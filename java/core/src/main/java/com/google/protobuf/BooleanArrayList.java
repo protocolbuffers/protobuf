@@ -45,7 +45,8 @@ import java.util.RandomAccess;
 final class BooleanArrayList extends AbstractProtobufList<Boolean>
     implements BooleanList, RandomAccess, PrimitiveNonBoxingCollection {
 
-  private static final BooleanArrayList EMPTY_LIST = new BooleanArrayList();
+  private static final BooleanArrayList EMPTY_LIST = new BooleanArrayList(new boolean[0], 0);
+
   static {
     EMPTY_LIST.makeImmutable();
   }

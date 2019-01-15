@@ -219,10 +219,10 @@ inline void OnShutdownDestroyString(const ::std::string* ptr) {
 }
 
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-
-inline void InlineGreedyStringParser(std::string* str, const char* begin, int size,
-                               ParseContext*) {
-  str->assign(begin, size);
+// To simplify generation of the parse loop code we take objects by void ptr.
+inline void InlineGreedyStringParser(void* str, const char* begin, int size,
+                                     ParseContext*) {
+  static_cast<std::string*>(str)->assign(begin, size);
 }
 
 

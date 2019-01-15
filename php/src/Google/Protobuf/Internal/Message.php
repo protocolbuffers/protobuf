@@ -716,7 +716,7 @@ class Message
      *
      * @param string $data Binary protobuf data.
      * @return null.
-     * @throws Exception Invalid data.
+     * @throws \Exception Invalid data.
      */
     public function mergeFromString($data)
     {
@@ -734,7 +734,7 @@ class Message
      *
      * @param string $data Json protobuf data.
      * @return null.
-     * @throws Exception Invalid data.
+     * @throws \Exception Invalid data.
      */
     public function mergeFromJsonString($data)
     {
@@ -1383,6 +1383,24 @@ class Message
             $timestamp = GPBUtil::formatTimestamp($this);
             $timestamp = json_encode($timestamp);
             $output->writeRaw($timestamp, strlen($timestamp));
+        } elseif (get_class($this) === 'Google\Protobuf\ListValue') {
+            $field = $this->desc->getField()[1];
+            if (!$this->existField($field)) {
+                $output->writeRaw("[]", 2);
+            } else {
+                if (!$this->serializeFieldToJsonStream($output, $field)) {
+                    return false;
+                }
+            }
+        } elseif (get_class($this) === 'Google\Protobuf\Struct') {
+            $field = $this->desc->getField()[1];
+            if (!$this->existField($field)) {
+                $output->writeRaw("{}", 2);
+            } else {
+                if (!$this->serializeFieldToJsonStream($output, $field)) {
+                    return false;
+                }
+            }
         } else {
             if (!GPBUtil::hasSpecialJsonMapping($this)) {
                 $output->writeRaw("{", 1);
@@ -1844,6 +1862,24 @@ class Message
             $timestamp = GPBUtil::formatTimestamp($this);
             $timestamp = json_encode($timestamp);
             $size += strlen($timestamp);
+        } elseif (get_class($this) === 'Google\Protobuf\ListValue') {
+            $field = $this->desc->getField()[1];
+            if ($this->existField($field)) {
+                $field_size = $this->fieldJsonByteSize($field);
+                $size += $field_size;
+            } else {
+                // Size for "[]".
+                $size += 2;
+            }
+        } elseif (get_class($this) === 'Google\Protobuf\Struct') {
+            $field = $this->desc->getField()[1];
+            if ($this->existField($field)) {
+                $field_size = $this->fieldJsonByteSize($field);
+                $size += $field_size;
+            } else {
+                // Size for "{}".
+                $size += 2;
+            }
         } else {
             if (!GPBUtil::hasSpecialJsonMapping($this)) {
                 // Size for "{}".

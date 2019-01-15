@@ -85,6 +85,11 @@ ConformanceTestSuite::ConformanceRequestSetting::ConformanceRequestSetting(
       break;
     }
 
+    case conformance::TEXT_FORMAT: {
+      request_.set_text_payload(input);
+      break;
+    }
+
     default:
       GOOGLE_LOG(FATAL) << "Unspecified input format";
   }
@@ -131,6 +136,8 @@ string ConformanceTestSuite::ConformanceRequestSetting::
       return "ProtobufInput";
     case conformance::JSON:
       return "JsonInput";
+    case conformance::TEXT_FORMAT:
+      return "TextFormatInput";
     default:
       GOOGLE_LOG(FATAL) << "Unspecified output format";
   }
@@ -144,19 +151,12 @@ string ConformanceTestSuite::ConformanceRequestSetting::
       return "ProtobufOutput";
     case conformance::JSON:
       return "JsonOutput";
+    case conformance::TEXT_FORMAT:
+      return "TextFormatOutput";
     default:
       GOOGLE_LOG(FATAL) << "Unspecified output format";
   }
   return "";
-}
-
-void ConformanceTestSuite::SetFailureList(
-    const string& filename,
-    const std::vector<string>& failure_list) {
-  failure_list_filename_ = filename;
-  expected_to_fail_.clear();
-  std::copy(failure_list.begin(), failure_list.end(),
-            std::inserter(expected_to_fail_, expected_to_fail_.end()));
 }
 
 void ConformanceTestSuite::ReportSuccess(const string& test_name) {
@@ -350,6 +350,8 @@ string ConformanceTestSuite::WireFormatToString(
       return "JSON";
     case conformance::JSPB:
       return "JSPB";
+    case conformance::TEXT_FORMAT:
+      return "TEXT_FORMAT";
     case conformance::UNSPECIFIED:
       return "UNSPECIFIED";
     default:
@@ -359,8 +361,9 @@ string ConformanceTestSuite::WireFormatToString(
   return "";
 }
 
-bool ConformanceTestSuite::RunSuite(
-    ConformanceTestRunner* runner, std::string* output) {
+bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
+                                    std::string* output, const string& filename,
+                                    conformance::FailureSet* failure_list) {
   runner_ = runner;
   successes_ = 0;
   expected_failures_ = 0;
@@ -371,6 +374,18 @@ bool ConformanceTestSuite::RunSuite(
 
   output_ = "\nCONFORMANCE TEST BEGIN ====================================\n\n";
 
+  ConformanceRequest req;
+  ConformanceResponse res;
+  req.set_message_type(failure_list->GetTypeName());
+  req.set_protobuf_payload("");
+  req.set_requested_output_format(conformance::WireFormat::PROTOBUF);
+  RunTest("FindFailures", req, &res);
+  GOOGLE_CHECK(failure_list->MergeFromString(res.protobuf_payload()));
+  failure_list_filename_ = filename;
+  expected_to_fail_.clear();
+  for (const string& failure : failure_list->failure()) {
+    expected_to_fail_.insert(failure);
+  }
   RunSuiteImpl();
 
   bool ok = true;

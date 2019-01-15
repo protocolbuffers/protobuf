@@ -242,3 +242,4 @@ enum MapValueEnum {
 message MapValueMessage {
   optional int32 foo = 1;
 }
+

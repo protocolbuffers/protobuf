@@ -107,6 +107,7 @@ other_language_protoc_outputs =                                \
   google/protobuf/wrappers_pb2.py                              \
   Conformance/ConformanceRequest.php                           \
   Conformance/ConformanceResponse.php                          \
+  Conformance/FailureSet.php                                   \
   Conformance/WireFormat.php                                   \
   GPBMetadata/Conformance.php                                  \
   GPBMetadata/Google/Protobuf/Any.php                          \
@@ -343,6 +344,9 @@ test_csharp: protoc_middleman conformance-test-runner conformance-csharp
 
 test_ruby: protoc_middleman conformance-test-runner $(other_language_protoc_outputs)
 	RUBYLIB=../ruby/lib:. ./conformance-test-runner --enforce_recommended --failure_list failure_list_ruby.txt ./conformance_ruby.rb
+
+test_ruby_mac: protoc_middleman conformance-test-runner $(other_language_protoc_outputs)
+	RUBYLIB=../ruby/lib:. ./conformance-test-runner --enforce_recommended --failure_list failure_list_ruby_mac.txt ./conformance_ruby.rb
 
 test_php: protoc_middleman conformance-test-runner conformance-php $(other_language_protoc_outputs)
 	./conformance-test-runner --enforce_recommended --failure_list failure_list_php.txt ./conformance-php

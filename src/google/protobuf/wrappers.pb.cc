@@ -390,7 +390,7 @@ void DoubleValue::Clear() {
 const char* DoubleValue::_InternalParse(const char* begin, const char* end, void* object,
                   ::google::protobuf::internal::ParseContext* ctx) {
   auto msg = static_cast<DoubleValue*>(object);
-  ::google::protobuf::uint32 size; (void)size;
+  ::google::protobuf::int32 size; (void)size;
   int depth; (void)depth;
   ::google::protobuf::uint32 tag;
   ::google::protobuf::internal::ParseFunc parser_till_end; (void)parser_till_end;
@@ -402,10 +402,8 @@ const char* DoubleValue::_InternalParse(const char* begin, const char* end, void
       // double value = 1;
       case 1: {
         if (static_cast<::google::protobuf::uint8>(tag) != 9) goto handle_unusual;
-        double val;
-        ::std::memcpy(&val, ptr, 8);
-        ptr += 8;
-        msg->set_value(val);
+        msg->set_value(::google::protobuf::io::UnalignedLoad<double>(ptr));
+        ptr += sizeof(double);
         break;
       }
       default: {
@@ -679,7 +677,7 @@ void FloatValue::Clear() {
 const char* FloatValue::_InternalParse(const char* begin, const char* end, void* object,
                   ::google::protobuf::internal::ParseContext* ctx) {
   auto msg = static_cast<FloatValue*>(object);
-  ::google::protobuf::uint32 size; (void)size;
+  ::google::protobuf::int32 size; (void)size;
   int depth; (void)depth;
   ::google::protobuf::uint32 tag;
   ::google::protobuf::internal::ParseFunc parser_till_end; (void)parser_till_end;
@@ -691,10 +689,8 @@ const char* FloatValue::_InternalParse(const char* begin, const char* end, void*
       // float value = 1;
       case 1: {
         if (static_cast<::google::protobuf::uint8>(tag) != 13) goto handle_unusual;
-        float val;
-        std::memcpy(&val, ptr, 4);
-        ptr += 4;
-        msg->set_value(val);
+        msg->set_value(::google::protobuf::io::UnalignedLoad<float>(ptr));
+        ptr += sizeof(float);
         break;
       }
       default: {
@@ -968,7 +964,7 @@ void Int64Value::Clear() {
 const char* Int64Value::_InternalParse(const char* begin, const char* end, void* object,
                   ::google::protobuf::internal::ParseContext* ctx) {
   auto msg = static_cast<Int64Value*>(object);
-  ::google::protobuf::uint32 size; (void)size;
+  ::google::protobuf::int32 size; (void)size;
   int depth; (void)depth;
   ::google::protobuf::uint32 tag;
   ::google::protobuf::internal::ParseFunc parser_till_end; (void)parser_till_end;
@@ -980,11 +976,8 @@ const char* Int64Value::_InternalParse(const char* begin, const char* end, void*
       // int64 value = 1;
       case 1: {
         if (static_cast<::google::protobuf::uint8>(tag) != 8) goto handle_unusual;
-        ::google::protobuf::uint64 val;
-        ptr = ::google::protobuf::io::Parse64(ptr, &val);
+        msg->set_value(::google::protobuf::internal::ReadVarint(&ptr));
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        ::google::protobuf::int64 value = val;
-        msg->set_value(value);
         break;
       }
       default: {
@@ -1260,7 +1253,7 @@ void UInt64Value::Clear() {
 const char* UInt64Value::_InternalParse(const char* begin, const char* end, void* object,
                   ::google::protobuf::internal::ParseContext* ctx) {
   auto msg = static_cast<UInt64Value*>(object);
-  ::google::protobuf::uint32 size; (void)size;
+  ::google::protobuf::int32 size; (void)size;
   int depth; (void)depth;
   ::google::protobuf::uint32 tag;
   ::google::protobuf::internal::ParseFunc parser_till_end; (void)parser_till_end;
@@ -1272,11 +1265,8 @@ const char* UInt64Value::_InternalParse(const char* begin, const char* end, void
       // uint64 value = 1;
       case 1: {
         if (static_cast<::google::protobuf::uint8>(tag) != 8) goto handle_unusual;
-        ::google::protobuf::uint64 val;
-        ptr = ::google::protobuf::io::Parse64(ptr, &val);
+        msg->set_value(::google::protobuf::internal::ReadVarint(&ptr));
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        ::google::protobuf::uint64 value = val;
-        msg->set_value(value);
         break;
       }
       default: {
@@ -1552,7 +1542,7 @@ void Int32Value::Clear() {
 const char* Int32Value::_InternalParse(const char* begin, const char* end, void* object,
                   ::google::protobuf::internal::ParseContext* ctx) {
   auto msg = static_cast<Int32Value*>(object);
-  ::google::protobuf::uint32 size; (void)size;
+  ::google::protobuf::int32 size; (void)size;
   int depth; (void)depth;
   ::google::protobuf::uint32 tag;
   ::google::protobuf::internal::ParseFunc parser_till_end; (void)parser_till_end;
@@ -1564,11 +1554,8 @@ const char* Int32Value::_InternalParse(const char* begin, const char* end, void*
       // int32 value = 1;
       case 1: {
         if (static_cast<::google::protobuf::uint8>(tag) != 8) goto handle_unusual;
-        ::google::protobuf::uint64 val;
-        ptr = ::google::protobuf::io::Parse64(ptr, &val);
+        msg->set_value(::google::protobuf::internal::ReadVarint(&ptr));
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        ::google::protobuf::int32 value = val;
-        msg->set_value(value);
         break;
       }
       default: {
@@ -1844,7 +1831,7 @@ void UInt32Value::Clear() {
 const char* UInt32Value::_InternalParse(const char* begin, const char* end, void* object,
                   ::google::protobuf::internal::ParseContext* ctx) {
   auto msg = static_cast<UInt32Value*>(object);
-  ::google::protobuf::uint32 size; (void)size;
+  ::google::protobuf::int32 size; (void)size;
   int depth; (void)depth;
   ::google::protobuf::uint32 tag;
   ::google::protobuf::internal::ParseFunc parser_till_end; (void)parser_till_end;
@@ -1856,11 +1843,8 @@ const char* UInt32Value::_InternalParse(const char* begin, const char* end, void
       // uint32 value = 1;
       case 1: {
         if (static_cast<::google::protobuf::uint8>(tag) != 8) goto handle_unusual;
-        ::google::protobuf::uint64 val;
-        ptr = ::google::protobuf::io::Parse64(ptr, &val);
+        msg->set_value(::google::protobuf::internal::ReadVarint(&ptr));
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        ::google::protobuf::uint32 value = val;
-        msg->set_value(value);
         break;
       }
       default: {
@@ -2136,7 +2120,7 @@ void BoolValue::Clear() {
 const char* BoolValue::_InternalParse(const char* begin, const char* end, void* object,
                   ::google::protobuf::internal::ParseContext* ctx) {
   auto msg = static_cast<BoolValue*>(object);
-  ::google::protobuf::uint32 size; (void)size;
+  ::google::protobuf::int32 size; (void)size;
   int depth; (void)depth;
   ::google::protobuf::uint32 tag;
   ::google::protobuf::internal::ParseFunc parser_till_end; (void)parser_till_end;
@@ -2148,11 +2132,8 @@ const char* BoolValue::_InternalParse(const char* begin, const char* end, void* 
       // bool value = 1;
       case 1: {
         if (static_cast<::google::protobuf::uint8>(tag) != 8) goto handle_unusual;
-        ::google::protobuf::uint64 val;
-        ptr = ::google::protobuf::io::Parse64(ptr, &val);
+        msg->set_value(::google::protobuf::internal::ReadVarint(&ptr));
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        bool value = val;
-        msg->set_value(value);
         break;
       }
       default: {
@@ -2433,7 +2414,7 @@ void StringValue::Clear() {
 const char* StringValue::_InternalParse(const char* begin, const char* end, void* object,
                   ::google::protobuf::internal::ParseContext* ctx) {
   auto msg = static_cast<StringValue*>(object);
-  ::google::protobuf::uint32 size; (void)size;
+  ::google::protobuf::int32 size; (void)size;
   int depth; (void)depth;
   ::google::protobuf::uint32 tag;
   ::google::protobuf::internal::ParseFunc parser_till_end; (void)parser_till_end;
@@ -2445,19 +2426,16 @@ const char* StringValue::_InternalParse(const char* begin, const char* end, void
       // string value = 1;
       case 1: {
         if (static_cast<::google::protobuf::uint8>(tag) != 10) goto handle_unusual;
-        ptr = ::google::protobuf::io::Parse32(ptr, &size);
+        ptr = ::google::protobuf::io::ReadSize(ptr, &size);
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
         ctx->extra_parse_data().SetFieldName("google.protobuf.StringValue.value");
-        auto str = msg->mutable_value();
+        object = msg->mutable_value();
         if (size > end - ptr + ::google::protobuf::internal::ParseContext::kSlopBytes) {
-          object = str;
-          str->clear();
-          str->reserve(size);
           parser_till_end = ::google::protobuf::internal::GreedyStringParserUTF8;
-          goto len_delim_till_end;
+          goto string_till_end;
         }
         GOOGLE_PROTOBUF_PARSER_ASSERT(::google::protobuf::internal::StringCheckUTF8(ptr, size, ctx));
-        ::google::protobuf::internal::InlineGreedyStringParser(str, ptr, size, ctx);
+        ::google::protobuf::internal::InlineGreedyStringParser(object, ptr, size, ctx);
         ptr += size;
         break;
       }
@@ -2476,6 +2454,10 @@ const char* StringValue::_InternalParse(const char* begin, const char* end, void
     }  // switch
   }  // while
   return ptr;
+string_till_end:
+  static_cast<::std::string*>(object)->clear();
+  static_cast<::std::string*>(object)->reserve(size);
+  goto len_delim_till_end;
 len_delim_till_end:
   return ctx->StoreAndTailCall(ptr, end, {_InternalParse, msg},
                                {parser_till_end, object}, size);
@@ -2758,7 +2740,7 @@ void BytesValue::Clear() {
 const char* BytesValue::_InternalParse(const char* begin, const char* end, void* object,
                   ::google::protobuf::internal::ParseContext* ctx) {
   auto msg = static_cast<BytesValue*>(object);
-  ::google::protobuf::uint32 size; (void)size;
+  ::google::protobuf::int32 size; (void)size;
   int depth; (void)depth;
   ::google::protobuf::uint32 tag;
   ::google::protobuf::internal::ParseFunc parser_till_end; (void)parser_till_end;
@@ -2770,18 +2752,15 @@ const char* BytesValue::_InternalParse(const char* begin, const char* end, void*
       // bytes value = 1;
       case 1: {
         if (static_cast<::google::protobuf::uint8>(tag) != 10) goto handle_unusual;
-        ptr = ::google::protobuf::io::Parse32(ptr, &size);
+        ptr = ::google::protobuf::io::ReadSize(ptr, &size);
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        auto str = msg->mutable_value();
+        object = msg->mutable_value();
         if (size > end - ptr + ::google::protobuf::internal::ParseContext::kSlopBytes) {
-          object = str;
-          str->clear();
-          str->reserve(size);
           parser_till_end = ::google::protobuf::internal::GreedyStringParser;
-          goto len_delim_till_end;
+          goto string_till_end;
         }
         GOOGLE_PROTOBUF_PARSER_ASSERT(::google::protobuf::internal::StringCheck(ptr, size, ctx));
-        ::google::protobuf::internal::InlineGreedyStringParser(str, ptr, size, ctx);
+        ::google::protobuf::internal::InlineGreedyStringParser(object, ptr, size, ctx);
         ptr += size;
         break;
       }
@@ -2800,6 +2779,10 @@ const char* BytesValue::_InternalParse(const char* begin, const char* end, void*
     }  // switch
   }  // while
   return ptr;
+string_till_end:
+  static_cast<::std::string*>(object)->clear();
+  static_cast<::std::string*>(object)->reserve(size);
+  goto len_delim_till_end;
 len_delim_till_end:
   return ctx->StoreAndTailCall(ptr, end, {_InternalParse, msg},
                                {parser_till_end, object}, size);

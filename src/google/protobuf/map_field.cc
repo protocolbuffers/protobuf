@@ -91,12 +91,6 @@ void MapFieldBase::SetRepeatedDirty() {
   state_.store(STATE_MODIFIED_REPEATED, std::memory_order_relaxed);
 }
 
-void MapFieldBase::SetClean() {
-  // These are called by (non-const) mutator functions. So by our API it's the
-  // callers responsibility to have these calls properly ordered.
-  state_.store(CLEAN, std::memory_order_relaxed);
-}
-
 void* MapFieldBase::MutableRepeatedPtrField() const { return repeated_field_; }
 
 void MapFieldBase::SyncRepeatedFieldWithMap() const {
@@ -192,7 +186,9 @@ void DynamicMapField::Clear() {
   if (MapFieldBase::repeated_field_ != nullptr) {
     MapFieldBase::repeated_field_->Clear();
   }
-  MapFieldBase::SetClean();
+  // Data in map and repeated field are both empty, but we can't set status
+  // CLEAN which will invalidate previous reference to map.
+  MapFieldBase::SetMapDirty();
 }
 
 bool DynamicMapField::ContainsMapKey(

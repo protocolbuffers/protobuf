@@ -38,6 +38,7 @@
 #include <limits>
 #include <unordered_map>
 
+
 #include <google/protobuf/stubs/hash.h>
 
 #include <google/protobuf/stubs/casts.h>
@@ -1154,7 +1155,7 @@ bool Parser::ParseDefaultAssignment(
       DO(ConsumeInteger64(max_value, &value,
                           "Expected integer for field default value."));
       // And stringify it again.
-      default_value->append(SimpleItoa(value));
+      default_value->append(StrCat(value));
       break;
     }
 
@@ -1177,7 +1178,7 @@ bool Parser::ParseDefaultAssignment(
       DO(ConsumeInteger64(max_value, &value,
                           "Expected integer for field default value."));
       // And stringify it again.
-      default_value->append(SimpleItoa(value));
+      default_value->append(StrCat(value));
       break;
     }
 

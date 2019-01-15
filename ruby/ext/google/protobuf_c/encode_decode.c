@@ -1323,9 +1323,12 @@ VALUE Message_encode(VALUE klass, VALUE msg_rb) {
 
 /*
  * call-seq:
- *     MessageClass.encode_json(msg) => json_string
+ *     MessageClass.encode_json(msg, options = {}) => json_string
  *
  * Encodes the given message object into its serialized JSON representation.
+ * @param options [Hash] options for the decoder
+ *  preserve_proto_fieldnames: set true to use original fieldnames (default is to camelCase)
+ *  emit_defaults: set true to emit 0/false values (default is to omit them)
  */
 VALUE Message_encode_json(int argc, VALUE* argv, VALUE klass) {
   VALUE descriptor = rb_ivar_get(klass, descriptor_instancevar_interned);

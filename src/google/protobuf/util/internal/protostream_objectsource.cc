@@ -49,6 +49,7 @@
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/casts.h>
 
+
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/status_macros.h>
 
@@ -943,61 +944,61 @@ const string ProtoStreamObjectSource::ReadFieldValueAsString(
     case google::protobuf::Field_Kind_TYPE_INT32: {
       uint32 buffer32;
       stream_->ReadVarint32(&buffer32);
-      result = SimpleItoa(::google::protobuf::bit_cast<int32>(buffer32));
+      result = StrCat(::google::protobuf::bit_cast<int32>(buffer32));
       break;
     }
     case google::protobuf::Field_Kind_TYPE_INT64: {
       uint64 buffer64;
       stream_->ReadVarint64(&buffer64);
-      result = SimpleItoa(::google::protobuf::bit_cast<int64>(buffer64));
+      result = StrCat(::google::protobuf::bit_cast<int64>(buffer64));
       break;
     }
     case google::protobuf::Field_Kind_TYPE_UINT32: {
       uint32 buffer32;
       stream_->ReadVarint32(&buffer32);
-      result = SimpleItoa(::google::protobuf::bit_cast<uint32>(buffer32));
+      result = StrCat(::google::protobuf::bit_cast<uint32>(buffer32));
       break;
     }
     case google::protobuf::Field_Kind_TYPE_UINT64: {
       uint64 buffer64;
       stream_->ReadVarint64(&buffer64);
-      result = SimpleItoa(::google::protobuf::bit_cast<uint64>(buffer64));
+      result = StrCat(::google::protobuf::bit_cast<uint64>(buffer64));
       break;
     }
     case google::protobuf::Field_Kind_TYPE_SINT32: {
       uint32 buffer32;
       stream_->ReadVarint32(&buffer32);
-      result = SimpleItoa(WireFormatLite::ZigZagDecode32(buffer32));
+      result = StrCat(WireFormatLite::ZigZagDecode32(buffer32));
       break;
     }
     case google::protobuf::Field_Kind_TYPE_SINT64: {
       uint64 buffer64;
       stream_->ReadVarint64(&buffer64);
-      result = SimpleItoa(WireFormatLite::ZigZagDecode64(buffer64));
+      result = StrCat(WireFormatLite::ZigZagDecode64(buffer64));
       break;
     }
     case google::protobuf::Field_Kind_TYPE_SFIXED32: {
       uint32 buffer32;
       stream_->ReadLittleEndian32(&buffer32);
-      result = SimpleItoa(::google::protobuf::bit_cast<int32>(buffer32));
+      result = StrCat(::google::protobuf::bit_cast<int32>(buffer32));
       break;
     }
     case google::protobuf::Field_Kind_TYPE_SFIXED64: {
       uint64 buffer64;
       stream_->ReadLittleEndian64(&buffer64);
-      result = SimpleItoa(::google::protobuf::bit_cast<int64>(buffer64));
+      result = StrCat(::google::protobuf::bit_cast<int64>(buffer64));
       break;
     }
     case google::protobuf::Field_Kind_TYPE_FIXED32: {
       uint32 buffer32;
       stream_->ReadLittleEndian32(&buffer32);
-      result = SimpleItoa(::google::protobuf::bit_cast<uint32>(buffer32));
+      result = StrCat(::google::protobuf::bit_cast<uint32>(buffer32));
       break;
     }
     case google::protobuf::Field_Kind_TYPE_FIXED64: {
       uint64 buffer64;
       stream_->ReadLittleEndian64(&buffer64);
-      result = SimpleItoa(::google::protobuf::bit_cast<uint64>(buffer64));
+      result = StrCat(::google::protobuf::bit_cast<uint64>(buffer64));
       break;
     }
     case google::protobuf::Field_Kind_TYPE_FLOAT: {

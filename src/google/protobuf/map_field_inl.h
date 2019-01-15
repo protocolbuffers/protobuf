@@ -186,7 +186,10 @@ void MapField<Derived, Key, T, kKeyFieldType, kValueFieldType,
   }
 
   impl_.MutableMap()->clear();
-  MapFieldBase::SetClean();
+  // Data in map and repeated field are both empty, but we can't set status
+  // CLEAN. Because clear is a generated API, we cannot invalidate previous
+  // reference to map.
+  MapFieldBase::SetMapDirty();
 }
 
 template <typename Derived, typename Key, typename T,

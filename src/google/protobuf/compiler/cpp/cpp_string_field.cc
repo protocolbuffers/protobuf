@@ -39,6 +39,7 @@
 #include <google/protobuf/stubs/strutil.h>
 
 
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -52,7 +53,7 @@ void SetStringVariables(const FieldDescriptor* descriptor,
   SetCommonFieldVariables(descriptor, variables, options);
   (*variables)["default"] = DefaultValue(options, descriptor);
   (*variables)["default_length"] =
-      SimpleItoa(descriptor->default_value_string().length());
+      StrCat(descriptor->default_value_string().length());
   string default_variable_string = MakeDefaultName(descriptor);
   (*variables)["default_variable_name"] = default_variable_string;
   (*variables)["default_variable"] =

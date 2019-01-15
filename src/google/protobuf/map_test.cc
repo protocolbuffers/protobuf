@@ -126,6 +126,7 @@ class MapImplTest : public ::testing::Test {
     // Test map size is correct.
     EXPECT_EQ(value, map_[key]);
     EXPECT_EQ(1, map_.count(key));
+    EXPECT_TRUE(map_.contains(key));
 
     // Check mutable at and find work correctly.
     EXPECT_EQ(value, map_.at(key));
@@ -246,6 +247,14 @@ TEST_F(MapImplTest, MapKeyAssignment) {
 
 TEST_F(MapImplTest, CountNonExist) {
   EXPECT_EQ(0, map_.count(0));
+}
+
+TEST_F(MapImplTest, ContainNotExist) {
+  EXPECT_FALSE(map_.contains(0));
+}
+
+TEST_F(MapImplTest, ImmutableContainNotExist) {
+  EXPECT_FALSE(const_map_.contains(0));
 }
 
 TEST_F(MapImplTest, MutableFindNonExist) {

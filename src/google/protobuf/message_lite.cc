@@ -353,6 +353,10 @@ bool MessageLite::ParsePartialFromArray(const void* data, int size) {
   return ParseFrom<kParsePartial>(as_string_view(data, size));
 }
 
+bool MessageLite::MergeFromString(const string& data) {
+  return ParseFrom<kMerge>(data);
+}
+
 
 // ===================================================================
 

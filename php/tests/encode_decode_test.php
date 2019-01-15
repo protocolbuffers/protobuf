@@ -898,6 +898,13 @@ class EncodeDecodeTest extends TestBase
         $this->assertSame("[1.5]", $m->serializeToJsonString());
     }
 
+    public function testEncodeEmptyListValue()
+    {
+        $m = new Struct();
+        $m->setFields(['test' => (new Value())->setListValue(new ListValue())]);
+        $this->assertSame('{"test":[]}', $m->serializeToJsonString());
+    }
+
     public function testDecodeTopLevelStruct()
     {
         $m = new Struct();
@@ -915,6 +922,13 @@ class EncodeDecodeTest extends TestBase
         $sub->setNumberValue(1.5);
         $map["a"] = $sub;
         $this->assertSame("{\"a\":1.5}", $m->serializeToJsonString());
+    }
+
+    public function testEncodeEmptyStruct()
+    {
+        $m = new Struct();
+        $m->setFields(['test' => (new Value())->setStructValue(new Struct())]);
+        $this->assertSame('{"test":{}}', $m->serializeToJsonString());
     }
 
     public function testDecodeTopLevelAny()
