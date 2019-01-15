@@ -35,13 +35,13 @@ static int indent(upb_textprinter *p) {
   int i;
   if (!p->single_line_)
     for (i = 0; i < p->indent_depth_; i++)
-      upb_bytessink_putbuf(&p->output_, p->subc, "  ", 2, NULL);
+      upb_bytessink_putbuf(p->output_, p->subc, "  ", 2, NULL);
   return 0;
 }
 
 static int endfield(upb_textprinter *p) {
   const char ch = (p->single_line_ ? ' ' : '\n');
-  upb_bytessink_putbuf(&p->output_, p->subc, &ch, 1, NULL);
+  upb_bytessink_putbuf(p->output_, p->subc, &ch, 1, NULL);
   return 0;
 }
 
@@ -60,7 +60,7 @@ static int putescaped(upb_textprinter *p, const char *buf, size_t len,
     bool is_hex_escape;
 
     if (dstend - dst < 4) {
-      upb_bytessink_putbuf(&p->output_, p->subc, dstbuf, dst - dstbuf, NULL);
+      upb_bytessink_putbuf(p->output_, p->subc, dstbuf, dst - dstbuf, NULL);
       dst = dstbuf;
     }
 
@@ -88,7 +88,7 @@ static int putescaped(upb_textprinter *p, const char *buf, size_t len,
     last_hex_escape = is_hex_escape;
   }
   /* Flush remaining data. */
-  upb_bytessink_putbuf(&p->output_, p->subc, dstbuf, dst - dstbuf, NULL);
+  upb_bytessink_putbuf(p->output_, p->subc, dstbuf, dst - dstbuf, NULL);
   return 0;
 }
 
@@ -114,7 +114,7 @@ bool putf(upb_textprinter *p, const char *fmt, ...) {
   va_end(args);
   UPB_ASSERT(written == len);
 
-  ok = upb_bytessink_putbuf(&p->output_, p->subc, str, len, NULL);
+  ok = upb_bytessink_putbuf(p->output_, p->subc, str, len, NULL);
   upb_gfree(str);
   return ok;
 }
@@ -126,7 +126,7 @@ static bool textprinter_startmsg(void *c, const void *hd) {
   upb_textprinter *p = c;
   UPB_UNUSED(hd);
   if (p->indent_depth_ == 0) {
-    upb_bytessink_start(&p->output_, 0, &p->subc);
+    upb_bytessink_start(p->output_, 0, &p->subc);
   }
   return true;
 }
@@ -136,7 +136,7 @@ static bool textprinter_endmsg(void *c, const void *hd, upb_status *s) {
   UPB_UNUSED(hd);
   UPB_UNUSED(s);
   if (p->indent_depth_ == 0) {
-    upb_bytessink_end(&p->output_);
+    upb_bytessink_end(p->output_);
   }
   return true;
 }
@@ -241,7 +241,7 @@ static bool textprinter_endsubmsg(void *closure, const void *handler_data) {
   UPB_UNUSED(handler_data);
   p->indent_depth_--;
   CHECK(indent(p));
-  upb_bytessink_putbuf(&p->output_, p->subc, "}", 1, NULL);
+  upb_bytessink_putbuf(p->output_, p->subc, "}", 1, NULL);
   CHECK(endfield(p));
   return true;
 err:

@@ -38,16 +38,16 @@ typedef struct {
   void *closure;
 } upb_sink;
 
-#define PUTVAL(type, ctype)                                            \
-  UPB_INLINE bool upb_sink_put##type(upb_sink *s, upb_selector_t sel,  \
-                                     ctype val) {                      \
-    typedef upb_##type##_handlerfunc functype;                         \
-    functype *func;                                                    \
-    const void *hd;                                                    \
-    if (!s->handlers) return true;                                     \
-    func = (functype *)upb_handlers_gethandler(s->handlers, sel, &hd); \
-    if (!func) return true;                                            \
-    return func(s->closure, hd, val);                                  \
+#define PUTVAL(type, ctype)                                           \
+  UPB_INLINE bool upb_sink_put##type(upb_sink s, upb_selector_t sel,  \
+                                     ctype val) {                     \
+    typedef upb_##type##_handlerfunc functype;                        \
+    functype *func;                                                   \
+    const void *hd;                                                   \
+    if (!s.handlers) return true;                                     \
+    func = (functype *)upb_handlers_gethandler(s.handlers, sel, &hd); \
+    if (!func) return true;                                           \
+    return func(s.closure, hd, val);                                  \
   }
 
 PUTVAL(int32,  int32_t)
@@ -64,134 +64,134 @@ UPB_INLINE void upb_sink_reset(upb_sink *s, const upb_handlers *h, void *c) {
   s->closure = c;
 }
 
-UPB_INLINE size_t upb_sink_putstring(upb_sink *s, upb_selector_t sel,
+UPB_INLINE size_t upb_sink_putstring(upb_sink s, upb_selector_t sel,
                                      const char *buf, size_t n,
                                      const upb_bufhandle *handle) {
   typedef upb_string_handlerfunc func;
   func *handler;
   const void *hd;
-  if (!s->handlers) return n;
-  handler = (func *)upb_handlers_gethandler(s->handlers, sel, &hd);
+  if (!s.handlers) return n;
+  handler = (func *)upb_handlers_gethandler(s.handlers, sel, &hd);
 
   if (!handler) return n;
-  return handler(s->closure, hd, buf, n, handle);
+  return handler(s.closure, hd, buf, n, handle);
 }
 
-UPB_INLINE bool upb_sink_putunknown(upb_sink *s, const char *buf, size_t n) {
+UPB_INLINE bool upb_sink_putunknown(upb_sink s, const char *buf, size_t n) {
   typedef upb_unknown_handlerfunc func;
   func *handler;
   const void *hd;
-  if (!s->handlers) return true;
+  if (!s.handlers) return true;
   handler =
-      (func *)upb_handlers_gethandler(s->handlers, UPB_UNKNOWN_SELECTOR, &hd);
+      (func *)upb_handlers_gethandler(s.handlers, UPB_UNKNOWN_SELECTOR, &hd);
 
   if (!handler) return n;
-  return handler(s->closure, hd, buf, n);
+  return handler(s.closure, hd, buf, n);
 }
 
-UPB_INLINE bool upb_sink_startmsg(upb_sink *s) {
+UPB_INLINE bool upb_sink_startmsg(upb_sink s) {
   typedef upb_startmsg_handlerfunc func;
   func *startmsg;
   const void *hd;
-  if (!s->handlers) return true;
+  if (!s.handlers) return true;
   startmsg =
-      (func *)upb_handlers_gethandler(s->handlers, UPB_STARTMSG_SELECTOR, &hd);
+      (func *)upb_handlers_gethandler(s.handlers, UPB_STARTMSG_SELECTOR, &hd);
 
   if (!startmsg) return true;
-  return startmsg(s->closure, hd);
+  return startmsg(s.closure, hd);
 }
 
-UPB_INLINE bool upb_sink_endmsg(upb_sink *s, upb_status *status) {
+UPB_INLINE bool upb_sink_endmsg(upb_sink s, upb_status *status) {
   typedef upb_endmsg_handlerfunc func;
   func *endmsg;
   const void *hd;
-  if (!s->handlers) return true;
+  if (!s.handlers) return true;
   endmsg =
-      (func *)upb_handlers_gethandler(s->handlers, UPB_ENDMSG_SELECTOR, &hd);
+      (func *)upb_handlers_gethandler(s.handlers, UPB_ENDMSG_SELECTOR, &hd);
 
   if (!endmsg) return true;
-  return endmsg(s->closure, hd, status);
+  return endmsg(s.closure, hd, status);
 }
 
-UPB_INLINE bool upb_sink_startseq(upb_sink *s, upb_selector_t sel,
+UPB_INLINE bool upb_sink_startseq(upb_sink s, upb_selector_t sel,
                                   upb_sink *sub) {
   typedef upb_startfield_handlerfunc func;
   func *startseq;
   const void *hd;
-  sub->closure = s->closure;
-  sub->handlers = s->handlers;
-  if (!s->handlers) return true;
-  startseq = (func*)upb_handlers_gethandler(s->handlers, sel, &hd);
+  sub->closure = s.closure;
+  sub->handlers = s.handlers;
+  if (!s.handlers) return true;
+  startseq = (func*)upb_handlers_gethandler(s.handlers, sel, &hd);
 
   if (!startseq) return true;
-  sub->closure = startseq(s->closure, hd);
+  sub->closure = startseq(s.closure, hd);
   return sub->closure ? true : false;
 }
 
-UPB_INLINE bool upb_sink_endseq(upb_sink *s, upb_selector_t sel) {
+UPB_INLINE bool upb_sink_endseq(upb_sink s, upb_selector_t sel) {
   typedef upb_endfield_handlerfunc func;
   func *endseq;
   const void *hd;
-  if (!s->handlers) return true;
-  endseq = (func*)upb_handlers_gethandler(s->handlers, sel, &hd);
+  if (!s.handlers) return true;
+  endseq = (func*)upb_handlers_gethandler(s.handlers, sel, &hd);
 
   if (!endseq) return true;
-  return endseq(s->closure, hd);
+  return endseq(s.closure, hd);
 }
 
-UPB_INLINE bool upb_sink_startstr(upb_sink *s, upb_selector_t sel,
+UPB_INLINE bool upb_sink_startstr(upb_sink s, upb_selector_t sel,
                                   size_t size_hint, upb_sink *sub) {
   typedef upb_startstr_handlerfunc func;
   func *startstr;
   const void *hd;
-  sub->closure = s->closure;
-  sub->handlers = s->handlers;
-  if (!s->handlers) return true;
-  startstr = (func*)upb_handlers_gethandler(s->handlers, sel, &hd);
+  sub->closure = s.closure;
+  sub->handlers = s.handlers;
+  if (!s.handlers) return true;
+  startstr = (func*)upb_handlers_gethandler(s.handlers, sel, &hd);
 
   if (!startstr) return true;
-  sub->closure = startstr(s->closure, hd, size_hint);
+  sub->closure = startstr(s.closure, hd, size_hint);
   return sub->closure ? true : false;
 }
 
-UPB_INLINE bool upb_sink_endstr(upb_sink *s, upb_selector_t sel) {
+UPB_INLINE bool upb_sink_endstr(upb_sink s, upb_selector_t sel) {
   typedef upb_endfield_handlerfunc func;
   func *endstr;
   const void *hd;
-  if (!s->handlers) return true;
-  endstr = (func*)upb_handlers_gethandler(s->handlers, sel, &hd);
+  if (!s.handlers) return true;
+  endstr = (func*)upb_handlers_gethandler(s.handlers, sel, &hd);
 
   if (!endstr) return true;
-  return endstr(s->closure, hd);
+  return endstr(s.closure, hd);
 }
 
-UPB_INLINE bool upb_sink_startsubmsg(upb_sink *s, upb_selector_t sel,
+UPB_INLINE bool upb_sink_startsubmsg(upb_sink s, upb_selector_t sel,
                                      upb_sink *sub) {
   typedef upb_startfield_handlerfunc func;
   func *startsubmsg;
   const void *hd;
-  sub->closure = s->closure;
-  if (!s->handlers) {
+  sub->closure = s.closure;
+  if (!s.handlers) {
     sub->handlers = NULL;
     return true;
   }
-  sub->handlers = upb_handlers_getsubhandlers_sel(s->handlers, sel);
-  startsubmsg = (func*)upb_handlers_gethandler(s->handlers, sel, &hd);
+  sub->handlers = upb_handlers_getsubhandlers_sel(s.handlers, sel);
+  startsubmsg = (func*)upb_handlers_gethandler(s.handlers, sel, &hd);
 
   if (!startsubmsg) return true;
-  sub->closure = startsubmsg(s->closure, hd);
+  sub->closure = startsubmsg(s.closure, hd);
   return sub->closure ? true : false;
 }
 
-UPB_INLINE bool upb_sink_endsubmsg(upb_sink *s, upb_selector_t sel) {
+UPB_INLINE bool upb_sink_endsubmsg(upb_sink s, upb_selector_t sel) {
   typedef upb_endfield_handlerfunc func;
   func *endsubmsg;
   const void *hd;
-  if (!s->handlers) return true;
-  endsubmsg = (func*)upb_handlers_gethandler(s->handlers, sel, &hd);
+  if (!s.handlers) return true;
+  endsubmsg = (func*)upb_handlers_gethandler(s.handlers, sel, &hd);
 
-  if (!endsubmsg) return s->closure;
-  return endsubmsg(s->closure, hd);
+  if (!endsubmsg) return s.closure;
+  return endsubmsg(s.closure, hd);
 }
 
 #ifdef __cplusplus
@@ -288,40 +288,40 @@ class upb::Sink {
    *   // ...
    *   sink->EndMessage(&status);
    *   sink->EndSubMessage(endsubmsg_selector); */
-  bool StartMessage() { return upb_sink_startmsg(&sink_); }
+  bool StartMessage() { return upb_sink_startmsg(sink_); }
   bool EndMessage(upb_status *status) {
-    return upb_sink_endmsg(&sink_, status);
+    return upb_sink_endmsg(sink_, status);
   }
 
   /* Putting of individual values.  These work for both repeated and
    * non-repeated fields, but for repeated fields you must wrap them in
    * calls to StartSequence()/EndSequence(). */
   bool PutInt32(HandlersPtr::Selector s, int32_t val) {
-    return upb_sink_putint32(&sink_, s, val);
+    return upb_sink_putint32(sink_, s, val);
   }
 
   bool PutInt64(HandlersPtr::Selector s, int64_t val) {
-    return upb_sink_putint64(&sink_, s, val);
+    return upb_sink_putint64(sink_, s, val);
   }
 
   bool PutUInt32(HandlersPtr::Selector s, uint32_t val) {
-    return upb_sink_putuint32(&sink_, s, val);
+    return upb_sink_putuint32(sink_, s, val);
   }
 
   bool PutUInt64(HandlersPtr::Selector s, uint64_t val) {
-    return upb_sink_putuint64(&sink_, s, val);
+    return upb_sink_putuint64(sink_, s, val);
   }
 
   bool PutFloat(HandlersPtr::Selector s, float val) {
-    return upb_sink_putfloat(&sink_, s, val);
+    return upb_sink_putfloat(sink_, s, val);
   }
 
   bool PutDouble(HandlersPtr::Selector s, double val) {
-    return upb_sink_putdouble(&sink_, s, val);
+    return upb_sink_putdouble(sink_, s, val);
   }
 
   bool PutBool(HandlersPtr::Selector s, bool val) {
-    return upb_sink_putbool(&sink_, s, val);
+    return upb_sink_putbool(sink_, s, val);
   }
 
   /* Putting of string/bytes values.  Each string can consist of zero or more
@@ -331,18 +331,18 @@ class upb::Sink {
    * The sub-sink must be used for any/all PutStringBuffer() calls. */
   bool StartString(HandlersPtr::Selector s, size_t size_hint, Sink* sub) {
     upb_sink sub_c;
-    bool ret = upb_sink_startstr(&sink_, s, size_hint, &sub_c);
+    bool ret = upb_sink_startstr(sink_, s, size_hint, &sub_c);
     *sub = sub_c;
     return ret;
   }
 
   size_t PutStringBuffer(HandlersPtr::Selector s, const char *buf, size_t len,
                          const upb_bufhandle *handle) {
-    return upb_sink_putstring(&sink_, s, buf, len, handle);
+    return upb_sink_putstring(sink_, s, buf, len, handle);
   }
 
   bool EndString(HandlersPtr::Selector s) {
-    return upb_sink_endstr(&sink_, s);
+    return upb_sink_endstr(sink_, s);
   }
 
   /* For submessage fields.
@@ -352,13 +352,13 @@ class upb::Sink {
    * submessage. */
   bool StartSubMessage(HandlersPtr::Selector s, Sink* sub) {
     upb_sink sub_c;
-    bool ret = upb_sink_startsubmsg(&sink_, s, &sub_c);
+    bool ret = upb_sink_startsubmsg(sink_, s, &sub_c);
     *sub = sub_c;
     return ret;
   }
 
   bool EndSubMessage(HandlersPtr::Selector s) {
-    return upb_sink_endsubmsg(&sink_, s);
+    return upb_sink_endsubmsg(sink_, s);
   }
 
   /* For repeated fields of any type, the sequence of values must be wrapped in
@@ -369,13 +369,13 @@ class upb::Sink {
    * sequence. */
   bool StartSequence(HandlersPtr::Selector s, Sink* sub) {
     upb_sink sub_c;
-    bool ret = upb_sink_startseq(&sink_, s, &sub_c);
+    bool ret = upb_sink_startseq(sink_, s, &sub_c);
     *sub = sub_c;
     return ret;
   }
 
   bool EndSequence(HandlersPtr::Selector s) {
-    return upb_sink_endseq(&sink_, s);
+    return upb_sink_endseq(sink_, s);
   }
 
   /* Copy and assign specifically allowed.
@@ -396,49 +396,49 @@ typedef struct {
   void *closure;
 } upb_bytessink ;
 
-UPB_INLINE void upb_bytessink_reset(upb_bytessink *s, const upb_byteshandler *h,
+UPB_INLINE void upb_bytessink_reset(upb_bytessink* s, const upb_byteshandler *h,
                                     void *closure) {
   s->handler = h;
   s->closure = closure;
 }
 
-UPB_INLINE bool upb_bytessink_start(upb_bytessink *s, size_t size_hint,
+UPB_INLINE bool upb_bytessink_start(upb_bytessink s, size_t size_hint,
                                     void **subc) {
   typedef upb_startstr_handlerfunc func;
   func *start;
-  *subc = s->closure;
-  if (!s->handler) return true;
-  start = (func *)s->handler->table[UPB_STARTSTR_SELECTOR].func;
+  *subc = s.closure;
+  if (!s.handler) return true;
+  start = (func *)s.handler->table[UPB_STARTSTR_SELECTOR].func;
 
   if (!start) return true;
-  *subc = start(s->closure,
-                s->handler->table[UPB_STARTSTR_SELECTOR].attr.handler_data,
+  *subc = start(s.closure,
+                s.handler->table[UPB_STARTSTR_SELECTOR].attr.handler_data,
                 size_hint);
   return *subc != NULL;
 }
 
-UPB_INLINE size_t upb_bytessink_putbuf(upb_bytessink *s, void *subc,
+UPB_INLINE size_t upb_bytessink_putbuf(upb_bytessink s, void *subc,
                                        const char *buf, size_t size,
                                        const upb_bufhandle* handle) {
   typedef upb_string_handlerfunc func;
   func *putbuf;
-  if (!s->handler) return true;
-  putbuf = (func *)s->handler->table[UPB_STRING_SELECTOR].func;
+  if (!s.handler) return true;
+  putbuf = (func *)s.handler->table[UPB_STRING_SELECTOR].func;
 
   if (!putbuf) return true;
-  return putbuf(subc, s->handler->table[UPB_STRING_SELECTOR].attr.handler_data,
+  return putbuf(subc, s.handler->table[UPB_STRING_SELECTOR].attr.handler_data,
                 buf, size, handle);
 }
 
-UPB_INLINE bool upb_bytessink_end(upb_bytessink *s) {
+UPB_INLINE bool upb_bytessink_end(upb_bytessink s) {
   typedef upb_endfield_handlerfunc func;
   func *end;
-  if (!s->handler) return true;
-  end = (func *)s->handler->table[UPB_ENDSTR_SELECTOR].func;
+  if (!s.handler) return true;
+  end = (func *)s.handler->table[UPB_ENDSTR_SELECTOR].func;
 
   if (!end) return true;
-  return end(s->closure,
-             s->handler->table[UPB_ENDSTR_SELECTOR].attr.handler_data);
+  return end(s.closure,
+             s.handler->table[UPB_ENDSTR_SELECTOR].attr.handler_data);
 }
 
 #ifdef __cplusplus
@@ -463,7 +463,7 @@ class upb::BytesSink {
    * TODO(haberman): once the Handlers know the expected closure type, verify
    * that T matches it. */
   template <class T> BytesSink(const upb_byteshandler* handler, T* closure) {
-    upb_bytessink_reset(&sink_, handler, closure);
+    upb_bytessink_reset(sink_, handler, closure);
   }
 
   /* Resets the value of the sink. */
@@ -472,16 +472,16 @@ class upb::BytesSink {
   }
 
   bool Start(size_t size_hint, void **subc) {
-    return upb_bytessink_start(&sink_, size_hint, subc);
+    return upb_bytessink_start(sink_, size_hint, subc);
   }
 
   size_t PutBuffer(void *subc, const char *buf, size_t len,
                    const upb_bufhandle *handle) {
-    return upb_bytessink_putbuf(&sink_, subc, buf, len, handle);
+    return upb_bytessink_putbuf(sink_, subc, buf, len, handle);
   }
 
   bool End() {
-    return upb_bytessink_end(&sink_);
+    return upb_bytessink_end(sink_);
   }
 
  private:

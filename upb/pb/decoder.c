@@ -594,7 +594,7 @@ have_tag:
 
     if (d->top->groupnum >= 0) {
       /* TODO: More code needed for handling unknown groups. */
-      upb_sink_putunknown(&d->top->sink, d->checkpoint, d->ptr - d->checkpoint);
+      upb_sink_putunknown(d->top->sink, d->checkpoint, d->ptr - d->checkpoint);
       return DECODE_OK;
     }
 
@@ -688,7 +688,7 @@ size_t run_decoder_vm(upb_pbdecoder *d, const mgroup *group,
   VMCASE(OP_PARSE_ ## type, { \
     ctype val; \
     CHECK_RETURN(decode_ ## wt(d, &val)); \
-    upb_sink_put ## name(&d->top->sink, arg, (convfunc)(val)); \
+    upb_sink_put ## name(d->top->sink, arg, (convfunc)(val)); \
   })
 
   while(1) {
@@ -740,36 +740,36 @@ size_t run_decoder_vm(upb_pbdecoder *d, const mgroup *group,
         d->pc += sizeof(void*) / sizeof(uint32_t);
       )
       VMCASE(OP_STARTMSG,
-        CHECK_SUSPEND(upb_sink_startmsg(&d->top->sink));
+        CHECK_SUSPEND(upb_sink_startmsg(d->top->sink));
       )
       VMCASE(OP_ENDMSG,
-        CHECK_SUSPEND(upb_sink_endmsg(&d->top->sink, d->status));
+        CHECK_SUSPEND(upb_sink_endmsg(d->top->sink, d->status));
       )
       VMCASE(OP_STARTSEQ,
         upb_pbdecoder_frame *outer = outer_frame(d);
-        CHECK_SUSPEND(upb_sink_startseq(&outer->sink, arg, &d->top->sink));
+        CHECK_SUSPEND(upb_sink_startseq(outer->sink, arg, &d->top->sink));
       )
       VMCASE(OP_ENDSEQ,
-        CHECK_SUSPEND(upb_sink_endseq(&d->top->sink, arg));
+        CHECK_SUSPEND(upb_sink_endseq(d->top->sink, arg));
       )
       VMCASE(OP_STARTSUBMSG,
         upb_pbdecoder_frame *outer = outer_frame(d);
-        CHECK_SUSPEND(upb_sink_startsubmsg(&outer->sink, arg, &d->top->sink));
+        CHECK_SUSPEND(upb_sink_startsubmsg(outer->sink, arg, &d->top->sink));
       )
       VMCASE(OP_ENDSUBMSG,
-        CHECK_SUSPEND(upb_sink_endsubmsg(&d->top->sink, arg));
+        CHECK_SUSPEND(upb_sink_endsubmsg(d->top->sink, arg));
       )
       VMCASE(OP_STARTSTR,
         uint32_t len = delim_remaining(d);
         upb_pbdecoder_frame *outer = outer_frame(d);
-        CHECK_SUSPEND(upb_sink_startstr(&outer->sink, arg, len, &d->top->sink));
+        CHECK_SUSPEND(upb_sink_startstr(outer->sink, arg, len, &d->top->sink));
         if (len == 0) {
           d->pc++;  /* Skip OP_STRING. */
         }
       )
       VMCASE(OP_STRING,
         uint32_t len = curbufleft(d);
-        size_t n = upb_sink_putstring(&d->top->sink, arg, d->ptr, len, handle);
+        size_t n = upb_sink_putstring(d->top->sink, arg, d->ptr, len, handle);
         if (n > len) {
           if (n > delim_remaining(d)) {
             seterr(d, "Tried to skip past end of string.");
@@ -790,7 +790,7 @@ size_t run_decoder_vm(upb_pbdecoder *d, const mgroup *group,
         }
       )
       VMCASE(OP_ENDSTR,
-        CHECK_SUSPEND(upb_sink_endstr(&d->top->sink, arg));
+        CHECK_SUSPEND(upb_sink_endstr(d->top->sink, arg));
       )
       VMCASE(OP_PUSHTAGDELIM,
         CHECK_SUSPEND(pushtagdelim(d, arg));

@@ -87,7 +87,7 @@ strpc *newstrpc_str(upb_handlers *h, const char * str) {
 static void print_data(
     upb_json_printer *p, const char *buf, unsigned int len) {
   /* TODO: Will need to change if we support pushback from the sink. */
-  size_t n = upb_bytessink_putbuf(&p->output_, p->subc_, buf, len, NULL);
+  size_t n = upb_bytessink_putbuf(p->output_, p->subc_, buf, len, NULL);
   UPB_ASSERT(n == len);
 }
 
@@ -369,7 +369,7 @@ static bool printer_startmsg(void *closure, const void *handler_data) {
   upb_json_printer *p = closure;
   UPB_UNUSED(handler_data);
   if (p->depth_ == 0) {
-    upb_bytessink_start(&p->output_, 0, &p->subc_);
+    upb_bytessink_start(p->output_, 0, &p->subc_);
   }
   start_frame(p);
   return true;
@@ -381,7 +381,7 @@ static bool printer_endmsg(void *closure, const void *handler_data, upb_status *
   UPB_UNUSED(s);
   end_frame(p);
   if (p->depth_ == 0) {
-    upb_bytessink_end(&p->output_);
+    upb_bytessink_end(p->output_);
   }
   return true;
 }
@@ -770,7 +770,7 @@ static bool printer_startdurationmsg(void *closure, const void *handler_data) {
   upb_json_printer *p = closure;
   UPB_UNUSED(handler_data);
   if (p->depth_ == 0) {
-    upb_bytessink_start(&p->output_, 0, &p->subc_);
+    upb_bytessink_start(p->output_, 0, &p->subc_);
   }
   return true;
 }
@@ -828,7 +828,7 @@ static bool printer_enddurationmsg(void *closure, const void *handler_data,
   print_data(p, "\"", 1);
 
   if (p->depth_ == 0) {
-    upb_bytessink_end(&p->output_);
+    upb_bytessink_end(p->output_);
   }
 
   UPB_UNUSED(handler_data);
@@ -839,7 +839,7 @@ static bool printer_starttimestampmsg(void *closure, const void *handler_data) {
   upb_json_printer *p = closure;
   UPB_UNUSED(handler_data);
   if (p->depth_ == 0) {
-    upb_bytessink_start(&p->output_, 0, &p->subc_);
+    upb_bytessink_start(p->output_, 0, &p->subc_);
   }
   return true;
 }
@@ -902,7 +902,7 @@ static bool printer_endtimestampmsg(void *closure, const void *handler_data,
   print_data(p, "\"", 1);
 
   if (p->depth_ == 0) {
-    upb_bytessink_end(&p->output_);
+    upb_bytessink_end(p->output_);
   }
 
   UPB_UNUSED(handler_data);
@@ -914,7 +914,7 @@ static bool printer_startmsg_noframe(void *closure, const void *handler_data) {
   upb_json_printer *p = closure;
   UPB_UNUSED(handler_data);
   if (p->depth_ == 0) {
-    upb_bytessink_start(&p->output_, 0, &p->subc_);
+    upb_bytessink_start(p->output_, 0, &p->subc_);
   }
   return true;
 }
@@ -925,7 +925,7 @@ static bool printer_endmsg_noframe(
   UPB_UNUSED(handler_data);
   UPB_UNUSED(s);
   if (p->depth_ == 0) {
-    upb_bytessink_end(&p->output_);
+    upb_bytessink_end(p->output_);
   }
   return true;
 }

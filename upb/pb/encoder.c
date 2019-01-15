@@ -127,7 +127,7 @@ struct upb_pb_encoder {
 
 /* TODO(haberman): handle pushback */
 static void putbuf(upb_pb_encoder *e, const char *buf, size_t len) {
-  size_t n = upb_bytessink_putbuf(&e->output_, e->subc, buf, len, NULL);
+  size_t n = upb_bytessink_putbuf(e->output_, e->subc, buf, len, NULL);
   UPB_ASSERT(n == len);
 }
 
@@ -353,7 +353,7 @@ static bool startmsg(void *c, const void *hd) {
   upb_pb_encoder *e = c;
   UPB_UNUSED(hd);
   if (e->depth++ == 0) {
-    upb_bytessink_start(&e->output_, 0, &e->subc);
+    upb_bytessink_start(e->output_, 0, &e->subc);
   }
   return true;
 }
@@ -363,7 +363,7 @@ static bool endmsg(void *c, const void *hd, upb_status *status) {
   UPB_UNUSED(hd);
   UPB_UNUSED(status);
   if (--e->depth == 0) {
-    upb_bytessink_end(&e->output_);
+    upb_bytessink_end(e->output_);
   }
   return true;
 }
