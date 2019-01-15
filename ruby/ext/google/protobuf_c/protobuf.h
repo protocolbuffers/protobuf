@@ -109,19 +109,19 @@ typedef struct Builder Builder;
 struct DescriptorPool {
   VALUE def_to_descriptor;  // Hash table of def* -> Ruby descriptor.
   upb_symtab* symtab;
+  upb_handlercache* fill_handler_cache;
+  upb_handlercache* pb_serialize_handler_cache;
+  upb_handlercache* json_serialize_handler_cache;
+  upb_handlercache* json_serialize_handler_preserve_cache;
+  upb_pbcodecache* fill_method_cache;
+  upb_json_codecache* json_fill_method_cache;
 };
 
 struct Descriptor {
   const upb_msgdef* msgdef;
   MessageLayout* layout;
-  VALUE klass;  // Starts as nil, created lazily.
-  VALUE descriptor_pool;  // Owns the upb_msgdef and keeps it alive.
-  const upb_handlers* fill_handlers;
-  const upb_pbdecodermethod* fill_method;
-  const upb_json_parsermethod* json_fill_method;
-  const upb_handlers* pb_serialize_handlers;
-  const upb_handlers* json_serialize_handlers;
-  const upb_handlers* json_serialize_handlers_preserve;
+  VALUE klass;
+  VALUE descriptor_pool;
 };
 
 struct FileDescriptor {
@@ -161,7 +161,7 @@ struct EnumBuilderContext {
 };
 
 struct FileBuilderContext {
-  upb_arena arena;
+  upb_arena *arena;
   google_protobuf_FileDescriptorProto* file_proto;
   VALUE descriptor_pool;
 };
@@ -587,6 +587,7 @@ VALUE enum_resolve(VALUE self, VALUE sym);
 
 const upb_pbdecodermethod *new_fillmsg_decodermethod(
     Descriptor* descriptor, const void *owner);
+void add_handlers_for_message(const void *closure, upb_handlers *h);
 
 // Maximum depth allowed during encoding, to avoid stack overflows due to
 // cycles.

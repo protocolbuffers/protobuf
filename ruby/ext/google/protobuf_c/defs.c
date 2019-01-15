@@ -224,7 +224,7 @@ static void rewrite_nesting(VALUE msg_ent, google_protobuf_DescriptorProto* msg,
 static void rewrite_names(VALUE _file_builder,
                           google_protobuf_FileDescriptorProto* file_proto) {
   FileBuilderContext* file_builder = ruby_to_FileBuilderContext(_file_builder);
-  upb_arena *arena = &file_builder->arena;
+  upb_arena *arena = file_builder->arena;
   // Build params (package, msg_names, enum_names).
   VALUE package = Qnil;
   VALUE msg_names = rb_ary_new();
@@ -337,7 +337,15 @@ void DescriptorPool_mark(void* _self) {
 
 void DescriptorPool_free(void* _self) {
   DescriptorPool* self = _self;
+
   upb_symtab_free(self->symtab);
+  upb_handlercache_free(self->fill_handler_cache);
+  upb_handlercache_free(self->pb_serialize_handler_cache);
+  upb_handlercache_free(self->json_serialize_handler_cache);
+  upb_handlercache_free(self->json_serialize_handler_preserve_cache);
+  upb_pbcodecache_free(self->fill_method_cache);
+  upb_json_codecache_free(self->json_fill_method_cache);
+
   xfree(self);
 }
 
@@ -350,8 +358,19 @@ void DescriptorPool_free(void* _self) {
 VALUE DescriptorPool_alloc(VALUE klass) {
   DescriptorPool* self = ALLOC(DescriptorPool);
   self->def_to_descriptor = rb_hash_new();
+  VALUE ret = TypedData_Wrap_Struct(klass, &_DescriptorPool_type, self);
+
   self->symtab = upb_symtab_new();
-  return TypedData_Wrap_Struct(klass, &_DescriptorPool_type, self);
+  self->fill_handler_cache =
+      upb_handlercache_new(add_handlers_for_message, (void*)ret);
+  self->pb_serialize_handler_cache = upb_pb_encoder_newcache();
+  self->json_serialize_handler_cache = upb_json_printer_newcache(false);
+  self->json_serialize_handler_preserve_cache =
+      upb_json_printer_newcache(true);
+  self->fill_method_cache = upb_pbcodecache_new(self->fill_handler_cache);
+  self->json_fill_method_cache = upb_json_codecache_new();
+
+  return ret;
 }
 
 void DescriptorPool_register(VALUE module) {
@@ -441,20 +460,6 @@ void Descriptor_free(void* _self) {
   if (self->layout) {
     free_layout(self->layout);
   }
-  if (self->fill_handlers) {
-    upb_handlers_unref(self->fill_handlers, &self->fill_handlers);
-  }
-  if (self->fill_method) {
-    upb_pbdecodermethod_unref(self->fill_method, &self->fill_method);
-  }
-  if (self->pb_serialize_handlers) {
-    upb_handlers_unref(self->pb_serialize_handlers,
-                       &self->pb_serialize_handlers);
-  }
-  if (self->json_serialize_handlers) {
-    upb_handlers_unref(self->json_serialize_handlers,
-                       &self->json_serialize_handlers);
-  }
   xfree(self);
 }
 
@@ -474,12 +479,6 @@ VALUE Descriptor_alloc(VALUE klass) {
   self->klass = Qnil;
   self->descriptor_pool = Qnil;
   self->layout = NULL;
-  self->fill_handlers = NULL;
-  self->fill_method = NULL;
-  self->json_fill_method = NULL;
-  self->pb_serialize_handlers = NULL;
-  self->json_serialize_handlers = NULL;
-  self->json_serialize_handlers_preserve = NULL;
   return ret;
 }
 
@@ -517,7 +516,6 @@ VALUE Descriptor_initialize(VALUE _self, VALUE cookie,
 
   self->descriptor_pool = descriptor_pool;
   self->msgdef = (const upb_msgdef*)NUM2ULL(ptr);
-  //fprintf(stderr, "YO: %p\n", self->msgdef);
 
   return Qnil;
 }
@@ -1432,7 +1430,7 @@ VALUE MessageBuilderContext_initialize(VALUE _self,
 
   self->file_builder = _file_builder;
   self->msg_proto = google_protobuf_FileDescriptorProto_add_message_type(
-      file_proto, &file_builder->arena);
+      file_proto, file_builder->arena);
 
   google_protobuf_DescriptorProto_set_name(
       self->msg_proto, FileBuilderContext_strdup(_file_builder, name));
@@ -1448,7 +1446,7 @@ static void msgdef_add_field(VALUE msgbuilder_rb, upb_label_t label, VALUE name,
       ruby_to_FileBuilderContext(self->file_builder);
   google_protobuf_FieldDescriptorProto* field_proto =
       google_protobuf_DescriptorProto_add_field(self->msg_proto,
-                                                &file_context->arena);
+                                                file_context->arena);
 
 
   Check_Type(name, T_SYMBOL);
@@ -1501,7 +1499,7 @@ static VALUE make_mapentry(VALUE _message_builder, VALUE types, int argc,
       ruby_to_FileBuilderContext(message_builder->file_builder);
   google_protobuf_MessageOptions* options =
       google_protobuf_DescriptorProto_mutable_options(
-          message_builder->msg_proto, &file_context->arena);
+          message_builder->msg_proto, file_context->arena);
 
   google_protobuf_MessageOptions_set_map_entry(options, true);
 
@@ -1715,7 +1713,7 @@ VALUE MessageBuilderContext_oneof(VALUE _self, VALUE name) {
   // Create oneof_proto and set its name.
   google_protobuf_OneofDescriptorProto* oneof_proto =
       google_protobuf_DescriptorProto_add_oneof_decl(self->msg_proto,
-                                                     &file_context->arena);
+                                                     file_context->arena);
   VALUE name_str = rb_str_new2(rb_id2name(SYM2ID(name)));
   upb_strview name_strview = upb_strview_makez(StringValueCStr(name_str));
   google_protobuf_OneofDescriptorProto_set_name(oneof_proto, name_strview);
@@ -1855,7 +1853,7 @@ VALUE EnumBuilderContext_initialize(VALUE _self, VALUE _file_builder,
 
   self->file_builder = _file_builder;
   self->enum_proto = google_protobuf_FileDescriptorProto_add_enum_type(
-      file_proto, &file_builder->arena);
+      file_proto, file_builder->arena);
 
   google_protobuf_EnumDescriptorProto_set_name(
       self->enum_proto, FileBuilderContext_strdup(_file_builder, name));
@@ -1879,7 +1877,7 @@ VALUE EnumBuilderContext_value(VALUE _self, VALUE name, VALUE number) {
 
   google_protobuf_EnumValueDescriptorProto* enum_value =
       google_protobuf_EnumDescriptorProto_add_value(self->enum_proto,
-                                                    &file_builder->arena);
+                                                    file_builder->arena);
 
   google_protobuf_EnumValueDescriptorProto_set_name(
       enum_value, FileBuilderContext_strdup(self->file_builder, name_str));
@@ -1904,7 +1902,7 @@ void FileBuilderContext_mark(void* _self) {
 
 void FileBuilderContext_free(void* _self) {
   FileBuilderContext* self = _self;
-  upb_arena_uninit(&self->arena);
+  upb_arena_free(self->arena);
   xfree(self);
 }
 
@@ -1912,7 +1910,7 @@ upb_strview FileBuilderContext_strdup2(VALUE _self, const char *str) {
   DEFINE_SELF(FileBuilderContext, self, _self);
   upb_strview ret;
   ret.size = strlen(str);
-  char *data = upb_malloc(upb_arena_alloc(&self->arena), ret.size + 1);
+  char *data = upb_malloc(upb_arena_alloc(self->arena), ret.size + 1);
   ret.data = data;
   memcpy(data, str, ret.size);
   /* Null-terminate required by rewrite_enum_defaults() above. */
@@ -1928,8 +1926,8 @@ upb_strview FileBuilderContext_strdup(VALUE _self, VALUE rb_str) {
 VALUE FileBuilderContext_alloc(VALUE klass) {
   FileBuilderContext* self = ALLOC(FileBuilderContext);
   VALUE ret = TypedData_Wrap_Struct(klass, &_FileBuilderContext_type, self);
-  upb_arena_init(&self->arena);
-  self->file_proto = google_protobuf_FileDescriptorProto_new(&self->arena);
+  self->arena = upb_arena_new();
+  self->file_proto = google_protobuf_FileDescriptorProto_new(self->arena);
   self->descriptor_pool = Qnil;
   return ret;
 }
@@ -2027,7 +2025,8 @@ void FileBuilderContext_build(VALUE _self) {
   rewrite_enum_defaults(pool->symtab, self->file_proto);
   rewrite_names(_self, self->file_proto);
 
-  upb_status status = UPB_STATUS_INIT;
+  upb_status status;
+  upb_status_clear(&status);
   if (!upb_symtab_addfile(pool->symtab, self->file_proto, &status)) {
     rb_raise(cTypeError, "Unable to add defs to DescriptorPool: %s",
              upb_status_errmsg(&status));
