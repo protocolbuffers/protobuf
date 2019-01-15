@@ -331,6 +331,8 @@ VALUE generated_pool;
 DEFINE_CLASS(DescriptorPool, "Google::Protobuf::DescriptorPool");
 
 void DescriptorPool_mark(void* _self) {
+  DescriptorPool* self = _self;
+  rb_gc_mark(self->def_to_descriptor);
 }
 
 void DescriptorPool_free(void* _self) {
@@ -347,6 +349,7 @@ void DescriptorPool_free(void* _self) {
  */
 VALUE DescriptorPool_alloc(VALUE klass) {
   DescriptorPool* self = ALLOC(DescriptorPool);
+  self->def_to_descriptor = rb_hash_new();
   self->symtab = upb_symtab_new();
   return TypedData_Wrap_Struct(klass, &_DescriptorPool_type, self);
 }
@@ -434,7 +437,25 @@ void Descriptor_mark(void* _self) {
 }
 
 void Descriptor_free(void* _self) {
-  xfree(_self);
+  Descriptor* self = _self;
+  if (self->layout) {
+    free_layout(self->layout);
+  }
+  if (self->fill_handlers) {
+    upb_handlers_unref(self->fill_handlers, &self->fill_handlers);
+  }
+  if (self->fill_method) {
+    upb_pbdecodermethod_unref(self->fill_method, &self->fill_method);
+  }
+  if (self->pb_serialize_handlers) {
+    upb_handlers_unref(self->pb_serialize_handlers,
+                       &self->pb_serialize_handlers);
+  }
+  if (self->json_serialize_handlers) {
+    upb_handlers_unref(self->json_serialize_handlers,
+                       &self->json_serialize_handlers);
+  }
+  xfree(self);
 }
 
 /*
@@ -2157,19 +2178,10 @@ VALUE Builder_build(VALUE _self) {
   return Qnil;
 }
 
-// -----------------------------------------------------------------------------
-// Global map from upb {msg,enum}defs to wrapper Descriptor/EnumDescriptor
-// instances.
-// -----------------------------------------------------------------------------
-
-// This is a hash table from def objects (encoded by converting pointers to
-// Ruby integers) to MessageDef/EnumDef instances (as Ruby values).
-// We populate it lazily.
-VALUE upb_def_to_ruby_obj_map;
-
-static VALUE get_def_obj(VALUE descriptor_pool, const void* ptr, VALUE klass) {
+static VALUE get_def_obj(VALUE _descriptor_pool, const void* ptr, VALUE klass) {
+  DEFINE_SELF(DescriptorPool, descriptor_pool, _descriptor_pool);
   VALUE key = ULL2NUM((intptr_t)ptr);
-  VALUE def = rb_hash_aref(upb_def_to_ruby_obj_map, key);
+  VALUE def = rb_hash_aref(descriptor_pool->def_to_descriptor, key);
 
   if (ptr == NULL) {
     return Qnil;
@@ -2177,9 +2189,9 @@ static VALUE get_def_obj(VALUE descriptor_pool, const void* ptr, VALUE klass) {
 
   if (def == Qnil) {
     // Lazily create wrapper object.
-    VALUE args[3] = { c_only_cookie, descriptor_pool, key };
+    VALUE args[3] = { c_only_cookie, _descriptor_pool, key };
     def = rb_class_new_instance(3, args, klass);
-    rb_hash_aset(upb_def_to_ruby_obj_map, key, def);
+    rb_hash_aset(descriptor_pool->def_to_descriptor, key, def);
   }
 
   return def;

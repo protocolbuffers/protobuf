@@ -100,9 +100,6 @@ void Init_protobuf_c() {
   kRubyStringASCIIEncoding = rb_usascii_encoding();
   kRubyString8bitEncoding = rb_ascii8bit_encoding();
 
-  rb_gc_register_address(&upb_def_to_ruby_obj_map);
-  upb_def_to_ruby_obj_map = rb_hash_new();
-
   rb_gc_register_address(&c_only_cookie);
   c_only_cookie = rb_class_new_instance(0, NULL, rb_cObject);
 }

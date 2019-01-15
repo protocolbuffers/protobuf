@@ -107,6 +107,7 @@ typedef struct Builder Builder;
 // -----------------------------------------------------------------------------
 
 struct DescriptorPool {
+  VALUE def_to_descriptor;  // Hash table of def* -> Ruby descriptor.
   upb_symtab* symtab;
 };
 
@@ -614,7 +615,6 @@ void check_upb_status(const upb_status* status, const char* msg);
 } while (0)
 
 extern ID descriptor_instancevar_interned;
-extern VALUE upb_def_to_ruby_obj_map;
 
 // A distinct object that is not accessible from Ruby.  We use this as a
 // constructor argument to enforce that certain objects cannot be created from
