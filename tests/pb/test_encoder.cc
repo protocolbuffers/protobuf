@@ -48,7 +48,7 @@ void test_pb_roundtrip() {
   upb::pb::EncoderPtr encoder =
       upb::pb::EncoderPtr::Create(&arena, encoder_handlers, string_sink.input());
   upb::pb::DecoderPtr decoder =
-      upb::pb::DecoderPtr::Create(&arena, method, encoder.input());
+      upb::pb::DecoderPtr::Create(&arena, method, encoder.input(), &status);
   ok = upb::PutBuffer(input, decoder.input());
   ASSERT(ok);
   ASSERT(input == output);

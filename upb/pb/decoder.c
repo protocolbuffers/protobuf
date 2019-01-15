@@ -991,7 +991,7 @@ void upb_pbdecoder_reset(upb_pbdecoder *d) {
 }
 
 upb_pbdecoder *upb_pbdecoder_create(upb_arena *a, const upb_pbdecodermethod *m,
-                                    upb_sink sink) {
+                                    upb_sink sink, upb_status *status) {
   const size_t default_max_nesting = 64;
 #ifndef NDEBUG
   size_t size_before = upb_arena_bytesallocated(a);
@@ -1010,7 +1010,7 @@ upb_pbdecoder *upb_pbdecoder_create(upb_arena *a, const upb_pbdecodermethod *m,
   d->arena = a;
   d->limit = d->stack + default_max_nesting - 1;
   d->stack_size = default_max_nesting;
-  d->status = NULL;
+  d->status = status;
 
   upb_pbdecoder_reset(d);
   upb_bytessink_reset(&d->input_, &m->input_handler_, d);

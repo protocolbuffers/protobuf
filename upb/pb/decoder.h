@@ -102,7 +102,7 @@ extern "C" {
 
 upb_pbdecoder *upb_pbdecoder_create(upb_arena *arena,
                                     const upb_pbdecodermethod *method,
-                                    upb_sink output);
+                                    upb_sink output, upb_status *status);
 const upb_pbdecodermethod *upb_pbdecoder_method(const upb_pbdecoder *d);
 upb_bytessink upb_pbdecoder_input(upb_pbdecoder *d);
 uint64_t upb_pbdecoder_bytesparsed(const upb_pbdecoder *d);
@@ -127,9 +127,9 @@ class upb::pb::DecoderPtr {
    *
    * The sink must match the given method. */
   static DecoderPtr Create(Arena *arena, DecoderMethodPtr method,
-                           upb::Sink output) {
-    return DecoderPtr(
-        upb_pbdecoder_create(arena->ptr(), method.ptr(), output.sink()));
+                           upb::Sink output, Status *status) {
+    return DecoderPtr(upb_pbdecoder_create(arena->ptr(), method.ptr(),
+                                           output.sink(), status->ptr()));
   }
 
   /* Returns the DecoderMethod this decoder is parsing from. */

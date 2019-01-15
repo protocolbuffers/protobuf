@@ -32,21 +32,6 @@ class VerboseParserEnvironment {
   /* Pass verbose=true to print detailed diagnostics to stderr. */
   VerboseParserEnvironment(bool verbose) : verbose_(verbose) {}
 
-  static bool OnError(void *ud, const upb::Status* status) {
-    VerboseParserEnvironment* env = static_cast<VerboseParserEnvironment*>(ud);
-
-    if (env->expect_error_ && env->verbose_) {
-      fprintf(stderr, "Encountered error, as expected: ");
-    } else if (!env->expect_error_) {
-      fprintf(stderr, "Encountered unexpected error: ");
-    } else {
-      return false;
-    }
-
-    fprintf(stderr, "%s\n", status->error_message());
-    return false;
-  }
-
   void Reset(const char *buf, size_t len, bool may_skip, bool expect_error) {
     buf_ = buf;
     len_ = len;
@@ -97,6 +82,17 @@ class VerboseParserEnvironment {
     if (expect_error_ && status_.ok()) {
       fprintf(stderr, "Expected error but saw none.\n");
       return false;
+    }
+
+    if (!status_.ok()) {
+      if (expect_error_ && verbose_) {
+        fprintf(stderr, "Encountered error, as expected: %s",
+                status_.error_message());
+      } else if (!expect_error_) {
+        fprintf(stderr, "Encountered unexpected error: %s",
+                status_.error_message());
+        return false;
+      }
     }
 
     return true;
@@ -175,6 +171,7 @@ class VerboseParserEnvironment {
   bool SkippedWithNull() { return skipped_with_null_; }
 
   upb::Arena* arena() { return &arena_; }
+  upb::Status* status() { return &status_; }
 
  private:
   upb::Arena arena_;

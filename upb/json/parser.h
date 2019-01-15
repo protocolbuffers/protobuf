@@ -71,6 +71,7 @@ upb_json_parser* upb_json_parser_create(upb_arena* a,
                                         const upb_json_parsermethod* m,
                                         const upb_symtab* symtab,
                                         upb_sink output,
+                                        upb_status *status,
                                         bool ignore_json_unknown);
 upb_bytessink upb_json_parser_input(upb_json_parser* p);
 
@@ -84,12 +85,12 @@ class upb::json::ParserPtr {
   ParserPtr(upb_json_parser* ptr) : ptr_(ptr) {}
 
   static ParserPtr Create(Arena* arena, ParserMethodPtr method,
-                          SymbolTable* symtab, Sink output,
+                          SymbolTable* symtab, Sink output, Status* status,
                           bool ignore_json_unknown) {
     upb_symtab* symtab_ptr = symtab ? symtab->ptr() : nullptr;
-    return ParserPtr(upb_json_parser_create(arena->ptr(), method.ptr(),
-                                            symtab_ptr, output.sink(),
-                                            ignore_json_unknown));
+    return ParserPtr(upb_json_parser_create(
+        arena->ptr(), method.ptr(), symtab_ptr, output.sink(), status->ptr(),
+        ignore_json_unknown));
   }
 
   BytesSink input() { return upb_json_parser_input(ptr_); }

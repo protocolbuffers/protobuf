@@ -304,8 +304,9 @@ static void json_parser_any_frame_set_payload_type(
   /* Initialize parser. */
   parser_method = upb_json_codecache_get(frame->parser_codecache, payload_type);
   upb_sink_reset(&frame->sink, h, encoder);
-  frame->parser = upb_json_parser_create(p->arena, parser_method, p->symtab,
-                                         frame->sink, p->ignore_json_unknown);
+  frame->parser =
+      upb_json_parser_create(p->arena, parser_method, p->symtab, frame->sink,
+                             p->status, p->ignore_json_unknown);
 }
 
 static void json_parser_any_frame_free(upb_jsonparser_any_frame *frame) {
@@ -2665,6 +2666,7 @@ upb_json_parser *upb_json_parser_create(upb_arena *arena,
                                         const upb_json_parsermethod *method,
                                         const upb_symtab* symtab,
                                         upb_sink output,
+                                        upb_status *status,
                                         bool ignore_json_unknown) {
 #ifndef NDEBUG
   const size_t size_before = upb_arena_bytesallocated(arena);
@@ -2674,7 +2676,7 @@ upb_json_parser *upb_json_parser_create(upb_arena *arena,
 
   p->arena = arena;
   p->method = method;
-  p->status = NULL;
+  p->status = status;
   p->limit = p->stack + UPB_JSON_MAX_DEPTH;
   p->accumulate_buf = NULL;
   p->accumulate_buf_size = 0;
