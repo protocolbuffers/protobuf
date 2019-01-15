@@ -69,10 +69,8 @@ enum TestEnum {
   C = 3;
 }
 
-message TestNestedMsg {
-  message testLowercase {
-    message lowercase{}
-  }
+message testLowercaseNested {
+  message lowercase{}
 }
 
 
