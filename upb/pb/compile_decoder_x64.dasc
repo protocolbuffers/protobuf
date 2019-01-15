@@ -92,7 +92,7 @@
 |.endmacro
 |
 |.macro load_handler_data, h, arg
-|  ld64   upb_handlers_gethandlerdata(h, arg)
+|  ld64   gethandlerdata(h, arg)
 |.endmacro
 |
 |.macro chkeob, bytes, target
@@ -140,7 +140,7 @@
 #define DECODE_EOF -3
 
 static upb_func *gethandler(const upb_handlers *h, upb_selector_t sel) {
-  return h ? upb_handlers_gethandler(h, sel) : NULL;
+  return h ? upb_handlers_gethandler(h, sel, NULL) : NULL;
 }
 
 /* Defines an "assembly label" for the current code generation offset.
@@ -179,14 +179,19 @@ static void asmlabel(jitcompiler *jc, const char *fmt, ...) {
 
 /* Should only be called when the associated handler is known to exist. */
 static bool alwaysok(const upb_handlers *h, upb_selector_t sel) {
-  upb_handlerattr attr = UPB_HANDLERATTR_INITIALIZER;
+  upb_handlerattr attr = UPB_HANDLERATTR_INIT;
   bool ok = upb_handlers_getattr(h, sel, &attr);
-  bool ret;
 
   UPB_ASSERT(ok);
-  ret = upb_handlerattr_alwaysok(&attr);
-  upb_handlerattr_uninit(&attr);
-  return ret;
+  return attr.alwaysok;
+}
+
+static const void *gethandlerdata(const upb_handlers *h, upb_selector_t sel) {
+  upb_handlerattr attr = UPB_HANDLERATTR_INIT;
+  bool ok = upb_handlers_getattr(h, sel, &attr);
+
+  UPB_ASSERT(ok);
+  return attr.handler_data;
 }
 
 /* Emit static assembly routines; code that does not vary based on the message

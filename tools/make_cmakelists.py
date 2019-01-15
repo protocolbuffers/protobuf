@@ -128,6 +128,12 @@ class BuildFileFunctions(object):
   def genrule(self, **kwargs):
     pass
 
+  def config_setting(self, **kwargs):
+    pass
+
+  def select(self, arg_dict):
+    return []
+
   def glob(*args):
     return []
 

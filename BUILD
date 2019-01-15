@@ -11,6 +11,11 @@ load(
     "upb_proto_reflection_library",
 )
 
+config_setting(
+    name = "k8",
+    values = {"cpu": "k8"},
+)
+
 # C/C++ rules ##################################################################
 
 cc_library(
@@ -62,7 +67,15 @@ cc_library(
         "upb/pb/textprinter.c",
         "upb/pb/varint.c",
         "upb/pb/varint.int.h",
-    ],
+    ] + select({
+        ":k8": [
+            "upb/pb/compile_decoder_x64.c",
+            "upb/pb/compile_decoder_x64.h",
+            "third_party/dynasm/dasm_proto.h",
+            "third_party/dynasm/dasm_x86.h",
+        ],
+        "//conditions:default": [],
+    }),
     hdrs = [
         "upb/pb/decoder.h",
         "upb/pb/encoder.h",
@@ -72,7 +85,10 @@ cc_library(
         "-std=c89",
         "-pedantic",
         "-Wno-long-long",
-    ],
+    ] + select({
+        ":k8": ["-DUPB_USE_JIT_X64"],
+        "//conditions:default": [],
+    }),
     deps = [
         ":upb",
     ],

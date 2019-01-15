@@ -278,7 +278,7 @@ static const char *const upb_jit_globalnames[] = {
 /*|.endmacro */
 /*| */
 /*|.macro load_handler_data, h, arg */
-/*|  ld64   upb_handlers_gethandlerdata(h, arg) */
+/*|  ld64   gethandlerdata(h, arg) */
 /*|.endmacro */
 /*| */
 /*|.macro chkeob, bytes, target */
@@ -326,7 +326,7 @@ static const char *const upb_jit_globalnames[] = {
 #define DECODE_EOF -3
 
 static upb_func *gethandler(const upb_handlers *h, upb_selector_t sel) {
-  return h ? upb_handlers_gethandler(h, sel) : NULL;
+  return h ? upb_handlers_gethandler(h, sel, NULL) : NULL;
 }
 
 /* Defines an "assembly label" for the current code generation offset.
@@ -367,14 +367,19 @@ static void asmlabel(jitcompiler *jc, const char *fmt, ...) {
 
 /* Should only be called when the associated handler is known to exist. */
 static bool alwaysok(const upb_handlers *h, upb_selector_t sel) {
-  upb_handlerattr attr = UPB_HANDLERATTR_INITIALIZER;
+  upb_handlerattr attr = UPB_HANDLERATTR_INIT;
   bool ok = upb_handlers_getattr(h, sel, &attr);
-  bool ret;
 
   UPB_ASSERT(ok);
-  ret = upb_handlerattr_alwaysok(&attr);
-  upb_handlerattr_uninit(&attr);
-  return ret;
+  return attr.alwaysok;
+}
+
+static const void *gethandlerdata(const upb_handlers *h, upb_selector_t sel) {
+  upb_handlerattr attr = UPB_HANDLERATTR_INIT;
+  bool ok = upb_handlers_getattr(h, sel, &attr);
+
+  UPB_ASSERT(ok);
+  return attr.handler_data;
 }
 
 /* Emit static assembly routines; code that does not vary based on the message
@@ -424,7 +429,7 @@ static void emit_static_asm(jitcompiler *jc) {
   /*|1: */
   /*|  pop   rbx */
   dasm_put(Dst, 2, (unsigned int)((uintptr_t)upb_pbdecoder_resume), (unsigned int)(((uintptr_t)upb_pbdecoder_resume)>>32), 0xfffffffffffffff0UL, Dt2(->saved_rsp), Dt2(->top), Dt2(->ptr), Dt2(->data_end), Dt1(->sink.closure), Dt1(->end_ofs), Dt2(->bufstart_ofs), Dt2(->buf), Dt2(->call_len), Dt2(->size_param), Dt2(->call_len));
-# 238 "upb/pb/compile_decoder_x64.dasc"
+# 243 "upb/pb/compile_decoder_x64.dasc"
   /*|  pop   r12 */
   /*|  pop   r13 */
   /*|  pop   r14 */
@@ -445,7 +450,7 @@ static void emit_static_asm(jitcompiler *jc) {
   /*| // the JIT resumes, and more buffer space will be available. */
   /*| // Args: eax=the value that decode() should return. */
   dasm_put(Dst, 115, Dt2(->callstack), (unsigned int)((uintptr_t)memcpy), (unsigned int)(((uintptr_t)memcpy)>>32), 0xfffffffffffffff0UL);
-# 257 "upb/pb/compile_decoder_x64.dasc"
+# 262 "upb/pb/compile_decoder_x64.dasc"
   asmlabel(jc, "exitjit");
   /*|->exitjit: */
   /*|  // Save the stack into DECODER->callstack. */
@@ -473,7 +478,7 @@ static void emit_static_asm(jitcompiler *jc) {
   /*| // (from the caller's perspective) not to return until the decoder is */
   /*| // resumed. */
   dasm_put(Dst, 161, Dt2(->callstack), Dt2(->saved_rsp), Dt2(->call_len), (unsigned int)((uintptr_t)memcpy), (unsigned int)(((uintptr_t)memcpy)>>32), 0xfffffffffffffff0UL, Dt2(->saved_rsp));
-# 283 "upb/pb/compile_decoder_x64.dasc"
+# 288 "upb/pb/compile_decoder_x64.dasc"
   asmlabel(jc, "suspend");
   /*|->suspend: */
   /*|  cmp   DECODER->ptr, PTR */
@@ -486,7 +491,7 @@ static void emit_static_asm(jitcompiler *jc) {
   /*|  jmp   ->exitjit */
   /*| */
   dasm_put(Dst, 222, Dt2(->ptr), Dt2(->checkpoint), Dt2(->top), Dt2(->ptr), Dt2(->data_end), Dt2(->delim_end), Dt2(->buf), Dt2(->bufstart_ofs), Dt1(->end_ofs), Dt1(->sink.closure), (unsigned int)((uintptr_t)upb_pbdecoder_suspend), (unsigned int)(((uintptr_t)upb_pbdecoder_suspend)>>32), 0xfffffffffffffff0UL);
-# 294 "upb/pb/compile_decoder_x64.dasc"
+# 299 "upb/pb/compile_decoder_x64.dasc"
   asmlabel(jc, "pushlendelim");
   /*|->pushlendelim: */
   /*|1: */
@@ -499,7 +504,7 @@ static void emit_static_asm(jitcompiler *jc) {
    } else {
   dasm_put(Dst, 321);
    }
-# 300 "upb/pb/compile_decoder_x64.dasc"
+# 305 "upb/pb/compile_decoder_x64.dasc"
   /*|  mov   rcx, DELIMEND */
   /*|  sub   rcx, PTR */
   /*|  sub   rcx, rdx */
@@ -520,7 +525,7 @@ static void emit_static_asm(jitcompiler *jc) {
   /*|  ja    >2 */
   /*|  mov   DATAEND, DELIMEND  // If DELIMEND >= PTR && DELIMEND < DATAEND */
   dasm_put(Dst, 337, Dt1(->end_ofs), Dt2(->limit), sizeof(upb_pbdecoder_frame), Dt1(->groupnum), Dt2(->end));
-# 319 "upb/pb/compile_decoder_x64.dasc"
+# 324 "upb/pb/compile_decoder_x64.dasc"
   /*|2: */
   /*|  ret */
   /*|3: */
@@ -540,7 +545,7 @@ static void emit_static_asm(jitcompiler *jc) {
   dasm_put(Dst, 454);
    }
    }
-# 327 "upb/pb/compile_decoder_x64.dasc"
+# 332 "upb/pb/compile_decoder_x64.dasc"
   /*|  callp upb_pbdecoder_seterr */
   /*|  call  ->suspend */
   /*|  jmp   <1 */
@@ -561,7 +566,7 @@ static void emit_static_asm(jitcompiler *jc) {
   dasm_put(Dst, 454);
    }
    }
-# 336 "upb/pb/compile_decoder_x64.dasc"
+# 341 "upb/pb/compile_decoder_x64.dasc"
   /*|  callp upb_pbdecoder_seterr */
   /*|  call  ->suspend */
   /*|  jmp   <1 */
@@ -592,7 +597,7 @@ static void emit_static_asm(jitcompiler *jc) {
   /*|.endmacro */
   /*| */
   dasm_put(Dst, 497, (unsigned int)((uintptr_t)upb_pbdecoder_seterr), (unsigned int)(((uintptr_t)upb_pbdecoder_seterr)>>32), 0xfffffffffffffff0UL);
-# 365 "upb/pb/compile_decoder_x64.dasc"
+# 370 "upb/pb/compile_decoder_x64.dasc"
   asmlabel(jc, "parse_unknown");
   /*| // Args: edx=fieldnum, cl=wire type */
   /*|->parse_unknown: */
@@ -607,7 +612,7 @@ static void emit_static_asm(jitcompiler *jc) {
   /*|  cmp     eax, DECODE_ENDGROUP */
   /*|  jne     >1 */
   dasm_put(Dst, 526, Dt2(->top), Dt2(->ptr), Dt2(->data_end), Dt2(->delim_end), Dt2(->buf), Dt2(->bufstart_ofs), Dt1(->end_ofs), Dt1(->sink.closure), (unsigned int)((uintptr_t)upb_pbdecoder_skipunknown), (unsigned int)(((uintptr_t)upb_pbdecoder_skipunknown)>>32), 0xfffffffffffffff0UL, Dt2(->top), Dt2(->ptr), Dt2(->data_end), Dt1(->sink.closure), Dt1(->end_ofs), Dt2(->bufstart_ofs), Dt2(->buf), DECODE_ENDGROUP);
-# 378 "upb/pb/compile_decoder_x64.dasc"
+# 383 "upb/pb/compile_decoder_x64.dasc"
   /*|  ret     // Return eax=DECODE_ENDGROUP, not zero */
   /*|1: */
   /*|  cmp     eax, DECODE_OK */
@@ -627,26 +632,26 @@ static void emit_static_asm(jitcompiler *jc) {
   /*| // completes.  We also set DECODER->ptr to this value which is a signal to */
   /*| // ->suspend that DECODER->checkpoint is up to date. */
   dasm_put(Dst, 623, DECODE_OK);
-# 396 "upb/pb/compile_decoder_x64.dasc"
+# 401 "upb/pb/compile_decoder_x64.dasc"
   asmlabel(jc, "skip_decode_f32_fallback");
   /*|->skipf32_fallback: */
   /*|->decodef32_fallback: */
   /*|  getvalue_slow upb_pbdecoder_decode_f32, 4 */
   dasm_put(Dst, 647, Dt2(->checkpoint), Dt2(->top), Dt2(->ptr), Dt2(->data_end), Dt2(->delim_end), Dt2(->buf), Dt2(->bufstart_ofs), Dt1(->end_ofs), Dt1(->sink.closure), (unsigned int)((uintptr_t)upb_pbdecoder_decode_f32), (unsigned int)(((uintptr_t)upb_pbdecoder_decode_f32)>>32), 0xfffffffffffffff0UL, Dt2(->top), Dt2(->ptr), Dt2(->data_end), Dt1(->sink.closure), Dt1(->end_ofs));
-# 400 "upb/pb/compile_decoder_x64.dasc"
+# 405 "upb/pb/compile_decoder_x64.dasc"
   /*| */
   dasm_put(Dst, 751, Dt2(->bufstart_ofs), Dt2(->buf), Dt2(->ptr));
-# 401 "upb/pb/compile_decoder_x64.dasc"
+# 406 "upb/pb/compile_decoder_x64.dasc"
   asmlabel(jc, "skip_decode_f64_fallback");
   /*|->skipf64_fallback: */
   /*|->decodef64_fallback: */
   /*|  getvalue_slow upb_pbdecoder_decode_f64, 8 */
   dasm_put(Dst, 799, Dt2(->checkpoint), Dt2(->top), Dt2(->ptr), Dt2(->data_end), Dt2(->delim_end), Dt2(->buf), Dt2(->bufstart_ofs), Dt1(->end_ofs), Dt1(->sink.closure), (unsigned int)((uintptr_t)upb_pbdecoder_decode_f64), (unsigned int)(((uintptr_t)upb_pbdecoder_decode_f64)>>32), 0xfffffffffffffff0UL, Dt2(->top), Dt2(->ptr), Dt2(->data_end), Dt1(->sink.closure), Dt1(->end_ofs));
-# 405 "upb/pb/compile_decoder_x64.dasc"
+# 410 "upb/pb/compile_decoder_x64.dasc"
   /*| */
   /*| // Called for varint >= 1 byte. */
   dasm_put(Dst, 903, Dt2(->bufstart_ofs), Dt2(->buf), Dt2(->ptr));
-# 407 "upb/pb/compile_decoder_x64.dasc"
+# 412 "upb/pb/compile_decoder_x64.dasc"
   asmlabel(jc, "skip_decode_v32_fallback");
   /*|->skipv32_fallback: */
   /*|->skipv64_fallback: */
@@ -657,7 +662,7 @@ static void emit_static_asm(jitcompiler *jc) {
    } else {
   dasm_put(Dst, 964);
    }
-# 411 "upb/pb/compile_decoder_x64.dasc"
+# 416 "upb/pb/compile_decoder_x64.dasc"
   /*|  // With at least 16 bytes left, we can do a branch-less SSE version. */
   /*|  movdqu   xmm0, [PTR] */
   /*|  pmovmskb eax, xmm0   // bits 0-15 are continuation bits, 16-31 are 0. */
@@ -687,7 +692,7 @@ static void emit_static_asm(jitcompiler *jc) {
   /*| */
   /*| // Returns tag in edx */
   dasm_put(Dst, 980, 10);
-# 439 "upb/pb/compile_decoder_x64.dasc"
+# 444 "upb/pb/compile_decoder_x64.dasc"
   asmlabel(jc, "decode_unknown_tag_fallback");
   /*|->decode_unknown_tag_fallback: */
   /*|  sub   rsp, 16 */
@@ -705,7 +710,7 @@ static void emit_static_asm(jitcompiler *jc) {
   /*|  callp upb_pbdecoder_decode_varint_slow */
   /*|  load_regs */
   dasm_put(Dst, 1053, Dt2(->top), Dt2(->ptr), Dt2(->data_end), Dt2(->delim_end), Dt2(->buf), Dt2(->bufstart_ofs), Dt1(->end_ofs), Dt1(->sink.closure), (unsigned int)((uintptr_t)upb_pbdecoder_decode_varint_slow), (unsigned int)(((uintptr_t)upb_pbdecoder_decode_varint_slow)>>32), 0xfffffffffffffff0UL, Dt2(->top), Dt2(->ptr), Dt2(->data_end), Dt1(->sink.closure));
-# 455 "upb/pb/compile_decoder_x64.dasc"
+# 460 "upb/pb/compile_decoder_x64.dasc"
   /*|  cmp   eax, 0 */
   /*|  jge   >3 */
   /*|  mov   edx, [rsp]   // Success; return parsed data. */
@@ -717,7 +722,7 @@ static void emit_static_asm(jitcompiler *jc) {
   /*| */
   /*| // Called for varint >= 1 byte. */
   dasm_put(Dst, 1156, Dt1(->end_ofs), Dt2(->bufstart_ofs), Dt2(->buf));
-# 465 "upb/pb/compile_decoder_x64.dasc"
+# 470 "upb/pb/compile_decoder_x64.dasc"
   asmlabel(jc, "decode_v32_v64_fallback");
   /*|->decodev32_fallback: */
   /*|->decodev64_fallback: */
@@ -728,7 +733,7 @@ static void emit_static_asm(jitcompiler *jc) {
    } else {
   dasm_put(Dst, 1207);
    }
-# 469 "upb/pb/compile_decoder_x64.dasc"
+# 474 "upb/pb/compile_decoder_x64.dasc"
   /*|  // OPT: do something faster than just calling the C version. */
   /*|  mov      rdi, PTR */
   /*|  callp    upb_vdecode_fast */
@@ -740,17 +745,17 @@ static void emit_static_asm(jitcompiler *jc) {
   /*|  ret */
   /*| */
   dasm_put(Dst, 1223, (unsigned int)((uintptr_t)upb_vdecode_fast), (unsigned int)(((uintptr_t)upb_vdecode_fast)>>32), 0xfffffffffffffff0UL, Dt2(->ptr));
-# 479 "upb/pb/compile_decoder_x64.dasc"
+# 484 "upb/pb/compile_decoder_x64.dasc"
   asmlabel(jc, "decode_varint_slow");
   /*|->decode_varint_slow: */
   /*|  // Slow path: end of buffer or error (varint length >= 10). */
   /*|  getvalue_slow upb_pbdecoder_decode_varint_slow, 1 */
   dasm_put(Dst, 1268, Dt2(->checkpoint), Dt2(->top), Dt2(->ptr), Dt2(->data_end), Dt2(->delim_end), Dt2(->buf), Dt2(->bufstart_ofs), Dt1(->end_ofs), Dt1(->sink.closure), (unsigned int)((uintptr_t)upb_pbdecoder_decode_varint_slow), (unsigned int)(((uintptr_t)upb_pbdecoder_decode_varint_slow)>>32), 0xfffffffffffffff0UL, Dt2(->top), Dt2(->ptr), Dt2(->data_end), Dt1(->sink.closure), Dt1(->end_ofs), Dt2(->bufstart_ofs));
-# 483 "upb/pb/compile_decoder_x64.dasc"
+# 488 "upb/pb/compile_decoder_x64.dasc"
   /*| */
   /*| // Args: rsi=expected tag, return=rax (DECODE_{OK,MISMATCH}) */
   dasm_put(Dst, 1374, Dt2(->buf), Dt2(->ptr));
-# 485 "upb/pb/compile_decoder_x64.dasc"
+# 490 "upb/pb/compile_decoder_x64.dasc"
   asmlabel(jc, "checktag_fallback");
   /*|->checktag_fallback: */
   /*|  sub      rsp, 8 */
@@ -762,7 +767,7 @@ static void emit_static_asm(jitcompiler *jc) {
   /*|  callp    upb_pbdecoder_checktag_slow */
   /*|  load_regs */
   dasm_put(Dst, 1418, Dt2(->top), Dt2(->ptr), Dt2(->data_end), Dt2(->delim_end), Dt2(->buf), Dt2(->bufstart_ofs), Dt1(->end_ofs), Dt1(->sink.closure), Dt2(->checkpoint), (unsigned int)((uintptr_t)upb_pbdecoder_checktag_slow), (unsigned int)(((uintptr_t)upb_pbdecoder_checktag_slow)>>32), 0xfffffffffffffff0UL, Dt2(->top), Dt2(->ptr), Dt2(->data_end), Dt1(->sink.closure), Dt1(->end_ofs), Dt2(->bufstart_ofs));
-# 495 "upb/pb/compile_decoder_x64.dasc"
+# 500 "upb/pb/compile_decoder_x64.dasc"
   /*|  cmp      eax, 0 */
   /*|  jge      >2 */
   /*|  add      rsp, 8 */
@@ -780,7 +785,7 @@ static void emit_static_asm(jitcompiler *jc) {
   /*| // Preserves: rcx, rdx */
   /*| // OPT: Could write this in assembly if it's a hotspot. */
   dasm_put(Dst, 1517, Dt2(->buf), DECODE_EOF);
-# 511 "upb/pb/compile_decoder_x64.dasc"
+# 516 "upb/pb/compile_decoder_x64.dasc"
   asmlabel(jc, "hashlookup");
   /*|->hashlookup: */
   /*|  push   rcx */
@@ -802,7 +807,7 @@ static void emit_static_asm(jitcompiler *jc) {
   /*|  not    rax */
   /*|  ret */
   dasm_put(Dst, 1559, (unsigned int)((uintptr_t)upb_inttable_lookup), (unsigned int)(((uintptr_t)upb_inttable_lookup)>>32), 0xfffffffffffffff0UL);
-# 531 "upb/pb/compile_decoder_x64.dasc"
+# 536 "upb/pb/compile_decoder_x64.dasc"
 }
 
 static void jitprimitive(jitcompiler *jc, opcode op,
@@ -828,63 +833,63 @@ static void jitprimitive(jitcompiler *jc, opcode op,
      } else {
     dasm_put(Dst, 1636, fastbytes);
      }
-# 550 "upb/pb/compile_decoder_x64.dasc"
+# 555 "upb/pb/compile_decoder_x64.dasc"
     /*|2: */
     dasm_put(Dst, 1652);
-# 551 "upb/pb/compile_decoder_x64.dasc"
+# 556 "upb/pb/compile_decoder_x64.dasc"
     switch (vtype) {
     case V32:
       /*|  call   ->decodev32_fallback */
       dasm_put(Dst, 1655);
-# 554 "upb/pb/compile_decoder_x64.dasc"
+# 559 "upb/pb/compile_decoder_x64.dasc"
       break;
     case V64:
       /*|  call   ->decodev64_fallback */
       dasm_put(Dst, 1659);
-# 557 "upb/pb/compile_decoder_x64.dasc"
+# 562 "upb/pb/compile_decoder_x64.dasc"
       break;
     case F32:
       /*|  call   ->decodef32_fallback */
       dasm_put(Dst, 1663);
-# 560 "upb/pb/compile_decoder_x64.dasc"
+# 565 "upb/pb/compile_decoder_x64.dasc"
       break;
     case F64:
       /*|  call   ->decodef64_fallback */
       dasm_put(Dst, 1667);
-# 563 "upb/pb/compile_decoder_x64.dasc"
+# 568 "upb/pb/compile_decoder_x64.dasc"
       break;
     case X: break;
     }
     /*|  jmp    >4 */
     dasm_put(Dst, 1671);
-# 567 "upb/pb/compile_decoder_x64.dasc"
+# 572 "upb/pb/compile_decoder_x64.dasc"
 
     /* Fast path decode; for when check_bytes bytes are available. */
     /*|3: */
     dasm_put(Dst, 1676);
-# 570 "upb/pb/compile_decoder_x64.dasc"
+# 575 "upb/pb/compile_decoder_x64.dasc"
     switch (op) {
     case OP_PARSE_SFIXED32:
     case OP_PARSE_FIXED32:
       /*|  mov    edx, dword [PTR] */
       dasm_put(Dst, 1679);
-# 574 "upb/pb/compile_decoder_x64.dasc"
+# 579 "upb/pb/compile_decoder_x64.dasc"
       break;
     case OP_PARSE_SFIXED64:
     case OP_PARSE_FIXED64:
       /*|  mov    rdx, qword [PTR] */
       dasm_put(Dst, 1682);
-# 578 "upb/pb/compile_decoder_x64.dasc"
+# 583 "upb/pb/compile_decoder_x64.dasc"
       break;
     case OP_PARSE_FLOAT:
       /*|  movss  xmm0, dword [PTR] */
       dasm_put(Dst, 1686);
-# 581 "upb/pb/compile_decoder_x64.dasc"
+# 586 "upb/pb/compile_decoder_x64.dasc"
       break;
     case OP_PARSE_DOUBLE:
       /*|  movsd  xmm0, qword [PTR] */
       dasm_put(Dst, 1692);
-# 584 "upb/pb/compile_decoder_x64.dasc"
+# 589 "upb/pb/compile_decoder_x64.dasc"
       break;
     default:
       /* Inline one byte of varint decoding. */
@@ -892,7 +897,7 @@ static void jitprimitive(jitcompiler *jc, opcode op,
       /*|  test   dl, dl */
       /*|  js     <2   // Fallback to slow path for >1 byte varint. */
       dasm_put(Dst, 1698);
-# 590 "upb/pb/compile_decoder_x64.dasc"
+# 595 "upb/pb/compile_decoder_x64.dasc"
       break;
     }
 
@@ -900,7 +905,7 @@ static void jitprimitive(jitcompiler *jc, opcode op,
     /* (only needed for a few types). */
     /*|4: */
     dasm_put(Dst, 1708);
-# 596 "upb/pb/compile_decoder_x64.dasc"
+# 601 "upb/pb/compile_decoder_x64.dasc"
     switch (op) {
     case OP_PARSE_SINT32:
       /* 32-bit zig-zag decode. */
@@ -910,7 +915,7 @@ static void jitprimitive(jitcompiler *jc, opcode op,
       /*|  neg    eax */
       /*|  xor    edx, eax */
       dasm_put(Dst, 1711);
-# 604 "upb/pb/compile_decoder_x64.dasc"
+# 609 "upb/pb/compile_decoder_x64.dasc"
       break;
     case OP_PARSE_SINT64:
       /* 64-bit zig-zag decode. */
@@ -920,13 +925,13 @@ static void jitprimitive(jitcompiler *jc, opcode op,
       /*|  neg    rax */
       /*|  xor    rdx, rax */
       dasm_put(Dst, 1725);
-# 612 "upb/pb/compile_decoder_x64.dasc"
+# 617 "upb/pb/compile_decoder_x64.dasc"
       break;
     case OP_PARSE_BOOL:
       /*|  test   rdx, rdx */
       /*|  setne  dl */
       dasm_put(Dst, 1744);
-# 616 "upb/pb/compile_decoder_x64.dasc"
+# 621 "upb/pb/compile_decoder_x64.dasc"
       break;
     default: break;
     }
@@ -938,29 +943,29 @@ static void jitprimitive(jitcompiler *jc, opcode op,
         case UPB_TYPE_UINT64:
           /*|  mov   [CLOSURE + offset], rdx */
           dasm_put(Dst, 1751, offset);
-# 626 "upb/pb/compile_decoder_x64.dasc"
+# 631 "upb/pb/compile_decoder_x64.dasc"
           break;
         case UPB_TYPE_INT32:
         case UPB_TYPE_UINT32:
         case UPB_TYPE_ENUM:
           /*|  mov   [CLOSURE + offset], edx */
           dasm_put(Dst, 1756, offset);
-# 631 "upb/pb/compile_decoder_x64.dasc"
+# 636 "upb/pb/compile_decoder_x64.dasc"
           break;
         case UPB_TYPE_DOUBLE:
           /*|  movsd  qword [CLOSURE + offset], XMMARG1 */
           dasm_put(Dst, 1761, offset);
-# 634 "upb/pb/compile_decoder_x64.dasc"
+# 639 "upb/pb/compile_decoder_x64.dasc"
           break;
         case UPB_TYPE_FLOAT:
           /*|  movss  dword [CLOSURE + offset], XMMARG1 */
           dasm_put(Dst, 1769, offset);
-# 637 "upb/pb/compile_decoder_x64.dasc"
+# 642 "upb/pb/compile_decoder_x64.dasc"
           break;
         case UPB_TYPE_BOOL:
           /*|  mov   [CLOSURE + offset], dl */
           dasm_put(Dst, 1777, offset);
-# 640 "upb/pb/compile_decoder_x64.dasc"
+# 645 "upb/pb/compile_decoder_x64.dasc"
           break;
         case UPB_TYPE_STRING:
         case UPB_TYPE_BYTES:
@@ -971,13 +976,13 @@ static void jitprimitive(jitcompiler *jc, opcode op,
        if (hasbit >= 0) {
       dasm_put(Dst, 1782, ((uint32_t)hasbit / 8), (1 << ((uint32_t)hasbit % 8)));
        }
-# 647 "upb/pb/compile_decoder_x64.dasc"
+# 652 "upb/pb/compile_decoder_x64.dasc"
     } else if (handler) {
       /*|  mov    ARG1_64, CLOSURE */
       /*|  load_handler_data h, sel */
       dasm_put(Dst, 1788);
        {
-       uintptr_t v = (uintptr_t)upb_handlers_gethandlerdata(h, sel);
+       uintptr_t v = (uintptr_t)gethandlerdata(h, sel);
        if (v > 0xffffffff) {
       dasm_put(Dst, 446, (unsigned int)(v), (unsigned int)((v)>>32));
        } else if (v) {
@@ -986,10 +991,10 @@ static void jitprimitive(jitcompiler *jc, opcode op,
       dasm_put(Dst, 454);
        }
        }
-# 650 "upb/pb/compile_decoder_x64.dasc"
+# 655 "upb/pb/compile_decoder_x64.dasc"
       /*|  callp  handler */
       dasm_put(Dst, 1793, (unsigned int)((uintptr_t)handler), (unsigned int)(((uintptr_t)handler)>>32), 0xfffffffffffffff0UL);
-# 651 "upb/pb/compile_decoder_x64.dasc"
+# 656 "upb/pb/compile_decoder_x64.dasc"
       if (!alwaysok(h, sel)) {
         /*|  test   al, al */
         /*|  jnz    >5 */
@@ -997,7 +1002,7 @@ static void jitprimitive(jitcompiler *jc, opcode op,
         /*|  jmp    <1 */
         /*|5: */
         dasm_put(Dst, 1815);
-# 657 "upb/pb/compile_decoder_x64.dasc"
+# 662 "upb/pb/compile_decoder_x64.dasc"
       }
     }
 
@@ -1005,7 +1010,7 @@ static void jitprimitive(jitcompiler *jc, opcode op,
      * data until the callback has returned success. */
     /*|  add    PTR, fastbytes */
     dasm_put(Dst, 1831, fastbytes);
-# 663 "upb/pb/compile_decoder_x64.dasc"
+# 668 "upb/pb/compile_decoder_x64.dasc"
   } else {
     /* No handler registered for this value, just skip it. */
     /*|  chkneob  fastbytes, >3 */
@@ -1014,30 +1019,30 @@ static void jitprimitive(jitcompiler *jc, opcode op,
      } else {
     dasm_put(Dst, 1636, fastbytes);
      }
-# 666 "upb/pb/compile_decoder_x64.dasc"
+# 671 "upb/pb/compile_decoder_x64.dasc"
     /*|2: */
     dasm_put(Dst, 1652);
-# 667 "upb/pb/compile_decoder_x64.dasc"
+# 672 "upb/pb/compile_decoder_x64.dasc"
     switch (vtype) {
     case V32:
       /*|  call   ->skipv32_fallback */
       dasm_put(Dst, 1836);
-# 670 "upb/pb/compile_decoder_x64.dasc"
+# 675 "upb/pb/compile_decoder_x64.dasc"
       break;
     case V64:
       /*|  call   ->skipv64_fallback */
       dasm_put(Dst, 1840);
-# 673 "upb/pb/compile_decoder_x64.dasc"
+# 678 "upb/pb/compile_decoder_x64.dasc"
       break;
     case F32:
       /*|  call   ->skipf32_fallback */
       dasm_put(Dst, 1844);
-# 676 "upb/pb/compile_decoder_x64.dasc"
+# 681 "upb/pb/compile_decoder_x64.dasc"
       break;
     case F64:
       /*|  call   ->skipf64_fallback */
       dasm_put(Dst, 1848);
-# 679 "upb/pb/compile_decoder_x64.dasc"
+# 684 "upb/pb/compile_decoder_x64.dasc"
       break;
     case X: break;
     }
@@ -1045,16 +1050,16 @@ static void jitprimitive(jitcompiler *jc, opcode op,
     /* Fast-path skip. */
     /*|3: */
     dasm_put(Dst, 1676);
-# 685 "upb/pb/compile_decoder_x64.dasc"
+# 690 "upb/pb/compile_decoder_x64.dasc"
     if (vtype == V32 || vtype == V64) {
       /*|  test   byte [PTR], 0x80 */
       /*|  jnz    <2 */
       dasm_put(Dst, 1852);
-# 688 "upb/pb/compile_decoder_x64.dasc"
+# 693 "upb/pb/compile_decoder_x64.dasc"
     }
     /*|  add    PTR, fastbytes */
     dasm_put(Dst, 1831, fastbytes);
-# 690 "upb/pb/compile_decoder_x64.dasc"
+# 695 "upb/pb/compile_decoder_x64.dasc"
   }
 }
 
@@ -1075,7 +1080,7 @@ static void jitdispatch(jitcompiler *jc,
   /*|=>define_jmptarget(jc, &method->dispatch): */
   /*|1: */
   dasm_put(Dst, 1861, define_jmptarget(jc, &method->dispatch));
-# 709 "upb/pb/compile_decoder_x64.dasc"
+# 714 "upb/pb/compile_decoder_x64.dasc"
   /* Decode the field tag. */
   /*|  mov     aword DECODER->checkpoint, PTR */
   /*|  chkeob  2, >6 */
@@ -1085,7 +1090,7 @@ static void jitdispatch(jitcompiler *jc,
    } else {
   dasm_put(Dst, 1873);
    }
-# 712 "upb/pb/compile_decoder_x64.dasc"
+# 717 "upb/pb/compile_decoder_x64.dasc"
   /*|  movzx   edx, byte [PTR] */
   /*|  test    dl, dl */
   /*|  jns     >7    // Jump if first byte has no continuation bit. */
@@ -1110,48 +1115,48 @@ static void jitdispatch(jitcompiler *jc,
   /*|  shr     edx, 3 */
   /*|  and     cl, 7 */
   dasm_put(Dst, 1889, 1);
-# 735 "upb/pb/compile_decoder_x64.dasc"
+# 740 "upb/pb/compile_decoder_x64.dasc"
 
   /* See comment attached to upb_pbdecodermethod.dispatch for layout of the
    * dispatch table. */
   /*|2: */
   /*|  cmp     edx, dispatch->array_size */
   dasm_put(Dst, 1954, dispatch->array_size);
-# 740 "upb/pb/compile_decoder_x64.dasc"
+# 745 "upb/pb/compile_decoder_x64.dasc"
   if (has_hash_entries) {
     /*|  jae     >7 */
     dasm_put(Dst, 1961);
-# 742 "upb/pb/compile_decoder_x64.dasc"
+# 747 "upb/pb/compile_decoder_x64.dasc"
   } else {
     /*|  jae     >5 */
     dasm_put(Dst, 1966);
-# 744 "upb/pb/compile_decoder_x64.dasc"
+# 749 "upb/pb/compile_decoder_x64.dasc"
   }
   /*|  // OPT: Compact the lookup arr into 32-bit entries. */
   if ((uintptr_t)dispatch->array > 0x7fffffff) {
     /*|  mov64 rax, (uintptr_t)dispatch->array */
     /*|  mov   rax, qword [rax + rdx * 8] */
     dasm_put(Dst, 1971, (unsigned int)((uintptr_t)dispatch->array), (unsigned int)(((uintptr_t)dispatch->array)>>32));
-# 749 "upb/pb/compile_decoder_x64.dasc"
+# 754 "upb/pb/compile_decoder_x64.dasc"
   } else {
     /*|  mov   rax, qword [rdx * 8 + dispatch->array] */
     dasm_put(Dst, 1980, dispatch->array);
-# 751 "upb/pb/compile_decoder_x64.dasc"
+# 756 "upb/pb/compile_decoder_x64.dasc"
   }
   /*|3: */
   /*|  // We take advantage of the fact that non-present entries are stored */
   /*|  // as -1, which will result in wire types that will never match. */
   /*|  cmp  al, cl */
   dasm_put(Dst, 1986);
-# 756 "upb/pb/compile_decoder_x64.dasc"
+# 761 "upb/pb/compile_decoder_x64.dasc"
   if (has_multi_wiretype) {
     /*|  jne  >6 */
     dasm_put(Dst, 1991);
-# 758 "upb/pb/compile_decoder_x64.dasc"
+# 763 "upb/pb/compile_decoder_x64.dasc"
   } else {
     /*|  jne  >5 */
     dasm_put(Dst, 1996);
-# 760 "upb/pb/compile_decoder_x64.dasc"
+# 765 "upb/pb/compile_decoder_x64.dasc"
   }
   /*|  shr  rax, 16 */
   /*| */
@@ -1182,7 +1187,7 @@ static void jitdispatch(jitcompiler *jc,
   /*|  lea  rax, [>9]  // ENDGROUP; Load address of OP_ENDMSG. */
   /*|  ret */
   dasm_put(Dst, 2001, define_jmptarget(jc, dispatch->array), (unsigned int)((uintptr_t)method->dest_handlers_), (unsigned int)(((uintptr_t)method->dest_handlers_)>>32), Dt1(->sink.handlers));
-# 789 "upb/pb/compile_decoder_x64.dasc"
+# 794 "upb/pb/compile_decoder_x64.dasc"
 
   if (has_multi_wiretype) {
     /*|6: */
@@ -1193,7 +1198,7 @@ static void jitdispatch(jitcompiler *jc,
     /*|  add   rdx, UPB_MAX_FIELDNUMBER */
     /*|  // This key will never be in the array part, so do a hash lookup. */
     dasm_put(Dst, 2043, UPB_MAX_FIELDNUMBER);
-# 798 "upb/pb/compile_decoder_x64.dasc"
+# 803 "upb/pb/compile_decoder_x64.dasc"
     UPB_ASSERT(has_hash_entries);
     /*|  ld64  dispatch */
      {
@@ -1206,10 +1211,10 @@ static void jitdispatch(jitcompiler *jc,
     dasm_put(Dst, 454);
      }
      }
-# 800 "upb/pb/compile_decoder_x64.dasc"
+# 805 "upb/pb/compile_decoder_x64.dasc"
     /*|  jmp   ->hashlookup  // Tail call. */
     dasm_put(Dst, 2056);
-# 801 "upb/pb/compile_decoder_x64.dasc"
+# 806 "upb/pb/compile_decoder_x64.dasc"
   }
 
   if (has_hash_entries) {
@@ -1227,11 +1232,11 @@ static void jitdispatch(jitcompiler *jc,
     dasm_put(Dst, 454);
      }
      }
-# 807 "upb/pb/compile_decoder_x64.dasc"
+# 812 "upb/pb/compile_decoder_x64.dasc"
     /*|  call   ->hashlookup */
     /*|  jmp    <3 */
     dasm_put(Dst, 2064);
-# 809 "upb/pb/compile_decoder_x64.dasc"
+# 814 "upb/pb/compile_decoder_x64.dasc"
   }
 }
 
@@ -1258,7 +1263,7 @@ static void jittag(jitcompiler *jc, uint64_t tag, int n, int ofs,
    } else {
   dasm_put(Dst, 2080, n);
    }
-# 830 "upb/pb/compile_decoder_x64.dasc"
+# 835 "upb/pb/compile_decoder_x64.dasc"
 
   /*|  // OPT: this is way too much fallback code to put here. */
   /*|  // Reduce and/or move to a separate section to make better icache usage. */
@@ -1273,7 +1278,7 @@ static void jittag(jitcompiler *jc, uint64_t tag, int n, int ofs,
   dasm_put(Dst, 454);
    }
    }
-# 834 "upb/pb/compile_decoder_x64.dasc"
+# 839 "upb/pb/compile_decoder_x64.dasc"
   /*|  call  ->checktag_fallback */
   /*|  cmp   eax, DECODE_MISMATCH */
   /*|  je    >3 */
@@ -1281,21 +1286,21 @@ static void jittag(jitcompiler *jc, uint64_t tag, int n, int ofs,
   /*|  je     =>jmptarget(jc, delimend) */
   /*|  jmp   >5 */
   dasm_put(Dst, 2096, DECODE_MISMATCH, DECODE_EOF, jmptarget(jc, delimend));
-# 840 "upb/pb/compile_decoder_x64.dasc"
+# 845 "upb/pb/compile_decoder_x64.dasc"
 
   /*|1: */
   dasm_put(Dst, 112);
-# 842 "upb/pb/compile_decoder_x64.dasc"
+# 847 "upb/pb/compile_decoder_x64.dasc"
   switch (n) {
   case 1:
     /*|  cmp  byte [PTR], tag */
     dasm_put(Dst, 2119, tag);
-# 845 "upb/pb/compile_decoder_x64.dasc"
+# 850 "upb/pb/compile_decoder_x64.dasc"
     break;
   case 2:
     /*|  cmp  word [PTR], tag */
     dasm_put(Dst, 2123, tag);
-# 848 "upb/pb/compile_decoder_x64.dasc"
+# 853 "upb/pb/compile_decoder_x64.dasc"
     break;
   case 3:
     /*|   // OPT: Slightly more efficient code, but depends on an extra byte. */
@@ -1307,41 +1312,41 @@ static void jittag(jitcompiler *jc, uint64_t tag, int n, int ofs,
     /*|   cmp  byte [PTR + 2], (tag >> 16) */
     /*|2: */
     dasm_put(Dst, 2128, (tag & 0xffff), 2, (tag >> 16));
-# 858 "upb/pb/compile_decoder_x64.dasc"
+# 863 "upb/pb/compile_decoder_x64.dasc"
     break;
   case 4:
     /*|   cmp  dword [PTR], tag */
     dasm_put(Dst, 2143, tag);
-# 861 "upb/pb/compile_decoder_x64.dasc"
+# 866 "upb/pb/compile_decoder_x64.dasc"
     break;
   case 5:
     /*|   cmp  dword [PTR], (tag & 0xffffffff) */
     /*|   jne  >3 */
     /*|   cmp  byte  [PTR + 4], (tag >> 32) */
     dasm_put(Dst, 2147, (tag & 0xffffffff), 4, (tag >> 32));
-# 866 "upb/pb/compile_decoder_x64.dasc"
+# 871 "upb/pb/compile_decoder_x64.dasc"
   }
   /*|  je    >4 */
   /*|3: */
   dasm_put(Dst, 2159);
-# 869 "upb/pb/compile_decoder_x64.dasc"
+# 874 "upb/pb/compile_decoder_x64.dasc"
   if (ofs == 0) {
     /*|  call   =>jmptarget(jc, &method->dispatch) */
     /*|  test   rax, rax */
     /*|  jz     =>jmptarget(jc, delimend) */
     /*|  jmp    rax */
     dasm_put(Dst, 2166, jmptarget(jc, &method->dispatch), jmptarget(jc, delimend));
-# 874 "upb/pb/compile_decoder_x64.dasc"
+# 879 "upb/pb/compile_decoder_x64.dasc"
   } else {
     /*|  jmp    =>jmptarget(jc, jc->pc + ofs) */
     dasm_put(Dst, 2178, jmptarget(jc, jc->pc + ofs));
-# 876 "upb/pb/compile_decoder_x64.dasc"
+# 881 "upb/pb/compile_decoder_x64.dasc"
   }
   /*|4: */
   /*|  add    PTR, n */
   /*|5: */
   dasm_put(Dst, 2182, n);
-# 880 "upb/pb/compile_decoder_x64.dasc"
+# 885 "upb/pb/compile_decoder_x64.dasc"
 }
 
 /* Compile the bytecode to x64. */
@@ -1364,7 +1369,7 @@ static void jitbytecode(jitcompiler *jc) {
        * TODO: optimize this to only define pclabels that are actually used. */
       /*|=>define_jmptarget(jc, jc->pc): */
       dasm_put(Dst, 0, define_jmptarget(jc, jc->pc));
-# 901 "upb/pb/compile_decoder_x64.dasc"
+# 906 "upb/pb/compile_decoder_x64.dasc"
     }
 
     jc->pc++;
@@ -1379,7 +1384,7 @@ static void jitbytecode(jitcompiler *jc) {
         /*|  load_handler_data h, UPB_STARTMSG_SELECTOR */
         dasm_put(Dst, 2191);
          {
-         uintptr_t v = (uintptr_t)upb_handlers_gethandlerdata(h, UPB_STARTMSG_SELECTOR);
+         uintptr_t v = (uintptr_t)gethandlerdata(h, UPB_STARTMSG_SELECTOR);
          if (v > 0xffffffff) {
         dasm_put(Dst, 446, (unsigned int)(v), (unsigned int)((v)>>32));
          } else if (v) {
@@ -1388,10 +1393,10 @@ static void jitbytecode(jitcompiler *jc) {
         dasm_put(Dst, 454);
          }
          }
-# 913 "upb/pb/compile_decoder_x64.dasc"
+# 918 "upb/pb/compile_decoder_x64.dasc"
         /*|  callp startmsg */
         dasm_put(Dst, 1793, (unsigned int)((uintptr_t)startmsg), (unsigned int)(((uintptr_t)startmsg)>>32), 0xfffffffffffffff0UL);
-# 914 "upb/pb/compile_decoder_x64.dasc"
+# 919 "upb/pb/compile_decoder_x64.dasc"
         if (!alwaysok(h, UPB_STARTMSG_SELECTOR)) {
           /*|  test  al, al */
           /*|  jnz   >2 */
@@ -1399,12 +1404,12 @@ static void jitbytecode(jitcompiler *jc) {
           /*|  jmp   <1 */
           /*|2: */
           dasm_put(Dst, 2198);
-# 920 "upb/pb/compile_decoder_x64.dasc"
+# 925 "upb/pb/compile_decoder_x64.dasc"
         }
       } else {
         /*| nop */
         dasm_put(Dst, 2214);
-# 923 "upb/pb/compile_decoder_x64.dasc"
+# 928 "upb/pb/compile_decoder_x64.dasc"
       }
       break;
     }
@@ -1412,14 +1417,14 @@ static void jitbytecode(jitcompiler *jc) {
       upb_func *endmsg = gethandler(h, UPB_ENDMSG_SELECTOR);
       /*|9: */
       dasm_put(Dst, 2216);
-# 929 "upb/pb/compile_decoder_x64.dasc"
+# 934 "upb/pb/compile_decoder_x64.dasc"
       if (endmsg) {
         /* bool endmsg(void *closure, const void *hd, upb_status *status) */
         /*|  mov   ARG1_64, CLOSURE */
         /*|  load_handler_data h, UPB_ENDMSG_SELECTOR */
         dasm_put(Dst, 1788);
          {
-         uintptr_t v = (uintptr_t)upb_handlers_gethandlerdata(h, UPB_ENDMSG_SELECTOR);
+         uintptr_t v = (uintptr_t)gethandlerdata(h, UPB_ENDMSG_SELECTOR);
          if (v > 0xffffffff) {
         dasm_put(Dst, 446, (unsigned int)(v), (unsigned int)((v)>>32));
          } else if (v) {
@@ -1428,11 +1433,11 @@ static void jitbytecode(jitcompiler *jc) {
         dasm_put(Dst, 454);
          }
          }
-# 933 "upb/pb/compile_decoder_x64.dasc"
+# 938 "upb/pb/compile_decoder_x64.dasc"
         /*|  mov   ARG3_64, DECODER->status */
         /*|  callp endmsg */
         dasm_put(Dst, 2219, Dt2(->status), (unsigned int)((uintptr_t)endmsg), (unsigned int)(((uintptr_t)endmsg)>>32), 0xfffffffffffffff0UL);
-# 935 "upb/pb/compile_decoder_x64.dasc"
+# 940 "upb/pb/compile_decoder_x64.dasc"
       }
       break;
     }
@@ -1465,7 +1470,7 @@ static void jitbytecode(jitcompiler *jc) {
       /*|=>define_jmptarget(jc, method): */
       /*|  sub   rsp, 8 */
       dasm_put(Dst, 2245, define_jmptarget(jc, op_pc), define_jmptarget(jc, method));
-# 966 "upb/pb/compile_decoder_x64.dasc"
+# 971 "upb/pb/compile_decoder_x64.dasc"
 
       break;
     }
@@ -1497,7 +1502,7 @@ static void jitbytecode(jitcompiler *jc) {
         /*|  load_handler_data h, arg */
         dasm_put(Dst, 2191);
          {
-         uintptr_t v = (uintptr_t)upb_handlers_gethandlerdata(h, arg);
+         uintptr_t v = (uintptr_t)gethandlerdata(h, arg);
          if (v > 0xffffffff) {
         dasm_put(Dst, 446, (unsigned int)(v), (unsigned int)((v)>>32));
          } else if (v) {
@@ -1506,16 +1511,16 @@ static void jitbytecode(jitcompiler *jc) {
         dasm_put(Dst, 454);
          }
          }
-# 995 "upb/pb/compile_decoder_x64.dasc"
+# 1000 "upb/pb/compile_decoder_x64.dasc"
         if (op == OP_STARTSTR) {
           /*|  mov    ARG3_64, DELIMEND */
           /*|  sub    ARG3_64, PTR */
           dasm_put(Dst, 2253);
-# 998 "upb/pb/compile_decoder_x64.dasc"
+# 1003 "upb/pb/compile_decoder_x64.dasc"
         }
         /*|  callp start */
         dasm_put(Dst, 1793, (unsigned int)((uintptr_t)start), (unsigned int)(((uintptr_t)start)>>32), 0xfffffffffffffff0UL);
-# 1000 "upb/pb/compile_decoder_x64.dasc"
+# 1005 "upb/pb/compile_decoder_x64.dasc"
         if (!alwaysok(h, arg)) {
           /*|  test  rax, rax */
           /*|  jnz   >2 */
@@ -1523,16 +1528,16 @@ static void jitbytecode(jitcompiler *jc) {
           /*|  jmp   <1 */
           /*|2: */
           dasm_put(Dst, 2261);
-# 1006 "upb/pb/compile_decoder_x64.dasc"
+# 1011 "upb/pb/compile_decoder_x64.dasc"
         }
         /*|  mov   CLOSURE, rax */
         dasm_put(Dst, 2278);
-# 1008 "upb/pb/compile_decoder_x64.dasc"
+# 1013 "upb/pb/compile_decoder_x64.dasc"
       } else {
         /* TODO: nop is only required because of asmlabel(). */
         /*|  nop */
         dasm_put(Dst, 2214);
-# 1011 "upb/pb/compile_decoder_x64.dasc"
+# 1016 "upb/pb/compile_decoder_x64.dasc"
       }
       break;
     }
@@ -1549,7 +1554,7 @@ static void jitbytecode(jitcompiler *jc) {
         /*|  load_handler_data h, arg */
         dasm_put(Dst, 2191);
          {
-         uintptr_t v = (uintptr_t)upb_handlers_gethandlerdata(h, arg);
+         uintptr_t v = (uintptr_t)gethandlerdata(h, arg);
          if (v > 0xffffffff) {
         dasm_put(Dst, 446, (unsigned int)(v), (unsigned int)((v)>>32));
          } else if (v) {
@@ -1558,10 +1563,10 @@ static void jitbytecode(jitcompiler *jc) {
         dasm_put(Dst, 454);
          }
          }
-# 1025 "upb/pb/compile_decoder_x64.dasc"
+# 1030 "upb/pb/compile_decoder_x64.dasc"
         /*|  callp end */
         dasm_put(Dst, 1793, (unsigned int)((uintptr_t)end), (unsigned int)(((uintptr_t)end)>>32), 0xfffffffffffffff0UL);
-# 1026 "upb/pb/compile_decoder_x64.dasc"
+# 1031 "upb/pb/compile_decoder_x64.dasc"
         if (!alwaysok(h, arg)) {
           /*|  test  al, al */
           /*|  jnz   >2 */
@@ -1569,13 +1574,13 @@ static void jitbytecode(jitcompiler *jc) {
           /*|  jmp   <1 */
           /*|2: */
           dasm_put(Dst, 2198);
-# 1032 "upb/pb/compile_decoder_x64.dasc"
+# 1037 "upb/pb/compile_decoder_x64.dasc"
         }
       } else {
         /* TODO: nop is only required because of asmlabel(). */
         /*|  nop */
         dasm_put(Dst, 2214);
-# 1036 "upb/pb/compile_decoder_x64.dasc"
+# 1041 "upb/pb/compile_decoder_x64.dasc"
       }
       break;
     }
@@ -1590,7 +1595,7 @@ static void jitbytecode(jitcompiler *jc) {
       /*|  jmp   <1 */
       /*|2: */
       dasm_put(Dst, 2282);
-# 1049 "upb/pb/compile_decoder_x64.dasc"
+# 1054 "upb/pb/compile_decoder_x64.dasc"
       if (str) {
         /* size_t str(void *closure, const void *hd, const char *str,
          *            size_t n) */
@@ -1598,7 +1603,7 @@ static void jitbytecode(jitcompiler *jc) {
         /*|  load_handler_data h, arg */
         dasm_put(Dst, 1788);
          {
-         uintptr_t v = (uintptr_t)upb_handlers_gethandlerdata(h, arg);
+         uintptr_t v = (uintptr_t)gethandlerdata(h, arg);
          if (v > 0xffffffff) {
         dasm_put(Dst, 446, (unsigned int)(v), (unsigned int)((v)>>32));
          } else if (v) {
@@ -1607,7 +1612,7 @@ static void jitbytecode(jitcompiler *jc) {
         dasm_put(Dst, 454);
          }
          }
-# 1054 "upb/pb/compile_decoder_x64.dasc"
+# 1059 "upb/pb/compile_decoder_x64.dasc"
         /*|  mov   ARG3_64, PTR */
         /*|  mov   ARG4_64, DATAEND */
         /*|  sub   ARG4_64, PTR */
@@ -1615,25 +1620,25 @@ static void jitbytecode(jitcompiler *jc) {
         /*|  callp str */
         /*|  add   PTR, rax */
         dasm_put(Dst, 2309, Dt2(->handle), (unsigned int)((uintptr_t)str), (unsigned int)(((uintptr_t)str)>>32), 0xfffffffffffffff0UL);
-# 1060 "upb/pb/compile_decoder_x64.dasc"
+# 1065 "upb/pb/compile_decoder_x64.dasc"
         if (!alwaysok(h, arg)) {
           /*|  cmp   PTR, DATAEND */
           /*|  je    >3 */
           /*|  call  ->strret_fallback */
           /*|3: */
           dasm_put(Dst, 2347);
-# 1065 "upb/pb/compile_decoder_x64.dasc"
+# 1070 "upb/pb/compile_decoder_x64.dasc"
         }
       } else {
         /*|  mov   PTR, DATAEND */
         dasm_put(Dst, 2360);
-# 1068 "upb/pb/compile_decoder_x64.dasc"
+# 1073 "upb/pb/compile_decoder_x64.dasc"
       }
       /*|  cmp   PTR, DELIMEND */
       /*|  jne   <1 */
       /*|4: */
       dasm_put(Dst, 2364);
-# 1072 "upb/pb/compile_decoder_x64.dasc"
+# 1077 "upb/pb/compile_decoder_x64.dasc"
       break;
     }
     case OP_PUSHTAGDELIM:
@@ -1649,18 +1654,18 @@ static void jitbytecode(jitcompiler *jc) {
       /*|  add   FRAME, sizeof(upb_pbdecoder_frame) */
       /*|  mov   dword FRAME->groupnum, arg */
       dasm_put(Dst, 2375, Dt1(->sink.closure), Dt1(->end_ofs), Dt2(->limit), sizeof(upb_pbdecoder_frame), Dt1(->groupnum), arg);
-# 1086 "upb/pb/compile_decoder_x64.dasc"
+# 1091 "upb/pb/compile_decoder_x64.dasc"
       break;
     case OP_PUSHLENDELIM:
       /*|  call  ->pushlendelim */
       dasm_put(Dst, 2405);
-# 1089 "upb/pb/compile_decoder_x64.dasc"
+# 1094 "upb/pb/compile_decoder_x64.dasc"
       break;
     case OP_POP:
       /*|  sub   FRAME, sizeof(upb_pbdecoder_frame) */
       /*|  mov   CLOSURE, FRAME->sink.closure */
       dasm_put(Dst, 2409, sizeof(upb_pbdecoder_frame), Dt1(->sink.closure));
-# 1093 "upb/pb/compile_decoder_x64.dasc"
+# 1098 "upb/pb/compile_decoder_x64.dasc"
       break;
     case OP_SETDELIM:
       /* OPT: experiment with testing vs old offset to optimize away. */
@@ -1673,35 +1678,35 @@ static void jitbytecode(jitcompiler *jc) {
       /*|  mov   DATAEND, DELIMEND */
       /*|1: */
       dasm_put(Dst, 2419, Dt2(->end), Dt1(->end_ofs), Dt2(->buf));
-# 1104 "upb/pb/compile_decoder_x64.dasc"
+# 1109 "upb/pb/compile_decoder_x64.dasc"
       break;
     case OP_SETBIGGROUPNUM:
       /*|  mov   dword FRAME->groupnum, *jc->pc++ */
       dasm_put(Dst, 2399, Dt1(->groupnum), *jc->pc++);
-# 1107 "upb/pb/compile_decoder_x64.dasc"
+# 1112 "upb/pb/compile_decoder_x64.dasc"
       break;
     case OP_CHECKDELIM:
       /*|  cmp  DELIMEND, PTR */
       /*|  je   =>jmptarget(jc, jc->pc + longofs) */
       dasm_put(Dst, 2449, jmptarget(jc, jc->pc + longofs));
-# 1111 "upb/pb/compile_decoder_x64.dasc"
+# 1116 "upb/pb/compile_decoder_x64.dasc"
       break;
     case OP_CALL:
       /*|  call =>jmptarget(jc, jc->pc + longofs) */
       dasm_put(Dst, 2456, jmptarget(jc, jc->pc + longofs));
-# 1114 "upb/pb/compile_decoder_x64.dasc"
+# 1119 "upb/pb/compile_decoder_x64.dasc"
       break;
     case OP_BRANCH:
       /*|  jmp  =>jmptarget(jc, jc->pc + longofs); */
       dasm_put(Dst, 2178, jmptarget(jc, jc->pc + longofs));
-# 1117 "upb/pb/compile_decoder_x64.dasc"
+# 1122 "upb/pb/compile_decoder_x64.dasc"
       break;
     case OP_RET:
       /*|9: */
       /*|  add  rsp, 8 */
       /*|  ret */
       dasm_put(Dst, 2459);
-# 1122 "upb/pb/compile_decoder_x64.dasc"
+# 1127 "upb/pb/compile_decoder_x64.dasc"
       break;
     case OP_TAG1:
       jittag(jc, (arg >> 8) & 0xff, 1, (int8_t)arg, method);
@@ -1718,7 +1723,7 @@ static void jitbytecode(jitcompiler *jc) {
     case OP_DISPATCH:
       /*|  call   =>jmptarget(jc, &method->dispatch) */
       dasm_put(Dst, 2456, jmptarget(jc, &method->dispatch));
-# 1137 "upb/pb/compile_decoder_x64.dasc"
+# 1142 "upb/pb/compile_decoder_x64.dasc"
       break;
     case OP_HALT:
       UPB_ASSERT(false);
@@ -1728,5 +1733,5 @@ static void jitbytecode(jitcompiler *jc) {
   asmlabel(jc, "eof");
   /*|  nop */
   dasm_put(Dst, 2214);
-# 1145 "upb/pb/compile_decoder_x64.dasc"
+# 1150 "upb/pb/compile_decoder_x64.dasc"
 }

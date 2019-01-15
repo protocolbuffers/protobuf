@@ -262,6 +262,7 @@ size_t upb_arena_bytesallocated(const upb_arena *a);
 UPB_INLINE upb_alloc *upb_arena_alloc(upb_arena *a) { return (upb_alloc*)a; }
 
 /* Convenience wrappers around upb_alloc functions. */
+
 UPB_INLINE void *upb_arena_malloc(upb_arena *a, size_t size) {
   return upb_malloc(upb_arena_alloc(a), size);
 }

@@ -233,7 +233,8 @@ static int getjmptarget(jitcompiler *jc, const void *key) {
  *
  * Creates/allocates a pclabel for this target if one does not exist already. */
 static int jmptarget(jitcompiler *jc, const void *key) {
-  // Optimizer sometimes can't figure out that initializing this is unnecessary.
+  /* Optimizer sometimes can't figure out that initializing this is unnecessary.
+   */
   int pclabel = 0;
   if (!try_getjmptarget(jc, key, &pclabel)) {
     pclabel = alloc_pclabel(jc);
