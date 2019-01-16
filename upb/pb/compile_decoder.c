@@ -4,11 +4,6 @@
 ** Code to compile a upb::Handlers into bytecode for decoding a protobuf
 ** according to that specific schema and destination handlers.
 **
-** Compiling to bytecode is always the first step.  If we are using the
-** interpreted decoder we leave it as bytecode and interpret that.  If we are
-** using a JIT decoder we use a code generator to turn the bytecode into native
-** code, LLVM IR, etc.
-**
 ** Bytecode definition is in decoder.int.h.
 */
 
@@ -37,7 +32,6 @@ static upb_pbdecodermethod *newmethod(const upb_handlers *dest_handlers,
 
   ret->group = group;
   ret->dest_handlers_ = dest_handlers;
-  ret->is_native_ = false;  /* If we JIT, it will update this later. */
   upb_inttable_init(&ret->dispatch, UPB_CTYPE_UINT64);
 
   return ret;
@@ -69,9 +63,6 @@ static void freegroup(mgroup *g) {
   }
 
   upb_inttable_uninit(&g->methods);
-#ifdef UPB_USE_JIT_X64
-  upb_pbdecoder_freejit(g);
-#endif
   upb_gfree(g->bytecode);
   upb_gfree(g);
 }
@@ -313,7 +304,7 @@ static void putop(compiler *c, int op, ...) {
   va_end(ap);
 }
 
-#if defined(UPB_USE_JIT_X64) || defined(UPB_DUMP_BYTECODE)
+#if defined(UPB_DUMP_BYTECODE)
 
 const char *upb_pbdecoder_getopname(unsigned int op) {
 #define QUOTE(x) #x
@@ -827,31 +818,6 @@ static void set_bytecode_handlers(mgroup *g) {
 }
 
 
-/* JIT setup. *****************************************************************/
-
-#ifdef UPB_USE_JIT_X64
-
-static void sethandlers(mgroup *g, bool allowjit) {
-  g->jit_code = NULL;
-  if (allowjit) {
-    /* Compile byte-code into machine code, create handlers. */
-    upb_pbdecoder_jit(g);
-  } else {
-    set_bytecode_handlers(g);
-  }
-}
-
-#else  /* UPB_USE_JIT_X64 */
-
-static void sethandlers(mgroup *g, bool allowjit) {
-  /* No JIT compiled in; use bytecode handlers unconditionally. */
-  UPB_UNUSED(allowjit);
-  set_bytecode_handlers(g);
-}
-
-#endif  /* UPB_USE_JIT_X64 */
-
-
 /* TODO(haberman): allow this to be constructed for an arbitrary set of dest
  * handlers and other mgroups (but verify we have a transitive closure). */
 const mgroup *mgroup_new(const upb_handlers *dest, bool allowjit, bool lazy) {
@@ -891,7 +857,7 @@ const mgroup *mgroup_new(const upb_handlers *dest, bool allowjit, bool lazy) {
   }
 #endif
 
-  sethandlers(g, allowjit);
+  set_bytecode_handlers(g);
   return g;
 }
 

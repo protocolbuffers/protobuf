@@ -67,15 +67,7 @@ cc_library(
         "upb/pb/textprinter.c",
         "upb/pb/varint.c",
         "upb/pb/varint.int.h",
-    ] + select({
-        ":k8": [
-            "upb/pb/compile_decoder_x64.c",
-            "upb/pb/compile_decoder_x64.h",
-            "third_party/dynasm/dasm_proto.h",
-            "third_party/dynasm/dasm_x86.h",
-        ],
-        "//conditions:default": [],
-    }),
+    ],
     hdrs = [
         "upb/pb/decoder.h",
         "upb/pb/encoder.h",
@@ -85,10 +77,7 @@ cc_library(
         "-std=c89",
         "-pedantic",
         "-Wno-long-long",
-    ] + select({
-        ":k8": ["-DUPB_USE_JIT_X64"],
-        "//conditions:default": [],
-    }),
+    ],
     deps = [
         ":upb",
     ],
@@ -421,19 +410,6 @@ py_library(
     srcs = ["tools/staleness_test_lib.py"],
 )
 
-genrule(
-    name = "make_dynasm_decoder",
-    srcs = [
-        "third_party/dynasm/dynasm.lua",
-        "third_party/dynasm/dasm_x64.lua",
-        "third_party/dynasm/dasm_x86.lua",
-        "upb/pb/compile_decoder_x64.dasc",
-    ],
-    outs = ["generated/upb/pb/compile_decoder_x64.h"],
-    cmd = "LUA_PATH=third_party/dynasm/?.lua $(location @lua//:lua) third_party/dynasm/dynasm.lua -c upb/pb/compile_decoder_x64.dasc > $@",
-    tools = ["@lua"],
-)
-
 py_binary(
     name = "make_cmakelists",
     srcs = ["tools/make_cmakelists.py"],
@@ -514,7 +490,6 @@ generated_file_staleness_test(
         "google/protobuf/descriptor.upb.h",
         "tests/json/test.proto.pb",
         "upb/json/parser.c",
-        "upb/pb/compile_decoder_x64.h",
     ],
     generated_pattern = "generated/%s",
 )

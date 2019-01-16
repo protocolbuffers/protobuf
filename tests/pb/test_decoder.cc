@@ -242,16 +242,8 @@ void indentbuf(string *buf, int depth) {
   buf->append(2 * depth, ' ');
 }
 
-void check_stack_alignment() {
-#ifdef UPB_USE_JIT_X64
-  void *rsp = __builtin_frame_address(0);
-  ASSERT(((uintptr_t)rsp % 16) == 0);
-#endif
-}
-
 #define NUMERIC_VALUE_HANDLER(member, ctype, fmt)                   \
   bool value_##member(int* depth, const uint32_t* num, ctype val) { \
-    check_stack_alignment();                                        \
     indentbuf(&output, *depth);                                     \
     appendf(&output, "%" PRIu32 ":%" fmt "\n", *num, val);          \
     return true;                                                    \
@@ -265,14 +257,12 @@ NUMERIC_VALUE_HANDLER(float,  float,    "g")
 NUMERIC_VALUE_HANDLER(double, double,   "g")
 
 bool value_bool(int* depth, const uint32_t* num, bool val) {
-  check_stack_alignment();
   indentbuf(&output, *depth);
   appendf(&output, "%" PRIu32 ":%s\n", *num, val ? "true" : "false");
   return true;
 }
 
 int* startstr(int* depth, const uint32_t* num, size_t size_hint) {
-  check_stack_alignment();
   indentbuf(&output, *depth);
   appendf(&output, "%" PRIu32 ":(%zu)\"", *num, size_hint);
   return depth + 1;
@@ -282,7 +272,6 @@ size_t value_string(int* depth, const uint32_t* num, const char* buf,
                     size_t n, const upb_bufhandle* handle) {
   UPB_UNUSED(num);
   UPB_UNUSED(depth);
-  check_stack_alignment();
   output.append(buf, n);
   ASSERT(handle == &global_handle);
   return n;
@@ -290,7 +279,6 @@ size_t value_string(int* depth, const uint32_t* num, const char* buf,
 
 bool endstr(int* depth, const uint32_t* num) {
   UPB_UNUSED(num);
-  check_stack_alignment();
   output.append("\n");
   indentbuf(&output, *depth);
   appendf(&output, "%" PRIu32 ":\"\n", *num);
@@ -298,7 +286,6 @@ bool endstr(int* depth, const uint32_t* num) {
 }
 
 int* startsubmsg(int* depth, const uint32_t* num) {
-  check_stack_alignment();
   indentbuf(&output, *depth);
   appendf(&output, "%" PRIu32 ":{\n", *num);
   return depth + 1;
@@ -306,14 +293,12 @@ int* startsubmsg(int* depth, const uint32_t* num) {
 
 bool endsubmsg(int* depth, const uint32_t* num) {
   UPB_UNUSED(num);
-  check_stack_alignment();
   indentbuf(&output, *depth);
   output.append("}\n");
   return true;
 }
 
 int* startseq(int* depth, const uint32_t* num) {
-  check_stack_alignment();
   indentbuf(&output, *depth);
   appendf(&output, "%" PRIu32 ":[\n", *num);
   return depth + 1;
@@ -321,14 +306,12 @@ int* startseq(int* depth, const uint32_t* num) {
 
 bool endseq(int* depth, const uint32_t* num) {
   UPB_UNUSED(num);
-  check_stack_alignment();
   indentbuf(&output, *depth);
   output.append("]\n");
   return true;
 }
 
 bool startmsg(int* depth) {
-  check_stack_alignment();
   indentbuf(&output, *depth);
   output.append("<\n");
   return true;
@@ -336,7 +319,6 @@ bool startmsg(int* depth) {
 
 bool endmsg(int* depth, upb_status* status) {
   UPB_UNUSED(status);
-  check_stack_alignment();
   indentbuf(&output, *depth);
   output.append(">\n");
   return true;
@@ -507,8 +489,6 @@ void do_run_decoder(VerboseParserEnvironment* env, upb::pb::DecoderPtr decoder,
 
     if (filter_hash) {
       fprintf(stderr, "RUNNING TEST CASE, hash=%x\n", testhash);
-      fprintf(stderr, "JIT on: %s\n",
-              global_method.is_native() ? "true" : "false");
       fprintf(stderr, "Input (len=%u): ", (unsigned)proto.size());
       PrintBinary(proto);
       fprintf(stderr, "\n");
@@ -1128,7 +1108,7 @@ void test_valid() {
 
 void empty_callback(const void *closure, upb::Handlers* h_ptr) {}
 
-void test_emptyhandlers(upb::SymbolTable* symtab, bool allowjit) {
+void test_emptyhandlers(upb::SymbolTable* symtab) {
   // Create an empty handlers to make sure that the decoder can handle empty
   // messages.
   HandlerRegisterData handlerdata;
@@ -1136,8 +1116,6 @@ void test_emptyhandlers(upb::SymbolTable* symtab, bool allowjit) {
 
   upb::HandlerCache handler_cache(empty_callback, &handlerdata);
   upb::pb::CodeCache pb_code_cache(&handler_cache);
-
-  pb_code_cache.set_allow_jit(allowjit);
 
   upb::MessageDefPtr md = upb::MessageDefPtr(Empty_getmsgdef(symtab->ptr()));
   global_handlers = handler_cache.Get(md);
@@ -1173,7 +1151,7 @@ void test_emptyhandlers(upb::SymbolTable* symtab, bool allowjit) {
   }
 }
 
-void run_tests(bool use_jit) {
+void run_tests() {
   HandlerRegisterData handlerdata;
   handlerdata.mode = test_mode;
 
@@ -1181,26 +1159,15 @@ void run_tests(bool use_jit) {
   upb::HandlerCache handler_cache(callback, &handlerdata);
   upb::pb::CodeCache pb_code_cache(&handler_cache);
 
-  pb_code_cache.set_allow_jit(use_jit);
-
   upb::MessageDefPtr md(DecoderTest_getmsgdef(symtab.ptr()));
   global_handlers = handler_cache.Get(md);
   global_method = pb_code_cache.Get(md);
-  ASSERT(use_jit == global_method.is_native());
   completed = 0;
 
   test_invalid();
   test_valid();
 
-  test_emptyhandlers(&symtab, use_jit);
-}
-
-void run_test_suite() {
-  // Test without/with JIT.
-  run_tests(false);
-#ifdef UPB_USE_JIT_X64
-  run_tests(true);
-#endif
+  test_emptyhandlers(&symtab);
 }
 
 extern "C" {
@@ -1216,16 +1183,16 @@ int run_tests(int argc, char *argv[]) {
   count = &total;
   total = 0;
   test_mode = COUNT_ONLY;
-  run_test_suite();
+  run_tests();
   count = &completed;
 
   total *= 2;  // NO_HANDLERS, ALL_HANDLERS.
 
   test_mode = NO_HANDLERS;
-  run_test_suite();
+  run_tests();
 
   test_mode = ALL_HANDLERS;
-  run_test_suite();
+  run_tests();
 
   printf("All tests passed, %d assertions.\n", num_assertions);
   return 0;
