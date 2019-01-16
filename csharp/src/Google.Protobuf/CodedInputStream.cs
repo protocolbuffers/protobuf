@@ -555,6 +555,10 @@ namespace Google.Protobuf
         public string ReadString()
         {
             int length = ReadLength();
+            if (length < 0)
+            {
+                throw InvalidProtocolBufferException.NegativeSize();
+            }
             // No need to read any data for an empty string.
             if (length == 0)
             {
