@@ -26,23 +26,16 @@ __EOF__
   exit 1
 fi
 
-# Verify the third_party directory before we start writing to it below.
-if test ! -d third_party/googletest/googletest; then
-  cat >&2 << __EOF__
-Third party code is missing.  Please run the following command, if you have
-not yet done so:
-
-git submodule update --init --recursive
-__EOF__
-  exit 1
-fi
-
 set -ex
 
 # The absence of a m4 directory in googletest causes autoreconf to fail when
 # building under the CentOS docker image. It's a warning in regular build on
-# Ubuntu/gLinux as well.
-mkdir -p third_party/googletest/m4
+# Ubuntu/gLinux as well. (This is only needed if git submodules have been
+# initialized, which is typically only needed for testing; see the installation
+# instructions for details.)
+if test -d third_party/googletest; then
+  mkdir -p third_party/googletest/m4
+fi
 
 # TODO(kenton):  Remove the ",no-obsolete" part and fix the resulting warnings.
 autoreconf -f -i -Wall,no-obsolete
