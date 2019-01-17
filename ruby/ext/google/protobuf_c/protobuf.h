@@ -196,6 +196,8 @@ VALUE DescriptorPool_build(int argc, VALUE* argv, VALUE _self);
 VALUE DescriptorPool_lookup(VALUE _self, VALUE name);
 VALUE DescriptorPool_generated_pool(VALUE _self);
 
+extern VALUE generated_pool;
+
 void Descriptor_mark(void* _self);
 void Descriptor_free(void* _self);
 VALUE Descriptor_alloc(VALUE klass);
