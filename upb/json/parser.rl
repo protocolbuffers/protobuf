@@ -19,6 +19,7 @@
 ** - handling of keys/escape-sequences/etc that span input buffers.
 */
 
+#include <ctype.h>
 #include <errno.h>
 #include <float.h>
 #include <math.h>
@@ -61,7 +62,6 @@ static bool is_string_wrapper_object(upb_json_parser *p);
 static bool does_string_wrapper_start(upb_json_parser *p);
 static bool does_string_wrapper_end(upb_json_parser *p);
 
-static bool is_fieldmask_object(upb_json_parser *p);
 static bool does_fieldmask_start(upb_json_parser *p);
 static bool does_fieldmask_end(upb_json_parser *p);
 static void start_fieldmask_object(upb_json_parser *p);
@@ -1668,9 +1668,7 @@ static void start_fieldmask_path_text(upb_json_parser *p, const char *ptr) {
 }
 
 static bool end_fieldmask_path_text(upb_json_parser *p, const char *ptr) {
-  if (!capture_end(p, ptr)) {
-    return false;
-  }
+  return capture_end(p, ptr);
 }
 
 static bool start_fieldmask_path(upb_json_parser *p) {
@@ -1683,7 +1681,7 @@ static bool start_fieldmask_path(upb_json_parser *p) {
    * handler frames, and string events occur in a sub-frame. */
   inner = p->top + 1;
   sel = getsel_for_handlertype(p, UPB_HANDLER_STARTSTR);
-  upb_sink_startstr(&p->top->sink, sel, 0, &inner->sink);
+  upb_sink_startstr(p->top->sink, sel, 0, &inner->sink);
   inner->m = p->top->m;
   inner->f = p->top->f;
   inner->name_table = NULL;
@@ -1705,10 +1703,10 @@ static bool lower_camel_push(
   for (;ptr < limit; ptr++) {
     if (*ptr >= 'A' && *ptr <= 'Z' && !first) {
       char lower = tolower(*ptr);
-      upb_sink_putstring(&p->top->sink, sel, "_", 1, NULL);
-      upb_sink_putstring(&p->top->sink, sel, &lower, 1, NULL);
+      upb_sink_putstring(p->top->sink, sel, "_", 1, NULL);
+      upb_sink_putstring(p->top->sink, sel, &lower, 1, NULL);
     } else {
-      upb_sink_putstring(&p->top->sink, sel, ptr, 1, NULL);
+      upb_sink_putstring(p->top->sink, sel, ptr, 1, NULL);
     }
     first = false;
   }
@@ -1725,7 +1723,7 @@ static bool end_fieldmask_path(upb_json_parser *p) {
   }
 
   sel = getsel_for_handlertype(p, UPB_HANDLER_ENDSTR);
-  upb_sink_endstr(&p->top->sink, sel);
+  upb_sink_endstr(p->top->sink, sel);
   p->top--;
 
   multipart_end(p);
@@ -2484,10 +2482,6 @@ static bool does_fieldmask_start(upb_json_parser *p) {
 }
 
 static bool does_fieldmask_end(upb_json_parser *p) {
-  return p->top->m != NULL && is_fieldmask(p->top->m);
-}
-
-static bool is_fieldmask_object(upb_json_parser *p) {
   return p->top->m != NULL && is_fieldmask(p->top->m);
 }
 

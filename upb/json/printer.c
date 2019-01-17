@@ -5,8 +5,9 @@
 
 #include "upb/json/printer.h"
 
-#include <string.h>
+#include <ctype.h>
 #include <stdint.h>
+#include <string.h>
 #include <time.h>
 
 struct upb_json_printer {
@@ -1029,7 +1030,7 @@ void printer_sethandlers_fieldmask(const void *closure, upb_handlers *h) {
   const upb_msgdef *md = upb_handlers_msgdef(h);
   const upb_fielddef* f = upb_msgdef_itof(md, 1);
 
-  upb_handlerattr empty_attr = UPB_HANDLERATTR_INITIALIZER;
+  upb_handlerattr empty_attr = UPB_HANDLERATTR_INIT;
 
   upb_handlers_setstartseq(h, f, startseq_fieldmask, &empty_attr);
   upb_handlers_setendseq(h, f, endseq_fieldmask, &empty_attr);

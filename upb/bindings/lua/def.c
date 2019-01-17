@@ -728,10 +728,6 @@ void lupb_def_registertypes(lua_State *L) {
   lupb_setfieldi(L, "TYPE_UINT32",    UPB_TYPE_UINT32);
   lupb_setfieldi(L, "TYPE_ENUM",      UPB_TYPE_ENUM);
 
-  lupb_setfieldi(L, "INTFMT_VARIABLE",  UPB_INTFMT_VARIABLE);
-  lupb_setfieldi(L, "INTFMT_FIXED",     UPB_INTFMT_FIXED);
-  lupb_setfieldi(L, "INTFMT_ZIGZAG",    UPB_INTFMT_ZIGZAG);
-
   lupb_setfieldi(L, "DESCRIPTOR_TYPE_DOUBLE",    UPB_DESCRIPTOR_TYPE_DOUBLE);
   lupb_setfieldi(L, "DESCRIPTOR_TYPE_FLOAT",     UPB_DESCRIPTOR_TYPE_FLOAT);
   lupb_setfieldi(L, "DESCRIPTOR_TYPE_INT64",     UPB_DESCRIPTOR_TYPE_INT64);
