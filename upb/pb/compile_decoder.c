@@ -666,8 +666,8 @@ static void generate_delimfield(compiler *c, const upb_fielddef *f,
     putop(c, OP_STARTSTR, getsel(f, UPB_HANDLER_STARTSTR));
     /* Need to emit even if no handler to skip past the string. */
     putop(c, OP_STRING, getsel(f, UPB_HANDLER_STRING));
-    putop(c, OP_POP);
     maybeput(c, OP_ENDSTR, h, f, UPB_HANDLER_ENDSTR);
+    putop(c, OP_POP);
     putop(c, OP_SETDELIM);
     putop(c, OP_CHECKDELIM, LABEL_LOOPBREAK);
     putchecktag(c, f, UPB_WIRE_TYPE_DELIMITED, LABEL_LOOPBREAK);
@@ -682,8 +682,8 @@ static void generate_delimfield(compiler *c, const upb_fielddef *f,
     putop(c, OP_PUSHLENDELIM);
     putop(c, OP_STARTSTR, getsel(f, UPB_HANDLER_STARTSTR));
     putop(c, OP_STRING, getsel(f, UPB_HANDLER_STRING));
-    putop(c, OP_POP);
     maybeput(c, OP_ENDSTR, h, f, UPB_HANDLER_ENDSTR);
+    putop(c, OP_POP);
     putop(c, OP_SETDELIM);
   }
 }

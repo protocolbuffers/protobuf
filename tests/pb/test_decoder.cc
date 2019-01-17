@@ -1098,7 +1098,7 @@ void test_valid() {
       LINE("%u:{")
       LINE("  <")
       LINE("  %u:(5)\"abcde")
-      LINE("  %u:\"")
+      LINE("    %u:\"")
       LINE("  >")
       LINE("}")
       LINE(">"), msg_fn, UPB_DESCRIPTOR_TYPE_STRING,

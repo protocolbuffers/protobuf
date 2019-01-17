@@ -747,6 +747,57 @@ static void *startseq_nokey(void *closure, const void *handler_data) {
   return closure;
 }
 
+static void *startseq_fieldmask(void *closure, const void *handler_data) {
+  upb_json_printer *p = closure;
+  UPB_UNUSED(handler_data);
+  p->depth_++;
+  p->first_elem_[p->depth_] = true;
+  print_data(p, "\"", 1);
+  return closure;
+}
+
+static bool endseq_fieldmask(void *closure, const void *handler_data) {
+  upb_json_printer *p = closure;
+  UPB_UNUSED(handler_data);
+  p->depth_--;
+  print_data(p, "\"", 1);
+  return true;
+}
+
+static void *repeated_startstr_fieldmask(
+    void *closure, const void *handler_data,
+    size_t size_hint) {
+  upb_json_printer *p = closure;
+  UPB_UNUSED(handler_data);
+  UPB_UNUSED(size_hint);
+  print_comma(p);
+  return p;
+}
+
+static size_t repeated_str_fieldmask(
+    void *closure, const void *handler_data,
+    const char *str, size_t len,
+    const upb_bufhandle *handle) {
+  const char* limit = str + len;
+  bool upper = false;
+  size_t result_len = 0;
+  for (; str < limit; str++) {
+    if (*str == '_') {
+      upper = true;
+      continue;
+    }
+    if (upper && *str >= 'a' && *str <= 'z') {
+      char upper_char = toupper(*str);
+      CHK(putstr(closure, handler_data, &upper_char, 1, handle));
+    } else {
+      CHK(putstr(closure, handler_data, str, 1, handle));
+    }
+    upper = false;
+    result_len++;
+  }
+  return result_len;
+}
+
 static void *startmap_nokey(void *closure, const void *handler_data) {
   upb_json_printer *p = closure;
   UPB_UNUSED(handler_data);
@@ -972,6 +1023,25 @@ void printer_sethandlers_any(const void *closure, upb_handlers *h) {
   UPB_UNUSED(closure);
 }
 
+/* Set up handlers for a fieldmask submessage. */
+void printer_sethandlers_fieldmask(const void *closure, upb_handlers *h) {
+  const upb_msgdef *md = upb_handlers_msgdef(h);
+  const upb_fielddef* f = upb_msgdef_itof(md, 1);
+
+  upb_handlerattr empty_attr = UPB_HANDLERATTR_INITIALIZER;
+
+  upb_handlers_setstartseq(h, f, startseq_fieldmask, &empty_attr);
+  upb_handlers_setendseq(h, f, endseq_fieldmask, &empty_attr);
+
+  upb_handlers_setstartmsg(h, printer_startmsg_noframe, &empty_attr);
+  upb_handlers_setendmsg(h, printer_endmsg_noframe, &empty_attr);
+
+  upb_handlers_setstartstr(h, f, repeated_startstr_fieldmask, &empty_attr);
+  upb_handlers_setstring(h, f, repeated_str_fieldmask, &empty_attr);
+
+  UPB_UNUSED(closure);
+}
+
 /* Set up handlers for a duration submessage. */
 void printer_sethandlers_duration(const void *closure, upb_handlers *h) {
   const upb_msgdef *md = upb_handlers_msgdef(h);
@@ -1127,6 +1197,9 @@ void printer_sethandlers(const void *closure, upb_handlers *h) {
       break;
     case UPB_WELLKNOWN_ANY:
       printer_sethandlers_any(closure, h);
+      return;
+    case UPB_WELLKNOWN_FIELDMASK:
+      printer_sethandlers_fieldmask(closure, h);
       return;
     case UPB_WELLKNOWN_DURATION:
       printer_sethandlers_duration(closure, h);

@@ -61,6 +61,12 @@ static bool is_string_wrapper_object(upb_json_parser *p);
 static bool does_string_wrapper_start(upb_json_parser *p);
 static bool does_string_wrapper_end(upb_json_parser *p);
 
+static bool is_fieldmask_object(upb_json_parser *p);
+static bool does_fieldmask_start(upb_json_parser *p);
+static bool does_fieldmask_end(upb_json_parser *p);
+static void start_fieldmask_object(upb_json_parser *p);
+static void end_fieldmask_object(upb_json_parser *p);
+
 static void start_wrapper_object(upb_json_parser *p);
 static void end_wrapper_object(upb_json_parser *p);
 
@@ -1162,6 +1168,9 @@ static bool start_stringval(upb_json_parser *p) {
   if (is_top_level(p)) {
     if (is_string_wrapper_object(p)) {
       start_wrapper_object(p);
+    } else if (is_wellknown_msg(p, UPB_WELLKNOWN_FIELDMASK)) {
+      start_fieldmask_object(p);
+      return true;
     } else if (is_wellknown_msg(p, UPB_WELLKNOWN_TIMESTAMP) ||
                is_wellknown_msg(p, UPB_WELLKNOWN_DURATION)) {
       start_object(p);
@@ -1175,6 +1184,12 @@ static bool start_stringval(upb_json_parser *p) {
       return false;
     }
     start_wrapper_object(p);
+  } else if (does_fieldmask_start(p)) {
+    if (!start_subobject(p)) {
+      return false;
+    }
+    start_fieldmask_object(p);
+    return true;
   } else if (is_wellknown_field(p, UPB_WELLKNOWN_TIMESTAMP) ||
              is_wellknown_field(p, UPB_WELLKNOWN_DURATION)) {
     if (!start_subobject(p)) {
@@ -1318,8 +1333,8 @@ static bool end_stringval_nontop(upb_json_parser *p) {
 
     case UPB_TYPE_STRING: {
       upb_selector_t sel = getsel_for_handlertype(p, UPB_HANDLER_ENDSTR);
-      p->top--;
       upb_sink_endstr(&p->top->sink, sel);
+      p->top--;
       break;
     }
 
@@ -1368,6 +1383,16 @@ static bool end_stringval_nontop(upb_json_parser *p) {
 }
 
 static bool end_stringval(upb_json_parser *p) {
+  /* FieldMask's stringvals have been ended when handling them. Only need to
+   * close FieldMask here.*/
+  if (does_fieldmask_end(p)) {
+    end_fieldmask_object(p);
+    if (!is_top_level(p)) {
+      end_subobject(p);
+    }
+    return true;
+  }
+
   if (!end_stringval_nontop(p)) {
     return false;
   }
@@ -1389,7 +1414,8 @@ static bool end_stringval(upb_json_parser *p) {
   }
 
   if (is_wellknown_msg(p, UPB_WELLKNOWN_TIMESTAMP) ||
-      is_wellknown_msg(p, UPB_WELLKNOWN_DURATION)) {
+      is_wellknown_msg(p, UPB_WELLKNOWN_DURATION) ||
+      is_wellknown_msg(p, UPB_WELLKNOWN_FIELDMASK)) {
     end_object(p);
     if (!is_top_level(p)) {
       end_subobject(p);
@@ -1652,6 +1678,75 @@ static bool end_timestamp_zone(upb_json_parser *p, const char *ptr) {
   return true;
 }
 
+static void start_fieldmask_path_text(upb_json_parser *p, const char *ptr) {
+  capture_begin(p, ptr);
+}
+
+static bool end_fieldmask_path_text(upb_json_parser *p, const char *ptr) {
+  if (!capture_end(p, ptr)) {
+    return false;
+  }
+}
+
+static bool start_fieldmask_path(upb_json_parser *p) {
+  upb_jsonparser_frame *inner;
+  upb_selector_t sel;
+
+  if (!check_stack(p)) return false;
+
+  /* Start a new parser frame: parser frames correspond one-to-one with
+   * handler frames, and string events occur in a sub-frame. */
+  inner = p->top + 1;
+  sel = getsel_for_handlertype(p, UPB_HANDLER_STARTSTR);
+  upb_sink_startstr(&p->top->sink, sel, 0, &inner->sink);
+  inner->m = p->top->m;
+  inner->f = p->top->f;
+  inner->name_table = NULL;
+  inner->is_map = false;
+  inner->is_mapentry = false;
+  inner->is_any = false;
+  inner->any_frame = NULL;
+  inner->is_unknown_field = false;
+  p->top = inner;
+
+  multipart_startaccum(p);
+  return true;
+}
+
+static bool lower_camel_push(
+    upb_json_parser *p, upb_selector_t sel, const char *ptr, size_t len) {
+  const char *limit = ptr + len;
+  bool first = true;
+  for (;ptr < limit; ptr++) {
+    if (*ptr >= 'A' && *ptr <= 'Z' && !first) {
+      char lower = tolower(*ptr);
+      upb_sink_putstring(&p->top->sink, sel, "_", 1, NULL);
+      upb_sink_putstring(&p->top->sink, sel, &lower, 1, NULL);
+    } else {
+      upb_sink_putstring(&p->top->sink, sel, ptr, 1, NULL);
+    }
+    first = false;
+  }
+  return true;
+}
+
+static bool end_fieldmask_path(upb_json_parser *p) {
+  upb_selector_t sel;
+
+  if (!lower_camel_push(
+           p, getsel_for_handlertype(p, UPB_HANDLER_STRING),
+           p->accumulated, p->accumulated_len)) {
+    return false;
+  }
+
+  sel = getsel_for_handlertype(p, UPB_HANDLER_ENDSTR);
+  upb_sink_endstr(&p->top->sink, sel);
+  p->top--;
+
+  multipart_end(p);
+  return true;
+}
+
 static void start_member(upb_json_parser *p) {
   UPB_ASSERT(!p->top->f);
   multipart_startaccum(p);
@@ -1711,7 +1806,7 @@ static bool parse_mapentry_key(upb_json_parser *p) {
       sel = getsel_for_handlertype(p, UPB_HANDLER_STRING);
       upb_sink_putstring(&subsink, sel, buf, len, NULL);
       sel = getsel_for_handlertype(p, UPB_HANDLER_ENDSTR);
-      upb_sink_endstr(&p->top->sink, sel);
+      upb_sink_endstr(&subsink, sel);
       multipart_end(p);
       break;
     }
@@ -2253,6 +2348,31 @@ static bool is_string_wrapper(const upb_msgdef *m) {
          type == UPB_WELLKNOWN_BYTESVALUE;
 }
 
+static bool is_fieldmask(const upb_msgdef *m) {
+  upb_wellknowntype_t type = upb_msgdef_wellknowntype(m);
+  return type == UPB_WELLKNOWN_FIELDMASK;
+}
+
+static void start_fieldmask_object(upb_json_parser *p) {
+  const char *membername = "paths";
+
+  start_object(p);
+
+  /* Set up context for parsing value */
+  start_member(p);
+  capture_begin(p, membername);
+  capture_end(p, membername + 5);
+  end_membername(p);
+
+  start_array(p);
+}
+
+static void end_fieldmask_object(upb_json_parser *p) {
+  end_array(p);
+  end_member(p);
+  end_object(p);
+}
+
 static void start_wrapper_object(upb_json_parser *p) {
   const char *membername = "value";
 
@@ -2391,6 +2511,20 @@ static bool is_string_wrapper_object(upb_json_parser *p) {
   return p->top->m != NULL && is_string_wrapper(p->top->m);
 }
 
+static bool does_fieldmask_start(upb_json_parser *p) {
+  return p->top->f != NULL &&
+         upb_fielddef_issubmsg(p->top->f) &&
+         is_fieldmask(upb_fielddef_msgsubdef(p->top->f));
+}
+
+static bool does_fieldmask_end(upb_json_parser *p) {
+  return p->top->m != NULL && is_fieldmask(p->top->m);
+}
+
+static bool is_fieldmask_object(upb_json_parser *p) {
+  return p->top->m != NULL && is_fieldmask(p->top->m);
+}
+
 #define CHECK_RETURN_TOP(x) if (!(x)) goto error
 
 
@@ -2483,6 +2617,24 @@ static bool is_string_wrapper_object(upb_json_parser *p) {
       @{ fhold; fret; }
     ;
 
+  fieldmask_path_text =
+    /[^",]/+
+      >{ start_fieldmask_path_text(parser, p); }
+      %{ end_fieldmask_path_text(parser, p); }
+    ;
+
+  fieldmask_path =
+    fieldmask_path_text
+      >{ start_fieldmask_path(parser); }
+      %{ end_fieldmask_path(parser); }
+    ;
+
+  fieldmask_machine :=
+    (fieldmask_path ("," fieldmask_path)*)?
+    '"'
+      @{ fhold; fret; }
+    ;
+
   string =
     '"'
       @{
@@ -2490,6 +2642,8 @@ static bool is_string_wrapper_object(upb_json_parser *p) {
           fcall timestamp_machine;
         } else if (is_wellknown_msg(parser, UPB_WELLKNOWN_DURATION)) {
           fcall duration_machine;
+        } else if (is_wellknown_msg(parser, UPB_WELLKNOWN_FIELDMASK)) {
+          fcall fieldmask_machine;
         } else {
           fcall string_machine;
         }
@@ -2620,6 +2774,7 @@ static bool end(void *closure, const void *hd) {
   /* Prevent compile warning on unused static constants. */
   UPB_UNUSED(json_start);
   UPB_UNUSED(json_en_duration_machine);
+  UPB_UNUSED(json_en_fieldmask_machine);
   UPB_UNUSED(json_en_number_machine);
   UPB_UNUSED(json_en_string_machine);
   UPB_UNUSED(json_en_timestamp_machine);
