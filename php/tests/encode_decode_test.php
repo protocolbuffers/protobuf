@@ -14,6 +14,7 @@ use Foo\TestRandomFieldOrder;
 use Foo\TestUnpackedMessage;
 use Google\Protobuf\Any;
 use Google\Protobuf\DoubleValue;
+use Google\Protobuf\FieldMask;
 use Google\Protobuf\FloatValue;
 use Google\Protobuf\Int32Value;
 use Google\Protobuf\UInt32Value;
@@ -264,6 +265,40 @@ class EncodeDecodeTest extends TestBase
         $this->assertSame("oneof_message", $n->getMyOneof());
         $this->assertFalse(is_null($n->getOneofMessage()));
 
+    }
+
+    public function testJsonEncodeDecodeOneof()
+    {
+        $m = new TestMessage();
+
+        $m->setOneofEnum(TestEnum::ONE);
+        $data = $m->serializeToJsonString();
+        $n = new TestMessage();
+        $n->mergeFromJsonString($data);
+        $this->assertSame("oneof_enum", $n->getMyOneof());
+        $this->assertSame(TestEnum::ONE, $n->getOneofEnum());
+
+        $m->setOneofString("a");
+        $data = $m->serializeToJsonString();
+        $n = new TestMessage();
+        $n->mergeFromJsonString($data);
+        $this->assertSame("oneof_string", $n->getMyOneof());
+        $this->assertSame("a", $n->getOneofString());
+
+        $m->setOneofBytes("bbbb");
+        $data = $m->serializeToJsonString();
+        $n = new TestMessage();
+        $n->mergeFromJsonString($data);
+        $this->assertSame("oneof_bytes", $n->getMyOneof());
+        $this->assertSame("bbbb", $n->getOneofBytes());
+
+        $sub_m = new Sub();
+        $m->setOneofMessage($sub_m);
+        $data = $m->serializeToJsonString();
+        $n = new TestMessage();
+        $n->mergeFromJsonString($data);
+        $this->assertSame("oneof_message", $n->getMyOneof());
+        $this->assertFalse(is_null($n->getOneofMessage()));
     }
 
     public function testPackedEncode()
@@ -1068,6 +1103,29 @@ class EncodeDecodeTest extends TestBase
             "{\"@type\":\"type.googleapis.com/google.protobuf.Timestamp\"," .
             "\"value\":\"2000-01-01T00:00:00.123456789Z\"}",
             $m->serializeToJsonString());
+    }
+
+    public function testDecodeTopLevelFieldMask()
+    {
+        $m = new TestMessage();
+        $m->setMapStringString(['a'=>'abcdefg']);
+        $data1 = $m->serializeToJsonString();
+        $n = new TestMessage();
+        $n->mergeFromJsonString($data1);
+        $data2 = $n->serializeToJsonString();
+        $this->assertSame($data1, $data2);
+
+        $m = new FieldMask();
+        $m->mergeFromJsonString("\"foo.barBaz,qux\"");
+        $this->assertSame("foo.bar_baz", $m->getPaths()[0]);
+        $this->assertSame("qux", $m->getPaths()[1]);
+    }
+
+    public function testEncodeTopLevelFieldMask()
+    {
+        $m = new FieldMask();
+        $m->setPaths(["foo.bar_baz", "qux"]);
+        $this->assertSame("\"foo.barBaz,qux\"", $m->serializeToJsonString());
     }
 
 }

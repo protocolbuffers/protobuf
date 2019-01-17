@@ -421,14 +421,6 @@ typedef enum {
   UPB_LABEL_REPEATED = 3
 } upb_label_t;
 
-/* How integers should be encoded in serializations that offer multiple
- * integer encoding methods. */
-typedef enum {
-  UPB_INTFMT_VARIABLE = 1,
-  UPB_INTFMT_FIXED = 2,
-  UPB_INTFMT_ZIGZAG = 3   /* Only for signed types (INT32/INT64). */
-} upb_intfmt_t;
-
 /* Descriptor types, as defined in descriptor.proto. */
 typedef enum {
   UPB_DESCRIPTOR_TYPE_DOUBLE   = 1,
@@ -450,36 +442,6 @@ typedef enum {
   UPB_DESCRIPTOR_TYPE_SINT32   = 17,
   UPB_DESCRIPTOR_TYPE_SINT64   = 18
 } upb_descriptortype_t;
-
-typedef enum {
-  UPB_SYNTAX_PROTO2 = 2,
-  UPB_SYNTAX_PROTO3 = 3
-} upb_syntax_t;
-
-/* All the different kind of well known type messages. For simplicity of check,
- * number wrappers and string wrappers are grouped together. Make sure the
- * order and merber of these groups are not changed.
- */
-typedef enum {
-  UPB_WELLKNOWN_UNSPECIFIED,
-  UPB_WELLKNOWN_ANY,
-  UPB_WELLKNOWN_DURATION,
-  UPB_WELLKNOWN_TIMESTAMP,
-  /* number wrappers */
-  UPB_WELLKNOWN_DOUBLEVALUE,
-  UPB_WELLKNOWN_FLOATVALUE,
-  UPB_WELLKNOWN_INT64VALUE,
-  UPB_WELLKNOWN_UINT64VALUE,
-  UPB_WELLKNOWN_INT32VALUE,
-  UPB_WELLKNOWN_UINT32VALUE,
-  /* string wrappers */
-  UPB_WELLKNOWN_STRINGVALUE,
-  UPB_WELLKNOWN_BYTESVALUE,
-  UPB_WELLKNOWN_BOOLVALUE,
-  UPB_WELLKNOWN_VALUE,
-  UPB_WELLKNOWN_LISTVALUE,
-  UPB_WELLKNOWN_STRUCT
-} upb_wellknowntype_t;
 
 extern const uint8_t upb_desctype_to_fieldtype[];
 
@@ -3134,6 +3096,37 @@ typedef struct upb_oneofdef upb_oneofdef;
 struct upb_symtab;
 typedef struct upb_symtab upb_symtab;
 
+typedef enum {
+  UPB_SYNTAX_PROTO2 = 2,
+  UPB_SYNTAX_PROTO3 = 3
+} upb_syntax_t;
+
+/* All the different kind of well known type messages. For simplicity of check,
+ * number wrappers and string wrappers are grouped together. Make sure the
+ * order and merber of these groups are not changed.
+ */
+typedef enum {
+  UPB_WELLKNOWN_UNSPECIFIED,
+  UPB_WELLKNOWN_ANY,
+  UPB_WELLKNOWN_FIELDMASK,
+  UPB_WELLKNOWN_DURATION,
+  UPB_WELLKNOWN_TIMESTAMP,
+  /* number wrappers */
+  UPB_WELLKNOWN_DOUBLEVALUE,
+  UPB_WELLKNOWN_FLOATVALUE,
+  UPB_WELLKNOWN_INT64VALUE,
+  UPB_WELLKNOWN_UINT64VALUE,
+  UPB_WELLKNOWN_INT32VALUE,
+  UPB_WELLKNOWN_UINT32VALUE,
+  /* string wrappers */
+  UPB_WELLKNOWN_STRINGVALUE,
+  UPB_WELLKNOWN_BYTESVALUE,
+  UPB_WELLKNOWN_BOOLVALUE,
+  UPB_WELLKNOWN_VALUE,
+  UPB_WELLKNOWN_LISTVALUE,
+  UPB_WELLKNOWN_STRUCT
+} upb_wellknowntype_t;
+
 /* upb_fielddef ***************************************************************/
 
 /* Maximum field number allowed for FieldDefs.  This is an inherent limit of the
@@ -3872,9 +3865,9 @@ const upb_msgdef *upb_symtab_lookupmsg2(
     const upb_symtab *s, const char *sym, size_t len);
 const upb_enumdef *upb_symtab_lookupenum(const upb_symtab *s, const char *sym);
 int upb_symtab_filecount(const upb_symtab *s);
-bool upb_symtab_addfile(upb_symtab *s,
-                        const google_protobuf_FileDescriptorProto* file,
-                        upb_status *status);
+const upb_filedef *upb_symtab_addfile(
+    upb_symtab *s, const google_protobuf_FileDescriptorProto *file,
+    upb_status *status);
 
 /* For generated code only: loads a generated descriptor. */
 typedef struct upb_def_init {
@@ -3910,9 +3903,10 @@ class upb::SymbolTable {
   /* TODO: iteration? */
 
   /* Adds the given serialized FileDescriptorProto to the pool. */
-  bool AddFile(const google_protobuf_FileDescriptorProto *file_proto,
-               Status *status) {
-    return upb_symtab_addfile(ptr_.get(), file_proto, status->ptr());
+  FileDefPtr AddFile(const google_protobuf_FileDescriptorProto *file_proto,
+                     Status *status) {
+    return FileDefPtr(
+        upb_symtab_addfile(ptr_.get(), file_proto, status->ptr()));
   }
 
  private:

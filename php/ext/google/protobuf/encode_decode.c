@@ -148,6 +148,11 @@ static const void* newhandlerdata(upb_handlers* h, uint32_t ofs) {
   return hd_ofs;
 }
 
+typedef struct {
+  void* closure;
+  stringsink sink;
+} stringfields_parseframe_t;
+
 typedef size_t (*encodeunknown_handlerfunc)(void* _sink, const void* hd,
                                             const char* ptr, size_t len,
                                             const upb_bufhandle* handle);
@@ -245,46 +250,41 @@ DEFINE_APPEND_HANDLER(int64,  int64_t)
 DEFINE_APPEND_HANDLER(uint64, uint64_t)
 DEFINE_APPEND_HANDLER(double, double)
 
-// Appends a string to a repeated field.
+// Appends a string or 'bytes' string to a repeated field.
 static void* appendstr_handler(void *closure,
                                const void *hd,
                                size_t size_hint) {
-  zval* array = (zval*)closure;
-  TSRMLS_FETCH();
-  RepeatedField* intern = UNBOX(RepeatedField, array);
+  UPB_UNUSED(hd);
 
-#if PHP_MAJOR_VERSION < 7
-  zval* str;
-  MAKE_STD_ZVAL(str);
-  PHP_PROTO_ZVAL_STRING(str, "", 1);
-  repeated_field_push_native(intern, &str);
-  return (void*)str;
-#else
-  zend_string* str = zend_string_init("", 0, 1);
-  repeated_field_push_native(intern, &str);
-  return intern;
-#endif
+  stringfields_parseframe_t* frame =
+      (stringfields_parseframe_t*)malloc(sizeof(stringfields_parseframe_t));
+  frame->closure = closure;
+  stringsink_init(&frame->sink);
+  
+  return frame;
 }
 
-// Appends a 'bytes' string to a repeated field.
-static void* appendbytes_handler(void *closure,
-                                 const void *hd,
-                                 size_t size_hint) {
-  zval* array = (zval*)closure;
+static bool appendstr_end_handler(void *closure, const void *hd) {
+  stringfields_parseframe_t* frame = closure;
+
+  zval* array = (zval*)frame->closure;
   TSRMLS_FETCH();
   RepeatedField* intern = UNBOX(RepeatedField, array);
 
 #if PHP_MAJOR_VERSION < 7
   zval* str;
   MAKE_STD_ZVAL(str);
-  PHP_PROTO_ZVAL_STRING(str, "", 1);
+  PHP_PROTO_ZVAL_STRINGL(str, frame->sink.ptr, frame->sink.len, 1);
   repeated_field_push_native(intern, &str);
-  return (void*)str;
 #else
-  zend_string* str = zend_string_init("", 0, 1);
+  zend_string* str = zend_string_init(frame->sink.ptr, frame->sink.len, 1);
   repeated_field_push_native(intern, &str);
-  return intern;
 #endif
+
+  stringsink_uninit(&frame->sink);
+  free(frame);
+
+  return true;
 }
 
 // Handlers that append primitive values to a repeated field.
@@ -326,63 +326,75 @@ static void *empty_php_string(zval* value_ptr) {
   return value_ptr;
 }
 #endif
+#if PHP_MAJOR_VERSION < 7
+static void *empty_php_string2(zval** value_ptr) {
+  SEPARATE_ZVAL_IF_NOT_REF(value_ptr);
+  if (Z_TYPE_PP(value_ptr) == IS_STRING &&
+      !IS_INTERNED(Z_STRVAL_PP(value_ptr))) {
+    FREE(Z_STRVAL_PP(value_ptr));
+  }
+  ZVAL_EMPTY_STRING(*value_ptr);
+  return (void*)(*value_ptr);
+}
+static void new_php_string(zval** value_ptr, const char* str, size_t len) {
+  SEPARATE_ZVAL_IF_NOT_REF(value_ptr);
+  if (Z_TYPE_PP(value_ptr) == IS_STRING &&
+      !IS_INTERNED(Z_STRVAL_PP(value_ptr))) {
+    FREE(Z_STRVAL_PP(value_ptr));
+  }
+  ZVAL_EMPTY_STRING(*value_ptr);
+  ZVAL_STRINGL(*value_ptr, str, len, 1);
+}
+#else
+static void *empty_php_string2(zval* value_ptr) {
+  if (Z_TYPE_P(value_ptr) == IS_STRING) {
+    zend_string_release(Z_STR_P(value_ptr));
+  }
+  ZVAL_EMPTY_STRING(value_ptr);
+  return value_ptr;
+}
+static void new_php_string(zval* value_ptr, const char* str, size_t len) {
+  if (Z_TYPE_P(value_ptr) == IS_STRING) {
+    zend_string_release(Z_STR_P(value_ptr));
+  }
+  ZVAL_NEW_STR(value_ptr, zend_string_init(str, len, 0));
+}
+#endif
 
-// Sets a non-repeated string field in a message.
+// Sets a non-repeated string/bytes field in a message.
 static void* str_handler(void *closure,
                          const void *hd,
                          size_t size_hint) {
-  MessageHeader* msg = closure;
-  const size_t *ofs = hd;
-  return empty_php_string(DEREF(message_data(msg), *ofs, CACHED_VALUE*));
+  UPB_UNUSED(hd);
+
+  stringfields_parseframe_t* frame =
+      (stringfields_parseframe_t*)malloc(sizeof(stringfields_parseframe_t));
+  frame->closure = closure;
+  stringsink_init(&frame->sink);
+  
+  return frame;
 }
 
-// Sets a non-repeated 'bytes' field in a message.
-static void* bytes_handler(void *closure,
-                           const void *hd,
-                           size_t size_hint) {
-  MessageHeader* msg = closure;
+static bool str_end_handler(void *closure, const void *hd) {
+  stringfields_parseframe_t* frame = closure;
   const size_t *ofs = hd;
-  return empty_php_string(DEREF(message_data(msg), *ofs, CACHED_VALUE*));
+  MessageHeader* msg = (MessageHeader*)frame->closure;
+
+  new_php_string(DEREF(message_data(msg), *ofs, CACHED_VALUE*),
+                 frame->sink.ptr, frame->sink.len);
+
+  stringsink_uninit(&frame->sink);
+  free(frame);
+
+  return true;
 }
 
 static size_t stringdata_handler(void* closure, const void* hd,
                                  const char* str, size_t len,
                                  const upb_bufhandle* handle) {
-  zval* php_str = (zval*)closure;
-#if PHP_MAJOR_VERSION < 7
-  // Oneof string/bytes fields may have NULL initial value, which doesn't need
-  // to be freed.
-  if (Z_TYPE_P(php_str) == IS_STRING && !IS_INTERNED(Z_STRVAL_P(php_str))) {
-    FREE(Z_STRVAL_P(php_str));
-  }
-  ZVAL_STRINGL(php_str, str, len, 1);
-#else
-  if (Z_TYPE_P(php_str) == IS_STRING) {
-    zend_string_release(Z_STR_P(php_str));
-  }
-  ZVAL_NEW_STR(php_str, zend_string_init(str, len, 0));
-#endif
-  return len;
+  stringfields_parseframe_t* frame = closure;
+  return stringsink_string(&frame->sink, hd, str, len, handle);
 }
-
-#if PHP_MAJOR_VERSION >= 7
-static size_t zendstringdata_handler(void* closure, const void* hd,
-                                     const char* str, size_t len,
-                                     const upb_bufhandle* handle) {
-  RepeatedField* intern = (RepeatedField*)closure;
-
-  unsigned char memory[NATIVE_SLOT_MAX_SIZE];
-  memset(memory, 0, NATIVE_SLOT_MAX_SIZE);
-  *(zend_string**)memory = zend_string_init(str, len, 0);
-
-  HashTable *ht = PHP_PROTO_HASH_OF(intern->array);
-  int index = zend_hash_num_elements(ht) - 1;
-  php_proto_zend_hash_index_update_mem(
-      ht, index, memory, sizeof(zend_string*), NULL);
-
-  return len;
-}
-#endif
 
 // Appends a submessage to a repeated field.
 static void *appendsubmsg_handler(void *closure, const void *hd) {
@@ -744,13 +756,38 @@ static void *oneofbytes_handler(void *closure,
    return empty_php_string(DEREF(
        message_data(msg), oneofdata->ofs, CACHED_VALUE*));
 }
+static bool oneofstr_end_handler(void *closure, const void *hd) {
+  stringfields_parseframe_t* frame = closure;
+  MessageHeader* msg = (MessageHeader*)frame->closure;
+  const oneof_handlerdata_t *oneofdata = hd;
+
+  oneof_cleanup(msg, oneofdata);
+
+  DEREF(message_data(msg), oneofdata->case_ofs, uint32_t) =
+      oneofdata->oneof_case_num;
+  DEREF(message_data(msg), oneofdata->ofs, CACHED_VALUE*) =
+      OBJ_PROP(&msg->std, oneofdata->property_ofs);
+
+  new_php_string(DEREF(message_data(msg), oneofdata->ofs, CACHED_VALUE*),
+                 frame->sink.ptr, frame->sink.len);
+
+  stringsink_uninit(&frame->sink);
+  free(frame);
+
+  return true;
+}
 
 static void *oneofstr_handler(void *closure,
                               const void *hd,
                               size_t size_hint) {
-  // TODO(teboring): Add it back.
-  // rb_enc_associate(str, kRubyString8bitEncoding);
-  return oneofbytes_handler(closure, hd, size_hint);
+  UPB_UNUSED(hd);
+
+  stringfields_parseframe_t* frame =
+      (stringfields_parseframe_t*)malloc(sizeof(stringfields_parseframe_t));
+  frame->closure = closure;
+  stringsink_init(&frame->sink);
+  
+  return frame;
 }
 
 // Handler for a submessage field in a oneof.
@@ -822,15 +859,9 @@ static void add_handlers_for_repeated_field(upb_handlers *h,
 
     case UPB_TYPE_STRING:
     case UPB_TYPE_BYTES: {
-      bool is_bytes = upb_fielddef_type(f) == UPB_TYPE_BYTES;
-      upb_handlers_setstartstr(h, f, is_bytes ?
-                               appendbytes_handler : appendstr_handler,
-                               NULL);
-#if PHP_MAJOR_VERSION < 7
+      upb_handlers_setstartstr(h, f, appendstr_handler, NULL);
       upb_handlers_setstring(h, f, stringdata_handler, NULL);
-#else
-      upb_handlers_setstring(h, f, zendstringdata_handler, NULL);
-#endif
+      upb_handlers_setendstr(h, f, appendstr_end_handler, &attr);
       break;
     }
     case UPB_TYPE_MESSAGE: {
@@ -870,13 +901,11 @@ static void add_handlers_for_singular_field(upb_handlers *h,
 
     case UPB_TYPE_STRING:
     case UPB_TYPE_BYTES: {
-      bool is_bytes = upb_fielddef_type(f) == UPB_TYPE_BYTES;
       upb_handlerattr attr = UPB_HANDLERATTR_INITIALIZER;
       upb_handlerattr_sethandlerdata(&attr, newhandlerdata(h, offset));
-      upb_handlers_setstartstr(h, f,
-                               is_bytes ? bytes_handler : str_handler,
-                               &attr);
+      upb_handlers_setstartstr(h, f, str_handler, &attr);
       upb_handlers_setstring(h, f, stringdata_handler, &attr);
+      upb_handlers_setendstr(h, f, str_end_handler, &attr);
       upb_handlerattr_uninit(&attr);
       break;
     }
@@ -958,11 +987,9 @@ static void add_handlers_for_oneof_field(upb_handlers *h,
 
     case UPB_TYPE_STRING:
     case UPB_TYPE_BYTES: {
-      bool is_bytes = upb_fielddef_type(f) == UPB_TYPE_BYTES;
-      upb_handlers_setstartstr(h, f, is_bytes ?
-                               oneofbytes_handler : oneofstr_handler,
-                               &attr);
+      upb_handlers_setstartstr(h, f, oneofstr_handler, &attr);
       upb_handlers_setstring(h, f, stringdata_handler, NULL);
+      upb_handlers_setendstr(h, f, oneofstr_end_handler, &attr);
       break;
     }
     case UPB_TYPE_MESSAGE: {

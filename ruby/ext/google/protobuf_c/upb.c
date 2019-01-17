@@ -1399,6 +1399,8 @@ static void assign_msg_wellknowntype(upb_msgdef *m) {
   }
   if (!strcmp(name, "google.protobuf.Any")) {
     m->well_known_type = UPB_WELLKNOWN_ANY;
+  } else if (!strcmp(name, "google.protobuf.FieldMask")) {
+    m->well_known_type = UPB_WELLKNOWN_FIELDMASK;
   } else if (!strcmp(name, "google.protobuf.Duration")) {
     m->well_known_type = UPB_WELLKNOWN_DURATION;
   } else if (!strcmp(name, "google.protobuf.Timestamp")) {
@@ -2737,9 +2739,9 @@ static bool upb_symtab_addtotabs(upb_symtab *s, symtab_addctx *ctx,
   return true;
 }
 
-bool upb_symtab_addfile(upb_symtab *s,
-                        const google_protobuf_FileDescriptorProto *file_proto,
-                        upb_status *status) {
+const upb_filedef *upb_symtab_addfile(
+    upb_symtab *s, const google_protobuf_FileDescriptorProto *file_proto,
+    upb_status *status) {
   upb_arena *tmparena = upb_arena_new();
   upb_strtable addtab;
   upb_alloc *alloc = upb_arena_alloc(s->arena);
@@ -2760,7 +2762,7 @@ bool upb_symtab_addfile(upb_symtab *s,
       upb_symtab_addtotabs(s, &ctx, status);
 
   upb_arena_free(tmparena);
-  return ok;
+  return ok ? file : NULL;
 }
 
 /* Include here since we want most of this file to be stdio-free. */
@@ -5740,11 +5742,6 @@ size_t upb_arena_bytesallocated(const upb_arena *a) {
 ** Code to compile a upb::Handlers into bytecode for decoding a protobuf
 ** according to that specific schema and destination handlers.
 **
-** Compiling to bytecode is always the first step.  If we are using the
-** interpreted decoder we leave it as bytecode and interpret that.  If we are
-** using a JIT decoder we use a code generator to turn the bytecode into native
-** code, LLVM IR, etc.
-**
 ** Bytecode definition is in decoder.int.h.
 */
 
@@ -5771,7 +5768,6 @@ static upb_pbdecodermethod *newmethod(const upb_handlers *dest_handlers,
 
   ret->group = group;
   ret->dest_handlers_ = dest_handlers;
-  ret->is_native_ = false;  /* If we JIT, it will update this later. */
   upb_inttable_init(&ret->dispatch, UPB_CTYPE_UINT64);
 
   return ret;
@@ -5803,9 +5799,6 @@ static void freegroup(mgroup *g) {
   }
 
   upb_inttable_uninit(&g->methods);
-#ifdef UPB_USE_JIT_X64
-  upb_pbdecoder_freejit(g);
-#endif
   upb_gfree(g->bytecode);
   upb_gfree(g);
 }
@@ -6047,7 +6040,7 @@ static void putop(compiler *c, int op, ...) {
   va_end(ap);
 }
 
-#if defined(UPB_USE_JIT_X64) || defined(UPB_DUMP_BYTECODE)
+#if defined(UPB_DUMP_BYTECODE)
 
 const char *upb_pbdecoder_getopname(unsigned int op) {
 #define QUOTE(x) #x
@@ -6358,8 +6351,8 @@ static void generate_delimfield(compiler *c, const upb_fielddef *f,
     putop(c, OP_STARTSTR, getsel(f, UPB_HANDLER_STARTSTR));
     /* Need to emit even if no handler to skip past the string. */
     putop(c, OP_STRING, getsel(f, UPB_HANDLER_STRING));
-    putop(c, OP_POP);
     maybeput(c, OP_ENDSTR, h, f, UPB_HANDLER_ENDSTR);
+    putop(c, OP_POP);
     putop(c, OP_SETDELIM);
     putop(c, OP_CHECKDELIM, LABEL_LOOPBREAK);
     putchecktag(c, f, UPB_WIRE_TYPE_DELIMITED, LABEL_LOOPBREAK);
@@ -6374,8 +6367,8 @@ static void generate_delimfield(compiler *c, const upb_fielddef *f,
     putop(c, OP_PUSHLENDELIM);
     putop(c, OP_STARTSTR, getsel(f, UPB_HANDLER_STARTSTR));
     putop(c, OP_STRING, getsel(f, UPB_HANDLER_STRING));
-    putop(c, OP_POP);
     maybeput(c, OP_ENDSTR, h, f, UPB_HANDLER_ENDSTR);
+    putop(c, OP_POP);
     putop(c, OP_SETDELIM);
   }
 }
@@ -6561,31 +6554,6 @@ static void set_bytecode_handlers(mgroup *g) {
 }
 
 
-/* JIT setup. *****************************************************************/
-
-#ifdef UPB_USE_JIT_X64
-
-static void sethandlers(mgroup *g, bool allowjit) {
-  g->jit_code = NULL;
-  if (allowjit) {
-    /* Compile byte-code into machine code, create handlers. */
-    upb_pbdecoder_jit(g);
-  } else {
-    set_bytecode_handlers(g);
-  }
-}
-
-#else  /* UPB_USE_JIT_X64 */
-
-static void sethandlers(mgroup *g, bool allowjit) {
-  /* No JIT compiled in; use bytecode handlers unconditionally. */
-  UPB_UNUSED(allowjit);
-  set_bytecode_handlers(g);
-}
-
-#endif  /* UPB_USE_JIT_X64 */
-
-
 /* TODO(haberman): allow this to be constructed for an arbitrary set of dest
  * handlers and other mgroups (but verify we have a transitive closure). */
 const mgroup *mgroup_new(const upb_handlers *dest, bool allowjit, bool lazy) {
@@ -6625,7 +6593,7 @@ const mgroup *mgroup_new(const upb_handlers *dest, bool allowjit, bool lazy) {
   }
 #endif
 
-  sethandlers(g, allowjit);
+  set_bytecode_handlers(g);
   return g;
 }
 
@@ -8765,6 +8733,7 @@ done:
 ** - handling of keys/escape-sequences/etc that span input buffers.
 */
 
+#include <ctype.h>
 #include <errno.h>
 #include <float.h>
 #include <math.h>
@@ -8804,6 +8773,11 @@ static bool does_number_wrapper_end(upb_json_parser *p);
 static bool is_string_wrapper_object(upb_json_parser *p);
 static bool does_string_wrapper_start(upb_json_parser *p);
 static bool does_string_wrapper_end(upb_json_parser *p);
+
+static bool does_fieldmask_start(upb_json_parser *p);
+static bool does_fieldmask_end(upb_json_parser *p);
+static void start_fieldmask_object(upb_json_parser *p);
+static void end_fieldmask_object(upb_json_parser *p);
 
 static void start_wrapper_object(upb_json_parser *p);
 static void end_wrapper_object(upb_json_parser *p);
@@ -9906,6 +9880,9 @@ static bool start_stringval(upb_json_parser *p) {
   if (is_top_level(p)) {
     if (is_string_wrapper_object(p)) {
       start_wrapper_object(p);
+    } else if (is_wellknown_msg(p, UPB_WELLKNOWN_FIELDMASK)) {
+      start_fieldmask_object(p);
+      return true;
     } else if (is_wellknown_msg(p, UPB_WELLKNOWN_TIMESTAMP) ||
                is_wellknown_msg(p, UPB_WELLKNOWN_DURATION)) {
       start_object(p);
@@ -9919,6 +9896,12 @@ static bool start_stringval(upb_json_parser *p) {
       return false;
     }
     start_wrapper_object(p);
+  } else if (does_fieldmask_start(p)) {
+    if (!start_subobject(p)) {
+      return false;
+    }
+    start_fieldmask_object(p);
+    return true;
   } else if (is_wellknown_field(p, UPB_WELLKNOWN_TIMESTAMP) ||
              is_wellknown_field(p, UPB_WELLKNOWN_DURATION)) {
     if (!start_subobject(p)) {
@@ -10059,8 +10042,8 @@ static bool end_stringval_nontop(upb_json_parser *p) {
 
     case UPB_TYPE_STRING: {
       upb_selector_t sel = getsel_for_handlertype(p, UPB_HANDLER_ENDSTR);
-      p->top--;
       upb_sink_endstr(p->top->sink, sel);
+      p->top--;
       break;
     }
 
@@ -10106,6 +10089,16 @@ static bool end_stringval_nontop(upb_json_parser *p) {
 }
 
 static bool end_stringval(upb_json_parser *p) {
+  /* FieldMask's stringvals have been ended when handling them. Only need to
+   * close FieldMask here.*/
+  if (does_fieldmask_end(p)) {
+    end_fieldmask_object(p);
+    if (!is_top_level(p)) {
+      end_subobject(p);
+    }
+    return true;
+  }
+
   if (!end_stringval_nontop(p)) {
     return false;
   }
@@ -10127,7 +10120,8 @@ static bool end_stringval(upb_json_parser *p) {
   }
 
   if (is_wellknown_msg(p, UPB_WELLKNOWN_TIMESTAMP) ||
-      is_wellknown_msg(p, UPB_WELLKNOWN_DURATION)) {
+      is_wellknown_msg(p, UPB_WELLKNOWN_DURATION) ||
+      is_wellknown_msg(p, UPB_WELLKNOWN_FIELDMASK)) {
     end_object(p);
     if (!is_top_level(p)) {
       end_subobject(p);
@@ -10381,6 +10375,73 @@ static bool end_timestamp_zone(upb_json_parser *p, const char *ptr) {
   return true;
 }
 
+static void start_fieldmask_path_text(upb_json_parser *p, const char *ptr) {
+  capture_begin(p, ptr);
+}
+
+static bool end_fieldmask_path_text(upb_json_parser *p, const char *ptr) {
+  return capture_end(p, ptr);
+}
+
+static bool start_fieldmask_path(upb_json_parser *p) {
+  upb_jsonparser_frame *inner;
+  upb_selector_t sel;
+
+  if (!check_stack(p)) return false;
+
+  /* Start a new parser frame: parser frames correspond one-to-one with
+   * handler frames, and string events occur in a sub-frame. */
+  inner = p->top + 1;
+  sel = getsel_for_handlertype(p, UPB_HANDLER_STARTSTR);
+  upb_sink_startstr(p->top->sink, sel, 0, &inner->sink);
+  inner->m = p->top->m;
+  inner->f = p->top->f;
+  inner->name_table = NULL;
+  inner->is_map = false;
+  inner->is_mapentry = false;
+  inner->is_any = false;
+  inner->any_frame = NULL;
+  inner->is_unknown_field = false;
+  p->top = inner;
+
+  multipart_startaccum(p);
+  return true;
+}
+
+static bool lower_camel_push(
+    upb_json_parser *p, upb_selector_t sel, const char *ptr, size_t len) {
+  const char *limit = ptr + len;
+  bool first = true;
+  for (;ptr < limit; ptr++) {
+    if (*ptr >= 'A' && *ptr <= 'Z' && !first) {
+      char lower = tolower(*ptr);
+      upb_sink_putstring(p->top->sink, sel, "_", 1, NULL);
+      upb_sink_putstring(p->top->sink, sel, &lower, 1, NULL);
+    } else {
+      upb_sink_putstring(p->top->sink, sel, ptr, 1, NULL);
+    }
+    first = false;
+  }
+  return true;
+}
+
+static bool end_fieldmask_path(upb_json_parser *p) {
+  upb_selector_t sel;
+
+  if (!lower_camel_push(
+           p, getsel_for_handlertype(p, UPB_HANDLER_STRING),
+           p->accumulated, p->accumulated_len)) {
+    return false;
+  }
+
+  sel = getsel_for_handlertype(p, UPB_HANDLER_ENDSTR);
+  upb_sink_endstr(p->top->sink, sel);
+  p->top--;
+
+  multipart_end(p);
+  return true;
+}
+
 static void start_member(upb_json_parser *p) {
   UPB_ASSERT(!p->top->f);
   multipart_startaccum(p);
@@ -10438,7 +10499,7 @@ static bool parse_mapentry_key(upb_json_parser *p) {
       sel = getsel_for_handlertype(p, UPB_HANDLER_STRING);
       upb_sink_putstring(subsink, sel, buf, len, NULL);
       sel = getsel_for_handlertype(p, UPB_HANDLER_ENDSTR);
-      upb_sink_endstr(p->top->sink, sel);
+      upb_sink_endstr(subsink, sel);
       multipart_end(p);
       break;
     }
@@ -10963,6 +11024,31 @@ static bool is_string_wrapper(const upb_msgdef *m) {
          type == UPB_WELLKNOWN_BYTESVALUE;
 }
 
+static bool is_fieldmask(const upb_msgdef *m) {
+  upb_wellknowntype_t type = upb_msgdef_wellknowntype(m);
+  return type == UPB_WELLKNOWN_FIELDMASK;
+}
+
+static void start_fieldmask_object(upb_json_parser *p) {
+  const char *membername = "paths";
+
+  start_object(p);
+
+  /* Set up context for parsing value */
+  start_member(p);
+  capture_begin(p, membername);
+  capture_end(p, membername + 5);
+  end_membername(p);
+
+  start_array(p);
+}
+
+static void end_fieldmask_object(upb_json_parser *p) {
+  end_array(p);
+  end_member(p);
+  end_object(p);
+}
+
 static void start_wrapper_object(upb_json_parser *p) {
   const char *membername = "value";
 
@@ -11101,6 +11187,16 @@ static bool is_string_wrapper_object(upb_json_parser *p) {
   return p->top->m != NULL && is_string_wrapper(p->top->m);
 }
 
+static bool does_fieldmask_start(upb_json_parser *p) {
+  return p->top->f != NULL &&
+         upb_fielddef_issubmsg(p->top->f) &&
+         is_fieldmask(upb_fielddef_msgsubdef(p->top->f));
+}
+
+static bool does_fieldmask_end(upb_json_parser *p) {
+  return p->top->m != NULL && is_fieldmask(p->top->m);
+}
+
 #define CHECK_RETURN_TOP(x) if (!(x)) goto error
 
 
@@ -11122,26 +11218,27 @@ static bool is_string_wrapper_object(upb_json_parser *p) {
  * final state once, when the closing '"' is seen. */
 
 
-#line 2542 "upb/json/parser.rl"
+#line 2690 "upb/json/parser.rl"
 
 
 
-#line 2388 "upb/json/parser.c"
+#line 2516 "upb/json/parser.c"
 static const char _json_actions[] = {
 	0, 1, 0, 1, 1, 1, 3, 1, 
 	4, 1, 6, 1, 7, 1, 8, 1, 
 	9, 1, 10, 1, 11, 1, 12, 1, 
-	13, 1, 21, 1, 23, 1, 24, 1, 
-	26, 1, 27, 1, 28, 1, 30, 1, 
-	32, 1, 33, 1, 34, 1, 35, 1, 
-	37, 1, 38, 2, 4, 9, 2, 5, 
-	6, 2, 7, 3, 2, 7, 9, 2, 
-	14, 15, 2, 16, 17, 2, 18, 19, 
-	2, 22, 20, 2, 24, 26, 2, 29, 
-	2, 2, 30, 38, 2, 31, 20, 2, 
-	33, 38, 2, 34, 38, 2, 35, 38, 
-	2, 36, 25, 2, 37, 38, 4, 14, 
-	15, 16, 17
+	13, 1, 24, 1, 26, 1, 28, 1, 
+	29, 1, 31, 1, 32, 1, 33, 1, 
+	35, 1, 37, 1, 38, 1, 39, 1, 
+	40, 1, 42, 1, 43, 2, 4, 9, 
+	2, 5, 6, 2, 7, 3, 2, 7, 
+	9, 2, 14, 15, 2, 16, 17, 2, 
+	18, 19, 2, 21, 23, 2, 22, 20, 
+	2, 27, 25, 2, 29, 31, 2, 34, 
+	2, 2, 35, 43, 2, 36, 25, 2, 
+	38, 43, 2, 39, 43, 2, 40, 43, 
+	2, 41, 30, 2, 42, 43, 3, 21, 
+	23, 24, 4, 14, 15, 16, 17
 };
 
 static const short _json_key_offsets[] = {
@@ -11154,12 +11251,12 @@ static const short _json_key_offsets[] = {
 	156, 158, 160, 162, 163, 165, 167, 168, 
 	170, 172, 173, 175, 177, 178, 180, 182, 
 	183, 185, 187, 191, 193, 195, 196, 197, 
-	198, 199, 201, 206, 215, 216, 216, 216, 
-	221, 226, 231, 232, 233, 234, 235, 235, 
-	236, 237, 238, 238, 239, 240, 241, 241, 
-	246, 247, 251, 256, 261, 266, 270, 270, 
-	273, 276, 279, 282, 285, 288, 288, 288, 
-	288, 288
+	198, 199, 201, 206, 208, 210, 212, 221, 
+	222, 222, 222, 227, 232, 237, 238, 239, 
+	240, 241, 241, 242, 243, 244, 244, 245, 
+	246, 247, 247, 252, 253, 257, 262, 267, 
+	272, 276, 276, 279, 282, 285, 288, 291, 
+	294, 294, 294, 294, 294, 294
 };
 
 static const char _json_trans_keys[] = {
@@ -11188,18 +11285,18 @@ static const char _json_trans_keys[] = {
 	57, 58, 48, 57, 48, 57, 58, 48, 
 	57, 48, 57, 43, 45, 46, 90, 48, 
 	57, 48, 57, 58, 48, 48, 34, 48, 
-	57, 43, 45, 90, 48, 57, 34, 45, 
-	91, 102, 110, 116, 123, 48, 57, 34, 
-	32, 93, 125, 9, 13, 32, 44, 93, 
-	9, 13, 32, 93, 125, 9, 13, 97, 
-	108, 115, 101, 117, 108, 108, 114, 117, 
-	101, 32, 34, 125, 9, 13, 34, 32, 
-	58, 9, 13, 32, 93, 125, 9, 13, 
-	32, 44, 125, 9, 13, 32, 44, 125, 
-	9, 13, 32, 34, 9, 13, 32, 9, 
-	13, 32, 9, 13, 32, 9, 13, 32, 
+	57, 43, 45, 90, 48, 57, 34, 44, 
+	34, 44, 34, 44, 34, 45, 91, 102, 
+	110, 116, 123, 48, 57, 34, 32, 93, 
+	125, 9, 13, 32, 44, 93, 9, 13, 
+	32, 93, 125, 9, 13, 97, 108, 115, 
+	101, 117, 108, 108, 114, 117, 101, 32, 
+	34, 125, 9, 13, 34, 32, 58, 9, 
+	13, 32, 93, 125, 9, 13, 32, 44, 
+	125, 9, 13, 32, 44, 125, 9, 13, 
+	32, 34, 9, 13, 32, 9, 13, 32, 
 	9, 13, 32, 9, 13, 32, 9, 13, 
-	0
+	32, 9, 13, 32, 9, 13, 0
 };
 
 static const char _json_single_lengths[] = {
@@ -11212,12 +11309,12 @@ static const char _json_single_lengths[] = {
 	0, 0, 0, 1, 0, 0, 1, 0, 
 	0, 1, 0, 0, 1, 0, 0, 1, 
 	0, 0, 4, 0, 0, 1, 1, 1, 
-	1, 0, 3, 7, 1, 0, 0, 3, 
-	3, 3, 1, 1, 1, 1, 0, 1, 
-	1, 1, 0, 1, 1, 1, 0, 3, 
-	1, 2, 3, 3, 3, 2, 0, 1, 
-	1, 1, 1, 1, 1, 0, 0, 0, 
-	0, 0
+	1, 0, 3, 2, 2, 2, 7, 1, 
+	0, 0, 3, 3, 3, 1, 1, 1, 
+	1, 0, 1, 1, 1, 0, 1, 1, 
+	1, 0, 3, 1, 2, 3, 3, 3, 
+	2, 0, 1, 1, 1, 1, 1, 1, 
+	0, 0, 0, 0, 0, 0
 };
 
 static const char _json_range_lengths[] = {
@@ -11230,12 +11327,12 @@ static const char _json_range_lengths[] = {
 	1, 1, 1, 0, 1, 1, 0, 1, 
 	1, 0, 1, 1, 0, 1, 1, 0, 
 	1, 1, 0, 1, 1, 0, 0, 0, 
-	0, 1, 1, 1, 0, 0, 0, 1, 
-	1, 1, 0, 0, 0, 0, 0, 0, 
-	0, 0, 0, 0, 0, 0, 0, 1, 
-	0, 1, 1, 1, 1, 1, 0, 1, 
-	1, 1, 1, 1, 1, 0, 0, 0, 
-	0, 0
+	0, 1, 1, 0, 0, 0, 1, 0, 
+	0, 0, 1, 1, 1, 0, 0, 0, 
+	0, 0, 0, 0, 0, 0, 0, 0, 
+	0, 0, 1, 0, 1, 1, 1, 1, 
+	1, 0, 1, 1, 1, 1, 1, 1, 
+	0, 0, 0, 0, 0, 0
 };
 
 static const short _json_index_offsets[] = {
@@ -11248,12 +11345,12 @@ static const short _json_index_offsets[] = {
 	166, 168, 170, 172, 174, 176, 178, 180, 
 	182, 184, 186, 188, 190, 192, 194, 196, 
 	198, 200, 202, 207, 209, 211, 213, 215, 
-	217, 219, 221, 226, 235, 237, 238, 239, 
-	244, 249, 254, 256, 258, 260, 262, 263, 
-	265, 267, 269, 270, 272, 274, 276, 277, 
-	282, 284, 288, 293, 298, 303, 307, 308, 
-	311, 314, 317, 320, 323, 326, 327, 328, 
-	329, 330
+	217, 219, 221, 226, 229, 232, 235, 244, 
+	246, 247, 248, 253, 258, 263, 265, 267, 
+	269, 271, 272, 274, 276, 278, 279, 281, 
+	283, 285, 286, 291, 293, 297, 302, 307, 
+	312, 316, 317, 320, 323, 326, 329, 332, 
+	335, 336, 337, 338, 339, 340
 };
 
 static const unsigned char _json_indicies[] = {
@@ -11285,64 +11382,67 @@ static const unsigned char _json_indicies[] = {
 	88, 1, 89, 89, 90, 91, 1, 92, 
 	1, 93, 1, 94, 1, 95, 1, 96, 
 	1, 97, 1, 98, 1, 99, 99, 100, 
-	98, 1, 101, 102, 103, 104, 105, 106, 
-	107, 102, 1, 108, 1, 109, 110, 112, 
-	113, 1, 112, 111, 114, 115, 113, 114, 
-	1, 115, 1, 1, 115, 111, 116, 1, 
-	117, 1, 118, 1, 119, 1, 120, 121, 
-	1, 122, 1, 123, 1, 124, 125, 1, 
-	126, 1, 127, 1, 128, 129, 130, 131, 
-	129, 1, 132, 1, 133, 134, 133, 1, 
-	134, 1, 1, 134, 135, 136, 137, 138, 
-	136, 1, 139, 140, 131, 139, 1, 140, 
-	130, 140, 1, 141, 142, 142, 1, 143, 
-	143, 1, 144, 144, 1, 145, 145, 1, 
-	146, 146, 1, 147, 147, 1, 1, 1, 
-	1, 1, 1, 0
+	98, 1, 102, 1, 101, 104, 105, 103, 
+	1, 1, 101, 106, 107, 108, 109, 110, 
+	111, 112, 107, 1, 113, 1, 114, 115, 
+	117, 118, 1, 117, 116, 119, 120, 118, 
+	119, 1, 120, 1, 1, 120, 116, 121, 
+	1, 122, 1, 123, 1, 124, 1, 125, 
+	126, 1, 127, 1, 128, 1, 129, 130, 
+	1, 131, 1, 132, 1, 133, 134, 135, 
+	136, 134, 1, 137, 1, 138, 139, 138, 
+	1, 139, 1, 1, 139, 140, 141, 142, 
+	143, 141, 1, 144, 145, 136, 144, 1, 
+	145, 135, 145, 1, 146, 147, 147, 1, 
+	148, 148, 1, 149, 149, 1, 150, 150, 
+	1, 151, 151, 1, 152, 152, 1, 1, 
+	1, 1, 1, 1, 1, 0
 };
 
 static const char _json_trans_targs[] = {
-	1, 0, 2, 104, 3, 6, 10, 13, 
-	16, 103, 4, 3, 103, 4, 5, 7, 
-	8, 9, 105, 11, 12, 106, 14, 15, 
-	107, 16, 17, 108, 18, 18, 19, 20, 
-	21, 22, 108, 21, 22, 24, 25, 31, 
-	109, 26, 28, 27, 29, 30, 33, 110, 
-	34, 33, 110, 34, 32, 35, 36, 37, 
-	38, 39, 33, 110, 34, 41, 42, 46, 
-	42, 46, 43, 45, 44, 111, 48, 49, 
+	1, 0, 2, 107, 3, 6, 10, 13, 
+	16, 106, 4, 3, 106, 4, 5, 7, 
+	8, 9, 108, 11, 12, 109, 14, 15, 
+	110, 16, 17, 111, 18, 18, 19, 20, 
+	21, 22, 111, 21, 22, 24, 25, 31, 
+	112, 26, 28, 27, 29, 30, 33, 113, 
+	34, 33, 113, 34, 32, 35, 36, 37, 
+	38, 39, 33, 113, 34, 41, 42, 46, 
+	42, 46, 43, 45, 44, 114, 48, 49, 
 	50, 51, 52, 53, 54, 55, 56, 57, 
 	58, 59, 60, 61, 62, 63, 64, 65, 
 	66, 67, 73, 72, 68, 69, 70, 71, 
-	72, 112, 74, 67, 72, 76, 78, 79, 
-	82, 87, 91, 95, 77, 113, 113, 80, 
-	79, 77, 80, 81, 83, 84, 85, 86, 
-	113, 88, 89, 90, 113, 92, 93, 94, 
-	113, 95, 96, 102, 97, 97, 98, 99, 
-	100, 101, 102, 100, 101, 113, 103, 103, 
-	103, 103, 103, 103
+	72, 115, 74, 67, 72, 76, 116, 76, 
+	116, 77, 79, 81, 82, 85, 90, 94, 
+	98, 80, 117, 117, 83, 82, 80, 83, 
+	84, 86, 87, 88, 89, 117, 91, 92, 
+	93, 117, 95, 96, 97, 117, 98, 99, 
+	105, 100, 100, 101, 102, 103, 104, 105, 
+	103, 104, 117, 106, 106, 106, 106, 106, 
+	106
 };
 
 static const char _json_trans_actions[] = {
-	0, 0, 84, 78, 33, 0, 0, 0, 
-	96, 39, 25, 0, 35, 0, 0, 0, 
+	0, 0, 92, 86, 35, 0, 0, 0, 
+	104, 41, 27, 0, 37, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
-	0, 0, 72, 31, 27, 0, 0, 25, 
-	29, 29, 75, 0, 0, 0, 0, 0, 
+	0, 0, 80, 33, 29, 0, 0, 27, 
+	31, 31, 83, 0, 0, 0, 0, 0, 
 	3, 0, 0, 0, 0, 0, 5, 15, 
-	0, 0, 51, 7, 13, 0, 54, 9, 
-	9, 9, 57, 60, 11, 17, 17, 17, 
+	0, 0, 53, 7, 13, 0, 56, 9, 
+	9, 9, 59, 62, 11, 17, 17, 17, 
 	0, 0, 0, 19, 0, 21, 23, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
-	0, 102, 63, 102, 0, 0, 0, 0, 
-	0, 69, 0, 66, 66, 84, 78, 33, 
-	0, 0, 0, 96, 39, 49, 81, 25, 
-	0, 35, 0, 0, 0, 0, 0, 0, 
-	90, 0, 0, 0, 93, 0, 0, 0, 
-	87, 0, 72, 31, 27, 0, 0, 25, 
-	29, 29, 75, 0, 0, 99, 0, 37, 
-	43, 45, 41, 47
+	0, 114, 65, 114, 0, 0, 0, 0, 
+	0, 71, 0, 68, 68, 77, 25, 0, 
+	110, 74, 92, 86, 35, 0, 0, 0, 
+	104, 41, 51, 89, 27, 0, 37, 0, 
+	0, 0, 0, 0, 0, 98, 0, 0, 
+	0, 101, 0, 0, 0, 95, 0, 80, 
+	33, 29, 0, 0, 27, 31, 31, 83, 
+	0, 0, 107, 0, 39, 45, 47, 43, 
+	49
 };
 
 static const char _json_eof_actions[] = {
@@ -11359,8 +11459,8 @@ static const char _json_eof_actions[] = {
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
-	37, 43, 45, 41, 47, 0, 0, 0, 
-	0, 0
+	0, 0, 0, 39, 45, 47, 43, 49, 
+	0, 0, 0, 0, 0, 0
 };
 
 static const int json_start = 1;
@@ -11369,11 +11469,12 @@ static const int json_en_number_machine = 23;
 static const int json_en_string_machine = 32;
 static const int json_en_duration_machine = 40;
 static const int json_en_timestamp_machine = 47;
-static const int json_en_value_machine = 75;
+static const int json_en_fieldmask_machine = 75;
+static const int json_en_value_machine = 78;
 static const int json_en_main = 1;
 
 
-#line 2545 "upb/json/parser.rl"
+#line 2693 "upb/json/parser.rl"
 
 size_t parse(void *closure, const void *hd, const char *buf, size_t size,
              const upb_bufhandle *handle) {
@@ -11396,7 +11497,7 @@ size_t parse(void *closure, const void *hd, const char *buf, size_t size,
   capture_resume(parser, buf);
 
   
-#line 2658 "upb/json/parser.c"
+#line 2791 "upb/json/parser.c"
 	{
 	int _klen;
 	unsigned int _trans;
@@ -11471,99 +11572,121 @@ _match:
 		switch ( *_acts++ )
 		{
 	case 1:
-#line 2393 "upb/json/parser.rl"
+#line 2521 "upb/json/parser.rl"
 	{ p--; {cs = stack[--top]; goto _again;} }
 	break;
 	case 2:
-#line 2395 "upb/json/parser.rl"
+#line 2523 "upb/json/parser.rl"
 	{ p--; {stack[top++] = cs; cs = 23;goto _again;} }
 	break;
 	case 3:
-#line 2399 "upb/json/parser.rl"
+#line 2527 "upb/json/parser.rl"
 	{ start_text(parser, p); }
 	break;
 	case 4:
-#line 2400 "upb/json/parser.rl"
+#line 2528 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_text(parser, p)); }
 	break;
 	case 5:
-#line 2406 "upb/json/parser.rl"
+#line 2534 "upb/json/parser.rl"
 	{ start_hex(parser); }
 	break;
 	case 6:
-#line 2407 "upb/json/parser.rl"
+#line 2535 "upb/json/parser.rl"
 	{ hexdigit(parser, p); }
 	break;
 	case 7:
-#line 2408 "upb/json/parser.rl"
+#line 2536 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_hex(parser)); }
 	break;
 	case 8:
-#line 2414 "upb/json/parser.rl"
+#line 2542 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(escape(parser, p)); }
 	break;
 	case 9:
-#line 2420 "upb/json/parser.rl"
+#line 2548 "upb/json/parser.rl"
 	{ p--; {cs = stack[--top]; goto _again;} }
 	break;
 	case 10:
-#line 2432 "upb/json/parser.rl"
+#line 2560 "upb/json/parser.rl"
 	{ start_duration_base(parser, p); }
 	break;
 	case 11:
-#line 2433 "upb/json/parser.rl"
+#line 2561 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_duration_base(parser, p)); }
 	break;
 	case 12:
-#line 2435 "upb/json/parser.rl"
+#line 2563 "upb/json/parser.rl"
 	{ p--; {cs = stack[--top]; goto _again;} }
 	break;
 	case 13:
-#line 2440 "upb/json/parser.rl"
+#line 2568 "upb/json/parser.rl"
 	{ start_timestamp_base(parser, p); }
 	break;
 	case 14:
-#line 2441 "upb/json/parser.rl"
+#line 2569 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_timestamp_base(parser, p)); }
 	break;
 	case 15:
-#line 2443 "upb/json/parser.rl"
+#line 2571 "upb/json/parser.rl"
 	{ start_timestamp_fraction(parser, p); }
 	break;
 	case 16:
-#line 2444 "upb/json/parser.rl"
+#line 2572 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_timestamp_fraction(parser, p)); }
 	break;
 	case 17:
-#line 2446 "upb/json/parser.rl"
+#line 2574 "upb/json/parser.rl"
 	{ start_timestamp_zone(parser, p); }
 	break;
 	case 18:
-#line 2447 "upb/json/parser.rl"
+#line 2575 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_timestamp_zone(parser, p)); }
 	break;
 	case 19:
-#line 2449 "upb/json/parser.rl"
+#line 2577 "upb/json/parser.rl"
 	{ p--; {cs = stack[--top]; goto _again;} }
 	break;
 	case 20:
-#line 2454 "upb/json/parser.rl"
+#line 2582 "upb/json/parser.rl"
+	{ start_fieldmask_path_text(parser, p); }
+	break;
+	case 21:
+#line 2583 "upb/json/parser.rl"
+	{ end_fieldmask_path_text(parser, p); }
+	break;
+	case 22:
+#line 2588 "upb/json/parser.rl"
+	{ start_fieldmask_path(parser); }
+	break;
+	case 23:
+#line 2589 "upb/json/parser.rl"
+	{ end_fieldmask_path(parser); }
+	break;
+	case 24:
+#line 2595 "upb/json/parser.rl"
+	{ p--; {cs = stack[--top]; goto _again;} }
+	break;
+	case 25:
+#line 2600 "upb/json/parser.rl"
 	{
         if (is_wellknown_msg(parser, UPB_WELLKNOWN_TIMESTAMP)) {
           {stack[top++] = cs; cs = 47;goto _again;}
         } else if (is_wellknown_msg(parser, UPB_WELLKNOWN_DURATION)) {
           {stack[top++] = cs; cs = 40;goto _again;}
+        } else if (is_wellknown_msg(parser, UPB_WELLKNOWN_FIELDMASK)) {
+          {stack[top++] = cs; cs = 75;goto _again;}
         } else {
           {stack[top++] = cs; cs = 32;goto _again;}
         }
       }
 	break;
-	case 21:
-#line 2465 "upb/json/parser.rl"
-	{ p--; {stack[top++] = cs; cs = 75;goto _again;} }
+	case 26:
+#line 2613 "upb/json/parser.rl"
+	{ p--; {stack[top++] = cs; cs = 78;goto _again;} }
 	break;
-	case 22:
-#line 2470 "upb/json/parser.rl"
+	case 27:
+#line 2618 "upb/json/parser.rl"
 	{
         if (is_wellknown_msg(parser, UPB_WELLKNOWN_ANY)) {
           start_any_member(parser, p);
@@ -11572,12 +11695,12 @@ _match:
         }
       }
 	break;
-	case 23:
-#line 2477 "upb/json/parser.rl"
+	case 28:
+#line 2625 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_membername(parser)); }
 	break;
-	case 24:
-#line 2480 "upb/json/parser.rl"
+	case 29:
+#line 2628 "upb/json/parser.rl"
 	{
         if (is_wellknown_msg(parser, UPB_WELLKNOWN_ANY)) {
           end_any_member(parser, p);
@@ -11586,8 +11709,8 @@ _match:
         }
       }
 	break;
-	case 25:
-#line 2491 "upb/json/parser.rl"
+	case 30:
+#line 2639 "upb/json/parser.rl"
 	{
         if (is_wellknown_msg(parser, UPB_WELLKNOWN_ANY)) {
           start_any_object(parser, p);
@@ -11596,8 +11719,8 @@ _match:
         }
       }
 	break;
-	case 26:
-#line 2500 "upb/json/parser.rl"
+	case 31:
+#line 2648 "upb/json/parser.rl"
 	{
         if (is_wellknown_msg(parser, UPB_WELLKNOWN_ANY)) {
           CHECK_RETURN_TOP(end_any_object(parser, p));
@@ -11606,55 +11729,55 @@ _match:
         }
       }
 	break;
-	case 27:
-#line 2512 "upb/json/parser.rl"
+	case 32:
+#line 2660 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(start_array(parser)); }
 	break;
-	case 28:
-#line 2516 "upb/json/parser.rl"
+	case 33:
+#line 2664 "upb/json/parser.rl"
 	{ end_array(parser); }
 	break;
-	case 29:
-#line 2521 "upb/json/parser.rl"
+	case 34:
+#line 2669 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(start_number(parser, p)); }
 	break;
-	case 30:
-#line 2522 "upb/json/parser.rl"
+	case 35:
+#line 2670 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_number(parser, p)); }
 	break;
-	case 31:
-#line 2524 "upb/json/parser.rl"
+	case 36:
+#line 2672 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(start_stringval(parser)); }
 	break;
-	case 32:
-#line 2525 "upb/json/parser.rl"
+	case 37:
+#line 2673 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_stringval(parser)); }
 	break;
-	case 33:
-#line 2527 "upb/json/parser.rl"
+	case 38:
+#line 2675 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_bool(parser, true)); }
 	break;
-	case 34:
-#line 2529 "upb/json/parser.rl"
+	case 39:
+#line 2677 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_bool(parser, false)); }
 	break;
-	case 35:
-#line 2531 "upb/json/parser.rl"
+	case 40:
+#line 2679 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_null(parser)); }
 	break;
-	case 36:
-#line 2533 "upb/json/parser.rl"
+	case 41:
+#line 2681 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(start_subobject_full(parser)); }
 	break;
-	case 37:
-#line 2534 "upb/json/parser.rl"
+	case 42:
+#line 2682 "upb/json/parser.rl"
 	{ end_subobject_full(parser); }
 	break;
-	case 38:
-#line 2539 "upb/json/parser.rl"
+	case 43:
+#line 2687 "upb/json/parser.rl"
 	{ p--; {cs = stack[--top]; goto _again;} }
 	break;
-#line 2916 "upb/json/parser.c"
+#line 3071 "upb/json/parser.c"
 		}
 	}
 
@@ -11671,32 +11794,32 @@ _again:
 	while ( __nacts-- > 0 ) {
 		switch ( *__acts++ ) {
 	case 0:
-#line 2391 "upb/json/parser.rl"
+#line 2519 "upb/json/parser.rl"
 	{ p--; {cs = stack[--top]; 	if ( p == pe )
 		goto _test_eof;
 goto _again;} }
 	break;
-	case 30:
-#line 2522 "upb/json/parser.rl"
+	case 35:
+#line 2670 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_number(parser, p)); }
 	break;
-	case 33:
-#line 2527 "upb/json/parser.rl"
+	case 38:
+#line 2675 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_bool(parser, true)); }
 	break;
-	case 34:
-#line 2529 "upb/json/parser.rl"
+	case 39:
+#line 2677 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_bool(parser, false)); }
 	break;
-	case 35:
-#line 2531 "upb/json/parser.rl"
+	case 40:
+#line 2679 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_null(parser)); }
 	break;
-	case 37:
-#line 2534 "upb/json/parser.rl"
+	case 42:
+#line 2682 "upb/json/parser.rl"
 	{ end_subobject_full(parser); }
 	break;
-#line 2958 "upb/json/parser.c"
+#line 3113 "upb/json/parser.c"
 		}
 	}
 	}
@@ -11704,7 +11827,7 @@ goto _again;} }
 	_out: {}
 	}
 
-#line 2567 "upb/json/parser.rl"
+#line 2715 "upb/json/parser.rl"
 
   if (p != pe) {
     upb_status_seterrf(parser->status, "Parse error at '%.*s'\n", pe - p, p);
@@ -11726,6 +11849,7 @@ static bool end(void *closure, const void *hd) {
   /* Prevent compile warning on unused static constants. */
   UPB_UNUSED(json_start);
   UPB_UNUSED(json_en_duration_machine);
+  UPB_UNUSED(json_en_fieldmask_machine);
   UPB_UNUSED(json_en_number_machine);
   UPB_UNUSED(json_en_string_machine);
   UPB_UNUSED(json_en_timestamp_machine);
@@ -11734,7 +11858,7 @@ static bool end(void *closure, const void *hd) {
 
   parse(parser, hd, &eof_ch, 0, NULL);
 
-  return parser->current_state >= 103;
+  return parser->current_state >= 106;
 }
 
 static void json_parser_reset(upb_json_parser *p) {
@@ -11751,13 +11875,13 @@ static void json_parser_reset(upb_json_parser *p) {
 
   /* Emit Ragel initialization of the parser. */
   
-#line 3013 "upb/json/parser.c"
+#line 3169 "upb/json/parser.c"
 	{
 	cs = json_start;
 	top = 0;
 	}
 
-#line 2613 "upb/json/parser.rl"
+#line 2762 "upb/json/parser.rl"
   p->current_state = cs;
   p->parser_top = top;
   accumulate_clear(p);
@@ -11921,8 +12045,9 @@ const upb_json_parsermethod *upb_json_codecache_get(upb_json_codecache *c,
 */
 
 
-#include <string.h>
+#include <ctype.h>
 #include <stdint.h>
+#include <string.h>
 #include <time.h>
 
 struct upb_json_printer {
@@ -12664,6 +12789,57 @@ static void *startseq_nokey(void *closure, const void *handler_data) {
   return closure;
 }
 
+static void *startseq_fieldmask(void *closure, const void *handler_data) {
+  upb_json_printer *p = closure;
+  UPB_UNUSED(handler_data);
+  p->depth_++;
+  p->first_elem_[p->depth_] = true;
+  print_data(p, "\"", 1);
+  return closure;
+}
+
+static bool endseq_fieldmask(void *closure, const void *handler_data) {
+  upb_json_printer *p = closure;
+  UPB_UNUSED(handler_data);
+  p->depth_--;
+  print_data(p, "\"", 1);
+  return true;
+}
+
+static void *repeated_startstr_fieldmask(
+    void *closure, const void *handler_data,
+    size_t size_hint) {
+  upb_json_printer *p = closure;
+  UPB_UNUSED(handler_data);
+  UPB_UNUSED(size_hint);
+  print_comma(p);
+  return p;
+}
+
+static size_t repeated_str_fieldmask(
+    void *closure, const void *handler_data,
+    const char *str, size_t len,
+    const upb_bufhandle *handle) {
+  const char* limit = str + len;
+  bool upper = false;
+  size_t result_len = 0;
+  for (; str < limit; str++) {
+    if (*str == '_') {
+      upper = true;
+      continue;
+    }
+    if (upper && *str >= 'a' && *str <= 'z') {
+      char upper_char = toupper(*str);
+      CHK(putstr(closure, handler_data, &upper_char, 1, handle));
+    } else {
+      CHK(putstr(closure, handler_data, str, 1, handle));
+    }
+    upper = false;
+    result_len++;
+  }
+  return result_len;
+}
+
 static void *startmap_nokey(void *closure, const void *handler_data) {
   upb_json_printer *p = closure;
   UPB_UNUSED(handler_data);
@@ -12889,6 +13065,25 @@ void printer_sethandlers_any(const void *closure, upb_handlers *h) {
   UPB_UNUSED(closure);
 }
 
+/* Set up handlers for a fieldmask submessage. */
+void printer_sethandlers_fieldmask(const void *closure, upb_handlers *h) {
+  const upb_msgdef *md = upb_handlers_msgdef(h);
+  const upb_fielddef* f = upb_msgdef_itof(md, 1);
+
+  upb_handlerattr empty_attr = UPB_HANDLERATTR_INIT;
+
+  upb_handlers_setstartseq(h, f, startseq_fieldmask, &empty_attr);
+  upb_handlers_setendseq(h, f, endseq_fieldmask, &empty_attr);
+
+  upb_handlers_setstartmsg(h, printer_startmsg_noframe, &empty_attr);
+  upb_handlers_setendmsg(h, printer_endmsg_noframe, &empty_attr);
+
+  upb_handlers_setstartstr(h, f, repeated_startstr_fieldmask, &empty_attr);
+  upb_handlers_setstring(h, f, repeated_str_fieldmask, &empty_attr);
+
+  UPB_UNUSED(closure);
+}
+
 /* Set up handlers for a duration submessage. */
 void printer_sethandlers_duration(const void *closure, upb_handlers *h) {
   const upb_msgdef *md = upb_handlers_msgdef(h);
@@ -13044,6 +13239,9 @@ void printer_sethandlers(const void *closure, upb_handlers *h) {
       break;
     case UPB_WELLKNOWN_ANY:
       printer_sethandlers_any(closure, h);
+      return;
+    case UPB_WELLKNOWN_FIELDMASK:
+      printer_sethandlers_fieldmask(closure, h);
       return;
     case UPB_WELLKNOWN_DURATION:
       printer_sethandlers_duration(closure, h);
