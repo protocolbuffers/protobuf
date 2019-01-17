@@ -1649,9 +1649,9 @@ static bool upb_symtab_addtotabs(upb_symtab *s, symtab_addctx *ctx,
   return true;
 }
 
-bool upb_symtab_addfile(upb_symtab *s,
-                        const google_protobuf_FileDescriptorProto *file_proto,
-                        upb_status *status) {
+const upb_filedef *upb_symtab_addfile(
+    upb_symtab *s, const google_protobuf_FileDescriptorProto *file_proto,
+    upb_status *status) {
   upb_arena *tmparena = upb_arena_new();
   upb_strtable addtab;
   upb_alloc *alloc = upb_arena_alloc(s->arena);
@@ -1672,7 +1672,7 @@ bool upb_symtab_addfile(upb_symtab *s,
       upb_symtab_addtotabs(s, &ctx, status);
 
   upb_arena_free(tmparena);
-  return ok;
+  return ok ? file : NULL;
 }
 
 /* Include here since we want most of this file to be stdio-free. */

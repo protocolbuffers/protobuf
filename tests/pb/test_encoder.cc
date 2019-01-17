@@ -31,8 +31,8 @@ void test_pb_roundtrip() {
       google_protobuf_FileDescriptorSet_file(set, &n);
   ASSERT(n == 1);
   upb::Status status;
-  bool ok = symtab.AddFile(files[0], &status);
-  if (!ok) {
+  upb::FileDefPtr file_def = symtab.AddFile(files[0], &status);
+  if (!file_def) {
     fprintf(stderr, "Error building def: %s\n", status.error_message());
     ASSERT(false);
   }
@@ -49,7 +49,7 @@ void test_pb_roundtrip() {
       upb::pb::EncoderPtr::Create(&arena, encoder_handlers, string_sink.input());
   upb::pb::DecoderPtr decoder =
       upb::pb::DecoderPtr::Create(&arena, method, encoder.input(), &status);
-  ok = upb::PutBuffer(input, decoder.input());
+  bool ok = upb::PutBuffer(input, decoder.input());
   ASSERT(ok);
   ASSERT(input == output);
 }

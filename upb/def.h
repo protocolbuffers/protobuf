@@ -788,9 +788,9 @@ const upb_msgdef *upb_symtab_lookupmsg2(
     const upb_symtab *s, const char *sym, size_t len);
 const upb_enumdef *upb_symtab_lookupenum(const upb_symtab *s, const char *sym);
 int upb_symtab_filecount(const upb_symtab *s);
-bool upb_symtab_addfile(upb_symtab *s,
-                        const google_protobuf_FileDescriptorProto* file,
-                        upb_status *status);
+const upb_filedef *upb_symtab_addfile(
+    upb_symtab *s, const google_protobuf_FileDescriptorProto *file,
+    upb_status *status);
 
 /* For generated code only: loads a generated descriptor. */
 typedef struct upb_def_init {
@@ -826,9 +826,10 @@ class upb::SymbolTable {
   /* TODO: iteration? */
 
   /* Adds the given serialized FileDescriptorProto to the pool. */
-  bool AddFile(const google_protobuf_FileDescriptorProto *file_proto,
-               Status *status) {
-    return upb_symtab_addfile(ptr_.get(), file_proto, status->ptr());
+  FileDefPtr AddFile(const google_protobuf_FileDescriptorProto *file_proto,
+                     Status *status) {
+    return FileDefPtr(
+        upb_symtab_addfile(ptr_.get(), file_proto, status->ptr()));
   }
 
  private:
