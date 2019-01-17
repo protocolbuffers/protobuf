@@ -94,7 +94,7 @@ genproto_output << "tests/test_ruby_package_proto2.rb"
 genproto_output << "tests/basic_test.rb"
 genproto_output << "tests/basic_test_proto2.rb"
 file "tests/generated_code.rb" => "tests/generated_code.proto" do |file_task|
-  sh "../src/protoc --ruby_out=. tests/generated_code.proto"
+  sh "../src/protoc -I. -I../src --ruby_out=. tests/generated_code.proto"
 end
 
 file "tests/generated_code_proto2.rb" => "tests/generated_code_proto2.proto" do |file_task|
@@ -135,7 +135,8 @@ Gem::PackageTask.new(spec) do |pkg|
 end
 
 Rake::TestTask.new(:test => :build) do |t|
-  t.test_files = FileList["tests/*.rb"].exclude("tests/gc_test.rb", "tests/common_tests.rb")
+  # t.test_files = FileList["tests/*.rb"].exclude("tests/gc_test.rb", "tests/common_tests.rb")
+  t.test_files = FileList["tests/encode_decode_test.rb", "tests/generated_code_pb.rb"]
 end
 
 # gc_test needs to be split out to ensure the generated file hasn't been
