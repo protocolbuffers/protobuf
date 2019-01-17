@@ -294,7 +294,7 @@ static bool map_field_read_dimension(zval *object, zval *key, int type,
   }
 }
 
-static bool map_index_unset(Map *intern, const char* keyval, int length) {
+static void map_index_unset(Map *intern, const char* keyval, int length) {
   upb_value old_value;
   if (upb_strtable_remove2(&intern->table, keyval, length, &old_value)) {
     switch (intern->value_type) {
