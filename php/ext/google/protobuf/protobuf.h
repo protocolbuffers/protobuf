@@ -1167,7 +1167,7 @@ PHP_METHOD(RepeatedFieldIter, valid);
 // -----------------------------------------------------------------------------
 
 PHP_PROTO_WRAP_OBJECT_START(Oneof)
-  upb_oneofdef* oneofdef;
+  const upb_oneofdef* oneofdef;
   int index;    // Index of field in oneof. -1 if not set.
   char value[NATIVE_SLOT_MAX_SIZE];
 PHP_PROTO_WRAP_OBJECT_END
