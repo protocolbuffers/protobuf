@@ -1460,6 +1460,8 @@ static void assign_msg_wellknowntype(upb_msgdef *m) {
   }
   if (!strcmp(name, "google.protobuf.Any")) {
     m->well_known_type = UPB_WELLKNOWN_ANY;
+  } else if (!strcmp(name, "google.protobuf.FieldMask")) {
+    m->well_known_type = UPB_WELLKNOWN_FIELDMASK;
   } else if (!strcmp(name, "google.protobuf.Duration")) {
     m->well_known_type = UPB_WELLKNOWN_DURATION;
   } else if (!strcmp(name, "google.protobuf.Timestamp")) {
@@ -5461,6 +5463,29 @@ const upb_msglayout *upb_msgfactory_getlayout(upb_msgfactory *f,
     return l;
   }
 }
+
+#if UINTPTR_MAX == 0xffffffff
+#define UPB_SIZE(size32, size64) size32
+#else
+#define UPB_SIZE(size32, size64) size64
+#endif
+
+#define UPB_FIELD_AT(msg, fieldtype, offset) \
+  *(fieldtype*)((const char*)(msg) + offset)
+
+#define UPB_READ_ONEOF(msg, fieldtype, offset, case_offset, case_val, default) \
+  UPB_FIELD_AT(msg, int, case_offset) == case_val                              \
+      ? UPB_FIELD_AT(msg, fieldtype, offset)                                   \
+      : default
+
+#define UPB_WRITE_ONEOF(msg, fieldtype, offset, value, case_offset, case_val) \
+  UPB_FIELD_AT(msg, int, case_offset) = case_val;                             \
+  UPB_FIELD_AT(msg, fieldtype, offset) = value;
+
+#undef UPB_SIZE
+#undef UPB_FIELD_AT
+#undef UPB_READ_ONEOF
+#undef UPB_WRITE_ONEOF
 /*
 ** upb::RefCounted Implementation
 **
@@ -10119,8 +10144,8 @@ static void generate_delimfield(compiler *c, const upb_fielddef *f,
     putop(c, OP_STARTSTR, getsel(f, UPB_HANDLER_STARTSTR));
     /* Need to emit even if no handler to skip past the string. */
     putop(c, OP_STRING, getsel(f, UPB_HANDLER_STRING));
-    putop(c, OP_POP);
     maybeput(c, OP_ENDSTR, h, f, UPB_HANDLER_ENDSTR);
+    putop(c, OP_POP);
     putop(c, OP_SETDELIM);
     putop(c, OP_CHECKDELIM, LABEL_LOOPBREAK);
     putchecktag(c, f, UPB_WIRE_TYPE_DELIMITED, LABEL_LOOPBREAK);
@@ -10135,8 +10160,8 @@ static void generate_delimfield(compiler *c, const upb_fielddef *f,
     putop(c, OP_PUSHLENDELIM);
     putop(c, OP_STARTSTR, getsel(f, UPB_HANDLER_STARTSTR));
     putop(c, OP_STRING, getsel(f, UPB_HANDLER_STRING));
-    putop(c, OP_POP);
     maybeput(c, OP_ENDSTR, h, f, UPB_HANDLER_ENDSTR);
+    putop(c, OP_POP);
     putop(c, OP_SETDELIM);
   }
 }
@@ -12618,6 +12643,12 @@ static bool is_string_wrapper_object(upb_json_parser *p);
 static bool does_string_wrapper_start(upb_json_parser *p);
 static bool does_string_wrapper_end(upb_json_parser *p);
 
+static bool is_fieldmask_object(upb_json_parser *p);
+static bool does_fieldmask_start(upb_json_parser *p);
+static bool does_fieldmask_end(upb_json_parser *p);
+static void start_fieldmask_object(upb_json_parser *p);
+static void end_fieldmask_object(upb_json_parser *p);
+
 static void start_wrapper_object(upb_json_parser *p);
 static void end_wrapper_object(upb_json_parser *p);
 
@@ -13719,6 +13750,9 @@ static bool start_stringval(upb_json_parser *p) {
   if (is_top_level(p)) {
     if (is_string_wrapper_object(p)) {
       start_wrapper_object(p);
+    } else if (is_wellknown_msg(p, UPB_WELLKNOWN_FIELDMASK)) {
+      start_fieldmask_object(p);
+      return true;
     } else if (is_wellknown_msg(p, UPB_WELLKNOWN_TIMESTAMP) ||
                is_wellknown_msg(p, UPB_WELLKNOWN_DURATION)) {
       start_object(p);
@@ -13732,6 +13766,12 @@ static bool start_stringval(upb_json_parser *p) {
       return false;
     }
     start_wrapper_object(p);
+  } else if (does_fieldmask_start(p)) {
+    if (!start_subobject(p)) {
+      return false;
+    }
+    start_fieldmask_object(p);
+    return true;
   } else if (is_wellknown_field(p, UPB_WELLKNOWN_TIMESTAMP) ||
              is_wellknown_field(p, UPB_WELLKNOWN_DURATION)) {
     if (!start_subobject(p)) {
@@ -13875,8 +13915,8 @@ static bool end_stringval_nontop(upb_json_parser *p) {
 
     case UPB_TYPE_STRING: {
       upb_selector_t sel = getsel_for_handlertype(p, UPB_HANDLER_ENDSTR);
-      p->top--;
       upb_sink_endstr(&p->top->sink, sel);
+      p->top--;
       break;
     }
 
@@ -13925,6 +13965,16 @@ static bool end_stringval_nontop(upb_json_parser *p) {
 }
 
 static bool end_stringval(upb_json_parser *p) {
+  /* FieldMask's stringvals have been ended when handling them. Only need to
+   * close FieldMask here.*/
+  if (does_fieldmask_end(p)) {
+    end_fieldmask_object(p);
+    if (!is_top_level(p)) {
+      end_subobject(p);
+    }
+    return true;
+  }
+
   if (!end_stringval_nontop(p)) {
     return false;
   }
@@ -13946,7 +13996,8 @@ static bool end_stringval(upb_json_parser *p) {
   }
 
   if (is_wellknown_msg(p, UPB_WELLKNOWN_TIMESTAMP) ||
-      is_wellknown_msg(p, UPB_WELLKNOWN_DURATION)) {
+      is_wellknown_msg(p, UPB_WELLKNOWN_DURATION) ||
+      is_wellknown_msg(p, UPB_WELLKNOWN_FIELDMASK)) {
     end_object(p);
     if (!is_top_level(p)) {
       end_subobject(p);
@@ -14209,6 +14260,75 @@ static bool end_timestamp_zone(upb_json_parser *p, const char *ptr) {
   return true;
 }
 
+static void start_fieldmask_path_text(upb_json_parser *p, const char *ptr) {
+  capture_begin(p, ptr);
+}
+
+static bool end_fieldmask_path_text(upb_json_parser *p, const char *ptr) {
+  if (!capture_end(p, ptr)) {
+    return false;
+  }
+}
+
+static bool start_fieldmask_path(upb_json_parser *p) {
+  upb_jsonparser_frame *inner;
+  upb_selector_t sel;
+
+  if (!check_stack(p)) return false;
+
+  /* Start a new parser frame: parser frames correspond one-to-one with
+   * handler frames, and string events occur in a sub-frame. */
+  inner = p->top + 1;
+  sel = getsel_for_handlertype(p, UPB_HANDLER_STARTSTR);
+  upb_sink_startstr(&p->top->sink, sel, 0, &inner->sink);
+  inner->m = p->top->m;
+  inner->f = p->top->f;
+  inner->name_table = NULL;
+  inner->is_map = false;
+  inner->is_mapentry = false;
+  inner->is_any = false;
+  inner->any_frame = NULL;
+  inner->is_unknown_field = false;
+  p->top = inner;
+
+  multipart_startaccum(p);
+  return true;
+}
+
+static bool lower_camel_push(
+    upb_json_parser *p, upb_selector_t sel, const char *ptr, size_t len) {
+  const char *limit = ptr + len;
+  bool first = true;
+  for (;ptr < limit; ptr++) {
+    if (*ptr >= 'A' && *ptr <= 'Z' && !first) {
+      char lower = tolower(*ptr);
+      upb_sink_putstring(&p->top->sink, sel, "_", 1, NULL);
+      upb_sink_putstring(&p->top->sink, sel, &lower, 1, NULL);
+    } else {
+      upb_sink_putstring(&p->top->sink, sel, ptr, 1, NULL);
+    }
+    first = false;
+  }
+  return true;
+}
+
+static bool end_fieldmask_path(upb_json_parser *p) {
+  upb_selector_t sel;
+
+  if (!lower_camel_push(
+           p, getsel_for_handlertype(p, UPB_HANDLER_STRING),
+           p->accumulated, p->accumulated_len)) {
+    return false;
+  }
+
+  sel = getsel_for_handlertype(p, UPB_HANDLER_ENDSTR);
+  upb_sink_endstr(&p->top->sink, sel);
+  p->top--;
+
+  multipart_end(p);
+  return true;
+}
+
 static void start_member(upb_json_parser *p) {
   UPB_ASSERT(!p->top->f);
   multipart_startaccum(p);
@@ -14268,7 +14388,7 @@ static bool parse_mapentry_key(upb_json_parser *p) {
       sel = getsel_for_handlertype(p, UPB_HANDLER_STRING);
       upb_sink_putstring(&subsink, sel, buf, len, NULL);
       sel = getsel_for_handlertype(p, UPB_HANDLER_ENDSTR);
-      upb_sink_endstr(&p->top->sink, sel);
+      upb_sink_endstr(&subsink, sel);
       multipart_end(p);
       break;
     }
@@ -14810,6 +14930,31 @@ static bool is_string_wrapper(const upb_msgdef *m) {
          type == UPB_WELLKNOWN_BYTESVALUE;
 }
 
+static bool is_fieldmask(const upb_msgdef *m) {
+  upb_wellknowntype_t type = upb_msgdef_wellknowntype(m);
+  return type == UPB_WELLKNOWN_FIELDMASK;
+}
+
+static void start_fieldmask_object(upb_json_parser *p) {
+  const char *membername = "paths";
+
+  start_object(p);
+
+  /* Set up context for parsing value */
+  start_member(p);
+  capture_begin(p, membername);
+  capture_end(p, membername + 5);
+  end_membername(p);
+
+  start_array(p);
+}
+
+static void end_fieldmask_object(upb_json_parser *p) {
+  end_array(p);
+  end_member(p);
+  end_object(p);
+}
+
 static void start_wrapper_object(upb_json_parser *p) {
   const char *membername = "value";
 
@@ -14948,6 +15093,20 @@ static bool is_string_wrapper_object(upb_json_parser *p) {
   return p->top->m != NULL && is_string_wrapper(p->top->m);
 }
 
+static bool does_fieldmask_start(upb_json_parser *p) {
+  return p->top->f != NULL &&
+         upb_fielddef_issubmsg(p->top->f) &&
+         is_fieldmask(upb_fielddef_msgsubdef(p->top->f));
+}
+
+static bool does_fieldmask_end(upb_json_parser *p) {
+  return p->top->m != NULL && is_fieldmask(p->top->m);
+}
+
+static bool is_fieldmask_object(upb_json_parser *p) {
+  return p->top->m != NULL && is_fieldmask(p->top->m);
+}
+
 #define CHECK_RETURN_TOP(x) if (!(x)) goto error
 
 
@@ -14969,227 +15128,27 @@ static bool is_string_wrapper_object(upb_json_parser *p) {
  * final state once, when the closing '"' is seen. */
 
 
-#line 2576 "upb/json/parser.rl"
+#line 2730 "upb/json/parser.rl"
 
 
 
-#line 2422 "upb/json/parser.c"
+#line 2556 "upb/json/parser.c"
 static const char _json_actions[] = {
 	0, 1, 0, 1, 1, 1, 3, 1, 
 	4, 1, 6, 1, 7, 1, 8, 1, 
 	9, 1, 10, 1, 11, 1, 12, 1, 
-	13, 1, 21, 1, 23, 1, 24, 1, 
-	26, 1, 27, 1, 28, 1, 30, 1, 
-	32, 1, 33, 1, 34, 1, 35, 1, 
-	37, 1, 38, 2, 4, 9, 2, 5, 
-	6, 2, 7, 3, 2, 7, 9, 2, 
-	14, 15, 2, 16, 17, 2, 18, 19, 
-	2, 22, 20, 2, 24, 26, 2, 29, 
-	2, 2, 30, 38, 2, 31, 20, 2, 
-	33, 38, 2, 34, 38, 2, 35, 38, 
-	2, 36, 25, 2, 37, 38, 4, 14, 
-	15, 16, 17
-};
-
-static const short _json_key_offsets[] = {
-	0, 0, 12, 13, 18, 23, 28, 29, 
-	30, 31, 32, 33, 34, 35, 36, 37, 
-	38, 43, 44, 48, 53, 58, 63, 67, 
-	71, 74, 77, 79, 83, 87, 89, 91, 
-	96, 98, 100, 109, 115, 121, 127, 133, 
-	135, 139, 142, 144, 146, 149, 150, 154, 
-	156, 158, 160, 162, 163, 165, 167, 168, 
-	170, 172, 173, 175, 177, 178, 180, 182, 
-	183, 185, 187, 191, 193, 195, 196, 197, 
-	198, 199, 201, 206, 215, 216, 216, 216, 
-	221, 226, 231, 232, 233, 234, 235, 235, 
-	236, 237, 238, 238, 239, 240, 241, 241, 
-	246, 247, 251, 256, 261, 266, 270, 270, 
-	273, 276, 279, 282, 285, 288, 288, 288, 
-	288, 288
-};
-
-static const char _json_trans_keys[] = {
-	32, 34, 45, 91, 102, 110, 116, 123, 
-	9, 13, 48, 57, 34, 32, 93, 125, 
-	9, 13, 32, 44, 93, 9, 13, 32, 
-	93, 125, 9, 13, 97, 108, 115, 101, 
-	117, 108, 108, 114, 117, 101, 32, 34, 
-	125, 9, 13, 34, 32, 58, 9, 13, 
-	32, 93, 125, 9, 13, 32, 44, 125, 
-	9, 13, 32, 44, 125, 9, 13, 32, 
-	34, 9, 13, 45, 48, 49, 57, 48, 
-	49, 57, 46, 69, 101, 48, 57, 69, 
-	101, 48, 57, 43, 45, 48, 57, 48, 
-	57, 48, 57, 46, 69, 101, 48, 57, 
-	34, 92, 34, 92, 34, 47, 92, 98, 
-	102, 110, 114, 116, 117, 48, 57, 65, 
-	70, 97, 102, 48, 57, 65, 70, 97, 
-	102, 48, 57, 65, 70, 97, 102, 48, 
-	57, 65, 70, 97, 102, 34, 92, 45, 
-	48, 49, 57, 48, 49, 57, 46, 115, 
-	48, 57, 115, 48, 57, 34, 46, 115, 
-	48, 57, 48, 57, 48, 57, 48, 57, 
-	48, 57, 45, 48, 57, 48, 57, 45, 
-	48, 57, 48, 57, 84, 48, 57, 48, 
-	57, 58, 48, 57, 48, 57, 58, 48, 
-	57, 48, 57, 43, 45, 46, 90, 48, 
-	57, 48, 57, 58, 48, 48, 34, 48, 
-	57, 43, 45, 90, 48, 57, 34, 45, 
-	91, 102, 110, 116, 123, 48, 57, 34, 
-	32, 93, 125, 9, 13, 32, 44, 93, 
-	9, 13, 32, 93, 125, 9, 13, 97, 
-	108, 115, 101, 117, 108, 108, 114, 117, 
-	101, 32, 34, 125, 9, 13, 34, 32, 
-	58, 9, 13, 32, 93, 125, 9, 13, 
-	32, 44, 125, 9, 13, 32, 44, 125, 
-	9, 13, 32, 34, 9, 13, 32, 9, 
-	13, 32, 9, 13, 32, 9, 13, 32, 
-	9, 13, 32, 9, 13, 32, 9, 13, 
-	0
-};
-
-static const char _json_single_lengths[] = {
-	0, 8, 1, 3, 3, 3, 1, 1, 
-	1, 1, 1, 1, 1, 1, 1, 1, 
-	3, 1, 2, 3, 3, 3, 2, 2, 
-	1, 3, 0, 2, 2, 0, 0, 3, 
-	2, 2, 9, 0, 0, 0, 0, 2, 
-	2, 1, 2, 0, 1, 1, 2, 0, 
-	0, 0, 0, 1, 0, 0, 1, 0, 
-	0, 1, 0, 0, 1, 0, 0, 1, 
-	0, 0, 4, 0, 0, 1, 1, 1, 
-	1, 0, 3, 7, 1, 0, 0, 3, 
-	3, 3, 1, 1, 1, 1, 0, 1, 
-	1, 1, 0, 1, 1, 1, 0, 3, 
-	1, 2, 3, 3, 3, 2, 0, 1, 
-	1, 1, 1, 1, 1, 0, 0, 0, 
-	0, 0
-};
-
-static const char _json_range_lengths[] = {
-	0, 2, 0, 1, 1, 1, 0, 0, 
-	0, 0, 0, 0, 0, 0, 0, 0, 
-	1, 0, 1, 1, 1, 1, 1, 1, 
-	1, 0, 1, 1, 1, 1, 1, 1, 
-	0, 0, 0, 3, 3, 3, 3, 0, 
-	1, 1, 0, 1, 1, 0, 1, 1, 
-	1, 1, 1, 0, 1, 1, 0, 1, 
-	1, 0, 1, 1, 0, 1, 1, 0, 
-	1, 1, 0, 1, 1, 0, 0, 0, 
-	0, 1, 1, 1, 0, 0, 0, 1, 
-	1, 1, 0, 0, 0, 0, 0, 0, 
-	0, 0, 0, 0, 0, 0, 0, 1, 
-	0, 1, 1, 1, 1, 1, 0, 1, 
-	1, 1, 1, 1, 1, 0, 0, 0, 
-	0, 0
-};
-
-static const short _json_index_offsets[] = {
-	0, 0, 11, 13, 18, 23, 28, 30, 
-	32, 34, 36, 38, 40, 42, 44, 46, 
-	48, 53, 55, 59, 64, 69, 74, 78, 
-	82, 85, 89, 91, 95, 99, 101, 103, 
-	108, 111, 114, 124, 128, 132, 136, 140, 
-	143, 147, 150, 153, 155, 158, 160, 164, 
-	166, 168, 170, 172, 174, 176, 178, 180, 
-	182, 184, 186, 188, 190, 192, 194, 196, 
-	198, 200, 202, 207, 209, 211, 213, 215, 
-	217, 219, 221, 226, 235, 237, 238, 239, 
-	244, 249, 254, 256, 258, 260, 262, 263, 
-	265, 267, 269, 270, 272, 274, 276, 277, 
-	282, 284, 288, 293, 298, 303, 307, 308, 
-	311, 314, 317, 320, 323, 326, 327, 328, 
-	329, 330
-};
-
-static const unsigned char _json_indicies[] = {
-	0, 2, 3, 4, 5, 6, 7, 8, 
-	0, 3, 1, 9, 1, 11, 12, 1, 
-	11, 10, 13, 14, 12, 13, 1, 14, 
-	1, 1, 14, 10, 15, 1, 16, 1, 
-	17, 1, 18, 1, 19, 1, 20, 1, 
-	21, 1, 22, 1, 23, 1, 24, 1, 
-	25, 26, 27, 25, 1, 28, 1, 29, 
-	30, 29, 1, 30, 1, 1, 30, 31, 
-	32, 33, 34, 32, 1, 35, 36, 27, 
-	35, 1, 36, 26, 36, 1, 37, 38, 
-	39, 1, 38, 39, 1, 41, 42, 42, 
-	40, 43, 1, 42, 42, 43, 40, 44, 
-	44, 45, 1, 45, 1, 45, 40, 41, 
-	42, 42, 39, 40, 47, 48, 46, 50, 
-	51, 49, 52, 52, 52, 52, 52, 52, 
-	52, 52, 53, 1, 54, 54, 54, 1, 
-	55, 55, 55, 1, 56, 56, 56, 1, 
-	57, 57, 57, 1, 59, 60, 58, 61, 
-	62, 63, 1, 64, 65, 1, 66, 67, 
-	1, 68, 1, 67, 68, 1, 69, 1, 
-	66, 67, 65, 1, 70, 1, 71, 1, 
-	72, 1, 73, 1, 74, 1, 75, 1, 
-	76, 1, 77, 1, 78, 1, 79, 1, 
-	80, 1, 81, 1, 82, 1, 83, 1, 
-	84, 1, 85, 1, 86, 1, 87, 1, 
-	88, 1, 89, 89, 90, 91, 1, 92, 
-	1, 93, 1, 94, 1, 95, 1, 96, 
-	1, 97, 1, 98, 1, 99, 99, 100, 
-	98, 1, 101, 102, 103, 104, 105, 106, 
-	107, 102, 1, 108, 1, 109, 110, 112, 
-	113, 1, 112, 111, 114, 115, 113, 114, 
-	1, 115, 1, 1, 115, 111, 116, 1, 
-	117, 1, 118, 1, 119, 1, 120, 121, 
-	1, 122, 1, 123, 1, 124, 125, 1, 
-	126, 1, 127, 1, 128, 129, 130, 131, 
-	129, 1, 132, 1, 133, 134, 133, 1, 
-	134, 1, 1, 134, 135, 136, 137, 138, 
-	136, 1, 139, 140, 131, 139, 1, 140, 
-	130, 140, 1, 141, 142, 142, 1, 143, 
-	143, 1, 144, 144, 1, 145, 145, 1, 
-	146, 146, 1, 147, 147, 1, 1, 1, 
-	1, 1, 1, 0
-};
-
-static const char _json_trans_targs[] = {
-	1, 0, 2, 104, 3, 6, 10, 13, 
-	16, 103, 4, 3, 103, 4, 5, 7, 
-	8, 9, 105, 11, 12, 106, 14, 15, 
-	107, 16, 17, 108, 18, 18, 19, 20, 
-	21, 22, 108, 21, 22, 24, 25, 31, 
-	109, 26, 28, 27, 29, 30, 33, 110, 
-	34, 33, 110, 34, 32, 35, 36, 37, 
-	38, 39, 33, 110, 34, 41, 42, 46, 
-	42, 46, 43, 45, 44, 111, 48, 49, 
-	50, 51, 52, 53, 54, 55, 56, 57, 
-	58, 59, 60, 61, 62, 63, 64, 65, 
-	66, 67, 73, 72, 68, 69, 70, 71, 
-	72, 112, 74, 67, 72, 76, 78, 79, 
-	82, 87, 91, 95, 77, 113, 113, 80, 
-	79, 77, 80, 81, 83, 84, 85, 86, 
-	113, 88, 89, 90, 113, 92, 93, 94, 
-	113, 95, 96, 102, 97, 97, 98, 99, 
-	100, 101, 102, 100, 101, 113, 103, 103, 
-	103, 103, 103, 103
-};
-
-static const char _json_trans_actions[] = {
-	0, 0, 84, 78, 33, 0, 0, 0, 
-	96, 39, 25, 0, 35, 0, 0, 0, 
-	0, 0, 0, 0, 0, 0, 0, 0, 
-	0, 0, 72, 31, 27, 0, 0, 25, 
-	29, 29, 75, 0, 0, 0, 0, 0, 
-	3, 0, 0, 0, 0, 0, 5, 15, 
-	0, 0, 51, 7, 13, 0, 54, 9, 
-	9, 9, 57, 60, 11, 17, 17, 17, 
-	0, 0, 0, 19, 0, 21, 23, 0, 
-	0, 0, 0, 0, 0, 0, 0, 0, 
-	0, 0, 0, 0, 0, 0, 0, 0, 
-	0, 102, 63, 102, 0, 0, 0, 0, 
-	0, 69, 0, 66, 66, 84, 78, 33, 
-	0, 0, 0, 96, 39, 49, 81, 25, 
-	0, 35, 0, 0, 0, 0, 0, 0, 
-	90, 0, 0, 0, 93, 0, 0, 0, 
-	87, 0, 72, 31, 27, 0, 0, 25, 
-	29, 29, 75, 0, 0, 99, 0, 37, 
-	43, 45, 41, 47
+	13, 1, 24, 1, 26, 1, 28, 1, 
+	29, 1, 31, 1, 32, 1, 33, 1, 
+	35, 1, 37, 1, 38, 1, 39, 1, 
+	40, 1, 42, 1, 43, 2, 4, 9, 
+	2, 5, 6, 2, 7, 3, 2, 7, 
+	9, 2, 14, 15, 2, 16, 17, 2, 
+	18, 19, 2, 21, 23, 2, 22, 20, 
+	2, 27, 25, 2, 29, 31, 2, 34, 
+	2, 2, 35, 43, 2, 36, 25, 2, 
+	38, 43, 2, 39, 43, 2, 40, 43, 
+	2, 41, 30, 2, 42, 43, 3, 21, 
+	23, 24, 4, 14, 15, 16, 17
 };
 
 static const char _json_eof_actions[] = {
@@ -15206,8 +15165,8 @@ static const char _json_eof_actions[] = {
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
-	37, 43, 45, 41, 47, 0, 0, 0, 
-	0, 0
+	0, 0, 0, 39, 45, 47, 43, 49, 
+	0, 0, 0, 0, 0, 0
 };
 
 static const int json_start = 1;
@@ -15216,11 +15175,12 @@ static const int json_en_number_machine = 23;
 static const int json_en_string_machine = 32;
 static const int json_en_duration_machine = 40;
 static const int json_en_timestamp_machine = 47;
-static const int json_en_value_machine = 75;
+static const int json_en_fieldmask_machine = 75;
+static const int json_en_value_machine = 78;
 static const int json_en_main = 1;
 
 
-#line 2579 "upb/json/parser.rl"
+#line 2733 "upb/json/parser.rl"
 
 size_t parse(void *closure, const void *hd, const char *buf, size_t size,
              const upb_bufhandle *handle) {
@@ -15243,174 +15203,996 @@ size_t parse(void *closure, const void *hd, const char *buf, size_t size,
   capture_resume(parser, buf);
 
   
-#line 2692 "upb/json/parser.c"
+#line 2627 "upb/json/parser.c"
 	{
-	int _klen;
-	unsigned int _trans;
 	const char *_acts;
 	unsigned int _nacts;
-	const char *_keys;
 
 	if ( p == pe )
 		goto _test_eof;
 	if ( cs == 0 )
 		goto _out;
 _resume:
-	_keys = _json_trans_keys + _json_key_offsets[cs];
-	_trans = _json_index_offsets[cs];
-
-	_klen = _json_single_lengths[cs];
-	if ( _klen > 0 ) {
-		const char *_lower = _keys;
-		const char *_mid;
-		const char *_upper = _keys + _klen - 1;
-		while (1) {
-			if ( _upper < _lower )
-				break;
-
-			_mid = _lower + ((_upper-_lower) >> 1);
-			if ( (*p) < *_mid )
-				_upper = _mid - 1;
-			else if ( (*p) > *_mid )
-				_lower = _mid + 1;
-			else {
-				_trans += (unsigned int)(_mid - _keys);
-				goto _match;
-			}
-		}
-		_keys += _klen;
-		_trans += _klen;
+	switch ( cs ) {
+case 1:
+	switch( (*p) ) {
+		case 32: goto tr0;
+		case 34: goto tr2;
+		case 45: goto tr3;
+		case 91: goto tr4;
+		case 102: goto tr5;
+		case 110: goto tr6;
+		case 116: goto tr7;
+		case 123: goto tr8;
+	}
+	if ( (*p) > 13 ) {
+		if ( 48 <= (*p) && (*p) <= 57 )
+			goto tr3;
+	} else if ( (*p) >= 9 )
+		goto tr0;
+	goto tr1;
+case 0:
+	goto _out;
+case 2:
+	if ( (*p) == 34 )
+		goto tr9;
+	goto tr1;
+case 106:
+	if ( (*p) == 32 )
+		goto tr147;
+	if ( 9 <= (*p) && (*p) <= 13 )
+		goto tr147;
+	goto tr1;
+case 107:
+	if ( (*p) == 32 )
+		goto tr148;
+	if ( 9 <= (*p) && (*p) <= 13 )
+		goto tr148;
+	goto tr1;
+case 3:
+	switch( (*p) ) {
+		case 32: goto tr11;
+		case 93: goto tr12;
+		case 125: goto tr1;
+	}
+	if ( 9 <= (*p) && (*p) <= 13 )
+		goto tr11;
+	goto tr10;
+case 4:
+	switch( (*p) ) {
+		case 32: goto tr13;
+		case 44: goto tr14;
+		case 93: goto tr12;
+	}
+	if ( 9 <= (*p) && (*p) <= 13 )
+		goto tr13;
+	goto tr1;
+case 5:
+	switch( (*p) ) {
+		case 32: goto tr14;
+		case 93: goto tr1;
+		case 125: goto tr1;
+	}
+	if ( 9 <= (*p) && (*p) <= 13 )
+		goto tr14;
+	goto tr10;
+case 6:
+	if ( (*p) == 97 )
+		goto tr15;
+	goto tr1;
+case 7:
+	if ( (*p) == 108 )
+		goto tr16;
+	goto tr1;
+case 8:
+	if ( (*p) == 115 )
+		goto tr17;
+	goto tr1;
+case 9:
+	if ( (*p) == 101 )
+		goto tr18;
+	goto tr1;
+case 108:
+	if ( (*p) == 32 )
+		goto tr149;
+	if ( 9 <= (*p) && (*p) <= 13 )
+		goto tr149;
+	goto tr1;
+case 10:
+	if ( (*p) == 117 )
+		goto tr19;
+	goto tr1;
+case 11:
+	if ( (*p) == 108 )
+		goto tr20;
+	goto tr1;
+case 12:
+	if ( (*p) == 108 )
+		goto tr21;
+	goto tr1;
+case 109:
+	if ( (*p) == 32 )
+		goto tr150;
+	if ( 9 <= (*p) && (*p) <= 13 )
+		goto tr150;
+	goto tr1;
+case 13:
+	if ( (*p) == 114 )
+		goto tr22;
+	goto tr1;
+case 14:
+	if ( (*p) == 117 )
+		goto tr23;
+	goto tr1;
+case 15:
+	if ( (*p) == 101 )
+		goto tr24;
+	goto tr1;
+case 110:
+	if ( (*p) == 32 )
+		goto tr151;
+	if ( 9 <= (*p) && (*p) <= 13 )
+		goto tr151;
+	goto tr1;
+case 16:
+	switch( (*p) ) {
+		case 32: goto tr25;
+		case 34: goto tr26;
+		case 125: goto tr27;
+	}
+	if ( 9 <= (*p) && (*p) <= 13 )
+		goto tr25;
+	goto tr1;
+case 17:
+	if ( (*p) == 34 )
+		goto tr28;
+	goto tr1;
+case 18:
+	switch( (*p) ) {
+		case 32: goto tr29;
+		case 58: goto tr30;
+	}
+	if ( 9 <= (*p) && (*p) <= 13 )
+		goto tr29;
+	goto tr1;
+case 19:
+	switch( (*p) ) {
+		case 32: goto tr30;
+		case 93: goto tr1;
+		case 125: goto tr1;
+	}
+	if ( 9 <= (*p) && (*p) <= 13 )
+		goto tr30;
+	goto tr31;
+case 20:
+	switch( (*p) ) {
+		case 32: goto tr32;
+		case 44: goto tr33;
+		case 125: goto tr34;
+	}
+	if ( 9 <= (*p) && (*p) <= 13 )
+		goto tr32;
+	goto tr1;
+case 21:
+	switch( (*p) ) {
+		case 32: goto tr35;
+		case 44: goto tr36;
+		case 125: goto tr27;
+	}
+	if ( 9 <= (*p) && (*p) <= 13 )
+		goto tr35;
+	goto tr1;
+case 22:
+	switch( (*p) ) {
+		case 32: goto tr36;
+		case 34: goto tr26;
+	}
+	if ( 9 <= (*p) && (*p) <= 13 )
+		goto tr36;
+	goto tr1;
+case 111:
+	if ( (*p) == 32 )
+		goto tr152;
+	if ( 9 <= (*p) && (*p) <= 13 )
+		goto tr152;
+	goto tr1;
+case 23:
+	switch( (*p) ) {
+		case 45: goto tr37;
+		case 48: goto tr38;
+	}
+	if ( 49 <= (*p) && (*p) <= 57 )
+		goto tr39;
+	goto tr1;
+case 24:
+	if ( (*p) == 48 )
+		goto tr38;
+	if ( 49 <= (*p) && (*p) <= 57 )
+		goto tr39;
+	goto tr1;
+case 25:
+	switch( (*p) ) {
+		case 46: goto tr41;
+		case 69: goto tr42;
+		case 101: goto tr42;
+	}
+	goto tr40;
+case 112:
+	goto tr1;
+case 26:
+	if ( 48 <= (*p) && (*p) <= 57 )
+		goto tr43;
+	goto tr1;
+case 27:
+	switch( (*p) ) {
+		case 69: goto tr42;
+		case 101: goto tr42;
+	}
+	if ( 48 <= (*p) && (*p) <= 57 )
+		goto tr43;
+	goto tr40;
+case 28:
+	switch( (*p) ) {
+		case 43: goto tr44;
+		case 45: goto tr44;
+	}
+	if ( 48 <= (*p) && (*p) <= 57 )
+		goto tr45;
+	goto tr1;
+case 29:
+	if ( 48 <= (*p) && (*p) <= 57 )
+		goto tr45;
+	goto tr1;
+case 30:
+	if ( 48 <= (*p) && (*p) <= 57 )
+		goto tr45;
+	goto tr40;
+case 31:
+	switch( (*p) ) {
+		case 46: goto tr41;
+		case 69: goto tr42;
+		case 101: goto tr42;
+	}
+	if ( 48 <= (*p) && (*p) <= 57 )
+		goto tr39;
+	goto tr40;
+case 32:
+	switch( (*p) ) {
+		case 34: goto tr47;
+		case 92: goto tr48;
+	}
+	goto tr46;
+case 33:
+	switch( (*p) ) {
+		case 34: goto tr50;
+		case 92: goto tr51;
+	}
+	goto tr49;
+case 113:
+	goto tr1;
+case 34:
+	switch( (*p) ) {
+		case 34: goto tr52;
+		case 47: goto tr52;
+		case 92: goto tr52;
+		case 98: goto tr52;
+		case 102: goto tr52;
+		case 110: goto tr52;
+		case 114: goto tr52;
+		case 116: goto tr52;
+		case 117: goto tr53;
+	}
+	goto tr1;
+case 35:
+	if ( (*p) < 65 ) {
+		if ( 48 <= (*p) && (*p) <= 57 )
+			goto tr54;
+	} else if ( (*p) > 70 ) {
+		if ( 97 <= (*p) && (*p) <= 102 )
+			goto tr54;
+	} else
+		goto tr54;
+	goto tr1;
+case 36:
+	if ( (*p) < 65 ) {
+		if ( 48 <= (*p) && (*p) <= 57 )
+			goto tr55;
+	} else if ( (*p) > 70 ) {
+		if ( 97 <= (*p) && (*p) <= 102 )
+			goto tr55;
+	} else
+		goto tr55;
+	goto tr1;
+case 37:
+	if ( (*p) < 65 ) {
+		if ( 48 <= (*p) && (*p) <= 57 )
+			goto tr56;
+	} else if ( (*p) > 70 ) {
+		if ( 97 <= (*p) && (*p) <= 102 )
+			goto tr56;
+	} else
+		goto tr56;
+	goto tr1;
+case 38:
+	if ( (*p) < 65 ) {
+		if ( 48 <= (*p) && (*p) <= 57 )
+			goto tr57;
+	} else if ( (*p) > 70 ) {
+		if ( 97 <= (*p) && (*p) <= 102 )
+			goto tr57;
+	} else
+		goto tr57;
+	goto tr1;
+case 39:
+	switch( (*p) ) {
+		case 34: goto tr59;
+		case 92: goto tr60;
+	}
+	goto tr58;
+case 40:
+	switch( (*p) ) {
+		case 45: goto tr61;
+		case 48: goto tr62;
+	}
+	if ( 49 <= (*p) && (*p) <= 57 )
+		goto tr63;
+	goto tr1;
+case 41:
+	if ( (*p) == 48 )
+		goto tr64;
+	if ( 49 <= (*p) && (*p) <= 57 )
+		goto tr65;
+	goto tr1;
+case 42:
+	switch( (*p) ) {
+		case 46: goto tr66;
+		case 115: goto tr67;
+	}
+	goto tr1;
+case 43:
+	if ( 48 <= (*p) && (*p) <= 57 )
+		goto tr68;
+	goto tr1;
+case 44:
+	if ( (*p) == 115 )
+		goto tr67;
+	if ( 48 <= (*p) && (*p) <= 57 )
+		goto tr68;
+	goto tr1;
+case 45:
+	if ( (*p) == 34 )
+		goto tr69;
+	goto tr1;
+case 114:
+	goto tr1;
+case 46:
+	switch( (*p) ) {
+		case 46: goto tr66;
+		case 115: goto tr67;
+	}
+	if ( 48 <= (*p) && (*p) <= 57 )
+		goto tr65;
+	goto tr1;
+case 47:
+	if ( 48 <= (*p) && (*p) <= 57 )
+		goto tr70;
+	goto tr1;
+case 48:
+	if ( 48 <= (*p) && (*p) <= 57 )
+		goto tr71;
+	goto tr1;
+case 49:
+	if ( 48 <= (*p) && (*p) <= 57 )
+		goto tr72;
+	goto tr1;
+case 50:
+	if ( 48 <= (*p) && (*p) <= 57 )
+		goto tr73;
+	goto tr1;
+case 51:
+	if ( (*p) == 45 )
+		goto tr74;
+	goto tr1;
+case 52:
+	if ( 48 <= (*p) && (*p) <= 57 )
+		goto tr75;
+	goto tr1;
+case 53:
+	if ( 48 <= (*p) && (*p) <= 57 )
+		goto tr76;
+	goto tr1;
+case 54:
+	if ( (*p) == 45 )
+		goto tr77;
+	goto tr1;
+case 55:
+	if ( 48 <= (*p) && (*p) <= 57 )
+		goto tr78;
+	goto tr1;
+case 56:
+	if ( 48 <= (*p) && (*p) <= 57 )
+		goto tr79;
+	goto tr1;
+case 57:
+	if ( (*p) == 84 )
+		goto tr80;
+	goto tr1;
+case 58:
+	if ( 48 <= (*p) && (*p) <= 57 )
+		goto tr81;
+	goto tr1;
+case 59:
+	if ( 48 <= (*p) && (*p) <= 57 )
+		goto tr82;
+	goto tr1;
+case 60:
+	if ( (*p) == 58 )
+		goto tr83;
+	goto tr1;
+case 61:
+	if ( 48 <= (*p) && (*p) <= 57 )
+		goto tr84;
+	goto tr1;
+case 62:
+	if ( 48 <= (*p) && (*p) <= 57 )
+		goto tr85;
+	goto tr1;
+case 63:
+	if ( (*p) == 58 )
+		goto tr86;
+	goto tr1;
+case 64:
+	if ( 48 <= (*p) && (*p) <= 57 )
+		goto tr87;
+	goto tr1;
+case 65:
+	if ( 48 <= (*p) && (*p) <= 57 )
+		goto tr88;
+	goto tr1;
+case 66:
+	switch( (*p) ) {
+		case 43: goto tr89;
+		case 45: goto tr89;
+		case 46: goto tr90;
+		case 90: goto tr91;
+	}
+	goto tr1;
+case 67:
+	if ( 48 <= (*p) && (*p) <= 57 )
+		goto tr92;
+	goto tr1;
+case 68:
+	if ( 48 <= (*p) && (*p) <= 57 )
+		goto tr93;
+	goto tr1;
+case 69:
+	if ( (*p) == 58 )
+		goto tr94;
+	goto tr1;
+case 70:
+	if ( (*p) == 48 )
+		goto tr95;
+	goto tr1;
+case 71:
+	if ( (*p) == 48 )
+		goto tr96;
+	goto tr1;
+case 72:
+	if ( (*p) == 34 )
+		goto tr97;
+	goto tr1;
+case 115:
+	goto tr1;
+case 73:
+	if ( 48 <= (*p) && (*p) <= 57 )
+		goto tr98;
+	goto tr1;
+case 74:
+	switch( (*p) ) {
+		case 43: goto tr99;
+		case 45: goto tr99;
+		case 90: goto tr100;
+	}
+	if ( 48 <= (*p) && (*p) <= 57 )
+		goto tr98;
+	goto tr1;
+case 75:
+	switch( (*p) ) {
+		case 34: goto tr102;
+		case 44: goto tr1;
+	}
+	goto tr101;
+case 76:
+	switch( (*p) ) {
+		case 34: goto tr104;
+		case 44: goto tr105;
+	}
+	goto tr103;
+case 116:
+	goto tr1;
+case 77:
+	switch( (*p) ) {
+		case 34: goto tr1;
+		case 44: goto tr1;
+	}
+	goto tr101;
+case 78:
+	switch( (*p) ) {
+		case 34: goto tr106;
+		case 45: goto tr107;
+		case 91: goto tr108;
+		case 102: goto tr109;
+		case 110: goto tr110;
+		case 116: goto tr111;
+		case 123: goto tr112;
+	}
+	if ( 48 <= (*p) && (*p) <= 57 )
+		goto tr107;
+	goto tr1;
+case 79:
+	if ( (*p) == 34 )
+		goto tr113;
+	goto tr1;
+case 80:
+	goto tr114;
+case 117:
+	goto tr1;
+case 81:
+	goto tr115;
+case 82:
+	switch( (*p) ) {
+		case 32: goto tr117;
+		case 93: goto tr118;
+		case 125: goto tr1;
+	}
+	if ( 9 <= (*p) && (*p) <= 13 )
+		goto tr117;
+	goto tr116;
+case 83:
+	switch( (*p) ) {
+		case 32: goto tr119;
+		case 44: goto tr120;
+		case 93: goto tr118;
+	}
+	if ( 9 <= (*p) && (*p) <= 13 )
+		goto tr119;
+	goto tr1;
+case 84:
+	switch( (*p) ) {
+		case 32: goto tr120;
+		case 93: goto tr1;
+		case 125: goto tr1;
+	}
+	if ( 9 <= (*p) && (*p) <= 13 )
+		goto tr120;
+	goto tr116;
+case 85:
+	if ( (*p) == 97 )
+		goto tr121;
+	goto tr1;
+case 86:
+	if ( (*p) == 108 )
+		goto tr122;
+	goto tr1;
+case 87:
+	if ( (*p) == 115 )
+		goto tr123;
+	goto tr1;
+case 88:
+	if ( (*p) == 101 )
+		goto tr124;
+	goto tr1;
+case 89:
+	goto tr125;
+case 90:
+	if ( (*p) == 117 )
+		goto tr126;
+	goto tr1;
+case 91:
+	if ( (*p) == 108 )
+		goto tr127;
+	goto tr1;
+case 92:
+	if ( (*p) == 108 )
+		goto tr128;
+	goto tr1;
+case 93:
+	goto tr129;
+case 94:
+	if ( (*p) == 114 )
+		goto tr130;
+	goto tr1;
+case 95:
+	if ( (*p) == 117 )
+		goto tr131;
+	goto tr1;
+case 96:
+	if ( (*p) == 101 )
+		goto tr132;
+	goto tr1;
+case 97:
+	goto tr133;
+case 98:
+	switch( (*p) ) {
+		case 32: goto tr134;
+		case 34: goto tr135;
+		case 125: goto tr136;
+	}
+	if ( 9 <= (*p) && (*p) <= 13 )
+		goto tr134;
+	goto tr1;
+case 99:
+	if ( (*p) == 34 )
+		goto tr137;
+	goto tr1;
+case 100:
+	switch( (*p) ) {
+		case 32: goto tr138;
+		case 58: goto tr139;
+	}
+	if ( 9 <= (*p) && (*p) <= 13 )
+		goto tr138;
+	goto tr1;
+case 101:
+	switch( (*p) ) {
+		case 32: goto tr139;
+		case 93: goto tr1;
+		case 125: goto tr1;
+	}
+	if ( 9 <= (*p) && (*p) <= 13 )
+		goto tr139;
+	goto tr140;
+case 102:
+	switch( (*p) ) {
+		case 32: goto tr141;
+		case 44: goto tr142;
+		case 125: goto tr143;
+	}
+	if ( 9 <= (*p) && (*p) <= 13 )
+		goto tr141;
+	goto tr1;
+case 103:
+	switch( (*p) ) {
+		case 32: goto tr144;
+		case 44: goto tr145;
+		case 125: goto tr136;
+	}
+	if ( 9 <= (*p) && (*p) <= 13 )
+		goto tr144;
+	goto tr1;
+case 104:
+	switch( (*p) ) {
+		case 32: goto tr145;
+		case 34: goto tr135;
+	}
+	if ( 9 <= (*p) && (*p) <= 13 )
+		goto tr145;
+	goto tr1;
+case 105:
+	goto tr146;
 	}
 
-	_klen = _json_range_lengths[cs];
-	if ( _klen > 0 ) {
-		const char *_lower = _keys;
-		const char *_mid;
-		const char *_upper = _keys + (_klen<<1) - 2;
-		while (1) {
-			if ( _upper < _lower )
-				break;
+	tr1: cs = 0; goto _again;
+	tr0: cs = 1; goto _again;
+	tr2: cs = 2; goto f0;
+	tr11: cs = 3; goto _again;
+	tr4: cs = 3; goto f2;
+	tr13: cs = 4; goto _again;
+	tr10: cs = 4; goto f5;
+	tr14: cs = 5; goto _again;
+	tr5: cs = 6; goto _again;
+	tr15: cs = 7; goto _again;
+	tr16: cs = 8; goto _again;
+	tr17: cs = 9; goto _again;
+	tr6: cs = 10; goto _again;
+	tr19: cs = 11; goto _again;
+	tr20: cs = 12; goto _again;
+	tr7: cs = 13; goto _again;
+	tr22: cs = 14; goto _again;
+	tr23: cs = 15; goto _again;
+	tr25: cs = 16; goto _again;
+	tr8: cs = 16; goto f3;
+	tr26: cs = 17; goto f7;
+	tr29: cs = 18; goto _again;
+	tr28: cs = 18; goto f9;
+	tr30: cs = 19; goto _again;
+	tr31: cs = 20; goto f5;
+	tr35: cs = 21; goto _again;
+	tr32: cs = 21; goto f10;
+	tr36: cs = 22; goto _again;
+	tr33: cs = 22; goto f10;
+	tr37: cs = 24; goto _again;
+	tr38: cs = 25; goto _again;
+	tr41: cs = 26; goto _again;
+	tr43: cs = 27; goto _again;
+	tr42: cs = 28; goto _again;
+	tr44: cs = 29; goto _again;
+	tr45: cs = 30; goto _again;
+	tr39: cs = 31; goto _again;
+	tr52: cs = 32; goto f18;
+	tr49: cs = 33; goto _again;
+	tr46: cs = 33; goto f14;
+	tr58: cs = 33; goto f21;
+	tr48: cs = 34; goto _again;
+	tr51: cs = 34; goto f17;
+	tr60: cs = 34; goto f23;
+	tr53: cs = 35; goto _again;
+	tr54: cs = 36; goto f19;
+	tr55: cs = 37; goto f20;
+	tr56: cs = 38; goto f20;
+	tr57: cs = 39; goto f20;
+	tr61: cs = 41; goto f24;
+	tr64: cs = 42; goto _again;
+	tr62: cs = 42; goto f24;
+	tr66: cs = 43; goto _again;
+	tr68: cs = 44; goto _again;
+	tr67: cs = 45; goto f25;
+	tr65: cs = 46; goto _again;
+	tr63: cs = 46; goto f24;
+	tr70: cs = 48; goto f27;
+	tr71: cs = 49; goto _again;
+	tr72: cs = 50; goto _again;
+	tr73: cs = 51; goto _again;
+	tr74: cs = 52; goto _again;
+	tr75: cs = 53; goto _again;
+	tr76: cs = 54; goto _again;
+	tr77: cs = 55; goto _again;
+	tr78: cs = 56; goto _again;
+	tr79: cs = 57; goto _again;
+	tr80: cs = 58; goto _again;
+	tr81: cs = 59; goto _again;
+	tr82: cs = 60; goto _again;
+	tr83: cs = 61; goto _again;
+	tr84: cs = 62; goto _again;
+	tr85: cs = 63; goto _again;
+	tr86: cs = 64; goto _again;
+	tr87: cs = 65; goto _again;
+	tr88: cs = 66; goto _again;
+	tr89: cs = 67; goto f28;
+	tr99: cs = 67; goto f31;
+	tr92: cs = 68; goto _again;
+	tr93: cs = 69; goto _again;
+	tr94: cs = 70; goto _again;
+	tr95: cs = 71; goto _again;
+	tr96: cs = 72; goto _again;
+	tr91: cs = 72; goto f28;
+	tr100: cs = 72; goto f31;
+	tr90: cs = 73; goto f29;
+	tr98: cs = 74; goto _again;
+	tr103: cs = 76; goto _again;
+	tr101: cs = 76; goto f32;
+	tr105: cs = 77; goto f35;
+	tr106: cs = 79; goto f0;
+	tr113: cs = 80; goto f4;
+	tr118: cs = 80; goto f6;
+	tr107: cs = 81; goto f1;
+	tr117: cs = 82; goto _again;
+	tr108: cs = 82; goto f2;
+	tr119: cs = 83; goto _again;
+	tr116: cs = 83; goto f5;
+	tr120: cs = 84; goto _again;
+	tr109: cs = 85; goto _again;
+	tr121: cs = 86; goto _again;
+	tr122: cs = 87; goto _again;
+	tr123: cs = 88; goto _again;
+	tr124: cs = 89; goto _again;
+	tr110: cs = 90; goto _again;
+	tr126: cs = 91; goto _again;
+	tr127: cs = 92; goto _again;
+	tr128: cs = 93; goto _again;
+	tr111: cs = 94; goto _again;
+	tr130: cs = 95; goto _again;
+	tr131: cs = 96; goto _again;
+	tr132: cs = 97; goto _again;
+	tr134: cs = 98; goto _again;
+	tr112: cs = 98; goto f3;
+	tr135: cs = 99; goto f7;
+	tr138: cs = 100; goto _again;
+	tr137: cs = 100; goto f9;
+	tr139: cs = 101; goto _again;
+	tr140: cs = 102; goto f5;
+	tr144: cs = 103; goto _again;
+	tr141: cs = 103; goto f10;
+	tr145: cs = 104; goto _again;
+	tr142: cs = 104; goto f10;
+	tr136: cs = 105; goto f8;
+	tr143: cs = 105; goto f11;
+	tr147: cs = 106; goto _again;
+	tr9: cs = 106; goto f4;
+	tr12: cs = 106; goto f6;
+	tr148: cs = 106; goto f42;
+	tr149: cs = 106; goto f43;
+	tr150: cs = 106; goto f44;
+	tr151: cs = 106; goto f45;
+	tr152: cs = 106; goto f46;
+	tr3: cs = 107; goto f1;
+	tr18: cs = 108; goto _again;
+	tr21: cs = 109; goto _again;
+	tr24: cs = 110; goto _again;
+	tr27: cs = 111; goto f8;
+	tr34: cs = 111; goto f11;
+	tr40: cs = 112; goto f13;
+	tr47: cs = 113; goto f15;
+	tr50: cs = 113; goto f16;
+	tr59: cs = 113; goto f22;
+	tr69: cs = 114; goto f26;
+	tr97: cs = 115; goto f30;
+	tr102: cs = 116; goto f33;
+	tr104: cs = 116; goto f34;
+	tr114: cs = 117; goto f36;
+	tr115: cs = 117; goto f37;
+	tr125: cs = 117; goto f38;
+	tr129: cs = 117; goto f39;
+	tr133: cs = 117; goto f40;
+	tr146: cs = 117; goto f41;
 
-			_mid = _lower + (((_upper-_lower) >> 1) & ~1);
-			if ( (*p) < _mid[0] )
-				_upper = _mid - 2;
-			else if ( (*p) > _mid[1] )
-				_lower = _mid + 2;
-			else {
-				_trans += (unsigned int)((_mid - _keys)>>1);
-				goto _match;
-			}
-		}
-		_trans += _klen;
-	}
+	f13: _acts = _json_actions + 3; goto execFuncs;
+	f14: _acts = _json_actions + 5; goto execFuncs;
+	f17: _acts = _json_actions + 7; goto execFuncs;
+	f20: _acts = _json_actions + 9; goto execFuncs;
+	f23: _acts = _json_actions + 11; goto execFuncs;
+	f18: _acts = _json_actions + 13; goto execFuncs;
+	f15: _acts = _json_actions + 15; goto execFuncs;
+	f24: _acts = _json_actions + 17; goto execFuncs;
+	f25: _acts = _json_actions + 19; goto execFuncs;
+	f26: _acts = _json_actions + 21; goto execFuncs;
+	f27: _acts = _json_actions + 23; goto execFuncs;
+	f33: _acts = _json_actions + 25; goto execFuncs;
+	f5: _acts = _json_actions + 27; goto execFuncs;
+	f9: _acts = _json_actions + 29; goto execFuncs;
+	f10: _acts = _json_actions + 31; goto execFuncs;
+	f8: _acts = _json_actions + 33; goto execFuncs;
+	f2: _acts = _json_actions + 35; goto execFuncs;
+	f6: _acts = _json_actions + 37; goto execFuncs;
+	f42: _acts = _json_actions + 39; goto execFuncs;
+	f4: _acts = _json_actions + 41; goto execFuncs;
+	f45: _acts = _json_actions + 43; goto execFuncs;
+	f43: _acts = _json_actions + 45; goto execFuncs;
+	f44: _acts = _json_actions + 47; goto execFuncs;
+	f46: _acts = _json_actions + 49; goto execFuncs;
+	f36: _acts = _json_actions + 51; goto execFuncs;
+	f16: _acts = _json_actions + 53; goto execFuncs;
+	f19: _acts = _json_actions + 56; goto execFuncs;
+	f21: _acts = _json_actions + 59; goto execFuncs;
+	f22: _acts = _json_actions + 62; goto execFuncs;
+	f29: _acts = _json_actions + 65; goto execFuncs;
+	f31: _acts = _json_actions + 68; goto execFuncs;
+	f30: _acts = _json_actions + 71; goto execFuncs;
+	f35: _acts = _json_actions + 74; goto execFuncs;
+	f32: _acts = _json_actions + 77; goto execFuncs;
+	f7: _acts = _json_actions + 80; goto execFuncs;
+	f11: _acts = _json_actions + 83; goto execFuncs;
+	f1: _acts = _json_actions + 86; goto execFuncs;
+	f37: _acts = _json_actions + 89; goto execFuncs;
+	f0: _acts = _json_actions + 92; goto execFuncs;
+	f40: _acts = _json_actions + 95; goto execFuncs;
+	f38: _acts = _json_actions + 98; goto execFuncs;
+	f39: _acts = _json_actions + 101; goto execFuncs;
+	f3: _acts = _json_actions + 104; goto execFuncs;
+	f41: _acts = _json_actions + 107; goto execFuncs;
+	f34: _acts = _json_actions + 110; goto execFuncs;
+	f28: _acts = _json_actions + 114; goto execFuncs;
 
-_match:
-	_trans = _json_indicies[_trans];
-	cs = _json_trans_targs[_trans];
-
-	if ( _json_trans_actions[_trans] == 0 )
-		goto _again;
-
-	_acts = _json_actions + _json_trans_actions[_trans];
-	_nacts = (unsigned int) *_acts++;
-	while ( _nacts-- > 0 )
-	{
-		switch ( *_acts++ )
-		{
+execFuncs:
+	_nacts = *_acts++;
+	while ( _nacts-- > 0 ) {
+		switch ( *_acts++ ) {
 	case 1:
-#line 2427 "upb/json/parser.rl"
-	{ p--; {cs = stack[--top]; goto _again;} }
+#line 2561 "upb/json/parser.rl"
+	{ p--; {cs = stack[--top];goto _again;} }
 	break;
 	case 2:
-#line 2429 "upb/json/parser.rl"
-	{ p--; {stack[top++] = cs; cs = 23; goto _again;} }
+#line 2563 "upb/json/parser.rl"
+	{ p--; {stack[top++] = cs; cs = 23;goto _again;} }
 	break;
 	case 3:
-#line 2433 "upb/json/parser.rl"
+#line 2567 "upb/json/parser.rl"
 	{ start_text(parser, p); }
 	break;
 	case 4:
-#line 2434 "upb/json/parser.rl"
+#line 2568 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_text(parser, p)); }
 	break;
 	case 5:
-#line 2440 "upb/json/parser.rl"
+#line 2574 "upb/json/parser.rl"
 	{ start_hex(parser); }
 	break;
 	case 6:
-#line 2441 "upb/json/parser.rl"
+#line 2575 "upb/json/parser.rl"
 	{ hexdigit(parser, p); }
 	break;
 	case 7:
-#line 2442 "upb/json/parser.rl"
+#line 2576 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_hex(parser)); }
 	break;
 	case 8:
-#line 2448 "upb/json/parser.rl"
+#line 2582 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(escape(parser, p)); }
 	break;
 	case 9:
-#line 2454 "upb/json/parser.rl"
-	{ p--; {cs = stack[--top]; goto _again;} }
+#line 2588 "upb/json/parser.rl"
+	{ p--; {cs = stack[--top];goto _again;} }
 	break;
 	case 10:
-#line 2466 "upb/json/parser.rl"
+#line 2600 "upb/json/parser.rl"
 	{ start_duration_base(parser, p); }
 	break;
 	case 11:
-#line 2467 "upb/json/parser.rl"
+#line 2601 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_duration_base(parser, p)); }
 	break;
 	case 12:
-#line 2469 "upb/json/parser.rl"
-	{ p--; {cs = stack[--top]; goto _again;} }
+#line 2603 "upb/json/parser.rl"
+	{ p--; {cs = stack[--top];goto _again;} }
 	break;
 	case 13:
-#line 2474 "upb/json/parser.rl"
+#line 2608 "upb/json/parser.rl"
 	{ start_timestamp_base(parser, p); }
 	break;
 	case 14:
-#line 2475 "upb/json/parser.rl"
+#line 2609 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_timestamp_base(parser, p)); }
 	break;
 	case 15:
-#line 2477 "upb/json/parser.rl"
+#line 2611 "upb/json/parser.rl"
 	{ start_timestamp_fraction(parser, p); }
 	break;
 	case 16:
-#line 2478 "upb/json/parser.rl"
+#line 2612 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_timestamp_fraction(parser, p)); }
 	break;
 	case 17:
-#line 2480 "upb/json/parser.rl"
+#line 2614 "upb/json/parser.rl"
 	{ start_timestamp_zone(parser, p); }
 	break;
 	case 18:
-#line 2481 "upb/json/parser.rl"
+#line 2615 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_timestamp_zone(parser, p)); }
 	break;
 	case 19:
-#line 2483 "upb/json/parser.rl"
-	{ p--; {cs = stack[--top]; goto _again;} }
+#line 2617 "upb/json/parser.rl"
+	{ p--; {cs = stack[--top];goto _again;} }
 	break;
 	case 20:
-#line 2488 "upb/json/parser.rl"
+#line 2622 "upb/json/parser.rl"
+	{ start_fieldmask_path_text(parser, p); }
+	break;
+	case 21:
+#line 2623 "upb/json/parser.rl"
+	{ end_fieldmask_path_text(parser, p); }
+	break;
+	case 22:
+#line 2628 "upb/json/parser.rl"
+	{ start_fieldmask_path(parser); }
+	break;
+	case 23:
+#line 2629 "upb/json/parser.rl"
+	{ end_fieldmask_path(parser); }
+	break;
+	case 24:
+#line 2635 "upb/json/parser.rl"
+	{ p--; {cs = stack[--top];goto _again;} }
+	break;
+	case 25:
+#line 2640 "upb/json/parser.rl"
 	{
         if (is_wellknown_msg(parser, UPB_WELLKNOWN_TIMESTAMP)) {
-          {stack[top++] = cs; cs = 47; goto _again;}
+          {stack[top++] = cs; cs = 47;goto _again;}
         } else if (is_wellknown_msg(parser, UPB_WELLKNOWN_DURATION)) {
-          {stack[top++] = cs; cs = 40; goto _again;}
+          {stack[top++] = cs; cs = 40;goto _again;}
+        } else if (is_wellknown_msg(parser, UPB_WELLKNOWN_FIELDMASK)) {
+          {stack[top++] = cs; cs = 75;goto _again;}
         } else {
-          {stack[top++] = cs; cs = 32; goto _again;}
+          {stack[top++] = cs; cs = 32;goto _again;}
         }
       }
 	break;
-	case 21:
-#line 2499 "upb/json/parser.rl"
-	{ p--; {stack[top++] = cs; cs = 75; goto _again;} }
+	case 26:
+#line 2653 "upb/json/parser.rl"
+	{ p--; {stack[top++] = cs; cs = 78;goto _again;} }
 	break;
-	case 22:
-#line 2504 "upb/json/parser.rl"
+	case 27:
+#line 2658 "upb/json/parser.rl"
 	{
         if (is_wellknown_msg(parser, UPB_WELLKNOWN_ANY)) {
           start_any_member(parser, p);
@@ -15419,12 +16201,12 @@ _match:
         }
       }
 	break;
-	case 23:
-#line 2511 "upb/json/parser.rl"
+	case 28:
+#line 2665 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_membername(parser)); }
 	break;
-	case 24:
-#line 2514 "upb/json/parser.rl"
+	case 29:
+#line 2668 "upb/json/parser.rl"
 	{
         if (is_wellknown_msg(parser, UPB_WELLKNOWN_ANY)) {
           end_any_member(parser, p);
@@ -15433,8 +16215,8 @@ _match:
         }
       }
 	break;
-	case 25:
-#line 2525 "upb/json/parser.rl"
+	case 30:
+#line 2679 "upb/json/parser.rl"
 	{
         if (is_wellknown_msg(parser, UPB_WELLKNOWN_ANY)) {
           start_any_object(parser, p);
@@ -15443,8 +16225,8 @@ _match:
         }
       }
 	break;
-	case 26:
-#line 2534 "upb/json/parser.rl"
+	case 31:
+#line 2688 "upb/json/parser.rl"
 	{
         if (is_wellknown_msg(parser, UPB_WELLKNOWN_ANY)) {
           CHECK_RETURN_TOP(end_any_object(parser, p));
@@ -15453,57 +16235,58 @@ _match:
         }
       }
 	break;
-	case 27:
-#line 2546 "upb/json/parser.rl"
+	case 32:
+#line 2700 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(start_array(parser)); }
 	break;
-	case 28:
-#line 2550 "upb/json/parser.rl"
+	case 33:
+#line 2704 "upb/json/parser.rl"
 	{ end_array(parser); }
 	break;
-	case 29:
-#line 2555 "upb/json/parser.rl"
+	case 34:
+#line 2709 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(start_number(parser, p)); }
 	break;
-	case 30:
-#line 2556 "upb/json/parser.rl"
+	case 35:
+#line 2710 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_number(parser, p)); }
 	break;
-	case 31:
-#line 2558 "upb/json/parser.rl"
+	case 36:
+#line 2712 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(start_stringval(parser)); }
 	break;
-	case 32:
-#line 2559 "upb/json/parser.rl"
+	case 37:
+#line 2713 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_stringval(parser)); }
 	break;
-	case 33:
-#line 2561 "upb/json/parser.rl"
+	case 38:
+#line 2715 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_bool(parser, true)); }
 	break;
-	case 34:
-#line 2563 "upb/json/parser.rl"
+	case 39:
+#line 2717 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_bool(parser, false)); }
 	break;
-	case 35:
-#line 2565 "upb/json/parser.rl"
+	case 40:
+#line 2719 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_null(parser)); }
 	break;
-	case 36:
-#line 2567 "upb/json/parser.rl"
+	case 41:
+#line 2721 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(start_subobject_full(parser)); }
 	break;
-	case 37:
-#line 2568 "upb/json/parser.rl"
+	case 42:
+#line 2722 "upb/json/parser.rl"
 	{ end_subobject_full(parser); }
 	break;
-	case 38:
-#line 2573 "upb/json/parser.rl"
-	{ p--; {cs = stack[--top]; goto _again;} }
+	case 43:
+#line 2727 "upb/json/parser.rl"
+	{ p--; {cs = stack[--top];goto _again;} }
 	break;
-#line 2950 "upb/json/parser.c"
+#line 3707 "upb/json/parser.c"
 		}
 	}
+	goto _again;
 
 _again:
 	if ( cs == 0 )
@@ -15518,30 +16301,32 @@ _again:
 	while ( __nacts-- > 0 ) {
 		switch ( *__acts++ ) {
 	case 0:
-#line 2425 "upb/json/parser.rl"
-	{ p--; {cs = stack[--top]; goto _again;} }
-	break;
-	case 30:
-#line 2556 "upb/json/parser.rl"
-	{ CHECK_RETURN_TOP(end_number(parser, p)); }
-	break;
-	case 33:
-#line 2561 "upb/json/parser.rl"
-	{ CHECK_RETURN_TOP(end_bool(parser, true)); }
-	break;
-	case 34:
-#line 2563 "upb/json/parser.rl"
-	{ CHECK_RETURN_TOP(end_bool(parser, false)); }
+#line 2559 "upb/json/parser.rl"
+	{ p--; {cs = stack[--top];	if ( p == pe )
+		goto _test_eof;
+goto _again;} }
 	break;
 	case 35:
-#line 2565 "upb/json/parser.rl"
+#line 2710 "upb/json/parser.rl"
+	{ CHECK_RETURN_TOP(end_number(parser, p)); }
+	break;
+	case 38:
+#line 2715 "upb/json/parser.rl"
+	{ CHECK_RETURN_TOP(end_bool(parser, true)); }
+	break;
+	case 39:
+#line 2717 "upb/json/parser.rl"
+	{ CHECK_RETURN_TOP(end_bool(parser, false)); }
+	break;
+	case 40:
+#line 2719 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_null(parser)); }
 	break;
-	case 37:
-#line 2568 "upb/json/parser.rl"
+	case 42:
+#line 2722 "upb/json/parser.rl"
 	{ end_subobject_full(parser); }
 	break;
-#line 2990 "upb/json/parser.c"
+#line 3750 "upb/json/parser.c"
 		}
 	}
 	}
@@ -15549,7 +16334,7 @@ _again:
 	_out: {}
 	}
 
-#line 2601 "upb/json/parser.rl"
+#line 2755 "upb/json/parser.rl"
 
   if (p != pe) {
     upb_status_seterrf(&parser->status, "Parse error at '%.*s'\n", pe - p, p);
@@ -15572,6 +16357,7 @@ static bool end(void *closure, const void *hd) {
   /* Prevent compile warning on unused static constants. */
   UPB_UNUSED(json_start);
   UPB_UNUSED(json_en_duration_machine);
+  UPB_UNUSED(json_en_fieldmask_machine);
   UPB_UNUSED(json_en_number_machine);
   UPB_UNUSED(json_en_string_machine);
   UPB_UNUSED(json_en_timestamp_machine);
@@ -15580,11 +16366,7 @@ static bool end(void *closure, const void *hd) {
 
   parse(parser, hd, &eof_ch, 0, NULL);
 
-  return parser->current_state >= 
-#line 3030 "upb/json/parser.c"
-103
-#line 2631 "upb/json/parser.rl"
-;
+  return parser->current_state >= 106;
 }
 
 static void json_parser_reset(upb_json_parser *p) {
@@ -15601,13 +16383,13 @@ static void json_parser_reset(upb_json_parser *p) {
 
   /* Emit Ragel initialization of the parser. */
   
-#line 3050 "upb/json/parser.c"
+#line 3807 "upb/json/parser.c"
 	{
 	cs = json_start;
 	top = 0;
 	}
 
-#line 2648 "upb/json/parser.rl"
+#line 2803 "upb/json/parser.rl"
   p->current_state = cs;
   p->parser_top = top;
   accumulate_clear(p);
@@ -16511,6 +17293,57 @@ static void *startseq_nokey(void *closure, const void *handler_data) {
   return closure;
 }
 
+static void *startseq_fieldmask(void *closure, const void *handler_data) {
+  upb_json_printer *p = closure;
+  UPB_UNUSED(handler_data);
+  p->depth_++;
+  p->first_elem_[p->depth_] = true;
+  print_data(p, "\"", 1);
+  return closure;
+}
+
+static bool endseq_fieldmask(void *closure, const void *handler_data) {
+  upb_json_printer *p = closure;
+  UPB_UNUSED(handler_data);
+  p->depth_--;
+  print_data(p, "\"", 1);
+  return true;
+}
+
+static void *repeated_startstr_fieldmask(
+    void *closure, const void *handler_data,
+    size_t size_hint) {
+  upb_json_printer *p = closure;
+  UPB_UNUSED(handler_data);
+  UPB_UNUSED(size_hint);
+  print_comma(p);
+  return p;
+}
+
+static size_t repeated_str_fieldmask(
+    void *closure, const void *handler_data,
+    const char *str, size_t len,
+    const upb_bufhandle *handle) {
+  const char* limit = str + len;
+  bool upper = false;
+  size_t result_len = 0;
+  for (; str < limit; str++) {
+    if (*str == '_') {
+      upper = true;
+      continue;
+    }
+    if (upper && *str >= 'a' && *str <= 'z') {
+      char upper_char = toupper(*str);
+      CHK(putstr(closure, handler_data, &upper_char, 1, handle));
+    } else {
+      CHK(putstr(closure, handler_data, str, 1, handle));
+    }
+    upper = false;
+    result_len++;
+  }
+  return result_len;
+}
+
 static void *startmap_nokey(void *closure, const void *handler_data) {
   upb_json_printer *p = closure;
   UPB_UNUSED(handler_data);
@@ -16736,6 +17569,25 @@ void printer_sethandlers_any(const void *closure, upb_handlers *h) {
   UPB_UNUSED(closure);
 }
 
+/* Set up handlers for a fieldmask submessage. */
+void printer_sethandlers_fieldmask(const void *closure, upb_handlers *h) {
+  const upb_msgdef *md = upb_handlers_msgdef(h);
+  const upb_fielddef* f = upb_msgdef_itof(md, 1);
+
+  upb_handlerattr empty_attr = UPB_HANDLERATTR_INITIALIZER;
+
+  upb_handlers_setstartseq(h, f, startseq_fieldmask, &empty_attr);
+  upb_handlers_setendseq(h, f, endseq_fieldmask, &empty_attr);
+
+  upb_handlers_setstartmsg(h, printer_startmsg_noframe, &empty_attr);
+  upb_handlers_setendmsg(h, printer_endmsg_noframe, &empty_attr);
+
+  upb_handlers_setstartstr(h, f, repeated_startstr_fieldmask, &empty_attr);
+  upb_handlers_setstring(h, f, repeated_str_fieldmask, &empty_attr);
+
+  UPB_UNUSED(closure);
+}
+
 /* Set up handlers for a duration submessage. */
 void printer_sethandlers_duration(const void *closure, upb_handlers *h) {
   const upb_msgdef *md = upb_handlers_msgdef(h);
@@ -16891,6 +17743,9 @@ void printer_sethandlers(const void *closure, upb_handlers *h) {
       break;
     case UPB_WELLKNOWN_ANY:
       printer_sethandlers_any(closure, h);
+      return;
+    case UPB_WELLKNOWN_FIELDMASK:
+      printer_sethandlers_fieldmask(closure, h);
       return;
     case UPB_WELLKNOWN_DURATION:
       printer_sethandlers_duration(closure, h);
