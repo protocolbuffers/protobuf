@@ -311,6 +311,8 @@ static void assign_msg_wellknowntype(upb_msgdef *m) {
   }
   if (!strcmp(name, "google.protobuf.Any")) {
     m->well_known_type = UPB_WELLKNOWN_ANY;
+  } else if (!strcmp(name, "google.protobuf.FieldMask")) {
+    m->well_known_type = UPB_WELLKNOWN_FIELDMASK;
   } else if (!strcmp(name, "google.protobuf.Duration")) {
     m->well_known_type = UPB_WELLKNOWN_DURATION;
   } else if (!strcmp(name, "google.protobuf.Timestamp")) {
