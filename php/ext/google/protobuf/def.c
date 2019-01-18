@@ -786,11 +786,11 @@ static char* fill_segment(const char *segment, int length,
   return classname + length;
 }
 
-static char* fill_namespace(const char *package, const char *namespace_given,
+static char* fill_namespace(const char *package, const char *php_namespace,
                             char *classname) {
-  if (namespace_given != NULL) {
-    size_t namespace_len = strlen(namespace_given);
-    memcpy(classname, namespace_given, namespace_len);
+  if (php_namespace != NULL) {
+    size_t namespace_len = strlen(php_namespace);
+    memcpy(classname, php_namespace, namespace_len);
     classname += namespace_len;
     *classname = '\\';
     classname++;
@@ -814,7 +814,7 @@ static char* fill_namespace(const char *package, const char *namespace_given,
 
 static char* fill_classname(const char *fullname,
                             const char *package,
-                            const char *namespace_given,
+                            const char *php_namespace,
                             const char *prefix, char *classname) {
   int classname_start = 0;
   if (package != NULL) {
@@ -842,12 +842,36 @@ static char* fill_classname(const char *fullname,
   return classname;
 }
 
-static char* fill_qualified_classname(const char *fullname,
-                                      const char *package,
-                                      const char *namespace_given,
-                                      const char *prefix, char *classname) {
-  classname = fill_namespace(package, namespace_given, classname);
-  return fill_classname(fullname, package, namespace_given, prefix, classname);
+static zend_class_entry *register_class(const upb_filedef *file,
+                                        const char *fullname,
+                                        PHP_PROTO_HASHTABLE_VALUE desc_php) {
+  /* Prepend '.' to package name to make it absolute. In the 5 additional
+   * bytes allocated, one for '.', one for trailing 0, and 3 for 'GPB' if
+   * given message is google.protobuf.Empty.*/
+  const char *package = upb_filedef_package(file);
+  const char *php_namespace = upb_filedef_phpnamespace(file);
+  const char *prefix = upb_filedef_phpprefix(file);
+  size_t classname_len =
+      classname_len_max(fullname, package, php_namespace, prefix);
+  char *classname = ecalloc(sizeof(char), classname_len);
+  zend_class_entry* ret;
+
+  classname = fill_namespace(package, php_namespace, classname);
+  classname =
+      fill_classname(fullname, package, php_namespace, prefix, classname);
+
+  PHP_PROTO_CE_DECLARE pce;
+  if (php_proto_zend_lookup_class(classname, strlen(classname), &pce) ==
+      FAILURE) {
+    zend_error(E_ERROR, "Generated message class %s hasn't been defined",
+               classname);
+    return NULL;
+  }
+  ret = PHP_PROTO_CE_UNREF(pce);
+  add_ce_obj(ret, desc_php);
+  add_proto_obj(fullname, desc_php);
+  efree(classname);
+  return ret;
 }
 
 static void classname_no_prefix(const char *fullname, const char *package_name,
@@ -902,53 +926,38 @@ void internal_add_generated_file(const char *data, PHP_PROTO_SIZE data_len,
   // wrapper. These information are needed later for encoding, decoding and type
   // checking. However, sometimes we just have one of them. In order to find
   // them quickly, here, we store the mapping for them.
-  //
-#define CASE_TYPE(def_type_lower, desc_type, desc_type_lower)                \
-  CREATE_HASHTABLE_VALUE(desc, desc_php, desc_type, desc_type_lower##_type); \
-  desc->def_type_lower = def_type_lower;                                     \
-  add_def_obj(desc->def_type_lower, desc_php);                               \
-  /* Unlike other messages, MapEntry is shared by all map fields and doesn't \
-   * have generated PHP class.*/                                             \
-  if (upb_def_type(def) == UPB_DEF_MSG &&                                    \
-      upb_msgdef_mapentry(upb_downcast_msgdef(def))) {                       \
-    break;                                                                   \
-  }                                                                          \
-  /* Prepend '.' to package name to make it absolute. In the 5 additional    \
-   * bytes allocated, one for '.', one for trailing 0, and 3 for 'GPB' if    \
-   * given message is google.protobuf.Empty.*/                               \
-  const char *fullname = upb_##def_type_lower##_fullname(def_type_lower);    \
-  const char *package = upb_filedef_package(file);                           \
-  const char *php_namespace = upb_filedef_phpnamespace(file);                \
-  const char *prefix_given = upb_filedef_phpprefix(file);                    \
-  size_t classname_len =                                                     \
-      classname_len_max(fullname, package, php_namespace, prefix_given);     \
-  char *classname = ecalloc(sizeof(char), classname_len);                    \
-  fill_qualified_classname(fullname, package, php_namespace, prefix_given,   \
-                           classname);                                       \
-  PHP_PROTO_CE_DECLARE pce;                                                  \
-  if (php_proto_zend_lookup_class(classname, strlen(classname), &pce) ==     \
-      FAILURE) {                                                             \
-    zend_error(E_ERROR, "Generated message class %s hasn't been defined",    \
-               classname);                                                   \
-    return;                                                                  \
-  } else {                                                                   \
-    desc->klass = PHP_PROTO_CE_UNREF(pce);                                   \
-  }                                                                          \
-  add_ce_obj(desc->klass, desc_php);                                         \
-  add_proto_obj(upb_##def_type_lower##_fullname(desc->def_type_lower),       \
-                desc_php);                                                   \
-  efree(classname);
 
   for (i = 0; i < upb_filedef_msgcount(file); i++) {
     const upb_msgdef *msgdef = upb_filedef_msg(file, i);
-    CASE_TYPE(msgdef, Descriptor, descriptor)
-    PHP_PROTO_HASHTABLE_VALUE desc_php = get_def_obj(msgdef);
+    CREATE_HASHTABLE_VALUE(desc, desc_php, Descriptor, descriptor_type);
+    desc->msgdef = msgdef;
+    add_def_obj(desc->msgdef, desc_php);
+
+    // Unlike other messages, MapEntry is shared by all map fields and doesn't
+    // have generated PHP class.
+    if (upb_msgdef_mapentry(msgdef)) {
+      continue;
+    }
+
+    desc->klass = register_class(file, upb_msgdef_fullname(msgdef), desc_php);
+
+    if (desc->klass == NULL) {
+      return;
+    }
+
     build_class_from_descriptor(desc_php TSRMLS_CC);
   }
 
   for (i = 0; i < upb_filedef_enumcount(file); i++) {
-    const upb_enumdef *def = upb_filedef_enum(file, i);
-    CASE_TYPE(enumdef, EnumDescriptor, enum_descriptor)
+    const upb_enumdef *enumdef = upb_filedef_enum(file, i);
+    CREATE_HASHTABLE_VALUE(desc, desc_php, EnumDescriptor, enum_descriptor_type);
+    desc->enumdef = enumdef;
+    add_def_obj(desc->enumdef, desc_php);
+    desc->klass = register_class(file, upb_enumdef_fullname(enumdef), desc_php);
+
+    if (desc->klass == NULL) {
+      return;
+    }
   }
 }
 
