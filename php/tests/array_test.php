@@ -530,6 +530,22 @@ class RepeatedFieldTest extends \PHPUnit\Framework\TestCase
     }
 
     #########################################################
+    # Test reference in array
+    #########################################################
+
+    public function testReferenceInArray()
+    {
+        $m = new TestMessage();
+        $subs = [1, 2];
+
+        foreach ($subs as &$sub) {
+          $sub = new Sub(['a' => $sub]);
+        }
+
+        $m->setRepeatedMessage($subs);
+    }
+
+    #########################################################
     # Test memory leak
     #########################################################
 
