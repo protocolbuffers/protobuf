@@ -167,7 +167,8 @@ static void map_begin_internal(Map *map, MapIter *iter) {
   upb_strtable_begin(&iter->it, &map->table);
 }
 
-static HashTable *map_field_get_gc(zval *object, CACHED_VALUE **table, int *n) {
+static HashTable *map_field_get_gc(zval *object, CACHED_VALUE **table,
+                                   int *n TSRMLS_DC) {
   // TODO(teboring): Unfortunately, zend engine does not support garbage
   // collection for custom array. We have to use zend engine's native array
   // instead.
