@@ -64,7 +64,7 @@ option objc_class_prefix = "GPB";
 //       foo = any.unpack(Foo.class);
 //     }
 //
-// Example 3: Pack and unpack a message in Python.
+//  Example 3: Pack and unpack a message in Python.
 //
 //     foo = Foo(...)
 //     any = Any()
@@ -74,7 +74,7 @@ option objc_class_prefix = "GPB";
 //       any.Unpack(foo)
 //       ...
 //
-// Example 4: Pack and unpack a message in Go
+//  Example 4: Pack and unpack a message in Go
 //
 //      foo := &pb.Foo{...}
 //      any, err := ptypes.MarshalAny(foo)
