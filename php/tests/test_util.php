@@ -65,7 +65,7 @@ class TestUtil
         $m->setOptionalDouble(1.6);
         $m->setOptionalBool(true);
         $m->setOptionalString('a');
-        $m->setOptionalBytes('b');
+        $m->setOptionalBytes('bbbb');
         $m->setOptionalEnum(TestEnum::ONE);
         $sub = new Sub();
         $m->setOptionalMessage($sub);
@@ -85,7 +85,7 @@ class TestUtil
         self::appendHelper($m, 'RepeatedDouble',   1.6);
         self::appendHelper($m, 'RepeatedBool',     true);
         self::appendHelper($m, 'RepeatedString',   'a');
-        self::appendHelper($m, 'RepeatedBytes',    'b');
+        self::appendHelper($m, 'RepeatedBytes',    'bbbb');
         self::appendHelper($m, 'RepeatedEnum',     TestEnum::ZERO);
         self::appendHelper($m, 'RepeatedMessage',  new Sub());
         $m->getRepeatedMessage()[0]->setA(34);
@@ -104,7 +104,7 @@ class TestUtil
         self::appendHelper($m, 'RepeatedDouble',   2.6);
         self::appendHelper($m, 'RepeatedBool',     false);
         self::appendHelper($m, 'RepeatedString',   'c');
-        self::appendHelper($m, 'RepeatedBytes',    'd');
+        self::appendHelper($m, 'RepeatedBytes',    'dddd');
         self::appendHelper($m, 'RepeatedEnum',     TestEnum::ONE);
         self::appendHelper($m, 'RepeatedMessage',  new Sub());
         $m->getRepeatedMessage()[1]->SetA(35);
@@ -123,7 +123,7 @@ class TestUtil
         self::kvUpdateHelper($m, 'MapInt32Double', 1, 3.6);
         self::kvUpdateHelper($m, 'MapBoolBool', true, true);
         self::kvUpdateHelper($m, 'MapStringString', 'e', 'e');
-        self::kvUpdateHelper($m, 'MapInt32Bytes', 1, 'f');
+        self::kvUpdateHelper($m, 'MapInt32Bytes', 1, 'ffff');
         self::kvUpdateHelper($m, 'MapInt32Enum', 1, TestEnum::ONE);
         self::kvUpdateHelper($m, 'MapInt32Message', 1, new Sub());
         $m->getMapInt32Message()[1]->SetA(36);
@@ -234,7 +234,7 @@ class TestUtil
         assert(1.6 === $m->getOptionalDouble());
         assert(true=== $m->getOptionalBool());
         assert('a' === $m->getOptionalString());
-        assert('b' === $m->getOptionalBytes());
+        assert('bbbb' === $m->getOptionalBytes());
         assert(TestEnum::ONE === $m->getOptionalEnum());
         assert(33  === $m->getOptionalMessage()->getA());
 
@@ -260,7 +260,7 @@ class TestUtil
         assert(1.6 === $m->getRepeatedDouble()[0]);
         assert(true=== $m->getRepeatedBool()[0]);
         assert('a' === $m->getRepeatedString()[0]);
-        assert('b' === $m->getRepeatedBytes()[0]);
+        assert('bbbb' === $m->getRepeatedBytes()[0]);
         assert(TestEnum::ZERO === $m->getRepeatedEnum()[0]);
         assert(34  === $m->getRepeatedMessage()[0]->getA());
 
@@ -286,7 +286,7 @@ class TestUtil
         assert(2.6 === $m->getRepeatedDouble()[1]);
         assert(false === $m->getRepeatedBool()[1]);
         assert('c' === $m->getRepeatedString()[1]);
-        assert('d' === $m->getRepeatedBytes()[1]);
+        assert('dddd' === $m->getRepeatedBytes()[1]);
         assert(TestEnum::ONE === $m->getRepeatedEnum()[1]);
         assert(35  === $m->getRepeatedMessage()[1]->getA());
 
@@ -312,7 +312,7 @@ class TestUtil
         assert(3.6 === $m->getMapInt32Double()[1]);
         assert(true === $m->getMapBoolBool()[true]);
         assert('e' === $m->getMapStringString()['e']);
-        assert('f' === $m->getMapInt32Bytes()[1]);
+        assert('ffff' === $m->getMapInt32Bytes()[1]);
         assert(TestEnum::ONE === $m->getMapInt32Enum()[1]);
         assert(36  === $m->getMapInt32Message()[1]->GetA());
     }
@@ -334,7 +334,7 @@ class TestUtil
             "619A9999999999F93F" .
             "6801" .
             "720161" .
-            "7A0162" .
+            "7A0462626262" .
             "800101" .
             "8A01020821" .
 
@@ -366,8 +366,8 @@ class TestUtil
             "D80200" .
             "E2020161" .
             "E2020163" .
-            "EA020162" .
-            "EA020164" .
+            "EA020462626262" .
+            "EA020464646464" .
             "F00200" .
             "F00201" .
             "FA02020822" .
@@ -387,7 +387,7 @@ class TestUtil
             "92050B080111CDCCCCCCCCCC0C40" .
             "9A050408011001" .
             "A205060a0165120165" .
-            "AA05050801120166" .
+            "AA05080801120466666666" .
             "B2050408011001" .
             "Ba0506080112020824"
         );
