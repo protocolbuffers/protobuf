@@ -29,8 +29,15 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <php.h>
+#include <Zend/zend_exceptions.h>
 #include <stdlib.h>
 #include <inttypes.h>
+
+#if PHP_MAJOR_VERSION < 7
+#include <Zend/zend_compile.h>
+#else
+#include <Zend/zend_inheritance.h>
+#endif
 
 #include "protobuf.h"
 #include "utf8.h"
@@ -83,7 +90,7 @@ static HashTable* message_get_properties(zval* object TSRMLS_DC);
 // Define object free method.
 PHP_PROTO_OBJECT_FREE_START(MessageHeader, message)
   if (*(void**)intern->data != NULL) {
-    stringsink_uninit(*(void**)intern->data);
+    stringsink_uninit_opaque(*(void**)intern->data);
     FREE(*(void**)intern->data);
   }
   FREE(intern->data);
@@ -904,12 +911,11 @@ PHP_METHOD(Field_Cardinality, name) {
     case 3:
       PHP_PROTO_RETURN_STRING("CARDINALITY_REPEATED", 1);
     default:
-      zend_throw_exception(
-          NULL,
+      zend_throw_exception_ex(
+          NULL, 0 TSRMLS_CC,
           "Enum Google\\Protobuf\\Field_Cardinality has no name "
           "defined for value %d.",
-          value,
-          0 TSRMLS_CC);
+          value);
   }
 }
 
@@ -927,12 +933,11 @@ PHP_METHOD(Field_Cardinality, value) {
   if (strncmp(name, "CARDINALITY_REQUIRED", name_len) == 0) RETURN_LONG(2);
   if (strncmp(name, "CARDINALITY_REPEATED", name_len) == 0) RETURN_LONG(3);
 
-  zend_throw_exception(
-      NULL,
+  zend_throw_exception_ex(
+      NULL, 0 TSRMLS_CC,
       "Enum Google\\Protobuf\\Field_Cardinality has no value "
       "defined for name %s.",
-      name,
-      0 TSRMLS_CC);
+      name);
 }
 
 // -----------------------------------------------------------------------------
@@ -1042,12 +1047,10 @@ PHP_METHOD(Field_Kind, name) {
     case 18:
       PHP_PROTO_RETURN_STRING("TYPE_SINT64", 1);
     default:
-      zend_throw_exception(
-          NULL,
-          "Enum Google\\Protobuf\\Field_Kind has no name "
-          "defined for value %d.",
-          value,
-          0 TSRMLS_CC);
+      zend_throw_exception_ex(NULL, 0 TSRMLS_CC,
+                              "Enum Google\\Protobuf\\Field_Kind has no name "
+                              "defined for value %d.",
+                              value);
   }
 }
 
@@ -1080,12 +1083,10 @@ PHP_METHOD(Field_Kind, value) {
   if (strncmp(name, "TYPE_SINT32", name_len) == 0) RETURN_LONG(17);
   if (strncmp(name, "TYPE_SINT64", name_len) == 0) RETURN_LONG(18);
 
-  zend_throw_exception(
-      NULL,
-      "Enum Google\\Protobuf\\Field_Kind has no value "
-      "defined for name %s.",
-      name,
-      0 TSRMLS_CC);
+  zend_throw_exception_ex(NULL, 0 TSRMLS_CC,
+                          "Enum Google\\Protobuf\\Field_Kind has no value "
+                          "defined for name %s.",
+                          name);
 }
 
 // -----------------------------------------------------------------------------
@@ -1117,12 +1118,10 @@ PHP_METHOD(NullValue, name) {
     case 0:
       PHP_PROTO_RETURN_STRING("NULL_VALUE", 1);
     default:
-      zend_throw_exception(
-          NULL,
-          "Enum Google\\Protobuf\\NullValue has no name "
-          "defined for value %d.",
-          value,
-          0 TSRMLS_CC);
+      zend_throw_exception_ex(NULL, 0 TSRMLS_CC,
+                              "Enum Google\\Protobuf\\NullValue has no name "
+                              "defined for value %d.",
+                              value);
   }
 }
 
@@ -1137,12 +1136,10 @@ PHP_METHOD(NullValue, value) {
 
   if (strncmp(name, "NULL_VALUE", name_len) == 0) RETURN_LONG(0);
 
-  zend_throw_exception(
-      NULL,
-      "Enum Google\\Protobuf\\NullValue has no value "
-      "defined for name %s.",
-      name,
-      0 TSRMLS_CC);
+  zend_throw_exception_ex(NULL, 0 TSRMLS_CC,
+                          "Enum Google\\Protobuf\\NullValue has no value "
+                          "defined for name %s.",
+                          name);
 }
 
 // -----------------------------------------------------------------------------
@@ -1178,12 +1175,10 @@ PHP_METHOD(Syntax, name) {
     case 1:
       PHP_PROTO_RETURN_STRING("SYNTAX_PROTO3", 1);
     default:
-      zend_throw_exception(
-          NULL,
-          "Enum Google\\Protobuf\\Syntax has no name "
-          "defined for value %d.",
-          value,
-          0 TSRMLS_CC);
+      zend_throw_exception_ex(NULL, 0 TSRMLS_CC,
+                              "Enum Google\\Protobuf\\Syntax has no name "
+                              "defined for value %d.",
+                              value);
   }
 }
 
@@ -1199,12 +1194,10 @@ PHP_METHOD(Syntax, value) {
   if (strncmp(name, "SYNTAX_PROTO2", name_len) == 0) RETURN_LONG(0);
   if (strncmp(name, "SYNTAX_PROTO3", name_len) == 0) RETURN_LONG(1);
 
-  zend_throw_exception(
-      NULL,
-      "Enum Google\\Protobuf\\Syntax has no value "
-      "defined for name %s.",
-      name,
-      0 TSRMLS_CC);
+  zend_throw_exception_ex(NULL, 0 TSRMLS_CC,
+                          "Enum Google\\Protobuf\\Syntax has no value "
+                          "defined for name %s.",
+                          name);
 }
 
 // -----------------------------------------------------------------------------

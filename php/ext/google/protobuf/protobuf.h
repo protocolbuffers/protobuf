@@ -310,8 +310,10 @@ static inline int php_proto_zend_hash_index_update_mem(HashTable* ht, ulong h,
 static inline int php_proto_zend_hash_update_zval(HashTable* ht,
                                                   const char* key, uint key_len,
                                                   zval* pData) {
+  void* result = NULL;
   zend_string* internal_key = zend_string_init(key, key_len, 0);
-  zend_hash_update(ht, internal_key, pData);
+  result = zend_hash_update(ht, internal_key, pData);
+  return result != NULL ? SUCCESS : FAILURE;
 }
 
 static inline int php_proto_zend_hash_update_mem(HashTable* ht, const char* key,
@@ -682,6 +684,7 @@ void double_value_init(TSRMLS_D);
 void duration_init(TSRMLS_D);
 void empty_init(TSRMLS_D);
 void enum_descriptor_init(TSRMLS_D);
+void enum_value_descriptor_init(TSRMLS_D);
 void enum_init(TSRMLS_D);
 void enum_value_init(TSRMLS_D);
 void field_cardinality_init(TSRMLS_D);
@@ -711,8 +714,8 @@ void struct_init(TSRMLS_D);
 void syntax_init(TSRMLS_D);
 void timestamp_init(TSRMLS_D);
 void type_init(TSRMLS_D);
-void uint32_value_init(TSRMLS_D);
-void uint64_value_init(TSRMLS_D);
+void u_int32_value_init(TSRMLS_D);
+void u_int64_value_init(TSRMLS_D);
 void util_init(TSRMLS_D);
 void value_init(TSRMLS_D);
 
@@ -966,7 +969,7 @@ PHP_METHOD(Message, __construct);
 const upb_pbdecodermethod *new_fillmsg_decodermethod(Descriptor *desc,
                                                      const void *owner);
 void serialize_to_string(zval* val, zval* return_value TSRMLS_DC);
-void merge_from_string(const char* data, int data_len, const Descriptor* desc,
+void merge_from_string(const char* data, int data_len, Descriptor* desc,
                        MessageHeader* msg);
 
 PHP_METHOD(Message, serializeToString);
@@ -1448,6 +1451,7 @@ extern zend_class_entry* value_type;
 upb_fieldtype_t to_fieldtype(upb_descriptortype_t type);
 const zend_class_entry* field_type_class(
     const upb_fielddef* field PHP_PROTO_TSRMLS_DC);
+void stringsink_uninit_opaque(void *sink);
 
 // -----------------------------------------------------------------------------
 // Utilities.
