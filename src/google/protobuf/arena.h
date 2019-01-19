@@ -153,6 +153,23 @@ struct ArenaOptions {
         on_arena_destruction(NULL),
         on_arena_allocation(NULL) {}
 
+  ArenaOptions(size_t start_block_size,
+               size_t max_block_size,
+               char* initial_block,
+               size_t initial_block_size,
+               void* (*block_alloc)(size_t),
+               void (*block_dealloc)(void*, size_t),
+      : start_block_size(start_block_size),
+        max_block_size(max_block_size),
+        initial_block(initial_block),
+        initial_block_size(initial_block_size),
+        block_alloc(block_alloc),
+        block_dealloc(block_dealloc),
+        on_arena_init(NULL),
+        on_arena_reset(NULL),
+        on_arena_destruction(NULL),
+        on_arena_allocation(NULL) {}
+
  private:
   // Hooks for adding external functionality such as user-specific metrics
   // collection, specific debugging abilities, etc.
