@@ -1128,4 +1128,11 @@ class EncodeDecodeTest extends TestBase
         $this->assertSame("\"foo.barBaz,qux\"", $m->serializeToJsonString());
     }
 
+    public function testDecodeEmptyFieldMask()
+    {
+        $m = new FieldMask();
+        $m->mergeFromJsonString("\"\"");
+        $this->assertEquals("", $m->serializeToString());
+    }
+
 }

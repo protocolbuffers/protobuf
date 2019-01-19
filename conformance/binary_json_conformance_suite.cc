@@ -2042,6 +2042,10 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
       "FieldMask", REQUIRED,
       R"({"optionalFieldMask": "foo,barBaz"})",
       R"(optional_field_mask: {paths: "foo" paths: "bar_baz"})");
+  RunValidJsonTest(
+      "EmptyFieldMask", REQUIRED,
+      R"({"optionalFieldMask": ""})",
+      R"(optional_field_mask: {})");
   ExpectParseFailureForJson(
       "FieldMaskInvalidCharacter", RECOMMENDED,
       R"({"optionalFieldMask": "foo,bar_bar"})");
