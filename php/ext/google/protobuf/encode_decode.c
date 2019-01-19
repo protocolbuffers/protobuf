@@ -107,23 +107,6 @@ typedef struct {
 static void stackenv_init(stackenv* se, const char* errmsg);
 static void stackenv_uninit(stackenv* se);
 
-// Callback invoked by upb if any error occurs during parsing or serialization.
-static bool env_error_func(void* ud, const upb_status* status) {
-    char err_msg[100] = "";
-    stackenv* se = ud;
-    // Free the env -- zend_error will longjmp up the stack past the
-    // encode/decode function so it would not otherwise have been freed.
-    stackenv_uninit(se);
-
-    // TODO(teboring): have a way to verify that this is actually a parse error,
-    // instead of just throwing "parse error" unconditionally.
-    sprintf(err_msg, se->php_error_template, upb_status_errmsg(status));
-    TSRMLS_FETCH();
-    zend_throw_exception(NULL, err_msg, 0 TSRMLS_CC);
-    // Never reached.
-    return false;
-}
-
 static void stackenv_init(stackenv* se, const char* errmsg) {
   se->php_error_template = errmsg;
   se->arena = upb_arena_new();
@@ -132,6 +115,14 @@ static void stackenv_init(stackenv* se, const char* errmsg) {
 
 static void stackenv_uninit(stackenv* se) {
   upb_arena_free(se->arena);
+
+  if (!upb_ok(&se->status)) {
+    // TODO(teboring): have a way to verify that this is actually a parse error,
+    // instead of just throwing "parse error" unconditionally.
+    TSRMLS_FETCH();
+    zend_throw_exception_ex(NULL, 0 TSRMLS_CC, se->php_error_template,
+                            upb_status_errmsg(&se->status));
+  }
 }
 
 // -----------------------------------------------------------------------------
@@ -1010,8 +1001,7 @@ static bool add_unknown_handler(void* closure, const void* hd, const char* buf,
   return true;
 }
 
-static void add_handlers_for_message(const void* closure,
-                                     upb_handlers* h) {
+void add_handlers_for_message(const void* closure, upb_handlers* h) {
   const upb_msgdef* msgdef = upb_handlers_msgdef(h);
   TSRMLS_FETCH();
   Descriptor* desc =
@@ -1060,50 +1050,18 @@ static void add_handlers_for_message(const void* closure,
   }
 }
 
-// Creates upb handlers for populating a message.
-static const upb_handlers *new_fill_handlers(Descriptor* desc,
-                                             const void* owner) {
-  // TODO(cfallin, haberman): once upb gets a caching/memoization layer for
-  // handlers, reuse subdef handlers so that e.g. if we already parse
-  // B-with-field-of-type-C, we don't have to rebuild the whole hierarchy to
-  // parse A-with-field-of-type-B-with-field-of-type-C.
-  return upb_handlers_newfrozen(desc->msgdef, owner,
-                                add_handlers_for_message, NULL);
-}
-
 // Constructs the handlers for filling a message's data into an in-memory
 // object.
 const upb_handlers* get_fill_handlers(Descriptor* desc) {
-  if (!desc->fill_handlers) {
-    desc->fill_handlers =
-        new_fill_handlers(desc, &desc->fill_handlers);
-  }
-  return desc->fill_handlers;
-}
-
-const upb_pbdecodermethod *new_fillmsg_decodermethod(Descriptor* desc,
-                                                     const void* owner) {
-  const upb_handlers* handlers = get_fill_handlers(desc);
-  upb_pbdecodermethodopts opts;
-  upb_pbdecodermethodopts_init(&opts, handlers);
-
-  return upb_pbdecodermethod_new(&opts, owner);
+  return upb_handlercache_get(desc->pool->fill_handler_cache, desc->msgdef);
 }
 
 static const upb_pbdecodermethod *msgdef_decodermethod(Descriptor* desc) {
-  if (desc->fill_method == NULL) {
-    desc->fill_method = new_fillmsg_decodermethod(
-        desc, &desc->fill_method);
-  }
-  return desc->fill_method;
+  return upb_pbcodecache_get(desc->pool->fill_method_cache, desc->msgdef);
 }
 
 static const upb_json_parsermethod *msgdef_jsonparsermethod(Descriptor* desc) {
-  if (desc->json_fill_method == NULL) {
-    desc->json_fill_method =
-        upb_json_parsermethod_new(desc->msgdef, &desc->json_fill_method);
-  }
-  return desc->json_fill_method;
+  return upb_json_codecache_get(desc->pool->json_fill_method_cache, desc->msgdef);
 }
 
 // -----------------------------------------------------------------------------
@@ -1356,7 +1314,7 @@ static void putjsonany(MessageHeader* msg, const Descriptor* desc,
       subsink.handlers =
           msgdef_json_serialize_handlers(payload_desc, true);
       subsink.closure = sink.closure;
-      putrawmsg(intern, payload_desc, &subsink, depth, true,
+      putrawmsg(intern, payload_desc, subsink, depth, true,
                 is_wellknown TSRMLS_CC);
 
       zval_dtor(&val);
@@ -1680,29 +1638,18 @@ static void putarray(zval* array, const upb_fielddef* f, upb_sink sink,
 }
 
 static const upb_handlers* msgdef_pb_serialize_handlers(Descriptor* desc) {
-  if (desc->pb_serialize_handlers == NULL) {
-    desc->pb_serialize_handlers =
-        upb_pb_encoder_newhandlers(desc->msgdef, &desc->pb_serialize_handlers);
-  }
-  return desc->pb_serialize_handlers;
+  return upb_handlercache_get(desc->pool->pb_serialize_handler_cache,
+                              desc->msgdef);
 }
 
 static const upb_handlers* msgdef_json_serialize_handlers(
     Descriptor* desc, bool preserve_proto_fieldnames) {
   if (preserve_proto_fieldnames) {
-    if (desc->json_serialize_handlers == NULL) {
-      desc->json_serialize_handlers =
-          upb_json_printer_newhandlers(
-              desc->msgdef, true, &desc->json_serialize_handlers);
-    }
-    return desc->json_serialize_handlers;
+    return upb_handlercache_get(
+        desc->pool->json_serialize_handler_preserve_cache, desc->msgdef);
   } else {
-    if (desc->json_serialize_handlers_preserve == NULL) {
-      desc->json_serialize_handlers_preserve =
-          upb_json_printer_newhandlers(
-              desc->msgdef, false, &desc->json_serialize_handlers_preserve);
-    }
-    return desc->json_serialize_handlers_preserve;
+    return upb_handlercache_get(desc->pool->json_serialize_handler_cache,
+                                desc->msgdef);
   }
 }
 
@@ -1724,7 +1671,7 @@ void serialize_to_string(zval* val, zval* return_value TSRMLS_DC) {
     upb_pb_encoder* encoder;
 
     stackenv_init(&se, "Error occurred during encoding: %s");
-    encoder = upb_pb_encoder_create(&se.env, serialize_handlers, sink.sink);
+    encoder = upb_pb_encoder_create(se.arena, serialize_handlers, sink.sink);
 
     putmsg(val, desc, upb_pb_encoder_input(encoder), 0, false TSRMLS_CC);
 
@@ -1749,7 +1696,7 @@ void merge_from_string(const char* data, int data_len, Descriptor* desc,
   stackenv_init(&se, "Error occurred during parsing: %s");
 
   upb_sink_reset(&sink, h, msg);
-  decoder = upb_pbdecoder_create(&se.env, method, sink);
+  decoder = upb_pbdecoder_create(se.arena, method, sink, &se.status);
   upb_bufsrc_putbuf(data, data_len, upb_pbdecoder_input(decoder));
 
   stackenv_uninit(&se);
@@ -1791,7 +1738,7 @@ PHP_METHOD(Message, serializeToJsonString) {
     stackenv se;
 
     stackenv_init(&se, "Error occurred during encoding: %s");
-    printer = upb_json_printer_create(&se.env, serialize_handlers, sink.sink);
+    printer = upb_json_printer_create(se.arena, serialize_handlers, sink.sink);
 
     putmsg(getThis(), desc, upb_json_printer_input(printer), 0, true TSRMLS_CC);
 
@@ -1832,8 +1779,8 @@ PHP_METHOD(Message, mergeFromJsonString) {
     stackenv_init(&se, "Error occurred during parsing: %s");
 
     upb_sink_reset(&sink, get_fill_handlers(desc), msg);
-    parser = upb_json_parser_create(&se.env, method, generated_pool->symtab,
-                                    sink, ignore_json_unknown);
+    parser = upb_json_parser_create(se.arena, method, generated_pool->symtab,
+                                    sink, &se.status, ignore_json_unknown);
     upb_bufsrc_putbuf(data, data_len, upb_json_parser_input(parser));
 
     stackenv_uninit(&se);

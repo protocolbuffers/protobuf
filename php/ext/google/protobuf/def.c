@@ -164,12 +164,6 @@ static void descriptor_init_c_instance(Descriptor *desc TSRMLS_DC) {
   desc->msgdef = NULL;
   desc->layout = NULL;
   desc->klass = NULL;
-  desc->fill_handlers = NULL;
-  desc->fill_method = NULL;
-  desc->json_fill_method = NULL;
-  desc->pb_serialize_handlers = NULL;
-  desc->json_serialize_handlers = NULL;
-  desc->json_serialize_handlers_preserve = NULL;
 }
 
 PHP_METHOD(Descriptor, getClass) {
@@ -621,17 +615,24 @@ void init_generated_pool_once(TSRMLS_D) {
 static void internal_descriptor_pool_init_c_instance(
     InternalDescriptorPool *pool TSRMLS_DC) {
   pool->symtab = upb_symtab_new();
-
-  ALLOC_HASHTABLE(pool->pending_list);
-  zend_hash_init(pool->pending_list, 1, NULL, ZVAL_PTR_DTOR, 0);
+  pool->fill_handler_cache =
+      upb_handlercache_new(add_handlers_for_message, NULL);
+  pool->pb_serialize_handler_cache = upb_pb_encoder_newcache();
+  pool->json_serialize_handler_cache = upb_json_printer_newcache(false);
+  pool->json_serialize_handler_preserve_cache = upb_json_printer_newcache(true);
+  pool->fill_method_cache = upb_pbcodecache_new(pool->fill_handler_cache);
+  pool->json_fill_method_cache = upb_json_codecache_new();
 }
 
 static void internal_descriptor_pool_free_c(
     InternalDescriptorPool *pool TSRMLS_DC) {
   upb_symtab_free(pool->symtab);
-
-  zend_hash_destroy(pool->pending_list);
-  FREE_HASHTABLE(pool->pending_list);
+  upb_handlercache_free(pool->fill_handler_cache);
+  upb_handlercache_free(pool->pb_serialize_handler_cache);
+  upb_handlercache_free(pool->json_serialize_handler_cache);
+  upb_handlercache_free(pool->json_serialize_handler_preserve_cache);
+  upb_pbcodecache_free(pool->fill_method_cache);
+  upb_json_codecache_free(pool->json_fill_method_cache);
 }
 
 static void descriptor_pool_init_c_instance(DescriptorPool *pool TSRMLS_DC) {
@@ -845,9 +846,9 @@ static char* fill_classname(const char *fullname,
 static zend_class_entry *register_class(const upb_filedef *file,
                                         const char *fullname,
                                         PHP_PROTO_HASHTABLE_VALUE desc_php) {
-  /* Prepend '.' to package name to make it absolute. In the 5 additional
-   * bytes allocated, one for '.', one for trailing 0, and 3 for 'GPB' if
-   * given message is google.protobuf.Empty.*/
+  // Prepend '.' to package name to make it absolute. In the 5 additional
+  // bytes allocated, one for '.', one for trailing 0, and 3 for 'GPB' if
+  // given message is google.protobuf.Empty.
   const char *package = upb_filedef_package(file);
   const char *php_namespace = upb_filedef_phpnamespace(file);
   const char *prefix = upb_filedef_phpprefix(file);
@@ -931,6 +932,7 @@ void internal_add_generated_file(const char *data, PHP_PROTO_SIZE data_len,
     const upb_msgdef *msgdef = upb_filedef_msg(file, i);
     CREATE_HASHTABLE_VALUE(desc, desc_php, Descriptor, descriptor_type);
     desc->msgdef = msgdef;
+    desc->pool = pool;
     add_def_obj(desc->msgdef, desc_php);
 
     // Unlike other messages, MapEntry is shared by all map fields and doesn't
