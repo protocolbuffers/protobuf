@@ -433,6 +433,7 @@ T(sint64,   int64_t,  upb_zzenc_64, encode_varint)
 
 /* code to build the handlers *************************************************/
 
+#include <stdio.h>
 static void newhandlers_callback(const void *closure, upb_handlers *h) {
   const upb_msgdef *m;
   upb_msg_field_iter i;

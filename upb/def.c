@@ -818,7 +818,7 @@ bool upb_oneof_done(upb_oneof_iter *iter) {
 }
 
 upb_fielddef *upb_oneof_iter_field(const upb_oneof_iter *iter) {
-  return (upb_fielddef*)upb_value_getptr(upb_inttable_iter_value(iter));
+  return (upb_fielddef *)upb_value_getconstptr(upb_inttable_iter_value(iter));
 }
 
 void upb_oneof_iter_setdone(upb_oneof_iter *iter) {
@@ -936,9 +936,6 @@ typedef struct {
 } symtab_addctx;
 
 static char* strviewdup(const symtab_addctx *ctx, upb_strview view) {
-  if (view.size == 0) {
-    return NULL;
-  }
   return upb_strdup2(view.data, view.size, ctx->alloc);
 }
 
@@ -1329,6 +1326,8 @@ static bool create_enumdef(
     }
   }
 
+  upb_inttable_compact2(&e->iton, ctx->alloc);
+
   return true;
 }
 
@@ -1378,6 +1377,7 @@ static bool create_msgdef(const symtab_addctx *ctx, const char *prefix,
 
   CHK(assign_msg_indices(m, ctx->status));
   assign_msg_wellknowntype(m);
+  upb_inttable_compact2(&m->itof, ctx->alloc);
 
   /* This message is built.  Now build nested messages and enums. */
 
@@ -1571,10 +1571,15 @@ static bool build_filedef(
   /* Read options. */
   file_options_proto = google_protobuf_FileDescriptorProto_options(file_proto);
   if (file_options_proto) {
-    file->phpprefix = strviewdup(
-        ctx, google_protobuf_FileOptions_php_class_prefix(file_options_proto));
-    file->phpnamespace = strviewdup(
-        ctx, google_protobuf_FileOptions_php_namespace(file_options_proto));
+    if (google_protobuf_FileOptions_has_php_class_prefix(file_options_proto)) {
+      file->phpprefix = strviewdup(
+          ctx,
+          google_protobuf_FileOptions_php_class_prefix(file_options_proto));
+    }
+    if (google_protobuf_FileOptions_has_php_namespace(file_options_proto)) {
+      file->phpnamespace = strviewdup(
+          ctx, google_protobuf_FileOptions_php_namespace(file_options_proto));
+    }
   }
 
   /* Verify dependencies. */
