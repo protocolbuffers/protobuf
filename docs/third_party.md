@@ -89,6 +89,7 @@ These are projects we know about implementing Protocol Buffers for other program
 * Scala: http://code.google.com/p/protobuf-scala
 * Scala: https://github.com/SandroGrzicic/ScalaBuff
 * Scala: https://scalapb.github.io
+* Solidity: https://github.com/celer-network/pb3-gen-sol
 * Swift: https://github.com/alexeyxo/protobuf-swift
 * Swift: https://github.com/apple/swift-protobuf/
 * Vala: https://launchpad.net/protobuf-vala
