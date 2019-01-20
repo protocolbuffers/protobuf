@@ -813,10 +813,8 @@ static char* fill_namespace(const char *package, const char *php_namespace,
   return classname;
 }
 
-static char* fill_classname(const char *fullname,
-                            const char *package,
-                            const char *php_namespace,
-                            const char *prefix, char *classname) {
+static void fill_classname(const char *fullname, const char *package,
+                           const char *prefix, char *classname) {
   int classname_start = 0;
   if (package != NULL) {
     size_t package_len = strlen(package);
@@ -840,7 +838,6 @@ static char* fill_classname(const char *fullname,
     }
     i = j + 1;
   }
-  return classname;
 }
 
 static zend_class_entry *register_class(const upb_filedef *file,
@@ -854,18 +851,18 @@ static zend_class_entry *register_class(const upb_filedef *file,
   const char *prefix = upb_filedef_phpprefix(file);
   size_t classname_len =
       classname_len_max(fullname, package, php_namespace, prefix);
-  char *classname = ecalloc(sizeof(char), classname_len);
+  char* classname = ecalloc(sizeof(char), classname_len);
+  char* after_package;
   zend_class_entry* ret;
 
-  classname = fill_namespace(package, php_namespace, classname);
-  classname =
-      fill_classname(fullname, package, php_namespace, prefix, classname);
+  after_package = fill_namespace(package, php_namespace, classname);
+  fill_classname(fullname, package, prefix, after_package);
 
   PHP_PROTO_CE_DECLARE pce;
   if (php_proto_zend_lookup_class(classname, strlen(classname), &pce) ==
       FAILURE) {
-    zend_error(E_ERROR, "Generated message class %s hasn't been defined",
-               classname);
+    zend_error(E_ERROR, "Generated message class %s hasn't been defined (%s, %s, %s, %s)",
+               classname, fullname, package, php_namespace, prefix);
     return NULL;
   }
   ret = PHP_PROTO_CE_UNREF(pce);
@@ -873,24 +870,6 @@ static zend_class_entry *register_class(const upb_filedef *file,
   add_proto_obj(fullname, desc_php);
   efree(classname);
   return ret;
-}
-
-static void classname_no_prefix(const char *fullname, const char *package_name,
-                                char *class_name) {
-  size_t i = 0, j;
-  bool first_char = true, is_reserved = false;
-  size_t pkg_name_len = package_name == NULL ? 0 : strlen(package_name);
-  size_t message_name_start = package_name == NULL ? 0 : pkg_name_len + 1;
-  size_t message_len = (strlen(fullname) - message_name_start);
-
-  // Submessage is concatenated with its containing messages by '_'.
-  for (j = message_name_start; j < message_name_start + message_len; j++) {
-    if (fullname[j] == '.') {
-      class_name[i++] = '_';
-    } else {
-      class_name[i++] = fullname[j];
-    }
-  }
 }
 
 void internal_add_generated_file(const char *data, PHP_PROTO_SIZE data_len,
