@@ -5,15 +5,9 @@
 # Change to repo root
 cd $(dirname $0)/../../..
 
-./tests.sh cpp_tcmalloc
-
-# Run tests under release docker image.
-DOCKER_IMAGE_NAME=protobuf/protoc_$(sha1sum kokoro/linux/dockerfile/test/cpp_tcmalloc/Dockerfile | cut -f1 -d " ")
-docker pull $DOCKER_IMAGE_NAME
-
-docker run -v $(pwd):/var/local/protobuf --rm $DOCKER_IMAGE_NAME \
-  bash -l /var/local/protobuf/tests.sh cpp_tcmalloc || FAILED="true"
-
-if [ "$FAILED" = "true" ]; then
-  exit 1
-fi
+export DOCKERHUB_ORGANIZATION=protobuftesting
+export DOCKERFILE_DIR=kokoro/linux/dockerfile/test/cpp_tcmalloc
+export DOCKER_RUN_SCRIPT=kokoro/linux/pull_request_in_docker.sh
+export OUTPUT_DIR=testoutput
+export TEST_SET="cpp_tcmalloc"
+./kokoro/linux/build_and_run_docker.sh
