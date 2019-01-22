@@ -161,6 +161,11 @@ bool native_slot_set(upb_fieldtype_t type, const zend_class_entry* klass,
 bool native_slot_set_by_array(upb_fieldtype_t type,
                               const zend_class_entry* klass, void* memory,
                               zval* value TSRMLS_DC) {
+#if PHP_MAJOR_VERSION >= 7
+  if (Z_ISREF_P(value)) {
+    ZVAL_DEREF(value);
+  }
+#endif
   switch (type) {
     case UPB_TYPE_STRING:
     case UPB_TYPE_BYTES: {
@@ -186,12 +191,6 @@ bool native_slot_set_by_array(upb_fieldtype_t type,
       break;
     }
     case UPB_TYPE_MESSAGE: {
-#if PHP_MAJOR_VERSION >= 7
-      if (Z_ISREF_P(value)) {
-        ZVAL_DEREF(value);
-      }
-#endif
-
       if (Z_TYPE_P(value) != IS_OBJECT) {
         zend_error(E_USER_ERROR, "Given value is not message.");
         return false;
@@ -219,6 +218,11 @@ bool native_slot_set_by_array(upb_fieldtype_t type,
 
 bool native_slot_set_by_map(upb_fieldtype_t type, const zend_class_entry* klass,
                             void* memory, zval* value TSRMLS_DC) {
+#if PHP_MAJOR_VERSION >= 7
+  if (Z_ISREF_P(value)) {
+    ZVAL_DEREF(value);
+  }
+#endif
   switch (type) {
     case UPB_TYPE_STRING:
     case UPB_TYPE_BYTES: {

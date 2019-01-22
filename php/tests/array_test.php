@@ -535,13 +535,18 @@ class RepeatedFieldTest extends \PHPUnit\Framework\TestCase
 
     public function testArrayElementIsReference()
     {
+        // String elements
+        $values = ['a', 'b', 'c'];
+        array_walk($values, function (&$value) {});
+        $m = new TestMessage();
+        $m->setRepeatedString($values);
+
+        // Message elements
         $m = new TestMessage();
         $subs = [1, 2];
-
         foreach ($subs as &$sub) {
             $sub = new Sub(['a' => $sub]);
         }
-
         $m->setRepeatedMessage($subs);
     }
 

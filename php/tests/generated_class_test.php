@@ -1387,4 +1387,17 @@ class GeneratedClassTest extends TestBase
         TestUtil::setTestMessage($n);
         $this->assertEquals($m, $n);
     }
+
+    #########################################################
+    # Test reference of value
+    #########################################################
+
+    public function testValueIsReference()
+    {
+        // String element
+        $values = ['a', 'b', 'c'];
+        array_walk($values, function (&$value) {});
+        $m = new TestMessage();
+        $m->setOptionalString($values[0]);
+    }
 }
