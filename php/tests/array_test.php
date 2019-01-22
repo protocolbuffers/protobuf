@@ -533,7 +533,7 @@ class RepeatedFieldTest extends \PHPUnit\Framework\TestCase
     # Test reference in array
     #########################################################
 
-    public function testReferenceInArray()
+    public function testArrayElementIsReference()
     {
         $m = new TestMessage();
         $subs = [1, 2];
@@ -545,11 +545,7 @@ class RepeatedFieldTest extends \PHPUnit\Framework\TestCase
         $m->setRepeatedMessage($subs);
     }
 
-    #########################################################
-    # Test reference in array
-    #########################################################
-
-    public function testReferenceInMap()
+    public function testArrayIsReference()
     {
         $keys = [['repeated_message' => [['a' => 1]]]];
 
