@@ -1329,7 +1329,7 @@ class GeneratedClassTest extends TestBase
             'optional_double' => 1.6,
             'optional_bool' => true,
             'optional_string' => 'a',
-            'optional_bytes' => 'b',
+            'optional_bytes' => 'bbbb',
             'optional_enum' => TestEnum::ONE,
             'optional_message' => new Sub([
                 'a' => 33
@@ -1348,7 +1348,7 @@ class GeneratedClassTest extends TestBase
             'repeated_double' => [1.6, 2.6],
             'repeated_bool' => [true, false],
             'repeated_string' => ['a', 'c'],
-            'repeated_bytes' => ['b', 'd'],
+            'repeated_bytes' => ['bbbb', 'dddd'],
             'repeated_enum' => [TestEnum::ZERO, TestEnum::ONE],
             'repeated_message' => [new Sub(['a' => 34]),
                                    new Sub(['a' => 35])],
@@ -1366,7 +1366,7 @@ class GeneratedClassTest extends TestBase
             'map_int32_double' => [1 => 3.6],
             'map_bool_bool' => [true => true],
             'map_string_string' => ['e' => 'e'],
-            'map_int32_bytes' => [1 => 'f'],
+            'map_int32_bytes' => [1 => 'ffff'],
             'map_int32_enum' => [1 => TestEnum::ONE],
             'map_int32_message' => [1 => new Sub(['a' => 36])],
         ]);
