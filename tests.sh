@@ -38,6 +38,15 @@ build_cpp() {
   fi
 }
 
+build_cpp_tcmalloc() {
+  internal_build_cpp
+  ./configure LIBS=-ltcmalloc && make clean && make \
+      PTHREAD_CFLAGS='-pthread -DGOOGLE_PROTOBUF_HEAP_CHECK_DRACONIAN' \
+      check
+  cd src
+  PPROF_PATH=/usr/bin/google-pprof HEAPCHECK=draconian ./protobuf-test
+}
+
 build_cpp_distcheck() {
   # Initialize any submodules.
   git submodule update --init --recursive

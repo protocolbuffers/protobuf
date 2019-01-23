@@ -33,9 +33,20 @@ RUN wget http://people.centos.org/tru/devtools-2/devtools-2.repo -P /etc/yum.rep
     bash -c 'echo "enabled=1" >> /etc/yum.repos.d/devtools-2.repo' && \
     bash -c "sed -e 's/\$basearch/i386/g' /etc/yum.repos.d/devtools-2.repo > /etc/yum.repos.d/devtools-i386-2.repo" && \
     sed -e 's/testing-/testing-i386-/g' -i /etc/yum.repos.d/devtools-i386-2.repo && \
-    rpm --rebuilddb && \
-    yum install -y devtoolset-2-gcc devtoolset-2-gcc-c++ devtoolset-2-binutils devtoolset-2-libstdc++-devel \
-                   devtoolset-2-gcc.i686 devtoolset-2-gcc-c++.i686 devtoolset-2-binutils.i686 devtoolset-2-libstdc++-devel.i686 && \
+    rpm --rebuilddb
+
+RUN yum install -y devtoolset-2-gcc \
+                   devtoolset-2-gcc-c++ \
+                   devtoolset-2-binutils \
+                   devtoolset-2-libstdc++-devel \
+                   devtoolset-2-libatomic-devel \
+                   libatomic \
+                   devtoolset-2-gcc.i686 \
+                   devtoolset-2-gcc-c++.i686 \
+                   devtoolset-2-binutils.i686 \
+                   devtoolset-2-libstdc++-devel.i686 \
+                   devtoolset-2-libatomic-devel.i686 \
+                   libatomic.i686 && \
     yum clean all
 
 COPY scl-enable-devtoolset.sh /var/local/

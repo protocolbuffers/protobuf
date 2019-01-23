@@ -319,6 +319,11 @@ void Message_construct(zval* msg, zval* array_wrapper) {
        zend_hash_move_forward_ex(array, &pointer)) {
     zend_hash_get_current_key_zval_ex(array, &key, &pointer);
     field = upb_msgdef_ntofz(intern->descriptor->msgdef, Z_STRVAL_P(&key));
+#if PHP_MAJOR_VERSION >= 7
+    if (Z_ISREF_P((CACHED_VALUE*)value)) {
+      value = Z_REFVAL_P((CACHED_VALUE*)value);
+    }
+#endif
     if (field == NULL) {
       zend_error(E_USER_ERROR, "Unknown field: %s", Z_STRVAL_P(&key));
     }

@@ -373,6 +373,11 @@ bool protobuf_convert_to_bool(zval* from, int8_t* to) {
 }
 
 bool protobuf_convert_to_string(zval* from) {
+#if PHP_MAJOR_VERSION >= 7
+  if (Z_ISREF_P(from)) {
+    ZVAL_DEREF(from);
+  }
+#endif
   TSRMLS_FETCH();
   switch (Z_TYPE_P(from)) {
     case IS_STRING: {
