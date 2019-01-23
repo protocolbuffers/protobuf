@@ -40,6 +40,7 @@ RUN yum install -y devtoolset-2-gcc \
                    devtoolset-2-binutils \
                    devtoolset-2-libstdc++-devel \
                    devtoolset-2-libatomic-devel \
+                   libatomic \
                    devtoolset-2-gcc.i686 \
                    devtoolset-2-gcc-c++.i686 \
                    devtoolset-2-binutils.i686 \
