@@ -477,7 +477,7 @@ GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const {
   format(
       "target = ::$proto_ns$::internal::WireFormatLite::\n"
       "  InternalWrite$declared_type$ToArray(\n"
-      "    $number$, HasBitSetters::$name$(this), deterministic, target);\n");
+      "    $number$, HasBitSetters::$name$(this), target);\n");
 }
 
 void MessageFieldGenerator::
@@ -812,8 +812,7 @@ GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const {
       "    n = static_cast<unsigned int>(this->$name$_size()); i < n; i++) {\n"
       "  target = ::$proto_ns$::internal::WireFormatLite::\n"
       "    InternalWrite$declared_type$ToArray(\n"
-      "      $number$, this->$name$(static_cast<int>(i)), deterministic, "
-      "target);\n"
+      "      $number$, this->$name$(static_cast<int>(i)), target);\n"
       "}\n");
 }
 

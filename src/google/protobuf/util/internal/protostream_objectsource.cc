@@ -49,6 +49,7 @@
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/casts.h>
 
+
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/status_macros.h>
 
@@ -188,10 +189,10 @@ Status ProtoStreamObjectSource::WriteMessage(const google::protobuf::Type& type,
                                              bool include_start_and_end,
                                              ObjectWriter* ow) const {
 
-    const TypeRenderer* type_renderer = FindTypeRenderer(type.name());
-    if (type_renderer != nullptr) {
-      return (*type_renderer)(this, type, name, ow);
-    }
+  const TypeRenderer* type_renderer = FindTypeRenderer(type.name());
+  if (type_renderer != nullptr) {
+    return (*type_renderer)(this, type, name, ow);
+  }
 
   const google::protobuf::Field* field = nullptr;
   string field_name;
@@ -229,9 +230,7 @@ Status ProtoStreamObjectSource::WriteMessage(const google::protobuf::Type& type,
 
     if (field->cardinality() ==
         google::protobuf::Field_Cardinality_CARDINALITY_REPEATED) {
-      bool check_maps = true;
-
-      if (check_maps && IsMap(*field)) {
+      if (IsMap(*field)) {
         ow->StartObject(field_name);
         ASSIGN_OR_RETURN(tag, RenderMap(field, field_name, tag, ow));
         ow->EndObject();
@@ -331,6 +330,7 @@ Status ProtoStreamObjectSource::RenderPacked(
   stream_->PopLimit(old_limit);
   return util::Status();
 }
+
 
 Status ProtoStreamObjectSource::RenderTimestamp(
     const ProtoStreamObjectSource* os, const google::protobuf::Type& type,
@@ -708,6 +708,7 @@ std::unordered_map<string, ProtoStreamObjectSource::TypeRenderer>*
     ProtoStreamObjectSource::renderers_ = NULL;
 PROTOBUF_NAMESPACE_ID::internal::once_flag source_renderers_init_;
 
+
 void ProtoStreamObjectSource::InitRendererMap() {
   renderers_ =
       new std::unordered_map<string, ProtoStreamObjectSource::TypeRenderer>();
@@ -745,6 +746,7 @@ void ProtoStreamObjectSource::InitRendererMap() {
   ::google::protobuf::internal::OnShutdown(&DeleteRendererMap);
 }
 
+
 void ProtoStreamObjectSource::DeleteRendererMap() {
   delete ProtoStreamObjectSource::renderers_;
   renderers_ = NULL;
@@ -781,15 +783,14 @@ Status ProtoStreamObjectSource::RenderField(
     // Short-circuit any special type rendering to save call-stack space.
     const TypeRenderer* type_renderer = FindTypeRenderer(type->name());
 
-    bool use_type_renderer = type_renderer != nullptr;
-
-    if (use_type_renderer) {
+    RETURN_IF_ERROR(IncrementRecursionDepth(type->name(), field_name));
+    if (type_renderer != nullptr) {
       RETURN_IF_ERROR((*type_renderer)(this, *type, field_name, ow));
     } else {
-      RETURN_IF_ERROR(IncrementRecursionDepth(type->name(), field_name));
       RETURN_IF_ERROR(WriteMessage(*type, field_name, 0, true, ow));
-      --recursion_depth_;
     }
+    --recursion_depth_;
+
     if (!stream_->ConsumedEntireMessage()) {
       return Status(util::error::INVALID_ARGUMENT,
                     "Nested protocol message not parsed in its entirety.");
@@ -943,61 +944,61 @@ const string ProtoStreamObjectSource::ReadFieldValueAsString(
     case google::protobuf::Field_Kind_TYPE_INT32: {
       uint32 buffer32;
       stream_->ReadVarint32(&buffer32);
-      result = SimpleItoa(::google::protobuf::bit_cast<int32>(buffer32));
+      result = StrCat(::google::protobuf::bit_cast<int32>(buffer32));
       break;
     }
     case google::protobuf::Field_Kind_TYPE_INT64: {
       uint64 buffer64;
       stream_->ReadVarint64(&buffer64);
-      result = SimpleItoa(::google::protobuf::bit_cast<int64>(buffer64));
+      result = StrCat(::google::protobuf::bit_cast<int64>(buffer64));
       break;
     }
     case google::protobuf::Field_Kind_TYPE_UINT32: {
       uint32 buffer32;
       stream_->ReadVarint32(&buffer32);
-      result = SimpleItoa(::google::protobuf::bit_cast<uint32>(buffer32));
+      result = StrCat(::google::protobuf::bit_cast<uint32>(buffer32));
       break;
     }
     case google::protobuf::Field_Kind_TYPE_UINT64: {
       uint64 buffer64;
       stream_->ReadVarint64(&buffer64);
-      result = SimpleItoa(::google::protobuf::bit_cast<uint64>(buffer64));
+      result = StrCat(::google::protobuf::bit_cast<uint64>(buffer64));
       break;
     }
     case google::protobuf::Field_Kind_TYPE_SINT32: {
       uint32 buffer32;
       stream_->ReadVarint32(&buffer32);
-      result = SimpleItoa(WireFormatLite::ZigZagDecode32(buffer32));
+      result = StrCat(WireFormatLite::ZigZagDecode32(buffer32));
       break;
     }
     case google::protobuf::Field_Kind_TYPE_SINT64: {
       uint64 buffer64;
       stream_->ReadVarint64(&buffer64);
-      result = SimpleItoa(WireFormatLite::ZigZagDecode64(buffer64));
+      result = StrCat(WireFormatLite::ZigZagDecode64(buffer64));
       break;
     }
     case google::protobuf::Field_Kind_TYPE_SFIXED32: {
       uint32 buffer32;
       stream_->ReadLittleEndian32(&buffer32);
-      result = SimpleItoa(::google::protobuf::bit_cast<int32>(buffer32));
+      result = StrCat(::google::protobuf::bit_cast<int32>(buffer32));
       break;
     }
     case google::protobuf::Field_Kind_TYPE_SFIXED64: {
       uint64 buffer64;
       stream_->ReadLittleEndian64(&buffer64);
-      result = SimpleItoa(::google::protobuf::bit_cast<int64>(buffer64));
+      result = StrCat(::google::protobuf::bit_cast<int64>(buffer64));
       break;
     }
     case google::protobuf::Field_Kind_TYPE_FIXED32: {
       uint32 buffer32;
       stream_->ReadLittleEndian32(&buffer32);
-      result = SimpleItoa(::google::protobuf::bit_cast<uint32>(buffer32));
+      result = StrCat(::google::protobuf::bit_cast<uint32>(buffer32));
       break;
     }
     case google::protobuf::Field_Kind_TYPE_FIXED64: {
       uint64 buffer64;
       stream_->ReadLittleEndian64(&buffer64);
-      result = SimpleItoa(::google::protobuf::bit_cast<uint64>(buffer64));
+      result = StrCat(::google::protobuf::bit_cast<uint64>(buffer64));
       break;
     }
     case google::protobuf::Field_Kind_TYPE_FLOAT: {

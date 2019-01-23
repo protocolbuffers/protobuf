@@ -69,6 +69,11 @@ enum TestEnum {
   C = 3;
 }
 
+message testLowercaseNested {
+  message lowercase{}
+}
+
+
 message TestUnknown {
   TestUnknown optional_unknown = 11;
   repeated TestUnknown repeated_unknown = 31;

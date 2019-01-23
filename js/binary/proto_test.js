@@ -661,4 +661,5 @@ describe('protoBinaryTest', function() {
     checkAllFields(msg, msg2);
 
   });
+
 });

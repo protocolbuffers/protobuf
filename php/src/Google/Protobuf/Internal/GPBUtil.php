@@ -518,8 +518,11 @@ class GPBUtil
 
     public static function parseFieldMask($paths_string)
     {
-        $path_strings = explode(",", $paths_string);
         $field_mask = new FieldMask();
+        if (strlen($paths_string) === 0) {
+            return $field_mask;
+        }
+        $path_strings = explode(",", $paths_string);
         $paths = $field_mask->getPaths();
         foreach($path_strings as &$path_string) {
             $field_strings = explode(".", $path_string);

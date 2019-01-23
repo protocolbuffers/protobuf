@@ -550,19 +550,25 @@ void WireFormatLite::WriteMessage(int field_number,
   value.SerializeWithCachedSizes(output);
 }
 
+void WireFormatLite::WriteSubMessageMaybeToArray(
+    int size, const MessageLite& value, io::CodedOutputStream* output) {
+  if (!output->IsSerializationDeterministic()) {
+    uint8* target = output->GetDirectBufferForNBytesAndAdvance(size);
+    if (target != nullptr) {
+      uint8* end = value.InternalSerializeWithCachedSizesToArray(target);
+      GOOGLE_DCHECK_EQ(end - target, size);
+      return;
+    }
+  }
+  value.SerializeWithCachedSizes(output);
+}
+
 void WireFormatLite::WriteGroupMaybeToArray(int field_number,
                                             const MessageLite& value,
                                             io::CodedOutputStream* output) {
   WriteTag(field_number, WIRETYPE_START_GROUP, output);
   const int size = value.GetCachedSize();
-  uint8* target = output->GetDirectBufferForNBytesAndAdvance(size);
-  if (target != NULL) {
-    uint8* end = value.InternalSerializeWithCachedSizesToArray(
-        output->IsSerializationDeterministic(), target);
-    GOOGLE_DCHECK_EQ(end - target, size);
-  } else {
-    value.SerializeWithCachedSizes(output);
-  }
+  WriteSubMessageMaybeToArray(size, value, output);
   WriteTag(field_number, WIRETYPE_END_GROUP, output);
 }
 
@@ -572,14 +578,7 @@ void WireFormatLite::WriteMessageMaybeToArray(int field_number,
   WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
   const int size = value.GetCachedSize();
   output->WriteVarint32(size);
-  uint8* target = output->GetDirectBufferForNBytesAndAdvance(size);
-  if (target != NULL) {
-    uint8* end = value.InternalSerializeWithCachedSizesToArray(
-        output->IsSerializationDeterministic(), target);
-    GOOGLE_DCHECK_EQ(end - target, size);
-  } else {
-    value.SerializeWithCachedSizes(output);
-  }
+  WriteSubMessageMaybeToArray(size, value, output);
 }
 
 PROTOBUF_ALWAYS_INLINE static bool ReadBytesToString(

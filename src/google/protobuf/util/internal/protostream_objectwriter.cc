@@ -44,6 +44,7 @@
 #include <google/protobuf/util/internal/utility.h>
 #include <google/protobuf/stubs/strutil.h>
 
+
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/statusor.h>
 
@@ -73,6 +74,7 @@ ProtoStreamObjectWriter::ProtoStreamObjectWriter(
   set_ignore_unknown_fields(options_.ignore_unknown_fields);
   set_ignore_unknown_enum_values(options_.ignore_unknown_enum_values);
   set_use_lower_camel_for_enums(options_.use_lower_camel_for_enums);
+  set_case_insensitive_enum_parsing(options_.case_insensitive_enum_parsing);
 }
 
 ProtoStreamObjectWriter::ProtoStreamObjectWriter(
@@ -85,6 +87,7 @@ ProtoStreamObjectWriter::ProtoStreamObjectWriter(
       options_(options) {
   set_ignore_unknown_fields(options_.ignore_unknown_fields);
   set_use_lower_camel_for_enums(options.use_lower_camel_for_enums);
+  set_case_insensitive_enum_parsing(options_.case_insensitive_enum_parsing);
 }
 
 ProtoStreamObjectWriter::ProtoStreamObjectWriter(
@@ -885,7 +888,7 @@ Status ProtoStreamObjectWriter::RenderStructValue(ProtoStreamObjectWriter* ow,
         if (int_value.ok()) {
           ow->ProtoWriter::RenderDataPiece(
               "string_value",
-              DataPiece(SimpleItoa(int_value.ValueOrDie()), true));
+              DataPiece(StrCat(int_value.ValueOrDie()), true));
           return Status();
         }
       }
@@ -900,7 +903,7 @@ Status ProtoStreamObjectWriter::RenderStructValue(ProtoStreamObjectWriter* ow,
         if (int_value.ok()) {
           ow->ProtoWriter::RenderDataPiece(
               "string_value",
-              DataPiece(SimpleItoa(int_value.ValueOrDie()), true));
+              DataPiece(StrCat(int_value.ValueOrDie()), true));
           return Status();
         }
       }

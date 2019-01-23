@@ -39,6 +39,7 @@
 #include <google/protobuf/stubs/strutil.h>
 
 
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -52,7 +53,7 @@ void SetStringVariables(const FieldDescriptor* descriptor,
   SetCommonFieldVariables(descriptor, variables, options);
   (*variables)["default"] = DefaultValue(options, descriptor);
   (*variables)["default_length"] =
-      SimpleItoa(descriptor->default_value_string().length());
+      StrCat(descriptor->default_value_string().length());
   string default_variable_string = MakeDefaultName(descriptor);
   (*variables)["default_variable_name"] = default_variable_string;
   (*variables)["default_variable"] =
@@ -89,21 +90,7 @@ StringFieldGenerator::StringFieldGenerator(const FieldDescriptor* descriptor,
                                            const Options& options)
     : FieldGenerator(descriptor, options),
       lite_(!HasDescriptorMethods(descriptor->file(), options)),
-      inlined_(false) {
-
-  // TODO(ckennelly): Handle inlining for any.proto.
-  if (IsAnyMessage(descriptor_->containing_type(), options_)) {
-    inlined_ = false;
-  }
-  if (descriptor_->containing_type()->options().map_entry()) {
-    inlined_ = false;
-  }
-
-  // Limit to proto2, as we rely on has bits to distinguish field presence for
-  // release_$name$.  On proto3, we cannot use the address of the string
-  // instance when the field has been inlined.
-  inlined_ = inlined_ && HasFieldPresence(descriptor_->file());
-
+      inlined_(IsStringInlined(descriptor, options)) {
   SetStringVariables(descriptor, &variables_, options);
 }
 

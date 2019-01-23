@@ -28,16 +28,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// The ArenaString implementation is not included in the open-source release. Do
-// not include this file in the distribution.
+#include "binary_json_conformance_suite.h"
+#include "conformance_test.h"
 
-#include <google/protobuf/arenastring.h>
-
-namespace google {
-namespace protobuf {
-namespace internal {
-
-
-}  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+int main(int argc, char *argv[]) {
+  google::protobuf::BinaryAndJsonConformanceSuite suite;
+  return google::protobuf::ForkPipeRunner::Run(argc, argv, &suite);
+}

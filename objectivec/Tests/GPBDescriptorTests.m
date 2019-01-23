@@ -244,7 +244,44 @@
   XCTAssertTrue([descriptor getValue:&value forEnumName:enumName]);
   XCTAssertEqual(value, 2);
   XCTAssertEqualObjects([descriptor getEnumTextFormatNameForIndex:4], @"BAR2");
+}
 
+- (void)testEnumAliasNameCollisions {
+  GPBEnumDescriptor *descriptor = TestEnumObjCNameCollision_EnumDescriptor();
+  NSString *textFormatName;
+  int32_t value;
+
+  XCTAssertEqual(descriptor.enumNameCount, 5U);
+
+  XCTAssertEqualObjects([descriptor getEnumNameForIndex:0], @"TestEnumObjCNameCollision_Foo");
+  textFormatName = [descriptor getEnumTextFormatNameForIndex:0];
+  XCTAssertEqualObjects(textFormatName, @"FOO");
+  XCTAssertTrue([descriptor getValue:&value forEnumTextFormatName:textFormatName]);
+  XCTAssertEqual(value, 1);
+
+  XCTAssertEqualObjects([descriptor getEnumNameForIndex:1], @"TestEnumObjCNameCollision_Foo");
+  textFormatName = [descriptor getEnumTextFormatNameForIndex:1];
+  XCTAssertEqualObjects(textFormatName, @"foo");
+  XCTAssertTrue([descriptor getValue:&value forEnumTextFormatName:textFormatName]);
+  XCTAssertEqual(value, 1);
+
+  XCTAssertEqualObjects([descriptor getEnumNameForIndex:2], @"TestEnumObjCNameCollision_Bar");
+  textFormatName = [descriptor getEnumTextFormatNameForIndex:2];
+  XCTAssertEqualObjects(textFormatName, @"BAR");
+  XCTAssertTrue([descriptor getValue:&value forEnumTextFormatName:textFormatName]);
+  XCTAssertEqual(value, 2);
+
+  XCTAssertEqualObjects([descriptor getEnumNameForIndex:3], @"TestEnumObjCNameCollision_Mumble");
+  textFormatName = [descriptor getEnumTextFormatNameForIndex:3];
+  XCTAssertEqualObjects(textFormatName, @"mumble");
+  XCTAssertTrue([descriptor getValue:&value forEnumTextFormatName:textFormatName]);
+  XCTAssertEqual(value, 2);
+
+  XCTAssertEqualObjects([descriptor getEnumNameForIndex:4], @"TestEnumObjCNameCollision_Mumble");
+  textFormatName = [descriptor getEnumTextFormatNameForIndex:4];
+  XCTAssertEqualObjects(textFormatName, @"MUMBLE");
+  XCTAssertTrue([descriptor getValue:&value forEnumTextFormatName:textFormatName]);
+  XCTAssertEqual(value, 2);
 }
 
 - (void)testEnumValueValidator {

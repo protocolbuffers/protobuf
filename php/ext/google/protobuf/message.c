@@ -29,8 +29,15 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <php.h>
+#include <Zend/zend_exceptions.h>
 #include <stdlib.h>
 #include <inttypes.h>
+
+#if PHP_MAJOR_VERSION < 7
+#include <Zend/zend_compile.h>
+#else
+#include <Zend/zend_inheritance.h>
+#endif
 
 #include "protobuf.h"
 #include "utf8.h"
@@ -83,7 +90,7 @@ static HashTable* message_get_properties(zval* object TSRMLS_DC);
 // Define object free method.
 PHP_PROTO_OBJECT_FREE_START(MessageHeader, message)
   if (*(void**)intern->data != NULL) {
-    stringsink_uninit(*(void**)intern->data);
+    stringsink_uninit_opaque(*(void**)intern->data);
     FREE(*(void**)intern->data);
   }
   FREE(intern->data);
@@ -312,6 +319,11 @@ void Message_construct(zval* msg, zval* array_wrapper) {
        zend_hash_move_forward_ex(array, &pointer)) {
     zend_hash_get_current_key_zval_ex(array, &key, &pointer);
     field = upb_msgdef_ntofz(intern->descriptor->msgdef, Z_STRVAL_P(&key));
+#if PHP_MAJOR_VERSION >= 7
+    if (Z_ISREF_P((CACHED_VALUE*)value)) {
+      value = Z_REFVAL_P((CACHED_VALUE*)value);
+    }
+#endif
     if (field == NULL) {
       zend_error(E_USER_ERROR, "Unknown field: %s", Z_STRVAL_P(&key));
     }
@@ -904,12 +916,11 @@ PHP_METHOD(Field_Cardinality, name) {
     case 3:
       PHP_PROTO_RETURN_STRING("CARDINALITY_REPEATED", 1);
     default:
-      zend_throw_exception(
-          NULL,
+      zend_throw_exception_ex(
+          NULL, 0 TSRMLS_CC,
           "Enum Google\\Protobuf\\Field_Cardinality has no name "
           "defined for value %d.",
-          value,
-          0 TSRMLS_CC);
+          value);
   }
 }
 
@@ -927,12 +938,11 @@ PHP_METHOD(Field_Cardinality, value) {
   if (strncmp(name, "CARDINALITY_REQUIRED", name_len) == 0) RETURN_LONG(2);
   if (strncmp(name, "CARDINALITY_REPEATED", name_len) == 0) RETURN_LONG(3);
 
-  zend_throw_exception(
-      NULL,
+  zend_throw_exception_ex(
+      NULL, 0 TSRMLS_CC,
       "Enum Google\\Protobuf\\Field_Cardinality has no value "
       "defined for name %s.",
-      name,
-      0 TSRMLS_CC);
+      name);
 }
 
 // -----------------------------------------------------------------------------
@@ -1042,12 +1052,10 @@ PHP_METHOD(Field_Kind, name) {
     case 18:
       PHP_PROTO_RETURN_STRING("TYPE_SINT64", 1);
     default:
-      zend_throw_exception(
-          NULL,
-          "Enum Google\\Protobuf\\Field_Kind has no name "
-          "defined for value %d.",
-          value,
-          0 TSRMLS_CC);
+      zend_throw_exception_ex(NULL, 0 TSRMLS_CC,
+                              "Enum Google\\Protobuf\\Field_Kind has no name "
+                              "defined for value %d.",
+                              value);
   }
 }
 
@@ -1080,12 +1088,10 @@ PHP_METHOD(Field_Kind, value) {
   if (strncmp(name, "TYPE_SINT32", name_len) == 0) RETURN_LONG(17);
   if (strncmp(name, "TYPE_SINT64", name_len) == 0) RETURN_LONG(18);
 
-  zend_throw_exception(
-      NULL,
-      "Enum Google\\Protobuf\\Field_Kind has no value "
-      "defined for name %s.",
-      name,
-      0 TSRMLS_CC);
+  zend_throw_exception_ex(NULL, 0 TSRMLS_CC,
+                          "Enum Google\\Protobuf\\Field_Kind has no value "
+                          "defined for name %s.",
+                          name);
 }
 
 // -----------------------------------------------------------------------------
@@ -1117,12 +1123,10 @@ PHP_METHOD(NullValue, name) {
     case 0:
       PHP_PROTO_RETURN_STRING("NULL_VALUE", 1);
     default:
-      zend_throw_exception(
-          NULL,
-          "Enum Google\\Protobuf\\NullValue has no name "
-          "defined for value %d.",
-          value,
-          0 TSRMLS_CC);
+      zend_throw_exception_ex(NULL, 0 TSRMLS_CC,
+                              "Enum Google\\Protobuf\\NullValue has no name "
+                              "defined for value %d.",
+                              value);
   }
 }
 
@@ -1137,12 +1141,10 @@ PHP_METHOD(NullValue, value) {
 
   if (strncmp(name, "NULL_VALUE", name_len) == 0) RETURN_LONG(0);
 
-  zend_throw_exception(
-      NULL,
-      "Enum Google\\Protobuf\\NullValue has no value "
-      "defined for name %s.",
-      name,
-      0 TSRMLS_CC);
+  zend_throw_exception_ex(NULL, 0 TSRMLS_CC,
+                          "Enum Google\\Protobuf\\NullValue has no value "
+                          "defined for name %s.",
+                          name);
 }
 
 // -----------------------------------------------------------------------------
@@ -1178,12 +1180,10 @@ PHP_METHOD(Syntax, name) {
     case 1:
       PHP_PROTO_RETURN_STRING("SYNTAX_PROTO3", 1);
     default:
-      zend_throw_exception(
-          NULL,
-          "Enum Google\\Protobuf\\Syntax has no name "
-          "defined for value %d.",
-          value,
-          0 TSRMLS_CC);
+      zend_throw_exception_ex(NULL, 0 TSRMLS_CC,
+                              "Enum Google\\Protobuf\\Syntax has no name "
+                              "defined for value %d.",
+                              value);
   }
 }
 
@@ -1199,12 +1199,10 @@ PHP_METHOD(Syntax, value) {
   if (strncmp(name, "SYNTAX_PROTO2", name_len) == 0) RETURN_LONG(0);
   if (strncmp(name, "SYNTAX_PROTO3", name_len) == 0) RETURN_LONG(1);
 
-  zend_throw_exception(
-      NULL,
-      "Enum Google\\Protobuf\\Syntax has no value "
-      "defined for name %s.",
-      name,
-      0 TSRMLS_CC);
+  zend_throw_exception_ex(NULL, 0 TSRMLS_CC,
+                          "Enum Google\\Protobuf\\Syntax has no value "
+                          "defined for name %s.",
+                          name);
 }
 
 // -----------------------------------------------------------------------------
@@ -1231,7 +1229,6 @@ zend_class_entry* any_type;
 
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\Any", Any, any)
-  zend_class_implements(any_type TSRMLS_CC, 1, message_type);
   zend_declare_property_string(any_type, "type_url", strlen("type_url"),
                                "" ,ZEND_ACC_PRIVATE TSRMLS_CC);
   zend_declare_property_string(any_type, "value", strlen("value"),
@@ -1421,7 +1418,6 @@ zend_class_entry* duration_type;
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\Duration",
                                  Duration, duration)
-  zend_class_implements(duration_type TSRMLS_CC, 1, message_type);
   zend_declare_property_long(duration_type, "seconds", strlen("seconds"),
                              0 ,ZEND_ACC_PRIVATE TSRMLS_CC);
   zend_declare_property_long(duration_type, "nanos", strlen("nanos"),
@@ -1457,7 +1453,6 @@ zend_class_entry* timestamp_type;
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\Timestamp",
                                  Timestamp, timestamp)
-  zend_class_implements(timestamp_type TSRMLS_CC, 1, message_type);
   zend_declare_property_long(timestamp_type, "seconds", strlen("seconds"),
                              0 ,ZEND_ACC_PRIVATE TSRMLS_CC);
   zend_declare_property_long(timestamp_type, "nanos", strlen("nanos"),
@@ -1650,7 +1645,6 @@ zend_class_entry* api_type;
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\Api",
                                  Api, api)
-  zend_class_implements(api_type TSRMLS_CC, 1, message_type);
   zend_declare_property_null(api_type, "name", strlen("name"),
                              ZEND_ACC_PRIVATE TSRMLS_CC);
   zend_declare_property_null(api_type, "methods", strlen("methods"),
@@ -1697,7 +1691,6 @@ zend_class_entry* bool_value_type;
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\BoolValue",
                                  BoolValue, bool_value)
-  zend_class_implements(bool_value_type TSRMLS_CC, 1, message_type);
   zend_declare_property_null(bool_value_type, "value", strlen("value"),
                              ZEND_ACC_PRIVATE TSRMLS_CC);
 PHP_PROTO_INIT_SUBMSGCLASS_END
@@ -1726,7 +1719,6 @@ zend_class_entry* bytes_value_type;
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\BytesValue",
                                  BytesValue, bytes_value)
-  zend_class_implements(bytes_value_type TSRMLS_CC, 1, message_type);
   zend_declare_property_null(bytes_value_type, "value", strlen("value"),
                              ZEND_ACC_PRIVATE TSRMLS_CC);
 PHP_PROTO_INIT_SUBMSGCLASS_END
@@ -1755,7 +1747,6 @@ zend_class_entry* double_value_type;
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\DoubleValue",
                                  DoubleValue, double_value)
-  zend_class_implements(double_value_type TSRMLS_CC, 1, message_type);
   zend_declare_property_null(double_value_type, "value", strlen("value"),
                              ZEND_ACC_PRIVATE TSRMLS_CC);
 PHP_PROTO_INIT_SUBMSGCLASS_END
@@ -1792,7 +1783,6 @@ zend_class_entry* enum_type;
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\Enum",
                                  Enum, enum)
-  zend_class_implements(enum_type TSRMLS_CC, 1, message_type);
   zend_declare_property_null(enum_type, "name", strlen("name"),
                              ZEND_ACC_PRIVATE TSRMLS_CC);
   zend_declare_property_null(enum_type, "enumvalue", strlen("enumvalue"),
@@ -1837,7 +1827,6 @@ zend_class_entry* enum_value_type;
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\EnumValue",
                                  EnumValue, enum_value)
-  zend_class_implements(enum_value_type TSRMLS_CC, 1, message_type);
   zend_declare_property_null(enum_value_type, "name", strlen("name"),
                              ZEND_ACC_PRIVATE TSRMLS_CC);
   zend_declare_property_null(enum_value_type, "number", strlen("number"),
@@ -1872,7 +1861,6 @@ zend_class_entry* field_mask_type;
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\FieldMask",
                                  FieldMask, field_mask)
-  zend_class_implements(field_mask_type TSRMLS_CC, 1, message_type);
   zend_declare_property_null(field_mask_type, "paths", strlen("paths"),
                              ZEND_ACC_PRIVATE TSRMLS_CC);
 PHP_PROTO_INIT_SUBMSGCLASS_END
@@ -1919,7 +1907,6 @@ zend_class_entry* field_type;
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\Field",
                                  Field, field)
-  zend_class_implements(field_type TSRMLS_CC, 1, message_type);
   zend_declare_property_null(field_type, "kind", strlen("kind"),
                              ZEND_ACC_PRIVATE TSRMLS_CC);
   zend_declare_property_null(field_type, "cardinality", strlen("cardinality"),
@@ -1975,7 +1962,6 @@ zend_class_entry* float_value_type;
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\FloatValue",
                                  FloatValue, float_value)
-  zend_class_implements(float_value_type TSRMLS_CC, 1, message_type);
   zend_declare_property_null(float_value_type, "value", strlen("value"),
                              ZEND_ACC_PRIVATE TSRMLS_CC);
 PHP_PROTO_INIT_SUBMSGCLASS_END
@@ -2002,7 +1988,6 @@ zend_class_entry* empty_type;
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\GPBEmpty",
                                  GPBEmpty, empty)
-  zend_class_implements(empty_type TSRMLS_CC, 1, message_type);
 PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(GPBEmpty, __construct) {
@@ -2028,7 +2013,6 @@ zend_class_entry* int32_value_type;
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\Int32Value",
                                  Int32Value, int32_value)
-  zend_class_implements(int32_value_type TSRMLS_CC, 1, message_type);
   zend_declare_property_null(int32_value_type, "value", strlen("value"),
                              ZEND_ACC_PRIVATE TSRMLS_CC);
 PHP_PROTO_INIT_SUBMSGCLASS_END
@@ -2057,7 +2041,6 @@ zend_class_entry* int64_value_type;
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\Int64Value",
                                  Int64Value, int64_value)
-  zend_class_implements(int64_value_type TSRMLS_CC, 1, message_type);
   zend_declare_property_null(int64_value_type, "value", strlen("value"),
                              ZEND_ACC_PRIVATE TSRMLS_CC);
 PHP_PROTO_INIT_SUBMSGCLASS_END
@@ -2086,7 +2069,6 @@ zend_class_entry* list_value_type;
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\ListValue",
                                  ListValue, list_value)
-  zend_class_implements(list_value_type TSRMLS_CC, 1, message_type);
   zend_declare_property_null(list_value_type, "values", strlen("values"),
                              ZEND_ACC_PRIVATE TSRMLS_CC);
 PHP_PROTO_INIT_SUBMSGCLASS_END
@@ -2127,7 +2109,6 @@ zend_class_entry* method_type;
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\Method",
                                  Method, method)
-  zend_class_implements(method_type TSRMLS_CC, 1, message_type);
   zend_declare_property_null(method_type, "name", strlen("name"),
                              ZEND_ACC_PRIVATE TSRMLS_CC);
   zend_declare_property_null(method_type, "request_type_url", strlen("request_type_url"),
@@ -2176,7 +2157,6 @@ zend_class_entry* mixin_type;
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\Mixin",
                                  Mixin, mixin)
-  zend_class_implements(mixin_type TSRMLS_CC, 1, message_type);
   zend_declare_property_null(mixin_type, "name", strlen("name"),
                              ZEND_ACC_PRIVATE TSRMLS_CC);
   zend_declare_property_null(mixin_type, "root", strlen("root"),
@@ -2210,7 +2190,6 @@ zend_class_entry* option_type;
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\Option",
                                  Option, option)
-  zend_class_implements(option_type TSRMLS_CC, 1, message_type);
   zend_declare_property_null(option_type, "name", strlen("name"),
                              ZEND_ACC_PRIVATE TSRMLS_CC);
   zend_declare_property_null(option_type, "value", strlen("value"),
@@ -2242,7 +2221,6 @@ zend_class_entry* source_context_type;
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\SourceContext",
                                  SourceContext, source_context)
-  zend_class_implements(source_context_type TSRMLS_CC, 1, message_type);
   zend_declare_property_null(source_context_type, "file_name", strlen("file_name"),
                              ZEND_ACC_PRIVATE TSRMLS_CC);
 PHP_PROTO_INIT_SUBMSGCLASS_END
@@ -2271,7 +2249,6 @@ zend_class_entry* string_value_type;
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\StringValue",
                                  StringValue, string_value)
-  zend_class_implements(string_value_type TSRMLS_CC, 1, message_type);
   zend_declare_property_null(string_value_type, "value", strlen("value"),
                              ZEND_ACC_PRIVATE TSRMLS_CC);
 PHP_PROTO_INIT_SUBMSGCLASS_END
@@ -2300,7 +2277,6 @@ zend_class_entry* struct_type;
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\Struct",
                                  Struct, struct)
-  zend_class_implements(struct_type TSRMLS_CC, 1, message_type);
   zend_declare_property_null(struct_type, "fields", strlen("fields"),
                              ZEND_ACC_PRIVATE TSRMLS_CC);
 PHP_PROTO_INIT_SUBMSGCLASS_END
@@ -2339,7 +2315,6 @@ zend_class_entry* type_type;
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\Type",
                                  Type, type)
-  zend_class_implements(type_type TSRMLS_CC, 1, message_type);
   zend_declare_property_null(type_type, "name", strlen("name"),
                              ZEND_ACC_PRIVATE TSRMLS_CC);
   zend_declare_property_null(type_type, "fields", strlen("fields"),
@@ -2383,7 +2358,6 @@ zend_class_entry* u_int32_value_type;
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\UInt32Value",
                                  UInt32Value, u_int32_value)
-  zend_class_implements(u_int32_value_type TSRMLS_CC, 1, message_type);
   zend_declare_property_null(u_int32_value_type, "value", strlen("value"),
                              ZEND_ACC_PRIVATE TSRMLS_CC);
 PHP_PROTO_INIT_SUBMSGCLASS_END
@@ -2412,7 +2386,6 @@ zend_class_entry* u_int64_value_type;
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\UInt64Value",
                                  UInt64Value, u_int64_value)
-  zend_class_implements(u_int64_value_type TSRMLS_CC, 1, message_type);
   zend_declare_property_null(u_int64_value_type, "value", strlen("value"),
                              ZEND_ACC_PRIVATE TSRMLS_CC);
 PHP_PROTO_INIT_SUBMSGCLASS_END
@@ -2452,7 +2425,6 @@ zend_class_entry* value_type;
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\Value",
                                  Value, value)
-  zend_class_implements(value_type TSRMLS_CC, 1, message_type);
   zend_declare_property_null(value_type, "kind", strlen("kind"),
                              ZEND_ACC_PRIVATE TSRMLS_CC);
 PHP_PROTO_INIT_SUBMSGCLASS_END

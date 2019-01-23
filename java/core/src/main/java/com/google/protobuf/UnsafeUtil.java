@@ -391,14 +391,12 @@ final class UnsafeUtil {
   }
 
   /**
-   * Gets the field with the given name within the class, or {@code null} if not found. If found,
-   * the field is made accessible.
+   * Gets the field with the given name within the class, or {@code null} if not found.
    */
   private static Field field(Class<?> clazz, String fieldName) {
     Field field;
     try {
       field = clazz.getDeclaredField(fieldName);
-      field.setAccessible(true);
     } catch (Throwable t) {
       // Failed to access the fields.
       field = null;

@@ -56,6 +56,7 @@
 #include <google/protobuf/stubs/substitute.h>
 
 
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -109,7 +110,7 @@ void ImmutableMessageGenerator::GenerateStaticVariables(
 
   std::map<string, string> vars;
   vars["identifier"] = UniqueFileScopeIdentifier(descriptor_);
-  vars["index"] = SimpleItoa(descriptor_->index());
+  vars["index"] = StrCat(descriptor_->index());
   vars["classname"] = name_resolver_->GetImmutableClassName(descriptor_);
   if (descriptor_->containing_type() != NULL) {
     vars["parent"] = UniqueFileScopeIdentifier(
@@ -153,7 +154,7 @@ int ImmutableMessageGenerator::GenerateStaticVariableInitializers(
   int bytecode_estimate = 0;
   std::map<string, string> vars;
   vars["identifier"] = UniqueFileScopeIdentifier(descriptor_);
-  vars["index"] = SimpleItoa(descriptor_->index());
+  vars["index"] = StrCat(descriptor_->index());
   vars["classname"] = name_resolver_->GetImmutableClassName(descriptor_);
   if (descriptor_->containing_type() != NULL) {
     vars["parent"] = UniqueFileScopeIdentifier(
@@ -417,8 +418,7 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
         descriptor_->oneof_decl(i))->name;
     vars["oneof_capitalized_name"] = context_->GetOneofGeneratorInfo(
         descriptor_->oneof_decl(i))->capitalized_name;
-    vars["oneof_index"] =
-        SimpleItoa(descriptor_->oneof_decl(i)->index());
+    vars["oneof_index"] = StrCat(descriptor_->oneof_decl(i)->index());
     // oneofCase_ and oneof_
     printer->Print(vars,
       "private int $oneof_name$Case_ = 0;\n"
@@ -434,7 +434,7 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
           "$deprecation$$field_name$($field_number$),\n", "deprecation",
           field->options().deprecated() ? "@java.lang.Deprecated " : "",
           "field_name", ToUpper(field->name()), "field_number",
-          SimpleItoa(field->number()));
+          StrCat(field->number()));
     }
     printer->Print(
       "$cap_oneof_name$_NOT_SET(0);\n",
@@ -459,7 +459,7 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
     for (int j = 0; j < descriptor_->oneof_decl(i)->field_count(); j++) {
       const FieldDescriptor* field = descriptor_->oneof_decl(i)->field(j);
       printer->Print("    case $field_number$: return $field_name$;\n",
-                     "field_number", SimpleItoa(field->number()),
+                     "field_number", StrCat(field->number()),
                      "field_name", ToUpper(field->name()));
     }
     printer->Print(
@@ -491,8 +491,7 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
   for (int i = 0; i < descriptor_->field_count(); i++) {
     printer->Print("public static final int $constant_name$ = $number$;\n",
                    "constant_name", FieldConstantName(descriptor_->field(i)),
-                   "number",
-                   SimpleItoa(descriptor_->field(i)->number()));
+                   "number", StrCat(descriptor_->field(i)->number()));
     field_generators_.get(descriptor_->field(i)).GenerateMembers(printer);
     printer->Print("\n");
   }
@@ -764,7 +763,7 @@ void ImmutableMessageGenerator::GenerateSerializeOneField(
 void ImmutableMessageGenerator::GenerateSerializeOneExtensionRange(
     io::Printer* printer, const Descriptor::ExtensionRange* range) {
   printer->Print("extensionWriter.writeUntil($end$, output);\n", "end",
-                 SimpleItoa(range->end));
+                 StrCat(range->end));
 }
 
 // ===================================================================
@@ -838,7 +837,7 @@ GenerateDescriptorMethods(io::Printer* printer) {
       printer->Print(
           "case $number$:\n"
           "  return internalGet$capitalized_name$();\n",
-          "number", SimpleItoa(field->number()), "capitalized_name",
+          "number", StrCat(field->number()), "capitalized_name",
           info->capitalized_name);
     }
     printer->Print(
@@ -929,7 +928,7 @@ void ImmutableMessageGenerator::GenerateIsInitialized(
                 context_->GetOneofGeneratorInfo(oneof);
             printer->Print("if ($oneof_name$Case_ == $field_number$) {\n",
                            "oneof_name", oneof_info->name, "field_number",
-                           SimpleItoa(field->number()));
+                           StrCat(field->number()));
           } else {
             printer->Print(
               "if (has$name$()) {\n",
@@ -1023,7 +1022,6 @@ GenerateEqualsAndHashCode(io::Printer* printer) {
     "\n",
     "classname", name_resolver_->GetImmutableClassName(descriptor_));
 
-  printer->Print("boolean result = true;\n");
   for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* field = descriptor_->field(i);
     if (field->containing_oneof() == NULL) {
@@ -1031,7 +1029,7 @@ GenerateEqualsAndHashCode(io::Printer* printer) {
       bool check_has_bits = CheckHasBitsForEqualsAndHashCode(field);
       if (check_has_bits) {
         printer->Print(
-          "result = result && (has$name$() == other.has$name$());\n"
+          "if (has$name$() != other.has$name$()) return false;\n"
           "if (has$name$()) {\n",
           "name", info->capitalized_name);
         printer->Indent();
@@ -1048,13 +1046,12 @@ GenerateEqualsAndHashCode(io::Printer* printer) {
   // Compare oneofs.
   for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
     printer->Print(
-      "result = result && get$oneof_capitalized_name$Case().equals(\n"
-      "    other.get$oneof_capitalized_name$Case());\n",
+      "if (!get$oneof_capitalized_name$Case().equals("
+      "other.get$oneof_capitalized_name$Case())) return false;\n",
       "oneof_capitalized_name",
       context_->GetOneofGeneratorInfo(
           descriptor_->oneof_decl(i))->capitalized_name);
     printer->Print(
-      "if (!result) return false;\n"
       "switch ($oneof_name$Case_) {\n",
       "oneof_name",
       context_->GetOneofGeneratorInfo(
@@ -1063,7 +1060,7 @@ GenerateEqualsAndHashCode(io::Printer* printer) {
     for (int j = 0; j < descriptor_->oneof_decl(i)->field_count(); j++) {
       const FieldDescriptor* field = descriptor_->oneof_decl(i)->field(j);
       printer->Print("case $field_number$:\n", "field_number",
-                     SimpleItoa(field->number()));
+                     StrCat(field->number()));
       printer->Indent();
       field_generators_.get(field).GenerateEqualsCode(printer);
       printer->Print("break;\n");
@@ -1080,14 +1077,14 @@ GenerateEqualsAndHashCode(io::Printer* printer) {
   // false for non-canonical ordering when running in LITE_RUNTIME but it's
   // the best we can do.
   printer->Print(
-      "result = result && unknownFields.equals(other.unknownFields);\n");
+      "if (!unknownFields.equals(other.unknownFields)) return false;\n");
   if (descriptor_->extension_range_count() > 0) {
     printer->Print(
-      "result = result &&\n"
-      "    getExtensionFields().equals(other.getExtensionFields());\n");
+      "if (!getExtensionFields().equals(other.getExtensionFields()))\n"
+      "  return false;\n");
   }
   printer->Print(
-    "return result;\n");
+    "return true;\n");
   printer->Outdent();
   printer->Print(
     "}\n"
@@ -1145,7 +1142,7 @@ GenerateEqualsAndHashCode(io::Printer* printer) {
     for (int j = 0; j < descriptor_->oneof_decl(i)->field_count(); j++) {
       const FieldDescriptor* field = descriptor_->oneof_decl(i)->field(j);
       printer->Print("case $field_number$:\n", "field_number",
-                     SimpleItoa(field->number()));
+                     StrCat(field->number()));
       printer->Indent();
       field_generators_.get(field).GenerateHashCode(printer);
       printer->Print("break;\n");
@@ -1252,7 +1249,7 @@ GenerateParsingConstructor(io::Printer* printer) {
       WireFormat::WireTypeForFieldType(field->type()));
 
     printer->Print("case $tag$: {\n", "tag",
-                   SimpleItoa(static_cast<int32>(tag)));
+                   StrCat(static_cast<int32>(tag)));
     printer->Indent();
 
     field_generators_.get(field).GenerateParsingCode(printer);
@@ -1268,7 +1265,7 @@ GenerateParsingConstructor(io::Printer* printer) {
       uint32 packed_tag = WireFormatLite::MakeTag(field->number(),
         WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
       printer->Print("case $tag$: {\n", "tag",
-                     SimpleItoa(static_cast<int32>(packed_tag)));
+                     StrCat(static_cast<int32>(packed_tag)));
       printer->Indent();
 
       field_generators_.get(field).GenerateParsingCodeFromPacked(printer);

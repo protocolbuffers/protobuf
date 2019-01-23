@@ -28,6 +28,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include "binary_json_conformance_suite.h"
 #include "conformance_test.h"
 #include "third_party/jsoncpp/json.h"
 
@@ -37,11 +38,13 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/text_format.h>
+#include <google/protobuf/util/json_util.h>
 #include <google/protobuf/util/type_resolver_util.h>
 #include <google/protobuf/wire_format_lite.h>
 
 using conformance::ConformanceRequest;
 using conformance::ConformanceResponse;
+using conformance::WireFormat;
 using google::protobuf::Descriptor;
 using google::protobuf::FieldDescriptor;
 using google::protobuf::Message;
@@ -189,73 +192,83 @@ std::unique_ptr<Message> NewTestMessage(bool is_proto3) {
 namespace google {
 namespace protobuf {
 
-class ConformanceTestSuiteImpl : public ConformanceTestSuite {
- public:
-  ConformanceTestSuiteImpl() {}
+bool BinaryAndJsonConformanceSuite::ParseJsonResponse(
+    const ConformanceResponse& response,
+    Message* test_message) {
+  string binary_protobuf;
+  util::Status status =
+      JsonToBinaryString(type_resolver_.get(), type_url_,
+                         response.json_payload(), &binary_protobuf);
 
- private:
-  void RunSuiteImpl();
-  void RunValidJsonTest(const string& test_name,
-                        ConformanceLevel level,
-                        const string& input_json,
-                        const string& equivalent_text_format);
-  void RunValidJsonTestWithProtobufInput(
-      const string& test_name,
-      ConformanceLevel level,
-      const protobuf_test_messages::proto3::TestAllTypesProto3& input,
-      const string& equivalent_text_format);
-  void RunValidJsonIgnoreUnknownTest(
-      const string& test_name, ConformanceLevel level, const string& input_json,
-      const string& equivalent_text_format);
-  void RunValidProtobufTest(const string& test_name, ConformanceLevel level,
-                            const string& input_protobuf,
-                            const string& equivalent_text_format,
-                            bool is_proto3);
-  void RunValidBinaryProtobufTest(const string& test_name,
-                                  ConformanceLevel level,
-                                  const string& input_protobuf,
-                                  bool is_proto3);
-  void RunValidProtobufTestWithMessage(
-      const string& test_name, ConformanceLevel level,
-      const Message *input,
-      const string& equivalent_text_format,
-      bool is_proto3);
+  if (!status.ok()) {
+    return false;
+  }
 
-  typedef std::function<bool(const Json::Value&)> Validator;
-  void RunValidJsonTestWithValidator(const string& test_name,
-                                     ConformanceLevel level,
-                                     const string& input_json,
-                                     const Validator& validator);
-  void ExpectParseFailureForJson(const string& test_name,
-                                 ConformanceLevel level,
-                                 const string& input_json);
-  void ExpectSerializeFailureForJson(const string& test_name,
-                                     ConformanceLevel level,
-                                     const string& text_format);
-  void ExpectParseFailureForProtoWithProtoVersion (const string& proto,
-                                                   const string& test_name,
-                                                   ConformanceLevel level,
-                                                   bool is_proto3);
-  void ExpectParseFailureForProto(const std::string& proto,
-                                  const std::string& test_name,
-                                  ConformanceLevel level);
-  void ExpectHardParseFailureForProto(const std::string& proto,
-                                      const std::string& test_name,
-                                      ConformanceLevel level);
-  void TestPrematureEOFForType(google::protobuf::FieldDescriptor::Type type);
-  void TestIllegalTags();
-  template <class MessageType>
-  void TestOneofMessage (MessageType &message,
-                         bool is_proto3);
-  template <class MessageType>
-  void TestUnknownMessage (MessageType &message,
-                           bool is_proto3);
-  void TestValidDataForType(
-      google::protobuf::FieldDescriptor::Type,
-      std::vector<std::pair<std::string, std::string>> values);
-};
+  if (!test_message->ParseFromString(binary_protobuf)) {
+    GOOGLE_LOG(FATAL)
+        << "INTERNAL ERROR: internal JSON->protobuf transcode "
+        << "yielded unparseable proto.";
+    return false;
+  }
 
-void ConformanceTestSuiteImpl::ExpectParseFailureForProtoWithProtoVersion (
+  return true;
+}
+
+bool BinaryAndJsonConformanceSuite::ParseResponse(
+    const ConformanceResponse& response,
+    const ConformanceRequestSetting& setting,
+    Message* test_message) {
+  const ConformanceRequest& request = setting.GetRequest();
+  WireFormat requested_output = request.requested_output_format();
+  const string& test_name = setting.GetTestName();
+  ConformanceLevel level = setting.GetLevel();
+
+  switch (response.result_case()) {
+    case ConformanceResponse::kProtobufPayload: {
+      if (requested_output != conformance::PROTOBUF) {
+        ReportFailure(
+            test_name, level, request, response,
+            StrCat("Test was asked for ", WireFormatToString(requested_output),
+                   " output but provided PROTOBUF instead.").c_str());
+        return false;
+      }
+
+      if (!test_message->ParseFromString(response.protobuf_payload())) {
+        ReportFailure(test_name, level, request, response,
+                   "Protobuf output we received from test was unparseable.");
+        return false;
+      }
+
+      break;
+    }
+
+    case ConformanceResponse::kJsonPayload: {
+      if (requested_output != conformance::JSON) {
+        ReportFailure(
+            test_name, level, request, response,
+            StrCat("Test was asked for ", WireFormatToString(requested_output),
+                   " output but provided JSON instead.").c_str());
+        return false;
+      }
+
+      if (!ParseJsonResponse(response, test_message)) {
+        ReportFailure(test_name, level, request, response,
+                      "JSON output we received from test was unparseable.");
+        return false;
+      }
+
+      break;
+    }
+
+    default:
+      GOOGLE_LOG(FATAL) << test_name << ": unknown payload type: "
+                        << response.result_case();
+  }
+
+  return true;
+}
+
+void BinaryAndJsonConformanceSuite::ExpectParseFailureForProtoWithProtoVersion (
     const string& proto, const string& test_name, ConformanceLevel level,
     bool is_proto3) {
   std::unique_ptr<Message> prototype = NewTestMessage(is_proto3);
@@ -285,7 +298,7 @@ void ConformanceTestSuiteImpl::ExpectParseFailureForProtoWithProtoVersion (
 }
 
 // Expect that this precise protobuf will cause a parse error.
-void ConformanceTestSuiteImpl::ExpectParseFailureForProto(
+void BinaryAndJsonConformanceSuite::ExpectParseFailureForProto(
     const string& proto, const string& test_name, ConformanceLevel level) {
   ExpectParseFailureForProtoWithProtoVersion(proto, test_name, level, true);
   ExpectParseFailureForProtoWithProtoVersion(proto, test_name, level, false);
@@ -296,12 +309,12 @@ void ConformanceTestSuiteImpl::ExpectParseFailureForProto(
 // data verbatim and once with this data followed by some valid data.
 //
 // TODO(haberman): implement the second of these.
-void ConformanceTestSuiteImpl::ExpectHardParseFailureForProto(
+void BinaryAndJsonConformanceSuite::ExpectHardParseFailureForProto(
     const string& proto, const string& test_name, ConformanceLevel level) {
   return ExpectParseFailureForProto(proto, test_name, level);
 }
 
-void ConformanceTestSuiteImpl::RunValidJsonTest(
+void BinaryAndJsonConformanceSuite::RunValidJsonTest(
     const string& test_name, ConformanceLevel level, const string& input_json,
     const string& equivalent_text_format) {
   TestAllTypesProto3 prototype;
@@ -317,7 +330,7 @@ void ConformanceTestSuiteImpl::RunValidJsonTest(
   RunValidInputTest(setting2, equivalent_text_format);
 }
 
-void ConformanceTestSuiteImpl::RunValidJsonTestWithProtobufInput(
+void BinaryAndJsonConformanceSuite::RunValidJsonTestWithProtobufInput(
     const string& test_name, ConformanceLevel level, const TestAllTypesProto3& input,
     const string& equivalent_text_format) {
   ConformanceRequestSetting setting(
@@ -327,7 +340,7 @@ void ConformanceTestSuiteImpl::RunValidJsonTestWithProtobufInput(
   RunValidInputTest(setting, equivalent_text_format);
 }
 
-void ConformanceTestSuiteImpl::RunValidJsonIgnoreUnknownTest(
+void BinaryAndJsonConformanceSuite::RunValidJsonIgnoreUnknownTest(
     const string& test_name, ConformanceLevel level, const string& input_json,
     const string& equivalent_text_format) {
   TestAllTypesProto3 prototype;
@@ -338,7 +351,7 @@ void ConformanceTestSuiteImpl::RunValidJsonIgnoreUnknownTest(
   RunValidInputTest(setting, equivalent_text_format);
 }
 
-void ConformanceTestSuiteImpl::RunValidProtobufTest(
+void BinaryAndJsonConformanceSuite::RunValidProtobufTest(
     const string& test_name, ConformanceLevel level,
     const string& input_protobuf, const string& equivalent_text_format,
     bool is_proto3) {
@@ -359,7 +372,7 @@ void ConformanceTestSuiteImpl::RunValidProtobufTest(
   }
 }
 
-void ConformanceTestSuiteImpl::RunValidBinaryProtobufTest(
+void BinaryAndJsonConformanceSuite::RunValidBinaryProtobufTest(
     const string& test_name, ConformanceLevel level,
     const string& input_protobuf, bool is_proto3) {
   std::unique_ptr<Message> prototype = NewTestMessage(is_proto3);
@@ -370,7 +383,7 @@ void ConformanceTestSuiteImpl::RunValidBinaryProtobufTest(
   RunValidBinaryInputTest(setting, input_protobuf);
 }
 
-void ConformanceTestSuiteImpl::RunValidProtobufTestWithMessage(
+void BinaryAndJsonConformanceSuite::RunValidProtobufTestWithMessage(
     const string& test_name, ConformanceLevel level, const Message *input,
     const string& equivalent_text_format, bool is_proto3) {
   RunValidProtobufTest(test_name, level, input->SerializeAsString(),
@@ -382,7 +395,7 @@ void ConformanceTestSuiteImpl::RunValidProtobufTestWithMessage(
 // numbers while the parser is allowed to accept them as JSON strings). This
 // method allows strict checking on a proto3 JSON serializer by inspecting
 // the JSON output directly.
-void ConformanceTestSuiteImpl::RunValidJsonTestWithValidator(
+void BinaryAndJsonConformanceSuite::RunValidJsonTestWithValidator(
     const string& test_name, ConformanceLevel level, const string& input_json,
     const Validator& validator) {
   TestAllTypesProto3 prototype;
@@ -426,7 +439,7 @@ void ConformanceTestSuiteImpl::RunValidJsonTestWithValidator(
   ReportSuccess(effective_test_name);
 }
 
-void ConformanceTestSuiteImpl::ExpectParseFailureForJson(
+void BinaryAndJsonConformanceSuite::ExpectParseFailureForJson(
     const string& test_name, ConformanceLevel level, const string& input_json) {
   TestAllTypesProto3 prototype;
   // We don't expect output, but if the program erroneously accepts the protobuf
@@ -452,7 +465,7 @@ void ConformanceTestSuiteImpl::ExpectParseFailureForJson(
   }
 }
 
-void ConformanceTestSuiteImpl::ExpectSerializeFailureForJson(
+void BinaryAndJsonConformanceSuite::ExpectSerializeFailureForJson(
     const string& test_name, ConformanceLevel level, const string& text_format) {
   TestAllTypesProto3 payload_message;
   GOOGLE_CHECK(
@@ -482,7 +495,7 @@ void ConformanceTestSuiteImpl::ExpectSerializeFailureForJson(
 }
 
 //TODO: proto2?
-void ConformanceTestSuiteImpl::TestPrematureEOFForType(
+void BinaryAndJsonConformanceSuite::TestPrematureEOFForType(
     FieldDescriptor::Type type) {
   // Incomplete values for each wire type.
   static const string incompletes[6] = {
@@ -570,7 +583,7 @@ void ConformanceTestSuiteImpl::TestPrematureEOFForType(
   }
 }
 
-void ConformanceTestSuiteImpl::TestValidDataForType(
+void BinaryAndJsonConformanceSuite::TestValidDataForType(
     FieldDescriptor::Type type,
     std::vector<std::pair<std::string, std::string>> values) {
   for (int is_proto3 = 0; is_proto3 < 2; is_proto3++) {
@@ -606,7 +619,7 @@ void ConformanceTestSuiteImpl::TestValidDataForType(
 }
 
 // TODO: proto2?
-void ConformanceTestSuiteImpl::TestIllegalTags() {
+void BinaryAndJsonConformanceSuite::TestIllegalTags() {
   // field num 0 is illegal
   string nullfield[] = {
     "\1DEADBEEF",
@@ -621,7 +634,7 @@ void ConformanceTestSuiteImpl::TestIllegalTags() {
   }
 }
 template <class MessageType>
-void ConformanceTestSuiteImpl::TestOneofMessage (
+void BinaryAndJsonConformanceSuite::TestOneofMessage (
     MessageType &message, bool is_proto3) {
   message.set_oneof_uint32(0);
   RunValidProtobufTestWithMessage(
@@ -660,14 +673,14 @@ void ConformanceTestSuiteImpl::TestOneofMessage (
 }
 
 template <class MessageType>
-void ConformanceTestSuiteImpl::TestUnknownMessage(
+void BinaryAndJsonConformanceSuite::TestUnknownMessage(
     MessageType& message, bool is_proto3) {
   message.ParseFromString("\xA8\x1F\x01");
   RunValidBinaryProtobufTest("UnknownVarint", REQUIRED,
                              message.SerializeAsString(), is_proto3);
 }
 
-void ConformanceTestSuiteImpl::RunSuiteImpl() {
+void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
   type_resolver_.reset(NewTypeResolverForDescriptorPool(
       kTypeUrlPrefix, DescriptorPool::generated_pool()));
   type_url_ = GetTypeUrl(TestAllTypesProto3::descriptor());
@@ -1373,6 +1386,23 @@ void ConformanceTestSuiteImpl::RunSuiteImpl() {
       "EnumField", REQUIRED,
       R"({"optionalNestedEnum": "FOO"})",
       "optional_nested_enum: FOO");
+  // Enum fields with alias
+  RunValidJsonTest(
+      "EnumFieldWithAlias", REQUIRED,
+      R"({"optionalAliasedEnum": "ALIAS_BAZ"})",
+      "optional_aliased_enum: ALIAS_BAZ");
+  RunValidJsonTest(
+      "EnumFieldWithAliasUseAlias", REQUIRED,
+      R"({"optionalAliasedEnum": "QUX"})",
+      "optional_aliased_enum: ALIAS_BAZ");
+  RunValidJsonTest(
+      "EnumFieldWithAliasLowerCase", REQUIRED,
+      R"({"optionalAliasedEnum": "qux"})",
+      "optional_aliased_enum: ALIAS_BAZ");
+  RunValidJsonTest(
+      "EnumFieldWithAliasDifferentCase", REQUIRED,
+      R"({"optionalAliasedEnum": "bAz"})",
+      "optional_aliased_enum: ALIAS_BAZ");
   // Enum values must be represented as strings.
   ExpectParseFailureForJson(
       "EnumFieldNotQuoted", REQUIRED,
@@ -2012,6 +2042,10 @@ void ConformanceTestSuiteImpl::RunSuiteImpl() {
       "FieldMask", REQUIRED,
       R"({"optionalFieldMask": "foo,barBaz"})",
       R"(optional_field_mask: {paths: "foo" paths: "bar_baz"})");
+  RunValidJsonTest(
+      "EmptyFieldMask", REQUIRED,
+      R"({"optionalFieldMask": ""})",
+      R"(optional_field_mask: {})");
   ExpectParseFailureForJson(
       "FieldMaskInvalidCharacter", RECOMMENDED,
       R"({"optionalFieldMask": "foo,bar_bar"})");
@@ -2360,8 +2394,3 @@ void ConformanceTestSuiteImpl::RunSuiteImpl() {
 
 }  // namespace protobuf
 }  // namespace google
-
-int main(int argc, char *argv[]) {
-  google::protobuf::ConformanceTestSuiteImpl suite;
-  return google::protobuf::ForkPipeRunner::Run(argc, argv, &suite);
-}

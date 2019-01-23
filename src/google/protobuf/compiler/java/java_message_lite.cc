@@ -56,6 +56,7 @@
 #include <google/protobuf/stubs/substitute.h>
 
 
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -253,7 +254,7 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
     vars["oneof_name"] = context_->GetOneofGeneratorInfo(oneof)->name;
     vars["oneof_capitalized_name"] = context_->GetOneofGeneratorInfo(
         oneof)->capitalized_name;
-    vars["oneof_index"] = SimpleItoa(oneof->index());
+    vars["oneof_index"] = StrCat(oneof->index());
     // oneofCase_ and oneof_
     printer->Print(vars,
       "private int $oneof_name$Case_ = 0;\n"
@@ -267,7 +268,7 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
       const FieldDescriptor* field = oneof->field(j);
       printer->Print("$field_name$($field_number$),\n", "field_name",
                      ToUpper(field->name()), "field_number",
-                     SimpleItoa(field->number()));
+                     StrCat(field->number()));
     }
     printer->Print(
       "$cap_oneof_name$_NOT_SET(0);\n",
@@ -292,7 +293,7 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
     for (int j = 0; j < oneof->field_count(); j++) {
       const FieldDescriptor* field = oneof->field(j);
       printer->Print("    case $field_number$: return $field_name$;\n",
-                     "field_number", SimpleItoa(field->number()),
+                     "field_number", StrCat(field->number()),
                      "field_name", ToUpper(field->name()));
     }
     printer->Print(
@@ -327,8 +328,7 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
   for (int i = 0; i < descriptor_->field_count(); i++) {
     printer->Print("public static final int $constant_name$ = $number$;\n",
                    "constant_name", FieldConstantName(descriptor_->field(i)),
-                   "number",
-                   SimpleItoa(descriptor_->field(i)->number()));
+                   "number", StrCat(descriptor_->field(i)->number()));
     field_generators_.get(descriptor_->field(i)).GenerateMembers(printer);
     printer->Print("\n");
   }
@@ -729,7 +729,7 @@ void ImmutableMessageLiteGenerator::GenerateSerializeOneField(
 void ImmutableMessageLiteGenerator::GenerateSerializeOneExtensionRange(
     io::Printer* printer, const Descriptor::ExtensionRange* range) {
   printer->Print("extensionWriter.writeUntil($end$, output);\n", "end",
-                 SimpleItoa(range->end));
+                 StrCat(range->end));
 }
 
 // ===================================================================
@@ -810,7 +810,7 @@ void ImmutableMessageLiteGenerator::GenerateDynamicMethodIsInitialized(
                 context_->GetOneofGeneratorInfo(oneof);
             printer->Print("if ($oneof_name$Case_ == $field_number$) {\n",
                            "oneof_name", oneof_info->name, "field_number",
-                           SimpleItoa(field->number()));
+                           StrCat(field->number()));
           } else {
             printer->Print(
               "if (has$name$()) {\n",
@@ -1014,7 +1014,7 @@ void ImmutableMessageLiteGenerator::GenerateDynamicMethodMergeFromStream(
         field->number(), WireFormat::WireTypeForFieldType(field->type()));
 
     printer->Print("case $tag$: {\n", "tag",
-                   SimpleItoa(static_cast<int32>(tag)));
+                   StrCat(static_cast<int32>(tag)));
     printer->Indent();
 
     field_generators_.get(field).GenerateParsingCode(printer);
@@ -1031,7 +1031,7 @@ void ImmutableMessageLiteGenerator::GenerateDynamicMethodMergeFromStream(
       uint32 packed_tag = WireFormatLite::MakeTag(
           field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
       printer->Print("case $tag$: {\n", "tag",
-                     SimpleItoa(static_cast<int32>(packed_tag)));
+                     StrCat(static_cast<int32>(packed_tag)));
       printer->Indent();
 
       field_generators_.get(field).GenerateParsingCodeFromPacked(printer);

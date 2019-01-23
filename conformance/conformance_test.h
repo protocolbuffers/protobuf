@@ -87,7 +87,6 @@ class ForkPipeRunner : public ConformanceTestRunner {
   static int Run(int argc, char *argv[],
                  ConformanceTestSuite* suite);
 
- private:
   ForkPipeRunner(const std::string &executable)
       : child_pid_(-1), executable_(executable) {}
 
@@ -97,24 +96,7 @@ class ForkPipeRunner : public ConformanceTestRunner {
                const std::string& request,
                std::string* response);
 
-  // TODO(haberman): make this work on Windows, instead of using these
-  // UNIX-specific APIs.
-  //
-  // There is a platform-agnostic API in
-  //    src/google/protobuf/compiler/subprocess.h
-  //
-  // However that API only supports sending a single message to the subprocess.
-  // We really want to be able to send messages and receive responses one at a
-  // time:
-  //
-  // 1. Spawning a new process for each test would take way too long for thousands
-  //    of tests and subprocesses like java that can take 100ms or more to start
-  //    up.
-  //
-  // 2. Sending all the tests in one big message and receiving all results in one
-  //    big message would take away our visibility about which test(s) caused a
-  //    crash or other fatal error.  It would also give us only a single failure
-  //    instead of all of them.
+ private:
   void SpawnTestProgram();
 
   void CheckedWrite(int fd, const void *buf, size_t len);
@@ -162,15 +144,6 @@ class ConformanceTestSuite {
 
   void SetVerbose(bool verbose) { verbose_ = verbose; }
 
-  // Sets the list of tests that are expected to fail when RunSuite() is called.
-  // RunSuite() will fail unless the set of failing tests is exactly the same
-  // as this list.
-  //
-  // The filename here is *only* used to create/format useful error messages for
-  // how to update the failure list.  We do NOT read this file at all.
-  void SetFailureList(const std::string& filename,
-                      const std::vector<std::string>& failure_list);
-
   // Whether to require the testee to pass RECOMMENDED tests. By default failing
   // a RECOMMENDED test case will not fail the entire suite but will only
   // generated a warning. If this flag is set to true, RECOMMENDED tests will
@@ -187,9 +160,12 @@ class ConformanceTestSuite {
   // Test output will be stored in "output".
   //
   // Returns true if the set of failing tests was exactly the same as the
-  // failure list.  If SetFailureList() was not called, returns true if all
-  // tests passed.
-  bool RunSuite(ConformanceTestRunner* runner, std::string* output);
+  // failure list.
+  // The filename here is *only* used to create/format useful error messages for
+  // how to update the failure list.  We do NOT read this file at all.
+  bool RunSuite(ConformanceTestRunner* runner, std::string* output,
+                const std::string& filename,
+                conformance::FailureSet* failure_list);
 
  protected:
   // Test cases are classified into a few categories:
@@ -237,6 +213,7 @@ class ConformanceTestSuite {
    protected:
     virtual string InputFormatString(conformance::WireFormat format) const;
     virtual string OutputFormatString(conformance::WireFormat format) const;
+    conformance::ConformanceRequest request_;
 
    private:
     ConformanceLevel level_;
@@ -244,11 +221,24 @@ class ConformanceTestSuite {
     ::conformance::WireFormat output_format_;
     const Message& prototype_message_;
     string test_name_;
-    conformance::ConformanceRequest request_;
   };
 
   bool CheckSetEmpty(const std::set<string>& set_to_check,
                      const std::string& write_to_file, const std::string& msg);
+  string WireFormatToString(conformance::WireFormat wire_format);
+
+  // Parse payload in the response to the given message. Returns true on
+  // success.
+  virtual bool ParseResponse(
+      const conformance::ConformanceResponse& response,
+      const ConformanceRequestSetting& setting,
+      Message* test_message) = 0;
+
+  void VerifyResponse(
+      const ConformanceRequestSetting& setting,
+      const string& equivalent_wire_format,
+      const conformance::ConformanceResponse& response,
+      bool need_report_success);
 
   void ReportSuccess(const std::string& test_name);
   void ReportFailure(const string& test_name,
@@ -295,10 +285,6 @@ class ConformanceTestSuite {
 
   // The set of tests that the testee opted out of;
   std::set<std::string> skipped_;
-
-  std::unique_ptr<google::protobuf::util::TypeResolver>
-      type_resolver_;
-  std::string type_url_;
 };
 
 }  // namespace protobuf

@@ -506,8 +506,8 @@ GenerateSerializedSizeCode(io::Printer* printer) const {
 void ImmutableMessageFieldGenerator::
 GenerateEqualsCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "result = result && get$capitalized_name$()\n"
-    "    .equals(other.get$capitalized_name$());\n");
+    "if (!get$capitalized_name$()\n"
+    "    .equals(other.get$capitalized_name$())) return false;\n");
 }
 
 void ImmutableMessageFieldGenerator::
@@ -1307,8 +1307,8 @@ GenerateSerializedSizeCode(io::Printer* printer) const {
 void RepeatedImmutableMessageFieldGenerator::
 GenerateEqualsCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "result = result && get$capitalized_name$List()\n"
-    "    .equals(other.get$capitalized_name$List());\n");
+    "if (!get$capitalized_name$List()\n"
+    "    .equals(other.get$capitalized_name$List())) return false;\n");
 }
 
 void RepeatedImmutableMessageFieldGenerator::

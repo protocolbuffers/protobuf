@@ -34,6 +34,7 @@
 #include <google/protobuf/type.pb.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/util/internal/utility.h>
+
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/mathlimits.h>
 #include <google/protobuf/stubs/mathutil.h>
@@ -231,13 +232,13 @@ string DataPiece::ValueAsStringOrDefault(
     StringPiece default_string) const {
   switch (type_) {
     case TYPE_INT32:
-      return SimpleItoa(i32_);
+      return StrCat(i32_);
     case TYPE_INT64:
-      return SimpleItoa(i64_);
+      return StrCat(i64_);
     case TYPE_UINT32:
-      return SimpleItoa(u32_);
+      return StrCat(u32_);
     case TYPE_UINT64:
-      return SimpleItoa(u64_);
+      return StrCat(u64_);
     case TYPE_DOUBLE:
       return DoubleAsString(double_);
     case TYPE_FLOAT:
@@ -274,6 +275,7 @@ StatusOr<string> DataPiece::ToBytes() const {
 
 StatusOr<int> DataPiece::ToEnum(const google::protobuf::Enum* enum_type,
                                 bool use_lower_camel_for_enums,
+                                bool case_insensitive_enum_parsing,
                                 bool ignore_unknown_enum_values,
                                 bool* is_unknown_enum_value) const {
   if (type_ == TYPE_NULL) return google::protobuf::NULL_VALUE;
@@ -295,11 +297,16 @@ StatusOr<int> DataPiece::ToEnum(const google::protobuf::Enum* enum_type,
     }
 
     // Next try a normalized name.
-    for (string::iterator it = enum_name.begin(); it != enum_name.end(); ++it) {
-      *it = *it == '-' ? '_' : ascii_toupper(*it);
+    bool should_normalize_enum =
+        case_insensitive_enum_parsing || use_lower_camel_for_enums;
+    if (should_normalize_enum) {
+      for (string::iterator it = enum_name.begin(); it != enum_name.end();
+           ++it) {
+        *it = *it == '-' ? '_' : ascii_toupper(*it);
+      }
+      value = FindEnumValueByNameOrNull(enum_type, enum_name);
+      if (value != nullptr) return value->number();
     }
-    value = FindEnumValueByNameOrNull(enum_type, enum_name);
-    if (value != nullptr) return value->number();
 
     // If use_lower_camel_for_enums is true try with enum name without
     // underscore. This will also accept camel case names as the enum_name has

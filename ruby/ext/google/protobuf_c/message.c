@@ -628,7 +628,7 @@ VALUE build_class_from_descriptor(Descriptor* desc) {
   rb_define_method(klass, "[]=", Message_index_set, 2);
   rb_define_singleton_method(klass, "decode", Message_decode, 1);
   rb_define_singleton_method(klass, "encode", Message_encode, 1);
-  rb_define_singleton_method(klass, "decode_json", Message_decode_json, 1);
+  rb_define_singleton_method(klass, "decode_json", Message_decode_json, -1);
   rb_define_singleton_method(klass, "encode_json", Message_encode_json, -1);
   rb_define_singleton_method(klass, "descriptor", Message_descriptor, 0);
 
@@ -698,10 +698,9 @@ VALUE build_module_from_enumdesc(EnumDescriptor* enumdesc) {
     const char* name = upb_enum_iter_name(&it);
     int32_t value = upb_enum_iter_number(&it);
     if (name[0] < 'A' || name[0] > 'Z') {
-      rb_raise(cTypeError,
-               "Enum value '%s' does not start with an uppercase letter "
-               "as is required for Ruby constants.",
-               name);
+      rb_warn("Enum value '%s' does not start with an uppercase letter "
+              "as is required for Ruby constants.",
+              name);
     }
     rb_define_const(mod, name, INT2NUM(value));
   }

@@ -63,7 +63,7 @@ goog.require('jspb.utils');
  * @struct
  */
 jspb.BinaryIterator = function(opt_decoder, opt_next, opt_elements) {
-  /** @private {jspb.BinaryDecoder} */
+  /** @private {?jspb.BinaryDecoder} */
   this.decoder_ = null;
 
   /**

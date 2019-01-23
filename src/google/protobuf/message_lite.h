@@ -400,12 +400,9 @@ class PROTOBUF_EXPORT MessageLite {
   // method.)
   virtual int GetCachedSize() const = 0;
 
-  virtual uint8* InternalSerializeWithCachedSizesToArray(bool deterministic,
-                                                         uint8* target) const;
-
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
   virtual internal::ParseFunc _ParseFunc() const {
-    GOOGLE_LOG(FATAL) << "Type " << typeid(*this).name()
+    GOOGLE_LOG(FATAL) << "Type " << GetTypeName()
                << " doesn't implement _InternalParse";
     return nullptr;
   }
@@ -451,6 +448,11 @@ class PROTOBUF_EXPORT MessageLite {
   // TODO(gerbens) make this a pure abstract function
   virtual const void* InternalGetTable() const { return NULL; }
 
+  // Fast path when conditions match (ie. non-deterministic)
+ public:
+  virtual uint8* InternalSerializeWithCachedSizesToArray(uint8* target) const;
+
+ private:
   friend class internal::WireFormatLite;
   friend class Message;
   friend class internal::WeakFieldMap;

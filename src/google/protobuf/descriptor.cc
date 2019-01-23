@@ -63,6 +63,7 @@
 #include <google/protobuf/stubs/casts.h>
 
 
+
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/stl_util.h>
 #include <google/protobuf/stubs/hash.h>
@@ -1926,16 +1927,16 @@ string FieldDescriptor::DefaultValueAsString(bool quote_string_type) const {
   GOOGLE_CHECK(has_default_value()) << "No default value";
   switch (cpp_type()) {
     case CPPTYPE_INT32:
-      return SimpleItoa(default_value_int32());
+      return StrCat(default_value_int32());
       break;
     case CPPTYPE_INT64:
-      return SimpleItoa(default_value_int64());
+      return StrCat(default_value_int64());
       break;
     case CPPTYPE_UINT32:
-      return SimpleItoa(default_value_uint32());
+      return StrCat(default_value_uint32());
       break;
     case CPPTYPE_UINT64:
-      return SimpleItoa(default_value_uint64());
+      return StrCat(default_value_uint64());
       break;
     case CPPTYPE_FLOAT:
       return SimpleFtoa(default_value_float());
@@ -5073,10 +5074,12 @@ void DescriptorBuilder::CheckEnumValueUniqueness(
     if (!inserted && insert_result.first->second->name() != value->name() &&
         insert_result.first->second->number() != value->number()) {
       string error_message =
-          "When enum name is stripped and label is PascalCased (" + stripped +
-          "), this value label conflicts with " + values[stripped]->name() +
-          ". This will make the proto fail to compile for some languages, such "
-          "as C#.";
+          "Enum name " + value->name() + " has the same name as " +
+          values[stripped]->name() +
+          " if you ignore case and strip out the enum name prefix (if any). "
+          "This is error-prone and can lead to undefined behavior. "
+          "Please avoid doing this. If you are using allow_alias, please "
+          "assign the same numeric value to both enums.";
       // There are proto2 enums out there with conflicting names, so to preserve
       // compatibility we issue only a warning for proto2.
       if (result->file()->syntax() == FileDescriptor::SYNTAX_PROTO2) {

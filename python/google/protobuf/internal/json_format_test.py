@@ -49,9 +49,11 @@ from google.protobuf import field_mask_pb2
 from google.protobuf import struct_pb2
 from google.protobuf import timestamp_pb2
 from google.protobuf import wrappers_pb2
+from google.protobuf import any_test_pb2
 from google.protobuf import unittest_mset_pb2
 from google.protobuf import unittest_pb2
 from google.protobuf.internal import well_known_types
+from google.protobuf import descriptor_pool
 from google.protobuf import json_format
 from google.protobuf.util import json_format_proto3_pb2
 
@@ -202,8 +204,8 @@ class JsonFormatTest(JsonFormatBase):
 
   def testJsonParseDictToAnyDoesNotAlterInput(self):
     orig_dict = {
-        "int32Value": 20,
-        "@type": "type.googleapis.com/proto3.TestMessage"
+        'int32Value': 20,
+        '@type': 'type.googleapis.com/proto3.TestMessage'
     }
     copied_dict = json.loads(json.dumps(orig_dict))
     parsed_message = any_pb2.Any()
@@ -628,6 +630,19 @@ class JsonFormatTest(JsonFormatBase):
         '  "value": {\n'
         '    "@type": "type.googleapis.com/proto3.TestMessage"')
 
+  def testAnyMessageDescriptorPoolMissingType(self):
+    packed_message = unittest_pb2.OneString()
+    packed_message.data = 'string'
+    message = any_test_pb2.TestAny()
+    message.any_value.Pack(packed_message)
+    empty_pool = descriptor_pool.DescriptorPool()
+    with self.assertRaises(TypeError) as cm:
+      json_format.MessageToJson(message, True, descriptor_pool=empty_pool)
+    self.assertEqual(
+        'Can not find message descriptor by type_url:'
+        ' type.googleapis.com/protobuf_unittest.OneString.',
+        str(cm.exception))
+
   def testWellKnownInAnyMessage(self):
     message = any_pb2.Any()
     int32_value = wrappers_pb2.Int32Value()
@@ -1015,6 +1030,32 @@ class JsonFormatTest(JsonFormatBase):
     message = json_format_proto3_pb2.TestMessage()
     json_format.ParseDict(js_dict, message)
     self.assertEqual(expected, message.int32_value)
+
+  def testParseDictAnyDescriptorPoolMissingType(self):
+    # Confirm that ParseDict does not raise ParseError with default pool
+    js_dict = {
+        'any_value': {
+            '@type': 'type.googleapis.com/proto3.MessageType',
+            'value': 1234
+        }
+    }
+    json_format.ParseDict(js_dict, any_test_pb2.TestAny())
+    # Check ParseDict raises ParseError with empty pool
+    js_dict = {
+        'any_value': {
+            '@type': 'type.googleapis.com/proto3.MessageType',
+            'value': 1234
+        }
+    }
+    with self.assertRaises(json_format.ParseError) as cm:
+      empty_pool = descriptor_pool.DescriptorPool()
+      json_format.ParseDict(js_dict,
+                            any_test_pb2.TestAny(),
+                            descriptor_pool=empty_pool)
+    self.assertEqual(
+        str(cm.exception),
+        'Failed to parse any_value field: Can not find message descriptor by'
+        ' type_url: type.googleapis.com/proto3.MessageType..')
 
   def testMessageToDict(self):
     message = json_format_proto3_pb2.TestMessage()

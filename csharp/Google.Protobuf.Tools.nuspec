@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <package>
   <metadata>
     <id>Google.Protobuf.Tools</id>
@@ -16,24 +16,24 @@
     <tags>Protocol Buffers Binary Serialization Format Google proto proto3</tags>
   </metadata>
   <files>
-    <file src="protoc\windows_x86\protoc.exe" target="tools\windows_x86\protoc.exe" />
-    <file src="protoc\windows_x64\protoc.exe" target="tools\windows_x64\protoc.exe" />
-    <file src="protoc\linux_x86\protoc" target="tools\linux_x86\protoc" />
-    <file src="protoc\linux_x64\protoc" target="tools\linux_x64\protoc" />
-    <file src="protoc\macosx_x86\protoc" target="tools\macosx_x86\protoc" />
-    <file src="protoc\macosx_x64\protoc" target="tools\macosx_x64\protoc" />
-    <file src="..\src\google\protobuf\any.proto" target="tools\google\protobuf" />
-    <file src="..\src\google\protobuf\api.proto" target="tools\google\protobuf" />
-    <file src="..\src\google\protobuf\descriptor.proto" target="tools\google\protobuf" />
-    <file src="..\src\google\protobuf\duration.proto" target="tools\google\protobuf" />
-    <file src="..\src\google\protobuf\empty.proto" target="tools\google\protobuf" />
-    <file src="..\src\google\protobuf\field_mask.proto" target="tools\google\protobuf" />
-    <file src="..\src\google\protobuf\source_context.proto" target="tools\google\protobuf" />
-    <file src="..\src\google\protobuf\struct.proto" target="tools\google\protobuf" />
-    <file src="..\src\google\protobuf\timestamp.proto" target="tools\google\protobuf" />
-    <file src="..\src\google\protobuf\type.proto" target="tools\google\protobuf" />
-    <file src="..\src\google\protobuf\wrappers.proto" target="tools\google\protobuf" />
-    <file src="Google.Protobuf.Tools.targets" target="buildCrossTargeting" />
-    <file src="Google.Protobuf.Tools.targets" target="build" />
+    <file src="protoc\windows_x86\protoc.exe" target="tools\windows_x86\protoc.exe"/>
+    <file src="protoc\windows_x64\protoc.exe" target="tools\windows_x64\protoc.exe"/>
+    <file src="protoc\linux_x86\protoc" target="tools\linux_x86\protoc"/>
+    <file src="protoc\linux_x64\protoc" target="tools\linux_x64\protoc"/>
+    <file src="protoc\macosx_x86\protoc" target="tools\macosx_x86\protoc"/>
+    <file src="protoc\macosx_x64\protoc" target="tools\macosx_x64\protoc"/>
+    <file src="..\src\google\protobuf\any.proto" target="tools\google\protobuf"/>
+    <file src="..\src\google\protobuf\api.proto" target="tools\google\protobuf"/>
+    <file src="..\src\google\protobuf\descriptor.proto" target="tools\google\protobuf"/>
+    <file src="..\src\google\protobuf\duration.proto" target="tools\google\protobuf"/>
+    <file src="..\src\google\protobuf\empty.proto" target="tools\google\protobuf"/>
+    <file src="..\src\google\protobuf\field_mask.proto" target="tools\google\protobuf"/>
+    <file src="..\src\google\protobuf\source_context.proto" target="tools\google\protobuf"/>
+    <file src="..\src\google\protobuf\struct.proto" target="tools\google\protobuf"/>
+    <file src="..\src\google\protobuf\timestamp.proto" target="tools\google\protobuf"/>
+    <file src="..\src\google\protobuf\type.proto" target="tools\google\protobuf"/>
+    <file src="..\src\google\protobuf\wrappers.proto" target="tools\google\protobuf"/>
+    <file src="Google.Protobuf.Tools.targets" target="buildCrossTargeting"/>
+    <file src="Google.Protobuf.Tools.targets" target="build"/>
   </files>
 </package>

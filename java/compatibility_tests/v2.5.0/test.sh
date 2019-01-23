@@ -5,6 +5,9 @@ set -ex
 # Change to the script's directory.
 cd $(dirname $0)
 
+MAVEN_LOCAL_REPOSITORY=/var/maven_local_repository
+MVN="mvn --batch-mode -e -X -Dhttps.protocols=TLSv1.2 -Dmaven.repo.local=$MAVEN_LOCAL_REPOSITORY"
+
 # Version of the tests (i.e., the version of protobuf from where we extracted
 # these tests).
 TEST_VERSION=`grep "^  <version>.*</version>" pom.xml | sed "s|  <version>\(.*\)</version>|\1|"`
@@ -59,7 +62,7 @@ echo "Running compatibility tests between $VERSION_NUMBER and $OLD_VERSION"
 # Build and install protobuf-java-$VERSION_NUMBER.jar
 [ -f ../../core/target/protobuf-java-$VERSION_NUMBER.jar ] || {
   pushd ../..
-  mvn install -Dmaven.test.skip=true
+  $MVN install -Dmaven.test.skip=true
   popd
 }
 
@@ -81,7 +84,7 @@ chmod +x protoc
 # Test A.1:
 #   protos: use new version
 #   more_protos: use old version
-mvn clean test \
+$MVN clean test \
   -Dprotobuf.test.source.path=$(pwd)/protobuf \
   -Dprotoc.path=$(pwd)/protoc \
   -Dprotos.protoc.path=$(pwd)/../../../src/protoc \
@@ -90,7 +93,7 @@ mvn clean test \
 # Test A.2:
 #   protos: use old version
 #   more_protos: use new version
-mvn clean test \
+$MVN clean test \
   -Dprotobuf.test.source.path=$(pwd)/protobuf \
   -Dprotoc.path=$(pwd)/protoc \
   -Dmore_protos.protoc.path=$(pwd)/../../../src/protoc \
@@ -103,12 +106,12 @@ mvn clean test \
 # make it easier to run binary compatibility test (where we will need to run
 # the jar files directly).
 cd deps
-mvn assembly:single
+$MVN assembly:single
 cd ..
 cp -f deps/target/compatibility-test-deps-${TEST_VERSION}-jar-with-dependencies.jar deps.jar
 
 # Build the old version of all 3 artifacts.
-mvn clean install -Dmaven.test.skip=true -Dprotoc.path=$(pwd)/protoc -Dprotobuf.version=$OLD_VERSION
+$MVN clean install -Dmaven.test.skip=true -Dprotoc.path=$(pwd)/protoc -Dprotobuf.version=$OLD_VERSION
 cp -f protos/target/compatibility-protos-${TEST_VERSION}.jar protos.jar
 cp -f more_protos/target/compatibility-more-protos-${TEST_VERSION}.jar more_protos.jar
 cp -f tests/target/compatibility-tests-${TEST_VERSION}.jar tests.jar
@@ -125,7 +128,7 @@ cd ..
 
 # Test B.2: update protos.jar only.
 cd protos
-mvn clean package -Dmaven.test.skip=true -Dprotoc.path=$(pwd)/../../../../src/protoc -Dprotobuf.version=$VERSION_NUMBER
+$MVN clean package -Dmaven.test.skip=true -Dprotoc.path=$(pwd)/../../../../src/protoc -Dprotobuf.version=$VERSION_NUMBER
 cd ..
 cd protobuf
 java -cp ../../../core/target/protobuf-java-$VERSION_NUMBER.jar:../protos/target/compatibility-protos-${TEST_VERSION}.jar:../more_protos.jar:../tests.jar:../deps.jar org.junit.runner.JUnitCore $TESTS
@@ -133,7 +136,7 @@ cd ..
 
 # Test B.3: update more_protos.jar only.
 cd more_protos
-mvn clean package -Dmaven.test.skip=true -Dprotoc.path=$(pwd)/../../../../src/protoc -Dprotobuf.version=$VERSION_NUMBER
+$MVN clean package -Dmaven.test.skip=true -Dprotoc.path=$(pwd)/../../../../src/protoc -Dprotobuf.version=$VERSION_NUMBER
 cd ..
 cd protobuf
 java -cp ../../../core/target/protobuf-java-$VERSION_NUMBER.jar:../protos.jar:../more_protos/target/compatibility-more-protos-${TEST_VERSION}.jar:../tests.jar:../deps.jar org.junit.runner.JUnitCore $TESTS

@@ -47,7 +47,7 @@ EOF
 
 MAKE="make -j8"
 
-for v in 2.5.1 2.4.0 2.3.0 ; do
+for v in 2.6.0 2.5.1 2.4.0 2.3.0 ; do
   ccache -c
   rake -f "$CROSS_RUBY" cross-ruby VERSION="$v" HOST=x86_64-darwin11 MAKE="$MAKE"
 done

@@ -43,6 +43,7 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/stubs/strutil.h>
+
 #include <google/protobuf/compiler/scc.h>
 #include <google/protobuf/compiler/js/well_known_types_embed.h>
 #include <google/protobuf/io/printer.h>
@@ -615,12 +616,11 @@ string JSFieldIndex(const FieldDescriptor* field) {
     for (int i = 0; i < parent_type->field_count(); i++) {
       if (parent_type->field(i)->type() == FieldDescriptor::TYPE_GROUP &&
           parent_type->field(i)->message_type() == containing_type) {
-        return SimpleItoa(field->number() -
-                                   parent_type->field(i)->number());
+        return StrCat(field->number() - parent_type->field(i)->number());
       }
     }
   }
-  return SimpleItoa(field->number());
+  return StrCat(field->number());
 }
 
 string JSOneofIndex(const OneofDescriptor* oneof) {
@@ -639,7 +639,7 @@ string JSOneofIndex(const OneofDescriptor* oneof) {
       break;
     }
   }
-  return SimpleItoa(index);
+  return StrCat(index);
 }
 
 // Decodes a codepoint in \x0000 -- \xFFFF.
@@ -845,23 +845,25 @@ string JSFieldDefault(const FieldDescriptor* field) {
 
   switch (field->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32:
-      return MaybeNumberString(
-          field, SimpleItoa(field->default_value_int32()));
+      return MaybeNumberString(field,
+                               StrCat(field->default_value_int32()));
     case FieldDescriptor::CPPTYPE_UINT32:
       // The original codegen is in Java, and Java protobufs store unsigned
       // integer values as signed integer values. In order to exactly match the
       // output, we need to reinterpret as base-2 signed. Ugh.
-      return MaybeNumberString(field, SimpleItoa(static_cast<int32>(
-                                          field->default_value_uint32())));
-    case FieldDescriptor::CPPTYPE_INT64:
       return MaybeNumberString(
-          field, SimpleItoa(field->default_value_int64()));
+          field,
+          StrCat(static_cast<int32>(field->default_value_uint32())));
+    case FieldDescriptor::CPPTYPE_INT64:
+      return MaybeNumberString(field,
+                               StrCat(field->default_value_int64()));
     case FieldDescriptor::CPPTYPE_UINT64:
       // See above note for uint32 -- reinterpreting as signed.
-      return MaybeNumberString(field, SimpleItoa(static_cast<int64>(
-                                          field->default_value_uint64())));
+      return MaybeNumberString(
+          field,
+          StrCat(static_cast<int64>(field->default_value_uint64())));
     case FieldDescriptor::CPPTYPE_ENUM:
-      return SimpleItoa(field->default_value_enum()->number());
+      return StrCat(field->default_value_enum()->number());
     case FieldDescriptor::CPPTYPE_BOOL:
       return field->default_value_bool() ? "true" : "false";
     case FieldDescriptor::CPPTYPE_FLOAT:
@@ -1444,7 +1446,7 @@ string GetPivot(const Descriptor* desc) {
         (max_field_number + 1) : kDefaultPivot;
   }
 
-  return SimpleItoa(pivot);
+  return StrCat(pivot);
 }
 
 // Whether this field represents presence.  For fields with presence, we
@@ -2104,6 +2106,12 @@ void Generator::GenerateClassConstructor(const GeneratorOptions& options,
       "};\n"
       "goog.inherits($classname$, jspb.Message);\n"
       "if (goog.DEBUG && !COMPILED) {\n"
+      // displayName overrides Function.prototype.displayName
+      // http://google3/javascript/externs/es3.js?l=511
+      "  /**\n"
+      "   * @public\n"
+      "   * @override\n"
+      "   */\n"
       "  $classname$.displayName = '$classname$';\n"
       "}\n",
       "classname", GetMessagePath(options, desc));
@@ -2264,7 +2272,7 @@ void Generator::GenerateClassToObject(const GeneratorOptions& options,
       " * @suppress {unusedLocalVariables} f is only used for nested messages\n"
       " */\n"
       "$classname$.toObject = function(includeInstance, msg) {\n"
-      "  var f, obj = {",
+      "  var obj = {",
       "classname", GetMessagePath(options, desc));
 
   bool first = true;
@@ -2430,6 +2438,9 @@ void Generator::GenerateClassFromObject(const GeneratorOptions& options,
       " * @param {!Object} obj The object representation of this proto to\n"
       " *     load the data from.\n"
       " * @return {!$classname$}\n"
+      " * @suppress {missingProperties} To prevent JSCompiler errors at "
+      "the\n"
+      " *     `goog.isDef(obj.<fieldName>)` lookups.\n"
       " */\n"
       "$classname$.fromObject = function(obj) {\n"
       "  var msg = new $classname$();\n",
@@ -2437,7 +2448,9 @@ void Generator::GenerateClassFromObject(const GeneratorOptions& options,
 
   for (int i = 0; i < desc->field_count(); i++) {
     const FieldDescriptor* field = desc->field(i);
-    GenerateClassFieldFromObject(options, printer, field);
+    if (!IgnoreField(field)) {
+      GenerateClassFieldFromObject(options, printer, field);
+    }
   }
 
   printer->Print(
@@ -2479,9 +2492,8 @@ void Generator::GenerateClassFieldFromObject(
         printer->Print(
             "  goog.isDef(obj.$name$) && "
             "jspb.Message.setRepeatedWrapperField(\n"
-            "      msg, $index$, goog.array.map(obj.$name$, function(i) {\n"
-            "        return $fieldclass$.fromObject(i);\n"
-            "      }));\n",
+            "      msg, $index$, obj.$name$.map(\n"
+            "          $fieldclass$.fromObject));\n",
             "name", JSObjectFieldName(options, field),
             "index", JSFieldIndex(field),
             "fieldclass", SubmessageTypeRef(options, field));
@@ -2843,46 +2855,69 @@ void Generator::GenerateClassField(const GeneratorOptions& options,
   // Generate clearFoo() method for map fields, repeated fields, and other
   // fields with presence.
   if (field->is_map()) {
+    // clang-format off
     printer->Print(
+        "/**\n"
+        " * Clears values from the map. The map will be non-null."
+        "$returndoc$\n"
+        " */\n"
         "$class$.prototype.$clearername$ = function() {\n"
         "  this.$gettername$().clear();$returnvalue$\n"
         "};\n"
         "\n"
         "\n",
+        "returndoc", JSReturnDoc(options, field),
         "class", GetMessagePath(options, field->containing_type()),
         "clearername", "clear" + JSGetterName(options, field),
         "gettername", "get" + JSGetterName(options, field),
         "returnvalue", JSReturnClause(field));
+    // clang-format on
     printer->Annotate("clearername", field);
   } else if (field->is_repeated() ||
              (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
               !field->is_required())) {
     // Fields where we can delegate to the regular setter.
+    // clang-format off
     printer->Print(
+        "/**\n"
+        " * $jsdoc$$returndoc$\n"
+        " */\n"
         "$class$.prototype.$clearername$ = function() {\n"
         "  this.$settername$($clearedvalue$);$returnvalue$\n"
         "};\n"
         "\n"
         "\n",
+       "jsdoc", field->is_repeated()
+           ? "Clears the list making it empty but non-null."
+           : "Clears the message field making it undefined.",
+        "returndoc", JSReturnDoc(options, field),
         "class", GetMessagePath(options, field->containing_type()),
         "clearername", "clear" + JSGetterName(options, field),
         "settername", "set" + JSGetterName(options, field),
         "clearedvalue", (field->is_repeated() ? "[]" : "undefined"),
         "returnvalue", JSReturnClause(field));
+    // clang-format on
     printer->Annotate("clearername", field);
   } else if (HasFieldPresence(options, field)) {
     // Fields where we can't delegate to the regular setter because it doesn't
     // accept "undefined" as an argument.
+    // clang-format off
     printer->Print(
+        "/**\n"
+        " * Clears the field making it undefined.$returndoc$\n"
+        " */\n"
         "$class$.prototype.$clearername$ = function() {\n"
         "  jspb.Message.set$maybeoneof$Field(this, "
         "$index$$maybeoneofgroup$, ",
+        "returndoc", JSReturnDoc(options, field),
         "class", GetMessagePath(options, field->containing_type()),
         "clearername", "clear" + JSGetterName(options, field),
         "maybeoneof", (field->containing_oneof() ? "Oneof" : ""),
-        "maybeoneofgroup", (field->containing_oneof() ?
-                           (", " + JSOneofArray(options, field)) : ""),
+        "maybeoneofgroup", (field->containing_oneof()
+                            ? (", " + JSOneofArray(options, field))
+                            : ""),
         "index", JSFieldIndex(field));
+    // clang-format on
     printer->Annotate("clearername", field);
     printer->Print(
         "$clearedvalue$);$returnvalue$\n"
@@ -2959,14 +2994,15 @@ void Generator::GenerateRepeatedMessageHelperMethods(
       " * @param {number=} opt_index\n"
       " * @return {!$optionaltype$}\n"
       " */\n"
-      "$class$.prototype.add$name$ = function(opt_value, opt_index) {\n"
+      "$class$.prototype.$addername$ = function(opt_value, opt_index) {\n"
       "  return jspb.Message.addTo$repeatedtag$WrapperField(",
-      "optionaltype", JSTypeName(options, field, BYTES_DEFAULT),
-      "class", GetMessagePath(options, field->containing_type()),
-      "name", JSGetterName(options, field, BYTES_DEFAULT,
-                   /* drop_list = */ true),
+      "optionaltype", JSTypeName(options, field, BYTES_DEFAULT), "class",
+      GetMessagePath(options, field->containing_type()), "addername",
+      "add" + JSGetterName(options, field, BYTES_DEFAULT,
+                           /* drop_list = */ true),
       "repeatedtag", (field->is_repeated() ? "Repeated" : ""));
 
+  printer->Annotate("addername", field);
   printer->Print(
       "this, $index$$oneofgroup$, opt_value, $ctor$, opt_index);\n"
       "};\n"
@@ -3053,38 +3089,42 @@ void Generator::GenerateClassDeserializeBinary(const GeneratorOptions& options,
       " * @return {!$class$}\n"
       " */\n"
       "$class$.deserializeBinaryFromReader = function(msg, reader) {\n"
-      "  while (reader.nextField()) {\n"
-      "    if (reader.isEndGroup()) {\n"
-      "      break;\n"
-      "    }\n"
-      "    var field = reader.getFieldNumber();\n"
-      "    switch (field) {\n",
+      "  while (reader.nextField()) {\n",
       "class", GetMessagePath(options, desc));
+    printer->Print(
+        "    if (reader.isEndGroup()) {\n"
+        "      break;\n"
+        "    }\n"
+        "    var field = reader.getFieldNumber();\n"
+        "    switch (field) {\n");
 
-  for (int i = 0; i < desc->field_count(); i++) {
-    if (!IgnoreField(desc->field(i))) {
-      GenerateClassDeserializeBinaryField(options, printer, desc->field(i));
+
+    for (int i = 0; i < desc->field_count(); i++) {
+      if (!IgnoreField(desc->field(i))) {
+        GenerateClassDeserializeBinaryField(options, printer, desc->field(i));
+      }
     }
-  }
+
+    printer->Print(
+        "    default:\n");
+    if (IsExtendable(desc)) {
+      printer->Print(
+          "      jspb.Message.readBinaryExtension(msg, reader,\n"
+          "        $extobj$Binary,\n"
+          "        $class$.prototype.getExtension,\n"
+          "        $class$.prototype.setExtension);\n"
+          "      break;\n"
+          "    }\n",
+          "extobj", JSExtensionsObjectName(options, desc->file(), desc),
+          "class", GetMessagePath(options, desc));
+    } else {
+      printer->Print(
+          "      reader.skipField();\n"
+          "      break;\n"
+          "    }\n");
+    }
 
   printer->Print(
-      "    default:\n");
-  if (IsExtendable(desc)) {
-    printer->Print(
-        "      jspb.Message.readBinaryExtension(msg, reader, $extobj$Binary,\n"
-        "        $class$.prototype.getExtension,\n"
-        "        $class$.prototype.setExtension);\n"
-        "      break;\n",
-        "extobj", JSExtensionsObjectName(options, desc->file(), desc),
-        "class", GetMessagePath(options, desc));
-  } else {
-    printer->Print(
-        "      reader.skipField();\n"
-        "      break;\n");
-  }
-
-  printer->Print(
-      "    }\n"
       "  }\n"
       "  return msg;\n"
       "};\n"
@@ -3096,8 +3136,7 @@ void Generator::GenerateClassDeserializeBinaryField(
     const GeneratorOptions& options,
     io::Printer* printer,
     const FieldDescriptor* field) const {
-  printer->Print("    case $num$:\n", "num",
-                 SimpleItoa(field->number()));
+  printer->Print("    case $num$:\n", "num", StrCat(field->number()));
 
   if (field->is_map()) {
     const FieldDescriptor* key_field = MapFieldKey(field);
@@ -3133,7 +3172,7 @@ void Generator::GenerateClassDeserializeBinaryField(
           (field->type() == FieldDescriptor::TYPE_GROUP) ? "Group" : "Message",
           "grpfield",
           (field->type() == FieldDescriptor::TYPE_GROUP)
-              ? (SimpleItoa(field->number()) + ", ")
+              ? (StrCat(field->number()) + ", ")
               : "");
     } else {
       printer->Print(
@@ -3296,7 +3335,7 @@ void Generator::GenerateClassSerializeBinaryField(
     printer->Print(
         "    f.serializeBinary($index$, writer, "
         "$keyWriterFn$, $valueWriterFn$",
-        "index", SimpleItoa(field->number()), "keyWriterFn",
+        "index", StrCat(field->number()), "keyWriterFn",
         JSBinaryWriterMethodName(options, key_field), "valueWriterFn",
         JSBinaryWriterMethodName(options, value_field));
 
@@ -3312,7 +3351,7 @@ void Generator::GenerateClassSerializeBinaryField(
         "      $index$,\n"
         "      f",
         "method", JSBinaryReadWriteMethodName(field, /* is_writer = */ true),
-        "index", SimpleItoa(field->number()));
+        "index", StrCat(field->number()));
 
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
         !field->is_map()) {
@@ -3349,7 +3388,7 @@ void Generator::GenerateEnum(const GeneratorOptions& options,
     const EnumValueDescriptor* value = enumdesc->value(i);
     printer->Print("  $name$: $value$$comma$\n", "name",
                    ToEnumCase(value->name()), "value",
-                   SimpleItoa(value->number()), "comma",
+                   StrCat(value->number()), "comma",
                    (i == enumdesc->value_count() - 1) ? "" : ",");
     printer->Annotate("name", value);
   }
@@ -3393,8 +3432,8 @@ void Generator::GenerateExtension(const GeneratorOptions& options,
       "!Object} */ (\n"
       "         $toObject$),\n"
       "    $repeated$);\n",
-      "index", SimpleItoa(field->number()), "name",
-      extension_object_name, "ctor",
+      "index", StrCat(field->number()), "name", extension_object_name,
+      "ctor",
       (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE
            ? SubmessageTypeRef(options, field)
            : string("null")),
@@ -3414,8 +3453,8 @@ void Generator::GenerateExtension(const GeneratorOptions& options,
       "    $binaryMessageDeserializeFn$,\n",
       "extendName",
       JSExtensionsObjectName(options, field->file(), field->containing_type()),
-      "index", SimpleItoa(field->number()), "class", extension_scope,
-      "name", extension_object_name, "binaryReaderFn",
+      "index", StrCat(field->number()), "class", extension_scope, "name",
+      extension_object_name, "binaryReaderFn",
       JSBinaryReaderMethodName(options, field), "binaryWriterFn",
       JSBinaryWriterMethodName(options, field), "binaryMessageSerializeFn",
       (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE)
@@ -3436,8 +3475,8 @@ void Generator::GenerateExtension(const GeneratorOptions& options,
       "\n",
       "extendName",
       JSExtensionsObjectName(options, field->file(), field->containing_type()),
-      "index", SimpleItoa(field->number()), "class", extension_scope,
-      "name", extension_object_name);
+      "index", StrCat(field->number()), "class", extension_scope, "name",
+      extension_object_name);
 }
 
 bool GeneratorOptions::ParseFromOptions(

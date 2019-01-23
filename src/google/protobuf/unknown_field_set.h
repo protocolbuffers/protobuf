@@ -176,17 +176,11 @@ class PROTOBUF_EXPORT UnknownFieldSet {
   // For InternalMergeFrom
   friend class UnknownField;
   // Merges from other UnknownFieldSet. This method assumes, that this object
-  // is newly created and has fields_ == NULL;
+  // is newly created and has no fields.
   void InternalMergeFrom(const UnknownFieldSet& other);
   void ClearFallback();
 
-  // fields_ is either NULL, or a pointer to a vector that is *non-empty*. We
-  // never hold the empty vector because we want the 'do we have any unknown
-  // fields' check to be fast, and avoid a cache miss: the UFS instance gets
-  // embedded in the message object, so 'fields_ != NULL' tests a member
-  // variable hot in the cache, without the need to go touch a vector somewhere
-  // else in memory.
-  std::vector<UnknownField>* fields_;
+  std::vector<UnknownField> fields_;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(UnknownFieldSet);
 };
 
@@ -200,13 +194,16 @@ inline void WriteLengthDelimited(uint32 num, StringPiece val,
   unknown->AddLengthDelimited(num)->assign(val.data(), val.size());
 }
 
+PROTOBUF_EXPORT
 const char* PackedValidEnumParser(const char* begin, const char* end,
                                   void* object, ParseContext* ctx);
+PROTOBUF_EXPORT
 const char* PackedValidEnumParserArg(const char* begin, const char* end,
                                      void* object, ParseContext* ctx);
-
+PROTOBUF_EXPORT
 const char* UnknownGroupParse(const char* begin, const char* end, void* object,
                               ParseContext* ctx);
+PROTOBUF_EXPORT
 std::pair<const char*, bool> UnknownFieldParse(uint64 tag, ParseClosure parent,
                                                const char* begin,
                                                const char* end,
@@ -262,10 +259,6 @@ class PROTOBUF_EXPORT UnknownField {
   // If this UnknownField contains a pointer, delete it.
   void Delete();
 
-  // Reset all the underlying pointers to NULL. A special function to be only
-  // used while merging from a temporary UFS.
-  void Reset();
-
   // Make a deep copy of any pointers in this UnknownField.
   void DeepCopy(const UnknownField& other);
 
@@ -291,36 +284,34 @@ class PROTOBUF_EXPORT UnknownField {
 // ===================================================================
 // inline implementations
 
-inline UnknownFieldSet::UnknownFieldSet() : fields_(NULL) {}
+inline UnknownFieldSet::UnknownFieldSet() {}
 
 inline UnknownFieldSet::~UnknownFieldSet() { Clear(); }
 
 inline void UnknownFieldSet::ClearAndFreeMemory() { Clear(); }
 
 inline void UnknownFieldSet::Clear() {
-  if (fields_ != NULL) {
+  if (!fields_.empty()) {
     ClearFallback();
   }
 }
 
 inline bool UnknownFieldSet::empty() const {
-  // Invariant: fields_ is never empty if present.
-  return !fields_;
+  return fields_.empty();
 }
 
 inline void UnknownFieldSet::Swap(UnknownFieldSet* x) {
-  std::swap(fields_, x->fields_);
+  fields_.swap(x->fields_);
 }
 
 inline int UnknownFieldSet::field_count() const {
-  return fields_ ? static_cast<int>(fields_->size()) : 0;
+  return static_cast<int>(fields_.size());
 }
 inline const UnknownField& UnknownFieldSet::field(int index) const {
-  GOOGLE_DCHECK(fields_ != NULL);
-  return (*fields_)[static_cast<size_t>(index)];
+  return (fields_)[static_cast<size_t>(index)];
 }
 inline UnknownField* UnknownFieldSet::mutable_field(int index) {
-  return &(*fields_)[static_cast<size_t>(index)];
+  return &(fields_)[static_cast<size_t>(index)];
 }
 
 inline void UnknownFieldSet::AddLengthDelimited(

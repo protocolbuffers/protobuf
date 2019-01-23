@@ -33,6 +33,7 @@
 
 #include <google/protobuf/stubs/strutil.h>
 
+#include <google/protobuf/util/message_differencer.h>
 #include <google/protobuf/testing/googletest.h>
 
 
@@ -64,6 +65,15 @@ inline ::std::string TestSourceDir() {
 
 inline ::std::string GetTestDataPath(const ::std::string& google3_path) {
   return TestSourceDir() + "/" + MaybeTranslatePath(google3_path);
+}
+
+// Checks the equality of "message" and serialized proto of type "ProtoType".
+// Do not directly compare two serialized protos.
+template <typename ProtoType>
+bool EqualsToSerialized(const ProtoType& message, const std::string& data) {
+  ProtoType other;
+  other.ParsePartialFromString(data);
+  return util::MessageDifferencer::Equals(message, other);
 }
 
 }  // namespace TestUtil

@@ -84,7 +84,7 @@ namespace google {
 namespace protobuf {
 
 void ParseFailureList(const char *filename,
-                      std::vector<string>* failure_list) {
+                      conformance::FailureSet *failure_list) {
   std::ifstream infile(filename);
 
   if (!infile.is_open()) {
@@ -101,7 +101,7 @@ void ParseFailureList(const char *filename,
     line = line.substr(0, line.find("#"));
 
     if (!line.empty()) {
-      failure_list->push_back(line);
+      failure_list->add_failure(line);
     }
   }
 }
@@ -178,7 +178,7 @@ int ForkPipeRunner::Run(
     int argc, char *argv[], ConformanceTestSuite* suite) {
   char *program;
   string failure_list_filename;
-  std::vector<string> failure_list;
+  conformance::FailureSet failure_list;
 
   for (int arg = 1; arg < argc; ++arg) {
     if (strcmp(argv[arg], "--failure_list") == 0) {
@@ -201,17 +201,35 @@ int ForkPipeRunner::Run(
     }
   }
 
-  suite->SetFailureList(failure_list_filename, failure_list);
   ForkPipeRunner runner(program);
 
   std::string output;
-  bool ok =  suite->RunSuite(&runner, &output);
+  bool ok =
+      suite->RunSuite(&runner, &output, failure_list_filename, &failure_list);
 
   fwrite(output.c_str(), 1, output.size(), stderr);
 
   return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
+// TODO(haberman): make this work on Windows, instead of using these
+// UNIX-specific APIs.
+//
+// There is a platform-agnostic API in
+//    src/google/protobuf/compiler/subprocess.h
+//
+// However that API only supports sending a single message to the subprocess.
+// We really want to be able to send messages and receive responses one at a
+// time:
+//
+// 1. Spawning a new process for each test would take way too long for thousands
+//    of tests and subprocesses like java that can take 100ms or more to start
+//    up.
+//
+// 2. Sending all the tests in one big message and receiving all results in one
+//    big message would take away our visibility about which test(s) caused a
+//    crash or other fatal error.  It would also give us only a single failure
+//    instead of all of them.
 void ForkPipeRunner::SpawnTestProgram() {
   int toproc_pipe_fd[2];
   int fromproc_pipe_fd[2];

@@ -7,7 +7,7 @@ use Google\Protobuf\Internal\GPBType;
 use Foo\TestMessage;
 use Foo\TestMessage\Sub;
 
-class RepeatedFieldTest extends PHPUnit_Framework_TestCase
+class RepeatedFieldTest extends \PHPUnit\Framework\TestCase
 {
 
     #########################################################
@@ -527,6 +527,45 @@ class RepeatedFieldTest extends PHPUnit_Framework_TestCase
         $this->assertSame(0, $arr[0]);
         $this->assertSame(1, $arr[1]);
         $this->assertSame(3, $arr[2]);
+    }
+
+    #########################################################
+    # Test reference in array
+    #########################################################
+
+    public function testArrayElementIsReferenceInSetters()
+    {
+        // Bool elements
+        $values = [true];
+        array_walk($values, function (&$value) {});
+        $m = new TestMessage();
+        $m->setRepeatedBool($values);
+
+        // Int32 elements
+        $values = [1];
+        array_walk($values, function (&$value) {});
+        $m = new TestMessage();
+        $m->setRepeatedInt32($values);
+
+        // Double elements
+        $values = [1.0];
+        array_walk($values, function (&$value) {});
+        $m = new TestMessage();
+        $m->setRepeatedDouble($values);
+
+        // String elements
+        $values = ['a'];
+        array_walk($values, function (&$value) {});
+        $m = new TestMessage();
+        $m->setRepeatedString($values);
+
+        // Message elements
+        $m = new TestMessage();
+        $subs = [1, 2];
+        foreach ($subs as &$sub) {
+            $sub = new Sub(['a' => $sub]);
+        }
+        $m->setRepeatedMessage($subs);
     }
 
     #########################################################

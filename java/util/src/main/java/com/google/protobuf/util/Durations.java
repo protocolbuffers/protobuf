@@ -42,6 +42,7 @@ import static com.google.protobuf.util.Timestamps.NANOS_PER_MICROSECOND;
 import static com.google.protobuf.util.Timestamps.NANOS_PER_MILLISECOND;
 import static com.google.protobuf.util.Timestamps.NANOS_PER_SECOND;
 
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.protobuf.Duration;
 import java.text.ParseException;
 import java.util.Comparator;
@@ -91,8 +92,8 @@ public final class Durations {
   }
 
   /**
-   * Compares two durations. The value returned is identical to what would be returned by:
-   * {@code Durations.comparator().compare(x, y)}.
+   * Compares two durations. The value returned is identical to what would be returned by: {@code
+   * Durations.comparator().compare(x, y)}.
    *
    * @return the value {@code 0} if {@code x == y}; a value less than {@code 0} if {@code x < y};
    *     and a value greater than {@code 0} if {@code x > y}
@@ -151,6 +152,7 @@ public final class Durations {
    * @throws IllegalArgumentException if {@code duration} is negative or invalid
    * @throws NullPointerException if {@code duration} is {@code null}
    */
+  @CanIgnoreReturnValue
   public static Duration checkNotNegative(Duration duration) {
     checkValid(duration);
     checkArgument(!isNegative(duration), "duration (%s) must not be negative", toString(duration));
@@ -163,6 +165,7 @@ public final class Durations {
    * @throws IllegalArgumentException if {@code duration} is negative, {@code ZERO}, or invalid
    * @throws NullPointerException if {@code duration} is {@code null}
    */
+  @CanIgnoreReturnValue
   public static Duration checkPositive(Duration duration) {
     checkValid(duration);
     checkArgument(
@@ -173,17 +176,30 @@ public final class Durations {
   }
 
   /** Throws an {@link IllegalArgumentException} if the given {@link Duration} is not valid. */
+  @CanIgnoreReturnValue
   public static Duration checkValid(Duration duration) {
     long seconds = duration.getSeconds();
     int nanos = duration.getNanos();
     if (!isValid(seconds, nanos)) {
-        throw new IllegalArgumentException(String.format(
-            "Duration is not valid. See proto definition for valid values. "
-            + "Seconds (%s) must be in range [-315,576,000,000, +315,576,000,000]. "
-            + "Nanos (%s) must be in range [-999,999,999, +999,999,999]. "
-            + "Nanos must have the same sign as seconds", seconds, nanos));
+      throw new IllegalArgumentException(
+          String.format(
+              "Duration is not valid. See proto definition for valid values. "
+                  + "Seconds (%s) must be in range [-315,576,000,000, +315,576,000,000]. "
+                  + "Nanos (%s) must be in range [-999,999,999, +999,999,999]. "
+                  + "Nanos must have the same sign as seconds",
+              seconds, nanos));
     }
     return duration;
+  }
+
+  /**
+   * Builds the given builder and throws an {@link IllegalArgumentException} if it is not valid. See
+   * {@link #checkValid(Duration}).
+   *
+   * @return A valid, built {@link Duration}.
+   */
+  public static Duration checkValid(Duration.Builder durationBuilder) {
+    return checkValid(durationBuilder.build());
   }
 
   /**

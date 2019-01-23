@@ -308,7 +308,7 @@ namespace Google.Protobuf.WellKnownTypes
         /// <returns>true if the two timestamps refer to the same nanosecond</returns>
         public static bool operator ==(Timestamp a, Timestamp b)
         {
-            return ReferenceEquals(a, b) || (a is null ? (b is null ? true : false) : a.Equals(b));
+            return ReferenceEquals(a, b) || (ReferenceEquals(a, null) ? (ReferenceEquals(b, null) ? true : false) : a.Equals(b));
         }
 
         /// <summary>

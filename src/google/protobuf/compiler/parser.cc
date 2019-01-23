@@ -38,6 +38,7 @@
 #include <limits>
 #include <unordered_map>
 
+
 #include <google/protobuf/stubs/hash.h>
 
 #include <google/protobuf/stubs/casts.h>
@@ -1154,7 +1155,7 @@ bool Parser::ParseDefaultAssignment(
       DO(ConsumeInteger64(max_value, &value,
                           "Expected integer for field default value."));
       // And stringify it again.
-      default_value->append(SimpleItoa(value));
+      default_value->append(StrCat(value));
       break;
     }
 
@@ -1177,7 +1178,7 @@ bool Parser::ParseDefaultAssignment(
       DO(ConsumeInteger64(max_value, &value,
                           "Expected integer for field default value."));
       // And stringify it again.
-      default_value->append(SimpleItoa(value));
+      default_value->append(StrCat(value));
       break;
     }
 
@@ -1564,15 +1565,18 @@ bool Parser::ParseExtensions(DescriptorProto* message,
 // name literals.
 bool Parser::ParseReserved(DescriptorProto* message,
                            const LocationRecorder& message_location) {
+  io::Tokenizer::Token start_token = input_->current();
   // Parse the declaration.
   DO(Consume("reserved"));
   if (LookingAtType(io::Tokenizer::TYPE_STRING)) {
     LocationRecorder location(message_location,
                               DescriptorProto::kReservedNameFieldNumber);
+    location.StartAt(start_token);
     return ParseReservedNames(message, location);
   } else {
     LocationRecorder location(message_location,
                               DescriptorProto::kReservedRangeFieldNumber);
+    location.StartAt(start_token);
     return ParseReservedNumbers(message, location);
   }
 }
@@ -1638,16 +1642,19 @@ bool Parser::ParseReservedNumbers(DescriptorProto* message,
 }
 
 bool Parser::ParseReserved(EnumDescriptorProto* message,
-                          const LocationRecorder& message_location) {
+                           const LocationRecorder& message_location) {
+  io::Tokenizer::Token start_token = input_->current();
   // Parse the declaration.
   DO(Consume("reserved"));
   if (LookingAtType(io::Tokenizer::TYPE_STRING)) {
     LocationRecorder location(message_location,
                               DescriptorProto::kReservedNameFieldNumber);
+    location.StartAt(start_token);
     return ParseReservedNames(message, location);
   } else {
     LocationRecorder location(message_location,
                               DescriptorProto::kReservedRangeFieldNumber);
+    location.StartAt(start_token);
     return ParseReservedNumbers(message, location);
   }
 }

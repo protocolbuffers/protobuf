@@ -290,7 +290,6 @@ ParseClosure GetPackedField(const FieldDescriptor* field, Message* msg,
       if (field->file()->syntax() == FileDescriptor::SYNTAX_PROTO3) {
         return {internal::PackedEnumParser, object};
       } else {
-        GOOGLE_CHECK_EQ(field->file()->options().cc_api_version(), 2);
         ctx->extra_parse_data().SetEnumValidatorArg(
             ReflectiveValidator, field->enum_type(),
             reflection->MutableUnknownFields(msg), field->number());
@@ -307,6 +306,7 @@ ParseClosure GetPackedField(const FieldDescriptor* field, Message* msg,
 
     default:
       GOOGLE_LOG(FATAL) << "Type is not packable " << field->type();
+      return {};  // Make compiler happy
   }
 }
 
@@ -315,19 +315,13 @@ ParseClosure GetLenDelim(int field_number, const FieldDescriptor* field,
                          internal::ParseContext* ctx) {
   if (WireFormat::WireTypeForFieldType(field->type()) !=
       WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-    ABSL_ASSERT(field->is_packable());
+    GOOGLE_DCHECK(field->is_packable());
     return GetPackedField(field, msg, reflection, ctx);
   }
   enum { kNone = 0, kVerify, kStrict } utf8_level = kNone;
   internal::ParseFunc string_parsers[] = {internal::StringParser,
                                           internal::StringParserUTF8Verify,
                                           internal::StringParserUTF8};
-  internal::ParseFunc cord_parsers[] = {internal::CordParser,
-                                        internal::CordParserUTF8Verify,
-                                        internal::CordParserUTF8};
-  internal::ParseFunc string_piece_parsers[] = {
-      internal::StringPieceParser, internal::StringPieceParserUTF8Verify,
-      internal::StringPieceParserUTF8};
   switch (field->type()) {
     case FieldDescriptor::TYPE_STRING:
       if (field->file()->syntax() == FileDescriptor::SYNTAX_PROTO3
@@ -339,7 +333,7 @@ ParseClosure GetLenDelim(int field_number, const FieldDescriptor* field,
         ctx->extra_parse_data().SetFieldName(field->full_name().c_str());
         utf8_level = kVerify;
       }
-      FALLTHROUGH_INTENDED;
+      PROTOBUF_FALLTHROUGH_INTENDED;
     case FieldDescriptor::TYPE_BYTES: {
       if (field->is_repeated()) {
         int index = reflection->FieldSize(*msg, field);
@@ -350,17 +344,10 @@ ParseClosure GetLenDelim(int field_number, const FieldDescriptor* field,
           auto object = reflection->MutableRepeatedPtrField<string>(msg, field)
                             ->Mutable(index);
           return {string_parsers[utf8_level], object};
-        } else if (field->options().ctype() == FieldOptions::CORD) {
-          auto object = reflection->MutableRepeatedField<Cord>(msg, field)
+        } else {
+          auto object = reflection->MutableRepeatedPtrField<string>(msg, field)
                             ->Mutable(index);
-          return {cord_parsers[utf8_level], object};
-        } else if (field->options().ctype() == FieldOptions::STRING_PIECE) {
-          auto object =
-              reflection
-                  ->MutableRepeatedPtrField<internal::StringPieceField>(msg,
-                                                                        field)
-                  ->Mutable(index);
-          return {string_piece_parsers[utf8_level], object};
+          return {string_parsers[utf8_level], object};
         }
       } else {
         // Clear value and make sure it's set.
@@ -372,16 +359,10 @@ ParseClosure GetLenDelim(int field_number, const FieldDescriptor* field,
               reflection->GetStringReference(*msg, field, nullptr));
           return {string_parsers[utf8_level], object};
         } else {
-          void* object =
-              internal::ReflectionAccessor::GetOffset(msg, field, reflection);
-          if (field->containing_oneof()) {
-            object = *static_cast<Cord**>(object);
-          }
-          if (field->options().ctype() == FieldOptions::CORD) {
-            return {cord_parsers[utf8_level], object};
-          } else if (field->options().ctype() == FieldOptions::STRING_PIECE) {
-            return {string_piece_parsers[utf8_level], object};
-          }
+          // HACK around inability to get mutable_string in reflection
+          string* object = &const_cast<string&>(
+              reflection->GetStringReference(*msg, field, nullptr));
+          return {string_parsers[utf8_level], object};
         }
       }
       GOOGLE_LOG(FATAL) << "No other type than string supported";
@@ -399,6 +380,7 @@ ParseClosure GetLenDelim(int field_number, const FieldDescriptor* field,
     default:
       GOOGLE_LOG(FATAL) << "Wrong type for length delim " << field->type();
   }
+  return {};  // Make compiler happy.
 }
 
 ParseClosure GetGroup(int field_number, const FieldDescriptor* field,
@@ -507,8 +489,8 @@ const char* Message::_InternalParse(const char* begin, const char* end,
           reflection_(msg->GetReflection()),
           ctx_(ctx),
           is_item_(is_item) {
-      GOOGLE_CHECK(descriptor_) << typeid(*this).name();
-      GOOGLE_CHECK(reflection_) << descriptor_->name() << " " << typeid(*this).name();
+      GOOGLE_CHECK(descriptor_) << msg->GetTypeName();
+      GOOGLE_CHECK(reflection_) << msg->GetTypeName();
     }
 
     const FieldDescriptor* Field(int num, int wire_type) {
