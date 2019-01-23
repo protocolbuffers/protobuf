@@ -1,7 +1,6 @@
 // Amalgamated source file
 #include "upb.h"
 
-
 #if UINTPTR_MAX == 0xffffffff
 #define UPB_SIZE(size32, size64) size32
 #else
@@ -3818,8 +3817,6 @@ bool upb_fieldtype_mapkeyok(upb_fieldtype_t type) {
 
 /** upb_msgval ****************************************************************/
 
-#define upb_alignof(t) offsetof(struct { char c; t x; }, x)
-
 /* These functions will generate real memcpy() calls on ARM sadly, because
  * the compiler assumes they might not be aligned. */
 
@@ -5677,10 +5674,16 @@ static void *upb_arena_doalloc(upb_alloc *alloc, void *ptr, size_t oldsize,
 
 /* Public Arena API ***********************************************************/
 
+#define upb_alignof(type) offsetof (struct { char c; type member; }, member)
+
 upb_arena *upb_arena_init(void *mem, size_t n, upb_alloc *alloc) {
   const size_t first_block_overhead = sizeof(upb_arena) + sizeof(mem_block);
   upb_arena *a;
   bool owned = false;
+
+  /* Round block size down to alignof(*a) since we will allocate the arena
+   * itself at the end. */
+  n &= ~(upb_alignof(upb_arena) - 1);
 
   if (n < first_block_overhead) {
     /* We need to malloc the initial block. */
@@ -5691,10 +5694,8 @@ upb_arena *upb_arena_init(void *mem, size_t n, upb_alloc *alloc) {
     }
   }
 
-  a = mem;
-  mem = (char*)mem + sizeof(*a);
+  a = (void*)((char*)mem + n - sizeof(*a));
   n -= sizeof(*a);
-  upb_arena_addblock(a, mem, n, owned);
 
   a->alloc.func = &upb_arena_doalloc;
   a->block_alloc = &upb_alloc_global;
@@ -5705,8 +5706,12 @@ upb_arena *upb_arena_init(void *mem, size_t n, upb_alloc *alloc) {
   a->block_head = NULL;
   a->block_alloc = alloc;
 
+  upb_arena_addblock(a, mem, n, owned);
+
   return a;
 }
+
+#undef upb_alignof
 
 void upb_arena_free(upb_arena *a) {
   cleanup_ent *ent = a->cleanup_head;
@@ -6638,6 +6643,7 @@ void upb_pbcodecache_free(upb_pbcodecache *c) {
   }
 
   upb_inttable_uninit(&c->groups);
+  upb_arena_free(c->arena);
   upb_gfree(c);
 }
 

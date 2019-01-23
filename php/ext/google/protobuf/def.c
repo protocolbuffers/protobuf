@@ -433,14 +433,13 @@ PHP_METHOD(FieldDescriptor, isMap) {
 
 PHP_METHOD(FieldDescriptor, getEnumType) {
   FieldDescriptor *intern = UNBOX(FieldDescriptor, getThis());
-  const upb_enumdef *enumdef = upb_fielddef_enumsubdef(intern->fielddef);
-  if (enumdef == NULL) {
-    char error_msg[100];
-    sprintf(error_msg, "Cannot get enum type for non-enum field '%s'",
-            upb_fielddef_name(intern->fielddef));
-    zend_throw_exception(NULL, error_msg, 0 TSRMLS_CC);
+  if (upb_fielddef_type(intern->fielddef) != UPB_TYPE_ENUM) {
+    zend_throw_exception_ex(NULL, 0 TSRMLS_CC,
+                            "Cannot get enum type for non-enum field '%s'",
+                            upb_fielddef_name(intern->fielddef));
     return;
   }
+  const upb_enumdef *enumdef = upb_fielddef_enumsubdef(intern->fielddef);
   PHP_PROTO_HASHTABLE_VALUE desc = get_def_obj(enumdef);
 
 #if PHP_MAJOR_VERSION < 7
@@ -453,14 +452,13 @@ PHP_METHOD(FieldDescriptor, getEnumType) {
 
 PHP_METHOD(FieldDescriptor, getMessageType) {
   FieldDescriptor *intern = UNBOX(FieldDescriptor, getThis());
-  const upb_msgdef *msgdef = upb_fielddef_msgsubdef(intern->fielddef);
-  if (msgdef == NULL) {
-    char error_msg[100];
-    sprintf(error_msg, "Cannot get message type for non-message field '%s'",
-            upb_fielddef_name(intern->fielddef));
-    zend_throw_exception(NULL, error_msg, 0 TSRMLS_CC);
+  if (upb_fielddef_type(intern->fielddef) != UPB_TYPE_MESSAGE) {
+    zend_throw_exception_ex(
+        NULL, 0 TSRMLS_CC, "Cannot get message type for non-message field '%s'",
+        upb_fielddef_name(intern->fielddef));
     return;
   }
+  const upb_msgdef *msgdef = upb_fielddef_msgsubdef(intern->fielddef);
   PHP_PROTO_HASHTABLE_VALUE desc = get_def_obj(msgdef);
 
 #if PHP_MAJOR_VERSION < 7
