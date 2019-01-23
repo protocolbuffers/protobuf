@@ -17,8 +17,6 @@ bool upb_fieldtype_mapkeyok(upb_fieldtype_t type) {
 
 /** upb_msgval ****************************************************************/
 
-#define upb_alignof(t) offsetof(struct { char c; t x; }, x)
-
 /* These functions will generate real memcpy() calls on ARM sadly, because
  * the compiler assumes they might not be aligned. */
 

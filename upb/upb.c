@@ -177,10 +177,16 @@ static void *upb_arena_doalloc(upb_alloc *alloc, void *ptr, size_t oldsize,
 
 /* Public Arena API ***********************************************************/
 
+#define upb_alignof(type) offsetof (struct { char c; type member; }, member)
+
 upb_arena *upb_arena_init(void *mem, size_t n, upb_alloc *alloc) {
   const size_t first_block_overhead = sizeof(upb_arena) + sizeof(mem_block);
   upb_arena *a;
   bool owned = false;
+
+  /* Round block size down to alignof(*a) since we will allocate the arena
+   * itself at the end. */
+  n &= ~(upb_alignof(upb_arena) - 1);
 
   if (n < first_block_overhead) {
     /* We need to malloc the initial block. */
@@ -207,6 +213,8 @@ upb_arena *upb_arena_init(void *mem, size_t n, upb_alloc *alloc) {
 
   return a;
 }
+
+#undef upb_alignof
 
 void upb_arena_free(upb_arena *a) {
   cleanup_ent *ent = a->cleanup_head;
