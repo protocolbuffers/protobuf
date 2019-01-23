@@ -752,6 +752,7 @@ label_skip_parsing:
 
       case FieldDescriptor::CPPTYPE_ENUM: {
         string value;
+        int64 int_value = kint64max;
         const EnumDescriptor* enum_type = field->enum_type();
         const EnumValueDescriptor* enum_value = NULL;
 
@@ -762,7 +763,6 @@ label_skip_parsing:
 
         } else if (LookingAt("-") ||
                    LookingAtType(io::Tokenizer::TYPE_INTEGER)) {
-          int64 int_value;
           DO(ConsumeSignedInteger(&int_value, kint32max));
           value = StrCat(int_value);  // for error reporting
           enum_value = enum_type->FindValueByNumber(int_value);
@@ -773,7 +773,11 @@ label_skip_parsing:
         }
 
         if (enum_value == NULL) {
-          if (!allow_unknown_enum_) {
+          if (int_value != kint64max &&
+              reflection->SupportsUnknownEnumValues()) {
+            SET_FIELD(EnumValue, int_value);
+            return true;
+          } else if (!allow_unknown_enum_) {
             ReportError("Unknown enumeration value of \"" + value  + "\" for "
                         "field \"" + field->name() + "\".");
             return false;
