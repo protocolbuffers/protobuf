@@ -32,6 +32,7 @@
 #include <Zend/zend_exceptions.h>
 
 #include "protobuf.h"
+#include "builtin_descriptors.inc"
 
 // Forward declare.
 static void descriptor_init_c_instance(Descriptor* intern TSRMLS_DC);
@@ -872,6 +873,21 @@ static zend_class_entry *register_class(const upb_filedef *file,
   return ret;
 }
 
+bool depends_on_descriptor(const google_protobuf_FileDescriptorProto* file) {
+  const upb_strview *deps;
+  upb_strview name = upb_strview_makez("google/protobuf/descriptor.proto");
+  size_t i, n;
+
+  deps = google_protobuf_FileDescriptorProto_dependency(file, &n);
+  for (i = 0; i < n; i++) {
+    if (upb_strview_eql(deps[i], name)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 void internal_add_generated_file(const char *data, PHP_PROTO_SIZE data_len,
                                  InternalDescriptorPool *pool TSRMLS_DC) {
   size_t n;
@@ -895,6 +911,16 @@ void internal_add_generated_file(const char *data, PHP_PROTO_SIZE data_len,
   if (n != 1) {
     upb_arena_free(arena);
     zend_error(E_ERROR, "Serialized descriptors should have exactly one file");
+  }
+
+  // The PHP code generator currently special-cases descriptor.proto.  It
+  // doesn't add it as a dependency even if the proto file actually does
+  // depend on it.
+  if (depends_on_descriptor(files[0]) &&
+      upb_symtab_lookupfile(pool->symtab, "google/protobuf/descriptor.proto") ==
+          NULL) {
+    internal_add_generated_file((char *)descriptor_proto, descriptor_proto_len,
+                                pool TSRMLS_CC);
   }
 
   CHECK_UPB(file = upb_symtab_addfile(pool->symtab, files[0], &status),
