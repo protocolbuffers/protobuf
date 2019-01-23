@@ -191,10 +191,8 @@ upb_arena *upb_arena_init(void *mem, size_t n, upb_alloc *alloc) {
     }
   }
 
-  a = mem;
-  mem = (char*)mem + sizeof(*a);
+  a = (void*)((char*)mem + n - sizeof(*a));
   n -= sizeof(*a);
-  upb_arena_addblock(a, mem, n, owned);
 
   a->alloc.func = &upb_arena_doalloc;
   a->block_alloc = &upb_alloc_global;
@@ -204,6 +202,8 @@ upb_arena *upb_arena_init(void *mem, size_t n, upb_alloc *alloc) {
   a->cleanup_head = NULL;
   a->block_head = NULL;
   a->block_alloc = alloc;
+
+  upb_arena_addblock(a, mem, n, owned);
 
   return a;
 }

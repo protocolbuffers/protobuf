@@ -818,6 +818,7 @@ const upb_msgdef *upb_symtab_lookupmsg(const upb_symtab *s, const char *sym);
 const upb_msgdef *upb_symtab_lookupmsg2(
     const upb_symtab *s, const char *sym, size_t len);
 const upb_enumdef *upb_symtab_lookupenum(const upb_symtab *s, const char *sym);
+const upb_filedef *upb_symtab_lookupfile(const upb_symtab *s, const char *name);
 int upb_symtab_filecount(const upb_symtab *s);
 const upb_filedef *upb_symtab_addfile(
     upb_symtab *s, const google_protobuf_FileDescriptorProto *file,
@@ -850,8 +851,12 @@ class upb::SymbolTable {
     return MessageDefPtr(upb_symtab_lookupmsg(ptr_.get(), sym));
   }
 
-  const EnumDefPtr LookupEnum(const char *sym) const {
+  EnumDefPtr LookupEnum(const char *sym) const {
     return EnumDefPtr(upb_symtab_lookupenum(ptr_.get(), sym));
+  }
+
+  FileDefPtr LookupFile(const char *name) const {
+    return FileDefPtr(upb_symtab_lookupfile(ptr_.get(), name));
   }
 
   /* TODO: iteration? */

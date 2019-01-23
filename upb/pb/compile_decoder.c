@@ -890,6 +890,7 @@ void upb_pbcodecache_free(upb_pbcodecache *c) {
   }
 
   upb_inttable_uninit(&c->groups);
+  upb_arena_free(c->arena);
   upb_gfree(c);
 }
 
