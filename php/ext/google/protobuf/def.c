@@ -94,14 +94,6 @@ static void append_map_entry_name(char *result, const char *field_name,
   strcat(result, "Entry");
 }
 
-#define CHECK_UPB(code, msg)        \
-  do {                              \
-    upb_status status;              \
-    upb_status_clear(&status);      \
-    code;                           \
-    check_upb_status(&status, msg); \
-  } while (0)
-
 // -----------------------------------------------------------------------------
 // GPBType
 // -----------------------------------------------------------------------------
@@ -888,11 +880,11 @@ bool depends_on_descriptor(const google_protobuf_FileDescriptorProto* file) {
   return false;
 }
 
-void internal_add_generated_file(const char *data, PHP_PROTO_SIZE data_len,
-                                 InternalDescriptorPool *pool TSRMLS_DC) {
+const upb_filedef *parse_and_add_descriptor(const char *data,
+                                            PHP_PROTO_SIZE data_len,
+                                            InternalDescriptorPool *pool,
+                                            upb_arena *arena) {
   size_t n;
-  int i;
-  upb_arena *arena = upb_arena_new();
   google_protobuf_FileDescriptorSet *set;
   const google_protobuf_FileDescriptorProto* const* files;
   const upb_filedef* file;
@@ -902,15 +894,15 @@ void internal_add_generated_file(const char *data, PHP_PROTO_SIZE data_len,
       upb_strview_make(data, data_len), arena);
 
   if (!set) {
-    upb_arena_free(arena);
     zend_error(E_ERROR, "Failed to parse binary descriptor\n");
+    return false;
   }
 
   files = google_protobuf_FileDescriptorSet_file(set, &n);
 
   if (n != 1) {
-    upb_arena_free(arena);
     zend_error(E_ERROR, "Serialized descriptors should have exactly one file");
+    return false;
   }
 
   // The PHP code generator currently special-cases descriptor.proto.  It
@@ -919,14 +911,28 @@ void internal_add_generated_file(const char *data, PHP_PROTO_SIZE data_len,
   if (depends_on_descriptor(files[0]) &&
       upb_symtab_lookupfile(pool->symtab, "google/protobuf/descriptor.proto") ==
           NULL) {
-    internal_add_generated_file((char *)descriptor_proto, descriptor_proto_len,
-                                pool TSRMLS_CC);
+    if (!parse_and_add_descriptor((char *)descriptor_proto,
+                                  descriptor_proto_len, pool, arena)) {
+      return false;
+    }
   }
 
-  CHECK_UPB(file = upb_symtab_addfile(pool->symtab, files[0], &status),
-            "Unable to add file to DescriptorPool");
+  upb_status_clear(&status);
+  file = upb_symtab_addfile(pool->symtab, files[0], &status);
+  check_upb_status(&status, "Unable to load descriptor");
+  return file;
+}
 
+void internal_add_generated_file(const char *data, PHP_PROTO_SIZE data_len,
+                                 InternalDescriptorPool *pool TSRMLS_DC) {
+  int i;
+  upb_arena *arena;
+  const upb_filedef* file;
+
+  arena = upb_arena_new();
+  file = parse_and_add_descriptor(data, data_len, pool, arena);
   upb_arena_free(arena);
+  if (!file) return;
 
   // For each enum/message, we need its PHP class, upb descriptor and its PHP
   // wrapper. These information are needed later for encoding, decoding and type
