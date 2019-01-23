@@ -1375,6 +1375,78 @@ class GeneratedClassTest extends TestBase
         $this->assertTrue(true);
     }
 
+    public function testReferenceInArrayConstructor()
+    {
+        $keys = [[
+                    'optional_bool' => true,
+                    'repeated_bool' => [true],
+                    'map_bool_bool' => [true => true],
+                    'optional_double' => 1.0,
+                    'repeated_double' => [1.0],
+                    'map_int32_double' => [1 => 1.0],
+                    'optional_int32' => 1,
+                    'repeated_int32' => [1],
+                    'map_int32_int32' => [1 => 1],
+                    'optional_string' => 'a',
+                    'repeated_string' => ['a'],
+                    'map_string_string' => ['a' => 'a'],
+                    'optional_message' => ['a' => 1],
+                    'repeated_message' => [['a' => 1]],
+                    'map_int32_message' => [1 => ['a' => 1]],
+                ]];
+
+        foreach ($keys as &$key) {
+            foreach ($key as $id => &$value) {
+                if ($id === 'repeated_bool') {
+                    foreach ($value as &$element) {
+                    }
+                }
+                if ($id === 'map_bool_bool') {
+                    foreach ($value as $mapKey => &$element) {
+                    }
+                }
+                if ($id === 'repeated_double') {
+                    foreach ($value as &$element) {
+                    }
+                }
+                if ($id === 'map_int32_double') {
+                    foreach ($value as $mapKey => &$element) {
+                    }
+                }
+                if ($id === 'repeated_int32') {
+                    foreach ($value as &$element) {
+                    }
+                }
+                if ($id === 'map_int32_int32') {
+                    foreach ($value as $mapKey => &$element) {
+                    }
+                }
+                if ($id === 'repeated_string') {
+                    foreach ($value as &$element) {
+                    }
+                }
+                if ($id === 'map_string_string') {
+                    foreach ($value as $mapKey => &$element) {
+                    }
+                }
+                if ($id === 'optional_message') {
+                    $value = new Sub($value);
+                }
+                if ($id === 'repeated_message') {
+                    foreach ($value as &$element) {
+                        $element = new Sub($element);
+                    }
+                }
+                if ($id === 'map_int32_message') {
+                    foreach ($value as $mapKey => &$element) {
+                        $element = new Sub($element);
+                    }
+                }
+            }
+            $key = new TestMessage($key);
+        }
+    }
+
     #########################################################
     # Test message equals.
     #########################################################
@@ -1386,5 +1458,36 @@ class GeneratedClassTest extends TestBase
         $n = new TestMessage();
         TestUtil::setTestMessage($n);
         $this->assertEquals($m, $n);
+    }
+
+    #########################################################
+    # Test reference of value
+    #########################################################
+
+    public function testValueIsReference()
+    {
+        // Bool element
+        $values = [true];
+        array_walk($values, function (&$value) {});
+        $m = new TestMessage();
+        $m->setOptionalBool($values[0]);
+
+        // Int32 element
+        $values = [1];
+        array_walk($values, function (&$value) {});
+        $m = new TestMessage();
+        $m->setOptionalInt32($values[0]);
+
+        // Double element
+        $values = [1.0];
+        array_walk($values, function (&$value) {});
+        $m = new TestMessage();
+        $m->setOptionalDouble($values[0]);
+
+        // String element
+        $values = ['a'];
+        array_walk($values, function (&$value) {});
+        $m = new TestMessage();
+        $m->setOptionalString($values[0]);
     }
 }

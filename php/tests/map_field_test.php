@@ -443,6 +443,43 @@ class MapFieldTest extends \PHPUnit\Framework\TestCase {
     }
 
     #########################################################
+    # Test reference in map
+    #########################################################
+
+    public function testMapElementIsReference()
+    {
+        // Bool elements
+        $values = [true => true];
+        array_walk($values, function (&$value) {});
+        $m = new TestMessage();
+        $m->setMapBoolBool($values);
+
+        // Int32 elements
+        $values = [1 => 1];
+        array_walk($values, function (&$value) {});
+        $m = new TestMessage();
+        $m->setMapInt32Int32($values);
+
+        // Double elements
+        $values = [1 => 1.0];
+        array_walk($values, function (&$value) {});
+        $m = new TestMessage();
+        $m->setMapInt32Double($values);
+
+        // String elements
+        $values = ['a' => 'a'];
+        array_walk($values, function (&$value) {});
+        $m = new TestMessage();
+        $m->setMapStringString($values);
+
+        // Message elements
+        $values = [1 => new Sub()];
+        array_walk($values, function (&$value) {});
+        $m = new TestMessage();
+        $m->setMapInt32Message($values);
+    }
+
+    #########################################################
     # Test memory leak
     #########################################################
 

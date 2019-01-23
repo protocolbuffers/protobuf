@@ -533,31 +533,39 @@ class RepeatedFieldTest extends \PHPUnit\Framework\TestCase
     # Test reference in array
     #########################################################
 
-    public function testArrayElementIsReference()
+    public function testArrayElementIsReferenceInSetters()
     {
+        // Bool elements
+        $values = [true];
+        array_walk($values, function (&$value) {});
+        $m = new TestMessage();
+        $m->setRepeatedBool($values);
+
+        // Int32 elements
+        $values = [1];
+        array_walk($values, function (&$value) {});
+        $m = new TestMessage();
+        $m->setRepeatedInt32($values);
+
+        // Double elements
+        $values = [1.0];
+        array_walk($values, function (&$value) {});
+        $m = new TestMessage();
+        $m->setRepeatedDouble($values);
+
+        // String elements
+        $values = ['a'];
+        array_walk($values, function (&$value) {});
+        $m = new TestMessage();
+        $m->setRepeatedString($values);
+
+        // Message elements
         $m = new TestMessage();
         $subs = [1, 2];
-
         foreach ($subs as &$sub) {
             $sub = new Sub(['a' => $sub]);
         }
-
         $m->setRepeatedMessage($subs);
-    }
-
-    public function testArrayIsReference()
-    {
-        $keys = [['repeated_message' => [['a' => 1]]]];
-
-        foreach ($keys as &$key) {
-            foreach ($key['repeated_message'] as &$element) {
-              $element = new Sub($element);
-            }
-            $key = new TestMessage($key);
-        }
-
-        $m = new TestMessage();
-        $m->setRepeatedDeep($keys);
     }
 
     #########################################################
