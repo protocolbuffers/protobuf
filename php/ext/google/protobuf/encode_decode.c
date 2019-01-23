@@ -27,6 +27,9 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+#include <php.h>
+#include <Zend/zend_exceptions.h>
 
 #include "protobuf.h"
 #include "utf8.h"
@@ -83,6 +86,8 @@ void stringsink_init(stringsink *sink) {
 }
 
 void stringsink_uninit(stringsink *sink) { free(sink->ptr); }
+
+void stringsink_uninit_opaque(void *sink) { stringsink_uninit(sink); }
 
 /* stackenv *****************************************************************/
 
@@ -1748,7 +1753,7 @@ PHP_METHOD(Message, serializeToString) {
   serialize_to_string(getThis(), return_value TSRMLS_CC);
 }
 
-void merge_from_string(const char* data, int data_len, const Descriptor* desc,
+void merge_from_string(const char* data, int data_len, Descriptor* desc,
                        MessageHeader* msg) {
   const upb_pbdecodermethod* method = msgdef_decodermethod(desc);
   const upb_handlers* h = upb_pbdecodermethod_desthandlers(method);
@@ -1900,7 +1905,7 @@ static void discard_unknown_fields(MessageHeader* msg) {
       for (map_begin(map_php, &map_it TSRMLS_CC);
            !map_done(&map_it); map_next(&map_it)) {
         upb_value value = map_iter_value(&map_it, &len);
-        void* memory = raw_value(upb_value_memory(&value), value_field);
+        const void* memory = raw_value(upb_value_memory(&value), value_field);
 #if PHP_MAJOR_VERSION < 7
         MessageHeader *submsg = UNBOX(MessageHeader, *(zval**)memory);
 #else
