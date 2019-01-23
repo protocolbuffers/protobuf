@@ -31,7 +31,6 @@ message TestMessage {
   Sub optional_message = 17;
   bar.TestInclude optional_included_message = 18;
   TestMessage recursive = 19;
-  repeated TestMessage repeated_deep = 20;
 
   // Repeated
   repeated    int32 repeated_int32    = 31;
