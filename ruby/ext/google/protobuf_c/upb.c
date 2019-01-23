@@ -1194,6 +1194,12 @@ struct upb_filedef {
   int ext_count;
 };
 
+struct upb_symtab {
+  upb_arena *arena;
+  upb_strtable syms;  /* full_name -> packed def ptr */
+  upb_strtable files;  /* file_name -> upb_filedef* */
+};
+
 /* Inside a symtab we store tagged pointers to specific def types. */
 typedef enum {
   UPB_DEFTYPE_MSG = 0,
@@ -1211,12 +1217,6 @@ static upb_value pack_def(const void *ptr, upb_deftype_t type) {
   uintptr_t num = (uintptr_t)ptr | type;
   return upb_value_constptr((const void*)num);
 }
-
-struct upb_symtab {
-  upb_arena *arena;
-  upb_strtable syms;  /* full_name -> packed def ptr */
-  upb_strtable files;  /* file_name -> upb_filedef* */
-};
 
 /* isalpha() etc. from <ctype.h> are locale-dependent, which we don't want. */
 static bool upb_isbetween(char c, char low, char high) {
@@ -1906,103 +1906,12 @@ bool upb_oneof_done(upb_oneof_iter *iter) {
 }
 
 upb_fielddef *upb_oneof_iter_field(const upb_oneof_iter *iter) {
-  return (upb_fielddef*)upb_value_getptr(upb_inttable_iter_value(iter));
+  return (upb_fielddef *)upb_value_getconstptr(upb_inttable_iter_value(iter));
 }
 
 void upb_oneof_iter_setdone(upb_oneof_iter *iter) {
   upb_inttable_iter_setdone(iter);
 }
-
-/* upb_filedef ****************************************************************/
-
-const char *upb_filedef_name(const upb_filedef *f) {
-  return f->name;
-}
-
-const char *upb_filedef_package(const upb_filedef *f) {
-  return f->package;
-}
-
-const char *upb_filedef_phpprefix(const upb_filedef *f) {
-  return f->phpprefix;
-}
-
-const char *upb_filedef_phpnamespace(const upb_filedef *f) {
-  return f->phpnamespace;
-}
-
-upb_syntax_t upb_filedef_syntax(const upb_filedef *f) {
-  return f->syntax;
-}
-
-int upb_filedef_msgcount(const upb_filedef *f) {
-  return f->msg_count;
-}
-
-int upb_filedef_depcount(const upb_filedef *f) {
-  return f->dep_count;
-}
-
-int upb_filedef_enumcount(const upb_filedef *f) {
-  return f->enum_count;
-}
-
-const upb_filedef *upb_filedef_dep(const upb_filedef *f, int i) {
-  return i < 0 || i >= f->dep_count ? NULL : f->deps[i];
-}
-
-const upb_msgdef *upb_filedef_msg(const upb_filedef *f, int i) {
-  return i < 0 || i >= f->msg_count ? NULL : &f->msgs[i];
-}
-
-const upb_enumdef *upb_filedef_enum(const upb_filedef *f, int i) {
-  return i < 0 || i >= f->enum_count ? NULL : &f->enums[i];
-}
-
-void upb_symtab_free(upb_symtab *s) {
-  upb_arena_free(s->arena);
-  upb_gfree(s);
-}
-
-upb_symtab *upb_symtab_new() {
-  upb_symtab *s = upb_gmalloc(sizeof(*s));
-  upb_alloc *alloc;
-
-  if (!s) {
-    return NULL;
-  }
-
-  s->arena = upb_arena_new();
-  alloc = upb_arena_alloc(s->arena);
-
-  if (!upb_strtable_init2(&s->syms, UPB_CTYPE_CONSTPTR, alloc) ||
-      !upb_strtable_init2(&s->files, UPB_CTYPE_CONSTPTR, alloc)) {
-    upb_arena_free(s->arena);
-    upb_gfree(s);
-    s = NULL;
-  }
-  return s;
-}
-
-const upb_msgdef *upb_symtab_lookupmsg(const upb_symtab *s, const char *sym) {
-  upb_value v;
-  return upb_strtable_lookup(&s->syms, sym, &v) ?
-      unpack_def(v, UPB_DEFTYPE_MSG) : NULL;
-}
-
-const upb_msgdef *upb_symtab_lookupmsg2(const upb_symtab *s, const char *sym,
-                                        size_t len) {
-  upb_value v;
-  return upb_strtable_lookup2(&s->syms, sym, len, &v) ?
-      unpack_def(v, UPB_DEFTYPE_MSG) : NULL;
-}
-
-const upb_enumdef *upb_symtab_lookupenum(const upb_symtab *s, const char *sym) {
-  upb_value v;
-  return upb_strtable_lookup(&s->syms, sym, &v) ?
-      unpack_def(v, UPB_DEFTYPE_ENUM) : NULL;
-}
-
 
 /* Code to build defs from descriptor protos. *********************************/
 
@@ -2024,9 +1933,6 @@ typedef struct {
 } symtab_addctx;
 
 static char* strviewdup(const symtab_addctx *ctx, upb_strview view) {
-  if (view.size == 0) {
-    return NULL;
-  }
   return upb_strdup2(view.data, view.size, ctx->alloc);
 }
 
@@ -2417,6 +2323,8 @@ static bool create_enumdef(
     }
   }
 
+  upb_inttable_compact2(&e->iton, ctx->alloc);
+
   return true;
 }
 
@@ -2466,6 +2374,7 @@ static bool create_msgdef(const symtab_addctx *ctx, const char *prefix,
 
   CHK(assign_msg_indices(m, ctx->status));
   assign_msg_wellknowntype(m);
+  upb_inttable_compact2(&m->itof, ctx->alloc);
 
   /* This message is built.  Now build nested messages and enums. */
 
@@ -2659,10 +2568,15 @@ static bool build_filedef(
   /* Read options. */
   file_options_proto = google_protobuf_FileDescriptorProto_options(file_proto);
   if (file_options_proto) {
-    file->phpprefix = strviewdup(
-        ctx, google_protobuf_FileOptions_php_class_prefix(file_options_proto));
-    file->phpnamespace = strviewdup(
-        ctx, google_protobuf_FileOptions_php_namespace(file_options_proto));
+    if (google_protobuf_FileOptions_has_php_class_prefix(file_options_proto)) {
+      file->phpprefix = strviewdup(
+          ctx,
+          google_protobuf_FileOptions_php_class_prefix(file_options_proto));
+    }
+    if (google_protobuf_FileOptions_has_php_namespace(file_options_proto)) {
+      file->phpnamespace = strviewdup(
+          ctx, google_protobuf_FileOptions_php_namespace(file_options_proto));
+    }
   }
 
   /* Verify dependencies. */
@@ -2676,8 +2590,9 @@ static bool build_filedef(
     if (!upb_strtable_lookup2(&ctx->symtab->files, dep_name.data,
                               dep_name.size, &v)) {
       upb_status_seterrf(ctx->status,
-                         "Depends on file '%s', but it has not been loaded",
-                         dep_name.data);
+                         "Depends on file '" UPB_STRVIEW_FORMAT
+                         "', but it has not been loaded",
+                         UPB_STRVIEW_ARGS(dep_name));
       return false;
     }
     file->deps[i] = upb_value_getconstptr(v);
@@ -2737,6 +2652,102 @@ static bool upb_symtab_addtotabs(upb_symtab *s, symtab_addctx *ctx,
   }
 
   return true;
+}
+
+/* upb_filedef ****************************************************************/
+
+const char *upb_filedef_name(const upb_filedef *f) {
+  return f->name;
+}
+
+const char *upb_filedef_package(const upb_filedef *f) {
+  return f->package;
+}
+
+const char *upb_filedef_phpprefix(const upb_filedef *f) {
+  return f->phpprefix;
+}
+
+const char *upb_filedef_phpnamespace(const upb_filedef *f) {
+  return f->phpnamespace;
+}
+
+upb_syntax_t upb_filedef_syntax(const upb_filedef *f) {
+  return f->syntax;
+}
+
+int upb_filedef_msgcount(const upb_filedef *f) {
+  return f->msg_count;
+}
+
+int upb_filedef_depcount(const upb_filedef *f) {
+  return f->dep_count;
+}
+
+int upb_filedef_enumcount(const upb_filedef *f) {
+  return f->enum_count;
+}
+
+const upb_filedef *upb_filedef_dep(const upb_filedef *f, int i) {
+  return i < 0 || i >= f->dep_count ? NULL : f->deps[i];
+}
+
+const upb_msgdef *upb_filedef_msg(const upb_filedef *f, int i) {
+  return i < 0 || i >= f->msg_count ? NULL : &f->msgs[i];
+}
+
+const upb_enumdef *upb_filedef_enum(const upb_filedef *f, int i) {
+  return i < 0 || i >= f->enum_count ? NULL : &f->enums[i];
+}
+
+void upb_symtab_free(upb_symtab *s) {
+  upb_arena_free(s->arena);
+  upb_gfree(s);
+}
+
+upb_symtab *upb_symtab_new() {
+  upb_symtab *s = upb_gmalloc(sizeof(*s));
+  upb_alloc *alloc;
+
+  if (!s) {
+    return NULL;
+  }
+
+  s->arena = upb_arena_new();
+  alloc = upb_arena_alloc(s->arena);
+
+  if (!upb_strtable_init2(&s->syms, UPB_CTYPE_CONSTPTR, alloc) ||
+      !upb_strtable_init2(&s->files, UPB_CTYPE_CONSTPTR, alloc)) {
+    upb_arena_free(s->arena);
+    upb_gfree(s);
+    s = NULL;
+  }
+  return s;
+}
+
+const upb_msgdef *upb_symtab_lookupmsg(const upb_symtab *s, const char *sym) {
+  upb_value v;
+  return upb_strtable_lookup(&s->syms, sym, &v) ?
+      unpack_def(v, UPB_DEFTYPE_MSG) : NULL;
+}
+
+const upb_msgdef *upb_symtab_lookupmsg2(const upb_symtab *s, const char *sym,
+                                        size_t len) {
+  upb_value v;
+  return upb_strtable_lookup2(&s->syms, sym, len, &v) ?
+      unpack_def(v, UPB_DEFTYPE_MSG) : NULL;
+}
+
+const upb_enumdef *upb_symtab_lookupenum(const upb_symtab *s, const char *sym) {
+  upb_value v;
+  return upb_strtable_lookup(&s->syms, sym, &v) ?
+      unpack_def(v, UPB_DEFTYPE_ENUM) : NULL;
+}
+
+const upb_filedef *upb_symtab_lookupfile(const upb_symtab *s, const char *name) {
+  upb_value v;
+  return upb_strtable_lookup(&s->files, name, &v) ? upb_value_getconstptr(v)
+                                                  : NULL;
 }
 
 const upb_filedef *upb_symtab_addfile(
@@ -3805,8 +3816,6 @@ bool upb_fieldtype_mapkeyok(upb_fieldtype_t type) {
 #define CHECK_TRUE(x) if (!(x)) { return false; }
 
 /** upb_msgval ****************************************************************/
-
-#define upb_alignof(t) offsetof(struct { char c; t x; }, x)
 
 /* These functions will generate real memcpy() calls on ARM sadly, because
  * the compiler assumes they might not be aligned. */
@@ -5665,10 +5674,16 @@ static void *upb_arena_doalloc(upb_alloc *alloc, void *ptr, size_t oldsize,
 
 /* Public Arena API ***********************************************************/
 
+#define upb_alignof(type) offsetof (struct { char c; type member; }, member)
+
 upb_arena *upb_arena_init(void *mem, size_t n, upb_alloc *alloc) {
   const size_t first_block_overhead = sizeof(upb_arena) + sizeof(mem_block);
   upb_arena *a;
   bool owned = false;
+
+  /* Round block size down to alignof(*a) since we will allocate the arena
+   * itself at the end. */
+  n &= ~(upb_alignof(upb_arena) - 1);
 
   if (n < first_block_overhead) {
     /* We need to malloc the initial block. */
@@ -5679,10 +5694,8 @@ upb_arena *upb_arena_init(void *mem, size_t n, upb_alloc *alloc) {
     }
   }
 
-  a = mem;
-  mem = (char*)mem + sizeof(*a);
+  a = (void*)((char*)mem + n - sizeof(*a));
   n -= sizeof(*a);
-  upb_arena_addblock(a, mem, n, owned);
 
   a->alloc.func = &upb_arena_doalloc;
   a->block_alloc = &upb_alloc_global;
@@ -5693,8 +5706,12 @@ upb_arena *upb_arena_init(void *mem, size_t n, upb_alloc *alloc) {
   a->block_head = NULL;
   a->block_alloc = alloc;
 
+  upb_arena_addblock(a, mem, n, owned);
+
   return a;
 }
+
+#undef upb_alignof
 
 void upb_arena_free(upb_arena *a) {
   cleanup_ent *ent = a->cleanup_head;
@@ -6626,6 +6643,7 @@ void upb_pbcodecache_free(upb_pbcodecache *c) {
   }
 
   upb_inttable_uninit(&c->groups);
+  upb_arena_free(c->arena);
   upb_gfree(c);
 }
 
@@ -8168,6 +8186,7 @@ T(sint64,   int64_t,  upb_zzenc_64, encode_varint)
 
 /* code to build the handlers *************************************************/
 
+#include <stdio.h>
 static void newhandlers_callback(const void *closure, upb_handlers *h) {
   const upb_msgdef *m;
   upb_msg_field_iter i;
