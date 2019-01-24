@@ -7,6 +7,8 @@
 #define UPB_HANDLERS_INL_H_
 
 #include <limits.h>
+#include <stddef.h>
+#include "upb/handlers.h"
 
 #ifdef __cplusplus
 
@@ -162,8 +164,8 @@ struct FuncInfo {
  * These functions are not bound to a handler data so have no data or cleanup
  * handler. */
 struct UnboundFunc {
-  CleanupFunc *GetCleanup() { return NULL; }
-  void *GetData() { return NULL; }
+  CleanupFunc *GetCleanup() { return nullptr; }
+  void *GetData() { return nullptr; }
 };
 
 template <class R, class P1, R F(P1), class I>

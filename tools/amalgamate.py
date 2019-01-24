@@ -16,11 +16,11 @@ class Amalgamator:
     self.output_h = open(output_path + "upb.h", "w")
     self.output_c = open(output_path + "upb.c", "w")
 
-    self.output_c.write("// Amalgamated source file\n")
+    self.output_c.write("/* Amalgamated source file */\n")
     self.output_c.write('#include "upb.h"\n')
     self.output_c.write(open("upb/port_def.inc").read())
 
-    self.output_h.write("// Amalgamated source file\n")
+    self.output_h.write("/* Amalgamated source file */\n")
     self.output_h.write(open("upb/port_def.inc").read())
 
   def finish(self):
