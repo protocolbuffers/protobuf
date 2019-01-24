@@ -86,10 +86,18 @@ def UpdateCpp():
       r'^#define GOOGLE_PROTOBUF_VERSION .*$',
       '#define GOOGLE_PROTOBUF_VERSION %s' % cpp_version,
       line)
+    line = re.sub(
+      r'^#define PROTOBUF_VERSION .*$',
+      '#define PROTOBUF_VERSION %s' % cpp_version,
+      line)
     if NEW_VERSION_INFO[2] == '0':
       line = re.sub(
         r'^#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION .*$',
         '#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION %s' % cpp_version,
+        line)
+      line = re.sub(
+        r'^#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC .*$',
+        '#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC %s' % cpp_version,
         line)
       line = re.sub(
         r'^#define GOOGLE_PROTOBUF_MIN_PROTOC_VERSION .*$',
@@ -105,6 +113,7 @@ def UpdateCpp():
         line)
     return line
   RewriteTextFile('src/google/protobuf/stubs/common.h', RewriteCpp)
+  RewriteTextFile('src/google/protobuf/port_def.inc', RewriteCpp)
 
 
 def UpdateCsharp():
@@ -122,6 +131,10 @@ def UpdateCsharp():
 
 def UpdateJava():
   RewriteXml('java/pom.xml',
+    lambda document : ReplaceText(
+      Find(document.documentElement, 'version'), NEW_VERSION))
+
+  RewriteXml('java/bom/pom.xml',
     lambda document : ReplaceText(
       Find(document.documentElement, 'version'), NEW_VERSION))
 
