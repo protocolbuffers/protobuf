@@ -137,6 +137,9 @@ class BuildFileFunctions(object):
   def glob(*args):
     return []
 
+  def licenses(*args):
+    pass
+
 
 class WorkspaceFileFunctions(object):
   def __init__(self, converter):

@@ -1,4 +1,3 @@
-
 _shell_find_runfiles = """
   # --- begin runfiles.bash initialization ---
   # Copy-pasted from Bazel's Bash runfiles library (tools/bash/runfiles/runfiles.bash).
@@ -100,7 +99,7 @@ BASE=$(dirname $(rlocation upb/upb_c.so))
 export LUA_CPATH="$BASE/?.so"
 export LUA_PATH="$BASE/?.lua"
 $(rlocation lua/lua) $(rlocation upb/tools/upbc.lua) "$@"
-"""
+""",
     )
 
     rule(
@@ -109,10 +108,10 @@ $(rlocation lua/lua) $(rlocation upb/tools/upbc.lua) "$@"
         data = ["@lua//:lua", "@bazel_tools//tools/bash/runfiles", luamain] + luadeps,
     )
 
-def lua_binary(name, luamain, luadeps=[]):
+def lua_binary(name, luamain, luadeps = []):
     _lua_binary_or_test(name, luamain, luadeps, native.sh_binary)
 
-def lua_test(name, luamain, luadeps=[]):
+def lua_test(name, luamain, luadeps = []):
     _lua_binary_or_test(name, luamain, luadeps, native.sh_test)
 
 def generated_file_staleness_test(name, outs, generated_pattern):
@@ -163,9 +162,9 @@ def generated_file_staleness_test(name, outs, generated_pattern):
 
 SrcList = provider(
     fields = {
-        'srcs' : 'list of srcs',
-        'hdrs' : 'list of hdrs',
-    }
+        "srcs": "list of srcs",
+        "hdrs": "list of hdrs",
+    },
 )
 
 def _file_list_aspect_impl(target, ctx):
@@ -205,7 +204,7 @@ upb_amalgamation = rule(
         ),
         "libs": attr.label_list(aspects = [_file_list_aspect]),
         "outs": attr.output_list(),
-    }
+    },
 )
 
 # upb_proto_library() rule
@@ -223,7 +222,7 @@ def _upb_proto_srcs_impl(ctx, suffix):
     outs = []
     include_dirs = {}
     for dep in ctx.attr.deps:
-        if hasattr(dep, 'proto'):
+        if hasattr(dep, "proto"):
             for src in dep.proto.transitive_sources:
                 sources.append(src)
                 include_dir = _remove_suffix(src.path, _remove_up(src.short_path) + "." + src.extension)
@@ -265,7 +264,7 @@ _upb_proto_library_srcs = rule(
             default = "@com_google_protobuf//:protoc",
         ),
         "deps": attr.label_list(),
-    }
+    },
 )
 
 def upb_proto_library(name, deps, upbc):
@@ -295,7 +294,7 @@ _upb_proto_reflection_library_srcs = rule(
             default = "@com_google_protobuf//:protoc",
         ),
         "deps": attr.label_list(),
-    }
+    },
 )
 
 def upb_proto_reflection_library(name, deps, upbc):
@@ -311,3 +310,7 @@ def upb_proto_reflection_library(name, deps, upbc):
         deps = [":upb"],
         copts = ["-Ibazel-out/k8-fastbuild/bin"],
     )
+
+def licenses(*args):
+    # No-op (for Google-internal usage).
+    pass

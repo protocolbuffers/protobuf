@@ -1,6 +1,7 @@
 load(
     ":build_defs.bzl",
     "generated_file_staleness_test",
+    "licenses",  # copybara:strip_for_google3
     "lua_binary",
     "lua_cclibrary",
     "lua_library",
@@ -10,6 +11,21 @@ load(
     "upb_proto_library",
     "upb_proto_reflection_library",
 )
+
+licenses(["notice"])  # BSD (Google-authored w/ possible external contributions)
+
+exports_files([
+    "LICENSE",
+    "build_defs",
+])
+
+COPTS = [
+    # copybara:strip_for_google3_begin
+    "-std=c89",
+    "-pedantic",
+    "-Wno-long-long",
+    # copybara:strip_end
+]
 
 # C/C++ rules ##################################################################
 
@@ -44,11 +60,7 @@ cc_library(
         "upb/sink.h",
         "upb/upb.h",
     ],
-    copts = [
-        "-std=c89",
-        "-pedantic",
-        "-Wno-long-long",
-    ],
+    copts = COPTS,
     visibility = ["//visibility:public"],
 )
 
@@ -68,11 +80,7 @@ cc_library(
         "upb/pb/encoder.h",
         "upb/pb/textprinter.h",
     ],
-    copts = [
-        "-std=c89",
-        "-pedantic",
-        "-Wno-long-long",
-    ],
+    copts = COPTS,
     deps = [
         ":upb",
     ],
@@ -88,11 +96,7 @@ cc_library(
         "upb/json/parser.h",
         "upb/json/printer.h",
     ],
-    copts = [
-        "-std=c89",
-        "-pedantic",
-        "-Wno-long-long",
-    ],
+    copts = COPTS,
     deps = [
         ":upb",
         ":upb_pb",
@@ -309,6 +313,7 @@ cc_library(
     name = "amalgamation",
     srcs = ["upb.c"],
     hdrs = ["upb.h"],
+    copts = COPTS,
 )
 
 # Lua libraries. ###############################################################
