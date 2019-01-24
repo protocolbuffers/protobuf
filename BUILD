@@ -11,11 +11,6 @@ load(
     "upb_proto_reflection_library",
 )
 
-config_setting(
-    name = "k8",
-    values = {"cpu": "k8"},
-)
-
 # C/C++ rules ##################################################################
 
 cc_library(
@@ -112,31 +107,30 @@ cc_library(
     deps = [":upb"],
 )
 
-# Amalgamation #################################################################
-
-py_binary(
-    name = "amalgamate",
-    srcs = ["tools/amalgamate.py"],
-)
-
-upb_amalgamation(
-    name = "gen_amalgamation",
-    outs = [
-        "upb.c",
-        "upb.h",
-    ],
-    amalgamator = ":amalgamate",
-    libs = [
-        ":upb",
-        ":upb_pb",
-        ":upb_json",
-    ],
-)
+# upb compiler #################################################################
 
 cc_library(
-    name = "amalgamation",
-    srcs = ["upb.c"],
-    hdrs = ["upb.h"],
+    name = "upbc_generator",
+    srcs = [
+        "upbc/generator.cc",
+        "upbc/message_layout.cc",
+        "upbc/message_layout.h",
+    ],
+    hdrs = ["upbc/generator.h"],
+    deps = [
+        "@absl//absl/strings",
+        "@com_google_protobuf//:protobuf",
+        "@com_google_protobuf//:protoc_lib",
+    ],
+)
+
+cc_binary(
+    name = "protoc-gen-upb",
+    srcs = ["upbc/main.cc"],
+    deps = [
+        ":upbc_generator",
+        "@com_google_protobuf//:protoc_lib",
+    ],
 )
 
 # C/C++ tests ##################################################################
@@ -160,12 +154,6 @@ cc_test(
         ":upb_pb",
         ":upb_test",
     ],
-)
-
-upb_proto_reflection_library(
-    name = "descriptor_upbproto",
-    upbc = ":protoc-gen-upb",
-    deps = ["descriptor_proto"],
 )
 
 proto_library(
@@ -296,6 +284,33 @@ sh_test(
     ],
 )
 
+# Amalgamation #################################################################
+
+py_binary(
+    name = "amalgamate",
+    srcs = ["tools/amalgamate.py"],
+)
+
+upb_amalgamation(
+    name = "gen_amalgamation",
+    outs = [
+        "upb.c",
+        "upb.h",
+    ],
+    amalgamator = ":amalgamate",
+    libs = [
+        ":upb",
+        ":upb_pb",
+        ":upb_json",
+    ],
+)
+
+cc_library(
+    name = "amalgamation",
+    srcs = ["upb.c"],
+    hdrs = ["upb.h"],
+)
+
 # Lua libraries. ###############################################################
 
 lua_cclibrary(
@@ -350,32 +365,6 @@ lua_test(
     name = "lua/test_upb_pb",
     luadeps = ["lua/upb/pb"],
     luamain = "tests/bindings/lua/test_upb.pb.lua",
-)
-
-# upb compiler #################################################################
-
-cc_library(
-    name = "upbc_generator",
-    srcs = [
-        "upbc/generator.cc",
-        "upbc/message_layout.cc",
-        "upbc/message_layout.h",
-    ],
-    hdrs = ["upbc/generator.h"],
-    deps = [
-        "@absl//absl/strings",
-        "@com_google_protobuf//:protobuf",
-        "@com_google_protobuf//:protoc_lib",
-    ],
-)
-
-cc_binary(
-    name = "protoc-gen-upb",
-    srcs = ["upbc/main.cc"],
-    deps = [
-        ":upbc_generator",
-        "@com_google_protobuf//:protoc_lib",
-    ],
 )
 
 # Test the CMake build #########################################################
