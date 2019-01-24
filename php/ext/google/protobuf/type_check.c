@@ -29,6 +29,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <Zend/zend_operators.h>
+#include <Zend/zend_exceptions.h>
 
 #include "protobuf.h"
 #include "utf8.h"
@@ -372,6 +373,11 @@ bool protobuf_convert_to_bool(zval* from, int8_t* to) {
 }
 
 bool protobuf_convert_to_string(zval* from) {
+#if PHP_MAJOR_VERSION >= 7
+  if (Z_ISREF_P(from)) {
+    ZVAL_DEREF(from);
+  }
+#endif
   TSRMLS_FETCH();
   switch (Z_TYPE_P(from)) {
     case IS_STRING: {
@@ -434,9 +440,9 @@ PHP_METHOD(Util, checkMessage) {
     RETURN_NULL();
   }
   if (!instanceof_function(Z_OBJCE_P(val), klass TSRMLS_CC)) {
-    zend_throw_exception(
-        NULL, "Given value is not an instance of %s.", klass->name,
-        0 TSRMLS_CC);
+    zend_throw_exception_ex(NULL, 0 TSRMLS_CC,
+                            "Given value is not an instance of %s.",
+                            klass->name);
     return;
   }
   RETURN_ZVAL(val, 1, 0);
@@ -479,32 +485,27 @@ void check_repeated_field(const zend_class_entry* klass, PHP_PROTO_LONG type,
 
   } else if (Z_TYPE_P(val) == IS_OBJECT) {
     if (!instanceof_function(Z_OBJCE_P(val), repeated_field_type TSRMLS_CC)) {
-      zend_throw_exception(
-          NULL, "Given value is not an instance of %s.",
-          repeated_field_type->name,
-          0 TSRMLS_CC);
+      zend_throw_exception_ex(NULL, 0 TSRMLS_CC,
+                              "Given value is not an instance of %s.",
+                              repeated_field_type->name);
       return;
     }
     RepeatedField* intern = UNBOX(RepeatedField, val);
     if (to_fieldtype(type) != intern->type) {
-      zend_throw_exception(
-          NULL, "Incorrect repeated field type.",
-          0 TSRMLS_CC);
+      zend_throw_exception_ex(NULL, 0 TSRMLS_CC,
+                              "Incorrect repeated field type.");
       return;
     }
     if (klass != NULL && intern->msg_ce != klass) {
-      zend_throw_exception(
-          NULL, "Expect a repeated field of %s, but %s is given.",
-          klass->name,
-          intern->msg_ce->name,
-          0 TSRMLS_CC);
+      zend_throw_exception_ex(NULL, 0 TSRMLS_CC,
+                              "Expect a repeated field of %s, but %s is given.",
+                              klass->name, intern->msg_ce->name);
       return;
     }
     RETURN_ZVAL(val, 1, 0);
   } else {
-    zend_throw_exception(
-        NULL, "Incorrect repeated field type.",
-        0 TSRMLS_CC);
+    zend_throw_exception_ex(NULL, 0 TSRMLS_CC,
+                            "Incorrect repeated field type.");
     return;
   }
 }
@@ -560,10 +561,9 @@ void check_map_field(const zend_class_entry* klass, PHP_PROTO_LONG key_type,
     RETURN_ZVAL(CACHED_TO_ZVAL_PTR(map_field), 1, 1);
   } else if (Z_TYPE_P(val) == IS_OBJECT) {
     if (!instanceof_function(Z_OBJCE_P(val), map_field_type TSRMLS_CC)) {
-      zend_throw_exception(
-          NULL, "Given value is not an instance of %s.",
-          map_field_type->name,
-          0 TSRMLS_CC);
+      zend_throw_exception_ex(NULL, 0 TSRMLS_CC,
+                              "Given value is not an instance of %s.",
+                              map_field_type->name);
       return;
     }
     Map* intern = UNBOX(Map, val);
@@ -580,10 +580,9 @@ void check_map_field(const zend_class_entry* klass, PHP_PROTO_LONG key_type,
       return;
     }
     if (klass != NULL && intern->msg_ce != klass) {
-      zend_throw_exception(
-          NULL, "Expect a map field of %s, but %s is given.",
-          klass->name, intern->msg_ce->name,
-          0 TSRMLS_CC);
+      zend_throw_exception_ex(NULL, 0 TSRMLS_CC,
+                              "Expect a map field of %s, but %s is given.",
+                              klass->name, intern->msg_ce->name);
       return;
     }
     RETURN_ZVAL(val, 1, 0);

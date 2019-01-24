@@ -232,6 +232,8 @@ class PROTOBUF_EXPORT LazyDescriptor {
 // Use DescriptorPool to construct your own descriptors.
 class PROTOBUF_EXPORT Descriptor {
  public:
+  typedef DescriptorProto Proto;
+
   // The name of the message type, not including its scope.
   const std::string& name() const;
 
@@ -345,6 +347,8 @@ class PROTOBUF_EXPORT Descriptor {
   // A range of field numbers which are designated for third-party
   // extensions.
   struct ExtensionRange {
+    typedef DescriptorProto_ExtensionRange Proto;
+
     typedef ExtensionRangeOptions OptionsType;
 
     // See Descriptor::CopyTo().
@@ -511,6 +515,8 @@ class PROTOBUF_EXPORT Descriptor {
 // Use DescriptorPool to construct your own descriptors.
 class PROTOBUF_EXPORT FieldDescriptor {
  public:
+  typedef FieldDescriptorProto Proto;
+
   // Identifies a field type.  0 is reserved for errors.  The order is weird
   // for historical reasons.  Types 12 and up are new in proto2.
   enum Type {
@@ -821,6 +827,8 @@ class PROTOBUF_EXPORT FieldDescriptor {
 // Describes a oneof defined in a message type.
 class PROTOBUF_EXPORT OneofDescriptor {
  public:
+  typedef OneofDescriptorProto Proto;
+
   const std::string& name() const;       // Name of this oneof.
   const std::string& full_name() const;  // Fully-qualified name of the oneof.
 
@@ -895,6 +903,8 @@ class PROTOBUF_EXPORT OneofDescriptor {
 // to construct your own descriptors.
 class PROTOBUF_EXPORT EnumDescriptor {
  public:
+  typedef EnumDescriptorProto Proto;
+
   // The name of this enum type in the containing scope.
   const std::string& name() const;
 
@@ -1051,6 +1061,8 @@ class PROTOBUF_EXPORT EnumDescriptor {
 // your own descriptors.
 class PROTOBUF_EXPORT EnumValueDescriptor {
  public:
+  typedef EnumValueDescriptorProto Proto;
+
   const std::string& name() const;  // Name of this enum constant.
   int index() const;           // Index within the enums's Descriptor.
   int number() const;          // Numeric value of this enum constant.
@@ -1123,12 +1135,12 @@ class PROTOBUF_EXPORT EnumValueDescriptor {
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(EnumValueDescriptor);
 };
 
-// Describes an RPC service.  To get the ServiceDescriptor for a service,
-// call Service::GetDescriptor().  Generated service classes also have a
-// static method called descriptor() which returns the type's
-// ServiceDescriptor.  Use DescriptorPool to construct your own descriptors.
+// Describes an RPC service. Use DescriptorPool to construct your own
+// descriptors.
 class PROTOBUF_EXPORT ServiceDescriptor {
  public:
+  typedef ServiceDescriptorProto Proto;
+
   // The name of the service, not including its containing scope.
   const std::string& name() const;
   // The fully-qualified name of the service, scope delimited by periods.
@@ -1209,6 +1221,8 @@ class PROTOBUF_EXPORT ServiceDescriptor {
 // own descriptors.
 class PROTOBUF_EXPORT MethodDescriptor {
  public:
+  typedef MethodDescriptorProto Proto;
+
   // Name of this method, not including containing scope.
   const std::string& name() const;
   // The fully-qualified name of the method, scope delimited by periods.
@@ -1294,6 +1308,8 @@ class PROTOBUF_EXPORT MethodDescriptor {
 // descriptor->file().  Use DescriptorPool to construct your own descriptors.
 class PROTOBUF_EXPORT FileDescriptor {
  public:
+  typedef FileDescriptorProto Proto;
+
   // The filename, relative to the source tree.
   // e.g. "foo/bar/baz.proto"
   const std::string& name() const;

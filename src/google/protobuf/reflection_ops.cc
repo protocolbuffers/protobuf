@@ -45,6 +45,7 @@
 #include <google/protobuf/unknown_field_set.h>
 #include <google/protobuf/stubs/strutil.h>
 
+
 namespace google {
 namespace protobuf {
 namespace internal {
@@ -244,6 +245,25 @@ void ReflectionOps::DiscardUnknownFields(Message* message) {
     const FieldDescriptor* field = fields[i];
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
       if (field->is_repeated()) {
+        if (field->is_map()) {
+          const FieldDescriptor* value_field = field->message_type()->field(1);
+          if (value_field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+            const MapFieldBase* map_field =
+                reflection->MutableMapData(message, field);
+            if (map_field->IsMapValid()) {
+              MapIterator iter(message, field);
+              MapIterator end(message, field);
+              for (map_field->MapBegin(&iter), map_field->MapEnd(&end);
+                   iter != end; ++iter) {
+                iter.MutableValueRef()->MutableMessageValue()
+                    ->DiscardUnknownFields();
+              }
+              continue;
+            }
+          } else {
+            continue;
+          }
+        }
         int size = reflection->FieldSize(*message, field);
         for (int j = 0; j < size; j++) {
           reflection->MutableRepeatedMessage(message, field, j)
@@ -269,7 +289,7 @@ static string SubMessagePrefix(const string& prefix,
   }
   if (index != -1) {
     result.append("[");
-    result.append(SimpleItoa(index));
+    result.append(StrCat(index));
     result.append("]");
   }
   result.append(".");

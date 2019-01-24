@@ -389,7 +389,7 @@ void GenerateMessageAssignment(
     "lookup(\"$full_name$\").msgclass\n",
     "full_name", message->full_name());
 
-  std::string nested_prefix = prefix + message->name() + "::";
+  std::string nested_prefix = prefix + RubifyConstant(message->name()) + "::";
   for (int i = 0; i < message->nested_type_count(); i++) {
     GenerateMessageAssignment(nested_prefix, message->nested_type(i), printer);
   }

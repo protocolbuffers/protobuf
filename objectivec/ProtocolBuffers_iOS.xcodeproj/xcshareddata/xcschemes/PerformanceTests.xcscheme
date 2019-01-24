@@ -315,16 +315,6 @@
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "8B9A5EA41831993600A9D33B"
-            BuildableName = "iOSTestHarness.app"
-            BlueprintName = "iOSTestHarness"
-            ReferencedContainer = "container:ProtocolBuffers_iOS.xcodeproj">
-         </BuildableReference>
-      </BuildableProductRunnable>
       <AdditionalOptions>
       </AdditionalOptions>
    </LaunchAction>

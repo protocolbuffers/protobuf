@@ -1,10 +1,11 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>C# runtime library for Protocol Buffers - Google's data interchange format.</Description>
     <Copyright>Copyright 2015, Google Inc.</Copyright>
     <AssemblyTitle>Google Protocol Buffers</AssemblyTitle>
     <VersionPrefix>3.6.1</VersionPrefix>
+    <LangVersion>6</LangVersion>
     <Authors>Google Inc.</Authors>
     <TargetFrameworks>netstandard1.0;net45</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -29,7 +30,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="SourceLink.Create.CommandLine" Version="2.7.6" PrivateAssets="All" /> 
+    <PackageReference Include="SourceLink.Create.CommandLine" PrivateAssets="All" Version="2.7.6"/> 
   </ItemGroup>
 
 </Project>

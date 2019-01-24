@@ -51,6 +51,7 @@
 
 #include <google/protobuf/port_def.inc>
 
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -270,6 +271,8 @@ inline bool IsWeak(const FieldDescriptor* field, const Options& options) {
   }
   return false;
 }
+
+bool IsStringInlined(const FieldDescriptor* descriptor, const Options& options);
 
 // For a string field, returns the effective ctype.  If the actual ctype is
 // not supported, returns the default of STRING.
@@ -591,7 +594,7 @@ class PROTOC_EXPORT Formatter {
   template <typename I, typename = typename std::enable_if<
                             std::is_integral<I>::value>::type>
   static std::string ToString(I x) {
-    return SimpleItoa(x);
+    return StrCat(x);
   }
   static std::string ToString(strings::Hex x) { return StrCat(x); }
   static std::string ToString(const FieldDescriptor* d) { return Payload(d); }

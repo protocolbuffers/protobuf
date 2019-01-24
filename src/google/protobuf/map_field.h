@@ -107,6 +107,7 @@ class PROTOBUF_EXPORT MapFieldBase {
   virtual void Swap(MapFieldBase* other) = 0;
   // Sync Map with repeated field and returns the size of map.
   virtual int size() const = 0;
+  virtual void Clear() = 0;
 
   // Returns the number of bytes used by the repeated field, excluding
   // sizeof(*this)
@@ -268,9 +269,8 @@ class MapField : public TypeDefinedMapFieldBase<Key, T> {
     return result;
   }
 
-  // Convenient methods for generated message implementation.
   int size() const override;
-  void Clear();
+  void Clear() override;
   void MergeFrom(const MapFieldBase& other) override;
   void Swap(MapFieldBase* other) override;
 
@@ -334,6 +334,7 @@ class PROTOBUF_EXPORT DynamicMapField
   Map<MapKey, MapValueRef>* MutableMap() override;
 
   int size() const override;
+  void Clear() override;
 
  private:
   Map<MapKey, MapValueRef> map_;

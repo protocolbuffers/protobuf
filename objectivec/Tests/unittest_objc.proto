@@ -867,3 +867,18 @@ message BoolOnlyMessage {
 message WKTRefereceMessage {
   optional google.protobuf.Any an_any = 1;
 }
+
+// This is in part a compile test, it ensures that when aliases end up with
+// the same ObjC name, we drop them to avoid the duplication names. There
+// is a test to ensure the descriptors are still generated to support
+// reflection and TextFormat.
+enum TestEnumObjCNameCollision {
+  option allow_alias = true;
+
+  FOO = 1;
+  foo = 1;
+
+  BAR = 2;
+  mumble = 2;
+  MUMBLE = 2;
+}

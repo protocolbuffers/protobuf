@@ -622,12 +622,10 @@ class PROTOBUF_EXPORT WireFormatLite {
   template <typename MessageType>
   INL static uint8* InternalWriteGroupToArray(int field_number,
                                               const MessageType& value,
-                                              bool deterministic,
                                               uint8* target);
   template <typename MessageType>
   INL static uint8* InternalWriteMessageToArray(int field_number,
                                                 const MessageType& value,
-                                                bool deterministic,
                                                 uint8* target);
 
   // Like above, but de-virtualize the call to SerializeWithCachedSizes().  The
@@ -636,23 +634,21 @@ class PROTOBUF_EXPORT WireFormatLite {
   template <typename MessageType>
   INL static uint8* InternalWriteGroupNoVirtualToArray(int field_number,
                                                        const MessageType& value,
-                                                       bool deterministic,
                                                        uint8* target);
   template <typename MessageType>
   INL static uint8* InternalWriteMessageNoVirtualToArray(
-      int field_number, const MessageType& value, bool deterministic,
-      uint8* target);
+      int field_number, const MessageType& value, uint8* target);
 
   // For backward-compatibility, the last four methods also have versions
   // that are non-deterministic always.
   INL static uint8* WriteGroupToArray(int field_number,
                                       const MessageLite& value, uint8* target) {
-    return InternalWriteGroupToArray(field_number, value, false, target);
+    return InternalWriteGroupToArray(field_number, value, target);
   }
   INL static uint8* WriteMessageToArray(int field_number,
                                         const MessageLite& value,
                                         uint8* target) {
-    return InternalWriteMessageToArray(field_number, value, false, target);
+    return InternalWriteMessageToArray(field_number, value, target);
   }
   template <typename MessageType>
   INL static uint8* WriteGroupNoVirtualToArray(int field_number,
@@ -736,6 +732,8 @@ class PROTOBUF_EXPORT WireFormatLite {
 
   static const CppType kFieldTypeToCppTypeMap[];
   static const WireFormatLite::WireType kWireTypeForFieldType[];
+  static void WriteSubMessageMaybeToArray(int size, const MessageLite& value,
+                                          io::CodedOutputStream* output);
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(WireFormatLite);
 };
@@ -912,6 +910,29 @@ inline void SerializeUnknownMessageSetItems(const std::string& unknown_fields,
 
 inline size_t ComputeUnknownMessageSetItemsSize(const std::string& unknown_fields) {
   return unknown_fields.size();
+}
+
+// Some convenience functions to simplify the generated parse loop code.
+// Returning the value and updating the buffer pointer allows for nicer
+// function composition. We rely on the compiler to inline this.
+// Also in debug compiles having local scoped variables tend to generated
+// stack frames that scale as O(num fields).
+inline uint64 ReadVarint(const char** p) {
+  uint64 tmp;
+  *p = io::Parse64(*p, &tmp);
+  return tmp;
+}
+
+inline int64 ReadVarintZigZag64(const char** p) {
+  uint64 tmp;
+  *p = io::Parse64(*p, &tmp);
+  return WireFormatLite::ZigZagDecode64(tmp);
+}
+
+inline int32 ReadVarintZigZag32(const char** p) {
+  uint64 tmp;
+  *p = io::Parse64(*p, &tmp);
+  return WireFormatLite::ZigZagDecode32(tmp);
 }
 
 }  // namespace internal

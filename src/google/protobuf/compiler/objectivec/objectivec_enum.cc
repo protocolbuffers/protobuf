@@ -35,6 +35,7 @@
 #include <google/protobuf/compiler/objectivec/objectivec_helpers.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <algorithm> // std::find()
 
 namespace google {
 namespace protobuf {
@@ -44,6 +45,17 @@ namespace objectivec {
 EnumGenerator::EnumGenerator(const EnumDescriptor* descriptor)
     : descriptor_(descriptor),
       name_(EnumName(descriptor_)) {
+  // Track the names for the enum values, and if an alias overlaps a base
+  // value, skip making a name for it. Likewise if two alias overlap, the
+  // first one wins.
+  // The one gap in this logic is if two base values overlap, but for that
+  // to happen you have to have "Foo" and "FOO" or "FOO_BAR" and "FooBar",
+  // and if an enum has that, it is already going to be confusing and a
+  // compile error is just fine.
+  // The values are still tracked to support the reflection apis and
+  // TextFormat handing since they are different there.
+  std::set<std::string> value_names;
+
   for (int i = 0; i < descriptor_->value_count(); i++) {
     const EnumValueDescriptor* value = descriptor_->value(i);
     const EnumValueDescriptor* canonical_value =
@@ -51,6 +63,14 @@ EnumGenerator::EnumGenerator(const EnumDescriptor* descriptor)
 
     if (value == canonical_value) {
       base_values_.push_back(value);
+      value_names.insert(EnumValueName(value));
+    } else {
+      string value_name(EnumValueName(value));
+      if (value_names.find(value_name) != value_names.end()) {
+        alias_values_to_skip_.insert(value);
+      } else {
+        value_names.insert(value_name);
+      }
     }
     all_values_.push_back(value);
   }
@@ -90,6 +110,9 @@ void EnumGenerator::GenerateHeader(io::Printer* printer) {
       "name", name_);
   }
   for (int i = 0; i < all_values_.size(); i++) {
+    if (alias_values_to_skip_.find(all_values_[i]) != alias_values_to_skip_.end()) {
+      continue;
+    }
     SourceLocation location;
     if (all_values_[i]->GetSourceLocation(&location)) {
       string comments = BuildCommentsString(location, true).c_str();

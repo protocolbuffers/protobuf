@@ -28,6 +28,9 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include <php.h>
+#include <Zend/zend_exceptions.h>
+
 #include "protobuf.h"
 
 // Forward declare.

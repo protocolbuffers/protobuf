@@ -45,7 +45,8 @@ import java.util.RandomAccess;
 final class IntArrayList extends AbstractProtobufList<Integer>
     implements IntList, RandomAccess, PrimitiveNonBoxingCollection {
 
-  private static final IntArrayList EMPTY_LIST = new IntArrayList();
+  private static final IntArrayList EMPTY_LIST = new IntArrayList(new int[0], 0);
+
   static {
     EMPTY_LIST.makeImmutable();
   }

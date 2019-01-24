@@ -36,6 +36,7 @@
 
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/test_util.h>
+#include <google/protobuf/test_util2.h>
 #include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/unittest_mset.pb.h>
 #include <google/protobuf/io/coded_stream.h>
@@ -58,6 +59,8 @@ namespace google {
 namespace protobuf {
 namespace internal {
 namespace {
+
+using TestUtil::EqualsToSerialized;
 
 // This test closely mirrors net/proto2/compiler/cpp/internal/unittest.cc
 // except that it uses extensions rather than regular fields.
@@ -660,7 +663,10 @@ TEST(ExtensionSetTest, PackedToUnpackedParsing) {
   // Reserialize
   unittest::TestUnpackedTypes unpacked;
   TestUtil::SetUnpackedFields(&unpacked);
-  EXPECT_TRUE(unpacked.SerializeAsString() == destination.SerializeAsString());
+  // Serialized proto has to be the same size and parsed to the same message.
+  EXPECT_EQ(unpacked.SerializeAsString().size(),
+            destination.SerializeAsString().size());
+  EXPECT_TRUE(EqualsToSerialized(unpacked, destination.SerializeAsString()));
 
   // Make sure we can add extensions.
   destination.AddExtension(unittest::unpacked_int32_extension, 1);
@@ -681,7 +687,10 @@ TEST(ExtensionSetTest, UnpackedToPackedParsing) {
   // Reserialize
   unittest::TestPackedTypes packed;
   TestUtil::SetPackedFields(&packed);
-  EXPECT_TRUE(packed.SerializeAsString() == destination.SerializeAsString());
+  // Serialized proto has to be the same size and parsed to the same message.
+  EXPECT_EQ(packed.SerializeAsString().size(),
+            destination.SerializeAsString().size());
+  EXPECT_TRUE(EqualsToSerialized(packed, destination.SerializeAsString()));
 
   // Make sure we can add extensions.
   destination.AddExtension(unittest::packed_int32_extension, 1);
@@ -1193,6 +1202,7 @@ TEST(ExtensionSetTest, DynamicExtensions) {
   // Since the extensions were based off of the fields of TestDynamicExtensions,
   // we can use that message to create this test message.
   string data;
+  unittest::TestDynamicExtensions dynamic_extension;
   {
     unittest::TestDynamicExtensions message;
     message.set_scalar_extension(123);
@@ -1218,6 +1228,7 @@ TEST(ExtensionSetTest, DynamicExtensions) {
     message.mutable_unknown_fields()->AddLengthDelimited(54321, "unknown");
 
     message.SerializeToString(&data);
+    dynamic_extension = message;
   }
 
   // Now we can parse this using our dynamic extension definitions...
@@ -1252,9 +1263,8 @@ TEST(ExtensionSetTest, DynamicExtensions) {
     message.DebugString());
 
   // Can we serialize it?
-  // (Don't use EXPECT_EQ because we don't want to dump raw binary data to the
-  // terminal on failure.)
-  EXPECT_TRUE(message.SerializeAsString() == data);
+  EXPECT_TRUE(
+      EqualsToSerialized(dynamic_extension, message.SerializeAsString()));
 
   // What if we parse using the reflection-based parser?
   {

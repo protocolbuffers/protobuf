@@ -139,10 +139,6 @@
 
 #include <google/protobuf/port_def.inc>
 
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-#include "util/coding/varint.h"
-#endif
-
 namespace google {
 namespace protobuf {
 
@@ -168,6 +164,57 @@ T UnalignedLoad(const void* p) {
   return res;
 }
 
+// TODO(gerbens) Experiment with best implementation.
+// Clang unrolls loop and generating pretty good code on O2, gcc doesn't.
+// Unclear if we want 64 bit parse loop unrolled, inlined or opaque function
+// call. Hence experimentation is needed.
+// Important guarantee is that it doesn't read more than size bytes from p.
+template <int size, typename T>
+const char* VarintParse(const char* p, T* out) {
+  T res = 0;
+  T extra = 0;
+  for (int i = 0; i < size; i++) {
+    T byte = static_cast<uint8>(p[i]);
+    res += byte << (i * 7);
+    int j = i + 1;
+    if (PROTOBUF_PREDICT_TRUE(byte < 128)) {
+      *out = res - extra;
+      return p + j;
+    }
+    extra += 128ull << (i * 7);
+  }
+  *out = 0;
+  return nullptr;
+}
+
+inline const char* Parse32(const char* p, uint32* out) {
+  return VarintParse<5>(p, out);
+}
+inline const char* Parse64(const char* p, uint64* out) {
+  return VarintParse<10>(p, out);
+}
+
+inline const char* ReadSize(const char* p, int32* out) {
+  int32 res = 0;
+  int32 extra = 0;
+  for (int i = 0; i < 4; i++) {
+    uint32 byte = static_cast<uint8>(p[i]);
+    res += byte << (i * 7);
+    int j = i + 1;
+    if (PROTOBUF_PREDICT_TRUE(byte < 128)) {
+      *out = res - extra;
+      return p + j;
+    }
+    extra += 128ull << (i * 7);
+  }
+  uint32 byte = static_cast<uint8>(p[4]);
+  // size may not be negative, so only the lowest 3 bits can be set.
+  if (byte >= 8) return nullptr;
+  res += byte << (4 * 7);
+  *out = res - extra;
+  return p + 5;
+}
+
 // Class which reads and decodes binary data which is composed of varint-
 // encoded integers and fixed-width pieces.  Wraps a ZeroCopyInputStream.
 // Most users will not need to deal with CodedInputStream.
@@ -175,6 +222,8 @@ T UnalignedLoad(const void* p) {
 // Most methods of CodedInputStream that return a bool return false if an
 // underlying I/O error occurs or if the data is malformed.  Once such a
 // failure occurs, the CodedInputStream is broken and is no longer useful.
+// After a failure, callers also should assume writes to "out" args may have
+// occurred, though nothing useful can be determined from those writes.
 class PROTOBUF_EXPORT CodedInputStream {
  public:
   // Create a CodedInputStream that reads from the given ZeroCopyInputStream.
@@ -418,6 +467,7 @@ class PROTOBUF_EXPORT CodedInputStream {
   void SetRecursionLimit(int limit);
   int RecursionBudget() { return recursion_budget_; }
 
+  static int GetDefaultRecursionLimit() { return default_recursion_limit_; }
 
   // Increments the current recursion depth.  Returns true if the depth is
   // under the limit, false if it has gone over.

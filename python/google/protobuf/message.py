@@ -172,6 +172,9 @@ class Message(object):
       we *do* stop because of an END_GROUP tag, the number
       of bytes returned does not include the bytes
       for the END_GROUP tag information.
+
+    Raises:
+      message.DecodeError if the input cannot be parsed.
     """
     raise NotImplementedError
 

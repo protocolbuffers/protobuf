@@ -80,9 +80,8 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
   (*variables)["val_wire_type"] =
       "TYPE_" + ToUpper(DeclaredTypeMethodName(val->type()));
   (*variables)["map_classname"] = ClassName(descriptor->message_type(), false);
-  (*variables)["number"] = SimpleItoa(descriptor->number());
-  (*variables)["tag"] =
-      SimpleItoa(internal::WireFormat::MakeTag(descriptor));
+  (*variables)["number"] = StrCat(descriptor->number());
+  (*variables)["tag"] = StrCat(internal::WireFormat::MakeTag(descriptor));
 
   if (HasDescriptorMethods(descriptor->file(), options)) {
     (*variables)["lite"] = "";
@@ -262,8 +261,7 @@ static void GenerateSerializationLoop(const Formatter& format,
   if (to_array) {
     format(
         "target = ::$proto_ns$::internal::WireFormatLite::InternalWrite"
-        "$declared_type$NoVirtualToArray($number$, *entry, deterministic, "
-        "target);\n");
+        "$declared_type$NoVirtualToArray($number$, *entry, target);\n");
   } else {
     format(
         "::$proto_ns$::internal::WireFormatLite::Write$stream_writer$($number$,"
@@ -365,7 +363,7 @@ void MapFieldGenerator::GenerateSerializeWithCachedSizes(io::Printer* printer,
       "    items[static_cast<ptrdiff_t>(n)] = SortItem(&*it);\n"
       "  }\n"
       "  ::std::sort(&items[0], &items[static_cast<ptrdiff_t>(n)], Less());\n",
-      to_array ? "deterministic" : "output->IsSerializationDeterministic()");
+      to_array ? "false" : "output->IsSerializationDeterministic()");
   format.Indent();
   GenerateSerializationLoop(format, SupportsArenas(descriptor_), string_key,
                             string_value, to_array, true);

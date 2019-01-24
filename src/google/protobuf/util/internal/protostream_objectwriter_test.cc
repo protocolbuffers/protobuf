@@ -301,6 +301,65 @@ TEST_P(ProtoStreamObjectWriterTest, IntEnumValuesAreAccepted) {
   CheckOutput(book);
 }
 
+TEST_P(ProtoStreamObjectWriterTest, EnumValuesWithDifferentCaseIsRejected) {
+  Book book;
+  book.set_title("Some Book");
+  Author* robert = book.mutable_author();
+  robert->set_name("robert");
+
+  options_.case_insensitive_enum_parsing = false;
+  ResetProtoWriter();
+
+  ow_->StartObject("")
+      ->RenderString("title", "Some Book")
+      ->RenderString("type", "action_and_adventure")
+      ->StartObject("author")
+      ->RenderString("name", "robert")
+      ->EndObject()
+      ->EndObject();
+  CheckOutput(book);
+}
+
+TEST_P(ProtoStreamObjectWriterTest, EnumValuesWithSameCaseIsAccepted) {
+  Book book;
+  book.set_title("Some Book");
+  book.set_type(google::protobuf::testing::Book_Type_ACTION_AND_ADVENTURE);
+  Author* robert = book.mutable_author();
+  robert->set_name("robert");
+
+  options_.case_insensitive_enum_parsing = false;
+  ResetProtoWriter();
+
+  ow_->StartObject("")
+      ->RenderString("title", "Some Book")
+      ->RenderString("type", "ACTION_AND_ADVENTURE")
+      ->StartObject("author")
+      ->RenderString("name", "robert")
+      ->EndObject()
+      ->EndObject();
+  CheckOutput(book);
+}
+
+TEST_P(ProtoStreamObjectWriterTest, EnumValuesWithDifferentCaseIsAccepted) {
+  Book book;
+  book.set_title("Some Book");
+  book.set_type(google::protobuf::testing::Book_Type_ACTION_AND_ADVENTURE);
+  Author* robert = book.mutable_author();
+  robert->set_name("robert");
+
+  options_.case_insensitive_enum_parsing = true;
+  ResetProtoWriter();
+
+  ow_->StartObject("")
+      ->RenderString("title", "Some Book")
+      ->RenderString("type", "action_AND_adventure")
+      ->StartObject("author")
+      ->RenderString("name", "robert")
+      ->EndObject()
+      ->EndObject();
+  CheckOutput(book);
+}
+
 TEST_P(ProtoStreamObjectWriterTest, EnumValuesWithoutUnderscoreAreAccepted) {
   Book book;
   book.set_title("Some Book");
@@ -334,6 +393,28 @@ TEST_P(ProtoStreamObjectWriterTest, EnumValuesInCamelCaseAreAccepted) {
   ow_->StartObject("")
       ->RenderString("title", "Some Book")
       ->RenderString("type", "actionAndAdventure")
+      ->StartObject("author")
+      ->RenderString("name", "robert")
+      ->EndObject()
+      ->EndObject();
+  CheckOutput(book);
+}
+
+TEST_P(ProtoStreamObjectWriterTest,
+       EnumValuesInCamelCaseRemoveDashAndUnderscoreAreAccepted) {
+  Book book;
+  book.set_title("Some Book");
+  book.set_type(google::protobuf::testing::Book_Type_ACTION_AND_ADVENTURE);
+  Author* robert = book.mutable_author();
+  robert->set_name("robert");
+
+  options_.use_lower_camel_for_enums = true;
+  options_.case_insensitive_enum_parsing = false;
+  ResetProtoWriter();
+
+  ow_->StartObject("")
+      ->RenderString("title", "Some Book")
+      ->RenderString("type", "action-And_Adventure")
       ->StartObject("author")
       ->RenderString("name", "robert")
       ->EndObject()

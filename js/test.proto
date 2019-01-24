@@ -39,8 +39,7 @@ import "google/protobuf/descriptor.proto";
 
 package jspb.test;
 
-message Empty {
-}
+message Empty {}
 
 enum OuterEnum {
   FOO = 1;
@@ -137,12 +136,13 @@ message DefaultValues {
     E1 = 13;
     E2 = 77;
   }
-  optional string string_field = 1 [default="default<>\'\"abc"];
-  optional bool bool_field = 2 [default=true];
-  optional int64 int_field = 3 [default=11];
-  optional Enum enum_field = 4 [default=E1];
-  optional string empty_field = 6 [default=""];
-  optional bytes bytes_field = 8 [default="moo"]; // Base64 encoding is "bW9v"
+  optional string string_field = 1 [default = "default<>\'\"abc"];
+  optional bool bool_field = 2 [default = true];
+  optional int64 int_field = 3 [default = 11];
+  optional Enum enum_field = 4 [default = E1];
+  optional string empty_field = 6 [default = ""];
+  optional bytes bytes_field = 8
+      [default = "moo"];  // Base64 encoding is "bW9v"
 }
 
 message FloatingPointFields {
@@ -254,9 +254,9 @@ extend TestLastFieldBeforePivot {
 
 
 message Int64Types {
-  optional int64 int64_normal = 1 [jstype=JS_NORMAL];
-  optional sint64 int64_string = 2 [jstype=JS_STRING];
-  optional uint64 int64_number = 3 [jstype=JS_NUMBER];
+  optional int64 int64_normal = 1 [jstype = JS_NORMAL];
+  optional sint64 int64_string = 2 [jstype = JS_STRING];
+  optional uint64 int64_number = 3 [jstype = JS_NUMBER];
 
 }
 
@@ -296,4 +296,5 @@ message Deeply {
     }
   }
 }
+
 

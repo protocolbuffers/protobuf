@@ -32,6 +32,7 @@ package com.google.protobuf.util;
 
 import com.google.common.base.Preconditions;
 import com.google.common.io.BaseEncoding;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
@@ -226,7 +227,7 @@ public class JsonFormat {
       return new Printer(
           registry,
           false,
-          fieldsToAlwaysOutput,
+          Collections.unmodifiableSet(new HashSet<>(fieldsToAlwaysOutput)),
           preservingProtoFieldNames,
           omittingInsignificantWhitespace,
           printingEnumsAsInts,
@@ -467,9 +468,10 @@ public class JsonFormat {
       private Builder() {}
 
       /**
-       * Adds a message type and all types defined in the same .proto file as
-       * well as all transitively imported .proto files to this {@link Builder}.
+       * Adds a message type and all types defined in the same .proto file as well as all
+       * transitively imported .proto files to this {@link Builder}.
        */
+      @CanIgnoreReturnValue
       public Builder add(Descriptor messageType) {
         if (types == null) {
           throw new IllegalStateException("A TypeRegistry.Builer can only be used once.");
@@ -479,9 +481,10 @@ public class JsonFormat {
       }
 
       /**
-       * Adds message types and all types defined in the same .proto file as
-       * well as all transitively imported .proto files to this {@link Builder}.
+       * Adds message types and all types defined in the same .proto file as well as all
+       * transitively imported .proto files to this {@link Builder}.
        */
+      @CanIgnoreReturnValue
       public Builder add(Iterable<Descriptor> messageTypes) {
         if (types == null) {
           throw new IllegalStateException("A TypeRegistry.Builder can only be used once.");

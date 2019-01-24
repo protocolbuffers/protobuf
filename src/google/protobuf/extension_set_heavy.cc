@@ -399,7 +399,7 @@ const char* ExtensionSet::ParseMessageSetItem(
     uint32 tag = *ptr++;
     if (tag == WireFormatLite::kMessageSetTypeIdTag) {
       uint32 type_id;
-      ptr = Varint::Parse32(ptr, &type_id);
+      ptr = io::Parse32(ptr, &type_id);
       GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
 
       if (ctx->extra_parse_data().payload.empty()) {
@@ -439,7 +439,7 @@ const char* ExtensionSet::ParseMessageSetItem(
       break;
     } else if (tag == WireFormatLite::kMessageSetMessageTag) {
       uint32 size;
-      ptr = Varint::Parse32Inline(ptr, &size);
+      ptr = io::Parse32(ptr, &size);
       GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
       ParseClosure child = {internal::StringParser,
                             &ctx->extra_parse_data().payload};
@@ -452,7 +452,7 @@ const char* ExtensionSet::ParseMessageSetItem(
       }
     } else {
       ptr--;
-      ptr = Varint::Parse32(ptr, &tag);
+      ptr = io::Parse32(ptr, &tag);
       GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
       auto res =
           ParseField(tag, parent, ptr, end, containing_type, metadata, ctx);
@@ -555,26 +555,23 @@ size_t ExtensionSet::Extension::SpaceUsedExcludingSelfLong() const {
 uint8* ExtensionSet::SerializeWithCachedSizesToArray(int start_field_number,
                                                      int end_field_number,
                                                      uint8* target) const {
-  return InternalSerializeWithCachedSizesToArray(
-      start_field_number, end_field_number,
-      io::CodedOutputStream::IsDefaultSerializationDeterministic(), target);
+  return InternalSerializeWithCachedSizesToArray(start_field_number,
+                                                 end_field_number, target);
 }
 
 uint8* ExtensionSet::SerializeMessageSetWithCachedSizesToArray(
     uint8* target) const {
-  return InternalSerializeMessageSetWithCachedSizesToArray(
-      io::CodedOutputStream::IsDefaultSerializationDeterministic(), target);
+  return InternalSerializeMessageSetWithCachedSizesToArray(target);
 }
 
 uint8* ExtensionSet::InternalSerializeWithCachedSizesToArray(
-    int start_field_number, int end_field_number, bool deterministic,
-    uint8* target) const {
+    int start_field_number, int end_field_number, uint8* target) const {
   if (PROTOBUF_PREDICT_FALSE(is_large())) {
     const auto& end = map_.large->end();
     for (auto it = map_.large->lower_bound(start_field_number);
          it != end && it->first < end_field_number; ++it) {
       target = it->second.InternalSerializeFieldWithCachedSizesToArray(
-          it->first, deterministic, target);
+          it->first, target);
     }
     return target;
   }
@@ -582,23 +579,23 @@ uint8* ExtensionSet::InternalSerializeWithCachedSizesToArray(
   for (const KeyValue* it = std::lower_bound(
            flat_begin(), end, start_field_number, KeyValue::FirstComparator());
        it != end && it->first < end_field_number; ++it) {
-    target = it->second.InternalSerializeFieldWithCachedSizesToArray(
-        it->first, deterministic, target);
+    target = it->second.InternalSerializeFieldWithCachedSizesToArray(it->first,
+                                                                     target);
   }
   return target;
 }
 
 uint8* ExtensionSet::InternalSerializeMessageSetWithCachedSizesToArray(
-    bool deterministic, uint8* target) const {
-  ForEach([deterministic, &target](int number, const Extension& ext) {
-    target = ext.InternalSerializeMessageSetItemWithCachedSizesToArray(
-        number, deterministic, target);
+    uint8* target) const {
+  ForEach([&target](int number, const Extension& ext) {
+    target = ext.InternalSerializeMessageSetItemWithCachedSizesToArray(number,
+                                                                       target);
   });
   return target;
 }
 
 uint8* ExtensionSet::Extension::InternalSerializeFieldWithCachedSizesToArray(
-    int number, bool deterministic, uint8* target) const {
+    int number, uint8* target) const {
   if (is_repeated) {
     if (is_packed) {
       if (cached_size == 0) return target;
@@ -666,14 +663,13 @@ uint8* ExtensionSet::Extension::InternalSerializeFieldWithCachedSizesToArray(
         HANDLE_TYPE(   BYTES,    Bytes,  string);
         HANDLE_TYPE(    ENUM,     Enum,    enum);
 #undef HANDLE_TYPE
-#define HANDLE_TYPE(UPPERCASE, CAMELCASE, LOWERCASE)                        \
-        case FieldDescriptor::TYPE_##UPPERCASE:                             \
-          for (int i = 0; i < repeated_##LOWERCASE##_value->size(); i++) {  \
-            target = WireFormatLite::InternalWrite##CAMELCASE##ToArray(     \
-                      number, repeated_##LOWERCASE##_value->Get(i),         \
-                      deterministic, target);                               \
-          }                                                                 \
-          break
+#define HANDLE_TYPE(UPPERCASE, CAMELCASE, LOWERCASE)                 \
+  case FieldDescriptor::TYPE_##UPPERCASE:                            \
+    for (int i = 0; i < repeated_##LOWERCASE##_value->size(); i++) { \
+      target = WireFormatLite::InternalWrite##CAMELCASE##ToArray(    \
+          number, repeated_##LOWERCASE##_value->Get(i), target);     \
+    }                                                                \
+    break
 
         HANDLE_TYPE(   GROUP,    Group, message);
         HANDLE_TYPE( MESSAGE,  Message, message);
@@ -708,11 +704,10 @@ uint8* ExtensionSet::Extension::InternalSerializeFieldWithCachedSizesToArray(
 #undef HANDLE_TYPE
       case FieldDescriptor::TYPE_MESSAGE:
         if (is_lazy) {
-          target = lazymessage_value->InternalWriteMessageToArray(
-              number, deterministic, target);
+          target = lazymessage_value->WriteMessageToArray(number, target);
         } else {
           target = WireFormatLite::InternalWriteMessageToArray(
-              number, *message_value, deterministic, target);
+              number, *message_value, target);
         }
         break;
     }
@@ -722,12 +717,11 @@ uint8* ExtensionSet::Extension::InternalSerializeFieldWithCachedSizesToArray(
 
 uint8*
 ExtensionSet::Extension::InternalSerializeMessageSetItemWithCachedSizesToArray(
-    int number, bool deterministic, uint8* target) const {
+    int number, uint8* target) const {
   if (type != WireFormatLite::TYPE_MESSAGE || is_repeated) {
     // Not a valid MessageSet extension, but serialize it the normal way.
     GOOGLE_LOG(WARNING) << "Invalid message set extension.";
-    return InternalSerializeFieldWithCachedSizesToArray(number, deterministic,
-                                                        target);
+    return InternalSerializeFieldWithCachedSizesToArray(number, target);
   }
 
   if (is_cleared) return target;
@@ -740,12 +734,11 @@ ExtensionSet::Extension::InternalSerializeMessageSetItemWithCachedSizesToArray(
       WireFormatLite::kMessageSetTypeIdNumber, number, target);
   // Write message.
   if (is_lazy) {
-    target = lazymessage_value->InternalWriteMessageToArray(
-        WireFormatLite::kMessageSetMessageNumber, deterministic, target);
+    target = lazymessage_value->WriteMessageToArray(
+        WireFormatLite::kMessageSetMessageNumber, target);
   } else {
     target = WireFormatLite::InternalWriteMessageToArray(
-        WireFormatLite::kMessageSetMessageNumber, *message_value, deterministic,
-        target);
+        WireFormatLite::kMessageSetMessageNumber, *message_value, target);
   }
   // End group.
   target = io::CodedOutputStream::WriteTagToArray(

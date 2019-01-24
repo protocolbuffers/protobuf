@@ -62,7 +62,8 @@ namespace protobuf {
 
 // ===================================================================
 
-class PROTOBUF_EXPORT Any : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Any) */ {
+class PROTOBUF_EXPORT Any final :
+    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Any) */ {
  public:
   Any();
   virtual ~Any();
@@ -148,7 +149,7 @@ class PROTOBUF_EXPORT Any : public ::google::protobuf::Message /* @@protoc_inser
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const final;
   ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
-      bool deterministic, ::google::protobuf::uint8* target) const final;
+      ::google::protobuf::uint8* target) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:

@@ -46,6 +46,7 @@
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/strutil.h>
 
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -71,8 +72,8 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
   (*variables)["capitalized_type"] =
       GetCapitalizedType(descriptor, /* immutable = */ true);
   (*variables)["tag"] =
-      SimpleItoa(static_cast<int32>(WireFormat::MakeTag(descriptor)));
-  (*variables)["tag_size"] = SimpleItoa(
+      StrCat(static_cast<int32>(WireFormat::MakeTag(descriptor)));
+  (*variables)["tag_size"] = StrCat(
       WireFormat::TagSize(descriptor->number(), GetType(descriptor)));
   (*variables)["required"] = descriptor->is_required() ? "true" : "false";
 
@@ -131,7 +132,7 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
       ? "@java.lang.Deprecated " : "";
   int fixed_size = FixedSize(GetType(descriptor));
   if (fixed_size != -1) {
-    (*variables)["fixed_size"] = SimpleItoa(fixed_size);
+    (*variables)["fixed_size"] = StrCat(fixed_size);
   }
 
   if (SupportFieldPresence(descriptor->file())) {

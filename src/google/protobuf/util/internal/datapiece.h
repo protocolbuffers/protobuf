@@ -169,7 +169,10 @@ class PROTOBUF_EXPORT DataPiece {
   // If none of these succeeds, returns a conversion error status.
   util::StatusOr<int> ToEnum(const google::protobuf::Enum* enum_type,
                                bool use_lower_camel_for_enums) const {
-    return ToEnum(enum_type, use_lower_camel_for_enums, false, nullptr);
+    return ToEnum(enum_type, use_lower_camel_for_enums,
+                  /* ignore_unknown_enum_values */ false,
+                  /* case_insensitive_enum_parsing */ true,
+                  /* is_unknown_enum_value */ nullptr);
   }
 
  private:
@@ -186,6 +189,7 @@ class PROTOBUF_EXPORT DataPiece {
   // unknown enum values.
   util::StatusOr<int> ToEnum(const google::protobuf::Enum* enum_type,
                                bool use_lower_camel_for_enums,
+                               bool case_insensitive_enum_parsing,
                                bool ignore_unknown_enum_values,
                                bool* is_unknown_enum_value) const;
 

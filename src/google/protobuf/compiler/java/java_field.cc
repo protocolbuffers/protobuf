@@ -55,6 +55,7 @@
 #include <google/protobuf/stubs/substitute.h>
 
 
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -254,7 +255,7 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
   (*variables)["capitalized_name"] = info->capitalized_name;
   (*variables)["disambiguated_reason"] = info->disambiguated_reason;
   (*variables)["constant_name"] = FieldConstantName(descriptor);
-  (*variables)["number"] = SimpleItoa(descriptor->number());
+  (*variables)["number"] = StrCat(descriptor->number());
   // These variables are placeholders to pick out the beginning and ends of
   // identifiers for annotations (when doing so with existing variables would
   // be ambiguous or impossible). They should never be set to anything but the
@@ -269,13 +270,13 @@ void SetCommonOneofVariables(const FieldDescriptor* descriptor,
   (*variables)["oneof_name"] = info->name;
   (*variables)["oneof_capitalized_name"] = info->capitalized_name;
   (*variables)["oneof_index"] =
-      SimpleItoa(descriptor->containing_oneof()->index());
+      StrCat(descriptor->containing_oneof()->index());
   (*variables)["set_oneof_case_message"] =
-      info->name + "Case_ = " + SimpleItoa(descriptor->number());
+      info->name + "Case_ = " + StrCat(descriptor->number());
   (*variables)["clear_oneof_case_message"] = info->name +
       "Case_ = 0";
   (*variables)["has_oneof_case_message"] =
-      info->name + "Case_ == " + SimpleItoa(descriptor->number());
+      info->name + "Case_ == " + StrCat(descriptor->number());
 }
 
 void PrintExtraFieldInfo(const std::map<string, string>& variables,

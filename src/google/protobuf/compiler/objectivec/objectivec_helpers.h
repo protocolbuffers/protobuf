@@ -62,7 +62,7 @@ string PROTOC_EXPORT EscapeTrigraphs(const string& to_escape);
 string PROTOC_EXPORT StripProto(const string& filename);
 
 // Remove white space from either end of a StringPiece.
-void PROTOC_EXPORT StringPieceTrimWhitespace(StringPiece* input);
+void PROTOC_EXPORT TrimWhitespace(StringPiece* input);
 
 // Returns true if the name requires a ns_returns_not_retained attribute applied
 // to it.

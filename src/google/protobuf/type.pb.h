@@ -162,7 +162,8 @@ inline bool Syntax_Parse(
 }
 // ===================================================================
 
-class PROTOBUF_EXPORT Type : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Type) */ {
+class PROTOBUF_EXPORT Type final :
+    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Type) */ {
  public:
   Type();
   virtual ~Type();
@@ -240,7 +241,7 @@ class PROTOBUF_EXPORT Type : public ::google::protobuf::Message /* @@protoc_inse
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const final;
   ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
-      bool deterministic, ::google::protobuf::uint8* target) const final;
+      ::google::protobuf::uint8* target) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
@@ -374,7 +375,8 @@ class PROTOBUF_EXPORT Type : public ::google::protobuf::Message /* @@protoc_inse
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Field : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Field) */ {
+class PROTOBUF_EXPORT Field final :
+    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Field) */ {
  public:
   Field();
   virtual ~Field();
@@ -452,7 +454,7 @@ class PROTOBUF_EXPORT Field : public ::google::protobuf::Message /* @@protoc_ins
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const final;
   ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
-      bool deterministic, ::google::protobuf::uint8* target) const final;
+      ::google::protobuf::uint8* target) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
@@ -727,7 +729,8 @@ class PROTOBUF_EXPORT Field : public ::google::protobuf::Message /* @@protoc_ins
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Enum : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Enum) */ {
+class PROTOBUF_EXPORT Enum final :
+    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Enum) */ {
  public:
   Enum();
   virtual ~Enum();
@@ -805,7 +808,7 @@ class PROTOBUF_EXPORT Enum : public ::google::protobuf::Message /* @@protoc_inse
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const final;
   ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
-      bool deterministic, ::google::protobuf::uint8* target) const final;
+      ::google::protobuf::uint8* target) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
@@ -916,7 +919,8 @@ class PROTOBUF_EXPORT Enum : public ::google::protobuf::Message /* @@protoc_inse
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT EnumValue : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.EnumValue) */ {
+class PROTOBUF_EXPORT EnumValue final :
+    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.EnumValue) */ {
  public:
   EnumValue();
   virtual ~EnumValue();
@@ -994,7 +998,7 @@ class PROTOBUF_EXPORT EnumValue : public ::google::protobuf::Message /* @@protoc
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const final;
   ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
-      bool deterministic, ::google::protobuf::uint8* target) const final;
+      ::google::protobuf::uint8* target) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
@@ -1079,7 +1083,8 @@ class PROTOBUF_EXPORT EnumValue : public ::google::protobuf::Message /* @@protoc
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Option : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Option) */ {
+class PROTOBUF_EXPORT Option final :
+    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Option) */ {
  public:
   Option();
   virtual ~Option();
@@ -1157,7 +1162,7 @@ class PROTOBUF_EXPORT Option : public ::google::protobuf::Message /* @@protoc_in
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const final;
   ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
-      bool deterministic, ::google::protobuf::uint8* target) const final;
+      ::google::protobuf::uint8* target) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:

@@ -317,7 +317,7 @@ class CodedInputStream
      * passed unchanged to the corresponding call to popLimit().
      *
      * @param integer $byte_limit
-     * @throws Exception Fail to push limit.
+     * @throws \Exception Fail to push limit.
      */
     public function pushLimit($byte_limit)
     {

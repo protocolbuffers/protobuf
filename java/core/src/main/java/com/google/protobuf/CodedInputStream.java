@@ -377,7 +377,7 @@ public abstract class CodedInputStream {
   /**
    * Set the maximum message recursion depth. In order to prevent malicious messages from causing
    * stack overflows, {@code CodedInputStream} limits how deeply messages may be nested. The default
-   * limit is 64.
+   * limit is 100.
    *
    * @return the old limit.
    */

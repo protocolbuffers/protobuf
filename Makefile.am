@@ -473,6 +473,12 @@ objectivec_EXTRA_DIST=                                                       \
   objectivec/ProtocolBuffers_OSX.xcodeproj/project.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings \
   objectivec/ProtocolBuffers_OSX.xcodeproj/xcshareddata/xcschemes/PerformanceTests.xcscheme \
   objectivec/ProtocolBuffers_OSX.xcodeproj/xcshareddata/xcschemes/ProtocolBuffers.xcscheme \
+  objectivec/ProtocolBuffers_tvOS.xcodeproj/project.pbxproj                  \
+  objectivec/ProtocolBuffers_tvOS.xcodeproj/project.xcworkspace/contents.xcworkspacedata \
+  objectivec/ProtocolBuffers_tvOS.xcodeproj/project.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist \
+  objectivec/ProtocolBuffers_tvOS.xcodeproj/project.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings \
+  objectivec/ProtocolBuffers_tvOS.xcodeproj/xcshareddata/xcschemes/PerformanceTests.xcscheme \
+  objectivec/ProtocolBuffers_tvOS.xcodeproj/xcshareddata/xcschemes/ProtocolBuffers.xcscheme \
   objectivec/README.md                                                       \
   objectivec/Tests/CocoaPods/OSXCocoaPodsTester/OSXCocoaPodsTester.xcodeproj/project.pbxproj \
   objectivec/Tests/CocoaPods/OSXCocoaPodsTester/OSXCocoaPodsTester.xcodeproj/project.xcworkspace/contents.xcworkspacedata \

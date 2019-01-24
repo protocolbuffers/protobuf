@@ -244,6 +244,11 @@ bool HasPrivateHasMethod(const FieldDescriptor* field) {
 // TODO(ckennelly):  Cull these exclusions if/when these protos do not have
 // their methods overriden by subclasses.
 
+bool ShouldMarkClassAsFinal(const Descriptor* descriptor,
+                            const Options& options) {
+  return true;
+}
+
 bool ShouldMarkClearAsFinal(const Descriptor* descriptor,
                             const Options& options) {
   static std::set<string> exclusions{
@@ -800,7 +805,8 @@ void MessageGenerator::GenerateSingularFieldHasBits(
       } else {
         format(
             "inline bool $classname$::has_$name$() const {\n"
-            "  return this != internal_default_instance() && $name$_ != nullptr;\n"
+            "  return this != internal_default_instance() "
+            "&& $name$_ != nullptr;\n"
             "}\n");
       }
     }
@@ -902,7 +908,7 @@ void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* printer) {
       format.Set("field_name", UnderscoresToCamelCase(field->name(), true));
       format.Set("oneof_name", field->containing_oneof()->name());
       format.Set("oneof_index",
-                 SimpleItoa(field->containing_oneof()->index()));
+                 StrCat(field->containing_oneof()->index()));
       GenerateOneofMemberHasBits(field, format);
     } else {
       // Singular field.
@@ -925,6 +931,9 @@ void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* printer) {
 
 void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
   Formatter format(printer, variables_);
+  format.Set("class_final",
+             ShouldMarkClassAsFinal(descriptor_, options_) ? "final": "");
+
   if (IsMapEntryMessage(descriptor_)) {
     std::map<string, string> vars;
     CollectMapInfo(options_, descriptor_, &vars);
@@ -941,7 +950,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
         "public:\n"
         "#if $GOOGLE_PROTOBUF$_ENABLE_EXPERIMENTAL_PARSER\n"
         "static bool _ParseMap(const char* begin, const "
-        "char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);\n"
+        "char* end, void* object, ::$proto_ns$::internal::ParseContext* ctx);\n"
         "#endif  // $GOOGLE_PROTOBUF$_ENABLE_EXPERIMENTAL_PARSER\n"
         "  typedef ::$proto_ns$::internal::MapEntry$lite$<$classname$, \n"
         "    $key_cpp$, $val_cpp$,\n"
@@ -966,9 +975,9 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
   }
 
   format(
-      "class $dllexport_decl $${1$$classname$$}$ : public $superclass$ "
-      "/* @@protoc_insertion_point(class_definition:$full_name$) */ "
-      "{\n",
+      "class $dllexport_decl $${1$$classname$$}$$ class_final$ :\n"
+      "    public $superclass$ /* @@protoc_insertion_point("
+      "class_definition:$full_name$) */ {\n",
       descriptor_);
   format(" public:\n");
   format.Indent();
@@ -1190,7 +1199,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
     if (HasFastArraySerialization(descriptor_->file(), options_)) {
       format(
           "$uint8$* InternalSerializeWithCachedSizesToArray(\n"
-          "    bool deterministic, $uint8$* target) const final;\n");
+          "    $uint8$* target) const final;\n");
     }
   }
 
@@ -1332,8 +1341,8 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
   const string has_bits_decl =
       sizeof_has_bits == 0
           ? ""
-          : "::$proto_ns$::internal::HasBits<" +
-                SimpleItoa(sizeof_has_bits / 4) + "> _has_bits_;\n";
+          : StrCat("::$proto_ns$::internal::HasBits<",
+                         sizeof_has_bits / 4, "> _has_bits_;\n");
 
   // To minimize padding, data members are divided into three sections:
   // (1) members assumed to align to 8 bytes
@@ -1624,10 +1633,9 @@ int MessageGenerator::GenerateFieldMetadata(io::Printer* printer) {
       std::map<string, string> vars;
       vars["classtype"] = QualifiedClassName(descriptor_);
       vars["field_name"] = FieldName(field);
-      vars["tag"] = SimpleItoa(tag);
-      vars["hasbit"] = SimpleItoa(i);
-      vars["type"] =
-          SimpleItoa(CalcFieldNum(generator, field, options_));
+      vars["tag"] = StrCat(tag);
+      vars["hasbit"] = StrCat(i);
+      vars["type"] = StrCat(CalcFieldNum(generator, field, options_));
       vars["ptr"] = "nullptr";
       if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
         GOOGLE_CHECK(!IsMapEntryMessage(field->message_type()));
@@ -1636,8 +1644,7 @@ int MessageGenerator::GenerateFieldMetadata(io::Printer* printer) {
               "::" +
               UniqueName("TableStruct", field->message_type(), options_) +
               "::serialization_table + " +
-              SimpleItoa(
-                  FindMessageIndexInFile(field->message_type()));
+              StrCat(FindMessageIndexInFile(field->message_type()));
         }
       }
       Formatter::SaveState saver(&format);
@@ -1654,8 +1661,10 @@ int MessageGenerator::GenerateFieldMetadata(io::Printer* printer) {
     return 2;
   }
   format(
-      "{PROTOBUF_FIELD_OFFSET($classtype$, _cached_size_), 0, 0, 0, nullptr},\n");
+      "{PROTOBUF_FIELD_OFFSET($classtype$, _cached_size_),"
+      " 0, 0, 0, nullptr},\n");
   std::vector<const Descriptor::ExtensionRange*> sorted_extensions;
+  sorted_extensions.reserve(descriptor_->extension_range_count());
   for (int i = 0; i < descriptor_->extension_range_count(); ++i) {
     sorted_extensions.push_back(descriptor_->extension_range(i));
   }
@@ -1712,7 +1721,7 @@ int MessageGenerator::GenerateFieldMetadata(io::Printer* printer) {
         ptr =
             "::" + UniqueName("TableStruct", field->message_type(), options_) +
             "::serialization_table + " +
-            SimpleItoa(FindMessageIndexInFile(field->message_type()));
+            StrCat(FindMessageIndexInFile(field->message_type()));
       }
     }
 
@@ -1864,8 +1873,8 @@ void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
     }
     format(
         "#if $GOOGLE_PROTOBUF$_ENABLE_EXPERIMENTAL_PARSER\n"
-        "bool $classname$::_ParseMap(const char* begin, const "
-        "char* end, void* object, ::google::protobuf::internal::ParseContext* ctx) {\n"
+        "bool $classname$::_ParseMap(const char* begin, const char* end, "
+        "void* object, ::$proto_ns$::internal::ParseContext* ctx) {\n"
         "  using MF = ::$proto_ns$::internal::MapField$1$<\n"
         "      $classname$, EntryKeyType, EntryValueType,\n"
         "      kEntryKeyFieldType, kEntryValueFieldType,\n"
@@ -1885,7 +1894,8 @@ void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
       format(
           "  DO_(parser.ParseMapEnumValidation(\n"
           "    begin, end, ctx->extra_parse_data().field_number,\n"
-          "    static_cast<::google::protobuf::internal::InternalMetadataWithArena$1$*>("
+          "    static_cast<::$proto_ns$::internal::"
+          "InternalMetadataWithArena$1$*>("
           "ctx->extra_parse_data().unknown_fields), $2$_IsValid));\n",
           HasDescriptorMethods(descriptor_->file(), options_) ? "" : "Lite",
           QualifiedClassName(val->enum_type()));
@@ -2159,16 +2169,15 @@ size_t MessageGenerator::GenerateParseOffsets(io::Printer* printer) {
     std::map<string, string> vars;
     if (field->containing_oneof() != NULL) {
       vars["name"] = field->containing_oneof()->name();
-      vars["presence"] =
-          SimpleItoa(field->containing_oneof()->index());
+      vars["presence"] = StrCat(field->containing_oneof()->index());
     } else {
       vars["name"] = FieldName(field);
-      vars["presence"] = SimpleItoa(has_bit_indices_[field->index()]);
+      vars["presence"] = StrCat(has_bit_indices_[field->index()]);
     }
-    vars["nwtype"] = SimpleItoa(normal_wiretype);
-    vars["pwtype"] = SimpleItoa(packed_wiretype);
-    vars["ptype"] = SimpleItoa(processing_type);
-    vars["tag_size"] = SimpleItoa(tag_size);
+    vars["nwtype"] = StrCat(normal_wiretype);
+    vars["pwtype"] = StrCat(packed_wiretype);
+    vars["ptype"] = StrCat(processing_type);
+    vars["tag_size"] = StrCat(tag_size);
 
     format.AddMap(vars);
 
@@ -2323,9 +2332,8 @@ std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(
   } else if (HasFieldPresence(descriptor_->file())) {
     entries += has_bit_indices_.size();
     for (int i = 0; i < has_bit_indices_.size(); i++) {
-      const string index = has_bit_indices_[i] >= 0
-                               ? SimpleItoa(has_bit_indices_[i])
-                               : "~0u";
+      const string index =
+          has_bit_indices_[i] >= 0 ? StrCat(has_bit_indices_[i]) : "~0u";
       format("$1$,\n", index);
     }
   }
@@ -3762,14 +3770,14 @@ void MessageGenerator::GenerateSerializeOneExtensionRange(
     io::Printer* printer, const Descriptor::ExtensionRange* range,
     bool to_array) {
   std::map<string, string> vars;
-  vars["start"] = SimpleItoa(range->start);
-  vars["end"] = SimpleItoa(range->end);
+  vars["start"] = StrCat(range->start);
+  vars["end"] = StrCat(range->end);
   Formatter format(printer, vars);
   format("// Extension range [$start$, $end$)\n");
   if (to_array) {
     format(
         "target = _extensions_.InternalSerializeWithCachedSizesToArray(\n"
-        "    $start$, $end$, deterministic, target);\n\n");
+        "    $start$, $end$, target);\n\n");
   } else {
     format(
         "_extensions_.SerializeWithCachedSizes($start$, $end$, output);\n"
@@ -3819,10 +3827,9 @@ void MessageGenerator::GenerateSerializeWithCachedSizesToArray(
     // Special-case MessageSet.
     format(
         "$uint8$* $classname$::InternalSerializeWithCachedSizesToArray(\n"
-        "    bool deterministic, $uint8$* target) const {\n"
+        "    $uint8$* target) const {\n"
         "  target = _extensions_."
-        "InternalSerializeMessageSetWithCachedSizesToArray(\n"
-        "               deterministic, target);\n");
+        "InternalSerializeMessageSetWithCachedSizesToArray(target);\n");
     GOOGLE_CHECK(UseUnknownFieldSet(descriptor_->file(), options_));
     std::map<string, string> vars;
     SetUnknkownFieldsVariable(descriptor_, options_, &vars);
@@ -3839,10 +3846,9 @@ void MessageGenerator::GenerateSerializeWithCachedSizesToArray(
 
   format(
       "$uint8$* $classname$::InternalSerializeWithCachedSizesToArray(\n"
-      "    bool deterministic, $uint8$* target) const {\n");
+      "    $uint8$* target) const {\n");
   format.Indent();
 
-  format("(void)deterministic; // Unused\n");
   format("// @@protoc_insertion_point(serialize_to_array_start:$full_name$)\n");
 
   GenerateSerializeWithCachedSizesBody(printer, true);
@@ -3937,6 +3943,7 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(
       SortFieldsByNumber(descriptor_);
 
   std::vector<const Descriptor::ExtensionRange*> sorted_extensions;
+  sorted_extensions.reserve(descriptor_->extension_range_count());
   for (int i = 0; i < descriptor_->extension_range_count(); ++i) {
     sorted_extensions.push_back(descriptor_->extension_range(i));
   }

@@ -123,8 +123,12 @@ tests=( array_test.php encode_decode_test.php generated_class_test.php map_field
 sed -i.bak '/php_implementation_test.php/d' phpunit.xml
 sed -i.bak '/generated_phpdoc_test.php/d' phpunit.xml
 sed -i.bak 's/generated_phpdoc_test.php//g' tests/test.sh
+sed -i.bak 's/generated_service_test.php//g' tests/test.sh
 sed -i.bak '/memory_leak_test.php/d' tests/test.sh
 sed -i.bak '/^    public function testTimestamp()$/,/^    }$/d' tests/well_known_test.php
+sed -i.bak 's/PHPUnit_Framework_TestCase/\\PHPUnit\\Framework\\TestCase/g' tests/array_test.php
+sed -i.bak 's/PHPUnit_Framework_TestCase/\\PHPUnit\\Framework\\TestCase/g' tests/map_field_test.php
+sed -i.bak 's/PHPUnit_Framework_TestCase/\\PHPUnit\\Framework\\TestCase/g' tests/test_base.php
 for t in "${tests[@]}"
 do
   remove_error_test tests/$t
