@@ -121,17 +121,20 @@ class GPBUtil
     {
         if (is_numeric($var)) {
             if (PHP_INT_SIZE === 8) {
-                $var = intval($var);
-                $var |= ((-(($var >> 31) & 0x1)) & ~0xFFFFFFFF);
-            } else {
-                if (bccomp($var, 0x7FFFFFFF) > 0) {
-                    $var = bcsub($var, "4294967296");
-                }
-                $var = (int) $var;
+                $var = ((int) $var) % pow(2, 32);
+
+                return;
             }
-        } else {
-            throw new \Exception("Expect integer.");
+
+            if (bccomp($var, 0x7FFFFFFF) > 0) {
+                $var = bcsub($var, "4294967296");
+            }
+            $var = (int) $var;
+
+            return;
         }
+
+        throw new \Exception("Expect integer.");
     }
 
     public static function checkInt64(&$var)
