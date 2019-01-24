@@ -207,7 +207,7 @@ libprotobuf_lite_la_SOURCES =                                  \
   google/protobuf/generated_message_table_driven_lite.cc       \
   google/protobuf/implicit_weak_message.cc                     \
   google/protobuf/message_lite.cc                              \
-  google/protobuf/parse_context.cc                              \  
+  google/protobuf/parse_context.cc                             \
   google/protobuf/repeated_field.cc                            \
   google/protobuf/wire_format_lite.cc                          \
   google/protobuf/io/coded_stream.cc                           \
