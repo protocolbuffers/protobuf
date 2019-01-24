@@ -958,6 +958,28 @@ static bool create_oneofdef(
 static bool parse_default(const symtab_addctx *ctx, const char *str, size_t len,
                           upb_fielddef *f) {
   char *end;
+  char nullz[64];
+  errno = 0;
+
+  switch (upb_fielddef_type(f)) {
+    case UPB_TYPE_INT32:
+    case UPB_TYPE_INT64:
+    case UPB_TYPE_UINT32:
+    case UPB_TYPE_UINT64:
+    case UPB_TYPE_DOUBLE:
+    case UPB_TYPE_FLOAT:
+      /* Standard C number parsing functions expect null-terminated strings. */
+      if (len >= sizeof(nullz) - 1) {
+        return false;
+      }
+      memcpy(nullz, str, len);
+      nullz[len] = '\0';
+      str = nullz;
+      break;
+    default:
+      break;
+  }
+
   switch (upb_fielddef_type(f)) {
     case UPB_TYPE_INT32: {
       long val = strtol(str, &end, 0);

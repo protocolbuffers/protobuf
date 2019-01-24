@@ -134,6 +134,7 @@ uint32_t upb_fielddef_selectorbase(const upb_fielddef *f);
  * an extension. */
 class upb::FieldDefPtr {
  public:
+  FieldDefPtr() : ptr_(nullptr) {}
   explicit FieldDefPtr(const upb_fielddef *ptr) : ptr_(ptr) {}
 
   const upb_fielddef* ptr() const { return ptr_; }
@@ -302,6 +303,7 @@ bool upb_oneof_iter_isequal(const upb_oneof_iter *iter1,
 /* Class that represents a oneof. */
 class upb::OneofDefPtr {
  public:
+  OneofDefPtr() : ptr_(nullptr) {}
   explicit OneofDefPtr(const upb_oneofdef *ptr) : ptr_(ptr) {}
 
   const upb_oneofdef* ptr() const { return ptr_; }
@@ -482,7 +484,8 @@ bool upb_msg_oneof_iter_isequal(const upb_msg_oneof_iter *iter1,
 /* Structure that describes a single .proto message type. */
 class upb::MessageDefPtr {
  public:
-  MessageDefPtr(const upb_msgdef *ptr) : ptr_(ptr) {}
+  MessageDefPtr() : ptr_(nullptr) {}
+  explicit MessageDefPtr(const upb_msgdef *ptr) : ptr_(ptr) {}
 
   const upb_msgdef *ptr() const { return ptr_; }
   explicit operator bool() const { return ptr_ != nullptr; }
@@ -689,6 +692,7 @@ int32_t upb_enum_iter_number(upb_enum_iter *iter);
 
 class upb::EnumDefPtr {
  public:
+  EnumDefPtr() : ptr_(nullptr) {}
   explicit EnumDefPtr(const upb_enumdef* ptr) : ptr_(ptr) {}
 
   const upb_enumdef* ptr() const { return ptr_; }
