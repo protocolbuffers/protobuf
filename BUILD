@@ -7,6 +7,7 @@ load(
     "lua_library",
     "lua_test",
     "make_shell_script",
+    "map_dep",
     "upb_amalgamation",
     "upb_proto_library",
     "upb_proto_reflection_library",
@@ -122,9 +123,9 @@ cc_library(
     ],
     hdrs = ["upbc/generator.h"],
     deps = [
-        "@absl//absl/strings",
-        "@com_google_protobuf//:protobuf",
-        "@com_google_protobuf//:protoc_lib",
+        map_dep("@absl//absl/strings"),
+        map_dep("@com_google_protobuf//:protobuf"),
+        map_dep("@com_google_protobuf//:protoc_lib"),
     ],
 )
 
@@ -133,9 +134,15 @@ cc_binary(
     srcs = ["upbc/main.cc"],
     deps = [
         ":upbc_generator",
-        "@com_google_protobuf//:protoc_lib",
+        map_dep("@com_google_protobuf//:protoc_lib"),
     ],
 )
+
+
+# We strip the tests and remaining rules from google3 until the upb_proto_library()
+# and upb_proto_reflection_library() rules are fixed.
+
+# copybara:strip_for_google3_begin
 
 # C/C++ tests ##################################################################
 
@@ -487,3 +494,5 @@ generated_file_staleness_test(
     ],
     generated_pattern = "generated/%s",
 )
+
+# copybara:strip_end

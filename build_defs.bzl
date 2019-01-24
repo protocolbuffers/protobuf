@@ -207,6 +207,21 @@ upb_amalgamation = rule(
     },
 )
 
+is_bazel = not hasattr(native, "genmpm")
+
+google3_dep_map = {
+    "@absl//absl/strings": "//third_party/absl/strings",
+    "@com_google_protobuf//:protoc": "//third_party/protobuf:protoc",
+    "@com_google_protobuf//:protobuf": "//third_party/protobuf:protobuf",
+    "@com_google_protobuf//:protoc_lib": "//third_party/protobuf:libprotoc",
+}
+
+def map_dep(dep):
+    if is_bazel:
+        return dep
+    else:
+        return google3_dep_map[dep]
+
 # upb_proto_library() rule
 
 def _remove_up(string):
@@ -261,7 +276,7 @@ _upb_proto_library_srcs = rule(
         "protoc": attr.label(
             executable = True,
             cfg = "host",
-            default = "@com_google_protobuf//:protoc",
+            default = map_dep("@com_google_protobuf//:protoc"),
         ),
         "deps": attr.label_list(),
     },
@@ -291,7 +306,7 @@ _upb_proto_reflection_library_srcs = rule(
         "protoc": attr.label(
             executable = True,
             cfg = "host",
-            default = "@com_google_protobuf//:protoc",
+            default = map_dep("@com_google_protobuf//:protoc"),
         ),
         "deps": attr.label_list(),
     },

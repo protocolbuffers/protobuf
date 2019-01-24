@@ -134,11 +134,14 @@ class BuildFileFunctions(object):
   def select(self, arg_dict):
     return []
 
-  def glob(*args):
+  def glob(self, *args):
     return []
 
-  def licenses(*args):
+  def licenses(self, *args):
     pass
+
+  def map_dep(self, arg):
+    return arg
 
 
 class WorkspaceFileFunctions(object):
