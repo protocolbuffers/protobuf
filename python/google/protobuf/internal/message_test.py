@@ -81,6 +81,7 @@ from google.protobuf import text_format
 from google.protobuf.internal import api_implementation
 from google.protobuf.internal import encoder
 from google.protobuf.internal import more_extensions_pb2
+from google.protobuf.internal import more_messages_pb2
 from google.protobuf.internal import packed_field_test_pb2
 from google.protobuf.internal import test_util
 from google.protobuf.internal import testing_refleaks
@@ -2527,9 +2528,8 @@ class PackedFieldTest(unittest.TestCase):
     self.assertEqual(golden_data, message.SerializeToString())
 
 
-@unittest.skipIf(api_implementation.Type() != 'cpp' or
-                 sys.version_info < (2, 7),
-                 'explicit tests of the C++ implementation for PY27 and above')
+@unittest.skipIf(api_implementation.Type() != 'cpp',
+                 'explicit tests of the C++ implementation')
 @testing_refleaks.TestCase
 class OversizeProtosTest(unittest.TestCase):
 
@@ -2588,6 +2588,36 @@ class OversizeProtosTest(unittest.TestCase):
     q = self.proto_cls()
     q.ParseFromString(self.p_serialized)
     self.assertEqual(self.p.field.payload, q.field.payload)
+
+
+@unittest.skipIf(api_implementation.Type() != 'cpp',
+                 'explicit tests of the C++ implementation')
+class DeepNestedProtosTest(BaseTestCase):
+
+  def setUp(self):
+    # create a Tree whose depth exceeds the default allowed recursive depth
+    # when reading
+    root = more_messages_pb2.Node(value=1)
+    for x in range(199):
+        root = more_messages_pb2.Node(tree=more_messages_pb2.Tree(right=root))
+
+    self.p = more_messages_pb2.Tree(right=root)
+    self.p_serialized = self.p.SerializeToString()
+
+  def testAssertOversizeProto(self):
+    from google.protobuf.pyext._message import SetAllowOversizeProtos
+    SetAllowOversizeProtos(False)
+    q = more_messages_pb2.Tree()
+    try:
+      q.ParseFromString(self.p_serialized)
+    except message.DecodeError as e:
+      self.assertEqual(str(e), 'Error parsing message')
+
+  def testSucceedOversizeProto(self):
+    from google.protobuf.pyext._message import SetAllowOversizeProtos
+    SetAllowOversizeProtos(True)
+    q = more_messages_pb2.Tree()
+    q.ParseFromString(self.p_serialized)
 
 if __name__ == '__main__':
   unittest.main()

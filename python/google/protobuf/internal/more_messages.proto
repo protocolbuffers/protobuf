@@ -358,3 +358,15 @@ message LotsNestedMessage {
   message B254 {}
   message B255 {}
 }
+
+message Tree {
+  optional Node left = 1;
+  optional Node right = 2;
+}
+
+message Node {
+  oneof Child {
+    Tree tree = 1;
+    sint64 value = 2;
+  }
+}
