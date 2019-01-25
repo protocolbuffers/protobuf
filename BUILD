@@ -75,6 +75,7 @@ cc_library(
         "upb/pb/textprinter.c",
         "upb/pb/varint.c",
         "upb/pb/varint.int.h",
+        "upb/table.int.h",
     ],
     hdrs = [
         "upb/pb/decoder.h",
@@ -137,7 +138,6 @@ cc_binary(
         map_dep("@com_google_protobuf//:protoc_lib"),
     ],
 )
-
 
 # We strip the tests and remaining rules from google3 until the upb_proto_library()
 # and upb_proto_reflection_library() rules are fixed.

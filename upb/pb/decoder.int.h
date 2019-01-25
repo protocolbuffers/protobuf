@@ -70,7 +70,7 @@ typedef enum {
 
 #define OP_MAX OP_HALT
 
-UPB_INLINE opcode getop(uint32_t instr) { return instr & 0xff; }
+UPB_INLINE opcode getop(uint32_t instr) { return (opcode)(instr & 0xff); }
 
 struct upb_pbcodecache {
   upb_arena *arena;
