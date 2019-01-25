@@ -591,7 +591,8 @@ static void init_file_any(TSRMLS_D) {
   char* binary;
   int binary_len;
   hex_to_binary(generated_file, &binary, &binary_len);
-  internal_add_generated_file(binary, binary_len, generated_pool TSRMLS_CC);
+  internal_add_generated_file(binary, binary_len,
+                              generated_pool, true TSRMLS_CC);
   FREE(binary);
   is_inited_file_any = true;
 }
@@ -631,7 +632,8 @@ static void init_file_api(TSRMLS_D) {
   char* binary;
   int binary_len;
   hex_to_binary(generated_file, &binary, &binary_len);
-  internal_add_generated_file(binary, binary_len, generated_pool TSRMLS_CC);
+  internal_add_generated_file(binary, binary_len,
+                              generated_pool, true TSRMLS_CC);
   FREE(binary);
   is_inited_file_api = true;
 }
@@ -651,7 +653,8 @@ static void init_file_duration(TSRMLS_D) {
   char* binary;
   int binary_len;
   hex_to_binary(generated_file, &binary, &binary_len);
-  internal_add_generated_file(binary, binary_len, generated_pool TSRMLS_CC);
+  internal_add_generated_file(binary, binary_len,
+                              generated_pool, true TSRMLS_CC);
   FREE(binary);
   is_inited_file_duration = true;
 }
@@ -671,7 +674,8 @@ static void init_file_field_mask(TSRMLS_D) {
   char* binary;
   int binary_len;
   hex_to_binary(generated_file, &binary, &binary_len);
-  internal_add_generated_file(binary, binary_len, generated_pool TSRMLS_CC);
+  internal_add_generated_file(binary, binary_len,
+                              generated_pool, true TSRMLS_CC);
   FREE(binary);
   is_inited_file_field_mask = true;
 }
@@ -690,7 +694,8 @@ static void init_file_empty(TSRMLS_D) {
   char* binary;
   int binary_len;
   hex_to_binary(generated_file, &binary, &binary_len);
-  internal_add_generated_file(binary, binary_len, generated_pool TSRMLS_CC);
+  internal_add_generated_file(binary, binary_len,
+                              generated_pool, true TSRMLS_CC);
   FREE(binary);
   is_inited_file_empty = true;
 }
@@ -711,7 +716,8 @@ static void init_file_source_context(TSRMLS_D) {
   char* binary;
   int binary_len;
   hex_to_binary(generated_file, &binary, &binary_len);
-  internal_add_generated_file(binary, binary_len, generated_pool TSRMLS_CC);
+  internal_add_generated_file(binary, binary_len,
+                              generated_pool, true TSRMLS_CC);
   FREE(binary);
   is_inited_file_source_context = true;
 }
@@ -745,7 +751,8 @@ static void init_file_struct(TSRMLS_D) {
   char* binary;
   int binary_len;
   hex_to_binary(generated_file, &binary, &binary_len);
-  internal_add_generated_file(binary, binary_len, generated_pool TSRMLS_CC);
+  internal_add_generated_file(binary, binary_len,
+                              generated_pool, true TSRMLS_CC);
   FREE(binary);
   is_inited_file_struct = true;
 }
@@ -765,7 +772,8 @@ static void init_file_timestamp(TSRMLS_D) {
   char* binary;
   int binary_len;
   hex_to_binary(generated_file, &binary, &binary_len);
-  internal_add_generated_file(binary, binary_len, generated_pool TSRMLS_CC);
+  internal_add_generated_file(binary, binary_len,
+                              generated_pool, true TSRMLS_CC);
   FREE(binary);
   is_inited_file_timestamp = true;
 }
@@ -833,7 +841,8 @@ static void init_file_type(TSRMLS_D) {
   char* binary;
   int binary_len;
   hex_to_binary(generated_file, &binary, &binary_len);
-  internal_add_generated_file(binary, binary_len, generated_pool TSRMLS_CC);
+  internal_add_generated_file(binary, binary_len,
+                              generated_pool, true TSRMLS_CC);
   FREE(binary);
   is_inited_file_type = true;
 }
@@ -860,7 +869,8 @@ static void init_file_wrappers(TSRMLS_D) {
   char* binary;
   int binary_len;
   hex_to_binary(generated_file, &binary, &binary_len);
-  internal_add_generated_file(binary, binary_len, generated_pool TSRMLS_CC);
+  internal_add_generated_file(binary, binary_len,
+                              generated_pool, true TSRMLS_CC);
   FREE(binary);
   is_inited_file_wrappers = true;
 }
