@@ -81,7 +81,7 @@ class GeneratedClassTest extends TestBase
 
         // Set integer.
         $m->setOptionalUint32(MAX_UINT32);
-        $this->assertSame(-1, $m->getOptionalUint32());
+        $this->assertSame(MAX_UINT32, $m->getOptionalUint32());
         $m->setOptionalUint32(-1);
         $this->assertSame(-1, $m->getOptionalUint32());
         $m->setOptionalUint32(MIN_UINT32);
@@ -91,7 +91,7 @@ class GeneratedClassTest extends TestBase
         $m->setOptionalUint32(1.1);
         $this->assertSame(1, $m->getOptionalUint32());
         $m->setOptionalUint32(MAX_UINT32_FLOAT);
-        $this->assertSame(-1, $m->getOptionalUint32());
+        $this->assertSame(MAX_UINT32, $m->getOptionalUint32());
         $m->setOptionalUint32(-1.0);
         $this->assertSame(-1, $m->getOptionalUint32());
         $m->setOptionalUint32(MIN_UINT32_FLOAT);
@@ -103,7 +103,7 @@ class GeneratedClassTest extends TestBase
         $m->setOptionalUint32('3.1');
         $this->assertSame(3, $m->getOptionalUint32());
         $m->setOptionalUint32(MAX_UINT32_STRING);
-        $this->assertSame(-1, $m->getOptionalUint32());
+        $this->assertSame(MAX_UINT32, $m->getOptionalUint32());
         $m->setOptionalUint32('-1.0');
         $this->assertSame(-1, $m->getOptionalUint32());
         $m->setOptionalUint32(MIN_UINT32_STRING);
