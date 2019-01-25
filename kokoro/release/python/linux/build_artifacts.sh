@@ -7,10 +7,10 @@ pushd $(dirname $0)/../../../..
 
 export REPO_DIR=protobuf
 export BUILD_VERSION=`grep -i "version" python/google/protobuf/__init__.py | grep -o "'.*'" | tr -d "'"`
-if [ -z $KOKORO_JOB_NAME ] then
-  export BUILD_COMMIT=`echo "$KOKORO_JOB_NAME" | cut -d '/' -f 3`
-else
+if [ -z $KOKORO_JOB_NAME ]; then
   export BUILD_COMMIT=master
+else
+  export BUILD_COMMIT=`echo "$KOKORO_JOB_NAME" | cut -d '/' -f 3`
 fi
 export PLAT=x86_64
 export UNICODE_WIDTH=32
