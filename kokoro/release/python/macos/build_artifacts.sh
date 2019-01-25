@@ -7,11 +7,13 @@ pushd $(dirname $0)/../../../..
 
 export REPO_DIR=protobuf
 export BUILD_VERSION=`grep -i "version" python/google/protobuf/__init__.py | grep -o "'.*'" | tr -d "'"`
-export BUILD_COMMIT=master
 export PLAT=x86_64
 export UNICODE_WIDTH=32
 export MACOSX_DEPLOYMENT_TARGET=10.9
 export TRAVIS_OS_NAME="osx"
+if [ -z $BUILD_COMMIT ]; then
+  export BUILD_COMMIT=master
+fi
 
 rm -rf artifacts/
 rm -rf multibuild/
@@ -19,7 +21,7 @@ mkdir artifacts
 export ARTIFACT_DIR=$(pwd)/artifacts
 
 git clone https://github.com/matthew-brett/multibuild.git
-cp kokoro/release/python/linux/config.sh config.sh
+cp kokoro/release/python/macos/config.sh config.sh
 
 OLD_PATH=$PATH
 

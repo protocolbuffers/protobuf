@@ -11,6 +11,9 @@ export BUILD_COMMIT=master
 export PLAT=x86_64
 export UNICODE_WIDTH=32
 export MACOSX_DEPLOYMENT_TARGET=10.9
+if [ -z $BUILD_COMMIT ]; then
+  export BUILD_COMMIT=master
+fi
 
 rm -rf artifacts/
 rm -rf multibuild/
