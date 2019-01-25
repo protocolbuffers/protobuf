@@ -12,7 +12,7 @@
 #ifdef __cplusplus
 namespace upb {
 namespace pb {
-class TextPrinter;
+class TextPrinterPtr;
 }  /* namespace pb */
 }  /* namespace upb */
 #endif
