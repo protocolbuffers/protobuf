@@ -6,6 +6,8 @@ function pre_build {
     # Runs in the root directory of this repository.
     pushd protobuf
 
+    export CC=gcc
+    export CXX=g++
     # Build protoc
     ./autogen.sh
     ./configure
