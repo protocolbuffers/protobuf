@@ -44,7 +44,7 @@ build_cpp_tcmalloc() {
       PTHREAD_CFLAGS='-pthread -DGOOGLE_PROTOBUF_HEAP_CHECK_DRACONIAN' \
       check
   cd src
-  PPROF_PATH=/usr/bin/google-pprof HEAPCHECK=draconian ./protobuf-test
+  PPROF_PATH=/usr/bin/google-pprof HEAPCHECK=strict ./protobuf-test
 }
 
 build_cpp_distcheck() {
