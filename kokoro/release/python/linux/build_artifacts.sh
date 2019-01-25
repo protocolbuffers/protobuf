@@ -7,7 +7,11 @@ pushd $(dirname $0)/../../../..
 
 export REPO_DIR=protobuf
 export BUILD_VERSION=`grep -i "version" python/google/protobuf/__init__.py | grep -o "'.*'" | tr -d "'"`
-export BUILD_COMMIT=`git branch | grep \* | cut -d ' ' -f2`
+if [ -z $KOKORO_JOB_NAME ] then
+  export BUILD_COMMIT=`echo "$KOKORO_JOB_NAME" | cut -d '/' -f 3`
+else
+  export BUILD_COMMIT=master
+fi
 export PLAT=x86_64
 export UNICODE_WIDTH=32
 export MACOSX_DEPLOYMENT_TARGET=10.9
