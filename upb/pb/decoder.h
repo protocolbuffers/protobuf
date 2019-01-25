@@ -117,6 +117,7 @@ void upb_pbdecoder_reset(upb_pbdecoder *d);
  * decoded data to its output sink. */
 class upb::pb::DecoderPtr {
  public:
+  DecoderPtr() : ptr_(nullptr) {}
   DecoderPtr(upb_pbdecoder* ptr) : ptr_(ptr) {}
 
   upb_pbdecoder* ptr() { return ptr_; }

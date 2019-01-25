@@ -503,7 +503,7 @@ bool upb_bufsrc_putbuf(const char *buf, size_t len, upb_bytessink sink);
 
 namespace upb {
 template <class T> bool PutBuffer(const T& str, BytesSink sink) {
-  return upb_bufsrc_putbuf(str.c_str(), str.size(), sink.sink());
+  return upb_bufsrc_putbuf(str.data(), str.size(), sink.sink());
 }
 }
 
