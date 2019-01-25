@@ -1,13 +1,11 @@
 <?php
 
-require_once('generated/NoNamespaceEnum.php');
-require_once('generated/NoNamespaceMessage.php');
-require_once('test_base.php');
-require_once('test_util.php');
+namespace Google\Protobuf\Tests;
 
 use Foo\TestMessage;
+use ReflectionClass;
 
-class GeneratedPhpdocTest extends TestBase
+final class GeneratedPhpdocTest extends TestBase
 {
     public function testPhpDocForClass()
     {

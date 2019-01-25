@@ -19,7 +19,8 @@
   },
   "autoload-dev": {
     "psr-4": {
-      "": "tests/generated"
+      "": "tests/generated",
+      "Google\\Protobuf\\Tests\\": "tests"
     }
   },
   "scripts": {

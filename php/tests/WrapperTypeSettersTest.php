@@ -1,7 +1,6 @@
 <?php
 
-require_once('test_base.php');
-require_once('test_util.php');
+namespace Google\Protobuf\Tests;
 
 use Foo\TestWrapperSetters;
 use Google\Protobuf\BoolValue;
@@ -13,8 +12,9 @@ use Google\Protobuf\Int64Value;
 use Google\Protobuf\StringValue;
 use Google\Protobuf\UInt32Value;
 use Google\Protobuf\UInt64Value;
+use stdClass;
 
-class WrapperTypeSettersTest extends TestBase
+final class WrapperTypeSettersTest extends TestBase
 {
     /**
      * @dataProvider gettersAndSettersDataProvider

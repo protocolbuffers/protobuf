@@ -1,17 +1,21 @@
 <?php
 
-require_once('test_util.php');
+namespace Google\Protobuf\Tests;
 
+use Exception;
+use Google\Protobuf\Internal\MapField;
 use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\GPBType;
 use Foo\TestMessage;
 use Foo\TestMessage\Sub;
+use PHPUnit_Framework_Error;
+use PHPUnit_Framework_TestCase;
 
-class UndefinedTest extends PHPUnit_Framework_TestCase
+final class UndefinedTest extends PHPUnit_Framework_TestCase
 {
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testInt32AppendStringFail()
     {
@@ -20,7 +24,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testInt32SetStringFail()
     {
@@ -30,7 +34,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testInt32AppendMessageFail()
     {
@@ -39,7 +43,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testInt32SetMessageFail()
     {
@@ -49,7 +53,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testUint32AppendStringFail()
     {
@@ -58,7 +62,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testUint32SetStringFail()
     {
@@ -68,7 +72,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testUint32AppendMessageFail()
     {
@@ -77,7 +81,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testUint32SetMessageFail()
     {
@@ -87,7 +91,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testInt64AppendStringFail()
     {
@@ -96,7 +100,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testInt64SetStringFail()
     {
@@ -106,7 +110,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testInt64AppendMessageFail()
     {
@@ -115,7 +119,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testInt64SetMessageFail()
     {
@@ -125,7 +129,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testUint64AppendStringFail()
     {
@@ -134,7 +138,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testUint64SetStringFail()
     {
@@ -144,7 +148,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testUint64AppendMessageFail()
     {
@@ -153,7 +157,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testUint64SetMessageFail()
     {
@@ -163,7 +167,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testFloatAppendStringFail()
     {
@@ -172,7 +176,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testFloatSetStringFail()
     {
@@ -182,7 +186,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testFloatAppendMessageFail()
     {
@@ -191,7 +195,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testFloatSetMessageFail()
     {
@@ -201,7 +205,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testDoubleAppendStringFail()
     {
@@ -210,7 +214,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testDoubleSetStringFail()
     {
@@ -220,7 +224,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testDoubleAppendMessageFail()
     {
@@ -229,7 +233,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testDoubleSetMessageFail()
     {
@@ -239,7 +243,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testBoolAppendMessageFail()
     {
@@ -248,7 +252,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testBoolSetMessageFail()
     {
@@ -258,7 +262,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testStringAppendMessageFail()
     {
@@ -267,7 +271,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testStringSetMessageFail()
     {
@@ -277,7 +281,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testStringAppendInvalidUTF8Fail()
     {
@@ -287,7 +291,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testStringSetInvalidUTF8Fail()
     {
@@ -298,7 +302,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testMessageAppendIntFail()
     {
@@ -307,7 +311,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testMessageSetIntFail()
     {
@@ -317,7 +321,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testMessageAppendStringFail()
     {
@@ -326,7 +330,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testMessageSetStringFail()
     {
@@ -336,7 +340,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testMessageAppendOtherMessageFail()
     {
@@ -420,7 +424,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testInt32FieldInvalidTypeFail()
     {
@@ -429,7 +433,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testInt32FieldInvalidStringFail()
     {
@@ -438,7 +442,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testUint32FieldInvalidTypeFail()
     {
@@ -447,7 +451,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testUint32FieldInvalidStringFail()
     {
@@ -456,7 +460,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testInt64FieldInvalidTypeFail()
     {
@@ -465,7 +469,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testInt64FieldInvalidStringFail()
     {
@@ -474,7 +478,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testUint64FieldInvalidTypeFail()
     {
@@ -483,7 +487,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testUint64FieldInvalidStringFail()
     {
@@ -492,7 +496,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testFloatFieldInvalidTypeFail()
     {
@@ -501,7 +505,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testFloatFieldInvalidStringFail()
     {
@@ -510,7 +514,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testDoubleFieldInvalidTypeFail()
     {
@@ -519,7 +523,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testDoubleFieldInvalidStringFail()
     {
@@ -528,7 +532,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testBoolFieldInvalidStringFail()
     {
@@ -537,7 +541,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testStringFieldInvalidUTF8Fail()
     {
@@ -547,7 +551,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testMessageFieldWrongTypeFail()
     {
@@ -557,7 +561,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testMessageFieldWrongClassFail()
     {
@@ -566,7 +570,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testRepeatedFieldWrongTypeFail()
     {
@@ -576,7 +580,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testRepeatedFieldWrongObjectFail()
     {
@@ -585,7 +589,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testRepeatedFieldWrongRepeatedTypeFail()
     {
@@ -596,7 +600,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testRepeatedFieldWrongRepeatedMessageClassFail()
     {
@@ -608,7 +612,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testMapFieldWrongTypeFail()
     {
@@ -618,7 +622,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testMapFieldWrongObjectFail()
     {
@@ -627,7 +631,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testMapFieldWrongRepeatedTypeFail()
     {
@@ -638,7 +642,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testMapFieldWrongRepeatedMessageClassFail()
     {
@@ -661,7 +665,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testInt32SetStringKeyFail()
     {
@@ -670,7 +674,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testInt32SetStringValueFail()
     {
@@ -679,7 +683,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testInt32SetMessageKeyFail()
     {
@@ -688,7 +692,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testInt32SetMessageValueFail()
     {
@@ -697,7 +701,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testUint32SetStringKeyFail()
     {
@@ -706,7 +710,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testUint32SetStringValueFail()
     {
@@ -715,7 +719,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testUint32SetMessageKeyFail()
     {
@@ -724,7 +728,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testUint32SetMessageValueFail()
     {
@@ -733,7 +737,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testInt64SetStringKeyFail()
     {
@@ -742,7 +746,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testInt64SetStringValueFail()
     {
@@ -751,7 +755,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testInt64SetMessageKeyFail()
     {
@@ -760,7 +764,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testInt64SetMessageValueFail()
     {
@@ -769,7 +773,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testUint64SetStringKeyFail()
     {
@@ -778,7 +782,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testUint64SetStringValueFail()
     {
@@ -787,7 +791,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testUint64SetMessageKeyFail()
     {
@@ -796,7 +800,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testUint64SetMessageValueFail()
     {
@@ -805,7 +809,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testDoubleSetStringValueFail()
     {
@@ -814,7 +818,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testDoubleSetMessageValueFail()
     {
@@ -823,7 +827,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testBoolSetMessageKeyFail()
     {
@@ -832,7 +836,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testBoolSetMessageValueFail()
     {
@@ -841,7 +845,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testStringSetInvalidUTF8KeyFail()
     {
@@ -850,7 +854,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testStringSetInvalidUTF8ValueFail()
     {
@@ -859,7 +863,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testStringSetMessageKeyFail()
     {
@@ -868,7 +872,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testStringSetMessageValueFail()
     {
@@ -877,7 +881,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testMessageSetIntValueFail()
     {
@@ -887,7 +891,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testMessageSetStringValueFail()
     {
@@ -897,7 +901,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException PHPUnit_Framework_Error
+     * @expectedException Exception
      */
     public function testMessageSetOtherMessageValueFail()
     {

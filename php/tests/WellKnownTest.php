@@ -1,8 +1,8 @@
 <?php
 
-require_once('test_base.php');
-require_once('test_util.php');
+namespace Google\Protobuf\Tests;
 
+use DateTime;
 use Foo\TestMessage;
 use Google\Protobuf\Any;
 use Google\Protobuf\Api;
@@ -34,10 +34,12 @@ use Google\Protobuf\Type;
 use Google\Protobuf\UInt32Value;
 use Google\Protobuf\UInt64Value;
 use Google\Protobuf\Value;
+use ReflectionClass;
+use TestImportDescriptorProto;
 
 class NotMessage {}
 
-class WellKnownTest extends TestBase {
+final class WellKnownTest extends TestBase {
 
     public function testEmpty()
     {

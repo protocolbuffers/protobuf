@@ -1,8 +1,8 @@
 <?php
 
-require_once('test_base.php');
-require_once('test_util.php');
+namespace Google\Protobuf\Tests;
 
+use Google\Protobuf\Duration;
 use Google\Protobuf\RepeatedField;
 use Google\Protobuf\GPBType;
 use Foo\TestAny;
@@ -17,6 +17,7 @@ use Google\Protobuf\DoubleValue;
 use Google\Protobuf\FieldMask;
 use Google\Protobuf\FloatValue;
 use Google\Protobuf\Int32Value;
+use Google\Protobuf\Timestamp;
 use Google\Protobuf\UInt32Value;
 use Google\Protobuf\Int64Value;
 use Google\Protobuf\UInt64Value;
@@ -28,7 +29,7 @@ use Google\Protobuf\ListValue;
 use Google\Protobuf\Struct;
 use Google\Protobuf\GPBEmpty;
 
-class EncodeDecodeTest extends TestBase
+final class EncodeDecodeTest extends TestBase
 {
     public function testDecodeJsonSimple()
     {
@@ -839,7 +840,7 @@ class EncodeDecodeTest extends TestBase
 
     public function testDecodeDuration()
     {
-        $m = new Google\Protobuf\Duration();
+        $m = new Duration();
         $m->mergeFromJsonString("\"1234.5678s\"");
         $this->assertEquals(1234, $m->getSeconds());
         $this->assertEquals(567800000, $m->getNanos());
@@ -847,7 +848,7 @@ class EncodeDecodeTest extends TestBase
 
     public function testEncodeDuration()
     {
-        $m = new Google\Protobuf\Duration();
+        $m = new Duration();
         $m->setSeconds(1234);
         $m->setNanos(999999999);
         $this->assertEquals("\"1234.999999999s\"", $m->serializeToJsonString());
@@ -855,7 +856,7 @@ class EncodeDecodeTest extends TestBase
 
     public function testDecodeTimestamp()
     {
-        $m = new Google\Protobuf\Timestamp();
+        $m = new Timestamp();
         $m->mergeFromJsonString("\"2000-01-01T00:00:00.123456789Z\"");
         $this->assertEquals(946684800, $m->getSeconds());
         $this->assertEquals(123456789, $m->getNanos());
@@ -863,7 +864,7 @@ class EncodeDecodeTest extends TestBase
 
     public function testEncodeTimestamp()
     {
-        $m = new Google\Protobuf\Timestamp();
+        $m = new Timestamp();
         $m->setSeconds(946684800);
         $m->setNanos(123456789);
         $this->assertEquals("\"2000-01-01T00:00:00.123456789Z\"",
@@ -1094,7 +1095,7 @@ class EncodeDecodeTest extends TestBase
             $outer->serializeToJsonString());
 
         // Test a Timestamp message.
-        $packed = new Google\Protobuf\Timestamp();
+        $packed = new Timestamp();
         $packed->setSeconds(946684800);
         $packed->setNanos(123456789);
         $m = new Any();

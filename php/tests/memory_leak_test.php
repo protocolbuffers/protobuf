@@ -46,13 +46,14 @@ require_once('generated/Php/Test/TestNamespace/PBEmpty/NestedEnum.php');
 require_once('generated/Php/Test/TestNamespace/PBEmpty/NestedMessage.php');
 require_once('generated/Php/Test/TestNamespace/NestedEnum.php');
 require_once('generated/Php/Test/TestNamespace/NestedMessage.php');
-require_once('test_util.php');
+require_once('TestUtil.php');
 
 use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\GPBType;
 use Foo\TestAny;
 use Foo\TestMessage;
 use Foo\TestMessage\Sub;
+use Google\Protobuf\Tests\TestUtil;
 
 $from = new TestMessage();
 TestUtil::setTestMessage($from);

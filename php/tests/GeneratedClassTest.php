@@ -1,9 +1,6 @@
 <?php
 
-require_once('generated/NoNamespaceEnum.php');
-require_once('generated/NoNamespaceMessage.php');
-require_once('test_base.php');
-require_once('test_util.php');
+namespace Google\Protobuf\Tests;
 
 use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\MapField;
@@ -21,10 +18,14 @@ use Foo\TestMessage\NestedEnum;
 use Foo\TestReverseFieldOrder;
 use Foo\testLowerCaseMessage;
 use Foo\testLowerCaseEnum;
+use NoNamespaceEnum;
+use NoNamespaceMessage;
 use PBEmpty\PBEcho\TestEmptyPackage;
 use Php\Test\TestNamespace;
+use PrefixTestPrefix;
+use TestEmptyNamespace;
 
-class GeneratedClassTest extends TestBase
+final class GeneratedClassTest extends TestBase
 {
 
     #########################################################
@@ -719,7 +720,7 @@ class GeneratedClassTest extends TestBase
     public function testEnumWithoutNamespace()
     {
         $m = new TestMessage();
-        $m->setOptionalNoNamespaceEnum(NoNameSpaceEnum::VALUE_A);
+        $m->setOptionalNoNamespaceEnum(NoNamespaceEnum::VALUE_A);
         $repeatedNoNamespaceEnum = $m->getRepeatedNoNamespaceEnum();
         $repeatedNoNamespaceEnum[] = NoNameSpaceEnum::VALUE_A;
         $m->setRepeatedNoNamespaceEnum($repeatedNoNamespaceEnum);

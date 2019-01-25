@@ -1,7 +1,6 @@
 <?php
 
-require_once('test_base.php');
-require_once('test_util.php');
+namespace Google\Protobuf\Tests;
 
 use Foo\TestEnum;
 use Foo\TestMessage;
@@ -14,7 +13,7 @@ use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBWire;
 use Google\Protobuf\Internal\CodedOutputStream;
 
-class ImplementationTest extends TestBase
+final class PhpImplementationTest extends TestBase
 {
     public function testReadInt32()
     {

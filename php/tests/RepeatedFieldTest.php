@@ -1,13 +1,13 @@
 <?php
 
-require_once('test_util.php');
+namespace Google\Protobuf\Tests;
 
 use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\GPBType;
 use Foo\TestMessage;
 use Foo\TestMessage\Sub;
 
-class RepeatedFieldTest extends \PHPUnit\Framework\TestCase
+final class RepeatedFieldTest extends \PHPUnit\Framework\TestCase
 {
 
     #########################################################

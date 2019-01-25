@@ -1,10 +1,12 @@
 <?php
 
+namespace Google\Protobuf\Tests;
+
 use Foo\TestMessage;
 use Foo\TestEnum;
 use Foo\TestMessage\Sub;
 
-class TestBase extends \PHPUnit\Framework\TestCase
+abstract class TestBase extends \PHPUnit\Framework\TestCase
 {
 
     public function setFields(TestMessage $m)

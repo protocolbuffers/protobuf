@@ -1,13 +1,13 @@
 <?php
 
-require_once('test_util.php');
+namespace Google\Protobuf\Tests;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\MapField;
 use Foo\TestMessage;
 use Foo\TestMessage\Sub;
 
-class MapFieldTest extends \PHPUnit\Framework\TestCase {
+final class MapFieldTest extends \PHPUnit\Framework\TestCase {
 
     #########################################################
     # Test int32 field.

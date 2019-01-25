@@ -14,14 +14,14 @@ set -e
 phpize && ./configure CFLAGS='-g -O0' && make
 popd
 
-tests=( array_test.php encode_decode_test.php generated_class_test.php map_field_test.php well_known_test.php descriptors_test.php wrapper_type_setters_test.php)
+tests=(DescriptorsTest.php EncodeDecodeTest.php GeneratedClassTest.php MapFieldTest.php RepeatedFieldTest.php WellKnownTest.php WrapperTypeSettersTest.php)
 
 for t in "${tests[@]}"
 do
   echo "****************************"
   echo "* $t"
   echo "****************************"
-  php -dextension=../ext/google/protobuf/modules/protobuf.so `which phpunit` --bootstrap autoload.php $t
+  php -dextension=../ext/google/protobuf/modules/protobuf.so `which phpunit` --bootstrap bootstrap_phpunit.php $t
   echo ""
 done
 

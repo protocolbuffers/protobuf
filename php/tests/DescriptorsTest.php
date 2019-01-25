@@ -1,9 +1,6 @@
 <?php
 
-require_once('generated/Descriptors/TestDescriptorsEnum.php');
-require_once('generated/Descriptors/TestDescriptorsMessage.php');
-require_once('test_base.php');
-require_once('test_util.php');
+namespace Google\Protobuf\Tests;
 
 use Google\Protobuf\DescriptorPool;
 use Google\Protobuf\Internal\RepeatedField;
@@ -12,7 +9,7 @@ use Descriptors\TestDescriptorsEnum;
 use Descriptors\TestDescriptorsMessage;
 use Descriptors\TestDescriptorsMessage\Sub;
 
-class DescriptorsTest extends TestBase
+final class DescriptorsTest extends TestBase
 {
 
     // Redefine these here for compatibility with c extension

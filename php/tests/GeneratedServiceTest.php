@@ -1,7 +1,6 @@
 <?php
 
-require_once('test_base.php');
-require_once('test_util.php');
+namespace Google\Protobuf\Tests;
 
 use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\MapField;
@@ -9,8 +8,9 @@ use Google\Protobuf\Internal\GPBType;
 use Foo\Greeter;
 use Foo\HelloRequest;
 use Foo\HelloReply;
+use ReflectionClass;
 
-class GeneratedServiceTest extends TestBase
+final class GeneratedServiceTest extends TestBase
 {
     /**
      * @var \ReflectionClass
