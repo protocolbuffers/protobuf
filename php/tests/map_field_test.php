@@ -84,7 +84,7 @@ class MapFieldTest extends \PHPUnit\Framework\TestCase {
 
         // Test integer argument.
         $arr[MAX_UINT32] = MAX_UINT32;
-        $this->assertSame(-1, $arr[-1]);
+        $this->assertSame(MAX_UINT32, $arr[MAX_UINT32]);
         $this->assertEquals(1, count($arr));
         unset($arr[MAX_UINT32]);
         $this->assertEquals(0, count($arr));
@@ -100,7 +100,7 @@ class MapFieldTest extends \PHPUnit\Framework\TestCase {
 
         // Test float argument.
         $arr[MAX_UINT32_FLOAT] = MAX_UINT32_FLOAT;
-        $this->assertSame(-1, $arr[-1]);
+        $this->assertSame(MAX_UINT32, $arr[MAX_UINT32]);
         $this->assertEquals(1, count($arr));
         unset($arr[MAX_UINT32_FLOAT]);
         $this->assertEquals(0, count($arr));
@@ -119,7 +119,7 @@ class MapFieldTest extends \PHPUnit\Framework\TestCase {
 
         // Test string argument.
         $arr[MAX_UINT32_STRING] = MAX_UINT32_STRING;
-        $this->assertSame(-1, $arr[-1]);
+        $this->assertSame(MAX_UINT32, $arr[MAX_UINT32]);
         $this->assertEquals(1, count($arr));
         unset($arr[MAX_UINT32_STRING]);
         $this->assertEquals(0, count($arr));
