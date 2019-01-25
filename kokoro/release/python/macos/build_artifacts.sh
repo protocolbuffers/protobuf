@@ -23,7 +23,6 @@ mkdir artifacts
 export ARTIFACT_DIR=$(pwd)/artifacts
 
 git clone https://github.com/matthew-brett/multibuild.git
-cp kokoro/release/python/macos/config.sh config.sh
 
 OLD_PATH=$PATH
 
