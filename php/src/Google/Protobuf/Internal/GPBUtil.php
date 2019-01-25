@@ -121,15 +121,12 @@ class GPBUtil
     {
         if (is_numeric($var)) {
             if (PHP_INT_SIZE === 8) {
-                $var = ((int) $var) % pow(2, 32);
+                $var = ((int) $var) % 4294967296;
 
                 return;
             }
 
-            if (bccomp($var, 0x7FFFFFFF) > 0) {
-                $var = bcsub($var, "4294967296");
-            }
-            $var = (int) $var;
+            $var = bcmod($var, "4294967296");
 
             return;
         }
