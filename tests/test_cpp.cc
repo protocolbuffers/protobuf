@@ -15,6 +15,7 @@
 #include "upb/def.h"
 #include "upb/handlers.h"
 #include "upb/pb/decoder.h"
+#include "upb/pb/textprinter.h"
 #include "upb/upb.h"
 #include "upb_test.h"
 

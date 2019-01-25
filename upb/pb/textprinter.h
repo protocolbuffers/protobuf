@@ -42,9 +42,10 @@ class upb::pb::TextPrinterPtr {
 
   /* The given handlers must have come from NewHandlers().  It must outlive the
    * TextPrinter. */
-  static TextPrinterPtr *Create(Arena *arena, const upb::Handlers *handlers,
-                             BytesSink output) {
-    return TextPrinterPtr(upb_textprinter_create(arena, handlers, output));
+  static TextPrinterPtr Create(Arena *arena, upb::HandlersPtr *handlers,
+                               BytesSink output) {
+    return TextPrinterPtr(
+        upb_textprinter_create(arena->ptr(), handlers->ptr(), output.sink()));
   }
 
   void SetSingleLineMode(bool single_line) {

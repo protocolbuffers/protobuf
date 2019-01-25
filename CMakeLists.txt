@@ -93,6 +93,7 @@ add_library(upb_pb
   upb/pb/textprinter.c
   upb/pb/varint.c
   upb/pb/varint.int.h
+  upb/table.int.h
   upb/pb/decoder.h
   upb/pb/encoder.h
   upb/pb/textprinter.h)
