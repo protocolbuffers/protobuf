@@ -1,7 +1,7 @@
 #!/bin/bash
 
 set -ex
-CXXFLAGS_COMMON="-DNDEBUG -mmacosx-version-min=10.9"
+CXXFLAGS_COMMON="-std=c++14 -DNDEBUG -mmacosx-version-min=10.9"
 
 cd github/protobuf
 ./autogen.sh
