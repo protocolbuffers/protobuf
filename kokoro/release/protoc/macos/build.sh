@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -x
+set -ex
 CXXFLAGS_COMMON="-DNDEBUG -mmacosx-version-min=10.9"
 
 cd github/protobuf
