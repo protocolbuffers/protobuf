@@ -652,6 +652,10 @@ class upb::MessageDefPtr {
   const upb_msgdef* ptr_;
 };
 
+inline upb::MessageDefPtr upb::FieldDefPtr::message_subdef() const {
+  return MessageDefPtr(upb_fielddef_msgsubdef(ptr_));
+}
+
 #endif  /* __cplusplus */
 
 /* upb_enumdef ****************************************************************/
@@ -744,6 +748,10 @@ class upb::EnumDefPtr {
  private:
   const upb_enumdef *ptr_;
 };
+
+inline upb::EnumDefPtr upb::FieldDefPtr::enum_subdef() const {
+  return EnumDefPtr(upb_fielddef_enumsubdef(ptr_));
+}
 
 #endif  /* __cplusplus */
 
