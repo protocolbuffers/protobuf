@@ -893,6 +893,26 @@ void TestHandlerDataDestruction() {
   ASSERT(x == 0);
 }
 
+void TestIteration() {
+  upb::SymbolTable symtab;
+  upb::MessageDefPtr md(upb_test_TestMessage_getmsgdef(symtab.ptr()));
+
+  // Test range-based for on both fields and oneofs (with the iterator adaptor).
+  int field_count = 0;
+  for (auto field : md.fields()) {
+    UPB_UNUSED(field);
+    field_count++;
+  }
+  ASSERT(field_count == md.field_count());
+
+  int oneof_count = 0;
+  for (auto oneof : md.oneofs()) {
+    UPB_UNUSED(oneof);
+    oneof_count++;
+  }
+  ASSERT(oneof_count == md.oneof_count());
+}
+
 extern "C" {
 
 int run_tests(int argc, char *argv[]) {

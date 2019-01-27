@@ -745,6 +745,11 @@ void upb_msg_field_iter_setdone(upb_msg_field_iter *iter) {
   upb_inttable_iter_setdone(iter);
 }
 
+bool upb_msg_field_iter_isequal(const upb_msg_field_iter * iter1,
+                                const upb_msg_field_iter * iter2) {
+  return upb_inttable_iter_isequal(iter1, iter2);
+}
+
 void upb_msg_oneof_begin(upb_msg_oneof_iter *iter, const upb_msgdef *m) {
   upb_strtable_begin(iter, &m->ntof);
   /* We need to skip past any initial fields. */
@@ -772,6 +777,11 @@ const upb_oneofdef *upb_msg_iter_oneof(const upb_msg_oneof_iter *iter) {
 
 void upb_msg_oneof_iter_setdone(upb_msg_oneof_iter *iter) {
   upb_strtable_iter_setdone(iter);
+}
+
+bool upb_msg_oneof_iter_isequal(const upb_msg_oneof_iter *iter1,
+                                const upb_msg_oneof_iter *iter2) {
+  return upb_strtable_iter_isequal(iter1, iter2);
 }
 
 /* upb_oneofdef ***************************************************************/
