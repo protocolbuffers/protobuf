@@ -948,6 +948,7 @@ int run_tests(int argc, char *argv[]) {
   TestMismatchedTypes();
 
   TestHandlerDataDestruction();
+  TestIteration();
 
   return 0;
 }
