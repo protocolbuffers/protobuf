@@ -103,7 +103,6 @@ bool upb_fielddef_packed(const upb_fielddef *f);
 size_t upb_fielddef_getjsonname(const upb_fielddef *f, char *buf, size_t len);
 const upb_msgdef *upb_fielddef_containingtype(const upb_fielddef *f);
 const upb_oneofdef *upb_fielddef_containingoneof(const upb_fielddef *f);
-upb_msgdef *upb_fielddef_containingtype_mutable(upb_fielddef *f);
 uint32_t upb_fielddef_index(const upb_fielddef *f);
 bool upb_fielddef_issubmsg(const upb_fielddef *f);
 bool upb_fielddef_isstring(const upb_fielddef *f);
@@ -376,6 +375,10 @@ class upb::OneofDefPtr {
  private:
   const upb_oneofdef *ptr_;
 };
+
+inline upb::OneofDefPtr upb::FieldDefPtr::containing_oneof() const {
+  return OneofDefPtr(upb_fielddef_containingoneof(ptr_));
+}
 
 #endif  /* __cplusplus */
 
@@ -654,6 +657,14 @@ class upb::MessageDefPtr {
 
 inline upb::MessageDefPtr upb::FieldDefPtr::message_subdef() const {
   return MessageDefPtr(upb_fielddef_msgsubdef(ptr_));
+}
+
+inline upb::MessageDefPtr upb::FieldDefPtr::containing_type() const {
+  return MessageDefPtr(upb_fielddef_containingtype(ptr_));
+}
+
+inline upb::MessageDefPtr upb::OneofDefPtr::containing_type() const {
+  return MessageDefPtr(upb_oneofdef_containingtype(ptr_));
 }
 
 #endif  /* __cplusplus */
