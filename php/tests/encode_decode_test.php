@@ -1135,4 +1135,17 @@ class EncodeDecodeTest extends TestBase
         $this->assertEquals("", $m->serializeToString());
     }
 
+    public function testJsonDecodeMapWithDefaultValueKey()
+    {
+        $m = new TestMessage();
+        $m->getMapInt32Int32()[0] = 0;
+        $this->assertSame("{\"mapInt32Int32\":{\"0\":0}}",
+                          $m->serializeToJsonString());
+
+        $m = new TestMessage();
+        $m->getMapStringString()[""] = "";
+        $this->assertSame("{\"mapStringString\":{\"\":\"\"}}",
+                          $m->serializeToJsonString());
+    }
+
 }
