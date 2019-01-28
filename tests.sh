@@ -482,8 +482,7 @@ build_php5.6_mac() {
   export PATH="$PHP_FOLDER/bin:$PATH"
 
   # Install phpunit
-  curl https://phar.phpunit.de/phpunit-5.6.10.phar -L -o phpunit.phar
-  chmod +x phpunit.phar
+  curl https://phar.phpunit.de/phpunit-5.6.8.phar -L -o phpunit.phar chmod +x phpunit.phar
   sudo mv phpunit.phar /usr/local/bin/phpunit
 
   # Install valgrind
