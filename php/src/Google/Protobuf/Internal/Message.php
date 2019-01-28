@@ -832,6 +832,9 @@ class Message
                 if (is_null($value)) {
                     return $this->defaultValue($field);
                 }
+                if (is_numeric($value)) {
+                    return strval($value);
+                }
                 if (!is_string($value)) {
                     throw new GPBDecodeException(
                         "String field only accepts string value");
