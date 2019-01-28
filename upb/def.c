@@ -4,7 +4,6 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
-#include "upb/structdefs.int.h"
 #include "upb/handlers.h"
 
 typedef struct {
@@ -663,6 +662,8 @@ static void freefield(upb_refcounted *r) {
   upb_fielddef_uninit_default(f);
   if (f->subdef_is_symbolic)
     upb_gfree(f->sub.name);
+  if (f->msg_is_symbolic)
+    upb_gfree(f->msg.name);
   upb_def_uninit(upb_fielddef_upcast_mutable(f));
   upb_gfree(f);
 }
@@ -1020,7 +1021,7 @@ bool upb_fielddef_setnumber(upb_fielddef *f, uint32_t number, upb_status *s) {
         s, "cannot change field number after adding to a message");
     return false;
   }
-  if (number == 0 || number > UPB_MAX_FIELDNUMBER) {
+  if (number == 0) {
     upb_status_seterrf(s, "invalid field number (%u)", number);
     return false;
   }

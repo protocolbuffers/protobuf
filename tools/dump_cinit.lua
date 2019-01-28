@@ -432,7 +432,6 @@ local function dump_defs_c(filedef, append)
   -- Emit forward declarations.
   emit_file_warning(filedef, append)
   append('#include "upb/def.h"\n')
-  append('#include "upb/structdefs.int.h"\n\n')
   append("static const upb_msgdef %s;\n", linktab:cdecl(upb.DEF_MSG))
   append("static const upb_fielddef %s;\n", linktab:cdecl(upb.DEF_FIELD))
   if not linktab:empty(upb.DEF_ENUM) then

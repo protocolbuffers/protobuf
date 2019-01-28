@@ -72,7 +72,6 @@ add_library(upb
   upb/port_undef.inc
   upb/refcounted.c
   upb/sink.c
-  upb/structdefs.int.h
   upb/structs.int.h
   upb/table.c
   upb/table.int.h

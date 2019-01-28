@@ -118,9 +118,24 @@ class upb::Def {
 
  private:
   UPB_DISALLOW_POD_OPS(Def, upb::Def)
+#else
+struct upb_def {
+  upb_refcounted base;
+
+  const char *fullname;
+  const upb_filedef* file;
+  char type;  /* A upb_deftype_t (char to save space) */
+
+  /* Used as a flag during the def's mutable stage.  Must be false unless
+   * it is currently being used by a function on the stack.  This allows
+   * us to easily determine which defs were passed into the function's
+   * current invocation. */
+  bool came_from_user;
+#endif
 };
 
-#endif  /* __cplusplus */
+#define UPB_DEF_INIT(name, type, vtbl, refs, ref2s) \
+    { UPB_REFCOUNT_INIT(vtbl, refs, ref2s), name, NULL, type, false }
 
 UPB_BEGIN_EXTERN_C
 
@@ -582,11 +597,56 @@ class upb::FieldDef {
 
  private:
   UPB_DISALLOW_POD_OPS(FieldDef, upb::FieldDef)
+#else
+struct upb_fielddef {
+  upb_def base;
+
+  union {
+    int64_t sint;
+    uint64_t uint;
+    double dbl;
+    float flt;
+    void *bytes;
+  } defaultval;
+  union {
+    const upb_msgdef *def;  /* If !msg_is_symbolic. */
+    char *name;             /* If msg_is_symbolic. */
+  } msg;
+  union {
+    const upb_def *def;  /* If !subdef_is_symbolic. */
+    char *name;          /* If subdef_is_symbolic. */
+  } sub;  /* The msgdef or enumdef for this field, if upb_hassubdef(f). */
+  bool subdef_is_symbolic;
+  bool msg_is_symbolic;
+  const upb_oneofdef *oneof;
+  bool default_is_string;
+  bool type_is_set_;     /* False until type is explicitly set. */
+  bool is_extension_;
+  bool lazy_;
+  bool packed_;
+  upb_intfmt_t intfmt;
+  bool tagdelim;
+  upb_fieldtype_t type_;
+  upb_label_t label_;
+  uint32_t number_;
+  uint32_t selector_base;  /* Used to index into a upb::Handlers table. */
+  uint32_t index_;
+# endif  /* defined(__cplusplus) */
 };
 
-# endif  /* defined(__cplusplus) */
-
 UPB_BEGIN_EXTERN_C
+
+extern const struct upb_refcounted_vtbl upb_fielddef_vtbl;
+
+#define UPB_FIELDDEF_INIT(label, type, intfmt, tagdelim, is_extension, lazy,   \
+                          packed, name, num, msgdef, subdef, selector_base,    \
+                          index, defaultval, refs, ref2s)                      \
+  {                                                                            \
+    UPB_DEF_INIT(name, UPB_DEF_FIELD, &upb_fielddef_vtbl, refs, ref2s),        \
+        defaultval, {msgdef}, {subdef}, NULL, false, false,                    \
+        type == UPB_TYPE_STRING || type == UPB_TYPE_BYTES, true, is_extension, \
+        lazy, packed, intfmt, tagdelim, type, label, num, selector_base, index \
+  }
 
 /* Native C API. */
 upb_fielddef *upb_fielddef_new(const void *owner);
@@ -937,11 +997,44 @@ class upb::MessageDef {
 
  private:
   UPB_DISALLOW_POD_OPS(MessageDef, upb::MessageDef)
+#else
+struct upb_msgdef {
+  upb_def base;
+
+  size_t selector_count;
+  uint32_t submsg_field_count;
+
+  /* Tables for looking up fields by number and name. */
+  upb_inttable itof;  /* int to field */
+  upb_strtable ntof;  /* name to field/oneof */
+
+  /* Is this a map-entry message? */
+  bool map_entry;
+
+  /* Whether this message has proto2 or proto3 semantics. */
+  upb_syntax_t syntax;
+
+  /* Type of well known type message. UPB_WELLKNOWN_UNSPECIFIED for
+   * non-well-known message. */
+  upb_wellknowntype_t well_known_type;
+
+  /* TODO(haberman): proper extension ranges (there can be multiple). */
+#endif  /* __cplusplus */
 };
 
-#endif  /* __cplusplus */
-
 UPB_BEGIN_EXTERN_C
+
+extern const struct upb_refcounted_vtbl upb_msgdef_vtbl;
+
+/* TODO: also support static initialization of the oneofs table. This will be
+ * needed if we compile in descriptors that contain oneofs. */
+#define UPB_MSGDEF_INIT(name, selector_count, submsg_field_count, itof, ntof, \
+                        map_entry, syntax, well_known_type, refs, ref2s)      \
+  {                                                                           \
+    UPB_DEF_INIT(name, UPB_DEF_MSG, &upb_fielddef_vtbl, refs, ref2s),         \
+        selector_count, submsg_field_count, itof, ntof, map_entry, syntax,    \
+        well_known_type                                                       \
+  }
 
 /* Returns NULL if memory allocation failed. */
 upb_msgdef *upb_msgdef_new(const void *owner);
@@ -1121,11 +1214,23 @@ class upb::EnumDef {
 
  private:
   UPB_DISALLOW_POD_OPS(EnumDef, upb::EnumDef)
+#else
+struct upb_enumdef {
+  upb_def base;
+
+  upb_strtable ntoi;
+  upb_inttable iton;
+  int32_t defaultval;
+#endif  /* __cplusplus */
 };
 
-#endif  /* __cplusplus */
-
 UPB_BEGIN_EXTERN_C
+
+extern const struct upb_refcounted_vtbl upb_enumdef_vtbl;
+
+#define UPB_ENUMDEF_INIT(name, ntoi, iton, defaultval, refs, ref2s) \
+  { UPB_DEF_INIT(name, UPB_DEF_ENUM, &upb_enumdef_vtbl, refs, ref2s), ntoi,    \
+    iton, defaultval }
 
 /* Native C API. */
 upb_enumdef *upb_enumdef_new(const void *owner);
@@ -1275,11 +1380,24 @@ class upb::OneofDef {
 
  private:
   UPB_DISALLOW_POD_OPS(OneofDef, upb::OneofDef)
+#else
+struct upb_oneofdef {
+  upb_refcounted base;
+
+  uint32_t index;  /* Index within oneofs. */
+  const char *name;
+  upb_strtable ntof;
+  upb_inttable itof;
+  const upb_msgdef *parent;
+#endif  /* __cplusplus */
 };
 
-#endif  /* __cplusplus */
-
 UPB_BEGIN_EXTERN_C
+
+extern const struct upb_refcounted_vtbl upb_oneofdef_vtbl;
+
+#define UPB_ONEOFDEF_INIT(name, ntof, itof, refs, ref2s) \
+  { UPB_REFCOUNT_INIT(&upb_oneofdef_vtbl, refs, ref2s), 0, name, ntof, itof }
 
 /* Native C API. */
 upb_oneofdef *upb_oneofdef_new(const void *owner);
@@ -1399,11 +1517,24 @@ class upb::FileDef {
 
  private:
   UPB_DISALLOW_POD_OPS(FileDef, upb::FileDef)
+#else
+struct upb_filedef {
+  upb_refcounted base;
+
+  const char *name;
+  const char *package;
+  const char *phpprefix;
+  const char *phpnamespace;
+  upb_syntax_t syntax;
+
+  upb_inttable defs;
+  upb_inttable deps;
+#endif
 };
 
-#endif
-
 UPB_BEGIN_EXTERN_C
+
+extern const struct upb_refcounted_vtbl upb_filedef_vtbl;
 
 upb_filedef *upb_filedef_new(const void *owner);
 
@@ -1534,9 +1665,13 @@ class upb::SymbolTable {
 
  private:
   UPB_DISALLOW_POD_OPS(SymbolTable, upb::SymbolTable)
-};
+#else
+struct upb_symtab {
+  upb_refcounted base;
 
+  upb_strtable symtab;
 #endif  /* __cplusplus */
+};
 
 UPB_BEGIN_EXTERN_C
 

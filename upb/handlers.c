@@ -4,7 +4,6 @@
 */
 
 #include "upb/handlers.h"
-#include "upb/structdefs.int.h"
 
 #include <string.h>
 

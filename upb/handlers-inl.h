@@ -7,6 +7,8 @@
 #define UPB_HANDLERS_INL_H_
 
 #include <limits.h>
+#include "upb/upb.h"
+#include "upb/handlers.h"
 
 /* C inline methods. */
 

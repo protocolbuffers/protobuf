@@ -5,6 +5,12 @@
 #ifndef UPB_MSGFACTORY_H_
 #define UPB_MSGFACTORY_H_
 
+#ifdef __cplusplus
+namespace upb {
+class MessageFactory;
+}
+#endif
+
 UPB_DECLARE_TYPE(upb::MessageFactory, upb_msgfactory)
 
 /** upb_msgfactory ************************************************************/
