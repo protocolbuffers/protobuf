@@ -321,12 +321,19 @@ static void *file_startenum(void *closure, const void *hd) {
 
 static void *file_startext(void *closure, const void *hd) {
   upb_descreader *r = closure;
-  bool ok;
   r->f = upb_fielddef_new(r);
-  ok = upb_filedef_addext(r->file, r->f, r, NULL);
   UPB_UNUSED(hd);
-  UPB_ASSERT(ok);
   return r;
+}
+
+static bool file_endext(void *closure, const void *hd) {
+  /* The current symtab code can't handle extensions, so we just discard
+   * them for now. */
+  upb_descreader *r = closure;
+  upb_fielddef_unref(r->f, r);
+  UPB_UNUSED(hd);
+  r->f = NULL;
+  return true;
 }
 
 static size_t file_ondep(void *closure, const void *hd, const char *buf,
@@ -702,11 +709,19 @@ static void *msg_startmsg(void *closure, const void *hd) {
 
 static void *msg_startext(void *closure, const void *hd) {
   upb_descreader *r = closure;
-  upb_fielddef *f = upb_fielddef_new(&f);
-  bool ok = upb_filedef_addext(r->file, f, &f, NULL);
+  r->f = upb_fielddef_new(r);
   UPB_UNUSED(hd);
-  UPB_ASSERT(ok);
   return r;
+}
+
+static bool msg_endext(void *closure, const void *hd) {
+  /* The current symtab code can't handle extensions, so we just discard
+   * them for now. */
+  upb_descreader *r = closure;
+  upb_fielddef_unref(r->f, r);
+  UPB_UNUSED(hd);
+  r->f = NULL;
+  return true;
 }
 
 static void *msg_startfield(void *closure, const void *hd) {
@@ -763,6 +778,8 @@ static void reghandlers(const void *closure, upb_handlers *h) {
     upb_handlers_setstring(h, F(DescriptorProto, name), &msg_name, NULL);
     upb_handlers_setstartsubmsg(h, F(DescriptorProto, extension), &msg_startext,
                                 NULL);
+    upb_handlers_setendsubmsg(h, F(DescriptorProto, extension), &msg_endext,
+                              NULL);
     upb_handlers_setstartsubmsg(h, F(DescriptorProto, nested_type),
                                 &msg_startmsg, NULL);
     upb_handlers_setstartsubmsg(h, F(DescriptorProto, field),
@@ -786,6 +803,8 @@ static void reghandlers(const void *closure, upb_handlers *h) {
                                 &file_startenum, NULL);
     upb_handlers_setstartsubmsg(h, F(FileDescriptorProto, extension),
                                 &file_startext, NULL);
+    upb_handlers_setendsubmsg(h, F(FileDescriptorProto, extension),
+                              &file_endext, NULL);
     upb_handlers_setstring(h, F(FileDescriptorProto, dependency),
                            &file_ondep, NULL);
   } else if (upbdefs_google_protobuf_EnumValueDescriptorProto_is(m)) {
