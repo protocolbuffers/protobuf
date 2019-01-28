@@ -1171,7 +1171,7 @@ static void put_optional_value(const void* memory, int len,
 #define T(upbtypeconst, upbtype, ctype, default_value)                         \
   case upbtypeconst: {                                                         \
     ctype value = DEREF(memory, 0, ctype);                                     \
-    if (value != default_value) {                                              \
+    if (is_json || value != default_value) {                                   \
       upb_selector_t sel = getsel(f, upb_handlers_getprimitivehandlertype(f)); \
       upb_sink_put##upbtype(sink, sel, value);                                 \
     }                                                                          \
@@ -1189,8 +1189,7 @@ static void put_optional_value(const void* memory, int len,
 #undef T
     case UPB_TYPE_STRING:
     case UPB_TYPE_BYTES:
-      putrawstr(memory, len, f, sink,
-                is_json && is_wrapper_msg(upb_fielddef_containingtype(f)));
+      putrawstr(memory, len, f, sink, is_json);
       break;
     case UPB_TYPE_MESSAGE: {
 #if PHP_MAJOR_VERSION < 7
