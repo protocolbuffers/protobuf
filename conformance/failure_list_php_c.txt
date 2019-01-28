@@ -23,7 +23,6 @@ Required.DurationProtoInputTooLarge.JsonOutput
 Required.DurationProtoInputTooSmall.JsonOutput
 Required.TimestampProtoInputTooLarge.JsonOutput
 Required.TimestampProtoInputTooSmall.JsonOutput
-Required.Proto3.JsonInput.BoolMapField.JsonOutput
 Required.Proto3.JsonInput.DoubleFieldMaxNegativeValue.JsonOutput
 Required.Proto3.JsonInput.DoubleFieldMaxNegativeValue.ProtobufOutput
 Required.Proto3.JsonInput.DoubleFieldMinPositiveValue.JsonOutput
