@@ -142,6 +142,7 @@ cc_library(
     ],
     hdrs = ["upbc/generator.h"],
     deps = [
+        map_dep("@absl//absl/base:core_headers"),
         map_dep("@absl//absl/strings"),
         map_dep("@com_google_protobuf//:protobuf"),
         map_dep("@com_google_protobuf//:protoc_lib"),

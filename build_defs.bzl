@@ -210,6 +210,7 @@ upb_amalgamation = rule(
 is_bazel = not hasattr(native, "genmpm")
 
 google3_dep_map = {
+    "@absl//absl/base:core_headers": "//third_party/absl/base:core_headers",
     "@absl//absl/strings": "//third_party/absl/strings",
     "@com_google_protobuf//:protoc": "//third_party/protobuf:protoc",
     "@com_google_protobuf//:protobuf": "//third_party/protobuf:protobuf",
