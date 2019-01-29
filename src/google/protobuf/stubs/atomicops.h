@@ -191,7 +191,8 @@ GOOGLE_PROTOBUF_ATOMICOPS_ERROR
 
 // AIX
 #elif defined(GOOGLE_PROTOBUF_OS_AIX)
-#include <google/protobuf/stubs/atomicops_internals_aix.h>
+//#include <google/protobuf/stubs/atomicops_internals_aix.h>
+#include  <google/protobuf/stubs/atomicops_internals_ppc_gcc.h>
 
 // Apple.
 #elif defined(GOOGLE_PROTOBUF_OS_APPLE)
