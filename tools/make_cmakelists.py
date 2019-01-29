@@ -123,8 +123,14 @@ class BuildFileFunctions(object):
   def genrule(self, **kwargs):
     pass
 
-  def glob(*args):
+  def glob(self, *args):
     return []
+
+  def map_dep(self, dep):
+    return dep
+
+  def licenses(self, *args):
+    pass
 
 
 class WorkspaceFileFunctions(object):

@@ -1,4 +1,3 @@
-
 _shell_find_runfiles = """
   # --- begin runfiles.bash initialization ---
   # Copy-pasted from Bazel's Bash runfiles library (tools/bash/runfiles/runfiles.bash).
@@ -100,7 +99,7 @@ BASE=$(dirname $(rlocation upb/upb_c.so))
 export LUA_CPATH="$BASE/?.so"
 export LUA_PATH="$BASE/?.lua"
 $(rlocation lua/lua) $(rlocation upb/tools/upbc.lua) "$@"
-"""
+""",
     )
 
     rule(
@@ -109,10 +108,10 @@ $(rlocation lua/lua) $(rlocation upb/tools/upbc.lua) "$@"
         data = ["@lua//:lua", "@bazel_tools//tools/bash/runfiles", luamain] + luadeps,
     )
 
-def lua_binary(name, luamain, luadeps=[]):
+def lua_binary(name, luamain, luadeps = []):
     _lua_binary_or_test(name, luamain, luadeps, native.sh_binary)
 
-def lua_test(name, luamain, luadeps=[]):
+def lua_test(name, luamain, luadeps = []):
     _lua_binary_or_test(name, luamain, luadeps, native.sh_test)
 
 def generated_file_staleness_test(name, outs, generated_pattern):
@@ -163,9 +162,9 @@ def generated_file_staleness_test(name, outs, generated_pattern):
 
 SrcList = provider(
     fields = {
-        'srcs' : 'list of srcs',
-        'hdrs' : 'list of hdrs',
-    }
+        "srcs": "list of srcs",
+        "hdrs": "list of hdrs",
+    },
 )
 
 def _file_list_aspect_impl(target, ctx):
@@ -205,8 +204,24 @@ upb_amalgamation = rule(
         ),
         "libs": attr.label_list(aspects = [_file_list_aspect]),
         "outs": attr.output_list(),
-    }
+    },
 )
+
+is_bazel = not hasattr(native, "genmpm")
+
+google3_dep_map = {
+    "@absl//absl/base:core_headers": "//third_party/absl/base:core_headers",
+    "@absl//absl/strings": "//third_party/absl/strings",
+    "@com_google_protobuf//:protoc": "//third_party/protobuf:protoc",
+    "@com_google_protobuf//:protobuf": "//third_party/protobuf:protobuf",
+    "@com_google_protobuf//:protoc_lib": "//third_party/protobuf:libprotoc",
+}
+
+def map_dep(dep):
+    if is_bazel:
+        return dep
+    else:
+        return google3_dep_map[dep]
 
 # upb_proto_library() rule
 
@@ -223,7 +238,7 @@ def _upb_proto_library_srcs_impl(ctx):
     outs = []
     include_dirs = {}
     for dep in ctx.attr.deps:
-        if hasattr(dep, 'proto'):
+        if hasattr(dep, "proto"):
             for src in dep.proto.transitive_sources:
                 sources.append(src)
                 include_dirs[_remove_suffix(src.path, _remove_up(src.short_path) + "." + src.extension)] = True
@@ -273,3 +288,7 @@ def upb_proto_library(name, deps, upbc):
         deps = [":upb"],
         copts = ["-Ibazel-out/k8-fastbuild/bin"],
     )
+
+def licenses(*args):
+    # No-op (for Google-internal usage).
+    pass

@@ -30,16 +30,20 @@ bool MessageLayout::HasHasbit(const protobuf::FieldDescriptor* field) {
 
 MessageLayout::SizeAndAlign MessageLayout::SizeOf(
     const protobuf::FieldDescriptor* field) {
-  if (field->label() == protobuf::FieldDescriptor::LABEL_REPEATED ||
-      field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
-    return {{4, 8}, {4, 8}};
+  if (field->is_repeated()) {
+    return {{4, 8}, {4, 8}};  // Pointer to array object.
+  } else {
+    return SizeOfUnwrapped(field);
   }
+}
 
+MessageLayout::SizeAndAlign MessageLayout::SizeOfUnwrapped(
+    const protobuf::FieldDescriptor* field) {
   switch (field->cpp_type()) {
+    case protobuf::FieldDescriptor::CPPTYPE_MESSAGE:
+      return {{4, 8}, {4, 8}};  // Pointer to message.
     case protobuf::FieldDescriptor::CPPTYPE_STRING:
-      // upb_stringview
-      // return {{8, 16}, {4, 8}};
-      return {{8, 16}, {8, 16}};
+      return {{8, 16}, {4, 8}};  // upb_stringview
     case protobuf::FieldDescriptor::CPPTYPE_BOOL:
       return {{1, 1}, {1, 1}};
     case protobuf::FieldDescriptor::CPPTYPE_FLOAT:

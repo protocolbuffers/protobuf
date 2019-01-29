@@ -72,7 +72,6 @@ add_library(upb
   upb/port_undef.inc
   upb/refcounted.c
   upb/sink.c
-  upb/structdefs.int.h
   upb/structs.int.h
   upb/table.c
   upb/table.int.h
@@ -81,6 +80,7 @@ add_library(upb
   upb/decode.h
   upb/def.h
   upb/encode.h
+  upb/generated_util.h
   upb/handlers.h
   upb/msg.h
   upb/msgfactory.h
@@ -103,6 +103,7 @@ add_library(upb_pb
   upb/pb/textprinter.c
   upb/pb/varint.c
   upb/pb/varint.int.h
+  upb/table.int.h
   upb/pb/decoder.h
   upb/pb/encoder.h
   upb/pb/glue.h

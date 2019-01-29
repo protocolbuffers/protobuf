@@ -7,8 +7,6 @@
  * regenerated. */
 
 #include "upb/def.h"
-#include "upb/structdefs.int.h"
-
 static const upb_msgdef msgs[8];
 static const upb_fielddef fields[37];
 static const upb_enumdef enums[1];

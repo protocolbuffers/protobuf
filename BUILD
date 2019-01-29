@@ -1,14 +1,31 @@
 load(
     ":build_defs.bzl",
+    "licenses",  # copybara:strip_for_google3
     "lua_cclibrary",
     "lua_library",
     "lua_binary",
     "lua_test",
     "generated_file_staleness_test",
     "make_shell_script",
+    "map_dep",
     "upb_amalgamation",
     "upb_proto_library",
 )
+
+licenses(["notice"])  # BSD (Google-authored w/ possible external contributions)
+
+exports_files([
+    "LICENSE",
+    "build_defs",
+])
+
+COPTS = [
+    # copybara:strip_for_google3_begin
+    "-std=c89",
+    "-pedantic",
+    "-Wno-long-long",
+    # copybara:strip_end
+]
 
 # C/C++ rules ##################################################################
 
@@ -27,7 +44,6 @@ cc_library(
         "upb/port_undef.inc",
         "upb/refcounted.c",
         "upb/sink.c",
-        "upb/structdefs.int.h",
         "upb/structs.int.h",
         "upb/table.c",
         "upb/table.int.h",
@@ -38,6 +54,7 @@ cc_library(
         "upb/decode.h",
         "upb/def.h",
         "upb/encode.h",
+        "upb/generated_util.h",
         "upb/handlers.h",
         "upb/msg.h",
         "upb/msgfactory.h",
@@ -45,11 +62,7 @@ cc_library(
         "upb/sink.h",
         "upb/upb.h",
     ],
-    copts = [
-        "-std=c89",
-        "-pedantic",
-        "-Wno-long-long",
-    ],
+    copts = COPTS,
     visibility = ["//visibility:public"],
 )
 
@@ -63,11 +76,7 @@ cc_library(
         "upb/descriptor/descriptor.upbdefs.h",
         "upb/descriptor/reader.h",
     ],
-    copts = [
-        "-std=c89",
-        "-pedantic",
-        "-Wno-long-long",
-    ],
+    copts = COPTS,
     deps = [":upb"],
 )
 
@@ -82,6 +91,7 @@ cc_library(
         "upb/pb/textprinter.c",
         "upb/pb/varint.c",
         "upb/pb/varint.int.h",
+        "upb/table.int.h",
     ],
     hdrs = [
         "upb/pb/decoder.h",
@@ -89,11 +99,7 @@ cc_library(
         "upb/pb/glue.h",
         "upb/pb/textprinter.h",
     ],
-    copts = [
-        "-std=c89",
-        "-pedantic",
-        "-Wno-long-long",
-    ],
+    copts = COPTS,
     deps = [
         ":upb",
         ":upb_descriptor",
@@ -110,11 +116,7 @@ cc_library(
         "upb/json/parser.h",
         "upb/json/printer.h",
     ],
-    copts = [
-        "-std=c89",
-        "-pedantic",
-        "-Wno-long-long",
-    ],
+    copts = COPTS,
     deps = [
         ":upb",
         ":upb_pb",
@@ -129,32 +131,44 @@ cc_library(
     deps = [":upb"],
 )
 
-# Amalgamation #################################################################
-
-py_binary(
-    name = "amalgamate",
-    srcs = ["tools/amalgamate.py"],
-)
-
-upb_amalgamation(
-    name = "gen_amalgamation",
-    outs = [
-        "upb.c",
-        "upb.h",
-    ],
-    amalgamator = ":amalgamate",
-    libs = [
-        ":upb",
-        ":upb_descriptor",
-        ":upb_pb",
-        ":upb_json",
-    ],
-)
+# upb compiler #################################################################
 
 cc_library(
-    name = "amalgamation",
-    srcs = ["upb.c"],
-    hdrs = ["upb.h"],
+    name = "upbc_generator",
+    srcs = [
+        "upbc/generator.cc",
+        "upbc/message_layout.cc",
+        "upbc/message_layout.h",
+    ],
+    hdrs = ["upbc/generator.h"],
+    deps = [
+        map_dep("@absl//absl/base:core_headers"),
+        map_dep("@absl//absl/strings"),
+        map_dep("@com_google_protobuf//:protobuf"),
+        map_dep("@com_google_protobuf//:protoc_lib"),
+    ],
+)
+
+cc_binary(
+    name = "protoc-gen-upb",
+    srcs = ["upbc/main.cc"],
+    deps = [
+        ":upbc_generator",
+        map_dep("@com_google_protobuf//:protoc_lib"),
+    ],
+)
+
+# We strip the tests and remaining rules from google3 until the upb_proto_library()
+# and upb_proto_reflection_library() rules are fixed.
+
+# copybara:strip_for_google3_begin
+
+lua_binary(
+    name = "lua_upbc",
+    luadeps = [
+        "lua/upbc_lib",
+    ],
+    luamain = "tools/upbc.lua",
 )
 
 # C/C++ tests ##################################################################
@@ -265,11 +279,11 @@ cc_binary(
     srcs = [
         "tests/conformance_upb.c",
     ],
+    copts = ["-Ibazel-out/k8-fastbuild/bin"],
     deps = [
         ":conformance_proto_upb",
         ":upb",
     ],
-    copts = ["-Ibazel-out/k8-fastbuild/bin"],
 )
 
 make_shell_script(
@@ -287,6 +301,35 @@ sh_test(
         "@bazel_tools//tools/bash/runfiles",
         "@com_google_protobuf//:conformance_test_runner",
     ],
+)
+
+# Amalgamation #################################################################
+
+py_binary(
+    name = "amalgamate",
+    srcs = ["tools/amalgamate.py"],
+)
+
+upb_amalgamation(
+    name = "gen_amalgamation",
+    outs = [
+        "upb.c",
+        "upb.h",
+    ],
+    amalgamator = ":amalgamate",
+    libs = [
+        ":upb",
+        ":upb_descriptor",
+        ":upb_pb",
+        ":upb_json",
+    ],
+)
+
+cc_library(
+    name = "amalgamation",
+    srcs = ["upb.c"],
+    hdrs = ["upb.h"],
+    copts = COPTS,
 )
 
 # Lua libraries. ###############################################################
@@ -374,42 +417,12 @@ lua_test(
     luamain = "tests/bindings/lua/test_upb.pb.lua",
 )
 
-# upb compiler #################################################################
-
-lua_binary(
-    name = "lua_upbc",
-    luadeps = [
-        "lua/upbc_lib",
-    ],
-    luamain = "tools/upbc.lua",
-)
-
-cc_library(
-    name = "upbc_generator",
-    hdrs = ["upbc/generator.h"],
-    srcs = ["upbc/generator.cc", "upbc/message_layout.h", "upbc/message_layout.cc"],
-    deps = [
-        "@com_google_protobuf//:protobuf",
-        "@com_google_protobuf//:protoc_lib",
-        "@absl//absl/strings",
-    ],
-)
-
-cc_binary(
-    name = "protoc-gen-upb",
-    srcs = ["upbc/main.cc"],
-    deps = [
-        ":upbc_generator",
-        "@com_google_protobuf//:protoc_lib",
-    ],
-)
-
 # Test the CMake build #########################################################
 
 make_shell_script(
     name = "gen_run_cmake_build",
     out = "run_cmake_build.sh",
-    contents = "mkdir build && cd build && cmake .. && make -j8 && make test"
+    contents = "mkdir build && cd build && cmake .. && make -j8 && make test",
 )
 
 sh_test(
@@ -463,10 +476,13 @@ py_binary(
 
 genrule(
     name = "gen_cmakelists",
+    srcs = [
+        "BUILD",
+        "WORKSPACE",
+    ],
     outs = ["generated/CMakeLists.txt"],
-    srcs = ["BUILD", "WORKSPACE"],
+    cmd = "$(location :make_cmakelists) $@",
     tools = [":make_cmakelists"],
-    cmd = "$(location :make_cmakelists) $@"
 )
 
 genrule(
@@ -510,8 +526,8 @@ genrule(
     ],
     cmd = "$(location @com_google_protobuf//:protoc) $< --upb_out=$(GENDIR)/generated --plugin=protoc-gen-upb=$(location :protoc-gen-upb)",
     tools = [
+        ":protoc-gen-upb",
         "@com_google_protobuf//:protoc",
-        ":protoc-gen-upb"
     ],
 )
 
@@ -563,3 +579,5 @@ generated_file_staleness_test(
     ],
     generated_pattern = "generated/%s",
 )
+
+# copybara:strip_end

@@ -36,9 +36,11 @@ class MessageLayout;
 
 #endif
 
-UPB_DECLARE_TYPE(upb::Array, upb_array)
 UPB_DECLARE_TYPE(upb::Map, upb_map)
 UPB_DECLARE_TYPE(upb::MapIterator, upb_mapiter)
+
+struct upb_array;
+typedef struct upb_array upb_array;
 
 /* TODO(haberman): C++ accessors */
 
@@ -73,21 +75,21 @@ typedef struct upb_msglayout {
 } upb_msglayout;
 
 
-/** upb_stringview ************************************************************/
+/** upb_strview ************************************************************/
 
 typedef struct {
   const char *data;
   size_t size;
-} upb_stringview;
+} upb_strview;
 
-UPB_INLINE upb_stringview upb_stringview_make(const char *data, size_t size) {
-  upb_stringview ret;
+UPB_INLINE upb_strview upb_strview_make(const char *data, size_t size) {
+  upb_strview ret;
   ret.data = data;
   ret.size = size;
   return ret;
 }
 
-#define UPB_STRINGVIEW_INIT(ptr, len) {ptr, len}
+#define UPB_STRVIEW_INIT(ptr, len) {ptr, len}
 
 
 /** upb_msgval ****************************************************************/
@@ -107,7 +109,7 @@ typedef union {
   const upb_msg* msg;
   const upb_array* arr;
   const void* ptr;
-  upb_stringview str;
+  upb_strview str;
 } upb_msgval;
 
 #define ACCESSORS(name, membername, ctype) \
@@ -134,12 +136,12 @@ ACCESSORS(map,    map, const upb_map*)
 ACCESSORS(msg,    msg, const upb_msg*)
 ACCESSORS(ptr,    ptr, const void*)
 ACCESSORS(arr,    arr, const upb_array*)
-ACCESSORS(str,    str, upb_stringview)
+ACCESSORS(str,    str, upb_strview)
 
 #undef ACCESSORS
 
 UPB_INLINE upb_msgval upb_msgval_makestr(const char *data, size_t size) {
-  return upb_msgval_str(upb_stringview_make(data, size));
+  return upb_msgval_str(upb_strview_make(data, size));
 }
 
 

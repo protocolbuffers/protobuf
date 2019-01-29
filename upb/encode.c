@@ -207,8 +207,8 @@ do { ; } while(0)
       VARINT_CASE(int64_t, upb_zzencode_64(*ptr));
     case UPB_DESCRIPTOR_TYPE_STRING:
     case UPB_DESCRIPTOR_TYPE_BYTES: {
-      upb_stringview *start = arr->data;
-      upb_stringview *ptr = start + arr->len;
+      upb_strview *start = arr->data;
+      upb_strview *ptr = start + arr->len;
       do {
         ptr--;
         CHK(upb_put_bytes(e, ptr->data, ptr->size) &&
@@ -292,7 +292,7 @@ static bool upb_encode_scalarfield(upb_encstate *e, const char *field_mem,
       CASE(int64_t, varint, UPB_WIRE_TYPE_VARINT, upb_zzencode_64(val));
     case UPB_DESCRIPTOR_TYPE_STRING:
     case UPB_DESCRIPTOR_TYPE_BYTES: {
-      upb_stringview view = *(upb_stringview*)field_mem;
+      upb_strview view = *(upb_strview*)field_mem;
       if (skip_zero_value && view.size == 0) {
         return true;
       }

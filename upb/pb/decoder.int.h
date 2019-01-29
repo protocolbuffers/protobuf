@@ -9,17 +9,10 @@
 #include "upb/handlers.h"
 #include "upb/pb/decoder.h"
 #include "upb/sink.h"
-#include "upb/structdefs.int.h"
 #include "upb/table.int.h"
 
-/* C++ names are not actually used since this type isn't exposed to users. */
-#ifdef __cplusplus
-namespace upb {
-namespace pb {
-class MessageGroup;
-}  /* namespace pb */
-}  /* namespace upb */
-#endif
+#ifndef __cplusplus
+
 UPB_DECLARE_DERIVED_TYPE(upb::pb::MessageGroup, upb::RefCounted,
                          mgroup, upb_refcounted)
 
@@ -82,7 +75,7 @@ typedef enum {
 
 #define OP_MAX OP_HALT
 
-UPB_INLINE opcode getop(uint32_t instr) { return instr & 0xff; }
+UPB_INLINE opcode getop(uint32_t instr) { return (opcode)(instr & 0xff); }
 
 /* Method group; represents a set of decoder methods that had their code
  * emitted together, and must therefore be freed together.  Immutable once
@@ -328,5 +321,7 @@ UPB_INLINE void upb_pbdecoder_unpackdispatch(uint64_t dispatch, uint64_t *ofs,
 #define DECODE_ENDGROUP -3  /* Used only from checkunknown(). */
 
 #define CHECK_RETURN(x) { int32_t ret = x; if (ret >= 0) return ret; }
+
+#endif  /* __cplusplus */
 
 #endif  /* UPB_DECODER_INT_H_ */
