@@ -272,7 +272,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
       };
 
   /**
-   * Returns a {@link Comparator<ByteString>} which compares {@link ByteString}-s lexicographically
+   * Returns a {@link Comparator} which compares {@link ByteString}-s lexicographically
    * as sequences of unsigned bytes (i.e. values between 0 and 255, inclusive).
    *
    * <p>For example, {@code (byte) -1} is considered to be greater than {@code (byte) 1} because it
@@ -640,7 +640,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * @param targetOffset offset within the target buffer
    * @param numberToCopy number of bytes to copy
    * @throws IndexOutOfBoundsException if an offset or size is negative or too large
-   * @deprecation Instead, call {@code byteString.substring(sourceOffset, sourceOffset +
+   * @deprecated Instead, call {@code byteString.substring(sourceOffset, sourceOffset +
    *     numberToCopy).copyTo(target, targetOffset)}
    */
   @Deprecated
