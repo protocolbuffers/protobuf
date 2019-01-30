@@ -264,8 +264,8 @@ G  A release.
   </release>
   <release>
    <version>
-    <release>3.7.0</release>
-    <api>3.7.0</api>
+    <release>3.7.0rc2</release>
+    <api>3.7.0rc2</api>
    </version>
    <stability>
     <release>stable</release>
