@@ -15,6 +15,17 @@
     extensible format.
   </description>
 
+  <developers>
+    <developer>
+      <id>haon</id>
+      <name>Hao Nguyen</name>
+      <email>haon@google.com</email>
+      <organization>Google</organization>
+      <organizationUrl>https://cloud.google.com</organizationUrl>
+      <timezone>America/Los_Angeles</timezone>
+    </developer>
+  </developers>
+
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
