@@ -80,6 +80,11 @@
                   <classifier>linux-aarch_64</classifier>
                   <type>exe</type>
                 </artifact>
+                <artifact>
+                  <file>${basedir}/target/linux/ppcle_64/protoc.exe</file>
+                  <classifier>linux-ppcle_64</classifier>
+                  <type>exe</type>
+                </artifact>
               </artifacts>
             </configuration>
           </execution>
