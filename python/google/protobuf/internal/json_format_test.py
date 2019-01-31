@@ -202,6 +202,17 @@ class JsonFormatTest(JsonFormatBase):
     json_format.ParseDict(message_dict, parsed_message)
     self.assertEqual(message, parsed_message)
 
+  def testExtensionToDictAndBackWithScalar(self):
+    message = unittest_pb2.TestAllExtensions()
+    ext1 = unittest_pb2.TestNestedExtension.test
+    message.Extensions[ext1] = 'data'
+    message_dict = json_format.MessageToDict(
+        message
+    )
+    parsed_message = unittest_pb2.TestAllExtensions()
+    json_format.ParseDict(message_dict, parsed_message)
+    self.assertEqual(message, parsed_message)
+
   def testJsonParseDictToAnyDoesNotAlterInput(self):
     orig_dict = {
         'int32Value': 20,
