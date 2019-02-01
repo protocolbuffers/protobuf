@@ -57,9 +57,8 @@ else
       # "no_native" can only be set if the RUBY_PLATFORM doing
       # cross-compilation is contained in the "ext.cross_platform" array.
       ext.no_native = true
-      # ext.config_options << '-std=gnu11 -D_XOPEN_SOURCE=700'
-      ext.cross_config_options << '-std=gnu11'
-      ext.cross_config_options << '-D_XOPEN_SOURCE=700'
+      # ext.cross_config_options << '-std=gnu11'
+      # ext.cross_config_options << '-D_XOPEN_SOURCE=700'
     end
     ext.ext_dir = "ext/google/protobuf_c"
     ext.lib_dir = "lib/google"
@@ -73,7 +72,7 @@ else
 
   task 'gem:windows' do
     require 'rake_compiler_dock'
-    RakeCompilerDock.sh "bundle && IN_DOCKER=true rake cross native gem RUBY_CC_VERSION=2.6.0:2.5.0:2.4.0:2.3.0  CFLAGS=-std=gnu11"
+    RakeCompilerDock.sh "bundle && IN_DOCKER=true rake cross native gem RUBY_CC_VERSION=2.6.0:2.5.0:2.4.0:2.3.0"
   end
 
   if RUBY_PLATFORM =~ /darwin/
