@@ -262,6 +262,7 @@ class TextFormat::Parser::ParserImpl {
       allow_unknown_enum_(allow_unknown_enum),
       allow_field_number_(allow_field_number),
       allow_partial_(allow_partial),
+      recursion_budget_(io::CodedInputStream::GetDefaultRecursionLimit()),
       had_errors_(false) {
     // For backwards-compatibility with proto1, we need to allow the 'f' suffix
     // for floats.
@@ -631,6 +632,10 @@ label_skip_parsing:
   bool ConsumeFieldMessage(Message* message,
                            const Reflection* reflection,
                            const FieldDescriptor* field) {
+    if (--recursion_budget_ < 0) {
+      ReportError("Message is too deep");
+      return false;
+    }
 
     // If the parse information tree is not NULL, create a nested one
     // for the nested message.
@@ -647,6 +652,8 @@ label_skip_parsing:
       DO(ConsumeMessage(reflection->MutableMessage(message, field),
                         delimiter));
     }
+
+    ++recursion_budget_;
 
     // Reset the parse information tree.
     parse_info_tree_ = parent;
@@ -1179,6 +1186,7 @@ label_skip_parsing:
   const bool allow_unknown_enum_;
   const bool allow_field_number_;
   const bool allow_partial_;
+  int recursion_budget_;
   bool had_errors_;
 };
 
