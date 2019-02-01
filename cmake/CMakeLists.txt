@@ -68,7 +68,7 @@ string(REGEX REPLACE        "${protobuf_AC_INIT_REGEX}" "\\2"
 string(REGEX REPLACE        "${protobuf_AC_INIT_REGEX}" "\\3"
     protobuf_CONTACT        "${protobuf_AC_INIT_LINE}")
 # Parse version tweaks
-set(protobuf_VERSION_REGEX "^([0-9]+)\\.([0-9]+)\\.([0-9]+)(-rc)?(.*)$")
+set(protobuf_VERSION_REGEX "^([0-9]+)\\.([0-9]+)\\.([0-9]+)(-rc-)?(.*)$")
 string(REGEX REPLACE     "${protobuf_VERSION_REGEX}" "\\1"
   protobuf_VERSION_MAJOR "${protobuf_VERSION_STRING}")
 string(REGEX REPLACE     "${protobuf_VERSION_REGEX}" "\\2"
