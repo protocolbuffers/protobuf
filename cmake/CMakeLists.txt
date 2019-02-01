@@ -75,7 +75,7 @@ string(REGEX REPLACE     "${protobuf_VERSION_REGEX}" "\\2"
   protobuf_VERSION_MINOR "${protobuf_VERSION_STRING}")
 string(REGEX REPLACE     "${protobuf_VERSION_REGEX}" "\\3"
   protobuf_VERSION_PATCH "${protobuf_VERSION_STRING}")
-string(REGEX REPLACE     "${protobuf_VERSION_REGEX}" "\\4"
+string(REGEX REPLACE     "${protobuf_VERSION_REGEX}" "\\5"
   protobuf_VERSION_PRERELEASE "${protobuf_VERSION_STRING}")
 
 # Package version
