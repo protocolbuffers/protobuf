@@ -57,8 +57,6 @@ else
       # "no_native" can only be set if the RUBY_PLATFORM doing
       # cross-compilation is contained in the "ext.cross_platform" array.
       ext.no_native = true
-      # Needed for strptime: https://stackoverflow.com/questions/35234152/strptime-giving-implicit-declaration-and-undefined-reference
-      ext.config_options << '-std=gnu11'
     end
     ext.ext_dir = "ext/google/protobuf_c"
     ext.lib_dir = "lib/google"
