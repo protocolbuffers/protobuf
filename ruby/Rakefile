@@ -39,6 +39,8 @@ unless ENV['IN_DOCKER'] == 'true'
   end
 end
 
+base_cc_flags("-std=gnu11")
+
 if RUBY_PLATFORM == "java"
   if `which mvn` == ''
     raise ArgumentError, "maven needs to be installed"
@@ -70,7 +72,7 @@ else
 
   task 'gem:windows' do
     require 'rake_compiler_dock'
-    RakeCompilerDock.sh "bundle && IN_DOCKER=true rake cross native gem RUBY_CC_VERSION=2.6.0:2.5.0:2.4.0:2.3.0 -- -std=gnu11"
+    RakeCompilerDock.sh "bundle && IN_DOCKER=true rake cross native gem RUBY_CC_VERSION=2.6.0:2.5.0:2.4.0:2.3.0"
   end
 
   if RUBY_PLATFORM =~ /darwin/
