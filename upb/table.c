@@ -726,7 +726,7 @@ bool upb_inttable_iter_isequal(const upb_inttable_iter *i1,
          i1->array_part == i2->array_part;
 }
 
-#ifdef UPB_UNALIGNED_READS_OK
+#if defined(UPB_UNALIGNED_READS_OK) || defined(__s390x__)
 /* -----------------------------------------------------------------------------
  * MurmurHash2, by Austin Appleby (released as public domain).
  * Reformatted and C99-ified by Joshua Haberman.
