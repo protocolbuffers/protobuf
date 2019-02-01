@@ -20,6 +20,25 @@ static void test_varint_for_num(upb_decoderet (*decoder)(const char*),
 
     memset(buf2, 0, sizeof(buf2));
     memcpy(&buf2, &encoded, 8);
+#ifdef UPB_BIG_ENDIAN
+    char swap[8];
+    swap[0] = buf2[7];
+    swap[1] = buf2[6];
+    swap[2] = buf2[5];
+    swap[3] = buf2[4];
+    swap[4] = buf2[3];
+    swap[5] = buf2[2];
+    swap[6] = buf2[1];
+    swap[7] = buf2[0];
+    buf2[0] = swap[0];
+    buf2[1] = swap[1];
+    buf2[2] = swap[2];
+    buf2[3] = swap[3];
+    buf2[4] = swap[4];
+    buf2[5] = swap[5];
+    buf2[6] = swap[6];
+    buf2[7] = swap[7];
+#endif    
     r = decoder(buf2);
     ASSERT(r.val == num);
     ASSERT(r.p == buf2 + upb_value_size(encoded));
