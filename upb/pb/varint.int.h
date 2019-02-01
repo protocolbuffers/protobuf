@@ -9,6 +9,7 @@
 #include <assert.h>
 #include <stdint.h>
 #include <string.h>
+#include <byteswap.h>
 #include "upb/upb.h"
 
 #ifdef __cplusplus
@@ -130,6 +131,9 @@ UPB_INLINE uint64_t upb_vencode32(uint32_t val) {
   uint64_t ret = 0;
   UPB_ASSERT(bytes <= 5);
   memcpy(&ret, buf, bytes);
+#ifdef UPB_BIG_ENDIAN
+  ret = bswap_64(ret);
+#endif
   UPB_ASSERT(ret <= 0xffffffffffU);
   return ret;
 }
