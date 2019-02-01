@@ -1,4 +1,11 @@
 // Amalgamated source file
+/* Need to define _XOPEN_SOURCE before including time.h to make strptime work. */
+
+#ifndef _XOPEN_SOURCE
+#define _XOPEN_SOURCE 700
+#endif
+#include <time.h>
+
 #include "upb.h"
 
 #if UINTPTR_MAX == 0xffffffff
@@ -12611,11 +12618,6 @@ done:
 #include <stdlib.h>
 #include <string.h>
 
-/* Need to define _XOPEN_SOURCE before including time.h to make strptime work. */
-#ifndef _XOPEN_SOURCE
-#define _XOPEN_SOURCE 700
-#endif
-#include <time.h>
 
 
 #define UPB_JSON_MAX_DEPTH 64
