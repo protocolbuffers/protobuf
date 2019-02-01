@@ -1,7 +1,7 @@
 // Amalgamated source file
 /* Need to define _XOPEN_SOURCE before including time.h to make strptime work. */
 
-#define __USE_XOPEN
+#define _XOPEN_SOURCE 700
 #include <time.h>
 
 #include "upb.h"
