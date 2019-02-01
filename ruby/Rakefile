@@ -64,8 +64,8 @@ else
     ext.ext_dir = "ext/google/protobuf_c"
     ext.lib_dir = "lib/google"
     ext.cross_compile = true
+    # 'x86-mingw32', 'x64-mingw32',
     ext.cross_platform = [
-      'x86-mingw32', 'x64-mingw32',
       'x86_64-linux', 'x86-linux',
       'universal-darwin'
     ]
@@ -73,7 +73,7 @@ else
 
   task 'gem:windows' do
     require 'rake_compiler_dock'
-    RakeCompilerDock.sh "bundle && IN_DOCKER=true rake cross native gem RUBY_CC_VERSION=2.5.0:2.4.0:2.3.0  CFLAGS=-std=gnu11"
+    RakeCompilerDock.sh "bundle && IN_DOCKER=true rake cross native gem RUBY_CC_VERSION=2.6.0:2.5.0:2.4.0:2.3.0  CFLAGS=-std=gnu11"
   end
 
   if RUBY_PLATFORM =~ /darwin/
