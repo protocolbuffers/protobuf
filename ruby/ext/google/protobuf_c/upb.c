@@ -1,8 +1,6 @@
 // Amalgamated source file
 /* Need to define _XOPEN_SOURCE before including time.h to make strptime work. */
 
-#define _XOPEN_SOURCE 700
-
 #include "upb.h"
 
 #if UINTPTR_MAX == 0xffffffff

@@ -57,8 +57,6 @@ else
       # "no_native" can only be set if the RUBY_PLATFORM doing
       # cross-compilation is contained in the "ext.cross_platform" array.
       ext.no_native = true
-      # ext.cross_config_options << '-std=gnu11'
-      # ext.cross_config_options << '-D_XOPEN_SOURCE=700'
     end
     ext.ext_dir = "ext/google/protobuf_c"
     ext.lib_dir = "lib/google"
