@@ -2,7 +2,8 @@
 
 require 'mkmf'
 
-$CFLAGS += " -std=c99 -O3 -DNDEBUG"
+# gnu needed for strptime: https://stackoverflow.com/questions/35234152/strptime-giving-implicit-declaration-and-undefined-reference
+$CFLAGS += " -std=gnu99 -O3 -DNDEBUG"
 
 
 if RUBY_PLATFORM =~ /linux/
