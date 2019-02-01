@@ -61,8 +61,8 @@ else
     ext.ext_dir = "ext/google/protobuf_c"
     ext.lib_dir = "lib/google"
     ext.cross_compile = true
-    # 'x86-mingw32', 'x64-mingw32',
     ext.cross_platform = [
+      'x86-mingw32', 'x64-mingw32',
       'x86_64-linux', 'x86-linux',
       'universal-darwin'
     ]
