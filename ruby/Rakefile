@@ -59,7 +59,7 @@ else
       ext.no_native = true
       # ext.config_options << '-std=gnu11 -D_XOPEN_SOURCE=700'
       ext.cross_config_options << '-std=gnu11'
-      ext.cross_config_options << '-D_XOPEN_SOURCE=700'
+      ext.cross_config_options << '-D_XOPEN_SOURCE'
     end
     ext.ext_dir = "ext/google/protobuf_c"
     ext.lib_dir = "lib/google"
@@ -73,7 +73,7 @@ else
 
   task 'gem:windows' do
     require 'rake_compiler_dock'
-    RakeCompilerDock.sh "bundle && IN_DOCKER=true rake cross native gem RUBY_CC_VERSION=2.6.0:2.5.0:2.4.0:2.3.0  CFLAGS=-std=gnu11"
+    RakeCompilerDock.sh "bundle && IN_DOCKER=true rake cross native gem RUBY_CC_VERSION=2.6.0:2.5.0:2.4.0:2.3.0  CFLAGS=-std=gnu11 -- -D_XOPEN_SOURCE"
   end
 
   if RUBY_PLATFORM =~ /darwin/

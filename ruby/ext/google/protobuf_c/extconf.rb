@@ -2,8 +2,12 @@
 
 require 'mkmf'
 
-# gnu needed for strptime: https://stackoverflow.com/questions/35234152/strptime-giving-implicit-declaration-and-undefined-reference
-$CFLAGS += " -std=gnu11 -O3 -DNDEBUG -D_XOPEN_SOURCE=700"
+if RUBY_PLATFORM =~ /linux/
+  # gnu needed for strptime: https://stackoverflow.com/questions/35234152/strptime-giving-implicit-declaration-and-undefined-reference
+  $CFLAGS += " -std=gnu99 -O3 -DNDEBUG -D_XOPEN_SOURCE"
+else
+  $CFLAGS += " -std=c99 -O3 -DNDEBUG"
+end
 
 
 if RUBY_PLATFORM =~ /linux/
