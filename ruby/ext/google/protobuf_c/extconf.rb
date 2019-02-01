@@ -3,7 +3,7 @@
 require 'mkmf'
 
 # gnu needed for strptime: https://stackoverflow.com/questions/35234152/strptime-giving-implicit-declaration-and-undefined-reference
-$CFLAGS += " -std=gnu11 -O3 -DNDEBUG"
+$CFLAGS += " -std=gnu11 -O3 -DNDEBUG -D_XOPEN_SOURCE=700"
 
 
 if RUBY_PLATFORM =~ /linux/
