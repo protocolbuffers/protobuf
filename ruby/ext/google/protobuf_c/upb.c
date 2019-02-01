@@ -12611,13 +12611,9 @@ done:
 #include <stdlib.h>
 #include <string.h>
 
-/* Need to define __USE_XOPEN before including time.h to make strptime work. */
-#ifndef __USE_XOPEN
-#define __USE_XOPEN
-#endif
 /* Need to define _XOPEN_SOURCE before including time.h to make strptime work. */
 #ifndef _XOPEN_SOURCE
-#define _XOPEN_SOURCE
+#define _XOPEN_SOURCE 700
 #endif
 #include <time.h>
 
