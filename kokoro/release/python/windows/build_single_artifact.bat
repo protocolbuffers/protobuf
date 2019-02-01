@@ -12,6 +12,12 @@ if %PYTHON%==C:\python36_32bit set vcplatform=Win32
 if %PYTHON%==C:\python36 set generator=Visual Studio 14 Win64
 if %PYTHON%==C:\python36 set vcplatform=x64
 
+if %PYTHON%==C:\python37_32bit set generator=Visual Studio 14
+if %PYTHON%==C:\python37_32bit set vcplatform=Win32
+
+if %PYTHON%==C:\python37 set generator=Visual Studio 14 Win64
+if %PYTHON%==C:\python37 set vcplatform=x64
+
 REM Prepend newly installed Python to the PATH of this build (this cannot be
 REM done from inside the powershell script as it would require to restart
 REM the parent CMD process).
@@ -38,8 +44,8 @@ mkdir src\.libs
 
 mkdir vcprojects
 pushd vcprojects
-cmake -G "%generator%" -Dprotobuf_BUILD_SHARED_LIBS=%BUILD_DLL% -Dprotobuf_UNICODE=%UNICODE% -Dprotobuf_BUILD_TESTS=OFF ../cmake
-msbuild protobuf.sln /p:Platform=%vcplatform% /p:Configuration=Release
+cmake -G "%generator%" -Dprotobuf_BUILD_SHARED_LIBS=%BUILD_DLL% -Dprotobuf_UNICODE=%UNICODE% -Dprotobuf_BUILD_TESTS=OFF ../cmake || goto :error
+msbuild protobuf.sln /p:Platform=%vcplatform% /p:Configuration=Release || goto :error
 dir /s /b
 popd
 copy vcprojects\Release\libprotobuf.lib src\.libs\libprotobuf.a
@@ -60,3 +66,8 @@ dir dist
 copy dist\* %ARTIFACT_DIR%
 dir %ARTIFACT_DIR%
 cd ..\..
+
+goto :EOF
+
+:error
+exit /b %errorlevel%
