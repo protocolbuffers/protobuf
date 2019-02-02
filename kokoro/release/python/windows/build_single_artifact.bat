@@ -30,11 +30,11 @@ python --version
 python -c "import struct; print(struct.calcsize('P') * 8)"
 
 rmdir /s/q protobuf
+xcopy /s  %REPO_DIR% protobuf
 git clone https://github.com/google/protobuf.git
 
 REM Checkout release commit
-cd %REPO_DIR%
-git checkout %BUILD_COMMIT%
+cd protobuf
 
 REM ======================
 REM Build Protobuf Library

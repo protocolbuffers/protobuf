@@ -1,17 +1,16 @@
 REM Move scripts to root
+xcopy /s  github\protobuf github\protobuf-stage
+set REPO_DIR=%cd%\github\protobuf-stage
 cd github\protobuf
 copy kokoro\release\python\windows\build_single_artifact.bat build_single_artifact.bat
 
 REM Set environment variables
-set REPO_DIR=protobuf
 set PACKAGE_NAME=protobuf
 set BUILD_DLL=OFF
 set UNICODE=ON
 set PB_TEST_DEP="six==1.9"
 set OTHER_TEST_DEP="setuptools==38.5.1"
 set OLD_PATH=C:\Program Files (x86)\MSBuild\14.0\bin\;%PATH%
-
-FOR /F "tokens=* USEBACKQ" %%F IN (`git rev-parse HEAD`) DO set BUILD_COMMIT=%%F
 
 REM Fetch multibuild
 git clone https://github.com/matthew-brett/multibuild.git
