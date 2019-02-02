@@ -584,11 +584,12 @@ static bool upb_decode_message(upb_decstate *d, const char *limit,
   return true;
 }
 
-bool upb_decode(upb_strview buf, void *msg, const upb_msglayout *l) {
+bool upb_decode(const char *buf, size_t size, void *msg,
+                const upb_msglayout *l) {
   upb_decstate state;
-  state.ptr = buf.data;
+  state.ptr = buf;
 
-  return upb_decode_message(&state, buf.data + buf.size, 0, msg, l);
+  return upb_decode_message(&state, buf + size, 0, msg, l);
 }
 
 #undef CHK
