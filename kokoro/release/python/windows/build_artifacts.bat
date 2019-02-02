@@ -11,7 +11,7 @@ set PB_TEST_DEP="six==1.9"
 set OTHER_TEST_DEP="setuptools==38.5.1"
 set OLD_PATH=C:\Program Files (x86)\MSBuild\14.0\bin\;%PATH%
 
-if not "%KOKORO_JOB_NAME%" (set BUILD_COMMIT=master) else (for /f "tokens=3 delims=/ " %%i in ("%KOKORO_JOB_NAME%") do set BUILD_COMMIT=%%i)
+FOR /F "tokens=* USEBACKQ" %%F IN (`git rev-parse HEAD`) DO set BUILD_COMMIT=%%F
 
 REM Fetch multibuild
 git clone https://github.com/matthew-brett/multibuild.git
