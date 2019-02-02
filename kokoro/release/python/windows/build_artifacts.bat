@@ -1,6 +1,6 @@
 REM Move scripts to root
-xcopy /s  github\protobuf github\protobuf-stage
-set REPO_DIR_STAGE=%cd%\github\protobuf-stage
+xcopy /S  github\protobuf github\protobuf-stage\
+set REPO_DIR_STAGE=%cd%\github\protobuf-stage\
 cd github\protobuf
 copy kokoro\release\python\windows\build_single_artifact.bat build_single_artifact.bat
 
