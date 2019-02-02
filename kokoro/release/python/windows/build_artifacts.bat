@@ -10,8 +10,6 @@ set UNICODE=ON
 set PB_TEST_DEP="six==1.9"
 set OTHER_TEST_DEP="setuptools==38.5.1"
 set OLD_PATH=C:\Program Files (x86)\MSBuild\14.0\bin\;%PATH%
-REM for /f "tokens=*" %%i in ( 'grep -i "version" python/google/protobuf/__init__.py ^| grep -o "'.*'"' ) do set BUILD_VERSION=%%i
-REM set BUILD_COMMIT=v%BUILD_VERSION:'=%
 
 if not "%KOKORO_JOB_NAME%" (
   set BUILD_COMMIT=master
