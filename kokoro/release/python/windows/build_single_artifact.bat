@@ -30,7 +30,7 @@ python --version
 python -c "import struct; print(struct.calcsize('P') * 8)"
 
 rmdir /s/q %REPO_DIR%
-xcopy /s  %REPO_DIR_STAGE% %REPO_DIR%
+xcopy /s  %REPO_DIR_STAGE% "%REPO_DIR%\"
 
 REM Checkout release commit
 cd %REPO_DIR%
