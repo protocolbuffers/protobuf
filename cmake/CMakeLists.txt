@@ -86,7 +86,7 @@ set(protobuf_VERSION
 
 if(protobuf_VERSION_PRERELEASE)
   set(protobuf_VERSION "${protobuf_VERSION}.${protobuf_VERSION_PRERELEASE}")
-else
+else()
   set(protobuf_VERSION "${protobuf_VERSION}.0")
 endif()
 message(STATUS "${protobuf_VERSION}")
