@@ -1,11 +1,12 @@
 REM Move scripts to root
 xcopy /s  github\protobuf github\protobuf-stage
-set REPO_DIR=%cd%\github\protobuf-stage
+set REPO_DIR_STAGE=%cd%\github\protobuf-stage
 cd github\protobuf
 copy kokoro\release\python\windows\build_single_artifact.bat build_single_artifact.bat
 
 REM Set environment variables
 set PACKAGE_NAME=protobuf
+set REPO_DIR=protobuf
 set BUILD_DLL=OFF
 set UNICODE=ON
 set PB_TEST_DEP="six==1.9"

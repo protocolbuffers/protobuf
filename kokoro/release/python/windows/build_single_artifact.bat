@@ -29,12 +29,11 @@ REM Check that we have the expected version and architecture for Python
 python --version
 python -c "import struct; print(struct.calcsize('P') * 8)"
 
-rmdir /s/q protobuf
-xcopy /s  %REPO_DIR% protobuf
-git clone https://github.com/google/protobuf.git
+rmdir /s/q %REPO_DIR%
+xcopy /s  %REPO_DIR_STAGE% %REPO_DIR%
 
 REM Checkout release commit
-cd protobuf
+cd %REPO_DIR%
 
 REM ======================
 REM Build Protobuf Library
