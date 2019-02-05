@@ -96,7 +96,7 @@ void EnumGenerator::GenerateHeader(io::Printer* printer) {
   //   https://github.com/apple/swift-evolution/blob/master/proposals/0192-non-exhaustive-enums.md
   // Since a .proto file can get new values added to an enum at any time, they
   // are effectively "non-frozen". Even in a proto3 syntax file where there is
-  // support for the unknown value, and edit to the file can always add a new
+  // support for the unknown value, an edit to the file can always add a new
   // value moving something from unknown to known. Since Swift is now ABI
   // stable, it also means a binary could contain Swift compiled against one
   // version of the .pbobjc.h file, but finally linked against an enum with
