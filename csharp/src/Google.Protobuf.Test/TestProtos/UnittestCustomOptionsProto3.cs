@@ -352,9 +352,7 @@ namespace UnitTest.Issues.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
-              return;
-            }
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 10: {
             Field1 = input.ReadString();
@@ -480,9 +478,7 @@ namespace UnitTest.Issues.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
-              return;
-            }
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
         }
       }
@@ -583,9 +579,7 @@ namespace UnitTest.Issues.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
-              return;
-            }
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
         }
       }
@@ -686,9 +680,7 @@ namespace UnitTest.Issues.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
-              return;
-            }
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
         }
       }
@@ -789,9 +781,7 @@ namespace UnitTest.Issues.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
-              return;
-            }
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
         }
       }
@@ -892,9 +882,7 @@ namespace UnitTest.Issues.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
-              return;
-            }
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
         }
       }
@@ -1008,9 +996,7 @@ namespace UnitTest.Issues.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
-              return;
-            }
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
         }
       }
@@ -1111,9 +1097,7 @@ namespace UnitTest.Issues.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
-              return;
-            }
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
         }
       }
@@ -1214,9 +1198,7 @@ namespace UnitTest.Issues.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
-              return;
-            }
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
         }
       }
@@ -1317,9 +1299,7 @@ namespace UnitTest.Issues.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
-              return;
-            }
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
         }
       }
@@ -1420,9 +1400,7 @@ namespace UnitTest.Issues.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
-              return;
-            }
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
         }
       }
@@ -1523,9 +1501,7 @@ namespace UnitTest.Issues.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
-              return;
-            }
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
         }
       }
@@ -1714,9 +1690,7 @@ namespace UnitTest.Issues.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
-              return;
-            }
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 8: {
             Foo = input.ReadInt32();
@@ -1928,9 +1902,7 @@ namespace UnitTest.Issues.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
-              return;
-            }
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 10: {
             if (bar_ == null) {
@@ -2079,9 +2051,7 @@ namespace UnitTest.Issues.TestProtos {
           while ((tag = input.ReadTag()) != 0) {
             switch(tag) {
               default:
-                if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
-                  return;
-                }
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
                 break;
               case 8: {
                 Waldo = input.ReadInt32();
@@ -2215,9 +2185,7 @@ namespace UnitTest.Issues.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
-              return;
-            }
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 8: {
             Qux = input.ReadInt32();
@@ -2325,9 +2293,7 @@ namespace UnitTest.Issues.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
-              return;
-            }
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
         }
       }
@@ -2509,9 +2475,7 @@ namespace UnitTest.Issues.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
-              return;
-            }
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 8: {
             I = input.ReadInt32();
@@ -2651,9 +2615,7 @@ namespace UnitTest.Issues.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
-              return;
-            }
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 8: {
             Fieldname = input.ReadInt32();
@@ -2761,9 +2723,7 @@ namespace UnitTest.Issues.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
-              return;
-            }
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
         }
       }
@@ -2895,9 +2855,7 @@ namespace UnitTest.Issues.TestProtos {
           while ((tag = input.ReadTag()) != 0) {
             switch(tag) {
               default:
-                if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
-                  return;
-                }
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
                 break;
               case 8: {
                 NestedField = input.ReadInt32();

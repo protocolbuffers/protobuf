@@ -91,6 +91,7 @@ namespace Google.Protobuf.WellKnownTypes {
   ///     Timestamp timestamp = Timestamp.newBuilder().setSeconds(millis / 1000)
   ///         .setNanos((int) ((millis % 1000) * 1000000)).build();
   ///
+  ///
   /// Example 5: Compute Timestamp from current time in Python.
   ///
   ///     timestamp = Timestamp()
@@ -120,6 +121,8 @@ namespace Google.Protobuf.WellKnownTypes {
   /// can use the Joda Time's [`ISODateTimeFormat.dateTime()`](
   /// http://www.joda.org/joda-time/apidocs/org/joda/time/format/ISODateTimeFormat.html#dateTime%2D%2D
   /// ) to obtain a formatter capable of generating timestamps in this format.
+  ///
+  ///
   /// </summary>
   public sealed partial class Timestamp : pb::IMessage<Timestamp> {
     private static readonly pb::MessageParser<Timestamp> _parser = new pb::MessageParser<Timestamp>(() => new Timestamp());
@@ -273,9 +276,7 @@ namespace Google.Protobuf.WellKnownTypes {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
-              return;
-            }
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 8: {
             Seconds = input.ReadInt64();

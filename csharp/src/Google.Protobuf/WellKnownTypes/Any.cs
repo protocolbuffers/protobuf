@@ -91,6 +91,7 @@ namespace Google.Protobuf.WellKnownTypes {
   /// in the type URL, for example "foo.bar.com/x/y.z" will yield type
   /// name "y.z".
   ///
+  ///
   /// JSON
   /// ====
   /// The JSON representation of an `Any` value uses the regular
@@ -118,6 +119,7 @@ namespace Google.Protobuf.WellKnownTypes {
   ///       "@type": "type.googleapis.com/google.protobuf.Duration",
   ///       "value": "1.212s"
   ///     }
+  ///
   /// </summary>
   public sealed partial class Any : pb::IMessage<Any> {
     private static readonly pb::MessageParser<Any> _parser = new pb::MessageParser<Any>(() => new Any());
@@ -185,6 +187,7 @@ namespace Google.Protobuf.WellKnownTypes {
     ///
     /// Schemes other than `http`, `https` (or the empty scheme) might be
     /// used with implementation specific semantics.
+    ///
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string TypeUrl {
@@ -292,9 +295,7 @@ namespace Google.Protobuf.WellKnownTypes {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
-              return;
-            }
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 10: {
             TypeUrl = input.ReadString();
