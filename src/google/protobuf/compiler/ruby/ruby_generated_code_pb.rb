@@ -70,6 +70,21 @@ module A
     module C
       TestMessage = Google::Protobuf::DescriptorPool.generated_pool.lookup("A.B.C.TestMessage").msgclass
       TestMessage::NestedMessage = Google::Protobuf::DescriptorPool.generated_pool.lookup("A.B.C.TestMessage.NestedMessage").msgclass
+      class TestMessage
+        def optional_enum_const
+          A::B::C::TestEnum.const_get(optional_enum)
+        end
+      end
+      class TestMessage
+        def repeated_enum_const
+          A::B::C::TestEnum.const_get(repeated_enum)
+        end
+      end
+      class TestMessage
+        def oneof_enum_const
+          A::B::C::TestEnum.const_get(oneof_enum)
+        end
+      end
       TestEnum = Google::Protobuf::DescriptorPool.generated_pool.lookup("A.B.C.TestEnum").enummodule
     end
   end
