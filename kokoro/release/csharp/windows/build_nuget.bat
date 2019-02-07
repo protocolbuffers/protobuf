@@ -3,3 +3,4 @@ cd /d %~dp0\..\..\..\..
 
 cd csharp
 call build_packages.bat
+call build_tools.sh
