@@ -30,6 +30,7 @@
 
 #include <iomanip>
 #include <sstream>
+#include <list>
 
 #include <google/protobuf/compiler/code_generator.h>
 #include <google/protobuf/compiler/plugin.h>
@@ -455,29 +456,38 @@ void GenerateEnumPatches(
     return;
   }
 
+  std::list<const FieldDescriptor*> enums;
   for (int i = 0; i < message->field_count(); i++) {
     const FieldDescriptor* field = message->field(i);
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
-      printer->Print(
-        "class $prefix$$name$\n",
-        "prefix", prefix,
-        "name", RubifyConstant(message->name()));
-      printer->Indent();
-      printer->Print(
-        "def $name$_const\n",
-        "name", field->name());
-      printer->Indent();
-      printer->Print(
-        "$prefix$$type$.const_get($name$)\n",
-        "prefix", prefix,
-        "type", RubifyEnumName(field->enum_type()),
-        "name", field->name());
-      printer->Outdent();
-      printer->Print("end\n");
-      printer->Outdent();
-      printer->Print("end\n");
+      enums.push_back(field);
     }
   }
+
+  if (!enums.empty()) {
+    printer->Print(
+      "class $prefix$$name$\n",
+      "prefix", prefix,
+      "name", RubifyConstant(message->name()));
+    printer->Indent();
+  }
+  for (const FieldDescriptor* field : enums) {
+    printer->Print(
+      "def $name$_const\n",
+      "name", field->name());
+    printer->Indent();
+    printer->Print(
+      "$prefix$$type$.const_get($name$)\n",
+      "prefix", prefix,
+      "type", RubifyEnumName(field->enum_type()),
+      "name", field->name());
+    printer->Outdent();
+    printer->Print("end\n");
+  }
+  if (!enums.empty()) {
+    printer->Outdent();
+    printer->Print("end\n");
+  }    
 
   std::string nested_prefix = prefix + RubifyConstant(message->name()) + "::";
   for (int i = 0; i < message->nested_type_count(); i++) {

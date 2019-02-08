@@ -74,13 +74,9 @@ module A
         def optional_enum_const
           A::B::C::TestEnum.const_get(optional_enum)
         end
-      end
-      class TestMessage
         def repeated_enum_const
           A::B::C::TestEnum.const_get(repeated_enum)
         end
-      end
-      class TestMessage
         def oneof_enum_const
           A::B::C::TestEnum.const_get(oneof_enum)
         end
