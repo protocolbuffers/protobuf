@@ -62,6 +62,8 @@ const char kThickSeparator[] =
 const char kThinSeparator[] =
   "// -------------------------------------------------------------------\n";
 
+const std::set<std::string> kReservedNames = { "default", "package" };
+
 namespace {
 
 const char* kDefaultPackage = "";
@@ -208,6 +210,14 @@ string CapitalizedFieldName(const FieldDescriptor* field) {
 
 string UnderscoresToCamelCase(const MethodDescriptor* method) {
   return UnderscoresToCamelCase(method->name(), false);
+}
+
+std::string UnderscoresToCamelCaseCheckReserved(const FieldDescriptor* field) {
+  std::string name = UnderscoresToCamelCase(field);
+  if (kReservedNames.find(name) != kReservedNames.end()) {
+    return name + "_";
+  }
+  return name;
 }
 
 string UniqueFileScopeIdentifier(const Descriptor* descriptor) {

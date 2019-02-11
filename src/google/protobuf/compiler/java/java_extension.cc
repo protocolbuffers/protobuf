@@ -67,7 +67,7 @@ void ExtensionGenerator::InitTemplateVars(
     ClassNameResolver* name_resolver, std::map<string, string>* vars_pointer) {
   std::map<string, string> &vars = *vars_pointer;
   vars["scope"] = scope;
-  vars["name"] = UnderscoresToCamelCase(descriptor);
+  vars["name"] = UnderscoresToCamelCaseCheckReserved(descriptor);
   vars["containing_type"] =
       name_resolver->GetClassName(descriptor->containing_type(), immutable);
   vars["number"] = StrCat(descriptor->number());
@@ -152,7 +152,7 @@ int ImmutableExtensionGenerator::GenerateNonNestedInitializationCode(
     // Only applies to non-nested extensions.
     printer->Print(
         "$name$.internalInit(descriptor.getExtensions().get($index$));\n",
-        "name", UnderscoresToCamelCase(descriptor_), "index",
+        "name", UnderscoresToCamelCaseCheckReserved(descriptor_), "index",
         StrCat(descriptor_->index()));
     bytecode_estimate += 21;
   }
@@ -164,7 +164,7 @@ int ImmutableExtensionGenerator::GenerateRegistrationCode(
   printer->Print(
     "registry.add($scope$.$name$);\n",
     "scope", scope_,
-    "name", UnderscoresToCamelCase(descriptor_));
+    "name", UnderscoresToCamelCaseCheckReserved(descriptor_));
   return 7;
 }
 
