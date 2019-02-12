@@ -395,6 +395,11 @@ VALUE Map_index_set(VALUE _self, VALUE key, VALUE value) {
   void* mem;
   key = table_key(self, key, keybuf, &keyval, &length);
 
+  if (TYPE(value) == T_HASH) {
+    VALUE args[1] = { value };
+    value = rb_class_new_instance(1, args, self->value_type_class);
+  }
+
   mem = value_memory(&v);
   native_slot_set("", self->value_type, self->value_type_class, mem, value);
 
