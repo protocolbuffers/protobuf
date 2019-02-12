@@ -706,6 +706,24 @@ module CommonTests
     assert proto_module::TestEnum::resolve(:C) == 3
   end
 
+  def test_enum_const_get_helpers
+    m = proto_module::TestMessage.new
+    assert_equal m.optional_enum_const, proto_module::TestEnum::Default
+    assert_equal proto_module::TestEnum.const_get(:Default), m.optional_enum_const
+
+    m = proto_module::TestMessage.new({optional_enum: proto_module::TestEnum::A})
+    assert_equal m.optional_enum_const, proto_module::TestEnum::A
+    assert_equal proto_module::TestEnum.const_get(:A), m.optional_enum_const
+
+    m = proto_module::TestMessage.new({optional_enum: proto_module::TestEnum::B})
+    assert_equal m.optional_enum_const, proto_module::TestEnum::B
+    assert_equal proto_module::TestEnum.const_get(:B), m.optional_enum_const
+
+    m = proto_module::TestMessage.new({optional_enum: proto_module::TestEnum::C})
+    assert_equal m.optional_enum_const, proto_module::TestEnum::C
+    assert_equal proto_module::TestEnum.const_get(:C), m.optional_enum_const
+  end
+
   def test_parse_serialize
     m = proto_module::TestMessage.new(:optional_int32 => 42,
                                       :optional_string => "hello world",
