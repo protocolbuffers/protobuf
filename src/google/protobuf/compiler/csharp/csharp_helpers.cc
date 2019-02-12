@@ -278,6 +278,19 @@ std::string GetEnumValueName(const std::string& enum_name, const std::string& en
   return result;
 }
 
+uint GetGroupEndTag(const Descriptor* descriptor) {
+  const Descriptor* containing_type = descriptor->containing_type();
+  if (containing_type == NULL) {
+    return 0;
+  }
+  const FieldDescriptor* field = containing_type->FindFieldByName(descriptor->name());
+  if (field != NULL && field->type() == FieldDescriptor::Type::TYPE_GROUP) {
+    return internal::WireFormatLite::MakeTag(field->number(), internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
+  } else {
+    return 0;
+  }
+}
+
 std::string ToCSharpName(const std::string& name, const FileDescriptor* file) {
   std::string result = GetFileNamespace(file);
   if (result != "") {
