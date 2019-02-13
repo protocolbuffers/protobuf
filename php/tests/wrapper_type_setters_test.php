@@ -225,4 +225,43 @@ class WrapperTypeSettersTest extends TestBase
             [TestWrapperSetters::class, BytesValue::class, 'bytes_value', 'getBytesValue', "nine"],
         ];
     }
+
+    /**
+     * @dataProvider invalidConstructorWithWrapperTypeDataProvider
+     * @expectedException \Exception
+     */
+    public function testInvalidConstructorWithWrapperType($class, $wrapperField, $value)
+    {
+        new $class([$wrapperField => $value]);
+    }
+
+    public function invalidConstructorWithWrapperTypeDataProvider()
+    {
+        return [
+            [TestWrapperSetters::class, 'repeated_string_value', ['eight']],
+            [TestWrapperSetters::class, 'map_string_value', ['key' => 'eight']],
+        ];
+    }
+
+    /**
+     * @dataProvider constructorWithRepeatedWrapperTypeDataProvider
+     */
+    public function testConstructorWithRepeatedWrapperType($class, $wrapperField, $getter, $value)
+    {
+        $actualInstance = new $class([$wrapperField => $value]);
+        $this->assertEquals($value, iterator_to_array($actualInstance->$getter()));
+    }
+
+    public function constructorWithRepeatedWrapperTypeDataProvider()
+    {
+        return [
+            [TestWrapperSetters::class, 'repeated_string_value', 'getRepeatedStringValue', [new StringValue(['value' => 'eight'])]],
+            [TestWrapperSetters::class, 'map_string_value', 'getMapStringValue', ['key' => new StringValue(['value' => 'eight'])]],
+        ];
+    }
+
+    /**
+     * @dataProvider invalidConstructorWithWrapperTypeDataProvider
+     * @expectedException \Exception
+     */
 }

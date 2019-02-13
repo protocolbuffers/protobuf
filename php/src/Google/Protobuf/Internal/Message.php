@@ -987,7 +987,7 @@ class Message
                     'Invalid message property: ' . $key);
             }
             $setter = $field->getSetter();
-            if ($field->isWrapperType()) {
+            if ($field->isWrapperType() && !($field->isRepeated() || $field->isMap())) {
                 self::normalizeToMessageType($value, $field->getMessageType()->getClass());
             }
             $this->$setter($value);
