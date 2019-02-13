@@ -71,6 +71,9 @@ static VALUE table_key(Map* self, VALUE key,
     case UPB_TYPE_BYTES:
     case UPB_TYPE_STRING:
       // Strings: use string content directly.
+      if (TYPE(key) == T_SYMBOL) {
+        key = rb_id2str(SYM2ID(key));
+      }
       Check_Type(key, T_STRING);
       key = native_slot_encode_and_freeze_string(self->key_type, key);
       *out_key = RSTRING_PTR(key);
