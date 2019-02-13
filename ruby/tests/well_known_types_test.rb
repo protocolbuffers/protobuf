@@ -140,7 +140,7 @@ class TestWellKnownTypes < Test::Unit::TestCase
     assert_equal ts, any.unpack(Google::Protobuf::Timestamp)
   end
 
-  def test_struct_assign
+  def test_struct_init
     s = Google::Protobuf::Struct.new(fields: {'a' => Google::Protobuf::Value.new({number_value: 4.4})})
     assert_equal 4.4, s['a']
 
@@ -148,10 +148,10 @@ class TestWellKnownTypes < Test::Unit::TestCase
     assert_equal 2.2, s['a']
 
     s = Google::Protobuf::Struct.new(fields: {a: {number_value: 1.1}})
-    assert_equal 1.1, s['a']
+    assert_equal 1.1, s[:a]
   end
 
-  def test_struct_nested_assign
+  def test_struct_nested_init
     s = Google::Protobuf::Struct.new(
       fields: {
         'a' => {string_value: 'A'},
