@@ -369,10 +369,10 @@ module BasicTest
       assert m.map_string_int32.frozen?
       assert m.map_string_msg.frozen?
 
-      assert_raise(ArgumentError) { m.map_string_int32['foo'] = 1 }
-      assert_raise(ArgumentError) { m.map_string_msg['bar'] = proto_module::TestMessage2.new }
-      assert_raise(ArgumentError) { m.map_string_int32.delete('a') }
-      assert_raise(ArgumentError) { m.map_string_int32.clear }
+      assert_raise(FrozenError) { m.map_string_int32['foo'] = 1 }
+      assert_raise(FrozenError) { m.map_string_msg['bar'] = proto_module::TestMessage2.new }
+      assert_raise(FrozenError) { m.map_string_int32.delete('a') }
+      assert_raise(FrozenError) { m.map_string_int32.clear }
     end
   end
 end
