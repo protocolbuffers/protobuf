@@ -216,9 +216,7 @@ VALUE Message_method_missing(int argc, VALUE* argv, VALUE _self) {
     if (argc != 2) {
       rb_raise(rb_eArgError, "Expected 2 arguments, received %d", argc);
     }
-    if (rb_obj_frozen_p(_self)) {
-      rb_raise(rb_eArgError, "object is frozen");
-    }
+    rb_check_frozen(_self);
   } else if (argc != 1) {
     rb_raise(rb_eArgError, "Expected 1 argument, received %d", argc);
   }

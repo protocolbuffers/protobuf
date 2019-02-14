@@ -1125,32 +1125,32 @@ module CommonTests
     m.optional_int32 = 10
     m.freeze
 
-    assert_raise(ArgumentError, 'object is frozen') do
+    assert_raise(FrozenError, 'can\'t modify frozen BasicTestProto2::TestMessage') do
       m.optional_int32 = 20
     end
     assert_equal 10, m.optional_int32
     assert_equal true, m.frozen?
 
-    assert_raise(ArgumentError) { m.optional_int64 = 2 }
-    assert_raise(ArgumentError) { m.optional_uint32 = 3 }
-    assert_raise(ArgumentError) { m.optional_uint64 = 4 }
-    assert_raise(ArgumentError) { m.optional_bool = true }
-    assert_raise(ArgumentError) { m.optional_float = 6.0 }
-    assert_raise(ArgumentError) { m.optional_double = 7.0 }
-    assert_raise(ArgumentError) { m.optional_string = '8' }
-    assert_raise(ArgumentError) { m.optional_bytes = nil }
-    assert_raise(ArgumentError) { m.optional_msg = proto_module::TestMessage2.new }
-    assert_raise(ArgumentError) { m.optional_enum = :A }
-    assert_raise(ArgumentError) { m.repeated_int32 = 1 }
-    assert_raise(ArgumentError) { m.repeated_int64 = 2 }
-    assert_raise(ArgumentError) { m.repeated_uint32 = 3 }
-    assert_raise(ArgumentError) { m.repeated_uint64 = 4 }
-    assert_raise(ArgumentError) { m.repeated_bool = true }
-    assert_raise(ArgumentError) { m.repeated_float = 6.0 }
-    assert_raise(ArgumentError) { m.repeated_double = 7.0 }
-    assert_raise(ArgumentError) { m.repeated_string = '8' }
-    assert_raise(ArgumentError) { m.repeated_bytes = nil }
-    assert_raise(ArgumentError) { m.repeated_msg = proto_module::TestMessage2.new }
-    assert_raise(ArgumentError) { m.repeated_enum = :A }
+    assert_raise(FrozenError) { m.optional_int64 = 2 }
+    assert_raise(FrozenError) { m.optional_uint32 = 3 }
+    assert_raise(FrozenError) { m.optional_uint64 = 4 }
+    assert_raise(FrozenError) { m.optional_bool = true }
+    assert_raise(FrozenError) { m.optional_float = 6.0 }
+    assert_raise(FrozenError) { m.optional_double = 7.0 }
+    assert_raise(FrozenError) { m.optional_string = '8' }
+    assert_raise(FrozenError) { m.optional_bytes = nil }
+    assert_raise(FrozenError) { m.optional_msg = proto_module::TestMessage2.new }
+    assert_raise(FrozenError) { m.optional_enum = :A }
+    assert_raise(FrozenError) { m.repeated_int32 = 1 }
+    assert_raise(FrozenError) { m.repeated_int64 = 2 }
+    assert_raise(FrozenError) { m.repeated_uint32 = 3 }
+    assert_raise(FrozenError) { m.repeated_uint64 = 4 }
+    assert_raise(FrozenError) { m.repeated_bool = true }
+    assert_raise(FrozenError) { m.repeated_float = 6.0 }
+    assert_raise(FrozenError) { m.repeated_double = 7.0 }
+    assert_raise(FrozenError) { m.repeated_string = '8' }
+    assert_raise(FrozenError) { m.repeated_bytes = nil }
+    assert_raise(FrozenError) { m.repeated_msg = proto_module::TestMessage2.new }
+    assert_raise(FrozenError) { m.repeated_enum = :A }
   end
 end
