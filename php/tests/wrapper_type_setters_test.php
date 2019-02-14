@@ -238,8 +238,16 @@ class WrapperTypeSettersTest extends TestBase
     public function invalidConstructorWithWrapperTypeDataProvider()
     {
         return [
-            [TestWrapperSetters::class, 'repeated_string_value', ['eight']],
-            [TestWrapperSetters::class, 'map_string_value', ['key' => 'eight']],
+            [TestWrapperSetters::class, 'repeated_string_value', null],
+            // The below is an error case, but we can't test it as the RepeatedField
+            // class uses trigger_error in this case.
+            // [TestWrapperSetters::class, 'repeated_string_value', [null]],
+            [TestWrapperSetters::class, 'repeated_string_value', [new stdClass()]],
+            [TestWrapperSetters::class, 'map_string_value', null],
+            // The below is an error case, but we can't test it as the MapField
+            // class uses trigger_error in this case.
+            //[TestWrapperSetters::class, 'map_string_value', ['key' => null]],
+            [TestWrapperSetters::class, 'map_string_value', ['key' => new stdClass()]],
         ];
     }
 
@@ -249,14 +257,81 @@ class WrapperTypeSettersTest extends TestBase
     public function testConstructorWithRepeatedWrapperType($class, $wrapperField, $getter, $value)
     {
         $actualInstance = new $class([$wrapperField => $value]);
-        $this->assertEquals($value, iterator_to_array($actualInstance->$getter()));
+        foreach ($actualInstance->$getter() as $key => $actualWrapperValue) {
+            $actualInnerValue = $actualWrapperValue->getValue();
+            $expectedElement = $value[$key];
+            if (is_object($expectedElement) && is_a($expectedElement, '\Google\Protobuf\StringValue')) {
+                $expectedInnerValue = $expectedElement->getValue();
+            } else {
+                $expectedInnerValue = $expectedElement;
+            }
+            $this->assertEquals($expectedInnerValue, $actualInnerValue);
+        }
     }
 
     public function constructorWithRepeatedWrapperTypeDataProvider()
     {
+        $sv7 = new StringValue(['value' => 'seven']);
+        $sv8 = new StringValue(['value' => 'eight']);
+
+        $testWrapperSetters = new TestWrapperSetters();
+        $testWrapperSetters->setRepeatedStringValue([$sv7, $sv8]);
+        $repeatedField = $testWrapperSetters->getRepeatedStringValue();
+
         return [
-            [TestWrapperSetters::class, 'repeated_string_value', 'getRepeatedStringValue', [new StringValue(['value' => 'eight'])]],
-            [TestWrapperSetters::class, 'map_string_value', 'getMapStringValue', ['key' => new StringValue(['value' => 'eight'])]],
+            [TestWrapperSetters::class, 'repeated_string_value', 'getRepeatedStringValue', []],
+            [TestWrapperSetters::class, 'repeated_string_value', 'getRepeatedStringValue', [$sv7]],
+            [TestWrapperSetters::class, 'repeated_string_value', 'getRepeatedStringValue', [$sv7, $sv8]],
+            [TestWrapperSetters::class, 'repeated_string_value', 'getRepeatedStringValue', ['seven']],
+            [TestWrapperSetters::class, 'repeated_string_value', 'getRepeatedStringValue', [7]],
+            [TestWrapperSetters::class, 'repeated_string_value', 'getRepeatedStringValue', [7.7]],
+            [TestWrapperSetters::class, 'repeated_string_value', 'getRepeatedStringValue', ['seven', 'eight']],
+            [TestWrapperSetters::class, 'repeated_string_value', 'getRepeatedStringValue', [$sv7, 'eight']],
+            [TestWrapperSetters::class, 'repeated_string_value', 'getRepeatedStringValue', ['seven', $sv8]],
+            [TestWrapperSetters::class, 'repeated_string_value', 'getRepeatedStringValue', $repeatedField],
+        ];
+    }
+
+    /**
+     * @dataProvider constructorWithMapWrapperTypeDataProvider
+     */
+    public function testConstructorWithMapWrapperType($class, $wrapperField, $getter, $value)
+    {
+        $actualInstance = new $class([$wrapperField => $value]);
+        foreach ($actualInstance->$getter() as $key => $actualWrapperValue) {
+            $actualInnerValue = $actualWrapperValue->getValue();
+            $expectedElement = $value[$key];
+            if (is_object($expectedElement) && is_a($expectedElement, '\Google\Protobuf\StringValue')) {
+                $expectedInnerValue = $expectedElement->getValue();
+            } elseif (is_object($expectedElement) && is_a($expectedElement, '\Google\Protobuf\Internal\MapEntry')) {
+                $expectedInnerValue = $expectedElement->getValue()->getValue();
+            } else {
+                $expectedInnerValue = $expectedElement;
+            }
+            $this->assertEquals($expectedInnerValue, $actualInnerValue);
+        }
+    }
+
+    public function constructorWithMapWrapperTypeDataProvider()
+    {
+        $sv7 = new StringValue(['value' => 'seven']);
+        $sv8 = new StringValue(['value' => 'eight']);
+
+        $testWrapperSetters = new TestWrapperSetters();
+        $testWrapperSetters->setMapStringValue(['key' => $sv7, 'key2' => $sv8]);
+        $mapField = $testWrapperSetters->getMapStringValue();
+
+        return [
+            [TestWrapperSetters::class, 'map_string_value', 'getMapStringValue', []],
+            [TestWrapperSetters::class, 'map_string_value', 'getMapStringValue', ['key' => $sv7]],
+            [TestWrapperSetters::class, 'map_string_value', 'getMapStringValue', ['key' => $sv7, 'key2' => $sv8]],
+            [TestWrapperSetters::class, 'map_string_value', 'getMapStringValue', ['key' => 'seven']],
+            [TestWrapperSetters::class, 'map_string_value', 'getMapStringValue', ['key' => 7]],
+            [TestWrapperSetters::class, 'map_string_value', 'getMapStringValue', ['key' => 7.7]],
+            [TestWrapperSetters::class, 'map_string_value', 'getMapStringValue', ['key' => 'seven', 'key2' => 'eight']],
+            [TestWrapperSetters::class, 'map_string_value', 'getMapStringValue', ['key' => $sv7, 'key2' => 'eight']],
+            [TestWrapperSetters::class, 'map_string_value', 'getMapStringValue', ['key' => 'seven', 'key2' => $sv8]],
+            [TestWrapperSetters::class, 'map_string_value', 'getMapStringValue', $mapField],
         ];
     }
 }

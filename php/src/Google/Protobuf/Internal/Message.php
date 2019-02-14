@@ -987,10 +987,56 @@ class Message
                     'Invalid message property: ' . $key);
             }
             $setter = $field->getSetter();
-            if ($field->isWrapperType() && !$field->isRepeated()) {
-                self::normalizeToMessageType($value, $field->getMessageType()->getClass());
+            if ($field->isMap()) {
+                $valueField = $field->getMessageType()->getFieldByName('value');
+                if (!is_null($valueField) && $valueField->isWrapperType()) {
+                    self::normalizeArrayElementsToMessageType($value, $valueField->getMessageType()->getClass());
+                }
+            } elseif ($field->isWrapperType()) {
+                $class = $field->getMessageType()->getClass();
+                if ($field->isRepeated()) {
+                    self::normalizeArrayElementsToMessageType($value, $class);
+                } else {
+                    self::normalizeToMessageType($value, $class);
+                }
             }
             $this->$setter($value);
+        }
+    }
+
+    /**
+     * Tries to normalize the elements in $value into a provided protobuf
+     * wrapper type $class. If $value is any type other than array, we do
+     * not do any conversion, and instead rely on the existing protobuf
+     * type checking. If $value is an array, we process each element and
+     * try to convert it to an instance of $class.
+     *
+     * @param mixed $value The array of values to normalize.
+     * @param string $class The expected wrapper class name
+     * @throws \Exception If an element of $value cannot be converted
+     */
+    private static function normalizeArrayElementsToMessageType(&$value, $class)
+    {
+        if (!is_array($value)) {
+            // In the case that $value is not an array, we do not want to
+            // attempt any conversion. Note that this includes the cases
+            // when $value is a RepeatedField of MapField. In those cases,
+            // we do not need to convert the elements, as they should
+            // already be the correct types.
+            return;
+        } else {
+            // Try to instantiate $class and set the value
+            try {
+                foreach ($value as $key => &$elementValue) {
+                  self::normalizeToMessageType($elementValue, $class);
+                }
+            } catch (\Exception $exception) {
+                throw new \Exception(
+                    "Error normalizing element to type '$class': " . $exception->getMessage(),
+                    $exception->getCode(),
+                    $exception
+                );
+            }
         }
     }
 
