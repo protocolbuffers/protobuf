@@ -1125,9 +1125,8 @@ module CommonTests
     m.optional_int32 = 10
     m.freeze
 
-    assert_raise(FrozenError, 'can\'t modify frozen BasicTestProto2::TestMessage') do
-      m.optional_int32 = 20
-    end
+    frozen_error = assert_raise(FrozenError) { m.optional_int32 = 20 }
+    assert_equal "can't modify frozen #{proto_module}::TestMessage", frozen_error.message
     assert_equal 10, m.optional_int32
     assert_equal true, m.frozen?
 
