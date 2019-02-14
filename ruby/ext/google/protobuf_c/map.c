@@ -388,6 +388,10 @@ VALUE Map_index(VALUE _self, VALUE key) {
 VALUE Map_index_set(VALUE _self, VALUE key, VALUE value) {
   Map* self = ruby_to_Map(_self);
 
+  if (rb_obj_frozen_p(_self)) {
+    rb_raise(rb_eArgError, "object is frozen");
+  }
+
   char keybuf[TABLE_KEY_BUF_LENGTH];
   const char* keyval = NULL;
   size_t length = 0;
@@ -440,6 +444,10 @@ VALUE Map_has_key(VALUE _self, VALUE key) {
 VALUE Map_delete(VALUE _self, VALUE key) {
   Map* self = ruby_to_Map(_self);
 
+  if (rb_obj_frozen_p(_self)) {
+    rb_raise(rb_eArgError, "object is frozen");
+  }
+
   char keybuf[TABLE_KEY_BUF_LENGTH];
   const char* keyval = NULL;
   size_t length = 0;
@@ -462,6 +470,10 @@ VALUE Map_delete(VALUE _self, VALUE key) {
  */
 VALUE Map_clear(VALUE _self) {
   Map* self = ruby_to_Map(_self);
+
+  if (rb_obj_frozen_p(_self)) {
+    rb_raise(rb_eArgError, "object is frozen");
+  }
 
   // Uninit and reinit the table -- this is faster than iterating and doing a
   // delete-lookup on each key.
