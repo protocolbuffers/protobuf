@@ -259,9 +259,4 @@ class WrapperTypeSettersTest extends TestBase
             [TestWrapperSetters::class, 'map_string_value', 'getMapStringValue', ['key' => new StringValue(['value' => 'eight'])]],
         ];
     }
-
-    /**
-     * @dataProvider invalidConstructorWithWrapperTypeDataProvider
-     * @expectedException \Exception
-     */
 }
