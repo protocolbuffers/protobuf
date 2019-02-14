@@ -164,10 +164,18 @@ class TestWellKnownTypes < Test::Unit::TestCase
       }
     )
     assert_equal 'A', s['a']
+    assert_equal 'A', s[:a]
     expected_b_x = [Google::Protobuf::Value.new(number_value: 1.0), Google::Protobuf::Value.new(string_value: "ok")]
     assert_equal expected_b_x, s['b']['x'].values
+    assert_equal expected_b_x, s[:b][:x].values
+    assert_equal expected_b_x, s['b'][:x].values
+    assert_equal expected_b_x, s[:b]['x'].values
     assert_equal true, s['b']['y']
+    assert_equal true, s[:b][:y]
+    assert_equal true, s[:b]['y']
+    assert_equal true, s['b'][:y]
     assert_equal Google::Protobuf::Struct.new, s['c']
+    assert_equal Google::Protobuf::Struct.new, s[:c]
 
     s = Google::Protobuf::Struct.new(
       fields: {
@@ -178,7 +186,11 @@ class TestWellKnownTypes < Test::Unit::TestCase
         }
       }
     )
+    assert_equal 'Eh', s['a']
     assert_equal 'Eh', s[:a]
+    assert_equal false, s['b']['y']
     assert_equal false, s[:b][:y]
+    assert_equal false, s['b'][:y]
+    assert_equal false, s[:b]['y']
   end
 end
