@@ -973,9 +973,12 @@ class Message
      * ]);
      * ```
      *
+     * This method will trigger an error if it is passed data that cannot
+     * be converted to the correct type. For example, a StringValue field
+     * must receive data that is either a string or a StringValue object.
+     *
      * @param array $array An array containing message properties and values.
      * @return null.
-     * @throws \Exception Invalid data.
      */
     protected function mergeFromArray(array $array)
     {
@@ -1013,7 +1016,6 @@ class Message
      *
      * @param mixed $value The array of values to normalize.
      * @param string $class The expected wrapper class name
-     * @throws \Exception If an element of $value cannot be converted
      */
     private static function normalizeArrayElementsToMessageType(&$value, $class)
     {
@@ -1038,9 +1040,11 @@ class Message
      * instance of $class and assign $value to it using the setValue method
      * shared by all wrapper types.
      *
+     * This method will raise an error if it receives a type that cannot be
+     * assigned to the wrapper type via setValue.
+     *
      * @param mixed $value The value to normalize.
      * @param string $class The expected wrapper class name
-     * @throws \Exception If $value cannot be converted to a wrapper type
      */
     private static function normalizeToMessageType(&$value, $class)
     {
