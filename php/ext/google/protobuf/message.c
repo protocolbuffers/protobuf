@@ -329,7 +329,6 @@ static void set_wrapper_message_as_map_value(
   zval* val = NULL;
   MAKE_STD_ZVAL(val);
   ZVAL_OBJ(val, subklass->create_object(subklass TSRMLS_CC));
-  repeated_field_push_native(intern, &val);
   map_field_handlers->write_dimension(
       map, key, val TSRMLS_CC);
   submsg = UNBOX(MessageHeader, val);
