@@ -77,29 +77,15 @@ public final class WireFormat {
    * only here to support the lite runtime and should not be used by users.
    */
   public enum JavaType {
-    INT(0),
-    LONG(0L),
-    FLOAT(0F),
-    DOUBLE(0D),
-    BOOLEAN(false),
-    STRING(""),
-    BYTE_STRING(ByteString.EMPTY),
-    ENUM(null),
-    MESSAGE(null);
-
-    JavaType(final Object defaultDefault) {
-      this.defaultDefault = defaultDefault;
-    }
-
-    /**
-     * The default default value for fields of this type, if it's a primitive
-     * type.
-     */
-    Object getDefaultDefault() {
-      return defaultDefault;
-    }
-
-    private final Object defaultDefault;
+    INT,
+    LONG,
+    FLOAT,
+    DOUBLE,
+    BOOLEAN,
+    STRING,
+    BYTE_STRING,
+    ENUM,
+    MESSAGE;
   }
 
   /**
