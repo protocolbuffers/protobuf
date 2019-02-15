@@ -416,26 +416,33 @@ int GeneratePackageModules(
     const FileDescriptor* file,
     google::protobuf::io::Printer* printer) {
   int levels = 0;
-  bool need_change_to_module;
+  bool need_change_to_module = true;
   std::string package_name;
 
+  // Determine the name to use in either format:
+  //   proto package:         one.two.three
+  //   option ruby_package:   One::Two::Three
   if (file->options().has_ruby_package()) {
     package_name = file->options().ruby_package();
     need_change_to_module = false;
   } else {
     package_name = file->package();
-    need_change_to_module = true;
   }
 
+  // Use the appropriate delimter
+  string delimiter = need_change_to_module ? "." : "::";
+  int delimiter_size = need_change_to_module ? 1 : 2;
+
+  // Extract each module name and indent
   while (!package_name.empty()) {
-    size_t dot_index = package_name.find(".");
+    size_t dot_index = package_name.find(delimiter);
     string component;
     if (dot_index == string::npos) {
       component = package_name;
       package_name = "";
     } else {
       component = package_name.substr(0, dot_index);
-      package_name = package_name.substr(dot_index + 1);
+      package_name = package_name.substr(dot_index + delimiter_size);
     }
     if (need_change_to_module) {
       component = PackageToModule(component);
