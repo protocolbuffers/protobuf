@@ -226,30 +226,30 @@ class WrapperTypeSettersTest extends TestBase
         ];
     }
 
-    /**
-     * @dataProvider invalidConstructorWithWrapperTypeDataProvider
-     * @expectedException \Exception
-     */
-    public function testInvalidConstructorWithWrapperType($class, $wrapperField, $value)
-    {
-        new $class([$wrapperField => $value]);
-    }
+    // /**
+    //  * @dataProvider invalidConstructorWithWrapperTypeDataProvider
+    //  * @expectedException \Exception
+    //  */
+    // public function testInvalidConstructorWithWrapperType($class, $wrapperField, $value)
+    // {
+    //     new $class([$wrapperField => $value]);
+    // }
 
-    public function invalidConstructorWithWrapperTypeDataProvider()
-    {
-        return [
-            [TestWrapperSetters::class, 'repeated_string_value', null],
-            // The below is an error case, but we can't test it as the RepeatedField
-            // class uses trigger_error in this case.
-            // [TestWrapperSetters::class, 'repeated_string_value', [null]],
-            [TestWrapperSetters::class, 'repeated_string_value', [new stdClass()]],
-            [TestWrapperSetters::class, 'map_string_value', null],
-            // The below is an error case, but we can't test it as the MapField
-            // class uses trigger_error in this case.
-            //[TestWrapperSetters::class, 'map_string_value', ['key' => null]],
-            [TestWrapperSetters::class, 'map_string_value', ['key' => new stdClass()]],
-        ];
-    }
+    // public function invalidConstructorWithWrapperTypeDataProvider()
+    // {
+    //     return [
+    //         [TestWrapperSetters::class, 'repeated_string_value', null],
+    //         // The below is an error case, but we can't test it as the RepeatedField
+    //         // class uses trigger_error in this case.
+    //         // [TestWrapperSetters::class, 'repeated_string_value', [null]],
+    //         [TestWrapperSetters::class, 'repeated_string_value', [new stdClass()]],
+    //         [TestWrapperSetters::class, 'map_string_value', null],
+    //         // The below is an error case, but we can't test it as the MapField
+    //         // class uses trigger_error in this case.
+    //         //[TestWrapperSetters::class, 'map_string_value', ['key' => null]],
+    //         [TestWrapperSetters::class, 'map_string_value', ['key' => new stdClass()]],
+    //     ];
+    // }
 
     /**
      * @dataProvider constructorWithRepeatedWrapperTypeDataProvider
