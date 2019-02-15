@@ -1810,20 +1810,6 @@ TEST_F(TextFormatParserTest, ParseDeprecatedField) {
                 "\"deprecated_int32\"", 1, 21, &message, true);
 }
 
-TEST_F(TextFormatParserTest, DeepRecursion) {
-  const char* format = "child: { $0 }";
-  std::string input;
-  for (int i = 0; i < 100; ++i)
-    input = strings::Substitute(format, input);
-
-  unittest::NestedTestAllTypes message;
-  ExpectSuccessAndTree(input, &message, nullptr);
-
-  input = strings::Substitute(format, input);
-  ExpectMessage(input,
-                "Message is too deep", 1, 908, &message, false);
-}
-
 class TextFormatMessageSetTest : public testing::Test {
  protected:
   static const char proto_debug_string_[];
