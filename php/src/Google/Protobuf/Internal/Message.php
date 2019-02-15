@@ -1025,17 +1025,9 @@ class Message
             // already be the correct types.
             return;
         } else {
-            // Try to instantiate $class and set the value
-            try {
-                foreach ($value as $key => &$elementValue) {
-                  self::normalizeToMessageType($elementValue, $class);
-                }
-            } catch (\Exception $exception) {
-                throw new \Exception(
-                    "Error normalizing element to type '$class': " . $exception->getMessage(),
-                    $exception->getCode(),
-                    $exception
-                );
+            // Normalize each element in the array.
+            foreach ($value as $key => &$elementValue) {
+              self::normalizeToMessageType($elementValue, $class);
             }
         }
     }
@@ -1065,10 +1057,9 @@ class Message
                 $value = $msg;
                 return;
             } catch (\Exception $exception) {
-                throw new \Exception(
+                trigger_error(
                     "Error normalizing value to type '$class': " . $exception->getMessage(),
-                    $exception->getCode(),
-                    $exception
+                    E_USER_ERROR
                 );
             }
         }

@@ -226,37 +226,12 @@ class WrapperTypeSettersTest extends TestBase
         ];
     }
 
-    // /**
-    //  * @dataProvider invalidConstructorWithWrapperTypeDataProvider
-    //  * @expectedException \Exception
-    //  */
-    // public function testInvalidConstructorWithWrapperType($class, $wrapperField, $value)
-    // {
-    //     new $class([$wrapperField => $value]);
-    // }
-
-    // public function invalidConstructorWithWrapperTypeDataProvider()
-    // {
-    //     return [
-    //         [TestWrapperSetters::class, 'repeated_string_value', null],
-    //         // The below is an error case, but we can't test it as the RepeatedField
-    //         // class uses trigger_error in this case.
-    //         // [TestWrapperSetters::class, 'repeated_string_value', [null]],
-    //         [TestWrapperSetters::class, 'repeated_string_value', [new stdClass()]],
-    //         [TestWrapperSetters::class, 'map_string_value', null],
-    //         // The below is an error case, but we can't test it as the MapField
-    //         // class uses trigger_error in this case.
-    //         //[TestWrapperSetters::class, 'map_string_value', ['key' => null]],
-    //         [TestWrapperSetters::class, 'map_string_value', ['key' => new stdClass()]],
-    //     ];
-    // }
-
     /**
      * @dataProvider constructorWithRepeatedWrapperTypeDataProvider
      */
-    public function testConstructorWithRepeatedWrapperType($class, $wrapperField, $getter, $value)
+    public function testConstructorWithRepeatedWrapperType($wrapperField, $getter, $value)
     {
-        $actualInstance = new $class([$wrapperField => $value]);
+        $actualInstance = new TestWrapperSetters([$wrapperField => $value]);
         foreach ($actualInstance->$getter() as $key => $actualWrapperValue) {
             $actualInnerValue = $actualWrapperValue->getValue();
             $expectedElement = $value[$key];
@@ -279,25 +254,25 @@ class WrapperTypeSettersTest extends TestBase
         $repeatedField = $testWrapperSetters->getRepeatedStringValue();
 
         return [
-            [TestWrapperSetters::class, 'repeated_string_value', 'getRepeatedStringValue', []],
-            [TestWrapperSetters::class, 'repeated_string_value', 'getRepeatedStringValue', [$sv7]],
-            [TestWrapperSetters::class, 'repeated_string_value', 'getRepeatedStringValue', [$sv7, $sv8]],
-            [TestWrapperSetters::class, 'repeated_string_value', 'getRepeatedStringValue', ['seven']],
-            [TestWrapperSetters::class, 'repeated_string_value', 'getRepeatedStringValue', [7]],
-            [TestWrapperSetters::class, 'repeated_string_value', 'getRepeatedStringValue', [7.7]],
-            [TestWrapperSetters::class, 'repeated_string_value', 'getRepeatedStringValue', ['seven', 'eight']],
-            [TestWrapperSetters::class, 'repeated_string_value', 'getRepeatedStringValue', [$sv7, 'eight']],
-            [TestWrapperSetters::class, 'repeated_string_value', 'getRepeatedStringValue', ['seven', $sv8]],
-            [TestWrapperSetters::class, 'repeated_string_value', 'getRepeatedStringValue', $repeatedField],
+            ['repeated_string_value', 'getRepeatedStringValue', []],
+            ['repeated_string_value', 'getRepeatedStringValue', [$sv7]],
+            ['repeated_string_value', 'getRepeatedStringValue', [$sv7, $sv8]],
+            ['repeated_string_value', 'getRepeatedStringValue', ['seven']],
+            ['repeated_string_value', 'getRepeatedStringValue', [7]],
+            ['repeated_string_value', 'getRepeatedStringValue', [7.7]],
+            ['repeated_string_value', 'getRepeatedStringValue', ['seven', 'eight']],
+            ['repeated_string_value', 'getRepeatedStringValue', [$sv7, 'eight']],
+            ['repeated_string_value', 'getRepeatedStringValue', ['seven', $sv8]],
+            ['repeated_string_value', 'getRepeatedStringValue', $repeatedField],
         ];
     }
 
     /**
      * @dataProvider constructorWithMapWrapperTypeDataProvider
      */
-    public function testConstructorWithMapWrapperType($class, $wrapperField, $getter, $value)
+    public function testConstructorWithMapWrapperType($wrapperField, $getter, $value)
     {
-        $actualInstance = new $class([$wrapperField => $value]);
+        $actualInstance = new TestWrapperSetters([$wrapperField => $value]);
         foreach ($actualInstance->$getter() as $key => $actualWrapperValue) {
             $actualInnerValue = $actualWrapperValue->getValue();
             $expectedElement = $value[$key];
@@ -322,16 +297,16 @@ class WrapperTypeSettersTest extends TestBase
         $mapField = $testWrapperSetters->getMapStringValue();
 
         return [
-            [TestWrapperSetters::class, 'map_string_value', 'getMapStringValue', []],
-            [TestWrapperSetters::class, 'map_string_value', 'getMapStringValue', ['key' => $sv7]],
-            [TestWrapperSetters::class, 'map_string_value', 'getMapStringValue', ['key' => $sv7, 'key2' => $sv8]],
-            [TestWrapperSetters::class, 'map_string_value', 'getMapStringValue', ['key' => 'seven']],
-            [TestWrapperSetters::class, 'map_string_value', 'getMapStringValue', ['key' => 7]],
-            [TestWrapperSetters::class, 'map_string_value', 'getMapStringValue', ['key' => 7.7]],
-            [TestWrapperSetters::class, 'map_string_value', 'getMapStringValue', ['key' => 'seven', 'key2' => 'eight']],
-            [TestWrapperSetters::class, 'map_string_value', 'getMapStringValue', ['key' => $sv7, 'key2' => 'eight']],
-            [TestWrapperSetters::class, 'map_string_value', 'getMapStringValue', ['key' => 'seven', 'key2' => $sv8]],
-            [TestWrapperSetters::class, 'map_string_value', 'getMapStringValue', $mapField],
+            ['map_string_value', 'getMapStringValue', []],
+            ['map_string_value', 'getMapStringValue', ['key' => $sv7]],
+            ['map_string_value', 'getMapStringValue', ['key' => $sv7, 'key2' => $sv8]],
+            ['map_string_value', 'getMapStringValue', ['key' => 'seven']],
+            ['map_string_value', 'getMapStringValue', ['key' => 7]],
+            ['map_string_value', 'getMapStringValue', ['key' => 7.7]],
+            ['map_string_value', 'getMapStringValue', ['key' => 'seven', 'key2' => 'eight']],
+            ['map_string_value', 'getMapStringValue', ['key' => $sv7, 'key2' => 'eight']],
+            ['map_string_value', 'getMapStringValue', ['key' => 'seven', 'key2' => $sv8]],
+            ['map_string_value', 'getMapStringValue', $mapField],
         ];
     }
 }
