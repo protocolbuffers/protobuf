@@ -711,22 +711,21 @@ module CommonTests
   def test_repeated_push
     m = proto_module::TestMessage.new
 
-    m.repeated_string << "one"
-    m.repeated_string.push "two"
-    assert_equal ["one", "two"], m.repeated_string
+    m.repeated_string += ['one']
+    m.repeated_string += %w[two three]
+    assert_equal %w[one two three], m.repeated_string
 
-    m.repeated_string.push ["three", "four"]
-    assert_equal ["one", "two", "three", "four"], m.repeated_string
+    m.repeated_string.push *['four', 'five']
+    assert_equal %w[one two three four five], m.repeated_string
 
-    m.repeated_string << ["five"]
-    assert_equal ["one", "two", "three", "four", "five"], m.repeated_string
+    m.repeated_string.push 'six', 'seven'
+    assert_equal %w[one two three four five six seven], m.repeated_string
 
     m = proto_module::TestMessage.new
 
-    m.repeated_msg << proto_module::TestMessage2.new(:foo => 1)
-    m.repeated_msg.push proto_module::TestMessage2.new(:foo => 2)
-    m.repeated_msg << [proto_module::TestMessage2.new(:foo => 3)]
-    m.repeated_msg.push [proto_module::TestMessage2.new(:foo => 4)]
+    m.repeated_msg += [proto_module::TestMessage2.new(:foo => 1), proto_module::TestMessage2.new(:foo => 2)]
+    m.repeated_msg += [proto_module::TestMessage2.new(:foo => 3)]
+    m.repeated_msg.push proto_module::TestMessage2.new(:foo => 4)
     assert_equal [1, 2, 3, 4], m.repeated_msg.map {|x| x.foo}
   end
 

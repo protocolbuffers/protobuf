@@ -30,8 +30,6 @@
 
 #include "protobuf.h"
 
-VALUE RepeatedField_concat(VALUE _self, VALUE list);
-
 // -----------------------------------------------------------------------------
 // Repeated field container type.
 // -----------------------------------------------------------------------------
@@ -212,10 +210,6 @@ void RepeatedField_reserve(RepeatedField* self, int new_size) {
  * Adds a new element to the repeated field.
  */
 VALUE RepeatedField_push(VALUE _self, VALUE val) {
-  if (TYPE(val) == T_ARRAY) {
-    return RepeatedField_concat(_self, val);
-  }
-
   RepeatedField* self = ruby_to_RepeatedField(_self);
   upb_fieldtype_t field_type = self->field_type;
   int element_size = native_slot_size(field_type);
@@ -229,6 +223,12 @@ VALUE RepeatedField_push(VALUE _self, VALUE val) {
   return _self;
 }
 
+VALUE RepeatedField_push_vararg(VALUE _self, VALUE args) {
+  for (int i = 0; i < RARRAY_LEN(args); i++) {
+    RepeatedField_push(_self, rb_ary_entry(args, i));
+  }
+  return _self;
+}
 
 // Used by parsing handlers.
 void RepeatedField_push_native(VALUE _self, void* data) {
@@ -641,7 +641,7 @@ void RepeatedField_register(VALUE module) {
   rb_define_method(klass, "[]", RepeatedField_index, -1);
   rb_define_method(klass, "at", RepeatedField_index, -1);
   rb_define_method(klass, "[]=", RepeatedField_index_set, 2);
-  rb_define_method(klass, "push", RepeatedField_push, 1);
+  rb_define_method(klass, "push", RepeatedField_push_vararg, -2);
   rb_define_method(klass, "<<", RepeatedField_push, 1);
   rb_define_private_method(klass, "pop_one", RepeatedField_pop_one, 0);
   rb_define_method(klass, "replace", RepeatedField_replace, 1);

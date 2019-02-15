@@ -221,7 +221,7 @@ class RepeatedFieldTest < Test::Unit::TestCase
 
   def test_push
     m = TestMessage.new
-    reference_arr = %w(foo bar baz)
+    reference_arr = %w[foo bar baz]
     m.repeated_string += reference_arr.clone
 
     check_self_modifying_method(m.repeated_string, reference_arr) do |arr|
@@ -230,10 +230,9 @@ class RepeatedFieldTest < Test::Unit::TestCase
     check_self_modifying_method(m.repeated_string, reference_arr) do |arr|
       arr << 'fizz'
     end
-    #TODO: push should support multiple
-    # check_self_modifying_method(m.repeated_string, reference_arr) do |arr|
-    #   arr.push('fizz', 'buzz')
-    # end
+    check_self_modifying_method(m.repeated_string, reference_arr) do |arr|
+      arr.push('fizz', 'buzz')
+    end
   end
 
   def test_clear
