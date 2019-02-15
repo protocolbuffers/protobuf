@@ -731,6 +731,7 @@ module CommonTests
     assert_equal 2, m.optional_enum_const
     assert_equal [:A, :C], m.repeated_enum
     assert_equal [1, 3], m.repeated_enum_const
+    assert_equal [proto_module::TestEnum::A, proto_module::TestEnum::C], m.repeated_enum_const
   end
 
   def test_enum_getter_oneof
@@ -738,6 +739,7 @@ module CommonTests
 
     assert_equal :C, m.const
     assert_equal 3, m.const_const
+    assert_equal proto_module::TestEnum::C, m.const_const
   end
 
   def test_enum_getter_only_enums
