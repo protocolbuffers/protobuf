@@ -729,6 +729,7 @@ module CommonTests
 
     assert_equal :B, m.optional_enum
     assert_equal 2, m.optional_enum_const
+    assert_equal proto_module::TestEnum::B, m.optional_enum_const
     assert_equal [:A, :C], m.repeated_enum
     assert_equal [1, 3], m.repeated_enum_const
     assert_equal [proto_module::TestEnum::A, proto_module::TestEnum::C], m.repeated_enum_const
