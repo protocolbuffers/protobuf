@@ -30,6 +30,8 @@
 
 #include "protobuf.h"
 
+VALUE RepeatedField_concat(VALUE _self, VALUE list);
+
 // -----------------------------------------------------------------------------
 // Repeated field container type.
 // -----------------------------------------------------------------------------
@@ -210,6 +212,10 @@ void RepeatedField_reserve(RepeatedField* self, int new_size) {
  * Adds a new element to the repeated field.
  */
 VALUE RepeatedField_push(VALUE _self, VALUE val) {
+  if (TYPE(val) == T_ARRAY) {
+    return RepeatedField_concat(_self, val);
+  }
+
   RepeatedField* self = ruby_to_RepeatedField(_self);
   upb_fieldtype_t field_type = self->field_type;
   int element_size = native_slot_size(field_type);
