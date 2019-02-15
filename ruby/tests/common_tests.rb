@@ -708,20 +708,46 @@ module CommonTests
 
   def test_enum_const_get_helpers
     m = proto_module::TestMessage.new
-    assert_equal m.optional_enum_const, proto_module::TestEnum::Default
+    assert_equal proto_module::TestEnum::Default, m.optional_enum_const
     assert_equal proto_module::TestEnum.const_get(:Default), m.optional_enum_const
 
     m = proto_module::TestMessage.new({optional_enum: proto_module::TestEnum::A})
-    assert_equal m.optional_enum_const, proto_module::TestEnum::A
+    assert_equal proto_module::TestEnum::A, m.optional_enum_const
     assert_equal proto_module::TestEnum.const_get(:A), m.optional_enum_const
 
     m = proto_module::TestMessage.new({optional_enum: proto_module::TestEnum::B})
-    assert_equal m.optional_enum_const, proto_module::TestEnum::B
+    assert_equal proto_module::TestEnum::B, m.optional_enum_const
     assert_equal proto_module::TestEnum.const_get(:B), m.optional_enum_const
 
     m = proto_module::TestMessage.new({optional_enum: proto_module::TestEnum::C})
-    assert_equal m.optional_enum_const, proto_module::TestEnum::C
+    assert_equal proto_module::TestEnum::C, m.optional_enum_const
     assert_equal proto_module::TestEnum.const_get(:C), m.optional_enum_const
+  end
+
+  def test_enum_getter
+    m = proto_module::Enumer.new(:optional_enum => :B, :repeated_enum => [:A, :C])
+
+    assert_equal :B, m.optional_enum
+    assert_equal 2, m.optional_enum_const
+    assert_equal [:A, :C], m.repeated_enum
+    assert_equal [1, 3], m.repeated_enum_const
+  end
+
+  def test_enum_getter_oneof
+    m = proto_module::Enumer.new(:const => :C)
+
+    assert_equal :C, m.const
+    assert_equal 3, m.const_const
+  end
+
+  def test_enum_getter_only_enums
+    m = proto_module::Enumer.new(:optional_enum => :B, :a_const => 'thing')
+
+    assert_equal 'thing', m.a_const
+    assert_equal :B, m.optional_enum
+
+    assert_raise(NoMethodError) { m.a }
+    assert_raise(NoMethodError) { m.a_const_const }
   end
 
   def test_parse_serialize

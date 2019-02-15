@@ -30,7 +30,6 @@
 
 #include <iomanip>
 #include <sstream>
-#include <list>
 
 #include <google/protobuf/compiler/code_generator.h>
 #include <google/protobuf/compiler/plugin.h>
@@ -63,10 +62,6 @@ void GenerateMessageAssignment(
 void GenerateEnumAssignment(
     const std::string& prefix,
     const google::protobuf::EnumDescriptor* en,
-    google::protobuf::io::Printer* printer);
-void GenerateEnumPatches(
-    const std::string& prefix,
-    const google::protobuf::Descriptor* message,
     google::protobuf::io::Printer* printer);
 std::string DefaultValueForField(
     const google::protobuf::FieldDescriptor* field);
@@ -374,49 +369,6 @@ std::string RubifyConstant(const std::string& name) {
   return ret;
 }
 
-// creates a fully qualified name for an enum
-std::string RubifyEnumName(const google::protobuf::EnumDescriptor* descriptor) {
-  bool need_change_to_module;
-  std::string package_name;
-
-  const FileDescriptor* file = descriptor->file();
-  if (file->options().has_ruby_package()) {
-    package_name = file->options().ruby_package();
-    need_change_to_module = false;
-  } else {
-    package_name = file->package();
-    need_change_to_module = true;
-  }
-
-  // create the fully qualified Ruby name
-  string component = "";
-  while (!package_name.empty()) {
-    size_t dot_index = package_name.find(".");
-    string comp;
-    if (dot_index == string::npos) {
-      comp = package_name;
-      package_name = "";
-    } else {
-      comp = package_name.substr(0, dot_index);
-      package_name = package_name.substr(dot_index + 1);
-    }
-    if (need_change_to_module) {
-      component += PackageToModule(comp);
-    } else {
-      component += comp;
-    }
-    component += "::";
-  }
-  const Descriptor* parent = descriptor->containing_type();
-  while (parent != NULL) {
-    component += RubifyConstant(parent->name()) + "::";
-    parent = parent->containing_type();
-  }
-  component += RubifyConstant(descriptor->name());
-
-  return component;
-}
-
 void GenerateMessageAssignment(
     const std::string& prefix,
     const google::protobuf::Descriptor* message,
@@ -443,55 +395,6 @@ void GenerateMessageAssignment(
   }
   for (int i = 0; i < message->enum_type_count(); i++) {
     GenerateEnumAssignment(nested_prefix, message->enum_type(i), printer);
-  }
-  GenerateEnumPatches(prefix, message, printer);
-}
-
-void GenerateEnumPatches(
-    const std::string& prefix,
-    const google::protobuf::Descriptor* message,
-    google::protobuf::io::Printer* printer) {
-
-  if (message->options().map_entry()) {
-    return;
-  }
-
-  std::list<const FieldDescriptor*> enums;
-  for (int i = 0; i < message->field_count(); i++) {
-    const FieldDescriptor* field = message->field(i);
-    if (field->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
-      enums.push_back(field);
-    }
-  }
-
-  if (!enums.empty()) {
-    printer->Print(
-      "class $prefix$$name$\n",
-      "prefix", prefix,
-      "name", RubifyConstant(message->name()));
-    printer->Indent();
-  }
-  for (const FieldDescriptor* field : enums) {
-    printer->Print(
-      "def $name$_const\n",
-      "name", field->name());
-    printer->Indent();
-    printer->Print(
-      "$prefix$$type$.const_get($name$)\n",
-      "prefix", prefix,
-      "type", RubifyEnumName(field->enum_type()),
-      "name", field->name());
-    printer->Outdent();
-    printer->Print("end\n");
-  }
-  if (!enums.empty()) {
-    printer->Outdent();
-    printer->Print("end\n");
-  }    
-
-  std::string nested_prefix = prefix + RubifyConstant(message->name()) + "::";
-  for (int i = 0; i < message->nested_type_count(); i++) {
-    GenerateEnumPatches(nested_prefix, message->nested_type(i), printer);
   }
 }
 
