@@ -591,6 +591,7 @@ php_EXTRA_DIST=                                                       \
   php/README.md                                                       \
   php/composer.json                                                   \
   php/ext/google/protobuf/array.c                                     \
+  php/ext/google/protobuf/builtin_descriptors.inc                     \
   php/ext/google/protobuf/config.m4                                   \
   php/ext/google/protobuf/def.c                                       \
   php/ext/google/protobuf/encode_decode.c                             \
