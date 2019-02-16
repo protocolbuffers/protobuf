@@ -86,7 +86,7 @@ class PROTOBUF_EXPORT FileInputStream : public ZeroCopyInputStream {
   // errno from that error.  Otherwise, this is zero.  Once an error
   // occurs, the stream is broken and all subsequent operations will
   // fail.
-  int GetErrno() { return copying_input_.GetErrno(); }
+  int GetErrno() const { return copying_input_.GetErrno(); }
 
   // implements ZeroCopyInputStream ----------------------------------
   bool Next(const void** data, int* size) override;
@@ -102,7 +102,7 @@ class PROTOBUF_EXPORT FileInputStream : public ZeroCopyInputStream {
 
     bool Close();
     void SetCloseOnDelete(bool value) { close_on_delete_ = value; }
-    int GetErrno() { return errno_; }
+    int GetErrno() const { return errno_; }
 
     // implements CopyingInputStream ---------------------------------
     int Read(void* buffer, int size) override;
@@ -169,7 +169,7 @@ class PROTOBUF_EXPORT FileOutputStream : public ZeroCopyOutputStream {
   // errno from that error.  Otherwise, this is zero.  Once an error
   // occurs, the stream is broken and all subsequent operations will
   // fail.
-  int GetErrno() { return copying_output_.GetErrno(); }
+  int GetErrno() const { return copying_output_.GetErrno(); }
 
   // implements ZeroCopyOutputStream ---------------------------------
   bool Next(void** data, int* size) override;
@@ -184,7 +184,7 @@ class PROTOBUF_EXPORT FileOutputStream : public ZeroCopyOutputStream {
 
     bool Close();
     void SetCloseOnDelete(bool value) { close_on_delete_ = value; }
-    int GetErrno() { return errno_; }
+    int GetErrno() const { return errno_; }
 
     // implements CopyingOutputStream --------------------------------
     bool Write(const void* buffer, int size) override;

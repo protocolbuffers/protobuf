@@ -195,6 +195,8 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
     this_ptr->swap(*other_ptr);
 #else
     std::swap(ptr_, other->ptr_);
+    (void)default_value;
+    (void)arena;
 #endif
   }
 

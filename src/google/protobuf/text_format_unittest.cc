@@ -48,6 +48,7 @@
 #include <google/protobuf/test_util.h>
 #include <google/protobuf/test_util2.h>
 #include <google/protobuf/unittest.pb.h>
+#include <google/protobuf/unittest_proto3.pb.h>
 #include <google/protobuf/unittest_mset.pb.h>
 #include <google/protobuf/unittest_mset_wire_format.pb.h>
 #include <google/protobuf/io/tokenizer.h>
@@ -742,6 +743,38 @@ TEST_F(TextFormatTest, ParseEnumFieldFromNegativeNumber) {
   EXPECT_TRUE(TextFormat::ParseFromString(parse_string, &proto));
   EXPECT_TRUE(proto.has_sparse_enum());
   EXPECT_EQ(unittest::SPARSE_E, proto.sparse_enum());
+}
+
+TEST_F(TextFormatTest, PrintUnknownEnumFieldProto3) {
+  proto3_unittest::TestAllTypes proto;
+
+  proto.add_repeated_nested_enum(
+      static_cast<proto3_unittest::TestAllTypes::NestedEnum>(10));
+  proto.add_repeated_nested_enum(
+      static_cast<proto3_unittest::TestAllTypes::NestedEnum>(-10));
+  proto.add_repeated_nested_enum(
+      static_cast<proto3_unittest::TestAllTypes::NestedEnum>(2147483647));
+  proto.add_repeated_nested_enum(
+      static_cast<proto3_unittest::TestAllTypes::NestedEnum>(-2147483648));
+
+  EXPECT_EQ(
+      "repeated_nested_enum: 10\n"
+      "repeated_nested_enum: -10\n"
+      "repeated_nested_enum: 2147483647\n"
+      "repeated_nested_enum: -2147483648\n",
+      proto.DebugString());
+}
+
+TEST_F(TextFormatTest, ParseUnknownEnumFieldProto3) {
+  proto3_unittest::TestAllTypes proto;
+  string parse_string =
+      "repeated_nested_enum: [10, -10, 2147483647, -2147483648]";
+  EXPECT_TRUE(TextFormat::ParseFromString(parse_string, &proto));
+  ASSERT_EQ(4, proto.repeated_nested_enum_size());
+  EXPECT_EQ(10, proto.repeated_nested_enum(0));
+  EXPECT_EQ(-10, proto.repeated_nested_enum(1));
+  EXPECT_EQ(2147483647, proto.repeated_nested_enum(2));
+  EXPECT_EQ(-2147483648, proto.repeated_nested_enum(3));
 }
 
 TEST_F(TextFormatTest, ParseStringEscape) {

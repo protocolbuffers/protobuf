@@ -6,13 +6,11 @@ function pre_build {
     # Runs in the root directory of this repository.
     pushd protobuf
 
-    yum install -y devtoolset-2-libatomic-devel
-
     # Build protoc
     ./autogen.sh
     ./configure
 
-    CXXFLAGS="-fPIC -g -O2" ./configure
+    CXXFLAGS="-std=c++14 -fPIC -g -O2" ./configure
     make -j8
 
     # Generate python dependencies.

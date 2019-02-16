@@ -19,4 +19,8 @@ message TestWrapperSetters {
     google.protobuf.DoubleValue double_value_oneof = 10;
     google.protobuf.StringValue string_value_oneof = 11;
   }
+
+  repeated google.protobuf.StringValue repeated_string_value = 12;
+
+  map<string, google.protobuf.StringValue> map_string_value = 13;
 }
