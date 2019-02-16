@@ -294,6 +294,57 @@ void build_class_from_descriptor(
 // PHP Methods
 // -----------------------------------------------------------------------------
 
+static bool is_wrapper_msg(const upb_msgdef* m) {
+  upb_wellknowntype_t type = upb_msgdef_wellknowntype(m);
+  return type >= UPB_WELLKNOWN_DOUBLEVALUE &&
+         type <= UPB_WELLKNOWN_BOOLVALUE;
+}
+
+static void append_wrapper_message(
+    zend_class_entry* subklass, RepeatedField* intern, zval* value TSRMLS_DC) {
+  MessageHeader* submsg;
+  const upb_fielddef* field;
+#if PHP_MAJOR_VERSION < 7
+  zval* val = NULL;
+  MAKE_STD_ZVAL(val);
+  ZVAL_OBJ(val, subklass->create_object(subklass TSRMLS_CC));
+  repeated_field_push_native(intern, &val);
+  submsg = UNBOX(MessageHeader, val);
+#else
+  zend_object* obj = subklass->create_object(subklass TSRMLS_CC);
+  repeated_field_push_native(intern, &obj);
+  submsg = (MessageHeader*)((char*)obj - XtOffsetOf(MessageHeader, std));
+#endif
+  custom_data_init(subklass, submsg PHP_PROTO_TSRMLS_CC);
+
+  field = upb_msgdef_itof(submsg->descriptor->msgdef, 1);
+  layout_set(submsg->descriptor->layout, submsg, field, value TSRMLS_CC);
+}
+
+static void set_wrapper_message_as_map_value(
+    zend_class_entry* subklass, zval* map, zval* key,  zval* value TSRMLS_DC) {
+  MessageHeader* submsg;
+  const upb_fielddef* field;
+#if PHP_MAJOR_VERSION < 7
+  zval* val = NULL;
+  MAKE_STD_ZVAL(val);
+  ZVAL_OBJ(val, subklass->create_object(subklass TSRMLS_CC));
+  map_field_handlers->write_dimension(
+      map, key, val TSRMLS_CC);
+  submsg = UNBOX(MessageHeader, val);
+#else
+  zval val;
+  zend_object* obj = subklass->create_object(subklass TSRMLS_CC);
+  ZVAL_OBJ(&val, obj);
+  map_field_handlers->write_dimension(map, key, &val TSRMLS_CC);
+  submsg = (MessageHeader*)((char*)obj - XtOffsetOf(MessageHeader, std));
+#endif
+  custom_data_init(subklass, submsg PHP_PROTO_TSRMLS_CC);
+
+  field = upb_msgdef_itof(submsg->descriptor->msgdef, 1);
+  layout_set(submsg->descriptor->layout, submsg, field, value TSRMLS_CC);
+}
+
 void Message_construct(zval* msg, zval* array_wrapper) {
   TSRMLS_FETCH();
   zend_class_entry* ce = Z_OBJCE_P(msg);
@@ -336,14 +387,38 @@ void Message_construct(zval* msg, zval* array_wrapper) {
       HashPosition subpointer;
       zval subkey;
       void* memory;
+      bool is_wrapper = false;
+      zend_class_entry* subklass = NULL;
+      const upb_msgdef* mapentry = upb_fielddef_msgsubdef(field);
+      const upb_fielddef *value_field = upb_msgdef_itof(mapentry, 2);
+
+      if (upb_fielddef_issubmsg(value_field)) {
+        const upb_msgdef* submsgdef = upb_fielddef_msgsubdef(value_field);
+        upb_wellknowntype_t type = upb_msgdef_wellknowntype(submsgdef);
+        is_wrapper = is_wrapper_msg(submsgdef);
+
+        if (is_wrapper) {
+          PHP_PROTO_HASHTABLE_VALUE subdesc_php = get_def_obj(submsgdef);
+          Descriptor* subdesc = UNBOX_HASHTABLE_VALUE(Descriptor, subdesc_php);
+          subklass = subdesc->klass;
+        }
+      }
+
       for (zend_hash_internal_pointer_reset_ex(subtable, &subpointer);
            php_proto_zend_hash_get_current_data_ex(subtable, (void**)&memory,
                                                    &subpointer) == SUCCESS;
            zend_hash_move_forward_ex(subtable, &subpointer)) {
         zend_hash_get_current_key_zval_ex(subtable, &subkey, &subpointer);
-        map_field_handlers->write_dimension(
-            submap, &subkey,
-            CACHED_PTR_TO_ZVAL_PTR((CACHED_VALUE*)memory) TSRMLS_CC);
+        if (is_wrapper &&
+            Z_TYPE_P(CACHED_PTR_TO_ZVAL_PTR((CACHED_VALUE*)memory)) != IS_OBJECT) {
+          set_wrapper_message_as_map_value(
+              subklass, submap, &subkey,
+              CACHED_PTR_TO_ZVAL_PTR((CACHED_VALUE*)memory) TSRMLS_CC);
+        } else {
+          map_field_handlers->write_dimension(
+              submap, &subkey,
+              CACHED_PTR_TO_ZVAL_PTR((CACHED_VALUE*)memory) TSRMLS_CC);
+        }
         zval_dtor(&subkey);
       }
     } else if (upb_fielddef_isseq(field)) {
@@ -354,13 +429,36 @@ void Message_construct(zval* msg, zval* array_wrapper) {
           CACHED_PTR_TO_ZVAL_PTR((CACHED_VALUE*)value));
       HashPosition subpointer;
       void* memory;
+      bool is_wrapper = false;
+      zend_class_entry* subklass = NULL;
+
+      if (upb_fielddef_issubmsg(field)) {
+        const upb_msgdef* submsgdef = upb_fielddef_msgsubdef(field);
+        upb_wellknowntype_t type = upb_msgdef_wellknowntype(submsgdef);
+        is_wrapper = is_wrapper_msg(submsgdef);
+
+        if (is_wrapper) {
+          PHP_PROTO_HASHTABLE_VALUE subdesc_php = get_def_obj(submsgdef);
+          Descriptor* subdesc = UNBOX_HASHTABLE_VALUE(Descriptor, subdesc_php);
+          subklass = subdesc->klass;
+        }
+      }
+
       for (zend_hash_internal_pointer_reset_ex(subtable, &subpointer);
            php_proto_zend_hash_get_current_data_ex(subtable, (void**)&memory,
                                                    &subpointer) == SUCCESS;
            zend_hash_move_forward_ex(subtable, &subpointer)) {
-        repeated_field_handlers->write_dimension(
-            subarray, NULL,
-            CACHED_PTR_TO_ZVAL_PTR((CACHED_VALUE*)memory) TSRMLS_CC);
+        if (is_wrapper &&
+            Z_TYPE_P(CACHED_PTR_TO_ZVAL_PTR((CACHED_VALUE*)memory)) != IS_OBJECT) {
+          RepeatedField* intern = UNBOX(RepeatedField, subarray);
+          append_wrapper_message(
+              subklass, intern,
+              CACHED_PTR_TO_ZVAL_PTR((CACHED_VALUE*)memory) TSRMLS_CC);
+        } else {
+          repeated_field_handlers->write_dimension(
+              subarray, NULL,
+              CACHED_PTR_TO_ZVAL_PTR((CACHED_VALUE*)memory) TSRMLS_CC);
+        }
       }
     } else if (upb_fielddef_issubmsg(field)) {
       const upb_msgdef* submsgdef = upb_fielddef_msgsubdef(field);

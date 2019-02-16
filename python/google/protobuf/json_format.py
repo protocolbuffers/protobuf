@@ -564,7 +564,10 @@ class _Parser(object):
           sub_message.SetInParent()
           self.ConvertMessage(value, sub_message)
         else:
-          setattr(message, field.name, _ConvertScalarFieldValue(value, field))
+          if field.is_extension:
+            message.Extensions[field] = _ConvertScalarFieldValue(value, field)
+          else:
+            setattr(message, field.name, _ConvertScalarFieldValue(value, field))
       except ParseError as e:
         if field and field.containing_oneof is None:
           raise ParseError('Failed to parse {0} field: {1}'.format(name, e))

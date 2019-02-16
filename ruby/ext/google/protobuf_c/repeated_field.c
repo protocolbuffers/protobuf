@@ -178,7 +178,7 @@ VALUE RepeatedField_index_set(VALUE _self, VALUE _index, VALUE val) {
   }
 
   memory = RepeatedField_memoryat(self, index, element_size);
-  native_slot_set(field_type, field_type_class, memory, val);
+  native_slot_set("", field_type, field_type_class, memory, val);
   return Qnil;
 }
 
@@ -217,7 +217,7 @@ VALUE RepeatedField_push(VALUE _self, VALUE val) {
 
   RepeatedField_reserve(self, self->size + 1);
   memory = (void *) (((uint8_t *)self->elements) + self->size * element_size);
-  native_slot_set(field_type, self->field_type_class, memory, val);
+  native_slot_set("", field_type, self->field_type_class, memory, val);
   // native_slot_set may raise an error; bump size only after set.
   self->size++;
   return _self;
