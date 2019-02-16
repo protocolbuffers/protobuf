@@ -299,7 +299,7 @@ class PROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
   // google::protobuf::Type of the root message type.
   const google::protobuf::Type& type_;
   // Holds copies of strings passed to RenderString.
-  std::vector<std::string*> string_values_;
+  std::vector<std::unique_ptr<std::string>> string_values_;
 
   // The current Node. Owned by its parents.
   Node* current_;

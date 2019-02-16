@@ -71,9 +71,6 @@ DefaultValueObjectWriter::DefaultValueObjectWriter(
       ow_(ow) {}
 
 DefaultValueObjectWriter::~DefaultValueObjectWriter() {
-  for (int i = 0; i < string_values_.size(); ++i) {
-    delete string_values_[i];
-  }
   if (own_typeinfo_) {
     delete typeinfo_;
   }
@@ -156,7 +153,7 @@ DefaultValueObjectWriter* DefaultValueObjectWriter::RenderString(
   } else {
     // Since StringPiece is essentially a pointer, takes a copy of "value" to
     // avoid ownership issues.
-    string_values_.push_back(new string(value));
+    string_values_.emplace_back(new string(value));
     RenderDataPiece(name, DataPiece(*string_values_.back(), true));
   }
   return this;
@@ -169,7 +166,7 @@ DefaultValueObjectWriter* DefaultValueObjectWriter::RenderBytes(
   } else {
     // Since StringPiece is essentially a pointer, takes a copy of "value" to
     // avoid ownership issues.
-    string_values_.push_back(new string(value.ToString()));
+    string_values_.emplace_back(new string(value));
     RenderDataPiece(name, DataPiece(*string_values_.back(), false, true));
   }
   return this;
