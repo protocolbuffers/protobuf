@@ -725,8 +725,8 @@ module CommonTests
 
     m.repeated_msg += [proto_module::TestMessage2.new(:foo => 1), proto_module::TestMessage2.new(:foo => 2)]
     m.repeated_msg += [proto_module::TestMessage2.new(:foo => 3)]
-    m.repeated_msg.push proto_module::TestMessage2.new(:foo => 4)
-    assert_equal [1, 2, 3, 4], m.repeated_msg.map {|x| x.foo}
+    m.repeated_msg.push proto_module::TestMessage2.new(:foo => 4), proto_module::TestMessage2.new(:foo => 5)
+    assert_equal [1, 2, 3, 4, 5], m.repeated_msg.map {|x| x.foo}
   end
 
   def test_parse_serialize
