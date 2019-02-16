@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package basic_test;
 
+import "google/protobuf/wrappers.proto";
+
 message Foo {
   Bar bar = 1;
   repeated Baz baz = 2;
@@ -106,4 +108,20 @@ message Outer {
 }
 
 message Inner {
+}
+
+message Wrapper {
+  google.protobuf.DoubleValue double = 1;
+  google.protobuf.FloatValue float = 2;
+  google.protobuf.Int32Value int32 = 3;
+  google.protobuf.Int64Value int64 = 4;
+  google.protobuf.UInt32Value uint32 = 5;
+  google.protobuf.UInt64Value uint64 = 6;
+  google.protobuf.BoolValue bool = 7;
+  google.protobuf.StringValue string = 8;
+  google.protobuf.BytesValue bytes = 9;
+  string real_string = 100;
+  oneof a_oneof {
+    string oneof_string = 10;
+  }
 }
