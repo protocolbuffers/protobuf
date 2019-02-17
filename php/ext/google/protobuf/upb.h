@@ -1,10 +1,4 @@
-// Amalgamated source file
-
-// php.h intentionally defined NDEBUG. We have to define this macro in order to
-// be used together with php.h
-#ifndef NDEBUG
-#define NDEBUG
-#endif
+/* Amalgamated source file */
 
 #if UINTPTR_MAX == 0xffffffff
 #define UPB_SIZE(size32, size64) size32
@@ -3155,7 +3149,6 @@ bool upb_fielddef_packed(const upb_fielddef *f);
 size_t upb_fielddef_getjsonname(const upb_fielddef *f, char *buf, size_t len);
 const upb_msgdef *upb_fielddef_containingtype(const upb_fielddef *f);
 const upb_oneofdef *upb_fielddef_containingoneof(const upb_fielddef *f);
-upb_msgdef *upb_fielddef_containingtype_mutable(upb_fielddef *f);
 uint32_t upb_fielddef_index(const upb_fielddef *f);
 bool upb_fielddef_issubmsg(const upb_fielddef *f);
 bool upb_fielddef_isstring(const upb_fielddef *f);
@@ -3186,6 +3179,7 @@ uint32_t upb_fielddef_selectorbase(const upb_fielddef *f);
  * an extension. */
 class upb::FieldDefPtr {
  public:
+  FieldDefPtr() : ptr_(nullptr) {}
   explicit FieldDefPtr(const upb_fielddef *ptr) : ptr_(ptr) {}
 
   const upb_fielddef* ptr() const { return ptr_; }
@@ -3354,6 +3348,7 @@ bool upb_oneof_iter_isequal(const upb_oneof_iter *iter1,
 /* Class that represents a oneof. */
 class upb::OneofDefPtr {
  public:
+  OneofDefPtr() : ptr_(nullptr) {}
   explicit OneofDefPtr(const upb_oneofdef *ptr) : ptr_(ptr) {}
 
   const upb_oneofdef* ptr() const { return ptr_; }
@@ -3426,6 +3421,10 @@ class upb::OneofDefPtr {
  private:
   const upb_oneofdef *ptr_;
 };
+
+inline upb::OneofDefPtr upb::FieldDefPtr::containing_oneof() const {
+  return OneofDefPtr(upb_fielddef_containingoneof(ptr_));
+}
 
 #endif  /* __cplusplus */
 
@@ -3534,7 +3533,8 @@ bool upb_msg_oneof_iter_isequal(const upb_msg_oneof_iter *iter1,
 /* Structure that describes a single .proto message type. */
 class upb::MessageDefPtr {
  public:
-  MessageDefPtr(const upb_msgdef *ptr) : ptr_(ptr) {}
+  MessageDefPtr() : ptr_(nullptr) {}
+  explicit MessageDefPtr(const upb_msgdef *ptr) : ptr_(ptr) {}
 
   const upb_msgdef *ptr() const { return ptr_; }
   explicit operator bool() const { return ptr_ != nullptr; }
@@ -3701,6 +3701,18 @@ class upb::MessageDefPtr {
   const upb_msgdef* ptr_;
 };
 
+inline upb::MessageDefPtr upb::FieldDefPtr::message_subdef() const {
+  return MessageDefPtr(upb_fielddef_msgsubdef(ptr_));
+}
+
+inline upb::MessageDefPtr upb::FieldDefPtr::containing_type() const {
+  return MessageDefPtr(upb_fielddef_containingtype(ptr_));
+}
+
+inline upb::MessageDefPtr upb::OneofDefPtr::containing_type() const {
+  return MessageDefPtr(upb_oneofdef_containingtype(ptr_));
+}
+
 #endif  /* __cplusplus */
 
 /* upb_enumdef ****************************************************************/
@@ -3741,6 +3753,7 @@ int32_t upb_enum_iter_number(upb_enum_iter *iter);
 
 class upb::EnumDefPtr {
  public:
+  EnumDefPtr() : ptr_(nullptr) {}
   explicit EnumDefPtr(const upb_enumdef* ptr) : ptr_(ptr) {}
 
   const upb_enumdef* ptr() const { return ptr_; }
@@ -3792,6 +3805,10 @@ class upb::EnumDefPtr {
  private:
   const upb_enumdef *ptr_;
 };
+
+inline upb::EnumDefPtr upb::FieldDefPtr::enum_subdef() const {
+  return EnumDefPtr(upb_fielddef_enumsubdef(ptr_));
+}
 
 #endif  /* __cplusplus */
 
@@ -4668,6 +4685,7 @@ bool upb_msg_getscalarhandlerdata(const upb_handlers *h,
 #define UPB_HANDLERS_INL_H_
 
 #include <limits.h>
+#include <stddef.h>
 
 #ifdef __cplusplus
 
@@ -4823,8 +4841,8 @@ struct FuncInfo {
  * These functions are not bound to a handler data so have no data or cleanup
  * handler. */
 struct UnboundFunc {
-  CleanupFunc *GetCleanup() { return NULL; }
-  void *GetData() { return NULL; }
+  CleanupFunc *GetCleanup() { return nullptr; }
+  void *GetData() { return nullptr; }
 };
 
 template <class R, class P1, R F(P1), class I>
@@ -6082,7 +6100,7 @@ bool upb_bufsrc_putbuf(const char *buf, size_t len, upb_bytessink sink);
 
 namespace upb {
 template <class T> bool PutBuffer(const T& str, BytesSink sink) {
-  return upb_bufsrc_putbuf(str.c_str(), str.size(), sink.sink());
+  return upb_bufsrc_putbuf(str.data(), str.size(), sink.sink());
 }
 }
 
@@ -6260,6 +6278,7 @@ void upb_pbdecoder_reset(upb_pbdecoder *d);
  * decoded data to its output sink. */
 class upb::pb::DecoderPtr {
  public:
+  DecoderPtr() : ptr_(nullptr) {}
   DecoderPtr(upb_pbdecoder* ptr) : ptr_(ptr) {}
 
   upb_pbdecoder* ptr() { return ptr_; }
@@ -6440,7 +6459,7 @@ typedef enum {
 
 #define OP_MAX OP_HALT
 
-UPB_INLINE opcode getop(uint32_t instr) { return instr & 0xff; }
+UPB_INLINE opcode getop(uint32_t instr) { return (opcode)(instr & 0xff); }
 
 struct upb_pbcodecache {
   upb_arena *arena;
@@ -6909,7 +6928,7 @@ class upb::pb::EncoderPtr {
 #ifdef __cplusplus
 namespace upb {
 namespace pb {
-class TextPrinter;
+class TextPrinterPtr;
 }  /* namespace pb */
 }  /* namespace upb */
 #endif
@@ -6939,9 +6958,10 @@ class upb::pb::TextPrinterPtr {
 
   /* The given handlers must have come from NewHandlers().  It must outlive the
    * TextPrinter. */
-  static TextPrinterPtr *Create(Arena *arena, const upb::Handlers *handlers,
-                             BytesSink output) {
-    return TextPrinterPtr(upb_textprinter_create(arena, handlers, output));
+  static TextPrinterPtr Create(Arena *arena, upb::HandlersPtr *handlers,
+                               BytesSink output) {
+    return TextPrinterPtr(
+        upb_textprinter_create(arena->ptr(), handlers->ptr(), output.sink()));
   }
 
   void SetSingleLineMode(bool single_line) {

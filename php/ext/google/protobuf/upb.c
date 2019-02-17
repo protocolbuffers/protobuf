@@ -1,4 +1,4 @@
-// Amalgamated source file
+/* Amalgamated source file */
 #include "upb.h"
 
 #if UINTPTR_MAX == 0xffffffff
@@ -1833,6 +1833,11 @@ void upb_msg_field_iter_setdone(upb_msg_field_iter *iter) {
   upb_inttable_iter_setdone(iter);
 }
 
+bool upb_msg_field_iter_isequal(const upb_msg_field_iter * iter1,
+                                const upb_msg_field_iter * iter2) {
+  return upb_inttable_iter_isequal(iter1, iter2);
+}
+
 void upb_msg_oneof_begin(upb_msg_oneof_iter *iter, const upb_msgdef *m) {
   upb_strtable_begin(iter, &m->ntof);
   /* We need to skip past any initial fields. */
@@ -1860,6 +1865,11 @@ const upb_oneofdef *upb_msg_iter_oneof(const upb_msg_oneof_iter *iter) {
 
 void upb_msg_oneof_iter_setdone(upb_msg_oneof_iter *iter) {
   upb_strtable_iter_setdone(iter);
+}
+
+bool upb_msg_oneof_iter_isequal(const upb_msg_oneof_iter *iter1,
+                                const upb_msg_oneof_iter *iter2) {
+  return upb_strtable_iter_isequal(iter1, iter2);
 }
 
 /* upb_oneofdef ***************************************************************/
@@ -2046,6 +2056,28 @@ static bool create_oneofdef(
 static bool parse_default(const symtab_addctx *ctx, const char *str, size_t len,
                           upb_fielddef *f) {
   char *end;
+  char nullz[64];
+  errno = 0;
+
+  switch (upb_fielddef_type(f)) {
+    case UPB_TYPE_INT32:
+    case UPB_TYPE_INT64:
+    case UPB_TYPE_UINT32:
+    case UPB_TYPE_UINT64:
+    case UPB_TYPE_DOUBLE:
+    case UPB_TYPE_FLOAT:
+      /* Standard C number parsing functions expect null-terminated strings. */
+      if (len >= sizeof(nullz) - 1) {
+        return false;
+      }
+      memcpy(nullz, str, len);
+      nullz[len] = '\0';
+      str = nullz;
+      break;
+    default:
+      break;
+  }
+
   switch (upb_fielddef_type(f)) {
     case UPB_TYPE_INT32: {
       long val = strtol(str, &end, 0);
@@ -4974,6 +5006,7 @@ void upb_strtable_next(upb_strtable_iter *i) {
 }
 
 bool upb_strtable_done(const upb_strtable_iter *i) {
+  if (!i->t) return true;
   return i->index >= upb_table_size(&i->t->t) ||
          upb_tabent_isempty(str_tabent(i));
 }
@@ -4996,6 +5029,7 @@ upb_value upb_strtable_iter_value(const upb_strtable_iter *i) {
 }
 
 void upb_strtable_iter_setdone(upb_strtable_iter *i) {
+  i->t = NULL;
   i->index = SIZE_MAX;
 }
 
@@ -5285,6 +5319,7 @@ void upb_inttable_next(upb_inttable_iter *iter) {
 }
 
 bool upb_inttable_done(const upb_inttable_iter *i) {
+  if (!i->t) return true;
   if (i->array_part) {
     return i->index >= i->t->array_size ||
            !upb_arrhas(int_arrent(i));
@@ -5307,6 +5342,7 @@ upb_value upb_inttable_iter_value(const upb_inttable_iter *i) {
 }
 
 void upb_inttable_iter_setdone(upb_inttable_iter *i) {
+  i->t = NULL;
   i->index = SIZE_MAX;
   i->array_part = false;
 }
