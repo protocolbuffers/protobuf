@@ -124,6 +124,7 @@ cc_library(
     ],
     hdrs = ["upbc/generator.h"],
     deps = [
+        map_dep("@absl//absl/base:core_headers"),
         map_dep("@absl//absl/strings"),
         map_dep("@com_google_protobuf//:protobuf"),
         map_dep("@com_google_protobuf//:protoc_lib"),
@@ -416,6 +417,17 @@ py_binary(
     srcs = ["tools/make_cmakelists.py"],
 )
 
+genrule(
+    name = "gen_cmakelists",
+    srcs = [
+        "BUILD",
+        "WORKSPACE",
+    ],
+    outs = ["generated/CMakeLists.txt"],
+    cmd = "$(location :make_cmakelists) $@",
+    tools = [":make_cmakelists"],
+)
+
 proto_library(
     name = "descriptor_proto",
     srcs = [
@@ -428,17 +440,6 @@ genrule(
     srcs = [":descriptor_proto"],
     outs = ["generated/google/protobuf/descriptor.pb"],
     cmd = "cp $< $@",
-)
-
-genrule(
-    name = "gen_cmakelists",
-    srcs = [
-        "BUILD",
-        "WORKSPACE",
-    ],
-    outs = ["generated/CMakeLists.txt"],
-    cmd = "$(location :make_cmakelists) $@",
-    tools = [":make_cmakelists"],
 )
 
 proto_library(
