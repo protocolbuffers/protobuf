@@ -831,9 +831,9 @@ static void fill_classname(const char *fullname, const char *package,
   }
 }
 
-static zend_class_entry *register_class(const upb_filedef *file,
-                                        const char *fullname,
-                                        PHP_PROTO_HASHTABLE_VALUE desc_php) {
+static zend_class_entry *register_class(
+    const upb_filedef *file, const char *fullname,
+    PHP_PROTO_HASHTABLE_VALUE desc_php TSRMLS_DC) {
   // Prepend '.' to package name to make it absolute. In the 5 additional
   // bytes allocated, one for '.', one for trailing 0, and 3 for 'GPB' if
   // given message is google.protobuf.Empty.
@@ -950,7 +950,8 @@ void internal_add_generated_file(const char *data, PHP_PROTO_SIZE data_len,
       continue;
     }
 
-    desc->klass = register_class(file, upb_msgdef_fullname(msgdef), desc_php);
+    desc->klass =
+        register_class(file, upb_msgdef_fullname(msgdef), desc_php TSRMLS_CC);
 
     if (desc->klass == NULL) {
       return;
@@ -964,7 +965,8 @@ void internal_add_generated_file(const char *data, PHP_PROTO_SIZE data_len,
     CREATE_HASHTABLE_VALUE(desc, desc_php, EnumDescriptor, enum_descriptor_type);
     desc->enumdef = enumdef;
     add_def_obj(desc->enumdef, desc_php);
-    desc->klass = register_class(file, upb_enumdef_fullname(enumdef), desc_php);
+    desc->klass =
+        register_class(file, upb_enumdef_fullname(enumdef), desc_php TSRMLS_CC);
 
     if (desc->klass == NULL) {
       return;
