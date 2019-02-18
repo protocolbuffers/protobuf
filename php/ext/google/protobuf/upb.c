@@ -12857,7 +12857,6 @@ static void *startseq_fieldmask(void *closure, const void *handler_data) {
   UPB_UNUSED(handler_data);
   p->depth_++;
   p->first_elem_[p->depth_] = true;
-  print_data(p, "\"", 1);
   return closure;
 }
 
@@ -12865,7 +12864,6 @@ static bool endseq_fieldmask(void *closure, const void *handler_data) {
   upb_json_printer *p = closure;
   UPB_UNUSED(handler_data);
   p->depth_--;
-  print_data(p, "\"", 1);
   return true;
 }
 
@@ -13085,6 +13083,29 @@ static bool printer_endmsg_noframe(
   return true;
 }
 
+static bool printer_startmsg_fieldmask(
+    void *closure, const void *handler_data) {
+  upb_json_printer *p = closure;
+  UPB_UNUSED(handler_data);
+  if (p->depth_ == 0) {
+    upb_bytessink_start(p->output_, 0, &p->subc_);
+  }
+  print_data(p, "\"", 1);
+  return true;
+}
+
+static bool printer_endmsg_fieldmask(
+    void *closure, const void *handler_data, upb_status *s) {
+  upb_json_printer *p = closure;
+  UPB_UNUSED(handler_data);
+  UPB_UNUSED(s);
+  print_data(p, "\"", 1);
+  if (p->depth_ == 0) {
+    upb_bytessink_end(p->output_);
+  }
+  return true;
+}
+
 static void *scalar_startstr_onlykey(
     void *closure, const void *handler_data, size_t size_hint) {
   upb_json_printer *p = closure;
@@ -13138,8 +13159,8 @@ void printer_sethandlers_fieldmask(const void *closure, upb_handlers *h) {
   upb_handlers_setstartseq(h, f, startseq_fieldmask, &empty_attr);
   upb_handlers_setendseq(h, f, endseq_fieldmask, &empty_attr);
 
-  upb_handlers_setstartmsg(h, printer_startmsg_noframe, &empty_attr);
-  upb_handlers_setendmsg(h, printer_endmsg_noframe, &empty_attr);
+  upb_handlers_setstartmsg(h, printer_startmsg_fieldmask, &empty_attr);
+  upb_handlers_setendmsg(h, printer_endmsg_fieldmask, &empty_attr);
 
   upb_handlers_setstartstr(h, f, repeated_startstr_fieldmask, &empty_attr);
   upb_handlers_setstring(h, f, repeated_str_fieldmask, &empty_attr);
