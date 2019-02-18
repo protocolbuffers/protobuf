@@ -21,6 +21,7 @@ class Amalgamator:
     self.output_c.write(open("upb/port_def.inc").read())
 
     self.output_h.write("/* Amalgamated source file */\n")
+    self.output_h.write('#include <stdint.h>')
     self.output_h.write(open("upb/port_def.inc").read())
 
   def finish(self):
