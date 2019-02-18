@@ -1,5 +1,16 @@
 /* Amalgamated source file */
 
+// php.h intentionally defined NDEBUG. We have to define this macro in order to
+// be used together with php.h
+#ifndef NDEBUG
+#define NDEBUG
+#endif
+
+#include <stdint.h>
+#ifndef UINTPTR_MAX
+#error must include stdint.h first
+#endif
+
 #if UINTPTR_MAX == 0xffffffff
 #define UPB_SIZE(size32, size64) size32
 #else
