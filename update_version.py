@@ -220,6 +220,11 @@ def UpdatePhp():
     changelog.appendChild(release)
     changelog.appendChild(document.createTextNode('\n '))
   RewriteXml('php/ext/google/protobuf/package.xml', Callback)
+  RewriteTextFile('php/ext/google/protobuf/protobuf.h',
+    lambda line : re.sub(
+      r'PHP_PROTOBUF_VERSION ".*"$',
+      'PHP_PROTOBUF_VERSION "%s"' % NEW_VERSION,
+      line))
 
 def UpdatePython():
   RewriteTextFile('python/google/protobuf/__init__.py',
