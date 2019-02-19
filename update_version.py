@@ -125,6 +125,10 @@ def UpdateJava():
     lambda document : ReplaceText(
       Find(document.documentElement, 'version'), NEW_VERSION))
 
+  RewriteXml('java/bom/pom.xml',
+    lambda document : ReplaceText(
+      Find(document.documentElement, 'version'), NEW_VERSION))
+
   RewriteXml('java/core/pom.xml',
     lambda document : ReplaceText(
       Find(Find(document.documentElement, 'parent'), 'version'),
