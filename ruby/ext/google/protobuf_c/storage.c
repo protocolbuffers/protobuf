@@ -180,18 +180,31 @@ void native_slot_set_value_and_case(const char* name,
       } else if (CLASS_OF(value) != type_class) {
         // check for possible implicit conversions
         VALUE converted_value = NULL;
+        char* field_type_name = rb_class2name(type_class);
+        char* value_type_name = rb_class2name(CLASS_OF(value));
 
         // Time -> Google::Protobuf::Timestamp
-        char* field_type_name = rb_class2name(type_class);
-        if (strcmp(field_type_name, "Google::Protobuf::Timestamp") == 0) {
-          char * value_type_name = rb_class2name(CLASS_OF(value));
-          if (strcmp(value_type_name, "Time") == 0) {
-            VALUE hash = rb_hash_new();
-            rb_hash_aset(hash, rb_str_new2("seconds"), rb_funcall(value, rb_intern("to_i"), 0));
-            rb_hash_aset(hash, rb_str_new2("nanos"), rb_funcall(value, rb_intern("nsec"), 0));
-            VALUE args[1] = { hash };
-            converted_value = rb_class_new_instance(1, args, type_class);
-          }
+        if (strcmp(field_type_name, "Google::Protobuf::Timestamp") == 0 &&
+            strcmp(value_type_name, "Time") == 0) {
+          VALUE hash = rb_hash_new();
+          rb_hash_aset(hash, rb_str_new2("seconds"), rb_funcall(value, rb_intern("to_i"), 0));
+          rb_hash_aset(hash, rb_str_new2("nanos"), rb_funcall(value, rb_intern("nsec"), 0));
+          VALUE args[1] = { hash };
+          converted_value = rb_class_new_instance(1, args, type_class);
+        }
+
+        // Number -> Google::Protobuf::Duration
+        if (strcmp(field_type_name, "Google::Protobuf::Duration") == 0 &&
+            (strcmp(value_type_name, "Integer") == 0 || 
+             strcmp(value_type_name, "Float") == 0)) {
+          VALUE hash = rb_hash_new();
+          rb_hash_aset(hash, rb_str_new2("seconds"), rb_funcall(value, rb_intern("to_i"), 0));
+          VALUE n_value = rb_funcall(value, rb_intern("remainder"), 1, INT2NUM(1));
+          n_value = rb_funcall(n_value, rb_intern("*"), 1, INT2NUM(1000000000));
+          n_value = rb_funcall(n_value, rb_intern("round"), 0);
+          rb_hash_aset(hash, rb_str_new2("nanos"), n_value);
+          VALUE args[1] = { hash };
+          converted_value = rb_class_new_instance(1, args, type_class);
         }
 
         // raise if no suitable conversaion could be found

@@ -1130,4 +1130,18 @@ module CommonTests
     m.timestamp = Time.at(9466, 123456.789)
     assert_equal Google::Protobuf::Timestamp.new(seconds: 9466, nanos: 123456789), m.timestamp
   end
+
+  def test_converts_duration
+    m = proto_module::TimeMessage.new
+
+    m.duration = Google::Protobuf::Duration.new(seconds: 2, nanos: 22)
+    assert_equal 2, m.duration.seconds
+    assert_equal 22, m.duration.nanos
+
+    m.duration = 10.5
+    assert_equal Google::Protobuf::Duration.new(seconds: 10, nanos: 500_000_000), m.duration
+
+    m.duration = 200
+    assert_equal Google::Protobuf::Duration.new(seconds: 200, nanos: 0), m.duration
+  end
 end

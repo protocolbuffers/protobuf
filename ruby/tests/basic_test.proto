@@ -3,6 +3,7 @@ syntax = "proto3";
 package basic_test;
 
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
 
 message Foo {
   Bar bar = 1;
@@ -112,4 +113,5 @@ message Inner {
 
 message TimeMessage {
   google.protobuf.Timestamp timestamp = 1;
+  google.protobuf.Duration duration = 2;
 }
