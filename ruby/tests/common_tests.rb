@@ -1132,6 +1132,11 @@ module CommonTests
 
     m = proto_module::TimeMessage.new(timestamp: Time.at(1))
     assert_equal Google::Protobuf::Timestamp.new(seconds: 1, nanos: 0), m.timestamp
+
+    assert_raise(Google::Protobuf::TypeError) { m.timestamp = 2 }
+    assert_raise(Google::Protobuf::TypeError) { m.timestamp = 2.4 }
+    assert_raise(Google::Protobuf::TypeError) { m.timestamp = '4' }
+    assert_raise(Google::Protobuf::TypeError) { m.timestamp = proto_module::TimeMessage.new }
   end
 
   def test_converts_duration
@@ -1149,5 +1154,8 @@ module CommonTests
 
     m = proto_module::TimeMessage.new(duration: 1.1)
     assert_equal Google::Protobuf::Duration.new(seconds: 1, nanos: 100_000_000), m.duration
+
+    assert_raise(Google::Protobuf::TypeError) { m.duration = '2' }
+    assert_raise(Google::Protobuf::TypeError) { m.duration = proto_module::TimeMessage.new }
   end
 end
