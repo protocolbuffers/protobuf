@@ -125,6 +125,10 @@ def UpdateJava():
     lambda document : ReplaceText(
       Find(document.documentElement, 'version'), NEW_VERSION))
 
+  RewriteXml('java/bom/pom.xml',
+    lambda document : ReplaceText(
+      Find(document.documentElement, 'version'), NEW_VERSION))
+
   RewriteXml('java/core/pom.xml',
     lambda document : ReplaceText(
       Find(Find(document.documentElement, 'parent'), 'version'),
@@ -220,6 +224,11 @@ def UpdatePhp():
     changelog.appendChild(release)
     changelog.appendChild(document.createTextNode('\n '))
   RewriteXml('php/ext/google/protobuf/package.xml', Callback)
+  RewriteTextFile('php/ext/google/protobuf/protobuf.h',
+    lambda line : re.sub(
+      r'PHP_PROTOBUF_VERSION ".*"$',
+      'PHP_PROTOBUF_VERSION "%s"' % NEW_VERSION,
+      line))
 
 def UpdatePython():
   RewriteTextFile('python/google/protobuf/__init__.py',
