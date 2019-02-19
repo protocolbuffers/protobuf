@@ -1119,4 +1119,15 @@ module CommonTests
   def test_comparison_with_arbitrary_object
     assert proto_module::TestMessage.new != nil
   end
+
+  def test_converts_time
+    m = proto_module::TimeMessage.new
+
+    m.timestamp = Google::Protobuf::Timestamp.new(seconds: 5, nanos: 6)
+    assert_equal 5, m.timestamp.seconds
+    assert_equal 6, m.timestamp.nanos
+
+    m.timestamp = Time.at(9466, 123456.789)
+    assert_equal Google::Protobuf::Timestamp.new(seconds: 9466, nanos: 123456789), m.timestamp
+  end
 end

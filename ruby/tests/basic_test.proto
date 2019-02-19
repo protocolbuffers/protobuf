@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package basic_test;
 
+import "google/protobuf/timestamp.proto";
+
 message Foo {
   Bar bar = 1;
   repeated Baz baz = 2;
@@ -106,4 +108,8 @@ message Outer {
 }
 
 message Inner {
+}
+
+message TimeMessage {
+  google.protobuf.Timestamp timestamp = 1;
 }
