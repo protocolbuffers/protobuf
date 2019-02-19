@@ -4,8 +4,8 @@
 # Example:
 # ./update_version.py 3.7.1 2
 #   => Version will become 3.7.1-rc-2 (beta)
-# ./update_version.py 3.8.1
-#   => Version will become 3.7.1-rc-2 (stable)
+# ./update_version.py 3.7.1
+#   => Version will become 3.7.1 (stable)
 
 import datetime
 import re
@@ -140,13 +140,13 @@ def UpdateCsharp():
   RewriteXml('csharp/src/Google.Protobuf/Google.Protobuf.csproj',
     lambda document : ReplaceText(
       Find(Find(document.documentElement, 'PropertyGroup'), 'VersionPrefix'),
-      GetFullVersion()),
+      GetFullVersion(rc_suffix = '-rc.')),
     add_xml_prefix=False)
 
   RewriteXml('csharp/Google.Protobuf.Tools.nuspec',
     lambda document : ReplaceText(
       Find(Find(document.documentElement, 'metadata'), 'version'),
-      GetFullVersion()))
+      GetFullVersion(rc_suffix = '-rc.')))
 
 
 def UpdateJava():
