@@ -1,5 +1,9 @@
-// Amalgamated source file
+/* Amalgamated source file */
 #include "upb.h"
+
+#ifndef UINTPTR_MAX
+#error must include stdint.h first
+#endif
 
 #if UINTPTR_MAX == 0xffffffff
 #define UPB_SIZE(size32, size64) size32
@@ -1833,6 +1837,11 @@ void upb_msg_field_iter_setdone(upb_msg_field_iter *iter) {
   upb_inttable_iter_setdone(iter);
 }
 
+bool upb_msg_field_iter_isequal(const upb_msg_field_iter * iter1,
+                                const upb_msg_field_iter * iter2) {
+  return upb_inttable_iter_isequal(iter1, iter2);
+}
+
 void upb_msg_oneof_begin(upb_msg_oneof_iter *iter, const upb_msgdef *m) {
   upb_strtable_begin(iter, &m->ntof);
   /* We need to skip past any initial fields. */
@@ -1860,6 +1869,11 @@ const upb_oneofdef *upb_msg_iter_oneof(const upb_msg_oneof_iter *iter) {
 
 void upb_msg_oneof_iter_setdone(upb_msg_oneof_iter *iter) {
   upb_strtable_iter_setdone(iter);
+}
+
+bool upb_msg_oneof_iter_isequal(const upb_msg_oneof_iter *iter1,
+                                const upb_msg_oneof_iter *iter2) {
+  return upb_strtable_iter_isequal(iter1, iter2);
 }
 
 /* upb_oneofdef ***************************************************************/
@@ -2046,6 +2060,28 @@ static bool create_oneofdef(
 static bool parse_default(const symtab_addctx *ctx, const char *str, size_t len,
                           upb_fielddef *f) {
   char *end;
+  char nullz[64];
+  errno = 0;
+
+  switch (upb_fielddef_type(f)) {
+    case UPB_TYPE_INT32:
+    case UPB_TYPE_INT64:
+    case UPB_TYPE_UINT32:
+    case UPB_TYPE_UINT64:
+    case UPB_TYPE_DOUBLE:
+    case UPB_TYPE_FLOAT:
+      /* Standard C number parsing functions expect null-terminated strings. */
+      if (len >= sizeof(nullz) - 1) {
+        return false;
+      }
+      memcpy(nullz, str, len);
+      nullz[len] = '\0';
+      str = nullz;
+      break;
+    default:
+      break;
+  }
+
   switch (upb_fielddef_type(f)) {
     case UPB_TYPE_INT32: {
       long val = strtol(str, &end, 0);
@@ -4554,6 +4590,10 @@ const upb_msglayout *upb_msgfactory_getlayout(upb_msgfactory *f,
   }
 }
 
+#ifndef UINTPTR_MAX
+#error must include stdint.h first
+#endif
+
 #if UINTPTR_MAX == 0xffffffff
 #define UPB_SIZE(size32, size64) size32
 #else
@@ -4974,6 +5014,7 @@ void upb_strtable_next(upb_strtable_iter *i) {
 }
 
 bool upb_strtable_done(const upb_strtable_iter *i) {
+  if (!i->t) return true;
   return i->index >= upb_table_size(&i->t->t) ||
          upb_tabent_isempty(str_tabent(i));
 }
@@ -4996,6 +5037,7 @@ upb_value upb_strtable_iter_value(const upb_strtable_iter *i) {
 }
 
 void upb_strtable_iter_setdone(upb_strtable_iter *i) {
+  i->t = NULL;
   i->index = SIZE_MAX;
 }
 
@@ -5285,6 +5327,7 @@ void upb_inttable_next(upb_inttable_iter *iter) {
 }
 
 bool upb_inttable_done(const upb_inttable_iter *i) {
+  if (!i->t) return true;
   if (i->array_part) {
     return i->index >= i->t->array_size ||
            !upb_arrhas(int_arrent(i));
@@ -5307,6 +5350,7 @@ upb_value upb_inttable_iter_value(const upb_inttable_iter *i) {
 }
 
 void upb_inttable_iter_setdone(upb_inttable_iter *i) {
+  i->t = NULL;
   i->index = SIZE_MAX;
   i->array_part = false;
 }
@@ -12813,7 +12857,6 @@ static void *startseq_fieldmask(void *closure, const void *handler_data) {
   UPB_UNUSED(handler_data);
   p->depth_++;
   p->first_elem_[p->depth_] = true;
-  print_data(p, "\"", 1);
   return closure;
 }
 
@@ -12821,7 +12864,6 @@ static bool endseq_fieldmask(void *closure, const void *handler_data) {
   upb_json_printer *p = closure;
   UPB_UNUSED(handler_data);
   p->depth_--;
-  print_data(p, "\"", 1);
   return true;
 }
 
@@ -13041,6 +13083,29 @@ static bool printer_endmsg_noframe(
   return true;
 }
 
+static bool printer_startmsg_fieldmask(
+    void *closure, const void *handler_data) {
+  upb_json_printer *p = closure;
+  UPB_UNUSED(handler_data);
+  if (p->depth_ == 0) {
+    upb_bytessink_start(p->output_, 0, &p->subc_);
+  }
+  print_data(p, "\"", 1);
+  return true;
+}
+
+static bool printer_endmsg_fieldmask(
+    void *closure, const void *handler_data, upb_status *s) {
+  upb_json_printer *p = closure;
+  UPB_UNUSED(handler_data);
+  UPB_UNUSED(s);
+  print_data(p, "\"", 1);
+  if (p->depth_ == 0) {
+    upb_bytessink_end(p->output_);
+  }
+  return true;
+}
+
 static void *scalar_startstr_onlykey(
     void *closure, const void *handler_data, size_t size_hint) {
   upb_json_printer *p = closure;
@@ -13094,8 +13159,8 @@ void printer_sethandlers_fieldmask(const void *closure, upb_handlers *h) {
   upb_handlers_setstartseq(h, f, startseq_fieldmask, &empty_attr);
   upb_handlers_setendseq(h, f, endseq_fieldmask, &empty_attr);
 
-  upb_handlers_setstartmsg(h, printer_startmsg_noframe, &empty_attr);
-  upb_handlers_setendmsg(h, printer_endmsg_noframe, &empty_attr);
+  upb_handlers_setstartmsg(h, printer_startmsg_fieldmask, &empty_attr);
+  upb_handlers_setendmsg(h, printer_endmsg_fieldmask, &empty_attr);
 
   upb_handlers_setstartstr(h, f, repeated_startstr_fieldmask, &empty_attr);
   upb_handlers_setstring(h, f, repeated_str_fieldmask, &empty_attr);
