@@ -668,7 +668,7 @@ void layout_clear(MessageLayout* layout,
     DEREF(memory, VALUE) = ary;
   } else {
     native_slot_set(upb_fielddef_name(field), upb_fielddef_type(field),
-                    field_type_class(field, field), memory,
+                    field_type_class(layout, field), memory,
                     layout_get_default(field));
   }
 }
@@ -807,12 +807,8 @@ void layout_set(MessageLayout* layout,
       // use native_slot_set_value_and_case(), which ensures that both the value
       // and case number are altered atomically (w.r.t. the Ruby VM).
       native_slot_set_value_and_case(
-<<<<<<< HEAD
-          upb_fielddef_type(field), field_type_class(layout, field),
-=======
           upb_fielddef_name(field),
-          upb_fielddef_type(field), field_type_class(field),
->>>>>>> master
+          upb_fielddef_type(field), field_type_class(layout, field),
           memory, val,
           oneof_case, upb_fielddef_number(field));
     }
@@ -823,13 +819,8 @@ void layout_set(MessageLayout* layout,
     check_repeated_field_type(layout, val, field);
     DEREF(memory, VALUE) = val;
   } else {
-<<<<<<< HEAD
-    native_slot_set(upb_fielddef_type(field), field_type_class(layout, field),
-=======
-    native_slot_set(upb_fielddef_name(field), 
-                    upb_fielddef_type(field), field_type_class(field),
->>>>>>> master
-                    memory, val);
+    native_slot_set(upb_fielddef_name(field), upb_fielddef_type(field),
+                    field_type_class(layout, field), memory, val);
   }
 
   if (layout->fields[upb_fielddef_index(field)].hasbit !=
