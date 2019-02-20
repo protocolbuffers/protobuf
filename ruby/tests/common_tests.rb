@@ -1116,43 +1116,43 @@ module CommonTests
     assert JSON.parse(actual, :symbolize_names => true) == expected
   end
 
+  def value_from_ruby(value)
+    ret = Google::Protobuf::Value.new
+    case value
+    when String
+      ret.string_value = value
+    when Google::Protobuf::Struct
+      ret.struct_value = value
+    when Hash
+      ret.struct_value = struct_from_ruby(value)
+    when Google::Protobuf::ListValue
+      ret.list_value = value
+    when Array
+      ret.list_value = list_from_ruby(value)
+    else
+      @log.error "Unknown type: #{value.class}"
+      raise Google::Protobuf::Error, "Unknown type: #{value.class}"
+    end
+    ret
+  end
+
+  def list_from_ruby(arr)
+    ret = Google::Protobuf::ListValue.new
+    arr.each do |v|
+      ret.values << value_from_ruby(v)
+    end
+    ret
+  end
+
+  def struct_from_ruby(hash)
+    ret = Google::Protobuf::Struct.new
+    hash.each do |k, v|
+      ret.fields[k] ||= value_from_ruby(v)
+    end
+    ret
+  end
+
   def test_deep_json
-    def value_from_ruby(value)
-      ret = Google::Protobuf::Value.new
-      case value
-      when String
-        ret.string_value = value
-      when Google::Protobuf::Struct
-        ret.struct_value = value
-      when Hash
-        ret.struct_value = struct_from_ruby(value)
-      when Google::Protobuf::ListValue
-        ret.list_value = value
-      when Array
-        ret.list_value = list_from_ruby(value)
-      else
-        @log.error "Unknown type: #{value.class}"
-        raise Google::Protobuf::Error, "Unknown type: #{value.class}"
-      end
-      ret
-    end
-
-    def list_from_ruby(arr)
-      ret = Google::Protobuf::ListValue.new
-      arr.each do |v|
-        ret.values << value_from_ruby(v)
-      end
-      ret
-    end
-
-    def struct_from_ruby(hash)
-      ret = Google::Protobuf::Struct.new
-      hash.each do |k, v|
-        ret.fields[k] ||= value_from_ruby(v)
-      end
-      ret
-    end
-
     # will not overflow
     json = '{"a":{"a":{"a":{"a":{"a":{"a":{"a":{"a":{"a":{"a":{"a":{"a":{"a":{"a":{"a":{}}}}}}}}}}}}}}}}'
 
