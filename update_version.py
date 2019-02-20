@@ -1,16 +1,25 @@
 #!/usr/bin/env python
+# Usage: ./update_version.py <MAJOR>.<MINOR>.<MICRO> [<RC version>]
+#
+# Example:
+# ./update_version.py 3.7.1 2
+#   => Version will become 3.7.1-rc-2 (beta)
+# ./update_version.py 3.7.1
+#   => Version will become 3.7.1 (stable)
 
 import datetime
 import re
 import sys
 from xml.dom import minidom
 
-if len(sys.argv) < 2:
+if len(sys.argv) < 2 or len(sys.argv) > 3:
   print """
 [ERROR] Please specify a version.
 
+./update_version.py <MAJOR>.<MINOR>.<MICRO> [<RC version>]
+
 Example:
-./update_version.py 2.1.3
+./update_version.py 3.7.1 2
 """
   exit(1)
 
@@ -21,9 +30,13 @@ if len(NEW_VERSION_INFO) != 3:
 [ERROR] Version must be in the format <MAJOR>.<MINOR>.<MICRO>
 
 Example:
-./update_version.py 2.1.3
+./update_version.py 3.7.3
 """
   exit(1)
+
+RC_VERSION = 0
+if len(sys.argv) > 2:
+  RC_VERSION = int(sys.argv[2])
 
 
 def Find(elem, tagname):
@@ -39,6 +52,13 @@ def FindAndClone(elem, tagname):
 
 def ReplaceText(elem, text):
   elem.firstChild.replaceWholeText(text)
+
+
+def GetFullVersion(rc_suffix = '-rc-'):
+  if RC_VERSION == 0:
+    return NEW_VERSION
+  else:
+    return '%s%s%s' % (NEW_VERSION, rc_suffix, RC_VERSION)
 
 
 def RewriteXml(filename, rewriter, add_xml_prefix=True):
@@ -74,7 +94,7 @@ def UpdateConfigure():
     lambda line : re.sub(
       r'^AC_INIT\(\[Protocol Buffers\],\[.*\],\[protobuf@googlegroups.com\],\[protobuf\]\)$',
       ('AC_INIT([Protocol Buffers],[%s],[protobuf@googlegroups.com],[protobuf])'
-        % NEW_VERSION),
+        % GetFullVersion()),
       line))
 
 
@@ -120,44 +140,44 @@ def UpdateCsharp():
   RewriteXml('csharp/src/Google.Protobuf/Google.Protobuf.csproj',
     lambda document : ReplaceText(
       Find(Find(document.documentElement, 'PropertyGroup'), 'VersionPrefix'),
-      NEW_VERSION),
+      GetFullVersion(rc_suffix = '-rc.')),
     add_xml_prefix=False)
 
   RewriteXml('csharp/Google.Protobuf.Tools.nuspec',
     lambda document : ReplaceText(
       Find(Find(document.documentElement, 'metadata'), 'version'),
-      NEW_VERSION))
+      GetFullVersion(rc_suffix = '-rc.')))
 
 
 def UpdateJava():
   RewriteXml('java/pom.xml',
     lambda document : ReplaceText(
-      Find(document.documentElement, 'version'), NEW_VERSION))
+      Find(document.documentElement, 'version'), GetFullVersion()))
 
   RewriteXml('java/bom/pom.xml',
     lambda document : ReplaceText(
-      Find(document.documentElement, 'version'), NEW_VERSION))
+      Find(document.documentElement, 'version'), GetFullVersion()))
 
   RewriteXml('java/core/pom.xml',
     lambda document : ReplaceText(
       Find(Find(document.documentElement, 'parent'), 'version'),
-      NEW_VERSION))
+      GetFullVersion()))
 
   RewriteXml('java/util/pom.xml',
     lambda document : ReplaceText(
       Find(Find(document.documentElement, 'parent'), 'version'),
-      NEW_VERSION))
+      GetFullVersion()))
 
   RewriteXml('protoc-artifacts/pom.xml',
     lambda document : ReplaceText(
-      Find(document.documentElement, 'version'), NEW_VERSION))
+      Find(document.documentElement, 'version'), GetFullVersion()))
 
 
 def UpdateJavaScript():
   RewriteTextFile('js/package.json',
     lambda line : re.sub(
       r'^  "version": ".*",$',
-      '  "version": "%s",' % NEW_VERSION,
+      '  "version": "%s",' % GetFullVersion(rc_suffix = '-rc.'),
       line))
 
 
@@ -185,7 +205,7 @@ def UpdateObjectiveC():
   RewriteTextFile('Protobuf.podspec',
     lambda line : re.sub(
       r"^  s.version  = '.*'$",
-      "  s.version  = '%s'" % NEW_VERSION,
+      "  s.version  = '%s'" % GetFullVersion(rc_suffix = '-rc.'),
       line))
 
 
@@ -203,8 +223,12 @@ def UpdatePhp():
 
     root = document.documentElement
     version = Find(root, 'version')
-    ReplaceText(Find(version, 'release'), NEW_VERSION)
+    ReplaceText(Find(version, 'release'), GetFullVersion(rc_suffix = 'RC'))
     ReplaceText(Find(version, 'api'), NEW_VERSION)
+    stability = Find(root, 'stability')
+    ReplaceText(Find(version, 'release'),
+        'stable' if RC_VERSION == 0 else 'beta')
+    ReplaceText(Find(version, 'api'), 'stable' if RC_VERSION == 0 else 'beta')
     now = datetime.datetime.now()
     ReplaceText(Find(root, 'date'), now.strftime('%Y-%m-%d'))
     ReplaceText(Find(root, 'time'), now.strftime('%H:%M:%S'))
@@ -215,7 +239,6 @@ def UpdatePhp():
           % NEW_VERSION)
         return
     changelog.appendChild(document.createTextNode(' '))
-    stability = Find(root, 'stability')
     release = CreateNode('release', 2, [
         CreateNode('version', 3, [
           FindAndClone(version, 'release'),
@@ -234,18 +257,24 @@ def UpdatePhp():
     changelog.appendChild(document.createTextNode('\n '))
   RewriteXml('php/ext/google/protobuf/package.xml', Callback)
 
+  RewriteTextFile('php/ext/google/protobuf/protobuf.h',
+    lambda line : re.sub(
+      r"^#define PHP_PROTOBUF_VERSION .*$",
+      "#define PHP_PROTOBUF_VERSION \"%s\"" % GetFullVersion(rc_suffix = 'RC'),
+      line))
+
 def UpdatePython():
   RewriteTextFile('python/google/protobuf/__init__.py',
     lambda line : re.sub(
       r"^__version__ = '.*'$",
-      "__version__ = '%s'" % NEW_VERSION,
+      "__version__ = '%s'" % GetFullVersion(rc_suffix = 'rc'),
       line))
 
 def UpdateRuby():
   RewriteTextFile('ruby/google-protobuf.gemspec',
     lambda line : re.sub(
       r'^  s.version     = ".*"$',
-      '  s.version     = "%s"' % NEW_VERSION,
+      '  s.version     = "%s"' % GetFullVersion(rc_suffix = '.rc.'),
       line))
 
 
