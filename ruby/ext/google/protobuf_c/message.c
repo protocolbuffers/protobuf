@@ -261,7 +261,7 @@ VALUE Message_method_missing(int argc, VALUE* argv, VALUE _self) {
     } else {
       // METHOD_ACCESSOR
       return oneof_field == NULL ? Qnil :
-       ID2SYM(rb_intern(upb_fielddef_name(oneof_field)));
+        ID2SYM(rb_intern(upb_fielddef_name(oneof_field)));
     }
   // Otherwise we're operating on a single proto field
   } else if (accessor_type == METHOD_SETTER) {
