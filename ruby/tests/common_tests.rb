@@ -3,6 +3,9 @@
 # Requires that the proto messages are exactly the same in proto2 and proto3 syntax
 # and that the including class should define a 'proto_module' method which returns
 # the enclosing module of the proto message classes.
+
+require 'bigdecimal'
+
 module CommonTests
   def test_defaults
     m = proto_module::TestMessage.new
@@ -1153,6 +1156,12 @@ module CommonTests
 
     m.duration = 200
     assert_equal Google::Protobuf::Duration.new(seconds: 200, nanos: 0), m.duration
+
+    m.duration = Rational(3, 2)
+    assert_equal Google::Protobuf::Duration.new(seconds: 1, nanos: 500_000_000), m.duration
+
+    m.duration = BigDecimal.new("5")
+    assert_equal Google::Protobuf::Duration.new(seconds: 5, nanos: 0), m.duration
 
     m = proto_module::TimeMessage.new(duration: 1.1)
     assert_equal Google::Protobuf::Duration.new(seconds: 1, nanos: 100_000_000), m.duration
