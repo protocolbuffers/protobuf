@@ -257,6 +257,12 @@ def UpdatePhp():
     changelog.appendChild(document.createTextNode('\n '))
   RewriteXml('php/ext/google/protobuf/package.xml', Callback)
 
+  RewriteTextFile('php/ext/google/protobuf/protobuf.h',
+    lambda line : re.sub(
+      r"^#define PHP_PROTOBUF_VERSION .*$",
+      "#define PHP_PROTOBUF_VERSION \"%s\"" % GetFullVersion(rc_suffix = 'RC'),
+      line))
+
 def UpdatePython():
   RewriteTextFile('python/google/protobuf/__init__.py',
     lambda line : re.sub(
