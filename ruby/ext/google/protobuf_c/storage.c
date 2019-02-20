@@ -195,8 +195,7 @@ void native_slot_set_value_and_case(const char* name,
 
         // Number -> Google::Protobuf::Duration
         if (strcmp(field_type_name, "Google::Protobuf::Duration") == 0 &&
-            (strcmp(value_type_name, "Integer") == 0 || 
-             strcmp(value_type_name, "Float") == 0)) {
+            (RB_TYPE_P(value, T_FIXNUM) || RB_TYPE_P(value, T_FLOAT))) {
           VALUE hash = rb_hash_new();
           rb_hash_aset(hash, rb_str_new2("seconds"), rb_funcall(value, rb_intern("to_i"), 0));
           VALUE n_value = rb_funcall(value, rb_intern("remainder"), 1, INT2NUM(1));

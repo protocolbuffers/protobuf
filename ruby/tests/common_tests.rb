@@ -1124,6 +1124,7 @@ module CommonTests
     m = proto_module::TimeMessage.new
 
     m.timestamp = Google::Protobuf::Timestamp.new(seconds: 5, nanos: 6)
+    assert_kind_of Google::Protobuf::Timestamp, m.timestamp
     assert_equal 5, m.timestamp.seconds
     assert_equal 6, m.timestamp.nanos
 
@@ -1143,6 +1144,7 @@ module CommonTests
     m = proto_module::TimeMessage.new
 
     m.duration = Google::Protobuf::Duration.new(seconds: 2, nanos: 22)
+    assert_kind_of Google::Protobuf::Duration, m.duration
     assert_equal 2, m.duration.seconds
     assert_equal 22, m.duration.nanos
 
