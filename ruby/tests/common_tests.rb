@@ -1154,7 +1154,8 @@ module CommonTests
 
   def test_deep_json
     # will not overflow
-    json = '{"a":{"a":{"a":{"a":{"a":{"a":{"a":{"a":{"a":{"a":{"a":{"a":{"a":{"a":{"a":{}}}}}}}}}}}}}}}}'
+    json = '{"a":{"a":{"a":{"a":{"a":{"a":{"a":{"a":{"a":{"a":{"a":'\
+           '{"a":{"a":{"a":{"a":{}}}}}}}}}}}}}}}}'
 
     struct = struct_from_ruby(JSON.parse(json))
     assert_equal json, struct.to_json
@@ -1164,7 +1165,8 @@ module CommonTests
     assert_equal json, proto_module::MyRepeatedStruct.decode(encoded).structs[0].struct.to_json
 
     # will overflow
-    json = '{"a":{"a":{"a":[{"a":{"a":[{"a":[{"a":{"a":[{"a":[{"a":{"a":[{"a":[{"a":{"a":{"a":[{"a":"a"}]}}}]}]}}]}]}}]}]}}]}}}'
+    json = '{"a":{"a":{"a":[{"a":{"a":[{"a":[{"a":{"a":[{"a":[{"a":'\
+           '{"a":[{"a":[{"a":{"a":{"a":[{"a":"a"}]}}}]}]}}]}]}}]}]}}]}}}'
 
     struct = struct_from_ruby(JSON.parse(json))
     assert_equal json, struct.to_json
