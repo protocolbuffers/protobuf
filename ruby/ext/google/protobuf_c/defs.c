@@ -886,7 +886,7 @@ VALUE FieldDescriptor_default_set(VALUE _self, VALUE default_value) {
   upb_fielddef* mut_def = check_field_notfrozen(self->fielddef);
 
   switch (upb_fielddef_type(mut_def)) {
-    case UPB_TYPE_FLOAT: 
+    case UPB_TYPE_FLOAT:
       upb_fielddef_setdefaultfloat(mut_def, NUM2DBL(default_value));
       break;
     case UPB_TYPE_DOUBLE:
@@ -902,16 +902,16 @@ VALUE FieldDescriptor_default_set(VALUE _self, VALUE default_value) {
       upb_fielddef_setdefaultbool(mut_def, RTEST(default_value));
       break;
     case UPB_TYPE_ENUM:
-    case UPB_TYPE_INT32: 
+    case UPB_TYPE_INT32:
       upb_fielddef_setdefaultint32(mut_def, NUM2INT(default_value));
       break;
-    case UPB_TYPE_INT64: 
+    case UPB_TYPE_INT64:
       upb_fielddef_setdefaultint64(mut_def, NUM2INT(default_value));
       break;
-    case UPB_TYPE_UINT32: 
+    case UPB_TYPE_UINT32:
       upb_fielddef_setdefaultuint32(mut_def, NUM2UINT(default_value));
       break;
-    case UPB_TYPE_UINT64: 
+    case UPB_TYPE_UINT64:
       upb_fielddef_setdefaultuint64(mut_def, NUM2UINT(default_value));
       break;
     case UPB_TYPE_STRING:
@@ -2085,7 +2085,7 @@ VALUE Builder_alloc(VALUE klass) {
 
 void Builder_register(VALUE module) {
   VALUE klass = rb_define_class_under(module, "Builder", rb_cObject);
-  rb_define_alloc_func(klass, Builder_alloc); 
+  rb_define_alloc_func(klass, Builder_alloc);
   rb_define_method(klass, "initialize", Builder_initialize, 0);
   rb_define_method(klass, "add_file", Builder_add_file, -1);
   rb_define_method(klass, "add_message", Builder_add_message, 1);
@@ -2230,7 +2230,7 @@ VALUE Builder_finalize_to_pool(VALUE _self, VALUE pool_rb) {
     VALUE def_rb = rb_ary_entry(self->pending_list, i);
     if (CLASS_OF(def_rb) == cDescriptor) {
       self->defs[i] = (upb_def*)ruby_to_Descriptor(def_rb)->msgdef;
-      
+
       if (upb_filedef_syntax(upb_def_file(self->defs[i])) == UPB_SYNTAX_PROTO3) {
         proto3_validate_msgdef((const upb_msgdef*)self->defs[i]);
       }

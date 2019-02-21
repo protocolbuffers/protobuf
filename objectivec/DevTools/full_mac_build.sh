@@ -341,7 +341,7 @@ if [[ "${DO_XCODE_TVOS_TESTS}" == "yes" ]] ; then
     xcodebuild
       -project objectivec/ProtocolBuffers_tvOS.xcodeproj
       -scheme ProtocolBuffers
-      # Test on the oldest and current. 
+      # Test on the oldest and current.
       -destination "platform=tvOS Simulator,name=Apple TV 1080p,OS=9.0"
       -destination "platform=tvOS Simulator,name=Apple TV,OS=latest"
   )

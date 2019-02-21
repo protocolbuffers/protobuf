@@ -299,7 +299,7 @@ const char descriptor_table_protodef_google_2fprotobuf_2fwrappers_2eproto[] =
   "\006proto3"
   ;
 ::google::protobuf::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fwrappers_2eproto = {
-  false, InitDefaults_google_2fprotobuf_2fwrappers_2eproto, 
+  false, InitDefaults_google_2fprotobuf_2fwrappers_2eproto,
   descriptor_table_protodef_google_2fprotobuf_2fwrappers_2eproto,
   "google/protobuf/wrappers.proto", &assign_descriptors_table_google_2fprotobuf_2fwrappers_2eproto, 447,
 };

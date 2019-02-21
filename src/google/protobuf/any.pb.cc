@@ -78,7 +78,7 @@ const char descriptor_table_protodef_google_2fprotobuf_2fany_2eproto[] =
   "roto3"
   ;
 ::google::protobuf::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fany_2eproto = {
-  false, InitDefaults_google_2fprotobuf_2fany_2eproto, 
+  false, InitDefaults_google_2fprotobuf_2fany_2eproto,
   descriptor_table_protodef_google_2fprotobuf_2fany_2eproto,
   "google/protobuf/any.proto", &assign_descriptors_table_google_2fprotobuf_2fany_2eproto, 205,
 };

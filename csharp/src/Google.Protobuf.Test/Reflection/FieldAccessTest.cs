@@ -213,6 +213,6 @@ namespace Google.Protobuf.Reflection
             var descriptor = TestAllTypes.Descriptor;
             Assert.Throws<KeyNotFoundException>(() => descriptor.Fields[999999].ToString());
             Assert.Throws<KeyNotFoundException>(() => descriptor.Fields["not found"].ToString());
-        }        
+        }
     }
 }

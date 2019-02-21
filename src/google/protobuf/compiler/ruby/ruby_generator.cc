@@ -65,7 +65,7 @@ void GenerateEnumAssignment(
     google::protobuf::io::Printer* printer);
 std::string DefaultValueForField(
     const google::protobuf::FieldDescriptor* field);
-  
+
 template<class numeric_type>
 std::string NumberToString(numeric_type value) {
   std::ostringstream os;
@@ -150,7 +150,7 @@ std::string DefaultValueForField(const google::protobuf::FieldDescriptor* field)
     case FieldDescriptor::CPPTYPE_STRING: {
       std::ostringstream os;
       string default_str = field->default_value_string();
-      
+
       if (field->type() == FieldDescriptor::TYPE_STRING) {
         os << "\"" << default_str << "\"";
       } else if (field->type() == FieldDescriptor::TYPE_BYTES) {
@@ -224,7 +224,7 @@ void GenerateField(const google::protobuf::FieldDescriptor* field,
 	", default: $default$",
 	"default", DefaultValueForField(field));
     }
-    
+
     printer->Print("\n");
   }
 }
@@ -252,7 +252,7 @@ bool GenerateMessage(const google::protobuf::Descriptor* message,
     *error = "Extensions are not yet supported for proto2 .proto files.";
     return false;
   }
-  
+
   // Don't generate MapEntry messages -- we use the Ruby extension's native
   // support for map fields instead.
   if (message->options().map_entry()) {

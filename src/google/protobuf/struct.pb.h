@@ -97,7 +97,7 @@ inline bool NullValue_Parse(
 }
 // ===================================================================
 
-class Struct_FieldsEntry_DoNotUse : public ::google::protobuf::internal::MapEntry<Struct_FieldsEntry_DoNotUse, 
+class Struct_FieldsEntry_DoNotUse : public ::google::protobuf::internal::MapEntry<Struct_FieldsEntry_DoNotUse,
     ::std::string, ::google::protobuf::Value,
     ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
     ::google::protobuf::internal::WireFormatLite::TYPE_MESSAGE,
@@ -106,7 +106,7 @@ public:
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 static bool _ParseMap(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
 #endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  typedef ::google::protobuf::internal::MapEntry<Struct_FieldsEntry_DoNotUse, 
+  typedef ::google::protobuf::internal::MapEntry<Struct_FieldsEntry_DoNotUse,
     ::std::string, ::google::protobuf::Value,
     ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
     ::google::protobuf::internal::WireFormatLite::TYPE_MESSAGE,

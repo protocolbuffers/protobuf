@@ -446,7 +446,7 @@ class GPBWire
             if (bccomp($value, 0) < 0 ||
                 bccomp($value, "9223372036854775807") > 0) {
                 return 10;
-            }    
+            }
             if (bccomp($value, 1 << 7) < 0) {
                 return 1;
             }
@@ -475,7 +475,7 @@ class GPBWire
         } else {
             if ($value < 0) {
                 return 10;
-            }    
+            }
             if ($value < (1 <<  7)) {
                 return 1;
             }

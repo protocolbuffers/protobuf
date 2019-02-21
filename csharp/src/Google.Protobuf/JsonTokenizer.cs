@@ -614,7 +614,7 @@ namespace Google.Protobuf
             /// where ^ represents the current position within the text stream. The examples all use string values,
             /// but could be any value, including nested objects/arrays.
             /// The complete state of the tokenizer also includes a stack to indicate the contexts (arrays/objects).
-            /// Any additional notional state of "AfterValue" indicates that a value has been completed, at which 
+            /// Any additional notional state of "AfterValue" indicates that a value has been completed, at which
             /// point there's an immediate transition to ExpectedEndOfDocument,  ObjectAfterProperty or ArrayAfterValue.
             /// </para>
             /// <para>
@@ -655,7 +655,7 @@ namespace Google.Protobuf
                 /// <summary>
                 /// { "foo" : ^ "bar", "x": "y" }
                 /// Before any property other than the first in an object.
-                /// (Equivalently: after any property in an object) 
+                /// (Equivalently: after any property in an object)
                 /// Next states:
                 /// "AfterValue" (value is simple)
                 /// ObjectStart (value is object)

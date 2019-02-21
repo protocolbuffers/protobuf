@@ -157,7 +157,7 @@ const char descriptor_table_protodef_google_2fprotobuf_2fstruct_2eproto[] =
   "3"
   ;
 ::google::protobuf::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fstruct_2eproto = {
-  false, InitDefaults_google_2fprotobuf_2fstruct_2eproto, 
+  false, InitDefaults_google_2fprotobuf_2fstruct_2eproto,
   descriptor_table_protodef_google_2fprotobuf_2fstruct_2eproto,
   "google/protobuf/struct.proto", &assign_descriptors_table_google_2fprotobuf_2fstruct_2eproto, 641,
 };
