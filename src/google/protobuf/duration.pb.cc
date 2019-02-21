@@ -78,7 +78,7 @@ const char descriptor_table_protodef_google_2fprotobuf_2fduration_2eproto[] =
   "obuf.WellKnownTypesb\006proto3"
   ;
 ::google::protobuf::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fduration_2eproto = {
-  false, InitDefaults_google_2fprotobuf_2fduration_2eproto, 
+  false, InitDefaults_google_2fprotobuf_2fduration_2eproto,
   descriptor_table_protodef_google_2fprotobuf_2fduration_2eproto,
   "google/protobuf/duration.proto", &assign_descriptors_table_google_2fprotobuf_2fduration_2eproto, 227,
 };

@@ -204,7 +204,7 @@ public final class SentinelOuterClass {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs = 
+        com.google.protobuf.ByteString bs =
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
@@ -220,7 +220,7 @@ public final class SentinelOuterClass {
         getDefaultStringBytes() {
       java.lang.Object ref = defaultString_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         defaultString_ = b;
@@ -432,7 +432,7 @@ public final class SentinelOuterClass {
        * <code>optional int32 default_int32 = 1;</code>
        */
       public Builder setDefaultInt32(int value) {
-        
+
         defaultInt32_ = value;
         onChanged();
         return this;
@@ -441,7 +441,7 @@ public final class SentinelOuterClass {
        * <code>optional int32 default_int32 = 1;</code>
        */
       public Builder clearDefaultInt32() {
-        
+
         defaultInt32_ = 0;
         onChanged();
         return this;
@@ -458,7 +458,7 @@ public final class SentinelOuterClass {
        * <code>optional int64 default_int64 = 2;</code>
        */
       public Builder setDefaultInt64(long value) {
-        
+
         defaultInt64_ = value;
         onChanged();
         return this;
@@ -467,7 +467,7 @@ public final class SentinelOuterClass {
        * <code>optional int64 default_int64 = 2;</code>
        */
       public Builder clearDefaultInt64() {
-        
+
         defaultInt64_ = 0L;
         onChanged();
         return this;
@@ -484,7 +484,7 @@ public final class SentinelOuterClass {
        * <code>optional uint32 default_unit32 = 3;</code>
        */
       public Builder setDefaultUnit32(int value) {
-        
+
         defaultUnit32_ = value;
         onChanged();
         return this;
@@ -493,7 +493,7 @@ public final class SentinelOuterClass {
        * <code>optional uint32 default_unit32 = 3;</code>
        */
       public Builder clearDefaultUnit32() {
-        
+
         defaultUnit32_ = 0;
         onChanged();
         return this;
@@ -510,7 +510,7 @@ public final class SentinelOuterClass {
        * <code>optional uint64 default_uint64 = 4;</code>
        */
       public Builder setDefaultUint64(long value) {
-        
+
         defaultUint64_ = value;
         onChanged();
         return this;
@@ -519,7 +519,7 @@ public final class SentinelOuterClass {
        * <code>optional uint64 default_uint64 = 4;</code>
        */
       public Builder clearDefaultUint64() {
-        
+
         defaultUint64_ = 0L;
         onChanged();
         return this;
@@ -550,7 +550,7 @@ public final class SentinelOuterClass {
           getDefaultStringBytes() {
         java.lang.Object ref = defaultString_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString b =
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           defaultString_ = b;
@@ -567,7 +567,7 @@ public final class SentinelOuterClass {
         if (value == null) {
     throw new NullPointerException();
   }
-  
+
         defaultString_ = value;
         onChanged();
         return this;
@@ -576,7 +576,7 @@ public final class SentinelOuterClass {
        * <code>optional string default_string = 5;</code>
        */
       public Builder clearDefaultString() {
-        
+
         defaultString_ = getDefaultInstance().getDefaultString();
         onChanged();
         return this;
@@ -589,7 +589,7 @@ public final class SentinelOuterClass {
         if (value == null) {
     throw new NullPointerException();
   }
-  
+
         defaultString_ = value;
         onChanged();
         return this;
@@ -606,7 +606,7 @@ public final class SentinelOuterClass {
        * <code>optional bool default_bool = 6;</code>
        */
       public Builder setDefaultBool(boolean value) {
-        
+
         defaultBool_ = value;
         onChanged();
         return this;
@@ -615,7 +615,7 @@ public final class SentinelOuterClass {
        * <code>optional bool default_bool = 6;</code>
        */
       public Builder clearDefaultBool() {
-        
+
         defaultBool_ = false;
         onChanged();
         return this;
@@ -632,7 +632,7 @@ public final class SentinelOuterClass {
        * <code>optional float default_float = 7;</code>
        */
       public Builder setDefaultFloat(float value) {
-        
+
         defaultFloat_ = value;
         onChanged();
         return this;
@@ -641,7 +641,7 @@ public final class SentinelOuterClass {
        * <code>optional float default_float = 7;</code>
        */
       public Builder clearDefaultFloat() {
-        
+
         defaultFloat_ = 0F;
         onChanged();
         return this;
@@ -658,7 +658,7 @@ public final class SentinelOuterClass {
        * <code>optional double default_double = 8;</code>
        */
       public Builder setDefaultDouble(double value) {
-        
+
         defaultDouble_ = value;
         onChanged();
         return this;
@@ -667,7 +667,7 @@ public final class SentinelOuterClass {
        * <code>optional double default_double = 8;</code>
        */
       public Builder clearDefaultDouble() {
-        
+
         defaultDouble_ = 0D;
         onChanged();
         return this;
@@ -687,7 +687,7 @@ public final class SentinelOuterClass {
         if (value == null) {
     throw new NullPointerException();
   }
-  
+
         defaultBytes_ = value;
         onChanged();
         return this;
@@ -696,7 +696,7 @@ public final class SentinelOuterClass {
        * <code>optional bytes default_bytes = 9;</code>
        */
       public Builder clearDefaultBytes() {
-        
+
         defaultBytes_ = getDefaultInstance().getDefaultBytes();
         onChanged();
         return this;

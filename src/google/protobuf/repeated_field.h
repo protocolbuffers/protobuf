@@ -285,7 +285,7 @@ class RepeatedField final {
   static const size_t kRepHeaderSize;
 
   // We reuse the Rep* for an Arena* when total_size == 0, to avoid having to do
-  // an allocation in the constructor when we have an Arena.  
+  // an allocation in the constructor when we have an Arena.
   union Pointer {
     Pointer(Arena* a) : arena(a) {}
     Arena* arena;       // When total_size_ == 0.

@@ -39,22 +39,22 @@ import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 /**
  * Test field deprecation
- * 
+ *
  * @author birdo@google.com (Roberto Scaramuzzi)
  */
 public class DeprecatedFieldTest extends TestCase {
   private String[] deprecatedGetterNames = {
       "hasDeprecatedInt32",
       "getDeprecatedInt32"};
-  
+
   private String[] deprecatedBuilderGetterNames = {
       "hasDeprecatedInt32",
       "getDeprecatedInt32",
       "clearDeprecatedInt32"};
-  
+
   private String[] deprecatedBuilderSetterNames = {
-      "setDeprecatedInt32"}; 
-  
+      "setDeprecatedInt32"};
+
   public void testDeprecatedField() throws Exception {
     Class<?> deprecatedFields = TestDeprecatedFields.class;
     Class<?> deprecatedFieldsBuilder = TestDeprecatedFields.Builder.class;
@@ -74,7 +74,7 @@ public class DeprecatedFieldTest extends TestCase {
           isDeprecated(method));
     }
   }
-  
+
   private boolean isDeprecated(AnnotatedElement annotated) {
     return annotated.isAnnotationPresent(Deprecated.class);
   }

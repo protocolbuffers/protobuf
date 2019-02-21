@@ -75,7 +75,7 @@ const char descriptor_table_protodef_google_2fprotobuf_2fempty_2eproto[] =
   ".WellKnownTypesb\006proto3"
   ;
 ::google::protobuf::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fempty_2eproto = {
-  false, InitDefaults_google_2fprotobuf_2fempty_2eproto, 
+  false, InitDefaults_google_2fprotobuf_2fempty_2eproto,
   descriptor_table_protodef_google_2fprotobuf_2fempty_2eproto,
   "google/protobuf/empty.proto", &assign_descriptors_table_google_2fprotobuf_2fempty_2eproto, 183,
 };

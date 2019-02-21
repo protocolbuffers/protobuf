@@ -392,13 +392,13 @@ message CommentMessage {
     // Leading nested message field comment
     string nested_text = 1;
   }
-  
+
   // Leading nested enum comment
   enum NestedCommentEnum {
     // Zero value comment
     ZERO_VALUE = 0;
   }
-  
+
   // Leading field comment
   string text = 1; // Trailing field comment
 }

@@ -9,8 +9,8 @@ function newBenchmark(messageName, filename, language) {
       })
       .on("start", function() {
           process.stdout.write(
-            "benchmarking message " + messageName 
-            + " of dataset file " + filename 
+            "benchmarking message " + messageName
+            + " of dataset file " + filename
             + "'s performance ..." + "\n\n");
       })
       .on("cycle", function(event) {
@@ -21,7 +21,7 @@ function newBenchmark(messageName, filename, language) {
             return 1 / (bench.stats.mean + bench.stats.moe);
           }
           benches.forEach(function(val, index) {
-            benches[index] = getHz(val); 
+            benches[index] = getHz(val);
           });
       }),
      benches: benches

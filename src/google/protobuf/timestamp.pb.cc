@@ -78,7 +78,7 @@ const char descriptor_table_protodef_google_2fprotobuf_2ftimestamp_2eproto[] =
   "Protobuf.WellKnownTypesb\006proto3"
   ;
 ::google::protobuf::internal::DescriptorTable descriptor_table_google_2fprotobuf_2ftimestamp_2eproto = {
-  false, InitDefaults_google_2fprotobuf_2ftimestamp_2eproto, 
+  false, InitDefaults_google_2fprotobuf_2ftimestamp_2eproto,
   descriptor_table_protodef_google_2fprotobuf_2ftimestamp_2eproto,
   "google/protobuf/timestamp.proto", &assign_descriptors_table_google_2fprotobuf_2ftimestamp_2eproto, 231,
 };

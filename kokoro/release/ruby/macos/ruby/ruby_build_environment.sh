@@ -34,7 +34,7 @@ patch "$CROSS_RUBY" << EOF
 +    '--without-gmp',
      '--with-ext='
    ]
- 
+
 @@ -151,6 +153,7 @@
  # make
  file "#{USER_HOME}/builds/#{MINGW_HOST}/#{RUBY_CC_VERSION}/ruby.exe" => ["#{USER_HOME}/builds/#{MINGW_HOST}/#{RUBY_CC_VERSION}/Makefile"] do |t|
