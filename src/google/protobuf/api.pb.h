@@ -599,13 +599,13 @@ inline const ::std::string& Api::name() const {
   return name_.GetNoArena();
 }
 inline void Api::set_name(const ::std::string& value) {
-
+  
   name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
   // @@protoc_insertion_point(field_set:google.protobuf.Api.name)
 }
 #if LANG_CXX11
 inline void Api::set_name(::std::string&& value) {
-
+  
   name_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
   // @@protoc_insertion_point(field_set_rvalue:google.protobuf.Api.name)
@@ -613,31 +613,31 @@ inline void Api::set_name(::std::string&& value) {
 #endif
 inline void Api::set_name(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
-
+  
   name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
   // @@protoc_insertion_point(field_set_char:google.protobuf.Api.name)
 }
 inline void Api::set_name(const char* value, size_t size) {
-
+  
   name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.Api.name)
 }
 inline ::std::string* Api::mutable_name() {
-
+  
   // @@protoc_insertion_point(field_mutable:google.protobuf.Api.name)
   return name_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* Api::release_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.Api.name)
-
+  
   return name_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline void Api::set_allocated_name(::std::string* name) {
   if (name != nullptr) {
-
+    
   } else {
-
+    
   }
   name_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), name);
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Api.name)
@@ -709,13 +709,13 @@ inline const ::std::string& Api::version() const {
   return version_.GetNoArena();
 }
 inline void Api::set_version(const ::std::string& value) {
-
+  
   version_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
   // @@protoc_insertion_point(field_set:google.protobuf.Api.version)
 }
 #if LANG_CXX11
 inline void Api::set_version(::std::string&& value) {
-
+  
   version_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
   // @@protoc_insertion_point(field_set_rvalue:google.protobuf.Api.version)
@@ -723,31 +723,31 @@ inline void Api::set_version(::std::string&& value) {
 #endif
 inline void Api::set_version(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
-
+  
   version_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
   // @@protoc_insertion_point(field_set_char:google.protobuf.Api.version)
 }
 inline void Api::set_version(const char* value, size_t size) {
-
+  
   version_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.Api.version)
 }
 inline ::std::string* Api::mutable_version() {
-
+  
   // @@protoc_insertion_point(field_mutable:google.protobuf.Api.version)
   return version_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* Api::release_version() {
   // @@protoc_insertion_point(field_release:google.protobuf.Api.version)
-
+  
   return version_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline void Api::set_allocated_version(::std::string* version) {
   if (version != nullptr) {
-
+    
   } else {
-
+    
   }
   version_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), version);
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Api.version)
@@ -765,13 +765,13 @@ inline const ::google::protobuf::SourceContext& Api::source_context() const {
 }
 inline ::google::protobuf::SourceContext* Api::release_source_context() {
   // @@protoc_insertion_point(field_release:google.protobuf.Api.source_context)
-
+  
   ::google::protobuf::SourceContext* temp = source_context_;
   source_context_ = nullptr;
   return temp;
 }
 inline ::google::protobuf::SourceContext* Api::mutable_source_context() {
-
+  
   if (source_context_ == nullptr) {
     auto* p = CreateMaybeMessage<::google::protobuf::SourceContext>(GetArenaNoVirtual());
     source_context_ = p;
@@ -790,9 +790,9 @@ inline void Api::set_allocated_source_context(::google::protobuf::SourceContext*
       source_context = ::google::protobuf::internal::GetOwnedMessage(
           message_arena, source_context, submessage_arena);
     }
-
+    
   } else {
-
+    
   }
   source_context_ = source_context;
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Api.source_context)
@@ -837,7 +837,7 @@ inline ::google::protobuf::Syntax Api::syntax() const {
   return static_cast< ::google::protobuf::Syntax >(syntax_);
 }
 inline void Api::set_syntax(::google::protobuf::Syntax value) {
-
+  
   syntax_ = value;
   // @@protoc_insertion_point(field_set:google.protobuf.Api.syntax)
 }
@@ -855,13 +855,13 @@ inline const ::std::string& Method::name() const {
   return name_.GetNoArena();
 }
 inline void Method::set_name(const ::std::string& value) {
-
+  
   name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
   // @@protoc_insertion_point(field_set:google.protobuf.Method.name)
 }
 #if LANG_CXX11
 inline void Method::set_name(::std::string&& value) {
-
+  
   name_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
   // @@protoc_insertion_point(field_set_rvalue:google.protobuf.Method.name)
@@ -869,31 +869,31 @@ inline void Method::set_name(::std::string&& value) {
 #endif
 inline void Method::set_name(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
-
+  
   name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
   // @@protoc_insertion_point(field_set_char:google.protobuf.Method.name)
 }
 inline void Method::set_name(const char* value, size_t size) {
-
+  
   name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.Method.name)
 }
 inline ::std::string* Method::mutable_name() {
-
+  
   // @@protoc_insertion_point(field_mutable:google.protobuf.Method.name)
   return name_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* Method::release_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.Method.name)
-
+  
   return name_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline void Method::set_allocated_name(::std::string* name) {
   if (name != nullptr) {
-
+    
   } else {
-
+    
   }
   name_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), name);
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Method.name)
@@ -908,13 +908,13 @@ inline const ::std::string& Method::request_type_url() const {
   return request_type_url_.GetNoArena();
 }
 inline void Method::set_request_type_url(const ::std::string& value) {
-
+  
   request_type_url_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
   // @@protoc_insertion_point(field_set:google.protobuf.Method.request_type_url)
 }
 #if LANG_CXX11
 inline void Method::set_request_type_url(::std::string&& value) {
-
+  
   request_type_url_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
   // @@protoc_insertion_point(field_set_rvalue:google.protobuf.Method.request_type_url)
@@ -922,31 +922,31 @@ inline void Method::set_request_type_url(::std::string&& value) {
 #endif
 inline void Method::set_request_type_url(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
-
+  
   request_type_url_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
   // @@protoc_insertion_point(field_set_char:google.protobuf.Method.request_type_url)
 }
 inline void Method::set_request_type_url(const char* value, size_t size) {
-
+  
   request_type_url_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.Method.request_type_url)
 }
 inline ::std::string* Method::mutable_request_type_url() {
-
+  
   // @@protoc_insertion_point(field_mutable:google.protobuf.Method.request_type_url)
   return request_type_url_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* Method::release_request_type_url() {
   // @@protoc_insertion_point(field_release:google.protobuf.Method.request_type_url)
-
+  
   return request_type_url_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline void Method::set_allocated_request_type_url(::std::string* request_type_url) {
   if (request_type_url != nullptr) {
-
+    
   } else {
-
+    
   }
   request_type_url_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), request_type_url);
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Method.request_type_url)
@@ -961,7 +961,7 @@ inline bool Method::request_streaming() const {
   return request_streaming_;
 }
 inline void Method::set_request_streaming(bool value) {
-
+  
   request_streaming_ = value;
   // @@protoc_insertion_point(field_set:google.protobuf.Method.request_streaming)
 }
@@ -975,13 +975,13 @@ inline const ::std::string& Method::response_type_url() const {
   return response_type_url_.GetNoArena();
 }
 inline void Method::set_response_type_url(const ::std::string& value) {
-
+  
   response_type_url_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
   // @@protoc_insertion_point(field_set:google.protobuf.Method.response_type_url)
 }
 #if LANG_CXX11
 inline void Method::set_response_type_url(::std::string&& value) {
-
+  
   response_type_url_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
   // @@protoc_insertion_point(field_set_rvalue:google.protobuf.Method.response_type_url)
@@ -989,31 +989,31 @@ inline void Method::set_response_type_url(::std::string&& value) {
 #endif
 inline void Method::set_response_type_url(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
-
+  
   response_type_url_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
   // @@protoc_insertion_point(field_set_char:google.protobuf.Method.response_type_url)
 }
 inline void Method::set_response_type_url(const char* value, size_t size) {
-
+  
   response_type_url_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.Method.response_type_url)
 }
 inline ::std::string* Method::mutable_response_type_url() {
-
+  
   // @@protoc_insertion_point(field_mutable:google.protobuf.Method.response_type_url)
   return response_type_url_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* Method::release_response_type_url() {
   // @@protoc_insertion_point(field_release:google.protobuf.Method.response_type_url)
-
+  
   return response_type_url_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline void Method::set_allocated_response_type_url(::std::string* response_type_url) {
   if (response_type_url != nullptr) {
-
+    
   } else {
-
+    
   }
   response_type_url_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), response_type_url);
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Method.response_type_url)
@@ -1028,7 +1028,7 @@ inline bool Method::response_streaming() const {
   return response_streaming_;
 }
 inline void Method::set_response_streaming(bool value) {
-
+  
   response_streaming_ = value;
   // @@protoc_insertion_point(field_set:google.protobuf.Method.response_streaming)
 }
@@ -1069,7 +1069,7 @@ inline ::google::protobuf::Syntax Method::syntax() const {
   return static_cast< ::google::protobuf::Syntax >(syntax_);
 }
 inline void Method::set_syntax(::google::protobuf::Syntax value) {
-
+  
   syntax_ = value;
   // @@protoc_insertion_point(field_set:google.protobuf.Method.syntax)
 }
@@ -1087,13 +1087,13 @@ inline const ::std::string& Mixin::name() const {
   return name_.GetNoArena();
 }
 inline void Mixin::set_name(const ::std::string& value) {
-
+  
   name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
   // @@protoc_insertion_point(field_set:google.protobuf.Mixin.name)
 }
 #if LANG_CXX11
 inline void Mixin::set_name(::std::string&& value) {
-
+  
   name_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
   // @@protoc_insertion_point(field_set_rvalue:google.protobuf.Mixin.name)
@@ -1101,31 +1101,31 @@ inline void Mixin::set_name(::std::string&& value) {
 #endif
 inline void Mixin::set_name(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
-
+  
   name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
   // @@protoc_insertion_point(field_set_char:google.protobuf.Mixin.name)
 }
 inline void Mixin::set_name(const char* value, size_t size) {
-
+  
   name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.Mixin.name)
 }
 inline ::std::string* Mixin::mutable_name() {
-
+  
   // @@protoc_insertion_point(field_mutable:google.protobuf.Mixin.name)
   return name_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* Mixin::release_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.Mixin.name)
-
+  
   return name_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline void Mixin::set_allocated_name(::std::string* name) {
   if (name != nullptr) {
-
+    
   } else {
-
+    
   }
   name_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), name);
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Mixin.name)
@@ -1140,13 +1140,13 @@ inline const ::std::string& Mixin::root() const {
   return root_.GetNoArena();
 }
 inline void Mixin::set_root(const ::std::string& value) {
-
+  
   root_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
   // @@protoc_insertion_point(field_set:google.protobuf.Mixin.root)
 }
 #if LANG_CXX11
 inline void Mixin::set_root(::std::string&& value) {
-
+  
   root_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
   // @@protoc_insertion_point(field_set_rvalue:google.protobuf.Mixin.root)
@@ -1154,31 +1154,31 @@ inline void Mixin::set_root(::std::string&& value) {
 #endif
 inline void Mixin::set_root(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
-
+  
   root_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
   // @@protoc_insertion_point(field_set_char:google.protobuf.Mixin.root)
 }
 inline void Mixin::set_root(const char* value, size_t size) {
-
+  
   root_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.Mixin.root)
 }
 inline ::std::string* Mixin::mutable_root() {
-
+  
   // @@protoc_insertion_point(field_mutable:google.protobuf.Mixin.root)
   return root_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* Mixin::release_root() {
   // @@protoc_insertion_point(field_release:google.protobuf.Mixin.root)
-
+  
   return root_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline void Mixin::set_allocated_root(::std::string* root) {
   if (root != nullptr) {
-
+    
   } else {
-
+    
   }
   root_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), root);
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Mixin.root)
