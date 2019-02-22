@@ -38,6 +38,7 @@
 #include <algorithm>
 #include <limits>
 #include <list>
+#include <type_traits>
 #include <vector>
 
 #include <google/protobuf/repeated_field.h>
@@ -71,26 +72,41 @@ TEST(RepeatedField, Small) {
   EXPECT_FALSE(field.empty());
   EXPECT_EQ(field.size(), 1);
   EXPECT_EQ(field.Get(0), 5);
+  EXPECT_EQ(field.at(0), 5);
 
   field.Add(42);
 
   EXPECT_FALSE(field.empty());
   EXPECT_EQ(field.size(), 2);
   EXPECT_EQ(field.Get(0), 5);
+  EXPECT_EQ(field.at(0), 5);
   EXPECT_EQ(field.Get(1), 42);
+  EXPECT_EQ(field.at(1), 42);
 
   field.Set(1, 23);
 
   EXPECT_FALSE(field.empty());
   EXPECT_EQ(field.size(), 2);
   EXPECT_EQ(field.Get(0), 5);
+  EXPECT_EQ(field.at(0), 5);
   EXPECT_EQ(field.Get(1), 23);
+  EXPECT_EQ(field.at(1), 23);
+
+  field.at(1) = 25;
+
+  EXPECT_FALSE(field.empty());
+  EXPECT_EQ(field.size(), 2);
+  EXPECT_EQ(field.Get(0), 5);
+  EXPECT_EQ(field.at(0), 5);
+  EXPECT_EQ(field.Get(1), 25);
+  EXPECT_EQ(field.at(1), 25);
 
   field.RemoveLast();
 
   EXPECT_FALSE(field.empty());
   EXPECT_EQ(field.size(), 1);
   EXPECT_EQ(field.Get(0), 5);
+  EXPECT_EQ(field.at(0), 5);
 
   field.Clear();
 
@@ -341,6 +357,9 @@ TEST(RepeatedField, CopyConstruct) {
 
 TEST(RepeatedField, IteratorConstruct) {
   std::vector<int> values;
+  RepeatedField<int> empty(values.begin(), values.end());
+  ASSERT_EQ(values.size(), empty.size());
+
   values.push_back(1);
   values.push_back(2);
 
@@ -516,6 +535,48 @@ TEST(RepeatedField, MoveAssign) {
   }
 }
 
+TEST(Movable, Works) {
+  class NonMoveConstructible {
+   public:
+    NonMoveConstructible(NonMoveConstructible&&) = delete;
+    NonMoveConstructible& operator=(NonMoveConstructible&&) { return *this; }
+  };
+  class NonMoveAssignable {
+   public:
+    NonMoveAssignable(NonMoveAssignable&&) {}
+    NonMoveAssignable& operator=(NonMoveConstructible&&) = delete;
+  };
+  class NonMovable {
+   public:
+    NonMovable(NonMovable&&) = delete;
+    NonMovable& operator=(NonMovable&&) = delete;
+  };
+
+  EXPECT_TRUE(internal::IsMovable<string>::value);
+
+  EXPECT_FALSE(std::is_move_constructible<NonMoveConstructible>::value);
+  EXPECT_TRUE(std::is_move_assignable<NonMoveConstructible>::value);
+  EXPECT_FALSE(internal::IsMovable<NonMoveConstructible>::value);
+
+  EXPECT_TRUE(std::is_move_constructible<NonMoveAssignable>::value);
+  EXPECT_FALSE(std::is_move_assignable<NonMoveAssignable>::value);
+  EXPECT_FALSE(internal::IsMovable<NonMoveAssignable>::value);
+
+  EXPECT_FALSE(internal::IsMovable<NonMovable>::value);
+}
+
+TEST(RepeatedField, MoveAdd) {
+  RepeatedPtrField<TestAllTypes> field;
+  TestAllTypes test_all_types;
+  auto* optional_nested_message =
+      test_all_types.mutable_optional_nested_message();
+  optional_nested_message->set_bb(42);
+  field.Add(std::move(test_all_types));
+
+  EXPECT_EQ(optional_nested_message,
+            field.Mutable(0)->mutable_optional_nested_message());
+}
+
 TEST(RepeatedField, MutableDataIsMutable) {
   RepeatedField<int> field;
   field.Add(1);
@@ -633,26 +694,32 @@ TEST(RepeatedPtrField, Small) {
   EXPECT_FALSE(field.empty());
   EXPECT_EQ(field.size(), 1);
   EXPECT_EQ(field.Get(0), "foo");
+  EXPECT_EQ(field.at(0), "foo");
 
   field.Add()->assign("bar");
 
   EXPECT_FALSE(field.empty());
   EXPECT_EQ(field.size(), 2);
   EXPECT_EQ(field.Get(0), "foo");
+  EXPECT_EQ(field.at(0), "foo");
   EXPECT_EQ(field.Get(1), "bar");
+  EXPECT_EQ(field.at(1), "bar");
 
   field.Mutable(1)->assign("baz");
 
   EXPECT_FALSE(field.empty());
   EXPECT_EQ(field.size(), 2);
   EXPECT_EQ(field.Get(0), "foo");
+  EXPECT_EQ(field.at(0), "foo");
   EXPECT_EQ(field.Get(1), "baz");
+  EXPECT_EQ(field.at(1), "baz");
 
   field.RemoveLast();
 
   EXPECT_FALSE(field.empty());
   EXPECT_EQ(field.size(), 1);
   EXPECT_EQ(field.Get(0), "foo");
+  EXPECT_EQ(field.at(0), "foo");
 
   field.Clear();
 

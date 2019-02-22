@@ -2910,9 +2910,8 @@ TEST_P(AllowUnknownDependenciesTest,
   ASSERT_TRUE(pool_->FindMessageTypeByName("undeclared.Quux") == NULL);
 }
 
-INSTANTIATE_TEST_CASE_P(DatabaseSource,
-                        AllowUnknownDependenciesTest,
-                        testing::Values(NO_DATABASE, FALLBACK_DATABASE));
+INSTANTIATE_TEST_SUITE_P(DatabaseSource, AllowUnknownDependenciesTest,
+                         testing::Values(NO_DATABASE, FALLBACK_DATABASE));
 
 // ===================================================================
 

@@ -2463,9 +2463,8 @@ TEST_P(EncodeDecodeTest, ProtoParseError) {
       "net/proto2/internal/no_such_file.proto: No such file or directory\n");
 }
 
-INSTANTIATE_TEST_CASE_P(FileDescriptorSetSource,
-                        EncodeDecodeTest,
-                        testing::Values(PROTO_PATH, DESCRIPTOR_SET_IN));
+INSTANTIATE_TEST_SUITE_P(FileDescriptorSetSource, EncodeDecodeTest,
+                         testing::Values(PROTO_PATH, DESCRIPTOR_SET_IN));
 }  // anonymous namespace
 
 #endif  // !GOOGLE_PROTOBUF_HEAP_CHECK_DRACONIAN

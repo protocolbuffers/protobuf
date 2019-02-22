@@ -111,3 +111,9 @@ message TestRecursion {
 message TestStringMap {
   map<string, string> string_map = 1;
 }
+
+message TestStringSerializer {
+  optional string scalar_string = 1;
+  repeated string repeated_string = 2;
+  map<string, string> string_map = 3;
+}

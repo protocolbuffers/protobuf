@@ -44,8 +44,8 @@
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 #include <google/protobuf/arena.h>
-#include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/generated_message_table_driven.h>
+#include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/stubs/strutil.h>
@@ -117,92 +117,39 @@ void MessageLite::LogInitializationErrorMessage() const {
 namespace internal {
 
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-template <typename Next>
-bool ParseStream(const Next& next, MessageLite* msg) {
-  internal::ParseContext ctx(io::CodedInputStream::GetDefaultRecursionLimit());
-  EpsCopyParser<false> parser({msg->_ParseFunc(), msg}, &ctx);
-  auto range = next();
-  while (!range.empty()) {
-    if (!parser.Parse(range)) return false;
-    range = next();
-  }
-  return parser.Done();
-}
 
 template <bool aliasing>
 bool MergePartialFromImpl(StringPiece input, MessageLite* msg) {
-  auto begin = input.data();
-  int size = input.size();
-  ParseContext ctx(io::CodedInputStream::GetDefaultRecursionLimit());
-  internal::ParseClosure parser = {msg->_ParseFunc(), msg};
-  // TODO(gerbens) fine tune
-  constexpr int kThreshold = 48;
-  static_assert(kThreshold >= ParseContext::kSlopBytes,
-                "Requires enough room for at least kSlopBytes to be copied.");
-  // TODO(gerbens) This could be left uninitialized and given an MSAN
-  // annotation instead.
-  char buffer[kThreshold + ParseContext::kSlopBytes] = {};
-  if (size <= kThreshold) {
-    std::memcpy(buffer, begin, size);
-    if (aliasing) {
-      ctx.extra_parse_data().aliasing =
-          reinterpret_cast<std::uintptr_t>(begin) -
-          reinterpret_cast<std::uintptr_t>(buffer);
-    }
-    return ctx.ParseExactRange(parser, buffer, buffer + size);
-  }
-  if (aliasing) {
-    ctx.extra_parse_data().aliasing = ParseContext::ExtraParseData::kNoDelta;
-  }
-  size -= ParseContext::kSlopBytes;
-  int overrun = 0;
-  ctx.StartParse(parser);
-  if (!ctx.ParseRange(StringPiece(begin, size), &overrun)) return false;
-  begin += size;
-  std::memcpy(buffer, begin, ParseContext::kSlopBytes);
-  if (aliasing) {
-    ctx.extra_parse_data().aliasing = reinterpret_cast<std::uintptr_t>(begin) -
-        reinterpret_cast<std::uintptr_t>(buffer);
-  }
-  return ctx.ParseRange({buffer, ParseContext::kSlopBytes}, &overrun) &&
-         ctx.ValidEnd(overrun);
-}
-
-StringPiece Next(BoundedZCIS* input) {
-  const void* data;
-  int size;
-  if (input->limit == 0) return {};
-  while (input->zcis->Next(&data, &size)) {
-    if (size != 0) {
-      input->limit -= size;
-      if (input->limit < 0) {
-        size += input->limit;
-        input->zcis->BackUp(-input->limit);
-        input->limit = 0;
-      }
-      return StringPiece(static_cast<const char*>(data), size);
-    }
-  }
-  return {};
+  const char* ptr;
+  internal::ParseContext ctx(io::CodedInputStream::GetDefaultRecursionLimit(),
+                             aliasing, &ptr, input);
+  return ctx.AtLegitimateEnd(msg->_InternalParse(ptr, &ctx));
 }
 
 template <bool aliasing>
 bool MergePartialFromImpl(BoundedZCIS input, MessageLite* msg) {
-  // TODO(gerbens) implement aliasing
-  auto next = [&input]() { return Next(&input); };
-  return ParseStream(next, msg) && input.limit == 0;
+  // TODO(gerbens) Circumvent CIS, to prevent slop region check overhead.
+  // Tricky case. If we limit ZeroCopyInputStream we need to make sure it's
+  // left precisely at the limit. However EpsCopyInputStream will always be
+  // 16 (kSlopBytes) bytes ahead of ZeroCopyInputStream, which means it's
+  // potentially a buffer ahead from which we can't rollback. Hence we must
+  // ensure we don't read more than the limit.
+  // TODO(gerbens) consider putting logic in EpsCopyInputStream to put an
+  // overall limit on the number of bytes it pulls from the underlying stream.
+  io::CodedInputStream cis(input.zcis);
+  cis.PushLimit(input.limit);
+  return msg->MergePartialFromCodedStream(&cis) && cis.BytesUntilLimit() == 0;
 }
 
 template <bool aliasing>
 bool MergePartialFromImpl(io::ZeroCopyInputStream* input, MessageLite* msg) {
-  // TODO(gerbens) implement aliasing
-  BoundedZCIS bounded_zcis{input, INT_MAX};
-  auto next = [&bounded_zcis]() { return Next(&bounded_zcis); };
-  return ParseStream(next, msg) && bounded_zcis.limit > 0;
+  const char* ptr;
+  internal::ParseContext ctx(io::CodedInputStream::GetDefaultRecursionLimit(),
+                             aliasing, &ptr, input);
+  return ctx.AtLegitimateEnd(msg->_InternalParse(ptr, &ctx));
 }
 
-
-#else
+#else  // !GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 
 inline bool InlineMergePartialEntireStream(io::CodedInputStream* cis,
                                            MessageLite* message,
@@ -232,7 +179,7 @@ bool MergePartialFromImpl(io::ZeroCopyInputStream* input, MessageLite* msg) {
   return InlineMergePartialEntireStream(&decoder, msg, aliasing);
 }
 
-#endif
+#endif  // !GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 
 template bool MergePartialFromImpl<false>(StringPiece input,
                                           MessageLite* msg);
@@ -256,43 +203,46 @@ MessageLite* MessageLite::New(Arena* arena) const {
 }
 
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-bool MessageLite::MergePartialFromCodedStream(io::CodedInputStream* input) {
-  // MergePartialFromCodedStream must leave input in "exactly" the same state
-  // as the old implementation. At least when the parse is successful. For
-  // MergePartialFromCodedStream a successful parse can also occur by ending
-  // on a zero tag or an end-group tag. In these cases input is left precisely
-  // past the terminating tag and last_tag_ is set to the terminating tags
-  // value. If the parse ended on a limit (either a pushed limit or end of the
-  // ZeroCopyInputStream) legitimate_end_ is set to true.
-  int size = 0;
-  auto next = [input, &size]() {
-    const void* ptr;
-    input->Skip(size);  // skip previous buffer
-    if (!input->GetDirectBufferPointer(&ptr, &size)) return StringPiece{};
-    return StringPiece(static_cast<const char*>(ptr), size);
-  };
-  internal::ParseContext ctx(input->RecursionBudget());
-  ctx.extra_parse_data().pool = input->GetExtensionPool();
-  ctx.extra_parse_data().factory = input->GetExtensionFactory();
-  internal::EpsCopyParser<true> parser({_ParseFunc(), this}, &ctx);
-  auto range = next();
-  while (!range.empty()) {
-    if (!parser.Parse(range)) {
-      if (!ctx.EndedOnTag()) return false;
-      // Parse ended on a zero or end-group tag, leave the stream in the
-      // appropriate state. Note we only skip forward, due to using
-      // ensure_non_negative_skip being set to true in parser.
-      input->Skip(parser.Skip());
-      input->SetLastTag(ctx.LastTag());
-      return true;
-    }
-    range = next();
+class ZeroCopyCodedInputStream : public io::ZeroCopyInputStream {
+ public:
+  ZeroCopyCodedInputStream(io::CodedInputStream* cis) : cis_(cis) {}
+  bool Next(const void** data, int* size) final {
+    if (!cis_->GetDirectBufferPointer(data, size)) return false;
+    cis_->Skip(*size);
+    return true;
   }
-  if (!parser.Done()) return false;
-  input->SetConsumed();
+  void BackUp(int count) final { cis_->Advance(-count); }
+  bool Skip(int count) final { return cis_->Skip(count); }
+  int64 ByteCount() const final { return 0; }
+
+  bool aliasing_enabled() { return cis_->aliasing_enabled_; }
+
+ private:
+  io::CodedInputStream* cis_;
+};
+
+bool MessageLite::MergePartialFromCodedStream(io::CodedInputStream* input) {
+  ZeroCopyCodedInputStream zcis(input);
+  const char* ptr;
+  internal::ParseContext ctx(input->RecursionBudget(), zcis.aliasing_enabled(),
+                             &ptr, &zcis);
+  // MergePartialFromCodedStream allows terminating the wireformat by 0 or
+  // end-group tag. Leaving it up to the caller to verify correct ending by
+  // calling LastTagWas on input. We need to maintain this behavior.
+  ctx.TrackCorrectEnding();
+  ctx.data().pool = input->GetExtensionPool();
+  ctx.data().factory = input->GetExtensionFactory();
+  ptr = _InternalParse(ptr, &ctx);
+  if (!ptr) return false;
+  ctx.BackUp(ptr);
+  if (ctx.LastTagMinus1() != 0) {
+    input->SetLastTag(ctx.LastTagMinus1() + 1);
+    return true;
+  }
+  if (ctx.AtLimit(ptr)) input->SetConsumed();
   return true;
 }
-#endif
+#endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 
 bool MessageLite::MergeFromCodedStream(io::CodedInputStream* input) {
   return MergePartialFromCodedStream(input) && IsInitializedWithErrors();
