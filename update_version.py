@@ -217,9 +217,9 @@ def UpdatePhp():
     ReplaceText(Find(version, 'release'), GetFullVersion(rc_suffix = 'RC'))
     ReplaceText(Find(version, 'api'), NEW_VERSION)
     stability = Find(root, 'stability')
-    ReplaceText(Find(version, 'release'),
+    ReplaceText(Find(stability, 'release'),
         'stable' if RC_VERSION == 0 else 'beta')
-    ReplaceText(Find(version, 'api'), 'stable' if RC_VERSION == 0 else 'beta')
+    ReplaceText(Find(stability, 'api'), 'stable' if RC_VERSION == 0 else 'beta')
     now = datetime.datetime.now()
     ReplaceText(Find(root, 'date'), now.strftime('%Y-%m-%d'))
     ReplaceText(Find(root, 'time'), now.strftime('%H:%M:%S'))
