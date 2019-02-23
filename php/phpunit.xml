@@ -14,7 +14,6 @@
       <file>tests/MapFieldTest.php</file>
       <file>tests/PhpImplementationTest.php</file>
       <file>tests/RepeatedFieldTest.php</file>
-      <file>tests/UndefinedTest.php</file>
       <file>tests/WellKnownTest.php</file>
       <file>tests/WrapperTypeSettersTest.php</file>
     </testsuite>
