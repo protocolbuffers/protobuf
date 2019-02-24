@@ -173,3 +173,4 @@ There are miscellaneous other things you may find useful as a Protocol Buffers d
 * [ProfaneDB - A Protocol Buffers database](https://profanedb.gitlab.io)
 * [Protocol Buffer property-based testing utility and example message generator (Python / Hypothesis)](https://github.com/CurataEng/hypothesis-protobuf)
 * [Protolock - CLI utility to prevent backward-incompatible changes to .proto files](https://github.com/nilslice/protolock)
+* [Optional GRPC - GRPC for testable microservices (Python)](https://github.com/mattpaletta/optional-grpc.git)
