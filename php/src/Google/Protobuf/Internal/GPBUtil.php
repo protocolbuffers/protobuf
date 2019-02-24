@@ -37,6 +37,7 @@ use Google\Protobuf\FieldMask;
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\MapField;
+use InvalidArgumentException;
 
 function camel2underscore($input) {
     preg_match_all(
@@ -119,19 +120,30 @@ class GPBUtil
 
     public static function checkUint32(&$var)
     {
-        if (is_numeric($var)) {
-            if (PHP_INT_SIZE === 8) {
-                $var = ((int) $var) % 4294967296;
+        if (! is_numeric($var)) {
+            throw new InvalidArgumentException('Numeric value expected');
+        }
 
+        if (PHP_INT_SIZE === 4) {
+            $var = (string) $var;
+
+            $var = bcmod($var, '4294967296');
+
+            if (bccomp($var, '0') !== -1) {
                 return;
             }
 
-            $var = bcmod($var, "4294967296");
+            $var = bcadd('4294967296', $var);
 
             return;
         }
 
-        throw new \Exception("Expect integer.");
+        $var = ((int) $var) % 4294967296;
+
+        if ($var < 0) {
+            $var = 4294967296 + $var;
+        }
+
     }
 
     public static function checkInt64(&$var)

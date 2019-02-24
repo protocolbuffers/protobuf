@@ -736,6 +736,7 @@ php_EXTRA_DIST=                                                       \
   php/tests/compatibility_test.sh                                     \
   php/tests/descriptors_test.php                                      \
   php/tests/encode_decode_test.php                                    \
+  php/tests/gbptuil_test.sh                                           \
   php/tests/gdb_test.sh                                               \
   php/tests/generated_class_test.php                                  \
   php/tests/generated_phpdoc_test.php                                 \

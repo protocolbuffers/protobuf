@@ -119,7 +119,7 @@ cd protobuf/php
 composer install
 
 # Remove implementation detail tests.
-tests=( array_test.php encode_decode_test.php generated_class_test.php map_field_test.php well_known_test.php )
+tests=( array_test.php encode_decode_test.php generated_class_test.php gpbutil_test.php map_field_test.php well_known_test.php )
 sed -i.bak '/php_implementation_test.php/d' phpunit.xml
 sed -i.bak '/generated_phpdoc_test.php/d' phpunit.xml
 sed -i.bak 's/generated_phpdoc_test.php//g' tests/test.sh

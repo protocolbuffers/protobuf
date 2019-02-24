@@ -89,7 +89,7 @@ class RepeatedFieldTest extends \PHPUnit\Framework\TestCase
         $arr[] = MAX_UINT32;
         $this->assertSame(MAX_UINT32, $arr[0]);
         $arr[] = -1;
-        $this->assertSame(-1, $arr[1]);
+        $this->assertSame(MAX_UINT32, $arr[1]);
         $arr[] = MIN_UINT32;
         $this->assertSame(MIN_UINT32, $arr[2]);
 
@@ -98,7 +98,7 @@ class RepeatedFieldTest extends \PHPUnit\Framework\TestCase
         $arr[] = MAX_UINT32_FLOAT;
         $this->assertSame(MAX_UINT32, $arr[4]);
         $arr[] = -1.0;
-        $this->assertSame(-1, $arr[5]);
+        $this->assertSame(MAX_UINT32, $arr[5]);
         $arr[] = MIN_UINT32_FLOAT;
         $this->assertSame(MIN_UINT32, $arr[6]);
 
@@ -109,7 +109,7 @@ class RepeatedFieldTest extends \PHPUnit\Framework\TestCase
         $arr[] = MAX_UINT32_STRING;
         $this->assertSame(MAX_UINT32, $arr[9]);
         $arr[] = '-1.0';
-        $this->assertSame(-1, $arr[10]);
+        $this->assertSame(MAX_UINT32, $arr[10]);
         $arr[] = MIN_UINT32_STRING;
         $this->assertSame(MIN_UINT32, $arr[11]);
 
@@ -124,7 +124,7 @@ class RepeatedFieldTest extends \PHPUnit\Framework\TestCase
         $arr[0] = MAX_UINT32;
         $this->assertSame(MAX_UINT32, $arr[0]);
         $arr[1] = -1;
-        $this->assertSame(-1, $arr[1]);
+        $this->assertSame(MAX_UINT32, $arr[1]);
         $arr[2] = MIN_UINT32;
         $this->assertSame(MIN_UINT32, $arr[2]);
 
@@ -133,7 +133,7 @@ class RepeatedFieldTest extends \PHPUnit\Framework\TestCase
         $arr[4] = MAX_UINT32_FLOAT;
         $this->assertSame(MAX_UINT32, $arr[4]);
         $arr[5] = -1.0;
-        $this->assertSame(-1, $arr[5]);
+        $this->assertSame(MAX_UINT32, $arr[5]);
         $arr[6] = MIN_UINT32_FLOAT;
         $this->assertSame(MIN_UINT32, $arr[6]);
 
@@ -144,7 +144,7 @@ class RepeatedFieldTest extends \PHPUnit\Framework\TestCase
         $arr[9] = MAX_UINT32_STRING;
         $this->assertSame(MAX_UINT32, $arr[9]);
         $arr[10] = '-1.0';
-        $this->assertSame(-1, $arr[10]);
+        $this->assertSame(MAX_UINT32, $arr[10]);
         $arr[11] = MIN_UINT32_STRING;
         $this->assertSame(MIN_UINT32, $arr[11]);
     }
