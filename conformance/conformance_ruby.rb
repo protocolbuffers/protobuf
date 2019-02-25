@@ -54,7 +54,7 @@ def do_test(request)
       elsif request.message_type.eql?('protobuf_test_messages.proto2.TestAllTypesProto2')
         response.skipped = "Ruby doesn't support proto2"
         return response
-      else 
+      else
         fail "Protobuf request doesn't have specific payload type"
       end
 

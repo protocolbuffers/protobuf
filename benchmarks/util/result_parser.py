@@ -295,6 +295,6 @@ def get_result_from_file(cpp_file="",
   if php_file != "":
     __parse_php_result(php_file, "php")
   if php_c_file != "":
-    __parse_php_result(php_c_file, "php")        
+    __parse_php_result(php_c_file, "php")
 
   return __results

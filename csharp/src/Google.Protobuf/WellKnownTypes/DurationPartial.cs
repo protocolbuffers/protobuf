@@ -156,7 +156,7 @@ namespace Google.Protobuf.WellKnownTypes
                 return Normalize(lhs.Seconds - rhs.Seconds, lhs.Nanos - rhs.Nanos);
             }
         }
-        
+
         /// <summary>
         /// Creates a duration with the normalized values from the given number of seconds and
         /// nanoseconds, conforming with the description in the proto file.

@@ -233,7 +233,7 @@ public class LiteralByteStringTest extends TestCase {
     assertTrue(classUnderTest + ".writeTo() must give back the same bytes",
         Arrays.equals(referenceBytes, roundTripBytes));
   }
-  
+
   public void testWriteTo_mutating() throws IOException {
     OutputStream os = new OutputStream() {
       @Override
@@ -274,7 +274,7 @@ public class LiteralByteStringTest extends TestCase {
     assertEquals("Output.reset() resets the output", 0, output.size());
     assertEquals("Output.reset() resets the output",
         ByteString.EMPTY, output.toByteString());
-    
+
   }
 
   public void testHashCode() {

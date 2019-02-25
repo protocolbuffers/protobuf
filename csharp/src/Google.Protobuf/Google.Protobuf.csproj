@@ -20,7 +20,7 @@
     <RepositoryUrl>https://github.com/protocolbuffers/protobuf.git</RepositoryUrl>
   </PropertyGroup>
 
-  <!-- 
+  <!--
     - Override target frameworks on non-Windows to just .NET Core
     - Doing this conditionally in the initial PropertyGroup confuses
     - Visual Studio.
@@ -30,7 +30,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="SourceLink.Create.CommandLine" PrivateAssets="All" Version="2.7.6"/> 
+    <PackageReference Include="SourceLink.Create.CommandLine" PrivateAssets="All" Version="2.7.6"/>
   </ItemGroup>
 
 </Project>
