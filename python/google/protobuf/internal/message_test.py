@@ -2130,6 +2130,11 @@ class Proto3Test(BaseTestCase):
       map_string_foreign_message=msg1.map_string_foreign_message)
     self.assertEqual(42, msg2.map_string_foreign_message['test'].c)
 
+  def testMapFieldRaisesCorrectError(self):
+    # Should raise a TypeError when given a non-iterable.
+    with self.assertRaises(TypeError):
+      map_unittest_pb2.TestMap(map_string_foreign_message=1)
+
   def testMapValidAfterFieldCleared(self):
     # Map needs to work even if field is cleared.
     # For the C++ implementation this tests the correctness of
