@@ -78,7 +78,7 @@ const char descriptor_table_protodef_google_2fprotobuf_2fsource_5fcontext_2eprot
   "pesb\006proto3"
   ;
 ::google::protobuf::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto = {
-  false, InitDefaults_google_2fprotobuf_2fsource_5fcontext_2eproto,
+  false, InitDefaults_google_2fprotobuf_2fsource_5fcontext_2eproto, 
   descriptor_table_protodef_google_2fprotobuf_2fsource_5fcontext_2eproto,
   "google/protobuf/source_context.proto", &assign_descriptors_table_google_2fprotobuf_2fsource_5fcontext_2eproto, 251,
 };

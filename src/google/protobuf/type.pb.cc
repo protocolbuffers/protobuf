@@ -254,7 +254,7 @@ const char descriptor_table_protodef_google_2fprotobuf_2ftype_2eproto[] =
   "le.Protobuf.WellKnownTypesb\006proto3"
   ;
 ::google::protobuf::internal::DescriptorTable descriptor_table_google_2fprotobuf_2ftype_2eproto = {
-  false, InitDefaults_google_2fprotobuf_2ftype_2eproto,
+  false, InitDefaults_google_2fprotobuf_2ftype_2eproto, 
   descriptor_table_protodef_google_2fprotobuf_2ftype_2eproto,
   "google/protobuf/type.proto", &assign_descriptors_table_google_2fprotobuf_2ftype_2eproto, 1594,
 };
@@ -389,9 +389,9 @@ void Type::unsafe_arena_set_allocated_source_context(
   }
   source_context_ = source_context;
   if (source_context) {
-
+    
   } else {
-
+    
   }
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.Type.source_context)
 }
@@ -1870,9 +1870,9 @@ void Enum::unsafe_arena_set_allocated_source_context(
   }
   source_context_ = source_context;
   if (source_context) {
-
+    
   } else {
-
+    
   }
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.Enum.source_context)
 }
@@ -2885,9 +2885,9 @@ void Option::unsafe_arena_set_allocated_value(
   }
   value_ = value;
   if (value) {
-
+    
   } else {
-
+    
   }
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.Option.value)
 }

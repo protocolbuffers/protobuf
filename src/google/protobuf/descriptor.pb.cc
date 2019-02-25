@@ -1205,7 +1205,7 @@ const char descriptor_table_protodef_google_2fprotobuf_2fdescriptor_2eproto[] =
   "le.Protobuf.Reflection"
   ;
 ::google::protobuf::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fdescriptor_2eproto = {
-  false, InitDefaults_google_2fprotobuf_2fdescriptor_2eproto,
+  false, InitDefaults_google_2fprotobuf_2fdescriptor_2eproto, 
   descriptor_table_protodef_google_2fprotobuf_2fdescriptor_2eproto,
   "google/protobuf/descriptor.proto", &assign_descriptors_table_google_2fprotobuf_2fdescriptor_2eproto, 6022,
 };

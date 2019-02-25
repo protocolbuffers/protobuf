@@ -198,7 +198,7 @@ const char descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fplugin_2epro
   "rotobuf/protoc-gen-go/plugin;plugin_go"
   ;
 ::google::protobuf::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto = {
-  false, InitDefaults_google_2fprotobuf_2fcompiler_2fplugin_2eproto,
+  false, InitDefaults_google_2fprotobuf_2fcompiler_2fplugin_2eproto, 
   descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fplugin_2eproto,
   "google/protobuf/compiler/plugin.proto", &assign_descriptors_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto, 638,
 };
