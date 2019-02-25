@@ -103,8 +103,8 @@ void MessageFieldGenerator::GenerateMembers(io::Printer* printer) {
       "$access_level$ bool Has$property_name$ {\n"
       "  get { return $name$_ != null; }\n"
       "}\n");
-    printer->Print( 
-      variables_, 
+    printer->Print(
+      variables_,
       "/// <summary>Clears the value of the $descriptor_name$ field</summary>\n");
     AddPublicMemberAttributes(printer);
     printer->Print(
@@ -259,7 +259,7 @@ void MessageOneofFieldGenerator::GenerateMembers(io::Printer* printer) {
 }
 
 void MessageOneofFieldGenerator::GenerateMergingCode(io::Printer* printer) {
-  printer->Print(variables_, 
+  printer->Print(variables_,
     "if ($property_name$ == null) {\n"
     "  $property_name$ = new $type_name$();\n"
     "}\n"

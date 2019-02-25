@@ -240,7 +240,7 @@ namespace Google.Protobuf
             AssertTokens("{'x': 'y'}",
                 JsonToken.StartObject, JsonToken.Name("x"), JsonToken.Value("y"), JsonToken.EndObject);
         }
-        
+
         [Test]
         [TestCase("[10, 20", 3)]
         [TestCase("[10,", 2)]
@@ -305,7 +305,7 @@ namespace Google.Protobuf
         [Test]
         public void ObjectMixedType()
         {
-            AssertTokens(@"{'a': 1, 'b': 'bar', 'c': null, 'd': false, 'e': true, 
+            AssertTokens(@"{'a': 1, 'b': 'bar', 'c': null, 'd': false, 'e': true,
                            'f': [2], 'g': {'x':'y' }}",
                 JsonToken.StartObject,
                 JsonToken.Name("a"),
@@ -349,12 +349,12 @@ namespace Google.Protobuf
             Assert.AreEqual(JsonToken.EndDocument, tokenizer.Next());
             Assert.Throws<InvalidOperationException>(() => tokenizer.Next());
         }
-       
+
         /// <summary>
         /// Asserts that the specified JSON is tokenized into the given sequence of tokens.
         /// All apostrophes are first converted to double quotes, allowing any tests
         /// that don't need to check actual apostrophe handling to use apostrophes in the JSON, avoiding
-        /// messy string literal escaping. The "end document" token is not specified in the list of 
+        /// messy string literal escaping. The "end document" token is not specified in the list of
         /// expected tokens, but is implicit.
         /// </summary>
         private static void AssertTokens(string json, params JsonToken[] expectedTokens)
@@ -366,7 +366,7 @@ namespace Google.Protobuf
         /// Asserts that the specified JSON is tokenized into the given sequence of tokens.
         /// Unlike <see cref="AssertTokens(string, JsonToken[])"/>, this does not perform any character
         /// replacement on the specified JSON, and should be used when the text contains apostrophes which
-        /// are expected to be used *as* apostrophes. The "end document" token is not specified in the list of 
+        /// are expected to be used *as* apostrophes. The "end document" token is not specified in the list of
         /// expected tokens, but is implicit.
         /// </summary>
         private static void AssertTokensNoReplacement(string json, params JsonToken[] expectedTokens)

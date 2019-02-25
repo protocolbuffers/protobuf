@@ -120,5 +120,5 @@ namespace Google.Protobuf.Collections
                 }
             }
         }
-    }    
+    }
 }

@@ -63,7 +63,7 @@ namespace Google.Protobuf.Reflection
         /// Singleton for all descriptors with an empty set of options.
         /// </summary>
         internal static readonly CustomOptions Empty = new CustomOptions();
-        
+
         /// <summary>
         /// A sequence of values per field. This needs to be per field rather than per tag to allow correct deserialization
         /// of repeated fields which could be "int, ByteString, int" - unlikely as that is. The fact that values are boxed
@@ -147,7 +147,7 @@ namespace Google.Protobuf.Reflection
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
         public bool TryGetSFixed64(int field, out long value) => TryGetInt64(field, out value);
-        
+
         /// <summary>
         /// Retrieves a signed 32-bit integer value for the specified option field,
         /// assuming a zigzag encoding.
@@ -357,7 +357,7 @@ namespace Google.Protobuf.Reflection
             List<FieldValue> valuesForField;
             if (!ret.valuesByField.TryGetValue(field, out valuesForField))
             {
-                // Expect almost all 
+                // Expect almost all
                 valuesForField = new List<FieldValue>(1);
                 ret.valuesByField[field] = valuesForField;
             }

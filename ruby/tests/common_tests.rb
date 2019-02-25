@@ -103,7 +103,7 @@ module CommonTests
     assert_equal 3, m.repeated_msg.first.sub_child.optional_int32
   end
 
-  def test_inspect
+  def test_inspect_eq_to_s
     m = proto_module::TestMessage.new(
       :optional_int32 => -42,
       :optional_enum => :A,
@@ -111,10 +111,12 @@ module CommonTests
       :repeated_string => ["hello", "there", "world"])
     expected = "<#{proto_module}::TestMessage: optional_int32: -42, optional_int64: 0, optional_uint32: 0, optional_uint64: 0, optional_bool: false, optional_float: 0.0, optional_double: 0.0, optional_string: \"\", optional_bytes: \"\", optional_msg: <#{proto_module}::TestMessage2: foo: 0>, optional_enum: :A, repeated_int32: [], repeated_int64: [], repeated_uint32: [], repeated_uint64: [], repeated_bool: [], repeated_float: [], repeated_double: [], repeated_string: [\"hello\", \"there\", \"world\"], repeated_bytes: [], repeated_msg: [], repeated_enum: []>"
     assert_equal expected, m.inspect
+    assert_equal expected, m.to_s
 
     m = proto_module::OneofMessage.new(:b => -42)
     expected = "<#{proto_module}::OneofMessage: a: \"\", b: -42, c: nil, d: :Default>"
     assert_equal expected, m.inspect
+    assert_equal expected, m.to_s
   end
 
   def test_hash
@@ -1116,5 +1118,26 @@ module CommonTests
 
   def test_comparison_with_arbitrary_object
     assert proto_module::TestMessage.new != nil
+  end
+
+  def test_eq
+    m1 = proto_module::TestMessage.new(:optional_string => 'foo', :repeated_string => ['bar1', 'bar2'])
+    m2 = proto_module::TestMessage.new(:optional_string => 'foo', :repeated_string => ['bar1', 'bar2'])
+
+    h = {}
+    h[m1] = :yes
+
+    assert m1 == m2
+    assert m1.eql?(m2)
+    assert m1.hash == m2.hash
+    assert h[m1] == :yes
+    assert h[m2] == :yes
+
+    m1.optional_int32 = 2
+
+    assert m1 != m2
+    assert !m1.eql?(m2)
+    assert m1.hash != m2.hash
+    assert_nil h[m2]
   end
 end

@@ -68,7 +68,7 @@ namespace Google.Protobuf
             paths = tree.ToFieldMask().Paths;
             Assert.AreEqual(3, paths.Count);
             Assert.Contains("bar.baz", paths);
-            
+
             // Redundant sub-path.
             tree.AddFieldPath("foo.bar");
             paths = tree.ToFieldMask().Paths;
@@ -79,7 +79,7 @@ namespace Google.Protobuf
             paths = tree.ToFieldMask().Paths;
             Assert.AreEqual(4, paths.Count);
             Assert.Contains("bar.quz", paths);
-            
+
             // A path that matches several existing sub-paths.
             tree.AddFieldPath("bar");
             paths = tree.ToFieldMask().Paths;

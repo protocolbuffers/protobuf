@@ -65,7 +65,7 @@ echo "benchmarking cpp..."
 env LD_PRELOAD="$oldpwd/gperftools/.libs/libtcmalloc.so" ./cpp-benchmark --benchmark_min_time=5.0 --benchmark_out_format=json --benchmark_out="tmp/cpp_result.json" $datasets
 cd $oldpwd
 
-# build go protobuf 
+# build go protobuf
 export PATH="`pwd`/src:$PATH"
 export GOPATH="$HOME/gocode"
 mkdir -p "$GOPATH/src/github.com/google"

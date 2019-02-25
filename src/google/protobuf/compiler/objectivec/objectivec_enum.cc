@@ -92,6 +92,20 @@ void EnumGenerator::GenerateHeader(io::Printer* printer) {
       "\n",
       "name", name_);
 
+  // Swift 5 included SE0192 "Handling Future Enum Cases"
+  //   https://github.com/apple/swift-evolution/blob/master/proposals/0192-non-exhaustive-enums.md
+  // Since a .proto file can get new values added to an enum at any time, they
+  // are effectively "non-frozen". Even in a proto3 syntax file where there is
+  // support for the unknown value, an edit to the file can always add a new
+  // value moving something from unknown to known. Since Swift is now ABI
+  // stable, it also means a binary could contain Swift compiled against one
+  // version of the .pbobjc.h file, but finally linked against an enum with
+  // more cases. So the Swift code will always have to treat ObjC Proto Enums
+  // as "non-frozen". The default behavior in SE0192 is for all objc enums to
+  // be "non-frozen" unless marked as otherwise, so this means this generation
+  // doesn't have to bother with the `enum_extensibility` attribute, as the
+  // default will be what is needed.
+
   printer->Print("$comments$typedef$deprecated_attribute$ GPB_ENUM($name$) {\n",
                  "comments", enum_comments,
                  "deprecated_attribute", GetOptionalDeprecatedAttribute(descriptor_, descriptor_->file()),

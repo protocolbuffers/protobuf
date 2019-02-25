@@ -86,7 +86,7 @@ namespace Google.Protobuf.Collections
             var map = new MapField<string, ForeignMessage>();
             Assert.Throws<ArgumentNullException>(() => map[null] = new ForeignMessage());
         }
-        
+
         [Test]
         public void AddPreservesInsertionOrder()
         {
@@ -471,7 +471,7 @@ namespace Google.Protobuf.Collections
             keys.CopyTo(array, 1);
             CollectionAssert.AreEqual(new[] { null, "foo", "x", null }, array);
         }
-        
+
         // Just test keys - we know the implementation is the same for values
         [Test]
         public void NonGenericViewCopyTo()

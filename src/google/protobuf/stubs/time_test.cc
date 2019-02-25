@@ -201,7 +201,7 @@ TEST(DateTimeTest, WrongDays) {
   time.month = 13;
   ASSERT_FALSE(DateTimeToSeconds(time, &seconds));
 }
-  
+
 TEST(DateTimeTest, StringFormat) {
   DateTime start, end;
   start.year = 1;

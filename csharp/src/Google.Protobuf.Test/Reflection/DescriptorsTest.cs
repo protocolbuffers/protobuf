@@ -256,7 +256,7 @@ namespace Google.Protobuf.Reflection
             Assert.AreEqual(unitTestProto3Descriptor, primitiveField.File);
             Assert.AreEqual(FieldType.Int32, primitiveField.FieldType);
             Assert.IsNull(primitiveField.Proto.Options);
-            
+
             Assert.AreEqual("single_nested_enum", enumField.Name);
             Assert.AreEqual(FieldType.Enum, enumField.FieldType);
             Assert.AreEqual(testAllTypesDescriptor.EnumTypes[0], enumField.EnumType);
@@ -352,7 +352,7 @@ namespace Google.Protobuf.Reflection
         // NestedMessage single_nested_message = 200;
         [Test]
         public void FieldListOrderings()
-        { 
+        {
             var fields = TestFieldOrderings.Descriptor.Fields;
             Assert.AreEqual(new[] { 11, 1, 101, 200 }, fields.InDeclarationOrder().Select(x => x.FieldNumber));
             Assert.AreEqual(new[] { 1, 11, 101, 200 }, fields.InFieldNumberOrder().Select(x => x.FieldNumber));

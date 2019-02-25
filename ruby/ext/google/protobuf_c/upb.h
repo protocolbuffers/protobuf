@@ -5036,7 +5036,7 @@ struct Func5 : public UnboundFunc {
 
 /* BoundFunc2, BoundFunc3: Like Func2/Func3 except also contains a value that
  * shall be bound to the function's second parameter.
- * 
+ *
  * Note that the second parameter is a const pointer, but our stored bound value
  * is non-const so we can free it when the handlers are destroyed. */
 template <class T>
