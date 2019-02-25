@@ -213,6 +213,9 @@ def UpdatePhp():
       return elem
 
     root = document.documentElement
+    now = datetime.datetime.now()
+    ReplaceText(Find(root, 'date'), now.strftime('%Y-%m-%d'))
+    ReplaceText(Find(root, 'time'), now.strftime('%H:%M:%S'))
     version = Find(root, 'version')
     ReplaceText(Find(version, 'release'), GetFullVersion(rc_suffix = 'RC'))
     ReplaceText(Find(version, 'api'), NEW_VERSION)
@@ -220,9 +223,6 @@ def UpdatePhp():
     ReplaceText(Find(stability, 'release'),
         'stable' if RC_VERSION == 0 else 'beta')
     ReplaceText(Find(stability, 'api'), 'stable' if RC_VERSION == 0 else 'beta')
-    now = datetime.datetime.now()
-    ReplaceText(Find(root, 'date'), now.strftime('%Y-%m-%d'))
-    ReplaceText(Find(root, 'time'), now.strftime('%H:%M:%S'))
     changelog = Find(root, 'changelog')
     for old_version in changelog.getElementsByTagName('version'):
       if Find(old_version, 'release').firstChild.nodeValue == NEW_VERSION:
