@@ -30,6 +30,7 @@ mv ../protobuf/composer.json composer.json
 sed -i 's|php/src|src|g' composer.json
 git add .
 git commit -m "$VERSION"
+git tag "$VERSION"
 popd
 
 # Clean up
