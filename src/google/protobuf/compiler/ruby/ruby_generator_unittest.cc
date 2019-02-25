@@ -120,6 +120,10 @@ TEST(RubyGeneratorTest, Proto3ExplictPackageTest) {
     RubyTest("/ruby_generated_pkg_explicit");
 }
 
+TEST(RubyGeneratorTest, Proto3ExplictLegacyPackageTest) {
+    RubyTest("/ruby_generated_pkg_explicit_legacy");
+}
+
 }  // namespace
 }  // namespace ruby
 }  // namespace compiler

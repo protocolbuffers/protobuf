@@ -424,7 +424,17 @@ int GeneratePackageModules(
   //   option ruby_package:   One::Two::Three
   if (file->options().has_ruby_package()) {
     package_name = file->options().ruby_package();
-    need_change_to_module = false;
+
+    // If :: is in the package use the Ruby formated name as-is
+    //    -> A::B::C
+    // otherwise, use the dot seperator
+    //    -> A.B.C
+    if (package_name.find("::") != std::string::npos) {
+      need_change_to_module = false;
+    } else {
+      GOOGLE_LOG(WARNING) << "ruby_package option should be in the form of:"
+                          << " 'A::B::C' and not 'A.B.C'";
+    }
   } else {
     package_name = file->package();
   }
