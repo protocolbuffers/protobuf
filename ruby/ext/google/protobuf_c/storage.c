@@ -185,7 +185,7 @@ void native_slot_set_value_and_case(const char* name,
 
         // Time -> Google::Protobuf::Timestamp
         if (strcmp(field_type_name, "Google::Protobuf::Timestamp") == 0 &&
-            strcmp(value_type_name, "Time") == 0) {
+            rb_obj_is_kind_of(value, rb_cTime)) {
           VALUE hash = rb_hash_new();
           rb_hash_aset(hash, rb_str_new2("seconds"), rb_funcall(value, rb_intern("to_i"), 0));
           rb_hash_aset(hash, rb_str_new2("nanos"), rb_funcall(value, rb_intern("nsec"), 0));
@@ -193,7 +193,7 @@ void native_slot_set_value_and_case(const char* name,
           converted_value = rb_class_new_instance(1, args, type_class);
         }
 
-        // Number -> Google::Protobuf::Duration
+        // Numeric -> Google::Protobuf::Duration
         if (strcmp(field_type_name, "Google::Protobuf::Duration") == 0 &&
             rb_obj_is_kind_of(value, rb_cNumeric)) {
           VALUE hash = rb_hash_new();
