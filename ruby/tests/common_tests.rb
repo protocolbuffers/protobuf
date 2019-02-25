@@ -722,6 +722,16 @@ module CommonTests
     m = proto_module::TestMessage.new({optional_enum: proto_module::TestEnum::C})
     assert_equal proto_module::TestEnum::C, m.optional_enum_const
     assert_equal proto_module::TestEnum.const_get(:C), m.optional_enum_const
+
+    m = proto_module::TestMessage2.new({foo: 2})
+    assert_equal 2, m.foo
+    assert_raise(NoMethodError) { m.foo_ }
+    assert_raise(NoMethodError) { m.foo_X }
+    assert_raise(NoMethodError) { m.foo_XX }
+    assert_raise(NoMethodError) { m.foo_XXX }
+    assert_raise(NoMethodError) { m.foo_XXXX }
+    assert_raise(NoMethodError) { m.foo_XXXXX }
+    assert_raise(NoMethodError) { m.foo_XXXXXX }
   end
 
   def test_enum_getter
