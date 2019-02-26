@@ -188,6 +188,7 @@ if __name__ == '__main__':
 
     if sys.platform == 'darwin':
       extra_compile_args.append("-Wno-shorten-64-to-32");
+      extra_compile_args.append("-Wno-deprecated-register");
 
     # https://developer.apple.com/documentation/xcode_release_notes/xcode_10_release_notes
     # C++ projects must now migrate to libc++ and are recommended to set a
