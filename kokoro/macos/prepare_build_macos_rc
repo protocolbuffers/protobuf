@@ -22,7 +22,12 @@ export CXX=g++
 ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 source $HOME/.rvm/scripts/rvm
 brew uninstall node icu4c
-brew install gflags gpg gpg2 node pcre ruby npm
+brew install gflags gpg gpg2 node pcre ruby
+
+echo "npm version: "
+npm -v
+echo "node version: "
+node -v
 
 ##
 # Install Tox
