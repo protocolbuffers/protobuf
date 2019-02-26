@@ -21,8 +21,10 @@ export CXX=g++
 
 ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 source $HOME/.rvm/scripts/rvm
-brew uninstall node icu4c
+brew uninstall node icu4c cmake
+brew prune
 brew install gflags gpg gpg2 node pcre ruby cmake
+sudo chown -R $(whoami) ~/.npm ~/.npmrc
 sudo brew postinstall node
 
 echo "npm version: "
