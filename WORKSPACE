@@ -1,6 +1,10 @@
 workspace(name = "com_google_protobuf")
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+load("//:protobuf_deps.bzl", "protobuf_deps")
+
+# Load common dependencies.
+protobuf_deps()
 
 new_local_repository(
     name = "submodule_gmock",
@@ -20,14 +24,6 @@ http_archive(
     sha256 = "bbccf674aa441c266df9894182d80de104cabd19be98be002f6d478aaa31574d",
     strip_prefix = "bazel-skylib-2169ae1c374aab4a09aa90e65efe1a3aad4e279b",
     urls = ["https://github.com/bazelbuild/bazel-skylib/archive/2169ae1c374aab4a09aa90e65efe1a3aad4e279b.tar.gz"],
-)
-
-http_archive(
-    name = "net_zlib",
-    build_file = "//:third_party/zlib.BUILD",
-    sha256 = "c3e5e9fdd5004dcb542feda5ee4f0ff0744628baf8ed2dd5d66f8ca1197cb1a1",
-    strip_prefix = "zlib-1.2.11",
-    urls = ["https://zlib.net/zlib-1.2.11.tar.gz"],
 )
 
 bind(
@@ -68,9 +64,4 @@ maven_jar(
 bind(
     name = "gson",
     actual = "@gson_maven//jar",
-)
-
-bind(
-    name = "zlib",
-    actual = "@net_zlib//:zlib",
 )
