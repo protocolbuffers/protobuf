@@ -26,7 +26,7 @@ Changes:
 - Optimized enum parsing.
 
 Fixes:
-- Fix for bug in limited input stream's Position, Introduced Position on 
+- Fix for bug in limited input stream's Position, Introduced Position on
   output stream
 - Fix for writing a character to a JSON output overflows allocated buffer
 - Optimize FromBase64String to return Empty when presented with empty string.
@@ -47,14 +47,14 @@ Changes:
 - Added 'Unsafe' static type in ByteString to allow direct buffer access
 
 Fixes:
-- Issue 50: The XML serializer will fail to deserialize a message with empty 
+- Issue 50: The XML serializer will fail to deserialize a message with empty
   child message
 - Issue 45: Use of 'item' as a field name causes AmbiguousMatchException
 - Issue 49: Generated nested static Types class should be partial
 - Issue 38: Disable CLSCompliant warnings (3021)
 - Issue 40: proto_path does not work for command-line file names
 - Issue 54: should retire all bytes in buffer (bufferSize)
-- Issue 43: Fix to correct identical 'umbrella_classname' options from trying 
+- Issue 43: Fix to correct identical 'umbrella_classname' options from trying
   to write to the same filename.
 
 ===============================================================================
@@ -66,7 +66,7 @@ Features:
   NONE, GENERIC, INTERFACE, or IRPCDISPATCH
 - Added interfaces IRpcDispatch and IRpcServerStub to provide for blocking
   services and implementations.
-- Added ProtoGen.exe command-line argument "--protoc_dir=" to specify the 
+- Added ProtoGen.exe command-line argument "--protoc_dir=" to specify the
   location of protoc.exe.
 - Extracted interfaces for ICodedInputStream and ICodedOutputStream to allow
   custom implementation of writers with both speed and size optimizations.
@@ -86,9 +86,9 @@ Fixes:
 - Issue 16:	Does not integrate well with other tooling
 - Issue 19:	Support for negative enum values
 - Issue 26:	AddRange in GeneratedBuilder iterates twice.
-- Issue 27:	Remove XML documentation output from test projects to clear 
+- Issue 27:	Remove XML documentation output from test projects to clear
   warnings/errors.
-- Issue 28: Circular message dependencies result in null default values for 
+- Issue 28: Circular message dependencies result in null default values for
   Message fields.
 - Issue 29: Message classes generated have a public default constructor.  You
   can disable private ctor generation with the option generate_private_ctor.
@@ -109,14 +109,14 @@ RELEASE NOTES - Version 2.3.0.277
 ===============================================================================
 
 Features:
-- Added cls_compliance option to generate attributes indicating 
+- Added cls_compliance option to generate attributes indicating
   non-CLS-compliance.
 - Added file_extension option to control the generated output file's extension.
 - Added umbrella_namespace option to place the umbrella class into a nested
-  namespace to address issues with proto files having the same name as a 
+  namespace to address issues with proto files having the same name as a
   message it contains.
 - Added output_directory option to set the output path for the source file(s).
-- Added ignore_google_protobuf option to avoid generating code for includes 
+- Added ignore_google_protobuf option to avoid generating code for includes
   from the google.protobuf package.
 - Added the LITE framework (Google.ProtoBuffersLite.dll) and the ability to
   generate code with "option optimize_for = LITE_RUNTIME;".

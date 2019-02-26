@@ -99,7 +99,7 @@ namespace Google.Protobuf.WellKnownTypes
             Duration difference = new Duration { Seconds = 1999, Nanos = Duration.NanosecondsPerSecond - 5000 };
             Assert.AreEqual(difference, t1 - t2);
             Assert.AreEqual(-difference, t2 - t1);
-            
+
             Assert.AreEqual(t1, t2 + difference);
             Assert.AreEqual(t2, t1 - difference);
         }
@@ -190,7 +190,7 @@ namespace Google.Protobuf.WellKnownTypes
             Assert.IsTrue(e > d);
             Assert.IsTrue(e == e);
             Assert.IsTrue(e == e.Clone());
-            
+
             Assert.IsTrue(b >= a);
             Assert.IsTrue(b <= c);
             Assert.IsTrue(b <= d);

@@ -961,14 +961,6 @@ VALUE FieldDescriptor_default(VALUE _self) {
 
 /*
  * call-seq:
- *     FieldDescriptor.default = default
- *
- * Sets this field's default value. Raises an exception when calling with
- * proto syntax 3.
- */
-
-/*
- * call-seq:
  *     FieldDescriptor.label => label
  *
  * Returns this field's label (i.e., plurality), as a Ruby symbol.

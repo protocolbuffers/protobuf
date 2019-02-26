@@ -618,6 +618,7 @@ VALUE build_class_from_descriptor(VALUE descriptor) {
   // Also define #clone so that we don't inherit Object#clone.
   rb_define_method(klass, "clone", Message_dup, 0);
   rb_define_method(klass, "==", Message_eq, 1);
+  rb_define_method(klass, "eql?", Message_eq, 1);
   rb_define_method(klass, "hash", Message_hash, 0);
   rb_define_method(klass, "to_h", Message_to_h, 0);
   rb_define_method(klass, "to_hash", Message_to_h, 0);

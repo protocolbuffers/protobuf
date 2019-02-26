@@ -95,7 +95,7 @@ public class FieldMaskTreeTest extends TestCase {
     tree.intersectFieldPath("bar", result);
     assertEquals("bar.baz,bar.quz,foo", result.toString());
   }
-  
+
   public void testMerge() throws Exception {
     testMergeImpl(true);
     testMergeImpl(false);
