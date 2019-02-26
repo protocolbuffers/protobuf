@@ -24,8 +24,9 @@ source $HOME/.rvm/scripts/rvm
 brew uninstall node icu4c cmake
 brew prune
 brew install gflags gpg gpg2 node pcre ruby cmake
-sudo chown -R $(whoami) ~/.npm ~/.npmrc
-sudo brew postinstall node
+sudo chown -R $(whoami) /usr/local
+sudo chown -R $(whoami) /usr/local/lib
+brew postinstall node
 
 echo "npm version: "
 npm -v
