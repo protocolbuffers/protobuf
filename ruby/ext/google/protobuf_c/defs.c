@@ -124,7 +124,7 @@ static void rewrite_enum_default(const upb_symtab* symtab,
   }
 }
 
-/* Historically we allowed the default to be specified as a number.  In
+/* Historically we allowed enum defaults to be specified as a number.  In
  * retrospect this was a mistake as descriptors require defaults to be
  * specified as a label. This can make a difference if multiple labels have the
  * same number.
@@ -139,16 +139,10 @@ static void rewrite_enum_defaults(
   google_protobuf_DescriptorProto** msgs =
       google_protobuf_FileDescriptorProto_mutable_message_type(file_proto, &n);
 
-  //fprintf(stderr, "%p %d " UPB_STRINGVIEW_FORMAT "\n", msgs, (int)n,
-  //        UPB_STRINGVIEW_ARGS(
-  //            google_protobuf_FileDescriptorProto_name(file_proto)));
-
   for (i = 0; i < n; i++) {
     size_t j, m;
     google_protobuf_FieldDescriptorProto** fields =
         google_protobuf_DescriptorProto_mutable_field(msgs[i], &m);
-    //fprintf(stderr, "- %p %d " UPB_STRINGVIEW_FORMAT "\n", fields, (int)m,
-    //        UPB_STRINGVIEW_ARGS(google_protobuf_DescriptorProto_name(msgs[i])));
     for (j = 0; j < m; j++) {
       rewrite_enum_default(symtab, file_proto, fields[j]);
     }
@@ -156,7 +150,6 @@ static void rewrite_enum_defaults(
 }
 
 static bool has_prefix(upb_strview str, upb_strview prefix) {
-  //fprintf(stderr, "%d %d %d\n", (int)str.size, (int)prefix.size, (int)memcmp(str.data, prefix.data, prefix.size));
   return str.size >= prefix.size &&
          memcmp(str.data, prefix.data, prefix.size) == 0;
 }
@@ -196,8 +189,6 @@ static void rewrite_nesting(VALUE msg_ent, google_protobuf_DescriptorProto* msg,
   int submsg_count = RARRAY_LEN(submsgs);
   int enum_count = RARRAY_LEN(enum_pos);
 
-  //printf("submsg_count: %d\n", submsg_count);
-
   google_protobuf_DescriptorProto** msg_msgs =
       google_protobuf_DescriptorProto_resize_nested_type(msg, submsg_count,
                                                          arena);
@@ -207,7 +198,6 @@ static void rewrite_nesting(VALUE msg_ent, google_protobuf_DescriptorProto* msg,
   for (int i = 0; i < submsg_count; i++) {
     VALUE submsg_ent = RARRAY_PTR(submsgs)[i];
     VALUE pos = rb_hash_aref(submsg_ent, ID2SYM(rb_intern("pos")));
-    //printf("submsg from pos: %d\n", (int)NUM2INT(pos));
     msg_msgs[i] = msgs[NUM2INT(pos)];
     upb_strview name = google_protobuf_DescriptorProto_name(msg_msgs[i]);
     remove_path(&name);
@@ -221,6 +211,47 @@ static void rewrite_nesting(VALUE msg_ent, google_protobuf_DescriptorProto* msg,
   }
 }
 
+/* We have to do some relatively complicated logic here for backward
+ * compatibility.
+ *
+ * In descriptor.proto, messages are nested inside other messages if that is
+ * what the original .proto file looks like.  For example, suppose we have this
+ * foo.proto:
+ *
+ * package foo;
+ * message Bar {
+ *   message Baz {}
+ * }
+ *
+ * The descriptor for this must look like this:
+ *
+ * file {
+ *   name: "test.proto"
+ *   package: "foo"
+ *   message_type {
+ *     name: "Bar"
+ *     nested_type {
+ *       name: "Baz"
+ *     }
+ *   }
+ * }
+ *
+ * However, the Ruby generated code has always generated messages in a flat,
+ * non-nested way:
+ *
+ * Google::Protobuf::DescriptorPool.generated_pool.build do
+ *   add_message "foo.Bar" do
+ *   end
+ *   add_message "foo.Bar.Baz" do
+ *   end
+ * end
+ *
+ * Here we need to do a translation where we turn this generated code into the
+ * above descriptor.  We need to infer that "foo" is the package name, and not
+ * a message itself.
+ *
+ * We delegate to Ruby to compute the transformation, for more concice and
+ * readable code than we can do in C */
 static void rewrite_names(VALUE _file_builder,
                           google_protobuf_FileDescriptorProto* file_proto) {
   FileBuilderContext* file_builder = ruby_to_FileBuilderContext(_file_builder);
