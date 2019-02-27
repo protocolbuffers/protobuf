@@ -814,7 +814,7 @@ void Generator::PrintNestedDescriptors(
 void Generator::PrintMessages() const {
   for (int i = 0; i < file_->message_type_count(); ++i) {
     std::vector<string> to_register;
-    PrintMessage(*file_->message_type(i), "", &to_register);
+    PrintMessage(*file_->message_type(i), "", &to_register, false);
     for (int j = 0; j < to_register.size(); ++j) {
       printer_->Print("_sym_db.RegisterMessage($name$)\n", "name",
                       to_register[j]);
@@ -833,25 +833,33 @@ void Generator::PrintMessages() const {
 // Collect nested message names to_register for the symbol_database.
 void Generator::PrintMessage(const Descriptor& message_descriptor,
                              const string& prefix,
-                             std::vector<string>* to_register) const {
+                             std::vector<string>* to_register,
+                             bool is_nested) const {
   string qualified_name(prefix + message_descriptor.name());
   to_register->push_back(qualified_name);
-  printer_->Print(
-      "$name$ = _reflection.GeneratedProtocolMessageType('$name$', "
-      "(_message.Message,), dict(\n",
-      "name", message_descriptor.name());
+  if (is_nested) {
+    printer_->Print(
+        "'$name$' : _reflection.GeneratedProtocolMessageType('$name$', "
+        "(_message.Message,), {\n",
+        "name", message_descriptor.name());
+  } else {
+    printer_->Print(
+        "$name$ = _reflection.GeneratedProtocolMessageType('$name$', "
+        "(_message.Message,), {\n",
+        "name", message_descriptor.name());
+  }
   printer_->Indent();
 
   PrintNestedMessages(message_descriptor, qualified_name + ".", to_register);
   std::map<string, string> m;
   m["descriptor_key"] = kDescriptorKey;
   m["descriptor_name"] = ModuleLevelDescriptorName(message_descriptor);
-  printer_->Print(m, "$descriptor_key$ = $descriptor_name$,\n");
-  printer_->Print("__module__ = '$module_name$'\n",
+  printer_->Print(m, "'$descriptor_key$' : $descriptor_name$,\n");
+  printer_->Print("'__module__' : '$module_name$'\n",
                   "module_name", ModuleName(file_->name()));
   printer_->Print("# @@protoc_insertion_point(class_scope:$full_name$)\n",
                   "full_name", message_descriptor.full_name());
-  printer_->Print("))\n");
+  printer_->Print("})\n");
   printer_->Outdent();
 }
 
@@ -862,7 +870,8 @@ void Generator::PrintNestedMessages(const Descriptor& containing_descriptor,
                                     std::vector<string>* to_register) const {
   for (int i = 0; i < containing_descriptor.nested_type_count(); ++i) {
     printer_->Print("\n");
-    PrintMessage(*containing_descriptor.nested_type(i), prefix, to_register);
+    PrintMessage(*containing_descriptor.nested_type(i), prefix, to_register,
+                 true);
     printer_->Print(",\n");
   }
 }

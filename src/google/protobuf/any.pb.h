@@ -108,15 +108,15 @@ class PROTOBUF_EXPORT Any final :
   void PackFrom(const ::google::protobuf::Message& message,
                 const ::std::string& type_url_prefix);
   bool UnpackTo(::google::protobuf::Message* message) const;
+  static bool GetAnyFieldDescriptors(
+      const ::google::protobuf::Message& message,
+      const ::google::protobuf::FieldDescriptor** type_url_field,
+      const ::google::protobuf::FieldDescriptor** value_field);
   template<typename T> bool Is() const {
     return _any_metadata_.Is<T>();
   }
   static bool ParseAnyTypeUrl(const string& type_url,
                               string* full_type_name);
-  static bool GetAnyFieldDescriptors(
-      const ::google::protobuf::Message& message,
-      const ::google::protobuf::FieldDescriptor** type_url_field,
-      const ::google::protobuf::FieldDescriptor** value_field);
   void Swap(Any* other);
   friend void swap(Any& a, Any& b) {
     a.Swap(&b);
@@ -140,8 +140,7 @@ class PROTOBUF_EXPORT Any final :
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
-  ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
+  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   #else
   bool MergePartialFromCodedStream(
       ::google::protobuf::io::CodedInputStream* input) final;
@@ -153,10 +152,14 @@ class PROTOBUF_EXPORT Any final :
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
-  void SharedCtor();
-  void SharedDtor();
+  inline void SharedCtor();
+  inline void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(Any* other);
+  friend class ::google::protobuf::internal::AnyMetadata;
+  static ::google::protobuf::StringPiece FullMessageName() {
+    return "google.protobuf.Any";
+  }
   private:
   inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
     return nullptr;

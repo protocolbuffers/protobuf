@@ -201,11 +201,11 @@ ImmutablePrimitiveFieldGenerator(const FieldDescriptor* descriptor,
 ImmutablePrimitiveFieldGenerator::~ImmutablePrimitiveFieldGenerator() {}
 
 int ImmutablePrimitiveFieldGenerator::GetNumBitsForMessage() const {
-  return 1;
+  return SupportFieldPresence(descriptor_->file()) ? 1 : 0;
 }
 
 int ImmutablePrimitiveFieldGenerator::GetNumBitsForBuilder() const {
-  return 1;
+  return GetNumBitsForMessage();
 }
 
 void ImmutablePrimitiveFieldGenerator::

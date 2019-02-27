@@ -134,7 +134,7 @@ ImmutableStringFieldLiteGenerator::ImmutableStringFieldLiteGenerator(
 ImmutableStringFieldLiteGenerator::~ImmutableStringFieldLiteGenerator() {}
 
 int ImmutableStringFieldLiteGenerator::GetNumBitsForMessage() const {
-  return 1;
+  return SupportFieldPresence(descriptor_->file()) ? 1 : 0;
 }
 
 // A note about how strings are handled. In the SPEED and CODE_SIZE runtimes,

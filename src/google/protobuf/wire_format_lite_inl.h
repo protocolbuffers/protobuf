@@ -1021,6 +1021,7 @@ bool ParseMessageSetItemImpl(io::CodedInputStream* input, MS ms) {
           io::CodedInputStream sub_input(
               reinterpret_cast<const uint8*>(message_data.data()),
               static_cast<int>(message_data.size()));
+          sub_input.SetRecursionLimit(input->RecursionBudget());
           if (!ms.ParseField(last_type_id, &sub_input)) {
             return false;
           }

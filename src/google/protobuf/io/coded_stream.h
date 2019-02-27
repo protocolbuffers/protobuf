@@ -144,8 +144,12 @@ namespace protobuf {
 
 class DescriptorPool;
 class MessageFactory;
+class ZeroCopyCodedInputStream;
 
-namespace internal { void MapTestForceDeterministic(); }
+namespace internal {
+void MapTestForceDeterministic();
+class EpsCopyByteStream;
+}  // namespace internal
 
 namespace io {
 
@@ -156,64 +160,6 @@ class CodedOutputStream;
 // Defined in other files.
 class ZeroCopyInputStream;           // zero_copy_stream.h
 class ZeroCopyOutputStream;          // zero_copy_stream.h
-
-template <typename T>
-T UnalignedLoad(const void* p) {
-  T res;
-  memcpy(&res, p, sizeof(T));
-  return res;
-}
-
-// TODO(gerbens) Experiment with best implementation.
-// Clang unrolls loop and generating pretty good code on O2, gcc doesn't.
-// Unclear if we want 64 bit parse loop unrolled, inlined or opaque function
-// call. Hence experimentation is needed.
-// Important guarantee is that it doesn't read more than size bytes from p.
-template <int size, typename T>
-const char* VarintParse(const char* p, T* out) {
-  T res = 0;
-  T extra = 0;
-  for (int i = 0; i < size; i++) {
-    T byte = static_cast<uint8>(p[i]);
-    res += byte << (i * 7);
-    int j = i + 1;
-    if (PROTOBUF_PREDICT_TRUE(byte < 128)) {
-      *out = res - extra;
-      return p + j;
-    }
-    extra += 128ull << (i * 7);
-  }
-  *out = 0;
-  return nullptr;
-}
-
-inline const char* Parse32(const char* p, uint32* out) {
-  return VarintParse<5>(p, out);
-}
-inline const char* Parse64(const char* p, uint64* out) {
-  return VarintParse<10>(p, out);
-}
-
-inline const char* ReadSize(const char* p, int32* out) {
-  int32 res = 0;
-  int32 extra = 0;
-  for (int i = 0; i < 4; i++) {
-    uint32 byte = static_cast<uint8>(p[i]);
-    res += byte << (i * 7);
-    int j = i + 1;
-    if (PROTOBUF_PREDICT_TRUE(byte < 128)) {
-      *out = res - extra;
-      return p + j;
-    }
-    extra += 128ull << (i * 7);
-  }
-  uint32 byte = static_cast<uint8>(p[4]);
-  // size may not be negative, so only the lowest 3 bits can be set.
-  if (byte >= 8) return nullptr;
-  res += byte << (4 * 7);
-  *out = res - extra;
-  return p + 5;
-}
 
 // Class which reads and decodes binary data which is composed of varint-
 // encoded integers and fixed-width pieces.  Wraps a ZeroCopyInputStream.
@@ -693,6 +639,9 @@ class PROTOBUF_EXPORT CodedInputStream {
   static const int kDefaultTotalBytesLimit = INT_MAX;
 
   static int default_recursion_limit_;  // 100 by default.
+
+  friend class google::protobuf::ZeroCopyCodedInputStream;
+  friend class google::protobuf::internal::EpsCopyByteStream;
 };
 
 // Class which encodes and writes binary data which is composed of varint-

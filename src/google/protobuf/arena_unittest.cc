@@ -1324,6 +1324,12 @@ TEST(ArenaTest, GetArenaShouldReturnTheArenaForArenaAllocatedMessages) {
   const ArenaMessage* const_pointer_to_message = message;
   EXPECT_EQ(&arena, Arena::GetArena(message));
   EXPECT_EQ(&arena, Arena::GetArena(const_pointer_to_message));
+
+  // Test that the Message* / MessageLite* specialization SFINAE works.
+  const Message* const_pointer_to_message_type = message;
+  EXPECT_EQ(&arena, Arena::GetArena(const_pointer_to_message_type));
+  const MessageLite* const_pointer_to_message_lite_type = message;
+  EXPECT_EQ(&arena, Arena::GetArena(const_pointer_to_message_lite_type));
 }
 
 TEST(ArenaTest, GetArenaShouldReturnNullForNonArenaAllocatedMessages) {

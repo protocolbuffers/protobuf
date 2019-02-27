@@ -361,6 +361,10 @@ string ConformanceTestSuite::WireFormatToString(
   return "";
 }
 
+void ConformanceTestSuite::AddExpectedFailedTest(const std::string& test_name) {
+  expected_to_fail_.insert(test_name);
+}
+
 bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
                                     std::string* output, const string& filename,
                                     conformance::FailureSet* failure_list) {
@@ -374,17 +378,10 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
 
   output_ = "\nCONFORMANCE TEST BEGIN ====================================\n\n";
 
-  ConformanceRequest req;
-  ConformanceResponse res;
-  req.set_message_type(failure_list->GetTypeName());
-  req.set_protobuf_payload("");
-  req.set_requested_output_format(conformance::WireFormat::PROTOBUF);
-  RunTest("FindFailures", req, &res);
-  GOOGLE_CHECK(failure_list->MergeFromString(res.protobuf_payload()));
   failure_list_filename_ = filename;
   expected_to_fail_.clear();
   for (const string& failure : failure_list->failure()) {
-    expected_to_fail_.insert(failure);
+    AddExpectedFailedTest(failure);
   }
   RunSuiteImpl();
 

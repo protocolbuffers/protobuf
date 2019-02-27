@@ -309,8 +309,8 @@ class MapFieldStateTest
   State state_;
 };
 
-INSTANTIATE_TEST_CASE_P(MapFieldStateTestInstance, MapFieldStateTest,
-                        ::testing::Values(CLEAN, MAP_DIRTY, REPEATED_DIRTY));
+INSTANTIATE_TEST_SUITE_P(MapFieldStateTestInstance, MapFieldStateTest,
+                         ::testing::Values(CLEAN, MAP_DIRTY, REPEATED_DIRTY));
 
 TEST_P(MapFieldStateTest, GetMap) {
   map_field_->GetMap();
