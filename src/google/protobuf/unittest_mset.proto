@@ -53,6 +53,8 @@ message TestMessageSetExtension1 {
     optional TestMessageSetExtension1 message_set_extension = 1545008;
   }
   optional int32 i = 15;
+  optional proto2_wireformat_unittest.TestMessageSet recursive = 16;
+  optional string test_aliasing = 17 [ctype = STRING_PIECE];
 }
 
 message TestMessageSetExtension2 {

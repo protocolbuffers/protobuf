@@ -163,12 +163,12 @@ namespace Google.Protobuf
                         var map = (IDictionary)f.Accessor.GetValue(message);
                         return map.Values.OfType<IMessage>().All(IsInitialized);
                     }
-                    else if (f.IsRepeated && f.MessageType != null)
+                    else if (f.IsRepeated && f.FieldType == FieldType.Message || f.FieldType == FieldType.Group)
                     {
                         var enumerable = (IEnumerable)f.Accessor.GetValue(message);
                         return enumerable.Cast<IMessage>().All(IsInitialized);
                     }
-                    else if (f.MessageType != null)
+                    else if (f.FieldType == FieldType.Message || f.FieldType == FieldType.Group)
                     {
                         if (f.Accessor.HasValue(message))
                         {
@@ -183,7 +183,7 @@ namespace Google.Protobuf
                     {
                         return f.Accessor.HasValue(message);
                     }
-                    else 
+                    else
                     {
                         return true;
                     }

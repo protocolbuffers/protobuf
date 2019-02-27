@@ -177,11 +177,7 @@ void ExtensionSet::RegisterMessageExtension(const MessageLite* containing_type,
   GOOGLE_CHECK(type == WireFormatLite::TYPE_MESSAGE ||
         type == WireFormatLite::TYPE_GROUP);
   ExtensionInfo info(type, is_repeated, is_packed);
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  info.message_info = {prototype, prototype->_ParseFunc()};
-#else
   info.message_info = {prototype};
-#endif
   Register(containing_type, number, info);
 }
 
@@ -1204,9 +1200,8 @@ bool ExtensionSet::ParseField(uint32 tag, io::CodedInputStream* input,
 }
 
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-std::pair<const char*, bool> ExtensionSet::ParseField(
-    uint64 tag, ParseClosure parent, const char* begin, const char* end,
-    const MessageLite* containing_type,
+const char* ExtensionSet::ParseField(
+    uint64 tag, const char* ptr, const MessageLite* containing_type,
     internal::InternalMetadataWithArenaLite* metadata,
     internal::ParseContext* ctx) {
   GeneratedExtensionFinder finder(containing_type);
@@ -1215,12 +1210,19 @@ std::pair<const char*, bool> ExtensionSet::ParseField(
   ExtensionInfo extension;
   if (!FindExtensionInfoFromFieldNumber(tag & 7, number, &finder, &extension,
                                         &was_packed_on_wire)) {
-    return UnknownFieldParse(tag, parent, begin, end,
-                             metadata->mutable_unknown_fields(), ctx);
+    return UnknownFieldParse(tag, metadata->mutable_unknown_fields(), ptr, ctx);
   }
   return ParseFieldWithExtensionInfo(number, was_packed_on_wire, extension,
-                                     metadata, parent, begin, end, ctx);
+                                     metadata, ptr, ctx);
 }
+
+const char* ExtensionSet::ParseMessageSetItem(
+    const char* ptr, const MessageLite* containing_type,
+    internal::InternalMetadataWithArenaLite* metadata,
+    internal::ParseContext* ctx) {
+  return ParseMessageSetItemTmpl(ptr, containing_type, metadata, ctx);
+}
+
 #endif
 
 bool ExtensionSet::ParseFieldWithExtensionInfo(

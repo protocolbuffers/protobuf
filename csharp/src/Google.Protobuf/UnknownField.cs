@@ -171,7 +171,7 @@ namespace Google.Protobuf
             {
                 result += CodedOutputStream.ComputeTagSize(fieldNumber) * fixed64List.Count;
                 result += CodedOutputStream.ComputeFixed64Size(1) * fixed64List.Count;
-            }                
+            }
             if (lengthDelimitedList != null)
             {
                 result += CodedOutputStream.ComputeTagSize(fieldNumber) * lengthDelimitedList.Count;
@@ -266,7 +266,7 @@ namespace Google.Protobuf
             return this;
         }
 
-        internal UnknownField AddGroup(UnknownFieldSet value) 
+        internal UnknownField AddGroup(UnknownFieldSet value)
         {
             groupList = Add(groupList, value);
             return this;

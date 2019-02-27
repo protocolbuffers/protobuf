@@ -54,7 +54,7 @@ def do_test(request)
       elsif request.message_type.eql?('protobuf_test_messages.proto2.TestAllTypesProto2')
         response.skipped = "Ruby doesn't support proto2"
         return response
-      else 
+      else
         fail "Protobuf request doesn't have specific payload type"
       end
 
@@ -66,6 +66,12 @@ def do_test(request)
         response.parse_error = err.message.encode('utf-8')
         return response
       end
+	
+	when :text_payload
+	  begin
+		response.skipped = "Ruby doesn't support proto2"
+        return response   
+	  end
 
     when nil
       fail "Request didn't have payload"

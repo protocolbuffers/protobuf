@@ -74,7 +74,7 @@ typedef union {
 
 /**
  * Enum listing the possible data types that a field can contain.
- * 
+ *
  * @note Do not change the order of this enum (or add things to it) without
  *       thinking about it very carefully. There are several things that depend
  *       on the order.

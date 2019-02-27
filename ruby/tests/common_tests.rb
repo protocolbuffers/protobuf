@@ -1152,4 +1152,25 @@ module CommonTests
     assert_raise(FrozenError) { m.repeated_msg = proto_module::TestMessage2.new }
     assert_raise(FrozenError) { m.repeated_enum = :A }
   end
+  
+  def test_eq
+    m1 = proto_module::TestMessage.new(:optional_string => 'foo', :repeated_string => ['bar1', 'bar2'])
+    m2 = proto_module::TestMessage.new(:optional_string => 'foo', :repeated_string => ['bar1', 'bar2'])
+
+    h = {}
+    h[m1] = :yes
+
+    assert m1 == m2
+    assert m1.eql?(m2)
+    assert m1.hash == m2.hash
+    assert h[m1] == :yes
+    assert h[m2] == :yes
+
+    m1.optional_int32 = 2
+
+    assert m1 != m2
+    assert !m1.eql?(m2)
+    assert m1.hash != m2.hash
+    assert_nil h[m2]
+  end
 end

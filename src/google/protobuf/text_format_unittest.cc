@@ -1313,24 +1313,24 @@ class TextFormatParserTest : public testing::Test {
 
   void ExpectMessage(const string& input, const string& message, int line,
                      int col, Message* proto, bool expected_result) {
-    TextFormat::Parser parser;
     MockErrorCollector error_collector;
-    parser.RecordErrorsTo(&error_collector);
-    EXPECT_EQ(expected_result, parser.ParseFromString(input, proto))
+    parser_.RecordErrorsTo(&error_collector);
+    EXPECT_EQ(expected_result, parser_.ParseFromString(input, proto))
         << input << " -> " << proto->DebugString();
     EXPECT_EQ(
         StrCat(line) + ":" + StrCat(col) + ": " + message + "\n",
         error_collector.text_);
+    parser_.RecordErrorsTo(nullptr);
   }
 
   void ExpectSuccessAndTree(const string& input, Message* proto,
                             TextFormat::ParseInfoTree* info_tree) {
-    TextFormat::Parser parser;
     MockErrorCollector error_collector;
-    parser.RecordErrorsTo(&error_collector);
-    parser.WriteLocationsTo(info_tree);
-
-    EXPECT_TRUE(parser.ParseFromString(input, proto));
+    parser_.RecordErrorsTo(&error_collector);
+    parser_.WriteLocationsTo(info_tree);
+    EXPECT_TRUE(parser_.ParseFromString(input, proto));
+    parser_.WriteLocationsTo(nullptr);
+    parser_.RecordErrorsTo(nullptr);
   }
 
   void ExpectLocation(TextFormat::ParseInfoTree* tree,
@@ -1361,6 +1361,8 @@ class TextFormatParserTest : public testing::Test {
       AddError(line, column, "WARNING:" + message);
     }
   };
+
+  TextFormat::Parser parser_;
 };
 
 TEST_F(TextFormatParserTest, ParseInfoTreeBuilding) {
@@ -1810,18 +1812,20 @@ TEST_F(TextFormatParserTest, ParseDeprecatedField) {
                 "\"deprecated_int32\"", 1, 21, &message, true);
 }
 
-TEST_F(TextFormatParserTest, DeepRecursion) {
+TEST_F(TextFormatParserTest, SetRecursionLimit) {
   const char* format = "child: { $0 }";
   std::string input;
-  for (int i = 0; i < 100; ++i)
-    input = strings::Substitute(format, input);
+  for (int i = 0; i < 100; ++i) input = strings::Substitute(format, input);
 
   unittest::NestedTestAllTypes message;
   ExpectSuccessAndTree(input, &message, nullptr);
 
   input = strings::Substitute(format, input);
-  ExpectMessage(input,
-                "Message is too deep", 1, 908, &message, false);
+  parser_.SetRecursionLimit(100);
+  ExpectMessage(input, "Message is too deep", 1, 908, &message, false);
+
+  parser_.SetRecursionLimit(101);
+  ExpectSuccessAndTree(input, &message, nullptr);
 }
 
 class TextFormatMessageSetTest : public testing::Test {

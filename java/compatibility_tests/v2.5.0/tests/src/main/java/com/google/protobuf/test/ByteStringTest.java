@@ -342,7 +342,7 @@ public class ByteStringTest extends TestCase {
       return -1;
     }
   }
-  
+
   // A stream which exposes the byte array passed into write(byte[], int, int).
   private static class EvilOutputStream extends OutputStream {
     public byte[] capturedArray = null;
@@ -454,13 +454,13 @@ public class ByteStringTest extends TestCase {
           isArrayRange(bytes, byteString.toByteArray(), 0, bytes.length));
     }
   }
-  
+
   public void testNewOutputEmpty() throws IOException {
     // Make sure newOutput() correctly builds empty byte strings
     ByteString byteString = ByteString.newOutput().toByteString();
     assertEquals(ByteString.EMPTY, byteString);
   }
-  
+
   public void testNewOutput_Mutating() throws IOException {
     Output os = ByteString.newOutput(5);
     os.write(new byte[] {1, 2, 3, 4, 5});

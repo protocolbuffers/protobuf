@@ -111,13 +111,13 @@ VALUE native_slot_encode_and_freeze_string(upb_fieldtype_t type, VALUE value) {
   return value;
 }
 
-void native_slot_set(const char* name, 
+void native_slot_set(const char* name,
                      upb_fieldtype_t type, VALUE type_class,
                      void* memory, VALUE value) {
   native_slot_set_value_and_case(name, type, type_class, memory, value, NULL, 0);
 }
 
-void native_slot_set_value_and_case(const char* name, 
+void native_slot_set_value_and_case(const char* name,
                                     upb_fieldtype_t type, VALUE type_class,
                                     void* memory, VALUE value,
                                     uint32_t* case_memory,
@@ -668,7 +668,7 @@ void layout_clear(MessageLayout* layout,
 
     DEREF(memory, VALUE) = ary;
   } else {
-    native_slot_set(upb_fielddef_name(field), 
+    native_slot_set(upb_fielddef_name(field),
                     upb_fielddef_type(field), field_type_class(field),
                     memory, layout_get_default(field));
   }
@@ -839,7 +839,7 @@ void layout_set(MessageLayout* layout,
     check_repeated_field_type(val, field);
     DEREF(memory, VALUE) = val;
   } else {
-    native_slot_set(upb_fielddef_name(field), 
+    native_slot_set(upb_fielddef_name(field),
                     upb_fielddef_type(field), field_type_class(field),
                     memory, val);
   }

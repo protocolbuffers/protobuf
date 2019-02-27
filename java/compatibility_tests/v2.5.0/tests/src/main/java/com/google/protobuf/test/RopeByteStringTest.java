@@ -38,7 +38,7 @@ import java.util.Iterator;
 /**
  * This class tests {@link RopeByteString} by inheriting the tests from
  * {@link LiteralByteStringTest}.  Only a couple of methods are overridden.
- * 
+ *
  * <p>A full test of the result of {@link RopeByteString#substring(int, int)} is found in the
  * separate class {@link RopeByteStringSubstringTest}.
  *

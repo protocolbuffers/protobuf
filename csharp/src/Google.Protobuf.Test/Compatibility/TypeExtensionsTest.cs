@@ -59,7 +59,7 @@ namespace Google.Protobuf.Compatibility
         [TestCase(typeof(string), typeof(int), false)]
         [TestCase(typeof(int), typeof(int), true)]
         [TestCase(typeof(ValueType), typeof(int), true)]
-        [TestCase(typeof(long), typeof(int), false)] // 
+        [TestCase(typeof(long), typeof(int), false)] //
         public void IsAssignableFrom(Type target, Type argument, bool expected)
         {
             Assert.AreEqual(expected, TypeExtensions.IsAssignableFrom(target, argument));

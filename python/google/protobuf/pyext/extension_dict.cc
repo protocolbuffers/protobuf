@@ -65,6 +65,31 @@ namespace python {
 
 namespace extension_dict {
 
+static Py_ssize_t len(ExtensionDict* self) {
+  Py_ssize_t size = 0;
+  std::vector<const FieldDescriptor*> fields;
+  self->parent->message->GetReflection()->ListFields(*self->parent->message,
+                                                     &fields);
+
+  for (size_t i = 0; i < fields.size(); ++i) {
+    if (fields[i]->is_extension()) {
+      // With C++ descriptors, the field can always be retrieved, but for
+      // unknown extensions which have not been imported in Python code, there
+      // is no message class and we cannot retrieve the value.
+      // ListFields() has the same behavior.
+      if (fields[i]->message_type() != nullptr &&
+          message_factory::GetMessageClass(
+              cmessage::GetFactoryForMessage(self->parent),
+              fields[i]->message_type()) == nullptr) {
+        PyErr_Clear();
+        continue;
+      }
+      ++size;
+    }
+  }
+  return size;
+}
+
 PyObject* subscript(ExtensionDict* self, PyObject* key) {
   const FieldDescriptor* descriptor = cmessage::GetExtensionDescriptor(key);
   if (descriptor == NULL) {
@@ -246,7 +271,7 @@ static PyObject* RichCompare(ExtensionDict* self, PyObject* other, int opid) {
 }
 
 static PyMappingMethods MpMethods = {
-  (lenfunc)NULL,               /* mp_length */
+  (lenfunc)len,                /* mp_length */
   (binaryfunc)subscript,       /* mp_subscript */
   (objobjargproc)ass_subscript,/* mp_ass_subscript */
 };

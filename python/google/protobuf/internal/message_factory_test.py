@@ -136,13 +136,14 @@ class MessageFactoryTest(unittest.TestCase):
           'google.protobuf.python.internal.Factory2Message.one_more_field')
       ext2 = msg1.Extensions._FindExtensionByName(
           'google.protobuf.python.internal.another_field')
+      self.assertEqual(0, len(msg1.Extensions))
       msg1.Extensions[ext1] = 'test1'
       msg1.Extensions[ext2] = 'test2'
       self.assertEqual('test1', msg1.Extensions[ext1])
       self.assertEqual('test2', msg1.Extensions[ext2])
       self.assertEqual(None,
                        msg1.Extensions._FindExtensionByNumber(12321))
-      self.assertRaises(TypeError, len, msg1.Extensions)
+      self.assertEqual(2, len(msg1.Extensions))
       if api_implementation.Type() == 'cpp':
         self.assertRaises(TypeError,
                           msg1.Extensions._FindExtensionByName, 0)
