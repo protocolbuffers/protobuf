@@ -243,7 +243,7 @@ namespace Google.Protobuf
         [Test]
         public void InvalidSurrogatePairsFail()
         {
-            // Note: don't use TestCase for these, as the strings can't be reliably represented 
+            // Note: don't use TestCase for these, as the strings can't be reliably represented
             // See http://codeblog.jonskeet.uk/2014/11/07/when-is-a-string-not-a-string/
 
             // Lone low surrogate

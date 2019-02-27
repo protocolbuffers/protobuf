@@ -52,7 +52,6 @@ from google.protobuf import wrappers_pb2
 from google.protobuf import any_test_pb2
 from google.protobuf import unittest_mset_pb2
 from google.protobuf import unittest_pb2
-from google.protobuf.internal import well_known_types
 from google.protobuf import descriptor_pool
 from google.protobuf import json_format
 from google.protobuf.util import json_format_proto3_pb2
@@ -479,6 +478,14 @@ class JsonFormatTest(JsonFormatBase):
         '  "value": "foo.bar,bar"\n'
         '}')
     parsed_message = json_format_proto3_pb2.TestFieldMask()
+    self.CheckParseBack(message, parsed_message)
+
+    message.value.Clear()
+    self.assertEqual(
+        json_format.MessageToJson(message, True),
+        '{\n'
+        '  "value": ""\n'
+        '}')
     self.CheckParseBack(message, parsed_message)
 
   def testWrapperMessage(self):
@@ -922,17 +929,18 @@ class JsonFormatTest(JsonFormatBase):
     text = '{"value": "10000-01-01T00:00:00.00Z"}'
     self.assertRaisesRegexp(
         json_format.ParseError,
+        'Failed to parse value field: '
         'time data \'10000-01-01T00:00:00\' does not match'
         ' format \'%Y-%m-%dT%H:%M:%S\'.',
         json_format.Parse, text, message)
     text = '{"value": "1970-01-01T00:00:00.0123456789012Z"}'
     self.assertRaisesRegexp(
-        well_known_types.ParseError,
+        json_format.ParseError,
         'nanos 0123456789012 more than 9 fractional digits.',
         json_format.Parse, text, message)
     text = '{"value": "1972-01-01T01:00:00.01+08"}'
     self.assertRaisesRegexp(
-        well_known_types.ParseError,
+        json_format.ParseError,
         (r'Invalid timezone offset value: \+08.'),
         json_format.Parse, text, message)
     # Time smaller than minimum time.

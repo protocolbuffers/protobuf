@@ -263,7 +263,7 @@ def _ModifyClass(class_object, testcases, naming_type):
       'Cannot add parameters to %s,'
       ' which already has parameterized methods.' % (class_object,))
   class_object._id_suffix = id_suffix = {}
-  # We change the size of __dict__ while we iterate over it, 
+  # We change the size of __dict__ while we iterate over it,
   # which Python 3.x will complain about, so use copy().
   for name, obj in class_object.__dict__.copy().items():
     if (name.startswith(unittest.TestLoader.testMethodPrefix)

@@ -55,7 +55,7 @@ message TestOptimizedForSize {
 message TestRequiredOptimizedForSize {
   required int32 x = 1;
 }
- 
+
 message TestOptionalOptimizedForSize {
   optional TestRequiredOptimizedForSize o = 1;
 }

@@ -183,7 +183,7 @@ namespace Google.Protobuf
                     {
                         return f.Accessor.HasValue(message);
                     }
-                    else 
+                    else
                     {
                         return true;
                     }

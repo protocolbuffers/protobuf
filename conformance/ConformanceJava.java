@@ -57,7 +57,7 @@ class ConformanceJava {
     buf[3] = (byte)(val >> 24);
     writeToStdout(buf);
   }
-  
+
   private enum BinaryDecoderType {
     BTYE_STRING_DECODER,
     BYTE_ARRAY_DECODER,
@@ -69,11 +69,11 @@ class ConformanceJava {
   }
 
   private static class BinaryDecoder <MessageType extends AbstractMessage> {
-    public MessageType decode (ByteString bytes, BinaryDecoderType type, 
+    public MessageType decode (ByteString bytes, BinaryDecoderType type,
         Parser <MessageType> parser, ExtensionRegistry extensions)
       throws InvalidProtocolBufferException {
       switch (type) {
-        case BTYE_STRING_DECODER: 
+        case BTYE_STRING_DECODER:
           return parser.parseFrom(bytes, extensions);
         case BYTE_ARRAY_DECODER:
           return parser.parseFrom(bytes.toByteArray(), extensions);
@@ -94,7 +94,7 @@ class ConformanceJava {
           } catch (InvalidProtocolBufferException e) {
             throw e;
           }
-        } 
+        }
         case DIRECT_BYTE_BUFFER_DECODER: {
           ByteBuffer buffer = ByteBuffer.allocateDirect(bytes.size());
           bytes.copyTo(buffer);
@@ -135,7 +135,7 @@ class ConformanceJava {
     ArrayList <MessageType> messages = new ArrayList <MessageType> ();
     ArrayList <InvalidProtocolBufferException> exceptions =
         new ArrayList <InvalidProtocolBufferException>();
-    
+
     for (int i = 0; i < BinaryDecoderType.values().length; i++) {
       messages.add(null);
       exceptions.add(null);
@@ -249,13 +249,30 @@ class ConformanceJava {
         break;
       }
       case TEXT_PAYLOAD: {
-        try {
-          TestMessagesProto3.TestAllTypesProto3.Builder builder =
-              TestMessagesProto3.TestAllTypesProto3.newBuilder();
-          TextFormat.merge(request.getTextPayload(), builder);
-          testMessage = builder.build();
-        } catch (TextFormat.ParseException e) {
-          return Conformance.ConformanceResponse.newBuilder().setParseError(e.getMessage()).build();
+        if (isProto3) {
+          try {
+            TestMessagesProto3.TestAllTypesProto3.Builder builder =
+                TestMessagesProto3.TestAllTypesProto3.newBuilder();
+            TextFormat.merge(request.getTextPayload(), builder);
+            testMessage = builder.build();
+          } catch (TextFormat.ParseException e) {
+              return Conformance.ConformanceResponse.newBuilder()
+                  .setParseError(e.getMessage())
+                  .build();
+          }
+        } else if (isProto2) {
+          try {
+            TestMessagesProto2.TestAllTypesProto2.Builder builder =
+                TestMessagesProto2.TestAllTypesProto2.newBuilder();
+            TextFormat.merge(request.getTextPayload(), builder);
+            testMessage = builder.build();
+          } catch (TextFormat.ParseException e) {
+              return Conformance.ConformanceResponse.newBuilder()
+                  .setParseError(e.getMessage())
+                  .build();
+          }
+        } else {
+          throw new RuntimeException("Protobuf request doesn't have specific payload type.");
         }
         break;
       }
@@ -273,7 +290,7 @@ class ConformanceJava {
         throw new RuntimeException("Unspecified output format.");
 
       case PROTOBUF: {
-        ByteString MessageString = testMessage.toByteString(); 
+        ByteString MessageString = testMessage.toByteString();
         return Conformance.ConformanceResponse.newBuilder().setProtobufPayload(MessageString).build();
       }
 

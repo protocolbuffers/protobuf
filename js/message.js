@@ -183,9 +183,6 @@ goog.define('jspb.Message.GENERATE_TO_OBJECT', true);
  *     calling fromObject. Enabling this might disable the JSCompiler's ability
  *     to dead code eliminate fields used in protocol buffers that are never
  *     used in an application.
- *     NOTE: By default no protos actually have a fromObject method. You need to
- *     add the jspb.generate_from_object options to the proto definition to
- *     activate the feature.
  *     By default this is enabled for test code only.
  */
 goog.define('jspb.Message.GENERATE_FROM_OBJECT', !goog.DISALLOW_TEST_ONLY_CODE);
@@ -703,20 +700,7 @@ jspb.Message.getField = function(msg, fieldNumber) {
  * @protected
  */
 jspb.Message.getRepeatedField = function(msg, fieldNumber) {
-  if (fieldNumber < msg.pivot_) {
-    var index = jspb.Message.getIndex_(msg, fieldNumber);
-    var val = msg.array[index];
-    if (val === jspb.Message.EMPTY_LIST_SENTINEL_) {
-      return msg.array[index] = [];
-    }
-    return val;
-  }
-
-  var val = msg.extensionObject_[fieldNumber];
-  if (val === jspb.Message.EMPTY_LIST_SENTINEL_) {
-    return msg.extensionObject_[fieldNumber] = [];
-  }
-  return val;
+  return /** @type {!Array} */ (jspb.Message.getField(msg, fieldNumber));
 };
 
 

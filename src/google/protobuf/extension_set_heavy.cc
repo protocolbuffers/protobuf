@@ -309,10 +309,6 @@ bool DescriptorPoolExtensionFinder::Find(int number, ExtensionInfo* output) {
       GOOGLE_CHECK(output->message_info.prototype != nullptr)
           << "Extension factory's GetPrototype() returned NULL for extension: "
           << extension->full_name();
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-      output->message_info.parse_func =
-          output->message_info.prototype->_ParseFunc();
-#endif
     } else if (extension->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
       output->enum_validity_check.func = ValidateEnumUsingDescriptor;
       output->enum_validity_check.arg = extension->enum_type();
@@ -329,15 +325,14 @@ bool ExtensionSet::FindExtension(int wire_type, uint32 field,
                                  const internal::ParseContext* ctx,
                                  ExtensionInfo* extension,
                                  bool* was_packed_on_wire) {
-  if (ctx->extra_parse_data().pool == nullptr) {
+  if (ctx->data().pool == nullptr) {
     GeneratedExtensionFinder finder(containing_type);
     if (!FindExtensionInfoFromFieldNumber(wire_type, field, &finder, extension,
                                           was_packed_on_wire)) {
       return false;
     }
   } else {
-    DescriptorPoolExtensionFinder finder(ctx->extra_parse_data().pool,
-                                         ctx->extra_parse_data().factory,
+    DescriptorPoolExtensionFinder finder(ctx->data().pool, ctx->data().factory,
                                          containing_type->GetDescriptor());
     if (!FindExtensionInfoFromFieldNumber(wire_type, field, &finder, extension,
                                           was_packed_on_wire)) {
@@ -347,9 +342,8 @@ bool ExtensionSet::FindExtension(int wire_type, uint32 field,
   return true;
 }
 
-std::pair<const char*, bool> ExtensionSet::ParseField(
-    uint64 tag, ParseClosure parent, const char* begin, const char* end,
-    const Message* containing_type,
+const char* ExtensionSet::ParseField(
+    uint64 tag, const char* ptr, const Message* containing_type,
     internal::InternalMetadataWithArena* metadata,
     internal::ParseContext* ctx) {
   int number = tag >> 3;
@@ -357,20 +351,26 @@ std::pair<const char*, bool> ExtensionSet::ParseField(
   ExtensionInfo extension;
   if (!FindExtension(tag & 7, number, containing_type, ctx, &extension,
                      &was_packed_on_wire)) {
-    return UnknownFieldParse(tag, parent, begin, end,
-                             metadata->mutable_unknown_fields(), ctx);
+    return UnknownFieldParse(tag, metadata->mutable_unknown_fields(), ptr, ctx);
   }
   return ParseFieldWithExtensionInfo(number, was_packed_on_wire, extension,
-                                     metadata, parent, begin, end, ctx);
+                                     metadata, ptr, ctx);
 }
 
-std::pair<const char*, bool> ExtensionSet::ParseFieldMaybeLazily(
-    uint64 tag, ParseClosure parent, const char* begin, const char* end,
-    const Message* containing_type,
+const char* ExtensionSet::ParseFieldMaybeLazily(
+    uint64 tag, const char* ptr, const Message* containing_type,
     internal::InternalMetadataWithArena* metadata,
     internal::ParseContext* ctx) {
-  return ParseField(tag, parent, begin, end, containing_type, metadata, ctx);
+  return ParseField(tag, ptr, containing_type, metadata, ctx);
 }
+
+const char* ExtensionSet::ParseMessageSetItem(
+    const char* ptr, const Message* containing_type,
+    internal::InternalMetadataWithArena* metadata,
+    internal::ParseContext* ctx) {
+  return ParseMessageSetItemTmpl(ptr, containing_type, metadata, ctx);
+}
+
 #endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 
 bool ExtensionSet::ParseField(uint32 tag, io::CodedInputStream* input,
@@ -387,83 +387,6 @@ bool ExtensionSet::ParseField(uint32 tag, io::CodedInputStream* input,
     return ParseField(tag, input, &finder, &skipper);
   }
 }
-
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-const char* ExtensionSet::ParseMessageSetItem(
-    ParseClosure parent, const char* begin, const char* end,
-    const Message* containing_type,
-    internal::InternalMetadataWithArena* metadata,
-    internal::ParseContext* ctx) {
-  auto ptr = begin;
-  while (ptr < end) {
-    uint32 tag = *ptr++;
-    if (tag == WireFormatLite::kMessageSetTypeIdTag) {
-      uint32 type_id;
-      ptr = io::Parse32(ptr, &type_id);
-      GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-
-      if (ctx->extra_parse_data().payload.empty()) {
-        tag = *ptr++;
-        GOOGLE_PROTOBUF_PARSER_ASSERT(tag ==
-                                       WireFormatLite::kMessageSetMessageTag);
-        auto res =
-            ParseFieldMaybeLazily(static_cast<uint64>(type_id) * 8 + 2, parent,
-                                  ptr, end, containing_type, metadata, ctx);
-        ptr = res.first;
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr != nullptr);
-        if (res.second) break;
-      } else {
-        ExtensionInfo extension;
-        bool was_packed_on_wire;
-        if (!FindExtension(2, type_id, containing_type, ctx, &extension,
-                           &was_packed_on_wire)) {
-          metadata->mutable_unknown_fields()->AddLengthDelimited(
-              type_id, ctx->extra_parse_data().payload);
-          continue;
-        }
-        MessageLite* value =
-            extension.is_repeated
-                ? AddMessage(type_id, WireFormatLite::TYPE_MESSAGE,
-                             *extension.message_info.prototype,
-                             extension.descriptor)
-                : MutableMessage(type_id, WireFormatLite::TYPE_MESSAGE,
-                                 *extension.message_info.prototype,
-                                 extension.descriptor);
-        ParseClosure parser = {extension.message_info.parse_func, value};
-        StringPiece chunk(ctx->extra_parse_data().payload);
-        bool ok = ctx->ParseExactRange(parser, chunk.begin(), chunk.end());
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ok);
-      }
-    } else if (tag == WireFormatLite::kMessageSetItemEndTag) {
-      ctx->EndGroup(tag);
-      break;
-    } else if (tag == WireFormatLite::kMessageSetMessageTag) {
-      uint32 size;
-      ptr = io::Parse32(ptr, &size);
-      GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-      ParseClosure child = {internal::StringParser,
-                            &ctx->extra_parse_data().payload};
-      if (size > end - ptr + internal::ParseContext::kSlopBytes) {
-        ctx->extra_parse_data().payload.clear();
-        return ctx->StoreAndTailCall(ptr, end, parent, child, size);
-      } else {
-        ctx->extra_parse_data().payload.assign(ptr, size);
-        ptr += size;
-      }
-    } else {
-      ptr--;
-      ptr = io::Parse32(ptr, &tag);
-      GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-      auto res =
-          ParseField(tag, parent, ptr, end, containing_type, metadata, ctx);
-      ptr = res.first;
-      GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-      if (res.second) break;
-    }
-  }
-  return ptr;
-}
-#endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 
 bool ExtensionSet::ParseMessageSet(io::CodedInputStream* input,
                                    const Message* containing_type,

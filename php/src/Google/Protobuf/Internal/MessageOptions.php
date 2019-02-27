@@ -70,7 +70,7 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      *     repeated MapFieldEntry map_field = 1;
      * Implementations may choose not to generate the map_entry=true message, but
      * use a native map in the target language to hold the keys and values.
-     * The reflection APIs in such implementions still need to work as
+     * The reflection APIs in such implementations still need to work as
      * if the field is a repeated message field.
      * NOTE: Do not set the option in .proto files. Always use the maps syntax
      * instead. The option should only be implicitly set by the proto compiler
@@ -133,7 +133,7 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      *               repeated MapFieldEntry map_field = 1;
      *           Implementations may choose not to generate the map_entry=true message, but
      *           use a native map in the target language to hold the keys and values.
-     *           The reflection APIs in such implementions still need to work as
+     *           The reflection APIs in such implementations still need to work as
      *           if the field is a repeated message field.
      *           NOTE: Do not set the option in .proto files. Always use the maps syntax
      *           instead. The option should only be implicitly set by the proto compiler
@@ -295,7 +295,7 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      *     repeated MapFieldEntry map_field = 1;
      * Implementations may choose not to generate the map_entry=true message, but
      * use a native map in the target language to hold the keys and values.
-     * The reflection APIs in such implementions still need to work as
+     * The reflection APIs in such implementations still need to work as
      * if the field is a repeated message field.
      * NOTE: Do not set the option in .proto files. Always use the maps syntax
      * instead. The option should only be implicitly set by the proto compiler
@@ -323,7 +323,7 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      *     repeated MapFieldEntry map_field = 1;
      * Implementations may choose not to generate the map_entry=true message, but
      * use a native map in the target language to hold the keys and values.
-     * The reflection APIs in such implementions still need to work as
+     * The reflection APIs in such implementations still need to work as
      * if the field is a repeated message field.
      * NOTE: Do not set the option in .proto files. Always use the maps syntax
      * instead. The option should only be implicitly set by the proto compiler

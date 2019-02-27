@@ -56,7 +56,7 @@ MapFieldGenerator::MapFieldGenerator(const FieldDescriptor* descriptor,
 MapFieldGenerator::~MapFieldGenerator() {
 }
 
-void MapFieldGenerator::GenerateMembers(io::Printer* printer) {   
+void MapFieldGenerator::GenerateMembers(io::Printer* printer) {
   const FieldDescriptor* key_descriptor =
       descriptor_->message_type()->FindFieldByName("key");
   const FieldDescriptor* value_descriptor =
