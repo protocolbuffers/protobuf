@@ -25,6 +25,7 @@ make_tmp_dir:
 	mkdir -p 'tmp/java/src/main/java'
 	touch make_tmp_dir
 
+
 # We have to cd to $(srcdir) before executing protoc because $(protoc_inputs) is
 # relative to srcdir, which may not be the same as the current directory when
 # building out-of-tree.
