@@ -76,7 +76,7 @@ const char* kForbiddenWordList[] = {
   "class",
 };
 
-const std::set<std::string> kReservedNames = {
+const std::unordered_set<string> kReservedNames = {
   "abstract", "assert", "boolean", "break", "byte", "case", "catch", "char",
   "class", "const", "continue", "default", "do", "double", "else", "enum",
   "extends", "final", "finally", "float", "for", "goto", "if", "implements",
@@ -220,8 +220,8 @@ string UnderscoresToCamelCase(const MethodDescriptor* method) {
   return UnderscoresToCamelCase(method->name(), false);
 }
 
-std::string UnderscoresToCamelCaseCheckReserved(const FieldDescriptor* field) {
-  std::string name = UnderscoresToCamelCase(field);
+string UnderscoresToCamelCaseCheckReserved(const FieldDescriptor* field) {
+  string name = UnderscoresToCamelCase(field);
   if (kReservedNames.find(name) != kReservedNames.end()) {
     return name + "_";
   }
