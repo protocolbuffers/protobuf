@@ -732,6 +732,16 @@ module CommonTests
     assert_raise(NoMethodError) { m.foo_XXXX }
     assert_raise(NoMethodError) { m.foo_XXXXX }
     assert_raise(NoMethodError) { m.foo_XXXXXX }
+
+    m = proto_module::Enumer.new({optional_enum: :B})
+    assert_equal :B, m.optional_enum
+    assert_raise(NoMethodError) { m.optional_enum_ }
+    assert_raise(NoMethodError) { m.optional_enum_X }
+    assert_raise(NoMethodError) { m.optional_enum_XX }
+    assert_raise(NoMethodError) { m.optional_enum_XXX }
+    assert_raise(NoMethodError) { m.optional_enum_XXXX }
+    assert_raise(NoMethodError) { m.optional_enum_XXXXX }
+    assert_raise(NoMethodError) { m.optional_enum_XXXXXX }
   end
 
   def test_enum_getter

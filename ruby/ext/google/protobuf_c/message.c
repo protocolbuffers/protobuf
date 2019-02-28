@@ -158,7 +158,9 @@ static int extract_method_call(VALUE method_name, MessageHeader* self,
 			                                   &test_f, &test_o);
 
   // Look for enum accessor of the form <enum_name>_const
-  if (!has_field && accessor_type == METHOD_GETTER && name_len > 6) {
+  if (!has_field && accessor_type == METHOD_GETTER &&
+      name_len > 6 && strncmp(name + name_len - 6, "_const", 6) == 0) {
+
     // Find enum field name
     char enum_name[name_len - 5];
     strncpy(enum_name, name, name_len - 6);
