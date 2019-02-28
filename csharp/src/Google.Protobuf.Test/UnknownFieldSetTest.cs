@@ -172,5 +172,23 @@ namespace Google.Protobuf
             assertEmpty(discardingParser1.ParseFrom(new MemoryStream(data)));
             assertEmpty(discardingParser2.ParseFrom(new MemoryStream(data)));
         }
+
+        [Test]
+        public void TestReadInvalidWireTypeThrowsInvalidProtocolBufferException()
+        {
+            MemoryStream ms = new MemoryStream();
+            CodedOutputStream output = new CodedOutputStream(ms);
+
+            uint tag = WireFormat.MakeTag(1, (WireFormat.WireType)6);
+            output.WriteRawVarint32(tag);
+            output.WriteLength(-1);
+            output.Flush();
+            ms.Position = 0;
+
+            CodedInputStream input = new CodedInputStream(ms);
+            Assert.AreEqual(tag, input.ReadTag());
+
+            Assert.Throws<InvalidProtocolBufferException>(() => UnknownFieldSet.MergeFieldFrom(null, input));
+        }
     }
 }

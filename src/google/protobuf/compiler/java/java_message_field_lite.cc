@@ -119,7 +119,7 @@ ImmutableMessageFieldLiteGenerator::ImmutableMessageFieldLiteGenerator(
 ImmutableMessageFieldLiteGenerator::~ImmutableMessageFieldLiteGenerator() {}
 
 int ImmutableMessageFieldLiteGenerator::GetNumBitsForMessage() const {
-  return 1;
+  return SupportFieldPresence(descriptor_->file()) ? 1 : 0;
 }
 
 void ImmutableMessageFieldLiteGenerator::

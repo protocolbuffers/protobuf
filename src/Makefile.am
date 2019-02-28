@@ -200,6 +200,7 @@ libprotobuf_lite_la_SOURCES =                                  \
   google/protobuf/stubs/strutil.cc                             \
   google/protobuf/stubs/time.cc                                \
   google/protobuf/stubs/time.h                                 \
+  google/protobuf/any_lite.cc                                  \
   google/protobuf/arena.cc                                     \
   google/protobuf/extension_set.cc                             \
   google/protobuf/generated_message_util.cc                    \

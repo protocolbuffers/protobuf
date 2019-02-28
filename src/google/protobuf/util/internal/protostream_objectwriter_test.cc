@@ -190,10 +190,10 @@ class ProtoStreamObjectWriterTest : public BaseProtoStreamObjectWriterTest {
   virtual ~ProtoStreamObjectWriterTest() {}
 };
 
-INSTANTIATE_TEST_CASE_P(DifferentTypeInfoSourceTest,
-                        ProtoStreamObjectWriterTest,
-                        ::testing::Values(
-                            testing::USE_TYPE_RESOLVER));
+INSTANTIATE_TEST_SUITE_P(DifferentTypeInfoSourceTest,
+                         ProtoStreamObjectWriterTest,
+                         ::testing::Values(
+                             testing::USE_TYPE_RESOLVER));
 
 TEST_P(ProtoStreamObjectWriterTest, EmptyObject) {
   Book empty;
@@ -1198,10 +1198,10 @@ class ProtoStreamObjectWriterTimestampDurationTest
   }
 };
 
-INSTANTIATE_TEST_CASE_P(DifferentTypeInfoSourceTest,
-                        ProtoStreamObjectWriterTimestampDurationTest,
-                        ::testing::Values(
-                            testing::USE_TYPE_RESOLVER));
+INSTANTIATE_TEST_SUITE_P(DifferentTypeInfoSourceTest,
+                         ProtoStreamObjectWriterTimestampDurationTest,
+                         ::testing::Values(
+                             testing::USE_TYPE_RESOLVER));
 
 TEST_P(ProtoStreamObjectWriterTimestampDurationTest, ParseTimestamp) {
   TimestampDuration timestamp;
@@ -1594,10 +1594,10 @@ class ProtoStreamObjectWriterStructTest
   }
 };
 
-INSTANTIATE_TEST_CASE_P(DifferentTypeInfoSourceTest,
-                        ProtoStreamObjectWriterStructTest,
-                        ::testing::Values(
-                            testing::USE_TYPE_RESOLVER));
+INSTANTIATE_TEST_SUITE_P(DifferentTypeInfoSourceTest,
+                         ProtoStreamObjectWriterStructTest,
+                         ::testing::Values(
+                             testing::USE_TYPE_RESOLVER));
 
 // TODO(skarvaje): Write tests for failure cases.
 TEST_P(ProtoStreamObjectWriterStructTest, StructRenderSuccess) {
@@ -1746,10 +1746,10 @@ class ProtoStreamObjectWriterMapTest : public BaseProtoStreamObjectWriterTest {
   }
 };
 
-INSTANTIATE_TEST_CASE_P(DifferentTypeInfoSourceTest,
-                        ProtoStreamObjectWriterMapTest,
-                        ::testing::Values(
-                            testing::USE_TYPE_RESOLVER));
+INSTANTIATE_TEST_SUITE_P(DifferentTypeInfoSourceTest,
+                         ProtoStreamObjectWriterMapTest,
+                         ::testing::Values(
+                             testing::USE_TYPE_RESOLVER));
 
 TEST_P(ProtoStreamObjectWriterMapTest, MapShouldNotAcceptList) {
   MapIn mm;
@@ -1843,10 +1843,10 @@ class ProtoStreamObjectWriterAnyTest : public BaseProtoStreamObjectWriterTest {
   }
 };
 
-INSTANTIATE_TEST_CASE_P(DifferentTypeInfoSourceTest,
-                        ProtoStreamObjectWriterAnyTest,
-                        ::testing::Values(
-                            testing::USE_TYPE_RESOLVER));
+INSTANTIATE_TEST_SUITE_P(DifferentTypeInfoSourceTest,
+                         ProtoStreamObjectWriterAnyTest,
+                         ::testing::Values(
+                             testing::USE_TYPE_RESOLVER));
 
 TEST_P(ProtoStreamObjectWriterAnyTest, AnyRenderSuccess) {
   AnyOut any;
@@ -2484,10 +2484,10 @@ class ProtoStreamObjectWriterFieldMaskTest
   }
 };
 
-INSTANTIATE_TEST_CASE_P(DifferentTypeInfoSourceTest,
-                        ProtoStreamObjectWriterFieldMaskTest,
-                        ::testing::Values(
-                            testing::USE_TYPE_RESOLVER));
+INSTANTIATE_TEST_SUITE_P(DifferentTypeInfoSourceTest,
+                         ProtoStreamObjectWriterFieldMaskTest,
+                         ::testing::Values(
+                             testing::USE_TYPE_RESOLVER));
 
 TEST_P(ProtoStreamObjectWriterFieldMaskTest, SimpleFieldMaskTest) {
   FieldMaskTest expected;
@@ -2737,10 +2737,10 @@ class ProtoStreamObjectWriterWrappersTest
   }
 };
 
-INSTANTIATE_TEST_CASE_P(DifferentTypeInfoSourceTest,
-                        ProtoStreamObjectWriterWrappersTest,
-                        ::testing::Values(
-                            testing::USE_TYPE_RESOLVER));
+INSTANTIATE_TEST_SUITE_P(DifferentTypeInfoSourceTest,
+                         ProtoStreamObjectWriterWrappersTest,
+                         ::testing::Values(
+                             testing::USE_TYPE_RESOLVER));
 
 TEST_P(ProtoStreamObjectWriterWrappersTest, WrapperAcceptsNull) {
   Int32Wrapper wrapper;
@@ -2760,10 +2760,10 @@ class ProtoStreamObjectWriterOneOfsTest
   }
 };
 
-INSTANTIATE_TEST_CASE_P(DifferentTypeInfoSourceTest,
-                        ProtoStreamObjectWriterOneOfsTest,
-                        ::testing::Values(
-                            testing::USE_TYPE_RESOLVER));
+INSTANTIATE_TEST_SUITE_P(DifferentTypeInfoSourceTest,
+                         ProtoStreamObjectWriterOneOfsTest,
+                         ::testing::Values(
+                             testing::USE_TYPE_RESOLVER));
 
 TEST_P(ProtoStreamObjectWriterOneOfsTest,
        MultipleOneofsFailForPrimitiveTypesTest) {

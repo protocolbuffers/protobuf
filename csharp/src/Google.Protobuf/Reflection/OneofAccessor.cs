@@ -45,7 +45,7 @@ namespace Google.Protobuf.Reflection
         private readonly Action<IMessage> clearDelegate;
         private OneofDescriptor descriptor;
 
-        internal OneofAccessor(PropertyInfo caseProperty, MethodInfo clearMethod, OneofDescriptor descriptor) 
+        internal OneofAccessor(PropertyInfo caseProperty, MethodInfo clearMethod, OneofDescriptor descriptor)
         {
             if (!caseProperty.CanRead)
             {

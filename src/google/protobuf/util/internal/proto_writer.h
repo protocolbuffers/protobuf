@@ -154,6 +154,8 @@ class PROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
     ignore_unknown_fields_ = ignore_unknown_fields;
   }
 
+  bool ignore_unknown_fields() { return ignore_unknown_fields_; }
+
   void set_ignore_unknown_enum_values(bool ignore_unknown_enum_values) {
     ignore_unknown_enum_values_ = ignore_unknown_enum_values;
   }

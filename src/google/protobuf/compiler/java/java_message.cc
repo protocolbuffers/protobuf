@@ -66,11 +66,6 @@ using internal::WireFormat;
 using internal::WireFormatLite;
 
 namespace {
-bool GenerateHasBits(const Descriptor* descriptor) {
-  return SupportFieldPresence(descriptor->file()) ||
-      HasRepeatedFields(descriptor);
-}
-
 string MapValueImmutableClassdName(const Descriptor* descriptor,
                                    ClassNameResolver* name_resolver) {
   const FieldDescriptor* value_field = descriptor->FindFieldByName("value");
@@ -397,18 +392,16 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
     messageGenerator.Generate(printer);
   }
 
-  if (GenerateHasBits(descriptor_)) {
-    // Integers for bit fields.
-    int totalBits = 0;
-    for (int i = 0; i < descriptor_->field_count(); i++) {
-      totalBits += field_generators_.get(descriptor_->field(i))
-          .GetNumBitsForMessage();
-    }
-    int totalInts = (totalBits + 31) / 32;
-    for (int i = 0; i < totalInts; i++) {
-      printer->Print("private int $bit_field_name$;\n",
-        "bit_field_name", GetBitFieldName(i));
-    }
+  // Integers for bit fields.
+  int totalBits = 0;
+  for (int i = 0; i < descriptor_->field_count(); i++) {
+    totalBits +=
+        field_generators_.get(descriptor_->field(i)).GetNumBitsForMessage();
+  }
+  int totalInts = (totalBits + 31) / 32;
+  for (int i = 0; i < totalInts; i++) {
+    printer->Print("private int $bit_field_name$;\n", "bit_field_name",
+                   GetBitFieldName(i));
   }
 
   // oneof
@@ -1446,12 +1439,16 @@ void ImmutableMessageGenerator::GenerateAnyMethods(io::Printer* printer) {
     "public <T extends com.google.protobuf.Message> T unpack(\n"
     "    java.lang.Class<T> clazz)\n"
     "    throws com.google.protobuf.InvalidProtocolBufferException {\n"
-    "  if (!is(clazz)) {\n"
+    "  boolean invalidClazz = false;\n"
+    "  if (cachedUnpackValue != null) {\n"
+    "    if (cachedUnpackValue.getClass() == clazz) {\n"
+    "      return (T) cachedUnpackValue;\n"
+    "    }\n"
+    "    invalidClazz = true;\n"
+    "  }\n"
+    "  if (invalidClazz || !is(clazz)) {\n"
     "    throw new com.google.protobuf.InvalidProtocolBufferException(\n"
     "        \"Type of the Any message does not match the given class.\");\n"
-    "  }\n"
-    "  if (cachedUnpackValue != null) {\n"
-    "    return (T) cachedUnpackValue;\n"
     "  }\n"
     "  T defaultInstance =\n"
     "      com.google.protobuf.Internal.getDefaultInstance(clazz);\n"
