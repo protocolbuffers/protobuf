@@ -804,30 +804,64 @@ class ReflectionTest(BaseTestCase):
   def testEnum_Value(self):
     self.assertEqual(unittest_pb2.FOREIGN_FOO,
                      unittest_pb2.ForeignEnum.Value('FOREIGN_FOO'))
+    self.assertEqual(unittest_pb2.FOREIGN_FOO,
+                     unittest_pb2.ForeignEnum.FOREIGN_FOO)
+
     self.assertEqual(unittest_pb2.FOREIGN_BAR,
                      unittest_pb2.ForeignEnum.Value('FOREIGN_BAR'))
+    self.assertEqual(unittest_pb2.FOREIGN_BAR,
+                     unittest_pb2.ForeignEnum.FOREIGN_BAR)
+
     self.assertEqual(unittest_pb2.FOREIGN_BAZ,
                      unittest_pb2.ForeignEnum.Value('FOREIGN_BAZ'))
+    self.assertEqual(unittest_pb2.FOREIGN_BAZ,
+                     unittest_pb2.ForeignEnum.FOREIGN_BAZ)
+
     self.assertRaises(ValueError,
                       unittest_pb2.ForeignEnum.Value, 'FO')
+    with self.assertRaises(AttributeError):
+      unittest_pb2.ForeignEnum.FO
 
     proto = unittest_pb2.TestAllTypes()
     self.assertEqual(proto.FOO,
                      proto.NestedEnum.Value('FOO'))
     self.assertEqual(proto.FOO,
+                     proto.NestedEnum.FOO)
+
+    self.assertEqual(proto.FOO,
                      unittest_pb2.TestAllTypes.NestedEnum.Value('FOO'))
+    self.assertEqual(proto.FOO,
+                     unittest_pb2.TestAllTypes.NestedEnum.FOO)
+
     self.assertEqual(proto.BAR,
                      proto.NestedEnum.Value('BAR'))
     self.assertEqual(proto.BAR,
+                     proto.NestedEnum.BAR)
+
+    self.assertEqual(proto.BAR,
                      unittest_pb2.TestAllTypes.NestedEnum.Value('BAR'))
+    self.assertEqual(proto.BAR,
+                     unittest_pb2.TestAllTypes.NestedEnum.BAR)
+
     self.assertEqual(proto.BAZ,
                      proto.NestedEnum.Value('BAZ'))
     self.assertEqual(proto.BAZ,
+                     proto.NestedEnum.BAZ)
+
+    self.assertEqual(proto.BAZ,
                      unittest_pb2.TestAllTypes.NestedEnum.Value('BAZ'))
+    self.assertEqual(proto.BAZ,
+                     unittest_pb2.TestAllTypes.NestedEnum.BAZ)
+
     self.assertRaises(ValueError,
                       proto.NestedEnum.Value, 'Foo')
+    with self.assertRaises(AttributeError):
+      proto.NestedEnum.Value.Foo
+
     self.assertRaises(ValueError,
                       unittest_pb2.TestAllTypes.NestedEnum.Value, 'Foo')
+    with self.assertRaises(AttributeError):
+      unittest_pb2.TestAllTypes.NestedEnum.Value.Foo
 
   def testEnum_KeysAndValues(self):
     self.assertEqual(['FOREIGN_FOO', 'FOREIGN_BAR', 'FOREIGN_BAZ'],
