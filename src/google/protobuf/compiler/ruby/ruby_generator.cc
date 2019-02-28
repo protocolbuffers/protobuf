@@ -416,43 +416,26 @@ int GeneratePackageModules(
     const FileDescriptor* file,
     google::protobuf::io::Printer* printer) {
   int levels = 0;
-  bool need_change_to_module = true;
+  bool need_change_to_module;
   std::string package_name;
 
-  // Determine the name to use in either format:
-  //   proto package:         one.two.three
-  //   option ruby_package:   One::Two::Three
   if (file->options().has_ruby_package()) {
     package_name = file->options().ruby_package();
-
-    // If :: is in the package use the Ruby formated name as-is
-    //    -> A::B::C
-    // otherwise, use the dot seperator
-    //    -> A.B.C
-    if (package_name.find("::") != std::string::npos) {
-      need_change_to_module = false;
-    } else {
-      GOOGLE_LOG(WARNING) << "ruby_package option should be in the form of:"
-                          << " 'A::B::C' and not 'A.B.C'";
-    }
+    need_change_to_module = false;
   } else {
     package_name = file->package();
+    need_change_to_module = true;
   }
 
-  // Use the appropriate delimter
-  string delimiter = need_change_to_module ? "." : "::";
-  int delimiter_size = need_change_to_module ? 1 : 2;
-
-  // Extract each module name and indent
   while (!package_name.empty()) {
-    size_t dot_index = package_name.find(delimiter);
+    size_t dot_index = package_name.find(".");
     string component;
     if (dot_index == string::npos) {
       component = package_name;
       package_name = "";
     } else {
       component = package_name.substr(0, dot_index);
-      package_name = package_name.substr(dot_index + delimiter_size);
+      package_name = package_name.substr(dot_index + 1);
     }
     if (need_change_to_module) {
       component = PackageToModule(component);

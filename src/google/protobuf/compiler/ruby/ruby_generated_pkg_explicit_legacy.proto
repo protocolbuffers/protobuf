@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package one.two.a_three.and;
-
-option ruby_package = "AA.BB.CC";
-
-message Four {
-  string another_string = 1;
-}
