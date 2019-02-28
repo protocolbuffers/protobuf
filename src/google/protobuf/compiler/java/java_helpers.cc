@@ -62,8 +62,6 @@ const char kThickSeparator[] =
 const char kThinSeparator[] =
   "// -------------------------------------------------------------------\n";
 
-const std::set<std::string> kReservedNames = { "default", "package" };
-
 namespace {
 
 const char* kDefaultPackage = "";
@@ -76,6 +74,16 @@ const char* kForbiddenWordList[] = {
   "cached_size", "serialized_size",
   // java.lang.Object:
   "class",
+};
+
+const std::set<std::string> kReservedNames = {
+  "abstract", "assert", "boolean", "break", "byte", "case", "catch", "char",
+  "class", "const", "continue", "default", "do", "double", "else", "enum",
+  "extends", "final", "finally", "float", "for", "goto", "if", "implements",
+  "import", "instanceof", "int", "interface", "long", "native", "new", "package",
+  "private", "protected", "public", "return", "short", "static", "strictfp", "super",
+  "switch", "synchronized", "this", "throw", "throws", "transient", "try", "void", 
+  "volatile", "while",
 };
 
 const int kDefaultLookUpStartFieldNumber = 40;
