@@ -1283,5 +1283,21 @@ module CommonTests
     assert_raise(NoMethodError) { m.as_value }
     assert_raise(NoMethodError) { m._as_value }
     assert_raise(NoMethodError) { m.oneof_string_as_value }
+
+    m = proto_module::Wrapper.new
+    m.string_as_value = 'you'
+    assert_equal 'you', m.string.value
+    assert_equal 'you', m.string_as_value
+    assert_raise(NoMethodError) { m.string_ }
+    assert_raise(NoMethodError) { m.string_X }
+    assert_raise(NoMethodError) { m.string_XX }
+    assert_raise(NoMethodError) { m.string_XXX }
+    assert_raise(NoMethodError) { m.string_XXXX }
+    assert_raise(NoMethodError) { m.string_XXXXX }
+    assert_raise(NoMethodError) { m.string_XXXXXX }
+    assert_raise(NoMethodError) { m.string_XXXXXXX }
+    assert_raise(NoMethodError) { m.string_XXXXXXXX }
+    assert_raise(NoMethodError) { m.string_XXXXXXXXX }
+    assert_raise(NoMethodError) { m.string_XXXXXXXXXX }
   end
 end

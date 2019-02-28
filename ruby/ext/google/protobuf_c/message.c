@@ -187,7 +187,7 @@ static int extract_method_call(VALUE method_name, MessageHeader* self,
   // Look for wrapper type accessor of the form <field_name>_as_value
   if (!has_field &&
       (accessor_type == METHOD_GETTER || accessor_type == METHOD_SETTER) &&
-      name_len > 9) {
+      name_len > 9 && strncmp(name + name_len - 9, "_as_value", 9) == 0) {
     // Find the field name
     char wrapper_field_name[name_len - 8];
     strncpy(wrapper_field_name, name, name_len - 9);
