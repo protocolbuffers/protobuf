@@ -607,6 +607,7 @@ php_EXTRA_DIST=                                                       \
   php/ext/google/protobuf/utf8.h                                      \
   php/generate_descriptor_protos.sh                                   \
   php/phpunit.xml                                                     \
+  php/release.sh                                                      \
   php/src/GPBMetadata/Google/Protobuf/Any.php                         \
   php/src/GPBMetadata/Google/Protobuf/Api.php                         \
   php/src/GPBMetadata/Google/Protobuf/Duration.php                    \
