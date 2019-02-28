@@ -76,6 +76,10 @@ function doTest(request) {
         response.setSkipped("JSON not supported.");
         return response;
 
+	  case conformance.ConformanceRequest.PayloadCase.TEXT_PAYLOAD:
+	    response.setSkipped("Text format not supported.");
+        return response;
+		
       case conformance.ConformanceRequest.PayloadCase.PAYLOAD_NOT_SET:
         response.setRuntimeError("Request didn't have payload");
         return response;

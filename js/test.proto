@@ -106,6 +106,13 @@ message OuterMessage {
   }
 }
 
+message MineField {
+  // document.cookie is a banned property in a couple of conformance check
+  // configs at Google. Verify that having a field called cookie doesn't confuse
+  // the compiler and break the build.
+  optional string cookie = 1;
+}
+
 message IsExtension {
   extend HasExtensions {
     optional IsExtension ext_field = 100;
@@ -261,7 +268,6 @@ message Int64Types {
 }
 
 message TestMapFieldsNoBinary {
-
   map<string, string> map_string_string = 1;
   map<string, int32> map_string_int32 = 2;
   map<string, int64> map_string_int64 = 3;
@@ -285,7 +291,6 @@ enum MapValueEnumNoBinary {
 }
 
 message MapValueMessageNoBinary {
-
   optional int32 foo = 1;
 }
 

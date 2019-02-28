@@ -55,6 +55,7 @@
 #include <iterator>
 #include <limits>
 #include <string>
+#include <type_traits>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/arena.h>
@@ -138,6 +139,9 @@ class RepeatedField final {
 
   const Element& operator[](int index) const { return Get(index); }
   Element& operator[](int index) { return *Mutable(index); }
+
+  const Element& at(int index) const;
+  Element& at(int index);
 
   void Set(int index, const Element& value);
   void Add(const Element& value);
@@ -412,6 +416,11 @@ struct TypeImplementsMergeBehavior< ::std::string> {
   typedef std::true_type type;
 };
 
+template <typename T>
+struct IsMovable
+    : std::integral_constant<bool, std::is_move_constructible<T>::value &&
+                                       std::is_move_assignable<T>::value> {};
+
 // This is the common base class for RepeatedPtrFields.  It deals only in void*
 // pointers.  Users should not use this interface directly.
 //
@@ -447,6 +456,11 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   int size() const;
 
   template <typename TypeHandler>
+  const typename TypeHandler::Type& at(int index) const;
+  template <typename TypeHandler>
+  typename TypeHandler::Type& at(int index);
+
+  template <typename TypeHandler>
   typename TypeHandler::Type* Mutable(int index);
   template <typename TypeHandler>
   void Delete(int index);
@@ -476,9 +490,10 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   inline void InternalSwap(RepeatedPtrFieldBase* other);
 
  protected:
-  template <typename TypeHandler>
-  void Add(typename TypeHandler::Type&& value,
-           typename std::enable_if<TypeHandler::Moveable>::type* dummy = NULL);
+  template <
+      typename TypeHandler,
+      typename std::enable_if<TypeHandler::Movable::value>::type* = nullptr>
+  void Add(typename TypeHandler::Type&& value);
 
   template <typename TypeHandler>
   void RemoveLast();
@@ -650,10 +665,13 @@ class GenericTypeHandler {
  public:
   typedef GenericType Type;
   typedef GenericType WeakType;
-  static const bool Moveable = false;
+  using Movable = IsMovable<GenericType>;
 
   static inline GenericType* New(Arena* arena) {
     return Arena::CreateMaybeMessage<Type>(arena);
+  }
+  static inline GenericType* New(Arena* arena, GenericType&& value) {
+    return Arena::Create<GenericType>(arena, std::move(value));
   }
   static inline GenericType* NewFromPrototype(const GenericType* prototype,
                                               Arena* arena = NULL);
@@ -739,8 +757,7 @@ class StringTypeHandler {
  public:
   typedef std::string Type;
   typedef std::string WeakType;
-  static const bool Moveable = std::is_move_constructible<Type>::value &&
-                               std::is_move_assignable<Type>::value;
+  using Movable = IsMovable<Type>;
 
   static inline std::string* New(Arena* arena) {
     return Arena::Create<std::string>(arena);
@@ -797,6 +814,9 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
 
   const Element& operator[](int index) const { return Get(index); }
   Element& operator[](int index) { return *Mutable(index); }
+
+  const Element& at(int index) const;
+  Element& at(int index);
 
   // Remove the last element in the array.
   // Ownership of the element is retained by the array.
@@ -1067,10 +1087,19 @@ RepeatedField<Element>::RepeatedField(Iter begin, const Iter& end)
     ptr_(NULL) {
   int reserve = internal::CalculateReserve(begin, end);
   if (reserve != -1) {
-    Reserve(reserve);
-    for (; begin != end; ++begin) {
-      AddAlreadyReserved(*begin);
+    if (reserve == 0) {
+      return;
     }
+
+    Reserve(reserve);
+    // TODO(ckennelly):  The compiler loses track of the buffer freshly
+    // allocated by Reserve() by the time we call elements, so it cannot
+    // guarantee that elements does not alias [begin(), end()).
+    //
+    // If restrict is available, annotating the pointer obtained from elements()
+    // causes this to lower to memcpy instead of memmove.
+    std::copy(begin, end, elements());
+    current_size_ = reserve;
   } else {
     for (; begin != end; ++begin) {
       Add(*begin);
@@ -1176,6 +1205,20 @@ template <typename Element>
 inline const Element& RepeatedField<Element>::Get(int index) const {
   GOOGLE_DCHECK_GE(index, 0);
   GOOGLE_DCHECK_LT(index, current_size_);
+  return elements()[index];
+}
+
+template <typename Element>
+inline const Element& RepeatedField<Element>::at(int index) const {
+  GOOGLE_CHECK_GE(index, 0);
+  GOOGLE_CHECK_LT(index, current_size_);
+  return elements()[index];
+}
+
+template <typename Element>
+inline Element& RepeatedField<Element>::at(int index) {
+  GOOGLE_CHECK_GE(index, 0);
+  GOOGLE_CHECK_LT(index, current_size_);
   return elements()[index];
 }
 
@@ -1516,6 +1559,21 @@ RepeatedPtrFieldBase::Get(int index) const {
 }
 
 template <typename TypeHandler>
+inline const typename TypeHandler::Type& RepeatedPtrFieldBase::at(
+    int index) const {
+  GOOGLE_CHECK_GE(index, 0);
+  GOOGLE_CHECK_LT(index, current_size_);
+  return *cast<TypeHandler>(rep_->elements[index]);
+}
+
+template <typename TypeHandler>
+inline typename TypeHandler::Type& RepeatedPtrFieldBase::at(int index) {
+  GOOGLE_CHECK_GE(index, 0);
+  GOOGLE_CHECK_LT(index, current_size_);
+  return *cast<TypeHandler>(rep_->elements[index]);
+}
+
+template <typename TypeHandler>
 inline typename TypeHandler::Type*
 RepeatedPtrFieldBase::Mutable(int index) {
   GOOGLE_DCHECK_GE(index, 0);
@@ -1546,10 +1604,9 @@ inline typename TypeHandler::Type* RepeatedPtrFieldBase::Add(
   return result;
 }
 
-template <typename TypeHandler>
-inline void RepeatedPtrFieldBase::Add(
-    typename TypeHandler::Type&& value,
-    typename std::enable_if<TypeHandler::Moveable>::type*) {
+template <typename TypeHandler,
+          typename std::enable_if<TypeHandler::Movable::value>::type*>
+inline void RepeatedPtrFieldBase::Add(typename TypeHandler::Type&& value) {
   if (rep_ != NULL && current_size_ < rep_->allocated_size) {
     *cast<TypeHandler>(rep_->elements[current_size_++]) = std::move(value);
     return;
@@ -1972,6 +2029,16 @@ inline int RepeatedPtrField<Element>::size() const {
 template <typename Element>
 inline const Element& RepeatedPtrField<Element>::Get(int index) const {
   return RepeatedPtrFieldBase::Get<TypeHandler>(index);
+}
+
+template <typename Element>
+inline const Element& RepeatedPtrField<Element>::at(int index) const {
+  return RepeatedPtrFieldBase::at<TypeHandler>(index);
+}
+
+template <typename Element>
+inline Element& RepeatedPtrField<Element>::at(int index) {
+  return RepeatedPtrFieldBase::at<TypeHandler>(index);
 }
 
 

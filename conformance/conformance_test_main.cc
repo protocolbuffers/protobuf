@@ -28,46 +28,13 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/implicit_weak_message.h>
+#include "binary_json_conformance_suite.h"
+#include "conformance_test.h"
+#include "text_format_conformance_suite.h"
 
-#include <google/protobuf/parse_context.h>
-#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
-#include <google/protobuf/stubs/once.h>
-#include <google/protobuf/wire_format_lite.h>
-
-#include <google/protobuf/port_def.inc>
-
-namespace google {
-namespace protobuf {
-namespace internal {
-
-bool ImplicitWeakMessage::MergePartialFromCodedStream(io::CodedInputStream* input) {
-  io::StringOutputStream string_stream(&data_);
-  io::CodedOutputStream coded_stream(&string_stream, false);
-  return WireFormatLite::SkipMessage(input, &coded_stream);
+int main(int argc, char *argv[]) {
+  google::protobuf::BinaryAndJsonConformanceSuite binary_and_json_suite;
+  google::protobuf::TextFormatConformanceTestSuite text_format_suite;
+  return google::protobuf::ForkPipeRunner::Run(
+      argc, argv, {&binary_and_json_suite, &text_format_suite});
 }
-
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-const char* ImplicitWeakMessage::_InternalParse(const char* ptr,
-                                                ParseContext* ctx) {
-  return ctx->AppendString(ptr, &data_);
-}
-#endif
-
-ExplicitlyConstructed<ImplicitWeakMessage>
-    implicit_weak_message_default_instance;
-internal::once_flag implicit_weak_message_once_init_;
-
-void InitImplicitWeakMessageDefaultInstance() {
-  implicit_weak_message_default_instance.DefaultConstruct();
-}
-
-const ImplicitWeakMessage* ImplicitWeakMessage::default_instance() {
-  internal::call_once(implicit_weak_message_once_init_,
-                      InitImplicitWeakMessageDefaultInstance);
-  return &implicit_weak_message_default_instance.get();
-}
-
-}  // namespace internal
-}  // namespace protobuf
-}  // namespace google

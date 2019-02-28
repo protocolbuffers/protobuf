@@ -61,11 +61,6 @@ namespace compiler {
 namespace java {
 
 namespace {
-bool GenerateHasBits(const Descriptor* descriptor) {
-  return SupportFieldPresence(descriptor->file()) ||
-      HasRepeatedFields(descriptor);
-}
-
 string MapValueImmutableClassdName(const Descriptor* descriptor,
                                    ClassNameResolver* name_resolver) {
   const FieldDescriptor* value_field = descriptor->FindFieldByName("value");
@@ -149,18 +144,16 @@ Generate(io::Printer* printer) {
       "\n");
   }
 
-  if (GenerateHasBits(descriptor_)) {
-    // Integers for bit fields.
-    int totalBits = 0;
-    for (int i = 0; i < descriptor_->field_count(); i++) {
-      totalBits += field_generators_.get(descriptor_->field(i))
-          .GetNumBitsForBuilder();
-    }
-    int totalInts = (totalBits + 31) / 32;
-    for (int i = 0; i < totalInts; i++) {
-      printer->Print("private int $bit_field_name$;\n",
-        "bit_field_name", GetBitFieldName(i));
-    }
+  // Integers for bit fields.
+  int totalBits = 0;
+  for (int i = 0; i < descriptor_->field_count(); i++) {
+    totalBits +=
+        field_generators_.get(descriptor_->field(i)).GetNumBitsForBuilder();
+  }
+  int totalInts = (totalBits + 31) / 32;
+  for (int i = 0; i < totalInts; i++) {
+    printer->Print("private int $bit_field_name$;\n", "bit_field_name",
+                   GetBitFieldName(i));
   }
 
   for (int i = 0; i < descriptor_->field_count(); i++) {
@@ -408,19 +401,17 @@ GenerateCommonBuilderMethods(io::Printer* printer) {
   int totalBuilderInts = (totalBuilderBits + 31) / 32;
   int totalMessageInts = (totalMessageBits + 31) / 32;
 
-  if (GenerateHasBits(descriptor_)) {
-    // Local vars for from and to bit fields to avoid accessing the builder and
-    // message over and over for these fields. Seems to provide a slight
-    // perforamance improvement in micro benchmark and this is also what proto1
-    // code does.
-    for (int i = 0; i < totalBuilderInts; i++) {
-      printer->Print("int from_$bit_field_name$ = $bit_field_name$;\n",
-        "bit_field_name", GetBitFieldName(i));
-    }
-    for (int i = 0; i < totalMessageInts; i++) {
-      printer->Print("int to_$bit_field_name$ = 0;\n",
-        "bit_field_name", GetBitFieldName(i));
-    }
+  // Local vars for from and to bit fields to avoid accessing the builder and
+  // message over and over for these fields. Seems to provide a slight
+  // perforamance improvement in micro benchmark and this is also what proto1
+  // code does.
+  for (int i = 0; i < totalBuilderInts; i++) {
+    printer->Print("int from_$bit_field_name$ = $bit_field_name$;\n",
+                   "bit_field_name", GetBitFieldName(i));
+  }
+  for (int i = 0; i < totalMessageInts; i++) {
+    printer->Print("int to_$bit_field_name$ = 0;\n", "bit_field_name",
+                   GetBitFieldName(i));
   }
 
   // Output generation code for each field.
@@ -428,12 +419,10 @@ GenerateCommonBuilderMethods(io::Printer* printer) {
     field_generators_.get(descriptor_->field(i)).GenerateBuildingCode(printer);
   }
 
-  if (GenerateHasBits(descriptor_)) {
-    // Copy the bit field results to the generated message
-    for (int i = 0; i < totalMessageInts; i++) {
-      printer->Print("result.$bit_field_name$ = to_$bit_field_name$;\n",
-        "bit_field_name", GetBitFieldName(i));
-    }
+  // Copy the bit field results to the generated message
+  for (int i = 0; i < totalMessageInts; i++) {
+    printer->Print("result.$bit_field_name$ = to_$bit_field_name$;\n",
+                   "bit_field_name", GetBitFieldName(i));
   }
 
   for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {

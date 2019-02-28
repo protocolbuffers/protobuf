@@ -321,19 +321,15 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   void Clear() override;
   bool IsInitialized() const override;
   void CheckTypeAndMergeFrom(const MessageLite& other) override;
-#if !GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
+#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
+  // Reflective parser
+  const char* _InternalParse(const char* ptr,
+                             internal::ParseContext* ctx) override;
+#else
   bool MergePartialFromCodedStream(io::CodedInputStream* input) override;
 #endif
   size_t ByteSizeLong() const override;
   void SerializeWithCachedSizes(io::CodedOutputStream* output) const override;
-
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  internal::ParseFunc _ParseFunc() const override { return _InternalParse; }
-
-  // Reflective parser
-  static const char* _InternalParse(const char* begin, const char* end,
-                                    void* object, internal::ParseContext* ctx);
-#endif
 
  private:
   // This is called only by the default implementation of ByteSize(), to

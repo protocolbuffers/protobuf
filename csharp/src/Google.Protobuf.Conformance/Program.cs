@@ -109,6 +109,10 @@ namespace Google.Protobuf.Conformance
                         }
                         break;
                     }
+					case ConformanceRequest.PayloadOneofCase.TextPayload:
+					{
+						return new ConformanceResponse { Skipped = "CSharp doesn't support text format" };
+					}
                     default:
                         throw new Exception("Unsupported request payload: " + request.PayloadCase);
                 }

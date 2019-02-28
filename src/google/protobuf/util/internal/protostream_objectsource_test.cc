@@ -290,10 +290,10 @@ class ProtostreamObjectSourceTest
   bool render_unknown_enum_values_;
 };
 
-INSTANTIATE_TEST_CASE_P(DifferentTypeInfoSourceTest,
-                        ProtostreamObjectSourceTest,
-                        ::testing::Values(
-                            testing::USE_TYPE_RESOLVER));
+INSTANTIATE_TEST_SUITE_P(DifferentTypeInfoSourceTest,
+                         ProtostreamObjectSourceTest,
+                         ::testing::Values(
+                             testing::USE_TYPE_RESOLVER));
 
 TEST_P(ProtostreamObjectSourceTest, EmptyMessage) {
   Book empty;
@@ -606,10 +606,10 @@ class ProtostreamObjectSourceMapsTest : public ProtostreamObjectSourceTest {
   }
 };
 
-INSTANTIATE_TEST_CASE_P(DifferentTypeInfoSourceTest,
-                        ProtostreamObjectSourceMapsTest,
-                        ::testing::Values(
-                            testing::USE_TYPE_RESOLVER));
+INSTANTIATE_TEST_SUITE_P(DifferentTypeInfoSourceTest,
+                         ProtostreamObjectSourceMapsTest,
+                         ::testing::Values(
+                             testing::USE_TYPE_RESOLVER));
 
 // Tests JSON map.
 //
@@ -748,10 +748,10 @@ class ProtostreamObjectSourceAnysTest : public ProtostreamObjectSourceTest {
   }
 };
 
-INSTANTIATE_TEST_CASE_P(DifferentTypeInfoSourceTest,
-                        ProtostreamObjectSourceAnysTest,
-                        ::testing::Values(
-                            testing::USE_TYPE_RESOLVER));
+INSTANTIATE_TEST_SUITE_P(DifferentTypeInfoSourceTest,
+                         ProtostreamObjectSourceAnysTest,
+                         ::testing::Values(
+                             testing::USE_TYPE_RESOLVER));
 
 // Tests JSON any support.
 //
@@ -984,10 +984,10 @@ class ProtostreamObjectSourceStructTest : public ProtostreamObjectSourceTest {
   }
 };
 
-INSTANTIATE_TEST_CASE_P(DifferentTypeInfoSourceTest,
-                        ProtostreamObjectSourceStructTest,
-                        ::testing::Values(
-                            testing::USE_TYPE_RESOLVER));
+INSTANTIATE_TEST_SUITE_P(DifferentTypeInfoSourceTest,
+                         ProtostreamObjectSourceStructTest,
+                         ::testing::Values(
+                             testing::USE_TYPE_RESOLVER));
 
 // Tests struct
 //
@@ -1030,10 +1030,10 @@ class ProtostreamObjectSourceFieldMaskTest
   }
 };
 
-INSTANTIATE_TEST_CASE_P(DifferentTypeInfoSourceTest,
-                        ProtostreamObjectSourceFieldMaskTest,
-                        ::testing::Values(
-                            testing::USE_TYPE_RESOLVER));
+INSTANTIATE_TEST_SUITE_P(DifferentTypeInfoSourceTest,
+                         ProtostreamObjectSourceFieldMaskTest,
+                         ::testing::Values(
+                             testing::USE_TYPE_RESOLVER));
 
 TEST_P(ProtostreamObjectSourceFieldMaskTest, FieldMaskRenderSuccess) {
   FieldMaskTest out;
@@ -1093,10 +1093,10 @@ class ProtostreamObjectSourceTimestampTest
   }
 };
 
-INSTANTIATE_TEST_CASE_P(DifferentTypeInfoSourceTest,
-                        ProtostreamObjectSourceTimestampTest,
-                        ::testing::Values(
-                            testing::USE_TYPE_RESOLVER));
+INSTANTIATE_TEST_SUITE_P(DifferentTypeInfoSourceTest,
+                         ProtostreamObjectSourceTimestampTest,
+                         ::testing::Values(
+                             testing::USE_TYPE_RESOLVER));
 
 TEST_P(ProtostreamObjectSourceTimestampTest, InvalidTimestampBelowMinTest) {
   TimestampDuration out;

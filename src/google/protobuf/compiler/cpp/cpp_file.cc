@@ -706,29 +706,34 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* printer) {
   // in the file.
 
   if (!message_generators_.empty()) {
-    format("::$proto_ns$::Metadata $file_level_metadata$[$1$];\n",
+    format("static ::$proto_ns$::Metadata $file_level_metadata$[$1$];\n",
            message_generators_.size());
   } else {
     format(
+        "static "
         "constexpr ::$proto_ns$::Metadata* $file_level_metadata$ = nullptr;\n");
   }
   if (!enum_generators_.empty()) {
     format(
+        "static "
         "const ::$proto_ns$::EnumDescriptor* "
         "$file_level_enum_descriptors$[$1$];\n",
         enum_generators_.size());
   } else {
     format(
+        "static "
         "constexpr ::$proto_ns$::EnumDescriptor const** "
         "$file_level_enum_descriptors$ = nullptr;\n");
   }
   if (HasGenericServices(file_, options_) && file_->service_count() > 0) {
     format(
+        "static "
         "const ::$proto_ns$::ServiceDescriptor* "
         "$file_level_service_descriptors$[$1$];\n",
         file_->service_count());
   } else {
     format(
+        "static "
         "constexpr ::$proto_ns$::ServiceDescriptor const** "
         "$file_level_service_descriptors$ = nullptr;\n");
   }
@@ -795,6 +800,7 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* printer) {
   // AssignDescriptors().  All later times, waits for the first call to
   // complete and then returns.
   format(
+      "static "
       "::$proto_ns$::internal::AssignDescriptorsTable $assign_desc_table$ = "
       "{\n"
       "  {}, $add_descriptors$, \"$filename$\", schemas,\n"
@@ -846,6 +852,7 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* printer) {
 
   // Now generate the AddDescriptors() function.
   format(
+      "static "
       "::$proto_ns$::internal::DescriptorTable $1$ = {\n"
       "  false, $init_defaults$, \n"
       "  $2$,\n",
@@ -1295,6 +1302,26 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* printer) {
 
   if (IsAnyMessage(file_, options_)) {
     IncludeFile("net/proto2/internal/any.h", printer);
+  } else {
+    // For Any support with lite protos, we need to friend AnyMetadata, so we
+    // forward-declare it here.
+    if (options_.opensource_runtime) {
+      format(
+          "namespace google {\n"
+          "namespace protobuf {\n"
+          "namespace internal {\n"
+          "class AnyMetadata;\n"
+          "}  // namespace internal\n"
+          "}  // namespace protobuf\n"
+          "}  // namespace google\n");
+    } else {
+      format(
+          "namespace google {\nnamespace protobuf {\n"
+          "namespace internal {\n"
+          "class AnyMetadata;\n"
+          "}  // namespace internal\n"
+          "}  // namespace protobuf\n}  // namespace google\n");
+    }
   }
 }
 

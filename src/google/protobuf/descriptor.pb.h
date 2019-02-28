@@ -32,6 +32,13 @@
 #include <google/protobuf/extension_set.h>  // IWYU pragma: export
 #include <google/protobuf/generated_enum_reflection.h>
 #include <google/protobuf/unknown_field_set.h>
+namespace google {
+namespace protobuf {
+namespace internal {
+class AnyMetadata;
+}  // namespace internal
+}  // namespace protobuf
+}  // namespace google
 // @@protoc_insertion_point(includes)
 #include <google/protobuf/port_def.inc>
 #define PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2fdescriptor_2eproto PROTOBUF_EXPORT
@@ -185,9 +192,9 @@ enum FieldDescriptorProto_Type {
   FieldDescriptorProto_Type_TYPE_SINT64 = 18
 };
 PROTOBUF_EXPORT bool FieldDescriptorProto_Type_IsValid(int value);
-const FieldDescriptorProto_Type FieldDescriptorProto_Type_Type_MIN = FieldDescriptorProto_Type_TYPE_DOUBLE;
-const FieldDescriptorProto_Type FieldDescriptorProto_Type_Type_MAX = FieldDescriptorProto_Type_TYPE_SINT64;
-const int FieldDescriptorProto_Type_Type_ARRAYSIZE = FieldDescriptorProto_Type_Type_MAX + 1;
+constexpr FieldDescriptorProto_Type FieldDescriptorProto_Type_Type_MIN = FieldDescriptorProto_Type_TYPE_DOUBLE;
+constexpr FieldDescriptorProto_Type FieldDescriptorProto_Type_Type_MAX = FieldDescriptorProto_Type_TYPE_SINT64;
+constexpr int FieldDescriptorProto_Type_Type_ARRAYSIZE = FieldDescriptorProto_Type_Type_MAX + 1;
 
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* FieldDescriptorProto_Type_descriptor();
 inline const ::std::string& FieldDescriptorProto_Type_Name(FieldDescriptorProto_Type value) {
@@ -205,9 +212,9 @@ enum FieldDescriptorProto_Label {
   FieldDescriptorProto_Label_LABEL_REPEATED = 3
 };
 PROTOBUF_EXPORT bool FieldDescriptorProto_Label_IsValid(int value);
-const FieldDescriptorProto_Label FieldDescriptorProto_Label_Label_MIN = FieldDescriptorProto_Label_LABEL_OPTIONAL;
-const FieldDescriptorProto_Label FieldDescriptorProto_Label_Label_MAX = FieldDescriptorProto_Label_LABEL_REPEATED;
-const int FieldDescriptorProto_Label_Label_ARRAYSIZE = FieldDescriptorProto_Label_Label_MAX + 1;
+constexpr FieldDescriptorProto_Label FieldDescriptorProto_Label_Label_MIN = FieldDescriptorProto_Label_LABEL_OPTIONAL;
+constexpr FieldDescriptorProto_Label FieldDescriptorProto_Label_Label_MAX = FieldDescriptorProto_Label_LABEL_REPEATED;
+constexpr int FieldDescriptorProto_Label_Label_ARRAYSIZE = FieldDescriptorProto_Label_Label_MAX + 1;
 
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* FieldDescriptorProto_Label_descriptor();
 inline const ::std::string& FieldDescriptorProto_Label_Name(FieldDescriptorProto_Label value) {
@@ -225,9 +232,9 @@ enum FileOptions_OptimizeMode {
   FileOptions_OptimizeMode_LITE_RUNTIME = 3
 };
 PROTOBUF_EXPORT bool FileOptions_OptimizeMode_IsValid(int value);
-const FileOptions_OptimizeMode FileOptions_OptimizeMode_OptimizeMode_MIN = FileOptions_OptimizeMode_SPEED;
-const FileOptions_OptimizeMode FileOptions_OptimizeMode_OptimizeMode_MAX = FileOptions_OptimizeMode_LITE_RUNTIME;
-const int FileOptions_OptimizeMode_OptimizeMode_ARRAYSIZE = FileOptions_OptimizeMode_OptimizeMode_MAX + 1;
+constexpr FileOptions_OptimizeMode FileOptions_OptimizeMode_OptimizeMode_MIN = FileOptions_OptimizeMode_SPEED;
+constexpr FileOptions_OptimizeMode FileOptions_OptimizeMode_OptimizeMode_MAX = FileOptions_OptimizeMode_LITE_RUNTIME;
+constexpr int FileOptions_OptimizeMode_OptimizeMode_ARRAYSIZE = FileOptions_OptimizeMode_OptimizeMode_MAX + 1;
 
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* FileOptions_OptimizeMode_descriptor();
 inline const ::std::string& FileOptions_OptimizeMode_Name(FileOptions_OptimizeMode value) {
@@ -245,9 +252,9 @@ enum FieldOptions_CType {
   FieldOptions_CType_STRING_PIECE = 2
 };
 PROTOBUF_EXPORT bool FieldOptions_CType_IsValid(int value);
-const FieldOptions_CType FieldOptions_CType_CType_MIN = FieldOptions_CType_STRING;
-const FieldOptions_CType FieldOptions_CType_CType_MAX = FieldOptions_CType_STRING_PIECE;
-const int FieldOptions_CType_CType_ARRAYSIZE = FieldOptions_CType_CType_MAX + 1;
+constexpr FieldOptions_CType FieldOptions_CType_CType_MIN = FieldOptions_CType_STRING;
+constexpr FieldOptions_CType FieldOptions_CType_CType_MAX = FieldOptions_CType_STRING_PIECE;
+constexpr int FieldOptions_CType_CType_ARRAYSIZE = FieldOptions_CType_CType_MAX + 1;
 
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* FieldOptions_CType_descriptor();
 inline const ::std::string& FieldOptions_CType_Name(FieldOptions_CType value) {
@@ -265,9 +272,9 @@ enum FieldOptions_JSType {
   FieldOptions_JSType_JS_NUMBER = 2
 };
 PROTOBUF_EXPORT bool FieldOptions_JSType_IsValid(int value);
-const FieldOptions_JSType FieldOptions_JSType_JSType_MIN = FieldOptions_JSType_JS_NORMAL;
-const FieldOptions_JSType FieldOptions_JSType_JSType_MAX = FieldOptions_JSType_JS_NUMBER;
-const int FieldOptions_JSType_JSType_ARRAYSIZE = FieldOptions_JSType_JSType_MAX + 1;
+constexpr FieldOptions_JSType FieldOptions_JSType_JSType_MIN = FieldOptions_JSType_JS_NORMAL;
+constexpr FieldOptions_JSType FieldOptions_JSType_JSType_MAX = FieldOptions_JSType_JS_NUMBER;
+constexpr int FieldOptions_JSType_JSType_ARRAYSIZE = FieldOptions_JSType_JSType_MAX + 1;
 
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* FieldOptions_JSType_descriptor();
 inline const ::std::string& FieldOptions_JSType_Name(FieldOptions_JSType value) {
@@ -285,9 +292,9 @@ enum MethodOptions_IdempotencyLevel {
   MethodOptions_IdempotencyLevel_IDEMPOTENT = 2
 };
 PROTOBUF_EXPORT bool MethodOptions_IdempotencyLevel_IsValid(int value);
-const MethodOptions_IdempotencyLevel MethodOptions_IdempotencyLevel_IdempotencyLevel_MIN = MethodOptions_IdempotencyLevel_IDEMPOTENCY_UNKNOWN;
-const MethodOptions_IdempotencyLevel MethodOptions_IdempotencyLevel_IdempotencyLevel_MAX = MethodOptions_IdempotencyLevel_IDEMPOTENT;
-const int MethodOptions_IdempotencyLevel_IdempotencyLevel_ARRAYSIZE = MethodOptions_IdempotencyLevel_IdempotencyLevel_MAX + 1;
+constexpr MethodOptions_IdempotencyLevel MethodOptions_IdempotencyLevel_IdempotencyLevel_MIN = MethodOptions_IdempotencyLevel_IDEMPOTENCY_UNKNOWN;
+constexpr MethodOptions_IdempotencyLevel MethodOptions_IdempotencyLevel_IdempotencyLevel_MAX = MethodOptions_IdempotencyLevel_IDEMPOTENT;
+constexpr int MethodOptions_IdempotencyLevel_IdempotencyLevel_ARRAYSIZE = MethodOptions_IdempotencyLevel_IdempotencyLevel_MAX + 1;
 
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* MethodOptions_IdempotencyLevel_descriptor();
 inline const ::std::string& MethodOptions_IdempotencyLevel_Name(MethodOptions_IdempotencyLevel value) {
@@ -378,8 +385,7 @@ class PROTOBUF_EXPORT FileDescriptorSet final :
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
-  ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
+  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   #else
   bool MergePartialFromCodedStream(
       ::google::protobuf::io::CodedInputStream* input) final;
@@ -391,10 +397,14 @@ class PROTOBUF_EXPORT FileDescriptorSet final :
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
-  void SharedCtor();
-  void SharedDtor();
+  inline void SharedCtor();
+  inline void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(FileDescriptorSet* other);
+  friend class ::google::protobuf::internal::AnyMetadata;
+  static ::google::protobuf::StringPiece FullMessageName() {
+    return "google.protobuf.FileDescriptorSet";
+  }
   protected:
   explicit FileDescriptorSet(::google::protobuf::Arena* arena);
   private:
@@ -519,8 +529,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
-  ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
+  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   #else
   bool MergePartialFromCodedStream(
       ::google::protobuf::io::CodedInputStream* input) final;
@@ -532,10 +541,14 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
-  void SharedCtor();
-  void SharedDtor();
+  inline void SharedCtor();
+  inline void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(FileDescriptorProto* other);
+  friend class ::google::protobuf::internal::AnyMetadata;
+  static ::google::protobuf::StringPiece FullMessageName() {
+    return "google.protobuf.FileDescriptorProto";
+  }
   protected:
   explicit FileDescriptorProto(::google::protobuf::Arena* arena);
   private:
@@ -849,8 +862,7 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final :
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
-  ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
+  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   #else
   bool MergePartialFromCodedStream(
       ::google::protobuf::io::CodedInputStream* input) final;
@@ -862,10 +874,14 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final :
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
-  void SharedCtor();
-  void SharedDtor();
+  inline void SharedCtor();
+  inline void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(DescriptorProto_ExtensionRange* other);
+  friend class ::google::protobuf::internal::AnyMetadata;
+  static ::google::protobuf::StringPiece FullMessageName() {
+    return "google.protobuf.DescriptorProto.ExtensionRange";
+  }
   protected:
   explicit DescriptorProto_ExtensionRange(::google::protobuf::Arena* arena);
   private:
@@ -1006,8 +1022,7 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final :
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
-  ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
+  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   #else
   bool MergePartialFromCodedStream(
       ::google::protobuf::io::CodedInputStream* input) final;
@@ -1019,10 +1034,14 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final :
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
-  void SharedCtor();
-  void SharedDtor();
+  inline void SharedCtor();
+  inline void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(DescriptorProto_ReservedRange* other);
+  friend class ::google::protobuf::internal::AnyMetadata;
+  static ::google::protobuf::StringPiece FullMessageName() {
+    return "google.protobuf.DescriptorProto.ReservedRange";
+  }
   protected:
   explicit DescriptorProto_ReservedRange(::google::protobuf::Arena* arena);
   private:
@@ -1150,8 +1169,7 @@ class PROTOBUF_EXPORT DescriptorProto final :
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
-  ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
+  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   #else
   bool MergePartialFromCodedStream(
       ::google::protobuf::io::CodedInputStream* input) final;
@@ -1163,10 +1181,14 @@ class PROTOBUF_EXPORT DescriptorProto final :
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
-  void SharedCtor();
-  void SharedDtor();
+  inline void SharedCtor();
+  inline void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(DescriptorProto* other);
+  friend class ::google::protobuf::internal::AnyMetadata;
+  static ::google::protobuf::StringPiece FullMessageName() {
+    return "google.protobuf.DescriptorProto";
+  }
   protected:
   explicit DescriptorProto(::google::protobuf::Arena* arena);
   private:
@@ -1433,8 +1455,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
-  ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
+  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   #else
   bool MergePartialFromCodedStream(
       ::google::protobuf::io::CodedInputStream* input) final;
@@ -1446,10 +1467,14 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
-  void SharedCtor();
-  void SharedDtor();
+  inline void SharedCtor();
+  inline void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(ExtensionRangeOptions* other);
+  friend class ::google::protobuf::internal::AnyMetadata;
+  static ::google::protobuf::StringPiece FullMessageName() {
+    return "google.protobuf.ExtensionRangeOptions";
+  }
   protected:
   explicit ExtensionRangeOptions(::google::protobuf::Arena* arena);
   private:
@@ -1577,8 +1602,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
-  ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
+  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   #else
   bool MergePartialFromCodedStream(
       ::google::protobuf::io::CodedInputStream* input) final;
@@ -1590,10 +1614,14 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
-  void SharedCtor();
-  void SharedDtor();
+  inline void SharedCtor();
+  inline void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(FieldDescriptorProto* other);
+  friend class ::google::protobuf::internal::AnyMetadata;
+  static ::google::protobuf::StringPiece FullMessageName() {
+    return "google.protobuf.FieldDescriptorProto";
+  }
   protected:
   explicit FieldDescriptorProto(::google::protobuf::Arena* arena);
   private:
@@ -1613,50 +1641,50 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   // nested types ----------------------------------------------------
 
   typedef FieldDescriptorProto_Type Type;
-  static const Type TYPE_DOUBLE =
+  static constexpr Type TYPE_DOUBLE =
     FieldDescriptorProto_Type_TYPE_DOUBLE;
-  static const Type TYPE_FLOAT =
+  static constexpr Type TYPE_FLOAT =
     FieldDescriptorProto_Type_TYPE_FLOAT;
-  static const Type TYPE_INT64 =
+  static constexpr Type TYPE_INT64 =
     FieldDescriptorProto_Type_TYPE_INT64;
-  static const Type TYPE_UINT64 =
+  static constexpr Type TYPE_UINT64 =
     FieldDescriptorProto_Type_TYPE_UINT64;
-  static const Type TYPE_INT32 =
+  static constexpr Type TYPE_INT32 =
     FieldDescriptorProto_Type_TYPE_INT32;
-  static const Type TYPE_FIXED64 =
+  static constexpr Type TYPE_FIXED64 =
     FieldDescriptorProto_Type_TYPE_FIXED64;
-  static const Type TYPE_FIXED32 =
+  static constexpr Type TYPE_FIXED32 =
     FieldDescriptorProto_Type_TYPE_FIXED32;
-  static const Type TYPE_BOOL =
+  static constexpr Type TYPE_BOOL =
     FieldDescriptorProto_Type_TYPE_BOOL;
-  static const Type TYPE_STRING =
+  static constexpr Type TYPE_STRING =
     FieldDescriptorProto_Type_TYPE_STRING;
-  static const Type TYPE_GROUP =
+  static constexpr Type TYPE_GROUP =
     FieldDescriptorProto_Type_TYPE_GROUP;
-  static const Type TYPE_MESSAGE =
+  static constexpr Type TYPE_MESSAGE =
     FieldDescriptorProto_Type_TYPE_MESSAGE;
-  static const Type TYPE_BYTES =
+  static constexpr Type TYPE_BYTES =
     FieldDescriptorProto_Type_TYPE_BYTES;
-  static const Type TYPE_UINT32 =
+  static constexpr Type TYPE_UINT32 =
     FieldDescriptorProto_Type_TYPE_UINT32;
-  static const Type TYPE_ENUM =
+  static constexpr Type TYPE_ENUM =
     FieldDescriptorProto_Type_TYPE_ENUM;
-  static const Type TYPE_SFIXED32 =
+  static constexpr Type TYPE_SFIXED32 =
     FieldDescriptorProto_Type_TYPE_SFIXED32;
-  static const Type TYPE_SFIXED64 =
+  static constexpr Type TYPE_SFIXED64 =
     FieldDescriptorProto_Type_TYPE_SFIXED64;
-  static const Type TYPE_SINT32 =
+  static constexpr Type TYPE_SINT32 =
     FieldDescriptorProto_Type_TYPE_SINT32;
-  static const Type TYPE_SINT64 =
+  static constexpr Type TYPE_SINT64 =
     FieldDescriptorProto_Type_TYPE_SINT64;
   static inline bool Type_IsValid(int value) {
     return FieldDescriptorProto_Type_IsValid(value);
   }
-  static const Type Type_MIN =
+  static constexpr Type Type_MIN =
     FieldDescriptorProto_Type_Type_MIN;
-  static const Type Type_MAX =
+  static constexpr Type Type_MAX =
     FieldDescriptorProto_Type_Type_MAX;
-  static const int Type_ARRAYSIZE =
+  static constexpr int Type_ARRAYSIZE =
     FieldDescriptorProto_Type_Type_ARRAYSIZE;
   static inline const ::google::protobuf::EnumDescriptor*
   Type_descriptor() {
@@ -1671,20 +1699,20 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   }
 
   typedef FieldDescriptorProto_Label Label;
-  static const Label LABEL_OPTIONAL =
+  static constexpr Label LABEL_OPTIONAL =
     FieldDescriptorProto_Label_LABEL_OPTIONAL;
-  static const Label LABEL_REQUIRED =
+  static constexpr Label LABEL_REQUIRED =
     FieldDescriptorProto_Label_LABEL_REQUIRED;
-  static const Label LABEL_REPEATED =
+  static constexpr Label LABEL_REPEATED =
     FieldDescriptorProto_Label_LABEL_REPEATED;
   static inline bool Label_IsValid(int value) {
     return FieldDescriptorProto_Label_IsValid(value);
   }
-  static const Label Label_MIN =
+  static constexpr Label Label_MIN =
     FieldDescriptorProto_Label_Label_MIN;
-  static const Label Label_MAX =
+  static constexpr Label Label_MAX =
     FieldDescriptorProto_Label_Label_MAX;
-  static const int Label_ARRAYSIZE =
+  static constexpr int Label_ARRAYSIZE =
     FieldDescriptorProto_Label_Label_ARRAYSIZE;
   static inline const ::google::protobuf::EnumDescriptor*
   Label_descriptor() {
@@ -1961,8 +1989,7 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
-  ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
+  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   #else
   bool MergePartialFromCodedStream(
       ::google::protobuf::io::CodedInputStream* input) final;
@@ -1974,10 +2001,14 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
-  void SharedCtor();
-  void SharedDtor();
+  inline void SharedCtor();
+  inline void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(OneofDescriptorProto* other);
+  friend class ::google::protobuf::internal::AnyMetadata;
+  static ::google::protobuf::StringPiece FullMessageName() {
+    return "google.protobuf.OneofDescriptorProto";
+  }
   protected:
   explicit OneofDescriptorProto(::google::protobuf::Arena* arena);
   private:
@@ -2127,8 +2158,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final :
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
-  ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
+  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   #else
   bool MergePartialFromCodedStream(
       ::google::protobuf::io::CodedInputStream* input) final;
@@ -2140,10 +2170,14 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final :
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
-  void SharedCtor();
-  void SharedDtor();
+  inline void SharedCtor();
+  inline void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(EnumDescriptorProto_EnumReservedRange* other);
+  friend class ::google::protobuf::internal::AnyMetadata;
+  static ::google::protobuf::StringPiece FullMessageName() {
+    return "google.protobuf.EnumDescriptorProto.EnumReservedRange";
+  }
   protected:
   explicit EnumDescriptorProto_EnumReservedRange(::google::protobuf::Arena* arena);
   private:
@@ -2271,8 +2305,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
-  ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
+  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   #else
   bool MergePartialFromCodedStream(
       ::google::protobuf::io::CodedInputStream* input) final;
@@ -2284,10 +2317,14 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
-  void SharedCtor();
-  void SharedDtor();
+  inline void SharedCtor();
+  inline void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(EnumDescriptorProto* other);
+  friend class ::google::protobuf::internal::AnyMetadata;
+  static ::google::protobuf::StringPiece FullMessageName() {
+    return "google.protobuf.EnumDescriptorProto";
+  }
   protected:
   explicit EnumDescriptorProto(::google::protobuf::Arena* arena);
   private:
@@ -2488,8 +2525,7 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
-  ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
+  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   #else
   bool MergePartialFromCodedStream(
       ::google::protobuf::io::CodedInputStream* input) final;
@@ -2501,10 +2537,14 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
-  void SharedCtor();
-  void SharedDtor();
+  inline void SharedCtor();
+  inline void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(EnumValueDescriptorProto* other);
+  friend class ::google::protobuf::internal::AnyMetadata;
+  static ::google::protobuf::StringPiece FullMessageName() {
+    return "google.protobuf.EnumValueDescriptorProto";
+  }
   protected:
   explicit EnumValueDescriptorProto(::google::protobuf::Arena* arena);
   private:
@@ -2662,8 +2702,7 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
-  ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
+  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   #else
   bool MergePartialFromCodedStream(
       ::google::protobuf::io::CodedInputStream* input) final;
@@ -2675,10 +2714,14 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
-  void SharedCtor();
-  void SharedDtor();
+  inline void SharedCtor();
+  inline void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(ServiceDescriptorProto* other);
+  friend class ::google::protobuf::internal::AnyMetadata;
+  static ::google::protobuf::StringPiece FullMessageName() {
+    return "google.protobuf.ServiceDescriptorProto";
+  }
   protected:
   explicit ServiceDescriptorProto(::google::protobuf::Arena* arena);
   private:
@@ -2841,8 +2884,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
-  ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
+  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   #else
   bool MergePartialFromCodedStream(
       ::google::protobuf::io::CodedInputStream* input) final;
@@ -2854,10 +2896,14 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
-  void SharedCtor();
-  void SharedDtor();
+  inline void SharedCtor();
+  inline void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(MethodDescriptorProto* other);
+  friend class ::google::protobuf::internal::AnyMetadata;
+  static ::google::protobuf::StringPiece FullMessageName() {
+    return "google.protobuf.MethodDescriptorProto";
+  }
   protected:
   explicit MethodDescriptorProto(::google::protobuf::Arena* arena);
   private:
@@ -3073,8 +3119,7 @@ class PROTOBUF_EXPORT FileOptions final :
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
-  ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
+  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   #else
   bool MergePartialFromCodedStream(
       ::google::protobuf::io::CodedInputStream* input) final;
@@ -3086,10 +3131,14 @@ class PROTOBUF_EXPORT FileOptions final :
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
-  void SharedCtor();
-  void SharedDtor();
+  inline void SharedCtor();
+  inline void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(FileOptions* other);
+  friend class ::google::protobuf::internal::AnyMetadata;
+  static ::google::protobuf::StringPiece FullMessageName() {
+    return "google.protobuf.FileOptions";
+  }
   protected:
   explicit FileOptions(::google::protobuf::Arena* arena);
   private:
@@ -3109,20 +3158,20 @@ class PROTOBUF_EXPORT FileOptions final :
   // nested types ----------------------------------------------------
 
   typedef FileOptions_OptimizeMode OptimizeMode;
-  static const OptimizeMode SPEED =
+  static constexpr OptimizeMode SPEED =
     FileOptions_OptimizeMode_SPEED;
-  static const OptimizeMode CODE_SIZE =
+  static constexpr OptimizeMode CODE_SIZE =
     FileOptions_OptimizeMode_CODE_SIZE;
-  static const OptimizeMode LITE_RUNTIME =
+  static constexpr OptimizeMode LITE_RUNTIME =
     FileOptions_OptimizeMode_LITE_RUNTIME;
   static inline bool OptimizeMode_IsValid(int value) {
     return FileOptions_OptimizeMode_IsValid(value);
   }
-  static const OptimizeMode OptimizeMode_MIN =
+  static constexpr OptimizeMode OptimizeMode_MIN =
     FileOptions_OptimizeMode_OptimizeMode_MIN;
-  static const OptimizeMode OptimizeMode_MAX =
+  static constexpr OptimizeMode OptimizeMode_MAX =
     FileOptions_OptimizeMode_OptimizeMode_MAX;
-  static const int OptimizeMode_ARRAYSIZE =
+  static constexpr int OptimizeMode_ARRAYSIZE =
     FileOptions_OptimizeMode_OptimizeMode_ARRAYSIZE;
   static inline const ::google::protobuf::EnumDescriptor*
   OptimizeMode_descriptor() {
@@ -3575,8 +3624,7 @@ class PROTOBUF_EXPORT MessageOptions final :
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
-  ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
+  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   #else
   bool MergePartialFromCodedStream(
       ::google::protobuf::io::CodedInputStream* input) final;
@@ -3588,10 +3636,14 @@ class PROTOBUF_EXPORT MessageOptions final :
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
-  void SharedCtor();
-  void SharedDtor();
+  inline void SharedCtor();
+  inline void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(MessageOptions* other);
+  friend class ::google::protobuf::internal::AnyMetadata;
+  static ::google::protobuf::StringPiece FullMessageName() {
+    return "google.protobuf.MessageOptions";
+  }
   protected:
   explicit MessageOptions(::google::protobuf::Arena* arena);
   private:
@@ -3751,8 +3803,7 @@ class PROTOBUF_EXPORT FieldOptions final :
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
-  ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
+  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   #else
   bool MergePartialFromCodedStream(
       ::google::protobuf::io::CodedInputStream* input) final;
@@ -3764,10 +3815,14 @@ class PROTOBUF_EXPORT FieldOptions final :
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
-  void SharedCtor();
-  void SharedDtor();
+  inline void SharedCtor();
+  inline void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(FieldOptions* other);
+  friend class ::google::protobuf::internal::AnyMetadata;
+  static ::google::protobuf::StringPiece FullMessageName() {
+    return "google.protobuf.FieldOptions";
+  }
   protected:
   explicit FieldOptions(::google::protobuf::Arena* arena);
   private:
@@ -3787,20 +3842,20 @@ class PROTOBUF_EXPORT FieldOptions final :
   // nested types ----------------------------------------------------
 
   typedef FieldOptions_CType CType;
-  static const CType STRING =
+  static constexpr CType STRING =
     FieldOptions_CType_STRING;
-  static const CType CORD =
+  static constexpr CType CORD =
     FieldOptions_CType_CORD;
-  static const CType STRING_PIECE =
+  static constexpr CType STRING_PIECE =
     FieldOptions_CType_STRING_PIECE;
   static inline bool CType_IsValid(int value) {
     return FieldOptions_CType_IsValid(value);
   }
-  static const CType CType_MIN =
+  static constexpr CType CType_MIN =
     FieldOptions_CType_CType_MIN;
-  static const CType CType_MAX =
+  static constexpr CType CType_MAX =
     FieldOptions_CType_CType_MAX;
-  static const int CType_ARRAYSIZE =
+  static constexpr int CType_ARRAYSIZE =
     FieldOptions_CType_CType_ARRAYSIZE;
   static inline const ::google::protobuf::EnumDescriptor*
   CType_descriptor() {
@@ -3815,20 +3870,20 @@ class PROTOBUF_EXPORT FieldOptions final :
   }
 
   typedef FieldOptions_JSType JSType;
-  static const JSType JS_NORMAL =
+  static constexpr JSType JS_NORMAL =
     FieldOptions_JSType_JS_NORMAL;
-  static const JSType JS_STRING =
+  static constexpr JSType JS_STRING =
     FieldOptions_JSType_JS_STRING;
-  static const JSType JS_NUMBER =
+  static constexpr JSType JS_NUMBER =
     FieldOptions_JSType_JS_NUMBER;
   static inline bool JSType_IsValid(int value) {
     return FieldOptions_JSType_IsValid(value);
   }
-  static const JSType JSType_MIN =
+  static constexpr JSType JSType_MIN =
     FieldOptions_JSType_JSType_MIN;
-  static const JSType JSType_MAX =
+  static constexpr JSType JSType_MAX =
     FieldOptions_JSType_JSType_MAX;
-  static const int JSType_ARRAYSIZE =
+  static constexpr int JSType_ARRAYSIZE =
     FieldOptions_JSType_JSType_ARRAYSIZE;
   static inline const ::google::protobuf::EnumDescriptor*
   JSType_descriptor() {
@@ -3999,8 +4054,7 @@ class PROTOBUF_EXPORT OneofOptions final :
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
-  ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
+  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   #else
   bool MergePartialFromCodedStream(
       ::google::protobuf::io::CodedInputStream* input) final;
@@ -4012,10 +4066,14 @@ class PROTOBUF_EXPORT OneofOptions final :
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
-  void SharedCtor();
-  void SharedDtor();
+  inline void SharedCtor();
+  inline void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(OneofOptions* other);
+  friend class ::google::protobuf::internal::AnyMetadata;
+  static ::google::protobuf::StringPiece FullMessageName() {
+    return "google.protobuf.OneofOptions";
+  }
   protected:
   explicit OneofOptions(::google::protobuf::Arena* arena);
   private:
@@ -4143,8 +4201,7 @@ class PROTOBUF_EXPORT EnumOptions final :
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
-  ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
+  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   #else
   bool MergePartialFromCodedStream(
       ::google::protobuf::io::CodedInputStream* input) final;
@@ -4156,10 +4213,14 @@ class PROTOBUF_EXPORT EnumOptions final :
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
-  void SharedCtor();
-  void SharedDtor();
+  inline void SharedCtor();
+  inline void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(EnumOptions* other);
+  friend class ::google::protobuf::internal::AnyMetadata;
+  static ::google::protobuf::StringPiece FullMessageName() {
+    return "google.protobuf.EnumOptions";
+  }
   protected:
   explicit EnumOptions(::google::protobuf::Arena* arena);
   private:
@@ -4303,8 +4364,7 @@ class PROTOBUF_EXPORT EnumValueOptions final :
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
-  ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
+  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   #else
   bool MergePartialFromCodedStream(
       ::google::protobuf::io::CodedInputStream* input) final;
@@ -4316,10 +4376,14 @@ class PROTOBUF_EXPORT EnumValueOptions final :
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
-  void SharedCtor();
-  void SharedDtor();
+  inline void SharedCtor();
+  inline void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(EnumValueOptions* other);
+  friend class ::google::protobuf::internal::AnyMetadata;
+  static ::google::protobuf::StringPiece FullMessageName() {
+    return "google.protobuf.EnumValueOptions";
+  }
   protected:
   explicit EnumValueOptions(::google::protobuf::Arena* arena);
   private:
@@ -4455,8 +4519,7 @@ class PROTOBUF_EXPORT ServiceOptions final :
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
-  ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
+  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   #else
   bool MergePartialFromCodedStream(
       ::google::protobuf::io::CodedInputStream* input) final;
@@ -4468,10 +4531,14 @@ class PROTOBUF_EXPORT ServiceOptions final :
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
-  void SharedCtor();
-  void SharedDtor();
+  inline void SharedCtor();
+  inline void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(ServiceOptions* other);
+  friend class ::google::protobuf::internal::AnyMetadata;
+  static ::google::protobuf::StringPiece FullMessageName() {
+    return "google.protobuf.ServiceOptions";
+  }
   protected:
   explicit ServiceOptions(::google::protobuf::Arena* arena);
   private:
@@ -4607,8 +4674,7 @@ class PROTOBUF_EXPORT MethodOptions final :
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
-  ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
+  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   #else
   bool MergePartialFromCodedStream(
       ::google::protobuf::io::CodedInputStream* input) final;
@@ -4620,10 +4686,14 @@ class PROTOBUF_EXPORT MethodOptions final :
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
-  void SharedCtor();
-  void SharedDtor();
+  inline void SharedCtor();
+  inline void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(MethodOptions* other);
+  friend class ::google::protobuf::internal::AnyMetadata;
+  static ::google::protobuf::StringPiece FullMessageName() {
+    return "google.protobuf.MethodOptions";
+  }
   protected:
   explicit MethodOptions(::google::protobuf::Arena* arena);
   private:
@@ -4643,20 +4713,20 @@ class PROTOBUF_EXPORT MethodOptions final :
   // nested types ----------------------------------------------------
 
   typedef MethodOptions_IdempotencyLevel IdempotencyLevel;
-  static const IdempotencyLevel IDEMPOTENCY_UNKNOWN =
+  static constexpr IdempotencyLevel IDEMPOTENCY_UNKNOWN =
     MethodOptions_IdempotencyLevel_IDEMPOTENCY_UNKNOWN;
-  static const IdempotencyLevel NO_SIDE_EFFECTS =
+  static constexpr IdempotencyLevel NO_SIDE_EFFECTS =
     MethodOptions_IdempotencyLevel_NO_SIDE_EFFECTS;
-  static const IdempotencyLevel IDEMPOTENT =
+  static constexpr IdempotencyLevel IDEMPOTENT =
     MethodOptions_IdempotencyLevel_IDEMPOTENT;
   static inline bool IdempotencyLevel_IsValid(int value) {
     return MethodOptions_IdempotencyLevel_IsValid(value);
   }
-  static const IdempotencyLevel IdempotencyLevel_MIN =
+  static constexpr IdempotencyLevel IdempotencyLevel_MIN =
     MethodOptions_IdempotencyLevel_IdempotencyLevel_MIN;
-  static const IdempotencyLevel IdempotencyLevel_MAX =
+  static constexpr IdempotencyLevel IdempotencyLevel_MAX =
     MethodOptions_IdempotencyLevel_IdempotencyLevel_MAX;
-  static const int IdempotencyLevel_ARRAYSIZE =
+  static constexpr int IdempotencyLevel_ARRAYSIZE =
     MethodOptions_IdempotencyLevel_IdempotencyLevel_ARRAYSIZE;
   static inline const ::google::protobuf::EnumDescriptor*
   IdempotencyLevel_descriptor() {
@@ -4795,8 +4865,7 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final :
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
-  ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
+  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   #else
   bool MergePartialFromCodedStream(
       ::google::protobuf::io::CodedInputStream* input) final;
@@ -4808,10 +4877,14 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final :
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
-  void SharedCtor();
-  void SharedDtor();
+  inline void SharedCtor();
+  inline void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(UninterpretedOption_NamePart* other);
+  friend class ::google::protobuf::internal::AnyMetadata;
+  static ::google::protobuf::StringPiece FullMessageName() {
+    return "google.protobuf.UninterpretedOption.NamePart";
+  }
   protected:
   explicit UninterpretedOption_NamePart(::google::protobuf::Arena* arena);
   private:
@@ -4959,8 +5032,7 @@ class PROTOBUF_EXPORT UninterpretedOption final :
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
-  ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
+  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   #else
   bool MergePartialFromCodedStream(
       ::google::protobuf::io::CodedInputStream* input) final;
@@ -4972,10 +5044,14 @@ class PROTOBUF_EXPORT UninterpretedOption final :
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
-  void SharedCtor();
-  void SharedDtor();
+  inline void SharedCtor();
+  inline void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(UninterpretedOption* other);
+  friend class ::google::protobuf::internal::AnyMetadata;
+  static ::google::protobuf::StringPiece FullMessageName() {
+    return "google.protobuf.UninterpretedOption";
+  }
   protected:
   explicit UninterpretedOption(::google::protobuf::Arena* arena);
   private:
@@ -5201,8 +5277,7 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
-  ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
+  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   #else
   bool MergePartialFromCodedStream(
       ::google::protobuf::io::CodedInputStream* input) final;
@@ -5214,10 +5289,14 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
-  void SharedCtor();
-  void SharedDtor();
+  inline void SharedCtor();
+  inline void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(SourceCodeInfo_Location* other);
+  friend class ::google::protobuf::internal::AnyMetadata;
+  static ::google::protobuf::StringPiece FullMessageName() {
+    return "google.protobuf.SourceCodeInfo.Location";
+  }
   protected:
   explicit SourceCodeInfo_Location(::google::protobuf::Arena* arena);
   private:
@@ -5430,8 +5509,7 @@ class PROTOBUF_EXPORT SourceCodeInfo final :
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
-  ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
+  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   #else
   bool MergePartialFromCodedStream(
       ::google::protobuf::io::CodedInputStream* input) final;
@@ -5443,10 +5521,14 @@ class PROTOBUF_EXPORT SourceCodeInfo final :
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
-  void SharedCtor();
-  void SharedDtor();
+  inline void SharedCtor();
+  inline void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(SourceCodeInfo* other);
+  friend class ::google::protobuf::internal::AnyMetadata;
+  static ::google::protobuf::StringPiece FullMessageName() {
+    return "google.protobuf.SourceCodeInfo";
+  }
   protected:
   explicit SourceCodeInfo(::google::protobuf::Arena* arena);
   private:
@@ -5573,8 +5655,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
-  ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
+  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   #else
   bool MergePartialFromCodedStream(
       ::google::protobuf::io::CodedInputStream* input) final;
@@ -5586,10 +5667,14 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
-  void SharedCtor();
-  void SharedDtor();
+  inline void SharedCtor();
+  inline void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(GeneratedCodeInfo_Annotation* other);
+  friend class ::google::protobuf::internal::AnyMetadata;
+  static ::google::protobuf::StringPiece FullMessageName() {
+    return "google.protobuf.GeneratedCodeInfo.Annotation";
+  }
   protected:
   explicit GeneratedCodeInfo_Annotation(::google::protobuf::Arena* arena);
   private:
@@ -5756,8 +5841,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final :
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
-  ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
+  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   #else
   bool MergePartialFromCodedStream(
       ::google::protobuf::io::CodedInputStream* input) final;
@@ -5769,10 +5853,14 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final :
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
-  void SharedCtor();
-  void SharedDtor();
+  inline void SharedCtor();
+  inline void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(GeneratedCodeInfo* other);
+  friend class ::google::protobuf::internal::AnyMetadata;
+  static ::google::protobuf::StringPiece FullMessageName() {
+    return "google.protobuf.GeneratedCodeInfo";
+  }
   protected:
   explicit GeneratedCodeInfo(::google::protobuf::Arena* arena);
   private:

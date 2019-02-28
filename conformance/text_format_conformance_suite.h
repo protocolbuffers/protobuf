@@ -28,46 +28,39 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/implicit_weak_message.h>
+#ifndef TEXT_FORMAT_CONFORMANCE_SUITE_H_
+#define TEXT_FORMAT_CONFORMANCE_SUITE_H_
 
-#include <google/protobuf/parse_context.h>
-#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
-#include <google/protobuf/stubs/once.h>
-#include <google/protobuf/wire_format_lite.h>
-
-#include <google/protobuf/port_def.inc>
+#include "conformance_test.h"
 
 namespace google {
 namespace protobuf {
-namespace internal {
 
-bool ImplicitWeakMessage::MergePartialFromCodedStream(io::CodedInputStream* input) {
-  io::StringOutputStream string_stream(&data_);
-  io::CodedOutputStream coded_stream(&string_stream, false);
-  return WireFormatLite::SkipMessage(input, &coded_stream);
-}
+class TextFormatConformanceTestSuite : public ConformanceTestSuite {
+ public:
+  TextFormatConformanceTestSuite();
 
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-const char* ImplicitWeakMessage::_InternalParse(const char* ptr,
-                                                ParseContext* ctx) {
-  return ctx->AppendString(ptr, &data_);
-}
-#endif
+ private:
+  void RunSuiteImpl();
+  void RunValidTextFormatTest(const string& test_name, ConformanceLevel level,
+                              const string& input);
+  void RunValidTextFormatTestProto2(const string& test_name,
+                                    ConformanceLevel level,
+                                    const string& input);
+  void RunValidTextFormatTestWithMessage(const string& test_name,
+                                         ConformanceLevel level,
+                                         const string& input_text,
+                                         const Message& prototype);
+  void ExpectParseFailure(const string& test_name, ConformanceLevel level,
+                          const string& input);
+  bool ParseTextFormatResponse(const conformance::ConformanceResponse& response,
+                               Message* test_message);
+  bool ParseResponse(const conformance::ConformanceResponse& response,
+                     const ConformanceRequestSetting& setting,
+                     Message* test_message) override;
+};
 
-ExplicitlyConstructed<ImplicitWeakMessage>
-    implicit_weak_message_default_instance;
-internal::once_flag implicit_weak_message_once_init_;
-
-void InitImplicitWeakMessageDefaultInstance() {
-  implicit_weak_message_default_instance.DefaultConstruct();
-}
-
-const ImplicitWeakMessage* ImplicitWeakMessage::default_instance() {
-  internal::call_once(implicit_weak_message_once_init_,
-                      InitImplicitWeakMessageDefaultInstance);
-  return &implicit_weak_message_default_instance.get();
-}
-
-}  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+#endif  // TEXT_FORMAT_CONFORMANCE_SUITE_H_
