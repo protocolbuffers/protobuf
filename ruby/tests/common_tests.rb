@@ -1114,6 +1114,67 @@ module CommonTests
     assert JSON.parse(actual, :symbolize_names => true) == expected
   end
 
+  def value_from_ruby(value)
+    ret = Google::Protobuf::Value.new
+    case value
+    when String
+      ret.string_value = value
+    when Google::Protobuf::Struct
+      ret.struct_value = value
+    when Hash
+      ret.struct_value = struct_from_ruby(value)
+    when Google::Protobuf::ListValue
+      ret.list_value = value
+    when Array
+      ret.list_value = list_from_ruby(value)
+    else
+      @log.error "Unknown type: #{value.class}"
+      raise Google::Protobuf::Error, "Unknown type: #{value.class}"
+    end
+    ret
+  end
+
+  def list_from_ruby(arr)
+    ret = Google::Protobuf::ListValue.new
+    arr.each do |v|
+      ret.values << value_from_ruby(v)
+    end
+    ret
+  end
+
+  def struct_from_ruby(hash)
+    ret = Google::Protobuf::Struct.new
+    hash.each do |k, v|
+      ret.fields[k] ||= value_from_ruby(v)
+    end
+    ret
+  end
+
+  def test_deep_json
+    # will not overflow
+    json = '{"a":{"a":{"a":{"a":{"a":{"a":{"a":{"a":{"a":{"a":{"a":'\
+           '{"a":{"a":{"a":{"a":{}}}}}}}}}}}}}}}}'
+
+    struct = struct_from_ruby(JSON.parse(json))
+    assert_equal json, struct.to_json
+
+    encoded = proto_module::MyRepeatedStruct.encode(
+      proto_module::MyRepeatedStruct.new(structs: [proto_module::MyStruct.new(struct: struct)]))
+    assert_equal json, proto_module::MyRepeatedStruct.decode(encoded).structs[0].struct.to_json
+
+    # will overflow
+    json = '{"a":{"a":{"a":[{"a":{"a":[{"a":[{"a":{"a":[{"a":[{"a":'\
+           '{"a":[{"a":[{"a":{"a":{"a":[{"a":"a"}]}}}]}]}}]}]}}]}]}}]}}}'
+
+    struct = struct_from_ruby(JSON.parse(json))
+    assert_equal json, struct.to_json
+
+    assert_raise(RuntimeError, "Maximum recursion depth exceeded during encoding") do
+      proto_module::MyRepeatedStruct.encode(
+        proto_module::MyRepeatedStruct.new(structs: [proto_module::MyStruct.new(struct: struct)]))
+    end
+  end
+
   def test_comparison_with_arbitrary_object
     assert proto_module::TestMessage.new != nil
   end

@@ -2,6 +2,8 @@ syntax = "proto2";
 
 package basic_test_proto2;
 
+import "google/protobuf/struct.proto";
+
 message Foo {
   optional Bar bar = 1;
   repeated Baz baz = 2;
@@ -114,4 +116,13 @@ message OneofMessage {
     TestMessage2 c = 3;
     TestEnum d = 4;
   }
+}
+
+message MyRepeatedStruct {
+  repeated MyStruct structs = 1;
+}
+
+message MyStruct {
+  optional string string = 1;
+  optional google.protobuf.Struct struct = 2;
 }
