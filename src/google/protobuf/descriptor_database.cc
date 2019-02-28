@@ -55,8 +55,9 @@ bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddFile(
     const FileDescriptorProto& file,
     Value value) {
   if (!InsertIfNotPresent(&by_name_, file.name(), value)) {
-    GOOGLE_LOG(ERROR) << "File already exists in database: " << file.name();
-    return false;
+    //GOOGLE_LOG(ERROR) << "File already exists in database: " << file.name();
+    //return false;
+    return true;
   }
 
   // We must be careful here -- calling file.package() if file.has_package() is
