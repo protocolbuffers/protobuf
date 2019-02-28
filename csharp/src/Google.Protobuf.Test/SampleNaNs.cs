@@ -43,7 +43,7 @@ namespace Google.Protobuf
 
         // Signalling bit is inverted compared with double.NaN. Doesn't really matter
         // whether that makes it quiet or signalling - it's different.
-        public static double SignallingFlipped { get; } = 
+        public static double SignallingFlipped { get; } =
             BitConverter.Int64BitsToDouble(BitConverter.DoubleToInt64Bits(double.NaN) ^ -0x8000_0000_0000_0000L);
 
         // A bit in the middle of the mantissa is flipped; this difference is preserved when casting to float.

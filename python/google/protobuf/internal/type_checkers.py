@@ -107,13 +107,18 @@ class TypeChecker(object):
       message = ('%.1024r has type %s, but expected one of: %s' %
                  (proposed_value, type(proposed_value), self._acceptable_types))
       raise TypeError(message)
+    # Some field types(float, double and bool) accept other types, must
+    # convert to the correct type in such cases.
+    if self._acceptable_types:
+      if self._acceptable_types[0] in (bool, float):
+        return self._acceptable_types[0](proposed_value)
     return proposed_value
 
 
 class TypeCheckerWithDefault(TypeChecker):
 
   def __init__(self, default_value, *acceptable_types):
-    TypeChecker.__init__(self, acceptable_types)
+    TypeChecker.__init__(self, *acceptable_types)
     self._default_value = default_value
 
   def DefaultValue(self):
@@ -232,9 +237,9 @@ _VALUE_CHECKERS = {
     _FieldDescriptor.CPPTYPE_UINT32: Uint32ValueChecker(),
     _FieldDescriptor.CPPTYPE_UINT64: Uint64ValueChecker(),
     _FieldDescriptor.CPPTYPE_DOUBLE: TypeCheckerWithDefault(
-        0.0, numbers.Real),
+        0.0, float, numbers.Real),
     _FieldDescriptor.CPPTYPE_FLOAT: TypeCheckerWithDefault(
-        0.0, numbers.Real),
+        0.0, float, numbers.Real),
     _FieldDescriptor.CPPTYPE_BOOL: TypeCheckerWithDefault(
         False, bool, numbers.Integral),
     _FieldDescriptor.CPPTYPE_STRING: TypeCheckerWithDefault(b'', bytes),

@@ -98,7 +98,7 @@ namespace Google.Protobuf.Reflection
             this.propertyName = propertyName;
             JsonName =  Proto.JsonName == "" ? JsonFormatter.ToJsonName(Proto.Name) : Proto.JsonName;
         }
-    
+
 
         /// <summary>
         /// The brief name of the descriptor's target.
@@ -129,7 +129,7 @@ namespace Google.Protobuf.Reflection
         /// </para>
         /// </remarks>
         public IFieldAccessor Accessor => accessor;
-        
+
         /// <summary>
         /// Maps a field type as included in the .proto file to a FieldType.
         /// </summary>

@@ -18,7 +18,7 @@
     <PackageReference Include="NUnitLite" Version="3.6.1" />
   </ItemGroup>
 
-  <!-- 
+  <!--
     - Override target frameworks on non-Windows to just .NET Core
     - Doing this conditionally in the initial PropertyGroup confuses
     - Visual Studio.
@@ -26,5 +26,5 @@
   <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
     <TargetFrameworks>netcoreapp1.0</TargetFrameworks>
   </PropertyGroup>
-  
+
 </Project>

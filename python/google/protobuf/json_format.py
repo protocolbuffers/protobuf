@@ -570,7 +570,7 @@ class _Parser(object):
             setattr(message, field.name, _ConvertScalarFieldValue(value, field))
       except ParseError as e:
         if field and field.containing_oneof is None:
-          raise ParseError('Failed to parse {0} field: {1}'.format(name, e))
+          raise ParseError('Failed to parse {0} field: {1}.'.format(name, e))
         else:
           raise ParseError(str(e))
       except ValueError as e:
@@ -607,7 +607,10 @@ class _Parser(object):
     """Convert a JSON representation into message with FromJsonString."""
     # Duration, Timestamp, FieldMask have a FromJsonString method to do the
     # conversion. Users can also call the method directly.
-    message.FromJsonString(value)
+    try:
+      message.FromJsonString(value)
+    except ValueError as e:
+      raise ParseError(e)
 
   def _ConvertValueMessage(self, value, message):
     """Convert a JSON representation into Value message."""

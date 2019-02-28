@@ -59,13 +59,6 @@ namespace protobuf {
 namespace compiler {
 namespace java {
 
-namespace {
-bool GenerateHasBits(const Descriptor* descriptor) {
-  return SupportFieldPresence(descriptor->file()) ||
-      HasRepeatedFields(descriptor);
-}
-}  // namespace
-
 MessageBuilderLiteGenerator::MessageBuilderLiteGenerator(
     const Descriptor* descriptor, Context* context)
   : descriptor_(descriptor), context_(context),

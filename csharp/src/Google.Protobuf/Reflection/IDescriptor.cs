@@ -51,5 +51,5 @@ namespace Google.Protobuf.Reflection
         /// Returns the descriptor for the .proto file that this entity is part of.
         /// </summary>
         FileDescriptor File { get; }
-    }    
+    }
 }

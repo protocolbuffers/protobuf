@@ -31,7 +31,10 @@
 #ifndef GOOGLE_PROTOBUF_TYPE_HANDLER_H__
 #define GOOGLE_PROTOBUF_TYPE_HANDLER_H__
 
+#include <google/protobuf/parse_context.h>
+#include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/arena.h>
+#include <google/protobuf/wire_format_lite.h>
 #include <google/protobuf/wire_format_lite_inl.h>
 
 #ifdef SWIG
@@ -165,6 +168,9 @@ class MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type> {
   static inline int GetCachedSize(const MapEntryAccessorType& value);
   static inline bool Read(io::CodedInputStream* input,
                           MapEntryAccessorType* value);
+  static inline const char* Read(const char* ptr, ParseContext* ctx,
+                                 MapEntryAccessorType* value);
+
   static inline void Write(int field, const MapEntryAccessorType& value,
                            io::CodedOutputStream* output);
   static inline uint8* WriteToArray(int field,
@@ -221,6 +227,8 @@ class MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type> {
     static inline int GetCachedSize(const MapEntryAccessorType& value);       \
     static inline bool Read(io::CodedInputStream* input,                      \
                             MapEntryAccessorType* value);                     \
+    static inline const char* Read(const char* begin, ParseContext* ctx,      \
+                                   MapEntryAccessorType* value);              \
     static inline void Write(int field, const MapEntryAccessorType& value,    \
                              io::CodedOutputStream* output);                  \
     static inline uint8* WriteToArray(int field,                              \
@@ -422,6 +430,96 @@ inline bool MapTypeHandler<WireFormatLite::TYPE_BYTES, Type>::Read(
   return WireFormatLite::ReadBytes(input, value);
 }
 
+template <typename Type>
+const char* MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::Read(
+    const char* ptr, ParseContext* ctx, MapEntryAccessorType* value) {
+  return ctx->ParseMessage(value, ptr);
+}
+
+template <typename Type>
+const char* MapTypeHandler<WireFormatLite::TYPE_STRING, Type>::Read(
+    const char* ptr, ParseContext* ctx, MapEntryAccessorType* value) {
+  int size = ReadSize(&ptr);
+  GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+  return ctx->ReadString(ptr, size, value);
+}
+
+template <typename Type>
+const char* MapTypeHandler<WireFormatLite::TYPE_BYTES, Type>::Read(
+    const char* ptr, ParseContext* ctx, MapEntryAccessorType* value) {
+  int size = ReadSize(&ptr);
+  GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+  return ctx->ReadString(ptr, size, value);
+}
+
+inline const char* ReadINT64(const char* ptr, int64* value) {
+  return ParseVarint64(ptr, reinterpret_cast<uint64*>(value));
+}
+inline const char* ReadUINT64(const char* ptr, uint64* value) {
+  return ParseVarint64(ptr, value);
+}
+inline const char* ReadINT32(const char* ptr, int32* value) {
+  uint64 tmp;
+  auto res = ParseVarint64(ptr, &tmp);
+  *value = static_cast<uint32>(tmp);
+  return res;
+}
+inline const char* ReadUINT32(const char* ptr, uint32* value) {
+  uint64 tmp;
+  auto res = ParseVarint64(ptr, &tmp);
+  *value = static_cast<uint32>(tmp);
+  return res;
+}
+inline const char* ReadSINT64(const char* ptr, int64* value) {
+  uint64 tmp;
+  auto res = ParseVarint64(ptr, &tmp);
+  *value = WireFormatLite::ZigZagDecode64(tmp);
+  return res;
+}
+inline const char* ReadSINT32(const char* ptr, int32* value) {
+  uint64 tmp;
+  auto res = ParseVarint64(ptr, &tmp);
+  *value = WireFormatLite::ZigZagDecode32(static_cast<uint32>(tmp));
+  return res;
+}
+template <typename E>
+inline const char* ReadENUM(const char* ptr, E* value) {
+  uint64 tmp;
+  auto res = ParseVarint64(ptr, &tmp);
+  *value = static_cast<E>(tmp);
+  return res;
+}
+inline const char* ReadBOOL(const char* ptr, bool* value) {
+  uint64 tmp;
+  auto res = ParseVarint64(ptr, &tmp);
+  *value = static_cast<bool>(tmp);
+  return res;
+}
+
+template <typename F>
+inline const char* ReadUnaligned(const char* ptr, F* value) {
+  *value = UnalignedLoad<F>(ptr);
+  return ptr + sizeof(F);
+}
+inline const char* ReadFLOAT(const char* ptr, float* value) {
+  return ReadUnaligned(ptr, value);
+}
+inline const char* ReadDOUBLE(const char* ptr, double* value) {
+  return ReadUnaligned(ptr, value);
+}
+inline const char* ReadFIXED64(const char* ptr, uint64* value) {
+  return ReadUnaligned(ptr, value);
+}
+inline const char* ReadFIXED32(const char* ptr, uint32* value) {
+  return ReadUnaligned(ptr, value);
+}
+inline const char* ReadSFIXED64(const char* ptr, int64* value) {
+  return ReadUnaligned(ptr, value);
+}
+inline const char* ReadSFIXED32(const char* ptr, int32* value) {
+  return ReadUnaligned(ptr, value);
+}
+
 #define READ_METHOD(FieldType)                                              \
   template <typename Type>                                                  \
   inline bool MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::Read( \
@@ -429,6 +527,11 @@ inline bool MapTypeHandler<WireFormatLite::TYPE_BYTES, Type>::Read(
     return WireFormatLite::ReadPrimitive<TypeOnMemory,                      \
                                          WireFormatLite::TYPE_##FieldType>( \
         input, value);                                                      \
+  }                                                                         \
+  template <typename Type>                                                  \
+  const char* MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::Read( \
+      const char* begin, ParseContext* ctx, MapEntryAccessorType* value) {  \
+    return Read##FieldType(begin, value);                                   \
   }
 
 READ_METHOD(INT64)

@@ -53,7 +53,6 @@ namespace google {
 namespace protobuf {
 namespace io {
 
-
 // ===================================================================
 
 // A ZeroCopyInputStream which reads from a file descriptor.

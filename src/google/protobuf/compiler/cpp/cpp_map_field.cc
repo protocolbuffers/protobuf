@@ -65,15 +65,15 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
   switch (val->cpp_type()) {
     case FieldDescriptor::CPPTYPE_MESSAGE:
       (*variables)["val_cpp"] = FieldMessageTypeName(val);
-      (*variables)["wrapper"] = "EntryWrapper";
+      (*variables)["wrapper"] = "MapEntryWrapper";
       break;
     case FieldDescriptor::CPPTYPE_ENUM:
       (*variables)["val_cpp"] = ClassName(val->enum_type(), true);
-      (*variables)["wrapper"] = "EnumEntryWrapper";
+      (*variables)["wrapper"] = "MapEnumEntryWrapper";
       break;
     default:
       (*variables)["val_cpp"] = PrimitiveTypeName(options, val->cpp_type());
-      (*variables)["wrapper"] = "EntryWrapper";
+      (*variables)["wrapper"] = "MapEntryWrapper";
   }
   (*variables)["key_wire_type"] =
       "TYPE_" + ToUpper(DeclaredTypeMethodName(key->type()));
@@ -238,11 +238,9 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
   }
 }
 
-static void GenerateSerializationLoop(const Formatter& format,
-                                      bool supports_arenas, bool string_key,
+static void GenerateSerializationLoop(const Formatter& format, bool string_key,
                                       bool string_value, bool to_array,
                                       bool is_deterministic) {
-  format("::std::unique_ptr<$map_classname$> entry;\n");
   string ptr;
   if (is_deterministic) {
     format("for (size_type i = 0; i < n; i++) {\n");
@@ -257,24 +255,17 @@ static void GenerateSerializationLoop(const Formatter& format,
   }
   format.Indent();
 
-  format("entry.reset($name$_.New$wrapper$($1$->first, $1$->second));\n", ptr);
+  format(
+      "$map_classname$::$wrapper$ entry(nullptr, $1$->first, $1$->second);\n",
+      ptr);
   if (to_array) {
     format(
         "target = ::$proto_ns$::internal::WireFormatLite::InternalWrite"
-        "$declared_type$NoVirtualToArray($number$, *entry, target);\n");
+        "$declared_type$NoVirtualToArray($number$, entry, target);\n");
   } else {
     format(
         "::$proto_ns$::internal::WireFormatLite::Write$stream_writer$($number$,"
-        " "
-        "*entry, output);\n");
-  }
-
-  // If entry is allocated by arena, its desctructor should be avoided.
-  if (supports_arenas) {
-    format(
-        "if (entry->GetArena() != nullptr) {\n"
-        "  entry.release();\n"
-        "}\n");
+        " entry, output);\n");
   }
 
   if (string_key || string_value) {
@@ -365,13 +356,11 @@ void MapFieldGenerator::GenerateSerializeWithCachedSizes(io::Printer* printer,
       "  ::std::sort(&items[0], &items[static_cast<ptrdiff_t>(n)], Less());\n",
       to_array ? "false" : "output->IsSerializationDeterministic()");
   format.Indent();
-  GenerateSerializationLoop(format, SupportsArenas(descriptor_), string_key,
-                            string_value, to_array, true);
+  GenerateSerializationLoop(format, string_key, string_value, to_array, true);
   format.Outdent();
   format("} else {\n");
   format.Indent();
-  GenerateSerializationLoop(format, SupportsArenas(descriptor_), string_key,
-                            string_value, to_array, false);
+  GenerateSerializationLoop(format, string_key, string_value, to_array, false);
   format.Outdent();
   format("}\n");
   format.Outdent();
@@ -384,35 +373,13 @@ GenerateByteSize(io::Printer* printer) const {
   format(
       "total_size += $tag_size$ *\n"
       "    ::$proto_ns$::internal::FromIntSize(this->$name$_size());\n"
-      "{\n"
-      "  ::std::unique_ptr<$map_classname$> entry;\n"
-      "  for (::$proto_ns$::Map< $key_cpp$, $val_cpp$ >::const_iterator\n"
-      "      it = this->$name$().begin();\n"
-      "      it != this->$name$().end(); ++it) {\n");
-
-  // If entry is allocated by arena, its desctructor should be avoided.
-  if (SupportsArenas(descriptor_)) {
-    format(
-        "    if (entry.get() != nullptr && entry->GetArena() != nullptr) {\n"
-        "      entry.release();\n"
-        "    }\n");
-  }
-
-  format(
-      "    entry.reset($name$_.New$wrapper$(it->first, it->second));\n"
-      "    total_size += ::$proto_ns$::internal::WireFormatLite::\n"
-      "        $declared_type$SizeNoVirtual(*entry);\n"
-      "  }\n");
-
-  // If entry is allocated by arena, its desctructor should be avoided.
-  if (SupportsArenas(descriptor_)) {
-    format(
-        "  if (entry.get() != nullptr && entry->GetArena() != nullptr) {\n"
-        "    entry.release();\n"
-        "  }\n");
-  }
-
-  format("}\n");
+      "for (::$proto_ns$::Map< $key_cpp$, $val_cpp$ >::const_iterator\n"
+      "    it = this->$name$().begin();\n"
+      "    it != this->$name$().end(); ++it) {\n"
+      "  $map_classname$::$wrapper$ entry(nullptr, it->first, it->second);\n"
+      "  total_size += ::$proto_ns$::internal::WireFormatLite::\n"
+      "      $declared_type$SizeNoVirtual(entry);\n"
+      "}\n");
 }
 
 }  // namespace cpp

@@ -358,7 +358,7 @@ namespace Google.Protobuf.WellKnownTypes
             /// field is set in the source, the value is copied to the
             /// destination; if the field is unset in the source, the field is cleared
             /// from the destination) when merging.
-            /// 
+            ///
             /// Default behavior is to always set the value of the source primitive
             /// field to the destination primitive field, and if the source field is
             /// unset, the default value of the source field is copied to the

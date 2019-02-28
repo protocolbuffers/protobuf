@@ -127,6 +127,9 @@
 #ifdef PROTOC_EXPORT
 #error PROTOC_EXPORT was previously defined
 #endif
+#ifdef PROTOBUF_MUST_USE_RESULT
+#error PROTOBUF_MUST_USE_RESULT was previously defined
+#endif
 
 
 #define PROTOBUF_NAMESPACE "google::protobuf"
@@ -134,6 +137,7 @@
 #define PROTOBUF_DEPRECATED
 #define PROTOBUF_DEPRECATED_MSG(x)
 #define PROTOBUF_SECTION_VARIABLE(x)
+#define PROTOBUF_MUST_USE_RESULT
 
 // ----------------------------------------------------------------------------
 // Annotations:  Some parts of the code have been annotated in ways that might

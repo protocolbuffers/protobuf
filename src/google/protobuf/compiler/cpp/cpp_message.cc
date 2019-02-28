@@ -948,10 +948,6 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
         "    ::$proto_ns$::internal::WireFormatLite::$val_wire_type$,\n"
         "    $default_enum_value$ > {\n"
         "public:\n"
-        "#if $GOOGLE_PROTOBUF$_ENABLE_EXPERIMENTAL_PARSER\n"
-        "static bool _ParseMap(const char* begin, const "
-        "char* end, void* object, ::$proto_ns$::internal::ParseContext* ctx);\n"
-        "#endif  // $GOOGLE_PROTOBUF$_ENABLE_EXPERIMENTAL_PARSER\n"
         "  typedef ::$proto_ns$::internal::MapEntry$lite$<$classname$, \n"
         "    $key_cpp$, $val_cpp$,\n"
         "    ::$proto_ns$::internal::WireFormatLite::$key_wire_type$,\n"
@@ -1097,20 +1093,39 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
   if (IsAnyMessage(descriptor_, options_)) {
     format(
         "// implements Any -----------------------------------------------\n"
-        "\n"
-        "void PackFrom(const ::$proto_ns$::Message& message);\n"
-        "void PackFrom(const ::$proto_ns$::Message& message,\n"
-        "              const $string$& type_url_prefix);\n"
-        "bool UnpackTo(::$proto_ns$::Message* message) const;\n"
+        "\n");
+    if (HasDescriptorMethods(descriptor_->file(), options_)) {
+      format(
+          "void PackFrom(const ::$proto_ns$::Message& message);\n"
+          "void PackFrom(const ::$proto_ns$::Message& message,\n"
+          "              const $string$& type_url_prefix);\n"
+          "bool UnpackTo(::$proto_ns$::Message* message) const;\n"
+          "static bool GetAnyFieldDescriptors(\n"
+          "    const ::$proto_ns$::Message& message,\n"
+          "    const ::$proto_ns$::FieldDescriptor** type_url_field,\n"
+          "    const ::$proto_ns$::FieldDescriptor** value_field);\n");
+    } else {
+      format(
+          "template <typename T>\n"
+          "void PackFrom(const T& message) {\n"
+          "  _any_metadata_.PackFrom(message);\n"
+          "}\n"
+          "template <typename T>\n"
+          "void PackFrom(const T& message,\n"
+          "              const $string$& type_url_prefix) {\n"
+          "  _any_metadata_.PackFrom(message, type_url_prefix);"
+          "}\n"
+          "template <typename T>\n"
+          "bool UnpackTo(T* message) const {\n"
+          "  return _any_metadata_.UnpackTo(message);\n"
+          "}\n");
+    }
+    format(
         "template<typename T> bool Is() const {\n"
         "  return _any_metadata_.Is<T>();\n"
         "}\n"
         "static bool ParseAnyTypeUrl(const string& type_url,\n"
-        "                            string* full_type_name);\n"
-        "static bool GetAnyFieldDescriptors(\n"
-        "    const ::$proto_ns$::Message& message,\n"
-        "    const ::$proto_ns$::FieldDescriptor** type_url_field,\n"
-        "    const ::$proto_ns$::FieldDescriptor** value_field);\n");
+        "                            string* full_type_name);\n");
   }
 
   format.Set("new_final",
@@ -1166,24 +1181,13 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
         "\n"
         "size_t ByteSizeLong() const final;\n"
         "#if $GOOGLE_PROTOBUF$_ENABLE_EXPERIMENTAL_PARSER\n"
-        "static const char* _InternalParse(const char* begin, const char* end, "
-        "void* object, ::$proto_ns$::internal::ParseContext* ctx);\n"
-        "::$proto_ns$::internal::ParseFunc _ParseFunc() const final { return "
-        "_InternalParse; }\n"
+        "const char* _InternalParse(const char* ptr, "
+        "::$proto_ns$::internal::ParseContext* ctx) final;\n"
         "#else\n"
         "bool MergePartialFromCodedStream(\n"
         "    ::$proto_ns$::io::CodedInputStream* input)$ "
         "merge_partial_final$;\n"
         "#endif  // $GOOGLE_PROTOBUF$_ENABLE_EXPERIMENTAL_PARSER\n");
-    if (descriptor_->options().message_set_wire_format()) {
-      format(
-          "#if $GOOGLE_PROTOBUF$_ENABLE_EXPERIMENTAL_PARSER\n"
-          "static const char* InternalParseMessageSetItem(const char* begin, "
-          "const char* end, void* object, "
-          "::$proto_ns$::internal::ParseContext* "
-          "ctx);\n"
-          "#endif  // $GOOGLE_PROTOBUF$_ENABLE_EXPERIMENTAL_PARSER\n");
-    }
 
     if (!options_.table_driven_serialization ||
         descriptor_->options().message_set_wire_format()) {
@@ -1206,10 +1210,20 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
   format(
       "int GetCachedSize() const final { return _cached_size_.Get(); }"
       "\n\nprivate:\n"
-      "void SharedCtor();\n"
-      "void SharedDtor();\n"
+      "inline void SharedCtor();\n"
+      "inline void SharedDtor();\n"
       "void SetCachedSize(int size) const$ full_final$;\n"
       "void InternalSwap($classname$* other);\n");
+
+  format(
+      // Friend AnyMetadata so that it can call this FullMessageName() method.
+      "friend class ::$proto_ns$::internal::AnyMetadata;\n"
+      "static $1$ FullMessageName() {\n"
+      "  return \"$full_name$\";\n"
+      "}\n",
+      options_.opensource_runtime ? "::google::protobuf::StringPiece"
+                                  : "::StringPiece");
+
   if (SupportsArenas(descriptor_)) {
     format(
         // TODO(gerbens) Make this private! Currently people are deriving from
@@ -1871,65 +1885,6 @@ void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
           "}\n"
           "\n");
     }
-    format(
-        "#if $GOOGLE_PROTOBUF$_ENABLE_EXPERIMENTAL_PARSER\n"
-        "bool $classname$::_ParseMap(const char* begin, const char* end, "
-        "void* object, ::$proto_ns$::internal::ParseContext* ctx) {\n"
-        "  using MF = ::$proto_ns$::internal::MapField$1$<\n"
-        "      $classname$, EntryKeyType, EntryValueType,\n"
-        "      kEntryKeyFieldType, kEntryValueFieldType,\n"
-        "      kEntryDefaultEnumValue>;\n"
-        "  auto mf = static_cast<MF*>(object);\n"
-        "  Parser<MF, ::$proto_ns$::Map<EntryKeyType, EntryValueType>> "
-        "parser(mf);\n"
-        "#define DO_(x) if (!(x)) return false\n",
-        HasDescriptorMethods(descriptor_->file(), options_) ? "" : "Lite");
-    const FieldDescriptor* key = descriptor_->FindFieldByName("key");
-    const FieldDescriptor* val = descriptor_->FindFieldByName("value");
-    GOOGLE_CHECK(val);
-    string key_string;
-    string value_string;
-    if (HasFieldPresence(descriptor_->file()) &&
-        val->type() == FieldDescriptor::TYPE_ENUM) {
-      format(
-          "  DO_(parser.ParseMapEnumValidation(\n"
-          "    begin, end, ctx->extra_parse_data().field_number,\n"
-          "    static_cast<::$proto_ns$::internal::"
-          "InternalMetadataWithArena$1$*>("
-          "ctx->extra_parse_data().unknown_fields), $2$_IsValid));\n",
-          HasDescriptorMethods(descriptor_->file(), options_) ? "" : "Lite",
-          QualifiedClassName(val->enum_type()));
-      key_string = "parser.entry_key()";
-      value_string = "parser.entry_value()";
-    } else {
-      format("  DO_(parser.ParseMap(begin, end));\n");
-      key_string = "parser.key()";
-      value_string = "parser.value()";
-    }
-    format.Indent();
-    if (key->type() == FieldDescriptor::TYPE_STRING) {
-      GenerateUtf8CheckCodeForString(
-          key, options_, true,
-          StrCat(key_string, ".data(), static_cast<int>(", key_string,
-                       ".length()),\n")
-              .data(),
-          format);
-    }
-    if (val->type() == FieldDescriptor::TYPE_STRING) {
-      GenerateUtf8CheckCodeForString(
-          val, options_, true,
-          StrCat(value_string, ".data(), static_cast<int>(", value_string,
-                       ".length()),\n")
-              .data(),
-          format);
-    }
-    format.Outdent();
-    format(
-        "#undef DO_\n"
-        "  return true;\n"
-        "}\n"
-        "#endif  // $GOOGLE_PROTOBUF$_ENABLE_EXPERIMENTAL_PARSER\n");
-    format("\n");
     return;
   }
 
@@ -1942,30 +1897,33 @@ void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
   format("}\n");
 
   if (IsAnyMessage(descriptor_, options_)) {
+    if (HasDescriptorMethods(descriptor_->file(), options_)) {
+      format(
+          "void $classname$::PackFrom(const ::$proto_ns$::Message& message) {\n"
+          "  _any_metadata_.PackFrom(message);\n"
+          "}\n"
+          "\n"
+          "void $classname$::PackFrom(const ::$proto_ns$::Message& message,\n"
+          "                           const $string$& type_url_prefix) {\n"
+          "  _any_metadata_.PackFrom(message, type_url_prefix);\n"
+          "}\n"
+          "\n"
+          "bool $classname$::UnpackTo(::$proto_ns$::Message* message) const {\n"
+          "  return _any_metadata_.UnpackTo(message);\n"
+          "}\n"
+          "bool $classname$::GetAnyFieldDescriptors(\n"
+          "    const ::$proto_ns$::Message& message,\n"
+          "    const ::$proto_ns$::FieldDescriptor** type_url_field,\n"
+          "    const ::$proto_ns$::FieldDescriptor** value_field) {\n"
+          "  return ::$proto_ns$::internal::GetAnyFieldDescriptors(\n"
+          "      message, type_url_field, value_field);\n"
+          "}\n");
+    }
     format(
-        "void $classname$::PackFrom(const ::$proto_ns$::Message& message) {\n"
-        "  _any_metadata_.PackFrom(message);\n"
-        "}\n"
-        "\n"
-        "void $classname$::PackFrom(const ::$proto_ns$::Message& message,\n"
-        "                           const $string$& type_url_prefix) {\n"
-        "  _any_metadata_.PackFrom(message, type_url_prefix);\n"
-        "}\n"
-        "\n"
-        "bool $classname$::UnpackTo(::$proto_ns$::Message* message) const {\n"
-        "  return _any_metadata_.UnpackTo(message);\n"
-        "}\n"
         "bool $classname$::ParseAnyTypeUrl(const string& type_url,\n"
         "                                  string* full_type_name) {\n"
         "  return ::$proto_ns$::internal::ParseAnyTypeUrl(type_url,\n"
         "                                             full_type_name);\n"
-        "}\n"
-        "bool $classname$::GetAnyFieldDescriptors(\n"
-        "    const ::$proto_ns$::Message& message,\n"
-        "    const ::$proto_ns$::FieldDescriptor** type_url_field,\n"
-        "    const ::$proto_ns$::FieldDescriptor** value_field) {\n"
-        "  return ::$proto_ns$::internal::GetAnyFieldDescriptors(\n"
-        "      message, type_url_field, value_field);\n"
         "}\n"
         "\n");
   }
@@ -3360,21 +3318,10 @@ void MessageGenerator::GenerateMergeFromCodedStream(io::Printer* printer) {
     // Special-case MessageSet.
     format(
         "#if $GOOGLE_PROTOBUF$_ENABLE_EXPERIMENTAL_PARSER\n"
-        "const char* $classname$::_InternalParse(const char* begin, const "
-        "char* end, void* object,\n"
+        "const char* $classname$::_InternalParse(const char* ptr,\n"
         "                  ::$proto_ns$::internal::ParseContext* ctx) {\n"
-        "  auto msg = static_cast<$classname$*>(object);\n"
-        "  return ::$proto_ns$::internal::ParseMessageSet(begin, end, "
-        "msg, &msg->_extensions_, &msg->_internal_metadata_, ctx);\n"
-        "}\n"
-        "const char* $classname$::InternalParseMessageSetItem(const char* "
-        "begin, const char* end, void* object,\n"
-        "                  ::$proto_ns$::internal::ParseContext* ctx) {\n"
-        "  auto msg = static_cast<$classname$*>(object);\n"
-        "  return "
-        "msg->_extensions_.ParseMessageSetItem({InternalParseMessageSetItem, "
-        "msg}, begin, end, internal_default_instance(), "
-        "&msg->_internal_metadata_, ctx);\n"
+        "  return _extensions_.ParseMessageSet(ptr, \n"
+        "      internal_default_instance(), &_internal_metadata_, ctx);\n"
         "}\n"
         "#else\n"
         "bool $classname$::MergePartialFromCodedStream(\n"

@@ -185,8 +185,9 @@ public final class Descriptors {
       if (name.indexOf('.') != -1) {
         return null;
       }
-      if (getPackage().length() > 0) {
-        name = getPackage() + '.' + name;
+      final String packageName = getPackage();
+      if (!packageName.isEmpty()) {
+        name = packageName + '.' + name;
       }
       final GenericDescriptor result = pool.findSymbol(name);
       if (result != null && result instanceof Descriptor && result.getFile() == this) {
@@ -208,8 +209,9 @@ public final class Descriptors {
       if (name.indexOf('.') != -1) {
         return null;
       }
-      if (getPackage().length() > 0) {
-        name = getPackage() + '.' + name;
+      final String packageName = getPackage();
+      if (!packageName.isEmpty()) {
+        name = packageName + '.' + name;
       }
       final GenericDescriptor result = pool.findSymbol(name);
       if (result != null && result instanceof EnumDescriptor && result.getFile() == this) {
@@ -231,8 +233,9 @@ public final class Descriptors {
       if (name.indexOf('.') != -1) {
         return null;
       }
-      if (getPackage().length() > 0) {
-        name = getPackage() + '.' + name;
+      final String packageName = getPackage();
+      if (!packageName.isEmpty()) {
+        name = packageName + '.' + name;
       }
       final GenericDescriptor result = pool.findSymbol(name);
       if (result != null && result instanceof ServiceDescriptor && result.getFile() == this) {
@@ -252,8 +255,9 @@ public final class Descriptors {
       if (name.indexOf('.') != -1) {
         return null;
       }
-      if (getPackage().length() > 0) {
-        name = getPackage() + '.' + name;
+      final String packageName = getPackage();
+      if (!packageName.isEmpty()) {
+        name = packageName + '.' + name;
       }
       final GenericDescriptor result = pool.findSymbol(name);
       if (result != null && result instanceof FieldDescriptor && result.getFile() == this) {
@@ -1223,14 +1227,20 @@ public final class Descriptors {
     // This method should match exactly with the ToJsonName() function in C++
     // descriptor.cc.
     private static String fieldNameToJsonName(String name) {
-      StringBuilder result = new StringBuilder(name.length());
+      final int length = name.length();
+      StringBuilder result = new StringBuilder(length);
       boolean isNextUpperCase = false;
-      for (int i = 0; i < name.length(); i++) {
+      for (int i = 0; i < length; i++) {
         char ch = name.charAt(i);
         if (ch == '_') {
           isNextUpperCase = true;
         } else if (isNextUpperCase) {
-          result.append(Character.toUpperCase(ch));
+          // This closely matches the logic for ASCII characters in:
+          // http://google3/google/protobuf/descriptor.cc?l=249-251&rcl=228891689
+          if ('a' <= ch && ch <= 'z') {
+            ch = (char) (ch - 'a' + 'A');
+          }
+          result.append(ch);
           isNextUpperCase = false;
         } else {
           result.append(ch);
@@ -1787,7 +1797,6 @@ public final class Descriptors {
       file.pool.addEnumValueByNumber(this);
     }
 
-    private Integer number;
     // Create an unknown enum value.
     private EnumValueDescriptor(
         final FileDescriptor file, final EnumDescriptor parent, final Integer number) {
@@ -1799,7 +1808,6 @@ public final class Descriptors {
       this.file = file;
       this.type = parent;
       this.fullName = parent.getFullName() + '.' + proto.getName();
-      this.number = number;
 
       // Don't add this descriptor into pool.
     }
@@ -2029,11 +2037,14 @@ public final class Descriptors {
       final FileDescriptor file, final Descriptor parent, final String name) {
     if (parent != null) {
       return parent.getFullName() + '.' + name;
-    } else if (file.getPackage().length() > 0) {
-      return file.getPackage() + '.' + name;
-    } else {
-      return name;
     }
+
+    final String packageName = file.getPackage();
+    if (!packageName.isEmpty()) {
+      return packageName + '.' + name;
+    }
+
+    return name;
   }
 
   // =================================================================
@@ -2322,13 +2333,13 @@ public final class Descriptors {
       validateSymbolName(descriptor);
 
       final String fullName = descriptor.getFullName();
-      final int dotpos = fullName.lastIndexOf('.');
 
       final GenericDescriptor old = descriptorsByName.put(fullName, descriptor);
       if (old != null) {
         descriptorsByName.put(fullName, old);
 
         if (descriptor.getFile() == old.getFile()) {
+          final int dotpos = fullName.lastIndexOf('.');
           if (dotpos == -1) {
             throw new DescriptorValidationException(
                 descriptor, '\"' + fullName + "\" is already defined.");
@@ -2494,27 +2505,22 @@ public final class Descriptors {
       final String name = descriptor.getName();
       if (name.length() == 0) {
         throw new DescriptorValidationException(descriptor, "Missing name.");
-      } else {
-        boolean valid = true;
-        for (int i = 0; i < name.length(); i++) {
-          final char c = name.charAt(i);
-          // Non-ASCII characters are not valid in protobuf identifiers, even
-          // if they are letters or digits.
-          if (c >= 128) {
-            valid = false;
-          }
-          // First character must be letter or _.  Subsequent characters may
-          // be letters, numbers, or digits.
-          if (Character.isLetter(c) || c == '_' || (Character.isDigit(c) && i > 0)) {
-            // Valid
-          } else {
-            valid = false;
-          }
+      }
+
+      // Non-ASCII characters are not valid in protobuf identifiers, even
+      // if they are letters or digits.
+      // The first character must be a letter or '_'.
+      // Subsequent characters may be letters, numbers, or digits.
+      for (int i = 0; i < name.length(); i++) {
+        final char c = name.charAt(i);
+        if (('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z')
+          || (c == '_')
+          || ('0' <= c && c <= '9' && i > 0)) {
+          // Valid
+          continue;
         }
-        if (!valid) {
-          throw new DescriptorValidationException(
-              descriptor, '\"' + name + "\" is not a valid identifier.");
-        }
+        throw new DescriptorValidationException(
+            descriptor, '\"' + name + "\" is not a valid identifier.");
       }
     }
   }
