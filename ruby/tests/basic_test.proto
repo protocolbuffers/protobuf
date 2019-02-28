@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package basic_test;
 
+import "google/protobuf/struct.proto";
+
 message Foo {
   Bar bar = 1;
   repeated Baz baz = 2;
@@ -116,4 +118,13 @@ message Enumer {
     string str = 10;
     TestEnum const = 11;
   }
+}
+
+message MyRepeatedStruct {
+  repeated MyStruct structs = 1;
+}
+
+message MyStruct {
+  string string = 1;
+  google.protobuf.Struct struct = 2;
 }
