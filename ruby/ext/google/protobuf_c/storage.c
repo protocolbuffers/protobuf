@@ -181,7 +181,6 @@ void native_slot_set_value_and_case(const char* name,
         // check for possible implicit conversions
         VALUE converted_value = NULL;
         char* field_type_name = rb_class2name(type_class);
-        char* value_type_name = rb_class2name(CLASS_OF(value));
 
         if (strcmp(field_type_name, "Google::Protobuf::Timestamp") == 0 &&
             rb_obj_is_kind_of(value, rb_cTime)) {
