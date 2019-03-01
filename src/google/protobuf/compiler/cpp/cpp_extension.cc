@@ -133,8 +133,8 @@ void ExtensionGenerator::GenerateDeclaration(io::Printer* printer) const {
       "static const int $constant_name$ = $number$;\n"
       "$1$ ::$proto_ns$::internal::ExtensionIdentifier< $extendee$,\n"
       "    ::$proto_ns$::internal::$type_traits$, $field_type$, $packed$ >\n"
-      "  $name$;\n",
-      qualifier);
+      "  ${2$$name$$}$;\n",
+      qualifier, descriptor_);
 }
 
 void ExtensionGenerator::GenerateDefinition(io::Printer* printer) {
