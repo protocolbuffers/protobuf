@@ -65,6 +65,12 @@ include PHP protobuf's src and build the c extension if required.
 ### Node.js
 Node.js benchmark need [node](https://nodejs.org/en/)(higher than V6) and [npm](https://www.npmjs.com/) package manager installed. This benchmark is using the [benchmark](https://www.npmjs.com/package/benchmark) framework to test, which needn't to manually install. And another prerequisite is [protobuf js](https://github.com/protocolbuffers/protobuf/tree/master/js), which needn't to manually install either
 
+### C#
+The C# benchmark code is built as part of the main Google.Protobuf
+solution. It requires the .NET Core SDK, and depends on
+[BenchmarkDotNet](https://github.com/dotnet/BenchmarkDotNet), which
+will be downloaded automatically.
+
 ### Big data
 
 There's some optional big testing data which is not included in the directory
@@ -74,7 +80,7 @@ initially, you need to run the following command to download the testing data:
 $ ./download_data.sh
 ```
 
-After doing this the big data file will automaticly generated in the
+After doing this the big data file will automatically generated in the
 benchmark directory.
 
 ## Run instructions
@@ -208,6 +214,15 @@ $ ./php-c-benchmark $(specific generated dataset file name)
 $ make js-benchmark
 $ ./js-benchmark $(specific generated dataset file name)
 ```
+
+### C#
+From `csharp/src/Google.Protobuf.Benchmarks`, run:
+
+```
+$ dotnet run -c Release
+```
+
+We intend to add support for this within the makefile in due course.
 
 ## Benchmark datasets
 
