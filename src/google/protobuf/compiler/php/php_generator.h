@@ -43,8 +43,7 @@ namespace protobuf {
 namespace compiler {
 namespace php {
 
-class PROTOC_EXPORT Generator
-    : public google::protobuf::compiler::CodeGenerator {
+class PROTOC_EXPORT Generator : public CodeGenerator {
   virtual bool Generate(
       const FileDescriptor* file,
       const string& parameter,

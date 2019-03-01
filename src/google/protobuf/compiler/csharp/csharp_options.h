@@ -76,7 +76,6 @@ struct Options {
 }  // namespace csharp
 }  // namespace compiler
 }  // namespace protobuf
-
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_COMPILER_CSHARP_OPTIONS_H__
