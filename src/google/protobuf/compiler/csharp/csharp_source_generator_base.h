@@ -48,6 +48,9 @@ class SourceGeneratorBase {
   SourceGeneratorBase(const FileDescriptor* descriptor, const Options* options);
   virtual ~SourceGeneratorBase();
 
+  SourceGeneratorBase(const SourceGeneratorBase&) = delete;
+  SourceGeneratorBase& operator=(const SourceGeneratorBase&) = delete;
+
   std::string class_access_level();
   const Options* options();
 
@@ -58,8 +61,6 @@ class SourceGeneratorBase {
  private:
   const FileDescriptor* descriptor_;
   const Options *options_;
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(SourceGeneratorBase);
 };
 
 }  // namespace csharp
