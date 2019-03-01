@@ -33,7 +33,6 @@
 #include <sstream>
 
 #include <google/protobuf/compiler/code_generator.h>
-#include <google/protobuf/compiler/plugin.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/coded_stream.h>
