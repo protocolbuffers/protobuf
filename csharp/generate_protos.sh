@@ -61,3 +61,9 @@ $PROTOC -Iexamples -Isrc --csharp_out=csharp/src/AddressBook \
 
 $PROTOC -Iconformance -Isrc --csharp_out=csharp/src/Google.Protobuf.Conformance \
     conformance/conformance.proto
+
+# Benchmark protos
+$PROTOC -Ibenchmarks \
+  benchmarks/datasets/google_message1/proto3/*.proto \
+  benchmarks/benchmarks.proto \
+  --csharp_out=csharp/src/Google.Protobuf.Benchmarks
