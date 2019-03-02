@@ -46,11 +46,13 @@ namespace Google.Protobuf
     {
         private static IExtensionValue GetValue<TTarget>(ref ExtensionSet<TTarget> set, Extension extension) where TTarget : IExtensionMessage<TTarget>
         {
-            if (!set.ValuesByIdentifier.ContainsKey(extension))
+            if (set == null)
             {
-                Register(ref set, extension);
+                set = new ExtensionSet<TTarget>();
             }
-            return set.ValuesByIdentifier[extension];
+            IExtensionValue value;
+            set.ValuesByNumber.TryGetValue(extension.FieldNumber, out value);
+            return value;
         }
 
         /// <summary>
@@ -62,10 +64,6 @@ namespace Google.Protobuf
             {
                 set = new ExtensionSet<TTarget>();
             }
-            if (set.ValuesByIdentifier.ContainsKey(extension))
-            {
-                return;
-            }
             if (extension.TargetType != typeof(TTarget))
             {
                 throw new ArgumentException("Cannot register extension for wrong target type");
@@ -74,9 +72,7 @@ namespace Google.Protobuf
             {
                 throw new ArgumentException("Set already contains an extension with the specified field number");
             }
-            var value = extension.CreateValue();
-            set.ValuesByIdentifier.Add(extension, value);
-            set.ValuesByNumber.Add(extension.FieldNumber, value);
+            set.ValuesByNumber.Add(extension.FieldNumber, extension.CreateValue());
         }
 
         /// <summary>
@@ -174,18 +170,17 @@ namespace Google.Protobuf
             {
                 first = new ExtensionSet<TTarget>();
             }
-            foreach (var pair in second.ValuesByIdentifier)
+            foreach (var pair in second.ValuesByNumber)
             {
                 IExtensionValue value;
-                if (first.ValuesByIdentifier.TryGetValue(pair.Key, out value))
+                if (first.ValuesByNumber.TryGetValue(pair.Key, out value))
                 {
                     value.MergeFrom(pair.Value);
                 }
                 else
                 {
                     var cloned = pair.Value.Clone();
-                    first.ValuesByIdentifier[pair.Key] = cloned;
-                    first.ValuesByNumber[pair.Key.FieldNumber] = cloned;
+                    first.ValuesByNumber[pair.Key] = cloned;
                 }
             }
         }
@@ -201,11 +196,10 @@ namespace Google.Protobuf
             }
 
             var newSet = new ExtensionSet<TTarget>();
-            foreach (var pair in set.ValuesByIdentifier)
+            foreach (var pair in set.ValuesByNumber)
             {
                 var cloned = pair.Value.Clone();
-                newSet.ValuesByIdentifier[pair.Key] = cloned;
-                newSet.ValuesByNumber[pair.Key.FieldNumber] = cloned;
+                newSet.ValuesByNumber[pair.Key] = cloned;
             }
             return newSet;
         }
@@ -220,7 +214,6 @@ namespace Google.Protobuf
     /// <typeparam name="TTarget">The message type that extensions in this set target</typeparam>
     public sealed class ExtensionSet<TTarget> where TTarget : IExtensionMessage<TTarget>
     {
-        internal Dictionary<Extension, IExtensionValue> ValuesByIdentifier { get; } = new Dictionary<Extension, IExtensionValue>();
         internal Dictionary<int, IExtensionValue> ValuesByNumber { get; } = new Dictionary<int, IExtensionValue>();
 
         /// <summary>
@@ -229,7 +222,7 @@ namespace Google.Protobuf
         public override int GetHashCode()
         {
             int ret = typeof(TTarget).GetHashCode();
-            foreach (KeyValuePair<Extension, IExtensionValue> field in ValuesByIdentifier)
+            foreach (KeyValuePair<int, IExtensionValue> field in ValuesByNumber)
             {
                 // Use ^ here to make the field order irrelevant.
                 int hash = field.Key.GetHashCode() ^ field.Value.GetHashCode();
@@ -248,14 +241,14 @@ namespace Google.Protobuf
                 return true;
             }
             ExtensionSet<TTarget> otherSet = other as ExtensionSet<TTarget>;
-            if (ValuesByIdentifier.Count != otherSet.ValuesByIdentifier.Count)
+            if (ValuesByNumber.Count != otherSet.ValuesByNumber.Count)
             {
                 return false;
             }
-            foreach (var pair in ValuesByIdentifier)
+            foreach (var pair in ValuesByNumber)
             {
                 IExtensionValue secondValue;
-                if (!otherSet.ValuesByIdentifier.TryGetValue(pair.Key, out secondValue))
+                if (!otherSet.ValuesByNumber.TryGetValue(pair.Key, out secondValue))
                 {
                     return false;
                 }
@@ -273,7 +266,7 @@ namespace Google.Protobuf
         public int CalculateSize()
         {
             int size = 0;
-            foreach (var value in ValuesByIdentifier.Values)
+            foreach (var value in ValuesByNumber.Values)
             {
                 size += value.CalculateSize();
             }
@@ -285,7 +278,7 @@ namespace Google.Protobuf
         /// </summary>
         public void WriteTo(CodedOutputStream stream)
         {
-            foreach (var value in ValuesByIdentifier.Values)
+            foreach (var value in ValuesByNumber.Values)
             {
                 value.WriteTo(stream);
             }
