@@ -118,7 +118,8 @@ enum {
   METHOD_GETTER = 1,
   METHOD_SETTER = 2,
   METHOD_CLEAR = 3,
-  METHOD_PRESENCE = 4
+  METHOD_PRESENCE = 4,
+  METHOD_ENUM_GETTER = 5
 };
 
 static int extract_method_call(VALUE method_name, MessageHeader* self,
@@ -153,9 +154,34 @@ static int extract_method_call(VALUE method_name, MessageHeader* self,
     accessor_type = METHOD_GETTER;
   }
 
+  bool has_field = upb_msgdef_lookupname(self->descriptor->msgdef, name, name_len,
+			                                   &test_f, &test_o);
+
+  // Look for enum accessor of the form <enum_name>_const
+  if (!has_field && accessor_type == METHOD_GETTER &&
+      name_len > 6 && strncmp(name + name_len - 6, "_const", 6) == 0) {
+
+    // Find enum field name
+    char enum_name[name_len - 5];
+    strncpy(enum_name, name, name_len - 6);
+    enum_name[name_len - 4] = '\0';
+
+    // Check if enum field exists
+    const upb_oneofdef* test_o_enum;
+    const upb_fielddef* test_f_enum;
+    if (upb_msgdef_lookupname(self->descriptor->msgdef, enum_name, name_len - 6,
+			                        &test_f_enum, &test_o_enum) &&
+        upb_fielddef_type(test_f_enum) == UPB_TYPE_ENUM) {
+      // It does exist!
+      has_field = true;
+      accessor_type = METHOD_ENUM_GETTER;
+      test_o = test_o_enum;
+      test_f = test_f_enum;
+    }
+  }
+
   // Verify the name corresponds to a oneof or field in this message.
-  if (!upb_msgdef_lookupname(self->descriptor->msgdef, name, name_len,
-			     &test_f, &test_o)) {
+  if (!has_field) {
     return METHOD_UNKNOWN;
   }
 
@@ -231,13 +257,13 @@ VALUE Message_method_missing(int argc, VALUE* argv, VALUE _self) {
       return oneof_field == NULL ? Qfalse : Qtrue;
     } else if (accessor_type == METHOD_CLEAR) {
       if (oneof_field != NULL) {
-	layout_clear(self->descriptor->layout, Message_data(self), oneof_field);
+        layout_clear(self->descriptor->layout, Message_data(self), oneof_field);
       }
       return Qnil;
     } else {
       // METHOD_ACCESSOR
       return oneof_field == NULL ? Qnil :
-	ID2SYM(rb_intern(upb_fielddef_name(oneof_field)));
+        ID2SYM(rb_intern(upb_fielddef_name(oneof_field)));
     }
   // Otherwise we're operating on a single proto field
   } else if (accessor_type == METHOD_SETTER) {
@@ -248,6 +274,25 @@ VALUE Message_method_missing(int argc, VALUE* argv, VALUE _self) {
     return Qnil;
   } else if (accessor_type == METHOD_PRESENCE) {
     return layout_has(self->descriptor->layout, Message_data(self), f);
+  } else if (accessor_type == METHOD_ENUM_GETTER) {
+    VALUE enum_type = field_type_class(f);
+    VALUE method = rb_intern("const_get");
+    VALUE raw_value = layout_get(self->descriptor->layout, Message_data(self), f);
+
+    // Map repeated fields to a new type with ints
+    if (upb_fielddef_label(f) == UPB_LABEL_REPEATED) {
+      int array_size = FIX2INT(rb_funcall(raw_value, rb_intern("length"), 0));
+      VALUE array_args[1] = { ID2SYM(rb_intern("int64")) };
+      VALUE array = rb_class_new_instance(1, array_args, CLASS_OF(raw_value));
+      for (int i = 0; i < array_size; i++) {
+        VALUE entry = rb_funcall(enum_type, method, 1, rb_funcall(raw_value,
+                                 rb_intern("at"), 1, INT2NUM(i)));
+        rb_funcall(array, rb_intern("push"), 1, entry);
+      }
+      return array;
+    }
+    // Convert the value for singular fields
+    return rb_funcall(enum_type, method, 1, raw_value);
   } else {
     return layout_get(self->descriptor->layout, Message_data(self), f);
   }
