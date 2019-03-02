@@ -554,8 +554,14 @@ EXTRA_DIST =                                                   \
   google/protobuf/util/package_info.h                          \
   google/protobuf/compiler/ruby/ruby_generated_code.proto      \
   google/protobuf/compiler/ruby/ruby_generated_code_pb.rb      \
-  google/protobuf/compiler/ruby/ruby_generated_code_proto2.proto \
-  google/protobuf/compiler/ruby/ruby_generated_code_proto2_pb.rb \
+  google/protobuf/compiler/ruby/ruby_generated_code_proto2.proto         \
+  google/protobuf/compiler/ruby/ruby_generated_code_proto2_pb.rb         \
+  google/protobuf/compiler/ruby/ruby_generated_pkg_explicit.proto        \
+  google/protobuf/compiler/ruby/ruby_generated_pkg_explicit_legacy.proto \
+  google/protobuf/compiler/ruby/ruby_generated_pkg_explicit_legacy_pb.rb \
+  google/protobuf/compiler/ruby/ruby_generated_pkg_explicit_pb.rb        \
+  google/protobuf/compiler/ruby/ruby_generated_pkg_implicit.proto        \
+  google/protobuf/compiler/ruby/ruby_generated_pkg_implicit_pb.rb        \
   google/protobuf/compiler/package_info.h                      \
   google/protobuf/compiler/zip_output_unittest.sh              \
   libprotobuf-lite.map                                         \
