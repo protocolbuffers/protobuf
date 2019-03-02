@@ -1269,6 +1269,39 @@ module CommonTests
     assert proto_module::TestMessage.new != nil
   end
 
+  def test_freeze
+    m = proto_module::TestMessage.new
+    m.optional_int32 = 10
+    m.freeze
+
+    frozen_error = assert_raise(FrozenError) { m.optional_int32 = 20 }
+    assert_equal "can't modify frozen #{proto_module}::TestMessage", frozen_error.message
+    assert_equal 10, m.optional_int32
+    assert_equal true, m.frozen?
+
+    assert_raise(FrozenError) { m.optional_int64 = 2 }
+    assert_raise(FrozenError) { m.optional_uint32 = 3 }
+    assert_raise(FrozenError) { m.optional_uint64 = 4 }
+    assert_raise(FrozenError) { m.optional_bool = true }
+    assert_raise(FrozenError) { m.optional_float = 6.0 }
+    assert_raise(FrozenError) { m.optional_double = 7.0 }
+    assert_raise(FrozenError) { m.optional_string = '8' }
+    assert_raise(FrozenError) { m.optional_bytes = nil }
+    assert_raise(FrozenError) { m.optional_msg = proto_module::TestMessage2.new }
+    assert_raise(FrozenError) { m.optional_enum = :A }
+    assert_raise(FrozenError) { m.repeated_int32 = 1 }
+    assert_raise(FrozenError) { m.repeated_int64 = 2 }
+    assert_raise(FrozenError) { m.repeated_uint32 = 3 }
+    assert_raise(FrozenError) { m.repeated_uint64 = 4 }
+    assert_raise(FrozenError) { m.repeated_bool = true }
+    assert_raise(FrozenError) { m.repeated_float = 6.0 }
+    assert_raise(FrozenError) { m.repeated_double = 7.0 }
+    assert_raise(FrozenError) { m.repeated_string = '8' }
+    assert_raise(FrozenError) { m.repeated_bytes = nil }
+    assert_raise(FrozenError) { m.repeated_msg = proto_module::TestMessage2.new }
+    assert_raise(FrozenError) { m.repeated_enum = :A }
+  end
+  
   def test_eq
     m1 = proto_module::TestMessage.new(:optional_string => 'foo', :repeated_string => ['bar1', 'bar2'])
     m2 = proto_module::TestMessage.new(:optional_string => 'foo', :repeated_string => ['bar1', 'bar2'])
