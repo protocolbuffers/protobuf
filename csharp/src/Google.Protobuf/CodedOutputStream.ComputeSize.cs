@@ -46,7 +46,7 @@ namespace Google.Protobuf
         /// Computes the number of bytes that would be needed to encode a
         /// double field, including the tag.
         /// </summary>
-        public static int ComputeDoubleSize(double value)
+        public static int ComputeFixedDoubleSize(double value)
         {
             return LittleEndian64Size;
         }
@@ -55,7 +55,7 @@ namespace Google.Protobuf
         /// Computes the number of bytes that would be needed to encode a
         /// float field, including the tag.
         /// </summary>
-        public static int ComputeFloatSize(float value)
+        public static int ComputeFixedFloatSize(float value)
         {
             return LittleEndian32Size;
         }
@@ -117,7 +117,7 @@ namespace Google.Protobuf
         /// Computes the number of bytes that would be needed to encode a
         /// bool field, including the tag.
         /// </summary>
-        public static int ComputeBoolSize(bool value)
+        public static int ComputeFixedBoolSize(bool value)
         {
             return 1;
         }
