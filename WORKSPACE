@@ -74,3 +74,13 @@ bind(
     name = "zlib",
     actual = "@net_zlib//:zlib",
 )
+
+maven_jar(
+    name = "error_prone_annotations_maven",
+    artifact = "com.google.errorprone:error_prone_annotations:2.3.2",
+)
+
+bind(
+    name = "error_prone_annotations",
+    actual = "@error_prone_annotations_maven//jar",
+)
