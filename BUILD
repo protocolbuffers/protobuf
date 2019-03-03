@@ -638,6 +638,7 @@ java_library(
     visibility = ["//visibility:public"],
     deps = [
         "protobuf_java",
+        "//external:error_prone_annotations",
         "//external:gson",
         "//external:guava",
     ],
