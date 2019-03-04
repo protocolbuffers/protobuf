@@ -44,6 +44,7 @@ copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\duration.pb.h" includ
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\dynamic_message.h" include\google\protobuf\dynamic_message.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\empty.pb.h" include\google\protobuf\empty.pb.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\extension_set.h" include\google\protobuf\extension_set.h
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\extension_set_inl.h" include\google\protobuf\extension_set_inl.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\field_mask.pb.h" include\google\protobuf\field_mask.pb.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\generated_enum_reflection.h" include\google\protobuf\generated_enum_reflection.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\generated_enum_util.h" include\google\protobuf\generated_enum_util.h
@@ -94,7 +95,6 @@ copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\mutex.h" includ
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\once.h" include\google\protobuf\stubs\once.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\platform_macros.h" include\google\protobuf\stubs\platform_macros.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\port.h" include\google\protobuf\stubs\port.h
-copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\singleton.h" include\google\protobuf\stubs\singleton.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\status.h" include\google\protobuf\stubs\status.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\stl_util.h" include\google\protobuf\stubs\stl_util.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\strutil.h" include\google\protobuf\stubs\strutil.h

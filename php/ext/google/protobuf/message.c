@@ -464,17 +464,29 @@ void Message_construct(zval* msg, zval* array_wrapper) {
       const upb_msgdef* submsgdef = upb_fielddef_msgsubdef(field);
       PHP_PROTO_HASHTABLE_VALUE desc_php = get_def_obj(submsgdef);
       Descriptor* desc = UNBOX_HASHTABLE_VALUE(Descriptor, desc_php);
-      zend_property_info* property_info;
-      PHP_PROTO_FAKE_SCOPE_BEGIN(Z_OBJCE_P(msg));
+
+      CACHED_VALUE* cached = NULL;
+      if (upb_fielddef_containingoneof(field)) {
+        void* memory = slot_memory(intern->descriptor->layout,
+                                   message_data(intern), field);
+        int property_cache_index =
+            intern->descriptor->layout->fields[upb_fielddef_index(field)]
+                .cache_index;
+        cached = OBJ_PROP(Z_OBJ_P(msg), property_cache_index);
+        *(CACHED_VALUE**)(memory) = cached;
+      } else {
+        zend_property_info* property_info;
+        PHP_PROTO_FAKE_SCOPE_BEGIN(Z_OBJCE_P(msg));
 #if PHP_MAJOR_VERSION < 7
-      property_info =
-          zend_get_property_info(Z_OBJCE_P(msg), &key, true TSRMLS_CC);
+        property_info =
+            zend_get_property_info(Z_OBJCE_P(msg), &key, true TSRMLS_CC);
 #else
-      property_info =
-          zend_get_property_info(Z_OBJCE_P(msg), Z_STR_P(&key), true);
+        property_info =
+            zend_get_property_info(Z_OBJCE_P(msg), Z_STR_P(&key), true);
 #endif
-      PHP_PROTO_FAKE_SCOPE_END;
-      CACHED_VALUE* cached = OBJ_PROP(Z_OBJ_P(msg), property_info->offset);
+        PHP_PROTO_FAKE_SCOPE_END;
+        cached = OBJ_PROP(Z_OBJ_P(msg), property_info->offset);
+      }
 #if PHP_MAJOR_VERSION < 7
       SEPARATE_ZVAL_IF_NOT_REF(cached);
 #endif
@@ -689,7 +701,8 @@ static void init_file_any(TSRMLS_D) {
   char* binary;
   int binary_len;
   hex_to_binary(generated_file, &binary, &binary_len);
-  internal_add_generated_file(binary, binary_len, generated_pool TSRMLS_CC);
+  internal_add_generated_file(binary, binary_len,
+                              generated_pool, true TSRMLS_CC);
   FREE(binary);
   is_inited_file_any = true;
 }
@@ -729,7 +742,8 @@ static void init_file_api(TSRMLS_D) {
   char* binary;
   int binary_len;
   hex_to_binary(generated_file, &binary, &binary_len);
-  internal_add_generated_file(binary, binary_len, generated_pool TSRMLS_CC);
+  internal_add_generated_file(binary, binary_len,
+                              generated_pool, true TSRMLS_CC);
   FREE(binary);
   is_inited_file_api = true;
 }
@@ -749,7 +763,8 @@ static void init_file_duration(TSRMLS_D) {
   char* binary;
   int binary_len;
   hex_to_binary(generated_file, &binary, &binary_len);
-  internal_add_generated_file(binary, binary_len, generated_pool TSRMLS_CC);
+  internal_add_generated_file(binary, binary_len,
+                              generated_pool, true TSRMLS_CC);
   FREE(binary);
   is_inited_file_duration = true;
 }
@@ -769,7 +784,8 @@ static void init_file_field_mask(TSRMLS_D) {
   char* binary;
   int binary_len;
   hex_to_binary(generated_file, &binary, &binary_len);
-  internal_add_generated_file(binary, binary_len, generated_pool TSRMLS_CC);
+  internal_add_generated_file(binary, binary_len,
+                              generated_pool, true TSRMLS_CC);
   FREE(binary);
   is_inited_file_field_mask = true;
 }
@@ -788,7 +804,8 @@ static void init_file_empty(TSRMLS_D) {
   char* binary;
   int binary_len;
   hex_to_binary(generated_file, &binary, &binary_len);
-  internal_add_generated_file(binary, binary_len, generated_pool TSRMLS_CC);
+  internal_add_generated_file(binary, binary_len,
+                              generated_pool, true TSRMLS_CC);
   FREE(binary);
   is_inited_file_empty = true;
 }
@@ -809,7 +826,8 @@ static void init_file_source_context(TSRMLS_D) {
   char* binary;
   int binary_len;
   hex_to_binary(generated_file, &binary, &binary_len);
-  internal_add_generated_file(binary, binary_len, generated_pool TSRMLS_CC);
+  internal_add_generated_file(binary, binary_len,
+                              generated_pool, true TSRMLS_CC);
   FREE(binary);
   is_inited_file_source_context = true;
 }
@@ -843,7 +861,8 @@ static void init_file_struct(TSRMLS_D) {
   char* binary;
   int binary_len;
   hex_to_binary(generated_file, &binary, &binary_len);
-  internal_add_generated_file(binary, binary_len, generated_pool TSRMLS_CC);
+  internal_add_generated_file(binary, binary_len,
+                              generated_pool, true TSRMLS_CC);
   FREE(binary);
   is_inited_file_struct = true;
 }
@@ -863,7 +882,8 @@ static void init_file_timestamp(TSRMLS_D) {
   char* binary;
   int binary_len;
   hex_to_binary(generated_file, &binary, &binary_len);
-  internal_add_generated_file(binary, binary_len, generated_pool TSRMLS_CC);
+  internal_add_generated_file(binary, binary_len,
+                              generated_pool, true TSRMLS_CC);
   FREE(binary);
   is_inited_file_timestamp = true;
 }
@@ -931,7 +951,8 @@ static void init_file_type(TSRMLS_D) {
   char* binary;
   int binary_len;
   hex_to_binary(generated_file, &binary, &binary_len);
-  internal_add_generated_file(binary, binary_len, generated_pool TSRMLS_CC);
+  internal_add_generated_file(binary, binary_len,
+                              generated_pool, true TSRMLS_CC);
   FREE(binary);
   is_inited_file_type = true;
 }
@@ -958,7 +979,8 @@ static void init_file_wrappers(TSRMLS_D) {
   char* binary;
   int binary_len;
   hex_to_binary(generated_file, &binary, &binary_len);
-  internal_add_generated_file(binary, binary_len, generated_pool TSRMLS_CC);
+  internal_add_generated_file(binary, binary_len,
+                              generated_pool, true TSRMLS_CC);
   FREE(binary);
   is_inited_file_wrappers = true;
 }
