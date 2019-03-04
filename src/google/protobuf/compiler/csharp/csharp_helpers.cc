@@ -353,12 +353,10 @@ std::string GetPropertyName(const FieldDescriptor* descriptor) {
   return property_name;
 }
 
-std::string GetOutputFile(
-    const google::protobuf::FileDescriptor* descriptor,
-    const std::string file_extension,
-    const bool generate_directories,
-    const std::string base_namespace,
-    string* error) {
+std::string GetOutputFile(const FileDescriptor* descriptor,
+                          const std::string file_extension,
+                          const bool generate_directories,
+                          const std::string base_namespace, string* error) {
   string relative_filename = GetFileNameBase(descriptor) + file_extension;
   if (!generate_directories) {
     return relative_filename;
