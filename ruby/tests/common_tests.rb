@@ -4,6 +4,9 @@
 # and that the including class should define a 'proto_module' method which returns
 # the enclosing module of the proto message classes.
 module CommonTests
+  # Ruby 2.5 changed to raise FrozenError instead of RuntimeError
+  FrozenErrorType = Gem::Version.new(RUBY_VERSION) < Gem::Version.new('2.5') ? RuntimeError : FrozenError
+
   def test_defaults
     m = proto_module::TestMessage.new
     assert m.optional_int32 == 0
@@ -204,15 +207,7 @@ module CommonTests
 
     # strings are immutable so we can't do this, but serialize should catch it.
     m.optional_string = "asdf".encode!('UTF-8')
-    # Ruby 2.5 changed to raise FrozenError. However, assert_raise don't
-    # accept subclass.
-    ok = false
-    begin
-      m.optional_string.encode!('ASCII-8BIT')
-    rescue RuntimeError
-      ok = true
-    end
-    assert ok
+    assert_raise(FrozenErrorType) { m.optional_string.encode!('ASCII-8BIT') }
   end
 
   def test_rptfield_int32
@@ -1274,32 +1269,32 @@ module CommonTests
     m.optional_int32 = 10
     m.freeze
 
-    frozen_error = assert_raise(FrozenError) { m.optional_int32 = 20 }
+    frozen_error = assert_raise(FrozenErrorType) { m.optional_int32 = 20 }
     assert_equal "can't modify frozen #{proto_module}::TestMessage", frozen_error.message
     assert_equal 10, m.optional_int32
     assert_equal true, m.frozen?
 
-    assert_raise(FrozenError) { m.optional_int64 = 2 }
-    assert_raise(FrozenError) { m.optional_uint32 = 3 }
-    assert_raise(FrozenError) { m.optional_uint64 = 4 }
-    assert_raise(FrozenError) { m.optional_bool = true }
-    assert_raise(FrozenError) { m.optional_float = 6.0 }
-    assert_raise(FrozenError) { m.optional_double = 7.0 }
-    assert_raise(FrozenError) { m.optional_string = '8' }
-    assert_raise(FrozenError) { m.optional_bytes = nil }
-    assert_raise(FrozenError) { m.optional_msg = proto_module::TestMessage2.new }
-    assert_raise(FrozenError) { m.optional_enum = :A }
-    assert_raise(FrozenError) { m.repeated_int32 = 1 }
-    assert_raise(FrozenError) { m.repeated_int64 = 2 }
-    assert_raise(FrozenError) { m.repeated_uint32 = 3 }
-    assert_raise(FrozenError) { m.repeated_uint64 = 4 }
-    assert_raise(FrozenError) { m.repeated_bool = true }
-    assert_raise(FrozenError) { m.repeated_float = 6.0 }
-    assert_raise(FrozenError) { m.repeated_double = 7.0 }
-    assert_raise(FrozenError) { m.repeated_string = '8' }
-    assert_raise(FrozenError) { m.repeated_bytes = nil }
-    assert_raise(FrozenError) { m.repeated_msg = proto_module::TestMessage2.new }
-    assert_raise(FrozenError) { m.repeated_enum = :A }
+    assert_raise(FrozenErrorType) { m.optional_int64 = 2 }
+    assert_raise(FrozenErrorType) { m.optional_uint32 = 3 }
+    assert_raise(FrozenErrorType) { m.optional_uint64 = 4 }
+    assert_raise(FrozenErrorType) { m.optional_bool = true }
+    assert_raise(FrozenErrorType) { m.optional_float = 6.0 }
+    assert_raise(FrozenErrorType) { m.optional_double = 7.0 }
+    assert_raise(FrozenErrorType) { m.optional_string = '8' }
+    assert_raise(FrozenErrorType) { m.optional_bytes = nil }
+    assert_raise(FrozenErrorType) { m.optional_msg = proto_module::TestMessage2.new }
+    assert_raise(FrozenErrorType) { m.optional_enum = :A }
+    assert_raise(FrozenErrorType) { m.repeated_int32 = 1 }
+    assert_raise(FrozenErrorType) { m.repeated_int64 = 2 }
+    assert_raise(FrozenErrorType) { m.repeated_uint32 = 3 }
+    assert_raise(FrozenErrorType) { m.repeated_uint64 = 4 }
+    assert_raise(FrozenErrorType) { m.repeated_bool = true }
+    assert_raise(FrozenErrorType) { m.repeated_float = 6.0 }
+    assert_raise(FrozenErrorType) { m.repeated_double = 7.0 }
+    assert_raise(FrozenErrorType) { m.repeated_string = '8' }
+    assert_raise(FrozenErrorType) { m.repeated_bytes = nil }
+    assert_raise(FrozenErrorType) { m.repeated_msg = proto_module::TestMessage2.new }
+    assert_raise(FrozenErrorType) { m.repeated_enum = :A }
   end
   
   def test_eq
