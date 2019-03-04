@@ -172,7 +172,12 @@ namespace Google.Protobuf
             WriteRawLittleEndian64((ulong)BitConverter.DoubleToInt64Bits(value));
         }
 
-        public void WriteDoubleArray(double[] values, int count)
+        /// <summary>
+        /// Writes an array of double field values, without tags, to the stream.
+        /// </summary>
+        /// <param name="values">The values to write</param>
+        /// <param name="count">Number of elements to write</param>
+        internal void WriteDoubleArray(double[] values, int count)
         {
             if(position + 8 * count > limit)
             {
@@ -225,11 +230,37 @@ namespace Google.Protobuf
             }
         }
 
-        public void WriteFloatArray(float[] values, int count)
+        /// <summary>
+        /// Writes an array of float field values, without tags, to the stream.
+        /// </summary>
+        /// <param name="values">The value to write</param>
+        /// <param name="count">Number of elements to write</param>
+        internal void WriteFloatArray(float[] values, int count)
         {
-            for(int i = 0; i < count; ++i)
+            if (position + count * 4 > limit)
             {
-                WriteFloat(values[i]);
+                for (int i = 0; i < count; ++i)
+                {
+                    WriteFloat(values[i]);
+                }
+            }
+            else
+            {
+                byte[] rawBytes;
+                for(int i = 0; i < count; ++i)
+                {
+                    rawBytes = BitConverter.GetBytes(values[i]);
+                    if (!BitConverter.IsLittleEndian)
+                    {
+                        ByteArray.Reverse(rawBytes);
+                    }
+
+                    buffer[position + i * 4] = rawBytes[0];
+                    buffer[position + i * 4 + 1] = rawBytes[1];
+                    buffer[position + i * 4 + 2] = rawBytes[2];
+                    buffer[position + i * 4 + 3] = rawBytes[3];
+                }
+                position += count * 4;
             }
         }
 
@@ -277,7 +308,12 @@ namespace Google.Protobuf
             WriteRawLittleEndian64(value);
         }
 
-        public void WriteFixed64Array(ulong[] values, int count)
+        /// <summary>
+        /// Writes an array of fixed64 field values, without tags, to the stream.
+        /// </summary>
+        /// <param name="values">The values to write</param>
+        /// <param name="count">The number of values to write</param>
+        internal void WriteFixed64Array(ulong[] values, int count)
         {
             WriteRawLittleEndian64Array(values, count);
         }
@@ -295,26 +331,10 @@ namespace Google.Protobuf
         /// Writes an array of fixed32 field values, without tags, to the stream.
         /// </summary>
         /// <param name="values">The values to write</param>
-        public void WriteFixed32Array(uint[] values, int count)
+        /// <param name="count">The number of values to write</param>
+        internal void WriteFixed32Array(uint[] values, int count)
         {
-            if (position + 4 * count > limit)
-            {
-                for(int i = 0; i < count; ++i)
-                {
-                    WriteRawLittleEndian32(values[i]);
-                }
-            }
-            else
-            {
-                for(int i = 0; i < count; ++i)
-                {
-                    buffer[position + i * 4] = ((byte)values[i]);
-                    buffer[position + i * 4 + 1] = ((byte)(values[i] >> 8));
-                    buffer[position + i * 4 + 2] = ((byte)(values[i] >> 16));
-                    buffer[position + i * 4 + 3] = ((byte)(values[i] >> 24));
-                }
-                position += count * 4;
-            }
+            WriteRawLittleEndian32Array(values, count);
         }
 
         /// <summary>
@@ -326,14 +346,15 @@ namespace Google.Protobuf
             WriteRawByte(value ? (byte) 1 : (byte) 0);
         }
 
-        internal readonly byte trueByte = (byte)1;
-        internal readonly byte falseByte = (byte)0;
+        internal readonly byte TrueByte = (byte)1;
+        internal readonly byte FalseByte = (byte)0;
 
         /// <summary>
         /// Writes an array of bool field values, without tags, to the stream. 
         /// </summary>
         /// <param name="values">The array of values to write</param>
-        public void WriteBoolArray(bool[] values, int count)
+        /// <param name="count">The number of values to write</param>
+        internal void WriteBoolArray(bool[] values, int count)
         {
             if(position + count > limit)
             { 
@@ -343,7 +364,7 @@ namespace Google.Protobuf
             else
             {
                 for (int i = 0; i < count; ++i)
-                    buffer[position + i] = (values[i] ? trueByte : falseByte);
+                    buffer[position + i] = (values[i] ? TrueByte : FalseByte);
                 position += count;
             }
         }
@@ -442,10 +463,11 @@ namespace Google.Protobuf
         /// <summary>
         /// Writes an array of sfixed32 values, without tags, to the stream.
         /// </summary>
-        /// <param name="value">The values to write.</param>
-        public void WriteSFixed32Array(int[] values, int count)
+        /// <param name="values">The values to write.</param>
+        /// <param name="count">The number of values to write</param>
+        internal void WriteSFixed32Array(int[] values, int count)
         {
-            WriteFixed32Array((uint[])(object)values, count);
+            WriteRawLittleEndian32Array((uint[])(object)values, count);
         }
 
         /// <summary>
@@ -457,7 +479,8 @@ namespace Google.Protobuf
             WriteRawLittleEndian64((ulong) value);
         }
 
-        public void WriteSFixed64Array(long[] values, int count)
+        
+        internal void WriteSFixed64Array(long[] values, int count)
         {
             WriteRawLittleEndian64Array((ulong[])(object)values, count);
         }
@@ -652,6 +675,29 @@ namespace Google.Protobuf
                 buffer[position++] = ((byte) (value >> 8));
                 buffer[position++] = ((byte) (value >> 16));
                 buffer[position++] = ((byte) (value >> 24));
+            }
+        }
+
+        internal void WriteRawLittleEndian32Array(uint[] values, int count)
+        {
+            if (position + 4 * count > limit)
+            {
+                for(int i = 0; i < count; ++i)
+                {
+                    WriteRawLittleEndian32(values[i]);
+                }
+            }
+            else
+            {
+                for(int i = 0; i < count; ++i)
+                {
+                    buffer[position + i * 4] = ((byte) values[i]);
+                    buffer[position + i * 4 + 1] = ((byte) (values[i] >> 8));
+                    buffer[position + i * 4 + 2] = ((byte) (values[i] >> 16));
+                    buffer[position + i * 4 + 3] = ((byte) (values[i] >> 24));
+                    
+                }
+                position += count * 4;
             }
         }
 
