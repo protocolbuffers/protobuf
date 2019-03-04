@@ -306,7 +306,7 @@ bool IsUpper(char ch) { return ch >= 'A' && ch <= 'Z'; }
 
 bool IsAlpha(char ch) { return IsLower(ch) || IsUpper(ch); }
 
-char CharToUpper(char ch) { return IsLower(ch) ? (ch - 'a' + 'A') : ch; }
+char UpperChar(char ch) { return IsLower(ch) ? (ch - 'a' + 'A') : ch; }
 
 
 // Package names in protobuf are snake_case by convention, but Ruby module
@@ -323,7 +323,7 @@ std::string PackageToModule(const std::string& name) {
       next_upper = true;
     } else {
       if (next_upper) {
-        result.push_back(CharToUpper(name[i]));
+        result.push_back(UpperChar(name[i]));
       } else {
         result.push_back(name[i]);
       }
@@ -343,7 +343,7 @@ std::string RubifyConstant(const std::string& name) {
   if (!ret.empty()) {
     if (IsLower(ret[0])) {
       // If it starts with a lowercase letter, capitalize it.
-      ret[0] = CharToUpper(ret[0]);
+      ret[0] = UpperChar(ret[0]);
     } else if (!IsAlpha(ret[0])) {
       // Otherwise (e.g. if it begins with an underscore), we need to come up
       // with some prefix that starts with a capital letter. We could be smarter
