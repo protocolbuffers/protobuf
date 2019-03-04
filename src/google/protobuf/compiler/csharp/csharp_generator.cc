@@ -48,8 +48,7 @@ namespace protobuf {
 namespace compiler {
 namespace csharp {
 
-void GenerateFile(const google::protobuf::FileDescriptor* file,
-                  io::Printer* printer,
+void GenerateFile(const FileDescriptor* file, io::Printer* printer,
                   const Options* options) {
   ReflectionClassGenerator reflectionClassGenerator(file, options);
   reflectionClassGenerator.Generate(printer);
