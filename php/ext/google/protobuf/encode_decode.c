@@ -36,22 +36,14 @@
 
 /* stringsink *****************************************************************/
 
-typedef struct {
-  upb_byteshandler handler;
-  upb_bytessink sink;
-  char *ptr;
-  size_t len, size;
-} stringsink;
-
-
 static void *stringsink_start(void *_sink, const void *hd, size_t size_hint) {
   stringsink *sink = _sink;
   sink->len = 0;
   return sink;
 }
 
-static size_t stringsink_string(void *_sink, const void *hd, const char *ptr,
-                                size_t len, const upb_bufhandle *handle) {
+size_t stringsink_string(void *_sink, const void *hd, const char *ptr,
+                         size_t len, const upb_bufhandle *handle) {
   stringsink *sink = _sink;
   size_t new_size = sink->size;
 
