@@ -455,10 +455,9 @@ namespace Google.Protobuf
                 Action<CodedOutputStream, T> writer,
                 Action<CodedOutputStream, T[], int> arrayWriter,
                 int fixedSize,
-                uint tag) : this(reader, writer, _ => fixedSize, tag)
+                uint tag) : this(reader, writer, arrayWriter, _ => fixedSize, tag, 0, DefaultDefault)
         {
             FixedSize = fixedSize;
-            ArrayValueWriter = arrayWriter;
         }
 
         internal FieldCodec(
