@@ -72,7 +72,7 @@ namespace Google.Protobuf
         /// <returns>A codec for the given tag.</returns>
         public static FieldCodec<bool> ForBool(uint tag)
         {
-            return new FieldCodec<bool>(input => input.ReadBool(), (output, value) => output.WriteBool(value), 1, tag);
+            return new FieldCodec<bool>(input => input.ReadBool(), (output, value) => output.WriteBool(value), (output, values, count) => output.WriteBoolArray(values, count), 1, tag);
         }
 
         /// <summary>
@@ -102,7 +102,7 @@ namespace Google.Protobuf
         /// <returns>A codec for the given tag.</returns>
         public static FieldCodec<uint> ForFixed32(uint tag)
         {
-            return new FieldCodec<uint>(input => input.ReadFixed32(), (output, value) => output.WriteFixed32(value), 4, tag);
+            return new FieldCodec<uint>(input => input.ReadFixed32(), (output, value) => output.WriteFixed32(value), (output, values, count) => output.WriteFixed32Array(values, count), 4, tag);
         }
 
         /// <summary>
@@ -112,7 +112,7 @@ namespace Google.Protobuf
         /// <returns>A codec for the given tag.</returns>
         public static FieldCodec<int> ForSFixed32(uint tag)
         {
-            return new FieldCodec<int>(input => input.ReadSFixed32(), (output, value) => output.WriteSFixed32(value), 4, tag);
+            return new FieldCodec<int>(input => input.ReadSFixed32(), (output, value) => output.WriteSFixed32(value), (output, values, count) => output.WriteSFixed32Array(values, count), 4, tag);
         }
 
         /// <summary>
@@ -152,7 +152,7 @@ namespace Google.Protobuf
         /// <returns>A codec for the given tag.</returns>
         public static FieldCodec<ulong> ForFixed64(uint tag)
         {
-            return new FieldCodec<ulong>(input => input.ReadFixed64(), (output, value) => output.WriteFixed64(value), 8, tag);
+            return new FieldCodec<ulong>(input => input.ReadFixed64(), (output, value) => output.WriteFixed64(value), (output, values, count) => output.WriteFixed64Array(values, count), 8, tag);
         }
 
         /// <summary>
@@ -162,7 +162,7 @@ namespace Google.Protobuf
         /// <returns>A codec for the given tag.</returns>
         public static FieldCodec<long> ForSFixed64(uint tag)
         {
-            return new FieldCodec<long>(input => input.ReadSFixed64(), (output, value) => output.WriteSFixed64(value), 8, tag);
+            return new FieldCodec<long>(input => input.ReadSFixed64(), (output, value) => output.WriteSFixed64(value), (output, values, count) => output.WriteSFixed64Array(values, count), 8, tag);
         }
 
         /// <summary>
@@ -182,7 +182,7 @@ namespace Google.Protobuf
         /// <returns>A codec for the given tag.</returns>
         public static FieldCodec<float> ForFloat(uint tag)
         {
-            return new FieldCodec<float>(input => input.ReadFloat(), (output, value) => output.WriteFloat(value), 4, tag);
+            return new FieldCodec<float>(input => input.ReadFloat(), (output, value) => output.WriteFloat(value), (output, values, count) => output.WriteFloatArray(values, count), 4, tag);
         }
 
         /// <summary>
@@ -192,7 +192,7 @@ namespace Google.Protobuf
         /// <returns>A codec for the given tag.</returns>
         public static FieldCodec<double> ForDouble(uint tag)
         {
-            return new FieldCodec<double>(input => input.ReadDouble(), (output, value) => output.WriteDouble(value), 8, tag);
+            return new FieldCodec<double>(input => input.ReadDouble(), (output, value) => output.WriteDouble(value), (output, values, count) => output.WriteDoubleArray(values, count), 8, tag);
         }
 
         // Enums are tricky. We can probably use expression trees to build these delegates automatically,
@@ -247,6 +247,12 @@ namespace Google.Protobuf
             return new FieldCodec<T>(
                 input => WrapperCodecs.Read<T>(input, nestedCodec),
                 (output, value) => WrapperCodecs.Write<T>(output, value, nestedCodec),
+                (output, values, count) => {
+                    for (int i = 0; i < count; ++i)
+                    {
+                        WrapperCodecs.Write<T>(output, values[i], nestedCodec);
+                    }
+                },
                 value => WrapperCodecs.CalculateSize<T>(value, nestedCodec),
                 tag, 0,
                 null); // Default value for the wrapper
@@ -262,6 +268,12 @@ namespace Google.Protobuf
             return new FieldCodec<T?>(
                 input => WrapperCodecs.Read<T>(input, nestedCodec),
                 (output, value) => WrapperCodecs.Write<T>(output, value.Value, nestedCodec),
+                (output, values, count) => {
+                  for (int i = 0; i < count; ++i)
+                  {
+                    WrapperCodecs.Write<T>(output, values[i].Value, nestedCodec);
+                  }
+                },
                 value => value == null ? 0 : WrapperCodecs.CalculateSize<T>(value.Value, nestedCodec),
                 tag, 0,
                 null); // Default value for the wrapper
@@ -389,6 +401,12 @@ namespace Google.Protobuf
         internal Action<CodedOutputStream, T> ValueWriter { get; }
 
         /// <summary>
+        /// Returns a delegate to write an array of values (unconditionally) to a coded
+        /// output stream.
+        /// </summary>
+        internal Action<CodedOutputStream, T[], int> ArrayValueWriter { get; }
+
+        /// <summary>
         /// Returns the size calculator for just a value.
         /// </summary>
         internal Func<T, int> ValueSizeCalculator { get; }
@@ -435,10 +453,12 @@ namespace Google.Protobuf
         internal FieldCodec(
                 Func<CodedInputStream, T> reader,
                 Action<CodedOutputStream, T> writer,
+                Action<CodedOutputStream, T[], int> arrayWriter,
                 int fixedSize,
                 uint tag) : this(reader, writer, _ => fixedSize, tag)
         {
             FixedSize = fixedSize;
+            ArrayValueWriter = arrayWriter;
         }
 
         internal FieldCodec(
@@ -446,13 +466,26 @@ namespace Google.Protobuf
             Action<CodedOutputStream, T> writer,
             Func<T, int> sizeCalculator,
             uint tag,
-            uint endTag = 0) : this(reader, writer, sizeCalculator, tag, endTag, DefaultDefault)
+            uint endTag = 0) : 
+                this(reader,
+                     writer,
+                     (output, values, count) => {
+                        for (int i = 0; i < count; ++i)
+                        {
+                            writer(output, values[i]);
+                        }
+                      },
+                     sizeCalculator,
+                     tag,
+                     endTag,
+                     DefaultDefault)
         {
         }
 
         internal FieldCodec(
             Func<CodedInputStream, T> reader,
             Action<CodedOutputStream, T> writer,
+            Action<CodedOutputStream, T[], int> arrayWriter,
             Func<T, int> sizeCalculator,
             uint tag,
             uint endTag,
@@ -460,6 +493,7 @@ namespace Google.Protobuf
         {
             ValueReader = reader;
             ValueWriter = writer;
+            ArrayValueWriter = arrayWriter;
             ValueSizeCalculator = sizeCalculator;
             FixedSize = 0;
             Tag = tag;

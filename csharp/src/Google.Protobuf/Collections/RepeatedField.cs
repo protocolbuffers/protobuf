@@ -195,10 +195,7 @@ namespace Google.Protobuf.Collections
                 uint size = (uint)CalculatePackedDataSize(codec);
                 output.WriteTag(tag);
                 output.WriteRawVarint32(size);
-                for (int i = 0; i < count; i++)
-                {
-                    writer(output, array[i]);
-                }
+                codec.ArrayValueWriter(output, array, count);
             }
             else
             {
