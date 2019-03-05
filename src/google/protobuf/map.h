@@ -414,7 +414,7 @@ class Map {
           : node_(NodePtrFromKeyPtr(*tree_it)), m_(m), bucket_index_(index) {
         // Invariant: iterators that use buckets with trees have an even
         // bucket_index_.
-        GOOGLE_DCHECK_EQ(bucket_index_ % 2, 0);
+        GOOGLE_DCHECK_EQ(bucket_index_ % 2, 0u);
       }
 
       // Advance through buckets, looking for the first that isn't empty.
@@ -454,7 +454,7 @@ class Map {
           if (is_list) {
             SearchFrom(bucket_index_ + 1);
           } else {
-            GOOGLE_DCHECK_EQ(bucket_index_ & 1, 0);
+            GOOGLE_DCHECK_EQ(bucket_index_ & 1, 0u);
             Tree* tree = static_cast<Tree*>(m_->table_[bucket_index_]);
             if (++tree_it == tree->end()) {
               SearchFrom(bucket_index_ + 2);

@@ -1017,6 +1017,11 @@ static void putary(VALUE ary, const upb_fielddef* f, upb_sink sink, int depth,
 static void put_ruby_value(VALUE value, const upb_fielddef* f, VALUE type_class,
                            int depth, upb_sink sink, bool emit_defaults,
                            bool is_json) {
+  if (depth > ENCODE_MAX_NESTING) {
+    rb_raise(rb_eRuntimeError,
+             "Maximum recursion depth exceeded during encoding.");
+  }
+
   upb_selector_t sel = 0;
   if (upb_fielddef_isprimitive(f)) {
     sel = getsel(f, upb_handlers_getprimitivehandlertype(f));

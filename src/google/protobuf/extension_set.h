@@ -121,9 +121,6 @@ struct ExtensionInfo {
 
   struct MessageInfo {
     const MessageLite* prototype;
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-    ParseFunc parse_func;
-#endif
   };
 
   union {
@@ -401,33 +398,45 @@ class PROTOBUF_EXPORT ExtensionSet {
                   io::CodedOutputStream* unknown_fields);
 
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  template <typename T>
-  std::pair<const char*, bool> ParseFieldWithExtensionInfo(
-      int number, bool was_packed_on_wire, const ExtensionInfo& info,
-      T* metadata, ParseClosure parent, const char* begin, const char* end,
-      internal::ParseContext* ctx);
   // Lite parser
-  std::pair<const char*, bool> ParseField(
-      uint64 tag, ParseClosure parent, const char* begin, const char* end,
-      const MessageLite* containing_type,
-      internal::InternalMetadataWithArenaLite* metadata,
-      internal::ParseContext* ctx);
+  const char* ParseField(uint64 tag, const char* ptr,
+                         const MessageLite* containing_type,
+                         internal::InternalMetadataWithArenaLite* metadata,
+                         internal::ParseContext* ctx);
   // Full parser
-  std::pair<const char*, bool> ParseField(
-      uint64 tag, ParseClosure parent, const char* begin, const char* end,
-      const Message* containing_type,
-      internal::InternalMetadataWithArena* metadata,
-      internal::ParseContext* ctx);
-  std::pair<const char*, bool> ParseFieldMaybeLazily(
-      uint64 tag, ParseClosure parent, const char* begin, const char* end,
-      const Message* containing_type,
-      internal::InternalMetadataWithArena* metadata,
-      internal::ParseContext* ctx);
-  const char* ParseMessageSetItem(ParseClosure parent, const char* begin,
-                                  const char* end,
-                                  const Message* containing_type,
-                                  internal::InternalMetadataWithArena* metadata,
-                                  internal::ParseContext* ctx);
+  const char* ParseField(uint64 tag, const char* ptr,
+                         const Message* containing_type,
+                         internal::InternalMetadataWithArena* metadata,
+                         internal::ParseContext* ctx);
+  template <typename Msg, typename Metadata>
+  const char* ParseMessageSet(const char* ptr, const Msg* containing_type,
+                              Metadata* metadata, internal::ParseContext* ctx) {
+    struct MessageSetItem {
+      const char* _InternalParse(const char* ptr, ParseContext* ctx) {
+        return me->ParseMessageSetItem(ptr, containing_type, metadata, ctx);
+      }
+      ExtensionSet* me;
+      const Msg* containing_type;
+      Metadata* metadata;
+    } item{this, containing_type, metadata};
+    while (!ctx->Done(&ptr)) {
+      uint32 tag;
+      ptr = ReadTag(ptr, &tag);
+      GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+      if (tag == WireFormatLite::kMessageSetItemStartTag) {
+        ptr = ctx->ParseGroup(&item, ptr, tag);
+        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+      } else {
+        if (tag == 0 || (tag & 7) == 4) {
+          ctx->SetLastTag(tag);
+          return ptr;
+        }
+        ptr = ParseField(tag, ptr, containing_type, metadata, ctx);
+        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+      }
+    }
+    return ptr;
+  }
 #endif
 
   // Parse an entire message in MessageSet format.  Such messages have no
@@ -527,6 +536,9 @@ class PROTOBUF_EXPORT ExtensionSet {
 
     virtual bool ReadMessage(const MessageLite& prototype,
                              io::CodedInputStream* input) = 0;
+#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
+    virtual const char* _InternalParse(const char* ptr, ParseContext* ctx) = 0;
+#endif
     virtual void WriteMessage(int number,
                               io::CodedOutputStream* output) const = 0;
     virtual uint8* WriteMessageToArray(int number, uint8* target) const = 0;
@@ -697,13 +709,6 @@ class PROTOBUF_EXPORT ExtensionSet {
   // Merges existing Extension from other_extension
   void InternalExtensionMergeFrom(int number, const Extension& other_extension);
 
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  bool FindExtension(int wire_type, uint32 field,
-                     const Message* containing_type,
-                     const internal::ParseContext* ctx,
-                     ExtensionInfo* extension, bool* was_packed_on_wire);
-#endif
-
   // Returns true and fills field_number and extension if extension is found.
   // Note to support packed repeated field compatibility, it also fills whether
   // the tag on wire is packed, which can be different from
@@ -757,6 +762,53 @@ class PROTOBUF_EXPORT ExtensionSet {
                            ExtensionFinder* extension_finder,
                            MessageSetFieldSkipper* field_skipper);
 
+#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
+  bool FindExtension(int wire_type, uint32 field,
+                     const MessageLite* containing_type,
+                     const internal::ParseContext* ctx,
+                     ExtensionInfo* extension, bool* was_packed_on_wire) {
+    GeneratedExtensionFinder finder(containing_type);
+    return FindExtensionInfoFromFieldNumber(wire_type, field, &finder,
+                                            extension, was_packed_on_wire);
+  }
+  inline bool FindExtension(int wire_type, uint32 field,
+                            const Message* containing_type,
+                            const internal::ParseContext* ctx,
+                            ExtensionInfo* extension, bool* was_packed_on_wire);
+  // Used for MessageSet only
+  const char* ParseFieldMaybeLazily(
+      uint64 tag, const char* ptr, const MessageLite* containing_type,
+      internal::InternalMetadataWithArenaLite* metadata,
+      internal::ParseContext* ctx) {
+    // Lite MessageSet doesn't implement lazy.
+    return ParseField(tag, ptr, containing_type, metadata, ctx);
+  }
+  const char* ParseFieldMaybeLazily(
+      uint64 tag, const char* ptr, const Message* containing_type,
+      internal::InternalMetadataWithArena* metadata,
+      internal::ParseContext* ctx);
+  const char* ParseMessageSetItem(
+      const char* ptr, const MessageLite* containing_type,
+      internal::InternalMetadataWithArenaLite* metadata,
+      internal::ParseContext* ctx);
+  const char* ParseMessageSetItem(const char* ptr,
+                                  const Message* containing_type,
+                                  internal::InternalMetadataWithArena* metadata,
+                                  internal::ParseContext* ctx);
+
+  // Implemented in extension_set_inl.h to keep code out of the header file.
+  template <typename T>
+  const char* ParseFieldWithExtensionInfo(int number, bool was_packed_on_wire,
+                                          const ExtensionInfo& info,
+                                          T* metadata, const char* ptr,
+                                          internal::ParseContext* ctx);
+  template <typename Msg, typename Metadata>
+  const char* ParseMessageSetItemTmpl(const char* ptr,
+                                      const Msg* containing_type,
+                                      Metadata* metadata,
+                                      internal::ParseContext* ctx);
+#endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
+
   // Hack:  RepeatedPtrFieldBase declares ExtensionSet as a friend.  This
   //   friendship should automatically extend to ExtensionSet::Extension, but
   //   unfortunately some older compilers (e.g. GCC 3.4.4) do not implement this
@@ -803,44 +855,6 @@ class PROTOBUF_EXPORT ExtensionSet {
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ExtensionSet);
 };
-
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-
-template <typename Msg, typename Metadata>
-const char* ParseMessageSet(const char* begin, const char* end, Msg* msg,
-                            ExtensionSet* ext, Metadata* metadata,
-                            internal::ParseContext* ctx) {
-  auto ptr = begin;
-  int depth = 0;
-  while (ptr < end) {
-    uint32 tag;
-    ptr = io::Parse32(ptr, &tag);
-    GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-    if (tag == WireFormatLite::kMessageSetItemStartTag) {
-      ctx->extra_parse_data().payload.clear();
-      auto res = ctx->ParseGroup(tag, {Msg::InternalParseMessageSetItem, msg},
-                                 ptr, end, &depth);
-      ptr = res.first;
-      GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-      if (res.second) {
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ctx->StoreGroup(
-            {Msg::_InternalParse, msg}, {Msg::InternalParseMessageSetItem, msg},
-            depth, tag));
-        return ptr;
-      }
-    } else {
-      auto res =
-          ext->ParseField(tag, {Msg::_InternalParse, msg}, ptr, end,
-                          Msg::internal_default_instance(), metadata, ctx);
-      ptr = res.first;
-      GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-      if (res.second) break;
-    }
-  }
-  return ptr;
-}
-
-#endif
 
 // These are just for convenience...
 inline void ExtensionSet::SetString(int number, FieldType type,

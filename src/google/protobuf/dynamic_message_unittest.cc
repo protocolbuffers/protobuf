@@ -316,7 +316,7 @@ TEST_F(DynamicMessageTest, Proto3) {
   delete message;
 }
 
-INSTANTIATE_TEST_CASE_P(UseArena, DynamicMessageTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(UseArena, DynamicMessageTest, ::testing::Bool());
 
 }  // namespace protobuf
 }  // namespace google

@@ -98,7 +98,7 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
 
   void PrintMessages() const;
   void PrintMessage(const Descriptor& message_descriptor, const std::string& prefix,
-                    std::vector<std::string>* to_register) const;
+                    std::vector<std::string>* to_register, bool is_nested) const;
   void PrintNestedMessages(const Descriptor& containing_descriptor,
                            const std::string& prefix,
                            std::vector<std::string>* to_register) const;

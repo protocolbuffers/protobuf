@@ -599,14 +599,73 @@ TEST(WireFormatTest, ParseMessageSetWithReverseTagOrder) {
   {
     // Test parse the message via Reflection.
     proto2_wireformat_unittest::TestMessageSet message_set;
-    io::CodedInputStream input(
-        reinterpret_cast<const uint8*>(data.data()), data.size());
+    io::CodedInputStream input(reinterpret_cast<const uint8*>(data.data()),
+                               data.size());
     EXPECT_TRUE(WireFormat::ParseAndMergePartial(&input, &message_set));
     EXPECT_TRUE(input.ConsumedEntireMessage());
 
     EXPECT_EQ(123, message_set.GetExtension(
         unittest::TestMessageSetExtension1::message_set_extension).i());
   }
+}
+
+void SerializeReverseOrder(
+    const proto2_wireformat_unittest::TestMessageSet& mset,
+    io::CodedOutputStream* coded_output);
+
+void SerializeReverseOrder(const unittest::TestMessageSetExtension1& message,
+                           io::CodedOutputStream* coded_output) {
+  WireFormatLite::WriteTag(15,  // i
+                           WireFormatLite::WIRETYPE_VARINT, coded_output);
+  coded_output->WriteVarint32(message.i());
+  WireFormatLite::WriteTag(16,  // recursive
+                           WireFormatLite::WIRETYPE_LENGTH_DELIMITED,
+                           coded_output);
+  coded_output->WriteVarint32(message.recursive().GetCachedSize());
+  SerializeReverseOrder(message.recursive(), coded_output);
+}
+
+void SerializeReverseOrder(
+    const proto2_wireformat_unittest::TestMessageSet& mset,
+    io::CodedOutputStream* coded_output) {
+  if (!mset.HasExtension(
+          unittest::TestMessageSetExtension1::message_set_extension))
+    return;
+  coded_output->WriteTag(WireFormatLite::kMessageSetItemStartTag);
+  // Write the message content first.
+  WireFormatLite::WriteTag(WireFormatLite::kMessageSetMessageNumber,
+                           WireFormatLite::WIRETYPE_LENGTH_DELIMITED,
+                           coded_output);
+  auto& message = mset.GetExtension(
+      unittest::TestMessageSetExtension1::message_set_extension);
+  coded_output->WriteVarint32(message.GetCachedSize());
+  SerializeReverseOrder(message, coded_output);
+  // Write the type id.
+  uint32 type_id = message.GetDescriptor()->extension(0)->number();
+  WireFormatLite::WriteUInt32(WireFormatLite::kMessageSetTypeIdNumber, type_id,
+                              coded_output);
+  coded_output->WriteTag(WireFormatLite::kMessageSetItemEndTag);
+}
+
+TEST(WireFormatTest, ParseMessageSetWithDeepRecReverseOrder) {
+  string data;
+  {
+    proto2_wireformat_unittest::TestMessageSet message_set;
+    proto2_wireformat_unittest::TestMessageSet* mset = &message_set;
+    for (int i = 0; i < 200; i++) {
+      auto m = mset->MutableExtension(
+          unittest::TestMessageSetExtension1::message_set_extension);
+      m->set_i(i);
+      mset = m->mutable_recursive();
+    }
+    message_set.ByteSizeLong();
+    // Serialize with reverse payload tag order
+    io::StringOutputStream output_stream(&data);
+    io::CodedOutputStream coded_output(&output_stream);
+    SerializeReverseOrder(message_set, &coded_output);
+  }
+  proto2_wireformat_unittest::TestMessageSet message_set;
+  EXPECT_FALSE(message_set.ParseFromString(data));
 }
 
 TEST(WireFormatTest, ParseBrokenMessageSet) {
