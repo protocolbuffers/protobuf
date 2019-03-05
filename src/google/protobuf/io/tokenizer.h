@@ -78,7 +78,7 @@ class PROTOBUF_EXPORT ErrorCollector {
   // column numbers.  The numbers are zero-based, so you may want to add
   // 1 to each before printing them.
   virtual void AddWarning(int line, ColumnNumber column,
-                          const std::string& message) { }
+                          const std::string& message) {}
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ErrorCollector);
@@ -126,7 +126,7 @@ class PROTOBUF_EXPORT Tokenizer {
   // Structure representing a token read from the token stream.
   struct Token {
     TokenType type;
-    std::string text;       // The exact text of the token as it appeared in
+    std::string text;  // The exact text of the token as it appeared in
                        // the input.  e.g. tokens of TYPE_STRING will still
                        // be escaped and in quotes.
 
@@ -401,7 +401,8 @@ inline const Tokenizer::Token& Tokenizer::previous() {
   return previous_;
 }
 
-inline void Tokenizer::ParseString(const std::string& text, std::string* output) {
+inline void Tokenizer::ParseString(const std::string& text,
+                                   std::string* output) {
   output->clear();
   ParseStringAppend(text, output);
 }

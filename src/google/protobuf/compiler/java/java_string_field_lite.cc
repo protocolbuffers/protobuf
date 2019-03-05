@@ -59,11 +59,10 @@ using internal::WireFormatLite;
 namespace {
 
 void SetPrimitiveVariables(const FieldDescriptor* descriptor,
-                           int messageBitIndex,
-                           int builderBitIndex,
+                           int messageBitIndex, int builderBitIndex,
                            const FieldGeneratorInfo* info,
                            ClassNameResolver* name_resolver,
-                           std::map<string, string>* variables) {
+                           std::map<std::string, std::string>* variables) {
   SetCommonFieldVariables(descriptor, info, variables);
 
   (*variables)["empty_list"] =
@@ -392,7 +391,7 @@ GenerateHashCode(io::Printer* printer) const {
     "hash = (53 * hash) + get$capitalized_name$().hashCode();\n");
 }
 
-string ImmutableStringFieldLiteGenerator::GetBoxedType() const {
+std::string ImmutableStringFieldLiteGenerator::GetBoxedType() const {
   return "java.lang.String";
 }
 
@@ -912,7 +911,7 @@ GenerateHashCode(io::Printer* printer) const {
     "}\n");
 }
 
-string RepeatedImmutableStringFieldLiteGenerator::GetBoxedType() const {
+std::string RepeatedImmutableStringFieldLiteGenerator::GetBoxedType() const {
   return "java.lang.String";
 }
 

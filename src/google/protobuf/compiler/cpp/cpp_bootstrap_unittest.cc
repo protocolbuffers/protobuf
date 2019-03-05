@@ -72,11 +72,11 @@ class MockErrorCollector : public MultiFileErrorCollector {
   MockErrorCollector() {}
   ~MockErrorCollector() {}
 
-  string text_;
+  std::string text_;
 
   // implements ErrorCollector ---------------------------------------
-  void AddError(const string& filename, int line, int column,
-                const string& message) {
+  void AddError(const std::string& filename, int line, int column,
+                const std::string& message) {
     strings::SubstituteAndAppend(&text_, "$0:$1:$2: $3\n",
                                  filename, line, column, message);
   }
@@ -87,13 +87,14 @@ class MockGeneratorContext : public GeneratorContext {
   MockGeneratorContext() {}
   ~MockGeneratorContext() { STLDeleteValues(&files_); }
 
-  void ExpectFileMatches(const string& virtual_filename,
-                         const string& physical_filename) {
-    string* expected_contents = FindPtrOrNull(files_, virtual_filename);
+  void ExpectFileMatches(const std::string& virtual_filename,
+                         const std::string& physical_filename) {
+    std::string* expected_contents =
+        FindPtrOrNull(files_, virtual_filename);
     ASSERT_TRUE(expected_contents != NULL)
       << "Generator failed to generate file: " << virtual_filename;
 
-    string actual_contents;
+    std::string actual_contents;
     GOOGLE_CHECK_OK(
         File::GetContents(TestUtil::TestSourceDir() + "/" + physical_filename,
                           &actual_contents, true))
@@ -102,11 +103,11 @@ class MockGeneratorContext : public GeneratorContext {
 
 #ifdef WRITE_FILES // Define to debug mismatched files.
     GOOGLE_CHECK_OK(
-        File::SetContents("/tmp/1.cc", *expected_contents, true));
-    GOOGLE_CHECK_OK(File::SetContents("/tmp/2.cc", actual_contents, true));
+        File::SetContents("/tmp/expected.cc", *expected_contents, true));
+    GOOGLE_CHECK_OK(File::SetContents("/tmp/actual.cc", actual_contents, true));
 #endif
 
-    EXPECT_EQ(*expected_contents, actual_contents)
+    ASSERT_EQ(*expected_contents, actual_contents)
         << physical_filename
         << " needs to be regenerated.  Please run "
            "generate_descriptor_proto.sh. "
@@ -115,16 +116,16 @@ class MockGeneratorContext : public GeneratorContext {
 
   // implements GeneratorContext --------------------------------------
 
-  virtual io::ZeroCopyOutputStream* Open(const string& filename) {
-    string** map_slot = &files_[filename];
+  virtual io::ZeroCopyOutputStream* Open(const std::string& filename) {
+    std::string** map_slot = &files_[filename];
     delete *map_slot;
-    *map_slot = new string;
+    *map_slot = new std::string;
 
     return new io::StringOutputStream(*map_slot);
   }
 
  private:
-  std::map<string, string*> files_;
+  std::map<std::string, std::string*> files_;
 };
 
 const char kDescriptorParameter[] = "dllexport_decl=PROTOBUF_EXPORT";
@@ -139,8 +140,8 @@ const char* test_protos[][2] = {
 TEST(BootstrapTest, GeneratedFilesMatch) {
   // We need a mapping from the actual file to virtual and actual path
   // of the data to compare to.
-  std::map<string, string> vpath_map;
-  std::map<string, string> rpath_map;
+  std::map<std::string, std::string> vpath_map;
+  std::map<std::string, std::string> rpath_map;
   rpath_map["third_party/protobuf/src/google/protobuf/test_messages_proto2"] =
       "net/proto2/z_generated_example/test_messages_proto2";
   rpath_map["third_party/protobuf/src/google/protobuf/test_messages_proto3"] =
@@ -155,7 +156,7 @@ TEST(BootstrapTest, GeneratedFilesMatch) {
     MockErrorCollector error_collector;
     Importer importer(&source_tree, &error_collector);
     const FileDescriptor* file =
-        importer.Import(file_parameter[0] + string(".proto"));
+        importer.Import(file_parameter[0] + std::string(".proto"));
     ASSERT_TRUE(file != nullptr)
         << "Can't import file " << file_parameter[0] + string(".proto") << "\n";
     EXPECT_EQ("", error_collector.text_);
@@ -165,12 +166,12 @@ TEST(BootstrapTest, GeneratedFilesMatch) {
     generator.set_opensource_runtime(true);
     generator.set_runtime_include_base(GOOGLE_PROTOBUF_RUNTIME_INCLUDE_BASE);
 #endif
-    string error;
+    std::string error;
     ASSERT_TRUE(generator.Generate(file, file_parameter[1], &context, &error));
 
-    string vpath =
+    std::string vpath =
         FindWithDefault(vpath_map, file_parameter[0], file_parameter[0]);
-    string rpath =
+    std::string rpath =
         FindWithDefault(rpath_map, file_parameter[0], file_parameter[0]);
     context.ExpectFileMatches(vpath + ".pb.cc", rpath + ".pb.cc");
     context.ExpectFileMatches(vpath + ".pb.h", rpath + ".pb.h");

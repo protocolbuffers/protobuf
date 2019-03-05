@@ -230,6 +230,41 @@ class Uint64ValueChecker(IntValueChecker):
   _TYPE = long
 
 
+# The max 4 bytes float is about 3.4028234663852886e+38
+_FLOAT_MAX = float.fromhex('0x1.fffffep+127')
+_FLOAT_MIN = -_FLOAT_MAX
+_INF = float('inf')
+_NEG_INF = float('-inf')
+
+
+class FloatValueChecker(object):
+
+  """Checker used for float fields.  Performs type-check and range check.
+
+  Values exceeding a 32-bit float will be converted to inf/-inf.
+  """
+
+  def CheckValue(self, proposed_value):
+    """Check and convert proposed_value to float."""
+    if not isinstance(proposed_value, numbers.Real):
+      message = ('%.1024r has type %s, but expected one of: numbers.Real' %
+                 (proposed_value, type(proposed_value)))
+      raise TypeError(message)
+    converted_value = float(proposed_value)
+    # This inf rounding matches the C++ proto SafeDoubleToFloat logic.
+    if converted_value > _FLOAT_MAX:
+      return _INF
+    if converted_value < _FLOAT_MIN:
+      return _NEG_INF
+
+    return converted_value
+    # TODO(jieluo): convert to 4 bytes float (c style float) at setters:
+    # return struct.unpack('f', struct.pack('f', converted_value))
+
+  def DefaultValue(self):
+    return 0.0
+
+
 # Type-checkers for all scalar CPPTYPEs.
 _VALUE_CHECKERS = {
     _FieldDescriptor.CPPTYPE_INT32: Int32ValueChecker(),
@@ -238,8 +273,7 @@ _VALUE_CHECKERS = {
     _FieldDescriptor.CPPTYPE_UINT64: Uint64ValueChecker(),
     _FieldDescriptor.CPPTYPE_DOUBLE: TypeCheckerWithDefault(
         0.0, float, numbers.Real),
-    _FieldDescriptor.CPPTYPE_FLOAT: TypeCheckerWithDefault(
-        0.0, float, numbers.Real),
+    _FieldDescriptor.CPPTYPE_FLOAT: FloatValueChecker(),
     _FieldDescriptor.CPPTYPE_BOOL: TypeCheckerWithDefault(
         False, bool, numbers.Integral),
     _FieldDescriptor.CPPTYPE_STRING: TypeCheckerWithDefault(b'', bytes),

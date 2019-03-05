@@ -51,12 +51,10 @@ namespace java {
 
 namespace {
 
-void SetMessageVariables(const FieldDescriptor* descriptor,
-                         int messageBitIndex,
-                         int builderBitIndex,
-                         const FieldGeneratorInfo* info,
+void SetMessageVariables(const FieldDescriptor* descriptor, int messageBitIndex,
+                         int builderBitIndex, const FieldGeneratorInfo* info,
                          ClassNameResolver* name_resolver,
-                         std::map<string, string>* variables) {
+                         std::map<std::string, std::string>* variables) {
   SetCommonFieldVariables(descriptor, info, variables);
 
   (*variables)["type"] =
@@ -517,7 +515,7 @@ GenerateHashCode(io::Printer* printer) const {
     "hash = (53 * hash) + get$capitalized_name$().hashCode();\n");
 }
 
-string ImmutableMessageFieldGenerator::GetBoxedType() const {
+std::string ImmutableMessageFieldGenerator::GetBoxedType() const {
   return name_resolver_->GetImmutableClassName(descriptor_->message_type());
 }
 
@@ -1320,7 +1318,7 @@ GenerateHashCode(io::Printer* printer) const {
     "}\n");
 }
 
-string RepeatedImmutableMessageFieldGenerator::GetBoxedType() const {
+std::string RepeatedImmutableMessageFieldGenerator::GetBoxedType() const {
   return name_resolver_->GetImmutableClassName(descriptor_->message_type());
 }
 

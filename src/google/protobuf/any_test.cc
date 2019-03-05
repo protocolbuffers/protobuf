@@ -44,7 +44,7 @@ TEST(AnyTest, TestPackAndUnpack) {
   protobuf_unittest::TestAny message;
   message.mutable_any_value()->PackFrom(submessage);
 
-  string data = message.SerializeAsString();
+  std::string data = message.SerializeAsString();
 
   ASSERT_TRUE(message.ParseFromString(data));
   EXPECT_TRUE(message.has_any_value());
@@ -73,7 +73,7 @@ TEST(AnyTest, TestPackAndUnpackAny) {
   protobuf_unittest::TestAny message;
   message.mutable_any_value()->PackFrom(any);
 
-  string data = message.SerializeAsString();
+  std::string data = message.SerializeAsString();
 
   ASSERT_TRUE(message.ParseFromString(data));
   EXPECT_TRUE(message.has_any_value());

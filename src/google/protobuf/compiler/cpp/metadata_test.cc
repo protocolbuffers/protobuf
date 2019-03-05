@@ -56,14 +56,14 @@ class CppMetadataTest : public ::testing::Test {
   // code from the previously added file with name `filename`. Returns true on
   // success. If pb_h is non-null, expects a .pb.h and a .pb.h.meta (copied to
   // pb_h and pb_h_info respecfively); similarly for proto_h and proto_h_info.
-  bool CaptureMetadata(const string& filename, FileDescriptorProto* file,
-                       string* pb_h, GeneratedCodeInfo* pb_h_info,
-                       string* proto_h, GeneratedCodeInfo* proto_h_info,
-                       string* pb_cc) {
+  bool CaptureMetadata(const std::string& filename, FileDescriptorProto* file,
+                       std::string* pb_h, GeneratedCodeInfo* pb_h_info,
+                       std::string* proto_h, GeneratedCodeInfo* proto_h_info,
+                       std::string* pb_cc) {
     CommandLineInterface cli;
     CppGenerator cpp_generator;
     cli.RegisterGenerator("--cpp_out", &cpp_generator, "");
-    string cpp_out =
+    std::string cpp_out =
         "--cpp_out=annotate_headers=true,"
         "annotation_pragma_name=pragma_name,"
         "annotation_guard_name=guard_name:" +
@@ -76,7 +76,7 @@ class CppMetadataTest : public ::testing::Test {
       return result;
     }
 
-    string output_base = TestTempDir() + "/" + StripProto(filename);
+    std::string output_base = TestTempDir() + "/" + StripProto(filename);
 
     if (pb_cc != NULL) {
       GOOGLE_CHECK_OK(
@@ -112,7 +112,7 @@ const char kSmallTestFile[] =
 TEST_F(CppMetadataTest, CapturesEnumNames) {
   FileDescriptorProto file;
   GeneratedCodeInfo info;
-  string pb_h;
+  std::string pb_h;
   atu::AddFile("test.proto", kSmallTestFile);
   EXPECT_TRUE(
       CaptureMetadata("test.proto", &file, &pb_h, &info, NULL, NULL, NULL));
@@ -129,19 +129,19 @@ TEST_F(CppMetadataTest, CapturesEnumNames) {
 TEST_F(CppMetadataTest, AddsPragma) {
   FileDescriptorProto file;
   GeneratedCodeInfo info;
-  string pb_h;
+  std::string pb_h;
   atu::AddFile("test.proto", kSmallTestFile);
   EXPECT_TRUE(
       CaptureMetadata("test.proto", &file, &pb_h, &info, NULL, NULL, NULL));
   EXPECT_TRUE(pb_h.find("#ifdef guard_name") != string::npos);
   EXPECT_TRUE(pb_h.find("#pragma pragma_name \"test.pb.h.meta\"") !=
-              string::npos);
+              std::string::npos);
 }
 
 TEST_F(CppMetadataTest, CapturesMessageNames) {
   FileDescriptorProto file;
   GeneratedCodeInfo info;
-  string pb_h;
+  std::string pb_h;
   atu::AddFile("test.proto", kSmallTestFile);
   EXPECT_TRUE(
       CaptureMetadata("test.proto", &file, &pb_h, &info, NULL, NULL, NULL));

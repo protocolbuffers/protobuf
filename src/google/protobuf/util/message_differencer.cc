@@ -456,7 +456,7 @@ void MessageDifferencer::SetFractionAndMargin(const FieldDescriptor* field,
   default_field_comparator_.SetFractionAndMargin(field, fraction, margin);
 }
 
-void MessageDifferencer::ReportDifferencesToString(string* output) {
+void MessageDifferencer::ReportDifferencesToString(std::string* output) {
   GOOGLE_DCHECK(output) << "Specified output string was NULL";
 
   output_string_ = output;
@@ -577,35 +577,10 @@ bool MessageDifferencer::Compare(
   const Reflection* reflection1 = message1.GetReflection();
   const Reflection* reflection2 = message2.GetReflection();
 
-  // Retrieve all the set fields, including extensions.
-  std::vector<const FieldDescriptor*> message1_fields;
-  message1_fields.reserve(1 + message1.GetDescriptor()->field_count());
-
-  std::vector<const FieldDescriptor*> message2_fields;
-  message2_fields.reserve(1 + message2.GetDescriptor()->field_count());
-
-  if (descriptor1->options().map_entry()) {
-    if (scope_ == PARTIAL) {
-      reflection1->ListFields(message1, &message1_fields);
-    } else {
-      // Map entry fields are always considered present.
-      for (int i = 0; i < descriptor1->field_count(); i++) {
-        message1_fields.push_back(descriptor1->field(i));
-      }
-    }
-    for (int i = 0; i < descriptor1->field_count(); i++) {
-      message2_fields.push_back(descriptor1->field(i));
-    }
-  } else {
-    reflection1->ListFields(message1, &message1_fields);
-    reflection2->ListFields(message2, &message2_fields);
-  }
-
-  // Add sentinel values to deal with the
-  // case where the number of the fields in
-  // each list are different.
-  message1_fields.push_back(NULL);
-  message2_fields.push_back(NULL);
+  std::vector<const FieldDescriptor*> message1_fields =
+      RetrieveFields(message1, true);
+  std::vector<const FieldDescriptor*> message2_fields =
+      RetrieveFields(message2, false);
 
   bool unknown_compare_result = true;
   // Ignore unknown fields in EQUIVALENT mode
@@ -628,6 +603,34 @@ bool MessageDifferencer::Compare(
       message1, message2,
       message1_fields, message2_fields,
       parent_fields) && unknown_compare_result;
+}
+
+std::vector<const FieldDescriptor*> MessageDifferencer::RetrieveFields(
+    const Message& message, bool base_message) {
+  const Descriptor* descriptor = message.GetDescriptor();
+
+  std::vector<const FieldDescriptor*> message_fields;
+  message_fields.reserve(descriptor->field_count() + 1);
+
+  const Reflection* reflection = message.GetReflection();
+  if (descriptor->options().map_entry()) {
+    if (this->scope_ == PARTIAL && base_message) {
+      reflection->ListFields(message, &message_fields);
+    } else {
+      // Map entry fields are always considered present.
+      for (int i = 0; i < descriptor->field_count(); i++) {
+        message_fields.push_back(descriptor->field(i));
+      }
+    }
+  } else {
+    reflection->ListFields(message, &message_fields);
+  }
+  // Add sentinel values to deal with the
+  // case where the number of the fields in
+  // each list are different.
+  message_fields.push_back(nullptr);
+
+  return message_fields;
 }
 
 bool MessageDifferencer::CompareRequestedFieldsUsingSettings(
@@ -885,7 +888,7 @@ bool MessageDifferencer::IsMatch(
   // Back up the Reporter and output_string_.  They will be reset in the
   // following code.
   Reporter* backup_reporter = reporter_;
-  string* output_string = output_string_;
+  std::string* output_string = output_string_;
   reporter_ = reporter;
   output_string_ = NULL;
   bool match;
@@ -1203,8 +1206,8 @@ bool MessageDifferencer::UnpackAny(const Message& any,
   if (!internal::GetAnyFieldDescriptors(any, &type_url_field, &value_field)) {
     return false;
   }
-  const string& type_url = reflection->GetString(any, type_url_field);
-  string full_type_name;
+  const std::string& type_url = reflection->GetString(any, type_url_field);
+  std::string full_type_name;
   if (!internal::ParseAnyTypeUrl(type_url, &full_type_name)) {
     return false;
   }
@@ -1221,7 +1224,7 @@ bool MessageDifferencer::UnpackAny(const Message& any,
     dynamic_message_factory_.reset(new DynamicMessageFactory());
   }
   data->reset(dynamic_message_factory_->GetPrototype(desc)->New());
-  string serialized_value = reflection->GetString(any, value_field);
+  std::string serialized_value = reflection->GetString(any, value_field);
   if (!(*data)->ParseFromString(serialized_value)) {
     GOOGLE_DLOG(ERROR) << "Failed to parse value for " << full_type_name;
     return false;
@@ -1786,7 +1789,7 @@ StreamReporter::PrintValue(const Message& message,
   const SpecificField& specific_field = field_path.back();
   const FieldDescriptor* field = specific_field.field;
   if (field != NULL) {
-    string output;
+    std::string output;
     int index = left_side ? specific_field.index : specific_field.new_index;
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
       const Reflection* reflection = message.GetReflection();
@@ -1820,7 +1823,7 @@ void MessageDifferencer::
 StreamReporter::PrintUnknownFieldValue(const UnknownField* unknown_field) {
   GOOGLE_CHECK(unknown_field != NULL) << " Cannot print NULL unknown_field.";
 
-  string output;
+  std::string output;
   switch (unknown_field->type()) {
     case UnknownField::TYPE_VARINT:
       output = StrCat(unknown_field->varint());
@@ -1847,7 +1850,7 @@ StreamReporter::PrintUnknownFieldValue(const UnknownField* unknown_field) {
   printer_->PrintRaw(output);
 }
 
-void MessageDifferencer::StreamReporter::Print(const string& str) {
+void MessageDifferencer::StreamReporter::Print(const std::string& str) {
   printer_->Print(str.c_str());
 }
 

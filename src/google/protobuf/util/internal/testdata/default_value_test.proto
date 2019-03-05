@@ -30,7 +30,7 @@
 
 syntax = "proto3";
 
-package google.protobuf.testing;
+package proto_util_converter.testing;
 
 message DefaultValueTest {
   double double_value = 1;

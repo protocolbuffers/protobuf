@@ -42,10 +42,10 @@ namespace protobuf {
 namespace TestUtil {
 
 // Translate net/proto2/* -> google/protobuf/*
-inline ::std::string TranslatePathToOpensource(const ::std::string& google3_path) {
-  const ::std::string prefix = "net/proto2/";
+inline std::string TranslatePathToOpensource(const std::string& google3_path) {
+  const std::string prefix = "net/proto2/";
   GOOGLE_CHECK(google3_path.find(prefix) == 0) << google3_path;
-  ::std::string path = google3_path.substr(prefix.size());
+  std::string path = google3_path.substr(prefix.size());
 
   path = StringReplace(path, "internal/", "", false);
   path = StringReplace(path, "proto/", "", false);
@@ -53,17 +53,17 @@ inline ::std::string TranslatePathToOpensource(const ::std::string& google3_path
   return "google/protobuf/" + path;
 }
 
-inline ::std::string MaybeTranslatePath(const ::std::string& google3_path) {
+inline std::string MaybeTranslatePath(const std::string& google3_path) {
   std::string path = google3_path;
   path = TranslatePathToOpensource(path);
   return path;
 }
 
-inline ::std::string TestSourceDir() {
+inline std::string TestSourceDir() {
   return google::protobuf::TestSourceDir();
 }
 
-inline ::std::string GetTestDataPath(const ::std::string& google3_path) {
+inline std::string GetTestDataPath(const std::string& google3_path) {
   return TestSourceDir() + "/" + MaybeTranslatePath(google3_path);
 }
 

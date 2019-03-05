@@ -110,6 +110,7 @@ class ServiceGenerator {
 
   const ServiceDescriptor* descriptor_;
   std::map<std::string, std::string> vars_;
+  const Options& options_;
 
   int index_in_metadata_;
 
