@@ -281,7 +281,7 @@ VALUE Message_method_missing(int argc, VALUE* argv, VALUE _self) {
   } else if (accessor_type == METHOD_PRESENCE) {
     return layout_has(self->descriptor->layout, Message_data(self), f);
   } else if (accessor_type == METHOD_ENUM_GETTER) {
-    VALUE enum_type = field_type_class(f);
+    VALUE enum_type = field_type_class(self->descriptor->layout, f);
     VALUE method = rb_intern("const_get");
     VALUE raw_value = layout_get(self->descriptor->layout, Message_data(self), f);
 
