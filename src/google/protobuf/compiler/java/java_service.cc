@@ -304,8 +304,10 @@ void ImmutableServiceGenerator::GenerateGetPrototype(RequestOrResponse which,
     const MethodDescriptor* method = descriptor_->method(i);
     std::map<string, string> vars;
     vars["index"] = StrCat(i);
-    vars["type"] = name_resolver_->GetImmutableClassName(
-      (which == REQUEST) ? method->input_type() : method->output_type());
+    vars["type"] =
+        (which == REQUEST)
+            ? name_resolver_->GetImmutableClassName(method->input_type())
+            : GetOutput(method);
     printer->Print(vars,
       "case $index$:\n"
       "  return $type$.getDefaultInstance();\n");

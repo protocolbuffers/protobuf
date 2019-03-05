@@ -4996,7 +4996,7 @@ namespace Google.Protobuf.Reflection {
     ///
     /// Implementations may choose not to generate the map_entry=true message, but
     /// use a native map in the target language to hold the keys and values.
-    /// The reflection APIs in such implementions still need to work as
+    /// The reflection APIs in such implementations still need to work as
     /// if the field is a repeated message field.
     ///
     /// NOTE: Do not set the option in .proto files. Always use the maps syntax
@@ -7238,7 +7238,7 @@ namespace Google.Protobuf.Reflection {
     ///   beginning of the "extend" block and is shared by all extensions within
     ///   the block.
     /// - Just because a location's span is a subset of some other location's span
-    ///   does not mean that it is a descendent.  For example, a "group" defines
+    ///   does not mean that it is a descendant.  For example, a "group" defines
     ///   both a type and a field in a single declaration.  Thus, the locations
     ///   corresponding to the type and field and their components will overlap.
     /// - Code which tries to interpret locations should probably be designed to

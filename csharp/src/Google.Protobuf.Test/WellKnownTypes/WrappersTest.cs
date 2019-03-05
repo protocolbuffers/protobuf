@@ -135,7 +135,7 @@ namespace Google.Protobuf.WellKnownTypes
                 DoubleField = { 12.5, -1.5, 0d },
                 FloatField = { 123.25f, -20f, 0f },
                 Int32Field = { int.MaxValue, int.MinValue, 0 },
-                Int64Field = { long.MaxValue, long.MinValue, 0L },                
+                Int64Field = { long.MaxValue, long.MinValue, 0L },
                 StringField = { "First", "Second", "" },
                 Uint32Field = { uint.MaxValue, uint.MinValue, 0U },
                 Uint64Field = { ulong.MaxValue, ulong.MinValue, 0UL },
@@ -403,7 +403,7 @@ namespace Google.Protobuf.WellKnownTypes
 
             output.Flush();
             stream.Position = 0;
-            
+
             var message = TestWellKnownTypes.Parser.ParseFrom(stream);
             Assert.AreEqual(6, message.Int32Field);
         }

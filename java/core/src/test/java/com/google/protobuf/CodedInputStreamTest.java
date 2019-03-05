@@ -1186,4 +1186,13 @@ public class CodedInputStreamTest extends TestCase {
       }
     }
   }
+
+  public void testSkipPastEndOfByteArrayInput() throws Exception {
+    try {
+      CodedInputStream.newInstance(new ByteArrayInputStream(new byte[100])).skipRawBytes(101);
+      fail();
+    } catch (InvalidProtocolBufferException e) {
+      // Expected
+    }
+  }
 }

@@ -107,9 +107,9 @@ void InitDefaults_google_2fprotobuf_2fcompiler_2fplugin_2eproto() {
   ::google::protobuf::internal::InitSCC(&scc_info_CodeGeneratorResponse_google_2fprotobuf_2fcompiler_2fplugin_2eproto.base);
 }
 
-::google::protobuf::Metadata file_level_metadata_google_2fprotobuf_2fcompiler_2fplugin_2eproto[4];
-constexpr ::google::protobuf::EnumDescriptor const** file_level_enum_descriptors_google_2fprotobuf_2fcompiler_2fplugin_2eproto = nullptr;
-constexpr ::google::protobuf::ServiceDescriptor const** file_level_service_descriptors_google_2fprotobuf_2fcompiler_2fplugin_2eproto = nullptr;
+static ::google::protobuf::Metadata file_level_metadata_google_2fprotobuf_2fcompiler_2fplugin_2eproto[4];
+static constexpr ::google::protobuf::EnumDescriptor const** file_level_enum_descriptors_google_2fprotobuf_2fcompiler_2fplugin_2eproto = nullptr;
+static constexpr ::google::protobuf::ServiceDescriptor const** file_level_service_descriptors_google_2fprotobuf_2fcompiler_2fplugin_2eproto = nullptr;
 
 const ::google::protobuf::uint32 TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
   PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::Version, _has_bits_),
@@ -173,7 +173,7 @@ static ::google::protobuf::Message const * const file_default_instances[] = {
   reinterpret_cast<const ::google::protobuf::Message*>(&::google::protobuf::compiler::_CodeGeneratorResponse_default_instance_),
 };
 
-::google::protobuf::internal::AssignDescriptorsTable assign_descriptors_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto = {
+static ::google::protobuf::internal::AssignDescriptorsTable assign_descriptors_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto = {
   {}, AddDescriptors_google_2fprotobuf_2fcompiler_2fplugin_2eproto, "google/protobuf/compiler/plugin.proto", schemas,
   file_default_instances, TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto::offsets,
   file_level_metadata_google_2fprotobuf_2fcompiler_2fplugin_2eproto, 4, file_level_enum_descriptors_google_2fprotobuf_2fcompiler_2fplugin_2eproto, file_level_service_descriptors_google_2fprotobuf_2fcompiler_2fplugin_2eproto,
@@ -197,7 +197,7 @@ const char descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fplugin_2epro
   "pilerB\014PluginProtosZ9github.com/golang/p"
   "rotobuf/protoc-gen-go/plugin;plugin_go"
   ;
-::google::protobuf::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto = {
+static ::google::protobuf::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto = {
   false, InitDefaults_google_2fprotobuf_2fcompiler_2fplugin_2eproto, 
   descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fplugin_2eproto,
   "google/protobuf/compiler/plugin.proto", &assign_descriptors_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto, 638,
@@ -311,77 +311,54 @@ void Version::Clear() {
 }
 
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-const char* Version::_InternalParse(const char* begin, const char* end, void* object,
-                  ::google::protobuf::internal::ParseContext* ctx) {
-  auto msg = static_cast<Version*>(object);
-  ::google::protobuf::int32 size; (void)size;
-  int depth; (void)depth;
-  ::google::protobuf::uint32 tag;
-  ::google::protobuf::internal::ParseFunc parser_till_end; (void)parser_till_end;
-  auto ptr = begin;
-  while (ptr < end) {
-    ptr = ::google::protobuf::io::Parse32(ptr, &tag);
+const char* Version::_InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) {
+  while (!ctx->Done(&ptr)) {
+    ::google::protobuf::uint32 tag;
+    ptr = ::google::protobuf::internal::ReadTag(ptr, &tag);
     GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
     switch (tag >> 3) {
       // optional int32 major = 1;
       case 1: {
         if (static_cast<::google::protobuf::uint8>(tag) != 8) goto handle_unusual;
-        msg->set_major(::google::protobuf::internal::ReadVarint(&ptr));
+        set_major(::google::protobuf::internal::ReadVarint(&ptr));
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
         break;
       }
       // optional int32 minor = 2;
       case 2: {
         if (static_cast<::google::protobuf::uint8>(tag) != 16) goto handle_unusual;
-        msg->set_minor(::google::protobuf::internal::ReadVarint(&ptr));
+        set_minor(::google::protobuf::internal::ReadVarint(&ptr));
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
         break;
       }
       // optional int32 patch = 3;
       case 3: {
         if (static_cast<::google::protobuf::uint8>(tag) != 24) goto handle_unusual;
-        msg->set_patch(::google::protobuf::internal::ReadVarint(&ptr));
+        set_patch(::google::protobuf::internal::ReadVarint(&ptr));
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
         break;
       }
       // optional string suffix = 4;
       case 4: {
         if (static_cast<::google::protobuf::uint8>(tag) != 34) goto handle_unusual;
-        ptr = ::google::protobuf::io::ReadSize(ptr, &size);
+        ptr = ::google::protobuf::internal::InlineGreedyStringParserUTF8Verify(mutable_suffix(), ptr, ctx, "google.protobuf.compiler.Version.suffix");
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        ctx->extra_parse_data().SetFieldName("google.protobuf.compiler.Version.suffix");
-        object = msg->mutable_suffix();
-        if (size > end - ptr + ::google::protobuf::internal::ParseContext::kSlopBytes) {
-          parser_till_end = ::google::protobuf::internal::GreedyStringParserUTF8Verify;
-          goto string_till_end;
-        }
-        GOOGLE_PROTOBUF_PARSER_ASSERT(::google::protobuf::internal::StringCheckUTF8Verify(ptr, size, ctx));
-        ::google::protobuf::internal::InlineGreedyStringParser(object, ptr, size, ctx);
-        ptr += size;
         break;
       }
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
-          ctx->EndGroup(tag);
+          ctx->SetLastTag(tag);
           return ptr;
         }
-        auto res = UnknownFieldParse(tag, {_InternalParse, msg},
-          ptr, end, msg->_internal_metadata_.mutable_unknown_fields(), ctx);
-        ptr = res.first;
+        ptr = UnknownFieldParse(tag,
+          _internal_metadata_.mutable_unknown_fields(), ptr, ctx);
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr != nullptr);
-        if (res.second) return ptr;
+        break;
       }
     }  // switch
   }  // while
   return ptr;
-string_till_end:
-  static_cast<::std::string*>(object)->clear();
-  static_cast<::std::string*>(object)->reserve(size);
-  goto len_delim_till_end;
-len_delim_till_end:
-  return ctx->StoreAndTailCall(ptr, end, {_InternalParse, msg},
-                               {parser_till_end, object}, size);
 }
 #else  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 bool Version::MergePartialFromCodedStream(
@@ -782,104 +759,60 @@ void CodeGeneratorRequest::Clear() {
 }
 
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-const char* CodeGeneratorRequest::_InternalParse(const char* begin, const char* end, void* object,
-                  ::google::protobuf::internal::ParseContext* ctx) {
-  auto msg = static_cast<CodeGeneratorRequest*>(object);
-  ::google::protobuf::int32 size; (void)size;
-  int depth; (void)depth;
-  ::google::protobuf::uint32 tag;
-  ::google::protobuf::internal::ParseFunc parser_till_end; (void)parser_till_end;
-  auto ptr = begin;
-  while (ptr < end) {
-    ptr = ::google::protobuf::io::Parse32(ptr, &tag);
+const char* CodeGeneratorRequest::_InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) {
+  while (!ctx->Done(&ptr)) {
+    ::google::protobuf::uint32 tag;
+    ptr = ::google::protobuf::internal::ReadTag(ptr, &tag);
     GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
     switch (tag >> 3) {
       // repeated string file_to_generate = 1;
       case 1: {
         if (static_cast<::google::protobuf::uint8>(tag) != 10) goto handle_unusual;
         do {
-          ptr = ::google::protobuf::io::ReadSize(ptr, &size);
+          ptr = ::google::protobuf::internal::InlineGreedyStringParserUTF8Verify(add_file_to_generate(), ptr, ctx, "google.protobuf.compiler.CodeGeneratorRequest.file_to_generate");
           GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-          ctx->extra_parse_data().SetFieldName("google.protobuf.compiler.CodeGeneratorRequest.file_to_generate");
-          object = msg->add_file_to_generate();
-          if (size > end - ptr + ::google::protobuf::internal::ParseContext::kSlopBytes) {
-            parser_till_end = ::google::protobuf::internal::GreedyStringParserUTF8Verify;
-            goto string_till_end;
-          }
-          GOOGLE_PROTOBUF_PARSER_ASSERT(::google::protobuf::internal::StringCheckUTF8Verify(ptr, size, ctx));
-          ::google::protobuf::internal::InlineGreedyStringParser(object, ptr, size, ctx);
-          ptr += size;
-          if (ptr >= end) break;
-        } while ((::google::protobuf::io::UnalignedLoad<::google::protobuf::uint64>(ptr) & 255) == 10 && (ptr += 1));
+          if (ctx->Done(&ptr)) return ptr;
+        } while ((::google::protobuf::internal::UnalignedLoad<::google::protobuf::uint64>(ptr) & 255) == 10 && (ptr += 1));
         break;
       }
       // optional string parameter = 2;
       case 2: {
         if (static_cast<::google::protobuf::uint8>(tag) != 18) goto handle_unusual;
-        ptr = ::google::protobuf::io::ReadSize(ptr, &size);
+        ptr = ::google::protobuf::internal::InlineGreedyStringParserUTF8Verify(mutable_parameter(), ptr, ctx, "google.protobuf.compiler.CodeGeneratorRequest.parameter");
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        ctx->extra_parse_data().SetFieldName("google.protobuf.compiler.CodeGeneratorRequest.parameter");
-        object = msg->mutable_parameter();
-        if (size > end - ptr + ::google::protobuf::internal::ParseContext::kSlopBytes) {
-          parser_till_end = ::google::protobuf::internal::GreedyStringParserUTF8Verify;
-          goto string_till_end;
-        }
-        GOOGLE_PROTOBUF_PARSER_ASSERT(::google::protobuf::internal::StringCheckUTF8Verify(ptr, size, ctx));
-        ::google::protobuf::internal::InlineGreedyStringParser(object, ptr, size, ctx);
-        ptr += size;
         break;
       }
       // optional .google.protobuf.compiler.Version compiler_version = 3;
       case 3: {
         if (static_cast<::google::protobuf::uint8>(tag) != 26) goto handle_unusual;
-        ptr = ::google::protobuf::io::ReadSize(ptr, &size);
+        ptr = ctx->ParseMessage(mutable_compiler_version(), ptr);
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        parser_till_end = ::google::protobuf::compiler::Version::_InternalParse;
-        object = msg->mutable_compiler_version();
-        if (size > end - ptr) goto len_delim_till_end;
-        ptr += size;
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ctx->ParseExactRange(
-            {parser_till_end, object}, ptr - size, ptr));
         break;
       }
       // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
       case 15: {
         if (static_cast<::google::protobuf::uint8>(tag) != 122) goto handle_unusual;
         do {
-          ptr = ::google::protobuf::io::ReadSize(ptr, &size);
+          ptr = ctx->ParseMessage(add_proto_file(), ptr);
           GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-          parser_till_end = ::google::protobuf::FileDescriptorProto::_InternalParse;
-          object = msg->add_proto_file();
-          if (size > end - ptr) goto len_delim_till_end;
-          ptr += size;
-          GOOGLE_PROTOBUF_PARSER_ASSERT(ctx->ParseExactRange(
-              {parser_till_end, object}, ptr - size, ptr));
-          if (ptr >= end) break;
-        } while ((::google::protobuf::io::UnalignedLoad<::google::protobuf::uint64>(ptr) & 255) == 122 && (ptr += 1));
+          if (ctx->Done(&ptr)) return ptr;
+        } while ((::google::protobuf::internal::UnalignedLoad<::google::protobuf::uint64>(ptr) & 255) == 122 && (ptr += 1));
         break;
       }
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
-          ctx->EndGroup(tag);
+          ctx->SetLastTag(tag);
           return ptr;
         }
-        auto res = UnknownFieldParse(tag, {_InternalParse, msg},
-          ptr, end, msg->_internal_metadata_.mutable_unknown_fields(), ctx);
-        ptr = res.first;
+        ptr = UnknownFieldParse(tag,
+          _internal_metadata_.mutable_unknown_fields(), ptr, ctx);
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr != nullptr);
-        if (res.second) return ptr;
+        break;
       }
     }  // switch
   }  // while
   return ptr;
-string_till_end:
-  static_cast<::std::string*>(object)->clear();
-  static_cast<::std::string*>(object)->reserve(size);
-  goto len_delim_till_end;
-len_delim_till_end:
-  return ctx->StoreAndTailCall(ptr, end, {_InternalParse, msg},
-                               {parser_till_end, object}, size);
 }
 #else  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 bool CodeGeneratorRequest::MergePartialFromCodedStream(
@@ -1295,88 +1228,47 @@ void CodeGeneratorResponse_File::Clear() {
 }
 
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-const char* CodeGeneratorResponse_File::_InternalParse(const char* begin, const char* end, void* object,
-                  ::google::protobuf::internal::ParseContext* ctx) {
-  auto msg = static_cast<CodeGeneratorResponse_File*>(object);
-  ::google::protobuf::int32 size; (void)size;
-  int depth; (void)depth;
-  ::google::protobuf::uint32 tag;
-  ::google::protobuf::internal::ParseFunc parser_till_end; (void)parser_till_end;
-  auto ptr = begin;
-  while (ptr < end) {
-    ptr = ::google::protobuf::io::Parse32(ptr, &tag);
+const char* CodeGeneratorResponse_File::_InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) {
+  while (!ctx->Done(&ptr)) {
+    ::google::protobuf::uint32 tag;
+    ptr = ::google::protobuf::internal::ReadTag(ptr, &tag);
     GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
     switch (tag >> 3) {
       // optional string name = 1;
       case 1: {
         if (static_cast<::google::protobuf::uint8>(tag) != 10) goto handle_unusual;
-        ptr = ::google::protobuf::io::ReadSize(ptr, &size);
+        ptr = ::google::protobuf::internal::InlineGreedyStringParserUTF8Verify(mutable_name(), ptr, ctx, "google.protobuf.compiler.CodeGeneratorResponse.File.name");
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        ctx->extra_parse_data().SetFieldName("google.protobuf.compiler.CodeGeneratorResponse.File.name");
-        object = msg->mutable_name();
-        if (size > end - ptr + ::google::protobuf::internal::ParseContext::kSlopBytes) {
-          parser_till_end = ::google::protobuf::internal::GreedyStringParserUTF8Verify;
-          goto string_till_end;
-        }
-        GOOGLE_PROTOBUF_PARSER_ASSERT(::google::protobuf::internal::StringCheckUTF8Verify(ptr, size, ctx));
-        ::google::protobuf::internal::InlineGreedyStringParser(object, ptr, size, ctx);
-        ptr += size;
         break;
       }
       // optional string insertion_point = 2;
       case 2: {
         if (static_cast<::google::protobuf::uint8>(tag) != 18) goto handle_unusual;
-        ptr = ::google::protobuf::io::ReadSize(ptr, &size);
+        ptr = ::google::protobuf::internal::InlineGreedyStringParserUTF8Verify(mutable_insertion_point(), ptr, ctx, "google.protobuf.compiler.CodeGeneratorResponse.File.insertion_point");
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        ctx->extra_parse_data().SetFieldName("google.protobuf.compiler.CodeGeneratorResponse.File.insertion_point");
-        object = msg->mutable_insertion_point();
-        if (size > end - ptr + ::google::protobuf::internal::ParseContext::kSlopBytes) {
-          parser_till_end = ::google::protobuf::internal::GreedyStringParserUTF8Verify;
-          goto string_till_end;
-        }
-        GOOGLE_PROTOBUF_PARSER_ASSERT(::google::protobuf::internal::StringCheckUTF8Verify(ptr, size, ctx));
-        ::google::protobuf::internal::InlineGreedyStringParser(object, ptr, size, ctx);
-        ptr += size;
         break;
       }
       // optional string content = 15;
       case 15: {
         if (static_cast<::google::protobuf::uint8>(tag) != 122) goto handle_unusual;
-        ptr = ::google::protobuf::io::ReadSize(ptr, &size);
+        ptr = ::google::protobuf::internal::InlineGreedyStringParserUTF8Verify(mutable_content(), ptr, ctx, "google.protobuf.compiler.CodeGeneratorResponse.File.content");
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        ctx->extra_parse_data().SetFieldName("google.protobuf.compiler.CodeGeneratorResponse.File.content");
-        object = msg->mutable_content();
-        if (size > end - ptr + ::google::protobuf::internal::ParseContext::kSlopBytes) {
-          parser_till_end = ::google::protobuf::internal::GreedyStringParserUTF8Verify;
-          goto string_till_end;
-        }
-        GOOGLE_PROTOBUF_PARSER_ASSERT(::google::protobuf::internal::StringCheckUTF8Verify(ptr, size, ctx));
-        ::google::protobuf::internal::InlineGreedyStringParser(object, ptr, size, ctx);
-        ptr += size;
         break;
       }
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
-          ctx->EndGroup(tag);
+          ctx->SetLastTag(tag);
           return ptr;
         }
-        auto res = UnknownFieldParse(tag, {_InternalParse, msg},
-          ptr, end, msg->_internal_metadata_.mutable_unknown_fields(), ctx);
-        ptr = res.first;
+        ptr = UnknownFieldParse(tag,
+          _internal_metadata_.mutable_unknown_fields(), ptr, ctx);
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr != nullptr);
-        if (res.second) return ptr;
+        break;
       }
     }  // switch
   }  // while
   return ptr;
-string_till_end:
-  static_cast<::std::string*>(object)->clear();
-  static_cast<::std::string*>(object)->reserve(size);
-  goto len_delim_till_end;
-len_delim_till_end:
-  return ctx->StoreAndTailCall(ptr, end, {_InternalParse, msg},
-                               {parser_till_end, object}, size);
 }
 #else  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 bool CodeGeneratorResponse_File::MergePartialFromCodedStream(
@@ -1742,72 +1634,43 @@ void CodeGeneratorResponse::Clear() {
 }
 
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-const char* CodeGeneratorResponse::_InternalParse(const char* begin, const char* end, void* object,
-                  ::google::protobuf::internal::ParseContext* ctx) {
-  auto msg = static_cast<CodeGeneratorResponse*>(object);
-  ::google::protobuf::int32 size; (void)size;
-  int depth; (void)depth;
-  ::google::protobuf::uint32 tag;
-  ::google::protobuf::internal::ParseFunc parser_till_end; (void)parser_till_end;
-  auto ptr = begin;
-  while (ptr < end) {
-    ptr = ::google::protobuf::io::Parse32(ptr, &tag);
+const char* CodeGeneratorResponse::_InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) {
+  while (!ctx->Done(&ptr)) {
+    ::google::protobuf::uint32 tag;
+    ptr = ::google::protobuf::internal::ReadTag(ptr, &tag);
     GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
     switch (tag >> 3) {
       // optional string error = 1;
       case 1: {
         if (static_cast<::google::protobuf::uint8>(tag) != 10) goto handle_unusual;
-        ptr = ::google::protobuf::io::ReadSize(ptr, &size);
+        ptr = ::google::protobuf::internal::InlineGreedyStringParserUTF8Verify(mutable_error(), ptr, ctx, "google.protobuf.compiler.CodeGeneratorResponse.error");
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        ctx->extra_parse_data().SetFieldName("google.protobuf.compiler.CodeGeneratorResponse.error");
-        object = msg->mutable_error();
-        if (size > end - ptr + ::google::protobuf::internal::ParseContext::kSlopBytes) {
-          parser_till_end = ::google::protobuf::internal::GreedyStringParserUTF8Verify;
-          goto string_till_end;
-        }
-        GOOGLE_PROTOBUF_PARSER_ASSERT(::google::protobuf::internal::StringCheckUTF8Verify(ptr, size, ctx));
-        ::google::protobuf::internal::InlineGreedyStringParser(object, ptr, size, ctx);
-        ptr += size;
         break;
       }
       // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;
       case 15: {
         if (static_cast<::google::protobuf::uint8>(tag) != 122) goto handle_unusual;
         do {
-          ptr = ::google::protobuf::io::ReadSize(ptr, &size);
+          ptr = ctx->ParseMessage(add_file(), ptr);
           GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-          parser_till_end = ::google::protobuf::compiler::CodeGeneratorResponse_File::_InternalParse;
-          object = msg->add_file();
-          if (size > end - ptr) goto len_delim_till_end;
-          ptr += size;
-          GOOGLE_PROTOBUF_PARSER_ASSERT(ctx->ParseExactRange(
-              {parser_till_end, object}, ptr - size, ptr));
-          if (ptr >= end) break;
-        } while ((::google::protobuf::io::UnalignedLoad<::google::protobuf::uint64>(ptr) & 255) == 122 && (ptr += 1));
+          if (ctx->Done(&ptr)) return ptr;
+        } while ((::google::protobuf::internal::UnalignedLoad<::google::protobuf::uint64>(ptr) & 255) == 122 && (ptr += 1));
         break;
       }
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
-          ctx->EndGroup(tag);
+          ctx->SetLastTag(tag);
           return ptr;
         }
-        auto res = UnknownFieldParse(tag, {_InternalParse, msg},
-          ptr, end, msg->_internal_metadata_.mutable_unknown_fields(), ctx);
-        ptr = res.first;
+        ptr = UnknownFieldParse(tag,
+          _internal_metadata_.mutable_unknown_fields(), ptr, ctx);
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr != nullptr);
-        if (res.second) return ptr;
+        break;
       }
     }  // switch
   }  // while
   return ptr;
-string_till_end:
-  static_cast<::std::string*>(object)->clear();
-  static_cast<::std::string*>(object)->reserve(size);
-  goto len_delim_till_end;
-len_delim_till_end:
-  return ctx->StoreAndTailCall(ptr, end, {_InternalParse, msg},
-                               {parser_till_end, object}, size);
 }
 #else  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 bool CodeGeneratorResponse::MergePartialFromCodedStream(

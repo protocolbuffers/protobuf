@@ -194,7 +194,7 @@ public final class Durations {
 
   /**
    * Builds the given builder and throws an {@link IllegalArgumentException} if it is not valid. See
-   * {@link #checkValid(Duration}).
+   * {@link #checkValid(Duration)}.
    *
    * @return A valid, built {@link Duration}.
    */

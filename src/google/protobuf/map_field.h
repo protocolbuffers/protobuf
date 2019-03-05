@@ -288,6 +288,10 @@ class MapField : public TypeDefinedMapFieldBase<Key, T> {
     return impl_.NewEntryWrapper(key, t);
   }
 
+  const char* _InternalParse(const char* ptr, ParseContext* ctx) {
+    return impl_._InternalParse(ptr, ctx);
+  }
+
  private:
   MapFieldLiteType impl_;
 

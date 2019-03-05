@@ -49,7 +49,7 @@ namespace Google.Protobuf.WellKnownTypes
         /// </summary>
         /// <remarks>
         /// <para>
-        /// This is always just the last part of the URL, after the final slash. No validation of 
+        /// This is always just the last part of the URL, after the final slash. No validation of
         /// anything before the trailing slash is performed. If the type URL does not include a slash,
         /// an empty string is returned rather than an exception being thrown; this won't match any types,
         /// and the calling code is probably in a better position to give a meaningful error.

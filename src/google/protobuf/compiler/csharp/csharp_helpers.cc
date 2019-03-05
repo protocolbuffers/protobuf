@@ -198,7 +198,7 @@ std::string ShoutyToPascalCase(const std::string& input) {
     char current = input[i];
     if (!ascii_isalnum(current)) {
       previous = current;
-      continue;      
+      continue;
     }
     if (!ascii_isalnum(previous)) {
       result += ascii_toupper(current);
@@ -228,7 +228,7 @@ std::string TryRemovePrefix(const std::string& prefix, const std::string& value)
       prefix_to_match += ascii_tolower(prefix[i]);
     }
   }
-  
+
   // This keeps track of how much of value we've consumed
   size_t prefix_index, value_index;
   for (prefix_index = 0, value_index = 0;

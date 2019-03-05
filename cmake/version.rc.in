@@ -15,15 +15,15 @@
 
 
 VS_VERSION_INFO VERSIONINFO
-  FILEVERSION    @protobuf_RC_FILEVERSION@,0
-  PRODUCTVERSION @protobuf_RC_FILEVERSION@,0
+  FILEVERSION    @protobuf_RC_FILEVERSION@
+  PRODUCTVERSION @protobuf_RC_FILEVERSION@
   FILEFLAGSMASK  VS_FFI_FILEFLAGSMASK
   FILEFLAGS      VER_DEBUG
   FILEOS         VOS__WINDOWS32
   FILETYPE       VFT_DLL
 BEGIN
     BLOCK "VarFileInfo"
-    BEGIN 
+    BEGIN
         // English language (0x409) and the Windows Unicode codepage (1200)
         VALUE "Translation", 0x409, 1200
     END
