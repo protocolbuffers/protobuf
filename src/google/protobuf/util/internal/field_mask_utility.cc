@@ -44,13 +44,13 @@ namespace converter {
 namespace {
 
 // Appends a FieldMask path segment to a prefix.
-string AppendPathSegmentToPrefix(StringPiece prefix,
-                                 StringPiece segment) {
+std::string AppendPathSegmentToPrefix(StringPiece prefix,
+                                      StringPiece segment) {
   if (prefix.empty()) {
-    return string(segment);
+    return std::string(segment);
   }
   if (segment.empty()) {
-    return string(prefix);
+    return std::string(prefix);
   }
   // If the segment is a map key, appends it to the prefix without the ".".
   if (HasPrefixString(segment, "[\"")) {
@@ -61,9 +61,9 @@ string AppendPathSegmentToPrefix(StringPiece prefix,
 
 }  // namespace
 
-string ConvertFieldMaskPath(const StringPiece path,
-                            ConverterCallback converter) {
-  string result;
+std::string ConvertFieldMaskPath(const StringPiece path,
+                                 ConverterCallback converter) {
+  std::string result;
   result.reserve(path.size() << 1);
 
   bool is_quoted = false;
@@ -107,7 +107,7 @@ string ConvertFieldMaskPath(const StringPiece path,
 
 util::Status DecodeCompactFieldMaskPaths(StringPiece paths,
                                            PathSinkCallback path_sink) {
-  std::stack<string> prefix;
+  std::stack<std::string> prefix;
   int length = paths.length();
   int previous_position = 0;
   bool in_map_key = false;
@@ -179,7 +179,7 @@ util::Status DecodeCompactFieldMaskPaths(StringPiece paths,
     // '(', ')', ',', or the beginning of the input) and the current position.
     StringPiece segment =
         paths.substr(previous_position, i - previous_position);
-    string current_prefix = prefix.empty() ? "" : prefix.top();
+    std::string current_prefix = prefix.empty() ? "" : prefix.top();
 
     if (i < length && paths[i] == '(') {
       // Builds a prefix and save it into the stack.

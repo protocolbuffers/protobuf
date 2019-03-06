@@ -32,7 +32,7 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include <google/protobuf/wire_format_lite_inl.h>
+#include <google/protobuf/wire_format_lite.h>
 
 #include <stack>
 #include <string>
@@ -191,7 +191,7 @@ bool WireFormatLite::SkipField(
       output->WriteVarint32(tag);
       output->WriteVarint32(length);
       // TODO(mkilavuz): Provide API to prevent extra string copying.
-      string temp;
+      std::string temp;
       if (!input->ReadString(&temp, length)) return false;
       output->WriteString(temp);
       return true;
@@ -499,7 +499,7 @@ void WireFormatLite::WriteEnum(int field_number, int value,
   WriteEnumNoTag(value, output);
 }
 
-void WireFormatLite::WriteString(int field_number, const string& value,
+void WireFormatLite::WriteString(int field_number, const std::string& value,
                                  io::CodedOutputStream* output) {
   // String is for UTF-8 text only
   WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
@@ -507,25 +507,25 @@ void WireFormatLite::WriteString(int field_number, const string& value,
   output->WriteVarint32(value.size());
   output->WriteString(value);
 }
-void WireFormatLite::WriteStringMaybeAliased(
-    int field_number, const string& value,
-    io::CodedOutputStream* output) {
+void WireFormatLite::WriteStringMaybeAliased(int field_number,
+                                             const std::string& value,
+                                             io::CodedOutputStream* output) {
   // String is for UTF-8 text only
   WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
   GOOGLE_CHECK_LE(value.size(), kint32max);
   output->WriteVarint32(value.size());
   output->WriteRawMaybeAliased(value.data(), value.size());
 }
-void WireFormatLite::WriteBytes(int field_number, const string& value,
+void WireFormatLite::WriteBytes(int field_number, const std::string& value,
                                 io::CodedOutputStream* output) {
   WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
   GOOGLE_CHECK_LE(value.size(), kint32max);
   output->WriteVarint32(value.size());
   output->WriteString(value);
 }
-void WireFormatLite::WriteBytesMaybeAliased(
-    int field_number, const string& value,
-    io::CodedOutputStream* output) {
+void WireFormatLite::WriteBytesMaybeAliased(int field_number,
+                                            const std::string& value,
+                                            io::CodedOutputStream* output) {
   WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
   GOOGLE_CHECK_LE(value.size(), kint32max);
   output->WriteVarint32(value.size());
@@ -582,29 +582,30 @@ void WireFormatLite::WriteMessageMaybeToArray(int field_number,
 }
 
 PROTOBUF_ALWAYS_INLINE static bool ReadBytesToString(
-    io::CodedInputStream* input, string* value);
+    io::CodedInputStream* input, std::string* value);
 inline static bool ReadBytesToString(io::CodedInputStream* input,
-                                     string* value) {
+                                     std::string* value) {
   uint32 length;
   return input->ReadVarint32(&length) &&
       input->InternalReadStringInline(value, length);
 }
 
-bool WireFormatLite::ReadBytes(io::CodedInputStream* input, string* value) {
+bool WireFormatLite::ReadBytes(io::CodedInputStream* input,
+                               std::string* value) {
   return ReadBytesToString(input, value);
 }
 
-bool WireFormatLite::ReadBytes(io::CodedInputStream* input, string** p) {
+bool WireFormatLite::ReadBytes(io::CodedInputStream* input, std::string** p) {
   if (*p == &GetEmptyStringAlreadyInited()) {
-    *p = new ::std::string();
+    *p = new std::string();
   }
   return ReadBytesToString(input, *p);
 }
 
 void PrintUTF8ErrorLog(const char* field_name, const char* operation_str,
                        bool emit_stacktrace) {
-  string stacktrace;
-  string quoted_field_name = "";
+  std::string stacktrace;
+  std::string quoted_field_name = "";
   if (field_name != nullptr) {
     quoted_field_name = StringPrintf(" '%s'", field_name);
   }

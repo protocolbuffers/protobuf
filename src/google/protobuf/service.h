@@ -101,8 +101,8 @@
 #define GOOGLE_PROTOBUF_SERVICE_H__
 
 #include <string>
-#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/callback.h>
+#include <google/protobuf/stubs/common.h>
 
 #ifdef SWIG
 #error "You cannot SWIG proto headers"

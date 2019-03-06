@@ -253,7 +253,8 @@ class PROTOBUF_EXPORT ExtensionSet {
   double GetDouble(int number, double default_value) const;
   bool GetBool(int number, bool default_value) const;
   int GetEnum(int number, int default_value) const;
-  const std::string& GetString(int number, const std::string& default_value) const;
+  const std::string& GetString(int number,
+                               const std::string& default_value) const;
   const MessageLite& GetMessage(int number,
                                 const MessageLite& default_value) const;
   const MessageLite& GetMessage(int number, const Descriptor* message_type,
@@ -1066,15 +1067,15 @@ class PROTOBUF_EXPORT StringTypeTraits {
   typedef StringTypeTraits Singular;
 
   static inline const std::string& Get(int number, const ExtensionSet& set,
-                                  ConstType default_value) {
+                                       ConstType default_value) {
     return set.GetString(number, default_value);
   }
-  static inline void Set(int number, FieldType field_type, const std::string& value,
-                         ExtensionSet* set) {
+  static inline void Set(int number, FieldType field_type,
+                         const std::string& value, ExtensionSet* set) {
     set->SetString(number, field_type, value, NULL);
   }
   static inline std::string* Mutable(int number, FieldType field_type,
-                                ExtensionSet* set) {
+                                     ExtensionSet* set) {
     return set->MutableString(number, field_type, NULL);
   }
   template <typename ExtendeeT>
@@ -1093,7 +1094,7 @@ class PROTOBUF_EXPORT RepeatedStringTypeTraits {
   typedef RepeatedPtrField<std::string> RepeatedFieldType;
 
   static inline const std::string& Get(int number, const ExtensionSet& set,
-                                  int index) {
+                                       int index) {
     return set.GetRepeatedString(number, index);
   }
   static inline void Set(int number, int index, const std::string& value,
@@ -1108,7 +1109,7 @@ class PROTOBUF_EXPORT RepeatedStringTypeTraits {
     set->AddString(number, field_type, value, NULL);
   }
   static inline std::string* Add(int number, FieldType field_type,
-                            ExtensionSet* set) {
+                                 ExtensionSet* set) {
     return set->AddString(number, field_type, NULL);
   }
   static inline const RepeatedPtrField<std::string>& GetRepeated(
@@ -1117,10 +1118,8 @@ class PROTOBUF_EXPORT RepeatedStringTypeTraits {
         set.GetRawRepeatedField(number, GetDefaultRepeatedField()));
   }
 
-  static inline RepeatedPtrField<std::string>* MutableRepeated(int number,
-                                                          FieldType field_type,
-                                                          bool is_packed,
-                                                          ExtensionSet* set) {
+  static inline RepeatedPtrField<std::string>* MutableRepeated(
+      int number, FieldType field_type, bool is_packed, ExtensionSet* set) {
     return reinterpret_cast<RepeatedPtrField<std::string>*>(
         set->MutableRawRepeatedField(number, field_type, is_packed, NULL));
   }
@@ -1558,6 +1557,38 @@ class ExtensionIdentifier {
   }
 
 }  // namespace internal
+
+// Call this function to ensure that this extensions's reflection is linked into
+// the binary:
+//
+//   google::protobuf::LinkExtensionReflection(Foo::my_extension);
+//
+// This will ensure that the following lookup will succeed:
+//
+//   DescriptorPool::generated_pool()->FindExtensionByName("Foo.my_extension");
+//
+// This is often relevant for parsing extensions in text mode.
+//
+// As a side-effect, it will also guarantee that anything else from the same
+// .proto file will also be available for lookup in the generated pool.
+//
+// This function does not actually register the extension, so it does not need
+// to be called before the lookup.  However it does need to occur in a function
+// that cannot be stripped from the binary (ie. it must be reachable from main).
+//
+// Best practice is to call this function as close as possible to where the
+// reflection is actually needed.  This function is very cheap to call, so you
+// should not need to worry about its runtime overhead except in tight loops (on
+// x86-64 it compiles into two "mov" instructions).
+template <typename ExtendeeType, typename TypeTraitsType,
+          internal::FieldType field_type, bool is_packed>
+void LinkExtensionReflection(
+    const google::protobuf::internal::ExtensionIdentifier<
+        ExtendeeType, TypeTraitsType, field_type, is_packed>& extension) {
+  const void* volatile unused = &extension;
+  (void)&unused;  // Use address to avoid an extra load of volatile variable.
+}
+
 }  // namespace protobuf
 }  // namespace google
 

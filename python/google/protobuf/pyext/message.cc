@@ -47,6 +47,7 @@
 #endif
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
+#include <google/protobuf/io/strtod.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 #include <google/protobuf/descriptor.pb.h>
@@ -756,7 +757,7 @@ bool CheckAndGetFloat(PyObject* arg, float* value) {
   if (!CheckAndGetDouble(arg, &double_value)) {
     return false;
   }
-  *value = static_cast<float>(double_value);
+  *value = io::SafeDoubleToFloat(double_value);
   return true;
 }
 

@@ -98,7 +98,9 @@ void Message::CopyFrom(const Message& from) {
   ReflectionOps::Copy(from, this);
 }
 
-string Message::GetTypeName() const { return GetDescriptor()->full_name(); }
+std::string Message::GetTypeName() const {
+  return GetDescriptor()->full_name();
+}
 
 void Message::Clear() { ReflectionOps::Clear(this); }
 
@@ -106,12 +108,12 @@ bool Message::IsInitialized() const {
   return ReflectionOps::IsInitialized(*this);
 }
 
-void Message::FindInitializationErrors(std::vector<string>* errors) const {
+void Message::FindInitializationErrors(std::vector<std::string>* errors) const {
   return ReflectionOps::FindInitializationErrors(*this, "", errors);
 }
 
-string Message::InitializationErrorString() const {
-  std::vector<string> errors;
+std::string Message::InitializationErrorString() const {
+  std::vector<std::string> errors;
   FindInitializationErrors(&errors);
   return Join(errors, ", ");
 }
@@ -302,7 +304,7 @@ const char* ParsePackedField(const FieldDescriptor* field, Message* msg,
 
     default:
       GOOGLE_LOG(FATAL) << "Type is not packable " << field->type();
-      return {};  // Make compiler happy
+      return nullptr;  // Make compiler happy
   }
 }
 
@@ -316,7 +318,7 @@ const char* ParseLenDelim(int field_number, const FieldDescriptor* field,
   }
   enum { kNone = 0, kVerify, kStrict } utf8_level = kNone;
   const char* field_name = nullptr;
-  auto parse_string = [ptr, ctx, &utf8_level, &field_name](string* s) {
+  auto parse_string = [ptr, ctx, &utf8_level, &field_name](std::string* s) {
     switch (utf8_level) {
       case kNone:
         return internal::InlineGreedyStringParser(s, ptr, ctx);
@@ -347,12 +349,14 @@ const char* ParseLenDelim(int field_number, const FieldDescriptor* field,
         reflection->AddString(msg, field, "");
         if (field->options().ctype() == FieldOptions::STRING ||
             field->is_extension()) {
-          auto object = reflection->MutableRepeatedPtrField<string>(msg, field)
-                            ->Mutable(index);
+          auto object =
+              reflection->MutableRepeatedPtrField<std::string>(msg, field)
+                  ->Mutable(index);
           return parse_string(object);
         } else {
-          auto object = reflection->MutableRepeatedPtrField<string>(msg, field)
-                            ->Mutable(index);
+          auto object =
+              reflection->MutableRepeatedPtrField<std::string>(msg, field)
+                  ->Mutable(index);
           return parse_string(object);
         }
       } else {
@@ -361,12 +365,12 @@ const char* ParseLenDelim(int field_number, const FieldDescriptor* field,
         if (field->options().ctype() == FieldOptions::STRING ||
             field->is_extension()) {
           // HACK around inability to get mutable_string in reflection
-          string* object = &const_cast<string&>(
+          std::string* object = &const_cast<std::string&>(
               reflection->GetStringReference(*msg, field, nullptr));
           return parse_string(object);
         } else {
           // HACK around inability to get mutable_string in reflection
-          string* object = &const_cast<string&>(
+          std::string* object = &const_cast<std::string&>(
               reflection->GetStringReference(*msg, field, nullptr));
           return parse_string(object);
         }
@@ -493,7 +497,7 @@ const char* Message::_InternalParse(const char* ptr,
     UnknownFieldSet* unknown_ = nullptr;
     bool is_item_ = false;
     uint32 type_id_ = 0;
-    string payload_;
+    std::string payload_;
 
     ReflectiveFieldParser(Message* msg, internal::ParseContext* ctx,
                           bool is_item)
@@ -670,7 +674,7 @@ void RegisterFileLevelMetadata(void* assign_descriptors_table);
 namespace {
 
 void RegisterFileLevelMetadata(void* assign_descriptors_table,
-                               const string& filename) {
+                               const std::string& filename) {
   internal::RegisterFileLevelMetadata(assign_descriptors_table);
 }
 

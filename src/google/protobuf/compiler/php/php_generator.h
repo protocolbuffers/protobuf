@@ -44,7 +44,7 @@ namespace compiler {
 namespace php {
 
 class PROTOC_EXPORT Generator
-    : public google::protobuf::compiler::CodeGenerator {
+    : public PROTOBUF_NAMESPACE_ID::compiler::CodeGenerator {
   virtual bool Generate(
       const FileDescriptor* file,
       const string& parameter,
@@ -56,11 +56,11 @@ class PROTOC_EXPORT Generator
 // Other code generators may need following API to figure out the actual
 // classname.
 PROTOC_EXPORT std::string GeneratedClassName(
-    const google::protobuf::Descriptor* desc);
+    const PROTOBUF_NAMESPACE_ID::Descriptor* desc);
 PROTOC_EXPORT std::string GeneratedClassName(
-    const google::protobuf::EnumDescriptor* desc);
+    const PROTOBUF_NAMESPACE_ID::EnumDescriptor* desc);
 PROTOC_EXPORT std::string GeneratedClassName(
-    const google::protobuf::ServiceDescriptor* desc);
+    const PROTOBUF_NAMESPACE_ID::ServiceDescriptor* desc);
 
 inline bool IsWrapperType(const FieldDescriptor* descriptor) {
   return descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&

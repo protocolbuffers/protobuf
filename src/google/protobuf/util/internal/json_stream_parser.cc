@@ -206,7 +206,7 @@ util::Status JsonStreamParser::ParseChunk(StringPiece chunk) {
     }
     // If we expect future data i.e. stack is non-empty, and we have some
     // unparsed data left, we save it for later parse.
-    leftover_ = string(p_);
+    leftover_ = std::string(p_);
   }
   return util::Status();
 }
@@ -501,8 +501,8 @@ util::Status JsonStreamParser::ParseNumber() {
   return result;
 }
 
-util::Status JsonStreamParser::ParseDoubleHelper(
-    const string& number, NumberResult* result) {
+util::Status JsonStreamParser::ParseDoubleHelper(const std::string& number,
+                                                 NumberResult* result) {
   if (!safe_strtod(number, &result->double_val)) {
     return ReportFailure("Unable to parse number.");
   }
@@ -545,7 +545,7 @@ util::Status JsonStreamParser::ParseNumberHelper(NumberResult* result) {
   }
 
   // Create a string containing just the number, so we can use safe_strtoX
-  string number = string(p_.substr(0, index));
+  std::string number = std::string(p_.substr(0, index));
 
   // Floating point number, parse as a double.
   if (floating) {
@@ -779,7 +779,7 @@ util::Status JsonStreamParser::ReportFailure(StringPiece message) {
   const char* end =
       std::min(p_start + kContextLength, json_start + json_.size());
   StringPiece segment(begin, end - begin);
-  string location(p_start - begin, ' ');
+  std::string location(p_start - begin, ' ');
   location.push_back('^');
   return util::Status(util::error::INVALID_ARGUMENT,
                       StrCat(message, "\n", segment, "\n", location));

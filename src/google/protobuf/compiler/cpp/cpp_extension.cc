@@ -51,7 +51,7 @@ namespace {
 // Returns the fully-qualified class name of the message that this field
 // extends. This function is used in the Google-internal code to handle some
 // legacy cases.
-string ExtendeeClassName(const FieldDescriptor* descriptor) {
+std::string ExtendeeClassName(const FieldDescriptor* descriptor) {
   const Descriptor* extendee = descriptor->containing_type();
   return ClassName(extendee, true);
 }
@@ -92,17 +92,17 @@ ExtensionGenerator::ExtensionGenerator(const FieldDescriptor* descriptor,
   SetCommonVars(options, &variables_);
   variables_["extendee"] = ExtendeeClassName(descriptor_);
   variables_["type_traits"] = type_traits_;
-  string name = descriptor_->name();
+  std::string name = descriptor_->name();
   variables_["name"] = name;
   variables_["constant_name"] = FieldConstantName(descriptor_);
   variables_["field_type"] =
       StrCat(static_cast<int>(descriptor_->type()));
   variables_["packed"] = descriptor_->options().packed() ? "true" : "false";
 
-  string scope =
+  std::string scope =
       IsScoped() ? ClassName(descriptor_->extension_scope(), false) + "::" : "";
   variables_["scope"] = scope;
-  string scoped_name = scope + name;
+  std::string scoped_name = scope + name;
   variables_["scoped_name"] = scoped_name;
   variables_["number"] = StrCat(descriptor_->number());
 }
@@ -119,7 +119,7 @@ void ExtensionGenerator::GenerateDeclaration(io::Printer* printer) const {
   // If this is a class member, it needs to be declared "static".  Otherwise,
   // it needs to be "extern".  In the latter case, it also needs the DLL
   // export/import specifier.
-  string qualifier;
+  std::string qualifier;
   if (!IsScoped()) {
     qualifier = "extern";
     if (!options_.dllexport_decl.empty()) {
@@ -149,7 +149,7 @@ void ExtensionGenerator::GenerateDefinition(io::Printer* printer) {
   }
 
   Formatter format(printer, variables_);
-  string default_str;
+  std::string default_str;
   // If this is a class member, it needs to be declared in its class scope.
   if (descriptor_->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
     // We need to declare a global string which will contain the default value.
@@ -158,7 +158,7 @@ void ExtensionGenerator::GenerateDefinition(io::Printer* printer) {
     // replace :: with _ in the name and declare it as a global.
     default_str =
         StringReplace(variables_["scoped_name"], "::", "_", true) + "_default";
-    format("const ::std::string $1$($2$);\n", default_str,
+    format("const std::string $1$($2$);\n", default_str,
            DefaultValue(options_, descriptor_));
   } else {
     default_str = DefaultValue(options_, descriptor_);

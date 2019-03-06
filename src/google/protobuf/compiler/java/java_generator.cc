@@ -59,14 +59,13 @@ JavaGenerator::JavaGenerator() {}
 JavaGenerator::~JavaGenerator() {}
 
 bool JavaGenerator::Generate(const FileDescriptor* file,
-                             const string& parameter,
+                             const std::string& parameter,
                              GeneratorContext* context,
-                             string* error) const {
+                             std::string* error) const {
   // -----------------------------------------------------------------
   // parse generator options
 
-
-  std::vector<std::pair<string, string> > options;
+  std::vector<std::pair<std::string, std::string> > options;
   ParseGeneratorParameter(parameter, &options);
   Options file_options;
 
@@ -105,8 +104,8 @@ bool JavaGenerator::Generate(const FileDescriptor* file,
   // -----------------------------------------------------------------
 
 
-  std::vector<string> all_files;
-  std::vector<string> all_annotations;
+  std::vector<std::string> all_files;
+  std::vector<std::string> all_annotations;
 
 
   std::vector<FileGenerator*> file_generators;
@@ -131,13 +130,13 @@ bool JavaGenerator::Generate(const FileDescriptor* file,
   for (int i = 0; i < file_generators.size(); ++i) {
     FileGenerator* file_generator = file_generators[i];
 
-    string package_dir = JavaPackageToDir(file_generator->java_package());
+    std::string package_dir = JavaPackageToDir(file_generator->java_package());
 
-    string java_filename = package_dir;
+    std::string java_filename = package_dir;
     java_filename += file_generator->classname();
     java_filename += ".java";
     all_files.push_back(java_filename);
-    string info_full_path = java_filename + ".pb.meta";
+    std::string info_full_path = java_filename + ".pb.meta";
     if (file_options.annotate_code) {
       all_annotations.push_back(info_full_path);
     }

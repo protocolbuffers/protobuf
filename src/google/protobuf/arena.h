@@ -35,6 +35,7 @@
 
 #include <limits>
 #include <type_traits>
+#include <utility>
 #ifdef max
 #undef max  // Visual Studio defines this macro
 #endif
@@ -244,10 +245,7 @@ struct ArenaOptions {
 // well as protobuf container types like RepeatedPtrField and Map. The protocol
 // is internal to protobuf and is not guaranteed to be stable. Non-proto types
 // should not rely on this protocol.
-//
-// Do NOT subclass Arena. This class will be marked as final when C++11 is
-// enabled.
-class PROTOBUF_EXPORT Arena {
+class PROTOBUF_EXPORT Arena final {
  public:
   // Arena constructor taking custom options. See ArenaOptions below for
   // descriptions of the options available.
@@ -442,7 +440,11 @@ class PROTOBUF_EXPORT Arena {
                                              sizeof(char)>
         is_arena_constructable;
 
-    template <typename U>
+    template <typename U,
+              typename std::enable_if<
+                  std::is_same<Arena*, decltype(std::declval<const U>()
+                                                    .GetArena())>::value,
+                  int>::type = 0>
     static char HasGetArena(decltype(&U::GetArena));
     template <typename U>
     static double HasGetArena(...);
@@ -480,6 +482,9 @@ class PROTOBUF_EXPORT Arena {
   };
 
  private:
+  template <typename T>
+  struct has_get_arena : InternalHelper<T>::has_get_arena {};
+
   template <typename T, typename... Args>
   PROTOBUF_ALWAYS_INLINE static T* CreateMessageInternal(Arena* arena,
                                                          Args&&... args) {
@@ -673,15 +678,15 @@ class PROTOBUF_EXPORT Arena {
   }
   template <typename T,
             typename std::enable_if<!is_arena_constructable<T>::value &&
-                                        InternalHelper<T>::has_get_arena::value,
+                                        has_get_arena<T>::value,
                                     int>::type = 0>
   PROTOBUF_ALWAYS_INLINE static Arena* GetArenaInternal(const T* value) {
     return value->GetArena();
   }
-  template <typename T, typename std::enable_if<
-                            !is_arena_constructable<T>::value &&
-                                !InternalHelper<T>::has_get_arena::value,
-                            int>::type = 0>
+  template <typename T,
+            typename std::enable_if<!is_arena_constructable<T>::value &&
+                                        !has_get_arena<T>::value,
+                                    int>::type = 0>
   PROTOBUF_ALWAYS_INLINE static Arena* GetArenaInternal(const T* value) {
     return nullptr;
   }

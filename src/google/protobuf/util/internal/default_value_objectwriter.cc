@@ -153,7 +153,7 @@ DefaultValueObjectWriter* DefaultValueObjectWriter::RenderString(
   } else {
     // Since StringPiece is essentially a pointer, takes a copy of "value" to
     // avoid ownership issues.
-    string_values_.emplace_back(new string(value));
+    string_values_.emplace_back(new std::string(value));
     RenderDataPiece(name, DataPiece(*string_values_.back(), true));
   }
   return this;
@@ -166,7 +166,7 @@ DefaultValueObjectWriter* DefaultValueObjectWriter::RenderBytes(
   } else {
     // Since StringPiece is essentially a pointer, takes a copy of "value" to
     // avoid ownership issues.
-    string_values_.emplace_back(new string(value));
+    string_values_.emplace_back(new std::string(value));
     RenderDataPiece(name, DataPiece(*string_values_.back(), false, true));
   }
   return this;
@@ -188,20 +188,22 @@ void DefaultValueObjectWriter::RegisterFieldScrubCallBack(
 }
 
 DefaultValueObjectWriter::Node* DefaultValueObjectWriter::CreateNewNode(
-    const string& name, const google::protobuf::Type* type, NodeKind kind,
-    const DataPiece& data, bool is_placeholder, const std::vector<string>& path,
-    bool suppress_empty_list, bool preserve_proto_field_names,
-    bool use_ints_for_enums, FieldScrubCallBack* field_scrub_callback) {
+    const std::string& name, const google::protobuf::Type* type, NodeKind kind,
+    const DataPiece& data, bool is_placeholder,
+    const std::vector<std::string>& path, bool suppress_empty_list,
+    bool preserve_proto_field_names, bool use_ints_for_enums,
+    FieldScrubCallBack* field_scrub_callback) {
   return new Node(name, type, kind, data, is_placeholder, path,
                   suppress_empty_list, preserve_proto_field_names,
                   use_ints_for_enums, field_scrub_callback);
 }
 
 DefaultValueObjectWriter::Node::Node(
-    const string& name, const google::protobuf::Type* type, NodeKind kind,
-    const DataPiece& data, bool is_placeholder, const std::vector<string>& path,
-    bool suppress_empty_list, bool preserve_proto_field_names,
-    bool use_ints_for_enums, FieldScrubCallBack* field_scrub_callback)
+    const std::string& name, const google::protobuf::Type* type, NodeKind kind,
+    const DataPiece& data, bool is_placeholder,
+    const std::vector<std::string>& path, bool suppress_empty_list,
+    bool preserve_proto_field_names, bool use_ints_for_enums,
+    FieldScrubCallBack* field_scrub_callback)
     : name_(name),
       type_(type),
       kind_(kind),
@@ -310,7 +312,7 @@ void DefaultValueObjectWriter::Node::PopulateChildren(
     return;
   }
   std::vector<Node*> new_children;
-  std::unordered_map<string, int> orig_children_map;
+  std::unordered_map<std::string, int> orig_children_map;
 
   // Creates a map of child nodes to speed up lookup.
   for (int i = 0; i < children_.size(); ++i) {
@@ -322,7 +324,7 @@ void DefaultValueObjectWriter::Node::PopulateChildren(
 
     // This code is checking if the field to be added to the tree should be
     // scrubbed or not by calling the field_scrub_callback_ callback function.
-    std::vector<string> path;
+    std::vector<std::string> path;
     if (!path_.empty()) {
       path.insert(path.begin(), path_.begin(), path_.end());
     }
@@ -332,7 +334,7 @@ void DefaultValueObjectWriter::Node::PopulateChildren(
       continue;
     }
 
-    std::unordered_map<string, int>::iterator found =
+    std::unordered_map<std::string, int>::iterator found =
         orig_children_map.find(field.name());
     // If the child field has already been set, we just add it to the new list
     // of children.
@@ -486,9 +488,9 @@ DataPiece DefaultValueObjectWriter::CreateDefaultDataPieceForField(
 DefaultValueObjectWriter* DefaultValueObjectWriter::StartObject(
     StringPiece name) {
   if (current_ == nullptr) {
-    std::vector<string> path;
+    std::vector<std::string> path;
     root_.reset(CreateNewNode(
-        string(name), &type_, OBJECT, DataPiece::NullData(), false, path,
+        std::string(name), &type_, OBJECT, DataPiece::NullData(), false, path,
         suppress_empty_list_, preserve_proto_field_names_, use_ints_for_enums_,
         field_scrub_callback_.get()));
     root_->PopulateChildren(typeinfo_);
@@ -501,7 +503,7 @@ DefaultValueObjectWriter* DefaultValueObjectWriter::StartObject(
     // If current_ is a list or a map node, we should create a new child and use
     // the type of current_ as the type of the new child.
     std::unique_ptr<Node> node(
-        CreateNewNode(string(name),
+        CreateNewNode(std::string(name),
                       ((current_->kind() == LIST || current_->kind() == MAP)
                            ? current_->type()
                            : nullptr),
@@ -537,22 +539,22 @@ DefaultValueObjectWriter* DefaultValueObjectWriter::EndObject() {
 DefaultValueObjectWriter* DefaultValueObjectWriter::StartList(
     StringPiece name) {
   if (current_ == nullptr) {
-    std::vector<string> path;
-    root_.reset(CreateNewNode(string(name), &type_, LIST, DataPiece::NullData(),
-                              false, path, suppress_empty_list_,
-                              preserve_proto_field_names_, use_ints_for_enums_,
-                              field_scrub_callback_.get()));
+    std::vector<std::string> path;
+    root_.reset(CreateNewNode(
+        std::string(name), &type_, LIST, DataPiece::NullData(), false, path,
+        suppress_empty_list_, preserve_proto_field_names_, use_ints_for_enums_,
+        field_scrub_callback_.get()));
     current_ = root_.get();
     return this;
   }
   MaybePopulateChildrenOfAny(current_);
   Node* child = current_->FindChild(name);
   if (child == nullptr || child->kind() != LIST) {
-    std::unique_ptr<Node> node(
-        CreateNewNode(string(name), nullptr, LIST, DataPiece::NullData(), false,
-                      child == nullptr ? current_->path() : child->path(),
-                      suppress_empty_list_, preserve_proto_field_names_,
-                      use_ints_for_enums_, field_scrub_callback_.get()));
+    std::unique_ptr<Node> node(CreateNewNode(
+        std::string(name), nullptr, LIST, DataPiece::NullData(), false,
+        child == nullptr ? current_->path() : child->path(),
+        suppress_empty_list_, preserve_proto_field_names_, use_ints_for_enums_,
+        field_scrub_callback_.get()));
     child = node.get();
     current_->AddChild(node.release());
   }
@@ -584,9 +586,9 @@ void DefaultValueObjectWriter::RenderDataPiece(StringPiece name,
   MaybePopulateChildrenOfAny(current_);
   if (current_->type() != nullptr && current_->type()->name() == kAnyType &&
       name == "@type") {
-    util::StatusOr<string> data_string = data.ToString();
+    util::StatusOr<std::string> data_string = data.ToString();
     if (data_string.ok()) {
-      const string& string_value = data_string.ValueOrDie();
+      const std::string& string_value = data_string.ValueOrDie();
       // If the type of current_ is "Any" and its "@type" field is being set
       // here, sets the type of current_ to be the type specified by the
       // "@type".
@@ -611,7 +613,7 @@ void DefaultValueObjectWriter::RenderDataPiece(StringPiece name,
   if (child == nullptr || child->kind() != PRIMITIVE) {
     // No children are found, creates a new child.
     std::unique_ptr<Node> node(
-        CreateNewNode(string(name), nullptr, PRIMITIVE, data, false,
+        CreateNewNode(std::string(name), nullptr, PRIMITIVE, data, false,
                       child == nullptr ? current_->path() : child->path(),
                       suppress_empty_list_, preserve_proto_field_names_,
                       use_ints_for_enums_, field_scrub_callback_.get()));

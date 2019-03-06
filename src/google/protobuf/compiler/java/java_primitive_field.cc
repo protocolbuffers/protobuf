@@ -58,11 +58,10 @@ using internal::WireFormatLite;
 namespace {
 
 void SetPrimitiveVariables(const FieldDescriptor* descriptor,
-                           int messageBitIndex,
-                           int builderBitIndex,
+                           int messageBitIndex, int builderBitIndex,
                            const FieldGeneratorInfo* info,
                            ClassNameResolver* name_resolver,
-                           std::map<string, string>* variables) {
+                           std::map<std::string, std::string>* variables) {
   SetCommonFieldVariables(descriptor, info, variables);
   JavaType javaType = GetJavaType(descriptor);
 
@@ -75,7 +74,7 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
       javaType == JAVATYPE_FLOAT ||
       javaType == JAVATYPE_INT ||
       javaType == JAVATYPE_LONG) {
-    string capitalized_type = UnderscoresToCamelCase(
+    std::string capitalized_type = UnderscoresToCamelCase(
         PrimitiveTypeName(javaType), /*cap_first_letter=*/true);
     (*variables)["field_list_type"] =
         "com.google.protobuf.Internal." + capitalized_type + "List";
@@ -467,7 +466,7 @@ GenerateHashCode(io::Printer* printer) const {
   }
 }
 
-string ImmutablePrimitiveFieldGenerator::GetBoxedType() const {
+std::string ImmutablePrimitiveFieldGenerator::GetBoxedType() const {
   return BoxedPrimitiveTypeName(GetJavaType(descriptor_));
 }
 
@@ -938,7 +937,7 @@ GenerateHashCode(io::Printer* printer) const {
     "}\n");
 }
 
-string RepeatedImmutablePrimitiveFieldGenerator::GetBoxedType() const {
+std::string RepeatedImmutablePrimitiveFieldGenerator::GetBoxedType() const {
   return BoxedPrimitiveTypeName(GetJavaType(descriptor_));
 }
 

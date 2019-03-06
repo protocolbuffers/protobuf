@@ -708,6 +708,10 @@ class PROTOBUF_EXPORT MessageDifferencer {
   static bool FieldBefore(const FieldDescriptor* field1,
                           const FieldDescriptor* field2);
 
+  // Retrieve all the set fields, including extensions.
+  std::vector<const FieldDescriptor*> RetrieveFields(const Message& message,
+                                                     bool base_message);
+
   // Combine the two lists of fields into the combined_fields output vector.
   // All fields present in both lists will always be included in the combined
   // list.  Fields only present in one of the lists will only appear in the

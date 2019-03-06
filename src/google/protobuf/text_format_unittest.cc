@@ -71,14 +71,14 @@ namespace protobuf {
 namespace text_format_unittest {
 
 // A basic string with different escapable characters for testing.
-const string kEscapeTestString =
-  "\"A string with ' characters \n and \r newlines and \t tabs and \001 "
-  "slashes \\ and  multiple   spaces";
+const std::string kEscapeTestString =
+    "\"A string with ' characters \n and \r newlines and \t tabs and \001 "
+    "slashes \\ and  multiple   spaces";
 
 // A representation of the above string with all the characters escaped.
-const string kEscapeTestStringEscaped =
-  "\"\\\"A string with \\' characters \\n and \\r newlines "
-  "and \\t tabs and \\001 slashes \\\\ and  multiple   spaces\"";
+const std::string kEscapeTestStringEscaped =
+    "\"\\\"A string with \\' characters \\n and \\r newlines "
+    "and \\t tabs and \\001 slashes \\\\ and  multiple   spaces\"";
 
 class TextFormatTest : public testing::Test {
  public:
@@ -95,13 +95,13 @@ class TextFormatTest : public testing::Test {
 
  protected:
   // Debug string read from text_format_unittest_data.txt.
-  const string proto_debug_string_;
+  const std::string proto_debug_string_;
   unittest::TestAllTypes proto_;
 
  private:
-  static string static_proto_debug_string_;
+  static std::string static_proto_debug_string_;
 };
-string TextFormatTest::static_proto_debug_string_;
+std::string TextFormatTest::static_proto_debug_string_;
 
 class TextFormatExtensionsTest : public testing::Test {
  public:
@@ -118,14 +118,13 @@ class TextFormatExtensionsTest : public testing::Test {
 
  protected:
   // Debug string read from text_format_unittest_data.txt.
-  const string proto_debug_string_;
+  const std::string proto_debug_string_;
   unittest::TestAllExtensions proto_;
 
  private:
-  static string static_proto_debug_string_;
+  static std::string static_proto_debug_string_;
 };
-string TextFormatExtensionsTest::static_proto_debug_string_;
-
+std::string TextFormatExtensionsTest::static_proto_debug_string_;
 
 TEST_F(TextFormatTest, Basic) {
   TestUtil::SetAllFields(&proto_);
@@ -162,7 +161,7 @@ TEST_F(TextFormatTest, ShortPrimitiveRepeateds) {
 
   TextFormat::Printer printer;
   printer.SetUseShortRepeatedPrimitives(true);
-  string text;
+  std::string text;
   EXPECT_TRUE(printer.PrintToString(proto_, &text));
 
   EXPECT_EQ("optional_int32: 123\n"
@@ -174,8 +173,8 @@ TEST_F(TextFormatTest, ShortPrimitiveRepeateds) {
             "repeated_nested_enum: [FOO, BAR]\n",
             text);
 
-  // Verify that any existing data in the string is cleared when
-  // PrintToString() is called.
+  // Verify that any existing data in the string is cleared when PrintToString()
+  // is called.
   text = "just some data here...\n\nblah blah";
   EXPECT_TRUE(printer.PrintToString(proto_, &text));
 
@@ -208,13 +207,12 @@ TEST_F(TextFormatTest, StringEscape) {
   proto_.set_optional_string(kEscapeTestString);
 
   // Get the DebugString from the proto.
-  string debug_string = proto_.DebugString();
-  string utf8_debug_string = proto_.Utf8DebugString();
+  std::string debug_string = proto_.DebugString();
+  std::string utf8_debug_string = proto_.Utf8DebugString();
 
   // Hardcode a correct value to test against.
-  string correct_string = "optional_string: "
-      + kEscapeTestStringEscaped
-       + "\n";
+  std::string correct_string =
+      "optional_string: " + kEscapeTestStringEscaped + "\n";
 
   // Compare.
   EXPECT_EQ(correct_string, debug_string);
@@ -222,8 +220,8 @@ TEST_F(TextFormatTest, StringEscape) {
   // the protocol buffer contains no UTF-8 text.
   EXPECT_EQ(correct_string, utf8_debug_string);
 
-  string expected_short_debug_string = "optional_string: "
-      + kEscapeTestStringEscaped;
+  std::string expected_short_debug_string =
+      "optional_string: " + kEscapeTestStringEscaped;
   EXPECT_EQ(expected_short_debug_string, proto_.ShortDebugString());
 }
 
@@ -233,18 +231,18 @@ TEST_F(TextFormatTest, Utf8DebugString) {
   proto_.set_optional_bytes("\350\260\267\346\255\214");
 
   // Get the DebugString from the proto.
-  string debug_string = proto_.DebugString();
-  string utf8_debug_string = proto_.Utf8DebugString();
+  std::string debug_string = proto_.DebugString();
+  std::string utf8_debug_string = proto_.Utf8DebugString();
 
   // Hardcode a correct value to test against.
-  string correct_utf8_string =
+  std::string correct_utf8_string =
       "optional_string: "
       "\"\350\260\267\346\255\214\""
       "\n"
       "optional_bytes: "
       "\"\\350\\260\\267\\346\\255\\214\""
       "\n";
-  string correct_string =
+  std::string correct_string =
       "optional_string: "
       "\"\\350\\260\\267\\346\\255\\214\""
       "\n"
@@ -306,7 +304,7 @@ TEST_F(TextFormatTest, PrintUnknownFieldsHidden) {
 
   TextFormat::Printer printer;
   printer.SetHideUnknownFields(true);
-  string output;
+  std::string output;
   printer.PrintToString(message, &output);
 
   EXPECT_EQ("data: \"data\"\n", output);
@@ -339,10 +337,10 @@ TEST_F(TextFormatTest, PrintUnknownMessage) {
   // nested message.
   message.add_repeated_nested_message()->set_bb(123);
 
-  string data;
+  std::string data;
   message.SerializeToString(&data);
 
-  string text;
+  std::string text;
   UnknownFieldSet unknown_fields;
   EXPECT_TRUE(unknown_fields.ParseFromString(data));
   EXPECT_TRUE(TextFormat::PrintUnknownFieldsToString(unknown_fields, &text));
@@ -365,7 +363,7 @@ TEST_F(TextFormatTest, PrintMessageWithIndent) {
   message.add_repeated_string("def");
   message.add_repeated_nested_message()->set_bb(123);
 
-  string text;
+  std::string text;
   TextFormat::Printer printer;
   printer.SetInitialIndentLevel(1);
   EXPECT_TRUE(printer.PrintToString(message, &text));
@@ -387,7 +385,7 @@ TEST_F(TextFormatTest, PrintMessageSingleLine) {
   message.add_repeated_string("def");
   message.add_repeated_nested_message()->set_bb(123);
 
-  string text;
+  std::string text;
   TextFormat::Printer printer;
   printer.SetInitialIndentLevel(1);
   printer.SetSingleLineMode(true);
@@ -416,7 +414,7 @@ TEST_F(TextFormatTest, PrintBufferTooSmall) {
 // A printer that appends 'u' to all unsigned int32.
 class CustomUInt32FieldValuePrinter : public TextFormat::FieldValuePrinter {
  public:
-  virtual string PrintUInt32(uint32 val) const {
+  virtual std::string PrintUInt32(uint32 val) const {
     return StrCat(FieldValuePrinter::PrintUInt32(val), "u");
   }
 };
@@ -433,14 +431,14 @@ TEST_F(TextFormatTest, DefaultCustomFieldPrinter) {
   printer.SetDefaultFieldValuePrinter(new CustomUInt32FieldValuePrinter());
   // Let's see if that works well together with the repeated primitives:
   printer.SetUseShortRepeatedPrimitives(true);
-  string text;
+  std::string text;
   printer.PrintToString(message, &text);
   EXPECT_EQ("optional_uint32: 42u\nrepeated_uint32: [1u, 2u, 3u]\n", text);
 }
 
 class CustomInt32FieldValuePrinter : public TextFormat::FieldValuePrinter {
  public:
-  virtual string PrintInt32(int32 val) const {
+  virtual std::string PrintInt32(int32 val) const {
     return StrCat("value-is(", FieldValuePrinter::PrintInt32(val), ")");
   }
 };
@@ -455,7 +453,7 @@ TEST_F(TextFormatTest, FieldSpecificCustomPrinter) {
   EXPECT_TRUE(printer.RegisterFieldValuePrinter(
       message.GetDescriptor()->FindFieldByName("optional_int32"),
       new CustomInt32FieldValuePrinter()));
-  string text;
+  std::string text;
   printer.PrintToString(message, &text);
   EXPECT_EQ("optional_int32: value-is(42)\nrepeated_int32: 42\n", text);
 }
@@ -491,15 +489,14 @@ TEST_F(TextFormatTest, ErrorCasesRegisteringFieldValuePrinterShouldFail) {
 
 class CustomMessageFieldValuePrinter : public TextFormat::FieldValuePrinter {
  public:
-  virtual string PrintInt32(int32 v) const {
+  virtual std::string PrintInt32(int32 v) const {
     return StrCat(FieldValuePrinter::PrintInt32(v), "  # x",
                         strings::Hex(v));
   }
 
-  virtual string PrintMessageStart(const Message& message,
-                                   int field_index,
-                                   int field_count,
-                                   bool single_line_mode) const {
+  virtual std::string PrintMessageStart(const Message& message, int field_index,
+                                        int field_count,
+                                        bool single_line_mode) const {
     if (single_line_mode) {
       return " { ";
     }
@@ -519,7 +516,7 @@ TEST_F(TextFormatTest, CustomPrinterForComments) {
   TextFormat::Printer printer;
   CustomMessageFieldValuePrinter my_field_printer;
   printer.SetDefaultFieldValuePrinter(new CustomMessageFieldValuePrinter());
-  string text;
+  std::string text;
   printer.PrintToString(message, &text);
   EXPECT_EQ(
       "optional_nested_message {  # NestedMessage: -1\n"
@@ -542,10 +539,9 @@ TEST_F(TextFormatTest, CustomPrinterForComments) {
 
 class CustomMultilineCommentPrinter : public TextFormat::FieldValuePrinter {
  public:
-  virtual string PrintMessageStart(const Message& message,
-                                   int field_index,
-                                   int field_count,
-                                   bool single_line_comment) const {
+  virtual std::string PrintMessageStart(const Message& message, int field_index,
+                                        int field_count,
+                                        bool single_line_comment) const {
     return StrCat(" {  # 1\n", "  # 2\n");
   }
 };
@@ -557,7 +553,7 @@ TEST_F(TextFormatTest, CustomPrinterForMultilineComments) {
   TextFormat::Printer printer;
   CustomMessageFieldValuePrinter my_field_printer;
   printer.SetDefaultFieldValuePrinter(new CustomMultilineCommentPrinter());
-  string text;
+  std::string text;
   printer.PrintToString(message, &text);
   EXPECT_EQ(
       "optional_nested_message {  # 1\n"
@@ -628,7 +624,7 @@ TEST_F(TextFormatTest, CompactRepeatedFieldPrinter) {
   message.add_repeated_nested_message()->set_bb(2);
   message.add_repeated_nested_message()->set_bb(3);
 
-  string text;
+  std::string text;
   ASSERT_TRUE(printer.PrintToString(message, &text));
   EXPECT_EQ(
       "repeated_nested_message {\n"
@@ -643,12 +639,12 @@ TEST_F(TextFormatTest, CompactRepeatedFieldPrinter) {
 // BaseTextGenerator::Indent and BaseTextGenerator::Outdent.
 class MultilineStringPrinter : public TextFormat::FastFieldValuePrinter {
  public:
-  void PrintString(const string& val,
+  void PrintString(const std::string& val,
                    TextFormat::BaseTextGenerator* generator) const override {
     generator->Indent();
     int last_pos = 0;
     int newline_pos = val.find('\n');
-    while (newline_pos != string::npos) {
+    while (newline_pos != std::string::npos) {
       generator->PrintLiteral("\n");
       TextFormat::FastFieldValuePrinter::PrintString(
           val.substr(last_pos, newline_pos + 1 - last_pos), generator);
@@ -676,7 +672,7 @@ TEST_F(TextFormatTest, MultilineStringPrinter) {
   protobuf_unittest::TestAllTypes message;
   message.set_optional_string("first line\nsecond line\nthird line");
 
-  string text;
+  std::string text;
   ASSERT_TRUE(printer.PrintToString(message, &text));
   EXPECT_EQ(
       "optional_string: \n"
@@ -703,7 +699,7 @@ TEST_F(TextFormatTest, CustomMessagePrinter) {
       new CustomNestedMessagePrinter);
 
   unittest::TestAllTypes message;
-  string text;
+  std::string text;
   EXPECT_TRUE(printer.PrintToString(message, &text));
   EXPECT_EQ("", text);
 
@@ -728,8 +724,8 @@ TEST_F(TextFormatExtensionsTest, ParseExtensions) {
 
 TEST_F(TextFormatTest, ParseEnumFieldFromNumber) {
   // Create a parse string with a numerical value for an enum field.
-  string parse_string = strings::Substitute("optional_nested_enum: $0",
-                                            unittest::TestAllTypes::BAZ);
+  std::string parse_string = strings::Substitute("optional_nested_enum: $0",
+                                                 unittest::TestAllTypes::BAZ);
   EXPECT_TRUE(TextFormat::ParseFromString(parse_string, &proto_));
   EXPECT_TRUE(proto_.has_optional_nested_enum());
   EXPECT_EQ(unittest::TestAllTypes::BAZ, proto_.optional_nested_enum());
@@ -737,8 +733,8 @@ TEST_F(TextFormatTest, ParseEnumFieldFromNumber) {
 
 TEST_F(TextFormatTest, ParseEnumFieldFromNegativeNumber) {
   ASSERT_LT(unittest::SPARSE_E, 0);
-  string parse_string = strings::Substitute("sparse_enum: $0",
-                                            unittest::SPARSE_E);
+  std::string parse_string =
+      strings::Substitute("sparse_enum: $0", unittest::SPARSE_E);
   unittest::SparseEnumMessage proto;
   EXPECT_TRUE(TextFormat::ParseFromString(parse_string, &proto));
   EXPECT_TRUE(proto.has_sparse_enum());
@@ -767,7 +763,7 @@ TEST_F(TextFormatTest, PrintUnknownEnumFieldProto3) {
 
 TEST_F(TextFormatTest, ParseUnknownEnumFieldProto3) {
   proto3_unittest::TestAllTypes proto;
-  string parse_string =
+  std::string parse_string =
       "repeated_nested_enum: [10, -10, 2147483647, -2147483648]";
   EXPECT_TRUE(TextFormat::ParseFromString(parse_string, &proto));
   ASSERT_EQ(4, proto.repeated_nested_enum_size());
@@ -779,9 +775,8 @@ TEST_F(TextFormatTest, ParseUnknownEnumFieldProto3) {
 
 TEST_F(TextFormatTest, ParseStringEscape) {
   // Create a parse string with escpaed characters in it.
-  string parse_string = "optional_string: "
-      + kEscapeTestStringEscaped
-      + "\n";
+  std::string parse_string =
+      "optional_string: " + kEscapeTestStringEscaped + "\n";
 
   io::ArrayInputStream input_stream(parse_string.data(),
                                     parse_string.size());
@@ -793,7 +788,7 @@ TEST_F(TextFormatTest, ParseStringEscape) {
 
 TEST_F(TextFormatTest, ParseConcatenatedString) {
   // Create a parse string with multiple parts on one line.
-  string parse_string = "optional_string: \"foo\" \"bar\"\n";
+  std::string parse_string = "optional_string: \"foo\" \"bar\"\n";
 
   io::ArrayInputStream input_stream1(parse_string.data(),
                                     parse_string.size());
@@ -819,7 +814,7 @@ TEST_F(TextFormatTest, ParseFloatWithSuffix) {
   // end.  This is needed for backwards-compatibility with proto1.
 
   // Have it parse a float with the 'f' suffix.
-  string parse_string = "optional_float: 1.0f\n";
+  std::string parse_string = "optional_float: 1.0f\n";
 
   io::ArrayInputStream input_stream(parse_string.data(),
                                     parse_string.size());
@@ -831,7 +826,7 @@ TEST_F(TextFormatTest, ParseFloatWithSuffix) {
 }
 
 TEST_F(TextFormatTest, ParseShortRepeatedForm) {
-  string parse_string =
+  std::string parse_string =
       // Mixed short-form and long-form are simply concatenated.
       "repeated_int32: 1\n"
       "repeated_int32: [456, 789]\n"
@@ -871,7 +866,7 @@ TEST_F(TextFormatTest, ParseShortRepeatedForm) {
 }
 
 TEST_F(TextFormatTest, ParseShortRepeatedWithTrailingComma) {
-  string parse_string = "repeated_int32: [456,]\n";
+  std::string parse_string = "repeated_int32: [456,]\n";
   ASSERT_FALSE(TextFormat::ParseFromString(parse_string, &proto_));
   parse_string = "repeated_nested_enum: [  FOO , ]";
   ASSERT_FALSE(TextFormat::ParseFromString(parse_string, &proto_));
@@ -883,7 +878,7 @@ TEST_F(TextFormatTest, ParseShortRepeatedWithTrailingComma) {
 }
 
 TEST_F(TextFormatTest, ParseShortRepeatedEmpty) {
-  string parse_string =
+  std::string parse_string =
       "repeated_int32: []\n"
       "repeated_nested_enum: []\n"
       "repeated_string: []\n"
@@ -900,7 +895,7 @@ TEST_F(TextFormatTest, ParseShortRepeatedEmpty) {
 }
 
 TEST_F(TextFormatTest, ParseShortRepeatedConcatenatedWithEmpty) {
-  string parse_string =
+  std::string parse_string =
       // Starting with empty [] should have no impact.
       "repeated_int32: []\n"
       "repeated_nested_enum: []\n"
@@ -955,8 +950,9 @@ TEST_F(TextFormatTest, ParseShortRepeatedConcatenatedWithEmpty) {
 TEST_F(TextFormatTest, Comments) {
   // Test that comments are ignored.
 
-  string parse_string = "optional_int32: 1  # a comment\n"
-                        "optional_int64: 2  # another comment";
+  std::string parse_string =
+      "optional_int32: 1  # a comment\n"
+      "optional_int64: 2  # another comment";
 
   io::ArrayInputStream input_stream(parse_string.data(),
                                     parse_string.size());
@@ -972,7 +968,7 @@ TEST_F(TextFormatTest, OptionalColon) {
   // Test that we can place a ':' after the field name of a nested message,
   // even though we don't have to.
 
-  string parse_string = "optional_nested_message: { bb: 1}\n";
+  std::string parse_string = "optional_nested_message: { bb: 1}\n";
 
   io::ArrayInputStream input_stream(parse_string.data(),
                                     parse_string.size());
@@ -986,7 +982,7 @@ TEST_F(TextFormatTest, OptionalColon) {
 
 // Some platforms (e.g. Windows) insist on padding the exponent to three
 // digits when one or two would be just fine.
-static string RemoveRedundantZeros(string text) {
+static std::string RemoveRedundantZeros(std::string text) {
   text = StringReplace(text, "e+0", "e+", true);
   text = StringReplace(text, "e-0", "e-", true);
   return text;
@@ -1008,7 +1004,7 @@ TEST_F(TextFormatTest, PrintExotic) {
   message.add_repeated_double(std::numeric_limits<double>::infinity());
   message.add_repeated_double(-std::numeric_limits<double>::infinity());
   message.add_repeated_double(std::numeric_limits<double>::quiet_NaN());
-  message.add_repeated_string(string("\000\001\a\b\f\n\r\t\v\\\'\"", 12));
+  message.add_repeated_string(std::string("\000\001\a\b\f\n\r\t\v\\\'\"", 12));
 
   // Fun story:  We used to use 1.23e22 instead of 1.23e21 above, but this
   //   seemed to trigger an odd case on MinGW/GCC 3.4.5 where GCC's parsing of
@@ -1207,9 +1203,9 @@ TEST_F(TextFormatTest, ParseExotic) {
   EXPECT_TRUE(MathLimits<double>::IsNaN(message.repeated_double(12)));
 
   // Note:  Since these string literals have \0's in them, we must explicitly
-  //   pass their sizes to string's constructor.
+  // pass their sizes to string's constructor.
   ASSERT_EQ(1, message.repeated_string_size());
-  EXPECT_EQ(string("\000\001\a\b\f\n\r\t\v\\\'\"", 12),
+  EXPECT_EQ(std::string("\000\001\a\b\f\n\r\t\v\\\'\"", 12),
             message.repeated_string(0));
 }
 
@@ -1239,7 +1235,7 @@ TEST_F(TextFormatTest, PrintFieldsInIndexOrder) {
   *message.MutableExtension(protobuf_unittest::my_extension_string) = "ext_str0";
 
   TextFormat::Printer printer;
-  string text;
+  std::string text;
 
   // By default, print in field number order.
   // my_int: 12345
@@ -1300,19 +1296,19 @@ TEST_F(TextFormatTest, PrintFieldsInIndexOrder) {
 
 class TextFormatParserTest : public testing::Test {
  protected:
-  void ExpectFailure(const string& input, const string& message, int line,
-                     int col) {
+  void ExpectFailure(const std::string& input, const std::string& message,
+                     int line, int col) {
     std::unique_ptr<unittest::TestAllTypes> proto(new unittest::TestAllTypes);
     ExpectFailure(input, message, line, col, proto.get());
   }
 
-  void ExpectFailure(const string& input, const string& message, int line,
-                     int col, Message* proto) {
+  void ExpectFailure(const std::string& input, const std::string& message,
+                     int line, int col, Message* proto) {
     ExpectMessage(input, message, line, col, proto, false);
   }
 
-  void ExpectMessage(const string& input, const string& message, int line,
-                     int col, Message* proto, bool expected_result) {
+  void ExpectMessage(const std::string& input, const std::string& message,
+                     int line, int col, Message* proto, bool expected_result) {
     MockErrorCollector error_collector;
     parser_.RecordErrorsTo(&error_collector);
     EXPECT_EQ(expected_result, parser_.ParseFromString(input, proto))
@@ -1323,7 +1319,7 @@ class TextFormatParserTest : public testing::Test {
     parser_.RecordErrorsTo(nullptr);
   }
 
-  void ExpectSuccessAndTree(const string& input, Message* proto,
+  void ExpectSuccessAndTree(const std::string& input, Message* proto,
                             TextFormat::ParseInfoTree* info_tree) {
     MockErrorCollector error_collector;
     parser_.RecordErrorsTo(&error_collector);
@@ -1333,9 +1329,9 @@ class TextFormatParserTest : public testing::Test {
     parser_.RecordErrorsTo(nullptr);
   }
 
-  void ExpectLocation(TextFormat::ParseInfoTree* tree,
-                      const Descriptor* d, const string& field_name,
-                      int index, int line, int column) {
+  void ExpectLocation(TextFormat::ParseInfoTree* tree, const Descriptor* d,
+                      const std::string& field_name, int index, int line,
+                      int column) {
     TextFormat::ParseLocation location = tree->GetLocation(
         d->FindFieldByName(field_name), index);
     EXPECT_EQ(line, location.line);
@@ -1349,15 +1345,15 @@ class TextFormatParserTest : public testing::Test {
     MockErrorCollector() {}
     ~MockErrorCollector() {}
 
-    string text_;
+    std::string text_;
 
     // implements ErrorCollector -------------------------------------
-    void AddError(int line, int column, const string& message) {
+    void AddError(int line, int column, const std::string& message) {
       strings::SubstituteAndAppend(&text_, "$0:$1: $2\n",
                                    line + 1, column + 1, message);
     }
 
-    void AddWarning(int line, int column, const string& message) {
+    void AddWarning(int line, int column, const std::string& message) {
       AddError(line, column, "WARNING:" + message);
     }
   };
@@ -1369,7 +1365,7 @@ TEST_F(TextFormatParserTest, ParseInfoTreeBuilding) {
   std::unique_ptr<unittest::TestAllTypes> message(new unittest::TestAllTypes);
   const Descriptor* d = message->GetDescriptor();
 
-  string stringData =
+  std::string stringData =
       "optional_int32: 1\n"
       "optional_int64: 2\n"
       "  optional_double: 2.4\n"
@@ -1384,7 +1380,6 @@ TEST_F(TextFormatParserTest, ParseInfoTreeBuilding) {
       "repeated_nested_message <\n"
       "  bb: 80\n"
       ">";
-
 
   TextFormat::ParseInfoTree tree;
   ExpectSuccessAndTree(stringData, message.get(), &tree);
@@ -1773,7 +1768,7 @@ TEST_F(TextFormatParserTest, ExplicitDelimiters) {
 }
 
 TEST_F(TextFormatParserTest, PrintErrorsToStderr) {
-  std::vector<string> errors;
+  std::vector<std::string> errors;
 
   {
     ScopedMemoryLog log;
@@ -1790,7 +1785,7 @@ TEST_F(TextFormatParserTest, PrintErrorsToStderr) {
 }
 
 TEST_F(TextFormatParserTest, FailsOnTokenizationError) {
-  std::vector<string> errors;
+  std::vector<std::string> errors;
 
   {
     ScopedMemoryLog log;

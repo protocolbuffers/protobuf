@@ -371,6 +371,7 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/proto/com/google/protobuf/outer_class_name_test.proto         \
   java/core/src/test/proto/com/google/protobuf/outer_class_name_test2.proto        \
   java/core/src/test/proto/com/google/protobuf/outer_class_name_test3.proto        \
+  java/core/src/test/proto/com/google/protobuf/proto2_unknown_enum_values.proto    \
   java/core/src/test/proto/com/google/protobuf/test_bad_identifiers.proto          \
   java/core/src/test/proto/com/google/protobuf/test_check_utf8.proto               \
   java/core/src/test/proto/com/google/protobuf/test_check_utf8_size.proto          \

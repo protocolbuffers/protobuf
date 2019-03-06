@@ -120,7 +120,7 @@ bool CollectExtensions(const Message& message,
 void CollectExtensions(const FileDescriptorProto& file_proto,
                        const DescriptorPool& alternate_pool,
                        FieldDescriptorSet* extensions,
-                       const string& file_data) {
+                       const std::string& file_data) {
   if (!CollectExtensions(file_proto, extensions)) {
     // There are unknown fields in the file_proto, which are probably
     // extensions. We need to parse the data into a dynamic message based on the
@@ -208,12 +208,13 @@ FileGenerator::FileGenerator(const FileDescriptor* file, const Options& options,
 
 FileGenerator::~FileGenerator() {}
 
-bool FileGenerator::Validate(string* error) {
+bool FileGenerator::Validate(std::string* error) {
   // Check that no class name matches the file's class name.  This is a common
   // problem that leads to Java compile errors that can be hard to understand.
   // It's especially bad when using the java_multiple_files, since we would
   // end up overwriting the outer class with one of the inner ones.
-  if (name_resolver_->HasConflictingClassName(file_, classname_)) {
+  if (name_resolver_->HasConflictingClassName(file_, classname_,
+                                              NameEquality::EXACT_EQUAL)) {
     error->assign(file_->name());
     error->append(
       ": Cannot generate Java output because the file's outer class name, \"");
@@ -224,6 +225,20 @@ bool FileGenerator::Validate(string* error) {
       "option to specify a different outer class name for the .proto file.");
     return false;
   }
+  // Similar to the check above, but ignore the case this time. This is not a
+  // problem on Linux, but will lead to Java compile errors on Windows / Mac
+  // because filenames are case-insensitive on those platforms.
+  if (name_resolver_->HasConflictingClassName(
+          file_, classname_, NameEquality::EQUAL_IGNORE_CASE)) {
+    GOOGLE_LOG(WARNING)
+        << file_->name() << ": The file's outer class name, \"" << classname_
+        << "\", matches the name of one of the types declared inside it when "
+        << "case is ignored. This can cause compilation issues on Windows / "
+        << "MacOS. Please either rename the type or use the "
+        << "java_outer_classname option to specify a different outer class "
+        << "name for the .proto file to be safe.";
+  }
+
   // Print a warning if optimize_for = LITE_RUNTIME is used.
   if (file_->options().optimize_for() == FileOptions::LITE_RUNTIME) {
     GOOGLE_LOG(WARNING)
@@ -430,7 +445,7 @@ void FileGenerator::GenerateDescriptorInitializationCodeForImmutable(
   // reflections to find all extension fields
   FileDescriptorProto file_proto;
   file_->CopyTo(&file_proto);
-  string file_data;
+  std::string file_data;
   file_proto.SerializeToString(&file_data);
   FieldDescriptorSet extensions;
   CollectExtensions(file_proto, *file_->pool(), &extensions, file_data);
@@ -461,7 +476,7 @@ void FileGenerator::GenerateDescriptorInitializationCodeForImmutable(
   // Force descriptor initialization of all dependencies.
   for (int i = 0; i < file_->dependency_count(); i++) {
     if (ShouldIncludeDependency(file_->dependency(i), true)) {
-      string dependency =
+      std::string dependency =
           name_resolver_->GetImmutableClassName(file_->dependency(i));
       printer->Print(
         "$dependency$.getDescriptor();\n",
@@ -501,7 +516,7 @@ void FileGenerator::GenerateDescriptorInitializationCodeForMutable(io::Printer* 
   // custom options are only represented with immutable messages.
   FileDescriptorProto file_proto;
   file_->CopyTo(&file_proto);
-  string file_data;
+  std::string file_data;
   file_proto.SerializeToString(&file_data);
   FieldDescriptorSet extensions;
   CollectExtensions(file_proto, *file_->pool(), &extensions, file_data);
@@ -530,7 +545,7 @@ void FileGenerator::GenerateDescriptorInitializationCodeForMutable(io::Printer* 
     FieldDescriptorSet::iterator it;
     for (it = extensions.begin(); it != extensions.end(); it++) {
       const FieldDescriptor* field = *it;
-      string scope;
+      std::string scope;
       if (field->extension_scope() != NULL) {
         scope = name_resolver_->GetMutableClassName(field->extension_scope()) +
                 ".getDescriptor()";
@@ -566,8 +581,8 @@ void FileGenerator::GenerateDescriptorInitializationCodeForMutable(io::Printer* 
   // Force descriptor initialization of all dependencies.
   for (int i = 0; i < file_->dependency_count(); i++) {
     if (ShouldIncludeDependency(file_->dependency(i), false)) {
-      string dependency = name_resolver_->GetMutableClassName(
-          file_->dependency(i));
+      std::string dependency =
+          name_resolver_->GetMutableClassName(file_->dependency(i));
       printer->Print(
         "$dependency$.getDescriptor();\n",
         "dependency", dependency);
@@ -580,18 +595,17 @@ void FileGenerator::GenerateDescriptorInitializationCodeForMutable(io::Printer* 
 }
 
 template <typename GeneratorClass, typename DescriptorClass>
-static void GenerateSibling(const string& package_dir,
-                            const string& java_package,
-                            const DescriptorClass* descriptor,
-                            GeneratorContext* context,
-                            std::vector<string>* file_list, bool annotate_code,
-                            std::vector<string>* annotation_list,
-                            const string& name_suffix,
-                            GeneratorClass* generator,
-                            void (GeneratorClass::*pfn)(io::Printer* printer)) {
-  string filename = package_dir + descriptor->name() + name_suffix + ".java";
+static void GenerateSibling(
+    const std::string& package_dir, const std::string& java_package,
+    const DescriptorClass* descriptor, GeneratorContext* context,
+    std::vector<std::string>* file_list, bool annotate_code,
+    std::vector<std::string>* annotation_list, const std::string& name_suffix,
+    GeneratorClass* generator,
+    void (GeneratorClass::*pfn)(io::Printer* printer)) {
+  std::string filename =
+      package_dir + descriptor->name() + name_suffix + ".java";
   file_list->push_back(filename);
-  string info_full_path = filename + ".pb.meta";
+  std::string info_full_path = filename + ".pb.meta";
   GeneratedCodeInfo annotations;
   io::AnnotationProtoCollector<GeneratedCodeInfo> annotation_collector(
       &annotations);
@@ -622,10 +636,10 @@ static void GenerateSibling(const string& package_dir,
   }
 }
 
-void FileGenerator::GenerateSiblings(const string& package_dir,
-                                     GeneratorContext* context,
-                                     std::vector<string>* file_list,
-                                     std::vector<string>* annotation_list) {
+void FileGenerator::GenerateSiblings(
+    const std::string& package_dir, GeneratorContext* context,
+    std::vector<std::string>* file_list,
+    std::vector<std::string>* annotation_list) {
   if (MultipleJavaFiles(file_, immutable_api_)) {
     for (int i = 0; i < file_->enum_type_count(); i++) {
       if (HasDescriptorMethods(file_, context_->EnforceLite())) {
