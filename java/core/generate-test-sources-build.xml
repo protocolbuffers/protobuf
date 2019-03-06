@@ -30,7 +30,8 @@
         <arg value="${test.proto.dir}/com/google/protobuf/non_nested_extension_lite.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/outer_class_name_test.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/outer_class_name_test2.proto"/>
-        <arg value="${test.proto.dir}/com/google/protobuf/outer_class_name_test3.proto"/>
+	<arg value="${test.proto.dir}/com/google/protobuf/outer_class_name_test3.proto"/>
+	<arg value="${test.proto.dir}/com/google/protobuf/proto2_unknown_enum_values.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/test_bad_identifiers.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/test_check_utf8.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/test_check_utf8_size.proto"/>
