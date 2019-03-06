@@ -37,7 +37,7 @@
 #include "upb.h"
 
 #define PHP_PROTOBUF_EXTNAME "protobuf"
-#define PHP_PROTOBUF_VERSION "3.6.1"
+#define PHP_PROTOBUF_VERSION "3.7.0"
 
 #define MAX_LENGTH_OF_INT64 20
 #define SIZEOF_INT64 8
@@ -770,7 +770,8 @@ PHP_METHOD(InternalDescriptorPool, getGeneratedPool);
 PHP_METHOD(InternalDescriptorPool, internalAddGeneratedFile);
 
 void internal_add_generated_file(const char* data, PHP_PROTO_SIZE data_len,
-                                 InternalDescriptorPool* pool TSRMLS_DC);
+                                 InternalDescriptorPool* pool,
+                                 bool use_nested_submsg TSRMLS_DC);
 void init_generated_pool_once(TSRMLS_D);
 
 // wrapper of generated pool
@@ -1452,6 +1453,18 @@ upb_fieldtype_t to_fieldtype(upb_descriptortype_t type);
 const zend_class_entry* field_type_class(
     const upb_fielddef* field PHP_PROTO_TSRMLS_DC);
 void stringsink_uninit_opaque(void *sink);
+
+typedef struct {
+  upb_byteshandler handler;
+  upb_bytessink sink;
+  char *ptr;
+  size_t len, size;
+} stringsink;
+
+void stringsink_init(stringsink *sink);
+void stringsink_uninit(stringsink *sink);
+size_t stringsink_string(void *_sink, const void *hd, const char *ptr,
+                         size_t len, const upb_bufhandle *handle);
 
 // -----------------------------------------------------------------------------
 // Utilities.

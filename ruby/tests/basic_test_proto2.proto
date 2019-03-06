@@ -135,6 +135,16 @@ message Wrapper {
   }
 }
 
+message Enumer {
+  optional TestEnum optional_enum = 11;
+  repeated TestEnum repeated_enum = 22;
+  optional string a_const = 3;
+  oneof a_oneof {
+    string str = 100;
+    TestEnum const = 101;
+  }
+}
+
 message MyRepeatedStruct {
   repeated MyStruct structs = 1;
 }

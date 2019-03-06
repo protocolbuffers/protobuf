@@ -607,6 +607,7 @@ php_EXTRA_DIST=                                                       \
   php/ext/google/protobuf/utf8.h                                      \
   php/generate_descriptor_protos.sh                                   \
   php/phpunit.xml                                                     \
+  php/release.sh                                                      \
   php/src/GPBMetadata/Google/Protobuf/Any.php                         \
   php/src/GPBMetadata/Google/Protobuf/Api.php                         \
   php/src/GPBMetadata/Google/Protobuf/Duration.php                    \
@@ -1089,6 +1090,7 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)   \
   cmake/protoc.cmake                     \
   cmake/tests.cmake                      \
   cmake/version.rc.in                    \
+  compiler_config_setting.bzl            \
   editors/README.txt                     \
   editors/proto.vim                      \
   editors/protobuf-mode.el               \
