@@ -780,8 +780,8 @@ static void fill_segment(const char *segment, int length,
 static void fill_namespace(const char *package, const char *php_namespace,
                            stringsink *classname) {
   if (php_namespace != NULL) {
-    stringsink_string(classname, NULL, namespace_given,
-                      strlen(namespace_given), NULL);
+    stringsink_string(classname, NULL, php_namespace, strlen(php_namespace),
+                      NULL);
     stringsink_string(classname, NULL, "\\", 1, NULL);
   } else if (package != NULL) {
     int i = 0, j, offset = 0;
@@ -846,24 +846,27 @@ static zend_class_entry *register_class(const upb_filedef *file,
   const char *prefix = upb_filedef_phpprefix(file);
   size_t classname_len =
       classname_len_max(fullname, package, php_namespace, prefix);
-  char* classname = ecalloc(sizeof(char), classname_len);
   char* after_package;
   zend_class_entry* ret;
+  stringsink namesink;
+  stringsink_init(&namesink);
 
-  after_package = fill_namespace(package, php_namespace, classname);
-  fill_classname(fullname, package, prefix, after_package, use_nested_submsg);
+  fill_namespace(package, php_namespace, &namesink);
+  fill_classname(fullname, package, prefix, &namesink, use_nested_submsg);
 
   PHP_PROTO_CE_DECLARE pce;
-  if (php_proto_zend_lookup_class(classname, strlen(classname), &pce) ==
+  if (php_proto_zend_lookup_class(namesink.ptr, namesink.len, &pce) ==
       FAILURE) {
-    zend_error(E_ERROR, "Generated message class %s hasn't been defined (%s, %s, %s, %s)",
-               classname, fullname, package, php_namespace, prefix);
+    zend_error(
+        E_ERROR,
+        "Generated message class %s hasn't been defined (%s, %s, %s, %s)",
+        namesink.ptr, fullname, package, php_namespace, prefix);
     return NULL;
   }
   ret = PHP_PROTO_CE_UNREF(pce);
   add_ce_obj(ret, desc_php);
   add_proto_obj(fullname, desc_php);
-  efree(classname);
+  stringsink_uninit(&namesink);
   return ret;
 }
 
@@ -882,7 +885,6 @@ bool depends_on_descriptor(const google_protobuf_FileDescriptorProto* file) {
   return false;
 }
 
-<<<<<<< HEAD
 const upb_filedef *parse_and_add_descriptor(const char *data,
                                             PHP_PROTO_SIZE data_len,
                                             InternalDescriptorPool *pool,
@@ -956,8 +958,8 @@ void internal_add_generated_file(const char *data, PHP_PROTO_SIZE data_len,
       continue;
     }
 
-    desc->klass =
-        register_class(file, upb_msgdef_fullname(msgdef), desc_php TSRMLS_CC);
+    desc->klass = register_class(file, upb_msgdef_fullname(msgdef), desc_php,
+                                 use_nested_submsg TSRMLS_CC);
 
     if (desc->klass == NULL) {
       return;
@@ -971,8 +973,8 @@ void internal_add_generated_file(const char *data, PHP_PROTO_SIZE data_len,
     CREATE_HASHTABLE_VALUE(desc, desc_php, EnumDescriptor, enum_descriptor_type);
     desc->enumdef = enumdef;
     add_def_obj(desc->enumdef, desc_php);
-    desc->klass =
-        register_class(file, upb_enumdef_fullname(enumdef), desc_php TSRMLS_CC);
+    desc->klass = register_class(file, upb_enumdef_fullname(enumdef), desc_php,
+                                 use_nested_submsg TSRMLS_CC);
 
     if (desc->klass == NULL) {
       return;
