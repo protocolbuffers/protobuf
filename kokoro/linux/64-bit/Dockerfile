@@ -30,7 +30,7 @@ RUN echo "deb http://ppa.launchpad.net/ondrej/php/ubuntu trusty main" | tee /etc
 # Install dotnet SDK based on https://www.microsoft.com/net/core#debian
 # (Ubuntu instructions need apt to support https)
 RUN apt-get update && apt-get install -y --force-yes curl && \
-  curl -sSL -o dotnet.tar.gz https://download.visualstudio.microsoft.com/download/pr/519eac6e-f2c9-49dd-a60d-02072ed8e5b3/aed96c5eee6a74a5cde2e3f1ad4c7121/dotnet-sdk-2.2.100-linux-x64.tar.gz &&  \
+  curl -sSL -o dotnet.tar.gz https://download.visualstudio.microsoft.com/download/pr/69937b49-a877-4ced-81e6-286620b390ab/8ab938cf6f5e83b2221630354160ef21/dotnet-sdk-2.2.104-linux-x64.tar.gz &&  \
   mkdir -p /opt/dotnet && tar zxf dotnet.tar.gz -C /opt/dotnet && \
   ln -s /opt/dotnet/dotnet /usr/local/bin
 
