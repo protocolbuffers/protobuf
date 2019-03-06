@@ -381,6 +381,7 @@ void upb_strtable_next(upb_strtable_iter *i) {
 }
 
 bool upb_strtable_done(const upb_strtable_iter *i) {
+  if (!i->t) return true;
   return i->index >= upb_table_size(&i->t->t) ||
          upb_tabent_isempty(str_tabent(i));
 }
@@ -403,6 +404,7 @@ upb_value upb_strtable_iter_value(const upb_strtable_iter *i) {
 }
 
 void upb_strtable_iter_setdone(upb_strtable_iter *i) {
+  i->t = NULL;
   i->index = SIZE_MAX;
 }
 
@@ -692,6 +694,7 @@ void upb_inttable_next(upb_inttable_iter *iter) {
 }
 
 bool upb_inttable_done(const upb_inttable_iter *i) {
+  if (!i->t) return true;
   if (i->array_part) {
     return i->index >= i->t->array_size ||
            !upb_arrhas(int_arrent(i));
@@ -714,6 +717,7 @@ upb_value upb_inttable_iter_value(const upb_inttable_iter *i) {
 }
 
 void upb_inttable_iter_setdone(upb_inttable_iter *i) {
+  i->t = NULL;
   i->index = SIZE_MAX;
   i->array_part = false;
 }

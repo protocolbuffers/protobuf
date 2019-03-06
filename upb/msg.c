@@ -1,4 +1,6 @@
 
+#include <string.h>
+#include "upb/table.int.h"
 #include "upb/msg.h"
 #include "upb/structs.int.h"
 
@@ -14,8 +16,6 @@ bool upb_fieldtype_mapkeyok(upb_fieldtype_t type) {
 #define CHECK_TRUE(x) if (!(x)) { return false; }
 
 /** upb_msgval ****************************************************************/
-
-#define upb_alignof(t) offsetof(struct { char c; t x; }, x)
 
 /* These functions will generate real memcpy() calls on ARM sadly, because
  * the compiler assumes they might not be aligned. */

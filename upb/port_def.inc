@@ -1,4 +1,8 @@
 
+#ifndef UINTPTR_MAX
+#error must include stdint.h first
+#endif
+
 #if UINTPTR_MAX == 0xffffffff
 #define UPB_SIZE(size32, size64) size32
 #else

@@ -1,15 +1,16 @@
 load(
     ":build_defs.bzl",
+    "generated_file_staleness_test",
     "licenses",  # copybara:strip_for_google3
+    "lua_binary",
     "lua_cclibrary",
     "lua_library",
-    "lua_binary",
     "lua_test",
-    "generated_file_staleness_test",
     "make_shell_script",
     "map_dep",
     "upb_amalgamation",
     "upb_proto_library",
+    "upb_proto_reflection_library",
 )
 
 licenses(["notice"])  # BSD (Google-authored w/ possible external contributions)
@@ -42,7 +43,6 @@ cc_library(
         "upb/msgfactory.c",
         "upb/port_def.inc",
         "upb/port_undef.inc",
-        "upb/refcounted.c",
         "upb/sink.c",
         "upb/structs.int.h",
         "upb/table.c",
@@ -58,26 +58,11 @@ cc_library(
         "upb/handlers.h",
         "upb/msg.h",
         "upb/msgfactory.h",
-        "upb/refcounted.h",
         "upb/sink.h",
         "upb/upb.h",
     ],
     copts = COPTS,
     visibility = ["//visibility:public"],
-)
-
-cc_library(
-    name = "upb_descriptor",
-    srcs = [
-        "upb/descriptor/descriptor.upbdefs.c",
-        "upb/descriptor/reader.c",
-    ],
-    hdrs = [
-        "upb/descriptor/descriptor.upbdefs.h",
-        "upb/descriptor/reader.h",
-    ],
-    copts = COPTS,
-    deps = [":upb"],
 )
 
 cc_library(
@@ -87,7 +72,6 @@ cc_library(
         "upb/pb/decoder.c",
         "upb/pb/decoder.int.h",
         "upb/pb/encoder.c",
-        "upb/pb/glue.c",
         "upb/pb/textprinter.c",
         "upb/pb/varint.c",
         "upb/pb/varint.int.h",
@@ -96,13 +80,11 @@ cc_library(
     hdrs = [
         "upb/pb/decoder.h",
         "upb/pb/encoder.h",
-        "upb/pb/glue.h",
         "upb/pb/textprinter.h",
     ],
     copts = COPTS,
     deps = [
         ":upb",
-        ":upb_descriptor",
     ],
 )
 
@@ -163,14 +145,6 @@ cc_binary(
 
 # copybara:strip_for_google3_begin
 
-lua_binary(
-    name = "lua_upbc",
-    luadeps = [
-        "lua/upbc_lib",
-    ],
-    luamain = "tools/upbc.lua",
-)
-
 # C/C++ tests ##################################################################
 
 cc_library(
@@ -194,28 +168,24 @@ cc_test(
     ],
 )
 
-cc_test(
-    name = "test_def",
-    srcs = ["tests/test_def.c"],
-    deps = [
-        ":upb_pb",
-        ":upb_test",
+proto_library(
+    name = "test_decoder_proto",
+    srcs = [
+        "tests/pb/test_decoder.proto",
     ],
 )
 
-cc_test(
-    name = "test_handlers",
-    srcs = ["tests/test_handlers.c"],
-    deps = [
-        ":upb_pb",
-        ":upb_test",
-    ],
+upb_proto_reflection_library(
+    name = "test_decoder_upbproto",
+    upbc = ":protoc-gen-upb",
+    deps = ["test_decoder_proto"],
 )
 
 cc_test(
     name = "test_decoder",
     srcs = ["tests/pb/test_decoder.cc"],
     deps = [
+        ":test_decoder_upbproto",
         ":upb_pb",
         ":upb_test",
     ],
@@ -224,7 +194,7 @@ cc_test(
 cc_test(
     name = "test_encoder",
     srcs = ["tests/pb/test_encoder.cc"],
-    data = ["upb/descriptor/descriptor.pb"],
+    data = ["google/protobuf/descriptor.pb"],
     deps = [
         ":upb_cc_bindings",
         ":upb_pb",
@@ -232,12 +202,25 @@ cc_test(
     ],
 )
 
+proto_library(
+    name = "test_cpp_proto",
+    srcs = [
+        "tests/test_cpp.proto",
+    ],
+)
+
+upb_proto_reflection_library(
+    name = "test_cpp_upbproto",
+    upbc = ":protoc-gen-upb",
+    deps = ["test_cpp_proto"],
+)
+
 cc_test(
     name = "test_cpp",
     srcs = ["tests/test_cpp.cc"],
     deps = [
+        ":test_cpp_upbproto",
         ":upb",
-        ":upb_descriptor",
         ":upb_pb",
         ":upb_test",
     ],
@@ -252,14 +235,24 @@ cc_test(
     ],
 )
 
+proto_library(
+    name = "test_json_proto",
+    srcs = ["tests/json/test.proto"],
+)
+
+upb_proto_reflection_library(
+    name = "test_json_upbproto",
+    upbc = ":protoc-gen-upb",
+    deps = ["test_json_proto"],
+)
+
 cc_test(
     name = "test_json",
     srcs = [
-        "tests/json/test.upbdefs.c",
-        "tests/json/test.upbdefs.h",
         "tests/json/test_json.cc",
     ],
     deps = [
+        ":test_json_upbproto",
         ":upb_json",
         ":upb_test",
     ],
@@ -319,7 +312,6 @@ upb_amalgamation(
     amalgamator = ":amalgamate",
     libs = [
         ":upb",
-        ":upb_descriptor",
         ":upb_pb",
         ":upb_json",
     ],
@@ -358,23 +350,6 @@ lua_library(
 )
 
 lua_cclibrary(
-    name = "lua/upb/table_c",
-    srcs = ["upb/bindings/lua/upb/table.c"],
-    luadeps = ["lua/upb_c"],
-    deps = ["upb"],
-)
-
-lua_library(
-    name = "lua/upb/table",
-    srcs = ["upb/bindings/lua/upb/table.lua"],
-    luadeps = [
-        "lua/upb",
-        "lua/upb/table_c",
-    ],
-    strip_prefix = "upb/bindings/lua",
-)
-
-lua_cclibrary(
     name = "lua/upb/pb_c",
     srcs = ["upb/bindings/lua/upb/pb.c"],
     luadeps = ["lua/upb_c"],
@@ -389,18 +364,6 @@ lua_library(
         "lua/upb/pb_c",
     ],
     strip_prefix = "upb/bindings/lua",
-)
-
-lua_library(
-    name = "lua/upbc_lib",
-    srcs = [
-        "tools/dump_cinit.lua",
-    ],
-    luadeps = [
-        "lua/upb",
-        "lua/upb/table",
-    ],
-    strip_prefix = "tools",
 )
 
 # Lua tests. ###################################################################
@@ -449,26 +412,6 @@ py_library(
     srcs = ["tools/staleness_test_lib.py"],
 )
 
-genrule(
-    name = "make_dynasm_decoder",
-    srcs = [
-        "third_party/dynasm/dynasm.lua",
-        "third_party/dynasm/dasm_x64.lua",
-        "third_party/dynasm/dasm_x86.lua",
-        "upb/pb/compile_decoder_x64.dasc",
-    ],
-    outs = ["generated/upb/pb/compile_decoder_x64.h"],
-    cmd = "LUA_PATH=third_party/dynasm/?.lua $(location @lua//:lua) third_party/dynasm/dynasm.lua -c upb/pb/compile_decoder_x64.dasc > $@",
-    tools = ["@lua"],
-)
-
-proto_library(
-    name = "upb_descriptor_proto",
-    srcs = [
-        "upb/descriptor/descriptor.proto",
-    ],
-)
-
 py_binary(
     name = "make_cmakelists",
     srcs = ["tools/make_cmakelists.py"],
@@ -485,22 +428,18 @@ genrule(
     tools = [":make_cmakelists"],
 )
 
-genrule(
-    name = "copy_upb_descriptor_pb",
-    srcs = [":upb_descriptor_proto"],
-    outs = ["generated/upb/descriptor/descriptor.pb"],
-    cmd = "cp $< $@",
+proto_library(
+    name = "descriptor_proto",
+    srcs = [
+        "google/protobuf/descriptor.proto",
+    ],
 )
 
 genrule(
-    name = "generate_old_upbdefs",
-    srcs = ["generated/upb/descriptor/descriptor.pb"],
-    outs = [
-        "generated/upb/descriptor/descriptor.upbdefs.h",
-        "generated/upb/descriptor/descriptor.upbdefs.c",
-    ],
-    cmd = "UPBC=$$PWD/$(location :lua_upbc); INFILE=$$PWD/$<; cd $(GENDIR)/generated && $$UPBC --generate-upbdefs $$INFILE",
-    tools = [":lua_upbc"],
+    name = "copy_upb_descriptor_pb",
+    srcs = [":descriptor_proto"],
+    outs = ["generated/google/protobuf/descriptor.pb"],
+    cmd = "cp $< $@",
 )
 
 proto_library(
@@ -508,13 +447,6 @@ proto_library(
     srcs = [
         "google/protobuf/descriptor.proto",
     ],
-)
-
-genrule(
-    name = "copy_google_descriptor_pb",
-    srcs = [":google_descriptor_proto"],
-    outs = ["generated/google/protobuf/descriptor.pb"],
-    cmd = "cp $< $@",
 )
 
 genrule(
@@ -544,17 +476,6 @@ genrule(
 )
 
 genrule(
-    name = "generated_json_test_proto_upbdefs",
-    srcs = ["generated/tests/json/test.proto.pb"],
-    outs = [
-        "generated/tests/json/test.upbdefs.h",
-        "generated/tests/json/test.upbdefs.c",
-    ],
-    cmd = "UPBC=$$PWD/$(location :lua_upbc); INFILE=$$PWD/$<; cd $(GENDIR)/generated && $$UPBC --generate-upbdefs $$INFILE",
-    tools = [":lua_upbc"],
-)
-
-genrule(
     name = "generate_json_ragel",
     srcs = ["upb/json/parser.rl"],
     outs = ["generated/upb/json/parser.c"],
@@ -566,16 +487,11 @@ generated_file_staleness_test(
     name = "test_generated_files",
     outs = [
         "CMakeLists.txt",
+        "google/protobuf/descriptor.pb",
         "google/protobuf/descriptor.upb.c",
         "google/protobuf/descriptor.upb.h",
         "tests/json/test.proto.pb",
-        "tests/json/test.upbdefs.c",
-        "tests/json/test.upbdefs.h",
-        "upb/descriptor/descriptor.pb",
-        "upb/descriptor/descriptor.upbdefs.c",
-        "upb/descriptor/descriptor.upbdefs.h",
         "upb/json/parser.c",
-        "upb/pb/compile_decoder_x64.h",
     ],
     generated_pattern = "generated/%s",
 )

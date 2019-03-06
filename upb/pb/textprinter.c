@@ -18,7 +18,7 @@
 
 struct upb_textprinter {
   upb_sink input_;
-  upb_bytessink *output_;
+  upb_bytessink output_;
   int indent_depth_;
   bool single_line_;
   void *subc;
@@ -183,7 +183,7 @@ static bool textprinter_putenum(void *closure, const void *handler_data,
                                 int32_t val) {
   upb_textprinter *p = closure;
   const upb_fielddef *f = handler_data;
-  const upb_enumdef *enum_def = upb_downcast_enumdef(upb_fielddef_subdef(f));
+  const upb_enumdef *enum_def = upb_fielddef_enumsubdef(f);
   const char *label = upb_enumdef_iton(enum_def, val);
   if (label) {
     indent(p);
@@ -260,8 +260,8 @@ static void onmreg(const void *c, upb_handlers *h) {
       !upb_msg_field_done(&i);
       upb_msg_field_next(&i)) {
     upb_fielddef *f = upb_msg_iter_field(&i);
-    upb_handlerattr attr = UPB_HANDLERATTR_INITIALIZER;
-    upb_handlerattr_sethandlerdata(&attr, f);
+    upb_handlerattr attr = UPB_HANDLERATTR_INIT;
+    attr.handler_data = f;
     switch (upb_fielddef_type(f)) {
       case UPB_TYPE_INT32:
         upb_handlers_setint32(h, f, textprinter_putint32, &attr);
@@ -292,10 +292,10 @@ static void onmreg(const void *c, upb_handlers *h) {
         break;
       case UPB_TYPE_MESSAGE: {
         const char *name =
-            upb_fielddef_istagdelim(f)
+            upb_fielddef_descriptortype(f) == UPB_DESCRIPTOR_TYPE_GROUP
                 ? shortname(upb_msgdef_fullname(upb_fielddef_msgsubdef(f)))
                 : upb_fielddef_name(f);
-        upb_handlerattr_sethandlerdata(&attr, name);
+        attr.handler_data = name;
         upb_handlers_setstartsubmsg(h, f, textprinter_startsubmsg, &attr);
         upb_handlers_setendsubmsg(h, f, textprinter_endsubmsg, &attr);
         break;
@@ -315,9 +315,9 @@ static void textprinter_reset(upb_textprinter *p, bool single_line) {
 
 /* Public API *****************************************************************/
 
-upb_textprinter *upb_textprinter_create(upb_env *env, const upb_handlers *h,
-                                        upb_bytessink *output) {
-  upb_textprinter *p = upb_env_malloc(env, sizeof(upb_textprinter));
+upb_textprinter *upb_textprinter_create(upb_arena *arena, const upb_handlers *h,
+                                        upb_bytessink output) {
+  upb_textprinter *p = upb_arena_malloc(arena, sizeof(upb_textprinter));
   if (!p) return NULL;
 
   p->output_ = output;
@@ -327,12 +327,11 @@ upb_textprinter *upb_textprinter_create(upb_env *env, const upb_handlers *h,
   return p;
 }
 
-const upb_handlers *upb_textprinter_newhandlers(const upb_msgdef *m,
-                                                const void *owner) {
-  return upb_handlers_newfrozen(m, owner, &onmreg, NULL);
+upb_handlercache *upb_textprinter_newcache() {
+  return upb_handlercache_new(&onmreg, NULL);
 }
 
-upb_sink *upb_textprinter_input(upb_textprinter *p) { return &p->input_; }
+upb_sink upb_textprinter_input(upb_textprinter *p) { return p->input_; }
 
 void upb_textprinter_setsingleline(upb_textprinter *p, bool single_line) {
   p->single_line_ = single_line;

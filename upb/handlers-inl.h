@@ -7,41 +7,8 @@
 #define UPB_HANDLERS_INL_H_
 
 #include <limits.h>
-#include "upb/upb.h"
+#include <stddef.h>
 #include "upb/handlers.h"
-
-/* C inline methods. */
-
-/* upb_bufhandle */
-UPB_INLINE void upb_bufhandle_init(upb_bufhandle *h) {
-  h->obj_ = NULL;
-  h->objtype_ = NULL;
-  h->buf_ = NULL;
-  h->objofs_ = 0;
-}
-UPB_INLINE void upb_bufhandle_uninit(upb_bufhandle *h) {
-  UPB_UNUSED(h);
-}
-UPB_INLINE void upb_bufhandle_setobj(upb_bufhandle *h, const void *obj,
-                                     const void *type) {
-  h->obj_ = obj;
-  h->objtype_ = type;
-}
-UPB_INLINE void upb_bufhandle_setbuf(upb_bufhandle *h, const char *buf,
-                                     size_t ofs) {
-  h->buf_ = buf;
-  h->objofs_ = ofs;
-}
-UPB_INLINE const void *upb_bufhandle_obj(const upb_bufhandle *h) {
-  return h->obj_;
-}
-UPB_INLINE const void *upb_bufhandle_objtype(const upb_bufhandle *h) {
-  return h->objtype_;
-}
-UPB_INLINE const char *upb_bufhandle_buf(const upb_bufhandle *h) {
-  return h->buf_;
-}
-
 
 #ifdef __cplusplus
 
@@ -197,8 +164,8 @@ struct FuncInfo {
  * These functions are not bound to a handler data so have no data or cleanup
  * handler. */
 struct UnboundFunc {
-  CleanupFunc *GetCleanup() { return NULL; }
-  void *GetData() { return NULL; }
+  CleanupFunc *GetCleanup() { return nullptr; }
+  void *GetData() { return nullptr; }
 };
 
 template <class R, class P1, R F(P1), class I>
@@ -606,9 +573,9 @@ void *ReturnClosureOrBreak3(P1 p1, P2 p2, P3 p3) {
 
 /* For the string callback, which takes five params, returns the size param. */
 template <class P1, class P2,
-          void F(P1, P2, const char *, size_t, const BufferHandle *)>
+          void F(P1, P2, const char *, size_t, const upb_bufhandle *)>
 size_t ReturnStringLen(P1 p1, P2 p2, const char *p3, size_t p4,
-                       const BufferHandle *p5) {
+                       const upb_bufhandle *p5) {
   F(p1, p2, p3, p4, p5);
   return p4;
 }
@@ -616,9 +583,9 @@ size_t ReturnStringLen(P1 p1, P2 p2, const char *p3, size_t p4,
 /* For the string callback, which takes five params, returns the size param or
  * zero. */
 template <class P1, class P2,
-          bool F(P1, P2, const char *, size_t, const BufferHandle *)>
+          bool F(P1, P2, const char *, size_t, const upb_bufhandle *)>
 size_t ReturnNOr0(P1 p1, P2 p2, const char *p3, size_t p4,
-                  const BufferHandle *p5) {
+                  const upb_bufhandle *p5) {
   return F(p1, p2, p3, p4, p5) ? p4 : 0;
 }
 
@@ -677,22 +644,22 @@ struct MaybeWrapReturn<Func3<bool, P1, P2, P3, F, I>, void *> {
 /* If our function returns void but we want one returning size_t, wrap it in a
  * function that returns the size argument. */
 template <class P1, class P2,
-          void F(P1, P2, const char *, size_t, const BufferHandle *), class I>
+          void F(P1, P2, const char *, size_t, const upb_bufhandle *), class I>
 struct MaybeWrapReturn<
-    Func5<void, P1, P2, const char *, size_t, const BufferHandle *, F, I>,
+    Func5<void, P1, P2, const char *, size_t, const upb_bufhandle *, F, I>,
           size_t> {
-  typedef Func5<size_t, P1, P2, const char *, size_t, const BufferHandle *,
+  typedef Func5<size_t, P1, P2, const char *, size_t, const upb_bufhandle *,
                 ReturnStringLen<P1, P2, F>, I> Func;
 };
 
 /* If our function returns bool but we want one returning size_t, wrap it in a
  * function that returns either 0 or the buf size. */
 template <class P1, class P2,
-          bool F(P1, P2, const char *, size_t, const BufferHandle *), class I>
+          bool F(P1, P2, const char *, size_t, const upb_bufhandle *), class I>
 struct MaybeWrapReturn<
-    Func5<bool, P1, P2, const char *, size_t, const BufferHandle *, F, I>,
+    Func5<bool, P1, P2, const char *, size_t, const upb_bufhandle *, F, I>,
     size_t> {
-  typedef Func5<size_t, P1, P2, const char *, size_t, const BufferHandle *,
+  typedef Func5<size_t, P1, P2, const char *, size_t, const upb_bufhandle *,
                 ReturnNOr0<P1, P2, F>, I> Func;
 };
 
@@ -733,7 +700,7 @@ R IgnoreHandlerData5(void *p1, const void *hd, P2 p2, P3 p3, P4 p4) {
 
 template <class R, class P1, R F(P1, const char*, size_t)>
 R IgnoreHandlerDataIgnoreHandle(void *p1, const void *hd, const char *p2,
-                                size_t p3, const BufferHandle *handle) {
+                                size_t p3, const upb_bufhandle *handle) {
   UPB_UNUSED(hd);
   UPB_UNUSED(handle);
   return F(static_cast<P1>(p1), p2, p3);
@@ -759,7 +726,7 @@ R CastHandlerData5(void *c, const void *hd, P3 p3, P4 p4, P5 p5) {
 
 template <class R, class P1, class P2, R F(P1, P2, const char *, size_t)>
 R CastHandlerDataIgnoreHandle(void *c, const void *hd, const char *p3,
-                              size_t p4, const BufferHandle *handle) {
+                              size_t p4, const upb_bufhandle *handle) {
   UPB_UNUSED(handle);
   return F(static_cast<P1>(c), static_cast<P2>(hd), p3, p4);
 }
@@ -779,11 +746,11 @@ struct ConvertParams<Func2<R, P1, P2, F, I>,
 };
 
 /* For StringBuffer only; this ignores both the handler data and the
- * BufferHandle. */
+ * upb_bufhandle. */
 template <class R, class P1, R F(P1, const char *, size_t), class I, class T>
 struct ConvertParams<Func3<R, P1, const char *, size_t, F, I>, T> {
   typedef Func5<R, void *, const void *, const char *, size_t,
-                const BufferHandle *, IgnoreHandlerDataIgnoreHandle<R, P1, F>,
+                const upb_bufhandle *, IgnoreHandlerDataIgnoreHandle<R, P1, F>,
                 I> Func;
 };
 
@@ -809,13 +776,14 @@ struct ConvertParams<BoundFunc3<R, P1, P2, P3, F, I>,
                 CastHandlerData3<R, P1, P2, P3_2, P3, F>, I> Func;
 };
 
-/* For StringBuffer only; this ignores the BufferHandle. */
+/* For StringBuffer only; this ignores the upb_bufhandle. */
 template <class R, class P1, class P2, R F(P1, P2, const char *, size_t),
           class I, class T>
 struct ConvertParams<BoundFunc4<R, P1, P2, const char *, size_t, F, I>, T> {
   typedef Func5<R, void *, const void *, const char *, size_t,
-                const BufferHandle *, CastHandlerDataIgnoreHandle<R, P1, P2, F>,
-                I> Func;
+                const upb_bufhandle *,
+                CastHandlerDataIgnoreHandle<R, P1, P2, F>, I>
+      Func;
 };
 
 template <class R, class P1, class P2, class P3, class P4, class P5,
@@ -827,19 +795,18 @@ struct ConvertParams<BoundFunc5<R, P1, P2, P3, P4, P5, F, I>, T> {
 
 /* utype/ltype are upper/lower-case, ctype is canonical C type, vtype is
  * variant C type. */
-#define TYPE_METHODS(utype, ltype, ctype, vtype)                               \
-  template <> struct CanonicalType<vtype> {                                    \
-    typedef ctype Type;                                                        \
-  };                                                                           \
-  template <>                                                                  \
-  inline bool Handlers::SetValueHandler<vtype>(                                \
-      const FieldDef *f,                                                       \
-      const Handlers::utype ## Handler& handler) {                             \
-    UPB_ASSERT(!handler.registered_);                                              \
-    handler.AddCleanup(this);                                                  \
-    handler.registered_ = true;                                                \
-    return upb_handlers_set##ltype(this, f, handler.handler_, &handler.attr_); \
-  }                                                                            \
+#define TYPE_METHODS(utype, ltype, ctype, vtype)                      \
+  template <>                                                         \
+  struct CanonicalType<vtype> {                                       \
+    typedef ctype Type;                                               \
+  };                                                                  \
+  template <>                                                         \
+  inline bool HandlersPtr::SetValueHandler<vtype>(                    \
+      FieldDefPtr f, const HandlersPtr::utype##Handler &handler) {    \
+    handler.AddCleanup(ptr());                                        \
+    return upb_handlers_set##ltype(ptr(), f.ptr(), handler.handler(), \
+                                   &handler.attr());                  \
+  }
 
 TYPE_METHODS(Double, double, double,   double)
 TYPE_METHODS(Float,  float,  float,    float)
@@ -864,24 +831,6 @@ template <> struct CanonicalType<Status*> {
   typedef Status* Type;
 };
 
-/* Type methods that are only one-per-canonical-type and not
- * one-per-cvariant. */
-
-#define TYPE_METHODS(utype, ctype) \
-    inline bool Handlers::Set##utype##Handler(const FieldDef *f, \
-                                              const utype##Handler &h) { \
-      return SetValueHandler<ctype>(f, h); \
-    } \
-
-TYPE_METHODS(Double, double)
-TYPE_METHODS(Float,  float)
-TYPE_METHODS(UInt64, uint64_t)
-TYPE_METHODS(UInt32, uint32_t)
-TYPE_METHODS(Int64,  int64_t)
-TYPE_METHODS(Int32,  int32_t)
-TYPE_METHODS(Bool,   bool)
-#undef TYPE_METHODS
-
 template <class F> struct ReturnOf;
 
 template <class R, class P1, class P2>
@@ -904,10 +853,6 @@ struct ReturnOf<R (*)(P1, P2, P3, P4, P5)> {
   typedef R Return;
 };
 
-template<class T> const void *UniquePtrForType() {
-  static const char ch = 0;
-  return &ch;
-}
 
 template <class T>
 template <class F>
@@ -915,7 +860,7 @@ inline Handler<T>::Handler(F func)
     : registered_(false),
       cleanup_data_(func.GetData()),
       cleanup_func_(func.GetCleanup()) {
-  upb_handlerattr_sethandlerdata(&attr_, func.GetData());
+  attr_.handler_data = func.GetData();
   typedef typename ReturnOf<T>::Return Return;
   typedef typename ConvertParams<F, T>::Func ConvertedParamsFunc;
   typedef typename MaybeWrapReturn<ConvertedParamsFunc, Return>::Func
@@ -928,10 +873,10 @@ inline Handler<T>::Handler(F func)
   /* If the original function returns void, then we know that we wrapped it to
    * always return ok. */
   bool always_ok = is_same<typename F::FuncInfo::Return, void>::value;
-  attr_.SetAlwaysOk(always_ok);
+  attr_.alwaysok = always_ok;
 
   /* Closure parameter and return type. */
-  attr_.SetClosureType(UniquePtrForType<typename F::FuncInfo::Closure>());
+  attr_.closure_type = UniquePtrForType<typename F::FuncInfo::Closure>();
 
   /* We use the closure type (from the first parameter) if the return type is
    * void or bool, since these are the two cases we wrap to return the closure's
@@ -942,187 +887,18 @@ inline Handler<T>::Handler(F func)
   typedef typename FirstUnlessVoidOrBool<typename F::FuncInfo::Return,
                                          typename F::FuncInfo::Closure>::value
       EffectiveReturn;
-  attr_.SetReturnClosureType(UniquePtrForType<EffectiveReturn>());
+  attr_.return_closure_type = UniquePtrForType<EffectiveReturn>();
 }
 
 template <class T>
-inline Handler<T>::~Handler() {
-  UPB_ASSERT(registered_);
+inline void Handler<T>::AddCleanup(upb_handlers* h) const {
+  UPB_ASSERT(!registered_);
+  registered_ = true;
+  if (cleanup_func_) {
+    bool ok = upb_handlers_addcleanup(h, cleanup_data_, cleanup_func_);
+    UPB_ASSERT(ok);
+  }
 }
-
-inline HandlerAttributes::HandlerAttributes() { upb_handlerattr_init(this); }
-inline HandlerAttributes::~HandlerAttributes() { upb_handlerattr_uninit(this); }
-inline bool HandlerAttributes::SetHandlerData(const void *hd) {
-  return upb_handlerattr_sethandlerdata(this, hd);
-}
-inline const void* HandlerAttributes::handler_data() const {
-  return upb_handlerattr_handlerdata(this);
-}
-inline bool HandlerAttributes::SetClosureType(const void *type) {
-  return upb_handlerattr_setclosuretype(this, type);
-}
-inline const void* HandlerAttributes::closure_type() const {
-  return upb_handlerattr_closuretype(this);
-}
-inline bool HandlerAttributes::SetReturnClosureType(const void *type) {
-  return upb_handlerattr_setreturnclosuretype(this, type);
-}
-inline const void* HandlerAttributes::return_closure_type() const {
-  return upb_handlerattr_returnclosuretype(this);
-}
-inline bool HandlerAttributes::SetAlwaysOk(bool always_ok) {
-  return upb_handlerattr_setalwaysok(this, always_ok);
-}
-inline bool HandlerAttributes::always_ok() const {
-  return upb_handlerattr_alwaysok(this);
-}
-
-inline BufferHandle::BufferHandle() { upb_bufhandle_init(this); }
-inline BufferHandle::~BufferHandle() { upb_bufhandle_uninit(this); }
-inline const char* BufferHandle::buffer() const {
-  return upb_bufhandle_buf(this);
-}
-inline size_t BufferHandle::object_offset() const {
-  return upb_bufhandle_objofs(this);
-}
-inline void BufferHandle::SetBuffer(const char* buf, size_t ofs) {
-  upb_bufhandle_setbuf(this, buf, ofs);
-}
-template <class T>
-void BufferHandle::SetAttachedObject(const T* obj) {
-  upb_bufhandle_setobj(this, obj, UniquePtrForType<T>());
-}
-template <class T>
-const T* BufferHandle::GetAttachedObject() const {
-  return upb_bufhandle_objtype(this) == UniquePtrForType<T>()
-      ? static_cast<const T *>(upb_bufhandle_obj(this))
-                               : NULL;
-}
-
-inline reffed_ptr<Handlers> Handlers::New(const MessageDef *m) {
-  upb_handlers *h = upb_handlers_new(m, &h);
-  return reffed_ptr<Handlers>(h, &h);
-}
-inline reffed_ptr<const Handlers> Handlers::NewFrozen(
-    const MessageDef *m, upb_handlers_callback *callback,
-    const void *closure) {
-  const upb_handlers *h = upb_handlers_newfrozen(m, &h, callback, closure);
-  return reffed_ptr<const Handlers>(h, &h);
-}
-inline const Status* Handlers::status() {
-  return upb_handlers_status(this);
-}
-inline void Handlers::ClearError() {
-  return upb_handlers_clearerr(this);
-}
-inline bool Handlers::Freeze(Status *s) {
-  upb::Handlers* h = this;
-  return upb_handlers_freeze(&h, 1, s);
-}
-inline bool Handlers::Freeze(Handlers *const *handlers, int n, Status *s) {
-  return upb_handlers_freeze(handlers, n, s);
-}
-inline bool Handlers::Freeze(const std::vector<Handlers*>& h, Status* status) {
-  return upb_handlers_freeze((Handlers* const*)&h[0], h.size(), status);
-}
-inline const MessageDef *Handlers::message_def() const {
-  return upb_handlers_msgdef(this);
-}
-inline bool Handlers::AddCleanup(void *p, upb_handlerfree *func) {
-  return upb_handlers_addcleanup(this, p, func);
-}
-inline bool Handlers::SetStartMessageHandler(
-    const Handlers::StartMessageHandler &handler) {
-  UPB_ASSERT(!handler.registered_);
-  handler.registered_ = true;
-  handler.AddCleanup(this);
-  return upb_handlers_setstartmsg(this, handler.handler_, &handler.attr_);
-}
-inline bool Handlers::SetEndMessageHandler(
-    const Handlers::EndMessageHandler &handler) {
-  UPB_ASSERT(!handler.registered_);
-  handler.registered_ = true;
-  handler.AddCleanup(this);
-  return upb_handlers_setendmsg(this, handler.handler_, &handler.attr_);
-}
-inline bool Handlers::SetStartStringHandler(const FieldDef *f,
-                                            const StartStringHandler &handler) {
-  UPB_ASSERT(!handler.registered_);
-  handler.registered_ = true;
-  handler.AddCleanup(this);
-  return upb_handlers_setstartstr(this, f, handler.handler_, &handler.attr_);
-}
-inline bool Handlers::SetEndStringHandler(const FieldDef *f,
-                                          const EndFieldHandler &handler) {
-  UPB_ASSERT(!handler.registered_);
-  handler.registered_ = true;
-  handler.AddCleanup(this);
-  return upb_handlers_setendstr(this, f, handler.handler_, &handler.attr_);
-}
-inline bool Handlers::SetStringHandler(const FieldDef *f,
-                                       const StringHandler& handler) {
-  UPB_ASSERT(!handler.registered_);
-  handler.registered_ = true;
-  handler.AddCleanup(this);
-  return upb_handlers_setstring(this, f, handler.handler_, &handler.attr_);
-}
-inline bool Handlers::SetStartSequenceHandler(
-    const FieldDef *f, const StartFieldHandler &handler) {
-  UPB_ASSERT(!handler.registered_);
-  handler.registered_ = true;
-  handler.AddCleanup(this);
-  return upb_handlers_setstartseq(this, f, handler.handler_, &handler.attr_);
-}
-inline bool Handlers::SetStartSubMessageHandler(
-    const FieldDef *f, const StartFieldHandler &handler) {
-  UPB_ASSERT(!handler.registered_);
-  handler.registered_ = true;
-  handler.AddCleanup(this);
-  return upb_handlers_setstartsubmsg(this, f, handler.handler_, &handler.attr_);
-}
-inline bool Handlers::SetEndSubMessageHandler(const FieldDef *f,
-                                              const EndFieldHandler &handler) {
-  UPB_ASSERT(!handler.registered_);
-  handler.registered_ = true;
-  handler.AddCleanup(this);
-  return upb_handlers_setendsubmsg(this, f, handler.handler_, &handler.attr_);
-}
-inline bool Handlers::SetEndSequenceHandler(const FieldDef *f,
-                                            const EndFieldHandler &handler) {
-  UPB_ASSERT(!handler.registered_);
-  handler.registered_ = true;
-  handler.AddCleanup(this);
-  return upb_handlers_setendseq(this, f, handler.handler_, &handler.attr_);
-}
-inline bool Handlers::SetSubHandlers(const FieldDef *f, const Handlers *sub) {
-  return upb_handlers_setsubhandlers(this, f, sub);
-}
-inline const Handlers *Handlers::GetSubHandlers(const FieldDef *f) const {
-  return upb_handlers_getsubhandlers(this, f);
-}
-inline const Handlers *Handlers::GetSubHandlers(Handlers::Selector sel) const {
-  return upb_handlers_getsubhandlers_sel(this, sel);
-}
-inline bool Handlers::GetSelector(const FieldDef *f, Handlers::Type type,
-                                  Handlers::Selector *s) {
-  return upb_handlers_getselector(f, type, s);
-}
-inline Handlers::Selector Handlers::GetEndSelector(Handlers::Selector start) {
-  return upb_handlers_getendselector(start);
-}
-inline Handlers::GenericFunction *Handlers::GetHandler(
-    Handlers::Selector selector) {
-  return upb_handlers_gethandler(this, selector);
-}
-inline const void *Handlers::GetHandlerData(Handlers::Selector selector) {
-  return upb_handlers_gethandlerdata(this, selector);
-}
-
-inline BytesHandler::BytesHandler() {
-  upb_byteshandler_init(this);
-}
-
-inline BytesHandler::~BytesHandler() {}
 
 }  /* namespace upb */
 
