@@ -317,8 +317,8 @@ inline UnknownField* UnknownFieldSet::mutable_field(int index) {
   return &(fields_)[static_cast<size_t>(index)];
 }
 
-inline void UnknownFieldSet::AddLengthDelimited(
-    int number, const std::string& value) {
+inline void UnknownFieldSet::AddLengthDelimited(int number,
+                                                const std::string& value) {
   AddLengthDelimited(number)->assign(value);
 }
 

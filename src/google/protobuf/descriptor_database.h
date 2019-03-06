@@ -262,7 +262,8 @@ class PROTOBUF_EXPORT SimpleDescriptorDatabase : public DescriptorDatabase {
     // True if either the arguments are equal or super_symbol identifies a
     // parent symbol of sub_symbol (e.g. "foo.bar" is a parent of
     // "foo.bar.baz", but not a parent of "foo.barbaz").
-    bool IsSubSymbol(const std::string& sub_symbol, const std::string& super_symbol);
+    bool IsSubSymbol(const std::string& sub_symbol,
+                     const std::string& super_symbol);
 
     // Returns true if and only if all characters in the name are alphanumerics,
     // underscores, or periods.

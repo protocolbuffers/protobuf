@@ -39,11 +39,11 @@
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/arena.h>
 #include <google/protobuf/arenastring.h>
+#include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/map.h>
 #include <google/protobuf/map_type_handler.h>
 #include <google/protobuf/port.h>
 #include <google/protobuf/wire_format_lite.h>
-#include <google/protobuf/wire_format_lite_inl.h>
 
 #include <google/protobuf/port_def.inc>
 #ifdef SWIG
@@ -191,7 +191,7 @@ class MapEntryImpl : public Base {
   std::string GetTypeName() const override { return ""; }
 
   void CheckTypeAndMergeFrom(const MessageLite& other) override {
-    MergeFromInternal(*::google::protobuf::down_cast<const Derived*>(&other));
+    MergeFromInternal(*::google::protobuf::internal::DownCast<const Derived*>(&other));
   }
 
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
@@ -203,9 +203,11 @@ class MapEntryImpl : public Base {
       if (tag == kKeyTag) {
         set_has_key();
         ptr = KeyTypeHandler::Read(ptr, ctx, mutable_key());
+        if (!::down_cast<Derived*>(this)->ValidateKey()) return nullptr;
       } else if (tag == kValueTag) {
         set_has_value();
         ptr = ValueTypeHandler::Read(ptr, ctx, mutable_value());
+        if (!::down_cast<Derived*>(this)->ValidateValue()) return nullptr;
       } else {
         if (tag == 0 || WireFormatLite::GetTagWireType(tag) ==
                             WireFormatLite::WIRETYPE_END_GROUP) {
@@ -416,7 +418,24 @@ class MapEntryImpl : public Base {
     const char* _InternalParse(const char* ptr, ParseContext* ctx) {
       auto entry = NewEntry();
       ptr = entry->_InternalParse(ptr, ctx);
+      if (!ptr) return nullptr;
       UseKeyAndValueFromEntry();
+      return ptr;
+    }
+
+    template <typename Metadata>
+    const char* ParseWithEnumValidation(const char* ptr, ParseContext* ctx,
+                                        bool (*is_valid)(int), uint32 field_num,
+                                        Metadata* metadata) {
+      auto entry = NewEntry();
+      ptr = entry->_InternalParse(ptr, ctx);
+      if (!ptr) return nullptr;
+      if (is_valid(entry->value())) {
+        UseKeyAndValueFromEntry();
+      } else {
+        WriteLengthDelimited(field_num, entry->SerializeAsString(),
+                             metadata->mutable_unknown_fields());
+      }
       return ptr;
     }
 
@@ -644,7 +663,7 @@ template <>
 struct FromHelper<WireFormatLite::TYPE_STRING> {
   static ArenaStringPtr From(const std::string& x) {
     ArenaStringPtr res;
-    TaggedPtr<::std::string> ptr;
+    TaggedPtr<std::string> ptr;
     ptr.Set(const_cast<std::string*>(&x));
     res.UnsafeSetTaggedPointer(ptr);
     return res;
@@ -654,7 +673,7 @@ template <>
 struct FromHelper<WireFormatLite::TYPE_BYTES> {
   static ArenaStringPtr From(const std::string& x) {
     ArenaStringPtr res;
-    TaggedPtr<::std::string> ptr;
+    TaggedPtr<std::string> ptr;
     ptr.Set(const_cast<std::string*>(&x));
     res.UnsafeSetTaggedPointer(ptr);
     return res;

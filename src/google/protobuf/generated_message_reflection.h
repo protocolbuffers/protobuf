@@ -72,13 +72,6 @@ class MapValueRef;
 }  // namespace protobuf
 }  // namespace google
 
-namespace google {
-namespace protobuf {
-namespace flat {
-class MetadataBuilder;
-}  // namespace flat
-}  // namespace protobuf
-}  // namespace google
 
 namespace google {
 namespace protobuf {
@@ -287,8 +280,8 @@ struct MigrationSchema {
 //
 // It is required that the user represents fields of each type in a standard
 // way, so that GeneratedMessageReflection can cast the void* pointer to
-// the appropriate type.  For primitive fields and string fields, each field
-// should be represented using the obvious C++ primitive type.  Enums and
+// the appropriate type.  For primitive fields and string fields, each
+// field should be represented using the obvious C++ primitive type.  Enums and
 // Messages are different:
 //  - Singular Message fields are stored as a pointer to a Message.  These
 //    should start out NULL, except for in the default instance where they
@@ -362,10 +355,10 @@ class GeneratedMessageReflection final : public Reflection {
   bool GetBool(const Message& message,
                const FieldDescriptor* field) const override;
   std::string GetString(const Message& message,
-                   const FieldDescriptor* field) const override;
+                        const FieldDescriptor* field) const override;
   const std::string& GetStringReference(const Message& message,
-                                   const FieldDescriptor* field,
-                                   std::string* scratch) const override;
+                                        const FieldDescriptor* field,
+                                        std::string* scratch) const override;
   const EnumValueDescriptor* GetEnum(
       const Message& message, const FieldDescriptor* field) const override;
   int GetEnumValue(const Message& message,
@@ -435,12 +428,12 @@ class GeneratedMessageReflection final : public Reflection {
                            int index) const override;
   bool GetRepeatedBool(const Message& message, const FieldDescriptor* field,
                        int index) const override;
-  std::string GetRepeatedString(const Message& message, const FieldDescriptor* field,
-                           int index) const override;
-  const std::string& GetRepeatedStringReference(const Message& message,
-                                           const FieldDescriptor* field,
-                                           int index,
-                                           std::string* scratch) const override;
+  std::string GetRepeatedString(const Message& message,
+                                const FieldDescriptor* field,
+                                int index) const override;
+  const std::string& GetRepeatedStringReference(
+      const Message& message, const FieldDescriptor* field, int index,
+      std::string* scratch) const override;
   const EnumValueDescriptor* GetRepeatedEnum(const Message& message,
                                              const FieldDescriptor* field,
                                              int index) const override;
@@ -538,7 +531,6 @@ class GeneratedMessageReflection final : public Reflection {
                           const Descriptor* message_type) const override;
 
  private:
-  friend class google::protobuf::flat::MetadataBuilder;
   friend class ReflectionAccessor;
   friend class upb::google_opensource::GMR_Handlers;
 

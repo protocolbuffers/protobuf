@@ -15,7 +15,6 @@ test_version() {
     # TODO(teboring): timestamp parsing is incorrect only on mac due to mktime.
     RUBY_CONFORMANCE=test_ruby_mac
   fi
-  return 0
 
   if [ "$version" == "jruby-1.7" ] ; then
     # No conformance tests yet -- JRuby is too broken to run them.

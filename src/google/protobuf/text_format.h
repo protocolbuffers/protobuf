@@ -84,8 +84,8 @@ class PROTOBUF_EXPORT TextFormat {
   // even if printing fails. Returns false if printing fails.
   static bool PrintToString(const Message& message, std::string* output);
 
-  // Like PrintUnknownFields(), but outputs directly to a string. Returns false
-  // if printing fails.
+  // Like PrintUnknownFields(), but outputs directly to a string. Returns
+  // false if printing fails.
   static bool PrintUnknownFieldsToString(const UnknownFieldSet& unknown_fields,
                                          std::string* output);
 
@@ -171,14 +171,14 @@ class PROTOBUF_EXPORT TextFormat {
     virtual std::string PrintBytes(const std::string& val) const;
     virtual std::string PrintEnum(int32 val, const std::string& name) const;
     virtual std::string PrintFieldName(const Message& message,
-                                  const Reflection* reflection,
-                                  const FieldDescriptor* field) const;
-    virtual std::string PrintMessageStart(const Message& message, int field_index,
-                                     int field_count,
-                                     bool single_line_mode) const;
+                                       const Reflection* reflection,
+                                       const FieldDescriptor* field) const;
+    virtual std::string PrintMessageStart(const Message& message,
+                                          int field_index, int field_count,
+                                          bool single_line_mode) const;
     virtual std::string PrintMessageEnd(const Message& message, int field_index,
-                                   int field_count,
-                                   bool single_line_mode) const;
+                                        int field_count,
+                                        bool single_line_mode) const;
 
    private:
     FastFieldValuePrinter delegate_;
@@ -317,9 +317,9 @@ class PROTOBUF_EXPORT TextFormat {
     // Set how parser finds message for Any payloads.
     void SetFinder(const Finder* finder) { finder_ = finder; }
 
-    // If non-zero, we truncate all string fields that are  longer than this
-    // threshold.  This is useful when the proto message has very long strings,
-    // e.g., dump of encoded image file.
+    // If non-zero, we truncate all string fields that are  longer than
+    // this threshold.  This is useful when the proto message has very long
+    // strings, e.g., dump of encoded image file.
     //
     // NOTE(hfgong):  Setting a non-zero value breaks round-trip safe
     // property of TextFormat::Printer.  That is, from the printed message, we

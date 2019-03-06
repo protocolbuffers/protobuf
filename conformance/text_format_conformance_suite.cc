@@ -221,11 +221,12 @@ void TextFormatConformanceTestSuite::RunSuiteImpl() {
                          "optional_float: 4294967296");
   RunValidTextFormatTest("FloatFieldLargerThanInt64", REQUIRED,
                          "optional_float: 9223372036854775808");
-
-  ExpectParseFailure("FloatFieldTooLarge", REQUIRED,
-                     "optional_int32: 3.4028235e+39");
-  ExpectParseFailure("FloatFieldTooSmall", REQUIRED,
-                     "optional_int32: 1.17549e-39");
+  RunValidTextFormatTest("FloatFieldTooLarge", REQUIRED,
+                         "optional_float: 3.4028235e+39");
+  RunValidTextFormatTest("FloatFieldTooSmall", REQUIRED,
+                         "optional_float: 1.17549e-39");
+  RunValidTextFormatTest("FloatFieldLargerThanUint64", REQUIRED,
+                         "optional_float: 18446744073709551616");
 
   // Group fields
   RunValidTextFormatTestProto2("GroupFieldNoColon", REQUIRED,

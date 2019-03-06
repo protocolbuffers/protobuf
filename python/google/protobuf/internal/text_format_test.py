@@ -497,6 +497,14 @@ class TextFormatParserTests(TextFormatBase):
     text_format.Parse(text, msg2)
     self.assertEqual(msg2.optional_string, u'café')
 
+  def testParseDoubleToFloat(self, message_module):
+    message = message_module.TestAllTypes()
+    text = ('repeated_float: 3.4028235e+39\n'
+            'repeated_float: 1.4028235e-39\n')
+    text_format.Parse(text, message)
+    self.assertEqual(message.repeated_float[0], float('inf'))
+    self.assertAlmostEqual(message.repeated_float[1], 1.4028235e-39)
+
   def testParseExotic(self, message_module):
     message = message_module.TestAllTypes()
     text = ('repeated_int64: -9223372036854775808\n'

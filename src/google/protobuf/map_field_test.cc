@@ -43,7 +43,6 @@
 #include <google/protobuf/map_field_inl.h>
 #include <google/protobuf/message.h>
 #include <google/protobuf/repeated_field.h>
-#include <google/protobuf/wire_format_lite_inl.h>
 #include <gtest/gtest.h>
 
 namespace google {

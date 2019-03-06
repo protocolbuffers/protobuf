@@ -100,29 +100,27 @@ class MockCodeGenerator : public CodeGenerator {
 
   // Get the name of the file which would be written by the given generator.
   static std::string GetOutputFileName(const std::string& generator_name,
-                                  const FileDescriptor* file);
+                                       const FileDescriptor* file);
   static std::string GetOutputFileName(const std::string& generator_name,
-                                  const std::string& file);
+                                       const std::string& file);
 
   // implements CodeGenerator ----------------------------------------
 
   virtual bool Generate(const FileDescriptor* file,
-                        const std::string& parameter,
-                        GeneratorContext* context,
+                        const std::string& parameter, GeneratorContext* context,
                         std::string* error) const;
 
  private:
   std::string name_;
 
   static std::string GetOutputFileContent(const std::string& generator_name,
-                                     const std::string& parameter,
-                                     const FileDescriptor* file,
-                                     GeneratorContext *context);
-  static std::string GetOutputFileContent(const std::string& generator_name,
-                                     const std::string& parameter,
-                                     const std::string& file,
-                                     const std::string& parsed_file_list,
-                                     const std::string& first_message_name);
+                                          const std::string& parameter,
+                                          const FileDescriptor* file,
+                                          GeneratorContext* context);
+  static std::string GetOutputFileContent(
+      const std::string& generator_name, const std::string& parameter,
+      const std::string& file, const std::string& parsed_file_list,
+      const std::string& first_message_name);
 };
 
 }  // namespace compiler

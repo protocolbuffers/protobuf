@@ -120,7 +120,7 @@ static const uint32 kCRC32Table[256] = {
   0xb40bbe37, 0xc30c8ea1, 0x5a05df1b, 0x2d02ef8d
 };
 
-static uint32 ComputeCRC32(const string &buf) {
+static uint32 ComputeCRC32(const std::string& buf) {
   uint32 x = ~0U;
   for (int i = 0; i < buf.size(); ++i) {
     unsigned char c = buf[i];
@@ -140,7 +140,8 @@ ZipWriter::ZipWriter(io::ZeroCopyOutputStream* raw_output)
   : raw_output_(raw_output) {}
 ZipWriter::~ZipWriter() {}
 
-bool ZipWriter::Write(const string& filename, const string& contents) {
+bool ZipWriter::Write(const std::string& filename,
+                      const std::string& contents) {
   FileInfo info;
 
   info.name = filename;
@@ -177,7 +178,7 @@ bool ZipWriter::WriteDirectory() {
   // write central directory
   io::CodedOutputStream output(raw_output_);
   for (int i = 0; i < num_entries; ++i) {
-    const string &filename = files_[i].name;
+    const std::string& filename = files_[i].name;
     uint16 filename_size = filename.size();
     uint32 crc32 = files_[i].crc32;
     uint32 size = files_[i].size;

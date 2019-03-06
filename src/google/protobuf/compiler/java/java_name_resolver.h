@@ -47,6 +47,9 @@ class ServiceDescriptor;
 namespace compiler {
 namespace java {
 
+// Indicates how closely the two class names match.
+enum NameEquality { NO_MATCH, EXACT_EQUAL, EQUAL_IGNORE_CASE };
+
 // Used to get the Java class related names for a given descriptor. It caches
 // the results to avoid redundant calculation across multiple name queries.
 // Thread-safety note: This class is *not* thread-safe.
@@ -66,7 +69,8 @@ class ClassNameResolver {
   // Check whether there is any type defined in the proto file that has
   // the given class name.
   bool HasConflictingClassName(const FileDescriptor* file,
-                               const std::string& classname);
+                               const std::string& classname,
+                               NameEquality equality_mode);
 
   // Gets the name of the outer class that holds descriptor information.
   // Descriptors are shared between immutable messages and mutable messages.
@@ -80,18 +84,18 @@ class ClassNameResolver {
   std::string GetClassName(const ServiceDescriptor* descriptor, bool immutable);
   std::string GetClassName(const FileDescriptor* descriptor, bool immutable);
 
-  template<class DescriptorType>
+  template <class DescriptorType>
   std::string GetImmutableClassName(const DescriptorType* descriptor) {
     return GetClassName(descriptor, true);
   }
-  template<class DescriptorType>
+  template <class DescriptorType>
   std::string GetMutableClassName(const DescriptorType* descriptor) {
     return GetClassName(descriptor, false);
   }
 
   // Gets the fully qualified name of an extension identifier.
   std::string GetExtensionIdentifierName(const FieldDescriptor* descriptor,
-                                    bool immutable);
+                                         bool immutable);
 
   // Gets the fully qualified name for generated classes in Java convention.
   // Nested classes will be separated using '$' instead of '.'
@@ -103,16 +107,14 @@ class ClassNameResolver {
   // Get the full name of a Java class by prepending the Java package name
   // or outer class name.
   std::string GetClassFullName(const std::string& name_without_package,
-                          const FileDescriptor* file,
-                          bool immutable,
-                          bool multiple_files);
+                               const FileDescriptor* file, bool immutable,
+                               bool multiple_files);
   // Get the Java Class style full name of a message.
-  std::string GetJavaClassFullName(
-      const std::string& name_without_package,
-      const FileDescriptor* file,
-      bool immutable);
+  std::string GetJavaClassFullName(const std::string& name_without_package,
+                                   const FileDescriptor* file, bool immutable);
   // Caches the result to provide better performance.
-  std::map<const FileDescriptor*, std::string> file_immutable_outer_class_names_;
+  std::map<const FileDescriptor*, std::string>
+      file_immutable_outer_class_names_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ClassNameResolver);
 };

@@ -52,7 +52,7 @@ extern const char kTypeGoogleApisComPrefix[];  // "type.googleapis.com/".
 extern const char kTypeGoogleProdComPrefix[];  // "type.googleprod.com/".
 
 std::string GetTypeUrl(StringPiece message_name,
-                  StringPiece type_url_prefix);
+                       StringPiece type_url_prefix);
 
 // Helper class used to implement google::protobuf::Any.
 class PROTOBUF_EXPORT AnyMetadata {

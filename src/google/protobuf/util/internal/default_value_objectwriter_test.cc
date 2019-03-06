@@ -41,7 +41,7 @@ namespace util {
 namespace converter {
 namespace testing {
 
-using google::protobuf::testing::DefaultValueTest;
+using proto_util_converter::testing::DefaultValueTest;
 
 // Base class for setting up required state for running default values tests on
 // different descriptors.
@@ -52,7 +52,8 @@ class BaseDefaultValueObjectWriterTest
       : helper_(GetParam()), mock_(), expects_(&mock_) {
     helper_.ResetTypeInfo(descriptor);
     testing_.reset(helper_.NewDefaultValueWriter(
-        string(kTypeServiceBaseUrl) + "/" + descriptor->full_name(), &mock_));
+        std::string(kTypeServiceBaseUrl) + "/" + descriptor->full_name(),
+        &mock_));
   }
 
   virtual ~BaseDefaultValueObjectWriterTest() {}

@@ -748,7 +748,8 @@ class PROTOBUF_EXPORT CodedOutputStream {
   // Like WriteString()  but writing directly to the target array.
   static uint8* WriteStringToArray(const std::string& str, uint8* target);
   // Write the varint-encoded size of str followed by str.
-  static uint8* WriteStringWithSizeToArray(const std::string& str, uint8* target);
+  static uint8* WriteStringWithSizeToArray(const std::string& str,
+                                           uint8* target);
 
 
   // Instructs the CodedOutputStream to allow the underlying
@@ -1289,8 +1290,8 @@ inline void CodedOutputStream::WriteRawMaybeAliased(
   }
 }
 
-inline uint8* CodedOutputStream::WriteStringToArray(
-    const std::string& str, uint8* target) {
+inline uint8* CodedOutputStream::WriteStringToArray(const std::string& str,
+                                                    uint8* target) {
   return WriteRawToArray(str.data(), static_cast<int>(str.size()), target);
 }
 

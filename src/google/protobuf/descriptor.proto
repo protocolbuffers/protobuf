@@ -417,7 +417,6 @@ message FileOptions {
   // determining the namespace.
   optional string php_namespace = 41;
 
-
   // Use this option to change the namespace of php generated metadata classes.
   // Default is empty. When this option is empty, the proto file name will be used
   // for determining the namespace.

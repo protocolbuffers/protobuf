@@ -66,8 +66,8 @@ using internal::WireFormat;
 using internal::WireFormatLite;
 
 namespace {
-string MapValueImmutableClassdName(const Descriptor* descriptor,
-                                   ClassNameResolver* name_resolver) {
+std::string MapValueImmutableClassdName(const Descriptor* descriptor,
+                                        ClassNameResolver* name_resolver) {
   const FieldDescriptor* value_field = descriptor->FindFieldByName("value");
   GOOGLE_CHECK_EQ(FieldDescriptor::TYPE_MESSAGE, value_field->type());
   return name_resolver->GetImmutableClassName(value_field->message_type());
@@ -103,7 +103,7 @@ void ImmutableMessageGenerator::GenerateStaticVariables(
   // the outermost class in the file.  This way, they will be initialized in
   // a deterministic order.
 
-  std::map<string, string> vars;
+  std::map<std::string, std::string> vars;
   vars["identifier"] = UniqueFileScopeIdentifier(descriptor_);
   vars["index"] = StrCat(descriptor_->index());
   vars["classname"] = name_resolver_->GetImmutableClassName(descriptor_);
@@ -147,7 +147,7 @@ void ImmutableMessageGenerator::GenerateStaticVariables(
 int ImmutableMessageGenerator::GenerateStaticVariableInitializers(
     io::Printer* printer) {
   int bytecode_estimate = 0;
-  std::map<string, string> vars;
+  std::map<std::string, std::string> vars;
   vars["identifier"] = UniqueFileScopeIdentifier(descriptor_);
   vars["index"] = StrCat(descriptor_->index());
   vars["classname"] = name_resolver_->GetImmutableClassName(descriptor_);
@@ -184,7 +184,7 @@ int ImmutableMessageGenerator::GenerateStaticVariableInitializers(
 
 void ImmutableMessageGenerator::
 GenerateFieldAccessorTable(io::Printer* printer, int* bytecode_estimate) {
-  std::map<string, string> vars;
+  std::map<std::string, std::string> vars;
   vars["identifier"] = UniqueFileScopeIdentifier(descriptor_);
   if (MultipleJavaFiles(descriptor_->file(), /* immutable = */ true)) {
     // We can only make these package-private since the classes that use them
@@ -296,7 +296,7 @@ void ImmutableMessageGenerator::GenerateInterface(io::Printer* printer) {
 void ImmutableMessageGenerator::Generate(io::Printer* printer) {
   bool is_own_file = IsOwnFile(descriptor_, /* immutable = */ true);
 
-  std::map<string, string> variables;
+  std::map<std::string, std::string> variables;
   variables["static"] = is_own_file ? " " : " static ";
   variables["classname"] = descriptor_->name();
   variables["extra_interfaces"] = ExtraMessageInterfaces(descriptor_);
@@ -309,7 +309,7 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
                                 /* immutable = */ true);
 
   // The builder_type stores the super type name of the nested Builder class.
-  string builder_type;
+  std::string builder_type;
   if (descriptor_->extension_range_count() > 0) {
     printer->Print(
         variables,
@@ -405,7 +405,7 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
   }
 
   // oneof
-  std::map<string, string> vars;
+  std::map<std::string, std::string> vars;
   for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
     vars["oneof_name"] = context_->GetOneofGeneratorInfo(
         descriptor_->oneof_decl(i))->name;

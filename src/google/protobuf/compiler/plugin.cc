@@ -73,14 +73,14 @@ class GeneratorResponseContext : public GeneratorContext {
 
   // implements GeneratorContext --------------------------------------
 
-  virtual io::ZeroCopyOutputStream* Open(const string& filename) {
+  virtual io::ZeroCopyOutputStream* Open(const std::string& filename) {
     CodeGeneratorResponse::File* file = response_->add_file();
     file->set_name(filename);
     return new io::StringOutputStream(file->mutable_content());
   }
 
   virtual io::ZeroCopyOutputStream* OpenForInsert(
-      const string& filename, const string& insertion_point) {
+      const std::string& filename, const std::string& insertion_point) {
     CodeGeneratorResponse::File* file = response_->add_file();
     file->set_name(filename);
     file->set_insertion_point(insertion_point);
@@ -102,8 +102,8 @@ class GeneratorResponseContext : public GeneratorContext {
 };
 
 bool GenerateCode(const CodeGeneratorRequest& request,
-    const CodeGenerator& generator, CodeGeneratorResponse* response,
-    string* error_msg) {
+                  const CodeGenerator& generator,
+                  CodeGeneratorResponse* response, std::string* error_msg) {
   DescriptorPool pool;
   for (int i = 0; i < request.proto_file_size(); i++) {
     const FileDescriptor* file = pool.BuildFile(request.proto_file(i));
@@ -128,7 +128,7 @@ bool GenerateCode(const CodeGeneratorRequest& request,
       request.compiler_version(), response, parsed_files);
 
 
-  string error;
+  std::string error;
   bool succeeded = generator.GenerateAll(
       parsed_files, request.parameter(), &context, &error);
 
@@ -162,7 +162,7 @@ int PluginMain(int argc, char* argv[], const CodeGenerator* generator) {
     return 1;
   }
 
-  string error_msg;
+  std::string error_msg;
   CodeGeneratorResponse response;
 
   if (GenerateCode(request, *generator, &response, &error_msg)) {

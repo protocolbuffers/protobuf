@@ -130,10 +130,19 @@
 #ifdef PROTOBUF_MUST_USE_RESULT
 #error PROTOBUF_MUST_USE_RESULT was previously defined
 #endif
+#ifdef PROTOBUF_UNUSED
+#error PROTOBUF_UNUSED was previously defined
+#endif
 
 
 #define PROTOBUF_NAMESPACE "google::protobuf"
 #define PROTOBUF_NAMESPACE_ID google::protobuf
+#define PROTOBUF_NAMESPACE_OPEN \
+  namespace google {            \
+  namespace protobuf {
+#define PROTOBUF_NAMESPACE_CLOSE \
+  } /* namespace protobuf */     \
+  } /* namespace google */
 #define PROTOBUF_DEPRECATED
 #define PROTOBUF_DEPRECATED_MSG(x)
 #define PROTOBUF_SECTION_VARIABLE(x)
@@ -242,6 +251,20 @@
 #ifndef PROTOBUF_FALLTHROUGH_INTENDED
 #define PROTOBUF_FALLTHROUGH_INTENDED
 #endif
+
+#if defined(__has_cpp_attribute)
+#define HAS_ATTRIBUTE(attr) __has_cpp_attribute(attr)
+#else
+#define HAS_ATTRIBUTE(attr) 0
+#endif
+
+#if HAS_ATTRIBUTE(unused) || (defined(__GNUC__) && !defined(__clang__))
+#define PROTOBUF_UNUSED __attribute__((__unused__))
+#else
+#define PROTOBUF_UNUSED
+#endif
+
+#undef HAS_ATTRIBUTE
 
 #ifdef _MSC_VER
 #define PROTOBUF_LONGLONG(x) x##I64

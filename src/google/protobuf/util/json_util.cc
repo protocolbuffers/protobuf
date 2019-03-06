@@ -83,7 +83,7 @@ void ZeroCopyStreamByteSink::Append(const char* bytes, size_t len) {
 }  // namespace internal
 
 util::Status BinaryToJsonStream(TypeResolver* resolver,
-                                  const string& type_url,
+                                  const std::string& type_url,
                                   io::ZeroCopyInputStream* binary_input,
                                   io::ZeroCopyOutputStream* json_output,
                                   const JsonPrintOptions& options) {
@@ -111,9 +111,9 @@ util::Status BinaryToJsonStream(TypeResolver* resolver,
 }
 
 util::Status BinaryToJsonString(TypeResolver* resolver,
-                                  const string& type_url,
-                                  const string& binary_input,
-                                  string* json_output,
+                                  const std::string& type_url,
+                                  const std::string& binary_input,
+                                  std::string* json_output,
                                   const JsonPrintOptions& options) {
   io::ArrayInputStream input_stream(binary_input.data(), binary_input.size());
   io::StringOutputStream output_stream(json_output);
@@ -132,7 +132,7 @@ class StatusErrorListener : public converter::ErrorListener {
   virtual void InvalidName(const converter::LocationTrackerInterface& loc,
                            StringPiece unknown_name,
                            StringPiece message) {
-    string loc_string = GetLocString(loc);
+    std::string loc_string = GetLocString(loc);
     if (!loc_string.empty()) {
       loc_string.append(" ");
     }
@@ -154,14 +154,14 @@ class StatusErrorListener : public converter::ErrorListener {
                             StringPiece missing_name) {
     status_ = util::Status(util::error::INVALID_ARGUMENT,
                              StrCat(GetLocString(loc), ": missing field ",
-                                          string(missing_name)));
+                                          std::string(missing_name)));
   }
 
  private:
   util::Status status_;
 
-  string GetLocString(const converter::LocationTrackerInterface& loc) {
-    string loc_string = loc.ToString();
+  std::string GetLocString(const converter::LocationTrackerInterface& loc) {
+    std::string loc_string = loc.ToString();
     StripWhitespace(&loc_string);
     if (!loc_string.empty()) {
       loc_string = StrCat("(", loc_string, ")");
@@ -174,7 +174,7 @@ class StatusErrorListener : public converter::ErrorListener {
 }  // namespace
 
 util::Status JsonToBinaryStream(TypeResolver* resolver,
-                                  const string& type_url,
+                                  const std::string& type_url,
                                   io::ZeroCopyInputStream* json_input,
                                   io::ZeroCopyOutputStream* binary_output,
                                   const JsonParseOptions& options) {
@@ -206,9 +206,9 @@ util::Status JsonToBinaryStream(TypeResolver* resolver,
 }
 
 util::Status JsonToBinaryString(TypeResolver* resolver,
-                                  const string& type_url,
+                                  const std::string& type_url,
                                   StringPiece json_input,
-                                  string* binary_output,
+                                  std::string* binary_output,
                                   const JsonParseOptions& options) {
   io::ArrayInputStream input_stream(json_input.data(), json_input.size());
   io::StringOutputStream output_stream(binary_output);
@@ -221,8 +221,9 @@ const char* kTypeUrlPrefix = "type.googleapis.com";
 TypeResolver* generated_type_resolver_ = NULL;
 PROTOBUF_NAMESPACE_ID::internal::once_flag generated_type_resolver_init_;
 
-string GetTypeUrl(const Message& message) {
-  return string(kTypeUrlPrefix) + "/" + message.GetDescriptor()->full_name();
+std::string GetTypeUrl(const Message& message) {
+  return std::string(kTypeUrlPrefix) + "/" +
+         message.GetDescriptor()->full_name();
 }
 
 void DeleteGeneratedTypeResolver() { delete generated_type_resolver_; }
@@ -240,7 +241,7 @@ TypeResolver* GetGeneratedTypeResolver() {
 }
 }  // namespace
 
-util::Status MessageToJsonString(const Message& message, string* output,
+util::Status MessageToJsonString(const Message& message, std::string* output,
                                    const JsonOptions& options) {
   const DescriptorPool* pool = message.GetDescriptor()->file()->pool();
   TypeResolver* resolver =
@@ -263,7 +264,7 @@ util::Status JsonStringToMessage(StringPiece input, Message* message,
       pool == DescriptorPool::generated_pool()
           ? GetGeneratedTypeResolver()
           : NewTypeResolverForDescriptorPool(kTypeUrlPrefix, pool);
-  string binary;
+  std::string binary;
   util::Status result = JsonToBinaryString(
       resolver, GetTypeUrl(*message), input, &binary, options);
   if (result.ok() && !message->ParseFromString(binary)) {

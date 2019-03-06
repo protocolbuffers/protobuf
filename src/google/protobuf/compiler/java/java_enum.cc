@@ -85,7 +85,7 @@ void EnumGenerator::Generate(io::Printer* printer) {
   printer->Indent();
 
   bool ordinal_is_index = true;
-  string index_text = "ordinal()";
+  std::string index_text = "ordinal()";
   for (int i = 0; i < canonical_values_.size(); i++) {
     if (canonical_values_[i]->index() != i) {
       ordinal_is_index = false;
@@ -95,7 +95,7 @@ void EnumGenerator::Generate(io::Printer* printer) {
   }
 
   for (int i = 0; i < canonical_values_.size(); i++) {
-    std::map<string, string> vars;
+    std::map<std::string, std::string> vars;
     vars["name"] = canonical_values_[i]->name();
     vars["index"] = StrCat(canonical_values_[i]->index());
     vars["number"] = StrCat(canonical_values_[i]->number());
@@ -129,7 +129,7 @@ void EnumGenerator::Generate(io::Printer* printer) {
   // -----------------------------------------------------------------
 
   for (int i = 0; i < aliases_.size(); i++) {
-    std::map<string, string> vars;
+    std::map<std::string, std::string> vars;
     vars["classname"] = descriptor_->name();
     vars["name"] = aliases_[i].value->name();
     vars["canonical_name"] = aliases_[i].canonical_value->name();
@@ -140,7 +140,7 @@ void EnumGenerator::Generate(io::Printer* printer) {
   }
 
   for (int i = 0; i < descriptor_->value_count(); i++) {
-    std::map<string, string> vars;
+    std::map<std::string, std::string> vars;
     vars["name"] = descriptor_->value(i)->name();
     vars["number"] = StrCat(descriptor_->value(i)->number());
     vars["{"] = "";

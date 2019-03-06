@@ -65,10 +65,10 @@ class MockErrorCollector : public io::ErrorCollector {
   MockErrorCollector() {}
   ~MockErrorCollector() {}
 
-  string text_;
+  std::string text_;
 
   // implements ErrorCollector ---------------------------------------
-  void AddError(int line, int column, const string& message) {
+  void AddError(int line, int column, const std::string& message) {
     strings::SubstituteAndAppend(&text_, "$0:$1: $2\n",
                                  line, column, message);
   }
@@ -83,11 +83,9 @@ class MockValidationErrorCollector : public DescriptorPool::ErrorCollector {
   ~MockValidationErrorCollector() {}
 
   // implements ErrorCollector ---------------------------------------
-  void AddError(const string& filename,
-                const string& element_name,
-                const Message* descriptor,
-                ErrorLocation location,
-                const string& message) {
+  void AddError(const std::string& filename, const std::string& element_name,
+                const Message* descriptor, ErrorLocation location,
+                const std::string& message) {
     int line, column;
     source_locations_.Find(descriptor, location, &line, &column);
     wrapped_collector_->AddError(line, column, message);
@@ -1956,9 +1954,9 @@ void SortMessages(FileDescriptorProto *file_descriptor_proto) {
 // Strips the message and enum field type names for comparison purpose only.
 void StripFieldTypeName(DescriptorProto* proto) {
   for (int i = 0; i < proto->field_size(); ++i) {
-    string type_name = proto->field(i).type_name();
-    string::size_type pos = type_name.find_last_of(".");
-    if (pos != string::npos) {
+    std::string type_name = proto->field(i).type_name();
+    std::string::size_type pos = type_name.find_last_of(".");
+    if (pos != std::string::npos) {
       proto->mutable_field(i)->mutable_type_name()->assign(
           type_name.begin() + pos + 1, type_name.end());
     }
@@ -1982,7 +1980,7 @@ TEST_F(ParseDescriptorDebugTest, TestAllDescriptorTypes) {
 
   // Get the DebugString of the unittest.proto FileDecriptor, which includes
   // all other descriptor types
-  string debug_string = original_file->DebugString();
+  std::string debug_string = original_file->DebugString();
 
   // Parse the debug string
   SetupParser(debug_string.c_str());
@@ -2033,7 +2031,7 @@ TEST_F(ParseDescriptorDebugTest, TestCustomOptions) {
   FileDescriptorProto expected;
   original_file->CopyTo(&expected);
 
-  string debug_string = original_file->DebugString();
+  std::string debug_string = original_file->DebugString();
 
   // Parse the debug string
   SetupParser(debug_string.c_str());
@@ -2166,12 +2164,13 @@ TEST_F(ParseDescriptorDebugTest, TestCommentsInDebugString) {
   debug_string_options.include_comments = true;
 
   {
-    const string debug_string =
+    const std::string debug_string =
         descriptor->DebugStringWithOptions(debug_string_options);
 
     for (int i = 0; i < GOOGLE_ARRAYSIZE(expected_comments); ++i) {
-      string::size_type found_pos = debug_string.find(expected_comments[i]);
-      EXPECT_TRUE(found_pos != string::npos)
+      std::string::size_type found_pos =
+          debug_string.find(expected_comments[i]);
+      EXPECT_TRUE(found_pos != std::string::npos)
           << "\"" << expected_comments[i] << "\" not found.";
     }
 
@@ -2202,7 +2201,7 @@ TEST_F(ParseDescriptorDebugTest, TestMaps) {
 
   // Make sure the debug string uses map syntax and does not have the auto
   // generated entry.
-  string debug_string = file->DebugString();
+  std::string debug_string = file->DebugString();
   EXPECT_TRUE(debug_string.find("map<") != string::npos);
   EXPECT_TRUE(debug_string.find("option map_entry") == string::npos);
   EXPECT_TRUE(debug_string.find("MapEntry") == string::npos);
@@ -2389,21 +2388,20 @@ class SourceInfoTest : public ParserTest {
   }
 
   bool HasSpan(char start_marker, char end_marker,
-               const Message& descriptor_proto, const string& field_name) {
+               const Message& descriptor_proto, const std::string& field_name) {
     return HasSpan(start_marker, end_marker, descriptor_proto, field_name, -1);
   }
 
   bool HasSpan(char start_marker, char end_marker,
-               const Message& descriptor_proto, const string& field_name,
+               const Message& descriptor_proto, const std::string& field_name,
                int index) {
     return HasSpan(start_marker, end_marker, descriptor_proto,
                    field_name, index, NULL, NULL, NULL);
   }
 
   bool HasSpan(char start_marker, char end_marker,
-               const Message& descriptor_proto,
-               const string& field_name, int index,
-               const char* expected_leading_comments,
+               const Message& descriptor_proto, const std::string& field_name,
+               int index, const char* expected_leading_comments,
                const char* expected_trailing_comments,
                const char* expected_leading_detached_comments) {
     const FieldDescriptor* field =
@@ -2425,11 +2423,11 @@ class SourceInfoTest : public ParserTest {
         '\0', '\0', descriptor_proto, NULL, -1, NULL, NULL, NULL);
   }
 
-  bool HasSpan(const Message& descriptor_proto, const string& field_name) {
+  bool HasSpan(const Message& descriptor_proto, const std::string& field_name) {
     return HasSpan('\0', '\0', descriptor_proto, field_name, -1);
   }
 
-  bool HasSpan(const Message& descriptor_proto, const string& field_name,
+  bool HasSpan(const Message& descriptor_proto, const std::string& field_name,
                int index) {
     return HasSpan('\0', '\0', descriptor_proto, field_name, index);
   }
@@ -2520,7 +2518,7 @@ class SourceInfoTest : public ParserTest {
   typedef std::multimap<SpanKey, const SourceCodeInfo::Location*> SpanMap;
   SpanMap spans_;
   std::map<char, std::pair<int, int> > markers_;
-  string text_without_markers_;
+  std::string text_without_markers_;
 
   void ExtractMarkers(const char* text) {
     markers_.clear();

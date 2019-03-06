@@ -794,6 +794,13 @@ class JsonFormatTest(JsonFormatBase):
     json_format.Parse(text, parsed_message)
     self.assertTrue(math.isnan(parsed_message.float_value))
 
+  def testParseDoubleToFloat(self):
+    message = json_format_proto3_pb2.TestMessage()
+    text = ('{"repeatedFloatValue": [3.4028235e+39, 1.4028235e-39]\n}')
+    json_format.Parse(text, message)
+    self.assertEqual(message.repeated_float_value[0], float('inf'))
+    self.assertAlmostEqual(message.repeated_float_value[1], 1.4028235e-39)
+
   def testParseEmptyText(self):
     self.CheckError('',
                     r'Failed to load JSON: (Expecting value)|(No JSON).')

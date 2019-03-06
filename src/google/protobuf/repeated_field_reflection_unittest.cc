@@ -54,8 +54,8 @@ static int Func(int i, int j) {
   return i * j;
 }
 
-static string StrFunc(int i, int j) {
-  string str;
+static std::string StrFunc(int i, int j) {
+  std::string str;
   SStringPrintf(&str, "%d", Func(i, 4));
   return str;
 }
@@ -95,8 +95,8 @@ TEST(RepeatedFieldReflectionTest, RegularFields) {
       refl->MutableRepeatedField<double>(&message, fd_repeated_double);
 
   // Get RepeatedPtrField objects for all fields of interest.
-  const RepeatedPtrField<string>& rpf_string =
-      refl->GetRepeatedPtrField<string>(message, fd_repeated_string);
+  const RepeatedPtrField<std::string>& rpf_string =
+      refl->GetRepeatedPtrField<std::string>(message, fd_repeated_string);
   const RepeatedPtrField<ForeignMessage>& rpf_foreign_message =
       refl->GetRepeatedPtrField<ForeignMessage>(
           message, fd_repeated_foreign_message);
@@ -105,8 +105,8 @@ TEST(RepeatedFieldReflectionTest, RegularFields) {
           message, fd_repeated_foreign_message);
 
   // Get mutable RepeatedPtrField objects for all fields of interest.
-  RepeatedPtrField<string>* mrpf_string =
-      refl->MutableRepeatedPtrField<string>(&message, fd_repeated_string);
+  RepeatedPtrField<std::string>* mrpf_string =
+      refl->MutableRepeatedPtrField<std::string>(&message, fd_repeated_string);
   RepeatedPtrField<ForeignMessage>* mrpf_foreign_message =
       refl->MutableRepeatedPtrField<ForeignMessage>(
           &message, fd_repeated_foreign_message);
@@ -204,10 +204,11 @@ void TestRepeatedFieldRefIteratorForPrimitive(
 
 template <typename MessageType, typename ValueType>
 void TestRepeatedFieldRefIteratorForString(
-    const RepeatedFieldRef<string>& handle, const MessageType& message,
+    const RepeatedFieldRef<std::string>& handle, const MessageType& message,
     ValueType (MessageType::*GetFunc)(int) const) {
   int index = 0;
-  for (typename RepeatedFieldRef<string>::const_iterator it = handle.begin();
+  for (typename RepeatedFieldRef<std::string>::const_iterator it =
+           handle.begin();
        it != handle.end(); ++it) {
     // Test both operator* and operator->
     EXPECT_EQ((message.*GetFunc)(index), *it);
@@ -244,8 +245,8 @@ TEST(RepeatedFieldReflectionTest, RepeatedFieldRefForRegularFields) {
       refl->GetRepeatedFieldRef<int32>(message, fd_repeated_int32);
   const RepeatedFieldRef<double> rf_double =
       refl->GetRepeatedFieldRef<double>(message, fd_repeated_double);
-  const RepeatedFieldRef<string> rf_string =
-      refl->GetRepeatedFieldRef<string>(message, fd_repeated_string);
+  const RepeatedFieldRef<std::string> rf_string =
+      refl->GetRepeatedFieldRef<std::string>(message, fd_repeated_string);
   const RepeatedFieldRef<ForeignMessage> rf_foreign_message =
       refl->GetRepeatedFieldRef<ForeignMessage>(
           message, fd_repeated_foreign_message);
@@ -258,8 +259,9 @@ TEST(RepeatedFieldReflectionTest, RepeatedFieldRefForRegularFields) {
       refl->GetMutableRepeatedFieldRef<int32>(&message, fd_repeated_int32);
   const MutableRepeatedFieldRef<double> mrf_double =
       refl->GetMutableRepeatedFieldRef<double>(&message, fd_repeated_double);
-  const MutableRepeatedFieldRef<string> mrf_string =
-      refl->GetMutableRepeatedFieldRef<string>(&message, fd_repeated_string);
+  const MutableRepeatedFieldRef<std::string> mrf_string =
+      refl->GetMutableRepeatedFieldRef<std::string>(&message,
+                                                    fd_repeated_string);
   const MutableRepeatedFieldRef<ForeignMessage> mrf_foreign_message =
       refl->GetMutableRepeatedFieldRef<ForeignMessage>(
           &message, fd_repeated_foreign_message);
@@ -603,8 +605,8 @@ TEST(RepeatedFieldReflectionTest, RepeatedFieldRefMergeFromAndSwap) {
       refl->GetMutableRepeatedFieldRef<int32>(&m0, fd_repeated_int32);
   const MutableRepeatedFieldRef<double> mrf_double =
       refl->GetMutableRepeatedFieldRef<double>(&m0, fd_repeated_double);
-  const MutableRepeatedFieldRef<string> mrf_string =
-      refl->GetMutableRepeatedFieldRef<string>(&m0, fd_repeated_string);
+  const MutableRepeatedFieldRef<std::string> mrf_string =
+      refl->GetMutableRepeatedFieldRef<std::string>(&m0, fd_repeated_string);
   const MutableRepeatedFieldRef<ForeignMessage> mrf_foreign_message =
       refl->GetMutableRepeatedFieldRef<ForeignMessage>(
           &m0, fd_repeated_foreign_message);
@@ -619,7 +621,7 @@ TEST(RepeatedFieldReflectionTest, RepeatedFieldRefMergeFromAndSwap) {
   mrf_double.CopyFrom(
       refl->GetRepeatedFieldRef<double>(m1, fd_repeated_double));
   mrf_string.CopyFrom(
-      refl->GetRepeatedFieldRef<string>(m1, fd_repeated_string));
+      refl->GetRepeatedFieldRef<std::string>(m1, fd_repeated_string));
   mrf_foreign_message.CopyFrom(
       refl->GetRepeatedFieldRef<ForeignMessage>(
           m1, fd_repeated_foreign_message));
@@ -640,7 +642,7 @@ TEST(RepeatedFieldReflectionTest, RepeatedFieldRefMergeFromAndSwap) {
   mrf_double.MergeFrom(
       refl->GetRepeatedFieldRef<double>(m2, fd_repeated_double));
   mrf_string.MergeFrom(
-      refl->GetRepeatedFieldRef<string>(m2, fd_repeated_string));
+      refl->GetRepeatedFieldRef<std::string>(m2, fd_repeated_string));
   mrf_foreign_message.MergeFrom(
       refl->GetRepeatedFieldRef<ForeignMessage>(
           m2, fd_repeated_foreign_message));
@@ -662,7 +664,7 @@ TEST(RepeatedFieldReflectionTest, RepeatedFieldRefMergeFromAndSwap) {
   mrf_double.Swap(
       refl->GetMutableRepeatedFieldRef<double>(&m2, fd_repeated_double));
   mrf_string.Swap(
-      refl->GetMutableRepeatedFieldRef<string>(&m2, fd_repeated_string));
+      refl->GetMutableRepeatedFieldRef<std::string>(&m2, fd_repeated_string));
   mrf_foreign_message.Swap(
       refl->GetMutableRepeatedFieldRef<ForeignMessage>(
           &m2, fd_repeated_foreign_message));

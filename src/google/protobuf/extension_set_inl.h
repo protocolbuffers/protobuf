@@ -163,11 +163,12 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
 
       case WireFormatLite::TYPE_BYTES:
       case WireFormatLite::TYPE_STRING: {
-        std::string* value = extension.is_repeated
-                            ? AddString(number, WireFormatLite::TYPE_STRING,
-                                        extension.descriptor)
-                            : MutableString(number, WireFormatLite::TYPE_STRING,
-                                            extension.descriptor);
+        std::string* value =
+            extension.is_repeated
+                ? AddString(number, WireFormatLite::TYPE_STRING,
+                            extension.descriptor)
+                : MutableString(number, WireFormatLite::TYPE_STRING,
+                                extension.descriptor);
         int size = ReadSize(&ptr);
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
         return ctx->ReadString(ptr, size, value);
@@ -210,12 +211,12 @@ const char* ExtensionSet::ParseMessageSetItemTmpl(const char* ptr,
   std::string payload;
   uint32 type_id = 0;
   while (!ctx->Done(&ptr)) {
-    uint32 tag;
-    ptr = ReadTag(ptr, &tag);
-    GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+    uint32 tag = static_cast<uint8>(*ptr++);
     if (tag == WireFormatLite::kMessageSetTypeIdTag) {
-      ptr = _Parse32(ptr, &type_id);
+      uint64 tmp;
+      ptr = ParseVarint64Inline(ptr, &tmp);
       GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+      type_id = tmp;
       if (!payload.empty()) {
         ExtensionInfo extension;
         bool was_packed_on_wire;
@@ -255,6 +256,13 @@ const char* ExtensionSet::ParseMessageSetItemTmpl(const char* ptr,
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
       }
     } else {
+      if (tag >= 128) {
+        // Parse remainder of tag varint
+        uint32 tmp;
+        ptr = VarintParse<4>(ptr, &tmp);
+        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+        tag += (tmp - 1) << 7;
+      }
       if (tag == 0 || (tag & 7) == 4) {
         ctx->SetLastTag(tag);
         return ptr;
