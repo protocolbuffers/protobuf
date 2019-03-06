@@ -19,6 +19,9 @@
 ** - handling of keys/escape-sequences/etc that span input buffers.
 */
 
+/* Need to define _XOPEN_SOURCE before any include to make strptime work. */
+#define _XOPEN_SOURCE 700
+
 #include <ctype.h>
 #include <errno.h>
 #include <float.h>
@@ -28,10 +31,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* Need to define __USE_XOPEN before including time.h to make strptime work. */
-#ifndef __USE_XOPEN
-#define __USE_XOPEN
-#endif
 #include <time.h>
 
 #include "upb/json/parser.h"
@@ -1535,11 +1534,18 @@ static bool end_timestamp_base(upb_json_parser *p, const char *ptr) {
   memcpy(timestamp_buf + UPB_TIMESTAMP_BASE_SIZE, "GMT", 3);
   timestamp_buf[UPB_TIMESTAMP_BASE_SIZE + 3] = 0;
 
+#if defined __MINGW32__ || defined __MINGW64__
+  upb_status_seterrf(
+      &p->status, "error parsing timestamp: mingw doesn't support strptime");
+  upb_env_reporterror(p->env, &p->status);
+  return false;
+#else
   /* Parse seconds */
   if (strptime(timestamp_buf, "%FT%H:%M:%S%Z", &p->tm) == NULL) {
     upb_status_seterrf(p->status, "error parsing timestamp: %s", buf);
     return false;
   }
+#endif
 
   /* Clean up buffer */
   multipart_end(p);
