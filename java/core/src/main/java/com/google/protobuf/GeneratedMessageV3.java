@@ -710,19 +710,23 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
       return (BuilderType) this;
     }
 
-    @Override
-    public BuilderType setUnknownFields(final UnknownFieldSet unknownFields) {
+    private BuilderType setUnknownFieldsInternal(final UnknownFieldSet unknownFields) {
       this.unknownFields = unknownFields;
       onChanged();
       return (BuilderType) this;
     }
 
+    @Override
+    public BuilderType setUnknownFields(final UnknownFieldSet unknownFields) {
+      return setUnknownFieldsInternal(unknownFields);
+    }
+
     /**
-     * Delegates to setUnknownFields. This method is obsolete, but we must retain it for
-     * compatibility with older generated code.
+     * This method is obsolete, but we must retain it for compatibility with
+     * older generated code.
      */
     protected BuilderType setUnknownFieldsProto3(final UnknownFieldSet unknownFields) {
-      return setUnknownFields(unknownFields);
+      return setUnknownFieldsInternal(unknownFields);
     }
 
     @Override

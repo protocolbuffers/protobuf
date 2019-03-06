@@ -35,6 +35,8 @@
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/message.h>
 
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
 namespace internal {
@@ -44,12 +46,12 @@ void AnyMetadata::PackFrom(const Message& message) {
 }
 
 void AnyMetadata::PackFrom(const Message& message,
-                           const string& type_url_prefix) {
+                           const std::string& type_url_prefix) {
   type_url_->SetNoArena(
-      &::google::protobuf::internal::GetEmptyString(),
+      &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyString(),
       GetTypeUrl(message.GetDescriptor()->full_name(), type_url_prefix));
   message.SerializeToString(value_->MutableNoArena(
-      &::google::protobuf::internal::GetEmptyStringAlreadyInited()));
+      &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited()));
 }
 
 bool AnyMetadata::UnpackTo(Message* message) const {

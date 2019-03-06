@@ -327,30 +327,6 @@ class PROTOBUF_EXPORT ConcatenatingInputStream : public ZeroCopyInputStream {
 
 // ===================================================================
 
-// A ZeroCopyInputStream which wraps some other stream and limits it to
-// a particular byte count.
-class PROTOBUF_EXPORT LimitingInputStream : public ZeroCopyInputStream {
- public:
-  LimitingInputStream(ZeroCopyInputStream* input, int64 limit);
-  ~LimitingInputStream() override;
-
-  // implements ZeroCopyInputStream ----------------------------------
-  bool Next(const void** data, int* size) override;
-  void BackUp(int count) override;
-  bool Skip(int count) override;
-  int64 ByteCount() const override;
-
-
- private:
-  ZeroCopyInputStream* input_;
-  int64 limit_;  // Decreases as we go, becomes negative if we overshoot.
-  int64 prior_bytes_read_;  // Bytes read on underlying stream at construction
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(LimitingInputStream);
-};
-
-// ===================================================================
-
 }  // namespace io
 }  // namespace protobuf
 }  // namespace google

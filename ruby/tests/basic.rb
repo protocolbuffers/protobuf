@@ -17,7 +17,6 @@ module BasicTest
     add_message "BadFieldNames" do
       optional :dup, :int32, 1
       optional :class, :int32, 2
-      optional :"a.b", :int32, 3
     end
   end
 
@@ -350,11 +349,6 @@ module BasicTest
       file_descriptor = TestEnum.descriptor.file_descriptor
       assert nil != file_descriptor
       assert_equal "tests/basic_test.proto", file_descriptor.name
-      assert_equal :proto3, file_descriptor.syntax
-
-      file_descriptor = BadFieldNames.descriptor.file_descriptor
-      assert nil != file_descriptor
-      assert_equal nil, file_descriptor.name
       assert_equal :proto3, file_descriptor.syntax
     end
 

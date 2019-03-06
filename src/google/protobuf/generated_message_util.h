@@ -45,8 +45,6 @@
 #include <vector>
 
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/parse_context.h>
-#include <google/protobuf/arenastring.h>
 #include <google/protobuf/has_bits.h>
 #include <google/protobuf/implicit_weak_message.h>
 #include <google/protobuf/message_lite.h>
@@ -54,6 +52,7 @@
 #include <google/protobuf/port.h>
 #include <google/protobuf/wire_format_lite.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/stubs/casts.h>
 
 #include <google/protobuf/port_def.inc>
 
@@ -70,11 +69,20 @@ namespace io { class CodedInputStream; }
 
 namespace internal {
 
+template<typename To, typename From>
+inline To DownCast(From* f) {
+  return PROTOBUF_NAMESPACE_ID::internal::down_cast<To>(f);
+}
+template<typename To, typename From>
+inline To DownCast(From& f) {
+  return PROTOBUF_NAMESPACE_ID::internal::down_cast<To>(f);
+}
+
 
 PROTOBUF_EXPORT void InitProtobufDefaults();
 
 // This used by proto1
-PROTOBUF_EXPORT inline const ::std::string& GetEmptyString() {
+PROTOBUF_EXPORT inline const std::string& GetEmptyString() {
   InitProtobufDefaults();
   return GetEmptyStringAlreadyInited();
 }
@@ -213,11 +221,10 @@ PROTOBUF_EXPORT void DestroyString(const void* s);
 inline void OnShutdownDestroyMessage(const void* ptr) {
   OnShutdownRun(DestroyMessage, ptr);
 }
-// Destroy the string (call string destructor)
-inline void OnShutdownDestroyString(const ::std::string* ptr) {
+// Destroy the string (call std::string destructor)
+inline void OnShutdownDestroyString(const std::string* ptr) {
   OnShutdownRun(DestroyString, ptr);
 }
-
 
 }  // namespace internal
 }  // namespace protobuf

@@ -168,7 +168,8 @@ class PROTOBUF_EXPORT JsonStreamParser {
   util::Status ParseNumberHelper(NumberResult* result);
 
   // Parse a number as double into a NumberResult.
-  util::Status ParseDoubleHelper(const std::string& number, NumberResult* result);
+  util::Status ParseDoubleHelper(const std::string& number,
+                                   NumberResult* result);
 
   // Handles a { during parsing of a value.
   util::Status HandleBeginObject();

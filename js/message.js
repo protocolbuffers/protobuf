@@ -268,12 +268,12 @@ jspb.Message.prototype.messageId_;
 
 
 /**
- * Repeated float or double fields which have been converted to include only
- * numbers and not strings holding "NaN", "Infinity" and "-Infinity".
+ * Repeated fields that have been converted to their proper type. This is used
+ * for numbers stored as strings (typically "NaN", "Infinity" and "-Infinity")
+ * and for booleans stored as numbers (0 or 1).
  * @private {!Object<number,boolean>|undefined}
  */
-jspb.Message.prototype.convertedFloatingPointFields_;
-
+jspb.Message.prototype.convertedPrimitiveFields_;
 
 /**
  * Repeated fields numbers.
@@ -368,7 +368,7 @@ jspb.Message.initialize = function(
   msg.arrayIndexOffset_ = messageId === 0 ? -1 : 0;
   msg.array = data;
   jspb.Message.initPivotAndExtensionObject_(msg, suggestedPivot);
-  msg.convertedFloatingPointFields_ = {};
+  msg.convertedPrimitiveFields_ = {};
 
   if (!jspb.Message.SERIALIZE_EMPTY_TRAILING_FIELDS) {
     // TODO(jakubvrana): This is same for all instances, move to prototype.
@@ -719,6 +719,20 @@ jspb.Message.getOptionalFloatingPointField = function(msg, fieldNumber) {
 
 
 /**
+ * Gets the value of an optional boolean field.
+ * @param {!jspb.Message} msg A jspb proto.
+ * @param {number} fieldNumber The field number.
+ * @return {?boolean|undefined} The field's value.
+ * @protected
+ */
+jspb.Message.getBooleanField = function(msg, fieldNumber) {
+  var value = jspb.Message.getField(msg, fieldNumber);
+  // TODO(b/122673075): always return null when the value is null-ish.
+  return value == null ? (value) : !!value;
+};
+
+
+/**
  * Gets the value of a repeated float or double field.
  * @param {!jspb.Message} msg A jspb proto.
  * @param {number} fieldNumber The field number.
@@ -727,18 +741,40 @@ jspb.Message.getOptionalFloatingPointField = function(msg, fieldNumber) {
  */
 jspb.Message.getRepeatedFloatingPointField = function(msg, fieldNumber) {
   var values = jspb.Message.getRepeatedField(msg, fieldNumber);
-  if (!msg.convertedFloatingPointFields_) {
-    msg.convertedFloatingPointFields_ = {};
+  if (!msg.convertedPrimitiveFields_) {
+    msg.convertedPrimitiveFields_ = {};
   }
-  if (!msg.convertedFloatingPointFields_[fieldNumber]) {
+  if (!msg.convertedPrimitiveFields_[fieldNumber]) {
     for (var i = 0; i < values.length; i++) {
       // Converts "NaN", "Infinity" and "-Infinity" to their corresponding
       // numbers.
       values[i] = +values[i];
     }
-    msg.convertedFloatingPointFields_[fieldNumber] = true;
+    msg.convertedPrimitiveFields_[fieldNumber] = true;
   }
   return /** @type {!Array<number>} */ (values);
+};
+
+/**
+ * Gets the value of a repeated boolean field.
+ * @param {!jspb.Message} msg A jspb proto.
+ * @param {number} fieldNumber The field number.
+ * @return {!Array<boolean>} The field's value.
+ * @protected
+ */
+jspb.Message.getRepeatedBooleanField = function(msg, fieldNumber) {
+  var values = jspb.Message.getRepeatedField(msg, fieldNumber);
+  if (!msg.convertedPrimitiveFields_) {
+    msg.convertedPrimitiveFields_ = {};
+  }
+  if (!msg.convertedPrimitiveFields_[fieldNumber]) {
+    for (var i = 0; i < values.length; i++) {
+      // Converts 0 and 1 to their corresponding booleans.
+      values[i] = !!values[i];
+    }
+    msg.convertedPrimitiveFields_[fieldNumber] = true;
+  }
+  return /** @type {!Array<boolean>} */ (values);
 };
 
 
@@ -841,6 +877,49 @@ jspb.Message.assertConsistentTypes_ = function(array) {
  */
 jspb.Message.getFieldWithDefault = function(msg, fieldNumber, defaultValue) {
   var value = jspb.Message.getField(msg, fieldNumber);
+  if (value == null) {
+    return defaultValue;
+  } else {
+    return value;
+  }
+};
+
+
+/**
+ * Gets the value of a boolean field, with proto3 (non-nullable primitives)
+ * semantics. Returns `defaultValue` if the field is not otherwise set.
+ * @template T
+ * @param {!jspb.Message} msg A jspb proto.
+ * @param {number} fieldNumber The field number.
+ * @param {boolean} defaultValue The default value.
+ * @return {boolean} The field's value.
+ * @protected
+ */
+jspb.Message.getBooleanFieldWithDefault = function(
+    msg, fieldNumber, defaultValue) {
+  var value = jspb.Message.getBooleanField(msg, fieldNumber);
+  if (value == null) {
+    return defaultValue;
+  } else {
+    return value;
+  }
+};
+
+
+/**
+ * Gets the value of a floating point field, with proto3 (non-nullable
+ * primitives) semantics. Returns `defaultValue` if the field is not otherwise
+ * set.
+ * @template T
+ * @param {!jspb.Message} msg A jspb proto.
+ * @param {number} fieldNumber The field number.
+ * @param {number} defaultValue The default value.
+ * @return {number} The field's value.
+ * @protected
+ */
+jspb.Message.getFloatingPointFieldWithDefault = function(
+    msg, fieldNumber, defaultValue) {
+  var value = jspb.Message.getOptionalFloatingPointField(msg, fieldNumber);
   if (value == null) {
     return defaultValue;
   } else {

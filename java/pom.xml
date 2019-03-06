@@ -4,7 +4,7 @@
 
   <groupId>com.google.protobuf</groupId>
   <artifactId>protobuf-parent</artifactId>
-  <version>3.6.1</version>
+  <version>3.7.0</version>
   <packaging>pom</packaging>
 
   <name>Protocol Buffers [Parent]</name>
@@ -14,6 +14,17 @@
     Protocol Buffers are a way of encoding structured data in an efficient yet
     extensible format.
   </description>
+
+  <developers>
+    <developer>
+      <id>haon</id>
+      <name>Hao Nguyen</name>
+      <email>haon@google.com</email>
+      <organization>Google</organization>
+      <organizationUrl>https://cloud.google.com</organizationUrl>
+      <timezone>America/Los_Angeles</timezone>
+    </developer>
+  </developers>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

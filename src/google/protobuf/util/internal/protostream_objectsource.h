@@ -51,13 +51,6 @@
 
 namespace google {
 namespace protobuf {
-class Field;
-class Type;
-}  // namespace protobuf
-}  // namespace google
-
-namespace google {
-namespace protobuf {
 namespace util {
 namespace converter {
 

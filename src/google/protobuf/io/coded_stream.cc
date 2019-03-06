@@ -239,12 +239,12 @@ bool CodedInputStream::ReadRaw(void* buffer, int size) {
   return InternalReadRawInline(buffer, size);
 }
 
-bool CodedInputStream::ReadString(string* buffer, int size) {
+bool CodedInputStream::ReadString(std::string* buffer, int size) {
   if (size < 0) return false;  // security: size is often user-supplied
   return InternalReadStringInline(buffer, size);
 }
 
-bool CodedInputStream::ReadStringFallback(string* buffer, int size) {
+bool CodedInputStream::ReadStringFallback(std::string* buffer, int size) {
   if (!buffer->empty()) {
     buffer->clear();
   }
@@ -776,7 +776,7 @@ bool CodedOutputStream::Refresh() {
   }
 }
 
-uint8* CodedOutputStream::WriteStringWithSizeToArray(const string& str,
+uint8* CodedOutputStream::WriteStringWithSizeToArray(const std::string& str,
                                                      uint8* target) {
   GOOGLE_DCHECK_LE(str.size(), kuint32max);
   target = WriteVarint32ToArray(str.size(), target);

@@ -18,12 +18,12 @@ internal_build_cpp() {
   ./autogen.sh
   ./configure CXXFLAGS="-fPIC -std=c++11"  # -fPIC is needed for python cpp test.
                                            # See python/setup.py for more details
-  make -j4
+  make -j$(nproc)
 }
 
 build_cpp() {
   internal_build_cpp
-  make check -j4 || (cat src/test-suite.log; false)
+  make check -j$(nproc) || (cat src/test-suite.log; false)
   cd conformance && make test_cpp && cd ..
 
   # The benchmark code depends on cmake, so test if it is installed before
@@ -77,7 +77,7 @@ build_cpp_distcheck() {
   fi
 
   # Do the regular dist-check for C++.
-  make distcheck -j4
+  make distcheck -j$(nproc)
 }
 
 build_csharp() {
@@ -482,7 +482,7 @@ build_php5.6_mac() {
   export PATH="$PHP_FOLDER/bin:$PATH"
 
   # Install phpunit
-  curl https://phar.phpunit.de/phpunit-5.6.10.phar -L -o phpunit.phar
+  curl https://phar.phpunit.de/phpunit-5.6.8.phar -L -o phpunit.phar
   chmod +x phpunit.phar
   sudo mv phpunit.phar /usr/local/bin/phpunit
 

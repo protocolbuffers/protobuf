@@ -102,14 +102,14 @@ describe('Message test suite', function() {
   });
 
   it('testComplexConversion', function() {
-    var data1 = ['a',,, [, 11], [[, 22], [, 33]],, ['s1', 's2'],, 1];
-    var data2 = ['a',,, [, 11], [[, 22], [, 33]],, ['s1', 's2'],, 1];
+    var data1 = ['a',,, [, 11], [[, 22], [, 33]],, ['s1', 's2'],, true];
+    var data2 = ['a',,, [, 11], [[, 22], [, 33]],, ['s1', 's2'],, true];
     var foo = new proto.jspb.test.Complex(data1);
     var bar = new proto.jspb.test.Complex(data2);
     var result = foo.toObject();
     assertObjectEquals({
       aString: 'a',
-      anOutOfOrderBool: 1,
+      anOutOfOrderBool: true,
       aNestedMessage: {
         anInt: 11
       },
@@ -121,7 +121,7 @@ describe('Message test suite', function() {
     result = foo.toObject(true /* opt_includeInstance */);
     assertObjectEquals({
       aString: 'a',
-      anOutOfOrderBool: 1,
+      anOutOfOrderBool: true,
       aNestedMessage: {
         anInt: 11,
         $jspbMessageInstance: foo.getANestedMessage()

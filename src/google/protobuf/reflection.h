@@ -338,7 +338,7 @@ namespace internal {
 //   CPPTYPE_FLOAT        float                   float
 //   CPPTYPE_BOOL         bool                    bool
 //   CPPTYPE_ENUM         generated enum type     int32
-//   CPPTYPE_STRING       string                  string
+//   CPPTYPE_STRING       string                  std::string
 //   CPPTYPE_MESSAGE      generated message type  google::protobuf::Message
 //                        or google::protobuf::Message
 //
@@ -573,7 +573,7 @@ struct RefTypeTraits<
   }
 };
 
-template<typename T>
+template <typename T>
 struct RefTypeTraits<
     T, typename std::enable_if<std::is_same<std::string, T>::value>::type> {
   typedef RepeatedFieldRefIterator<T> iterator;

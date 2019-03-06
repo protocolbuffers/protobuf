@@ -45,8 +45,8 @@ namespace util {
 
 class SnakeCaseCamelCaseTest : public ::testing::Test {
  protected:
-  string SnakeCaseToCamelCase(const string& input) {
-    string output;
+  string SnakeCaseToCamelCase(const std::string& input) {
+    std::string output;
     if (FieldMaskUtil::SnakeCaseToCamelCase(input, &output)) {
       return output;
     } else {
@@ -54,8 +54,8 @@ class SnakeCaseCamelCaseTest : public ::testing::Test {
     }
   }
 
-  string CamelCaseToSnakeCase(const string& input) {
-    string output;
+  string CamelCaseToSnakeCase(const std::string& input) {
+    std::string output;
     if (FieldMaskUtil::CamelCaseToSnakeCase(input, &output)) {
       return output;
     } else {
@@ -92,10 +92,10 @@ TEST_F(SnakeCaseCamelCaseTest, CamelToSnake) {
 TEST_F(SnakeCaseCamelCaseTest, RoundTripTest) {
   // Enumerates all possible snake_case names and test that converting it to
   // camelCase and then to snake_case again will yield the original name.
-  string name = "___abc123";
+  std::string name = "___abc123";
   std::sort(name.begin(), name.end());
   do {
-    string camelName = SnakeCaseToCamelCase(name);
+    std::string camelName = SnakeCaseToCamelCase(name);
     if (camelName != "#FAIL#") {
       EXPECT_EQ(name, CamelCaseToSnakeCase(camelName));
     }
@@ -106,7 +106,7 @@ TEST_F(SnakeCaseCamelCaseTest, RoundTripTest) {
   name = "abcABC123";
   std::sort(name.begin(), name.end());
   do {
-    string camelName = CamelCaseToSnakeCase(name);
+    std::string camelName = CamelCaseToSnakeCase(name);
     if (camelName != "#FAIL#") {
       EXPECT_EQ(name, SnakeCaseToCamelCase(camelName));
     }
@@ -140,7 +140,7 @@ TEST(FieldMaskUtilTest, StringFormat) {
 
 TEST(FieldMaskUtilTest, JsonStringFormat) {
   FieldMask mask;
-  string value;
+  std::string value;
   EXPECT_TRUE(FieldMaskUtil::ToJsonString(mask, &value));
   EXPECT_EQ("", value);
   mask.add_paths("foo_bar");

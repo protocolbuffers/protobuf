@@ -49,7 +49,7 @@ namespace util {
 #define RETURN_IF_ERROR(expr)                                                \
   do {                                                                       \
     /* Using _status below to avoid capture problems if expr is "status". */ \
-    const ::google::protobuf::util::Status _status = (expr);                 \
+    const PROTOBUF_NAMESPACE_ID::util::Status _status = (expr);              \
     if (PROTOBUF_PREDICT_FALSE(!_status.ok())) return _status;               \
   } while (0)
 

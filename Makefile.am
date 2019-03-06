@@ -371,6 +371,7 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/proto/com/google/protobuf/outer_class_name_test.proto         \
   java/core/src/test/proto/com/google/protobuf/outer_class_name_test2.proto        \
   java/core/src/test/proto/com/google/protobuf/outer_class_name_test3.proto        \
+  java/core/src/test/proto/com/google/protobuf/proto2_unknown_enum_values.proto    \
   java/core/src/test/proto/com/google/protobuf/test_bad_identifiers.proto          \
   java/core/src/test/proto/com/google/protobuf/test_check_utf8.proto               \
   java/core/src/test/proto/com/google/protobuf/test_check_utf8_size.proto          \
@@ -591,6 +592,7 @@ php_EXTRA_DIST=                                                       \
   php/README.md                                                       \
   php/composer.json                                                   \
   php/ext/google/protobuf/array.c                                     \
+  php/ext/google/protobuf/builtin_descriptors.inc                     \
   php/ext/google/protobuf/config.m4                                   \
   php/ext/google/protobuf/def.c                                       \
   php/ext/google/protobuf/encode_decode.c                             \
@@ -607,6 +609,7 @@ php_EXTRA_DIST=                                                       \
   php/ext/google/protobuf/utf8.h                                      \
   php/generate_descriptor_protos.sh                                   \
   php/phpunit.xml                                                     \
+  php/release.sh                                                      \
   php/src/GPBMetadata/Google/Protobuf/Any.php                         \
   php/src/GPBMetadata/Google/Protobuf/Api.php                         \
   php/src/GPBMetadata/Google/Protobuf/Duration.php                    \
@@ -1089,6 +1092,7 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)   \
   cmake/protoc.cmake                     \
   cmake/tests.cmake                      \
   cmake/version.rc.in                    \
+  compiler_config_setting.bzl            \
   editors/README.txt                     \
   editors/proto.vim                      \
   editors/protobuf-mode.el               \

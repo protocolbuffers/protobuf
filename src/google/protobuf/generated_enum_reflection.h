@@ -67,15 +67,14 @@ const EnumDescriptor* GetEnumDescriptor();
 
 namespace internal {
 
-// Helper for EnumType_Parse functions: try to parse the string 'name' as an
-// enum name of the given type, returning true and filling in value on success,
-// or returning false and leaving value unchanged on failure.
+// Helper for EnumType_Parse functions: try to parse the string 'name' as
+// an enum name of the given type, returning true and filling in value on
+// success, or returning false and leaving value unchanged on failure.
 PROTOBUF_EXPORT bool ParseNamedEnum(const EnumDescriptor* descriptor,
                                     const std::string& name, int* value);
 
-template<typename EnumType>
-bool ParseNamedEnum(const EnumDescriptor* descriptor,
-                    const std::string& name,
+template <typename EnumType>
+bool ParseNamedEnum(const EnumDescriptor* descriptor, const std::string& name,
                     EnumType* value) {
   int tmp;
   if (!ParseNamedEnum(descriptor, name, &tmp)) return false;
@@ -87,7 +86,7 @@ bool ParseNamedEnum(const EnumDescriptor* descriptor,
 // function is not to be inlined, so that you can do this without including
 // descriptor.h.
 PROTOBUF_EXPORT const std::string& NameOfEnum(const EnumDescriptor* descriptor,
-                                         int value);
+                                              int value);
 
 }  // namespace internal
 }  // namespace protobuf

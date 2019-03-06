@@ -380,7 +380,7 @@ namespace internal {
 // arena-related "copy if on different arena" behavior if the necessary methods
 // exist on the contained type. In particular, we rely on MergeFrom() existing
 // as a general proxy for the fact that a copy will work, and we also provide a
-// specific override for string*.
+// specific override for std::string*.
 template <typename T>
 struct TypeImplementsMergeBehaviorProbeForMergeFrom {
   typedef char HasMerge;
@@ -412,7 +412,7 @@ struct TypeImplementsMergeBehavior :
 
 
 template <>
-struct TypeImplementsMergeBehavior< ::std::string> {
+struct TypeImplementsMergeBehavior<std::string> {
   typedef std::true_type type;
 };
 
@@ -724,13 +724,13 @@ inline void* GenericTypeHandler<MessageLite>::GetMaybeArenaPointer(
 template <>
 void GenericTypeHandler<MessageLite>::Merge(const MessageLite& from,
                                             MessageLite* to);
-template<>
+template <>
 inline void GenericTypeHandler<std::string>::Clear(std::string* value) {
   value->clear();
 }
-template<>
+template <>
 void GenericTypeHandler<std::string>::Merge(const std::string& from,
-                                       std::string* to);
+                                            std::string* to);
 
 // Declarations of the specialization as we cannot define them here, as the
 // header that defines ProtocolMessage depends on types defined in this header.
@@ -765,7 +765,8 @@ class StringTypeHandler {
   static inline std::string* New(Arena* arena, std::string&& value) {
     return Arena::Create<std::string>(arena, std::move(value));
   }
-  static inline std::string* NewFromPrototype(const std::string*, Arena* arena) {
+  static inline std::string* NewFromPrototype(const std::string*,
+                                              Arena* arena) {
     return New(arena);
   }
   static inline Arena* GetArena(std::string*) { return NULL; }
@@ -778,8 +779,10 @@ class StringTypeHandler {
     }
   }
   static inline void Clear(std::string* value) { value->clear(); }
-  static inline void Merge(const std::string& from, std::string* to) { *to = from; }
-  static size_t SpaceUsedLong(const std::string& value)  {
+  static inline void Merge(const std::string& from, std::string* to) {
+    *to = from;
+  }
+  static size_t SpaceUsedLong(const std::string& value) {
     return sizeof(value) + StringSpaceUsedExcludingSelfLong(value);
   }
 };
@@ -1944,8 +1947,7 @@ class RepeatedPtrField<Element>::TypeHandler
 
 template <>
 class RepeatedPtrField<std::string>::TypeHandler
-    : public internal::StringTypeHandler {
-};
+    : public internal::StringTypeHandler {};
 
 template <typename Element>
 inline RepeatedPtrField<Element>::RepeatedPtrField()
@@ -2299,7 +2301,7 @@ class RepeatedPtrIterator {
       : it_(other.it_) {
     // Force a compiler error if the other type is not convertible to ours.
     if (false) {
-      ::google::protobuf::implicit_cast<Element*>(static_cast<OtherElement*>(nullptr));
+      implicit_cast<Element*>(static_cast<OtherElement*>(nullptr));
     }
   }
 

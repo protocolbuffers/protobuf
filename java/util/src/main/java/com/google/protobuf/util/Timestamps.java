@@ -180,7 +180,7 @@ public final class Timestamps {
 
   /**
    * Builds the given builder and throws an {@link IllegalArgumentException} if it is not valid. See
-   * {@link #checkValid(Timestamp}).
+   * {@link #checkValid(Timestamp)}.
    *
    * @return A valid, built {@link Timestamp}.
    */

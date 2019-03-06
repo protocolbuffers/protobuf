@@ -218,7 +218,7 @@ void DynamicMapField::AllocateMapValue(MapValueRef* map_val) {
     HANDLE_TYPE(DOUBLE, double);
     HANDLE_TYPE(FLOAT, float);
     HANDLE_TYPE(BOOL, bool);
-    HANDLE_TYPE(STRING, string);
+    HANDLE_TYPE(STRING, std::string);
     HANDLE_TYPE(ENUM, int32);
 #undef HANDLE_TYPE
     case FieldDescriptor::CPPTYPE_MESSAGE: {
@@ -514,7 +514,7 @@ void DynamicMapField::SyncMapWithRepeatedFieldNoLock() const {
       HANDLE_TYPE(DOUBLE, double, Double);
       HANDLE_TYPE(FLOAT, float, Float);
       HANDLE_TYPE(BOOL, bool, Bool);
-      HANDLE_TYPE(STRING, string, String);
+      HANDLE_TYPE(STRING, std::string, String);
       HANDLE_TYPE(ENUM, int32, EnumValue);
 #undef HANDLE_TYPE
       case FieldDescriptor::CPPTYPE_MESSAGE: {
@@ -541,7 +541,7 @@ size_t DynamicMapField::SpaceUsedExcludingSelfNoLock() const {
     size += sizeof(it->second) * map_size;
     // If key is string, add the allocated space.
     if (it->first.type() == FieldDescriptor::CPPTYPE_STRING) {
-      size += sizeof(string) * map_size;
+      size += sizeof(std::string) * map_size;
     }
     // Add the allocated space in MapValueRef.
     switch (it->second.type()) {
@@ -557,7 +557,7 @@ size_t DynamicMapField::SpaceUsedExcludingSelfNoLock() const {
       HANDLE_TYPE(DOUBLE, double);
       HANDLE_TYPE(FLOAT, float);
       HANDLE_TYPE(BOOL, bool);
-      HANDLE_TYPE(STRING, string);
+      HANDLE_TYPE(STRING, std::string);
       HANDLE_TYPE(ENUM, int32);
 #undef HANDLE_TYPE
       case FieldDescriptor::CPPTYPE_MESSAGE: {

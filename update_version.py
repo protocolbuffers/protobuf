@@ -222,16 +222,16 @@ def UpdatePhp():
       return elem
 
     root = document.documentElement
+    now = datetime.datetime.now()
+    ReplaceText(Find(root, 'date'), now.strftime('%Y-%m-%d'))
+    ReplaceText(Find(root, 'time'), now.strftime('%H:%M:%S'))
     version = Find(root, 'version')
     ReplaceText(Find(version, 'release'), GetFullVersion(rc_suffix = 'RC'))
     ReplaceText(Find(version, 'api'), NEW_VERSION)
     stability = Find(root, 'stability')
-    ReplaceText(Find(version, 'release'),
+    ReplaceText(Find(stability, 'release'),
         'stable' if RC_VERSION == 0 else 'beta')
-    ReplaceText(Find(version, 'api'), 'stable' if RC_VERSION == 0 else 'beta')
-    now = datetime.datetime.now()
-    ReplaceText(Find(root, 'date'), now.strftime('%Y-%m-%d'))
-    ReplaceText(Find(root, 'time'), now.strftime('%H:%M:%S'))
+    ReplaceText(Find(stability, 'api'), 'stable' if RC_VERSION == 0 else 'beta')
     changelog = Find(root, 'changelog')
     for old_version in changelog.getElementsByTagName('version'):
       if Find(old_version, 'release').firstChild.nodeValue == NEW_VERSION:
@@ -256,6 +256,17 @@ def UpdatePhp():
     changelog.appendChild(release)
     changelog.appendChild(document.createTextNode('\n '))
   RewriteXml('php/ext/google/protobuf/package.xml', Callback)
+  RewriteTextFile('php/ext/google/protobuf/protobuf.h',
+    lambda line : re.sub(
+      r'PHP_PROTOBUF_VERSION ".*"$',
+      'PHP_PROTOBUF_VERSION "%s"' % NEW_VERSION,
+      line))
+
+  RewriteTextFile('php/ext/google/protobuf/protobuf.h',
+    lambda line : re.sub(
+      r"^#define PHP_PROTOBUF_VERSION .*$",
+      "#define PHP_PROTOBUF_VERSION \"%s\"" % GetFullVersion(rc_suffix = 'RC'),
+      line))
 
   RewriteTextFile('php/ext/google/protobuf/protobuf.h',
     lambda line : re.sub(

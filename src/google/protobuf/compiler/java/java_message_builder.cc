@@ -61,8 +61,8 @@ namespace compiler {
 namespace java {
 
 namespace {
-string MapValueImmutableClassdName(const Descriptor* descriptor,
-                                   ClassNameResolver* name_resolver) {
+std::string MapValueImmutableClassdName(const Descriptor* descriptor,
+                                        ClassNameResolver* name_resolver) {
   const FieldDescriptor* value_field = descriptor->FindFieldByName("value");
   GOOGLE_CHECK_EQ(FieldDescriptor::TYPE_MESSAGE, value_field->type());
   return name_resolver->GetImmutableClassName(value_field->message_type());
@@ -115,7 +115,7 @@ Generate(io::Printer* printer) {
   }
 
   // oneof
-  std::map<string, string> vars;
+  std::map<std::string, std::string> vars;
   for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
     vars["oneof_name"] = context_->GetOneofGeneratorInfo(
         descriptor_->oneof_decl(i))->name;

@@ -61,7 +61,7 @@ namespace protobuf {
 namespace {
 
 // Shorthand to get a FieldDescriptor for a field of unittest::TestAllTypes.
-const FieldDescriptor* F(const string& name) {
+const FieldDescriptor* F(const std::string& name) {
   const FieldDescriptor* result =
     unittest::TestAllTypes::descriptor()->FindFieldByName(name);
   GOOGLE_CHECK(result != NULL);
@@ -107,24 +107,26 @@ TEST(GeneratedMessageReflectionTest, Accessors) {
 }
 
 TEST(GeneratedMessageReflectionTest, GetStringReference) {
-  // Test that GetStringReference() returns the underlying string when it is
-  // a normal string field.
+  // Test that GetStringReference() returns the underlying string when it
+  // is a normal string field.
   unittest::TestAllTypes message;
   message.set_optional_string("foo");
   message.add_repeated_string("foo");
 
   const Reflection* reflection = message.GetReflection();
-  string scratch;
+  std::string scratch;
 
-  EXPECT_EQ(&message.optional_string(),
+  EXPECT_EQ(
+      &message.optional_string(),
       &reflection->GetStringReference(message, F("optional_string"), &scratch))
-    << "For simple string fields, GetStringReference() should return a "
-       "reference to the underlying string.";
+      << "For simple string fields, GetStringReference() should return a "
+         "reference to the underlying string.";
   EXPECT_EQ(&message.repeated_string(0),
-      &reflection->GetRepeatedStringReference(message, F("repeated_string"),
-                                              0, &scratch))
-    << "For simple string fields, GetRepeatedStringReference() should return "
-       "a reference to the underlying string.";
+            &reflection->GetRepeatedStringReference(
+                message, F("repeated_string"), 0, &scratch))
+      << "For simple string fields, GetRepeatedStringReference() should "
+         "return "
+         "a reference to the underlying string.";
 }
 
 
