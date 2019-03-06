@@ -60,6 +60,11 @@ rb_data_type_t Message_type = {
 VALUE Message_alloc(VALUE klass) {
   VALUE descriptor = rb_ivar_get(klass, descriptor_instancevar_interned);
   Descriptor* desc = ruby_to_Descriptor(descriptor);
+
+  if (desc->layout == NULL) {
+    desc->layout = create_layout(desc);
+  }
+
   MessageHeader* msg = (MessageHeader*)ALLOC_N(
       uint8_t, sizeof(MessageHeader) + desc->layout->size);
   VALUE ret;
@@ -118,7 +123,8 @@ enum {
   METHOD_GETTER = 1,
   METHOD_SETTER = 2,
   METHOD_CLEAR = 3,
-  METHOD_PRESENCE = 4
+  METHOD_PRESENCE = 4,
+  METHOD_ENUM_GETTER = 5
 };
 
 static int extract_method_call(VALUE method_name, MessageHeader* self,
@@ -153,9 +159,34 @@ static int extract_method_call(VALUE method_name, MessageHeader* self,
     accessor_type = METHOD_GETTER;
   }
 
+  bool has_field = upb_msgdef_lookupname(self->descriptor->msgdef, name, name_len,
+			                                   &test_f, &test_o);
+
+  // Look for enum accessor of the form <enum_name>_const
+  if (!has_field && accessor_type == METHOD_GETTER &&
+      name_len > 6 && strncmp(name + name_len - 6, "_const", 6) == 0) {
+
+    // Find enum field name
+    char enum_name[name_len - 5];
+    strncpy(enum_name, name, name_len - 6);
+    enum_name[name_len - 4] = '\0';
+
+    // Check if enum field exists
+    const upb_oneofdef* test_o_enum;
+    const upb_fielddef* test_f_enum;
+    if (upb_msgdef_lookupname(self->descriptor->msgdef, enum_name, name_len - 6,
+			                        &test_f_enum, &test_o_enum) &&
+        upb_fielddef_type(test_f_enum) == UPB_TYPE_ENUM) {
+      // It does exist!
+      has_field = true;
+      accessor_type = METHOD_ENUM_GETTER;
+      test_o = test_o_enum;
+      test_f = test_f_enum;
+    }
+  }
+
   // Verify the name corresponds to a oneof or field in this message.
-  if (!upb_msgdef_lookupname(self->descriptor->msgdef, name, name_len,
-			     &test_f, &test_o)) {
+  if (!has_field) {
     return METHOD_UNKNOWN;
   }
 
@@ -216,6 +247,7 @@ VALUE Message_method_missing(int argc, VALUE* argv, VALUE _self) {
     if (argc != 2) {
       rb_raise(rb_eArgError, "Expected 2 arguments, received %d", argc);
     }
+    rb_check_frozen(_self);
   } else if (argc != 1) {
     rb_raise(rb_eArgError, "Expected 1 argument, received %d", argc);
   }
@@ -231,13 +263,13 @@ VALUE Message_method_missing(int argc, VALUE* argv, VALUE _self) {
       return oneof_field == NULL ? Qfalse : Qtrue;
     } else if (accessor_type == METHOD_CLEAR) {
       if (oneof_field != NULL) {
-	layout_clear(self->descriptor->layout, Message_data(self), oneof_field);
+        layout_clear(self->descriptor->layout, Message_data(self), oneof_field);
       }
       return Qnil;
     } else {
       // METHOD_ACCESSOR
       return oneof_field == NULL ? Qnil :
-	ID2SYM(rb_intern(upb_fielddef_name(oneof_field)));
+        ID2SYM(rb_intern(upb_fielddef_name(oneof_field)));
     }
   // Otherwise we're operating on a single proto field
   } else if (accessor_type == METHOD_SETTER) {
@@ -248,6 +280,25 @@ VALUE Message_method_missing(int argc, VALUE* argv, VALUE _self) {
     return Qnil;
   } else if (accessor_type == METHOD_PRESENCE) {
     return layout_has(self->descriptor->layout, Message_data(self), f);
+  } else if (accessor_type == METHOD_ENUM_GETTER) {
+    VALUE enum_type = field_type_class(self->descriptor->layout, f);
+    VALUE method = rb_intern("const_get");
+    VALUE raw_value = layout_get(self->descriptor->layout, Message_data(self), f);
+
+    // Map repeated fields to a new type with ints
+    if (upb_fielddef_label(f) == UPB_LABEL_REPEATED) {
+      int array_size = FIX2INT(rb_funcall(raw_value, rb_intern("length"), 0));
+      VALUE array_args[1] = { ID2SYM(rb_intern("int64")) };
+      VALUE array = rb_class_new_instance(1, array_args, CLASS_OF(raw_value));
+      for (int i = 0; i < array_size; i++) {
+        VALUE entry = rb_funcall(enum_type, method, 1, rb_funcall(raw_value,
+                                 rb_intern("at"), 1, INT2NUM(i)));
+        rb_funcall(array, rb_intern("push"), 1, entry);
+      }
+      return array;
+    }
+    // Convert the value for singular fields
+    return rb_funcall(enum_type, method, 1, raw_value);
   } else {
     return layout_get(self->descriptor->layout, Message_data(self), f);
   }
@@ -274,15 +325,13 @@ VALUE Message_respond_to_missing(int argc, VALUE* argv, VALUE _self) {
   }
 }
 
-VALUE create_submsg_from_hash(const upb_fielddef *f, VALUE hash) {
-  const upb_def *d = upb_fielddef_subdef(f);
+VALUE create_submsg_from_hash(const MessageLayout* layout,
+                              const upb_fielddef* f, VALUE hash) {
+  const upb_msgdef *d = upb_fielddef_msgsubdef(f);
   assert(d != NULL);
 
-  VALUE descriptor = get_def_obj(d);
-  VALUE msgclass = rb_funcall(descriptor, rb_intern("msgclass"), 0, NULL);
-
   VALUE args[1] = { hash };
-  return rb_class_new_instance(1, args, msgclass);
+  return rb_class_new_instance(1, args, field_type_class(layout, f));
 }
 
 int Message_initialize_kwarg(VALUE key, VALUE val, VALUE _self) {
@@ -332,14 +381,14 @@ int Message_initialize_kwarg(VALUE key, VALUE val, VALUE _self) {
     for (int i = 0; i < RARRAY_LEN(val); i++) {
       VALUE entry = rb_ary_entry(val, i);
       if (TYPE(entry) == T_HASH && upb_fielddef_issubmsg(f)) {
-        entry = create_submsg_from_hash(f, entry);
+        entry = create_submsg_from_hash(self->descriptor->layout, f, entry);
       }
 
       RepeatedField_push(ary, entry);
     }
   } else {
     if (TYPE(val) == T_HASH && upb_fielddef_issubmsg(f)) {
-      val = create_submsg_from_hash(f, val);
+      val = create_submsg_from_hash(self->descriptor->layout, f, val);
     }
 
     layout_set(self->descriptor->layout, Message_data(self), f, val);
@@ -584,16 +633,10 @@ VALUE Message_descriptor(VALUE klass) {
   return rb_ivar_get(klass, descriptor_instancevar_interned);
 }
 
-VALUE build_class_from_descriptor(Descriptor* desc) {
+VALUE build_class_from_descriptor(VALUE descriptor) {
+  Descriptor* desc = ruby_to_Descriptor(descriptor);
   const char *name;
   VALUE klass;
-
-  if (desc->layout == NULL) {
-    desc->layout = create_layout(desc->msgdef);
-  }
-  if (desc->fill_method == NULL) {
-    desc->fill_method = new_fillmsg_decodermethod(desc, &desc->fill_method);
-  }
 
   name = upb_msgdef_fullname(desc->msgdef);
   if (name == NULL) {
@@ -605,8 +648,7 @@ VALUE build_class_from_descriptor(Descriptor* desc) {
       // their own toplevel constant class name.
       rb_intern("Message"),
       rb_cObject);
-  rb_ivar_set(klass, descriptor_instancevar_interned,
-              get_def_obj(desc->msgdef));
+  rb_ivar_set(klass, descriptor_instancevar_interned, descriptor);
   rb_define_alloc_func(klass, Message_alloc);
   rb_require("google/protobuf/message_exts");
   rb_include_module(klass, rb_eval_string("::Google::Protobuf::MessageExts"));
@@ -691,7 +733,8 @@ VALUE enum_descriptor(VALUE self) {
   return rb_ivar_get(self, descriptor_instancevar_interned);
 }
 
-VALUE build_module_from_enumdesc(EnumDescriptor* enumdesc) {
+VALUE build_module_from_enumdesc(VALUE _enumdesc) {
+  EnumDescriptor* enumdesc = ruby_to_EnumDescriptor(_enumdesc);
   VALUE mod = rb_define_module_id(
       rb_intern(upb_enumdef_fullname(enumdesc->enumdef)));
 
@@ -712,8 +755,7 @@ VALUE build_module_from_enumdesc(EnumDescriptor* enumdesc) {
   rb_define_singleton_method(mod, "lookup", enum_lookup, 1);
   rb_define_singleton_method(mod, "resolve", enum_resolve, 1);
   rb_define_singleton_method(mod, "descriptor", enum_descriptor, 0);
-  rb_ivar_set(mod, descriptor_instancevar_interned,
-              get_def_obj(enumdesc->enumdef));
+  rb_ivar_set(mod, descriptor_instancevar_interned, _enumdesc);
 
   return mod;
 }

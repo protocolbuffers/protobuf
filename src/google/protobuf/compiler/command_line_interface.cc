@@ -1820,7 +1820,7 @@ void CommandLineInterface::PrintHelpText() {
                              ' ')  // Spaces for alignment.
               << iter->second.help_text << std::endl;
   }
-  std::cerr <<
+  std::cout <<
 "  @<filename>                 Read options and filenames from file. If a\n"
 "                              relative file path is specified, the file\n"
 "                              will be searched in the working directory.\n"

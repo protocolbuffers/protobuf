@@ -127,7 +127,8 @@ class PROTOBUF_EXPORT MessageDifferencer {
   // defined as all fields within the two messages having the same value. This
   // differs from the Equals method above in that fields with default values
   // are considered set to said value automatically. For details on how default
-  // values are defined for each field type, see http://shortn/_x2Gv6XFrWt.
+  // values are defined for each field type, see 
+  // https://developers.google.com/protocol-buffers/docs/proto?csw=1#optional.
   // Also, Equivalent() ignores unknown fields. Use IgnoreField() and Compare()
   // if some fields should be ignored in the comparison.
   //

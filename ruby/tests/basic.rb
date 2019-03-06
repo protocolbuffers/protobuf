@@ -17,7 +17,6 @@ module BasicTest
     add_message "BadFieldNames" do
       optional :dup, :int32, 1
       optional :class, :int32, 2
-      optional :"a.b", :int32, 3
     end
   end
 
@@ -351,11 +350,23 @@ module BasicTest
       assert nil != file_descriptor
       assert_equal "tests/basic_test.proto", file_descriptor.name
       assert_equal :proto3, file_descriptor.syntax
+    end
 
-      file_descriptor = BadFieldNames.descriptor.file_descriptor
-      assert nil != file_descriptor
-      assert_equal nil, file_descriptor.name
-      assert_equal :proto3, file_descriptor.syntax
+    def test_map_freeze
+      m = proto_module::MapMessage.new
+      m.map_string_int32['a'] = 5
+      m.map_string_msg['b'] = proto_module::TestMessage2.new
+
+      m.map_string_int32.freeze
+      m.map_string_msg.freeze
+
+      assert m.map_string_int32.frozen?
+      assert m.map_string_msg.frozen?
+
+      assert_raise(FrozenError) { m.map_string_int32['foo'] = 1 }
+      assert_raise(FrozenError) { m.map_string_msg['bar'] = proto_module::TestMessage2.new }
+      assert_raise(FrozenError) { m.map_string_int32.delete('a') }
+      assert_raise(FrozenError) { m.map_string_int32.clear }
     end
   end
 end

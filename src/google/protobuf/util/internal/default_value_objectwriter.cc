@@ -71,9 +71,6 @@ DefaultValueObjectWriter::DefaultValueObjectWriter(
       ow_(ow) {}
 
 DefaultValueObjectWriter::~DefaultValueObjectWriter() {
-  for (int i = 0; i < string_values_.size(); ++i) {
-    delete string_values_[i];
-  }
   if (own_typeinfo_) {
     delete typeinfo_;
   }
