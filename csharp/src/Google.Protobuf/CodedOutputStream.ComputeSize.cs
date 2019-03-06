@@ -52,7 +52,7 @@ namespace Google.Protobuf
         /// </summary>
         public static int ComputeDoubleSize(double value)
         {
-            return LittleEndian64Size;
+            return DoubleSize;
         }
 
         /// <summary>
@@ -61,7 +61,7 @@ namespace Google.Protobuf
         /// </summary>
         public static int ComputeFloatSize(float value)
         {
-            return LittleEndian32Size;
+            return FloatSize;
         }
 
         /// <summary>
@@ -123,7 +123,7 @@ namespace Google.Protobuf
         /// </summary>
         public static int ComputeBoolSize(bool value)
         {
-            return 1;
+            return BoolSize;
         }
 
         /// <summary>
