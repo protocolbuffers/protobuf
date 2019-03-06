@@ -166,7 +166,7 @@ DefaultValueObjectWriter* DefaultValueObjectWriter::RenderBytes(
   } else {
     // Since StringPiece is essentially a pointer, takes a copy of "value" to
     // avoid ownership issues.
-    string_values_.emplace_back(new std::string(value.ToString()));
+    string_values_.emplace_back(new std::string(value));
     RenderDataPiece(name, DataPiece(*string_values_.back(), false, true));
   }
   return this;
