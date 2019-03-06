@@ -32,6 +32,7 @@
 #include <Zend/zend_exceptions.h>
 
 #include "protobuf.h"
+#include "builtin_descriptors.inc"
 
 // Forward declare.
 static void descriptor_init_c_instance(Descriptor* intern TSRMLS_DC);
@@ -68,21 +69,6 @@ static void check_upb_status(const upb_status* status, const char* msg) {
   }
 }
 
-static void upb_filedef_free(void *r) {
-  upb_filedef *f = *(upb_filedef **)r;
-  size_t i;
-
-  for (i = 0; i < upb_filedef_depcount(f); i++) {
-    upb_filedef_unref(upb_filedef_dep(f, i), f);
-  }
-
-  upb_inttable_uninit(&f->defs);
-  upb_inttable_uninit(&f->deps);
-  upb_gfree((void *)f->name);
-  upb_gfree((void *)f->package);
-  upb_gfree(f);
-}
-
 // Camel-case the field name and append "Entry" for generated map entry name.
 // e.g. map<KeyType, ValueType> foo_map => FooMapEntry
 static void append_map_entry_name(char *result, const char *field_name,
@@ -107,13 +93,6 @@ static void append_map_entry_name(char *result, const char *field_name,
   }
   strcat(result, "Entry");
 }
-
-#define CHECK_UPB(code, msg)             \
-  do {                                   \
-    upb_status status = UPB_STATUS_INIT; \
-    code;                                \
-    check_upb_status(&status, msg);      \
-  } while (0)
 
 // -----------------------------------------------------------------------------
 // GPBType
@@ -172,40 +151,12 @@ static void descriptor_free_c(Descriptor *self TSRMLS_DC) {
   if (self->layout) {
     free_layout(self->layout);
   }
-  if (self->fill_handlers) {
-    upb_handlers_unref(self->fill_handlers, &self->fill_handlers);
-  }
-  if (self->fill_method) {
-    upb_pbdecodermethod_unref(self->fill_method, &self->fill_method);
-  }
-  if (self->json_fill_method) {
-    upb_json_parsermethod_unref(self->json_fill_method,
-                                &self->json_fill_method);
-  }
-  if (self->pb_serialize_handlers) {
-    upb_handlers_unref(self->pb_serialize_handlers,
-                       &self->pb_serialize_handlers);
-  }
-  if (self->json_serialize_handlers) {
-    upb_handlers_unref(self->json_serialize_handlers,
-                       &self->json_serialize_handlers);
-  }
-  if (self->json_serialize_handlers_preserve) {
-    upb_handlers_unref(self->json_serialize_handlers_preserve,
-                       &self->json_serialize_handlers_preserve);
-  }
 }
 
 static void descriptor_init_c_instance(Descriptor *desc TSRMLS_DC) {
   desc->msgdef = NULL;
   desc->layout = NULL;
   desc->klass = NULL;
-  desc->fill_handlers = NULL;
-  desc->fill_method = NULL;
-  desc->json_fill_method = NULL;
-  desc->pb_serialize_handlers = NULL;
-  desc->json_serialize_handlers = NULL;
-  desc->json_serialize_handlers_preserve = NULL;
 }
 
 PHP_METHOD(Descriptor, getClass) {
@@ -297,7 +248,7 @@ PHP_METHOD(Descriptor, getOneofDecl) {
   for(upb_msg_oneof_begin(&iter, intern->msgdef), i = 0;
       !upb_msg_oneof_done(&iter) && i < index;
       upb_msg_oneof_next(&iter), i++);
-  upb_oneofdef *oneof = upb_msg_iter_oneof(&iter);
+  const upb_oneofdef *oneof = upb_msg_iter_oneof(&iter);
 
   ZVAL_OBJ(return_value, oneof_descriptor_type->create_object(
                              oneof_descriptor_type TSRMLS_CC));
@@ -482,14 +433,13 @@ PHP_METHOD(FieldDescriptor, isMap) {
 
 PHP_METHOD(FieldDescriptor, getEnumType) {
   FieldDescriptor *intern = UNBOX(FieldDescriptor, getThis());
-  const upb_enumdef *enumdef = upb_fielddef_enumsubdef(intern->fielddef);
-  if (enumdef == NULL) {
-    char error_msg[100];
-    sprintf(error_msg, "Cannot get enum type for non-enum field '%s'",
-            upb_fielddef_name(intern->fielddef));
-    zend_throw_exception(NULL, error_msg, 0 TSRMLS_CC);
+  if (upb_fielddef_type(intern->fielddef) != UPB_TYPE_ENUM) {
+    zend_throw_exception_ex(NULL, 0 TSRMLS_CC,
+                            "Cannot get enum type for non-enum field '%s'",
+                            upb_fielddef_name(intern->fielddef));
     return;
   }
+  const upb_enumdef *enumdef = upb_fielddef_enumsubdef(intern->fielddef);
   PHP_PROTO_HASHTABLE_VALUE desc = get_def_obj(enumdef);
 
 #if PHP_MAJOR_VERSION < 7
@@ -502,14 +452,13 @@ PHP_METHOD(FieldDescriptor, getEnumType) {
 
 PHP_METHOD(FieldDescriptor, getMessageType) {
   FieldDescriptor *intern = UNBOX(FieldDescriptor, getThis());
-  const upb_msgdef *msgdef = upb_fielddef_msgsubdef(intern->fielddef);
-  if (msgdef == NULL) {
-    char error_msg[100];
-    sprintf(error_msg, "Cannot get message type for non-message field '%s'",
-            upb_fielddef_name(intern->fielddef));
-    zend_throw_exception(NULL, error_msg, 0 TSRMLS_CC);
+  if (upb_fielddef_type(intern->fielddef) != UPB_TYPE_MESSAGE) {
+    zend_throw_exception_ex(
+        NULL, 0 TSRMLS_CC, "Cannot get message type for non-message field '%s'",
+        upb_fielddef_name(intern->fielddef));
     return;
   }
+  const upb_msgdef *msgdef = upb_fielddef_msgsubdef(intern->fielddef);
   PHP_PROTO_HASHTABLE_VALUE desc = get_def_obj(msgdef);
 
 #if PHP_MAJOR_VERSION < 7
@@ -657,17 +606,24 @@ void init_generated_pool_once(TSRMLS_D) {
 static void internal_descriptor_pool_init_c_instance(
     InternalDescriptorPool *pool TSRMLS_DC) {
   pool->symtab = upb_symtab_new();
-
-  ALLOC_HASHTABLE(pool->pending_list);
-  zend_hash_init(pool->pending_list, 1, NULL, ZVAL_PTR_DTOR, 0);
+  pool->fill_handler_cache =
+      upb_handlercache_new(add_handlers_for_message, NULL);
+  pool->pb_serialize_handler_cache = upb_pb_encoder_newcache();
+  pool->json_serialize_handler_cache = upb_json_printer_newcache(false);
+  pool->json_serialize_handler_preserve_cache = upb_json_printer_newcache(true);
+  pool->fill_method_cache = upb_pbcodecache_new(pool->fill_handler_cache);
+  pool->json_fill_method_cache = upb_json_codecache_new();
 }
 
 static void internal_descriptor_pool_free_c(
     InternalDescriptorPool *pool TSRMLS_DC) {
   upb_symtab_free(pool->symtab);
-
-  zend_hash_destroy(pool->pending_list);
-  FREE_HASHTABLE(pool->pending_list);
+  upb_handlercache_free(pool->fill_handler_cache);
+  upb_handlercache_free(pool->pb_serialize_handler_cache);
+  upb_handlercache_free(pool->json_serialize_handler_cache);
+  upb_handlercache_free(pool->json_serialize_handler_preserve_cache);
+  upb_pbcodecache_free(pool->fill_method_cache);
+  upb_json_codecache_free(pool->json_fill_method_cache);
 }
 
 static void descriptor_pool_init_c_instance(DescriptorPool *pool TSRMLS_DC) {
@@ -821,11 +777,11 @@ static void fill_segment(const char *segment, int length,
   }
 }
 
-static void fill_namespace(const char *package, const char *namespace_given,
+static void fill_namespace(const char *package, const char *php_namespace,
                            stringsink *classname) {
-  if (namespace_given != NULL) {
-    stringsink_string(classname, NULL, namespace_given,
-                      strlen(namespace_given), NULL);
+  if (php_namespace != NULL) {
+    stringsink_string(classname, NULL, php_namespace, strlen(php_namespace),
+                      NULL);
     stringsink_string(classname, NULL, "\\", 1, NULL);
   } else if (package != NULL) {
     int i = 0, j, offset = 0;
@@ -845,7 +801,6 @@ static void fill_namespace(const char *package, const char *namespace_given,
 
 static void fill_classname(const char *fullname,
                            const char *package,
-                           const char *namespace_given,
                            const char *prefix,
                            stringsink *classname,
                            bool use_nested_submsg) {
@@ -879,118 +834,152 @@ static void fill_classname(const char *fullname,
   }
 }
 
-static void fill_qualified_classname(const char *fullname,
-                                     const char *package,
-                                     const char *namespace_given,
-                                     const char *prefix,
-                                     stringsink *classname,
-                                     bool use_nested_submsg) {
-  fill_namespace(package, namespace_given, classname);
-  fill_classname(fullname, package, namespace_given, prefix,
-                 classname, use_nested_submsg);
+static zend_class_entry *register_class(const upb_filedef *file,
+                                        const char *fullname,
+                                        PHP_PROTO_HASHTABLE_VALUE desc_php,
+                                        bool use_nested_submsg TSRMLS_DC) {
+  // Prepend '.' to package name to make it absolute. In the 5 additional
+  // bytes allocated, one for '.', one for trailing 0, and 3 for 'GPB' if
+  // given message is google.protobuf.Empty.
+  const char *package = upb_filedef_package(file);
+  const char *php_namespace = upb_filedef_phpnamespace(file);
+  const char *prefix = upb_filedef_phpprefix(file);
+  size_t classname_len =
+      classname_len_max(fullname, package, php_namespace, prefix);
+  char* after_package;
+  zend_class_entry* ret;
+  stringsink namesink;
+  stringsink_init(&namesink);
+
+  fill_namespace(package, php_namespace, &namesink);
+  fill_classname(fullname, package, prefix, &namesink, use_nested_submsg);
+
+  PHP_PROTO_CE_DECLARE pce;
+  if (php_proto_zend_lookup_class(namesink.ptr, namesink.len, &pce) ==
+      FAILURE) {
+    zend_error(
+        E_ERROR,
+        "Generated message class %s hasn't been defined (%s, %s, %s, %s)",
+        namesink.ptr, fullname, package, php_namespace, prefix);
+    return NULL;
+  }
+  ret = PHP_PROTO_CE_UNREF(pce);
+  add_ce_obj(ret, desc_php);
+  add_proto_obj(fullname, desc_php);
+  stringsink_uninit(&namesink);
+  return ret;
 }
 
-static void classname_no_prefix(const char *fullname, const char *package_name,
-                                char *class_name) {
-  size_t i = 0, j;
-  bool first_char = true, is_reserved = false;
-  size_t pkg_name_len = package_name == NULL ? 0 : strlen(package_name);
-  size_t message_name_start = package_name == NULL ? 0 : pkg_name_len + 1;
-  size_t message_len = (strlen(fullname) - message_name_start);
+bool depends_on_descriptor(const google_protobuf_FileDescriptorProto* file) {
+  const upb_strview *deps;
+  upb_strview name = upb_strview_makez("google/protobuf/descriptor.proto");
+  size_t i, n;
 
-  // Submessage is concatenated with its containing messages by '_'.
-  for (j = message_name_start; j < message_name_start + message_len; j++) {
-    if (fullname[j] == '.') {
-      class_name[i++] = '_';
-    } else {
-      class_name[i++] = fullname[j];
+  deps = google_protobuf_FileDescriptorProto_dependency(file, &n);
+  for (i = 0; i < n; i++) {
+    if (upb_strview_eql(deps[i], name)) {
+      return true;
     }
   }
+
+  return false;
+}
+
+const upb_filedef *parse_and_add_descriptor(const char *data,
+                                            PHP_PROTO_SIZE data_len,
+                                            InternalDescriptorPool *pool,
+                                            upb_arena *arena) {
+  size_t n;
+  google_protobuf_FileDescriptorSet *set;
+  const google_protobuf_FileDescriptorProto* const* files;
+  const upb_filedef* file;
+  upb_status status;
+
+  set = google_protobuf_FileDescriptorSet_parsenew(
+      upb_strview_make(data, data_len), arena);
+
+  if (!set) {
+    zend_error(E_ERROR, "Failed to parse binary descriptor\n");
+    return false;
+  }
+
+  files = google_protobuf_FileDescriptorSet_file(set, &n);
+
+  if (n != 1) {
+    zend_error(E_ERROR, "Serialized descriptors should have exactly one file");
+    return false;
+  }
+
+  // The PHP code generator currently special-cases descriptor.proto.  It
+  // doesn't add it as a dependency even if the proto file actually does
+  // depend on it.
+  if (depends_on_descriptor(files[0]) &&
+      upb_symtab_lookupfile(pool->symtab, "google/protobuf/descriptor.proto") ==
+          NULL) {
+    if (!parse_and_add_descriptor((char *)descriptor_proto,
+                                  descriptor_proto_len, pool, arena)) {
+      return false;
+    }
+  }
+
+  upb_status_clear(&status);
+  file = upb_symtab_addfile(pool->symtab, files[0], &status);
+  check_upb_status(&status, "Unable to load descriptor");
+  return file;
 }
 
 void internal_add_generated_file(const char *data, PHP_PROTO_SIZE data_len,
                                  InternalDescriptorPool *pool,
                                  bool use_nested_submsg TSRMLS_DC) {
-  upb_filedef **files;
-  size_t i;
+  int i;
+  upb_arena *arena;
+  const upb_filedef* file;
 
-  CHECK_UPB(files = upb_loaddescriptor(data, data_len, &pool, &status),
-            "Parse binary descriptors to internal descriptors failed");
-
-  // This method is called only once in each file.
-  assert(files[0] != NULL);
-  assert(files[1] == NULL);
-
-  CHECK_UPB(upb_symtab_addfile(pool->symtab, files[0], &status),
-            "Unable to add file to DescriptorPool");
+  arena = upb_arena_new();
+  file = parse_and_add_descriptor(data, data_len, pool, arena);
+  upb_arena_free(arena);
+  if (!file) return;
 
   // For each enum/message, we need its PHP class, upb descriptor and its PHP
   // wrapper. These information are needed later for encoding, decoding and type
   // checking. However, sometimes we just have one of them. In order to find
   // them quickly, here, we store the mapping for them.
-  for (i = 0; i < upb_filedef_defcount(files[0]); i++) {
-    const upb_def *def = upb_filedef_def(files[0], i);
-    switch (upb_def_type(def)) {
-#define CASE_TYPE(def_type, def_type_lower, desc_type, desc_type_lower)        \
-  case UPB_DEF_##def_type: {                                                   \
-    CREATE_HASHTABLE_VALUE(desc, desc_php, desc_type, desc_type_lower##_type); \
-    const upb_##def_type_lower *def_type_lower =                               \
-        upb_downcast_##def_type_lower(def);                                    \
-    desc->def_type_lower = def_type_lower;                                     \
-    add_def_obj(desc->def_type_lower, desc_php);                               \
-    /* Unlike other messages, MapEntry is shared by all map fields and doesn't \
-     * have generated PHP class.*/                                             \
-    if (upb_def_type(def) == UPB_DEF_MSG &&                                    \
-        upb_msgdef_mapentry(upb_downcast_msgdef(def))) {                       \
-      break;                                                                   \
-    }                                                                          \
-    /* Prepend '.' to package name to make it absolute. In the 5 additional    \
-     * bytes allocated, one for '.', one for trailing 0, and 3 for 'GPB' if    \
-     * given message is google.protobuf.Empty.*/                               \
-    const char *fullname = upb_##def_type_lower##_fullname(def_type_lower);    \
-    const char *package = upb_filedef_package(files[0]);                       \
-    const char *php_namespace = upb_filedef_phpnamespace(files[0]);            \
-    const char *prefix_given = upb_filedef_phpprefix(files[0]);                \
-    stringsink namesink;                                                       \
-    stringsink_init(&namesink);                                                \
-    fill_qualified_classname(fullname, package, php_namespace,                 \
-                             prefix_given, &namesink, use_nested_submsg);      \
-    PHP_PROTO_CE_DECLARE pce;                                                  \
-    if (php_proto_zend_lookup_class(namesink.ptr, namesink.len, &pce) ==       \
-        FAILURE) {                                                             \
-      zend_error(E_ERROR, "Generated message class %s hasn't been defined",    \
-                 namesink.ptr);                                                \
-      return;                                                                  \
-    } else {                                                                   \
-      desc->klass = PHP_PROTO_CE_UNREF(pce);                                   \
-    }                                                                          \
-    add_ce_obj(desc->klass, desc_php);                                         \
-    add_proto_obj(upb_##def_type_lower##_fullname(desc->def_type_lower),       \
-                  desc_php);                                                   \
-    stringsink_uninit(&namesink);                                              \
-    break;                                                                     \
+
+  for (i = 0; i < upb_filedef_msgcount(file); i++) {
+    const upb_msgdef *msgdef = upb_filedef_msg(file, i);
+    CREATE_HASHTABLE_VALUE(desc, desc_php, Descriptor, descriptor_type);
+    desc->msgdef = msgdef;
+    desc->pool = pool;
+    add_def_obj(desc->msgdef, desc_php);
+
+    // Unlike other messages, MapEntry is shared by all map fields and doesn't
+    // have generated PHP class.
+    if (upb_msgdef_mapentry(msgdef)) {
+      continue;
+    }
+
+    desc->klass = register_class(file, upb_msgdef_fullname(msgdef), desc_php,
+                                 use_nested_submsg TSRMLS_CC);
+
+    if (desc->klass == NULL) {
+      return;
+    }
+
+    build_class_from_descriptor(desc_php TSRMLS_CC);
   }
 
-      CASE_TYPE(MSG, msgdef, Descriptor, descriptor)
-      CASE_TYPE(ENUM, enumdef, EnumDescriptor, enum_descriptor)
-#undef CASE_TYPE
+  for (i = 0; i < upb_filedef_enumcount(file); i++) {
+    const upb_enumdef *enumdef = upb_filedef_enum(file, i);
+    CREATE_HASHTABLE_VALUE(desc, desc_php, EnumDescriptor, enum_descriptor_type);
+    desc->enumdef = enumdef;
+    add_def_obj(desc->enumdef, desc_php);
+    desc->klass = register_class(file, upb_enumdef_fullname(enumdef), desc_php,
+                                 use_nested_submsg TSRMLS_CC);
 
-      default:
-        break;
+    if (desc->klass == NULL) {
+      return;
     }
   }
-
-  for (i = 0; i < upb_filedef_defcount(files[0]); i++) {
-    const upb_def *def = upb_filedef_def(files[0], i);
-    if (upb_def_type(def) == UPB_DEF_MSG) {
-      const upb_msgdef *msgdef = upb_downcast_msgdef(def);
-      PHP_PROTO_HASHTABLE_VALUE desc_php = get_def_obj(msgdef);
-      build_class_from_descriptor(desc_php TSRMLS_CC);
-    }
-  }
-
-  upb_filedef_unref(files[0], &pool);
-  upb_gfree(files);
 }
 
 PHP_METHOD(InternalDescriptorPool, internalAddGeneratedFile) {
