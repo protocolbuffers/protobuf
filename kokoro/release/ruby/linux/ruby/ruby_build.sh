@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -ex
+
 # Build protoc
 if test ! -e src/protoc; then
   ./autogen.sh

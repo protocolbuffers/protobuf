@@ -789,47 +789,44 @@ static bool is_reserved(const char *segment, int length) {
   return result;
 }
 
-static char* fill_prefix(const char *segment, int length,
-                         const char *prefix_given,
-                         const char *package_name, char *classname) {
+static void fill_prefix(const char *segment, int length,
+                        const char *prefix_given,
+                        const char *package_name,
+                        stringsink *classname) {
   size_t i;
 
   if (prefix_given != NULL && strcmp(prefix_given, "") != 0) {
-    size_t prefix_len = strlen(prefix_given);
-    memcpy(classname, prefix_given, strlen(prefix_given));
-    classname += prefix_len;
+    stringsink_string(classname, NULL, prefix_given,
+                      strlen(prefix_given), NULL);
   } else {
     if (is_reserved(segment, length)) {
       if (package_name != NULL &&
           strcmp("google.protobuf", package_name) == 0) {
-        memcpy(classname, "GPB", 3);
-        classname += 3;
+        stringsink_string(classname, NULL, "GPB", 3, NULL);
       } else {
-        memcpy(classname, "PB", 2);
-        classname += 2;
+        stringsink_string(classname, NULL, "PB", 2, NULL);
       }
     }
   }
-  return classname;
 }
 
-static char* fill_segment(const char *segment, int length,
-                          char *classname, bool use_camel) {
-  memcpy(classname, segment, length);
+static void fill_segment(const char *segment, int length,
+                         stringsink *classname, bool use_camel) {
   if (use_camel && (segment[0] < 'A' || segment[0] > 'Z')) {
-    classname[0] += 'A' - 'a';
+    char first = segment[0] + ('A' - 'a');
+    stringsink_string(classname, NULL, &first, 1, NULL);
+    stringsink_string(classname, NULL, segment + 1, length - 1, NULL);
+  } else {
+    stringsink_string(classname, NULL, segment, length, NULL);
   }
-  return classname + length;
 }
 
-static char* fill_namespace(const char *package, const char *namespace_given,
-                            char *classname) {
+static void fill_namespace(const char *package, const char *namespace_given,
+                           stringsink *classname) {
   if (namespace_given != NULL) {
-    size_t namespace_len = strlen(namespace_given);
-    memcpy(classname, namespace_given, namespace_len);
-    classname += namespace_len;
-    *classname = '\\';
-    classname++;
+    stringsink_string(classname, NULL, namespace_given,
+                      strlen(namespace_given), NULL);
+    stringsink_string(classname, NULL, "\\", 1, NULL);
   } else if (package != NULL) {
     int i = 0, j, offset = 0;
     size_t package_len = strlen(package);
@@ -838,29 +835,27 @@ static char* fill_namespace(const char *package, const char *namespace_given,
       while (j < package_len && package[j] != '.') {
         j++;
       }
-      classname = fill_prefix(package + i, j - i, "", package, classname);
-      classname = fill_segment(package + i, j - i, classname, true);
-      classname[0] = '\\';
-      classname++;
+      fill_prefix(package + i, j - i, "", package, classname);
+      fill_segment(package + i, j - i, classname, true);
+      stringsink_string(classname, NULL, "\\", 1, NULL);
       i = j + 1;
     }
   }
-  return classname;
 }
 
-static char* fill_classname(const char *fullname,
-                            const char *package,
-                            const char *namespace_given,
-                            const char *prefix, char *classname) {
+static void fill_classname(const char *fullname,
+                           const char *package,
+                           const char *namespace_given,
+                           const char *prefix,
+                           stringsink *classname,
+                           bool use_nested_submsg) {
   int classname_start = 0;
   if (package != NULL) {
     size_t package_len = strlen(package);
     classname_start = package_len == 0 ? 0 : package_len + 1;
   }
   size_t fullname_len = strlen(fullname);
-  classname = fill_prefix(fullname + classname_start,
-                          fullname_len - classname_start,
-                          prefix, package, classname);
+  bool is_first_segment = true;
 
   int i = classname_start, j;
   while (i < fullname_len) {
@@ -868,22 +863,31 @@ static char* fill_classname(const char *fullname,
     while (j < fullname_len && fullname[j] != '.') {
       j++;
     }
-    classname = fill_segment(fullname + i, j - i, classname, false);
+    if (use_nested_submsg || is_first_segment && j == fullname_len) {
+      fill_prefix(fullname + i, j - i, prefix, package, classname);
+    }
+    is_first_segment = false;
+    fill_segment(fullname + i, j - i, classname, false);
     if (j != fullname_len) {
-      *classname = '_';
-      classname++;
+      if (use_nested_submsg) {
+        stringsink_string(classname, NULL, "\\", 1, NULL);
+      } else {
+        stringsink_string(classname, NULL, "_", 1, NULL);
+      }
     }
     i = j + 1;
   }
-  return classname;
 }
 
-static char* fill_qualified_classname(const char *fullname,
-                                      const char *package,
-                                      const char *namespace_given,
-                                      const char *prefix, char *classname) {
-  classname = fill_namespace(package, namespace_given, classname);
-  return fill_classname(fullname, package, namespace_given, prefix, classname);
+static void fill_qualified_classname(const char *fullname,
+                                     const char *package,
+                                     const char *namespace_given,
+                                     const char *prefix,
+                                     stringsink *classname,
+                                     bool use_nested_submsg) {
+  fill_namespace(package, namespace_given, classname);
+  fill_classname(fullname, package, namespace_given, prefix,
+                 classname, use_nested_submsg);
 }
 
 static void classname_no_prefix(const char *fullname, const char *package_name,
@@ -905,7 +909,8 @@ static void classname_no_prefix(const char *fullname, const char *package_name,
 }
 
 void internal_add_generated_file(const char *data, PHP_PROTO_SIZE data_len,
-                                 InternalDescriptorPool *pool TSRMLS_DC) {
+                                 InternalDescriptorPool *pool,
+                                 bool use_nested_submsg TSRMLS_DC) {
   upb_filedef **files;
   size_t i;
 
@@ -946,16 +951,15 @@ void internal_add_generated_file(const char *data, PHP_PROTO_SIZE data_len,
     const char *package = upb_filedef_package(files[0]);                       \
     const char *php_namespace = upb_filedef_phpnamespace(files[0]);            \
     const char *prefix_given = upb_filedef_phpprefix(files[0]);                \
-    size_t classname_len = classname_len_max(fullname, package,                \
-                                             php_namespace, prefix_given);     \
-    char *classname = ecalloc(sizeof(char), classname_len);                    \
+    stringsink namesink;                                                       \
+    stringsink_init(&namesink);                                                \
     fill_qualified_classname(fullname, package, php_namespace,                 \
-                             prefix_given, classname);                         \
+                             prefix_given, &namesink, use_nested_submsg);      \
     PHP_PROTO_CE_DECLARE pce;                                                  \
-    if (php_proto_zend_lookup_class(classname, strlen(classname), &pce) ==     \
+    if (php_proto_zend_lookup_class(namesink.ptr, namesink.len, &pce) ==       \
         FAILURE) {                                                             \
       zend_error(E_ERROR, "Generated message class %s hasn't been defined",    \
-                 classname);                                                   \
+                 namesink.ptr);                                                \
       return;                                                                  \
     } else {                                                                   \
       desc->klass = PHP_PROTO_CE_UNREF(pce);                                   \
@@ -963,7 +967,7 @@ void internal_add_generated_file(const char *data, PHP_PROTO_SIZE data_len,
     add_ce_obj(desc->klass, desc_php);                                         \
     add_proto_obj(upb_##def_type_lower##_fullname(desc->def_type_lower),       \
                   desc_php);                                                   \
-    efree(classname);                                                          \
+    stringsink_uninit(&namesink);                                              \
     break;                                                                     \
   }
 
@@ -993,15 +997,18 @@ PHP_METHOD(InternalDescriptorPool, internalAddGeneratedFile) {
   char *data = NULL;
   PHP_PROTO_SIZE data_len;
   upb_filedef **files;
+  zend_bool use_nested_submsg = false;
   size_t i;
 
-  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &data, &data_len) ==
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|b",
+                            &data, &data_len, &use_nested_submsg) ==
       FAILURE) {
     return;
   }
 
   InternalDescriptorPool *pool = UNBOX(InternalDescriptorPool, getThis());
-  internal_add_generated_file(data, data_len, pool TSRMLS_CC);
+  internal_add_generated_file(data, data_len, pool,
+                              use_nested_submsg TSRMLS_CC);
 }
 
 PHP_METHOD(DescriptorPool, getDescriptorByClassName) {
