@@ -32,6 +32,7 @@ package com.google.protobuf;
 
 import static com.google.protobuf.WireFormat.FIXED32_SIZE;
 import static com.google.protobuf.WireFormat.FIXED64_SIZE;
+import static com.google.protobuf.WireFormat.MAX_VARINT32_SIZE;
 import static com.google.protobuf.WireFormat.MAX_VARINT_SIZE;
 import static java.lang.Math.max;
 
@@ -1263,7 +1264,7 @@ public abstract class CodedOutputStream extends ByteOutput {
 
     @Override
     public final void writeUInt32NoTag(int value) throws IOException {
-      if (HAS_UNSAFE_ARRAY_OPERATIONS && spaceLeft() >= MAX_VARINT_SIZE) {
+      if (HAS_UNSAFE_ARRAY_OPERATIONS && spaceLeft() >= MAX_VARINT32_SIZE) {
         while (true) {
           if ((value & ~0x7F) == 0) {
             UnsafeUtil.putByte(buffer, position++, (byte) value);
@@ -2447,7 +2448,7 @@ public abstract class CodedOutputStream extends ByteOutput {
 
     @Override
     public void writeUInt32NoTag(int value) throws IOException {
-      flushIfNotAvailable(MAX_VARINT_SIZE);
+      flushIfNotAvailable(MAX_VARINT32_SIZE);
       bufferUInt32NoTag(value);
     }
 
@@ -2750,7 +2751,7 @@ public abstract class CodedOutputStream extends ByteOutput {
 
     @Override
     public void writeUInt32NoTag(int value) throws IOException {
-      flushIfNotAvailable(MAX_VARINT_SIZE);
+      flushIfNotAvailable(MAX_VARINT32_SIZE);
       bufferUInt32NoTag(value);
     }
 

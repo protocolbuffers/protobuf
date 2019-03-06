@@ -62,8 +62,7 @@ bool IsMapFieldInApi(const FieldDescriptor* field) {
 }
 }  // anonymous namespace
 
-bool ParseNamedEnum(const EnumDescriptor* descriptor,
-                    const string& name,
+bool ParseNamedEnum(const EnumDescriptor* descriptor, const std::string& name,
                     int* value) {
   const EnumValueDescriptor* d = descriptor->FindValueByName(name);
   if (d == NULL) return false;
@@ -71,7 +70,7 @@ bool ParseNamedEnum(const EnumDescriptor* descriptor,
   return true;
 }
 
-const string& NameOfEnum(const EnumDescriptor* descriptor, int value) {
+const std::string& NameOfEnum(const EnumDescriptor* descriptor, int value) {
   const EnumValueDescriptor* d = descriptor->FindValueByNumber(value);
   return (d == NULL ? GetEmptyString() : d->name());
 }
@@ -245,8 +244,9 @@ size_t GeneratedMessageReflection::SpaceUsedLong(const Message& message) const {
           switch (field->options().ctype()) {
             default:  // TODO(kenton):  Support other string reps.
             case FieldOptions::STRING:
-              total_size += GetRaw<RepeatedPtrField<string> >(message, field)
-                                .SpaceUsedExcludingSelfLong();
+              total_size +=
+                  GetRaw<RepeatedPtrField<std::string> >(message, field)
+                      .SpaceUsedExcludingSelfLong();
               break;
           }
           break;
@@ -286,18 +286,18 @@ size_t GeneratedMessageReflection::SpaceUsedLong(const Message& message) const {
             default:  // TODO(kenton):  Support other string reps.
             case FieldOptions::STRING: {
               if (IsInlined(field)) {
-                const string* ptr =
+                const std::string* ptr =
                     &GetField<InlinedStringField>(message, field).GetNoArena();
                 total_size += StringSpaceUsedExcludingSelfLong(*ptr);
                 break;
               }
 
-              // Initially, the string points to the default value stored in
-              // the prototype. Only count the string if it has been changed
-              // from the default value.
-              const string* default_ptr =
+              // Initially, the string points to the default value stored
+              // in the prototype. Only count the string if it has been
+              // changed from the default value.
+              const std::string* default_ptr =
                   &DefaultRaw<ArenaStringPtr>(field).Get();
-              const string* ptr =
+              const std::string* ptr =
                   &GetField<ArenaStringPtr>(message, field).Get();
 
               if (ptr != default_ptr) {
@@ -355,8 +355,8 @@ void GeneratedMessageReflection::SwapField(
         switch (field->options().ctype()) {
           default:  // TODO(kenton):  Support other string reps.
           case FieldOptions::STRING:
-            MutableRaw<RepeatedPtrFieldBase>(message1, field)->
-                Swap<GenericTypeHandler<string> >(
+            MutableRaw<RepeatedPtrFieldBase>(message1, field)
+                ->Swap<GenericTypeHandler<std::string> >(
                     MutableRaw<RepeatedPtrFieldBase>(message2, field));
             break;
         }
@@ -437,12 +437,12 @@ void GeneratedMessageReflection::SwapField(
                   MutableRaw<ArenaStringPtr>(message1, field);
               ArenaStringPtr* string2 =
                   MutableRaw<ArenaStringPtr>(message2, field);
-              const string* default_ptr =
+              const std::string* default_ptr =
                   &DefaultRaw<ArenaStringPtr>(field).Get();
               if (arena1 == arena2) {
                 string1->Swap(string2, default_ptr, arena1);
               } else {
-                const string temp = string1->Get();
+                const std::string temp = string1->Get();
                 string1->Set(default_ptr, string2->Get(), arena1);
                 string2->Set(default_ptr, temp, arena2);
               }
@@ -473,7 +473,7 @@ void GeneratedMessageReflection::SwapOneofField(
   bool temp_bool;
   int temp_int;
   Message* temp_message = NULL;
-  string temp_string;
+  std::string temp_string;
 
   // Stores message1's oneof field to a temp variable.
   const FieldDescriptor* field1 = NULL;
@@ -807,14 +807,14 @@ void GeneratedMessageReflection::ClearField(
             default:  // TODO(kenton):  Support other string reps.
             case FieldOptions::STRING: {
               if (IsInlined(field)) {
-                const string* default_ptr =
+                const std::string* default_ptr =
                     &DefaultRaw<InlinedStringField>(field).GetNoArena();
                 MutableRaw<InlinedStringField>(message, field)->SetNoArena(
                     default_ptr, *default_ptr);
                 break;
               }
 
-              const string* default_ptr =
+              const std::string* default_ptr =
                   &DefaultRaw<ArenaStringPtr>(field).Get();
               MutableRaw<ArenaStringPtr>(message, field)->SetAllocated(
                   default_ptr, NULL, GetArena(message));
@@ -859,7 +859,7 @@ void GeneratedMessageReflection::ClearField(
         switch (field->options().ctype()) {
           default:  // TODO(kenton):  Support other string reps.
           case FieldOptions::STRING:
-            MutableRaw<RepeatedPtrField<string> >(message, field)->Clear();
+            MutableRaw<RepeatedPtrField<std::string> >(message, field)->Clear();
             break;
         }
         break;
@@ -909,7 +909,8 @@ void GeneratedMessageReflection::RemoveLast(
         switch (field->options().ctype()) {
           default:  // TODO(kenton):  Support other string reps.
           case FieldOptions::STRING:
-            MutableRaw<RepeatedPtrField<string> >(message, field)->RemoveLast();
+            MutableRaw<RepeatedPtrField<std::string> >(message, field)
+                ->RemoveLast();
             break;
         }
         break;
@@ -1134,7 +1135,7 @@ DEFINE_PRIMITIVE_ACCESSORS(Bool  , bool  , bool  , BOOL  )
 
 // -------------------------------------------------------------------
 
-string GeneratedMessageReflection::GetString(
+std::string GeneratedMessageReflection::GetString(
     const Message& message, const FieldDescriptor* field) const {
   USAGE_CHECK_ALL(GetString, SINGULAR, STRING);
   if (field->is_extension()) {
@@ -1154,9 +1155,9 @@ string GeneratedMessageReflection::GetString(
   }
 }
 
-const string& GeneratedMessageReflection::GetStringReference(
-    const Message& message,
-    const FieldDescriptor* field, string* scratch) const {
+const std::string& GeneratedMessageReflection::GetStringReference(
+    const Message& message, const FieldDescriptor* field,
+    std::string* scratch) const {
   USAGE_CHECK_ALL(GetStringReference, SINGULAR, STRING);
   if (field->is_extension()) {
     return GetExtensionSet(message).GetString(field->number(),
@@ -1176,9 +1177,9 @@ const string& GeneratedMessageReflection::GetStringReference(
 }
 
 
-void GeneratedMessageReflection::SetString(
-    Message* message, const FieldDescriptor* field,
-    const string& value) const {
+void GeneratedMessageReflection::SetString(Message* message,
+                                           const FieldDescriptor* field,
+                                           const std::string& value) const {
   USAGE_CHECK_ALL(SetString, SINGULAR, STRING);
   if (field->is_extension()) {
     return MutableExtensionSet(message)->SetString(field->number(),
@@ -1193,7 +1194,8 @@ void GeneratedMessageReflection::SetString(
           break;
         }
 
-        const string* default_ptr = &DefaultRaw<ArenaStringPtr>(field).Get();
+        const std::string* default_ptr =
+            &DefaultRaw<ArenaStringPtr>(field).Get();
         if (field->containing_oneof() && !HasOneofField(*message, field)) {
           ClearOneof(message, field->containing_oneof());
           MutableField<ArenaStringPtr>(message, field)->UnsafeSetDefault(
@@ -1209,7 +1211,7 @@ void GeneratedMessageReflection::SetString(
 }
 
 
-string GeneratedMessageReflection::GetRepeatedString(
+std::string GeneratedMessageReflection::GetRepeatedString(
     const Message& message, const FieldDescriptor* field, int index) const {
   USAGE_CHECK_ALL(GetRepeatedString, REPEATED, STRING);
   if (field->is_extension()) {
@@ -1218,14 +1220,14 @@ string GeneratedMessageReflection::GetRepeatedString(
     switch (field->options().ctype()) {
       default:  // TODO(kenton):  Support other string reps.
       case FieldOptions::STRING:
-        return GetRepeatedPtrField<string>(message, field, index);
+        return GetRepeatedPtrField<std::string>(message, field, index);
     }
   }
 }
 
-const string& GeneratedMessageReflection::GetRepeatedStringReference(
-    const Message& message, const FieldDescriptor* field,
-    int index, string* scratch) const {
+const std::string& GeneratedMessageReflection::GetRepeatedStringReference(
+    const Message& message, const FieldDescriptor* field, int index,
+    std::string* scratch) const {
   USAGE_CHECK_ALL(GetRepeatedStringReference, REPEATED, STRING);
   if (field->is_extension()) {
     return GetExtensionSet(message).GetRepeatedString(field->number(), index);
@@ -1233,15 +1235,15 @@ const string& GeneratedMessageReflection::GetRepeatedStringReference(
     switch (field->options().ctype()) {
       default:  // TODO(kenton):  Support other string reps.
       case FieldOptions::STRING:
-        return GetRepeatedPtrField<string>(message, field, index);
+        return GetRepeatedPtrField<std::string>(message, field, index);
     }
   }
 }
 
 
 void GeneratedMessageReflection::SetRepeatedString(
-    Message* message, const FieldDescriptor* field,
-    int index, const string& value) const {
+    Message* message, const FieldDescriptor* field, int index,
+    const std::string& value) const {
   USAGE_CHECK_ALL(SetRepeatedString, REPEATED, STRING);
   if (field->is_extension()) {
     MutableExtensionSet(message)->SetRepeatedString(
@@ -1250,16 +1252,16 @@ void GeneratedMessageReflection::SetRepeatedString(
     switch (field->options().ctype()) {
       default:  // TODO(kenton):  Support other string reps.
       case FieldOptions::STRING:
-        *MutableRepeatedField<string>(message, field, index) = value;
+        *MutableRepeatedField<std::string>(message, field, index) = value;
         break;
     }
   }
 }
 
 
-void GeneratedMessageReflection::AddString(
-    Message* message, const FieldDescriptor* field,
-    const string& value) const {
+void GeneratedMessageReflection::AddString(Message* message,
+                                           const FieldDescriptor* field,
+                                           const std::string& value) const {
   USAGE_CHECK_ALL(AddString, REPEATED, STRING);
   if (field->is_extension()) {
     MutableExtensionSet(message)->AddString(field->number(),
@@ -1268,7 +1270,7 @@ void GeneratedMessageReflection::AddString(
     switch (field->options().ctype()) {
       default:  // TODO(kenton):  Support other string reps.
       case FieldOptions::STRING:
-        *AddField<string>(message, field) = value;
+        *AddField<std::string>(message, field) = value;
         break;
     }
   }
@@ -1825,7 +1827,7 @@ int GeneratedMessageReflection::MapSize(
 // -----------------------------------------------------------------------------
 
 const FieldDescriptor* GeneratedMessageReflection::FindKnownExtensionByName(
-    const string& name) const {
+    const std::string& name) const {
   if (!schema_.HasExtensionSet()) return NULL;
 
   const FieldDescriptor* result = descriptor_pool_->FindExtensionByName(name);
@@ -1984,7 +1986,7 @@ inline bool GeneratedMessageReflection::HasBit(
     // field must be a scalar.
 
     // Scalar primitive (numeric or string/bytes) fields are present if
-    // their value is non-zero (numeric) or non-empty (string/bytes).  N.B.:
+    // their value is non-zero (numeric) or non-empty (string/bytes). N.B.:
     // we must use this definition here, rather than the "scalar fields
     // always present" in the proto3 docs, because MergeFrom() semantics
     // require presence as "present on wire", and reflection-based merge
@@ -2103,7 +2105,7 @@ inline void GeneratedMessageReflection::ClearOneof(
           switch (field->options().ctype()) {
             default:  // TODO(kenton):  Support other string reps.
             case FieldOptions::STRING: {
-              const string* default_ptr =
+              const std::string* default_ptr =
                   &DefaultRaw<ArenaStringPtr>(field).Get();
               MutableField<ArenaStringPtr>(message, field)->
                   Destroy(default_ptr, GetArena(message));

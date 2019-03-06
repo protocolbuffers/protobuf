@@ -12,7 +12,7 @@ Installation from Gem
 In Gemfile (Please check a version of Protocol Buffers you needed [RubyGems](https://rubygems.org/gems/google-protobuf)):
 
     gem 'google-protobuf'
- 
+
 Or for using this pre-packaged gem, simply install it as you would any other gem:
 
     $ gem install [--prerelease] google-protobuf

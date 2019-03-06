@@ -242,7 +242,8 @@ class PROTOBUF_EXPORT Printer {
   // substituted are identified by their names surrounded by delimiter
   // characters (as given to the constructor).  The variable bindings are
   // defined by the given map.
-  void Print(const std::map<std::string, std::string>& variables, const char* text);
+  void Print(const std::map<std::string, std::string>& variables,
+             const char* text);
 
   // Like the first Print(), except the substitutions are given as parameters.
   template <typename... Args>
@@ -278,7 +279,8 @@ class PROTOBUF_EXPORT Printer {
   // and variables directly supplied by arguments (eq "$1$" meaning first
   // argument which is the zero index element of args).
   void FormatInternal(const std::vector<std::string>& args,
-                      const std::map<std::string, std::string>& vars, const char* format);
+                      const std::map<std::string, std::string>& vars,
+                      const char* format);
 
   // True if any write to the underlying stream failed.  (We don't just
   // crash in this case because this is an I/O failure, not a programming
@@ -296,7 +298,8 @@ class PROTOBUF_EXPORT Printer {
                 const std::string& file_path, const std::vector<int>& path);
 
   // Base case
-  void PrintInternal(std::map<std::string, std::string>* vars, const char* text) {
+  void PrintInternal(std::map<std::string, std::string>* vars,
+                     const char* text) {
     Print(*vars, text);
   }
 
@@ -325,8 +328,9 @@ class PROTOBUF_EXPORT Printer {
 
   inline void IndentIfAtStart();
   const char* WriteVariable(
-      const std::vector<std::string>& args, const std::map<std::string, std::string>& vars,
-      const char* format, int* arg_index,
+      const std::vector<std::string>& args,
+      const std::map<std::string, std::string>& vars, const char* format,
+      int* arg_index,
       std::vector<AnnotationCollector::Annotation>* annotations);
 
   const char variable_delimiter_;

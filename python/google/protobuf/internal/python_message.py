@@ -64,6 +64,7 @@ from google.protobuf.internal import containers
 from google.protobuf.internal import decoder
 from google.protobuf.internal import encoder
 from google.protobuf.internal import enum_type_wrapper
+from google.protobuf.internal import extension_dict
 from google.protobuf.internal import message_listener as message_listener_mod
 from google.protobuf.internal import type_checkers
 from google.protobuf.internal import well_known_types
@@ -74,7 +75,7 @@ from google.protobuf import text_format
 
 _FieldDescriptor = descriptor_mod.FieldDescriptor
 _AnyFullTypeName = 'google.protobuf.Any'
-
+_ExtensionDict = extension_dict._ExtensionDict
 
 class GeneratedProtocolMessageType(type):
 
@@ -237,28 +238,6 @@ def _PropertyName(proto_field_name):
   return proto_field_name
 
 
-def _VerifyExtensionHandle(message, extension_handle):
-  """Verify that the given extension handle is valid."""
-
-  if not isinstance(extension_handle, _FieldDescriptor):
-    raise KeyError('HasExtension() expects an extension handle, got: %s' %
-                   extension_handle)
-
-  if not extension_handle.is_extension:
-    raise KeyError('"%s" is not an extension.' % extension_handle.full_name)
-
-  if not extension_handle.containing_type:
-    raise KeyError('"%s" is missing a containing_type.'
-                   % extension_handle.full_name)
-
-  if extension_handle.containing_type is not message.DESCRIPTOR:
-    raise KeyError('Extension "%s" extends message type "%s", but this '
-                   'message is of type "%s".' %
-                   (extension_handle.full_name,
-                    extension_handle.containing_type.full_name,
-                    message.DESCRIPTOR.full_name))
-
-
 def _AddSlots(message_descriptor, dictionary):
   """Adds a __slots__ entry to dictionary, containing the names of all valid
   attributes for this message type.
@@ -379,8 +358,8 @@ def _AttachFieldHelpers(cls, field_descriptor):
 
 
 def _AddClassAttributesForNestedExtensions(descriptor, dictionary):
-  extension_dict = descriptor.extensions_by_name
-  for extension_name, extension_field in extension_dict.items():
+  extensions = descriptor.extensions_by_name
+  for extension_name, extension_field in extensions.items():
     assert extension_name not in dictionary
     dictionary[extension_name] = extension_field
 
@@ -784,8 +763,8 @@ def _AddPropertiesForNonRepeatedCompositeField(field, cls):
 
 def _AddPropertiesForExtensions(descriptor, cls):
   """Adds properties for all fields in this protocol message type."""
-  extension_dict = descriptor.extensions_by_name
-  for extension_name, extension_field in extension_dict.items():
+  extensions = descriptor.extensions_by_name
+  for extension_name, extension_field in extensions.items():
     constant_name = extension_name.upper() + '_FIELD_NUMBER'
     setattr(cls, constant_name, extension_field.number)
 
@@ -922,7 +901,7 @@ def _AddClearFieldMethod(message_descriptor, cls):
 def _AddClearExtensionMethod(cls):
   """Helper for _AddMessageMethods()."""
   def ClearExtension(self, extension_handle):
-    _VerifyExtensionHandle(self, extension_handle)
+    extension_dict._VerifyExtensionHandle(self, extension_handle)
 
     # Similar to ClearField(), above.
     if extension_handle in self._fields:
@@ -934,7 +913,7 @@ def _AddClearExtensionMethod(cls):
 def _AddHasExtensionMethod(cls):
   """Helper for _AddMessageMethods()."""
   def HasExtension(self, extension_handle):
-    _VerifyExtensionHandle(self, extension_handle)
+    extension_dict._VerifyExtensionHandle(self, extension_handle)
     if extension_handle.label == _FieldDescriptor.LABEL_REPEATED:
       raise KeyError('"%s" is repeated.' % extension_handle.full_name)
 
@@ -1550,126 +1529,3 @@ class _OneofListener(_Listener):
       super(_OneofListener, self).Modified()
     except ReferenceError:
       pass
-
-
-# TODO(robinson): Move elsewhere?  This file is getting pretty ridiculous...
-# TODO(robinson): Unify error handling of "unknown extension" crap.
-# TODO(robinson): Support iteritems()-style iteration over all
-# extensions with the "has" bits turned on?
-class _ExtensionDict(object):
-
-  """Dict-like container for supporting an indexable "Extensions"
-  field on proto instances.
-
-  Note that in all cases we expect extension handles to be
-  FieldDescriptors.
-  """
-
-  def __init__(self, extended_message):
-    """extended_message: Message instance for which we are the Extensions dict.
-    """
-
-    self._extended_message = extended_message
-
-  def __getitem__(self, extension_handle):
-    """Returns the current value of the given extension handle."""
-
-    _VerifyExtensionHandle(self._extended_message, extension_handle)
-
-    result = self._extended_message._fields.get(extension_handle)
-    if result is not None:
-      return result
-
-    if extension_handle.label == _FieldDescriptor.LABEL_REPEATED:
-      result = extension_handle._default_constructor(self._extended_message)
-    elif extension_handle.cpp_type == _FieldDescriptor.CPPTYPE_MESSAGE:
-      assert getattr(extension_handle.message_type, '_concrete_class', None), (
-          'Uninitialized concrete class found for field %r (message type %r)'
-          % (extension_handle.full_name,
-             extension_handle.message_type.full_name))
-      result = extension_handle.message_type._concrete_class()
-      try:
-        result._SetListener(self._extended_message._listener_for_children)
-      except ReferenceError:
-        pass
-    else:
-      # Singular scalar -- just return the default without inserting into the
-      # dict.
-      return extension_handle.default_value
-
-    # Atomically check if another thread has preempted us and, if not, swap
-    # in the new object we just created.  If someone has preempted us, we
-    # take that object and discard ours.
-    # WARNING:  We are relying on setdefault() being atomic.  This is true
-    #   in CPython but we haven't investigated others.  This warning appears
-    #   in several other locations in this file.
-    result = self._extended_message._fields.setdefault(
-        extension_handle, result)
-
-    return result
-
-  def __eq__(self, other):
-    if not isinstance(other, self.__class__):
-      return False
-
-    my_fields = self._extended_message.ListFields()
-    other_fields = other._extended_message.ListFields()
-
-    # Get rid of non-extension fields.
-    my_fields = [field for field in my_fields if field.is_extension]
-    other_fields = [field for field in other_fields if field.is_extension]
-
-    return my_fields == other_fields
-
-  def __ne__(self, other):
-    return not self == other
-
-  def __hash__(self):
-    raise TypeError('unhashable object')
-
-  # Note that this is only meaningful for non-repeated, scalar extension
-  # fields.  Note also that we may have to call _Modified() when we do
-  # successfully set a field this way, to set any necssary "has" bits in the
-  # ancestors of the extended message.
-  def __setitem__(self, extension_handle, value):
-    """If extension_handle specifies a non-repeated, scalar extension
-    field, sets the value of that field.
-    """
-
-    _VerifyExtensionHandle(self._extended_message, extension_handle)
-
-    if (extension_handle.label == _FieldDescriptor.LABEL_REPEATED or
-        extension_handle.cpp_type == _FieldDescriptor.CPPTYPE_MESSAGE):
-      raise TypeError(
-          'Cannot assign to extension "%s" because it is a repeated or '
-          'composite type.' % extension_handle.full_name)
-
-    # It's slightly wasteful to lookup the type checker each time,
-    # but we expect this to be a vanishingly uncommon case anyway.
-    type_checker = type_checkers.GetTypeChecker(extension_handle)
-    # pylint: disable=protected-access
-    self._extended_message._fields[extension_handle] = (
-        type_checker.CheckValue(value))
-    self._extended_message._Modified()
-
-  def _FindExtensionByName(self, name):
-    """Tries to find a known extension with the specified name.
-
-    Args:
-      name: Extension full name.
-
-    Returns:
-      Extension field descriptor.
-    """
-    return self._extended_message._extensions_by_name.get(name, None)
-
-  def _FindExtensionByNumber(self, number):
-    """Tries to find a known extension with the field number.
-
-    Args:
-      number: Extension field number.
-
-    Returns:
-      Extension field descriptor.
-    """
-    return self._extended_message._extensions_by_number.get(number, None)

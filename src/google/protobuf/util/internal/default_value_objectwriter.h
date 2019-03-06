@@ -150,8 +150,8 @@ class PROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
   // DefaultValueObjectWriter.
   class PROTOBUF_EXPORT Node {
    public:
-    Node(const std::string& name, const google::protobuf::Type* type, NodeKind kind,
-         const DataPiece& data, bool is_placeholder,
+    Node(const std::string& name, const google::protobuf::Type* type,
+         NodeKind kind, const DataPiece& data, bool is_placeholder,
          const std::vector<std::string>& path, bool suppress_empty_list,
          bool preserve_proto_field_names, bool use_ints_for_enums,
          FieldScrubCallBack* field_scrub_callback);
@@ -299,7 +299,7 @@ class PROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
   // google::protobuf::Type of the root message type.
   const google::protobuf::Type& type_;
   // Holds copies of strings passed to RenderString.
-  std::vector<std::string*> string_values_;
+  std::vector<std::unique_ptr<std::string>> string_values_;
 
   // The current Node. Owned by its parents.
   Node* current_;

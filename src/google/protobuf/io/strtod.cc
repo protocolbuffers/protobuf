@@ -52,7 +52,7 @@ namespace {
 // Returns a string identical to *input except that the character pointed to
 // by radix_pos (which should be '.') is replaced with the locale-specific
 // radix character.
-string LocalizeRadix(const char* input, const char* radix_pos) {
+std::string LocalizeRadix(const char* input, const char* radix_pos) {
   // Determine the locale-specific radix character by calling sprintf() to
   // print the number 1.5, then stripping off the digits.  As far as I can
   // tell, this is the only portable, thread-safe way to get the C library
@@ -65,7 +65,7 @@ string LocalizeRadix(const char* input, const char* radix_pos) {
   GOOGLE_CHECK_LE(size, 6);
 
   // Now replace the '.' in the input with it.
-  string result;
+  std::string result;
   result.reserve(strlen(input) + size - 3);
   result.append(input, radix_pos);
   result.append(temp + 1, size - 2);
@@ -90,7 +90,7 @@ double NoLocaleStrtod(const char* text, char** original_endptr) {
   // Parsing halted on a '.'.  Perhaps we're in a different locale?  Let's
   // try to replace the '.' with a locale-specific radix character and
   // try again.
-  string localized = LocalizeRadix(text, temp_endptr);
+  std::string localized = LocalizeRadix(text, temp_endptr);
   const char* localized_cstr = localized.c_str();
   char* localized_endptr;
   result = strtod(localized_cstr, &localized_endptr);

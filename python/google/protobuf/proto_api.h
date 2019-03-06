@@ -47,6 +47,7 @@
 
 #include <Python.h>
 
+#include <google/protobuf/descriptor_database.h>
 #include <google/protobuf/message.h>
 
 namespace google {
@@ -76,6 +77,11 @@ struct PyProto_API {
   // pointing to the message, like submessages or repeated containers.
   // With the current implementation, only empty messages are in this case.
   virtual Message* GetMutableMessagePointer(PyObject* msg) const = 0;
+
+  // Expose the underlying DescriptorPool and MessageFactory to enable C++ code
+  // to create Python-compatible message.
+  virtual const DescriptorPool* GetDefaultDescriptorPool() const = 0;
+  virtual MessageFactory* GetDefaultMessageFactory() const = 0;
 };
 
 inline const char* PyProtoAPICapsuleName() {

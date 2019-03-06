@@ -294,6 +294,57 @@ void build_class_from_descriptor(
 // PHP Methods
 // -----------------------------------------------------------------------------
 
+static bool is_wrapper_msg(const upb_msgdef* m) {
+  upb_wellknowntype_t type = upb_msgdef_wellknowntype(m);
+  return type >= UPB_WELLKNOWN_DOUBLEVALUE &&
+         type <= UPB_WELLKNOWN_BOOLVALUE;
+}
+
+static void append_wrapper_message(
+    zend_class_entry* subklass, RepeatedField* intern, zval* value TSRMLS_DC) {
+  MessageHeader* submsg;
+  const upb_fielddef* field;
+#if PHP_MAJOR_VERSION < 7
+  zval* val = NULL;
+  MAKE_STD_ZVAL(val);
+  ZVAL_OBJ(val, subklass->create_object(subklass TSRMLS_CC));
+  repeated_field_push_native(intern, &val);
+  submsg = UNBOX(MessageHeader, val);
+#else
+  zend_object* obj = subklass->create_object(subklass TSRMLS_CC);
+  repeated_field_push_native(intern, &obj);
+  submsg = (MessageHeader*)((char*)obj - XtOffsetOf(MessageHeader, std));
+#endif
+  custom_data_init(subklass, submsg PHP_PROTO_TSRMLS_CC);
+
+  field = upb_msgdef_itof(submsg->descriptor->msgdef, 1);
+  layout_set(submsg->descriptor->layout, submsg, field, value TSRMLS_CC);
+}
+
+static void set_wrapper_message_as_map_value(
+    zend_class_entry* subklass, zval* map, zval* key,  zval* value TSRMLS_DC) {
+  MessageHeader* submsg;
+  const upb_fielddef* field;
+#if PHP_MAJOR_VERSION < 7
+  zval* val = NULL;
+  MAKE_STD_ZVAL(val);
+  ZVAL_OBJ(val, subklass->create_object(subklass TSRMLS_CC));
+  map_field_handlers->write_dimension(
+      map, key, val TSRMLS_CC);
+  submsg = UNBOX(MessageHeader, val);
+#else
+  zval val;
+  zend_object* obj = subklass->create_object(subklass TSRMLS_CC);
+  ZVAL_OBJ(&val, obj);
+  map_field_handlers->write_dimension(map, key, &val TSRMLS_CC);
+  submsg = (MessageHeader*)((char*)obj - XtOffsetOf(MessageHeader, std));
+#endif
+  custom_data_init(subklass, submsg PHP_PROTO_TSRMLS_CC);
+
+  field = upb_msgdef_itof(submsg->descriptor->msgdef, 1);
+  layout_set(submsg->descriptor->layout, submsg, field, value TSRMLS_CC);
+}
+
 void Message_construct(zval* msg, zval* array_wrapper) {
   TSRMLS_FETCH();
   zend_class_entry* ce = Z_OBJCE_P(msg);
@@ -336,14 +387,38 @@ void Message_construct(zval* msg, zval* array_wrapper) {
       HashPosition subpointer;
       zval subkey;
       void* memory;
+      bool is_wrapper = false;
+      zend_class_entry* subklass = NULL;
+      const upb_msgdef* mapentry = upb_fielddef_msgsubdef(field);
+      const upb_fielddef *value_field = upb_msgdef_itof(mapentry, 2);
+
+      if (upb_fielddef_issubmsg(value_field)) {
+        const upb_msgdef* submsgdef = upb_fielddef_msgsubdef(value_field);
+        upb_wellknowntype_t type = upb_msgdef_wellknowntype(submsgdef);
+        is_wrapper = is_wrapper_msg(submsgdef);
+
+        if (is_wrapper) {
+          PHP_PROTO_HASHTABLE_VALUE subdesc_php = get_def_obj(submsgdef);
+          Descriptor* subdesc = UNBOX_HASHTABLE_VALUE(Descriptor, subdesc_php);
+          subklass = subdesc->klass;
+        }
+      }
+
       for (zend_hash_internal_pointer_reset_ex(subtable, &subpointer);
            php_proto_zend_hash_get_current_data_ex(subtable, (void**)&memory,
                                                    &subpointer) == SUCCESS;
            zend_hash_move_forward_ex(subtable, &subpointer)) {
         zend_hash_get_current_key_zval_ex(subtable, &subkey, &subpointer);
-        map_field_handlers->write_dimension(
-            submap, &subkey,
-            CACHED_PTR_TO_ZVAL_PTR((CACHED_VALUE*)memory) TSRMLS_CC);
+        if (is_wrapper &&
+            Z_TYPE_P(CACHED_PTR_TO_ZVAL_PTR((CACHED_VALUE*)memory)) != IS_OBJECT) {
+          set_wrapper_message_as_map_value(
+              subklass, submap, &subkey,
+              CACHED_PTR_TO_ZVAL_PTR((CACHED_VALUE*)memory) TSRMLS_CC);
+        } else {
+          map_field_handlers->write_dimension(
+              submap, &subkey,
+              CACHED_PTR_TO_ZVAL_PTR((CACHED_VALUE*)memory) TSRMLS_CC);
+        }
         zval_dtor(&subkey);
       }
     } else if (upb_fielddef_isseq(field)) {
@@ -354,29 +429,64 @@ void Message_construct(zval* msg, zval* array_wrapper) {
           CACHED_PTR_TO_ZVAL_PTR((CACHED_VALUE*)value));
       HashPosition subpointer;
       void* memory;
+      bool is_wrapper = false;
+      zend_class_entry* subklass = NULL;
+
+      if (upb_fielddef_issubmsg(field)) {
+        const upb_msgdef* submsgdef = upb_fielddef_msgsubdef(field);
+        upb_wellknowntype_t type = upb_msgdef_wellknowntype(submsgdef);
+        is_wrapper = is_wrapper_msg(submsgdef);
+
+        if (is_wrapper) {
+          PHP_PROTO_HASHTABLE_VALUE subdesc_php = get_def_obj(submsgdef);
+          Descriptor* subdesc = UNBOX_HASHTABLE_VALUE(Descriptor, subdesc_php);
+          subklass = subdesc->klass;
+        }
+      }
+
       for (zend_hash_internal_pointer_reset_ex(subtable, &subpointer);
            php_proto_zend_hash_get_current_data_ex(subtable, (void**)&memory,
                                                    &subpointer) == SUCCESS;
            zend_hash_move_forward_ex(subtable, &subpointer)) {
-        repeated_field_handlers->write_dimension(
-            subarray, NULL,
-            CACHED_PTR_TO_ZVAL_PTR((CACHED_VALUE*)memory) TSRMLS_CC);
+        if (is_wrapper &&
+            Z_TYPE_P(CACHED_PTR_TO_ZVAL_PTR((CACHED_VALUE*)memory)) != IS_OBJECT) {
+          RepeatedField* intern = UNBOX(RepeatedField, subarray);
+          append_wrapper_message(
+              subklass, intern,
+              CACHED_PTR_TO_ZVAL_PTR((CACHED_VALUE*)memory) TSRMLS_CC);
+        } else {
+          repeated_field_handlers->write_dimension(
+              subarray, NULL,
+              CACHED_PTR_TO_ZVAL_PTR((CACHED_VALUE*)memory) TSRMLS_CC);
+        }
       }
     } else if (upb_fielddef_issubmsg(field)) {
       const upb_msgdef* submsgdef = upb_fielddef_msgsubdef(field);
       PHP_PROTO_HASHTABLE_VALUE desc_php = get_def_obj(submsgdef);
       Descriptor* desc = UNBOX_HASHTABLE_VALUE(Descriptor, desc_php);
-      zend_property_info* property_info;
-      PHP_PROTO_FAKE_SCOPE_BEGIN(Z_OBJCE_P(msg));
+
+      CACHED_VALUE* cached = NULL;
+      if (upb_fielddef_containingoneof(field)) {
+        void* memory = slot_memory(intern->descriptor->layout,
+                                   message_data(intern), field);
+        int property_cache_index =
+            intern->descriptor->layout->fields[upb_fielddef_index(field)]
+                .cache_index;
+        cached = OBJ_PROP(Z_OBJ_P(msg), property_cache_index);
+        *(CACHED_VALUE**)(memory) = cached;
+      } else {
+        zend_property_info* property_info;
+        PHP_PROTO_FAKE_SCOPE_BEGIN(Z_OBJCE_P(msg));
 #if PHP_MAJOR_VERSION < 7
-      property_info =
-          zend_get_property_info(Z_OBJCE_P(msg), &key, true TSRMLS_CC);
+        property_info =
+            zend_get_property_info(Z_OBJCE_P(msg), &key, true TSRMLS_CC);
 #else
-      property_info =
-          zend_get_property_info(Z_OBJCE_P(msg), Z_STR_P(&key), true);
+        property_info =
+            zend_get_property_info(Z_OBJCE_P(msg), Z_STR_P(&key), true);
 #endif
-      PHP_PROTO_FAKE_SCOPE_END;
-      CACHED_VALUE* cached = OBJ_PROP(Z_OBJ_P(msg), property_info->offset);
+        PHP_PROTO_FAKE_SCOPE_END;
+        cached = OBJ_PROP(Z_OBJ_P(msg), property_info->offset);
+      }
 #if PHP_MAJOR_VERSION < 7
       SEPARATE_ZVAL_IF_NOT_REF(cached);
 #endif
@@ -384,7 +494,7 @@ void Message_construct(zval* msg, zval* array_wrapper) {
       ZVAL_OBJ(submsg, desc->klass->create_object(desc->klass TSRMLS_CC));
       Message_construct(submsg, NULL);
       MessageHeader* to = UNBOX(MessageHeader, submsg);
-      const upb_filedef *file = upb_def_file(upb_msgdef_upcast(submsgdef));
+      const upb_filedef *file = upb_msgdef_file(submsgdef);
       if (!strcmp(upb_filedef_name(file), "google/protobuf/wrappers.proto") &&
           Z_TYPE_P(CACHED_PTR_TO_ZVAL_PTR((CACHED_VALUE*)value)) != IS_OBJECT) {
         const upb_fielddef *value_field = upb_msgdef_itof(submsgdef, 1);
@@ -591,7 +701,8 @@ static void init_file_any(TSRMLS_D) {
   char* binary;
   int binary_len;
   hex_to_binary(generated_file, &binary, &binary_len);
-  internal_add_generated_file(binary, binary_len, generated_pool TSRMLS_CC);
+  internal_add_generated_file(binary, binary_len,
+                              generated_pool, true TSRMLS_CC);
   FREE(binary);
   is_inited_file_any = true;
 }
@@ -631,7 +742,8 @@ static void init_file_api(TSRMLS_D) {
   char* binary;
   int binary_len;
   hex_to_binary(generated_file, &binary, &binary_len);
-  internal_add_generated_file(binary, binary_len, generated_pool TSRMLS_CC);
+  internal_add_generated_file(binary, binary_len,
+                              generated_pool, true TSRMLS_CC);
   FREE(binary);
   is_inited_file_api = true;
 }
@@ -651,7 +763,8 @@ static void init_file_duration(TSRMLS_D) {
   char* binary;
   int binary_len;
   hex_to_binary(generated_file, &binary, &binary_len);
-  internal_add_generated_file(binary, binary_len, generated_pool TSRMLS_CC);
+  internal_add_generated_file(binary, binary_len,
+                              generated_pool, true TSRMLS_CC);
   FREE(binary);
   is_inited_file_duration = true;
 }
@@ -671,7 +784,8 @@ static void init_file_field_mask(TSRMLS_D) {
   char* binary;
   int binary_len;
   hex_to_binary(generated_file, &binary, &binary_len);
-  internal_add_generated_file(binary, binary_len, generated_pool TSRMLS_CC);
+  internal_add_generated_file(binary, binary_len,
+                              generated_pool, true TSRMLS_CC);
   FREE(binary);
   is_inited_file_field_mask = true;
 }
@@ -690,7 +804,8 @@ static void init_file_empty(TSRMLS_D) {
   char* binary;
   int binary_len;
   hex_to_binary(generated_file, &binary, &binary_len);
-  internal_add_generated_file(binary, binary_len, generated_pool TSRMLS_CC);
+  internal_add_generated_file(binary, binary_len,
+                              generated_pool, true TSRMLS_CC);
   FREE(binary);
   is_inited_file_empty = true;
 }
@@ -711,7 +826,8 @@ static void init_file_source_context(TSRMLS_D) {
   char* binary;
   int binary_len;
   hex_to_binary(generated_file, &binary, &binary_len);
-  internal_add_generated_file(binary, binary_len, generated_pool TSRMLS_CC);
+  internal_add_generated_file(binary, binary_len,
+                              generated_pool, true TSRMLS_CC);
   FREE(binary);
   is_inited_file_source_context = true;
 }
@@ -745,7 +861,8 @@ static void init_file_struct(TSRMLS_D) {
   char* binary;
   int binary_len;
   hex_to_binary(generated_file, &binary, &binary_len);
-  internal_add_generated_file(binary, binary_len, generated_pool TSRMLS_CC);
+  internal_add_generated_file(binary, binary_len,
+                              generated_pool, true TSRMLS_CC);
   FREE(binary);
   is_inited_file_struct = true;
 }
@@ -765,7 +882,8 @@ static void init_file_timestamp(TSRMLS_D) {
   char* binary;
   int binary_len;
   hex_to_binary(generated_file, &binary, &binary_len);
-  internal_add_generated_file(binary, binary_len, generated_pool TSRMLS_CC);
+  internal_add_generated_file(binary, binary_len,
+                              generated_pool, true TSRMLS_CC);
   FREE(binary);
   is_inited_file_timestamp = true;
 }
@@ -833,7 +951,8 @@ static void init_file_type(TSRMLS_D) {
   char* binary;
   int binary_len;
   hex_to_binary(generated_file, &binary, &binary_len);
-  internal_add_generated_file(binary, binary_len, generated_pool TSRMLS_CC);
+  internal_add_generated_file(binary, binary_len,
+                              generated_pool, true TSRMLS_CC);
   FREE(binary);
   is_inited_file_type = true;
 }
@@ -860,7 +979,8 @@ static void init_file_wrappers(TSRMLS_D) {
   char* binary;
   int binary_len;
   hex_to_binary(generated_file, &binary, &binary_len);
-  internal_add_generated_file(binary, binary_len, generated_pool TSRMLS_CC);
+  internal_add_generated_file(binary, binary_len,
+                              generated_pool, true TSRMLS_CC);
   FREE(binary);
   is_inited_file_wrappers = true;
 }

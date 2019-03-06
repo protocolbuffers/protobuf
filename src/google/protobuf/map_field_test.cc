@@ -43,7 +43,6 @@
 #include <google/protobuf/map_field_inl.h>
 #include <google/protobuf/message.h>
 #include <google/protobuf/repeated_field.h>
-#include <google/protobuf/wire_format_lite_inl.h>
 #include <gtest/gtest.h>
 
 namespace google {
@@ -309,8 +308,8 @@ class MapFieldStateTest
   State state_;
 };
 
-INSTANTIATE_TEST_CASE_P(MapFieldStateTestInstance, MapFieldStateTest,
-                        ::testing::Values(CLEAN, MAP_DIRTY, REPEATED_DIRTY));
+INSTANTIATE_TEST_SUITE_P(MapFieldStateTestInstance, MapFieldStateTest,
+                         ::testing::Values(CLEAN, MAP_DIRTY, REPEATED_DIRTY));
 
 TEST_P(MapFieldStateTest, GetMap) {
   map_field_->GetMap();

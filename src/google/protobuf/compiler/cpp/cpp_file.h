@@ -94,14 +94,15 @@ class FileGenerator {
   void IncludeFile(const std::string& google3_name, io::Printer* printer) {
     DoIncludeFile(google3_name, false, printer);
   }
-  void IncludeFileAndExport(const std::string& google3_name, io::Printer* printer) {
+  void IncludeFileAndExport(const std::string& google3_name,
+                            io::Printer* printer) {
     DoIncludeFile(google3_name, true, printer);
   }
   void DoIncludeFile(const std::string& google3_name, bool do_export,
                      io::Printer* printer);
 
   std::string CreateHeaderInclude(const std::string& basename,
-                             const FileDescriptor* file);
+                                  const FileDescriptor* file);
   void GenerateInternalForwardDeclarations(
       const std::vector<const FieldDescriptor*>& fields, const Options& options,
       MessageSCCAnalyzer* scc_analyzer, io::Printer* printer);
@@ -116,10 +117,8 @@ class FileGenerator {
   void GenerateForwardDeclarations(io::Printer* printer);
 
   // Generates top or bottom of a header file.
-  void GenerateTopHeaderGuard(io::Printer* printer,
-                              const std::string& filename_identifier);
-  void GenerateBottomHeaderGuard(io::Printer* printer,
-                                 const std::string& filename_identifier);
+  void GenerateTopHeaderGuard(io::Printer* printer, bool pb_h);
+  void GenerateBottomHeaderGuard(io::Printer* printer, bool pb_h);
 
   // Generates #include directives.
   void GenerateLibraryIncludes(io::Printer* printer);
@@ -127,7 +126,8 @@ class FileGenerator {
 
   // Generate a pragma to pull in metadata using the given info_path (if
   // non-empty). info_path should be relative to printer's output.
-  void GenerateMetadataPragma(io::Printer* printer, const std::string& info_path);
+  void GenerateMetadataPragma(io::Printer* printer,
+                              const std::string& info_path);
 
   // Generates a couple of different pieces before definitions:
   void GenerateGlobalStateFunctionDeclarations(io::Printer* printer);

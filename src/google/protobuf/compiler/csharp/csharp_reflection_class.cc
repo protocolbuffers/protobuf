@@ -234,7 +234,7 @@ void ReflectionClassGenerator::WriteGeneratedCodeInfo(const Descriptor* descript
   }
   // Generated message type
   printer->Print("new pbr::GeneratedClrTypeInfo(typeof($type_name$), $type_name$.Parser, ", "type_name", GetClassName(descriptor));
-  
+
   // Fields
   if (descriptor->field_count() > 0) {
       std::vector<std::string> fields;
@@ -273,7 +273,7 @@ void ReflectionClassGenerator::WriteGeneratedCodeInfo(const Descriptor* descript
 
   // Nested types
   if (descriptor->nested_type_count() > 0) {
-      // Need to specify array type explicitly here, as all elements may be null. 
+      // Need to specify array type explicitly here, as all elements may be null.
       printer->Print("new pbr::GeneratedClrTypeInfo[] { ");
       for (int i = 0; i < descriptor->nested_type_count(); i++) {
           WriteGeneratedCodeInfo(descriptor->nested_type(i), printer, i == descriptor->nested_type_count() - 1);

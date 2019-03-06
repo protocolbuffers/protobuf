@@ -109,8 +109,8 @@ class MapReflectionTester {
   void GetMapValueViaMapReflection(Message* message,
                                    const std::string& field_name,
                                    const MapKey& map_key, MapValueRef* map_val);
-  Message* GetMapEntryViaReflection(Message* message, const std::string& field_name,
-                                    int index);
+  Message* GetMapEntryViaReflection(Message* message,
+                                    const std::string& field_name, int index);
   MapIterator MapBegin(Message* message, const std::string& field_name);
   MapIterator MapEnd(Message* message, const std::string& field_name);
 

@@ -373,6 +373,42 @@ namespace Google.Protobuf
             Assert.AreEqual('\ufffd', text[0]);
         }
 
+        [Test]
+        public void ReadNegativeSizedStringThrowsInvalidProtocolBufferException()
+        {
+            MemoryStream ms = new MemoryStream();
+            CodedOutputStream output = new CodedOutputStream(ms);
+
+            uint tag = WireFormat.MakeTag(1, WireFormat.WireType.LengthDelimited);
+            output.WriteRawVarint32(tag);
+            output.WriteLength(-1);
+            output.Flush();
+            ms.Position = 0;
+
+            CodedInputStream input = new CodedInputStream(ms);
+
+            Assert.AreEqual(tag, input.ReadTag());
+            Assert.Throws<InvalidProtocolBufferException>(() => input.ReadString());
+        }
+
+        [Test]
+        public void ReadNegativeSizedBytesThrowsInvalidProtocolBufferException()
+        {
+            MemoryStream ms = new MemoryStream();
+            CodedOutputStream output = new CodedOutputStream(ms);
+
+            uint tag = WireFormat.MakeTag(1, WireFormat.WireType.LengthDelimited);
+            output.WriteRawVarint32(tag);
+            output.WriteLength(-1);
+            output.Flush();
+            ms.Position = 0;
+
+            CodedInputStream input = new CodedInputStream(ms);
+
+            Assert.AreEqual(tag, input.ReadTag());
+            Assert.Throws<InvalidProtocolBufferException>(() => input.ReadBytes());
+        }
+
         /// <summary>
         /// A stream which limits the number of bytes it reads at a time.
         /// We use this to make sure that CodedInputStream doesn't screw up when

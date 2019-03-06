@@ -260,9 +260,7 @@ namespace Google.Protobuf.Examples.AddressBook {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
-              return;
-            }
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 10: {
             Name = input.ReadString();
@@ -442,9 +440,7 @@ namespace Google.Protobuf.Examples.AddressBook {
           while ((tag = input.ReadTag()) != 0) {
             switch(tag) {
               default:
-                if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
-                  return;
-                }
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
                 break;
               case 10: {
                 Number = input.ReadString();
@@ -577,9 +573,7 @@ namespace Google.Protobuf.Examples.AddressBook {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
-              return;
-            }
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 10: {
             people_.AddEntriesFrom(input, _repeated_people_codec);

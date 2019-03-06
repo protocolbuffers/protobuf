@@ -555,7 +555,7 @@ InitDetector init_detector;
 
 bool IsStructurallyValidUTF8(const char* buf, int len) {
   if (!module_initialized_) return true;
-  
+
   int bytes_consumed = 0;
   UTF8GenericScanFastAscii(&utf8acceptnonsurrogates_obj,
                            buf, len, &bytes_consumed);

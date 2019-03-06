@@ -47,7 +47,7 @@ namespace Google.Protobuf.Reflection
         }
 
         /// <value>
-        /// The index of this descriptor within its parent descriptor. 
+        /// The index of this descriptor within its parent descriptor.
         /// </value>
         /// <remarks>
         /// This returns the index of this descriptor within its parent, for

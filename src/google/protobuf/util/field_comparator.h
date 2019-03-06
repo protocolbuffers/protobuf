@@ -182,7 +182,8 @@ class PROTOBUF_EXPORT DefaultFieldComparator : public FieldComparator {
   // basic types (instead of submessages). They return true on success. One
   // can use ResultFromBoolean() to convert that boolean to a ComparisonResult
   // value.
-  bool CompareBool(const FieldDescriptor& /* unused */, bool value_1, bool value_2) {
+  bool CompareBool(const FieldDescriptor& /* unused */,
+                   bool value_1, bool value_2) {
     return value_1 == value_2;
   }
 

@@ -18,7 +18,6 @@ module BasicTestProto2
       add_message "BadFieldNames" do
         optional :dup, :int32, 1
         optional :class, :int32, 2
-        optional :"a.b", :int32, 3
       end
     end
   end
@@ -207,7 +206,7 @@ module BasicTestProto2
       e = assert_raise ArgumentError do
         TestMessage.new(:repeated_uint32 => "hello")
       end
-      assert_equal e.message, "Expected array as initializer value for repeated field 'repeated_uint32'."
+      assert_equal e.message, "Expected array as initializer value for repeated field 'repeated_uint32' (given String)."
     end
 
 

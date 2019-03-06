@@ -57,9 +57,8 @@ const FieldDescriptor* ValueField(const FieldDescriptor* descriptor) {
   return message->FindFieldByName("value");
 }
 
-string TypeName(const FieldDescriptor* field,
-                ClassNameResolver* name_resolver,
-                bool boxed) {
+std::string TypeName(const FieldDescriptor* field,
+                     ClassNameResolver* name_resolver, bool boxed) {
   if (GetJavaType(field) == JAVATYPE_MESSAGE) {
     return name_resolver->GetImmutableClassName(field->message_type());
   } else if (GetJavaType(field) == JAVATYPE_ENUM) {
@@ -70,17 +69,15 @@ string TypeName(const FieldDescriptor* field,
   }
 }
 
-string WireType(const FieldDescriptor* field) {
+std::string WireType(const FieldDescriptor* field) {
   return "com.google.protobuf.WireFormat.FieldType." +
-      string(FieldTypeName(field->type()));
+         std::string(FieldTypeName(field->type()));
 }
 
-void SetMessageVariables(const FieldDescriptor* descriptor,
-                         int messageBitIndex,
-                         int builderBitIndex,
-                         const FieldGeneratorInfo* info,
+void SetMessageVariables(const FieldDescriptor* descriptor, int messageBitIndex,
+                         int builderBitIndex, const FieldGeneratorInfo* info,
                          Context* context,
-                         std::map<string, string>* variables) {
+                         std::map<std::string, std::string>* variables) {
   SetCommonFieldVariables(descriptor, info, variables);
 
   ClassNameResolver* name_resolver = context->GetNameResolver();
@@ -900,7 +897,7 @@ GenerateHashCode(io::Printer* printer) const {
       "}\n");
 }
 
-string ImmutableMapFieldLiteGenerator::GetBoxedType() const {
+std::string ImmutableMapFieldLiteGenerator::GetBoxedType() const {
   return name_resolver_->GetImmutableClassName(descriptor_->message_type());
 }
 

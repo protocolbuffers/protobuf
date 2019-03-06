@@ -30,10 +30,10 @@
 
 syntax = "proto3";
 
-package google.protobuf.testing;
+package proto_util_converter.testing;
 
-import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
 
 message TimestampDurationTestCases {
   // Timestamp tests

@@ -135,7 +135,8 @@ class CodedStreamTest : public testing::Test {
   // for further information.
   static void SetupTotalBytesLimitWarningTest(
       int total_bytes_limit, int warning_threshold,
-      std::vector<string>* out_errors, std::vector<string>* out_warnings);
+      std::vector<std::string>* out_errors,
+      std::vector<std::string>* out_warnings);
 
   // Buffer used during most of the tests. This assumes tests run sequentially.
   static const int kBufferSize = 1024 * 64;
@@ -705,7 +706,7 @@ TEST_1D(CodedStreamTest, ReadString, kBlockSizes) {
   {
     CodedInputStream coded_input(&input);
 
-    string str;
+    std::string str;
     EXPECT_TRUE(coded_input.ReadString(&str, strlen(kRawBytes)));
     EXPECT_EQ(kRawBytes, str);
   }
@@ -720,7 +721,7 @@ TEST_1D(CodedStreamTest, ReadStringImpossiblyLarge, kBlockSizes) {
   {
     CodedInputStream coded_input(&input);
 
-    string str;
+    std::string str;
     // Try to read a gigabyte.
     EXPECT_FALSE(coded_input.ReadString(&str, 1 << 30));
   }
@@ -731,14 +732,14 @@ TEST_F(CodedStreamTest, ReadStringImpossiblyLargeFromStringOnStack) {
   // crashes while the above did not.
   uint8 buffer[8];
   CodedInputStream coded_input(buffer, 8);
-  string str;
+  std::string str;
   EXPECT_FALSE(coded_input.ReadString(&str, 1 << 30));
 }
 
 TEST_F(CodedStreamTest, ReadStringImpossiblyLargeFromStringOnHeap) {
   std::unique_ptr<uint8[]> buffer(new uint8[8]);
   CodedInputStream coded_input(buffer.get(), 8);
-  string str;
+  std::string str;
   EXPECT_FALSE(coded_input.ReadString(&str, 1 << 30));
 }
 
@@ -751,7 +752,7 @@ TEST_1D(CodedStreamTest, ReadStringReservesMemoryOnTotalLimit, kBlockSizes) {
     coded_input.SetTotalBytesLimit(sizeof(kRawBytes), sizeof(kRawBytes));
     EXPECT_EQ(sizeof(kRawBytes), coded_input.BytesUntilTotalBytesLimit());
 
-    string str;
+    std::string str;
     EXPECT_TRUE(coded_input.ReadString(&str, strlen(kRawBytes)));
     EXPECT_EQ(sizeof(kRawBytes) - strlen(kRawBytes),
               coded_input.BytesUntilTotalBytesLimit());
@@ -771,7 +772,7 @@ TEST_1D(CodedStreamTest, ReadStringReservesMemoryOnPushedLimit, kBlockSizes) {
     CodedInputStream coded_input(&input);
     coded_input.PushLimit(sizeof(buffer_));
 
-    string str;
+    std::string str;
     EXPECT_TRUE(coded_input.ReadString(&str, strlen(kRawBytes)));
     EXPECT_EQ(kRawBytes, str);
     // TODO(liujisi): Replace with a more meaningful test (see cl/60966023).
@@ -791,7 +792,7 @@ TEST_F(CodedStreamTest, ReadStringNoReservationIfLimitsNotSet) {
   {
     CodedInputStream coded_input(&input);
 
-    string str;
+    std::string str;
     EXPECT_TRUE(coded_input.ReadString(&str, strlen(kRawBytes)));
     EXPECT_EQ(kRawBytes, str);
     // Note: this check depends on string class implementation. It
@@ -816,12 +817,12 @@ TEST_F(CodedStreamTest, ReadStringNoReservationSizeIsNegative) {
     CodedInputStream coded_input(&input);
     coded_input.PushLimit(sizeof(buffer_));
 
-    string str;
+    std::string str;
     EXPECT_FALSE(coded_input.ReadString(&str, -1));
     // Note: this check depends on string class implementation. It
     // expects that string will always allocate the same amount of
     // memory for an empty string.
-    EXPECT_EQ(string().capacity(), str.capacity());
+    EXPECT_EQ(std::string().capacity(), str.capacity());
   }
 }
 
@@ -836,7 +837,7 @@ TEST_F(CodedStreamTest, ReadStringNoReservationSizeIsLarge) {
     CodedInputStream coded_input(&input);
     coded_input.PushLimit(sizeof(buffer_));
 
-    string str;
+    std::string str;
     EXPECT_FALSE(coded_input.ReadString(&str, 1 << 30));
     EXPECT_GT(1 << 30, str.capacity());
   }
@@ -853,7 +854,7 @@ TEST_F(CodedStreamTest, ReadStringNoReservationSizeIsOverTheLimit) {
     CodedInputStream coded_input(&input);
     coded_input.PushLimit(16);
 
-    string str;
+    std::string str;
     EXPECT_FALSE(coded_input.ReadString(&str, strlen(kRawBytes)));
     // Note: this check depends on string class implementation. It
     // expects that string will allocate less than strlen(kRawBytes)
@@ -873,7 +874,7 @@ TEST_F(CodedStreamTest, ReadStringNoReservationSizeIsOverTheTotalBytesLimit) {
     CodedInputStream coded_input(&input);
     coded_input.SetTotalBytesLimit(16, 16);
 
-    string str;
+    std::string str;
     EXPECT_FALSE(coded_input.ReadString(&str, strlen(kRawBytes)));
     // Note: this check depends on string class implementation. It
     // expects that string will allocate less than strlen(kRawBytes)
@@ -895,7 +896,7 @@ TEST_F(CodedStreamTest,
     coded_input.PushLimit(sizeof(buffer_));
     coded_input.SetTotalBytesLimit(16, 16);
 
-    string str;
+    std::string str;
     EXPECT_FALSE(coded_input.ReadString(&str, strlen(kRawBytes)));
     // Note: this check depends on string class implementation. It
     // expects that string will allocate less than strlen(kRawBytes)
@@ -918,7 +919,7 @@ TEST_F(CodedStreamTest,
     coded_input.SetTotalBytesLimit(sizeof(buffer_), sizeof(buffer_));
     EXPECT_EQ(sizeof(buffer_), coded_input.BytesUntilTotalBytesLimit());
 
-    string str;
+    std::string str;
     EXPECT_FALSE(coded_input.ReadString(&str, strlen(kRawBytes)));
     // Note: this check depends on string class implementation. It
     // expects that string will allocate less than strlen(kRawBytes)
@@ -941,7 +942,7 @@ TEST_1D(CodedStreamTest, SkipInput, kBlockSizes) {
   {
     CodedInputStream coded_input(&input);
 
-    string str;
+    std::string str;
     EXPECT_TRUE(coded_input.ReadString(&str, strlen("<Before skipping>")));
     EXPECT_EQ("<Before skipping>", str);
     EXPECT_TRUE(coded_input.Skip(strlen("<To be skipped>")));
@@ -1225,11 +1226,11 @@ TEST_F(CodedStreamTest, TotalBytesLimit) {
   coded_input.SetTotalBytesLimit(16, -1);
   EXPECT_EQ(16, coded_input.BytesUntilTotalBytesLimit());
 
-  string str;
+  std::string str;
   EXPECT_TRUE(coded_input.ReadString(&str, 16));
   EXPECT_EQ(0, coded_input.BytesUntilTotalBytesLimit());
 
-  std::vector<string> errors;
+  std::vector<std::string> errors;
 
   {
     ScopedMemoryLog error_log;
@@ -1258,7 +1259,7 @@ TEST_F(CodedStreamTest, TotalBytesLimitNotValidMessageEnd) {
   CodedInputStream::Limit limit = coded_input.PushLimit(16);
 
   // Read 16 bytes.
-  string str;
+  std::string str;
   EXPECT_TRUE(coded_input.ReadString(&str, 16));
 
   // Read a tag.  Should fail, but report being a valid endpoint since it's
@@ -1281,14 +1282,15 @@ TEST_F(CodedStreamTest, TotalBytesLimitNotValidMessageEnd) {
 // vectors.
 void CodedStreamTest::SetupTotalBytesLimitWarningTest(
     int total_bytes_limit, int warning_threshold,
-    std::vector<string>* out_errors, std::vector<string>* out_warnings) {
+    std::vector<std::string>* out_errors,
+    std::vector<std::string>* out_warnings) {
   ArrayInputStream raw_input(buffer_, sizeof(buffer_), 128);
 
   ScopedMemoryLog scoped_log;
   {
     CodedInputStream input(&raw_input);
     input.SetTotalBytesLimit(total_bytes_limit, warning_threshold);
-    string str;
+    std::string str;
     EXPECT_TRUE(input.ReadString(&str, 2048));
   }
 
@@ -1381,12 +1383,12 @@ TEST_F(CodedStreamTest, InputOver2G) {
   // input.BackUp() with the correct number of bytes on destruction.
   ReallyBigInputStream input;
 
-  std::vector<string> errors;
+  std::vector<std::string> errors;
 
   {
     ScopedMemoryLog error_log;
     CodedInputStream coded_input(&input);
-    string str;
+    std::string str;
     EXPECT_TRUE(coded_input.ReadString(&str, 512));
     EXPECT_TRUE(coded_input.ReadString(&str, 1024));
     errors = error_log.GetMessages(ERROR);

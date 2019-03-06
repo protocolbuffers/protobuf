@@ -70,7 +70,7 @@ namespace Google.Protobuf
         /// </summary>
         public static JsonFormatter Default { get; } = new JsonFormatter(Settings.Default);
 
-        // A JSON formatter which *only* exists 
+        // A JSON formatter which *only* exists
         private static readonly JsonFormatter diagnosticFormatter = new JsonFormatter(Settings.Default);
 
         /// <summary>
@@ -579,7 +579,7 @@ namespace Google.Protobuf
             writer.Write(data.ToBase64());
             writer.Write('"');
             writer.Write(" }");
-        }        
+        }
 
         private void WriteStruct(TextWriter writer, IMessage message)
         {
@@ -616,7 +616,7 @@ namespace Google.Protobuf
             }
 
             object value = specifiedField.Accessor.GetValue(message);
-            
+
             switch (specifiedField.FieldNumber)
             {
                 case Value.BoolValueFieldNumber:
@@ -871,7 +871,7 @@ namespace Google.Protobuf
             // the platforms we target have it.
             private static readonly Dictionary<System.Type, Dictionary<object, string>> dictionaries
                 = new Dictionary<System.Type, Dictionary<object, string>>();
-            
+
             internal static string GetOriginalName(object value)
             {
                 var enumType = value.GetType();

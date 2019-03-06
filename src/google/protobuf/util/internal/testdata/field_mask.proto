@@ -30,7 +30,7 @@
 
 syntax = "proto3";
 
-package google.protobuf.testing;
+package proto_util_converter.testing;
 
 import "google/protobuf/field_mask.proto";
 

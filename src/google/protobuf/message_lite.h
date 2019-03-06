@@ -41,6 +41,7 @@
 
 #include <climits>
 #include <string>
+
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/arena.h>
@@ -71,12 +72,8 @@ class ZeroCopyOutputStream;
 }  // namespace io
 namespace internal {
 
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 // See parse_context.h for explanation
 class ParseContext;
-typedef const char* (*ParseFunc)(const char* ptr, const char* end, void* object,
-                                 ParseContext* ctx);
-#endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 
 class RepeatedPtrFieldBase;
 class WireFormatLite;
@@ -147,11 +144,11 @@ class ExplicitlyConstructed {
 
 // Default empty string object. Don't use this directly. Instead, call
 // GetEmptyString() to get the reference.
-PROTOBUF_EXPORT extern ExplicitlyConstructed<::std::string>
+PROTOBUF_EXPORT extern ExplicitlyConstructed<std::string>
     fixed_address_empty_string;
 
 
-PROTOBUF_EXPORT inline const ::std::string& GetEmptyStringAlreadyInited() {
+PROTOBUF_EXPORT inline const std::string& GetEmptyStringAlreadyInited() {
   return fixed_address_empty_string.get();
 }
 
@@ -350,8 +347,8 @@ class PROTOBUF_EXPORT MessageLite {
   // Like SerializeAsString(), but allows missing required fields.
   std::string SerializePartialAsString() const;
 
-  // Like SerializeToString(), but appends to the data to the string's existing
-  // contents.  All required fields must be set.
+  // Like SerializeToString(), but appends to the data to the string's
+  // existing contents.  All required fields must be set.
   bool AppendToString(std::string* output) const;
   // Like AppendToString(), but allows missing required fields.
   bool AppendPartialToString(std::string* output) const;
@@ -401,9 +398,8 @@ class PROTOBUF_EXPORT MessageLite {
   virtual int GetCachedSize() const = 0;
 
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  virtual internal::ParseFunc _ParseFunc() const {
-    GOOGLE_LOG(FATAL) << "Type " << GetTypeName()
-               << " doesn't implement _InternalParse";
+  virtual const char* _InternalParse(const char* ptr,
+                                     internal::ParseContext* ctx) {
     return nullptr;
   }
 #endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
@@ -496,7 +492,6 @@ extern template bool MergePartialFromImpl<false>(BoundedZCIS input,
 extern template bool MergePartialFromImpl<true>(BoundedZCIS input,
                                                 MessageLite* msg);
 
-
 template <typename T>
 struct SourceWrapper;
 
@@ -511,8 +506,8 @@ template <MessageLite::ParseFlags flags, typename T>
 bool MessageLite::ParseFrom(const T& input) {
   if (flags & kParse) Clear();
   constexpr bool alias = flags & kMergeWithAliasing;
-  return internal::MergePartialFromImpl<alias>(input, this) &&
-         ((flags & kMergePartial) || IsInitializedWithErrors());
+  bool res = internal::MergePartialFromImpl<alias>(input, this);
+  return res && ((flags & kMergePartial) || IsInitializedWithErrors());
 }
 
 }  // namespace protobuf

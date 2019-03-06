@@ -32,6 +32,7 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+#include <functional>
 #include <limits>
 #include <map>
 #include <queue>
@@ -41,6 +42,7 @@
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/compiler/cpp/cpp_helpers.h>
+#include <google/protobuf/descriptor.h>
 
 #include <google/protobuf/compiler/scc.h>
 #include <google/protobuf/io/printer.h>
@@ -67,15 +69,15 @@ static const char kAnyMessageName[] = "Any";
 static const char kAnyProtoFile[] = "google/protobuf/any.proto";
 static const char kGoogleProtobufPrefix[] = "google/protobuf/";
 
-string DotsToUnderscores(const string& name) {
+std::string DotsToUnderscores(const std::string& name) {
   return StringReplace(name, ".", "_", true);
 }
 
-string DotsToColons(const string& name) {
+std::string DotsToColons(const std::string& name) {
   return StringReplace(name, ".", "::", true);
 }
 
-const char* const kKeywordList[] = {  //
+static const char* const kKeywordList[] = {  //
     "NULL",
     "alignas",
     "alignof",
@@ -160,15 +162,15 @@ const char* const kKeywordList[] = {  //
     "xor",
     "xor_eq"};
 
-std::unordered_set<string> MakeKeywordsMap() {
-  std::unordered_set<string> result;
-  for (int i = 0; i < GOOGLE_ARRAYSIZE(kKeywordList); i++) {
-    result.insert(kKeywordList[i]);
+static std::unordered_set<std::string>* MakeKeywordsMap() {
+  auto* result = new std::unordered_set<std::string>();
+  for (const auto keyword : kKeywordList) {
+    result->emplace(keyword);
   }
   return result;
 }
 
-std::unordered_set<string> kKeywords = MakeKeywordsMap();
+static std::unordered_set<std::string>& kKeywords = *MakeKeywordsMap();
 
 // Returns whether the provided descriptor has an extension. This includes its
 // nested types.
@@ -199,8 +201,8 @@ char Base63Char(int value) {
 // Given a c identifier has 63 legal characters we can't implement base64
 // encoding. So we return the k least significant "digits" in base 63.
 template <typename I>
-string Base63(I n, int k) {
-  string res;
+std::string Base63(I n, int k) {
+  std::string res;
   while (k-- > 0) {
     res += Base63Char(static_cast<int>(n % 63));
     n /= 63;
@@ -208,27 +210,23 @@ string Base63(I n, int k) {
   return res;
 }
 
-string IntTypeName(const Options& options, const string& type) {
+std::string IntTypeName(const Options& options, const std::string& type) {
   if (options.opensource_runtime) {
-    return "::google::protobuf::" + type;
+    return "::PROTOBUF_NAMESPACE_ID::" + type;
   } else {
     return "::" + type;
   }
 }
 
-string StringTypeName(const Options& options) {
-  return options.opensource_runtime ? "::std::string" : "::std::string";
-}
-
-void SetIntVar(const Options& options, const string& type,
-               std::map<string, string>* variables) {
+void SetIntVar(const Options& options, const std::string& type,
+               std::map<std::string, std::string>* variables) {
   (*variables)[type] = IntTypeName(options, type);
 }
 
 }  // namespace
 
 void SetCommonVars(const Options& options,
-                   std::map<string, string>* variables) {
+                   std::map<std::string, std::string>* variables) {
   (*variables)["proto_ns"] = ProtobufNamespace(options);
 
   // Warning: there is some clever naming/splitting here to avoid extract script
@@ -255,16 +253,18 @@ void SetCommonVars(const Options& options,
         "ECK";
   }
 
+  SetIntVar(options, "int8", variables);
   SetIntVar(options, "uint8", variables);
   SetIntVar(options, "uint32", variables);
   SetIntVar(options, "uint64", variables);
   SetIntVar(options, "int32", variables);
   SetIntVar(options, "int64", variables);
-  (*variables)["string"] = StringTypeName(options);
+  (*variables)["string"] = "std::string";
 }
 
-string UnderscoresToCamelCase(const string& input, bool cap_next_letter) {
-  string result;
+std::string UnderscoresToCamelCase(const std::string& input,
+                                   bool cap_next_letter) {
+  std::string result;
   // Note:  I distrust ctype.h due to locales.
   for (int i = 0; i < input.size(); i++) {
     if ('a' <= input[i] && input[i] <= 'z') {
@@ -317,16 +317,16 @@ bool CanInitializeByZeroing(const FieldDescriptor* field) {
   }
 }
 
-string ClassName(const Descriptor* descriptor) {
+std::string ClassName(const Descriptor* descriptor) {
   const Descriptor* parent = descriptor->containing_type();
-  string res;
+  std::string res;
   if (parent) res += ClassName(parent) + "_";
   res += descriptor->name();
   if (IsMapEntryMessage(descriptor)) res += "_DoNotUse";
   return res;
 }
 
-string ClassName(const EnumDescriptor* enum_descriptor) {
+std::string ClassName(const EnumDescriptor* enum_descriptor) {
   if (enum_descriptor->containing_type() == nullptr) {
     return enum_descriptor->name();
   } else {
@@ -335,43 +335,72 @@ string ClassName(const EnumDescriptor* enum_descriptor) {
   }
 }
 
-string QualifiedClassName(const Descriptor* d) {
-  return Namespace(d) + "::" + ClassName(d);
+std::string QualifiedClassName(const Descriptor* d, const Options& options) {
+  return QualifiedFileLevelSymbol(d->file(), ClassName(d), options);
 }
 
-string QualifiedClassName(const EnumDescriptor* d) {
-  return Namespace(d) + "::" + ClassName(d);
+std::string QualifiedClassName(const EnumDescriptor* d,
+                               const Options& options) {
+  return QualifiedFileLevelSymbol(d->file(), ClassName(d), options);
 }
 
-string Namespace(const string& package) {
+std::string QualifiedClassName(const Descriptor* d) {
+  return QualifiedClassName(d, Options());
+}
+
+std::string QualifiedClassName(const EnumDescriptor* d) {
+  return QualifiedClassName(d, Options());
+}
+
+std::string Namespace(const std::string& package) {
   if (package.empty()) return "";
   return "::" + DotsToColons(package);
 }
 
-string Namespace(const Descriptor* d) { return Namespace(d->file()); }
-
-string Namespace(const FieldDescriptor* d) { return Namespace(d->file()); }
-
-string Namespace(const EnumDescriptor* d) { return Namespace(d->file()); }
-
-string DefaultInstanceName(const Descriptor* descriptor) {
-  string prefix = descriptor->file()->package().empty() ? "" : "::";
-  return prefix + DotsToColons(descriptor->file()->package()) + "::_" +
-         ClassName(descriptor, false) + "_default_instance_";
+std::string Namespace(const FileDescriptor* d, const Options& options) {
+  std::string ret = Namespace(d->package());
+  if (IsWellKnownMessage(d) && options.opensource_runtime) {
+    // Written with string concatenation to prevent rewriting of
+    // ::google::protobuf.
+    ret = StringReplace(ret, "::google::" "protobuf", "PROTOBUF_NAMESPACE_ID",
+                        false);
+  }
+  return ret;
 }
 
-string ReferenceFunctionName(const Descriptor* descriptor) {
-  return QualifiedClassName(descriptor) + "_ReferenceStrong";
+std::string Namespace(const Descriptor* d, const Options& options) {
+  return Namespace(d->file(), options);
 }
 
-string SuperClassName(const Descriptor* descriptor, const Options& options) {
+std::string Namespace(const FieldDescriptor* d, const Options& options) {
+  return Namespace(d->file(), options);
+}
+
+std::string Namespace(const EnumDescriptor* d, const Options& options) {
+  return Namespace(d->file(), options);
+}
+
+std::string DefaultInstanceName(const Descriptor* descriptor,
+                                const Options& options) {
+  return QualifiedFileLevelSymbol(
+      descriptor->file(),
+      "_" + ClassName(descriptor, false) + "_default_instance_", options);
+}
+
+std::string ReferenceFunctionName(const Descriptor* descriptor,
+                                  const Options& options) {
+  return QualifiedClassName(descriptor, options) + "_ReferenceStrong";
+}
+
+std::string SuperClassName(const Descriptor* descriptor,
+                           const Options& options) {
   return "::" + ProtobufNamespace(options) +
          (HasDescriptorMethods(descriptor->file(), options) ? "::Message"
                                                             : "::MessageLite");
 }
 
-string FieldName(const FieldDescriptor* field) {
-  string result = field->name();
+std::string FieldName(const FieldDescriptor* field) {
+  std::string result = field->name();
   LowerString(&result);
   if (kKeywords.count(result) > 0) {
     result.append("_");
@@ -379,8 +408,8 @@ string FieldName(const FieldDescriptor* field) {
   return result;
 }
 
-string EnumValueName(const EnumValueDescriptor* enum_value) {
-  string result = enum_value->name();
+std::string EnumValueName(const EnumValueDescriptor* enum_value) {
+  std::string result = enum_value->name();
   if (kKeywords.count(result) > 0) {
     result.append("_");
   }
@@ -411,9 +440,9 @@ int EstimateAlignmentSize(const FieldDescriptor* field) {
   return -1;  // Make compiler happy.
 }
 
-string FieldConstantName(const FieldDescriptor* field) {
-  string field_name = UnderscoresToCamelCase(field->name(), true);
-  string result = "k" + field_name + "FieldNumber";
+std::string FieldConstantName(const FieldDescriptor* field) {
+  std::string field_name = UnderscoresToCamelCase(field->name(), true);
+  std::string result = "k" + field_name + "FieldNumber";
 
   if (!field->is_extension() &&
       field->containing_type()->FindFieldByCamelcaseName(
@@ -427,13 +456,14 @@ string FieldConstantName(const FieldDescriptor* field) {
   return result;
 }
 
-string FieldMessageTypeName(const FieldDescriptor* field) {
+std::string FieldMessageTypeName(const FieldDescriptor* field,
+                                 const Options& options) {
   // Note:  The Google-internal version of Protocol Buffers uses this function
   //   as a hook point for hacks to support legacy code.
-  return ClassName(field->message_type(), true);
+  return QualifiedClassName(field->message_type(), options);
 }
 
-string StripProto(const string& filename) {
+std::string StripProto(const std::string& filename) {
   if (HasSuffixString(filename, ".protodevel")) {
     return StripSuffixString(filename, ".protodevel");
   } else {
@@ -460,7 +490,7 @@ const char* PrimitiveTypeName(FieldDescriptor::CppType type) {
     case FieldDescriptor::CPPTYPE_ENUM:
       return "int";
     case FieldDescriptor::CPPTYPE_STRING:
-      return "::std::string";
+      return "std::string";
     case FieldDescriptor::CPPTYPE_MESSAGE:
       return nullptr;
 
@@ -472,8 +502,8 @@ const char* PrimitiveTypeName(FieldDescriptor::CppType type) {
   return nullptr;
 }
 
-string PrimitiveTypeName(const Options& options,
-                         FieldDescriptor::CppType type) {
+std::string PrimitiveTypeName(const Options& options,
+                              FieldDescriptor::CppType type) {
   switch (type) {
     case FieldDescriptor::CPPTYPE_INT32:
       return IntTypeName(options, "int32");
@@ -492,7 +522,7 @@ string PrimitiveTypeName(const Options& options,
     case FieldDescriptor::CPPTYPE_ENUM:
       return "int";
     case FieldDescriptor::CPPTYPE_STRING:
-      return StringTypeName(options);
+      return "std::string";
     case FieldDescriptor::CPPTYPE_MESSAGE:
       return "";
 
@@ -552,7 +582,7 @@ const char* DeclaredTypeMethodName(FieldDescriptor::Type type) {
   return "";
 }
 
-string Int32ToString(int number) {
+std::string Int32ToString(int number) {
   if (number == kint32min) {
     // This needs to be special-cased, see explanation here:
     // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=52661
@@ -562,7 +592,7 @@ string Int32ToString(int number) {
   }
 }
 
-string Int64ToString(const string& macro_prefix, int64 number) {
+std::string Int64ToString(const std::string& macro_prefix, int64 number) {
   if (number == kint64min) {
     // This needs to be special-cased, see explanation here:
     // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=52661
@@ -571,11 +601,11 @@ string Int64ToString(const string& macro_prefix, int64 number) {
   return StrCat(macro_prefix, "_LONGLONG(", number, ")");
 }
 
-string UInt64ToString(const string& macro_prefix, uint64 number) {
+std::string UInt64ToString(const std::string& macro_prefix, uint64 number) {
   return StrCat(macro_prefix, "_ULONGLONG(", number, ")");
 }
 
-string DefaultValue(const FieldDescriptor* field) {
+std::string DefaultValue(const FieldDescriptor* field) {
   switch (field->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT64:
       return Int64ToString("GG", field->default_value_int64());
@@ -586,7 +616,7 @@ string DefaultValue(const FieldDescriptor* field) {
   }
 }
 
-string DefaultValue(const Options& options, const FieldDescriptor* field) {
+std::string DefaultValue(const Options& options, const FieldDescriptor* field) {
   switch (field->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32:
       return Int32ToString(field->default_value_int32());
@@ -617,7 +647,7 @@ string DefaultValue(const Options& options, const FieldDescriptor* field) {
       } else if (value != value) {
         return "std::numeric_limits<float>::quiet_NaN()";
       } else {
-        string float_value = SimpleFtoa(value);
+        std::string float_value = SimpleFtoa(value);
         // If floating point value contains a period (.) or an exponent
         // (either E or e), then append suffix 'f' to make it a float
         // literal.
@@ -640,7 +670,7 @@ string DefaultValue(const Options& options, const FieldDescriptor* field) {
              EscapeTrigraphs(CEscape(field->default_value_string())) +
              "\"";
     case FieldDescriptor::CPPTYPE_MESSAGE:
-      return "*" + FieldMessageTypeName(field) +
+      return "*" + FieldMessageTypeName(field, options) +
              "::internal_default_instance()";
   }
   // Can't actually get here; make compiler happy.  (We could add a default
@@ -651,8 +681,8 @@ string DefaultValue(const Options& options, const FieldDescriptor* field) {
 }
 
 // Convert a file name into a valid identifier.
-string FilenameIdentifier(const string& filename) {
-  string result;
+std::string FilenameIdentifier(const std::string& filename) {
+  std::string result;
   for (int i = 0; i < filename.size(); i++) {
     if (ascii_isalnum(filename[i])) {
       result.push_back(filename[i]);
@@ -665,31 +695,34 @@ string FilenameIdentifier(const string& filename) {
   return result;
 }
 
-string UniqueName(const string& name, const string& filename,
+string UniqueName(const std::string& name, const std::string& filename,
                   const Options& options) {
   return name + "_" + FilenameIdentifier(filename);
 }
 
 // Return the qualified C++ name for a file level symbol.
-string QualifiedFileLevelSymbol(const string& package, const string& name) {
-  if (package.empty()) {
+std::string QualifiedFileLevelSymbol(const FileDescriptor* file,
+                                     const std::string& name,
+                                     const Options& options) {
+  if (file->package().empty()) {
     return StrCat("::", name);
   }
-  return StrCat("::", DotsToColons(package), "::", name);
+  return StrCat(Namespace(file, options), "::", name);
 }
 
 // Escape C++ trigraphs by escaping question marks to \?
-string EscapeTrigraphs(const string& to_escape) {
+std::string EscapeTrigraphs(const std::string& to_escape) {
   return StringReplace(to_escape, "?", "\\?", true);
 }
 
 // Escaped function name to eliminate naming conflict.
-string SafeFunctionName(const Descriptor* descriptor,
-                        const FieldDescriptor* field, const string& prefix) {
+std::string SafeFunctionName(const Descriptor* descriptor,
+                             const FieldDescriptor* field,
+                             const std::string& prefix) {
   // Do not use FieldName() since it will escape keywords.
-  string name = field->name();
+  std::string name = field->name();
   LowerString(&name);
-  string function_name = prefix + name;
+  std::string function_name = prefix + name;
   if (descriptor->FindFieldByName(function_name)) {
     // Single underscore will also make it conflicting with the private data
     // member. We use double underscore to escape function names.
@@ -910,11 +943,7 @@ FieldOptions::CType EffectiveStringCType(const FieldDescriptor* field,
 }
 
 bool IsAnyMessage(const FileDescriptor* descriptor, const Options& options) {
-  // For now we do not support Any in lite mode, so if we're building for lite
-  // then we just treat Any as if it's an ordinary message with no special
-  // behavior.
-  return descriptor->name() == kAnyProtoFile &&
-         GetOptimizeFor(descriptor, options) != FileOptions::LITE_RUNTIME;
+  return descriptor->name() == kAnyProtoFile;
 }
 
 bool IsAnyMessage(const Descriptor* descriptor, const Options& options) {
@@ -922,8 +951,22 @@ bool IsAnyMessage(const Descriptor* descriptor, const Options& options) {
          IsAnyMessage(descriptor->file(), options);
 }
 
-bool IsWellKnownMessage(const FileDescriptor* descriptor) {
-  return !descriptor->name().compare(0, 16, kGoogleProtobufPrefix);
+bool IsWellKnownMessage(const FileDescriptor* file) {
+  static const std::unordered_set<std::string> well_known_files{
+      "google/protobuf/any.proto",
+      "google/protobuf/api.proto",
+      "google/protobuf/compiler/plugin.proto",
+      "google/protobuf/descriptor.proto",
+      "google/protobuf/duration.proto",
+      "google/protobuf/empty.proto",
+      "google/protobuf/field_mask.proto",
+      "google/protobuf/source_context.proto",
+      "google/protobuf/struct.proto",
+      "google/protobuf/timestamp.proto",
+      "google/protobuf/type.proto",
+      "google/protobuf/wrappers.proto",
+  };
+  return well_known_files.find(file->name()) != well_known_files.end();
 }
 
 enum Utf8CheckMode {
@@ -957,7 +1000,8 @@ static Utf8CheckMode GetUtf8CheckMode(const FieldDescriptor* field,
   }
 }
 
-string GetUtf8Suffix(const FieldDescriptor* field, const Options& options) {
+std::string GetUtf8Suffix(const FieldDescriptor* field,
+                          const Options& options) {
   switch (GetUtf8CheckMode(field, options)) {
     case STRICT:
       return "UTF8";
@@ -1181,13 +1225,13 @@ void ListAllTypesForServices(const FileDescriptor* fd,
   }
 }
 
-bool GetBootstrapBasename(const Options& options, const string& basename,
-                          string* bootstrap_basename) {
+bool GetBootstrapBasename(const Options& options, const std::string& basename,
+                          std::string* bootstrap_basename) {
   if (options.opensource_runtime || options.lite_implicit_weak_fields) {
     return false;
   }
 
-  std::unordered_map<string, string> bootstrap_mapping{
+  std::unordered_map<std::string, std::string> bootstrap_mapping{
       {"net/proto2/proto/descriptor",
        "net/proto2/internal/descriptor"},
       {"net/proto2/compiler/proto/plugin",
@@ -1206,13 +1250,13 @@ bool GetBootstrapBasename(const Options& options, const string& basename,
 }
 
 bool IsBootstrapProto(const Options& options, const FileDescriptor* file) {
-  string my_name = StripProto(file->name());
+  std::string my_name = StripProto(file->name());
   return GetBootstrapBasename(options, my_name, &my_name);
 }
 
 bool MaybeBootstrap(const Options& options, GeneratorContext* generator_context,
-                    bool bootstrap_flag, string* basename) {
-  string bootstrap_basename;
+                    bool bootstrap_flag, std::string* basename) {
+  std::string bootstrap_basename;
   if (!GetBootstrapBasename(options, *basename, &bootstrap_basename)) {
     return false;
   }
@@ -1222,7 +1266,7 @@ bool MaybeBootstrap(const Options& options, GeneratorContext* generator_context,
     *basename = bootstrap_basename;
     return false;
   } else {
-    string forward_to_basename = bootstrap_basename;
+    std::string forward_to_basename = bootstrap_basename;
 
     // Generate forwarding headers and empty .pb.cc.
     {
@@ -1302,14 +1346,20 @@ class ParseLoopGenerator {
 
   void GenerateParserLoop(const Descriptor* descriptor) {
     format_.Set("classname", ClassName(descriptor));
-    format_.Set("proto_ns", ProtobufNamespace(options_));
+    format_.Set("p_ns", "::" + ProtobufNamespace(options_));
+    format_.Set("pi_ns", StrCat("::", ProtobufNamespace(options_), "::internal"));
     format_.Set("GOOGLE_PROTOBUF", MacroPrefix(options_));
-    std::map<string, string> vars;
+    format_.Set("kSlopBytes",
+                static_cast<int>(internal::ParseContext::kSlopBytes));
+    std::map<std::string, std::string> vars;
     SetCommonVars(options_, &vars);
     format_.AddMap(vars);
 
     std::vector<const FieldDescriptor*> ordered_fields;
     for (auto field : FieldRange(descriptor)) {
+      if (IsProto1(descriptor->file(), options_)) {
+        if (field->number() >= (1 << 14)) continue;
+      }
       ordered_fields.push_back(field);
     }
     std::sort(ordered_fields.begin(), ordered_fields.end(),
@@ -1318,19 +1368,12 @@ class ParseLoopGenerator {
               });
 
     format_(
-        "const char* $classname$::_InternalParse(const char* begin, const "
-        "char* "
-        "end, void* object,\n"
-        "                  ::$proto_ns$::internal::ParseContext* ctx) {\n"
-        "  auto msg = static_cast<$classname$*>(object);\n"
-        "  $int32$ size; (void)size;\n"
-        "  int depth; (void)depth;\n"
-        "  $uint32$ tag;\n"
-        "  ::$proto_ns$::internal::ParseFunc parser_till_end; "
-        "(void)parser_till_end;\n"
-        "  auto ptr = begin;\n"
-        "  while (ptr < end) {\n"
-        "    ptr = ::$proto_ns$::io::Parse32(ptr, &tag);\n"
+        "const char* $classname$::_InternalParse(const char* ptr, "
+        "$pi_ns$::ParseContext* ctx) {\n"
+        "  $p_ns$::Arena* arena = GetArena(); (void)arena;\n"
+        "  while (!ctx->Done(&ptr)) {\n"
+        "    $uint32$ tag;\n"
+        "    ptr = $pi_ns$::ReadTag(ptr, &tag);\n"
         "    $GOOGLE_PROTOBUF$_PARSER_ASSERT(ptr);\n"
         "    switch (tag >> 3) {\n");
 
@@ -1338,15 +1381,11 @@ class ParseLoopGenerator {
     format_.Indent();
     format_.Indent();
 
-    bool use_handle_unusual = false;
     for (const auto* field : ordered_fields) {
-      if (IsProto1(descriptor->file(), options_)) {
-        if (field->number() >= (1 << 14)) continue;
-      }
       // Print the field's (or oneof's) proto-syntax definition as a comment.
       // We don't want to print group bodies so we cut off after the first
       // line.
-      string def;
+      std::string def;
       {
         DebugStringOptions options;
         options.elide_group_body = true;
@@ -1359,22 +1398,21 @@ class ParseLoopGenerator {
           "case $2$: {\n",
           def, field->number());
       format_.Indent();
-      use_handle_unusual = true;
       GenerateCaseBody(field);
       format_.Outdent();
       format_("}\n");  // case
     }                  // for fields
+
+    // Default case
     format_("default: {\n");
-    if (use_handle_unusual) format_("handle_unusual:\n");
+    if (!ordered_fields.empty()) format_("handle_unusual:\n");
     format_(
         "  if ((tag & 7) == 4 || tag == 0) {\n"
-        "    ctx->EndGroup(tag);\n"
+        "    ctx->SetLastTag(tag);\n"
         "    return ptr;\n"
         "  }\n");
     if (IsMapEntryMessage(descriptor)) {
-      format_(
-          "  break;\n"
-          "}\n");
+      format_("  break;\n");
     } else {
       if (descriptor->extension_range_count() > 0) {
         format_("if (");
@@ -1396,113 +1434,69 @@ class ParseLoopGenerator {
         }
         format_(") {\n");
         format_(
-            "  auto res = msg->_extensions_.ParseField(tag, {_InternalParse, "
-            "msg}, ptr, end,\n"
-            "      internal_default_instance(), &msg->_internal_metadata_, "
+            "  ptr = _extensions_.ParseField(tag, ptr, \n"
+            "      internal_default_instance(), &_internal_metadata_, "
             "ctx);\n"
-            "  ptr = res.first;\n"
             "  $GOOGLE_PROTOBUF$_PARSER_ASSERT(ptr != nullptr);\n"
-            "  if (res.second) return ptr;\n"
-            "  continue;\n"
+            "  break;\n"
             "}\n");
       }
       format_(
-          "  auto res = UnknownFieldParse(tag, {_InternalParse, msg},\n"
-          "    ptr, end, msg->_internal_metadata_.mutable_unknown_fields(), "
-          "ctx);\n"
-          "  ptr = res.first;\n"
+          "  ptr = UnknownFieldParse(tag,\n"
+          "    _internal_metadata_.mutable_unknown_fields(), ptr, ctx);\n"
           "  $GOOGLE_PROTOBUF$_PARSER_ASSERT(ptr != nullptr);\n"
-          "  if (res.second) return ptr;\n"
-          "}\n");  // default case
+          "  break;\n");
     }
+    format_("}\n");  // default case
     format_.Outdent();
     format_.Outdent();
     format_.Outdent();
     format_(
         "    }  // switch\n"
         "  }  // while\n"
-        "  return ptr;\n");
-    if (use_string_) {
-      format_(
-          "string_till_end:\n"
-          "  static_cast<$string$*>(object)->clear();\n"
-          // TODO(gerbens) evaluate security
-          "  static_cast<$string$*>(object)->reserve(size);\n"
-          "  goto len_delim_till_end;\n");
-    }
-    if (use_arena_string_) {
-      format_(
-          "arena_string_till_end:\n"
-          "  object = "
-          "static_cast<::$proto_ns$::internal::ArenaStringPtr*>(object)->"
-          "Mutable(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), "
-          "msg->GetArenaNoVirtual());\n"
-          "  static_cast<$string$*>(object)->clear();\n"
-          // TODO(gerbens) evaluate security
-          "  static_cast<$string$*>(object)->reserve(size);\n"
-          "  goto len_delim_till_end;\n");
-    }
-    if (use_length_delimited_) {
-      format_(
-          "len_delim_till_end:\n"
-          "  return ctx->StoreAndTailCall(ptr, end, {_InternalParse, msg},\n"
-          "                               {parser_till_end, object}, size);\n");
-    }
-    if (use_group_) {
-      // Group crossed end and must be continued. Either this a parse failure
-      // or we need to resume on the next chunk and thus save the state.
-      format_(
-          "group_continues:\n"
-          "  $DCHK$(ptr >= end);\n"
-          "  $GOOGLE_PROTOBUF$_PARSER_ASSERT(ctx->StoreGroup(\n   "
-          "   {_InternalParse, msg}, {parser_till_end, object}, depth, tag));\n"
-          "  return ptr;\n");
-    }
-    format_("}\n");
+        "  return ptr;\n"
+        "}\n");
   }
 
  private:
   MessageSCCAnalyzer* scc_analyzer_;
   const Options& options_;
   Formatter format_;
-  bool use_length_delimited_ = false;
-  bool use_group_ = false;
-  bool use_string_ = false;
-  bool use_arena_string_ = false;
 
   using WireFormat = internal::WireFormat;
   using WireFormatLite = internal::WireFormatLite;
 
-  void GenerateArenaString(const FieldDescriptor* field, const string& utf8) {
-    use_arena_string_ = true;
+  void GenerateArenaString(const FieldDescriptor* field,
+                           const std::string& utf8, std::string field_name) {
+    if (!field_name.empty()) {
+      format_("static const char kFieldName[] = $1$;\n",
+              field_name.substr(2));  // remove ", "
+      field_name = ", kFieldName";
+    }
+    format_("if (arena != nullptr) {\n");
     if (HasFieldPresence(field->file())) {
-      format_("HasBitSetters::set_has_$1$(msg);\n", FieldName(field));
+      format_("  HasBitSetters::set_has_$1$(this);\n", FieldName(field));
     }
     format_(
-        "if (size > end - ptr + "
-        "::$proto_ns$::internal::ParseContext::kSlopBytes) {\n"
-        "  object = &msg->$1$_;\n"
-        "  parser_till_end = ::$proto_ns$::internal::GreedyStringParser$2$;\n"
-        "  goto arena_string_till_end;\n"
-        "}\n"
-        "$GOOGLE_PROTOBUF$_PARSER_ASSERT(::$proto_ns$::internal::StringCheck$2$"
-        "(ptr, size, ctx));\n"
-        "::$proto_ns$::internal::CopyIntoArenaString(ptr, size, &msg->$1$_, "
-        "msg->GetArenaNoVirtual());\n"
-        "ptr += size;\n",
-        FieldName(field), utf8);
+        "  ptr = $pi_ns$::InlineCopyIntoArenaString$1$(&$2$_, ptr, ctx, "
+        "  arena$3$);\n"
+        "} else {\n"
+        "  ptr = $pi_ns$::InlineGreedyStringParser$1$($4$_$2$(), ptr, ctx$3$);"
+        "\n}\n",
+        utf8, FieldName(field), field_name,
+        field->is_repeated() ? "add" : "mutable");
   }
 
   void GenerateStrings(const FieldDescriptor* field, bool check_utf8) {
-    string utf8;
+    std::string utf8;
+    std::string field_name;
     if (check_utf8) {
       utf8 = GetUtf8Suffix(field, options_);
       if (!utf8.empty()) {
-        string name = "nullptr";
+        field_name = ", nullptr";
         if (HasDescriptorMethods(field->file(), options_)) {
-          name = "\"" + field->full_name() + "\"";
+          field_name = StrCat(", \"", field->full_name(), "\"");
         }
-        format_("ctx->extra_parse_data().SetFieldName($1$);\n", name);
       }
     }
     FieldOptions::CType ctype = FieldOptions::STRING;
@@ -1523,73 +1517,40 @@ class ParseLoopGenerator {
         !IsProto1(field->file(), options_) &&
         !IsStringInlined(field, options_) &&
         field->containing_oneof() == nullptr && ctype == FieldOptions::STRING) {
-      GenerateArenaString(field, utf8);
+      GenerateArenaString(field, utf8, field_name);
       return;
     }
-    format_(
-        "object = msg->$1$_$2$();\n"
-        "if (size > end - ptr + "
-        "::$proto_ns$::internal::ParseContext::kSlopBytes) {\n",
-        field->is_repeated() && !field->is_packable() ? "add" : "mutable",
-        FieldName(field));
-    string name;
-    string label = "len_delim_till_end";
+    std::string name;
     switch (ctype) {
       case FieldOptions::STRING:
-        name = "GreedyStringParser";
-        use_string_ = true;
-        label = "string_till_end";
+        name = "GreedyStringParser" + utf8;
         break;
       case FieldOptions::CORD:
-        name = "CordParser";
-        format_("  static_cast<::Cord*>(object)->Clear();\n");
+        name = "CordParser" + utf8;
         break;
       case FieldOptions::STRING_PIECE:
-        name = "StringPieceParser";
-        format_(
-            "  "
-            "static_cast<::$proto_ns$::internal::StringPieceField*>(object)->"
-            "Clear();\n");
+        name = "StringPieceParser" + utf8;
         break;
     }
     format_(
-        "  parser_till_end = ::$proto_ns$::internal::$1$$2$;\n"
-        "  goto $3$;\n"
-        "}\n"
-        "$GOOGLE_PROTOBUF$_PARSER_ASSERT(::$proto_ns$::internal::StringCheck$2$"
-        "(ptr, size, ctx));\n"
-        "::$proto_ns$::internal::Inline$1$(object, ptr, size, ctx);\n"
-        "ptr += size;\n",
-        name, utf8, label);
+        "ptr = $pi_ns$::Inline$1$($2$_$3$(), ptr, ctx$4$);\n",
+        name, field->is_repeated() && !field->is_packable() ? "add" : "mutable",
+        FieldName(field), field_name);
   }
 
   void GenerateLengthDelim(const FieldDescriptor* field) {
-    format_(
-        "ptr = ::$proto_ns$::io::ReadSize(ptr, &size);\n"
-        "$GOOGLE_PROTOBUF$_PARSER_ASSERT(ptr);\n");
     if (!IsProto1(field->file(), options_) && field->is_packable()) {
-      if (!HasPreservingUnknownEnumSemantics(field->file()) &&
-          field->type() == FieldDescriptor::TYPE_ENUM) {
-        format_(
-            "ctx->extra_parse_data().SetEnumValidator($1$_IsValid, "
-            "msg->mutable_unknown_fields(), $2$);\n"
-            "parser_till_end = "
-            "::$proto_ns$::internal::PackedValidEnumParser$3$;\n"
-            "object = msg->mutable_$4$();\n",
-            QualifiedClassName(field->enum_type()), field->number(),
-            UseUnknownFieldSet(field->file(), options_) ? "" : "Lite",
-            FieldName(field));
-      } else {
-        format_(
-            "parser_till_end = ::$proto_ns$::internal::Packed$1$Parser;\n"
-            "object = msg->mutable_$2$();\n",
-            DeclaredTypeMethodName(field->type()), FieldName(field));
+      std::string enum_validator;
+      if (field->type() == FieldDescriptor::TYPE_ENUM &&
+          !HasPreservingUnknownEnumSemantics(field)) {
+        enum_validator = StrCat(
+            ", ", QualifiedClassName(field->enum_type(), options_),
+            "_IsValid, mutable_unknown_fields(), ", field->number());
       }
       format_(
-          "if (size > end - ptr) goto len_delim_till_end;\n"
-          "auto newend = ptr + size;\n"
-          "if (size) ptr = parser_till_end(ptr, newend, object, ctx);\n"
-          "$GOOGLE_PROTOBUF$_PARSER_ASSERT(ptr == newend);\n");
+          "ptr = $pi_ns$::Packed$1$Parser(mutable_$2$(), ptr, ctx$3$);\n",
+          DeclaredTypeMethodName(field->type()), FieldName(field),
+          enum_validator);
     } else {
       auto field_type = field->type();
       if (IsProto1(field->file(), options_)) {
@@ -1610,7 +1571,6 @@ class ParseLoopGenerator {
           GenerateStrings(field, false /* utf8 */);
           break;
         case FieldDescriptor::TYPE_MESSAGE: {
-          GOOGLE_CHECK(field->message_type());
           if (!IsProto1(field->file(), options_) && field->is_map()) {
             const FieldDescriptor* val =
                 field->message_type()->FindFieldByName("value");
@@ -1618,98 +1578,69 @@ class ParseLoopGenerator {
             if (HasFieldPresence(field->file()) &&
                 val->type() == FieldDescriptor::TYPE_ENUM) {
               format_(
-                  "ctx->extra_parse_data().field_number = $1$;\n"
-                  "ctx->extra_parse_data().unknown_fields = "
-                  "&msg->_internal_metadata_;\n",
+                  "auto object = ::$proto_ns$::internal::InitEnumParseWrapper("
+                  "&$1$_, $2$_IsValid, $3$, &_internal_metadata_);\n"
+                  "ptr = ctx->ParseMessage(&object, ptr);\n",
+                  FieldName(field), QualifiedClassName(val->enum_type()),
                   field->number());
+            } else {
+              format_("ptr = ctx->ParseMessage(&$1$_, ptr);\n",
+                      FieldName(field));
             }
-            format_(
-                "parser_till_end = "
-                "::$proto_ns$::internal::SlowMapEntryParser;\n"
-                "auto parse_map = $1$::_ParseMap;\n"
-                "ctx->extra_parse_data().payload.clear();\n"
-                "ctx->extra_parse_data().parse_map = parse_map;\n"
-                "object = &msg->$2$_;\n"
-                "if (size > end - ptr) goto len_delim_till_end;\n"
-                "auto newend = ptr + size;\n"
-                "$GOOGLE_PROTOBUF$_PARSER_ASSERT(parse_map(ptr, newend, "
-                "object, ctx));\n"
-                "ptr = newend;\n",
-                QualifiedClassName(field->message_type()), FieldName(field));
-            break;
-          }
-          if (!IsProto1(field->file(), options_) && IsLazy(field, options_)) {
+          } else if (!IsProto1(field->file(), options_) &&
+                     IsLazy(field, options_)) {
             if (field->containing_oneof() != nullptr) {
               format_(
-                  "if (!msg->has_$1$()) {\n"
-                  "  msg->clear_$1$();\n"
-                  "  msg->$2$_.$1$_ = ::$proto_ns$::Arena::CreateMessage<\n"
-                  "      ::$proto_ns$::internal::LazyField>("
-                  "msg->GetArenaNoVirtual());\n"
-                  "  msg->set_has_$1$();\n"
+                  "if (!has_$1$()) {\n"
+                  "  clear_$1$();\n"
+                  "  $2$_.$1$_ = ::$proto_ns$::Arena::CreateMessage<\n"
+                  "      $pi_ns$::LazyField>("
+                  "GetArenaNoVirtual());\n"
+                  "  set_has_$1$();\n"
                   "}\n"
-                  "auto parse_closure = msg->$2$_.$1$_->_ParseClosure();\n",
+                  "ptr = ctx->ParseMessage($2$_.$1$_, ptr);\n",
                   FieldName(field), field->containing_oneof()->name());
             } else if (HasFieldPresence(field->file())) {
               format_(
-                  "HasBitSetters::set_has_$1$(msg);\n"
-                  "auto parse_closure = msg->$1$_._ParseClosure();\n",
+                  "HasBitSetters::set_has_$1$(this);\n"
+                  "ptr = ctx->ParseMessage(&$1$_, ptr);\n",
                   FieldName(field));
             } else {
-              format_("auto parse_closure = msg->$1$_._ParseClosure();\n",
-                      FieldName(field));
+              format_(
+                  "ptr = ctx->ParseMessage(&$1$_, ptr);\n", FieldName(field));
             }
-            format_(
-                "parser_till_end = parse_closure.func;\n"
-                "object = parse_closure.object;\n"
-                "if (size > end - ptr) goto len_delim_till_end;\n"
-                "auto newend = ptr + size;\n"
-                "$GOOGLE_PROTOBUF$_PARSER_ASSERT(ctx->ParseExactRange(\n"
-                "    parse_closure, ptr, newend));\n"
-                "ptr = newend;\n");
-            break;
-          }
-          if (IsImplicitWeakField(field, options_, scc_analyzer_)) {
+          } else if (IsImplicitWeakField(field, options_, scc_analyzer_)) {
             if (!field->is_repeated()) {
-              format_("object = HasBitSetters::mutable_$1$(msg);\n",
-                      FieldName(field));
+              format_(
+                  "ptr = ctx->ParseMessage(HasBitSetters::mutable_$1$(this), "
+                  "ptr);\n",
+                  FieldName(field));
             } else {
               format_(
-                  "object = "
-                  "CastToBase(&msg->$1$_)->AddWeak(reinterpret_cast<const "
-                  "::$proto_ns$::MessageLite*>(&$2$::_$3$_default_instance_));"
-                  "\n",
-                  FieldName(field), Namespace(field->message_type()),
+                  "ptr = ctx->ParseMessage("
+                  "CastToBase(&$1$_)->AddWeak(reinterpret_cast<const "
+                  "::$proto_ns$::MessageLite*>(&$2$::_$3$_default_instance_)), "
+                  "ptr);\n",
+                  FieldName(field), Namespace(field->message_type(), options_),
                   ClassName(field->message_type()));
             }
-            format_(
-                "parser_till_end = static_cast<::$proto_ns$::MessageLite*>("
-                "object)->_ParseFunc();\n");
           } else if (IsWeak(field, options_)) {
             if (IsProto1(field->file(), options_)) {
-              format_("object = msg->internal_mutable_$1$();\n",
-                      FieldName(field));
+              format_(
+                  "ptr = ctx->ParseMessage("
+                  "reinterpret_cast<$p_ns$::MessageLite*>(internal_mutable_$1$("
+                  ")), ptr);\n",
+                  FieldName(field));
             } else {
               format_(
-                  "object = msg->_weak_field_map_.MutableMessage($1$, "
-                  "_$classname$_default_instance_.$2$_);\n",
+                  "ptr = ctx->ParseMessage(_weak_field_map_.MutableMessage($1$,"
+                  " _$classname$_default_instance_.$2$_), ptr);\n",
                   field->number(), FieldName(field));
             }
-            format_(
-                "parser_till_end = static_cast<::$proto_ns$::MessageLite*>("
-                "object)->_ParseFunc();\n");
           } else {
-            format_(
-                "parser_till_end = $1$::_InternalParse;\n"
-                "object = msg->$2$_$3$();\n",
-                QualifiedClassName(field->message_type()),
-                field->is_repeated() ? "add" : "mutable", FieldName(field));
+            format_("ptr = ctx->ParseMessage($1$_$2$(), ptr);\n",
+                    field->is_repeated() ? "add" : "mutable", FieldName(field));
           }
-          format_(
-              "if (size > end - ptr) goto len_delim_till_end;\n"
-              "ptr += size;\n"
-              "$GOOGLE_PROTOBUF$_PARSER_ASSERT(ctx->ParseExactRange(\n"
-              "    {parser_till_end, object}, ptr - size, ptr));\n");
           break;
         }
         default:
@@ -1727,64 +1658,59 @@ class ParseLoopGenerator {
     }
     switch (wiretype) {
       case WireFormatLite::WIRETYPE_VARINT: {
-        string type = PrimitiveTypeName(options_, field->cpp_type());
-        string prefix = field->is_repeated() ? "add" : "set";
+        std::string type = PrimitiveTypeName(options_, field->cpp_type());
+        std::string prefix = field->is_repeated() ? "add" : "set";
         if (field->type() == FieldDescriptor::TYPE_ENUM &&
             !IsProto1(field->file(), options_)) {
-          format_("$uint64$ val = ::$proto_ns$::internal::ReadVarint(&ptr);\n");
-          if (!HasPreservingUnknownEnumSemantics(field->file())) {
+          format_(
+              "$uint64$ val = $pi_ns$::ReadVarint(&ptr);\n"
+              "$GOOGLE_PROTOBUF$_PARSER_ASSERT(ptr);\n");
+          if (!HasPreservingUnknownEnumSemantics(field)) {
             format_(
                 "if (!$1$_IsValid(val)) {\n"
-                "  ::$proto_ns$::internal::WriteVarint($2$, val, "
-                "msg->mutable_unknown_fields());\n"
+                "  $pi_ns$::WriteVarint($2$, val, "
+                "mutable_unknown_fields());\n"
                 "  break;\n"
                 "}\n",
-                QualifiedClassName(field->enum_type()), field->number());
+                QualifiedClassName(field->enum_type(), options_),
+                field->number());
           }
-          format_("msg->$1$_$2$(static_cast<$3$>(val));\n", prefix,
-                  FieldName(field), QualifiedClassName(field->enum_type()));
+          format_("$1$_$2$(static_cast<$3$>(val));\n", prefix, FieldName(field),
+                  QualifiedClassName(field->enum_type(), options_));
         } else {
-          string zigzag;
+          int size = field->type() == FieldDescriptor::TYPE_SINT32 ? 32 : 64;
+          std::string zigzag;
           if ((field->type() == FieldDescriptor::TYPE_SINT32 ||
                field->type() == FieldDescriptor::TYPE_SINT64) &&
               !IsProto1(field->file(), options_)) {
-            int size = field->type() == FieldDescriptor::TYPE_SINT32 ? 32 : 64;
             zigzag = StrCat("ZigZag", size);
           }
           format_(
-              "msg->$1$_$2$(::$proto_ns$::internal::ReadVarint$3$(&ptr));\n",
+              "$1$_$2$($pi_ns$::ReadVarint$3$(&ptr));\n"
+              "$GOOGLE_PROTOBUF$_PARSER_ASSERT(ptr);\n",
               prefix, FieldName(field), zigzag);
         }
-        format_("$GOOGLE_PROTOBUF$_PARSER_ASSERT(ptr);\n");
         break;
       }
       case WireFormatLite::WIRETYPE_FIXED32:
       case WireFormatLite::WIRETYPE_FIXED64: {
-        string prefix = field->is_repeated() ? "add" : "set";
-        string type = PrimitiveTypeName(options_, field->cpp_type());
+        std::string prefix = field->is_repeated() ? "add" : "set";
+        std::string type = PrimitiveTypeName(options_, field->cpp_type());
         format_(
-            "msg->$1$_$2$(::$proto_ns$::io::UnalignedLoad<$3$>(ptr));\n"
+            "$1$_$2$($pi_ns$::UnalignedLoad<$3$>(ptr));\n"
             "ptr += sizeof($3$);\n",
             prefix, FieldName(field), type);
         break;
       }
       case WireFormatLite::WIRETYPE_LENGTH_DELIMITED: {
-        use_length_delimited_ = true;
         GenerateLengthDelim(field);
+        format_("$GOOGLE_PROTOBUF$_PARSER_ASSERT(ptr);\n");
         break;
       }
       case WireFormatLite::WIRETYPE_START_GROUP: {
-        use_group_ = true;
         format_(
-            "parser_till_end = $1$::_InternalParse;\n"
-            "object = msg->$2$_$3$();\n"
-            "auto res = ctx->ParseGroup(tag, {parser_till_end, object}, ptr, "
-            "end, "
-            "&depth);\n"
-            "ptr = res.first;\n"
-            "$GOOGLE_PROTOBUF$_PARSER_ASSERT(ptr);\n"
-            "if (res.second) goto group_continues;\n",
-            QualifiedClassName(field->message_type()),
+            "ptr = ctx->ParseGroup($1$_$2$(), ptr, tag);\n"
+            "$GOOGLE_PROTOBUF$_PARSER_ASSERT(ptr);\n",
             field->is_repeated() ? "add" : "mutable", FieldName(field));
         break;
       }
@@ -1795,7 +1721,6 @@ class ParseLoopGenerator {
     }  // switch (wire_type)
 
     if (ShouldRepeat(field, wiretype)) {
-      format_("if (ptr >= end) break;\n");
       uint32 x = field->number() * 8 + wiretype;
       uint64 y = 0;
       int cnt = 0;
@@ -1805,10 +1730,11 @@ class ParseLoopGenerator {
         x >>= 7;
       } while (x);
       uint64 mask = (1ull << (cnt * 8)) - 1;
+      format_("if (ctx->Done(&ptr)) return ptr;\n");
       format_.Outdent();
       format_(
-          "} while ((::$proto_ns$::io::UnalignedLoad<$uint64$>(ptr) & $1$) == "
-          "$2$ && (ptr += $3$));\n",
+          "} while (($pi_ns$::UnalignedLoad<$uint64$>(ptr)"
+          " & $1$) == $2$ && (ptr += $3$));\n",
           mask, y, cnt);
     }
     format_("break;\n");

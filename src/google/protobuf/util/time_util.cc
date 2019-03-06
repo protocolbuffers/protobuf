@@ -105,7 +105,7 @@ Duration CreateNormalized(int64 seconds, int64 nanos) {
 
 // Format nanoseconds with either 3, 6, or 9 digits depending on the required
 // precision to represent the exact value.
-string FormatNanos(int32 nanos) {
+std::string FormatNanos(int32 nanos) {
   if (nanos % kNanosPerMillisecond == 0) {
     return StringPrintf("%03d", nanos / kNanosPerMillisecond);
   } else if (nanos % kNanosPerMicrosecond == 0) {
@@ -115,11 +115,11 @@ string FormatNanos(int32 nanos) {
   }
 }
 
-string FormatTime(int64 seconds, int32 nanos) {
+std::string FormatTime(int64 seconds, int32 nanos) {
   return ::google::protobuf::internal::FormatTime(seconds, nanos);
 }
 
-bool ParseTime(const string& value, int64* seconds, int32* nanos) {
+bool ParseTime(const std::string& value, int64* seconds, int32* nanos) {
   return ::google::protobuf::internal::ParseTime(value, seconds, nanos);
 }
 
@@ -153,11 +153,11 @@ const int64 TimeUtil::kDurationMaxSeconds;
 const int64 TimeUtil::kDurationMinSeconds;
 #endif  // !_MSC_VER
 
-string TimeUtil::ToString(const Timestamp& timestamp) {
+std::string TimeUtil::ToString(const Timestamp& timestamp) {
   return FormatTime(timestamp.seconds(), timestamp.nanos());
 }
 
-bool TimeUtil::FromString(const string& value, Timestamp* timestamp) {
+bool TimeUtil::FromString(const std::string& value, Timestamp* timestamp) {
   int64 seconds;
   int32 nanos;
   if (!ParseTime(value, &seconds, &nanos)) {
@@ -176,8 +176,8 @@ Timestamp TimeUtil::GetCurrentTime() {
 
 Timestamp TimeUtil::GetEpoch() { return Timestamp(); }
 
-string TimeUtil::ToString(const Duration& duration) {
-  string result;
+std::string TimeUtil::ToString(const Duration& duration) {
+  std::string result;
   int64 seconds = duration.seconds();
   int32 nanos = duration.nanos();
   if (seconds < 0 || nanos < 0) {
@@ -201,7 +201,7 @@ static int64 Pow(int64 x, int y) {
   return result;
 }
 
-bool TimeUtil::FromString(const string& value, Duration* duration) {
+bool TimeUtil::FromString(const std::string& value, Duration* duration) {
   if (value.length() <= 1 || value[value.length() - 1] != 's') {
     return false;
   }
@@ -209,9 +209,9 @@ bool TimeUtil::FromString(const string& value, Duration* duration) {
   int sign_length = (negative ? 1 : 0);
   // Parse the duration value as two integers rather than a float value
   // to avoid precision loss.
-  string seconds_part, nanos_part;
+  std::string seconds_part, nanos_part;
   size_t pos = value.find_last_of(".");
-  if (pos == string::npos) {
+  if (pos == std::string::npos) {
     seconds_part = value.substr(sign_length, value.length() - 1 - sign_length);
     nanos_part = "0";
   } else {

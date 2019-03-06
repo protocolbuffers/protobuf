@@ -49,7 +49,7 @@ namespace ruby {
 // Ruby output, you can do so by registering an instance of this
 // CodeGenerator with the CommandLineInterface in your main() function.
 class PROTOC_EXPORT Generator
-    : public google::protobuf::compiler::CodeGenerator {
+    : public PROTOBUF_NAMESPACE_ID::compiler::CodeGenerator {
   virtual bool Generate(
       const FileDescriptor* file,
       const string& parameter,
