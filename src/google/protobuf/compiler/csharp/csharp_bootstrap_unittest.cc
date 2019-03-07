@@ -46,6 +46,7 @@
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/stl_util.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/stubs/substitute.h>
 
 #include <google/protobuf/testing/file.h>
 #include <google/protobuf/testing/file.h>
