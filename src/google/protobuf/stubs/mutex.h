@@ -32,6 +32,17 @@
 
 #include <mutex>
 
+#ifdef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
+
+#include <windows.h>
+
+// GetMessage conflicts with GeneratedMessageReflection::GetMessage().
+#ifdef GetMessage
+#undef GetMessage
+#endif
+
+#endif
+
 #include <google/protobuf/stubs/macros.h>
 
 // Define thread-safety annotations for use below, if we are building with
@@ -56,6 +67,27 @@ namespace internal {
 
 #define GOOGLE_PROTOBUF_LINKER_INITIALIZED
 
+#ifdef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
+
+// This class is a lightweight replacement for std::mutex on Windows platforms.
+// std::mutex does not work on Windows XP SP2 with the latest VC++ libraries,
+// because it utilizes the Concurrency Runtime that is only supported on Windows
+// XP SP3 and above.
+class PROTOBUF_EXPORT CriticalSectionLock {
+ public:
+  CriticalSectionLock() { InitializeCriticalSection(&critical_section_); }
+  ~CriticalSectionLock() { DeleteCriticalSection(&critical_section_); }
+  void lock() { EnterCriticalSection(&critical_section_); }
+  void unlock() { LeaveCriticalSection(&critical_section_); }
+
+ private:
+  CRITICAL_SECTION critical_section_;
+
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(CriticalSectionLock);
+};
+
+#endif
+
 // Mutex is a natural type to wrap. As both google and other organization have
 // specialized mutexes. gRPC also provides an injection mechanism for custom
 // mutexes.
@@ -69,7 +101,11 @@ class PROTOBUF_EXPORT WrappedMutex {
   void AssertHeld() const {}
 
  private:
+#ifndef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
   std::mutex mu_;
+#else  // ifndef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
+  CriticalSectionLock mu_;
+#endif  // #ifndef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
 };
 
 using Mutex = WrappedMutex;

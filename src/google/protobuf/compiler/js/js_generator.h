@@ -87,7 +87,7 @@ struct GeneratorOptions {
         annotate_code(false) {}
 
   bool ParseFromOptions(
-      const std::vector< std::pair< std::string, std::string > >& options,
+      const std::vector<std::pair<std::string, std::string> >& options,
       std::string* error);
 
   // Returns the file name extension to use for generated code.
@@ -138,8 +138,7 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
   virtual ~Generator() {}
 
   virtual bool Generate(const FileDescriptor* file,
-                        const std::string& parameter,
-                        GeneratorContext* context,
+                        const std::string& parameter, GeneratorContext* context,
                         std::string* error) const {
     *error = "Unimplemented Generate() method. Call GenerateAll() instead.";
     return false;
@@ -149,29 +148,24 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
 
   virtual bool GenerateAll(const std::vector<const FileDescriptor*>& files,
                            const std::string& parameter,
-                           GeneratorContext* context,
-                           std::string* error) const;
+                           GeneratorContext* context, std::string* error) const;
 
  private:
   void GenerateHeader(const GeneratorOptions& options,
                       io::Printer* printer) const;
 
   // Generate goog.provides() calls.
-  void FindProvides(const GeneratorOptions& options,
-                    io::Printer* printer,
+  void FindProvides(const GeneratorOptions& options, io::Printer* printer,
                     const std::vector<const FileDescriptor*>& file,
                     std::set<std::string>* provided) const;
   void FindProvidesForFile(const GeneratorOptions& options,
-                           io::Printer* printer,
-                           const FileDescriptor* file,
+                           io::Printer* printer, const FileDescriptor* file,
                            std::set<std::string>* provided) const;
   void FindProvidesForMessage(const GeneratorOptions& options,
-                              io::Printer* printer,
-                              const Descriptor* desc,
+                              io::Printer* printer, const Descriptor* desc,
                               std::set<std::string>* provided) const;
   void FindProvidesForEnum(const GeneratorOptions& options,
-                           io::Printer* printer,
-                           const EnumDescriptor* enumdesc,
+                           io::Printer* printer, const EnumDescriptor* enumdesc,
                            std::set<std::string>* provided) const;
   // For extension fields at file scope.
   void FindProvidesForFields(const GeneratorOptions& options,
@@ -179,8 +173,7 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
                              const std::vector<const FieldDescriptor*>& fields,
                              std::set<std::string>* provided) const;
   // Print the goog.provides() found by the methods above.
-  void GenerateProvides(const GeneratorOptions& options,
-                        io::Printer* printer,
+  void GenerateProvides(const GeneratorOptions& options, io::Printer* printer,
                         std::set<std::string>* provided) const;
 
   // Generate goog.setTestOnly() if indicated.
@@ -193,8 +186,7 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
       const std::vector<const FileDescriptor*>& files,
       std::set<std::string>* provided) const;
   void GenerateRequiresForSCC(const GeneratorOptions& options,
-                              io::Printer* printer,
-                              const SCC* scc,
+                              io::Printer* printer, const SCC* scc,
                               std::set<std::string>* provided) const;
   // For extension fields at file scope.
   void GenerateRequiresForExtensions(
@@ -202,7 +194,8 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
       const std::vector<const FieldDescriptor*>& fields,
       std::set<std::string>* provided) const;
   void GenerateRequiresImpl(const GeneratorOptions& options,
-                            io::Printer* printer, std::set<std::string>* required,
+                            io::Printer* printer,
+                            std::set<std::string>* required,
                             std::set<std::string>* forwards,
                             std::set<std::string>* provided, bool require_jspb,
                             bool require_extension, bool require_map) const;

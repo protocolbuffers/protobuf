@@ -46,7 +46,7 @@ bool IsProto3Field(const FieldDescriptor* field_descriptor) {
 }
 
 void SetMessageVariables(const FieldDescriptor* descriptor,
-                         std::map<string, string>* variables,
+                         std::map<std::string, std::string>* variables,
                          const Options& options) {
   SetCommonFieldVariables(descriptor, variables, options);
   (*variables)["type"] = ClassName(descriptor->message_type(), false);
@@ -64,7 +64,7 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
   (*variables)["key_cpp"] = PrimitiveTypeName(options, key->cpp_type());
   switch (val->cpp_type()) {
     case FieldDescriptor::CPPTYPE_MESSAGE:
-      (*variables)["val_cpp"] = FieldMessageTypeName(val);
+      (*variables)["val_cpp"] = FieldMessageTypeName(val, options);
       (*variables)["wrapper"] = "MapEntryWrapper";
       break;
     case FieldDescriptor::CPPTYPE_ENUM:
@@ -176,8 +176,8 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
       descriptor_->message_type()->FindFieldByName("key");
   const FieldDescriptor* value_field =
       descriptor_->message_type()->FindFieldByName("value");
-  string key;
-  string value;
+  std::string key;
+  std::string value;
   format(
       "$map_classname$::Parser< ::$proto_ns$::internal::MapField$lite$<\n"
       "    $map_classname$,\n"
@@ -199,7 +199,7 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
     value = "entry->value()";
     format("auto entry = parser.NewEntry();\n");
     format(
-        "::std::string data;\n"
+        "std::string data;\n"
         "DO_(::$proto_ns$::internal::WireFormatLite::ReadString(input, "
         "&data));\n"
         "DO_(entry->ParseFromString(data));\n"
@@ -241,7 +241,7 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
 static void GenerateSerializationLoop(const Formatter& format, bool string_key,
                                       bool string_value, bool to_array,
                                       bool is_deterministic) {
-  string ptr;
+  std::string ptr;
   if (is_deterministic) {
     format("for (size_type i = 0; i < n; i++) {\n");
     ptr = string_key ? "items[static_cast<ptrdiff_t>(i)]"

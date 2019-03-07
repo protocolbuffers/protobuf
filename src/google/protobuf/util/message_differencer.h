@@ -127,7 +127,8 @@ class PROTOBUF_EXPORT MessageDifferencer {
   // defined as all fields within the two messages having the same value. This
   // differs from the Equals method above in that fields with default values
   // are considered set to said value automatically. For details on how default
-  // values are defined for each field type, see http://shortn/_x2Gv6XFrWt.
+  // values are defined for each field type, see 
+  // https://developers.google.com/protocol-buffers/docs/proto?csw=1#optional.
   // Also, Equivalent() ignores unknown fields. Use IgnoreField() and Compare()
   // if some fields should be ignored in the comparison.
   //
@@ -706,6 +707,10 @@ class PROTOBUF_EXPORT MessageDifferencer {
   // Returns true if field1's number() is less than field2's.
   static bool FieldBefore(const FieldDescriptor* field1,
                           const FieldDescriptor* field2);
+
+  // Retrieve all the set fields, including extensions.
+  std::vector<const FieldDescriptor*> RetrieveFields(const Message& message,
+                                                     bool base_message);
 
   // Combine the two lists of fields into the combined_fields output vector.
   // All fields present in both lists will always be included in the combined

@@ -58,9 +58,8 @@ class TestGenerator : public CodeGenerator {
   ~TestGenerator() {}
 
   virtual bool Generate(const FileDescriptor* file,
-                        const string& parameter,
-                        GeneratorContext* context,
-                        string* error) const {
+                        const std::string& parameter, GeneratorContext* context,
+                        std::string* error) const {
     TryInsert("test.pb.h", "includes", context);
     TryInsert("test.pb.h", "namespace_scope", context);
     TryInsert("test.pb.h", "global_scope", context);
@@ -167,7 +166,8 @@ class TestGenerator : public CodeGenerator {
     return true;
   }
 
-  void TryInsert(const string& filename, const string& insertion_point,
+  void TryInsert(const std::string& filename,
+                 const std::string& insertion_point,
                  GeneratorContext* context) const {
     std::unique_ptr<io::ZeroCopyOutputStream> output(
         context->OpenForInsert(filename, insertion_point));
@@ -227,9 +227,9 @@ TEST(CppPluginTest, PluginTest) {
   cli.RegisterGenerator("--cpp_out", &cpp_generator, "");
   cli.RegisterGenerator("--test_out", &test_generator, "");
 
-  string proto_path = "-I" + TestTempDir();
-  string cpp_out = "--cpp_out=" + TestTempDir();
-  string test_out = "--test_out=" + TestTempDir();
+  std::string proto_path = "-I" + TestTempDir();
+  std::string cpp_out = "--cpp_out=" + TestTempDir();
+  std::string test_out = "--test_out=" + TestTempDir();
 
   const char* argv[] = {
     "protoc",

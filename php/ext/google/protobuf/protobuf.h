@@ -37,7 +37,7 @@
 #include "upb.h"
 
 #define PHP_PROTOBUF_EXTNAME "protobuf"
-#define PHP_PROTOBUF_VERSION "3.6.1"
+#define PHP_PROTOBUF_VERSION "3.7.0"
 
 #define MAX_LENGTH_OF_INT64 20
 #define SIZEOF_INT64 8
@@ -763,15 +763,22 @@ PHP_METHOD(DescriptorPool, getEnumDescriptorByClassName);
 
 PHP_PROTO_WRAP_OBJECT_START(InternalDescriptorPool)
   upb_symtab* symtab;
-  HashTable* pending_list;
+  upb_handlercache* fill_handler_cache;
+  upb_handlercache* pb_serialize_handler_cache;
+  upb_handlercache* json_serialize_handler_cache;
+  upb_handlercache* json_serialize_handler_preserve_cache;
+  upb_pbcodecache* fill_method_cache;
+  upb_json_codecache* json_fill_method_cache;
 PHP_PROTO_WRAP_OBJECT_END
 
 PHP_METHOD(InternalDescriptorPool, getGeneratedPool);
 PHP_METHOD(InternalDescriptorPool, internalAddGeneratedFile);
 
 void internal_add_generated_file(const char* data, PHP_PROTO_SIZE data_len,
-                                 InternalDescriptorPool* pool TSRMLS_DC);
+                                 InternalDescriptorPool* pool,
+                                 bool use_nested_submsg TSRMLS_DC);
 void init_generated_pool_once(TSRMLS_D);
+void add_handlers_for_message(const void* closure, upb_handlers* h);
 
 // wrapper of generated pool
 #if PHP_MAJOR_VERSION < 7
@@ -788,15 +795,10 @@ void internal_descriptor_pool_free(zend_object* object);
 extern InternalDescriptorPool* generated_pool;  // The actual generated pool
 
 PHP_PROTO_WRAP_OBJECT_START(Descriptor)
+  InternalDescriptorPool* pool;
   const upb_msgdef* msgdef;
   MessageLayout* layout;
   zend_class_entry* klass;  // begins as NULL
-  const upb_handlers* fill_handlers;
-  const upb_pbdecodermethod* fill_method;
-  const upb_json_parsermethod* json_fill_method;
-  const upb_handlers* pb_serialize_handlers;
-  const upb_handlers* json_serialize_handlers;
-  const upb_handlers* json_serialize_handlers_preserve;
 PHP_PROTO_WRAP_OBJECT_END
 
 PHP_METHOD(Descriptor, getClass);
@@ -1167,7 +1169,7 @@ PHP_METHOD(RepeatedFieldIter, valid);
 // -----------------------------------------------------------------------------
 
 PHP_PROTO_WRAP_OBJECT_START(Oneof)
-  upb_oneofdef* oneofdef;
+  const upb_oneofdef* oneofdef;
   int index;    // Index of field in oneof. -1 if not set.
   char value[NATIVE_SLOT_MAX_SIZE];
 PHP_PROTO_WRAP_OBJECT_END
@@ -1452,6 +1454,18 @@ upb_fieldtype_t to_fieldtype(upb_descriptortype_t type);
 const zend_class_entry* field_type_class(
     const upb_fielddef* field PHP_PROTO_TSRMLS_DC);
 void stringsink_uninit_opaque(void *sink);
+
+typedef struct {
+  upb_byteshandler handler;
+  upb_bytessink sink;
+  char *ptr;
+  size_t len, size;
+} stringsink;
+
+void stringsink_init(stringsink *sink);
+void stringsink_uninit(stringsink *sink);
+size_t stringsink_string(void *_sink, const void *hd, const char *ptr,
+                         size_t len, const upb_bufhandle *handle);
 
 // -----------------------------------------------------------------------------
 // Utilities.

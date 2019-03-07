@@ -248,7 +248,7 @@ FieldGeneratorMap<ImmutableFieldLiteGenerator>::~FieldGeneratorMap() {}
 
 void SetCommonFieldVariables(const FieldDescriptor* descriptor,
                              const FieldGeneratorInfo* info,
-                             std::map<string, string>* variables) {
+                             std::map<std::string, std::string>* variables) {
   (*variables)["field_name"] = descriptor->name();
   (*variables)["name"] = info->name;
   (*variables)["classname"] = descriptor->containing_type()->name();
@@ -266,7 +266,7 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
 
 void SetCommonOneofVariables(const FieldDescriptor* descriptor,
                              const OneofGeneratorInfo* info,
-                             std::map<string, string>* variables) {
+                             std::map<std::string, std::string>* variables) {
   (*variables)["oneof_name"] = info->name;
   (*variables)["oneof_capitalized_name"] = info->capitalized_name;
   (*variables)["oneof_index"] =
@@ -279,9 +279,9 @@ void SetCommonOneofVariables(const FieldDescriptor* descriptor,
       info->name + "Case_ == " + StrCat(descriptor->number());
 }
 
-void PrintExtraFieldInfo(const std::map<string, string>& variables,
+void PrintExtraFieldInfo(const std::map<std::string, std::string>& variables,
                          io::Printer* printer) {
-  const std::map<string, string>::const_iterator it =
+  const std::map<std::string, std::string>::const_iterator it =
       variables.find("disambiguated_reason");
   if (it != variables.end() && !it->second.empty()) {
     printer->Print(

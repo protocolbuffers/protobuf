@@ -329,7 +329,7 @@ MapReflectionTester::MapReflectionTester(
 }
 
 // Shorthand to get a FieldDescriptor for a field of unittest::TestMap.
-const FieldDescriptor* MapReflectionTester::F(const string& name) {
+const FieldDescriptor* MapReflectionTester::F(const std::string& name) {
   const FieldDescriptor* result = NULL;
   result = base_descriptor_->FindFieldByName(name);
   GOOGLE_CHECK(result != NULL);
@@ -744,30 +744,28 @@ void MapReflectionTester::SetMapFieldsViaMapReflection(
       sub_foreign_message, foreign_c_, 1);
 }
 
-void MapReflectionTester::GetMapValueViaMapReflection(Message* message,
-                                                      const string& field_name,
-                                                      const MapKey& map_key,
-                                                      MapValueRef* map_val) {
+void MapReflectionTester::GetMapValueViaMapReflection(
+    Message* message, const std::string& field_name, const MapKey& map_key,
+    MapValueRef* map_val) {
   const Reflection* reflection = message->GetReflection();
   EXPECT_FALSE(reflection->InsertOrLookupMapValue(message, F(field_name),
                                                   map_key, map_val));
 }
 
-Message* MapReflectionTester::GetMapEntryViaReflection(Message* message,
-                                                       const string& field_name,
-                                                       int index) {
+Message* MapReflectionTester::GetMapEntryViaReflection(
+    Message* message, const std::string& field_name, int index) {
   const Reflection* reflection = message->GetReflection();
   return reflection->MutableRepeatedMessage(message, F(field_name), index);
 }
 
 MapIterator MapReflectionTester::MapBegin(Message* message,
-                                          const string& field_name) {
+                                          const std::string& field_name) {
   const Reflection* reflection = message->GetReflection();
   return reflection->MapBegin(message, F(field_name));
 }
 
 MapIterator MapReflectionTester::MapEnd(Message* message,
-                                        const string& field_name) {
+                                        const std::string& field_name) {
   const Reflection* reflection = message->GetReflection();
   return reflection->MapEnd(message, F(field_name));
 }
@@ -993,7 +991,7 @@ void MapReflectionTester::
 
 void MapReflectionTester::ExpectMapFieldsSetViaReflection(
     const Message& message) {
-  string scratch;
+  std::string scratch;
   const Reflection* reflection = message.GetReflection();
   const Message* sub_message;
   MapKey map_key;
@@ -1256,15 +1254,15 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflection(
     }
   }
   {
-    std::map<string, string> map;
+    std::map<std::string, std::string> map;
     map["0"] = "0";
     map["1"] = "1";
     for (int i = 0; i < 2; i++) {
       sub_message =
           &reflection->GetRepeatedMessage(message, F("map_string_string"), i);
-      string  key = sub_message->GetReflection()->GetString(
+      std::string key = sub_message->GetReflection()->GetString(
           *sub_message, map_string_string_key_);
-      string val = sub_message->GetReflection()->GetString(
+      std::string val = sub_message->GetReflection()->GetString(
           *sub_message, map_string_string_val_);
       EXPECT_EQ(map[key], val);
       // Check with Map Reflection
@@ -1274,7 +1272,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflection(
     }
   }
   {
-    std::map<int32, string> map;
+    std::map<int32, std::string> map;
     map[0] = "0";
     map[1] = "1";
     for (int i = 0; i < 2; i++) {
@@ -1282,7 +1280,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflection(
           &reflection->GetRepeatedMessage(message, F("map_int32_bytes"), i);
       int32  key = sub_message->GetReflection()->GetInt32(
           *sub_message, map_int32_bytes_key_);
-      string val = sub_message->GetReflection()->GetString(
+      std::string val = sub_message->GetReflection()->GetString(
           *sub_message, map_int32_bytes_val_);
       EXPECT_EQ(map[key], val);
       // Check with Map Reflection
@@ -1333,8 +1331,8 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflection(
 
 void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
     Message* message) {
-  string scratch;
-  string serialized;
+  std::string scratch;
+  std::string serialized;
   const Reflection* reflection = message->GetReflection();
 
   ASSERT_EQ(2, reflection->FieldSize(*message, F("map_int32_int32")));
@@ -1499,7 +1497,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
     }
   }
   {
-    std::map<string, string> map;
+    std::map<std::string, std::string> map;
     map["0"] = "0";
     map["1"] = "1";
     int size = 0;
@@ -1519,7 +1517,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
     EXPECT_EQ(size, 2);
   }
   {
-    std::map<int32, string> map;
+    std::map<int32, std::string> map;
     map[0] = "0";
     map[1] = "1";
     for (MapIterator iter = reflection->MapBegin(message, F("map_int32_bytes"));

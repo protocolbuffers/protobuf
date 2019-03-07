@@ -314,14 +314,7 @@ public final class Descriptors {
       return result;
     }
 
-    /**
-     * This method is to be called by generated code only. It is equivalent to {@code buildFrom}
-     * except that the {@code FileDescriptorProto} is encoded in protocol buffer wire format.
-     */
-    public static void internalBuildGeneratedFileFrom(
-        final String[] descriptorDataParts,
-        final FileDescriptor[] dependencies,
-        final InternalDescriptorAssigner descriptorAssigner) {
+    private static byte[] latin1Cat(final String[] strings) {
       // Hack:  We can't embed a raw byte array inside generated Java code
       //   (at least, not efficiently), but we can embed Strings.  So, the
       //   protocol compiler embeds the FileDescriptorProto as a giant
@@ -330,16 +323,45 @@ public final class Descriptors {
       //   characters, each one representing a byte of the FileDescriptorProto's
       //   serialized form.  So, if we convert it to bytes in ISO-8859-1, we
       //   should get the original bytes that we want.
-
-      // descriptorData may contain multiple strings in order to get around the
-      // Java 64k string literal limit.
+      // Literal strings are limited to 64k, so it may be split into multiple strings.
+      if (strings.length == 1) {
+        return strings[0].getBytes(Internal.ISO_8859_1);
+      }
       StringBuilder descriptorData = new StringBuilder();
-      for (String part : descriptorDataParts) {
+      for (String part : strings) {
         descriptorData.append(part);
       }
+      return descriptorData.toString().getBytes(Internal.ISO_8859_1);
+    }
 
-      final byte[] descriptorBytes;
-      descriptorBytes = descriptorData.toString().getBytes(Internal.ISO_8859_1);
+    private static FileDescriptor[] findDescriptors(
+        final Class<?> descriptorOuterClass,
+        final String[] dependencyClassNames,
+        final String[] dependencyFileNames) {
+      List<FileDescriptor> descriptors = new ArrayList<FileDescriptor>();
+      for (int i = 0; i < dependencyClassNames.length; i++) {
+        try {
+          Class<?> clazz = descriptorOuterClass.getClassLoader().loadClass(dependencyClassNames[i]);
+          descriptors.add((FileDescriptor) clazz.getField("descriptor").get(null));
+        } catch (Exception e) {
+          // We allow unknown dependencies by default. If a dependency cannot
+          // be found we only generate a warning.
+          logger.warning("Descriptors for \"" + dependencyFileNames[i] + "\" can not be found.");
+        }
+      }
+      return descriptors.toArray(new FileDescriptor[0]);
+    }
+
+    /**
+     * This method is for backward compatibility with generated code which passed an
+     * InternalDescriptorAssigner.
+     */
+    @Deprecated
+    public static void internalBuildGeneratedFileFrom(
+        final String[] descriptorDataParts,
+        final FileDescriptor[] dependencies,
+        final InternalDescriptorAssigner descriptorAssigner) {
+      final byte[] descriptorBytes = latin1Cat(descriptorDataParts);
 
       FileDescriptorProto proto;
       try {
@@ -375,29 +397,61 @@ public final class Descriptors {
     }
 
     /**
-     * This method is to be called by generated code only. It uses Java reflection to load the
-     * dependencies' descriptors.
+     * This method is to be called by generated code only. It is equivalent to {@code buildFrom}
+     * except that the {@code FileDescriptorProto} is encoded in protocol buffer wire format.
      */
+    public static FileDescriptor internalBuildGeneratedFileFrom(
+        final String[] descriptorDataParts,
+        final FileDescriptor[] dependencies) {
+      final byte[] descriptorBytes = latin1Cat(descriptorDataParts);
+
+      FileDescriptorProto proto;
+      try {
+        proto = FileDescriptorProto.parseFrom(descriptorBytes);
+      } catch (InvalidProtocolBufferException e) {
+        throw new IllegalArgumentException(
+            "Failed to parse protocol buffer descriptor for generated code.", e);
+      }
+
+      try {
+        // When building descriptors for generated code, we allow unknown
+        // dependencies by default.
+        return buildFrom(proto, dependencies, true);
+      } catch (DescriptorValidationException e) {
+        throw new IllegalArgumentException(
+            "Invalid embedded descriptor for \"" + proto.getName() + "\".", e);
+      }
+    }
+
+    /**
+     * This method is for backward compatibility with generated code which passed an
+     * InternalDescriptorAssigner.
+     */
+    @Deprecated
     public static void internalBuildGeneratedFileFrom(
         final String[] descriptorDataParts,
         final Class<?> descriptorOuterClass,
-        final String[] dependencies,
+        final String[] dependencyClassNames,
         final String[] dependencyFileNames,
         final InternalDescriptorAssigner descriptorAssigner) {
-      List<FileDescriptor> descriptors = new ArrayList<FileDescriptor>();
-      for (int i = 0; i < dependencies.length; i++) {
-        try {
-          Class<?> clazz = descriptorOuterClass.getClassLoader().loadClass(dependencies[i]);
-          descriptors.add((FileDescriptor) clazz.getField("descriptor").get(null));
-        } catch (Exception e) {
-          // We allow unknown dependencies by default. If a dependency cannot
-          // be found we only generate a warning.
-          logger.warning("Descriptors for \"" + dependencyFileNames[i] + "\" can not be found.");
-        }
-      }
-      FileDescriptor[] descriptorArray = new FileDescriptor[descriptors.size()];
-      descriptors.toArray(descriptorArray);
-      internalBuildGeneratedFileFrom(descriptorDataParts, descriptorArray, descriptorAssigner);
+      FileDescriptor[] dependencies = findDescriptors(
+          descriptorOuterClass, dependencyClassNames, dependencyFileNames);
+      internalBuildGeneratedFileFrom(
+          descriptorDataParts, dependencies, descriptorAssigner);
+    }
+
+    /**
+     * This method is to be called by generated code only. It uses Java reflection to load the
+     * dependencies' descriptors.
+     */
+    public static FileDescriptor internalBuildGeneratedFileFrom(
+        final String[] descriptorDataParts,
+        final Class<?> descriptorOuterClass,
+        final String[] dependencyClassNames,
+        final String[] dependencyFileNames) {
+      FileDescriptor[] dependencies = findDescriptors(
+          descriptorOuterClass, dependencyClassNames, dependencyFileNames);
+      return internalBuildGeneratedFileFrom(descriptorDataParts, dependencies);
     }
 
     /**
@@ -427,7 +481,10 @@ public final class Descriptors {
      * extensions which might be used in the descriptor -- that is, extensions of the various
      * "Options" messages defined in descriptor.proto. The callback may also return null to indicate
      * that no extensions are used in the descriptor.
+     *
+     * This interface is deprecated.  Use the return value of internalBuildGeneratedFrom() instead.
      */
+    @Deprecated
     public interface InternalDescriptorAssigner {
       ExtensionRegistry assignDescriptors(FileDescriptor root);
     }

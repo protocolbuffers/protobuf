@@ -130,10 +130,19 @@
 #ifdef PROTOBUF_MUST_USE_RESULT
 #error PROTOBUF_MUST_USE_RESULT was previously defined
 #endif
+#ifdef PROTOBUF_UNUSED
+#error PROTOBUF_UNUSED was previously defined
+#endif
 
 
 #define PROTOBUF_NAMESPACE "google::protobuf"
 #define PROTOBUF_NAMESPACE_ID google::protobuf
+#define PROTOBUF_NAMESPACE_OPEN \
+  namespace google {            \
+  namespace protobuf {
+#define PROTOBUF_NAMESPACE_CLOSE \
+  } /* namespace protobuf */     \
+  } /* namespace google */
 #define PROTOBUF_DEPRECATED
 #define PROTOBUF_DEPRECATED_MSG(x)
 #define PROTOBUF_SECTION_VARIABLE(x)
@@ -243,6 +252,20 @@
 #define PROTOBUF_FALLTHROUGH_INTENDED
 #endif
 
+#if defined(__has_cpp_attribute)
+#define HAS_ATTRIBUTE(attr) __has_cpp_attribute(attr)
+#else
+#define HAS_ATTRIBUTE(attr) 0
+#endif
+
+#if HAS_ATTRIBUTE(unused) || (defined(__GNUC__) && !defined(__clang__))
+#define PROTOBUF_UNUSED __attribute__((__unused__))
+#else
+#define PROTOBUF_UNUSED
+#endif
+
+#undef HAS_ATTRIBUTE
+
 #ifdef _MSC_VER
 #define PROTOBUF_LONGLONG(x) x##I64
 #define PROTOBUF_ULONGLONG(x) x##UI64
@@ -259,13 +282,13 @@
 
 // Shared google3/opensource definitions. //////////////////////////////////////
 
-#define PROTOBUF_VERSION 3006001
-#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC 3006001
+#define PROTOBUF_VERSION 3007000
+#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC 3007000
 #define PROTOBUF_VERSION_SUFFIX ""
 
 // The minimum library version which works with the current version of the
 // headers.
-#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION 3006001
+#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION 3007000
 
 #if defined(GOOGLE_PROTOBUF_NO_RTTI) && GOOGLE_PROTOBUF_NO_RTTI
 #define PROTOBUF_RTTI 0

@@ -110,6 +110,15 @@ message Outer {
 message Inner {
 }
 
+message Enumer {
+  TestEnum optional_enum = 1;
+  repeated TestEnum repeated_enum = 2;
+  string a_const = 3;
+  oneof a_oneof {
+    string str = 10;
+    TestEnum const = 11;
+  }
+}
 
 message MyRepeatedStruct {
   repeated MyStruct structs = 1;

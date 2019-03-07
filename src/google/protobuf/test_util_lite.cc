@@ -1160,7 +1160,7 @@ void TestUtilLite::ExpectAllExtensionsSet(
 
 void TestUtilLite::ExpectExtensionsClear(
     const unittest::TestAllExtensionsLite& message) {
-  string serialized;
+  std::string serialized;
   ASSERT_TRUE(message.SerializeToString(&serialized));
   EXPECT_EQ("", serialized);
   EXPECT_EQ(0, message.ByteSize());

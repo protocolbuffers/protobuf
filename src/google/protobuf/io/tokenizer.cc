@@ -271,7 +271,7 @@ void Tokenizer::Refresh() {
   current_char_ = buffer_[0];
 }
 
-inline void Tokenizer::RecordTo(string* target) {
+inline void Tokenizer::RecordTo(std::string* target) {
   record_target_ = target;
   record_start_ = buffer_pos_;
 }
@@ -474,7 +474,7 @@ Tokenizer::TokenType Tokenizer::ConsumeNumber(bool started_with_zero,
   return is_float ? TYPE_FLOAT : TYPE_INTEGER;
 }
 
-void Tokenizer::ConsumeLineComment(string* content) {
+void Tokenizer::ConsumeLineComment(std::string* content) {
   if (content != NULL) RecordTo(content);
 
   while (current_char_ != '\0' && current_char_ != '\n') {
@@ -485,7 +485,7 @@ void Tokenizer::ConsumeLineComment(string* content) {
   if (content != NULL) StopRecording();
 }
 
-void Tokenizer::ConsumeBlockComment(string* content) {
+void Tokenizer::ConsumeBlockComment(std::string* content) {
   int start_line = line_;
   int start_column = column_ - 2;
 
@@ -664,9 +664,9 @@ namespace {
 // next_leading_comments.
 class CommentCollector {
  public:
-  CommentCollector(string* prev_trailing_comments,
-                   std::vector<string>* detached_comments,
-                   string* next_leading_comments)
+  CommentCollector(std::string* prev_trailing_comments,
+                   std::vector<std::string>* detached_comments,
+                   std::string* next_leading_comments)
       : prev_trailing_comments_(prev_trailing_comments),
         detached_comments_(detached_comments),
         next_leading_comments_(next_leading_comments),
@@ -687,7 +687,7 @@ class CommentCollector {
 
   // About to read a line comment.  Get the comment buffer pointer in order to
   // read into it.
-  string* GetBufferForLineComment() {
+  std::string* GetBufferForLineComment() {
     // We want to combine with previous line comments, but not block comments.
     if (has_comment_ && !is_line_comment_) {
       Flush();
@@ -699,7 +699,7 @@ class CommentCollector {
 
   // About to read a block comment.  Get the comment buffer pointer in order to
   // read into it.
-  string* GetBufferForBlockComment() {
+  std::string* GetBufferForBlockComment() {
     if (has_comment_) {
       Flush();
     }
@@ -736,11 +736,11 @@ class CommentCollector {
   }
 
  private:
-  string* prev_trailing_comments_;
-  std::vector<string>* detached_comments_;
-  string* next_leading_comments_;
+  std::string* prev_trailing_comments_;
+  std::vector<std::string>* detached_comments_;
+  std::string* next_leading_comments_;
 
-  string comment_buffer_;
+  std::string comment_buffer_;
 
   // True if any comments were read into comment_buffer_.  This can be true even
   // if comment_buffer_ is empty, namely if the comment was "/**/".
@@ -756,9 +756,9 @@ class CommentCollector {
 
 } // namespace
 
-bool Tokenizer::NextWithComments(string* prev_trailing_comments,
-                                 std::vector<string>* detached_comments,
-                                 string* next_leading_comments) {
+bool Tokenizer::NextWithComments(std::string* prev_trailing_comments,
+                                 std::vector<std::string>* detached_comments,
+                                 std::string* next_leading_comments) {
   CommentCollector collector(prev_trailing_comments, detached_comments,
                              next_leading_comments);
 
@@ -858,7 +858,7 @@ bool Tokenizer::NextWithComments(string* prev_trailing_comments,
 // are given is text that the tokenizer actually parsed as a token
 // of the given type.
 
-bool Tokenizer::ParseInteger(const string& text, uint64 max_value,
+bool Tokenizer::ParseInteger(const std::string& text, uint64 max_value,
                              uint64* output) {
   // Sadly, we can't just use strtoul() since it is only 32-bit and strtoull()
   // is non-standard.  I hate the C standard library.  :(
@@ -897,7 +897,7 @@ bool Tokenizer::ParseInteger(const string& text, uint64 max_value,
   return true;
 }
 
-double Tokenizer::ParseFloat(const string& text) {
+double Tokenizer::ParseFloat(const std::string& text) {
   const char* start = text.c_str();
   char* end;
   double result = NoLocaleStrtod(start, &end);
@@ -924,7 +924,7 @@ double Tokenizer::ParseFloat(const string& text) {
 
 // Helper to append a Unicode code point to a string as UTF8, without bringing
 // in any external dependencies.
-static void AppendUTF8(uint32 code_point, string* output) {
+static void AppendUTF8(uint32 code_point, std::string* output) {
   uint32 tmp = 0;
   int len = 0;
   if (code_point <= 0x7f) {
@@ -1036,7 +1036,8 @@ static const char* FetchUnicodePoint(const char* ptr, uint32* code_point) {
 
 // The text string must begin and end with single or double quote
 // characters.
-void Tokenizer::ParseStringAppend(const string& text, string* output) {
+void Tokenizer::ParseStringAppend(const std::string& text,
+                                  std::string* output) {
   // Reminder: text[0] is always a quote character.  (If text is
   // empty, it's invalid, so we'll just return).
   const size_t text_size = text.size();
@@ -1114,8 +1115,8 @@ void Tokenizer::ParseStringAppend(const string& text, string* output) {
   }
 }
 
-template<typename CharacterClass>
-static bool AllInClass(const string& s) {
+template <typename CharacterClass>
+static bool AllInClass(const std::string& s) {
   for (int i = 0; i < s.size(); ++i) {
     if (!CharacterClass::InClass(s[i]))
       return false;
@@ -1123,7 +1124,7 @@ static bool AllInClass(const string& s) {
   return true;
 }
 
-bool Tokenizer::IsIdentifier(const string& text) {
+bool Tokenizer::IsIdentifier(const std::string& text) {
   // Mirrors IDENTIFIER definition in Tokenizer::Next() above.
   if (text.size() == 0)
     return false;

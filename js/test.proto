@@ -93,10 +93,11 @@ message Complex {
     required int32 an_int = 2;
   }
   required string a_string = 1;
-  required bool an_out_of_order_bool = 9;
+  optional bool an_out_of_order_bool = 9;
   optional Nested a_nested_message = 4;
   repeated Nested a_repeated_message = 5;
   repeated string a_repeated_string = 7;
+  optional double a_floating_point_field = 10;
 }
 
 message OuterMessage {
@@ -161,6 +162,13 @@ message FloatingPointFields {
   required double required_double_field = 6;
   repeated double repeated_double_field = 7;
   optional double default_double_field = 8 [default = 2.0];
+}
+
+message BooleanFields {
+  optional bool optional_boolean_field = 1;
+  required bool required_boolean_field = 2;
+  repeated bool repeated_boolean_field = 3;
+  optional bool default_boolean_field = 4 [default = true];
 }
 
 message TestClone {

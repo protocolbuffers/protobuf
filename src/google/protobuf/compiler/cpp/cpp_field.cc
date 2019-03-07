@@ -57,10 +57,10 @@ namespace cpp {
 using internal::WireFormat;
 
 void SetCommonFieldVariables(const FieldDescriptor* descriptor,
-                             std::map<string, string>* variables,
+                             std::map<std::string, std::string>* variables,
                              const Options& options) {
   SetCommonVars(options, variables);
-  (*variables)["ns"] = Namespace(descriptor);
+  (*variables)["ns"] = Namespace(descriptor, options);
   (*variables)["name"] = FieldName(descriptor);
   (*variables)["index"] = StrCat(descriptor->index());
   (*variables)["number"] = StrCat(descriptor->number());
@@ -102,9 +102,10 @@ void FieldGenerator::SetHasBitIndex(int32 has_bit_index) {
       strings::Hex(1u << (has_bit_index % 32), strings::ZERO_PAD_8), "u;");
 }
 
-void SetCommonOneofFieldVariables(const FieldDescriptor* descriptor,
-                                  std::map<string, string>* variables) {
-  const string prefix = descriptor->containing_oneof()->name() + "_.";
+void SetCommonOneofFieldVariables(
+    const FieldDescriptor* descriptor,
+    std::map<std::string, std::string>* variables) {
+  const std::string prefix = descriptor->containing_oneof()->name() + "_.";
   (*variables)["oneof_name"] = descriptor->containing_oneof()->name();
   (*variables)["field_member"] =
       StrCat(prefix, (*variables)["name"], "_");

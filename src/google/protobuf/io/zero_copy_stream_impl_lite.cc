@@ -143,9 +143,7 @@ int64 ArrayOutputStream::ByteCount() const {
 
 // ===================================================================
 
-StringOutputStream::StringOutputStream(string* target)
-  : target_(target) {
-}
+StringOutputStream::StringOutputStream(std::string* target) : target_(target) {}
 
 bool StringOutputStream::Next(void** data, int* size) {
   GOOGLE_CHECK(target_ != NULL);
@@ -190,9 +188,7 @@ int64 StringOutputStream::ByteCount() const {
   return target_->size();
 }
 
-void StringOutputStream::SetString(string* target) {
-  target_ = target;
-}
+void StringOutputStream::SetString(std::string* target) { target_ = target; }
 
 // ===================================================================
 
@@ -201,7 +197,7 @@ int CopyingInputStream::Skip(int count) {
   int skipped = 0;
   while (skipped < count) {
     int bytes = Read(junk, std::min(count - skipped,
-                                    ::google::protobuf::implicit_cast<int>(sizeof(junk))));
+                                    implicit_cast<int>(sizeof(junk))));
     if (bytes <= 0) {
       // EOF or read error.
       return skipped;
@@ -393,6 +389,63 @@ void CopyingOutputStreamAdaptor::FreeBuffer() {
   buffer_used_ = 0;
   buffer_.reset();
 }
+
+// ===================================================================
+
+LimitingInputStream::LimitingInputStream(ZeroCopyInputStream* input,
+                                         int64 limit)
+    : input_(input), limit_(limit) {
+  prior_bytes_read_ = input_->ByteCount();
+}
+
+LimitingInputStream::~LimitingInputStream() {
+  // If we overshot the limit, back up.
+  if (limit_ < 0) input_->BackUp(-limit_);
+}
+
+bool LimitingInputStream::Next(const void** data, int* size) {
+  if (limit_ <= 0) return false;
+  if (!input_->Next(data, size)) return false;
+
+  limit_ -= *size;
+  if (limit_ < 0) {
+    // We overshot the limit.  Reduce *size to hide the rest of the buffer.
+    *size += limit_;
+  }
+  return true;
+}
+
+void LimitingInputStream::BackUp(int count) {
+  if (limit_ < 0) {
+    input_->BackUp(count - limit_);
+    limit_ = count;
+  } else {
+    input_->BackUp(count);
+    limit_ += count;
+  }
+}
+
+bool LimitingInputStream::Skip(int count) {
+  if (count > limit_) {
+    if (limit_ < 0) return false;
+    input_->Skip(limit_);
+    limit_ = 0;
+    return false;
+  } else {
+    if (!input_->Skip(count)) return false;
+    limit_ -= count;
+    return true;
+  }
+}
+
+int64 LimitingInputStream::ByteCount() const {
+  if (limit_ < 0) {
+    return input_->ByteCount() + limit_ - prior_bytes_read_;
+  } else {
+    return input_->ByteCount() - prior_bytes_read_;
+  }
+}
+
 
 // ===================================================================
 

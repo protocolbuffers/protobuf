@@ -55,7 +55,7 @@ class JsonObjectWriterTest : public ::testing::Test {
     delete str_stream_;
   }
 
-  string output_;
+  std::string output_;
   StringOutputStream* const str_stream_;
   CodedOutputStream* const out_stream_;
   JsonObjectWriter* ow_;
@@ -175,7 +175,7 @@ TEST_F(JsonObjectWriterTest, RenderPrimitives) {
 }
 
 TEST_F(JsonObjectWriterTest, BytesEncodesAsNonWebSafeBase64) {
-  string s;
+  std::string s;
   s.push_back('\377');
   s.push_back('\357');
   ow_ = new JsonObjectWriter("", out_stream_);

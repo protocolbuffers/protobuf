@@ -291,6 +291,13 @@ class MapField : public TypeDefinedMapFieldBase<Key, T> {
   const char* _InternalParse(const char* ptr, ParseContext* ctx) {
     return impl_._InternalParse(ptr, ctx);
   }
+  template <typename Metadata>
+  const char* ParseWithEnumValidation(const char* ptr, ParseContext* ctx,
+                                      bool (*is_valid)(int), uint32 field_num,
+                                      Metadata* metadata) {
+    return impl_.ParseWithEnumValidation(ptr, ctx, is_valid, field_num,
+                                         metadata);
+  }
 
  private:
   MapFieldLiteType impl_;
@@ -832,13 +839,13 @@ struct hash<::PROTOBUF_NAMESPACE_ID::MapKey> {
       case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_STRING:
         return hash<std::string>()(map_key.GetStringValue());
       case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_INT64:
-        return hash<::google::protobuf::int64>()(map_key.GetInt64Value());
+        return hash<int64>()(map_key.GetInt64Value());
       case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_INT32:
-        return hash<::google::protobuf::int32>()(map_key.GetInt32Value());
+        return hash<int32>()(map_key.GetInt32Value());
       case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_UINT64:
-        return hash<::google::protobuf::uint64>()(map_key.GetUInt64Value());
+        return hash<uint64>()(map_key.GetUInt64Value());
       case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_UINT32:
-        return hash<::google::protobuf::uint32>()(map_key.GetUInt32Value());
+        return hash<uint32>()(map_key.GetUInt32Value());
       case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_BOOL:
         return hash<bool>()(map_key.GetBoolValue());
     }

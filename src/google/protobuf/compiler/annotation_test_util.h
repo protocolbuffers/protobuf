@@ -52,7 +52,8 @@ struct ExpectedOutput {
   std::string file_path;
   std::string file_content;
   GeneratedCodeInfo file_info;
-  explicit ExpectedOutput(const std::string& file_path) : file_path(file_path) {}
+  explicit ExpectedOutput(const std::string& file_path)
+      : file_path(file_path) {}
 };
 
 // Creates a file with name `filename` and content `data` in temp test
