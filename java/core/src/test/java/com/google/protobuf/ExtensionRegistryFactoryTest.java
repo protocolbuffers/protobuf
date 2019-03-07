@@ -69,6 +69,8 @@ public class ExtensionRegistryFactoryTest extends TestCase {
     void testAdd();
 
     void testAdd_immutable();
+
+    void testExtensionRenamesKeywords();
   }
 
   /** Test implementations for the non-Lite usage of ExtensionRegistryFactory. */
@@ -156,6 +158,11 @@ public class ExtensionRegistryFactoryTest extends TestCase {
       } catch (IllegalArgumentException expected) {
       }
     }
+
+    @Override
+    public void testExtensionRenamesKeywords() {
+      assertTrue(NonNestedExtension.if_ instanceof GeneratedMessage.GeneratedExtension);
+    }
   }
 
   /** Test implementations for the Lite usage of ExtensionRegistryFactory. */
@@ -201,6 +208,11 @@ public class ExtensionRegistryFactoryTest extends TestCase {
         fail();
       } catch (UnsupportedOperationException expected) {
       }
+    }
+
+    @Override
+    public void testExtensionRenamesKeywords() {
+      assertTrue(NonNestedExtensionLite.package_ instanceof GeneratedMessageLite.GeneratedExtension);
     }
   }
 
