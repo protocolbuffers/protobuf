@@ -80,6 +80,38 @@ build_cpp_distcheck() {
   make distcheck -j$(nproc)
 }
 
+build_dist_install() {
+  # Initialize any submodules.
+  git submodule update --init --recursive
+  ./autogen.sh
+  ./configure
+  make dist
+
+  # Unzip the dist tar file and install it.
+  DIST=`ls *.tar.gz`
+  tar -xf $DIST
+  pushd ${DIST//.tar.gz}
+  ./configure && make check -j4 && make install
+
+  export LD_LIBRARY_PATH=/usr/local/lib
+
+  # Try to install Java
+  pushd java
+  use_java jdk7
+  $MVN install
+  popd
+
+  # Try to install Python
+  virtualenv --no-site-packages venv
+  source venv/bin/activate
+  pushd python
+  python setup.py clean build sdist
+  pip install dist/protobuf-*.tar.gz
+  popd
+  deactivate
+  rm -rf python/venv
+}
+
 build_csharp() {
   # Required for conformance tests and to regenerate protos.
   internal_build_cpp
@@ -653,6 +685,7 @@ Usage: $0 { cpp |
             php7.1   |
             php7.1_c |
             php_all |
+            dist_install |
             benchmark)
 "
   exit 1
