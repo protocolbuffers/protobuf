@@ -105,21 +105,6 @@ std::string FieldName(const FieldDescriptor* field) {
   return field_name;
 }
 
-
-// Judge whether should use table or use look up.
-// Copied from com.google.protobuf.SchemaUtil.shouldUseTableSwitch
-bool ShouldUseTable(int lo, int hi, int number_of_fields) {
-  if (hi < kDefaultLookUpStartFieldNumber) {
-    return true;
-  }
-  int64 table_space_cost = (static_cast<int64>(hi) - lo + 1);  // words
-  int64 table_time_cost = 3;           // comparisons
-  int64 lookup_space_cost = 3 + 2 * static_cast<int64>(number_of_fields);
-  int64 lookup_time_cost = 3 + number_of_fields;
-  return table_space_cost + 3 * table_time_cost <=
-         lookup_space_cost + 3 * lookup_time_cost;
-}
-
 }  // namespace
 
 void PrintGeneratedAnnotation(io::Printer* printer, char delimiter,

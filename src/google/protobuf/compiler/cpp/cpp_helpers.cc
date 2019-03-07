@@ -69,10 +69,6 @@ static const char kAnyMessageName[] = "Any";
 static const char kAnyProtoFile[] = "google/protobuf/any.proto";
 static const char kGoogleProtobufPrefix[] = "google/protobuf/";
 
-std::string DotsToUnderscores(const std::string& name) {
-  return StringReplace(name, ".", "_", true);
-}
-
 std::string DotsToColons(const std::string& name) {
   return StringReplace(name, ".", "::", true);
 }

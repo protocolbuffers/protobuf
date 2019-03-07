@@ -50,6 +50,9 @@ class PrimitiveFieldGenerator : public FieldGeneratorBase {
                           const Options *options);
   ~PrimitiveFieldGenerator();
 
+  PrimitiveFieldGenerator(const PrimitiveFieldGenerator&) = delete;
+  PrimitiveFieldGenerator& operator=(const PrimitiveFieldGenerator&) = delete;
+
   virtual void GenerateCodecCode(io::Printer* printer);
   virtual void GenerateCloningCode(io::Printer* printer);
   virtual void GenerateMembers(io::Printer* printer);
@@ -64,9 +67,6 @@ class PrimitiveFieldGenerator : public FieldGeneratorBase {
 
  protected:
   bool is_value_type;
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(PrimitiveFieldGenerator);
 };
 
 class PrimitiveOneofFieldGenerator : public PrimitiveFieldGenerator {
@@ -76,14 +76,15 @@ class PrimitiveOneofFieldGenerator : public PrimitiveFieldGenerator {
                                const Options *options);
   ~PrimitiveOneofFieldGenerator();
 
+  PrimitiveOneofFieldGenerator(const PrimitiveOneofFieldGenerator&) = delete;
+  PrimitiveOneofFieldGenerator& operator=(const PrimitiveOneofFieldGenerator&) =
+      delete;
+
   virtual void GenerateCloningCode(io::Printer* printer);
   virtual void GenerateMembers(io::Printer* printer);
   virtual void GenerateMergingCode(io::Printer* printer);
   virtual void WriteToString(io::Printer* printer);
   virtual void GenerateParsingCode(io::Printer* printer);
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(PrimitiveOneofFieldGenerator);
 };
 
 }  // namespace csharp
