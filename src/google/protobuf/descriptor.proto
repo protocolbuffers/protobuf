@@ -45,6 +45,7 @@ option java_package = "com.google.protobuf";
 option java_outer_classname = "DescriptorProtos";
 option csharp_namespace = "Google.Protobuf.Reflection";
 option objc_class_prefix = "GPB";
+option pharo_class_prefix = "GBP";
 option cc_enable_arenas = true;
 
 // descriptor.proto must be optimized for speed because reflection-based
@@ -426,6 +427,10 @@ message FileOptions {
   // is empty. When this option is not set, the package name will be used for
   // determining the ruby package.
   optional string ruby_package = 45;
+
+  // Sets the Pharo class prefix which is prepended to all Pharo generated
+  // classes from this .proto. There is no default.
+  optional string pharo_class_prefix = 46;
 
   // The parser stores options it doesn't recognize here.
   // See the documentation for the "Options" section above.
