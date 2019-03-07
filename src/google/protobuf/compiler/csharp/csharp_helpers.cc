@@ -293,7 +293,7 @@ uint GetGroupEndTag(const Descriptor* descriptor) {
 
 std::string ToCSharpName(const std::string& name, const FileDescriptor* file) {
   std::string result = GetFileNamespace(file);
-  if (result != "") {
+  if (!result.empty()) {
     result += '.';
   }
   string classname;

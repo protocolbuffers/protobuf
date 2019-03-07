@@ -238,6 +238,7 @@ void ReflectionClassGenerator::WriteGeneratedCodeInfo(const Descriptor* descript
   // Fields
   if (descriptor->field_count() > 0) {
       std::vector<std::string> fields;
+      fields.reserve(descriptor->field_count());
       for (int i = 0; i < descriptor->field_count(); i++) {
           fields.push_back(GetPropertyName(descriptor->field(i)));
       }
@@ -250,6 +251,7 @@ void ReflectionClassGenerator::WriteGeneratedCodeInfo(const Descriptor* descript
   // Oneofs
   if (descriptor->oneof_decl_count() > 0) {
       std::vector<std::string> oneofs;
+      oneofs.reserve(descriptor->oneof_decl_count());
       for (int i = 0; i < descriptor->oneof_decl_count(); i++) {
           oneofs.push_back(UnderscoresToCamelCase(descriptor->oneof_decl(i)->name(), true));
       }
@@ -262,6 +264,7 @@ void ReflectionClassGenerator::WriteGeneratedCodeInfo(const Descriptor* descript
   // Nested enums
   if (descriptor->enum_type_count() > 0) {
       std::vector<std::string> enums;
+      enums.reserve(descriptor->enum_type_count());
       for (int i = 0; i < descriptor->enum_type_count(); i++) {
           enums.push_back(GetClassName(descriptor->enum_type(i)));
       }
