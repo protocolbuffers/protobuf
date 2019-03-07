@@ -18,6 +18,7 @@ module BasicTestProto2
       add_message "BadFieldNames" do
         optional :dup, :int32, 1
         optional :class, :int32, 2
+        optional :"a.b", :int32, 3
       end
     end
   end

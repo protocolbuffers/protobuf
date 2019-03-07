@@ -802,7 +802,7 @@ module CommonTests
                                                         proto_module::TestMessage2.new(:foo => 2)])
     data = proto_module::TestMessage.encode m
     m2 = proto_module::TestMessage.decode data
-    assert_equal m, m2
+    assert m == m2
 
     data = Google::Protobuf.encode m
     m2 = Google::Protobuf.decode(proto_module::TestMessage, data)
@@ -897,6 +897,8 @@ module CommonTests
     assert m['class'] == 2
     m['dup'] = 3
     assert m['dup'] == 3
+    m['a.b'] = 4
+    assert m['a.b'] == 4
   end
 
   def test_int_ranges
@@ -1077,7 +1079,9 @@ module CommonTests
 
     json_text = proto_module::TestMessage.encode_json(m)
     m2 = proto_module::TestMessage.decode_json(json_text)
-    assert_equal m, m2
+    puts m.inspect
+    puts m2.inspect
+    assert m == m2
 
     # Crash case from GitHub issue 283.
     bar = proto_module::Bar.new(msg: "bar")
@@ -1123,7 +1127,7 @@ module CommonTests
 
     actual = proto_module::TestMessage.encode_json(m, :emit_defaults => true)
 
-    assert_equal expected, JSON.parse(actual, :symbolize_names => true)
+    assert JSON.parse(actual, :symbolize_names => true) == expected
   end
 
   def test_json_emit_defaults_submsg
@@ -1158,7 +1162,7 @@ module CommonTests
 
     actual = proto_module::TestMessage.encode_json(m, :emit_defaults => true)
 
-    assert_equal expected, JSON.parse(actual, :symbolize_names => true)
+    assert JSON.parse(actual, :symbolize_names => true) == expected
   end
 
   def test_json_emit_defaults_repeated_submsg
@@ -1192,7 +1196,7 @@ module CommonTests
 
     actual = proto_module::TestMessage.encode_json(m, :emit_defaults => true)
 
-    assert_equal expected, JSON.parse(actual, :symbolize_names => true)
+    assert JSON.parse(actual, :symbolize_names => true) == expected
   end
 
   def value_from_ruby(value)

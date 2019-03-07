@@ -30,10 +30,26 @@
 
 #include "protobuf.h"
 
+// -----------------------------------------------------------------------------
+// Global map from upb {msg,enum}defs to wrapper Descriptor/EnumDescriptor
+// instances.
+// -----------------------------------------------------------------------------
+
+// This is a hash table from def objects (encoded by converting pointers to
+// Ruby integers) to MessageDef/EnumDef instances (as Ruby values).
+VALUE upb_def_to_ruby_obj_map;
+
 VALUE cError;
 VALUE cParseError;
 VALUE cTypeError;
-VALUE c_only_cookie;
+
+void add_def_obj(const void* def, VALUE value) {
+  rb_hash_aset(upb_def_to_ruby_obj_map, ULL2NUM((intptr_t)def), value);
+}
+
+VALUE get_def_obj(const void* def) {
+  return rb_hash_aref(upb_def_to_ruby_obj_map, ULL2NUM((intptr_t)def));
+}
 
 // -----------------------------------------------------------------------------
 // Utilities.
@@ -100,6 +116,6 @@ void Init_protobuf_c() {
   kRubyStringASCIIEncoding = rb_usascii_encoding();
   kRubyString8bitEncoding = rb_ascii8bit_encoding();
 
-  rb_gc_register_address(&c_only_cookie);
-  c_only_cookie = rb_class_new_instance(0, NULL, rb_cObject);
+  rb_gc_register_address(&upb_def_to_ruby_obj_map);
+  upb_def_to_ruby_obj_map = rb_hash_new();
 }
