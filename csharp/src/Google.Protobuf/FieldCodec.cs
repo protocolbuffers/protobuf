@@ -72,7 +72,7 @@ namespace Google.Protobuf
         /// <returns>A codec for the given tag.</returns>
         public static FieldCodec<bool> ForBool(uint tag)
         {
-            return new FieldCodec<bool>(input => input.ReadBool(), (output, value) => output.WriteBool(value), CodedOutputStream.ComputeBoolSize, tag);
+            return new FieldCodec<bool>(input => input.ReadBool(), (output, value) => output.WriteBool(value), CodedOutputStream.BoolSize, tag);
         }
 
         /// <summary>
@@ -182,7 +182,7 @@ namespace Google.Protobuf
         /// <returns>A codec for the given tag.</returns>
         public static FieldCodec<float> ForFloat(uint tag)
         {
-            return new FieldCodec<float>(input => input.ReadFloat(), (output, value) => output.WriteFloat(value), CodedOutputStream.ComputeFloatSize, tag);
+            return new FieldCodec<float>(input => input.ReadFloat(), (output, value) => output.WriteFloat(value), CodedOutputStream.FloatSize, tag);
         }
 
         /// <summary>
@@ -192,7 +192,7 @@ namespace Google.Protobuf
         /// <returns>A codec for the given tag.</returns>
         public static FieldCodec<double> ForDouble(uint tag)
         {
-            return new FieldCodec<double>(input => input.ReadDouble(), (output, value) => output.WriteDouble(value), CodedOutputStream.ComputeDoubleSize, tag);
+            return new FieldCodec<double>(input => input.ReadDouble(), (output, value) => output.WriteDouble(value), CodedOutputStream.DoubleSize, tag);
         }
 
         // Enums are tricky. We can probably use expression trees to build these delegates automatically,
