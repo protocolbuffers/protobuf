@@ -212,12 +212,12 @@ module BasicTest
       e = assert_raise ArgumentError do
         MapMessage.new(:map_string_int32 => "hello")
       end
-      assert_equal e.message, "Expected Hash object as initializer value for map field 'map_string_int32'."
+      assert_equal e.message, "Expected Hash object as initializer value for map field 'map_string_int32' (given String)."
 
       e = assert_raise ArgumentError do
         TestMessage.new(:repeated_uint32 => "hello")
       end
-      assert_equal e.message, "Expected array as initializer value for repeated field 'repeated_uint32'."
+      assert_equal e.message, "Expected array as initializer value for repeated field 'repeated_uint32' (given String)."
     end
 
     def test_type_errors
