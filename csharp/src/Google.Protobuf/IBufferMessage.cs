@@ -1,6 +1,6 @@
 ﻿#region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
-// Copyright 2015 Google Inc.  All rights reserved.
+// Copyright 2008 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
 //
 // Redistribution and use in source and binary forms, with or without
@@ -30,24 +30,28 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
-using NUnit.Framework;
-
 namespace Google.Protobuf
 {
-    internal static class CodedInputStreamExtensions
+#if GOOGLE_PROTOBUF_SUPPORT_SYSTEM_MEMORY
+    /// <summary>
+    /// Interface for a Protocol Buffers message, supporting
+    /// <see cref="CodedInputReader"/> and <see cref="CodedOutputWriter"/>
+    /// serialization operations.
+    /// </summary>
+    public interface IBufferMessage : IMessage
     {
-        public static void AssertNextTag(this CodedInputStream input, uint expectedTag)
-        {
-            uint tag = input.ReadTag();
-            Assert.AreEqual(expectedTag, tag);
-        }
+        /// <summary>
+        /// Merges the data from the specified <see cref="CodedInputReader"/> with the current message.
+        /// </summary>
+        /// <remarks>See the user guide for precise merge semantics.</remarks>
+        /// <param name="input"><see cref="CodedInputReader"/> to read data from. Must not be null.</param>
+        void MergeFrom(ref CodedInputReader input);
 
-        public static T ReadMessage<T>(this CodedInputStream stream, MessageParser<T> parser)
-            where T : IMessage<T>
-        {
-            var message = parser.CreateTemplate();
-            stream.ReadMessage(message);
-            return message;
-        }
+        /// <summary>
+        /// Writes the data to the given <see cref="CodedOutputWriter"/>.
+        /// </summary>
+        /// <param name="output"><see cref="CodedOutputWriter"/> to write the data to. Must not be null.</param>
+        void WriteTo(ref CodedOutputWriter output);
     }
+#endif
 }

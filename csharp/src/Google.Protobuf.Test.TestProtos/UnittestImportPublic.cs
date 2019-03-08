@@ -37,7 +37,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
   #region Messages
-  public sealed partial class PublicImportMessage : pb::IMessage<PublicImportMessage> {
+  public sealed partial class PublicImportMessage : pb::IMessage<PublicImportMessage>
+  #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    , pb::IBufferMessage
+  #endif
+   {
     private static readonly pb::MessageParser<PublicImportMessage> _parser = new pb::MessageParser<PublicImportMessage>(() => new PublicImportMessage());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
@@ -140,6 +144,20 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(ref pb::CodedOutputWriter output) {
+      if (HasE) {
+        output.WriteRawTag(8);
+        output.WriteInt32(E);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
@@ -178,6 +196,25 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         }
       }
     }
+
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(ref pb::CodedInputReader input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 8: {
+            E = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 

@@ -40,6 +40,7 @@
 #include <google/protobuf/compiler/csharp/csharp_helpers.h>
 #include <google/protobuf/compiler/csharp/csharp_repeated_message_field.h>
 #include <google/protobuf/compiler/csharp/csharp_message_field.h>
+#include <google/protobuf/compiler/csharp/csharp_options.h>
 #include <google/protobuf/compiler/csharp/csharp_wrapper_field.h>
 
 namespace google {
@@ -98,10 +99,22 @@ void RepeatedMessageFieldGenerator::GenerateParsingCode(io::Printer* printer) {
     "$name$_.AddEntriesFrom(input, _repeated_$name$_codec);\n");
 }
 
+void RepeatedMessageFieldGenerator::GenerateBufferParsingCode(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "$name$_.AddEntriesFrom(ref input, _repeated_$name$_codec);\n");
+}
+
 void RepeatedMessageFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
   printer->Print(
     variables_,
     "$name$_.WriteTo(output, _repeated_$name$_codec);\n");
+}
+
+void RepeatedMessageFieldGenerator::GenerateBufferSerializationCode(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "$name$_.WriteTo(ref output, _repeated_$name$_codec);\n");
 }
 
 void RepeatedMessageFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {

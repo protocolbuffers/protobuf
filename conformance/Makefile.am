@@ -343,6 +343,7 @@ test_java_lite: protoc_middleman conformance-test-runner conformance-java-lite
 
 test_csharp: protoc_middleman conformance-test-runner conformance-csharp
 	./conformance-test-runner --enforce_recommended --failure_list failure_list_csharp.txt --text_format_failure_list text_format_failure_list_csharp.txt ./conformance-csharp
+	./conformance-test-runner --enforce_recommended --failure_list failure_list_csharp.txt --text_format_failure_list text_format_failure_list_csharp.txt ./conformance-csharp --use_buffer_serialization
 
 test_ruby: protoc_middleman conformance-test-runner $(other_language_protoc_outputs)
 	RUBYLIB=../ruby/lib:. ./conformance-test-runner --enforce_recommended --failure_list failure_list_ruby.txt --text_format_failure_list text_format_failure_list_ruby.txt ./conformance_ruby.rb

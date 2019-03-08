@@ -52,15 +52,25 @@ namespace Google.Protobuf.Benchmarks
                     t => ((MessageDescriptor) t.GetProperty("Descriptor", BindingFlags.Static | BindingFlags.Public).GetValue(null)).FullName,
                     t => ((MessageParser) t.GetProperty("Parser", BindingFlags.Static | BindingFlags.Public).GetValue(null)));
 
-        public MessageParser Parser { get; }
-        public IEnumerable<ByteString> Payloads { get; }
-        public string Name { get; }
+        public MessageParser Parser { get; private set; }
+        public IEnumerable<ByteString> Payloads { get; private set; }
+        public string Name { get; private set; }
 
         public SerializationConfig(string resource)
         {
             var data = LoadData(resource);
             var dataset = BenchmarkDataset.Parser.ParseFrom(data);
 
+            Initialize(dataset);
+        }
+
+        public SerializationConfig(BenchmarkDataset dataset)
+        {
+            Initialize(dataset);
+        }
+
+        private void Initialize(BenchmarkDataset dataset)
+        {
             if (!parsersByMessageName.TryGetValue(dataset.MessageName, out var parser))
             {
                 throw new ArgumentException($"No parser for message {dataset.MessageName} in this assembly");

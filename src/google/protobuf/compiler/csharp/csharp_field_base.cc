@@ -157,8 +157,16 @@ void FieldGeneratorBase::GenerateCodecCode(io::Printer* printer) {
 }
 
 void FieldGeneratorBase::GenerateExtensionCode(io::Printer* printer) {
-  // No-op: only message fields, enum fields, primitives, 
+  // No-op: only message fields, enum fields, primitives,
   // and repeated fields need this default is to not generate any code
+}
+
+void FieldGeneratorBase::GenerateBufferParsingCode(io::Printer* printer) {
+  GenerateParsingCode(printer);
+}
+
+void FieldGeneratorBase::GenerateBufferSerializationCode(io::Printer* printer) {
+  GenerateSerializationCode(printer);
 }
 
 void FieldGeneratorBase::AddDeprecatedFlag(io::Printer* printer) {

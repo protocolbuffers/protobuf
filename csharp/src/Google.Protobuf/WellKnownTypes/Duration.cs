@@ -100,7 +100,11 @@ namespace Google.Protobuf.WellKnownTypes {
   /// be expressed in JSON format as "3.000000001s", and 3 seconds and 1
   /// microsecond should be expressed in JSON format as "3.000001s".
   /// </summary>
-  public sealed partial class Duration : pb::IMessage<Duration> {
+  public sealed partial class Duration : pb::IMessage<Duration>
+  #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    , pb::IBufferMessage
+  #endif
+   {
     private static readonly pb::MessageParser<Duration> _parser = new pb::MessageParser<Duration>(() => new Duration());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -219,6 +223,24 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(ref pb::CodedOutputWriter output) {
+      if (Seconds != 0L) {
+        output.WriteRawTag(8);
+        output.WriteInt64(Seconds);
+      }
+      if (Nanos != 0) {
+        output.WriteRawTag(16);
+        output.WriteInt32(Nanos);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
@@ -267,6 +289,29 @@ namespace Google.Protobuf.WellKnownTypes {
         }
       }
     }
+
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(ref pb::CodedInputReader input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 8: {
+            Seconds = input.ReadInt64();
+            break;
+          }
+          case 16: {
+            Nanos = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 

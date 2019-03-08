@@ -107,7 +107,11 @@ namespace Conformance {
   /// This will be known by message_type == "conformance.FailureSet", a conformance
   /// test should return a serialized FailureSet in protobuf_payload.
   /// </summary>
-  public sealed partial class FailureSet : pb::IMessage<FailureSet> {
+  public sealed partial class FailureSet : pb::IMessage<FailureSet>
+  #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    , pb::IBufferMessage
+  #endif
+   {
     private static readonly pb::MessageParser<FailureSet> _parser = new pb::MessageParser<FailureSet>(() => new FailureSet());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -191,6 +195,17 @@ namespace Conformance {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(ref pb::CodedOutputWriter output) {
+      failure_.WriteTo(ref output, _repeated_failure_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
@@ -226,6 +241,25 @@ namespace Conformance {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(ref pb::CodedInputReader input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            failure_.AddEntriesFrom(ref input, _repeated_failure_codec);
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
   }
 
   /// <summary>
@@ -235,7 +269,11 @@ namespace Conformance {
   ///   2. parse the protobuf or JSON payload in "payload" (which may fail)
   ///   3. if the parse succeeded, serialize the message in the requested format.
   /// </summary>
-  public sealed partial class ConformanceRequest : pb::IMessage<ConformanceRequest> {
+  public sealed partial class ConformanceRequest : pb::IMessage<ConformanceRequest>
+  #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    , pb::IBufferMessage
+  #endif
+   {
     private static readonly pb::MessageParser<ConformanceRequest> _parser = new pb::MessageParser<ConformanceRequest>(() => new ConformanceRequest());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -524,6 +562,52 @@ namespace Conformance {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(ref pb::CodedOutputWriter output) {
+      if (payloadCase_ == PayloadOneofCase.ProtobufPayload) {
+        output.WriteRawTag(10);
+        output.WriteBytes(ProtobufPayload);
+      }
+      if (payloadCase_ == PayloadOneofCase.JsonPayload) {
+        output.WriteRawTag(18);
+        output.WriteString(JsonPayload);
+      }
+      if (RequestedOutputFormat != global::Conformance.WireFormat.Unspecified) {
+        output.WriteRawTag(24);
+        output.WriteEnum((int) RequestedOutputFormat);
+      }
+      if (MessageType.Length != 0) {
+        output.WriteRawTag(34);
+        output.WriteString(MessageType);
+      }
+      if (TestCategory != global::Conformance.TestCategory.UnspecifiedTest) {
+        output.WriteRawTag(40);
+        output.WriteEnum((int) TestCategory);
+      }
+      if (jspbEncodingOptions_ != null) {
+        output.WriteRawTag(50);
+        output.WriteMessage(JspbEncodingOptions);
+      }
+      if (payloadCase_ == PayloadOneofCase.JspbPayload) {
+        output.WriteRawTag(58);
+        output.WriteString(JspbPayload);
+      }
+      if (payloadCase_ == PayloadOneofCase.TextPayload) {
+        output.WriteRawTag(66);
+        output.WriteString(TextPayload);
+      }
+      if (PrintUnknownFields != false) {
+        output.WriteRawTag(72);
+        output.WriteBool(PrintUnknownFields);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
@@ -652,12 +736,70 @@ namespace Conformance {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(ref pb::CodedInputReader input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            ProtobufPayload = input.ReadBytes();
+            break;
+          }
+          case 18: {
+            JsonPayload = input.ReadString();
+            break;
+          }
+          case 24: {
+            RequestedOutputFormat = (global::Conformance.WireFormat) input.ReadEnum();
+            break;
+          }
+          case 34: {
+            MessageType = input.ReadString();
+            break;
+          }
+          case 40: {
+            TestCategory = (global::Conformance.TestCategory) input.ReadEnum();
+            break;
+          }
+          case 50: {
+            if (jspbEncodingOptions_ == null) {
+              JspbEncodingOptions = new global::Conformance.JspbEncodingConfig();
+            }
+            input.ReadMessage(JspbEncodingOptions);
+            break;
+          }
+          case 58: {
+            JspbPayload = input.ReadString();
+            break;
+          }
+          case 66: {
+            TextPayload = input.ReadString();
+            break;
+          }
+          case 72: {
+            PrintUnknownFields = input.ReadBool();
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
   }
 
   /// <summary>
   /// Represents a single test case's output.
   /// </summary>
-  public sealed partial class ConformanceResponse : pb::IMessage<ConformanceResponse> {
+  public sealed partial class ConformanceResponse : pb::IMessage<ConformanceResponse>
+  #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    , pb::IBufferMessage
+  #endif
+   {
     private static readonly pb::MessageParser<ConformanceResponse> _parser = new pb::MessageParser<ConformanceResponse>(() => new ConformanceResponse());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -955,6 +1097,48 @@ namespace Conformance {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(ref pb::CodedOutputWriter output) {
+      if (resultCase_ == ResultOneofCase.ParseError) {
+        output.WriteRawTag(10);
+        output.WriteString(ParseError);
+      }
+      if (resultCase_ == ResultOneofCase.RuntimeError) {
+        output.WriteRawTag(18);
+        output.WriteString(RuntimeError);
+      }
+      if (resultCase_ == ResultOneofCase.ProtobufPayload) {
+        output.WriteRawTag(26);
+        output.WriteBytes(ProtobufPayload);
+      }
+      if (resultCase_ == ResultOneofCase.JsonPayload) {
+        output.WriteRawTag(34);
+        output.WriteString(JsonPayload);
+      }
+      if (resultCase_ == ResultOneofCase.Skipped) {
+        output.WriteRawTag(42);
+        output.WriteString(Skipped);
+      }
+      if (resultCase_ == ResultOneofCase.SerializeError) {
+        output.WriteRawTag(50);
+        output.WriteString(SerializeError);
+      }
+      if (resultCase_ == ResultOneofCase.JspbPayload) {
+        output.WriteRawTag(58);
+        output.WriteString(JspbPayload);
+      }
+      if (resultCase_ == ResultOneofCase.TextPayload) {
+        output.WriteRawTag(66);
+        output.WriteString(TextPayload);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
@@ -1067,12 +1251,63 @@ namespace Conformance {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(ref pb::CodedInputReader input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            ParseError = input.ReadString();
+            break;
+          }
+          case 18: {
+            RuntimeError = input.ReadString();
+            break;
+          }
+          case 26: {
+            ProtobufPayload = input.ReadBytes();
+            break;
+          }
+          case 34: {
+            JsonPayload = input.ReadString();
+            break;
+          }
+          case 42: {
+            Skipped = input.ReadString();
+            break;
+          }
+          case 50: {
+            SerializeError = input.ReadString();
+            break;
+          }
+          case 58: {
+            JspbPayload = input.ReadString();
+            break;
+          }
+          case 66: {
+            TextPayload = input.ReadString();
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
   }
 
   /// <summary>
   /// Encoding options for jspb format.
   /// </summary>
-  public sealed partial class JspbEncodingConfig : pb::IMessage<JspbEncodingConfig> {
+  public sealed partial class JspbEncodingConfig : pb::IMessage<JspbEncodingConfig>
+  #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    , pb::IBufferMessage
+  #endif
+   {
     private static readonly pb::MessageParser<JspbEncodingConfig> _parser = new pb::MessageParser<JspbEncodingConfig>(() => new JspbEncodingConfig());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1163,6 +1398,20 @@ namespace Conformance {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(ref pb::CodedOutputWriter output) {
+      if (UseJspbArrayAnyFormat != false) {
+        output.WriteRawTag(8);
+        output.WriteBool(UseJspbArrayAnyFormat);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
@@ -1201,6 +1450,25 @@ namespace Conformance {
         }
       }
     }
+
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(ref pb::CodedInputReader input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 8: {
+            UseJspbArrayAnyFormat = input.ReadBool();
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 

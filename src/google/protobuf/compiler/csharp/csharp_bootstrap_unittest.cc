@@ -141,7 +141,7 @@ TEST(CsharpBootstrapTest, GeneratedCsharpDescriptorMatches) {
   Importer importer(&source_tree, &error_collector);
   GenerateAndTest generate_test;
 
-  generate_test.SetParameter("base_namespace=Google.Protobuf");
+  generate_test.SetParameter("base_namespace=Google.Protobuf,use_buffer_serialization");
   source_tree.MapPath("", TestSourceDir());
   generate_test.Run(importer.Import("google/protobuf/descriptor.proto"),
                     "Reflection/Descriptor.cs",
@@ -177,7 +177,7 @@ TEST(CsharpBootstrapTest, GeneratedCsharpDescriptorMatches) {
                     "WellKnownTypes/Wrappers.cs",
                     "../csharp/src/Google.Protobuf/WellKnownTypes/Wrappers.cs");
 
-  generate_test.SetParameter("");
+  generate_test.SetParameter("use_buffer_serialization");
   source_tree.MapPath("", TestSourceDir() + "/../conformance");
   generate_test.Run(importer.Import("conformance.proto"),
                     "Conformance.cs",

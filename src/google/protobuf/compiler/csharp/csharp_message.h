@@ -77,6 +77,9 @@ class MessageGenerator : public SourceGeneratorBase {
   void AddDeprecatedFlag(io::Printer* printer);
   void AddSerializableAttribute(io::Printer* printer);
 
+  void GenerateWriteToOutputMethod(io::Printer* printer, bool use_buffer_serialization);
+  void GenerateMergeFromInput(io::Printer* printer, bool use_buffer_serialization);
+
   std::string class_name();
   std::string full_class_name();
 

@@ -38,7 +38,11 @@ namespace Benchmarks {
 
   }
   #region Messages
-  public sealed partial class BenchmarkDataset : pb::IMessage<BenchmarkDataset> {
+  public sealed partial class BenchmarkDataset : pb::IMessage<BenchmarkDataset>
+  #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    , pb::IBufferMessage
+  #endif
+   {
     private static readonly pb::MessageParser<BenchmarkDataset> _parser = new pb::MessageParser<BenchmarkDataset>(() => new BenchmarkDataset());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -186,6 +190,25 @@ namespace Benchmarks {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(ref pb::CodedOutputWriter output) {
+      if (Name.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(Name);
+      }
+      if (MessageName.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(MessageName);
+      }
+      payload_.WriteTo(ref output, _repeated_payload_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
@@ -240,6 +263,33 @@ namespace Benchmarks {
         }
       }
     }
+
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(ref pb::CodedInputReader input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            Name = input.ReadString();
+            break;
+          }
+          case 18: {
+            MessageName = input.ReadString();
+            break;
+          }
+          case 26: {
+            payload_.AddEntriesFrom(ref input, _repeated_payload_codec);
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 

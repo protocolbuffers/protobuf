@@ -122,11 +122,28 @@ void WrapperFieldGenerator::GenerateParsingCode(io::Printer* printer) {
     "}\n");
 }
 
+void WrapperFieldGenerator::GenerateBufferParsingCode(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "$type_name$ value = _single_$name$_codec.Read(ref input);\n"
+    "if ($has_not_property_check$ || value != $default_value$) {\n"
+    "  $property_name$ = value;\n"
+    "}\n");
+}
+
 void WrapperFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
   printer->Print(
     variables_,
     "if ($has_property_check$) {\n"
     "  _single_$name$_codec.WriteTagAndValue(output, $property_name$);\n"
+    "}\n");
+}
+
+void WrapperFieldGenerator::GenerateBufferSerializationCode(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "if ($has_property_check$) {\n"
+    "  _single_$name$_codec.WriteTagAndValue(ref output, $property_name$);\n"
     "}\n");
 }
 
@@ -253,12 +270,27 @@ void WrapperOneofFieldGenerator::GenerateParsingCode(io::Printer* printer) {
     "$property_name$ = _oneof_$name$_codec.Read(input);\n");
 }
 
+void WrapperOneofFieldGenerator::GenerateBufferParsingCode(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "$property_name$ = _oneof_$name$_codec.Read(ref input);\n");
+}
+
 void WrapperOneofFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
   // TODO: I suspect this is wrong...
   printer->Print(
     variables_,
     "if ($has_property_check$) {\n"
     "  _oneof_$name$_codec.WriteTagAndValue(output, ($type_name$) $oneof_name$_);\n"
+    "}\n");
+}
+
+void WrapperOneofFieldGenerator::GenerateBufferSerializationCode(io::Printer* printer) {
+  // TODO: I suspect this is wrong...
+  printer->Print(
+    variables_,
+    "if ($has_property_check$) {\n"
+    "  _oneof_$name$_codec.WriteTagAndValue(ref output, ($type_name$) $oneof_name$_);\n"
     "}\n");
 }
 

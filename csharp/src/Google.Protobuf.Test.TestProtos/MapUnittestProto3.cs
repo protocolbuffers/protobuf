@@ -176,7 +176,11 @@ namespace Google.Protobuf.TestProtos {
   /// <summary>
   /// Tests maps.
   /// </summary>
-  public sealed partial class TestMap : pb::IMessage<TestMap> {
+  public sealed partial class TestMap : pb::IMessage<TestMap>
+  #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    , pb::IBufferMessage
+  #endif
+   {
     private static readonly pb::MessageParser<TestMap> _parser = new pb::MessageParser<TestMap>(() => new TestMap());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -484,6 +488,33 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(ref pb::CodedOutputWriter output) {
+      mapInt32Int32_.WriteTo(ref output, _map_mapInt32Int32_codec);
+      mapInt64Int64_.WriteTo(ref output, _map_mapInt64Int64_codec);
+      mapUint32Uint32_.WriteTo(ref output, _map_mapUint32Uint32_codec);
+      mapUint64Uint64_.WriteTo(ref output, _map_mapUint64Uint64_codec);
+      mapSint32Sint32_.WriteTo(ref output, _map_mapSint32Sint32_codec);
+      mapSint64Sint64_.WriteTo(ref output, _map_mapSint64Sint64_codec);
+      mapFixed32Fixed32_.WriteTo(ref output, _map_mapFixed32Fixed32_codec);
+      mapFixed64Fixed64_.WriteTo(ref output, _map_mapFixed64Fixed64_codec);
+      mapSfixed32Sfixed32_.WriteTo(ref output, _map_mapSfixed32Sfixed32_codec);
+      mapSfixed64Sfixed64_.WriteTo(ref output, _map_mapSfixed64Sfixed64_codec);
+      mapInt32Float_.WriteTo(ref output, _map_mapInt32Float_codec);
+      mapInt32Double_.WriteTo(ref output, _map_mapInt32Double_codec);
+      mapBoolBool_.WriteTo(ref output, _map_mapBoolBool_codec);
+      mapStringString_.WriteTo(ref output, _map_mapStringString_codec);
+      mapInt32Bytes_.WriteTo(ref output, _map_mapInt32Bytes_codec);
+      mapInt32Enum_.WriteTo(ref output, _map_mapInt32Enum_codec);
+      mapInt32ForeignMessage_.WriteTo(ref output, _map_mapInt32ForeignMessage_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
@@ -615,9 +646,96 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(ref pb::CodedInputReader input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            mapInt32Int32_.AddEntriesFrom(ref input, _map_mapInt32Int32_codec);
+            break;
+          }
+          case 18: {
+            mapInt64Int64_.AddEntriesFrom(ref input, _map_mapInt64Int64_codec);
+            break;
+          }
+          case 26: {
+            mapUint32Uint32_.AddEntriesFrom(ref input, _map_mapUint32Uint32_codec);
+            break;
+          }
+          case 34: {
+            mapUint64Uint64_.AddEntriesFrom(ref input, _map_mapUint64Uint64_codec);
+            break;
+          }
+          case 42: {
+            mapSint32Sint32_.AddEntriesFrom(ref input, _map_mapSint32Sint32_codec);
+            break;
+          }
+          case 50: {
+            mapSint64Sint64_.AddEntriesFrom(ref input, _map_mapSint64Sint64_codec);
+            break;
+          }
+          case 58: {
+            mapFixed32Fixed32_.AddEntriesFrom(ref input, _map_mapFixed32Fixed32_codec);
+            break;
+          }
+          case 66: {
+            mapFixed64Fixed64_.AddEntriesFrom(ref input, _map_mapFixed64Fixed64_codec);
+            break;
+          }
+          case 74: {
+            mapSfixed32Sfixed32_.AddEntriesFrom(ref input, _map_mapSfixed32Sfixed32_codec);
+            break;
+          }
+          case 82: {
+            mapSfixed64Sfixed64_.AddEntriesFrom(ref input, _map_mapSfixed64Sfixed64_codec);
+            break;
+          }
+          case 90: {
+            mapInt32Float_.AddEntriesFrom(ref input, _map_mapInt32Float_codec);
+            break;
+          }
+          case 98: {
+            mapInt32Double_.AddEntriesFrom(ref input, _map_mapInt32Double_codec);
+            break;
+          }
+          case 106: {
+            mapBoolBool_.AddEntriesFrom(ref input, _map_mapBoolBool_codec);
+            break;
+          }
+          case 114: {
+            mapStringString_.AddEntriesFrom(ref input, _map_mapStringString_codec);
+            break;
+          }
+          case 122: {
+            mapInt32Bytes_.AddEntriesFrom(ref input, _map_mapInt32Bytes_codec);
+            break;
+          }
+          case 130: {
+            mapInt32Enum_.AddEntriesFrom(ref input, _map_mapInt32Enum_codec);
+            break;
+          }
+          case 138: {
+            mapInt32ForeignMessage_.AddEntriesFrom(ref input, _map_mapInt32ForeignMessage_codec);
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
   }
 
-  public sealed partial class TestMapSubmessage : pb::IMessage<TestMapSubmessage> {
+  public sealed partial class TestMapSubmessage : pb::IMessage<TestMapSubmessage>
+  #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    , pb::IBufferMessage
+  #endif
+   {
     private static readonly pb::MessageParser<TestMapSubmessage> _parser = new pb::MessageParser<TestMapSubmessage>(() => new TestMapSubmessage());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -705,6 +823,20 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(ref pb::CodedOutputWriter output) {
+      if (testMap_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(TestMap);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
@@ -750,9 +882,35 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(ref pb::CodedInputReader input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            if (testMap_ == null) {
+              TestMap = new global::Google.Protobuf.TestProtos.TestMap();
+            }
+            input.ReadMessage(TestMap);
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
   }
 
-  public sealed partial class TestMessageMap : pb::IMessage<TestMessageMap> {
+  public sealed partial class TestMessageMap : pb::IMessage<TestMessageMap>
+  #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    , pb::IBufferMessage
+  #endif
+   {
     private static readonly pb::MessageParser<TestMessageMap> _parser = new pb::MessageParser<TestMessageMap>(() => new TestMessageMap());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -836,6 +994,17 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(ref pb::CodedOutputWriter output) {
+      mapInt32Message_.WriteTo(ref output, _map_mapInt32Message_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
@@ -871,12 +1040,35 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(ref pb::CodedInputReader input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            mapInt32Message_.AddEntriesFrom(ref input, _map_mapInt32Message_codec);
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
   }
 
   /// <summary>
   /// Two map fields share the same entry default instance.
   /// </summary>
-  public sealed partial class TestSameTypeMap : pb::IMessage<TestSameTypeMap> {
+  public sealed partial class TestSameTypeMap : pb::IMessage<TestSameTypeMap>
+  #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    , pb::IBufferMessage
+  #endif
+   {
     private static readonly pb::MessageParser<TestSameTypeMap> _parser = new pb::MessageParser<TestSameTypeMap>(() => new TestSameTypeMap());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -974,6 +1166,18 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(ref pb::CodedOutputWriter output) {
+      map1_.WriteTo(ref output, _map_map1_codec);
+      map2_.WriteTo(ref output, _map_map2_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
@@ -1015,9 +1219,36 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(ref pb::CodedInputReader input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            map1_.AddEntriesFrom(ref input, _map_map1_codec);
+            break;
+          }
+          case 18: {
+            map2_.AddEntriesFrom(ref input, _map_map2_codec);
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
   }
 
-  public sealed partial class TestArenaMap : pb::IMessage<TestArenaMap> {
+  public sealed partial class TestArenaMap : pb::IMessage<TestArenaMap>
+  #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    , pb::IBufferMessage
+  #endif
+   {
     private static readonly pb::MessageParser<TestArenaMap> _parser = new pb::MessageParser<TestArenaMap>(() => new TestArenaMap());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1297,6 +1528,31 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(ref pb::CodedOutputWriter output) {
+      mapInt32Int32_.WriteTo(ref output, _map_mapInt32Int32_codec);
+      mapInt64Int64_.WriteTo(ref output, _map_mapInt64Int64_codec);
+      mapUint32Uint32_.WriteTo(ref output, _map_mapUint32Uint32_codec);
+      mapUint64Uint64_.WriteTo(ref output, _map_mapUint64Uint64_codec);
+      mapSint32Sint32_.WriteTo(ref output, _map_mapSint32Sint32_codec);
+      mapSint64Sint64_.WriteTo(ref output, _map_mapSint64Sint64_codec);
+      mapFixed32Fixed32_.WriteTo(ref output, _map_mapFixed32Fixed32_codec);
+      mapFixed64Fixed64_.WriteTo(ref output, _map_mapFixed64Fixed64_codec);
+      mapSfixed32Sfixed32_.WriteTo(ref output, _map_mapSfixed32Sfixed32_codec);
+      mapSfixed64Sfixed64_.WriteTo(ref output, _map_mapSfixed64Sfixed64_codec);
+      mapInt32Float_.WriteTo(ref output, _map_mapInt32Float_codec);
+      mapInt32Double_.WriteTo(ref output, _map_mapInt32Double_codec);
+      mapBoolBool_.WriteTo(ref output, _map_mapBoolBool_codec);
+      mapInt32Enum_.WriteTo(ref output, _map_mapInt32Enum_codec);
+      mapInt32ForeignMessage_.WriteTo(ref output, _map_mapInt32ForeignMessage_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
@@ -1416,13 +1672,92 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(ref pb::CodedInputReader input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            mapInt32Int32_.AddEntriesFrom(ref input, _map_mapInt32Int32_codec);
+            break;
+          }
+          case 18: {
+            mapInt64Int64_.AddEntriesFrom(ref input, _map_mapInt64Int64_codec);
+            break;
+          }
+          case 26: {
+            mapUint32Uint32_.AddEntriesFrom(ref input, _map_mapUint32Uint32_codec);
+            break;
+          }
+          case 34: {
+            mapUint64Uint64_.AddEntriesFrom(ref input, _map_mapUint64Uint64_codec);
+            break;
+          }
+          case 42: {
+            mapSint32Sint32_.AddEntriesFrom(ref input, _map_mapSint32Sint32_codec);
+            break;
+          }
+          case 50: {
+            mapSint64Sint64_.AddEntriesFrom(ref input, _map_mapSint64Sint64_codec);
+            break;
+          }
+          case 58: {
+            mapFixed32Fixed32_.AddEntriesFrom(ref input, _map_mapFixed32Fixed32_codec);
+            break;
+          }
+          case 66: {
+            mapFixed64Fixed64_.AddEntriesFrom(ref input, _map_mapFixed64Fixed64_codec);
+            break;
+          }
+          case 74: {
+            mapSfixed32Sfixed32_.AddEntriesFrom(ref input, _map_mapSfixed32Sfixed32_codec);
+            break;
+          }
+          case 82: {
+            mapSfixed64Sfixed64_.AddEntriesFrom(ref input, _map_mapSfixed64Sfixed64_codec);
+            break;
+          }
+          case 90: {
+            mapInt32Float_.AddEntriesFrom(ref input, _map_mapInt32Float_codec);
+            break;
+          }
+          case 98: {
+            mapInt32Double_.AddEntriesFrom(ref input, _map_mapInt32Double_codec);
+            break;
+          }
+          case 106: {
+            mapBoolBool_.AddEntriesFrom(ref input, _map_mapBoolBool_codec);
+            break;
+          }
+          case 114: {
+            mapInt32Enum_.AddEntriesFrom(ref input, _map_mapInt32Enum_codec);
+            break;
+          }
+          case 122: {
+            mapInt32ForeignMessage_.AddEntriesFrom(ref input, _map_mapInt32ForeignMessage_codec);
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
   }
 
   /// <summary>
   /// Previously, message containing enum called Type cannot be used as value of
   /// map field.
   /// </summary>
-  public sealed partial class MessageContainingEnumCalledType : pb::IMessage<MessageContainingEnumCalledType> {
+  public sealed partial class MessageContainingEnumCalledType : pb::IMessage<MessageContainingEnumCalledType>
+  #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    , pb::IBufferMessage
+  #endif
+   {
     private static readonly pb::MessageParser<MessageContainingEnumCalledType> _parser = new pb::MessageParser<MessageContainingEnumCalledType>(() => new MessageContainingEnumCalledType());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1506,6 +1841,17 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(ref pb::CodedOutputWriter output) {
+      type_.WriteTo(ref output, _map_type_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
@@ -1541,6 +1887,25 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(ref pb::CodedInputReader input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            type_.AddEntriesFrom(ref input, _map_type_codec);
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
     #region Nested types
     /// <summary>Container for nested types declared in the MessageContainingEnumCalledType message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1557,7 +1922,11 @@ namespace Google.Protobuf.TestProtos {
   /// <summary>
   /// Previously, message cannot contain map field called "entry".
   /// </summary>
-  public sealed partial class MessageContainingMapCalledEntry : pb::IMessage<MessageContainingMapCalledEntry> {
+  public sealed partial class MessageContainingMapCalledEntry : pb::IMessage<MessageContainingMapCalledEntry>
+  #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    , pb::IBufferMessage
+  #endif
+   {
     private static readonly pb::MessageParser<MessageContainingMapCalledEntry> _parser = new pb::MessageParser<MessageContainingMapCalledEntry>(() => new MessageContainingMapCalledEntry());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1641,6 +2010,17 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(ref pb::CodedOutputWriter output) {
+      entry_.WriteTo(ref output, _map_entry_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
@@ -1675,6 +2055,25 @@ namespace Google.Protobuf.TestProtos {
         }
       }
     }
+
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(ref pb::CodedInputReader input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            entry_.AddEntriesFrom(ref input, _map_entry_codec);
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 

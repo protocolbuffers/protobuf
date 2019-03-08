@@ -31,6 +31,9 @@
 #endregion
 
 using BenchmarkDotNet.Attributes;
+using Benchmarks;
+using Google.Protobuf.Buffers;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -50,7 +53,11 @@ namespace Google.Protobuf.Benchmarks
         /// </summary>
         public static SerializationConfig[] Configurations => new[]
         {
-            new SerializationConfig("dataset.google_message1_proto3.pb")
+            new SerializationConfig("dataset.google_message1_proto3.pb"),
+            GoogleMessageBenchmark.CreateGoogleMessageConfig(MessageSize.Empty),
+            GoogleMessageBenchmark.CreateGoogleMessageConfig(MessageSize.Small),
+            GoogleMessageBenchmark.CreateGoogleMessageConfig(MessageSize.Medium),
+            GoogleMessageBenchmark.CreateGoogleMessageConfig(MessageSize.Large)
         };
 
         [ParamsSource(nameof(Configurations))]
@@ -68,32 +75,78 @@ namespace Google.Protobuf.Benchmarks
         public void GlobalSetup()
         {
             parser = Configuration.Parser;
-            subTests = Configuration.Payloads.Select(p => new SubTest(p, parser.ParseFrom(p))).ToList();
+            subTests = Configuration.Payloads.Select(p => new SubTest(p, (IBufferMessage)parser.ParseFrom(p))).ToList();
         }
 
         [Benchmark]
-        public void WriteToStream() => subTests.ForEach(item => item.WriteToStream());
+        public void WriteToStream()
+        {
+            foreach (var subTest in subTests)
+            {
+                subTest.WriteToStream();
+            }
+        }
 
         [Benchmark]
-        public void ToByteArray() => subTests.ForEach(item => item.ToByteArray());
+        public void WriteToBufferWriter()
+        {
+            foreach (var subTest in subTests)
+            {
+                subTest.WriteToBufferWriter();
+            }
+        }
 
         [Benchmark]
-        public void ParseFromByteString() => subTests.ForEach(item => item.ParseFromByteString(parser));
+        public void ToByteArray()
+        {
+            foreach (var subTest in subTests)
+            {
+                subTest.ToByteArray();
+            }
+        }
 
         [Benchmark]
-        public void ParseFromStream() => subTests.ForEach(item => item.ParseFromStream(parser));
+        public void ParseFromByteString()
+        {
+            foreach (var subTest in subTests)
+            {
+                subTest.ParseFromByteString(parser);
+            }
+        }
+
+        [Benchmark]
+        public void ParseFromStream()
+        {
+            foreach (var subTest in subTests)
+            {
+                subTest.ParseFromStream(parser);
+            }
+        }
+
+        [Benchmark]
+        public void ParseFromReadOnlySequence()
+        {
+            foreach (var subTest in subTests)
+            {
+                subTest.ParseFromReadOnlySequence(parser);
+            }
+        }
 
         private class SubTest
         {
             private readonly Stream destinationStream;
+            private readonly Google.Protobuf.Buffers.ArrayBufferWriter<byte> bufferWriter;
             private readonly Stream sourceStream;
+            private readonly ReadOnlySequence<byte> readOnlySequence;
             private readonly ByteString data;
-            private readonly IMessage message;
+            private readonly IBufferMessage message;
 
-            public SubTest(ByteString data, IMessage message)
+            public SubTest(ByteString data, IBufferMessage message)
             {
                 destinationStream = new MemoryStream(data.Length);
+                bufferWriter = new Google.Protobuf.Buffers.ArrayBufferWriter<byte>();
                 sourceStream = new MemoryStream(data.ToByteArray());
+                readOnlySequence = new ReadOnlySequence<byte>(data.ToByteArray());
                 this.data = data;
                 this.message = message;
             }
@@ -106,6 +159,13 @@ namespace Google.Protobuf.Benchmarks
                 message.WriteTo(destinationStream);
             }
 
+            public void WriteToBufferWriter()
+            {
+                bufferWriter.Clear();
+                var writer = new CodedOutputWriter(bufferWriter);
+                message.WriteTo(ref writer);
+            }
+
             public void ToByteArray() => message.ToByteArray();
 
             public void ParseFromByteString(MessageParser parser) => parser.ParseFrom(data);
@@ -114,6 +174,12 @@ namespace Google.Protobuf.Benchmarks
             {
                 sourceStream.Position = 0;
                 parser.ParseFrom(sourceStream);
+            }
+
+            public void ParseFromReadOnlySequence(MessageParser parser)
+            {
+                var reader = new CodedInputReader(readOnlySequence);
+                parser.ParseFrom(ref reader);
             }
         }
     }

@@ -39,6 +39,7 @@
 
 #include <google/protobuf/compiler/csharp/csharp_doc_comment.h>
 #include <google/protobuf/compiler/csharp/csharp_helpers.h>
+#include <google/protobuf/compiler/csharp/csharp_options.h>
 #include <google/protobuf/compiler/csharp/csharp_repeated_primitive_field.h>
 
 namespace google {
@@ -83,10 +84,22 @@ void RepeatedPrimitiveFieldGenerator::GenerateParsingCode(io::Printer* printer) 
     "$name$_.AddEntriesFrom(input, _repeated_$name$_codec);\n");
 }
 
+void RepeatedPrimitiveFieldGenerator::GenerateBufferParsingCode(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "$name$_.AddEntriesFrom(ref input, _repeated_$name$_codec);\n");
+}
+
 void RepeatedPrimitiveFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
   printer->Print(
     variables_,
     "$name$_.WriteTo(output, _repeated_$name$_codec);\n");
+}
+
+void RepeatedPrimitiveFieldGenerator::GenerateBufferSerializationCode(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "$name$_.WriteTo(ref output, _repeated_$name$_codec);\n");
 }
 
 void RepeatedPrimitiveFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {

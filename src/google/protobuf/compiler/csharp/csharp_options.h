@@ -45,7 +45,8 @@ struct Options {
       base_namespace(""),
       base_namespace_specified(false),
       internal_access(false),
-      serializable(false) {
+      serializable(false),
+      use_buffer_serialization(false) {
   }
   // Extension of the generated file. Defaults to ".cs"
   std::string file_extension;
@@ -71,6 +72,10 @@ struct Options {
   // Whether the generated classes should have a global::System.Serializable attribute added
   // Defaults to false
   bool serializable;
+  // Whether the generated classes should use CodedInputReader and CodedOutputWriter
+  // Defaults to false
+  // Note: experimental API that can change or be removed without any prior notice.
+  bool use_buffer_serialization;
 };
 
 }  // namespace csharp

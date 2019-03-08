@@ -31,6 +31,7 @@
 #endregion
 
 using BenchmarkDotNet.Attributes;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -43,26 +44,44 @@ namespace Google.Protobuf.Benchmarks
     [MemoryDiagnoser]
     public class WrapperBenchmark
     {
-        byte[] manyWrapperFieldsData;
-        byte[] manyPrimitiveFieldsData;
+        byte[] manyWrapperFieldsByteArray;
+        ReadOnlySequence<byte> manyWrapperFieldsReadOnlySequence;
+        byte[] manyPrimitiveFieldsByteArray;
+        ReadOnlySequence<byte> manyPrimitiveFieldsReadOnlySequence;
 
         [GlobalSetup]
         public void GlobalSetup()
         {
-            manyWrapperFieldsData = CreateManyWrapperFieldsMessage().ToByteArray();
-            manyPrimitiveFieldsData = CreateManyPrimitiveFieldsMessage().ToByteArray();
+            manyWrapperFieldsByteArray = CreateManyWrapperFieldsMessage().ToByteArray();
+            manyWrapperFieldsReadOnlySequence = new ReadOnlySequence<byte>(manyWrapperFieldsByteArray);
+            manyPrimitiveFieldsByteArray = CreateManyPrimitiveFieldsMessage().ToByteArray();
+            manyPrimitiveFieldsReadOnlySequence = new ReadOnlySequence<byte>(manyPrimitiveFieldsByteArray);
         }
 
         [Benchmark]
-        public ManyWrapperFieldsMessage ParseWrapperFields()
+        public ManyWrapperFieldsMessage ParseWrapperFieldsFromByteArray()
         {
-            return ManyWrapperFieldsMessage.Parser.ParseFrom(manyWrapperFieldsData);
+            return ManyWrapperFieldsMessage.Parser.ParseFrom(manyWrapperFieldsByteArray);
         }
 
         [Benchmark]
-        public ManyPrimitiveFieldsMessage ParsePrimitiveFields()
+        public ManyWrapperFieldsMessage ParseWrapperFieldsFromReadOnlySequence()
         {
-            return ManyPrimitiveFieldsMessage.Parser.ParseFrom(manyPrimitiveFieldsData);
+            var input = new CodedInputReader(manyWrapperFieldsReadOnlySequence);
+            return ManyWrapperFieldsMessage.Parser.ParseFrom(ref input);
+        }
+
+        [Benchmark]
+        public ManyPrimitiveFieldsMessage ParsePrimitiveFieldsFromByteArray()
+        {
+            return ManyPrimitiveFieldsMessage.Parser.ParseFrom(manyPrimitiveFieldsByteArray);
+        }
+
+        [Benchmark]
+        public ManyPrimitiveFieldsMessage ParsePrimitiveFieldsFromReadOnlySequence()
+        {
+            var input = new CodedInputReader(manyPrimitiveFieldsReadOnlySequence);
+            return ManyPrimitiveFieldsMessage.Parser.ParseFrom(ref input);
         }
 
         private static ManyWrapperFieldsMessage CreateManyWrapperFieldsMessage()

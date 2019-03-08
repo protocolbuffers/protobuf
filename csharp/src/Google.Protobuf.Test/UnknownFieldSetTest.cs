@@ -161,10 +161,10 @@ namespace Google.Protobuf
             MessageParser discardingParser2 = retainingParser2.WithDiscardUnknownFields(true);
 
             // Test parse from byte[]
-            assertFull(retainingParser1.ParseFrom(data));
-            assertFull(retainingParser2.ParseFrom(data));
-            assertEmpty(discardingParser1.ParseFrom(data));
-            assertEmpty(discardingParser2.ParseFrom(data));
+            MessageParsingHelpers.AssertReadingMessage(retainingParser1, data, m => assertFull(m));
+            MessageParsingHelpers.AssertReadingMessage(retainingParser2, data, m => assertFull(m));
+            MessageParsingHelpers.AssertReadingMessage(discardingParser1, data, m => assertEmpty(m));
+            MessageParsingHelpers.AssertReadingMessage(discardingParser2, data, m => assertEmpty(m));
 
             // Test parse from byte[] with offset
             assertFull(retainingParser1.ParseFrom(data, 0, data.Length));
@@ -197,10 +197,20 @@ namespace Google.Protobuf
             output.Flush();
             ms.Position = 0;
 
-            CodedInputStream input = new CodedInputStream(ms);
-            Assert.AreEqual(tag, input.ReadTag());
+            CodedInputStream inputStream = new CodedInputStream(ms);
+            Assert.AreEqual(tag, inputStream.ReadTag());
+            Assert.Throws<InvalidProtocolBufferException>(() => UnknownFieldSet.MergeFieldFrom(null, inputStream));
 
-            Assert.Throws<InvalidProtocolBufferException>(() => UnknownFieldSet.MergeFieldFrom(null, input));
+#if GOOGLE_PROTOBUF_SUPPORT_SYSTEM_MEMORY
+            ms.Position = 0;
+
+            Assert.Throws<InvalidProtocolBufferException>(() =>
+            {
+                CodedInputReader inputReader = new CodedInputReader(new System.Buffers.ReadOnlySequence<byte>(ms.ToArray()));
+                Assert.AreEqual(tag, inputReader.ReadTag());
+                UnknownFieldSet.MergeFieldFrom(null, ref inputReader);
+            });
+#endif
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿#region Copyright notice and license
+#region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
@@ -192,7 +192,7 @@ namespace Google.Protobuf
                 extensionValue.MergeFrom(stream);
                 return true;
             }
-            else if (stream.ExtensionRegistry != null && stream.ExtensionRegistry.ContainsInputField(stream, typeof(TTarget), out extension))
+            else if (stream.ExtensionRegistry != null && stream.ExtensionRegistry.ContainsInputField(stream.LastTag, typeof(TTarget), out extension))
             {
                 IExtensionValue value = extension.CreateValue();
                 value.MergeFrom(stream);
@@ -205,6 +205,37 @@ namespace Google.Protobuf
                 return false;
             }
         }
+
+#if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+        /// <summary>
+        /// Tries to merge a field from the coded input, returning true if the field was merged.
+        /// If the set is null or the field was not otherwise merged, this returns false.
+        /// </summary>
+        public static bool TryMergeFieldFrom<TTarget>(ref ExtensionSet<TTarget> set, ref CodedInputReader input) where TTarget : IExtendableMessage<TTarget>
+        {
+            Extension extension;
+            int lastFieldNumber = WireFormat.GetTagFieldNumber(input.LastTag);
+
+            IExtensionValue extensionValue;
+            if (set != null && set.ValuesByNumber.TryGetValue(lastFieldNumber, out extensionValue))
+            {
+                extensionValue.MergeFrom(ref input);
+                return true;
+            }
+            else if (input.ExtensionRegistry != null && input.ExtensionRegistry.ContainsInputField(input.LastTag, typeof(TTarget), out extension))
+            {
+                IExtensionValue value = extension.CreateValue();
+                value.MergeFrom(ref input);
+                set = (set ?? new ExtensionSet<TTarget>());
+                set.ValuesByNumber.Add(extension.FieldNumber, value);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+#endif
 
         /// <summary>
         /// Merges the second set into the first set, creating a new instance if first is null
@@ -332,6 +363,19 @@ namespace Google.Protobuf
                 value.WriteTo(stream);
             }
         }
+
+#if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+        /// <summary>
+        /// Writes the extension values in this set to the output stream
+        /// </summary>
+        public void WriteTo(ref CodedOutputWriter output)
+        {
+            foreach (var value in ValuesByNumber.Values)
+            {
+                value.WriteTo(ref output);
+            }
+        }
+#endif
 
         internal bool IsInitialized()
         {

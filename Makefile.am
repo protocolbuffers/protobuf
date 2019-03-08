@@ -87,6 +87,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/AddressBook/SampleUsage.cs                                      \
   csharp/src/Google.Protobuf.Benchmarks/BenchmarkMessage1Proto3.cs           \
   csharp/src/Google.Protobuf.Benchmarks/Benchmarks.cs                        \
+  csharp/src/Google.Protobuf.Benchmarks/GoogleMessageBenchmark.cs            \
   csharp/src/Google.Protobuf.Benchmarks/Google.Protobuf.Benchmarks.csproj    \
   csharp/src/Google.Protobuf.Benchmarks/Program.cs                           \
   csharp/src/Google.Protobuf.Benchmarks/SerializationBenchmark.cs            \
@@ -100,9 +101,16 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf.JsonDump/Google.Protobuf.JsonDump.csproj        \
   csharp/src/Google.Protobuf.JsonDump/Program.cs                             \
   csharp/src/Google.Protobuf.Test/ByteStringTest.cs                          \
-  csharp/src/Google.Protobuf.Test/CodedInputStreamExtensions.cs              \
+  csharp/src/Google.Protobuf.Test/CodedInputExtensions.cs                    \
+  csharp/src/Google.Protobuf.Test/CodedInputReaderTest.cs                    \
   csharp/src/Google.Protobuf.Test/CodedInputStreamTest.cs                    \
+  csharp/src/Google.Protobuf.Test/CodedInputTestBase.cs                      \
   csharp/src/Google.Protobuf.Test/CodedOutputStreamTest.cs                   \
+  csharp/src/Google.Protobuf.Test/CodedOutputWriterTest.cs                   \
+  csharp/src/Google.Protobuf.Test/CodedOutputTestBase.cs                     \
+  csharp/src/Google.Protobuf.Test/Buffers/ArrayBufferWriter.cs               \
+  csharp/src/Google.Protobuf.Test/Buffers/MaxSizeHintBufferWriter.cs         \
+  csharp/src/Google.Protobuf.Test/Buffers/ReadOnlySequenceFactory.cs         \
   csharp/src/Google.Protobuf.Test/Collections/MapFieldTest.cs                \
   csharp/src/Google.Protobuf.Test/Collections/ProtobufEqualityComparersTest.cs \
   csharp/src/Google.Protobuf.Test/Collections/RepeatedFieldTest.cs           \
@@ -121,6 +129,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf.Test/JsonFormatterTest.cs                       \
   csharp/src/Google.Protobuf.Test/JsonParserTest.cs                          \
   csharp/src/Google.Protobuf.Test/JsonTokenizerTest.cs                       \
+  csharp/src/Google.Protobuf.Test/MessageParsingHelpers.cs                   \
   csharp/src/Google.Protobuf.Test/Reflection/CustomOptionsTest.cs            \
   csharp/src/Google.Protobuf.Test/Reflection/DescriptorDeclarationTest.cs    \
   csharp/src/Google.Protobuf.Test/Reflection/DescriptorsTest.cs              \
@@ -160,8 +169,10 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf/ByteArray.cs                                    \
   csharp/src/Google.Protobuf/ByteString.cs                                   \
   csharp/src/Google.Protobuf/CodedInputStream.cs                             \
+  csharp/src/Google.Protobuf/CodedInputReader.cs                             \
   csharp/src/Google.Protobuf/CodedOutputStream.ComputeSize.cs                \
   csharp/src/Google.Protobuf/CodedOutputStream.cs                            \
+  csharp/src/Google.Protobuf/CodedOutputWriter.cs                            \
   csharp/src/Google.Protobuf/Collections/Lists.cs                            \
   csharp/src/Google.Protobuf/Collections/MapField.cs                         \
   csharp/src/Google.Protobuf/Collections/ProtobufEqualityComparers.cs        \
@@ -179,6 +190,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf/FieldMaskTree.cs                                \
   csharp/src/Google.Protobuf/FrameworkPortability.cs                         \
   csharp/src/Google.Protobuf/Google.Protobuf.csproj                          \
+  csharp/src/Google.Protobuf/IBufferMessage.cs                               \
   csharp/src/Google.Protobuf/ICustomDiagnosticMessage.cs                     \
   csharp/src/Google.Protobuf/IDeepCloneable.cs                               \
   csharp/src/Google.Protobuf/IExtendableMessage.cs                           \
@@ -225,6 +237,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf/Reflection/ServiceDescriptor.cs                 \
   csharp/src/Google.Protobuf/Reflection/SingleFieldAccessor.cs               \
   csharp/src/Google.Protobuf/Reflection/TypeRegistry.cs                      \
+  csharp/src/Google.Protobuf/SequenceReader.cs                               \
   csharp/src/Google.Protobuf/WellKnownTypes/Any.cs                           \
   csharp/src/Google.Protobuf/WellKnownTypes/AnyPartial.cs                    \
   csharp/src/Google.Protobuf/WellKnownTypes/Api.cs                           \

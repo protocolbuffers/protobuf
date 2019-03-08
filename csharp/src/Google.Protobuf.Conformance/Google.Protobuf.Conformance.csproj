@@ -4,7 +4,12 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <OutputType>Exe</OutputType>
     <IsPackable>False</IsPackable>
+    <DefineConstants>$(DefineConstants);GOOGLE_PROTOBUF_SUPPORT_SYSTEM_MEMORY</DefineConstants>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Google.Protobuf.Test\Buffers\ArrayBufferWriter.cs" Link="ArrayBufferWriter.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Google.Protobuf\Google.Protobuf.csproj" />

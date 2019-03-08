@@ -244,7 +244,11 @@ namespace ProtobufTestMessages.Proto2 {
   /// could trigger bugs that occur in any message type in this file.  We verify
   /// this stays true in a unit test.
   /// </summary>
-  public sealed partial class TestAllTypesProto2 : pb::IExtendableMessage<TestAllTypesProto2> {
+  public sealed partial class TestAllTypesProto2 : pb::IExtendableMessage<TestAllTypesProto2>
+  #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    , pb::IBufferMessage
+  #endif
+   {
     private static readonly pb::MessageParser<TestAllTypesProto2> _parser = new pb::MessageParser<TestAllTypesProto2>(() => new TestAllTypesProto2());
     private pb::UnknownFieldSet _unknownFields;
     private pb::ExtensionSet<TestAllTypesProto2> _extensions;
@@ -2876,6 +2880,288 @@ namespace ProtobufTestMessages.Proto2 {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(ref pb::CodedOutputWriter output) {
+      if (HasOptionalInt32) {
+        output.WriteRawTag(8);
+        output.WriteInt32(OptionalInt32);
+      }
+      if (HasOptionalInt64) {
+        output.WriteRawTag(16);
+        output.WriteInt64(OptionalInt64);
+      }
+      if (HasOptionalUint32) {
+        output.WriteRawTag(24);
+        output.WriteUInt32(OptionalUint32);
+      }
+      if (HasOptionalUint64) {
+        output.WriteRawTag(32);
+        output.WriteUInt64(OptionalUint64);
+      }
+      if (HasOptionalSint32) {
+        output.WriteRawTag(40);
+        output.WriteSInt32(OptionalSint32);
+      }
+      if (HasOptionalSint64) {
+        output.WriteRawTag(48);
+        output.WriteSInt64(OptionalSint64);
+      }
+      if (HasOptionalFixed32) {
+        output.WriteRawTag(61);
+        output.WriteFixed32(OptionalFixed32);
+      }
+      if (HasOptionalFixed64) {
+        output.WriteRawTag(65);
+        output.WriteFixed64(OptionalFixed64);
+      }
+      if (HasOptionalSfixed32) {
+        output.WriteRawTag(77);
+        output.WriteSFixed32(OptionalSfixed32);
+      }
+      if (HasOptionalSfixed64) {
+        output.WriteRawTag(81);
+        output.WriteSFixed64(OptionalSfixed64);
+      }
+      if (HasOptionalFloat) {
+        output.WriteRawTag(93);
+        output.WriteFloat(OptionalFloat);
+      }
+      if (HasOptionalDouble) {
+        output.WriteRawTag(97);
+        output.WriteDouble(OptionalDouble);
+      }
+      if (HasOptionalBool) {
+        output.WriteRawTag(104);
+        output.WriteBool(OptionalBool);
+      }
+      if (HasOptionalString) {
+        output.WriteRawTag(114);
+        output.WriteString(OptionalString);
+      }
+      if (HasOptionalBytes) {
+        output.WriteRawTag(122);
+        output.WriteBytes(OptionalBytes);
+      }
+      if (HasOptionalNestedMessage) {
+        output.WriteRawTag(146, 1);
+        output.WriteMessage(OptionalNestedMessage);
+      }
+      if (HasOptionalForeignMessage) {
+        output.WriteRawTag(154, 1);
+        output.WriteMessage(OptionalForeignMessage);
+      }
+      if (HasOptionalNestedEnum) {
+        output.WriteRawTag(168, 1);
+        output.WriteEnum((int) OptionalNestedEnum);
+      }
+      if (HasOptionalForeignEnum) {
+        output.WriteRawTag(176, 1);
+        output.WriteEnum((int) OptionalForeignEnum);
+      }
+      if (HasOptionalStringPiece) {
+        output.WriteRawTag(194, 1);
+        output.WriteString(OptionalStringPiece);
+      }
+      if (HasOptionalCord) {
+        output.WriteRawTag(202, 1);
+        output.WriteString(OptionalCord);
+      }
+      if (HasRecursiveMessage) {
+        output.WriteRawTag(218, 1);
+        output.WriteMessage(RecursiveMessage);
+      }
+      repeatedInt32_.WriteTo(ref output, _repeated_repeatedInt32_codec);
+      repeatedInt64_.WriteTo(ref output, _repeated_repeatedInt64_codec);
+      repeatedUint32_.WriteTo(ref output, _repeated_repeatedUint32_codec);
+      repeatedUint64_.WriteTo(ref output, _repeated_repeatedUint64_codec);
+      repeatedSint32_.WriteTo(ref output, _repeated_repeatedSint32_codec);
+      repeatedSint64_.WriteTo(ref output, _repeated_repeatedSint64_codec);
+      repeatedFixed32_.WriteTo(ref output, _repeated_repeatedFixed32_codec);
+      repeatedFixed64_.WriteTo(ref output, _repeated_repeatedFixed64_codec);
+      repeatedSfixed32_.WriteTo(ref output, _repeated_repeatedSfixed32_codec);
+      repeatedSfixed64_.WriteTo(ref output, _repeated_repeatedSfixed64_codec);
+      repeatedFloat_.WriteTo(ref output, _repeated_repeatedFloat_codec);
+      repeatedDouble_.WriteTo(ref output, _repeated_repeatedDouble_codec);
+      repeatedBool_.WriteTo(ref output, _repeated_repeatedBool_codec);
+      repeatedString_.WriteTo(ref output, _repeated_repeatedString_codec);
+      repeatedBytes_.WriteTo(ref output, _repeated_repeatedBytes_codec);
+      repeatedNestedMessage_.WriteTo(ref output, _repeated_repeatedNestedMessage_codec);
+      repeatedForeignMessage_.WriteTo(ref output, _repeated_repeatedForeignMessage_codec);
+      repeatedNestedEnum_.WriteTo(ref output, _repeated_repeatedNestedEnum_codec);
+      repeatedForeignEnum_.WriteTo(ref output, _repeated_repeatedForeignEnum_codec);
+      repeatedStringPiece_.WriteTo(ref output, _repeated_repeatedStringPiece_codec);
+      repeatedCord_.WriteTo(ref output, _repeated_repeatedCord_codec);
+      mapInt32Int32_.WriteTo(ref output, _map_mapInt32Int32_codec);
+      mapInt64Int64_.WriteTo(ref output, _map_mapInt64Int64_codec);
+      mapUint32Uint32_.WriteTo(ref output, _map_mapUint32Uint32_codec);
+      mapUint64Uint64_.WriteTo(ref output, _map_mapUint64Uint64_codec);
+      mapSint32Sint32_.WriteTo(ref output, _map_mapSint32Sint32_codec);
+      mapSint64Sint64_.WriteTo(ref output, _map_mapSint64Sint64_codec);
+      mapFixed32Fixed32_.WriteTo(ref output, _map_mapFixed32Fixed32_codec);
+      mapFixed64Fixed64_.WriteTo(ref output, _map_mapFixed64Fixed64_codec);
+      mapSfixed32Sfixed32_.WriteTo(ref output, _map_mapSfixed32Sfixed32_codec);
+      mapSfixed64Sfixed64_.WriteTo(ref output, _map_mapSfixed64Sfixed64_codec);
+      mapInt32Float_.WriteTo(ref output, _map_mapInt32Float_codec);
+      mapInt32Double_.WriteTo(ref output, _map_mapInt32Double_codec);
+      mapBoolBool_.WriteTo(ref output, _map_mapBoolBool_codec);
+      mapStringString_.WriteTo(ref output, _map_mapStringString_codec);
+      mapStringBytes_.WriteTo(ref output, _map_mapStringBytes_codec);
+      mapStringNestedMessage_.WriteTo(ref output, _map_mapStringNestedMessage_codec);
+      mapStringForeignMessage_.WriteTo(ref output, _map_mapStringForeignMessage_codec);
+      mapStringNestedEnum_.WriteTo(ref output, _map_mapStringNestedEnum_codec);
+      mapStringForeignEnum_.WriteTo(ref output, _map_mapStringForeignEnum_codec);
+      packedInt32_.WriteTo(ref output, _repeated_packedInt32_codec);
+      packedInt64_.WriteTo(ref output, _repeated_packedInt64_codec);
+      packedUint32_.WriteTo(ref output, _repeated_packedUint32_codec);
+      packedUint64_.WriteTo(ref output, _repeated_packedUint64_codec);
+      packedSint32_.WriteTo(ref output, _repeated_packedSint32_codec);
+      packedSint64_.WriteTo(ref output, _repeated_packedSint64_codec);
+      packedFixed32_.WriteTo(ref output, _repeated_packedFixed32_codec);
+      packedFixed64_.WriteTo(ref output, _repeated_packedFixed64_codec);
+      packedSfixed32_.WriteTo(ref output, _repeated_packedSfixed32_codec);
+      packedSfixed64_.WriteTo(ref output, _repeated_packedSfixed64_codec);
+      packedFloat_.WriteTo(ref output, _repeated_packedFloat_codec);
+      packedDouble_.WriteTo(ref output, _repeated_packedDouble_codec);
+      packedBool_.WriteTo(ref output, _repeated_packedBool_codec);
+      packedNestedEnum_.WriteTo(ref output, _repeated_packedNestedEnum_codec);
+      unpackedInt32_.WriteTo(ref output, _repeated_unpackedInt32_codec);
+      unpackedInt64_.WriteTo(ref output, _repeated_unpackedInt64_codec);
+      unpackedUint32_.WriteTo(ref output, _repeated_unpackedUint32_codec);
+      unpackedUint64_.WriteTo(ref output, _repeated_unpackedUint64_codec);
+      unpackedSint32_.WriteTo(ref output, _repeated_unpackedSint32_codec);
+      unpackedSint64_.WriteTo(ref output, _repeated_unpackedSint64_codec);
+      unpackedFixed32_.WriteTo(ref output, _repeated_unpackedFixed32_codec);
+      unpackedFixed64_.WriteTo(ref output, _repeated_unpackedFixed64_codec);
+      unpackedSfixed32_.WriteTo(ref output, _repeated_unpackedSfixed32_codec);
+      unpackedSfixed64_.WriteTo(ref output, _repeated_unpackedSfixed64_codec);
+      unpackedFloat_.WriteTo(ref output, _repeated_unpackedFloat_codec);
+      unpackedDouble_.WriteTo(ref output, _repeated_unpackedDouble_codec);
+      unpackedBool_.WriteTo(ref output, _repeated_unpackedBool_codec);
+      unpackedNestedEnum_.WriteTo(ref output, _repeated_unpackedNestedEnum_codec);
+      if (HasOneofUint32) {
+        output.WriteRawTag(248, 6);
+        output.WriteUInt32(OneofUint32);
+      }
+      if (HasOneofNestedMessage) {
+        output.WriteRawTag(130, 7);
+        output.WriteMessage(OneofNestedMessage);
+      }
+      if (HasOneofString) {
+        output.WriteRawTag(138, 7);
+        output.WriteString(OneofString);
+      }
+      if (HasOneofBytes) {
+        output.WriteRawTag(146, 7);
+        output.WriteBytes(OneofBytes);
+      }
+      if (HasOneofBool) {
+        output.WriteRawTag(152, 7);
+        output.WriteBool(OneofBool);
+      }
+      if (HasOneofUint64) {
+        output.WriteRawTag(160, 7);
+        output.WriteUInt64(OneofUint64);
+      }
+      if (HasOneofFloat) {
+        output.WriteRawTag(173, 7);
+        output.WriteFloat(OneofFloat);
+      }
+      if (HasOneofDouble) {
+        output.WriteRawTag(177, 7);
+        output.WriteDouble(OneofDouble);
+      }
+      if (HasOneofEnum) {
+        output.WriteRawTag(184, 7);
+        output.WriteEnum((int) OneofEnum);
+      }
+      if (HasData) {
+        output.WriteRawTag(203, 12);
+        output.WriteGroup(Data);
+        output.WriteRawTag(204, 12);
+      }
+      if (HasFieldname1) {
+        output.WriteRawTag(136, 25);
+        output.WriteInt32(Fieldname1);
+      }
+      if (HasFieldName2) {
+        output.WriteRawTag(144, 25);
+        output.WriteInt32(FieldName2);
+      }
+      if (HasFieldName3) {
+        output.WriteRawTag(152, 25);
+        output.WriteInt32(FieldName3);
+      }
+      if (HasFieldName4) {
+        output.WriteRawTag(160, 25);
+        output.WriteInt32(FieldName4);
+      }
+      if (HasField0Name5) {
+        output.WriteRawTag(168, 25);
+        output.WriteInt32(Field0Name5);
+      }
+      if (HasField0Name6) {
+        output.WriteRawTag(176, 25);
+        output.WriteInt32(Field0Name6);
+      }
+      if (HasFieldName7) {
+        output.WriteRawTag(184, 25);
+        output.WriteInt32(FieldName7);
+      }
+      if (HasFieldName8) {
+        output.WriteRawTag(192, 25);
+        output.WriteInt32(FieldName8);
+      }
+      if (HasFieldName9) {
+        output.WriteRawTag(200, 25);
+        output.WriteInt32(FieldName9);
+      }
+      if (HasFieldName10) {
+        output.WriteRawTag(208, 25);
+        output.WriteInt32(FieldName10);
+      }
+      if (HasFIELDNAME11) {
+        output.WriteRawTag(216, 25);
+        output.WriteInt32(FIELDNAME11);
+      }
+      if (HasFIELDName12) {
+        output.WriteRawTag(224, 25);
+        output.WriteInt32(FIELDName12);
+      }
+      if (HasFieldName13) {
+        output.WriteRawTag(232, 25);
+        output.WriteInt32(FieldName13);
+      }
+      if (HasFieldName14) {
+        output.WriteRawTag(240, 25);
+        output.WriteInt32(FieldName14);
+      }
+      if (HasFieldName15) {
+        output.WriteRawTag(248, 25);
+        output.WriteInt32(FieldName15);
+      }
+      if (HasFieldName16) {
+        output.WriteRawTag(128, 26);
+        output.WriteInt32(FieldName16);
+      }
+      if (HasFieldName17) {
+        output.WriteRawTag(136, 26);
+        output.WriteInt32(FieldName17);
+      }
+      if (HasFieldName18) {
+        output.WriteRawTag(144, 26);
+        output.WriteInt32(FieldName18);
+      }
+      if (_extensions != null) {
+        _extensions.WriteTo(ref output);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
@@ -3898,6 +4184,556 @@ namespace ProtobufTestMessages.Proto2 {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(ref pb::CodedInputReader input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            if (!pb::ExtensionSet.TryMergeFieldFrom(ref _extensions, ref input)) {
+              _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            }
+            break;
+          case 8: {
+            OptionalInt32 = input.ReadInt32();
+            break;
+          }
+          case 16: {
+            OptionalInt64 = input.ReadInt64();
+            break;
+          }
+          case 24: {
+            OptionalUint32 = input.ReadUInt32();
+            break;
+          }
+          case 32: {
+            OptionalUint64 = input.ReadUInt64();
+            break;
+          }
+          case 40: {
+            OptionalSint32 = input.ReadSInt32();
+            break;
+          }
+          case 48: {
+            OptionalSint64 = input.ReadSInt64();
+            break;
+          }
+          case 61: {
+            OptionalFixed32 = input.ReadFixed32();
+            break;
+          }
+          case 65: {
+            OptionalFixed64 = input.ReadFixed64();
+            break;
+          }
+          case 77: {
+            OptionalSfixed32 = input.ReadSFixed32();
+            break;
+          }
+          case 81: {
+            OptionalSfixed64 = input.ReadSFixed64();
+            break;
+          }
+          case 93: {
+            OptionalFloat = input.ReadFloat();
+            break;
+          }
+          case 97: {
+            OptionalDouble = input.ReadDouble();
+            break;
+          }
+          case 104: {
+            OptionalBool = input.ReadBool();
+            break;
+          }
+          case 114: {
+            OptionalString = input.ReadString();
+            break;
+          }
+          case 122: {
+            OptionalBytes = input.ReadBytes();
+            break;
+          }
+          case 146: {
+            if (!HasOptionalNestedMessage) {
+              OptionalNestedMessage = new global::ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.NestedMessage();
+            }
+            input.ReadMessage(OptionalNestedMessage);
+            break;
+          }
+          case 154: {
+            if (!HasOptionalForeignMessage) {
+              OptionalForeignMessage = new global::ProtobufTestMessages.Proto2.ForeignMessageProto2();
+            }
+            input.ReadMessage(OptionalForeignMessage);
+            break;
+          }
+          case 168: {
+            OptionalNestedEnum = (global::ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.NestedEnum) input.ReadEnum();
+            break;
+          }
+          case 176: {
+            OptionalForeignEnum = (global::ProtobufTestMessages.Proto2.ForeignEnumProto2) input.ReadEnum();
+            break;
+          }
+          case 194: {
+            OptionalStringPiece = input.ReadString();
+            break;
+          }
+          case 202: {
+            OptionalCord = input.ReadString();
+            break;
+          }
+          case 218: {
+            if (!HasRecursiveMessage) {
+              RecursiveMessage = new global::ProtobufTestMessages.Proto2.TestAllTypesProto2();
+            }
+            input.ReadMessage(RecursiveMessage);
+            break;
+          }
+          case 250:
+          case 248: {
+            repeatedInt32_.AddEntriesFrom(ref input, _repeated_repeatedInt32_codec);
+            break;
+          }
+          case 258:
+          case 256: {
+            repeatedInt64_.AddEntriesFrom(ref input, _repeated_repeatedInt64_codec);
+            break;
+          }
+          case 266:
+          case 264: {
+            repeatedUint32_.AddEntriesFrom(ref input, _repeated_repeatedUint32_codec);
+            break;
+          }
+          case 274:
+          case 272: {
+            repeatedUint64_.AddEntriesFrom(ref input, _repeated_repeatedUint64_codec);
+            break;
+          }
+          case 282:
+          case 280: {
+            repeatedSint32_.AddEntriesFrom(ref input, _repeated_repeatedSint32_codec);
+            break;
+          }
+          case 290:
+          case 288: {
+            repeatedSint64_.AddEntriesFrom(ref input, _repeated_repeatedSint64_codec);
+            break;
+          }
+          case 298:
+          case 301: {
+            repeatedFixed32_.AddEntriesFrom(ref input, _repeated_repeatedFixed32_codec);
+            break;
+          }
+          case 306:
+          case 305: {
+            repeatedFixed64_.AddEntriesFrom(ref input, _repeated_repeatedFixed64_codec);
+            break;
+          }
+          case 314:
+          case 317: {
+            repeatedSfixed32_.AddEntriesFrom(ref input, _repeated_repeatedSfixed32_codec);
+            break;
+          }
+          case 322:
+          case 321: {
+            repeatedSfixed64_.AddEntriesFrom(ref input, _repeated_repeatedSfixed64_codec);
+            break;
+          }
+          case 330:
+          case 333: {
+            repeatedFloat_.AddEntriesFrom(ref input, _repeated_repeatedFloat_codec);
+            break;
+          }
+          case 338:
+          case 337: {
+            repeatedDouble_.AddEntriesFrom(ref input, _repeated_repeatedDouble_codec);
+            break;
+          }
+          case 346:
+          case 344: {
+            repeatedBool_.AddEntriesFrom(ref input, _repeated_repeatedBool_codec);
+            break;
+          }
+          case 354: {
+            repeatedString_.AddEntriesFrom(ref input, _repeated_repeatedString_codec);
+            break;
+          }
+          case 362: {
+            repeatedBytes_.AddEntriesFrom(ref input, _repeated_repeatedBytes_codec);
+            break;
+          }
+          case 386: {
+            repeatedNestedMessage_.AddEntriesFrom(ref input, _repeated_repeatedNestedMessage_codec);
+            break;
+          }
+          case 394: {
+            repeatedForeignMessage_.AddEntriesFrom(ref input, _repeated_repeatedForeignMessage_codec);
+            break;
+          }
+          case 410:
+          case 408: {
+            repeatedNestedEnum_.AddEntriesFrom(ref input, _repeated_repeatedNestedEnum_codec);
+            break;
+          }
+          case 418:
+          case 416: {
+            repeatedForeignEnum_.AddEntriesFrom(ref input, _repeated_repeatedForeignEnum_codec);
+            break;
+          }
+          case 434: {
+            repeatedStringPiece_.AddEntriesFrom(ref input, _repeated_repeatedStringPiece_codec);
+            break;
+          }
+          case 442: {
+            repeatedCord_.AddEntriesFrom(ref input, _repeated_repeatedCord_codec);
+            break;
+          }
+          case 450: {
+            mapInt32Int32_.AddEntriesFrom(ref input, _map_mapInt32Int32_codec);
+            break;
+          }
+          case 458: {
+            mapInt64Int64_.AddEntriesFrom(ref input, _map_mapInt64Int64_codec);
+            break;
+          }
+          case 466: {
+            mapUint32Uint32_.AddEntriesFrom(ref input, _map_mapUint32Uint32_codec);
+            break;
+          }
+          case 474: {
+            mapUint64Uint64_.AddEntriesFrom(ref input, _map_mapUint64Uint64_codec);
+            break;
+          }
+          case 482: {
+            mapSint32Sint32_.AddEntriesFrom(ref input, _map_mapSint32Sint32_codec);
+            break;
+          }
+          case 490: {
+            mapSint64Sint64_.AddEntriesFrom(ref input, _map_mapSint64Sint64_codec);
+            break;
+          }
+          case 498: {
+            mapFixed32Fixed32_.AddEntriesFrom(ref input, _map_mapFixed32Fixed32_codec);
+            break;
+          }
+          case 506: {
+            mapFixed64Fixed64_.AddEntriesFrom(ref input, _map_mapFixed64Fixed64_codec);
+            break;
+          }
+          case 514: {
+            mapSfixed32Sfixed32_.AddEntriesFrom(ref input, _map_mapSfixed32Sfixed32_codec);
+            break;
+          }
+          case 522: {
+            mapSfixed64Sfixed64_.AddEntriesFrom(ref input, _map_mapSfixed64Sfixed64_codec);
+            break;
+          }
+          case 530: {
+            mapInt32Float_.AddEntriesFrom(ref input, _map_mapInt32Float_codec);
+            break;
+          }
+          case 538: {
+            mapInt32Double_.AddEntriesFrom(ref input, _map_mapInt32Double_codec);
+            break;
+          }
+          case 546: {
+            mapBoolBool_.AddEntriesFrom(ref input, _map_mapBoolBool_codec);
+            break;
+          }
+          case 554: {
+            mapStringString_.AddEntriesFrom(ref input, _map_mapStringString_codec);
+            break;
+          }
+          case 562: {
+            mapStringBytes_.AddEntriesFrom(ref input, _map_mapStringBytes_codec);
+            break;
+          }
+          case 570: {
+            mapStringNestedMessage_.AddEntriesFrom(ref input, _map_mapStringNestedMessage_codec);
+            break;
+          }
+          case 578: {
+            mapStringForeignMessage_.AddEntriesFrom(ref input, _map_mapStringForeignMessage_codec);
+            break;
+          }
+          case 586: {
+            mapStringNestedEnum_.AddEntriesFrom(ref input, _map_mapStringNestedEnum_codec);
+            break;
+          }
+          case 594: {
+            mapStringForeignEnum_.AddEntriesFrom(ref input, _map_mapStringForeignEnum_codec);
+            break;
+          }
+          case 602:
+          case 600: {
+            packedInt32_.AddEntriesFrom(ref input, _repeated_packedInt32_codec);
+            break;
+          }
+          case 610:
+          case 608: {
+            packedInt64_.AddEntriesFrom(ref input, _repeated_packedInt64_codec);
+            break;
+          }
+          case 618:
+          case 616: {
+            packedUint32_.AddEntriesFrom(ref input, _repeated_packedUint32_codec);
+            break;
+          }
+          case 626:
+          case 624: {
+            packedUint64_.AddEntriesFrom(ref input, _repeated_packedUint64_codec);
+            break;
+          }
+          case 634:
+          case 632: {
+            packedSint32_.AddEntriesFrom(ref input, _repeated_packedSint32_codec);
+            break;
+          }
+          case 642:
+          case 640: {
+            packedSint64_.AddEntriesFrom(ref input, _repeated_packedSint64_codec);
+            break;
+          }
+          case 650:
+          case 653: {
+            packedFixed32_.AddEntriesFrom(ref input, _repeated_packedFixed32_codec);
+            break;
+          }
+          case 658:
+          case 657: {
+            packedFixed64_.AddEntriesFrom(ref input, _repeated_packedFixed64_codec);
+            break;
+          }
+          case 666:
+          case 669: {
+            packedSfixed32_.AddEntriesFrom(ref input, _repeated_packedSfixed32_codec);
+            break;
+          }
+          case 674:
+          case 673: {
+            packedSfixed64_.AddEntriesFrom(ref input, _repeated_packedSfixed64_codec);
+            break;
+          }
+          case 682:
+          case 685: {
+            packedFloat_.AddEntriesFrom(ref input, _repeated_packedFloat_codec);
+            break;
+          }
+          case 690:
+          case 689: {
+            packedDouble_.AddEntriesFrom(ref input, _repeated_packedDouble_codec);
+            break;
+          }
+          case 698:
+          case 696: {
+            packedBool_.AddEntriesFrom(ref input, _repeated_packedBool_codec);
+            break;
+          }
+          case 706:
+          case 704: {
+            packedNestedEnum_.AddEntriesFrom(ref input, _repeated_packedNestedEnum_codec);
+            break;
+          }
+          case 714:
+          case 712: {
+            unpackedInt32_.AddEntriesFrom(ref input, _repeated_unpackedInt32_codec);
+            break;
+          }
+          case 722:
+          case 720: {
+            unpackedInt64_.AddEntriesFrom(ref input, _repeated_unpackedInt64_codec);
+            break;
+          }
+          case 730:
+          case 728: {
+            unpackedUint32_.AddEntriesFrom(ref input, _repeated_unpackedUint32_codec);
+            break;
+          }
+          case 738:
+          case 736: {
+            unpackedUint64_.AddEntriesFrom(ref input, _repeated_unpackedUint64_codec);
+            break;
+          }
+          case 746:
+          case 744: {
+            unpackedSint32_.AddEntriesFrom(ref input, _repeated_unpackedSint32_codec);
+            break;
+          }
+          case 754:
+          case 752: {
+            unpackedSint64_.AddEntriesFrom(ref input, _repeated_unpackedSint64_codec);
+            break;
+          }
+          case 762:
+          case 765: {
+            unpackedFixed32_.AddEntriesFrom(ref input, _repeated_unpackedFixed32_codec);
+            break;
+          }
+          case 770:
+          case 769: {
+            unpackedFixed64_.AddEntriesFrom(ref input, _repeated_unpackedFixed64_codec);
+            break;
+          }
+          case 778:
+          case 781: {
+            unpackedSfixed32_.AddEntriesFrom(ref input, _repeated_unpackedSfixed32_codec);
+            break;
+          }
+          case 786:
+          case 785: {
+            unpackedSfixed64_.AddEntriesFrom(ref input, _repeated_unpackedSfixed64_codec);
+            break;
+          }
+          case 794:
+          case 797: {
+            unpackedFloat_.AddEntriesFrom(ref input, _repeated_unpackedFloat_codec);
+            break;
+          }
+          case 802:
+          case 801: {
+            unpackedDouble_.AddEntriesFrom(ref input, _repeated_unpackedDouble_codec);
+            break;
+          }
+          case 810:
+          case 808: {
+            unpackedBool_.AddEntriesFrom(ref input, _repeated_unpackedBool_codec);
+            break;
+          }
+          case 818:
+          case 816: {
+            unpackedNestedEnum_.AddEntriesFrom(ref input, _repeated_unpackedNestedEnum_codec);
+            break;
+          }
+          case 888: {
+            OneofUint32 = input.ReadUInt32();
+            break;
+          }
+          case 898: {
+            global::ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.NestedMessage subBuilder = new global::ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.NestedMessage();
+            if (HasOneofNestedMessage) {
+              subBuilder.MergeFrom(OneofNestedMessage);
+            }
+            input.ReadMessage(subBuilder);
+            OneofNestedMessage = subBuilder;
+            break;
+          }
+          case 906: {
+            OneofString = input.ReadString();
+            break;
+          }
+          case 914: {
+            OneofBytes = input.ReadBytes();
+            break;
+          }
+          case 920: {
+            OneofBool = input.ReadBool();
+            break;
+          }
+          case 928: {
+            OneofUint64 = input.ReadUInt64();
+            break;
+          }
+          case 941: {
+            OneofFloat = input.ReadFloat();
+            break;
+          }
+          case 945: {
+            OneofDouble = input.ReadDouble();
+            break;
+          }
+          case 952: {
+            oneofField_ = input.ReadEnum();
+            oneofFieldCase_ = OneofFieldOneofCase.OneofEnum;
+            break;
+          }
+          case 1611: {
+            if (!HasData) {
+              Data = new global::ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.Data();
+            }
+            input.ReadGroup(Data);
+            break;
+          }
+          case 3208: {
+            Fieldname1 = input.ReadInt32();
+            break;
+          }
+          case 3216: {
+            FieldName2 = input.ReadInt32();
+            break;
+          }
+          case 3224: {
+            FieldName3 = input.ReadInt32();
+            break;
+          }
+          case 3232: {
+            FieldName4 = input.ReadInt32();
+            break;
+          }
+          case 3240: {
+            Field0Name5 = input.ReadInt32();
+            break;
+          }
+          case 3248: {
+            Field0Name6 = input.ReadInt32();
+            break;
+          }
+          case 3256: {
+            FieldName7 = input.ReadInt32();
+            break;
+          }
+          case 3264: {
+            FieldName8 = input.ReadInt32();
+            break;
+          }
+          case 3272: {
+            FieldName9 = input.ReadInt32();
+            break;
+          }
+          case 3280: {
+            FieldName10 = input.ReadInt32();
+            break;
+          }
+          case 3288: {
+            FIELDNAME11 = input.ReadInt32();
+            break;
+          }
+          case 3296: {
+            FIELDName12 = input.ReadInt32();
+            break;
+          }
+          case 3304: {
+            FieldName13 = input.ReadInt32();
+            break;
+          }
+          case 3312: {
+            FieldName14 = input.ReadInt32();
+            break;
+          }
+          case 3320: {
+            FieldName15 = input.ReadInt32();
+            break;
+          }
+          case 3328: {
+            FieldName16 = input.ReadInt32();
+            break;
+          }
+          case 3336: {
+            FieldName17 = input.ReadInt32();
+            break;
+          }
+          case 3344: {
+            FieldName18 = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
     public TValue GetExtension<TValue>(pb::Extension<TestAllTypesProto2, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
@@ -3934,7 +4770,11 @@ namespace ProtobufTestMessages.Proto2 {
         [pbr::OriginalName("NEG")] Neg = -1,
       }
 
-      public sealed partial class NestedMessage : pb::IMessage<NestedMessage> {
+      public sealed partial class NestedMessage : pb::IMessage<NestedMessage>
+      #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+        , pb::IBufferMessage
+      #endif
+       {
         private static readonly pb::MessageParser<NestedMessage> _parser = new pb::MessageParser<NestedMessage>(() => new NestedMessage());
         private pb::UnknownFieldSet _unknownFields;
         private int _hasBits0;
@@ -4065,6 +4905,24 @@ namespace ProtobufTestMessages.Proto2 {
           }
         }
 
+
+        #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void WriteTo(ref pb::CodedOutputWriter output) {
+          if (HasA) {
+            output.WriteRawTag(8);
+            output.WriteInt32(A);
+          }
+          if (HasCorecursive) {
+            output.WriteRawTag(18);
+            output.WriteMessage(Corecursive);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
+
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
           int size = 0;
@@ -4120,12 +4978,42 @@ namespace ProtobufTestMessages.Proto2 {
           }
         }
 
+
+        #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void MergeFrom(ref pb::CodedInputReader input) {
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+                break;
+              case 8: {
+                A = input.ReadInt32();
+                break;
+              }
+              case 18: {
+                if (!HasCorecursive) {
+                  Corecursive = new global::ProtobufTestMessages.Proto2.TestAllTypesProto2();
+                }
+                input.ReadMessage(Corecursive);
+                break;
+              }
+            }
+          }
+        }
+        #endif
+
       }
 
       /// <summary>
       /// groups
       /// </summary>
-      public sealed partial class Data : pb::IMessage<Data> {
+      public sealed partial class Data : pb::IMessage<Data>
+      #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+        , pb::IBufferMessage
+      #endif
+       {
         private static readonly pb::MessageParser<Data> _parser = new pb::MessageParser<Data>(() => new Data());
         private pb::UnknownFieldSet _unknownFields;
         private int _hasBits0;
@@ -4259,6 +5147,24 @@ namespace ProtobufTestMessages.Proto2 {
           }
         }
 
+
+        #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void WriteTo(ref pb::CodedOutputWriter output) {
+          if (HasGroupInt32) {
+            output.WriteRawTag(208, 12);
+            output.WriteInt32(GroupInt32);
+          }
+          if (HasGroupUint32) {
+            output.WriteRawTag(216, 12);
+            output.WriteUInt32(GroupUint32);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
+
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
           int size = 0;
@@ -4310,12 +5216,41 @@ namespace ProtobufTestMessages.Proto2 {
           }
         }
 
+
+        #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void MergeFrom(ref pb::CodedInputReader input) {
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              case 1612:
+                return;
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+                break;
+              case 1616: {
+                GroupInt32 = input.ReadInt32();
+                break;
+              }
+              case 1624: {
+                GroupUint32 = input.ReadUInt32();
+                break;
+              }
+            }
+          }
+        }
+        #endif
+
       }
 
       /// <summary>
       /// message_set test case.
       /// </summary>
-      public sealed partial class MessageSetCorrect : pb::IExtendableMessage<MessageSetCorrect> {
+      public sealed partial class MessageSetCorrect : pb::IExtendableMessage<MessageSetCorrect>
+      #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+        , pb::IBufferMessage
+      #endif
+       {
         private static readonly pb::MessageParser<MessageSetCorrect> _parser = new pb::MessageParser<MessageSetCorrect>(() => new MessageSetCorrect());
         private pb::UnknownFieldSet _unknownFields;
         private pb::ExtensionSet<MessageSetCorrect> _extensions;
@@ -4397,6 +5332,19 @@ namespace ProtobufTestMessages.Proto2 {
           }
         }
 
+
+        #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void WriteTo(ref pb::CodedOutputWriter output) {
+          if (_extensions != null) {
+            _extensions.WriteTo(ref output);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
+
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
           int size = 0;
@@ -4432,6 +5380,23 @@ namespace ProtobufTestMessages.Proto2 {
           }
         }
 
+
+        #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void MergeFrom(ref pb::CodedInputReader input) {
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              default:
+                if (!pb::ExtensionSet.TryMergeFieldFrom(ref _extensions, ref input)) {
+                  _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+                }
+                break;
+            }
+          }
+        }
+        #endif
+
         public TValue GetExtension<TValue>(pb::Extension<MessageSetCorrect, TValue> extension) {
           return pb::ExtensionSet.Get(ref _extensions, extension);
         }
@@ -4456,7 +5421,11 @@ namespace ProtobufTestMessages.Proto2 {
 
       }
 
-      public sealed partial class MessageSetCorrectExtension1 : pb::IMessage<MessageSetCorrectExtension1> {
+      public sealed partial class MessageSetCorrectExtension1 : pb::IMessage<MessageSetCorrectExtension1>
+      #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+        , pb::IBufferMessage
+      #endif
+       {
         private static readonly pb::MessageParser<MessageSetCorrectExtension1> _parser = new pb::MessageParser<MessageSetCorrectExtension1>(() => new MessageSetCorrectExtension1());
         private pb::UnknownFieldSet _unknownFields;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4556,6 +5525,20 @@ namespace ProtobufTestMessages.Proto2 {
           }
         }
 
+
+        #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void WriteTo(ref pb::CodedOutputWriter output) {
+          if (HasStr) {
+            output.WriteRawTag(202, 1);
+            output.WriteString(Str);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
+
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
           int size = 0;
@@ -4595,6 +5578,25 @@ namespace ProtobufTestMessages.Proto2 {
           }
         }
 
+
+        #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void MergeFrom(ref pb::CodedInputReader input) {
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+                break;
+              case 202: {
+                Str = input.ReadString();
+                break;
+              }
+            }
+          }
+        }
+        #endif
+
         #region Extensions
         /// <summary>Container for extensions for other messages declared in the MessageSetCorrectExtension1 message type.</summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4606,7 +5608,11 @@ namespace ProtobufTestMessages.Proto2 {
 
       }
 
-      public sealed partial class MessageSetCorrectExtension2 : pb::IMessage<MessageSetCorrectExtension2> {
+      public sealed partial class MessageSetCorrectExtension2 : pb::IMessage<MessageSetCorrectExtension2>
+      #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+        , pb::IBufferMessage
+      #endif
+       {
         private static readonly pb::MessageParser<MessageSetCorrectExtension2> _parser = new pb::MessageParser<MessageSetCorrectExtension2>(() => new MessageSetCorrectExtension2());
         private pb::UnknownFieldSet _unknownFields;
         private int _hasBits0;
@@ -4709,6 +5715,20 @@ namespace ProtobufTestMessages.Proto2 {
           }
         }
 
+
+        #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void WriteTo(ref pb::CodedOutputWriter output) {
+          if (HasI) {
+            output.WriteRawTag(72);
+            output.WriteInt32(I);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
+
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
           int size = 0;
@@ -4748,6 +5768,25 @@ namespace ProtobufTestMessages.Proto2 {
           }
         }
 
+
+        #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void MergeFrom(ref pb::CodedInputReader input) {
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+                break;
+              case 72: {
+                I = input.ReadInt32();
+                break;
+              }
+            }
+          }
+        }
+        #endif
+
         #region Extensions
         /// <summary>Container for extensions for other messages declared in the MessageSetCorrectExtension2 message type.</summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4764,7 +5803,11 @@ namespace ProtobufTestMessages.Proto2 {
 
   }
 
-  public sealed partial class ForeignMessageProto2 : pb::IMessage<ForeignMessageProto2> {
+  public sealed partial class ForeignMessageProto2 : pb::IMessage<ForeignMessageProto2>
+  #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    , pb::IBufferMessage
+  #endif
+   {
     private static readonly pb::MessageParser<ForeignMessageProto2> _parser = new pb::MessageParser<ForeignMessageProto2>(() => new ForeignMessageProto2());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
@@ -4867,6 +5910,20 @@ namespace ProtobufTestMessages.Proto2 {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(ref pb::CodedOutputWriter output) {
+      if (HasC) {
+        output.WriteRawTag(8);
+        output.WriteInt32(C);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
@@ -4906,9 +5963,32 @@ namespace ProtobufTestMessages.Proto2 {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(ref pb::CodedInputReader input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 8: {
+            C = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
   }
 
-  public sealed partial class UnknownToTestAllTypes : pb::IMessage<UnknownToTestAllTypes> {
+  public sealed partial class UnknownToTestAllTypes : pb::IMessage<UnknownToTestAllTypes>
+  #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    , pb::IBufferMessage
+  #endif
+   {
     private static readonly pb::MessageParser<UnknownToTestAllTypes> _parser = new pb::MessageParser<UnknownToTestAllTypes>(() => new UnknownToTestAllTypes());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
@@ -5143,6 +6223,38 @@ namespace ProtobufTestMessages.Proto2 {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(ref pb::CodedOutputWriter output) {
+      if (HasOptionalInt32) {
+        output.WriteRawTag(200, 62);
+        output.WriteInt32(OptionalInt32);
+      }
+      if (HasOptionalString) {
+        output.WriteRawTag(210, 62);
+        output.WriteString(OptionalString);
+      }
+      if (HasNestedMessage) {
+        output.WriteRawTag(218, 62);
+        output.WriteMessage(NestedMessage);
+      }
+      if (HasOptionalGroup) {
+        output.WriteRawTag(227, 62);
+        output.WriteGroup(OptionalGroup);
+        output.WriteRawTag(228, 62);
+      }
+      if (HasOptionalBool) {
+        output.WriteRawTag(240, 62);
+        output.WriteBool(OptionalBool);
+      }
+      repeatedInt32_.WriteTo(ref output, _repeated_repeatedInt32_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
@@ -5241,11 +6353,61 @@ namespace ProtobufTestMessages.Proto2 {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(ref pb::CodedInputReader input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 8008: {
+            OptionalInt32 = input.ReadInt32();
+            break;
+          }
+          case 8018: {
+            OptionalString = input.ReadString();
+            break;
+          }
+          case 8026: {
+            if (!HasNestedMessage) {
+              NestedMessage = new global::ProtobufTestMessages.Proto2.ForeignMessageProto2();
+            }
+            input.ReadMessage(NestedMessage);
+            break;
+          }
+          case 8035: {
+            if (!HasOptionalGroup) {
+              OptionalGroup = new global::ProtobufTestMessages.Proto2.UnknownToTestAllTypes.Types.OptionalGroup();
+            }
+            input.ReadGroup(OptionalGroup);
+            break;
+          }
+          case 8048: {
+            OptionalBool = input.ReadBool();
+            break;
+          }
+          case 8090:
+          case 8088: {
+            repeatedInt32_.AddEntriesFrom(ref input, _repeated_repeatedInt32_codec);
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
     #region Nested types
     /// <summary>Container for nested types declared in the UnknownToTestAllTypes message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static partial class Types {
-      public sealed partial class OptionalGroup : pb::IMessage<OptionalGroup> {
+      public sealed partial class OptionalGroup : pb::IMessage<OptionalGroup>
+      #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+        , pb::IBufferMessage
+      #endif
+       {
         private static readonly pb::MessageParser<OptionalGroup> _parser = new pb::MessageParser<OptionalGroup>(() => new OptionalGroup());
         private pb::UnknownFieldSet _unknownFields;
         private int _hasBits0;
@@ -5348,6 +6510,20 @@ namespace ProtobufTestMessages.Proto2 {
           }
         }
 
+
+        #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void WriteTo(ref pb::CodedOutputWriter output) {
+          if (HasA) {
+            output.WriteRawTag(8);
+            output.WriteInt32(A);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
+
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
           int size = 0;
@@ -5388,6 +6564,27 @@ namespace ProtobufTestMessages.Proto2 {
             }
           }
         }
+
+
+        #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void MergeFrom(ref pb::CodedInputReader input) {
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              case 8036:
+                return;
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+                break;
+              case 8: {
+                A = input.ReadInt32();
+                break;
+              }
+            }
+          }
+        }
+        #endif
 
       }
 

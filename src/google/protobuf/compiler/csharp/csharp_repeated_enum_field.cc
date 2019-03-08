@@ -39,6 +39,7 @@
 
 #include <google/protobuf/compiler/csharp/csharp_doc_comment.h>
 #include <google/protobuf/compiler/csharp/csharp_helpers.h>
+#include <google/protobuf/compiler/csharp/csharp_options.h>
 #include <google/protobuf/compiler/csharp/csharp_repeated_enum_field.h>
 
 namespace google {
@@ -83,10 +84,22 @@ void RepeatedEnumFieldGenerator::GenerateParsingCode(io::Printer* printer) {
     "$name$_.AddEntriesFrom(input, _repeated_$name$_codec);\n");
 }
 
+void RepeatedEnumFieldGenerator::GenerateBufferParsingCode(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "$name$_.AddEntriesFrom(ref input, _repeated_$name$_codec);\n");
+}
+
 void RepeatedEnumFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
   printer->Print(
     variables_,
     "$name$_.WriteTo(output, _repeated_$name$_codec);\n");
+}
+
+void RepeatedEnumFieldGenerator::GenerateBufferSerializationCode(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "$name$_.WriteTo(ref output, _repeated_$name$_codec);\n");
 }
 
 void RepeatedEnumFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {

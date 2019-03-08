@@ -31,12 +31,16 @@
 #endregion
 
 using System;
+using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
+#if GOOGLE_PROTOBUF_SUPPORT_SYSTEM_MEMORY
+using Google.Protobuf.Buffers;
+#endif
 using Google.Protobuf.TestProtos;
 using Google.Protobuf.WellKnownTypes;
 using NUnit.Framework;
@@ -382,7 +386,7 @@ namespace Google.Protobuf.Collections
         }
 
         [Test]
-        public void AddEntriesFrom_Message()
+        public void AddEntriesFrom_CodedInputStream_Message()
         {
             var message1 = new ForeignMessage { C = 2000 };
             var message2 = new ForeignMessage { C = -250 };
@@ -404,6 +408,31 @@ namespace Google.Protobuf.Collections
             CollectionAssert.AreEqual(new[] { message1, message2}, field);
             Assert.IsTrue(input.IsAtEnd);
         }
+
+#if GOOGLE_PROTOBUF_SUPPORT_SYSTEM_MEMORY
+        [Test]
+        public void AddEntriesFrom_CodedInputReader_Message()
+        {
+            var message1 = new ForeignMessage { C = 2000 };
+            var message2 = new ForeignMessage { C = -250 };
+
+            uint tag = WireFormat.MakeTag(10, WireFormat.WireType.LengthDelimited);
+            var bufferWriter = new ArrayBufferWriter<byte>();
+            var output = new CodedOutputWriter(bufferWriter);
+            output.WriteTag(tag);
+            output.WriteMessage(message1);
+            output.WriteTag(tag);
+            output.WriteMessage(message2);
+            output.Flush();
+
+            var field = new RepeatedField<ForeignMessage>();
+            var input = new CodedInputReader(new ReadOnlySequence<byte>(bufferWriter.WrittenSpan.ToArray()));
+            input.AssertNextTag(tag);
+            field.AddEntriesFrom(ref input, FieldCodec.ForMessage(tag, ForeignMessage.Parser));
+            CollectionAssert.AreEqual(new[] { message1, message2 }, field);
+            Assert.IsTrue(input.IsAtEnd);
+        }
+#endif
 
         [Test]
         public void WriteTo_PackedInt32()
@@ -469,7 +498,7 @@ namespace Google.Protobuf.Collections
         }
 
         [Test]
-        public void WriteTo_Message()
+        public void WriteTo_CodedInputStream_Message()
         {
             var message1 = new ForeignMessage { C = 20 };
             var message2 = new ForeignMessage { C = 25 };
@@ -488,6 +517,28 @@ namespace Google.Protobuf.Collections
             Assert.AreEqual(message2, input.ReadMessage(ForeignMessage.Parser));
             Assert.IsTrue(input.IsAtEnd);
         }
+
+#if GOOGLE_PROTOBUF_SUPPORT_SYSTEM_MEMORY
+        [Test]
+        public void WriteTo_CodedInputReader_Message()
+        {
+            var message1 = new ForeignMessage { C = 20 };
+            var message2 = new ForeignMessage { C = 25 };
+            uint tag = WireFormat.MakeTag(10, WireFormat.WireType.LengthDelimited);
+            var field = new RepeatedField<ForeignMessage> { message1, message2 };
+            var bufferWriter = new ArrayBufferWriter<byte>();
+            var output = new CodedOutputWriter(bufferWriter);
+            field.WriteTo(ref output, FieldCodec.ForMessage(tag, ForeignMessage.Parser));
+            output.Flush();
+
+            var input = new CodedInputReader(new ReadOnlySequence<byte>(bufferWriter.WrittenSpan.ToArray()));
+            input.AssertNextTag(tag);
+            Assert.AreEqual(message1, input.ReadMessage(ForeignMessage.Parser));
+            input.AssertNextTag(tag);
+            Assert.AreEqual(message2, input.ReadMessage(ForeignMessage.Parser));
+            Assert.IsTrue(input.IsAtEnd);
+        }
+#endif
 
         [Test]
         public void CalculateSize_VariableSizeNonPacked()

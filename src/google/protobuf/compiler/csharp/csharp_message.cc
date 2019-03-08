@@ -132,6 +132,20 @@ void MessageGenerator::Generate(io::Printer* printer) {
   else {
     printer->Print(vars, "pb::IMessage<$class_name$>");
   }
+
+  if (this->options()->use_buffer_serialization)
+  {
+    printer->Print(
+      "\n"
+      "#if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION\n");
+    printer->Indent();
+    printer->Print(
+        ", pb::IBufferMessage\n");
+    printer->Outdent();
+    printer->Print(
+      "#endif\n");
+  }
+
   printer->Print(" {\n");
   printer->Indent();
 
@@ -514,37 +528,11 @@ void MessageGenerator::GenerateFrameworkMethods(io::Printer* printer) {
 }
 
 void MessageGenerator::GenerateMessageSerializationMethods(io::Printer* printer) {
-  WriteGeneratedCodeAttributes(printer);
-  printer->Print(
-      "public void WriteTo(pb::CodedOutputStream output) {\n");
-  printer->Indent();
-
-  // Serialize all the fields
-  for (int i = 0; i < fields_by_number().size(); i++) {
-    std::unique_ptr<FieldGeneratorBase> generator(
-      CreateFieldGeneratorInternal(fields_by_number()[i]));
-    generator->GenerateSerializationCode(printer);
+  GenerateWriteToOutputMethod(printer, false);
+  if (this->options()->use_buffer_serialization) {
+    GenerateWriteToOutputMethod(printer, true);
   }
 
-  if (has_extension_ranges_) {
-    // Serialize extensions
-    printer->Print(
-      "if (_extensions != null) {\n"
-      "  _extensions.WriteTo(output);\n"
-      "}\n");
-  }
-
-  // Serialize unknown fields
-  printer->Print(
-    "if (_unknownFields != null) {\n"
-    "  _unknownFields.WriteTo(output);\n"
-    "}\n");
-
-  // TODO(jonskeet): Memoize size of frozen messages?
-  printer->Outdent();
-  printer->Print(
-    "}\n"
-    "\n");
   WriteGeneratedCodeAttributes(printer);
   printer->Print(
     "public int CalculateSize() {\n");
@@ -571,6 +559,69 @@ void MessageGenerator::GenerateMessageSerializationMethods(io::Printer* printer)
   printer->Print("return size;\n");
   printer->Outdent();
   printer->Print("}\n\n");
+}
+
+void MessageGenerator::GenerateWriteToOutputMethod(io::Printer* printer, bool use_buffer_serialization) {
+  if (use_buffer_serialization) {
+    printer->Print("\n#if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION\n");
+  }
+  WriteGeneratedCodeAttributes(printer);
+  if (use_buffer_serialization) {
+    printer->Print(
+      "public void WriteTo(ref pb::CodedOutputWriter output) {\n");
+  } else {
+    printer->Print(
+      "public void WriteTo(pb::CodedOutputStream output) {\n");
+  }
+  printer->Indent();
+
+  // Serialize all the fields
+  for (int i = 0; i < fields_by_number().size(); i++) {
+    std::unique_ptr<FieldGeneratorBase> generator(
+      CreateFieldGeneratorInternal(fields_by_number()[i]));
+    if (use_buffer_serialization) {
+      generator->GenerateBufferSerializationCode(printer);
+    } else {
+      generator->GenerateSerializationCode(printer);
+    }
+  }
+
+  if (has_extension_ranges_) {
+    // Serialize extensions
+    printer->Print(
+      "if (_extensions != null) {\n");
+    if (use_buffer_serialization) {
+      printer->Print(
+      "  _extensions.WriteTo(ref output);\n");
+    } else {
+      printer->Print(
+      "  _extensions.WriteTo(output);\n");
+    }
+    printer->Print(
+        "}\n");
+  }
+
+  // Serialize unknown fields
+  printer->Print(
+      "if (_unknownFields != null) {\n");
+  if (use_buffer_serialization) {
+    printer->Print(
+      "  _unknownFields.WriteTo(ref output);\n");
+  } else {
+    printer->Print(
+      "  _unknownFields.WriteTo(output);\n");
+  }
+  printer->Print(
+      "}\n");
+
+  // TODO(jonskeet): Memoize size of frozen messages?
+  printer->Outdent();
+  printer->Print(
+    "}\n");
+  if (use_buffer_serialization) {
+    printer->Print("#endif\n");
+  }
+  printer->Print("\n");
 }
 
 void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
@@ -622,17 +673,28 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
   if (has_extension_ranges_) {
     printer->Print("pb::ExtensionSet.MergeFrom(ref _extensions, other._extensions);\n");
   }
-
   // Merge unknown fields.
   printer->Print(
       "_unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);\n");
-
   printer->Outdent();
   printer->Print("}\n\n");
 
+  GenerateMergeFromInput(printer, false);
+  if (this->options()->use_buffer_serialization) {
+    GenerateMergeFromInput(printer, true);
+  }
+}
 
+void MessageGenerator::GenerateMergeFromInput(io::Printer* printer, bool use_buffer_serialization) {
+  if (use_buffer_serialization) {
+    printer->Print("\n#if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION\n");
+  }
   WriteGeneratedCodeAttributes(printer);
-  printer->Print("public void MergeFrom(pb::CodedInputStream input) {\n");
+  if (use_buffer_serialization) {
+    printer->Print("public void MergeFrom(ref pb::CodedInputReader input) {\n");
+  } else {
+    printer->Print("public void MergeFrom(pb::CodedInputStream input) {\n");
+  }
   printer->Indent();
   printer->Print(
     "uint tag;\n"
@@ -648,15 +710,30 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
   }
   if (has_extension_ranges_) {
     printer->Print(
-      "default:\n"
+      "default:\n");
+    if (use_buffer_serialization) {
+      printer->Print(
+      "  if (!pb::ExtensionSet.TryMergeFieldFrom(ref _extensions, ref input)) {\n"
+      "    _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);\n");
+    } else {
+      printer->Print(
       "  if (!pb::ExtensionSet.TryMergeFieldFrom(ref _extensions, input)) {\n"
-      "    _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);\n"
+      "    _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);\n");
+    }
+    printer->Print(
       "  }\n"
       "  break;\n");
   } else {
     printer->Print(
-      "default:\n"
-      "  _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);\n"
+      "default:\n");
+    if (use_buffer_serialization) {
+      printer->Print(
+      "  _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);\n");
+    } else {
+      printer->Print(
+      "  _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);\n");
+    }
+    printer->Print(
       "  break;\n");
   }
   for (int i = 0; i < fields_by_number().size(); i++) {
@@ -683,7 +760,11 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
     printer->Indent();
     std::unique_ptr<FieldGeneratorBase> generator(
         CreateFieldGeneratorInternal(field));
-    generator->GenerateParsingCode(printer);
+    if (use_buffer_serialization) {
+      generator->GenerateBufferParsingCode(printer);
+    } else {
+      generator->GenerateParsingCode(printer);
+    }
     printer->Print("break;\n");
     printer->Outdent();
     printer->Print("}\n");
@@ -693,7 +774,11 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
   printer->Outdent();
   printer->Print("}\n"); // while
   printer->Outdent();
-  printer->Print("}\n\n"); // method
+  printer->Print("}\n"); // method
+  if (use_buffer_serialization) {
+    printer->Print("#endif\n");
+  }
+  printer->Print("\n");
 }
 
 // it's a waste of space to track presence for all values, so we only track them if they're not nullable

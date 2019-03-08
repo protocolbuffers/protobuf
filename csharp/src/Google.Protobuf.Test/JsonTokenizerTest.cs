@@ -199,8 +199,11 @@ namespace Google.Protobuf
         [TestCase("1e-")]
         [TestCase("--")]
         [TestCase("--1")]
+#if !NETCOREAPP3_0
+        // .NET Core 3.0 returns infinity
         [TestCase("-1.7977e308")]
         [TestCase("1.7977e308")]
+#endif
         public void InvalidNumberValue(string json)
         {
             AssertThrowsAfter(json);

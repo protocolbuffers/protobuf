@@ -124,11 +124,49 @@ namespace Google.Protobuf.Collections
             }
         }
 
+#if GOOGLE_PROTOBUF_SUPPORT_SYSTEM_MEMORY
+        /// <summary>
+        /// Adds the entries from the given input stream, decoding them with the specified codec.
+        /// </summary>
+        /// <param name="input">The input stream to read from.</param>
+        /// <param name="codec">The codec to use in order to read each entry.</param>
+        public void AddEntriesFrom(ref CodedInputReader input, FieldCodec<T> codec)
+        {
+            // TODO: Inline some of the Add code, so we can avoid checking the size on every
+            // iteration.
+            uint tag = input.LastTag;
+            var reader = codec.BufferValueReader;
+            // Non-nullable value types can be packed or not.
+            if (FieldCodec<T>.IsPackedRepeatedField(tag))
+            {
+                int length = input.ReadLength();
+                if (length > 0)
+                {
+                    long oldLimit = input.PushLimit(length);
+                    while (!input.ReachedLimit)
+                    {
+                        Add(reader(ref input));
+                    }
+                    input.PopLimit(oldLimit);
+                }
+                // Empty packed field. Odd, but valid - just ignore.
+            }
+            else
+            {
+                // Not packed... (possibly not packable)
+                do
+                {
+                    Add(reader(ref input));
+                } while (input.MaybeConsumeTag(tag));
+            }
+        }
+#endif
+
         /// <summary>
         /// Calculates the size of this collection based on the given codec.
         /// </summary>
         /// <param name="codec">The codec to use when encoding each field.</param>
-        /// <returns>The number of bytes that would be written to a <see cref="CodedOutputStream"/> by <see cref="WriteTo"/>,
+        /// <returns>The number of bytes that would be written to output,
         /// using the same codec.</returns>
         public int CalculateSize(FieldCodec<T> codec)
         {
@@ -219,6 +257,49 @@ namespace Google.Protobuf.Collections
                 }
             }
         }
+
+#if GOOGLE_PROTOBUF_SUPPORT_SYSTEM_MEMORY
+        /// <summary>
+        /// Writes the contents of this collection to the given <see cref="CodedOutputWriter"/>,
+        /// encoding each value using the specified codec.
+        /// </summary>
+        /// <param name="output">The output stream to write to.</param>
+        /// <param name="codec">The codec to use when encoding each value.</param>
+        public void WriteTo(ref CodedOutputWriter output, FieldCodec<T> codec)
+        {
+            if (count == 0)
+            {
+                return;
+            }
+            var writer = codec.BufferValueWriter;
+            var tag = codec.Tag;
+            if (codec.PackedRepeatedField)
+            {
+                // Packed primitive type
+                uint size = (uint)CalculatePackedDataSize(codec);
+                output.WriteTag(tag);
+                output.WriteRawVarint32(size);
+                for (int i = 0; i < count; i++)
+                {
+                    writer(ref output, array[i]);
+                }
+            }
+            else
+            {
+                // Not packed: a simple tag/value pair for each value.
+                // Can't use codec.WriteTagAndValue, as that omits default values.
+                for (int i = 0; i < count; i++)
+                {
+                    output.WriteTag(tag);
+                    writer(ref output, array[i]);
+                    if (codec.EndTag != 0)
+                    {
+                        output.WriteTag(codec.EndTag);
+                    }
+                }
+            }
+        }
+#endif
 
         /// <summary>
         /// Gets and sets the capacity of the RepeatedField's internal array.  WHen set, the internal array is reallocated to the given capacity.
@@ -579,7 +660,7 @@ namespace Google.Protobuf.Collections
             }
         }
 
-        #region Explicit interface implementation for IList and ICollection.
+#region Explicit interface implementation for IList and ICollection.
         bool IList.IsFixedSize => false;
 
         void ICollection.CopyTo(Array array, int index)
@@ -630,6 +711,6 @@ namespace Google.Protobuf.Collections
             }
             Remove((T)value);
         }
-        #endregion        
+#endregion
     }
 }

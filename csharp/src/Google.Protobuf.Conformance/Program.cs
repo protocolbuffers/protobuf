@@ -31,9 +31,12 @@
 #endregion
 
 using Conformance;
+using Google.Protobuf.Buffers;
 using Google.Protobuf.Reflection;
 using System;
+using System.Buffers;
 using System.IO;
+using System.Linq;
 
 namespace Google.Protobuf.Conformance
 {
@@ -45,6 +48,8 @@ namespace Google.Protobuf.Conformance
     {
         private static void Main(string[] args)
         {
+            var mode = ParseCmdline(args);
+
             // This way we get the binary streams instead of readers/writers.
             var input = new BinaryReader(Console.OpenStandardInput());
             var output = new BinaryWriter(Console.OpenStandardOutput());
@@ -53,14 +58,31 @@ namespace Google.Protobuf.Conformance
                 ProtobufTestMessages.Proto2.TestAllTypesProto2.Descriptor);
 
             int count = 0;
-            while (RunTest(input, output, typeRegistry))
+            while (RunTest(input, output, typeRegistry, mode))
             {
                 count++;
             }
             Console.Error.WriteLine("Received EOF after {0} tests", count);
         }
 
-        private static bool RunTest(BinaryReader input, BinaryWriter output, TypeRegistry typeRegistry)
+        private static SerializationMode ParseCmdline(string[] args)
+        {
+            var mode = SerializationMode.Stream;
+            foreach (var arg in args.Skip(1))
+            {
+                switch (arg)
+                {
+                    case "--use_buffer_serialization":
+                        mode = SerializationMode.Buffer;
+                        break;
+                    default:
+                        throw new Exception($"Unknown command line argument: {arg}");
+                }
+            }
+            return mode;
+        }
+
+        private static bool RunTest(BinaryReader input, BinaryWriter output, TypeRegistry typeRegistry, SerializationMode mode)
         {
             int? size = ReadInt32(input);
             if (size == null)
@@ -72,8 +94,9 @@ namespace Google.Protobuf.Conformance
             {
                 throw new EndOfStreamException("Read " + inputData.Length + " bytes of data when expecting " + size);
             }
+            // It doesn't matter what parser mode we use for ConformanceRequest, it isn't being tested
             ConformanceRequest request = ConformanceRequest.Parser.ParseFrom(inputData);
-            ConformanceResponse response = PerformRequest(request, typeRegistry);
+            ConformanceResponse response = PerformRequest(request, typeRegistry, mode);
             byte[] outputData = response.ToByteArray();
             output.Write(outputData.Length);
             output.Write(outputData);
@@ -81,7 +104,7 @@ namespace Google.Protobuf.Conformance
             return true;
         }
 
-        private static ConformanceResponse PerformRequest(ConformanceRequest request, TypeRegistry typeRegistry)
+        private static ConformanceResponse PerformRequest(ConformanceRequest request, TypeRegistry typeRegistry, SerializationMode mode)
         {
             IMessage message;
             try
@@ -89,17 +112,30 @@ namespace Google.Protobuf.Conformance
                 switch (request.PayloadCase)
                 {
                     case ConformanceRequest.PayloadOneofCase.JsonPayload:
-                        if (request.TestCategory == global::Conformance.TestCategory.JsonIgnoreUnknownParsingTest) {
+                    {
+                        // There is no buffer implementation of JSON. Use standard implementation
+                        if (request.TestCategory == global::Conformance.TestCategory.JsonIgnoreUnknownParsingTest)
+                        {
                             return new ConformanceResponse { Skipped = "CSharp doesn't support skipping unknown fields in json parsing." };
                         }
                         var parser = new JsonParser(new JsonParser.Settings(20, typeRegistry));
                         message = parser.Parse<ProtobufTestMessages.Proto3.TestAllTypesProto3>(request.JsonPayload);
                         break;
+                    }
                     case ConformanceRequest.PayloadOneofCase.ProtobufPayload:
                     {
                         if (request.MessageType.Equals("protobuf_test_messages.proto3.TestAllTypesProto3"))
                         {
-                            message = ProtobufTestMessages.Proto3.TestAllTypesProto3.Parser.ParseFrom(request.ProtobufPayload);
+                            var messageParser = ProtobufTestMessages.Proto3.TestAllTypesProto3.Parser;
+
+                            if (mode == SerializationMode.Stream)
+                            {
+                                message = messageParser.ParseFrom(request.ProtobufPayload);
+                            }
+                            else
+                            {
+                                message = messageParser.ParseFrom(new ReadOnlySequence<byte>(request.ProtobufPayload.ToByteArray()));
+                            }
                         }
                         else if (request.MessageType.Equals("protobuf_test_messages.proto2.TestAllTypesProto2"))
                         {
@@ -109,18 +145,27 @@ namespace Google.Protobuf.Conformance
                                 ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.MessageSetCorrectExtension1.Extensions.MessageSetExtension,
                                 ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.MessageSetCorrectExtension2.Extensions.MessageSetExtension
                             };
-                            message = ProtobufTestMessages.Proto2.TestAllTypesProto2.Parser.WithExtensionRegistry(registry).ParseFrom(request.ProtobufPayload);
+                            var messageParser = ProtobufTestMessages.Proto2.TestAllTypesProto2.Parser.WithExtensionRegistry(registry);
+
+                            if (mode == SerializationMode.Stream)
+                            {
+                                message = messageParser.ParseFrom(request.ProtobufPayload);
+                            }
+                            else
+                            {
+                                message = messageParser.ParseFrom(new ReadOnlySequence<byte>(request.ProtobufPayload.ToByteArray()));
+                            }
                         }
                         else
                         {
-                            throw new Exception(" Protobuf request doesn't have specific payload type");
+                            throw new Exception("Protobuf request doesn't have specific payload type");
                         }
                         break;
                     }
-					case ConformanceRequest.PayloadOneofCase.TextPayload:
-					{
-						return new ConformanceResponse { Skipped = "CSharp doesn't support text format" };
-					}
+                    case ConformanceRequest.PayloadOneofCase.TextPayload:
+                    {
+                        return new ConformanceResponse { Skipped = "CSharp doesn't support text format" };
+                    }
                     default:
                         throw new Exception("Unsupported request payload: " + request.PayloadCase);
                 }
@@ -141,7 +186,19 @@ namespace Google.Protobuf.Conformance
                         var formatter = new JsonFormatter(new JsonFormatter.Settings(false, typeRegistry));
                         return new ConformanceResponse { JsonPayload = formatter.Format(message) };
                     case global::Conformance.WireFormat.Protobuf:
-                        return new ConformanceResponse { ProtobufPayload = message.ToByteString() };
+                        if (mode == SerializationMode.Stream)
+                        {
+                            return new ConformanceResponse { ProtobufPayload = message.ToByteString() };
+                        }
+                        else
+                        {
+                            var bufferMessage = (IBufferMessage)message;
+                            var byteArrayWriter = new ArrayBufferWriter<byte>();
+                            var codedOutputWriter = new CodedOutputWriter(byteArrayWriter);
+                            bufferMessage.WriteTo(ref codedOutputWriter);
+                            codedOutputWriter.Flush();
+                            return new ConformanceResponse { ProtobufPayload = ByteString.CopyFrom(byteArrayWriter.WrittenSpan.ToArray()) };
+                        }
                     default:
                         throw new Exception("Unsupported request output format: " + request.RequestedOutputFormat);
                 }
@@ -165,6 +222,12 @@ namespace Google.Protobuf.Conformance
                 throw new EndOfStreamException("Read " + bytes.Length + " bytes of size when expecting 4");
             }
             return bytes[0] | (bytes[1] << 8) | (bytes[2] << 16) | (bytes[3] << 24);
+        }
+
+        private enum SerializationMode
+        {
+            Stream,
+            Buffer
         }
     }
 }

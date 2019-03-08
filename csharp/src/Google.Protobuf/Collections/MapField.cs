@@ -1,4 +1,4 @@
-﻿#region Copyright notice and license
+#region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
 // Copyright 2015 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
@@ -33,10 +33,14 @@
 using Google.Protobuf.Compatibility;
 using Google.Protobuf.Reflection;
 using System;
+#if GOOGLE_PROTOBUF_SUPPORT_SYSTEM_MEMORY
+using System.Buffers;
+#endif
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security;
 
 namespace Google.Protobuf.Collections
 {
@@ -51,7 +55,7 @@ namespace Google.Protobuf.Collections
     /// </para>
     /// <para>
     /// Null values are not permitted in the map, either for wrapper types or regular messages.
-    /// If a map is deserialized from a data stream and the value is missing from an entry, a default value
+    /// If a map is deserialized from a data input and the value is missing from an entry, a default value
     /// is created instead. For primitive types, that is the regular default value (0, the empty string and so
     /// on); for message types, an empty instance of the message is created, as if the map entry contained a 0-length
     /// encoded value for the field.
@@ -411,14 +415,14 @@ namespace Google.Protobuf.Collections
         }
 
         /// <summary>
-        /// Adds entries to the map from the given stream.
+        /// Adds entries to the map from the given input.
         /// </summary>
         /// <remarks>
-        /// It is assumed that the stream is initially positioned after the tag specified by the codec.
-        /// This method will continue reading entries from the stream until the end is reached, or
+        /// It is assumed that the input is initially positioned after the tag specified by the codec.
+        /// This method will continue reading entries from the input until the end is reached, or
         /// a different tag is encountered.
         /// </remarks>
-        /// <param name="input">Stream to read from</param>
+        /// <param name="input">Input to read from</param>
         /// <param name="codec">Codec describing how the key/value pairs are encoded</param>
         public void AddEntriesFrom(CodedInputStream input, Codec codec)
         {
@@ -431,11 +435,34 @@ namespace Google.Protobuf.Collections
             } while (input.MaybeConsumeTag(codec.MapTag));
         }
 
+#if GOOGLE_PROTOBUF_SUPPORT_SYSTEM_MEMORY
         /// <summary>
-        /// Writes the contents of this map to the given coded output stream, using the specified codec
+        /// Adds entries to the map from the given input.
+        /// </summary>
+        /// <remarks>
+        /// It is assumed that the input is initially positioned after the tag specified by the codec.
+        /// This method will continue reading entries from the input until the end is reached, or
+        /// a different tag is encountered.
+        /// </remarks>
+        /// <param name="input">Input to read from</param>
+        /// <param name="codec">Codec describing how the key/value pairs are encoded</param>
+        public void AddEntriesFrom(ref CodedInputReader input, Codec codec)
+        {
+            var adapter = new Codec.MessageAdapter(codec);
+            do
+            {
+                adapter.Reset();
+                input.ReadMessage(adapter);
+                this[adapter.Key] = adapter.Value;
+            } while (input.MaybeConsumeTag(codec.MapTag));
+        }
+#endif
+
+        /// <summary>
+        /// Writes the contents of this map to the given coded output, using the specified codec
         /// to encode each entry.
         /// </summary>
-        /// <param name="output">The output stream to write to.</param>
+        /// <param name="output">The output to write to.</param>
         /// <param name="codec">The codec to use for each entry.</param>
         public void WriteTo(CodedOutputStream output, Codec codec)
         {
@@ -448,6 +475,26 @@ namespace Google.Protobuf.Collections
                 output.WriteMessage(message);
             }
         }
+
+#if GOOGLE_PROTOBUF_SUPPORT_SYSTEM_MEMORY
+        /// <summary>
+        /// Writes the contents of this map to the given coded output, using the specified codec
+        /// to encode each entry.
+        /// </summary>
+        /// <param name="output">The output to write to.</param>
+        /// <param name="codec">The codec to use for each entry.</param>
+        public void WriteTo(ref CodedOutputWriter output, Codec codec)
+        {
+            var message = new Codec.MessageAdapter(codec);
+            foreach (var entry in list)
+            {
+                message.Key = entry.Key;
+                message.Value = entry.Value;
+                output.WriteTag(codec.MapTag);
+                output.WriteMessage(message);
+            }
+        }
+#endif
 
         /// <summary>
         /// Calculates the size of this map based on the given entry codec.
@@ -621,8 +668,23 @@ namespace Google.Protobuf.Collections
             /// and it's simpler if it has direct access to all its fields.
             /// </summary>
             internal class MessageAdapter : IMessage
+#if GOOGLE_PROTOBUF_SUPPORT_SYSTEM_MEMORY
+                , IBufferMessage
+#endif
             {
-                private static readonly byte[] ZeroLengthMessageStreamData = new byte[] { 0 };
+                private static readonly byte[] ZeroLengthMessageStreamData;
+#if GOOGLE_PROTOBUF_SUPPORT_SYSTEM_MEMORY
+                private static readonly ReadOnlySequence<byte> ZeroLengthMessageSequence;
+#endif
+
+                [SecuritySafeCritical]
+                static MessageAdapter()
+                {
+                    ZeroLengthMessageStreamData = new byte[] { 0 };
+#if GOOGLE_PROTOBUF_SUPPORT_SYSTEM_MEMORY
+                    ZeroLengthMessageSequence = new ReadOnlySequence<byte>(ZeroLengthMessageStreamData);
+#endif
+                }
 
                 private readonly Codec codec;
                 internal TKey Key { get; set; }
@@ -659,18 +721,57 @@ namespace Google.Protobuf.Collections
                     }
 
                     // Corner case: a map entry with a key but no value, where the value type is a message.
-                    // Read it as if we'd seen an input stream with no data (i.e. create a "default" message).
+                    // Read it as if we'd seen input with no data (i.e. create a "default" message).
                     if (Value == null)
                     {
                         Value = codec.valueCodec.Read(new CodedInputStream(ZeroLengthMessageStreamData));
                     }
                 }
 
+#if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+                [SecuritySafeCritical]
+                public void MergeFrom(ref CodedInputReader input)
+                {
+                    uint tag;
+                    while ((tag = input.ReadTag()) != 0)
+                    {
+                        if (tag == codec.keyCodec.Tag)
+                        {
+                            Key = codec.keyCodec.Read(ref input);
+                        }
+                        else if (tag == codec.valueCodec.Tag)
+                        {
+                            Value = codec.valueCodec.Read(ref input);
+                        }
+                        else
+                        {
+                            input.SkipLastField();
+                        }
+                    }
+
+                    // Corner case: a map entry with a key but no value, where the value type is a message.
+                    // Read it as if we'd seen input with no data (i.e. create a "default" message).
+                    if (Value == null)
+                    {
+                        var reader = new CodedInputReader(ZeroLengthMessageSequence);
+                        Value = codec.valueCodec.Read(ref reader);
+                    }
+                }
+#endif
+
                 public void WriteTo(CodedOutputStream output)
                 {
                     codec.keyCodec.WriteTagAndValue(output, Key);
                     codec.valueCodec.WriteTagAndValue(output, Value);
                 }
+
+#if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+                public void WriteTo(ref CodedOutputWriter output)
+                {
+                    codec.keyCodec.WriteTagAndValue(ref output, Key);
+                    codec.valueCodec.WriteTagAndValue(ref output, Value);
+                }
+#endif
 
                 public int CalculateSize()
                 {

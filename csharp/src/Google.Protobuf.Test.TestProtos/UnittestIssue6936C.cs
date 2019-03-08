@@ -39,7 +39,11 @@ namespace UnitTest.Issues.TestProtos {
 
   }
   #region Messages
-  public sealed partial class Bar : pb::IMessage<Bar> {
+  public sealed partial class Bar : pb::IMessage<Bar>
+  #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    , pb::IBufferMessage
+  #endif
+   {
     private static readonly pb::MessageParser<Bar> _parser = new pb::MessageParser<Bar>(() => new Bar());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -127,6 +131,20 @@ namespace UnitTest.Issues.TestProtos {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(ref pb::CodedOutputWriter output) {
+      if (foo_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(Foo);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
@@ -171,6 +189,28 @@ namespace UnitTest.Issues.TestProtos {
         }
       }
     }
+
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(ref pb::CodedInputReader input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            if (foo_ == null) {
+              Foo = new global::UnitTest.Issues.TestProtos.Foo();
+            }
+            input.ReadMessage(Foo);
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 

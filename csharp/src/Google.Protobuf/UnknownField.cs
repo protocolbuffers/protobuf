@@ -147,6 +147,59 @@ namespace Google.Protobuf
             }
         }
 
+#if GOOGLE_PROTOBUF_SUPPORT_SYSTEM_MEMORY
+        /// <summary>
+        /// Serializes the field, including the field number, and writes it to
+        /// <paramref name="output"/>
+        /// </summary>
+        /// <param name="fieldNumber">The unknown field number.</param>
+        /// <param name="output">The CodedOutputWriter to write to.</param>
+        internal void WriteTo(int fieldNumber, ref CodedOutputWriter output)
+        {
+            if (varintList != null)
+            {
+                foreach (ulong value in varintList)
+                {
+                    output.WriteTag(fieldNumber, WireFormat.WireType.Varint);
+                    output.WriteUInt64(value);
+                }
+            }
+            if (fixed32List != null)
+            {
+                foreach (uint value in fixed32List)
+                {
+                    output.WriteTag(fieldNumber, WireFormat.WireType.Fixed32);
+                    output.WriteFixed32(value);
+                }
+            }
+            if (fixed64List != null)
+            {
+                foreach (ulong value in fixed64List)
+                {
+                    output.WriteTag(fieldNumber, WireFormat.WireType.Fixed64);
+                    output.WriteFixed64(value);
+                }
+            }
+            if (lengthDelimitedList != null)
+            {
+                foreach (ByteString value in lengthDelimitedList)
+                {
+                    output.WriteTag(fieldNumber, WireFormat.WireType.LengthDelimited);
+                    output.WriteBytes(value);
+                }
+            }
+            if (groupList != null)
+            {
+                foreach (UnknownFieldSet value in groupList)
+                {
+                    output.WriteTag(fieldNumber, WireFormat.WireType.StartGroup);
+                    value.WriteTo(ref output);
+                    output.WriteTag(fieldNumber, WireFormat.WireType.EndGroup);
+                }
+            }
+        }
+#endif
+
         /// <summary>
         /// Computes the number of bytes required to encode this field, including field
         /// number.

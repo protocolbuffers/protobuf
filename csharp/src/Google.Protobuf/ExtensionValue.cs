@@ -39,8 +39,14 @@ namespace Google.Protobuf
     internal interface IExtensionValue : IEquatable<IExtensionValue>, IDeepCloneable<IExtensionValue>
     {
         void MergeFrom(CodedInputStream input);
+#if GOOGLE_PROTOBUF_SUPPORT_SYSTEM_MEMORY
+        void MergeFrom(ref CodedInputReader input);
+#endif
         void MergeFrom(IExtensionValue value);
         void WriteTo(CodedOutputStream output);
+#if GOOGLE_PROTOBUF_SUPPORT_SYSTEM_MEMORY
+        void WriteTo(ref CodedOutputWriter output);
+#endif
         int CalculateSize();
         bool IsInitialized();
     }
@@ -96,6 +102,13 @@ namespace Google.Protobuf
             codec.ValueMerger(input, ref field);
         }
 
+#if GOOGLE_PROTOBUF_SUPPORT_SYSTEM_MEMORY
+        public void MergeFrom(ref CodedInputReader input)
+        {
+            codec.BufferValueMerger(ref input, ref field);
+        }
+#endif
+
         public void MergeFrom(IExtensionValue value)
         {
             if (value is ExtensionValue<T>)
@@ -114,6 +127,18 @@ namespace Google.Protobuf
                 output.WriteTag(codec.EndTag);
             }
         }
+
+#if GOOGLE_PROTOBUF_SUPPORT_SYSTEM_MEMORY
+        public void WriteTo(ref CodedOutputWriter output)
+        {
+            output.WriteTag(codec.Tag);
+            codec.BufferValueWriter(ref output, field);
+            if (codec.EndTag != 0)
+            {
+                output.WriteTag(codec.EndTag);
+            }
+        }
+#endif
 
         public T GetValue() => field;
 
@@ -185,6 +210,13 @@ namespace Google.Protobuf
             field.AddEntriesFrom(input, codec);
         }
 
+#if GOOGLE_PROTOBUF_SUPPORT_SYSTEM_MEMORY
+        public void MergeFrom(ref CodedInputReader input)
+        {
+            field.AddEntriesFrom(ref input, codec);
+        }
+#endif
+
         public void MergeFrom(IExtensionValue value)
         {
             if (value is RepeatedExtensionValue<T>)
@@ -197,6 +229,13 @@ namespace Google.Protobuf
         {
             field.WriteTo(output, codec);
         }
+
+#if GOOGLE_PROTOBUF_SUPPORT_SYSTEM_MEMORY
+        public void WriteTo(ref CodedOutputWriter output)
+        {
+            field.WriteTo(ref output, codec);
+        }
+#endif
 
         public RepeatedField<T> GetValue() => field;
 

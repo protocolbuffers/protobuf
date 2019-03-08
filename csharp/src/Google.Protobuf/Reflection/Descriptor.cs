@@ -193,7 +193,11 @@ namespace Google.Protobuf.Reflection {
   /// The protocol compiler can output a FileDescriptorSet containing the .proto
   /// files it parses.
   /// </summary>
-  public sealed partial class FileDescriptorSet : pb::IMessage<FileDescriptorSet> {
+  public sealed partial class FileDescriptorSet : pb::IMessage<FileDescriptorSet>
+  #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    , pb::IBufferMessage
+  #endif
+   {
     private static readonly pb::MessageParser<FileDescriptorSet> _parser = new pb::MessageParser<FileDescriptorSet>(() => new FileDescriptorSet());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -277,6 +281,17 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(ref pb::CodedOutputWriter output) {
+      file_.WriteTo(ref output, _repeated_file_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
@@ -312,12 +327,35 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(ref pb::CodedInputReader input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            file_.AddEntriesFrom(ref input, _repeated_file_codec);
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
   }
 
   /// <summary>
   /// Describes a complete .proto file.
   /// </summary>
-  public sealed partial class FileDescriptorProto : pb::IMessage<FileDescriptorProto> {
+  public sealed partial class FileDescriptorProto : pb::IMessage<FileDescriptorProto>
+  #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    , pb::IBufferMessage
+  #endif
+   {
     private static readonly pb::MessageParser<FileDescriptorProto> _parser = new pb::MessageParser<FileDescriptorProto>(() => new FileDescriptorProto());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -660,6 +698,43 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(ref pb::CodedOutputWriter output) {
+      if (HasName) {
+        output.WriteRawTag(10);
+        output.WriteString(Name);
+      }
+      if (HasPackage) {
+        output.WriteRawTag(18);
+        output.WriteString(Package);
+      }
+      dependency_.WriteTo(ref output, _repeated_dependency_codec);
+      messageType_.WriteTo(ref output, _repeated_messageType_codec);
+      enumType_.WriteTo(ref output, _repeated_enumType_codec);
+      service_.WriteTo(ref output, _repeated_service_codec);
+      extension_.WriteTo(ref output, _repeated_extension_codec);
+      if (HasOptions) {
+        output.WriteRawTag(66);
+        output.WriteMessage(Options);
+      }
+      if (HasSourceCodeInfo) {
+        output.WriteRawTag(74);
+        output.WriteMessage(SourceCodeInfo);
+      }
+      publicDependency_.WriteTo(ref output, _repeated_publicDependency_codec);
+      weakDependency_.WriteTo(ref output, _repeated_weakDependency_codec);
+      if (HasSyntax) {
+        output.WriteRawTag(98);
+        output.WriteString(Syntax);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
@@ -795,12 +870,87 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(ref pb::CodedInputReader input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            Name = input.ReadString();
+            break;
+          }
+          case 18: {
+            Package = input.ReadString();
+            break;
+          }
+          case 26: {
+            dependency_.AddEntriesFrom(ref input, _repeated_dependency_codec);
+            break;
+          }
+          case 34: {
+            messageType_.AddEntriesFrom(ref input, _repeated_messageType_codec);
+            break;
+          }
+          case 42: {
+            enumType_.AddEntriesFrom(ref input, _repeated_enumType_codec);
+            break;
+          }
+          case 50: {
+            service_.AddEntriesFrom(ref input, _repeated_service_codec);
+            break;
+          }
+          case 58: {
+            extension_.AddEntriesFrom(ref input, _repeated_extension_codec);
+            break;
+          }
+          case 66: {
+            if (!HasOptions) {
+              Options = new global::Google.Protobuf.Reflection.FileOptions();
+            }
+            input.ReadMessage(Options);
+            break;
+          }
+          case 74: {
+            if (!HasSourceCodeInfo) {
+              SourceCodeInfo = new global::Google.Protobuf.Reflection.SourceCodeInfo();
+            }
+            input.ReadMessage(SourceCodeInfo);
+            break;
+          }
+          case 82:
+          case 80: {
+            publicDependency_.AddEntriesFrom(ref input, _repeated_publicDependency_codec);
+            break;
+          }
+          case 90:
+          case 88: {
+            weakDependency_.AddEntriesFrom(ref input, _repeated_weakDependency_codec);
+            break;
+          }
+          case 98: {
+            Syntax = input.ReadString();
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
   }
 
   /// <summary>
   /// Describes a message type.
   /// </summary>
-  public sealed partial class DescriptorProto : pb::IMessage<DescriptorProto> {
+  public sealed partial class DescriptorProto : pb::IMessage<DescriptorProto>
+  #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    , pb::IBufferMessage
+  #endif
+   {
     private static readonly pb::MessageParser<DescriptorProto> _parser = new pb::MessageParser<DescriptorProto>(() => new DescriptorProto());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1044,6 +1194,32 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(ref pb::CodedOutputWriter output) {
+      if (HasName) {
+        output.WriteRawTag(10);
+        output.WriteString(Name);
+      }
+      field_.WriteTo(ref output, _repeated_field_codec);
+      nestedType_.WriteTo(ref output, _repeated_nestedType_codec);
+      enumType_.WriteTo(ref output, _repeated_enumType_codec);
+      extensionRange_.WriteTo(ref output, _repeated_extensionRange_codec);
+      extension_.WriteTo(ref output, _repeated_extension_codec);
+      if (HasOptions) {
+        output.WriteRawTag(58);
+        output.WriteMessage(Options);
+      }
+      oneofDecl_.WriteTo(ref output, _repeated_oneofDecl_codec);
+      reservedRange_.WriteTo(ref output, _repeated_reservedRange_codec);
+      reservedName_.WriteTo(ref output, _repeated_reservedName_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
@@ -1147,11 +1323,73 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(ref pb::CodedInputReader input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            Name = input.ReadString();
+            break;
+          }
+          case 18: {
+            field_.AddEntriesFrom(ref input, _repeated_field_codec);
+            break;
+          }
+          case 26: {
+            nestedType_.AddEntriesFrom(ref input, _repeated_nestedType_codec);
+            break;
+          }
+          case 34: {
+            enumType_.AddEntriesFrom(ref input, _repeated_enumType_codec);
+            break;
+          }
+          case 42: {
+            extensionRange_.AddEntriesFrom(ref input, _repeated_extensionRange_codec);
+            break;
+          }
+          case 50: {
+            extension_.AddEntriesFrom(ref input, _repeated_extension_codec);
+            break;
+          }
+          case 58: {
+            if (!HasOptions) {
+              Options = new global::Google.Protobuf.Reflection.MessageOptions();
+            }
+            input.ReadMessage(Options);
+            break;
+          }
+          case 66: {
+            oneofDecl_.AddEntriesFrom(ref input, _repeated_oneofDecl_codec);
+            break;
+          }
+          case 74: {
+            reservedRange_.AddEntriesFrom(ref input, _repeated_reservedRange_codec);
+            break;
+          }
+          case 82: {
+            reservedName_.AddEntriesFrom(ref input, _repeated_reservedName_codec);
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
     #region Nested types
     /// <summary>Container for nested types declared in the DescriptorProto message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static partial class Types {
-      public sealed partial class ExtensionRange : pb::IMessage<ExtensionRange> {
+      public sealed partial class ExtensionRange : pb::IMessage<ExtensionRange>
+      #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+        , pb::IBufferMessage
+      #endif
+       {
         private static readonly pb::MessageParser<ExtensionRange> _parser = new pb::MessageParser<ExtensionRange>(() => new ExtensionRange());
         private pb::UnknownFieldSet _unknownFields;
         private int _hasBits0;
@@ -1319,6 +1557,28 @@ namespace Google.Protobuf.Reflection {
           }
         }
 
+
+        #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void WriteTo(ref pb::CodedOutputWriter output) {
+          if (HasStart) {
+            output.WriteRawTag(8);
+            output.WriteInt32(Start);
+          }
+          if (HasEnd) {
+            output.WriteRawTag(16);
+            output.WriteInt32(End);
+          }
+          if (HasOptions) {
+            output.WriteRawTag(26);
+            output.WriteMessage(Options);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
+
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
           int size = 0;
@@ -1384,6 +1644,36 @@ namespace Google.Protobuf.Reflection {
           }
         }
 
+
+        #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void MergeFrom(ref pb::CodedInputReader input) {
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+                break;
+              case 8: {
+                Start = input.ReadInt32();
+                break;
+              }
+              case 16: {
+                End = input.ReadInt32();
+                break;
+              }
+              case 26: {
+                if (!HasOptions) {
+                  Options = new global::Google.Protobuf.Reflection.ExtensionRangeOptions();
+                }
+                input.ReadMessage(Options);
+                break;
+              }
+            }
+          }
+        }
+        #endif
+
       }
 
       /// <summary>
@@ -1391,7 +1681,11 @@ namespace Google.Protobuf.Reflection {
       /// fields or extension ranges in the same message. Reserved ranges may
       /// not overlap.
       /// </summary>
-      public sealed partial class ReservedRange : pb::IMessage<ReservedRange> {
+      public sealed partial class ReservedRange : pb::IMessage<ReservedRange>
+      #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+        , pb::IBufferMessage
+      #endif
+       {
         private static readonly pb::MessageParser<ReservedRange> _parser = new pb::MessageParser<ReservedRange>(() => new ReservedRange());
         private pb::UnknownFieldSet _unknownFields;
         private int _hasBits0;
@@ -1531,6 +1825,24 @@ namespace Google.Protobuf.Reflection {
           }
         }
 
+
+        #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void WriteTo(ref pb::CodedOutputWriter output) {
+          if (HasStart) {
+            output.WriteRawTag(8);
+            output.WriteInt32(Start);
+          }
+          if (HasEnd) {
+            output.WriteRawTag(16);
+            output.WriteInt32(End);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
+
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
           int size = 0;
@@ -1580,6 +1892,29 @@ namespace Google.Protobuf.Reflection {
           }
         }
 
+
+        #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void MergeFrom(ref pb::CodedInputReader input) {
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+                break;
+              case 8: {
+                Start = input.ReadInt32();
+                break;
+              }
+              case 16: {
+                End = input.ReadInt32();
+                break;
+              }
+            }
+          }
+        }
+        #endif
+
       }
 
     }
@@ -1587,7 +1922,11 @@ namespace Google.Protobuf.Reflection {
 
   }
 
-  public sealed partial class ExtensionRangeOptions : pb::IExtendableMessage<ExtensionRangeOptions> {
+  public sealed partial class ExtensionRangeOptions : pb::IExtendableMessage<ExtensionRangeOptions>
+  #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    , pb::IBufferMessage
+  #endif
+   {
     private static readonly pb::MessageParser<ExtensionRangeOptions> _parser = new pb::MessageParser<ExtensionRangeOptions>(() => new ExtensionRangeOptions());
     private pb::UnknownFieldSet _unknownFields;
     internal pb::ExtensionSet<ExtensionRangeOptions> _extensions;
@@ -1686,6 +2025,20 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(ref pb::CodedOutputWriter output) {
+      uninterpretedOption_.WriteTo(ref output, _repeated_uninterpretedOption_codec);
+      if (_extensions != null) {
+        _extensions.WriteTo(ref output);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
@@ -1727,6 +2080,27 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(ref pb::CodedInputReader input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            if (!pb::ExtensionSet.TryMergeFieldFrom(ref _extensions, ref input)) {
+              _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            }
+            break;
+          case 7994: {
+            uninterpretedOption_.AddEntriesFrom(ref input, _repeated_uninterpretedOption_codec);
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
     public TValue GetExtension<TValue>(pb::Extension<ExtensionRangeOptions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
@@ -1754,7 +2128,11 @@ namespace Google.Protobuf.Reflection {
   /// <summary>
   /// Describes a field within a message.
   /// </summary>
-  public sealed partial class FieldDescriptorProto : pb::IMessage<FieldDescriptorProto> {
+  public sealed partial class FieldDescriptorProto : pb::IMessage<FieldDescriptorProto>
+  #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    , pb::IBufferMessage
+  #endif
+   {
     private static readonly pb::MessageParser<FieldDescriptorProto> _parser = new pb::MessageParser<FieldDescriptorProto>(() => new FieldDescriptorProto());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
@@ -2160,6 +2538,56 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(ref pb::CodedOutputWriter output) {
+      if (HasName) {
+        output.WriteRawTag(10);
+        output.WriteString(Name);
+      }
+      if (HasExtendee) {
+        output.WriteRawTag(18);
+        output.WriteString(Extendee);
+      }
+      if (HasNumber) {
+        output.WriteRawTag(24);
+        output.WriteInt32(Number);
+      }
+      if (HasLabel) {
+        output.WriteRawTag(32);
+        output.WriteEnum((int) Label);
+      }
+      if (HasType) {
+        output.WriteRawTag(40);
+        output.WriteEnum((int) Type);
+      }
+      if (HasTypeName) {
+        output.WriteRawTag(50);
+        output.WriteString(TypeName);
+      }
+      if (HasDefaultValue) {
+        output.WriteRawTag(58);
+        output.WriteString(DefaultValue);
+      }
+      if (HasOptions) {
+        output.WriteRawTag(66);
+        output.WriteMessage(Options);
+      }
+      if (HasOneofIndex) {
+        output.WriteRawTag(72);
+        output.WriteInt32(OneofIndex);
+      }
+      if (HasJsonName) {
+        output.WriteRawTag(82);
+        output.WriteString(JsonName);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
@@ -2295,6 +2723,64 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(ref pb::CodedInputReader input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            Name = input.ReadString();
+            break;
+          }
+          case 18: {
+            Extendee = input.ReadString();
+            break;
+          }
+          case 24: {
+            Number = input.ReadInt32();
+            break;
+          }
+          case 32: {
+            Label = (global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Label) input.ReadEnum();
+            break;
+          }
+          case 40: {
+            Type = (global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Type) input.ReadEnum();
+            break;
+          }
+          case 50: {
+            TypeName = input.ReadString();
+            break;
+          }
+          case 58: {
+            DefaultValue = input.ReadString();
+            break;
+          }
+          case 66: {
+            if (!HasOptions) {
+              Options = new global::Google.Protobuf.Reflection.FieldOptions();
+            }
+            input.ReadMessage(Options);
+            break;
+          }
+          case 72: {
+            OneofIndex = input.ReadInt32();
+            break;
+          }
+          case 82: {
+            JsonName = input.ReadString();
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
     #region Nested types
     /// <summary>Container for nested types declared in the FieldDescriptorProto message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2367,7 +2853,11 @@ namespace Google.Protobuf.Reflection {
   /// <summary>
   /// Describes a oneof.
   /// </summary>
-  public sealed partial class OneofDescriptorProto : pb::IMessage<OneofDescriptorProto> {
+  public sealed partial class OneofDescriptorProto : pb::IMessage<OneofDescriptorProto>
+  #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    , pb::IBufferMessage
+  #endif
+   {
     private static readonly pb::MessageParser<OneofDescriptorProto> _parser = new pb::MessageParser<OneofDescriptorProto>(() => new OneofDescriptorProto());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2495,6 +2985,24 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(ref pb::CodedOutputWriter output) {
+      if (HasName) {
+        output.WriteRawTag(10);
+        output.WriteString(Name);
+      }
+      if (HasOptions) {
+        output.WriteRawTag(18);
+        output.WriteMessage(Options);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
@@ -2550,12 +3058,42 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(ref pb::CodedInputReader input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            Name = input.ReadString();
+            break;
+          }
+          case 18: {
+            if (!HasOptions) {
+              Options = new global::Google.Protobuf.Reflection.OneofOptions();
+            }
+            input.ReadMessage(Options);
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
   }
 
   /// <summary>
   /// Describes an enum type.
   /// </summary>
-  public sealed partial class EnumDescriptorProto : pb::IMessage<EnumDescriptorProto> {
+  public sealed partial class EnumDescriptorProto : pb::IMessage<EnumDescriptorProto>
+  #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    , pb::IBufferMessage
+  #endif
+   {
     private static readonly pb::MessageParser<EnumDescriptorProto> _parser = new pb::MessageParser<EnumDescriptorProto>(() => new EnumDescriptorProto());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2734,6 +3272,27 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(ref pb::CodedOutputWriter output) {
+      if (HasName) {
+        output.WriteRawTag(10);
+        output.WriteString(Name);
+      }
+      value_.WriteTo(ref output, _repeated_value_codec);
+      if (HasOptions) {
+        output.WriteRawTag(26);
+        output.WriteMessage(Options);
+      }
+      reservedRange_.WriteTo(ref output, _repeated_reservedRange_codec);
+      reservedName_.WriteTo(ref output, _repeated_reservedName_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
@@ -2807,6 +3366,44 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(ref pb::CodedInputReader input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            Name = input.ReadString();
+            break;
+          }
+          case 18: {
+            value_.AddEntriesFrom(ref input, _repeated_value_codec);
+            break;
+          }
+          case 26: {
+            if (!HasOptions) {
+              Options = new global::Google.Protobuf.Reflection.EnumOptions();
+            }
+            input.ReadMessage(Options);
+            break;
+          }
+          case 34: {
+            reservedRange_.AddEntriesFrom(ref input, _repeated_reservedRange_codec);
+            break;
+          }
+          case 42: {
+            reservedName_.AddEntriesFrom(ref input, _repeated_reservedName_codec);
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
     #region Nested types
     /// <summary>Container for nested types declared in the EnumDescriptorProto message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2819,7 +3416,11 @@ namespace Google.Protobuf.Reflection {
       /// is inclusive such that it can appropriately represent the entire int32
       /// domain.
       /// </summary>
-      public sealed partial class EnumReservedRange : pb::IMessage<EnumReservedRange> {
+      public sealed partial class EnumReservedRange : pb::IMessage<EnumReservedRange>
+      #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+        , pb::IBufferMessage
+      #endif
+       {
         private static readonly pb::MessageParser<EnumReservedRange> _parser = new pb::MessageParser<EnumReservedRange>(() => new EnumReservedRange());
         private pb::UnknownFieldSet _unknownFields;
         private int _hasBits0;
@@ -2959,6 +3560,24 @@ namespace Google.Protobuf.Reflection {
           }
         }
 
+
+        #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void WriteTo(ref pb::CodedOutputWriter output) {
+          if (HasStart) {
+            output.WriteRawTag(8);
+            output.WriteInt32(Start);
+          }
+          if (HasEnd) {
+            output.WriteRawTag(16);
+            output.WriteInt32(End);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
+
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
           int size = 0;
@@ -3008,6 +3627,29 @@ namespace Google.Protobuf.Reflection {
           }
         }
 
+
+        #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void MergeFrom(ref pb::CodedInputReader input) {
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+                break;
+              case 8: {
+                Start = input.ReadInt32();
+                break;
+              }
+              case 16: {
+                End = input.ReadInt32();
+                break;
+              }
+            }
+          }
+        }
+        #endif
+
       }
 
     }
@@ -3018,7 +3660,11 @@ namespace Google.Protobuf.Reflection {
   /// <summary>
   /// Describes a value within an enum.
   /// </summary>
-  public sealed partial class EnumValueDescriptorProto : pb::IMessage<EnumValueDescriptorProto> {
+  public sealed partial class EnumValueDescriptorProto : pb::IMessage<EnumValueDescriptorProto>
+  #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    , pb::IBufferMessage
+  #endif
+   {
     private static readonly pb::MessageParser<EnumValueDescriptorProto> _parser = new pb::MessageParser<EnumValueDescriptorProto>(() => new EnumValueDescriptorProto());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
@@ -3179,6 +3825,28 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(ref pb::CodedOutputWriter output) {
+      if (HasName) {
+        output.WriteRawTag(10);
+        output.WriteString(Name);
+      }
+      if (HasNumber) {
+        output.WriteRawTag(16);
+        output.WriteInt32(Number);
+      }
+      if (HasOptions) {
+        output.WriteRawTag(26);
+        output.WriteMessage(Options);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
@@ -3244,12 +3912,46 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(ref pb::CodedInputReader input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            Name = input.ReadString();
+            break;
+          }
+          case 16: {
+            Number = input.ReadInt32();
+            break;
+          }
+          case 26: {
+            if (!HasOptions) {
+              Options = new global::Google.Protobuf.Reflection.EnumValueOptions();
+            }
+            input.ReadMessage(Options);
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
   }
 
   /// <summary>
   /// Describes a service.
   /// </summary>
-  public sealed partial class ServiceDescriptorProto : pb::IMessage<ServiceDescriptorProto> {
+  public sealed partial class ServiceDescriptorProto : pb::IMessage<ServiceDescriptorProto>
+  #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    , pb::IBufferMessage
+  #endif
+   {
     private static readonly pb::MessageParser<ServiceDescriptorProto> _parser = new pb::MessageParser<ServiceDescriptorProto>(() => new ServiceDescriptorProto());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3391,6 +4093,25 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(ref pb::CodedOutputWriter output) {
+      if (HasName) {
+        output.WriteRawTag(10);
+        output.WriteString(Name);
+      }
+      method_.WriteTo(ref output, _repeated_method_codec);
+      if (HasOptions) {
+        output.WriteRawTag(26);
+        output.WriteMessage(Options);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
@@ -3452,12 +4173,46 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(ref pb::CodedInputReader input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            Name = input.ReadString();
+            break;
+          }
+          case 18: {
+            method_.AddEntriesFrom(ref input, _repeated_method_codec);
+            break;
+          }
+          case 26: {
+            if (!HasOptions) {
+              Options = new global::Google.Protobuf.Reflection.ServiceOptions();
+            }
+            input.ReadMessage(Options);
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
   }
 
   /// <summary>
   /// Describes a method of a service.
   /// </summary>
-  public sealed partial class MethodDescriptorProto : pb::IMessage<MethodDescriptorProto> {
+  public sealed partial class MethodDescriptorProto : pb::IMessage<MethodDescriptorProto>
+  #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    , pb::IBufferMessage
+  #endif
+   {
     private static readonly pb::MessageParser<MethodDescriptorProto> _parser = new pb::MessageParser<MethodDescriptorProto>(() => new MethodDescriptorProto());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
@@ -3719,6 +4474,40 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(ref pb::CodedOutputWriter output) {
+      if (HasName) {
+        output.WriteRawTag(10);
+        output.WriteString(Name);
+      }
+      if (HasInputType) {
+        output.WriteRawTag(18);
+        output.WriteString(InputType);
+      }
+      if (HasOutputType) {
+        output.WriteRawTag(26);
+        output.WriteString(OutputType);
+      }
+      if (HasOptions) {
+        output.WriteRawTag(34);
+        output.WriteMessage(Options);
+      }
+      if (HasClientStreaming) {
+        output.WriteRawTag(40);
+        output.WriteBool(ClientStreaming);
+      }
+      if (HasServerStreaming) {
+        output.WriteRawTag(48);
+        output.WriteBool(ServerStreaming);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
@@ -3814,9 +4603,55 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(ref pb::CodedInputReader input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            Name = input.ReadString();
+            break;
+          }
+          case 18: {
+            InputType = input.ReadString();
+            break;
+          }
+          case 26: {
+            OutputType = input.ReadString();
+            break;
+          }
+          case 34: {
+            if (!HasOptions) {
+              Options = new global::Google.Protobuf.Reflection.MethodOptions();
+            }
+            input.ReadMessage(Options);
+            break;
+          }
+          case 40: {
+            ClientStreaming = input.ReadBool();
+            break;
+          }
+          case 48: {
+            ServerStreaming = input.ReadBool();
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
   }
 
-  public sealed partial class FileOptions : pb::IExtendableMessage<FileOptions> {
+  public sealed partial class FileOptions : pb::IExtendableMessage<FileOptions>
+  #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    , pb::IBufferMessage
+  #endif
+   {
     private static readonly pb::MessageParser<FileOptions> _parser = new pb::MessageParser<FileOptions>(() => new FileOptions());
     private pb::UnknownFieldSet _unknownFields;
     internal pb::ExtensionSet<FileOptions> _extensions;
@@ -4624,6 +5459,100 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(ref pb::CodedOutputWriter output) {
+      if (HasJavaPackage) {
+        output.WriteRawTag(10);
+        output.WriteString(JavaPackage);
+      }
+      if (HasJavaOuterClassname) {
+        output.WriteRawTag(66);
+        output.WriteString(JavaOuterClassname);
+      }
+      if (HasOptimizeFor) {
+        output.WriteRawTag(72);
+        output.WriteEnum((int) OptimizeFor);
+      }
+      if (HasJavaMultipleFiles) {
+        output.WriteRawTag(80);
+        output.WriteBool(JavaMultipleFiles);
+      }
+      if (HasGoPackage) {
+        output.WriteRawTag(90);
+        output.WriteString(GoPackage);
+      }
+      if (HasCcGenericServices) {
+        output.WriteRawTag(128, 1);
+        output.WriteBool(CcGenericServices);
+      }
+      if (HasJavaGenericServices) {
+        output.WriteRawTag(136, 1);
+        output.WriteBool(JavaGenericServices);
+      }
+      if (HasPyGenericServices) {
+        output.WriteRawTag(144, 1);
+        output.WriteBool(PyGenericServices);
+      }
+      if (HasJavaGenerateEqualsAndHash) {
+        output.WriteRawTag(160, 1);
+        output.WriteBool(JavaGenerateEqualsAndHash);
+      }
+      if (HasDeprecated) {
+        output.WriteRawTag(184, 1);
+        output.WriteBool(Deprecated);
+      }
+      if (HasJavaStringCheckUtf8) {
+        output.WriteRawTag(216, 1);
+        output.WriteBool(JavaStringCheckUtf8);
+      }
+      if (HasCcEnableArenas) {
+        output.WriteRawTag(248, 1);
+        output.WriteBool(CcEnableArenas);
+      }
+      if (HasObjcClassPrefix) {
+        output.WriteRawTag(162, 2);
+        output.WriteString(ObjcClassPrefix);
+      }
+      if (HasCsharpNamespace) {
+        output.WriteRawTag(170, 2);
+        output.WriteString(CsharpNamespace);
+      }
+      if (HasSwiftPrefix) {
+        output.WriteRawTag(186, 2);
+        output.WriteString(SwiftPrefix);
+      }
+      if (HasPhpClassPrefix) {
+        output.WriteRawTag(194, 2);
+        output.WriteString(PhpClassPrefix);
+      }
+      if (HasPhpNamespace) {
+        output.WriteRawTag(202, 2);
+        output.WriteString(PhpNamespace);
+      }
+      if (HasPhpGenericServices) {
+        output.WriteRawTag(208, 2);
+        output.WriteBool(PhpGenericServices);
+      }
+      if (HasPhpMetadataNamespace) {
+        output.WriteRawTag(226, 2);
+        output.WriteString(PhpMetadataNamespace);
+      }
+      if (HasRubyPackage) {
+        output.WriteRawTag(234, 2);
+        output.WriteString(RubyPackage);
+      }
+      uninterpretedOption_.WriteTo(ref output, _repeated_uninterpretedOption_codec);
+      if (_extensions != null) {
+        _extensions.WriteTo(ref output);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
@@ -4865,6 +5794,107 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(ref pb::CodedInputReader input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            if (!pb::ExtensionSet.TryMergeFieldFrom(ref _extensions, ref input)) {
+              _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            }
+            break;
+          case 10: {
+            JavaPackage = input.ReadString();
+            break;
+          }
+          case 66: {
+            JavaOuterClassname = input.ReadString();
+            break;
+          }
+          case 72: {
+            OptimizeFor = (global::Google.Protobuf.Reflection.FileOptions.Types.OptimizeMode) input.ReadEnum();
+            break;
+          }
+          case 80: {
+            JavaMultipleFiles = input.ReadBool();
+            break;
+          }
+          case 90: {
+            GoPackage = input.ReadString();
+            break;
+          }
+          case 128: {
+            CcGenericServices = input.ReadBool();
+            break;
+          }
+          case 136: {
+            JavaGenericServices = input.ReadBool();
+            break;
+          }
+          case 144: {
+            PyGenericServices = input.ReadBool();
+            break;
+          }
+          case 160: {
+            JavaGenerateEqualsAndHash = input.ReadBool();
+            break;
+          }
+          case 184: {
+            Deprecated = input.ReadBool();
+            break;
+          }
+          case 216: {
+            JavaStringCheckUtf8 = input.ReadBool();
+            break;
+          }
+          case 248: {
+            CcEnableArenas = input.ReadBool();
+            break;
+          }
+          case 290: {
+            ObjcClassPrefix = input.ReadString();
+            break;
+          }
+          case 298: {
+            CsharpNamespace = input.ReadString();
+            break;
+          }
+          case 314: {
+            SwiftPrefix = input.ReadString();
+            break;
+          }
+          case 322: {
+            PhpClassPrefix = input.ReadString();
+            break;
+          }
+          case 330: {
+            PhpNamespace = input.ReadString();
+            break;
+          }
+          case 336: {
+            PhpGenericServices = input.ReadBool();
+            break;
+          }
+          case 354: {
+            PhpMetadataNamespace = input.ReadString();
+            break;
+          }
+          case 362: {
+            RubyPackage = input.ReadString();
+            break;
+          }
+          case 7994: {
+            uninterpretedOption_.AddEntriesFrom(ref input, _repeated_uninterpretedOption_codec);
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
     public TValue GetExtension<TValue>(pb::Extension<FileOptions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
@@ -4914,7 +5944,11 @@ namespace Google.Protobuf.Reflection {
 
   }
 
-  public sealed partial class MessageOptions : pb::IExtendableMessage<MessageOptions> {
+  public sealed partial class MessageOptions : pb::IExtendableMessage<MessageOptions>
+  #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    , pb::IBufferMessage
+  #endif
+   {
     private static readonly pb::MessageParser<MessageOptions> _parser = new pb::MessageParser<MessageOptions>(() => new MessageOptions());
     private pb::UnknownFieldSet _unknownFields;
     internal pb::ExtensionSet<MessageOptions> _extensions;
@@ -5193,6 +6227,36 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(ref pb::CodedOutputWriter output) {
+      if (HasMessageSetWireFormat) {
+        output.WriteRawTag(8);
+        output.WriteBool(MessageSetWireFormat);
+      }
+      if (HasNoStandardDescriptorAccessor) {
+        output.WriteRawTag(16);
+        output.WriteBool(NoStandardDescriptorAccessor);
+      }
+      if (HasDeprecated) {
+        output.WriteRawTag(24);
+        output.WriteBool(Deprecated);
+      }
+      if (HasMapEntry) {
+        output.WriteRawTag(56);
+        output.WriteBool(MapEntry);
+      }
+      uninterpretedOption_.WriteTo(ref output, _repeated_uninterpretedOption_codec);
+      if (_extensions != null) {
+        _extensions.WriteTo(ref output);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
@@ -5274,6 +6338,43 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(ref pb::CodedInputReader input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            if (!pb::ExtensionSet.TryMergeFieldFrom(ref _extensions, ref input)) {
+              _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            }
+            break;
+          case 8: {
+            MessageSetWireFormat = input.ReadBool();
+            break;
+          }
+          case 16: {
+            NoStandardDescriptorAccessor = input.ReadBool();
+            break;
+          }
+          case 24: {
+            Deprecated = input.ReadBool();
+            break;
+          }
+          case 56: {
+            MapEntry = input.ReadBool();
+            break;
+          }
+          case 7994: {
+            uninterpretedOption_.AddEntriesFrom(ref input, _repeated_uninterpretedOption_codec);
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
     public TValue GetExtension<TValue>(pb::Extension<MessageOptions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
@@ -5298,7 +6399,11 @@ namespace Google.Protobuf.Reflection {
 
   }
 
-  public sealed partial class FieldOptions : pb::IExtendableMessage<FieldOptions> {
+  public sealed partial class FieldOptions : pb::IExtendableMessage<FieldOptions>
+  #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    , pb::IBufferMessage
+  #endif
+   {
     private static readonly pb::MessageParser<FieldOptions> _parser = new pb::MessageParser<FieldOptions>(() => new FieldOptions());
     private pb::UnknownFieldSet _unknownFields;
     internal pb::ExtensionSet<FieldOptions> _extensions;
@@ -5649,6 +6754,44 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(ref pb::CodedOutputWriter output) {
+      if (HasCtype) {
+        output.WriteRawTag(8);
+        output.WriteEnum((int) Ctype);
+      }
+      if (HasPacked) {
+        output.WriteRawTag(16);
+        output.WriteBool(Packed);
+      }
+      if (HasDeprecated) {
+        output.WriteRawTag(24);
+        output.WriteBool(Deprecated);
+      }
+      if (HasLazy) {
+        output.WriteRawTag(40);
+        output.WriteBool(Lazy);
+      }
+      if (HasJstype) {
+        output.WriteRawTag(48);
+        output.WriteEnum((int) Jstype);
+      }
+      if (HasWeak) {
+        output.WriteRawTag(80);
+        output.WriteBool(Weak);
+      }
+      uninterpretedOption_.WriteTo(ref output, _repeated_uninterpretedOption_codec);
+      if (_extensions != null) {
+        _extensions.WriteTo(ref output);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
@@ -5750,6 +6893,51 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(ref pb::CodedInputReader input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            if (!pb::ExtensionSet.TryMergeFieldFrom(ref _extensions, ref input)) {
+              _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            }
+            break;
+          case 8: {
+            Ctype = (global::Google.Protobuf.Reflection.FieldOptions.Types.CType) input.ReadEnum();
+            break;
+          }
+          case 16: {
+            Packed = input.ReadBool();
+            break;
+          }
+          case 24: {
+            Deprecated = input.ReadBool();
+            break;
+          }
+          case 40: {
+            Lazy = input.ReadBool();
+            break;
+          }
+          case 48: {
+            Jstype = (global::Google.Protobuf.Reflection.FieldOptions.Types.JSType) input.ReadEnum();
+            break;
+          }
+          case 80: {
+            Weak = input.ReadBool();
+            break;
+          }
+          case 7994: {
+            uninterpretedOption_.AddEntriesFrom(ref input, _repeated_uninterpretedOption_codec);
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
     public TValue GetExtension<TValue>(pb::Extension<FieldOptions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
@@ -5805,7 +6993,11 @@ namespace Google.Protobuf.Reflection {
 
   }
 
-  public sealed partial class OneofOptions : pb::IExtendableMessage<OneofOptions> {
+  public sealed partial class OneofOptions : pb::IExtendableMessage<OneofOptions>
+  #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    , pb::IBufferMessage
+  #endif
+   {
     private static readonly pb::MessageParser<OneofOptions> _parser = new pb::MessageParser<OneofOptions>(() => new OneofOptions());
     private pb::UnknownFieldSet _unknownFields;
     internal pb::ExtensionSet<OneofOptions> _extensions;
@@ -5904,6 +7096,20 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(ref pb::CodedOutputWriter output) {
+      uninterpretedOption_.WriteTo(ref output, _repeated_uninterpretedOption_codec);
+      if (_extensions != null) {
+        _extensions.WriteTo(ref output);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
@@ -5945,6 +7151,27 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(ref pb::CodedInputReader input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            if (!pb::ExtensionSet.TryMergeFieldFrom(ref _extensions, ref input)) {
+              _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            }
+            break;
+          case 7994: {
+            uninterpretedOption_.AddEntriesFrom(ref input, _repeated_uninterpretedOption_codec);
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
     public TValue GetExtension<TValue>(pb::Extension<OneofOptions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
@@ -5969,7 +7196,11 @@ namespace Google.Protobuf.Reflection {
 
   }
 
-  public sealed partial class EnumOptions : pb::IExtendableMessage<EnumOptions> {
+  public sealed partial class EnumOptions : pb::IExtendableMessage<EnumOptions>
+  #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    , pb::IBufferMessage
+  #endif
+   {
     private static readonly pb::MessageParser<EnumOptions> _parser = new pb::MessageParser<EnumOptions>(() => new EnumOptions());
     private pb::UnknownFieldSet _unknownFields;
     internal pb::ExtensionSet<EnumOptions> _extensions;
@@ -6142,6 +7373,28 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(ref pb::CodedOutputWriter output) {
+      if (HasAllowAlias) {
+        output.WriteRawTag(16);
+        output.WriteBool(AllowAlias);
+      }
+      if (HasDeprecated) {
+        output.WriteRawTag(24);
+        output.WriteBool(Deprecated);
+      }
+      uninterpretedOption_.WriteTo(ref output, _repeated_uninterpretedOption_codec);
+      if (_extensions != null) {
+        _extensions.WriteTo(ref output);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
@@ -6203,6 +7456,35 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(ref pb::CodedInputReader input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            if (!pb::ExtensionSet.TryMergeFieldFrom(ref _extensions, ref input)) {
+              _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            }
+            break;
+          case 16: {
+            AllowAlias = input.ReadBool();
+            break;
+          }
+          case 24: {
+            Deprecated = input.ReadBool();
+            break;
+          }
+          case 7994: {
+            uninterpretedOption_.AddEntriesFrom(ref input, _repeated_uninterpretedOption_codec);
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
     public TValue GetExtension<TValue>(pb::Extension<EnumOptions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
@@ -6227,7 +7509,11 @@ namespace Google.Protobuf.Reflection {
 
   }
 
-  public sealed partial class EnumValueOptions : pb::IExtendableMessage<EnumValueOptions> {
+  public sealed partial class EnumValueOptions : pb::IExtendableMessage<EnumValueOptions>
+  #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    , pb::IBufferMessage
+  #endif
+   {
     private static readonly pb::MessageParser<EnumValueOptions> _parser = new pb::MessageParser<EnumValueOptions>(() => new EnumValueOptions());
     private pb::UnknownFieldSet _unknownFields;
     internal pb::ExtensionSet<EnumValueOptions> _extensions;
@@ -6365,6 +7651,24 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(ref pb::CodedOutputWriter output) {
+      if (HasDeprecated) {
+        output.WriteRawTag(8);
+        output.WriteBool(Deprecated);
+      }
+      uninterpretedOption_.WriteTo(ref output, _repeated_uninterpretedOption_codec);
+      if (_extensions != null) {
+        _extensions.WriteTo(ref output);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
@@ -6416,6 +7720,31 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(ref pb::CodedInputReader input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            if (!pb::ExtensionSet.TryMergeFieldFrom(ref _extensions, ref input)) {
+              _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            }
+            break;
+          case 8: {
+            Deprecated = input.ReadBool();
+            break;
+          }
+          case 7994: {
+            uninterpretedOption_.AddEntriesFrom(ref input, _repeated_uninterpretedOption_codec);
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
     public TValue GetExtension<TValue>(pb::Extension<EnumValueOptions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
@@ -6440,7 +7769,11 @@ namespace Google.Protobuf.Reflection {
 
   }
 
-  public sealed partial class ServiceOptions : pb::IExtendableMessage<ServiceOptions> {
+  public sealed partial class ServiceOptions : pb::IExtendableMessage<ServiceOptions>
+  #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    , pb::IBufferMessage
+  #endif
+   {
     private static readonly pb::MessageParser<ServiceOptions> _parser = new pb::MessageParser<ServiceOptions>(() => new ServiceOptions());
     private pb::UnknownFieldSet _unknownFields;
     internal pb::ExtensionSet<ServiceOptions> _extensions;
@@ -6578,6 +7911,24 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(ref pb::CodedOutputWriter output) {
+      if (HasDeprecated) {
+        output.WriteRawTag(136, 2);
+        output.WriteBool(Deprecated);
+      }
+      uninterpretedOption_.WriteTo(ref output, _repeated_uninterpretedOption_codec);
+      if (_extensions != null) {
+        _extensions.WriteTo(ref output);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
@@ -6629,6 +7980,31 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(ref pb::CodedInputReader input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            if (!pb::ExtensionSet.TryMergeFieldFrom(ref _extensions, ref input)) {
+              _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            }
+            break;
+          case 264: {
+            Deprecated = input.ReadBool();
+            break;
+          }
+          case 7994: {
+            uninterpretedOption_.AddEntriesFrom(ref input, _repeated_uninterpretedOption_codec);
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
     public TValue GetExtension<TValue>(pb::Extension<ServiceOptions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
@@ -6653,7 +8029,11 @@ namespace Google.Protobuf.Reflection {
 
   }
 
-  public sealed partial class MethodOptions : pb::IExtendableMessage<MethodOptions> {
+  public sealed partial class MethodOptions : pb::IExtendableMessage<MethodOptions>
+  #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    , pb::IBufferMessage
+  #endif
+   {
     private static readonly pb::MessageParser<MethodOptions> _parser = new pb::MessageParser<MethodOptions>(() => new MethodOptions());
     private pb::UnknownFieldSet _unknownFields;
     internal pb::ExtensionSet<MethodOptions> _extensions;
@@ -6822,6 +8202,28 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(ref pb::CodedOutputWriter output) {
+      if (HasDeprecated) {
+        output.WriteRawTag(136, 2);
+        output.WriteBool(Deprecated);
+      }
+      if (HasIdempotencyLevel) {
+        output.WriteRawTag(144, 2);
+        output.WriteEnum((int) IdempotencyLevel);
+      }
+      uninterpretedOption_.WriteTo(ref output, _repeated_uninterpretedOption_codec);
+      if (_extensions != null) {
+        _extensions.WriteTo(ref output);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
@@ -6883,6 +8285,35 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(ref pb::CodedInputReader input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            if (!pb::ExtensionSet.TryMergeFieldFrom(ref _extensions, ref input)) {
+              _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            }
+            break;
+          case 264: {
+            Deprecated = input.ReadBool();
+            break;
+          }
+          case 272: {
+            IdempotencyLevel = (global::Google.Protobuf.Reflection.MethodOptions.Types.IdempotencyLevel) input.ReadEnum();
+            break;
+          }
+          case 7994: {
+            uninterpretedOption_.AddEntriesFrom(ref input, _repeated_uninterpretedOption_codec);
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
     public TValue GetExtension<TValue>(pb::Extension<MethodOptions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
@@ -6939,7 +8370,11 @@ namespace Google.Protobuf.Reflection {
   /// or produced by Descriptor::CopyTo()) will never have UninterpretedOptions
   /// in them.
   /// </summary>
-  public sealed partial class UninterpretedOption : pb::IMessage<UninterpretedOption> {
+  public sealed partial class UninterpretedOption : pb::IMessage<UninterpretedOption>
+  #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    , pb::IBufferMessage
+  #endif
+   {
     private static readonly pb::MessageParser<UninterpretedOption> _parser = new pb::MessageParser<UninterpretedOption>(() => new UninterpretedOption());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
@@ -7212,6 +8647,41 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(ref pb::CodedOutputWriter output) {
+      name_.WriteTo(ref output, _repeated_name_codec);
+      if (HasIdentifierValue) {
+        output.WriteRawTag(26);
+        output.WriteString(IdentifierValue);
+      }
+      if (HasPositiveIntValue) {
+        output.WriteRawTag(32);
+        output.WriteUInt64(PositiveIntValue);
+      }
+      if (HasNegativeIntValue) {
+        output.WriteRawTag(40);
+        output.WriteInt64(NegativeIntValue);
+      }
+      if (HasDoubleValue) {
+        output.WriteRawTag(49);
+        output.WriteDouble(DoubleValue);
+      }
+      if (HasStringValue) {
+        output.WriteRawTag(58);
+        output.WriteBytes(StringValue);
+      }
+      if (HasAggregateValue) {
+        output.WriteRawTag(66);
+        output.WriteString(AggregateValue);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
@@ -7307,6 +8777,49 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(ref pb::CodedInputReader input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 18: {
+            name_.AddEntriesFrom(ref input, _repeated_name_codec);
+            break;
+          }
+          case 26: {
+            IdentifierValue = input.ReadString();
+            break;
+          }
+          case 32: {
+            PositiveIntValue = input.ReadUInt64();
+            break;
+          }
+          case 40: {
+            NegativeIntValue = input.ReadInt64();
+            break;
+          }
+          case 49: {
+            DoubleValue = input.ReadDouble();
+            break;
+          }
+          case 58: {
+            StringValue = input.ReadBytes();
+            break;
+          }
+          case 66: {
+            AggregateValue = input.ReadString();
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
     #region Nested types
     /// <summary>Container for nested types declared in the UninterpretedOption message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -7318,7 +8831,11 @@ namespace Google.Protobuf.Reflection {
       /// E.g.,{ ["foo", false], ["bar.baz", true], ["qux", false] } represents
       /// "foo.(bar.baz).qux".
       /// </summary>
-      public sealed partial class NamePart : pb::IMessage<NamePart> {
+      public sealed partial class NamePart : pb::IMessage<NamePart>
+      #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+        , pb::IBufferMessage
+      #endif
+       {
         private static readonly pb::MessageParser<NamePart> _parser = new pb::MessageParser<NamePart>(() => new NamePart());
         private pb::UnknownFieldSet _unknownFields;
         private int _hasBits0;
@@ -7451,6 +8968,24 @@ namespace Google.Protobuf.Reflection {
           }
         }
 
+
+        #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void WriteTo(ref pb::CodedOutputWriter output) {
+          if (HasNamePart_) {
+            output.WriteRawTag(10);
+            output.WriteString(NamePart_);
+          }
+          if (HasIsExtension) {
+            output.WriteRawTag(16);
+            output.WriteBool(IsExtension);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
+
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
           int size = 0;
@@ -7500,6 +9035,29 @@ namespace Google.Protobuf.Reflection {
           }
         }
 
+
+        #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void MergeFrom(ref pb::CodedInputReader input) {
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+                break;
+              case 10: {
+                NamePart_ = input.ReadString();
+                break;
+              }
+              case 16: {
+                IsExtension = input.ReadBool();
+                break;
+              }
+            }
+          }
+        }
+        #endif
+
       }
 
     }
@@ -7511,7 +9069,11 @@ namespace Google.Protobuf.Reflection {
   /// Encapsulates information about the original source file from which a
   /// FileDescriptorProto was generated.
   /// </summary>
-  public sealed partial class SourceCodeInfo : pb::IMessage<SourceCodeInfo> {
+  public sealed partial class SourceCodeInfo : pb::IMessage<SourceCodeInfo>
+  #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    , pb::IBufferMessage
+  #endif
+   {
     private static readonly pb::MessageParser<SourceCodeInfo> _parser = new pb::MessageParser<SourceCodeInfo>(() => new SourceCodeInfo());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -7640,6 +9202,17 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(ref pb::CodedOutputWriter output) {
+      location_.WriteTo(ref output, _repeated_location_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
@@ -7675,11 +9248,34 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(ref pb::CodedInputReader input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            location_.AddEntriesFrom(ref input, _repeated_location_codec);
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
     #region Nested types
     /// <summary>Container for nested types declared in the SourceCodeInfo message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static partial class Types {
-      public sealed partial class Location : pb::IMessage<Location> {
+      public sealed partial class Location : pb::IMessage<Location>
+      #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+        , pb::IBufferMessage
+      #endif
+       {
         private static readonly pb::MessageParser<Location> _parser = new pb::MessageParser<Location>(() => new Location());
         private pb::UnknownFieldSet _unknownFields;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -7932,6 +9528,27 @@ namespace Google.Protobuf.Reflection {
           }
         }
 
+
+        #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void WriteTo(ref pb::CodedOutputWriter output) {
+          path_.WriteTo(ref output, _repeated_path_codec);
+          span_.WriteTo(ref output, _repeated_span_codec);
+          if (HasLeadingComments) {
+            output.WriteRawTag(26);
+            output.WriteString(LeadingComments);
+          }
+          if (HasTrailingComments) {
+            output.WriteRawTag(34);
+            output.WriteString(TrailingComments);
+          }
+          leadingDetachedComments_.WriteTo(ref output, _repeated_leadingDetachedComments_codec);
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
+
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
           int size = 0;
@@ -8001,6 +9618,43 @@ namespace Google.Protobuf.Reflection {
           }
         }
 
+
+        #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void MergeFrom(ref pb::CodedInputReader input) {
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+                break;
+              case 10:
+              case 8: {
+                path_.AddEntriesFrom(ref input, _repeated_path_codec);
+                break;
+              }
+              case 18:
+              case 16: {
+                span_.AddEntriesFrom(ref input, _repeated_span_codec);
+                break;
+              }
+              case 26: {
+                LeadingComments = input.ReadString();
+                break;
+              }
+              case 34: {
+                TrailingComments = input.ReadString();
+                break;
+              }
+              case 50: {
+                leadingDetachedComments_.AddEntriesFrom(ref input, _repeated_leadingDetachedComments_codec);
+                break;
+              }
+            }
+          }
+        }
+        #endif
+
       }
 
     }
@@ -8013,7 +9667,11 @@ namespace Google.Protobuf.Reflection {
   /// file. A GeneratedCodeInfo message is associated with only one generated
   /// source file, but may contain references to different source .proto files.
   /// </summary>
-  public sealed partial class GeneratedCodeInfo : pb::IMessage<GeneratedCodeInfo> {
+  public sealed partial class GeneratedCodeInfo : pb::IMessage<GeneratedCodeInfo>
+  #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    , pb::IBufferMessage
+  #endif
+   {
     private static readonly pb::MessageParser<GeneratedCodeInfo> _parser = new pb::MessageParser<GeneratedCodeInfo>(() => new GeneratedCodeInfo());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -8101,6 +9759,17 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(ref pb::CodedOutputWriter output) {
+      annotation_.WriteTo(ref output, _repeated_annotation_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
@@ -8136,11 +9805,34 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+
+    #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(ref pb::CodedInputReader input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            annotation_.AddEntriesFrom(ref input, _repeated_annotation_codec);
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
     #region Nested types
     /// <summary>Container for nested types declared in the GeneratedCodeInfo message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static partial class Types {
-      public sealed partial class Annotation : pb::IMessage<Annotation> {
+      public sealed partial class Annotation : pb::IMessage<Annotation>
+      #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+        , pb::IBufferMessage
+      #endif
+       {
         private static readonly pb::MessageParser<Annotation> _parser = new pb::MessageParser<Annotation>(() => new Annotation());
         private pb::UnknownFieldSet _unknownFields;
         private int _hasBits0;
@@ -8334,6 +10026,29 @@ namespace Google.Protobuf.Reflection {
           }
         }
 
+
+        #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void WriteTo(ref pb::CodedOutputWriter output) {
+          path_.WriteTo(ref output, _repeated_path_codec);
+          if (HasSourceFile) {
+            output.WriteRawTag(18);
+            output.WriteString(SourceFile);
+          }
+          if (HasBegin) {
+            output.WriteRawTag(24);
+            output.WriteInt32(Begin);
+          }
+          if (HasEnd) {
+            output.WriteRawTag(32);
+            output.WriteInt32(End);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
+
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
           int size = 0;
@@ -8399,6 +10114,38 @@ namespace Google.Protobuf.Reflection {
             }
           }
         }
+
+
+        #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void MergeFrom(ref pb::CodedInputReader input) {
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+                break;
+              case 10:
+              case 8: {
+                path_.AddEntriesFrom(ref input, _repeated_path_codec);
+                break;
+              }
+              case 18: {
+                SourceFile = input.ReadString();
+                break;
+              }
+              case 24: {
+                Begin = input.ReadInt32();
+                break;
+              }
+              case 32: {
+                End = input.ReadInt32();
+                break;
+              }
+            }
+          }
+        }
+        #endif
 
       }
 
