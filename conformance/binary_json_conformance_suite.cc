@@ -681,6 +681,20 @@ void BinaryAndJsonConformanceSuite::TestUnknownMessage(
 }
 
 void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
+  // Hack to get the list of test failures based on whether
+  // GOOGLE3_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER is enabled or not.
+  conformance::FailureSet failure_set;
+  ConformanceRequest req;
+  ConformanceResponse res;
+  req.set_message_type(failure_set.GetTypeName());
+  req.set_protobuf_payload("");
+  req.set_requested_output_format(conformance::WireFormat::PROTOBUF);
+  RunTest("FindFailures", req, &res);
+  GOOGLE_CHECK(failure_set.MergeFromString(res.protobuf_payload()));
+  for (const string& failure : failure_set.failure()) {
+    AddExpectedFailedTest(failure);
+  }
+
   type_resolver_.reset(NewTypeResolverForDescriptorPool(
       kTypeUrlPrefix, DescriptorPool::generated_pool()));
   type_url_ = GetTypeUrl(TestAllTypesProto3::descriptor());

@@ -33,7 +33,6 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
 #include <algorithm>
-#include <google/protobuf/stubs/hash.h>
 #include <limits>
 #include <vector>
 #include <sstream>
@@ -44,7 +43,6 @@
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/stubs/substitute.h>
 
 #include <google/protobuf/compiler/csharp/csharp_field_base.h>
 #include <google/protobuf/compiler/csharp/csharp_enum_field.h>
@@ -198,7 +196,7 @@ std::string ShoutyToPascalCase(const std::string& input) {
     char current = input[i];
     if (!ascii_isalnum(current)) {
       previous = current;
-      continue;      
+      continue;
     }
     if (!ascii_isalnum(previous)) {
       result += ascii_toupper(current);
@@ -228,7 +226,7 @@ std::string TryRemovePrefix(const std::string& prefix, const std::string& value)
       prefix_to_match += ascii_tolower(prefix[i]);
     }
   }
-  
+
   // This keeps track of how much of value we've consumed
   size_t prefix_index, value_index;
   for (prefix_index = 0, value_index = 0;
@@ -355,12 +353,10 @@ std::string GetPropertyName(const FieldDescriptor* descriptor) {
   return property_name;
 }
 
-std::string GetOutputFile(
-    const google::protobuf::FileDescriptor* descriptor,
-    const std::string file_extension,
-    const bool generate_directories,
-    const std::string base_namespace,
-    string* error) {
+std::string GetOutputFile(const FileDescriptor* descriptor,
+                          const std::string file_extension,
+                          const bool generate_directories,
+                          const std::string base_namespace, string* error) {
   string relative_filename = GetFileNameBase(descriptor) + file_extension;
   if (!generate_directories) {
     return relative_filename;

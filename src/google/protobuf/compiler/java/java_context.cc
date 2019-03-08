@@ -59,9 +59,9 @@ namespace {
 // Whether two fields have conflicting accessors (assuming name1 and name2
 // are different). name1 and name2 are field1 and field2's camel-case name
 // respectively.
-bool IsConflicting(const FieldDescriptor* field1, const string& name1,
-                   const FieldDescriptor* field2, const string& name2,
-                   string* info) {
+bool IsConflicting(const FieldDescriptor* field1, const std::string& name1,
+                   const FieldDescriptor* field2, const std::string& name2,
+                   std::string* info) {
   if (field1->is_repeated()) {
     if (field2->is_repeated()) {
       // Both fields are repeated.
@@ -129,13 +129,13 @@ void Context::InitializeFieldGeneratorInfoForFields(
   // Find out all fields that conflict with some other field in the same
   // message.
   std::vector<bool> is_conflict(fields.size());
-  std::vector<string> conflict_reason(fields.size());
+  std::vector<std::string> conflict_reason(fields.size());
   for (int i = 0; i < fields.size(); ++i) {
     const FieldDescriptor* field = fields[i];
-    const string& name = UnderscoresToCapitalizedCamelCase(field);
+    const std::string& name = UnderscoresToCapitalizedCamelCase(field);
     for (int j = i + 1; j < fields.size(); ++j) {
       const FieldDescriptor* other = fields[j];
-      const string& other_name = UnderscoresToCapitalizedCamelCase(other);
+      const std::string& other_name = UnderscoresToCapitalizedCamelCase(other);
       if (name == other_name) {
         is_conflict[i] = is_conflict[j] = true;
         conflict_reason[i] = conflict_reason[j] =

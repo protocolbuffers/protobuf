@@ -88,7 +88,7 @@ void util_init(TSRMLS_D) {
 // Type checking/conversion.
 // -----------------------------------------------------------------------------
 
-// This is modified from is_numeric_string in zend_operators.h. The behavior of 
+// This is modified from is_numeric_string in zend_operators.h. The behavior of
 // this function is the same as is_numeric_string, except that this takes
 // int64_t as input instead of long.
 static zend_uchar convert_numeric_string(
@@ -102,7 +102,7 @@ static zend_uchar convert_numeric_string(
     return IS_NULL;
   }
 
-  while (*str == ' ' || *str == '\t' || *str == '\n' || 
+  while (*str == ' ' || *str == '\t' || *str == '\n' ||
          *str == '\r' || *str == '\v' || *str == '\f') {
     str++;
     length--;

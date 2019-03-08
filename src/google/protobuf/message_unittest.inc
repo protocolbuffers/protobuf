@@ -88,8 +88,8 @@ TEST(MESSAGE_TEST_NAME, SerializeHelpers) {
   TestUtil::SetAllFields(&message);
   std::stringstream stream;
 
-  string str1("foo");
-  string str2("bar");
+  std::string str1("foo");
+  std::string str2("bar");
 
   EXPECT_TRUE(message.SerializeToString(&str1));
   EXPECT_TRUE(message.AppendToString(&str2));
@@ -102,7 +102,7 @@ TEST(MESSAGE_TEST_NAME, SerializeHelpers) {
   EXPECT_TRUE(str2.substr(3) == str1);
 
   // GCC gives some sort of error if we try to just do stream.str() == str1.
-  string temp = stream.str();
+  std::string temp = stream.str();
   EXPECT_TRUE(temp == str1);
 
   EXPECT_TRUE(message.SerializeAsString() == str1);
@@ -118,7 +118,7 @@ TEST(MESSAGE_TEST_NAME, SerializeToBrokenOstream) {
 }
 
 TEST(MESSAGE_TEST_NAME, ParseFromFileDescriptor) {
-  string filename =
+  std::string filename =
       TestUtil::GetTestDataPath("net/proto2/internal/testdata/golden_message");
   int file = open(filename.c_str(), O_RDONLY | O_BINARY);
   ASSERT_GE(file, 0);
@@ -131,7 +131,7 @@ TEST(MESSAGE_TEST_NAME, ParseFromFileDescriptor) {
 }
 
 TEST(MESSAGE_TEST_NAME, ParsePackedFromFileDescriptor) {
-  string filename = TestUtil::GetTestDataPath(
+  std::string filename = TestUtil::GetTestDataPath(
       "net/proto2/internal/testdata/golden_packed_fields_message");
   int file = open(filename.c_str(), O_RDONLY | O_BINARY);
   ASSERT_GE(file, 0);
@@ -146,7 +146,7 @@ TEST(MESSAGE_TEST_NAME, ParsePackedFromFileDescriptor) {
 TEST(MESSAGE_TEST_NAME, ParseHelpers) {
   // TODO(kenton):  Test more helpers?  They're all two-liners so it seems
   //   like a waste of time.
-  string data;
+  std::string data;
 
   {
     // Set up.
@@ -173,7 +173,7 @@ TEST(MESSAGE_TEST_NAME, ParseHelpers) {
 
   {
     // Test ParseFromBoundedZeroCopyStream.
-    string data_with_junk(data);
+    std::string data_with_junk(data);
     data_with_junk.append("some junk on the end");
     io::ArrayInputStream stream(data_with_junk.data(), data_with_junk.size());
     UNITTEST::TestAllTypes message;
@@ -193,7 +193,7 @@ TEST(MESSAGE_TEST_NAME, ParseHelpers) {
 
 TEST(MESSAGE_TEST_NAME, ParseFailsIfNotInitialized) {
   UNITTEST::TestRequired message;
-  std::vector<string> errors;
+  std::vector<std::string> errors;
 
   {
     ScopedMemoryLog log;
@@ -203,7 +203,7 @@ TEST(MESSAGE_TEST_NAME, ParseFailsIfNotInitialized) {
 
   ASSERT_EQ(1, errors.size());
   EXPECT_EQ(
-      "Can't parse message of type \"" + string(UNITTEST_PACKAGE_NAME) +
+      "Can't parse message of type \"" + std::string(UNITTEST_PACKAGE_NAME) +
           ".TestRequired\" because it is missing required fields: a, b, c",
       errors[0]);
 }
@@ -241,10 +241,10 @@ TEST(MESSAGE_TEST_NAME, DynamicCastToGenerated) {
 
 TEST(MESSAGE_TEST_NAME, SerializeFailsIfNotInitialized) {
   UNITTEST::TestRequired message;
-  string data;
+  std::string data;
   EXPECT_DEBUG_DEATH(EXPECT_TRUE(message.SerializeToString(&data)),
                      "Can't serialize message of type \"" +
-                         string(UNITTEST_PACKAGE_NAME) +
+                         std::string(UNITTEST_PACKAGE_NAME) +
                          ".TestRequired\" because "
                          "it is missing required fields: a, b, c");
 }
@@ -252,8 +252,7 @@ TEST(MESSAGE_TEST_NAME, SerializeFailsIfNotInitialized) {
 TEST(MESSAGE_TEST_NAME, CheckInitialized) {
   UNITTEST::TestRequired message;
   EXPECT_DEATH(message.CheckInitialized(),
-               "Message of type \"" +
-                   string(UNITTEST_PACKAGE_NAME) +
+               "Message of type \"" + std::string(UNITTEST_PACKAGE_NAME) +
                    ".TestRequired\" is missing required "
                    "fields: a, b, c");
 }
@@ -261,12 +260,13 @@ TEST(MESSAGE_TEST_NAME, CheckInitialized) {
 #endif  // PROTOBUF_HAS_DEATH_TEST
 
 namespace {
-// An input stream that repeats a string's content for a number of times. It
-// helps us create a really large input without consuming too much memory. Used
-// to test the parsing behavior when the input size exceeds 2G or close to it.
+// An input stream that repeats a std::string's content for a number of times.
+// It helps us create a really large input without consuming too much memory.
+// Used to test the parsing behavior when the input size exceeds 2G or close to
+// it.
 class RepeatedInputStream : public io::ZeroCopyInputStream {
  public:
-  RepeatedInputStream(const string& data, size_t count)
+  RepeatedInputStream(const std::string& data, size_t count)
       : data_(data), count_(count), position_(0), total_byte_count_(0) {}
 
   virtual bool Next(const void** data, int* size) {
@@ -308,22 +308,22 @@ class RepeatedInputStream : public io::ZeroCopyInputStream {
   virtual int64 ByteCount() const { return total_byte_count_; }
 
  private:
-  string data_;
+  std::string data_;
   size_t count_;     // The number of strings that haven't been consuemd.
-  size_t position_;  // Position in the string for the next read.
+  size_t position_;  // Position in the std::string for the next read.
   int64 total_byte_count_;
 };
 }  // namespace
 
 TEST(MESSAGE_TEST_NAME, TestParseMessagesCloseTo2G) {
-  // Create a message with a large string field.
-  string value = string(64 * 1024 * 1024, 'x');
+  // Create a message with a large std::string field.
+  std::string value = std::string(64 * 1024 * 1024, 'x');
   UNITTEST::TestAllTypes message;
   message.set_optional_string(value);
 
   // Repeat this message in the input stream to make the total input size
   // close to 2G.
-  string data = message.SerializeAsString();
+  std::string data = message.SerializeAsString();
   size_t count = static_cast<size_t>(kint32max) / data.size();
   RepeatedInputStream input(data, count);
 
@@ -337,14 +337,14 @@ TEST(MESSAGE_TEST_NAME, TestParseMessagesCloseTo2G) {
 }
 
 TEST(MESSAGE_TEST_NAME, TestParseMessagesOver2G) {
-  // Create a message with a large string field.
-  string value = string(64 * 1024 * 1024, 'x');
+  // Create a message with a large std::string field.
+  std::string value = std::string(64 * 1024 * 1024, 'x');
   UNITTEST::TestAllTypes message;
   message.set_optional_string(value);
 
   // Repeat this message in the input stream to make the total input size
   // larger than 2G.
-  string data = message.SerializeAsString();
+  std::string data = message.SerializeAsString();
   size_t count = static_cast<size_t>(kint32max) / data.size() + 1;
   RepeatedInputStream input(data, count);
 
@@ -362,7 +362,7 @@ TEST(MESSAGE_TEST_NAME, BypassInitializationCheckOnSerialize) {
 
 TEST(MESSAGE_TEST_NAME, FindInitializationErrors) {
   UNITTEST::TestRequired message;
-  std::vector<string> errors;
+  std::vector<std::string> errors;
   message.FindInitializationErrors(&errors);
   ASSERT_EQ(3, errors.size());
   EXPECT_EQ("a", errors[0]);
@@ -391,7 +391,7 @@ TEST(MESSAGE_TEST_NAME, MessageIsStillValidAfterParseFails) {
   UNITTEST::TestAllTypes message;
 
   // 9 0xFFs for the "optional_uint64" field.
-  string invalid_data = "\x20\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF";
+  std::string invalid_data = "\x20\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF";
 
   EXPECT_FALSE(message.ParseFromString(invalid_data));
   message.Clear();
@@ -399,7 +399,7 @@ TEST(MESSAGE_TEST_NAME, MessageIsStillValidAfterParseFails) {
 
   // invalid data for field "optional_string". Length prefix is 1 but no
   // payload.
-  string invalid_string_data = "\x72\x01";
+  std::string invalid_string_data = "\x72\x01";
   {
     Arena arena;
     UNITTEST::TestAllTypes* arena_message =
@@ -462,7 +462,7 @@ TEST(MESSAGE_TEST_NAME, ParsingMerge) {
 
 #undef ASSIGN_REPEATED_GROUP
 
-  string buffer;
+  std::string buffer;
   generator.SerializeToString(&buffer);
   UNITTEST::TestParsingMerge parsing_merge;
   parsing_merge.ParseFromString(buffer);
@@ -571,14 +571,14 @@ TEST(MESSAGE_TEST_NAME, MOMIParserEdgeCases) {
   {
     UNITTEST::TestAllTypes msg;
     // Parser ends in last 16 bytes of buffer due to a 0.
-    string data;
+    std::string data;
     // 12 bytes of data
     for (int i = 0; i < 4; i++) data += "\370\1\1";
     // 13 byte is terminator
     data += '\0';  // Terminator
     // followed by the rest of the stream
     // space is ascii 32 so no end group
-    data += string(30, ' ');
+    data += std::string(30, ' ');
     io::ArrayInputStream zcis(data.data(), data.size(), 17);
     io::CodedInputStream cis(&zcis);
     EXPECT_TRUE(msg.MergePartialFromCodedStream(&cis));
@@ -589,10 +589,10 @@ TEST(MESSAGE_TEST_NAME, MOMIParserEdgeCases) {
     // Must use a message that is a group. Otherwise ending on a group end is
     // a failure.
     UNITTEST::TestAllTypes::OptionalGroup msg;
-    string data;
+    std::string data;
     for (int i = 0; i < 3; i++) data += "\370\1\1";
     data += '\14';  // Octal end-group tag 12 (1 * 8 + 4(
-    data += string(30, ' ');
+    data += std::string(30, ' ');
     io::ArrayInputStream zcis(data.data(), data.size(), 17);
     io::CodedInputStream cis(&zcis);
     EXPECT_TRUE(msg.MergePartialFromCodedStream(&cis));
@@ -604,10 +604,10 @@ TEST(MESSAGE_TEST_NAME, MOMIParserEdgeCases) {
     // a length delimited field.
     // a failure.
     UNITTEST::TestAllTypes::OptionalGroup msg;
-    string data;
+    std::string data;
     data += "\22\3foo";
     data += '\14';  // Octal end-group tag 12 (1 * 8 + 4(
-    data += string(30, ' ');
+    data += std::string(30, ' ');
     io::ArrayInputStream zcis(data.data(), data.size(), 17);
     io::CodedInputStream cis(&zcis);
     EXPECT_TRUE(msg.MergePartialFromCodedStream(&cis));
@@ -617,12 +617,12 @@ TEST(MESSAGE_TEST_NAME, MOMIParserEdgeCases) {
   {
     // Parser fails when ending on 0 if from ZeroCopyInputStream
     UNITTEST::TestAllTypes msg;
-    string data;
+    std::string data;
     // 12 bytes of data
     for (int i = 0; i < 4; i++) data += "\370\1\1";
     // 13 byte is terminator
     data += '\0';  // Terminator
-    data += string(30, ' ');
+    data += std::string(30, ' ');
     io::ArrayInputStream zcis(data.data(), data.size(), 17);
     EXPECT_FALSE(msg.ParsePartialFromZeroCopyStream(&zcis));
   }

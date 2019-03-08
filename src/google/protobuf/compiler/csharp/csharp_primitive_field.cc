@@ -31,7 +31,6 @@
 #include <sstream>
 
 #include <google/protobuf/compiler/code_generator.h>
-#include <google/protobuf/compiler/plugin.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/printer.h>
@@ -69,7 +68,7 @@ void PrimitiveFieldGenerator::GenerateMembers(io::Printer* printer) {
   // (Basically, should null-handling code be in the getter or the setter?)
   if (IsProto2(descriptor_->file())) {
     printer->Print(
-      variables_, 
+      variables_,
       "private readonly static $type_name$ $property_name$DefaultValue = $default_value$;\n\n");
   }
 
@@ -121,7 +120,7 @@ void PrimitiveFieldGenerator::GenerateMembers(io::Printer* printer) {
     printer->Print(variables_, "/// <summary>Gets whether the \"$descriptor_name$\" field is set</summary>\n");
     AddPublicMemberAttributes(printer);
     printer->Print(
-      variables_, 
+      variables_,
       "$access_level$ bool Has$property_name$ {\n"
       "  get { return ");
     if (IsNullable(descriptor_)) {

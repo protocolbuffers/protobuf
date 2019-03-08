@@ -33,7 +33,7 @@ class BenchmarkMethod
             (new $args[1]())->mergeFromString($payloads->offsetGet($i));
         }
     }
-    
+
     // $args: array of message
     static function serialize(&$args) {
         foreach ($args as &$temp_message) {
@@ -49,7 +49,7 @@ class Benchmark
     private $benchmark_time;
     private $total_bytes;
     private $coefficient;
-    
+
     public function __construct($benchmark_name, $args, $total_bytes,
         $benchmark_time = 5.0) {
             $this->args = $args;
@@ -58,7 +58,7 @@ class Benchmark
             $this->total_bytes = $total_bytes;
             $this->coefficient = pow (10, 0) / pow(2, 20);
     }
-    
+
     public function runBenchmark() {
         $t = $this->runBenchmarkWithTimes(1);
         $times = ceil($this->benchmark_time / $t);
@@ -66,7 +66,7 @@ class Benchmark
         ($times == 1 ? $t : $this->runBenchmarkWithTimes($times)) *
         $this->coefficient;
     }
-    
+
     private function runBenchmarkWithTimes($times) {
         $st = microtime(true);
         for ($i = 0; $i < $times; $i++) {
@@ -109,14 +109,14 @@ function runBenchmark($file, $behavior_prefix) {
         array_push($message_list, $new_message);
         $total_bytes += strlen($payloads->offsetGet($i));
     }
-    
+
     $parse_benchmark = new Benchmark(
         "\Google\Protobuf\Benchmark\BenchmarkMethod::parse",
         array($dataset, $message_name), $total_bytes);
     $serialize_benchmark = new Benchmark(
         "\Google\Protobuf\Benchmark\BenchmarkMethod::serialize",
         $message_list, $total_bytes);
-    
+
     return array(
         "filename" => $file,
         "benchmarks" => array(
@@ -139,7 +139,7 @@ foreach ($argv as $index => $arg) {
     if ($arg == "--json") {
         $json_output = true;
     } else if (strpos($arg, "--behavior_prefix") == 0) {
-        $behavior_prefix = str_replace("--behavior_prefix=", "", $arg);     
+        $behavior_prefix = str_replace("--behavior_prefix=", "", $arg);
     }
 }
 

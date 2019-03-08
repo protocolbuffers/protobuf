@@ -3,7 +3,7 @@
 
 This directory contains benchmarking schemas and data sets that you
 can use to test a variety of performance scenarios against your
-protobuf language runtime. If you are looking for performance 
+protobuf language runtime. If you are looking for performance
 numbers of officially support languages, see [here](
 https://github.com/protocolbuffers/protobuf/blob/master/docs/performance.md)
 
@@ -45,8 +45,8 @@ And you also need to make sure `pkg-config` is installed.
 
 ### Go
 Go protobufs are maintained at [github.com/golang/protobuf](
-http://github.com/golang/protobuf). If not done already, you need to install the 
-toolchain and the Go protoc-gen-go plugin for protoc. 
+http://github.com/golang/protobuf). If not done already, you need to install the
+toolchain and the Go protoc-gen-go plugin for protoc.
 
 To install protoc-gen-go, run:
 
@@ -59,7 +59,7 @@ The first command installs `protoc-gen-go` into the `bin` directory in your loca
 The second command adds the `bin` directory to your `PATH` so that `protoc` can locate the plugin later.
 
 ### PHP
-PHP benchmark's requirement is the same as PHP protobuf's requirements. The benchmark will automaticly 
+PHP benchmark's requirement is the same as PHP protobuf's requirements. The benchmark will automaticly
 include PHP protobuf's src and build the c extension if required.
 
 ### Node.js

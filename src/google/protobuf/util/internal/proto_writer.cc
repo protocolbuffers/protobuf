@@ -252,7 +252,7 @@ inline Status WriteBool(int field_number, const DataPiece& data,
 // Writes a BYTES field, including tag, to the stream.
 inline Status WriteBytes(int field_number, const DataPiece& data,
                          CodedOutputStream* stream) {
-  StatusOr<string> c = data.ToBytes();
+  StatusOr<std::string> c = data.ToBytes();
   if (c.ok()) {
     WireFormatLite::WriteBytes(field_number, c.ValueOrDie(), stream);
   }
@@ -262,7 +262,7 @@ inline Status WriteBytes(int field_number, const DataPiece& data,
 // Writes a STRING field, including tag, to the stream.
 inline Status WriteString(int field_number, const DataPiece& data,
                           CodedOutputStream* stream) {
-  StatusOr<string> s = data.ToString();
+  StatusOr<std::string> s = data.ToString();
   if (s.ok()) {
     WireFormatLite::WriteString(field_number, s.ValueOrDie(), stream);
   }
@@ -387,8 +387,8 @@ void ProtoWriter::ProtoElement::RegisterField(
   }
 }
 
-string ProtoWriter::ProtoElement::ToString() const {
-  string loc = "";
+std::string ProtoWriter::ProtoElement::ToString() const {
+  std::string loc = "";
 
   // first populate a stack with the nodes since we need to process them
   // from root to leaf when generating the string location
@@ -406,7 +406,7 @@ string ProtoWriter::ProtoElement::ToString() const {
 
     if (!ow_->IsRepeated(*(now->parent_field_)) ||
         now->parent()->parent_field_ != now->parent_field_) {
-      string name = now->parent_field_->name();
+      std::string name = now->parent_field_->name();
       int i = 0;
       while (i < name.size() && (ascii_isalnum(name[i]) || name[i] == '_')) ++i;
       if (i > 0 && i == name.size()) {  // safe field name

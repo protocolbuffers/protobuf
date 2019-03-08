@@ -4,6 +4,9 @@
 # and that the including class should define a 'proto_module' method which returns
 # the enclosing module of the proto message classes.
 module CommonTests
+  # Ruby 2.5 changed to raise FrozenError instead of RuntimeError
+  FrozenErrorType = Gem::Version.new(RUBY_VERSION) < Gem::Version.new('2.5') ? RuntimeError : FrozenError
+
   def test_defaults
     m = proto_module::TestMessage.new
     assert m.optional_int32 == 0
@@ -103,7 +106,7 @@ module CommonTests
     assert_equal 3, m.repeated_msg.first.sub_child.optional_int32
   end
 
-  def test_inspect
+  def test_inspect_eq_to_s
     m = proto_module::TestMessage.new(
       :optional_int32 => -42,
       :optional_enum => :A,
@@ -111,10 +114,12 @@ module CommonTests
       :repeated_string => ["hello", "there", "world"])
     expected = "<#{proto_module}::TestMessage: optional_int32: -42, optional_int64: 0, optional_uint32: 0, optional_uint64: 0, optional_bool: false, optional_float: 0.0, optional_double: 0.0, optional_string: \"\", optional_bytes: \"\", optional_msg: <#{proto_module}::TestMessage2: foo: 0>, optional_enum: :A, repeated_int32: [], repeated_int64: [], repeated_uint32: [], repeated_uint64: [], repeated_bool: [], repeated_float: [], repeated_double: [], repeated_string: [\"hello\", \"there\", \"world\"], repeated_bytes: [], repeated_msg: [], repeated_enum: []>"
     assert_equal expected, m.inspect
+    assert_equal expected, m.to_s
 
     m = proto_module::OneofMessage.new(:b => -42)
     expected = "<#{proto_module}::OneofMessage: a: \"\", b: -42, c: nil, d: :Default>"
     assert_equal expected, m.inspect
+    assert_equal expected, m.to_s
   end
 
   def test_hash
@@ -202,15 +207,7 @@ module CommonTests
 
     # strings are immutable so we can't do this, but serialize should catch it.
     m.optional_string = "asdf".encode!('UTF-8')
-    # Ruby 2.5 changed to raise FrozenError. However, assert_raise don't
-    # accept subclass.
-    ok = false
-    begin
-      m.optional_string.encode!('ASCII-8BIT')
-    rescue RuntimeError
-      ok = true
-    end
-    assert ok
+    assert_raise(FrozenErrorType) { m.optional_string.encode!('ASCII-8BIT') }
   end
 
   def test_rptfield_int32
@@ -706,6 +703,94 @@ module CommonTests
     assert proto_module::TestEnum::resolve(:C) == 3
   end
 
+  def test_enum_const_get_helpers
+    m = proto_module::TestMessage.new
+    assert_equal proto_module::TestEnum::Default, m.optional_enum_const
+    assert_equal proto_module::TestEnum.const_get(:Default), m.optional_enum_const
+
+    m = proto_module::TestMessage.new({optional_enum: proto_module::TestEnum::A})
+    assert_equal proto_module::TestEnum::A, m.optional_enum_const
+    assert_equal proto_module::TestEnum.const_get(:A), m.optional_enum_const
+
+    m = proto_module::TestMessage.new({optional_enum: proto_module::TestEnum::B})
+    assert_equal proto_module::TestEnum::B, m.optional_enum_const
+    assert_equal proto_module::TestEnum.const_get(:B), m.optional_enum_const
+
+    m = proto_module::TestMessage.new({optional_enum: proto_module::TestEnum::C})
+    assert_equal proto_module::TestEnum::C, m.optional_enum_const
+    assert_equal proto_module::TestEnum.const_get(:C), m.optional_enum_const
+
+    m = proto_module::TestMessage2.new({foo: 2})
+    assert_equal 2, m.foo
+    assert_raise(NoMethodError) { m.foo_ }
+    assert_raise(NoMethodError) { m.foo_X }
+    assert_raise(NoMethodError) { m.foo_XX }
+    assert_raise(NoMethodError) { m.foo_XXX }
+    assert_raise(NoMethodError) { m.foo_XXXX }
+    assert_raise(NoMethodError) { m.foo_XXXXX }
+    assert_raise(NoMethodError) { m.foo_XXXXXX }
+
+    m = proto_module::Enumer.new({optional_enum: :B})
+    assert_equal :B, m.optional_enum
+    assert_raise(NoMethodError) { m.optional_enum_ }
+    assert_raise(NoMethodError) { m.optional_enum_X }
+    assert_raise(NoMethodError) { m.optional_enum_XX }
+    assert_raise(NoMethodError) { m.optional_enum_XXX }
+    assert_raise(NoMethodError) { m.optional_enum_XXXX }
+    assert_raise(NoMethodError) { m.optional_enum_XXXXX }
+    assert_raise(NoMethodError) { m.optional_enum_XXXXXX }
+  end
+
+  def test_enum_getter
+    m = proto_module::Enumer.new(:optional_enum => :B, :repeated_enum => [:A, :C])
+
+    assert_equal :B, m.optional_enum
+    assert_equal 2, m.optional_enum_const
+    assert_equal proto_module::TestEnum::B, m.optional_enum_const
+    assert_equal [:A, :C], m.repeated_enum
+    assert_equal [1, 3], m.repeated_enum_const
+    assert_equal [proto_module::TestEnum::A, proto_module::TestEnum::C], m.repeated_enum_const
+  end
+
+  def test_enum_getter_oneof
+    m = proto_module::Enumer.new(:const => :C)
+
+    assert_equal :C, m.const
+    assert_equal 3, m.const_const
+    assert_equal proto_module::TestEnum::C, m.const_const
+  end
+
+  def test_enum_getter_only_enums
+    m = proto_module::Enumer.new(:optional_enum => :B, :a_const => 'thing')
+
+    assert_equal 'thing', m.a_const
+    assert_equal :B, m.optional_enum
+
+    assert_raise(NoMethodError) { m.a }
+    assert_raise(NoMethodError) { m.a_const_const }
+  end
+  
+  def test_repeated_push
+    m = proto_module::TestMessage.new
+
+    m.repeated_string += ['one']
+    m.repeated_string += %w[two three]
+    assert_equal %w[one two three], m.repeated_string
+
+    m.repeated_string.push *['four', 'five']
+    assert_equal %w[one two three four five], m.repeated_string
+
+    m.repeated_string.push 'six', 'seven'
+    assert_equal %w[one two three four five six seven], m.repeated_string
+
+    m = proto_module::TestMessage.new
+
+    m.repeated_msg += [proto_module::TestMessage2.new(:foo => 1), proto_module::TestMessage2.new(:foo => 2)]
+    m.repeated_msg += [proto_module::TestMessage2.new(:foo => 3)]
+    m.repeated_msg.push proto_module::TestMessage2.new(:foo => 4), proto_module::TestMessage2.new(:foo => 5)
+    assert_equal [1, 2, 3, 4, 5], m.repeated_msg.map {|x| x.foo}
+  end
+
   def test_parse_serialize
     m = proto_module::TestMessage.new(:optional_int32 => 42,
                                       :optional_string => "hello world",
@@ -1177,5 +1262,59 @@ module CommonTests
 
   def test_comparison_with_arbitrary_object
     assert proto_module::TestMessage.new != nil
+  end
+
+  def test_freeze
+    m = proto_module::TestMessage.new
+    m.optional_int32 = 10
+    m.freeze
+
+    frozen_error = assert_raise(FrozenErrorType) { m.optional_int32 = 20 }
+    assert_equal "can't modify frozen #{proto_module}::TestMessage", frozen_error.message
+    assert_equal 10, m.optional_int32
+    assert_equal true, m.frozen?
+
+    assert_raise(FrozenErrorType) { m.optional_int64 = 2 }
+    assert_raise(FrozenErrorType) { m.optional_uint32 = 3 }
+    assert_raise(FrozenErrorType) { m.optional_uint64 = 4 }
+    assert_raise(FrozenErrorType) { m.optional_bool = true }
+    assert_raise(FrozenErrorType) { m.optional_float = 6.0 }
+    assert_raise(FrozenErrorType) { m.optional_double = 7.0 }
+    assert_raise(FrozenErrorType) { m.optional_string = '8' }
+    assert_raise(FrozenErrorType) { m.optional_bytes = nil }
+    assert_raise(FrozenErrorType) { m.optional_msg = proto_module::TestMessage2.new }
+    assert_raise(FrozenErrorType) { m.optional_enum = :A }
+    assert_raise(FrozenErrorType) { m.repeated_int32 = 1 }
+    assert_raise(FrozenErrorType) { m.repeated_int64 = 2 }
+    assert_raise(FrozenErrorType) { m.repeated_uint32 = 3 }
+    assert_raise(FrozenErrorType) { m.repeated_uint64 = 4 }
+    assert_raise(FrozenErrorType) { m.repeated_bool = true }
+    assert_raise(FrozenErrorType) { m.repeated_float = 6.0 }
+    assert_raise(FrozenErrorType) { m.repeated_double = 7.0 }
+    assert_raise(FrozenErrorType) { m.repeated_string = '8' }
+    assert_raise(FrozenErrorType) { m.repeated_bytes = nil }
+    assert_raise(FrozenErrorType) { m.repeated_msg = proto_module::TestMessage2.new }
+    assert_raise(FrozenErrorType) { m.repeated_enum = :A }
+  end
+  
+  def test_eq
+    m1 = proto_module::TestMessage.new(:optional_string => 'foo', :repeated_string => ['bar1', 'bar2'])
+    m2 = proto_module::TestMessage.new(:optional_string => 'foo', :repeated_string => ['bar1', 'bar2'])
+
+    h = {}
+    h[m1] = :yes
+
+    assert m1 == m2
+    assert m1.eql?(m2)
+    assert m1.hash == m2.hash
+    assert h[m1] == :yes
+    assert h[m2] == :yes
+
+    m1.optional_int32 = 2
+
+    assert m1 != m2
+    assert !m1.eql?(m2)
+    assert m1.hash != m2.hash
+    assert_nil h[m2]
   end
 end

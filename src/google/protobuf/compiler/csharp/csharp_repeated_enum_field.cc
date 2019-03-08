@@ -31,7 +31,6 @@
 #include <sstream>
 
 #include <google/protobuf/compiler/code_generator.h>
-#include <google/protobuf/compiler/plugin.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/printer.h>
@@ -90,7 +89,7 @@ void RepeatedEnumFieldGenerator::GenerateSerializationCode(io::Printer* printer)
     "$name$_.WriteTo(output, _repeated_$name$_codec);\n");
 }
 
-void RepeatedEnumFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {  
+void RepeatedEnumFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {
   printer->Print(
     variables_,
     "size += $name$_.CalculateSize(_repeated_$name$_codec);\n");

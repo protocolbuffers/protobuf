@@ -89,7 +89,7 @@ class PROTOBUF_EXPORT LogMessage {
   LogMessage& operator<<(double value);
   LogMessage& operator<<(void* value);
   LogMessage& operator<<(const StringPiece& value);
-  LogMessage& operator<<(const ::google::protobuf::util::Status& status);
+  LogMessage& operator<<(const util::Status& status);
   LogMessage& operator<<(const uint128& value);
 
  private:
@@ -143,10 +143,10 @@ inline bool IsOk(bool status) { return status; }
 #undef GOOGLE_DCHECK_GT
 #undef GOOGLE_DCHECK_GE
 
-#define GOOGLE_LOG(LEVEL)                                                 \
-  ::google::protobuf::internal::LogFinisher() =                           \
-    ::google::protobuf::internal::LogMessage(                             \
-      ::google::protobuf::LOGLEVEL_##LEVEL, __FILE__, __LINE__)
+#define GOOGLE_LOG(LEVEL)                          \
+  ::google::protobuf::internal::LogFinisher() = \
+      ::google::protobuf::internal::LogMessage( \
+          ::google::protobuf::LOGLEVEL_##LEVEL, __FILE__, __LINE__)
 #define GOOGLE_LOG_IF(LEVEL, CONDITION) \
   !(CONDITION) ? (void)0 : GOOGLE_LOG(LEVEL)
 
@@ -170,8 +170,8 @@ T* CheckNotNull(const char* /* file */, int /* line */,
   return val;
 }
 }  // namespace internal
-#define GOOGLE_CHECK_NOTNULL(A) \
-  ::google::protobuf::internal::CheckNotNull(\
+#define GOOGLE_CHECK_NOTNULL(A)               \
+  ::google::protobuf::internal::CheckNotNull( \
       __FILE__, __LINE__, "'" #A "' must not be nullptr", (A))
 
 #ifdef NDEBUG

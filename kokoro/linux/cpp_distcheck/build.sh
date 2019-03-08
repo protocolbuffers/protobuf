@@ -2,7 +2,7 @@
 #
 # Build file to set up and run tests
 
-set -ex
+set -ex  # exit immediately on error
 
 # Change to repo root
 cd $(dirname $0)/../../..

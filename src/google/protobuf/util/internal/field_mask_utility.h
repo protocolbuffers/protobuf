@@ -54,7 +54,7 @@ typedef std::function<util::Status(StringPiece)> PathSinkCallback;
 // converting their content. Escaping is supported within quoted strings.
 // For example, "ab\"_c" will be returned as "ab\"_c" without any changes.
 std::string ConvertFieldMaskPath(const StringPiece path,
-                            ConverterCallback converter);
+                                 ConverterCallback converter);
 
 // Decodes a compact list of FieldMasks. For example, "a.b,a.c.d,a.c.e" will be
 // decoded into a list of field paths - "a.b", "a.c.d", "a.c.e". And the results

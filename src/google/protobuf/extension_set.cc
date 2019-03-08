@@ -45,7 +45,6 @@
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/metadata_lite.h>
 #include <google/protobuf/repeated_field.h>
-#include <google/protobuf/wire_format_lite_inl.h>
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/hash.h>
 
@@ -177,11 +176,7 @@ void ExtensionSet::RegisterMessageExtension(const MessageLite* containing_type,
   GOOGLE_CHECK(type == WireFormatLite::TYPE_MESSAGE ||
         type == WireFormatLite::TYPE_GROUP);
   ExtensionInfo info(type, is_repeated, is_packed);
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  info.message_info = {prototype, prototype->_ParseFunc()};
-#else
   info.message_info = {prototype};
-#endif
   Register(containing_type, number, info);
 }
 
@@ -427,7 +422,7 @@ void* ExtensionSet::MutableRawRepeatedField(int number, FieldType field_type,
         break;
       case WireFormatLite::CPPTYPE_STRING:
         extension->repeated_string_value =
-            Arena::CreateMessage<RepeatedPtrField<::std::string> >(arena_);
+            Arena::CreateMessage<RepeatedPtrField<std::string>>(arena_);
         break;
       case WireFormatLite::CPPTYPE_MESSAGE:
         extension->repeated_message_value =
@@ -515,8 +510,8 @@ void ExtensionSet::AddEnum(int number, FieldType type,
 // -------------------------------------------------------------------
 // Strings
 
-const string& ExtensionSet::GetString(int number,
-                                      const string& default_value) const {
+const std::string& ExtensionSet::GetString(
+    int number, const std::string& default_value) const {
   const Extension* extension = FindOrNull(number);
   if (extension == NULL || extension->is_cleared) {
     // Not present.  Return the default value.
@@ -527,14 +522,14 @@ const string& ExtensionSet::GetString(int number,
   }
 }
 
-string* ExtensionSet::MutableString(int number, FieldType type,
-                                    const FieldDescriptor* descriptor) {
+std::string* ExtensionSet::MutableString(int number, FieldType type,
+                                         const FieldDescriptor* descriptor) {
   Extension* extension;
   if (MaybeNewExtension(number, descriptor, &extension)) {
     extension->type = type;
     GOOGLE_DCHECK_EQ(cpp_type(extension->type), WireFormatLite::CPPTYPE_STRING);
     extension->is_repeated = false;
-    extension->string_value = Arena::Create<string>(arena_);
+    extension->string_value = Arena::Create<std::string>(arena_);
   } else {
     GOOGLE_DCHECK_TYPE(*extension, OPTIONAL, STRING);
   }
@@ -542,22 +537,23 @@ string* ExtensionSet::MutableString(int number, FieldType type,
   return extension->string_value;
 }
 
-const string& ExtensionSet::GetRepeatedString(int number, int index) const {
+const std::string& ExtensionSet::GetRepeatedString(int number,
+                                                   int index) const {
   const Extension* extension = FindOrNull(number);
   GOOGLE_CHECK(extension != NULL) << "Index out-of-bounds (field is empty).";
   GOOGLE_DCHECK_TYPE(*extension, REPEATED, STRING);
   return extension->repeated_string_value->Get(index);
 }
 
-string* ExtensionSet::MutableRepeatedString(int number, int index) {
+std::string* ExtensionSet::MutableRepeatedString(int number, int index) {
   Extension* extension = FindOrNull(number);
   GOOGLE_CHECK(extension != NULL) << "Index out-of-bounds (field is empty).";
   GOOGLE_DCHECK_TYPE(*extension, REPEATED, STRING);
   return extension->repeated_string_value->Mutable(index);
 }
 
-string* ExtensionSet::AddString(int number, FieldType type,
-                                const FieldDescriptor* descriptor) {
+std::string* ExtensionSet::AddString(int number, FieldType type,
+                                     const FieldDescriptor* descriptor) {
   Extension* extension;
   if (MaybeNewExtension(number, descriptor, &extension)) {
     extension->type = type;
@@ -565,7 +561,7 @@ string* ExtensionSet::AddString(int number, FieldType type,
     extension->is_repeated = true;
     extension->is_packed = false;
     extension->repeated_string_value =
-        Arena::CreateMessage<RepeatedPtrField<string> >(arena_);
+        Arena::CreateMessage<RepeatedPtrField<std::string>>(arena_);
   } else {
     GOOGLE_DCHECK_TYPE(*extension, REPEATED, STRING);
   }
@@ -966,7 +962,7 @@ void ExtensionSet::InternalExtensionMergeFrom(
       HANDLE_TYPE( DOUBLE,  double, RepeatedField   < double>);
       HANDLE_TYPE(   BOOL,    bool, RepeatedField   <   bool>);
       HANDLE_TYPE(   ENUM,    enum, RepeatedField   <    int>);
-      HANDLE_TYPE( STRING,  string, RepeatedPtrField< string>);
+      HANDLE_TYPE(STRING, string, RepeatedPtrField<std::string>);
 #undef HANDLE_TYPE
 
       case WireFormatLite::CPPTYPE_MESSAGE:
@@ -1204,9 +1200,8 @@ bool ExtensionSet::ParseField(uint32 tag, io::CodedInputStream* input,
 }
 
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-std::pair<const char*, bool> ExtensionSet::ParseField(
-    uint64 tag, ParseClosure parent, const char* begin, const char* end,
-    const MessageLite* containing_type,
+const char* ExtensionSet::ParseField(
+    uint64 tag, const char* ptr, const MessageLite* containing_type,
     internal::InternalMetadataWithArenaLite* metadata,
     internal::ParseContext* ctx) {
   GeneratedExtensionFinder finder(containing_type);
@@ -1215,12 +1210,19 @@ std::pair<const char*, bool> ExtensionSet::ParseField(
   ExtensionInfo extension;
   if (!FindExtensionInfoFromFieldNumber(tag & 7, number, &finder, &extension,
                                         &was_packed_on_wire)) {
-    return UnknownFieldParse(tag, parent, begin, end,
-                             metadata->mutable_unknown_fields(), ctx);
+    return UnknownFieldParse(tag, metadata->mutable_unknown_fields(), ptr, ctx);
   }
   return ParseFieldWithExtensionInfo(number, was_packed_on_wire, extension,
-                                     metadata, parent, begin, end, ctx);
+                                     metadata, ptr, ctx);
 }
+
+const char* ExtensionSet::ParseMessageSetItem(
+    const char* ptr, const MessageLite* containing_type,
+    internal::InternalMetadataWithArenaLite* metadata,
+    internal::ParseContext* ctx) {
+  return ParseMessageSetItemTmpl(ptr, containing_type, metadata, ctx);
+}
+
 #endif
 
 bool ExtensionSet::ParseFieldWithExtensionInfo(
@@ -1341,19 +1343,23 @@ bool ExtensionSet::ParseFieldWithExtensionInfo(
       }
 
       case WireFormatLite::TYPE_STRING:  {
-        string* value = extension.is_repeated ?
-          AddString(number, WireFormatLite::TYPE_STRING, extension.descriptor) :
-          MutableString(number, WireFormatLite::TYPE_STRING,
-                        extension.descriptor);
+        std::string* value =
+            extension.is_repeated
+                ? AddString(number, WireFormatLite::TYPE_STRING,
+                            extension.descriptor)
+                : MutableString(number, WireFormatLite::TYPE_STRING,
+                                extension.descriptor);
         if (!WireFormatLite::ReadString(input, value)) return false;
         break;
       }
 
       case WireFormatLite::TYPE_BYTES:  {
-        string* value = extension.is_repeated ?
-          AddString(number, WireFormatLite::TYPE_BYTES, extension.descriptor) :
-          MutableString(number, WireFormatLite::TYPE_BYTES,
-                        extension.descriptor);
+        std::string* value =
+            extension.is_repeated
+                ? AddString(number, WireFormatLite::TYPE_BYTES,
+                            extension.descriptor)
+                : MutableString(number, WireFormatLite::TYPE_BYTES,
+                                extension.descriptor);
         if (!WireFormatLite::ReadBytes(input, value)) return false;
         break;
       }
@@ -1451,7 +1457,7 @@ bool ExtensionSet::ParseMessageSetItemLite(io::CodedInputStream* input,
 
 bool ExtensionSet::ParseMessageSet(io::CodedInputStream* input,
                                    const MessageLite* containing_type,
-                                   string* unknown_fields) {
+                                   std::string* unknown_fields) {
   io::StringOutputStream zcis(unknown_fields);
   io::CodedOutputStream output(&zcis);
   CodedOutputStreamFieldSkipper skipper(&output);

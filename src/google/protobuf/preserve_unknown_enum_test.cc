@@ -99,7 +99,7 @@ void CheckMessage(
 TEST(PreserveUnknownEnumTest, PreserveParseAndSerialize) {
   proto3_preserve_unknown_enum_unittest::MyMessagePlusExtra orig_message;
   FillMessage(&orig_message);
-  string serialized;
+  std::string serialized;
   orig_message.SerializeToString(&serialized);
 
   proto3_preserve_unknown_enum_unittest::MyMessage message;
@@ -117,7 +117,7 @@ TEST(PreserveUnknownEnumTest, PreserveParseAndSerialize) {
 TEST(PreserveUnknownEnumTest, PreserveParseAndSerializeDynamicMessage) {
   proto3_preserve_unknown_enum_unittest::MyMessagePlusExtra orig_message;
   FillMessage(&orig_message);
-  string serialized = orig_message.SerializeAsString();
+  std::string serialized = orig_message.SerializeAsString();
 
   DynamicMessageFactory factory;
   std::unique_ptr<Message> message(
@@ -138,7 +138,7 @@ TEST(PreserveUnknownEnumTest, Proto2HidesUnknownValues) {
   proto3_preserve_unknown_enum_unittest::MyMessagePlusExtra orig_message;
   FillMessage(&orig_message);
 
-  string serialized;
+  std::string serialized;
   orig_message.SerializeToString(&serialized);
 
   proto2_preserve_unknown_enum_unittest::MyMessage message;
@@ -160,7 +160,7 @@ TEST(PreserveUnknownEnumTest, DynamicProto2HidesUnknownValues) {
   proto3_preserve_unknown_enum_unittest::MyMessagePlusExtra orig_message;
   FillMessage(&orig_message);
 
-  string serialized;
+  std::string serialized;
   orig_message.SerializeToString(&serialized);
 
   DynamicMessageFactory factory;
@@ -187,7 +187,7 @@ TEST(PreserveUnknownEnumTest, DynamicProto2HidesUnknownValues) {
 TEST(PreserveUnknownEnumTest, DynamicEnumValueDescriptors) {
   proto3_preserve_unknown_enum_unittest::MyMessagePlusExtra orig_message;
   FillMessage(&orig_message);
-  string serialized;
+  std::string serialized;
   orig_message.SerializeToString(&serialized);
 
   proto3_preserve_unknown_enum_unittest::MyMessage message;

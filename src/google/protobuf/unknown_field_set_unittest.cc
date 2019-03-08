@@ -68,7 +68,7 @@ class UnknownFieldSetTest : public testing::Test {
     unknown_fields_ = empty_message_.mutable_unknown_fields();
   }
 
-  const UnknownField* GetField(const string& name) {
+  const UnknownField* GetField(const std::string& name) {
     const FieldDescriptor* field = descriptor_->FindFieldByName(name);
     if (field == NULL) return NULL;
     for (int i = 0; i < unknown_fields_->field_count(); i++) {
@@ -82,7 +82,7 @@ class UnknownFieldSetTest : public testing::Test {
   // Constructs a protocol buffer which contains fields with all the same
   // numbers as all_fields_data_ except that each field is some other wire
   // type.
-  string GetBizarroData() {
+  std::string GetBizarroData() {
     unittest::TestEmptyMessage bizarro_message;
     UnknownFieldSet* bizarro_unknown_fields =
       bizarro_message.mutable_unknown_fields();
@@ -95,14 +95,14 @@ class UnknownFieldSetTest : public testing::Test {
       }
     }
 
-    string data;
+    std::string data;
     EXPECT_TRUE(bizarro_message.SerializeToString(&data));
     return data;
   }
 
   const Descriptor* descriptor_;
   unittest::TestAllTypes all_fields_;
-  string all_fields_data_;
+  std::string all_fields_data_;
 
   // An empty message that has been parsed from all_fields_data_.  So, it has
   // unknown fields of every type.
@@ -191,8 +191,8 @@ TEST_F(UnknownFieldSetTest, Group) {
 TEST_F(UnknownFieldSetTest, SerializeFastAndSlowAreEquivalent) {
   int size = WireFormat::ComputeUnknownFieldsSize(
       empty_message_.unknown_fields());
-  string slow_buffer;
-  string fast_buffer;
+  std::string slow_buffer;
+  std::string fast_buffer;
   slow_buffer.resize(size);
   fast_buffer.resize(size);
 
@@ -216,7 +216,7 @@ TEST_F(UnknownFieldSetTest, Serialize) {
   // Check that serializing the UnknownFieldSet produces the original data
   // again.
 
-  string data;
+  std::string data;
   empty_message_.SerializeToString(&data);
 
   // Don't use EXPECT_EQ because we don't want to dump raw binary data to
@@ -241,7 +241,7 @@ TEST_F(UnknownFieldSetTest, SerializeViaReflection) {
   // Make sure fields are properly written from the UnknownFieldSet when
   // serializing via reflection.
 
-  string data;
+  std::string data;
 
   {
     io::StringOutputStream raw_output(&data);
@@ -270,8 +270,8 @@ TEST_F(UnknownFieldSetTest, Swap) {
 
   EXPECT_GT(empty_message_.unknown_fields().field_count(), 0);
   EXPECT_GT(other_message.unknown_fields().field_count(), 0);
-  const string debug_string = empty_message_.DebugString();
-  const string other_debug_string = other_message.DebugString();
+  const std::string debug_string = empty_message_.DebugString();
+  const std::string other_debug_string = other_message.DebugString();
   EXPECT_NE(debug_string, other_debug_string);
 
   empty_message_.Swap(&other_message);
@@ -280,7 +280,7 @@ TEST_F(UnknownFieldSetTest, Swap) {
 }
 
 TEST_F(UnknownFieldSetTest, SwapWithSelf) {
-  const string debug_string = empty_message_.DebugString();
+  const std::string debug_string = empty_message_.DebugString();
   EXPECT_GT(empty_message_.unknown_fields().field_count(), 0);
 
   empty_message_.Swap(&empty_message_);
@@ -328,7 +328,7 @@ TEST_F(UnknownFieldSetTest, ParseKnownAndUnknown) {
 
   unittest::TestEmptyMessage source;
   source.mutable_unknown_fields()->AddVarint(123456, 654321);
-  string data;
+  std::string data;
   ASSERT_TRUE(source.SerializeToString(&data));
 
   unittest::TestAllTypes destination;
@@ -347,7 +347,7 @@ TEST_F(UnknownFieldSetTest, WrongTypeTreatedAsUnknown) {
 
   unittest::TestAllTypes all_types_message;
   unittest::TestEmptyMessage empty_message;
-  string bizarro_data = GetBizarroData();
+  std::string bizarro_data = GetBizarroData();
   ASSERT_TRUE(all_types_message.ParseFromString(bizarro_data));
   ASSERT_TRUE(empty_message.ParseFromString(bizarro_data));
 
@@ -361,7 +361,7 @@ TEST_F(UnknownFieldSetTest, WrongTypeTreatedAsUnknownViaReflection) {
 
   unittest::TestAllTypes all_types_message;
   unittest::TestEmptyMessage empty_message;
-  string bizarro_data = GetBizarroData();
+  std::string bizarro_data = GetBizarroData();
   io::ArrayInputStream raw_input(bizarro_data.data(), bizarro_data.size());
   io::CodedInputStream input(&raw_input);
   ASSERT_TRUE(WireFormat::ParseAndMergePartial(&input, &all_types_message));
@@ -398,7 +398,7 @@ TEST_F(UnknownFieldSetTest, WrongExtensionTypeTreatedAsUnknown) {
 
   unittest::TestAllExtensions all_extensions_message;
   unittest::TestEmptyMessage empty_message;
-  string bizarro_data = GetBizarroData();
+  std::string bizarro_data = GetBizarroData();
   ASSERT_TRUE(all_extensions_message.ParseFromString(bizarro_data));
   ASSERT_TRUE(empty_message.ParseFromString(bizarro_data));
 
@@ -419,7 +419,7 @@ TEST_F(UnknownFieldSetTest, UnknownEnumValue) {
   ASSERT_TRUE(singular_field != NULL);
   ASSERT_TRUE(repeated_field != NULL);
 
-  string data;
+  std::string data;
 
   {
     TestEmptyMessage empty_message;
@@ -509,11 +509,11 @@ TEST_F(UnknownFieldSetTest, SpaceUsed) {
   EXPECT_LT(base_size, empty_message.SpaceUsed());
   base_size = empty_message.SpaceUsed();
 
-  string* str = unknown_fields->AddLengthDelimited(1);
+  std::string* str = unknown_fields->AddLengthDelimited(1);
   EXPECT_LT(base_size, empty_message.SpaceUsed());
   base_size = empty_message.SpaceUsed();
 
-  str->assign(sizeof(string) + 1, 'x');
+  str->assign(sizeof(std::string) + 1, 'x');
   EXPECT_LT(base_size, empty_message.SpaceUsed());
   base_size = empty_message.SpaceUsed();
 

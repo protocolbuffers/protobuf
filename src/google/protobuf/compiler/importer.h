@@ -129,8 +129,9 @@ class PROTOBUF_EXPORT SourceTreeDescriptorDatabase : public DescriptorDatabase {
                   const Message* descriptor, ErrorLocation location,
                   const std::string& message) override;
 
-    void AddWarning(const std::string& filename, const std::string& element_name,
-                    const Message* descriptor, ErrorLocation location,
+    void AddWarning(const std::string& filename,
+                    const std::string& element_name, const Message* descriptor,
+                    ErrorLocation location,
                     const std::string& message) override;
 
    private:
@@ -288,15 +289,15 @@ class PROTOBUF_EXPORT DiskSourceTree : public SourceTree {
   //   it is not useful.
   // * NO_MAPPING: Indicates that no mapping was found which contains this
   //   file.
-  DiskFileToVirtualFileResult
-    DiskFileToVirtualFile(const std::string& disk_file,
-                          std::string* virtual_file,
-                          std::string* shadowing_disk_file);
+  DiskFileToVirtualFileResult DiskFileToVirtualFile(
+      const std::string& disk_file, std::string* virtual_file,
+      std::string* shadowing_disk_file);
 
   // Given a virtual path, find the path to the file on disk.
   // Return true and update disk_file with the on-disk path if the file exists.
   // Return false and leave disk_file untouched if the file doesn't exist.
-  bool VirtualFileToDiskFile(const std::string& virtual_file, std::string* disk_file);
+  bool VirtualFileToDiskFile(const std::string& virtual_file,
+                             std::string* disk_file);
 
   // implements SourceTree -------------------------------------------
   io::ZeroCopyInputStream* Open(const std::string& filename) override;
@@ -310,7 +311,7 @@ class PROTOBUF_EXPORT DiskSourceTree : public SourceTree {
 
     inline Mapping(const std::string& virtual_path_param,
                    const std::string& disk_path_param)
-      : virtual_path(virtual_path_param), disk_path(disk_path_param) {}
+        : virtual_path(virtual_path_param), disk_path(disk_path_param) {}
   };
   std::vector<Mapping> mappings_;
   std::string last_error_message_;

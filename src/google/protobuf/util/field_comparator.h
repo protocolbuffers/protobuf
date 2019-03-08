@@ -182,7 +182,8 @@ class PROTOBUF_EXPORT DefaultFieldComparator : public FieldComparator {
   // basic types (instead of submessages). They return true on success. One
   // can use ResultFromBoolean() to convert that boolean to a ComparisonResult
   // value.
-  bool CompareBool(const FieldDescriptor& field, bool value_1, bool value_2) {
+  bool CompareBool(const FieldDescriptor& /* unused */,
+                   bool value_1, bool value_2) {
     return value_1 == value_2;
   }
 
@@ -199,27 +200,27 @@ class PROTOBUF_EXPORT DefaultFieldComparator : public FieldComparator {
   // CompareFloat.
   bool CompareFloat(const FieldDescriptor& field, float value_1, float value_2);
 
-  bool CompareInt32(const FieldDescriptor& field, int32 value_1,
+  bool CompareInt32(const FieldDescriptor& /* unused */, int32 value_1,
                     int32 value_2) {
     return value_1 == value_2;
   }
 
-  bool CompareInt64(const FieldDescriptor& field, int64 value_1,
+  bool CompareInt64(const FieldDescriptor& /* unused */, int64 value_1,
                     int64 value_2) {
     return value_1 == value_2;
   }
 
-  bool CompareString(const FieldDescriptor& field, const std::string& value_1,
+  bool CompareString(const FieldDescriptor& /* unused */, const std::string& value_1,
                      const std::string& value_2) {
     return value_1 == value_2;
   }
 
-  bool CompareUInt32(const FieldDescriptor& field, uint32 value_1,
+  bool CompareUInt32(const FieldDescriptor& /* unused */, uint32 value_1,
                      uint32 value_2) {
     return value_1 == value_2;
   }
 
-  bool CompareUInt64(const FieldDescriptor& field, uint64 value_1,
+  bool CompareUInt64(const FieldDescriptor& /* unused */, uint64 value_1,
                      uint64 value_2) {
     return value_1 == value_2;
   }

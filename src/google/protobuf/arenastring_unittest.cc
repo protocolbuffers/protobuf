@@ -52,85 +52,83 @@ namespace protobuf {
 using internal::ArenaStringPtr;
 
 
-static string WrapString(const char* value) {
-  return value;
-}
+static std::string WrapString(const char* value) { return value; }
 
 // Test ArenaStringPtr with arena == NULL.
 TEST(ArenaStringPtrTest, ArenaStringPtrOnHeap) {
   ArenaStringPtr field;
-  ::std::string default_value = "default";
+  std::string default_value = "default";
   field.UnsafeSetDefault(&default_value);
-  EXPECT_EQ(string("default"), field.Get());
+  EXPECT_EQ(std::string("default"), field.Get());
   field.Set(&default_value, WrapString("Test short"), NULL);
-  EXPECT_EQ(string("Test short"), field.Get());
+  EXPECT_EQ(std::string("Test short"), field.Get());
   field.Set(&default_value, WrapString("Test long long long long value"), NULL);
-  EXPECT_EQ(string("Test long long long long value"), field.Get());
-  field.Set(&default_value, string(""), NULL);
+  EXPECT_EQ(std::string("Test long long long long value"), field.Get());
+  field.Set(&default_value, std::string(""), NULL);
   field.Destroy(&default_value, NULL);
 
   ArenaStringPtr field2;
   field2.UnsafeSetDefault(&default_value);
-  ::std::string* mut = field2.Mutable(&default_value, NULL);
+  std::string* mut = field2.Mutable(&default_value, NULL);
   EXPECT_EQ(mut, field2.Mutable(&default_value, NULL));
   EXPECT_EQ(mut, &field2.Get());
   EXPECT_NE(&default_value, mut);
-  EXPECT_EQ(string("default"), *mut);
+  EXPECT_EQ(std::string("default"), *mut);
   *mut = "Test long long long long value";  // ensure string allocates storage
-  EXPECT_EQ(string("Test long long long long value"), field2.Get());
+  EXPECT_EQ(std::string("Test long long long long value"), field2.Get());
   field2.Destroy(&default_value, NULL);
 }
 
 TEST(ArenaStringPtrTest, ArenaStringPtrOnArena) {
   Arena arena;
   ArenaStringPtr field;
-  ::std::string default_value = "default";
+  std::string default_value = "default";
   field.UnsafeSetDefault(&default_value);
-  EXPECT_EQ(string("default"), field.Get());
+  EXPECT_EQ(std::string("default"), field.Get());
   field.Set(&default_value, WrapString("Test short"), &arena);
-  EXPECT_EQ(string("Test short"), field.Get());
+  EXPECT_EQ(std::string("Test short"), field.Get());
   field.Set(&default_value, WrapString("Test long long long long value"),
             &arena);
-  EXPECT_EQ(string("Test long long long long value"), field.Get());
-  field.Set(&default_value, string(""), &arena);
+  EXPECT_EQ(std::string("Test long long long long value"), field.Get());
+  field.Set(&default_value, std::string(""), &arena);
   field.Destroy(&default_value, &arena);
 
   ArenaStringPtr field2;
   field2.UnsafeSetDefault(&default_value);
-  ::std::string* mut = field2.Mutable(&default_value, &arena);
+  std::string* mut = field2.Mutable(&default_value, &arena);
   EXPECT_EQ(mut, field2.Mutable(&default_value, &arena));
   EXPECT_EQ(mut, &field2.Get());
   EXPECT_NE(&default_value, mut);
-  EXPECT_EQ(string("default"), *mut);
+  EXPECT_EQ(std::string("default"), *mut);
   *mut = "Test long long long long value";  // ensure string allocates storage
-  EXPECT_EQ(string("Test long long long long value"), field2.Get());
+  EXPECT_EQ(std::string("Test long long long long value"), field2.Get());
   field2.Destroy(&default_value, &arena);
 }
 
 TEST(ArenaStringPtrTest, ArenaStringPtrOnArenaNoSSO) {
   Arena arena;
   ArenaStringPtr field;
-  ::std::string default_value = "default";
+  std::string default_value = "default";
   field.UnsafeSetDefault(&default_value);
-  EXPECT_EQ(string("default"), field.Get());
+  EXPECT_EQ(std::string("default"), field.Get());
 
   // Avoid triggering the SSO optimization by setting the string to something
   // larger than the internal buffer.
   field.Set(&default_value, WrapString("Test long long long long value"),
             &arena);
-  EXPECT_EQ(string("Test long long long long value"), field.Get());
-  field.Set(&default_value, string(""), &arena);
+  EXPECT_EQ(std::string("Test long long long long value"), field.Get());
+  field.Set(&default_value, std::string(""), &arena);
   field.Destroy(&default_value, &arena);
 
   ArenaStringPtr field2;
   field2.UnsafeSetDefault(&default_value);
-  ::std::string* mut = field2.Mutable(&default_value, &arena);
+  std::string* mut = field2.Mutable(&default_value, &arena);
   EXPECT_EQ(mut, field2.Mutable(&default_value, &arena));
   EXPECT_EQ(mut, &field2.Get());
   EXPECT_NE(&default_value, mut);
-  EXPECT_EQ(string("default"), *mut);
+  EXPECT_EQ(std::string("default"), *mut);
   *mut = "Test long long long long value";  // ensure string allocates storage
-  EXPECT_EQ(string("Test long long long long value"), field2.Get());
+  EXPECT_EQ(std::string("Test long long long long value"), field2.Get());
   field2.Destroy(&default_value, &arena);
 }
 

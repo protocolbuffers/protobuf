@@ -82,8 +82,8 @@ PROTOC_EXPORT int PluginMain(int argc, char* argv[],
 // generation is successful. If the code geneartion fails, error_msg may be
 // populated to describe the failure cause.
 bool GenerateCode(const CodeGeneratorRequest& request,
-    const CodeGenerator& generator, CodeGeneratorResponse* response,
-    std::string* error_msg);
+                  const CodeGenerator& generator,
+                  CodeGeneratorResponse* response, std::string* error_msg);
 
 }  // namespace compiler
 }  // namespace protobuf

@@ -48,8 +48,7 @@ namespace csharp {
 // header.  If you create your own protocol compiler binary and you want
 // it to support C# output, you can do so by registering an instance of this
 // CodeGenerator with the CommandLineInterface in your main() function.
-class PROTOC_EXPORT Generator
-    : public google::protobuf::compiler::CodeGenerator {
+class PROTOC_EXPORT Generator : public CodeGenerator {
  public:
   virtual bool Generate(
       const FileDescriptor* file,

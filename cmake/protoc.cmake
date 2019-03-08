@@ -9,7 +9,7 @@ set(protoc_rc_files
 endif()
 
 add_executable(protoc ${protoc_files} ${protoc_rc_files})
-target_link_libraries(protoc libprotobuf libprotoc)
+target_link_libraries(protoc libprotoc libprotobuf)
 add_executable(protobuf::protoc ALIAS protoc)
 
 set_target_properties(protoc PROPERTIES

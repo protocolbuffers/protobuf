@@ -200,6 +200,7 @@ libprotobuf_lite_la_SOURCES =                                  \
   google/protobuf/stubs/strutil.cc                             \
   google/protobuf/stubs/time.cc                                \
   google/protobuf/stubs/time.h                                 \
+  google/protobuf/any_lite.cc                                  \
   google/protobuf/arena.cc                                     \
   google/protobuf/extension_set.cc                             \
   google/protobuf/generated_message_util.cc                    \
@@ -207,7 +208,7 @@ libprotobuf_lite_la_SOURCES =                                  \
   google/protobuf/generated_message_table_driven_lite.cc       \
   google/protobuf/implicit_weak_message.cc                     \
   google/protobuf/message_lite.cc                              \
-  google/protobuf/parse_context.cc                              \  
+  google/protobuf/parse_context.cc                             \
   google/protobuf/repeated_field.cc                            \
   google/protobuf/wire_format_lite.cc                          \
   google/protobuf/io/coded_stream.cc                           \
@@ -553,8 +554,14 @@ EXTRA_DIST =                                                   \
   google/protobuf/util/package_info.h                          \
   google/protobuf/compiler/ruby/ruby_generated_code.proto      \
   google/protobuf/compiler/ruby/ruby_generated_code_pb.rb      \
-  google/protobuf/compiler/ruby/ruby_generated_code_proto2.proto \
-  google/protobuf/compiler/ruby/ruby_generated_code_proto2_pb.rb \
+  google/protobuf/compiler/ruby/ruby_generated_code_proto2.proto         \
+  google/protobuf/compiler/ruby/ruby_generated_code_proto2_pb.rb         \
+  google/protobuf/compiler/ruby/ruby_generated_pkg_explicit.proto        \
+  google/protobuf/compiler/ruby/ruby_generated_pkg_explicit_legacy.proto \
+  google/protobuf/compiler/ruby/ruby_generated_pkg_explicit_legacy_pb.rb \
+  google/protobuf/compiler/ruby/ruby_generated_pkg_explicit_pb.rb        \
+  google/protobuf/compiler/ruby/ruby_generated_pkg_implicit.proto        \
+  google/protobuf/compiler/ruby/ruby_generated_pkg_implicit_pb.rb        \
   google/protobuf/compiler/package_info.h                      \
   google/protobuf/compiler/zip_output_unittest.sh              \
   libprotobuf-lite.map                                         \
