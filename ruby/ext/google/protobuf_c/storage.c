@@ -430,8 +430,10 @@ static size_t align_up_to(size_t offset, size_t granularity) {
   return (offset + granularity - 1) & ~(granularity - 1);
 }
 
-MessageLayout* create_layout(const upb_msgdef* msgdef) {
+MessageLayout* create_layout(const Descriptor* desc) {
+  const upb_msgdef *msgdef = desc->msgdef;
   MessageLayout* layout = ALLOC(MessageLayout);
+  layout->desc = desc;
   int nfields = upb_msgdef_numfields(msgdef);
   upb_msg_field_iter it;
   upb_msg_oneof_iter oit;
@@ -448,7 +450,7 @@ MessageLayout* create_layout(const upb_msgdef* msgdef) {
       layout->fields[upb_fielddef_index(field)].hasbit = hasbit++;
     } else {
       layout->fields[upb_fielddef_index(field)].hasbit =
-	  MESSAGE_FIELD_NO_HASBIT;
+          MESSAGE_FIELD_NO_HASBIT;
     }
   }
 
@@ -537,28 +539,25 @@ MessageLayout* create_layout(const upb_msgdef* msgdef) {
   }
 
   layout->size = off;
-
   layout->msgdef = msgdef;
-  upb_msgdef_ref(layout->msgdef, &layout->msgdef);
 
   return layout;
 }
 
 void free_layout(MessageLayout* layout) {
   xfree(layout->fields);
-  upb_msgdef_unref(layout->msgdef, &layout->msgdef);
   xfree(layout);
 }
 
-VALUE field_type_class(const upb_fielddef* field) {
+VALUE field_type_class(const MessageLayout* layout, const upb_fielddef* field) {
   VALUE type_class = Qnil;
   if (upb_fielddef_type(field) == UPB_TYPE_MESSAGE) {
-    VALUE submsgdesc =
-        get_def_obj(upb_fielddef_subdef(field));
+    VALUE submsgdesc = get_msgdef_obj(layout->desc->descriptor_pool,
+                                      upb_fielddef_msgsubdef(field));
     type_class = Descriptor_msgclass(submsgdesc);
   } else if (upb_fielddef_type(field) == UPB_TYPE_ENUM) {
-    VALUE subenumdesc =
-        get_def_obj(upb_fielddef_subdef(field));
+    VALUE subenumdesc = get_enumdef_obj(layout->desc->descriptor_pool,
+                                        upb_fielddef_enumsubdef(field));
     type_class = EnumDescriptor_enummodule(subenumdesc);
   }
   return type_class;
@@ -632,7 +631,7 @@ void layout_clear(MessageLayout* layout,
 
     const upb_fielddef* key_field = map_field_key(field);
     const upb_fielddef* value_field = map_field_value(field);
-    VALUE type_class = field_type_class(value_field);
+    VALUE type_class = field_type_class(layout, value_field);
 
     if (type_class != Qnil) {
       VALUE args[3] = {
@@ -653,7 +652,7 @@ void layout_clear(MessageLayout* layout,
   } else if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
     VALUE ary = Qnil;
 
-    VALUE type_class = field_type_class(field);
+    VALUE type_class = field_type_class(layout, field);
 
     if (type_class != Qnil) {
       VALUE args[2] = {
@@ -668,9 +667,9 @@ void layout_clear(MessageLayout* layout,
 
     DEREF(memory, VALUE) = ary;
   } else {
-    native_slot_set(upb_fielddef_name(field),
-                    upb_fielddef_type(field), field_type_class(field),
-                    memory, layout_get_default(field));
+    native_slot_set(upb_fielddef_name(field), upb_fielddef_type(field),
+                    field_type_class(layout, field), memory,
+                    layout_get_default(field));
   }
 }
 
@@ -728,20 +727,19 @@ VALUE layout_get(MessageLayout* layout,
       return layout_get_default(field);
     }
     return native_slot_get(upb_fielddef_type(field),
-                           field_type_class(field),
-                           memory);
+                           field_type_class(layout, field), memory);
   } else if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
     return *((VALUE *)memory);
   } else if (!field_set) {
     return layout_get_default(field);
   } else {
     return native_slot_get(upb_fielddef_type(field),
-                           field_type_class(field),
-                           memory);
+                           field_type_class(layout, field), memory);
   }
 }
 
-static void check_repeated_field_type(VALUE val, const upb_fielddef* field) {
+static void check_repeated_field_type(const MessageLayout* layout, VALUE val,
+                                      const upb_fielddef* field) {
   RepeatedField* self;
   assert(upb_fielddef_label(field) == UPB_LABEL_REPEATED);
 
@@ -755,25 +753,13 @@ static void check_repeated_field_type(VALUE val, const upb_fielddef* field) {
     rb_raise(cTypeError, "Repeated field array has wrong element type");
   }
 
-  if (self->field_type == UPB_TYPE_MESSAGE) {
-    if (self->field_type_class !=
-        Descriptor_msgclass(get_def_obj(upb_fielddef_subdef(field)))) {
-      rb_raise(cTypeError,
-               "Repeated field array has wrong message class");
-    }
-  }
-
-
-  if (self->field_type == UPB_TYPE_ENUM) {
-    if (self->field_type_class !=
-        EnumDescriptor_enummodule(get_def_obj(upb_fielddef_subdef(field)))) {
-      rb_raise(cTypeError,
-               "Repeated field array has wrong enum class");
-    }
+  if (self->field_type_class != field_type_class(layout, field)) {
+    rb_raise(cTypeError, "Repeated field array has wrong message/enum class");
   }
 }
 
-static void check_map_field_type(VALUE val, const upb_fielddef* field) {
+static void check_map_field_type(const MessageLayout* layout, VALUE val,
+                                 const upb_fielddef* field) {
   const upb_fielddef* key_field = map_field_key(field);
   const upb_fielddef* value_field = map_field_value(field);
   Map* self;
@@ -790,16 +776,10 @@ static void check_map_field_type(VALUE val, const upb_fielddef* field) {
   if (self->value_type != upb_fielddef_type(value_field)) {
     rb_raise(cTypeError, "Map value type does not match field's value type");
   }
-  if (upb_fielddef_type(value_field) == UPB_TYPE_MESSAGE ||
-      upb_fielddef_type(value_field) == UPB_TYPE_ENUM) {
-    if (self->value_type_class !=
-        get_def_obj(upb_fielddef_subdef(value_field))) {
-      rb_raise(cTypeError,
-               "Map value type has wrong message/enum class");
-    }
+  if (self->value_type_class != field_type_class(layout, value_field)) {
+    rb_raise(cTypeError, "Map value type has wrong message/enum class");
   }
 }
-
 
 void layout_set(MessageLayout* layout,
                 void* storage,
@@ -828,20 +808,19 @@ void layout_set(MessageLayout* layout,
       // and case number are altered atomically (w.r.t. the Ruby VM).
       native_slot_set_value_and_case(
           upb_fielddef_name(field),
-          upb_fielddef_type(field), field_type_class(field),
+          upb_fielddef_type(field), field_type_class(layout, field),
           memory, val,
           oneof_case, upb_fielddef_number(field));
     }
   } else if (is_map_field(field)) {
-    check_map_field_type(val, field);
+    check_map_field_type(layout, val, field);
     DEREF(memory, VALUE) = val;
   } else if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
-    check_repeated_field_type(val, field);
+    check_repeated_field_type(layout, val, field);
     DEREF(memory, VALUE) = val;
   } else {
-    native_slot_set(upb_fielddef_name(field),
-                    upb_fielddef_type(field), field_type_class(field),
-                    memory, val);
+    native_slot_set(upb_fielddef_name(field), upb_fielddef_type(field),
+                    field_type_class(layout, field), memory, val);
   }
 
   if (layout->fields[upb_fielddef_index(field)].hasbit !=
