@@ -154,11 +154,7 @@ class TestTypeErrors < Test::Unit::TestCase
 
   def test_bad_msg
     check_error Google::Protobuf::TypeError,
-<<<<<<< HEAD
                 "Invalid type #{IntegerType.name} to assign to submessage field 'optional_msg'." do
-=======
-                "Invalid type Fixnum to assign to submessage field 'optional_msg'." do
->>>>>>> parent of 1568deab... Revert "Updated upb from defcleanup branch and modified Ruby to use it (#5539)" (#5848)
       A::B::C::TestMessage.new(optional_msg: 2)
     end
     check_error Google::Protobuf::TypeError,
