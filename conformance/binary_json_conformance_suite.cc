@@ -2143,6 +2143,28 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
           }
         }
       )");
+  RunValidJsonTest(
+      "NestedListValue", REQUIRED,
+      R"({
+        "repeatedValue": [["a"]]
+      })",
+      R"(
+        repeated_value: [
+          {
+            list_value: {
+              values: [
+                {
+                  list_value: {
+                    values: [
+                      { string_value: "a"}
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      )");
   // Value
   RunValidJsonTest(
       "ValueAcceptInteger", REQUIRED,
