@@ -206,6 +206,7 @@ message TestAllTypesProto3 {
   repeated google.protobuf.Struct repeated_struct = 324;
   repeated google.protobuf.Any repeated_any = 315;
   repeated google.protobuf.Value repeated_value = 316;
+  repeated google.protobuf.ListValue repeated_list_value = 317;
 
   // Test field-name-to-JSON-name convention.
   // (protobuf says names can be any valid C/C++ identifier.)
