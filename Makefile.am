@@ -59,6 +59,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/build_tools.sh                                                      \
   csharp/buildall.sh                                                         \
   csharp/generate_protos.sh                                                  \
+  csharp/install_dotnet_sdk.ps1                                              \
   csharp/keys/Google.Protobuf.public.snk                                     \
   csharp/keys/Google.Protobuf.snk                                            \
   csharp/keys/README.md                                                      \
