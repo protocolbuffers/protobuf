@@ -2125,6 +2125,24 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
           }
         }
       )");
+  RunValidJsonTest(
+      "StructWithEmptyListValue", REQUIRED,
+      R"({
+        "optionalStruct": {
+          "listValue": []
+        }
+      })",
+      R"(
+        optional_struct: {
+          fields: {
+            key: "listValue"
+            value: {
+              list_value: {
+              }
+            }
+          }
+        }
+      )");
   // Value
   RunValidJsonTest(
       "ValueAcceptInteger", REQUIRED,
