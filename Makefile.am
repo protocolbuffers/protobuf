@@ -77,6 +77,12 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/AddressBook/ListPeople.cs                                       \
   csharp/src/AddressBook/Program.cs                                          \
   csharp/src/AddressBook/SampleUsage.cs                                      \
+  csharp/src/Google.Protobuf.Benchmarks/SerializationConfig.cs               \
+  csharp/src/Google.Protobuf.Benchmarks/SerializationBenchmark.cs            \
+  csharp/src/Google.Protobuf.Benchmarks/Program.cs                           \
+  csharp/src/Google.Protobuf.Benchmarks/Google.Protobuf.Benchmarks.csproj    \
+  csharp/src/Google.Protobuf.Benchmarks/Benchmarks.cs                        \
+  csharp/src/Google.Protobuf.Benchmarks/BenchmarkMessage1Proto3.cs           \
   csharp/src/Google.Protobuf.Conformance/Conformance.cs                      \
   csharp/src/Google.Protobuf.Conformance/Google.Protobuf.Conformance.csproj  \
   csharp/src/Google.Protobuf.Conformance/Program.cs                          \
