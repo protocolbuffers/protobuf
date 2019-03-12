@@ -14,7 +14,7 @@ end
 module AA
   module BB
     module CC
-      Four = Google::Protobuf::DescriptorPool.generated_pool.lookup("one.two.a_three.and.Four").msgclass
+      Four = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("one.two.a_three.and.Four").msgclass
     end
   end
 end
