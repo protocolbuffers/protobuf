@@ -117,6 +117,12 @@ build_csharp() {
   internal_build_cpp
   NUGET=/usr/local/bin/nuget.exe
 
+  # Disable some unwanted dotnet options
+  export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=true
+  export DOTNET_CLI_TELEMETRY_OPTOUT=true
+
+  # TODO(jtattermusch): is this still needed with "first time experience"
+  # disabled?
   # Perform "dotnet new" once to get the setup preprocessing out of the
   # way. That spews a lot of output (including backspaces) into logs
   # otherwise, and can cause problems. It doesn't matter if this step
