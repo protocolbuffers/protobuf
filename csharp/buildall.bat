@@ -4,7 +4,7 @@ dotnet build src/Google.Protobuf.sln || goto :error
 
 echo Running tests.
 
-dotnet test -f netcoreapp2.1 src/Google.Protobuf.Test/Google.Protobuf.Test.csproj || goto :error
+dotnet test src/Google.Protobuf.Test/Google.Protobuf.Test.csproj || goto :error
 
 goto :EOF
 
