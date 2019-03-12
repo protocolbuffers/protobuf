@@ -2194,6 +2194,36 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
           }
         }
       )");
+  RunValidJsonTest(
+      "RepeatedValue", REQUIRED,
+      R"({
+        "repeatedValue": [["a"]]
+      })",
+      R"(
+        repeated_value: [
+          {
+            list_value: {
+              values: [
+                { string_value: "a"}
+              ]
+            }
+          }
+        ]
+      )");
+  RunValidJsonTest(
+      "RepeatedListValue", REQUIRED,
+      R"({
+        "repeatedListValue": [["a"]]
+      })",
+      R"(
+        repeated_list_value: [
+          {
+            values: [
+              { string_value: "a"}
+            ]
+          }
+        ]
+      )");
 
   // Any
   RunValidJsonTest(
