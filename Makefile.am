@@ -57,6 +57,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/README.md                                                           \
   csharp/build_packages.bat                                                  \
   csharp/build_tools.sh                                                      \
+  csharp/buildall.bat                                                        \
   csharp/buildall.sh                                                         \
   csharp/generate_protos.sh                                                  \
   csharp/install_dotnet_sdk.ps1                                              \
