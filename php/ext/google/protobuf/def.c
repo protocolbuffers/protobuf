@@ -888,6 +888,7 @@ static void fill_qualified_classname(const char *fullname,
   fill_namespace(package, namespace_given, classname);
   fill_classname(fullname, package, namespace_given, prefix,
                  classname, use_nested_submsg);
+  stringsink_string(classname, NULL, "\0", 1, NULL);
 }
 
 static void classname_no_prefix(const char *fullname, const char *package_name,
@@ -956,7 +957,7 @@ void internal_add_generated_file(const char *data, PHP_PROTO_SIZE data_len,
     fill_qualified_classname(fullname, package, php_namespace,                 \
                              prefix_given, &namesink, use_nested_submsg);      \
     PHP_PROTO_CE_DECLARE pce;                                                  \
-    if (php_proto_zend_lookup_class(namesink.ptr, namesink.len, &pce) ==       \
+    if (php_proto_zend_lookup_class(namesink.ptr, namesink.len - 1, &pce) ==   \
         FAILURE) {                                                             \
       zend_error(E_ERROR, "Generated message class %s hasn't been defined",    \
                  namesink.ptr);                                                \
