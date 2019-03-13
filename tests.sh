@@ -467,6 +467,16 @@ build_php5.5_c() {
   # popd
 }
 
+build_php5.5_mixed() {
+  use_php 5.5
+  pushd php
+  rm -rf vendor
+  composer update
+  /bin/bash ./tests/compile_extension.sh ./ext/google/protobuf
+  php -dextension=./ext/google/protobuf/modules/protobuf.so ./vendor/bin/phpunit
+  popd
+}
+
 build_php5.5_zts_c() {
   use_php_zts 5.5
   cd php/tests && /bin/bash ./test.sh 5.5-zts && cd ../..
@@ -495,6 +505,16 @@ build_php5.6_c() {
   # pushd conformance
   # make test_php_c
   # popd
+}
+
+build_php5.6_mixed() {
+  use_php 5.6
+  pushd php
+  rm -rf vendor
+  composer update
+  /bin/bash ./tests/compile_extension.sh ./ext/google/protobuf
+  php -dextension=./ext/google/protobuf/modules/protobuf.so ./vendor/bin/phpunit
+  popd
 }
 
 build_php5.6_zts_c() {
@@ -550,6 +570,16 @@ build_php7.0_c() {
   # pushd conformance
   # make test_php_c
   # popd
+}
+
+build_php7.0_mixed() {
+  use_php 7.0
+  pushd php
+  rm -rf vendor
+  composer update
+  /bin/bash ./tests/compile_extension.sh ./ext/google/protobuf
+  php -dextension=./ext/google/protobuf/modules/protobuf.so ./vendor/bin/phpunit
+  popd
 }
 
 build_php7.0_zts_c() {
@@ -615,6 +645,16 @@ build_php7.1_c() {
   fi
 }
 
+build_php7.1_mixed() {
+  use_php 7.1
+  pushd php
+  rm -rf vendor
+  composer update
+  /bin/bash ./tests/compile_extension.sh ./ext/google/protobuf
+  php -dextension=./ext/google/protobuf/modules/protobuf.so ./vendor/bin/phpunit
+  popd
+}
+
 build_php7.1_zts_c() {
   use_php_zts 7.1
   cd php/tests && /bin/bash ./test.sh 7.1-zts && cd ../..
@@ -632,6 +672,10 @@ build_php_all_32() {
   build_php5.6_c
   build_php7.0_c
   build_php7.1_c $1
+  build_php5.5_mixed
+  build_php5.6_mixed
+  build_php7.0_mixed
+  build_php7.1_mixed
   build_php5.5_zts_c
   build_php5.6_zts_c
   build_php7.0_zts_c
