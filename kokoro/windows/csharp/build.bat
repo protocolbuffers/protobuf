@@ -1,5 +1,5 @@
 @rem enter repo root
-cd /d %~dp0\..\..\..\..
+cd /d %~dp0\..\..\..
 
 cd csharp
 
@@ -11,4 +11,4 @@ set PATH=%LOCALAPPDATA%\Microsoft\dotnet;%PATH%
 set DOTNET_SKIP_FIRST_TIME_EXPERIENCE=true
 set DOTNET_CLI_TELEMETRY_OPTOUT=true
 
-call build_packages.bat
+call buildall.bat
