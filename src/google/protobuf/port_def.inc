@@ -97,6 +97,9 @@
 #ifdef PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC
 #error PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC was previously defined
 #endif
+#ifdef PROTOBUF_MIN_PROTOC_VERSION
+#error PROTOBUF_MIN_PROTOC_VERSION was previously defined
+#endif
 #ifdef PROTOBUF_PREDICT_TRUE
 #error PROTOBUF_PREDICT_TRUE was previously defined
 #endif
