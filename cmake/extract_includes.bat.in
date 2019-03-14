@@ -98,7 +98,6 @@ copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\platform_macros
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\port.h" include\google\protobuf\stubs\port.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\status.h" include\google\protobuf\stubs\status.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\stl_util.h" include\google\protobuf\stubs\stl_util.h
-copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\strutil.h" include\google\protobuf\stubs\strutil.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\stringpiece.h" include\google\protobuf\stubs\stringpiece.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\strutil.h" include\google\protobuf\stubs\strutil.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\template_util.h" include\google\protobuf\stubs\template_util.h
