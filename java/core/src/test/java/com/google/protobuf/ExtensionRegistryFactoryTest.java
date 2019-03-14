@@ -30,6 +30,8 @@
 
 package com.google.protobuf;
 
+import protobuf_unittest.NestedExtension;
+import protobuf_unittest.NestedExtensionLite;
 import protobuf_unittest.NonNestedExtension;
 import protobuf_unittest.NonNestedExtensionLite;
 import java.lang.reflect.Method;
@@ -162,6 +164,18 @@ public class ExtensionRegistryFactoryTest extends TestCase {
     @Override
     public void testExtensionRenamesKeywords() {
       assertTrue(NonNestedExtension.if_ instanceof GeneratedMessage.GeneratedExtension);
+      assertTrue(NestedExtension.MyNestedExtension.default_ instanceof GeneratedMessage.GeneratedExtension);
+
+      NonNestedExtension.MessageToBeExtended msg =
+              NonNestedExtension.MessageToBeExtended.newBuilder()
+                      .setExtension(NonNestedExtension.if_, "!fi")
+                      .build();
+      assertEquals("!fi", msg.getExtension(NonNestedExtension.if_));
+
+      msg = NonNestedExtension.MessageToBeExtended.newBuilder()
+              .setExtension(NestedExtension.MyNestedExtension.default_, 8)
+              .build();
+      assertEquals(8, msg.getExtension(NestedExtension.MyNestedExtension.default_).intValue());
     }
   }
 
@@ -213,6 +227,18 @@ public class ExtensionRegistryFactoryTest extends TestCase {
     @Override
     public void testExtensionRenamesKeywords() {
       assertTrue(NonNestedExtensionLite.package_ instanceof GeneratedMessageLite.GeneratedExtension);
+      assertTrue(NestedExtensionLite.MyNestedExtensionLite.private_ instanceof GeneratedMessageLite.GeneratedExtension);
+
+      NonNestedExtensionLite.MessageLiteToBeExtended msg =
+              NonNestedExtensionLite.MessageLiteToBeExtended.newBuilder()
+              .setExtension(NonNestedExtensionLite.package_, true)
+              .build();
+      assertTrue(msg.getExtension(NonNestedExtensionLite.package_));
+
+      msg = NonNestedExtensionLite.MessageLiteToBeExtended.newBuilder()
+              .setExtension(NestedExtensionLite.MyNestedExtensionLite.private_, 2.4)
+              .build();
+      assertEquals(2.4, msg.getExtension(NestedExtensionLite.MyNestedExtensionLite.private_), 0.001);
     }
   }
 
