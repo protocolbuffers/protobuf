@@ -18,6 +18,8 @@
     <PackageLicenseUrl>https://github.com/protocolbuffers/protobuf/blob/master/LICENSE</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/protocolbuffers/protobuf.git</RepositoryUrl>
+    <!-- Include PDB in the built .nupkg -->
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
   </PropertyGroup>
 
   <!--
@@ -30,7 +32,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="SourceLink.Create.CommandLine" PrivateAssets="All" Version="2.7.6"/>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta2-18618-05" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>
