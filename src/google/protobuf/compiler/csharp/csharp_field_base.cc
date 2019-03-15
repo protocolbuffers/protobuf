@@ -323,13 +323,8 @@ std::string FieldGeneratorBase::default_value() {
 std::string FieldGeneratorBase::default_value(const FieldDescriptor* descriptor) {
   switch (descriptor->type()) {
     case FieldDescriptor::TYPE_ENUM:
-      if (IsProto2(descriptor_->file())) {
-        return GetClassName(descriptor->default_value_enum()->type()) + "." +
-          GetEnumValueName(descriptor->default_value_enum()->type()->name(), descriptor->default_value_enum()->name());
-      }
-      else {
-        return "0";
-      }
+      return GetClassName(descriptor->default_value_enum()->type()) + "." +
+        GetEnumValueName(descriptor->default_value_enum()->type()->name(), descriptor->default_value_enum()->name());
     case FieldDescriptor::TYPE_MESSAGE:
     case FieldDescriptor::TYPE_GROUP:
       if (IsWrapperType(descriptor)) {

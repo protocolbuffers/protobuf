@@ -620,18 +620,20 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
     "  switch(tag) {\n");
   printer->Indent();
   printer->Indent();
-  printer->Print(
-    "default:\n");
-  if (has_extension_ranges_) {
-    printer->Print("  if (!ExtensionSet.TryMergeFieldFrom(ref _extensions, input)) {\n");
-    printer->Indent();
+  if (end_tag_ != 0) {
+    printer->Print(
+      "$end_tag$:\n"
+      "  return;\n",
+      "end_tag", SimpleItoa(end_tag_));
   }
-  printer->Print(
-    "  if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {\n"
-    "    return;\n"
-    "  }\n");
   if (has_extension_ranges_) {
-    printer->Outdent();
+    printer->Print(
+      "default:\n"
+      "  if (!pb::ExtensionSet.TryMergeFieldFrom(ref _extensions, input)) {\n"
+      "    _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);\n"
+      "  }\n"
+      "  break;\n");
+  } else {
     printer->Print(
       "default:\n"
       "  _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);\n"
@@ -643,8 +645,6 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
         "end_tag", StrCat(end_tag_));
     }
   }
-  printer->Print(
-    "  break;\n");
   for (int i = 0; i < fields_by_number().size(); i++) {
     const FieldDescriptor* field = fields_by_number()[i];
     internal::WireFormatLite::WireType wt =
