@@ -141,19 +141,39 @@ namespace Google.Protobuf
         /// </summary>
         public static bool TryMergeFieldFrom<TTarget>(ref ExtensionSet<TTarget> set, CodedInputStream stream) where TTarget : IExtensionMessage<TTarget>
         {
+            Extension extension;
+            int lastFieldNumber = WireFormat.GetTagFieldNumber(stream.LastTag);
             if (set == null)
             {
-                return false;
-            }
-            IExtensionValue extensionValue;
-            if (set.ValuesByNumber.TryGetValue(WireFormat.GetTagFieldNumber(stream.LastTag), out extensionValue))
-            {
-                extensionValue.MergeFrom(stream);
-                return true;
+                if (stream.ExtensionRegistry != null && stream.ExtensionRegistry.ContainsInputField(stream, typeof(TTarget), out extension))
+                {
+                    Register(ref set, extension);
+                    set.ValuesByNumber[lastFieldNumber].MergeFrom(stream);
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
             else
             {
-                return false;
+                IExtensionValue extensionValue;
+                if (set.ValuesByNumber.TryGetValue(lastFieldNumber, out extensionValue))
+                {
+                    extensionValue.MergeFrom(stream);
+                    return true;
+                }
+                else if (stream.ExtensionRegistry != null && stream.ExtensionRegistry.ContainsInputField(stream, typeof(TTarget), out extension))
+                {
+                    Register(ref set, extension);
+                    set.ValuesByNumber[lastFieldNumber].MergeFrom(stream);
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
         }
 

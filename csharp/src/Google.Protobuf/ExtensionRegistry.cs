@@ -42,30 +42,35 @@ namespace Google.Protobuf
     /// </summary>
     public sealed class ExtensionRegistry : ICollection<Extension>, IDeepCloneable<ExtensionRegistry>
     {
-        private IDictionary<Type, ICollection<Extension>> extensions;
+        private IDictionary<ObjectIntPair<Type>, Extension> extensions;
 
         /// <summary>
         /// Creates a new empty extension registry
         /// </summary>
         public ExtensionRegistry()
         {
-            extensions = new Dictionary<Type, ICollection<Extension>>();
+            extensions = new Dictionary<ObjectIntPair<Type>, Extension>();
         }
 
-        private ExtensionRegistry(IDictionary<Type, ICollection<Extension>> collection)
+        private ExtensionRegistry(IDictionary<ObjectIntPair<Type>, Extension> collection)
         {
-            extensions = collection.ToDictionary(k => k.Key, v => (ICollection<Extension>)new List<Extension>(v.Value));
+            extensions = collection.ToDictionary(k => k.Key, v => v.Value);
         }
 
         /// <summary>
         /// Gets the total number of extensions in this extension registry
         /// </summary>
-        public int Count => extensions.Values.Sum(c => c.Count);
+        public int Count => extensions.Count;
 
         /// <summary>
         /// Returns whether the registry is readonly
         /// </summary>
         bool ICollection<Extension>.IsReadOnly => false;
+
+        internal bool ContainsInputField(CodedInputStream stream, Type target, out Extension extension)
+        {
+            return extensions.TryGetValue(new ObjectIntPair<Type>(target, WireFormat.GetTagFieldNumber(stream.LastTag)), out extension);
+        }
 
         /// <summary>
         /// Adds the specified extension to the registry
@@ -74,15 +79,7 @@ namespace Google.Protobuf
         {
             ProtoPreconditions.CheckNotNull(extension, nameof(extension));
 
-            ICollection<Extension> collection;
-            if (extensions.TryGetValue(extension.TargetType, out collection))
-            {
-                collection.Add(extension);
-            }
-            else
-            {
-                extensions.Add(extension.TargetType, new List<Extension> { extension });
-            }
+            extensions.Add(new ObjectIntPair<Type>(extension.TargetType, extension.FieldNumber), extension);
         }
 
         /// <summary>
@@ -121,8 +118,7 @@ namespace Google.Protobuf
         {
             ProtoPreconditions.CheckNotNull(item, nameof(item));
 
-            ICollection<Extension> collection;
-            return extensions.TryGetValue(item.TargetType, out collection) && collection.Contains(item);
+            return extensions.ContainsKey(new ObjectIntPair<Type>(item.TargetType, item.FieldNumber));
         }
 
         /// <summary>
@@ -138,10 +134,10 @@ namespace Google.Protobuf
             if (array.Length - arrayIndex < Count)
                 throw new ArgumentException("The provided array is shorter than the number of elements in the registry");
 
-            foreach (var collection in extensions.Values)
+            for (int i = 0; i < array.Length; i++)
             {
-                collection.CopyTo(array, arrayIndex);
-                arrayIndex += collection.Count;
+                Extension extension = array[i];
+                extensions.Add(new ObjectIntPair<Type>(extension.TargetType, extension.FieldNumber), extension);
             }
         }
 
@@ -151,26 +147,7 @@ namespace Google.Protobuf
         /// <returns>Returns an enumerator for the extensions in this registry</returns>
         public IEnumerator<Extension> GetEnumerator()
         {
-            foreach (var collection in extensions.Values)
-                foreach (var extension in collection)
-                    yield return extension;
-        }
-
-        /// <summary>
-        /// Searches the registry for extensions and registers found extensions in the specified message
-        /// </summary>
-        public void RegisterExtensionsFor(IExtensionMessage message)
-        {
-            ProtoPreconditions.CheckNotNull(message, nameof(message));
-
-            ICollection<Extension> collection;
-            if (extensions.TryGetValue(message.GetType(), out collection))
-            {
-                foreach (var extension in collection)
-                {
-                    message.RegisterExtension(extension);
-                }
-            }
+            return extensions.Values.GetEnumerator();
         }
 
         /// <summary>
@@ -182,8 +159,7 @@ namespace Google.Protobuf
         {
             ProtoPreconditions.CheckNotNull(item, nameof(item));
 
-            ICollection<Extension> collection;
-            return extensions.TryGetValue(item.TargetType, out collection) && collection.Remove(item);
+            return extensions.Remove(new ObjectIntPair<Type>(item.TargetType, item.FieldNumber));
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
