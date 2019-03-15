@@ -627,7 +627,7 @@ namespace ProtobufTestMessages.Proto3 {
 
     /// <summary>Field number for the "optional_aliased_enum" field.</summary>
     public const int OptionalAliasedEnumFieldNumber = 23;
-    private global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.AliasedEnum optionalAliasedEnum_ = 0;
+    private global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.AliasedEnum optionalAliasedEnum_ = global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.AliasedEnum.AliasFoo;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.AliasedEnum OptionalAliasedEnum {
       get { return optionalAliasedEnum_; }
@@ -1906,9 +1906,9 @@ namespace ProtobufTestMessages.Proto3 {
       if (OptionalBytes.Length != 0) hash ^= OptionalBytes.GetHashCode();
       if (optionalNestedMessage_ != null) hash ^= OptionalNestedMessage.GetHashCode();
       if (optionalForeignMessage_ != null) hash ^= OptionalForeignMessage.GetHashCode();
-      if (OptionalNestedEnum != 0) hash ^= OptionalNestedEnum.GetHashCode();
-      if (OptionalForeignEnum != 0) hash ^= OptionalForeignEnum.GetHashCode();
-      if (OptionalAliasedEnum != 0) hash ^= OptionalAliasedEnum.GetHashCode();
+      if (OptionalNestedEnum != global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.NestedEnum.Foo) hash ^= OptionalNestedEnum.GetHashCode();
+      if (OptionalForeignEnum != global::ProtobufTestMessages.Proto3.ForeignEnum.ForeignFoo) hash ^= OptionalForeignEnum.GetHashCode();
+      if (OptionalAliasedEnum != global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.AliasedEnum.AliasFoo) hash ^= OptionalAliasedEnum.GetHashCode();
       if (OptionalStringPiece.Length != 0) hash ^= OptionalStringPiece.GetHashCode();
       if (OptionalCord.Length != 0) hash ^= OptionalCord.GetHashCode();
       if (recursiveMessage_ != null) hash ^= RecursiveMessage.GetHashCode();
@@ -2100,7 +2100,7 @@ namespace ProtobufTestMessages.Proto3 {
         output.WriteRawTag(176, 1);
         output.WriteEnum((int) OptionalForeignEnum);
       }
-      if (OptionalAliasedEnum != 0) {
+      if (OptionalAliasedEnum != global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.AliasedEnum.AliasFoo) {
         output.WriteRawTag(184, 1);
         output.WriteEnum((int) OptionalAliasedEnum);
       }
@@ -2396,7 +2396,7 @@ namespace ProtobufTestMessages.Proto3 {
       if (OptionalForeignEnum != global::ProtobufTestMessages.Proto3.ForeignEnum.ForeignFoo) {
         size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) OptionalForeignEnum);
       }
-      if (OptionalAliasedEnum != 0) {
+      if (OptionalAliasedEnum != global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.AliasedEnum.AliasFoo) {
         size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) OptionalAliasedEnum);
       }
       if (OptionalStringPiece.Length != 0) {
@@ -2664,7 +2664,7 @@ namespace ProtobufTestMessages.Proto3 {
       if (other.OptionalForeignEnum != global::ProtobufTestMessages.Proto3.ForeignEnum.ForeignFoo) {
         OptionalForeignEnum = other.OptionalForeignEnum;
       }
-      if (other.OptionalAliasedEnum != 0) {
+      if (other.OptionalAliasedEnum != global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.AliasedEnum.AliasFoo) {
         OptionalAliasedEnum = other.OptionalAliasedEnum;
       }
       if (other.OptionalStringPiece.Length != 0) {
