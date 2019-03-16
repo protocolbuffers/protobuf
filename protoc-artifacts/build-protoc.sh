@@ -197,6 +197,8 @@ elif [[ "$(uname)" == Linux* ]]; then
     if [[ "$ARCH" == x86_64 ]]; then
       CXXFLAGS="$CXXFLAGS -m64"
     elif [[ "$ARCH" == x86_32 ]]; then
+      # OSes like Debian don't set up the include path in a way that can work
+      # for both x86_32 and aarch/ppcle so we manually add the appropriate path.
       CXXFLAGS="$CXXFLAGS -m32 -I/usr/include/x86_64-linux-gnu"
     elif [[ "$ARCH" == aarch_64 ]]; then
       CONFIGURE_ARGS="$CONFIGURE_ARGS --host=aarch64-linux-gnu"
