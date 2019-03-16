@@ -253,7 +253,7 @@ if [[ "$OS" == windows ]]; then
   LDFLAGS="$LDFLAGS -static-libgcc -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread -s"
 elif [[ "$OS" != osx ]]; then
   # And they don't work under Mac.
-  LDFLAGS="$LDFLAGS -static-libgcc -static-libstdc++ -s"
+  LDFLAGS="$LDFLAGS -static-libgcc -static-libstdc++ -s --static"
 fi
 
 export CXXFLAGS LDFLAGS
