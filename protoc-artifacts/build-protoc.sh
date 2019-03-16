@@ -139,19 +139,7 @@ checkDependencies ()
   elif [[ "$OS" == linux ]]; then
     host_machine="$(uname -m)";
     dump_cmd='ldd '"$1"
-    if [[ "$ARCH" == x86_32 ]]; then
-      white_list="linux-gate\.so\.1\|libpthread\.so\.0\|libm\.so\.6\|libc\.so\.6\|ld-linux\.so\.2\|libatomic\.so\.1"
-    elif [[ "$ARCH" == x86_64 ]]; then
-      white_list="linux-vdso\.so\.1\|libpthread\.so\.0\|libm\.so\.6\|libc\.so\.6\|ld-linux-x86-64\.so\.2\|libatomic\.so\.1"
-    elif [[ "$ARCH" == ppcle_64 ]]; then
-      if [[ $host_machine != ppc64le ]];then
-        dump_cmd='objdump -p '"$1"' | grep NEEDED'
-      fi
-      white_list="linux-vdso64\.so\.1\|libpthread\.so\.0\|libm\.so\.6\|libc\.so\.6\|libz\.so\.1\|ld64\.so\.2"
-    elif [[ "$ARCH" == aarch_64 ]]; then
-      dump_cmd='objdump -p '"$1"' | grep NEEDED'
-      white_list="libpthread\.so\.0\|libm\.so\.6\|libc\.so\.6\|ld-linux-aarch64\.so\.1"
-    fi
+    white_list="not a dynamic executable"
   elif [[ "$OS" == osx ]]; then
     dump_cmd='otool -L '"$1"' | fgrep dylib'
     white_list="libz\.1\.dylib\|libstdc++\.6\.dylib\|libSystem\.B\.dylib"
