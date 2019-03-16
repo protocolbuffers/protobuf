@@ -41,6 +41,8 @@ using static UnitTest.Issues.TestProtos.ComplexOptionType2.Types;
 using static UnitTest.Issues.TestProtos.DummyMessageContainingEnum.Types;
 using static Google.Protobuf.Test.Reflection.CustomOptionNumber;
 
+#pragma warning disable CS0618
+
 namespace Google.Protobuf.Test.Reflection
 {
     // Internal enum to allow us to use "using static" for convenience.
