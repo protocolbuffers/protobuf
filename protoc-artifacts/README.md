@@ -70,8 +70,8 @@ script. We only use this script to build artifacts on Ubuntu and MacOS (both
 with x86_64, and do cross-compilation for other platforms.
 
 ### Tips for building for Linux
-We build on Centos 6.9 to provide a good compatibility for not very new
-systems. We have provided a ``Dockerfile`` under this directory to build the
+We build on Debian 9 with cross-compile toolchains for our target architectures.
+We have provided a ``Dockerfile`` under this directory to build the
 environment. It has been tested with Docker 1.6.1.
 
 To build a image:
