@@ -197,7 +197,7 @@ elif [[ "$(uname)" == Linux* ]]; then
     if [[ "$ARCH" == x86_64 ]]; then
       CXXFLAGS="$CXXFLAGS -m64"
     elif [[ "$ARCH" == x86_32 ]]; then
-      CXXFLAGS="$CXXFLAGS -m32"
+      CXXFLAGS="$CXXFLAGS -m32 -I/usr/include/x86_64-linux-gnu"
     elif [[ "$ARCH" == aarch_64 ]]; then
       CONFIGURE_ARGS="$CONFIGURE_ARGS --host=aarch64-linux-gnu"
     elif [[ "$ARCH" == ppcle_64 ]]; then
