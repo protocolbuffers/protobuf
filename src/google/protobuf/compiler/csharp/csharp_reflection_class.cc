@@ -74,7 +74,7 @@ void ReflectionClassGenerator::Generate(io::Printer* printer) {
   if (file_->extension_count() > 0) {
     printer->Print(
         "/// <summary>Holder for extension identifiers generated from the top level of $file_name$</summary>\n"
-        "internal static partial class $class_name$ {\n",
+        "$access_level$ static partial class $class_name$ {\n",
         "access_level", class_access_level(),
         "class_name", extensionClassname_,
         "file_name", file_->name());

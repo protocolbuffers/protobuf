@@ -320,7 +320,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
       "#region Extensions\n"
       "/// <summary>Container for extensions for other messages declared in the $class_name$ message type.</summary>\n");
     WriteGeneratedCodeAttributes(printer);
-    printer->Print("internal static partial class Extensions {\n");
+    printer->Print("public static partial class Extensions {\n");
     printer->Indent();
     for (int i = 0; i < descriptor_->extension_count(); i++) {
       std::unique_ptr<FieldGeneratorBase> generator(

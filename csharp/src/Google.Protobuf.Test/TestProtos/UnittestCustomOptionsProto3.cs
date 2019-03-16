@@ -165,7 +165,7 @@ namespace UnitTest.Issues.TestProtos {
 
   }
   /// <summary>Holder for extension identifiers generated from the top level of unittest_custom_options_proto3.proto</summary>
-  internal static partial class UnittestCustomOptionsProto3Extensions {
+  public static partial class UnittestCustomOptionsProto3Extensions {
     public static readonly pb::Extension<global::Google.Protobuf.Reflection.FileOptions, ulong> FileOpt1 =
       new pb::Extension<global::Google.Protobuf.Reflection.FileOptions, ulong>(7736974, pb::FieldCodec.ForUInt64(61895792, 0UL));
     public static readonly pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, int> MessageOpt1 =
@@ -2138,7 +2138,7 @@ namespace UnitTest.Issues.TestProtos {
         #region Extensions
         /// <summary>Container for extensions for other messages declared in the ComplexOptionType4 message type.</summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        internal static partial class Extensions {
+        public static partial class Extensions {
           public static readonly pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, global::UnitTest.Issues.TestProtos.ComplexOptionType2.Types.ComplexOptionType4> ComplexOpt4 =
             new pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, global::UnitTest.Issues.TestProtos.ComplexOptionType2.Types.ComplexOptionType4>(7633546, pb::FieldCodec.ForMessage(61068370, global::UnitTest.Issues.TestProtos.ComplexOptionType2.Types.ComplexOptionType4.Parser));
         }

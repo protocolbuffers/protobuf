@@ -53,7 +53,8 @@ $PROTOC -Isrc -Icsharp/protos \
     csharp/protos/unittest_import_proto3.proto \
     csharp/protos/unittest_import_public_proto3.proto \
     src/google/protobuf/unittest_well_known_types.proto \
-    src/google/protobuf/test_messages_proto3.proto
+    src/google/protobuf/test_messages_proto3.proto \
+    src/google/protobuf/test_messages_proto2.proto
 
 # AddressBook sample protos
 $PROTOC -Iexamples -Isrc --csharp_out=csharp/src/AddressBook \
