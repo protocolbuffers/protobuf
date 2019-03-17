@@ -19,9 +19,6 @@
 ** - handling of keys/escape-sequences/etc that span input buffers.
 */
 
-/* Need to define _XOPEN_SOURCE before any include to make strptime work. */
-#define _XOPEN_SOURCE 700
-
 #include <ctype.h>
 #include <errno.h>
 #include <float.h>
@@ -1531,45 +1528,98 @@ static bool end_duration_base(upb_json_parser *p, const char *ptr) {
   return true;
 }
 
-static void start_timestamp_base(upb_json_parser *p, const char *ptr) {
-  capture_begin(p, ptr);
-}
-
-#define UPB_TIMESTAMP_BASE_SIZE 19
-
-static bool end_timestamp_base(upb_json_parser *p, const char *ptr) {
+static int parse_timestamp_number(upb_json_parser *p) {
   size_t len;
   const char *buf;
-  /* 3 for GMT and 1 for ending 0 */
-  char timestamp_buf[UPB_TIMESTAMP_BASE_SIZE + 4];
+  char *end;
+  int val;
 
-  if (!capture_end(p, ptr)) {
-    return false;
-  }
+  /* atoi() and friends unfortunately do not support specifying the length of
+   * the input string, so we need to force a copy into a NULL-terminated buffer. */
+  multipart_text(p, "\0", 1, false);
 
   buf = accumulate_getptr(p, &len);
-  UPB_ASSERT(len == UPB_TIMESTAMP_BASE_SIZE);
-  memcpy(timestamp_buf, buf, UPB_TIMESTAMP_BASE_SIZE);
-  memcpy(timestamp_buf + UPB_TIMESTAMP_BASE_SIZE, "GMT", 3);
-  timestamp_buf[UPB_TIMESTAMP_BASE_SIZE + 3] = 0;
-
-#if defined __MINGW32__ || defined __MINGW64__
-  upb_status_seterrf(p->status,
-                     "error parsing timestamp: mingw doesn't support strptime");
-  return false;
-#else
-  /* Parse seconds */
-  if (strptime(timestamp_buf, "%FT%H:%M:%S%Z", &p->tm) == NULL) {
-    upb_status_seterrf(p->status, "error parsing timestamp: %s", buf);
-    return false;
-  }
-#endif
-
-  /* Clean up buffer */
+  val = atoi(buf);
   multipart_end(p);
   multipart_startaccum(p);
 
+  return val;
+}
+
+static void start_year(upb_json_parser *p, const char *ptr) {
+  capture_begin(p, ptr);
+}
+
+static bool end_year(upb_json_parser *p, const char *ptr) {
+  if (!capture_end(p, ptr)) {
+    return false;
+  }
+  p->tm.tm_year = parse_timestamp_number(p) - 1900;
   return true;
+}
+
+static void start_month(upb_json_parser *p, const char *ptr) {
+  capture_begin(p, ptr);
+}
+
+static bool end_month(upb_json_parser *p, const char *ptr) {
+  if (!capture_end(p, ptr)) {
+    return false;
+  }
+  p->tm.tm_mon = parse_timestamp_number(p) - 1;
+  return true;
+}
+
+static void start_day(upb_json_parser *p, const char *ptr) {
+  capture_begin(p, ptr);
+}
+
+static bool end_day(upb_json_parser *p, const char *ptr) {
+  if (!capture_end(p, ptr)) {
+    return false;
+  }
+  p->tm.tm_mday = parse_timestamp_number(p);
+  return true;
+}
+
+static void start_hour(upb_json_parser *p, const char *ptr) {
+  capture_begin(p, ptr);
+}
+
+static bool end_hour(upb_json_parser *p, const char *ptr) {
+  if (!capture_end(p, ptr)) {
+    return false;
+  }
+  p->tm.tm_hour = parse_timestamp_number(p);
+  return true;
+}
+
+static void start_minute(upb_json_parser *p, const char *ptr) {
+  capture_begin(p, ptr);
+}
+
+static bool end_minute(upb_json_parser *p, const char *ptr) {
+  if (!capture_end(p, ptr)) {
+    return false;
+  }
+  p->tm.tm_min = parse_timestamp_number(p);
+  return true;
+}
+
+static void start_second(upb_json_parser *p, const char *ptr) {
+  capture_begin(p, ptr);
+}
+
+static bool end_second(upb_json_parser *p, const char *ptr) {
+  if (!capture_end(p, ptr)) {
+    return false;
+  }
+  p->tm.tm_sec = parse_timestamp_number(p);
+  return true;
+}
+
+static void start_timestamp_base(upb_json_parser *p) {
+  memset(&p->tm, 0, sizeof(struct tm));
 }
 
 static void start_timestamp_fraction(upb_json_parser *p, const char *ptr) {
@@ -2534,12 +2584,36 @@ static bool does_fieldmask_end(upb_json_parser *p) {
       @{ fhold; fret; }
     ;
 
-  year = digit digit digit digit;
-  month = digit digit;
-  day = digit digit;
-  hour = digit digit;
-  minute = digit digit;
-  second = digit digit;
+  year = 
+    (digit digit digit digit)
+      >{ start_year(parser, p); }
+      %{ CHECK_RETURN_TOP(end_year(parser, p)); }
+    ;
+  month =
+    (digit digit)
+      >{ start_month(parser, p); }
+      %{ CHECK_RETURN_TOP(end_month(parser, p)); }
+    ;
+  day =
+    (digit digit)
+      >{ start_day(parser, p); }
+      %{ CHECK_RETURN_TOP(end_day(parser, p)); }
+    ;
+  hour =
+    (digit digit)
+      >{ start_hour(parser, p); }
+      %{ CHECK_RETURN_TOP(end_hour(parser, p)); }
+    ;
+  minute =
+    (digit digit)
+      >{ start_minute(parser, p); }
+      %{ CHECK_RETURN_TOP(end_minute(parser, p)); }
+    ;
+  second =
+    (digit digit)
+      >{ start_second(parser, p); }
+      %{ CHECK_RETURN_TOP(end_second(parser, p)); }
+    ;
 
   duration_machine :=
     ("-"? integer decimal?)
@@ -2551,12 +2625,11 @@ static bool does_fieldmask_end(upb_json_parser *p) {
 
   timestamp_machine :=
     (year "-" month "-" day "T" hour ":" minute ":" second)
-      >{ start_timestamp_base(parser, p); }
-      %{ CHECK_RETURN_TOP(end_timestamp_base(parser, p)); }
+      >{ start_timestamp_base(parser); }
     ("." digit+)?
       >{ start_timestamp_fraction(parser, p); }
       %{ CHECK_RETURN_TOP(end_timestamp_fraction(parser, p)); }
-    ([+\-] hour ":00" | "Z")
+    ([+\-] digit digit ":00" | "Z")
       >{ start_timestamp_zone(parser, p); }
       %{ CHECK_RETURN_TOP(end_timestamp_zone(parser, p)); }
     '"'
