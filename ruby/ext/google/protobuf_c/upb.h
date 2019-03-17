@@ -10639,4 +10639,4 @@ inline reffed_ptr<const Handlers> Printer::NewHandlers(
 #undef UPB_FIELD_AT
 #undef UPB_READ_ONEOF
 #undef UPB_WRITE_ONEOF
-undef UPB_WRITE_ONEOF
+#undef UPB_WRITE_ONEOF
