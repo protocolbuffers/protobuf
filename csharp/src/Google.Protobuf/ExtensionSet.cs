@@ -44,15 +44,13 @@ namespace Google.Protobuf
     /// </summary>
     public static class ExtensionSet
     {
-        private static IExtensionValue GetValue<TTarget>(ref ExtensionSet<TTarget> set, Extension extension) where TTarget : IExtensionMessage<TTarget>
+        private static bool GetValue<TTarget>(ref ExtensionSet<TTarget> set, Extension extension, out IExtensionValue value) where TTarget : IExtensionMessage<TTarget>
         {
             if (set == null)
             {
                 set = new ExtensionSet<TTarget>();
             }
-            IExtensionValue value;
-            set.ValuesByNumber.TryGetValue(extension.FieldNumber, out value);
-            return value;
+            return set.ValuesByNumber.TryGetValue(extension.FieldNumber, out value);
         }
 
         /// <summary>
@@ -75,16 +73,36 @@ namespace Google.Protobuf
             set.ValuesByNumber.Add(extension.FieldNumber, extension.CreateValue());
         }
 
+        private static TValue GetDefaultValue<TValue>() 
+        {
+            if (typeof(TValue) == typeof(string)) 
+            {
+                return (TValue)(object)"";
+            }
+            else if (typeof(TValue) == typeof(ByteString))
+            {
+                return (TValue)(object)ByteString.Empty;
+            }
+            else
+            {
+                return default(TValue);
+            }
+        }
+
         /// <summary>
         /// Gets the value of the specified extension
         /// </summary>
         public static TValue Get<TTarget, TValue>(ref ExtensionSet<TTarget> set, Extension<TTarget, TValue> extension) where TTarget : IExtensionMessage<TTarget>
         {
-            if (set == null)
+            IExtensionValue value;
+            if (GetValue(ref set, extension, out value))
             {
-                set = new ExtensionSet<TTarget>();
+                return ((ExtensionValue<TValue>)value).GetValue();
             }
-            return ((ExtensionValue<TValue>)GetValue(ref set, extension)).GetValue();
+            else 
+            {
+                return GetDefaultValue<TValue>();
+            }
         }
 
         /// <summary>
@@ -92,11 +110,16 @@ namespace Google.Protobuf
         /// </summary>
         public static RepeatedField<TValue> Get<TTarget, TValue>(ref ExtensionSet<TTarget> set, RepeatedExtension<TTarget, TValue> extension) where TTarget : IExtensionMessage<TTarget>
         {
-            if (set == null)
+            IExtensionValue value;
+            if (GetValue(ref set, extension, out value))
             {
-                set = new ExtensionSet<TTarget>();
+                return ((RepeatedExtensionValue<TValue>)value).GetValue();
             }
-            return ((RepeatedExtensionValue<TValue>)GetValue(ref set, extension)).GetValue();
+            else 
+            {
+                Register(ref set, extension);
+                return Get(ref set, extension);
+            }
         }
 
         /// <summary>
@@ -104,11 +127,11 @@ namespace Google.Protobuf
         /// </summary>
         public static void Set<TTarget, TValue>(ref ExtensionSet<TTarget> set, Extension<TTarget, TValue> extension, TValue value) where TTarget : IExtensionMessage<TTarget>
         {
-            if (set == null)
+            IExtensionValue extensionValue;
+            if (GetValue(ref set, extension, out extensionValue))
             {
-                set = new ExtensionSet<TTarget>();
+                ((ExtensionValue<TValue>)extensionValue).SetValue(value);
             }
-            ((ExtensionValue<TValue>)GetValue(ref set, extension)).SetValue(value);
         }
 
         /// <summary>
@@ -116,11 +139,15 @@ namespace Google.Protobuf
         /// </summary>
         public static bool Has<TTarget, TValue>(ref ExtensionSet<TTarget> set, Extension<TTarget, TValue> extension) where TTarget : IExtensionMessage<TTarget>
         {
-            if (set == null)
+            IExtensionValue value;
+            if (GetValue(ref set, extension, out value))
             {
-                set = new ExtensionSet<TTarget>();
+                return ((ExtensionValue<TValue>)value).HasValue;
             }
-            return ((ExtensionValue<TValue>)GetValue(ref set, extension)).HasValue;
+            else 
+            {
+                return false;
+            }
         }
 
         /// <summary>
@@ -128,11 +155,11 @@ namespace Google.Protobuf
         /// </summary>
         public static void Clear<TTarget, TValue>(ref ExtensionSet<TTarget> set, Extension<TTarget, TValue> extension) where TTarget : IExtensionMessage<TTarget>
         {
-            if (set == null)
+            IExtensionValue value;
+            if (GetValue(ref set, extension, out value))
             {
-                set = new ExtensionSet<TTarget>();
+                ((ExtensionValue<TValue>)value).ClearValue();
             }
-            ((ExtensionValue<TValue>)GetValue(ref set, extension)).ClearValue();
         }
 
         /// <summary>
