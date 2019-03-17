@@ -48,7 +48,8 @@ namespace Google.Protobuf
         {
             if (set == null)
             {
-                set = new ExtensionSet<TTarget>();
+                value = null;
+                return false;
             }
             return set.ValuesByNumber.TryGetValue(extension.FieldNumber, out value);
         }
@@ -128,10 +129,16 @@ namespace Google.Protobuf
         public static void Set<TTarget, TValue>(ref ExtensionSet<TTarget> set, Extension<TTarget, TValue> extension, TValue value) where TTarget : IExtensionMessage<TTarget>
         {
             IExtensionValue extensionValue;
-            if (GetValue(ref set, extension, out extensionValue))
+            if (!GetValue(ref set, extension, out extensionValue))
             {
-                ((ExtensionValue<TValue>)extensionValue).SetValue(value);
+                Register(ref set, extension);
+                if (!GetValue(ref set, extension, out extensionValue))
+                {
+                    throw new InvalidOperationException("Failed to get newly registered extension value");
+                }
             }
+            
+            ((ExtensionValue<TValue>)extensionValue).SetValue(value);
         }
 
         /// <summary>
