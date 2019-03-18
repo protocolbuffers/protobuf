@@ -2282,14 +2282,23 @@ namespace internal {
 // This code based on net/proto/proto-array-internal.h by Jeffrey Yasskin
 // (jyasskin@google.com).
 template<typename Element>
-class RepeatedPtrIterator {
+class RepeatedPtrIterator
+    : public std::iterator<
+          std::random_access_iterator_tag, Element> {
  public:
   typedef RepeatedPtrIterator<Element> iterator;
-  typedef std::random_access_iterator_tag iterator_category;
+  typedef std::iterator<
+          std::random_access_iterator_tag, Element> superclass;
+
+  // Shadow the value_type in std::iterator<> because const_iterator::value_type
+  // needs to be T, not const T.
   typedef typename std::remove_const<Element>::type value_type;
-  typedef std::ptrdiff_t difference_type;
-  typedef Element* pointer;
-  typedef Element& reference;
+
+  // Let the compiler know that these are type names, so we don't have to
+  // write "typename" in front of them everywhere.
+  typedef typename superclass::reference reference;
+  typedef typename superclass::pointer pointer;
+  typedef typename superclass::difference_type difference_type;
 
   RepeatedPtrIterator() : it_(NULL) {}
   explicit RepeatedPtrIterator(void* const* it) : it_(it) {}
@@ -2369,14 +2378,21 @@ class RepeatedPtrIterator {
 // referenced by the iterator.  It should either be "void *" for a mutable
 // iterator, or "const void* const" for a constant iterator.
 template <typename Element, typename VoidPtr>
-class RepeatedPtrOverPtrsIterator {
+class RepeatedPtrOverPtrsIterator
+    : public std::iterator<std::random_access_iterator_tag, Element> {
  public:
   typedef RepeatedPtrOverPtrsIterator<Element, VoidPtr> iterator;
-  typedef std::random_access_iterator_tag iterator_category;
+  typedef std::iterator<std::random_access_iterator_tag, Element> superclass;
+
+  // Shadow the value_type in std::iterator<> because const_iterator::value_type
+  // needs to be T, not const T.
   typedef typename std::remove_const<Element>::type value_type;
-  typedef std::ptrdiff_t difference_type;
-  typedef Element* pointer;
-  typedef Element& reference;
+
+  // Let the compiler know that these are type names, so we don't have to
+  // write "typename" in front of them everywhere.
+  typedef typename superclass::reference reference;
+  typedef typename superclass::pointer pointer;
+  typedef typename superclass::difference_type difference_type;
 
   RepeatedPtrOverPtrsIterator() : it_(NULL) {}
   explicit RepeatedPtrOverPtrsIterator(VoidPtr* it) : it_(it) {}
