@@ -83,3 +83,13 @@ the final release.
   Ultimately, the green signal will be provided by our testing infrastructure.
   The reviewer will help you if there are test failures that seem not related
   to the change you are making.
+* Apply the "release notes: yes" label if the pull request's description should
+  be included in the next release (e.g., any new feature / bug fix).
+  Apply the "release notes: no" label if the pull request's description should
+  not be included in the next release (e.g., refactoring changes that does not
+  change behavior, integration from Google internal, updating tests, etc.).
+* Apply the appropriate language label (e.g., C++, Java, Python, etc.) to the
+  pull request. This will make it easier to identify which languages the pull
+  request affects, allowing us to better identify appropriate reviewer, create
+  a better release note, and make it easier to identify issues in the future.
+  
