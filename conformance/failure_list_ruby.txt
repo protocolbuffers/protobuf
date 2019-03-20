@@ -26,7 +26,6 @@ Required.Proto3.JsonInput.DoubleFieldMinPositiveValue.ProtobufOutput
 Required.Proto3.JsonInput.DoubleFieldNan.JsonOutput
 Required.Proto3.JsonInput.DurationMinValue.JsonOutput
 Required.Proto3.JsonInput.DurationRepeatedValue.JsonOutput
-Required.Proto3.JsonInput.EmptyFieldMask.JsonOutput
 Required.Proto3.JsonInput.FloatFieldInfinity.JsonOutput
 Required.Proto3.JsonInput.FloatFieldNan.JsonOutput
 Required.Proto3.JsonInput.FloatFieldNegativeInfinity.JsonOutput
