@@ -121,7 +121,6 @@ std::vector<const protobuf::Descriptor*> SortedMessages(
   for (int i = 0; i < file->message_type_count(); i++) {
     AddMessages(file->message_type(i), &messages);
   }
-  //SortDefs(&messages);
   return messages;
 }
 
@@ -208,13 +207,12 @@ std::string CTypeInternal(const protobuf::FieldDescriptor* field,
       return maybe_const + maybe_struct + MessageName(field->message_type()) +
              "*";
     }
-    case protobuf::FieldDescriptor::CPPTYPE_ENUM:
-      return ToCIdent(field->enum_type()->full_name());
     case protobuf::FieldDescriptor::CPPTYPE_BOOL:
       return "bool";
     case protobuf::FieldDescriptor::CPPTYPE_FLOAT:
       return "float";
     case protobuf::FieldDescriptor::CPPTYPE_INT32:
+    case protobuf::FieldDescriptor::CPPTYPE_ENUM:
       return "int32_t";
     case protobuf::FieldDescriptor::CPPTYPE_UINT32:
       return "uint32_t";
@@ -507,45 +505,56 @@ void WriteHeader(const protobuf::FileDescriptor* file, Output& output) {
       "#endif\n\n",
       ToPreproc(file->name()));
 
+  std::vector<const protobuf::Descriptor*> this_file_messages =
+      SortedMessages(file);
+
   // Forward-declare types defined in this file.
-  for (auto message : SortedMessages(file)) {
+  for (auto message : this_file_messages) {
     output("struct $0;\n", ToCIdent(message->full_name()));
   }
-  for (auto message : SortedMessages(file)) {
+  for (auto message : this_file_messages) {
     output("typedef struct $0 $0;\n", ToCIdent(message->full_name()));
   }
-  for (auto message : SortedMessages(file)) {
+  for (auto message : this_file_messages) {
     output("extern const upb_msglayout $0;\n", MessageInit(message));
   }
 
   // Forward-declare types not in this file, but used as submessages.
-  std::set<const protobuf::Descriptor*> forward_messages;
+  // Order by full name for consistent ordering.
+  std::map<std::string, const protobuf::Descriptor*> forward_messages;
+
   for (auto message : SortedMessages(file)) {
     for (int i = 0; i < message->field_count(); i++) {
       const protobuf::FieldDescriptor* field = message->field(i);
       if (field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_MESSAGE &&
           field->file() != field->message_type()->file()) {
-        forward_messages.insert(field->message_type());
+        forward_messages[field->message_type()->full_name()] =
+            field->message_type();
       }
     }
   }
-  for (const auto& descriptor : forward_messages) {
-    output("struct $0;\n", MessageName(descriptor));
+  for (const auto& pair : forward_messages) {
+    output("struct $0;\n", MessageName(pair.second));
   }
-  for (const auto& descriptor : forward_messages) {
-    output("extern const upb_msglayout $0;\n", MessageInit(descriptor));
+  for (const auto& pair : forward_messages) {
+    output("extern const upb_msglayout $0;\n", MessageInit(pair.second));
   }
+
+  std::vector<const protobuf::EnumDescriptor*> this_file_enums =
+      SortedEnums(file);
 
   output(
       "\n"
       "/* Enums */\n\n");
-  for (auto enumdesc : SortedEnums(file)) {
+  for (auto enumdesc : this_file_enums) {
     output("typedef enum {\n");
     DumpEnumValues(enumdesc, output);
     output("} $0;\n\n", ToCIdent(enumdesc->full_name()));
   }
 
-  for (auto message : SortedMessages(file)) {
+  output("\n");
+
+  for (auto message : this_file_messages) {
     GenerateMessageInHeader(message, output);
   }
 
@@ -740,7 +749,7 @@ void WriteDefSource(const protobuf::FileDescriptor* file, Output& output) {
 
   output("static upb_def_init *deps[$0] = {\n", file->dependency_count() + 1);
   for (int i = 0; i < file->dependency_count(); i++) {
-    output("  $0,\n", DefInitSymbol(file->dependency(i)));
+    output("  &$0,\n", DefInitSymbol(file->dependency(i)));
   }
   output("  NULL\n");
   output("};\n");

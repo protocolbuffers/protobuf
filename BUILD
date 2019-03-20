@@ -237,10 +237,19 @@ cc_test(
 
 proto_library(
     name = "test_json_proto",
-    srcs = ["tests/json/test.proto"],
+    srcs = [
+        "tests/json/test.proto",
+        "tests/json/enum_from_separate_file.proto",
+    ],
 )
 
 upb_proto_reflection_library(
+    name = "test_json_upbprotoreflection",
+    upbc = ":protoc-gen-upb",
+    deps = ["test_json_proto"],
+)
+
+upb_proto_library(
     name = "test_json_upbproto",
     upbc = ":protoc-gen-upb",
     deps = ["test_json_proto"],
@@ -252,7 +261,7 @@ cc_test(
         "tests/json/test_json.cc",
     ],
     deps = [
-        ":test_json_upbproto",
+        ":test_json_upbprotoreflection",
         ":upb_json",
         ":upb_test",
     ],
