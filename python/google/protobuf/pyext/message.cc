@@ -310,12 +310,25 @@ static PyObject* New(PyTypeObject* type,
   return result.release();
 }
 
-static void Dealloc(CMessageClass *self) {
+static void Dealloc(PyObject* pself) {
+  CMessageClass* self = reinterpret_cast<CMessageClass*>(pself);
   Py_XDECREF(self->py_message_descriptor);
   Py_XDECREF(self->py_message_factory);
-  Py_TYPE(self)->tp_free(reinterpret_cast<PyObject*>(self));
+  return PyType_Type.tp_dealloc(pself);
 }
 
+static int GcTraverse(PyObject* pself, visitproc visit, void* arg) {
+  CMessageClass* self = reinterpret_cast<CMessageClass*>(pself);
+  Py_VISIT(self->py_message_descriptor);
+  Py_VISIT(self->py_message_factory);
+  return PyType_Type.tp_traverse(pself, visit, arg);
+}
+
+static int GcClear(PyObject* pself) {
+  // It's important to keep the descriptor and factory alive, until the
+  // C++ message is fully destructed.
+  return PyType_Type.tp_clear(pself);
+}
 
 // This function inserts and empty weakref at the end of the list of
 // subclasses for the main protocol buffer Message class.
@@ -329,10 +342,16 @@ static int InsertEmptyWeakref(PyTypeObject *base_type) {
   // https://bugs.python.org/issue17936.
   return 0;
 #else
+#ifdef Py_DEBUG
+  // The code below causes all new subclasses to append an entry, which is never
+  // cleared. This is a small memory leak, which we disable in Py_DEBUG mode
+  // to have stable refcounting checks.
+#else
   PyObject *subclasses = base_type->tp_subclasses;
   if (subclasses && PyList_CheckExact(subclasses)) {
     return PyList_Append(subclasses, kEmptyWeakref);
   }
+#endif  // !Py_DEBUG
   return 0;
 #endif  // PY_MAJOR_VERSION >= 3
 }
@@ -451,44 +470,44 @@ static PyObject* GetAttr(CMessageClass* self, PyObject* name) {
 }  // namespace message_meta
 
 static PyTypeObject _CMessageClass_Type = {
-  PyVarObject_HEAD_INIT(&PyType_Type, 0)
-  FULL_MODULE_NAME ".MessageMeta",     // tp_name
-  sizeof(CMessageClass),               // tp_basicsize
-  0,                                   // tp_itemsize
-  (destructor)message_meta::Dealloc,   // tp_dealloc
-  0,                                   // tp_print
-  0,                                   // tp_getattr
-  0,                                   // tp_setattr
-  0,                                   // tp_compare
-  0,                                   // tp_repr
-  0,                                   // tp_as_number
-  0,                                   // tp_as_sequence
-  0,                                   // tp_as_mapping
-  0,                                   // tp_hash
-  0,                                   // tp_call
-  0,                                   // tp_str
-  (getattrofunc)message_meta::GetAttr,  // tp_getattro
-  0,                                   // tp_setattro
-  0,                                   // tp_as_buffer
-  Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,  // tp_flags
-  "The metaclass of ProtocolMessages",  // tp_doc
-  0,                                   // tp_traverse
-  0,                                   // tp_clear
-  0,                                   // tp_richcompare
-  0,                                   // tp_weaklistoffset
-  0,                                   // tp_iter
-  0,                                   // tp_iternext
-  0,                                   // tp_methods
-  0,                                   // tp_members
-  message_meta::Getters,               // tp_getset
-  0,                                   // tp_base
-  0,                                   // tp_dict
-  0,                                   // tp_descr_get
-  0,                                   // tp_descr_set
-  0,                                   // tp_dictoffset
-  0,                                   // tp_init
-  0,                                   // tp_alloc
-  message_meta::New,                   // tp_new
+    PyVarObject_HEAD_INIT(&PyType_Type, 0) FULL_MODULE_NAME
+    ".MessageMeta",                       // tp_name
+    sizeof(CMessageClass),                // tp_basicsize
+    0,                                    // tp_itemsize
+    message_meta::Dealloc,                // tp_dealloc
+    0,                                    // tp_print
+    0,                                    // tp_getattr
+    0,                                    // tp_setattr
+    0,                                    // tp_compare
+    0,                                    // tp_repr
+    0,                                    // tp_as_number
+    0,                                    // tp_as_sequence
+    0,                                    // tp_as_mapping
+    0,                                    // tp_hash
+    0,                                    // tp_call
+    0,                                    // tp_str
+    (getattrofunc)message_meta::GetAttr,  // tp_getattro
+    0,                                    // tp_setattro
+    0,                                    // tp_as_buffer
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_GC,  // tp_flags
+    "The metaclass of ProtocolMessages",                            // tp_doc
+    message_meta::GcTraverse,  // tp_traverse
+    message_meta::GcClear,     // tp_clear
+    0,                         // tp_richcompare
+    0,                         // tp_weaklistoffset
+    0,                         // tp_iter
+    0,                         // tp_iternext
+    0,                         // tp_methods
+    0,                         // tp_members
+    message_meta::Getters,     // tp_getset
+    0,                         // tp_base
+    0,                         // tp_dict
+    0,                         // tp_descr_get
+    0,                         // tp_descr_set
+    0,                         // tp_dictoffset
+    0,                         // tp_init
+    0,                         // tp_alloc
+    message_meta::New,         // tp_new
 };
 PyTypeObject* CMessageClass_Type = &_CMessageClass_Type;
 

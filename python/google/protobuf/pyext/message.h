@@ -129,12 +129,13 @@ struct CMessageClass {
   const Descriptor* message_descriptor;
 
   // Owned reference, used to keep the pointer above alive.
+  // This reference must stay alive until all message pointers are destructed.
   PyObject* py_message_descriptor;
 
   // The Python MessageFactory used to create the class. It is needed to resolve
   // fields descriptors, including extensions fields; its C++ MessageFactory is
   // used to instantiate submessages.
-  // We own the reference, because it's important to keep the factory alive.
+  // This reference must stay alive until all message pointers are destructed.
   PyMessageFactory* py_message_factory;
 
   PyObject* AsPyObject() {

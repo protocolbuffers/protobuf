@@ -35,9 +35,13 @@
 #include <google/protobuf/generated_message_util.h>
 
 #include <limits>
+
+#ifndef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
 // We're only using this as a standard way for getting the thread id.
 // We're not using any thread functionality.
 #include <thread>  // NOLINT
+#endif  // #ifndef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
+
 #include <vector>
 
 #include <google/protobuf/io/coded_stream_inl.h>
@@ -784,8 +788,17 @@ void InitSCCImpl(SCCInfoBase* scc) {
   static WrappedMutex mu{GOOGLE_PROTOBUF_LINKER_INITIALIZED};
   // Either the default in case no initialization is running or the id of the
   // thread that is currently initializing.
+#ifndef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
   static std::atomic<std::thread::id> runner;
   auto me = std::this_thread::get_id();
+#else
+  // This is a lightweight replacement for std::thread::id. std::thread does not
+  // work on Windows XP SP2 with the latest VC++ libraries, because it utilizes
+  // the Concurrency Runtime that is only supported on Windows XP SP3 and above.
+  static std::atomic_llong runner(-1);
+  auto me = ::GetCurrentThreadId();
+#endif  // #ifndef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
+
   // This will only happen because the constructor will call InitSCC while
   // constructing the default instance.
   if (runner.load(std::memory_order_relaxed) == me) {
@@ -799,7 +812,13 @@ void InitSCCImpl(SCCInfoBase* scc) {
   mu.Lock();
   runner.store(me, std::memory_order_relaxed);
   InitSCC_DFS(scc);
+
+#ifndef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
   runner.store(std::thread::id{}, std::memory_order_relaxed);
+#else
+  runner.store(-1, std::memory_order_relaxed);
+#endif  // #ifndef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
+
   mu.Unlock();
 }
 

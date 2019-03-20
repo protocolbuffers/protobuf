@@ -143,6 +143,9 @@ std::string ReferenceFunctionName(const Descriptor* descriptor,
 std::string SuperClassName(const Descriptor* descriptor,
                            const Options& options);
 
+// Adds an underscore if necessary to prevent conflicting with a keyword.
+std::string ResolveKeyword(const string& name);
+
 // Get the (unqualified) name that should be used for this field in C++ code.
 // The name is coerced to lower-case to emulate proto1 behavior.  People
 // should be using lowercase-with-underscores style for proto field names

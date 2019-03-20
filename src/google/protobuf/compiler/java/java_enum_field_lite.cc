@@ -53,6 +53,13 @@ namespace compiler {
 namespace java {
 
 namespace {
+bool EnableExperimentalRuntimeForLite() {
+#ifdef PROTOBUF_EXPERIMENT
+  return PROTOBUF_EXPERIMENT;
+#else   // PROTOBUF_EXPERIMENT
+  return false;
+#endif  // !PROTOBUF_EXPERIMENT
+}
 
 void SetEnumVariables(const FieldDescriptor* descriptor, int messageBitIndex,
                       int builderBitIndex, const FieldGeneratorInfo* info,
@@ -656,7 +663,7 @@ GenerateMembers(io::Printer* printer) const {
     printer->Annotate("{", "}", descriptor_);
   }
 
-  if (descriptor_->is_packed() &&
+  if (!EnableExperimentalRuntimeForLite() && descriptor_->is_packed() &&
       context_->HasGeneratedMethods(descriptor_->containing_type())) {
     printer->Print(variables_,
       "private int $name$MemoizedSerializedSize;\n");
@@ -929,6 +936,8 @@ GenerateParsingDoneCode(io::Printer* printer) const {
 
 void RepeatedImmutableEnumFieldLiteGenerator::
 GenerateSerializationCode(io::Printer* printer) const {
+  GOOGLE_CHECK(!EnableExperimentalRuntimeForLite());
+
   if (descriptor_->is_packed()) {
     printer->Print(variables_,
       "if (get$capitalized_name$List().size() > 0) {\n"
@@ -948,6 +957,8 @@ GenerateSerializationCode(io::Printer* printer) const {
 
 void RepeatedImmutableEnumFieldLiteGenerator::
 GenerateSerializedSizeCode(io::Printer* printer) const {
+  GOOGLE_CHECK(!EnableExperimentalRuntimeForLite());
+
   printer->Print(variables_,
     "{\n"
     "  int dataSize = 0;\n");

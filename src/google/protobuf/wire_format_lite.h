@@ -248,16 +248,6 @@ class PROTOBUF_EXPORT WireFormatLite {
   // of these methods are defined in wire_format_lite_inl.h; you must #include
   // that file to use these.
 
-#ifdef NDEBUG
-#define INL PROTOBUF_ALWAYS_INLINE
-#else
-// Avoid excessive inlining in non-optimized builds. Without other optimizations
-// the inlining is not going to provide benefits anyway and the huge resulting
-// functions, especially in the proto-generated serialization functions, produce
-// stack frames so large that many tests run into stack overflows (b/32192897).
-#define INL
-#endif
-
   // Read fields, not including tags.  The assumption is that you already
   // read the tag to determine what field to read.
 
@@ -265,15 +255,16 @@ class PROTOBUF_EXPORT WireFormatLite {
   // the represented type and the FieldType. These are specialized with the
   // appropriate definition for each declared type.
   template <typename CType, enum FieldType DeclaredType>
-  INL static bool ReadPrimitive(io::CodedInputStream* input, CType* value);
+  PROTOBUF_ALWAYS_INLINE static bool ReadPrimitive(io::CodedInputStream* input,
+                                                   CType* value);
 
   // Reads repeated primitive values, with optimizations for repeats.
   // tag_size and tag should both be compile-time constants provided by the
   // protocol compiler.
   template <typename CType, enum FieldType DeclaredType>
-  INL static bool ReadRepeatedPrimitive(int tag_size, uint32 tag,
-                                        io::CodedInputStream* input,
-                                        RepeatedField<CType>* value);
+  PROTOBUF_ALWAYS_INLINE static bool ReadRepeatedPrimitive(
+      int tag_size, uint32 tag, io::CodedInputStream* input,
+      RepeatedField<CType>* value);
 
   // Identical to ReadRepeatedPrimitive, except will not inline the
   // implementation.
@@ -288,15 +279,15 @@ class PROTOBUF_EXPORT WireFormatLite {
   // This is only implemented for the types with fixed wire size, e.g.
   // float, double, and the (s)fixed* types.
   template <typename CType, enum FieldType DeclaredType>
-  INL static const uint8* ReadPrimitiveFromArray(const uint8* buffer,
-                                                 CType* value);
+  PROTOBUF_ALWAYS_INLINE static const uint8* ReadPrimitiveFromArray(
+      const uint8* buffer, CType* value);
 
   // Reads a primitive packed field.
   //
   // This is only implemented for packable types.
   template <typename CType, enum FieldType DeclaredType>
-  INL static bool ReadPackedPrimitive(io::CodedInputStream* input,
-                                      RepeatedField<CType>* value);
+  PROTOBUF_ALWAYS_INLINE static bool ReadPackedPrimitive(
+      io::CodedInputStream* input, RepeatedField<CType>* value);
 
   // Identical to ReadPackedPrimitive, except will not inline the
   // implementation.
@@ -364,28 +355,38 @@ class PROTOBUF_EXPORT WireFormatLite {
   // Write a tag.  The Write*() functions typically include the tag, so
   // normally there's no need to call this unless using the Write*NoTag()
   // variants.
-  INL static void WriteTag(int field_number, WireType type,
-                           io::CodedOutputStream* output);
+  PROTOBUF_ALWAYS_INLINE static void WriteTag(int field_number, WireType type,
+                                              io::CodedOutputStream* output);
 
   // Write fields, without tags.
-  INL static void WriteInt32NoTag(int32 value, io::CodedOutputStream* output);
-  INL static void WriteInt64NoTag(int64 value, io::CodedOutputStream* output);
-  INL static void WriteUInt32NoTag(uint32 value, io::CodedOutputStream* output);
-  INL static void WriteUInt64NoTag(uint64 value, io::CodedOutputStream* output);
-  INL static void WriteSInt32NoTag(int32 value, io::CodedOutputStream* output);
-  INL static void WriteSInt64NoTag(int64 value, io::CodedOutputStream* output);
-  INL static void WriteFixed32NoTag(uint32 value,
-                                    io::CodedOutputStream* output);
-  INL static void WriteFixed64NoTag(uint64 value,
-                                    io::CodedOutputStream* output);
-  INL static void WriteSFixed32NoTag(int32 value,
-                                     io::CodedOutputStream* output);
-  INL static void WriteSFixed64NoTag(int64 value,
-                                     io::CodedOutputStream* output);
-  INL static void WriteFloatNoTag(float value, io::CodedOutputStream* output);
-  INL static void WriteDoubleNoTag(double value, io::CodedOutputStream* output);
-  INL static void WriteBoolNoTag(bool value, io::CodedOutputStream* output);
-  INL static void WriteEnumNoTag(int value, io::CodedOutputStream* output);
+  PROTOBUF_ALWAYS_INLINE static void WriteInt32NoTag(
+      int32 value, io::CodedOutputStream* output);
+  PROTOBUF_ALWAYS_INLINE static void WriteInt64NoTag(
+      int64 value, io::CodedOutputStream* output);
+  PROTOBUF_ALWAYS_INLINE static void WriteUInt32NoTag(
+      uint32 value, io::CodedOutputStream* output);
+  PROTOBUF_ALWAYS_INLINE static void WriteUInt64NoTag(
+      uint64 value, io::CodedOutputStream* output);
+  PROTOBUF_ALWAYS_INLINE static void WriteSInt32NoTag(
+      int32 value, io::CodedOutputStream* output);
+  PROTOBUF_ALWAYS_INLINE static void WriteSInt64NoTag(
+      int64 value, io::CodedOutputStream* output);
+  PROTOBUF_ALWAYS_INLINE static void WriteFixed32NoTag(
+      uint32 value, io::CodedOutputStream* output);
+  PROTOBUF_ALWAYS_INLINE static void WriteFixed64NoTag(
+      uint64 value, io::CodedOutputStream* output);
+  PROTOBUF_ALWAYS_INLINE static void WriteSFixed32NoTag(
+      int32 value, io::CodedOutputStream* output);
+  PROTOBUF_ALWAYS_INLINE static void WriteSFixed64NoTag(
+      int64 value, io::CodedOutputStream* output);
+  PROTOBUF_ALWAYS_INLINE static void WriteFloatNoTag(
+      float value, io::CodedOutputStream* output);
+  PROTOBUF_ALWAYS_INLINE static void WriteDoubleNoTag(
+      double value, io::CodedOutputStream* output);
+  PROTOBUF_ALWAYS_INLINE static void WriteBoolNoTag(
+      bool value, io::CodedOutputStream* output);
+  PROTOBUF_ALWAYS_INLINE static void WriteEnumNoTag(
+      int value, io::CodedOutputStream* output);
 
   // Write array of primitive fields, without tags
   static void WriteFloatArray(const float* a, int n,
@@ -468,147 +469,161 @@ class PROTOBUF_EXPORT WireFormatLite {
                                            io::CodedOutputStream* output);
 
   // Like above, but use only *ToArray methods of CodedOutputStream.
-  INL static uint8* WriteTagToArray(int field_number, WireType type,
-                                    uint8* target);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteTagToArray(int field_number,
+                                                       WireType type,
+                                                       uint8* target);
 
   // Write fields, without tags.
-  INL static uint8* WriteInt32NoTagToArray(int32 value, uint8* target);
-  INL static uint8* WriteInt64NoTagToArray(int64 value, uint8* target);
-  INL static uint8* WriteUInt32NoTagToArray(uint32 value, uint8* target);
-  INL static uint8* WriteUInt64NoTagToArray(uint64 value, uint8* target);
-  INL static uint8* WriteSInt32NoTagToArray(int32 value, uint8* target);
-  INL static uint8* WriteSInt64NoTagToArray(int64 value, uint8* target);
-  INL static uint8* WriteFixed32NoTagToArray(uint32 value, uint8* target);
-  INL static uint8* WriteFixed64NoTagToArray(uint64 value, uint8* target);
-  INL static uint8* WriteSFixed32NoTagToArray(int32 value, uint8* target);
-  INL static uint8* WriteSFixed64NoTagToArray(int64 value, uint8* target);
-  INL static uint8* WriteFloatNoTagToArray(float value, uint8* target);
-  INL static uint8* WriteDoubleNoTagToArray(double value, uint8* target);
-  INL static uint8* WriteBoolNoTagToArray(bool value, uint8* target);
-  INL static uint8* WriteEnumNoTagToArray(int value, uint8* target);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteInt32NoTagToArray(int32 value,
+                                                              uint8* target);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteInt64NoTagToArray(int64 value,
+                                                              uint8* target);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteUInt32NoTagToArray(uint32 value,
+                                                               uint8* target);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteUInt64NoTagToArray(uint64 value,
+                                                               uint8* target);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteSInt32NoTagToArray(int32 value,
+                                                               uint8* target);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteSInt64NoTagToArray(int64 value,
+                                                               uint8* target);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteFixed32NoTagToArray(uint32 value,
+                                                                uint8* target);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteFixed64NoTagToArray(uint64 value,
+                                                                uint8* target);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteSFixed32NoTagToArray(int32 value,
+                                                                 uint8* target);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteSFixed64NoTagToArray(int64 value,
+                                                                 uint8* target);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteFloatNoTagToArray(float value,
+                                                              uint8* target);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteDoubleNoTagToArray(double value,
+                                                               uint8* target);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteBoolNoTagToArray(bool value,
+                                                             uint8* target);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteEnumNoTagToArray(int value,
+                                                             uint8* target);
 
   // Write fields, without tags.  These require that value.size() > 0.
   template <typename T>
-  INL static uint8* WritePrimitiveNoTagToArray(const RepeatedField<T>& value,
-                                               uint8* (*Writer)(T, uint8*),
-                                               uint8* target);
+  PROTOBUF_ALWAYS_INLINE static uint8* WritePrimitiveNoTagToArray(
+      const RepeatedField<T>& value, uint8* (*Writer)(T, uint8*),
+      uint8* target);
   template <typename T>
-  INL static uint8* WriteFixedNoTagToArray(const RepeatedField<T>& value,
-                                           uint8* (*Writer)(T, uint8*),
-                                           uint8* target);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteFixedNoTagToArray(
+      const RepeatedField<T>& value, uint8* (*Writer)(T, uint8*),
+      uint8* target);
 
-  INL static uint8* WriteInt32NoTagToArray(const RepeatedField<int32>& value,
-                                           uint8* output);
-  INL static uint8* WriteInt64NoTagToArray(const RepeatedField<int64>& value,
-                                           uint8* output);
-  INL static uint8* WriteUInt32NoTagToArray(const RepeatedField<uint32>& value,
-                                            uint8* output);
-  INL static uint8* WriteUInt64NoTagToArray(const RepeatedField<uint64>& value,
-                                            uint8* output);
-  INL static uint8* WriteSInt32NoTagToArray(const RepeatedField<int32>& value,
-                                            uint8* output);
-  INL static uint8* WriteSInt64NoTagToArray(const RepeatedField<int64>& value,
-                                            uint8* output);
-  INL static uint8* WriteFixed32NoTagToArray(const RepeatedField<uint32>& value,
-                                             uint8* output);
-  INL static uint8* WriteFixed64NoTagToArray(const RepeatedField<uint64>& value,
-                                             uint8* output);
-  INL static uint8* WriteSFixed32NoTagToArray(const RepeatedField<int32>& value,
-                                              uint8* output);
-  INL static uint8* WriteSFixed64NoTagToArray(const RepeatedField<int64>& value,
-                                              uint8* output);
-  INL static uint8* WriteFloatNoTagToArray(const RepeatedField<float>& value,
-                                           uint8* output);
-  INL static uint8* WriteDoubleNoTagToArray(const RepeatedField<double>& value,
-                                            uint8* output);
-  INL static uint8* WriteBoolNoTagToArray(const RepeatedField<bool>& value,
-                                          uint8* output);
-  INL static uint8* WriteEnumNoTagToArray(const RepeatedField<int>& value,
-                                          uint8* output);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteInt32NoTagToArray(
+      const RepeatedField<int32>& value, uint8* output);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteInt64NoTagToArray(
+      const RepeatedField<int64>& value, uint8* output);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteUInt32NoTagToArray(
+      const RepeatedField<uint32>& value, uint8* output);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteUInt64NoTagToArray(
+      const RepeatedField<uint64>& value, uint8* output);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteSInt32NoTagToArray(
+      const RepeatedField<int32>& value, uint8* output);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteSInt64NoTagToArray(
+      const RepeatedField<int64>& value, uint8* output);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteFixed32NoTagToArray(
+      const RepeatedField<uint32>& value, uint8* output);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteFixed64NoTagToArray(
+      const RepeatedField<uint64>& value, uint8* output);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteSFixed32NoTagToArray(
+      const RepeatedField<int32>& value, uint8* output);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteSFixed64NoTagToArray(
+      const RepeatedField<int64>& value, uint8* output);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteFloatNoTagToArray(
+      const RepeatedField<float>& value, uint8* output);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteDoubleNoTagToArray(
+      const RepeatedField<double>& value, uint8* output);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteBoolNoTagToArray(
+      const RepeatedField<bool>& value, uint8* output);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteEnumNoTagToArray(
+      const RepeatedField<int>& value, uint8* output);
 
   // Write fields, including tags.
-  INL static uint8* WriteInt32ToArray(int field_number, int32 value,
-                                      uint8* target);
-  INL static uint8* WriteInt64ToArray(int field_number, int64 value,
-                                      uint8* target);
-  INL static uint8* WriteUInt32ToArray(int field_number, uint32 value,
-                                       uint8* target);
-  INL static uint8* WriteUInt64ToArray(int field_number, uint64 value,
-                                       uint8* target);
-  INL static uint8* WriteSInt32ToArray(int field_number, int32 value,
-                                       uint8* target);
-  INL static uint8* WriteSInt64ToArray(int field_number, int64 value,
-                                       uint8* target);
-  INL static uint8* WriteFixed32ToArray(int field_number, uint32 value,
-                                        uint8* target);
-  INL static uint8* WriteFixed64ToArray(int field_number, uint64 value,
-                                        uint8* target);
-  INL static uint8* WriteSFixed32ToArray(int field_number, int32 value,
-                                         uint8* target);
-  INL static uint8* WriteSFixed64ToArray(int field_number, int64 value,
-                                         uint8* target);
-  INL static uint8* WriteFloatToArray(int field_number, float value,
-                                      uint8* target);
-  INL static uint8* WriteDoubleToArray(int field_number, double value,
-                                       uint8* target);
-  INL static uint8* WriteBoolToArray(int field_number, bool value,
-                                     uint8* target);
-  INL static uint8* WriteEnumToArray(int field_number, int value,
-                                     uint8* target);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteInt32ToArray(int field_number,
+                                                         int32 value,
+                                                         uint8* target);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteInt64ToArray(int field_number,
+                                                         int64 value,
+                                                         uint8* target);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteUInt32ToArray(int field_number,
+                                                          uint32 value,
+                                                          uint8* target);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteUInt64ToArray(int field_number,
+                                                          uint64 value,
+                                                          uint8* target);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteSInt32ToArray(int field_number,
+                                                          int32 value,
+                                                          uint8* target);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteSInt64ToArray(int field_number,
+                                                          int64 value,
+                                                          uint8* target);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteFixed32ToArray(int field_number,
+                                                           uint32 value,
+                                                           uint8* target);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteFixed64ToArray(int field_number,
+                                                           uint64 value,
+                                                           uint8* target);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteSFixed32ToArray(int field_number,
+                                                            int32 value,
+                                                            uint8* target);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteSFixed64ToArray(int field_number,
+                                                            int64 value,
+                                                            uint8* target);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteFloatToArray(int field_number,
+                                                         float value,
+                                                         uint8* target);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteDoubleToArray(int field_number,
+                                                          double value,
+                                                          uint8* target);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteBoolToArray(int field_number,
+                                                        bool value,
+                                                        uint8* target);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteEnumToArray(int field_number,
+                                                        int value,
+                                                        uint8* target);
 
   template <typename T>
-  INL static uint8* WritePrimitiveToArray(int field_number,
-                                          const RepeatedField<T>& value,
-                                          uint8* (*Writer)(int, T, uint8*),
-                                          uint8* target);
+  PROTOBUF_ALWAYS_INLINE static uint8* WritePrimitiveToArray(
+      int field_number, const RepeatedField<T>& value,
+      uint8* (*Writer)(int, T, uint8*), uint8* target);
 
-  INL static uint8* WriteInt32ToArray(int field_number,
-                                      const RepeatedField<int32>& value,
-                                      uint8* output);
-  INL static uint8* WriteInt64ToArray(int field_number,
-                                      const RepeatedField<int64>& value,
-                                      uint8* output);
-  INL static uint8* WriteUInt32ToArray(int field_number,
-                                       const RepeatedField<uint32>& value,
-                                       uint8* output);
-  INL static uint8* WriteUInt64ToArray(int field_number,
-                                       const RepeatedField<uint64>& value,
-                                       uint8* output);
-  INL static uint8* WriteSInt32ToArray(int field_number,
-                                       const RepeatedField<int32>& value,
-                                       uint8* output);
-  INL static uint8* WriteSInt64ToArray(int field_number,
-                                       const RepeatedField<int64>& value,
-                                       uint8* output);
-  INL static uint8* WriteFixed32ToArray(int field_number,
-                                        const RepeatedField<uint32>& value,
-                                        uint8* output);
-  INL static uint8* WriteFixed64ToArray(int field_number,
-                                        const RepeatedField<uint64>& value,
-                                        uint8* output);
-  INL static uint8* WriteSFixed32ToArray(int field_number,
-                                         const RepeatedField<int32>& value,
-                                         uint8* output);
-  INL static uint8* WriteSFixed64ToArray(int field_number,
-                                         const RepeatedField<int64>& value,
-                                         uint8* output);
-  INL static uint8* WriteFloatToArray(int field_number,
-                                      const RepeatedField<float>& value,
-                                      uint8* output);
-  INL static uint8* WriteDoubleToArray(int field_number,
-                                       const RepeatedField<double>& value,
-                                       uint8* output);
-  INL static uint8* WriteBoolToArray(int field_number,
-                                     const RepeatedField<bool>& value,
-                                     uint8* output);
-  INL static uint8* WriteEnumToArray(int field_number,
-                                     const RepeatedField<int>& value,
-                                     uint8* output);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteInt32ToArray(
+      int field_number, const RepeatedField<int32>& value, uint8* output);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteInt64ToArray(
+      int field_number, const RepeatedField<int64>& value, uint8* output);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteUInt32ToArray(
+      int field_number, const RepeatedField<uint32>& value, uint8* output);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteUInt64ToArray(
+      int field_number, const RepeatedField<uint64>& value, uint8* output);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteSInt32ToArray(
+      int field_number, const RepeatedField<int32>& value, uint8* output);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteSInt64ToArray(
+      int field_number, const RepeatedField<int64>& value, uint8* output);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteFixed32ToArray(
+      int field_number, const RepeatedField<uint32>& value, uint8* output);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteFixed64ToArray(
+      int field_number, const RepeatedField<uint64>& value, uint8* output);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteSFixed32ToArray(
+      int field_number, const RepeatedField<int32>& value, uint8* output);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteSFixed64ToArray(
+      int field_number, const RepeatedField<int64>& value, uint8* output);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteFloatToArray(
+      int field_number, const RepeatedField<float>& value, uint8* output);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteDoubleToArray(
+      int field_number, const RepeatedField<double>& value, uint8* output);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteBoolToArray(
+      int field_number, const RepeatedField<bool>& value, uint8* output);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteEnumToArray(
+      int field_number, const RepeatedField<int>& value, uint8* output);
 
-  INL static uint8* WriteStringToArray(int field_number,
-                                       const std::string& value, uint8* target);
-  INL static uint8* WriteBytesToArray(int field_number,
-                                      const std::string& value, uint8* target);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteStringToArray(
+      int field_number, const std::string& value, uint8* target);
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteBytesToArray(
+      int field_number, const std::string& value, uint8* target);
 
   // Whether to serialize deterministically (e.g., map keys are
   // sorted) is a property of a CodedOutputStream, and in the process
@@ -616,38 +631,32 @@ class PROTOBUF_EXPORT WireFormatLite {
   // have a CodedOutputStream available, so they get an additional parameter
   // telling them whether to serialize deterministically.
   template <typename MessageType>
-  INL static uint8* InternalWriteGroupToArray(int field_number,
-                                              const MessageType& value,
-                                              uint8* target);
+  PROTOBUF_ALWAYS_INLINE static uint8* InternalWriteGroupToArray(
+      int field_number, const MessageType& value, uint8* target);
   template <typename MessageType>
-  INL static uint8* InternalWriteMessageToArray(int field_number,
-                                                const MessageType& value,
-                                                uint8* target);
+  PROTOBUF_ALWAYS_INLINE static uint8* InternalWriteMessageToArray(
+      int field_number, const MessageType& value, uint8* target);
 
   // Like above, but de-virtualize the call to SerializeWithCachedSizes().  The
   // pointer must point at an instance of MessageType, *not* a subclass (or
   // the subclass must not override SerializeWithCachedSizes()).
   template <typename MessageType>
-  INL static uint8* InternalWriteGroupNoVirtualToArray(int field_number,
-                                                       const MessageType& value,
-                                                       uint8* target);
+  PROTOBUF_ALWAYS_INLINE static uint8* InternalWriteGroupNoVirtualToArray(
+      int field_number, const MessageType& value, uint8* target);
   template <typename MessageType>
-  INL static uint8* InternalWriteMessageNoVirtualToArray(
+  PROTOBUF_ALWAYS_INLINE static uint8* InternalWriteMessageNoVirtualToArray(
       int field_number, const MessageType& value, uint8* target);
 
   // For backward-compatibility, the last four methods also have versions
   // that are non-deterministic always.
-  INL static uint8* WriteGroupToArray(int field_number,
-                                      const MessageLite& value, uint8* target) {
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteGroupToArray(
+      int field_number, const MessageLite& value, uint8* target) {
     return InternalWriteGroupToArray(field_number, value, target);
   }
-  INL static uint8* WriteMessageToArray(int field_number,
-                                        const MessageLite& value,
-                                        uint8* target) {
+  PROTOBUF_ALWAYS_INLINE static uint8* WriteMessageToArray(
+      int field_number, const MessageLite& value, uint8* target) {
     return InternalWriteMessageToArray(field_number, value, target);
   }
-
-#undef INL
 
   // Compute the byte size of a field.  The XxSize() functions do NOT include
   // the tag, so you must also call TagSize().  (This is because, for repeated

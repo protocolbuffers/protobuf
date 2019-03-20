@@ -51,9 +51,12 @@ class TextFormatConformanceTestSuite : public ConformanceTestSuite {
                                          ConformanceLevel level,
                                          const string& input_text,
                                          const Message& prototype);
+  void RunValidUnknownTextFormatTest(const string& test_name,
+                                     const Message& message);
   void ExpectParseFailure(const string& test_name, ConformanceLevel level,
                           const string& input);
   bool ParseTextFormatResponse(const conformance::ConformanceResponse& response,
+                               const ConformanceRequestSetting& setting,
                                Message* test_message);
   bool ParseResponse(const conformance::ConformanceResponse& response,
                      const ConformanceRequestSetting& setting,

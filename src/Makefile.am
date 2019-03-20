@@ -131,7 +131,6 @@ nobase_include_HEADERS =                                         \
   google/protobuf/unknown_field_set.h                            \
   google/protobuf/wire_format.h                                  \
   google/protobuf/wire_format_lite.h                             \
-  google/protobuf/wire_format_lite_inl.h                         \
   google/protobuf/wrappers.pb.h                                  \
   google/protobuf/io/coded_stream.h                              \
   $(GZHEADERS)                                                   \
