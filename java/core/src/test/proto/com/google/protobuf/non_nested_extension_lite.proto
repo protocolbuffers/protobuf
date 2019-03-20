@@ -46,4 +46,5 @@ message MyNonNestedExtensionLite {}
 
 extend MessageLiteToBeExtended {
   optional MyNonNestedExtensionLite nonNestedExtensionLite = 1;
+  optional bool package = 2006;
 }

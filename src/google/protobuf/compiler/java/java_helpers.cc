@@ -76,6 +76,16 @@ const char* kForbiddenWordList[] = {
   "class",
 };
 
+const std::unordered_set<string> kReservedNames = {
+  "abstract", "assert", "boolean", "break", "byte", "case", "catch", "char",
+  "class", "const", "continue", "default", "do", "double", "else", "enum",
+  "extends", "final", "finally", "float", "for", "goto", "if", "implements",
+  "import", "instanceof", "int", "interface", "long", "native", "new", "package",
+  "private", "protected", "public", "return", "short", "static", "strictfp", "super",
+  "switch", "synchronized", "this", "throw", "throws", "transient", "try", "void", 
+  "volatile", "while",
+};
+
 const int kDefaultLookUpStartFieldNumber = 40;
 
 bool IsForbidden(const std::string& field_name) {
@@ -193,6 +203,14 @@ std::string CapitalizedFieldName(const FieldDescriptor* field) {
 
 std::string UnderscoresToCamelCase(const MethodDescriptor* method) {
   return UnderscoresToCamelCase(method->name(), false);
+}
+
+std::string UnderscoresToCamelCaseCheckReserved(const FieldDescriptor* field) {
+  std::string name = UnderscoresToCamelCase(field);
+  if (kReservedNames.find(name) != kReservedNames.end()) {
+    return name + "_";
+  }
+  return name;
 }
 
 std::string UniqueFileScopeIdentifier(const Descriptor* descriptor) {
