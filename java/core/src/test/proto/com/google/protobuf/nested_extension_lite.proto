@@ -45,5 +45,6 @@ import "com/google/protobuf/non_nested_extension_lite.proto";
 message MyNestedExtensionLite {
   extend MessageLiteToBeExtended {
     optional MessageLiteToBeExtended recursiveExtensionLite = 3;
+    optional double private = 2004;
   }
 }

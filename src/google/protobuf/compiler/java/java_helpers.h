@@ -83,6 +83,9 @@ std::string UnderscoresToCapitalizedCamelCase(const FieldDescriptor* field);
 // of lower-casing the first letter of the name.)
 std::string UnderscoresToCamelCase(const MethodDescriptor* method);
 
+// Same as UnderscoresToCamelCase, but checks for reserved keywords
+std::string UnderscoresToCamelCaseCheckReserved(const FieldDescriptor* field);
+
 // Similar to UnderscoresToCamelCase, but guarentees that the result is a
 // complete Java identifier by adding a _ if needed.
 std::string CamelCaseFieldName(const FieldDescriptor* field);

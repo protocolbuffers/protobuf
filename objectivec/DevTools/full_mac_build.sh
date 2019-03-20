@@ -163,8 +163,7 @@ if [[ "${DO_AUTOGEN}" == "yes" ]] ; then
   header "Running autogen & configure"
   ./autogen.sh
   ./configure \
-    CPPFLAGS="-mmacosx-version-min=10.9 -Wunused-const-variable -Wunused-function" \
-    CXXFLAGS="-Wnon-virtual-dtor -Woverloaded-virtual"
+    CPPFLAGS="-mmacosx-version-min=10.9 -Wunused-const-variable -Wunused-function"
 fi
 
 if [[ "${DO_CLEAN}" == "yes" ]] ; then

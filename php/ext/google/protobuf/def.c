@@ -853,9 +853,10 @@ static zend_class_entry *register_class(const upb_filedef *file,
 
   fill_namespace(package, php_namespace, &namesink);
   fill_classname(fullname, package, prefix, &namesink, use_nested_submsg);
+  stringsink_string(&namesink, NULL, "\0", 1, NULL);
 
   PHP_PROTO_CE_DECLARE pce;
-  if (php_proto_zend_lookup_class(namesink.ptr, namesink.len, &pce) ==
+  if (php_proto_zend_lookup_class(namesink.ptr, namesink.len - 1, &pce) ==
       FAILURE) {
     zend_error(
         E_ERROR,
