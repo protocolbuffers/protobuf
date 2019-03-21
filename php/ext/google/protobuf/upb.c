@@ -16577,7 +16577,6 @@ static size_t putbytes(void *closure, const void *handler_data, const char *str,
   return len;
 }
 
-
 static void *scalar_startstr(void *closure, const void *handler_data,
                              size_t size_hint) {
   upb_json_printer *p = closure;
