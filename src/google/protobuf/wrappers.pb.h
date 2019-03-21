@@ -93,7 +93,7 @@ namespace protobuf {
 
 // ===================================================================
 
-class PROTOBUF_EXPORT DoubleValue final :
+class PROTOBUF_EXPORT DoubleValue :
     public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.DoubleValue) */ {
  public:
   DoubleValue();
@@ -220,7 +220,7 @@ class PROTOBUF_EXPORT DoubleValue final :
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT FloatValue final :
+class PROTOBUF_EXPORT FloatValue :
     public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.FloatValue) */ {
  public:
   FloatValue();
@@ -347,7 +347,7 @@ class PROTOBUF_EXPORT FloatValue final :
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Int64Value final :
+class PROTOBUF_EXPORT Int64Value :
     public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Int64Value) */ {
  public:
   Int64Value();
@@ -474,7 +474,7 @@ class PROTOBUF_EXPORT Int64Value final :
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT UInt64Value final :
+class PROTOBUF_EXPORT UInt64Value :
     public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.UInt64Value) */ {
  public:
   UInt64Value();
@@ -601,7 +601,7 @@ class PROTOBUF_EXPORT UInt64Value final :
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Int32Value final :
+class PROTOBUF_EXPORT Int32Value :
     public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Int32Value) */ {
  public:
   Int32Value();
@@ -728,7 +728,7 @@ class PROTOBUF_EXPORT Int32Value final :
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT UInt32Value final :
+class PROTOBUF_EXPORT UInt32Value :
     public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.UInt32Value) */ {
  public:
   UInt32Value();
@@ -855,7 +855,7 @@ class PROTOBUF_EXPORT UInt32Value final :
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT BoolValue final :
+class PROTOBUF_EXPORT BoolValue :
     public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.BoolValue) */ {
  public:
   BoolValue();
@@ -982,7 +982,7 @@ class PROTOBUF_EXPORT BoolValue final :
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT StringValue final :
+class PROTOBUF_EXPORT StringValue :
     public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.StringValue) */ {
  public:
   StringValue();
@@ -1126,7 +1126,7 @@ class PROTOBUF_EXPORT StringValue final :
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT BytesValue final :
+class PROTOBUF_EXPORT BytesValue :
     public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.BytesValue) */ {
  public:
   BytesValue();

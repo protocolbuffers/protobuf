@@ -62,7 +62,7 @@ namespace protobuf {
 
 // ===================================================================
 
-class PROTOBUF_EXPORT Any final :
+class PROTOBUF_EXPORT Any :
     public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Any) */ {
  public:
   Any();

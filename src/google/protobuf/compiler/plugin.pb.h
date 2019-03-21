@@ -83,7 +83,7 @@ namespace compiler {
 
 // ===================================================================
 
-class PROTOC_EXPORT Version final :
+class PROTOC_EXPORT Version :
     public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.Version) */ {
  public:
   Version();
@@ -236,7 +236,7 @@ class PROTOC_EXPORT Version final :
 };
 // -------------------------------------------------------------------
 
-class PROTOC_EXPORT CodeGeneratorRequest final :
+class PROTOC_EXPORT CodeGeneratorRequest :
     public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.CodeGeneratorRequest) */ {
  public:
   CodeGeneratorRequest();
@@ -411,7 +411,7 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
 };
 // -------------------------------------------------------------------
 
-class PROTOC_EXPORT CodeGeneratorResponse_File final :
+class PROTOC_EXPORT CodeGeneratorResponse_File :
     public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.CodeGeneratorResponse.File) */ {
  public:
   CodeGeneratorResponse_File();
@@ -572,7 +572,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
 };
 // -------------------------------------------------------------------
 
-class PROTOC_EXPORT CodeGeneratorResponse final :
+class PROTOC_EXPORT CodeGeneratorResponse :
     public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.CodeGeneratorResponse) */ {
  public:
   CodeGeneratorResponse();

@@ -61,7 +61,7 @@ namespace protobuf {
 
 // ===================================================================
 
-class PROTOBUF_EXPORT FieldMask final :
+class PROTOBUF_EXPORT FieldMask :
     public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.FieldMask) */ {
  public:
   FieldMask();
