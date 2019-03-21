@@ -41,7 +41,6 @@ goog.provide('jspb.Message');
 goog.require('goog.array');
 goog.require('goog.asserts');
 goog.require('goog.crypt.base64');
-goog.require('jspb.BinaryConstants');
 goog.require('jspb.BinaryReader');
 goog.require('jspb.Map');
 
