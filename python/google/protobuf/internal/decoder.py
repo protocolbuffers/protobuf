@@ -914,11 +914,11 @@ def _SkipGroup(buffer, pos, end):
     pos = new_pos
 
 
-def _DecodeGroup(buffer, pos):
-  """Decode group.  Returns the UnknownFieldSet and new position."""
+def _DecodeUnknownFieldSet(buffer, pos, end_pos=None):
+  """Decode UnknownFieldSet.  Returns the UnknownFieldSet and new position."""
 
   unknown_field_set = containers.UnknownFieldSet()
-  while 1:
+  while end_pos is None or pos < end_pos:
     (tag_bytes, pos) = ReadTag(buffer, pos)
     (tag, _) = _DecodeVarint(tag_bytes, 0)
     field_number, wire_type = wire_format.UnpackTag(tag)
@@ -945,7 +945,7 @@ def _DecodeUnknownField(buffer, pos, wire_type):
     data = buffer[pos:pos+size]
     pos += size
   elif wire_type == wire_format.WIRETYPE_START_GROUP:
-    (data, pos) = _DecodeGroup(buffer, pos)
+    (data, pos) = _DecodeUnknownFieldSet(buffer, pos)
   elif wire_type == wire_format.WIRETYPE_END_GROUP:
     return (0, -1)
   else:

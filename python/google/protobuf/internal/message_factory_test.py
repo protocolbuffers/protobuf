@@ -43,12 +43,13 @@ from google.protobuf import descriptor_pb2
 from google.protobuf.internal import api_implementation
 from google.protobuf.internal import factory_test1_pb2
 from google.protobuf.internal import factory_test2_pb2
+from google.protobuf.internal import testing_refleaks
 from google.protobuf import descriptor_database
 from google.protobuf import descriptor_pool
 from google.protobuf import message_factory
 
 
-class MessageFactoryTest(unittest.TestCase):
+class MessageFactoryTest(testing_refleaks.BaseTestCase):
 
   def setUp(self):
     self.factory_test1_fd = descriptor_pb2.FileDescriptorProto.FromString(

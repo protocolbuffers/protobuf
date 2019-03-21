@@ -234,6 +234,20 @@ class PROTOBUF_EXPORT MessageLite {
   // results are undefined (probably crash).
   virtual void CheckTypeAndMergeFrom(const MessageLite& other) = 0;
 
+  // These methods return a human-readable summary of the message. Note that
+  // since the MessageLite interface does not support reflection, there is very
+  // little information that these methods can provide. They are shadowed by
+  // methods of the same name on the Message interface which provide much more
+  // information. The methods here are intended primarily to facilitate code
+  // reuse for logic that needs to interoperate with both full and lite protos.
+  //
+  // The format of the returned string is subject to change, so please do not
+  // assume it will remain stable over time.
+  std::string DebugString() const;
+  std::string ShortDebugString() const {
+    return DebugString();
+  }
+
   // Parsing ---------------------------------------------------------
   // Methods for parsing in protocol buffer format.  Most of these are
   // just simple wrappers around MergeFromCodedStream().  Clear() will be

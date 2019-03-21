@@ -41,10 +41,16 @@ This files defines well known classes which need extra maintenance including:
 __author__ = 'jieluo@google.com (Jie Luo)'
 
 import calendar
-import collections
 from datetime import datetime
 from datetime import timedelta
 import six
+
+try:
+  # Since python 3
+  import collections.abc as collections_abc
+except ImportError:
+  # Won't work after python 3.8
+  import collections as collections_abc
 
 from google.protobuf.descriptor import FieldDescriptor
 
@@ -86,6 +92,9 @@ class Any(object):
   def Is(self, descriptor):
     """Checks if this Any represents the given protobuf type."""
     return '/' in self.type_url and self.TypeName() == descriptor.full_name
+
+
+_EPOCH_DATETIME = datetime.utcfromtimestamp(0)
 
 
 class Timestamp(object):
@@ -221,8 +230,9 @@ class Timestamp(object):
 
   def ToDatetime(self):
     """Converts Timestamp to datetime."""
-    return datetime.utcfromtimestamp(
-        self.seconds + self.nanos / float(_NANOS_PER_SECOND))
+    return _EPOCH_DATETIME + timedelta(
+        seconds=self.seconds, microseconds=_RoundTowardZero(
+            self.nanos, _NANOS_PER_MICROSECOND))
 
   def FromDatetime(self, dt):
     """Converts datetime to Timestamp."""
@@ -780,7 +790,7 @@ class Struct(object):
     for key, value in dictionary.items():
       _SetStructValue(self.fields[key], value)
 
-collections.MutableMapping.register(Struct)
+collections_abc.MutableMapping.register(Struct)
 
 
 class ListValue(object):
@@ -824,7 +834,7 @@ class ListValue(object):
     list_value.Clear()
     return list_value
 
-collections.MutableSequence.register(ListValue)
+collections_abc.MutableSequence.register(ListValue)
 
 
 WKTBASES = {

@@ -43,6 +43,7 @@ using conformance::WireFormat;
 using google::protobuf::Message;
 using google::protobuf::TextFormat;
 using protobuf_test_messages::proto2::TestAllTypesProto2;
+using protobuf_test_messages::proto2::UnknownToTestAllTypes;
 using protobuf_test_messages::proto3::TestAllTypesProto3;
 using std::string;
 
@@ -54,8 +55,14 @@ TextFormatConformanceTestSuite::TextFormatConformanceTestSuite() {
 }
 
 bool TextFormatConformanceTestSuite::ParseTextFormatResponse(
-    const ConformanceResponse& response, Message* test_message) {
-  if (!TextFormat::ParseFromString(response.text_payload(), test_message)) {
+    const ConformanceResponse& response,
+    const ConformanceRequestSetting& setting, Message* test_message) {
+  TextFormat::Parser parser;
+  const ConformanceRequest& request = setting.GetRequest();
+  if (request.print_unknown_fields()) {
+    parser.AllowFieldNumber(true);
+  }
+  if (!parser.ParseFromString(response.text_payload(), test_message)) {
     GOOGLE_LOG(ERROR) << "INTERNAL ERROR: internal text->protobuf transcode "
                       << "yielded unparseable proto. Text payload: "
                       << response.text_payload();
@@ -103,7 +110,7 @@ bool TextFormatConformanceTestSuite::ParseResponse(
         return false;
       }
 
-      if (!ParseTextFormatResponse(response, test_message)) {
+      if (!ParseTextFormatResponse(response, setting, test_message)) {
         ReportFailure(
             test_name, level, request, response,
             "TEXT_FORMAT output we received from test was unparseable.");
@@ -171,6 +178,27 @@ void TextFormatConformanceTestSuite::RunValidTextFormatTestWithMessage(
   RunValidInputTest(setting2, input_text);
 }
 
+void TextFormatConformanceTestSuite::RunValidUnknownTextFormatTest(
+    const string& test_name, const Message& message) {
+  string serialized_input;
+  message.SerializeToString(&serialized_input);
+  TestAllTypesProto3 prototype;
+  ConformanceRequestSetting setting1(
+      RECOMMENDED, conformance::PROTOBUF, conformance::TEXT_FORMAT,
+      conformance::TEXT_FORMAT_TEST, prototype, test_name + "_Drop",
+      serialized_input);
+  setting1.SetPrototypeMessageForCompare(message);
+  RunValidBinaryInputTest(setting1, "");
+
+  ConformanceRequestSetting setting2(
+      RECOMMENDED, conformance::PROTOBUF, conformance::TEXT_FORMAT,
+      conformance::TEXT_FORMAT_TEST, prototype, test_name + "_Print",
+      serialized_input);
+  setting2.SetPrototypeMessageForCompare(message);
+  setting2.SetPrintUnknownFields(true);
+  RunValidBinaryInputTest(setting2, serialized_input);
+}
+
 void TextFormatConformanceTestSuite::RunSuiteImpl() {
   RunValidTextFormatTest("HelloWorld", REQUIRED,
                          "optional_string: 'Hello, World!'");
@@ -235,6 +263,29 @@ void TextFormatConformanceTestSuite::RunSuiteImpl() {
                                "Data: { group_int32: 1 }");
   RunValidTextFormatTestProto2("GroupFieldEmpty", REQUIRED,
                                "Data {}");
+
+
+  // Unknown Fields
+  UnknownToTestAllTypes message;
+  // Unable to print unknown Fixed32/Fixed64 fields as if they are known.
+  // Fixed32/Fixed64 fields are not added in the tests.
+  message.set_optional_int32(123);
+  message.set_optional_string("hello");
+  message.set_optional_bool(true);
+  RunValidUnknownTextFormatTest("ScalarUnknownFields", message);
+
+  message.Clear();
+  message.mutable_nested_message()->set_c(111);
+  RunValidUnknownTextFormatTest("MessageUnknownFields", message);
+
+  message.Clear();
+  message.mutable_optionalgroup()->set_a(321);
+  RunValidUnknownTextFormatTest("GroupUnknownFields", message);
+
+  message.add_repeated_int32(1);
+  message.add_repeated_int32(2);
+  message.add_repeated_int32(3);
+  RunValidUnknownTextFormatTest("RepeatedUnknownFields", message);
 }
 
 }  // namespace protobuf

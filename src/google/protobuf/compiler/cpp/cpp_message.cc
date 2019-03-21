@@ -975,9 +975,11 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
         GOOGLE_CHECK(suffix == "UTF8Verify");
         format(
             "  bool ValidateKey() const {\n"
+            "#ifndef NDEBUG\n"
             "    ::$proto_ns$::internal::WireFormatLite::VerifyUtf8String(\n"
             "       key().data(), key().size(), ::$proto_ns$::internal::"
             "WireFormatLite::PARSE, \"$1$\");\n"
+            "#endif\n"
             "    return true;\n"
             " }\n",
             descriptor_->field(0)->full_name());
@@ -999,9 +1001,11 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
         GOOGLE_CHECK(suffix == "UTF8Verify");
         format(
             "  bool ValidateValue() const {\n"
+            "#ifndef NDEBUG\n"
             "    ::$proto_ns$::internal::WireFormatLite::VerifyUtf8String(\n"
             "       value().data(), value().size(), ::$proto_ns$::internal::"
             "WireFormatLite::PARSE, \"$1$\");\n"
+            "#endif\n"
             "    return true;\n"
             " }\n",
             descriptor_->field(1)->full_name());
@@ -1324,7 +1328,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
     const Descriptor* nested_type = descriptor_->nested_type(i);
     if (!IsMapEntryMessage(nested_type)) {
       format.Set("nested_full_name", ClassName(nested_type, false));
-      format.Set("nested_name", nested_type->name());
+      format.Set("nested_name", ResolveKeyword(nested_type->name()));
       format("typedef ${1$$nested_full_name$$}$ ${1$$nested_name$$}$;\n",
              nested_type);
     }

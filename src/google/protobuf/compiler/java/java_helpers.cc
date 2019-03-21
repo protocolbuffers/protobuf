@@ -115,6 +115,7 @@ std::string FieldName(const FieldDescriptor* field) {
   return field_name;
 }
 
+
 }  // namespace
 
 void PrintGeneratedAnnotation(io::Printer* printer, char delimiter,

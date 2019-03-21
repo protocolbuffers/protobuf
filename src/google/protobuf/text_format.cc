@@ -64,6 +64,8 @@
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/stl_util.h>
 
+#include <google/protobuf/port_def.inc>
+
 
 namespace google {
 namespace protobuf {
