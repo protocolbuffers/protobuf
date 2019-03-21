@@ -287,12 +287,14 @@ uint GetGroupEndTag(const Descriptor* descriptor) {
   if (containing_type == NULL) {
     return 0;
   }
-  const FieldDescriptor* field = containing_type->FindFieldByName(descriptor->name());
-  if (field != NULL && field->type() == FieldDescriptor::Type::TYPE_GROUP) {
-    return internal::WireFormatLite::MakeTag(field->number(), internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
-  } else {
-    return 0;
+  const FieldDescriptor* field;
+  for (int i = 0; i < containing_type->field_count(); i++) {
+    field = containing_type->field(i);
+    if (field->type() == FieldDescriptor::Type::TYPE_GROUP && field->message_type() == descriptor) {
+      return internal::WireFormatLite::MakeTag(field->number(), internal::WireFormatLite::WIRETYPE_END_GROUP);
+    }
   }
+  return 0;
 }
 
 std::string ToCSharpName(const std::string& name, const FileDescriptor* file) {

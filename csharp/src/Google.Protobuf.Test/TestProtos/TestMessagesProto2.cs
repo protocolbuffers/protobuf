@@ -3666,6 +3666,8 @@ namespace ProtobufTestMessages.Proto2 {
           uint tag;
           while ((tag = input.ReadTag()) != 0) {
             switch(tag) {
+              case 1612:
+                return;
               default:
                 _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
                 break;

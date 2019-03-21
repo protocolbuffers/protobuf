@@ -625,7 +625,7 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
   printer->Indent();
   if (end_tag_ != 0) {
     printer->Print(
-      "$end_tag$:\n"
+      "case $end_tag$:\n"
       "  return;\n",
       "end_tag", StrCat(end_tag_));
   }
@@ -681,7 +681,7 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
 
 // it's a waste of space to track presence for all values, so we only track them if they're not nullable
 int MessageGenerator::GetPresenceIndex(const FieldDescriptor* descriptor) {
-  if (IsNullable(descriptor) || !IsProto2(descriptor_->file())) {
+  if (IsNullable(descriptor) || !IsProto2(descriptor->file()) || descriptor->is_extension()) {
     return -1;
   }
 
