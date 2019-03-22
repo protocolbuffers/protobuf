@@ -313,6 +313,23 @@ TEST_F(JsonObjectWriterTest, TestWebsafeByteEncoding) {
             output_.substr(0, out_stream_->ByteCount()));
 }
 
+TEST_F(JsonObjectWriterTest, DoneAfterEmptyObject) {
+  ow_ = new JsonObjectWriter("", out_stream_);
+  ow_->StartObject("")->EndObject();
+  EXPECT_EQ(true, ow_->done());
+}
+
+TEST_F(JsonObjectWriterTest, NotDoneWithoutObject) {
+  ow_ = new JsonObjectWriter("", out_stream_);
+  EXPECT_EQ(false, ow_->done());
+}
+
+TEST_F(JsonObjectWriterTest, NotDoneInsideObject) {
+  ow_ = new JsonObjectWriter("", out_stream_);
+  ow_->StartObject("");
+  EXPECT_EQ(false, ow_->done());
+}
+
 }  // namespace converter
 }  // namespace util
 }  // namespace protobuf

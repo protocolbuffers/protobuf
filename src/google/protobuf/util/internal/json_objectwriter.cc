@@ -65,7 +65,10 @@ JsonObjectWriter* JsonObjectWriter::StartObject(StringPiece name) {
 JsonObjectWriter* JsonObjectWriter::EndObject() {
   Pop();
   WriteChar('}');
-  if (element() && element()->is_root()) NewLine();
+  if (element() && element()->is_root()) {
+    NewLine();
+    done_ = true;
+  }
   return this;
 }
 
