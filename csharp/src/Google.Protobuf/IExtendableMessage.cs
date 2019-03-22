@@ -37,7 +37,7 @@ namespace Google.Protobuf
     /// <summary>
     /// Interface for a Protocol Buffers message, supporting basic operations for serialization as well as registering extension field values
     /// </summary>
-    public interface IExtensionMessage : IMessage
+    public interface IExtendableMessage : IMessage
     {
         /// <summary>
         /// Registers an extension in this message
@@ -48,7 +48,7 @@ namespace Google.Protobuf
     /// <summary>
     /// Generic interface for a Protocol Buffers message containing one or more extensions, where the type parameter is expected to be the same type as the implementation class
     /// </summary>
-    public interface IExtensionMessage<T> : IExtensionMessage, IMessage<T> where T : IExtensionMessage<T>
+    public interface IExtendableMessage<T> : IExtendableMessage, IMessage<T> where T : IExtendableMessage<T>
     {
         /// <summary>
         /// Gets the value of the specified extension

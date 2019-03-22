@@ -127,7 +127,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
     "$access_level$ sealed partial class $class_name$ : ");
 
   if (has_extension_ranges_) {
-    printer->Print(vars, "pb::IExtensionMessage<$class_name$>");
+    printer->Print(vars, "pb::IExtendableMessage<$class_name$>");
   }
   else {
     printer->Print(vars, "pb::IMessage<$class_name$>");

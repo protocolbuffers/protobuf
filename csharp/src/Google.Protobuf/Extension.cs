@@ -58,11 +58,11 @@ namespace Google.Protobuf
     }
 
     /// <summary>
-    /// Represents a type-safe extension identifier used for getting and setting single extension values in <see cref="IExtensionMessage{T}"/> instances
+    /// Represents a type-safe extension identifier used for getting and setting single extension values in <see cref="IExtendableMessage{T}"/> instances
     /// </summary>
     /// <typeparam name="TTarget">The message type this field applies to</typeparam>
     /// <typeparam name="TValue">The field value type of this extension</typeparam>
-    public sealed class Extension<TTarget, TValue> : Extension where TTarget : IExtensionMessage<TTarget>
+    public sealed class Extension<TTarget, TValue> : Extension where TTarget : IExtendableMessage<TTarget>
     {
         private readonly FieldCodec<TValue> codec;
 
@@ -83,11 +83,11 @@ namespace Google.Protobuf
     }
 
     /// <summary>
-    /// Represents a type-safe extension identifier used for getting repeated extension values in <see cref="IExtensionMessage{T}"/> instances
+    /// Represents a type-safe extension identifier used for getting repeated extension values in <see cref="IExtendableMessage{T}"/> instances
     /// </summary>
     /// <typeparam name="TTarget">The message type this field applies to</typeparam>
     /// <typeparam name="TValue">The repeated field value type of this extension</typeparam>
-    public sealed class RepeatedExtension<TTarget, TValue> : Extension where TTarget : IExtensionMessage<TTarget>
+    public sealed class RepeatedExtension<TTarget, TValue> : Extension where TTarget : IExtendableMessage<TTarget>
     {
         private readonly FieldCodec<TValue> codec;
 

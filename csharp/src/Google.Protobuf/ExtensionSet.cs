@@ -44,7 +44,7 @@ namespace Google.Protobuf
     /// </summary>
     public static class ExtensionSet
     {
-        private static bool GetValue<TTarget>(ref ExtensionSet<TTarget> set, Extension extension, out IExtensionValue value) where TTarget : IExtensionMessage<TTarget>
+        private static bool GetValue<TTarget>(ref ExtensionSet<TTarget> set, Extension extension, out IExtensionValue value) where TTarget : IExtendableMessage<TTarget>
         {
             if (set == null)
             {
@@ -57,7 +57,7 @@ namespace Google.Protobuf
         /// <summary>
         /// Registers the specified extension in this set
         /// </summary>
-        public static void Register<TTarget>(ref ExtensionSet<TTarget> set, Extension extension) where TTarget : IExtensionMessage<TTarget>
+        public static void Register<TTarget>(ref ExtensionSet<TTarget> set, Extension extension) where TTarget : IExtendableMessage<TTarget>
         {
             if (set == null)
             {
@@ -93,7 +93,7 @@ namespace Google.Protobuf
         /// <summary>
         /// Gets the value of the specified extension
         /// </summary>
-        public static TValue Get<TTarget, TValue>(ref ExtensionSet<TTarget> set, Extension<TTarget, TValue> extension) where TTarget : IExtensionMessage<TTarget>
+        public static TValue Get<TTarget, TValue>(ref ExtensionSet<TTarget> set, Extension<TTarget, TValue> extension) where TTarget : IExtendableMessage<TTarget>
         {
             IExtensionValue value;
             if (GetValue(ref set, extension, out value))
@@ -109,7 +109,7 @@ namespace Google.Protobuf
         /// <summary>
         /// Gets the value of the specified repeated extension
         /// </summary>
-        public static RepeatedField<TValue> Get<TTarget, TValue>(ref ExtensionSet<TTarget> set, RepeatedExtension<TTarget, TValue> extension) where TTarget : IExtensionMessage<TTarget>
+        public static RepeatedField<TValue> Get<TTarget, TValue>(ref ExtensionSet<TTarget> set, RepeatedExtension<TTarget, TValue> extension) where TTarget : IExtendableMessage<TTarget>
         {
             IExtensionValue value;
             if (GetValue(ref set, extension, out value))
@@ -126,7 +126,7 @@ namespace Google.Protobuf
         /// <summary>
         /// Sets the value of the specified extension
         /// </summary>
-        public static void Set<TTarget, TValue>(ref ExtensionSet<TTarget> set, Extension<TTarget, TValue> extension, TValue value) where TTarget : IExtensionMessage<TTarget>
+        public static void Set<TTarget, TValue>(ref ExtensionSet<TTarget> set, Extension<TTarget, TValue> extension, TValue value) where TTarget : IExtendableMessage<TTarget>
         {
             IExtensionValue extensionValue;
             if (!GetValue(ref set, extension, out extensionValue))
@@ -144,7 +144,7 @@ namespace Google.Protobuf
         /// <summary>
         /// Gets whether the value of the specified extension is set
         /// </summary>
-        public static bool Has<TTarget, TValue>(ref ExtensionSet<TTarget> set, Extension<TTarget, TValue> extension) where TTarget : IExtensionMessage<TTarget>
+        public static bool Has<TTarget, TValue>(ref ExtensionSet<TTarget> set, Extension<TTarget, TValue> extension) where TTarget : IExtendableMessage<TTarget>
         {
             IExtensionValue value;
             if (GetValue(ref set, extension, out value))
@@ -160,12 +160,16 @@ namespace Google.Protobuf
         /// <summary>
         /// Clears the value of the specified extension
         /// </summary>
-        public static void Clear<TTarget, TValue>(ref ExtensionSet<TTarget> set, Extension<TTarget, TValue> extension) where TTarget : IExtensionMessage<TTarget>
+        public static void Clear<TTarget>(ref ExtensionSet<TTarget> set, Extension extension) where TTarget : IExtendableMessage<TTarget>
         {
-            IExtensionValue value;
-            if (GetValue(ref set, extension, out value))
+            if (set == null)
             {
-                ((ExtensionValue<TValue>)value).ClearValue();
+                return;
+            }
+            set.ValuesByNumber.Remove(extension.FieldNumber);
+            if (set.ValuesByNumber.Count == 0)
+            {
+                set = null;
             }
         }
 
@@ -173,7 +177,7 @@ namespace Google.Protobuf
         /// Tries to merge a field from the coded input, returning true if the field was merged.
         /// If the set is null or the field was not otherwise merged, this returns false.
         /// </summary>
-        public static bool TryMergeFieldFrom<TTarget>(ref ExtensionSet<TTarget> set, CodedInputStream stream) where TTarget : IExtensionMessage<TTarget>
+        public static bool TryMergeFieldFrom<TTarget>(ref ExtensionSet<TTarget> set, CodedInputStream stream) where TTarget : IExtendableMessage<TTarget>
         {
             Extension extension;
             int lastFieldNumber = WireFormat.GetTagFieldNumber(stream.LastTag);
@@ -214,7 +218,7 @@ namespace Google.Protobuf
         /// <summary>
         /// Merges the second set into the first set, creating a new instance if first is null
         /// </summary>
-        public static void MergeFrom<TTarget>(ref ExtensionSet<TTarget> first, ExtensionSet<TTarget> second) where TTarget : IExtensionMessage<TTarget>
+        public static void MergeFrom<TTarget>(ref ExtensionSet<TTarget> first, ExtensionSet<TTarget> second) where TTarget : IExtendableMessage<TTarget>
         {
             if (second == null)
             {
@@ -242,7 +246,7 @@ namespace Google.Protobuf
         /// <summary>
         /// Clones the set into a new set. If the set is null, this returns null
         /// </summary>
-        public static ExtensionSet<TTarget> Clone<TTarget>(ExtensionSet<TTarget> set) where TTarget : IExtensionMessage<TTarget>
+        public static ExtensionSet<TTarget> Clone<TTarget>(ExtensionSet<TTarget> set) where TTarget : IExtendableMessage<TTarget>
         {
             if (set == null)
             {
@@ -261,12 +265,12 @@ namespace Google.Protobuf
 
     /// <summary>
     /// Used for keeping track of extensions in messages. 
-    /// <see cref="IExtensionMessage{T}"/> methods route to this set.
+    /// <see cref="IExtendableMessage{T}"/> methods route to this set.
     /// 
     /// Most users will not need to use this class directly
     /// </summary>
     /// <typeparam name="TTarget">The message type that extensions in this set target</typeparam>
-    public sealed class ExtensionSet<TTarget> where TTarget : IExtensionMessage<TTarget>
+    public sealed class ExtensionSet<TTarget> where TTarget : IExtendableMessage<TTarget>
     {
         internal Dictionary<int, IExtensionValue> ValuesByNumber { get; } = new Dictionary<int, IExtensionValue>();
 

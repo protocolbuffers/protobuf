@@ -198,7 +198,7 @@ namespace Google.Protobuf.Reflection
         }
 
         private class ExtensionReflectionHelper<T1, T3> : IExtensionReflectionHelper
-            where T1 : IExtensionMessage<T1>
+            where T1 : IExtendableMessage<T1>
         {
             private readonly Extension extension;
 
