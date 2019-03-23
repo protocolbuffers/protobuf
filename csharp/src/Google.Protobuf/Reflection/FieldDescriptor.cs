@@ -204,6 +204,11 @@ namespace Google.Protobuf.Reflection
         public bool IsPacked => File.Proto.Syntax == "proto2" ? Proto.Options?.Packed ?? false : !Proto.Options.HasPacked || Proto.Options.Packed;
 
         /// <summary>
+        /// Returns <c>true</c> if this field extends another message type; <c>false</c> otherwise.
+        /// </summary>
+        public bool IsExtension => Proto.HasExtendee;
+
+        /// <summary>
         /// Returns the type of the field.
         /// </summary>
         public FieldType FieldType => fieldType;
