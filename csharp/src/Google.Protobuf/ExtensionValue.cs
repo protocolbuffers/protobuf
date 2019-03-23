@@ -41,7 +41,6 @@ namespace Google.Protobuf
         void MergeFrom(IExtensionValue value);
         void WriteTo(CodedOutputStream output);
         int CalculateSize();
-        bool IsInitialized();
     }
 
     internal sealed class ExtensionValue<T> : IExtensionValue
@@ -129,11 +128,6 @@ namespace Google.Protobuf
             }
         }
 
-        public bool IsInitialized()
-        {
-            return field is IMessage ? (field as IMessage).IsInitialized() : true;
-        }
-
         public T GetValue() => field;
 
         public void SetValue(T value)
@@ -143,12 +137,6 @@ namespace Google.Protobuf
         }
 
         public bool HasValue => hasValue;
-
-        public void ClearValue()
-        {
-            hasValue = false;
-            field = codec.DefaultValue;
-        }
     }
 
     internal sealed class RepeatedExtensionValue<T> : IExtensionValue
@@ -212,26 +200,6 @@ namespace Google.Protobuf
         public void WriteTo(CodedOutputStream output)
         {
             field.WriteTo(output, codec);
-        }
-
-        public bool IsInitialized()
-        {
-            for (int i = 0; i < field.Count; i++)
-            {
-                if (field[i] is IMessage)
-                {
-                    if (!(field[i] as IMessage).IsInitialized())
-                    {
-                        return false;
-                    }
-                }
-                else
-                {
-                    return true;
-                }
-            }
-
-            return true;
         }
 
         public RepeatedField<T> GetValue() => field;
