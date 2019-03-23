@@ -79,6 +79,8 @@ namespace Google.Protobuf
 
         internal override Type TargetType => typeof(TTarget);
 
+        internal TValue DefaultValue => codec.DefaultValue;
+
         internal override IExtensionValue CreateValue()
         {
             return new ExtensionValue<TValue>(codec);

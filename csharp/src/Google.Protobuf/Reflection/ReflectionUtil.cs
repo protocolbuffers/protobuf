@@ -71,7 +71,7 @@ namespace Google.Protobuf.Reflection
 
         /// <summary>
         /// Empty Type[] used when calling GetProperty to force property instead of indexer fetching.
-        /// </summary>
+        /// </summary>getFieldFunc
         internal static readonly Type[] EmptyTypes = new Type[0];
 
         /// <summary>
@@ -115,6 +115,9 @@ namespace Google.Protobuf.Reflection
         internal static Func<IMessage, bool> CreateFuncIMessageBool(MethodInfo method) =>
             GetReflectionHelper(method.DeclaringType, method.ReturnType).CreateFuncIMessageBool(method);
 
+        internal static Func<IMessage, bool> CreateIsInitializedCaller(Type msg) =>
+            ((IExtensionSetReflector)Activator.CreateInstance(typeof(ExtensionSetReflector<>).MakeGenericType(msg))).CreateIsInitializedCaller();
+
         /// <summary>
         /// Creates a delegate which will execute the given method after casting the first argument to
         /// the type that declares the method, and the second argument to the first parameter type of the method.
@@ -148,6 +151,11 @@ namespace Google.Protobuf.Reflection
             void SetExtension(IMessage message, object value);
             bool HasExtension(IMessage message);
             void ClearExtension(IMessage message);
+        }
+
+        private interface IExtensionSetReflector
+        {
+            Func<IMessage, bool> CreateIsInitializedCaller();
         }
 
         private class ReflectionHelper<T1, T2> : IReflectionHelper
@@ -297,6 +305,23 @@ namespace Google.Protobuf.Reflection
                 {
                     throw new InvalidCastException("The provided extension is not a valid extension identifier type");
                 }
+            }
+        }
+
+        private class ExtensionSetReflector<T1> : IExtensionSetReflector where T1 : IExtendableMessage<T1>
+        {
+            public Func<IMessage, bool> CreateIsInitializedCaller()
+            {
+                var field = typeof(T1).GetTypeInfo().GetDeclaredField("_extensions");
+                var initializedFunc = (Func<ExtensionSet<T1>, bool>)
+                    typeof(ExtensionSet<T1>)
+                        .GetTypeInfo()
+                        .GetDeclaredMethod("IsInitialized")
+                        .CreateDelegate(typeof(Func<ExtensionSet<T1>, bool>));
+                return (m) => {
+                    var set = field.GetValue(m) as ExtensionSet<T1>;
+                    return set == null || initializedFunc(set);
+                };
             }
         }
 

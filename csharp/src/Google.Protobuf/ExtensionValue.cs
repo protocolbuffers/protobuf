@@ -32,6 +32,7 @@
 
 using Google.Protobuf.Collections;
 using System;
+using System.Linq;
 
 namespace Google.Protobuf
 {
@@ -41,6 +42,7 @@ namespace Google.Protobuf
         void MergeFrom(IExtensionValue value);
         void WriteTo(CodedOutputStream output);
         int CalculateSize();
+        bool IsInitialized();
     }
 
     internal sealed class ExtensionValue<T> : IExtensionValue
@@ -137,6 +139,11 @@ namespace Google.Protobuf
         }
 
         public bool HasValue => hasValue;
+
+        public bool IsInitialized()
+        {
+            return HasValue && field is IMessage && (field as IMessage).IsInitialized();
+        }
     }
 
     internal sealed class RepeatedExtensionValue<T> : IExtensionValue
@@ -203,5 +210,10 @@ namespace Google.Protobuf
         }
 
         public RepeatedField<T> GetValue() => field;
+
+        public bool IsInitialized()
+        {
+            return field.All(m => m is IMessage && (m as IMessage).IsInitialized());
+        }
     }
 }

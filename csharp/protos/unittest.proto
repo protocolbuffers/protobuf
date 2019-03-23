@@ -764,6 +764,12 @@ message TestRequiredOneof {
   }
 }
 
+message TestRequiredMap {
+  map<int32, NestedMessage> foo = 1;
+  message NestedMessage {
+    required int32 required_int32 = 1;
+  }
+}
 
 // Test messages for packed fields
 

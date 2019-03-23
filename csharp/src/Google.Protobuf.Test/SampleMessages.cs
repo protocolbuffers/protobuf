@@ -32,6 +32,7 @@
 
 using System;
 using Google.Protobuf.TestProtos;
+using Proto2 = Google.Protobuf.TestProtos.Proto2;
 
 namespace Google.Protobuf
 {
@@ -85,6 +86,57 @@ namespace Google.Protobuf
                 RepeatedNestedEnum = { TestAllTypes.Types.NestedEnum.Foo, TestAllTypes.Types.NestedEnum.Neg },
                 RepeatedNestedMessage = { new TestAllTypes.Types.NestedMessage { Bb = 35 }, new TestAllTypes.Types.NestedMessage { Bb = 10 } },
                 RepeatedPublicImportMessage = { new PublicImportMessage { E = 54 }, new PublicImportMessage { E = -1 } },
+                RepeatedSfixed32 = { -123, 123 },
+                RepeatedSfixed64 = { -12345678901234, 12345678901234 },
+                RepeatedSint32 = { -456, 100 },
+                RepeatedSint64 = { -12345678901235, 123 },
+                RepeatedString = { "foo", "bar" },
+                RepeatedUint32 = { UInt32.MaxValue, UInt32.MinValue },
+                RepeatedUint64 = { UInt64.MaxValue, UInt32.MinValue },
+                OneofString = "Oneof string"
+            };
+        }
+
+        public static Proto2.TestAllTypes CreateFullTestAllTypesProto2()
+        {
+            return new Proto2.TestAllTypes
+            {
+                OptionalBool = true,
+                OptionalBytes = ByteString.CopyFrom(1, 2, 3, 4),
+                OptionalDouble = 23.5,
+                OptionalFixed32 = 23,
+                OptionalFixed64 = 1234567890123,
+                OptionalFloat = 12.25f,
+                OptionalForeignEnum = Proto2.ForeignEnum.ForeignBar,
+                OptionalForeignMessage = new Proto2.ForeignMessage { C = 10 },
+                OptionalImportEnum = Proto2.ImportEnum.ImportBaz,
+                OptionalImportMessage = new Proto2.ImportMessage { D = 20 },
+                OptionalInt32 = 100,
+                OptionalInt64 = 3210987654321,
+                OptionalNestedEnum = Proto2.TestAllTypes.Types.NestedEnum.Foo,
+                OptionalNestedMessage = new Proto2.TestAllTypes.Types.NestedMessage { Bb = 35 },
+                OptionalPublicImportMessage = new Proto2.PublicImportMessage { E = 54 },
+                OptionalSfixed32 = -123,
+                OptionalSfixed64 = -12345678901234,
+                OptionalSint32 = -456,
+                OptionalSint64 = -12345678901235,
+                OptionalString = "test",
+                OptionalUint32 = UInt32.MaxValue,
+                OptionalUint64 = UInt64.MaxValue,
+                RepeatedBool = { true, false },
+                RepeatedBytes = { ByteString.CopyFrom(1, 2, 3, 4), ByteString.CopyFrom(5, 6), ByteString.CopyFrom(new byte[1000]) },
+                RepeatedDouble = { -12.25, 23.5 },
+                RepeatedFixed32 = { UInt32.MaxValue, 23 },
+                RepeatedFixed64 = { UInt64.MaxValue, 1234567890123 },
+                RepeatedFloat = { 100f, 12.25f },
+                RepeatedForeignEnum = { Proto2.ForeignEnum.ForeignFoo, Proto2.ForeignEnum.ForeignBar },
+                RepeatedForeignMessage = { new Proto2.ForeignMessage(), new Proto2.ForeignMessage { C = 10 } },
+                RepeatedImportEnum = { Proto2.ImportEnum.ImportBaz, Proto2.ImportEnum.ImportFoo },
+                RepeatedImportMessage = { new Proto2.ImportMessage { D = 20 }, new Proto2.ImportMessage { D = 25 } },
+                RepeatedInt32 = { 100, 200 },
+                RepeatedInt64 = { 3210987654321, Int64.MaxValue },
+                RepeatedNestedEnum = { Proto2.TestAllTypes.Types.NestedEnum.Foo, Proto2.TestAllTypes.Types.NestedEnum.Neg },
+                RepeatedNestedMessage = { new Proto2.TestAllTypes.Types.NestedMessage { Bb = 35 }, new Proto2.TestAllTypes.Types.NestedMessage { Bb = 10 } },
                 RepeatedSfixed32 = { -123, 123 },
                 RepeatedSfixed64 = { -12345678901234, 12345678901234 },
                 RepeatedSint32 = { -456, 100 },

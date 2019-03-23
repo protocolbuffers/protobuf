@@ -330,5 +330,10 @@ namespace Google.Protobuf
                 value.WriteTo(stream);
             }
         }
+
+        internal bool IsInitialized()
+        {
+            return ValuesByNumber.Values.All(v => v.IsInitialized());
+        }
     }
 }

@@ -34,6 +34,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reflection;
 #if NET35
 // Needed for ReadOnlyDictionary, which does not exist in .NET 3.5
 using Google.Protobuf.Collections;
@@ -63,6 +64,7 @@ namespace Google.Protobuf.Reflection
         private readonly IList<FieldDescriptor> fieldsInDeclarationOrder;
         private readonly IList<FieldDescriptor> fieldsInNumberOrder;
         private readonly IDictionary<string, FieldDescriptor> jsonFieldMap;
+        private Func<IMessage, bool> extensionSetIsInitialized;
 
         internal MessageDescriptor(DescriptorProto proto, FileDescriptor file, MessageDescriptor parent, int typeIndex, GeneratedClrTypeInfo generatedCodeInfo)
             : base(file, file.ComputeFullName(parent, proto.Name), typeIndex)
@@ -133,6 +135,26 @@ namespace Google.Protobuf.Reflection
         }
 
         internal DescriptorProto Proto { get; }
+
+        internal bool GetIsExtensionsInitialized(IMessage message)
+        {
+            if (!object.ReferenceEquals(message.Descriptor, this))
+            {
+                throw new InvalidOperationException("message's descriptor reference does not match this");
+            }
+
+            if (Proto.ExtensionRange.Count == 0)
+            {
+                return true;
+            }
+
+            if (extensionSetIsInitialized == null)
+            {
+                extensionSetIsInitialized = ReflectionUtil.CreateIsInitializedCaller(ClrType);
+            }
+
+            return extensionSetIsInitialized(message);
+        }
 
         /// <summary>
         /// The CLR type used to represent message instances from this descriptor.
