@@ -184,6 +184,11 @@ typedef struct {
   /* The table mapping json name to fielddef for this message. */
   const upb_strtable *name_table;
 
+  /* We are in a repeated-field context. We need this flag to decide whether to
+   * handle the array as a normal repeated field or a
+   * google.protobuf.ListValue/google.protobuf.Value. */
+  bool is_repeated;
+
   /* We are in a repeated-field context, ready to emit mapentries as
    * submessages. This flag alters the start-of-object (open-brace) behavior to
    * begin a sequence of mapentry messages rather than a single submessage. */
@@ -213,6 +218,19 @@ typedef struct {
   /* True if the field to be parsed is unknown. */
   bool is_unknown_field;
 } upb_jsonparser_frame;
+
+static void init_frame(upb_jsonparser_frame* frame) {
+  frame->m = NULL;
+  frame->f = NULL;
+  frame->name_table = NULL;
+  frame->is_repeated = false;
+  frame->is_map = false;
+  frame->is_mapentry = false;
+  frame->mapfield = NULL;
+  frame->is_any = false;
+  frame->any_frame = NULL;
+  frame->is_unknown_field = false;
+}
 
 struct upb_json_parser {
   upb_arena *arena;
@@ -260,6 +278,13 @@ struct upb_json_parser {
    * handlers. */
   struct tm tm;
 };
+
+static upb_jsonparser_frame* start_jsonparser_frame(upb_json_parser *p) {
+  upb_jsonparser_frame *inner;
+  inner = p->top + 1;
+  init_frame(inner);
+  return inner;
+}
 
 struct upb_json_codecache {
   upb_arena *arena;
@@ -1219,17 +1244,11 @@ static bool start_stringval(upb_json_parser *p) {
 
     /* Start a new parser frame: parser frames correspond one-to-one with
      * handler frames, and string events occur in a sub-frame. */
-    inner = p->top + 1;
+    inner = start_jsonparser_frame(p);
     sel = getsel_for_handlertype(p, UPB_HANDLER_STARTSTR);
     upb_sink_startstr(p->top->sink, sel, 0, &inner->sink);
     inner->m = p->top->m;
     inner->f = p->top->f;
-    inner->name_table = NULL;
-    inner->is_map = false;
-    inner->is_mapentry = false;
-    inner->is_any = false;
-    inner->any_frame = NULL;
-    inner->is_unknown_field = false;
     p->top = inner;
 
     if (upb_fielddef_type(p->top->f) == UPB_TYPE_STRING) {
@@ -1684,17 +1703,11 @@ static bool start_fieldmask_path(upb_json_parser *p) {
 
   /* Start a new parser frame: parser frames correspond one-to-one with
    * handler frames, and string events occur in a sub-frame. */
-  inner = p->top + 1;
+  inner = start_jsonparser_frame(p);
   sel = getsel_for_handlertype(p, UPB_HANDLER_STARTSTR);
   upb_sink_startstr(p->top->sink, sel, 0, &inner->sink);
   inner->m = p->top->m;
   inner->f = p->top->f;
-  inner->name_table = NULL;
-  inner->is_map = false;
-  inner->is_mapentry = false;
-  inner->is_any = false;
-  inner->any_frame = NULL;
-  inner->is_unknown_field = false;
   p->top = inner;
 
   multipart_startaccum(p);
@@ -1827,17 +1840,12 @@ static bool handle_mapentry(upb_json_parser *p) {
   mapfield = p->top->mapfield;
   mapentrymsg = upb_fielddef_msgsubdef(mapfield);
 
-  inner = p->top + 1;
+  inner = start_jsonparser_frame(p);
   p->top->f = mapfield;
   sel = getsel_for_handlertype(p, UPB_HANDLER_STARTSUBMSG);
   upb_sink_startsubmsg(p->top->sink, sel, &inner->sink);
   inner->m = mapentrymsg;
-  inner->name_table = NULL;
   inner->mapfield = mapfield;
-  inner->is_map = false;
-  inner->is_any = false;
-  inner->any_frame = NULL;
-  inner->is_unknown_field = false;
 
   /* Don't set this to true *yet* -- we reuse parsing handlers below to push
    * the key field value to the sink, and these handlers will pop the frame
@@ -1952,15 +1960,7 @@ static bool start_subobject(upb_json_parser *p) {
     upb_jsonparser_frame *inner;
     if (!check_stack(p)) return false;
 
-    inner = p->top + 1;
-    inner->m = NULL;
-    inner->f = NULL;
-    inner->is_map = false;
-    inner->is_mapentry = false;
-    inner->is_any = false;
-    inner->any_frame = NULL;
-    inner->is_unknown_field = false;
-    p->top = inner;
+    p->top = start_jsonparser_frame(p);
     return true;
   }
 
@@ -1972,18 +1972,12 @@ static bool start_subobject(upb_json_parser *p) {
      * context. */
     if (!check_stack(p)) return false;
 
-    inner = p->top + 1;
+    inner = start_jsonparser_frame(p);
     sel = getsel_for_handlertype(p, UPB_HANDLER_STARTSEQ);
     upb_sink_startseq(p->top->sink, sel, &inner->sink);
     inner->m = upb_fielddef_msgsubdef(p->top->f);
-    inner->name_table = NULL;
     inner->mapfield = p->top->f;
-    inner->f = NULL;
     inner->is_map = true;
-    inner->is_mapentry = false;
-    inner->is_any = false;
-    inner->any_frame = NULL;
-    inner->is_unknown_field = false;
     p->top = inner;
 
     return true;
@@ -1995,16 +1989,11 @@ static bool start_subobject(upb_json_parser *p) {
      * context. */
     if (!check_stack(p)) return false;
 
-    inner = p->top + 1;
-
+    inner = start_jsonparser_frame(p);
     sel = getsel_for_handlertype(p, UPB_HANDLER_STARTSUBMSG);
     upb_sink_startsubmsg(p->top->sink, sel, &inner->sink);
     inner->m = upb_fielddef_msgsubdef(p->top->f);
     set_name_table(p, inner);
-    inner->f = NULL;
-    inner->is_map = false;
-    inner->is_mapentry = false;
-    inner->is_unknown_field = false;
     p->top = inner;
 
     if (is_wellknown_msg(p, UPB_WELLKNOWN_ANY)) {
@@ -2101,10 +2090,14 @@ static bool start_array(upb_json_parser *p) {
     } else {
       return false;
     }
-  } else if (is_wellknown_field(p, UPB_WELLKNOWN_LISTVALUE)) {
+  } else if (is_wellknown_field(p, UPB_WELLKNOWN_LISTVALUE) &&
+             (!upb_fielddef_isseq(p->top->f) ||
+              p->top->is_repeated)) {
     if (!start_subobject(p)) return false;
     start_listvalue_object(p);
-  } else if (is_wellknown_field(p, UPB_WELLKNOWN_VALUE)) {
+  } else if (is_wellknown_field(p, UPB_WELLKNOWN_VALUE) &&
+             (!upb_fielddef_isseq(p->top->f) ||
+              p->top->is_repeated)) {
     if (!start_subobject(p)) return false;
     start_value_object(p, VALUE_LISTVALUE);
     if (!start_subobject(p)) return false;
@@ -2112,14 +2105,7 @@ static bool start_array(upb_json_parser *p) {
   }
 
   if (p->top->is_unknown_field) {
-    inner = p->top + 1;
-    inner->m = NULL;
-    inner->name_table = NULL;
-    inner->f = NULL;
-    inner->is_map = false;
-    inner->is_mapentry = false;
-    inner->is_any = false;
-    inner->any_frame = NULL;
+    inner = start_jsonparser_frame(p);
     inner->is_unknown_field = true;
     p->top = inner;
 
@@ -2135,17 +2121,12 @@ static bool start_array(upb_json_parser *p) {
 
   if (!check_stack(p)) return false;
 
-  inner = p->top + 1;
+  inner = start_jsonparser_frame(p);
   sel = getsel_for_handlertype(p, UPB_HANDLER_STARTSEQ);
   upb_sink_startseq(p->top->sink, sel, &inner->sink);
   inner->m = p->top->m;
-  inner->name_table = NULL;
   inner->f = p->top->f;
-  inner->is_map = false;
-  inner->is_mapentry = false;
-  inner->is_any = false;
-  inner->any_frame = NULL;
-  inner->is_unknown_field = false;
+  inner->is_repeated = true;
   p->top = inner;
 
   return true;
@@ -2755,12 +2736,7 @@ static void json_parser_reset(upb_json_parser *p) {
   int top;
 
   p->top = p->stack;
-  p->top->f = NULL;
-  p->top->is_map = false;
-  p->top->is_mapentry = false;
-  p->top->is_any = false;
-  p->top->any_frame = NULL;
-  p->top->is_unknown_field = false;
+  init_frame(p->top);
 
   /* Emit Ragel initialization of the parser. */
   %% write init;
