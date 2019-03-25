@@ -239,7 +239,7 @@ proto_library(
     name = "test_json_proto",
     srcs = [
         "tests/json/test.proto",
-        "tests/json/enum_from_separate_file.proto",
+        # "tests/json/enum_from_separate_file.proto",
     ],
 )
 

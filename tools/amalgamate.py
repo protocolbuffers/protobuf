@@ -17,7 +17,6 @@ class Amalgamator:
     self.output_c = open(output_path + "upb.c", "w")
 
     self.output_c.write("/* Amalgamated source file */\n")
-    self.output_c.write('#define _XOPEN_SOURCE 700\n')
     self.output_c.write('#include "upb.h"\n')
     self.output_c.write(open("upb/port_def.inc").read())
 
