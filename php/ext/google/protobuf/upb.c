@@ -16533,9 +16533,14 @@ static size_t putbytes(void *closure, const void *handler_data, const char *str,
   UPB_UNUSED(handler_data);
   UPB_UNUSED(handle);
 
+  print_data(p, "\"", 1);
+
   while (remaining > 2) {
-    /* TODO(haberman): handle encoded lengths > sizeof(data) */
-    UPB_ASSERT((limit - to) >= 4);
+    if (limit - to < 4) {
+      bytes = to - data;
+      putstring(p, data, bytes);
+      to = data;
+    }
 
     to[0] = base64[from[0] >> 2];
     to[1] = base64[((from[0] & 0x3) << 4) | (from[1] >> 4)];
@@ -16567,7 +16572,6 @@ static size_t putbytes(void *closure, const void *handler_data, const char *str,
   }
 
   bytes = to - data;
-  print_data(p, "\"", 1);
   putstring(p, data, bytes);
   print_data(p, "\"", 1);
   return len;
