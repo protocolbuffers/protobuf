@@ -101,16 +101,12 @@ def UpdateConfigure():
 def UpdateCpp():
   cpp_version = '%s00%s00%s' % (
     NEW_VERSION_INFO[0], NEW_VERSION_INFO[1], NEW_VERSION_INFO[2])
-  def RewriteCpp(line):
+  def RewriteCommon(line):
     line = re.sub(
       r'^#define GOOGLE_PROTOBUF_VERSION .*$',
       '#define GOOGLE_PROTOBUF_VERSION %s' % cpp_version,
       line)
     if NEW_VERSION_INFO[2] == '0':
-      line = re.sub(
-        r'^#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION .*$',
-        '#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION %s' % cpp_version,
-        line)
       line = re.sub(
         r'^#define GOOGLE_PROTOBUF_MIN_PROTOC_VERSION .*$',
         '#define GOOGLE_PROTOBUF_MIN_PROTOC_VERSION %s' % cpp_version,
@@ -124,7 +120,27 @@ def UpdateCpp():
         'static const int kMinHeaderVersionForProtoc = %s;' % cpp_version,
         line)
     return line
-  RewriteTextFile('src/google/protobuf/stubs/common.h', RewriteCpp)
+  def RewritePortDef(line):
+    line = re.sub(
+      r'^#define PROTOBUF_VERSION .*$',
+      '#define PROTOBUF_VERSION %s' % cpp_version,
+      line)
+    if NEW_VERSION_INFO[2] == '0':
+      line = re.sub(
+        r'^#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC .*$',
+        '#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC %s' % cpp_version,
+        line)
+      line = re.sub(
+        r'^#define PROTOBUF_MIN_PROTOC_VERSION .*$',
+        '#define PROTOBUF_MIN_PROTOC_VERSION %s' % cpp_version,
+        line)
+      line = re.sub(
+        r'^#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION .*$',
+        '#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION %s' % cpp_version,
+        line)
+    return line
+  RewriteTextFile('src/google/protobuf/stubs/common.h', RewriteCommon)
+  RewriteTextFile('src/google/protobuf/port_def.inc', RewritePortDef)
 
 
 def UpdateCsharp():
