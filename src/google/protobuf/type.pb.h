@@ -162,7 +162,7 @@ inline bool Syntax_Parse(
 }
 // ===================================================================
 
-class PROTOBUF_EXPORT Type final :
+class PROTOBUF_EXPORT Type :
     public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Type) */ {
  public:
   Type();
@@ -375,7 +375,7 @@ class PROTOBUF_EXPORT Type final :
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Field final :
+class PROTOBUF_EXPORT Field :
     public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Field) */ {
  public:
   Field();
@@ -729,7 +729,7 @@ class PROTOBUF_EXPORT Field final :
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Enum final :
+class PROTOBUF_EXPORT Enum :
     public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Enum) */ {
  public:
   Enum();
@@ -919,7 +919,7 @@ class PROTOBUF_EXPORT Enum final :
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT EnumValue final :
+class PROTOBUF_EXPORT EnumValue :
     public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.EnumValue) */ {
  public:
   EnumValue();
@@ -1083,7 +1083,7 @@ class PROTOBUF_EXPORT EnumValue final :
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Option final :
+class PROTOBUF_EXPORT Option :
     public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Option) */ {
  public:
   Option();

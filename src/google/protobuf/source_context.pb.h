@@ -61,7 +61,7 @@ namespace protobuf {
 
 // ===================================================================
 
-class PROTOBUF_EXPORT SourceContext final :
+class PROTOBUF_EXPORT SourceContext :
     public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.SourceContext) */ {
  public:
   SourceContext();

@@ -121,7 +121,7 @@ static bool _ParseMap(const char* begin, const char* end, void* object, ::google
 
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Struct final :
+class PROTOBUF_EXPORT Struct :
     public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Struct) */ {
  public:
   Struct();
@@ -257,7 +257,7 @@ class PROTOBUF_EXPORT Struct final :
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Value final :
+class PROTOBUF_EXPORT Value :
     public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Value) */ {
  public:
   Value();
@@ -486,7 +486,7 @@ class PROTOBUF_EXPORT Value final :
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT ListValue final :
+class PROTOBUF_EXPORT ListValue :
     public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.ListValue) */ {
  public:
   ListValue();
