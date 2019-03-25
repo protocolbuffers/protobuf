@@ -165,6 +165,10 @@ AS_IF([test "$with_zlib" != no], [
 ])
 AM_CONDITIONAL([HAVE_ZLIB], [test $HAVE_ZLIB = 1])
 
+# Add -std=c++11 if necesssary. It is important for us to do this before the
+# libatomic check below, since that also depends on C++11.
+AX_CXX_COMPILE_STDCXX([11], [noext], [mandatory])
+
 dnl On some platforms, std::atomic needs a helper library
 AC_MSG_CHECKING(whether -latomic is needed)
 AC_LINK_IFELSE([AC_LANG_SOURCE([[
@@ -213,8 +217,6 @@ case "$target_os" in
     ;;
 esac
 AM_CONDITIONAL([OBJC_CONFORMANCE_TEST], [test $OBJC_CONFORMANCE_TEST = 1])
-
-AX_CXX_COMPILE_STDCXX([11], [noext], [mandatory])
 
 # HACK:  Make gmock's configure script pick up our copy of CFLAGS and CXXFLAGS,
 #   since the flags added by ACX_CHECK_SUNCC must be used when compiling gmock
