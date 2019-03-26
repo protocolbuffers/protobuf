@@ -3,6 +3,9 @@
 # Requires that the proto messages are exactly the same in proto2 and proto3 syntax
 # and that the including class should define a 'proto_module' method which returns
 # the enclosing module of the proto message classes.
+
+require 'bigdecimal'
+
 module CommonTests
   # Ruby 2.5 changed to raise FrozenError instead of RuntimeError
   FrozenErrorType = Gem::Version.new(RUBY_VERSION) < Gem::Version.new('2.5') ? RuntimeError : FrozenError
@@ -1262,6 +1265,53 @@ module CommonTests
 
   def test_comparison_with_arbitrary_object
     assert proto_module::TestMessage.new != nil
+  end
+
+  def test_converts_time
+    m = proto_module::TimeMessage.new
+
+    m.timestamp = Google::Protobuf::Timestamp.new(seconds: 5, nanos: 6)
+    assert_kind_of Google::Protobuf::Timestamp, m.timestamp
+    assert_equal 5, m.timestamp.seconds
+    assert_equal 6, m.timestamp.nanos
+
+    m.timestamp = Time.at(9466, 123456.789)
+    assert_equal Google::Protobuf::Timestamp.new(seconds: 9466, nanos: 123456789), m.timestamp
+
+    m = proto_module::TimeMessage.new(timestamp: Time.at(1))
+    assert_equal Google::Protobuf::Timestamp.new(seconds: 1, nanos: 0), m.timestamp
+
+    assert_raise(Google::Protobuf::TypeError) { m.timestamp = 2 }
+    assert_raise(Google::Protobuf::TypeError) { m.timestamp = 2.4 }
+    assert_raise(Google::Protobuf::TypeError) { m.timestamp = '4' }
+    assert_raise(Google::Protobuf::TypeError) { m.timestamp = proto_module::TimeMessage.new }
+  end
+
+  def test_converts_duration
+    m = proto_module::TimeMessage.new
+
+    m.duration = Google::Protobuf::Duration.new(seconds: 2, nanos: 22)
+    assert_kind_of Google::Protobuf::Duration, m.duration
+    assert_equal 2, m.duration.seconds
+    assert_equal 22, m.duration.nanos
+
+    m.duration = 10.5
+    assert_equal Google::Protobuf::Duration.new(seconds: 10, nanos: 500_000_000), m.duration
+
+    m.duration = 200
+    assert_equal Google::Protobuf::Duration.new(seconds: 200, nanos: 0), m.duration
+
+    m.duration = Rational(3, 2)
+    assert_equal Google::Protobuf::Duration.new(seconds: 1, nanos: 500_000_000), m.duration
+
+    m.duration = BigDecimal.new("5")
+    assert_equal Google::Protobuf::Duration.new(seconds: 5, nanos: 0), m.duration
+
+    m = proto_module::TimeMessage.new(duration: 1.1)
+    assert_equal Google::Protobuf::Duration.new(seconds: 1, nanos: 100_000_000), m.duration
+
+    assert_raise(Google::Protobuf::TypeError) { m.duration = '2' }
+    assert_raise(Google::Protobuf::TypeError) { m.duration = proto_module::TimeMessage.new }
   end
 
   def test_freeze

@@ -2,6 +2,8 @@ syntax = "proto2";
 
 package basic_test_proto2;
 
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
 import "google/protobuf/struct.proto";
 
 message Foo {
@@ -116,6 +118,11 @@ message OneofMessage {
     TestMessage2 c = 3;
     TestEnum d = 4;
   }
+}
+
+message TimeMessage {
+  optional google.protobuf.Timestamp timestamp = 1;
+  optional google.protobuf.Duration duration = 2;
 }
 
 message Enumer {
