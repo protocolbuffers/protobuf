@@ -1,5 +1,6 @@
 /* We encode backwards, to avoid pre-computing lengths (one-pass encode). */
 
+#include <string.h>
 #include "upb/upb.h"
 #include "upb/encode.h"
 #include "upb/structs.int.h"

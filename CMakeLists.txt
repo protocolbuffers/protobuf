@@ -70,7 +70,6 @@ add_library(upb
   upb/msgfactory.c
   upb/port_def.inc
   upb/port_undef.inc
-  upb/refcounted.c
   upb/sink.c
   upb/structs.int.h
   upb/table.c
@@ -84,33 +83,22 @@ add_library(upb
   upb/handlers.h
   upb/msg.h
   upb/msgfactory.h
-  upb/refcounted.h
   upb/sink.h
   upb/upb.h)
-add_library(upb_descriptor
-  upb/descriptor/descriptor.upbdefs.c
-  upb/descriptor/reader.c
-  upb/descriptor/descriptor.upbdefs.h
-  upb/descriptor/reader.h)
-target_link_libraries(upb_descriptor
-  upb)
 add_library(upb_pb
   upb/pb/compile_decoder.c
   upb/pb/decoder.c
   upb/pb/decoder.int.h
   upb/pb/encoder.c
-  upb/pb/glue.c
   upb/pb/textprinter.c
   upb/pb/varint.c
   upb/pb/varint.int.h
   upb/table.int.h
   upb/pb/decoder.h
   upb/pb/encoder.h
-  upb/pb/glue.h
   upb/pb/textprinter.h)
 target_link_libraries(upb_pb
-  upb
-  upb_descriptor)
+  upb)
 add_library(upb_json
   upb/json/parser.c
   upb/json/printer.c
@@ -126,63 +114,5 @@ add_library(upb_test
   tests/testmain.cc
   tests/test_util.h
   tests/upb_test.h)
-add_executable(test_varint
-  tests/pb/test_varint.c)
-add_test(NAME test_varint COMMAND test_varint)
-target_link_libraries(test_varint
-  upb_pb
-  upb_test)
-add_executable(test_def
-  tests/test_def.c)
-add_test(NAME test_def COMMAND test_def)
-target_link_libraries(test_def
-  upb_pb
-  upb_test)
-add_executable(test_handlers
-  tests/test_handlers.c)
-add_test(NAME test_handlers COMMAND test_handlers)
-target_link_libraries(test_handlers
-  upb_pb
-  upb_test)
-add_executable(test_decoder
-  tests/pb/test_decoder.cc)
-add_test(NAME test_decoder COMMAND test_decoder)
-target_link_libraries(test_decoder
-  upb_pb
-  upb_test)
-add_executable(test_encoder
-  tests/pb/test_encoder.cc)
-add_test(NAME test_encoder COMMAND test_encoder)
-add_custom_command(
-    TARGET test_encoder POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy
-            ${CMAKE_SOURCE_DIR}/upb/descriptor/descriptor.pb
-            ${CMAKE_CURRENT_BINARY_DIR}/upb/descriptor/descriptor.pb)
-target_link_libraries(test_encoder
-  upb_cc_bindings
-  upb_pb
-  upb_test)
-add_executable(test_cpp
-  tests/test_cpp.cc)
-add_test(NAME test_cpp COMMAND test_cpp)
-target_link_libraries(test_cpp
-  upb
-  upb_descriptor
-  upb_pb
-  upb_test)
-add_executable(test_table
-  tests/test_table.cc)
-add_test(NAME test_table COMMAND test_table)
-target_link_libraries(test_table
-  upb
-  upb_test)
-add_executable(test_json
-  tests/json/test.upbdefs.c
-  tests/json/test.upbdefs.h
-  tests/json/test_json.cc)
-add_test(NAME test_json COMMAND test_json)
-target_link_libraries(test_json
-  upb_json
-  upb_test)
 
 

@@ -7,11 +7,15 @@
 
 #include "upb/msg.h"
 
-UPB_BEGIN_EXTERN_C
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 bool upb_decode(const char *buf, size_t size, upb_msg *msg,
                 const upb_msglayout *l);
 
-UPB_END_EXTERN_C
+#ifdef __cplusplus
+}  /* extern "C" */
+#endif
 
 #endif  /* UPB_DECODE_H_ */

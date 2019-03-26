@@ -91,11 +91,11 @@ typedef struct {
 } upb_pb_encoder_segment;
 
 struct upb_pb_encoder {
-  upb_env *env;
+  upb_arena *arena;
 
   /* Our input and output. */
   upb_sink input_;
-  upb_bytessink *output_;
+  upb_bytessink output_;
 
   /* The "subclosure" -- used as the inner closure as part of the bytessink
    * protocol. */
@@ -150,7 +150,7 @@ static bool reserve(upb_pb_encoder *e, size_t bytes) {
       new_size *= 2;
     }
 
-    new_buf = upb_env_realloc(e->env, e->buf, old_size, new_size);
+    new_buf = upb_arena_realloc(e->arena, e->buf, old_size, new_size);
 
     if (new_buf == NULL) {
       return false;
@@ -230,7 +230,7 @@ static bool start_delim(upb_pb_encoder *e) {
           (e->seglimit - e->segbuf) * sizeof(upb_pb_encoder_segment);
       size_t new_size = old_size * 2;
       upb_pb_encoder_segment *new_buf =
-          upb_env_realloc(e->env, e->segbuf, old_size, new_size);
+          upb_arena_realloc(e->arena, e->segbuf, old_size, new_size);
 
       if (new_buf == NULL) {
         return false;
@@ -304,8 +304,7 @@ static void new_tag(upb_handlers *h, const upb_fielddef *f, upb_wiretype_t wt,
   tag_t *tag = upb_gmalloc(sizeof(tag_t));
   tag->bytes = upb_vencode64((n << 3) | wt, tag->tag);
 
-  upb_handlerattr_init(attr);
-  upb_handlerattr_sethandlerdata(attr, tag);
+  attr->handler_data = tag;
   upb_handlers_addcleanup(h, tag, upb_gfree);
 }
 
@@ -434,6 +433,7 @@ T(sint64,   int64_t,  upb_zzenc_64, encode_varint)
 
 /* code to build the handlers *************************************************/
 
+#include <stdio.h>
 static void newhandlers_callback(const void *closure, upb_handlers *h) {
   const upb_msgdef *m;
   upb_msg_field_iter i;
@@ -451,7 +451,7 @@ static void newhandlers_callback(const void *closure, upb_handlers *h) {
     const upb_fielddef *f = upb_msg_iter_field(&i);
     bool packed = upb_fielddef_isseq(f) && upb_fielddef_isprimitive(f) &&
                   upb_fielddef_packed(f);
-    upb_handlerattr attr;
+    upb_handlerattr attr = UPB_HANDLERATTR_INIT;
     upb_wiretype_t wt =
         packed ? UPB_WIRE_TYPE_DELIMITED
                : upb_pb_native_wire_types[upb_fielddef_descriptortype(f)];
@@ -500,20 +500,17 @@ static void newhandlers_callback(const void *closure, upb_handlers *h) {
         break;
       case UPB_DESCRIPTOR_TYPE_GROUP: {
         /* Endgroup takes a different tag (wire_type = END_GROUP). */
-        upb_handlerattr attr2;
+        upb_handlerattr attr2 = UPB_HANDLERATTR_INIT;
         new_tag(h, f, UPB_WIRE_TYPE_END_GROUP, &attr2);
 
         upb_handlers_setstartsubmsg(h, f, encode_startgroup, &attr);
         upb_handlers_setendsubmsg(h, f, encode_endgroup, &attr2);
 
-        upb_handlerattr_uninit(&attr2);
         break;
       }
     }
 
 #undef T
-
-    upb_handlerattr_uninit(&attr);
   }
 }
 
@@ -526,27 +523,26 @@ void upb_pb_encoder_reset(upb_pb_encoder *e) {
 
 /* public API *****************************************************************/
 
-const upb_handlers *upb_pb_encoder_newhandlers(const upb_msgdef *m,
-                                               const void *owner) {
-  return upb_handlers_newfrozen(m, owner, newhandlers_callback, NULL);
+upb_handlercache *upb_pb_encoder_newcache() {
+  return upb_handlercache_new(newhandlers_callback, NULL);
 }
 
-upb_pb_encoder *upb_pb_encoder_create(upb_env *env, const upb_handlers *h,
-                                      upb_bytessink *output) {
+upb_pb_encoder *upb_pb_encoder_create(upb_arena *arena, const upb_handlers *h,
+                                      upb_bytessink output) {
   const size_t initial_bufsize = 256;
   const size_t initial_segbufsize = 16;
   /* TODO(haberman): make this configurable. */
   const size_t stack_size = 64;
 #ifndef NDEBUG
-  const size_t size_before = upb_env_bytesallocated(env);
+  const size_t size_before = upb_arena_bytesallocated(arena);
 #endif
 
-  upb_pb_encoder *e = upb_env_malloc(env, sizeof(upb_pb_encoder));
+  upb_pb_encoder *e = upb_arena_malloc(arena, sizeof(upb_pb_encoder));
   if (!e) return NULL;
 
-  e->buf = upb_env_malloc(env, initial_bufsize);
-  e->segbuf = upb_env_malloc(env, initial_segbufsize * sizeof(*e->segbuf));
-  e->stack = upb_env_malloc(env, stack_size * sizeof(*e->stack));
+  e->buf = upb_arena_malloc(arena, initial_bufsize);
+  e->segbuf = upb_arena_malloc(arena, initial_segbufsize * sizeof(*e->segbuf));
+  e->stack = upb_arena_malloc(arena, stack_size * sizeof(*e->stack));
 
   if (!e->buf || !e->segbuf || !e->stack) {
     return NULL;
@@ -559,15 +555,15 @@ upb_pb_encoder *upb_pb_encoder_create(upb_env *env, const upb_handlers *h,
   upb_pb_encoder_reset(e);
   upb_sink_reset(&e->input_, h, e);
 
-  e->env = env;
+  e->arena = arena;
   e->output_ = output;
-  e->subc = output->closure;
+  e->subc = output.closure;
   e->ptr = e->buf;
 
   /* If this fails, increase the value in encoder.h. */
-  UPB_ASSERT_DEBUGVAR(upb_env_bytesallocated(env) - size_before <=
+  UPB_ASSERT_DEBUGVAR(upb_arena_bytesallocated(arena) - size_before <=
                       UPB_PB_ENCODER_SIZE);
   return e;
 }
 
-upb_sink *upb_pb_encoder_input(upb_pb_encoder *e) { return &e->input_; }
+upb_sink upb_pb_encoder_input(upb_pb_encoder *e) { return e->input_; }

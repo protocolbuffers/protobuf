@@ -21,6 +21,7 @@ class Amalgamator:
     self.output_c.write(open("upb/port_def.inc").read())
 
     self.output_h.write("/* Amalgamated source file */\n")
+    self.output_h.write('#include <stdint.h>')
     self.output_h.write(open("upb/port_def.inc").read())
 
   def finish(self):
@@ -51,6 +52,10 @@ output_path = sys.argv[2]
 amalgamator = Amalgamator(include_path, output_path)
 
 for filename in sys.argv[3:]:
+  # Leave JIT out of the amalgamation.
+  if "x64" in filename or "dynasm" in filename:
+    continue
+
   amalgamator.add_src(filename.strip())
 
 amalgamator.finish()

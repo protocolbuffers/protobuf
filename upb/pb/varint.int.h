@@ -24,6 +24,18 @@ extern "C" {
  * descriptor type (upb_descriptortype_t). */
 extern const uint8_t upb_pb_native_wire_types[];
 
+UPB_INLINE uint64_t byteswap64(uint64_t val)
+{
+  return ((((val) & 0xff00000000000000ull) >> 56)
+    | (((val) & 0x00ff000000000000ull) >> 40)
+    | (((val) & 0x0000ff0000000000ull) >> 24)
+    | (((val) & 0x000000ff00000000ull) >> 8)
+    | (((val) & 0x00000000ff000000ull) << 8)
+    | (((val) & 0x0000000000ff0000ull) << 24)
+    | (((val) & 0x000000000000ff00ull) << 40)
+    | (((val) & 0x00000000000000ffull) << 56));
+}
+
 /* Zig-zag encoding/decoding **************************************************/
 
 UPB_INLINE int32_t upb_zzdec_32(uint32_t n) {
@@ -130,6 +142,9 @@ UPB_INLINE uint64_t upb_vencode32(uint32_t val) {
   uint64_t ret = 0;
   UPB_ASSERT(bytes <= 5);
   memcpy(&ret, buf, bytes);
+#ifdef UPB_BIG_ENDIAN
+  ret = byteswap64(ret);
+#endif
   UPB_ASSERT(ret <= 0xffffffffffU);
   return ret;
 }

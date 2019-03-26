@@ -100,16 +100,21 @@ static void *lupb_newuserdata(lua_State *L, size_t size, const char *type) {
  * it is an internal memory management detail.  Other objects refer to this
  * object from their userdata to keep the arena-owned data alive. */
 
+typedef struct {
+  upb_arena *arena;
+} lupb_arena;
+
 upb_arena *lupb_arena_check(lua_State *L, int narg) {
-  return luaL_checkudata(L, narg, LUPB_ARENA);
+  lupb_arena *a = luaL_checkudata(L, narg, LUPB_ARENA);
+  return a ? a->arena : NULL;
 }
 
 int lupb_arena_new(lua_State *L) {
-  upb_arena *a = lupb_newuserdata(L, sizeof(upb_arena), LUPB_ARENA);
+  lupb_arena *a = lupb_newuserdata(L, sizeof(lupb_arena), LUPB_ARENA);
 
   /* TODO(haberman): use Lua alloc func as block allocator?  Would need to
    * verify that all cases of upb_malloc in msg/table are longjmp-safe. */
-  upb_arena_init(a);
+  a->arena = upb_arena_new();
 
   return 1;
 }
@@ -140,7 +145,7 @@ static void lupb_arena_initsingleton(lua_State *L) {
 
 static int lupb_arena_gc(lua_State *L) {
   upb_arena *a = lupb_arena_check(L, 1);
-  upb_arena_uninit(a);
+  upb_arena_free(a);
   return 0;
 }
 

@@ -144,7 +144,7 @@ class StringSink {
   }
   ~StringSink() { }
 
-  upb_bytessink* Sink() { return &bytessink_; }
+  upb_bytessink Sink() { return bytessink_; }
 
   const std::string& Data() { return s_; }
 
@@ -169,16 +169,15 @@ class StringSink {
 void test_json_roundtrip_message(const char* json_src,
                                  const char* json_expected,
                                  const upb::Handlers* serialize_handlers,
-                                 const upb::json::ParserMethod* parser_method,
+                                 const upb::json::ParserMethodPtr parser_method,
                                  int seam) {
   VerboseParserEnvironment env(verbose);
   StringSink data_sink;
-  upb::json::Printer* printer = upb::json::Printer::Create(
-      env.env(), serialize_handlers, data_sink.Sink());
-  upb::json::Parser* parser =
-      upb::json::Parser::Create(
-          env.env(), parser_method, NULL, printer->input(), false);
-  env.ResetBytesSink(parser->input());
+  upb::json::PrinterPtr printer = upb::json::PrinterPtr::Create(
+      env.arena(), serialize_handlers, data_sink.Sink());
+  upb::json::ParserPtr parser = upb::json::ParserPtr::Create(
+      env.arena(), parser_method, NULL, printer.input(), env.status(), false);
+  env.ResetBytesSink(parser.input());
   env.Reset(json_src, strlen(json_src), false, false);
 
   bool ok = env.Start() &&
@@ -203,12 +202,16 @@ void test_json_roundtrip_message(const char* json_src,
 // Starts with a message in JSON format, parses and directly serializes again,
 // and compares the result.
 void test_json_roundtrip() {
-  upb::reffed_ptr<const upb::MessageDef> md(
-      upbdefs::upb::test::json::TestMessage::get());
-  upb::reffed_ptr<const upb::Handlers> serialize_handlers(
-      upb::json::Printer::NewHandlers(md.get(), false));
-  upb::reffed_ptr<const upb::json::ParserMethod> parser_method(
-      upb::json::ParserMethod::New(md.get()));
+  upb::SymbolTable symtab;
+  upb::HandlerCache serialize_handlercache(
+      upb::json::PrinterPtr::NewCache(false));
+  upb::json::CodeCache parse_codecache;
+
+  upb::MessageDefPtr md(upb_test_json_TestMessage_getmsgdef(symtab.ptr()));
+  ASSERT(md);
+  const upb::Handlers* serialize_handlers = serialize_handlercache.Get(md);
+  const upb::json::ParserMethodPtr parser_method = parse_codecache.Get(md);
+  ASSERT(serialize_handlers);
 
   for (const TestCase* test_case = kTestRoundtripMessages;
        test_case->input != NULL; test_case++) {
@@ -219,12 +222,12 @@ void test_json_roundtrip() {
 
     for (size_t i = 0; i < strlen(test_case->input); i++) {
       test_json_roundtrip_message(test_case->input, expected,
-                                  serialize_handlers.get(), parser_method.get(),
-                                  i);
+                                  serialize_handlers, parser_method, i);
     }
   }
 
-  serialize_handlers = upb::json::Printer::NewHandlers(md.get(), true);
+  serialize_handlercache = upb::json::PrinterPtr::NewCache(true);
+  serialize_handlers = serialize_handlercache.Get(md);
 
   for (const TestCase* test_case = kTestRoundtripMessagesPreserve;
        test_case->input != NULL; test_case++) {
@@ -235,8 +238,7 @@ void test_json_roundtrip() {
 
     for (size_t i = 0; i < strlen(test_case->input); i++) {
       test_json_roundtrip_message(test_case->input, expected,
-                                  serialize_handlers.get(), parser_method.get(),
-                                  i);
+                                  serialize_handlers, parser_method, i);
     }
   }
 }

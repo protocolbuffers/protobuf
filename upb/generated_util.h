@@ -7,6 +7,7 @@
 #define UPB_GENERATED_UTIL_H_
 
 #include <stdint.h>
+#include "upb/msg.h"
 #include "upb/structs.int.h"
 
 #define PTR_AT(msg, ofs, type) (type*)((const char*)msg + ofs)
@@ -15,7 +16,7 @@ UPB_INLINE const void *_upb_array_accessor(const void *msg, size_t ofs,
                                            size_t *size) {
   const upb_array *arr = *PTR_AT(msg, ofs, const upb_array*);
   if (arr) {
-    if (size) *size = arr->size;
+    if (size) *size = arr->len;
     return arr->data;
   } else {
     if (size) *size = 0;
@@ -27,7 +28,7 @@ UPB_INLINE void *_upb_array_mutable_accessor(void *msg, size_t ofs,
                                              size_t *size) {
   upb_array *arr = *PTR_AT(msg, ofs, upb_array*);
   if (arr) {
-    if (size) *size = arr->size;
+    if (size) *size = arr->len;
     return arr->data;
   } else {
     if (size) *size = 0;
@@ -53,10 +54,9 @@ UPB_INLINE void *_upb_array_resize_accessor(void *msg, size_t ofs, size_t size,
     size_t new_size = UPB_MAX(arr->size, 4);
     size_t old_bytes = arr->size * elem_size;
     size_t new_bytes;
-    upb_alloc *alloc = upb_arena_alloc(arr->arena);
     while (new_size < size) new_size *= 2;
     new_bytes = new_size * elem_size;
-    arr->data = upb_realloc(alloc, arr->data, old_bytes, new_bytes);
+    arr->data = upb_arena_realloc(arena, arr->data, old_bytes, new_bytes);
     if (!arr->data) {
       return NULL;
     }
@@ -82,7 +82,7 @@ UPB_INLINE bool _upb_array_append_accessor(void *msg, size_t ofs,
 }
 
 UPB_INLINE bool _upb_has_field(const void *msg, size_t idx) {
-  return (*PTR_AT(msg, idx / 8, const char) & (idx % 8)) != 0;
+  return (*PTR_AT(msg, idx / 8, const char) & (1 << (idx % 8))) != 0;
 }
 
 UPB_INLINE bool _upb_sethas(const void *msg, size_t idx) {

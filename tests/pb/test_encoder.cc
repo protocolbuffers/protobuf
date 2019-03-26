@@ -2,10 +2,9 @@
 #include "tests/test_util.h"
 #include "tests/upb_test.h"
 #include "upb/bindings/stdc++/string.h"
-#include "upb/descriptor/descriptor.upbdefs.h"
+#include "google/protobuf/descriptor.upb.h"
 #include "upb/pb/decoder.h"
 #include "upb/pb/encoder.h"
-#include "upb/pb/glue.h"
 
 std::string read_string(const char *filename) {
   size_t len;
@@ -18,24 +17,39 @@ std::string read_string(const char *filename) {
 }
 
 void test_pb_roundtrip() {
-  upb::reffed_ptr<const upb::MessageDef> md(
-      upbdefs::google::protobuf::FileDescriptorSet::get());
-  upb::reffed_ptr<const upb::Handlers> encoder_handlers(
-      upb::pb::Encoder::NewHandlers(md.get()));
-  upb::reffed_ptr<const upb::pb::DecoderMethod> method(
-      upb::pb::DecoderMethod::New(
-          upb::pb::DecoderMethodOptions(encoder_handlers.get())));
+  std::string input = read_string("google/protobuf/descriptor.pb");
+  upb::SymbolTable symtab;
+  upb::HandlerCache encoder_cache(upb::pb::EncoderPtr::NewCache());
+  upb::pb::CodeCache decoder_cache(&encoder_cache);
+  upb::Arena arena;
+  google_protobuf_FileDescriptorSet *set =
+      google_protobuf_FileDescriptorSet_parse(input.c_str(), input.size(),
+                                              arena.ptr());
+  ASSERT(set);
+  size_t n;
+  const google_protobuf_FileDescriptorProto *const *files =
+      google_protobuf_FileDescriptorSet_file(set, &n);
+  ASSERT(n == 1);
+  upb::Status status;
+  upb::FileDefPtr file_def = symtab.AddFile(files[0], &status);
+  if (!file_def) {
+    fprintf(stderr, "Error building def: %s\n", status.error_message());
+    ASSERT(false);
+  }
+  upb::MessageDefPtr md =
+      symtab.LookupMessage("google.protobuf.FileDescriptorSet");
+  ASSERT(md);
+  const upb::Handlers *encoder_handlers = encoder_cache.Get(md);
+  ASSERT(encoder_handlers);
+  const upb::pb::DecoderMethodPtr method = decoder_cache.Get(md);
 
-  upb::InlinedEnvironment<512> env;
-  std::string input = read_string("upb/descriptor/descriptor.pb");
   std::string output;
   upb::StringSink string_sink(&output);
-  upb::pb::Encoder* encoder =
-      upb::pb::Encoder::Create(&env, encoder_handlers.get(),
-                               string_sink.input());
-  upb::pb::Decoder* decoder =
-      upb::pb::Decoder::Create(&env, method.get(), encoder->input());
-  bool ok = upb::BufferSource::PutBuffer(input, decoder->input());
+  upb::pb::EncoderPtr encoder =
+      upb::pb::EncoderPtr::Create(&arena, encoder_handlers, string_sink.input());
+  upb::pb::DecoderPtr decoder =
+      upb::pb::DecoderPtr::Create(&arena, method, encoder.input(), &status);
+  bool ok = upb::PutBuffer(input, decoder.input());
   ASSERT(ok);
   ASSERT(input == output);
 }

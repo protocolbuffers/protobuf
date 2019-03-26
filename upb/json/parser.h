@@ -13,17 +13,46 @@
 #ifdef __cplusplus
 namespace upb {
 namespace json {
-class Parser;
-class ParserMethod;
+class CodeCache;
+class ParserPtr;
+class ParserMethodPtr;
 }  /* namespace json */
 }  /* namespace upb */
 #endif
 
-UPB_DECLARE_TYPE(upb::json::Parser, upb_json_parser)
-UPB_DECLARE_DERIVED_TYPE(upb::json::ParserMethod, upb::RefCounted,
-                         upb_json_parsermethod, upb_refcounted)
+/* upb_json_parsermethod ******************************************************/
 
-/* upb::json::Parser **********************************************************/
+struct upb_json_parsermethod;
+typedef struct upb_json_parsermethod upb_json_parsermethod;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+const upb_byteshandler* upb_json_parsermethod_inputhandler(
+    const upb_json_parsermethod* m);
+
+#ifdef __cplusplus
+}  /* extern "C" */
+
+class upb::json::ParserMethodPtr {
+ public:
+  ParserMethodPtr() : ptr_(nullptr) {}
+  ParserMethodPtr(const upb_json_parsermethod* ptr) : ptr_(ptr) {}
+
+  const upb_json_parsermethod* ptr() const { return ptr_; }
+
+  const BytesHandler* input_handler() const {
+    return upb_json_parsermethod_inputhandler(ptr());
+  }
+
+ private:
+  const upb_json_parsermethod* ptr_;
+};
+
+#endif  /* __cplusplus */
+
+/* upb_json_parser ************************************************************/
 
 /* Preallocation hint: parser won't allocate more bytes than this when first
  * constructed.  This hint may be an overestimate for some build configurations.
@@ -31,96 +60,81 @@ UPB_DECLARE_DERIVED_TYPE(upb::json::ParserMethod, upb::RefCounted,
  * it may be an underestimate. */
 #define UPB_JSON_PARSER_SIZE 5712
 
+struct upb_json_parser;
+typedef struct upb_json_parser upb_json_parser;
+
 #ifdef __cplusplus
+extern "C" {
+#endif
+
+upb_json_parser* upb_json_parser_create(upb_arena* a,
+                                        const upb_json_parsermethod* m,
+                                        const upb_symtab* symtab,
+                                        upb_sink output,
+                                        upb_status *status,
+                                        bool ignore_json_unknown);
+upb_bytessink upb_json_parser_input(upb_json_parser* p);
+
+#ifdef __cplusplus
+}  /* extern "C" */
 
 /* Parses an incoming BytesStream, pushing the results to the destination
  * sink. */
-class upb::json::Parser {
+class upb::json::ParserPtr {
  public:
-  static Parser* Create(Environment* env, const ParserMethod* method,
-                        const SymbolTable* symtab,
-                        Sink* output, bool ignore_json_unknown);
+  ParserPtr(upb_json_parser* ptr) : ptr_(ptr) {}
 
-  BytesSink* input();
+  static ParserPtr Create(Arena* arena, ParserMethodPtr method,
+                          SymbolTable* symtab, Sink output, Status* status,
+                          bool ignore_json_unknown) {
+    upb_symtab* symtab_ptr = symtab ? symtab->ptr() : nullptr;
+    return ParserPtr(upb_json_parser_create(
+        arena->ptr(), method.ptr(), symtab_ptr, output.sink(), status->ptr(),
+        ignore_json_unknown));
+  }
+
+  BytesSink input() { return upb_json_parser_input(ptr_); }
 
  private:
-  UPB_DISALLOW_POD_OPS(Parser, upb::json::Parser)
+  upb_json_parser* ptr_;
 };
 
-class upb::json::ParserMethod {
- public:
-  /* Include base methods from upb::ReferenceCounted. */
-  UPB_REFCOUNTED_CPPMETHODS
+#endif  /* __cplusplus */
 
-  /* Returns handlers for parsing according to the specified schema. */
-  static reffed_ptr<const ParserMethod> New(const upb::MessageDef* md);
+/* upb_json_codecache *********************************************************/
 
-  /* The destination handlers that are statically bound to this method.
-   * This method is only capable of outputting to a sink that uses these
-   * handlers. */
-  const Handlers* dest_handlers() const;
+/* Lazily builds and caches decoder methods that will push data to the given
+ * handlers.  The upb_symtab object(s) must outlive this object. */
 
-  /* The input handlers for this decoder method. */
-  const BytesHandler* input_handler() const;
-
- private:
-  UPB_DISALLOW_POD_OPS(ParserMethod, upb::json::ParserMethod)
-};
-
-#endif
-
-UPB_BEGIN_EXTERN_C
-
-upb_json_parser* upb_json_parser_create(upb_env* e,
-                                        const upb_json_parsermethod* m,
-                                        const upb_symtab* symtab,
-                                        upb_sink* output,
-                                        bool ignore_json_unknown);
-upb_bytessink *upb_json_parser_input(upb_json_parser *p);
-
-upb_json_parsermethod* upb_json_parsermethod_new(const upb_msgdef* md,
-                                                 const void* owner);
-const upb_handlers *upb_json_parsermethod_desthandlers(
-    const upb_json_parsermethod *m);
-const upb_byteshandler *upb_json_parsermethod_inputhandler(
-    const upb_json_parsermethod *m);
-
-/* Include refcounted methods like upb_json_parsermethod_ref(). */
-UPB_REFCOUNTED_CMETHODS(upb_json_parsermethod, upb_json_parsermethod_upcast)
-
-UPB_END_EXTERN_C
+struct upb_json_codecache;
+typedef struct upb_json_codecache upb_json_codecache;
 
 #ifdef __cplusplus
-
-namespace upb {
-namespace json {
-inline Parser* Parser::Create(Environment* env, const ParserMethod* method,
-                              const SymbolTable* symtab,
-                              Sink* output, bool ignore_json_unknown) {
-  return upb_json_parser_create(
-      env, method, symtab, output, ignore_json_unknown);
-}
-inline BytesSink* Parser::input() {
-  return upb_json_parser_input(this);
-}
-
-inline const Handlers* ParserMethod::dest_handlers() const {
-  return upb_json_parsermethod_desthandlers(this);
-}
-inline const BytesHandler* ParserMethod::input_handler() const {
-  return upb_json_parsermethod_inputhandler(this);
-}
-/* static */
-inline reffed_ptr<const ParserMethod> ParserMethod::New(
-    const MessageDef* md) {
-  const upb_json_parsermethod *m = upb_json_parsermethod_new(md, &m);
-  return reffed_ptr<const ParserMethod>(m, &m);
-}
-
-}  /* namespace json */
-}  /* namespace upb */
-
+extern "C" {
 #endif
 
+upb_json_codecache *upb_json_codecache_new();
+void upb_json_codecache_free(upb_json_codecache *cache);
+const upb_json_parsermethod* upb_json_codecache_get(upb_json_codecache* cache,
+                                                    const upb_msgdef* md);
+
+#ifdef __cplusplus
+}  /* extern "C" */
+
+class upb::json::CodeCache {
+ public:
+  CodeCache() : ptr_(upb_json_codecache_new(), upb_json_codecache_free) {}
+
+  /* Returns a DecoderMethod that can push data to the given handlers.
+   * If a suitable method already exists, it will be returned from the cache. */
+  ParserMethodPtr Get(MessageDefPtr md) {
+    return upb_json_codecache_get(ptr_.get(), md.ptr());
+  }
+
+ private:
+  std::unique_ptr<upb_json_codecache, decltype(&upb_json_codecache_free)> ptr_;
+};
+
+#endif
 
 #endif  /* UPB_JSON_PARSER_H_ */

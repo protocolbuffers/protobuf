@@ -39,7 +39,7 @@ void CheckedWrite(int fd, const void *buf, size_t len) {
   }
 }
 
-bool stringview_eql(upb_strview view, const char *str) {
+bool strview_eql(upb_strview view, const char *str) {
   return view.size == strlen(str) && memcmp(view.data, str, view.size) == 0;
 }
 
@@ -50,8 +50,8 @@ void DoTest(
     const conformance_ConformanceRequest* request,
     conformance_ConformanceResponse *response,
     upb_arena *arena) {
-  if (!stringview_eql(conformance_ConformanceRequest_message_type(request),
-                      proto3_msg)) {
+  if (!strview_eql(conformance_ConformanceRequest_message_type(request),
+                   proto3_msg)) {
     static const char msg[] = "Only proto3 for now.";
     conformance_ConformanceResponse_set_skipped(
         response, upb_strview_make(msg, sizeof(msg)));
@@ -130,7 +130,7 @@ void DoTest(
 }
 
 bool DoTestIo() {
-  upb_arena arena;
+  upb_arena *arena;
   upb_alloc *alloc;
   upb_status status;
   char *serialized_input;
@@ -145,8 +145,8 @@ bool DoTestIo() {
     return false;
   }
 
-  upb_arena_init(&arena);
-  alloc = upb_arena_alloc(&arena);
+  arena = upb_arena_new();
+  alloc = upb_arena_alloc(arena);
   serialized_input = upb_malloc(alloc, input_size);
 
   if (!CheckedRead(STDIN_FILENO, serialized_input, input_size)) {
@@ -154,24 +154,26 @@ bool DoTestIo() {
     exit(1);
   }
 
-  request = conformance_ConformanceRequest_parse(serialized_input, input_size,
-                                                 &arena);
-  response = conformance_ConformanceResponse_new(&arena);
+  request =
+      conformance_ConformanceRequest_parse(serialized_input, input_size, arena);
+  response = conformance_ConformanceResponse_new(arena);
 
   if (request) {
-    DoTest(request, response, &arena);
+    DoTest(request, response, arena);
   } else {
     fprintf(stderr, "conformance_upb: parse of ConformanceRequest failed: %s\n",
             upb_status_errmsg(&status));
   }
 
   serialized_output = conformance_ConformanceResponse_serialize(
-      response, &arena, &output_size);
+      response, arena, &output_size);
 
   CheckedWrite(STDOUT_FILENO, &output_size, sizeof(uint32_t));
   CheckedWrite(STDOUT_FILENO, serialized_output, output_size);
 
   test_count++;
+
+  upb_arena_free(arena);
 
   return true;
 }

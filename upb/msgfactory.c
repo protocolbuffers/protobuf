@@ -1,4 +1,5 @@
 
+#include "upb/handlers.h"
 #include "upb/msgfactory.h"
 
 static bool is_power_of_two(size_t val) {
@@ -196,7 +197,6 @@ static bool upb_msglayout_init(const upb_msgdef *m,
 struct upb_msgfactory {
   const upb_symtab *symtab;  /* We own a ref. */
   upb_inttable layouts;
-  upb_inttable mergehandlers;
 };
 
 upb_msgfactory *upb_msgfactory_new(const upb_symtab *symtab) {
@@ -204,7 +204,6 @@ upb_msgfactory *upb_msgfactory_new(const upb_symtab *symtab) {
 
   ret->symtab = symtab;
   upb_inttable_init(&ret->layouts, UPB_CTYPE_PTR);
-  upb_inttable_init(&ret->mergehandlers, UPB_CTYPE_CONSTPTR);
 
   return ret;
 }
@@ -217,14 +216,7 @@ void upb_msgfactory_free(upb_msgfactory *f) {
     upb_msglayout_free(l);
   }
 
-  upb_inttable_begin(&i, &f->mergehandlers);
-  for(; !upb_inttable_done(&i); upb_inttable_next(&i)) {
-    const upb_handlers *h = upb_value_getconstptr(upb_inttable_iter_value(&i));
-    upb_handlers_unref(h, f);
-  }
-
   upb_inttable_uninit(&f->layouts);
-  upb_inttable_uninit(&f->mergehandlers);
   upb_gfree(f);
 }
 
