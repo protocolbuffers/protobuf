@@ -8,6 +8,7 @@ configure
 depcomp
 install-sh
 ltmain.sh
+make.sh
 missing
 
 aclocal.m4
