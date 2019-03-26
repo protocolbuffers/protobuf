@@ -1207,6 +1207,18 @@ TEST_F(TextFormatTest, ParseExotic) {
   ASSERT_EQ(1, message.repeated_string_size());
   EXPECT_EQ(std::string("\000\001\a\b\f\n\r\t\v\\\'\"", 12),
             message.repeated_string(0));
+
+  ASSERT_TRUE(TextFormat::ParseFromString(
+    "repeated_float: 3.4028235e+38\n"
+    "repeated_float: -3.4028235e+38\n"
+    "repeated_float: 3.40282351e+38\n"
+    "repeated_float: -3.40282351e+38\n",
+    &message));
+  EXPECT_EQ(message.repeated_float(0), std::numeric_limits<float>::max());
+  EXPECT_EQ(message.repeated_float(1), -std::numeric_limits<float>::max());
+  EXPECT_EQ(message.repeated_float(2), std::numeric_limits<float>::infinity());
+  EXPECT_EQ(message.repeated_float(3), -std::numeric_limits<float>::infinity());
+
 }
 
 TEST_F(TextFormatTest, PrintFieldsInIndexOrder) {
@@ -1864,6 +1876,138 @@ TEST_F(TextFormatMessageSetTest, Deserialize) {
   proto.message_set().GetReflection()->ListFields(
     proto.message_set(), &descriptors);
   EXPECT_EQ(2, descriptors.size());
+}
+
+TEST(TextFormatUnknownFieldTest, TestUnknownField) {
+  protobuf_unittest::TestAllTypes proto;
+  TextFormat::Parser parser;
+  // Unknown field is not permitted by default.
+  EXPECT_FALSE(parser.ParseFromString("unknown_field: 12345", &proto));
+  EXPECT_FALSE(parser.ParseFromString("12345678: 12345", &proto));
+
+  parser.AllowUnknownField(true);
+  EXPECT_TRUE(parser.ParseFromString("unknown_field: 12345", &proto));
+  EXPECT_TRUE(parser.ParseFromString("unknown_field: -12345", &proto));
+  EXPECT_TRUE(parser.ParseFromString("unknown_field: 1.2345", &proto));
+  EXPECT_TRUE(parser.ParseFromString("unknown_field: -1.2345", &proto));
+  EXPECT_TRUE(parser.ParseFromString("unknown_field: 1.2345f", &proto));
+  EXPECT_TRUE(parser.ParseFromString("unknown_field: -1.2345f", &proto));
+  EXPECT_TRUE(parser.ParseFromString("unknown_field: inf", &proto));
+  EXPECT_TRUE(parser.ParseFromString("unknown_field: -inf", &proto));
+  EXPECT_TRUE(parser.ParseFromString("unknown_field: TYPE_STRING", &proto));
+  EXPECT_TRUE(
+      parser.ParseFromString("unknown_field: \"string value\"", &proto));
+  // Invalid field value
+  EXPECT_FALSE(parser.ParseFromString("unknown_field: -TYPE_STRING", &proto));
+  // Two or more unknown fields
+  EXPECT_TRUE(parser.ParseFromString("unknown_field1: TYPE_STRING\n"
+                                     "unknown_field2: 12345",
+                                     &proto));
+  // Unknown nested message
+  EXPECT_TRUE(parser.ParseFromString("unknown_message1: {}\n"
+                                     "unknown_message2 {\n"
+                                     "  unknown_field: 12345\n"
+                                     "}\n"
+                                     "unknown_message3 <\n"
+                                     "  unknown_nested_message {\n"
+                                     "    unknown_field: 12345\n"
+                                     "  }\n"
+                                     ">",
+                                     &proto));
+  // Unmatched delimeters for message body
+  EXPECT_FALSE(parser.ParseFromString("unknown_message: {>", &proto));
+  // Unknown extension
+  EXPECT_TRUE(parser.ParseFromString("[somewhere.unknown_extension1]: 12345\n"
+                                     "[somewhere.unknown_extension2] {\n"
+                                     "  unknown_field: 12345\n"
+                                     "}",
+                                     &proto));
+  // Unknown fields between known fields
+  ASSERT_TRUE(
+      parser.ParseFromString("optional_int32: 1\n"
+                             "unknown_field: 12345\n"
+                             "optional_string: \"string\"\n"
+                             "unknown_message { unknown: 0 }\n"
+                             "optional_nested_message { bb: 2 }",
+                             &proto));
+  EXPECT_EQ(1, proto.optional_int32());
+  EXPECT_EQ("string", proto.optional_string());
+  EXPECT_EQ(2, proto.optional_nested_message().bb());
+
+  // Unknown field with numeric tag number instead of identifier.
+  EXPECT_TRUE(parser.ParseFromString("12345678: 12345", &proto));
+
+  // Nested unknown extensions.
+  EXPECT_TRUE(parser.ParseFromString("[test.extension1] <\n"
+                                     "  unknown_nested_message <\n"
+                                     "    [test.extension2] <\n"
+                                     "      unknown_field: 12345\n"
+                                     "    >\n"
+                                     "  >\n"
+                                     ">",
+                                     &proto));
+  EXPECT_TRUE(parser.ParseFromString("[test.extension1] {\n"
+                                     "  unknown_nested_message {\n"
+                                     "    [test.extension2] {\n"
+                                     "      unknown_field: 12345\n"
+                                     "    }\n"
+                                     "  }\n"
+                                     "}",
+                                     &proto));
+  EXPECT_TRUE(parser.ParseFromString("[test.extension1] <\n"
+                                     "  some_unknown_fields: <\n"
+                                     "    unknown_field: 12345\n"
+                                     "  >\n"
+                                     ">",
+                                     &proto));
+  EXPECT_TRUE(parser.ParseFromString("[test.extension1] {\n"
+                                     "  some_unknown_fields: {\n"
+                                     "    unknown_field: 12345\n"
+                                     "  }\n"
+                                     "}",
+                                     &proto));
+
+  // Unknown field with compact repetition.
+  EXPECT_TRUE(parser.ParseFromString("unknown_field: [1, 2]", &proto));
+  // Unknown field with compact repetition of some unknown enum.
+  EXPECT_TRUE(parser.ParseFromString("unknown_field: [VAL1, VAL2]", &proto));
+  // Unknown field with compact repetition with sub-message.
+  EXPECT_TRUE(parser.ParseFromString("unknown_field: [{a:1}, <b:2>]", &proto));
+}
+
+TEST(TextFormatUnknownFieldTest, TestAnyInUnknownField) {
+  protobuf_unittest::TestAllTypes proto;
+  TextFormat::Parser parser;
+  parser.AllowUnknownField(true);
+  EXPECT_TRUE(
+      parser.ParseFromString("unknown {\n"
+                             "  [type.googleapis.com/foo.bar] {\n"
+                             "  }\n"
+                             "}",
+                             &proto));
+}
+
+TEST(TextFormatUnknownFieldTest, TestUnknownExtension) {
+  protobuf_unittest::TestAllTypes proto;
+  TextFormat::Parser parser;
+  std::string message_with_ext =
+      "[test.extension1] {\n"
+      "  some_unknown_fields: {\n"
+      "    unknown_field: 12345\n"
+      "  }\n"
+      "}";
+  // Unknown extensions are not permitted by default.
+  EXPECT_FALSE(parser.ParseFromString(message_with_ext, &proto));
+  // AllowUnknownField implies AllowUnknownExtension.
+  parser.AllowUnknownField(true);
+  EXPECT_TRUE(parser.ParseFromString(message_with_ext, &proto));
+
+  parser.AllowUnknownField(false);
+  EXPECT_FALSE(parser.ParseFromString(message_with_ext, &proto));
+  parser.AllowUnknownExtension(true);
+  EXPECT_TRUE(parser.ParseFromString(message_with_ext, &proto));
+  // Unknown fields are still not accepted.
+  EXPECT_FALSE(parser.ParseFromString("unknown_field: 1", &proto));
 }
 
 

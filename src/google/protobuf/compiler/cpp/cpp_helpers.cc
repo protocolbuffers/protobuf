@@ -358,8 +358,10 @@ std::string Namespace(const FileDescriptor* d, const Options& options) {
   if (IsWellKnownMessage(d) && options.opensource_runtime) {
     // Written with string concatenation to prevent rewriting of
     // ::google::protobuf.
-    ret = StringReplace(ret, "::google::" "protobuf", "PROTOBUF_NAMESPACE_ID",
-                        false);
+    ret = StringReplace(ret,
+                        "::google::"
+                        "protobuf",
+                        "PROTOBUF_NAMESPACE_ID", false);
   }
   return ret;
 }
@@ -1350,7 +1352,8 @@ class ParseLoopGenerator {
   void GenerateParserLoop(const Descriptor* descriptor) {
     format_.Set("classname", ClassName(descriptor));
     format_.Set("p_ns", "::" + ProtobufNamespace(options_));
-    format_.Set("pi_ns", StrCat("::", ProtobufNamespace(options_), "::internal"));
+    format_.Set("pi_ns",
+                StrCat("::", ProtobufNamespace(options_), "::internal"));
     format_.Set("GOOGLE_PROTOBUF", MacroPrefix(options_));
     std::map<std::string, std::string> vars;
     SetCommonVars(options_, &vars);
@@ -1461,10 +1464,9 @@ class ParseLoopGenerator {
         name = "StringPieceParser" + utf8;
         break;
     }
-    format_(
-        "ptr = $pi_ns$::Inline$1$($2$_$3$(), ptr, ctx$4$);\n",
-        name, field->is_repeated() && !field->is_packable() ? "add" : "mutable",
-        FieldName(field), field_name);
+    format_("ptr = $pi_ns$::Inline$1$($2$_$3$(), ptr, ctx$4$);\n", name,
+            field->is_repeated() && !field->is_packable() ? "add" : "mutable",
+            FieldName(field), field_name);
   }
 
   void GenerateLengthDelim(const FieldDescriptor* field) {
@@ -1476,10 +1478,9 @@ class ParseLoopGenerator {
             ", ", QualifiedClassName(field->enum_type(), options_),
             "_IsValid, mutable_unknown_fields(), ", field->number());
       }
-      format_(
-          "ptr = $pi_ns$::Packed$1$Parser(mutable_$2$(), ptr, ctx$3$);\n",
-          DeclaredTypeMethodName(field->type()), FieldName(field),
-          enum_validator);
+      format_("ptr = $pi_ns$::Packed$1$Parser(mutable_$2$(), ptr, ctx$3$);\n",
+              DeclaredTypeMethodName(field->type()), FieldName(field),
+              enum_validator);
     } else {
       auto field_type = field->type();
       if (IsProto1(field->file(), options_)) {
@@ -1535,8 +1536,8 @@ class ParseLoopGenerator {
                   "ptr = ctx->ParseMessage(&$1$_, ptr);\n",
                   FieldName(field));
             } else {
-              format_(
-                  "ptr = ctx->ParseMessage(&$1$_, ptr);\n", FieldName(field));
+              format_("ptr = ctx->ParseMessage(&$1$_, ptr);\n",
+                      FieldName(field));
             }
           } else if (IsImplicitWeakField(field, options_, scc_analyzer_)) {
             if (!field->is_repeated()) {

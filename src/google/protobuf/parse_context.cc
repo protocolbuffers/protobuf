@@ -114,11 +114,13 @@ const char* EpsCopyInputStream::Next(int overrun, int d) {
   // Note we must use memmove because the previous buffer could be part of
   // buffer_.
   std::memmove(buffer_, buffer_end_, kSlopBytes);
-  if (zcis_ && (d < 0 || !ParseEndsInSlopRegion(buffer_, overrun, d))) {
+  if (overall_limit_ > 0 &&
+      (d < 0 || !ParseEndsInSlopRegion(buffer_, overrun, d))) {
     const void* data;
     // ZeroCopyInputStream indicates Next may return 0 size buffers. Hence
     // we loop.
     while (zcis_->Next(&data, &size_)) {
+      overall_limit_ -= size_;
       if (size_ > kSlopBytes) {
         // We got a large chunk
         std::memcpy(buffer_ + kSlopBytes, data, kSlopBytes);
@@ -135,6 +137,7 @@ const char* EpsCopyInputStream::Next(int overrun, int d) {
       }
       GOOGLE_DCHECK(size_ == 0) << size_;
     }
+    overall_limit_ = 0;  // Next failed, no more needs for next
   }
   // End of stream or array
   if (aliasing_ == kNoDelta) {
@@ -260,6 +263,7 @@ const char* EpsCopyInputStream::InitFrom(io::ZeroCopyInputStream* zcis) {
   int size;
   limit_ = INT_MAX;
   if (zcis->Next(&data, &size)) {
+    overall_limit_ -= size;
     if (size > kSlopBytes) {
       auto ptr = static_cast<const char*>(data);
       limit_ -= size - kSlopBytes;
@@ -275,6 +279,7 @@ const char* EpsCopyInputStream::InitFrom(io::ZeroCopyInputStream* zcis) {
       return ptr;
     }
   }
+  overall_limit_ = 0;
   next_chunk_ = nullptr;
   size_ = 0;
   limit_end_ = buffer_end_ = buffer_;

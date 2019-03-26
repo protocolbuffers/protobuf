@@ -47,8 +47,8 @@
 #include <google/protobuf/compiler/cpp/cpp_unittest.h>
 
 #include <google/protobuf/unittest.pb.h>
-#include <google/protobuf/unittest_optimize_for.pb.h>
 #include <google/protobuf/unittest_embed_optimize_for.pb.h>
+#include <google/protobuf/unittest_optimize_for.pb.h>
 
 #include <google/protobuf/test_util.h>
 
@@ -96,8 +96,7 @@ TEST(GENERATED_MESSAGE_TEST_NAME, TestConflictingSymbolNames) {
   // parameter names.
   typedef protobuf_unittest::TestConflictingSymbolNamesExtension ExtensionMessage;
   message.AddExtension(ExtensionMessage::repeated_int32_ext, 123);
-  EXPECT_EQ(123,
-            message.GetExtension(ExtensionMessage::repeated_int32_ext, 0));
+  EXPECT_EQ(123, message.GetExtension(ExtensionMessage::repeated_int32_ext, 0));
 }
 
 TEST(GENERATED_MESSAGE_TEST_NAME, TestConflictingEnumNames) {
@@ -127,7 +126,6 @@ TEST(GENERATED_MESSAGE_TEST_NAME, TestConflictingExtension) {
   message.SetExtension(protobuf_unittest::void_, 123);
   EXPECT_EQ(123, message.GetExtension(protobuf_unittest::void_));
 }
-
 
 }  // namespace cpp_unittest
 }  // namespace cpp

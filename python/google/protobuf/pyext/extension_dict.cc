@@ -108,20 +108,19 @@ PyObject* subscript(ExtensionDict* self, PyObject* key) {
       self->parent->composite_fields->find(descriptor);
   if (iterator != self->parent->composite_fields->end()) {
     Py_INCREF(iterator->second);
-    return iterator->second;
+    return iterator->second->AsPyObject();
   }
 
   if (descriptor->label() != FieldDescriptor::LABEL_REPEATED &&
       descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
     // TODO(plabatut): consider building the class on the fly!
-    PyObject* sub_message = cmessage::InternalGetSubMessage(
+    ContainerBase* sub_message = cmessage::InternalGetSubMessage(
         self->parent, descriptor);
     if (sub_message == NULL) {
       return NULL;
     }
-    Py_INCREF(sub_message);
     (*self->parent->composite_fields)[descriptor] = sub_message;
-    return sub_message;
+    return sub_message->AsPyObject();
   }
 
   if (descriptor->label() == FieldDescriptor::LABEL_REPEATED) {
@@ -144,23 +143,21 @@ PyObject* subscript(ExtensionDict* self, PyObject* key) {
       if (message_class == NULL) {
         return NULL;
       }
-      PyObject* py_container = repeated_composite_container::NewContainer(
+      ContainerBase* py_container = repeated_composite_container::NewContainer(
           self->parent, descriptor, message_class);
       if (py_container == NULL) {
         return NULL;
       }
-      Py_INCREF(py_container);
       (*self->parent->composite_fields)[descriptor] = py_container;
-      return py_container;
+      return py_container->AsPyObject();
     } else {
-      PyObject* py_container = repeated_scalar_container::NewContainer(
+      ContainerBase* py_container = repeated_scalar_container::NewContainer(
           self->parent, descriptor);
       if (py_container == NULL) {
         return NULL;
       }
-      Py_INCREF(py_container);
       (*self->parent->composite_fields)[descriptor] = py_container;
-      return py_container;
+      return py_container->AsPyObject();
     }
   }
   PyErr_SetString(PyExc_ValueError, "control reached unexpected line");
@@ -248,7 +245,8 @@ ExtensionDict* NewExtensionDict(CMessage *parent) {
   return self;
 }
 
-void dealloc(ExtensionDict* self) {
+void dealloc(PyObject* pself) {
+  ExtensionDict* self = reinterpret_cast<ExtensionDict*>(pself);
   Py_CLEAR(self->parent);
   Py_TYPE(self)->tp_free(reinterpret_cast<PyObject*>(self));
 }

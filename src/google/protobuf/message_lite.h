@@ -316,7 +316,7 @@ class PROTOBUF_EXPORT MessageLite {
   // MergeFromCodedStream() is just implemented as MergePartialFromCodedStream()
   // followed by IsInitialized().
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  virtual bool MergePartialFromCodedStream(io::CodedInputStream* input);
+  bool MergePartialFromCodedStream(io::CodedInputStream* input);
 #else
   virtual bool MergePartialFromCodedStream(io::CodedInputStream* input) = 0;
 #endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER

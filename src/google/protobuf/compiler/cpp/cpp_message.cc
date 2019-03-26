@@ -154,8 +154,7 @@ bool CanConstructByZeroing(const FieldDescriptor* field,
   // Non-repeated, non-lazy message fields are simply raw pointers, so we can
   // use memset to initialize these in SharedCtor.  We cannot use this in
   // Clear, as we need to potentially delete the existing value.
-  ret = ret || (!field->is_repeated() &&
-                !IsLazy(field, options) &&
+  ret = ret || (!field->is_repeated() && !IsLazy(field, options) &&
                 field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE);
   return ret;
 }
@@ -262,16 +261,6 @@ bool ShouldMarkClearAsFinal(const Descriptor* descriptor,
 
 bool ShouldMarkIsInitializedAsFinal(const Descriptor* descriptor,
                                     const Options& options) {
-  static std::set<std::string> exclusions{
-  };
-
-  const std::string name = ClassName(descriptor, true);
-  return exclusions.find(name) == exclusions.end() ||
-         options.opensource_runtime;
-}
-
-bool ShouldMarkMergePartialAsFinal(const Descriptor* descriptor,
-                                   const Options& options) {
   static std::set<std::string> exclusions{
   };
 
@@ -437,10 +426,10 @@ class MatchRepeatedAndHasByteAndZeroInits : public MatchRepeatedAndHasByte {
 
 // Collects neighboring fields based on a given criteria (equivalent predicate).
 template <typename Predicate>
-std::vector<std::vector<const FieldDescriptor*> > CollectFields(
+std::vector<std::vector<const FieldDescriptor*>> CollectFields(
     const std::vector<const FieldDescriptor*>& fields,
     const Predicate& equivalent) {
-  std::vector<std::vector<const FieldDescriptor*> > chunks;
+  std::vector<std::vector<const FieldDescriptor*>> chunks;
   if (fields.empty()) {
     return chunks;
   }
@@ -520,7 +509,7 @@ class ColdChunkSkipper {
     return has_bit_indices_[chunks_[chunk][offset]->index()] / 32;
   }
 
-  const std::vector<std::vector<const FieldDescriptor*> >& chunks_;
+  const std::vector<std::vector<const FieldDescriptor*>>& chunks_;
   const std::vector<int>& has_bit_indices_;
   const AccessInfoMap* access_info_map_;
   const double cold_threshold_;
@@ -848,8 +837,7 @@ void MessageGenerator::GenerateOneofMemberHasBits(const FieldDescriptor* field,
 }
 
 void MessageGenerator::GenerateFieldClear(const FieldDescriptor* field,
-                                          bool is_inline,
-                                          Formatter format) {
+                                          bool is_inline, Formatter format) {
   // Generate clear_$name$().
   if (is_inline) {
     format("inline ");
@@ -933,7 +921,7 @@ void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* printer) {
 void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
   Formatter format(printer, variables_);
   format.Set("class_final",
-             ShouldMarkClassAsFinal(descriptor_, options_) ? "final": "");
+             ShouldMarkClassAsFinal(descriptor_, options_) ? "final" : "");
 
   if (IsMapEntryMessage(descriptor_)) {
     std::map<std::string, std::string> vars;
@@ -1133,7 +1121,8 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
       "}\n"
       "static constexpr int kIndexInFileMessages =\n"
       "  $1$;\n"
-      "\n", index_in_file_messages_);
+      "\n",
+      index_in_file_messages_);
 
   if (SupportsArenas(descriptor_)) {
     format("void UnsafeArenaSwap($classname$* other);\n");
@@ -1218,9 +1207,6 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
     format.Set(
         "is_initialized_final",
         ShouldMarkIsInitializedAsFinal(descriptor_, options_) ? "final" : "");
-    format.Set(
-        "merge_partial_final",
-        ShouldMarkMergePartialAsFinal(descriptor_, options_) ? "final" : "");
 
     format(
         "void CopyFrom(const $classname$& from);\n"
@@ -1234,8 +1220,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
         "::$proto_ns$::internal::ParseContext* ctx) final;\n"
         "#else\n"
         "bool MergePartialFromCodedStream(\n"
-        "    ::$proto_ns$::io::CodedInputStream* input)$ "
-        "merge_partial_final$;\n"
+        "    ::$proto_ns$::io::CodedInputStream* input) final;\n"
         "#endif  // $GOOGLE_PROTOBUF$_ENABLE_EXPERIMENTAL_PARSER\n");
 
     if (!options_.table_driven_serialization ||
@@ -1869,8 +1854,7 @@ void MessageGenerator::GenerateDefaultInstanceInitializer(
   for (auto field : FieldRange(descriptor_)) {
     Formatter::SaveState saver(&format);
 
-    if (!field->is_repeated() &&
-        !IsLazy(field, options_) &&
+    if (!field->is_repeated() && !IsLazy(field, options_) &&
         field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
         (field->containing_oneof() == NULL ||
          HasDescriptorMethods(descriptor_->file(), options_))) {
@@ -2259,7 +2243,8 @@ size_t MessageGenerator::GenerateParseAuxTable(io::Printer* printer) {
             default_val = field->default_value_string().empty()
                               ? "&::" + variables_["proto_ns"] +
                                     "::internal::fixed_address_empty_string"
-                              : "&" + QualifiedClassName(descriptor_, options_) +
+                              : "&" +
+                                    QualifiedClassName(descriptor_, options_) +
                                     "::" + MakeDefaultName(field);
             break;
           case FieldOptions::CORD:
@@ -2355,8 +2340,7 @@ void MessageGenerator::GenerateSharedConstructorCode(io::Printer* printer) {
   Formatter format(printer, variables_);
 
   format("void $classname$::SharedCtor() {\n");
-  if (scc_analyzer_
-          ->GetSCCAnalysis(scc_analyzer_->GetSCC(descriptor_))
+  if (scc_analyzer_->GetSCCAnalysis(scc_analyzer_->GetSCC(descriptor_))
           .constructor_requires_initialization) {
     format(
         "  ::$proto_ns$::internal::InitSCC(\n"
@@ -2784,14 +2768,14 @@ void MessageGenerator::GenerateClear(io::Printer* printer) {
     unconditional_budget -= EstimateAlignmentSize(field);
   }
 
-  std::vector<std::vector<const FieldDescriptor*> > chunks_frag = CollectFields(
+  std::vector<std::vector<const FieldDescriptor*>> chunks_frag = CollectFields(
       optimized_order_,
       MatchRepeatedAndHasByteAndZeroInits(
           &has_bit_indices_, HasFieldPresence(descriptor_->file())));
 
   // Merge next non-zero initializable chunk if it has the same has_byte index
   // and not meeting unconditional clear condition.
-  std::vector<std::vector<const FieldDescriptor*> > chunks;
+  std::vector<std::vector<const FieldDescriptor*>> chunks;
   if (!HasFieldPresence(descriptor_->file())) {
     // Don't bother with merging without has_bit field.
     chunks = chunks_frag;
@@ -3068,8 +3052,7 @@ void MessageGenerator::GenerateSwap(io::Printer* printer) {
     }
 
     for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
-      format(
-          "swap(_oneof_case_[$1$], other->_oneof_case_[$1$]);\n", i);
+      format("swap(_oneof_case_[$1$], other->_oneof_case_[$1$]);\n", i);
     }
 
     if (num_weak_fields_) {
@@ -3539,9 +3522,8 @@ void MessageGenerator::GenerateMergeFromCodedStream(io::Printer* printer) {
       // Emit code to parse the common, expected case.
       // MSVC is warning about truncating constant in the static_cast so
       // we truncate the tag explicitly.
-      format(
-          "if (static_cast< $uint8$>(tag) == ($1$ & 0xFF)) {\n",
-          WireFormat::MakeTag(field));
+      format("if (static_cast< $uint8$>(tag) == ($1$ & 0xFF)) {\n",
+             WireFormat::MakeTag(field));
 
       format.Indent();
       if (field->is_packed()) {
@@ -3557,9 +3539,8 @@ void MessageGenerator::GenerateMergeFromCodedStream(io::Printer* printer) {
             WireFormat::WireTypeForFieldType(field->type());
         const uint32 tag =
             internal::WireFormatLite::MakeTag(field->number(), wiretype);
-        format(
-            "} else if (static_cast< $uint8$>(tag) == ($1$ & 0xFF)) {\n",
-            tag);
+        format("} else if (static_cast< $uint8$>(tag) == ($1$ & 0xFF)) {\n",
+               tag);
 
         format.Indent();
         field_generator.GenerateMergeFromCodedStream(printer);
@@ -3569,9 +3550,8 @@ void MessageGenerator::GenerateMergeFromCodedStream(io::Printer* printer) {
             internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED;
         const uint32 tag =
             internal::WireFormatLite::MakeTag(field->number(), wiretype);
-        format(
-            "} else if (static_cast< $uint8$>(tag) == ($1$ & 0xFF)) {\n",
-            tag);
+        format("} else if (static_cast< $uint8$>(tag) == ($1$ & 0xFF)) {\n",
+               tag);
         format.Indent();
         field_generator.GenerateMergeFromCodedStreamWithPacking(printer);
         format.Outdent();
@@ -4178,7 +4158,7 @@ void MessageGenerator::GenerateByteSize(io::Printer* printer) {
     }
   }
 
-  std::vector<std::vector<const FieldDescriptor*> > chunks = CollectFields(
+  std::vector<std::vector<const FieldDescriptor*>> chunks = CollectFields(
       optimized_order_,
       MatchRepeatedAndHasByteAndRequired(
           &has_bit_indices_, HasFieldPresence(descriptor_->file())));

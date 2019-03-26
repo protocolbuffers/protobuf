@@ -41,7 +41,6 @@
 #include <unordered_map>
 
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/pyext/thread_unsafe_shared_ptr.h>
 
 namespace google {
 namespace protobuf {
@@ -57,39 +56,51 @@ namespace python {
 
 struct ExtensionDict;
 struct PyMessageFactory;
+struct CMessageClass;
 
-typedef struct CMessage {
+// Most of the complexity of the Message class comes from the "Release"
+// behavior:
+//
+// When a field is cleared, it is only detached from its message. Existing
+// references to submessages, to repeated container etc. won't see any change,
+// as if the data was effectively managed by these containers.
+//
+// ExtensionDicts and UnknownFields containers do NOT follow this rule. They
+// don't store any data, and always refer to their parent message.
+
+struct ContainerBase {
   PyObject_HEAD;
 
-  // This is the top-level C++ Message object that owns the whole
-  // proto tree.  Every Python CMessage holds a reference to it in
-  // order to keep it alive as long as there's a Python object that
-  // references any part of the tree.
-
-  typedef ThreadUnsafeSharedPtr<Message> OwnerRef;
-  OwnerRef owner;
-
-  // Weak reference to a parent CMessage object. This is NULL for any top-level
-  // message and is set for any child message (i.e. a child submessage or a
-  // part of a repeated composite field).
+  // Strong reference to a parent message object. For a CMessage there are three
+  // cases:
+  // - For a top-level message, this pointer is NULL.
+  // - For a sub-message, this points to the parent message.
+  // - For a message managed externally, this is a owned reference to Py_None.
   //
-  // Used to make sure all ancestors are also mutable when first modifying
-  // a child submessage (in other words, turning a default message instance
-  // into a mutable one).
-  //
-  // If a submessage is released (becomes a new top-level message), this field
-  // MUST be set to NULL. The parent may get deallocated and further attempts
-  // to use this pointer will result in a crash.
+  // For all other types: repeated containers, maps, it always point to a
+  // valid parent CMessage.
   struct CMessage* parent;
 
-  // Pointer to the parent's descriptor that describes this submessage.
-  // Used together with the parent's message when making a default message
-  // instance mutable.
-  // The pointer is owned by the global DescriptorPool.
+  // If this object belongs to a parent message, describes which field it comes
+  // from.
+  // The pointer is owned by the DescriptorPool (which is kept alive
+  // through the message's Python class)
   const FieldDescriptor* parent_field_descriptor;
 
-  // Pointer to the C++ Message object for this CMessage.  The
-  // CMessage does not own this pointer.
+  PyObject* AsPyObject() { return reinterpret_cast<PyObject*>(this); }
+
+  // The Three methods below are only used by Repeated containers, and Maps.
+
+  // This implementation works for all containers which have a parent.
+  PyObject* DeepCopy();
+  // Delete this container object from its parent. Does not work for messages.
+  void RemoveFromParentCache();
+};
+
+typedef struct CMessage : public ContainerBase {
+  // Pointer to the C++ Message object for this CMessage.
+  // - If this object has no parent, we own this pointer.
+  // - If this object has a parent message, the parent owns this pointer.
   Message* message;
 
   // Indicates this submessage is pointing to a default instance of a message.
@@ -97,23 +108,37 @@ typedef struct CMessage {
   // made writable, at which point this field is set to false.
   bool read_only;
 
-  // A mapping indexed by field, containing CMessage,
-  // RepeatedCompositeContainer, and RepeatedScalarContainer
-  // objects. Used as a cache to make sure we don't have to make a
-  // Python wrapper for the C++ Message objects on every access, or
-  // deal with the synchronization nightmare that could create.
-  // Also cache extension fields.
-  // The FieldDescriptor is owned by the message's pool; PyObject references
-  // are owned.
-  typedef std::unordered_map<const FieldDescriptor*, PyObject*>
+  // A mapping indexed by field, containing weak references to contained objects
+  // which need to implement the "Release" mechanism:
+  // direct submessages, RepeatedCompositeContainer, RepeatedScalarContainer
+  // and MapContainer.
+  typedef std::unordered_map<const FieldDescriptor*, ContainerBase*>
       CompositeFieldsMap;
   CompositeFieldsMap* composite_fields;
+
+  // A mapping containing weak references to indirect child messages, accessed
+  // through containers: repeated messages, and values of message maps.
+  // This avoid the creation of similar maps in each of those containers.
+  typedef std::unordered_map<const Message*, CMessage*> SubMessagesMap;
+  SubMessagesMap* child_submessages;
 
   // A reference to PyUnknownFields.
   PyObject* unknown_field_set;
 
   // Implements the "weakref" protocol for this object.
   PyObject* weakreflist;
+
+  // Return a *borrowed* reference to the message class.
+  CMessageClass* GetMessageClass() {
+    return reinterpret_cast<CMessageClass*>(Py_TYPE(this));
+  }
+
+  // For container containing messages, return a Python object for the given
+  // pointer to a message.
+  CMessage* BuildSubMessageFromPointer(const FieldDescriptor* field_descriptor,
+                                       Message* sub_message,
+                                       CMessageClass* message_class);
+  CMessage* MaybeReleaseSubMessage(Message* sub_message);
 } CMessage;
 
 // The (meta) type of all Messages classes.
@@ -161,21 +186,16 @@ const FieldDescriptor* GetExtensionDescriptor(PyObject* extension);
 // submessage as the result is cached in composite_fields.
 //
 // Corresponds to reflection api method GetMessage.
-PyObject* InternalGetSubMessage(
+CMessage* InternalGetSubMessage(
     CMessage* self, const FieldDescriptor* field_descriptor);
 
-// Deletes a range of C++ submessages in a repeated field (following a
+// Deletes a range of items in a repeated field (following a
 // removal in a RepeatedCompositeContainer).
 //
-// Releases submessages to the provided cmessage_list if it is not NULL rather
-// than just removing them from the underlying proto. This cmessage_list must
-// have a CMessage for each underlying submessage. The CMessages referred to
-// by slice will be removed from cmessage_list by this function.
-//
 // Corresponds to reflection api method RemoveLast.
-int InternalDeleteRepeatedField(Message* message,
-                                const FieldDescriptor* field_descriptor,
-                                PyObject* slice, PyObject* cmessage_list);
+int DeleteRepeatedField(CMessage* self,
+                        const FieldDescriptor* field_descriptor,
+                        PyObject* slice);
 
 // Sets the specified scalar value to the message.
 int InternalSetScalar(CMessage* self,
@@ -192,6 +212,11 @@ int InternalSetNonOneofScalar(Message* message,
 // Returns a new python reference.
 PyObject* InternalGetScalar(const Message* message,
                             const FieldDescriptor* field_descriptor);
+
+bool SetCompositeField(CMessage* self, const FieldDescriptor* field,
+                       ContainerBase* value);
+
+bool SetSubmessage(CMessage* self, CMessage* submessage);
 
 // Clears the message, removing all contained data. Extension dictionary and
 // submessages are released first if there are remaining external references.
@@ -247,11 +272,6 @@ int SetFieldValue(CMessage* self, const FieldDescriptor* field_descriptor,
                   PyObject* value);
 
 PyObject* FindInitializationErrors(CMessage* self);
-
-// Set the owner field of self and any children of self, recursively.
-// Used when self is being released and thus has a new owner (the
-// released Message.)
-int SetOwner(CMessage* self, const CMessage::OwnerRef& new_owner);
 
 int AssureWritable(CMessage* self);
 
@@ -344,6 +364,8 @@ extern PyObject* PickleError_class;
 
 const Message* PyMessage_GetMessagePointer(PyObject* msg);
 Message* PyMessage_GetMutableMessagePointer(PyObject* msg);
+PyObject* PyMessage_NewMessageOwnedExternally(Message* message,
+                                              PyObject* message_factory);
 
 bool InitProto2MessageModule(PyObject *m);
 

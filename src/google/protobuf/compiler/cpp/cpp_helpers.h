@@ -168,8 +168,8 @@ std::string FieldConstantName(const FieldDescriptor* field);
 // Returns the scope where the field was defined (for extensions, this is
 // different from the message type to which the field applies).
 inline const Descriptor* FieldScope(const FieldDescriptor* field) {
-  return field->is_extension() ?
-    field->extension_scope() : field->containing_type();
+  return field->is_extension() ? field->extension_scope()
+                               : field->containing_type();
 }
 
 // Returns the fully-qualified type name field->message_type().  Usually this
@@ -776,9 +776,7 @@ struct OneOfRangeImpl {
   };
 
   Iterator begin() const { return {0, descriptor}; }
-  Iterator end() const {
-    return {descriptor->oneof_decl_count(), descriptor};
-  }
+  Iterator end() const { return {descriptor->oneof_decl_count(), descriptor}; }
 
   const Descriptor* descriptor;
 };

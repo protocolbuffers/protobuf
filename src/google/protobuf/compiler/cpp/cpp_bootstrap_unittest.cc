@@ -77,8 +77,8 @@ class MockErrorCollector : public MultiFileErrorCollector {
   // implements ErrorCollector ---------------------------------------
   void AddError(const std::string& filename, int line, int column,
                 const std::string& message) {
-    strings::SubstituteAndAppend(&text_, "$0:$1:$2: $3\n",
-                                 filename, line, column, message);
+    strings::SubstituteAndAppend(&text_, "$0:$1:$2: $3\n", filename, line,
+                                 column, message);
   }
 };
 
@@ -92,7 +92,7 @@ class MockGeneratorContext : public GeneratorContext {
     std::string* expected_contents =
         FindPtrOrNull(files_, virtual_filename);
     ASSERT_TRUE(expected_contents != NULL)
-      << "Generator failed to generate file: " << virtual_filename;
+        << "Generator failed to generate file: " << virtual_filename;
 
     std::string actual_contents;
     GOOGLE_CHECK_OK(
@@ -101,10 +101,11 @@ class MockGeneratorContext : public GeneratorContext {
         << physical_filename;
     CleanStringLineEndings(&actual_contents, false);
 
-#ifdef WRITE_FILES // Define to debug mismatched files.
+#ifdef WRITE_FILES  // Define to debug mismatched files.
+    GOOGLE_CHECK_OK(File::SetContents("/tmp/expected.cc", *expected_contents,
+                               true));
     GOOGLE_CHECK_OK(
-        File::SetContents("/tmp/expected.cc", *expected_contents, true));
-    GOOGLE_CHECK_OK(File::SetContents("/tmp/actual.cc", actual_contents, true));
+        File::SetContents("/tmp/actual.cc", actual_contents, true));
 #endif
 
     ASSERT_EQ(*expected_contents, actual_contents)

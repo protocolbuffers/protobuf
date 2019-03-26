@@ -40,9 +40,9 @@ namespace java {
 
 class ImmutableMapFieldGenerator : public ImmutableFieldGenerator {
  public:
-  explicit ImmutableMapFieldGenerator(
-      const FieldDescriptor* descriptor, int messageBitIndex,
-      int builderBitIndex, Context* context);
+  explicit ImmutableMapFieldGenerator(const FieldDescriptor* descriptor,
+                                      int messageBitIndex, int builderBitIndex,
+                                      Context* context);
   ~ImmutableMapFieldGenerator();
 
   // implements ImmutableFieldGenerator ---------------------------------------

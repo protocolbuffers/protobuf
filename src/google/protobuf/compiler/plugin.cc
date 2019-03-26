@@ -63,8 +63,7 @@ using google::protobuf::internal::win32::setmode;
 class GeneratorResponseContext : public GeneratorContext {
  public:
   GeneratorResponseContext(
-      const Version& compiler_version,
-      CodeGeneratorResponse* response,
+      const Version& compiler_version, CodeGeneratorResponse* response,
       const std::vector<const FileDescriptor*>& parsed_files)
       : compiler_version_(compiler_version),
         response_(response),
@@ -117,24 +116,26 @@ bool GenerateCode(const CodeGeneratorRequest& request,
   for (int i = 0; i < request.file_to_generate_size(); i++) {
     parsed_files.push_back(pool.FindFileByName(request.file_to_generate(i)));
     if (parsed_files.back() == NULL) {
-      *error_msg = "protoc asked plugin to generate a file but "
-                   "did not provide a descriptor for the file: " +
-                   request.file_to_generate(i);
+      *error_msg =
+          "protoc asked plugin to generate a file but "
+          "did not provide a descriptor for the file: " +
+          request.file_to_generate(i);
       return false;
     }
   }
 
-  GeneratorResponseContext context(
-      request.compiler_version(), response, parsed_files);
+  GeneratorResponseContext context(request.compiler_version(), response,
+                                   parsed_files);
 
 
   std::string error;
-  bool succeeded = generator.GenerateAll(
-      parsed_files, request.parameter(), &context, &error);
+  bool succeeded = generator.GenerateAll(parsed_files, request.parameter(),
+                                         &context, &error);
 
   if (!succeeded && error.empty()) {
-    error = "Code generator returned false but provided no error "
-            "description.";
+    error =
+        "Code generator returned false but provided no error "
+        "description.";
   }
   if (!error.empty()) {
     response->set_error(error);

@@ -69,8 +69,7 @@ class CppMetadataTest : public ::testing::Test {
         "annotation_guard_name=guard_name:" +
         TestTempDir();
 
-    const bool result =
-        atu::RunProtoCompiler(filename, cpp_out, &cli, file);
+    const bool result = atu::RunProtoCompiler(filename, cpp_out, &cli, file);
 
     if (!result) {
       return result;

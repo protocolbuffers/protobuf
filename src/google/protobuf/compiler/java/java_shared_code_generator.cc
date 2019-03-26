@@ -52,8 +52,7 @@ SharedCodeGenerator::SharedCodeGenerator(const FileDescriptor* file,
                                          const Options& options)
     : name_resolver_(new ClassNameResolver), file_(file), options_(options) {}
 
-SharedCodeGenerator::~SharedCodeGenerator() {
-}
+SharedCodeGenerator::~SharedCodeGenerator() {}
 
 void SharedCodeGenerator::Generate(
     GeneratorContext* context, std::vector<std::string>* file_list,
@@ -82,9 +81,9 @@ void SharedCodeGenerator::Generate(
         "filename", file_->name());
     if (!java_package.empty()) {
       printer->Print(
-        "package $package$;\n"
-        "\n",
-        "package", java_package);
+          "package $package$;\n"
+          "\n",
+          "package", java_package);
     }
     PrintGeneratedAnnotation(printer.get(), '$',
                              options_.annotate_code ? info_relative_path : "");
@@ -101,8 +100,8 @@ void SharedCodeGenerator::Generate(
     printer->Outdent();
     printer->Outdent();
     printer->Print(
-      "  }\n"
-      "}\n");
+        "  }\n"
+        "}\n");
 
     if (options_.annotate_code) {
       std::unique_ptr<io::ZeroCopyOutputStream> info_output(
@@ -133,8 +132,7 @@ void SharedCodeGenerator::GenerateDescriptors(io::Printer* printer) {
   std::string file_data;
   file_proto.SerializeToString(&file_data);
 
-  printer->Print(
-    "java.lang.String[] descriptorData = {\n");
+  printer->Print("java.lang.String[] descriptorData = {\n");
   printer->Indent();
 
   // Limit the number of bytes per line.
@@ -152,8 +150,8 @@ void SharedCodeGenerator::GenerateDescriptors(io::Printer* printer) {
         printer->Print(" +\n");
       }
     }
-    printer->Print("\"$data$\"",
-      "data", CEscape(file_data.substr(i, kBytesPerLine)));
+    printer->Print("\"$data$\"", "data",
+                   CEscape(file_data.substr(i, kBytesPerLine)));
   }
 
   printer->Outdent();
@@ -179,20 +177,18 @@ void SharedCodeGenerator::GenerateDescriptors(io::Printer* printer) {
   // -----------------------------------------------------------------
   // Invoke internalBuildGeneratedFileFrom() to build the file.
   printer->Print(
-    "descriptor = com.google.protobuf.Descriptors.FileDescriptor\n"
-    "  .internalBuildGeneratedFileFrom(descriptorData,\n");
+      "descriptor = com.google.protobuf.Descriptors.FileDescriptor\n"
+      "  .internalBuildGeneratedFileFrom(descriptorData,\n");
   printer->Print(
-    "    new com.google.protobuf.Descriptors.FileDescriptor[] {\n");
+      "    new com.google.protobuf.Descriptors.FileDescriptor[] {\n");
 
   for (int i = 0; i < dependencies.size(); i++) {
     const std::string& dependency = dependencies[i].second;
-    printer->Print(
-        "      $dependency$.getDescriptor(),\n",
-        "dependency", dependency);
+    printer->Print("      $dependency$.getDescriptor(),\n", "dependency",
+                   dependency);
   }
 
-  printer->Print(
-    "    });\n");
+  printer->Print("    });\n");
 }
 
 }  // namespace java

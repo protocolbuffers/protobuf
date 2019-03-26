@@ -779,28 +779,31 @@ class MessageTest(BaseTestCase):
     m1 = message_module.TestAllTypes()
     m2 = message_module.TestAllTypes()
     # Cpp extension will lazily create a sub message which is immutable.
-    self.assertEqual(0, m1.optional_nested_message.bb)
+    nested = m1.optional_nested_message
+    self.assertEqual(0, nested.bb)
     m2.optional_nested_message.bb = 1
     # Make sure cmessage pointing to a mutable message after merge instead of
     # the lazily created message.
     m1.MergeFrom(m2)
-    self.assertEqual(1, m1.optional_nested_message.bb)
+    self.assertEqual(1, nested.bb)
 
     # Test more nested sub message.
     msg1 = message_module.NestedTestAllTypes()
     msg2 = message_module.NestedTestAllTypes()
-    self.assertEqual(0, msg1.child.payload.optional_nested_message.bb)
+    nested = msg1.child.payload.optional_nested_message
+    self.assertEqual(0, nested.bb)
     msg2.child.payload.optional_nested_message.bb = 1
     msg1.MergeFrom(msg2)
-    self.assertEqual(1, msg1.child.payload.optional_nested_message.bb)
+    self.assertEqual(1, nested.bb)
 
     # Test repeated field.
     self.assertEqual(msg1.payload.repeated_nested_message,
                      msg1.payload.repeated_nested_message)
-    msg2.payload.repeated_nested_message.add().bb = 1
+    nested = msg2.payload.repeated_nested_message.add()
+    nested.bb = 1
     msg1.MergeFrom(msg2)
     self.assertEqual(1, len(msg1.payload.repeated_nested_message))
-    self.assertEqual(1, msg1.payload.repeated_nested_message[0].bb)
+    self.assertEqual(1, nested.bb)
 
   def testMergeFromString(self, message_module):
     m1 = message_module.TestAllTypes()

@@ -781,8 +781,8 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* printer) {
       format(
           "reinterpret_cast<const "
           "::$proto_ns$::Message*>(&$1$::_$2$_default_instance_),\n",
-          Namespace(descriptor, options_),   // 1
-          ClassName(descriptor));  // 2
+          Namespace(descriptor, options_),  // 1
+          ClassName(descriptor));           // 2
     }
     format.Outdent();
     format(
@@ -823,7 +823,7 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* printer) {
   // built into real descriptors at initialization time.
   const std::string protodef_name =
       UniqueName("descriptor_table_protodef", file_, options_);
-  format( "const char $1$[] =\n", protodef_name);
+  format("const char $1$[] =\n", protodef_name);
   format.Indent();
   FileDescriptorProto file_proto;
   file_->CopyTo(&file_proto);
@@ -863,8 +863,7 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* printer) {
       "::$proto_ns$::internal::DescriptorTable $1$ = {\n"
       "  false, $init_defaults$, \n"
       "  $2$,\n",
-      UniqueName("descriptor_table", file_, options_),
-      protodef_name);
+      UniqueName("descriptor_table", file_, options_), protodef_name);
 
   const int num_deps = file_->dependency_count();
   format(
@@ -1243,7 +1242,7 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* printer) {
         "#endif\n"
         "\n",
         PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC,  // 1
-        PROTOBUF_VERSION);                               // 2
+        PROTOBUF_VERSION);                       // 2
     IncludeFile("net/proto2/public/port_undef.inc", printer);
   }
 

@@ -301,8 +301,9 @@ void EnumGenerator::GenerateMethods(int idx, io::Printer* printer) {
     // Before C++17, we must define the static constants which were
     // declared in the header, to give the linker a place to put them.
     // But pre-2015 MSVC++ insists that we not.
-    format("#if (__cplusplus < 201703) && "
-           "(!defined(_MSC_VER) || _MSC_VER >= 1900)\n");
+    format(
+        "#if (__cplusplus < 201703) && "
+        "(!defined(_MSC_VER) || _MSC_VER >= 1900)\n");
 
     for (int i = 0; i < descriptor_->value_count(); i++) {
       format("constexpr $classname$ $1$::$2$;\n", parent,
@@ -316,8 +317,9 @@ void EnumGenerator::GenerateMethods(int idx, io::Printer* printer) {
       format("constexpr int $1$::$nested_name$_ARRAYSIZE;\n", parent);
     }
 
-    format("#endif  // (__cplusplus < 201703) && "
-           "(!defined(_MSC_VER) || _MSC_VER >= 1900)\n");
+    format(
+        "#endif  // (__cplusplus < 201703) && "
+        "(!defined(_MSC_VER) || _MSC_VER >= 1900)\n");
   }
 }
 

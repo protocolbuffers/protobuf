@@ -598,6 +598,12 @@ class TextFormatParserTests(TextFormatBase):
     six.assertRaisesRegex(self, text_format.ParseError, (
         r'1:1 : Message type "\w+.TestAllTypes" has no field named '
         r'"unknown_field".'), text_format.Parse, text, message)
+    text = ('optional_int32: 123\n'
+            'unknown_field: 8\n'
+            'optional_nested_message { bb: 45 }')
+    text_format.Parse(text, message, allow_unknown_field=True)
+    self.assertEqual(message.optional_nested_message.bb, 45)
+    self.assertEqual(message.optional_int32, 123)
 
   def testParseBadEnumValue(self, message_module):
     message = message_module.TestAllTypes()
