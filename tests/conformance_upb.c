@@ -63,8 +63,8 @@ void DoTest(
   switch (conformance_ConformanceRequest_payload_case(request)) {
     case conformance_ConformanceRequest_payload_protobuf_payload: {
       upb_strview payload = conformance_ConformanceRequest_protobuf_payload(request);
-      test_message = protobuf_test_messages_proto3_TestAllTypesProto3_parsenew(
-          payload, arena);
+      test_message = protobuf_test_messages_proto3_TestAllTypesProto3_parse(
+          payload.data, payload.size, arena);
 
       if (!test_message) {
         static const char msg[] = "Parse error";
@@ -154,8 +154,8 @@ bool DoTestIo() {
     exit(1);
   }
 
-  request = conformance_ConformanceRequest_parsenew(
-      upb_strview_make(serialized_input, input_size), arena);
+  request =
+      conformance_ConformanceRequest_parse(serialized_input, input_size, arena);
   response = conformance_ConformanceResponse_new(arena);
 
   if (request) {

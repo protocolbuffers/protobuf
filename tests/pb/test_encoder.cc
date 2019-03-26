@@ -23,8 +23,8 @@ void test_pb_roundtrip() {
   upb::pb::CodeCache decoder_cache(&encoder_cache);
   upb::Arena arena;
   google_protobuf_FileDescriptorSet *set =
-      google_protobuf_FileDescriptorSet_parsenew(
-          upb_strview_make(input.c_str(), input.size()), arena.ptr());
+      google_protobuf_FileDescriptorSet_parse(input.c_str(), input.size(),
+                                              arena.ptr());
   ASSERT(set);
   size_t n;
   const google_protobuf_FileDescriptorProto *const *files =

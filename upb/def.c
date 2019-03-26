@@ -1743,7 +1743,8 @@ bool _upb_symtab_loaddefinit(upb_symtab *s, const upb_def_init *init) {
     if (!_upb_symtab_loaddefinit(s, *deps)) goto err;
   }
 
-  file = google_protobuf_FileDescriptorProto_parsenew(init->descriptor, arena);
+  file = google_protobuf_FileDescriptorProto_parse(
+      init->descriptor.data, init->descriptor.size, arena);
 
   if (!file) {
     upb_status_seterrf(

@@ -11,7 +11,8 @@
 extern "C" {
 #endif
 
-bool upb_decode(upb_strview buf, upb_msg *msg, const upb_msglayout *l);
+bool upb_decode(const char *buf, size_t size, upb_msg *msg,
+                const upb_msglayout *l);
 
 #ifdef __cplusplus
 }  /* extern "C" */
