@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 import 'google/protobuf/any.proto';
+import 'google/protobuf/struct.proto';
 import 'proto/test_include.proto';
 import 'proto/test_no_namespace.proto';
 import 'proto/test_php_namespace.proto';

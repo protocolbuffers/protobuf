@@ -18,7 +18,7 @@ else
 PTHREAD_DEF =
 endif
 
-PROTOBUF_VERSION = 18:0:0
+PROTOBUF_VERSION = 18:1:0
 
 if GCC
 # Turn on all warnings except for sign comparison (we ignore sign comparison
@@ -894,7 +894,7 @@ no_warning_test.cc:
 
 no_warning_test_LDADD = $(PTHREAD_LIBS) libprotobuf.la libprotoc.la
 no_warning_test_CXXFLAGS = $(PTHREAD_CFLAGS) $(PTHREAD_DEF) $(ZLIB_DEF) \
-                           -Wall -Wextra -Werror -Wno-unused-parameter -Og
+                           -Wall -Wextra -Werror -Wno-unused-parameter
 nodist_no_warning_test_SOURCES = no_warning_test.cc $(protoc_outputs)
 
 TESTS = protobuf-test protobuf-lazy-descriptor-test protobuf-lite-test \
