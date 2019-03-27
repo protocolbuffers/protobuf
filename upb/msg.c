@@ -3,6 +3,8 @@
 
 #include "upb/table.int.h"
 
+#include "upb/port_def.inc"
+
 #define VOIDPTR_AT(msg, ofs) (void*)((char*)msg + ofs)
 
 /* Internal members of a upb_msg.  We can change this without breaking binary

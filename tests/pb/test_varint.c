@@ -3,6 +3,8 @@
 #include "upb/pb/varint.int.h"
 #include "tests/upb_test.h"
 
+#include "upb/port_def.inc"
+
 /* Test that we can round-trip from int->varint->int. */
 static void test_varint_for_num(upb_decoderet (*decoder)(const char*),
                                 uint64_t num) {

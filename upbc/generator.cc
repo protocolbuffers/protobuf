@@ -352,12 +352,12 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message, Output& output
     const protobuf::OneofDescriptor* oneof = message->oneof_decl(i);
     std::string fullname = ToCIdent(oneof->full_name());
     output("typedef enum {\n");
-    for (int i = 0; i < oneof->field_count(); i++) {
-      const protobuf::FieldDescriptor* field = oneof->field(i);
+    for (int j = 0; j < oneof->field_count(); j++) {
+      const protobuf::FieldDescriptor* field = oneof->field(j);
       output("  $0_$1 = $2,\n", fullname, field->name(), field->number());
     }
     output(
-        "  $0_NOT_SET = 0,\n"
+        "  $0_NOT_SET = 0\n"
         "} $0_oneofcases;\n",
         fullname);
     output(
@@ -689,7 +689,19 @@ void GenerateMessageDefAccessor(const protobuf::Descriptor* d, Output& output) {
 void WriteDefHeader(const protobuf::FileDescriptor* file, Output& output) {
   EmitFileWarning(file, output);
 
+  output(
+      "#ifndef $0_UPBDEFS_H_\n"
+      "#define $0_UPBDEFS_H_\n\n"
+      "#include \"upb/def.h\"\n"
+      "#include \"upb/port_def.inc\"\n"
+      "#ifdef __cplusplus\n"
+      "extern \"C\" {\n"
+      "#endif\n\n",
+      ToPreproc(file->name()));
+
   output("#include \"upb/def.h\"\n");
+  output("\n");
+  output("#include \"upb/port_def.inc\"\n");
   output("\n");
 
   output("extern upb_def_init $0;\n", DefInitSymbol(file));
@@ -698,6 +710,16 @@ void WriteDefHeader(const protobuf::FileDescriptor* file, Output& output) {
   for (int i = 0; i < file->message_type_count(); i++) {
     GenerateMessageDefAccessor(file->message_type(i), output);
   }
+
+  output(
+      "#ifdef __cplusplus\n"
+      "}  /* extern \"C\" */\n"
+      "#endif\n"
+      "\n"
+      "#include \"upb/port_undef.inc\"\n"
+      "\n"
+      "#endif  /* $0_UPBDEFS_H_ */\n",
+      ToPreproc(file->name()));
 }
 
 // Escape C++ trigraphs by escaping question marks to \?

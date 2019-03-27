@@ -6,6 +6,8 @@
 #include "upb/pb/decoder.h"
 #include "upb/pb/encoder.h"
 
+#include "upb/port_def.inc"
+
 std::string read_string(const char *filename) {
   size_t len;
   char *str = upb_readfile(filename, &len);

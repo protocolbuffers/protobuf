@@ -11,6 +11,8 @@
 #include "upb/sink.h"
 #include "upb/table.int.h"
 
+#include "upb/port_def.inc"
+
 /* Opcode definitions.  The canonical meaning of each opcode is its
  * implementation in the interpreter (the JIT is written to match this).
  *
@@ -302,5 +304,7 @@ UPB_INLINE void upb_pbdecoder_unpackdispatch(uint64_t dispatch, uint64_t *ofs,
 #define DECODE_ENDGROUP -3  /* Used only from checkunknown(). */
 
 #define CHECK_RETURN(x) { int32_t ret = x; if (ret >= 0) return ret; }
+
+#include "upb/port_undef.inc"
 
 #endif  /* UPB_DECODER_INT_H_ */

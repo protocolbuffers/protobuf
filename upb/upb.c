@@ -1,4 +1,6 @@
 
+#include "upb/upb.h"
+
 #include <errno.h>
 #include <stdarg.h>
 #include <stddef.h>
@@ -6,7 +8,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "upb/upb.h"
+
+#include "upb/port_def.inc"
 
 /* Guarantee null-termination and provide ellipsis truncation.
  * It may be tempting to "optimize" this by initializing these final

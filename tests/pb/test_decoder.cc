@@ -47,6 +47,8 @@
 #include "upb/upb.h"
 #endif  // !AMALGAMATED
 
+#include "upb/port_def.inc"
+
 #undef PRINT_FAILURE
 #define PRINT_FAILURE(expr)                                           \
   fprintf(stderr, "Assertion failed: %s:%d\n", __FILE__, __LINE__);   \

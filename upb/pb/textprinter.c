@@ -16,6 +16,8 @@
 
 #include "upb/sink.h"
 
+#include "upb/port_def.inc"
+
 struct upb_textprinter {
   upb_sink input_;
   upb_bytessink output_;

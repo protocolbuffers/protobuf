@@ -1,6 +1,8 @@
 
 #include "upb/msgfactory.h"
 
+#include "upb/port_def.inc"
+
 static bool is_power_of_two(size_t val) {
   return (val & (val - 1)) == 0;
 }

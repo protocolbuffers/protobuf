@@ -5,6 +5,8 @@
 #include "upb/table.int.h"
 #include "upb/msg.h"
 
+#include "upb/port_def.inc"
+
 bool upb_fieldtype_mapkeyok(upb_fieldtype_t type) {
   return type == UPB_TYPE_BOOL || type == UPB_TYPE_INT32 ||
          type == UPB_TYPE_UINT32 || type == UPB_TYPE_INT64 ||

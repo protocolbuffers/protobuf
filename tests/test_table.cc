@@ -6,14 +6,17 @@
 #include <limits.h>
 #include <string.h>
 #include <sys/resource.h>
-#include <ext/hash_map>
 #include <iostream>
 #include <map>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <vector>
+
 #include "tests/upb_test.h"
 #include "upb/table.int.h"
+
+#include "upb/port_def.inc"
 
 // Convenience interface for C++.  We don't put this in upb itself because
 // the table is not exposed to users.
@@ -397,7 +400,7 @@ void test_inttable(int32_t *keys, uint16_t num_entries, const char *desc) {
   Table table;
   uint32_t largest_key = 0;
   std::map<uint32_t, uint32_t> m;
-  __gnu_cxx::hash_map<uint32_t, uint32_t> hm;
+  std::unordered_map<uint32_t, uint32_t> hm;
   for(size_t i = 0; i < num_entries; i++) {
     int32_t key = keys[i];
     largest_key = UPB_MAX((int32_t)largest_key, key);
@@ -546,7 +549,7 @@ void test_inttable(int32_t *keys, uint16_t num_entries, const char *desc) {
   total = get_usertime() - before;
   printf("%ld/s (%0.1f%% of upb)\n", (long)(i/total), i / upb_rand_i);
 
-  printf("__gnu_cxx::hash_map<uint32_t, uint32_t>(seq): ");
+  printf("std::unordered_map<uint32_t, uint32_t>(seq): ");
   fflush(stdout);
   before = get_usertime();
   for(i = 0; true; i++) {
@@ -557,7 +560,7 @@ void test_inttable(int32_t *keys, uint16_t num_entries, const char *desc) {
   total = get_usertime() - before;
   printf("%ld/s (%0.1f%% of upb)\n", (long)(i/total), i / upb_seq_i);
 
-  printf("__gnu_cxx::hash_map<uint32_t, uint32_t>(rand): ");
+  printf("std::unordered_map<uint32_t, uint32_t>(rand): ");
   fflush(stdout);
   before = get_usertime();
   for(i = 0; true; i++) {

@@ -50,6 +50,8 @@ void DoTest(
     const conformance_ConformanceRequest* request,
     conformance_ConformanceResponse *response,
     upb_arena *arena) {
+  protobuf_test_messages_proto3_TestAllTypesProto3 *test_message;
+
   if (!strview_eql(conformance_ConformanceRequest_message_type(request),
                    proto3_msg)) {
     static const char msg[] = "Only proto3 for now.";
@@ -57,8 +59,6 @@ void DoTest(
         response, upb_strview_make(msg, sizeof(msg)));
     return;
   }
-
-  protobuf_test_messages_proto3_TestAllTypesProto3 *test_message;
 
   switch (conformance_ConformanceRequest_payload_case(request)) {
     case conformance_ConformanceRequest_payload_protobuf_payload: {

@@ -57,6 +57,7 @@
 #include "upb/pb/encoder.h"
 #include "upb/pb/varint.int.h"
 
+#include "upb/port_def.inc"
 
 /* The output buffer is divided into segments; a segment is a string of data
  * that is "ready to go" -- it does not need any varint lengths inserted into

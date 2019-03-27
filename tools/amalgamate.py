@@ -52,10 +52,7 @@ output_path = sys.argv[2]
 amalgamator = Amalgamator(include_path, output_path)
 
 for filename in sys.argv[3:]:
-  # Leave JIT out of the amalgamation.
-  if "x64" in filename or "dynasm" in filename:
-    continue
-
-  amalgamator.add_src(filename.strip())
+  if filename.endswith(".h") or filename.endswith(".inc"):
+    amalgamator.add_src(filename.strip())
 
 amalgamator.finish()

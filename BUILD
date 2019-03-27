@@ -20,11 +20,17 @@ exports_files([
     "build_defs",
 ])
 
-COPTS = [
+CPPOPTS = [
     # copybara:strip_for_google3_begin
-    "-std=c89",
-    "-pedantic",
+    "-Werror",
     "-Wno-long-long",
+    # copybara:strip_end
+]
+
+COPTS = CPPOPTS + [
+    # copybara:strip_for_google3_begin
+    "-pedantic",
+    "-std=c89",
     # copybara:strip_end
 ]
 
@@ -93,6 +99,7 @@ cc_library(
     ],
     hdrs = ["upb/legacy_msg_reflection.h"],
     deps = [":upb"],
+    copts = COPTS,
 )
 
 cc_library(
@@ -178,6 +185,7 @@ cc_library(
         map_dep("@com_google_protobuf//:protobuf"),
         map_dep("@com_google_protobuf//:protoc_lib"),
     ],
+    copts = CPPOPTS,
 )
 
 cc_binary(
@@ -187,6 +195,7 @@ cc_binary(
         ":upbc_generator",
         map_dep("@com_google_protobuf//:protoc_lib"),
     ],
+    copts = CPPOPTS,
 )
 
 # We strip the tests and remaining rules from google3 until the upb_proto_library()
@@ -206,6 +215,7 @@ cc_library(
         "tests/test_util.h",
         "tests/upb_test.h",
     ],
+    copts = CPPOPTS,
 )
 
 cc_test(
@@ -215,6 +225,7 @@ cc_test(
         ":upb_pb",
         ":upb_test",
     ],
+    copts = COPTS,
 )
 
 proto_library(
@@ -238,6 +249,7 @@ cc_test(
         ":upb_pb",
         ":upb_test",
     ],
+    copts = CPPOPTS,
 )
 
 cc_test(
@@ -249,6 +261,7 @@ cc_test(
         ":upb_pb",
         ":upb_test",
     ],
+    copts = CPPOPTS,
 )
 
 proto_library(
@@ -273,6 +286,7 @@ cc_test(
         ":upb_pb",
         ":upb_test",
     ],
+    copts = CPPOPTS,
 )
 
 cc_test(
@@ -282,6 +296,7 @@ cc_test(
         ":upb",
         ":upb_test",
     ],
+    copts = CPPOPTS,
 )
 
 proto_library(
@@ -314,6 +329,7 @@ cc_test(
         ":upb_json",
         ":upb_test",
     ],
+    copts = CPPOPTS,
 )
 
 upb_proto_library(
@@ -330,7 +346,7 @@ cc_binary(
     srcs = [
         "tests/conformance_upb.c",
     ],
-    copts = ["-Ibazel-out/k8-fastbuild/bin"],
+    copts = COPTS + ["-Ibazel-out/k8-fastbuild/bin"],
     deps = [
         ":conformance_proto_upb",
         ":upb",

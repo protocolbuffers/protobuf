@@ -10,6 +10,8 @@
 #include <string.h>
 #include <time.h>
 
+#include "upb/port_def.inc"
+
 struct upb_json_printer {
   upb_sink input_;
   /* BytesSink closure. */

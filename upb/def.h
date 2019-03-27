@@ -37,6 +37,8 @@ class SymbolTable;
 }
 #endif
 
+#include "upb/port_def.inc"
+
 struct upb_enumdef;
 typedef struct upb_enumdef upb_enumdef;
 struct upb_fielddef;
@@ -901,5 +903,7 @@ UPB_INLINE const char* upb_safecstr(const std::string& str) {
 }
 
 #endif  /* __cplusplus */
+
+#include "upb/port_undef.inc"
 
 #endif /* UPB_DEF_H_ */

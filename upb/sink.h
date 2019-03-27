@@ -20,6 +20,8 @@
 
 #include "upb/handlers.h"
 
+#include "upb/port_def.inc"
+
 #ifdef __cplusplus
 namespace upb {
 class BytesSink;
@@ -508,5 +510,7 @@ template <class T> bool PutBuffer(const T& str, BytesSink sink) {
 }
 
 #endif  /* __cplusplus */
+
+#include "upb/port_undef.inc"
 
 #endif

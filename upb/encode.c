@@ -7,6 +7,8 @@
 #include "upb/msg.h"
 #include "upb/upb.h"
 
+#include "upb/port_def.inc"
+
 #define UPB_PB_VARINT_MAX_LEN 10
 #define CHK(x) do { if (!(x)) { return false; } } while(0)
 

@@ -11,6 +11,8 @@
 #include <string.h>
 #include "upb/upb.h"
 
+#include "upb/port_def.inc"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -152,5 +154,7 @@ UPB_INLINE uint64_t upb_vencode32(uint32_t val) {
 #ifdef __cplusplus
 }  /* extern "C" */
 #endif
+
+#include "upb/port_undef.inc"
 
 #endif  /* UPB_VARINT_DECODER_H_ */

@@ -9,6 +9,8 @@
 #include <stdint.h>
 #include "upb/msg.h"
 
+#include "upb/port_def.inc"
+
 #define PTR_AT(msg, ofs, type) (type*)((const char*)msg + ofs)
 
 UPB_INLINE const void *_upb_array_accessor(const void *msg, size_t ofs,
@@ -97,5 +99,7 @@ UPB_INLINE bool _upb_has_oneof_field(const void *msg, size_t case_ofs, int32_t n
 }
 
 #undef PTR_AT
+
+#include "upb/port_undef.inc"
 
 #endif  /* UPB_GENERATED_UTIL_H_ */

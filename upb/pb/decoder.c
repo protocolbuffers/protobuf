@@ -22,6 +22,8 @@
 #include <stdio.h>
 #endif
 
+#include "upb/port_def.inc"
+
 #define CHECK_SUSPEND(x) if (!(x)) return upb_pbdecoder_suspend(d);
 
 /* Error messages that are shared between the bytecode and JIT decoders. */

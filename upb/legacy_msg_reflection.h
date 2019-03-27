@@ -5,6 +5,8 @@
 #include "upb/upb.h"
 #include "upb/msg.h"
 
+#include "upb/port_def.inc"
+
 struct upb_map;
 typedef struct upb_map upb_map;
 
@@ -183,4 +185,6 @@ upb_msgval upb_mapiter_value(const upb_mapiter *i);
 void upb_mapiter_setdone(upb_mapiter *i);
 bool upb_mapiter_isequal(const upb_mapiter *i1, const upb_mapiter *i2);
 
-#endif  // UPB_LEGACY_MSG_REFLECTION_H_
+#include "upb/port_undef.inc"
+
+#endif /* UPB_LEGACY_MSG_REFLECTION_H_ */

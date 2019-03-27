@@ -4,6 +4,8 @@
 
 #include "upb/sink.h"
 
+#include "upb/port_def.inc"
+
 namespace upb {
 
 template <class T>
@@ -61,5 +63,7 @@ class StringSink {
 };
 
 }  // namespace upb
+
+#include "upb/port_undef.inc"
 
 #endif  // UPB_STDCPP_H_

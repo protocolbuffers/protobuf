@@ -33,6 +33,8 @@
 #include "upb/json/parser.h"
 #include "upb/pb/encoder.h"
 
+#include "upb/port_def.inc"
+
 #define UPB_JSON_MAX_DEPTH 64
 
 /* Type of value message */

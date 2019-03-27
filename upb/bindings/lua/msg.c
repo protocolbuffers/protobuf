@@ -14,6 +14,8 @@
 #include "upb/legacy_msg_reflection.h"
 #include "upb/msg.h"
 
+#include "upb/port_def.inc"
+
 /*
  * Message/Array/Map objects can be constructed in one of two ways:
  *

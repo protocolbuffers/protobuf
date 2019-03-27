@@ -19,6 +19,8 @@
 #include "upb/upb.h"
 #include "upb_test.h"
 
+#include "upb/port_def.inc"
+
 template <class T>
 void AssertInsert(T* const container, const typename T::value_type& val) {
   bool inserted = container->insert(val).second;

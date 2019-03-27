@@ -3,6 +3,8 @@
 #include "upb/upb.h"
 #include "upb/decode.h"
 
+#include "upb/port_def.inc"
+
 /* Maps descriptor type -> upb field type.  */
 const uint8_t upb_desctype_to_fieldtype[] = {
   UPB_WIRE_TYPE_END_GROUP,  /* ENDGROUP */

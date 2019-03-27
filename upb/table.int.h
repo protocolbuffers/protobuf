@@ -24,6 +24,8 @@
 #include <string.h>
 #include "upb/upb.h"
 
+#include "upb/port_def.inc"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -499,5 +501,7 @@ bool upb_inttable_iter_isequal(const upb_inttable_iter *i1,
 #ifdef __cplusplus
 }  /* extern "C" */
 #endif
+
+#include "upb/port_undef.inc"
 
 #endif  /* UPB_TABLE_H_ */

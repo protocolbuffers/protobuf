@@ -7,6 +7,8 @@
 #include <string.h>
 #include "google/protobuf/descriptor.upb.h"
 
+#include "upb/port_def.inc"
+
 typedef struct {
   size_t len;
   char str[1];  /* Null-terminated string data follows. */

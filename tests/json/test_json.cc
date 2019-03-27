@@ -13,6 +13,8 @@
 
 #include <string>
 
+#include "upb/port_def.inc"
+
 // Macros for readability in test case list: allows us to give TEST("...") /
 // EXPECT("...") pairs.
 #define TEST(x)     x

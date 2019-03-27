@@ -22,6 +22,8 @@
 #include "upb/def.h"
 #include "upb/table.int.h"
 
+#include "upb/port_def.inc"
+
 #ifdef __cplusplus
 namespace upb {
 class HandlersPtr;
@@ -724,5 +726,7 @@ bool upb_msg_getscalarhandlerdata(const upb_handlers *h,
 #endif
 
 #include "upb/handlers-inl.h"
+
+#include "upb/port_undef.inc"
 
 #endif  /* UPB_HANDLERS_H */

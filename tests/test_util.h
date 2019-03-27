@@ -10,6 +10,8 @@
 #include "tests/upb_test.h"
 #include "upb/sink.h"
 
+#include "upb/port_def.inc"
+
 #ifdef __cplusplus
 
 upb_bufhandle global_handle;
@@ -223,4 +225,6 @@ error:
   return NULL;
 }
 
-#endif
+#include "upb/port_undef.inc"
+
+#endif /* UPB_TEST_UTIL_H_ */

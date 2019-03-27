@@ -15,6 +15,8 @@
 #include <stdio.h>
 #endif
 
+#include "upb/port_def.inc"
+
 #define MAXLABEL 5
 #define EMPTYLABEL -1
 

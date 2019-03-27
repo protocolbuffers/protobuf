@@ -8,6 +8,8 @@
 
 #include <string.h>
 
+#include "upb/port_def.inc"
+
 #define UPB_MAXARRSIZE 16  /* 64k. */
 
 /* From Chromium. */
