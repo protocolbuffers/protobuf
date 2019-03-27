@@ -5,7 +5,13 @@ require 'google/protobuf/wrappers_pb.rb'
 # Requires that the proto messages are exactly the same in proto2 and proto3 syntax
 # and that the including class should define a 'proto_module' method which returns
 # the enclosing module of the proto message classes.
+
+require 'bigdecimal'
+
 module CommonTests
+  # Ruby 2.5 changed to raise FrozenError instead of RuntimeError
+  FrozenErrorType = Gem::Version.new(RUBY_VERSION) < Gem::Version.new('2.5') ? RuntimeError : FrozenError
+
   def test_defaults
     m = proto_module::TestMessage.new
     assert m.optional_int32 == 0
@@ -206,15 +212,7 @@ module CommonTests
 
     # strings are immutable so we can't do this, but serialize should catch it.
     m.optional_string = "asdf".encode!('UTF-8')
-    # Ruby 2.5 changed to raise FrozenError. However, assert_raise don't
-    # accept subclass.
-    ok = false
-    begin
-      m.optional_string.encode!('ASCII-8BIT')
-    rescue RuntimeError
-      ok = true
-    end
-    assert ok
+    assert_raise(FrozenErrorType) { m.optional_string.encode!('ASCII-8BIT') }
   end
 
   def test_rptfield_int32
@@ -1449,38 +1447,85 @@ module CommonTests
     assert_raise(NoMethodError) { m.string_XXXXXXXXX }
     assert_raise(NoMethodError) { m.string_XXXXXXXXXX }
   end
+  
+  def test_converts_time
+    m = proto_module::TimeMessage.new
+
+    m.timestamp = Google::Protobuf::Timestamp.new(seconds: 5, nanos: 6)
+    assert_kind_of Google::Protobuf::Timestamp, m.timestamp
+    assert_equal 5, m.timestamp.seconds
+    assert_equal 6, m.timestamp.nanos
+
+    m.timestamp = Time.at(9466, 123456.789)
+    assert_equal Google::Protobuf::Timestamp.new(seconds: 9466, nanos: 123456789), m.timestamp
+
+    m = proto_module::TimeMessage.new(timestamp: Time.at(1))
+    assert_equal Google::Protobuf::Timestamp.new(seconds: 1, nanos: 0), m.timestamp
+
+    assert_raise(Google::Protobuf::TypeError) { m.timestamp = 2 }
+    assert_raise(Google::Protobuf::TypeError) { m.timestamp = 2.4 }
+    assert_raise(Google::Protobuf::TypeError) { m.timestamp = '4' }
+    assert_raise(Google::Protobuf::TypeError) { m.timestamp = proto_module::TimeMessage.new }
+  end
+
+  def test_converts_duration
+    m = proto_module::TimeMessage.new
+
+    m.duration = Google::Protobuf::Duration.new(seconds: 2, nanos: 22)
+    assert_kind_of Google::Protobuf::Duration, m.duration
+    assert_equal 2, m.duration.seconds
+    assert_equal 22, m.duration.nanos
+
+    m.duration = 10.5
+    assert_equal Google::Protobuf::Duration.new(seconds: 10, nanos: 500_000_000), m.duration
+
+    m.duration = 200
+    assert_equal Google::Protobuf::Duration.new(seconds: 200, nanos: 0), m.duration
+
+    m.duration = Rational(3, 2)
+    assert_equal Google::Protobuf::Duration.new(seconds: 1, nanos: 500_000_000), m.duration
+
+    m.duration = BigDecimal.new("5")
+    assert_equal Google::Protobuf::Duration.new(seconds: 5, nanos: 0), m.duration
+
+    m = proto_module::TimeMessage.new(duration: 1.1)
+    assert_equal Google::Protobuf::Duration.new(seconds: 1, nanos: 100_000_000), m.duration
+
+    assert_raise(Google::Protobuf::TypeError) { m.duration = '2' }
+    assert_raise(Google::Protobuf::TypeError) { m.duration = proto_module::TimeMessage.new }
+  end
 
   def test_freeze
     m = proto_module::TestMessage.new
     m.optional_int32 = 10
     m.freeze
 
-    frozen_error = assert_raise(FrozenError) { m.optional_int32 = 20 }
+    frozen_error = assert_raise(FrozenErrorType) { m.optional_int32 = 20 }
     assert_equal "can't modify frozen #{proto_module}::TestMessage", frozen_error.message
     assert_equal 10, m.optional_int32
     assert_equal true, m.frozen?
 
-    assert_raise(FrozenError) { m.optional_int64 = 2 }
-    assert_raise(FrozenError) { m.optional_uint32 = 3 }
-    assert_raise(FrozenError) { m.optional_uint64 = 4 }
-    assert_raise(FrozenError) { m.optional_bool = true }
-    assert_raise(FrozenError) { m.optional_float = 6.0 }
-    assert_raise(FrozenError) { m.optional_double = 7.0 }
-    assert_raise(FrozenError) { m.optional_string = '8' }
-    assert_raise(FrozenError) { m.optional_bytes = nil }
-    assert_raise(FrozenError) { m.optional_msg = proto_module::TestMessage2.new }
-    assert_raise(FrozenError) { m.optional_enum = :A }
-    assert_raise(FrozenError) { m.repeated_int32 = 1 }
-    assert_raise(FrozenError) { m.repeated_int64 = 2 }
-    assert_raise(FrozenError) { m.repeated_uint32 = 3 }
-    assert_raise(FrozenError) { m.repeated_uint64 = 4 }
-    assert_raise(FrozenError) { m.repeated_bool = true }
-    assert_raise(FrozenError) { m.repeated_float = 6.0 }
-    assert_raise(FrozenError) { m.repeated_double = 7.0 }
-    assert_raise(FrozenError) { m.repeated_string = '8' }
-    assert_raise(FrozenError) { m.repeated_bytes = nil }
-    assert_raise(FrozenError) { m.repeated_msg = proto_module::TestMessage2.new }
-    assert_raise(FrozenError) { m.repeated_enum = :A }
+    assert_raise(FrozenErrorType) { m.optional_int64 = 2 }
+    assert_raise(FrozenErrorType) { m.optional_uint32 = 3 }
+    assert_raise(FrozenErrorType) { m.optional_uint64 = 4 }
+    assert_raise(FrozenErrorType) { m.optional_bool = true }
+    assert_raise(FrozenErrorType) { m.optional_float = 6.0 }
+    assert_raise(FrozenErrorType) { m.optional_double = 7.0 }
+    assert_raise(FrozenErrorType) { m.optional_string = '8' }
+    assert_raise(FrozenErrorType) { m.optional_bytes = nil }
+    assert_raise(FrozenErrorType) { m.optional_msg = proto_module::TestMessage2.new }
+    assert_raise(FrozenErrorType) { m.optional_enum = :A }
+    assert_raise(FrozenErrorType) { m.repeated_int32 = 1 }
+    assert_raise(FrozenErrorType) { m.repeated_int64 = 2 }
+    assert_raise(FrozenErrorType) { m.repeated_uint32 = 3 }
+    assert_raise(FrozenErrorType) { m.repeated_uint64 = 4 }
+    assert_raise(FrozenErrorType) { m.repeated_bool = true }
+    assert_raise(FrozenErrorType) { m.repeated_float = 6.0 }
+    assert_raise(FrozenErrorType) { m.repeated_double = 7.0 }
+    assert_raise(FrozenErrorType) { m.repeated_string = '8' }
+    assert_raise(FrozenErrorType) { m.repeated_bytes = nil }
+    assert_raise(FrozenErrorType) { m.repeated_msg = proto_module::TestMessage2.new }
+    assert_raise(FrozenErrorType) { m.repeated_enum = :A }
   end
   
   def test_eq

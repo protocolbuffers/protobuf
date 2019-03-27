@@ -212,6 +212,9 @@ const char* UnknownGroupParse(UnknownFieldSet* unknown, const char* ptr,
 PROTOBUF_EXPORT
 const char* UnknownFieldParse(uint64 tag, UnknownFieldSet* unknown,
                               const char* ptr, ParseContext* ctx);
+PROTOBUF_EXPORT
+const char* UnknownFieldParse(uint32 tag, InternalMetadataWithArena* metadata,
+                              const char* ptr, ParseContext* ctx);
 
 }  // namespace internal
 #endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
@@ -317,8 +320,8 @@ inline UnknownField* UnknownFieldSet::mutable_field(int index) {
   return &(fields_)[static_cast<size_t>(index)];
 }
 
-inline void UnknownFieldSet::AddLengthDelimited(
-    int number, const std::string& value) {
+inline void UnknownFieldSet::AddLengthDelimited(int number,
+                                                const std::string& value) {
   AddLengthDelimited(number)->assign(value);
 }
 

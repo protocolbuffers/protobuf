@@ -34,6 +34,7 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
 #include <climits>
+#include <cstdint>
 #include <string>
 
 #include <google/protobuf/stubs/logging.h>
@@ -48,6 +49,7 @@
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/repeated_field.h>
+
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/stl_util.h>
 
@@ -56,8 +58,13 @@
 namespace google {
 namespace protobuf {
 
-string MessageLite::InitializationErrorString() const {
+std::string MessageLite::InitializationErrorString() const {
   return "(cannot determine missing fields for lite message)";
+}
+
+std::string MessageLite::DebugString() const {
+  std::uintptr_t address = reinterpret_cast<std::uintptr_t>(this);
+  return StrCat("MessageLite at 0x", strings::Hex(address));
 }
 
 namespace {
@@ -83,8 +90,8 @@ void ByteSizeConsistencyError(size_t byte_size_before_serialization,
   GOOGLE_LOG(FATAL) << "This shouldn't be called if all the sizes are equal.";
 }
 
-string InitializationErrorMessage(const char* action,
-                                  const MessageLite& message) {
+std::string InitializationErrorMessage(const char* action,
+                                       const MessageLite& message) {
   // Note:  We want to avoid depending on strutil in the lite library, otherwise
   //   we'd use:
   //
@@ -94,7 +101,7 @@ string InitializationErrorMessage(const char* action,
   //   action, message.GetTypeName(),
   //   message.InitializationErrorString());
 
-  string result;
+  std::string result;
   result += "Can't ";
   result += action;
   result += " message of type \"";
@@ -123,22 +130,9 @@ bool MergePartialFromImpl(StringPiece input, MessageLite* msg) {
   const char* ptr;
   internal::ParseContext ctx(io::CodedInputStream::GetDefaultRecursionLimit(),
                              aliasing, &ptr, input);
-  return ctx.AtLegitimateEnd(msg->_InternalParse(ptr, &ctx));
-}
-
-template <bool aliasing>
-bool MergePartialFromImpl(BoundedZCIS input, MessageLite* msg) {
-  // TODO(gerbens) Circumvent CIS, to prevent slop region check overhead.
-  // Tricky case. If we limit ZeroCopyInputStream we need to make sure it's
-  // left precisely at the limit. However EpsCopyInputStream will always be
-  // 16 (kSlopBytes) bytes ahead of ZeroCopyInputStream, which means it's
-  // potentially a buffer ahead from which we can't rollback. Hence we must
-  // ensure we don't read more than the limit.
-  // TODO(gerbens) consider putting logic in EpsCopyInputStream to put an
-  // overall limit on the number of bytes it pulls from the underlying stream.
-  io::CodedInputStream cis(input.zcis);
-  cis.PushLimit(input.limit);
-  return msg->MergePartialFromCodedStream(&cis) && cis.BytesUntilLimit() == 0;
+  ptr = msg->_InternalParse(ptr, &ctx);
+  // ctx has an explicit limit set (length of string_view).
+  return ptr && ctx.EndedAtLimit();
 }
 
 template <bool aliasing>
@@ -146,7 +140,20 @@ bool MergePartialFromImpl(io::ZeroCopyInputStream* input, MessageLite* msg) {
   const char* ptr;
   internal::ParseContext ctx(io::CodedInputStream::GetDefaultRecursionLimit(),
                              aliasing, &ptr, input);
-  return ctx.AtLegitimateEnd(msg->_InternalParse(ptr, &ctx));
+  ptr = msg->_InternalParse(ptr, &ctx);
+  // ctx has no explicit limit (hence we end on end of stream)
+  return ptr && ctx.EndedAtEndOfStream();
+}
+
+template <bool aliasing>
+bool MergePartialFromImpl(BoundedZCIS input, MessageLite* msg) {
+  // We must prevent reading more than limit from the input. Due to the nature
+  // of EpsCopyInputStream the stream will always read kSlopBytes ahead of
+  // the parser, we can't always backup so we must prevent from reading past
+  // limit in the first place.
+  io::LimitingInputStream zcis(input.zcis, input.limit);
+  return MergePartialFromImpl<aliasing>(&zcis, msg) &&
+         zcis.ByteCount() == input.limit;
 }
 
 #else  // !GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
@@ -233,13 +240,15 @@ bool MessageLite::MergePartialFromCodedStream(io::CodedInputStream* input) {
   ctx.data().pool = input->GetExtensionPool();
   ctx.data().factory = input->GetExtensionFactory();
   ptr = _InternalParse(ptr, &ctx);
-  if (!ptr) return false;
+  if (PROTOBUF_PREDICT_FALSE(!ptr)) return false;
   ctx.BackUp(ptr);
-  if (ctx.LastTagMinus1() != 0) {
-    input->SetLastTag(ctx.LastTagMinus1() + 1);
+  if (!ctx.EndedAtEndOfStream()) {
+    GOOGLE_DCHECK(ctx.LastTag() != 1);  // We can't end on a pushed limit.
+    if (ctx.IsExceedingLimit(ptr)) return false;
+    input->SetLastTag(ctx.LastTag());
     return true;
   }
-  if (ctx.AtLimit(ptr)) input->SetConsumed();
+  input->SetConsumed();
   return true;
 }
 #endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
@@ -287,11 +296,11 @@ bool MessageLite::ParsePartialFromBoundedZeroCopyStream(
   return ParseFrom<kParsePartial>(internal::BoundedZCIS{input, size});
 }
 
-bool MessageLite::ParseFromString(const string& data) {
+bool MessageLite::ParseFromString(const std::string& data) {
   return ParseFrom<kParse>(data);
 }
 
-bool MessageLite::ParsePartialFromString(const string& data) {
+bool MessageLite::ParsePartialFromString(const std::string& data) {
   return ParseFrom<kParsePartial>(data);
 }
 
@@ -303,7 +312,7 @@ bool MessageLite::ParsePartialFromArray(const void* data, int size) {
   return ParseFrom<kParsePartial>(as_string_view(data, size));
 }
 
-bool MessageLite::MergeFromString(const string& data) {
+bool MessageLite::MergeFromString(const std::string& data) {
   return ParseFrom<kMerge>(data);
 }
 
@@ -385,12 +394,12 @@ bool MessageLite::SerializePartialToZeroCopyStream(
   return SerializePartialToCodedStream(&encoder);
 }
 
-bool MessageLite::AppendToString(string* output) const {
+bool MessageLite::AppendToString(std::string* output) const {
   GOOGLE_DCHECK(IsInitialized()) << InitializationErrorMessage("serialize", *this);
   return AppendPartialToString(output);
 }
 
-bool MessageLite::AppendPartialToString(string* output) const {
+bool MessageLite::AppendPartialToString(std::string* output) const {
   size_t old_size = output->size();
   size_t byte_size = ByteSizeLong();
   if (byte_size > INT_MAX) {
@@ -409,12 +418,12 @@ bool MessageLite::AppendPartialToString(string* output) const {
   return true;
 }
 
-bool MessageLite::SerializeToString(string* output) const {
+bool MessageLite::SerializeToString(std::string* output) const {
   output->clear();
   return AppendToString(output);
 }
 
-bool MessageLite::SerializePartialToString(string* output) const {
+bool MessageLite::SerializePartialToString(std::string* output) const {
   output->clear();
   return AppendPartialToString(output);
 }
@@ -440,18 +449,18 @@ bool MessageLite::SerializePartialToArray(void* data, int size) const {
   return true;
 }
 
-string MessageLite::SerializeAsString() const {
+std::string MessageLite::SerializeAsString() const {
   // If the compiler implements the (Named) Return Value Optimization,
   // the local variable 'output' will not actually reside on the stack
   // of this function, but will be overlaid with the object that the
   // caller supplied for the return value to be constructed in.
-  string output;
+  std::string output;
   if (!AppendToString(&output)) output.clear();
   return output;
 }
 
-string MessageLite::SerializePartialAsString() const {
-  string output;
+std::string MessageLite::SerializePartialAsString() const {
+  std::string output;
   if (!AppendPartialToString(&output)) output.clear();
   return output;
 }
@@ -501,7 +510,8 @@ void GenericTypeHandler<MessageLite>::Merge(const MessageLite& from,
   to->CheckTypeAndMergeFrom(from);
 }
 template <>
-void GenericTypeHandler<string>::Merge(const string& from, string* to) {
+void GenericTypeHandler<std::string>::Merge(const std::string& from,
+                                            std::string* to) {
   *to = from;
 }
 

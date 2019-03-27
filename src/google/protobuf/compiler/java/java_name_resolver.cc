@@ -37,6 +37,7 @@
 #include <google/protobuf/compiler/java/java_helpers.h>
 #include <google/protobuf/stubs/substitute.h>
 
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -52,8 +53,8 @@ const char* kOuterClassNameSuffix = "OuterClass";
 //   Full name   : foo.Bar.Baz
 //   Package name: foo
 //   After strip : Bar.Baz
-string StripPackageName(const string& full_name,
-                        const FileDescriptor* file) {
+std::string StripPackageName(const std::string& full_name,
+                             const FileDescriptor* file) {
   if (file->package().empty()) {
     return full_name;
   } else {
@@ -63,15 +64,15 @@ string StripPackageName(const string& full_name,
 }
 
 // Get the name of a message's Java class without package name prefix.
-string ClassNameWithoutPackage(const Descriptor* descriptor,
-                               bool immutable) {
+std::string ClassNameWithoutPackage(const Descriptor* descriptor,
+                                    bool immutable) {
   return StripPackageName(descriptor->full_name(),
                           descriptor->file());
 }
 
 // Get the name of an enum's Java class without package name prefix.
-string ClassNameWithoutPackage(const EnumDescriptor* descriptor,
-                               bool immutable) {
+std::string ClassNameWithoutPackage(const EnumDescriptor* descriptor,
+                                    bool immutable) {
   // Doesn't append "Mutable" for enum type's name.
   const Descriptor* message_descriptor = descriptor->containing_type();
   if (message_descriptor == NULL) {
@@ -83,26 +84,42 @@ string ClassNameWithoutPackage(const EnumDescriptor* descriptor,
 }
 
 // Get the name of a service's Java class without package name prefix.
-string ClassNameWithoutPackage(const ServiceDescriptor* descriptor,
-                               bool immutable) {
-  string full_name = StripPackageName(descriptor->full_name(),
-                                      descriptor->file());
+std::string ClassNameWithoutPackage(const ServiceDescriptor* descriptor,
+                                    bool immutable) {
+  std::string full_name =
+      StripPackageName(descriptor->full_name(), descriptor->file());
   // We don't allow nested service definitions.
-  GOOGLE_CHECK(full_name.find('.') == string::npos);
+  GOOGLE_CHECK(full_name.find('.') == std::string::npos);
   return full_name;
+}
+
+// Return true if a and b are equals (case insensitive).
+NameEquality CheckNameEquality(const string& a, const string& b) {
+  if (ToUpper(a) == ToUpper(b)) {
+    if (a == b) {
+      return NameEquality::EXACT_EQUAL;
+    }
+    return NameEquality::EQUAL_IGNORE_CASE;
+  }
+  return NameEquality::NO_MATCH;
 }
 
 // Check whether a given message or its nested types has the given class name.
 bool MessageHasConflictingClassName(const Descriptor* message,
-                                    const string& classname) {
-  if (message->name() == classname) return true;
+                                    const std::string& classname,
+                                    NameEquality equality_mode) {
+  if (CheckNameEquality(message->name(), classname) == equality_mode) {
+    return true;
+  }
   for (int i = 0; i < message->nested_type_count(); ++i) {
-    if (MessageHasConflictingClassName(message->nested_type(i), classname)) {
+    if (MessageHasConflictingClassName(message->nested_type(i), classname,
+                                       equality_mode)) {
       return true;
     }
   }
   for (int i = 0; i < message->enum_type_count(); ++i) {
-    if (message->enum_type(i)->name() == classname) {
+    if (CheckNameEquality(message->enum_type(i)->name(), classname) ==
+        equality_mode) {
       return true;
     }
   }
@@ -117,11 +134,11 @@ ClassNameResolver::ClassNameResolver() {
 ClassNameResolver::~ClassNameResolver() {
 }
 
-string ClassNameResolver::GetFileDefaultImmutableClassName(
+std::string ClassNameResolver::GetFileDefaultImmutableClassName(
     const FileDescriptor* file) {
-  string basename;
-  string::size_type last_slash = file->name().find_last_of('/');
-  if (last_slash == string::npos) {
+  std::string basename;
+  std::string::size_type last_slash = file->name().find_last_of('/');
+  if (last_slash == std::string::npos) {
     basename = file->name();
   } else {
     basename = file->name().substr(last_slash + 1);
@@ -129,15 +146,16 @@ string ClassNameResolver::GetFileDefaultImmutableClassName(
   return UnderscoresToCamelCase(StripProto(basename), true);
 }
 
-string ClassNameResolver::GetFileImmutableClassName(
+std::string ClassNameResolver::GetFileImmutableClassName(
     const FileDescriptor* file) {
-  string& class_name = file_immutable_outer_class_names_[file];
+  std::string& class_name = file_immutable_outer_class_names_[file];
   if (class_name.empty()) {
     if (file->options().has_java_outer_classname()) {
       class_name = file->options().java_outer_classname();
     } else {
       class_name = GetFileDefaultImmutableClassName(file);
-      if (HasConflictingClassName(file, class_name)) {
+      if (HasConflictingClassName(file, class_name,
+                                  NameEquality::EXACT_EQUAL)) {
         class_name += kOuterClassNameSuffix;
       }
     }
@@ -145,8 +163,8 @@ string ClassNameResolver::GetFileImmutableClassName(
   return class_name;
 }
 
-string ClassNameResolver::GetFileClassName(const FileDescriptor* file,
-                                           bool immutable) {
+std::string ClassNameResolver::GetFileClassName(const FileDescriptor* file,
+                                                bool immutable) {
   if (immutable) {
     return GetFileImmutableClassName(file);
   } else {
@@ -157,33 +175,37 @@ string ClassNameResolver::GetFileClassName(const FileDescriptor* file,
 // Check whether there is any type defined in the proto file that has
 // the given class name.
 bool ClassNameResolver::HasConflictingClassName(
-    const FileDescriptor* file, const string& classname) {
+    const FileDescriptor* file, const std::string& classname,
+    NameEquality equality_mode) {
   for (int i = 0; i < file->enum_type_count(); i++) {
-    if (file->enum_type(i)->name() == classname) {
+    if (CheckNameEquality(file->enum_type(i)->name(), classname) ==
+        equality_mode) {
       return true;
     }
   }
   for (int i = 0; i < file->service_count(); i++) {
-    if (file->service(i)->name() == classname) {
+    if (CheckNameEquality(file->service(i)->name(), classname) ==
+        equality_mode) {
       return true;
     }
   }
   for (int i = 0; i < file->message_type_count(); i++) {
-    if (MessageHasConflictingClassName(file->message_type(i), classname)) {
+    if (MessageHasConflictingClassName(file->message_type(i), classname,
+                                       equality_mode)) {
       return true;
     }
   }
   return false;
 }
 
-string ClassNameResolver::GetDescriptorClassName(
+std::string ClassNameResolver::GetDescriptorClassName(
     const FileDescriptor* descriptor) {
   return GetFileImmutableClassName(descriptor);
 }
 
-string ClassNameResolver::GetClassName(const FileDescriptor* descriptor,
-                                       bool immutable) {
-  string result = FileJavaPackage(descriptor, immutable);
+std::string ClassNameResolver::GetClassName(const FileDescriptor* descriptor,
+                                            bool immutable) {
+  std::string result = FileJavaPackage(descriptor, immutable);
   if (!result.empty()) result += '.';
   result += GetFileClassName(descriptor, immutable);
   return result;
@@ -191,11 +213,10 @@ string ClassNameResolver::GetClassName(const FileDescriptor* descriptor,
 
 // Get the full name of a Java class by prepending the Java package name
 // or outer class name.
-string ClassNameResolver::GetClassFullName(const string& name_without_package,
-                                           const FileDescriptor* file,
-                                           bool immutable,
-                                           bool multiple_files) {
-  string result;
+std::string ClassNameResolver::GetClassFullName(
+    const std::string& name_without_package, const FileDescriptor* file,
+    bool immutable, bool multiple_files) {
+  std::string result;
   if (multiple_files) {
     result = FileJavaPackage(file, immutable);
   } else {
@@ -208,33 +229,32 @@ string ClassNameResolver::GetClassFullName(const string& name_without_package,
   return result;
 }
 
-string ClassNameResolver::GetClassName(const Descriptor* descriptor,
-                                       bool immutable) {
+std::string ClassNameResolver::GetClassName(const Descriptor* descriptor,
+                                            bool immutable) {
   return GetClassFullName(ClassNameWithoutPackage(descriptor, immutable),
                           descriptor->file(), immutable,
                           MultipleJavaFiles(descriptor->file(), immutable));
 }
 
-string ClassNameResolver::GetClassName(const EnumDescriptor* descriptor,
-                                       bool immutable) {
+std::string ClassNameResolver::GetClassName(const EnumDescriptor* descriptor,
+                                            bool immutable) {
   return GetClassFullName(ClassNameWithoutPackage(descriptor, immutable),
                           descriptor->file(), immutable,
                           MultipleJavaFiles(descriptor->file(), immutable));
 }
 
-string ClassNameResolver::GetClassName(const ServiceDescriptor* descriptor,
-                                       bool immutable) {
+std::string ClassNameResolver::GetClassName(const ServiceDescriptor* descriptor,
+                                            bool immutable) {
   return GetClassFullName(ClassNameWithoutPackage(descriptor, immutable),
                           descriptor->file(), immutable,
                           MultipleJavaFiles(descriptor->file(), immutable));
 }
 
 // Get the Java Class style full name of a message.
-string ClassNameResolver::GetJavaClassFullName(
-    const string& name_without_package,
-    const FileDescriptor* file,
+std::string ClassNameResolver::GetJavaClassFullName(
+    const std::string& name_without_package, const FileDescriptor* file,
     bool immutable) {
-  string result;
+  std::string result;
   if (MultipleJavaFiles(file, immutable)) {
     result = FileJavaPackage(file, immutable);
     if (!result.empty()) result += '.';
@@ -246,21 +266,20 @@ string ClassNameResolver::GetJavaClassFullName(
   return result;
 }
 
-string ClassNameResolver::GetExtensionIdentifierName(
+std::string ClassNameResolver::GetExtensionIdentifierName(
     const FieldDescriptor* descriptor, bool immutable) {
   return GetClassName(descriptor->containing_type(), immutable) + "." +
          descriptor->name();
 }
 
-
-string ClassNameResolver::GetJavaImmutableClassName(
+std::string ClassNameResolver::GetJavaImmutableClassName(
     const Descriptor* descriptor) {
   return GetJavaClassFullName(
       ClassNameWithoutPackage(descriptor, true),
       descriptor->file(), true);
 }
 
-string ClassNameResolver::GetJavaImmutableClassName(
+std::string ClassNameResolver::GetJavaImmutableClassName(
     const EnumDescriptor* descriptor) {
   return GetJavaClassFullName(
       ClassNameWithoutPackage(descriptor, true),

@@ -233,13 +233,12 @@ static PyObject* AddMessage(RepeatedCompositeContainer* self, PyObject* value) {
 static PyObject* AppendMethod(PyObject* pself, PyObject* value) {
   RepeatedCompositeContainer* self =
       reinterpret_cast<RepeatedCompositeContainer*>(pself);
-  PyObject* py_cmsg = AddMessage(self, value);
+  ScopedPyObjectPtr py_cmsg(AddMessage(self, value));
   if (py_cmsg == nullptr) {
     return nullptr;
   }
 
-  if (PyList_Append(self->child_messages, py_cmsg) < 0) {
-    Py_DECREF(py_cmsg);
+  if (PyList_Append(self->child_messages, py_cmsg.get()) < 0) {
     return nullptr;
   }
 
@@ -258,7 +257,7 @@ static PyObject* Insert(PyObject* pself, PyObject* args) {
     return nullptr;
   }
 
-  PyObject* py_cmsg = AddMessage(self, value);
+  ScopedPyObjectPtr py_cmsg(AddMessage(self, value));
   if (py_cmsg == nullptr) {
     return nullptr;
   }
@@ -277,7 +276,7 @@ static PyObject* Insert(PyObject* pself, PyObject* args) {
     }
   }
 
-  if (PyList_Insert(self->child_messages, index, py_cmsg) < 0) {
+  if (PyList_Insert(self->child_messages, index, py_cmsg.get()) < 0) {
     return nullptr;
   }
   Py_RETURN_NONE;

@@ -112,8 +112,9 @@ public final class Timestamps {
       };
 
   /**
-   * Returns a {@link Comparator} for {@link Timestamp}s which sorts in increasing chronological
-   * order. Nulls and invalid {@link Timestamp}s are not allowed (see {@link #isValid}).
+   * Returns a {@link Comparator} for {@link Timestamp Timestamps} which sorts in increasing
+   * chronological order. Nulls and invalid {@link Timestamp Timestamps} are not allowed (see
+   * {@link #isValid}).
    */
   public static Comparator<Timestamp> comparator() {
     return COMPARATOR;

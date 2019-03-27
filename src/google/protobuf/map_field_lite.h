@@ -114,6 +114,15 @@ class MapFieldLite {
     return parser._InternalParse(ptr, ctx);
   }
 
+  template <typename Metadata>
+  const char* ParseWithEnumValidation(const char* ptr, ParseContext* ctx,
+                                      bool (*is_valid)(int), uint32 field_num,
+                                      Metadata* metadata) {
+    typename Derived::template Parser<MapFieldLite, Map<Key, T>> parser(this);
+    return parser.ParseWithEnumValidation(ptr, ctx, is_valid, field_num,
+                                          metadata);
+  }
+
  private:
   typedef void DestructorSkippable_;
 
@@ -122,6 +131,30 @@ class MapFieldLite {
 
   friend class ::PROTOBUF_NAMESPACE_ID::Arena;
 };
+
+template <typename T, typename Metadata>
+struct EnumParseWrapper {
+  const char* _InternalParse(const char* ptr, ParseContext* ctx) {
+    return map_field->ParseWithEnumValidation(ptr, ctx, is_valid, field_num,
+                                              metadata);
+  }
+  T* map_field;
+  bool (*is_valid)(int);
+  uint32 field_num;
+  Metadata* metadata;
+};
+
+// Helper function because the typenames of maps are horrendous to print. This
+// leverages compiler type deduction, to keep all type data out of the
+// generated code
+template <typename T, typename Metadata>
+EnumParseWrapper<T, Metadata> InitEnumParseWrapper(T* map_field,
+                                                   bool (*is_valid)(int),
+                                                   uint32 field_num,
+                                                   Metadata* metadata) {
+  return EnumParseWrapper<T, Metadata>{map_field, is_valid, field_num,
+                                       metadata};
+}
 
 // True if IsInitialized() is true for value field in all elements of t. T is
 // expected to be message.  It's useful to have this helper here to keep the

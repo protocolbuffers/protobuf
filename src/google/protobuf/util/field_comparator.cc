@@ -94,8 +94,8 @@ FieldComparator::ComparisonResult DefaultFieldComparator::Compare(
       if (field->is_repeated()) {
         // Allocate scratch strings to store the result if a conversion is
         // needed.
-        string scratch1;
-        string scratch2;
+        std::string scratch1;
+        std::string scratch2;
         return ResultFromBoolean(
             CompareString(*field, reflection_1->GetRepeatedStringReference(
                                       message_1, field, index_1, &scratch1),
@@ -104,8 +104,8 @@ FieldComparator::ComparisonResult DefaultFieldComparator::Compare(
       } else {
         // Allocate scratch strings to store the result if a conversion is
         // needed.
-        string scratch1;
-        string scratch2;
+        std::string scratch1;
+        std::string scratch2;
         return ResultFromBoolean(CompareString(
             *field,
             reflection_1->GetStringReference(message_1, field, &scratch1),

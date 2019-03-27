@@ -58,7 +58,8 @@ class EnumGenerator {
  public:
   // See generator.cc for the meaning of dllexport_decl.
   EnumGenerator(const EnumDescriptor* descriptor,
-                const std::map<std::string, std::string>& vars, const Options& options);
+                const std::map<std::string, std::string>& vars,
+                const Options& options);
   ~EnumGenerator();
 
   // Generate header code defining the enum.  This code should be placed

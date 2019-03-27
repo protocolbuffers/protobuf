@@ -86,6 +86,7 @@ goog.require('proto.jspb.exttest.floatingMsgField');
 goog.require('proto.jspb.exttest.floatingMsgFieldTwo');
 
 // CommonJS-LoadFromFile: test_pb proto.jspb.test
+goog.require('proto.jspb.test.BooleanFields');
 goog.require('proto.jspb.test.CloneExtension');
 goog.require('proto.jspb.test.Complex');
 goog.require('proto.jspb.test.DefaultValues');
@@ -157,10 +158,11 @@ describe('Message test suite', function() {
     assertObjectEquals(
         {
           aString: 'a',
-          anOutOfOrderBool: 1,
+          anOutOfOrderBool: true,
           aNestedMessage: {anInt: 11},
           aRepeatedMessageList: [{anInt: 22}, {anInt: 33}],
-          aRepeatedStringList: ['s1', 's2']
+          aRepeatedStringList: ['s1', 's2'],
+          aFloatingPointField: undefined,
         },
         result);
 
@@ -169,7 +171,7 @@ describe('Message test suite', function() {
     assertObjectEquals(
         {
           aString: 'a',
-          anOutOfOrderBool: 1,
+          anOutOfOrderBool: true,
           aNestedMessage:
               {anInt: 11, $jspbMessageInstance: foo.getANestedMessage()},
           aRepeatedMessageList: [
@@ -177,6 +179,7 @@ describe('Message test suite', function() {
             {anInt: 33, $jspbMessageInstance: foo.getARepeatedMessageList()[1]}
           ],
           aRepeatedStringList: ['s1', 's2'],
+          aFloatingPointField: undefined,
           $jspbMessageInstance: foo
         },
         result);
@@ -200,7 +203,8 @@ describe('Message test suite', function() {
           aNestedMessage: {anInt: undefined},
           // Note: JsPb converts undefined repeated fields to empty arrays.
           aRepeatedMessageList: [],
-          aRepeatedStringList: []
+          aRepeatedStringList: [],
+          aFloatingPointField: undefined,
         },
         result);
 
@@ -867,6 +871,53 @@ describe('Message test suite', function() {
     assertNan(message.getRepeatedDoubleFieldList()[0]);
     assertNan(message.getRepeatedDoubleFieldList()[1]);
     assertNan(message.getDefaultDoubleField());
+  });
+
+  it('testFloatingPointsAreConvertedFromStringInput', function() {
+    var assertInf = function(x) {
+      assertTrue(
+          'Expected ' + x + ' (' + goog.typeOf(x) + ') to be Infinity.',
+          x === Infinity);
+    };
+    var message = new proto.jspb.test.FloatingPointFields([
+      Infinity, 'Infinity', ['Infinity', Infinity], 'Infinity', 'Infinity',
+      'Infinity', ['Infinity', Infinity], 'Infinity'
+    ]);
+    assertInf(message.getOptionalFloatField());
+    assertInf(message.getRequiredFloatField());
+    assertInf(message.getRepeatedFloatFieldList()[0]);
+    assertInf(message.getRepeatedFloatFieldList()[1]);
+    assertInf(message.getDefaultFloatField());
+    assertInf(message.getOptionalDoubleField());
+    assertInf(message.getRequiredDoubleField());
+    assertInf(message.getRepeatedDoubleFieldList()[0]);
+    assertInf(message.getRepeatedDoubleFieldList()[1]);
+    assertInf(message.getDefaultDoubleField());
+  });
+
+  it('testBooleansAreConvertedFromNumberInput', function() {
+    var assertBooleanFieldTrue = function(x) {
+      assertTrue(
+          'Expected ' + x + ' (' + goog.typeOf(x) + ') to be True.',
+          x === true);
+    };
+    var message = new proto.jspb.test.BooleanFields([1, 1, [true, 1]]);
+    assertBooleanFieldTrue(message.getOptionalBooleanField());
+    assertBooleanFieldTrue(message.getRequiredBooleanField());
+    assertBooleanFieldTrue(message.getRepeatedBooleanFieldList()[0]);
+    assertBooleanFieldTrue(message.getRepeatedBooleanFieldList()[1]);
+    assertBooleanFieldTrue(message.getDefaultBooleanField());
+
+    var assertBooleanFieldFalse = function(x) {
+      assertTrue(
+          'Expected ' + x + ' (' + goog.typeOf(x) + ') to be False.',
+          x === false);
+    };
+    message = new proto.jspb.test.BooleanFields([0, 0, [0, 0]]);
+    assertBooleanFieldFalse(message.getOptionalBooleanField());
+    assertBooleanFieldFalse(message.getRequiredBooleanField());
+    assertBooleanFieldFalse(message.getRepeatedBooleanFieldList()[0]);
+    assertBooleanFieldFalse(message.getRepeatedBooleanFieldList()[1]);
   });
 
   it('testExtensionReverseOrder', function() {

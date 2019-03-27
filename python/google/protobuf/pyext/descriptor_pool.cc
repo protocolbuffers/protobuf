@@ -70,7 +70,7 @@ namespace cdescriptor_pool {
 // Create a Python DescriptorPool object, but does not fill the "pool"
 // attribute.
 static PyDescriptorPool* _CreateDescriptorPool() {
-  PyDescriptorPool* cpool = PyObject_New(
+  PyDescriptorPool* cpool = PyObject_GC_New(
       PyDescriptorPool, &PyDescriptorPool_Type);
   if (cpool == NULL) {
     return NULL;
@@ -87,6 +87,8 @@ static PyDescriptorPool* _CreateDescriptorPool() {
     Py_DECREF(cpool);
     return NULL;
   }
+
+  PyObject_GC_Track(cpool);
 
   return cpool;
 }
@@ -165,7 +167,19 @@ static void Dealloc(PyObject* pself) {
   delete self->descriptor_options;
   delete self->database;
   delete self->pool;
-  Py_TYPE(self)->tp_free(reinterpret_cast<PyObject*>(self));
+  Py_TYPE(self)->tp_free(pself);
+}
+
+static int GcTraverse(PyObject* pself, visitproc visit, void* arg) {
+  PyDescriptorPool* self = reinterpret_cast<PyDescriptorPool*>(pself);
+  Py_VISIT(self->py_message_factory);
+  return 0;
+}
+
+static int GcClear(PyObject* pself) {
+  PyDescriptorPool* self = reinterpret_cast<PyDescriptorPool*>(pself);
+  Py_CLEAR(self->py_message_factory);
+  return 0;
 }
 
 static PyObject* FindMessageByName(PyObject* self, PyObject* arg) {
@@ -629,45 +643,45 @@ static PyMethodDef Methods[] = {
 }  // namespace cdescriptor_pool
 
 PyTypeObject PyDescriptorPool_Type = {
-  PyVarObject_HEAD_INIT(&PyType_Type, 0)
-  FULL_MODULE_NAME ".DescriptorPool",  // tp_name
-  sizeof(PyDescriptorPool),            // tp_basicsize
-  0,                                   // tp_itemsize
-  cdescriptor_pool::Dealloc,           // tp_dealloc
-  0,                                   // tp_print
-  0,                                   // tp_getattr
-  0,                                   // tp_setattr
-  0,                                   // tp_compare
-  0,                                   // tp_repr
-  0,                                   // tp_as_number
-  0,                                   // tp_as_sequence
-  0,                                   // tp_as_mapping
-  0,                                   // tp_hash
-  0,                                   // tp_call
-  0,                                   // tp_str
-  0,                                   // tp_getattro
-  0,                                   // tp_setattro
-  0,                                   // tp_as_buffer
-  Py_TPFLAGS_DEFAULT,                  // tp_flags
-  "A Descriptor Pool",                 // tp_doc
-  0,                                   // tp_traverse
-  0,                                   // tp_clear
-  0,                                   // tp_richcompare
-  0,                                   // tp_weaklistoffset
-  0,                                   // tp_iter
-  0,                                   // tp_iternext
-  cdescriptor_pool::Methods,           // tp_methods
-  0,                                   // tp_members
-  0,                                   // tp_getset
-  0,                                   // tp_base
-  0,                                   // tp_dict
-  0,                                   // tp_descr_get
-  0,                                   // tp_descr_set
-  0,                                   // tp_dictoffset
-  0,                                   // tp_init
-  0,                                   // tp_alloc
-  cdescriptor_pool::New,               // tp_new
-  PyObject_Del,                        // tp_free
+    PyVarObject_HEAD_INIT(&PyType_Type, 0) FULL_MODULE_NAME
+    ".DescriptorPool",                        // tp_name
+    sizeof(PyDescriptorPool),                 // tp_basicsize
+    0,                                        // tp_itemsize
+    cdescriptor_pool::Dealloc,                // tp_dealloc
+    0,                                        // tp_print
+    0,                                        // tp_getattr
+    0,                                        // tp_setattr
+    0,                                        // tp_compare
+    0,                                        // tp_repr
+    0,                                        // tp_as_number
+    0,                                        // tp_as_sequence
+    0,                                        // tp_as_mapping
+    0,                                        // tp_hash
+    0,                                        // tp_call
+    0,                                        // tp_str
+    0,                                        // tp_getattro
+    0,                                        // tp_setattro
+    0,                                        // tp_as_buffer
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC,  // tp_flags
+    "A Descriptor Pool",                      // tp_doc
+    cdescriptor_pool::GcTraverse,             // tp_traverse
+    cdescriptor_pool::GcClear,                // tp_clear
+    0,                                        // tp_richcompare
+    0,                                        // tp_weaklistoffset
+    0,                                        // tp_iter
+    0,                                        // tp_iternext
+    cdescriptor_pool::Methods,                // tp_methods
+    0,                                        // tp_members
+    0,                                        // tp_getset
+    0,                                        // tp_base
+    0,                                        // tp_dict
+    0,                                        // tp_descr_get
+    0,                                        // tp_descr_set
+    0,                                        // tp_dictoffset
+    0,                                        // tp_init
+    0,                                        // tp_alloc
+    cdescriptor_pool::New,                    // tp_new
+    PyObject_GC_Del,                          // tp_free
 };
 
 // This is the DescriptorPool which contains all the definitions from the

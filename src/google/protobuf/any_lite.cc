@@ -40,8 +40,8 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-string GetTypeUrl(StringPiece message_name,
-                  StringPiece type_url_prefix) {
+std::string GetTypeUrl(StringPiece message_name,
+                       StringPiece type_url_prefix) {
   if (!type_url_prefix.empty() &&
       type_url_prefix[type_url_prefix.size() - 1] == '/') {
     return StrCat(type_url_prefix, message_name);
@@ -101,10 +101,10 @@ bool AnyMetadata::InternalIs(StringPiece type_name) const {
          HasSuffixString(type_url, type_name);
 }
 
-bool ParseAnyTypeUrl(const string& type_url, string* url_prefix,
-                     string* full_type_name) {
+bool ParseAnyTypeUrl(const std::string& type_url, std::string* url_prefix,
+                     std::string* full_type_name) {
   size_t pos = type_url.find_last_of("/");
-  if (pos == string::npos || pos + 1 == type_url.size()) {
+  if (pos == std::string::npos || pos + 1 == type_url.size()) {
     return false;
   }
   if (url_prefix) {
@@ -114,7 +114,7 @@ bool ParseAnyTypeUrl(const string& type_url, string* url_prefix,
   return true;
 }
 
-bool ParseAnyTypeUrl(const string& type_url, string* full_type_name) {
+bool ParseAnyTypeUrl(const std::string& type_url, std::string* full_type_name) {
   return ParseAnyTypeUrl(type_url, nullptr, full_type_name);
 }
 

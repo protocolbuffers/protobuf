@@ -128,8 +128,7 @@ class PROTOC_EXPORT CommandLineInterface {
   //   protoc --foo_out=enable_bar:outdir
   // The text before the colon is passed to CodeGenerator::Generate() as the
   // "parameter".
-  void RegisterGenerator(const std::string& flag_name,
-                         CodeGenerator* generator,
+  void RegisterGenerator(const std::string& flag_name, CodeGenerator* generator,
                          const std::string& help_text);
 
   // Register a code generator for a language.
@@ -199,9 +198,7 @@ class PROTOC_EXPORT CommandLineInterface {
   // Provides some text which will be printed when the --version flag is
   // used.  The version of libprotoc will also be printed on the next line
   // after this text.
-  void SetVersionInfo(const std::string& text) {
-    version_info_ = text;
-  }
+  void SetVersionInfo(const std::string& text) { version_info_ = text; }
 
 
  private:
@@ -210,14 +207,16 @@ class PROTOC_EXPORT CommandLineInterface {
   class ErrorPrinter;
   class GeneratorContextImpl;
   class MemoryOutputStream;
-  typedef std::unordered_map<std::string, GeneratorContextImpl*> GeneratorContextMap;
+  typedef std::unordered_map<std::string, GeneratorContextImpl*>
+      GeneratorContextMap;
 
   // Clear state from previous Run().
   void Clear();
 
   // Remaps the proto file so that it is relative to one of the directories
   // in proto_path_.  Returns false if an error occurred.
-  bool MakeProtoProtoPathRelative(DiskSourceTree* source_tree, std::string* proto,
+  bool MakeProtoProtoPathRelative(DiskSourceTree* source_tree,
+                                  std::string* proto,
                                   DescriptorDatabase* fallback_database);
 
   // Remaps each file in input_files_ so that it is relative to one of the
@@ -238,7 +237,8 @@ class PROTOC_EXPORT CommandLineInterface {
 
   // Read an argument file and append the file's content to the list of
   // arguments. Return false if the file cannot be read.
-  bool ExpandArgumentFile(const std::string& file, std::vector<std::string>* arguments);
+  bool ExpandArgumentFile(const std::string& file,
+                          std::vector<std::string>* arguments);
 
   // Parses a command-line argument into a name/value pair.  Returns
   // true if the next argument in the argv should be used as the value,
@@ -388,7 +388,7 @@ class PROTOC_EXPORT CommandLineInterface {
   ErrorFormat error_format_;
 
   std::vector<std::pair<std::string, std::string> >
-      proto_path_;                   // Search path for proto files.
+      proto_path_;                        // Search path for proto files.
   std::vector<std::string> input_files_;  // Names of the input proto files.
 
   // Names of proto files which are allowed to be imported. Used by build
@@ -403,7 +403,7 @@ class PROTOC_EXPORT CommandLineInterface {
   // output_directives_ lists all the files we are supposed to output and what
   // generator to use for each.
   struct OutputDirective {
-    std::string name;                // E.g. "--foo_out"
+    std::string name;           // E.g. "--foo_out"
     CodeGenerator* generator;   // NULL for plugins
     std::string parameter;
     std::string output_location;

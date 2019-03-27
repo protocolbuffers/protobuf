@@ -46,25 +46,19 @@ namespace compiler {
 namespace ruby {
 
 // Forward decls.
-template<class numeric_type> std::string NumberToString(numeric_type value);
+template <class numeric_type>
+std::string NumberToString(numeric_type value);
 std::string GetRequireName(const std::string& proto_file);
-std::string LabelForField(google::protobuf::FieldDescriptor* field);
-std::string TypeName(google::protobuf::FieldDescriptor* field);
-bool GenerateMessage(const google::protobuf::Descriptor* message,
-                     google::protobuf::io::Printer* printer,
-		     std::string* error);
-void GenerateEnum(const google::protobuf::EnumDescriptor* en,
-                  google::protobuf::io::Printer* printer);
-void GenerateMessageAssignment(
-    const std::string& prefix,
-    const google::protobuf::Descriptor* message,
-    google::protobuf::io::Printer* printer);
-void GenerateEnumAssignment(
-    const std::string& prefix,
-    const google::protobuf::EnumDescriptor* en,
-    google::protobuf::io::Printer* printer);
-std::string DefaultValueForField(
-    const google::protobuf::FieldDescriptor* field);
+std::string LabelForField(FieldDescriptor* field);
+std::string TypeName(FieldDescriptor* field);
+bool GenerateMessage(const Descriptor* message, io::Printer* printer,
+                     std::string* error);
+void GenerateEnum(const EnumDescriptor* en, io::Printer* printer);
+void GenerateMessageAssignment(const std::string& prefix,
+                               const Descriptor* message, io::Printer* printer);
+void GenerateEnumAssignment(const std::string& prefix, const EnumDescriptor* en,
+                            io::Printer* printer);
+std::string DefaultValueForField(const FieldDescriptor* field);
 
 template<class numeric_type>
 std::string NumberToString(numeric_type value) {
@@ -82,7 +76,7 @@ std::string GetOutputFilename(const std::string& proto_file) {
   return GetRequireName(proto_file) + ".rb";
 }
 
-std::string LabelForField(const google::protobuf::FieldDescriptor* field) {
+std::string LabelForField(const FieldDescriptor* field) {
   switch (field->label()) {
     case FieldDescriptor::LABEL_OPTIONAL: return "optional";
     case FieldDescriptor::LABEL_REQUIRED: return "required";
@@ -91,7 +85,7 @@ std::string LabelForField(const google::protobuf::FieldDescriptor* field) {
   }
 }
 
-std::string TypeName(const google::protobuf::FieldDescriptor* field) {
+std::string TypeName(const FieldDescriptor* field) {
   switch (field->type()) {
     case FieldDescriptor::TYPE_INT32: return "int32";
     case FieldDescriptor::TYPE_INT64: return "int64";
@@ -124,12 +118,12 @@ string StringifySyntax(FileDescriptor::Syntax syntax) {
     case FileDescriptor::SYNTAX_UNKNOWN:
     default:
       GOOGLE_LOG(FATAL) << "Unsupported syntax; this generator only supports "
-	  "proto2 and proto3 syntax.";
+                           "proto2 and proto3 syntax.";
       return "";
   }
 }
 
-std::string DefaultValueForField(const google::protobuf::FieldDescriptor* field) {
+std::string DefaultValueForField(const FieldDescriptor* field) {
   switch(field->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32:
       return NumberToString(field->default_value_int32());
@@ -160,7 +154,7 @@ std::string DefaultValueForField(const google::protobuf::FieldDescriptor* field)
         for (int i = 0; i < default_str.length(); ++i) {
           // Write the hex form of each byte.
           os << "\\x" << std::hex << std::setw(2)
-	     << ((uint16) ((unsigned char) default_str.at(i)));
+             << ((uint16)((unsigned char)default_str.at(i)));
         }
         os << "\".force_encoding(\"ASCII-8BIT\")";
       }
@@ -171,9 +165,7 @@ std::string DefaultValueForField(const google::protobuf::FieldDescriptor* field)
   }
 }
 
-void GenerateField(const google::protobuf::FieldDescriptor* field,
-                   google::protobuf::io::Printer* printer) {
-
+void GenerateField(const FieldDescriptor* field, io::Printer* printer) {
   if (field->is_map()) {
     const FieldDescriptor* key_field =
         field->message_type()->FindFieldByNumber(1);
@@ -220,17 +212,15 @@ void GenerateField(const google::protobuf::FieldDescriptor* field,
     }
 
     if (field->has_default_value()) {
-      printer->Print(
-	", default: $default$",
-	"default", DefaultValueForField(field));
+      printer->Print(", default: $default$", "default",
+                     DefaultValueForField(field));
     }
 
     printer->Print("\n");
   }
 }
 
-void GenerateOneof(const google::protobuf::OneofDescriptor* oneof,
-                   google::protobuf::io::Printer* printer) {
+void GenerateOneof(const OneofDescriptor* oneof, io::Printer* printer) {
   printer->Print(
       "oneof :$name$ do\n",
       "name", oneof->name());
@@ -245,9 +235,8 @@ void GenerateOneof(const google::protobuf::OneofDescriptor* oneof,
   printer->Print("end\n");
 }
 
-bool GenerateMessage(const google::protobuf::Descriptor* message,
-                     google::protobuf::io::Printer* printer,
-		     std::string* error) {
+bool GenerateMessage(const Descriptor* message, io::Printer* printer,
+                     std::string* error) {
   if (message->extension_range_count() > 0 || message->extension_count() > 0) {
     *error = "Extensions are not yet supported for proto2 .proto files.";
     return false;
@@ -291,8 +280,7 @@ bool GenerateMessage(const google::protobuf::Descriptor* message,
   return true;
 }
 
-void GenerateEnum(const google::protobuf::EnumDescriptor* en,
-                  google::protobuf::io::Printer* printer) {
+void GenerateEnum(const EnumDescriptor* en, io::Printer* printer) {
   printer->Print(
     "add_enum \"$name$\" do\n",
     "name", en->full_name());
@@ -318,7 +306,7 @@ bool IsUpper(char ch) { return ch >= 'A' && ch <= 'Z'; }
 
 bool IsAlpha(char ch) { return IsLower(ch) || IsUpper(ch); }
 
-char ToUpper(char ch) { return IsLower(ch) ? (ch - 'a' + 'A') : ch; }
+char UpperChar(char ch) { return IsLower(ch) ? (ch - 'a' + 'A') : ch; }
 
 
 // Package names in protobuf are snake_case by convention, but Ruby module
@@ -335,7 +323,7 @@ std::string PackageToModule(const std::string& name) {
       next_upper = true;
     } else {
       if (next_upper) {
-        result.push_back(ToUpper(name[i]));
+        result.push_back(UpperChar(name[i]));
       } else {
         result.push_back(name[i]);
       }
@@ -355,7 +343,7 @@ std::string RubifyConstant(const std::string& name) {
   if (!ret.empty()) {
     if (IsLower(ret[0])) {
       // If it starts with a lowercase letter, capitalize it.
-      ret[0] = ToUpper(ret[0]);
+      ret[0] = UpperChar(ret[0]);
     } else if (!IsAlpha(ret[0])) {
       // Otherwise (e.g. if it begins with an underscore), we need to come up
       // with some prefix that starts with a capital letter. We could be smarter
@@ -369,11 +357,9 @@ std::string RubifyConstant(const std::string& name) {
   return ret;
 }
 
-void GenerateMessageAssignment(
-    const std::string& prefix,
-    const google::protobuf::Descriptor* message,
-    google::protobuf::io::Printer* printer) {
-
+void GenerateMessageAssignment(const std::string& prefix,
+                               const Descriptor* message,
+                               io::Printer* printer) {
   // Don't generate MapEntry messages -- we use the Ruby extension's native
   // support for map fields instead.
   if (message->options().map_entry()) {
@@ -398,10 +384,8 @@ void GenerateMessageAssignment(
   }
 }
 
-void GenerateEnumAssignment(
-    const std::string& prefix,
-    const google::protobuf::EnumDescriptor* en,
-    google::protobuf::io::Printer* printer) {
+void GenerateEnumAssignment(const std::string& prefix, const EnumDescriptor* en,
+                            io::Printer* printer) {
   printer->Print(
     "$prefix$$name$ = ",
     "prefix", prefix,
@@ -412,9 +396,7 @@ void GenerateEnumAssignment(
     "full_name", en->full_name());
 }
 
-int GeneratePackageModules(
-    const FileDescriptor* file,
-    google::protobuf::io::Printer* printer) {
+int GeneratePackageModules(const FileDescriptor* file, io::Printer* printer) {
   int levels = 0;
   bool need_change_to_module = true;
   std::string package_name;
@@ -466,9 +448,7 @@ int GeneratePackageModules(
   return levels;
 }
 
-void EndPackageModules(
-    int levels,
-    google::protobuf::io::Printer* printer) {
+void EndPackageModules(int levels, io::Printer* printer) {
   while (levels > 0) {
     levels--;
     printer->Outdent();

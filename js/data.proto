@@ -32,10 +32,10 @@
 
 syntax = "proto2";
 
+package jspb.test;
+
 option java_package = "com.google.apps.jspb.proto";
 option java_multiple_files = true;
-
-package jspb.test;
 
 // legacy data, must be nested
 message data {
@@ -48,4 +48,3 @@ message data {
 message UnnestedData {
   required string str = 1;
 }
-

@@ -84,7 +84,7 @@ Subprocess::~Subprocess() {
   }
 }
 
-void Subprocess::Start(const string& program, SearchMode search_mode) {
+void Subprocess::Start(const std::string& program, SearchMode search_mode) {
   // Create the pipes.
   HANDLE stdin_pipe_read;
   HANDLE stdin_pipe_write;
@@ -159,7 +159,7 @@ void Subprocess::Start(const string& program, SearchMode search_mode) {
 }
 
 bool Subprocess::Communicate(const Message& input, Message* output,
-                             string* error) {
+                             std::string* error) {
   if (process_start_error_ != ERROR_SUCCESS) {
     *error = Win32ErrorMessage(process_start_error_);
     return false;
@@ -167,8 +167,8 @@ bool Subprocess::Communicate(const Message& input, Message* output,
 
   GOOGLE_CHECK(child_handle_ != NULL) << "Must call Start() first.";
 
-  string input_data = input.SerializeAsString();
-  string output_data;
+  std::string input_data = input.SerializeAsString();
+  std::string output_data;
 
   int input_pos = 0;
 
@@ -270,7 +270,7 @@ bool Subprocess::Communicate(const Message& input, Message* output,
   return true;
 }
 
-string Subprocess::Win32ErrorMessage(DWORD error_code) {
+std::string Subprocess::Win32ErrorMessage(DWORD error_code) {
   char* message;
 
   // WTF?
@@ -280,7 +280,7 @@ string Subprocess::Win32ErrorMessage(DWORD error_code) {
                  (LPSTR)&message,  // NOT A BUG!
                  0, NULL);
 
-  string result = message;
+  std::string result = message;
   LocalFree(message);
   return result;
 }
@@ -301,7 +301,7 @@ Subprocess::~Subprocess() {
   }
 }
 
-void Subprocess::Start(const string& program, SearchMode search_mode) {
+void Subprocess::Start(const std::string& program, SearchMode search_mode) {
   // Note that we assume that there are no other threads, thus we don't have to
   // do crazy stuff like using socket pairs or avoiding libc locks.
 
@@ -359,7 +359,7 @@ void Subprocess::Start(const string& program, SearchMode search_mode) {
 }
 
 bool Subprocess::Communicate(const Message& input, Message* output,
-                             string* error) {
+                             std::string* error) {
   GOOGLE_CHECK_NE(child_stdin_, -1) << "Must call Start() first.";
 
   // The "sighandler_t" typedef is GNU-specific, so define our own.
@@ -368,8 +368,8 @@ bool Subprocess::Communicate(const Message& input, Message* output,
   // Make sure SIGPIPE is disabled so that if the child dies it doesn't kill us.
   SignalHandler* old_pipe_handler = signal(SIGPIPE, SIG_IGN);
 
-  string input_data = input.SerializeAsString();
-  string output_data;
+  std::string input_data = input.SerializeAsString();
+  std::string output_data;
 
   int input_pos = 0;
   int max_fd = std::max(child_stdin_, child_stdout_);

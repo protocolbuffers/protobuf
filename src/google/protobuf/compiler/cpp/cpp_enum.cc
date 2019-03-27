@@ -60,7 +60,7 @@ bool ShouldGenerateArraySize(const EnumDescriptor* descriptor) {
 }  // namespace
 
 EnumGenerator::EnumGenerator(const EnumDescriptor* descriptor,
-                             const std::map<string, string>& vars,
+                             const std::map<std::string, std::string>& vars,
                              const Options& options)
     : descriptor_(descriptor),
       classname_(ClassName(descriptor, false)),
@@ -68,10 +68,11 @@ EnumGenerator::EnumGenerator(const EnumDescriptor* descriptor,
       generate_array_size_(ShouldGenerateArraySize(descriptor)),
       variables_(vars) {
   variables_["classname"] = classname_;
-  variables_["classtype"] = QualifiedClassName(descriptor_);
+  variables_["classtype"] = QualifiedClassName(descriptor_, options);
   variables_["short_name"] = descriptor_->name();
   variables_["enumbase"] = options_.proto_h ? " : int" : "";
   variables_["nested_name"] = descriptor_->name();
+  variables_["resolved_name"] = ResolveKeyword(descriptor_->name());
   variables_["prefix"] =
       (descriptor_->containing_type() == NULL) ? "" : classname_ + "_";
 }
@@ -110,7 +111,7 @@ void EnumGenerator::GenerateDefinition(io::Printer* printer) {
     }
   }
 
-  if (HasPreservingUnknownEnumSemantics(descriptor_->file())) {
+  if (descriptor_->file()->syntax() == FileDescriptor::SYNTAX_PROTO3) {
     // For new enum semantics: generate min and max sentinel values equal to
     // INT32_MIN and INT32_MAX
     if (descriptor_->value_count() > 0) format(",\n");
@@ -148,7 +149,7 @@ void EnumGenerator::GenerateDefinition(io::Printer* printer) {
       // TODO(haberman): consider removing this in favor of the stricter
       // version below.  Would this break our compatibility guarantees?
       format(
-          "inline const $string$& $classname$_Name($classname$ value) {\n"
+          "inline const std::string& $classname$_Name($classname$ value) {\n"
           "  return ::$proto_ns$::internal::NameOfEnum(\n"
           "    $classname$_descriptor(), value);\n"
           "}\n");
@@ -158,7 +159,7 @@ void EnumGenerator::GenerateDefinition(io::Printer* printer) {
       // an integral type.
       format(
           "template<typename T>\n"
-          "inline const $string$& $classname$_Name(T enum_t_value) {\n"
+          "inline const std::string& $classname$_Name(T enum_t_value) {\n"
           "  static_assert(::std::is_same<T, $classname$>::value ||\n"
           "    ::std::is_integral<T>::value,\n"
           "    \"Incorrect type passed to function $classname$_Name.\");\n"
@@ -168,7 +169,7 @@ void EnumGenerator::GenerateDefinition(io::Printer* printer) {
     }
     format(
         "inline bool $classname$_Parse(\n"
-        "    const $string$& name, $classname$* value) {\n"
+        "    const std::string& name, $classname$* value) {\n"
         "  return ::$proto_ns$::internal::ParseNamedEnum<$classname$>(\n"
         "    $classname$_descriptor(), name, value);\n"
         "}\n");
@@ -192,13 +193,13 @@ void EnumGenerator::GenerateGetEnumDescriptorSpecializations(
 
 void EnumGenerator::GenerateSymbolImports(io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("typedef $classname$ $nested_name$;\n");
+  format("typedef $classname$ $resolved_name$;\n");
 
   for (int j = 0; j < descriptor_->value_count(); j++) {
-    string deprecated_attr = DeprecatedAttribute(
+    std::string deprecated_attr = DeprecatedAttribute(
         options_, descriptor_->value(j)->options().deprecated());
     format(
-        "$1$static constexpr $nested_name$ ${2$$3$$}$ =\n"
+        "$1$static constexpr $resolved_name$ ${2$$3$$}$ =\n"
         "  $classname$_$3$;\n",
         deprecated_attr, descriptor_->value(j),
         EnumValueName(descriptor_->value(j)));
@@ -208,9 +209,9 @@ void EnumGenerator::GenerateSymbolImports(io::Printer* printer) const {
       "static inline bool $nested_name$_IsValid(int value) {\n"
       "  return $classname$_IsValid(value);\n"
       "}\n"
-      "static constexpr $nested_name$ ${1$$nested_name$_MIN$}$ =\n"
+      "static constexpr $resolved_name$ ${1$$nested_name$_MIN$}$ =\n"
       "  $classname$_$nested_name$_MIN;\n"
-      "static constexpr $nested_name$ ${1$$nested_name$_MAX$}$ =\n"
+      "static constexpr $resolved_name$ ${1$$nested_name$_MAX$}$ =\n"
       "  $classname$_$nested_name$_MAX;\n",
       descriptor_);
   if (generate_array_size_) {
@@ -230,8 +231,8 @@ void EnumGenerator::GenerateSymbolImports(io::Printer* printer) const {
       // TODO(haberman): consider removing this in favor of the stricter
       // version below.  Would this break our compatibility guarantees?
       format(
-          "static inline const $string$& "
-          "$nested_name$_Name($nested_name$ value) {"
+          "static inline const std::string& "
+          "$nested_name$_Name($resolved_name$ value) {"
           "\n"
           "  return $classname$_Name(value);\n"
           "}\n");
@@ -241,16 +242,17 @@ void EnumGenerator::GenerateSymbolImports(io::Printer* printer) const {
       // an integral type.
       format(
           "template<typename T>\n"
-          "static inline const $string$& $nested_name$_Name(T enum_t_value) {\n"
-          "  static_assert(::std::is_same<T, $nested_name$>::value ||\n"
+          "static inline const std::string& $nested_name$_Name(T enum_t_value) "
+          "{\n"
+          "  static_assert(::std::is_same<T, $resolved_name$>::value ||\n"
           "    ::std::is_integral<T>::value,\n"
           "    \"Incorrect type passed to function $nested_name$_Name.\");\n"
           "  return $classname$_Name(enum_t_value);\n"
           "}\n");
     }
     format(
-        "static inline bool $nested_name$_Parse(const $string$& name,\n"
-        "    $nested_name$* value) {\n"
+        "static inline bool $nested_name$_Parse(const std::string& name,\n"
+        "    $resolved_name$* value) {\n"
         "  return $classname$_Parse(name, value);\n"
         "}\n");
   }
@@ -295,7 +297,7 @@ void EnumGenerator::GenerateMethods(int idx, io::Printer* printer) {
       "\n");
 
   if (descriptor_->containing_type() != NULL) {
-    string parent = ClassName(descriptor_->containing_type(), false);
+    std::string parent = ClassName(descriptor_->containing_type(), false);
     // Before C++17, we must define the static constants which were
     // declared in the header, to give the linker a place to put them.
     // But pre-2015 MSVC++ insists that we not.

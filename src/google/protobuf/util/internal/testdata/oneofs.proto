@@ -31,11 +31,11 @@
 // Proto to test proto3 oneofs.
 syntax = "proto3";
 
+package proto_util_converter.testing.oneofs;
+
 import "google/protobuf/any.proto";
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
-
-package google.protobuf.testing.oneofs;
 
 message OneOfsRequest {
   string value = 1;

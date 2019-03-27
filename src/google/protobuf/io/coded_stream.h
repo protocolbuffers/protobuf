@@ -710,6 +710,9 @@ class PROTOBUF_EXPORT CodedOutputStream {
   // Skips a number of bytes, leaving the bytes unmodified in the underlying
   // buffer.  Returns false if an underlying write error occurs.  This is
   // mainly useful with GetDirectBufferPointer().
+  // Note of caution, the skipped bytes may contain uninitialized data. The
+  // caller must make sure that the skipped bytes are properly initialized,
+  // otherwise you might leak bytes from your heap.
   bool Skip(int count);
 
   // Sets *data to point directly at the unwritten part of the
@@ -748,7 +751,8 @@ class PROTOBUF_EXPORT CodedOutputStream {
   // Like WriteString()  but writing directly to the target array.
   static uint8* WriteStringToArray(const std::string& str, uint8* target);
   // Write the varint-encoded size of str followed by str.
-  static uint8* WriteStringWithSizeToArray(const std::string& str, uint8* target);
+  static uint8* WriteStringWithSizeToArray(const std::string& str,
+                                           uint8* target);
 
 
   // Instructs the CodedOutputStream to allow the underlying
@@ -1289,8 +1293,8 @@ inline void CodedOutputStream::WriteRawMaybeAliased(
   }
 }
 
-inline uint8* CodedOutputStream::WriteStringToArray(
-    const std::string& str, uint8* target) {
+inline uint8* CodedOutputStream::WriteStringToArray(const std::string& str,
+                                                    uint8* target) {
   return WriteRawToArray(str.data(), static_cast<int>(str.size()), target);
 }
 

@@ -49,7 +49,7 @@
 // Then, if you used the protocol compiler to generate a class from the above
 // definition, you could use it like so:
 //
-//   string data;  // Will store a serialized version of the message.
+//   std::string data;  // Will store a serialized version of the message.
 //
 //   {
 //     // Create a message and serialize it.
@@ -541,7 +541,7 @@ class PROTOBUF_EXPORT Reflection {
   virtual bool   GetBool  (const Message& message,
                            const FieldDescriptor* field) const = 0;
   virtual std::string GetString(const Message& message,
-                           const FieldDescriptor* field) const = 0;
+                                const FieldDescriptor* field) const = 0;
   virtual const EnumValueDescriptor* GetEnum(
       const Message& message, const FieldDescriptor* field) const = 0;
 
@@ -561,21 +561,21 @@ class PROTOBUF_EXPORT Reflection {
   // Get a string value without copying, if possible.
   //
   // GetString() necessarily returns a copy of the string.  This can be
-  // inefficient when the string is already stored in a string object in the
-  // underlying message.  GetStringReference() will return a reference to the
-  // underlying string in this case.  Otherwise, it will copy the string into
-  // *scratch and return that.
+  // inefficient when the std::string is already stored in a std::string object
+  // in the underlying message.  GetStringReference() will return a reference to
+  // the underlying std::string in this case.  Otherwise, it will copy the
+  // string into *scratch and return that.
   //
   // Note:  It is perfectly reasonable and useful to write code like:
   //     str = reflection->GetStringReference(message, field, &str);
   //   This line would ensure that only one copy of the string is made
   //   regardless of the field's underlying representation.  When initializing
-  //   a newly-constructed string, though, it's just as fast and more readable
-  //   to use code like:
-  //     string str = reflection->GetString(message, field);
+  //   a newly-constructed string, though, it's just as fast and more
+  //   readable to use code like:
+  //     std::string str = reflection->GetString(message, field);
   virtual const std::string& GetStringReference(const Message& message,
-                                           const FieldDescriptor* field,
-                                           std::string* scratch) const = 0;
+                                                const FieldDescriptor* field,
+                                                std::string* scratch) const = 0;
 
 
   // Singular field mutators -----------------------------------------
@@ -595,8 +595,7 @@ class PROTOBUF_EXPORT Reflection {
                          const FieldDescriptor* field, double value) const = 0;
   virtual void SetBool  (Message* message,
                          const FieldDescriptor* field, bool   value) const = 0;
-  virtual void SetString(Message* message,
-                         const FieldDescriptor* field,
+  virtual void SetString(Message* message, const FieldDescriptor* field,
                          const std::string& value) const = 0;
   virtual void SetEnum  (Message* message,
                          const FieldDescriptor* field,
@@ -669,8 +668,8 @@ class PROTOBUF_EXPORT Reflection {
                                    const FieldDescriptor* field,
                                    int index) const = 0;
   virtual std::string GetRepeatedString(const Message& message,
-                                   const FieldDescriptor* field,
-                                   int index) const = 0;
+                                        const FieldDescriptor* field,
+                                        int index) const = 0;
   virtual const EnumValueDescriptor* GetRepeatedEnum(
       const Message& message,
       const FieldDescriptor* field, int index) const = 0;
@@ -688,8 +687,8 @@ class PROTOBUF_EXPORT Reflection {
 
   // See GetStringReference(), above.
   virtual const std::string& GetRepeatedStringReference(
-      const Message& message, const FieldDescriptor* field,
-      int index, std::string* scratch) const = 0;
+      const Message& message, const FieldDescriptor* field, int index,
+      std::string* scratch) const = 0;
 
 
   // Repeated field mutators -----------------------------------------
@@ -716,8 +715,7 @@ class PROTOBUF_EXPORT Reflection {
   virtual void SetRepeatedBool  (Message* message,
                                  const FieldDescriptor* field,
                                  int index, bool   value) const = 0;
-  virtual void SetRepeatedString(Message* message,
-                                 const FieldDescriptor* field,
+  virtual void SetRepeatedString(Message* message, const FieldDescriptor* field,
                                  int index, const std::string& value) const = 0;
   virtual void SetRepeatedEnum(Message* message,
                                const FieldDescriptor* field, int index,
@@ -755,8 +753,7 @@ class PROTOBUF_EXPORT Reflection {
                          const FieldDescriptor* field, double value) const = 0;
   virtual void AddBool  (Message* message,
                          const FieldDescriptor* field, bool   value) const = 0;
-  virtual void AddString(Message* message,
-                         const FieldDescriptor* field,
+  virtual void AddString(Message* message, const FieldDescriptor* field,
                          const std::string& value) const = 0;
   virtual void AddEnum  (Message* message,
                          const FieldDescriptor* field,
@@ -799,7 +796,7 @@ class PROTOBUF_EXPORT Reflection {
   //   CPPTYPE_FLOAT        float
   //   CPPTYPE_BOOL         bool
   //   CPPTYPE_ENUM         generated enum type or int32
-  //   CPPTYPE_STRING       string
+  //   CPPTYPE_STRING       std::string
   //   CPPTYPE_MESSAGE      generated message type or google::protobuf::Message
   //
   // A RepeatedFieldRef object can be copied and the resulted object will point
@@ -851,7 +848,7 @@ class PROTOBUF_EXPORT Reflection {
 
   // DEPRECATED. Please use GetRepeatedFieldRef().
   //
-  // for T = string, google::protobuf::internal::StringPieceField
+  // for T = std::string, google::protobuf::internal::StringPieceField
   //         google::protobuf::Message & descendants.
   template <typename T>
   PROTOBUF_DEPRECATED_MSG("Please use GetRepeatedFieldRef() instead")
@@ -860,7 +857,7 @@ class PROTOBUF_EXPORT Reflection {
 
   // DEPRECATED. Please use GetMutableRepeatedFieldRef().
   //
-  // for T = string, google::protobuf::internal::StringPieceField
+  // for T = std::string, google::protobuf::internal::StringPieceField
   //         google::protobuf::Message & descendants.
   template <typename T>
   PROTOBUF_DEPRECATED_MSG("Please use GetMutableRepeatedFieldRef() instead")
@@ -985,8 +982,8 @@ class PROTOBUF_EXPORT Reflection {
   friend class internal::MapFieldPrinterHelper;
   friend class internal::ReflectionAccessor;
 
-  // Special version for specialized implementations of string.  We can't call
-  // MutableRawRepeatedField directly here because we don't have access to
+  // Special version for specialized implementations of string.  We can't
+  // call MutableRawRepeatedField directly here because we don't have access to
   // FieldOptions::* which are defined in descriptor.pb.h.  Including that
   // file here is not possible because it would cause a circular include cycle.
   // We use 1 routine rather than 2 (const vs mutable) because it is private
@@ -1174,6 +1171,33 @@ T* DynamicCastToGenerated(Message* from) {
   return const_cast<T*>(DynamicCastToGenerated<T>(message_const));
 }
 
+// Call this function to ensure that this message's reflection is linked into
+// the binary:
+//
+//   google::protobuf::LinkMessageReflection<FooMessage>();
+//
+// This will ensure that the following lookup will succeed:
+//
+//   DescriptorPool::generated_pool()->FindMessageTypeByName("FooMessage");
+//
+// As a side-effect, it will also guarantee that anything else from the same
+// .proto file will also be available for lookup in the generated pool.
+//
+// This function does not actually register the message, so it does not need
+// to be called before the lookup.  However it does need to occur in a function
+// that cannot be stripped from the binary (ie. it must be reachable from main).
+//
+// Best practice is to call this function as close as possible to where the
+// reflection is actually needed.  This function is very cheap to call, so you
+// should not need to worry about its runtime overhead except in the tightest
+// of loops (on x86-64 it compiles into two "mov" instructions).
+template <typename T>
+void LinkMessageReflection() {
+  typedef const T& GetDefaultInstanceFunction();
+  GetDefaultInstanceFunction* volatile unused = &T::default_instance;
+  (void)&unused;  // Use address to avoid an extra load of volatile variable.
+}
+
 namespace internal {
 
 // Legacy functions, to preserve compatibility with existing callers.
@@ -1191,22 +1215,24 @@ T dynamic_cast_if_available(Message* from) {
 
 // =============================================================================
 // Implementation details for {Get,Mutable}RawRepeatedPtrField.  We provide
-// specializations for <string>, <StringPieceField> and <Message> and handle
-// everything else with the default template which will match any type having
-// a method with signature "static const google::protobuf::Descriptor* descriptor()".
-// Such a type presumably is a descendant of google::protobuf::Message.
+// specializations for <std::string>, <StringPieceField> and <Message> and
+// handle everything else with the default template which will match any type
+// having a method with signature "static const google::protobuf::Descriptor*
+// descriptor()". Such a type presumably is a descendant of google::protobuf::Message.
 
-template<>
-inline const RepeatedPtrField<std::string>& Reflection::GetRepeatedPtrField<std::string>(
+template <>
+inline const RepeatedPtrField<std::string>&
+Reflection::GetRepeatedPtrField<std::string>(
     const Message& message, const FieldDescriptor* field) const {
-  return *static_cast<RepeatedPtrField<std::string>* >(
+  return *static_cast<RepeatedPtrField<std::string>*>(
       MutableRawRepeatedString(const_cast<Message*>(&message), field, true));
 }
 
-template<>
-inline RepeatedPtrField<std::string>* Reflection::MutableRepeatedPtrField<std::string>(
+template <>
+inline RepeatedPtrField<std::string>*
+Reflection::MutableRepeatedPtrField<std::string>(
     Message* message, const FieldDescriptor* field) const {
-  return static_cast<RepeatedPtrField<std::string>* >(
+  return static_cast<RepeatedPtrField<std::string>*>(
       MutableRawRepeatedString(message, field, true));
 }
 

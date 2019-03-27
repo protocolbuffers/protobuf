@@ -32,6 +32,7 @@ package com.google.protobuf;
 
 import static com.google.protobuf.WireFormat.FIXED32_SIZE;
 import static com.google.protobuf.WireFormat.FIXED64_SIZE;
+import static com.google.protobuf.WireFormat.MAX_VARINT32_SIZE;
 import static com.google.protobuf.WireFormat.MAX_VARINT_SIZE;
 import static java.lang.Math.max;
 
@@ -1263,16 +1264,34 @@ public abstract class CodedOutputStream extends ByteOutput {
 
     @Override
     public final void writeUInt32NoTag(int value) throws IOException {
-      if (HAS_UNSAFE_ARRAY_OPERATIONS && spaceLeft() >= MAX_VARINT_SIZE) {
-        while (true) {
-          if ((value & ~0x7F) == 0) {
-            UnsafeUtil.putByte(buffer, position++, (byte) value);
-            return;
-          } else {
-            UnsafeUtil.putByte(buffer, position++, (byte) ((value & 0x7F) | 0x80));
-            value >>>= 7;
-          }
+      if (HAS_UNSAFE_ARRAY_OPERATIONS
+          && !Android.isOnAndroidDevice()
+          && spaceLeft() >= MAX_VARINT32_SIZE) {
+        if ((value & ~0x7F) == 0) {
+          UnsafeUtil.putByte(buffer, position++, (byte) value);
+          return;
         }
+        UnsafeUtil.putByte(buffer, position++, (byte) (value | 0x80));
+        value >>>= 7;
+        if ((value & ~0x7F) == 0) {
+          UnsafeUtil.putByte(buffer, position++, (byte) value);
+          return;
+        }
+        UnsafeUtil.putByte(buffer, position++, (byte) (value | 0x80));
+        value >>>= 7;
+        if ((value & ~0x7F) == 0) {
+          UnsafeUtil.putByte(buffer, position++, (byte) value);
+          return;
+        }
+        UnsafeUtil.putByte(buffer, position++, (byte) (value | 0x80));
+        value >>>= 7;
+        if ((value & ~0x7F) == 0) {
+          UnsafeUtil.putByte(buffer, position++, (byte) value);
+          return;
+        }
+        UnsafeUtil.putByte(buffer, position++, (byte) (value | 0x80));
+        value >>>= 7;
+        UnsafeUtil.putByte(buffer, position++, (byte) value);
       } else {
         try {
           while (true) {
@@ -2447,7 +2466,7 @@ public abstract class CodedOutputStream extends ByteOutput {
 
     @Override
     public void writeUInt32NoTag(int value) throws IOException {
-      flushIfNotAvailable(MAX_VARINT_SIZE);
+      flushIfNotAvailable(MAX_VARINT32_SIZE);
       bufferUInt32NoTag(value);
     }
 
@@ -2750,7 +2769,7 @@ public abstract class CodedOutputStream extends ByteOutput {
 
     @Override
     public void writeUInt32NoTag(int value) throws IOException {
-      flushIfNotAvailable(MAX_VARINT_SIZE);
+      flushIfNotAvailable(MAX_VARINT32_SIZE);
       bufferUInt32NoTag(value);
     }
 

@@ -73,7 +73,7 @@ Printer::~Printer() {
 
 bool Printer::GetSubstitutionRange(const char* varname,
                                    std::pair<size_t, size_t>* range) {
-  std::map<string, std::pair<size_t, size_t> >::const_iterator iter =
+  std::map<std::string, std::pair<size_t, size_t> >::const_iterator iter =
       substitutions_.find(varname);
   if (iter == substitutions_.end()) {
     GOOGLE_LOG(DFATAL) << " Undefined variable in annotation: " << varname;
@@ -89,7 +89,8 @@ bool Printer::GetSubstitutionRange(const char* varname,
 }
 
 void Printer::Annotate(const char* begin_varname, const char* end_varname,
-                       const string& file_path, const std::vector<int>& path) {
+                       const std::string& file_path,
+                       const std::vector<int>& path) {
   if (annotation_collector_ == NULL) {
     // Can't generate signatures with this Printer.
     return;
@@ -108,7 +109,7 @@ void Printer::Annotate(const char* begin_varname, const char* end_varname,
   }
 }
 
-void Printer::Print(const std::map<string, string>& variables,
+void Printer::Print(const std::map<std::string, std::string>& variables,
                     const char* text) {
   int size = strlen(text);
   int pos = 0;  // The number of bytes we've written so far.
@@ -142,13 +143,14 @@ void Printer::Print(const std::map<string, string>& variables,
       }
       int endpos = end - text;
 
-      string varname(text + pos, endpos - pos);
+      std::string varname(text + pos, endpos - pos);
       if (varname.empty()) {
         // Two delimiters in a row reduce to a literal delimiter character.
         WriteRaw(&variable_delimiter_, 1);
       } else {
         // Replace with the variable's value.
-        std::map<string, string>::const_iterator iter = variables.find(varname);
+        std::map<std::string, std::string>::const_iterator iter =
+            variables.find(varname);
         if (iter == variables.end()) {
           GOOGLE_LOG(DFATAL) << " Undefined variable: " << varname;
         } else {
@@ -156,7 +158,7 @@ void Printer::Print(const std::map<string, string>& variables,
             line_start_variables_.push_back(varname);
           }
           WriteRaw(iter->second.data(), iter->second.size());
-          std::pair<std::map<string, std::pair<size_t, size_t> >::iterator,
+          std::pair<std::map<std::string, std::pair<size_t, size_t> >::iterator,
                     bool>
               inserted = substitutions_.insert(std::make_pair(
                   varname,
@@ -193,7 +195,7 @@ void Printer::Outdent() {
   indent_.resize(indent_.size() - 2);
 }
 
-void Printer::PrintRaw(const string& data) {
+void Printer::PrintRaw(const std::string& data) {
   WriteRaw(data.data(), data.size());
 }
 
@@ -213,7 +215,7 @@ void Printer::WriteRaw(const char* data, int size) {
     if (failed_) return;
     // Fix up empty variables (e.g., "{") that should be annotated as
     // coming after the indent.
-    for (std::vector<string>::iterator i = line_start_variables_.begin();
+    for (std::vector<std::string>::iterator i = line_start_variables_.begin();
          i != line_start_variables_.end(); ++i) {
       substitutions_[*i].first += indent_.size();
       substitutions_[*i].second += indent_.size();
@@ -273,8 +275,8 @@ void Printer::IndentIfAtStart() {
   }
 }
 
-void Printer::FormatInternal(const std::vector<string>& args,
-                             const std::map<string, string>& vars,
+void Printer::FormatInternal(const std::vector<std::string>& args,
+                             const std::map<std::string, std::string>& vars,
                              const char* format) {
   auto save = format;
   int arg_index = 0;
@@ -304,9 +306,9 @@ void Printer::FormatInternal(const std::vector<string>& args,
 }
 
 const char* Printer::WriteVariable(
-    const std::vector<string>& args, const std::map<string, string>& vars,
-    const char* format, int* arg_index,
-    std::vector<AnnotationCollector::Annotation>* annotations) {
+    const std::vector<string>& args,
+    const std::map<std::string, std::string>& vars, const char* format,
+    int* arg_index, std::vector<AnnotationCollector::Annotation>* annotations) {
   auto start = format;
   auto end = strchr(format, '$');
   if (!end) {
@@ -353,9 +355,9 @@ const char* Printer::WriteVariable(
   }
   auto end_var = end;
   while (start_var < end_var && *(end_var - 1) == ' ') end_var--;
-  string var_name{start_var,
-                  static_cast<string::size_type>(end_var - start_var)};
-  string sub;
+  std::string var_name{
+      start_var, static_cast<std::string::size_type>(end_var - start_var)};
+  std::string sub;
   if (std::isdigit(var_name[0])) {
     GOOGLE_CHECK_EQ(var_name.size(), 1);  // No need for multi-digits
     int idx = var_name[0] - '1';   // Start counting at 1

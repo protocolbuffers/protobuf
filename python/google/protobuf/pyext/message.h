@@ -129,12 +129,13 @@ struct CMessageClass {
   const Descriptor* message_descriptor;
 
   // Owned reference, used to keep the pointer above alive.
+  // This reference must stay alive until all message pointers are destructed.
   PyObject* py_message_descriptor;
 
   // The Python MessageFactory used to create the class. It is needed to resolve
   // fields descriptors, including extensions fields; its C++ MessageFactory is
   // used to instantiate submessages.
-  // We own the reference, because it's important to keep the factory alive.
+  // This reference must stay alive until all message pointers are destructed.
   PyMessageFactory* py_message_factory;
 
   PyObject* AsPyObject() {
@@ -332,7 +333,7 @@ bool CheckAndSetString(
     bool append,
     int index);
 PyObject* ToStringObject(const FieldDescriptor* descriptor,
-                         const std::string& value);
+                         const string& value);
 
 // Check if the passed field descriptor belongs to the given message.
 // If not, return false and set a Python exception (a KeyError)
@@ -346,14 +347,12 @@ Message* PyMessage_GetMutableMessagePointer(PyObject* msg);
 
 bool InitProto2MessageModule(PyObject *m);
 
-#if LANG_CXX11
 // These are referenced by repeated_scalar_container, and must
 // be explicitly instantiated.
 extern template bool CheckAndGetInteger<int32>(PyObject*, int32*);
 extern template bool CheckAndGetInteger<int64>(PyObject*, int64*);
 extern template bool CheckAndGetInteger<uint32>(PyObject*, uint32*);
 extern template bool CheckAndGetInteger<uint64>(PyObject*, uint64*);
-#endif
 
 }  // namespace python
 }  // namespace protobuf

@@ -31,7 +31,7 @@
 // Author: kenton@google.com (Kenton Varda)
 
 syntax = "proto2";
-package google.protobuf.no_generic_services_test;
+package protobuf_unittest.no_generic_services_test;
 
 
 // *_generic_services are false by default.

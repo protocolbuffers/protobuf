@@ -497,6 +497,14 @@ class TextFormatParserTests(TextFormatBase):
     text_format.Parse(text, msg2)
     self.assertEqual(msg2.optional_string, u'café')
 
+  def testParseDoubleToFloat(self, message_module):
+    message = message_module.TestAllTypes()
+    text = ('repeated_float: 3.4028235e+39\n'
+            'repeated_float: 1.4028235e-39\n')
+    text_format.Parse(text, message)
+    self.assertEqual(message.repeated_float[0], float('inf'))
+    self.assertAlmostEqual(message.repeated_float[1], 1.4028235e-39)
+
   def testParseExotic(self, message_module):
     message = message_module.TestAllTypes()
     text = ('repeated_int64: -9223372036854775808\n'
@@ -789,6 +797,39 @@ class OnlyWorksWithProto2RightNowTests(TextFormatBase):
     self.CompareToGoldenFile(
         self.RemoveRedundantZeros(text_format.MessageToString(message)),
         'text_format_unittest_data_oneof_implemented.txt')
+
+  def testPrintUnknownFields(self):
+    message = unittest_pb2.TestAllTypes()
+    message.optional_int32 = 101
+    message.optional_double = 102.0
+    message.optional_string = u'hello'
+    message.optional_bytes = b'103'
+    message.optionalgroup.a = 104
+    message.optional_nested_message.bb = 105
+    all_data = message.SerializeToString()
+    empty_message = unittest_pb2.TestEmptyMessage()
+    empty_message.ParseFromString(all_data)
+    self.assertEqual('1: 101\n'
+                     '12: 4636878028842991616\n'
+                     '14: "hello"\n'
+                     '15: "103"\n'
+                     '16 {\n'
+                     '  17: 104\n'
+                     '}\n'
+                     '18 {\n'
+                     '  1: 105\n'
+                     '}\n',
+                     text_format.MessageToString(empty_message,
+                                                 print_unknown_fields=True))
+    self.assertEqual('1: 101 '
+                     '12: 4636878028842991616 '
+                     '14: "hello" '
+                     '15: "103" '
+                     '16 { 17: 104 } '
+                     '18 { 1: 105 }',
+                     text_format.MessageToString(empty_message,
+                                                 print_unknown_fields=True,
+                                                 as_one_line=True))
 
   def testPrintInIndexOrder(self):
     message = unittest_pb2.TestFieldOrderings()

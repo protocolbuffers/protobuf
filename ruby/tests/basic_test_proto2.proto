@@ -3,6 +3,8 @@ syntax = "proto2";
 package basic_test_proto2;
 
 import "google/protobuf/wrappers.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
 import "google/protobuf/struct.proto";
 
 message Foo {
@@ -133,6 +135,11 @@ message Wrapper {
   oneof a_oneof {
     string oneof_string = 10;
   }
+}
+
+message TimeMessage {
+  optional google.protobuf.Timestamp timestamp = 1;
+  optional google.protobuf.Duration duration = 2;
 }
 
 message Enumer {

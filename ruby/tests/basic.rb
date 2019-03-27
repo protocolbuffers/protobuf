@@ -358,6 +358,9 @@ module BasicTest
       assert_equal :proto3, file_descriptor.syntax
     end
 
+    # Ruby 2.5 changed to raise FrozenError instead of RuntimeError
+    FrozenErrorType = Gem::Version.new(RUBY_VERSION) < Gem::Version.new('2.5') ? RuntimeError : FrozenError
+
     def test_map_freeze
       m = proto_module::MapMessage.new
       m.map_string_int32['a'] = 5
@@ -369,10 +372,10 @@ module BasicTest
       assert m.map_string_int32.frozen?
       assert m.map_string_msg.frozen?
 
-      assert_raise(FrozenError) { m.map_string_int32['foo'] = 1 }
-      assert_raise(FrozenError) { m.map_string_msg['bar'] = proto_module::TestMessage2.new }
-      assert_raise(FrozenError) { m.map_string_int32.delete('a') }
-      assert_raise(FrozenError) { m.map_string_int32.clear }
+      assert_raise(FrozenErrorType) { m.map_string_int32['foo'] = 1 }
+      assert_raise(FrozenErrorType) { m.map_string_msg['bar'] = proto_module::TestMessage2.new }
+      assert_raise(FrozenErrorType) { m.map_string_int32.delete('a') }
+      assert_raise(FrozenErrorType) { m.map_string_int32.clear }
     end
   end
 end

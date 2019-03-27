@@ -128,7 +128,7 @@ int FieldSpaceUsed(const FieldDescriptor* field) {
         switch (field->options().ctype()) {
           default:  // TODO(kenton):  Support other string reps.
           case FieldOptions::STRING:
-            return sizeof(RepeatedPtrField<string>);
+            return sizeof(RepeatedPtrField<std::string>);
         }
         break;
     }
@@ -379,7 +379,7 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
           default:  // TODO(kenton):  Support other string reps.
           case FieldOptions::STRING:
             if (!field->is_repeated()) {
-              const string* default_value;
+              const std::string* default_value;
               if (is_prototype()) {
                 default_value = &field->default_value_string();
               } else {
@@ -391,7 +391,7 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
               ArenaStringPtr* asp = new(field_ptr) ArenaStringPtr();
               asp->UnsafeSetDefault(default_value);
             } else {
-              new (field_ptr) RepeatedPtrField<string>(arena_);
+              new (field_ptr) RepeatedPtrField<std::string>(arena_);
             }
             break;
         }
@@ -470,10 +470,9 @@ DynamicMessage::~DynamicMessage() {
           switch (field->options().ctype()) {
             default:
             case FieldOptions::STRING: {
-              const ::std::string* default_value =
+              const std::string* default_value =
                   &(reinterpret_cast<const ArenaStringPtr*>(
-                        reinterpret_cast<const uint8*>(
-                            type_info_->prototype) +
+                        reinterpret_cast<const uint8*>(type_info_->prototype) +
                         type_info_->offsets[i])
                         ->Get());
               reinterpret_cast<ArenaStringPtr*>(field_ptr)->Destroy(
@@ -511,8 +510,8 @@ DynamicMessage::~DynamicMessage() {
           switch (field->options().ctype()) {
             default:  // TODO(kenton):  Support other string reps.
             case FieldOptions::STRING:
-              reinterpret_cast<RepeatedPtrField<string>*>(field_ptr)
-                  ->~RepeatedPtrField<string>();
+              reinterpret_cast<RepeatedPtrField<std::string>*>(field_ptr)
+                  ->~RepeatedPtrField<std::string>();
               break;
           }
           break;
@@ -531,7 +530,7 @@ DynamicMessage::~DynamicMessage() {
       switch (field->options().ctype()) {
         default:  // TODO(kenton):  Support other string reps.
         case FieldOptions::STRING: {
-          const ::std::string* default_value =
+          const std::string* default_value =
               &(reinterpret_cast<const ArenaStringPtr*>(
                     type_info_->prototype->OffsetToPointer(
                         type_info_->offsets[i]))

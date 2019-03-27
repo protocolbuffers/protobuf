@@ -37,6 +37,7 @@
 #include <unordered_set>
 
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/type.pb.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/descriptor.h>
@@ -50,21 +51,6 @@
 #include <google/protobuf/stubs/hash.h>
 
 #include <google/protobuf/port_def.inc>
-
-namespace google {
-namespace protobuf {
-namespace io {
-class CodedOutputStream;
-}  // namespace io
-}  // namespace protobuf
-}  // namespace google
-
-namespace google {
-namespace protobuf {
-class Type;
-class Field;
-}  // namespace protobuf
-}  // namespace google
 
 namespace google {
 namespace protobuf {

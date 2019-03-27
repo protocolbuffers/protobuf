@@ -380,7 +380,7 @@ namespace internal {
 // arena-related "copy if on different arena" behavior if the necessary methods
 // exist on the contained type. In particular, we rely on MergeFrom() existing
 // as a general proxy for the fact that a copy will work, and we also provide a
-// specific override for string*.
+// specific override for std::string*.
 template <typename T>
 struct TypeImplementsMergeBehaviorProbeForMergeFrom {
   typedef char HasMerge;
@@ -412,7 +412,7 @@ struct TypeImplementsMergeBehavior :
 
 
 template <>
-struct TypeImplementsMergeBehavior< ::std::string> {
+struct TypeImplementsMergeBehavior<std::string> {
   typedef std::true_type type;
 };
 
@@ -724,13 +724,13 @@ inline void* GenericTypeHandler<MessageLite>::GetMaybeArenaPointer(
 template <>
 void GenericTypeHandler<MessageLite>::Merge(const MessageLite& from,
                                             MessageLite* to);
-template<>
+template <>
 inline void GenericTypeHandler<std::string>::Clear(std::string* value) {
   value->clear();
 }
-template<>
+template <>
 void GenericTypeHandler<std::string>::Merge(const std::string& from,
-                                       std::string* to);
+                                            std::string* to);
 
 // Declarations of the specialization as we cannot define them here, as the
 // header that defines ProtocolMessage depends on types defined in this header.
@@ -765,7 +765,8 @@ class StringTypeHandler {
   static inline std::string* New(Arena* arena, std::string&& value) {
     return Arena::Create<std::string>(arena, std::move(value));
   }
-  static inline std::string* NewFromPrototype(const std::string*, Arena* arena) {
+  static inline std::string* NewFromPrototype(const std::string*,
+                                              Arena* arena) {
     return New(arena);
   }
   static inline Arena* GetArena(std::string*) { return NULL; }
@@ -778,8 +779,10 @@ class StringTypeHandler {
     }
   }
   static inline void Clear(std::string* value) { value->clear(); }
-  static inline void Merge(const std::string& from, std::string* to) { *to = from; }
-  static size_t SpaceUsedLong(const std::string& value)  {
+  static inline void Merge(const std::string& from, std::string* to) {
+    *to = from;
+  }
+  static size_t SpaceUsedLong(const std::string& value) {
     return sizeof(value) + StringSpaceUsedExcludingSelfLong(value);
   }
 };
@@ -1944,8 +1947,7 @@ class RepeatedPtrField<Element>::TypeHandler
 
 template <>
 class RepeatedPtrField<std::string>::TypeHandler
-    : public internal::StringTypeHandler {
-};
+    : public internal::StringTypeHandler {};
 
 template <typename Element>
 inline RepeatedPtrField<Element>::RepeatedPtrField()
@@ -2280,14 +2282,23 @@ namespace internal {
 // This code based on net/proto/proto-array-internal.h by Jeffrey Yasskin
 // (jyasskin@google.com).
 template<typename Element>
-class RepeatedPtrIterator {
+class RepeatedPtrIterator
+    : public std::iterator<
+          std::random_access_iterator_tag, Element> {
  public:
   typedef RepeatedPtrIterator<Element> iterator;
-  typedef std::random_access_iterator_tag iterator_category;
+  typedef std::iterator<
+          std::random_access_iterator_tag, Element> superclass;
+
+  // Shadow the value_type in std::iterator<> because const_iterator::value_type
+  // needs to be T, not const T.
   typedef typename std::remove_const<Element>::type value_type;
-  typedef std::ptrdiff_t difference_type;
-  typedef Element* pointer;
-  typedef Element& reference;
+
+  // Let the compiler know that these are type names, so we don't have to
+  // write "typename" in front of them everywhere.
+  typedef typename superclass::reference reference;
+  typedef typename superclass::pointer pointer;
+  typedef typename superclass::difference_type difference_type;
 
   RepeatedPtrIterator() : it_(NULL) {}
   explicit RepeatedPtrIterator(void* const* it) : it_(it) {}
@@ -2299,7 +2310,7 @@ class RepeatedPtrIterator {
       : it_(other.it_) {
     // Force a compiler error if the other type is not convertible to ours.
     if (false) {
-      ::google::protobuf::implicit_cast<Element*>(static_cast<OtherElement*>(nullptr));
+      implicit_cast<Element*>(static_cast<OtherElement*>(nullptr));
     }
   }
 
@@ -2367,14 +2378,21 @@ class RepeatedPtrIterator {
 // referenced by the iterator.  It should either be "void *" for a mutable
 // iterator, or "const void* const" for a constant iterator.
 template <typename Element, typename VoidPtr>
-class RepeatedPtrOverPtrsIterator {
+class RepeatedPtrOverPtrsIterator
+    : public std::iterator<std::random_access_iterator_tag, Element> {
  public:
   typedef RepeatedPtrOverPtrsIterator<Element, VoidPtr> iterator;
-  typedef std::random_access_iterator_tag iterator_category;
+  typedef std::iterator<std::random_access_iterator_tag, Element> superclass;
+
+  // Shadow the value_type in std::iterator<> because const_iterator::value_type
+  // needs to be T, not const T.
   typedef typename std::remove_const<Element>::type value_type;
-  typedef std::ptrdiff_t difference_type;
-  typedef Element* pointer;
-  typedef Element& reference;
+
+  // Let the compiler know that these are type names, so we don't have to
+  // write "typename" in front of them everywhere.
+  typedef typename superclass::reference reference;
+  typedef typename superclass::pointer pointer;
+  typedef typename superclass::difference_type difference_type;
 
   RepeatedPtrOverPtrsIterator() : it_(NULL) {}
   explicit RepeatedPtrOverPtrsIterator(VoidPtr* it) : it_(it) {}

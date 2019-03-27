@@ -45,7 +45,6 @@ abstract interface.
 __author__ = 'gps@google.com (Gregory P. Smith)'
 
 
-import collections
 import copy
 import math
 import operator
@@ -54,6 +53,13 @@ import pydoc
 import six
 import sys
 import warnings
+
+try:
+  # Since python 3
+  import collections.abc as collections_abc
+except ImportError:
+  # Won't work after python 3.8
+  import collections as collections_abc
 
 try:
   import unittest2 as unittest  # PY26
@@ -345,6 +351,27 @@ class MessageTest(BaseTestCase):
     message.optional_float = -kMostNegExponentOneSigBit
     message.ParseFromString(message.SerializeToString())
     self.assertTrue(message.optional_float == -kMostNegExponentOneSigBit)
+
+    # Max 4 bytes float value
+    max_float = float.fromhex('0x1.fffffep+127')
+    message.optional_float = max_float
+    self.assertAlmostEqual(message.optional_float, max_float)
+    serialized_data = message.SerializeToString()
+    message.ParseFromString(serialized_data)
+    self.assertAlmostEqual(message.optional_float, max_float)
+
+    # Test set double to float field.
+    message.optional_float = 3.4028235e+39
+    self.assertEqual(message.optional_float, float('inf'))
+    serialized_data = message.SerializeToString()
+    message.ParseFromString(serialized_data)
+    self.assertEqual(message.optional_float, float('inf'))
+
+    message.optional_float = -3.4028235e+39
+    self.assertEqual(message.optional_float, float('-inf'))
+
+    message.optional_float = 1.4028235e-39
+    self.assertAlmostEqual(message.optional_float, 1.4028235e-39)
 
   def testExtremeDoubleValues(self, message_module):
     message = message_module.TestAllTypes()
@@ -732,9 +759,9 @@ class MessageTest(BaseTestCase):
 
   def testRepeatedFieldsAreSequences(self, message_module):
     m = message_module.TestAllTypes()
-    self.assertIsInstance(m.repeated_int32, collections.MutableSequence)
+    self.assertIsInstance(m.repeated_int32, collections_abc.MutableSequence)
     self.assertIsInstance(m.repeated_nested_message,
-                          collections.MutableSequence)
+                          collections_abc.MutableSequence)
 
   def testRepeatedFieldsNotHashable(self, message_module):
     m = message_module.TestAllTypes()
@@ -2318,11 +2345,11 @@ class Proto3Test(BaseTestCase):
 
   def testMapsAreMapping(self):
     msg = map_unittest_pb2.TestMap()
-    self.assertIsInstance(msg.map_int32_int32, collections.Mapping)
-    self.assertIsInstance(msg.map_int32_int32, collections.MutableMapping)
-    self.assertIsInstance(msg.map_int32_foreign_message, collections.Mapping)
+    self.assertIsInstance(msg.map_int32_int32, collections_abc.Mapping)
+    self.assertIsInstance(msg.map_int32_int32, collections_abc.MutableMapping)
+    self.assertIsInstance(msg.map_int32_foreign_message, collections_abc.Mapping)
     self.assertIsInstance(msg.map_int32_foreign_message,
-                          collections.MutableMapping)
+                          collections_abc.MutableMapping)
 
   def testMapsCompare(self):
     msg = map_unittest_pb2.TestMap()

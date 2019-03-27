@@ -494,7 +494,7 @@ void Message_construct(zval* msg, zval* array_wrapper) {
       ZVAL_OBJ(submsg, desc->klass->create_object(desc->klass TSRMLS_CC));
       Message_construct(submsg, NULL);
       MessageHeader* to = UNBOX(MessageHeader, submsg);
-      const upb_filedef *file = upb_def_file(upb_msgdef_upcast(submsgdef));
+      const upb_filedef *file = upb_msgdef_file(submsgdef);
       if (!strcmp(upb_filedef_name(file), "google/protobuf/wrappers.proto") &&
           Z_TYPE_P(CACHED_PTR_TO_ZVAL_PTR((CACHED_VALUE*)value)) != IS_OBJECT) {
         const upb_fielddef *value_field = upb_msgdef_itof(submsgdef, 1);

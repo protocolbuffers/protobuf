@@ -54,12 +54,10 @@ namespace java {
 
 namespace {
 
-void SetEnumVariables(const FieldDescriptor* descriptor,
-                      int messageBitIndex,
-                      int builderBitIndex,
-                      const FieldGeneratorInfo* info,
+void SetEnumVariables(const FieldDescriptor* descriptor, int messageBitIndex,
+                      int builderBitIndex, const FieldGeneratorInfo* info,
                       ClassNameResolver* name_resolver,
-                      std::map<string, string>* variables) {
+                      std::map<std::string, std::string>* variables) {
   SetCommonFieldVariables(descriptor, info, variables);
 
   (*variables)["type"] =
@@ -369,7 +367,7 @@ GenerateHashCode(io::Printer* printer) const {
     "hash = (53 * hash) + $name$_;\n");
 }
 
-string ImmutableEnumFieldGenerator::GetBoxedType() const {
+std::string ImmutableEnumFieldGenerator::GetBoxedType() const {
   return name_resolver_->GetImmutableClassName(descriptor_->enum_type());
 }
 
@@ -996,7 +994,7 @@ GenerateHashCode(io::Printer* printer) const {
     "}\n");
 }
 
-string RepeatedImmutableEnumFieldGenerator::GetBoxedType() const {
+std::string RepeatedImmutableEnumFieldGenerator::GetBoxedType() const {
   return name_resolver_->GetImmutableClassName(descriptor_->enum_type());
 }
 

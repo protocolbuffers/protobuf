@@ -51,7 +51,7 @@ namespace {
 // Ordinarily a static_cast is enough to cast google::protobuf::MessageLite* to a class
 // deriving from it, but we need a reinterpret_cast in cases where the generated
 // message is forward-declared but its full definition is not visible.
-string StaticCast(const string& type, const string& expression,
+string StaticCast(const std::string& type, const std::string& expression,
                   bool implicit_weak_field) {
   if (implicit_weak_field) {
     return "static_cast< " + type + " >(" + expression + ")";
@@ -60,7 +60,7 @@ string StaticCast(const string& type, const string& expression,
   }
 }
 
-string ReinterpretCast(const string& type, const string& expression,
+string ReinterpretCast(const std::string& type, const std::string& expression,
                        bool implicit_weak_field) {
   if (implicit_weak_field) {
     return "reinterpret_cast< " + type + " >(" + expression + ")";
@@ -71,16 +71,17 @@ string ReinterpretCast(const string& type, const string& expression,
 
 void SetMessageVariables(const FieldDescriptor* descriptor,
                          const Options& options, bool implicit_weak,
-                         std::map<string, string>* variables) {
+                         std::map<std::string, std::string>* variables) {
   SetCommonFieldVariables(descriptor, variables, options);
-  (*variables)["type"] = FieldMessageTypeName(descriptor);
+  (*variables)["type"] = FieldMessageTypeName(descriptor, options);
   (*variables)["casted_member"] = ReinterpretCast(
       (*variables)["type"] + "*", (*variables)["name"] + "_", implicit_weak);
   (*variables)["type_default_instance"] =
-      DefaultInstanceName(descriptor->message_type());
+      DefaultInstanceName(descriptor->message_type(), options);
   (*variables)["type_reference_function"] =
       implicit_weak
-          ? ("  " + ReferenceFunctionName(descriptor->message_type()) + "();\n")
+          ? ("  " + ReferenceFunctionName(descriptor->message_type(), options) +
+             "();\n")
           : "";
   (*variables)["stream_writer"] =
       (*variables)["declared_type"] +

@@ -166,7 +166,8 @@ def do_test(request):
         return response
 
     elif request.requested_output_format == conformance_pb2.TEXT_FORMAT:
-      response.text_payload = text_format.MessageToString(test_message)
+      response.text_payload = text_format.MessageToString(
+          test_message, print_unknown_fields=request.print_unknown_fields)
 
   except Exception as e:
     response.runtime_error = str(e)

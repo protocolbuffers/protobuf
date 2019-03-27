@@ -59,9 +59,8 @@ class TestGenerator : public CodeGenerator {
   ~TestGenerator() {}
 
   virtual bool Generate(const FileDescriptor* file,
-                        const string& parameter,
-                        GeneratorContext* context,
-                        string* error) const {
+                        const std::string& parameter, GeneratorContext* context,
+                        std::string* error) const {
     TryInsert("test_pb2.py", "imports", context);
     TryInsert("test_pb2.py", "module_scope", context);
     TryInsert("test_pb2.py", "class_scope:foo.Bar", context);
@@ -69,7 +68,8 @@ class TestGenerator : public CodeGenerator {
     return true;
   }
 
-  void TryInsert(const string& filename, const string& insertion_point,
+  void TryInsert(const std::string& filename,
+                 const std::string& insertion_point,
                  GeneratorContext* context) const {
     std::unique_ptr<io::ZeroCopyOutputStream> output(
         context->OpenForInsert(filename, insertion_point));
@@ -98,9 +98,9 @@ TEST(PythonPluginTest, PluginTest) {
   cli.RegisterGenerator("--python_out", &python_generator, "");
   cli.RegisterGenerator("--test_out", &test_generator, "");
 
-  string proto_path = "-I" + TestTempDir();
-  string python_out = "--python_out=" + TestTempDir();
-  string test_out = "--test_out=" + TestTempDir();
+  std::string proto_path = "-I" + TestTempDir();
+  std::string python_out = "--python_out=" + TestTempDir();
+  std::string test_out = "--test_out=" + TestTempDir();
 
   const char* argv[] = {
     "protoc",
@@ -137,25 +137,25 @@ TEST(PythonPluginTest, ImportTest) {
   cli.SetInputsAreProtoPathRelative(true);
   python::Generator python_generator;
   cli.RegisterGenerator("--python_out", &python_generator, "");
-  string proto_path = "-I" + TestTempDir();
-  string python_out = "--python_out=" + TestTempDir();
+  std::string proto_path = "-I" + TestTempDir();
+  std::string python_out = "--python_out=" + TestTempDir();
   const char* argv[] = {"protoc", proto_path.c_str(), "-I.", python_out.c_str(),
                         "test1.proto"};
   ASSERT_EQ(0, cli.Run(5, argv));
 
   // Loop over the lines of the generated code and verify that we find an
   // ordinary Python import but do not find the string "importlib".
-  string output;
+  std::string output;
   GOOGLE_CHECK_OK(File::GetContents(TestTempDir() + "/test1_pb2.py", &output,
                              true));
-  std::vector<string> lines = Split(output, "\n");
-  string expected_import = "import test2_pb2";
+  std::vector<std::string> lines = Split(output, "\n");
+  std::string expected_import = "import test2_pb2";
   bool found_expected_import = false;
   for (int i = 0; i < lines.size(); ++i) {
-    if (lines[i].find(expected_import) != string::npos) {
+    if (lines[i].find(expected_import) != std::string::npos) {
       found_expected_import = true;
     }
-    EXPECT_EQ(string::npos, lines[i].find("importlib"));
+    EXPECT_EQ(std::string::npos, lines[i].find("importlib"));
   }
   EXPECT_TRUE(found_expected_import);
 }
