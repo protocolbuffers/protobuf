@@ -42,6 +42,12 @@ def lua_cclibrary(name, srcs, hdrs = [], deps = [], luadeps = []):
         name = so_rule,
         linkshared = True,
         deps = [_librule(name)],
+            linkopts = select({
+        ":darwin": [
+            "-undefined dynamic_lookup",
+        ],
+        "//conditions:default": [],
+    })
     )
 
     native.genrule(
@@ -196,7 +202,6 @@ def _upb_amalgamation(ctx):
     )
 
 upb_amalgamation = rule(
-    implementation = _upb_amalgamation,
     attrs = {
         "amalgamator": attr.label(
             executable = True,
@@ -205,6 +210,7 @@ upb_amalgamation = rule(
         "libs": attr.label_list(aspects = [_file_list_aspect]),
         "outs": attr.output_list(),
     },
+    implementation = _upb_amalgamation,
 )
 
 is_bazel = not hasattr(native, "genmpm")
@@ -268,7 +274,6 @@ def _upb_proto_reflection_library_srcs_impl(ctx):
     return _upb_proto_srcs_impl(ctx, ".upbdefs")
 
 _upb_proto_library_srcs = rule(
-    implementation = _upb_proto_library_srcs_impl,
     attrs = {
         "upbc": attr.label(
             executable = True,
@@ -281,6 +286,7 @@ _upb_proto_library_srcs = rule(
         ),
         "deps": attr.label_list(),
     },
+    implementation = _upb_proto_library_srcs_impl,
 )
 
 def upb_proto_library(name, deps, upbc):
@@ -298,7 +304,6 @@ def upb_proto_library(name, deps, upbc):
     )
 
 _upb_proto_reflection_library_srcs = rule(
-    implementation = _upb_proto_reflection_library_srcs_impl,
     attrs = {
         "upbc": attr.label(
             executable = True,
@@ -311,6 +316,7 @@ _upb_proto_reflection_library_srcs = rule(
         ),
         "deps": attr.label_list(),
     },
+    implementation = _upb_proto_reflection_library_srcs_impl,
 )
 
 def upb_proto_reflection_library(name, deps, upbc):
