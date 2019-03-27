@@ -40,41 +40,10 @@
 namespace google {
 namespace protobuf {
 
-// MSVC++ 2005 and older compilers think the header declaration was a
-// definition, and erroneously flag these as a duplicate definition.
-#if defined(COMPILER_MSVC) || __cpluscplus < 201103L
-
 #define DEF_COMMON_LIMITS(Type)
 #define DEF_UNSIGNED_INT_LIMITS(Type)
 #define DEF_SIGNED_INT_LIMITS(Type)
 #define DEF_PRECISION_LIMITS(Type)
-
-#else
-
-#define DEF_COMMON_LIMITS(Type) \
-const bool MathLimits<Type>::kIsSigned; \
-const bool MathLimits<Type>::kIsInteger; \
-const int MathLimits<Type>::kMin10Exp; \
-const int MathLimits<Type>::kMax10Exp;
-
-#define DEF_UNSIGNED_INT_LIMITS(Type) \
-DEF_COMMON_LIMITS(Type) \
-const Type MathLimits<Type>::kPosMin; \
-const Type MathLimits<Type>::kPosMax; \
-const Type MathLimits<Type>::kMin; \
-const Type MathLimits<Type>::kMax; \
-const Type MathLimits<Type>::kEpsilon; \
-const Type MathLimits<Type>::kStdError;
-
-#define DEF_SIGNED_INT_LIMITS(Type) \
-DEF_UNSIGNED_INT_LIMITS(Type) \
-const Type MathLimits<Type>::kNegMin; \
-const Type MathLimits<Type>::kNegMax;
-
-#define DEF_PRECISION_LIMITS(Type) \
-const int MathLimits<Type>::kPrecisionDigits;
-
-#endif  // not COMPILER_MSVC
 
 // http://en.wikipedia.org/wiki/Quadruple_precision_floating-point_format#Double-double_arithmetic
 // With some compilers (gcc 4.6.x) on some platforms (powerpc64),
