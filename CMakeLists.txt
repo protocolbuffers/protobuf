@@ -62,29 +62,43 @@ enable_testing()
 add_library(upb
   google/protobuf/descriptor.upb.c
   upb/decode.c
-  upb/def.c
   upb/encode.c
-  upb/handlers.c
-  upb/handlers-inl.h
   upb/msg.c
-  upb/msgfactory.c
   upb/port_def.inc
   upb/port_undef.inc
-  upb/sink.c
-  upb/structs.int.h
   upb/table.c
   upb/table.int.h
   upb/upb.c
   google/protobuf/descriptor.upb.h
   upb/decode.h
-  upb/def.h
   upb/encode.h
   upb/generated_util.h
-  upb/handlers.h
   upb/msg.h
-  upb/msgfactory.h
-  upb/sink.h
   upb/upb.h)
+add_library(reflection
+  upb/def.c
+  upb/msgfactory.c
+  upb/def.h
+  upb/msgfactory.h)
+target_link_libraries(reflection
+  upb)
+add_library(table INTERFACE)
+target_link_libraries(table INTERFACE
+  upb)
+add_library(legacy_msg_reflection
+  upb/legacy_msg_reflection.c
+  upb/legacy_msg_reflection.h)
+target_link_libraries(legacy_msg_reflection
+  upb)
+add_library(handlers
+  upb/handlers.c
+  upb/handlers-inl.h
+  upb/sink.c
+  upb/handlers.h
+  upb/sink.h)
+target_link_libraries(handlers
+  reflection
+  upb)
 add_library(upb_pb
   upb/pb/compile_decoder.c
   upb/pb/decoder.c
@@ -93,11 +107,12 @@ add_library(upb_pb
   upb/pb/textprinter.c
   upb/pb/varint.c
   upb/pb/varint.int.h
-  upb/table.int.h
   upb/pb/decoder.h
   upb/pb/encoder.h
   upb/pb/textprinter.h)
 target_link_libraries(upb_pb
+  handlers
+  table
   upb)
 add_library(upb_json
   upb/json/parser.c

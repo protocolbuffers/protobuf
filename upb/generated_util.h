@@ -8,7 +8,6 @@
 
 #include <stdint.h>
 #include "upb/msg.h"
-#include "upb/structs.int.h"
 
 #define PTR_AT(msg, ofs, type) (type*)((const char*)msg + ofs)
 

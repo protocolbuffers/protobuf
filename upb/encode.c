@@ -1,9 +1,11 @@
 /* We encode backwards, to avoid pre-computing lengths (one-pass encode). */
 
-#include <string.h>
-#include "upb/upb.h"
 #include "upb/encode.h"
-#include "upb/structs.int.h"
+
+#include <string.h>
+
+#include "upb/msg.h"
+#include "upb/upb.h"
 
 #define UPB_PB_VARINT_MAX_LEN 10
 #define CHK(x) do { if (!(x)) { return false; } } while(0)

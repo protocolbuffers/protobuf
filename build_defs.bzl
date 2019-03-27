@@ -329,7 +329,7 @@ def upb_proto_reflection_library(name, deps, upbc):
     native.cc_library(
         name = name,
         srcs = [":" + srcs_rule],
-        deps = [":upb"],
+        deps = [":upb", ":reflection"],
         copts = ["-Ibazel-out/k8-fastbuild/bin"],
     )
 

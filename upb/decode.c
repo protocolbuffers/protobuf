@@ -2,7 +2,6 @@
 #include <string.h>
 #include "upb/upb.h"
 #include "upb/decode.h"
-#include "upb/structs.int.h"
 
 /* Maps descriptor type -> upb field type.  */
 const uint8_t upb_desctype_to_fieldtype[] = {
@@ -164,7 +163,7 @@ static bool upb_skip_unknownfielddata(upb_decstate *d, upb_decframe *frame,
   return false;
 }
 
-static bool upb_array_grow(upb_array *arr, size_t elements) {
+static bool upb_array_grow(upb_array *arr, size_t elements, size_t elem_size) {
   size_t needed = arr->len + elements;
   size_t new_size = UPB_MAX(arr->size, 8);
   size_t new_bytes;
@@ -176,8 +175,8 @@ static bool upb_array_grow(upb_array *arr, size_t elements) {
     new_size *= 2;
   }
 
-  old_bytes = arr->len * arr->element_size;
-  new_bytes = new_size * arr->element_size;
+  old_bytes = arr->len * elem_size;
+  new_bytes = new_size * elem_size;
   new_data = upb_realloc(alloc, arr->data, old_bytes, new_bytes);
   CHK(new_data);
 
@@ -186,17 +185,23 @@ static bool upb_array_grow(upb_array *arr, size_t elements) {
   return true;
 }
 
-static void *upb_array_reserve(upb_array *arr, size_t elements) {
+static void *upb_array_reserve(upb_array *arr, size_t elements,
+                               size_t elem_size) {
   if (arr->size - arr->len < elements) {
-    CHK(upb_array_grow(arr, elements));
+    if (!upb_array_grow(arr, elements, elem_size)) return NULL;
   }
-  return (char*)arr->data + (arr->len * arr->element_size);
+  return (char*)arr->data + (arr->len * elem_size);
 }
 
-static void *upb_array_add(upb_array *arr, size_t elements) {
-  void *ret = upb_array_reserve(arr, elements);
+bool upb_array_add(upb_array *arr, size_t elements, size_t elem_size,
+                   const void *data) {
+  void *dest = upb_array_reserve(arr, elements, elem_size);
+
+  CHK(dest);
   arr->len += elements;
-  return ret;
+  memcpy(dest, data, elements * elem_size);
+
+  return true;
 }
 
 static upb_array *upb_getarr(upb_decframe *frame,
@@ -234,17 +239,20 @@ static void upb_setoneofcase(upb_decframe *frame,
   upb_set32(frame->msg, ~field->presence, field->number);
 }
 
-static char *upb_decode_prepareslot(upb_decframe *frame,
-                                    const upb_msglayout_field *field) {
+static bool upb_decode_addval(upb_decframe *frame,
+                               const upb_msglayout_field *field, void *val,
+                               size_t size) {
   char *field_mem = frame->msg + field->offset;
   upb_array *arr;
 
   if (field->label == UPB_LABEL_REPEATED) {
     arr = upb_getorcreatearr(frame, field);
-    field_mem = upb_array_reserve(arr, 1);
+    field_mem = upb_array_reserve(arr, 1, size);
+    CHK(field_mem);
   }
 
-  return field_mem;
+  memcpy(field_mem, val, size);
+  return true;
 }
 
 static void upb_decode_setpresent(upb_decframe *frame,
@@ -264,21 +272,15 @@ static bool upb_decode_submsg(upb_decstate *d, upb_decframe *frame,
                               const char *limit,
                               const upb_msglayout_field *field,
                               int group_number) {
-  char *submsg_slot = upb_decode_prepareslot(frame, field);
-  char *submsg = *(void **)submsg_slot;
-  const upb_msglayout *subm;
+  upb_msg **submsg = (void*)(frame->msg + field->offset);
+  const upb_msglayout *subm = frame->m->submsgs[field->submsg_index];
 
-  subm = frame->m->submsgs[field->submsg_index];
-  UPB_ASSERT(subm);
-
-  if (!submsg) {
-    submsg = upb_msg_new(subm, upb_msg_arena(frame->msg));
-    CHK(submsg);
-    *(void**)submsg_slot = submsg;
+  if (!*submsg) {
+    *submsg = upb_msg_new(subm, upb_msg_arena(frame->msg));
+    CHK(*submsg);
   }
 
-  upb_decode_message(d, limit, group_number, submsg, subm);
-
+  upb_decode_message(d, limit, group_number, *submsg, subm);
   return true;
 }
 
@@ -286,37 +288,33 @@ static bool upb_decode_varintfield(upb_decstate *d, upb_decframe *frame,
                                    const char *field_start,
                                    const upb_msglayout_field *field) {
   uint64_t val;
-  void *field_mem;
-
-  field_mem = upb_decode_prepareslot(frame, field);
-  CHK(field_mem);
   CHK(upb_decode_varint(&d->ptr, frame->limit, &val));
 
-  switch ((upb_descriptortype_t)field->descriptortype) {
+  switch (field->descriptortype) {
     case UPB_DESCRIPTOR_TYPE_INT64:
     case UPB_DESCRIPTOR_TYPE_UINT64:
-      memcpy(field_mem, &val, sizeof(val));
+      CHK(upb_decode_addval(frame, field, &val, sizeof(val)));
       break;
     case UPB_DESCRIPTOR_TYPE_INT32:
     case UPB_DESCRIPTOR_TYPE_UINT32:
     case UPB_DESCRIPTOR_TYPE_ENUM: {
       uint32_t val32 = val;
-      memcpy(field_mem, &val32, sizeof(val32));
+      CHK(upb_decode_addval(frame, field, &val32, sizeof(val32)));
       break;
     }
     case UPB_DESCRIPTOR_TYPE_BOOL: {
       bool valbool = val != 0;
-      memcpy(field_mem, &valbool, sizeof(valbool));
+      CHK(upb_decode_addval(frame, field, &valbool, sizeof(valbool)));
       break;
     }
     case UPB_DESCRIPTOR_TYPE_SINT32: {
       int32_t decoded = upb_zzdecode_32(val);
-      memcpy(field_mem, &decoded, sizeof(decoded));
+      CHK(upb_decode_addval(frame, field, &decoded, sizeof(decoded)));
       break;
     }
     case UPB_DESCRIPTOR_TYPE_SINT64: {
       int64_t decoded = upb_zzdecode_64(val);
-      memcpy(field_mem, &decoded, sizeof(decoded));
+      CHK(upb_decode_addval(frame, field, &decoded, sizeof(decoded)));
       break;
     }
     default:
@@ -330,18 +328,14 @@ static bool upb_decode_varintfield(upb_decstate *d, upb_decframe *frame,
 static bool upb_decode_64bitfield(upb_decstate *d, upb_decframe *frame,
                                   const char *field_start,
                                   const upb_msglayout_field *field) {
-  void *field_mem;
   uint64_t val;
-
-  field_mem = upb_decode_prepareslot(frame, field);
-  CHK(field_mem);
   CHK(upb_decode_64bit(&d->ptr, frame->limit, &val));
 
-  switch ((upb_descriptortype_t)field->descriptortype) {
+  switch (field->descriptortype) {
     case UPB_DESCRIPTOR_TYPE_DOUBLE:
     case UPB_DESCRIPTOR_TYPE_FIXED64:
     case UPB_DESCRIPTOR_TYPE_SFIXED64:
-      memcpy(field_mem, &val, sizeof(val));
+      CHK(upb_decode_addval(frame, field, &val, sizeof(val)));
       break;
     default:
       return upb_append_unknown(d, frame, field_start);
@@ -354,18 +348,14 @@ static bool upb_decode_64bitfield(upb_decstate *d, upb_decframe *frame,
 static bool upb_decode_32bitfield(upb_decstate *d, upb_decframe *frame,
                                   const char *field_start,
                                   const upb_msglayout_field *field) {
-  void *field_mem;
   uint32_t val;
-
-  field_mem = upb_decode_prepareslot(frame, field);
-  CHK(field_mem);
   CHK(upb_decode_32bit(&d->ptr, frame->limit, &val));
 
-  switch ((upb_descriptortype_t)field->descriptortype) {
+  switch (field->descriptortype) {
     case UPB_DESCRIPTOR_TYPE_FLOAT:
     case UPB_DESCRIPTOR_TYPE_FIXED32:
     case UPB_DESCRIPTOR_TYPE_SFIXED32:
-      memcpy(field_mem, &val, sizeof(val));
+      CHK(upb_decode_addval(frame, field, &val, sizeof(val)));
       break;
     default:
       return upb_append_unknown(d, frame, field_start);
@@ -377,13 +367,11 @@ static bool upb_decode_32bitfield(upb_decstate *d, upb_decframe *frame,
 
 static bool upb_decode_fixedpacked(upb_array *arr, upb_strview data,
                                    int elem_size) {
-  int elements = data.size / elem_size;
-  void *field_mem;
+  size_t elements = data.size / elem_size;
 
   CHK((size_t)(elements * elem_size) == data.size);
-  field_mem = upb_array_add(arr, elements);
-  CHK(field_mem);
-  memcpy(field_mem, data.data, data.size);
+  CHK(upb_array_add(arr, elements, elem_size, data.data));
+
   return true;
 }
 
@@ -393,29 +381,24 @@ static bool upb_decode_toarray(upb_decstate *d, upb_decframe *frame,
                                upb_strview val) {
   upb_array *arr = upb_getorcreatearr(frame, field);
 
-#define VARINT_CASE(ctype, decode) { \
-  const char *ptr = val.data; \
-  const char *limit = ptr + val.size; \
-  while (ptr < limit) { \
-    uint64_t val; \
-    void *field_mem; \
-    ctype decoded; \
-    CHK(upb_decode_varint(&ptr, limit, &val)); \
-    decoded = (decode)(val); \
-    field_mem = upb_array_add(arr, 1); \
-    CHK(field_mem); \
-    memcpy(field_mem, &decoded, sizeof(ctype)); \
-  } \
-  return true; \
-}
+#define VARINT_CASE(ctype, decode)                           \
+  {                                                          \
+    const char *ptr = val.data;                              \
+    const char *limit = ptr + val.size;                      \
+    while (ptr < limit) {                                    \
+      uint64_t val;                                          \
+      ctype decoded;                                         \
+      CHK(upb_decode_varint(&ptr, limit, &val));             \
+      decoded = (decode)(val);                               \
+      CHK(upb_array_add(arr, 1, sizeof(decoded), &decoded)); \
+    }                                                        \
+    return true;                                             \
+  }
 
-  switch ((upb_descriptortype_t)field->descriptortype) {
+  switch (field->descriptortype) {
     case UPB_DESCRIPTOR_TYPE_STRING:
     case UPB_DESCRIPTOR_TYPE_BYTES: {
-      void *field_mem = upb_array_add(arr, 1);
-      CHK(field_mem);
-      memcpy(field_mem, &val, sizeof(val));
-      return true;
+      return upb_array_add(arr, 1, sizeof(val), &val);
     }
     case UPB_DESCRIPTOR_TYPE_FLOAT:
     case UPB_DESCRIPTOR_TYPE_FIXED32:
@@ -428,7 +411,6 @@ static bool upb_decode_toarray(upb_decstate *d, upb_decframe *frame,
     case UPB_DESCRIPTOR_TYPE_INT32:
     case UPB_DESCRIPTOR_TYPE_UINT32:
     case UPB_DESCRIPTOR_TYPE_ENUM:
-      /* TODO: proto2 enum field that isn't in the enum. */
       VARINT_CASE(uint32_t, uint32_t);
     case UPB_DESCRIPTOR_TYPE_INT64:
     case UPB_DESCRIPTOR_TYPE_UINT64:
@@ -440,24 +422,14 @@ static bool upb_decode_toarray(upb_decstate *d, upb_decframe *frame,
     case UPB_DESCRIPTOR_TYPE_SINT64:
       VARINT_CASE(int64_t, upb_zzdecode_64);
     case UPB_DESCRIPTOR_TYPE_MESSAGE: {
-      const upb_msglayout *subm;
-      char *submsg;
-      void *field_mem;
+      const upb_msglayout *subm = frame->m->submsgs[field->submsg_index];
+      upb_msg *submsg = upb_msg_new(subm, upb_msg_arena(frame->msg));
 
-      CHK(val.size <= (size_t)(frame->limit - val.data));
-      d->ptr -= val.size;
-
-      /* Create elemente message. */
-      subm = frame->m->submsgs[field->submsg_index];
-      UPB_ASSERT(subm);
-
-      submsg = upb_msg_new(subm, upb_msg_arena(frame->msg));
       CHK(submsg);
+      CHK(val.size <= (size_t)(frame->limit - val.data));
+      upb_array_add(arr, 1, sizeof(submsg), &submsg);
 
-      field_mem = upb_array_add(arr, 1);
-      CHK(field_mem);
-      *(void**)field_mem = submsg;
-
+      d->ptr -= val.size;
       return upb_decode_message(
           d, val.data + val.size, frame->group_number, submsg, subm);
     }
@@ -478,12 +450,10 @@ static bool upb_decode_delimitedfield(upb_decstate *d, upb_decframe *frame,
   if (field->label == UPB_LABEL_REPEATED) {
     return upb_decode_toarray(d, frame, field_start, field, val);
   } else {
-    switch ((upb_descriptortype_t)field->descriptortype) {
+    switch (field->descriptortype) {
       case UPB_DESCRIPTOR_TYPE_STRING:
       case UPB_DESCRIPTOR_TYPE_BYTES: {
-        void *field_mem = upb_decode_prepareslot(frame, field);
-        CHK(field_mem);
-        memcpy(field_mem, &val, sizeof(val));
+        CHK(upb_decode_addval(frame, field, &val, sizeof(val)));
         break;
       }
       case UPB_DESCRIPTOR_TYPE_MESSAGE:

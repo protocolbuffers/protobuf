@@ -1531,7 +1531,6 @@ static bool end_duration_base(upb_json_parser *p, const char *ptr) {
 static int parse_timestamp_number(upb_json_parser *p) {
   size_t len;
   const char *buf;
-  char *end;
   int val;
 
   /* atoi() and friends unfortunately do not support specifying the length of
@@ -2007,7 +2006,6 @@ static void end_any_member(upb_json_parser *p, const char *ptr) {
 
 static bool start_subobject(upb_json_parser *p) {
   if (p->top->is_unknown_field) {
-    upb_jsonparser_frame *inner;
     if (!check_stack(p)) return false;
 
     p->top = start_jsonparser_frame(p);

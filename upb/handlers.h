@@ -76,7 +76,7 @@ typedef int32_t upb_selector_t;
 #define UPB_STARTMSG_SELECTOR 0
 #define UPB_ENDMSG_SELECTOR 1
 #define UPB_UNKNOWN_SELECTOR 2
-#define UPB_STATIC_SELECTOR_COUNT 3
+#define UPB_STATIC_SELECTOR_COUNT 3  /* Warning: also in upb/def.c. */
 
 /* Static selectors for upb::BytesHandler. */
 #define UPB_STARTSTR_SELECTOR 0
@@ -232,10 +232,6 @@ bool upb_handlers_getselector(const upb_fielddef *f, upb_handlertype_t type,
 UPB_INLINE upb_selector_t upb_handlers_getendselector(upb_selector_t start) {
   return start + 1;
 }
-
-/* Internal-only. */
-uint32_t upb_handlers_selectorbaseoffset(const upb_fielddef *f);
-uint32_t upb_handlers_selectorcount(const upb_fielddef *f);
 
 #ifdef __cplusplus
 }  /* extern "C" */

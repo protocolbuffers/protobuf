@@ -1,5 +1,4 @@
 
-#include "upb/handlers.h"
 #include "upb/msgfactory.h"
 
 static bool is_power_of_two(size_t val) {

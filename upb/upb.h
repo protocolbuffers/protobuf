@@ -13,6 +13,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
 #ifdef __cplusplus
 #include <memory>
@@ -169,6 +170,33 @@ class upb::Status {
 };
 
 #endif  /* __cplusplus */
+
+/** upb_strview ************************************************************/
+
+typedef struct {
+  const char *data;
+  size_t size;
+} upb_strview;
+
+UPB_INLINE upb_strview upb_strview_make(const char *data, size_t size) {
+  upb_strview ret;
+  ret.data = data;
+  ret.size = size;
+  return ret;
+}
+
+UPB_INLINE upb_strview upb_strview_makez(const char *data) {
+  return upb_strview_make(data, strlen(data));
+}
+
+UPB_INLINE bool upb_strview_eql(upb_strview a, upb_strview b) {
+  return a.size == b.size && memcmp(a.data, b.data, a.size) == 0;
+}
+
+#define UPB_STRVIEW_INIT(ptr, len) {ptr, len}
+
+#define UPB_STRVIEW_FORMAT "%.*s"
+#define UPB_STRVIEW_ARGS(view) (int)(view).size, (view).data
 
 /** upb_alloc *****************************************************************/
 

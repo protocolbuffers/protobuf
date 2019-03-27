@@ -6,7 +6,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "google/protobuf/descriptor.upb.h"
-#include "upb/handlers.h"
 
 typedef struct {
   size_t len;
@@ -206,6 +205,30 @@ int cmp_fields(const void *p1, const void *p2) {
   return field_rank(f1) - field_rank(f2);
 }
 
+/* A few implementation details of handlers.  We put these here to avoid
+ * a def -> handlers dependency. */
+
+#define UPB_STATIC_SELECTOR_COUNT 3  /* Warning: also in upb/handlers.h. */
+
+static uint32_t upb_handlers_selectorbaseoffset(const upb_fielddef *f) {
+  return upb_fielddef_isseq(f) ? 2 : 0;
+}
+
+static uint32_t upb_handlers_selectorcount(const upb_fielddef *f) {
+  uint32_t ret = 1;
+  if (upb_fielddef_isseq(f)) ret += 2;    /* STARTSEQ/ENDSEQ */
+  if (upb_fielddef_isstring(f)) ret += 2; /* [STRING]/STARTSTR/ENDSTR */
+  if (upb_fielddef_issubmsg(f)) {
+    /* ENDSUBMSG (STARTSUBMSG is at table beginning) */
+    ret += 0;
+    if (upb_fielddef_lazy(f)) {
+      /* STARTSTR/ENDSTR/STRING (for lazy) */
+      ret += 3;
+    }
+  }
+  return ret;
+}
+
 static bool assign_msg_indices(upb_msgdef *m, upb_status *s) {
   /* Sort fields.  upb internally relies on UPB_TYPE_MESSAGE fields having the
    * lowest indexes, but we do not publicly guarantee this. */
@@ -250,47 +273,6 @@ static bool assign_msg_indices(upb_msgdef *m, upb_status *s) {
     selector += upb_handlers_selectorcount(f);
   }
   m->selector_count = selector;
-
-#ifndef NDEBUG
-  {
-    /* Verify that all selectors for the message are distinct. */
-#define TRY(type) \
-    if (upb_handlers_getselector(f, type, &sel)) { upb_inttable_insert(&t, sel, v); }
-
-    upb_inttable t;
-    upb_value v;
-    upb_selector_t sel;
-
-    upb_inttable_init(&t, UPB_CTYPE_BOOL);
-    v = upb_value_bool(true);
-    upb_inttable_insert(&t, UPB_STARTMSG_SELECTOR, v);
-    upb_inttable_insert(&t, UPB_ENDMSG_SELECTOR, v);
-    upb_inttable_insert(&t, UPB_UNKNOWN_SELECTOR, v);
-    for(upb_msg_field_begin(&j, m);
-        !upb_msg_field_done(&j);
-        upb_msg_field_next(&j)) {
-      upb_fielddef *f = upb_msg_iter_field(&j);
-      /* These calls will assert-fail in upb_table if the value already
-       * exists. */
-      TRY(UPB_HANDLER_INT32);
-      TRY(UPB_HANDLER_INT64)
-      TRY(UPB_HANDLER_UINT32)
-      TRY(UPB_HANDLER_UINT64)
-      TRY(UPB_HANDLER_FLOAT)
-      TRY(UPB_HANDLER_DOUBLE)
-      TRY(UPB_HANDLER_BOOL)
-      TRY(UPB_HANDLER_STARTSTR)
-      TRY(UPB_HANDLER_STRING)
-      TRY(UPB_HANDLER_ENDSTR)
-      TRY(UPB_HANDLER_STARTSUBMSG)
-      TRY(UPB_HANDLER_ENDSUBMSG)
-      TRY(UPB_HANDLER_STARTSEQ)
-      TRY(UPB_HANDLER_ENDSEQ)
-    }
-    upb_inttable_uninit(&t);
-  }
-#undef TRY
-#endif
 
   for(upb_msg_oneof_begin(&k, m), i = 0;
       !upb_msg_oneof_done(&k);

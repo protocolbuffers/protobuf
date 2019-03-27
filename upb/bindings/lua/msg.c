@@ -7,9 +7,11 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "lauxlib.h"
 #include "upb/bindings/lua/upb.h"
 #include "upb/handlers.h"
+#include "upb/legacy_msg_reflection.h"
 #include "upb/msg.h"
 
 /*

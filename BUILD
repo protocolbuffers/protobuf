@@ -34,23 +34,17 @@ config_setting(
     visibility = ["//visibility:public"],
 )
 
-# C/C++ rules ##################################################################
+# Public C/C++ libraries #######################################################
 
 cc_library(
     name = "upb",
     srcs = [
         "google/protobuf/descriptor.upb.c",
         "upb/decode.c",
-        "upb/def.c",
         "upb/encode.c",
-        "upb/handlers.c",
-        "upb/handlers-inl.h",
         "upb/msg.c",
-        "upb/msgfactory.c",
         "upb/port_def.inc",
         "upb/port_undef.inc",
-        "upb/sink.c",
-        "upb/structs.int.h",
         "upb/table.c",
         "upb/table.int.h",
         "upb/upb.c",
@@ -58,17 +52,65 @@ cc_library(
     hdrs = [
         "google/protobuf/descriptor.upb.h",
         "upb/decode.h",
-        "upb/def.h",
         "upb/encode.h",
         "upb/generated_util.h",
-        "upb/handlers.h",
         "upb/msg.h",
-        "upb/msgfactory.h",
-        "upb/sink.h",
         "upb/upb.h",
     ],
     copts = COPTS,
     visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "reflection",
+    srcs = [
+        "upb/def.c",
+        "upb/msgfactory.c",
+    ],
+    hdrs = [
+        "upb/def.h",
+        "upb/msgfactory.h",
+    ],
+    copts = COPTS,
+    visibility = ["//visibility:public"],
+    deps = [":upb"],
+)
+
+# Internal C/C++ libraries #####################################################
+
+cc_library(
+    name = "table",
+    hdrs = ["upb/table.int.h"],
+    deps = [":upb"],
+)
+
+# Legacy C/C++ Libraries (not recommended for new code) ########################
+
+cc_library(
+    name = "legacy_msg_reflection",
+    srcs = [
+        "upb/legacy_msg_reflection.c",
+    ],
+    hdrs = ["upb/legacy_msg_reflection.h"],
+    deps = [":upb"],
+)
+
+cc_library(
+    name = "handlers",
+    srcs = [
+        "upb/handlers.c",
+        "upb/handlers-inl.h",
+        "upb/sink.c",
+    ],
+    hdrs = [
+        "upb/handlers.h",
+        "upb/sink.h",
+    ],
+    copts = COPTS,
+    deps = [
+        ":reflection",
+        ":upb",
+    ],
 )
 
 cc_library(
@@ -81,7 +123,6 @@ cc_library(
         "upb/pb/textprinter.c",
         "upb/pb/varint.c",
         "upb/pb/varint.int.h",
-        "upb/table.int.h",
     ],
     hdrs = [
         "upb/pb/decoder.h",
@@ -90,6 +131,8 @@ cc_library(
     ],
     copts = COPTS,
     deps = [
+        ":handlers",
+        ":table",
         ":upb",
     ],
 )
@@ -327,6 +370,8 @@ upb_amalgamation(
     amalgamator = ":amalgamate",
     libs = [
         ":upb",
+        ":reflection",
+        ":handlers",
         ":upb_pb",
         ":upb_json",
     ],
@@ -352,6 +397,7 @@ lua_cclibrary(
         "upb/bindings/lua/upb.h",
     ],
     deps = [
+        "legacy_msg_reflection",
         "upb",
         "upb_pb",
     ],
