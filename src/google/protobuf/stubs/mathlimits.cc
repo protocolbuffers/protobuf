@@ -40,11 +40,6 @@
 namespace google {
 namespace protobuf {
 
-#define DEF_COMMON_LIMITS(Type)
-#define DEF_UNSIGNED_INT_LIMITS(Type)
-#define DEF_SIGNED_INT_LIMITS(Type)
-#define DEF_PRECISION_LIMITS(Type)
-
 // http://en.wikipedia.org/wiki/Quadruple_precision_floating-point_format#Double-double_arithmetic
 // With some compilers (gcc 4.6.x) on some platforms (powerpc64),
 // "long double" is implemented as a pair of double: "double double" format.
@@ -70,7 +65,6 @@ namespace protobuf {
 // max(DBL_EPSILON * DBL_EPSILON, kEpsilon) rather than a multiple of kEpsilon.
 
 #define DEF_FP_LIMITS(Type, PREFIX) \
-DEF_COMMON_LIMITS(Type) \
 const Type MathLimits<Type>::kPosMin = PREFIX##_MIN; \
 const Type MathLimits<Type>::kPosMax = PREFIX##_MAX; \
 const Type MathLimits<Type>::kMin = -MathLimits<Type>::kPosMax; \
@@ -82,32 +76,14 @@ const Type MathLimits<Type>::kEpsilon = PREFIX##_EPSILON; \
 const Type MathLimits<Type>::kStdError = \
   32 * (DBL_EPSILON * DBL_EPSILON > MathLimits<Type>::kEpsilon \
       ? DBL_EPSILON * DBL_EPSILON : MathLimits<Type>::kEpsilon); \
-DEF_PRECISION_LIMITS(Type) \
 const Type MathLimits<Type>::kNaN = HUGE_VAL - HUGE_VAL; \
 const Type MathLimits<Type>::kPosInf = HUGE_VAL; \
 const Type MathLimits<Type>::kNegInf = -HUGE_VAL;
-
-// The following are *not* casts!
-DEF_SIGNED_INT_LIMITS(int8)
-DEF_SIGNED_INT_LIMITS(int16)  // NOLINT(readability/casting)
-DEF_SIGNED_INT_LIMITS(int32)  // NOLINT(readability/casting)
-DEF_SIGNED_INT_LIMITS(int64)  // NOLINT(readability/casting)
-DEF_UNSIGNED_INT_LIMITS(uint8)
-DEF_UNSIGNED_INT_LIMITS(uint16)  // NOLINT(readability/casting)
-DEF_UNSIGNED_INT_LIMITS(uint32)  // NOLINT(readability/casting)
-DEF_UNSIGNED_INT_LIMITS(uint64)  // NOLINT(readability/casting)
-
-DEF_SIGNED_INT_LIMITS(long int)
-DEF_UNSIGNED_INT_LIMITS(unsigned long int)
 
 DEF_FP_LIMITS(float, FLT)
 DEF_FP_LIMITS(double, DBL)
 DEF_FP_LIMITS(long double, LDBL);
 
-#undef DEF_COMMON_LIMITS
-#undef DEF_SIGNED_INT_LIMITS
-#undef DEF_UNSIGNED_INT_LIMITS
 #undef DEF_FP_LIMITS
-#undef DEF_PRECISION_LIMITS
 }  // namespace protobuf
 }  // namespace google
