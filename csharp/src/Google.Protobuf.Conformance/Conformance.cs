@@ -25,32 +25,32 @@ namespace Conformance {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "ChFjb25mb3JtYW5jZS5wcm90bxILY29uZm9ybWFuY2UiHQoKRmFpbHVyZVNl",
-            "dBIPCgdmYWlsdXJlGAEgAygJIsUCChJDb25mb3JtYW5jZVJlcXVlc3QSGgoQ",
+            "dBIPCgdmYWlsdXJlGAEgAygJIuMCChJDb25mb3JtYW5jZVJlcXVlc3QSGgoQ",
             "cHJvdG9idWZfcGF5bG9hZBgBIAEoDEgAEhYKDGpzb25fcGF5bG9hZBgCIAEo",
             "CUgAEhYKDGpzcGJfcGF5bG9hZBgHIAEoCUgAEhYKDHRleHRfcGF5bG9hZBgI",
             "IAEoCUgAEjgKF3JlcXVlc3RlZF9vdXRwdXRfZm9ybWF0GAMgASgOMhcuY29u",
             "Zm9ybWFuY2UuV2lyZUZvcm1hdBIUCgxtZXNzYWdlX3R5cGUYBCABKAkSMAoN",
             "dGVzdF9jYXRlZ29yeRgFIAEoDjIZLmNvbmZvcm1hbmNlLlRlc3RDYXRlZ29y",
             "eRI+ChVqc3BiX2VuY29kaW5nX29wdGlvbnMYBiABKAsyHy5jb25mb3JtYW5j",
-            "ZS5Kc3BiRW5jb2RpbmdDb25maWdCCQoHcGF5bG9hZCLhAQoTQ29uZm9ybWFu",
-            "Y2VSZXNwb25zZRIVCgtwYXJzZV9lcnJvchgBIAEoCUgAEhkKD3NlcmlhbGl6",
-            "ZV9lcnJvchgGIAEoCUgAEhcKDXJ1bnRpbWVfZXJyb3IYAiABKAlIABIaChBw",
-            "cm90b2J1Zl9wYXlsb2FkGAMgASgMSAASFgoManNvbl9wYXlsb2FkGAQgASgJ",
-            "SAASEQoHc2tpcHBlZBgFIAEoCUgAEhYKDGpzcGJfcGF5bG9hZBgHIAEoCUgA",
-            "EhYKDHRleHRfcGF5bG9hZBgIIAEoCUgAQggKBnJlc3VsdCI3ChJKc3BiRW5j",
-            "b2RpbmdDb25maWcSIQoZdXNlX2pzcGJfYXJyYXlfYW55X2Zvcm1hdBgBIAEo",
-            "CCpQCgpXaXJlRm9ybWF0Eg8KC1VOU1BFQ0lGSUVEEAASDAoIUFJPVE9CVUYQ",
-            "ARIICgRKU09OEAISCAoESlNQQhADEg8KC1RFWFRfRk9STUFUEAQqjwEKDFRl",
-            "c3RDYXRlZ29yeRIUChBVTlNQRUNJRklFRF9URVNUEAASDwoLQklOQVJZX1RF",
-            "U1QQARINCglKU09OX1RFU1QQAhIkCiBKU09OX0lHTk9SRV9VTktOT1dOX1BB",
-            "UlNJTkdfVEVTVBADEg0KCUpTUEJfVEVTVBAEEhQKEFRFWFRfRk9STUFUX1RF",
-            "U1QQBUIhCh9jb20uZ29vZ2xlLnByb3RvYnVmLmNvbmZvcm1hbmNlYgZwcm90",
-            "bzM="));
+            "ZS5Kc3BiRW5jb2RpbmdDb25maWcSHAoUcHJpbnRfdW5rbm93bl9maWVsZHMY",
+            "CSABKAhCCQoHcGF5bG9hZCLhAQoTQ29uZm9ybWFuY2VSZXNwb25zZRIVCgtw",
+            "YXJzZV9lcnJvchgBIAEoCUgAEhkKD3NlcmlhbGl6ZV9lcnJvchgGIAEoCUgA",
+            "EhcKDXJ1bnRpbWVfZXJyb3IYAiABKAlIABIaChBwcm90b2J1Zl9wYXlsb2Fk",
+            "GAMgASgMSAASFgoManNvbl9wYXlsb2FkGAQgASgJSAASEQoHc2tpcHBlZBgF",
+            "IAEoCUgAEhYKDGpzcGJfcGF5bG9hZBgHIAEoCUgAEhYKDHRleHRfcGF5bG9h",
+            "ZBgIIAEoCUgAQggKBnJlc3VsdCI3ChJKc3BiRW5jb2RpbmdDb25maWcSIQoZ",
+            "dXNlX2pzcGJfYXJyYXlfYW55X2Zvcm1hdBgBIAEoCCpQCgpXaXJlRm9ybWF0",
+            "Eg8KC1VOU1BFQ0lGSUVEEAASDAoIUFJPVE9CVUYQARIICgRKU09OEAISCAoE",
+            "SlNQQhADEg8KC1RFWFRfRk9STUFUEAQqjwEKDFRlc3RDYXRlZ29yeRIUChBV",
+            "TlNQRUNJRklFRF9URVNUEAASDwoLQklOQVJZX1RFU1QQARINCglKU09OX1RF",
+            "U1QQAhIkCiBKU09OX0lHTk9SRV9VTktOT1dOX1BBUlNJTkdfVEVTVBADEg0K",
+            "CUpTUEJfVEVTVBAEEhQKEFRFWFRfRk9STUFUX1RFU1QQBUIhCh9jb20uZ29v",
+            "Z2xlLnByb3RvYnVmLmNvbmZvcm1hbmNlYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Conformance.WireFormat), typeof(global::Conformance.TestCategory), }, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.FailureSet), global::Conformance.FailureSet.Parser, new[]{ "Failure" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.ConformanceRequest), global::Conformance.ConformanceRequest.Parser, new[]{ "ProtobufPayload", "JsonPayload", "JspbPayload", "TextPayload", "RequestedOutputFormat", "MessageType", "TestCategory", "JspbEncodingOptions" }, new[]{ "Payload" }, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.ConformanceRequest), global::Conformance.ConformanceRequest.Parser, new[]{ "ProtobufPayload", "JsonPayload", "JspbPayload", "TextPayload", "RequestedOutputFormat", "MessageType", "TestCategory", "JspbEncodingOptions", "PrintUnknownFields" }, new[]{ "Payload" }, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.ConformanceResponse), global::Conformance.ConformanceResponse.Parser, new[]{ "ParseError", "SerializeError", "RuntimeError", "ProtobufPayload", "JsonPayload", "Skipped", "JspbPayload", "TextPayload" }, new[]{ "Result" }, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.JspbEncodingConfig), global::Conformance.JspbEncodingConfig.Parser, new[]{ "UseJspbArrayAnyFormat" }, null, null, null)
           }));
@@ -264,6 +264,7 @@ namespace Conformance {
       messageType_ = other.messageType_;
       testCategory_ = other.testCategory_;
       jspbEncodingOptions_ = other.jspbEncodingOptions_ != null ? other.jspbEncodingOptions_.Clone() : null;
+      printUnknownFields_ = other.printUnknownFields_;
       switch (other.PayloadCase) {
         case PayloadOneofCase.ProtobufPayload:
           ProtobufPayload = other.ProtobufPayload;
@@ -394,6 +395,21 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "print_unknown_fields" field.</summary>
+    public const int PrintUnknownFieldsFieldNumber = 9;
+    private bool printUnknownFields_;
+    /// <summary>
+    /// This can be used in json and text format. If true, testee should print
+    /// unknown fields instead of ignore. This feature is optional.
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool PrintUnknownFields {
+      get { return printUnknownFields_; }
+      set {
+        printUnknownFields_ = value;
+      }
+    }
+
     private object payload_;
     /// <summary>Enum of possible cases for the "payload" oneof.</summary>
     public enum PayloadOneofCase {
@@ -436,6 +452,7 @@ namespace Conformance {
       if (MessageType != other.MessageType) return false;
       if (TestCategory != other.TestCategory) return false;
       if (!object.Equals(JspbEncodingOptions, other.JspbEncodingOptions)) return false;
+      if (PrintUnknownFields != other.PrintUnknownFields) return false;
       if (PayloadCase != other.PayloadCase) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
@@ -451,6 +468,7 @@ namespace Conformance {
       if (MessageType.Length != 0) hash ^= MessageType.GetHashCode();
       if (TestCategory != 0) hash ^= TestCategory.GetHashCode();
       if (jspbEncodingOptions_ != null) hash ^= JspbEncodingOptions.GetHashCode();
+      if (PrintUnknownFields != false) hash ^= PrintUnknownFields.GetHashCode();
       hash ^= (int) payloadCase_;
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -497,6 +515,10 @@ namespace Conformance {
         output.WriteRawTag(66);
         output.WriteString(TextPayload);
       }
+      if (PrintUnknownFields != false) {
+        output.WriteRawTag(72);
+        output.WriteBool(PrintUnknownFields);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -529,6 +551,9 @@ namespace Conformance {
       if (jspbEncodingOptions_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(JspbEncodingOptions);
       }
+      if (PrintUnknownFields != false) {
+        size += 1 + 1;
+      }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -554,6 +579,9 @@ namespace Conformance {
           JspbEncodingOptions = new global::Conformance.JspbEncodingConfig();
         }
         JspbEncodingOptions.MergeFrom(other.JspbEncodingOptions);
+      }
+      if (other.PrintUnknownFields != false) {
+        PrintUnknownFields = other.PrintUnknownFields;
       }
       switch (other.PayloadCase) {
         case PayloadOneofCase.ProtobufPayload:
@@ -614,6 +642,10 @@ namespace Conformance {
           }
           case 66: {
             TextPayload = input.ReadString();
+            break;
+          }
+          case 72: {
+            PrintUnknownFields = input.ReadBool();
             break;
           }
         }

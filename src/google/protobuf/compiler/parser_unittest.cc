@@ -62,8 +62,8 @@ namespace {
 
 class MockErrorCollector : public io::ErrorCollector {
  public:
-  MockErrorCollector() {}
-  ~MockErrorCollector() {}
+  MockErrorCollector() = default;
+  ~MockErrorCollector() override = default;
 
   std::string text_;
 
@@ -1114,17 +1114,17 @@ TEST_F(ParseMiscTest, ParsePackageWithSpaces) {
 
 TEST_F(ParseMiscTest, ParseFileOptions) {
   ExpectParsesTo(
-    "option java_package = \"com.google.foo\";\n"
-    "option optimize_for = CODE_SIZE;",
+      "option java_package = \"com.google.foo\";\n"
+      "option optimize_for = CODE_SIZE;",
 
-    "options {"
-    "uninterpreted_option { name { name_part: \"java_package\" "
-    "                              is_extension: false }"
-    "                       string_value: \"com.google.foo\"} "
-    "uninterpreted_option { name { name_part: \"optimize_for\" "
-    "                              is_extension: false }"
-    "                       identifier_value: \"CODE_SIZE\" } "
-    "}");
+      "options {"
+      "uninterpreted_option { name { name_part: \"java_package\" "
+      "                              is_extension: false }"
+      "                       string_value: \"com.google.foo\"} "
+      "uninterpreted_option { name { name_part: \"optimize_for\" "
+      "                              is_extension: false }"
+      "                       identifier_value: \"CODE_SIZE\" } "
+      "}");
 }
 
 // ===================================================================

@@ -319,12 +319,12 @@ std::string ClassName(const Descriptor* descriptor) {
   if (parent) res += ClassName(parent) + "_";
   res += descriptor->name();
   if (IsMapEntryMessage(descriptor)) res += "_DoNotUse";
-  return res;
+  return ResolveKeyword(res);
 }
 
 std::string ClassName(const EnumDescriptor* enum_descriptor) {
   if (enum_descriptor->containing_type() == nullptr) {
-    return enum_descriptor->name();
+    return ResolveKeyword(enum_descriptor->name());
   } else {
     return ClassName(enum_descriptor->containing_type()) + "_" +
            enum_descriptor->name();
@@ -393,6 +393,13 @@ std::string SuperClassName(const Descriptor* descriptor,
   return "::" + ProtobufNamespace(options) +
          (HasDescriptorMethods(descriptor->file(), options) ? "::Message"
                                                             : "::MessageLite");
+}
+
+std::string ResolveKeyword(const string& name) {
+  if (kKeywords.count(name) > 0) {
+    return name + "_";
+  }
+  return name;
 }
 
 std::string FieldName(const FieldDescriptor* field) {
@@ -1345,8 +1352,6 @@ class ParseLoopGenerator {
     format_.Set("p_ns", "::" + ProtobufNamespace(options_));
     format_.Set("pi_ns", StrCat("::", ProtobufNamespace(options_), "::internal"));
     format_.Set("GOOGLE_PROTOBUF", MacroPrefix(options_));
-    format_.Set("kSlopBytes",
-                static_cast<int>(internal::ParseContext::kSlopBytes));
     std::map<std::string, std::string> vars;
     SetCommonVars(options_, &vars);
     format_.AddMap(vars);
@@ -1365,93 +1370,14 @@ class ParseLoopGenerator {
 
     format_(
         "const char* $classname$::_InternalParse(const char* ptr, "
-        "$pi_ns$::ParseContext* ctx) {\n"
-        "  $p_ns$::Arena* arena = GetArena(); (void)arena;\n"
-        "  while (!ctx->Done(&ptr)) {\n"
-        "    $uint32$ tag;\n"
-        "    ptr = $pi_ns$::ReadTag(ptr, &tag);\n"
-        "    $GOOGLE_PROTOBUF$_PARSER_ASSERT(ptr);\n"
-        "    switch (tag >> 3) {\n");
-
+        "$pi_ns$::ParseContext* ctx) {\n");
     format_.Indent();
-    format_.Indent();
-    format_.Indent();
-
-    for (const auto* field : ordered_fields) {
-      // Print the field's (or oneof's) proto-syntax definition as a comment.
-      // We don't want to print group bodies so we cut off after the first
-      // line.
-      std::string def;
-      {
-        DebugStringOptions options;
-        options.elide_group_body = true;
-        options.elide_oneof_body = true;
-        def = field->DebugStringWithOptions(options);
-        def = def.substr(0, def.find_first_of('\n'));
-      }
-      format_(
-          "// $1$\n"
-          "case $2$: {\n",
-          def, field->number());
-      format_.Indent();
-      GenerateCaseBody(field);
-      format_.Outdent();
-      format_("}\n");  // case
-    }                  // for fields
-
-    // Default case
-    format_("default: {\n");
-    if (!ordered_fields.empty()) format_("handle_unusual:\n");
-    format_(
-        "  if ((tag & 7) == 4 || tag == 0) {\n"
-        "    ctx->SetLastTag(tag);\n"
-        "    return ptr;\n"
-        "  }\n");
-    if (IsMapEntryMessage(descriptor)) {
-      format_("  break;\n");
-    } else {
-      if (descriptor->extension_range_count() > 0) {
-        format_("if (");
-        for (int i = 0; i < descriptor->extension_range_count(); i++) {
-          const Descriptor::ExtensionRange* range =
-              descriptor->extension_range(i);
-          if (i > 0) format_(" ||\n    ");
-
-          uint32 start_tag = WireFormatLite::MakeTag(
-              range->start, static_cast<WireFormatLite::WireType>(0));
-          uint32 end_tag = WireFormatLite::MakeTag(
-              range->end, static_cast<WireFormatLite::WireType>(0));
-
-          if (range->end > FieldDescriptor::kMaxNumber) {
-            format_("($1$u <= tag)", start_tag);
-          } else {
-            format_("($1$u <= tag && tag < $2$u)", start_tag, end_tag);
-          }
-        }
-        format_(") {\n");
-        format_(
-            "  ptr = _extensions_.ParseField(tag, ptr, \n"
-            "      internal_default_instance(), &_internal_metadata_, "
-            "ctx);\n"
-            "  $GOOGLE_PROTOBUF$_PARSER_ASSERT(ptr != nullptr);\n"
-            "  break;\n"
-            "}\n");
-      }
-      format_(
-          "  ptr = UnknownFieldParse(tag,\n"
-          "    _internal_metadata_.mutable_unknown_fields(), ptr, ctx);\n"
-          "  $GOOGLE_PROTOBUF$_PARSER_ASSERT(ptr != nullptr);\n"
-          "  break;\n");
+    if (descriptor->file()->options().cc_enable_arenas()) {
+      format_("$p_ns$::Arena* arena = GetArenaNoVirtual(); (void)arena;\n");
     }
-    format_("}\n");  // default case
+    GenerateParseLoop(descriptor, ordered_fields);
     format_.Outdent();
-    format_.Outdent();
-    format_.Outdent();
-    format_(
-        "    }  // switch\n"
-        "  }  // while\n"
-        "  return ptr;\n"
-        "}\n");
+    format_("}\n");
   }
 
  private:
@@ -1469,18 +1395,25 @@ class ParseLoopGenerator {
               field_name.substr(2));  // remove ", "
       field_name = ", kFieldName";
     }
-    format_("if (arena != nullptr) {\n");
     if (HasFieldPresence(field->file())) {
-      format_("  HasBitSetters::set_has_$1$(this);\n", FieldName(field));
+      format_("HasBitSetters::set_has_$1$(this);\n", FieldName(field));
     }
+    string default_string =
+        field->default_value_string().empty()
+            ? "::" + ProtobufNamespace(options_) +
+                  "::internal::GetEmptyStringAlreadyInited()"
+            : QualifiedClassName(field->containing_type(), options_) +
+                  "::" + MakeDefaultName(field) + ".get()";
     format_(
+        "if (arena != nullptr) {\n"
         "  ptr = $pi_ns$::InlineCopyIntoArenaString$1$(&$2$_, ptr, ctx, "
         "  arena$3$);\n"
         "} else {\n"
-        "  ptr = $pi_ns$::InlineGreedyStringParser$1$($4$_$2$(), ptr, ctx$3$);"
+        "  ptr = "
+        "$pi_ns$::InlineGreedyStringParser$1$($2$_.MutableNoArenaNoDefault(&$4$"
+        "), ptr, ctx$3$);"
         "\n}\n",
-        utf8, FieldName(field), field_name,
-        field->is_repeated() ? "add" : "mutable");
+        utf8, FieldName(field), field_name, default_string);
   }
 
   void GenerateStrings(const FieldDescriptor* field, bool check_utf8) {
@@ -1765,6 +1698,93 @@ class ParseLoopGenerator {
               WireFormat::MakeTag(field) & 0xFF);
       GenerateCaseBody(wiretype, field);
     }
+  }
+
+  void GenerateParseLoop(
+      const Descriptor* descriptor,
+      const std::vector<const FieldDescriptor*>& ordered_fields) {
+    format_(
+        "while (!ctx->Done(&ptr)) {\n"
+        "  $uint32$ tag;\n"
+        "  ptr = $pi_ns$::ReadTag(ptr, &tag);\n"
+        "  $GOOGLE_PROTOBUF$_PARSER_ASSERT(ptr);\n"
+        "  switch (tag >> 3) {\n");
+
+    format_.Indent();
+    format_.Indent();
+
+    for (const auto* field : ordered_fields) {
+      // Print the field's (or oneof's) proto-syntax definition as a comment.
+      // We don't want to print group bodies so we cut off after the first
+      // line.
+      std::string def;
+      {
+        DebugStringOptions options;
+        options.elide_group_body = true;
+        options.elide_oneof_body = true;
+        def = field->DebugStringWithOptions(options);
+        def = def.substr(0, def.find_first_of('\n'));
+      }
+      format_(
+          "// $1$\n"
+          "case $2$: {\n",
+          def, field->number());
+      format_.Indent();
+      GenerateCaseBody(field);
+      format_.Outdent();
+      format_("}\n");  // case
+    }                  // for fields
+
+    // Default case
+    format_("default: {\n");
+    if (!ordered_fields.empty()) format_("handle_unusual:\n");
+    format_(
+        "  if ((tag & 7) == 4 || tag == 0) {\n"
+        "    ctx->SetLastTag(tag);\n"
+        "    return ptr;\n"
+        "  }\n");
+    if (IsMapEntryMessage(descriptor)) {
+      format_("  break;\n");
+    } else {
+      if (descriptor->extension_range_count() > 0) {
+        format_("if (");
+        for (int i = 0; i < descriptor->extension_range_count(); i++) {
+          const Descriptor::ExtensionRange* range =
+              descriptor->extension_range(i);
+          if (i > 0) format_(" ||\n    ");
+
+          uint32 start_tag = WireFormatLite::MakeTag(
+              range->start, static_cast<WireFormatLite::WireType>(0));
+          uint32 end_tag = WireFormatLite::MakeTag(
+              range->end, static_cast<WireFormatLite::WireType>(0));
+
+          if (range->end > FieldDescriptor::kMaxNumber) {
+            format_("($1$u <= tag)", start_tag);
+          } else {
+            format_("($1$u <= tag && tag < $2$u)", start_tag, end_tag);
+          }
+        }
+        format_(") {\n");
+        format_(
+            "  ptr = _extensions_.ParseField(tag, ptr, \n"
+            "      internal_default_instance(), &_internal_metadata_, "
+            "ctx);\n"
+            "  $GOOGLE_PROTOBUF$_PARSER_ASSERT(ptr != nullptr);\n"
+            "  break;\n"
+            "}\n");
+      }
+      format_(
+          "  ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);\n"
+          "  $GOOGLE_PROTOBUF$_PARSER_ASSERT(ptr != nullptr);\n"
+          "  break;\n");
+    }
+    format_("}\n");  // default case
+    format_.Outdent();
+    format_.Outdent();
+    format_(
+        "  }  // switch\n"
+        "}  // while\n"
+        "return ptr;\n");
   }
 };
 

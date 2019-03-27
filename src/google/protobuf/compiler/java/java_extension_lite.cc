@@ -109,7 +109,7 @@ int ImmutableExtensionLiteGenerator::GenerateRegistrationCode(
   printer->Print(
     "registry.add($scope$.$name$);\n",
     "scope", scope_,
-    "name", UnderscoresToCamelCase(descriptor_));
+    "name", UnderscoresToCamelCaseCheckReserved(descriptor_));
   return 7;
 }
 

@@ -38,6 +38,7 @@
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/arenastring.h>
 #include <google/protobuf/implicit_weak_message.h>
+#include <google/protobuf/metadata_lite.h>
 #include <google/protobuf/port.h>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/wire_format_lite.h>
@@ -124,17 +125,17 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   PROTOBUF_MUST_USE_RESULT int PushLimit(const char* ptr, int limit) {
     GOOGLE_DCHECK(limit >= 0);
     limit += ptr - buffer_end_;
-    if (limit < 0) limit_end_ = buffer_end_ + limit;
+    limit_end_ = buffer_end_ + (std::min)(0, limit);
     auto old_limit = limit_;
     limit_ = limit;
     return old_limit - limit;
   }
 
-  PROTOBUF_MUST_USE_RESULT bool PopLimit(int delta, const char* ptr) {
-    // Ensure not to forget to check PushLimit return value
-    GOOGLE_DCHECK(delta >= 0);
-    if (ptr == nullptr || ptr - buffer_end_ != limit_) return false;
+  PROTOBUF_MUST_USE_RESULT bool PopLimit(int delta) {
+    if (PROTOBUF_PREDICT_FALSE(!EndedAtLimit())) return false;
     limit_ = limit_ + delta;
+    // TODO(gerbens) We could remove this line and hoist the code to
+    // DoneFallback. Study the perf/bin-size effects.
     limit_end_ = buffer_end_ + (std::min)(0, limit_);
     return true;
   }
@@ -175,9 +176,19 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   PROTOBUF_MUST_USE_RESULT const char* ReadPackedVarint(const char* ptr,
                                                         Add add);
 
-  bool AtLimit(const char* ptr) const {
-    return (ptr - buffer_end_ == limit_) ||
-           (next_chunk_ == nullptr && limit_ > 0 && ptr == buffer_end_);
+  uint32 LastTag() const { return last_tag_minus_1_ + 1; }
+  bool ConsumeEndGroup(uint32 start_tag) {
+    bool res = last_tag_minus_1_ == start_tag;
+    last_tag_minus_1_ = 0;
+    return res;
+  }
+  bool EndedAtLimit() const { return last_tag_minus_1_ == 0; }
+  bool EndedAtEndOfStream() const { return last_tag_minus_1_ == 1; }
+  void SetLastTag(uint32 tag) { last_tag_minus_1_ = tag - 1; }
+  void SetEndOfStream() { last_tag_minus_1_ = 1; }
+  bool IsExceedingLimit(const char* ptr) {
+    return ptr > limit_end_ &&
+           (next_chunk_ == nullptr || ptr - buffer_end_ > limit_);
   }
 
  protected:
@@ -233,6 +244,20 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   char buffer_[2 * kSlopBytes] = {};
   enum { kNoAliasing = 0, kOnPatch = 1, kNoDelta = 2 };
   std::uintptr_t aliasing_ = kNoAliasing;
+  // This variable is used to communicate how the parse ended, in order to
+  // completely verify the parsed data. A wire-format parse can end because of
+  // one of the following conditions:
+  // 1) A parse can end on a pushed limit.
+  // 2) A parse can end on End Of Stream (EOS).
+  // 3) A parse can end on 0 tag (only valid for toplevel message).
+  // 4) A parse can end on an end-group tag.
+  // This variable should always be set to 0, which indicates case 1. If the
+  // parse terminated due to EOS (case 2), it's set to 1. In case the parse
+  // ended due to a terminating tag (case 3 and 4) it's set to (tag - 1).
+  // This var doesn't really belong in EpsCopyInputStream and should be part of
+  // the ParseContext, but case 2 is most easily and optimally implemented in
+  // DoneFallback.
+  uint32 last_tag_minus_1_ = 0;
 
   std::pair<const char*, bool> DoneFallback(const char* ptr, int d);
   const char* Next(int overrun, int d);
@@ -306,12 +331,6 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
   bool DoneNoSlopCheck(const char** ptr) { return DoneWithCheck(ptr, -1); }
 
   int depth() const { return depth_; }
-  void SetLastTag(uint32 tag) { last_tag_minus_1_ = tag - 1; }
-  uint32 LastTagMinus1() const { return last_tag_minus_1_; }
-
-  bool AtLegitimateEnd(const char* ptr) const {
-    return ptr && AtLimit(ptr) && last_tag_minus_1_ == 0;
-  }
 
   Data& data() { return data_; }
   const Data& data() const { return data_; }
@@ -331,8 +350,7 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
     ptr = msg->_InternalParse(ptr, this);
     group_depth_--;
     depth_++;
-    if (last_tag_minus_1_ != tag) return nullptr;
-    last_tag_minus_1_ = 0;
+    if (PROTOBUF_PREDICT_FALSE(!ConsumeEndGroup(tag))) return nullptr;
     return ptr;
   }
 
@@ -346,7 +364,6 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
   // Unfortunately necessary for the fringe case of ending on 0 or end-group tag
   // in the last kSlopBytes of a ZeroCopyInputStream chunk.
   int group_depth_ = INT_MIN;
-  uint32 last_tag_minus_1_ = 0;
   Data data_;
 };
 
@@ -403,11 +420,25 @@ inline uint32 DecodeTwoBytes(uint32 value, const char** ptr) {
 
 // Used for tags, could read up to 5 bytes which must be available.
 // Caller must ensure its safe to call.
-inline const char* ReadTag(const char* p, uint32* out) {
-  return VarintParse<5>(p, out);
-}
 
 std::pair<const char*, uint32> ReadTagFallback(const char* p, uint32 res);
+
+inline const char* ReadTag(const char* p, uint32* out) {
+  uint32 res = static_cast<uint8>(p[0]);
+  if (res < 128) {
+    *out = res;
+    return p + 1;
+  }
+  uint32 second = static_cast<uint8>(p[1]);
+  res += (second - 1) << 7;
+  if (second < 128) {
+    *out = res;
+    return p + 2;
+  }
+  auto tmp = ReadTagFallback(p + 2, res);
+  *out = tmp.second;
+  return tmp.first;
+}
 
 // Will preload the next 2 bytes
 inline const char* ReadTag(const char* p, uint32* out, uint32* preload) {
@@ -536,10 +567,11 @@ PROTOBUF_MUST_USE_RESULT const char* ParseContext::ParseMessage(
   int size = ReadSize(&ptr);
   if (!ptr) return nullptr;
   auto old = PushLimit(ptr, size);
-  if (--depth_ < 0 || old < 0) return nullptr;
+  if (--depth_ < 0) return nullptr;
   ptr = msg->_InternalParse(ptr, this);
+  if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) return nullptr;
   depth_++;
-  if (!PopLimit(old, ptr) || last_tag_minus_1_ != 0) return nullptr;
+  if (!PopLimit(old)) return nullptr;
   return ptr;
 }
 
@@ -555,7 +587,7 @@ const char* EpsCopyInputStream::ReadPackedVarint(const char* ptr, Add add) {
     if (!ptr) return nullptr;
     add(varint);
   }
-  if (!PopLimit(old, ptr)) return nullptr;
+  if (!PopLimit(old)) return nullptr;
   return ptr;
 }
 
@@ -564,19 +596,22 @@ PROTOBUF_EXPORT
 bool VerifyUTF8(StringPiece s, const char* field_name);
 
 // All the string parsers with or without UTF checking and for all CTypes.
-inline PROTOBUF_MUST_USE_RESULT const char* InlineGreedyStringParser(
-    std::string* s, const char* ptr, ParseContext* ctx) {
-  int size = ReadSize(&ptr);
-  if (!ptr) return nullptr;
-  return ctx->ReadString(ptr, size, s);
-}
+PROTOBUF_EXPORT PROTOBUF_MUST_USE_RESULT const char* InlineGreedyStringParser(
+    std::string* s, const char* ptr, ParseContext* ctx);
 
 PROTOBUF_EXPORT PROTOBUF_MUST_USE_RESULT const char*
 InlineGreedyStringParserUTF8(std::string* s, const char* ptr, ParseContext* ctx,
                              const char* field_name);
-PROTOBUF_EXPORT PROTOBUF_MUST_USE_RESULT const char*
-InlineGreedyStringParserUTF8Verify(std::string* s, const char* ptr,
-                                   ParseContext* ctx, const char* field_name);
+// Inline because we don't want to pay the price of field_name in opt mode.
+inline PROTOBUF_MUST_USE_RESULT const char* InlineGreedyStringParserUTF8Verify(
+    std::string* s, const char* ptr, ParseContext* ctx,
+    const char* field_name) {
+  auto p = InlineGreedyStringParser(s, ptr, ctx);
+#ifndef NDEBUG
+  VerifyUTF8(*s, field_name);
+#endif  // !NDEBUG
+  return p;
+}
 
 
 // Add any of the following lines to debug which parse function is failing.
@@ -705,6 +740,9 @@ PROTOBUF_EXPORT PROTOBUF_MUST_USE_RESULT const char* UnknownGroupLiteParse(
 // UnknownFieldSet* to make the generated code isomorphic between full and lite.
 PROTOBUF_EXPORT PROTOBUF_MUST_USE_RESULT const char* UnknownFieldParse(
     uint32 tag, std::string* unknown, const char* ptr, ParseContext* ctx);
+PROTOBUF_EXPORT PROTOBUF_MUST_USE_RESULT const char* UnknownFieldParse(
+    uint32 tag, InternalMetadataWithArenaLite* metadata, const char* ptr,
+    ParseContext* ctx);
 
 }  // namespace internal
 }  // namespace protobuf

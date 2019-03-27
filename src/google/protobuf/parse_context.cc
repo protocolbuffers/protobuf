@@ -157,11 +157,15 @@ std::pair<const char*, bool> EpsCopyInputStream::DoneFallback(const char* ptr,
   GOOGLE_DCHECK(ptr >= limit_end_);
   int overrun = ptr - buffer_end_;
   GOOGLE_DCHECK(overrun <= kSlopBytes);  // Guaranteed by parse loop.
-  GOOGLE_DCHECK(overrun != limit_);
-  // We either exceeded the limit (parse error) or we need to get new data.
-  // Did we exceed the limit? Is so parse error.
+  // Did we exceeded the limit (parse error).
   if (PROTOBUF_PREDICT_FALSE(overrun > limit_)) return {nullptr, true};
-  GOOGLE_DCHECK(overrun <= limit_);  // Follows from above
+  GOOGLE_DCHECK(overrun != limit_);  // Guaranteed by caller.
+  GOOGLE_DCHECK(overrun < limit_);   // Follows from above
+  // TODO(gerbens) Instead of this dcheck we could just assign, and remove
+  // updating the limit_end from PopLimit, ie.
+  // limit_end_ = buffer_end_ + (std::min)(0, limit_);
+  // if (ptr < limit_end_) return {ptr, false};
+  GOOGLE_DCHECK(limit_end_ == buffer_end_ + (std::min)(0, limit_));
   // At this point we know the following assertion holds.
   GOOGLE_DCHECK(limit_ > 0);
   GOOGLE_DCHECK(limit_end_ == buffer_end_);  // because limit_ > 0
@@ -174,6 +178,8 @@ std::pair<const char*, bool> EpsCopyInputStream::DoneFallback(const char* ptr,
       if (PROTOBUF_PREDICT_FALSE(overrun != 0)) return {nullptr, true};
       GOOGLE_DCHECK(limit_ > 0);
       limit_end_ = buffer_end_;
+      // Distinquish ending on a pushed limit or ending on end-of-stream.
+      SetEndOfStream();
       return {ptr, true};
     }
     limit_ -= buffer_end_ - p;  // Adjust limit_ relative to new anchor
@@ -193,12 +199,19 @@ const char* EpsCopyInputStream::ReadStringFallback(const char* ptr, int size,
   s->clear();
   // TODO(gerbens) assess security. At the moment its parity with
   // CodedInputStream but it allows a payload to reserve large memory.
-  if (size <= buffer_end_ - ptr + limit_) s->reserve(size);
+  if (PROTOBUF_PREDICT_TRUE(size <= buffer_end_ - ptr + limit_)) {
+    s->reserve(size);
+  }
   return AppendStringFallback(ptr, size, s);
 }
 
 const char* EpsCopyInputStream::AppendStringFallback(const char* ptr, int size,
                                                      std::string* str) {
+  // TODO(gerbens) assess security. At the moment its parity with
+  // CodedInputStream but it allows a payload to reserve large memory.
+  if (PROTOBUF_PREDICT_TRUE(size <= buffer_end_ - ptr + limit_)) {
+    str->reserve(size);
+  }
   return AppendSize(ptr, size,
                     [str](const char* p, int s) { str->append(p, s); });
 }
@@ -264,7 +277,6 @@ const char* EpsCopyInputStream::InitFrom(io::ZeroCopyInputStream* zcis) {
   }
   next_chunk_ = nullptr;
   size_ = 0;
-  limit_ = 0;
   limit_end_ = buffer_end_ = buffer_;
   return buffer_;
 }
@@ -340,21 +352,18 @@ bool VerifyUTF8(StringPiece str, const char* field_name) {
   return true;
 }
 
+const char* InlineGreedyStringParser(std::string* s, const char* ptr,
+                                     ParseContext* ctx) {
+  int size = ReadSize(&ptr);
+  if (!ptr) return nullptr;
+  return ctx->ReadString(ptr, size, s);
+}
+
 const char* InlineGreedyStringParserUTF8(std::string* s, const char* ptr,
                                          ParseContext* ctx,
                                          const char* field_name) {
   auto p = InlineGreedyStringParser(s, ptr, ctx);
   GOOGLE_PROTOBUF_PARSER_ASSERT(VerifyUTF8(*s, field_name));
-  return p;
-}
-
-const char* InlineGreedyStringParserUTF8Verify(std::string* s, const char* ptr,
-                                               ParseContext* ctx,
-                                               const char* field_name) {
-  auto p = InlineGreedyStringParser(s, ptr, ctx);
-#ifndef NDEBUG
-  VerifyUTF8(*s, field_name);
-#endif  // !NDEBUG
   return p;
 }
 
@@ -529,6 +538,12 @@ const char* UnknownFieldParse(uint32 tag, std::string* unknown, const char* ptr,
                               ParseContext* ctx) {
   UnknownFieldLiteParserHelper field_parser(unknown);
   return FieldParser(tag, field_parser, ptr, ctx);
+}
+
+const char* UnknownFieldParse(uint32 tag,
+                              InternalMetadataWithArenaLite* metadata,
+                              const char* ptr, ParseContext* ctx) {
+  return UnknownFieldParse(tag, metadata->mutable_unknown_fields(), ptr, ctx);
 }
 
 }  // namespace internal

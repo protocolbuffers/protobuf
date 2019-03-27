@@ -72,6 +72,7 @@ EnumGenerator::EnumGenerator(const EnumDescriptor* descriptor,
   variables_["short_name"] = descriptor_->name();
   variables_["enumbase"] = options_.proto_h ? " : int" : "";
   variables_["nested_name"] = descriptor_->name();
+  variables_["resolved_name"] = ResolveKeyword(descriptor_->name());
   variables_["prefix"] =
       (descriptor_->containing_type() == NULL) ? "" : classname_ + "_";
 }
@@ -192,13 +193,13 @@ void EnumGenerator::GenerateGetEnumDescriptorSpecializations(
 
 void EnumGenerator::GenerateSymbolImports(io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("typedef $classname$ $nested_name$;\n");
+  format("typedef $classname$ $resolved_name$;\n");
 
   for (int j = 0; j < descriptor_->value_count(); j++) {
     std::string deprecated_attr = DeprecatedAttribute(
         options_, descriptor_->value(j)->options().deprecated());
     format(
-        "$1$static constexpr $nested_name$ ${2$$3$$}$ =\n"
+        "$1$static constexpr $resolved_name$ ${2$$3$$}$ =\n"
         "  $classname$_$3$;\n",
         deprecated_attr, descriptor_->value(j),
         EnumValueName(descriptor_->value(j)));
@@ -208,9 +209,9 @@ void EnumGenerator::GenerateSymbolImports(io::Printer* printer) const {
       "static inline bool $nested_name$_IsValid(int value) {\n"
       "  return $classname$_IsValid(value);\n"
       "}\n"
-      "static constexpr $nested_name$ ${1$$nested_name$_MIN$}$ =\n"
+      "static constexpr $resolved_name$ ${1$$nested_name$_MIN$}$ =\n"
       "  $classname$_$nested_name$_MIN;\n"
-      "static constexpr $nested_name$ ${1$$nested_name$_MAX$}$ =\n"
+      "static constexpr $resolved_name$ ${1$$nested_name$_MAX$}$ =\n"
       "  $classname$_$nested_name$_MAX;\n",
       descriptor_);
   if (generate_array_size_) {
@@ -231,7 +232,7 @@ void EnumGenerator::GenerateSymbolImports(io::Printer* printer) const {
       // version below.  Would this break our compatibility guarantees?
       format(
           "static inline const std::string& "
-          "$nested_name$_Name($nested_name$ value) {"
+          "$nested_name$_Name($resolved_name$ value) {"
           "\n"
           "  return $classname$_Name(value);\n"
           "}\n");
@@ -243,7 +244,7 @@ void EnumGenerator::GenerateSymbolImports(io::Printer* printer) const {
           "template<typename T>\n"
           "static inline const std::string& $nested_name$_Name(T enum_t_value) "
           "{\n"
-          "  static_assert(::std::is_same<T, $nested_name$>::value ||\n"
+          "  static_assert(::std::is_same<T, $resolved_name$>::value ||\n"
           "    ::std::is_integral<T>::value,\n"
           "    \"Incorrect type passed to function $nested_name$_Name.\");\n"
           "  return $classname$_Name(enum_t_value);\n"
@@ -251,7 +252,7 @@ void EnumGenerator::GenerateSymbolImports(io::Printer* printer) const {
     }
     format(
         "static inline bool $nested_name$_Parse(const std::string& name,\n"
-        "    $nested_name$* value) {\n"
+        "    $resolved_name$* value) {\n"
         "  return $classname$_Parse(name, value);\n"
         "}\n");
   }

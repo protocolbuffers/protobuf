@@ -68,6 +68,7 @@ ConformanceTestSuite::ConformanceRequestSetting::ConformanceRequestSetting(
       input_format_(input_format),
       output_format_(output_format),
       prototype_message_(prototype_message),
+      prototype_message_for_compare_(prototype_message.New()),
       test_name_(test_name) {
   switch (input_format) {
     case conformance::PROTOBUF: {
@@ -102,7 +103,7 @@ ConformanceTestSuite::ConformanceRequestSetting::ConformanceRequestSetting(
 
 Message* ConformanceTestSuite::ConformanceRequestSetting::
     GetTestMessage() const {
-  return prototype_message_.New();
+  return prototype_message_for_compare_->New();
 }
 
 string ConformanceTestSuite::ConformanceRequestSetting::

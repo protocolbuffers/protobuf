@@ -224,6 +224,14 @@ class ConformanceTestSuite {
 
     string ConformanceLevelToString(ConformanceLevel level) const;
 
+    void SetPrintUnknownFields(bool print_unknown_fields) {
+      request_.set_print_unknown_fields(true);
+    }
+
+    void SetPrototypeMessageForCompare(const Message& message) {
+      prototype_message_for_compare_.reset(message.New());
+    }
+
    protected:
     virtual string InputFormatString(conformance::WireFormat format) const;
     virtual string OutputFormatString(conformance::WireFormat format) const;
@@ -234,6 +242,7 @@ class ConformanceTestSuite {
     ::conformance::WireFormat input_format_;
     ::conformance::WireFormat output_format_;
     const Message& prototype_message_;
+    std::unique_ptr<Message> prototype_message_for_compare_;
     string test_name_;
   };
 

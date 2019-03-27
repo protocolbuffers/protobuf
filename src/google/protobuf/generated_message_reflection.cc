@@ -50,6 +50,8 @@
 #include <google/protobuf/wire_format.h>
 
 
+#include <google/protobuf/port_def.inc>
+
 #define GOOGLE_PROTOBUF_HAS_ONEOF
 
 namespace google {

@@ -2426,9 +2426,13 @@ void Generator::GenerateClassFieldToObject(const GeneratorOptions& options,
     // all).  So we want to generate independent code.
     // The accessor for unset optional values without default should return
     // null. Those are converted to undefined in the generated object.
-    printer->Print("(f = ");
+    if (!use_default) {
+      printer->Print("(f = ");
+    }
     GenerateFieldValueExpression(printer, "msg", field, use_default);
-    printer->Print(") == null ? undefined : f");
+    if (!use_default) {
+      printer->Print(") == null ? undefined : f");
+    }
   }
 }
 
