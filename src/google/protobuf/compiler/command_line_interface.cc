@@ -195,7 +195,7 @@ bool GetProtocAbsolutePath(std::string* path) {
 #ifdef _WIN32
   char buffer[MAX_PATH];
   int len = GetModuleFileNameA(NULL, buffer, MAX_PATH);
-#elif __APPLE__
+#elif defined(__APPLE__)
   char buffer[PATH_MAX];
   int len = 0;
 
