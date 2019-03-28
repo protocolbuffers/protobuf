@@ -61,9 +61,14 @@ namespace Google.Protobuf
         TValue GetExtension<TValue>(Extension<T, TValue> extension);
 
         /// <summary>
-        /// Gets the value of the specified repeated extension
+        /// Gets the value of the specified repeated extension or null if the extension isn't registered
         /// </summary>
         RepeatedField<TValue> GetExtension<TValue>(RepeatedExtension<T, TValue> extension);
+
+        /// <summary>
+        /// Gets the value of the specified repeated extension, registering it if it isn't
+        /// </summary>
+        RepeatedField<TValue> GetOrRegisterExtension<TValue>(RepeatedExtension<T, TValue> extension);
 
         /// <summary>
         /// Sets the value of the specified extension

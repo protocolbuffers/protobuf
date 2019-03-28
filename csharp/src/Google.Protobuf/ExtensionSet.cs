@@ -59,10 +59,6 @@ namespace Google.Protobuf
         /// </summary>
         public static void Register<TTarget>(ref ExtensionSet<TTarget> set, Extension extension) where TTarget : IExtendableMessage<TTarget>
         {
-            if (set == null)
-            {
-                set = new ExtensionSet<TTarget>();
-            }
             if (extension.TargetType != typeof(TTarget))
             {
                 throw new ArgumentException("Cannot register extension for wrong target type");
@@ -71,23 +67,11 @@ namespace Google.Protobuf
             {
                 throw new ArgumentException("Set already contains an extension with the specified field number");
             }
+            if (set == null)
+            {
+                set = new ExtensionSet<TTarget>();
+            }
             set.ValuesByNumber.Add(extension.FieldNumber, extension.CreateValue());
-        }
-
-        private static TValue GetDefaultValue<TValue>() 
-        {
-            if (typeof(TValue) == typeof(string)) 
-            {
-                return (TValue)(object)"";
-            }
-            else if (typeof(TValue) == typeof(ByteString))
-            {
-                return (TValue)(object)ByteString.Empty;
-            }
-            else
-            {
-                return default(TValue);
-            }
         }
 
         /// <summary>
@@ -102,12 +86,12 @@ namespace Google.Protobuf
             }
             else 
             {
-                return GetDefaultValue<TValue>();
+                return extension.DefaultValue;
             }
         }
 
         /// <summary>
-        /// Gets the value of the specified repeated extension
+        /// Gets the value of the specified repeated extension or null if it doesn't exist in this set
         /// </summary>
         public static RepeatedField<TValue> Get<TTarget, TValue>(ref ExtensionSet<TTarget> set, RepeatedExtension<TTarget, TValue> extension) where TTarget : IExtendableMessage<TTarget>
         {
@@ -118,9 +102,32 @@ namespace Google.Protobuf
             }
             else 
             {
-                Register(ref set, extension);
-                return Get(ref set, extension);
+                return null;
             }
+        }
+
+        /// <summary>
+        /// Gets the value of the specified repeated extension, registering it if it doesn't exist
+        /// </summary>
+        public static RepeatedField<TValue> GetOrRegister<TTarget, TValue>(ref ExtensionSet<TTarget> set, RepeatedExtension<TTarget, TValue> extension) where TTarget : IExtendableMessage<TTarget>
+        {
+            IExtensionValue value;
+            if (set == null)
+            {
+                value = extension.CreateValue();
+                set = new ExtensionSet<TTarget>();
+                set.ValuesByNumber.Add(extension.FieldNumber, value);
+            }
+            else
+            {
+                if (!set.ValuesByNumber.TryGetValue(extension.FieldNumber, out value))
+                {
+                    value = extension.CreateValue();
+                    set.ValuesByNumber.Add(extension.FieldNumber, value);
+                }
+            }
+
+            return ((RepeatedExtensionValue<TValue>)value).GetValue();
         }
 
         /// <summary>
@@ -129,12 +136,18 @@ namespace Google.Protobuf
         public static void Set<TTarget, TValue>(ref ExtensionSet<TTarget> set, Extension<TTarget, TValue> extension, TValue value) where TTarget : IExtendableMessage<TTarget>
         {
             IExtensionValue extensionValue;
-            if (!GetValue(ref set, extension, out extensionValue))
+            if (set == null)
             {
-                Register(ref set, extension);
-                if (!GetValue(ref set, extension, out extensionValue))
+                extensionValue = extension.CreateValue();
+                set = new ExtensionSet<TTarget>();
+                set.ValuesByNumber.Add(extension.FieldNumber, extensionValue);
+            }
+            else
+            {
+                if (!set.ValuesByNumber.TryGetValue(extension.FieldNumber, out extensionValue))
                 {
-                    throw new InvalidOperationException("Failed to get newly registered extension value");
+                    extensionValue = extension.CreateValue();
+                    set.ValuesByNumber.Add(extension.FieldNumber, extensionValue);
                 }
             }
             
@@ -185,8 +198,10 @@ namespace Google.Protobuf
             {
                 if (stream.ExtensionRegistry != null && stream.ExtensionRegistry.ContainsInputField(stream, typeof(TTarget), out extension))
                 {
-                    Register(ref set, extension);
-                    set.ValuesByNumber[lastFieldNumber].MergeFrom(stream);
+                    IExtensionValue value = extension.CreateValue();
+                    value.MergeFrom(stream);
+                    set = new ExtensionSet<TTarget>();
+                    set.ValuesByNumber.Add(extension.FieldNumber, value);
                     return true;
                 }
                 else
@@ -204,8 +219,9 @@ namespace Google.Protobuf
                 }
                 else if (stream.ExtensionRegistry != null && stream.ExtensionRegistry.ContainsInputField(stream, typeof(TTarget), out extension))
                 {
-                    Register(ref set, extension);
-                    set.ValuesByNumber[lastFieldNumber].MergeFrom(stream);
+                    IExtensionValue value = extension.CreateValue();
+                    value.MergeFrom(stream);
+                    set.ValuesByNumber.Add(extension.FieldNumber, value);
                     return true;
                 }
                 else
