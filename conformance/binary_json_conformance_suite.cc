@@ -2404,6 +2404,8 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
         "unknown": {"a": 1}
       })",
       "");
+
+  RunValidJsonTest("TopLevelNull", REQUIRED, "null", "");
 }
 
 }  // namespace protobuf
