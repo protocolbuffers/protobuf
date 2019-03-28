@@ -29,7 +29,7 @@ else
 fi
 
 # Pull dockerimage from Dockerhub
-docker pull $DOCKER_IMAGE_NAME
+#docker pull $DOCKER_IMAGE_NAME
 
 # Ensure existence of ccache directory
 CCACHE_DIR=/tmp/protobuf-ccache
@@ -52,7 +52,7 @@ docker run \
   -v $CCACHE_DIR:$CCACHE_DIR \
   -w /var/local/git/protobuf \
   --name=$CONTAINER_NAME \
-  $DOCKER_IMAGE_NAME \
+  cd641fcbd50d \
   bash -l "/var/local/kokoro/protobuf/$DOCKER_RUN_SCRIPT" || FAILED="true"
 
 # remove the container, possibly killing it first
