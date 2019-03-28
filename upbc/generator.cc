@@ -368,8 +368,10 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message, Output& output
         GetSizeInit(layout.GetOneofCaseOffset(oneof)));
   }
 
-  for (auto field : FieldNumberOrder(message)) {
+  // Generate const methods.
 
+  for (auto field : FieldNumberOrder(message)) {
+    // Generate hazzer (if any).
     if (layout.HasHasbit(field)) {
       output(
           "UPB_INLINE bool $0_has_$1(const $0 *msg) { "
@@ -384,6 +386,7 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message, Output& output
           field->number());
     }
 
+    // Generate getter.
     if (field->is_repeated()) {
       output(
           "UPB_INLINE $0 const* $1_$2(const $1 *msg, size_t *len) { "
@@ -409,8 +412,15 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message, Output& output
 
   output("\n");
 
+  // Generate mutable methods.
+
   for (auto field : FieldNumberOrder(message)) {
-    if (field->is_repeated()) {
+    if (message->options().map_entry() && field->name() == "key") {
+      // Emit nothing, map keys cannot be changed directly.  Users must use
+      // the mutators of the map itself.
+    } else if (field->is_map()) {
+      // TODO(haberman): add map-based mutators.
+    } else if (field->is_repeated()) {
       output(
           "UPB_INLINE $0* $1_mutable_$2($1 *msg, size_t *len) {\n"
           "  return ($0*)_upb_array_mutable_accessor(msg, $3, len);\n"
@@ -453,6 +463,7 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message, Output& output
             UpbType(field));
       }
     } else {
+      // Non-repeated field.
       output("UPB_INLINE void $0_set_$1($0 *msg, $2 value) {\n", msgname,
              field->name(), CType(field));
       if (field->containing_oneof()) {

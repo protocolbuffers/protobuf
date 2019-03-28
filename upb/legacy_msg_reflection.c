@@ -211,15 +211,6 @@ bool upb_array_set(upb_array *arr, size_t i, upb_msgval val) {
 
 /** upb_map *******************************************************************/
 
-struct upb_map {
-  upb_fieldtype_t key_type;
-  upb_fieldtype_t val_type;
-  /* We may want to optimize this to use inttable where possible, for greater
-   * efficiency and lower memory footprint. */
-  upb_strtable strtab;
-  upb_arena *arena;
-};
-
 static void upb_map_tokey(upb_fieldtype_t type, upb_msgval *key,
                           const char **out_key, size_t *out_len) {
   switch (type) {

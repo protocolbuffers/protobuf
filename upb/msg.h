@@ -11,6 +11,8 @@
 
 #include <stdint.h>
 #include <string.h>
+
+#include "upb/table.int.h"
 #include "upb/upb.h"
 
 #ifdef __cplusplus
@@ -54,6 +56,19 @@ typedef struct {
   size_t size;  /* Measured in elements. */
   upb_arena *arena;
 } upb_array;
+
+/* Our internal representation for maps. */
+typedef struct {
+  /* First element must be upb_array so code like parser/serializer can treat
+   * map fields as array. */
+  upb_array array;
+
+  /* A side index whose values are indexes into the array. May be NULL. */
+  union {
+    upb_strtable *strtab;
+    upb_inttable *inttab;
+  } table;
+} upb_map;
 
 upb_msg *upb_msg_new(const upb_msglayout *l, upb_arena *a);
 upb_msg *upb_msg_new(const upb_msglayout *l, upb_arena *a);

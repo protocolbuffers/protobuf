@@ -7,9 +7,6 @@
 
 #include "upb/port_def.inc"
 
-struct upb_map;
-typedef struct upb_map upb_map;
-
 struct upb_mapiter;
 typedef struct upb_mapiter upb_mapiter;
 
