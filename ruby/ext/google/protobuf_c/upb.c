@@ -14325,7 +14325,7 @@ static bool end_timestamp_zone(upb_json_parser *p, const char *ptr) {
   }
 
   /* Normalize tm */
-  seconds = timegm(&p->tm);
+  seconds = mktime(&p->tm) - timezone;
   seconds += 3600 * hours;
 
   /* Check timestamp boundary */
