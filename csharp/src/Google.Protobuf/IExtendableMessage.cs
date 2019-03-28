@@ -43,6 +43,11 @@ namespace Google.Protobuf
         /// Registers an extension in this message
         /// </summary>
         void RegisterExtension(Extension extension);
+
+        /// <summary>
+        /// Clears an extension, removing it from this message
+        /// </summary>
+        void ClearExtension(Extension extension);
     }
 
     /// <summary>
@@ -69,10 +74,5 @@ namespace Google.Protobuf
         /// Gets whether the value of the specified extension is set
         /// </summary>
         bool HasExtension<TValue>(Extension<T, TValue> extension);
-
-        /// <summary>
-        /// Clears the value of the specified extension
-        /// </summary>
-        void ClearExtension<TValue>(Extension<T, TValue> extension);
     }
 }

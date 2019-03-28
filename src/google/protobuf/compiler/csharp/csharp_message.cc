@@ -279,7 +279,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
       "public bool HasExtension<TValue>(pb::Extension<$class_name$, TValue> extension) {\n"
       "  return pb::ExtensionSet.Has(ref _extensions, extension);\n"
       "}\n"
-      "public void ClearExtension<TValue>(pb::Extension<$class_name$, TValue> extension) {\n"
+      "public void ClearExtension(pb::Extension extension) {\n"
       "  pb::ExtensionSet.Clear(ref _extensions, extension);\n"
       "}\n\n");
   }
