@@ -35,25 +35,9 @@ using Google.Protobuf.Collections;
 namespace Google.Protobuf
 {
     /// <summary>
-    /// Interface for a Protocol Buffers message, supporting basic operations for serialization as well as registering extension field values
-    /// </summary>
-    public interface IExtendableMessage : IMessage
-    {
-        /// <summary>
-        /// Registers an extension in this message
-        /// </summary>
-        void RegisterExtension(Extension extension);
-
-        /// <summary>
-        /// Clears an extension, removing it from this message
-        /// </summary>
-        void ClearExtension(Extension extension);
-    }
-
-    /// <summary>
     /// Generic interface for a Protocol Buffers message containing one or more extensions, where the type parameter is expected to be the same type as the implementation class
     /// </summary>
-    public interface IExtendableMessage<T> : IExtendableMessage, IMessage<T> where T : IExtendableMessage<T>
+    public interface IExtendableMessage<T> : IMessage<T> where T : IExtendableMessage<T>
     {
         /// <summary>
         /// Gets the value of the specified extension
@@ -61,7 +45,8 @@ namespace Google.Protobuf
         TValue GetExtension<TValue>(Extension<T, TValue> extension);
 
         /// <summary>
-        /// Gets the value of the specified repeated extension or null if the extension isn't registered
+        /// Gets the value of the specified repeated extension or null if the extension isn't registered in this set.
+        /// For a version of this method that never returns null, use <see cref="IExtendableMessage{T}.GetOrRegisterExtension{TValue}(RepeatedExtension{T, TValue})"/>
         /// </summary>
         RepeatedField<TValue> GetExtension<TValue>(RepeatedExtension<T, TValue> extension);
 
@@ -79,5 +64,15 @@ namespace Google.Protobuf
         /// Gets whether the value of the specified extension is set
         /// </summary>
         bool HasExtension<TValue>(Extension<T, TValue> extension);
+
+        /// <summary>
+        /// Clears the value of the specified extension
+        /// </summary>
+        void ClearExtension<TValue>(Extension<T, TValue> extension);
+
+        /// <summary>
+        /// Clears the value of the specified repeated extension
+        /// </summary>
+        void ClearExtension<TValue>(RepeatedExtension<T, TValue> extension);
     }
 }

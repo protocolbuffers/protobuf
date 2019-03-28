@@ -264,9 +264,6 @@ void MessageGenerator::Generate(io::Printer* printer) {
   if (has_extension_ranges_) {
     printer->Print(
       vars,
-      "public void RegisterExtension(pb::Extension extension) {\n"
-      "  pb::ExtensionSet.Register(ref _extensions, extension);\n"
-      "}\n"
       "public TValue GetExtension<TValue>(pb::Extension<$class_name$, TValue> extension) {\n"
       "  return pb::ExtensionSet.Get(ref _extensions, extension);\n"
       "}\n"
@@ -282,7 +279,10 @@ void MessageGenerator::Generate(io::Printer* printer) {
       "public bool HasExtension<TValue>(pb::Extension<$class_name$, TValue> extension) {\n"
       "  return pb::ExtensionSet.Has(ref _extensions, extension);\n"
       "}\n"
-      "public void ClearExtension(pb::Extension extension) {\n"
+      "public void ClearExtension<TValue>(pb::Extension<$class_name$, TValue> extension) {\n"
+      "  pb::ExtensionSet.Clear(ref _extensions, extension);\n"
+      "}\n"
+      "public void ClearExtension<TValue>(pb::RepeatedExtension<$class_name$, TValue> extension) {\n"
       "  pb::ExtensionSet.Clear(ref _extensions, extension);\n"
       "}\n\n");
   }

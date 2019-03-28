@@ -55,26 +55,6 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Registers the specified extension in this set
-        /// </summary>
-        public static void Register<TTarget>(ref ExtensionSet<TTarget> set, Extension extension) where TTarget : IExtendableMessage<TTarget>
-        {
-            if (extension.TargetType != typeof(TTarget))
-            {
-                throw new ArgumentException("Cannot register extension for wrong target type");
-            }
-            if (set.ValuesByNumber.ContainsKey(extension.FieldNumber))
-            {
-                throw new ArgumentException("Set already contains an extension with the specified field number");
-            }
-            if (set == null)
-            {
-                set = new ExtensionSet<TTarget>();
-            }
-            set.ValuesByNumber.Add(extension.FieldNumber, extension.CreateValue());
-        }
-
-        /// <summary>
         /// Gets the value of the specified extension
         /// </summary>
         public static TValue Get<TTarget, TValue>(ref ExtensionSet<TTarget> set, Extension<TTarget, TValue> extension) where TTarget : IExtendableMessage<TTarget>
@@ -173,7 +153,23 @@ namespace Google.Protobuf
         /// <summary>
         /// Clears the value of the specified extension
         /// </summary>
-        public static void Clear<TTarget>(ref ExtensionSet<TTarget> set, Extension extension) where TTarget : IExtendableMessage<TTarget>
+        public static void Clear<TTarget, TValue>(ref ExtensionSet<TTarget> set, Extension<TTarget, TValue> extension) where TTarget : IExtendableMessage<TTarget>
+        {
+            if (set == null)
+            {
+                return;
+            }
+            set.ValuesByNumber.Remove(extension.FieldNumber);
+            if (set.ValuesByNumber.Count == 0)
+            {
+                set = null;
+            }
+        }
+
+        /// <summary>
+        /// Clears the value of the specified extension
+        /// </summary>
+        public static void Clear<TTarget, TValue>(ref ExtensionSet<TTarget> set, RepeatedExtension<TTarget, TValue> extension) where TTarget : IExtendableMessage<TTarget>
         {
             if (set == null)
             {
