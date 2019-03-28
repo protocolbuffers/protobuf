@@ -2405,7 +2405,7 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
       })",
       "");
 
-  RunValidJsonTest("TopLevelNull", REQUIRED, "null", "");
+  ExpectParseFailureForJson("RejectTopLevelNull", REQUIRED, "null");
 }
 
 }  // namespace protobuf
