@@ -2143,7 +2143,7 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
   RunValidJsonTest(
       "EmptyValue", REQUIRED,
       R"({"optionalValue": {}})",
-      "optional_value: { null_value: NULL_VALUE }");
+      "optional_value: { }");
   RunValidJsonTest(
       "NullValue", REQUIRED,
       R"({"optionalValue": null})",
