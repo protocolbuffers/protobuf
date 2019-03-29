@@ -36,8 +36,11 @@ test_version() {
        cd ../ruby/compatibility_tests/v3.0.0 &&
        cp -R ../../lib lib && ./test.sh"
   else
+    # Recent versions of OSX have deprecated OpenSSL, so we have to explicitly
+    # provide a path to the OpenSSL directory installed via Homebrew.
     bash --login -c \
-      "rvm install $version && rvm use $version && \
+      "rvm install $version --with-openssl-dir=`brew --prefix openssl` && \
+       rvm use $version && \
        which ruby && \
        git clean -f && \
        gem install bundler -v 1.17.3 && bundle && \
