@@ -357,6 +357,11 @@ const char* UnknownFieldParse(uint64 tag, UnknownFieldSet* unknown,
   return FieldParser(tag, field_parser, ptr, ctx);
 }
 
+const char* UnknownFieldParse(uint32 tag, InternalMetadataWithArena* metadata,
+                              const char* ptr, ParseContext* ctx) {
+  return UnknownFieldParse(tag, metadata->mutable_unknown_fields(), ptr, ctx);
+}
+
 }  // namespace internal
 #endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 

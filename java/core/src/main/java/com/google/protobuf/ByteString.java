@@ -1438,16 +1438,14 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
         LiteralByteString lbsOther = (LiteralByteString) other;
         byte[] thisBytes = bytes;
         byte[] otherBytes = lbsOther.bytes;
-        int thisLimit = getOffsetIntoBytes() + length;
-        for (int thisIndex = getOffsetIntoBytes(),
-                otherIndex = lbsOther.getOffsetIntoBytes() + offset;
-            (thisIndex < thisLimit);
-            ++thisIndex, ++otherIndex) {
-          if (thisBytes[thisIndex] != otherBytes[otherIndex]) {
-            return false;
-          }
-        }
-        return true;
+
+        return UnsafeUtil.mismatch(
+                thisBytes,
+                getOffsetIntoBytes(),
+                otherBytes,
+                lbsOther.getOffsetIntoBytes() + offset,
+                length)
+            == -1;
       }
 
       return other.substring(offset, offset + length).equals(substring(0, length));

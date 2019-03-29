@@ -50,8 +50,6 @@ struct CMessageClass;
 //
 // There is normally one pool per process. We make it a Python object only
 // because it contains many Python references.
-// TODO(amauryfa): See whether such objects can appear in reference cycles, and
-// consider adding support for the cyclic GC.
 //
 // "Methods" that interacts with this DescriptorPool are in the cdescriptor_pool
 // namespace.

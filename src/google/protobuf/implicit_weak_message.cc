@@ -41,16 +41,17 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-bool ImplicitWeakMessage::MergePartialFromCodedStream(io::CodedInputStream* input) {
-  io::StringOutputStream string_stream(&data_);
-  io::CodedOutputStream coded_stream(&string_stream, false);
-  return WireFormatLite::SkipMessage(input, &coded_stream);
-}
-
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 const char* ImplicitWeakMessage::_InternalParse(const char* ptr,
                                                 ParseContext* ctx) {
   return ctx->AppendString(ptr, &data_);
+}
+#else
+bool ImplicitWeakMessage::MergePartialFromCodedStream(
+    io::CodedInputStream* input) {
+  io::StringOutputStream string_stream(&data_);
+  io::CodedOutputStream coded_stream(&string_stream, false);
+  return WireFormatLite::SkipMessage(input, &coded_stream);
 }
 #endif
 

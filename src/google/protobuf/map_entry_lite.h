@@ -214,7 +214,7 @@ class MapEntryImpl : public Base {
           ctx->SetLastTag(tag);
           return ptr;
         }
-        ptr = UnknownFieldParse(tag, nullptr, ptr, ctx);
+        ptr = UnknownFieldParse(tag, static_cast<string*>(nullptr), ptr, ctx);
       }
       GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
     }

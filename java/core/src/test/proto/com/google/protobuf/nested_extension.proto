@@ -43,5 +43,6 @@ package protobuf_unittest;
 message MyNestedExtension {
   extend MessageToBeExtended {
     optional MessageToBeExtended recursiveExtension = 2;
+    optional int32 default = 2002;
   }
 }

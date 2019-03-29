@@ -798,6 +798,39 @@ class OnlyWorksWithProto2RightNowTests(TextFormatBase):
         self.RemoveRedundantZeros(text_format.MessageToString(message)),
         'text_format_unittest_data_oneof_implemented.txt')
 
+  def testPrintUnknownFields(self):
+    message = unittest_pb2.TestAllTypes()
+    message.optional_int32 = 101
+    message.optional_double = 102.0
+    message.optional_string = u'hello'
+    message.optional_bytes = b'103'
+    message.optionalgroup.a = 104
+    message.optional_nested_message.bb = 105
+    all_data = message.SerializeToString()
+    empty_message = unittest_pb2.TestEmptyMessage()
+    empty_message.ParseFromString(all_data)
+    self.assertEqual('1: 101\n'
+                     '12: 4636878028842991616\n'
+                     '14: "hello"\n'
+                     '15: "103"\n'
+                     '16 {\n'
+                     '  17: 104\n'
+                     '}\n'
+                     '18 {\n'
+                     '  1: 105\n'
+                     '}\n',
+                     text_format.MessageToString(empty_message,
+                                                 print_unknown_fields=True))
+    self.assertEqual('1: 101 '
+                     '12: 4636878028842991616 '
+                     '14: "hello" '
+                     '15: "103" '
+                     '16 { 17: 104 } '
+                     '18 { 1: 105 }',
+                     text_format.MessageToString(empty_message,
+                                                 print_unknown_fields=True,
+                                                 as_one_line=True))
+
   def testPrintInIndexOrder(self):
     message = unittest_pb2.TestFieldOrderings()
     # Fields are listed in index order instead of field number.

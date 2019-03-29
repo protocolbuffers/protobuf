@@ -86,7 +86,11 @@ string TestSourceDir() {
   // Look for the "src" directory.
   string prefix = ".";
 
-  while (!File::Exists(prefix + "/src/google/protobuf")) {
+  // Keep looking further up the directory tree until we find
+  // src/.../descriptor.cc. It is important to look for a particular file,
+  // keeping in mind that with Bazel builds the directory structure under
+  // bazel-bin/ looks similar to the main directory tree in the Git repo.
+  while (!File::Exists(prefix + "/src/google/protobuf/descriptor.cc")) {
     if (!File::Exists(prefix)) {
       GOOGLE_LOG(FATAL)
         << "Could not find protobuf source code.  Please run tests from "

@@ -273,23 +273,24 @@ inline uint8* TableSerializeToArray(const MessageLite& msg,
 
 template <typename T>
 struct CompareHelper {
-  bool operator()(const T& a, const T& b) { return a < b; }
+  bool operator()(const T& a, const T& b) const { return a < b; }
 };
 
 template <>
 struct CompareHelper<ArenaStringPtr> {
-  bool operator()(const ArenaStringPtr& a, const ArenaStringPtr& b) {
+  bool operator()(const ArenaStringPtr& a, const ArenaStringPtr& b) const {
     return a.Get() < b.Get();
   }
 };
 
 struct CompareMapKey {
   template <typename T>
-  bool operator()(const MapEntryHelper<T>& a, const MapEntryHelper<T>& b) {
+  bool operator()(const MapEntryHelper<T>& a,
+                  const MapEntryHelper<T>& b) const {
     return Compare(a.key_, b.key_);
   }
   template <typename T>
-  bool Compare(const T& a, const T& b) {
+  bool Compare(const T& a, const T& b) const {
     return CompareHelper<T>()(a, b);
   }
 };

@@ -710,6 +710,9 @@ class PROTOBUF_EXPORT CodedOutputStream {
   // Skips a number of bytes, leaving the bytes unmodified in the underlying
   // buffer.  Returns false if an underlying write error occurs.  This is
   // mainly useful with GetDirectBufferPointer().
+  // Note of caution, the skipped bytes may contain uninitialized data. The
+  // caller must make sure that the skipped bytes are properly initialized,
+  // otherwise you might leak bytes from your heap.
   bool Skip(int count);
 
   // Sets *data to point directly at the unwritten part of the

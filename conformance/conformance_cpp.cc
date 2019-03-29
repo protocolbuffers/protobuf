@@ -214,8 +214,10 @@ void DoTest(const ConformanceRequest& request, ConformanceResponse* response) {
     }
 
     case conformance::TEXT_FORMAT: {
-      GOOGLE_CHECK(TextFormat::PrintToString(*test_message,
-                                             response->mutable_text_payload()));
+      TextFormat::Printer printer;
+      printer.SetHideUnknownFields(!request.print_unknown_fields());
+      GOOGLE_CHECK(printer.PrintToString(*test_message,
+                                         response->mutable_text_payload()));
       break;
     }
 

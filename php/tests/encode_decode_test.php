@@ -167,6 +167,23 @@ class EncodeDecodeTest extends TestBase
         $this->assertSame("\"YQ==\"", $m->serializeToJsonString());
     }
 
+    public function generateRandomString($length = 10) {
+        $randomString = str_repeat("+", $length);
+        for ($i = 0; $i < $length; $i++) {
+            $randomString[$i] = rand(0, 255);
+        }
+        return $randomString;
+    }
+
+    public function testEncodeTopLevelLongBytesValue()
+    {
+        $m = new BytesValue();
+        $data = $this->generateRandomString(12007);
+        $m->setValue($data);
+        $expected = "\"" . base64_encode($data) . "\"";
+        $this->assertSame(strlen($expected), strlen($m->serializeToJsonString()));
+    }
+
     public function testEncode()
     {
         $from = new TestMessage();

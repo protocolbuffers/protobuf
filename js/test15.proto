@@ -30,9 +30,9 @@
 
 syntax = "proto2";
 
-import "test13.proto";
-
 package jspb.filenametest.package1;
+
+import "test13.proto";
 
 extend TestMessage {
   optional int32 b = 2;

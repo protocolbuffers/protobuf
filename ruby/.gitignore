@@ -6,3 +6,4 @@ protobuf-jruby.iml
 target/
 pkg/
 tmp/
+tests/google/

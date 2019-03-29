@@ -30,12 +30,12 @@
 
 syntax = "proto2";
 
-option java_package = "com.google.apps.jspb.proto";
-option java_multiple_files = true;
-
 package jspb.exttest;
 
 import "test3.proto";
+
+option java_package = "com.google.apps.jspb.proto";
+option java_multiple_files = true;
 
 extend TestExtensionsMessage {
   optional ExtensionMessage floating_msg_field_two = 103;

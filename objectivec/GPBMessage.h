@@ -308,7 +308,7 @@ CF_EXTERN_C_END
 - (void)writeToOutputStream:(NSOutputStream *)output;
 
 /**
- * Writes out a varint for the message size followed by the the message to
+ * Writes out a varint for the message size followed by the message to
  * the given output stream.
  *
  * @param output The coded output stream into which to write the message.
@@ -318,7 +318,7 @@ CF_EXTERN_C_END
 - (void)writeDelimitedToCodedOutputStream:(GPBCodedOutputStream *)output;
 
 /**
- * Writes out a varint for the message size followed by the the message to
+ * Writes out a varint for the message size followed by the message to
  * the given output stream.
  *
  * @param output The output stream into which to write the message.

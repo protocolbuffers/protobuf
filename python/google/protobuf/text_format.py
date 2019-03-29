@@ -51,6 +51,7 @@ if six.PY3:
   long = int  # pylint: disable=redefined-builtin,invalid-name
 
 # pylint: disable=g-import-not-at-top
+from google.protobuf.internal import decoder
 from google.protobuf.internal import type_checkers
 from google.protobuf import descriptor
 from google.protobuf import text_encoding
@@ -128,7 +129,8 @@ def MessageToString(message,
                     use_field_number=False,
                     descriptor_pool=None,
                     indent=0,
-                    message_formatter=None):
+                    message_formatter=None,
+                    print_unknown_fields=False):
   # type: (...) -> str
   """Convert protobuf message to text format.
 
@@ -159,6 +161,7 @@ def MessageToString(message,
     message_formatter: A function(message, indent, as_one_line): unicode|None
       to custom format selected sub-messages (usually based on message type).
       Use to pretty print parts of the protobuf for easier diffing.
+    print_unknown_fields: If True, unknown fields will be printed.
 
   Returns:
     A string of the text formatted protocol buffer message.
@@ -167,7 +170,8 @@ def MessageToString(message,
   printer = _Printer(out, indent, as_utf8, as_one_line,
                      use_short_repeated_primitives, pointy_brackets,
                      use_index_order, float_format, use_field_number,
-                     descriptor_pool, message_formatter)
+                     descriptor_pool, message_formatter,
+                     print_unknown_fields=print_unknown_fields)
   printer.PrintMessage(message)
   result = out.getvalue()
   out.close()
@@ -203,11 +207,19 @@ def PrintMessage(message,
                  float_format=None,
                  use_field_number=False,
                  descriptor_pool=None,
-                 message_formatter=None):
-  printer = _Printer(out, indent, as_utf8, as_one_line,
-                     use_short_repeated_primitives, pointy_brackets,
-                     use_index_order, float_format, use_field_number,
-                     descriptor_pool, message_formatter)
+                 message_formatter=None,
+                 print_unknown_fields=False):
+  printer = _Printer(
+      out=out, indent=indent, as_utf8=as_utf8,
+      as_one_line=as_one_line,
+      use_short_repeated_primitives=use_short_repeated_primitives,
+      pointy_brackets=pointy_brackets,
+      use_index_order=use_index_order,
+      float_format=float_format,
+      use_field_number=use_field_number,
+      descriptor_pool=descriptor_pool,
+      message_formatter=message_formatter,
+      print_unknown_fields=print_unknown_fields)
   printer.PrintMessage(message)
 
 
@@ -221,12 +233,14 @@ def PrintField(field,
                pointy_brackets=False,
                use_index_order=False,
                float_format=None,
-               message_formatter=None):
+               message_formatter=None,
+               print_unknown_fields=False):
   """Print a single field name/value pair."""
   printer = _Printer(out, indent, as_utf8, as_one_line,
                      use_short_repeated_primitives, pointy_brackets,
                      use_index_order, float_format,
-                     message_formatter=message_formatter)
+                     message_formatter=message_formatter,
+                     print_unknown_fields=print_unknown_fields)
   printer.PrintField(field, value)
 
 
@@ -240,12 +254,14 @@ def PrintFieldValue(field,
                     pointy_brackets=False,
                     use_index_order=False,
                     float_format=None,
-                    message_formatter=None):
+                    message_formatter=None,
+                    print_unknown_fields=False):
   """Print a single field value (not including name)."""
   printer = _Printer(out, indent, as_utf8, as_one_line,
                      use_short_repeated_primitives, pointy_brackets,
                      use_index_order, float_format,
-                     message_formatter=message_formatter)
+                     message_formatter=message_formatter,
+                     print_unknown_fields=print_unknown_fields)
   printer.PrintFieldValue(field, value)
 
 
@@ -274,6 +290,11 @@ def _BuildMessageFromTypeName(type_name, descriptor_pool):
   return message_type()
 
 
+# These values must match WireType enum in google/protobuf/wire_format.h.
+WIRETYPE_LENGTH_DELIMITED = 2
+WIRETYPE_START_GROUP = 3
+
+
 class _Printer(object):
   """Text format printer for protocol message."""
 
@@ -288,7 +309,8 @@ class _Printer(object):
                float_format=None,
                use_field_number=False,
                descriptor_pool=None,
-               message_formatter=None):
+               message_formatter=None,
+               print_unknown_fields=False):
     """Initialize the Printer.
 
     Floating point values can be formatted compactly with 15 digits of
@@ -317,6 +339,7 @@ class _Printer(object):
       message_formatter: A function(message, indent, as_one_line): unicode|None
         to custom format selected sub-messages (usually based on message type).
         Use to pretty print parts of the protobuf for easier diffing.
+      print_unknown_fields: If True, unknown fields will be printed.
     """
     self.out = out
     self.indent = indent
@@ -329,6 +352,7 @@ class _Printer(object):
     self.use_field_number = use_field_number
     self.descriptor_pool = descriptor_pool
     self.message_formatter = message_formatter
+    self.print_unknown_fields = print_unknown_fields
 
   def _TryPrintAsAnyMessage(self, message):
     """Serializes if message is a google.protobuf.Any field."""
@@ -391,6 +415,64 @@ class _Printer(object):
             self.PrintField(field, element)
       else:
         self.PrintField(field, value)
+
+    if self.print_unknown_fields:
+      self._PrintUnknownFields(message.UnknownFields())
+
+  def _PrintUnknownFields(self, unknown_fields):
+    """Print unknown fields."""
+    out = self.out
+    for field in unknown_fields:
+      out.write(' ' * self.indent)
+      out.write(str(field.field_number))
+      if field.wire_type == WIRETYPE_START_GROUP:
+        if self.as_one_line:
+          out.write(' { ')
+        else:
+          out.write(' {\n')
+          self.indent += 2
+
+        self._PrintUnknownFields(field.data)
+
+        if self.as_one_line:
+          out.write('} ')
+        else:
+          out.write('}\n')
+          self.indent -= 2
+      elif field.wire_type == WIRETYPE_LENGTH_DELIMITED:
+        try:
+          # If this field is parseable as a Message, it is probably
+          # an embedded message.
+          # pylint: disable=protected-access
+          (embedded_unknown_message, pos) = decoder._DecodeUnknownFieldSet(
+              memoryview(field.data), 0, len(field.data))
+        except Exception:    # pylint: disable=broad-except
+          pos = 0
+
+        if pos == len(field.data):
+          if self.as_one_line:
+            out.write(' { ')
+          else:
+            out.write(' {\n')
+            self.indent += 2
+
+          self._PrintUnknownFields(embedded_unknown_message)
+
+          if self.as_one_line:
+            out.write('} ')
+          else:
+            out.write('}\n')
+            self.indent -= 2
+        else:
+          # A string or bytes field. self.as_utf8 may not work.
+          out.write(': \"')
+          out.write(text_encoding.CEscape(field.data, False))
+          out.write('\" ' if self.as_one_line else '\"\n')
+      else:
+        # varint, fixed32, fixed64
+        out.write(': ')
+        out.write(str(field.data))
+        out.write(' ' if self.as_one_line else '\n')
 
   def _PrintFieldName(self, field):
     """Print field name."""

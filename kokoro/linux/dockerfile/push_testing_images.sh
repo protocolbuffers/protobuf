@@ -4,7 +4,7 @@ set -ex
 
 cd $(dirname $0)/../../..
 git_root=$(pwd)
-cd -
+cd kokoro/linux/dockerfile
 
 DOCKERHUB_ORGANIZATION=protobuftesting
 
