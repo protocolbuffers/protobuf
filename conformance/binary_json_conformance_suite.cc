@@ -2145,6 +2145,10 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
       R"({"optionalValue": {}})",
       "optional_value: { }");
   RunValidJsonTest(
+      "NullValue", REQUIRED,
+      R"({"optionalValue": null})",
+      "optional_value: { }");
+  RunValidJsonTest(
       "ValueAcceptInteger", REQUIRED,
       R"({"optionalValue": 1})",
       "optional_value: { number_value: 1}");
