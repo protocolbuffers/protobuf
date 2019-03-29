@@ -2139,6 +2139,24 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
           }
         }
       )");
+  RunValidJsonTest(
+      "StructWithEmptyListValue", REQUIRED,
+      R"({
+        "optionalStruct": {
+          "listValue": []
+        }
+      })",
+      R"(
+        optional_struct: {
+          fields: {
+            key: "listValue"
+            value: {
+              list_value: {
+              }
+            }
+          }
+        }
+      )");
   // Value
   RunValidJsonTest(
       "ValueAcceptInteger", REQUIRED,
@@ -2189,6 +2207,36 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
             }
           }
         }
+      )");
+  RunValidJsonTest(
+      "RepeatedValue", REQUIRED,
+      R"({
+        "repeatedValue": [["a"]]
+      })",
+      R"(
+        repeated_value: [
+          {
+            list_value: {
+              values: [
+                { string_value: "a"}
+              ]
+            }
+          }
+        ]
+      )");
+  RunValidJsonTest(
+      "RepeatedListValue", REQUIRED,
+      R"({
+        "repeatedListValue": [["a"]]
+      })",
+      R"(
+        repeated_list_value: [
+          {
+            values: [
+              { string_value: "a"}
+            ]
+          }
+        ]
       )");
 
   // Any
