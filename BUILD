@@ -69,9 +69,25 @@ config_setting(
     },
 )
 
+config_setting(
+    name = "android-libcpp",
+    values = {
+        "crosstool_top": "@androidndk//:toolchain-libcpp",
+    },
+)
+
+config_setting(
+    name = "android-gnu-libstdcpp",
+    values = {
+        "crosstool_top": "@androidndk//:toolchain-gnu-libstdcpp",
+    },
+)
+
 # Android and MSVC builds do not need to link in a separate pthread library.
 LINK_OPTS = select({
     ":android": [],
+    ":android-libcpp": [],
+    ":android-gnu-libstdcpp": [],
     ":msvc": [
         # Suppress linker warnings about files with no symbols defined.
         "-ignore:4221",
