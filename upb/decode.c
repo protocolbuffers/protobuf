@@ -33,6 +33,7 @@ typedef struct {
   /* Current decoding pointer.  Points to the beginning of a field until we
    * have finished decoding the whole field. */
   const char *ptr;
+  upb_arena *arena;
 } upb_decstate;
 
 /* Data pertaining to a single message frame. */
@@ -557,10 +558,11 @@ static bool upb_decode_message(upb_decstate *d, const char *limit,
   return true;
 }
 
-bool upb_decode(const char *buf, size_t size, void *msg,
-                const upb_msglayout *l) {
+bool upb_decode(const char *buf, size_t size, void *msg, const upb_msglayout *l,
+                upb_arena *arena) {
   upb_decstate state;
   state.ptr = buf;
+  state.arena = arena;
 
   return upb_decode_message(&state, buf + size, 0, msg, l);
 }
