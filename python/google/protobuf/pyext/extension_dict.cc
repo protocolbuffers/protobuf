@@ -90,6 +90,47 @@ static Py_ssize_t len(ExtensionDict* self) {
   return size;
 }
 
+struct ExtensionIterator {
+  PyObject_HEAD;
+  Py_ssize_t index;
+  std::vector<const FieldDescriptor*> fields;
+
+  // Owned reference, to keep the FieldDescriptors alive.
+  ExtensionDict* extension_dict;
+};
+
+PyObject* GetIter(PyObject* _self) {
+  ExtensionDict* self = reinterpret_cast<ExtensionDict*>(_self);
+
+  ScopedPyObjectPtr obj(PyType_GenericAlloc(&ExtensionIterator_Type, 0));
+  if (obj == nullptr) {
+    return PyErr_Format(PyExc_MemoryError,
+                        "Could not allocate extension iterator");
+  }
+
+  ExtensionIterator* iter = reinterpret_cast<ExtensionIterator*>(obj.get());
+
+  // Call "placement new" to initialize. So the constructor of
+  // std::vector<...> fields will be called.
+  new (iter) ExtensionIterator;
+
+  self->parent->message->GetReflection()->ListFields(*self->parent->message,
+                                                     &iter->fields);
+  iter->index = 0;
+  Py_INCREF(self);
+  iter->extension_dict = self;
+
+  return obj.release();
+}
+
+static void DeallocExtensionIterator(PyObject* _self) {
+  ExtensionIterator* self = reinterpret_cast<ExtensionIterator*>(_self);
+  self->fields.clear();
+  Py_XDECREF(self->extension_dict);
+  self->~ExtensionIterator();
+  Py_TYPE(_self)->tp_free(_self);
+}
+
 PyObject* subscript(ExtensionDict* self, PyObject* key) {
   const FieldDescriptor* descriptor = cmessage::GetExtensionDescriptor(key);
   if (descriptor == NULL) {
@@ -108,20 +149,19 @@ PyObject* subscript(ExtensionDict* self, PyObject* key) {
       self->parent->composite_fields->find(descriptor);
   if (iterator != self->parent->composite_fields->end()) {
     Py_INCREF(iterator->second);
-    return iterator->second;
+    return iterator->second->AsPyObject();
   }
 
   if (descriptor->label() != FieldDescriptor::LABEL_REPEATED &&
       descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
     // TODO(plabatut): consider building the class on the fly!
-    PyObject* sub_message = cmessage::InternalGetSubMessage(
+    ContainerBase* sub_message = cmessage::InternalGetSubMessage(
         self->parent, descriptor);
     if (sub_message == NULL) {
       return NULL;
     }
-    Py_INCREF(sub_message);
     (*self->parent->composite_fields)[descriptor] = sub_message;
-    return sub_message;
+    return sub_message->AsPyObject();
   }
 
   if (descriptor->label() == FieldDescriptor::LABEL_REPEATED) {
@@ -144,23 +184,21 @@ PyObject* subscript(ExtensionDict* self, PyObject* key) {
       if (message_class == NULL) {
         return NULL;
       }
-      PyObject* py_container = repeated_composite_container::NewContainer(
+      ContainerBase* py_container = repeated_composite_container::NewContainer(
           self->parent, descriptor, message_class);
       if (py_container == NULL) {
         return NULL;
       }
-      Py_INCREF(py_container);
       (*self->parent->composite_fields)[descriptor] = py_container;
-      return py_container;
+      return py_container->AsPyObject();
     } else {
-      PyObject* py_container = repeated_scalar_container::NewContainer(
+      ContainerBase* py_container = repeated_scalar_container::NewContainer(
           self->parent, descriptor);
       if (py_container == NULL) {
         return NULL;
       }
-      Py_INCREF(py_container);
       (*self->parent->composite_fields)[descriptor] = py_container;
-      return py_container;
+      return py_container->AsPyObject();
     }
   }
   PyErr_SetString(PyExc_ValueError, "control reached unexpected line");
@@ -236,6 +274,35 @@ PyObject* _FindExtensionByNumber(ExtensionDict* self, PyObject* arg) {
   return PyFieldDescriptor_FromDescriptor(message_extension);
 }
 
+static int Contains(PyObject* _self, PyObject* key) {
+  ExtensionDict* self = reinterpret_cast<ExtensionDict*>(_self);
+  const FieldDescriptor* field_descriptor =
+      cmessage::GetExtensionDescriptor(key);
+  if (field_descriptor == nullptr) {
+    return -1;
+  }
+
+  if (!field_descriptor->is_extension()) {
+    PyErr_Format(PyExc_KeyError, "%s is not an extension",
+                 field_descriptor->full_name().c_str());
+    return -1;
+  }
+
+  const Message* message = self->parent->message;
+  const Reflection* reflection = message->GetReflection();
+  if (field_descriptor->is_repeated()) {
+    if (reflection->FieldSize(*message, field_descriptor) > 0) {
+      return 1;
+    }
+  } else {
+    if (reflection->HasField(*message, field_descriptor)) {
+      return 1;
+    }
+  }
+
+  return 0;
+}
+
 ExtensionDict* NewExtensionDict(CMessage *parent) {
   ExtensionDict* self = reinterpret_cast<ExtensionDict*>(
       PyType_GenericAlloc(&ExtensionDict_Type, 0));
@@ -248,7 +315,8 @@ ExtensionDict* NewExtensionDict(CMessage *parent) {
   return self;
 }
 
-void dealloc(ExtensionDict* self) {
+void dealloc(PyObject* pself) {
+  ExtensionDict* self = reinterpret_cast<ExtensionDict*>(pself);
   Py_CLEAR(self->parent);
   Py_TYPE(self)->tp_free(reinterpret_cast<PyObject*>(self));
 }
@@ -269,6 +337,16 @@ static PyObject* RichCompare(ExtensionDict* self, PyObject* other, int opid) {
     Py_RETURN_TRUE;
   }
 }
+static PySequenceMethods SeqMethods = {
+    (lenfunc)len,          // sq_length
+    0,                     // sq_concat
+    0,                     // sq_repeat
+    0,                     // sq_item
+    0,                     // sq_slice
+    0,                     // sq_ass_item
+    0,                     // sq_ass_slice
+    (objobjproc)Contains,  // sq_contains
+};
 
 static PyMappingMethods MpMethods = {
   (lenfunc)len,                /* mp_length */
@@ -278,54 +356,119 @@ static PyMappingMethods MpMethods = {
 
 #define EDMETHOD(name, args, doc) { #name, (PyCFunction)name, args, doc }
 static PyMethodDef Methods[] = {
-  EDMETHOD(_FindExtensionByName, METH_O,
-           "Finds an extension by name."),
-  EDMETHOD(_FindExtensionByNumber, METH_O,
-           "Finds an extension by field number."),
-  { NULL, NULL }
+    EDMETHOD(_FindExtensionByName, METH_O, "Finds an extension by name."),
+    EDMETHOD(_FindExtensionByNumber, METH_O,
+             "Finds an extension by field number."),
+    {NULL, NULL},
 };
 
 }  // namespace extension_dict
 
 PyTypeObject ExtensionDict_Type = {
-  PyVarObject_HEAD_INIT(&PyType_Type, 0)
-  FULL_MODULE_NAME ".ExtensionDict",   // tp_name
-  sizeof(ExtensionDict),               // tp_basicsize
-  0,                                   //  tp_itemsize
-  (destructor)extension_dict::dealloc,  //  tp_dealloc
-  0,                                   //  tp_print
-  0,                                   //  tp_getattr
-  0,                                   //  tp_setattr
-  0,                                   //  tp_compare
-  0,                                   //  tp_repr
-  0,                                   //  tp_as_number
-  0,                                   //  tp_as_sequence
-  &extension_dict::MpMethods,          //  tp_as_mapping
-  PyObject_HashNotImplemented,         //  tp_hash
-  0,                                   //  tp_call
-  0,                                   //  tp_str
-  0,                                   //  tp_getattro
-  0,                                   //  tp_setattro
-  0,                                   //  tp_as_buffer
-  Py_TPFLAGS_DEFAULT,                  //  tp_flags
-  "An extension dict",                 //  tp_doc
-  0,                                   //  tp_traverse
-  0,                                   //  tp_clear
-  (richcmpfunc)extension_dict::RichCompare,  //  tp_richcompare
-  0,                                   //  tp_weaklistoffset
-  0,                                   //  tp_iter
-  0,                                   //  tp_iternext
-  extension_dict::Methods,             //  tp_methods
-  0,                                   //  tp_members
-  0,                                   //  tp_getset
-  0,                                   //  tp_base
-  0,                                   //  tp_dict
-  0,                                   //  tp_descr_get
-  0,                                   //  tp_descr_set
-  0,                                   //  tp_dictoffset
-  0,                                   //  tp_init
+    PyVarObject_HEAD_INIT(&PyType_Type, 0)     //
+    FULL_MODULE_NAME ".ExtensionDict",         // tp_name
+    sizeof(ExtensionDict),                     // tp_basicsize
+    0,                                         //  tp_itemsize
+    (destructor)extension_dict::dealloc,       //  tp_dealloc
+    0,                                         //  tp_print
+    0,                                         //  tp_getattr
+    0,                                         //  tp_setattr
+    0,                                         //  tp_compare
+    0,                                         //  tp_repr
+    0,                                         //  tp_as_number
+    &extension_dict::SeqMethods,               //  tp_as_sequence
+    &extension_dict::MpMethods,                //  tp_as_mapping
+    PyObject_HashNotImplemented,               //  tp_hash
+    0,                                         //  tp_call
+    0,                                         //  tp_str
+    0,                                         //  tp_getattro
+    0,                                         //  tp_setattro
+    0,                                         //  tp_as_buffer
+    Py_TPFLAGS_DEFAULT,                        //  tp_flags
+    "An extension dict",                       //  tp_doc
+    0,                                         //  tp_traverse
+    0,                                         //  tp_clear
+    (richcmpfunc)extension_dict::RichCompare,  //  tp_richcompare
+    0,                                         //  tp_weaklistoffset
+    extension_dict::GetIter,                   //  tp_iter
+    0,                                         //  tp_iternext
+    extension_dict::Methods,                   //  tp_methods
+    0,                                         //  tp_members
+    0,                                         //  tp_getset
+    0,                                         //  tp_base
+    0,                                         //  tp_dict
+    0,                                         //  tp_descr_get
+    0,                                         //  tp_descr_set
+    0,                                         //  tp_dictoffset
+    0,                                         //  tp_init
 };
 
+PyObject* IterNext(PyObject* _self) {
+  extension_dict::ExtensionIterator* self =
+      reinterpret_cast<extension_dict::ExtensionIterator*>(_self);
+  Py_ssize_t total_size = self->fields.size();
+  Py_ssize_t index = self->index;
+  while (self->index < total_size) {
+    index = self->index;
+    ++self->index;
+    if (self->fields[index]->is_extension()) {
+      // With C++ descriptors, the field can always be retrieved, but for
+      // unknown extensions which have not been imported in Python code, there
+      // is no message class and we cannot retrieve the value.
+      // ListFields() has the same behavior.
+      if (self->fields[index]->message_type() != nullptr &&
+          message_factory::GetMessageClass(
+              cmessage::GetFactoryForMessage(self->extension_dict->parent),
+              self->fields[index]->message_type()) == nullptr) {
+        PyErr_Clear();
+        continue;
+      }
+
+      return PyFieldDescriptor_FromDescriptor(self->fields[index]);
+    }
+  }
+
+  return nullptr;
+}
+
+PyTypeObject ExtensionIterator_Type = {
+    PyVarObject_HEAD_INIT(&PyType_Type, 0)      //
+    FULL_MODULE_NAME ".ExtensionIterator",      //  tp_name
+    sizeof(extension_dict::ExtensionIterator),  //  tp_basicsize
+    0,                                          //  tp_itemsize
+    extension_dict::DeallocExtensionIterator,   //  tp_dealloc
+    0,                                          //  tp_print
+    0,                                          //  tp_getattr
+    0,                                          //  tp_setattr
+    0,                                          //  tp_compare
+    0,                                          //  tp_repr
+    0,                                          //  tp_as_number
+    0,                                          //  tp_as_sequence
+    0,                                          //  tp_as_mapping
+    0,                                          //  tp_hash
+    0,                                          //  tp_call
+    0,                                          //  tp_str
+    0,                                          //  tp_getattro
+    0,                                          //  tp_setattro
+    0,                                          //  tp_as_buffer
+    Py_TPFLAGS_DEFAULT,                         //  tp_flags
+    "A scalar map iterator",                    //  tp_doc
+    0,                                          //  tp_traverse
+    0,                                          //  tp_clear
+    0,                                          //  tp_richcompare
+    0,                                          //  tp_weaklistoffset
+    PyObject_SelfIter,                          //  tp_iter
+    IterNext,                                   //  tp_iternext
+    0,                                          //  tp_methods
+    0,                                          //  tp_members
+    0,                                          //  tp_getset
+    0,                                          //  tp_base
+    0,                                          //  tp_dict
+    0,                                          //  tp_descr_get
+    0,                                          //  tp_descr_set
+    0,                                          //  tp_dictoffset
+    0,                                          //  tp_init
+};
 }  // namespace python
 }  // namespace protobuf
 }  // namespace google

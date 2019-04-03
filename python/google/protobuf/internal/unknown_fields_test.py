@@ -53,10 +53,8 @@ from google.protobuf.internal import type_checkers
 from google.protobuf import descriptor
 
 
-BaseTestCase = testing_refleaks.BaseTestCase
-
-
-class UnknownFieldsTest(BaseTestCase):
+@testing_refleaks.TestCase
+class UnknownFieldsTest(unittest.TestCase):
 
   def setUp(self):
     self.descriptor = unittest_pb2.TestAllTypes.DESCRIPTOR
@@ -152,7 +150,8 @@ class UnknownFieldsTest(BaseTestCase):
         msg.map_int32_all_types[1].optional_nested_message.SerializeToString())
 
 
-class UnknownFieldsAccessorsTest(BaseTestCase):
+@testing_refleaks.TestCase
+class UnknownFieldsAccessorsTest(unittest.TestCase):
 
   def setUp(self):
     self.descriptor = unittest_pb2.TestAllTypes.DESCRIPTOR
@@ -348,7 +347,8 @@ class UnknownFieldsAccessorsTest(BaseTestCase):
     self.assertEqual(message.SerializeToString(), self.all_fields_data)
 
 
-class UnknownEnumValuesTest(BaseTestCase):
+@testing_refleaks.TestCase
+class UnknownEnumValuesTest(unittest.TestCase):
 
   def setUp(self):
     self.descriptor = missing_enum_values_pb2.TestEnumValues.DESCRIPTOR

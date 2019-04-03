@@ -35,8 +35,8 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_MESSAGE_H__
 #define GOOGLE_PROTOBUF_COMPILER_JAVA_MESSAGE_H__
 
-#include <string>
 #include <map>
+#include <string>
 #include <google/protobuf/compiler/java/java_field.h>
 
 namespace google {
@@ -101,14 +101,13 @@ class ImmutableMessageGenerator : public MessageGenerator {
   virtual void Generate(io::Printer* printer);
   virtual void GenerateInterface(io::Printer* printer);
   virtual void GenerateExtensionRegistrationCode(io::Printer* printer);
-  virtual void GenerateStaticVariables(
-      io::Printer* printer, int* bytecode_estimate);
+  virtual void GenerateStaticVariables(io::Printer* printer,
+                                       int* bytecode_estimate);
 
   // Returns an estimate of the number of bytes the printed code will compile to
   virtual int GenerateStaticVariableInitializers(io::Printer* printer);
 
  private:
-
   void GenerateFieldAccessorTable(io::Printer* printer, int* bytecode_estimate);
 
   // Returns an estimate of the number of bytes the printed code will compile to

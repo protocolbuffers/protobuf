@@ -236,7 +236,7 @@ void TextFormatConformanceTestSuite::RunSuiteImpl() {
   RunValidTextFormatTest("FloatFieldWithVeryPreciseNumber", REQUIRED,
                          "optional_float: 3.123456789123456789");
   RunValidTextFormatTest("FloatFieldMaxValue", REQUIRED,
-                         "optional_float: 3.40282e+38");
+                         "optional_float: 3.4028235e+38");
   RunValidTextFormatTest("FloatFieldMinValue", REQUIRED,
                          "optional_float: 1.17549e-38");
   RunValidTextFormatTest("FloatFieldNaNValue", REQUIRED,
@@ -286,6 +286,31 @@ void TextFormatConformanceTestSuite::RunSuiteImpl() {
   message.add_repeated_int32(2);
   message.add_repeated_int32(3);
   RunValidUnknownTextFormatTest("RepeatedUnknownFields", message);
+
+  // Any fields
+  RunValidTextFormatTest("AnyField", REQUIRED,
+                         R"(
+      optional_any: {
+        [type.googleapis.com/protobuf_test_messages.proto3.TestAllTypesProto3] {
+          optional_int32: 12345
+        }
+      }
+      )");
+  RunValidTextFormatTest("AnyFieldWithRawBytes", REQUIRED,
+                         R"(
+      optional_any: {
+        type_url: "type.googleapis.com/protobuf_test_messages.proto3.TestAllTypesProto3"
+        value: "\b\271`"
+      }
+      )");
+  ExpectParseFailure("AnyFieldWithInvalidType", REQUIRED,
+                     R"(
+      optional_any: {
+        [type.googleapis.com/unknown] {
+          optional_int32: 12345
+        }
+      }
+      )");
 }
 
 }  // namespace protobuf

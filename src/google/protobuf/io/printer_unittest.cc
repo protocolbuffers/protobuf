@@ -77,10 +77,11 @@ TEST(Printer, BasicPrinting) {
 
     buffer[output.ByteCount()] = '\0';
 
-    EXPECT_STREQ("Hello World!  This is the same line.\n"
-                 "But this is a new one.\n"
-                 "And this is another one.",
-                 buffer);
+    EXPECT_STREQ(
+        "Hello World!  This is the same line.\n"
+        "But this is a new one.\n"
+        "And this is another one.",
+        buffer);
   }
 }
 
@@ -103,12 +104,13 @@ TEST(Printer, WriteRaw) {
 
     buffer[output.ByteCount()] = '\0';
 
-    EXPECT_STREQ("Hello World!  This is the same line.\n"
-                 "But this is a new one.\n"
-                 "And this is another one."
-                 "\n"
-                 "From an object\n",
-                 buffer);
+    EXPECT_STREQ(
+        "Hello World!  This is the same line.\n"
+        "But this is a new one.\n"
+        "And this is another one."
+        "\n"
+        "From an object\n",
+        buffer);
   }
 }
 
@@ -138,13 +140,14 @@ TEST(Printer, VariableSubstitution) {
 
     buffer[output.ByteCount()] = '\0';
 
-    EXPECT_STREQ("Hello World!\n"
-                 "bar = $foo$\n"
-                 "RawBit\n"
-                 "1234\n"
-                 "A literal dollar sign:  $\n"
-                 "Now foo = blah.",
-                 buffer);
+    EXPECT_STREQ(
+        "Hello World!\n"
+        "bar = $foo$\n"
+        "RawBit\n"
+        "1234\n"
+        "A literal dollar sign:  $\n"
+        "Now foo = blah.",
+        buffer);
   }
 }
 
@@ -163,10 +166,11 @@ TEST(Printer, InlineVariableSubstitution) {
 
   buffer[output.ByteCount()] = '\0';
 
-  EXPECT_STREQ("Hello World!\n"
-               "RawBit\n"
-               "one two\n",
-               buffer);
+  EXPECT_STREQ(
+      "Hello World!\n"
+      "RawBit\n"
+      "one two\n",
+      buffer);
 }
 
 // MockDescriptorFile defines only those members that Printer uses to write out
@@ -435,7 +439,6 @@ TEST(Printer, AnnotateIndentNewline) {
   EXPECT_EQ(4, ab->end());
 }
 
-
 TEST(Printer, Indenting) {
   char buffer[8192];
 
@@ -454,11 +457,13 @@ TEST(Printer, Indenting) {
       printer.Outdent();
       printer.Print("But this is not.");
       printer.Indent();
-      printer.Print("  And this is still the same line.\n"
-                    "But this is indented.\n");
+      printer.Print(
+          "  And this is still the same line.\n"
+          "But this is indented.\n");
       printer.PrintRaw("RawBit has indent at start\n");
       printer.PrintRaw("but not after a raw newline\n");
-      printer.Print(vars, "Note that a newline in a variable will break "
+      printer.Print(vars,
+                    "Note that a newline in a variable will break "
                     "indenting, as we see$newline$here.\n");
       printer.Indent();
       printer.Print("And this");
@@ -472,18 +477,18 @@ TEST(Printer, Indenting) {
     buffer[output.ByteCount()] = '\0';
 
     EXPECT_STREQ(
-      "This is not indented.\n"
-      "  This is indented\n"
-      "  And so is this\n"
-      "But this is not.  And this is still the same line.\n"
-      "  But this is indented.\n"
-      "  RawBit has indent at start\n"
-      "but not after a raw newline\n"
-      "Note that a newline in a variable will break indenting, as we see\n"
-      "here.\n"
-      "    And this is double-indented\n"
-      "Back to normal.",
-      buffer);
+        "This is not indented.\n"
+        "  This is indented\n"
+        "  And so is this\n"
+        "But this is not.  And this is still the same line.\n"
+        "  But this is indented.\n"
+        "  RawBit has indent at start\n"
+        "but not after a raw newline\n"
+        "Note that a newline in a variable will break indenting, as we see\n"
+        "here.\n"
+        "    And this is double-indented\n"
+        "Back to normal.",
+        buffer);
   }
 }
 

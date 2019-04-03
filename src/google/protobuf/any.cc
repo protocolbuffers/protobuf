@@ -64,16 +64,16 @@ bool AnyMetadata::UnpackTo(Message* message) const {
 bool GetAnyFieldDescriptors(const Message& message,
                             const FieldDescriptor** type_url_field,
                             const FieldDescriptor** value_field) {
-    const Descriptor* descriptor = message.GetDescriptor();
-    if (descriptor->full_name() != kAnyFullTypeName) {
-      return false;
-    }
-    *type_url_field = descriptor->FindFieldByNumber(1);
-    *value_field = descriptor->FindFieldByNumber(2);
-    return (*type_url_field != NULL &&
-            (*type_url_field)->type() == FieldDescriptor::TYPE_STRING &&
-            *value_field != NULL &&
-            (*value_field)->type() == FieldDescriptor::TYPE_BYTES);
+  const Descriptor* descriptor = message.GetDescriptor();
+  if (descriptor->full_name() != kAnyFullTypeName) {
+    return false;
+  }
+  *type_url_field = descriptor->FindFieldByNumber(1);
+  *value_field = descriptor->FindFieldByNumber(2);
+  return (*type_url_field != NULL &&
+          (*type_url_field)->type() == FieldDescriptor::TYPE_STRING &&
+          *value_field != NULL &&
+          (*value_field)->type() == FieldDescriptor::TYPE_BYTES);
 }
 
 }  // namespace internal

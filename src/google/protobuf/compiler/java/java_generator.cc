@@ -78,6 +78,10 @@ bool JavaGenerator::Generate(const FileDescriptor* file,
       file_options.generate_mutable_code = true;
     } else if (options[i].first == "shared") {
       file_options.generate_shared_code = true;
+    } else if (options[i].first == "lite") {
+      // Note: Java Lite does not guarantee API/ABI stability. We may choose to
+      // break existing API in order to boost performance / reduce code size.
+      file_options.enforce_lite = true;
     } else if (options[i].first == "annotate_code") {
       file_options.annotate_code = true;
     } else if (options[i].first == "annotation_list_file") {
@@ -147,9 +151,9 @@ bool JavaGenerator::Generate(const FileDescriptor* file,
     GeneratedCodeInfo annotations;
     io::AnnotationProtoCollector<GeneratedCodeInfo> annotation_collector(
         &annotations);
-    io::Printer printer(output.get(), '$', file_options.annotate_code
-                                               ? &annotation_collector
-                                               : NULL);
+    io::Printer printer(
+        output.get(), '$',
+        file_options.annotate_code ? &annotation_collector : NULL);
 
     file_generator->Generate(&printer);
 

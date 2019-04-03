@@ -45,9 +45,9 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/compiler/plugin.pb.h>
 #include <google/protobuf/compiler/code_generator.h>
+#include <google/protobuf/io/io_win32.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/descriptor.h>
-#include <google/protobuf/stubs/io_win32.h>
 
 
 namespace google {
@@ -57,14 +57,13 @@ namespace compiler {
 #if defined(_WIN32)
 // DO NOT include <io.h>, instead create functions in io_win32.{h,cc} and import
 // them like we do below.
-using google::protobuf::internal::win32::setmode;
+using google::protobuf::io::win32::setmode;
 #endif
 
 class GeneratorResponseContext : public GeneratorContext {
  public:
   GeneratorResponseContext(
-      const Version& compiler_version,
-      CodeGeneratorResponse* response,
+      const Version& compiler_version, CodeGeneratorResponse* response,
       const std::vector<const FileDescriptor*>& parsed_files)
       : compiler_version_(compiler_version),
         response_(response),
@@ -117,24 +116,26 @@ bool GenerateCode(const CodeGeneratorRequest& request,
   for (int i = 0; i < request.file_to_generate_size(); i++) {
     parsed_files.push_back(pool.FindFileByName(request.file_to_generate(i)));
     if (parsed_files.back() == NULL) {
-      *error_msg = "protoc asked plugin to generate a file but "
-                   "did not provide a descriptor for the file: " +
-                   request.file_to_generate(i);
+      *error_msg =
+          "protoc asked plugin to generate a file but "
+          "did not provide a descriptor for the file: " +
+          request.file_to_generate(i);
       return false;
     }
   }
 
-  GeneratorResponseContext context(
-      request.compiler_version(), response, parsed_files);
+  GeneratorResponseContext context(request.compiler_version(), response,
+                                   parsed_files);
 
 
   std::string error;
-  bool succeeded = generator.GenerateAll(
-      parsed_files, request.parameter(), &context, &error);
+  bool succeeded = generator.GenerateAll(parsed_files, request.parameter(),
+                                         &context, &error);
 
   if (!succeeded && error.empty()) {
-    error = "Code generator returned false but provided no error "
-            "description.";
+    error =
+        "Code generator returned false but provided no error "
+        "description.";
   }
   if (!error.empty()) {
     response->set_error(error);
