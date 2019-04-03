@@ -36,10 +36,6 @@ static void InitDefaultsSourceContext_google_2fprotobuf_2fsource_5fcontext_2epro
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_SourceContext_google_2fprotobuf_2fsource_5fcontext_2eproto =
     {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsSourceContext_google_2fprotobuf_2fsource_5fcontext_2eproto}, {}};
 
-void InitDefaults_google_2fprotobuf_2fsource_5fcontext_2eproto() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_SourceContext_google_2fprotobuf_2fsource_5fcontext_2eproto.base);
-}
-
 static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_google_2fprotobuf_2fsource_5fcontext_2eproto[1];
 static constexpr ::PROTOBUF_NAMESPACE_ID::EnumDescriptor const** file_level_enum_descriptors_google_2fprotobuf_2fsource_5fcontext_2eproto = nullptr;
 static constexpr ::PROTOBUF_NAMESPACE_ID::ServiceDescriptor const** file_level_service_descriptors_google_2fprotobuf_2fsource_5fcontext_2eproto = nullptr;
@@ -76,8 +72,7 @@ const char descriptor_table_protodef_google_2fprotobuf_2fsource_5fcontext_2eprot
   "pesb\006proto3"
   ;
 static ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto = {
-  false, InitDefaults_google_2fprotobuf_2fsource_5fcontext_2eproto, 
-  descriptor_table_protodef_google_2fprotobuf_2fsource_5fcontext_2eproto,
+  false, descriptor_table_protodef_google_2fprotobuf_2fsource_5fcontext_2eproto,
   "google/protobuf/source_context.proto", &assign_descriptors_table_google_2fprotobuf_2fsource_5fcontext_2eproto, 251,
 };
 
@@ -85,6 +80,7 @@ void AddDescriptors_google_2fprotobuf_2fsource_5fcontext_2eproto() {
   static constexpr ::PROTOBUF_NAMESPACE_ID::internal::InitFunc deps[1] =
   {
   };
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_SourceContext_google_2fprotobuf_2fsource_5fcontext_2eproto.base);
  ::PROTOBUF_NAMESPACE_ID::internal::AddDescriptors(&descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto, deps, 0);
 }
 
@@ -156,16 +152,17 @@ void SourceContext::Clear() {
 
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 const char* SourceContext::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
-    GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+    CHK_(ptr);
     switch (tag >> 3) {
       // string file_name = 1;
       case 1: {
         if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 10) goto handle_unusual;
         ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8(mutable_file_name(), ptr, ctx, "google.protobuf.SourceContext.file_name");
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+        CHK_(ptr);
         break;
       }
       default: {
@@ -175,12 +172,15 @@ const char* SourceContext::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_
           return ptr;
         }
         ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr != nullptr);
+        CHK_(ptr != nullptr);
         break;
       }
     }  // switch
   }  // while
   return ptr;
+failure:
+  return nullptr;
+#undef CHK_
 }
 #else  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 bool SourceContext::MergePartialFromCodedStream(
