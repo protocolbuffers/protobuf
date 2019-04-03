@@ -23,6 +23,10 @@ _shell_find_runfiles = """
   # --- end runfiles.bash initialization ---
 """
 
+load("@bazel_skylib//lib:paths.bzl", "paths")
+load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain")
+load("@bazel_tools//tools/build_defs/cc:action_names.bzl", "CPP_LINK_STATIC_LIBRARY_ACTION_NAME")
+
 def _librule(name):
     return name + "_lib"
 
@@ -273,35 +277,159 @@ def _upb_proto_library_srcs_impl(ctx):
 def _upb_proto_reflection_library_srcs_impl(ctx):
     return _upb_proto_srcs_impl(ctx, ".upbdefs")
 
-_upb_proto_library_srcs = rule(
+def _generate_output_files(ctx, package, file_names, file_types):
+    result = {}
+    for key in file_types.keys():
+        relative_paths = [paths.relativize(src.path, package) for src in file_names]
+        replaced_extensions = [paths.replace_extension(path, file_types[key]) for path in relative_paths]
+        result[key] = [ctx.new_file(ctx.genfiles_dir, file) for file in replaced_extensions]
+    return result
+
+def cc_library_func(ctx, hdrs, srcs, deps):
+    compilation_contexts = []
+    linking_contexts = []
+    for dep in deps:
+      if CcInfo in dep:
+        compilation_contexts.append(dep[CcInfo].compilation_context)
+        linking_contexts.append(dep[CcInfo].linking_context)
+    toolchain = find_cpp_toolchain(ctx)
+    feature_configuration = cc_common.configure_features(
+      cc_toolchain = toolchain,
+      requested_features = ctx.features,
+      unsupported_features = ctx.disabled_features,
+    )
+    compilation_info = cc_common.compile(
+      ctx = ctx,
+      feature_configuration = feature_configuration,
+      cc_toolchain = toolchain,
+      srcs = srcs,
+      hdrs = hdrs,
+      compilation_contexts = compilation_contexts,
+    )
+    output_file = ctx.new_file(ctx.bin_dir, "lib" + ctx.rule.attr.name + ".a")
+    library_to_link = cc_common.create_library_to_link(
+      actions = ctx.actions,
+      feature_configuration = feature_configuration,
+      cc_toolchain = toolchain,
+      static_library = output_file,
+    )
+    linking_context = cc_common.create_linking_context(
+        libraries_to_link = [library_to_link],
+    )
+
+    archiver_path = cc_common.get_tool_for_action(
+        feature_configuration = feature_configuration,
+        action_name = CPP_LINK_STATIC_LIBRARY_ACTION_NAME,
+    )
+    archiver_variables = cc_common.create_link_variables(
+        feature_configuration = feature_configuration,
+        cc_toolchain = toolchain,
+        output_file = output_file.path,
+        is_using_linker = False,
+    )
+    command_line = cc_common.get_memory_inefficient_command_line(
+        feature_configuration = feature_configuration,
+        action_name = CPP_LINK_STATIC_LIBRARY_ACTION_NAME,
+        variables = archiver_variables,
+    )
+    object_files = compilation_info.cc_compilation_outputs.object_files(use_pic = False)
+    args = ctx.actions.args()
+    args.add_all(command_line)
+    args.add_all(object_files)
+
+    env = cc_common.get_environment_variables(
+        feature_configuration = feature_configuration,
+        action_name = CPP_LINK_STATIC_LIBRARY_ACTION_NAME,
+        variables = archiver_variables,
+    )
+
+    ctx.actions.run(
+        executable = archiver_path,
+        arguments = [args],
+        env = env,
+        inputs = depset(
+            direct = object_files,
+            transitive = [
+                # TODO: Use CcToolchainInfo getters when available
+                # See https://github.com/bazelbuild/bazel/issues/7427.
+                ctx.attr._cc_toolchain.files,
+            ],
+        ),
+        outputs = [output_file],
+    )
+    return [
+      CcInfo(
+        compilation_context = compilation_info.compilation_context,
+        linking_context = linking_context,
+      )
+    ]
+
+def _upb_proto_library_aspect_impl(target, ctx):
+  proto_sources = target[ProtoInfo].direct_sources
+  types = {
+      "srcs": ".upb.c",
+      "hdrs": ".upb.h",
+  }
+  files = _generate_output_files(
+      ctx = ctx,
+      package = ctx.label.package,
+      file_names = proto_sources,
+      file_types = types,
+  )
+  ctx.actions.run(
+      inputs = [ctx.executable._upbc] + proto_sources,
+      outputs = files["srcs"] + files["hdrs"],
+      executable = ctx.executable._protoc,
+      arguments = ["--upb_out"], #, ctx.genfiles_dir, "--plugin=protoc-gen-upb=" + ctx.executable._upbc.path] + [file.path for file in files["srcs"]],
+      progress_message = "Generating upb protos",
+  )
+  return cc_library_func(
+      ctx = ctx,
+      hdrs = files["hdrs"],
+      srcs = files["srcs"],
+      deps = ctx.rule.attr.deps
+  )
+
+
+_upb_proto_library_aspect = aspect(
     attrs = {
-        "upbc": attr.label(
+        "_upbc": attr.label(
             executable = True,
             cfg = "host",
+            default = ":protoc-gen-upb",
         ),
-        "protoc": attr.label(
+        "_protoc": attr.label(
             executable = True,
             cfg = "host",
             default = map_dep("@com_google_protobuf//:protoc"),
         ),
-        "deps": attr.label_list(),
+        "_cc_toolchain": attr.label(default = "@bazel_tools//tools/cpp:current_cc_toolchain"),
+        "_upb": attr.label(default = ":upb"),
     },
-    implementation = _upb_proto_library_srcs_impl,
+    implementation = _upb_proto_library_aspect_impl,
+    attr_aspects = ["deps"],
 )
 
-def upb_proto_library(name, deps, upbc):
-    srcs_rule = name + "_srcs.cc"
-    _upb_proto_library_srcs(
-        name = srcs_rule,
-        upbc = upbc,
-        deps = deps,
-    )
-    native.cc_library(
-        name = name,
-        srcs = [":" + srcs_rule],
-        deps = [":upb"],
-        copts = ["-Ibazel-out/k8-fastbuild/bin"],
-    )
+def _upb_proto_library_impl(ctx):
+    if len(ctx.attr.deps) != 1:
+        fail("only one deps dependency allowed.")
+    dep = ctx.attr.deps[0]
+    if CcInfo not in dep:
+        fail("proto_library rule must generate CcInfo (have cc_api_version>0).")
+    return [dep[CcInfo]]
+
+
+upb_proto_library = rule(
+    output_to_genfiles = True,
+    implementation = _upb_proto_library_impl,
+    attrs = {
+        'deps': attr.label_list(
+            aspects = [_upb_proto_library_aspect],
+            allow_rules = ["proto_library"],
+            providers = [ProtoInfo],
+        ),
+    },
+)
 
 _upb_proto_reflection_library_srcs = rule(
     attrs = {

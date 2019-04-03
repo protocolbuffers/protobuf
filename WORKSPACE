@@ -37,7 +37,6 @@ http_archive(
     urls = ["http://www.colm.net/files/ragel/ragel-6.10.tar.gz"],
 )
 
-# Used by protobuf.
 http_archive(
     name = "bazel_skylib",
     sha256 = "bbccf674aa441c266df9894182d80de104cabd19be98be002f6d478aaa31574d",

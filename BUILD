@@ -315,7 +315,6 @@ upb_proto_reflection_library(
 
 upb_proto_library(
     name = "test_json_upbproto",
-    upbc = ":protoc-gen-upb",
     deps = ["test_json_proto"],
 )
 
@@ -334,7 +333,6 @@ cc_test(
 
 upb_proto_library(
     name = "conformance_proto_upb",
-    upbc = ":protoc-gen-upb",
     deps = [
         "@com_google_protobuf//:conformance_proto",
         "@com_google_protobuf//:test_messages_proto3_proto",
