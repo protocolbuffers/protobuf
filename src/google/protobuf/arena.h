@@ -34,6 +34,8 @@
 #define GOOGLE_PROTOBUF_ARENA_H__
 
 #include <limits>
+#include <type_traits>
+#include <utility>
 #ifdef max
 #undef max  // Visual Studio defines this macro
 #endif
@@ -156,13 +158,14 @@ struct ArenaOptions {
  private:
   // Hooks for adding external functionality such as user-specific metrics
   // collection, specific debugging abilities, etc.
-  // Init hook may return a pointer to a cookie to be stored in the arena.
-  // reset and destruction hooks will then be called with the same cookie
-  // pointer. This allows us to save an external object per arena instance and
-  // use it on the other hooks (Note: It is just as legal for init to return
-  // NULL and not use the cookie feature).
-  // on_arena_reset and on_arena_destruction also receive the space used in
-  // the arena just before the reset.
+  // Init hook (if set) will always be called at Arena init time. Init hook may
+  // return a pointer to a cookie to be stored in the arena. Reset and
+  // destruction hooks will then be called with the same cookie pointer. This
+  // allows us to save an external object per arena instance and use it on the
+  // other hooks (Note: If init hook returns NULL, the other hooks will NOT be
+  // called on this arena instance).
+  // on_arena_reset and on_arena_destruction also receive the space used in the
+  // arena just before the reset.
   void* (*on_arena_init)(Arena* arena);
   void (*on_arena_reset)(Arena* arena, void* cookie, uint64 space_used);
   void (*on_arena_destruction)(Arena* arena, void* cookie, uint64 space_used);
@@ -242,10 +245,7 @@ struct ArenaOptions {
 // well as protobuf container types like RepeatedPtrField and Map. The protocol
 // is internal to protobuf and is not guaranteed to be stable. Non-proto types
 // should not rely on this protocol.
-//
-// Do NOT subclass Arena. This class will be marked as final when C++11 is
-// enabled.
-class PROTOBUF_EXPORT Arena {
+class PROTOBUF_EXPORT Arena final {
  public:
   // Arena constructor taking custom options. See ArenaOptions below for
   // descriptions of the options available.
@@ -408,12 +408,12 @@ class PROTOBUF_EXPORT Arena {
   }
 
   // Retrieves the arena associated with |value| if |value| is an arena-capable
-  // message, or NULL otherwise. This differs from value->GetArena() in that the
-  // latter is a virtual call, while this method is a templated call that
-  // resolves at compile-time.
+  // message, or NULL otherwise. If possible, the call resolves at compile time.
+  // Note that we can often devirtualize calls to `value->GetArena()` so usually
+  // calling this method is unnecessary.
   template <typename T>
   PROTOBUF_ALWAYS_INLINE static Arena* GetArena(const T* value) {
-    return GetArenaInternal(value, is_arena_constructable<T>());
+    return GetArenaInternal(value);
   }
 
   template <typename T>
@@ -439,6 +439,19 @@ class PROTOBUF_EXPORT Arena {
                                              static_cast<const T*>(0))) ==
                                              sizeof(char)>
         is_arena_constructable;
+
+    template <typename U,
+              typename std::enable_if<
+                  std::is_same<Arena*, decltype(std::declval<const U>()
+                                                    .GetArena())>::value,
+                  int>::type = 0>
+    static char HasGetArena(decltype(&U::GetArena));
+    template <typename U>
+    static double HasGetArena(...);
+
+    typedef std::integral_constant<bool, sizeof(HasGetArena<T>(nullptr)) ==
+                                             sizeof(char)>
+        has_get_arena;
 
     template <typename... Args>
     static T* Construct(void* ptr, Args&&... args) {
@@ -469,6 +482,9 @@ class PROTOBUF_EXPORT Arena {
   };
 
  private:
+  template <typename T>
+  struct has_get_arena : InternalHelper<T>::has_get_arena {};
+
   template <typename T, typename... Args>
   PROTOBUF_ALWAYS_INLINE static T* CreateMessageInternal(Arena* arena,
                                                          Args&&... args) {
@@ -655,16 +671,24 @@ class PROTOBUF_EXPORT Arena {
   // Implementation for GetArena(). Only message objects with
   // InternalArenaConstructable_ tags can be associated with an arena, and such
   // objects must implement a GetArenaNoVirtual() method.
-  template <typename T>
-  PROTOBUF_ALWAYS_INLINE static Arena* GetArenaInternal(const T* value,
-                                                        std::true_type) {
+  template <typename T, typename std::enable_if<
+                            is_arena_constructable<T>::value, int>::type = 0>
+  PROTOBUF_ALWAYS_INLINE static Arena* GetArenaInternal(const T* value) {
     return InternalHelper<T>::GetArena(value);
   }
-
-  template <typename T>
-  PROTOBUF_ALWAYS_INLINE static Arena* GetArenaInternal(const T* /* value */,
-                                                        std::false_type) {
-    return NULL;
+  template <typename T,
+            typename std::enable_if<!is_arena_constructable<T>::value &&
+                                        has_get_arena<T>::value,
+                                    int>::type = 0>
+  PROTOBUF_ALWAYS_INLINE static Arena* GetArenaInternal(const T* value) {
+    return value->GetArena();
+  }
+  template <typename T,
+            typename std::enable_if<!is_arena_constructable<T>::value &&
+                                        !has_get_arena<T>::value,
+                                    int>::type = 0>
+  PROTOBUF_ALWAYS_INLINE static Arena* GetArenaInternal(const T* value) {
+    return nullptr;
   }
 
   // For friends of arena.

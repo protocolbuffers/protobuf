@@ -1061,6 +1061,11 @@ static void put_ruby_value(VALUE value,
                            upb_sink *sink,
                            bool emit_defaults,
                            bool is_json) {
+  if (depth > ENCODE_MAX_NESTING) {
+    rb_raise(rb_eRuntimeError,
+             "Maximum recursion depth exceeded during encoding.");
+  }
+
   upb_selector_t sel = 0;
   if (upb_fielddef_isprimitive(f)) {
     sel = getsel(f, upb_handlers_getprimitivehandlertype(f));
@@ -1232,6 +1237,34 @@ static void putjsonany(VALUE msg_rb, const Descriptor* desc,
   upb_sink_endmsg(sink, &status);
 }
 
+static void putjsonlistvalue(
+    VALUE msg_rb, const Descriptor* desc,
+    upb_sink* sink, int depth, bool emit_defaults) {
+  upb_status status;
+  upb_sink subsink;
+  MessageHeader* msg = NULL;
+  const upb_fielddef* f = upb_msgdef_itof(desc->msgdef, 1);
+  uint32_t offset =
+      desc->layout->fields[upb_fielddef_index(f)].offset +
+      sizeof(MessageHeader);
+  VALUE ary;
+
+  TypedData_Get_Struct(msg_rb, MessageHeader, &Message_type, msg);
+
+  upb_sink_startmsg(sink);
+
+  ary = DEREF(msg, offset, VALUE);
+
+  if (ary == Qnil || RepeatedField_size(ary) == 0) {
+    upb_sink_startseq(sink, getsel(f, UPB_HANDLER_STARTSEQ), &subsink);
+    upb_sink_endseq(sink, getsel(f, UPB_HANDLER_ENDSEQ));
+  } else {
+    putary(ary, f, sink, depth, emit_defaults, true);
+  }
+
+  upb_sink_endmsg(sink, &status);
+}
+
 static void putmsg(VALUE msg_rb, const Descriptor* desc,
                    upb_sink *sink, int depth, bool emit_defaults,
                    bool is_json, bool open_msg) {
@@ -1239,8 +1272,15 @@ static void putmsg(VALUE msg_rb, const Descriptor* desc,
   upb_msg_field_iter i;
   upb_status status;
 
-  if (is_json && upb_msgdef_wellknowntype(desc->msgdef) == UPB_WELLKNOWN_ANY) {
+  if (is_json &&
+      upb_msgdef_wellknowntype(desc->msgdef) == UPB_WELLKNOWN_ANY) {
     putjsonany(msg_rb, desc, sink, depth, emit_defaults);
+    return;
+  }
+
+  if (is_json &&
+      upb_msgdef_wellknowntype(desc->msgdef) == UPB_WELLKNOWN_LISTVALUE) {
+    putjsonlistvalue(msg_rb, desc, sink, depth, emit_defaults);
     return;
   }
 

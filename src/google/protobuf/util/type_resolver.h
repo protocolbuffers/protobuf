@@ -36,16 +36,10 @@
 #include <string>
 
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/type.pb.h>
 #include <google/protobuf/stubs/status.h>
 
 #include <google/protobuf/port_def.inc>
-
-namespace google {
-namespace protobuf {
-class Type;
-class Enum;
-}  // namespace protobuf
-}  // namespace google
 
 namespace google {
 namespace protobuf {

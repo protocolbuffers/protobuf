@@ -60,7 +60,7 @@ static void AddToDatabase(SimpleDescriptorDatabase* database,
 }
 
 static void ExpectContainsType(const FileDescriptorProto& proto,
-                               const string& type_name) {
+                               const std::string& type_name) {
   for (int i = 0; i < proto.message_type_size(); i++) {
     if (proto.message_type(i).name() == type_name) return;
   }
@@ -124,7 +124,7 @@ class EncodedDescriptorDatabaseTestCase : public DescriptorDatabaseTestCase {
     return &database_;
   }
   virtual bool AddToDatabase(const FileDescriptorProto& file) {
-    string data;
+    std::string data;
     file.SerializeToString(&data);
     return database_.AddCopy(data.data(), data.size());
   }
@@ -497,10 +497,10 @@ TEST(EncodedDescriptorDatabaseExtraTest, FindNameOfFileContainingSymbol) {
   file2b.add_message_type()->set_name("Bar");
 
   // Normal serialization allows our optimization to kick in.
-  string data1 = file1.SerializeAsString();
+  std::string data1 = file1.SerializeAsString();
 
   // Force out-of-order serialization to test slow path.
-  string data2 = file2b.SerializeAsString() + file2a.SerializeAsString();
+  std::string data2 = file2b.SerializeAsString() + file2a.SerializeAsString();
 
   // Create EncodedDescriptorDatabase containing both files.
   EncodedDescriptorDatabase db;
@@ -508,7 +508,7 @@ TEST(EncodedDescriptorDatabaseExtraTest, FindNameOfFileContainingSymbol) {
   db.Add(data2.data(), data2.size());
 
   // Test!
-  string filename;
+  std::string filename;
   EXPECT_TRUE(db.FindNameOfFileContainingSymbol("foo.Foo", &filename));
   EXPECT_EQ("foo.proto", filename);
   EXPECT_TRUE(db.FindNameOfFileContainingSymbol("foo.Foo.Blah", &filename));
@@ -530,7 +530,7 @@ TEST(SimpleDescriptorDatabaseExtraTest, FindAllFileNames) {
   db.Add(f);
 
   // Test!
-  std::vector<string> all_files;
+  std::vector<std::string> all_files;
   db.FindAllFileNames(&all_files);
   EXPECT_THAT(all_files, testing::ElementsAre("foo.proto"));
 }

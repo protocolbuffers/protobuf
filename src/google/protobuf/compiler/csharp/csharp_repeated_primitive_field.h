@@ -43,8 +43,12 @@ namespace csharp {
 
 class RepeatedPrimitiveFieldGenerator : public FieldGeneratorBase {
  public:
-  RepeatedPrimitiveFieldGenerator(const FieldDescriptor* descriptor, int presenceIndex, const Options *options);
+  RepeatedPrimitiveFieldGenerator(const FieldDescriptor* descriptor,
+                                  int presenceIndex, const Options* options);
   ~RepeatedPrimitiveFieldGenerator();
+
+  RepeatedPrimitiveFieldGenerator(const RepeatedPrimitiveFieldGenerator&) = delete;
+  RepeatedPrimitiveFieldGenerator& operator=(const RepeatedPrimitiveFieldGenerator&) = delete;
 
   virtual void GenerateCloningCode(io::Printer* printer);
   virtual void GenerateFreezingCode(io::Printer* printer);
@@ -57,9 +61,6 @@ class RepeatedPrimitiveFieldGenerator : public FieldGeneratorBase {
   virtual void WriteHash(io::Printer* printer);
   virtual void WriteEquals(io::Printer* printer);
   virtual void WriteToString(io::Printer* printer);
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RepeatedPrimitiveFieldGenerator);
 };
 
 }  // namespace csharp

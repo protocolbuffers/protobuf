@@ -198,8 +198,7 @@ LogMessage& LogMessage::operator<<(const StringPiece& value) {
   return *this;
 }
 
-LogMessage& LogMessage::operator<<(
-    const ::google::protobuf::util::Status& status) {
+LogMessage& LogMessage::operator<<(const util::Status& status) {
   message_ += status.ToString();
   return *this;
 }

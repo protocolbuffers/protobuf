@@ -50,6 +50,10 @@ class RepeatedMessageFieldGenerator : public FieldGeneratorBase {
                                 const Options *options);
   ~RepeatedMessageFieldGenerator();
 
+  RepeatedMessageFieldGenerator(const RepeatedMessageFieldGenerator&) = delete;
+  RepeatedMessageFieldGenerator& operator=(
+      const RepeatedMessageFieldGenerator&) = delete;
+
   virtual void GenerateCloningCode(io::Printer* printer);
   virtual void GenerateFreezingCode(io::Printer* printer);
   virtual void GenerateMembers(io::Printer* printer);
@@ -61,9 +65,6 @@ class RepeatedMessageFieldGenerator : public FieldGeneratorBase {
   virtual void WriteHash(io::Printer* printer);
   virtual void WriteEquals(io::Printer* printer);
   virtual void WriteToString(io::Printer* printer);
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RepeatedMessageFieldGenerator);
 };
 
 }  // namespace csharp

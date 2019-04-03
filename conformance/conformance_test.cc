@@ -68,6 +68,7 @@ ConformanceTestSuite::ConformanceRequestSetting::ConformanceRequestSetting(
       input_format_(input_format),
       output_format_(output_format),
       prototype_message_(prototype_message),
+      prototype_message_for_compare_(prototype_message.New()),
       test_name_(test_name) {
   switch (input_format) {
     case conformance::PROTOBUF: {
@@ -102,7 +103,7 @@ ConformanceTestSuite::ConformanceRequestSetting::ConformanceRequestSetting(
 
 Message* ConformanceTestSuite::ConformanceRequestSetting::
     GetTestMessage() const {
-  return prototype_message_.New();
+  return prototype_message_for_compare_->New();
 }
 
 string ConformanceTestSuite::ConformanceRequestSetting::
@@ -361,6 +362,10 @@ string ConformanceTestSuite::WireFormatToString(
   return "";
 }
 
+void ConformanceTestSuite::AddExpectedFailedTest(const std::string& test_name) {
+  expected_to_fail_.insert(test_name);
+}
+
 bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
                                     std::string* output, const string& filename,
                                     conformance::FailureSet* failure_list) {
@@ -374,17 +379,10 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
 
   output_ = "\nCONFORMANCE TEST BEGIN ====================================\n\n";
 
-  ConformanceRequest req;
-  ConformanceResponse res;
-  req.set_message_type(failure_list->GetTypeName());
-  req.set_protobuf_payload("");
-  req.set_requested_output_format(conformance::WireFormat::PROTOBUF);
-  RunTest("FindFailures", req, &res);
-  GOOGLE_CHECK(failure_list->MergeFromString(res.protobuf_payload()));
   failure_list_filename_ = filename;
   expected_to_fail_.clear();
   for (const string& failure : failure_list->failure()) {
-    expected_to_fail_.insert(failure);
+    AddExpectedFailedTest(failure);
   }
   RunSuiteImpl();
 

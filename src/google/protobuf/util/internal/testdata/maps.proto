@@ -30,7 +30,7 @@
 
 syntax = "proto3";
 
-package google.protobuf.testing;
+package proto_util_converter.testing;
 
 import "google/protobuf/any.proto";
 
@@ -94,8 +94,7 @@ message MapOfObjects {
   map<string, M> map = 1;
 }
 
-message DummyRequest {
-}
+message DummyRequest {}
 
 service MapsTestService {
   rpc Call(DummyRequest) returns (MapsTestCases);

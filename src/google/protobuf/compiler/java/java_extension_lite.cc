@@ -57,7 +57,7 @@ ImmutableExtensionLiteGenerator::ImmutableExtensionLiteGenerator(
 ImmutableExtensionLiteGenerator::~ImmutableExtensionLiteGenerator() {}
 
 void ImmutableExtensionLiteGenerator::Generate(io::Printer* printer) {
-  std::map<string, string> vars;
+  std::map<std::string, std::string> vars;
   const bool kUseImmutableNames = true;
   InitTemplateVars(descriptor_, scope_, kUseImmutableNames, name_resolver_,
                    &vars);
@@ -109,7 +109,7 @@ int ImmutableExtensionLiteGenerator::GenerateRegistrationCode(
   printer->Print(
     "registry.add($scope$.$name$);\n",
     "scope", scope_,
-    "name", UnderscoresToCamelCase(descriptor_));
+    "name", UnderscoresToCamelCaseCheckReserved(descriptor_));
   return 7;
 }
 

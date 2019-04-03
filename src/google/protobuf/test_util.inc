@@ -1545,7 +1545,7 @@ inline void TestUtil::ExpectAllExtensionsSet(
 
 inline void TestUtil::ExpectExtensionsClear(
     const UNITTEST::TestAllExtensions& message) {
-  string serialized;
+  std::string serialized;
   ASSERT_TRUE(message.SerializeToString(&serialized));
   EXPECT_EQ("", serialized);
   EXPECT_EQ(0, message.ByteSizeLong());

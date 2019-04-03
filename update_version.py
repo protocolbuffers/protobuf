@@ -101,7 +101,7 @@ def UpdateConfigure():
 def UpdateCpp():
   cpp_version = '%s00%s00%s' % (
     NEW_VERSION_INFO[0], NEW_VERSION_INFO[1], NEW_VERSION_INFO[2])
-  def RewriteCpp(line):
+  def RewriteCommon(line):
     line = re.sub(
       r'^#define GOOGLE_PROTOBUF_VERSION .*$',
       '#define GOOGLE_PROTOBUF_VERSION %s' % cpp_version,
@@ -111,10 +111,6 @@ def UpdateCpp():
       '#define PROTOBUF_VERSION %s' % cpp_version,
       line)
     if NEW_VERSION_INFO[2] == '0':
-      line = re.sub(
-        r'^#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION .*$',
-        '#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION %s' % cpp_version,
-        line)
       line = re.sub(
         r'^#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC .*$',
         '#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC %s' % cpp_version,
@@ -132,8 +128,27 @@ def UpdateCpp():
         'static const int kMinHeaderVersionForProtoc = %s;' % cpp_version,
         line)
     return line
-  RewriteTextFile('src/google/protobuf/stubs/common.h', RewriteCpp)
-  RewriteTextFile('src/google/protobuf/port_def.inc', RewriteCpp)
+  def RewritePortDef(line):
+    line = re.sub(
+      r'^#define PROTOBUF_VERSION .*$',
+      '#define PROTOBUF_VERSION %s' % cpp_version,
+      line)
+    if NEW_VERSION_INFO[2] == '0':
+      line = re.sub(
+        r'^#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC .*$',
+        '#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC %s' % cpp_version,
+        line)
+      line = re.sub(
+        r'^#define PROTOBUF_MIN_PROTOC_VERSION .*$',
+        '#define PROTOBUF_MIN_PROTOC_VERSION %s' % cpp_version,
+        line)
+      line = re.sub(
+        r'^#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION .*$',
+        '#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION %s' % cpp_version,
+        line)
+    return line
+  RewriteTextFile('src/google/protobuf/stubs/common.h', RewriteCommon)
+  RewriteTextFile('src/google/protobuf/port_def.inc', RewritePortDef)
 
 
 def UpdateCsharp():
@@ -222,16 +237,16 @@ def UpdatePhp():
       return elem
 
     root = document.documentElement
+    now = datetime.datetime.now()
+    ReplaceText(Find(root, 'date'), now.strftime('%Y-%m-%d'))
+    ReplaceText(Find(root, 'time'), now.strftime('%H:%M:%S'))
     version = Find(root, 'version')
     ReplaceText(Find(version, 'release'), GetFullVersion(rc_suffix = 'RC'))
     ReplaceText(Find(version, 'api'), NEW_VERSION)
     stability = Find(root, 'stability')
-    ReplaceText(Find(version, 'release'),
+    ReplaceText(Find(stability, 'release'),
         'stable' if RC_VERSION == 0 else 'beta')
-    ReplaceText(Find(version, 'api'), 'stable' if RC_VERSION == 0 else 'beta')
-    now = datetime.datetime.now()
-    ReplaceText(Find(root, 'date'), now.strftime('%Y-%m-%d'))
-    ReplaceText(Find(root, 'time'), now.strftime('%H:%M:%S'))
+    ReplaceText(Find(stability, 'api'), 'stable' if RC_VERSION == 0 else 'beta')
     changelog = Find(root, 'changelog')
     for old_version in changelog.getElementsByTagName('version'):
       if Find(old_version, 'release').firstChild.nodeValue == NEW_VERSION:
@@ -256,6 +271,17 @@ def UpdatePhp():
     changelog.appendChild(release)
     changelog.appendChild(document.createTextNode('\n '))
   RewriteXml('php/ext/google/protobuf/package.xml', Callback)
+  RewriteTextFile('php/ext/google/protobuf/protobuf.h',
+    lambda line : re.sub(
+      r'PHP_PROTOBUF_VERSION ".*"$',
+      'PHP_PROTOBUF_VERSION "%s"' % NEW_VERSION,
+      line))
+
+  RewriteTextFile('php/ext/google/protobuf/protobuf.h',
+    lambda line : re.sub(
+      r"^#define PHP_PROTOBUF_VERSION .*$",
+      "#define PHP_PROTOBUF_VERSION \"%s\"" % GetFullVersion(rc_suffix = 'RC'),
+      line))
 
   RewriteTextFile('php/ext/google/protobuf/protobuf.h',
     lambda line : re.sub(

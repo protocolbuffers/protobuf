@@ -84,8 +84,9 @@ class ConformanceTestRunner {
 // over a pipe.
 class ForkPipeRunner : public ConformanceTestRunner {
  public:
+  // Note: Run() doesn't take ownership of the pointers inside suites.
   static int Run(int argc, char *argv[],
-                 ConformanceTestSuite* suite);
+                 const std::vector<ConformanceTestSuite*>& suites);
 
   ForkPipeRunner(const std::string &executable)
       : child_pid_(-1), executable_(executable) {}
@@ -139,7 +140,10 @@ class ForkPipeRunner : public ConformanceTestRunner {
 //
 class ConformanceTestSuite {
  public:
-  ConformanceTestSuite() : verbose_(false), enforce_recommended_(false) {}
+  ConformanceTestSuite()
+      : verbose_(false),
+        enforce_recommended_(false),
+        failure_list_flag_name_("--failure_list") {}
   virtual ~ConformanceTestSuite() {}
 
   void SetVerbose(bool verbose) { verbose_ = verbose; }
@@ -154,6 +158,16 @@ class ConformanceTestSuite {
   // difference between REQUIRED and RECOMMENDED test cases.
   void SetEnforceRecommended(bool value) {
     enforce_recommended_ = value;
+  }
+
+  // Gets the flag name to the failure list file.
+  // By default, this would return --failure_list
+  string GetFailureListFlagName() {
+    return failure_list_flag_name_;
+  }
+
+  void SetFailureListFlagName(const std::string& failure_list_flag_name) {
+    failure_list_flag_name_ = failure_list_flag_name;
   }
 
   // Run all the conformance tests against the given test runner.
@@ -210,6 +224,14 @@ class ConformanceTestSuite {
 
     string ConformanceLevelToString(ConformanceLevel level) const;
 
+    void SetPrintUnknownFields(bool print_unknown_fields) {
+      request_.set_print_unknown_fields(true);
+    }
+
+    void SetPrototypeMessageForCompare(const Message& message) {
+      prototype_message_for_compare_.reset(message.New());
+    }
+
    protected:
     virtual string InputFormatString(conformance::WireFormat format) const;
     virtual string OutputFormatString(conformance::WireFormat format) const;
@@ -220,6 +242,7 @@ class ConformanceTestSuite {
     ::conformance::WireFormat input_format_;
     ::conformance::WireFormat output_format_;
     const Message& prototype_message_;
+    std::unique_ptr<Message> prototype_message_for_compare_;
     string test_name_;
   };
 
@@ -259,6 +282,8 @@ class ConformanceTestSuite {
                const conformance::ConformanceRequest& request,
                conformance::ConformanceResponse* response);
 
+  void AddExpectedFailedTest(const std::string& test_name);
+
   virtual void RunSuiteImpl() = 0;
 
   ConformanceTestRunner* runner_;
@@ -267,6 +292,7 @@ class ConformanceTestSuite {
   bool verbose_;
   bool enforce_recommended_;
   std::string output_;
+  std::string failure_list_flag_name_;
   std::string failure_list_filename_;
 
   // The set of test names that are expected to fail in this run, but haven't

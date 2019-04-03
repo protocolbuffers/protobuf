@@ -78,7 +78,7 @@ These are projects we know about implementing Protocol Buffers for other program
 * PHP: http://drslump.github.com/Protobuf-PHP
 * Prolog: http://www.swi-prolog.org/pldoc/package/protobufs.html
 * Python: https://github.com/google/protobuf (Google-official implementation)
-* Python: http://eigenein.github.com/protobuf/
+* Python: https://github.com/eigenein/protobuf
 * R: http://cran.r-project.org/package=RProtoBuf
 * Ruby: http://code.google.com/p/ruby-protobuf/
 * Ruby: http://github.com/mozy/ruby-protocol-buffers
@@ -173,3 +173,4 @@ There are miscellaneous other things you may find useful as a Protocol Buffers d
 * [ProfaneDB - A Protocol Buffers database](https://profanedb.gitlab.io)
 * [Protocol Buffer property-based testing utility and example message generator (Python / Hypothesis)](https://github.com/CurataEng/hypothesis-protobuf)
 * [Protolock - CLI utility to prevent backward-incompatible changes to .proto files](https://github.com/nilslice/protolock)
+* [Optional GRPC - GRPC for testable microservices (Python)](https://github.com/mattpaletta/optional-grpc.git)

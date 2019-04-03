@@ -159,10 +159,6 @@ static PyObject* AddToAttached(RepeatedCompositeContainer* self,
   }
 
   PyObject* py_cmsg = reinterpret_cast<PyObject*>(cmsg);
-  if (PyList_Append(self->child_messages, py_cmsg) < 0) {
-    Py_DECREF(py_cmsg);
-    return NULL;
-  }
   return py_cmsg;
 }
 
@@ -174,6 +170,18 @@ static PyObject* AddToReleased(RepeatedCompositeContainer* self,
   // Create a new Message detached from the rest.
   PyObject* py_cmsg = PyEval_CallObjectWithKeywords(
       self->child_message_class->AsPyObject(), args, kwargs);
+  return py_cmsg;
+}
+
+PyObject* Add(RepeatedCompositeContainer* self,
+              PyObject* args,
+              PyObject* kwargs) {
+  PyObject* py_cmsg;
+  if (self->message == nullptr)
+    py_cmsg = AddToReleased(self, args, kwargs);
+  else
+    py_cmsg = AddToAttached(self, args, kwargs);
+
   if (py_cmsg == NULL)
     return NULL;
 
@@ -184,17 +192,94 @@ static PyObject* AddToReleased(RepeatedCompositeContainer* self,
   return py_cmsg;
 }
 
-PyObject* Add(RepeatedCompositeContainer* self,
-              PyObject* args,
-              PyObject* kwargs) {
-  if (self->message == NULL)
-    return AddToReleased(self, args, kwargs);
-  else
-    return AddToAttached(self, args, kwargs);
-}
-
 static PyObject* AddMethod(PyObject* self, PyObject* args, PyObject* kwargs) {
   return Add(reinterpret_cast<RepeatedCompositeContainer*>(self), args, kwargs);
+}
+
+// ---------------------------------------------------------------------
+// append()
+
+static PyObject* AddMessage(RepeatedCompositeContainer* self, PyObject* value) {
+  cmessage::AssureWritable(self->parent);
+  if (UpdateChildMessages(self) < 0) {
+    return nullptr;
+  }
+
+  PyObject* py_cmsg;
+  if (self->message == nullptr) {
+    py_cmsg = AddToReleased(self, nullptr, nullptr);
+    if (py_cmsg == nullptr) return nullptr;
+    CMessage* cmsg = reinterpret_cast<CMessage*>(py_cmsg);
+    if (ScopedPyObjectPtr(cmessage::MergeFrom(cmsg, value)) == nullptr) {
+      Py_DECREF(cmsg);
+      return nullptr;
+    }
+  } else {
+    Message* message = self->message;
+    const Reflection* reflection = message->GetReflection();
+    py_cmsg = AddToAttached(self, nullptr, nullptr);
+    if (py_cmsg == nullptr) return nullptr;
+    CMessage* cmsg = reinterpret_cast<CMessage*>(py_cmsg);
+    if (ScopedPyObjectPtr(cmessage::MergeFrom(cmsg, value)) == nullptr) {
+      reflection->RemoveLast(
+          message, self->parent_field_descriptor);
+      Py_DECREF(cmsg);
+      return nullptr;
+    }
+  }
+  return py_cmsg;
+}
+
+static PyObject* AppendMethod(PyObject* pself, PyObject* value) {
+  RepeatedCompositeContainer* self =
+      reinterpret_cast<RepeatedCompositeContainer*>(pself);
+  ScopedPyObjectPtr py_cmsg(AddMessage(self, value));
+  if (py_cmsg == nullptr) {
+    return nullptr;
+  }
+
+  if (PyList_Append(self->child_messages, py_cmsg.get()) < 0) {
+    return nullptr;
+  }
+
+  Py_RETURN_NONE;
+}
+
+// ---------------------------------------------------------------------
+// insert()
+static PyObject* Insert(PyObject* pself, PyObject* args) {
+  RepeatedCompositeContainer* self =
+      reinterpret_cast<RepeatedCompositeContainer*>(pself);
+
+  Py_ssize_t index;
+  PyObject* value;
+  if (!PyArg_ParseTuple(args, "nO", &index, &value)) {
+    return nullptr;
+  }
+
+  ScopedPyObjectPtr py_cmsg(AddMessage(self, value));
+  if (py_cmsg == nullptr) {
+    return nullptr;
+  }
+
+  if (self->message != nullptr) {
+    // Swap the element to right position.
+    Message* message = self->message;
+    const Reflection* reflection = message->GetReflection();
+    const FieldDescriptor* field_descriptor = self->parent_field_descriptor;
+    Py_ssize_t length = reflection->FieldSize(*message, field_descriptor) - 1;
+    Py_ssize_t end_index = index;
+    if (end_index < 0) end_index += length;
+    if (end_index < 0) end_index = 0;
+    for (Py_ssize_t i = length; i > end_index; i --) {
+      reflection->SwapElements(message, field_descriptor, i, i - 1);
+    }
+  }
+
+  if (PyList_Insert(self->child_messages, index, py_cmsg.get()) < 0) {
+    return nullptr;
+  }
+  Py_RETURN_NONE;
 }
 
 // ---------------------------------------------------------------------
@@ -638,6 +723,10 @@ static PyMethodDef Methods[] = {
     "Makes a deep copy of the class." },
   { "add", (PyCFunction)AddMethod, METH_VARARGS | METH_KEYWORDS,
     "Adds an object to the repeated container." },
+  { "append", AppendMethod, METH_O,
+    "Appends a message to the end of the repeated container."},
+  { "insert", Insert, METH_VARARGS,
+    "Inserts a message before the specified index." },
   { "extend", ExtendMethod, METH_O,
     "Adds objects to the repeated container." },
   { "pop", Pop, METH_VARARGS,

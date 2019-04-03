@@ -68,7 +68,7 @@ class DescriptorPoolTypeResolverTest : public testing::Test {
         kUrlPrefix, DescriptorPool::generated_pool()));
   }
 
-  const Field* FindField(const Type& type, const string& name) {
+  const Field* FindField(const Type& type, const std::string& name) {
     for (int i = 0; i < type.fields_size(); ++i) {
       const Field& field = type.fields(i);
       if (field.name() == name) {
@@ -78,12 +78,12 @@ class DescriptorPoolTypeResolverTest : public testing::Test {
     return NULL;
   }
 
-  bool HasField(const Type& type, const string& name) {
+  bool HasField(const Type& type, const std::string& name) {
     return FindField(type, name) != NULL;
   }
 
   bool HasField(const Type& type, Field::Cardinality cardinality,
-                Field::Kind kind, const string& name, int number) {
+                Field::Kind kind, const std::string& name, int number) {
     const Field* field = FindField(type, name);
     if (field == NULL) {
       return false;
@@ -92,8 +92,8 @@ class DescriptorPoolTypeResolverTest : public testing::Test {
         field->kind() == kind && field->number() == number;
   }
 
-  bool CheckFieldTypeUrl(const Type& type, const string& name,
-                         const string& type_url) {
+  bool CheckFieldTypeUrl(const Type& type, const std::string& name,
+                         const std::string& type_url) {
     const Field* field = FindField(type, name);
     if (field == NULL) {
       return false;
@@ -101,8 +101,8 @@ class DescriptorPoolTypeResolverTest : public testing::Test {
     return field->type_url() == type_url;
   }
 
-  bool FieldInOneof(const Type& type, const string& name,
-                    const string& oneof_name) {
+  bool FieldInOneof(const Type& type, const std::string& name,
+                    const std::string& oneof_name) {
     const Field* field = FindField(type, name);
     if (field == NULL || field->oneof_index() <= 0 ||
         field->oneof_index() > type.oneofs_size()) {
@@ -111,7 +111,7 @@ class DescriptorPoolTypeResolverTest : public testing::Test {
     return type.oneofs(field->oneof_index() - 1) == oneof_name;
   }
 
-  bool IsPacked(const Type& type, const string& name) {
+  bool IsPacked(const Type& type, const std::string& name) {
     const Field* field = FindField(type, name);
     if (field == NULL) {
       return false;
@@ -119,7 +119,7 @@ class DescriptorPoolTypeResolverTest : public testing::Test {
     return field->packed();
   }
 
-  const EnumValue* FindEnumValue(const Enum& type, const string& name) {
+  const EnumValue* FindEnumValue(const Enum& type, const std::string& name) {
     for (const EnumValue& value : type.enumvalue()) {
       if (value.name() == name) {
         return &value;
@@ -128,29 +128,29 @@ class DescriptorPoolTypeResolverTest : public testing::Test {
     return nullptr;
   }
 
-  bool EnumHasValue(const Enum& type, const string& name, int number) {
+  bool EnumHasValue(const Enum& type, const std::string& name, int number) {
     const EnumValue* value = FindEnumValue(type, name);
     return value != nullptr && value->number() == number;
   }
 
   bool HasBoolOption(const RepeatedPtrField<Option>& options,
-                     const string& name, bool value) {
+                     const std::string& name, bool value) {
     return HasOption<BoolValue>(options, name, value);
   }
 
   bool HasInt32Option(const RepeatedPtrField<Option>& options,
-                      const string& name, int32 value) {
+                      const std::string& name, int32 value) {
     return HasOption<Int32Value>(options, name, value);
   }
 
   bool HasUInt64Option(const RepeatedPtrField<Option>& options,
-                       const string& name, uint64 value) {
+                       const std::string& name, uint64 value) {
     return HasOption<UInt64Value>(options, name, value);
   }
 
   template <typename WrapperT, typename T>
-  bool HasOption(const RepeatedPtrField<Option>& options, const string& name,
-                 T value) {
+  bool HasOption(const RepeatedPtrField<Option>& options,
+                 const std::string& name, T value) {
     for (const Option& option : options) {
       if (option.name() == name) {
         WrapperT wrapper;
@@ -162,12 +162,12 @@ class DescriptorPoolTypeResolverTest : public testing::Test {
     return false;
   }
 
-  string GetTypeUrl(string full_name) {
-    return kUrlPrefix + string("/") + full_name;
+  string GetTypeUrl(std::string full_name) {
+    return kUrlPrefix + std::string("/") + full_name;
   }
 
-  template<typename T>
-  string GetTypeUrl() {
+  template <typename T>
+  std::string GetTypeUrl() {
     return GetTypeUrl(T::descriptor()->full_name());
   }
 

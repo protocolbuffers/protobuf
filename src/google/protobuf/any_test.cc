@@ -29,7 +29,9 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <google/protobuf/any_test.pb.h>
+#include <google/protobuf/unittest.pb.h>
 #include <gtest/gtest.h>
+
 
 
 namespace google {
@@ -42,12 +44,24 @@ TEST(AnyTest, TestPackAndUnpack) {
   protobuf_unittest::TestAny message;
   message.mutable_any_value()->PackFrom(submessage);
 
-  string data = message.SerializeAsString();
+  std::string data = message.SerializeAsString();
 
   ASSERT_TRUE(message.ParseFromString(data));
   EXPECT_TRUE(message.has_any_value());
+  submessage.Clear();
   ASSERT_TRUE(message.any_value().UnpackTo(&submessage));
   EXPECT_EQ(12345, submessage.int32_value());
+}
+
+TEST(AnyTest, TestUnpackWithTypeMismatch) {
+  protobuf_unittest::TestAny payload;
+  payload.set_int32_value(13);
+  google::protobuf::Any any;
+  any.PackFrom(payload);
+
+  // Attempt to unpack into the wrong type.
+  protobuf_unittest::TestAllTypes dest;
+  EXPECT_FALSE(any.UnpackTo(&dest));
 }
 
 TEST(AnyTest, TestPackAndUnpackAny) {
@@ -59,30 +73,30 @@ TEST(AnyTest, TestPackAndUnpackAny) {
   protobuf_unittest::TestAny message;
   message.mutable_any_value()->PackFrom(any);
 
-  string data = message.SerializeAsString();
+  std::string data = message.SerializeAsString();
 
   ASSERT_TRUE(message.ParseFromString(data));
   EXPECT_TRUE(message.has_any_value());
+  any.Clear();
+  submessage.Clear();
   ASSERT_TRUE(message.any_value().UnpackTo(&any));
   ASSERT_TRUE(any.UnpackTo(&submessage));
   EXPECT_EQ(12345, submessage.int32_value());
 }
 
-TEST(AnyType, TestPackWithCustomTypeUrl) {
+TEST(AnyTest, TestPackWithCustomTypeUrl) {
   protobuf_unittest::TestAny submessage;
   submessage.set_int32_value(12345);
   google::protobuf::Any any;
   // Pack with a custom type URL prefix.
   any.PackFrom(submessage, "type.myservice.com");
-  EXPECT_EQ("type.myservice.com/" + submessage.GetDescriptor()->full_name(),
-            any.type_url());
+  EXPECT_EQ("type.myservice.com/protobuf_unittest.TestAny", any.type_url());
   // Pack with a custom type URL prefix ending with '/'.
   any.PackFrom(submessage, "type.myservice.com/");
-  EXPECT_EQ("type.myservice.com/" + submessage.GetDescriptor()->full_name(),
-            any.type_url());
+  EXPECT_EQ("type.myservice.com/protobuf_unittest.TestAny", any.type_url());
   // Pack with an empty type URL prefix.
   any.PackFrom(submessage, "");
-  EXPECT_EQ("/" + submessage.GetDescriptor()->full_name(), any.type_url());
+  EXPECT_EQ("/protobuf_unittest.TestAny", any.type_url());
 
   // Test unpacking the type.
   submessage.Clear();
@@ -104,6 +118,15 @@ TEST(AnyTest, TestIs) {
   ASSERT_TRUE(message.ParseFromString(message.SerializeAsString()));
   EXPECT_FALSE(message.any_value().Is<protobuf_unittest::TestAny>());
   EXPECT_TRUE(message.any_value().Is<google::protobuf::Any>());
+
+  any.set_type_url("/protobuf_unittest.TestAny");
+  EXPECT_TRUE(any.Is<protobuf_unittest::TestAny>());
+  // The type URL must contain at least one "/".
+  any.set_type_url("protobuf_unittest.TestAny");
+  EXPECT_FALSE(any.Is<protobuf_unittest::TestAny>());
+  // The type name after the slash must be fully qualified.
+  any.set_type_url("/TestAny");
+  EXPECT_FALSE(any.Is<protobuf_unittest::TestAny>());
 }
 
 TEST(AnyTest, MoveConstructor) {
@@ -117,6 +140,7 @@ TEST(AnyTest, MoveConstructor) {
 
   google::protobuf::Any dst(std::move(src));
   EXPECT_EQ(type_url, dst.type_url().data());
+  payload.Clear();
   ASSERT_TRUE(dst.UnpackTo(&payload));
   EXPECT_EQ(12345, payload.int32_value());
 }
@@ -133,6 +157,7 @@ TEST(AnyTest, MoveAssignment) {
   google::protobuf::Any dst;
   dst = std::move(src);
   EXPECT_EQ(type_url, dst.type_url().data());
+  payload.Clear();
   ASSERT_TRUE(dst.UnpackTo(&payload));
   EXPECT_EQ(12345, payload.int32_value());
 }

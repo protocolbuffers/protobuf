@@ -120,6 +120,19 @@ void UsageError() {
   fprintf(stderr,
           "                              line.  Use '#' for comments.\n");
   fprintf(stderr,
+          "  --text_format_failure_list <filename>   Use to specify list \n");
+  fprintf(stderr,
+          "                              of tests that are expected to \n");
+  fprintf(stderr,
+          "                              fail in the \n");
+  fprintf(stderr,
+          "                              text_format_conformance_suite.  \n");
+  fprintf(stderr,
+          "                              File should contain one test name \n");
+  fprintf(stderr,
+          "                              per line.  Use '#' for comments.\n");
+
+  fprintf(stderr,
           "  --enforce_recommended       Enforce that recommended test\n");
   fprintf(stderr,
           "                              cases are also passing. Specify\n");
@@ -175,41 +188,56 @@ void ForkPipeRunner::RunTest(
 }
 
 int ForkPipeRunner::Run(
-    int argc, char *argv[], ConformanceTestSuite* suite) {
-  char *program;
-  string failure_list_filename;
-  conformance::FailureSet failure_list;
-
-  for (int arg = 1; arg < argc; ++arg) {
-    if (strcmp(argv[arg], "--failure_list") == 0) {
-      if (++arg == argc) UsageError();
-      failure_list_filename = argv[arg];
-      ParseFailureList(argv[arg], &failure_list);
-    } else if (strcmp(argv[arg], "--verbose") == 0) {
-      suite->SetVerbose(true);
-    } else if (strcmp(argv[arg], "--enforce_recommended") == 0) {
-      suite->SetEnforceRecommended(true);
-    } else if (argv[arg][0] == '-') {
-      fprintf(stderr, "Unknown option: %s\n", argv[arg]);
-      UsageError();
-    } else {
-      if (arg != argc - 1) {
-        fprintf(stderr, "Too many arguments.\n");
-        UsageError();
-      }
-      program = argv[arg];
-    }
+    int argc, char *argv[], const std::vector<ConformanceTestSuite*>& suites) {
+  if (suites.empty()) {
+    fprintf(stderr, "No test suites found.\n");
+    return EXIT_FAILURE;
   }
+  bool all_ok = true;
+  for (ConformanceTestSuite* suite : suites) {
+    char *program;
+    string failure_list_filename;
+    conformance::FailureSet failure_list;
 
-  ForkPipeRunner runner(program);
+    for (int arg = 1; arg < argc; ++arg) {
+      if (strcmp(argv[arg], suite->GetFailureListFlagName().c_str()) == 0) {
+        if (++arg == argc) UsageError();
+        failure_list_filename = argv[arg];
+        ParseFailureList(argv[arg], &failure_list);
+      } else if (strcmp(argv[arg], "--verbose") == 0) {
+        suite->SetVerbose(true);
+      } else if (strcmp(argv[arg], "--enforce_recommended") == 0) {
+        suite->SetEnforceRecommended(true);
+      } else if (argv[arg][0] == '-') {
+        bool recognized_flag = false;
+        for (ConformanceTestSuite* suite : suites) {
+          if (strcmp(argv[arg], suite->GetFailureListFlagName().c_str()) == 0) {
+            if (++arg == argc) UsageError();
+            recognized_flag = true;
+          }
+        }
+        if (!recognized_flag) {
+          fprintf(stderr, "Unknown option: %s\n", argv[arg]);
+          UsageError();
+        }
+      } else {
+        if (arg != argc - 1) {
+          fprintf(stderr, "Too many arguments.\n");
+          UsageError();
+        }
+        program = argv[arg];
+      }
+    }
 
-  std::string output;
-  bool ok =
-      suite->RunSuite(&runner, &output, failure_list_filename, &failure_list);
+    ForkPipeRunner runner(program);
 
-  fwrite(output.c_str(), 1, output.size(), stderr);
+    std::string output;
+    all_ok = all_ok &&
+        suite->RunSuite(&runner, &output, failure_list_filename, &failure_list);
 
-  return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+    fwrite(output.c_str(), 1, output.size(), stderr);
+  }
+  return all_ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
 // TODO(haberman): make this work on Windows, instead of using these

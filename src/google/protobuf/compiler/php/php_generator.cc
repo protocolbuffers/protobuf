@@ -1010,7 +1010,7 @@ void GenerateAddFileToPool(const FileDescriptor* file, bool is_descriptor,
 
     Outdent(printer);
     printer->Print(
-        "));\n\n");
+        "), true);\n\n");
   }
   printer->Print(
       "static::$is_initialized = true;\n");
@@ -1023,16 +1023,14 @@ void GenerateUseDeclaration(bool is_descriptor, io::Printer* printer) {
     printer->Print(
         "use Google\\Protobuf\\Internal\\GPBType;\n"
         "use Google\\Protobuf\\Internal\\RepeatedField;\n"
-        "use Google\\Protobuf\\Internal\\GPBUtil;\n"
-        "use Google\\Protobuf\\Internal\\GPBWrapperUtils;\n\n");
+        "use Google\\Protobuf\\Internal\\GPBUtil;\n\n");
   } else {
     printer->Print(
         "use Google\\Protobuf\\Internal\\GPBType;\n"
         "use Google\\Protobuf\\Internal\\GPBWire;\n"
         "use Google\\Protobuf\\Internal\\RepeatedField;\n"
         "use Google\\Protobuf\\Internal\\InputStream;\n"
-        "use Google\\Protobuf\\Internal\\GPBUtil;\n"
-        "use Google\\Protobuf\\Internal\\GPBWrapperUtils;\n\n");
+        "use Google\\Protobuf\\Internal\\GPBUtil;\n\n");
   }
 }
 

@@ -18,12 +18,12 @@ internal_build_cpp() {
   ./autogen.sh
   ./configure CXXFLAGS="-fPIC -std=c++11"  # -fPIC is needed for python cpp test.
                                            # See python/setup.py for more details
-  make -j4
+  make -j$(nproc)
 }
 
 build_cpp() {
   internal_build_cpp
-  make check -j4 || (cat src/test-suite.log; false)
+  make check -j$(nproc) || (cat src/test-suite.log; false)
   cd conformance && make test_cpp && cd ..
 
   # The benchmark code depends on cmake, so test if it is installed before
@@ -48,6 +48,10 @@ build_cpp_tcmalloc() {
 }
 
 build_cpp_distcheck() {
+  grep -q -- "-Og" src/Makefile.am &&
+    echo "The -Og flag is incompatible with Clang versions older than 4.0." &&
+    exit 1
+
   # Initialize any submodules.
   git submodule update --init --recursive
   ./autogen.sh
@@ -77,7 +81,39 @@ build_cpp_distcheck() {
   fi
 
   # Do the regular dist-check for C++.
-  make distcheck -j4
+  make distcheck -j$(nproc)
+}
+
+build_dist_install() {
+  # Initialize any submodules.
+  git submodule update --init --recursive
+  ./autogen.sh
+  ./configure
+  make dist
+
+  # Unzip the dist tar file and install it.
+  DIST=`ls *.tar.gz`
+  tar -xf $DIST
+  pushd ${DIST//.tar.gz}
+  ./configure && make check -j4 && make install
+
+  export LD_LIBRARY_PATH=/usr/local/lib
+
+  # Try to install Java
+  pushd java
+  use_java jdk7
+  $MVN install
+  popd
+
+  # Try to install Python
+  virtualenv --no-site-packages venv
+  source venv/bin/activate
+  pushd python
+  python setup.py clean build sdist
+  pip install dist/protobuf-*.tar.gz
+  popd
+  deactivate
+  rm -rf python/venv
 }
 
 build_csharp() {
@@ -85,6 +121,12 @@ build_csharp() {
   internal_build_cpp
   NUGET=/usr/local/bin/nuget.exe
 
+  # Disable some unwanted dotnet options
+  export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=true
+  export DOTNET_CLI_TELEMETRY_OPTOUT=true
+
+  # TODO(jtattermusch): is this still needed with "first time experience"
+  # disabled?
   # Perform "dotnet new" once to get the setup preprocessing out of the
   # way. That spews a lot of output (including backspaces) into logs
   # otherwise, and can cause problems. It doesn't matter if this step
@@ -226,7 +268,7 @@ build_objectivec_tvos_release() {
 
 build_objectivec_cocoapods_integration() {
   # Update pod to the latest version.
-  gem install cocoapods --no-ri --no-rdoc
+  gem install cocoapods --no_document
   objectivec/Tests/CocoaPods/run_tests.sh
 }
 
@@ -435,6 +477,16 @@ build_php5.5_c() {
   # popd
 }
 
+build_php5.5_mixed() {
+  use_php 5.5
+  pushd php
+  rm -rf vendor
+  composer update
+  /bin/bash ./tests/compile_extension.sh ./ext/google/protobuf
+  php -dextension=./ext/google/protobuf/modules/protobuf.so ./vendor/bin/phpunit
+  popd
+}
+
 build_php5.5_zts_c() {
   use_php_zts 5.5
   cd php/tests && /bin/bash ./test.sh 5.5-zts && cd ../..
@@ -465,6 +517,16 @@ build_php5.6_c() {
   # popd
 }
 
+build_php5.6_mixed() {
+  use_php 5.6
+  pushd php
+  rm -rf vendor
+  composer update
+  /bin/bash ./tests/compile_extension.sh ./ext/google/protobuf
+  php -dextension=./ext/google/protobuf/modules/protobuf.so ./vendor/bin/phpunit
+  popd
+}
+
 build_php5.6_zts_c() {
   use_php_zts 5.6
   cd php/tests && /bin/bash ./test.sh 5.6-zts && cd ../..
@@ -482,7 +544,7 @@ build_php5.6_mac() {
   export PATH="$PHP_FOLDER/bin:$PATH"
 
   # Install phpunit
-  curl https://phar.phpunit.de/phpunit-5.6.10.phar -L -o phpunit.phar
+  curl https://phar.phpunit.de/phpunit-5.6.8.phar -L -o phpunit.phar
   chmod +x phpunit.phar
   sudo mv phpunit.phar /usr/local/bin/phpunit
 
@@ -518,6 +580,16 @@ build_php7.0_c() {
   # pushd conformance
   # make test_php_c
   # popd
+}
+
+build_php7.0_mixed() {
+  use_php 7.0
+  pushd php
+  rm -rf vendor
+  composer update
+  /bin/bash ./tests/compile_extension.sh ./ext/google/protobuf
+  php -dextension=./ext/google/protobuf/modules/protobuf.so ./vendor/bin/phpunit
+  popd
 }
 
 build_php7.0_zts_c() {
@@ -583,6 +655,16 @@ build_php7.1_c() {
   fi
 }
 
+build_php7.1_mixed() {
+  use_php 7.1
+  pushd php
+  rm -rf vendor
+  composer update
+  /bin/bash ./tests/compile_extension.sh ./ext/google/protobuf
+  php -dextension=./ext/google/protobuf/modules/protobuf.so ./vendor/bin/phpunit
+  popd
+}
+
 build_php7.1_zts_c() {
   use_php_zts 7.1
   cd php/tests && /bin/bash ./test.sh 7.1-zts && cd ../..
@@ -600,6 +682,10 @@ build_php_all_32() {
   build_php5.6_c
   build_php7.0_c
   build_php7.1_c $1
+  build_php5.5_mixed
+  build_php5.6_mixed
+  build_php7.0_mixed
+  build_php7.1_mixed
   build_php5.5_zts_c
   build_php5.6_zts_c
   build_php7.0_zts_c
@@ -653,6 +739,7 @@ Usage: $0 { cpp |
             php7.1   |
             php7.1_c |
             php_all |
+            dist_install |
             benchmark)
 "
   exit 1

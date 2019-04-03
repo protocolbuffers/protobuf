@@ -159,10 +159,10 @@ class TestErrorCollector : public ErrorCollector {
   TestErrorCollector() {}
   ~TestErrorCollector() {}
 
-  string text_;
+  std::string text_;
 
   // implements ErrorCollector ---------------------------------------
-  void AddError(int line, int column, const string& message) {
+  void AddError(int line, int column, const std::string& message) {
     strings::SubstituteAndAppend(&text_, "$0:$1: $2\n",
                                  line, column, message);
   }
@@ -179,7 +179,7 @@ const int kBlockSizes[] = {1, 2, 3, 5, 7, 13, 32, 1024};
 class TokenizerTest : public testing::Test {
  protected:
   // For easy testing.
-  uint64 ParseInteger(const string& text) {
+  uint64 ParseInteger(const std::string& text) {
     uint64 result;
     EXPECT_TRUE(Tokenizer::ParseInteger(text, kuint64max, &result));
     return result;
@@ -195,7 +195,7 @@ class TokenizerTest : public testing::Test {
 // In each test case, the entire input text should parse as a single token
 // of the given type.
 struct SimpleTokenCase {
-  string input;
+  std::string input;
   Tokenizer::TokenType type;
 };
 
@@ -326,7 +326,7 @@ TEST_1D(TokenizerTest, FloatSuffix, kBlockSizes) {
 // In each case, the input is parsed to produce a list of tokens.  The
 // last token in "output" must have type TYPE_END.
 struct MultiTokenCase {
-  string input;
+  std::string input;
   Tokenizer::Token output[10];  // The compiler wants a constant array
                                 // size for initialization to work.  There
                                 // is no reason this can't be increased if
@@ -513,7 +513,7 @@ TEST_1D(TokenizerTest, ShCommentStyle, kBlockSizes) {
 // In each case, the input is expected to have two tokens named "prev" and
 // "next" with comments in between.
 struct DocCommentCase {
-  string input;
+  std::string input;
 
   const char* prev_trailing_comments;
   const char* detached_comments[10];
@@ -692,9 +692,9 @@ TEST_2D(TokenizerTest, DocComments, kDocCommentCases, kBlockSizes) {
   EXPECT_EQ("prev", tokenizer.current().text);
   EXPECT_EQ("prev", tokenizer2.current().text);
 
-  string prev_trailing_comments;
-  std::vector<string> detached_comments;
-  string next_leading_comments;
+  std::string prev_trailing_comments;
+  std::vector<std::string> detached_comments;
+  std::string next_leading_comments;
   tokenizer.NextWithComments(&prev_trailing_comments, &detached_comments,
                              &next_leading_comments);
   tokenizer2.NextWithComments(NULL, NULL, NULL);
@@ -797,7 +797,7 @@ TEST_F(TokenizerTest, ParseFloat) {
 }
 
 TEST_F(TokenizerTest, ParseString) {
-  string output;
+  std::string output;
   Tokenizer::ParseString("'hello'", &output);
   EXPECT_EQ("hello", output);
   Tokenizer::ParseString("\"blah\\nblah2\"", &output);
@@ -840,7 +840,7 @@ TEST_F(TokenizerTest, ParseString) {
 
 TEST_F(TokenizerTest, ParseStringAppend) {
   // Check that ParseString and ParseStringAppend differ.
-  string output("stuff+");
+  std::string output("stuff+");
   Tokenizer::ParseStringAppend("'hello'", &output);
   EXPECT_EQ("stuff+hello", output);
   Tokenizer::ParseString("'hello'", &output);
@@ -852,7 +852,7 @@ TEST_F(TokenizerTest, ParseStringAppend) {
 // Each case parses some input text, ignoring the tokens produced, and
 // checks that the error output matches what is expected.
 struct ErrorCase {
-  string input;
+  std::string input;
   bool recoverable;  // True if the tokenizer should be able to recover and
                      // parse more tokens after seeing this error.  Cases
                      // for which this is true must end with "foo" as
@@ -865,86 +865,70 @@ inline std::ostream& operator<<(std::ostream& out, const ErrorCase& test_case) {
 }
 
 ErrorCase kErrorCases[] = {
-  // String errors.
-  { "'\\l' foo", true,
-    "0:2: Invalid escape sequence in string literal.\n" },
-  { "'\\X' foo", true,
-    "0:2: Invalid escape sequence in string literal.\n" },
-  { "'\\x' foo", true,
-    "0:3: Expected hex digits for escape sequence.\n" },
-  { "'foo", false,
-    "0:4: Unexpected end of string.\n" },
-  { "'bar\nfoo", true,
-    "0:4: String literals cannot cross line boundaries.\n" },
-  { "'\\u01' foo", true,
-    "0:5: Expected four hex digits for \\u escape sequence.\n" },
-  { "'\\u01' foo", true,
-    "0:5: Expected four hex digits for \\u escape sequence.\n" },
-  { "'\\uXYZ' foo", true,
-    "0:3: Expected four hex digits for \\u escape sequence.\n" },
+    // String errors.
+    {"'\\l' foo", true, "0:2: Invalid escape sequence in string literal.\n"},
+    {"'\\X' foo", true, "0:2: Invalid escape sequence in string literal.\n"},
+    {"'\\x' foo", true, "0:3: Expected hex digits for escape sequence.\n"},
+    {"'foo", false, "0:4: Unexpected end of string.\n"},
+    {"'bar\nfoo", true, "0:4: String literals cannot cross line boundaries.\n"},
+    {"'\\u01' foo", true,
+     "0:5: Expected four hex digits for \\u escape sequence.\n"},
+    {"'\\u01' foo", true,
+     "0:5: Expected four hex digits for \\u escape sequence.\n"},
+    {"'\\uXYZ' foo", true,
+     "0:3: Expected four hex digits for \\u escape sequence.\n"},
 
-  // Integer errors.
-  { "123foo", true,
-    "0:3: Need space between number and identifier.\n" },
+    // Integer errors.
+    {"123foo", true, "0:3: Need space between number and identifier.\n"},
 
-  // Hex/octal errors.
-  { "0x foo", true,
-    "0:2: \"0x\" must be followed by hex digits.\n" },
-  { "0541823 foo", true,
-    "0:4: Numbers starting with leading zero must be in octal.\n" },
-  { "0x123z foo", true,
-    "0:5: Need space between number and identifier.\n" },
-  { "0x123.4 foo", true,
-    "0:5: Hex and octal numbers must be integers.\n" },
-  { "0123.4 foo", true,
-    "0:4: Hex and octal numbers must be integers.\n" },
+    // Hex/octal errors.
+    {"0x foo", true, "0:2: \"0x\" must be followed by hex digits.\n"},
+    {"0541823 foo", true,
+     "0:4: Numbers starting with leading zero must be in octal.\n"},
+    {"0x123z foo", true, "0:5: Need space between number and identifier.\n"},
+    {"0x123.4 foo", true, "0:5: Hex and octal numbers must be integers.\n"},
+    {"0123.4 foo", true, "0:4: Hex and octal numbers must be integers.\n"},
 
-  // Float errors.
-  { "1e foo", true,
-    "0:2: \"e\" must be followed by exponent.\n" },
-  { "1e- foo", true,
-    "0:3: \"e\" must be followed by exponent.\n" },
-  { "1.2.3 foo", true,
-    "0:3: Already saw decimal point or exponent; can't have another one.\n" },
-  { "1e2.3 foo", true,
-    "0:3: Already saw decimal point or exponent; can't have another one.\n" },
-  { "a.1 foo", true,
-    "0:1: Need space between identifier and decimal point.\n" },
-  // allow_f_after_float not enabled, so this should be an error.
-  { "1.0f foo", true,
-    "0:3: Need space between number and identifier.\n" },
+    // Float errors.
+    {"1e foo", true, "0:2: \"e\" must be followed by exponent.\n"},
+    {"1e- foo", true, "0:3: \"e\" must be followed by exponent.\n"},
+    {"1.2.3 foo", true,
+     "0:3: Already saw decimal point or exponent; can't have another one.\n"},
+    {"1e2.3 foo", true,
+     "0:3: Already saw decimal point or exponent; can't have another one.\n"},
+    {"a.1 foo", true,
+     "0:1: Need space between identifier and decimal point.\n"},
+    // allow_f_after_float not enabled, so this should be an error.
+    {"1.0f foo", true, "0:3: Need space between number and identifier.\n"},
 
-  // Block comment errors.
-  { "/*", false,
-    "0:2: End-of-file inside block comment.\n"
-    "0:0:   Comment started here.\n"},
-  { "/*/*/ foo", true,
-    "0:3: \"/*\" inside block comment.  Block comments cannot be nested.\n"},
+    // Block comment errors.
+    {"/*", false,
+     "0:2: End-of-file inside block comment.\n"
+     "0:0:   Comment started here.\n"},
+    {"/*/*/ foo", true,
+     "0:3: \"/*\" inside block comment.  Block comments cannot be nested.\n"},
 
-  // Control characters.  Multiple consecutive control characters should only
-  // produce one error.
-  { "\b foo", true,
-    "0:0: Invalid control characters encountered in text.\n" },
-  { "\b\b foo", true,
-    "0:0: Invalid control characters encountered in text.\n" },
+    // Control characters.  Multiple consecutive control characters should only
+    // produce one error.
+    {"\b foo", true, "0:0: Invalid control characters encountered in text.\n"},
+    {"\b\b foo", true,
+     "0:0: Invalid control characters encountered in text.\n"},
 
-  // Check that control characters at end of input don't result in an
-  // infinite loop.
-  { "\b", false,
-    "0:0: Invalid control characters encountered in text.\n" },
+    // Check that control characters at end of input don't result in an
+    // infinite loop.
+    {"\b", false, "0:0: Invalid control characters encountered in text.\n"},
 
-  // Check recovery from '\0'.  We have to explicitly specify the length of
-  // these strings because otherwise the string constructor will just call
-  // strlen() which will see the first '\0' and think that is the end of the
-  // string.
-  { string("\0foo", 4), true,
-    "0:0: Invalid control characters encountered in text.\n" },
-  { string("\0\0foo", 5), true,
-    "0:0: Invalid control characters encountered in text.\n" },
+    // Check recovery from '\0'.  We have to explicitly specify the length of
+    // these strings because otherwise the string constructor will just call
+    // strlen() which will see the first '\0' and think that is the end of the
+    // string.
+    {std::string("\0foo", 4), true,
+     "0:0: Invalid control characters encountered in text.\n"},
+    {std::string("\0\0foo", 5), true,
+     "0:0: Invalid control characters encountered in text.\n"},
 
-  // Check error from high order bits set
-  { "\300foo", true,
-    "0:0: Interpreting non ascii codepoint 192.\n" },
+    // Check error from high order bits set
+    {"\300foo", true, "0:0: Interpreting non ascii codepoint 192.\n"},
 };
 
 TEST_2D(TokenizerTest, Errors, kErrorCases, kBlockSizes) {
@@ -973,7 +957,7 @@ TEST_2D(TokenizerTest, Errors, kErrorCases, kBlockSizes) {
 // -------------------------------------------------------------------
 
 TEST_1D(TokenizerTest, BackUpOnDestruction, kBlockSizes) {
-  string text = "foo bar";
+  std::string text = "foo bar";
   TestInputStream input(text.data(), text.size(), kBlockSizes_case);
 
   // Create a tokenizer, read one token, then destroy it.

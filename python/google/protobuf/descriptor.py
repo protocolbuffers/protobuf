@@ -855,7 +855,7 @@ class FileDescriptor(DescriptorBase):
   dependencies: List of other FileDescriptors this FileDescriptor depends on.
   public_dependencies: A list of FileDescriptors, subset of the dependencies
     above, which were declared as "public".
-  message_types_by_name: Dict of message names of their descriptors.
+  message_types_by_name: Dict of message names and their descriptors.
   enum_types_by_name: Dict of enum names and their descriptors.
   extensions_by_name: Dict of extension names and their descriptors.
   services_by_name: Dict of services names and their descriptors.

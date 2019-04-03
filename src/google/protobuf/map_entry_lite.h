@@ -36,13 +36,14 @@
 
 #include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/parse_context.h>
+#include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/arena.h>
 #include <google/protobuf/arenastring.h>
+#include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/map.h>
 #include <google/protobuf/map_type_handler.h>
 #include <google/protobuf/port.h>
 #include <google/protobuf/wire_format_lite.h>
-#include <google/protobuf/wire_format_lite_inl.h>
 
 #include <google/protobuf/port_def.inc>
 #ifdef SWIG
@@ -190,9 +191,36 @@ class MapEntryImpl : public Base {
   std::string GetTypeName() const override { return ""; }
 
   void CheckTypeAndMergeFrom(const MessageLite& other) override {
-    MergeFromInternal(*::google::protobuf::down_cast<const Derived*>(&other));
+    MergeFromInternal(*::google::protobuf::internal::DownCast<const Derived*>(&other));
   }
 
+#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
+  const char* _InternalParse(const char* ptr, ParseContext* ctx) final {
+    while (!ctx->Done(&ptr)) {
+      uint32 tag;
+      ptr = ReadTag(ptr, &tag);
+      GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+      if (tag == kKeyTag) {
+        set_has_key();
+        ptr = KeyTypeHandler::Read(ptr, ctx, mutable_key());
+        if (!::down_cast<Derived*>(this)->ValidateKey()) return nullptr;
+      } else if (tag == kValueTag) {
+        set_has_value();
+        ptr = ValueTypeHandler::Read(ptr, ctx, mutable_value());
+        if (!::down_cast<Derived*>(this)->ValidateValue()) return nullptr;
+      } else {
+        if (tag == 0 || WireFormatLite::GetTagWireType(tag) ==
+                            WireFormatLite::WIRETYPE_END_GROUP) {
+          ctx->SetLastTag(tag);
+          return ptr;
+        }
+        ptr = UnknownFieldParse(tag, static_cast<string*>(nullptr), ptr, ctx);
+      }
+      GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+    }
+    return ptr;
+  }
+#else
   bool MergePartialFromCodedStream(io::CodedInputStream* input) override {
     uint32 tag;
 
@@ -233,6 +261,7 @@ class MapEntryImpl : public Base {
       }
     }
   }
+#endif
 
   size_t ByteSizeLong() const override {
     size_t size = 0;
@@ -386,35 +415,29 @@ class MapEntryImpl : public Base {
       return result;
     }
 
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-    bool ParseMap(const char* begin, const char* end) {
-      io::CodedInputStream input(reinterpret_cast<const uint8*>(begin),
-                                 end - begin);
-      return MergePartialFromCodedStream(&input) &&
-             input.ConsumedEntireMessage();
-    }
-    template <typename Metadata>
-    bool ParseMapEnumValidation(const char* begin, const char* end, uint32 num,
-                                Metadata* metadata,
-                                bool (*validate_enum)(int)) {
-      io::CodedInputStream input(reinterpret_cast<const uint8*>(begin),
-                                 static_cast<int>(end - begin));
+    const char* _InternalParse(const char* ptr, ParseContext* ctx) {
       auto entry = NewEntry();
-      // TODO(gerbens) implement _InternalParse for maps. We can't use
-      // ParseFromString as this will call _InternalParse
-      if (!(entry->MergePartialFromCodedStream(&input) &&
-            input.ConsumedEntireMessage()))
-        return false;
-      if (!validate_enum(entry->value())) {
-        auto unknown_fields = metadata->mutable_unknown_fields();
-        WriteLengthDelimited(num, StringPiece(begin, end - begin),
-                             unknown_fields);
-        return true;
-      }
-      (*map_)[entry->key()] = static_cast<Value>(entry->value());
-      return true;
+      ptr = entry->_InternalParse(ptr, ctx);
+      if (!ptr) return nullptr;
+      UseKeyAndValueFromEntry();
+      return ptr;
     }
-#endif
+
+    template <typename Metadata>
+    const char* ParseWithEnumValidation(const char* ptr, ParseContext* ctx,
+                                        bool (*is_valid)(int), uint32 field_num,
+                                        Metadata* metadata) {
+      auto entry = NewEntry();
+      ptr = entry->_InternalParse(ptr, ctx);
+      if (!ptr) return nullptr;
+      if (is_valid(entry->value())) {
+        UseKeyAndValueFromEntry();
+      } else {
+        WriteLengthDelimited(field_num, entry->SerializeAsString(),
+                             metadata->mutable_unknown_fields());
+      }
+      return ptr;
+    }
 
     MapEntryImpl* NewEntry() { return entry_ = mf_->NewEntry(); }
 
@@ -425,7 +448,7 @@ class MapEntryImpl : public Base {
     const Value& entry_value() const { return entry_->value(); }
 
    private:
-    void UseKeyAndValueFromEntry() PROTOBUF_COLD {
+    void UseKeyAndValueFromEntry() {
       // Update key_ in case we need it later (because key() is called).
       // This is potentially inefficient, especially if the key is
       // expensive to copy (e.g., a long string), but this is a cold
@@ -477,7 +500,7 @@ class MapEntryImpl : public Base {
   bool has_value() const { return (_has_bits_[0] & 0x00000002u) != 0; }
   void clear_has_value() { _has_bits_[0] &= ~0x00000002u; }
 
- private:
+ public:
   // Serializing a generated message containing map field involves serializing
   // key-value pairs from Map. The wire format of each key-value pair
   // after serialization should be the same as that of a MapEntry message
@@ -640,7 +663,7 @@ template <>
 struct FromHelper<WireFormatLite::TYPE_STRING> {
   static ArenaStringPtr From(const std::string& x) {
     ArenaStringPtr res;
-    TaggedPtr<::std::string> ptr;
+    TaggedPtr<std::string> ptr;
     ptr.Set(const_cast<std::string*>(&x));
     res.UnsafeSetTaggedPointer(ptr);
     return res;
@@ -650,7 +673,7 @@ template <>
 struct FromHelper<WireFormatLite::TYPE_BYTES> {
   static ArenaStringPtr From(const std::string& x) {
     ArenaStringPtr res;
-    TaggedPtr<::std::string> ptr;
+    TaggedPtr<std::string> ptr;
     ptr.Set(const_cast<std::string*>(&x));
     res.UnsafeSetTaggedPointer(ptr);
     return res;

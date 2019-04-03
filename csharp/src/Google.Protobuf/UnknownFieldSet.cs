@@ -229,7 +229,7 @@ namespace Google.Protobuf
                         return false;
                     }
                 default:
-                    throw new InvalidOperationException("Wire Type is invalid.");
+                    throw InvalidProtocolBufferException.InvalidWireType();
             }
         }
 

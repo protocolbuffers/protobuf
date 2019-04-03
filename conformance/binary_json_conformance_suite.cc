@@ -681,6 +681,20 @@ void BinaryAndJsonConformanceSuite::TestUnknownMessage(
 }
 
 void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
+  // Hack to get the list of test failures based on whether
+  // GOOGLE3_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER is enabled or not.
+  conformance::FailureSet failure_set;
+  ConformanceRequest req;
+  ConformanceResponse res;
+  req.set_message_type(failure_set.GetTypeName());
+  req.set_protobuf_payload("");
+  req.set_requested_output_format(conformance::WireFormat::PROTOBUF);
+  RunTest("FindFailures", req, &res);
+  GOOGLE_CHECK(failure_set.MergeFromString(res.protobuf_payload()));
+  for (const string& failure : failure_set.failure()) {
+    AddExpectedFailedTest(failure);
+  }
+
   type_resolver_.reset(NewTypeResolverForDescriptorPool(
       kTypeUrlPrefix, DescriptorPool::generated_pool()));
   type_url_ = GetTypeUrl(TestAllTypesProto3::descriptor());
@@ -2125,6 +2139,24 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
           }
         }
       )");
+  RunValidJsonTest(
+      "StructWithEmptyListValue", REQUIRED,
+      R"({
+        "optionalStruct": {
+          "listValue": []
+        }
+      })",
+      R"(
+        optional_struct: {
+          fields: {
+            key: "listValue"
+            value: {
+              list_value: {
+              }
+            }
+          }
+        }
+      )");
   // Value
   RunValidJsonTest(
       "ValueAcceptInteger", REQUIRED,
@@ -2175,6 +2207,36 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
             }
           }
         }
+      )");
+  RunValidJsonTest(
+      "RepeatedValue", REQUIRED,
+      R"({
+        "repeatedValue": [["a"]]
+      })",
+      R"(
+        repeated_value: [
+          {
+            list_value: {
+              values: [
+                { string_value: "a"}
+              ]
+            }
+          }
+        ]
+      )");
+  RunValidJsonTest(
+      "RepeatedListValue", REQUIRED,
+      R"({
+        "repeatedListValue": [["a"]]
+      })",
+      R"(
+        repeated_list_value: [
+          {
+            values: [
+              { string_value: "a"}
+            ]
+          }
+        ]
       )");
 
   // Any

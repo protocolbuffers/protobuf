@@ -132,7 +132,8 @@ inline TestUtil::ReflectionTester::ReflectionTester(
   std::string package = base_descriptor->file()->package();
   const FieldDescriptor* import_descriptor =
       pool->FindFieldByName(package + ".TestAllTypes.optional_import_message");
-  std::string import_package = import_descriptor->message_type()->file()->package();
+  std::string import_package =
+      import_descriptor->message_type()->file()->package();
 
   nested_b_ = pool->FindFieldByName(package + ".TestAllTypes.NestedMessage.bb");
   foreign_c_ = pool->FindFieldByName(package + ".ForeignMessage.c");
@@ -1269,8 +1270,7 @@ inline void TestUtil::ReflectionTester::ExpectMessagesReleasedViaReflection(
 // Check that the passed-in serialization is the canonical serialization we
 // expect for a TestFieldOrderings message filled in by
 // SetAllFieldsAndExtensions().
-inline void ExpectAllFieldsAndExtensionsInOrder(
-    const std::string& serialized) {
+inline void ExpectAllFieldsAndExtensionsInOrder(const std::string& serialized) {
   // We set each field individually, serialize separately, and concatenate all
   // the strings in canonical order to determine the expected serialization.
   std::string expected;

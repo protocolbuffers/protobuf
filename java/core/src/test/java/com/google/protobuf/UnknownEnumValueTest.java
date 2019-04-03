@@ -35,6 +35,10 @@ import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.FieldPresenceTestProto.TestAllTypes;
+import com.google.protobuf.Proto2UnknownEnumValuesTestProto.Proto2EnumMessage;
+import com.google.protobuf.Proto2UnknownEnumValuesTestProto.Proto2EnumMessageWithEnumSubset;
+import com.google.protobuf.Proto2UnknownEnumValuesTestProto.Proto2TestEnum;
+import com.google.protobuf.Proto2UnknownEnumValuesTestProto.Proto2TestEnumSubset;
 import com.google.protobuf.TextFormat.ParseException;
 import junit.framework.TestCase;
 
@@ -42,6 +46,7 @@ import junit.framework.TestCase;
  * Unit tests for protos that keep unknown enum values rather than discard them as unknown fields.
  */
 public class UnknownEnumValueTest extends TestCase {
+
   public void testUnknownEnumValues() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     builder.setOptionalNestedEnumValue(4321);
@@ -244,5 +249,62 @@ public class UnknownEnumValueTest extends TestCase {
     } catch (ParseException e) {
       // expected.
     }
+  }
+
+  public void testUnknownEnumValuesInProto2() throws Exception {
+    Proto2EnumMessage.Builder sourceMessage = Proto2EnumMessage.newBuilder();
+    sourceMessage
+        .addRepeatedPackedEnum(Proto2TestEnum.ZERO)
+        .addRepeatedPackedEnum(Proto2TestEnum.TWO) // Unknown in parsed proto
+        .addRepeatedPackedEnum(Proto2TestEnum.ONE);
+
+    Proto2EnumMessageWithEnumSubset destMessage =
+        Proto2EnumMessageWithEnumSubset.parseFrom(sourceMessage.build().toByteArray());
+
+    // Known enum values should be preserved.
+    assertEquals(2, destMessage.getRepeatedPackedEnumCount());
+    assertEquals(Proto2TestEnumSubset.TESTENUM_SUBSET_ZERO, destMessage.getRepeatedPackedEnum(0));
+    assertEquals(Proto2TestEnumSubset.TESTENUM_SUBSET_ONE, destMessage.getRepeatedPackedEnum(1));
+
+    // Unknown enum values should be found in UnknownFieldSet.
+    UnknownFieldSet unknown = destMessage.getUnknownFields();
+    assertEquals(
+        Proto2TestEnum.TWO_VALUE,
+        unknown
+            .getField(Proto2EnumMessageWithEnumSubset.REPEATED_PACKED_ENUM_FIELD_NUMBER)
+            .getVarintList()
+            .get(0)
+            .longValue());
+  }
+
+  public void testUnknownEnumValuesInProto2WithDynamicMessage() throws Exception {
+    Descriptor descriptor = Proto2EnumMessageWithEnumSubset.getDescriptor();
+    FieldDescriptor repeatedPackedField = descriptor.findFieldByName("repeated_packed_enum");
+
+    Proto2EnumMessage.Builder sourceMessage = Proto2EnumMessage.newBuilder();
+    sourceMessage
+        .addRepeatedPackedEnum(Proto2TestEnum.ZERO)
+        .addRepeatedPackedEnum(Proto2TestEnum.TWO) // Unknown in parsed proto
+        .addRepeatedPackedEnum(Proto2TestEnum.ONE);
+
+    DynamicMessage message =
+        DynamicMessage.parseFrom(
+            Proto2EnumMessageWithEnumSubset.getDescriptor(), sourceMessage.build().toByteArray());
+
+    // Known enum values should be preserved.
+    assertEquals(2, message.getRepeatedFieldCount(repeatedPackedField));
+    EnumValueDescriptor enumValue0 =
+        (EnumValueDescriptor) message.getRepeatedField(repeatedPackedField, 0);
+    EnumValueDescriptor enumValue1 =
+        (EnumValueDescriptor) message.getRepeatedField(repeatedPackedField, 1);
+
+    assertEquals(Proto2TestEnumSubset.TESTENUM_SUBSET_ZERO_VALUE, enumValue0.getNumber());
+    assertEquals(Proto2TestEnumSubset.TESTENUM_SUBSET_ONE_VALUE, enumValue1.getNumber());
+
+    // Unknown enum values should be found in UnknownFieldSet.
+    UnknownFieldSet unknown = message.getUnknownFields();
+    assertEquals(
+        Proto2TestEnum.TWO_VALUE,
+        unknown.getField(repeatedPackedField.getNumber()).getVarintList().get(0).longValue());
   }
 }

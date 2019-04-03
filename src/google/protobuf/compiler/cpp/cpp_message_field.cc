@@ -44,6 +44,7 @@ namespace compiler {
 namespace cpp {
 
 namespace {
+
 string ReinterpretCast(const string& type, const string& expression,
                        bool implicit_weak_field) {
   if (implicit_weak_field) {
@@ -55,16 +56,17 @@ string ReinterpretCast(const string& type, const string& expression,
 
 void SetMessageVariables(const FieldDescriptor* descriptor,
                          const Options& options, bool implicit_weak,
-                         std::map<string, string>* variables) {
+                         std::map<std::string, std::string>* variables) {
   SetCommonFieldVariables(descriptor, variables, options);
-  (*variables)["type"] = FieldMessageTypeName(descriptor);
+  (*variables)["type"] = FieldMessageTypeName(descriptor, options);
   (*variables)["casted_member"] = ReinterpretCast(
       (*variables)["type"] + "*", (*variables)["name"] + "_", implicit_weak);
   (*variables)["type_default_instance"] =
-      DefaultInstanceName(descriptor->message_type());
+      DefaultInstanceName(descriptor->message_type(), options);
   (*variables)["type_reference_function"] =
       implicit_weak
-          ? ("  " + ReferenceFunctionName(descriptor->message_type()) + "();\n")
+          ? ("  " + ReferenceFunctionName(descriptor->message_type(), options) +
+             "();\n")
           : "";
   (*variables)["stream_writer"] =
       (*variables)["declared_type"] +

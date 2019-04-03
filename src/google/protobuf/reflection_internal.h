@@ -127,9 +127,9 @@ class RepeatedFieldWrapper : public RandomAccessRepeatedFieldAccessor {
   virtual T ConvertToT(const Value* value) const = 0;
 
   // Convert an object stored in RepeatedPtrField to an object that will be
-  // returned by this accessor. If the two objects have the same type (true
-  // for string fields with ctype=STRING), a pointer to the source object can
-  // be returned directly. Otherwise, data should be copied from value to
+  // returned by this accessor. If the two objects have the same type (true for
+  // string fields with ctype=STRING), a pointer to the source object can be
+  // returned directly. Otherwise, data should be copied from value to
   // scratch_space and scratch_space should be returned.
   virtual const Value* ConvertFromT(const T& value,
                                     Value* scratch_space) const = 0;
@@ -189,9 +189,9 @@ class RepeatedPtrFieldWrapper : public RandomAccessRepeatedFieldAccessor {
   virtual void ConvertToT(const Value* value, T* result) const = 0;
 
   // Convert an object stored in RepeatedPtrField to an object that will be
-  // returned by this accessor. If the two objects have the same type (true
-  // for string fields with ctype=STRING), a pointer to the source object can
-  // be returned directly. Otherwise, data should be copied from value to
+  // returned by this accessor. If the two objects have the same type (true for
+  // string fields with ctype=STRING), a pointer to the source object can be
+  // returned directly. Otherwise, data should be copied from value to
   // scratch_space and scratch_space should be returned.
   virtual const Value* ConvertFromT(const T& value,
                                     Value* scratch_space) const = 0;

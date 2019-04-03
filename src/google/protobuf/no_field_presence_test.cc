@@ -418,7 +418,7 @@ TEST(NoFieldPresenceTest, DontSerializeDefaultValuesTest) {
   // check that serialized data contains only non-zero numeric fields/non-empty
   // string/byte fields.
   proto2_nofieldpresence_unittest::TestAllTypes message;
-  string output;
+  std::string output;
 
   // All default values -> no output.
   message.SerializeToString(&output);
@@ -510,7 +510,7 @@ TEST(NoFieldPresenceTest, LazyMessageFieldHasBit) {
 
   // Serialize and parse with a new message object so that lazy field on new
   // object is in unparsed state.
-  string output;
+  std::string output;
   message.SerializeToString(&output);
   proto2_nofieldpresence_unittest::TestAllTypes message2;
   message2.ParseFromString(output);
@@ -529,7 +529,7 @@ TEST(NoFieldPresenceTest, OneofPresence) {
   // oneof fields still have field presence -- ensure that this goes on the wire
   // even though its value is the empty string.
   message.set_oneof_string("");
-  string serialized;
+  std::string serialized;
   message.SerializeToString(&serialized);
   // Tag: 113 --> tag is (113 << 3) | 2 (length delimited) = 906
   // varint: 0x8a 0x07

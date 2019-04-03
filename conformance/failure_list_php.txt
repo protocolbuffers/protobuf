@@ -13,6 +13,10 @@ Required.Proto3.JsonInput.FloatFieldTooSmall
 Required.Proto3.JsonInput.DoubleFieldTooSmall
 Required.Proto3.JsonInput.Int32FieldNotInteger
 Required.Proto3.JsonInput.Int64FieldNotInteger
+Required.Proto3.JsonInput.RepeatedFieldWrongElementTypeExpectingStringsGotInt
+Required.Proto3.JsonInput.RepeatedListValue.JsonOutput
+Required.Proto3.JsonInput.RepeatedListValue.ProtobufOutput
+Required.Proto3.JsonInput.StringFieldNotAString
 Required.Proto3.JsonInput.Uint32FieldNotInteger
 Required.Proto3.JsonInput.Uint64FieldNotInteger
 Required.Proto3.JsonInput.Int32FieldLeadingSpace

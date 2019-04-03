@@ -25,6 +25,7 @@ make_tmp_dir:
 	mkdir -p 'tmp/java/src/main/java'
 	touch make_tmp_dir
 
+
 # We have to cd to $(srcdir) before executing protoc because $(protoc_inputs) is
 # relative to srcdir, which may not be the same as the current directory when
 # building out-of-tree.
@@ -90,8 +91,8 @@ $(benchmarks_protoc_outputs_proto2_header): protoc_middleman2
 
 initialize_submodule:
 	oldpwd=`pwd`
-	cd $(top_srcdir) && git submodule update --init -r third_party/benchmark
-	cd $(top_srcdir)/third_party/benchmark && cmake -DCMAKE_BUILD_TYPE=Release && make
+	cd $(top_srcdir) && git submodule update --init -r third_party/benchmark && \
+		cd third_party/benchmark && cmake -DCMAKE_BUILD_TYPE=Release && make
 	cd $$oldpwd
 	touch initialize_submodule
 

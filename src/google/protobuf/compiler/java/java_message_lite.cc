@@ -74,13 +74,8 @@ bool EnableExperimentalRuntimeForLite() {
 #endif  // !PROTOBUF_EXPERIMENT
 }
 
-bool GenerateHasBits(const Descriptor* descriptor) {
-  return SupportFieldPresence(descriptor->file()) ||
-      HasRepeatedFields(descriptor);
-}
-
-string MapValueImmutableClassdName(const Descriptor* descriptor,
-                                   ClassNameResolver* name_resolver) {
+std::string MapValueImmutableClassdName(const Descriptor* descriptor,
+                                        ClassNameResolver* name_resolver) {
   const FieldDescriptor* value_field = descriptor->FindFieldByName("value");
   GOOGLE_CHECK_EQ(FieldDescriptor::TYPE_MESSAGE, value_field->type());
   return name_resolver->GetImmutableClassName(value_field->message_type());
@@ -180,7 +175,7 @@ void ImmutableMessageLiteGenerator::GenerateInterface(io::Printer* printer) {
 void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
   bool is_own_file = IsOwnFile(descriptor_, /* immutable = */ true);
 
-  std::map<string, string> variables;
+  std::map<std::string, std::string> variables;
   variables["static"] = is_own_file ? " " : " static ";
   variables["classname"] = descriptor_->name();
   variables["extra_interfaces"] = ExtraMessageInterfaces(descriptor_);
@@ -193,7 +188,7 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
 
 
   // The builder_type stores the super type name of the nested Builder class.
-  string builder_type;
+  std::string builder_type;
   if (descriptor_->extension_range_count() > 0) {
     printer->Print(variables,
       "$deprecation$public $static$final class $classname$ extends\n"
@@ -233,22 +228,20 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
     messageGenerator.Generate(printer);
   }
 
-  if (GenerateHasBits(descriptor_)) {
-    // Integers for bit fields.
-    int totalBits = 0;
-    for (int i = 0; i < descriptor_->field_count(); i++) {
-      totalBits += field_generators_.get(descriptor_->field(i))
-          .GetNumBitsForMessage();
-    }
-    int totalInts = (totalBits + 31) / 32;
-    for (int i = 0; i < totalInts; i++) {
-      printer->Print("private int $bit_field_name$;\n",
-        "bit_field_name", GetBitFieldName(i));
-    }
+  // Integers for bit fields.
+  int totalBits = 0;
+  for (int i = 0; i < descriptor_->field_count(); i++) {
+    totalBits +=
+        field_generators_.get(descriptor_->field(i)).GetNumBitsForMessage();
+  }
+  int totalInts = (totalBits + 31) / 32;
+  for (int i = 0; i < totalInts; i++) {
+    printer->Print("private int $bit_field_name$;\n", "bit_field_name",
+                   GetBitFieldName(i));
   }
 
   // oneof
-  std::map<string, string> vars;
+  std::map<std::string, std::string> vars;
   for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
     const OneofDescriptor* oneof = descriptor_->oneof_decl(i);
     vars["oneof_name"] = context_->GetOneofGeneratorInfo(oneof)->name;
@@ -952,20 +945,17 @@ void ImmutableMessageLiteGenerator::GenerateDynamicMethodVisit(
       "oneof_name", context_->GetOneofGeneratorInfo(field)->name);
   }
 
-  if (GenerateHasBits(descriptor_)) {
-    // Integers for bit fields.
-    int totalBits = 0;
-    for (int i = 0; i < descriptor_->field_count(); i++) {
-      totalBits += field_generators_.get(descriptor_->field(i))
-          .GetNumBitsForMessage();
-    }
-    int totalInts = (totalBits + 31) / 32;
+  // Integers for bit fields.
+  int totalBits = 0;
+  for (int i = 0; i < descriptor_->field_count(); i++) {
+    totalBits +=
+        field_generators_.get(descriptor_->field(i)).GetNumBitsForMessage();
+  }
+  int totalInts = (totalBits + 31) / 32;
 
-    for (int i = 0; i < totalInts; i++) {
-      printer->Print(
-        "$bit_field_name$ |= other.$bit_field_name$;\n",
-        "bit_field_name", GetBitFieldName(i));
-    }
+  for (int i = 0; i < totalInts; i++) {
+    printer->Print("$bit_field_name$ |= other.$bit_field_name$;\n",
+                   "bit_field_name", GetBitFieldName(i));
   }
   printer->Outdent();
   printer->Print(

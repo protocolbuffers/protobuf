@@ -112,8 +112,9 @@ public final class Timestamps {
       };
 
   /**
-   * Returns a {@link Comparator} for {@link Timestamp}s which sorts in increasing chronological
-   * order. Nulls and invalid {@link Timestamp}s are not allowed (see {@link #isValid}).
+   * Returns a {@link Comparator} for {@link Timestamp Timestamps} which sorts in increasing
+   * chronological order. Nulls and invalid {@link Timestamp Timestamps} are not allowed (see
+   * {@link #isValid}).
    */
   public static Comparator<Timestamp> comparator() {
     return COMPARATOR;
@@ -180,7 +181,7 @@ public final class Timestamps {
 
   /**
    * Builds the given builder and throws an {@link IllegalArgumentException} if it is not valid. See
-   * {@link #checkValid(Timestamp}).
+   * {@link #checkValid(Timestamp)}.
    *
    * @return A valid, built {@link Timestamp}.
    */
