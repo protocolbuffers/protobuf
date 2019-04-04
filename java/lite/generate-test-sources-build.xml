@@ -1,12 +1,19 @@
 <project name="generate-test-sources">
     <mkdir dir="${generated.testsources.dir}"/>
     <exec executable="${protoc}">
-        <arg value="--java_out=${generated.testsources.dir}"/>
+        <arg value="--java_out=lite:${generated.testsources.dir}"/>
         <arg value="--proto_path=${protobuf.source.dir}"/>
         <arg value="--proto_path=${test.proto.dir}"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/any.proto"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/api.proto"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/duration.proto"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/empty.proto"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/field_mask.proto"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/source_context.proto"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/struct.proto"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/timestamp.proto"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/type.proto"/>
         <arg value="${protobuf.source.dir}/google/protobuf/unittest.proto"/>
-        <arg value="${protobuf.source.dir}/google/protobuf/unittest_custom_options.proto"/>
-        <arg value="${protobuf.source.dir}/google/protobuf/unittest_enormous_descriptor.proto"/>
         <arg value="${protobuf.source.dir}/google/protobuf/unittest_import.proto"/>
         <arg value="${protobuf.source.dir}/google/protobuf/unittest_import_lite.proto"/>
         <arg value="${protobuf.source.dir}/google/protobuf/unittest_import_public.proto"/>
@@ -18,6 +25,7 @@
         <arg value="${protobuf.source.dir}/google/protobuf/unittest_optimize_for.proto"/>
         <arg value="${protobuf.source.dir}/google/protobuf/unittest_proto3.proto"/>
         <arg value="${protobuf.source.dir}/google/protobuf/unittest_well_known_types.proto"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/wrappers.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/any_test.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/cached_field_size_test.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/deprecated_file.proto"/>
@@ -30,7 +38,6 @@
         <arg value="${test.proto.dir}/com/google/protobuf/map_lite_test.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/map_test.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/message_lite_extension_util_test.proto"/>
-        <arg value="${test.proto.dir}/com/google/protobuf/multiple_files_test.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/nested_builders_test.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/nested_extension.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/nested_extension_lite.proto"/>
@@ -48,8 +55,6 @@
         <arg value="${test.proto.dir}/com/google/protobuf/test_bad_identifiers.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/test_check_utf8.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/test_check_utf8_size.proto"/>
-        <arg value="${test.proto.dir}/com/google/protobuf/test_custom_options.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/wrappers_test.proto"/>
-
     </exec>
 </project>

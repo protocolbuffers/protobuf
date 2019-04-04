@@ -225,6 +225,7 @@
     <module>bom</module>
     <module>core</module>
     <module>util</module>
+    <module>lite</module>
   </modules>
 
 </project>
