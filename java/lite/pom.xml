@@ -57,6 +57,8 @@
           <include>google/protobuf/timestamp.proto</include>
           <include>google/protobuf/type.proto</include>
           <include>google/protobuf/wrappers.proto</include>
+          <include>google/protobuf/testdata/golden_message_oneof_implemented</include>
+          <include>google/protobuf/testdata/golden_packed_fields_message</include>
         </includes>
       </testResource>
     </testResources>
@@ -73,7 +75,7 @@
               <goal>copy-resources</goal>
             </goals>
             <configuration>
-              <outputDirectory>${basedir}/target/main/java/com/google/protobuf</outputDirectory>
+              <outputDirectory>${generated.sources.dir}/com/google/protobuf</outputDirectory>
               <resources>          
                 <resource>
                   <directory>${basedir}/../core/src/main/java/com/google/protobuf</directory>
@@ -178,12 +180,12 @@
           </execution>
           <execution>
             <id>copy-test-source-files</id>
-            <phase>generate-sources</phase>
+            <phase>generate-test-sources</phase>
             <goals>
               <goal>copy-resources</goal>
             </goals>
             <configuration>
-              <outputDirectory>${basedir}/target/test/java/com/google/protobuf</outputDirectory>
+              <outputDirectory>${generated.testsources.dir}/com/google/protobuf</outputDirectory>
               <resources>          
                 <resource>
                   <directory>${basedir}/../core/src/test/java/com/google/protobuf</directory>
@@ -223,6 +225,7 @@
                     <exclude>TextFormatParseInfoTreeTest.java</exclude>
                     <exclude>TextFormatParseLocationTest.java</exclude>
                     <exclude>TextFormatTest.java</exclude>
+                    <exclude>TestUtil.java</exclude>
                     <exclude>UnknownEnumValueTest.java</exclude>
                     <exclude>UnknownFieldSetLiteTest.java</exclude>
                     <exclude>UnknownFieldSetTest.java</exclude>
@@ -274,38 +277,6 @@
         <artifactId>build-helper-maven-plugin</artifactId>
         <executions>
           <execution>
-            <id>add-copy-source-files</id>
-            <phase>generate-sources</phase>
-            <goals>
-              <goal>add-source</goal>
-            </goals>
-            <configuration>
-              <sources>
-                <source>${basedir}/target/main/java/com/google/protobuf</source>
-              </sources>
-            </configuration>
-          </execution>
-          <execution>
-            <id>add-copy-test-source-files</id>
-            <phase>generate-test-sources</phase>
-            <goals>
-              <goal>add-test-source</goal>
-            </goals>
-            <configuration>
-              <sources>
-                <source>${basedir}/target/test/java/com/google/protobuf</source>
-              </sources>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
-      <!-- Add the generated sources to the build -->
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
-        <executions>
-          <execution>
             <id>add-generated-sources</id>
             <phase>generate-sources</phase>
             <goals>
@@ -317,6 +288,7 @@
               </sources>
             </configuration>
           </execution>
+
           <execution>
             <id>add-generated-test-sources</id>
             <phase>generate-test-sources</phase>
