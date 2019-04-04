@@ -808,7 +808,7 @@ final class SchemaUtil {
 
   private static Class<?> getGeneratedMessageClass() {
     try {
-      return Class.forName("com.google.protobuf.GeneratedMessage");
+      return Class.forName("com.google.protobuf.GeneratedMessageV3");
     } catch (Throwable e) {
       return null;
     }
