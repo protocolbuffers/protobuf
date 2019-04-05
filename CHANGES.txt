@@ -647,7 +647,7 @@
     details about APIs.
 
   Objective-C
-  * Helpers are now provided for working the the Any well known type (see
+  * Helpers are now provided for working the Any well known type (see
     GPBWellKnownTypes.h for the api additions).
   * Some improvements in startup code (especially when extensions aren’t used).
 

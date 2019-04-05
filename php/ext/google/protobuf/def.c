@@ -896,8 +896,8 @@ const upb_filedef *parse_and_add_descriptor(const char *data,
   const upb_filedef* file;
   upb_status status;
 
-  set = google_protobuf_FileDescriptorSet_parsenew(
-      upb_strview_make(data, data_len), arena);
+  set = google_protobuf_FileDescriptorSet_parse(
+      data, data_len, arena);
 
   if (!set) {
     zend_error(E_ERROR, "Failed to parse binary descriptor\n");

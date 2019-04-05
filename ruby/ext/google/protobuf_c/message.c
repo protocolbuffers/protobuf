@@ -119,8 +119,36 @@ enum {
   METHOD_SETTER = 2,
   METHOD_CLEAR = 3,
   METHOD_PRESENCE = 4,
-  METHOD_ENUM_GETTER = 5
+  METHOD_ENUM_GETTER = 5,
+  METHOD_WRAPPER_GETTER = 6,
+  METHOD_WRAPPER_SETTER = 7
 };
+
+// Check if the field is a well known wrapper type
+static bool is_wrapper_type_field(const upb_fielddef* field) {
+  char* field_type_name = rb_class2name(field_type_class(field));
+
+  return strcmp(field_type_name, "Google::Protobuf::DoubleValue") == 0 ||
+         strcmp(field_type_name, "Google::Protobuf::FloatValue") == 0 ||
+         strcmp(field_type_name, "Google::Protobuf::Int32Value") == 0 ||
+         strcmp(field_type_name, "Google::Protobuf::Int64Value") == 0 ||
+         strcmp(field_type_name, "Google::Protobuf::UInt32Value") == 0 ||
+         strcmp(field_type_name, "Google::Protobuf::UInt64Value") == 0 ||
+         strcmp(field_type_name, "Google::Protobuf::BoolValue") == 0 ||
+         strcmp(field_type_name, "Google::Protobuf::StringValue") == 0 ||
+         strcmp(field_type_name, "Google::Protobuf::BytesValue") == 0;
+}
+
+// Get a new Ruby wrapper type and set the initial value
+static VALUE ruby_wrapper_type(const upb_fielddef* field, const VALUE* value) {
+  if (is_wrapper_type_field(field) && value != Qnil) {
+    VALUE hash = rb_hash_new();
+    rb_hash_aset(hash, rb_str_new2("value"), value);
+    VALUE args[1] = { hash };
+    return rb_class_new_instance(1, args, field_type_class(field));
+  }
+  return Qnil;
+}
 
 static int extract_method_call(VALUE method_name, MessageHeader* self,
 			       const upb_fielddef **f, const upb_oneofdef **o) {
@@ -156,6 +184,34 @@ static int extract_method_call(VALUE method_name, MessageHeader* self,
 
   bool has_field = upb_msgdef_lookupname(self->descriptor->msgdef, name, name_len,
 			                                   &test_f, &test_o);
+
+  // Look for wrapper type accessor of the form <field_name>_as_value
+  if (!has_field &&
+      (accessor_type == METHOD_GETTER || accessor_type == METHOD_SETTER) &&
+      name_len > 9 && strncmp(name + name_len - 9, "_as_value", 9) == 0) {
+    // Find the field name
+    char wrapper_field_name[name_len - 8];
+    strncpy(wrapper_field_name, name, name_len - 9);
+    wrapper_field_name[name_len - 7] = '\0';
+
+    // Check if field exists and is a wrapper type
+    const upb_oneofdef* test_o_wrapper;
+    const upb_fielddef* test_f_wrapper;
+    if (upb_msgdef_lookupname(self->descriptor->msgdef, wrapper_field_name, name_len - 9,
+			                        &test_f_wrapper, &test_o_wrapper) &&
+        upb_fielddef_type(test_f_wrapper) == UPB_TYPE_MESSAGE &&
+        is_wrapper_type_field(test_f_wrapper)) {
+      // It does exist!
+      has_field = true;
+      if (accessor_type == METHOD_SETTER) {
+        accessor_type = METHOD_WRAPPER_SETTER;
+      } else {
+        accessor_type = METHOD_WRAPPER_GETTER;
+      }
+      test_o = test_o_wrapper;
+      test_f = test_f_wrapper;
+    }
+  }
 
   // Look for enum accessor of the form <enum_name>_const
   if (!has_field && accessor_type == METHOD_GETTER &&
@@ -238,7 +294,7 @@ VALUE Message_method_missing(int argc, VALUE* argv, VALUE _self) {
   int accessor_type = extract_method_call(argv[0], self, &f, &o);
   if (accessor_type == METHOD_UNKNOWN || (o == NULL && f == NULL) ) {
     return rb_call_super(argc, argv);
-  } else if (accessor_type == METHOD_SETTER) {
+  } else if (accessor_type == METHOD_SETTER || accessor_type == METHOD_WRAPPER_SETTER) {
     if (argc != 2) {
       rb_raise(rb_eArgError, "Expected 2 arguments, received %d", argc);
     }
@@ -275,6 +331,16 @@ VALUE Message_method_missing(int argc, VALUE* argv, VALUE _self) {
     return Qnil;
   } else if (accessor_type == METHOD_PRESENCE) {
     return layout_has(self->descriptor->layout, Message_data(self), f);
+  } else if (accessor_type == METHOD_WRAPPER_GETTER) {
+    VALUE value = layout_get(self->descriptor->layout, Message_data(self), f);
+    if (value != Qnil) {
+      value = rb_funcall(value, rb_intern("value"), 0);
+    }
+    return value;
+  } else if (accessor_type == METHOD_WRAPPER_SETTER) {
+    VALUE wrapper = ruby_wrapper_type(f, argv[1]);
+    layout_set(self->descriptor->layout, Message_data(self), f, wrapper);
+    return Qnil;
   } else if (accessor_type == METHOD_ENUM_GETTER) {
     VALUE enum_type = field_type_class(f);
     VALUE method = rb_intern("const_get");
