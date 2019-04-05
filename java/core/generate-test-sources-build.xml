@@ -33,9 +33,7 @@
         <arg value="${test.proto.dir}/com/google/protobuf/multiple_files_test.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/nested_builders_test.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/nested_extension.proto"/>
-        <arg value="${test.proto.dir}/com/google/protobuf/nested_extension_lite.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/non_nested_extension.proto"/>
-        <arg value="${test.proto.dir}/com/google/protobuf/non_nested_extension_lite.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/outer_class_name_test.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/outer_class_name_test2.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/outer_class_name_test3.proto"/>
@@ -50,6 +48,13 @@
         <arg value="${test.proto.dir}/com/google/protobuf/test_check_utf8_size.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/test_custom_options.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/wrappers_test.proto"/>
-
+    </exec>
+    <!-- Also generate some Lite protos needed for ExtensionRegistryFactoryTest -->
+    <exec executable="${protoc}">
+        <arg value="--java_out=lite:${generated.testsources.dir}"/>
+        <arg value="--proto_path=${protobuf.source.dir}"/>
+        <arg value="--proto_path=${test.proto.dir}"/>
+        <arg value="${test.proto.dir}/com/google/protobuf/nested_extension_lite.proto"/>
+        <arg value="${test.proto.dir}/com/google/protobuf/non_nested_extension_lite.proto"/>
     </exec>
 </project>

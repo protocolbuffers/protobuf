@@ -441,7 +441,12 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
 
   @Override
   public void writeTo(final CodedOutputStream output) throws IOException {
-    MessageReflection.writeMessageTo(this, getAllFieldsRaw(), output, false);
+    if (canUseUnsafe()) {
+      CodedOutputStreamWriter writer = CodedOutputStreamWriter.forCodedOutput(output);
+      Protobuf.getInstance().schemaFor(this).writeTo(this, writer);
+    } else {
+      MessageReflection.writeMessageTo(this, getAllFieldsRaw(), output, false);
+    }
   }
 
   @Override
@@ -761,6 +766,24 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
                        .build());
     }
 
+    @Override
+    public BuilderType mergeFrom(
+        final CodedInputStream input,
+        final ExtensionRegistryLite extensionRegistry)
+        throws IOException {
+      if (!canUseUnsafe()) {
+        return super.mergeFrom(input, extensionRegistry);
+      }
+
+      CodedInputStreamReader reader = CodedInputStreamReader.forCodedInput(input);
+      Message message = buildPartial();
+      Protobuf.getInstance().schemaFor(message).mergeFrom(message, reader, extensionRegistry);
+
+      // getAllField() will change bytes to String, which will lead invalid Utf8 bytes behavior
+      // fails. We change to use getAllFieldsRaw instead.
+      Map<FieldDescriptor, Object> allFieldsRaw = ((GeneratedMessageV3) message).getAllFieldsRaw();
+      return mergeFrom(message, allFieldsRaw);
+    }
 
     @Override
     public boolean isInitialized() {
