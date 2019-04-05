@@ -113,8 +113,8 @@ void SetCommonOneofFieldVariables(
 
 FieldGenerator::~FieldGenerator() {}
 
-void FieldGenerator::
-GenerateMergeFromCodedStreamWithPacking(io::Printer* printer) const {
+void FieldGenerator::GenerateMergeFromCodedStreamWithPacking(
+    io::Printer* printer) const {
   // Reaching here indicates a bug. Cases are:
   //   - This FieldGenerator should support packing, but this method should be
   //     overridden.
@@ -122,7 +122,6 @@ GenerateMergeFromCodedStreamWithPacking(io::Printer* printer) const {
   //     never have been called.
   GOOGLE_LOG(FATAL) << "GenerateMergeFromCodedStreamWithPacking() "
              << "called on field generator that does not support packing.";
-
 }
 
 FieldGeneratorMap::FieldGeneratorMap(const Descriptor* descriptor,

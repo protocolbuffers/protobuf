@@ -65,15 +65,17 @@ namespace protobuf {
 
 class Arena;
 
-namespace io { class CodedInputStream; }
+namespace io {
+class CodedInputStream;
+}
 
 namespace internal {
 
-template<typename To, typename From>
+template <typename To, typename From>
 inline To DownCast(From* f) {
   return PROTOBUF_NAMESPACE_ID::internal::down_cast<To>(f);
 }
-template<typename To, typename From>
+template <typename To, typename From>
 inline To DownCast(From& f) {
   return PROTOBUF_NAMESPACE_ID::internal::down_cast<To>(f);
 }
@@ -93,8 +95,9 @@ PROTOBUF_EXPORT inline const std::string& GetEmptyString() {
 // helper here to keep the protobuf compiler from ever having to emit loops in
 // IsInitialized() methods.  We want the C++ compiler to inline this or not
 // as it sees fit.
-template <class Type> bool AllAreInitialized(const Type& t) {
-  for (int i = t.size(); --i >= 0; ) {
+template <class Type>
+bool AllAreInitialized(const Type& t) {
+  for (int i = t.size(); --i >= 0;) {
     if (!t.Get(i).IsInitialized()) return false;
   }
   return true;
@@ -167,6 +170,7 @@ class PROTOBUF_EXPORT CachedSize {
  public:
   int Get() const { return size_.load(std::memory_order_relaxed); }
   void Set(int size) { size_.store(size, std::memory_order_relaxed); }
+
  private:
   std::atomic<int> size_{0};
 };

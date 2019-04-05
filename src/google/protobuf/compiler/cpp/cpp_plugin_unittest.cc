@@ -38,8 +38,8 @@
 
 #include <google/protobuf/compiler/cpp/cpp_generator.h>
 #include <google/protobuf/compiler/command_line_interface.h>
-#include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/io/printer.h>
+#include <google/protobuf/io/zero_copy_stream.h>
 
 #include <google/protobuf/testing/file.h>
 #include <google/protobuf/testing/file.h>
@@ -128,7 +128,8 @@ class TestGenerator : public CodeGenerator {
     // Check field accessors for a message inside oneof{}:
     TryInsert("test.pb.h", "field_get:foo.Bar.oneOfMessage", context);
     TryInsert("test.pb.h", "field_mutable:foo.Bar.oneOfMessage", context);
-    TryInsert("test.pb.cc", "field_set_allocated:foo.Bar.oneOfMessage", context);
+    TryInsert("test.pb.cc", "field_set_allocated:foo.Bar.oneOfMessage",
+              context);
 
     // Check field accessors for an optional enum:
     TryInsert("test.pb.h", "field_get:foo.Bar.optEnum", context);
@@ -231,13 +232,8 @@ TEST(CppPluginTest, PluginTest) {
   std::string cpp_out = "--cpp_out=" + TestTempDir();
   std::string test_out = "--test_out=" + TestTempDir();
 
-  const char* argv[] = {
-    "protoc",
-    proto_path.c_str(),
-    cpp_out.c_str(),
-    test_out.c_str(),
-    "test.proto"
-  };
+  const char* argv[] = {"protoc", proto_path.c_str(), cpp_out.c_str(),
+                        test_out.c_str(), "test.proto"};
 
   EXPECT_EQ(0, cli.Run(5, argv));
 }

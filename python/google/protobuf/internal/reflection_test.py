@@ -68,9 +68,6 @@ if six.PY3:
   long = int  # pylint: disable=redefined-builtin,invalid-name
 
 
-BaseTestCase = testing_refleaks.BaseTestCase
-
-
 class _MiniDecoder(object):
   """Decodes a stream of values from a string.
 
@@ -116,7 +113,8 @@ class _MiniDecoder(object):
     return self._pos == len(self._bytes)
 
 
-class ReflectionTest(BaseTestCase):
+@testing_refleaks.TestCase
+class ReflectionTest(unittest.TestCase):
 
   def assertListsEqual(self, values, others):
     self.assertEqual(len(values), len(others))
@@ -1201,32 +1199,71 @@ class ReflectionTest(BaseTestCase):
     self.assertEqual(prius.price, new_prius.price)
     self.assertEqual(prius.owners, new_prius.owners)
 
+  def testExtensionIter(self):
+    extendee_proto = more_extensions_pb2.ExtendedMessage()
+
+    extension_int32 = more_extensions_pb2.optional_int_extension
+    extendee_proto.Extensions[extension_int32] = 23
+
+    extension_repeated = more_extensions_pb2.repeated_int_extension
+    extendee_proto.Extensions[extension_repeated].append(11)
+
+    extension_msg = more_extensions_pb2.optional_message_extension
+    extendee_proto.Extensions[extension_msg].foreign_message_int = 56
+
+    # Set some normal fields.
+    extendee_proto.optional_int32 = 1
+    extendee_proto.repeated_string.append('hi')
+
+    expected = (extension_int32, extension_msg, extension_repeated)
+    count = 0
+    for item in extendee_proto.Extensions:
+      self.assertEqual(item.name, expected[count].name)
+      self.assertIn(item, extendee_proto.Extensions)
+      count += 1
+    self.assertEqual(count, 3)
+
+  def testExtensionContainsError(self):
+    extendee_proto = more_extensions_pb2.ExtendedMessage()
+    self.assertRaises(KeyError, extendee_proto.Extensions.__contains__, 0)
+
+    field = more_extensions_pb2.ExtendedMessage.DESCRIPTOR.fields_by_name[
+        'optional_int32']
+    self.assertRaises(KeyError, extendee_proto.Extensions.__contains__, field)
+
   def testTopLevelExtensionsForOptionalScalar(self):
     extendee_proto = unittest_pb2.TestAllExtensions()
     extension = unittest_pb2.optional_int32_extension
     self.assertTrue(not extendee_proto.HasExtension(extension))
+    self.assertNotIn(extension, extendee_proto.Extensions)
     self.assertEqual(0, extendee_proto.Extensions[extension])
     # As with normal scalar fields, just doing a read doesn't actually set the
     # "has" bit.
     self.assertTrue(not extendee_proto.HasExtension(extension))
+    self.assertNotIn(extension, extendee_proto.Extensions)
     # Actually set the thing.
     extendee_proto.Extensions[extension] = 23
     self.assertEqual(23, extendee_proto.Extensions[extension])
     self.assertTrue(extendee_proto.HasExtension(extension))
+    self.assertIn(extension, extendee_proto.Extensions)
     # Ensure that clearing works as well.
     extendee_proto.ClearExtension(extension)
     self.assertEqual(0, extendee_proto.Extensions[extension])
     self.assertTrue(not extendee_proto.HasExtension(extension))
+    self.assertNotIn(extension, extendee_proto.Extensions)
 
   def testTopLevelExtensionsForRepeatedScalar(self):
     extendee_proto = unittest_pb2.TestAllExtensions()
     extension = unittest_pb2.repeated_string_extension
     self.assertEqual(0, len(extendee_proto.Extensions[extension]))
+    self.assertNotIn(extension, extendee_proto.Extensions)
     extendee_proto.Extensions[extension].append('foo')
     self.assertEqual(['foo'], extendee_proto.Extensions[extension])
+    self.assertIn(extension, extendee_proto.Extensions)
     string_list = extendee_proto.Extensions[extension]
     extendee_proto.ClearExtension(extension)
     self.assertEqual(0, len(extendee_proto.Extensions[extension]))
+    self.assertNotIn(extension, extendee_proto.Extensions)
     self.assertTrue(string_list is not extendee_proto.Extensions[extension])
     # Shouldn't be allowed to do Extensions[extension] = 'a'
     self.assertRaises(TypeError, operator.setitem, extendee_proto.Extensions,
@@ -1236,13 +1273,16 @@ class ReflectionTest(BaseTestCase):
     extendee_proto = unittest_pb2.TestAllExtensions()
     extension = unittest_pb2.optional_foreign_message_extension
     self.assertTrue(not extendee_proto.HasExtension(extension))
+    self.assertNotIn(extension, extendee_proto.Extensions)
     self.assertEqual(0, extendee_proto.Extensions[extension].c)
     # As with normal (non-extension) fields, merely reading from the
     # thing shouldn't set the "has" bit.
     self.assertTrue(not extendee_proto.HasExtension(extension))
+    self.assertNotIn(extension, extendee_proto.Extensions)
     extendee_proto.Extensions[extension].c = 23
     self.assertEqual(23, extendee_proto.Extensions[extension].c)
     self.assertTrue(extendee_proto.HasExtension(extension))
+    self.assertIn(extension, extendee_proto.Extensions)
     # Save a reference here.
     foreign_message = extendee_proto.Extensions[extension]
     extendee_proto.ClearExtension(extension)
@@ -1253,6 +1293,7 @@ class ReflectionTest(BaseTestCase):
     self.assertEqual(42, foreign_message.c)
     self.assertTrue(foreign_message.HasField('c'))
     self.assertTrue(not extendee_proto.HasExtension(extension))
+    self.assertNotIn(extension, extendee_proto.Extensions)
     # Shouldn't be allowed to do Extensions[extension] = 'a'
     self.assertRaises(TypeError, operator.setitem, extendee_proto.Extensions,
                       extension, 'a')
@@ -1280,15 +1321,19 @@ class ReflectionTest(BaseTestCase):
 
     # We just test the non-repeated case.
     self.assertTrue(not extendee_proto.HasExtension(extension))
+    self.assertNotIn(extension, extendee_proto.Extensions)
     required = extendee_proto.Extensions[extension]
     self.assertEqual(0, required.a)
     self.assertTrue(not extendee_proto.HasExtension(extension))
+    self.assertNotIn(extension, extendee_proto.Extensions)
     required.a = 23
     self.assertEqual(23, extendee_proto.Extensions[extension].a)
     self.assertTrue(extendee_proto.HasExtension(extension))
+    self.assertIn(extension, extendee_proto.Extensions)
     extendee_proto.ClearExtension(extension)
     self.assertTrue(required is not extendee_proto.Extensions[extension])
     self.assertTrue(not extendee_proto.HasExtension(extension))
+    self.assertNotIn(extension, extendee_proto.Extensions)
 
   def testRegisteredExtensions(self):
     pool = unittest_pb2.DESCRIPTOR.pool
@@ -1952,7 +1997,8 @@ class ReflectionTest(BaseTestCase):
 #  into separate TestCase classes.
 
 
-class TestAllTypesEqualityTest(BaseTestCase):
+@testing_refleaks.TestCase
+class TestAllTypesEqualityTest(unittest.TestCase):
 
   def setUp(self):
     self.first_proto = unittest_pb2.TestAllTypes()
@@ -1968,7 +2014,8 @@ class TestAllTypesEqualityTest(BaseTestCase):
     self.assertEqual(self.first_proto, self.second_proto)
 
 
-class FullProtosEqualityTest(BaseTestCase):
+@testing_refleaks.TestCase
+class FullProtosEqualityTest(unittest.TestCase):
 
   """Equality tests using completely-full protos as a starting point."""
 
@@ -2054,7 +2101,8 @@ class FullProtosEqualityTest(BaseTestCase):
     self.assertEqual(self.first_proto, self.second_proto)
 
 
-class ExtensionEqualityTest(BaseTestCase):
+@testing_refleaks.TestCase
+class ExtensionEqualityTest(unittest.TestCase):
 
   def testExtensionEquality(self):
     first_proto = unittest_pb2.TestAllExtensions()
@@ -2087,7 +2135,8 @@ class ExtensionEqualityTest(BaseTestCase):
     self.assertEqual(first_proto, second_proto)
 
 
-class MutualRecursionEqualityTest(BaseTestCase):
+@testing_refleaks.TestCase
+class MutualRecursionEqualityTest(unittest.TestCase):
 
   def testEqualityWithMutualRecursion(self):
     first_proto = unittest_pb2.TestMutualRecursionA()
@@ -2099,7 +2148,8 @@ class MutualRecursionEqualityTest(BaseTestCase):
     self.assertEqual(first_proto, second_proto)
 
 
-class ByteSizeTest(BaseTestCase):
+@testing_refleaks.TestCase
+class ByteSizeTest(unittest.TestCase):
 
   def setUp(self):
     self.proto = unittest_pb2.TestAllTypes()
@@ -2411,7 +2461,8 @@ class ByteSizeTest(BaseTestCase):
 #   * Handling of empty submessages (with and without "has"
 #     bits set).
 
-class SerializationTest(BaseTestCase):
+@testing_refleaks.TestCase
+class SerializationTest(unittest.TestCase):
 
   def testSerializeEmtpyMessage(self):
     first_proto = unittest_pb2.TestAllTypes()
@@ -3004,7 +3055,8 @@ class SerializationTest(BaseTestCase):
     self.assertEqual(3, proto.repeated_int32[2])
 
 
-class OptionsTest(BaseTestCase):
+@testing_refleaks.TestCase
+class OptionsTest(unittest.TestCase):
 
   def testMessageOptions(self):
     proto = message_set_extensions_pb2.TestMessageSet()
@@ -3031,7 +3083,8 @@ class OptionsTest(BaseTestCase):
 
 
 
-class ClassAPITest(BaseTestCase):
+@testing_refleaks.TestCase
+class ClassAPITest(unittest.TestCase):
 
   @unittest.skipIf(
       api_implementation.Type() == 'cpp' and api_implementation.Version() == 2,

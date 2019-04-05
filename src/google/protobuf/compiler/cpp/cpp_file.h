@@ -163,9 +163,7 @@ class FileGenerator {
   const Descriptor* GetSCCRepresentative(const Descriptor* d) {
     return GetSCC(d)->GetRepresentative();
   }
-  const SCC* GetSCC(const Descriptor* d) {
-    return scc_analyzer_.GetSCC(d);
-  }
+  const SCC* GetSCC(const Descriptor* d) { return scc_analyzer_.GetSCC(d); }
 
   bool IsDepWeak(const FileDescriptor* dep) const {
     if (weak_deps_.count(dep) != 0) {

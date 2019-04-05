@@ -37,9 +37,9 @@
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/type.pb.h>
+#include <google/protobuf/util/internal/type_info.h>
 #include <google/protobuf/util/internal/object_source.h>
 #include <google/protobuf/util/internal/object_writer.h>
-#include <google/protobuf/util/internal/type_info.h>
 #include <google/protobuf/util/type_resolver.h>
 #include <google/protobuf/stubs/stringpiece.h>
 #include <google/protobuf/stubs/hash.h>
@@ -175,10 +175,9 @@ class PROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
   // Renders a NWP map.
   // Returns the next tag after reading all map entries. The caller should use
   // this tag before reading more tags from the stream.
-  util::StatusOr<uint32>
-      RenderMap(const google::protobuf::Field* field,
-                StringPiece name, uint32 list_tag,
-                ObjectWriter* ow) const;
+  util::StatusOr<uint32> RenderMap(const google::protobuf::Field* field,
+                                     StringPiece name, uint32 list_tag,
+                                     ObjectWriter* ow) const;
 
   // Renders a packed repeating field. A packed field is stored as:
   // {tag length item1 item2 item3} instead of the less efficient

@@ -35,8 +35,8 @@
 
 #include <string>
 
-#include <google/protobuf/descriptor.h>
 #include <google/protobuf/field_mask.pb.h>
+#include <google/protobuf/descriptor.h>
 #include <google/protobuf/stubs/stringpiece.h>
 
 #include <google/protobuf/port_def.inc>
@@ -134,9 +134,8 @@ class PROTOBUF_EXPORT FieldMaskUtil {
   }
   // This flavor takes the protobuf type descriptor as an argument.
   // Useful when the type is not known at compile time.
-  static void Subtract(const Descriptor* descriptor,
-                       const FieldMask& mask1, const FieldMask& mask2,
-                       FieldMask* out);
+  static void Subtract(const Descriptor* descriptor, const FieldMask& mask1,
+                       const FieldMask& mask2, FieldMask* out);
 
   // Returns true if path is covered by the given FieldMask. Note that path
   // "foo.bar" covers all paths like "foo.bar.baz", "foo.bar.quz.x", etc.
@@ -177,7 +176,8 @@ class PROTOBUF_EXPORT FieldMaskUtil {
   // Note that the input can contain characters not allowed in C identifiers.
   // For example, "foo_bar,baz_quz" will be converted to "fooBar,bazQuz"
   // successfully.
-  static bool SnakeCaseToCamelCase(StringPiece input, std::string* output);
+  static bool SnakeCaseToCamelCase(StringPiece input,
+                                   std::string* output);
   // Converts a field name from camelCase to snake_case:
   //   1. Every uppercase letter is converted to lowercase with a additional
   //      preceding "-".
@@ -190,7 +190,8 @@ class PROTOBUF_EXPORT FieldMaskUtil {
   // Note that the input can contain characters not allowed in C identifiers.
   // For example, "fooBar,bazQuz" will be converted to "foo_bar,baz_quz"
   // successfully.
-  static bool CamelCaseToSnakeCase(StringPiece input, std::string* output);
+  static bool CamelCaseToSnakeCase(StringPiece input,
+                                   std::string* output);
 };
 
 class PROTOBUF_EXPORT FieldMaskUtil::MergeOptions {
@@ -223,15 +224,12 @@ class PROTOBUF_EXPORT FieldMaskUtil::MergeOptions {
 
 class PROTOBUF_EXPORT FieldMaskUtil::TrimOptions {
  public:
-  TrimOptions()
-      : keep_required_fields_(false) {}
+  TrimOptions() : keep_required_fields_(false) {}
   // When trimming message fields, the default behavior is to trim required
   // fields of the present message if they are not specified in the field mask.
   // If you instead want to keep required fields of the present message even
-  // they are not speicifed in the field mask, set this flag to true.
-  void set_keep_required_fields(bool value) {
-    keep_required_fields_ = value;
-  }
+  // they are not specified in the field mask, set this flag to true.
+  void set_keep_required_fields(bool value) { keep_required_fields_ = value; }
   bool keep_required_fields() const { return keep_required_fields_; }
 
  private:

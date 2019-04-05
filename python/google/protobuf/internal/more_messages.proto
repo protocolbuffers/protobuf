@@ -30,6 +30,8 @@
 
 // Author: robinson@google.com (Will Robinson)
 
+// LINT: LEGACY_NAMES
+
 syntax = "proto2";
 
 package google.protobuf.internal;
@@ -50,6 +52,53 @@ extend OutOfOrderFields {
   optional   uint64 optional_uint64   =  4;
   optional    int64 optional_int64    =  2;
 }
+
+enum is {                               // top level enum keyword
+  default = 0;
+  else = 1;                             // top level enum value keyword
+}
+
+message class {                         // message keyword
+  optional int32 int_field = 1;
+  optional int32 if = 2;                // field keyword
+  optional is as = 3;                   // enum field keyword
+  optional is enum_field = 4;
+  enum for {                            // nested enum keyword
+    default = 0;
+    True = 1;                           // nested enum value keyword
+  }
+  optional for nested_enum_field = 5;
+  message try {
+    optional int32 field = 1;
+    extensions 999 to 9999;
+  }
+  optional try nested_message = 6;
+  extensions 999 to 9999;
+}
+
+extend class {
+  optional int32 continue = 1001;       // top level extension keyword
+}
+
+extend class.try {
+  optional int32 with = 1001;
+}
+
+message ExtendClass {
+  extend class {
+    optional int32 return = 1002;       // nested extension keyword
+  }
+}
+
+message TestFullKeyword {
+  optional google.protobuf.internal.OutOfOrderFields field1 = 1;
+  optional google.protobuf.internal.class field2 = 2;
+}
+
+// TODO(jieluo): Add keyword support for service.
+// service False {
+//   rpc Bar(class) returns (class);
+// }
 
 message LotsNestedMessage {
   message B0 {}

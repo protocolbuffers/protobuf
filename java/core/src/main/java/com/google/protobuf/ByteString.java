@@ -732,6 +732,16 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    */
   abstract void writeTo(ByteOutput byteOutput) throws IOException;
 
+  /**
+   * This method behaves exactly the same as {@link #writeTo(ByteOutput)} unless the {@link
+   * ByteString} is a rope. For ropes, the leaf nodes are written in reverse order to the {@code
+   * byteOutput}.
+   *
+   * @param byteOutput the output target to receive the bytes
+   * @throws IOException if an I/O error occurs
+   * @see UnsafeByteOperations#unsafeWriteToReverse(ByteString, ByteOutput)
+   */
+  abstract void writeToReverse(ByteOutput byteOutput) throws IOException;
 
   /**
    * Constructs a read-only {@code java.nio.ByteBuffer} whose content is equal to the contents of
@@ -862,6 +872,10 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
       return true;
     }
 
+    @Override
+    void writeToReverse(ByteOutput byteOutput) throws IOException {
+      writeTo(byteOutput);
+    }
 
     /**
      * Check equality of the substring of given length of this object starting at zero with another
@@ -1438,14 +1452,16 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
         LiteralByteString lbsOther = (LiteralByteString) other;
         byte[] thisBytes = bytes;
         byte[] otherBytes = lbsOther.bytes;
-
-        return UnsafeUtil.mismatch(
-                thisBytes,
-                getOffsetIntoBytes(),
-                otherBytes,
-                lbsOther.getOffsetIntoBytes() + offset,
-                length)
-            == -1;
+        int thisLimit = getOffsetIntoBytes() + length;
+        for (int thisIndex = getOffsetIntoBytes(),
+                otherIndex = lbsOther.getOffsetIntoBytes() + offset;
+            (thisIndex < thisLimit);
+            ++thisIndex, ++otherIndex) {
+          if (thisBytes[thisIndex] != otherBytes[otherIndex]) {
+            return false;
+          }
+        }
+        return true;
       }
 
       return other.substring(offset, offset + length).equals(substring(0, length));

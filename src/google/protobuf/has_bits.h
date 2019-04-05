@@ -44,7 +44,7 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-template<size_t doublewords>
+template <size_t doublewords>
 class HasBits {
  public:
   HasBits() PROTOBUF_ALWAYS_INLINE { Clear(); }

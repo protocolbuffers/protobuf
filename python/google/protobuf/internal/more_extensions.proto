@@ -41,7 +41,9 @@ message TopLevelMessage {
 
 
 message ExtendedMessage {
-  extensions 1 to max;
+  optional int32 optional_int32 = 1001;
+  repeated string repeated_string = 1002;
+  extensions 1 to 999;
 }
 
 

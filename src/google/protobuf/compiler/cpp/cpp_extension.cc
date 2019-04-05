@@ -60,8 +60,7 @@ std::string ExtendeeClassName(const FieldDescriptor* descriptor) {
 
 ExtensionGenerator::ExtensionGenerator(const FieldDescriptor* descriptor,
                                        const Options& options)
-  : descriptor_(descriptor),
-    options_(options) {
+    : descriptor_(descriptor), options_(options) {
   // Construct type_traits_.
   if (descriptor_->is_repeated()) {
     type_traits_ = "Repeated";

@@ -156,6 +156,7 @@ set(tests_files
   ${protobuf_source_dir}/src/google/protobuf/extension_set_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/generated_message_reflection_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/io/coded_stream_unittest.cc
+  ${protobuf_source_dir}/src/google/protobuf/io/io_win32_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/io/printer_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/io/tokenizer_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/io/zero_copy_stream_unittest.cc
@@ -175,7 +176,6 @@ set(tests_files
   ${protobuf_source_dir}/src/google/protobuf/stubs/bytestream_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/common_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/int128_unittest.cc
-  ${protobuf_source_dir}/src/google/protobuf/stubs/io_win32_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/status_test.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/statusor_test.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/stringpiece_unittest.cc

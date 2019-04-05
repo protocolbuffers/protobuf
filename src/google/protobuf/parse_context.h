@@ -190,6 +190,9 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     return ptr > limit_end_ &&
            (next_chunk_ == nullptr || ptr - buffer_end_ > limit_);
   }
+  // Returns true if more data is available, if false is returned one has to
+  // call Done for further checks.
+  bool DataAvailable(const char* ptr) { return ptr < limit_end_; }
 
  protected:
   // Returns true is limit (either an explicit limit or end of stream) is
@@ -206,6 +209,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   }
 
   const char* InitFrom(StringPiece flat) {
+    overall_limit_ = 0;
     if (flat.size() > kSlopBytes) {
       limit_ = kSlopBytes;
       limit_end_ = buffer_end_ = flat.end() - kSlopBytes;
@@ -228,6 +232,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   const char* InitFrom(io::ZeroCopyInputStream* zcis);
 
   const char* InitFrom(io::ZeroCopyInputStream* zcis, int limit) {
+    overall_limit_ = limit;
     auto res = InitFrom(zcis);
     limit_ = limit - static_cast<int>(buffer_end_ - res);
     limit_end_ = buffer_end_ + (std::min)(0, limit_);
@@ -258,6 +263,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   // the ParseContext, but case 2 is most easily and optimally implemented in
   // DoneFallback.
   uint32 last_tag_minus_1_ = 0;
+  int overall_limit_ = INT_MAX;  // Overall limit independent of pushed limits.
 
   std::pair<const char*, bool> DoneFallback(const char* ptr, int d);
   const char* Next(int overrun, int d);
