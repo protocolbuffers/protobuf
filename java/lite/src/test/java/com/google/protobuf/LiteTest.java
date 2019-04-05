@@ -30,7 +30,6 @@
 
 package com.google.protobuf;
 
-import static com.google.common.truth.Truth.assertThat;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 
@@ -2342,10 +2341,10 @@ public class LiteTest extends TestCase {
   }
 
   public void testExtensionRenamesKeywords() {
-    assertThat(NonNestedExtensionLite.package_)
-        .isInstanceOf(GeneratedMessageLite.GeneratedExtension.class);
-    assertThat(NestedExtensionLite.MyNestedExtensionLite.private_)
-        .isInstanceOf(GeneratedMessageLite.GeneratedExtension.class);
+    assertTrue(NonNestedExtensionLite.package_ instanceof GeneratedMessageLite.GeneratedExtension);
+    assertTrue(
+        NestedExtensionLite.MyNestedExtensionLite.private_
+            instanceof GeneratedMessageLite.GeneratedExtension);
 
     NonNestedExtensionLite.MessageLiteToBeExtended msg =
         NonNestedExtensionLite.MessageLiteToBeExtended.newBuilder()
