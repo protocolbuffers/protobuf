@@ -38,17 +38,19 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_CODE_GENERATOR_H__
 #define GOOGLE_PROTOBUF_COMPILER_CODE_GENERATOR_H__
 
-#include <google/protobuf/stubs/common.h>
 #include <string>
-#include <vector>
 #include <utility>
+#include <vector>
+#include <google/protobuf/stubs/common.h>
 
 #include <google/protobuf/port_def.inc>
 
 namespace google {
 namespace protobuf {
 
-namespace io { class ZeroCopyOutputStream; }
+namespace io {
+class ZeroCopyOutputStream;
+}
 class FileDescriptor;
 
 namespace compiler {

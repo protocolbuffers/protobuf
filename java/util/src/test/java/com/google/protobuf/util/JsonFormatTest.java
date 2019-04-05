@@ -34,6 +34,7 @@ import com.google.protobuf.Any;
 import com.google.protobuf.BoolValue;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.BytesValue;
+import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.DoubleValue;
 import com.google.protobuf.FloatValue;
@@ -463,6 +464,20 @@ public class JsonFormatTest extends TestCase {
     assertEquals(NullValue.NULL_VALUE, message.getOneofNullValue());
   }
 
+  public void testNullMessageInDuplicateOneof() throws Exception {
+    // Succeeds if null is first.
+    TestOneof.Builder successBuilder = TestOneof.newBuilder();
+    mergeFromJson("{\"oneofNestedMessage\": null, \"oneofInt32\": 1}", successBuilder);
+
+    // Fails if null is last.
+    try {
+      TestOneof.Builder builder = TestOneof.newBuilder();
+      mergeFromJson("{\"oneofInt32\": 1, \"oneofNestedMessage\": null}", builder);
+      fail();
+    } catch (InvalidProtocolBufferException expected) {
+    }
+  }
+
   public void testParserRejectDuplicatedFields() throws Exception {
     // TODO(xiaofeng): The parser we are currently using (GSON) will accept and keep the last
     // one if multiple entries have the same name. This is not the desired behavior but it can
@@ -833,6 +848,7 @@ public class JsonFormatTest extends TestCase {
     assertEquals("{\n" + "  \"listValue\": [31831.125, null]\n" + "}", toJsonString(message));
     assertRoundTripEquals(message);
   }
+
 
   public void testAnyFields() throws Exception {
     TestAllTypes content = TestAllTypes.newBuilder().setOptionalInt32(1234).build();

@@ -65,9 +65,7 @@ class MapFieldBaseStub : public MapFieldBase {
     MapFieldBase::SyncMapWithRepeatedField();
   }
   // Get underlined repeated field without synchronizing map.
-  RepeatedPtrField<Message>* InternalRepeatedField() {
-    return repeated_field_;
-  }
+  RepeatedPtrField<Message>* InternalRepeatedField() { return repeated_field_; }
   bool IsMapClean() {
     return state_.load(std::memory_order_relaxed) != STATE_MODIFIED_MAP;
   }
@@ -80,15 +78,11 @@ class MapFieldBaseStub : public MapFieldBase {
   void SetRepeatedDirty() {
     state_.store(STATE_MODIFIED_REPEATED, std::memory_order_relaxed);
   }
-  bool ContainsMapKey(const MapKey& map_key) const {
-    return false;
-  }
+  bool ContainsMapKey(const MapKey& map_key) const { return false; }
   bool InsertOrLookupMapValue(const MapKey& map_key, MapValueRef* val) {
     return false;
   }
-  bool DeleteMapValue(const MapKey& map_key) {
-    return false;
-  }
+  bool DeleteMapValue(const MapKey& map_key) { return false; }
   bool EqualIterator(const MapIterator& a, const MapIterator& b) const {
     return false;
   }
@@ -210,8 +204,7 @@ namespace {
 enum State { CLEAN, MAP_DIRTY, REPEATED_DIRTY };
 }  // anonymous namespace
 
-class MapFieldStateTest
-    : public testing::TestWithParam<State> {
+class MapFieldStateTest : public testing::TestWithParam<State> {
  public:
  protected:
   typedef unittest::TestMap_MapInt32Int32Entry_DoNotUse EntryType;

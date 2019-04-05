@@ -63,8 +63,7 @@ class MapTestUtil {
 
   // Check that all fields have the values that they should have after
   // SetMapFieldsInitialized() is called.
-  static void ExpectMapFieldsSetInitialized(
-      const unittest::TestMap& message);
+  static void ExpectMapFieldsSetInitialized(const unittest::TestMap& message);
 
   // Expect that the message is modified as would be expected from
   // ModifyMapFields().

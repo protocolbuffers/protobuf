@@ -143,9 +143,10 @@ class InternalMetadataWithArenaBase {
     return reinterpret_cast<intptr_t>(ptr_) & kPtrTagMask;
   }
 
-  template<typename U> U* PtrValue() const {
-    return reinterpret_cast<U*>(
-        reinterpret_cast<intptr_t>(ptr_) & kPtrValueMask);
+  template <typename U>
+  U* PtrValue() const {
+    return reinterpret_cast<U*>(reinterpret_cast<intptr_t>(ptr_) &
+                                kPtrValueMask);
   }
 
   // If ptr_'s tag is kTagContainer, it points to an instance of this struct.
@@ -160,8 +161,8 @@ class InternalMetadataWithArenaBase {
     // Two-step assignment works around a bug in clang's static analyzer:
     // https://bugs.llvm.org/show_bug.cgi?id=34198.
     ptr_ = container;
-    ptr_ = reinterpret_cast<void*>(
-        reinterpret_cast<intptr_t>(ptr_) | kTagContainer);
+    ptr_ = reinterpret_cast<void*>(reinterpret_cast<intptr_t>(ptr_) |
+                                   kTagContainer);
     container->arena = my_arena;
     return &(container->unknown_fields);
   }
@@ -187,9 +188,7 @@ class InternalMetadataWithArenaLite
     mutable_unknown_fields()->append(other);
   }
 
-  void DoClear() {
-    mutable_unknown_fields()->clear();
-  }
+  void DoClear() { mutable_unknown_fields()->clear(); }
 
   static const std::string& default_instance() {
     // Can't use GetEmptyStringAlreadyInited() here because empty string

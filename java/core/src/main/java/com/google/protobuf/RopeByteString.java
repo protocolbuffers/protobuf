@@ -445,6 +445,11 @@ final class RopeByteString extends ByteString {
     right.writeTo(output);
   }
 
+  @Override
+  void writeToReverse(ByteOutput output) throws IOException {
+    right.writeToReverse(output);
+    left.writeToReverse(output);
+  }
 
   @Override
   protected String toStringInternal(Charset charset) {

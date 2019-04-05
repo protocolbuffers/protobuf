@@ -261,8 +261,9 @@ public class ExtensionRegistryFactoryTest extends TestCase {
         ((URLClassLoader) testClassLoader).getURLs(), ClassLoader.getSystemClassLoader()) {
       @Override
       public Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+        System.out.println("Loading class: " + name);
         if (classNamesNotInLite.contains(name)) {
-          throw new ClassNotFoundException("Class deliberately blacklisted by test.");
+          throw new ClassNotFoundException("Class deliberately blacklisted by test." + name);
         }
         Class<?> loadedClass = null;
         try {
@@ -273,7 +274,10 @@ public class ExtensionRegistryFactoryTest extends TestCase {
               resolveClass(loadedClass);
             }
           }
-        } catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException | SecurityException e) {
+          // Java 8+ would throw a SecurityException if we attempt to find a loaded class from
+          // java.lang.* package. We don't really care about those anyway, so just delegate to the
+          // parent class loader.
           loadedClass = super.loadClass(name, resolve);
         }
         return loadedClass;

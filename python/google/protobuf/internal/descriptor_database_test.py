@@ -44,9 +44,11 @@ from google.protobuf import unittest_pb2
 from google.protobuf import descriptor_pb2
 from google.protobuf.internal import factory_test2_pb2
 from google.protobuf.internal import no_package_pb2
+from google.protobuf.internal import testing_refleaks
 from google.protobuf import descriptor_database
 
 
+@testing_refleaks.TestCase
 class DescriptorDatabaseTest(unittest.TestCase):
 
   def testAdd(self):

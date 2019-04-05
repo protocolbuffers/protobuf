@@ -28,11 +28,14 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLE_PROTOBUF_WIRE_FORMAT_LITE_INL_H__
-#define GOOGLE_PROTOBUF_WIRE_FORMAT_LITE_INL_H__
+package com.google.protobuf;
 
-// Please include wire_format_lite.h instead.
+/** A factory that creates {@link MessageInfo} instances for message types. */
+@ExperimentalApi
+interface MessageInfoFactory {
+  /** Whether the message class is supported by this factory. */
+  boolean isSupported(Class<?> clazz);
 
-#include <google/protobuf/wire_format_lite.h>
-
-#endif  // GOOGLE_PROTOBUF_WIRE_FORMAT_LITE_INL_H__
+  /** Returns a information of the message class. */
+  MessageInfo messageInfoFor(Class<?> clazz);
+}

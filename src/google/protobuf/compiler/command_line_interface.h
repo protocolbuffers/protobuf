@@ -52,14 +52,15 @@
 namespace google {
 namespace protobuf {
 
-class Descriptor;            // descriptor.h
-class DescriptorDatabase;    // descriptor_database.h
-class DescriptorPool;        // descriptor.h
-class FileDescriptor;        // descriptor.h
-class FileDescriptorSet;     // descriptor.h
-class FileDescriptorProto;   // descriptor.pb.h
-template<typename T> class RepeatedPtrField;  // repeated_field.h
-class SimpleDescriptorDatabase;               // descriptor_database.h
+class Descriptor;           // descriptor.h
+class DescriptorDatabase;   // descriptor_database.h
+class DescriptorPool;       // descriptor.h
+class FileDescriptor;       // descriptor.h
+class FileDescriptorSet;    // descriptor.h
+class FileDescriptorProto;  // descriptor.pb.h
+template <typename T>
+class RepeatedPtrField;          // repeated_field.h
+class SimpleDescriptorDatabase;  // descriptor_database.h
 
 namespace compiler {
 
@@ -307,8 +308,7 @@ class PROTOC_EXPORT CommandLineInterface {
   // If include_json_name is true, populate the json_name field of
   // FieldDescriptorProto for all fields.
   static void GetTransitiveDependencies(
-      const FileDescriptor* file,
-      bool include_json_name,
+      const FileDescriptor* file, bool include_json_name,
       bool include_source_code_info,
       std::set<const FileDescriptor*>* already_seen,
       RepeatedPtrField<FileDescriptorProto>* output);
@@ -374,15 +374,15 @@ class PROTOC_EXPORT CommandLineInterface {
   Mode mode_;
 
   enum PrintMode {
-    PRINT_NONE,               // Not in MODE_PRINT
-    PRINT_FREE_FIELDS,        // --print_free_fields
+    PRINT_NONE,         // Not in MODE_PRINT
+    PRINT_FREE_FIELDS,  // --print_free_fields
   };
 
   PrintMode print_mode_;
 
   enum ErrorFormat {
-    ERROR_FORMAT_GCC,   // GCC error output format (default).
-    ERROR_FORMAT_MSVS   // Visual Studio output (--error_format=msvs).
+    ERROR_FORMAT_GCC,  // GCC error output format (default).
+    ERROR_FORMAT_MSVS  // Visual Studio output (--error_format=msvs).
   };
 
   ErrorFormat error_format_;
@@ -403,8 +403,8 @@ class PROTOC_EXPORT CommandLineInterface {
   // output_directives_ lists all the files we are supposed to output and what
   // generator to use for each.
   struct OutputDirective {
-    std::string name;           // E.g. "--foo_out"
-    CodeGenerator* generator;   // NULL for plugins
+    std::string name;          // E.g. "--foo_out"
+    CodeGenerator* generator;  // NULL for plugins
     std::string parameter;
     std::string output_location;
   };

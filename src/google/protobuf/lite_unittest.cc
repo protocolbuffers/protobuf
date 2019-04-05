@@ -44,6 +44,7 @@
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 #include <google/protobuf/wire_format_lite.h>
 #include <gtest/gtest.h>
+#include <google/protobuf/stubs/strutil.h>
 
 namespace google {
 namespace protobuf {
@@ -55,10 +56,9 @@ void ExpectMessageMerged(const unittest::TestAllTypesLite& message) {
   EXPECT_EQ(message.optional_string(), "hello");
 }
 
-void AssignParsingMergeMessages(
-    unittest::TestAllTypesLite* msg1,
-    unittest::TestAllTypesLite* msg2,
-    unittest::TestAllTypesLite* msg3) {
+void AssignParsingMergeMessages(unittest::TestAllTypesLite* msg1,
+                                unittest::TestAllTypesLite* msg2,
+                                unittest::TestAllTypesLite* msg3) {
   msg1->set_optional_int32(1);
   msg2->set_optional_int64(2);
   msg3->set_optional_int32(3);
@@ -173,10 +173,10 @@ TEST(Lite, AllLite5) {
     unittest::TestAllTypesLite* msg2;
     unittest::TestAllTypesLite* msg3;
 
-#define ASSIGN_REPEATED_FIELD(FIELD)                \
-  msg1 = generator.add_##FIELD();                   \
-  msg2 = generator.add_##FIELD();                   \
-  msg3 = generator.add_##FIELD();                   \
+#define ASSIGN_REPEATED_FIELD(FIELD) \
+  msg1 = generator.add_##FIELD();    \
+  msg2 = generator.add_##FIELD();    \
+  msg3 = generator.add_##FIELD();    \
   AssignParsingMergeMessages(msg1, msg2, msg3)
 
     ASSIGN_REPEATED_FIELD(field1);
@@ -446,8 +446,7 @@ TEST(Lite, AllLite18) {
     protobuf_unittest::TestMessageMapLite message;
 
     // Creates a TestAllTypes with default value
-    TestUtilLite::ExpectClear(
-        (*message.mutable_map_int32_message())[0]);
+    TestUtilLite::ExpectClear((*message.mutable_map_int32_message())[0]);
   }
 }
 
@@ -835,30 +834,30 @@ TEST(Lite, AllLite42) {
   std::string data;
 
   {
-      // Check that adding more values to enum does not corrupt message
-      // when passed through an old client.
-      protobuf_unittest::V2MessageLite v2_message;
-      v2_message.set_int_field(800);
-      // Set enum field to the value not understood by the old client.
-      v2_message.set_enum_field(protobuf_unittest::V2_SECOND);
-      std::string v2_bytes = v2_message.SerializeAsString();
+    // Check that adding more values to enum does not corrupt message
+    // when passed through an old client.
+    protobuf_unittest::V2MessageLite v2_message;
+    v2_message.set_int_field(800);
+    // Set enum field to the value not understood by the old client.
+    v2_message.set_enum_field(protobuf_unittest::V2_SECOND);
+    std::string v2_bytes = v2_message.SerializeAsString();
 
-      protobuf_unittest::V1MessageLite v1_message;
-      v1_message.ParseFromString(v2_bytes);
-      EXPECT_TRUE(v1_message.IsInitialized());
-      EXPECT_EQ(v1_message.int_field(), v2_message.int_field());
-      // V1 client does not understand V2_SECOND value, so it discards it and
-      // uses default value instead.
-      EXPECT_EQ(v1_message.enum_field(), protobuf_unittest::V1_FIRST);
+    protobuf_unittest::V1MessageLite v1_message;
+    v1_message.ParseFromString(v2_bytes);
+    EXPECT_TRUE(v1_message.IsInitialized());
+    EXPECT_EQ(v1_message.int_field(), v2_message.int_field());
+    // V1 client does not understand V2_SECOND value, so it discards it and
+    // uses default value instead.
+    EXPECT_EQ(v1_message.enum_field(), protobuf_unittest::V1_FIRST);
 
-      // However, when re-serialized, it should preserve enum value.
-      std::string v1_bytes = v1_message.SerializeAsString();
+    // However, when re-serialized, it should preserve enum value.
+    std::string v1_bytes = v1_message.SerializeAsString();
 
-      protobuf_unittest::V2MessageLite same_v2_message;
-      same_v2_message.ParseFromString(v1_bytes);
+    protobuf_unittest::V2MessageLite same_v2_message;
+    same_v2_message.ParseFromString(v1_bytes);
 
-      EXPECT_EQ(v2_message.int_field(), same_v2_message.int_field());
-      EXPECT_EQ(v2_message.enum_field(), same_v2_message.enum_field());
+    EXPECT_EQ(v2_message.int_field(), same_v2_message.int_field());
+    EXPECT_EQ(v2_message.enum_field(), same_v2_message.enum_field());
   }
 }
 
@@ -1047,6 +1046,55 @@ TEST(Lite, MapCrash) {
   //   MapEnumLite value = too long varint (parse error)
   EXPECT_FALSE(msg->ParseFromString(
       "\202\1\15\10\1\200\200\200\200\200\200\200\200\200\200\1"));
+}
+
+TEST(Lite, CorrectEnding) {
+  protobuf_unittest::TestAllTypesLite msg;
+  {
+    // All proto wireformat parsers should act the same on parsing data in as
+    // much as it concerns the parsing, ie. not the interpretation of the data.
+    // TestAllTypesLite is not a group inside another message. So in practice
+    // will not encounter an end-group tag. However the parser should behave
+    // like any wire format parser should.
+    static const char kWireFormat[] = "\204\1";
+    io::CodedInputStream cis(reinterpret_cast<const uint8*>(kWireFormat), 2);
+    // The old CodedInputStream parser got an optimization (ReadTagNoLastTag)
+    // for non-group messages (like TestAllTypesLite) which made it not accept
+    // end-group. This is not a real big deal, but I think going forward its
+    // good to have all parse loops behave 'exactly' the same.
+#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
+    EXPECT_TRUE(msg.MergePartialFromCodedStream(&cis));
+    EXPECT_FALSE(cis.ConsumedEntireMessage());
+    EXPECT_TRUE(cis.LastTagWas(132));
+#endif
+  }
+  {
+    // This is an incomplete end-group tag. This should be a genuine parse
+    // failure.
+    static const char kWireFormat[] = "\214";
+    io::CodedInputStream cis(reinterpret_cast<const uint8*>(kWireFormat), 1);
+    // Unfortunately the old parser detects a parse error in ReadTag and returns
+    // 0 (as it states 0 is an invalid tag). However 0 is not an invalid tag
+    // as it can be used to terminate the stream, so this returns true.
+#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
+    EXPECT_FALSE(msg.MergePartialFromCodedStream(&cis));
+#endif
+  }
+}
+
+TEST(Lite, DebugString) {
+  protobuf_unittest::TestAllTypesLite message1, message2;
+  EXPECT_TRUE(HasPrefixString(message1.DebugString(), "MessageLite at 0x"));
+  EXPECT_TRUE(HasPrefixString(message2.DebugString(), "MessageLite at 0x"));
+
+  // DebugString() and ShortDebugString() are the same for now.
+  EXPECT_EQ(message1.DebugString(), message1.ShortDebugString());
+
+  // Even identical lite protos should have different DebugString() output. Part
+  // of the reason for including the memory address is so that we get some
+  // non-determinism, which should make it easier for us to change the output
+  // later without breaking any code.
+  EXPECT_NE(message1.DebugString(), message2.DebugString());
 }
 
 }  // namespace protobuf

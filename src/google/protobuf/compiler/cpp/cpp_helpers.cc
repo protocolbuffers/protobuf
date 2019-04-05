@@ -55,7 +55,6 @@
 
 #include <google/protobuf/stubs/hash.h>
 
-
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -319,12 +318,12 @@ std::string ClassName(const Descriptor* descriptor) {
   if (parent) res += ClassName(parent) + "_";
   res += descriptor->name();
   if (IsMapEntryMessage(descriptor)) res += "_DoNotUse";
-  return res;
+  return ResolveKeyword(res);
 }
 
 std::string ClassName(const EnumDescriptor* enum_descriptor) {
   if (enum_descriptor->containing_type() == nullptr) {
-    return enum_descriptor->name();
+    return ResolveKeyword(enum_descriptor->name());
   } else {
     return ClassName(enum_descriptor->containing_type()) + "_" +
            enum_descriptor->name();
@@ -358,8 +357,10 @@ std::string Namespace(const FileDescriptor* d, const Options& options) {
   if (IsWellKnownMessage(d) && options.opensource_runtime) {
     // Written with string concatenation to prevent rewriting of
     // ::google::protobuf.
-    ret = StringReplace(ret, "::google::" "protobuf", "PROTOBUF_NAMESPACE_ID",
-                        false);
+    ret = StringReplace(ret,
+                        "::google::"
+                        "protobuf",
+                        "PROTOBUF_NAMESPACE_ID", false);
   }
   return ret;
 }
@@ -393,6 +394,13 @@ std::string SuperClassName(const Descriptor* descriptor,
   return "::" + ProtobufNamespace(options) +
          (HasDescriptorMethods(descriptor->file(), options) ? "::Message"
                                                             : "::MessageLite");
+}
+
+std::string ResolveKeyword(const string& name) {
+  if (kKeywords.count(name) > 0) {
+    return name + "_";
+  }
+  return name;
 }
 
 std::string FieldName(const FieldDescriptor* field) {
@@ -1343,19 +1351,15 @@ class ParseLoopGenerator {
   void GenerateParserLoop(const Descriptor* descriptor) {
     format_.Set("classname", ClassName(descriptor));
     format_.Set("p_ns", "::" + ProtobufNamespace(options_));
-    format_.Set("pi_ns", StrCat("::", ProtobufNamespace(options_), "::internal"));
+    format_.Set("pi_ns",
+                StrCat("::", ProtobufNamespace(options_), "::internal"));
     format_.Set("GOOGLE_PROTOBUF", MacroPrefix(options_));
-    format_.Set("kSlopBytes",
-                static_cast<int>(internal::ParseContext::kSlopBytes));
     std::map<std::string, std::string> vars;
     SetCommonVars(options_, &vars);
     format_.AddMap(vars);
 
     std::vector<const FieldDescriptor*> ordered_fields;
     for (auto field : FieldRange(descriptor)) {
-      if (IsProto1(descriptor->file(), options_)) {
-        if (field->number() >= (1 << 14)) continue;
-      }
       ordered_fields.push_back(field);
     }
     std::sort(ordered_fields.begin(), ordered_fields.end(),
@@ -1366,14 +1370,321 @@ class ParseLoopGenerator {
     format_(
         "const char* $classname$::_InternalParse(const char* ptr, "
         "$pi_ns$::ParseContext* ctx) {\n"
-        "  $p_ns$::Arena* arena = GetArena(); (void)arena;\n"
-        "  while (!ctx->Done(&ptr)) {\n"
-        "    $uint32$ tag;\n"
-        "    ptr = $pi_ns$::ReadTag(ptr, &tag);\n"
-        "    $GOOGLE_PROTOBUF$_PARSER_ASSERT(ptr);\n"
-        "    switch (tag >> 3) {\n");
-
+        "#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure\n");
     format_.Indent();
+    if (descriptor->file()->options().cc_enable_arenas()) {
+      format_("$p_ns$::Arena* arena = GetArenaNoVirtual(); (void)arena;\n");
+    }
+    GenerateParseLoop(descriptor, ordered_fields);
+    format_.Outdent();
+    format_(
+        "failure:\n"
+        "  return nullptr;\n"
+        "#undef CHK_\n"
+        "}\n");
+  }
+
+ private:
+  MessageSCCAnalyzer* scc_analyzer_;
+  const Options& options_;
+  Formatter format_;
+
+  using WireFormat = internal::WireFormat;
+  using WireFormatLite = internal::WireFormatLite;
+
+  void GenerateArenaString(const FieldDescriptor* field,
+                           const std::string& utf8, std::string field_name) {
+    if (!field_name.empty()) {
+      format_("static const char kFieldName[] = $1$;\n",
+              field_name.substr(2));  // remove ", "
+      field_name = ", kFieldName";
+    }
+    if (HasFieldPresence(field->file())) {
+      format_("HasBitSetters::set_has_$1$(this);\n", FieldName(field));
+    }
+    string default_string =
+        field->default_value_string().empty()
+            ? "::" + ProtobufNamespace(options_) +
+                  "::internal::GetEmptyStringAlreadyInited()"
+            : QualifiedClassName(field->containing_type(), options_) +
+                  "::" + MakeDefaultName(field) + ".get()";
+    format_(
+        "if (arena != nullptr) {\n"
+        "  ptr = $pi_ns$::InlineCopyIntoArenaString$1$(&$2$_, ptr, ctx, "
+        "  arena$3$);\n"
+        "} else {\n"
+        "  ptr = "
+        "$pi_ns$::InlineGreedyStringParser$1$($2$_.MutableNoArenaNoDefault(&$4$"
+        "), ptr, ctx$3$);"
+        "\n}\n",
+        utf8, FieldName(field), field_name, default_string);
+  }
+
+  void GenerateStrings(const FieldDescriptor* field, bool check_utf8) {
+    std::string utf8;
+    std::string field_name;
+    if (check_utf8) {
+      utf8 = GetUtf8Suffix(field, options_);
+      if (!utf8.empty()) {
+        field_name = ", nullptr";
+        if (HasDescriptorMethods(field->file(), options_)) {
+          field_name = StrCat(", \"", field->full_name(), "\"");
+        }
+      }
+    }
+    FieldOptions::CType ctype = FieldOptions::STRING;
+    if (!options_.opensource_runtime) {
+      // Open source doesn't support other ctypes;
+      ctype = field->options().ctype();
+    }
+    if (field->file()->options().cc_enable_arenas() && !field->is_repeated() &&
+        !options_.opensource_runtime &&
+        GetOptimizeFor(field->file(), options_) != FileOptions::LITE_RUNTIME &&
+        // For now only use arena string for strings with empty defaults.
+        field->default_value_string().empty() &&
+        !IsStringInlined(field, options_) &&
+        field->containing_oneof() == nullptr && ctype == FieldOptions::STRING) {
+      GenerateArenaString(field, utf8, field_name);
+      return;
+    }
+    std::string name;
+    switch (ctype) {
+      case FieldOptions::STRING:
+        name = "GreedyStringParser" + utf8;
+        break;
+      case FieldOptions::CORD:
+        name = "CordParser" + utf8;
+        break;
+      case FieldOptions::STRING_PIECE:
+        name = "StringPieceParser" + utf8;
+        break;
+    }
+    format_("ptr = $pi_ns$::Inline$1$($2$_$3$(), ptr, ctx$4$);\n", name,
+            field->is_repeated() && !field->is_packable() ? "add" : "mutable",
+            FieldName(field), field_name);
+  }
+
+  void GenerateLengthDelim(const FieldDescriptor* field) {
+    if (field->is_packable()) {
+      std::string enum_validator;
+      if (field->type() == FieldDescriptor::TYPE_ENUM &&
+          !HasPreservingUnknownEnumSemantics(field)) {
+        enum_validator = StrCat(
+            ", ", QualifiedClassName(field->enum_type(), options_),
+            "_IsValid, mutable_unknown_fields(), ", field->number());
+      }
+      format_("ptr = $pi_ns$::Packed$1$Parser(mutable_$2$(), ptr, ctx$3$);\n",
+              DeclaredTypeMethodName(field->type()), FieldName(field),
+              enum_validator);
+    } else {
+      auto field_type = field->type();
+      switch (field_type) {
+        case FieldDescriptor::TYPE_STRING:
+          GenerateStrings(field, true /* utf8 */);
+          break;
+        case FieldDescriptor::TYPE_BYTES:
+          GenerateStrings(field, false /* utf8 */);
+          break;
+        case FieldDescriptor::TYPE_MESSAGE: {
+          if (field->is_map()) {
+            const FieldDescriptor* val =
+                field->message_type()->FindFieldByName("value");
+            GOOGLE_CHECK(val);
+            if (HasFieldPresence(field->file()) &&
+                val->type() == FieldDescriptor::TYPE_ENUM) {
+              format_(
+                  "auto object = ::$proto_ns$::internal::InitEnumParseWrapper("
+                  "&$1$_, $2$_IsValid, $3$, &_internal_metadata_);\n"
+                  "ptr = ctx->ParseMessage(&object, ptr);\n",
+                  FieldName(field), QualifiedClassName(val->enum_type()),
+                  field->number());
+            } else {
+              format_("ptr = ctx->ParseMessage(&$1$_, ptr);\n",
+                      FieldName(field));
+            }
+          } else if (IsLazy(field, options_)) {
+            if (field->containing_oneof() != nullptr) {
+              format_(
+                  "if (!has_$1$()) {\n"
+                  "  clear_$1$();\n"
+                  "  $2$_.$1$_ = ::$proto_ns$::Arena::CreateMessage<\n"
+                  "      $pi_ns$::LazyField>("
+                  "GetArenaNoVirtual());\n"
+                  "  set_has_$1$();\n"
+                  "}\n"
+                  "ptr = ctx->ParseMessage($2$_.$1$_, ptr);\n",
+                  FieldName(field), field->containing_oneof()->name());
+            } else if (HasFieldPresence(field->file())) {
+              format_(
+                  "HasBitSetters::set_has_$1$(this);\n"
+                  "ptr = ctx->ParseMessage(&$1$_, ptr);\n",
+                  FieldName(field));
+            } else {
+              format_("ptr = ctx->ParseMessage(&$1$_, ptr);\n",
+                      FieldName(field));
+            }
+          } else if (IsImplicitWeakField(field, options_, scc_analyzer_)) {
+            if (!field->is_repeated()) {
+              format_(
+                  "ptr = ctx->ParseMessage(HasBitSetters::mutable_$1$(this), "
+                  "ptr);\n",
+                  FieldName(field));
+            } else {
+              format_(
+                  "ptr = ctx->ParseMessage("
+                  "CastToBase(&$1$_)->AddWeak(reinterpret_cast<const "
+                  "::$proto_ns$::MessageLite*>(&$2$::_$3$_default_instance_)), "
+                  "ptr);\n",
+                  FieldName(field), Namespace(field->message_type(), options_),
+                  ClassName(field->message_type()));
+            }
+          } else if (IsWeak(field, options_)) {
+            format_(
+                "ptr = ctx->ParseMessage(_weak_field_map_.MutableMessage($1$,"
+                " _$classname$_default_instance_.$2$_), ptr);\n",
+                field->number(), FieldName(field));
+          } else {
+            format_("ptr = ctx->ParseMessage($1$_$2$(), ptr);\n",
+                    field->is_repeated() ? "add" : "mutable", FieldName(field));
+          }
+          break;
+        }
+        default:
+          GOOGLE_LOG(FATAL) << "Illegal combination for length delimited wiretype "
+                     << " filed type is " << field->type();
+      }
+    }
+  }
+
+  void GenerateCaseBody(internal::WireFormatLite::WireType wiretype,
+                        const FieldDescriptor* field) {
+    if (ShouldRepeat(field, wiretype)) {
+      format_("do {\n");
+      format_.Indent();
+    }
+    switch (wiretype) {
+      case WireFormatLite::WIRETYPE_VARINT: {
+        std::string type = PrimitiveTypeName(options_, field->cpp_type());
+        std::string prefix = field->is_repeated() ? "add" : "set";
+        if (field->type() == FieldDescriptor::TYPE_ENUM) {
+          format_(
+              "$uint64$ val = $pi_ns$::ReadVarint(&ptr);\n"
+              "CHK_(ptr);\n");
+          if (!HasPreservingUnknownEnumSemantics(field)) {
+            format_(
+                "if (!$1$_IsValid(val)) {\n"
+                "  $pi_ns$::WriteVarint($2$, val, "
+                "mutable_unknown_fields());\n"
+                "  break;\n"
+                "}\n",
+                QualifiedClassName(field->enum_type(), options_),
+                field->number());
+          }
+          format_("$1$_$2$(static_cast<$3$>(val));\n", prefix, FieldName(field),
+                  QualifiedClassName(field->enum_type(), options_));
+        } else {
+          int size = field->type() == FieldDescriptor::TYPE_SINT32 ? 32 : 64;
+          std::string zigzag;
+          if ((field->type() == FieldDescriptor::TYPE_SINT32 ||
+               field->type() == FieldDescriptor::TYPE_SINT64)) {
+            zigzag = StrCat("ZigZag", size);
+          }
+          format_(
+              "$1$_$2$($pi_ns$::ReadVarint$3$(&ptr));\n"
+              "CHK_(ptr);\n",
+              prefix, FieldName(field), zigzag);
+        }
+        break;
+      }
+      case WireFormatLite::WIRETYPE_FIXED32:
+      case WireFormatLite::WIRETYPE_FIXED64: {
+        std::string prefix = field->is_repeated() ? "add" : "set";
+        std::string type = PrimitiveTypeName(options_, field->cpp_type());
+        format_(
+            "$1$_$2$($pi_ns$::UnalignedLoad<$3$>(ptr));\n"
+            "ptr += sizeof($3$);\n",
+            prefix, FieldName(field), type);
+        break;
+      }
+      case WireFormatLite::WIRETYPE_LENGTH_DELIMITED: {
+        GenerateLengthDelim(field);
+        format_("CHK_(ptr);\n");
+        break;
+      }
+      case WireFormatLite::WIRETYPE_START_GROUP: {
+        format_(
+            "ptr = ctx->ParseGroup($1$_$2$(), ptr, tag);\n"
+            "CHK_(ptr);\n",
+            field->is_repeated() ? "add" : "mutable", FieldName(field));
+        break;
+      }
+      case WireFormatLite::WIRETYPE_END_GROUP: {
+        GOOGLE_LOG(FATAL) << "Can't have end group field\n";
+        break;
+      }
+    }  // switch (wire_type)
+
+    if (ShouldRepeat(field, wiretype)) {
+      uint32 x = field->number() * 8 + wiretype;
+      uint64 y = 0;
+      int cnt = 0;
+      do {
+        y += static_cast<uint64>((x & 0x7F) + (x >= 128 ? 128 : 0))
+             << (cnt++ * 8);
+        x >>= 7;
+      } while (x);
+      uint64 mask = (1ull << (cnt * 8)) - 1;
+      format_("if (ctx->Done(&ptr)) return ptr;\n");
+      format_.Outdent();
+      format_(
+          "} while (($pi_ns$::UnalignedLoad<$uint64$>(ptr)"
+          " & $1$) == $2$ && (ptr += $3$));\n",
+          mask, y, cnt);
+    }
+    format_("break;\n");
+  }
+
+  void GenerateCaseBody(const FieldDescriptor* field) {
+    if (field->is_packable()) {
+      auto expected_wiretype = WireFormat::WireTypeForFieldType(field->type());
+      GOOGLE_CHECK(expected_wiretype != WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
+      uint32 expected_tag =
+          WireFormatLite::MakeTag(field->number(), expected_wiretype);
+      auto fallback_wiretype = WireFormatLite::WIRETYPE_LENGTH_DELIMITED;
+      uint32 fallback_tag =
+          WireFormatLite::MakeTag(field->number(), fallback_wiretype);
+
+      if (field->is_packed()) {
+        std::swap(expected_tag, fallback_tag);
+        std::swap(expected_wiretype, fallback_wiretype);
+      }
+
+      format_("if (static_cast<$uint8$>(tag) == $1$) {\n", expected_tag & 0xFF);
+      format_.Indent();
+      GenerateCaseBody(expected_wiretype, field);
+      format_.Outdent();
+      format_(
+          "} else if (static_cast<$uint8$>(tag) != $1$) goto handle_unusual;\n",
+          fallback_tag & 0xFF);
+      GenerateCaseBody(fallback_wiretype, field);
+    } else {
+      auto wiretype = WireFormat::WireTypeForField(field);
+      format_("if (static_cast<$uint8$>(tag) != $1$) goto handle_unusual;\n",
+              WireFormat::MakeTag(field) & 0xFF);
+      GenerateCaseBody(wiretype, field);
+    }
+  }
+
+  void GenerateParseLoop(
+      const Descriptor* descriptor,
+      const std::vector<const FieldDescriptor*>& ordered_fields) {
+    format_(
+        "while (!ctx->Done(&ptr)) {\n"
+        "  $uint32$ tag;\n"
+        "  ptr = $pi_ns$::ReadTag(ptr, &tag);\n"
+        "  CHK_(ptr);\n"
+        "  switch (tag >> 3) {\n");
+
     format_.Indent();
     format_.Indent();
 
@@ -1433,338 +1744,22 @@ class ParseLoopGenerator {
             "  ptr = _extensions_.ParseField(tag, ptr, \n"
             "      internal_default_instance(), &_internal_metadata_, "
             "ctx);\n"
-            "  $GOOGLE_PROTOBUF$_PARSER_ASSERT(ptr != nullptr);\n"
+            "  CHK_(ptr != nullptr);\n"
             "  break;\n"
             "}\n");
       }
       format_(
-          "  ptr = UnknownFieldParse(tag,\n"
-          "    _internal_metadata_.mutable_unknown_fields(), ptr, ctx);\n"
-          "  $GOOGLE_PROTOBUF$_PARSER_ASSERT(ptr != nullptr);\n"
+          "  ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);\n"
+          "  CHK_(ptr != nullptr);\n"
           "  break;\n");
     }
     format_("}\n");  // default case
     format_.Outdent();
     format_.Outdent();
-    format_.Outdent();
     format_(
-        "    }  // switch\n"
-        "  }  // while\n"
-        "  return ptr;\n"
-        "}\n");
-  }
-
- private:
-  MessageSCCAnalyzer* scc_analyzer_;
-  const Options& options_;
-  Formatter format_;
-
-  using WireFormat = internal::WireFormat;
-  using WireFormatLite = internal::WireFormatLite;
-
-  void GenerateArenaString(const FieldDescriptor* field,
-                           const std::string& utf8, std::string field_name) {
-    if (!field_name.empty()) {
-      format_("static const char kFieldName[] = $1$;\n",
-              field_name.substr(2));  // remove ", "
-      field_name = ", kFieldName";
-    }
-    format_("if (arena != nullptr) {\n");
-    if (HasFieldPresence(field->file())) {
-      format_("  HasBitSetters::set_has_$1$(this);\n", FieldName(field));
-    }
-    format_(
-        "  ptr = $pi_ns$::InlineCopyIntoArenaString$1$(&$2$_, ptr, ctx, "
-        "  arena$3$);\n"
-        "} else {\n"
-        "  ptr = $pi_ns$::InlineGreedyStringParser$1$($4$_$2$(), ptr, ctx$3$);"
-        "\n}\n",
-        utf8, FieldName(field), field_name,
-        field->is_repeated() ? "add" : "mutable");
-  }
-
-  void GenerateStrings(const FieldDescriptor* field, bool check_utf8) {
-    std::string utf8;
-    std::string field_name;
-    if (check_utf8) {
-      utf8 = GetUtf8Suffix(field, options_);
-      if (!utf8.empty()) {
-        field_name = ", nullptr";
-        if (HasDescriptorMethods(field->file(), options_)) {
-          field_name = StrCat(", \"", field->full_name(), "\"");
-        }
-      }
-    }
-    FieldOptions::CType ctype = FieldOptions::STRING;
-    if (!options_.opensource_runtime) {
-      // Open source doesn't support other ctypes;
-      ctype = field->options().ctype();
-      if (IsProto1(field->file(), options_) &&
-          ctype == FieldOptions::STRING_PIECE) {
-        // proto1 doesn't support STRING_PIECE
-        ctype = FieldOptions::STRING;
-      }
-    }
-    if (field->file()->options().cc_enable_arenas() && !field->is_repeated() &&
-        !options_.opensource_runtime &&
-        GetOptimizeFor(field->file(), options_) != FileOptions::LITE_RUNTIME &&
-        // For now only use arena string for strings with empty defaults.
-        field->default_value_string().empty() &&
-        !IsProto1(field->file(), options_) &&
-        !IsStringInlined(field, options_) &&
-        field->containing_oneof() == nullptr && ctype == FieldOptions::STRING) {
-      GenerateArenaString(field, utf8, field_name);
-      return;
-    }
-    std::string name;
-    switch (ctype) {
-      case FieldOptions::STRING:
-        name = "GreedyStringParser" + utf8;
-        break;
-      case FieldOptions::CORD:
-        name = "CordParser" + utf8;
-        break;
-      case FieldOptions::STRING_PIECE:
-        name = "StringPieceParser" + utf8;
-        break;
-    }
-    format_(
-        "ptr = $pi_ns$::Inline$1$($2$_$3$(), ptr, ctx$4$);\n",
-        name, field->is_repeated() && !field->is_packable() ? "add" : "mutable",
-        FieldName(field), field_name);
-  }
-
-  void GenerateLengthDelim(const FieldDescriptor* field) {
-    if (!IsProto1(field->file(), options_) && field->is_packable()) {
-      std::string enum_validator;
-      if (field->type() == FieldDescriptor::TYPE_ENUM &&
-          !HasPreservingUnknownEnumSemantics(field)) {
-        enum_validator = StrCat(
-            ", ", QualifiedClassName(field->enum_type(), options_),
-            "_IsValid, mutable_unknown_fields(), ", field->number());
-      }
-      format_(
-          "ptr = $pi_ns$::Packed$1$Parser(mutable_$2$(), ptr, ctx$3$);\n",
-          DeclaredTypeMethodName(field->type()), FieldName(field),
-          enum_validator);
-    } else {
-      auto field_type = field->type();
-      if (IsProto1(field->file(), options_)) {
-        if (field->is_packable()) {
-          // Sigh ... packed fields endup as a string in proto1
-          field_type = FieldDescriptor::TYPE_BYTES;
-        }
-        if (field_type == FieldDescriptor::TYPE_STRING) {
-          // In proto1 strings are treated as bytes
-          field_type = FieldDescriptor::TYPE_BYTES;
-        }
-      }
-      switch (field_type) {
-        case FieldDescriptor::TYPE_STRING:
-          GenerateStrings(field, true /* utf8 */);
-          break;
-        case FieldDescriptor::TYPE_BYTES:
-          GenerateStrings(field, false /* utf8 */);
-          break;
-        case FieldDescriptor::TYPE_MESSAGE: {
-          if (!IsProto1(field->file(), options_) && field->is_map()) {
-            const FieldDescriptor* val =
-                field->message_type()->FindFieldByName("value");
-            GOOGLE_CHECK(val);
-            if (HasFieldPresence(field->file()) &&
-                val->type() == FieldDescriptor::TYPE_ENUM) {
-              format_(
-                  "auto object = ::$proto_ns$::internal::InitEnumParseWrapper("
-                  "&$1$_, $2$_IsValid, $3$, &_internal_metadata_);\n"
-                  "ptr = ctx->ParseMessage(&object, ptr);\n",
-                  FieldName(field), QualifiedClassName(val->enum_type()),
-                  field->number());
-            } else {
-              format_("ptr = ctx->ParseMessage(&$1$_, ptr);\n",
-                      FieldName(field));
-            }
-          } else if (!IsProto1(field->file(), options_) &&
-                     IsLazy(field, options_)) {
-            if (field->containing_oneof() != nullptr) {
-              format_(
-                  "if (!has_$1$()) {\n"
-                  "  clear_$1$();\n"
-                  "  $2$_.$1$_ = ::$proto_ns$::Arena::CreateMessage<\n"
-                  "      $pi_ns$::LazyField>("
-                  "GetArenaNoVirtual());\n"
-                  "  set_has_$1$();\n"
-                  "}\n"
-                  "ptr = ctx->ParseMessage($2$_.$1$_, ptr);\n",
-                  FieldName(field), field->containing_oneof()->name());
-            } else if (HasFieldPresence(field->file())) {
-              format_(
-                  "HasBitSetters::set_has_$1$(this);\n"
-                  "ptr = ctx->ParseMessage(&$1$_, ptr);\n",
-                  FieldName(field));
-            } else {
-              format_(
-                  "ptr = ctx->ParseMessage(&$1$_, ptr);\n", FieldName(field));
-            }
-          } else if (IsImplicitWeakField(field, options_, scc_analyzer_)) {
-            if (!field->is_repeated()) {
-              format_(
-                  "ptr = ctx->ParseMessage(HasBitSetters::mutable_$1$(this), "
-                  "ptr);\n",
-                  FieldName(field));
-            } else {
-              format_(
-                  "ptr = ctx->ParseMessage("
-                  "CastToBase(&$1$_)->AddWeak(reinterpret_cast<const "
-                  "::$proto_ns$::MessageLite*>(&$2$::_$3$_default_instance_)), "
-                  "ptr);\n",
-                  FieldName(field), Namespace(field->message_type(), options_),
-                  ClassName(field->message_type()));
-            }
-          } else if (IsWeak(field, options_)) {
-            if (IsProto1(field->file(), options_)) {
-              format_(
-                  "ptr = ctx->ParseMessage("
-                  "reinterpret_cast<$p_ns$::MessageLite*>(internal_mutable_$1$("
-                  ")), ptr);\n",
-                  FieldName(field));
-            } else {
-              format_(
-                  "ptr = ctx->ParseMessage(_weak_field_map_.MutableMessage($1$,"
-                  " _$classname$_default_instance_.$2$_), ptr);\n",
-                  field->number(), FieldName(field));
-            }
-          } else {
-            format_("ptr = ctx->ParseMessage($1$_$2$(), ptr);\n",
-                    field->is_repeated() ? "add" : "mutable", FieldName(field));
-          }
-          break;
-        }
-        default:
-          GOOGLE_LOG(FATAL) << "Illegal combination for length delimited wiretype "
-                     << " filed type is " << field->type();
-      }
-    }
-  }
-
-  void GenerateCaseBody(internal::WireFormatLite::WireType wiretype,
-                        const FieldDescriptor* field) {
-    if (ShouldRepeat(field, wiretype)) {
-      format_("do {\n");
-      format_.Indent();
-    }
-    switch (wiretype) {
-      case WireFormatLite::WIRETYPE_VARINT: {
-        std::string type = PrimitiveTypeName(options_, field->cpp_type());
-        std::string prefix = field->is_repeated() ? "add" : "set";
-        if (field->type() == FieldDescriptor::TYPE_ENUM &&
-            !IsProto1(field->file(), options_)) {
-          format_(
-              "$uint64$ val = $pi_ns$::ReadVarint(&ptr);\n"
-              "$GOOGLE_PROTOBUF$_PARSER_ASSERT(ptr);\n");
-          if (!HasPreservingUnknownEnumSemantics(field)) {
-            format_(
-                "if (!$1$_IsValid(val)) {\n"
-                "  $pi_ns$::WriteVarint($2$, val, "
-                "mutable_unknown_fields());\n"
-                "  break;\n"
-                "}\n",
-                QualifiedClassName(field->enum_type(), options_),
-                field->number());
-          }
-          format_("$1$_$2$(static_cast<$3$>(val));\n", prefix, FieldName(field),
-                  QualifiedClassName(field->enum_type(), options_));
-        } else {
-          int size = field->type() == FieldDescriptor::TYPE_SINT32 ? 32 : 64;
-          std::string zigzag;
-          if ((field->type() == FieldDescriptor::TYPE_SINT32 ||
-               field->type() == FieldDescriptor::TYPE_SINT64) &&
-              !IsProto1(field->file(), options_)) {
-            zigzag = StrCat("ZigZag", size);
-          }
-          format_(
-              "$1$_$2$($pi_ns$::ReadVarint$3$(&ptr));\n"
-              "$GOOGLE_PROTOBUF$_PARSER_ASSERT(ptr);\n",
-              prefix, FieldName(field), zigzag);
-        }
-        break;
-      }
-      case WireFormatLite::WIRETYPE_FIXED32:
-      case WireFormatLite::WIRETYPE_FIXED64: {
-        std::string prefix = field->is_repeated() ? "add" : "set";
-        std::string type = PrimitiveTypeName(options_, field->cpp_type());
-        format_(
-            "$1$_$2$($pi_ns$::UnalignedLoad<$3$>(ptr));\n"
-            "ptr += sizeof($3$);\n",
-            prefix, FieldName(field), type);
-        break;
-      }
-      case WireFormatLite::WIRETYPE_LENGTH_DELIMITED: {
-        GenerateLengthDelim(field);
-        format_("$GOOGLE_PROTOBUF$_PARSER_ASSERT(ptr);\n");
-        break;
-      }
-      case WireFormatLite::WIRETYPE_START_GROUP: {
-        format_(
-            "ptr = ctx->ParseGroup($1$_$2$(), ptr, tag);\n"
-            "$GOOGLE_PROTOBUF$_PARSER_ASSERT(ptr);\n",
-            field->is_repeated() ? "add" : "mutable", FieldName(field));
-        break;
-      }
-      case WireFormatLite::WIRETYPE_END_GROUP: {
-        GOOGLE_LOG(FATAL) << "Can't have end group field\n";
-        break;
-      }
-    }  // switch (wire_type)
-
-    if (ShouldRepeat(field, wiretype)) {
-      uint32 x = field->number() * 8 + wiretype;
-      uint64 y = 0;
-      int cnt = 0;
-      do {
-        y += static_cast<uint64>((x & 0x7F) + (x >= 128 ? 128 : 0))
-             << (cnt++ * 8);
-        x >>= 7;
-      } while (x);
-      uint64 mask = (1ull << (cnt * 8)) - 1;
-      format_("if (ctx->Done(&ptr)) return ptr;\n");
-      format_.Outdent();
-      format_(
-          "} while (($pi_ns$::UnalignedLoad<$uint64$>(ptr)"
-          " & $1$) == $2$ && (ptr += $3$));\n",
-          mask, y, cnt);
-    }
-    format_("break;\n");
-  }
-
-  void GenerateCaseBody(const FieldDescriptor* field) {
-    if (!IsProto1(field->file(), options_) && field->is_packable()) {
-      auto expected_wiretype = WireFormat::WireTypeForFieldType(field->type());
-      GOOGLE_CHECK(expected_wiretype != WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
-      uint32 expected_tag =
-          WireFormatLite::MakeTag(field->number(), expected_wiretype);
-      auto fallback_wiretype = WireFormatLite::WIRETYPE_LENGTH_DELIMITED;
-      uint32 fallback_tag =
-          WireFormatLite::MakeTag(field->number(), fallback_wiretype);
-
-      if (field->is_packed()) {
-        std::swap(expected_tag, fallback_tag);
-        std::swap(expected_wiretype, fallback_wiretype);
-      }
-
-      format_("if (static_cast<$uint8$>(tag) == $1$) {\n", expected_tag & 0xFF);
-      format_.Indent();
-      GenerateCaseBody(expected_wiretype, field);
-      format_.Outdent();
-      format_(
-          "} else if (static_cast<$uint8$>(tag) != $1$) goto handle_unusual;\n",
-          fallback_tag & 0xFF);
-      GenerateCaseBody(fallback_wiretype, field);
-    } else {
-      auto wiretype = WireFormat::WireTypeForField(field);
-      format_("if (static_cast<$uint8$>(tag) != $1$) goto handle_unusual;\n",
-              WireFormat::MakeTag(field) & 0xFF);
-      GenerateCaseBody(wiretype, field);
-    }
+        "  }  // switch\n"
+        "}  // while\n"
+        "return ptr;\n");
   }
 };
 

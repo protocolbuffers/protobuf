@@ -43,11 +43,13 @@ from google.protobuf import descriptor_pb2
 from google.protobuf.internal import api_implementation
 from google.protobuf.internal import factory_test1_pb2
 from google.protobuf.internal import factory_test2_pb2
+from google.protobuf.internal import testing_refleaks
 from google.protobuf import descriptor_database
 from google.protobuf import descriptor_pool
 from google.protobuf import message_factory
 
 
+@testing_refleaks.TestCase
 class MessageFactoryTest(unittest.TestCase):
 
   def setUp(self):

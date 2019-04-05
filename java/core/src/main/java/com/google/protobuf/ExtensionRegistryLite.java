@@ -110,12 +110,23 @@ public class ExtensionRegistryLite {
     return ExtensionRegistryFactory.create();
   }
 
+  private static volatile ExtensionRegistryLite emptyRegistry;
+
   /**
    * Get the unmodifiable singleton empty instance of either ExtensionRegistryLite or {@code
    * ExtensionRegistry} (if the full (non-Lite) proto libraries are available).
    */
   public static ExtensionRegistryLite getEmptyRegistry() {
-    return ExtensionRegistryFactory.createEmpty();
+    ExtensionRegistryLite result = emptyRegistry;
+    if (result == null) {
+      synchronized (ExtensionRegistryLite.class) {
+        result = emptyRegistry;
+        if (result == null) {
+          result = emptyRegistry = ExtensionRegistryFactory.createEmpty();
+        }
+      }
+    }
+    return result;
   }
 
 

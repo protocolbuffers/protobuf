@@ -29,7 +29,7 @@ def __get_data_size(filename):
 
 
 def __extract_file_name(file_name):
-  name_list = re.split("[/\.]", file_name)
+  name_list = re.split(r"[/\.]", file_name)
   short_file_name = ""
   for name in name_list:
     if name[:14] == "google_message":
@@ -213,7 +213,7 @@ def __parse_go_result(filename):
     filename = os.path.dirname(os.path.abspath(__file__)) + '/' + filename
   with open(filename) as f:
     for line in f:
-      result_list = re.split("[\ \t]+", line)
+      result_list = re.split(r"[\ \t]+", line)
       if result_list[0][:9] != "Benchmark":
         continue
       first_slash_index = result_list[0].find('/')

@@ -30,12 +30,12 @@
 
 syntax = "proto2";
 
-option java_package = "com.google.apps.jspb.proto";
-option java_multiple_files = true;
-
 package jspb.test;
 
 import "test.proto";
+
+option java_package = "com.google.apps.jspb.proto";
+option java_multiple_files = true;
 
 message TestExtensionsMessage {
   optional int32 intfield = 1;

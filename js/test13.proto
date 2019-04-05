@@ -47,24 +47,24 @@ enum TestEnum {
 
 message TestLooooooooooooooooooooooooooooooooooooooooooooooooooooooongName1 {
   optional TestLooooooooooooooooooooooooooooooooooooooooooooooooooooooongName2
-    a = 1;
+      a = 1;
   optional int32 b = 2;
 }
 
 message TestLooooooooooooooooooooooooooooooooooooooooooooooooooooooongName2 {
   optional TestLooooooooooooooooooooooooooooooooooooooooooooooooooooooongName3
-    a = 1;
+      a = 1;
   optional int32 b = 2;
 }
 
 message TestLooooooooooooooooooooooooooooooooooooooooooooooooooooooongName3 {
   optional TestLooooooooooooooooooooooooooooooooooooooooooooooooooooooongName4
-    a = 1;
+      a = 1;
   optional int32 b = 2;
 }
 
 message TestLooooooooooooooooooooooooooooooooooooooooooooooooooooooongName4 {
   optional TestLooooooooooooooooooooooooooooooooooooooooooooooooooooooongName1
-    a = 1;
+      a = 1;
   optional int32 b = 2;
 }

@@ -441,7 +441,12 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
 
   @Override
   public void writeTo(final CodedOutputStream output) throws IOException {
-    MessageReflection.writeMessageTo(this, getAllFieldsRaw(), output, false);
+    if (canUseUnsafe()) {
+      CodedOutputStreamWriter writer = CodedOutputStreamWriter.forCodedOutput(output);
+      Protobuf.getInstance().schemaFor(this).writeTo(this, writer);
+    } else {
+      MessageReflection.writeMessageTo(this, getAllFieldsRaw(), output, false);
+    }
   }
 
   @Override
@@ -457,6 +462,29 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
   }
 
 
+
+  /**
+   * This class is used to make a generated protected method inaccessible from user's code (e.g.,
+   * the {@link #newInstance} method below). When this class is used as a parameter's type in a
+   * generated protected method, the method is visible to user's code in the same package, but
+   * since the constructor of this class is private to protobuf runtime, user's code can't obtain
+   * an instance of this class and as such can't actually make a method call on the protected
+   * method.
+   */
+  protected static final class UnusedPrivateParameter {
+    static final UnusedPrivateParameter INSTANCE = new UnusedPrivateParameter();
+
+    private UnusedPrivateParameter() {
+    }
+  }
+
+  /**
+   * Creates a new instance of this message type. Overridden in the generated code.
+   */
+  @SuppressWarnings({"unused"})
+  protected Object newInstance(UnusedPrivateParameter unused) {
+    throw new UnsupportedOperationException("This method must be overridden by the subclass.");
+  }
 
   /**
    * Used by parsing constructors in generated classes.
@@ -738,6 +766,24 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
                        .build());
     }
 
+    @Override
+    public BuilderType mergeFrom(
+        final CodedInputStream input,
+        final ExtensionRegistryLite extensionRegistry)
+        throws IOException {
+      if (!canUseUnsafe()) {
+        return super.mergeFrom(input, extensionRegistry);
+      }
+
+      CodedInputStreamReader reader = CodedInputStreamReader.forCodedInput(input);
+      Message message = buildPartial();
+      Protobuf.getInstance().schemaFor(message).mergeFrom(message, reader, extensionRegistry);
+
+      // getAllField() will change bytes to String, which will lead invalid Utf8 bytes behavior
+      // fails. We change to use getAllFieldsRaw instead.
+      Map<FieldDescriptor, Object> allFieldsRaw = ((GeneratedMessageV3) message).getAllFieldsRaw();
+      return mergeFrom(message, allFieldsRaw);
+    }
 
     @Override
     public boolean isInitialized() {

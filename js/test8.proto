@@ -30,10 +30,10 @@
 
 syntax = "proto2";
 
+package jspb.exttest.nested;
+
 option java_package = "com.google.apps.jspb.proto";
 option java_multiple_files = true;
-
-package jspb.exttest.nested;
 
 message TestNestedExtensionsMessage {
   optional int32 intfield = 1;

@@ -34,6 +34,7 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
 #include <climits>
+#include <cstdint>
 #include <string>
 
 #include <google/protobuf/stubs/logging.h>
@@ -48,6 +49,7 @@
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/repeated_field.h>
+
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/stl_util.h>
 
@@ -58,6 +60,11 @@ namespace protobuf {
 
 std::string MessageLite::InitializationErrorString() const {
   return "(cannot determine missing fields for lite message)";
+}
+
+std::string MessageLite::DebugString() const {
+  std::uintptr_t address = reinterpret_cast<std::uintptr_t>(this);
+  return StrCat("MessageLite at 0x", strings::Hex(address));
 }
 
 namespace {
@@ -123,7 +130,9 @@ bool MergePartialFromImpl(StringPiece input, MessageLite* msg) {
   const char* ptr;
   internal::ParseContext ctx(io::CodedInputStream::GetDefaultRecursionLimit(),
                              aliasing, &ptr, input);
-  return ctx.AtLegitimateEnd(msg->_InternalParse(ptr, &ctx));
+  ptr = msg->_InternalParse(ptr, &ctx);
+  // ctx has an explicit limit set (length of string_view).
+  return ptr && ctx.EndedAtLimit();
 }
 
 template <bool aliasing>
@@ -131,18 +140,20 @@ bool MergePartialFromImpl(io::ZeroCopyInputStream* input, MessageLite* msg) {
   const char* ptr;
   internal::ParseContext ctx(io::CodedInputStream::GetDefaultRecursionLimit(),
                              aliasing, &ptr, input);
-  return ctx.AtLegitimateEnd(msg->_InternalParse(ptr, &ctx));
+  ptr = msg->_InternalParse(ptr, &ctx);
+  // ctx has no explicit limit (hence we end on end of stream)
+  return ptr && ctx.EndedAtEndOfStream();
 }
 
 template <bool aliasing>
 bool MergePartialFromImpl(BoundedZCIS input, MessageLite* msg) {
-  // We must prevent reading more than limit from the input. Due to the nature
-  // of EpsCopyInputStream the stream will always read kSlopBytes ahead of
-  // the parser, we can't always backup so we must prevent from reading past
-  // limit in the first place.
-  io::LimitingInputStream zcis(input.zcis, input.limit);
-  return MergePartialFromImpl<aliasing>(&zcis, msg) &&
-         zcis.ByteCount() == input.limit;
+  const char* ptr;
+  internal::ParseContext ctx(io::CodedInputStream::GetDefaultRecursionLimit(),
+                             aliasing, &ptr, input.zcis, input.limit);
+  ptr = msg->_InternalParse(ptr, &ctx);
+  if (PROTOBUF_PREDICT_FALSE(!ptr)) return false;
+  ctx.BackUp(ptr);
+  return ctx.EndedAtLimit();
 }
 
 #else  // !GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
@@ -229,13 +240,15 @@ bool MessageLite::MergePartialFromCodedStream(io::CodedInputStream* input) {
   ctx.data().pool = input->GetExtensionPool();
   ctx.data().factory = input->GetExtensionFactory();
   ptr = _InternalParse(ptr, &ctx);
-  if (!ptr) return false;
+  if (PROTOBUF_PREDICT_FALSE(!ptr)) return false;
   ctx.BackUp(ptr);
-  if (ctx.LastTagMinus1() != 0) {
-    input->SetLastTag(ctx.LastTagMinus1() + 1);
+  if (!ctx.EndedAtEndOfStream()) {
+    GOOGLE_DCHECK(ctx.LastTag() != 1);  // We can't end on a pushed limit.
+    if (ctx.IsExceedingLimit(ptr)) return false;
+    input->SetLastTag(ctx.LastTag());
     return true;
   }
-  if (ctx.AtLimit(ptr)) input->SetConsumed();
+  input->SetConsumed();
   return true;
 }
 #endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
@@ -263,8 +276,8 @@ bool MessageLite::ParsePartialFromZeroCopyStream(
   return ParseFrom<kParsePartial>(input);
 }
 
-bool MessageLite::MergePartialFromBoundedZeroCopyStream(io::ZeroCopyInputStream* input,
-                                                 int size) {
+bool MessageLite::MergePartialFromBoundedZeroCopyStream(
+    io::ZeroCopyInputStream* input, int size) {
   return ParseFrom<kMergePartial>(internal::BoundedZCIS{input, size});
 }
 

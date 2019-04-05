@@ -50,39 +50,30 @@ static const char kHex[] = "0123456789abcdef";
 // kCommonEscapes[ch] is the escaped string of ch, if escaping is needed;
 //                    or an empty string, if escaping is not needed.
 static const char kCommonEscapes[160][7] = {
-  // C0 (ASCII and derivatives) control characters
-  "\\u0000", "\\u0001", "\\u0002", "\\u0003",  // 0x00
-  "\\u0004", "\\u0005", "\\u0006", "\\u0007",
-  "\\b",     "\\t",     "\\n",     "\\u000b",
-  "\\f",     "\\r",     "\\u000e", "\\u000f",
-  "\\u0010", "\\u0011", "\\u0012", "\\u0013",  // 0x10
-  "\\u0014", "\\u0015", "\\u0016", "\\u0017",
-  "\\u0018", "\\u0019", "\\u001a", "\\u001b",
-  "\\u001c", "\\u001d", "\\u001e", "\\u001f",
-  // Escaping of " and \ are required by www.json.org string definition.
-  // Escaping of < and > are required for HTML security.
-  "", "", "\\\"", "", "",        "", "",        "",  // 0x20
-  "", "", "",     "", "",        "", "",        "",
-  "", "", "",     "", "",        "", "",        "",  // 0x30
-  "", "", "",     "", "\\u003c", "", "\\u003e", "",
-  "", "", "",     "", "",        "", "",        "",  // 0x40
-  "", "", "",     "", "",        "", "",        "",
-  "", "", "",     "", "",        "", "",        "",  // 0x50
-  "", "", "",     "", "\\\\",    "", "",        "",
-  "", "", "",     "", "",        "", "",        "",  // 0x60
-  "", "", "",     "", "",        "", "",        "",
-  "", "", "",     "", "",        "", "",        "",  // 0x70
-  "", "", "",     "", "",        "", "",        "\\u007f",
-  // C1 (ISO 8859 and Unicode) extended control characters
-  "\\u0080", "\\u0081", "\\u0082", "\\u0083",  // 0x80
-  "\\u0084", "\\u0085", "\\u0086", "\\u0087",
-  "\\u0088", "\\u0089", "\\u008a", "\\u008b",
-  "\\u008c", "\\u008d", "\\u008e", "\\u008f",
-  "\\u0090", "\\u0091", "\\u0092", "\\u0093",  // 0x90
-  "\\u0094", "\\u0095", "\\u0096", "\\u0097",
-  "\\u0098", "\\u0099", "\\u009a", "\\u009b",
-  "\\u009c", "\\u009d", "\\u009e", "\\u009f"
-};
+    // C0 (ASCII and derivatives) control characters
+    "\\u0000", "\\u0001", "\\u0002", "\\u0003",  // 0x00
+    "\\u0004", "\\u0005", "\\u0006", "\\u0007", "\\b", "\\t", "\\n", "\\u000b",
+    "\\f", "\\r", "\\u000e", "\\u000f", "\\u0010", "\\u0011", "\\u0012",
+    "\\u0013",  // 0x10
+    "\\u0014", "\\u0015", "\\u0016", "\\u0017", "\\u0018", "\\u0019", "\\u001a",
+    "\\u001b", "\\u001c", "\\u001d", "\\u001e", "\\u001f",
+    // Escaping of " and \ are required by www.json.org string definition.
+    // Escaping of < and > are required for HTML security.
+    "", "", "\\\"", "", "", "", "", "",                              // 0x20
+    "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",  // 0x30
+    "", "", "", "", "\\u003c", "", "\\u003e", "", "", "", "", "", "", "", "",
+    "",                                                                  // 0x40
+    "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",      // 0x50
+    "", "", "", "", "\\\\", "", "", "", "", "", "", "", "", "", "", "",  // 0x60
+    "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",      // 0x70
+    "", "", "", "", "", "", "", "\\u007f",
+    // C1 (ISO 8859 and Unicode) extended control characters
+    "\\u0080", "\\u0081", "\\u0082", "\\u0083",  // 0x80
+    "\\u0084", "\\u0085", "\\u0086", "\\u0087", "\\u0088", "\\u0089", "\\u008a",
+    "\\u008b", "\\u008c", "\\u008d", "\\u008e", "\\u008f", "\\u0090", "\\u0091",
+    "\\u0092", "\\u0093",  // 0x90
+    "\\u0094", "\\u0095", "\\u0096", "\\u0097", "\\u0098", "\\u0099", "\\u009a",
+    "\\u009b", "\\u009c", "\\u009d", "\\u009e", "\\u009f"};
 
 // Determines if the given char value is a unicode surrogate code unit (either
 // high-surrogate or low-surrogate).
@@ -102,9 +93,9 @@ inline bool IsValidCodePoint(uint32 cp) {
 // Returns the low surrogate for the given unicode code point. The result is
 // meaningless if the given code point is not a supplementary character.
 inline uint16 ToLowSurrogate(uint32 cp) {
-  return (cp & (JsonEscaping::kMaxLowSurrogate
-                - JsonEscaping::kMinLowSurrogate))
-      + JsonEscaping::kMinLowSurrogate;
+  return (cp &
+          (JsonEscaping::kMaxLowSurrogate - JsonEscaping::kMinLowSurrogate)) +
+         JsonEscaping::kMinLowSurrogate;
 }
 
 // Returns the high surrogate for the given unicode code point. The result is
@@ -328,10 +319,10 @@ void JsonEscaping::Escape(strings::ByteSource* input,
       ok = ReadCodePoint(str, i, &cp, &num_left, &num_read);
       if (num_left > 0 || !ok) break;  // case iii or iv
       escaped = EscapeCodePoint(cp, buffer, cp_was_split);
-      if (!escaped.empty()) break;     // case i or ii
+      if (!escaped.empty()) break;  // case i or ii
       i += num_read;
       num_read = 0;
-    } while (i < str.length());        // case iv
+    } while (i < str.length());  // case iv
     // First copy the un-escaped prefix, if any, to the output ByteSink.
     if (i > 0) input->CopyTo(output, i);
     if (num_read > 0) input->Skip(num_read);

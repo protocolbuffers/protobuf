@@ -35,8 +35,8 @@
 // A proto file we will use for unit testing.
 
 syntax = "proto2";
-package protobuf_unittest;
 
+package protobuf_unittest;
 
 message TestFlagsAndStrings {
   required int32 A = 1;
