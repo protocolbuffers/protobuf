@@ -85,9 +85,6 @@ void SetEnumVariables(const FieldDescriptor* descriptor, int messageBitIndex,
   (*variables)["required"] = descriptor->is_required() ? "true" : "false";
 
   if (SupportFieldPresence(descriptor->file())) {
-    (*variables)["bit_field_id"] = StrCat(messageBitIndex / 32);
-    (*variables)["bit_field_name"] = GetBitFieldNameForBit(messageBitIndex);
-    (*variables)["bit_field_mask"] = StrCat(1 << (messageBitIndex % 32));
     // For singular messages and builders, one bit is used for the hasField bit.
     (*variables)["get_has_field_bit_message"] = GenerateGetBit(messageBitIndex);
 
@@ -161,18 +158,6 @@ void ImmutableEnumFieldLiteGenerator::GenerateInterfaceMembers(
 
 void ImmutableEnumFieldLiteGenerator::GenerateMembers(
     io::Printer* printer) const {
-  printer->Print(
-      variables_,
-      "@com.google.protobuf.ProtoField(\n"
-      "  fieldNumber=$number$,\n"
-      "  type=com.google.protobuf.FieldType.$annotation_field_type$,\n"
-      "  isRequired=$required$)\n");
-  if (SupportFieldPresence(descriptor_->file())) {
-    printer->Print(variables_,
-                   "@com.google.protobuf.ProtoPresenceCheckedField(\n"
-                   "  presenceBitsId=$bit_field_id$,\n"
-                   "  mask=$bit_field_mask$)\n");
-  }
   printer->Print(variables_, "private int $name$_;\n");
   PrintExtraFieldInfo(variables_, printer);
   if (SupportFieldPresence(descriptor_->file())) {
@@ -559,11 +544,6 @@ void RepeatedImmutableEnumFieldLiteGenerator::GenerateInterfaceMembers(
 
 void RepeatedImmutableEnumFieldLiteGenerator::GenerateMembers(
     io::Printer* printer) const {
-  printer->Print(
-      variables_,
-      "@com.google.protobuf.ProtoField(\n"
-      "  fieldNumber=$number$,\n"
-      "  type=com.google.protobuf.FieldType.$annotation_field_type$)\n");
   printer->Print(
       variables_,
       "private com.google.protobuf.Internal.IntList $name$_;\n"

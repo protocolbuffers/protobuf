@@ -261,8 +261,9 @@ public class ExtensionRegistryFactoryTest extends TestCase {
         ((URLClassLoader) testClassLoader).getURLs(), ClassLoader.getSystemClassLoader()) {
       @Override
       public Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+        System.out.println("Loading class: " + name);
         if (classNamesNotInLite.contains(name)) {
-          throw new ClassNotFoundException("Class deliberately blacklisted by test.");
+          throw new ClassNotFoundException("Class deliberately blacklisted by test." + name);
         }
         Class<?> loadedClass = null;
         try {
