@@ -362,7 +362,7 @@ test_php_zts_c: protoc_middleman conformance-test-runner conformance-php-c $(oth
 # These depend on library paths being properly set up.  The easiest way to
 # run them is to just use "tox" from the python dir.
 test_python: protoc_middleman conformance-test-runner
-	./conformance-test-runner --enforce_recommended --failure_list failure_list_python.txt ./conformance_python.py
+	./conformance-test-runner --enforce_recommended --failure_list failure_list_python.txt --text_format_failure_list text_format_failure_list_python.txt ./conformance_python.py
 
 test_python_cpp: protoc_middleman conformance-test-runner
 	./conformance-test-runner --enforce_recommended --failure_list failure_list_python_cpp.txt ./conformance_python.py
