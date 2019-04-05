@@ -643,6 +643,7 @@ class PROTOC_EXPORT Formatter {
   static std::string ToString(const EnumValueDescriptor* d) {
     return Payload(d);
   }
+  static std::string ToString(const OneofDescriptor* d) { return Payload(d); }
 
   template <typename Descriptor>
   static std::string Payload(const Descriptor* descriptor) {
