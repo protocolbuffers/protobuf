@@ -29,7 +29,9 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Author: laszlocsomor@google.com (Laszlo Csomor)
-//
+//  Based on original Protocol Buffers design by
+//  Sanjay Ghemawat, Jeff Dean, and others.
+
 // Implementation for long-path-aware open/mkdir/access/etc. on Windows, as well
 // as for the supporting utility functions.
 //
@@ -58,7 +60,7 @@
 #include <wctype.h>
 #include <windows.h>
 
-#include <google/protobuf/stubs/io_win32.h>
+#include <google/protobuf/io/io_win32.h>
 
 #include <memory>
 #include <sstream>
@@ -67,7 +69,7 @@
 
 namespace google {
 namespace protobuf {
-namespace internal {
+namespace io {
 namespace win32 {
 namespace {
 
@@ -407,7 +409,7 @@ bool wcs_to_utf8(const wchar_t* input, string* out) {
 
 }  // namespace strings
 }  // namespace win32
-}  // namespace internal
+}  // namespace io
 }  // namespace protobuf
 }  // namespace google
 

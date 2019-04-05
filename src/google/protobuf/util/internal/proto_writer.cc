@@ -313,10 +313,10 @@ ProtoWriter::ProtoElement::ProtoElement(ProtoWriter::ProtoElement* parent,
       typeinfo_(this->parent()->typeinfo_),
       proto3_(type.syntax() == google::protobuf::SYNTAX_PROTO3),
       type_(type),
-      size_index_(
-          !is_list && field->kind() == google::protobuf::Field_Kind_TYPE_MESSAGE
-              ? ow_->size_insert_.size()
-              : -1),
+      size_index_(!is_list && field->kind() ==
+                                  google::protobuf::Field_Kind_TYPE_MESSAGE
+                      ? ow_->size_insert_.size()
+                      : -1),
       array_index_(is_list ? 0 : -1),
       // oneof_indices_ values are 1-indexed (0 means not present).
       oneof_indices_(type_.oneofs_size() + 1) {

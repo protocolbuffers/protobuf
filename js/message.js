@@ -172,7 +172,8 @@ jspb.Message = function() {
  *     dead code eliminate fields used in protocol buffers that are never used
  *     in an application.
  */
-goog.define('jspb.Message.GENERATE_TO_OBJECT', true);
+jspb.Message.GENERATE_TO_OBJECT =
+    goog.define('jspb.Message.GENERATE_TO_OBJECT', true);
 
 
 /**
@@ -184,7 +185,8 @@ goog.define('jspb.Message.GENERATE_TO_OBJECT', true);
  *     used in an application.
  *     By default this is enabled for test code only.
  */
-goog.define('jspb.Message.GENERATE_FROM_OBJECT', !goog.DISALLOW_TEST_ONLY_CODE);
+jspb.Message.GENERATE_FROM_OBJECT = goog.define(
+    'jspb.Message.GENERATE_FROM_OBJECT', !goog.DISALLOW_TEST_ONLY_CODE);
 
 
 /**
@@ -192,7 +194,8 @@ goog.define('jspb.Message.GENERATE_FROM_OBJECT', !goog.DISALLOW_TEST_ONLY_CODE);
  *     this off if you do not use toString in your project and want to trim it
  *     from the compiled JS.
  */
-goog.define('jspb.Message.GENERATE_TO_STRING', true);
+jspb.Message.GENERATE_TO_STRING =
+    goog.define('jspb.Message.GENERATE_TO_STRING', true);
 
 
 /**
@@ -200,7 +203,8 @@ goog.define('jspb.Message.GENERATE_TO_STRING', true);
  *     local (e.g. not from another iframe) and thus safely classified with
  *     instanceof Array.
  */
-goog.define('jspb.Message.ASSUME_LOCAL_ARRAYS', false);
+jspb.Message.ASSUME_LOCAL_ARRAYS =
+    goog.define('jspb.Message.ASSUME_LOCAL_ARRAYS', false);
 
 
 // TODO(jakubvrana): Turn this off by default.
@@ -210,7 +214,8 @@ goog.define('jspb.Message.ASSUME_LOCAL_ARRAYS', false);
  *     the proto before serialization. This is enabled by default to be
  *     backwards compatible. Projects are advised to turn this flag always off.
  */
-goog.define('jspb.Message.SERIALIZE_EMPTY_TRAILING_FIELDS', true);
+jspb.Message.SERIALIZE_EMPTY_TRAILING_FIELDS =
+    goog.define('jspb.Message.SERIALIZE_EMPTY_TRAILING_FIELDS', true);
 
 
 /**
@@ -325,6 +330,10 @@ jspb.Message.prototype.arrayIndexOffset_;
 jspb.Message.getIndex_ = function(msg, fieldNumber) {
   return fieldNumber + msg.arrayIndexOffset_;
 };
+
+// This is only here to ensure we are not back sliding on ES6 requiements for
+// protos in g3.
+jspb.Message.hiddenES6Property_ = class {};
 
 
 /**

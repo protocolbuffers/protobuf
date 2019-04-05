@@ -98,8 +98,8 @@ util::Status BinaryToJsonStream(TypeResolver* resolver,
   converter::JsonObjectWriter json_writer(options.add_whitespace ? " " : "",
                                           &out_stream);
   if (options.always_print_primitive_fields) {
-    converter::DefaultValueObjectWriter default_value_writer(
-        resolver, type, &json_writer);
+    converter::DefaultValueObjectWriter default_value_writer(resolver, type,
+                                                             &json_writer);
     default_value_writer.set_preserve_proto_field_names(
         options.preserve_proto_field_names);
     default_value_writer.set_print_enums_as_ints(
@@ -129,9 +129,9 @@ class StatusErrorListener : public converter::ErrorListener {
 
   util::Status GetStatus() { return status_; }
 
-  virtual void InvalidName(const converter::LocationTrackerInterface& loc,
-                           StringPiece unknown_name,
-                           StringPiece message) {
+  void InvalidName(const converter::LocationTrackerInterface& loc,
+                   StringPiece unknown_name,
+                   StringPiece message) override {
     std::string loc_string = GetLocString(loc);
     if (!loc_string.empty()) {
       loc_string.append(" ");
@@ -141,17 +141,17 @@ class StatusErrorListener : public converter::ErrorListener {
                        StrCat(loc_string, unknown_name, ": ", message));
   }
 
-  virtual void InvalidValue(const converter::LocationTrackerInterface& loc,
-                            StringPiece type_name,
-                            StringPiece value) {
+  void InvalidValue(const converter::LocationTrackerInterface& loc,
+                    StringPiece type_name,
+                    StringPiece value) override {
     status_ = util::Status(
         util::error::INVALID_ARGUMENT,
         StrCat(GetLocString(loc), ": invalid value ", string(value),
                      " for type ", string(type_name)));
   }
 
-  virtual void MissingField(const converter::LocationTrackerInterface& loc,
-                            StringPiece missing_name) {
+  void MissingField(const converter::LocationTrackerInterface& loc,
+                    StringPiece missing_name) override {
     status_ = util::Status(util::error::INVALID_ARGUMENT,
                              StrCat(GetLocString(loc), ": missing field ",
                                           std::string(missing_name)));
@@ -188,9 +188,8 @@ util::Status JsonToBinaryStream(TypeResolver* resolver,
       options.ignore_unknown_fields;
   proto_writer_options.case_insensitive_enum_parsing =
       options.case_insensitive_enum_parsing;
-  converter::ProtoStreamObjectWriter proto_writer(resolver, type, &sink,
-                                                  &listener,
-                                                  proto_writer_options);
+  converter::ProtoStreamObjectWriter proto_writer(
+      resolver, type, &sink, &listener, proto_writer_options);
 
   converter::JsonStreamParser parser(&proto_writer);
   const void* buffer;
@@ -212,8 +211,8 @@ util::Status JsonToBinaryString(TypeResolver* resolver,
                                   const JsonParseOptions& options) {
   io::ArrayInputStream input_stream(json_input.data(), json_input.size());
   io::StringOutputStream output_stream(binary_output);
-  return JsonToBinaryStream(
-      resolver, type_url, &input_stream, &output_stream, options);
+  return JsonToBinaryStream(resolver, type_url, &input_stream, &output_stream,
+                            options);
 }
 
 namespace {
@@ -265,8 +264,8 @@ util::Status JsonStringToMessage(StringPiece input, Message* message,
           ? GetGeneratedTypeResolver()
           : NewTypeResolverForDescriptorPool(kTypeUrlPrefix, pool);
   std::string binary;
-  util::Status result = JsonToBinaryString(
-      resolver, GetTypeUrl(*message), input, &binary, options);
+  util::Status result = JsonToBinaryString(resolver, GetTypeUrl(*message),
+                                             input, &binary, options);
   if (result.ok() && !message->ParseFromString(binary)) {
     result =
         util::Status(util::error::INVALID_ARGUMENT,

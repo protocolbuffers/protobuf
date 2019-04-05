@@ -70,7 +70,7 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 
-class CodeGenerator;    // code_generator.h
+class CodeGenerator;  // code_generator.h
 class CodeGeneratorRequest;
 class CodeGeneratorResponse;
 

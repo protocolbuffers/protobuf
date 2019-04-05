@@ -44,6 +44,7 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import junit.framework.TestCase;
 
 /**
@@ -1194,5 +1195,60 @@ public class CodedInputStreamTest extends TestCase {
     } catch (InvalidProtocolBufferException e) {
       // Expected
     }
+  }
+  
+  public void testMaliciousInputStream() throws Exception {
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    CodedOutputStream codedOutputStream = CodedOutputStream.newInstance(outputStream);
+    codedOutputStream.writeByteArrayNoTag(new byte[] { 0x0, 0x1, 0x2, 0x3, 0x4, 0x5 });
+    codedOutputStream.flush();
+    final List<byte[]> maliciousCapture = new ArrayList<>();
+    InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray()) {
+      @Override
+      public synchronized int read(byte[] b, int off, int len) {
+        maliciousCapture.add(b);
+        return super.read(b, off, len);
+      }
+    };
+    
+    // test ByteString
+    
+    CodedInputStream codedInputStream = CodedInputStream.newInstance(inputStream, 1);
+    ByteString byteString = codedInputStream.readBytes();
+    assertEquals(0x0, byteString.byteAt(0));
+    maliciousCapture.get(1)[0] = 0x9;
+    assertEquals(0x0, byteString.byteAt(0));
+    
+    // test ByteBuffer
+    
+    inputStream.reset();
+    maliciousCapture.clear();
+    codedInputStream = CodedInputStream.newInstance(inputStream, 1);
+    ByteBuffer byteBuffer = codedInputStream.readByteBuffer();
+    assertEquals(0x0, byteBuffer.get(0));
+    maliciousCapture.get(1)[0] = 0x9;
+    assertEquals(0x0, byteBuffer.get(0));
+    
+
+    // test byte[]
+    
+    inputStream.reset();
+    maliciousCapture.clear();
+    codedInputStream = CodedInputStream.newInstance(inputStream, 1);
+    byte[] byteArray = codedInputStream.readByteArray();
+    assertEquals(0x0, byteArray[0]);
+    maliciousCapture.get(1)[0] = 0x9;
+    assertEquals(0x9, byteArray[0]); // MODIFICATION! Should we fix?
+
+    // test rawBytes
+    
+    inputStream.reset();
+    maliciousCapture.clear();
+    codedInputStream = CodedInputStream.newInstance(inputStream, 1);
+    int length = codedInputStream.readRawVarint32();
+    byteArray = codedInputStream.readRawBytes(length);
+    assertEquals(0x0, byteArray[0]);
+    maliciousCapture.get(1)[0] = 0x9;
+    assertEquals(0x9, byteArray[0]); // MODIFICATION! Should we fix?
   }
 }

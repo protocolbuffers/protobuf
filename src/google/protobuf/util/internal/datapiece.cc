@@ -47,9 +47,9 @@ namespace converter {
 ;
 ;
 ;
-using util::error::Code;
 using util::Status;
 using util::StatusOr;
+using util::error::Code;
 
 namespace {
 

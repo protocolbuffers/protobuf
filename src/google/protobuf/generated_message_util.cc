@@ -40,7 +40,7 @@
 // We're only using this as a standard way for getting the thread id.
 // We're not using any thread functionality.
 #include <thread>  // NOLINT
-#endif  // #ifndef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
+#endif             // #ifndef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
 
 #include <vector>
 
@@ -497,8 +497,8 @@ struct RepeatedFieldHelper<WireFormatLite::TYPE_MESSAGE> {
     for (int i = 0; i < AccessorHelper::Size(array); i++) {
       WriteTagTo(md.tag, output);
       SerializeMessageTo(
-          static_cast<const MessageLite*>(AccessorHelper::Get(array, i)), md.ptr,
-          output);
+          static_cast<const MessageLite*>(AccessorHelper::Get(array, i)),
+          md.ptr, output);
     }
   }
 };
@@ -663,8 +663,8 @@ void SerializeInternal(const uint8* base,
       case FieldMetadata::kSpecial:
         func = reinterpret_cast<SpecialSerializer>(
             const_cast<void*>(field_metadata.ptr));
-        func (base, field_metadata.offset, field_metadata.tag,
-            field_metadata.has_offset, output);
+        func(base, field_metadata.offset, field_metadata.tag,
+             field_metadata.has_offset, output);
         break;
       default:
         // __builtin_unreachable()
@@ -708,10 +708,10 @@ uint8* SerializeInternalToArray(const uint8* base,
         io::ArrayOutputStream array_stream(array_output.ptr, INT_MAX);
         io::CodedOutputStream output(&array_stream);
         output.SetSerializationDeterministic(is_deterministic);
-                func =  reinterpret_cast<SpecialSerializer>(
+        func = reinterpret_cast<SpecialSerializer>(
             const_cast<void*>(field_metadata.ptr));
-                func (base, field_metadata.offset, field_metadata.tag,
-            field_metadata.has_offset, &output);
+        func(base, field_metadata.offset, field_metadata.tag,
+             field_metadata.has_offset, &output);
         array_output.ptr += output.ByteCount();
       } break;
       default:
@@ -768,7 +768,8 @@ namespace {
 
 void InitSCC_DFS(SCCInfoBase* scc) {
   if (scc->visit_status.load(std::memory_order_relaxed) !=
-      SCCInfoBase::kUninitialized) return;
+      SCCInfoBase::kUninitialized)
+    return;
   scc->visit_status.store(SCCInfoBase::kRunning, std::memory_order_relaxed);
   // Each base is followed by an array of pointers to deps
   auto deps = reinterpret_cast<SCCInfoBase* const*>(scc + 1);

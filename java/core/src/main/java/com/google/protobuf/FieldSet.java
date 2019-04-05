@@ -218,6 +218,17 @@ final class FieldSet<
     return fields.entrySet().iterator();
   }
 
+  /**
+   * Get an iterator over the fields in the map in descending (i.e. reverse) order. This iterator
+   * should not be leaked out of the protobuf library as it is not protected from mutation when
+   * fields is not immutable.
+   */
+  Iterator<Map.Entry<FieldDescriptorType, Object>> descendingIterator() {
+    if (hasLazyField) {
+      return new LazyIterator<FieldDescriptorType>(fields.descendingEntrySet().iterator());
+    }
+    return fields.descendingEntrySet().iterator();
+  }
 
   /** Useful for implementing {@link Message#hasField(Descriptors.FieldDescriptor)}. */
   public boolean hasField(final FieldDescriptorType descriptor) {
