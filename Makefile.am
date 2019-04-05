@@ -329,7 +329,6 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/java/com/google/protobuf/LazyStringArrayListTest.java         \
   java/core/src/test/java/com/google/protobuf/LazyStringEndToEndTest.java          \
   java/core/src/test/java/com/google/protobuf/LiteEqualsAndHashTest.java           \
-  java/core/src/test/java/com/google/protobuf/LiteTest.java                        \
   java/core/src/test/java/com/google/protobuf/LiteralByteStringTest.java           \
   java/core/src/test/java/com/google/protobuf/LongArrayListTest.java               \
   java/core/src/test/java/com/google/protobuf/MapForProto2LiteTest.java            \
@@ -355,7 +354,6 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/java/com/google/protobuf/TextFormatParseLocationTest.java     \
   java/core/src/test/java/com/google/protobuf/TextFormatTest.java                  \
   java/core/src/test/java/com/google/protobuf/UnknownEnumValueTest.java            \
-  java/core/src/test/java/com/google/protobuf/UnknownFieldSetLiteTest.java         \
   java/core/src/test/java/com/google/protobuf/UnknownFieldSetTest.java             \
   java/core/src/test/java/com/google/protobuf/UnmodifiableLazyStringListTest.java  \
   java/core/src/test/java/com/google/protobuf/WellKnownTypesTest.java              \
