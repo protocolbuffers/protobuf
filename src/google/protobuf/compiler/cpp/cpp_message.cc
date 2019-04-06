@@ -246,7 +246,7 @@ bool HasPrivateHasMethod(const FieldDescriptor* field) {
 
 bool ShouldMarkClassAsFinal(const Descriptor* descriptor,
                             const Options& options) {
-  return true;
+  return false;
 }
 
 bool ShouldMarkClearAsFinal(const Descriptor* descriptor,
