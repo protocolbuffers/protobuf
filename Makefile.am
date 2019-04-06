@@ -471,6 +471,7 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/proto/com/google/protobuf/test_extra_interfaces.proto         \
   java/core/src/test/proto/com/google/protobuf/wrappers_test.proto                 \
   java/lite.md                                                                     \
+  java/lite/generate-sources-build.xml                                             \
   java/lite/generate-test-sources-build.xml                                        \
   java/lite/lite.awk                                                               \
   java/lite/pom.xml                                                                \
