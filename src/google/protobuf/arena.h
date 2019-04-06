@@ -72,8 +72,8 @@ struct ArenaOptions;  // defined below
 namespace google {
 namespace protobuf {
 
-class Arena;    // defined below
-class Message;  // defined in message.h
+class Arena;          // defined below
+class Message;        // defined in message.h
 class MessageLite;
 
 namespace arena_metrics {
@@ -84,8 +84,8 @@ void EnableArenaMetrics(ArenaOptions* options);
 
 namespace internal {
 
-struct ArenaStringPtr;  // defined in arenastring.h
-class LazyField;        // defined in lazy_field.h
+struct ArenaStringPtr;     // defined in arenastring.h
+class LazyField;           // defined in lazy_field.h
 
 template <typename Type>
 class GenericTypeHandler;  // defined in repeated_field.h
@@ -402,8 +402,8 @@ class PROTOBUF_EXPORT Arena final {
   // will be manually called when the arena is destroyed or reset. This differs
   // from OwnDestructor() in that any member function may be specified, not only
   // the class destructor.
-  PROTOBUF_NOINLINE void OwnCustomDestructor(void* object,
-                                             void (*destruct)(void*)) {
+  PROTOBUF_NOINLINE void OwnCustomDestructor(
+      void* object, void (*destruct)(void*)) {
     impl_.AddCleanup(object, destruct);
   }
 

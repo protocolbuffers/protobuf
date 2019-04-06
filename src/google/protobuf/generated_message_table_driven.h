@@ -114,6 +114,7 @@ struct PROTOBUF_EXPORT FieldMetadata {
   static int CalculateType(int fundamental_type, FieldTypeClass type_class);
 };
 
+
 // TODO(ckennelly):  Add a static assertion to ensure that these masks do not
 // conflict with wiretypes.
 
@@ -218,7 +219,7 @@ static_assert(std::is_pod<ParseTable>::value, "");
 bool MergePartialFromCodedStream(MessageLite* msg, const ParseTable& table,
                                  io::CodedInputStream* input);
 bool MergePartialFromCodedStreamLite(MessageLite* msg, const ParseTable& table,
-                                     io::CodedInputStream* input);
+                                 io::CodedInputStream* input);
 
 template <typename Entry>
 bool ParseMap(io::CodedInputStream* input, void* map_field) {

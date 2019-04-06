@@ -28,58 +28,77 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// Author: dweis@google.com (Daniel Weis)
-//  Based on original Protocol Buffers design by
-//  Sanjay Ghemawat, Jeff Dean, and others.
+// ThreadUnsafeSharedPtr<T> is the same as shared_ptr<T> without the locking
+// overhread (and thread-safety).
+#ifndef GOOGLE_PROTOBUF_PYTHON_CPP_THREAD_UNSAFE_SHARED_PTR_H__
+#define GOOGLE_PROTOBUF_PYTHON_CPP_THREAD_UNSAFE_SHARED_PTR_H__
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_MESSAGE_BUILDER_LITE_H__
-#define GOOGLE_PROTOBUF_COMPILER_JAVA_MESSAGE_BUILDER_LITE_H__
+#include <algorithm>
+#include <utility>
 
-#include <string>
-#include <map>
-#include <google/protobuf/compiler/java/java_field.h>
-
-namespace google {
-namespace protobuf {
-namespace compiler {
-namespace java {
-class Context;            // context.h
-class ClassNameResolver;  // name_resolver.h
-}  // namespace java
-}  // namespace compiler
-namespace io {
-class Printer;  // printer.h
-}
-}  // namespace protobuf
-}  // namespace google
+#include <google/protobuf/stubs/logging.h>
+#include <google/protobuf/stubs/common.h>
 
 namespace google {
 namespace protobuf {
-namespace compiler {
-namespace java {
+namespace python {
 
-class MessageBuilderLiteGenerator {
+template <typename T>
+class ThreadUnsafeSharedPtr {
  public:
-  explicit MessageBuilderLiteGenerator(const Descriptor* descriptor,
-                                       Context* context);
-  virtual ~MessageBuilderLiteGenerator();
+  // Takes ownership.
+  explicit ThreadUnsafeSharedPtr(T* ptr)
+      : ptr_(ptr), refcount_(ptr ? new RefcountT(1) : nullptr) {
+  }
 
-  virtual void Generate(io::Printer* printer);
+  ThreadUnsafeSharedPtr(const ThreadUnsafeSharedPtr& other)
+      : ThreadUnsafeSharedPtr(nullptr) {
+    *this = other;
+  }
+
+  ThreadUnsafeSharedPtr& operator=(const ThreadUnsafeSharedPtr& other) {
+    if (other.refcount_ == refcount_) {
+      return *this;
+    }
+    this->~ThreadUnsafeSharedPtr();
+    ptr_ = other.ptr_;
+    refcount_ = other.refcount_;
+    if (refcount_) {
+      ++*refcount_;
+    }
+    return *this;
+  }
+
+  ~ThreadUnsafeSharedPtr() {
+    if (refcount_ == nullptr) {
+      GOOGLE_DCHECK(ptr_ == nullptr);
+      return;
+    }
+    if (--*refcount_ == 0) {
+      delete refcount_;
+      delete ptr_;
+    }
+  }
+
+  void reset(T* ptr = nullptr) { *this = ThreadUnsafeSharedPtr(ptr); }
+
+  T* get() { return ptr_; }
+  const T* get() const { return ptr_; }
+
+  void swap(ThreadUnsafeSharedPtr& other) {
+    using std::swap;
+    swap(ptr_, other.ptr_);
+    swap(refcount_, other.refcount_);
+  }
 
  private:
-  void GenerateCommonBuilderMethods(io::Printer* printer);
-
-  const Descriptor* descriptor_;
-  Context* context_;
-  ClassNameResolver* name_resolver_;
-  FieldGeneratorMap<ImmutableFieldLiteGenerator> field_generators_;
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MessageBuilderLiteGenerator);
+  typedef int RefcountT;
+  T* ptr_;
+  RefcountT* refcount_;
 };
 
-}  // namespace java
-}  // namespace compiler
+}  // namespace python
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_MESSAGE_BUILDER_LITE_H__
+#endif  // GOOGLE_PROTOBUF_PYTHON_CPP_THREAD_UNSAFE_SHARED_PTR_H__

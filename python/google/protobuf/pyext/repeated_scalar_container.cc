@@ -63,8 +63,8 @@ namespace repeated_scalar_container {
 
 static int InternalAssignRepeatedField(
     RepeatedScalarContainer* self, PyObject* list) {
-  Message* message = self->parent->message;
-  message->GetReflection()->ClearField(message, self->parent_field_descriptor);
+  self->message->GetReflection()->ClearField(self->message,
+                                             self->parent_field_descriptor);
   for (Py_ssize_t i = 0; i < PyList_GET_SIZE(list); ++i) {
     PyObject* value = PyList_GET_ITEM(list, i);
     if (ScopedPyObjectPtr(Append(self, value)) == NULL) {
@@ -77,7 +77,7 @@ static int InternalAssignRepeatedField(
 static Py_ssize_t Len(PyObject* pself) {
   RepeatedScalarContainer* self =
       reinterpret_cast<RepeatedScalarContainer*>(pself);
-  Message* message = self->parent->message;
+  Message* message = self->message;
   return message->GetReflection()->FieldSize(*message,
                                              self->parent_field_descriptor);
 }
@@ -87,7 +87,7 @@ static int AssignItem(PyObject* pself, Py_ssize_t index, PyObject* arg) {
       reinterpret_cast<RepeatedScalarContainer*>(pself);
 
   cmessage::AssureWritable(self->parent);
-  Message* message = self->parent->message;
+  Message* message = self->message;
   const FieldDescriptor* field_descriptor = self->parent_field_descriptor;
 
   const Reflection* reflection = message->GetReflection();
@@ -104,8 +104,9 @@ static int AssignItem(PyObject* pself, Py_ssize_t index, PyObject* arg) {
 
   if (arg == NULL) {
     ScopedPyObjectPtr py_index(PyLong_FromLong(index));
-    return cmessage::DeleteRepeatedField(self->parent, field_descriptor,
-                                         py_index.get());
+    return cmessage::InternalDeleteRepeatedField(self->message,
+                                                 field_descriptor,
+                                                 py_index.get(), NULL);
   }
 
   if (PySequence_Check(arg) && !(PyBytes_Check(arg) || PyUnicode_Check(arg))) {
@@ -192,7 +193,7 @@ static PyObject* Item(PyObject* pself, Py_ssize_t index) {
   RepeatedScalarContainer* self =
       reinterpret_cast<RepeatedScalarContainer*>(pself);
 
-  Message* message = self->parent->message;
+  Message* message = self->message;
   const FieldDescriptor* field_descriptor = self->parent_field_descriptor;
   const Reflection* reflection = message->GetReflection();
 
@@ -342,7 +343,7 @@ static PyObject* Subscript(PyObject* pself, PyObject* slice) {
 
 PyObject* Append(RepeatedScalarContainer* self, PyObject* item) {
   cmessage::AssureWritable(self->parent);
-  Message* message = self->parent->message;
+  Message* message = self->message;
   const FieldDescriptor* field_descriptor = self->parent_field_descriptor;
 
   const Reflection* reflection = message->GetReflection();
@@ -436,7 +437,7 @@ static int AssSubscript(PyObject* pself, PyObject* slice, PyObject* value) {
   bool create_list = false;
 
   cmessage::AssureWritable(self->parent);
-  Message* message = self->parent->message;
+  Message* message = self->message;
   const FieldDescriptor* field_descriptor =
       self->parent_field_descriptor;
 
@@ -466,7 +467,8 @@ static int AssSubscript(PyObject* pself, PyObject* slice, PyObject* value) {
   }
 
   if (value == NULL) {
-    return cmessage::DeleteRepeatedField(self->parent, field_descriptor, slice);
+    return cmessage::InternalDeleteRepeatedField(
+        self->message, field_descriptor, slice, nullptr);
   }
 
   if (!create_list) {
@@ -667,7 +669,7 @@ static PyObject* MergeFrom(PyObject* pself, PyObject* arg) {
 }
 
 // The private constructor of RepeatedScalarContainer objects.
-RepeatedScalarContainer* NewContainer(
+PyObject *NewContainer(
     CMessage* parent, const FieldDescriptor* parent_field_descriptor) {
   if (!CheckFieldBelongsToMessage(parent_field_descriptor, parent->message)) {
     return NULL;
@@ -679,20 +681,72 @@ RepeatedScalarContainer* NewContainer(
     return NULL;
   }
 
-  Py_INCREF(parent);
+  self->message = parent->message;
   self->parent = parent;
   self->parent_field_descriptor = parent_field_descriptor;
+  self->owner = parent->owner;
 
-  return self;
+  return reinterpret_cast<PyObject*>(self);
+}
+
+// Initializes the underlying Message object of "to" so it becomes a new parent
+// repeated scalar, and copies all the values from "from" to it. A child scalar
+// container can be released by passing it as both from and to (e.g. making it
+// the recipient of the new parent message and copying the values from itself).
+static int InitializeAndCopyToParentContainer(
+    RepeatedScalarContainer* from,
+    RepeatedScalarContainer* to) {
+  ScopedPyObjectPtr full_slice(PySlice_New(NULL, NULL, NULL));
+  if (full_slice == NULL) {
+    return -1;
+  }
+  ScopedPyObjectPtr values(
+      Subscript(reinterpret_cast<PyObject*>(from), full_slice.get()));
+  if (values == NULL) {
+    return -1;
+  }
+  Message* new_message = from->message->New();
+  to->parent = NULL;
+  to->parent_field_descriptor = from->parent_field_descriptor;
+  to->message = new_message;
+  to->owner.reset(new_message);
+  if (InternalAssignRepeatedField(to, values.get()) < 0) {
+    return -1;
+  }
+  return 0;
+}
+
+int Release(RepeatedScalarContainer* self) {
+  return InitializeAndCopyToParentContainer(self, self);
 }
 
 PyObject* DeepCopy(PyObject* pself, PyObject* arg) {
-  return reinterpret_cast<RepeatedScalarContainer*>(pself)->DeepCopy();
+  RepeatedScalarContainer* self =
+      reinterpret_cast<RepeatedScalarContainer*>(pself);
+
+  RepeatedScalarContainer* clone = reinterpret_cast<RepeatedScalarContainer*>(
+      PyType_GenericAlloc(&RepeatedScalarContainer_Type, 0));
+  if (clone == NULL) {
+    return NULL;
+  }
+
+  if (InitializeAndCopyToParentContainer(self, clone) < 0) {
+    Py_DECREF(clone);
+    return NULL;
+  }
+  return reinterpret_cast<PyObject*>(clone);
 }
 
 static void Dealloc(PyObject* pself) {
-  reinterpret_cast<RepeatedScalarContainer*>(pself)->RemoveFromParentCache();
-  Py_TYPE(pself)->tp_free(pself);
+  RepeatedScalarContainer* self =
+      reinterpret_cast<RepeatedScalarContainer*>(pself);
+  self->owner.reset();
+  Py_TYPE(self)->tp_free(pself);
+}
+
+void SetOwner(RepeatedScalarContainer* self,
+              const CMessage::OwnerRef& new_owner) {
+  self->owner = new_owner;
 }
 
 static PySequenceMethods SqMethods = {

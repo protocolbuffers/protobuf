@@ -86,45 +86,45 @@ namespace {
 // TODO(kenton):  gTest now supports "parameterized tests" which would be
 //   a better way to accomplish this.  Rewrite when time permits.
 
-#define TEST_1D(FIXTURE, NAME, CASES)                             \
-  class FIXTURE##_##NAME##_DD : public FIXTURE {                  \
-   protected:                                                     \
-    template <typename CaseType>                                  \
-    void DoSingleCase(const CaseType& CASES##_case);              \
-  };                                                              \
-                                                                  \
-  TEST_F(FIXTURE##_##NAME##_DD, NAME) {                           \
-    for (int i = 0; i < GOOGLE_ARRAYSIZE(CASES); i++) {                  \
-      SCOPED_TRACE(testing::Message()                             \
-                   << #CASES " case #" << i << ": " << CASES[i]); \
-      DoSingleCase(CASES[i]);                                     \
-    }                                                             \
-  }                                                               \
-                                                                  \
-  template <typename CaseType>                                    \
+#define TEST_1D(FIXTURE, NAME, CASES)                                      \
+  class FIXTURE##_##NAME##_DD : public FIXTURE {                           \
+   protected:                                                              \
+    template <typename CaseType>                                           \
+    void DoSingleCase(const CaseType& CASES##_case);                       \
+  };                                                                       \
+                                                                           \
+  TEST_F(FIXTURE##_##NAME##_DD, NAME) {                                    \
+    for (int i = 0; i < GOOGLE_ARRAYSIZE(CASES); i++) {                           \
+      SCOPED_TRACE(testing::Message()                                      \
+        << #CASES " case #" << i << ": " << CASES[i]);                     \
+      DoSingleCase(CASES[i]);                                              \
+    }                                                                      \
+  }                                                                        \
+                                                                           \
+  template <typename CaseType>                                             \
   void FIXTURE##_##NAME##_DD::DoSingleCase(const CaseType& CASES##_case)
 
-#define TEST_2D(FIXTURE, NAME, CASES1, CASES2)                              \
-  class FIXTURE##_##NAME##_DD : public FIXTURE {                            \
-   protected:                                                               \
-    template <typename CaseType1, typename CaseType2>                       \
-    void DoSingleCase(const CaseType1& CASES1##_case,                       \
-                      const CaseType2& CASES2##_case);                      \
-  };                                                                        \
-                                                                            \
-  TEST_F(FIXTURE##_##NAME##_DD, NAME) {                                     \
-    for (int i = 0; i < GOOGLE_ARRAYSIZE(CASES1); i++) {                           \
-      for (int j = 0; j < GOOGLE_ARRAYSIZE(CASES2); j++) {                         \
-        SCOPED_TRACE(testing::Message()                                     \
-                     << #CASES1 " case #" << i << ": " << CASES1[i] << ", " \
-                     << #CASES2 " case #" << j << ": " << CASES2[j]);       \
-        DoSingleCase(CASES1[i], CASES2[j]);                                 \
-      }                                                                     \
-    }                                                                       \
-  }                                                                         \
-                                                                            \
-  template <typename CaseType1, typename CaseType2>                         \
-  void FIXTURE##_##NAME##_DD::DoSingleCase(const CaseType1& CASES1##_case,  \
+#define TEST_2D(FIXTURE, NAME, CASES1, CASES2)                             \
+  class FIXTURE##_##NAME##_DD : public FIXTURE {                           \
+   protected:                                                              \
+    template <typename CaseType1, typename CaseType2>                      \
+    void DoSingleCase(const CaseType1& CASES1##_case,                      \
+                      const CaseType2& CASES2##_case);                     \
+  };                                                                       \
+                                                                           \
+  TEST_F(FIXTURE##_##NAME##_DD, NAME) {                                    \
+    for (int i = 0; i < GOOGLE_ARRAYSIZE(CASES1); i++) {                          \
+      for (int j = 0; j < GOOGLE_ARRAYSIZE(CASES2); j++) {                        \
+        SCOPED_TRACE(testing::Message()                                    \
+          << #CASES1 " case #" << i << ": " << CASES1[i] << ", "           \
+          << #CASES2 " case #" << j << ": " << CASES2[j]);                 \
+        DoSingleCase(CASES1[i], CASES2[j]);                                \
+      }                                                                    \
+    }                                                                      \
+  }                                                                        \
+                                                                           \
+  template <typename CaseType1, typename CaseType2>                        \
+  void FIXTURE##_##NAME##_DD::DoSingleCase(const CaseType1& CASES1##_case, \
                                            const CaseType2& CASES2##_case)
 
 // ===================================================================
@@ -157,9 +157,9 @@ const int kBlockSizes[] = {1, 2, 3, 5, 7, 13, 32, 1024};
 // Varint tests.
 
 struct VarintCase {
-  uint8 bytes[10];  // Encoded bytes.
-  int size;         // Encoded size, in bytes.
-  uint64 value;     // Parsed value.
+  uint8 bytes[10];          // Encoded bytes.
+  int size;                 // Encoded size, in bytes.
+  uint64 value;             // Parsed value.
 };
 
 inline std::ostream& operator<<(std::ostream& os, const VarintCase& c) {
@@ -167,32 +167,28 @@ inline std::ostream& operator<<(std::ostream& os, const VarintCase& c) {
 }
 
 VarintCase kVarintCases[] = {
-    // 32-bit values
-    {{0x00}, 1, 0},
-    {{0x01}, 1, 1},
-    {{0x7f}, 1, 127},
-    {{0xa2, 0x74}, 2, (0x22 << 0) | (0x74 << 7)},  // 14882
-    {{0xbe, 0xf7, 0x92, 0x84, 0x0b},
-     5,  // 2961488830
-     (0x3e << 0) | (0x77 << 7) | (0x12 << 14) | (0x04 << 21) |
-         (ULL(0x0b) << 28)},
+  // 32-bit values
+  {{0x00}      , 1, 0},
+  {{0x01}      , 1, 1},
+  {{0x7f}      , 1, 127},
+  {{0xa2, 0x74}, 2, (0x22 << 0) | (0x74 << 7)},          // 14882
+  {{0xbe, 0xf7, 0x92, 0x84, 0x0b}, 5,                    // 2961488830
+    (0x3e << 0) | (0x77 << 7) | (0x12 << 14) | (0x04 << 21) |
+    (ULL(0x0b) << 28)},
 
-    // 64-bit
-    {{0xbe, 0xf7, 0x92, 0x84, 0x1b},
-     5,  // 7256456126
-     (0x3e << 0) | (0x77 << 7) | (0x12 << 14) | (0x04 << 21) |
-         (ULL(0x1b) << 28)},
-    {{0x80, 0xe6, 0xeb, 0x9c, 0xc3, 0xc9, 0xa4, 0x49},
-     8,  // 41256202580718336
-     (0x00 << 0) | (0x66 << 7) | (0x6b << 14) | (0x1c << 21) |
-         (ULL(0x43) << 28) | (ULL(0x49) << 35) | (ULL(0x24) << 42) |
-         (ULL(0x49) << 49)},
-    // 11964378330978735131
-    {{0x9b, 0xa8, 0xf9, 0xc2, 0xbb, 0xd6, 0x80, 0x85, 0xa6, 0x01},
-     10,
-     (0x1b << 0) | (0x28 << 7) | (0x79 << 14) | (0x42 << 21) |
-         (ULL(0x3b) << 28) | (ULL(0x56) << 35) | (ULL(0x00) << 42) |
-         (ULL(0x05) << 49) | (ULL(0x26) << 56) | (ULL(0x01) << 63)},
+  // 64-bit
+  {{0xbe, 0xf7, 0x92, 0x84, 0x1b}, 5,                    // 7256456126
+    (0x3e << 0) | (0x77 << 7) | (0x12 << 14) | (0x04 << 21) |
+    (ULL(0x1b) << 28)},
+  {{0x80, 0xe6, 0xeb, 0x9c, 0xc3, 0xc9, 0xa4, 0x49}, 8,  // 41256202580718336
+    (0x00 << 0) | (0x66 << 7) | (0x6b << 14) | (0x1c << 21) |
+    (ULL(0x43) << 28) | (ULL(0x49) << 35) | (ULL(0x24) << 42) |
+    (ULL(0x49) << 49)},
+  // 11964378330978735131
+  {{0x9b, 0xa8, 0xf9, 0xc2, 0xbb, 0xd6, 0x80, 0x85, 0xa6, 0x01}, 10,
+    (0x1b << 0) | (0x28 << 7) | (0x79 << 14) | (0x42 << 21) |
+    (ULL(0x3b) << 28) | (ULL(0x56) << 35) | (ULL(0x00) << 42) |
+    (ULL(0x05) << 49) | (ULL(0x26) << 56) | (ULL(0x01) << 63)},
 };
 
 TEST_2D(CodedStreamTest, ReadVarint32, kVarintCases, kBlockSizes) {
@@ -233,14 +229,15 @@ TEST_F(CodedStreamTest, EmptyInputBeforeEos) {
   class In : public ZeroCopyInputStream {
    public:
     In() : count_(0) {}
-
    private:
     virtual bool Next(const void** data, int* size) {
       *data = NULL;
       *size = 0;
       return count_++ < 2;
     }
-    virtual void BackUp(int count) { GOOGLE_LOG(FATAL) << "Tests never call this."; }
+    virtual void BackUp(int count)  {
+      GOOGLE_LOG(FATAL) << "Tests never call this.";
+    }
     virtual bool Skip(int count) {
       GOOGLE_LOG(FATAL) << "Tests never call this.";
       return false;
@@ -294,8 +291,9 @@ TEST_1D(CodedStreamTest, ExpectTagFromArray, kVarintCases) {
 
   // If the expectation succeeds, it should return a pointer past the tag.
   if (kVarintCases_case.size <= 2) {
-    EXPECT_TRUE(NULL == CodedInputStream::ExpectTagFromArray(
-                            buffer_, expected_value + 1));
+    EXPECT_TRUE(NULL ==
+                CodedInputStream::ExpectTagFromArray(buffer_,
+                                                     expected_value + 1));
     EXPECT_TRUE(buffer_ + kVarintCases_case.size ==
                 CodedInputStream::ExpectTagFromArray(buffer_, expected_value));
   } else {
@@ -338,7 +336,7 @@ TEST_2D(CodedStreamTest, WriteVarint32, kVarintCases, kBlockSizes) {
 
   EXPECT_EQ(kVarintCases_case.size, output.ByteCount());
   EXPECT_EQ(0,
-            memcmp(buffer_, kVarintCases_case.bytes, kVarintCases_case.size));
+    memcmp(buffer_, kVarintCases_case.bytes, kVarintCases_case.size));
 }
 
 TEST_2D(CodedStreamTest, WriteVarint64, kVarintCases, kBlockSizes) {
@@ -355,17 +353,19 @@ TEST_2D(CodedStreamTest, WriteVarint64, kVarintCases, kBlockSizes) {
 
   EXPECT_EQ(kVarintCases_case.size, output.ByteCount());
   EXPECT_EQ(0,
-            memcmp(buffer_, kVarintCases_case.bytes, kVarintCases_case.size));
+    memcmp(buffer_, kVarintCases_case.bytes, kVarintCases_case.size));
 }
 
 // This test causes gcc 3.3.5 (and earlier?) to give the cryptic error:
 //   "sorry, unimplemented: `method_call_expr' not supported by dump_expr"
 #if !defined(__GNUC__) || __GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ > 3)
 
-int32 kSignExtendedVarintCases[] = {0, 1, -1, 1237894, -37895138};
+int32 kSignExtendedVarintCases[] = {
+  0, 1, -1, 1237894, -37895138
+};
 
-TEST_2D(CodedStreamTest, WriteVarint32SignExtended, kSignExtendedVarintCases,
-        kBlockSizes) {
+TEST_2D(CodedStreamTest, WriteVarint32SignExtended,
+        kSignExtendedVarintCases, kBlockSizes) {
   ArrayOutputStream output(buffer_, sizeof(buffer_), kBlockSizes_case);
 
   {
@@ -419,23 +419,22 @@ inline std::ostream& operator<<(std::ostream& os, const VarintErrorCase& c) {
 }
 
 const VarintErrorCase kVarintErrorCases[] = {
-    // Control case.  (Insures that there isn't something else wrong that
-    // makes parsing always fail.)
-    {{0x00}, 1, true},
+  // Control case.  (Insures that there isn't something else wrong that
+  // makes parsing always fail.)
+  {{0x00}, 1, true},
 
-    // No input data.
-    {{}, 0, false},
+  // No input data.
+  {{}, 0, false},
 
-    // Input ends unexpectedly.
-    {{0xf0, 0xab}, 2, false},
+  // Input ends unexpectedly.
+  {{0xf0, 0xab}, 2, false},
 
-    // Input ends unexpectedly after 32 bits.
-    {{0xf0, 0xab, 0xc9, 0x9a, 0xf8, 0xb2}, 6, false},
+  // Input ends unexpectedly after 32 bits.
+  {{0xf0, 0xab, 0xc9, 0x9a, 0xf8, 0xb2}, 6, false},
 
-    // Longer than 10 bytes.
-    {{0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x01},
-     11,
-     false},
+  // Longer than 10 bytes.
+  {{0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x01},
+   11, false},
 };
 
 TEST_2D(CodedStreamTest, ReadVarint32Error, kVarintErrorCases, kBlockSizes) {
@@ -501,14 +500,14 @@ inline std::ostream& operator<<(std::ostream& os, const VarintSizeCase& c) {
 }
 
 VarintSizeCase kVarintSizeCases[] = {
-    {0u, 1},
-    {1u, 1},
-    {127u, 1},
-    {128u, 2},
-    {758923u, 3},
-    {4000000000u, 5},
-    {ULL(41256202580718336), 8},
-    {ULL(11964378330978735131), 10},
+  {0u, 1},
+  {1u, 1},
+  {127u, 1},
+  {128u, 2},
+  {758923u, 3},
+  {4000000000u, 5},
+  {ULL(41256202580718336), 8},
+  {ULL(11964378330978735131), 10},
 };
 
 TEST_1D(CodedStreamTest, VarintSize32, kVarintSizeCases) {
@@ -518,13 +517,13 @@ TEST_1D(CodedStreamTest, VarintSize32, kVarintSizeCases) {
   }
 
   EXPECT_EQ(kVarintSizeCases_case.size,
-            CodedOutputStream::VarintSize32(
-                static_cast<uint32>(kVarintSizeCases_case.value)));
+    CodedOutputStream::VarintSize32(
+      static_cast<uint32>(kVarintSizeCases_case.value)));
 }
 
 TEST_1D(CodedStreamTest, VarintSize64, kVarintSizeCases) {
   EXPECT_EQ(kVarintSizeCases_case.size,
-            CodedOutputStream::VarintSize64(kVarintSizeCases_case.value));
+    CodedOutputStream::VarintSize64(kVarintSizeCases_case.value));
 }
 
 TEST_F(CodedStreamTest, VarintSize32PowersOfTwo) {
@@ -553,13 +552,13 @@ TEST_F(CodedStreamTest, VarintSize64PowersOfTwo) {
 // Fixed-size int tests
 
 struct Fixed32Case {
-  uint8 bytes[sizeof(uint32)];  // Encoded bytes.
-  uint32 value;                 // Parsed value.
+  uint8 bytes[sizeof(uint32)];          // Encoded bytes.
+  uint32 value;                         // Parsed value.
 };
 
 struct Fixed64Case {
-  uint8 bytes[sizeof(uint64)];  // Encoded bytes.
-  uint64 value;                 // Parsed value.
+  uint8 bytes[sizeof(uint64)];          // Encoded bytes.
+  uint64 value;                         // Parsed value.
 };
 
 inline std::ostream& operator<<(std::ostream& os, const Fixed32Case& c) {
@@ -571,13 +570,13 @@ inline std::ostream& operator<<(std::ostream& os, const Fixed64Case& c) {
 }
 
 Fixed32Case kFixed32Cases[] = {
-    {{0xef, 0xcd, 0xab, 0x90}, 0x90abcdefu},
-    {{0x12, 0x34, 0x56, 0x78}, 0x78563412u},
+  {{0xef, 0xcd, 0xab, 0x90}, 0x90abcdefu},
+  {{0x12, 0x34, 0x56, 0x78}, 0x78563412u},
 };
 
 Fixed64Case kFixed64Cases[] = {
-    {{0xef, 0xcd, 0xab, 0x90, 0x12, 0x34, 0x56, 0x78}, ULL(0x7856341290abcdef)},
-    {{0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88}, ULL(0x8877665544332211)},
+  {{0xef, 0xcd, 0xab, 0x90, 0x12, 0x34, 0x56, 0x78}, ULL(0x7856341290abcdef)},
+  {{0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88}, ULL(0x8877665544332211)},
 };
 
 TEST_2D(CodedStreamTest, ReadLittleEndian32, kFixed32Cases, kBlockSizes) {
@@ -648,8 +647,8 @@ TEST_1D(CodedStreamTest, ReadLittleEndian32FromArray, kFixed32Cases) {
   memcpy(buffer_, kFixed32Cases_case.bytes, sizeof(kFixed32Cases_case.bytes));
 
   uint32 value;
-  const uint8* end =
-      CodedInputStream::ReadLittleEndian32FromArray(buffer_, &value);
+  const uint8* end = CodedInputStream::ReadLittleEndian32FromArray(
+      buffer_, &value);
   EXPECT_EQ(kFixed32Cases_case.value, value);
   EXPECT_TRUE(end == buffer_ + sizeof(value));
 }
@@ -658,8 +657,8 @@ TEST_1D(CodedStreamTest, ReadLittleEndian64FromArray, kFixed64Cases) {
   memcpy(buffer_, kFixed64Cases_case.bytes, sizeof(kFixed64Cases_case.bytes));
 
   uint64 value;
-  const uint8* end =
-      CodedInputStream::ReadLittleEndian64FromArray(buffer_, &value);
+  const uint8* end = CodedInputStream::ReadLittleEndian64FromArray(
+      buffer_, &value);
   EXPECT_EQ(kFixed64Cases_case.value, value);
   EXPECT_TRUE(end == buffer_ + sizeof(value));
 }
@@ -934,7 +933,7 @@ TEST_F(CodedStreamTest,
 // Skip
 
 const char kSkipTestBytes[] =
-    "<Before skipping><To be skipped><After skipping>";
+  "<Before skipping><To be skipped><After skipping>";
 
 TEST_1D(CodedStreamTest, SkipInput, kBlockSizes) {
   memcpy(buffer_, kSkipTestBytes, sizeof(kSkipTestBytes));
@@ -1241,8 +1240,7 @@ TEST_F(CodedStreamTest, TotalBytesLimit) {
 
   ASSERT_EQ(1, errors.size());
   EXPECT_PRED_FORMAT2(testing::IsSubstring,
-                      "A protocol message was rejected because it was too big",
-                      errors[0]);
+    "A protocol message was rejected because it was too big", errors[0]);
 
   coded_input.SetTotalBytesLimit(32, -1);
   EXPECT_EQ(16, coded_input.BytesUntilTotalBytesLimit());
@@ -1306,35 +1304,35 @@ TEST_F(CodedStreamTest, RecursionLimit) {
   coded_input.SetRecursionLimit(4);
 
   // This is way too much testing for a counter.
-  EXPECT_TRUE(coded_input.IncrementRecursionDepth());   // 1
-  EXPECT_TRUE(coded_input.IncrementRecursionDepth());   // 2
-  EXPECT_TRUE(coded_input.IncrementRecursionDepth());   // 3
-  EXPECT_TRUE(coded_input.IncrementRecursionDepth());   // 4
-  EXPECT_FALSE(coded_input.IncrementRecursionDepth());  // 5
-  EXPECT_FALSE(coded_input.IncrementRecursionDepth());  // 6
-  coded_input.DecrementRecursionDepth();                // 5
-  EXPECT_FALSE(coded_input.IncrementRecursionDepth());  // 6
-  coded_input.DecrementRecursionDepth();                // 5
-  coded_input.DecrementRecursionDepth();                // 4
-  coded_input.DecrementRecursionDepth();                // 3
-  EXPECT_TRUE(coded_input.IncrementRecursionDepth());   // 4
-  EXPECT_FALSE(coded_input.IncrementRecursionDepth());  // 5
-  coded_input.DecrementRecursionDepth();                // 4
-  coded_input.DecrementRecursionDepth();                // 3
-  coded_input.DecrementRecursionDepth();                // 2
-  coded_input.DecrementRecursionDepth();                // 1
-  coded_input.DecrementRecursionDepth();                // 0
-  coded_input.DecrementRecursionDepth();                // 0
-  coded_input.DecrementRecursionDepth();                // 0
-  EXPECT_TRUE(coded_input.IncrementRecursionDepth());   // 1
-  EXPECT_TRUE(coded_input.IncrementRecursionDepth());   // 2
-  EXPECT_TRUE(coded_input.IncrementRecursionDepth());   // 3
-  EXPECT_TRUE(coded_input.IncrementRecursionDepth());   // 4
-  EXPECT_FALSE(coded_input.IncrementRecursionDepth());  // 5
+  EXPECT_TRUE(coded_input.IncrementRecursionDepth());      // 1
+  EXPECT_TRUE(coded_input.IncrementRecursionDepth());      // 2
+  EXPECT_TRUE(coded_input.IncrementRecursionDepth());      // 3
+  EXPECT_TRUE(coded_input.IncrementRecursionDepth());      // 4
+  EXPECT_FALSE(coded_input.IncrementRecursionDepth());     // 5
+  EXPECT_FALSE(coded_input.IncrementRecursionDepth());     // 6
+  coded_input.DecrementRecursionDepth();                   // 5
+  EXPECT_FALSE(coded_input.IncrementRecursionDepth());     // 6
+  coded_input.DecrementRecursionDepth();                   // 5
+  coded_input.DecrementRecursionDepth();                   // 4
+  coded_input.DecrementRecursionDepth();                   // 3
+  EXPECT_TRUE(coded_input.IncrementRecursionDepth());      // 4
+  EXPECT_FALSE(coded_input.IncrementRecursionDepth());     // 5
+  coded_input.DecrementRecursionDepth();                   // 4
+  coded_input.DecrementRecursionDepth();                   // 3
+  coded_input.DecrementRecursionDepth();                   // 2
+  coded_input.DecrementRecursionDepth();                   // 1
+  coded_input.DecrementRecursionDepth();                   // 0
+  coded_input.DecrementRecursionDepth();                   // 0
+  coded_input.DecrementRecursionDepth();                   // 0
+  EXPECT_TRUE(coded_input.IncrementRecursionDepth());      // 1
+  EXPECT_TRUE(coded_input.IncrementRecursionDepth());      // 2
+  EXPECT_TRUE(coded_input.IncrementRecursionDepth());      // 3
+  EXPECT_TRUE(coded_input.IncrementRecursionDepth());      // 4
+  EXPECT_FALSE(coded_input.IncrementRecursionDepth());     // 5
 
   coded_input.SetRecursionLimit(6);
-  EXPECT_TRUE(coded_input.IncrementRecursionDepth());   // 6
-  EXPECT_FALSE(coded_input.IncrementRecursionDepth());  // 7
+  EXPECT_TRUE(coded_input.IncrementRecursionDepth());      // 6
+  EXPECT_FALSE(coded_input.IncrementRecursionDepth());     // 7
 }
 
 
@@ -1366,16 +1364,12 @@ class ReallyBigInputStream : public ZeroCopyInputStream {
     }
   }
 
-  void BackUp(int count) { backup_amount_ = count; }
+  void BackUp(int count) {
+    backup_amount_ = count;
+  }
 
-  bool Skip(int count) {
-    GOOGLE_LOG(FATAL) << "Not implemented.";
-    return false;
-  }
-  int64 ByteCount() const {
-    GOOGLE_LOG(FATAL) << "Not implemented.";
-    return 0;
-  }
+  bool Skip(int count)    { GOOGLE_LOG(FATAL) << "Not implemented."; return false; }
+  int64 ByteCount() const { GOOGLE_LOG(FATAL) << "Not implemented."; return 0; }
 
   int backup_amount_;
 

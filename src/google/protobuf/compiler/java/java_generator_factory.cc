@@ -52,8 +52,9 @@ GeneratorFactory::~GeneratorFactory() {}
 
 // ===================================================================
 
-ImmutableGeneratorFactory::ImmutableGeneratorFactory(Context* context)
-    : context_(context) {}
+ImmutableGeneratorFactory::ImmutableGeneratorFactory(
+    Context* context) : context_(context) {
+}
 ImmutableGeneratorFactory::~ImmutableGeneratorFactory() {}
 
 MessageGenerator* ImmutableGeneratorFactory::NewMessageGenerator(

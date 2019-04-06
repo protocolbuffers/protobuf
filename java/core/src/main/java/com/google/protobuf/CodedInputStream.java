@@ -72,9 +72,6 @@ public abstract class CodedInputStream {
   /** Visible for subclasses. See setSizeLimit() */
   int sizeLimit = DEFAULT_SIZE_LIMIT;
 
-  /** Used to adapt to the experimental {@link Reader} interface. */
-  CodedInputStreamReader wrapper;
-
   /** Create a new CodedInputStream wrapping the given InputStream. */
   public static CodedInputStream newInstance(final InputStream input) {
     return newInstance(input, DEFAULT_BUFFER_SIZE);
@@ -2266,7 +2263,7 @@ public abstract class CodedInputStream {
         return result;
       }
       // Slow path:  Build a byte array first then copy it.
-      return new String(readRawBytesSlowPath(size, /* ensureNoLeakedReferences= */ false), UTF_8);
+      return new String(readRawBytesSlowPath(size), UTF_8);
     }
 
     @Override
@@ -2290,7 +2287,7 @@ public abstract class CodedInputStream {
         pos = tempPos + size;
       } else {
         // Slow path:  Build a byte array first then copy it.
-        bytes = readRawBytesSlowPath(size, /* ensureNoLeakedReferences= */ false);
+        bytes = readRawBytesSlowPath(size);
         tempPos = 0;
       }
       return Utf8.decodeUtf8(bytes, tempPos, size);
@@ -2395,8 +2392,7 @@ public abstract class CodedInputStream {
         return result;
       } else {
         // Slow path: Build a byte array first then copy it.
-        // TODO(dweis): Do we want to protect from malicious input streams here?
-        return readRawBytesSlowPath(size, /* ensureNoLeakedReferences= */ false);
+        return readRawBytesSlowPath(size);
       }
     }
 
@@ -2413,10 +2409,7 @@ public abstract class CodedInputStream {
         return Internal.EMPTY_BYTE_BUFFER;
       }
       // Slow path: Build a byte array first then copy it.
-      
-      // We must copy as the byte array was handed off to the InputStream and a malicious
-      // implementation could retain a reference.
-      return ByteBuffer.wrap(readRawBytesSlowPath(size, /* ensureNoLeakedReferences= */ true));
+      return ByteBuffer.wrap(readRawBytesSlowPath(size));
     }
 
     @Override
@@ -2819,24 +2812,19 @@ public abstract class CodedInputStream {
         pos = tempPos + size;
         return Arrays.copyOfRange(buffer, tempPos, tempPos + size);
       } else {
-        // TODO(dweis): Do we want to protect from malicious input streams here?
-        return readRawBytesSlowPath(size, /* ensureNoLeakedReferences= */ false);
+        return readRawBytesSlowPath(size);
       }
     }
 
     /**
      * Exactly like readRawBytes, but caller must have already checked the fast path: (size <=
      * (bufferSize - pos) && size > 0)
-     * 
-     * If ensureNoLeakedReferences is true, the value is guaranteed to have not escaped to
-     * untrusted code.
      */
-    private byte[] readRawBytesSlowPath(
-        final int size, boolean ensureNoLeakedReferences) throws IOException {
+    private byte[] readRawBytesSlowPath(final int size) throws IOException {
       // Attempt to read the data in one byte array when it's safe to do.
       byte[] result = readRawBytesSlowPathOneChunk(size);
       if (result != null) {
-        return ensureNoLeakedReferences ? result.clone() : result;
+        return result;
       }
 
       final int originalBufferPos = pos;
@@ -2874,8 +2862,6 @@ public abstract class CodedInputStream {
     /**
      * Attempts to read the data in one byte array when it's safe to do. Returns null if the size to
      * read is too large and needs to be allocated in smaller chunks for security reasons.
-     * 
-     * Returns a byte[] that may have escaped to user code via InputStream APIs.
      */
     private byte[] readRawBytesSlowPathOneChunk(final int size) throws IOException {
       if (size == 0) {
@@ -2930,11 +2916,7 @@ public abstract class CodedInputStream {
       return null;
     }
 
-    /**
-     * Reads the remaining data in small chunks from the input stream.
-     * 
-     * Returns a byte[] that may have escaped to user code via InputStream APIs.
-     */
+    /** Reads the remaining data in small chunks from the input stream. */
     private List<byte[]> readRawBytesSlowPathRemainingChunks(int sizeLeft) throws IOException {
       // The size is very large.  For security reasons, we can't allocate the
       // entire byte array yet.  The size comes directly from the input, so a
@@ -2971,9 +2953,7 @@ public abstract class CodedInputStream {
     private ByteString readBytesSlowPath(final int size) throws IOException {
       final byte[] result = readRawBytesSlowPathOneChunk(size);
       if (result != null) {
-        // We must copy as the byte array was handed off to the InputStream and a malicious
-        // implementation could retain a reference.
-        return ByteString.copyFrom(result);
+        return ByteString.wrap(result);
       }
 
       final int originalBufferPos = pos;
@@ -2991,20 +2971,13 @@ public abstract class CodedInputStream {
       // chunks.
       List<byte[]> chunks = readRawBytesSlowPathRemainingChunks(sizeLeft);
 
-      // OK, got everything.  Now concatenate it all into one buffer.
-      final byte[] bytes = new byte[size];
-
-      // Start by copying the leftover bytes from this.buffer.
-      System.arraycopy(buffer, originalBufferPos, bytes, 0, bufferedBytes);
-
-      // And now all the chunks.
-      int tempPos = bufferedBytes;
-      for (final byte[] chunk : chunks) {
-        System.arraycopy(chunk, 0, bytes, tempPos, chunk.length);
-        tempPos += chunk.length;
+      // Wrap the byte arrays into a single ByteString.
+      List<ByteString> byteStrings = new ArrayList<ByteString>(1 + chunks.size());
+      byteStrings.add(ByteString.copyFrom(buffer, originalBufferPos, bufferedBytes));
+      for (byte[] chunk : chunks) {
+        byteStrings.add(ByteString.wrap(chunk));
       }
-      
-      return ByteString.wrap(bytes);
+      return ByteString.copyFrom(byteStrings);
     }
 
     @Override

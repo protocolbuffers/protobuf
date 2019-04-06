@@ -157,14 +157,10 @@ inline bool IsDescriptorProto(const Descriptor* descriptor) {
          descriptor->file()->name() == "google/protobuf/descriptor.proto";
 }
 
-// Returns the stored type string used by the experimental runtime for oneof
-// fields.
-std::string GetOneofStoredType(const FieldDescriptor* field);
-
 
 // Whether we should generate multiple java files for messages.
-inline bool MultipleJavaFiles(const FileDescriptor* descriptor,
-                              bool immutable) {
+inline bool MultipleJavaFiles(
+    const FileDescriptor* descriptor, bool immutable) {
   return descriptor->options().java_multiple_files();
 }
 
@@ -249,19 +245,24 @@ bool IsByteStringWithCustomDefaultValue(const FieldDescriptor* field);
 // Does this message class have descriptor and reflection methods?
 inline bool HasDescriptorMethods(const Descriptor* descriptor,
                                  bool enforce_lite) {
-  return !enforce_lite;
+  return !enforce_lite &&
+         descriptor->file()->options().optimize_for() !=
+             FileOptions::LITE_RUNTIME;
 }
 inline bool HasDescriptorMethods(const EnumDescriptor* descriptor,
                                  bool enforce_lite) {
-  return !enforce_lite;
+  return !enforce_lite &&
+         descriptor->file()->options().optimize_for() !=
+             FileOptions::LITE_RUNTIME;
 }
 inline bool HasDescriptorMethods(const FileDescriptor* descriptor,
                                  bool enforce_lite) {
-  return !enforce_lite;
+  return !enforce_lite &&
+         descriptor->options().optimize_for() != FileOptions::LITE_RUNTIME;
 }
 
 // Should we generate generic services for this file?
-inline bool HasGenericServices(const FileDescriptor* file, bool enforce_lite) {
+inline bool HasGenericServices(const FileDescriptor *file, bool enforce_lite) {
   return file->service_count() > 0 &&
          HasDescriptorMethods(file, enforce_lite) &&
          file->options().java_generic_services();
@@ -398,7 +399,7 @@ inline bool IsWrappersProtoFile(const FileDescriptor* descriptor) {
 
 inline bool CheckUtf8(const FieldDescriptor* descriptor) {
   return descriptor->file()->syntax() == FileDescriptor::SYNTAX_PROTO3 ||
-         descriptor->file()->options().java_string_check_utf8();
+      descriptor->file()->options().java_string_check_utf8();
 }
 
 inline std::string GeneratedCodeVersionSuffix() {

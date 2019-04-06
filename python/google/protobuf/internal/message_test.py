@@ -106,11 +106,13 @@ def IsNegInf(val):
   return isinf(val) and (val < 0)
 
 
+BaseTestCase = testing_refleaks.BaseTestCase
+
+
 @_parameterized.named_parameters(
     ('_proto2', unittest_pb2),
     ('_proto3', unittest_proto3_arena_pb2))
-@testing_refleaks.TestCase
-class MessageTest(unittest.TestCase):
+class MessageTest(BaseTestCase):
 
   def testBadUtf8String(self, message_module):
     if api_implementation.Type() != 'python':
@@ -777,31 +779,28 @@ class MessageTest(unittest.TestCase):
     m1 = message_module.TestAllTypes()
     m2 = message_module.TestAllTypes()
     # Cpp extension will lazily create a sub message which is immutable.
-    nested = m1.optional_nested_message
-    self.assertEqual(0, nested.bb)
+    self.assertEqual(0, m1.optional_nested_message.bb)
     m2.optional_nested_message.bb = 1
     # Make sure cmessage pointing to a mutable message after merge instead of
     # the lazily created message.
     m1.MergeFrom(m2)
-    self.assertEqual(1, nested.bb)
+    self.assertEqual(1, m1.optional_nested_message.bb)
 
     # Test more nested sub message.
     msg1 = message_module.NestedTestAllTypes()
     msg2 = message_module.NestedTestAllTypes()
-    nested = msg1.child.payload.optional_nested_message
-    self.assertEqual(0, nested.bb)
+    self.assertEqual(0, msg1.child.payload.optional_nested_message.bb)
     msg2.child.payload.optional_nested_message.bb = 1
     msg1.MergeFrom(msg2)
-    self.assertEqual(1, nested.bb)
+    self.assertEqual(1, msg1.child.payload.optional_nested_message.bb)
 
     # Test repeated field.
     self.assertEqual(msg1.payload.repeated_nested_message,
                      msg1.payload.repeated_nested_message)
-    nested = msg2.payload.repeated_nested_message.add()
-    nested.bb = 1
+    msg2.payload.repeated_nested_message.add().bb = 1
     msg1.MergeFrom(msg2)
     self.assertEqual(1, len(msg1.payload.repeated_nested_message))
-    self.assertEqual(1, nested.bb)
+    self.assertEqual(1, msg1.payload.repeated_nested_message[0].bb)
 
   def testMergeFromString(self, message_module):
     m1 = message_module.TestAllTypes()
@@ -1300,8 +1299,7 @@ class MessageTest(unittest.TestCase):
 
 
 # Class to test proto2-only features (required, extensions, etc.)
-@testing_refleaks.TestCase
-class Proto2Test(unittest.TestCase):
+class Proto2Test(BaseTestCase):
 
   def testFieldPresence(self):
     message = unittest_pb2.TestAllTypes()
@@ -1575,8 +1573,7 @@ class Proto2Test(unittest.TestCase):
 
 
 # Class to test proto3-only features/behavior (updated field presence & enums)
-@testing_refleaks.TestCase
-class Proto3Test(unittest.TestCase):
+class Proto3Test(BaseTestCase):
 
   # Utility method for comparing equality with a map.
   def assertMapIterEquals(self, map_iter, dict_value):
@@ -2447,8 +2444,7 @@ class Proto3Test(unittest.TestCase):
         optional_string=u'\ud801\ud801')
 
 
-@testing_refleaks.TestCase
-class ValidTypeNamesTest(unittest.TestCase):
+class ValidTypeNamesTest(BaseTestCase):
 
   def assertImportFromName(self, msg, base_name):
     # Parse <type 'module.class_name'> to extra 'some.name' as a string.
@@ -2469,8 +2465,7 @@ class ValidTypeNamesTest(unittest.TestCase):
     self.assertImportFromName(pb.repeated_int32, 'Scalar')
     self.assertImportFromName(pb.repeated_nested_message, 'Composite')
 
-@testing_refleaks.TestCase
-class PackedFieldTest(unittest.TestCase):
+class PackedFieldTest(BaseTestCase):
 
   def setMessage(self, message):
     message.repeated_int32.append(1)
@@ -2530,8 +2525,7 @@ class PackedFieldTest(unittest.TestCase):
 @unittest.skipIf(api_implementation.Type() != 'cpp' or
                  sys.version_info < (2, 7),
                  'explicit tests of the C++ implementation for PY27 and above')
-@testing_refleaks.TestCase
-class OversizeProtosTest(unittest.TestCase):
+class OversizeProtosTest(BaseTestCase):
 
   @classmethod
   def setUpClass(cls):

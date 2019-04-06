@@ -56,7 +56,6 @@ typedef struct ExtensionDict {
 } ExtensionDict;
 
 extern PyTypeObject ExtensionDict_Type;
-extern PyTypeObject ExtensionIterator_Type;
 
 namespace extension_dict {
 

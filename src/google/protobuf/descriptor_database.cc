@@ -51,7 +51,8 @@ DescriptorDatabase::~DescriptorDatabase() {}
 
 template <typename Value>
 bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddFile(
-    const FileDescriptorProto& file, Value value) {
+    const FileDescriptorProto& file,
+    Value value) {
   if (!InsertIfNotPresent(&by_name_, file.name(), value)) {
     GOOGLE_LOG(ERROR) << "File already exists in database: " << file.name();
     return false;
@@ -107,10 +108,8 @@ bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddSymbol(
   }
 
   if (IsSubSymbol(iter->first, name)) {
-    GOOGLE_LOG(ERROR) << "Symbol name \"" << name
-               << "\" conflicts with the existing "
-                  "symbol \""
-               << iter->first << "\".";
+    GOOGLE_LOG(ERROR) << "Symbol name \"" << name << "\" conflicts with the existing "
+                  "symbol \"" << iter->first << "\".";
     return false;
   }
 
@@ -122,10 +121,8 @@ bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddSymbol(
   ++iter;
 
   if (iter != by_symbol_.end() && IsSubSymbol(name, iter->first)) {
-    GOOGLE_LOG(ERROR) << "Symbol name \"" << name
-               << "\" conflicts with the existing "
-                  "symbol \""
-               << iter->first << "\".";
+    GOOGLE_LOG(ERROR) << "Symbol name \"" << name << "\" conflicts with the existing "
+                  "symbol \"" << iter->first << "\".";
     return false;
   }
 
@@ -141,7 +138,8 @@ bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddSymbol(
 
 template <typename Value>
 bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddNestedExtensions(
-    const DescriptorProto& message_type, Value value) {
+    const DescriptorProto& message_type,
+    Value value) {
   for (int i = 0; i < message_type.nested_type_size(); i++) {
     if (!AddNestedExtensions(message_type.nested_type(i), value)) return false;
   }
@@ -153,7 +151,8 @@ bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddNestedExtensions(
 
 template <typename Value>
 bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddExtension(
-    const FieldDescriptorProto& field, Value value) {
+    const FieldDescriptorProto& field,
+    Value value) {
   if (!field.extendee().empty() && field.extendee()[0] == '.') {
     // The extension is fully-qualified.  We can use it as a lookup key in
     // the by_symbol_ table.
@@ -162,9 +161,8 @@ bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddExtension(
             std::make_pair(field.extendee().substr(1), field.number()),
             value)) {
       GOOGLE_LOG(ERROR) << "Extension conflicts with extension already in database: "
-                    "extend "
-                 << field.extendee() << " { " << field.name() << " = "
-                 << field.number() << " }";
+                    "extend " << field.extendee() << " { "
+                 << field.name() << " = " << field.number() << " }";
       return false;
     }
   } else {
@@ -187,9 +185,8 @@ Value SimpleDescriptorDatabase::DescriptorIndex<Value>::FindSymbol(
   typename std::map<std::string, Value>::iterator iter =
       FindLastLessOrEqual(name);
 
-  return (iter != by_symbol_.end() && IsSubSymbol(iter->first, name))
-             ? iter->second
-             : Value();
+  return (iter != by_symbol_.end() && IsSubSymbol(iter->first, name)) ?
+         iter->second : Value();
 }
 
 template <typename Value>
@@ -252,8 +249,10 @@ bool SimpleDescriptorDatabase::DescriptorIndex<Value>::ValidateSymbolName(
     const std::string& name) {
   for (int i = 0; i < name.size(); i++) {
     // I don't trust ctype.h due to locales.  :(
-    if (name[i] != '.' && name[i] != '_' && (name[i] < '0' || name[i] > '9') &&
-        (name[i] < 'A' || name[i] > 'Z') && (name[i] < 'a' || name[i] > 'z')) {
+    if (name[i] != '.' && name[i] != '_' &&
+        (name[i] < '0' || name[i] > '9') &&
+        (name[i] < 'A' || name[i] > 'Z') &&
+        (name[i] < 'a' || name[i] > 'z')) {
       return false;
     }
   }
@@ -322,8 +321,8 @@ EncodedDescriptorDatabase::~EncodedDescriptorDatabase() {
   }
 }
 
-bool EncodedDescriptorDatabase::Add(const void* encoded_file_descriptor,
-                                    int size) {
+bool EncodedDescriptorDatabase::Add(
+    const void* encoded_file_descriptor, int size) {
   FileDescriptorProto file;
   if (file.ParseFromArray(encoded_file_descriptor, size)) {
     return index_.AddFile(file, std::make_pair(encoded_file_descriptor, size));
@@ -334,8 +333,8 @@ bool EncodedDescriptorDatabase::Add(const void* encoded_file_descriptor,
   }
 }
 
-bool EncodedDescriptorDatabase::AddCopy(const void* encoded_file_descriptor,
-                                        int size) {
+bool EncodedDescriptorDatabase::AddCopy(
+    const void* encoded_file_descriptor, int size) {
   void* copy = operator new(size);
   memcpy(copy, encoded_file_descriptor, size);
   files_to_delete_.push_back(copy);
@@ -393,7 +392,8 @@ bool EncodedDescriptorDatabase::FindAllExtensionNumbers(
 }
 
 bool EncodedDescriptorDatabase::MaybeParse(
-    std::pair<const void*, int> encoded_file, FileDescriptorProto* output) {
+    std::pair<const void*, int> encoded_file,
+    FileDescriptorProto* output) {
   if (encoded_file.first == NULL) return false;
   return output->ParseFromArray(encoded_file.first, encoded_file.second);
 }
@@ -401,7 +401,7 @@ bool EncodedDescriptorDatabase::MaybeParse(
 // ===================================================================
 
 DescriptorPoolDatabase::DescriptorPoolDatabase(const DescriptorPool& pool)
-    : pool_(pool) {}
+  : pool_(pool) {}
 DescriptorPoolDatabase::~DescriptorPoolDatabase() {}
 
 bool DescriptorPoolDatabase::FindFileByName(const std::string& filename,
@@ -429,7 +429,7 @@ bool DescriptorPoolDatabase::FindFileContainingExtension(
   if (extendee == NULL) return false;
 
   const FieldDescriptor* extension =
-      pool_.FindExtensionByNumber(extendee, field_number);
+    pool_.FindExtensionByNumber(extendee, field_number);
   if (extension == NULL) return false;
 
   output->Clear();
@@ -455,13 +455,14 @@ bool DescriptorPoolDatabase::FindAllExtensionNumbers(
 // ===================================================================
 
 MergedDescriptorDatabase::MergedDescriptorDatabase(
-    DescriptorDatabase* source1, DescriptorDatabase* source2) {
+    DescriptorDatabase* source1,
+    DescriptorDatabase* source2) {
   sources_.push_back(source1);
   sources_.push_back(source2);
 }
 MergedDescriptorDatabase::MergedDescriptorDatabase(
     const std::vector<DescriptorDatabase*>& sources)
-    : sources_(sources) {}
+  : sources_(sources) {}
 MergedDescriptorDatabase::~MergedDescriptorDatabase() {}
 
 bool MergedDescriptorDatabase::FindFileByName(const std::string& filename,
@@ -499,8 +500,8 @@ bool MergedDescriptorDatabase::FindFileContainingExtension(
     const std::string& containing_type, int field_number,
     FileDescriptorProto* output) {
   for (int i = 0; i < sources_.size(); i++) {
-    if (sources_[i]->FindFileContainingExtension(containing_type, field_number,
-                                                 output)) {
+    if (sources_[i]->FindFileContainingExtension(
+          containing_type, field_number, output)) {
       // The symbol was found in source i.  However, if one of the previous
       // sources defines a file with the same name (which presumably doesn't
       // contain the symbol, since it wasn't found in that source), then we

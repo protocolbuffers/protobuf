@@ -57,8 +57,6 @@ namespace protobuf {
 namespace util {
 namespace converter {
 
-using io::ArrayInputStream;
-using io::CodedInputStream;
 using proto_util_converter::testing::AnyM;
 using proto_util_converter::testing::AnyOut;
 using proto_util_converter::testing::Author;
@@ -77,6 +75,8 @@ using proto_util_converter::testing::Primitive;
 using proto_util_converter::testing::Proto3Message;
 using proto_util_converter::testing::StructType;
 using proto_util_converter::testing::TimestampDuration;
+using io::ArrayInputStream;
+using io::CodedInputStream;
 using ::testing::_;
 using util::Status;
 

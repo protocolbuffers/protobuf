@@ -540,24 +540,6 @@ public final class Internal {
         }
         return valueConverter.doForward(oldValue);
       }
-
-      @Override
-      public boolean equals(Object o) {
-        if (o == this) {
-          return true;
-        }
-        if (!(o instanceof Map.Entry)) {
-          return false;
-        }
-        @SuppressWarnings("unchecked")
-        Map.Entry<?, ?> other = (Map.Entry<?, ?>) o;
-        return getKey().equals(other.getKey()) && getValue().equals(getValue());
-      }
-
-      @Override
-      public int hashCode() {
-        return realEntry.hashCode();
-      }
     }
   }
 

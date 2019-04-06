@@ -69,24 +69,25 @@ static const char* kImplVersionName = "api_version";
 
 static const char* kModuleName = "_api_implementation";
 static const char kModuleDocstring[] =
-    "_api_implementation is a module that exposes compile-time constants that\n"
-    "determine the default API implementation to use for Python proto2.\n"
-    "\n"
-    "It complements api_implementation.py by setting defaults using "
-    "compile-time\n"
-    "constants defined in C, such that one can set defaults at compilation\n"
-    "(e.g. with blaze flag --copt=-DPYTHON_PROTO2_CPP_IMPL_V2).";
+"_api_implementation is a module that exposes compile-time constants that\n"
+"determine the default API implementation to use for Python proto2.\n"
+"\n"
+"It complements api_implementation.py by setting defaults using compile-time\n"
+"constants defined in C, such that one can set defaults at compilation\n"
+"(e.g. with blaze flag --copt=-DPYTHON_PROTO2_CPP_IMPL_V2).";
 
 #if PY_MAJOR_VERSION >= 3
-static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
-                                     kModuleName,
-                                     kModuleDocstring,
-                                     -1,
-                                     NULL,
-                                     NULL,
-                                     NULL,
-                                     NULL,
-                                     NULL};
+static struct PyModuleDef _module = {
+  PyModuleDef_HEAD_INIT,
+  kModuleName,
+  kModuleDocstring,
+  -1,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  NULL
+};
 #define INITFUNC PyInit__api_implementation
 #define INITFUNC_ERRORVAL NULL
 #else
@@ -95,31 +96,32 @@ static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
 #endif
 
 extern "C" {
-PyMODINIT_FUNC INITFUNC() {
+  PyMODINIT_FUNC INITFUNC() {
 #if PY_MAJOR_VERSION >= 3
-  PyObject* module = PyModule_Create(&_module);
+    PyObject *module = PyModule_Create(&_module);
 #else
-  PyObject* module = Py_InitModule3(const_cast<char*>(kModuleName), NULL,
-                                    const_cast<char*>(kModuleDocstring));
+    PyObject *module = Py_InitModule3(
+        const_cast<char*>(kModuleName),
+        NULL,
+        const_cast<char*>(kModuleDocstring));
 #endif
-  if (module == NULL) {
-    return INITFUNC_ERRORVAL;
-  }
+    if (module == NULL) {
+      return INITFUNC_ERRORVAL;
+    }
 
-  // Adds the module variable "api_version".
-  if (PyModule_AddIntConstant(module, const_cast<char*>(kImplVersionName),
-                              kImplVersion))
+    // Adds the module variable "api_version".
+    if (PyModule_AddIntConstant(
+        module,
+        const_cast<char*>(kImplVersionName),
+        kImplVersion))
 #if PY_MAJOR_VERSION < 3
-    return;
+      return;
 #else
-  {
-    Py_DECREF(module);
-    return NULL;
-  }
+      { Py_DECREF(module); return NULL; }
 
-  return module;
+    return module;
 #endif
-}
+  }
 }
 
 }  // namespace python

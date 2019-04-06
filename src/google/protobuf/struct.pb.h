@@ -90,13 +90,9 @@ constexpr NullValue NullValue_MAX = NULL_VALUE;
 constexpr int NullValue_ARRAYSIZE = NullValue_MAX + 1;
 
 PROTOBUF_EXPORT const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* NullValue_descriptor();
-template<typename T>
-inline const std::string& NullValue_Name(T enum_t_value) {
-  static_assert(::std::is_same<T, NullValue>::value ||
-    ::std::is_integral<T>::value,
-    "Incorrect type passed to function NullValue_Name.");
+inline const std::string& NullValue_Name(NullValue value) {
   return ::PROTOBUF_NAMESPACE_ID::internal::NameOfEnum(
-    NullValue_descriptor(), enum_t_value);
+    NullValue_descriptor(), value);
 }
 inline bool NullValue_Parse(
     const std::string& name, NullValue* value) {
@@ -120,10 +116,10 @@ public:
   Struct_FieldsEntry_DoNotUse(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   void MergeFrom(const Struct_FieldsEntry_DoNotUse& other);
   static const Struct_FieldsEntry_DoNotUse* internal_default_instance() { return reinterpret_cast<const Struct_FieldsEntry_DoNotUse*>(&_Struct_FieldsEntry_DoNotUse_default_instance_); }
-  static bool ValidateKey(std::string* s) {
-    return ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(s->data(), s->size(), ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::PARSE, "google.protobuf.Struct.FieldsEntry.key");
+  bool ValidateKey() const {
+    return ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(key().data(), key().size(), ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::PARSE, "google.protobuf.Struct.FieldsEntry.key");
  }
-  static bool ValidateValue(void*) { return true; }
+  bool ValidateValue() const { return true; }
   void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& other) final;
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const;
 };

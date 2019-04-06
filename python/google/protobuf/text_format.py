@@ -584,8 +584,7 @@ def Parse(text,
           message,
           allow_unknown_extension=False,
           allow_field_number=False,
-          descriptor_pool=None,
-          allow_unknown_field=False):
+          descriptor_pool=None):
   """Parses a text representation of a protocol message into a message.
 
   NOTE: for historical reasons this function does not clear the input
@@ -611,9 +610,6 @@ def Parse(text,
       parsing
     allow_field_number: if True, both field number and field name are allowed.
     descriptor_pool: A DescriptorPool used to resolve Any types.
-    allow_unknown_field: if True, skip over unknown field and keep
-      parsing. Avoid to use this option if possible. It may hide some
-      errors (e.g. spelling error on field name)
 
   Returns:
     The same message passed as argument.
@@ -625,16 +621,14 @@ def Parse(text,
                     message,
                     allow_unknown_extension,
                     allow_field_number,
-                    descriptor_pool=descriptor_pool,
-                    allow_unknown_field=allow_unknown_field)
+                    descriptor_pool=descriptor_pool)
 
 
 def Merge(text,
           message,
           allow_unknown_extension=False,
           allow_field_number=False,
-          descriptor_pool=None,
-          allow_unknown_field=False):
+          descriptor_pool=None):
   """Parses a text representation of a protocol message into a message.
 
   Like Parse(), but allows repeated values for a non-repeated field, and uses
@@ -647,9 +641,6 @@ def Merge(text,
       parsing
     allow_field_number: if True, both field number and field name are allowed.
     descriptor_pool: A DescriptorPool used to resolve Any types.
-    allow_unknown_field: if True, skip over unknown field and keep
-      parsing. Avoid to use this option if possible. It may hide some
-      errors (e.g. spelling error on field name)
 
   Returns:
     The same message passed as argument.
@@ -662,16 +653,14 @@ def Merge(text,
       message,
       allow_unknown_extension,
       allow_field_number,
-      descriptor_pool=descriptor_pool,
-      allow_unknown_field=allow_unknown_field)
+      descriptor_pool=descriptor_pool)
 
 
 def ParseLines(lines,
                message,
                allow_unknown_extension=False,
                allow_field_number=False,
-               descriptor_pool=None,
-               allow_unknown_field=False):
+               descriptor_pool=None):
   """Parses a text representation of a protocol message into a message.
 
   Args:
@@ -681,9 +670,6 @@ def ParseLines(lines,
       parsing
     allow_field_number: if True, both field number and field name are allowed.
     descriptor_pool: A DescriptorPool used to resolve Any types.
-    allow_unknown_field: if True, skip over unknown field and keep
-      parsing. Avoid to use this option if possible. It may hide some
-      errors (e.g. spelling error on field name)
 
   Returns:
     The same message passed as argument.
@@ -693,8 +679,7 @@ def ParseLines(lines,
   """
   parser = _Parser(allow_unknown_extension,
                    allow_field_number,
-                   descriptor_pool=descriptor_pool,
-                   allow_unknown_field=allow_unknown_field)
+                   descriptor_pool=descriptor_pool)
   return parser.ParseLines(lines, message)
 
 
@@ -702,8 +687,7 @@ def MergeLines(lines,
                message,
                allow_unknown_extension=False,
                allow_field_number=False,
-               descriptor_pool=None,
-               allow_unknown_field=False):
+               descriptor_pool=None):
   """Parses a text representation of a protocol message into a message.
 
   Like ParseLines(), but allows repeated values for a non-repeated field, and
@@ -716,9 +700,6 @@ def MergeLines(lines,
       parsing
     allow_field_number: if True, both field number and field name are allowed.
     descriptor_pool: A DescriptorPool used to resolve Any types.
-    allow_unknown_field: if True, skip over unknown field and keep
-      parsing. Avoid to use this option if possible. It may hide some
-      errors (e.g. spelling error on field name)
 
   Returns:
     The same message passed as argument.
@@ -728,8 +709,7 @@ def MergeLines(lines,
   """
   parser = _Parser(allow_unknown_extension,
                    allow_field_number,
-                   descriptor_pool=descriptor_pool,
-                   allow_unknown_field=allow_unknown_field)
+                   descriptor_pool=descriptor_pool)
   return parser.MergeLines(lines, message)
 
 
@@ -739,12 +719,10 @@ class _Parser(object):
   def __init__(self,
                allow_unknown_extension=False,
                allow_field_number=False,
-               descriptor_pool=None,
-               allow_unknown_field=False):
+               descriptor_pool=None):
     self.allow_unknown_extension = allow_unknown_extension
     self.allow_field_number = allow_field_number
     self.descriptor_pool = descriptor_pool
-    self.allow_unknown_field = allow_unknown_field
 
   def ParseLines(self, lines, message):
     """Parses a text representation of a protocol message into a message."""
@@ -866,7 +844,7 @@ class _Parser(object):
             field.message_type.name != name):
           field = None
 
-      if not field and not self.allow_unknown_field:
+      if not field:
         raise tokenizer.ParseErrorPreviousToken(
             'Message type "%s" has no field named "%s".' %
             (message_descriptor.full_name, name))
@@ -905,7 +883,7 @@ class _Parser(object):
         merger(tokenizer, message, field)
 
     else:  # Proto field is unknown.
-      assert (self.allow_unknown_extension or self.allow_unknown_field)
+      assert self.allow_unknown_extension
       _SkipFieldContents(tokenizer)
 
     # For historical reasons, fields may optionally be separated by commas or

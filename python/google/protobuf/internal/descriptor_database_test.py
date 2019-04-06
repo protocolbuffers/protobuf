@@ -48,8 +48,7 @@ from google.protobuf.internal import testing_refleaks
 from google.protobuf import descriptor_database
 
 
-@testing_refleaks.TestCase
-class DescriptorDatabaseTest(unittest.TestCase):
+class DescriptorDatabaseTest(testing_refleaks.BaseTestCase):
 
   def testAdd(self):
     db = descriptor_database.DescriptorDatabase()

@@ -30,8 +30,6 @@
 
 package com.google.protobuf;
 
-import protobuf_unittest.NestedExtension;
-import protobuf_unittest.NonNestedExtension;
 import com.google.protobuf.DescriptorProtos.DescriptorProto;
 import com.google.protobuf.DescriptorProtos.EnumDescriptorProto;
 import com.google.protobuf.DescriptorProtos.EnumValueDescriptorProto;
@@ -780,24 +778,5 @@ public class DescriptorsTest extends TestCase {
     assertEquals("FieldName4", d.getFields().get(3).getJsonName());
     assertEquals("FIELDNAME5", d.getFields().get(4).getJsonName());
     assertEquals("@type", d.getFields().get(5).getJsonName());
-  }
-
-  public void testExtensionRenamesKeywords() {
-    assertTrue(NonNestedExtension.if_ instanceof GeneratedMessage.GeneratedExtension);
-    assertTrue(
-        NestedExtension.MyNestedExtension.default_
-            instanceof GeneratedMessage.GeneratedExtension);
-
-    NonNestedExtension.MessageToBeExtended msg =
-        NonNestedExtension.MessageToBeExtended.newBuilder()
-            .setExtension(NonNestedExtension.if_, "!fi")
-            .build();
-    assertEquals("!fi", msg.getExtension(NonNestedExtension.if_));
-
-    msg =
-        NonNestedExtension.MessageToBeExtended.newBuilder()
-            .setExtension(NestedExtension.MyNestedExtension.default_, 8)
-            .build();
-    assertEquals(8, msg.getExtension(NestedExtension.MyNestedExtension.default_).intValue());
   }
 }

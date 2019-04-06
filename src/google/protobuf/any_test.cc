@@ -166,3 +166,4 @@ TEST(AnyTest, MoveAssignment) {
 }  // namespace
 }  // namespace protobuf
 }  // namespace google
+

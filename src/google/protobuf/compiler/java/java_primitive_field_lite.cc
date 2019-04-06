@@ -134,8 +134,8 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
   }
   // TODO(birdo): Add @deprecated javadoc when generating javadoc is supported
   // by the proto compiler
-  (*variables)["deprecation"] =
-      descriptor->options().deprecated() ? "@java.lang.Deprecated " : "";
+  (*variables)["deprecation"] = descriptor->options().deprecated()
+      ? "@java.lang.Deprecated " : "";
   int fixed_size = FixedSize(GetType(descriptor));
   if (fixed_size != -1) {
     (*variables)["fixed_size"] = StrCat(fixed_size);
@@ -196,19 +196,20 @@ int ImmutablePrimitiveFieldLiteGenerator::GetNumBitsForMessage() const {
   return SupportFieldPresence(descriptor_->file()) ? 1 : 0;
 }
 
-void ImmutablePrimitiveFieldLiteGenerator::GenerateInterfaceMembers(
-    io::Printer* printer) const {
+void ImmutablePrimitiveFieldLiteGenerator::
+GenerateInterfaceMembers(io::Printer* printer) const {
   if (SupportFieldPresence(descriptor_->file())) {
     WriteFieldDocComment(printer, descriptor_);
     printer->Print(variables_,
-                   "$deprecation$boolean has$capitalized_name$();\n");
+      "$deprecation$boolean has$capitalized_name$();\n");
   }
   WriteFieldDocComment(printer, descriptor_);
-  printer->Print(variables_, "$deprecation$$type$ get$capitalized_name$();\n");
+  printer->Print(variables_,
+    "$deprecation$$type$ get$capitalized_name$();\n");
 }
 
-void ImmutablePrimitiveFieldLiteGenerator::GenerateMembers(
-    io::Printer* printer) const {
+void ImmutablePrimitiveFieldLiteGenerator::
+GenerateMembers(io::Printer* printer) const {
   if (IsByteStringWithCustomDefaultValue(descriptor_)) {
     // allocate this once statically since we know ByteStrings are immutable
     // values that can be reused.
@@ -216,111 +217,252 @@ void ImmutablePrimitiveFieldLiteGenerator::GenerateMembers(
         variables_,
         "private static final $field_type$ $bytes_default$ = $default$;\n");
   }
-  printer->Print(variables_, "private $field_type$ $name$_;\n");
+  printer->Print(variables_,
+    "private $field_type$ $name$_;\n");
   PrintExtraFieldInfo(variables_, printer);
   if (SupportFieldPresence(descriptor_->file())) {
     WriteFieldDocComment(printer, descriptor_);
-    printer->Print(
-        variables_,
-        "@java.lang.Override\n"
-        "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
-        "  return $get_has_field_bit_message$;\n"
-        "}\n");
+    printer->Print(variables_,
+      "@java.lang.Override\n"
+      "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
+      "  return $get_has_field_bit_message$;\n"
+      "}\n");
     printer->Annotate("{", "}", descriptor_);
   }
 
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
-                 "@java.lang.Override\n"
-                 "$deprecation$public $type$ ${$get$capitalized_name$$}$() {\n"
-                 "  return $name$_;\n"
-                 "}\n");
+    "@java.lang.Override\n"
+    "$deprecation$public $type$ ${$get$capitalized_name$$}$() {\n"
+    "  return $name$_;\n"
+    "}\n");
   printer->Annotate("{", "}", descriptor_);
 
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
-                 "private void set$capitalized_name$($type$ value) {\n"
-                 "$null_check$"
-                 "  $set_has_field_bit_message$\n"
-                 "  $name$_ = value;\n"
-                 "}\n");
+    "private void set$capitalized_name$($type$ value) {\n"
+    "$null_check$"
+    "  $set_has_field_bit_message$\n"
+    "  $name$_ = value;\n"
+    "}\n");
 
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
-                 "private void clear$capitalized_name$() {\n"
-                 "  $clear_has_field_bit_message$\n");
+    "private void clear$capitalized_name$() {\n"
+    "  $clear_has_field_bit_message$\n");
   JavaType type = GetJavaType(descriptor_);
   if (type == JAVATYPE_STRING || type == JAVATYPE_BYTES) {
     // The default value is not a simple literal so we want to avoid executing
     // it multiple times.  Instead, get the default out of the default instance.
-    printer->Print(
-        variables_,
-        "  $name$_ = getDefaultInstance().get$capitalized_name$();\n");
+    printer->Print(variables_,
+      "  $name$_ = getDefaultInstance().get$capitalized_name$();\n");
   } else {
-    printer->Print(variables_, "  $name$_ = $default$;\n");
+    printer->Print(variables_,
+      "  $name$_ = $default$;\n");
   }
-  printer->Print(variables_, "}\n");
+  printer->Print(variables_,
+    "}\n");
 }
 
-void ImmutablePrimitiveFieldLiteGenerator::GenerateBuilderMembers(
-    io::Printer* printer) const {
+void ImmutablePrimitiveFieldLiteGenerator::
+GenerateBuilderMembers(io::Printer* printer) const {
   if (SupportFieldPresence(descriptor_->file())) {
     WriteFieldDocComment(printer, descriptor_);
-    printer->Print(
-        variables_,
-        "@java.lang.Override\n"
-        "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
-        "  return instance.has$capitalized_name$();\n"
-        "}\n");
+    printer->Print(variables_,
+      "@java.lang.Override\n"
+      "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
+      "  return instance.has$capitalized_name$();\n"
+      "}\n");
     printer->Annotate("{", "}", descriptor_);
   }
 
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
-                 "@java.lang.Override\n"
-                 "$deprecation$public $type$ ${$get$capitalized_name$$}$() {\n"
-                 "  return instance.get$capitalized_name$();\n"
-                 "}\n");
+    "@java.lang.Override\n"
+    "$deprecation$public $type$ ${$get$capitalized_name$$}$() {\n"
+    "  return instance.get$capitalized_name$();\n"
+    "}\n");
   printer->Annotate("{", "}", descriptor_);
 
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
-                 "$deprecation$public Builder "
-                 "${$set$capitalized_name$$}$($type$ value) {\n"
-                 "  copyOnWrite();\n"
-                 "  instance.set$capitalized_name$(value);\n"
-                 "  return this;\n"
-                 "}\n");
+    "$deprecation$public Builder ${$set$capitalized_name$$}$($type$ value) {\n"
+    "  copyOnWrite();\n"
+    "  instance.set$capitalized_name$(value);\n"
+    "  return this;\n"
+    "}\n");
   printer->Annotate("{", "}", descriptor_);
 
   WriteFieldDocComment(printer, descriptor_);
-  printer->Print(
-      variables_,
-      "$deprecation$public Builder ${$clear$capitalized_name$$}$() {\n"
-      "  copyOnWrite();\n"
-      "  instance.clear$capitalized_name$();\n"
-      "  return this;\n"
-      "}\n");
+  printer->Print(variables_,
+    "$deprecation$public Builder ${$clear$capitalized_name$$}$() {\n"
+    "  copyOnWrite();\n"
+    "  instance.clear$capitalized_name$();\n"
+    "  return this;\n"
+    "}\n");
   printer->Annotate("{", "}", descriptor_);
 }
 
-void ImmutablePrimitiveFieldLiteGenerator::GenerateFieldInfo(
-    io::Printer* printer, std::vector<uint16>* output) const {
-  WriteIntToUtf16CharSequence(descriptor_->number(), output);
-  WriteIntToUtf16CharSequence(GetExperimentalJavaFieldType(descriptor_),
-                              output);
-  if (SupportFieldPresence(descriptor_->file())) {
-    WriteIntToUtf16CharSequence(messageBitIndex_, output);
-  }
-  printer->Print(variables_, "\"$name$_\",\n");
+void ImmutablePrimitiveFieldLiteGenerator::
+GenerateFieldBuilderInitializationCode(io::Printer* printer)  const {
+  // noop for primitives
 }
 
-void ImmutablePrimitiveFieldLiteGenerator::GenerateInitializationCode(
-    io::Printer* printer) const {
+
+void ImmutablePrimitiveFieldLiteGenerator::
+GenerateInitializationCode(io::Printer* printer) const {
   if (IsByteStringWithCustomDefaultValue(descriptor_)) {
     printer->Print(variables_, "$name$_ = $bytes_default$;\n");
   } else if (!IsDefaultValueJavaDefault(descriptor_)) {
     printer->Print(variables_, "$name$_ = $default$;\n");
+  }
+}
+
+void ImmutablePrimitiveFieldLiteGenerator::
+GenerateBuilderClearCode(io::Printer* printer) const {
+  // noop for primitives
+}
+
+void ImmutablePrimitiveFieldLiteGenerator::
+GenerateVisitCode(io::Printer* printer) const {
+  if (SupportFieldPresence(descriptor_->file())) {
+    printer->Print(variables_,
+      "$name$_ = visitor.visit$visit_type$(\n"
+      "    has$capitalized_name$(), $name$_,\n"
+      "    other.has$capitalized_name$(), other.$name$_);\n");
+  } else {
+    printer->Print(variables_,
+      "$name$_ = visitor.visit$visit_type$($name$_ != $default$, $name$_,\n"
+      "    other.$name$_ != $default$, other.$name$_);\n");
+  }
+}
+
+void ImmutablePrimitiveFieldLiteGenerator::
+GenerateBuildingCode(io::Printer* printer) const {
+  // noop for primitives
+}
+
+void ImmutablePrimitiveFieldLiteGenerator::
+GenerateDynamicMethodMakeImmutableCode(io::Printer* printer) const {
+  // noop for scalars
+}
+
+void ImmutablePrimitiveFieldLiteGenerator::
+GenerateParsingCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "$set_has_field_bit_message$\n"
+    "$name$_ = input.read$capitalized_type$();\n");
+}
+
+void ImmutablePrimitiveFieldLiteGenerator::
+GenerateParsingDoneCode(io::Printer* printer) const {
+  // noop for primitives.
+}
+
+void ImmutablePrimitiveFieldLiteGenerator::
+GenerateSerializationCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "if ($is_field_present_message$) {\n"
+    "  output.write$capitalized_type$($number$, $name$_);\n"
+    "}\n");
+}
+
+void ImmutablePrimitiveFieldLiteGenerator::
+GenerateSerializedSizeCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "if ($is_field_present_message$) {\n"
+    "  size += com.google.protobuf.CodedOutputStream\n"
+    "    .compute$capitalized_type$Size($number$, $name$_);\n"
+    "}\n");
+}
+
+void ImmutablePrimitiveFieldLiteGenerator::
+GenerateEqualsCode(io::Printer* printer) const {
+  switch (GetJavaType(descriptor_)) {
+    case JAVATYPE_INT:
+    case JAVATYPE_LONG:
+    case JAVATYPE_BOOLEAN:
+      printer->Print(variables_,
+        "result = result && (get$capitalized_name$()\n"
+        "    == other.get$capitalized_name$());\n");
+      break;
+
+    case JAVATYPE_FLOAT:
+      printer->Print(variables_,
+        "result = result && (\n"
+        "    java.lang.Float.floatToIntBits(get$capitalized_name$())\n"
+        "    == java.lang.Float.floatToIntBits(\n"
+        "        other.get$capitalized_name$()));\n");
+      break;
+
+    case JAVATYPE_DOUBLE:
+      printer->Print(variables_,
+        "result = result && (\n"
+        "    java.lang.Double.doubleToLongBits(get$capitalized_name$())\n"
+        "    == java.lang.Double.doubleToLongBits(\n"
+        "        other.get$capitalized_name$()));\n");
+      break;
+
+    case JAVATYPE_STRING:
+    case JAVATYPE_BYTES:
+      printer->Print(variables_,
+        "result = result && get$capitalized_name$()\n"
+        "    .equals(other.get$capitalized_name$());\n");
+      break;
+
+    case JAVATYPE_ENUM:
+    case JAVATYPE_MESSAGE:
+    default:
+      GOOGLE_LOG(FATAL) << "Can't get here.";
+      break;
+  }
+}
+
+void ImmutablePrimitiveFieldLiteGenerator::
+GenerateHashCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "hash = (37 * hash) + $constant_name$;\n");
+  switch (GetJavaType(descriptor_)) {
+    case JAVATYPE_INT:
+      printer->Print(variables_,
+        "hash = (53 * hash) + get$capitalized_name$();\n");
+      break;
+
+    case JAVATYPE_LONG:
+      printer->Print(variables_,
+        "hash = (53 * hash) + com.google.protobuf.Internal.hashLong(\n"
+        "    get$capitalized_name$());\n");
+      break;
+
+    case JAVATYPE_BOOLEAN:
+      printer->Print(variables_,
+        "hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(\n"
+        "    get$capitalized_name$());\n");
+      break;
+
+    case JAVATYPE_FLOAT:
+      printer->Print(variables_,
+        "hash = (53 * hash) + java.lang.Float.floatToIntBits(\n"
+        "    get$capitalized_name$());\n");
+      break;
+
+    case JAVATYPE_DOUBLE:
+      printer->Print(variables_,
+        "hash = (53 * hash) + com.google.protobuf.Internal.hashLong(\n"
+        "    java.lang.Double.doubleToLongBits(get$capitalized_name$()));\n");
+      break;
+
+    case JAVATYPE_STRING:
+    case JAVATYPE_BYTES:
+      printer->Print(variables_,
+        "hash = (53 * hash) + get$capitalized_name$().hashCode();\n");
+      break;
+
+    case JAVATYPE_ENUM:
+    case JAVATYPE_MESSAGE:
+    default:
+      GOOGLE_LOG(FATAL) << "Can't get here.";
+      break;
   }
 }
 
@@ -342,99 +484,126 @@ ImmutablePrimitiveOneofFieldLiteGenerator::
 }
 
 ImmutablePrimitiveOneofFieldLiteGenerator::
-    ~ImmutablePrimitiveOneofFieldLiteGenerator() {}
+~ImmutablePrimitiveOneofFieldLiteGenerator() {}
 
-void ImmutablePrimitiveOneofFieldLiteGenerator::GenerateMembers(
-    io::Printer* printer) const {
+void ImmutablePrimitiveOneofFieldLiteGenerator::
+GenerateMembers(io::Printer* printer) const {
   PrintExtraFieldInfo(variables_, printer);
   if (SupportFieldPresence(descriptor_->file())) {
     WriteFieldDocComment(printer, descriptor_);
-    printer->Print(
-        variables_,
-        "@java.lang.Override\n"
-        "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
-        "  return $has_oneof_case_message$;\n"
-        "}\n");
+    printer->Print(variables_,
+      "@java.lang.Override\n"
+      "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
+      "  return $has_oneof_case_message$;\n"
+      "}\n");
     printer->Annotate("{", "}", descriptor_);
   }
 
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
-                 "@java.lang.Override\n"
-                 "$deprecation$public $type$ ${$get$capitalized_name$$}$() {\n"
-                 "  if ($has_oneof_case_message$) {\n"
-                 "    return ($boxed_type$) $oneof_name$_;\n"
-                 "  }\n"
-                 "  return $default$;\n"
-                 "}\n");
+    "@java.lang.Override\n"
+    "$deprecation$public $type$ ${$get$capitalized_name$$}$() {\n"
+    "  if ($has_oneof_case_message$) {\n"
+    "    return ($boxed_type$) $oneof_name$_;\n"
+    "  }\n"
+    "  return $default$;\n"
+    "}\n");
   printer->Annotate("{", "}", descriptor_);
 
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
-                 "private void set$capitalized_name$($type$ value) {\n"
-                 "$null_check$"
-                 "  $set_oneof_case_message$;\n"
-                 "  $oneof_name$_ = value;\n"
-                 "}\n");
+    "private void set$capitalized_name$($type$ value) {\n"
+    "$null_check$"
+    "  $set_oneof_case_message$;\n"
+    "  $oneof_name$_ = value;\n"
+    "}\n");
 
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
-                 "private void clear$capitalized_name$() {\n"
-                 "  if ($has_oneof_case_message$) {\n"
-                 "    $clear_oneof_case_message$;\n"
-                 "    $oneof_name$_ = null;\n"
-                 "  }\n"
-                 "}\n");
+    "private void clear$capitalized_name$() {\n"
+    "  if ($has_oneof_case_message$) {\n"
+    "    $clear_oneof_case_message$;\n"
+    "    $oneof_name$_ = null;\n"
+    "  }\n"
+    "}\n");
 }
 
-void ImmutablePrimitiveOneofFieldLiteGenerator::GenerateFieldInfo(
-    io::Printer* printer, std::vector<uint16>* output) const {
-  WriteIntToUtf16CharSequence(descriptor_->number(), output);
-  WriteIntToUtf16CharSequence(GetExperimentalJavaFieldType(descriptor_),
-                              output);
-  WriteIntToUtf16CharSequence(descriptor_->containing_oneof()->index(), output);
-}
 
-void ImmutablePrimitiveOneofFieldLiteGenerator::GenerateBuilderMembers(
-    io::Printer* printer) const {
+void ImmutablePrimitiveOneofFieldLiteGenerator::
+GenerateBuilderMembers(io::Printer* printer) const {
   if (SupportFieldPresence(descriptor_->file())) {
     WriteFieldDocComment(printer, descriptor_);
-    printer->Print(
-        variables_,
-        "@java.lang.Override\n"
-        "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
-        "  return instance.has$capitalized_name$();\n"
-        "}\n");
+    printer->Print(variables_,
+      "@java.lang.Override\n"
+      "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
+      "  return instance.has$capitalized_name$();\n"
+      "}\n");
     printer->Annotate("{", "}", descriptor_);
   }
 
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
-                 "@java.lang.Override\n"
-                 "$deprecation$public $type$ ${$get$capitalized_name$$}$() {\n"
-                 "  return instance.get$capitalized_name$();\n"
-                 "}\n");
+    "@java.lang.Override\n"
+    "$deprecation$public $type$ ${$get$capitalized_name$$}$() {\n"
+    "  return instance.get$capitalized_name$();\n"
+    "}\n");
   printer->Annotate("{", "}", descriptor_);
 
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
-                 "$deprecation$public Builder "
-                 "${$set$capitalized_name$$}$($type$ value) {\n"
-                 "  copyOnWrite();\n"
-                 "  instance.set$capitalized_name$(value);\n"
-                 "  return this;\n"
-                 "}\n");
+    "$deprecation$public Builder ${$set$capitalized_name$$}$($type$ value) {\n"
+    "  copyOnWrite();\n"
+    "  instance.set$capitalized_name$(value);\n"
+    "  return this;\n"
+    "}\n");
   printer->Annotate("{", "}", descriptor_);
 
   WriteFieldDocComment(printer, descriptor_);
-  printer->Print(
-      variables_,
-      "$deprecation$public Builder ${$clear$capitalized_name$$}$() {\n"
-      "  copyOnWrite();\n"
-      "  instance.clear$capitalized_name$();\n"
-      "  return this;\n"
-      "}\n");
+  printer->Print(variables_,
+    "$deprecation$public Builder ${$clear$capitalized_name$$}$() {\n"
+    "  copyOnWrite();\n"
+    "  instance.clear$capitalized_name$();\n"
+    "  return this;\n"
+    "}\n");
   printer->Annotate("{", "}", descriptor_);
+}
+
+void ImmutablePrimitiveOneofFieldLiteGenerator::
+GenerateBuildingCode(io::Printer* printer) const {
+  // noop for primitives
+}
+
+void ImmutablePrimitiveOneofFieldLiteGenerator::
+GenerateVisitCode(io::Printer* printer) const {
+  printer->Print(variables_,
+      "$oneof_name$_ = visitor.visitOneof$visit_type$(\n"
+      "    $has_oneof_case_message$, $oneof_name$_, other.$oneof_name$_);\n");
+}
+
+void ImmutablePrimitiveOneofFieldLiteGenerator::
+GenerateParsingCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "$set_oneof_case_message$;\n"
+    "$oneof_name$_ = input.read$capitalized_type$();\n");
+}
+
+void ImmutablePrimitiveOneofFieldLiteGenerator::
+GenerateSerializationCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "if ($has_oneof_case_message$) {\n"
+    "  output.write$capitalized_type$(\n"
+    "      $number$, ($type$)(($boxed_type$) $oneof_name$_));\n"
+    "}\n");
+}
+
+void ImmutablePrimitiveOneofFieldLiteGenerator::
+GenerateSerializedSizeCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "if ($has_oneof_case_message$) {\n"
+    "  size += com.google.protobuf.CodedOutputStream\n"
+    "    .compute$capitalized_type$Size(\n"
+    "        $number$, ($type$)(($boxed_type$) $oneof_name$_));\n"
+    "}\n");
 }
 
 // ===================================================================
@@ -453,176 +622,326 @@ RepeatedImmutablePrimitiveFieldLiteGenerator::
 }
 
 RepeatedImmutablePrimitiveFieldLiteGenerator::
-    ~RepeatedImmutablePrimitiveFieldLiteGenerator() {}
+~RepeatedImmutablePrimitiveFieldLiteGenerator() {}
 
 int RepeatedImmutablePrimitiveFieldLiteGenerator::GetNumBitsForMessage() const {
   return 0;
 }
 
-void RepeatedImmutablePrimitiveFieldLiteGenerator::GenerateInterfaceMembers(
-    io::Printer* printer) const {
+void RepeatedImmutablePrimitiveFieldLiteGenerator::
+GenerateInterfaceMembers(io::Printer* printer) const {
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
-                 "$deprecation$java.util.List<$boxed_type$> "
-                 "get$capitalized_name$List();\n");
+    "$deprecation$java.util.List<$boxed_type$> get$capitalized_name$List();\n");
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
-                 "$deprecation$int get$capitalized_name$Count();\n");
+    "$deprecation$int get$capitalized_name$Count();\n");
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
-                 "$deprecation$$type$ get$capitalized_name$(int index);\n");
+    "$deprecation$$type$ get$capitalized_name$(int index);\n");
 }
 
-void RepeatedImmutablePrimitiveFieldLiteGenerator::GenerateMembers(
-    io::Printer* printer) const {
-  printer->Print(variables_, "private $field_list_type$ $name$_;\n");
+
+void RepeatedImmutablePrimitiveFieldLiteGenerator::
+GenerateMembers(io::Printer* printer) const {
+  printer->Print(variables_,
+    "private $field_list_type$ $name$_;\n");
   PrintExtraFieldInfo(variables_, printer);
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
-                 "@java.lang.Override\n"
-                 "$deprecation$public java.util.List<$boxed_type$>\n"
-                 "    ${$get$capitalized_name$List$}$() {\n"
-                 "  return $name$_;\n"  // note:  unmodifiable list
-                 "}\n");
+    "@java.lang.Override\n"
+    "$deprecation$public java.util.List<$boxed_type$>\n"
+    "    ${$get$capitalized_name$List$}$() {\n"
+    "  return $name$_;\n"   // note:  unmodifiable list
+    "}\n");
   printer->Annotate("{", "}", descriptor_);
   WriteFieldDocComment(printer, descriptor_);
-  printer->Print(
-      variables_,
-      "@java.lang.Override\n"
-      "$deprecation$public int ${$get$capitalized_name$Count$}$() {\n"
-      "  return $name$_.size();\n"
-      "}\n");
+  printer->Print(variables_,
+    "@java.lang.Override\n"
+    "$deprecation$public int ${$get$capitalized_name$Count$}$() {\n"
+    "  return $name$_.size();\n"
+    "}\n");
   printer->Annotate("{", "}", descriptor_);
   WriteFieldDocComment(printer, descriptor_);
-  printer->Print(
-      variables_,
-      "@java.lang.Override\n"
-      "$deprecation$public $type$ ${$get$capitalized_name$$}$(int index) {\n"
-      "  return $repeated_get$(index);\n"
-      "}\n");
+  printer->Print(variables_,
+    "@java.lang.Override\n"
+    "$deprecation$public $type$ ${$get$capitalized_name$$}$(int index) {\n"
+    "  return $repeated_get$(index);\n"
+    "}\n");
   printer->Annotate("{", "}", descriptor_);
 
   if (!EnableExperimentalRuntimeForLite() && descriptor_->is_packed() &&
       context_->HasGeneratedMethods(descriptor_->containing_type())) {
     printer->Print(variables_,
-                   "private int $name$MemoizedSerializedSize = -1;\n");
+      "private int $name$MemoizedSerializedSize = -1;\n");
+  }
+
+  printer->Print(variables_,
+    "private void ensure$capitalized_name$IsMutable() {\n"
+    "  if (!$is_mutable$) {\n"
+    "    $name$_ =\n"
+    "        com.google.protobuf.GeneratedMessageLite.mutableCopy($name$_);\n"
+    "   }\n"
+    "}\n");
+
+  WriteFieldDocComment(printer, descriptor_);
+  printer->Print(variables_,
+    "private void set$capitalized_name$(\n"
+    "    int index, $type$ value) {\n"
+    "$null_check$"
+    "  ensure$capitalized_name$IsMutable();\n"
+    "  $repeated_set$(index, value);\n"
+    "}\n");
+  WriteFieldDocComment(printer, descriptor_);
+  printer->Print(variables_,
+    "private void add$capitalized_name$($type$ value) {\n"
+    "$null_check$"
+    "  ensure$capitalized_name$IsMutable();\n"
+    "  $repeated_add$(value);\n"
+    "}\n");
+  WriteFieldDocComment(printer, descriptor_);
+  printer->Print(variables_,
+    "private void addAll$capitalized_name$(\n"
+    "    java.lang.Iterable<? extends $boxed_type$> values) {\n"
+    "  ensure$capitalized_name$IsMutable();\n"
+    "  com.google.protobuf.AbstractMessageLite.addAll(\n"
+    "      values, $name$_);\n"
+    "}\n");
+  WriteFieldDocComment(printer, descriptor_);
+  printer->Print(variables_,
+    "private void clear$capitalized_name$() {\n"
+    "  $name$_ = $empty_list$;\n"
+    "}\n");
+}
+
+void RepeatedImmutablePrimitiveFieldLiteGenerator::
+GenerateBuilderMembers(io::Printer* printer) const {
+  WriteFieldDocComment(printer, descriptor_);
+  printer->Print(variables_,
+    "@java.lang.Override\n"
+    "$deprecation$public java.util.List<$boxed_type$>\n"
+    "    ${$get$capitalized_name$List$}$() {\n"
+    "  return java.util.Collections.unmodifiableList(\n"
+    "      instance.get$capitalized_name$List());\n"
+    "}\n");
+  printer->Annotate("{", "}", descriptor_);
+  WriteFieldDocComment(printer, descriptor_);
+  printer->Print(variables_,
+    "@java.lang.Override\n"
+    "$deprecation$public int ${$get$capitalized_name$Count$}$() {\n"
+    "  return instance.get$capitalized_name$Count();\n"
+    "}\n");
+  printer->Annotate("{", "}", descriptor_);
+  WriteFieldDocComment(printer, descriptor_);
+  printer->Print(variables_,
+    "@java.lang.Override\n"
+    "$deprecation$public $type$ ${$get$capitalized_name$$}$(int index) {\n"
+    "  return instance.get$capitalized_name$(index);\n"
+    "}\n");
+  printer->Annotate("{", "}", descriptor_);
+  WriteFieldDocComment(printer, descriptor_);
+  printer->Print(variables_,
+    "$deprecation$public Builder ${$set$capitalized_name$$}$(\n"
+    "    int index, $type$ value) {\n"
+    "  copyOnWrite();\n"
+    "  instance.set$capitalized_name$(index, value);\n"
+    "  return this;\n"
+    "}\n");
+  printer->Annotate("{", "}", descriptor_);
+  WriteFieldDocComment(printer, descriptor_);
+  printer->Print(variables_,
+    "$deprecation$public Builder ${$add$capitalized_name$$}$($type$ value) {\n"
+    "  copyOnWrite();\n"
+    "  instance.add$capitalized_name$(value);\n"
+    "  return this;\n"
+    "}\n");
+  printer->Annotate("{", "}", descriptor_);
+  WriteFieldDocComment(printer, descriptor_);
+  printer->Print(variables_,
+    "$deprecation$public Builder ${$addAll$capitalized_name$$}$(\n"
+    "    java.lang.Iterable<? extends $boxed_type$> values) {\n"
+    "  copyOnWrite();\n"
+    "  instance.addAll$capitalized_name$(values);\n"
+    "  return this;\n"
+    "}\n");
+  printer->Annotate("{", "}", descriptor_);
+  WriteFieldDocComment(printer, descriptor_);
+  printer->Print(variables_,
+    "$deprecation$public Builder ${$clear$capitalized_name$$}$() {\n"
+    "  copyOnWrite();\n"
+    "  instance.clear$capitalized_name$();\n"
+    "  return this;\n"
+    "}\n");
+  printer->Annotate("{", "}", descriptor_);
+}
+
+void RepeatedImmutablePrimitiveFieldLiteGenerator::
+GenerateFieldBuilderInitializationCode(io::Printer* printer)  const {
+  // noop for primitives
+}
+
+
+void RepeatedImmutablePrimitiveFieldLiteGenerator::
+GenerateInitializationCode(io::Printer* printer) const {
+  printer->Print(variables_, "$name$_ = $empty_list$;\n");
+}
+
+void RepeatedImmutablePrimitiveFieldLiteGenerator::
+GenerateBuilderClearCode(io::Printer* printer) const {
+  // noop for primitives
+}
+
+void RepeatedImmutablePrimitiveFieldLiteGenerator::
+GenerateVisitCode(io::Printer* printer) const {
+  printer->Print(variables_,
+      "$name$_= visitor.$visit_type_list$($name$_, other.$name$_);\n");
+}
+
+void RepeatedImmutablePrimitiveFieldLiteGenerator::
+GenerateBuildingCode(io::Printer* printer) const {
+  // noop for primitives
+}
+
+void RepeatedImmutablePrimitiveFieldLiteGenerator::
+GenerateDynamicMethodMakeImmutableCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "$name$_.makeImmutable();\n");
+}
+
+void RepeatedImmutablePrimitiveFieldLiteGenerator::
+GenerateParsingCode(io::Printer* printer) const {
+  // TODO(dweis): Scan the input buffer to count, then initialize
+  // appropriately.
+  // TODO(dweis): Scan the input buffer to count and ensure capacity.
+  printer->Print(variables_,
+    "if (!$is_mutable$) {\n"
+    "  $name$_ =\n"
+    "      com.google.protobuf.GeneratedMessageLite.mutableCopy($name$_);\n"
+    "}\n"
+    "$repeated_add$(input.read$capitalized_type$());\n");
+}
+
+void RepeatedImmutablePrimitiveFieldLiteGenerator::
+GenerateParsingCodeFromPacked(io::Printer* printer) const {
+  printer->Print(variables_,
+    "int length = input.readRawVarint32();\n"
+    "int limit = input.pushLimit(length);\n"
+    "if (!$is_mutable$ && input.getBytesUntilLimit() > 0) {\n");
+
+  int fixed_size = FixedSize(GetType(descriptor_));
+  if (fixed_size == -1) {
+    // TODO(dweis): Scan the input buffer to count, then initialize
+    // appropriately.
+    printer->Print(variables_,
+      "  $name$_ =\n"
+      "      com.google.protobuf.GeneratedMessageLite.mutableCopy($name$_);\n");
+  } else {
+    printer->Print(variables_,
+      "  final int currentSize = $name$_.size();\n"
+      "  $name$_ = $name$_.mutableCopyWithCapacity(\n"
+      "      currentSize + (length/$fixed_size$));\n");
+  }
+
+  // TODO(dweis): Scan the input buffer to count and ensure capacity.
+  printer->Print(variables_,
+    "}\n"
+    "while (input.getBytesUntilLimit() > 0) {\n"
+    "  $repeated_add$(input.read$capitalized_type$());\n"
+    "}\n"
+    "input.popLimit(limit);\n");
+}
+
+void RepeatedImmutablePrimitiveFieldLiteGenerator::
+GenerateParsingDoneCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "if ($is_mutable$) {\n"
+    "  $make_name_unmodifiable$;\n"
+    "}\n");
+}
+
+void RepeatedImmutablePrimitiveFieldLiteGenerator::
+GenerateSerializationCode(io::Printer* printer) const {
+  GOOGLE_CHECK(!EnableExperimentalRuntimeForLite());
+
+  if (descriptor_->is_packed()) {
+    // We invoke getSerializedSize in writeTo for messages that have packed
+    // fields in ImmutableMessageGenerator::GenerateMessageSerializationMethods.
+    // That makes it safe to rely on the memoized size here.
+    printer->Print(variables_,
+      "if (get$capitalized_name$List().size() > 0) {\n"
+      "  output.writeUInt32NoTag($tag$);\n"
+      "  output.writeUInt32NoTag($name$MemoizedSerializedSize);\n"
+      "}\n"
+      "for (int i = 0; i < $name$_.size(); i++) {\n"
+      "  output.write$capitalized_type$NoTag($repeated_get$(i));\n"
+      "}\n");
+  } else {
+    printer->Print(variables_,
+      "for (int i = 0; i < $name$_.size(); i++) {\n"
+      "  output.write$capitalized_type$($number$, $repeated_get$(i));\n"
+      "}\n");
+  }
+}
+
+void RepeatedImmutablePrimitiveFieldLiteGenerator::
+GenerateSerializedSizeCode(io::Printer* printer) const {
+  GOOGLE_CHECK(!EnableExperimentalRuntimeForLite());
+
+  printer->Print(variables_,
+    "{\n"
+    "  int dataSize = 0;\n");
+  printer->Indent();
+
+  if (FixedSize(GetType(descriptor_)) == -1) {
+    printer->Print(variables_,
+      "for (int i = 0; i < $name$_.size(); i++) {\n"
+      "  dataSize += com.google.protobuf.CodedOutputStream\n"
+      "    .compute$capitalized_type$SizeNoTag($repeated_get$(i));\n"
+      "}\n");
+  } else {
+    printer->Print(variables_,
+      "dataSize = $fixed_size$ * get$capitalized_name$List().size();\n");
   }
 
   printer->Print(
-      variables_,
-      "private void ensure$capitalized_name$IsMutable() {\n"
-      "  if (!$is_mutable$) {\n"
-      "    $name$_ =\n"
-      "        com.google.protobuf.GeneratedMessageLite.mutableCopy($name$_);\n"
-      "   }\n"
-      "}\n");
+      "size += dataSize;\n");
 
-  WriteFieldDocComment(printer, descriptor_);
-  printer->Print(variables_,
-                 "private void set$capitalized_name$(\n"
-                 "    int index, $type$ value) {\n"
-                 "$null_check$"
-                 "  ensure$capitalized_name$IsMutable();\n"
-                 "  $repeated_set$(index, value);\n"
-                 "}\n");
-  WriteFieldDocComment(printer, descriptor_);
-  printer->Print(variables_,
-                 "private void add$capitalized_name$($type$ value) {\n"
-                 "$null_check$"
-                 "  ensure$capitalized_name$IsMutable();\n"
-                 "  $repeated_add$(value);\n"
-                 "}\n");
-  WriteFieldDocComment(printer, descriptor_);
-  printer->Print(variables_,
-                 "private void addAll$capitalized_name$(\n"
-                 "    java.lang.Iterable<? extends $boxed_type$> values) {\n"
-                 "  ensure$capitalized_name$IsMutable();\n"
-                 "  com.google.protobuf.AbstractMessageLite.addAll(\n"
-                 "      values, $name$_);\n"
-                 "}\n");
-  WriteFieldDocComment(printer, descriptor_);
-  printer->Print(variables_,
-                 "private void clear$capitalized_name$() {\n"
-                 "  $name$_ = $empty_list$;\n"
-                 "}\n");
+  if (descriptor_->is_packed()) {
+    printer->Print(variables_,
+      "if (!get$capitalized_name$List().isEmpty()) {\n"
+      "  size += $tag_size$;\n"
+      "  size += com.google.protobuf.CodedOutputStream\n"
+      "      .computeInt32SizeNoTag(dataSize);\n"
+      "}\n");
+  } else {
+    printer->Print(variables_,
+      "size += $tag_size$ * get$capitalized_name$List().size();\n");
+  }
+
+  // cache the data size for packed fields.
+  if (descriptor_->is_packed()) {
+    printer->Print(variables_,
+      "$name$MemoizedSerializedSize = dataSize;\n");
+  }
+
+  printer->Outdent();
+  printer->Print("}\n");
 }
 
-void RepeatedImmutablePrimitiveFieldLiteGenerator::GenerateBuilderMembers(
-    io::Printer* printer) const {
-  WriteFieldDocComment(printer, descriptor_);
+void RepeatedImmutablePrimitiveFieldLiteGenerator::
+GenerateEqualsCode(io::Printer* printer) const {
   printer->Print(variables_,
-                 "@java.lang.Override\n"
-                 "$deprecation$public java.util.List<$boxed_type$>\n"
-                 "    ${$get$capitalized_name$List$}$() {\n"
-                 "  return java.util.Collections.unmodifiableList(\n"
-                 "      instance.get$capitalized_name$List());\n"
-                 "}\n");
-  printer->Annotate("{", "}", descriptor_);
-  WriteFieldDocComment(printer, descriptor_);
-  printer->Print(
-      variables_,
-      "@java.lang.Override\n"
-      "$deprecation$public int ${$get$capitalized_name$Count$}$() {\n"
-      "  return instance.get$capitalized_name$Count();\n"
-      "}\n");
-  printer->Annotate("{", "}", descriptor_);
-  WriteFieldDocComment(printer, descriptor_);
-  printer->Print(
-      variables_,
-      "@java.lang.Override\n"
-      "$deprecation$public $type$ ${$get$capitalized_name$$}$(int index) {\n"
-      "  return instance.get$capitalized_name$(index);\n"
-      "}\n");
-  printer->Annotate("{", "}", descriptor_);
-  WriteFieldDocComment(printer, descriptor_);
-  printer->Print(variables_,
-                 "$deprecation$public Builder ${$set$capitalized_name$$}$(\n"
-                 "    int index, $type$ value) {\n"
-                 "  copyOnWrite();\n"
-                 "  instance.set$capitalized_name$(index, value);\n"
-                 "  return this;\n"
-                 "}\n");
-  printer->Annotate("{", "}", descriptor_);
-  WriteFieldDocComment(printer, descriptor_);
-  printer->Print(variables_,
-                 "$deprecation$public Builder "
-                 "${$add$capitalized_name$$}$($type$ value) {\n"
-                 "  copyOnWrite();\n"
-                 "  instance.add$capitalized_name$(value);\n"
-                 "  return this;\n"
-                 "}\n");
-  printer->Annotate("{", "}", descriptor_);
-  WriteFieldDocComment(printer, descriptor_);
-  printer->Print(variables_,
-                 "$deprecation$public Builder ${$addAll$capitalized_name$$}$(\n"
-                 "    java.lang.Iterable<? extends $boxed_type$> values) {\n"
-                 "  copyOnWrite();\n"
-                 "  instance.addAll$capitalized_name$(values);\n"
-                 "  return this;\n"
-                 "}\n");
-  printer->Annotate("{", "}", descriptor_);
-  WriteFieldDocComment(printer, descriptor_);
-  printer->Print(
-      variables_,
-      "$deprecation$public Builder ${$clear$capitalized_name$$}$() {\n"
-      "  copyOnWrite();\n"
-      "  instance.clear$capitalized_name$();\n"
-      "  return this;\n"
-      "}\n");
-  printer->Annotate("{", "}", descriptor_);
+    "result = result && get$capitalized_name$List()\n"
+    "    .equals(other.get$capitalized_name$List());\n");
 }
 
-void RepeatedImmutablePrimitiveFieldLiteGenerator::GenerateFieldInfo(
-    io::Printer* printer, std::vector<uint16>* output) const {
-  WriteIntToUtf16CharSequence(descriptor_->number(), output);
-  WriteIntToUtf16CharSequence(GetExperimentalJavaFieldType(descriptor_),
-                              output);
-  printer->Print(variables_, "\"$name$_\",\n");
-}
-
-void RepeatedImmutablePrimitiveFieldLiteGenerator::GenerateInitializationCode(
-    io::Printer* printer) const {
-  printer->Print(variables_, "$name$_ = $empty_list$;\n");
+void RepeatedImmutablePrimitiveFieldLiteGenerator::
+GenerateHashCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "if (get$capitalized_name$Count() > 0) {\n"
+    "  hash = (37 * hash) + $constant_name$;\n"
+    "  hash = (53 * hash) + get$capitalized_name$List().hashCode();\n"
+    "}\n");
 }
 
 std::string RepeatedImmutablePrimitiveFieldLiteGenerator::GetBoxedType() const {

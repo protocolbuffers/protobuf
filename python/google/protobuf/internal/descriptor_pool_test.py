@@ -561,8 +561,8 @@ class DescriptorPoolTestBase(object):
                       str(w[0].message))
 
 
-@testing_refleaks.TestCase
-class DefaultDescriptorPoolTest(DescriptorPoolTestBase, unittest.TestCase):
+class DefaultDescriptorPoolTest(DescriptorPoolTestBase,
+                                testing_refleaks.BaseTestCase):
 
   def setUp(self):
     self.pool = descriptor_pool.Default()
@@ -597,8 +597,8 @@ class DefaultDescriptorPoolTest(DescriptorPoolTestBase, unittest.TestCase):
         unittest_pb2.DESCRIPTOR.services_by_name['TestService'])
 
 
-@testing_refleaks.TestCase
-class CreateDescriptorPoolTest(DescriptorPoolTestBase, unittest.TestCase):
+class CreateDescriptorPoolTest(DescriptorPoolTestBase,
+                               testing_refleaks.BaseTestCase):
 
   def setUp(self):
     self.pool = descriptor_pool.DescriptorPool()
@@ -619,9 +619,8 @@ class CreateDescriptorPoolTest(DescriptorPoolTestBase, unittest.TestCase):
         no_package_pb2.DESCRIPTOR.serialized_pb))
 
 
-@testing_refleaks.TestCase
 class SecondaryDescriptorFromDescriptorDB(DescriptorPoolTestBase,
-                                          unittest.TestCase):
+                                          testing_refleaks.BaseTestCase):
 
   def setUp(self):
     self.factory_test1_fd = descriptor_pb2.FileDescriptorProto.FromString(
@@ -813,8 +812,7 @@ class ExtensionField(object):
     test.assertEqual(file_desc, field_desc.file)
 
 
-@testing_refleaks.TestCase
-class AddDescriptorTest(unittest.TestCase):
+class AddDescriptorTest(testing_refleaks.BaseTestCase):
 
   def _TestMessage(self, prefix):
     pool = descriptor_pool.DescriptorPool()

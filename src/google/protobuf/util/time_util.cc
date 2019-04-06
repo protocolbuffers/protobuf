@@ -45,8 +45,8 @@ namespace google {
 namespace protobuf {
 namespace util {
 
-using google::protobuf::Duration;
 using google::protobuf::Timestamp;
+using google::protobuf::Duration;
 
 namespace {
 static const int kNanosPerSecond = 1000000000;

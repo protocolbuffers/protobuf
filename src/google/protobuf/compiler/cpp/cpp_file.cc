@@ -75,6 +75,7 @@ FileGenerator::FileGenerator(const FileDescriptor* file, const Options& options)
   variables_["add_descriptors"] = UniqueName("AddDescriptors", file_, options_);
   variables_["filename"] = file_->name();
   variables_["package_ns"] = Namespace(file_, options);
+  variables_["init_defaults"] = UniqueName("InitDefaults", file_, options_);
 
   std::vector<const Descriptor*> msgs = FlattenMessagesInFile(file);
   for (int i = 0; i < msgs.size(); i++) {
@@ -149,6 +150,11 @@ void FileGenerator::GenerateHeader(io::Printer* printer) {
   format("#define $1$$ dllexport_decl$\n",
          UniqueName("PROTOBUF_INTERNAL_EXPORT", file_, options_));
   GenerateMacroUndefs(printer);
+  if (IsProto2MessageSetFile(file_, options_)) {
+    // Proto2 MessageSet overrides GetMapper() so we forward declare TagMapper
+    // to avoid inclusion of "tagmapper.h".
+    format("class TagMapper;\n");
+  }
 
   // For Any support with lite protos, we need to friend AnyMetadata, so we
   // forward-declare it here.
@@ -158,6 +164,18 @@ void FileGenerator::GenerateHeader(io::Printer* printer) {
       "class AnyMetadata;\n"
       "}  // namespace internal\n"
       "PROTOBUF_NAMESPACE_CLOSE\n");
+
+  if (!options_.opensource_runtime) {
+    // EmbeddedMessageHolder is a proxy class to provide access into arena
+    // constructors for proto1 message objects.
+    // See net/proto/proto_arena_internal.h
+    format(
+        "namespace proto {\n"
+        "namespace internal {\n"
+        "template <typename T> struct EmbeddedMessageHolder;\n"
+        "}  //  namespace internal\n"
+        "}  //  namespace proto\n");
+  }
 
   GenerateGlobalStateFunctionDeclarations(printer);
 
@@ -231,7 +249,14 @@ void FileGenerator::GenerateProtoHeader(io::Printer* printer,
 
   for (int i = 0; i < file_->public_dependency_count(); i++) {
     const FileDescriptor* dep = file_->public_dependency(i);
-    format("#include \"$1$.proto.h\"\n", StripProto(dep->name()));
+    const char* extension = ".proto.h";
+    // The proto1 compiler only generates .pb.h files, so even if we are
+    // running in proto-h mode, we can only use the .pb.h.
+    if (IsProto1(dep, options_)) {
+      extension = ".pb.h";
+    }
+    std::string dependency = StripProto(dep->name()) + extension;
+    format("#include \"$1$\"\n", dependency);
   }
 
   format("// @@protoc_insertion_point(includes)\n");
@@ -388,13 +413,20 @@ void FileGenerator::GenerateSourceIncludes(io::Printer* printer) {
     // Use the smaller .proto.h files.
     for (int i = 0; i < file_->dependency_count(); i++) {
       const FileDescriptor* dep = file_->dependency(i);
+      const char* extension = ".proto.h";
+      std::string basename = StripProto(dep->name());
       // Do not import weak deps.
       if (!options_.opensource_runtime && IsDepWeak(dep)) continue;
-      std::string basename = StripProto(dep->name());
+      // The proto1 compiler only generates .pb.h files, so even if we are
+      // running in proto-h mode, we can only use the .pb.h.
+      if (IsProto1(dep, options_)) {
+        extension = ".pb.h";
+      }
       if (IsBootstrapProto(options_, file_)) {
         GetBootstrapBasename(options_, basename, &basename);
       }
-      format("#include \"$1$.proto.h\"\n", basename);
+      std::string dependency = basename + extension;
+      format("#include \"$1$\"\n", dependency);
     }
   }
 
@@ -447,7 +479,7 @@ void FileGenerator::GenerateInternalForwardDeclarations(
     }
     std::string dllexport =
         UniqueName("PROTOBUF_INTERNAL_EXPORT", msg, options_);
-    if (IsWeak(field, options_)) {
+    if (IsProto1(msg->file(), options_) || IsWeak(field, options_)) {
       dllexport = "";
     }
     auto scc = scc_analyzer->GetSCC(msg);
@@ -594,6 +626,19 @@ void FileGenerator::GenerateSource(io::Printer* printer) {
     }
 
     if (HasDescriptorMethods(file_, options_)) {
+      // TODO(gerbens) This is for proto1 interoperability. Remove when proto1
+      // is gone.
+      format("void $init_defaults$() {\n");
+      for (int i = 0; i < message_generators_.size(); i++) {
+        if (!IsSCCRepresentative(message_generators_[i]->descriptor_)) continue;
+        std::string scc_name =
+            UniqueName(ClassName(message_generators_[i]->descriptor_),
+                       message_generators_[i]->descriptor_, options_);
+        format("  ::$proto_ns$::internal::InitSCC(&scc_info_$1$.base);\n",
+               scc_name);
+      }
+      format("}\n\n");
+
       // Define the code to initialize reflection. This code uses a global
       // constructor to register reflection data with the runtime pre-main.
       GenerateReflectionInitializationCode(printer);
@@ -736,8 +781,8 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* printer) {
       format(
           "reinterpret_cast<const "
           "::$proto_ns$::Message*>(&$1$::_$2$_default_instance_),\n",
-          Namespace(descriptor, options_),  // 1
-          ClassName(descriptor));           // 2
+          Namespace(descriptor, options_),   // 1
+          ClassName(descriptor));  // 2
     }
     format.Outdent();
     format(
@@ -778,7 +823,7 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* printer) {
   // built into real descriptors at initialization time.
   const std::string protodef_name =
       UniqueName("descriptor_table_protodef", file_, options_);
-  format("const char $1$[] =\n", protodef_name);
+  format( "const char $1$[] =\n", protodef_name);
   format.Indent();
   FileDescriptorProto file_proto;
   file_->CopyTo(&file_proto);
@@ -816,8 +861,10 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* printer) {
   format(
       "static "
       "::$proto_ns$::internal::DescriptorTable $1$ = {\n"
-      "  false, $2$,\n",
-      UniqueName("descriptor_table", file_, options_), protodef_name);
+      "  false, $init_defaults$, \n"
+      "  $2$,\n",
+      UniqueName("descriptor_table", file_, options_),
+      protodef_name);
 
   const int num_deps = file_->dependency_count();
   format(
@@ -831,18 +878,8 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* printer) {
     const FileDescriptor* dependency = file_->dependency(i);
     format("    ::$1$,\n", UniqueName("AddDescriptors", dependency, options_));
   }
-  format("  };\n");
-  // Reflection referes to the default instances so make sure they are
-  // initialized.
-  for (int i = 0; i < message_generators_.size(); i++) {
-    if (!IsSCCRepresentative(message_generators_[i]->descriptor_)) continue;
-    std::string scc_name =
-        UniqueName(ClassName(message_generators_[i]->descriptor_),
-                   message_generators_[i]->descriptor_, options_);
-    format("  ::$proto_ns$::internal::InitSCC(&scc_info_$1$.base);\n",
-           scc_name);
-  }
   format(
+      "  };\n"
       " ::$proto_ns$::internal::AddDescriptors(&$1$, deps, $2$);\n"
       "}\n\n",
       UniqueName("descriptor_table", file_, options_),  // 1
@@ -866,6 +903,15 @@ void FileGenerator::GenerateInitForSCC(const SCC* scc, io::Printer* printer) {
   }
 
   format.Indent();
+
+  if (!options_.opensource_runtime) {
+    for (int i = 0; i < scc->children.size(); i++) {
+      const SCC* child_scc = scc->children[i];
+      const FileDescriptor* dependency = child_scc->GetRepresentative()->file();
+      if (!IsProto1(dependency, options_)) continue;
+      format("$1$();\n", UniqueName("InitDefaults", dependency, options_));
+    }
+  }
 
   // First construct all the necessary default instances.
   for (int i = 0; i < message_generators_.size(); i++) {
@@ -915,6 +961,11 @@ void FileGenerator::GenerateInitForSCC(const SCC* scc, io::Printer* printer) {
                  options_));
   for (const SCC* child : scc->children) {
     auto repr = child->GetRepresentative();
+    if (IsProto1(repr->file(), options_)) {
+      GOOGLE_CHECK(!options_.opensource_runtime);
+      format("\n      nullptr,");
+      continue;
+    }
     format("\n      &scc_info_$1$.base,",
            UniqueName(ClassName(repr), repr, options_));
   }
@@ -1192,7 +1243,7 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* printer) {
         "#endif\n"
         "\n",
         PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC,  // 1
-        PROTOBUF_VERSION);                       // 2
+        PROTOBUF_VERSION);                               // 2
     IncludeFile("net/proto2/public/port_undef.inc", printer);
   }
 
@@ -1330,6 +1381,11 @@ void FileGenerator::GenerateGlobalStateFunctionDeclarations(
       std::max(size_t(1), message_generators_.size()));
   if (HasDescriptorMethods(file_, options_)) {
     format("void $dllexport_decl $$add_descriptors$();\n");
+    if (!options_.opensource_runtime) {
+      // TODO(gerbens) This is for proto1 interoperability. Remove when proto1
+      // is gone.
+      format("void $dllexport_decl $$init_defaults$();\n");
+    }
   }
 }
 

@@ -50,21 +50,55 @@ struct CMessageClass;
 
 // This struct is used directly for ScalarMap, and is the base class of
 // MessageMapContainer, which is used for MessageMap.
-struct MapContainer : public ContainerBase {
+struct MapContainer {
+  PyObject_HEAD;
+
+  // This is the top-level C++ Message object that owns the whole
+  // proto tree.  Every Python MapContainer holds a
+  // reference to it in order to keep it alive as long as there's a
+  // Python object that references any part of the tree.
+  CMessage::OwnerRef owner;
+
+  // Pointer to the C++ Message that contains this container.  The
+  // MapContainer does not own this pointer.
+  const Message* message;
+
   // Use to get a mutable message when necessary.
   Message* GetMutableMessage();
 
-  // Cache some descriptors, used to convert keys and values.
+  // Weak reference to a parent CMessage object (i.e. may be NULL.)
+  //
+  // Used to make sure all ancestors are also mutable when first
+  // modifying the container.
+  CMessage* parent;
+
+  // Pointer to the parent's descriptor that describes this
+  // field.  Used together with the parent's message when making a
+  // default message instance mutable.
+  // The pointer is owned by the global DescriptorPool.
+  const FieldDescriptor* parent_field_descriptor;
   const FieldDescriptor* key_field_descriptor;
   const FieldDescriptor* value_field_descriptor;
+
   // We bump this whenever we perform a mutation, to invalidate existing
   // iterators.
   uint64 version;
+
+  // Releases the messages in the container to a new message.
+  //
+  // Returns 0 on success, -1 on failure.
+  int Release();
+
+  // Set the owner field of self and any children of self.
+  void SetOwner(const CMessage::OwnerRef& new_owner) { owner = new_owner; }
 };
 
 struct MessageMapContainer : public MapContainer {
   // The type used to create new child messages.
   CMessageClass* message_class;
+
+  // A dict mapping Message* -> CMessage.
+  PyObject* message_dict;
 };
 
 bool InitMapContainers();
@@ -75,12 +109,12 @@ extern PyTypeObject MapIterator_Type;  // Both map types use the same iterator.
 
 // Builds a MapContainer object, from a parent message and a
 // field descriptor.
-extern MapContainer* NewScalarMapContainer(
+extern PyObject* NewScalarMapContainer(
     CMessage* parent, const FieldDescriptor* parent_field_descriptor);
 
 // Builds a MessageMap object, from a parent message and a
 // field descriptor.
-extern MessageMapContainer* NewMessageMapContainer(
+extern PyObject* NewMessageMapContainer(
     CMessage* parent, const FieldDescriptor* parent_field_descriptor,
     CMessageClass* message_class);
 

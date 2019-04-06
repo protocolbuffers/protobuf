@@ -50,8 +50,6 @@ import com.google.protobuf.UnittestLite.TestHugeFieldNumbersLite;
 import com.google.protobuf.UnittestLite.TestNestedExtensionLite;
 import map_lite_test.MapTestProto.TestMap;
 import map_lite_test.MapTestProto.TestMap.MessageValue;
-import protobuf_unittest.NestedExtensionLite;
-import protobuf_unittest.NonNestedExtensionLite;
 import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash.Bar;
 import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash.BarPrime;
 import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash.Foo;
@@ -2338,26 +2336,6 @@ public class LiteTest extends TestCase {
       assertEquals("Element at index 0 is null.", expected.getMessage());
       assertEquals(0, builder.getRepeatedNestedMessageCount());
     }
-  }
-
-  public void testExtensionRenamesKeywords() {
-    assertTrue(NonNestedExtensionLite.package_ instanceof GeneratedMessageLite.GeneratedExtension);
-    assertTrue(
-        NestedExtensionLite.MyNestedExtensionLite.private_
-            instanceof GeneratedMessageLite.GeneratedExtension);
-
-    NonNestedExtensionLite.MessageLiteToBeExtended msg =
-        NonNestedExtensionLite.MessageLiteToBeExtended.newBuilder()
-            .setExtension(NonNestedExtensionLite.package_, true)
-            .build();
-    assertTrue(msg.getExtension(NonNestedExtensionLite.package_));
-
-    msg =
-        NonNestedExtensionLite.MessageLiteToBeExtended.newBuilder()
-            .setExtension(NestedExtensionLite.MyNestedExtensionLite.private_, 2.4)
-            .build();
-    assertEquals(
-        2.4, msg.getExtension(NestedExtensionLite.MyNestedExtensionLite.private_), 0.001);
   }
 
   private static final class OneTimeIterableList<T> extends ArrayList<T> {

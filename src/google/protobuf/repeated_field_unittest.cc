@@ -629,23 +629,27 @@ TEST(RepeatedField, ExtractSubrange) {
       for (int start = 0; start < sz - num; ++start) {
         // Create RepeatedField with sz elements having values 0 through sz-1.
         RepeatedField<int32> field;
-        for (int i = 0; i < sz; ++i) field.Add(i);
+        for (int i = 0; i < sz; ++i)
+          field.Add(i);
         EXPECT_EQ(field.size(), sz);
 
         // Create a catcher array and call ExtractSubrange.
         int32 catcher[10];
-        for (int i = 0; i < 10; ++i) catcher[i] = -1;
+        for (int i = 0; i < 10; ++i)
+          catcher[i] = -1;
         field.ExtractSubrange(start, num, catcher);
 
         // Does the resulting array have the right size?
         EXPECT_EQ(field.size(), sz - num);
 
         // Were the removed elements extracted into the catcher array?
-        for (int i = 0; i < num; ++i) EXPECT_EQ(catcher[i], start + i);
+        for (int i = 0; i < num; ++i)
+          EXPECT_EQ(catcher[i], start + i);
         EXPECT_EQ(catcher[num], -1);
 
         // Does the resulting array contain the right values?
-        for (int i = 0; i < start; ++i) EXPECT_EQ(field.Get(i), i);
+        for (int i = 0; i < start; ++i)
+          EXPECT_EQ(field.Get(i), i);
         for (int i = start; i < field.size(); ++i)
           EXPECT_EQ(field.Get(i), i + num);
       }
@@ -1275,13 +1279,15 @@ TEST(RepeatedPtrField, ExtractSubrange) {
             field.AddAllocated(subject[i]);
           }
           EXPECT_EQ(field.size(), sz + extra);
-          for (int i = 0; i < extra; ++i) field.RemoveLast();
+          for (int i = 0; i < extra; ++i)
+            field.RemoveLast();
           EXPECT_EQ(field.size(), sz);
           EXPECT_EQ(field.ClearedCount(), extra);
 
           // Create a catcher array and call ExtractSubrange.
           std::string* catcher[10];
-          for (int i = 0; i < 10; ++i) catcher[i] = NULL;
+          for (int i = 0; i < 10; ++i)
+            catcher[i] = NULL;
           field.ExtractSubrange(start, num, catcher);
 
           // Does the resulting array have the right size?
@@ -1300,7 +1306,8 @@ TEST(RepeatedPtrField, ExtractSubrange) {
 
           // Reinstate the cleared elements.
           EXPECT_EQ(field.ClearedCount(), extra);
-          for (int i = 0; i < extra; ++i) field.Add();
+          for (int i = 0; i < extra; ++i)
+            field.Add();
           EXPECT_EQ(field.ClearedCount(), 0);
           EXPECT_EQ(field.size(), sz - num + extra);
 
@@ -1308,13 +1315,15 @@ TEST(RepeatedPtrField, ExtractSubrange) {
           for (int i = sz; i < sz + extra; ++i) {
             int count = 0;
             for (int j = sz; j < sz + extra; ++j) {
-              if (field.Mutable(j - num) == subject[i]) count += 1;
+              if (field.Mutable(j - num) == subject[i])
+                count += 1;
             }
             EXPECT_EQ(count, 1);
           }
 
           // Release the caught elements.
-          for (int i = 0; i < num; ++i) delete catcher[i];
+          for (int i = 0; i < num; ++i)
+            delete catcher[i];
         }
       }
     }
@@ -1710,6 +1719,7 @@ TEST_F(RepeatedPtrFieldPtrsIteratorTest, Sort) {
   EXPECT_EQ("y", proto_array_.Get(9));
 }
 
+
 // -----------------------------------------------------------------------------
 // Unit-tests for the insert iterators
 // google::protobuf::RepeatedFieldBackInserter,
@@ -1775,7 +1785,8 @@ class RepeatedFieldInsertionIteratorsTest : public testing::Test {
 };
 
 TEST_F(RepeatedFieldInsertionIteratorsTest, Fibonacci) {
-  EXPECT_TRUE(std::equal(fibonacci.begin(), fibonacci.end(),
+  EXPECT_TRUE(std::equal(fibonacci.begin(),
+                         fibonacci.end(),
                          protobuffer.repeated_int32().begin()));
   EXPECT_TRUE(std::equal(protobuffer.repeated_int32().begin(),
                          protobuffer.repeated_int32().end(),
@@ -1783,10 +1794,12 @@ TEST_F(RepeatedFieldInsertionIteratorsTest, Fibonacci) {
 }
 
 TEST_F(RepeatedFieldInsertionIteratorsTest, Halves) {
-  EXPECT_TRUE(std::equal(halves.begin(), halves.end(),
+  EXPECT_TRUE(std::equal(halves.begin(),
+                         halves.end(),
                          protobuffer.repeated_double().begin()));
   EXPECT_TRUE(std::equal(protobuffer.repeated_double().begin(),
-                         protobuffer.repeated_double().end(), halves.begin()));
+                         protobuffer.repeated_double().end(),
+                         halves.begin()));
 }
 
 TEST_F(RepeatedFieldInsertionIteratorsTest, Words) {
@@ -1804,9 +1817,8 @@ TEST_F(RepeatedFieldInsertionIteratorsTest, Words2) {
   words.push_back("six");
   words.push_back("pence");
   protobuffer.mutable_repeated_string()->Clear();
-  std::copy(
-      words.begin(), words.end(),
-      RepeatedPtrFieldBackInserter(protobuffer.mutable_repeated_string()));
+  std::copy(words.begin(), words.end(), RepeatedPtrFieldBackInserter(
+      protobuffer.mutable_repeated_string()));
   ASSERT_EQ(words.size(), protobuffer.repeated_string_size());
   for (int i = 0; i < words.size(); ++i)
     EXPECT_EQ(words.at(i), protobuffer.repeated_string(i));
@@ -1852,9 +1864,8 @@ TEST_F(RepeatedFieldInsertionIteratorsTest,
     *new_data = "name-" + StrCat(i);
   }
   TestAllTypes testproto;
-  std::copy(data.begin(), data.end(),
-            AllocatedRepeatedPtrFieldBackInserter(
-                testproto.mutable_repeated_string()));
+  std::copy(data.begin(), data.end(), AllocatedRepeatedPtrFieldBackInserter(
+                                          testproto.mutable_repeated_string()));
   EXPECT_EQ(testproto.DebugString(), goldenproto.DebugString());
 }
 

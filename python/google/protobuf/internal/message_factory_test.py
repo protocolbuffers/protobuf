@@ -49,8 +49,7 @@ from google.protobuf import descriptor_pool
 from google.protobuf import message_factory
 
 
-@testing_refleaks.TestCase
-class MessageFactoryTest(unittest.TestCase):
+class MessageFactoryTest(testing_refleaks.BaseTestCase):
 
   def setUp(self):
     self.factory_test1_fd = descriptor_pb2.FileDescriptorProto.FromString(

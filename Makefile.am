@@ -225,25 +225,17 @@ java_EXTRA_DIST=                                                                
   java/core/src/main/java/com/google/protobuf/AbstractMessageLite.java             \
   java/core/src/main/java/com/google/protobuf/AbstractParser.java                  \
   java/core/src/main/java/com/google/protobuf/AbstractProtobufList.java            \
-  java/core/src/main/java/com/google/protobuf/AllocatedBuffer.java                 \
   java/core/src/main/java/com/google/protobuf/Android.java                         \
-  java/core/src/main/java/com/google/protobuf/ArrayDecoders.java                   \
-  java/core/src/main/java/com/google/protobuf/BinaryReader.java                    \
-  java/core/src/main/java/com/google/protobuf/BinaryWriter.java                    \
   java/core/src/main/java/com/google/protobuf/BlockingRpcChannel.java              \
   java/core/src/main/java/com/google/protobuf/BlockingService.java                 \
   java/core/src/main/java/com/google/protobuf/BooleanArrayList.java                \
-  java/core/src/main/java/com/google/protobuf/BufferAllocator.java                 \
   java/core/src/main/java/com/google/protobuf/ByteBufferWriter.java                \
   java/core/src/main/java/com/google/protobuf/ByteOutput.java                      \
   java/core/src/main/java/com/google/protobuf/ByteString.java                      \
   java/core/src/main/java/com/google/protobuf/CodedInputStream.java                \
-  java/core/src/main/java/com/google/protobuf/CodedInputStreamReader.java          \
   java/core/src/main/java/com/google/protobuf/CodedOutputStream.java               \
-  java/core/src/main/java/com/google/protobuf/CodedOutputStreamWriter.java         \
-  java/core/src/main/java/com/google/protobuf/DescriptorMessageInfoFactory.java    \
-  java/core/src/main/java/com/google/protobuf/Descriptors.java                     \
   java/core/src/main/java/com/google/protobuf/DiscardUnknownFieldsParser.java      \
+  java/core/src/main/java/com/google/protobuf/Descriptors.java                     \
   java/core/src/main/java/com/google/protobuf/DoubleArrayList.java                 \
   java/core/src/main/java/com/google/protobuf/DynamicMessage.java                  \
   java/core/src/main/java/com/google/protobuf/ExperimentalApi.java                 \
@@ -252,65 +244,37 @@ java_EXTRA_DIST=                                                                
   java/core/src/main/java/com/google/protobuf/ExtensionRegistry.java               \
   java/core/src/main/java/com/google/protobuf/ExtensionRegistryFactory.java        \
   java/core/src/main/java/com/google/protobuf/ExtensionRegistryLite.java           \
-  java/core/src/main/java/com/google/protobuf/ExtensionSchema.java                 \
-  java/core/src/main/java/com/google/protobuf/ExtensionSchemaFull.java             \
-  java/core/src/main/java/com/google/protobuf/ExtensionSchemaLite.java             \
-  java/core/src/main/java/com/google/protobuf/ExtensionSchemas.java                \
-  java/core/src/main/java/com/google/protobuf/FieldInfo.java                       \
   java/core/src/main/java/com/google/protobuf/FieldSet.java                        \
-  java/core/src/main/java/com/google/protobuf/FieldType.java                       \
   java/core/src/main/java/com/google/protobuf/FloatArrayList.java                  \
   java/core/src/main/java/com/google/protobuf/GeneratedMessage.java                \
-  java/core/src/main/java/com/google/protobuf/GeneratedMessageInfoFactory.java     \
   java/core/src/main/java/com/google/protobuf/GeneratedMessageLite.java            \
   java/core/src/main/java/com/google/protobuf/GeneratedMessageV3.java              \
   java/core/src/main/java/com/google/protobuf/IntArrayList.java                    \
   java/core/src/main/java/com/google/protobuf/Internal.java                        \
   java/core/src/main/java/com/google/protobuf/InvalidProtocolBufferException.java  \
   java/core/src/main/java/com/google/protobuf/IterableByteBufferInputStream.java   \
-  java/core/src/main/java/com/google/protobuf/JavaType.java                        \
   java/core/src/main/java/com/google/protobuf/LazyField.java                       \
   java/core/src/main/java/com/google/protobuf/LazyFieldLite.java                   \
   java/core/src/main/java/com/google/protobuf/LazyStringArrayList.java             \
   java/core/src/main/java/com/google/protobuf/LazyStringList.java                  \
-  java/core/src/main/java/com/google/protobuf/ListFieldSchema.java                 \
   java/core/src/main/java/com/google/protobuf/LongArrayList.java                   \
-  java/core/src/main/java/com/google/protobuf/ManifestSchemaFactory.java           \
   java/core/src/main/java/com/google/protobuf/MapEntry.java                        \
   java/core/src/main/java/com/google/protobuf/MapEntryLite.java                    \
   java/core/src/main/java/com/google/protobuf/MapField.java                        \
   java/core/src/main/java/com/google/protobuf/MapFieldLite.java                    \
-  java/core/src/main/java/com/google/protobuf/MapFieldSchema.java                  \
-  java/core/src/main/java/com/google/protobuf/MapFieldSchemaFull.java              \
-  java/core/src/main/java/com/google/protobuf/MapFieldSchemaLite.java              \
-  java/core/src/main/java/com/google/protobuf/MapFieldSchemas.java                 \
   java/core/src/main/java/com/google/protobuf/Message.java                         \
-  java/core/src/main/java/com/google/protobuf/MessageInfo.java                     \
-  java/core/src/main/java/com/google/protobuf/MessageInfoFactory.java              \
   java/core/src/main/java/com/google/protobuf/MessageLite.java                     \
   java/core/src/main/java/com/google/protobuf/MessageLiteOrBuilder.java            \
   java/core/src/main/java/com/google/protobuf/MessageLiteToString.java             \
   java/core/src/main/java/com/google/protobuf/MessageOrBuilder.java                \
   java/core/src/main/java/com/google/protobuf/MessageReflection.java               \
-  java/core/src/main/java/com/google/protobuf/MessageSchema.java                   \
-  java/core/src/main/java/com/google/protobuf/MessageSetSchema.java                \
   java/core/src/main/java/com/google/protobuf/MutabilityOracle.java                \
-  java/core/src/main/java/com/google/protobuf/NewInstanceSchema.java               \
-  java/core/src/main/java/com/google/protobuf/NewInstanceSchemaFull.java           \
-  java/core/src/main/java/com/google/protobuf/NewInstanceSchemaLite.java           \
-  java/core/src/main/java/com/google/protobuf/NewInstanceSchemas.java              \
   java/core/src/main/java/com/google/protobuf/NioByteString.java                   \
-  java/core/src/main/java/com/google/protobuf/OneofInfo.java                       \
   java/core/src/main/java/com/google/protobuf/Parser.java                          \
   java/core/src/main/java/com/google/protobuf/PrimitiveNonBoxingCollection.java    \
-  java/core/src/main/java/com/google/protobuf/ProtoSyntax.java                     \
-  java/core/src/main/java/com/google/protobuf/Protobuf.java                        \
   java/core/src/main/java/com/google/protobuf/ProtobufArrayList.java               \
-  java/core/src/main/java/com/google/protobuf/ProtobufLists.java                   \
   java/core/src/main/java/com/google/protobuf/ProtocolMessageEnum.java             \
   java/core/src/main/java/com/google/protobuf/ProtocolStringList.java              \
-  java/core/src/main/java/com/google/protobuf/RawMessageInfo.java                  \
-  java/core/src/main/java/com/google/protobuf/Reader.java                          \
   java/core/src/main/java/com/google/protobuf/RepeatedFieldBuilder.java            \
   java/core/src/main/java/com/google/protobuf/RepeatedFieldBuilderV3.java          \
   java/core/src/main/java/com/google/protobuf/RopeByteString.java                  \
@@ -318,47 +282,30 @@ java_EXTRA_DIST=                                                                
   java/core/src/main/java/com/google/protobuf/RpcChannel.java                      \
   java/core/src/main/java/com/google/protobuf/RpcController.java                   \
   java/core/src/main/java/com/google/protobuf/RpcUtil.java                         \
-  java/core/src/main/java/com/google/protobuf/Schema.java                          \
-  java/core/src/main/java/com/google/protobuf/SchemaFactory.java                   \
-  java/core/src/main/java/com/google/protobuf/SchemaUtil.java                      \
   java/core/src/main/java/com/google/protobuf/Service.java                         \
   java/core/src/main/java/com/google/protobuf/ServiceException.java                \
   java/core/src/main/java/com/google/protobuf/SingleFieldBuilder.java              \
   java/core/src/main/java/com/google/protobuf/SingleFieldBuilderV3.java            \
   java/core/src/main/java/com/google/protobuf/SmallSortedMap.java                  \
-  java/core/src/main/java/com/google/protobuf/StructuralMessageInfo.java           \
   java/core/src/main/java/com/google/protobuf/TextFormat.java                      \
   java/core/src/main/java/com/google/protobuf/TextFormatEscaper.java               \
   java/core/src/main/java/com/google/protobuf/TextFormatParseInfoTree.java         \
   java/core/src/main/java/com/google/protobuf/TextFormatParseLocation.java         \
   java/core/src/main/java/com/google/protobuf/UninitializedMessageException.java   \
-  java/core/src/main/java/com/google/protobuf/UnknownFieldSchema.java              \
   java/core/src/main/java/com/google/protobuf/UnknownFieldSet.java                 \
   java/core/src/main/java/com/google/protobuf/UnknownFieldSetLite.java             \
-  java/core/src/main/java/com/google/protobuf/UnknownFieldSetLiteSchema.java       \
-  java/core/src/main/java/com/google/protobuf/UnknownFieldSetSchema.java           \
   java/core/src/main/java/com/google/protobuf/UnmodifiableLazyStringList.java      \
   java/core/src/main/java/com/google/protobuf/UnsafeByteOperations.java            \
   java/core/src/main/java/com/google/protobuf/UnsafeUtil.java                      \
   java/core/src/main/java/com/google/protobuf/Utf8.java                            \
   java/core/src/main/java/com/google/protobuf/WireFormat.java                      \
-  java/core/src/main/java/com/google/protobuf/Writer.java                          \
   java/core/src/test/java/com/google/protobuf/AbstractMessageTest.java             \
-  java/core/src/test/java/com/google/protobuf/AbstractProto2LiteSchemaTest.java    \
-  java/core/src/test/java/com/google/protobuf/AbstractProto2SchemaTest.java        \
-  java/core/src/test/java/com/google/protobuf/AbstractProto3LiteSchemaTest.java    \
-  java/core/src/test/java/com/google/protobuf/AbstractProto3SchemaTest.java        \
-  java/core/src/test/java/com/google/protobuf/AbstractSchemaTest.java              \
   java/core/src/test/java/com/google/protobuf/AnyTest.java                         \
-  java/core/src/test/java/com/google/protobuf/ArrayDecodersTest.java               \
-  java/core/src/test/java/com/google/protobuf/BinaryProtocolTest.java              \
   java/core/src/test/java/com/google/protobuf/BooleanArrayListTest.java            \
   java/core/src/test/java/com/google/protobuf/BoundedByteStringTest.java           \
   java/core/src/test/java/com/google/protobuf/ByteBufferWriterTest.java            \
   java/core/src/test/java/com/google/protobuf/ByteStringTest.java                  \
-  java/core/src/test/java/com/google/protobuf/CachedFieldSizeTest.java             \
   java/core/src/test/java/com/google/protobuf/CheckUtf8Test.java                   \
-  java/core/src/test/java/com/google/protobuf/CodedAdapterTest.java                \
   java/core/src/test/java/com/google/protobuf/CodedInputStreamTest.java            \
   java/core/src/test/java/com/google/protobuf/CodedOutputStreamTest.java           \
   java/core/src/test/java/com/google/protobuf/DecodeUtf8Test.java                  \
@@ -368,9 +315,6 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/java/com/google/protobuf/DoubleArrayListTest.java             \
   java/core/src/test/java/com/google/protobuf/DynamicMessageTest.java              \
   java/core/src/test/java/com/google/protobuf/EnumTest.java                        \
-  java/core/src/test/java/com/google/protobuf/ExperimentalMessageFactory.java      \
-  java/core/src/test/java/com/google/protobuf/ExperimentalSerializationUtil.java   \
-  java/core/src/test/java/com/google/protobuf/ExperimentalTestDataProvider.java    \
   java/core/src/test/java/com/google/protobuf/ExtensionRegistryFactoryTest.java    \
   java/core/src/test/java/com/google/protobuf/FieldPresenceTest.java               \
   java/core/src/test/java/com/google/protobuf/FloatArrayListTest.java              \
@@ -385,32 +329,17 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/java/com/google/protobuf/LazyStringArrayListTest.java         \
   java/core/src/test/java/com/google/protobuf/LazyStringEndToEndTest.java          \
   java/core/src/test/java/com/google/protobuf/LiteEqualsAndHashTest.java           \
+  java/core/src/test/java/com/google/protobuf/LiteTest.java                        \
   java/core/src/test/java/com/google/protobuf/LiteralByteStringTest.java           \
   java/core/src/test/java/com/google/protobuf/LongArrayListTest.java               \
   java/core/src/test/java/com/google/protobuf/MapForProto2LiteTest.java            \
   java/core/src/test/java/com/google/protobuf/MapForProto2Test.java                \
-  java/core/src/test/java/com/google/protobuf/MapLiteTest.java                     \
   java/core/src/test/java/com/google/protobuf/MapTest.java                         \
   java/core/src/test/java/com/google/protobuf/MessageTest.java                     \
   java/core/src/test/java/com/google/protobuf/NestedBuildersTest.java              \
   java/core/src/test/java/com/google/protobuf/NioByteStringTest.java               \
-  java/core/src/test/java/com/google/protobuf/PackedFieldTest.java                 \
   java/core/src/test/java/com/google/protobuf/ParseExceptionsTest.java             \
-  java/core/src/test/java/com/google/protobuf/ParserLiteTest.java                  \
   java/core/src/test/java/com/google/protobuf/ParserTest.java                      \
-  java/core/src/test/java/com/google/protobuf/Proto2ExtensionLookupSchemaTest.java \
-  java/core/src/test/java/com/google/protobuf/Proto2LiteSchemaTest.java            \
-  java/core/src/test/java/com/google/protobuf/Proto2MessageFactory.java            \
-  java/core/src/test/java/com/google/protobuf/Proto2MessageInfoFactory.java        \
-  java/core/src/test/java/com/google/protobuf/Proto2MessageLiteFactory.java        \
-  java/core/src/test/java/com/google/protobuf/Proto2SchemaTest.java                \
-  java/core/src/test/java/com/google/protobuf/Proto2UnknownEnumValueTest.java      \
-  java/core/src/test/java/com/google/protobuf/Proto3LiteSchemaTest.java            \
-  java/core/src/test/java/com/google/protobuf/Proto3MessageFactory.java            \
-  java/core/src/test/java/com/google/protobuf/Proto3MessageInfoFactory.java        \
-  java/core/src/test/java/com/google/protobuf/Proto3MessageLiteFactory.java        \
-  java/core/src/test/java/com/google/protobuf/Proto3MessageLiteInfoFactory.java    \
-  java/core/src/test/java/com/google/protobuf/Proto3SchemaTest.java                \
   java/core/src/test/java/com/google/protobuf/ProtobufArrayListTest.java           \
   java/core/src/test/java/com/google/protobuf/RepeatedFieldBuilderV3Test.java      \
   java/core/src/test/java/com/google/protobuf/RopeByteStringSubstringTest.java     \
@@ -420,25 +349,18 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/java/com/google/protobuf/SmallSortedMapTest.java              \
   java/core/src/test/java/com/google/protobuf/TestBadIdentifiers.java              \
   java/core/src/test/java/com/google/protobuf/TestBadIdentifiersLite.java          \
-  java/core/src/test/java/com/google/protobuf/TestSchemas.java                     \
-  java/core/src/test/java/com/google/protobuf/TestSchemasLite.java                 \
   java/core/src/test/java/com/google/protobuf/TestUtil.java                        \
   java/core/src/test/java/com/google/protobuf/TestUtilLite.java                    \
   java/core/src/test/java/com/google/protobuf/TextFormatParseInfoTreeTest.java     \
   java/core/src/test/java/com/google/protobuf/TextFormatParseLocationTest.java     \
   java/core/src/test/java/com/google/protobuf/TextFormatTest.java                  \
   java/core/src/test/java/com/google/protobuf/UnknownEnumValueTest.java            \
+  java/core/src/test/java/com/google/protobuf/UnknownFieldSetLiteTest.java         \
   java/core/src/test/java/com/google/protobuf/UnknownFieldSetTest.java             \
   java/core/src/test/java/com/google/protobuf/UnmodifiableLazyStringListTest.java  \
-  java/core/src/test/java/com/google/protobuf/Utf8Test.java                        \
-  java/core/src/test/java/com/google/protobuf/Utf8Utils.java                       \
   java/core/src/test/java/com/google/protobuf/WellKnownTypesTest.java              \
-  java/core/src/test/java/com/google/protobuf/WireFormatLiteTest.java              \
   java/core/src/test/java/com/google/protobuf/WireFormatTest.java                  \
-  java/core/src/test/java/com/google/protobuf/WrappersLiteOfMethodTest.java        \
-  java/core/src/test/java/com/google/protobuf/WrappersOfMethodTest.java            \
   java/core/src/test/proto/com/google/protobuf/any_test.proto                      \
-  java/core/src/test/proto/com/google/protobuf/cached_field_size_test.proto        \
   java/core/src/test/proto/com/google/protobuf/deprecated_file.proto               \
   java/core/src/test/proto/com/google/protobuf/field_presence_test.proto           \
   java/core/src/test/proto/com/google/protobuf/lazy_fields_lite.proto              \
@@ -448,7 +370,6 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/proto/com/google/protobuf/map_initialization_order_test.proto \
   java/core/src/test/proto/com/google/protobuf/map_lite_test.proto                 \
   java/core/src/test/proto/com/google/protobuf/map_test.proto                      \
-  java/core/src/test/proto/com/google/protobuf/message_lite_extension_util_test.proto\
   java/core/src/test/proto/com/google/protobuf/multiple_files_test.proto           \
   java/core/src/test/proto/com/google/protobuf/nested_builders_test.proto          \
   java/core/src/test/proto/com/google/protobuf/nested_extension.proto              \
@@ -458,25 +379,13 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/proto/com/google/protobuf/outer_class_name_test.proto         \
   java/core/src/test/proto/com/google/protobuf/outer_class_name_test2.proto        \
   java/core/src/test/proto/com/google/protobuf/outer_class_name_test3.proto        \
-  java/core/src/test/proto/com/google/protobuf/packed_field_test.proto             \
-  java/core/src/test/proto/com/google/protobuf/proto2_message.proto                \
-  java/core/src/test/proto/com/google/protobuf/proto2_message_lite.proto           \
   java/core/src/test/proto/com/google/protobuf/proto2_unknown_enum_values.proto    \
-  java/core/src/test/proto/com/google/protobuf/proto3_message.proto                \
-  java/core/src/test/proto/com/google/protobuf/proto3_message_lite.proto           \
   java/core/src/test/proto/com/google/protobuf/test_bad_identifiers.proto          \
   java/core/src/test/proto/com/google/protobuf/test_check_utf8.proto               \
   java/core/src/test/proto/com/google/protobuf/test_check_utf8_size.proto          \
   java/core/src/test/proto/com/google/protobuf/test_custom_options.proto           \
   java/core/src/test/proto/com/google/protobuf/test_extra_interfaces.proto         \
-  java/core/src/test/proto/com/google/protobuf/wrappers_test.proto                 \
   java/lite.md                                                                     \
-  java/lite/generate-test-sources-build.xml                                        \
-  java/lite/lite.awk                                                               \
-  java/lite/pom.xml                                                                \
-  java/lite/process-lite-sources-build.xml                                         \
-  java/lite/src/test/java/com/google/protobuf/LiteTest.java                        \
-  java/lite/src/test/java/com/google/protobuf/Proto2MessageLiteInfoFactory.java    \
   java/pom.xml                                                                     \
   java/util/pom.xml                                                                \
   java/util/src/main/java/com/google/protobuf/util/Durations.java                  \
@@ -903,7 +812,6 @@ python_EXTRA_DIST=                                                           \
   python/google/protobuf/internal/import_test_package/inner.proto            \
   python/google/protobuf/internal/import_test_package/outer.proto            \
   python/google/protobuf/internal/json_format_test.py                        \
-  python/google/protobuf/internal/keywords_test.py                           \
   python/google/protobuf/internal/message_factory_test.py                    \
   python/google/protobuf/internal/message_listener.py                        \
   python/google/protobuf/internal/message_set_extensions.proto               \
@@ -971,6 +879,7 @@ python_EXTRA_DIST=                                                           \
   python/google/protobuf/pyext/repeated_scalar_container.h                   \
   python/google/protobuf/pyext/safe_numerics.h                               \
   python/google/protobuf/pyext/scoped_pyobject_ptr.h                         \
+  python/google/protobuf/pyext/thread_unsafe_shared_ptr.h                    \
   python/google/protobuf/reflection.py                                       \
   python/google/protobuf/service.py                                          \
   python/google/protobuf/service_reflection.py                               \

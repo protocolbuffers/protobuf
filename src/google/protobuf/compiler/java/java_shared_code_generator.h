@@ -82,6 +82,7 @@ class SharedCodeGenerator {
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(SharedCodeGenerator);
 };
 
+
 }  // namespace java
 }  // namespace compiler
 }  // namespace protobuf

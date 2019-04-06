@@ -49,14 +49,14 @@ namespace protobuf {
 namespace util {
 namespace {
 
+using proto_util_converter::testing::MapIn;
 using proto3::BAR;
 using proto3::FOO;
-using proto3::TestAny;
 using proto3::TestEnumValue;
 using proto3::TestMap;
 using proto3::TestMessage;
 using proto3::TestOneof;
-using proto_util_converter::testing::MapIn;
+using proto3::TestAny;
 
 static const char kTypeUrlPrefix[] = "type.googleapis.com";
 
@@ -67,7 +67,8 @@ static const char kTypeUrlPrefix[] = "type.googleapis.com";
 // tests are contained in the //net/proto2/util/converter directory.
 class JsonUtilTest : public ::testing::Test {
  protected:
-  JsonUtilTest() {}
+  JsonUtilTest() {
+  }
 
   std::string ToJson(const Message& message, const JsonPrintOptions& options) {
     std::string result;
@@ -338,9 +339,8 @@ TEST_F(JsonUtilTest, TestDynamicMessage) {
   DescriptorPool pool(&database);
   // A dynamic version of the test proto.
   DynamicMessageFactory factory;
-  std::unique_ptr<Message> message(
-      factory.GetPrototype(pool.FindMessageTypeByName("proto3.TestMessage"))
-          ->New());
+  std::unique_ptr<Message> message(factory.GetPrototype(
+      pool.FindMessageTypeByName("proto3.TestMessage"))->New());
   EXPECT_TRUE(FromJson(input, message.get()));
 
   // Convert to generated message for easy inspection.
@@ -498,9 +498,7 @@ typedef std::pair<char*, int> Segment;
 class SegmentedZeroCopyOutputStream : public io::ZeroCopyOutputStream {
  public:
   explicit SegmentedZeroCopyOutputStream(std::list<Segment> segments)
-      : segments_(segments),
-        last_segment_(static_cast<char*>(NULL), 0),
-        byte_count_(0) {}
+      : segments_(segments), last_segment_(static_cast<char*>(NULL), 0), byte_count_(0) {}
 
   virtual bool Next(void** buffer, int* length) {
     if (segments_.empty()) {
@@ -629,8 +627,8 @@ TEST_F(JsonUtilTest, TestWrongJsonInput) {
   TypeResolver* resolver = NewTypeResolverForDescriptorPool(
       "type.googleapis.com", DescriptorPool::generated_pool());
 
-  auto result_status = util::JsonToBinaryStream(resolver, message_type,
-                                                &input_stream, &output_stream);
+  auto result_status = util::JsonToBinaryStream(
+      resolver, message_type, &input_stream, &output_stream);
 
   delete resolver;
 

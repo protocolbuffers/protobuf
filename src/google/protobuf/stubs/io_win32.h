@@ -29,28 +29,26 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Author: laszlocsomor@google.com (Laszlo Csomor)
-//  Based on original Protocol Buffers design by
-//  Sanjay Ghemawat, Jeff Dean, and others.
-
+//
 // This file contains the declarations for Windows implementations of
 // commonly used POSIX functions such as open(2) and access(2), as well
 // as macro definitions for flags of these functions.
 //
 // By including this file you'll redefine open/access/etc. to
-// ::google::protobuf::io::win32::{open/access/etc.}.
+// ::google::protobuf::internal::win32::{open/access/etc.}.
 // Make sure you don't include a header that attempts to redeclare or
 // redefine these functions, that'll lead to confusing compilation
 // errors. It's best to #include this file as the last one to ensure that.
 //
 // This file is only used on Windows, it's empty on other platforms.
 
-#ifndef GOOGLE_PROTOBUF_IO_IO_WIN32_H__
-#define GOOGLE_PROTOBUF_IO_IO_WIN32_H__
+#ifndef GOOGLE_PROTOBUF_STUBS_IO_WIN32_H__
+#define GOOGLE_PROTOBUF_STUBS_IO_WIN32_H__
 
 #if defined(_WIN32)
 
 #include <string>
-#include <google/protobuf/port.h>
+#include <google/protobuf/stubs/port.h>
 
 #include <google/protobuf/port_def.inc>
 
@@ -58,7 +56,7 @@
 // following functions already, except for mkdir.
 namespace google {
 namespace protobuf {
-namespace io {
+namespace internal {
 namespace win32 {
 
 PROTOBUF_EXPORT FILE* fopen(const char* path, const char* mode);
@@ -93,7 +91,7 @@ PROTOBUF_EXPORT bool wcs_to_utf8(const wchar_t* input, std::string* out);
 }  // namespace strings
 
 }  // namespace win32
-}  // namespace io
+}  // namespace internal
 }  // namespace protobuf
 }  // namespace google
 
@@ -117,4 +115,4 @@ PROTOBUF_EXPORT bool wcs_to_utf8(const wchar_t* input, std::string* out);
 
 #endif  // defined(_WIN32)
 
-#endif  // GOOGLE_PROTOBUF_IO_IO_WIN32_H__
+#endif  // GOOGLE_PROTOBUF_STUBS_IO_WIN32_H__

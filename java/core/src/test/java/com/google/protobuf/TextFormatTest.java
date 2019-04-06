@@ -132,9 +132,6 @@ public class TextFormatTest extends TestCase {
           + "  i: 456\n"
           + "}\n";
 
-  private final TextFormat.Parser parserAllowingUnknownFields =
-      TextFormat.Parser.newBuilder().setAllowUnknownFields(true).build();
-
   private final TextFormat.Parser parserAllowingUnknownExtensions =
       TextFormat.Parser.newBuilder().setAllowUnknownExtensions(true).build();
 
@@ -505,7 +502,6 @@ public class TextFormatTest extends TestCase {
     assertEquals(2, builder.getOptionalInt64());
   }
 
-
   private void assertParseError(String error, String text) {
     // Test merge().
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
@@ -525,22 +521,6 @@ public class TextFormatTest extends TestCase {
     }
   }
 
-  private void assertParseErrorWithUnknownFields(String error, String text) {
-    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
-    try {
-      parserAllowingUnknownFields.merge(text, TestUtil.getFullExtensionRegistry(), builder);
-      fail("Expected parse exception.");
-    } catch (TextFormat.ParseException e) {
-      assertEquals(error, e.getMessage());
-    }
-  }
-
-  private TestAllTypes assertParseSuccessWithUnknownFields(String text)
-      throws TextFormat.ParseException {
-    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
-    parserAllowingUnknownFields.merge(text, TestUtil.getFullExtensionRegistry(), builder);
-    return builder.build();
-  }
 
   private void assertParseErrorWithUnknownExtensions(String error, String text) {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
@@ -1243,7 +1223,6 @@ public class TextFormatTest extends TestCase {
     // Set to allow unknown fields
     TextFormat.Parser parser =
         TextFormat.Parser.newBuilder()
-            .setAllowUnknownFields(true)
             .setParseInfoTreeBuilder(treeBuilder)
             .build();
 

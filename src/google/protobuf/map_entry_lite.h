@@ -122,16 +122,16 @@ class MapEntryImpl : public Base {
   // Enum type cannot be used for MapTypeHandler::Read. Define a type
   // which will replace Enum with int.
   typedef typename KeyTypeHandler::MapEntryAccessorType KeyMapEntryAccessorType;
-  typedef
-      typename ValueTypeHandler::MapEntryAccessorType ValueMapEntryAccessorType;
+  typedef typename ValueTypeHandler::MapEntryAccessorType
+      ValueMapEntryAccessorType;
 
   // Constants for field number.
   static const int kKeyFieldNumber = 1;
   static const int kValueFieldNumber = 2;
 
   // Constants for field tag.
-  static const uint8 kKeyTag =
-      GOOGLE_PROTOBUF_WIRE_FORMAT_MAKE_TAG(kKeyFieldNumber, KeyTypeHandler::kWireType);
+  static const uint8 kKeyTag = GOOGLE_PROTOBUF_WIRE_FORMAT_MAKE_TAG(
+      kKeyFieldNumber, KeyTypeHandler::kWireType);
   static const uint8 kValueTag = GOOGLE_PROTOBUF_WIRE_FORMAT_MAKE_TAG(
       kValueFieldNumber, ValueTypeHandler::kWireType);
   static const size_t kTagSize = 1;
@@ -202,14 +202,12 @@ class MapEntryImpl : public Base {
       GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
       if (tag == kKeyTag) {
         set_has_key();
-        KeyMapEntryAccessorType* key = mutable_key();
-        ptr = KeyTypeHandler::Read(ptr, ctx, key);
-        if (!Derived::ValidateKey(key)) return nullptr;
+        ptr = KeyTypeHandler::Read(ptr, ctx, mutable_key());
+        if (!::down_cast<Derived*>(this)->ValidateKey()) return nullptr;
       } else if (tag == kValueTag) {
         set_has_value();
-        ValueMapEntryAccessorType* value = mutable_value();
-        ptr = ValueTypeHandler::Read(ptr, ctx, value);
-        if (!Derived::ValidateValue(value)) return nullptr;
+        ptr = ValueTypeHandler::Read(ptr, ctx, mutable_value());
+        if (!::down_cast<Derived*>(this)->ValidateValue()) return nullptr;
       } else {
         if (tag == 0 || WireFormatLite::GetTagWireType(tag) ==
                             WireFormatLite::WIRETYPE_END_GROUP) {
@@ -253,8 +251,9 @@ class MapEntryImpl : public Base {
           break;
 
         default:
-          if (tag == 0 || WireFormatLite::GetTagWireType(tag) ==
-                              WireFormatLite::WIRETYPE_END_GROUP) {
+          if (tag == 0 ||
+              WireFormatLite::GetTagWireType(tag) ==
+              WireFormatLite::WIRETYPE_END_GROUP) {
             return true;
           }
           if (!WireFormatLite::SkipField(input, tag)) return false;
@@ -266,13 +265,10 @@ class MapEntryImpl : public Base {
 
   size_t ByteSizeLong() const override {
     size_t size = 0;
-    size += has_key() ? kTagSize +
-                            static_cast<size_t>(KeyTypeHandler::ByteSize(key()))
-                      : 0;
-    size += has_value()
-                ? kTagSize +
-                      static_cast<size_t>(ValueTypeHandler::ByteSize(value()))
-                : 0;
+    size += has_key() ?
+        kTagSize + static_cast<size_t>(KeyTypeHandler::ByteSize(key())) : 0;
+    size += has_value() ?
+        kTagSize + static_cast<size_t>(ValueTypeHandler::ByteSize(value())) : 0;
     return size;
   }
 
@@ -292,12 +288,12 @@ class MapEntryImpl : public Base {
 
   int GetCachedSize() const override {
     int size = 0;
-    size += has_key() ? static_cast<int>(kTagSize) +
-                            KeyTypeHandler::GetCachedSize(key())
-                      : 0;
-    size += has_value() ? static_cast<int>(kTagSize) +
-                              ValueTypeHandler::GetCachedSize(value())
-                        : 0;
+    size += has_key()
+        ? static_cast<int>(kTagSize) + KeyTypeHandler::GetCachedSize(key())
+        : 0;
+    size += has_value()
+        ? static_cast<int>(kTagSize) + ValueTypeHandler::GetCachedSize(value())
+        : 0;
     return size;
   }
 
@@ -336,8 +332,8 @@ class MapEntryImpl : public Base {
  public:
   void Clear() override {
     KeyTypeHandler::Clear(&key_, GetArenaNoVirtual());
-    ValueTypeHandler::ClearMaybeByDefaultEnum(&value_, GetArenaNoVirtual(),
-                                              default_enum_value);
+    ValueTypeHandler::ClearMaybeByDefaultEnum(
+        &value_, GetArenaNoVirtual(), default_enum_value);
     clear_has_key();
     clear_has_value();
   }
@@ -420,43 +416,10 @@ class MapEntryImpl : public Base {
     }
 
     const char* _InternalParse(const char* ptr, ParseContext* ctx) {
-      if (PROTOBUF_PREDICT_TRUE(!ctx->Done(&ptr) && *ptr == kKeyTag)) {
-        ptr = KeyTypeHandler::Read(ptr + 1, ctx, &key_);
-        if (PROTOBUF_PREDICT_FALSE(!ptr || !Derived::ValidateKey(&key_))) {
-          return nullptr;
-        }
-        if (PROTOBUF_PREDICT_TRUE(!ctx->Done(&ptr) && *ptr == kValueTag)) {
-          typename Map::size_type map_size = map_->size();
-          value_ptr_ = &(*map_)[key_];
-          if (PROTOBUF_PREDICT_TRUE(map_size != map_->size())) {
-            using T =
-                typename MapIf<ValueTypeHandler::kIsEnum, int*, Value*>::type;
-            ptr = ValueTypeHandler::Read(ptr + 1, ctx,
-                                         reinterpret_cast<T>(value_ptr_));
-            if (PROTOBUF_PREDICT_FALSE(!ptr ||
-                                       !Derived::ValidateValue(value_ptr_))) {
-              map_->erase(key_);  // Failure! Undo insertion.
-              return nullptr;
-            }
-            if (PROTOBUF_PREDICT_TRUE(ctx->Done(&ptr))) return ptr;
-            if (!ptr) return nullptr;
-            NewEntry();
-            ValueMover::Move(value_ptr_, entry_->mutable_value());
-            map_->erase(key_);
-            goto move_key;
-          }
-        } else {
-          if (!ptr) return nullptr;
-        }
-        NewEntry();
-      move_key:
-        KeyMover::Move(&key_, entry_->mutable_key());
-      } else {
-        if (!ptr) return nullptr;
-        NewEntry();
-      }
-      ptr = entry_->_InternalParse(ptr, ctx);
-      if (ptr) UseKeyAndValueFromEntry();
+      auto entry = NewEntry();
+      ptr = entry->_InternalParse(ptr, ctx);
+      if (!ptr) return nullptr;
+      UseKeyAndValueFromEntry();
       return ptr;
     }
 
@@ -492,13 +455,27 @@ class MapEntryImpl : public Base {
       // path, so it's not a big deal.
       key_ = entry_->key();
       value_ptr_ = &(*map_)[key_];
-      ValueMover::Move(entry_->mutable_value(), value_ptr_);
+      MoveHelper<ValueTypeHandler::kIsEnum,
+                 ValueTypeHandler::kIsMessage,
+                 ValueTypeHandler::kWireType ==
+                 WireFormatLite::WIRETYPE_LENGTH_DELIMITED,
+                 Value>::Move(entry_->mutable_value(), value_ptr_);
     }
 
     // After reading a key and value successfully, and inserting that data
     // into map_, we are not at the end of the input.  This is unusual, but
     // allowed by the spec.
     bool ReadBeyondKeyValuePair(io::CodedInputStream* input) PROTOBUF_COLD {
+      typedef MoveHelper<KeyTypeHandler::kIsEnum,
+                         KeyTypeHandler::kIsMessage,
+                         KeyTypeHandler::kWireType ==
+                         WireFormatLite::WIRETYPE_LENGTH_DELIMITED,
+                         Key> KeyMover;
+      typedef MoveHelper<ValueTypeHandler::kIsEnum,
+                         ValueTypeHandler::kIsMessage,
+                         ValueTypeHandler::kWireType ==
+                         WireFormatLite::WIRETYPE_LENGTH_DELIMITED,
+                         Value> ValueMover;
       NewEntry();
       ValueMover::Move(value_ptr_, entry_->mutable_value());
       map_->erase(key_);
@@ -507,17 +484,6 @@ class MapEntryImpl : public Base {
       if (result) UseKeyAndValueFromEntry();
       return result;
     }
-
-    typedef MoveHelper<KeyTypeHandler::kIsEnum, KeyTypeHandler::kIsMessage,
-                       KeyTypeHandler::kWireType ==
-                           WireFormatLite::WIRETYPE_LENGTH_DELIMITED,
-                       Key>
-        KeyMover;
-    typedef MoveHelper<ValueTypeHandler::kIsEnum, ValueTypeHandler::kIsMessage,
-                       ValueTypeHandler::kWireType ==
-                           WireFormatLite::WIRETYPE_LENGTH_DELIMITED,
-                       Value>
-        ValueMover;
 
     MapField* const mf_;
     Map* const map_;
@@ -600,7 +566,9 @@ class MapEntryImpl : public Base {
     typedef void DestructorSkippable_;
   };
 
-  inline Arena* GetArenaNoVirtual() const { return arena_; }
+  inline Arena* GetArenaNoVirtual() const {
+    return arena_;
+  }
 
  public:  // Needed for constructing tables
   KeyOnMemory key_;
@@ -661,8 +629,7 @@ struct DeconstructMapEntry<MapEntryLite<T, K, V, key, value, default_enum> > {
 // type is relatively small and easy to copy then copying Keys into an
 // array of SortItems can be beneficial.  Then all the data the sorting
 // algorithm needs to touch is in that one array.
-template <typename Key, typename PtrToKeyValuePair>
-struct SortItem {
+template <typename Key, typename PtrToKeyValuePair> struct SortItem {
   SortItem() {}
   explicit SortItem(PtrToKeyValuePair p) : first(p->first), second(p) {}
 
@@ -670,14 +637,16 @@ struct SortItem {
   PtrToKeyValuePair second;
 };
 
-template <typename T>
-struct CompareByFirstField {
-  bool operator()(const T& a, const T& b) const { return a.first < b.first; }
+template <typename T> struct CompareByFirstField {
+  bool operator()(const T& a, const T& b) const {
+    return a.first < b.first;
+  }
 };
 
-template <typename T>
-struct CompareByDerefFirst {
-  bool operator()(const T& a, const T& b) const { return a->first < b->first; }
+template <typename T> struct CompareByDerefFirst {
+  bool operator()(const T& a, const T& b) const {
+    return a->first < b->first;
+  }
 };
 
 // Helper for table driven serialization

@@ -34,8 +34,6 @@
 
 #include <google/protobuf/stubs/map_util.h>
 
-#include <google/protobuf/port_def.inc>
-
 namespace google {
 namespace protobuf {
 namespace util {
@@ -162,8 +160,8 @@ bool FieldMaskUtil::GetFieldDescriptors(
   return true;
 }
 
-void FieldMaskUtil::GetFieldMaskForAllFields(const Descriptor* descriptor,
-                                             FieldMask* out) {
+void FieldMaskUtil::GetFieldMaskForAllFields(
+    const Descriptor* descriptor, FieldMask* out) {
   for (int i = 0; i < descriptor->field_count(); ++i) {
     out->add_paths(descriptor->field(i)->name());
   }
@@ -550,8 +548,8 @@ void FieldMaskTree::MergeMessage(const Node* node, const Message& source,
   }
 }
 
-void FieldMaskTree::AddRequiredFieldPath(Node* node,
-                                         const Descriptor* descriptor) {
+void FieldMaskTree::AddRequiredFieldPath(
+    Node* node, const Descriptor* descriptor) {
   const int32 field_count = descriptor->field_count();
   for (int index = 0; index < field_count; ++index) {
     const FieldDescriptor* field = descriptor->field(index);
@@ -561,7 +559,7 @@ void FieldMaskTree::AddRequiredFieldPath(Node* node,
       if (child == nullptr) {
         // Add required field path to the tree
         child = new Node();
-      } else if (child->children.empty()) {
+      } else if (child->children.empty()){
         // If the required field is in the tree and does not have any children,
         // do nothing.
         continue;

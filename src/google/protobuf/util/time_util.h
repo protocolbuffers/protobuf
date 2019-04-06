@@ -224,15 +224,15 @@ inline Duration operator-(const Duration& d1, const Duration& d2) {
   return result -= d2;
 }
 // Multiplicative operators
-template <typename T>
+template<typename T>
 inline Duration operator*(Duration d, T r) {
   return d *= r;
 }
-template <typename T>
+template<typename T>
 inline Duration operator*(T r, Duration d) {
   return d *= r;
 }
-template <typename T>
+template<typename T>
 inline Duration operator/(Duration d, T r) {
   return d /= r;
 }

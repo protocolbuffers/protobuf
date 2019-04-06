@@ -33,7 +33,7 @@
 
 #include <google/protobuf/testing/googletest.h>
 #include <google/protobuf/testing/file.h>
-#include <google/protobuf/io/io_win32.h>
+#include <google/protobuf/stubs/io_win32.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -55,11 +55,11 @@ namespace protobuf {
 #ifdef _WIN32
 // DO NOT include <io.h>, instead create functions in io_win32.{h,cc} and import
 // them like we do below.
-using google::protobuf::io::win32::close;
-using google::protobuf::io::win32::dup2;
-using google::protobuf::io::win32::dup;
-using google::protobuf::io::win32::mkdir;
-using google::protobuf::io::win32::open;
+using google::protobuf::internal::win32::close;
+using google::protobuf::internal::win32::dup2;
+using google::protobuf::internal::win32::dup;
+using google::protobuf::internal::win32::mkdir;
+using google::protobuf::internal::win32::open;
 #endif
 
 #ifndef O_BINARY

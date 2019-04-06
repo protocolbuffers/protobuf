@@ -91,9 +91,9 @@ std::string GetTypeUrl(const Descriptor* descriptor) {
 }  // namespace
 
 #if __cplusplus >= 201103L
-using std::get;
+  using std::get;
 #else
-using std::tr1::get;
+  using std::tr1::get;
 #endif
 
 class BaseProtoStreamObjectWriterTest
@@ -183,7 +183,9 @@ class ProtoStreamObjectWriterTest : public BaseProtoStreamObjectWriterTest {
   ProtoStreamObjectWriterTest()
       : BaseProtoStreamObjectWriterTest(Book::descriptor()) {}
 
-  void ResetProtoWriter() { ResetTypeInfo(Book::descriptor()); }
+  void ResetProtoWriter() {
+    ResetTypeInfo(Book::descriptor());
+  }
 
   virtual ~ProtoStreamObjectWriterTest() {}
 };
@@ -1022,7 +1024,9 @@ TEST_P(ProtoStreamObjectWriterTest, AcceptUnknownEnumValue) {
   expected.set_enum_value(static_cast<Proto3Message::NestedEnum>(12345));
 
   EXPECT_CALL(listener_, InvalidValue(_, _, _)).Times(0);
-  ow_->StartObject("")->RenderInt32("enumValue", 12345)->EndObject();
+  ow_->StartObject("")
+      ->RenderInt32("enumValue", 12345)
+      ->EndObject();
   CheckOutput(expected);
 }
 
