@@ -51,15 +51,15 @@ namespace compiler {
 namespace java {
 
 EnumGenerator::EnumGenerator(const EnumDescriptor* descriptor,
-                             bool immutable_api,
-                             Context* context)
-  : descriptor_(descriptor), immutable_api_(immutable_api),
-    context_(context),
-    name_resolver_(context->GetNameResolver())  {
+                             bool immutable_api, Context* context)
+    : descriptor_(descriptor),
+      immutable_api_(immutable_api),
+      context_(context),
+      name_resolver_(context->GetNameResolver()) {
   for (int i = 0; i < descriptor_->value_count(); i++) {
     const EnumValueDescriptor* value = descriptor_->value(i);
     const EnumValueDescriptor* canonical_value =
-      descriptor_->FindValueByNumber(value->number());
+        descriptor_->FindValueByNumber(value->number());
 
     if (value == canonical_value) {
       canonical_values_.push_back(value);
@@ -104,11 +104,9 @@ void EnumGenerator::Generate(io::Printer* printer) {
       printer->Print("@java.lang.Deprecated\n");
     }
     if (ordinal_is_index) {
-      printer->Print(vars,
-        "$name$($number$),\n");
+      printer->Print(vars, "$name$($number$),\n");
     } else {
-      printer->Print(vars,
-        "$name$($index$, $number$),\n");
+      printer->Print(vars, "$name$($index$, $number$),\n");
     }
     printer->Annotate("name", canonical_values_[i]);
   }
@@ -123,8 +121,8 @@ void EnumGenerator::Generate(io::Printer* printer) {
   }
 
   printer->Print(
-    ";\n"
-    "\n");
+      ";\n"
+      "\n");
 
   // -----------------------------------------------------------------
 
@@ -134,8 +132,8 @@ void EnumGenerator::Generate(io::Printer* printer) {
     vars["name"] = aliases_[i].value->name();
     vars["canonical_name"] = aliases_[i].canonical_value->name();
     WriteEnumValueDocComment(printer, aliases_[i].value);
-    printer->Print(vars,
-      "public static final $classname$ $name$ = $canonical_name$;\n");
+    printer->Print(
+        vars, "public static final $classname$ $name$ = $canonical_name$;\n");
     printer->Annotate("name", aliases_[i].value);
   }
 
@@ -147,7 +145,7 @@ void EnumGenerator::Generate(io::Printer* printer) {
     vars["}"] = "";
     WriteEnumValueDocComment(printer, descriptor_->value(i));
     printer->Print(vars,
-      "public static final int ${$$name$_VALUE$}$ = $number$;\n");
+                   "public static final int ${$$name$_VALUE$}$ = $number$;\n");
     printer->Annotate("{", "}", descriptor_->value(i));
   }
   printer->Print("\n");
@@ -155,38 +153,38 @@ void EnumGenerator::Generate(io::Printer* printer) {
   // -----------------------------------------------------------------
 
   printer->Print(
-    "\n"
-    "public final int getNumber() {\n");
+      "\n"
+      "public final int getNumber() {\n");
   if (SupportUnknownEnumValue(descriptor_->file())) {
     if (ordinal_is_index) {
       printer->Print(
-        "  if (this == UNRECOGNIZED) {\n"
-        "    throw new java.lang.IllegalArgumentException(\n"
-        "        \"Can't get the number of an unknown enum value.\");\n"
-        "  }\n");
+          "  if (this == UNRECOGNIZED) {\n"
+          "    throw new java.lang.IllegalArgumentException(\n"
+          "        \"Can't get the number of an unknown enum value.\");\n"
+          "  }\n");
     } else {
       printer->Print(
-        "  if (index == -1) {\n"
-        "    throw new java.lang.IllegalArgumentException(\n"
-        "        \"Can't get the number of an unknown enum value.\");\n"
-        "  }\n");
+          "  if (index == -1) {\n"
+          "    throw new java.lang.IllegalArgumentException(\n"
+          "        \"Can't get the number of an unknown enum value.\");\n"
+          "  }\n");
     }
   }
   printer->Print(
-    "  return value;\n"
-    "}\n"
-    "\n"
-    "/**\n"
-    " * @deprecated Use {@link #forNumber(int)} instead.\n"
-    " */\n"
-    "@java.lang.Deprecated\n"
-    "public static $classname$ valueOf(int value) {\n"
-    "  return forNumber(value);\n"
-    "}\n"
-    "\n"
-    "public static $classname$ forNumber(int value) {\n"
-    "  switch (value) {\n",
-    "classname", descriptor_->name());
+      "  return value;\n"
+      "}\n"
+      "\n"
+      "/**\n"
+      " * @deprecated Use {@link #forNumber(int)} instead.\n"
+      " */\n"
+      "@java.lang.Deprecated\n"
+      "public static $classname$ valueOf(int value) {\n"
+      "  return forNumber(value);\n"
+      "}\n"
+      "\n"
+      "public static $classname$ forNumber(int value) {\n"
+      "  switch (value) {\n",
+      "classname", descriptor_->name());
   printer->Indent();
   printer->Indent();
 
@@ -199,40 +197,40 @@ void EnumGenerator::Generate(io::Printer* printer) {
   printer->Outdent();
   printer->Outdent();
   printer->Print(
-    "    default: return null;\n"
-    "  }\n"
-    "}\n"
-    "\n"
-    "public static com.google.protobuf.Internal.EnumLiteMap<$classname$>\n"
-    "    internalGetValueMap() {\n"
-    "  return internalValueMap;\n"
-    "}\n"
-    "private static final com.google.protobuf.Internal.EnumLiteMap<\n"
-    "    $classname$> internalValueMap =\n"
-    "      new com.google.protobuf.Internal.EnumLiteMap<$classname$>() {\n"
-    "        public $classname$ findValueByNumber(int number) {\n"
-    "          return $classname$.forNumber(number);\n"
-    "        }\n"
-    "      };\n"
-    "\n",
-    "classname", descriptor_->name());
+      "    default: return null;\n"
+      "  }\n"
+      "}\n"
+      "\n"
+      "public static com.google.protobuf.Internal.EnumLiteMap<$classname$>\n"
+      "    internalGetValueMap() {\n"
+      "  return internalValueMap;\n"
+      "}\n"
+      "private static final com.google.protobuf.Internal.EnumLiteMap<\n"
+      "    $classname$> internalValueMap =\n"
+      "      new com.google.protobuf.Internal.EnumLiteMap<$classname$>() {\n"
+      "        public $classname$ findValueByNumber(int number) {\n"
+      "          return $classname$.forNumber(number);\n"
+      "        }\n"
+      "      };\n"
+      "\n",
+      "classname", descriptor_->name());
 
   // -----------------------------------------------------------------
   // Reflection
 
   if (HasDescriptorMethods(descriptor_, context_->EnforceLite())) {
     printer->Print(
-      "public final com.google.protobuf.Descriptors.EnumValueDescriptor\n"
-      "    getValueDescriptor() {\n"
-      "  return getDescriptor().getValues().get($index_text$);\n"
-      "}\n"
-      "public final com.google.protobuf.Descriptors.EnumDescriptor\n"
-      "    getDescriptorForType() {\n"
-      "  return getDescriptor();\n"
-      "}\n"
-      "public static final com.google.protobuf.Descriptors.EnumDescriptor\n"
-      "    getDescriptor() {\n",
-      "index_text", index_text);
+        "public final com.google.protobuf.Descriptors.EnumValueDescriptor\n"
+        "    getValueDescriptor() {\n"
+        "  return getDescriptor().getValues().get($index_text$);\n"
+        "}\n"
+        "public final com.google.protobuf.Descriptors.EnumDescriptor\n"
+        "    getDescriptorForType() {\n"
+        "  return getDescriptor();\n"
+        "}\n"
+        "public static final com.google.protobuf.Descriptors.EnumDescriptor\n"
+        "    getDescriptor() {\n",
+        "index_text", index_text);
 
     // TODO(kenton):  Cache statically?  Note that we can't access descriptors
     //   at module init time because it wouldn't work with descriptor.proto, but
@@ -262,10 +260,10 @@ void EnumGenerator::Generate(io::Printer* printer) {
     }
 
     printer->Print(
-      "}\n"
-      "\n"
-      "private static final $classname$[] VALUES = ",
-      "classname", descriptor_->name());
+        "}\n"
+        "\n"
+        "private static final $classname$[] VALUES = ",
+        "classname", descriptor_->name());
 
     if (CanUseEnumValues()) {
       // If the constants we are going to output are exactly the ones we
@@ -275,11 +273,10 @@ void EnumGenerator::Generate(io::Printer* printer) {
       printer->Print("values();\n");
     } else {
       printer->Print(
-        "{\n"
-        "  ");
+          "{\n"
+          "  ");
       for (int i = 0; i < descriptor_->value_count(); i++) {
-        printer->Print("$name$, ",
-          "name", descriptor_->value(i)->name());
+        printer->Print("$name$, ", "name", descriptor_->value(i)->name());
       }
       printer->Print(
           "\n"
@@ -287,24 +284,24 @@ void EnumGenerator::Generate(io::Printer* printer) {
     }
 
     printer->Print(
-      "\n"
-      "public static $classname$ valueOf(\n"
-      "    com.google.protobuf.Descriptors.EnumValueDescriptor desc) {\n"
-      "  if (desc.getType() != getDescriptor()) {\n"
-      "    throw new java.lang.IllegalArgumentException(\n"
-      "      \"EnumValueDescriptor is not for this type.\");\n"
-      "  }\n",
-      "classname", descriptor_->name());
+        "\n"
+        "public static $classname$ valueOf(\n"
+        "    com.google.protobuf.Descriptors.EnumValueDescriptor desc) {\n"
+        "  if (desc.getType() != getDescriptor()) {\n"
+        "    throw new java.lang.IllegalArgumentException(\n"
+        "      \"EnumValueDescriptor is not for this type.\");\n"
+        "  }\n",
+        "classname", descriptor_->name());
     if (SupportUnknownEnumValue(descriptor_->file())) {
       printer->Print(
-        "  if (desc.getIndex() == -1) {\n"
-        "    return UNRECOGNIZED;\n"
-        "  }\n");
+          "  if (desc.getIndex() == -1) {\n"
+          "    return UNRECOGNIZED;\n"
+          "  }\n");
     }
     printer->Print(
-      "  return VALUES[desc.getIndex()];\n"
-      "}\n"
-      "\n");
+        "  return VALUES[desc.getIndex()];\n"
+        "}\n"
+        "\n");
 
     if (!ordinal_is_index) {
       printer->Print("private final int index;\n");
@@ -313,30 +310,27 @@ void EnumGenerator::Generate(io::Printer* printer) {
 
   // -----------------------------------------------------------------
 
-  printer->Print(
-    "private final int value;\n\n");
+  printer->Print("private final int value;\n\n");
 
   if (ordinal_is_index) {
-    printer->Print(
-      "private $classname$(int value) {\n",
-      "classname", descriptor_->name());
+    printer->Print("private $classname$(int value) {\n", "classname",
+                   descriptor_->name());
   } else {
-    printer->Print(
-      "private $classname$(int index, int value) {\n",
-      "classname", descriptor_->name());
+    printer->Print("private $classname$(int index, int value) {\n", "classname",
+                   descriptor_->name());
   }
   if (HasDescriptorMethods(descriptor_, context_->EnforceLite()) &&
       !ordinal_is_index) {
     printer->Print("  this.index = index;\n");
   }
   printer->Print(
-    "  this.value = value;\n"
-    "}\n");
+      "  this.value = value;\n"
+      "}\n");
 
   printer->Print(
-    "\n"
-    "// @@protoc_insertion_point(enum_scope:$full_name$)\n",
-    "full_name", descriptor_->full_name());
+      "\n"
+      "// @@protoc_insertion_point(enum_scope:$full_name$)\n",
+      "full_name", descriptor_->full_name());
 
   printer->Outdent();
   printer->Print("}\n\n");

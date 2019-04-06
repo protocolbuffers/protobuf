@@ -33,10 +33,10 @@
 // This is a dummy code generator plugin used by
 // command_line_interface_unittest.
 
-#include <string>
 #include <stdlib.h>
-#include <google/protobuf/compiler/plugin.h>
+#include <string>
 #include <google/protobuf/compiler/mock_code_generator.h>
+#include <google/protobuf/compiler/plugin.h>
 
 namespace google {
 namespace protobuf {

@@ -70,19 +70,13 @@ class PROTOBUF_EXPORT GzipInputStream : public ZeroCopyInputStream {
   };
 
   // buffer_size and format may be -1 for default of 64kB and GZIP format
-  explicit GzipInputStream(
-      ZeroCopyInputStream* sub_stream,
-      Format format = AUTO,
-      int buffer_size = -1);
+  explicit GzipInputStream(ZeroCopyInputStream* sub_stream,
+                           Format format = AUTO, int buffer_size = -1);
   virtual ~GzipInputStream();
 
   // Return last error message or NULL if no error.
-  inline const char* ZlibErrorMessage() const {
-    return zcontext_.msg;
-  }
-  inline int ZlibErrorCode() const {
-    return zerror_;
-  }
+  inline const char* ZlibErrorMessage() const { return zcontext_.msg; }
+  inline int ZlibErrorCode() const { return zerror_; }
 
   // implements ZeroCopyInputStream ----------------------------------
   bool Next(const void** data, int* size);
@@ -143,19 +137,13 @@ class PROTOBUF_EXPORT GzipOutputStream : public ZeroCopyOutputStream {
   explicit GzipOutputStream(ZeroCopyOutputStream* sub_stream);
 
   // Create a GzipOutputStream with the given options.
-  GzipOutputStream(
-      ZeroCopyOutputStream* sub_stream,
-      const Options& options);
+  GzipOutputStream(ZeroCopyOutputStream* sub_stream, const Options& options);
 
   virtual ~GzipOutputStream();
 
   // Return last error message or NULL if no error.
-  inline const char* ZlibErrorMessage() const {
-    return zcontext_.msg;
-  }
-  inline int ZlibErrorCode() const {
-    return zerror_;
-  }
+  inline const char* ZlibErrorMessage() const { return zcontext_.msg; }
+  inline int ZlibErrorCode() const { return zerror_; }
 
   // Flushes data written so far to zipped data in the underlying stream.
   // It is the caller's responsibility to flush the underlying stream if

@@ -29,7 +29,9 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Author: laszlocsomor@google.com (Laszlo Csomor)
-//
+//  Based on original Protocol Buffers design by
+//  Sanjay Ghemawat, Jeff Dean, and others.
+
 // Unit tests for long-path-aware open/mkdir/access/etc. on Windows, as well as
 // for the supporting utility functions.
 //
@@ -47,7 +49,7 @@
 #include <wchar.h>
 #include <windows.h>
 
-#include <google/protobuf/stubs/io_win32.h>
+#include <google/protobuf/io/io_win32.h>
 #include <gtest/gtest.h>
 
 #include <memory>
@@ -56,7 +58,7 @@
 
 namespace google {
 namespace protobuf {
-namespace internal {
+namespace io {
 namespace win32 {
 namespace {
 
@@ -444,7 +446,7 @@ TEST_F(IoWin32Test, Utf8Utf16ConversionTest) {
 
 }  // namespace
 }  // namespace win32
-}  // namespace internal
+}  // namespace io
 }  // namespace protobuf
 }  // namespace google
 

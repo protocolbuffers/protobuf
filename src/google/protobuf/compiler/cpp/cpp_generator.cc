@@ -34,9 +34,9 @@
 
 #include <google/protobuf/compiler/cpp/cpp_generator.h>
 
-#include <vector>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/compiler/cpp/cpp_file.h>
@@ -101,8 +101,8 @@ bool CppGenerator::Generate(const FileDescriptor* file,
       file_options.enforce_mode = EnforceOptimizeMode::kLiteRuntime;
       file_options.lite_implicit_weak_fields = true;
       if (!options[i].second.empty()) {
-        file_options.num_cc_files = strto32(options[i].second.c_str(),
-                                            NULL, 10);
+        file_options.num_cc_files =
+            strto32(options[i].second.c_str(), NULL, 10);
       }
     } else if (options[i].first == "table_driven_parsing") {
       file_options.table_driven_parsing = true;
@@ -142,9 +142,9 @@ bool CppGenerator::Generate(const FileDescriptor* file,
     io::AnnotationProtoCollector<GeneratedCodeInfo> annotation_collector(
         &annotations);
     std::string info_path = basename + ".proto.h.meta";
-    io::Printer printer(output.get(), '$', file_options.annotate_headers
-                                               ? &annotation_collector
-                                               : NULL);
+    io::Printer printer(
+        output.get(), '$',
+        file_options.annotate_headers ? &annotation_collector : NULL);
     file_generator.GenerateProtoHeader(
         &printer, file_options.annotate_headers ? info_path : "");
     if (file_options.annotate_headers) {
@@ -161,9 +161,9 @@ bool CppGenerator::Generate(const FileDescriptor* file,
     io::AnnotationProtoCollector<GeneratedCodeInfo> annotation_collector(
         &annotations);
     std::string info_path = basename + ".pb.h.meta";
-    io::Printer printer(output.get(), '$', file_options.annotate_headers
-                                               ? &annotation_collector
-                                               : NULL);
+    io::Printer printer(
+        output.get(), '$',
+        file_options.annotate_headers ? &annotation_collector : NULL);
     file_generator.GeneratePBHeader(
         &printer, file_options.annotate_headers ? info_path : "");
     if (file_options.annotate_headers) {

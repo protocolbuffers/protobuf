@@ -48,7 +48,7 @@ namespace google {
 namespace protobuf {
 namespace io {
 
-class ZeroCopyInputStream;     // zero_copy_stream.h
+class ZeroCopyInputStream;  // zero_copy_stream.h
 
 // Defined in this file.
 class ErrorCollector;
@@ -99,8 +99,8 @@ class PROTOBUF_EXPORT Tokenizer {
   ~Tokenizer();
 
   enum TokenType {
-    TYPE_START,       // Next() has not yet been called.
-    TYPE_END,         // End of input reached.  "text" is empty.
+    TYPE_START,  // Next() has not yet been called.
+    TYPE_END,    // End of input reached.  "text" is empty.
 
     TYPE_IDENTIFIER,  // A sequence of letters, digits, and underscores, not
                       // starting with a digit.  It is an error for a number
@@ -258,17 +258,17 @@ class PROTOBUF_EXPORT Tokenizer {
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(Tokenizer);
 
-  Token current_;           // Returned by current().
-  Token previous_;          // Returned by previous().
+  Token current_;   // Returned by current().
+  Token previous_;  // Returned by previous().
 
   ZeroCopyInputStream* input_;
   ErrorCollector* error_collector_;
 
-  char current_char_;       // == buffer_[buffer_pos_], updated by NextChar().
-  const char* buffer_;      // Current buffer returned from input_.
-  int buffer_size_;         // Size of buffer_.
-  int buffer_pos_;          // Current position within the buffer.
-  bool read_error_;         // Did we previously encounter a read error?
+  char current_char_;   // == buffer_[buffer_pos_], updated by NextChar().
+  const char* buffer_;  // Current buffer returned from input_.
+  int buffer_size_;     // Size of buffer_.
+  int buffer_pos_;      // Current position within the buffer.
+  bool read_error_;     // Did we previously encounter a read error?
 
   // Line and column number of current_char_ within the whole input stream.
   int line_;
@@ -369,37 +369,33 @@ class PROTOBUF_EXPORT Tokenizer {
 
   // Returns true if the current character is of the given character
   // class, but does not consume anything.
-  template<typename CharacterClass>
+  template <typename CharacterClass>
   inline bool LookingAt();
 
   // If the current character is in the given class, consume it and return
   // true.  Otherwise return false.
   // e.g. TryConsumeOne<Letter>()
-  template<typename CharacterClass>
+  template <typename CharacterClass>
   inline bool TryConsumeOne();
 
   // Like above, but try to consume the specific character indicated.
   inline bool TryConsume(char c);
 
   // Consume zero or more of the given character class.
-  template<typename CharacterClass>
+  template <typename CharacterClass>
   inline void ConsumeZeroOrMore();
 
   // Consume one or more of the given character class or log the given
   // error message.
   // e.g. ConsumeOneOrMore<Digit>("Expected digits.");
-  template<typename CharacterClass>
+  template <typename CharacterClass>
   inline void ConsumeOneOrMore(const char* error);
 };
 
 // inline methods ====================================================
-inline const Tokenizer::Token& Tokenizer::current() {
-  return current_;
-}
+inline const Tokenizer::Token& Tokenizer::current() { return current_; }
 
-inline const Tokenizer::Token& Tokenizer::previous() {
-  return previous_;
-}
+inline const Tokenizer::Token& Tokenizer::previous() { return previous_; }
 
 inline void Tokenizer::ParseString(const std::string& text,
                                    std::string* output) {

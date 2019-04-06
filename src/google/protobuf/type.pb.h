@@ -111,9 +111,13 @@ constexpr Field_Kind Field_Kind_Kind_MAX = Field_Kind_TYPE_SINT64;
 constexpr int Field_Kind_Kind_ARRAYSIZE = Field_Kind_Kind_MAX + 1;
 
 PROTOBUF_EXPORT const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* Field_Kind_descriptor();
-inline const std::string& Field_Kind_Name(Field_Kind value) {
+template<typename T>
+inline const std::string& Field_Kind_Name(T enum_t_value) {
+  static_assert(::std::is_same<T, Field_Kind>::value ||
+    ::std::is_integral<T>::value,
+    "Incorrect type passed to function Field_Kind_Name.");
   return ::PROTOBUF_NAMESPACE_ID::internal::NameOfEnum(
-    Field_Kind_descriptor(), value);
+    Field_Kind_descriptor(), enum_t_value);
 }
 inline bool Field_Kind_Parse(
     const std::string& name, Field_Kind* value) {
@@ -134,9 +138,13 @@ constexpr Field_Cardinality Field_Cardinality_Cardinality_MAX = Field_Cardinalit
 constexpr int Field_Cardinality_Cardinality_ARRAYSIZE = Field_Cardinality_Cardinality_MAX + 1;
 
 PROTOBUF_EXPORT const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* Field_Cardinality_descriptor();
-inline const std::string& Field_Cardinality_Name(Field_Cardinality value) {
+template<typename T>
+inline const std::string& Field_Cardinality_Name(T enum_t_value) {
+  static_assert(::std::is_same<T, Field_Cardinality>::value ||
+    ::std::is_integral<T>::value,
+    "Incorrect type passed to function Field_Cardinality_Name.");
   return ::PROTOBUF_NAMESPACE_ID::internal::NameOfEnum(
-    Field_Cardinality_descriptor(), value);
+    Field_Cardinality_descriptor(), enum_t_value);
 }
 inline bool Field_Cardinality_Parse(
     const std::string& name, Field_Cardinality* value) {
@@ -155,9 +163,13 @@ constexpr Syntax Syntax_MAX = SYNTAX_PROTO3;
 constexpr int Syntax_ARRAYSIZE = Syntax_MAX + 1;
 
 PROTOBUF_EXPORT const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* Syntax_descriptor();
-inline const std::string& Syntax_Name(Syntax value) {
+template<typename T>
+inline const std::string& Syntax_Name(T enum_t_value) {
+  static_assert(::std::is_same<T, Syntax>::value ||
+    ::std::is_integral<T>::value,
+    "Incorrect type passed to function Syntax_Name.");
   return ::PROTOBUF_NAMESPACE_ID::internal::NameOfEnum(
-    Syntax_descriptor(), value);
+    Syntax_descriptor(), enum_t_value);
 }
 inline bool Syntax_Parse(
     const std::string& name, Syntax* value) {
@@ -532,8 +544,12 @@ class PROTOBUF_EXPORT Field final :
   Kind_descriptor() {
     return Field_Kind_descriptor();
   }
-  static inline const std::string& Kind_Name(Kind value) {
-    return Field_Kind_Name(value);
+  template<typename T>
+  static inline const std::string& Kind_Name(T enum_t_value) {
+    static_assert(::std::is_same<T, Kind>::value ||
+      ::std::is_integral<T>::value,
+      "Incorrect type passed to function Kind_Name.");
+    return Field_Kind_Name(enum_t_value);
   }
   static inline bool Kind_Parse(const std::string& name,
       Kind* value) {
@@ -562,8 +578,12 @@ class PROTOBUF_EXPORT Field final :
   Cardinality_descriptor() {
     return Field_Cardinality_descriptor();
   }
-  static inline const std::string& Cardinality_Name(Cardinality value) {
-    return Field_Cardinality_Name(value);
+  template<typename T>
+  static inline const std::string& Cardinality_Name(T enum_t_value) {
+    static_assert(::std::is_same<T, Cardinality>::value ||
+      ::std::is_integral<T>::value,
+      "Incorrect type passed to function Cardinality_Name.");
+    return Field_Cardinality_Name(enum_t_value);
   }
   static inline bool Cardinality_Parse(const std::string& name,
       Cardinality* value) {

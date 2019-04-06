@@ -55,6 +55,8 @@ inline size_t AlignUpTo8(size_t n) {
   return (n + 7) & static_cast<size_t>(-8);
 }
 
+using LifecycleId = int64_t;
+
 // This class provides the core Arena memory allocation library. Different
 // implementations only need to implement the public interface below.
 // Arena is not a template type as that would only be useful if all protos
@@ -73,12 +75,12 @@ class PROTOBUF_EXPORT ArenaImpl {
 
     template <typename O>
     explicit Options(const O& options)
-      : start_block_size(options.start_block_size),
-        max_block_size(options.max_block_size),
-        initial_block(options.initial_block),
-        initial_block_size(options.initial_block_size),
-        block_alloc(options.block_alloc),
-        block_dealloc(options.block_dealloc) {}
+        : start_block_size(options.start_block_size),
+          max_block_size(options.max_block_size),
+          initial_block(options.initial_block),
+          initial_block_size(options.initial_block_size),
+          block_alloc(options.block_alloc),
+          block_dealloc(options.block_dealloc) {}
   };
 
   template <typename O>
@@ -193,11 +195,11 @@ class PROTOBUF_EXPORT ArenaImpl {
     void AddCleanupFallback(void* elem, void (*cleanup)(void*));
     void CleanupListFallback();
 
-    ArenaImpl* arena_;        // Containing arena.
-    void* owner_;             // &ThreadCache of this thread;
-    Block* head_;             // Head of linked list of blocks.
-    CleanupChunk* cleanup_;   // Head of cleanup list.
-    SerialArena* next_;       // Next SerialArena in this linked list.
+    ArenaImpl* arena_;       // Containing arena.
+    void* owner_;            // &ThreadCache of this thread;
+    Block* head_;            // Head of linked list of blocks.
+    CleanupChunk* cleanup_;  // Head of cleanup list.
+    SerialArena* next_;      // Next SerialArena in this linked list.
 
     // Next pointer to allocate from.  Always 8-byte aligned.  Points inside
     // head_ (and head_->pos will always be non-canonical).  We keep these
@@ -227,7 +229,7 @@ class PROTOBUF_EXPORT ArenaImpl {
     void set_pos(size_t pos) { pos_ = pos; }
 
    private:
-    Block* next_;   // Next block for this thread.
+    Block* next_;  // Next block for this thread.
     size_t pos_;
     size_t size_;
     // data follows
@@ -243,10 +245,10 @@ class PROTOBUF_EXPORT ArenaImpl {
 
     // The ThreadCache is considered valid as long as this matches the
     // lifecycle_id of the arena being used.
-    int64 last_lifecycle_id_seen;
+    LifecycleId last_lifecycle_id_seen;
     SerialArena* last_serial_arena;
   };
-  static std::atomic<int64> lifecycle_id_generator_;
+  static std::atomic<LifecycleId> lifecycle_id_generator_;
 #if defined(GOOGLE_PROTOBUF_NO_THREADLOCAL)
   // Android ndk does not support GOOGLE_THREAD_LOCAL keyword so we use a custom thread
   // local storage class we implemented.
@@ -279,21 +281,20 @@ class PROTOBUF_EXPORT ArenaImpl {
     hint_.store(serial, std::memory_order_release);
   }
 
-
   std::atomic<SerialArena*>
       threads_;                     // Pointer to a linked list of SerialArena.
   std::atomic<SerialArena*> hint_;  // Fast thread-local block access
   std::atomic<size_t> space_allocated_;  // Total size of all allocated blocks.
 
-  Block *initial_block_;     // If non-NULL, points to the block that came from
-                             // user data.
+  Block* initial_block_;  // If non-NULL, points to the block that came from
+                          // user data.
 
   Block* NewBlock(Block* last_block, size_t min_bytes);
 
   SerialArena* GetSerialArena();
   bool GetSerialArenaFast(SerialArena** arena);
   SerialArena* GetSerialArenaFallback(void* me);
-  int64 lifecycle_id_;  // Unique for each arena. Changes on Reset().
+  LifecycleId lifecycle_id_;  // Unique for each arena. Changes on Reset().
 
   Options options_;
 

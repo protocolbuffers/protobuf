@@ -35,9 +35,9 @@
 
 syntax = "proto2";
 
-import "com/google/protobuf/non_nested_extension.proto";
-
 package protobuf_unittest;
+
+import "com/google/protobuf/non_nested_extension.proto";
 
 
 message MyNestedExtension {

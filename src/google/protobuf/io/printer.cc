@@ -34,10 +34,10 @@
 
 #include <cctype>
 
-#include <google/protobuf/io/printer.h>
-#include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/io/printer.h>
+#include <google/protobuf/io/zero_copy_stream.h>
 
 namespace google {
 namespace protobuf {
@@ -182,9 +182,7 @@ void Printer::Print(const std::map<std::string, std::string>& variables,
   WriteRaw(text + pos, size - pos);
 }
 
-void Printer::Indent() {
-  indent_ += "  ";
-}
+void Printer::Indent() { indent_ += "  "; }
 
 void Printer::Outdent() {
   if (indent_.empty()) {

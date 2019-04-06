@@ -31,8 +31,8 @@
 #include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/unittest_preserve_unknown_enum.pb.h>
 #include <google/protobuf/unittest_preserve_unknown_enum2.pb.h>
-#include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/descriptor.h>
+#include <google/protobuf/dynamic_message.h>
 #include <gtest/gtest.h>
 
 namespace google {
@@ -41,22 +41,18 @@ namespace {
 
 void FillMessage(
     proto3_preserve_unknown_enum_unittest::MyMessagePlusExtra* message) {
-  message->set_e(
-      proto3_preserve_unknown_enum_unittest::E_EXTRA);
-  message->add_repeated_e(
-      proto3_preserve_unknown_enum_unittest::E_EXTRA);
+  message->set_e(proto3_preserve_unknown_enum_unittest::E_EXTRA);
+  message->add_repeated_e(proto3_preserve_unknown_enum_unittest::E_EXTRA);
   message->add_repeated_packed_e(
       proto3_preserve_unknown_enum_unittest::E_EXTRA);
   message->add_repeated_packed_unexpected_e(
       proto3_preserve_unknown_enum_unittest::E_EXTRA);
-  message->set_oneof_e_1(
-      proto3_preserve_unknown_enum_unittest::E_EXTRA);
+  message->set_oneof_e_1(proto3_preserve_unknown_enum_unittest::E_EXTRA);
 }
 
 void CheckMessage(
     const proto3_preserve_unknown_enum_unittest::MyMessagePlusExtra& message) {
-  EXPECT_EQ(proto3_preserve_unknown_enum_unittest::E_EXTRA,
-            message.e());
+  EXPECT_EQ(proto3_preserve_unknown_enum_unittest::E_EXTRA, message.e());
   EXPECT_EQ(1, message.repeated_e_size());
   EXPECT_EQ(proto3_preserve_unknown_enum_unittest::E_EXTRA,
             message.repeated_e(0));
@@ -72,23 +68,18 @@ void CheckMessage(
 
 void CheckMessage(
     const proto3_preserve_unknown_enum_unittest::MyMessage& message) {
-  EXPECT_EQ(static_cast<int>(
-              proto3_preserve_unknown_enum_unittest::E_EXTRA),
+  EXPECT_EQ(static_cast<int>(proto3_preserve_unknown_enum_unittest::E_EXTRA),
             static_cast<int>(message.e()));
   EXPECT_EQ(1, message.repeated_e_size());
-  EXPECT_EQ(static_cast<int>(
-              proto3_preserve_unknown_enum_unittest::E_EXTRA),
+  EXPECT_EQ(static_cast<int>(proto3_preserve_unknown_enum_unittest::E_EXTRA),
             static_cast<int>(message.repeated_e(0)));
   EXPECT_EQ(1, message.repeated_packed_e_size());
-  EXPECT_EQ(static_cast<int>(
-              proto3_preserve_unknown_enum_unittest::E_EXTRA),
+  EXPECT_EQ(static_cast<int>(proto3_preserve_unknown_enum_unittest::E_EXTRA),
             static_cast<int>(message.repeated_packed_e(0)));
   EXPECT_EQ(1, message.repeated_packed_unexpected_e_size());
-  EXPECT_EQ(static_cast<int>(
-              proto3_preserve_unknown_enum_unittest::E_EXTRA),
+  EXPECT_EQ(static_cast<int>(proto3_preserve_unknown_enum_unittest::E_EXTRA),
             static_cast<int>(message.repeated_packed_unexpected_e(0)));
-  EXPECT_EQ(static_cast<int>(
-              proto3_preserve_unknown_enum_unittest::E_EXTRA),
+  EXPECT_EQ(static_cast<int>(proto3_preserve_unknown_enum_unittest::E_EXTRA),
             static_cast<int>(message.oneof_e_1()));
 }
 

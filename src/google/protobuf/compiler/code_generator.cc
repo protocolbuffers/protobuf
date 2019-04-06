@@ -57,8 +57,9 @@ bool CodeGenerator::GenerateAll(const std::vector<const FileDescriptor*>& files,
     const FileDescriptor* file = files[i];
     succeeded = Generate(file, parameter, generator_context, error);
     if (!succeeded && error && error->empty()) {
-      *error = "Code generator returned false but provided no error "
-               "description.";
+      *error =
+          "Code generator returned false but provided no error "
+          "description.";
     }
     if (error && !error->empty()) {
       *error = file->name() + ": " + *error;

@@ -45,7 +45,7 @@
 #endif
 #include <errno.h>
 
-#include <google/protobuf/stubs/io_win32.h>
+#include <google/protobuf/io/io_win32.h>
 #include <google/protobuf/stubs/logging.h>
 
 namespace google {
@@ -59,11 +59,11 @@ namespace protobuf {
 #endif
 
 #ifdef _WIN32
-using google::protobuf::internal::win32::access;
-using google::protobuf::internal::win32::chdir;
-using google::protobuf::internal::win32::fopen;
-using google::protobuf::internal::win32::mkdir;
-using google::protobuf::internal::win32::stat;
+using google::protobuf::io::win32::access;
+using google::protobuf::io::win32::chdir;
+using google::protobuf::io::win32::fopen;
+using google::protobuf::io::win32::mkdir;
+using google::protobuf::io::win32::stat;
 #endif
 
 bool File::Exists(const string& name) {

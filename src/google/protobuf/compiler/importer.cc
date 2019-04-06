@@ -37,10 +37,10 @@
 #else
 #include <unistd.h>
 #endif
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include <algorithm>
 #include <memory>
@@ -48,12 +48,12 @@
 #include <google/protobuf/compiler/importer.h>
 
 #include <google/protobuf/compiler/parser.h>
+#include <google/protobuf/io/io_win32.h>
 #include <google/protobuf/io/tokenizer.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/stubs/strutil.h>
 
 
-#include <google/protobuf/stubs/io_win32.h>
 
 #ifdef _WIN32
 #include <ctype.h>
@@ -66,8 +66,8 @@ namespace compiler {
 #ifdef _WIN32
 // DO NOT include <io.h>, instead create functions in io_win32.{h,cc} and import
 // them like we do below.
-using google::protobuf::internal::win32::access;
-using google::protobuf::internal::win32::open;
+using google::protobuf::io::win32::access;
+using google::protobuf::io::win32::open;
 #endif
 
 // Returns true if the text looks like a Windows-style absolute path, starting
@@ -75,10 +75,8 @@ using google::protobuf::internal::win32::open;
 // copy in command_line_interface.cc?
 static bool IsWindowsAbsolutePath(const std::string& text) {
 #if defined(_WIN32) || defined(__CYGWIN__)
-  return text.size() >= 3 && text[1] == ':' &&
-         isalpha(text[0]) &&
-         (text[2] == '/' || text[2] == '\\') &&
-         text.find_last_of(':') == 1;
+  return text.size() >= 3 && text[1] == ':' && isalpha(text[0]) &&
+         (text[2] == '/' || text[2] == '\\') && text.find_last_of(':') == 1;
 #else
   return false;
 #endif
@@ -165,8 +163,7 @@ bool SourceTreeDescriptorDatabase::FindFileByName(const std::string& filename,
 
   // Parse it.
   output->set_name(filename);
-  return parser.Parse(&tokenizer, output) &&
-         !file_error_collector.had_errors();
+  return parser.Parse(&tokenizer, output) && !file_error_collector.had_errors();
 }
 
 bool SourceTreeDescriptorDatabase::FindFileContainingSymbol(
@@ -183,11 +180,11 @@ bool SourceTreeDescriptorDatabase::FindFileContainingExtension(
 // -------------------------------------------------------------------
 
 SourceTreeDescriptorDatabase::ValidationErrorCollector::
-ValidationErrorCollector(SourceTreeDescriptorDatabase* owner)
-  : owner_(owner) {}
+    ValidationErrorCollector(SourceTreeDescriptorDatabase* owner)
+    : owner_(owner) {}
 
 SourceTreeDescriptorDatabase::ValidationErrorCollector::
-~ValidationErrorCollector() {}
+    ~ValidationErrorCollector() {}
 
 void SourceTreeDescriptorDatabase::ValidationErrorCollector::AddError(
     const std::string& filename, const std::string& element_name,
@@ -196,7 +193,12 @@ void SourceTreeDescriptorDatabase::ValidationErrorCollector::AddError(
   if (owner_->error_collector_ == NULL) return;
 
   int line, column;
-  owner_->source_locations_.Find(descriptor, location, &line, &column);
+  if (location == DescriptorPool::ErrorCollector::IMPORT) {
+    owner_->source_locations_.FindImport(descriptor, element_name, &line,
+                                         &column);
+  } else {
+    owner_->source_locations_.Find(descriptor, location, &line, &column);
+  }
   owner_->error_collector_->AddError(filename, line, column, message);
 }
 
@@ -207,7 +209,12 @@ void SourceTreeDescriptorDatabase::ValidationErrorCollector::AddWarning(
   if (owner_->error_collector_ == NULL) return;
 
   int line, column;
-  owner_->source_locations_.Find(descriptor, location, &line, &column);
+  if (location == DescriptorPool::ErrorCollector::IMPORT) {
+    owner_->source_locations_.FindImport(descriptor, element_name, &line,
+                                         &column);
+  } else {
+    owner_->source_locations_.Find(descriptor, location, &line, &column);
+  }
   owner_->error_collector_->AddWarning(filename, line, column, message);
 }
 
@@ -215,8 +222,8 @@ void SourceTreeDescriptorDatabase::ValidationErrorCollector::AddWarning(
 
 Importer::Importer(SourceTree* source_tree,
                    MultiFileErrorCollector* error_collector)
-  : database_(source_tree),
-    pool_(&database_, database_.GetValidationErrorCollector()) {
+    : database_(source_tree),
+      pool_(&database_, database_.GetValidationErrorCollector()) {
   pool_.EnforceWeakDependencies(true);
   database_.RecordErrorsTo(error_collector);
 }
@@ -297,8 +304,8 @@ static std::string CanonicalizePath(std::string path) {
     // Restore leading slash.
     result = '/' + result;
   }
-  if (!path.empty() && LastChar(path) == '/' &&
-      !result.empty() && LastChar(result) != '/') {
+  if (!path.empty() && LastChar(path) == '/' && !result.empty() &&
+      LastChar(result) != '/') {
     // Restore trailing slash.
     result += '/';
   }
@@ -453,8 +460,9 @@ io::ZeroCopyInputStream* DiskSourceTree::OpenVirtualFile(
     // We do not allow importing of paths containing things like ".." or
     // consecutive slashes since the compiler expects files to be uniquely
     // identified by file name.
-    last_error_message_ = "Backslashes, consecutive slashes, \".\", or \"..\" "
-                          "are not allowed in the virtual path";
+    last_error_message_ =
+        "Backslashes, consecutive slashes, \".\", or \"..\" "
+        "are not allowed in the virtual path";
     return NULL;
   }
 
@@ -472,8 +480,8 @@ io::ZeroCopyInputStream* DiskSourceTree::OpenVirtualFile(
 
       if (errno == EACCES) {
         // The file exists but is not readable.
-        last_error_message_ = "Read access is denied for file: " +
-                              temp_disk_file;
+        last_error_message_ =
+            "Read access is denied for file: " + temp_disk_file;
         return NULL;
       }
     }
