@@ -177,6 +177,10 @@ bool EmitFieldNonDefaultCondition(io::Printer* printer,
     } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
       // Message fields still have has_$name$() methods.
       format("if ($prefix$has_$name$()) {\n");
+    } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_DOUBLE 
+               || field->cpp_type() == FieldDescriptor::CPPTYPE_FLOAT) {
+      // Handle float comparison to prevent -Wfloat-equal warnings
+      format("if (!($prefix$$name$() <= 0 && $prefix$$name$() >= 0)) {\n");
     } else {
       format("if ($prefix$$name$() != 0) {\n");
     }
