@@ -1116,10 +1116,12 @@ char* FastUInt64ToBufferLeft(uint64 u64, char* buffer) {
 }
 
 char* FastInt64ToBufferLeft(int64 i, char* buffer) {
-  uint64 u = i;
+  uint64 u = 0;
   if (i < 0) {
     *buffer++ = '-';
-    u = -i;
+    u -= i;
+  } else {
+    u = i;
   }
   return FastUInt64ToBufferLeft(u, buffer);
 }

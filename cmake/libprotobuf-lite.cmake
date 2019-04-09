@@ -5,13 +5,13 @@ set(libprotobuf_lite_files
   ${protobuf_source_dir}/src/google/protobuf/generated_message_table_driven_lite.cc
   ${protobuf_source_dir}/src/google/protobuf/generated_message_util.cc
   ${protobuf_source_dir}/src/google/protobuf/implicit_weak_message.cc
-  ${protobuf_source_dir}/src/google/protobuf/parse_context.cc
   ${protobuf_source_dir}/src/google/protobuf/io/coded_stream.cc
   ${protobuf_source_dir}/src/google/protobuf/io/io_win32.cc
   ${protobuf_source_dir}/src/google/protobuf/io/strtod.cc
   ${protobuf_source_dir}/src/google/protobuf/io/zero_copy_stream.cc
   ${protobuf_source_dir}/src/google/protobuf/io/zero_copy_stream_impl_lite.cc
   ${protobuf_source_dir}/src/google/protobuf/message_lite.cc
+  ${protobuf_source_dir}/src/google/protobuf/parse_context.cc
   ${protobuf_source_dir}/src/google/protobuf/repeated_field.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/bytestream.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/common.cc

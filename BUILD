@@ -69,9 +69,25 @@ config_setting(
     },
 )
 
+config_setting(
+    name = "android-libcpp",
+    values = {
+        "crosstool_top": "@androidndk//:toolchain-libcpp",
+    },
+)
+
+config_setting(
+    name = "android-gnu-libstdcpp",
+    values = {
+        "crosstool_top": "@androidndk//:toolchain-gnu-libstdcpp",
+    },
+)
+
 # Android and MSVC builds do not need to link in a separate pthread library.
 LINK_OPTS = select({
     ":android": [],
+    ":android-libcpp": [],
+    ":android-gnu-libstdcpp": [],
     ":msvc": [
         # Suppress linker warnings about files with no symbols defined.
         "-ignore:4221",
@@ -92,16 +108,18 @@ cc_library(
     name = "protobuf_lite",
     srcs = [
         # AUTOGEN(protobuf_lite_srcs)
-		"src/google/protobuf/any_lite.cc",
+        "src/google/protobuf/any_lite.cc",
         "src/google/protobuf/arena.cc",
         "src/google/protobuf/extension_set.cc",
         "src/google/protobuf/generated_message_table_driven_lite.cc",
         "src/google/protobuf/generated_message_util.cc",
         "src/google/protobuf/implicit_weak_message.cc",
         "src/google/protobuf/io/coded_stream.cc",
+        "src/google/protobuf/io/strtod.cc",
         "src/google/protobuf/io/zero_copy_stream.cc",
         "src/google/protobuf/io/zero_copy_stream_impl_lite.cc",
         "src/google/protobuf/message_lite.cc",
+        "src/google/protobuf/parse_context.cc",
         "src/google/protobuf/repeated_field.cc",
         "src/google/protobuf/stubs/bytestream.cc",
         "src/google/protobuf/stubs/common.cc",
@@ -149,7 +167,6 @@ cc_library(
         "src/google/protobuf/generated_message_table_driven.cc",
         "src/google/protobuf/io/gzip_stream.cc",
         "src/google/protobuf/io/printer.cc",
-        "src/google/protobuf/io/strtod.cc",
         "src/google/protobuf/io/tokenizer.cc",
         "src/google/protobuf/io/zero_copy_stream_impl.cc",
         "src/google/protobuf/map_field.cc",
