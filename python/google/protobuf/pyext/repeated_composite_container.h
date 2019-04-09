@@ -52,46 +52,11 @@ namespace python {
 
 struct CMessageClass;
 
-// A RepeatedCompositeContainer can be in one of two states: attached
-// or released.
-//
-// When in the attached state all modifications to the container are
-// done both on the 'message' and on the 'child_messages'
-// list.  In this state all Messages referred to by the children in
-// 'child_messages' are owner by the 'owner'.
-//
-// When in the released state 'message', 'owner', 'parent', and
-// 'parent_field_descriptor' are NULL.
-typedef struct RepeatedCompositeContainer {
-  PyObject_HEAD;
-
-  // This is the top-level C++ Message object that owns the whole
-  // proto tree.  Every Python RepeatedCompositeContainer holds a
-  // reference to it in order to keep it alive as long as there's a
-  // Python object that references any part of the tree.
-  CMessage::OwnerRef owner;
-
-  // Weak reference to parent object. May be NULL. Used to make sure
-  // the parent is writable before modifying the
-  // RepeatedCompositeContainer.
-  CMessage* parent;
-
-  // A descriptor used to modify the underlying 'message'.
-  // The pointer is owned by the global DescriptorPool.
-  const FieldDescriptor* parent_field_descriptor;
-
-  // Pointer to the C++ Message that contains this container.  The
-  // RepeatedCompositeContainer does not own this pointer.
-  //
-  // If NULL, this message has been released from its parent (by
-  // calling Clear() or ClearField() on the parent.
-  Message* message;
-
+// A RepeatedCompositeContainer always has a parent message.
+// The parent message also caches reference to items of the container.
+typedef struct RepeatedCompositeContainer : public ContainerBase {
   // The type used to create new child messages.
   CMessageClass* child_message_class;
-
-  // A list of child messages.
-  PyObject* child_messages;
 } RepeatedCompositeContainer;
 
 extern PyTypeObject RepeatedCompositeContainer_Type;
@@ -100,7 +65,7 @@ namespace repeated_composite_container {
 
 // Builds a RepeatedCompositeContainer object, from a parent message and a
 // field descriptor.
-PyObject *NewContainer(
+RepeatedCompositeContainer* NewContainer(
     CMessage* parent,
     const FieldDescriptor* parent_field_descriptor,
     CMessageClass *child_message_class);
@@ -139,25 +104,6 @@ PyObject* Subscript(RepeatedCompositeContainer* self, PyObject* slice);
 int AssignSubscript(RepeatedCompositeContainer* self,
                     PyObject* slice,
                     PyObject* value);
-
-// Releases the messages in the container to a new message.
-//
-// Returns 0 on success, -1 on failure.
-int Release(RepeatedCompositeContainer* self);
-
-// Returns 0 on success, -1 on failure.
-int SetOwner(RepeatedCompositeContainer* self,
-             const CMessage::OwnerRef& new_owner);
-
-// Removes the last element of the repeated message field 'field' on
-// the Message 'parent', and transfers the ownership of the released
-// Message to 'target'.
-//
-// Corresponds to reflection api method ReleaseMessage.
-void ReleaseLastTo(Message* message,
-                   const FieldDescriptor* field,
-                   CMessage* target);
-
 }  // namespace repeated_composite_container
 }  // namespace python
 }  // namespace protobuf

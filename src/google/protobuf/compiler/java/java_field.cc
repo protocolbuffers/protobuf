@@ -63,15 +63,16 @@ namespace java {
 
 namespace {
 
-ImmutableFieldGenerator* MakeImmutableGenerator(
-    const FieldDescriptor* field, int messageBitIndex, int builderBitIndex,
-    Context* context) {
+ImmutableFieldGenerator* MakeImmutableGenerator(const FieldDescriptor* field,
+                                                int messageBitIndex,
+                                                int builderBitIndex,
+                                                Context* context) {
   if (field->is_repeated()) {
     switch (GetJavaType(field)) {
       case JAVATYPE_MESSAGE:
         if (IsMapEntry(field->message_type())) {
-          return new ImmutableMapFieldGenerator(
-              field, messageBitIndex, builderBitIndex, context);
+          return new ImmutableMapFieldGenerator(field, messageBitIndex,
+                                                builderBitIndex, context);
         } else {
           return new RepeatedImmutableMessageFieldGenerator(
               field, messageBitIndex, builderBitIndex, context);
@@ -93,8 +94,8 @@ ImmutableFieldGenerator* MakeImmutableGenerator(
           return new ImmutableMessageOneofFieldGenerator(
               field, messageBitIndex, builderBitIndex, context);
         case JAVATYPE_ENUM:
-          return new ImmutableEnumOneofFieldGenerator(
-              field, messageBitIndex, builderBitIndex, context);
+          return new ImmutableEnumOneofFieldGenerator(field, messageBitIndex,
+                                                      builderBitIndex, context);
         case JAVATYPE_STRING:
           return new ImmutableStringOneofFieldGenerator(
               field, messageBitIndex, builderBitIndex, context);
@@ -105,17 +106,17 @@ ImmutableFieldGenerator* MakeImmutableGenerator(
     } else {
       switch (GetJavaType(field)) {
         case JAVATYPE_MESSAGE:
-          return new ImmutableMessageFieldGenerator(
-              field, messageBitIndex, builderBitIndex, context);
+          return new ImmutableMessageFieldGenerator(field, messageBitIndex,
+                                                    builderBitIndex, context);
         case JAVATYPE_ENUM:
-          return new ImmutableEnumFieldGenerator(
-              field, messageBitIndex, builderBitIndex, context);
+          return new ImmutableEnumFieldGenerator(field, messageBitIndex,
+                                                 builderBitIndex, context);
         case JAVATYPE_STRING:
-          return new ImmutableStringFieldGenerator(
-              field, messageBitIndex, builderBitIndex, context);
+          return new ImmutableStringFieldGenerator(field, messageBitIndex,
+                                                   builderBitIndex, context);
         default:
-          return new ImmutablePrimitiveFieldGenerator(
-              field, messageBitIndex, builderBitIndex, context);
+          return new ImmutablePrimitiveFieldGenerator(field, messageBitIndex,
+                                                      builderBitIndex, context);
       }
     }
   }
@@ -193,17 +194,12 @@ static inline void ReportUnexpectedPackedFieldsCall(io::Printer* printer) {
 
 ImmutableFieldGenerator::~ImmutableFieldGenerator() {}
 
-void ImmutableFieldGenerator::
-GenerateParsingCodeFromPacked(io::Printer* printer) const {
+void ImmutableFieldGenerator::GenerateParsingCodeFromPacked(
+    io::Printer* printer) const {
   ReportUnexpectedPackedFieldsCall(printer);
 }
 
 ImmutableFieldLiteGenerator::~ImmutableFieldLiteGenerator() {}
-
-void ImmutableFieldLiteGenerator::
-GenerateParsingCodeFromPacked(io::Printer* printer) const {
-  ReportUnexpectedPackedFieldsCall(printer);
-}
 
 // ===================================================================
 
@@ -224,7 +220,7 @@ FieldGeneratorMap<ImmutableFieldGenerator>::FieldGeneratorMap(
   }
 }
 
-template<>
+template <>
 FieldGeneratorMap<ImmutableFieldGenerator>::~FieldGeneratorMap() {}
 
 template <>
@@ -242,7 +238,7 @@ FieldGeneratorMap<ImmutableFieldLiteGenerator>::FieldGeneratorMap(
   }
 }
 
-template<>
+template <>
 FieldGeneratorMap<ImmutableFieldLiteGenerator>::~FieldGeneratorMap() {}
 
 
@@ -271,10 +267,10 @@ void SetCommonOneofVariables(const FieldDescriptor* descriptor,
   (*variables)["oneof_capitalized_name"] = info->capitalized_name;
   (*variables)["oneof_index"] =
       StrCat(descriptor->containing_oneof()->index());
+  (*variables)["oneof_stored_type"] = GetOneofStoredType(descriptor);
   (*variables)["set_oneof_case_message"] =
       info->name + "Case_ = " + StrCat(descriptor->number());
-  (*variables)["clear_oneof_case_message"] = info->name +
-      "Case_ = 0";
+  (*variables)["clear_oneof_case_message"] = info->name + "Case_ = 0";
   (*variables)["has_oneof_case_message"] =
       info->name + "Case_ == " + StrCat(descriptor->number());
 }

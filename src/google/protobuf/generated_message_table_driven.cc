@@ -57,32 +57,30 @@ struct UnknownFieldHandler {
   static constexpr bool IsLite() { return false; }
 
   static bool Skip(MessageLite* msg, const ParseTable& table,
-                   io::CodedInputStream* input,
-                   int tag) {
+                   io::CodedInputStream* input, int tag) {
     GOOGLE_DCHECK(table.unknown_field_set);
 
     return WireFormat::SkipField(input, tag,
-        MutableUnknownFields(msg, table.arena_offset));
+                                 MutableUnknownFields(msg, table.arena_offset));
   }
 
-  static void Varint(MessageLite* msg, const ParseTable& table,
-                     int tag, int value) {
+  static void Varint(MessageLite* msg, const ParseTable& table, int tag,
+                     int value) {
     GOOGLE_DCHECK(table.unknown_field_set);
 
-    MutableUnknownFields(msg, table.arena_offset)->AddVarint(
-        WireFormatLite::GetTagFieldNumber(tag), value);
+    MutableUnknownFields(msg, table.arena_offset)
+        ->AddVarint(WireFormatLite::GetTagFieldNumber(tag), value);
   }
 
-  static bool ParseExtension(
-      MessageLite* msg, const ParseTable& table,
-      io::CodedInputStream* input, int tag) {
+  static bool ParseExtension(MessageLite* msg, const ParseTable& table,
+                             io::CodedInputStream* input, int tag) {
     ExtensionSet* extensions = GetExtensionSet(msg, table.extension_offset);
     if (extensions == NULL) {
       return false;
     }
 
-    const Message* prototype = down_cast<const Message*>(
-        table.default_instance());
+    const Message* prototype =
+        down_cast<const Message*>(table.default_instance());
 
     GOOGLE_DCHECK(prototype != NULL);
     GOOGLE_DCHECK(table.unknown_field_set);
@@ -95,8 +93,8 @@ struct UnknownFieldHandler {
 
 }  // namespace
 
-bool MergePartialFromCodedStream(
-    MessageLite* msg, const ParseTable& table, io::CodedInputStream* input) {
+bool MergePartialFromCodedStream(MessageLite* msg, const ParseTable& table,
+                                 io::CodedInputStream* input) {
   return MergePartialFromCodedStreamImpl<UnknownFieldHandler,
                                          InternalMetadataWithArena>(msg, table,
                                                                     input);

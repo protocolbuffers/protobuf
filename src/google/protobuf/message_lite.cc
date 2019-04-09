@@ -147,13 +147,13 @@ bool MergePartialFromImpl(io::ZeroCopyInputStream* input, MessageLite* msg) {
 
 template <bool aliasing>
 bool MergePartialFromImpl(BoundedZCIS input, MessageLite* msg) {
-  // We must prevent reading more than limit from the input. Due to the nature
-  // of EpsCopyInputStream the stream will always read kSlopBytes ahead of
-  // the parser, we can't always backup so we must prevent from reading past
-  // limit in the first place.
-  io::LimitingInputStream zcis(input.zcis, input.limit);
-  return MergePartialFromImpl<aliasing>(&zcis, msg) &&
-         zcis.ByteCount() == input.limit;
+  const char* ptr;
+  internal::ParseContext ctx(io::CodedInputStream::GetDefaultRecursionLimit(),
+                             aliasing, &ptr, input.zcis, input.limit);
+  ptr = msg->_InternalParse(ptr, &ctx);
+  if (PROTOBUF_PREDICT_FALSE(!ptr)) return false;
+  ctx.BackUp(ptr);
+  return ctx.EndedAtLimit();
 }
 
 #else  // !GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
@@ -276,8 +276,8 @@ bool MessageLite::ParsePartialFromZeroCopyStream(
   return ParseFrom<kParsePartial>(input);
 }
 
-bool MessageLite::MergePartialFromBoundedZeroCopyStream(io::ZeroCopyInputStream* input,
-                                                 int size) {
+bool MessageLite::MergePartialFromBoundedZeroCopyStream(
+    io::ZeroCopyInputStream* input, int size) {
   return ParseFrom<kMergePartial>(internal::BoundedZCIS{input, size});
 }
 

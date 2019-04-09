@@ -481,7 +481,9 @@ DataPiece DefaultValueObjectWriter::CreateDefaultDataPieceForField(
     case google::protobuf::Field_Kind_TYPE_ENUM: {
       return FindEnumDefault(field, typeinfo, use_ints_for_enums);
     }
-    default: { return DataPiece::NullData(); }
+    default: {
+      return DataPiece::NullData();
+    }
   }
 }
 

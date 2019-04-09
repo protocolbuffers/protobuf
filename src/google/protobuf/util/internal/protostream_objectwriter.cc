@@ -57,10 +57,10 @@ namespace util {
 namespace converter {
 
 using ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite;
+using std::placeholders::_1;
 using util::Status;
 using util::StatusOr;
 using util::error::INVALID_ARGUMENT;
-using std::placeholders::_1;
 
 
 ProtoStreamObjectWriter::ProtoStreamObjectWriter(
@@ -359,9 +359,9 @@ void ProtoStreamObjectWriter::AnyWriter::StartAny(const DataPiece& value) {
 
   // Create our object writer and initialize it with the first StartObject
   // call.
-  ow_.reset(new ProtoStreamObjectWriter(
-      parent_->typeinfo(), *type, &output_, parent_->listener(),
-      parent_->options_));
+  ow_.reset(new ProtoStreamObjectWriter(parent_->typeinfo(), *type, &output_,
+                                        parent_->listener(),
+                                        parent_->options_));
 
   // Don't call StartObject() for well-known types yet. Depending on the
   // type of actual data, we may not need to call StartObject(). For
@@ -985,9 +985,9 @@ Status ProtoStreamObjectWriter::RenderFieldMask(ProtoStreamObjectWriter* ow,
                                data.ValueAsStringOrDefault("")));
   }
 
-// TODO(tsun): figure out how to do proto descriptor based snake case
-// conversions as much as possible. Because ToSnakeCase sometimes returns the
-// wrong value.
+  // TODO(tsun): figure out how to do proto descriptor based snake case
+  // conversions as much as possible. Because ToSnakeCase sometimes returns the
+  // wrong value.
   return DecodeCompactFieldMaskPaths(data.str(),
                                      std::bind(&RenderOneFieldPath, ow, _1));
 }

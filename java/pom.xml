@@ -223,6 +223,7 @@
 
   <modules>
     <module>bom</module>
+    <module>lite</module>
     <module>core</module>
     <module>util</module>
   </modules>

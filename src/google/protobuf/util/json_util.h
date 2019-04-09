@@ -133,8 +133,9 @@ inline util::Status BinaryToJsonStream(
 }
 
 PROTOBUF_EXPORT util::Status BinaryToJsonString(
-    TypeResolver* resolver, const std::string& type_url, const std::string& binary_input,
-    std::string* json_output, const JsonPrintOptions& options);
+    TypeResolver* resolver, const std::string& type_url,
+    const std::string& binary_input, std::string* json_output,
+    const JsonPrintOptions& options);
 
 inline util::Status BinaryToJsonString(TypeResolver* resolver,
                                          const std::string& type_url,
@@ -155,8 +156,7 @@ PROTOBUF_EXPORT util::Status JsonToBinaryStream(
     io::ZeroCopyOutputStream* binary_output, const JsonParseOptions& options);
 
 inline util::Status JsonToBinaryStream(
-    TypeResolver* resolver,
-    const std::string& type_url,
+    TypeResolver* resolver, const std::string& type_url,
     io::ZeroCopyInputStream* json_input,
     io::ZeroCopyOutputStream* binary_output) {
   return JsonToBinaryStream(resolver, type_url, json_input, binary_output,

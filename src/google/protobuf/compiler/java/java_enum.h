@@ -42,13 +42,13 @@
 namespace google {
 namespace protobuf {
 namespace compiler {
-  namespace java {
-    class Context;           // context.h
-    class ClassNameResolver; // name_resolver.h
-  }
-}
+namespace java {
+class Context;            // context.h
+class ClassNameResolver;  // name_resolver.h
+}  // namespace java
+}  // namespace compiler
 namespace io {
-  class Printer;             // printer.h
+class Printer;  // printer.h
 }
 }  // namespace protobuf
 }  // namespace google

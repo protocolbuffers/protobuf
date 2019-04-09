@@ -168,7 +168,7 @@ template<> PROTOBUF_EXPORT PROTOBUF_NAMESPACE_ID::UninterpretedOption_NamePart* 
 PROTOBUF_NAMESPACE_CLOSE
 PROTOBUF_NAMESPACE_OPEN
 
-enum FieldDescriptorProto_Type {
+enum FieldDescriptorProto_Type : int {
   FieldDescriptorProto_Type_TYPE_DOUBLE = 1,
   FieldDescriptorProto_Type_TYPE_FLOAT = 2,
   FieldDescriptorProto_Type_TYPE_INT64 = 3,
@@ -194,16 +194,20 @@ constexpr FieldDescriptorProto_Type FieldDescriptorProto_Type_Type_MAX = FieldDe
 constexpr int FieldDescriptorProto_Type_Type_ARRAYSIZE = FieldDescriptorProto_Type_Type_MAX + 1;
 
 PROTOBUF_EXPORT const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* FieldDescriptorProto_Type_descriptor();
-inline const std::string& FieldDescriptorProto_Type_Name(FieldDescriptorProto_Type value) {
+template<typename T>
+inline const std::string& FieldDescriptorProto_Type_Name(T enum_t_value) {
+  static_assert(::std::is_same<T, FieldDescriptorProto_Type>::value ||
+    ::std::is_integral<T>::value,
+    "Incorrect type passed to function FieldDescriptorProto_Type_Name.");
   return ::PROTOBUF_NAMESPACE_ID::internal::NameOfEnum(
-    FieldDescriptorProto_Type_descriptor(), value);
+    FieldDescriptorProto_Type_descriptor(), enum_t_value);
 }
 inline bool FieldDescriptorProto_Type_Parse(
     const std::string& name, FieldDescriptorProto_Type* value) {
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<FieldDescriptorProto_Type>(
     FieldDescriptorProto_Type_descriptor(), name, value);
 }
-enum FieldDescriptorProto_Label {
+enum FieldDescriptorProto_Label : int {
   FieldDescriptorProto_Label_LABEL_OPTIONAL = 1,
   FieldDescriptorProto_Label_LABEL_REQUIRED = 2,
   FieldDescriptorProto_Label_LABEL_REPEATED = 3
@@ -214,16 +218,20 @@ constexpr FieldDescriptorProto_Label FieldDescriptorProto_Label_Label_MAX = Fiel
 constexpr int FieldDescriptorProto_Label_Label_ARRAYSIZE = FieldDescriptorProto_Label_Label_MAX + 1;
 
 PROTOBUF_EXPORT const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* FieldDescriptorProto_Label_descriptor();
-inline const std::string& FieldDescriptorProto_Label_Name(FieldDescriptorProto_Label value) {
+template<typename T>
+inline const std::string& FieldDescriptorProto_Label_Name(T enum_t_value) {
+  static_assert(::std::is_same<T, FieldDescriptorProto_Label>::value ||
+    ::std::is_integral<T>::value,
+    "Incorrect type passed to function FieldDescriptorProto_Label_Name.");
   return ::PROTOBUF_NAMESPACE_ID::internal::NameOfEnum(
-    FieldDescriptorProto_Label_descriptor(), value);
+    FieldDescriptorProto_Label_descriptor(), enum_t_value);
 }
 inline bool FieldDescriptorProto_Label_Parse(
     const std::string& name, FieldDescriptorProto_Label* value) {
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<FieldDescriptorProto_Label>(
     FieldDescriptorProto_Label_descriptor(), name, value);
 }
-enum FileOptions_OptimizeMode {
+enum FileOptions_OptimizeMode : int {
   FileOptions_OptimizeMode_SPEED = 1,
   FileOptions_OptimizeMode_CODE_SIZE = 2,
   FileOptions_OptimizeMode_LITE_RUNTIME = 3
@@ -234,16 +242,20 @@ constexpr FileOptions_OptimizeMode FileOptions_OptimizeMode_OptimizeMode_MAX = F
 constexpr int FileOptions_OptimizeMode_OptimizeMode_ARRAYSIZE = FileOptions_OptimizeMode_OptimizeMode_MAX + 1;
 
 PROTOBUF_EXPORT const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* FileOptions_OptimizeMode_descriptor();
-inline const std::string& FileOptions_OptimizeMode_Name(FileOptions_OptimizeMode value) {
+template<typename T>
+inline const std::string& FileOptions_OptimizeMode_Name(T enum_t_value) {
+  static_assert(::std::is_same<T, FileOptions_OptimizeMode>::value ||
+    ::std::is_integral<T>::value,
+    "Incorrect type passed to function FileOptions_OptimizeMode_Name.");
   return ::PROTOBUF_NAMESPACE_ID::internal::NameOfEnum(
-    FileOptions_OptimizeMode_descriptor(), value);
+    FileOptions_OptimizeMode_descriptor(), enum_t_value);
 }
 inline bool FileOptions_OptimizeMode_Parse(
     const std::string& name, FileOptions_OptimizeMode* value) {
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<FileOptions_OptimizeMode>(
     FileOptions_OptimizeMode_descriptor(), name, value);
 }
-enum FieldOptions_CType {
+enum FieldOptions_CType : int {
   FieldOptions_CType_STRING = 0,
   FieldOptions_CType_CORD = 1,
   FieldOptions_CType_STRING_PIECE = 2
@@ -254,16 +266,20 @@ constexpr FieldOptions_CType FieldOptions_CType_CType_MAX = FieldOptions_CType_S
 constexpr int FieldOptions_CType_CType_ARRAYSIZE = FieldOptions_CType_CType_MAX + 1;
 
 PROTOBUF_EXPORT const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* FieldOptions_CType_descriptor();
-inline const std::string& FieldOptions_CType_Name(FieldOptions_CType value) {
+template<typename T>
+inline const std::string& FieldOptions_CType_Name(T enum_t_value) {
+  static_assert(::std::is_same<T, FieldOptions_CType>::value ||
+    ::std::is_integral<T>::value,
+    "Incorrect type passed to function FieldOptions_CType_Name.");
   return ::PROTOBUF_NAMESPACE_ID::internal::NameOfEnum(
-    FieldOptions_CType_descriptor(), value);
+    FieldOptions_CType_descriptor(), enum_t_value);
 }
 inline bool FieldOptions_CType_Parse(
     const std::string& name, FieldOptions_CType* value) {
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<FieldOptions_CType>(
     FieldOptions_CType_descriptor(), name, value);
 }
-enum FieldOptions_JSType {
+enum FieldOptions_JSType : int {
   FieldOptions_JSType_JS_NORMAL = 0,
   FieldOptions_JSType_JS_STRING = 1,
   FieldOptions_JSType_JS_NUMBER = 2
@@ -274,16 +290,20 @@ constexpr FieldOptions_JSType FieldOptions_JSType_JSType_MAX = FieldOptions_JSTy
 constexpr int FieldOptions_JSType_JSType_ARRAYSIZE = FieldOptions_JSType_JSType_MAX + 1;
 
 PROTOBUF_EXPORT const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* FieldOptions_JSType_descriptor();
-inline const std::string& FieldOptions_JSType_Name(FieldOptions_JSType value) {
+template<typename T>
+inline const std::string& FieldOptions_JSType_Name(T enum_t_value) {
+  static_assert(::std::is_same<T, FieldOptions_JSType>::value ||
+    ::std::is_integral<T>::value,
+    "Incorrect type passed to function FieldOptions_JSType_Name.");
   return ::PROTOBUF_NAMESPACE_ID::internal::NameOfEnum(
-    FieldOptions_JSType_descriptor(), value);
+    FieldOptions_JSType_descriptor(), enum_t_value);
 }
 inline bool FieldOptions_JSType_Parse(
     const std::string& name, FieldOptions_JSType* value) {
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<FieldOptions_JSType>(
     FieldOptions_JSType_descriptor(), name, value);
 }
-enum MethodOptions_IdempotencyLevel {
+enum MethodOptions_IdempotencyLevel : int {
   MethodOptions_IdempotencyLevel_IDEMPOTENCY_UNKNOWN = 0,
   MethodOptions_IdempotencyLevel_NO_SIDE_EFFECTS = 1,
   MethodOptions_IdempotencyLevel_IDEMPOTENT = 2
@@ -294,9 +314,13 @@ constexpr MethodOptions_IdempotencyLevel MethodOptions_IdempotencyLevel_Idempote
 constexpr int MethodOptions_IdempotencyLevel_IdempotencyLevel_ARRAYSIZE = MethodOptions_IdempotencyLevel_IdempotencyLevel_MAX + 1;
 
 PROTOBUF_EXPORT const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* MethodOptions_IdempotencyLevel_descriptor();
-inline const std::string& MethodOptions_IdempotencyLevel_Name(MethodOptions_IdempotencyLevel value) {
+template<typename T>
+inline const std::string& MethodOptions_IdempotencyLevel_Name(T enum_t_value) {
+  static_assert(::std::is_same<T, MethodOptions_IdempotencyLevel>::value ||
+    ::std::is_integral<T>::value,
+    "Incorrect type passed to function MethodOptions_IdempotencyLevel_Name.");
   return ::PROTOBUF_NAMESPACE_ID::internal::NameOfEnum(
-    MethodOptions_IdempotencyLevel_descriptor(), value);
+    MethodOptions_IdempotencyLevel_descriptor(), enum_t_value);
 }
 inline bool MethodOptions_IdempotencyLevel_Parse(
     const std::string& name, MethodOptions_IdempotencyLevel* value) {
@@ -1657,8 +1681,12 @@ class PROTOBUF_EXPORT FieldDescriptorProto :
   Type_descriptor() {
     return FieldDescriptorProto_Type_descriptor();
   }
-  static inline const std::string& Type_Name(Type value) {
-    return FieldDescriptorProto_Type_Name(value);
+  template<typename T>
+  static inline const std::string& Type_Name(T enum_t_value) {
+    static_assert(::std::is_same<T, Type>::value ||
+      ::std::is_integral<T>::value,
+      "Incorrect type passed to function Type_Name.");
+    return FieldDescriptorProto_Type_Name(enum_t_value);
   }
   static inline bool Type_Parse(const std::string& name,
       Type* value) {
@@ -1685,8 +1713,12 @@ class PROTOBUF_EXPORT FieldDescriptorProto :
   Label_descriptor() {
     return FieldDescriptorProto_Label_descriptor();
   }
-  static inline const std::string& Label_Name(Label value) {
-    return FieldDescriptorProto_Label_Name(value);
+  template<typename T>
+  static inline const std::string& Label_Name(T enum_t_value) {
+    static_assert(::std::is_same<T, Label>::value ||
+      ::std::is_integral<T>::value,
+      "Incorrect type passed to function Label_Name.");
+    return FieldDescriptorProto_Label_Name(enum_t_value);
   }
   static inline bool Label_Parse(const std::string& name,
       Label* value) {
@@ -3102,8 +3134,12 @@ class PROTOBUF_EXPORT FileOptions :
   OptimizeMode_descriptor() {
     return FileOptions_OptimizeMode_descriptor();
   }
-  static inline const std::string& OptimizeMode_Name(OptimizeMode value) {
-    return FileOptions_OptimizeMode_Name(value);
+  template<typename T>
+  static inline const std::string& OptimizeMode_Name(T enum_t_value) {
+    static_assert(::std::is_same<T, OptimizeMode>::value ||
+      ::std::is_integral<T>::value,
+      "Incorrect type passed to function OptimizeMode_Name.");
+    return FileOptions_OptimizeMode_Name(enum_t_value);
   }
   static inline bool OptimizeMode_Parse(const std::string& name,
       OptimizeMode* value) {
@@ -3762,8 +3798,12 @@ class PROTOBUF_EXPORT FieldOptions :
   CType_descriptor() {
     return FieldOptions_CType_descriptor();
   }
-  static inline const std::string& CType_Name(CType value) {
-    return FieldOptions_CType_Name(value);
+  template<typename T>
+  static inline const std::string& CType_Name(T enum_t_value) {
+    static_assert(::std::is_same<T, CType>::value ||
+      ::std::is_integral<T>::value,
+      "Incorrect type passed to function CType_Name.");
+    return FieldOptions_CType_Name(enum_t_value);
   }
   static inline bool CType_Parse(const std::string& name,
       CType* value) {
@@ -3790,8 +3830,12 @@ class PROTOBUF_EXPORT FieldOptions :
   JSType_descriptor() {
     return FieldOptions_JSType_descriptor();
   }
-  static inline const std::string& JSType_Name(JSType value) {
-    return FieldOptions_JSType_Name(value);
+  template<typename T>
+  static inline const std::string& JSType_Name(T enum_t_value) {
+    static_assert(::std::is_same<T, JSType>::value ||
+      ::std::is_integral<T>::value,
+      "Incorrect type passed to function JSType_Name.");
+    return FieldOptions_JSType_Name(enum_t_value);
   }
   static inline bool JSType_Parse(const std::string& name,
       JSType* value) {
@@ -4623,8 +4667,12 @@ class PROTOBUF_EXPORT MethodOptions :
   IdempotencyLevel_descriptor() {
     return MethodOptions_IdempotencyLevel_descriptor();
   }
-  static inline const std::string& IdempotencyLevel_Name(IdempotencyLevel value) {
-    return MethodOptions_IdempotencyLevel_Name(value);
+  template<typename T>
+  static inline const std::string& IdempotencyLevel_Name(T enum_t_value) {
+    static_assert(::std::is_same<T, IdempotencyLevel>::value ||
+      ::std::is_integral<T>::value,
+      "Incorrect type passed to function IdempotencyLevel_Name.");
+    return MethodOptions_IdempotencyLevel_Name(enum_t_value);
   }
   static inline bool IdempotencyLevel_Parse(const std::string& name,
       IdempotencyLevel* value) {

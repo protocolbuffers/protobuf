@@ -34,9 +34,9 @@
 
 #include <algorithm>
 
-#include <google/protobuf/repeated_field.h>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/repeated_field.h>
 
 #include <google/protobuf/port_def.inc>
 
@@ -56,9 +56,8 @@ void** RepeatedPtrFieldBase::InternalExtend(int extend_amount) {
   Arena* arena = GetArenaNoVirtual();
   new_size = std::max(kMinRepeatedFieldAllocationSize,
                       std::max(total_size_ * 2, new_size));
-  GOOGLE_CHECK_LE(new_size,
-           (std::numeric_limits<size_t>::max() - kRepHeaderSize) /
-           sizeof(old_rep->elements[0]))
+  GOOGLE_CHECK_LE(new_size, (std::numeric_limits<size_t>::max() - kRepHeaderSize) /
+                         sizeof(old_rep->elements[0]))
       << "Requested size is too large to fit into size_t.";
   size_t bytes = kRepHeaderSize + sizeof(old_rep->elements[0]) * new_size;
   if (arena == NULL) {
