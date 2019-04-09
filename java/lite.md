@@ -25,3 +25,7 @@ and will not have any effect any more.
 
 The latest Java Lite runtime is not yet fully released in any official
 version. You will need to build from our master's branch in order to use it.
+
+For the older version of Java Lite (v3.0.0), please refer to:
+
+    https://github.com/protocolbuffers/protobuf/blob/javalite/java/lite.md
