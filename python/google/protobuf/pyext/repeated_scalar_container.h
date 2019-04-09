@@ -45,30 +45,7 @@ namespace google {
 namespace protobuf {
 namespace python {
 
-typedef struct RepeatedScalarContainer {
-  PyObject_HEAD;
-
-  // This is the top-level C++ Message object that owns the whole
-  // proto tree.  Every Python RepeatedScalarContainer holds a
-  // reference to it in order to keep it alive as long as there's a
-  // Python object that references any part of the tree.
-  CMessage::OwnerRef owner;
-
-  // Pointer to the C++ Message that contains this container.  The
-  // RepeatedScalarContainer does not own this pointer.
-  Message* message;
-
-  // Weak reference to a parent CMessage object (i.e. may be NULL.)
-  //
-  // Used to make sure all ancestors are also mutable when first
-  // modifying the container.
-  CMessage* parent;
-
-  // Pointer to the parent's descriptor that describes this
-  // field.  Used together with the parent's message when making a
-  // default message instance mutable.
-  // The pointer is owned by the global DescriptorPool.
-  const FieldDescriptor* parent_field_descriptor;
+typedef struct RepeatedScalarContainer : public ContainerBase {
 } RepeatedScalarContainer;
 
 extern PyTypeObject RepeatedScalarContainer_Type;
@@ -77,7 +54,7 @@ namespace repeated_scalar_container {
 
 // Builds a RepeatedScalarContainer object, from a parent message and a
 // field descriptor.
-extern PyObject *NewContainer(
+extern RepeatedScalarContainer* NewContainer(
     CMessage* parent, const FieldDescriptor* parent_field_descriptor);
 
 // Appends the scalar 'item' to the end of the container 'self'.
@@ -86,20 +63,11 @@ extern PyObject *NewContainer(
 // unsuccessful.
 PyObject* Append(RepeatedScalarContainer* self, PyObject* item);
 
-// Releases the messages in the container to a new message.
-//
-// Returns 0 on success, -1 on failure.
-int Release(RepeatedScalarContainer* self);
-
 // Appends all the elements in the input iterator to the container.
 //
 // Returns None if successful; returns NULL and sets an exception if
 // unsuccessful.
 PyObject* Extend(RepeatedScalarContainer* self, PyObject* value);
-
-// Set the owner field of self and any children of self.
-void SetOwner(RepeatedScalarContainer* self,
-              const CMessage::OwnerRef& new_owner);
 
 }  // namespace repeated_scalar_container
 }  // namespace python

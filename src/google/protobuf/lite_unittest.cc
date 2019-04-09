@@ -56,10 +56,9 @@ void ExpectMessageMerged(const unittest::TestAllTypesLite& message) {
   EXPECT_EQ(message.optional_string(), "hello");
 }
 
-void AssignParsingMergeMessages(
-    unittest::TestAllTypesLite* msg1,
-    unittest::TestAllTypesLite* msg2,
-    unittest::TestAllTypesLite* msg3) {
+void AssignParsingMergeMessages(unittest::TestAllTypesLite* msg1,
+                                unittest::TestAllTypesLite* msg2,
+                                unittest::TestAllTypesLite* msg3) {
   msg1->set_optional_int32(1);
   msg2->set_optional_int64(2);
   msg3->set_optional_int32(3);
@@ -174,10 +173,10 @@ TEST(Lite, AllLite5) {
     unittest::TestAllTypesLite* msg2;
     unittest::TestAllTypesLite* msg3;
 
-#define ASSIGN_REPEATED_FIELD(FIELD)                \
-  msg1 = generator.add_##FIELD();                   \
-  msg2 = generator.add_##FIELD();                   \
-  msg3 = generator.add_##FIELD();                   \
+#define ASSIGN_REPEATED_FIELD(FIELD) \
+  msg1 = generator.add_##FIELD();    \
+  msg2 = generator.add_##FIELD();    \
+  msg3 = generator.add_##FIELD();    \
   AssignParsingMergeMessages(msg1, msg2, msg3)
 
     ASSIGN_REPEATED_FIELD(field1);
@@ -447,8 +446,7 @@ TEST(Lite, AllLite18) {
     protobuf_unittest::TestMessageMapLite message;
 
     // Creates a TestAllTypes with default value
-    TestUtilLite::ExpectClear(
-        (*message.mutable_map_int32_message())[0]);
+    TestUtilLite::ExpectClear((*message.mutable_map_int32_message())[0]);
   }
 }
 
@@ -836,30 +834,30 @@ TEST(Lite, AllLite42) {
   std::string data;
 
   {
-      // Check that adding more values to enum does not corrupt message
-      // when passed through an old client.
-      protobuf_unittest::V2MessageLite v2_message;
-      v2_message.set_int_field(800);
-      // Set enum field to the value not understood by the old client.
-      v2_message.set_enum_field(protobuf_unittest::V2_SECOND);
-      std::string v2_bytes = v2_message.SerializeAsString();
+    // Check that adding more values to enum does not corrupt message
+    // when passed through an old client.
+    protobuf_unittest::V2MessageLite v2_message;
+    v2_message.set_int_field(800);
+    // Set enum field to the value not understood by the old client.
+    v2_message.set_enum_field(protobuf_unittest::V2_SECOND);
+    std::string v2_bytes = v2_message.SerializeAsString();
 
-      protobuf_unittest::V1MessageLite v1_message;
-      v1_message.ParseFromString(v2_bytes);
-      EXPECT_TRUE(v1_message.IsInitialized());
-      EXPECT_EQ(v1_message.int_field(), v2_message.int_field());
-      // V1 client does not understand V2_SECOND value, so it discards it and
-      // uses default value instead.
-      EXPECT_EQ(v1_message.enum_field(), protobuf_unittest::V1_FIRST);
+    protobuf_unittest::V1MessageLite v1_message;
+    v1_message.ParseFromString(v2_bytes);
+    EXPECT_TRUE(v1_message.IsInitialized());
+    EXPECT_EQ(v1_message.int_field(), v2_message.int_field());
+    // V1 client does not understand V2_SECOND value, so it discards it and
+    // uses default value instead.
+    EXPECT_EQ(v1_message.enum_field(), protobuf_unittest::V1_FIRST);
 
-      // However, when re-serialized, it should preserve enum value.
-      std::string v1_bytes = v1_message.SerializeAsString();
+    // However, when re-serialized, it should preserve enum value.
+    std::string v1_bytes = v1_message.SerializeAsString();
 
-      protobuf_unittest::V2MessageLite same_v2_message;
-      same_v2_message.ParseFromString(v1_bytes);
+    protobuf_unittest::V2MessageLite same_v2_message;
+    same_v2_message.ParseFromString(v1_bytes);
 
-      EXPECT_EQ(v2_message.int_field(), same_v2_message.int_field());
-      EXPECT_EQ(v2_message.enum_field(), same_v2_message.enum_field());
+    EXPECT_EQ(v2_message.int_field(), same_v2_message.int_field());
+    EXPECT_EQ(v2_message.enum_field(), same_v2_message.enum_field());
   }
 }
 

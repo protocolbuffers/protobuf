@@ -137,6 +137,8 @@ static void Dealloc(PyObject* pself) {
   if (PyObject_TypeCheck(self->parent, &PyUnknownFields_Type)) {
     reinterpret_cast<PyUnknownFields*>(
         self->parent)->sub_unknown_fields.erase(self);
+  } else {
+    reinterpret_cast<CMessage*>(self->parent)->unknown_field_set = nullptr;
   }
   Py_CLEAR(self->parent);
   self->~PyUnknownFields();

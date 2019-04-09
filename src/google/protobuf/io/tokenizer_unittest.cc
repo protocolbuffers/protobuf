@@ -75,45 +75,45 @@ namespace {
 // which failed will be printed.  The case type must be printable using
 // ostream::operator<<.
 
-#define TEST_1D(FIXTURE, NAME, CASES)                                      \
-  class FIXTURE##_##NAME##_DD : public FIXTURE {                           \
-   protected:                                                              \
-    template <typename CaseType>                                           \
-    void DoSingleCase(const CaseType& CASES##_case);                       \
-  };                                                                       \
-                                                                           \
-  TEST_F(FIXTURE##_##NAME##_DD, NAME) {                                    \
-    for (int i = 0; i < GOOGLE_ARRAYSIZE(CASES); i++) {                           \
-      SCOPED_TRACE(testing::Message()                                      \
-        << #CASES " case #" << i << ": " << CASES[i]);                     \
-      DoSingleCase(CASES[i]);                                              \
-    }                                                                      \
-  }                                                                        \
-                                                                           \
-  template <typename CaseType>                                             \
+#define TEST_1D(FIXTURE, NAME, CASES)                             \
+  class FIXTURE##_##NAME##_DD : public FIXTURE {                  \
+   protected:                                                     \
+    template <typename CaseType>                                  \
+    void DoSingleCase(const CaseType& CASES##_case);              \
+  };                                                              \
+                                                                  \
+  TEST_F(FIXTURE##_##NAME##_DD, NAME) {                           \
+    for (int i = 0; i < GOOGLE_ARRAYSIZE(CASES); i++) {                  \
+      SCOPED_TRACE(testing::Message()                             \
+                   << #CASES " case #" << i << ": " << CASES[i]); \
+      DoSingleCase(CASES[i]);                                     \
+    }                                                             \
+  }                                                               \
+                                                                  \
+  template <typename CaseType>                                    \
   void FIXTURE##_##NAME##_DD::DoSingleCase(const CaseType& CASES##_case)
 
-#define TEST_2D(FIXTURE, NAME, CASES1, CASES2)                             \
-  class FIXTURE##_##NAME##_DD : public FIXTURE {                           \
-   protected:                                                              \
-    template <typename CaseType1, typename CaseType2>                      \
-    void DoSingleCase(const CaseType1& CASES1##_case,                      \
-                      const CaseType2& CASES2##_case);                     \
-  };                                                                       \
-                                                                           \
-  TEST_F(FIXTURE##_##NAME##_DD, NAME) {                                    \
-    for (int i = 0; i < GOOGLE_ARRAYSIZE(CASES1); i++) {                          \
-      for (int j = 0; j < GOOGLE_ARRAYSIZE(CASES2); j++) {                        \
-        SCOPED_TRACE(testing::Message()                                    \
-          << #CASES1 " case #" << i << ": " << CASES1[i] << ", "           \
-          << #CASES2 " case #" << j << ": " << CASES2[j]);                 \
-        DoSingleCase(CASES1[i], CASES2[j]);                                \
-      }                                                                    \
-    }                                                                      \
-  }                                                                        \
-                                                                           \
-  template <typename CaseType1, typename CaseType2>                        \
-  void FIXTURE##_##NAME##_DD::DoSingleCase(const CaseType1& CASES1##_case, \
+#define TEST_2D(FIXTURE, NAME, CASES1, CASES2)                              \
+  class FIXTURE##_##NAME##_DD : public FIXTURE {                            \
+   protected:                                                               \
+    template <typename CaseType1, typename CaseType2>                       \
+    void DoSingleCase(const CaseType1& CASES1##_case,                       \
+                      const CaseType2& CASES2##_case);                      \
+  };                                                                        \
+                                                                            \
+  TEST_F(FIXTURE##_##NAME##_DD, NAME) {                                     \
+    for (int i = 0; i < GOOGLE_ARRAYSIZE(CASES1); i++) {                           \
+      for (int j = 0; j < GOOGLE_ARRAYSIZE(CASES2); j++) {                         \
+        SCOPED_TRACE(testing::Message()                                     \
+                     << #CASES1 " case #" << i << ": " << CASES1[i] << ", " \
+                     << #CASES2 " case #" << j << ": " << CASES2[j]);       \
+        DoSingleCase(CASES1[i], CASES2[j]);                                 \
+      }                                                                     \
+    }                                                                       \
+  }                                                                         \
+                                                                            \
+  template <typename CaseType1, typename CaseType2>                         \
+  void FIXTURE##_##NAME##_DD::DoSingleCase(const CaseType1& CASES1##_case,  \
                                            const CaseType2& CASES2##_case)
 
 // -------------------------------------------------------------------
@@ -123,7 +123,7 @@ namespace {
 class TestInputStream : public ZeroCopyInputStream {
  public:
   TestInputStream(const void* data, int size, int block_size)
-    : array_stream_(data, size, block_size), counter_(0) {}
+      : array_stream_(data, size, block_size), counter_(0) {}
   ~TestInputStream() {}
 
   // implements ZeroCopyInputStream ----------------------------------
@@ -141,9 +141,9 @@ class TestInputStream : public ZeroCopyInputStream {
     }
   }
 
-  void BackUp(int count)  { return array_stream_.BackUp(count); }
-  bool Skip(int count)    { return array_stream_.Skip(count);   }
-  int64 ByteCount() const { return array_stream_.ByteCount();   }
+  void BackUp(int count) { return array_stream_.BackUp(count); }
+  bool Skip(int count) { return array_stream_.Skip(count); }
+  int64 ByteCount() const { return array_stream_.ByteCount(); }
 
  private:
   ArrayInputStream array_stream_;
@@ -163,8 +163,7 @@ class TestErrorCollector : public ErrorCollector {
 
   // implements ErrorCollector ---------------------------------------
   void AddError(int line, int column, const std::string& message) {
-    strings::SubstituteAndAppend(&text_, "$0:$1: $2\n",
-                                 line, column, message);
+    strings::SubstituteAndAppend(&text_, "$0:$1: $2\n", line, column, message);
   }
 };
 
@@ -205,52 +204,51 @@ inline std::ostream& operator<<(std::ostream& out,
 }
 
 SimpleTokenCase kSimpleTokenCases[] = {
-  // Test identifiers.
-  { "hello",       Tokenizer::TYPE_IDENTIFIER },
+    // Test identifiers.
+    {"hello", Tokenizer::TYPE_IDENTIFIER},
 
-  // Test integers.
-  { "123",         Tokenizer::TYPE_INTEGER },
-  { "0xab6",       Tokenizer::TYPE_INTEGER },
-  { "0XAB6",       Tokenizer::TYPE_INTEGER },
-  { "0X1234567",   Tokenizer::TYPE_INTEGER },
-  { "0x89abcdef",  Tokenizer::TYPE_INTEGER },
-  { "0x89ABCDEF",  Tokenizer::TYPE_INTEGER },
-  { "01234567",    Tokenizer::TYPE_INTEGER },
+    // Test integers.
+    {"123", Tokenizer::TYPE_INTEGER},
+    {"0xab6", Tokenizer::TYPE_INTEGER},
+    {"0XAB6", Tokenizer::TYPE_INTEGER},
+    {"0X1234567", Tokenizer::TYPE_INTEGER},
+    {"0x89abcdef", Tokenizer::TYPE_INTEGER},
+    {"0x89ABCDEF", Tokenizer::TYPE_INTEGER},
+    {"01234567", Tokenizer::TYPE_INTEGER},
 
-  // Test floats.
-  { "123.45",      Tokenizer::TYPE_FLOAT },
-  { "1.",          Tokenizer::TYPE_FLOAT },
-  { "1e3",         Tokenizer::TYPE_FLOAT },
-  { "1E3",         Tokenizer::TYPE_FLOAT },
-  { "1e-3",        Tokenizer::TYPE_FLOAT },
-  { "1e+3",        Tokenizer::TYPE_FLOAT },
-  { "1.e3",        Tokenizer::TYPE_FLOAT },
-  { "1.2e3",       Tokenizer::TYPE_FLOAT },
-  { ".1",          Tokenizer::TYPE_FLOAT },
-  { ".1e3",        Tokenizer::TYPE_FLOAT },
-  { ".1e-3",       Tokenizer::TYPE_FLOAT },
-  { ".1e+3",       Tokenizer::TYPE_FLOAT },
+    // Test floats.
+    {"123.45", Tokenizer::TYPE_FLOAT},
+    {"1.", Tokenizer::TYPE_FLOAT},
+    {"1e3", Tokenizer::TYPE_FLOAT},
+    {"1E3", Tokenizer::TYPE_FLOAT},
+    {"1e-3", Tokenizer::TYPE_FLOAT},
+    {"1e+3", Tokenizer::TYPE_FLOAT},
+    {"1.e3", Tokenizer::TYPE_FLOAT},
+    {"1.2e3", Tokenizer::TYPE_FLOAT},
+    {".1", Tokenizer::TYPE_FLOAT},
+    {".1e3", Tokenizer::TYPE_FLOAT},
+    {".1e-3", Tokenizer::TYPE_FLOAT},
+    {".1e+3", Tokenizer::TYPE_FLOAT},
 
-  // Test strings.
-  { "'hello'",     Tokenizer::TYPE_STRING },
-  { "\"foo\"",     Tokenizer::TYPE_STRING },
-  { "'a\"b'",      Tokenizer::TYPE_STRING },
-  { "\"a'b\"",     Tokenizer::TYPE_STRING },
-  { "'a\\'b'",     Tokenizer::TYPE_STRING },
-  { "\"a\\\"b\"",  Tokenizer::TYPE_STRING },
-  { "'\\xf'",      Tokenizer::TYPE_STRING },
-  { "'\\0'",       Tokenizer::TYPE_STRING },
+    // Test strings.
+    {"'hello'", Tokenizer::TYPE_STRING},
+    {"\"foo\"", Tokenizer::TYPE_STRING},
+    {"'a\"b'", Tokenizer::TYPE_STRING},
+    {"\"a'b\"", Tokenizer::TYPE_STRING},
+    {"'a\\'b'", Tokenizer::TYPE_STRING},
+    {"\"a\\\"b\"", Tokenizer::TYPE_STRING},
+    {"'\\xf'", Tokenizer::TYPE_STRING},
+    {"'\\0'", Tokenizer::TYPE_STRING},
 
-  // Test symbols.
-  { "+",           Tokenizer::TYPE_SYMBOL },
-  { ".",           Tokenizer::TYPE_SYMBOL },
+    // Test symbols.
+    {"+", Tokenizer::TYPE_SYMBOL},
+    {".", Tokenizer::TYPE_SYMBOL},
 };
 
 TEST_2D(TokenizerTest, SimpleTokens, kSimpleTokenCases, kBlockSizes) {
   // Set up the tokenizer.
   TestInputStream input(kSimpleTokenCases_case.input.data(),
-                        kSimpleTokenCases_case.input.size(),
-                        kBlockSizes_case);
+                        kSimpleTokenCases_case.input.size(), kBlockSizes_case);
   TestErrorCollector error_collector;
   Tokenizer tokenizer(&input, &error_collector);
 
@@ -339,92 +337,101 @@ inline std::ostream& operator<<(std::ostream& out,
 }
 
 MultiTokenCase kMultiTokenCases[] = {
-  // Test empty input.
-  { "", {
-    { Tokenizer::TYPE_END       , ""     , 0,  0,  0 },
-  }},
+    // Test empty input.
+    {"",
+     {
+         {Tokenizer::TYPE_END, "", 0, 0, 0},
+     }},
 
-  // Test all token types at the same time.
-  { "foo 1 1.2 + 'bar'", {
-    { Tokenizer::TYPE_IDENTIFIER, "foo"  , 0,  0,  3 },
-    { Tokenizer::TYPE_INTEGER   , "1"    , 0,  4,  5 },
-    { Tokenizer::TYPE_FLOAT     , "1.2"  , 0,  6,  9 },
-    { Tokenizer::TYPE_SYMBOL    , "+"    , 0, 10, 11 },
-    { Tokenizer::TYPE_STRING    , "'bar'", 0, 12, 17 },
-    { Tokenizer::TYPE_END       , ""     , 0, 17, 17 },
-  }},
+    // Test all token types at the same time.
+    {"foo 1 1.2 + 'bar'",
+     {
+         {Tokenizer::TYPE_IDENTIFIER, "foo", 0, 0, 3},
+         {Tokenizer::TYPE_INTEGER, "1", 0, 4, 5},
+         {Tokenizer::TYPE_FLOAT, "1.2", 0, 6, 9},
+         {Tokenizer::TYPE_SYMBOL, "+", 0, 10, 11},
+         {Tokenizer::TYPE_STRING, "'bar'", 0, 12, 17},
+         {Tokenizer::TYPE_END, "", 0, 17, 17},
+     }},
 
-  // Test that consecutive symbols are parsed as separate tokens.
-  { "!@+%", {
-    { Tokenizer::TYPE_SYMBOL    , "!"    , 0, 0, 1 },
-    { Tokenizer::TYPE_SYMBOL    , "@"    , 0, 1, 2 },
-    { Tokenizer::TYPE_SYMBOL    , "+"    , 0, 2, 3 },
-    { Tokenizer::TYPE_SYMBOL    , "%"    , 0, 3, 4 },
-    { Tokenizer::TYPE_END       , ""     , 0, 4, 4 },
-  }},
+    // Test that consecutive symbols are parsed as separate tokens.
+    {"!@+%",
+     {
+         {Tokenizer::TYPE_SYMBOL, "!", 0, 0, 1},
+         {Tokenizer::TYPE_SYMBOL, "@", 0, 1, 2},
+         {Tokenizer::TYPE_SYMBOL, "+", 0, 2, 3},
+         {Tokenizer::TYPE_SYMBOL, "%", 0, 3, 4},
+         {Tokenizer::TYPE_END, "", 0, 4, 4},
+     }},
 
-  // Test that newlines affect line numbers correctly.
-  { "foo bar\nrab oof", {
-    { Tokenizer::TYPE_IDENTIFIER, "foo", 0,  0, 3 },
-    { Tokenizer::TYPE_IDENTIFIER, "bar", 0,  4, 7 },
-    { Tokenizer::TYPE_IDENTIFIER, "rab", 1,  0, 3 },
-    { Tokenizer::TYPE_IDENTIFIER, "oof", 1,  4, 7 },
-    { Tokenizer::TYPE_END       , ""   , 1,  7, 7 },
-  }},
+    // Test that newlines affect line numbers correctly.
+    {"foo bar\nrab oof",
+     {
+         {Tokenizer::TYPE_IDENTIFIER, "foo", 0, 0, 3},
+         {Tokenizer::TYPE_IDENTIFIER, "bar", 0, 4, 7},
+         {Tokenizer::TYPE_IDENTIFIER, "rab", 1, 0, 3},
+         {Tokenizer::TYPE_IDENTIFIER, "oof", 1, 4, 7},
+         {Tokenizer::TYPE_END, "", 1, 7, 7},
+     }},
 
-  // Test that tabs affect column numbers correctly.
-  { "foo\tbar  \tbaz", {
-    { Tokenizer::TYPE_IDENTIFIER, "foo", 0,  0,  3 },
-    { Tokenizer::TYPE_IDENTIFIER, "bar", 0,  8, 11 },
-    { Tokenizer::TYPE_IDENTIFIER, "baz", 0, 16, 19 },
-    { Tokenizer::TYPE_END       , ""   , 0, 19, 19 },
-  }},
+    // Test that tabs affect column numbers correctly.
+    {"foo\tbar  \tbaz",
+     {
+         {Tokenizer::TYPE_IDENTIFIER, "foo", 0, 0, 3},
+         {Tokenizer::TYPE_IDENTIFIER, "bar", 0, 8, 11},
+         {Tokenizer::TYPE_IDENTIFIER, "baz", 0, 16, 19},
+         {Tokenizer::TYPE_END, "", 0, 19, 19},
+     }},
 
-  // Test that tabs in string literals affect column numbers correctly.
-  { "\"foo\tbar\" baz", {
-    { Tokenizer::TYPE_STRING    , "\"foo\tbar\"", 0,  0, 12 },
-    { Tokenizer::TYPE_IDENTIFIER, "baz"         , 0, 13, 16 },
-    { Tokenizer::TYPE_END       , ""            , 0, 16, 16 },
-  }},
+    // Test that tabs in string literals affect column numbers correctly.
+    {"\"foo\tbar\" baz",
+     {
+         {Tokenizer::TYPE_STRING, "\"foo\tbar\"", 0, 0, 12},
+         {Tokenizer::TYPE_IDENTIFIER, "baz", 0, 13, 16},
+         {Tokenizer::TYPE_END, "", 0, 16, 16},
+     }},
 
-  // Test that line comments are ignored.
-  { "foo // This is a comment\n"
-    "bar // This is another comment", {
-    { Tokenizer::TYPE_IDENTIFIER, "foo", 0,  0,  3 },
-    { Tokenizer::TYPE_IDENTIFIER, "bar", 1,  0,  3 },
-    { Tokenizer::TYPE_END       , ""   , 1, 30, 30 },
-  }},
+    // Test that line comments are ignored.
+    {"foo // This is a comment\n"
+     "bar // This is another comment",
+     {
+         {Tokenizer::TYPE_IDENTIFIER, "foo", 0, 0, 3},
+         {Tokenizer::TYPE_IDENTIFIER, "bar", 1, 0, 3},
+         {Tokenizer::TYPE_END, "", 1, 30, 30},
+     }},
 
-  // Test that block comments are ignored.
-  { "foo /* This is a block comment */ bar", {
-    { Tokenizer::TYPE_IDENTIFIER, "foo", 0,  0,  3 },
-    { Tokenizer::TYPE_IDENTIFIER, "bar", 0, 34, 37 },
-    { Tokenizer::TYPE_END       , ""   , 0, 37, 37 },
-  }},
+    // Test that block comments are ignored.
+    {"foo /* This is a block comment */ bar",
+     {
+         {Tokenizer::TYPE_IDENTIFIER, "foo", 0, 0, 3},
+         {Tokenizer::TYPE_IDENTIFIER, "bar", 0, 34, 37},
+         {Tokenizer::TYPE_END, "", 0, 37, 37},
+     }},
 
-  // Test that sh-style comments are not ignored by default.
-  { "foo # bar\n"
-    "baz", {
-    { Tokenizer::TYPE_IDENTIFIER, "foo", 0, 0, 3 },
-    { Tokenizer::TYPE_SYMBOL    , "#"  , 0, 4, 5 },
-    { Tokenizer::TYPE_IDENTIFIER, "bar", 0, 6, 9 },
-    { Tokenizer::TYPE_IDENTIFIER, "baz", 1, 0, 3 },
-    { Tokenizer::TYPE_END       , ""   , 1, 3, 3 },
-  }},
+    // Test that sh-style comments are not ignored by default.
+    {"foo # bar\n"
+     "baz",
+     {
+         {Tokenizer::TYPE_IDENTIFIER, "foo", 0, 0, 3},
+         {Tokenizer::TYPE_SYMBOL, "#", 0, 4, 5},
+         {Tokenizer::TYPE_IDENTIFIER, "bar", 0, 6, 9},
+         {Tokenizer::TYPE_IDENTIFIER, "baz", 1, 0, 3},
+         {Tokenizer::TYPE_END, "", 1, 3, 3},
+     }},
 
-  // Test all whitespace chars
-  { "foo\n\t\r\v\fbar", {
-    { Tokenizer::TYPE_IDENTIFIER, "foo", 0,  0,  3 },
-    { Tokenizer::TYPE_IDENTIFIER, "bar", 1, 11, 14 },
-    { Tokenizer::TYPE_END       , ""   , 1, 14, 14 },
-  }},
+    // Test all whitespace chars
+    {"foo\n\t\r\v\fbar",
+     {
+         {Tokenizer::TYPE_IDENTIFIER, "foo", 0, 0, 3},
+         {Tokenizer::TYPE_IDENTIFIER, "bar", 1, 11, 14},
+         {Tokenizer::TYPE_END, "", 1, 14, 14},
+     }},
 };
 
 TEST_2D(TokenizerTest, MultipleTokens, kMultiTokenCases, kBlockSizes) {
   // Set up the tokenizer.
   TestInputStream input(kMultiTokenCases_case.input.data(),
-                        kMultiTokenCases_case.input.size(),
-                        kBlockSizes_case);
+                        kMultiTokenCases_case.input.size(), kBlockSizes_case);
   TestErrorCollector error_collector;
   Tokenizer tokenizer(&input, &error_collector);
 
@@ -479,14 +486,14 @@ TEST_2D(TokenizerTest, MultipleTokens, kMultiTokenCases, kBlockSizes) {
 TEST_1D(TokenizerTest, ShCommentStyle, kBlockSizes) {
   // Test the "comment_style" option.
 
-  const char* text = "foo # bar\n"
-                     "baz // qux\n"
-                     "corge /* grault */\n"
-                     "garply";
+  const char* text =
+      "foo # bar\n"
+      "baz // qux\n"
+      "corge /* grault */\n"
+      "garply";
   const char* const kTokens[] = {"foo",  // "# bar" is ignored
-                                 "baz", "/", "/", "qux",
-                                 "corge", "/", "*", "grault", "*", "/",
-                                 "garply"};
+                                 "baz", "/",      "/", "qux", "corge", "/",
+                                 "*",   "grault", "*", "/",   "garply"};
 
   // Set up the tokenizer.
   TestInputStream input(text, strlen(text), kBlockSizes_case);
@@ -526,164 +533,136 @@ inline std::ostream& operator<<(std::ostream& out,
 }
 
 DocCommentCase kDocCommentCases[] = {
-  {
-    "prev next",
+    {"prev next",
 
-    "",
-    {},
-    ""
-      },
+     "",
+     {},
+     ""},
 
-        {
-      "prev /* ignored */ next",
+    {"prev /* ignored */ next",
 
-      "",
-      {},
-      ""
-        },
+     "",
+     {},
+     ""},
 
-          {
-        "prev // trailing comment\n"
-            "next",
+    {"prev // trailing comment\n"
+     "next",
 
-            " trailing comment\n",
-            {},
-            ""
-          },
+     " trailing comment\n",
+     {},
+     ""},
 
-            {
-          "prev\n"
-              "// leading comment\n"
-              "// line 2\n"
-              "next",
+    {"prev\n"
+     "// leading comment\n"
+     "// line 2\n"
+     "next",
 
-              "",
-              {},
-              " leading comment\n"
-              " line 2\n"
-            },
+     "",
+     {},
+     " leading comment\n"
+     " line 2\n"},
 
-              {
-            "prev\n"
-                "// trailing comment\n"
-                "// line 2\n"
-                "\n"
-                "next",
+    {"prev\n"
+     "// trailing comment\n"
+     "// line 2\n"
+     "\n"
+     "next",
 
-                " trailing comment\n"
-                " line 2\n",
-                {},
-                ""
-              },
+     " trailing comment\n"
+     " line 2\n",
+     {},
+     ""},
 
-                {
-              "prev // trailing comment\n"
-                  "// leading comment\n"
-                  "// line 2\n"
-                  "next",
+    {"prev // trailing comment\n"
+     "// leading comment\n"
+     "// line 2\n"
+     "next",
 
-                  " trailing comment\n",
-                  {},
-                  " leading comment\n"
-                  " line 2\n"
-                },
+     " trailing comment\n",
+     {},
+     " leading comment\n"
+     " line 2\n"},
 
-                  {
-                "prev /* trailing block comment */\n"
-                    "/* leading block comment\n"
-                    " * line 2\n"
-                    " * line 3 */"
-                    "next",
+    {"prev /* trailing block comment */\n"
+     "/* leading block comment\n"
+     " * line 2\n"
+     " * line 3 */"
+     "next",
 
-                    " trailing block comment ",
-                    {},
-                    " leading block comment\n"
-                    " line 2\n"
-                    " line 3 "
-                  },
+     " trailing block comment ",
+     {},
+     " leading block comment\n"
+     " line 2\n"
+     " line 3 "},
 
-                    {
-                  "prev\n"
-                      "/* trailing block comment\n"
-                      " * line 2\n"
-                      " * line 3\n"
-                      " */\n"
-                      "/* leading block comment\n"
-                      " * line 2\n"
-                      " * line 3 */"
-                      "next",
+    {"prev\n"
+     "/* trailing block comment\n"
+     " * line 2\n"
+     " * line 3\n"
+     " */\n"
+     "/* leading block comment\n"
+     " * line 2\n"
+     " * line 3 */"
+     "next",
 
-                      " trailing block comment\n"
-                      " line 2\n"
-                      " line 3\n",
-                      {},
-                      " leading block comment\n"
-                      " line 2\n"
-                      " line 3 "
-                    },
+     " trailing block comment\n"
+     " line 2\n"
+     " line 3\n",
+     {},
+     " leading block comment\n"
+     " line 2\n"
+     " line 3 "},
 
-                      {
-                    "prev\n"
-                        "// trailing comment\n"
-                        "\n"
-                        "// detached comment\n"
-                        "// line 2\n"
-                        "\n"
-                        "// second detached comment\n"
-                        "/* third detached comment\n"
-                        " * line 2 */\n"
-                        "// leading comment\n"
-                        "next",
+    {"prev\n"
+     "// trailing comment\n"
+     "\n"
+     "// detached comment\n"
+     "// line 2\n"
+     "\n"
+     "// second detached comment\n"
+     "/* third detached comment\n"
+     " * line 2 */\n"
+     "// leading comment\n"
+     "next",
 
-                        " trailing comment\n",
-                        {
-                      " detached comment\n"
-                          " line 2\n",
-                          " second detached comment\n",
-                          " third detached comment\n"
-                          " line 2 "
-                        },
-                          " leading comment\n"
-                        },
+     " trailing comment\n",
+     {" detached comment\n"
+      " line 2\n",
+      " second detached comment\n",
+      " third detached comment\n"
+      " line 2 "},
+     " leading comment\n"},
 
-                          {
-                        "prev /**/\n"
-                            "\n"
-                            "// detached comment\n"
-                            "\n"
-                            "// leading comment\n"
-                            "next",
+    {"prev /**/\n"
+     "\n"
+     "// detached comment\n"
+     "\n"
+     "// leading comment\n"
+     "next",
 
-                            "",
-                            {
-                          " detached comment\n"
-                            },
-                              " leading comment\n"
-                            },
+     "",
+     {" detached comment\n"},
+     " leading comment\n"},
 
-                              {
-                            "prev /**/\n"
-                                "// leading comment\n"
-                                "next",
+    {"prev /**/\n"
+     "// leading comment\n"
+     "next",
 
-                                "",
-                                {},
-                                " leading comment\n"
-                              },
-                              };
+     "",
+     {},
+     " leading comment\n"},
+};
 
 TEST_2D(TokenizerTest, DocComments, kDocCommentCases, kBlockSizes) {
   // Set up the tokenizer.
   TestInputStream input(kDocCommentCases_case.input.data(),
-                        kDocCommentCases_case.input.size(),
-                        kBlockSizes_case);
+                        kDocCommentCases_case.input.size(), kBlockSizes_case);
   TestErrorCollector error_collector;
   Tokenizer tokenizer(&input, &error_collector);
 
   // Set up a second tokenizer where we'll pass all NULLs to NextWithComments().
   TestInputStream input2(kDocCommentCases_case.input.data(),
-                        kDocCommentCases_case.input.size(),
-                        kBlockSizes_case);
+                         kDocCommentCases_case.input.size(), kBlockSizes_case);
   Tokenizer tokenizer2(&input2, &error_collector);
 
   tokenizer.Next();
@@ -707,16 +686,14 @@ TEST_2D(TokenizerTest, DocComments, kDocCommentCases, kBlockSizes) {
   for (int i = 0; i < detached_comments.size(); i++) {
     ASSERT_LT(i, GOOGLE_ARRAYSIZE(kDocCommentCases));
     ASSERT_TRUE(kDocCommentCases_case.detached_comments[i] != NULL);
-    EXPECT_EQ(kDocCommentCases_case.detached_comments[i],
-              detached_comments[i]);
+    EXPECT_EQ(kDocCommentCases_case.detached_comments[i], detached_comments[i]);
   }
 
   // Verify that we matched all the detached comments.
   EXPECT_EQ(NULL,
-      kDocCommentCases_case.detached_comments[detached_comments.size()]);
+            kDocCommentCases_case.detached_comments[detached_comments.size()]);
 
-  EXPECT_EQ(kDocCommentCases_case.next_leading_comments,
-            next_leading_comments);
+  EXPECT_EQ(kDocCommentCases_case.next_leading_comments, next_leading_comments);
 }
 
 // -------------------------------------------------------------------
@@ -745,30 +722,30 @@ TEST_F(TokenizerTest, ParseInteger) {
   EXPECT_FALSE(Tokenizer::ParseInteger("-1", kuint64max, &i));
 
   // Test overflows.
-  EXPECT_TRUE (Tokenizer::ParseInteger("0", 0, &i));
+  EXPECT_TRUE(Tokenizer::ParseInteger("0", 0, &i));
   EXPECT_FALSE(Tokenizer::ParseInteger("1", 0, &i));
-  EXPECT_TRUE (Tokenizer::ParseInteger("1", 1, &i));
-  EXPECT_TRUE (Tokenizer::ParseInteger("12345", 12345, &i));
+  EXPECT_TRUE(Tokenizer::ParseInteger("1", 1, &i));
+  EXPECT_TRUE(Tokenizer::ParseInteger("12345", 12345, &i));
   EXPECT_FALSE(Tokenizer::ParseInteger("12346", 12345, &i));
-  EXPECT_TRUE (Tokenizer::ParseInteger("0xFFFFFFFFFFFFFFFF" , kuint64max, &i));
+  EXPECT_TRUE(Tokenizer::ParseInteger("0xFFFFFFFFFFFFFFFF", kuint64max, &i));
   EXPECT_FALSE(Tokenizer::ParseInteger("0x10000000000000000", kuint64max, &i));
 }
 
 TEST_F(TokenizerTest, ParseFloat) {
-  EXPECT_DOUBLE_EQ(1    , Tokenizer::ParseFloat("1."));
-  EXPECT_DOUBLE_EQ(1e3  , Tokenizer::ParseFloat("1e3"));
-  EXPECT_DOUBLE_EQ(1e3  , Tokenizer::ParseFloat("1E3"));
+  EXPECT_DOUBLE_EQ(1, Tokenizer::ParseFloat("1."));
+  EXPECT_DOUBLE_EQ(1e3, Tokenizer::ParseFloat("1e3"));
+  EXPECT_DOUBLE_EQ(1e3, Tokenizer::ParseFloat("1E3"));
   EXPECT_DOUBLE_EQ(1.5e3, Tokenizer::ParseFloat("1.5e3"));
-  EXPECT_DOUBLE_EQ(.1   , Tokenizer::ParseFloat(".1"));
-  EXPECT_DOUBLE_EQ(.25  , Tokenizer::ParseFloat(".25"));
-  EXPECT_DOUBLE_EQ(.1e3 , Tokenizer::ParseFloat(".1e3"));
+  EXPECT_DOUBLE_EQ(.1, Tokenizer::ParseFloat(".1"));
+  EXPECT_DOUBLE_EQ(.25, Tokenizer::ParseFloat(".25"));
+  EXPECT_DOUBLE_EQ(.1e3, Tokenizer::ParseFloat(".1e3"));
   EXPECT_DOUBLE_EQ(.25e3, Tokenizer::ParseFloat(".25e3"));
   EXPECT_DOUBLE_EQ(.1e+3, Tokenizer::ParseFloat(".1e+3"));
   EXPECT_DOUBLE_EQ(.1e-3, Tokenizer::ParseFloat(".1e-3"));
-  EXPECT_DOUBLE_EQ(5    , Tokenizer::ParseFloat("5"));
+  EXPECT_DOUBLE_EQ(5, Tokenizer::ParseFloat("5"));
   EXPECT_DOUBLE_EQ(6e-12, Tokenizer::ParseFloat("6e-12"));
-  EXPECT_DOUBLE_EQ(1.2  , Tokenizer::ParseFloat("1.2"));
-  EXPECT_DOUBLE_EQ(1.e2 , Tokenizer::ParseFloat("1.e2"));
+  EXPECT_DOUBLE_EQ(1.2, Tokenizer::ParseFloat("1.2"));
+  EXPECT_DOUBLE_EQ(1.e2, Tokenizer::ParseFloat("1.e2"));
 
   // Test invalid integers that may still be tokenized as integers.
   EXPECT_DOUBLE_EQ(1, Tokenizer::ParseFloat("1e"));
@@ -782,17 +759,20 @@ TEST_F(TokenizerTest, ParseFloat) {
 
   // These should parse successfully even though they are out of range.
   // Overflows become infinity and underflows become zero.
-  EXPECT_EQ(     0.0, Tokenizer::ParseFloat("1e-9999999999999999999999999999"));
+  EXPECT_EQ(0.0, Tokenizer::ParseFloat("1e-9999999999999999999999999999"));
   EXPECT_EQ(HUGE_VAL, Tokenizer::ParseFloat("1e+9999999999999999999999999999"));
 
 #ifdef PROTOBUF_HAS_DEATH_TEST  // death tests do not work on Windows yet
   // Test invalid integers that will never be tokenized as integers.
-  EXPECT_DEBUG_DEATH(Tokenizer::ParseFloat("zxy"),
-    "passed text that could not have been tokenized as a float");
-  EXPECT_DEBUG_DEATH(Tokenizer::ParseFloat("1-e0"),
-    "passed text that could not have been tokenized as a float");
-  EXPECT_DEBUG_DEATH(Tokenizer::ParseFloat("-1.0"),
-    "passed text that could not have been tokenized as a float");
+  EXPECT_DEBUG_DEATH(
+      Tokenizer::ParseFloat("zxy"),
+      "passed text that could not have been tokenized as a float");
+  EXPECT_DEBUG_DEATH(
+      Tokenizer::ParseFloat("1-e0"),
+      "passed text that could not have been tokenized as a float");
+  EXPECT_DEBUG_DEATH(
+      Tokenizer::ParseFloat("-1.0"),
+      "passed text that could not have been tokenized as a float");
 #endif  // PROTOBUF_HAS_DEATH_TEST
 }
 
@@ -833,8 +813,9 @@ TEST_F(TokenizerTest, ParseString) {
 
   // Test invalid strings that will never be tokenized as strings.
 #ifdef PROTOBUF_HAS_DEATH_TEST  // death tests do not work on Windows yet
-  EXPECT_DEBUG_DEATH(Tokenizer::ParseString("", &output),
-    "passed text that could not have been tokenized as a string");
+  EXPECT_DEBUG_DEATH(
+      Tokenizer::ParseString("", &output),
+      "passed text that could not have been tokenized as a string");
 #endif  // PROTOBUF_HAS_DEATH_TEST
 }
 
@@ -934,8 +915,7 @@ ErrorCase kErrorCases[] = {
 TEST_2D(TokenizerTest, Errors, kErrorCases, kBlockSizes) {
   // Set up the tokenizer.
   TestInputStream input(kErrorCases_case.input.data(),
-                        kErrorCases_case.input.size(),
-                        kBlockSizes_case);
+                        kErrorCases_case.input.size(), kBlockSizes_case);
   TestErrorCollector error_collector;
   Tokenizer tokenizer(&input, &error_collector);
 

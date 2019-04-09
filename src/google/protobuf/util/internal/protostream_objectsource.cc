@@ -64,7 +64,7 @@ using util::StatusOr;
 namespace error {
 using util::error::Code;
 using util::error::INTERNAL;
-}
+}  // namespace error
 namespace converter {
 using ::PROTOBUF_NAMESPACE_ID::internal::WireFormat;
 using ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite;

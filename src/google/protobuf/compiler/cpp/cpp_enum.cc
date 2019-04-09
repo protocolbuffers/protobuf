@@ -70,7 +70,6 @@ EnumGenerator::EnumGenerator(const EnumDescriptor* descriptor,
   variables_["classname"] = classname_;
   variables_["classtype"] = QualifiedClassName(descriptor_, options);
   variables_["short_name"] = descriptor_->name();
-  variables_["enumbase"] = options_.proto_h ? " : int" : "";
   variables_["nested_name"] = descriptor_->name();
   variables_["resolved_name"] = ResolveKeyword(descriptor_->name());
   variables_["prefix"] =
@@ -81,7 +80,7 @@ EnumGenerator::~EnumGenerator() {}
 
 void EnumGenerator::GenerateDefinition(io::Printer* printer) {
   Formatter format(printer, variables_);
-  format("enum ${1$$classname$$}$$enumbase$ {\n", descriptor_);
+  format("enum ${1$$classname$$}$ : int {\n", descriptor_);
   format.Indent();
 
   const EnumValueDescriptor* min_value = descriptor_->value(0);
@@ -145,28 +144,18 @@ void EnumGenerator::GenerateDefinition(io::Printer* printer) {
         "$dllexport_decl $const ::$proto_ns$::EnumDescriptor* "
         "$classname$_descriptor();\n");
     // The _Name and _Parse methods
-    if (options_.opensource_runtime) {
-      // TODO(haberman): consider removing this in favor of the stricter
-      // version below.  Would this break our compatibility guarantees?
-      format(
-          "inline const std::string& $classname$_Name($classname$ value) {\n"
-          "  return ::$proto_ns$::internal::NameOfEnum(\n"
-          "    $classname$_descriptor(), value);\n"
-          "}\n");
-    } else {
-      // Support a stricter, type-checked enum-to-string method that
-      // statically checks whether the parameter is the exact enum type or is
-      // an integral type.
-      format(
-          "template<typename T>\n"
-          "inline const std::string& $classname$_Name(T enum_t_value) {\n"
-          "  static_assert(::std::is_same<T, $classname$>::value ||\n"
-          "    ::std::is_integral<T>::value,\n"
-          "    \"Incorrect type passed to function $classname$_Name.\");\n"
-          "  return ::$proto_ns$::internal::NameOfEnum(\n"
-          "    $classname$_descriptor(), enum_t_value);\n"
-          "}\n");
-    }
+    // Support a stricter, type-checked enum-to-string method that
+    // statically checks whether the parameter is the exact enum type or is
+    // an integral type.
+    format(
+        "template<typename T>\n"
+        "inline const std::string& $classname$_Name(T enum_t_value) {\n"
+        "  static_assert(::std::is_same<T, $classname$>::value ||\n"
+        "    ::std::is_integral<T>::value,\n"
+        "    \"Incorrect type passed to function $classname$_Name.\");\n"
+        "  return ::$proto_ns$::internal::NameOfEnum(\n"
+        "    $classname$_descriptor(), enum_t_value);\n"
+        "}\n");
     format(
         "inline bool $classname$_Parse(\n"
         "    const std::string& name, $classname$* value) {\n"
@@ -227,29 +216,18 @@ void EnumGenerator::GenerateSymbolImports(io::Printer* printer) const {
         "$nested_name$_descriptor() {\n"
         "  return $classname$_descriptor();\n"
         "}\n");
-    if (options_.opensource_runtime) {
-      // TODO(haberman): consider removing this in favor of the stricter
-      // version below.  Would this break our compatibility guarantees?
-      format(
-          "static inline const std::string& "
-          "$nested_name$_Name($resolved_name$ value) {"
-          "\n"
-          "  return $classname$_Name(value);\n"
-          "}\n");
-    } else {
-      // Support a stricter, type-checked enum-to-string method that
-      // statically checks whether the parameter is the exact enum type or is
-      // an integral type.
-      format(
-          "template<typename T>\n"
-          "static inline const std::string& $nested_name$_Name(T enum_t_value) "
-          "{\n"
-          "  static_assert(::std::is_same<T, $resolved_name$>::value ||\n"
-          "    ::std::is_integral<T>::value,\n"
-          "    \"Incorrect type passed to function $nested_name$_Name.\");\n"
-          "  return $classname$_Name(enum_t_value);\n"
-          "}\n");
-    }
+    // Support a stricter, type-checked enum-to-string method that
+    // statically checks whether the parameter is the exact enum type or is
+    // an integral type.
+    format(
+        "template<typename T>\n"
+        "static inline const std::string& $nested_name$_Name(T enum_t_value) "
+        "{\n"
+        "  static_assert(::std::is_same<T, $resolved_name$>::value ||\n"
+        "    ::std::is_integral<T>::value,\n"
+        "    \"Incorrect type passed to function $nested_name$_Name.\");\n"
+        "  return $classname$_Name(enum_t_value);\n"
+        "}\n");
     format(
         "static inline bool $nested_name$_Parse(const std::string& name,\n"
         "    $resolved_name$* value) {\n"
@@ -301,8 +279,9 @@ void EnumGenerator::GenerateMethods(int idx, io::Printer* printer) {
     // Before C++17, we must define the static constants which were
     // declared in the header, to give the linker a place to put them.
     // But pre-2015 MSVC++ insists that we not.
-    format("#if (__cplusplus < 201703) && "
-           "(!defined(_MSC_VER) || _MSC_VER >= 1900)\n");
+    format(
+        "#if (__cplusplus < 201703) && "
+        "(!defined(_MSC_VER) || _MSC_VER >= 1900)\n");
 
     for (int i = 0; i < descriptor_->value_count(); i++) {
       format("constexpr $classname$ $1$::$2$;\n", parent,
@@ -316,8 +295,9 @@ void EnumGenerator::GenerateMethods(int idx, io::Printer* printer) {
       format("constexpr int $1$::$nested_name$_ARRAYSIZE;\n", parent);
     }
 
-    format("#endif  // (__cplusplus < 201703) && "
-           "(!defined(_MSC_VER) || _MSC_VER >= 1900)\n");
+    format(
+        "#endif  // (__cplusplus < 201703) && "
+        "(!defined(_MSC_VER) || _MSC_VER >= 1900)\n");
   }
 }
 

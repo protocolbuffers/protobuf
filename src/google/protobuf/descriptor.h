@@ -174,7 +174,8 @@ struct DebugStringOptions {
   DebugStringOptions()
       : include_comments(false),
         elide_group_body(false),
-        elide_oneof_body(false) {}
+        elide_oneof_body(false) {
+  }
 };
 
 // A class to handle the simplest cases of a lazily linked descriptor
@@ -523,62 +524,62 @@ class PROTOBUF_EXPORT FieldDescriptor {
   // Identifies a field type.  0 is reserved for errors.  The order is weird
   // for historical reasons.  Types 12 and up are new in proto2.
   enum Type {
-    TYPE_DOUBLE         = 1,   // double, exactly eight bytes on the wire.
-    TYPE_FLOAT          = 2,   // float, exactly four bytes on the wire.
-    TYPE_INT64          = 3,   // int64, varint on the wire.  Negative numbers
-                               // take 10 bytes.  Use TYPE_SINT64 if negative
-                               // values are likely.
-    TYPE_UINT64         = 4,   // uint64, varint on the wire.
-    TYPE_INT32          = 5,   // int32, varint on the wire.  Negative numbers
-                               // take 10 bytes.  Use TYPE_SINT32 if negative
-                               // values are likely.
-    TYPE_FIXED64        = 6,   // uint64, exactly eight bytes on the wire.
-    TYPE_FIXED32        = 7,   // uint32, exactly four bytes on the wire.
-    TYPE_BOOL           = 8,   // bool, varint on the wire.
-    TYPE_STRING         = 9,   // UTF-8 text.
-    TYPE_GROUP          = 10,  // Tag-delimited message.  Deprecated.
-    TYPE_MESSAGE        = 11,  // Length-delimited message.
+    TYPE_DOUBLE = 1,    // double, exactly eight bytes on the wire.
+    TYPE_FLOAT = 2,     // float, exactly four bytes on the wire.
+    TYPE_INT64 = 3,     // int64, varint on the wire.  Negative numbers
+                        // take 10 bytes.  Use TYPE_SINT64 if negative
+                        // values are likely.
+    TYPE_UINT64 = 4,    // uint64, varint on the wire.
+    TYPE_INT32 = 5,     // int32, varint on the wire.  Negative numbers
+                        // take 10 bytes.  Use TYPE_SINT32 if negative
+                        // values are likely.
+    TYPE_FIXED64 = 6,   // uint64, exactly eight bytes on the wire.
+    TYPE_FIXED32 = 7,   // uint32, exactly four bytes on the wire.
+    TYPE_BOOL = 8,      // bool, varint on the wire.
+    TYPE_STRING = 9,    // UTF-8 text.
+    TYPE_GROUP = 10,    // Tag-delimited message.  Deprecated.
+    TYPE_MESSAGE = 11,  // Length-delimited message.
 
-    TYPE_BYTES          = 12,  // Arbitrary byte array.
-    TYPE_UINT32         = 13,  // uint32, varint on the wire
-    TYPE_ENUM           = 14,  // Enum, varint on the wire
-    TYPE_SFIXED32       = 15,  // int32, exactly four bytes on the wire
-    TYPE_SFIXED64       = 16,  // int64, exactly eight bytes on the wire
-    TYPE_SINT32         = 17,  // int32, ZigZag-encoded varint on the wire
-    TYPE_SINT64         = 18,  // int64, ZigZag-encoded varint on the wire
+    TYPE_BYTES = 12,     // Arbitrary byte array.
+    TYPE_UINT32 = 13,    // uint32, varint on the wire
+    TYPE_ENUM = 14,      // Enum, varint on the wire
+    TYPE_SFIXED32 = 15,  // int32, exactly four bytes on the wire
+    TYPE_SFIXED64 = 16,  // int64, exactly eight bytes on the wire
+    TYPE_SINT32 = 17,    // int32, ZigZag-encoded varint on the wire
+    TYPE_SINT64 = 18,    // int64, ZigZag-encoded varint on the wire
 
-    MAX_TYPE            = 18,  // Constant useful for defining lookup tables
-                               // indexed by Type.
+    MAX_TYPE = 18,  // Constant useful for defining lookup tables
+                    // indexed by Type.
   };
 
   // Specifies the C++ data type used to represent the field.  There is a
   // fixed mapping from Type to CppType where each Type maps to exactly one
   // CppType.  0 is reserved for errors.
   enum CppType {
-    CPPTYPE_INT32       = 1,     // TYPE_INT32, TYPE_SINT32, TYPE_SFIXED32
-    CPPTYPE_INT64       = 2,     // TYPE_INT64, TYPE_SINT64, TYPE_SFIXED64
-    CPPTYPE_UINT32      = 3,     // TYPE_UINT32, TYPE_FIXED32
-    CPPTYPE_UINT64      = 4,     // TYPE_UINT64, TYPE_FIXED64
-    CPPTYPE_DOUBLE      = 5,     // TYPE_DOUBLE
-    CPPTYPE_FLOAT       = 6,     // TYPE_FLOAT
-    CPPTYPE_BOOL        = 7,     // TYPE_BOOL
-    CPPTYPE_ENUM        = 8,     // TYPE_ENUM
-    CPPTYPE_STRING      = 9,     // TYPE_STRING, TYPE_BYTES
-    CPPTYPE_MESSAGE     = 10,    // TYPE_MESSAGE, TYPE_GROUP
+    CPPTYPE_INT32 = 1,     // TYPE_INT32, TYPE_SINT32, TYPE_SFIXED32
+    CPPTYPE_INT64 = 2,     // TYPE_INT64, TYPE_SINT64, TYPE_SFIXED64
+    CPPTYPE_UINT32 = 3,    // TYPE_UINT32, TYPE_FIXED32
+    CPPTYPE_UINT64 = 4,    // TYPE_UINT64, TYPE_FIXED64
+    CPPTYPE_DOUBLE = 5,    // TYPE_DOUBLE
+    CPPTYPE_FLOAT = 6,     // TYPE_FLOAT
+    CPPTYPE_BOOL = 7,      // TYPE_BOOL
+    CPPTYPE_ENUM = 8,      // TYPE_ENUM
+    CPPTYPE_STRING = 9,    // TYPE_STRING, TYPE_BYTES
+    CPPTYPE_MESSAGE = 10,  // TYPE_MESSAGE, TYPE_GROUP
 
-    MAX_CPPTYPE         = 10,    // Constant useful for defining lookup tables
-                                 // indexed by CppType.
+    MAX_CPPTYPE = 10,  // Constant useful for defining lookup tables
+                       // indexed by CppType.
   };
 
   // Identifies whether the field is optional, required, or repeated.  0 is
   // reserved for errors.
   enum Label {
-    LABEL_OPTIONAL      = 1,    // optional
-    LABEL_REQUIRED      = 2,    // required
-    LABEL_REPEATED      = 3,    // repeated
+    LABEL_OPTIONAL = 1,  // optional
+    LABEL_REQUIRED = 2,  // required
+    LABEL_REPEATED = 3,  // repeated
 
-    MAX_LABEL           = 3,    // Constant useful for defining lookup tables
-                                // indexed by Label.
+    MAX_LABEL = 3,  // Constant useful for defining lookup tables
+                    // indexed by Label.
   };
 
   // Valid field numbers are positive integers up to kMaxNumber.
@@ -589,14 +590,14 @@ class PROTOBUF_EXPORT FieldDescriptor {
   static const int kFirstReservedNumber = 19000;
   // Last field number reserved for the protocol buffer library implementation.
   // Users may not declare fields that use reserved numbers.
-  static const int kLastReservedNumber  = 19999;
+  static const int kLastReservedNumber = 19999;
 
   const std::string& name() const;  // Name of this field within the message.
   const std::string& full_name() const;  // Fully-qualified name of the field.
   const std::string& json_name() const;  // JSON name of this field.
-  const FileDescriptor* file() const;// File in which this field was defined.
-  bool is_extension() const;         // Is this an extension field?
-  int number() const;                // Declared tag number.
+  const FileDescriptor* file() const;  // File in which this field was defined.
+  bool is_extension() const;           // Is this an extension field?
+  int number() const;                  // Declared tag number.
 
   // Same as name() except converted to lower-case.  This (and especially the
   // FindFieldByLowercaseName() method) can be useful when parsing formats
@@ -623,15 +624,15 @@ class PROTOBUF_EXPORT FieldDescriptor {
   const char* cpp_type_name() const;  // Name of the C++ type.
   Label label() const;                // optional/required/repeated
 
-  bool is_required() const;      // shorthand for label() == LABEL_REQUIRED
-  bool is_optional() const;      // shorthand for label() == LABEL_OPTIONAL
-  bool is_repeated() const;      // shorthand for label() == LABEL_REPEATED
-  bool is_packable() const;      // shorthand for is_repeated() &&
-                                 //               IsTypePackable(type())
-  bool is_packed() const;        // shorthand for is_packable() &&
-                                 //               options().packed()
-  bool is_map() const;           // shorthand for type() == TYPE_MESSAGE &&
-                                 // message_type()->options().map_entry()
+  bool is_required() const;  // shorthand for label() == LABEL_REQUIRED
+  bool is_optional() const;  // shorthand for label() == LABEL_OPTIONAL
+  bool is_repeated() const;  // shorthand for label() == LABEL_REPEATED
+  bool is_packable() const;  // shorthand for is_repeated() &&
+                             //               IsTypePackable(type())
+  bool is_packed() const;    // shorthand for is_packable() &&
+                             //               options().packed()
+  bool is_map() const;       // shorthand for type() == TYPE_MESSAGE &&
+                             // message_type()->options().map_entry()
 
   // Index of this field within the message's field array, or the file or
   // extension scope's extensions array.
@@ -798,13 +799,13 @@ class PROTOBUF_EXPORT FieldDescriptor {
   // descriptor.cc and update them to initialize the field.
 
   union {
-    int32  default_value_int32_;
-    int64  default_value_int64_;
+    int32 default_value_int32_;
+    int64 default_value_int64_;
     uint32 default_value_uint32_;
     uint64 default_value_uint64_;
-    float  default_value_float_;
+    float default_value_float_;
     double default_value_double_;
-    bool   default_value_bool_;
+    bool default_value_bool_;
 
     mutable const EnumValueDescriptor* default_value_enum_;
     const std::string* default_value_string_;
@@ -812,11 +813,11 @@ class PROTOBUF_EXPORT FieldDescriptor {
 
   static const CppType kTypeToCppTypeMap[MAX_TYPE + 1];
 
-  static const char * const kTypeToName[MAX_TYPE + 1];
+  static const char* const kTypeToName[MAX_TYPE + 1];
 
-  static const char * const kCppTypeToName[MAX_CPPTYPE + 1];
+  static const char* const kCppTypeToName[MAX_CPPTYPE + 1];
 
-  static const char * const kLabelToName[MAX_LABEL + 1];
+  static const char* const kLabelToName[MAX_LABEL + 1];
 
   // Must be constructed using DescriptorPool.
   FieldDescriptor() {}
@@ -977,8 +978,8 @@ class PROTOBUF_EXPORT EnumDescriptor {
   bool IsReservedNumber(int number) const;
 
   // Returns NULL if no reserved range contains the given number.
-  const EnumDescriptor::ReservedRange*
-      FindReservedRangeContainingNumber(int number) const;
+  const EnumDescriptor::ReservedRange* FindReservedRangeContainingNumber(
+      int number) const;
 
   // The number of reserved field names in this message type.
   int reserved_name_count() const;
@@ -1011,9 +1012,8 @@ class PROTOBUF_EXPORT EnumDescriptor {
   // This is private but is used by GeneratedMessageReflection (which is
   // friended below) to return a valid EnumValueDescriptor from GetEnum() when
   // this feature is enabled.
-  const EnumValueDescriptor*
-      FindValueByNumberCreatingIfUnknown(int number) const;
-
+  const EnumValueDescriptor* FindValueByNumberCreatingIfUnknown(
+      int number) const;
 
   // See Descriptor::DebugString().
   void DebugString(int depth, std::string* contents,
@@ -1068,8 +1068,8 @@ class PROTOBUF_EXPORT EnumValueDescriptor {
   typedef EnumValueDescriptorProto Proto;
 
   const std::string& name() const;  // Name of this enum constant.
-  int index() const;           // Index within the enums's Descriptor.
-  int number() const;          // Numeric value of this enum constant.
+  int index() const;                // Index within the enums's Descriptor.
+  int number() const;               // Numeric value of this enum constant.
 
   // The full_name of an enum value is a sibling symbol of the enum type.
   // e.g. the full name of FieldDescriptorProto::TYPE_INT32 is actually
@@ -1381,8 +1381,8 @@ class PROTOBUF_EXPORT FileDescriptor {
   // Syntax of this file.
   enum Syntax {
     SYNTAX_UNKNOWN = 0,
-    SYNTAX_PROTO2  = 2,
-    SYNTAX_PROTO3  = 3,
+    SYNTAX_PROTO2 = 2,
+    SYNTAX_PROTO3 = 3,
   };
   Syntax syntax() const;
   static const char* SyntaxName(Syntax syntax);
@@ -1618,16 +1618,17 @@ class PROTOBUF_EXPORT DescriptorPool {
     // This is useful e.g. for mapping the error back to an exact location
     // in a .proto file.
     enum ErrorLocation {
-      NAME,              // the symbol name, or the package name for files
-      NUMBER,            // field or extension range number
-      TYPE,              // field type
-      EXTENDEE,          // field extendee
-      DEFAULT_VALUE,     // field default value
-      INPUT_TYPE,        // method input type
-      OUTPUT_TYPE,       // method output type
-      OPTION_NAME,       // name in assignment
-      OPTION_VALUE,      // value in option assignment
-      OTHER              // some other problem
+      NAME,           // the symbol name, or the package name for files
+      NUMBER,         // field or extension range number
+      TYPE,           // field type
+      EXTENDEE,       // field extendee
+      DEFAULT_VALUE,  // field default value
+      INPUT_TYPE,     // method input type
+      OUTPUT_TYPE,    // method output type
+      OPTION_NAME,    // name in assignment
+      OPTION_VALUE,   // value in option assignment
+      IMPORT,         // import error
+      OTHER           // some other problem
     };
 
     // Reports an error in the FileDescriptorProto. Use this function if the
@@ -1665,8 +1666,7 @@ class PROTOBUF_EXPORT DescriptorPool {
 
   // Same as BuildFile() except errors are sent to the given ErrorCollector.
   const FileDescriptor* BuildFileCollectingErrors(
-    const FileDescriptorProto& proto,
-    ErrorCollector* error_collector);
+      const FileDescriptorProto& proto, ErrorCollector* error_collector);
 
   // By default, it is an error if a FileDescriptorProto contains references
   // to types or other files that are not found in the DescriptorPool (or its
@@ -1721,8 +1721,8 @@ class PROTOBUF_EXPORT DescriptorPool {
   // Called by generated classes at init time to add their descriptors to
   // generated_pool.  Do NOT call this in your own code!  filename must be a
   // permanent string (e.g. a string literal).
-  static void InternalAddGeneratedFile(
-      const void* encoded_file_descriptor, int size);
+  static void InternalAddGeneratedFile(const void* encoded_file_descriptor,
+                                       int size);
 
   // Disallow [enforce_utf8 = false] in .proto files.
   void DisallowEnforceUtf8() { disallow_enforce_utf8_ = true; }
@@ -1799,7 +1799,7 @@ class PROTOBUF_EXPORT DescriptorPool {
   // fallback_database_.  Declared const because it is called by (semantically)
   // const methods.
   const FileDescriptor* BuildFileFromDatabase(
-    const FileDescriptorProto& proto) const;
+      const FileDescriptorProto& proto) const;
 
   // Helper for when lazily_build_dependencies_ is set, can look up a symbol
   // after the file's descriptor is built, and can build the file where that
@@ -1886,8 +1886,7 @@ PROTOBUF_DEFINE_ACCESSOR(Descriptor, extension_range_count, int)
 PROTOBUF_DEFINE_ACCESSOR(Descriptor, extension_count, int)
 PROTOBUF_DEFINE_ARRAY_ACCESSOR(Descriptor, extension_range,
                                const Descriptor::ExtensionRange*)
-PROTOBUF_DEFINE_ARRAY_ACCESSOR(Descriptor, extension,
-                               const FieldDescriptor*)
+PROTOBUF_DEFINE_ARRAY_ACCESSOR(Descriptor, extension, const FieldDescriptor*)
 
 PROTOBUF_DEFINE_ACCESSOR(Descriptor, reserved_range_count, int)
 PROTOBUF_DEFINE_ARRAY_ACCESSOR(Descriptor, reserved_range,
@@ -1914,13 +1913,13 @@ PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, extension_scope, const Descriptor*)
 PROTOBUF_DEFINE_OPTIONS_ACCESSOR(FieldDescriptor, FieldOptions)
 PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, has_default_value, bool)
 PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, has_json_name, bool)
-PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, default_value_int32 , int32 )
-PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, default_value_int64 , int64 )
+PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, default_value_int32, int32)
+PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, default_value_int64, int64)
 PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, default_value_uint32, uint32)
 PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, default_value_uint64, uint64)
-PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, default_value_float , float )
+PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, default_value_float, float)
 PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, default_value_double, double)
-PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, default_value_bool  , bool  )
+PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, default_value_bool, bool)
 PROTOBUF_DEFINE_STRING_ACCESSOR(FieldDescriptor, default_value_string)
 
 PROTOBUF_DEFINE_STRING_ACCESSOR(OneofDescriptor, name)
@@ -2151,14 +2150,11 @@ inline const FileDescriptor* FileDescriptor::public_dependency(
   return dependency(public_dependencies_[index]);
 }
 
-inline const FileDescriptor* FileDescriptor::weak_dependency(
-    int index) const {
+inline const FileDescriptor* FileDescriptor::weak_dependency(int index) const {
   return dependency(weak_dependencies_[index]);
 }
 
-inline FileDescriptor::Syntax FileDescriptor::syntax() const {
-  return syntax_;
-}
+inline FileDescriptor::Syntax FileDescriptor::syntax() const { return syntax_; }
 
 // Can't use PROTOBUF_DEFINE_ARRAY_ACCESSOR because fields_ is actually an array
 // of pointers rather than the usual array of objects.

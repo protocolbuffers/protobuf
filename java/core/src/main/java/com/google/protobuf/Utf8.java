@@ -794,7 +794,7 @@ final class Utf8 {
       // if it occurs.
       try {
         // Designed to take advantage of
-        // https://wikis.oracle.com/display/HotSpotInternals/RangeCheckElimination
+        // https://wiki.openjdk.java.net/display/HotSpotInternals/RangeCheckElimination
         for (char c; inIx < inLength && (c = in.charAt(inIx)) < 0x80; ++inIx) {
           out.put(outIx + inIx, (byte) c);
         }
@@ -1041,7 +1041,7 @@ final class Utf8 {
       int i = 0;
       int limit = offset + length;
       // Designed to take advantage of
-      // https://wikis.oracle.com/display/HotSpotInternals/RangeCheckElimination
+      // https://wiki.openjdk.java.net/display/HotSpotInternals/RangeCheckElimination
       for (char c; i < utf16Length && i + j < limit && (c = in.charAt(i)) < 0x80; i++) {
         out[j + i] = (byte) c;
       }
@@ -1527,7 +1527,7 @@ final class Utf8 {
       }
 
       // Designed to take advantage of
-      // https://wikis.oracle.com/display/HotSpotInternals/RangeCheckElimination
+      // https://wiki.openjdk.java.net/display/HotSpotInternals/RangeCheckElimination
       int inIx = 0;
       for (char c; inIx < inLimit && (c = in.charAt(inIx)) < 0x80; ++inIx) {
         UnsafeUtil.putByte(out, outIx++, (byte) c);
@@ -1589,7 +1589,7 @@ final class Utf8 {
       }
 
       // Designed to take advantage of
-      // https://wikis.oracle.com/display/HotSpotInternals/RangeCheckElimination
+      // https://wiki.openjdk.java.net/display/HotSpotInternals/RangeCheckElimination
       int inIx = 0;
       for (char c; inIx < inLimit && (c = in.charAt(inIx)) < 0x80; ++inIx) {
         UnsafeUtil.putByte(outIx++, (byte) c);

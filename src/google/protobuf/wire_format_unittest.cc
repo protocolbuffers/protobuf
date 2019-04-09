@@ -33,14 +33,14 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
 #include <google/protobuf/wire_format.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
-#include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/test_util.h>
 #include <google/protobuf/unittest.pb.h>
-#include <google/protobuf/unittest_proto3_arena.pb.h>
 #include <google/protobuf/unittest_mset.pb.h>
 #include <google/protobuf/unittest_mset_wire_format.pb.h>
-#include <google/protobuf/test_util.h>
+#include <google/protobuf/unittest_proto3_arena.pb.h>
+#include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/io/zero_copy_stream_impl.h>
+#include <google/protobuf/descriptor.h>
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
@@ -232,8 +232,7 @@ TEST(WireFormatTest, ByteSizeExtensions) {
   unittest::TestAllExtensions message;
   TestUtil::SetAllExtensions(&message);
 
-  EXPECT_EQ(message.ByteSize(),
-            WireFormat::ByteSize(message));
+  EXPECT_EQ(message.ByteSize(), WireFormat::ByteSize(message));
   message.Clear();
   EXPECT_EQ(0, message.ByteSize());
   EXPECT_EQ(0, WireFormat::ByteSize(message));
@@ -253,8 +252,7 @@ TEST(WireFormatTest, ByteSizePackedExtensions) {
   unittest::TestPackedExtensions message;
   TestUtil::SetPackedExtensions(&message);
 
-  EXPECT_EQ(message.ByteSize(),
-            WireFormat::ByteSize(message));
+  EXPECT_EQ(message.ByteSize(), WireFormat::ByteSize(message));
   message.Clear();
   EXPECT_EQ(0, message.ByteSize());
   EXPECT_EQ(0, WireFormat::ByteSize(message));
@@ -264,8 +262,7 @@ TEST(WireFormatTest, ByteSizeOneof) {
   unittest::TestOneof2 message;
   TestUtil::SetOneof1(&message);
 
-  EXPECT_EQ(message.ByteSize(),
-  WireFormat::ByteSize(message));
+  EXPECT_EQ(message.ByteSize(), WireFormat::ByteSize(message));
   message.Clear();
 
   EXPECT_EQ(0, message.ByteSize());
@@ -425,12 +422,16 @@ const int kUnknownTypeId = 1550055;
 TEST(WireFormatTest, SerializeMessageSet) {
   // Set up a TestMessageSet with two known messages and an unknown one.
   proto2_wireformat_unittest::TestMessageSet message_set;
-  message_set.MutableExtension(
-    unittest::TestMessageSetExtension1::message_set_extension)->set_i(123);
-  message_set.MutableExtension(
-    unittest::TestMessageSetExtension2::message_set_extension)->set_str("foo");
-  message_set.mutable_unknown_fields()->AddLengthDelimited(
-    kUnknownTypeId, "bar");
+  message_set
+      .MutableExtension(
+          unittest::TestMessageSetExtension1::message_set_extension)
+      ->set_i(123);
+  message_set
+      .MutableExtension(
+          unittest::TestMessageSetExtension2::message_set_extension)
+      ->set_str("foo");
+  message_set.mutable_unknown_fields()->AddLengthDelimited(kUnknownTypeId,
+                                                           "bar");
 
   std::string data;
   ASSERT_TRUE(message_set.SerializeToString(&data));
@@ -443,11 +444,11 @@ TEST(WireFormatTest, SerializeMessageSet) {
 
   ASSERT_EQ(3, raw.item_size());
   EXPECT_EQ(
-    unittest::TestMessageSetExtension1::descriptor()->extension(0)->number(),
-    raw.item(0).type_id());
+      unittest::TestMessageSetExtension1::descriptor()->extension(0)->number(),
+      raw.item(0).type_id());
   EXPECT_EQ(
-    unittest::TestMessageSetExtension2::descriptor()->extension(0)->number(),
-    raw.item(1).type_id());
+      unittest::TestMessageSetExtension2::descriptor()->extension(0)->number(),
+      raw.item(1).type_id());
   EXPECT_EQ(kUnknownTypeId, raw.item(2).type_id());
 
   unittest::TestMessageSetExtension1 message1;
@@ -468,12 +469,16 @@ TEST(WireFormatTest, SerializeMessageSetVariousWaysAreEqual) {
   // above.
 
   proto2_wireformat_unittest::TestMessageSet message_set;
-  message_set.MutableExtension(
-    unittest::TestMessageSetExtension1::message_set_extension)->set_i(123);
-  message_set.MutableExtension(
-    unittest::TestMessageSetExtension2::message_set_extension)->set_str("foo");
-  message_set.mutable_unknown_fields()->AddLengthDelimited(
-    kUnknownTypeId, "bar");
+  message_set
+      .MutableExtension(
+          unittest::TestMessageSetExtension1::message_set_extension)
+      ->set_i(123);
+  message_set
+      .MutableExtension(
+          unittest::TestMessageSetExtension2::message_set_extension)
+      ->set_str("foo");
+  message_set.mutable_unknown_fields()->AddLengthDelimited(kUnknownTypeId,
+                                                           "bar");
 
   int size = message_set.ByteSize();
   EXPECT_EQ(size, message_set.GetCachedSize());
@@ -519,8 +524,9 @@ TEST(WireFormatTest, ParseMessageSet) {
 
   {
     unittest::RawMessageSet::Item* item = raw.add_item();
-    item->set_type_id(
-      unittest::TestMessageSetExtension1::descriptor()->extension(0)->number());
+    item->set_type_id(unittest::TestMessageSetExtension1::descriptor()
+                          ->extension(0)
+                          ->number());
     unittest::TestMessageSetExtension1 message;
     message.set_i(123);
     message.SerializeToString(item->mutable_message());
@@ -528,8 +534,9 @@ TEST(WireFormatTest, ParseMessageSet) {
 
   {
     unittest::RawMessageSet::Item* item = raw.add_item();
-    item->set_type_id(
-      unittest::TestMessageSetExtension2::descriptor()->extension(0)->number());
+    item->set_type_id(unittest::TestMessageSetExtension2::descriptor()
+                          ->extension(0)
+                          ->number());
     unittest::TestMessageSetExtension2 message;
     message.set_str("foo");
     message.SerializeToString(item->mutable_message());
@@ -548,10 +555,16 @@ TEST(WireFormatTest, ParseMessageSet) {
   proto2_wireformat_unittest::TestMessageSet message_set;
   ASSERT_TRUE(message_set.ParseFromString(data));
 
-  EXPECT_EQ(123, message_set.GetExtension(
-    unittest::TestMessageSetExtension1::message_set_extension).i());
-  EXPECT_EQ("foo", message_set.GetExtension(
-    unittest::TestMessageSetExtension2::message_set_extension).str());
+  EXPECT_EQ(123,
+            message_set
+                .GetExtension(
+                    unittest::TestMessageSetExtension1::message_set_extension)
+                .i());
+  EXPECT_EQ("foo",
+            message_set
+                .GetExtension(
+                    unittest::TestMessageSetExtension2::message_set_extension)
+                .str());
 
   ASSERT_EQ(1, message_set.unknown_fields().field_count());
   ASSERT_EQ(UnknownField::TYPE_LENGTH_DELIMITED,
@@ -592,8 +605,11 @@ TEST(WireFormatTest, ParseMessageSetWithReverseTagOrder) {
     proto2_wireformat_unittest::TestMessageSet message_set;
     ASSERT_TRUE(message_set.ParseFromString(data));
 
-    EXPECT_EQ(123, message_set.GetExtension(
-        unittest::TestMessageSetExtension1::message_set_extension).i());
+    EXPECT_EQ(123,
+              message_set
+                  .GetExtension(
+                      unittest::TestMessageSetExtension1::message_set_extension)
+                  .i());
   }
   {
     // Test parse the message via Reflection.
@@ -603,8 +619,11 @@ TEST(WireFormatTest, ParseMessageSetWithReverseTagOrder) {
     EXPECT_TRUE(WireFormat::ParseAndMergePartial(&input, &message_set));
     EXPECT_TRUE(input.ConsumedEntireMessage());
 
-    EXPECT_EQ(123, message_set.GetExtension(
-        unittest::TestMessageSetExtension1::message_set_extension).i());
+    EXPECT_EQ(123,
+              message_set
+                  .GetExtension(
+                      unittest::TestMessageSetExtension1::message_set_extension)
+                  .i());
   }
 }
 
@@ -699,11 +718,11 @@ TEST(WireFormatTest, RecursionLimit) {
 TEST(WireFormatTest, UnknownFieldRecursionLimit) {
   unittest::TestEmptyMessage message;
   message.mutable_unknown_fields()
-        ->AddGroup(1234)
-        ->AddGroup(1234)
-        ->AddGroup(1234)
-        ->AddGroup(1234)
-        ->AddVarint(1234, 123);
+      ->AddGroup(1234)
+      ->AddGroup(1234)
+      ->AddGroup(1234)
+      ->AddGroup(1234)
+      ->AddVarint(1234, 123);
   std::string data;
   message.SerializeToString(&data);
 
@@ -733,27 +752,27 @@ TEST(WireFormatTest, ZigZag) {
 #define ZigZagEncode64(x) WireFormatLite::ZigZagEncode64(x)
 #define ZigZagDecode64(x) WireFormatLite::ZigZagDecode64(x)
 
-  EXPECT_EQ(0u, ZigZagEncode32( 0));
+  EXPECT_EQ(0u, ZigZagEncode32(0));
   EXPECT_EQ(1u, ZigZagEncode32(-1));
-  EXPECT_EQ(2u, ZigZagEncode32( 1));
+  EXPECT_EQ(2u, ZigZagEncode32(1));
   EXPECT_EQ(3u, ZigZagEncode32(-2));
   EXPECT_EQ(0x7FFFFFFEu, ZigZagEncode32(0x3FFFFFFF));
   EXPECT_EQ(0x7FFFFFFFu, ZigZagEncode32(0xC0000000));
   EXPECT_EQ(0xFFFFFFFEu, ZigZagEncode32(0x7FFFFFFF));
   EXPECT_EQ(0xFFFFFFFFu, ZigZagEncode32(0x80000000));
 
-  EXPECT_EQ( 0, ZigZagDecode32(0u));
+  EXPECT_EQ(0, ZigZagDecode32(0u));
   EXPECT_EQ(-1, ZigZagDecode32(1u));
-  EXPECT_EQ( 1, ZigZagDecode32(2u));
+  EXPECT_EQ(1, ZigZagDecode32(2u));
   EXPECT_EQ(-2, ZigZagDecode32(3u));
   EXPECT_EQ(0x3FFFFFFF, ZigZagDecode32(0x7FFFFFFEu));
   EXPECT_EQ(0xC0000000, ZigZagDecode32(0x7FFFFFFFu));
   EXPECT_EQ(0x7FFFFFFF, ZigZagDecode32(0xFFFFFFFEu));
   EXPECT_EQ(0x80000000, ZigZagDecode32(0xFFFFFFFFu));
 
-  EXPECT_EQ(0u, ZigZagEncode64( 0));
+  EXPECT_EQ(0u, ZigZagEncode64(0));
   EXPECT_EQ(1u, ZigZagEncode64(-1));
-  EXPECT_EQ(2u, ZigZagEncode64( 1));
+  EXPECT_EQ(2u, ZigZagEncode64(1));
   EXPECT_EQ(3u, ZigZagEncode64(-2));
   EXPECT_EQ(ULL(0x000000007FFFFFFE), ZigZagEncode64(LL(0x000000003FFFFFFF)));
   EXPECT_EQ(ULL(0x000000007FFFFFFF), ZigZagEncode64(LL(0xFFFFFFFFC0000000)));
@@ -762,9 +781,9 @@ TEST(WireFormatTest, ZigZag) {
   EXPECT_EQ(ULL(0xFFFFFFFFFFFFFFFE), ZigZagEncode64(LL(0x7FFFFFFFFFFFFFFF)));
   EXPECT_EQ(ULL(0xFFFFFFFFFFFFFFFF), ZigZagEncode64(LL(0x8000000000000000)));
 
-  EXPECT_EQ( 0, ZigZagDecode64(0u));
+  EXPECT_EQ(0, ZigZagDecode64(0u));
   EXPECT_EQ(-1, ZigZagDecode64(1u));
-  EXPECT_EQ( 1, ZigZagDecode64(2u));
+  EXPECT_EQ(1, ZigZagDecode64(2u));
   EXPECT_EQ(-2, ZigZagDecode64(3u));
   EXPECT_EQ(LL(0x000000003FFFFFFF), ZigZagDecode64(ULL(0x000000007FFFFFFE)));
   EXPECT_EQ(LL(0xFFFFFFFFC0000000), ZigZagDecode64(ULL(0x000000007FFFFFFF)));
@@ -775,22 +794,22 @@ TEST(WireFormatTest, ZigZag) {
 
   // Some easier-to-verify round-trip tests.  The inputs (other than 0, 1, -1)
   // were chosen semi-randomly via keyboard bashing.
-  EXPECT_EQ(    0, ZigZagDecode32(ZigZagEncode32(    0)));
-  EXPECT_EQ(    1, ZigZagDecode32(ZigZagEncode32(    1)));
-  EXPECT_EQ(   -1, ZigZagDecode32(ZigZagEncode32(   -1)));
+  EXPECT_EQ(0, ZigZagDecode32(ZigZagEncode32(0)));
+  EXPECT_EQ(1, ZigZagDecode32(ZigZagEncode32(1)));
+  EXPECT_EQ(-1, ZigZagDecode32(ZigZagEncode32(-1)));
   EXPECT_EQ(14927, ZigZagDecode32(ZigZagEncode32(14927)));
   EXPECT_EQ(-3612, ZigZagDecode32(ZigZagEncode32(-3612)));
 
-  EXPECT_EQ(    0, ZigZagDecode64(ZigZagEncode64(    0)));
-  EXPECT_EQ(    1, ZigZagDecode64(ZigZagEncode64(    1)));
-  EXPECT_EQ(   -1, ZigZagDecode64(ZigZagEncode64(   -1)));
+  EXPECT_EQ(0, ZigZagDecode64(ZigZagEncode64(0)));
+  EXPECT_EQ(1, ZigZagDecode64(ZigZagEncode64(1)));
+  EXPECT_EQ(-1, ZigZagDecode64(ZigZagEncode64(-1)));
   EXPECT_EQ(14927, ZigZagDecode64(ZigZagEncode64(14927)));
   EXPECT_EQ(-3612, ZigZagDecode64(ZigZagEncode64(-3612)));
 
-  EXPECT_EQ(LL(856912304801416), ZigZagDecode64(ZigZagEncode64(
-            LL(856912304801416))));
-  EXPECT_EQ(LL(-75123905439571256), ZigZagDecode64(ZigZagEncode64(
-            LL(-75123905439571256))));
+  EXPECT_EQ(LL(856912304801416),
+            ZigZagDecode64(ZigZagEncode64(LL(856912304801416))));
+  EXPECT_EQ(LL(-75123905439571256),
+            ZigZagDecode64(ZigZagEncode64(LL(-75123905439571256))));
 }
 
 TEST(WireFormatTest, RepeatedScalarsDifferentTagSizes) {
@@ -1029,8 +1048,8 @@ class WireFormatInvalidInputTest : public testing::Test {
   // contains exactly the given bytes, which may be invalid.
   std::string MakeInvalidEmbeddedMessage(const char* bytes, int size) {
     const FieldDescriptor* field =
-      unittest::TestAllTypes::descriptor()->FindFieldByName(
-        "optional_nested_message");
+        unittest::TestAllTypes::descriptor()->FindFieldByName(
+            "optional_nested_message");
     GOOGLE_CHECK(field != NULL);
 
     std::string result;
@@ -1052,8 +1071,7 @@ class WireFormatInvalidInputTest : public testing::Test {
   std::string MakeInvalidGroup(const char* bytes, int size,
                                bool include_end_tag) {
     const FieldDescriptor* field =
-      unittest::TestAllTypes::descriptor()->FindFieldByName(
-        "optionalgroup");
+        unittest::TestAllTypes::descriptor()->FindFieldByName("optionalgroup");
     GOOGLE_CHECK(field != NULL);
 
     std::string result;
@@ -1066,7 +1084,7 @@ class WireFormatInvalidInputTest : public testing::Test {
       output.WriteString(std::string(bytes, size));
       if (include_end_tag) {
         output.WriteVarint32(WireFormatLite::MakeTag(
-          field->number(), WireFormatLite::WIRETYPE_END_GROUP));
+            field->number(), WireFormatLite::WIRETYPE_END_GROUP));
       }
     }
 
@@ -1114,7 +1132,6 @@ TEST_F(WireFormatInvalidInputTest, InvalidMessageWithExtraZero) {
     EXPECT_FALSE(message.ParseFromString(data));
   }
 }
-
 
 TEST_F(WireFormatInvalidInputTest, InvalidGroup) {
   unittest::TestAllTypes message;
@@ -1191,10 +1208,10 @@ TEST_F(WireFormatInvalidInputTest, InvalidStringInUnknownGroup) {
 // ReadValidUTF8String:  fine.
 // WriteAnyBytes: fine.
 // ReadAnyBytes: fine.
-const char * kInvalidUTF8String = "Invalid UTF-8: \xA0\xB0\xC0\xD0";
+const char* kInvalidUTF8String = "Invalid UTF-8: \xA0\xB0\xC0\xD0";
 // This used to be "Valid UTF-8: \x01\x02\u8C37\u6B4C", but MSVC seems to
 // interpret \u differently from GCC.
-const char * kValidUTF8String = "Valid UTF-8: \x01\x02\350\260\267\346\255\214";
+const char* kValidUTF8String = "Valid UTF-8: \x01\x02\350\260\267\346\255\214";
 
 template <typename T>
 bool WriteMessage(const char* value, T* message, std::string* wire_buffer) {

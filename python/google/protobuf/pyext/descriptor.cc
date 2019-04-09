@@ -394,11 +394,12 @@ PyObject* NewInternedDescriptor(PyTypeObject* type,
   return reinterpret_cast<PyObject*>(py_descriptor);
 }
 
-static void Dealloc(PyBaseDescriptor* self) {
+static void Dealloc(PyObject* pself) {
+  PyBaseDescriptor* self = reinterpret_cast<PyBaseDescriptor*>(pself);
   // Remove from interned dictionary
   interned_descriptors->erase(self->descriptor);
   Py_CLEAR(self->pool);
-  Py_TYPE(self)->tp_free(reinterpret_cast<PyObject*>(self));
+  Py_TYPE(self)->tp_free(pself);
 }
 
 static int GcTraverse(PyObject* pself, visitproc visit, void* arg) {
@@ -1323,7 +1324,7 @@ static const FileDescriptor* _GetDescriptor(PyFileDescriptor *self) {
 
 static void Dealloc(PyFileDescriptor* self) {
   Py_XDECREF(self->serialized_pb);
-  descriptor::Dealloc(&self->base);
+  descriptor::Dealloc(reinterpret_cast<PyObject*>(self));
 }
 
 static PyObject* GetPool(PyFileDescriptor *self, void *closure) {

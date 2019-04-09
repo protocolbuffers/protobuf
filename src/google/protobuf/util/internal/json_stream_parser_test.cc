@@ -118,7 +118,7 @@ class JsonStreamParserTest : public ::testing::Test {
         result = parser.FinishParse();
       }
     }
-    if (result.ok()){
+    if (result.ok()) {
       EXPECT_EQ(parser.recursion_depth(), 0);
     }
     return result;
@@ -138,8 +138,7 @@ class JsonStreamParserTest : public ::testing::Test {
   void DoErrorTest(StringPiece json, int split,
                    StringPiece error_prefix, bool coerce_utf8 = false,
                    bool allow_empty_null = false) {
-    util::Status result =
-        RunTest(json, split, coerce_utf8, allow_empty_null);
+    util::Status result = RunTest(json, split, coerce_utf8, allow_empty_null);
     EXPECT_EQ(util::error::INVALID_ARGUMENT, result.code());
     StringPiece error_message(result.error_message());
     EXPECT_EQ(error_prefix, error_message.substr(0, error_prefix.size()));

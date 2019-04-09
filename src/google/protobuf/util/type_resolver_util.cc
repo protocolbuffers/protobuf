@@ -40,6 +40,10 @@
 
 #include <google/protobuf/stubs/status.h>
 
+// clang-format off
+#include <google/protobuf/port_def.inc>
+// clang-format on
+
 namespace google {
 namespace protobuf {
 namespace util {
