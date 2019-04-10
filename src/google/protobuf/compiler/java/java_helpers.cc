@@ -91,8 +91,6 @@ const std::unordered_set<string>* kReservedNames =
         "transient",  "try",          "void",      "volatile",   "while",
     });
 
-const int kDefaultLookUpStartFieldNumber = 40;
-
 bool IsForbidden(const std::string& field_name) {
   for (int i = 0; i < GOOGLE_ARRAYSIZE(kForbiddenWordList); ++i) {
     if (field_name == kForbiddenWordList[i]) {
