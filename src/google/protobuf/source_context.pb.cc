@@ -56,12 +56,6 @@ static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] =
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&PROTOBUF_NAMESPACE_ID::_SourceContext_default_instance_),
 };
 
-static ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptorsTable assign_descriptors_table_google_2fprotobuf_2fsource_5fcontext_2eproto = {
-  {}, AddDescriptors_google_2fprotobuf_2fsource_5fcontext_2eproto, "google/protobuf/source_context.proto", schemas,
-  file_default_instances, TableStruct_google_2fprotobuf_2fsource_5fcontext_2eproto::offsets,
-  file_level_metadata_google_2fprotobuf_2fsource_5fcontext_2eproto, 1, file_level_enum_descriptors_google_2fprotobuf_2fsource_5fcontext_2eproto, file_level_service_descriptors_google_2fprotobuf_2fsource_5fcontext_2eproto,
-};
-
 const char descriptor_table_protodef_google_2fprotobuf_2fsource_5fcontext_2eproto[] =
   "\n$google/protobuf/source_context.proto\022\017"
   "google.protobuf\"\"\n\rSourceContext\022\021\n\tfile"
@@ -71,9 +65,12 @@ const char descriptor_table_protodef_google_2fprotobuf_2fsource_5fcontext_2eprot
   "text\242\002\003GPB\252\002\036Google.Protobuf.WellKnownTy"
   "pesb\006proto3"
   ;
+static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto_once;
 static ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto = {
-  false, descriptor_table_protodef_google_2fprotobuf_2fsource_5fcontext_2eproto,
-  "google/protobuf/source_context.proto", &assign_descriptors_table_google_2fprotobuf_2fsource_5fcontext_2eproto, 251,
+  false, descriptor_table_protodef_google_2fprotobuf_2fsource_5fcontext_2eproto, "google/protobuf/source_context.proto", 251,
+  &descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto_once, AddDescriptors_google_2fprotobuf_2fsource_5fcontext_2eproto, schemas,
+  file_default_instances, TableStruct_google_2fprotobuf_2fsource_5fcontext_2eproto::offsets,
+  file_level_metadata_google_2fprotobuf_2fsource_5fcontext_2eproto, 1, file_level_enum_descriptors_google_2fprotobuf_2fsource_5fcontext_2eproto, file_level_service_descriptors_google_2fprotobuf_2fsource_5fcontext_2eproto,
 };
 
 void AddDescriptors_google_2fprotobuf_2fsource_5fcontext_2eproto() {
@@ -362,7 +359,7 @@ void SourceContext::InternalSwap(SourceContext* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata SourceContext::GetMetadata() const {
-  ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::assign_descriptors_table_google_2fprotobuf_2fsource_5fcontext_2eproto);
+  ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto);
   return ::file_level_metadata_google_2fprotobuf_2fsource_5fcontext_2eproto[kIndexInFileMessages];
 }
 

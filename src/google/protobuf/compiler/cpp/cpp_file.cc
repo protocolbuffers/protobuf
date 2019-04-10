@@ -64,10 +64,9 @@ FileGenerator::FileGenerator(const FileDescriptor* file, const Options& options)
   SetCommonVars(options, &variables_);
   variables_["dllexport_decl"] = options.dllexport_decl;
   variables_["tablename"] = UniqueName("TableStruct", file_, options_);
-  variables_["assign_desc_table"] =
-      UniqueName("assign_descriptors_table", file_, options_);
   variables_["file_level_metadata"] =
       UniqueName("file_level_metadata", file_, options_);
+  variables_["desc_table"] = UniqueName("descriptor_table", file_, options_),
   variables_["file_level_enum_descriptors"] =
       UniqueName("file_level_enum_descriptors", file_, options_);
   variables_["file_level_service_descriptors"] =
@@ -758,21 +757,6 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* printer) {
 
   // ---------------------------------------------------------------
 
-  // protobuf_AssignDescriptorsOnce():  The first time it is called, calls
-  // AssignDescriptors().  All later times, waits for the first call to
-  // complete and then returns.
-  format(
-      "static "
-      "::$proto_ns$::internal::AssignDescriptorsTable $assign_desc_table$ = "
-      "{\n"
-      "  {}, $add_descriptors$, \"$filename$\", schemas,\n"
-      "  file_default_instances, $tablename$::offsets,\n"
-      "  $file_level_metadata$, $1$, $file_level_enum_descriptors$, "
-      "$file_level_service_descriptors$,\n"
-      "};\n"
-      "\n",
-      message_generators_.size());
-
   // Embed the descriptor.  We simply serialize the entire
   // FileDescriptorProto/ and embed it as a string literal, which is parsed and
   // built into real descriptors at initialization time.
@@ -812,21 +796,26 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* printer) {
   }
   format.Outdent();
 
-  // Now generate the AddDescriptors() function.
-  format(
-      "static "
-      "::$proto_ns$::internal::DescriptorTable $1$ = {\n"
-      "  false, $2$,\n",
-      UniqueName("descriptor_table", file_, options_), protodef_name);
+  int num_deps = file_->dependency_count();
 
-  const int num_deps = file_->dependency_count();
+  // Now generate the AddDescriptors() function.
+  // We have to make the once flag separate on account of MSVC 2015, which
+  // does not linker-initialize constexpr constructors. :(
   format(
-      "  \"$filename$\", &$assign_desc_table$, $1$,\n"
+      "static ::$proto_ns$::internal::once_flag $desc_table$_once;\n"
+      "static "
+      "::$proto_ns$::internal::DescriptorTable $desc_table$ = {\n"
+      "  false, $1$, \"$filename$\", $2$,\n"
+      "  &$desc_table$_once, $add_descriptors$, schemas,\n"
+      "  file_default_instances, $tablename$::offsets,\n"
+      "  $file_level_metadata$, $3$, $file_level_enum_descriptors$, "
+      "$file_level_service_descriptors$,\n"
       "};\n\n"
       "void $add_descriptors$() {\n"
-      "  static constexpr ::$proto_ns$::internal::InitFunc deps[$2$] =\n"
+      "  static constexpr ::$proto_ns$::internal::InitFunc deps[$4$] =\n"
       "  {\n",
-      file_data.size(), std::max(num_deps, 1));
+      protodef_name, file_data.size(), message_generators_.size(),
+      std::max(num_deps, 1));
   for (int i = 0; i < num_deps; i++) {
     const FileDescriptor* dependency = file_->dependency(i);
     format("    ::$1$,\n", UniqueName("AddDescriptors", dependency, options_));
@@ -843,10 +832,9 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* printer) {
            scc_name);
   }
   format(
-      " ::$proto_ns$::internal::AddDescriptors(&$1$, deps, $2$);\n"
+      " ::$proto_ns$::internal::AddDescriptors(&$desc_table$, deps, $1$);\n"
       "}\n\n",
-      UniqueName("descriptor_table", file_, options_),  // 1
-      num_deps);                                        // 2
+      num_deps);  // 1
   format(
       "// Force running AddDescriptors() at dynamic initialization time.\n"
       "static bool $1$ = []() { $add_descriptors$(); return true; }();\n",

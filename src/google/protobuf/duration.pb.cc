@@ -57,12 +57,6 @@ static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] =
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&PROTOBUF_NAMESPACE_ID::_Duration_default_instance_),
 };
 
-static ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptorsTable assign_descriptors_table_google_2fprotobuf_2fduration_2eproto = {
-  {}, AddDescriptors_google_2fprotobuf_2fduration_2eproto, "google/protobuf/duration.proto", schemas,
-  file_default_instances, TableStruct_google_2fprotobuf_2fduration_2eproto::offsets,
-  file_level_metadata_google_2fprotobuf_2fduration_2eproto, 1, file_level_enum_descriptors_google_2fprotobuf_2fduration_2eproto, file_level_service_descriptors_google_2fprotobuf_2fduration_2eproto,
-};
-
 const char descriptor_table_protodef_google_2fprotobuf_2fduration_2eproto[] =
   "\n\036google/protobuf/duration.proto\022\017google"
   ".protobuf\"*\n\010Duration\022\017\n\007seconds\030\001 \001(\003\022\r"
@@ -71,9 +65,12 @@ const char descriptor_table_protodef_google_2fprotobuf_2fduration_2eproto[] =
   "f/ptypes/duration\370\001\001\242\002\003GPB\252\002\036Google.Prot"
   "obuf.WellKnownTypesb\006proto3"
   ;
+static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_google_2fprotobuf_2fduration_2eproto_once;
 static ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fduration_2eproto = {
-  false, descriptor_table_protodef_google_2fprotobuf_2fduration_2eproto,
-  "google/protobuf/duration.proto", &assign_descriptors_table_google_2fprotobuf_2fduration_2eproto, 227,
+  false, descriptor_table_protodef_google_2fprotobuf_2fduration_2eproto, "google/protobuf/duration.proto", 227,
+  &descriptor_table_google_2fprotobuf_2fduration_2eproto_once, AddDescriptors_google_2fprotobuf_2fduration_2eproto, schemas,
+  file_default_instances, TableStruct_google_2fprotobuf_2fduration_2eproto::offsets,
+  file_level_metadata_google_2fprotobuf_2fduration_2eproto, 1, file_level_enum_descriptors_google_2fprotobuf_2fduration_2eproto, file_level_service_descriptors_google_2fprotobuf_2fduration_2eproto,
 };
 
 void AddDescriptors_google_2fprotobuf_2fduration_2eproto() {
@@ -419,7 +416,7 @@ void Duration::InternalSwap(Duration* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata Duration::GetMetadata() const {
-  ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::assign_descriptors_table_google_2fprotobuf_2fduration_2eproto);
+  ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fduration_2eproto);
   return ::file_level_metadata_google_2fprotobuf_2fduration_2eproto[kIndexInFileMessages];
 }
 

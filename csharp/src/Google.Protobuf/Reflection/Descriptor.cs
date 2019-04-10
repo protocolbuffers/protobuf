@@ -4345,8 +4345,8 @@ namespace Google.Protobuf.Reflection {
     private string phpMetadataNamespace_;
     /// <summary>
     /// Use this option to change the namespace of php generated metadata classes.
-    /// Default is empty. When this option is empty, the proto file name will be used
-    /// for determining the namespace.
+    /// Default is empty. When this option is empty, the proto file name will be
+    /// used for determining the namespace.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string PhpMetadataNamespace {

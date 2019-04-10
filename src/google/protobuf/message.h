@@ -147,6 +147,7 @@ class MapIterator;
 class MapReflectionTester;
 
 namespace internal {
+struct DescriptorTable;
 class MapFieldBase;
 }
 class UnknownFieldSet;  // unknown_field_set.h
@@ -1087,8 +1088,8 @@ class PROTOBUF_EXPORT MessageFactory {
   // in the file.  This strange mechanism is necessary because descriptors are
   // built lazily, so we can't register types by their descriptor until we
   // know that the descriptor exists.  |filename| must be a permanent string.
-  static void InternalRegisterGeneratedFile(const char* filename,
-                                            void* assign_descriptors_table);
+  static void InternalRegisterGeneratedFile(
+      google::protobuf::internal::DescriptorTable* table);
 
   // For internal use only:  Registers a message type.  Called only by the
   // functions which are registered with InternalRegisterGeneratedFile(),

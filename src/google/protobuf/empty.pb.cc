@@ -55,12 +55,6 @@ static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] =
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&PROTOBUF_NAMESPACE_ID::_Empty_default_instance_),
 };
 
-static ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptorsTable assign_descriptors_table_google_2fprotobuf_2fempty_2eproto = {
-  {}, AddDescriptors_google_2fprotobuf_2fempty_2eproto, "google/protobuf/empty.proto", schemas,
-  file_default_instances, TableStruct_google_2fprotobuf_2fempty_2eproto::offsets,
-  file_level_metadata_google_2fprotobuf_2fempty_2eproto, 1, file_level_enum_descriptors_google_2fprotobuf_2fempty_2eproto, file_level_service_descriptors_google_2fprotobuf_2fempty_2eproto,
-};
-
 const char descriptor_table_protodef_google_2fprotobuf_2fempty_2eproto[] =
   "\n\033google/protobuf/empty.proto\022\017google.pr"
   "otobuf\"\007\n\005EmptyBv\n\023com.google.protobufB\n"
@@ -68,9 +62,12 @@ const char descriptor_table_protodef_google_2fprotobuf_2fempty_2eproto[] =
   "/ptypes/empty\370\001\001\242\002\003GPB\252\002\036Google.Protobuf"
   ".WellKnownTypesb\006proto3"
   ;
+static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_google_2fprotobuf_2fempty_2eproto_once;
 static ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fempty_2eproto = {
-  false, descriptor_table_protodef_google_2fprotobuf_2fempty_2eproto,
-  "google/protobuf/empty.proto", &assign_descriptors_table_google_2fprotobuf_2fempty_2eproto, 183,
+  false, descriptor_table_protodef_google_2fprotobuf_2fempty_2eproto, "google/protobuf/empty.proto", 183,
+  &descriptor_table_google_2fprotobuf_2fempty_2eproto_once, AddDescriptors_google_2fprotobuf_2fempty_2eproto, schemas,
+  file_default_instances, TableStruct_google_2fprotobuf_2fempty_2eproto::offsets,
+  file_level_metadata_google_2fprotobuf_2fempty_2eproto, 1, file_level_enum_descriptors_google_2fprotobuf_2fempty_2eproto, file_level_service_descriptors_google_2fprotobuf_2fempty_2eproto,
 };
 
 void AddDescriptors_google_2fprotobuf_2fempty_2eproto() {
@@ -317,7 +314,7 @@ void Empty::InternalSwap(Empty* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata Empty::GetMetadata() const {
-  ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::assign_descriptors_table_google_2fprotobuf_2fempty_2eproto);
+  ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fempty_2eproto);
   return ::file_level_metadata_google_2fprotobuf_2fempty_2eproto[kIndexInFileMessages];
 }
 

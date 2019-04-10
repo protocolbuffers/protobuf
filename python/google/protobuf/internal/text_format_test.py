@@ -268,13 +268,6 @@ class TextFormatMessageToStringTests(TextFormatBase):
   def testPrintFloatFormat(self, message_module):
     # Check that float_format argument is passed to sub-message formatting.
     message = message_module.NestedTestAllTypes()
-    # We use 1.25 as it is a round number in binary.  The proto 32-bit float
-    # will not gain additional imprecise digits as a 64-bit Python float and
-    # show up in its str.  32-bit 1.2 is noisy when extended to 64-bit:
-    #  >>> struct.unpack('f', struct.pack('f', 1.2))[0]
-    #  1.2000000476837158
-    #  >>> struct.unpack('f', struct.pack('f', 1.25))[0]
-    #  1.25
     message.payload.optional_float = 1.25
     # Check rounding at 15 significant digits
     message.payload.optional_double = -.000003456789012345678
@@ -297,6 +290,31 @@ class TextFormatMessageToStringTests(TextFormatBase):
     self.CompareToGoldenText(
         self.RemoveRedundantZeros(text_message),
         'payload {{ {0} {1} {2} {3} }}'.format(*formatted_fields))
+
+    # 32-bit 1.2 is noisy when extended to 64-bit:
+    #  >>> struct.unpack('f', struct.pack('f', 1.2))[0]
+    #  1.2000000476837158
+    # TODO(jieluo): change to 1.2 with cl/241634942.
+    message.payload.optional_float = 1.2000000476837158
+    formatted_fields = ['optional_float: 1.2',
+                        'optional_double: -3.45678901234568e-6',
+                        'repeated_float: -5642', 'repeated_double: 7.89e-5']
+    text_message = text_format.MessageToString(message, float_format='.7g',
+                                               double_format='.15g')
+    self.CompareToGoldenText(
+        self.RemoveRedundantZeros(text_message),
+        'payload {{\n  {0}\n  {1}\n  {2}\n  {3}\n}}\n'.format(
+            *formatted_fields))
+
+    # Test only set float_format affect both float and double fields.
+    formatted_fields = ['optional_float: 1.2',
+                        'optional_double: -3.456789e-6',
+                        'repeated_float: -5642', 'repeated_double: 7.89e-5']
+    text_message = text_format.MessageToString(message, float_format='.7g')
+    self.CompareToGoldenText(
+        self.RemoveRedundantZeros(text_message),
+        'payload {{\n  {0}\n  {1}\n  {2}\n  {3}\n}}\n'.format(
+            *formatted_fields))
 
   def testMessageToString(self, message_module):
     message = message_module.ForeignMessage()

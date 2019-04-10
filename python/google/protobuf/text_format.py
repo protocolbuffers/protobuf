@@ -65,8 +65,6 @@ _INTEGER_CHECKERS = (type_checkers.Uint32ValueChecker(),
                      type_checkers.Int64ValueChecker())
 _FLOAT_INFINITY = re.compile('-?inf(?:inity)?f?$', re.IGNORECASE)
 _FLOAT_NAN = re.compile('nanf?$', re.IGNORECASE)
-_FLOAT_TYPES = frozenset([descriptor.FieldDescriptor.CPPTYPE_FLOAT,
-                          descriptor.FieldDescriptor.CPPTYPE_DOUBLE])
 _QUOTES = frozenset(("'", '"'))
 _ANY_FULL_TYPE_NAME = 'google.protobuf.Any'
 
@@ -126,6 +124,7 @@ def MessageToString(message,
                     pointy_brackets=False,
                     use_index_order=False,
                     float_format=None,
+                    double_format=None,
                     use_field_number=False,
                     descriptor_pool=None,
                     indent=0,
@@ -153,8 +152,12 @@ def MessageToString(message,
       will be printed at the end of the message and their relative order is
       determined by the extension number. By default, use the field number
       order.
-    float_format: If set, use this to specify floating point number formatting
+    float_format: If set, use this to specify float field formatting
       (per the "Format Specification Mini-Language"); otherwise, str() is used.
+      Also affect double field if double_format is not set.
+    double_format: If set, use this to specify double field formatting
+      (per the "Format Specification Mini-Language"); otherwise, float_format
+      is used.
     use_field_number: If True, print field numbers instead of names.
     descriptor_pool: A DescriptorPool used to resolve Any types.
     indent: The initial indent level, in terms of spaces, for pretty print.
@@ -169,7 +172,8 @@ def MessageToString(message,
   out = TextWriter(as_utf8)
   printer = _Printer(out, indent, as_utf8, as_one_line,
                      use_short_repeated_primitives, pointy_brackets,
-                     use_index_order, float_format, use_field_number,
+                     use_index_order, float_format, double_format,
+                     use_field_number,
                      descriptor_pool, message_formatter,
                      print_unknown_fields=print_unknown_fields)
   printer.PrintMessage(message)
@@ -205,6 +209,7 @@ def PrintMessage(message,
                  pointy_brackets=False,
                  use_index_order=False,
                  float_format=None,
+                 double_format=None,
                  use_field_number=False,
                  descriptor_pool=None,
                  message_formatter=None,
@@ -216,6 +221,7 @@ def PrintMessage(message,
       pointy_brackets=pointy_brackets,
       use_index_order=use_index_order,
       float_format=float_format,
+      double_format=double_format,
       use_field_number=use_field_number,
       descriptor_pool=descriptor_pool,
       message_formatter=message_formatter,
@@ -233,12 +239,13 @@ def PrintField(field,
                pointy_brackets=False,
                use_index_order=False,
                float_format=None,
+               double_format=None,
                message_formatter=None,
                print_unknown_fields=False):
   """Print a single field name/value pair."""
   printer = _Printer(out, indent, as_utf8, as_one_line,
                      use_short_repeated_primitives, pointy_brackets,
-                     use_index_order, float_format,
+                     use_index_order, float_format, double_format,
                      message_formatter=message_formatter,
                      print_unknown_fields=print_unknown_fields)
   printer.PrintField(field, value)
@@ -254,12 +261,13 @@ def PrintFieldValue(field,
                     pointy_brackets=False,
                     use_index_order=False,
                     float_format=None,
+                    double_format=None,
                     message_formatter=None,
                     print_unknown_fields=False):
   """Print a single field value (not including name)."""
   printer = _Printer(out, indent, as_utf8, as_one_line,
                      use_short_repeated_primitives, pointy_brackets,
-                     use_index_order, float_format,
+                     use_index_order, float_format, double_format,
                      message_formatter=message_formatter,
                      print_unknown_fields=print_unknown_fields)
   printer.PrintFieldValue(field, value)
@@ -307,6 +315,7 @@ class _Printer(object):
                pointy_brackets=False,
                use_index_order=False,
                float_format=None,
+               double_format=None,
                use_field_number=False,
                descriptor_pool=None,
                message_formatter=None,
@@ -333,7 +342,9 @@ class _Printer(object):
         field number order.
       float_format: If set, use this to specify floating point number formatting
         (per the "Format Specification Mini-Language"); otherwise, str() is
-        used.
+        used. Also affect double field if double_format is not set.
+      double_format: If set, use this to specify double field formatting;
+        otherwise, float_format is used.
       use_field_number: If True, print field numbers instead of names.
       descriptor_pool: A DescriptorPool used to resolve Any types.
       message_formatter: A function(message, indent, as_one_line): unicode|None
@@ -349,6 +360,10 @@ class _Printer(object):
     self.pointy_brackets = pointy_brackets
     self.use_index_order = use_index_order
     self.float_format = float_format
+    if double_format is not None:
+      self.double_format = double_format
+    else:
+      self.double_format = float_format
     self.use_field_number = use_field_number
     self.descriptor_pool = descriptor_pool
     self.message_formatter = message_formatter
@@ -574,8 +589,12 @@ class _Printer(object):
         out.write('true')
       else:
         out.write('false')
-    elif field.cpp_type in _FLOAT_TYPES and self.float_format is not None:
+    elif (field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_FLOAT and
+          self.float_format is not None):
       out.write('{1:{0}}'.format(self.float_format, value))
+    elif (field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_DOUBLE and
+          self.double_format is not None):
+      out.write('{1:{0}}'.format(self.double_format, value))
     else:
       out.write(str(value))
 
