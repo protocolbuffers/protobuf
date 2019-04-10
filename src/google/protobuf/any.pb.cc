@@ -57,12 +57,6 @@ static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] =
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&PROTOBUF_NAMESPACE_ID::_Any_default_instance_),
 };
 
-static ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptorsTable assign_descriptors_table_google_2fprotobuf_2fany_2eproto = {
-  {}, AddDescriptors_google_2fprotobuf_2fany_2eproto, "google/protobuf/any.proto", schemas,
-  file_default_instances, TableStruct_google_2fprotobuf_2fany_2eproto::offsets,
-  file_level_metadata_google_2fprotobuf_2fany_2eproto, 1, file_level_enum_descriptors_google_2fprotobuf_2fany_2eproto, file_level_service_descriptors_google_2fprotobuf_2fany_2eproto,
-};
-
 const char descriptor_table_protodef_google_2fprotobuf_2fany_2eproto[] =
   "\n\031google/protobuf/any.proto\022\017google.prot"
   "obuf\"&\n\003Any\022\020\n\010type_url\030\001 \001(\t\022\r\n\005value\030\002"
@@ -71,9 +65,12 @@ const char descriptor_table_protodef_google_2fprotobuf_2fany_2eproto[] =
   "\003GPB\252\002\036Google.Protobuf.WellKnownTypesb\006p"
   "roto3"
   ;
+static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_google_2fprotobuf_2fany_2eproto_once;
 static ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fany_2eproto = {
-  false, descriptor_table_protodef_google_2fprotobuf_2fany_2eproto,
-  "google/protobuf/any.proto", &assign_descriptors_table_google_2fprotobuf_2fany_2eproto, 205,
+  false, descriptor_table_protodef_google_2fprotobuf_2fany_2eproto, "google/protobuf/any.proto", 205,
+  &descriptor_table_google_2fprotobuf_2fany_2eproto_once, AddDescriptors_google_2fprotobuf_2fany_2eproto, schemas,
+  file_default_instances, TableStruct_google_2fprotobuf_2fany_2eproto::offsets,
+  file_level_metadata_google_2fprotobuf_2fany_2eproto, 1, file_level_enum_descriptors_google_2fprotobuf_2fany_2eproto, file_level_service_descriptors_google_2fprotobuf_2fany_2eproto,
 };
 
 void AddDescriptors_google_2fprotobuf_2fany_2eproto() {
@@ -440,7 +437,7 @@ void Any::InternalSwap(Any* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata Any::GetMetadata() const {
-  ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::assign_descriptors_table_google_2fprotobuf_2fany_2eproto);
+  ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fany_2eproto);
   return ::file_level_metadata_google_2fprotobuf_2fany_2eproto[kIndexInFileMessages];
 }
 

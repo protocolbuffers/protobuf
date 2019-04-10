@@ -2305,7 +2305,7 @@ struct MetadataOwner {
   std::vector<std::pair<const Metadata*, const Metadata*> > metadata_arrays_;
 };
 
-void AssignDescriptorsImpl(const AssignDescriptorsTable* table) {
+void AssignDescriptorsImpl(const DescriptorTable* table) {
   // Ensure the file descriptor is added to the pool.
   {
     // This only happens once per proto file. So a global mutex to serialize
@@ -2342,7 +2342,7 @@ void AssignDescriptorsImpl(const AssignDescriptorsTable* table) {
                                       helper.GetCurrentMetadataPtr());
 }
 
-void AddDescriptorsImpl(const DescriptorTable* table, const InitFunc* deps,
+void AddDescriptorsImpl(DescriptorTable* table, const InitFunc* deps,
                         int num_deps) {
   // Ensure all dependent descriptors are registered to the generated descriptor
   // pool and message factory.
@@ -2352,14 +2352,13 @@ void AddDescriptorsImpl(const DescriptorTable* table, const InitFunc* deps,
   }
   // Register the descriptor of this file.
   DescriptorPool::InternalAddGeneratedFile(table->descriptor, table->size);
-  MessageFactory::InternalRegisterGeneratedFile(
-      table->filename, table->assign_descriptors_table);
+  MessageFactory::InternalRegisterGeneratedFile(table);
 }
 
 }  // namespace
 
-void AssignDescriptors(AssignDescriptorsTable* table) {
-  call_once(table->once, AssignDescriptorsImpl, table);
+void AssignDescriptors(const DescriptorTable* table) {
+  call_once(*table->once, AssignDescriptorsImpl, table);
 }
 
 void AddDescriptors(DescriptorTable* table, const InitFunc* deps,
@@ -2380,17 +2379,13 @@ void RegisterAllTypesInternal(const Metadata* file_level_metadata, int size) {
     const GeneratedMessageReflection* reflection =
         static_cast<const GeneratedMessageReflection*>(
             file_level_metadata[i].reflection);
-    if (reflection) {
-      // It's not a map type
-      MessageFactory::InternalRegisterGeneratedMessage(
-          file_level_metadata[i].descriptor,
-          reflection->schema_.default_instance_);
-    }
+    MessageFactory::InternalRegisterGeneratedMessage(
+        file_level_metadata[i].descriptor,
+        reflection->schema_.default_instance_);
   }
 }
 
-void RegisterFileLevelMetadata(void* assign_descriptors_table) {
-  auto table = static_cast<AssignDescriptorsTable*>(assign_descriptors_table);
+void RegisterFileLevelMetadata(DescriptorTable* table) {
   AssignDescriptors(table);
   RegisterAllTypesInternal(table->file_level_metadata, table->num_messages);
 }

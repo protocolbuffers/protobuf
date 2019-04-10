@@ -661,10 +661,13 @@ class GeneratedMessageReflection final : public Reflection {
 
 typedef void (*InitFunc)();
 
-struct PROTOBUF_EXPORT AssignDescriptorsTable {
-  once_flag once;
-  InitFunc add_descriptors;
+struct PROTOBUF_EXPORT DescriptorTable {
+  bool is_initialized;
+  const char* descriptor;
   const char* filename;
+  int size;  // of serialized descriptor
+  once_flag* once;
+  InitFunc add_descriptors;
   const MigrationSchema* schemas;
   const Message* const* default_instances;
   const uint32* offsets;
@@ -675,16 +678,7 @@ struct PROTOBUF_EXPORT AssignDescriptorsTable {
   const ServiceDescriptor** file_level_service_descriptors;
 };
 
-void PROTOBUF_EXPORT AssignDescriptors(AssignDescriptorsTable* table);
-
-struct PROTOBUF_EXPORT DescriptorTable {
-  bool is_initialized;
-  const char* descriptor;
-  const char* filename;
-  AssignDescriptorsTable* assign_descriptors_table;
-  int size;  // of serialized descriptor
-};
-
+void PROTOBUF_EXPORT AssignDescriptors(const DescriptorTable* table);
 void PROTOBUF_EXPORT AddDescriptors(DescriptorTable* table,
                                     const InitFunc* deps, int num_deps);
 

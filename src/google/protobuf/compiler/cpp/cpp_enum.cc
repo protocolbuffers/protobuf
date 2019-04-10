@@ -241,7 +241,7 @@ void EnumGenerator::GenerateMethods(int idx, io::Printer* printer) {
   if (HasDescriptorMethods(descriptor_->file(), options_)) {
     format(
         "const ::$proto_ns$::EnumDescriptor* $classname$_descriptor() {\n"
-        "  ::$proto_ns$::internal::AssignDescriptors(&$assign_desc_table$);\n"
+        "  ::$proto_ns$::internal::AssignDescriptors(&$desc_table$);\n"
         "  return $file_level_enum_descriptors$[$1$];\n"
         "}\n",
         idx);

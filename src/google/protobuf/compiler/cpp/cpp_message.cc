@@ -1894,7 +1894,7 @@ void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
       format(
           "::$proto_ns$::Metadata $classname$::GetMetadata() const {\n"
           "  "
-          "::$proto_ns$::internal::AssignDescriptors(&::$assign_desc_table$);\n"
+          "::$proto_ns$::internal::AssignDescriptors(&::$desc_table$);\n"
           "  return ::$file_level_metadata$[$1$];\n"
           "}\n",
           index_in_file_messages_);
@@ -2049,7 +2049,7 @@ void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
   if (HasDescriptorMethods(descriptor_->file(), options_)) {
     format(
         "::$proto_ns$::Metadata $classname$::GetMetadata() const {\n"
-        "  ::$proto_ns$::internal::AssignDescriptors(&::$assign_desc_table$);\n"
+        "  ::$proto_ns$::internal::AssignDescriptors(&::$desc_table$);\n"
         "  return ::$file_level_metadata$[kIndexInFileMessages];\n"
         "}\n"
         "\n");
