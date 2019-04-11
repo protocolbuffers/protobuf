@@ -663,6 +663,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 1;
 			knownRegions = (
+				English,
 				en,
 			);
 			mainGroup = 29B97314FDCFA39411CA2CEA /* CustomTemplate */;
@@ -830,6 +831,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = YES;
+				DEFINES_MODULE = YES;
+				MODULEMAP_FILE = "$(SRCROOT)/module.modulemap";
+				PRODUCT_MODULE_NAME = com_google_protobuf_objectivec;
 				PRODUCT_NAME = ProtocolBuffers;
 				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)";
 			};
@@ -839,6 +843,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = YES;
+				DEFINES_MODULE = YES;
+				MODULEMAP_FILE = "$(SRCROOT)/module.modulemap";
+				PRODUCT_MODULE_NAME = com_google_protobuf_objectivec;
 				PRODUCT_NAME = ProtocolBuffers;
 				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)";
 			};
@@ -849,27 +856,21 @@
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
-				FRAMEWORK_SEARCH_PATHS = (
-					"\"$(DEVELOPER_LIBRARY_DIR)/Frameworks\"",
-					"$(inherited)",
-				);
 				INFOPLIST_FILE = "Tests/UnitTests-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(DEVELOPER_DIR)/usr/lib\"",
-				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = UnitTests;
 				SWIFT_OBJC_BRIDGING_HEADER = "Tests/UnitTests-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 4.0;
 				USER_HEADER_SEARCH_PATHS = "${PROJECT_DERIVED_FILE_DIR}/protos $(SRCROOT)";
+				USE_HEADERMAP = NO;
 				WARNING_CFLAGS = (
 					"$(inherited)",
 					"-Wno-documentation-unknown-command",
 					"-Wno-reserved-id-macro",
 					"-Wno-direct-ivar-access",
+					"-Wno-private-header",
 				);
 			};
 			name = Debug;
@@ -879,26 +880,20 @@
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
-				FRAMEWORK_SEARCH_PATHS = (
-					"\"$(DEVELOPER_LIBRARY_DIR)/Frameworks\"",
-					"$(inherited)",
-				);
 				INFOPLIST_FILE = "Tests/UnitTests-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(DEVELOPER_DIR)/usr/lib\"",
-				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = UnitTests;
 				SWIFT_OBJC_BRIDGING_HEADER = "Tests/UnitTests-Bridging-Header.h";
 				SWIFT_VERSION = 4.0;
 				USER_HEADER_SEARCH_PATHS = "${PROJECT_DERIVED_FILE_DIR}/protos $(SRCROOT)";
+				USE_HEADERMAP = NO;
 				WARNING_CFLAGS = (
 					"$(inherited)",
 					"-Wno-documentation-unknown-command",
 					"-Wno-reserved-id-macro",
 					"-Wno-direct-ivar-access",
+					"-Wno-private-header",
 				);
 			};
 			name = Release;
@@ -1047,6 +1042,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = YES;
+				DEFINES_MODULE = YES;
+				MODULEMAP_FILE = "$(SRCROOT)/module.modulemap";
+				PRODUCT_MODULE_NAME = com_google_protobuf_objectivec;
 				PRODUCT_NAME = TestSingleSourceBuild;
 				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)";
 			};
@@ -1056,6 +1054,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = YES;
+				DEFINES_MODULE = YES;
+				MODULEMAP_FILE = "$(SRCROOT)/module.modulemap";
+				PRODUCT_MODULE_NAME = com_google_protobuf_objectivec;
 				PRODUCT_NAME = TestSingleSourceBuild;
 				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)";
 			};

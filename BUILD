@@ -892,6 +892,8 @@ alias(
     visibility = ["//visibility:public"],
 )
 
+# We explicitly do not build with modules here. The module map is only
+# for external components to include protobuf headers.
 objc_library(
     name = "protobuf_objc",
     hdrs = [
@@ -913,6 +915,7 @@ objc_library(
         "objectivec/GPBUtilities.h",
         "objectivec/GPBWellKnownTypes.h",
         "objectivec/GPBWireFormat.h",
+        "objectivec/module.modulemap",
         "objectivec/google/protobuf/Any.pbobjc.h",
         "objectivec/google/protobuf/Api.pbobjc.h",
         "objectivec/google/protobuf/Duration.pbobjc.h",

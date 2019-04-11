@@ -162,6 +162,7 @@
 		8B4248DB1A92933A00BC1EC6 /* GPBWellKnownTypesTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBWellKnownTypesTest.m; sourceTree = "<group>"; };
 		8B42494C1A92A16600BC1EC6 /* duration.proto */ = {isa = PBXFileReference; lastKnownFileType = text; name = duration.proto; path = ../src/google/protobuf/duration.proto; sourceTree = "<group>"; };
 		8B42494D1A92A16600BC1EC6 /* timestamp.proto */ = {isa = PBXFileReference; lastKnownFileType = text; name = timestamp.proto; path = ../src/google/protobuf/timestamp.proto; sourceTree = "<group>"; };
+		8B6F3E7922662EFF005E9288 /* module.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = module.modulemap; sourceTree = "<group>"; };
 		8B79657814992E3E002FFBFC /* GPBRootObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GPBRootObject.h; sourceTree = "<group>"; };
 		8B79657914992E3E002FFBFC /* GPBRootObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBRootObject.m; sourceTree = "<group>"; };
 		8B7E6A7414893DBA00F8884A /* unittest_custom_options.proto */ = {isa = PBXFileReference; lastKnownFileType = text; name = unittest_custom_options.proto; path = ../../src/google/protobuf/unittest_custom_options.proto; sourceTree = "<group>"; };
@@ -303,6 +304,7 @@
 		080E96DDFE201D6D7F000001 /* Core Source */ = {
 			isa = PBXGroup;
 			children = (
+				8B6F3E7922662EFF005E9288 /* module.modulemap */,
 				7461B4CD0F94F99000A0C422 /* GPBProtocolBuffers.h */,
 				F451D3F51A8AAE8700B8A22C /* GPBProtocolBuffers_RuntimeSupport.h */,
 				8BCF338814ED799900BC5317 /* GPBProtocolBuffers.m */,
@@ -656,6 +658,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 1;
 			knownRegions = (
+				English,
 				en,
 			);
 			mainGroup = 29B97314FDCFA39411CA2CEA /* CustomTemplate */;
@@ -824,6 +827,9 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEFINES_MODULE = YES;
+				MODULEMAP_FILE = "$(SRCROOT)/module.modulemap";
+				PRODUCT_MODULE_NAME = com_google_protobuf_objectivec;
 				PRODUCT_NAME = ProtocolBuffers;
 				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)";
 			};
@@ -834,6 +840,9 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEFINES_MODULE = YES;
+				MODULEMAP_FILE = "$(SRCROOT)/module.modulemap";
+				PRODUCT_MODULE_NAME = com_google_protobuf_objectivec;
 				PRODUCT_NAME = ProtocolBuffers;
 				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)";
 			};
@@ -848,17 +857,18 @@
 				INFOPLIST_FILE = "Tests/UnitTests-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.yourcompany.${PRODUCT_NAME:identifier}";
 				PRODUCT_NAME = UnitTests;
 				SWIFT_OBJC_BRIDGING_HEADER = "Tests/UnitTests-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 4.0;
 				USER_HEADER_SEARCH_PATHS = "${PROJECT_DERIVED_FILE_DIR}/protos $(SRCROOT)";
+				USE_HEADERMAP = NO;
 				WARNING_CFLAGS = (
 					"$(inherited)",
 					"-Wno-documentation-unknown-command",
 					"-Wno-reserved-id-macro",
 					"-Wno-direct-ivar-access",
+					"-Wno-private-header",
 				);
 			};
 			name = Debug;
@@ -872,16 +882,17 @@
 				INFOPLIST_FILE = "Tests/UnitTests-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.yourcompany.${PRODUCT_NAME:identifier}";
 				PRODUCT_NAME = UnitTests;
 				SWIFT_OBJC_BRIDGING_HEADER = "Tests/UnitTests-Bridging-Header.h";
 				SWIFT_VERSION = 4.0;
 				USER_HEADER_SEARCH_PATHS = "${PROJECT_DERIVED_FILE_DIR}/protos $(SRCROOT)";
+				USE_HEADERMAP = NO;
 				WARNING_CFLAGS = (
 					"$(inherited)",
 					"-Wno-documentation-unknown-command",
 					"-Wno-reserved-id-macro",
 					"-Wno-direct-ivar-access",
+					"-Wno-private-header",
 				);
 			};
 			name = Release;
@@ -945,7 +956,6 @@
 				ONLY_ACTIVE_ARCH = YES;
 				RUN_CLANG_STATIC_ANALYZER = YES;
 				SDKROOT = macosx;
-				USE_HEADERMAP = NO;
 				WARNING_CFLAGS = (
 					"-Wdocumentation-unknown-command",
 					"-Wundef",
@@ -1014,7 +1024,6 @@
 				RUN_CLANG_STATIC_ANALYZER = YES;
 				SDKROOT = macosx;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
-				USE_HEADERMAP = NO;
 				WARNING_CFLAGS = (
 					"-Wdocumentation-unknown-command",
 					"-Wundef",
@@ -1031,6 +1040,9 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEFINES_MODULE = YES;
+				MODULEMAP_FILE = "$(SRCROOT)/module.modulemap";
+				PRODUCT_MODULE_NAME = com_google_protobuf_objectivec;
 				PRODUCT_NAME = TestSingleSourceBuild;
 				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)";
 			};
@@ -1041,6 +1053,9 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEFINES_MODULE = YES;
+				MODULEMAP_FILE = "$(SRCROOT)/module.modulemap";
+				PRODUCT_MODULE_NAME = com_google_protobuf_objectivec;
 				PRODUCT_NAME = TestSingleSourceBuild;
 				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)";
 			};

@@ -1,0 +1,81 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2019 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+module com_google_protobuf_objectivec [extern_c] {
+	requires objc
+	export *
+
+	private header "GPBArray_PackagePrivate.h"
+	private header "GPBCodedInputStream_PackagePrivate.h"
+	private header "GPBCodedOutputStream_PackagePrivate.h"
+	private header "GPBDescriptor_PackagePrivate.h"
+	private header "GPBDictionary_PackagePrivate.h"
+	private header "GPBMessage_PackagePrivate.h"
+	private header "GPBRootObject_PackagePrivate.h"
+	private header "GPBUnknownField_PackagePrivate.h"
+	private header "GPBUnknownFieldSet_PackagePrivate.h"
+	private header "GPBUtilities_PackagePrivate.h"
+
+	header "GPBArray.h"
+	header "GPBBootstrap.h"
+	header "GPBCodedInputStream.h"
+	header "GPBCodedOutputStream.h"
+	header "GPBDescriptor.h"
+	header "GPBDictionary.h"
+	header "GPBExtensionInternals.h"
+	header "GPBExtensionRegistry.h"
+	header "GPBMessage_PackagePrivate.h"
+	header "GPBMessage.h"
+	header "GPBProtocolBuffers_RuntimeSupport.h"
+	header "GPBProtocolBuffers.h"
+	header "GPBRootObject.h"
+	header "GPBRuntimeTypes.h"
+	header "GPBUnknownField.h"
+	header "GPBUnknownFieldSet.h"
+	header "GPBUtilities.h"
+	header "GPBWellKnownTypes.h"
+	header "GPBWireFormat.h"
+
+	// Well Known Types
+	module google_protobuf {
+		requires objc
+		export *
+		header "google/protobuf/Any.pbobjc.h"
+		header "google/protobuf/Api.pbobjc.h"
+		header "google/protobuf/Duration.pbobjc.h"
+		header "google/protobuf/Empty.pbobjc.h"
+		header "google/protobuf/FieldMask.pbobjc.h"
+		header "google/protobuf/SourceContext.pbobjc.h"
+		header "google/protobuf/Struct.pbobjc.h"
+		header "google/protobuf/Timestamp.pbobjc.h"
+		header "google/protobuf/Type.pbobjc.h"
+		header "google/protobuf/Wrappers.pbobjc.h"
+	}
+}
