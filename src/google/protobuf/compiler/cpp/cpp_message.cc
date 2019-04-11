@@ -521,7 +521,11 @@ class ColdChunkSkipper {
 // Tuning parameters for ColdChunkSkipper.
 const double kColdRatio = 0.005;
 
-bool ColdChunkSkipper::IsColdChunk(int chunk) { return false; }
+bool ColdChunkSkipper::IsColdChunk(int chunk) {
+  // Mark this variable as used until it is actually used
+  (void) cold_threshold_;
+  return false;
+}
 
 void ColdChunkSkipper::OnStartChunk(int chunk, int cached_has_bit_index,
                                     const std::string& from,
