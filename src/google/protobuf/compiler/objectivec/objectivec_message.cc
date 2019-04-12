@@ -461,7 +461,7 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
         "typedef struct $classname$__storage_ {\n"
         "  uint32_t _has_storage_[$sizeof_has_storage$];\n",
         "classname", class_name_,
-        "sizeof_has_storage", SimpleItoa(sizeof_has_storage));
+        "sizeof_has_storage", StrCat(sizeof_has_storage));
     printer->Indent();
 
     for (int i = 0; i < descriptor_->field_count(); i++) {
@@ -582,8 +582,8 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
           "    static const GPBExtensionRange ranges[] = {\n");
       for (int i = 0; i < sorted_extensions.size(); i++) {
         printer->Print("      { .start = $start$, .end = $end$ },\n",
-                       "start", SimpleItoa(sorted_extensions[i]->start),
-                       "end", SimpleItoa(sorted_extensions[i]->end));
+                       "start", StrCat(sorted_extensions[i]->start),
+                       "end", StrCat(sorted_extensions[i]->end));
       }
       printer->Print(
           "    };\n"
