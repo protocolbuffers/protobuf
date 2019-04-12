@@ -376,11 +376,29 @@ std::string Namespace(const EnumDescriptor* d, const Options& options) {
   return Namespace(d->file(), options);
 }
 
+std::string DefaultInstanceType(const Descriptor* descriptor,
+                                const Options& options) {
+  return ClassName(descriptor) + "DefaultTypeInternal";
+}
+
 std::string DefaultInstanceName(const Descriptor* descriptor,
                                 const Options& options) {
+  return "_" + ClassName(descriptor, false) + "_default_instance_";
+}
+
+std::string QualifiedDefaultInstanceName(const Descriptor* descriptor,
+                                         const Options& options) {
   return QualifiedFileLevelSymbol(
-      descriptor->file(),
-      "_" + ClassName(descriptor, false) + "_default_instance_", options);
+      descriptor->file(), DefaultInstanceName(descriptor, options), options);
+}
+
+std::string DescriptorTableName(const FileDescriptor* file,
+                                const Options& options) {
+  return UniqueName("descriptor_table", file, options);
+}
+
+std::string FileDllExport(const FileDescriptor* file, const Options& options) {
+  return UniqueName("PROTOBUF_INTERNAL_EXPORT", file, options);
 }
 
 std::string ReferenceFunctionName(const Descriptor* descriptor,

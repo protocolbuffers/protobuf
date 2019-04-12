@@ -358,9 +358,7 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   //
   // This method remains virtual in case a subclass does not implement
   // reflection and wants to override the default behavior.
-  virtual const Reflection* GetReflection() const final {
-    return GetMetadata().reflection;
-  }
+  const Reflection* GetReflection() const { return GetMetadata().reflection; }
 
  protected:
   // Get a struct containing the metadata for the Message. Most subclasses only
@@ -1089,7 +1087,7 @@ class PROTOBUF_EXPORT MessageFactory {
   // built lazily, so we can't register types by their descriptor until we
   // know that the descriptor exists.  |filename| must be a permanent string.
   static void InternalRegisterGeneratedFile(
-      google::protobuf::internal::DescriptorTable* table);
+      const google::protobuf::internal::DescriptorTable* table);
 
   // For internal use only:  Registers a message type.  Called only by the
   // functions which are registered with InternalRegisterGeneratedFile(),

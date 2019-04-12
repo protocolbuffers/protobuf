@@ -71,7 +71,7 @@ namespace internal {
 // TODO(gerbens) make this factorized better. This should not have to hop
 // to reflection. Currently uses GeneratedMessageReflection and thus is
 // defined in generated_message_reflection.cc
-void RegisterFileLevelMetadata(DescriptorTable* descriptor_table);
+void RegisterFileLevelMetadata(const DescriptorTable* descriptor_table);
 
 }  // namespace internal
 
@@ -682,7 +682,7 @@ class GeneratedMessageFactory : public MessageFactory {
     int size;
   };
 
-  void RegisterFile(google::protobuf::internal::DescriptorTable* table);
+  void RegisterFile(const google::protobuf::internal::DescriptorTable* table);
   void RegisterType(const Descriptor* descriptor, const Message* prototype);
 
   // implements MessageFactory ---------------------------------------
@@ -690,7 +690,7 @@ class GeneratedMessageFactory : public MessageFactory {
 
  private:
   // Only written at static init time, so does not require locking.
-  std::unordered_map<const char*, google::protobuf::internal::DescriptorTable*,
+  std::unordered_map<const char*, const google::protobuf::internal::DescriptorTable*,
                      hash<const char*>, streq>
       file_map_;
 
@@ -706,7 +706,7 @@ GeneratedMessageFactory* GeneratedMessageFactory::singleton() {
 }
 
 void GeneratedMessageFactory::RegisterFile(
-    google::protobuf::internal::DescriptorTable* table) {
+    const google::protobuf::internal::DescriptorTable* table) {
   if (!InsertIfNotPresent(&file_map_, table->filename, table)) {
     GOOGLE_LOG(FATAL) << "File is already registered: " << table->filename;
   }
@@ -740,7 +740,7 @@ const Message* GeneratedMessageFactory::GetPrototype(const Descriptor* type) {
   if (type->file()->pool() != DescriptorPool::generated_pool()) return NULL;
 
   // Apparently the file hasn't been registered yet.  Let's do that now.
-  internal::DescriptorTable* registration_data =
+  const internal::DescriptorTable* registration_data =
       FindPtrOrNull(file_map_, type->file()->name().c_str());
   if (registration_data == NULL) {
     GOOGLE_LOG(DFATAL) << "File appears to be in generated pool but wasn't "
@@ -775,7 +775,7 @@ MessageFactory* MessageFactory::generated_factory() {
 }
 
 void MessageFactory::InternalRegisterGeneratedFile(
-    google::protobuf::internal::DescriptorTable* table) {
+    const google::protobuf::internal::DescriptorTable* table) {
   GeneratedMessageFactory::singleton()->RegisterFile(table);
 }
 

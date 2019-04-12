@@ -49,7 +49,9 @@ namespace io {
 
 namespace {
 
-const double MAX_FLOAT_AS_DOUBLE_ROUNDED = 3.4028235e+38;
+// This approximately 0x1.ffffffp127, but we don't use 0x1.ffffffp127 because
+// it won't compile in MSVC.
+const double MAX_FLOAT_AS_DOUBLE_ROUNDED = 3.4028235677973366e+38;
 
 // Returns a string identical to *input except that the character pointed to
 // by radix_pos (which should be '.') is replaced with the locale-specific

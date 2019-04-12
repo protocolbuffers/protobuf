@@ -51,6 +51,9 @@ struct SCC {
   std::vector<const SCC*> children;
 
   const Descriptor* GetRepresentative() const { return descriptors[0]; }
+
+  // All messages must necessarily be in the same file.
+  const FileDescriptor* GetFile() const { return descriptors[0]->file(); }
 };
 
 // This class is used for analyzing the SCC for each message, to ensure linear

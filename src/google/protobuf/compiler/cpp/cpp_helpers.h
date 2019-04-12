@@ -125,9 +125,25 @@ inline std::string ClassName(const EnumDescriptor* descriptor, bool qualified) {
                    : ClassName(descriptor);
 }
 
-// Fully qualified name of the default_instance of this message.
+// Type name of default instance.
+std::string DefaultInstanceType(const Descriptor* descriptor,
+                                const Options& options);
+
+// Non-qualified name of the default_instance of this message.
 std::string DefaultInstanceName(const Descriptor* descriptor,
                                 const Options& options);
+
+// Fully qualified name of the default_instance of this message.
+std::string QualifiedDefaultInstanceName(const Descriptor* descriptor,
+                                         const Options& options);
+
+// DescriptorTable variable name.
+std::string DescriptorTableName(const FileDescriptor* file,
+                                const Options& options);
+
+// When declaring symbol externs from another file, this macro will supply the
+// dllexport needed for the target file, if any.
+std::string FileDllExport(const FileDescriptor* file, const Options& options);
 
 // Returns the name of a no-op function that we can call to introduce a linker
 // dependency on the given message type. This is used to implement implicit weak
@@ -536,10 +552,39 @@ class PROTOC_EXPORT MessageSCCAnalyzer {
   std::map<const SCC*, MessageAnalysis> analysis_cache_;
 };
 
+inline std::string SccInfoSymbol(const SCC* scc, const Options& options) {
+  return UniqueName("scc_info_" + ClassName(scc->GetRepresentative()),
+                    scc->GetRepresentative(), options);
+}
+
 void ListAllFields(const Descriptor* d,
                    std::vector<const FieldDescriptor*>* fields);
 void ListAllFields(const FileDescriptor* d,
                    std::vector<const FieldDescriptor*>* fields);
+
+template <class T>
+void ForEachField(const Descriptor* d, T&& func) {
+  for (int i = 0; i < d->nested_type_count(); i++) {
+    ForEachField(d->nested_type(i), std::forward<T&&>(func));
+  }
+  for (int i = 0; i < d->extension_count(); i++) {
+    func(d->extension(i));
+  }
+  for (int i = 0; i < d->field_count(); i++) {
+    func(d->field(i));
+  }
+}
+
+template <class T>
+void ForEachField(const FileDescriptor* d, T&& func) {
+  for (int i = 0; i < d->message_type_count(); i++) {
+    ForEachField(d->message_type(i), std::forward<T&&>(func));
+  }
+  for (int i = 0; i < d->extension_count(); i++) {
+    func(d->extension(i));
+  }
+}
+
 void ListAllTypesForServices(const FileDescriptor* fd,
                              std::vector<const Descriptor*>* types);
 

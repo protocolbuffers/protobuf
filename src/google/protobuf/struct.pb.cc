@@ -15,7 +15,6 @@
 #include <google/protobuf/wire_format.h>
 // @@protoc_insertion_point(includes)
 #include <google/protobuf/port_def.inc>
-
 extern PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2fstruct_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_ListValue_google_2fprotobuf_2fstruct_2eproto;
 PROTOBUF_NAMESPACE_OPEN
 class Struct_FieldsEntry_DoNotUseDefaultTypeInternal {
@@ -41,7 +40,7 @@ class ListValueDefaultTypeInternal {
   ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<ListValue> _instance;
 } _ListValue_default_instance_;
 PROTOBUF_NAMESPACE_CLOSE
-static void InitDefaultsListValue_google_2fprotobuf_2fstruct_2eproto() {
+static void InitDefaultsscc_info_ListValue_google_2fprotobuf_2fstruct_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   {
@@ -70,7 +69,7 @@ static void InitDefaultsListValue_google_2fprotobuf_2fstruct_2eproto() {
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_ListValue_google_2fprotobuf_2fstruct_2eproto =
-    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsListValue_google_2fprotobuf_2fstruct_2eproto}, {}};
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsscc_info_ListValue_google_2fprotobuf_2fstruct_2eproto}, {}};
 
 static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_google_2fprotobuf_2fstruct_2eproto[4];
 static const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* file_level_enum_descriptors_google_2fprotobuf_2fstruct_2eproto[1];
@@ -144,24 +143,22 @@ const char descriptor_table_protodef_google_2fprotobuf_2fstruct_2eproto[] =
   "\252\002\036Google.Protobuf.WellKnownTypesb\006proto"
   "3"
   ;
+static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_google_2fprotobuf_2fstruct_2eproto_deps[1] = {
+};
+static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_google_2fprotobuf_2fstruct_2eproto_sccs[1] = {
+  &scc_info_ListValue_google_2fprotobuf_2fstruct_2eproto.base,
+};
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_google_2fprotobuf_2fstruct_2eproto_once;
-static ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fstruct_2eproto = {
-  false, descriptor_table_protodef_google_2fprotobuf_2fstruct_2eproto, "google/protobuf/struct.proto", 641,
-  &descriptor_table_google_2fprotobuf_2fstruct_2eproto_once, AddDescriptors_google_2fprotobuf_2fstruct_2eproto, schemas,
-  file_default_instances, TableStruct_google_2fprotobuf_2fstruct_2eproto::offsets,
+static bool descriptor_table_google_2fprotobuf_2fstruct_2eproto_initialized = false;
+const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fstruct_2eproto = {
+  &descriptor_table_google_2fprotobuf_2fstruct_2eproto_initialized, descriptor_table_protodef_google_2fprotobuf_2fstruct_2eproto, "google/protobuf/struct.proto", 641,
+  &descriptor_table_google_2fprotobuf_2fstruct_2eproto_once, descriptor_table_google_2fprotobuf_2fstruct_2eproto_sccs, descriptor_table_google_2fprotobuf_2fstruct_2eproto_deps, 1, 0,
+  schemas, file_default_instances, TableStruct_google_2fprotobuf_2fstruct_2eproto::offsets,
   file_level_metadata_google_2fprotobuf_2fstruct_2eproto, 4, file_level_enum_descriptors_google_2fprotobuf_2fstruct_2eproto, file_level_service_descriptors_google_2fprotobuf_2fstruct_2eproto,
 };
 
-void AddDescriptors_google_2fprotobuf_2fstruct_2eproto() {
-  static constexpr ::PROTOBUF_NAMESPACE_ID::internal::InitFunc deps[1] =
-  {
-  };
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_ListValue_google_2fprotobuf_2fstruct_2eproto.base);
- ::PROTOBUF_NAMESPACE_ID::internal::AddDescriptors(&descriptor_table_google_2fprotobuf_2fstruct_2eproto, deps, 0);
-}
-
 // Force running AddDescriptors() at dynamic initialization time.
-static bool dynamic_init_dummy_google_2fprotobuf_2fstruct_2eproto = []() { AddDescriptors_google_2fprotobuf_2fstruct_2eproto(); return true; }();
+static bool dynamic_init_dummy_google_2fprotobuf_2fstruct_2eproto = (  ::PROTOBUF_NAMESPACE_ID::internal::AddDescriptors(&descriptor_table_google_2fprotobuf_2fstruct_2eproto), true);
 PROTOBUF_NAMESPACE_OPEN
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* NullValue_descriptor() {
   ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fstruct_2eproto);
@@ -186,8 +183,7 @@ void Struct_FieldsEntry_DoNotUse::MergeFrom(const Struct_FieldsEntry_DoNotUse& o
   MergeFromInternal(other);
 }
 ::PROTOBUF_NAMESPACE_ID::Metadata Struct_FieldsEntry_DoNotUse::GetMetadata() const {
-  ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fstruct_2eproto);
-  return ::file_level_metadata_google_2fprotobuf_2fstruct_2eproto[0];
+  return GetMetadataStatic();
 }
 void Struct_FieldsEntry_DoNotUse::MergeFrom(
     const ::PROTOBUF_NAMESPACE_ID::Message& other) {
@@ -229,8 +225,7 @@ Struct::Struct(const Struct& from)
 }
 
 void Struct::SharedCtor() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(
-      &scc_info_ListValue_google_2fprotobuf_2fstruct_2eproto.base);
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_ListValue_google_2fprotobuf_2fstruct_2eproto.base);
 }
 
 Struct::~Struct() {
@@ -572,8 +567,7 @@ void Struct::InternalSwap(Struct* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata Struct::GetMetadata() const {
-  ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fstruct_2eproto);
-  return ::file_level_metadata_google_2fprotobuf_2fstruct_2eproto[kIndexInFileMessages];
+  return GetMetadataStatic();
 }
 
 
@@ -693,8 +687,7 @@ Value::Value(const Value& from)
 }
 
 void Value::SharedCtor() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(
-      &scc_info_ListValue_google_2fprotobuf_2fstruct_2eproto.base);
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_ListValue_google_2fprotobuf_2fstruct_2eproto.base);
   clear_has_kind();
 }
 
@@ -1221,8 +1214,7 @@ void Value::InternalSwap(Value* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata Value::GetMetadata() const {
-  ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fstruct_2eproto);
-  return ::file_level_metadata_google_2fprotobuf_2fstruct_2eproto[kIndexInFileMessages];
+  return GetMetadataStatic();
 }
 
 
@@ -1260,8 +1252,7 @@ ListValue::ListValue(const ListValue& from)
 }
 
 void ListValue::SharedCtor() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(
-      &scc_info_ListValue_google_2fprotobuf_2fstruct_2eproto.base);
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_ListValue_google_2fprotobuf_2fstruct_2eproto.base);
 }
 
 ListValue::~ListValue() {
@@ -1523,8 +1514,7 @@ void ListValue::InternalSwap(ListValue* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata ListValue::GetMetadata() const {
-  ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fstruct_2eproto);
-  return ::file_level_metadata_google_2fprotobuf_2fstruct_2eproto[kIndexInFileMessages];
+  return GetMetadataStatic();
 }
 
 

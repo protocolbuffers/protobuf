@@ -200,3 +200,7 @@ enum ForeignEnum {
 message TestNoArenaMessage {
   optional proto2_arena_unittest.ArenaMessage arena_message = 1;
 };
+
+message OneString {
+  optional string data = 1;
+}

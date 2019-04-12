@@ -62,7 +62,7 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
   (*variables)["casted_member"] = ReinterpretCast(
       (*variables)["type"] + "*", (*variables)["name"] + "_", implicit_weak);
   (*variables)["type_default_instance"] =
-      DefaultInstanceName(descriptor->message_type(), options);
+      QualifiedDefaultInstanceName(descriptor->message_type(), options);
   (*variables)["type_reference_function"] =
       implicit_weak
           ? ("  " + ReferenceFunctionName(descriptor->message_type(), options) +
