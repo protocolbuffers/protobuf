@@ -119,7 +119,10 @@ string GetTemporaryDirectoryName() {
   // testing.  We cannot use tmpfile() or mkstemp() since we're creating a
   // directory.
   char b[L_tmpnam + 1];     // HPUX multithread return 0 if s is 0
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
   string result = tmpnam(b);
+#pragma GCC diagnostic pop
 #ifdef _WIN32
   // Avoid a trailing dot by changing it to an underscore. On Win32 the names of
   // files and directories can, but should not, end with dot.

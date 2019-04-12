@@ -58,8 +58,6 @@ using proto3::TestMessage;
 using proto3::TestOneof;
 using proto_util_converter::testing::MapIn;
 
-static const char kTypeUrlPrefix[] = "type.googleapis.com";
-
 // As functions defined in json_util.h are just thin wrappers around the
 // JSON conversion code in //net/proto2/util/converter, in this test we
 // only cover some very basic cases to make sure the wrappers have forwarded

@@ -78,25 +78,25 @@ class MapFieldBaseStub : public MapFieldBase {
   void SetRepeatedDirty() {
     state_.store(STATE_MODIFIED_REPEATED, std::memory_order_relaxed);
   }
-  bool ContainsMapKey(const MapKey& map_key) const { return false; }
-  bool InsertOrLookupMapValue(const MapKey& map_key, MapValueRef* val) {
+  bool ContainsMapKey(const MapKey& map_key) const override { return false; }
+  bool InsertOrLookupMapValue(const MapKey& map_key, MapValueRef* val) override {
     return false;
   }
-  bool DeleteMapValue(const MapKey& map_key) { return false; }
-  bool EqualIterator(const MapIterator& a, const MapIterator& b) const {
+  bool DeleteMapValue(const MapKey& map_key) override { return false; }
+  bool EqualIterator(const MapIterator& a, const MapIterator& b) const override {
     return false;
   }
-  int size() const { return 0; }
+  int size() const override { return 0; }
   void Clear() override {}
-  void MapBegin(MapIterator* map_iter) const {}
-  void MapEnd(MapIterator* map_iter) const {}
+  void MapBegin(MapIterator* map_iter) const override {}
+  void MapEnd(MapIterator* map_iter) const override {}
   void MergeFrom(const MapFieldBase& other) override {}
-  void Swap(MapFieldBase* other) {}
-  void InitializeIterator(MapIterator* map_iter) const {}
-  void DeleteIterator(MapIterator* map_iter) const {}
+  void Swap(MapFieldBase* other) override {}
+  void InitializeIterator(MapIterator* map_iter) const override {}
+  void DeleteIterator(MapIterator* map_iter) const override {}
   void CopyIterator(MapIterator* this_iterator,
-                    const MapIterator& other_iterator) const {}
-  void IncreaseIterator(MapIterator* map_iter) const {}
+                    const MapIterator& other_iterator) const override {}
+  void IncreaseIterator(MapIterator* map_iter) const override {}
   void SetDefaultMessageEntry(const Message* message) const {}
   const Message* GetDefaultMessageEntry() const { return NULL; }
 };
