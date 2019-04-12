@@ -68,7 +68,7 @@ class MockErrorCollector : public io::ErrorCollector {
   std::string text_;
 
   // implements ErrorCollector ---------------------------------------
-  void AddError(int line, int column, const std::string& message) {
+  void AddError(int line, int column, const std::string& message) override {
     strings::SubstituteAndAppend(&text_, "$0:$1: $2\n", line, column, message);
   }
 };
