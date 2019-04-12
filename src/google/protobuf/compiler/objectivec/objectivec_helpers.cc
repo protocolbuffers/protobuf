@@ -805,17 +805,17 @@ string DefaultValue(const FieldDescriptor* field) {
       if (field->default_value_int32() == INT_MIN) {
         return "-0x80000000";
       }
-      return SimpleItoa(field->default_value_int32());
+      return StrCat(field->default_value_int32());
     case FieldDescriptor::CPPTYPE_UINT32:
-      return SimpleItoa(field->default_value_uint32()) + "U";
+      return StrCat(field->default_value_uint32()) + "U";
     case FieldDescriptor::CPPTYPE_INT64:
       // gcc and llvm reject the decimal form of kint32min and kint64min.
       if (field->default_value_int64() == LLONG_MIN) {
         return "-0x8000000000000000LL";
       }
-      return SimpleItoa(field->default_value_int64()) + "LL";
+      return StrCat(field->default_value_int64()) + "LL";
     case FieldDescriptor::CPPTYPE_UINT64:
-      return SimpleItoa(field->default_value_uint64()) + "ULL";
+      return StrCat(field->default_value_uint64()) + "ULL";
     case FieldDescriptor::CPPTYPE_DOUBLE:
       return HandleExtremeFloatingPoint(
           SimpleDtoa(field->default_value_double()), false);
@@ -1547,7 +1547,7 @@ bool ParseSimpleFile(
     if (!parser.ParseChunk(StringPiece(static_cast<const char*>(buf), buf_len))) {
       *out_error =
           string("error: ") + path +
-          " Line " + SimpleItoa(parser.last_line()) + ", " + parser.error_str();
+          " Line " + StrCat(parser.last_line()) + ", " + parser.error_str();
       return false;
     }
   }

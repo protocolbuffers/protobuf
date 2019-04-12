@@ -152,7 +152,7 @@ int PrimitiveFieldGenerator::ExtraRuntimeHasBitsNeeded(void) const {
 void PrimitiveFieldGenerator::SetExtraRuntimeHasBitsBase(int has_base) {
   if (GetObjectiveCType(descriptor_) == OBJECTIVECTYPE_BOOLEAN) {
     // Set into the offset the has bit to use for the actual value.
-    variables_["storage_offset_value"] = SimpleItoa(has_base);
+    variables_["storage_offset_value"] = StrCat(has_base);
     variables_["storage_offset_comment"] =
         "  // Stored in _has_storage_ to save space.";
   }
