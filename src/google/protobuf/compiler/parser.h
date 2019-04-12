@@ -206,6 +206,10 @@ class PROTOBUF_EXPORT Parser {
   // of the current token.
   void AddError(const std::string& error);
 
+  // Invokes error_collector_->AddWarning() with the line and column number
+  // of the current token.
+  void AddWarning(const string& warning);
+
   // Records a location in the SourceCodeInfo.location table (see
   // descriptor.proto).  We use RAII to ensure that the start and end locations
   // are recorded -- the constructor records the start location and the

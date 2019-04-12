@@ -1210,8 +1210,8 @@ TEST_F(TextFormatTest, ParseExotic) {
   ASSERT_TRUE(
       TextFormat::ParseFromString("repeated_float: 3.4028235e+38\n"
                                   "repeated_float: -3.4028235e+38\n"
-                                  "repeated_float: 3.40282351e+38\n"
-                                  "repeated_float: -3.40282351e+38\n",
+                                  "repeated_float: 3.402823567797337e+38\n"
+                                  "repeated_float: -3.402823567797337e+38\n",
                                   &message));
   EXPECT_EQ(message.repeated_float(0), std::numeric_limits<float>::max());
   EXPECT_EQ(message.repeated_float(1), -std::numeric_limits<float>::max());

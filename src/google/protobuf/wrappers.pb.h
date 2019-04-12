@@ -27,6 +27,7 @@
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/inlined_string_field.h>
 #include <google/protobuf/metadata.h>
+#include <google/protobuf/generated_message_reflection.h>
 #include <google/protobuf/message.h>
 #include <google/protobuf/repeated_field.h>  // IWYU pragma: export
 #include <google/protobuf/extension_set.h>  // IWYU pragma: export
@@ -52,7 +53,7 @@ struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2fwrappers_2eproto {
   static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
   static const ::PROTOBUF_NAMESPACE_ID::uint32 offsets[];
 };
-void PROTOBUF_EXPORT AddDescriptors_google_2fprotobuf_2fwrappers_2eproto();
+extern PROTOBUF_EXPORT const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fwrappers_2eproto;
 PROTOBUF_NAMESPACE_OPEN
 class BoolValue;
 class BoolValueDefaultTypeInternal;
@@ -129,7 +130,13 @@ class PROTOBUF_EXPORT DoubleValue :
     return MaybeArenaPtr();
   }
   static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
-    return default_instance().GetDescriptor();
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
   }
   static const DoubleValue& default_instance();
 
@@ -200,6 +207,13 @@ class PROTOBUF_EXPORT DoubleValue :
   public:
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fwrappers_2eproto);
+    return ::descriptor_table_google_2fprotobuf_2fwrappers_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
 
   // nested types ----------------------------------------------------
 
@@ -257,7 +271,13 @@ class PROTOBUF_EXPORT FloatValue :
     return MaybeArenaPtr();
   }
   static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
-    return default_instance().GetDescriptor();
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
   }
   static const FloatValue& default_instance();
 
@@ -328,6 +348,13 @@ class PROTOBUF_EXPORT FloatValue :
   public:
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fwrappers_2eproto);
+    return ::descriptor_table_google_2fprotobuf_2fwrappers_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
 
   // nested types ----------------------------------------------------
 
@@ -385,7 +412,13 @@ class PROTOBUF_EXPORT Int64Value :
     return MaybeArenaPtr();
   }
   static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
-    return default_instance().GetDescriptor();
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
   }
   static const Int64Value& default_instance();
 
@@ -456,6 +489,13 @@ class PROTOBUF_EXPORT Int64Value :
   public:
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fwrappers_2eproto);
+    return ::descriptor_table_google_2fprotobuf_2fwrappers_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
 
   // nested types ----------------------------------------------------
 
@@ -513,7 +553,13 @@ class PROTOBUF_EXPORT UInt64Value :
     return MaybeArenaPtr();
   }
   static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
-    return default_instance().GetDescriptor();
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
   }
   static const UInt64Value& default_instance();
 
@@ -584,6 +630,13 @@ class PROTOBUF_EXPORT UInt64Value :
   public:
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fwrappers_2eproto);
+    return ::descriptor_table_google_2fprotobuf_2fwrappers_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
 
   // nested types ----------------------------------------------------
 
@@ -641,7 +694,13 @@ class PROTOBUF_EXPORT Int32Value :
     return MaybeArenaPtr();
   }
   static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
-    return default_instance().GetDescriptor();
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
   }
   static const Int32Value& default_instance();
 
@@ -712,6 +771,13 @@ class PROTOBUF_EXPORT Int32Value :
   public:
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fwrappers_2eproto);
+    return ::descriptor_table_google_2fprotobuf_2fwrappers_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
 
   // nested types ----------------------------------------------------
 
@@ -769,7 +835,13 @@ class PROTOBUF_EXPORT UInt32Value :
     return MaybeArenaPtr();
   }
   static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
-    return default_instance().GetDescriptor();
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
   }
   static const UInt32Value& default_instance();
 
@@ -840,6 +912,13 @@ class PROTOBUF_EXPORT UInt32Value :
   public:
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fwrappers_2eproto);
+    return ::descriptor_table_google_2fprotobuf_2fwrappers_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
 
   // nested types ----------------------------------------------------
 
@@ -897,7 +976,13 @@ class PROTOBUF_EXPORT BoolValue :
     return MaybeArenaPtr();
   }
   static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
-    return default_instance().GetDescriptor();
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
   }
   static const BoolValue& default_instance();
 
@@ -968,6 +1053,13 @@ class PROTOBUF_EXPORT BoolValue :
   public:
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fwrappers_2eproto);
+    return ::descriptor_table_google_2fprotobuf_2fwrappers_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
 
   // nested types ----------------------------------------------------
 
@@ -1025,7 +1117,13 @@ class PROTOBUF_EXPORT StringValue :
     return MaybeArenaPtr();
   }
   static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
-    return default_instance().GetDescriptor();
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
   }
   static const StringValue& default_instance();
 
@@ -1096,6 +1194,13 @@ class PROTOBUF_EXPORT StringValue :
   public:
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fwrappers_2eproto);
+    return ::descriptor_table_google_2fprotobuf_2fwrappers_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
 
   // nested types ----------------------------------------------------
 
@@ -1168,7 +1273,13 @@ class PROTOBUF_EXPORT BytesValue :
     return MaybeArenaPtr();
   }
   static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
-    return default_instance().GetDescriptor();
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
   }
   static const BytesValue& default_instance();
 
@@ -1239,6 +1350,13 @@ class PROTOBUF_EXPORT BytesValue :
   public:
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fwrappers_2eproto);
+    return ::descriptor_table_google_2fprotobuf_2fwrappers_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
 
   // nested types ----------------------------------------------------
 

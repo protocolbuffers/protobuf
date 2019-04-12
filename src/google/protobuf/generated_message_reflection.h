@@ -659,15 +659,16 @@ class GeneratedMessageReflection final : public Reflection {
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(GeneratedMessageReflection);
 };
 
-typedef void (*InitFunc)();
-
 struct PROTOBUF_EXPORT DescriptorTable {
-  bool is_initialized;
+  bool* is_initialized;
   const char* descriptor;
   const char* filename;
   int size;  // of serialized descriptor
   once_flag* once;
-  InitFunc add_descriptors;
+  SCCInfoBase* const* init_default_instances;
+  const DescriptorTable* const* deps;
+  int num_sccs;
+  int num_deps;
   const MigrationSchema* schemas;
   const Message* const* default_instances;
   const uint32* offsets;
@@ -678,9 +679,19 @@ struct PROTOBUF_EXPORT DescriptorTable {
   const ServiceDescriptor** file_level_service_descriptors;
 };
 
+// AssignDescriptors() pulls the compiled FileDescriptor from the DescriptorPool
+// and uses it to populate all of the global variables which store pointers to
+// the descriptor objects.  It also constructs the reflection objects.  It is
+// called the first time anyone calls descriptor() or GetReflection() on one of
+// the types defined in the file.  AssignDescriptors() is thread-safe.
 void PROTOBUF_EXPORT AssignDescriptors(const DescriptorTable* table);
-void PROTOBUF_EXPORT AddDescriptors(DescriptorTable* table,
-                                    const InitFunc* deps, int num_deps);
+
+// AddDescriptors() is a file-level procedure which adds the encoded
+// FileDescriptorProto for this .proto file to the global DescriptorPool for
+// generated files (DescriptorPool::generated_pool()). It ordinarily runs at
+// static initialization time, but is not used at all in LITE_RUNTIME mode.
+// AddDescriptors() is *not* thread-safe.
+void PROTOBUF_EXPORT AddDescriptors(const DescriptorTable* table);
 
 // These cannot be in lite so we put them in the reflection.
 PROTOBUF_EXPORT void UnknownFieldSetSerializer(const uint8* base, uint32 offset,

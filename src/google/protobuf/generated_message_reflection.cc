@@ -2312,7 +2312,7 @@ void AssignDescriptorsImpl(const DescriptorTable* table) {
     // calls to AddDescriptors.
     static WrappedMutex mu{GOOGLE_PROTOBUF_LINKER_INITIALIZED};
     mu.Lock();
-    table->add_descriptors();
+    AddDescriptors(table);
     mu.Unlock();
   }
   // Fill the arrays with pointers to descriptors and reflection classes.
@@ -2342,14 +2342,20 @@ void AssignDescriptorsImpl(const DescriptorTable* table) {
                                       helper.GetCurrentMetadataPtr());
 }
 
-void AddDescriptorsImpl(DescriptorTable* table, const InitFunc* deps,
-                        int num_deps) {
+void AddDescriptorsImpl(const DescriptorTable* table) {
+  // Reflection refers to the default instances so make sure they are
+  // initialized.
+  for (int i = 0; i < table->num_sccs; i++) {
+    internal::InitSCC(table->init_default_instances[i]);
+  }
+
   // Ensure all dependent descriptors are registered to the generated descriptor
   // pool and message factory.
-  for (int i = 0; i < num_deps; i++) {
+  for (int i = 0; i < table->num_deps; i++) {
     // In case of weak fields deps[i] could be null.
-    if (deps[i]) deps[i]();
+    if (table->deps[i]) AddDescriptors(table->deps[i]);
   }
+
   // Register the descriptor of this file.
   DescriptorPool::InternalAddGeneratedFile(table->descriptor, table->size);
   MessageFactory::InternalRegisterGeneratedFile(table);
@@ -2361,15 +2367,14 @@ void AssignDescriptors(const DescriptorTable* table) {
   call_once(*table->once, AssignDescriptorsImpl, table);
 }
 
-void AddDescriptors(DescriptorTable* table, const InitFunc* deps,
-                    int num_deps) {
+void AddDescriptors(const DescriptorTable* table) {
   // AddDescriptors is not thread safe. Callers need to ensure calls are
   // properly serialized. This function is only called pre-main by global
   // descriptors and we can assume single threaded access or it's called
   // by AssignDescriptorImpl which uses a mutex to sequence calls.
-  if (table->is_initialized) return;
-  table->is_initialized = true;
-  AddDescriptorsImpl(table, deps, num_deps);
+  if (*table->is_initialized) return;
+  *table->is_initialized = true;
+  AddDescriptorsImpl(table);
 }
 
 // Separate function because it needs to be a friend of
@@ -2385,7 +2390,7 @@ void RegisterAllTypesInternal(const Metadata* file_level_metadata, int size) {
   }
 }
 
-void RegisterFileLevelMetadata(DescriptorTable* table) {
+void RegisterFileLevelMetadata(const DescriptorTable* table) {
   AssignDescriptors(table);
   RegisterAllTypesInternal(table->file_level_metadata, table->num_messages);
 }

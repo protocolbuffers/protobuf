@@ -114,6 +114,49 @@ std::string MapEntryName(const std::string& field_name) {
   return result;
 }
 
+bool IsUppercase(char c) { return c >= 'A' && c <= 'Z'; }
+
+bool IsLowercase(char c) { return c >= 'a' && c <= 'z'; }
+
+bool IsNumber(char c) { return c >= '0' && c <= '9'; }
+
+bool IsUpperCamelCase(const string& name) {
+  if (name.empty()) {
+    return true;
+  }
+  // Name must start with an upper case character.
+  if (!IsUppercase(name[0])) {
+    return false;
+  }
+  // Must not contains underscore.
+  for (int i = 1; i < name.length(); i++) {
+    if (name[i] == '_') {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool IsUpperUnderscore(const string& name) {
+  for (int i = 0; i < name.length(); i++) {
+    const char c = name[i];
+    if (!IsUppercase(c) && c != '_' && !IsNumber(c)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool IsLowerUnderscore(const string& name) {
+  for (int i = 0; i < name.length(); i++) {
+    const char c = name[i];
+    if (!IsLowercase(c) && c != '_' && !IsNumber(c)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 }  // anonymous namespace
 
 // Makes code slightly more readable.  The meaning of "DO(foo)" is
@@ -335,6 +378,13 @@ void Parser::AddError(const std::string& error) {
   AddError(input_->current().line, input_->current().column, error);
 }
 
+void Parser::AddWarning(const string& warning) {
+  if (error_collector_ != nullptr) {
+    error_collector_->AddWarning(input_->current().line,
+                                 input_->current().column, warning);
+  }
+}
+
 // -------------------------------------------------------------------
 
 Parser::LocationRecorder::LocationRecorder(Parser* parser)
@@ -516,7 +566,7 @@ bool Parser::ValidateEnum(const EnumDescriptorProto* proto) {
   std::set<int> used_values;
   bool has_duplicates = false;
   for (int i = 0; i < proto->value_size(); ++i) {
-    const EnumValueDescriptorProto enum_value = proto->value(i);
+    const EnumValueDescriptorProto& enum_value = proto->value(i);
     if (used_values.find(enum_value.number()) != used_values.end()) {
       has_duplicates = true;
       break;
@@ -534,6 +584,19 @@ bool Parser::ValidateEnum(const EnumDescriptorProto* proto) {
     // and does not use it protect future authors.
     AddError(error);
     return false;
+  }
+
+  // Enforce that enum constants must be UPPER_CASE except in case of
+  // enum_alias.
+  if (!allow_alias) {
+    for (const auto& enum_value : proto->value()) {
+      if (!IsUpperUnderscore(enum_value.name())) {
+        AddWarning(
+            "Enum constant should be in UPPER_CASE. Found: " +
+            enum_value.name() +
+            ". See https://developers.google.com/protocol-buffers/docs/style");
+      }
+    }
   }
 
   return true;
@@ -685,6 +748,12 @@ bool Parser::ParseMessageDefinition(
     location.RecordLegacyLocation(message,
                                   DescriptorPool::ErrorCollector::NAME);
     DO(ConsumeIdentifier(message->mutable_name(), "Expected message name."));
+    if (!IsUpperCamelCase(message->name())) {
+      AddWarning(
+          "Message name should be in UpperCamelCase. Found: " +
+          message->name() +
+          ". See https://developers.google.com/protocol-buffers/docs/style");
+    }
   }
   DO(ParseMessageBlock(message, message_location, containing_file));
   return true;
@@ -929,6 +998,12 @@ bool Parser::ParseMessageFieldNoLabel(
                               FieldDescriptorProto::kNameFieldNumber);
     location.RecordLegacyLocation(field, DescriptorPool::ErrorCollector::NAME);
     DO(ConsumeIdentifier(field->mutable_name(), "Expected field name."));
+
+    if (!IsLowerUnderscore(field->name())) {
+      AddWarning(
+          "Field name should be lowercase. Found: " + field->name() +
+          ". See: https://developers.google.com/protocol-buffers/docs/style");
+    }
   }
   DO(Consume("=", "Missing field number."));
 

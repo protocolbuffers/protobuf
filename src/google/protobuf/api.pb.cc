@@ -15,11 +15,10 @@
 #include <google/protobuf/wire_format.h>
 // @@protoc_insertion_point(includes)
 #include <google/protobuf/port_def.inc>
-
-extern PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2fapi_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Mixin_google_2fprotobuf_2fapi_2eproto;
 extern PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2fapi_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_Method_google_2fprotobuf_2fapi_2eproto;
-extern PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2fsource_5fcontext_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_SourceContext_google_2fprotobuf_2fsource_5fcontext_2eproto;
+extern PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2fapi_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Mixin_google_2fprotobuf_2fapi_2eproto;
 extern PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2ftype_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_Option_google_2fprotobuf_2ftype_2eproto;
+extern PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2fsource_5fcontext_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_SourceContext_google_2fprotobuf_2fsource_5fcontext_2eproto;
 PROTOBUF_NAMESPACE_OPEN
 class ApiDefaultTypeInternal {
  public:
@@ -34,7 +33,7 @@ class MixinDefaultTypeInternal {
   ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<Mixin> _instance;
 } _Mixin_default_instance_;
 PROTOBUF_NAMESPACE_CLOSE
-static void InitDefaultsApi_google_2fprotobuf_2fapi_2eproto() {
+static void InitDefaultsscc_info_Api_google_2fprotobuf_2fapi_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   {
@@ -46,13 +45,13 @@ static void InitDefaultsApi_google_2fprotobuf_2fapi_2eproto() {
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<4> scc_info_Api_google_2fprotobuf_2fapi_2eproto =
-    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 4, InitDefaultsApi_google_2fprotobuf_2fapi_2eproto}, {
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 4, InitDefaultsscc_info_Api_google_2fprotobuf_2fapi_2eproto}, {
       &scc_info_Method_google_2fprotobuf_2fapi_2eproto.base,
       &scc_info_Option_google_2fprotobuf_2ftype_2eproto.base,
       &scc_info_SourceContext_google_2fprotobuf_2fsource_5fcontext_2eproto.base,
       &scc_info_Mixin_google_2fprotobuf_2fapi_2eproto.base,}};
 
-static void InitDefaultsMethod_google_2fprotobuf_2fapi_2eproto() {
+static void InitDefaultsscc_info_Method_google_2fprotobuf_2fapi_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   {
@@ -64,10 +63,10 @@ static void InitDefaultsMethod_google_2fprotobuf_2fapi_2eproto() {
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_Method_google_2fprotobuf_2fapi_2eproto =
-    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 1, InitDefaultsMethod_google_2fprotobuf_2fapi_2eproto}, {
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 1, InitDefaultsscc_info_Method_google_2fprotobuf_2fapi_2eproto}, {
       &scc_info_Option_google_2fprotobuf_2ftype_2eproto.base,}};
 
-static void InitDefaultsMixin_google_2fprotobuf_2fapi_2eproto() {
+static void InitDefaultsscc_info_Mixin_google_2fprotobuf_2fapi_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   {
@@ -79,7 +78,7 @@ static void InitDefaultsMixin_google_2fprotobuf_2fapi_2eproto() {
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Mixin_google_2fprotobuf_2fapi_2eproto =
-    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsMixin_google_2fprotobuf_2fapi_2eproto}, {}};
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsscc_info_Mixin_google_2fprotobuf_2fapi_2eproto}, {}};
 
 static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_google_2fprotobuf_2fapi_2eproto[3];
 static constexpr ::PROTOBUF_NAMESPACE_ID::EnumDescriptor const** file_level_enum_descriptors_google_2fprotobuf_2fapi_2eproto = nullptr;
@@ -151,28 +150,26 @@ const char descriptor_table_protodef_google_2fprotobuf_2fapi_2eproto[] =
   "nproto/protobuf/api;api\242\002\003GPB\252\002\036Google.P"
   "rotobuf.WellKnownTypesb\006proto3"
   ;
+static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_google_2fprotobuf_2fapi_2eproto_deps[2] = {
+  &::descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto,
+  &::descriptor_table_google_2fprotobuf_2ftype_2eproto,
+};
+static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_google_2fprotobuf_2fapi_2eproto_sccs[3] = {
+  &scc_info_Api_google_2fprotobuf_2fapi_2eproto.base,
+  &scc_info_Method_google_2fprotobuf_2fapi_2eproto.base,
+  &scc_info_Mixin_google_2fprotobuf_2fapi_2eproto.base,
+};
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_google_2fprotobuf_2fapi_2eproto_once;
-static ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fapi_2eproto = {
-  false, descriptor_table_protodef_google_2fprotobuf_2fapi_2eproto, "google/protobuf/api.proto", 750,
-  &descriptor_table_google_2fprotobuf_2fapi_2eproto_once, AddDescriptors_google_2fprotobuf_2fapi_2eproto, schemas,
-  file_default_instances, TableStruct_google_2fprotobuf_2fapi_2eproto::offsets,
+static bool descriptor_table_google_2fprotobuf_2fapi_2eproto_initialized = false;
+const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fapi_2eproto = {
+  &descriptor_table_google_2fprotobuf_2fapi_2eproto_initialized, descriptor_table_protodef_google_2fprotobuf_2fapi_2eproto, "google/protobuf/api.proto", 750,
+  &descriptor_table_google_2fprotobuf_2fapi_2eproto_once, descriptor_table_google_2fprotobuf_2fapi_2eproto_sccs, descriptor_table_google_2fprotobuf_2fapi_2eproto_deps, 3, 2,
+  schemas, file_default_instances, TableStruct_google_2fprotobuf_2fapi_2eproto::offsets,
   file_level_metadata_google_2fprotobuf_2fapi_2eproto, 3, file_level_enum_descriptors_google_2fprotobuf_2fapi_2eproto, file_level_service_descriptors_google_2fprotobuf_2fapi_2eproto,
 };
 
-void AddDescriptors_google_2fprotobuf_2fapi_2eproto() {
-  static constexpr ::PROTOBUF_NAMESPACE_ID::internal::InitFunc deps[2] =
-  {
-    ::AddDescriptors_google_2fprotobuf_2fsource_5fcontext_2eproto,
-    ::AddDescriptors_google_2fprotobuf_2ftype_2eproto,
-  };
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_Api_google_2fprotobuf_2fapi_2eproto.base);
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_Method_google_2fprotobuf_2fapi_2eproto.base);
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_Mixin_google_2fprotobuf_2fapi_2eproto.base);
- ::PROTOBUF_NAMESPACE_ID::internal::AddDescriptors(&descriptor_table_google_2fprotobuf_2fapi_2eproto, deps, 2);
-}
-
 // Force running AddDescriptors() at dynamic initialization time.
-static bool dynamic_init_dummy_google_2fprotobuf_2fapi_2eproto = []() { AddDescriptors_google_2fprotobuf_2fapi_2eproto(); return true; }();
+static bool dynamic_init_dummy_google_2fprotobuf_2fapi_2eproto = (  ::PROTOBUF_NAMESPACE_ID::internal::AddDescriptors(&descriptor_table_google_2fprotobuf_2fapi_2eproto), true);
 PROTOBUF_NAMESPACE_OPEN
 
 // ===================================================================
@@ -239,8 +236,7 @@ Api::Api(const Api& from)
 }
 
 void Api::SharedCtor() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(
-      &scc_info_Api_google_2fprotobuf_2fapi_2eproto.base);
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_Api_google_2fprotobuf_2fapi_2eproto.base);
   name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   version_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   ::memset(&source_context_, 0, static_cast<size_t>(
@@ -800,8 +796,7 @@ void Api::InternalSwap(Api* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata Api::GetMetadata() const {
-  ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fapi_2eproto);
-  return ::file_level_metadata_google_2fprotobuf_2fapi_2eproto[kIndexInFileMessages];
+  return GetMetadataStatic();
 }
 
 
@@ -855,8 +850,7 @@ Method::Method(const Method& from)
 }
 
 void Method::SharedCtor() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(
-      &scc_info_Method_google_2fprotobuf_2fapi_2eproto.base);
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_Method_google_2fprotobuf_2fapi_2eproto.base);
   name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   request_type_url_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   response_type_url_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
@@ -1400,8 +1394,7 @@ void Method::InternalSwap(Method* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata Method::GetMetadata() const {
-  ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fapi_2eproto);
-  return ::file_level_metadata_google_2fprotobuf_2fapi_2eproto[kIndexInFileMessages];
+  return GetMetadataStatic();
 }
 
 
@@ -1439,8 +1432,7 @@ Mixin::Mixin(const Mixin& from)
 }
 
 void Mixin::SharedCtor() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(
-      &scc_info_Mixin_google_2fprotobuf_2fapi_2eproto.base);
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_Mixin_google_2fprotobuf_2fapi_2eproto.base);
   name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   root_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
@@ -1743,8 +1735,7 @@ void Mixin::InternalSwap(Mixin* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata Mixin::GetMetadata() const {
-  ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fapi_2eproto);
-  return ::file_level_metadata_google_2fprotobuf_2fapi_2eproto[kIndexInFileMessages];
+  return GetMetadataStatic();
 }
 
 

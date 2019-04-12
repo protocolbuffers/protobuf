@@ -27,6 +27,7 @@
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/inlined_string_field.h>
 #include <google/protobuf/metadata.h>
+#include <google/protobuf/generated_message_reflection.h>
 #include <google/protobuf/message.h>
 #include <google/protobuf/repeated_field.h>  // IWYU pragma: export
 #include <google/protobuf/extension_set.h>  // IWYU pragma: export
@@ -54,7 +55,7 @@ struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2fapi_2eproto {
   static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
   static const ::PROTOBUF_NAMESPACE_ID::uint32 offsets[];
 };
-void PROTOBUF_EXPORT AddDescriptors_google_2fprotobuf_2fapi_2eproto();
+extern PROTOBUF_EXPORT const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fapi_2eproto;
 PROTOBUF_NAMESPACE_OPEN
 class Api;
 class ApiDefaultTypeInternal;
@@ -101,7 +102,13 @@ class PROTOBUF_EXPORT Api :
   }
 
   static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
-    return default_instance().GetDescriptor();
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
   }
   static const Api& default_instance();
 
@@ -166,6 +173,13 @@ class PROTOBUF_EXPORT Api :
   public:
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fapi_2eproto);
+    return ::descriptor_table_google_2fprotobuf_2fapi_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
 
   // nested types ----------------------------------------------------
 
@@ -289,7 +303,13 @@ class PROTOBUF_EXPORT Method :
   }
 
   static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
-    return default_instance().GetDescriptor();
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
   }
   static const Method& default_instance();
 
@@ -354,6 +374,13 @@ class PROTOBUF_EXPORT Method :
   public:
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fapi_2eproto);
+    return ::descriptor_table_google_2fprotobuf_2fapi_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
 
   // nested types ----------------------------------------------------
 
@@ -468,7 +495,13 @@ class PROTOBUF_EXPORT Mixin :
   }
 
   static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
-    return default_instance().GetDescriptor();
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
   }
   static const Mixin& default_instance();
 
@@ -533,6 +566,13 @@ class PROTOBUF_EXPORT Mixin :
   public:
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fapi_2eproto);
+    return ::descriptor_table_google_2fprotobuf_2fapi_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
 
   // nested types ----------------------------------------------------
 
