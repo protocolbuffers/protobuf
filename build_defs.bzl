@@ -46,12 +46,12 @@ def lua_cclibrary(name, srcs, hdrs = [], deps = [], luadeps = []):
         name = so_rule,
         linkshared = True,
         deps = [_librule(name)],
-            linkopts = select({
-        ":darwin": [
-            "-undefined dynamic_lookup",
-        ],
-        "//conditions:default": [],
-    })
+        linkopts = select({
+            ":darwin": [
+                "-undefined dynamic_lookup",
+            ],
+            "//conditions:default": [],
+        }),
     )
 
     native.genrule(
@@ -289,34 +289,30 @@ def cc_library_func(ctx, hdrs, srcs, deps):
     compilation_contexts = []
     linking_contexts = []
     for dep in deps:
-      if CcInfo in dep:
-        compilation_contexts.append(dep[CcInfo].compilation_context)
-        linking_contexts.append(dep[CcInfo].linking_context)
+        if CcInfo in dep:
+            compilation_contexts.append(dep[CcInfo].compilation_context)
+            linking_contexts.append(dep[CcInfo].linking_context)
     toolchain = find_cpp_toolchain(ctx)
     feature_configuration = cc_common.configure_features(
-      cc_toolchain = toolchain,
-      requested_features = ctx.features,
-      unsupported_features = ctx.disabled_features,
+        cc_toolchain = toolchain,
+        requested_features = ctx.features,
+        unsupported_features = ctx.disabled_features,
     )
     compilation_info = cc_common.compile(
-      ctx = ctx,
-      feature_configuration = feature_configuration,
-      cc_toolchain = toolchain,
-      srcs = srcs,
-      hdrs = hdrs,
-      compilation_contexts = compilation_contexts,
+        ctx = ctx,
+        feature_configuration = feature_configuration,
+        cc_toolchain = toolchain,
+        srcs = srcs,
+        hdrs = hdrs,
+        compilation_contexts = compilation_contexts,
     )
     output_file = ctx.new_file(ctx.bin_dir, "lib" + ctx.rule.attr.name + ".a")
     library_to_link = cc_common.create_library_to_link(
-      actions = ctx.actions,
-      feature_configuration = feature_configuration,
-      cc_toolchain = toolchain,
-      static_library = output_file,
+        actions = ctx.actions,
+        feature_configuration = feature_configuration,
+        cc_toolchain = toolchain,
+        static_library = output_file,
     )
-    linking_context = cc_common.create_linking_context(
-        libraries_to_link = [library_to_link],
-    )
-
     archiver_path = cc_common.get_tool_for_action(
         feature_configuration = feature_configuration,
         action_name = CPP_LINK_STATIC_LIBRARY_ACTION_NAME,
@@ -332,7 +328,13 @@ def cc_library_func(ctx, hdrs, srcs, deps):
         action_name = CPP_LINK_STATIC_LIBRARY_ACTION_NAME,
         variables = archiver_variables,
     )
-    object_files = compilation_info.cc_compilation_outputs.object_files(use_pic = False)
+
+    # Non-PIC objects only get emitted in opt builds.
+    use_pic = True
+    if ctx.var.get("COMPILATION_MODE") == "opt":
+        use_pic = False
+
+    object_files = compilation_info.cc_compilation_outputs.object_files(use_pic = use_pic)
     args = ctx.actions.args()
     args.add_all(command_line)
     args.add_all(object_files)
@@ -357,39 +359,44 @@ def cc_library_func(ctx, hdrs, srcs, deps):
         ),
         outputs = [output_file],
     )
+    linking_context = cc_common.create_linking_context(
+        libraries_to_link = [library_to_link],
+    )
     return [
-      CcInfo(
-        compilation_context = compilation_info.compilation_context,
-        linking_context = linking_context,
-      )
+        CcInfo(
+            compilation_context = compilation_info.compilation_context,
+            linking_context = linking_context,
+        ),
     ]
 
 def _upb_proto_library_aspect_impl(target, ctx):
-  proto_sources = target[ProtoInfo].direct_sources
-  types = {
-      "srcs": ".upb.c",
-      "hdrs": ".upb.h",
-  }
-  files = _generate_output_files(
-      ctx = ctx,
-      package = ctx.label.package,
-      file_names = proto_sources,
-      file_types = types,
-  )
-  ctx.actions.run(
-      inputs = [ctx.executable._upbc] + proto_sources,
-      outputs = files["srcs"] + files["hdrs"],
-      executable = ctx.executable._protoc,
-      arguments = ["--upb_out"], #, ctx.genfiles_dir, "--plugin=protoc-gen-upb=" + ctx.executable._upbc.path] + [file.path for file in files["srcs"]],
-      progress_message = "Generating upb protos",
-  )
-  return cc_library_func(
-      ctx = ctx,
-      hdrs = files["hdrs"],
-      srcs = files["srcs"],
-      deps = ctx.rule.attr.deps
-  )
-
+    proto_sources = target[ProtoInfo].direct_sources
+    types = {
+        "srcs": ".upb.c",
+        "hdrs": ".upb.h",
+    }
+    files = _generate_output_files(
+        ctx = ctx,
+        package = ctx.label.package,
+        file_names = proto_sources,
+        file_types = types,
+    )
+    ctx.actions.run(
+        inputs = depset(
+            direct = target[ProtoInfo].direct_sources + [ctx.executable._upbc],
+            transitive = [target[ProtoInfo].transitive_sources],
+        ),
+        outputs = files["srcs"] + files["hdrs"],
+        executable = ctx.executable._protoc,
+        arguments = ["--upb_out=" + ctx.genfiles_dir.path, "--plugin=protoc-gen-upb=" + ctx.executable._upbc.path] + [file.path for file in proto_sources],
+        progress_message = "Generating upb protos",
+    )
+    return cc_library_func(
+        ctx = ctx,
+        hdrs = files["hdrs"],
+        srcs = files["srcs"],
+        deps = ctx.rule.attr.deps + [ctx.attr._upb],
+    )
 
 _upb_proto_library_aspect = aspect(
     attrs = {
@@ -416,14 +423,20 @@ def _upb_proto_library_impl(ctx):
     dep = ctx.attr.deps[0]
     if CcInfo not in dep:
         fail("proto_library rule must generate CcInfo (have cc_api_version>0).")
-    return [dep[CcInfo]]
-
+    return [
+        DefaultInfo(
+            files = depset(
+                [dep[CcInfo].linking_context.libraries_to_link[0].static_library],
+            ),
+        ),
+        dep[CcInfo],
+    ]
 
 upb_proto_library = rule(
     output_to_genfiles = True,
     implementation = _upb_proto_library_impl,
     attrs = {
-        'deps': attr.label_list(
+        "deps": attr.label_list(
             aspects = [_upb_proto_library_aspect],
             allow_rules = ["proto_library"],
             providers = [ProtoInfo],

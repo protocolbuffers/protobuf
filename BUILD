@@ -196,6 +196,7 @@ cc_binary(
         map_dep("@com_google_protobuf//:protoc_lib"),
     ],
     copts = CPPOPTS,
+    visibility = ["//visibility:public"],
 )
 
 # We strip the tests and remaining rules from google3 until the upb_proto_library()
@@ -300,11 +301,14 @@ cc_test(
 )
 
 proto_library(
+    name = "test_json_enum_from_separate",
+    srcs = ["tests/json/enum_from_separate_file.proto"],
+    deps = [":test_json_proto"],
+)
+
+proto_library(
     name = "test_json_proto",
-    srcs = [
-        "tests/json/test.proto",
-        # "tests/json/enum_from_separate_file.proto",
-    ],
+    srcs = ["tests/json/test.proto"],
 )
 
 upb_proto_reflection_library(
@@ -314,8 +318,13 @@ upb_proto_reflection_library(
 )
 
 upb_proto_library(
+    name = "test_json_enum_from_separate_upbproto",
+    deps = [":test_json_enum_from_separate"],
+)
+
+upb_proto_library(
     name = "test_json_upbproto",
-    deps = ["test_json_proto"],
+    deps = [":test_json_proto"],
 )
 
 cc_test(
@@ -335,6 +344,12 @@ upb_proto_library(
     name = "conformance_proto_upb",
     deps = [
         "@com_google_protobuf//:conformance_proto",
+    ],
+)
+
+upb_proto_library(
+    name = "test_messages_proto3_proto_upb",
+    deps = [
         "@com_google_protobuf//:test_messages_proto3_proto",
     ],
 )
@@ -347,6 +362,7 @@ cc_binary(
     copts = COPTS + ["-Ibazel-out/k8-fastbuild/bin"],
     deps = [
         ":conformance_proto_upb",
+        ":test_messages_proto3_proto_upb",
         ":upb",
     ],
 )
