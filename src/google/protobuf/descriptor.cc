@@ -3860,7 +3860,7 @@ Symbol DescriptorPool::NewPlaceholderWithMutexHeld(
     placeholder_file->enum_types_ = tables_->AllocateArray<EnumDescriptor>(1);
 
     EnumDescriptor* placeholder_enum = &placeholder_file->enum_types_[0];
-    memset(placeholder_enum, 0, sizeof(*placeholder_enum));
+    memset(static_cast<void*>(placeholder_enum), 0, sizeof(*placeholder_enum));
 
     placeholder_enum->full_name_ = placeholder_full_name;
     placeholder_enum->name_ = placeholder_name;
@@ -3874,7 +3874,7 @@ Symbol DescriptorPool::NewPlaceholderWithMutexHeld(
     placeholder_enum->values_ = tables_->AllocateArray<EnumValueDescriptor>(1);
 
     EnumValueDescriptor* placeholder_value = &placeholder_enum->values_[0];
-    memset(placeholder_value, 0, sizeof(*placeholder_value));
+    memset(static_cast<void*>(placeholder_value), 0, sizeof(*placeholder_value));
 
     placeholder_value->name_ = tables_->AllocateString("PLACEHOLDER_VALUE");
     // Note that enum value names are siblings of their type, not children.
@@ -3894,7 +3894,7 @@ Symbol DescriptorPool::NewPlaceholderWithMutexHeld(
     placeholder_file->message_types_ = tables_->AllocateArray<Descriptor>(1);
 
     Descriptor* placeholder_message = &placeholder_file->message_types_[0];
-    memset(placeholder_message, 0, sizeof(*placeholder_message));
+    memset(static_cast<void*>(placeholder_message), 0, sizeof(*placeholder_message));
 
     placeholder_message->full_name_ = placeholder_full_name;
     placeholder_message->name_ = placeholder_name;
@@ -3929,7 +3929,7 @@ FileDescriptor* DescriptorPool::NewPlaceholderFileWithMutexHeld(
     mutex_->AssertHeld();
   }
   FileDescriptor* placeholder = tables_->Allocate<FileDescriptor>();
-  memset(placeholder, 0, sizeof(*placeholder));
+  memset(static_cast<void*>(placeholder), 0, sizeof(*placeholder));
 
   placeholder->name_ = tables_->AllocateString(name);
   placeholder->package_ = &internal::GetEmptyString();
