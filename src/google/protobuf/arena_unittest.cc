@@ -1345,10 +1345,8 @@ TEST(ArenaTest, GetArenaShouldReturnNullForNonArenaCompatibleTypes) {
 
   // Test that GetArena returns nullptr for types that have a GetArena alias.
   struct {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-local-typedef"
     using GetArena = Arena*;
-#pragma GCC diagnostic pop
+    GetArena unused;
   } has_get_arena_alias;
   EXPECT_EQ(nullptr, Arena::GetArena(&has_get_arena_alias));
 
