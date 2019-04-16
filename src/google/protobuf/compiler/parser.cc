@@ -1267,7 +1267,7 @@ bool Parser::ParseDefaultAssignment(
       double value;
       DO(ConsumeNumber(&value, "Expected number."));
       // And stringify it again.
-      default_value->append(SimpleDtoa(value));
+      default_value->append(StrCat(value));
       break;
 
     case FieldDescriptorProto::TYPE_BOOL:

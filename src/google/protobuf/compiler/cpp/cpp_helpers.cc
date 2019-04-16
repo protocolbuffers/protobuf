@@ -656,7 +656,7 @@ std::string DefaultValue(const Options& options, const FieldDescriptor* field) {
       } else if (value != value) {
         return "std::numeric_limits<double>::quiet_NaN()";
       } else {
-        return SimpleDtoa(value);
+        return StrCat(value);
       }
     }
     case FieldDescriptor::CPPTYPE_FLOAT: {
@@ -668,7 +668,7 @@ std::string DefaultValue(const Options& options, const FieldDescriptor* field) {
       } else if (value != value) {
         return "std::numeric_limits<float>::quiet_NaN()";
       } else {
-        std::string float_value = SimpleFtoa(value);
+        std::string float_value = StrCat(value);
         // If floating point value contains a period (.) or an exponent
         // (either E or e), then append suffix 'f' to make it a float
         // literal.
