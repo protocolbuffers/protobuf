@@ -107,7 +107,6 @@ ImmutableMessageFieldLiteGenerator::ImmutableMessageFieldLiteGenerator(
     const FieldDescriptor* descriptor, int messageBitIndex, Context* context)
     : descriptor_(descriptor),
       messageBitIndex_(messageBitIndex),
-      context_(context),
       name_resolver_(context->GetNameResolver()) {
   SetMessageVariables(descriptor, messageBitIndex, 0,
                       context->GetFieldGeneratorInfo(descriptor),
@@ -472,10 +471,7 @@ RepeatedImmutableMessageFieldLiteGenerator::
     RepeatedImmutableMessageFieldLiteGenerator(
         const FieldDescriptor* descriptor, int messageBitIndex,
         Context* context)
-    : descriptor_(descriptor),
-      messageBitIndex_(messageBitIndex),
-      context_(context),
-      name_resolver_(context->GetNameResolver()) {
+    : descriptor_(descriptor), name_resolver_(context->GetNameResolver()) {
   SetMessageVariables(descriptor, messageBitIndex, 0,
                       context->GetFieldGeneratorInfo(descriptor),
                       name_resolver_, &variables_);

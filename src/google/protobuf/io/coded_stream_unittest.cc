@@ -131,13 +131,6 @@ namespace {
 
 class CodedStreamTest : public testing::Test {
  protected:
-  // Helper method used by tests for bytes warning. See implementation comment
-  // for further information.
-  static void SetupTotalBytesLimitWarningTest(
-      int total_bytes_limit, int warning_threshold,
-      std::vector<std::string>* out_errors,
-      std::vector<std::string>* out_warnings);
-
   // Buffer used during most of the tests. This assumes tests run sequentially.
   static const int kBufferSize = 1024 * 64;
   static uint8 buffer_[kBufferSize];
@@ -1276,28 +1269,6 @@ TEST_F(CodedStreamTest, TotalBytesLimitNotValidMessageEnd) {
   // this time we're hitting the total bytes limit.
   EXPECT_EQ(0, coded_input.ReadTagNoLastTag());
   EXPECT_FALSE(coded_input.ConsumedEntireMessage());
-}
-
-// This method is used by the tests below.
-// It constructs a CodedInputStream with the given limits and tries to read 2KiB
-// of data from it. Then it returns the logged errors and warnings in the given
-// vectors.
-void CodedStreamTest::SetupTotalBytesLimitWarningTest(
-    int total_bytes_limit, int warning_threshold,
-    std::vector<std::string>* out_errors,
-    std::vector<std::string>* out_warnings) {
-  ArrayInputStream raw_input(buffer_, sizeof(buffer_), 128);
-
-  ScopedMemoryLog scoped_log;
-  {
-    CodedInputStream input(&raw_input);
-    input.SetTotalBytesLimit(total_bytes_limit, warning_threshold);
-    std::string str;
-    EXPECT_TRUE(input.ReadString(&str, 2048));
-  }
-
-  *out_errors = scoped_log.GetMessages(ERROR);
-  *out_warnings = scoped_log.GetMessages(WARNING);
 }
 
 TEST_F(CodedStreamTest, RecursionLimit) {

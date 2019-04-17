@@ -87,8 +87,6 @@ class EnumLiteGenerator {
   Context* context_;
   ClassNameResolver* name_resolver_;
 
-  bool CanUseEnumValues();
-
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(EnumLiteGenerator);
 };
 

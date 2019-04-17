@@ -44,7 +44,6 @@ namespace compiler {
 namespace cpp {
 
 namespace {
-
 string ReinterpretCast(const string& type, const string& expression,
                        bool implicit_weak_field) {
   if (implicit_weak_field) {

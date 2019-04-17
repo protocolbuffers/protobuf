@@ -683,4 +683,5 @@ public final class Internal {
     @Override
     FloatList mutableCopyWithCapacity(int capacity);
   }
+
 }

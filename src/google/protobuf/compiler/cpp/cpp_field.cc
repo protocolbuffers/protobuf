@@ -127,9 +127,7 @@ void FieldGenerator::GenerateMergeFromCodedStreamWithPacking(
 FieldGeneratorMap::FieldGeneratorMap(const Descriptor* descriptor,
                                      const Options& options,
                                      MessageSCCAnalyzer* scc_analyzer)
-    : descriptor_(descriptor),
-      options_(options),
-      field_generators_(descriptor->field_count()) {
+    : descriptor_(descriptor), field_generators_(descriptor->field_count()) {
   // Construct all the FieldGenerators.
   for (int i = 0; i < descriptor->field_count(); i++) {
     field_generators_[i].reset(

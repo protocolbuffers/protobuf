@@ -460,7 +460,7 @@ void DoubleValue::SerializeWithCachedSizes(
   (void) cached_has_bits;
 
   // double value = 1;
-  if (this->value() != 0) {
+  if (!(this->value() <= 0 && this->value() >= 0)) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteDouble(1, this->value(), output);
   }
 
@@ -478,7 +478,7 @@ void DoubleValue::SerializeWithCachedSizes(
   (void) cached_has_bits;
 
   // double value = 1;
-  if (this->value() != 0) {
+  if (!(this->value() <= 0 && this->value() >= 0)) {
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteDoubleToArray(1, this->value(), target);
   }
 
@@ -504,7 +504,7 @@ size_t DoubleValue::ByteSizeLong() const {
   (void) cached_has_bits;
 
   // double value = 1;
-  if (this->value() != 0) {
+  if (!(this->value() <= 0 && this->value() >= 0)) {
     total_size += 1 + 8;
   }
 
@@ -535,7 +535,7 @@ void DoubleValue::MergeFrom(const DoubleValue& from) {
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  if (from.value() != 0) {
+  if (!(from.value() <= 0 && from.value() >= 0)) {
     set_value(from.value());
   }
 }
@@ -745,7 +745,7 @@ void FloatValue::SerializeWithCachedSizes(
   (void) cached_has_bits;
 
   // float value = 1;
-  if (this->value() != 0) {
+  if (!(this->value() <= 0 && this->value() >= 0)) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteFloat(1, this->value(), output);
   }
 
@@ -763,7 +763,7 @@ void FloatValue::SerializeWithCachedSizes(
   (void) cached_has_bits;
 
   // float value = 1;
-  if (this->value() != 0) {
+  if (!(this->value() <= 0 && this->value() >= 0)) {
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteFloatToArray(1, this->value(), target);
   }
 
@@ -789,7 +789,7 @@ size_t FloatValue::ByteSizeLong() const {
   (void) cached_has_bits;
 
   // float value = 1;
-  if (this->value() != 0) {
+  if (!(this->value() <= 0 && this->value() >= 0)) {
     total_size += 1 + 4;
   }
 
@@ -820,7 +820,7 @@ void FloatValue::MergeFrom(const FloatValue& from) {
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  if (from.value() != 0) {
+  if (!(from.value() <= 0 && from.value() >= 0)) {
     set_value(from.value());
   }
 }

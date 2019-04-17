@@ -267,29 +267,6 @@ std::string JavaPackageToDir(std::string package_name) {
   return package_dir;
 }
 
-// TODO(xiaofeng): This function is only kept for it's publicly referenced.
-// It should be removed after mutable API up-integration.
-std::string ToJavaName(const std::string& full_name,
-                       const FileDescriptor* file) {
-  std::string result;
-  if (file->options().java_multiple_files()) {
-    result = FileJavaPackage(file);
-  } else {
-    result = ClassName(file);
-  }
-  if (!result.empty()) {
-    result += '.';
-  }
-  if (file->package().empty()) {
-    result += full_name;
-  } else {
-    // Strip the proto package from full_name since we've replaced it with
-    // the Java package.
-    result += full_name.substr(file->package().size() + 1);
-  }
-  return result;
-}
-
 std::string ClassName(const Descriptor* descriptor) {
   ClassNameResolver name_resolver;
   return name_resolver.GetClassName(descriptor, true);

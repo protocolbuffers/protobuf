@@ -1179,21 +1179,6 @@ void LinkMessageReflection() {
   (void)&unused;  // Use address to avoid an extra load of volatile variable.
 }
 
-namespace internal {
-
-// Legacy functions, to preserve compatibility with existing callers.
-// These had a slightly different signature, so we have to adjust "T".
-template <typename T>
-T dynamic_cast_if_available(const Message* from) {
-  return DynamicCastToGenerated<typename std::remove_pointer<T>::type>(from);
-}
-template <typename T>
-T dynamic_cast_if_available(Message* from) {
-  return DynamicCastToGenerated<typename std::remove_pointer<T>::type>(from);
-}
-
-}  // namespace internal
-
 // =============================================================================
 // Implementation details for {Get,Mutable}RawRepeatedPtrField.  We provide
 // specializations for <std::string>, <StringPieceField> and <Message> and

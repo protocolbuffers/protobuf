@@ -887,7 +887,6 @@ class PROTOBUF_EXPORT OneofDescriptor {
   const std::string* name_;
   const std::string* full_name_;
   const Descriptor* containing_type_;
-  bool is_extendable_;
   int field_count_;
   const FieldDescriptor** fields_;
   const OneofOptions* options_;

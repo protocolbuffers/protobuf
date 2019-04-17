@@ -1041,18 +1041,21 @@ int DeleteRepeatedField(
 
   // Remove items, starting from the end.
   for (; length > to; length--) {
-    // If there is a living weak reference to a deleted item, we "Release" it,
-    if (field_descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
-        self->child_submessages) {
-      Message* sub_message = reflection->MutableRepeatedMessage(
-          message, field_descriptor, length - 1);
-      if (CMessage* released = self->MaybeReleaseSubMessage(sub_message)) {
-        released->message = reflection->ReleaseLast(message, field_descriptor);
-        continue;
-      }
+    if (field_descriptor->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) {
+      reflection->RemoveLast(message, field_descriptor);
+      continue;
     }
-    // No Python object refers to this item, discard the value.
-    reflection->RemoveLast(message, field_descriptor);
+    // It seems that RemoveLast() is less efficient for sub-messages, and
+    // the memory is not completely released. Prefer ReleaseLast().
+    Message* sub_message = reflection->ReleaseLast(message, field_descriptor);
+    // If there is a live weak reference to an item being removed, we "Release"
+    // it, and it takes ownership of the message.
+    if (CMessage* released = self->MaybeReleaseSubMessage(sub_message)) {
+      released->message = sub_message;
+    } else {
+      // sub_message was not transferred, delete it.
+      delete sub_message;
+    }
   }
 
   return 0;

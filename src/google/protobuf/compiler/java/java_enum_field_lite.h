@@ -69,7 +69,6 @@ class ImmutableEnumFieldLiteGenerator : public ImmutableFieldLiteGenerator {
   void GenerateMembers(io::Printer* printer) const;
   void GenerateBuilderMembers(io::Printer* printer) const;
   void GenerateInitializationCode(io::Printer* printer) const;
-  void GenerateFieldInfo(io::Printer* printer) const;
   void GenerateFieldInfo(io::Printer* printer,
                          std::vector<uint16>* output) const;
 
@@ -95,7 +94,6 @@ class ImmutableEnumOneofFieldLiteGenerator
 
   void GenerateMembers(io::Printer* printer) const;
   void GenerateBuilderMembers(io::Printer* printer) const;
-  void GenerateFieldInfo(io::Printer* printer) const;
   void GenerateFieldInfo(io::Printer* printer,
                          std::vector<uint16>* output) const;
 
@@ -116,7 +114,6 @@ class RepeatedImmutableEnumFieldLiteGenerator
   void GenerateMembers(io::Printer* printer) const;
   void GenerateBuilderMembers(io::Printer* printer) const;
   void GenerateInitializationCode(io::Printer* printer) const;
-  void GenerateFieldInfo(io::Printer* printer) const;
   void GenerateFieldInfo(io::Printer* printer,
                          std::vector<uint16>* output) const;
 
@@ -125,7 +122,6 @@ class RepeatedImmutableEnumFieldLiteGenerator
  private:
   const FieldDescriptor* descriptor_;
   std::map<std::string, std::string> variables_;
-  const int messageBitIndex_;
   Context* context_;
   ClassNameResolver* name_resolver_;
 

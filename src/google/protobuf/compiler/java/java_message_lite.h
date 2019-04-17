@@ -63,7 +63,6 @@ class ImmutableMessageLiteGenerator : public MessageGenerator {
   void GenerateBuilder(io::Printer* printer);
   void GenerateDynamicMethodNewBuilder(io::Printer* printer);
   void GenerateInitializers(io::Printer* printer);
-  void GenerateEqualsAndHashCode(io::Printer* printer);
   void GenerateParser(io::Printer* printer);
   void GenerateConstructor(io::Printer* printer);
   void GenerateDynamicMethodNewBuildMessageInfo(io::Printer* printer);

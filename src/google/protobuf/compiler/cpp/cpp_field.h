@@ -227,7 +227,6 @@ class FieldGeneratorMap {
 
  private:
   const Descriptor* descriptor_;
-  const Options& options_;
   std::vector<std::unique_ptr<FieldGenerator>> field_generators_;
 
   static FieldGenerator* MakeGoogleInternalGenerator(
