@@ -53,6 +53,7 @@
 #include <google/protobuf/stubs/strutil.h>
 
 
+// Always include as last one, otherwise it can break compilation
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -512,14 +513,20 @@ bool MessageDifferencer::CompareWithFields(
 
   bool result = false;
 
-  std::vector<const FieldDescriptor*> message1_fields(message1_fields_arg);
-  std::vector<const FieldDescriptor*> message2_fields(message2_fields_arg);
+  FieldDescriptorArray message1_fields(message1_fields_arg.size() + 1);
+  FieldDescriptorArray message2_fields(message2_fields_arg.size() + 1);
+
+  std::copy(message1_fields_arg.cbegin(), message1_fields_arg.cend(),
+            message1_fields.begin());
+  std::copy(message2_fields_arg.cbegin(), message2_fields_arg.cend(),
+            message2_fields.begin());
+
+  // Append sentinel values.
+  message1_fields[message1_fields_arg.size()] = nullptr;
+  message2_fields[message2_fields_arg.size()] = nullptr;
 
   std::sort(message1_fields.begin(), message1_fields.end(), FieldBefore);
   std::sort(message2_fields.begin(), message2_fields.end(), FieldBefore);
-  // Append NULL sentinel values.
-  message1_fields.push_back(NULL);
-  message2_fields.push_back(NULL);
 
   // Setup the internal reporter if need be.
   if (output_string_) {
@@ -579,10 +586,8 @@ bool MessageDifferencer::Compare(const Message& message1,
     }
   }
 
-  std::vector<const FieldDescriptor*> message1_fields =
-      RetrieveFields(message1, true);
-  std::vector<const FieldDescriptor*> message2_fields =
-      RetrieveFields(message2, false);
+  FieldDescriptorArray message1_fields = RetrieveFields(message1, true);
+  FieldDescriptorArray message2_fields = RetrieveFields(message2, false);
 
   return CompareRequestedFieldsUsingSettings(
       message1, message2,
@@ -590,48 +595,49 @@ bool MessageDifferencer::Compare(const Message& message1,
       parent_fields) && unknown_compare_result;
 }
 
-std::vector<const FieldDescriptor*> MessageDifferencer::RetrieveFields(
-    const Message& message, bool base_message) {
+FieldDescriptorArray MessageDifferencer::RetrieveFields(const Message& message,
+                                                        bool base_message) {
   const Descriptor* descriptor = message.GetDescriptor();
 
-  std::vector<const FieldDescriptor*> message_fields;
-  message_fields.reserve(descriptor->field_count() + 1);
+  tmp_message_fields_.clear();
+  tmp_message_fields_.reserve(descriptor->field_count() + 1);
 
   const Reflection* reflection = message.GetReflection();
   if (descriptor->options().map_entry()) {
     if (this->scope_ == PARTIAL && base_message) {
-      reflection->ListFields(message, &message_fields);
+      reflection->ListFields(message, &tmp_message_fields_);
     } else {
       // Map entry fields are always considered present.
       for (int i = 0; i < descriptor->field_count(); i++) {
-        message_fields.push_back(descriptor->field(i));
+        tmp_message_fields_.push_back(descriptor->field(i));
       }
     }
   } else {
-    reflection->ListFields(message, &message_fields);
+    reflection->ListFields(message, &tmp_message_fields_);
   }
   // Add sentinel values to deal with the
   // case where the number of the fields in
   // each list are different.
-  message_fields.push_back(nullptr);
+  tmp_message_fields_.push_back(nullptr);
+
+  FieldDescriptorArray message_fields(tmp_message_fields_.begin(),
+                                      tmp_message_fields_.end());
 
   return message_fields;
 }
 
 bool MessageDifferencer::CompareRequestedFieldsUsingSettings(
-    const Message& message1,
-    const Message& message2,
-    const std::vector<const FieldDescriptor*>& message1_fields,
-    const std::vector<const FieldDescriptor*>& message2_fields,
+    const Message& message1, const Message& message2,
+    const FieldDescriptorArray& message1_fields,
+    const FieldDescriptorArray& message2_fields,
     std::vector<SpecificField>* parent_fields) {
   if (scope_ == FULL) {
     if (message_field_comparison_ == EQUIVALENT) {
       // We need to merge the field lists of both messages (i.e.
       // we are merely checking for a difference in field values,
       // rather than the addition or deletion of fields).
-      std::vector<const FieldDescriptor*> fields_union;
-      CombineFields(message1_fields, FULL, message2_fields, FULL,
-                    &fields_union);
+      FieldDescriptorArray fields_union =
+          CombineFields(message1_fields, FULL, message2_fields, FULL);
       return CompareWithFieldsInternal(message1, message2, fields_union,
                                        fields_union, parent_fields);
     } else {
@@ -651,24 +657,21 @@ bool MessageDifferencer::CompareRequestedFieldsUsingSettings(
       // but only the intersection for message2.  This way, any fields
       // only present in message2 will be ignored, but any fields only
       // present in message1 will be marked as a difference.
-      std::vector<const FieldDescriptor*> fields_intersection;
-      CombineFields(message1_fields, PARTIAL, message2_fields, PARTIAL,
-                    &fields_intersection);
+      FieldDescriptorArray fields_intersection =
+          CombineFields(message1_fields, PARTIAL, message2_fields, PARTIAL);
       return CompareWithFieldsInternal(message1, message2, message1_fields,
                                        fields_intersection, parent_fields);
     }
   }
 }
 
-void MessageDifferencer::CombineFields(
-    const std::vector<const FieldDescriptor*>& fields1,
-    Scope fields1_scope,
-    const std::vector<const FieldDescriptor*>& fields2,
-    Scope fields2_scope,
-    std::vector<const FieldDescriptor*>* combined_fields) {
-
+FieldDescriptorArray MessageDifferencer::CombineFields(
+    const FieldDescriptorArray& fields1, Scope fields1_scope,
+    const FieldDescriptorArray& fields2, Scope fields2_scope) {
   int index1 = 0;
   int index2 = 0;
+
+  tmp_message_fields_.clear();
 
   while (index1 < fields1.size() && index2 < fields2.size()) {
     const FieldDescriptor* field1 = fields1[index1];
@@ -676,27 +679,33 @@ void MessageDifferencer::CombineFields(
 
     if (FieldBefore(field1, field2)) {
       if (fields1_scope == FULL) {
-        combined_fields->push_back(fields1[index1]);
+        tmp_message_fields_.push_back(fields1[index1]);
       }
       ++index1;
     } else if (FieldBefore(field2, field1)) {
       if (fields2_scope == FULL) {
-        combined_fields->push_back(fields2[index2]);
+        tmp_message_fields_.push_back(fields2[index2]);
       }
       ++index2;
     } else {
-      combined_fields->push_back(fields1[index1]);
+      tmp_message_fields_.push_back(fields1[index1]);
       ++index1;
       ++index2;
     }
   }
+
+  tmp_message_fields_.push_back(nullptr);
+
+  FieldDescriptorArray combined_fields(tmp_message_fields_.begin(),
+                                       tmp_message_fields_.end());
+
+  return combined_fields;
 }
 
 bool MessageDifferencer::CompareWithFieldsInternal(
-    const Message& message1,
-    const Message& message2,
-    const std::vector<const FieldDescriptor*>& message1_fields,
-    const std::vector<const FieldDescriptor*>& message2_fields,
+    const Message& message1, const Message& message2,
+    const FieldDescriptorArray& message1_fields,
+    const FieldDescriptorArray& message2_fields,
     std::vector<SpecificField>* parent_fields) {
   bool isDifferent = false;
   int field_index1 = 0;

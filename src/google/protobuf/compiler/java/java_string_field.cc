@@ -139,11 +139,7 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
 ImmutableStringFieldGenerator::ImmutableStringFieldGenerator(
     const FieldDescriptor* descriptor, int messageBitIndex, int builderBitIndex,
     Context* context)
-    : descriptor_(descriptor),
-      messageBitIndex_(messageBitIndex),
-      builderBitIndex_(builderBitIndex),
-      context_(context),
-      name_resolver_(context->GetNameResolver()) {
+    : descriptor_(descriptor), name_resolver_(context->GetNameResolver()) {
   SetPrimitiveVariables(descriptor, messageBitIndex, builderBitIndex,
                         context->GetFieldGeneratorInfo(descriptor),
                         name_resolver_, &variables_);
@@ -708,11 +704,7 @@ void ImmutableStringOneofFieldGenerator::GenerateSerializedSizeCode(
 RepeatedImmutableStringFieldGenerator::RepeatedImmutableStringFieldGenerator(
     const FieldDescriptor* descriptor, int messageBitIndex, int builderBitIndex,
     Context* context)
-    : descriptor_(descriptor),
-      messageBitIndex_(messageBitIndex),
-      builderBitIndex_(builderBitIndex),
-      context_(context),
-      name_resolver_(context->GetNameResolver()) {
+    : descriptor_(descriptor), name_resolver_(context->GetNameResolver()) {
   SetPrimitiveVariables(descriptor, messageBitIndex, builderBitIndex,
                         context->GetFieldGeneratorInfo(descriptor),
                         name_resolver_, &variables_);

@@ -79,11 +79,13 @@ class MapFieldBaseStub : public MapFieldBase {
     state_.store(STATE_MODIFIED_REPEATED, std::memory_order_relaxed);
   }
   bool ContainsMapKey(const MapKey& map_key) const override { return false; }
-  bool InsertOrLookupMapValue(const MapKey& map_key, MapValueRef* val) override {
+  bool InsertOrLookupMapValue(const MapKey& map_key,
+                              MapValueRef* val) override {
     return false;
   }
   bool DeleteMapValue(const MapKey& map_key) override { return false; }
-  bool EqualIterator(const MapIterator& a, const MapIterator& b) const override {
+  bool EqualIterator(const MapIterator& a,
+                     const MapIterator& b) const override {
     return false;
   }
   int size() const override { return 0; }

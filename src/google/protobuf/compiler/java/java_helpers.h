@@ -111,14 +111,6 @@ std::string FileJavaPackage(const FileDescriptor* file, bool immutable);
 // Returns output directory for the given package name.
 std::string JavaPackageToDir(std::string package_name);
 
-// Converts the given fully-qualified name in the proto namespace to its
-// fully-qualified name in the Java namespace, given that it is in the given
-// file.
-// TODO(xiaofeng): this method is deprecated and should be removed in the
-// future.
-std::string ToJavaName(const std::string& full_name,
-                       const FileDescriptor* file);
-
 // TODO(xiaofeng): the following methods are kept for they are exposed
 // publicly in //net/proto2/compiler/java/public/names.h. They return
 // immutable names only and should be removed after mutable API is

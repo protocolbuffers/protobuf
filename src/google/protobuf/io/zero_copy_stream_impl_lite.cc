@@ -181,8 +181,6 @@ int64 StringOutputStream::ByteCount() const {
   return target_->size();
 }
 
-void StringOutputStream::SetString(std::string* target) { target_ = target; }
-
 // ===================================================================
 
 int CopyingInputStream::Skip(int count) {

@@ -78,10 +78,6 @@ class DescriptorPoolTypeResolverTest : public testing::Test {
     return NULL;
   }
 
-  bool HasField(const Type& type, const std::string& name) {
-    return FindField(type, name) != NULL;
-  }
-
   bool HasField(const Type& type, Field::Cardinality cardinality,
                 Field::Kind kind, const std::string& name, int number) {
     const Field* field = FindField(type, name);

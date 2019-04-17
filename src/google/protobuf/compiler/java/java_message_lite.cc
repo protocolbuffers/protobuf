@@ -65,15 +65,6 @@ namespace java {
 using internal::WireFormat;
 using internal::WireFormatLite;
 
-namespace {
-std::string MapValueImmutableClassdName(const Descriptor* descriptor,
-                                        ClassNameResolver* name_resolver) {
-  const FieldDescriptor* value_field = descriptor->FindFieldByName("value");
-  GOOGLE_CHECK_EQ(FieldDescriptor::TYPE_MESSAGE, value_field->type());
-  return name_resolver->GetImmutableClassName(value_field->message_type());
-}
-}  // namespace
-
 // ===================================================================
 ImmutableMessageLiteGenerator::ImmutableMessageLiteGenerator(
     const Descriptor* descriptor, Context* context)

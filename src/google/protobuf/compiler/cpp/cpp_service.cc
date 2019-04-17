@@ -167,14 +167,6 @@ void ServiceGenerator::GenerateMethodSignatures(VirtualOrNon virtual_or_non,
 
 // ===================================================================
 
-void ServiceGenerator::GenerateDescriptorInitializer(io::Printer* printer,
-                                                     int index) {
-  Formatter format(printer, vars_);
-  format("$classname$_descriptor_ = file->service($1$);\n", index);
-}
-
-// ===================================================================
-
 void ServiceGenerator::GenerateImplementation(io::Printer* printer) {
   Formatter format(printer, vars_);
   format(

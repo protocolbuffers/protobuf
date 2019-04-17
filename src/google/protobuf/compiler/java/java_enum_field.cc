@@ -137,10 +137,7 @@ void SetEnumVariables(const FieldDescriptor* descriptor, int messageBitIndex,
 ImmutableEnumFieldGenerator::ImmutableEnumFieldGenerator(
     const FieldDescriptor* descriptor, int messageBitIndex, int builderBitIndex,
     Context* context)
-    : descriptor_(descriptor),
-      messageBitIndex_(messageBitIndex),
-      builderBitIndex_(builderBitIndex),
-      name_resolver_(context->GetNameResolver()) {
+    : descriptor_(descriptor), name_resolver_(context->GetNameResolver()) {
   SetEnumVariables(descriptor, messageBitIndex, builderBitIndex,
                    context->GetFieldGeneratorInfo(descriptor), name_resolver_,
                    &variables_);
@@ -588,11 +585,7 @@ void ImmutableEnumOneofFieldGenerator::GenerateHashCode(
 RepeatedImmutableEnumFieldGenerator::RepeatedImmutableEnumFieldGenerator(
     const FieldDescriptor* descriptor, int messageBitIndex, int builderBitIndex,
     Context* context)
-    : descriptor_(descriptor),
-      messageBitIndex_(messageBitIndex),
-      builderBitIndex_(builderBitIndex),
-      context_(context),
-      name_resolver_(context->GetNameResolver()) {
+    : descriptor_(descriptor), name_resolver_(context->GetNameResolver()) {
   SetEnumVariables(descriptor, messageBitIndex, builderBitIndex,
                    context->GetFieldGeneratorInfo(descriptor), name_resolver_,
                    &variables_);
