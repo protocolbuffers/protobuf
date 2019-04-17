@@ -277,21 +277,52 @@ def _upb_proto_library_srcs_impl(ctx):
 def _upb_proto_reflection_library_srcs_impl(ctx):
     return _upb_proto_srcs_impl(ctx, ".upbdefs")
 
+def _get_real_short_path(file):
+    # For some reason, files from other archives have short paths that look like:
+    #   ../com_google_protobuf/google/protobuf/descriptor.proto
+    short_path = file.short_path
+    if short_path.startswith("../"):
+        second_slash = short_path.index("/", 3)
+        short_path = short_path[second_slash + 1:]
+    return short_path
+
+def _get_real_root(file):
+    real_short_path = _get_real_short_path(file)
+    return file.path[:-len(real_short_path)]
+
+def _get_real_roots(files):
+    roots = {}
+    for file in files:
+        real_root = _get_real_root(file)
+        if real_root:
+            roots[real_root] = True
+    return roots.keys()
+
+def _generate_output_file(ctx, src, extension):
+    real_short_path = _get_real_short_path(src)
+    output_filename = paths.replace_extension(real_short_path, extension)
+    ret = ctx.new_file(ctx.genfiles_dir, output_filename)
+    real_genfiles_dir = ret.path[:-len(output_filename)]
+    return ret, real_genfiles_dir
+
 def _generate_output_files(ctx, package, file_names, file_types):
     result = {}
+    real_genfiles_dir = None
     for key in file_types.keys():
-        relative_paths = [paths.relativize(src.path, package) for src in file_names]
-        replaced_extensions = [paths.replace_extension(path, file_types[key]) for path in relative_paths]
-        result[key] = [ctx.new_file(ctx.genfiles_dir, file) for file in replaced_extensions]
-    return result
+        arr = []
+        for name in file_names:
+            file, real_genfiles_dir = _generate_output_file(ctx, name, file_types[key])
+            arr.append(file)
+        result[key] = arr
+    return result, real_genfiles_dir
 
 def cc_library_func(ctx, hdrs, srcs, deps):
     compilation_contexts = []
-    linking_contexts = []
+    cc_infos = []
     for dep in deps:
         if CcInfo in dep:
+            cc_infos.append(dep[CcInfo])
             compilation_contexts.append(dep[CcInfo].compilation_context)
-            linking_contexts.append(dep[CcInfo].linking_context)
     toolchain = find_cpp_toolchain(ctx)
     feature_configuration = cc_common.configure_features(
         cc_toolchain = toolchain,
@@ -362,12 +393,11 @@ def cc_library_func(ctx, hdrs, srcs, deps):
     linking_context = cc_common.create_linking_context(
         libraries_to_link = [library_to_link],
     )
-    return [
-        CcInfo(
-            compilation_context = compilation_info.compilation_context,
-            linking_context = linking_context,
-        ),
-    ]
+    info = CcInfo(
+        compilation_context = compilation_info.compilation_context,
+        linking_context = linking_context,
+    )
+    return cc_common.merge_cc_infos(cc_infos = [info] + cc_infos)
 
 def _upb_proto_library_aspect_impl(target, ctx):
     proto_sources = target[ProtoInfo].direct_sources
@@ -375,7 +405,7 @@ def _upb_proto_library_aspect_impl(target, ctx):
         "srcs": ".upb.c",
         "hdrs": ".upb.h",
     }
-    files = _generate_output_files(
+    files, real_genfiles_dir = _generate_output_files(
         ctx = ctx,
         package = ctx.label.package,
         file_names = proto_sources,
@@ -388,15 +418,19 @@ def _upb_proto_library_aspect_impl(target, ctx):
         ),
         outputs = files["srcs"] + files["hdrs"],
         executable = ctx.executable._protoc,
-        arguments = ["--upb_out=" + ctx.genfiles_dir.path, "--plugin=protoc-gen-upb=" + ctx.executable._upbc.path] + [file.path for file in proto_sources],
+        arguments = ["--upb_out=" + _get_real_root(files["srcs"][0]),
+                     "--plugin=protoc-gen-upb=" + ctx.executable._upbc.path] +
+                    ["-I" + path for path in _get_real_roots(target[ProtoInfo].direct_sources + list(target[ProtoInfo].transitive_sources))] +
+                    [file.path for file in proto_sources],
         progress_message = "Generating upb protos",
     )
-    return cc_library_func(
+    cc_info = cc_library_func(
         ctx = ctx,
         hdrs = files["hdrs"],
         srcs = files["srcs"],
         deps = ctx.rule.attr.deps + [ctx.attr._upb],
     )
+    return [cc_info]
 
 _upb_proto_library_aspect = aspect(
     attrs = {

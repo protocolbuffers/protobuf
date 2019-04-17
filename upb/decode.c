@@ -512,7 +512,7 @@ static bool upb_decode_field(upb_decstate *d, upb_decframe *frame) {
         frame->limit = d->ptr;
         return true;
       default:
-        return false;
+        CHK(false);
     }
   } else {
     CHK(field_number != 0);

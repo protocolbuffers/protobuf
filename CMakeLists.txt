@@ -60,7 +60,6 @@ endif()
 enable_testing()
 
 add_library(upb
-  google/protobuf/descriptor.upb.c
   upb/decode.c
   upb/encode.c
   upb/msg.c
@@ -69,7 +68,6 @@ add_library(upb
   upb/table.c
   upb/table.int.h
   upb/upb.c
-  google/protobuf/descriptor.upb.h
   upb/decode.h
   upb/encode.h
   upb/generated_util.h
@@ -81,6 +79,7 @@ add_library(reflection
   upb/def.h
   upb/msgfactory.h)
 target_link_libraries(reflection
+  descriptor_upbproto
   upb)
 add_library(table INTERFACE)
 target_link_libraries(table INTERFACE
