@@ -338,14 +338,6 @@ class PROTOBUF_EXPORT WireFormatLite {
   static inline bool ReadMessage(io::CodedInputStream* input,
                                  MessageType* value);
 
-  // Do not use.
-  template <typename MessageType>
-  static inline bool ReadGroupNoVirtual(int field_number,
-                                        io::CodedInputStream* input,
-                                        MessageType* value) {
-    return ReadGroup(field_number, input, value);
-  }
-
   template <typename MessageType>
   static inline bool ReadMessageNoVirtual(io::CodedInputStream* input,
                                           MessageType* value) {

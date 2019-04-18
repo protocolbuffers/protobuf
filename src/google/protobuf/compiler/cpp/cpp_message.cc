@@ -177,8 +177,8 @@ bool EmitFieldNonDefaultCondition(io::Printer* printer,
     } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
       // Message fields still have has_$name$() methods.
       format("if ($prefix$has_$name$()) {\n");
-    } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_DOUBLE 
-               || field->cpp_type() == FieldDescriptor::CPPTYPE_FLOAT) {
+    } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_DOUBLE ||
+               field->cpp_type() == FieldDescriptor::CPPTYPE_FLOAT) {
       // Handle float comparison to prevent -Wfloat-equal warnings
       format("if (!($prefix$$name$() <= 0 && $prefix$$name$() >= 0)) {\n");
     } else {
@@ -766,7 +766,8 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* printer) {
     format.Set("camel_oneof_name", UnderscoresToCamelCase(oneof->name(), true));
     format(
         "void ${1$clear_$oneof_name$$}$();\n"
-        "$camel_oneof_name$Case $oneof_name$_case() const;\n", oneof);
+        "$camel_oneof_name$Case $oneof_name$_case() const;\n",
+        oneof);
   }
 }
 
@@ -1551,7 +1552,8 @@ void MessageGenerator::GenerateInlineMethods(io::Printer* printer) {
         "${1$$oneof_name$_case$}$() const {\n"
         "  return $classname$::$camel_oneof_name$Case("
         "_oneof_case_[$oneof_index$]);\n"
-        "}\n", oneof);
+        "}\n",
+        oneof);
   }
 }
 
@@ -2743,21 +2745,6 @@ void MessageGenerator::GenerateSourceInProto2Namespace(io::Printer* printer) {
       "  return Arena::$1$Internal< $classtype$ >(arena);\n"
       "}\n",
       MessageCreateFunction(descriptor_));
-}
-
-bool MessageGenerator::MaybeGenerateOptionalFieldCondition(
-    io::Printer* printer, const FieldDescriptor* field,
-    int expected_has_bits_index) {
-  Formatter format(printer, variables_);
-  int has_bit_index = has_bit_indices_[field->index()];
-  if (!field->options().weak() &&
-      expected_has_bits_index == has_bit_index / 32) {
-    const std::string mask =
-        StrCat(strings::Hex(1u << (has_bit_index % 32), strings::ZERO_PAD_8));
-    format("if (cached_has_bits & 0x$1$u) {\n", mask);
-    return true;
-  }
-  return false;
 }
 
 void MessageGenerator::GenerateClear(io::Printer* printer) {

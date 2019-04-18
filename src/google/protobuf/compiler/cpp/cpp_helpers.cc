@@ -166,20 +166,6 @@ static std::unordered_set<std::string>* MakeKeywordsMap() {
 
 static std::unordered_set<std::string>& kKeywords = *MakeKeywordsMap();
 
-// Returns whether the provided descriptor has an extension. This includes its
-// nested types.
-bool HasExtension(const Descriptor* descriptor) {
-  if (descriptor->extension_count() > 0) {
-    return true;
-  }
-  for (int i = 0; i < descriptor->nested_type_count(); ++i) {
-    if (HasExtension(descriptor->nested_type(i))) {
-      return true;
-    }
-  }
-  return false;
-}
-
 // Encode [0..63] as 'A'-'Z', 'a'-'z', '0'-'9', '_'
 char Base63Char(int value) {
   GOOGLE_CHECK_GE(value, 0);

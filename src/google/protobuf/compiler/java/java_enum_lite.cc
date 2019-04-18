@@ -223,18 +223,6 @@ void EnumLiteGenerator::Generate(io::Printer* printer) {
   printer->Print("}\n\n");
 }
 
-bool EnumLiteGenerator::CanUseEnumValues() {
-  if (canonical_values_.size() != descriptor_->value_count()) {
-    return false;
-  }
-  for (int i = 0; i < descriptor_->value_count(); i++) {
-    if (descriptor_->value(i)->name() != canonical_values_[i]->name()) {
-      return false;
-    }
-  }
-  return true;
-}
-
 }  // namespace java
 }  // namespace compiler
 }  // namespace protobuf

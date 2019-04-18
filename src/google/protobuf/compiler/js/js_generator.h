@@ -278,8 +278,6 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
   void GenerateClassFieldFromObject(const GeneratorOptions& options,
                                     io::Printer* printer,
                                     const FieldDescriptor* field) const;
-  void GenerateClassClone(const GeneratorOptions& options, io::Printer* printer,
-                          const Descriptor* desc) const;
   void GenerateClassRegistration(const GeneratorOptions& options,
                                  io::Printer* printer,
                                  const Descriptor* desc) const;

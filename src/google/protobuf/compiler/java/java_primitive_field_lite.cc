@@ -183,7 +183,6 @@ ImmutablePrimitiveFieldLiteGenerator::ImmutablePrimitiveFieldLiteGenerator(
     const FieldDescriptor* descriptor, int messageBitIndex, Context* context)
     : descriptor_(descriptor),
       messageBitIndex_(messageBitIndex),
-      context_(context),
       name_resolver_(context->GetNameResolver()) {
   SetPrimitiveVariables(descriptor, messageBitIndex, 0,
                         context->GetFieldGeneratorInfo(descriptor),
@@ -444,7 +443,6 @@ RepeatedImmutablePrimitiveFieldLiteGenerator::
         const FieldDescriptor* descriptor, int messageBitIndex,
         Context* context)
     : descriptor_(descriptor),
-      messageBitIndex_(messageBitIndex),
       context_(context),
       name_resolver_(context->GetNameResolver()) {
   SetPrimitiveVariables(descriptor, messageBitIndex, 0,

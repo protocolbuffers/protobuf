@@ -281,42 +281,6 @@ void ImmutableEnumFieldLiteGenerator::GenerateInitializationCode(
 }
 
 void ImmutableEnumFieldLiteGenerator::GenerateFieldInfo(
-    io::Printer* printer) const {
-  if (SupportFieldPresence(descriptor_->file())) {
-    if (descriptor_->is_required()) {
-      printer->Print(
-          variables_,
-          "fieldInfoForProto2Required(\n"
-          "    reflectField($classname$.class, \"$name$_\"),\n"
-          "    $number$,\n"
-          "    com.google.protobuf.FieldType.$annotation_field_type$,\n"
-          "    $bit_field_name$,\n"
-          "    $bit_field_mask$,\n"
-          "    false,\n"
-          "    $type$.internalGetValueMap())");
-    } else {
-      printer->Print(
-          variables_,
-          "fieldInfoForProto2Optional(\n"
-          "    reflectField($classname$.class, \"$name$_\"),\n"
-          "    $number$,\n"
-          "    com.google.protobuf.FieldType.$annotation_field_type$,\n"
-          "    $bit_field_name$,\n"
-          "    $bit_field_mask$,\n"
-          "    false,\n"
-          "    $type$.internalGetValueMap())");
-    }
-  } else {
-    printer->Print(
-        variables_,
-        "fieldInfoWithEnumMap(\n"
-        "    reflectField($classname$.class, \"$name$_\"),\n"
-        "    $number$,\n"
-        "    com.google.protobuf.FieldType.$annotation_field_type$,\n"
-        "    $type$.internalGetValueMap())");
-  }
-}
-void ImmutableEnumFieldLiteGenerator::GenerateFieldInfo(
     io::Printer* printer, std::vector<uint16>* output) const {
   WriteIntToUtf16CharSequence(descriptor_->number(), output);
   WriteIntToUtf16CharSequence(GetExperimentalJavaFieldType(descriptor_),
@@ -417,15 +381,6 @@ void ImmutableEnumOneofFieldLiteGenerator::GenerateMembers(
 }
 
 void ImmutableEnumOneofFieldLiteGenerator::GenerateFieldInfo(
-    io::Printer* printer) const {
-  printer->Print(variables_,
-                 "fieldInfoForOneofEnum(\n"
-                 "    $number$,\n"
-                 "    $oneof_name$_,\n"
-                 "    $oneof_stored_type$.class,\n"
-                 "    $type$.internalGetValueMap())");
-}
-void ImmutableEnumOneofFieldLiteGenerator::GenerateFieldInfo(
     io::Printer* printer, std::vector<uint16>* output) const {
   WriteIntToUtf16CharSequence(descriptor_->number(), output);
   WriteIntToUtf16CharSequence(GetExperimentalJavaFieldType(descriptor_),
@@ -504,7 +459,6 @@ RepeatedImmutableEnumFieldLiteGenerator::
                                             int messageBitIndex,
                                             Context* context)
     : descriptor_(descriptor),
-      messageBitIndex_(messageBitIndex),
       context_(context),
       name_resolver_(context->GetNameResolver()) {
   SetEnumVariables(descriptor, messageBitIndex, 0,
@@ -678,15 +632,6 @@ void RepeatedImmutableEnumFieldLiteGenerator::GenerateMembers(
   }
 }
 
-void RepeatedImmutableEnumFieldLiteGenerator::GenerateFieldInfo(
-    io::Printer* printer) const {
-  printer->Print(variables_,
-                 "fieldInfoWithEnumMap(\n"
-                 "    reflectField($classname$.class, \"$name$_\"),\n"
-                 "    $number$,\n"
-                 "    com.google.protobuf.FieldType.$annotation_field_type$,\n"
-                 "    $type$.internalGetValueMap())");
-}
 void RepeatedImmutableEnumFieldLiteGenerator::GenerateFieldInfo(
     io::Printer* printer, std::vector<uint16>* output) const {
   WriteIntToUtf16CharSequence(descriptor_->number(), output);

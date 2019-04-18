@@ -123,7 +123,6 @@ ImmutableStringFieldLiteGenerator::ImmutableStringFieldLiteGenerator(
     const FieldDescriptor* descriptor, int messageBitIndex, Context* context)
     : descriptor_(descriptor),
       messageBitIndex_(messageBitIndex),
-      context_(context),
       name_resolver_(context->GetNameResolver()) {
   SetPrimitiveVariables(descriptor, messageBitIndex, 0,
                         context->GetFieldGeneratorInfo(descriptor),
@@ -489,10 +488,7 @@ RepeatedImmutableStringFieldLiteGenerator::
     RepeatedImmutableStringFieldLiteGenerator(const FieldDescriptor* descriptor,
                                               int messageBitIndex,
                                               Context* context)
-    : descriptor_(descriptor),
-      messageBitIndex_(messageBitIndex),
-      context_(context),
-      name_resolver_(context->GetNameResolver()) {
+    : descriptor_(descriptor), name_resolver_(context->GetNameResolver()) {
   SetPrimitiveVariables(descriptor, messageBitIndex, 0,
                         context->GetFieldGeneratorInfo(descriptor),
                         name_resolver_, &variables_);
@@ -700,11 +696,6 @@ void RepeatedImmutableStringFieldLiteGenerator::GenerateBuilderMembers(
       "  return this;\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_);
-}
-
-void RepeatedImmutableStringFieldLiteGenerator::
-    GenerateFieldBuilderInitializationCode(io::Printer* printer) const {
-  // noop for strings
 }
 
 void RepeatedImmutableStringFieldLiteGenerator::GenerateFieldInfo(

@@ -49,9 +49,7 @@ namespace java {
 
 ImmutableExtensionGenerator::ImmutableExtensionGenerator(
     const FieldDescriptor* descriptor, Context* context)
-    : descriptor_(descriptor),
-      context_(context),
-      name_resolver_(context->GetNameResolver()) {
+    : descriptor_(descriptor), name_resolver_(context->GetNameResolver()) {
   if (descriptor_->extension_scope() != NULL) {
     scope_ =
         name_resolver_->GetImmutableClassName(descriptor_->extension_scope());

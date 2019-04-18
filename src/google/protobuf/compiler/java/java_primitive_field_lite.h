@@ -78,7 +78,6 @@ class ImmutablePrimitiveFieldLiteGenerator
   const FieldDescriptor* descriptor_;
   std::map<std::string, std::string> variables_;
   const int messageBitIndex_;
-  Context* context_;
   ClassNameResolver* name_resolver_;
 
  private:
@@ -124,7 +123,6 @@ class RepeatedImmutablePrimitiveFieldLiteGenerator
  private:
   const FieldDescriptor* descriptor_;
   std::map<std::string, std::string> variables_;
-  const int messageBitIndex_;
   Context* context_;
   ClassNameResolver* name_resolver_;
 
