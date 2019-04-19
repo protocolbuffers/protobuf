@@ -29,6 +29,11 @@ message TestMessage {
   map<string, int32>      map_string_int32 = 23;
   map<string, bool>       map_string_bool = 24;
   map<string, SubMessage> map_string_msg = 25;
+
+  oneof o {
+    int32 oneof_int32 = 26;
+    int64 oneof_int64 = 27;
+  }
 }
 
 message SubMessage {

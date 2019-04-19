@@ -4,6 +4,7 @@
  */
 
 #include "tests/json/test.upbdefs.h"
+#include "tests/json/test.upb.h"   // Test that it compiles for C++.
 #include "tests/test_util.h"
 #include "tests/upb_test.h"
 #include "upb/handlers.h"

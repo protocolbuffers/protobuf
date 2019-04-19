@@ -326,6 +326,7 @@ cc_test(
     ],
     deps = [
         ":test_json_upbprotoreflection",
+        ":test_json_upbproto",
         ":upb_json",
         ":upb_test",
     ],

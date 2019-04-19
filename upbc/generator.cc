@@ -362,7 +362,7 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message, Output& output
         fullname);
     output(
         "UPB_INLINE $0_oneofcases $1_$2_case(const $1* msg) { "
-        "return UPB_FIELD_AT(msg, int, $3); }\n"
+        "return ($0_oneofcases)UPB_FIELD_AT(msg, int32_t, $3); }\n"
         "\n",
         fullname, msgname, oneof->name(),
         GetSizeInit(layout.GetOneofCaseOffset(oneof)));
