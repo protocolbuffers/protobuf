@@ -244,7 +244,7 @@ namespace Google.Protobuf.Examples.AddressBook {
       if (other.Email.Length != 0) {
         Email = other.Email;
       }
-      phones_.Add(other.phones_);
+      pbc::CollectionExtensions.MergeFrom<global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneNumber>(other.phones_, phones_, global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneNumber.Parser);
       if (other.lastUpdated_ != null) {
         if (lastUpdated_ == null) {
           LastUpdated = new global::Google.Protobuf.WellKnownTypes.Timestamp();
@@ -563,7 +563,7 @@ namespace Google.Protobuf.Examples.AddressBook {
       if (other == null) {
         return;
       }
-      people_.Add(other.people_);
+      pbc::CollectionExtensions.MergeFrom<global::Google.Protobuf.Examples.AddressBook.Person>(other.people_, people_, global::Google.Protobuf.Examples.AddressBook.Person.Parser);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
