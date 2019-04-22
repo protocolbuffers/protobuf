@@ -45,7 +45,69 @@
 namespace google {
 namespace protobuf {
 
+namespace {
+void RecordMessageNames(const DescriptorProto& desc_proto,
+                        const std::string& prefix,
+                        std::set<std::string>* output) {
+  GOOGLE_CHECK(desc_proto.has_name());
+  std::string full_name = prefix.empty()
+                              ? desc_proto.name()
+                              : StrCat(prefix, ".", desc_proto.name());
+  output->insert(full_name);
+
+  for (const auto& d : desc_proto.nested_type()) {
+    RecordMessageNames(d, full_name, output);
+  }
+}
+
+void RecordMessageNames(const FileDescriptorProto& file_proto,
+                        std::set<std::string>* output) {
+  for (const auto& d : file_proto.message_type()) {
+    RecordMessageNames(d, file_proto.package(), output);
+  }
+}
+
+template <typename Fn>
+bool ForAllFileProtos(DescriptorDatabase* db, Fn callback,
+                      std::vector<std::string>* output) {
+  std::vector<std::string> file_names;
+  if (!db->FindAllFileNames(&file_names)) {
+    return false;
+  }
+  std::set<std::string> set;
+  FileDescriptorProto file_proto;
+  for (const auto& f : file_names) {
+    file_proto.Clear();
+    if (!db->FindFileByName(f, &file_proto)) {
+      GOOGLE_LOG(ERROR) << "File not found in database (unexpected): " << f;
+      return false;
+    }
+    callback(file_proto, &set);
+  }
+  output->insert(output->end(), set.begin(), set.end());
+  return true;
+}
+}  // namespace
+
 DescriptorDatabase::~DescriptorDatabase() {}
+
+bool DescriptorDatabase::FindAllPackageNames(std::vector<std::string>* output) {
+  return ForAllFileProtos(
+      this,
+      [](const FileDescriptorProto& file_proto, std::set<std::string>* set) {
+        set->insert(file_proto.package());
+      },
+      output);
+}
+
+bool DescriptorDatabase::FindAllMessageNames(std::vector<std::string>* output) {
+  return ForAllFileProtos(
+      this,
+      [](const FileDescriptorProto& file_proto, std::set<std::string>* set) {
+        RecordMessageNames(file_proto, set);
+      },
+      output);
+}
 
 // ===================================================================
 

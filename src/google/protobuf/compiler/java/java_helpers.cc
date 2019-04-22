@@ -158,6 +158,7 @@ void PrintEnumVerifierLogic(io::Printer* printer,
 
 std::string UnderscoresToCamelCase(const std::string& input,
                                    bool cap_next_letter) {
+  GOOGLE_CHECK(!input.empty());
   std::string result;
   // Note:  I distrust ctype.h due to locales.
   for (int i = 0; i < input.size(); i++) {

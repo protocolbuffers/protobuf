@@ -2584,11 +2584,6 @@ class SourceInfoTest : public ParserTest {
     return HasSpan('\0', '\0', descriptor_proto, field_name, -1);
   }
 
-  bool HasSpan(const Message& descriptor_proto, const std::string& field_name,
-               int index) {
-    return HasSpan('\0', '\0', descriptor_proto, field_name, index);
-  }
-
   bool HasSpanWithComment(char start_marker, char end_marker,
                           const Message& descriptor_proto,
                           const FieldDescriptor* field, int index,

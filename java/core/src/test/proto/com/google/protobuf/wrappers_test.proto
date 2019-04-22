@@ -31,9 +31,11 @@
 syntax = "proto3";
 
 package wrappers_test;
+
+import "google/protobuf/wrappers.proto";
+
 option java_package = "com.google.protobuf.wrapperstest";
 option java_outer_classname = "WrappersTestProto";
-import "google/protobuf/wrappers.proto";
 
 message TopLevelMessage {
   int32 field1 = 1;

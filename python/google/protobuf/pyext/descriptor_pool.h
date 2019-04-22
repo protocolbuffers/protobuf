@@ -84,18 +84,7 @@ extern PyTypeObject PyDescriptorPool_Type;
 namespace cdescriptor_pool {
 
 
-// Looks up a message by name.
-// Returns a message Descriptor, or NULL if not found.
-const Descriptor* FindMessageTypeByName(PyDescriptorPool* self,
-                                        const string& name);
-
 // The functions below are also exposed as methods of the DescriptorPool type.
-
-// Looks up a message by name. Returns a PyMessageDescriptor corresponding to
-// the field on success, or NULL on failure.
-//
-// Returns a new reference.
-PyObject* FindMessageByName(PyDescriptorPool* self, PyObject* name);
 
 // Looks up a field by name. Returns a PyFieldDescriptor corresponding to
 // the field on success, or NULL on failure.

@@ -1461,17 +1461,17 @@ const char* FileDescriptorSet::_InternalParse(const char* ptr, ::PROTOBUF_NAMESP
     CHK_(ptr);
     switch (tag >> 3) {
       // repeated .google.protobuf.FileDescriptorProto file = 1;
-      case 1: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 10) goto handle_unusual;
-        while (true) {
-          ptr = ctx->ParseMessage(add_file(), ptr);
-          CHK_(ptr);
-          if (!ctx->DataAvailable(ptr)) break;
-          if (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) != 10) break;
-          ptr += 1;
-        }
-        break;
-      }
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
+          ptr -= 1;
+          do {
+            ptr += 1;
+            ptr = ctx->ParseMessage(add_file(), ptr);
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) == 10);
+        } else goto handle_unusual;
+        continue;
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
@@ -1480,7 +1480,7 @@ const char* FileDescriptorSet::_InternalParse(const char* ptr, ::PROTOBUF_NAMESP
         }
         ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
         CHK_(ptr != nullptr);
-        break;
+        continue;
       }
     }  // switch
   }  // while
@@ -1907,132 +1907,130 @@ const char* FileDescriptorProto::_InternalParse(const char* ptr, ::PROTOBUF_NAME
     CHK_(ptr);
     switch (tag >> 3) {
       // optional string name = 1;
-      case 1: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 10) goto handle_unusual;
-        ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_name(), ptr, ctx, "google.protobuf.FileDescriptorProto.name");
-        CHK_(ptr);
-        break;
-      }
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_name(), ptr, ctx, "google.protobuf.FileDescriptorProto.name");
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // optional string package = 2;
-      case 2: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 18) goto handle_unusual;
-        ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_package(), ptr, ctx, "google.protobuf.FileDescriptorProto.package");
-        CHK_(ptr);
-        break;
-      }
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 18)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_package(), ptr, ctx, "google.protobuf.FileDescriptorProto.package");
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // repeated string dependency = 3;
-      case 3: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 26) goto handle_unusual;
-        while (true) {
-          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(add_dependency(), ptr, ctx, "google.protobuf.FileDescriptorProto.dependency");
-          CHK_(ptr);
-          if (!ctx->DataAvailable(ptr)) break;
-          if (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) != 26) break;
-          ptr += 1;
-        }
-        break;
-      }
+      case 3:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 26)) {
+          ptr -= 1;
+          do {
+            ptr += 1;
+            ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(add_dependency(), ptr, ctx, "google.protobuf.FileDescriptorProto.dependency");
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) == 26);
+        } else goto handle_unusual;
+        continue;
       // repeated .google.protobuf.DescriptorProto message_type = 4;
-      case 4: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 34) goto handle_unusual;
-        while (true) {
-          ptr = ctx->ParseMessage(add_message_type(), ptr);
-          CHK_(ptr);
-          if (!ctx->DataAvailable(ptr)) break;
-          if (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) != 34) break;
-          ptr += 1;
-        }
-        break;
-      }
+      case 4:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 34)) {
+          ptr -= 1;
+          do {
+            ptr += 1;
+            ptr = ctx->ParseMessage(add_message_type(), ptr);
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) == 34);
+        } else goto handle_unusual;
+        continue;
       // repeated .google.protobuf.EnumDescriptorProto enum_type = 5;
-      case 5: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 42) goto handle_unusual;
-        while (true) {
-          ptr = ctx->ParseMessage(add_enum_type(), ptr);
-          CHK_(ptr);
-          if (!ctx->DataAvailable(ptr)) break;
-          if (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) != 42) break;
-          ptr += 1;
-        }
-        break;
-      }
+      case 5:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 42)) {
+          ptr -= 1;
+          do {
+            ptr += 1;
+            ptr = ctx->ParseMessage(add_enum_type(), ptr);
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) == 42);
+        } else goto handle_unusual;
+        continue;
       // repeated .google.protobuf.ServiceDescriptorProto service = 6;
-      case 6: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 50) goto handle_unusual;
-        while (true) {
-          ptr = ctx->ParseMessage(add_service(), ptr);
-          CHK_(ptr);
-          if (!ctx->DataAvailable(ptr)) break;
-          if (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) != 50) break;
-          ptr += 1;
-        }
-        break;
-      }
+      case 6:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 50)) {
+          ptr -= 1;
+          do {
+            ptr += 1;
+            ptr = ctx->ParseMessage(add_service(), ptr);
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) == 50);
+        } else goto handle_unusual;
+        continue;
       // repeated .google.protobuf.FieldDescriptorProto extension = 7;
-      case 7: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 58) goto handle_unusual;
-        while (true) {
-          ptr = ctx->ParseMessage(add_extension(), ptr);
-          CHK_(ptr);
-          if (!ctx->DataAvailable(ptr)) break;
-          if (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) != 58) break;
-          ptr += 1;
-        }
-        break;
-      }
+      case 7:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 58)) {
+          ptr -= 1;
+          do {
+            ptr += 1;
+            ptr = ctx->ParseMessage(add_extension(), ptr);
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) == 58);
+        } else goto handle_unusual;
+        continue;
       // optional .google.protobuf.FileOptions options = 8;
-      case 8: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 66) goto handle_unusual;
-        ptr = ctx->ParseMessage(mutable_options(), ptr);
-        CHK_(ptr);
-        break;
-      }
+      case 8:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 66)) {
+          ptr = ctx->ParseMessage(mutable_options(), ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // optional .google.protobuf.SourceCodeInfo source_code_info = 9;
-      case 9: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 74) goto handle_unusual;
-        ptr = ctx->ParseMessage(mutable_source_code_info(), ptr);
-        CHK_(ptr);
-        break;
-      }
+      case 9:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 74)) {
+          ptr = ctx->ParseMessage(mutable_source_code_info(), ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // repeated int32 public_dependency = 10;
-      case 10: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 80) {
-          while (true) {
+      case 10:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 80)) {
+          ptr -= 1;
+          do {
+            ptr += 1;
             add_public_dependency(::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr));
             CHK_(ptr);
             if (!ctx->DataAvailable(ptr)) break;
-            if (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) != 80) break;
-            ptr += 1;
-          }
-          break;
-        } else if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 82) goto handle_unusual;
-        ptr = ::PROTOBUF_NAMESPACE_ID::internal::PackedInt32Parser(mutable_public_dependency(), ptr, ctx);
-        CHK_(ptr);
-        break;
-      }
+          } while (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) == 80);
+        } else if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 82) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::PackedInt32Parser(mutable_public_dependency(), ptr, ctx);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // repeated int32 weak_dependency = 11;
-      case 11: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 88) {
-          while (true) {
+      case 11:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 88)) {
+          ptr -= 1;
+          do {
+            ptr += 1;
             add_weak_dependency(::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr));
             CHK_(ptr);
             if (!ctx->DataAvailable(ptr)) break;
-            if (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) != 88) break;
-            ptr += 1;
-          }
-          break;
-        } else if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 90) goto handle_unusual;
-        ptr = ::PROTOBUF_NAMESPACE_ID::internal::PackedInt32Parser(mutable_weak_dependency(), ptr, ctx);
-        CHK_(ptr);
-        break;
-      }
+          } while (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) == 88);
+        } else if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 90) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::PackedInt32Parser(mutable_weak_dependency(), ptr, ctx);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // optional string syntax = 12;
-      case 12: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 98) goto handle_unusual;
-        ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_syntax(), ptr, ctx, "google.protobuf.FileDescriptorProto.syntax");
-        CHK_(ptr);
-        break;
-      }
+      case 12:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 98)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_syntax(), ptr, ctx, "google.protobuf.FileDescriptorProto.syntax");
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
@@ -2041,7 +2039,7 @@ const char* FileDescriptorProto::_InternalParse(const char* ptr, ::PROTOBUF_NAME
         }
         ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
         CHK_(ptr != nullptr);
-        break;
+        continue;
       }
     }  // switch
   }  // while
@@ -2850,28 +2848,28 @@ const char* DescriptorProto_ExtensionRange::_InternalParse(const char* ptr, ::PR
     CHK_(ptr);
     switch (tag >> 3) {
       // optional int32 start = 1;
-      case 1: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 8) goto handle_unusual;
-        HasBitSetters::set_has_start(&has_bits);
-        start_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
-        CHK_(ptr);
-        break;
-      }
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
+          HasBitSetters::set_has_start(&has_bits);
+          start_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // optional int32 end = 2;
-      case 2: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 16) goto handle_unusual;
-        HasBitSetters::set_has_end(&has_bits);
-        end_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
-        CHK_(ptr);
-        break;
-      }
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16)) {
+          HasBitSetters::set_has_end(&has_bits);
+          end_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // optional .google.protobuf.ExtensionRangeOptions options = 3;
-      case 3: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 26) goto handle_unusual;
-        ptr = ctx->ParseMessage(mutable_options(), ptr);
-        CHK_(ptr);
-        break;
-      }
+      case 3:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 26)) {
+          ptr = ctx->ParseMessage(mutable_options(), ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
@@ -2880,7 +2878,7 @@ const char* DescriptorProto_ExtensionRange::_InternalParse(const char* ptr, ::PR
         }
         ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
         CHK_(ptr != nullptr);
-        break;
+        continue;
       }
     }  // switch
   }  // while
@@ -3256,21 +3254,21 @@ const char* DescriptorProto_ReservedRange::_InternalParse(const char* ptr, ::PRO
     CHK_(ptr);
     switch (tag >> 3) {
       // optional int32 start = 1;
-      case 1: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 8) goto handle_unusual;
-        HasBitSetters::set_has_start(&has_bits);
-        start_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
-        CHK_(ptr);
-        break;
-      }
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
+          HasBitSetters::set_has_start(&has_bits);
+          start_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // optional int32 end = 2;
-      case 2: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 16) goto handle_unusual;
-        HasBitSetters::set_has_end(&has_bits);
-        end_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
-        CHK_(ptr);
-        break;
-      }
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16)) {
+          HasBitSetters::set_has_end(&has_bits);
+          end_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
@@ -3279,7 +3277,7 @@ const char* DescriptorProto_ReservedRange::_InternalParse(const char* ptr, ::PRO
         }
         ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
         CHK_(ptr != nullptr);
-        break;
+        continue;
       }
     }  // switch
   }  // while
@@ -3682,115 +3680,115 @@ const char* DescriptorProto::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPAC
     CHK_(ptr);
     switch (tag >> 3) {
       // optional string name = 1;
-      case 1: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 10) goto handle_unusual;
-        ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_name(), ptr, ctx, "google.protobuf.DescriptorProto.name");
-        CHK_(ptr);
-        break;
-      }
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_name(), ptr, ctx, "google.protobuf.DescriptorProto.name");
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // repeated .google.protobuf.FieldDescriptorProto field = 2;
-      case 2: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 18) goto handle_unusual;
-        while (true) {
-          ptr = ctx->ParseMessage(add_field(), ptr);
-          CHK_(ptr);
-          if (!ctx->DataAvailable(ptr)) break;
-          if (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) != 18) break;
-          ptr += 1;
-        }
-        break;
-      }
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 18)) {
+          ptr -= 1;
+          do {
+            ptr += 1;
+            ptr = ctx->ParseMessage(add_field(), ptr);
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) == 18);
+        } else goto handle_unusual;
+        continue;
       // repeated .google.protobuf.DescriptorProto nested_type = 3;
-      case 3: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 26) goto handle_unusual;
-        while (true) {
-          ptr = ctx->ParseMessage(add_nested_type(), ptr);
-          CHK_(ptr);
-          if (!ctx->DataAvailable(ptr)) break;
-          if (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) != 26) break;
-          ptr += 1;
-        }
-        break;
-      }
+      case 3:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 26)) {
+          ptr -= 1;
+          do {
+            ptr += 1;
+            ptr = ctx->ParseMessage(add_nested_type(), ptr);
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) == 26);
+        } else goto handle_unusual;
+        continue;
       // repeated .google.protobuf.EnumDescriptorProto enum_type = 4;
-      case 4: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 34) goto handle_unusual;
-        while (true) {
-          ptr = ctx->ParseMessage(add_enum_type(), ptr);
-          CHK_(ptr);
-          if (!ctx->DataAvailable(ptr)) break;
-          if (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) != 34) break;
-          ptr += 1;
-        }
-        break;
-      }
+      case 4:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 34)) {
+          ptr -= 1;
+          do {
+            ptr += 1;
+            ptr = ctx->ParseMessage(add_enum_type(), ptr);
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) == 34);
+        } else goto handle_unusual;
+        continue;
       // repeated .google.protobuf.DescriptorProto.ExtensionRange extension_range = 5;
-      case 5: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 42) goto handle_unusual;
-        while (true) {
-          ptr = ctx->ParseMessage(add_extension_range(), ptr);
-          CHK_(ptr);
-          if (!ctx->DataAvailable(ptr)) break;
-          if (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) != 42) break;
-          ptr += 1;
-        }
-        break;
-      }
+      case 5:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 42)) {
+          ptr -= 1;
+          do {
+            ptr += 1;
+            ptr = ctx->ParseMessage(add_extension_range(), ptr);
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) == 42);
+        } else goto handle_unusual;
+        continue;
       // repeated .google.protobuf.FieldDescriptorProto extension = 6;
-      case 6: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 50) goto handle_unusual;
-        while (true) {
-          ptr = ctx->ParseMessage(add_extension(), ptr);
-          CHK_(ptr);
-          if (!ctx->DataAvailable(ptr)) break;
-          if (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) != 50) break;
-          ptr += 1;
-        }
-        break;
-      }
+      case 6:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 50)) {
+          ptr -= 1;
+          do {
+            ptr += 1;
+            ptr = ctx->ParseMessage(add_extension(), ptr);
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) == 50);
+        } else goto handle_unusual;
+        continue;
       // optional .google.protobuf.MessageOptions options = 7;
-      case 7: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 58) goto handle_unusual;
-        ptr = ctx->ParseMessage(mutable_options(), ptr);
-        CHK_(ptr);
-        break;
-      }
+      case 7:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 58)) {
+          ptr = ctx->ParseMessage(mutable_options(), ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // repeated .google.protobuf.OneofDescriptorProto oneof_decl = 8;
-      case 8: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 66) goto handle_unusual;
-        while (true) {
-          ptr = ctx->ParseMessage(add_oneof_decl(), ptr);
-          CHK_(ptr);
-          if (!ctx->DataAvailable(ptr)) break;
-          if (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) != 66) break;
-          ptr += 1;
-        }
-        break;
-      }
+      case 8:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 66)) {
+          ptr -= 1;
+          do {
+            ptr += 1;
+            ptr = ctx->ParseMessage(add_oneof_decl(), ptr);
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) == 66);
+        } else goto handle_unusual;
+        continue;
       // repeated .google.protobuf.DescriptorProto.ReservedRange reserved_range = 9;
-      case 9: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 74) goto handle_unusual;
-        while (true) {
-          ptr = ctx->ParseMessage(add_reserved_range(), ptr);
-          CHK_(ptr);
-          if (!ctx->DataAvailable(ptr)) break;
-          if (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) != 74) break;
-          ptr += 1;
-        }
-        break;
-      }
+      case 9:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 74)) {
+          ptr -= 1;
+          do {
+            ptr += 1;
+            ptr = ctx->ParseMessage(add_reserved_range(), ptr);
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) == 74);
+        } else goto handle_unusual;
+        continue;
       // repeated string reserved_name = 10;
-      case 10: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 82) goto handle_unusual;
-        while (true) {
-          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(add_reserved_name(), ptr, ctx, "google.protobuf.DescriptorProto.reserved_name");
-          CHK_(ptr);
-          if (!ctx->DataAvailable(ptr)) break;
-          if (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) != 82) break;
-          ptr += 1;
-        }
-        break;
-      }
+      case 10:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 82)) {
+          ptr -= 1;
+          do {
+            ptr += 1;
+            ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(add_reserved_name(), ptr, ctx, "google.protobuf.DescriptorProto.reserved_name");
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) == 82);
+        } else goto handle_unusual;
+        continue;
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
@@ -3799,7 +3797,7 @@ const char* DescriptorProto::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPAC
         }
         ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
         CHK_(ptr != nullptr);
-        break;
+        continue;
       }
     }  // switch
   }  // while
@@ -4480,17 +4478,17 @@ const char* ExtensionRangeOptions::_InternalParse(const char* ptr, ::PROTOBUF_NA
     CHK_(ptr);
     switch (tag >> 3) {
       // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-      case 999: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 58) goto handle_unusual;
-        while (true) {
-          ptr = ctx->ParseMessage(add_uninterpreted_option(), ptr);
-          CHK_(ptr);
-          if (!ctx->DataAvailable(ptr)) break;
-          if (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint16>(ptr) != 16058) break;
-          ptr += 2;
-        }
-        break;
-      }
+      case 999:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 58)) {
+          ptr -= 2;
+          do {
+            ptr += 2;
+            ptr = ctx->ParseMessage(add_uninterpreted_option(), ptr);
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint16>(ptr) == 16058);
+        } else goto handle_unusual;
+        continue;
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
@@ -4498,14 +4496,14 @@ const char* ExtensionRangeOptions::_InternalParse(const char* ptr, ::PROTOBUF_NA
           goto success;
         }
       if ((8000u <= tag)) {
-        ptr = _extensions_.ParseField(tag, ptr, 
+        ptr = _extensions_.ParseField(tag, ptr,
             internal_default_instance(), &_internal_metadata_, ctx);
         CHK_(ptr != nullptr);
-        break;
+        continue;
       }
         ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
         CHK_(ptr != nullptr);
-        break;
+        continue;
       }
     }  // switch
   }  // while
@@ -4949,87 +4947,87 @@ const char* FieldDescriptorProto::_InternalParse(const char* ptr, ::PROTOBUF_NAM
     CHK_(ptr);
     switch (tag >> 3) {
       // optional string name = 1;
-      case 1: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 10) goto handle_unusual;
-        ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_name(), ptr, ctx, "google.protobuf.FieldDescriptorProto.name");
-        CHK_(ptr);
-        break;
-      }
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_name(), ptr, ctx, "google.protobuf.FieldDescriptorProto.name");
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // optional string extendee = 2;
-      case 2: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 18) goto handle_unusual;
-        ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_extendee(), ptr, ctx, "google.protobuf.FieldDescriptorProto.extendee");
-        CHK_(ptr);
-        break;
-      }
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 18)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_extendee(), ptr, ctx, "google.protobuf.FieldDescriptorProto.extendee");
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // optional int32 number = 3;
-      case 3: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 24) goto handle_unusual;
-        HasBitSetters::set_has_number(&has_bits);
-        number_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
-        CHK_(ptr);
-        break;
-      }
+      case 3:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 24)) {
+          HasBitSetters::set_has_number(&has_bits);
+          number_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // optional .google.protobuf.FieldDescriptorProto.Label label = 4;
-      case 4: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 32) goto handle_unusual;
-        ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
-        CHK_(ptr);
-        if (!PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Label_IsValid(val)) {
-          ::PROTOBUF_NAMESPACE_ID::internal::WriteVarint(4, val, mutable_unknown_fields());
-          break;
-        }
-        set_label(static_cast<PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Label>(val));
-        break;
-      }
+      case 4:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 32)) {
+          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+          if (PROTOBUF_PREDICT_TRUE(PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Label_IsValid(val))) {
+            set_label(static_cast<PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Label>(val));
+          } else {
+            ::PROTOBUF_NAMESPACE_ID::internal::WriteVarint(4, val, mutable_unknown_fields());
+          }
+        } else goto handle_unusual;
+        continue;
       // optional .google.protobuf.FieldDescriptorProto.Type type = 5;
-      case 5: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 40) goto handle_unusual;
-        ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
-        CHK_(ptr);
-        if (!PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Type_IsValid(val)) {
-          ::PROTOBUF_NAMESPACE_ID::internal::WriteVarint(5, val, mutable_unknown_fields());
-          break;
-        }
-        set_type(static_cast<PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Type>(val));
-        break;
-      }
+      case 5:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 40)) {
+          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+          if (PROTOBUF_PREDICT_TRUE(PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Type_IsValid(val))) {
+            set_type(static_cast<PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Type>(val));
+          } else {
+            ::PROTOBUF_NAMESPACE_ID::internal::WriteVarint(5, val, mutable_unknown_fields());
+          }
+        } else goto handle_unusual;
+        continue;
       // optional string type_name = 6;
-      case 6: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 50) goto handle_unusual;
-        ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_type_name(), ptr, ctx, "google.protobuf.FieldDescriptorProto.type_name");
-        CHK_(ptr);
-        break;
-      }
+      case 6:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 50)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_type_name(), ptr, ctx, "google.protobuf.FieldDescriptorProto.type_name");
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // optional string default_value = 7;
-      case 7: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 58) goto handle_unusual;
-        ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_default_value(), ptr, ctx, "google.protobuf.FieldDescriptorProto.default_value");
-        CHK_(ptr);
-        break;
-      }
+      case 7:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 58)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_default_value(), ptr, ctx, "google.protobuf.FieldDescriptorProto.default_value");
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // optional .google.protobuf.FieldOptions options = 8;
-      case 8: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 66) goto handle_unusual;
-        ptr = ctx->ParseMessage(mutable_options(), ptr);
-        CHK_(ptr);
-        break;
-      }
+      case 8:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 66)) {
+          ptr = ctx->ParseMessage(mutable_options(), ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // optional int32 oneof_index = 9;
-      case 9: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 72) goto handle_unusual;
-        HasBitSetters::set_has_oneof_index(&has_bits);
-        oneof_index_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
-        CHK_(ptr);
-        break;
-      }
+      case 9:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 72)) {
+          HasBitSetters::set_has_oneof_index(&has_bits);
+          oneof_index_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // optional string json_name = 10;
-      case 10: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 82) goto handle_unusual;
-        ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_json_name(), ptr, ctx, "google.protobuf.FieldDescriptorProto.json_name");
-        CHK_(ptr);
-        break;
-      }
+      case 10:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 82)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_json_name(), ptr, ctx, "google.protobuf.FieldDescriptorProto.json_name");
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
@@ -5038,7 +5036,7 @@ const char* FieldDescriptorProto::_InternalParse(const char* ptr, ::PROTOBUF_NAM
         }
         ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
         CHK_(ptr != nullptr);
-        break;
+        continue;
       }
     }  // switch
   }  // while
@@ -5774,19 +5772,19 @@ const char* OneofDescriptorProto::_InternalParse(const char* ptr, ::PROTOBUF_NAM
     CHK_(ptr);
     switch (tag >> 3) {
       // optional string name = 1;
-      case 1: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 10) goto handle_unusual;
-        ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_name(), ptr, ctx, "google.protobuf.OneofDescriptorProto.name");
-        CHK_(ptr);
-        break;
-      }
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_name(), ptr, ctx, "google.protobuf.OneofDescriptorProto.name");
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // optional .google.protobuf.OneofOptions options = 2;
-      case 2: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 18) goto handle_unusual;
-        ptr = ctx->ParseMessage(mutable_options(), ptr);
-        CHK_(ptr);
-        break;
-      }
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 18)) {
+          ptr = ctx->ParseMessage(mutable_options(), ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
@@ -5795,7 +5793,7 @@ const char* OneofDescriptorProto::_InternalParse(const char* ptr, ::PROTOBUF_NAM
         }
         ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
         CHK_(ptr != nullptr);
-        break;
+        continue;
       }
     }  // switch
   }  // while
@@ -6150,21 +6148,21 @@ const char* EnumDescriptorProto_EnumReservedRange::_InternalParse(const char* pt
     CHK_(ptr);
     switch (tag >> 3) {
       // optional int32 start = 1;
-      case 1: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 8) goto handle_unusual;
-        HasBitSetters::set_has_start(&has_bits);
-        start_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
-        CHK_(ptr);
-        break;
-      }
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
+          HasBitSetters::set_has_start(&has_bits);
+          start_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // optional int32 end = 2;
-      case 2: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 16) goto handle_unusual;
-        HasBitSetters::set_has_end(&has_bits);
-        end_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
-        CHK_(ptr);
-        break;
-      }
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16)) {
+          HasBitSetters::set_has_end(&has_bits);
+          end_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
@@ -6173,7 +6171,7 @@ const char* EnumDescriptorProto_EnumReservedRange::_InternalParse(const char* pt
         }
         ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
         CHK_(ptr != nullptr);
-        break;
+        continue;
       }
     }  // switch
   }  // while
@@ -6556,55 +6554,55 @@ const char* EnumDescriptorProto::_InternalParse(const char* ptr, ::PROTOBUF_NAME
     CHK_(ptr);
     switch (tag >> 3) {
       // optional string name = 1;
-      case 1: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 10) goto handle_unusual;
-        ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_name(), ptr, ctx, "google.protobuf.EnumDescriptorProto.name");
-        CHK_(ptr);
-        break;
-      }
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_name(), ptr, ctx, "google.protobuf.EnumDescriptorProto.name");
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // repeated .google.protobuf.EnumValueDescriptorProto value = 2;
-      case 2: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 18) goto handle_unusual;
-        while (true) {
-          ptr = ctx->ParseMessage(add_value(), ptr);
-          CHK_(ptr);
-          if (!ctx->DataAvailable(ptr)) break;
-          if (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) != 18) break;
-          ptr += 1;
-        }
-        break;
-      }
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 18)) {
+          ptr -= 1;
+          do {
+            ptr += 1;
+            ptr = ctx->ParseMessage(add_value(), ptr);
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) == 18);
+        } else goto handle_unusual;
+        continue;
       // optional .google.protobuf.EnumOptions options = 3;
-      case 3: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 26) goto handle_unusual;
-        ptr = ctx->ParseMessage(mutable_options(), ptr);
-        CHK_(ptr);
-        break;
-      }
+      case 3:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 26)) {
+          ptr = ctx->ParseMessage(mutable_options(), ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // repeated .google.protobuf.EnumDescriptorProto.EnumReservedRange reserved_range = 4;
-      case 4: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 34) goto handle_unusual;
-        while (true) {
-          ptr = ctx->ParseMessage(add_reserved_range(), ptr);
-          CHK_(ptr);
-          if (!ctx->DataAvailable(ptr)) break;
-          if (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) != 34) break;
-          ptr += 1;
-        }
-        break;
-      }
+      case 4:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 34)) {
+          ptr -= 1;
+          do {
+            ptr += 1;
+            ptr = ctx->ParseMessage(add_reserved_range(), ptr);
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) == 34);
+        } else goto handle_unusual;
+        continue;
       // repeated string reserved_name = 5;
-      case 5: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 42) goto handle_unusual;
-        while (true) {
-          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(add_reserved_name(), ptr, ctx, "google.protobuf.EnumDescriptorProto.reserved_name");
-          CHK_(ptr);
-          if (!ctx->DataAvailable(ptr)) break;
-          if (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) != 42) break;
-          ptr += 1;
-        }
-        break;
-      }
+      case 5:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 42)) {
+          ptr -= 1;
+          do {
+            ptr += 1;
+            ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(add_reserved_name(), ptr, ctx, "google.protobuf.EnumDescriptorProto.reserved_name");
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) == 42);
+        } else goto handle_unusual;
+        continue;
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
@@ -6613,7 +6611,7 @@ const char* EnumDescriptorProto::_InternalParse(const char* ptr, ::PROTOBUF_NAME
         }
         ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
         CHK_(ptr != nullptr);
-        break;
+        continue;
       }
     }  // switch
   }  // while
@@ -7138,27 +7136,27 @@ const char* EnumValueDescriptorProto::_InternalParse(const char* ptr, ::PROTOBUF
     CHK_(ptr);
     switch (tag >> 3) {
       // optional string name = 1;
-      case 1: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 10) goto handle_unusual;
-        ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_name(), ptr, ctx, "google.protobuf.EnumValueDescriptorProto.name");
-        CHK_(ptr);
-        break;
-      }
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_name(), ptr, ctx, "google.protobuf.EnumValueDescriptorProto.name");
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // optional int32 number = 2;
-      case 2: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 16) goto handle_unusual;
-        HasBitSetters::set_has_number(&has_bits);
-        number_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
-        CHK_(ptr);
-        break;
-      }
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16)) {
+          HasBitSetters::set_has_number(&has_bits);
+          number_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // optional .google.protobuf.EnumValueOptions options = 3;
-      case 3: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 26) goto handle_unusual;
-        ptr = ctx->ParseMessage(mutable_options(), ptr);
-        CHK_(ptr);
-        break;
-      }
+      case 3:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 26)) {
+          ptr = ctx->ParseMessage(mutable_options(), ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
@@ -7167,7 +7165,7 @@ const char* EnumValueDescriptorProto::_InternalParse(const char* ptr, ::PROTOBUF
         }
         ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
         CHK_(ptr != nullptr);
-        break;
+        continue;
       }
     }  // switch
   }  // while
@@ -7594,31 +7592,31 @@ const char* ServiceDescriptorProto::_InternalParse(const char* ptr, ::PROTOBUF_N
     CHK_(ptr);
     switch (tag >> 3) {
       // optional string name = 1;
-      case 1: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 10) goto handle_unusual;
-        ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_name(), ptr, ctx, "google.protobuf.ServiceDescriptorProto.name");
-        CHK_(ptr);
-        break;
-      }
-      // repeated .google.protobuf.MethodDescriptorProto method = 2;
-      case 2: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 18) goto handle_unusual;
-        while (true) {
-          ptr = ctx->ParseMessage(add_method(), ptr);
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_name(), ptr, ctx, "google.protobuf.ServiceDescriptorProto.name");
           CHK_(ptr);
-          if (!ctx->DataAvailable(ptr)) break;
-          if (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) != 18) break;
-          ptr += 1;
-        }
-        break;
-      }
+        } else goto handle_unusual;
+        continue;
+      // repeated .google.protobuf.MethodDescriptorProto method = 2;
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 18)) {
+          ptr -= 1;
+          do {
+            ptr += 1;
+            ptr = ctx->ParseMessage(add_method(), ptr);
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) == 18);
+        } else goto handle_unusual;
+        continue;
       // optional .google.protobuf.ServiceOptions options = 3;
-      case 3: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 26) goto handle_unusual;
-        ptr = ctx->ParseMessage(mutable_options(), ptr);
-        CHK_(ptr);
-        break;
-      }
+      case 3:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 26)) {
+          ptr = ctx->ParseMessage(mutable_options(), ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
@@ -7627,7 +7625,7 @@ const char* ServiceDescriptorProto::_InternalParse(const char* ptr, ::PROTOBUF_N
         }
         ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
         CHK_(ptr != nullptr);
-        break;
+        continue;
       }
     }  // switch
   }  // while
@@ -8101,49 +8099,49 @@ const char* MethodDescriptorProto::_InternalParse(const char* ptr, ::PROTOBUF_NA
     CHK_(ptr);
     switch (tag >> 3) {
       // optional string name = 1;
-      case 1: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 10) goto handle_unusual;
-        ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_name(), ptr, ctx, "google.protobuf.MethodDescriptorProto.name");
-        CHK_(ptr);
-        break;
-      }
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_name(), ptr, ctx, "google.protobuf.MethodDescriptorProto.name");
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // optional string input_type = 2;
-      case 2: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 18) goto handle_unusual;
-        ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_input_type(), ptr, ctx, "google.protobuf.MethodDescriptorProto.input_type");
-        CHK_(ptr);
-        break;
-      }
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 18)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_input_type(), ptr, ctx, "google.protobuf.MethodDescriptorProto.input_type");
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // optional string output_type = 3;
-      case 3: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 26) goto handle_unusual;
-        ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_output_type(), ptr, ctx, "google.protobuf.MethodDescriptorProto.output_type");
-        CHK_(ptr);
-        break;
-      }
+      case 3:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 26)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_output_type(), ptr, ctx, "google.protobuf.MethodDescriptorProto.output_type");
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // optional .google.protobuf.MethodOptions options = 4;
-      case 4: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 34) goto handle_unusual;
-        ptr = ctx->ParseMessage(mutable_options(), ptr);
-        CHK_(ptr);
-        break;
-      }
+      case 4:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 34)) {
+          ptr = ctx->ParseMessage(mutable_options(), ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // optional bool client_streaming = 5 [default = false];
-      case 5: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 40) goto handle_unusual;
-        HasBitSetters::set_has_client_streaming(&has_bits);
-        client_streaming_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
-        CHK_(ptr);
-        break;
-      }
+      case 5:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 40)) {
+          HasBitSetters::set_has_client_streaming(&has_bits);
+          client_streaming_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // optional bool server_streaming = 6 [default = false];
-      case 6: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 48) goto handle_unusual;
-        HasBitSetters::set_has_server_streaming(&has_bits);
-        server_streaming_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
-        CHK_(ptr);
-        break;
-      }
+      case 6:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 48)) {
+          HasBitSetters::set_has_server_streaming(&has_bits);
+          server_streaming_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
@@ -8152,7 +8150,7 @@ const char* MethodDescriptorProto::_InternalParse(const char* ptr, ::PROTOBUF_NA
         }
         ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
         CHK_(ptr != nullptr);
-        break;
+        continue;
       }
     }  // switch
   }  // while
@@ -8859,171 +8857,171 @@ const char* FileOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID
     CHK_(ptr);
     switch (tag >> 3) {
       // optional string java_package = 1;
-      case 1: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 10) goto handle_unusual;
-        ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_java_package(), ptr, ctx, "google.protobuf.FileOptions.java_package");
-        CHK_(ptr);
-        break;
-      }
-      // optional string java_outer_classname = 8;
-      case 8: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 66) goto handle_unusual;
-        ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_java_outer_classname(), ptr, ctx, "google.protobuf.FileOptions.java_outer_classname");
-        CHK_(ptr);
-        break;
-      }
-      // optional .google.protobuf.FileOptions.OptimizeMode optimize_for = 9 [default = SPEED];
-      case 9: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 72) goto handle_unusual;
-        ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
-        CHK_(ptr);
-        if (!PROTOBUF_NAMESPACE_ID::FileOptions_OptimizeMode_IsValid(val)) {
-          ::PROTOBUF_NAMESPACE_ID::internal::WriteVarint(9, val, mutable_unknown_fields());
-          break;
-        }
-        set_optimize_for(static_cast<PROTOBUF_NAMESPACE_ID::FileOptions_OptimizeMode>(val));
-        break;
-      }
-      // optional bool java_multiple_files = 10 [default = false];
-      case 10: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 80) goto handle_unusual;
-        HasBitSetters::set_has_java_multiple_files(&has_bits);
-        java_multiple_files_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
-        CHK_(ptr);
-        break;
-      }
-      // optional string go_package = 11;
-      case 11: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 90) goto handle_unusual;
-        ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_go_package(), ptr, ctx, "google.protobuf.FileOptions.go_package");
-        CHK_(ptr);
-        break;
-      }
-      // optional bool cc_generic_services = 16 [default = false];
-      case 16: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 128) goto handle_unusual;
-        HasBitSetters::set_has_cc_generic_services(&has_bits);
-        cc_generic_services_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
-        CHK_(ptr);
-        break;
-      }
-      // optional bool java_generic_services = 17 [default = false];
-      case 17: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 136) goto handle_unusual;
-        HasBitSetters::set_has_java_generic_services(&has_bits);
-        java_generic_services_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
-        CHK_(ptr);
-        break;
-      }
-      // optional bool py_generic_services = 18 [default = false];
-      case 18: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 144) goto handle_unusual;
-        HasBitSetters::set_has_py_generic_services(&has_bits);
-        py_generic_services_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
-        CHK_(ptr);
-        break;
-      }
-      // optional bool java_generate_equals_and_hash = 20 [deprecated = true];
-      case 20: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 160) goto handle_unusual;
-        HasBitSetters::set_has_java_generate_equals_and_hash(&has_bits);
-        java_generate_equals_and_hash_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
-        CHK_(ptr);
-        break;
-      }
-      // optional bool deprecated = 23 [default = false];
-      case 23: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 184) goto handle_unusual;
-        HasBitSetters::set_has_deprecated(&has_bits);
-        deprecated_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
-        CHK_(ptr);
-        break;
-      }
-      // optional bool java_string_check_utf8 = 27 [default = false];
-      case 27: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 216) goto handle_unusual;
-        HasBitSetters::set_has_java_string_check_utf8(&has_bits);
-        java_string_check_utf8_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
-        CHK_(ptr);
-        break;
-      }
-      // optional bool cc_enable_arenas = 31 [default = false];
-      case 31: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 248) goto handle_unusual;
-        HasBitSetters::set_has_cc_enable_arenas(&has_bits);
-        cc_enable_arenas_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
-        CHK_(ptr);
-        break;
-      }
-      // optional string objc_class_prefix = 36;
-      case 36: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 34) goto handle_unusual;
-        ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_objc_class_prefix(), ptr, ctx, "google.protobuf.FileOptions.objc_class_prefix");
-        CHK_(ptr);
-        break;
-      }
-      // optional string csharp_namespace = 37;
-      case 37: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 42) goto handle_unusual;
-        ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_csharp_namespace(), ptr, ctx, "google.protobuf.FileOptions.csharp_namespace");
-        CHK_(ptr);
-        break;
-      }
-      // optional string swift_prefix = 39;
-      case 39: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 58) goto handle_unusual;
-        ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_swift_prefix(), ptr, ctx, "google.protobuf.FileOptions.swift_prefix");
-        CHK_(ptr);
-        break;
-      }
-      // optional string php_class_prefix = 40;
-      case 40: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 66) goto handle_unusual;
-        ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_php_class_prefix(), ptr, ctx, "google.protobuf.FileOptions.php_class_prefix");
-        CHK_(ptr);
-        break;
-      }
-      // optional string php_namespace = 41;
-      case 41: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 74) goto handle_unusual;
-        ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_php_namespace(), ptr, ctx, "google.protobuf.FileOptions.php_namespace");
-        CHK_(ptr);
-        break;
-      }
-      // optional bool php_generic_services = 42 [default = false];
-      case 42: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 80) goto handle_unusual;
-        HasBitSetters::set_has_php_generic_services(&has_bits);
-        php_generic_services_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
-        CHK_(ptr);
-        break;
-      }
-      // optional string php_metadata_namespace = 44;
-      case 44: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 98) goto handle_unusual;
-        ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_php_metadata_namespace(), ptr, ctx, "google.protobuf.FileOptions.php_metadata_namespace");
-        CHK_(ptr);
-        break;
-      }
-      // optional string ruby_package = 45;
-      case 45: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 106) goto handle_unusual;
-        ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_ruby_package(), ptr, ctx, "google.protobuf.FileOptions.ruby_package");
-        CHK_(ptr);
-        break;
-      }
-      // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-      case 999: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 58) goto handle_unusual;
-        while (true) {
-          ptr = ctx->ParseMessage(add_uninterpreted_option(), ptr);
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_java_package(), ptr, ctx, "google.protobuf.FileOptions.java_package");
           CHK_(ptr);
-          if (!ctx->DataAvailable(ptr)) break;
-          if (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint16>(ptr) != 16058) break;
-          ptr += 2;
-        }
-        break;
-      }
+        } else goto handle_unusual;
+        continue;
+      // optional string java_outer_classname = 8;
+      case 8:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 66)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_java_outer_classname(), ptr, ctx, "google.protobuf.FileOptions.java_outer_classname");
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // optional .google.protobuf.FileOptions.OptimizeMode optimize_for = 9 [default = SPEED];
+      case 9:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 72)) {
+          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+          if (PROTOBUF_PREDICT_TRUE(PROTOBUF_NAMESPACE_ID::FileOptions_OptimizeMode_IsValid(val))) {
+            set_optimize_for(static_cast<PROTOBUF_NAMESPACE_ID::FileOptions_OptimizeMode>(val));
+          } else {
+            ::PROTOBUF_NAMESPACE_ID::internal::WriteVarint(9, val, mutable_unknown_fields());
+          }
+        } else goto handle_unusual;
+        continue;
+      // optional bool java_multiple_files = 10 [default = false];
+      case 10:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 80)) {
+          HasBitSetters::set_has_java_multiple_files(&has_bits);
+          java_multiple_files_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // optional string go_package = 11;
+      case 11:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 90)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_go_package(), ptr, ctx, "google.protobuf.FileOptions.go_package");
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // optional bool cc_generic_services = 16 [default = false];
+      case 16:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 128)) {
+          HasBitSetters::set_has_cc_generic_services(&has_bits);
+          cc_generic_services_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // optional bool java_generic_services = 17 [default = false];
+      case 17:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 136)) {
+          HasBitSetters::set_has_java_generic_services(&has_bits);
+          java_generic_services_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // optional bool py_generic_services = 18 [default = false];
+      case 18:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 144)) {
+          HasBitSetters::set_has_py_generic_services(&has_bits);
+          py_generic_services_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // optional bool java_generate_equals_and_hash = 20 [deprecated = true];
+      case 20:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 160)) {
+          HasBitSetters::set_has_java_generate_equals_and_hash(&has_bits);
+          java_generate_equals_and_hash_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // optional bool deprecated = 23 [default = false];
+      case 23:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 184)) {
+          HasBitSetters::set_has_deprecated(&has_bits);
+          deprecated_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // optional bool java_string_check_utf8 = 27 [default = false];
+      case 27:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 216)) {
+          HasBitSetters::set_has_java_string_check_utf8(&has_bits);
+          java_string_check_utf8_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // optional bool cc_enable_arenas = 31 [default = false];
+      case 31:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 248)) {
+          HasBitSetters::set_has_cc_enable_arenas(&has_bits);
+          cc_enable_arenas_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // optional string objc_class_prefix = 36;
+      case 36:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 34)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_objc_class_prefix(), ptr, ctx, "google.protobuf.FileOptions.objc_class_prefix");
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // optional string csharp_namespace = 37;
+      case 37:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 42)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_csharp_namespace(), ptr, ctx, "google.protobuf.FileOptions.csharp_namespace");
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // optional string swift_prefix = 39;
+      case 39:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 58)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_swift_prefix(), ptr, ctx, "google.protobuf.FileOptions.swift_prefix");
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // optional string php_class_prefix = 40;
+      case 40:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 66)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_php_class_prefix(), ptr, ctx, "google.protobuf.FileOptions.php_class_prefix");
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // optional string php_namespace = 41;
+      case 41:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 74)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_php_namespace(), ptr, ctx, "google.protobuf.FileOptions.php_namespace");
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // optional bool php_generic_services = 42 [default = false];
+      case 42:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 80)) {
+          HasBitSetters::set_has_php_generic_services(&has_bits);
+          php_generic_services_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // optional string php_metadata_namespace = 44;
+      case 44:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 98)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_php_metadata_namespace(), ptr, ctx, "google.protobuf.FileOptions.php_metadata_namespace");
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // optional string ruby_package = 45;
+      case 45:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 106)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_ruby_package(), ptr, ctx, "google.protobuf.FileOptions.ruby_package");
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
+      case 999:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 58)) {
+          ptr -= 2;
+          do {
+            ptr += 2;
+            ptr = ctx->ParseMessage(add_uninterpreted_option(), ptr);
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint16>(ptr) == 16058);
+        } else goto handle_unusual;
+        continue;
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
@@ -9031,14 +9029,14 @@ const char* FileOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID
           goto success;
         }
       if ((8000u <= tag)) {
-        ptr = _extensions_.ParseField(tag, ptr, 
+        ptr = _extensions_.ParseField(tag, ptr,
             internal_default_instance(), &_internal_metadata_, ctx);
         CHK_(ptr != nullptr);
-        break;
+        continue;
       }
         ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
         CHK_(ptr != nullptr);
-        break;
+        continue;
       }
     }  // switch
   }  // while
@@ -10202,49 +10200,49 @@ const char* MessageOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE
     CHK_(ptr);
     switch (tag >> 3) {
       // optional bool message_set_wire_format = 1 [default = false];
-      case 1: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 8) goto handle_unusual;
-        HasBitSetters::set_has_message_set_wire_format(&has_bits);
-        message_set_wire_format_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
-        CHK_(ptr);
-        break;
-      }
-      // optional bool no_standard_descriptor_accessor = 2 [default = false];
-      case 2: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 16) goto handle_unusual;
-        HasBitSetters::set_has_no_standard_descriptor_accessor(&has_bits);
-        no_standard_descriptor_accessor_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
-        CHK_(ptr);
-        break;
-      }
-      // optional bool deprecated = 3 [default = false];
-      case 3: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 24) goto handle_unusual;
-        HasBitSetters::set_has_deprecated(&has_bits);
-        deprecated_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
-        CHK_(ptr);
-        break;
-      }
-      // optional bool map_entry = 7;
-      case 7: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 56) goto handle_unusual;
-        HasBitSetters::set_has_map_entry(&has_bits);
-        map_entry_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
-        CHK_(ptr);
-        break;
-      }
-      // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-      case 999: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 58) goto handle_unusual;
-        while (true) {
-          ptr = ctx->ParseMessage(add_uninterpreted_option(), ptr);
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
+          HasBitSetters::set_has_message_set_wire_format(&has_bits);
+          message_set_wire_format_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
-          if (!ctx->DataAvailable(ptr)) break;
-          if (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint16>(ptr) != 16058) break;
-          ptr += 2;
-        }
-        break;
-      }
+        } else goto handle_unusual;
+        continue;
+      // optional bool no_standard_descriptor_accessor = 2 [default = false];
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16)) {
+          HasBitSetters::set_has_no_standard_descriptor_accessor(&has_bits);
+          no_standard_descriptor_accessor_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // optional bool deprecated = 3 [default = false];
+      case 3:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 24)) {
+          HasBitSetters::set_has_deprecated(&has_bits);
+          deprecated_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // optional bool map_entry = 7;
+      case 7:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 56)) {
+          HasBitSetters::set_has_map_entry(&has_bits);
+          map_entry_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
+      case 999:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 58)) {
+          ptr -= 2;
+          do {
+            ptr += 2;
+            ptr = ctx->ParseMessage(add_uninterpreted_option(), ptr);
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint16>(ptr) == 16058);
+        } else goto handle_unusual;
+        continue;
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
@@ -10252,14 +10250,14 @@ const char* MessageOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE
           goto success;
         }
       if ((8000u <= tag)) {
-        ptr = _extensions_.ParseField(tag, ptr, 
+        ptr = _extensions_.ParseField(tag, ptr,
             internal_default_instance(), &_internal_metadata_, ctx);
         CHK_(ptr != nullptr);
-        break;
+        continue;
       }
         ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
         CHK_(ptr != nullptr);
-        break;
+        continue;
       }
     }  // switch
   }  // while
@@ -10744,73 +10742,73 @@ const char* FieldOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_I
     CHK_(ptr);
     switch (tag >> 3) {
       // optional .google.protobuf.FieldOptions.CType ctype = 1 [default = STRING];
-      case 1: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 8) goto handle_unusual;
-        ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
-        CHK_(ptr);
-        if (!PROTOBUF_NAMESPACE_ID::FieldOptions_CType_IsValid(val)) {
-          ::PROTOBUF_NAMESPACE_ID::internal::WriteVarint(1, val, mutable_unknown_fields());
-          break;
-        }
-        set_ctype(static_cast<PROTOBUF_NAMESPACE_ID::FieldOptions_CType>(val));
-        break;
-      }
-      // optional bool packed = 2;
-      case 2: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 16) goto handle_unusual;
-        HasBitSetters::set_has_packed(&has_bits);
-        packed_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
-        CHK_(ptr);
-        break;
-      }
-      // optional bool deprecated = 3 [default = false];
-      case 3: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 24) goto handle_unusual;
-        HasBitSetters::set_has_deprecated(&has_bits);
-        deprecated_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
-        CHK_(ptr);
-        break;
-      }
-      // optional bool lazy = 5 [default = false];
-      case 5: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 40) goto handle_unusual;
-        HasBitSetters::set_has_lazy(&has_bits);
-        lazy_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
-        CHK_(ptr);
-        break;
-      }
-      // optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];
-      case 6: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 48) goto handle_unusual;
-        ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
-        CHK_(ptr);
-        if (!PROTOBUF_NAMESPACE_ID::FieldOptions_JSType_IsValid(val)) {
-          ::PROTOBUF_NAMESPACE_ID::internal::WriteVarint(6, val, mutable_unknown_fields());
-          break;
-        }
-        set_jstype(static_cast<PROTOBUF_NAMESPACE_ID::FieldOptions_JSType>(val));
-        break;
-      }
-      // optional bool weak = 10 [default = false];
-      case 10: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 80) goto handle_unusual;
-        HasBitSetters::set_has_weak(&has_bits);
-        weak_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
-        CHK_(ptr);
-        break;
-      }
-      // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-      case 999: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 58) goto handle_unusual;
-        while (true) {
-          ptr = ctx->ParseMessage(add_uninterpreted_option(), ptr);
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
+          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
-          if (!ctx->DataAvailable(ptr)) break;
-          if (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint16>(ptr) != 16058) break;
-          ptr += 2;
-        }
-        break;
-      }
+          if (PROTOBUF_PREDICT_TRUE(PROTOBUF_NAMESPACE_ID::FieldOptions_CType_IsValid(val))) {
+            set_ctype(static_cast<PROTOBUF_NAMESPACE_ID::FieldOptions_CType>(val));
+          } else {
+            ::PROTOBUF_NAMESPACE_ID::internal::WriteVarint(1, val, mutable_unknown_fields());
+          }
+        } else goto handle_unusual;
+        continue;
+      // optional bool packed = 2;
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16)) {
+          HasBitSetters::set_has_packed(&has_bits);
+          packed_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // optional bool deprecated = 3 [default = false];
+      case 3:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 24)) {
+          HasBitSetters::set_has_deprecated(&has_bits);
+          deprecated_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // optional bool lazy = 5 [default = false];
+      case 5:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 40)) {
+          HasBitSetters::set_has_lazy(&has_bits);
+          lazy_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];
+      case 6:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 48)) {
+          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+          if (PROTOBUF_PREDICT_TRUE(PROTOBUF_NAMESPACE_ID::FieldOptions_JSType_IsValid(val))) {
+            set_jstype(static_cast<PROTOBUF_NAMESPACE_ID::FieldOptions_JSType>(val));
+          } else {
+            ::PROTOBUF_NAMESPACE_ID::internal::WriteVarint(6, val, mutable_unknown_fields());
+          }
+        } else goto handle_unusual;
+        continue;
+      // optional bool weak = 10 [default = false];
+      case 10:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 80)) {
+          HasBitSetters::set_has_weak(&has_bits);
+          weak_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
+      case 999:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 58)) {
+          ptr -= 2;
+          do {
+            ptr += 2;
+            ptr = ctx->ParseMessage(add_uninterpreted_option(), ptr);
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint16>(ptr) == 16058);
+        } else goto handle_unusual;
+        continue;
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
@@ -10818,14 +10816,14 @@ const char* FieldOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_I
           goto success;
         }
       if ((8000u <= tag)) {
-        ptr = _extensions_.ParseField(tag, ptr, 
+        ptr = _extensions_.ParseField(tag, ptr,
             internal_default_instance(), &_internal_metadata_, ctx);
         CHK_(ptr != nullptr);
-        break;
+        continue;
       }
         ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
         CHK_(ptr != nullptr);
-        break;
+        continue;
       }
     }  // switch
   }  // while
@@ -11355,17 +11353,17 @@ const char* OneofOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_I
     CHK_(ptr);
     switch (tag >> 3) {
       // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-      case 999: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 58) goto handle_unusual;
-        while (true) {
-          ptr = ctx->ParseMessage(add_uninterpreted_option(), ptr);
-          CHK_(ptr);
-          if (!ctx->DataAvailable(ptr)) break;
-          if (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint16>(ptr) != 16058) break;
-          ptr += 2;
-        }
-        break;
-      }
+      case 999:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 58)) {
+          ptr -= 2;
+          do {
+            ptr += 2;
+            ptr = ctx->ParseMessage(add_uninterpreted_option(), ptr);
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint16>(ptr) == 16058);
+        } else goto handle_unusual;
+        continue;
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
@@ -11373,14 +11371,14 @@ const char* OneofOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_I
           goto success;
         }
       if ((8000u <= tag)) {
-        ptr = _extensions_.ParseField(tag, ptr, 
+        ptr = _extensions_.ParseField(tag, ptr,
             internal_default_instance(), &_internal_metadata_, ctx);
         CHK_(ptr != nullptr);
-        break;
+        continue;
       }
         ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
         CHK_(ptr != nullptr);
-        break;
+        continue;
       }
     }  // switch
   }  // while
@@ -11708,33 +11706,33 @@ const char* EnumOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID
     CHK_(ptr);
     switch (tag >> 3) {
       // optional bool allow_alias = 2;
-      case 2: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 16) goto handle_unusual;
-        HasBitSetters::set_has_allow_alias(&has_bits);
-        allow_alias_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
-        CHK_(ptr);
-        break;
-      }
-      // optional bool deprecated = 3 [default = false];
-      case 3: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 24) goto handle_unusual;
-        HasBitSetters::set_has_deprecated(&has_bits);
-        deprecated_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
-        CHK_(ptr);
-        break;
-      }
-      // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-      case 999: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 58) goto handle_unusual;
-        while (true) {
-          ptr = ctx->ParseMessage(add_uninterpreted_option(), ptr);
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16)) {
+          HasBitSetters::set_has_allow_alias(&has_bits);
+          allow_alias_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
-          if (!ctx->DataAvailable(ptr)) break;
-          if (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint16>(ptr) != 16058) break;
-          ptr += 2;
-        }
-        break;
-      }
+        } else goto handle_unusual;
+        continue;
+      // optional bool deprecated = 3 [default = false];
+      case 3:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 24)) {
+          HasBitSetters::set_has_deprecated(&has_bits);
+          deprecated_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
+      case 999:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 58)) {
+          ptr -= 2;
+          do {
+            ptr += 2;
+            ptr = ctx->ParseMessage(add_uninterpreted_option(), ptr);
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint16>(ptr) == 16058);
+        } else goto handle_unusual;
+        continue;
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
@@ -11742,14 +11740,14 @@ const char* EnumOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID
           goto success;
         }
       if ((8000u <= tag)) {
-        ptr = _extensions_.ParseField(tag, ptr, 
+        ptr = _extensions_.ParseField(tag, ptr,
             internal_default_instance(), &_internal_metadata_, ctx);
         CHK_(ptr != nullptr);
-        break;
+        continue;
       }
         ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
         CHK_(ptr != nullptr);
-        break;
+        continue;
       }
     }  // switch
   }  // while
@@ -12141,25 +12139,25 @@ const char* EnumValueOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPA
     CHK_(ptr);
     switch (tag >> 3) {
       // optional bool deprecated = 1 [default = false];
-      case 1: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 8) goto handle_unusual;
-        HasBitSetters::set_has_deprecated(&has_bits);
-        deprecated_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
-        CHK_(ptr);
-        break;
-      }
-      // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-      case 999: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 58) goto handle_unusual;
-        while (true) {
-          ptr = ctx->ParseMessage(add_uninterpreted_option(), ptr);
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
+          HasBitSetters::set_has_deprecated(&has_bits);
+          deprecated_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
-          if (!ctx->DataAvailable(ptr)) break;
-          if (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint16>(ptr) != 16058) break;
-          ptr += 2;
-        }
-        break;
-      }
+        } else goto handle_unusual;
+        continue;
+      // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
+      case 999:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 58)) {
+          ptr -= 2;
+          do {
+            ptr += 2;
+            ptr = ctx->ParseMessage(add_uninterpreted_option(), ptr);
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint16>(ptr) == 16058);
+        } else goto handle_unusual;
+        continue;
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
@@ -12167,14 +12165,14 @@ const char* EnumValueOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPA
           goto success;
         }
       if ((8000u <= tag)) {
-        ptr = _extensions_.ParseField(tag, ptr, 
+        ptr = _extensions_.ParseField(tag, ptr,
             internal_default_instance(), &_internal_metadata_, ctx);
         CHK_(ptr != nullptr);
-        break;
+        continue;
       }
         ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
         CHK_(ptr != nullptr);
-        break;
+        continue;
       }
     }  // switch
   }  // while
@@ -12528,25 +12526,25 @@ const char* ServiceOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE
     CHK_(ptr);
     switch (tag >> 3) {
       // optional bool deprecated = 33 [default = false];
-      case 33: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 8) goto handle_unusual;
-        HasBitSetters::set_has_deprecated(&has_bits);
-        deprecated_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
-        CHK_(ptr);
-        break;
-      }
-      // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-      case 999: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 58) goto handle_unusual;
-        while (true) {
-          ptr = ctx->ParseMessage(add_uninterpreted_option(), ptr);
+      case 33:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
+          HasBitSetters::set_has_deprecated(&has_bits);
+          deprecated_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
-          if (!ctx->DataAvailable(ptr)) break;
-          if (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint16>(ptr) != 16058) break;
-          ptr += 2;
-        }
-        break;
-      }
+        } else goto handle_unusual;
+        continue;
+      // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
+      case 999:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 58)) {
+          ptr -= 2;
+          do {
+            ptr += 2;
+            ptr = ctx->ParseMessage(add_uninterpreted_option(), ptr);
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint16>(ptr) == 16058);
+        } else goto handle_unusual;
+        continue;
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
@@ -12554,14 +12552,14 @@ const char* ServiceOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE
           goto success;
         }
       if ((8000u <= tag)) {
-        ptr = _extensions_.ParseField(tag, ptr, 
+        ptr = _extensions_.ParseField(tag, ptr,
             internal_default_instance(), &_internal_metadata_, ctx);
         CHK_(ptr != nullptr);
-        break;
+        continue;
       }
         ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
         CHK_(ptr != nullptr);
-        break;
+        continue;
       }
     }  // switch
   }  // while
@@ -12928,37 +12926,37 @@ const char* MethodOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_
     CHK_(ptr);
     switch (tag >> 3) {
       // optional bool deprecated = 33 [default = false];
-      case 33: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 8) goto handle_unusual;
-        HasBitSetters::set_has_deprecated(&has_bits);
-        deprecated_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
-        CHK_(ptr);
-        break;
-      }
-      // optional .google.protobuf.MethodOptions.IdempotencyLevel idempotency_level = 34 [default = IDEMPOTENCY_UNKNOWN];
-      case 34: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 16) goto handle_unusual;
-        ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
-        CHK_(ptr);
-        if (!PROTOBUF_NAMESPACE_ID::MethodOptions_IdempotencyLevel_IsValid(val)) {
-          ::PROTOBUF_NAMESPACE_ID::internal::WriteVarint(34, val, mutable_unknown_fields());
-          break;
-        }
-        set_idempotency_level(static_cast<PROTOBUF_NAMESPACE_ID::MethodOptions_IdempotencyLevel>(val));
-        break;
-      }
-      // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-      case 999: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 58) goto handle_unusual;
-        while (true) {
-          ptr = ctx->ParseMessage(add_uninterpreted_option(), ptr);
+      case 33:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
+          HasBitSetters::set_has_deprecated(&has_bits);
+          deprecated_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
-          if (!ctx->DataAvailable(ptr)) break;
-          if (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint16>(ptr) != 16058) break;
-          ptr += 2;
-        }
-        break;
-      }
+        } else goto handle_unusual;
+        continue;
+      // optional .google.protobuf.MethodOptions.IdempotencyLevel idempotency_level = 34 [default = IDEMPOTENCY_UNKNOWN];
+      case 34:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16)) {
+          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+          if (PROTOBUF_PREDICT_TRUE(PROTOBUF_NAMESPACE_ID::MethodOptions_IdempotencyLevel_IsValid(val))) {
+            set_idempotency_level(static_cast<PROTOBUF_NAMESPACE_ID::MethodOptions_IdempotencyLevel>(val));
+          } else {
+            ::PROTOBUF_NAMESPACE_ID::internal::WriteVarint(34, val, mutable_unknown_fields());
+          }
+        } else goto handle_unusual;
+        continue;
+      // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
+      case 999:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 58)) {
+          ptr -= 2;
+          do {
+            ptr += 2;
+            ptr = ctx->ParseMessage(add_uninterpreted_option(), ptr);
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint16>(ptr) == 16058);
+        } else goto handle_unusual;
+        continue;
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
@@ -12966,14 +12964,14 @@ const char* MethodOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_
           goto success;
         }
       if ((8000u <= tag)) {
-        ptr = _extensions_.ParseField(tag, ptr, 
+        ptr = _extensions_.ParseField(tag, ptr,
             internal_default_instance(), &_internal_metadata_, ctx);
         CHK_(ptr != nullptr);
-        break;
+        continue;
       }
         ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
         CHK_(ptr != nullptr);
-        break;
+        continue;
       }
     }  // switch
   }  // while
@@ -13382,20 +13380,20 @@ const char* UninterpretedOption_NamePart::_InternalParse(const char* ptr, ::PROT
     CHK_(ptr);
     switch (tag >> 3) {
       // required string name_part = 1;
-      case 1: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 10) goto handle_unusual;
-        ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_name_part(), ptr, ctx, "google.protobuf.UninterpretedOption.NamePart.name_part");
-        CHK_(ptr);
-        break;
-      }
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_name_part(), ptr, ctx, "google.protobuf.UninterpretedOption.NamePart.name_part");
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // required bool is_extension = 2;
-      case 2: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 16) goto handle_unusual;
-        HasBitSetters::set_has_is_extension(&has_bits);
-        is_extension_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
-        CHK_(ptr);
-        break;
-      }
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16)) {
+          HasBitSetters::set_has_is_extension(&has_bits);
+          is_extension_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
@@ -13404,7 +13402,7 @@ const char* UninterpretedOption_NamePart::_InternalParse(const char* ptr, ::PROT
         }
         ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
         CHK_(ptr != nullptr);
-        break;
+        continue;
       }
     }  // switch
   }  // while
@@ -13823,62 +13821,62 @@ const char* UninterpretedOption::_InternalParse(const char* ptr, ::PROTOBUF_NAME
     CHK_(ptr);
     switch (tag >> 3) {
       // repeated .google.protobuf.UninterpretedOption.NamePart name = 2;
-      case 2: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 18) goto handle_unusual;
-        while (true) {
-          ptr = ctx->ParseMessage(add_name(), ptr);
-          CHK_(ptr);
-          if (!ctx->DataAvailable(ptr)) break;
-          if (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) != 18) break;
-          ptr += 1;
-        }
-        break;
-      }
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 18)) {
+          ptr -= 1;
+          do {
+            ptr += 1;
+            ptr = ctx->ParseMessage(add_name(), ptr);
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) == 18);
+        } else goto handle_unusual;
+        continue;
       // optional string identifier_value = 3;
-      case 3: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 26) goto handle_unusual;
-        ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_identifier_value(), ptr, ctx, "google.protobuf.UninterpretedOption.identifier_value");
-        CHK_(ptr);
-        break;
-      }
+      case 3:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 26)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_identifier_value(), ptr, ctx, "google.protobuf.UninterpretedOption.identifier_value");
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // optional uint64 positive_int_value = 4;
-      case 4: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 32) goto handle_unusual;
-        HasBitSetters::set_has_positive_int_value(&has_bits);
-        positive_int_value_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
-        CHK_(ptr);
-        break;
-      }
+      case 4:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 32)) {
+          HasBitSetters::set_has_positive_int_value(&has_bits);
+          positive_int_value_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // optional int64 negative_int_value = 5;
-      case 5: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 40) goto handle_unusual;
-        HasBitSetters::set_has_negative_int_value(&has_bits);
-        negative_int_value_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
-        CHK_(ptr);
-        break;
-      }
+      case 5:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 40)) {
+          HasBitSetters::set_has_negative_int_value(&has_bits);
+          negative_int_value_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // optional double double_value = 6;
-      case 6: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 49) goto handle_unusual;
-        HasBitSetters::set_has_double_value(&has_bits);
-        double_value_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<double>(ptr);
-        ptr += sizeof(double);
-        break;
-      }
+      case 6:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 49)) {
+          HasBitSetters::set_has_double_value(&has_bits);
+          double_value_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<double>(ptr);
+          ptr += sizeof(double);
+        } else goto handle_unusual;
+        continue;
       // optional bytes string_value = 7;
-      case 7: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 58) goto handle_unusual;
-        ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(mutable_string_value(), ptr, ctx);
-        CHK_(ptr);
-        break;
-      }
+      case 7:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 58)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(mutable_string_value(), ptr, ctx);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // optional string aggregate_value = 8;
-      case 8: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 66) goto handle_unusual;
-        ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_aggregate_value(), ptr, ctx, "google.protobuf.UninterpretedOption.aggregate_value");
-        CHK_(ptr);
-        break;
-      }
+      case 8:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 66)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_aggregate_value(), ptr, ctx, "google.protobuf.UninterpretedOption.aggregate_value");
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
@@ -13887,7 +13885,7 @@ const char* UninterpretedOption::_InternalParse(const char* ptr, ::PROTOBUF_NAME
         }
         ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
         CHK_(ptr != nullptr);
-        break;
+        continue;
       }
     }  // switch
   }  // while
@@ -14455,63 +14453,51 @@ const char* SourceCodeInfo_Location::_InternalParse(const char* ptr, ::PROTOBUF_
     CHK_(ptr);
     switch (tag >> 3) {
       // repeated int32 path = 1 [packed = true];
-      case 1: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10) {
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
           ptr = ::PROTOBUF_NAMESPACE_ID::internal::PackedInt32Parser(mutable_path(), ptr, ctx);
           CHK_(ptr);
-          break;
-        } else if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 8) goto handle_unusual;
-        while (true) {
+        } else if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8) {
           add_path(::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr));
           CHK_(ptr);
-          if (!ctx->DataAvailable(ptr)) break;
-          if (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) != 8) break;
-          ptr += 1;
-        }
-        break;
-      }
+        } else goto handle_unusual;
+        continue;
       // repeated int32 span = 2 [packed = true];
-      case 2: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 18) {
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 18)) {
           ptr = ::PROTOBUF_NAMESPACE_ID::internal::PackedInt32Parser(mutable_span(), ptr, ctx);
           CHK_(ptr);
-          break;
-        } else if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 16) goto handle_unusual;
-        while (true) {
+        } else if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16) {
           add_span(::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr));
           CHK_(ptr);
-          if (!ctx->DataAvailable(ptr)) break;
-          if (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) != 16) break;
-          ptr += 1;
-        }
-        break;
-      }
+        } else goto handle_unusual;
+        continue;
       // optional string leading_comments = 3;
-      case 3: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 26) goto handle_unusual;
-        ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_leading_comments(), ptr, ctx, "google.protobuf.SourceCodeInfo.Location.leading_comments");
-        CHK_(ptr);
-        break;
-      }
-      // optional string trailing_comments = 4;
-      case 4: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 34) goto handle_unusual;
-        ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_trailing_comments(), ptr, ctx, "google.protobuf.SourceCodeInfo.Location.trailing_comments");
-        CHK_(ptr);
-        break;
-      }
-      // repeated string leading_detached_comments = 6;
-      case 6: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 50) goto handle_unusual;
-        while (true) {
-          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(add_leading_detached_comments(), ptr, ctx, "google.protobuf.SourceCodeInfo.Location.leading_detached_comments");
+      case 3:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 26)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_leading_comments(), ptr, ctx, "google.protobuf.SourceCodeInfo.Location.leading_comments");
           CHK_(ptr);
-          if (!ctx->DataAvailable(ptr)) break;
-          if (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) != 50) break;
-          ptr += 1;
-        }
-        break;
-      }
+        } else goto handle_unusual;
+        continue;
+      // optional string trailing_comments = 4;
+      case 4:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 34)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_trailing_comments(), ptr, ctx, "google.protobuf.SourceCodeInfo.Location.trailing_comments");
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // repeated string leading_detached_comments = 6;
+      case 6:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 50)) {
+          ptr -= 1;
+          do {
+            ptr += 1;
+            ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(add_leading_detached_comments(), ptr, ctx, "google.protobuf.SourceCodeInfo.Location.leading_detached_comments");
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) == 50);
+        } else goto handle_unusual;
+        continue;
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
@@ -14520,7 +14506,7 @@ const char* SourceCodeInfo_Location::_InternalParse(const char* ptr, ::PROTOBUF_
         }
         ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
         CHK_(ptr != nullptr);
-        break;
+        continue;
       }
     }  // switch
   }  // while
@@ -15029,17 +15015,17 @@ const char* SourceCodeInfo::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE
     CHK_(ptr);
     switch (tag >> 3) {
       // repeated .google.protobuf.SourceCodeInfo.Location location = 1;
-      case 1: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 10) goto handle_unusual;
-        while (true) {
-          ptr = ctx->ParseMessage(add_location(), ptr);
-          CHK_(ptr);
-          if (!ctx->DataAvailable(ptr)) break;
-          if (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) != 10) break;
-          ptr += 1;
-        }
-        break;
-      }
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
+          ptr -= 1;
+          do {
+            ptr += 1;
+            ptr = ctx->ParseMessage(add_location(), ptr);
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) == 10);
+        } else goto handle_unusual;
+        continue;
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
@@ -15048,7 +15034,7 @@ const char* SourceCodeInfo::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE
         }
         ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
         CHK_(ptr != nullptr);
-        break;
+        continue;
       }
     }  // switch
   }  // while
@@ -15368,44 +15354,38 @@ const char* GeneratedCodeInfo_Annotation::_InternalParse(const char* ptr, ::PROT
     CHK_(ptr);
     switch (tag >> 3) {
       // repeated int32 path = 1 [packed = true];
-      case 1: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10) {
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
           ptr = ::PROTOBUF_NAMESPACE_ID::internal::PackedInt32Parser(mutable_path(), ptr, ctx);
           CHK_(ptr);
-          break;
-        } else if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 8) goto handle_unusual;
-        while (true) {
+        } else if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8) {
           add_path(::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr));
           CHK_(ptr);
-          if (!ctx->DataAvailable(ptr)) break;
-          if (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) != 8) break;
-          ptr += 1;
-        }
-        break;
-      }
+        } else goto handle_unusual;
+        continue;
       // optional string source_file = 2;
-      case 2: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 18) goto handle_unusual;
-        ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_source_file(), ptr, ctx, "google.protobuf.GeneratedCodeInfo.Annotation.source_file");
-        CHK_(ptr);
-        break;
-      }
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 18)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8Verify(mutable_source_file(), ptr, ctx, "google.protobuf.GeneratedCodeInfo.Annotation.source_file");
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // optional int32 begin = 3;
-      case 3: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 24) goto handle_unusual;
-        HasBitSetters::set_has_begin(&has_bits);
-        begin_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
-        CHK_(ptr);
-        break;
-      }
+      case 3:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 24)) {
+          HasBitSetters::set_has_begin(&has_bits);
+          begin_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // optional int32 end = 4;
-      case 4: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 32) goto handle_unusual;
-        HasBitSetters::set_has_end(&has_bits);
-        end_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
-        CHK_(ptr);
-        break;
-      }
+      case 4:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 32)) {
+          HasBitSetters::set_has_end(&has_bits);
+          end_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
@@ -15414,7 +15394,7 @@ const char* GeneratedCodeInfo_Annotation::_InternalParse(const char* ptr, ::PROT
         }
         ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
         CHK_(ptr != nullptr);
-        break;
+        continue;
       }
     }  // switch
   }  // while
@@ -15841,17 +15821,17 @@ const char* GeneratedCodeInfo::_InternalParse(const char* ptr, ::PROTOBUF_NAMESP
     CHK_(ptr);
     switch (tag >> 3) {
       // repeated .google.protobuf.GeneratedCodeInfo.Annotation annotation = 1;
-      case 1: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 10) goto handle_unusual;
-        while (true) {
-          ptr = ctx->ParseMessage(add_annotation(), ptr);
-          CHK_(ptr);
-          if (!ctx->DataAvailable(ptr)) break;
-          if (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) != 10) break;
-          ptr += 1;
-        }
-        break;
-      }
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
+          ptr -= 1;
+          do {
+            ptr += 1;
+            ptr = ctx->ParseMessage(add_annotation(), ptr);
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) == 10);
+        } else goto handle_unusual;
+        continue;
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
@@ -15860,7 +15840,7 @@ const char* GeneratedCodeInfo::_InternalParse(const char* ptr, ::PROTOBUF_NAMESP
         }
         ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
         CHK_(ptr != nullptr);
-        break;
+        continue;
       }
     }  // switch
   }  // while

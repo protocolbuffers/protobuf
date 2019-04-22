@@ -143,10 +143,6 @@ class CommandLineInterfaceTest : public testing::Test {
   // substring.
   void ExpectErrorSubstring(const std::string& expected_substring);
 
-  // Like ExpectErrorSubstring, but checks that Run() returned zero.
-  void ExpectErrorSubstringWithZeroReturnCode(
-      const std::string& expected_substring);
-
   // Checks that the captured stdout is the same as the expected_text.
   void ExpectCapturedStdout(const std::string& expected_text);
 
@@ -155,9 +151,11 @@ class CommandLineInterfaceTest : public testing::Test {
   void ExpectCapturedStdoutSubstringWithZeroReturnCode(
       const std::string& expected_substring);
 
+#if defined(_WIN32) && !defined(__CYGWIN__)
   // Returns true if ExpectErrorSubstring(expected_substring) would pass, but
   // does not fail otherwise.
   bool HasAlternateErrorSubstring(const std::string& expected_substring);
+#endif  // _WIN32 && !__CYGWIN__
 
   // Checks that MockCodeGenerator::Generate() was called in the given
   // context (or the generator in test_plugin.cc, which produces the same
@@ -189,7 +187,9 @@ class CommandLineInterfaceTest : public testing::Test {
   void CheckGeneratedAnnotations(const std::string& name,
                                  const std::string& file);
 
+#if defined(_WIN32)
   void ExpectNullCodeGeneratorCalled(const std::string& parameter);
+#endif  // _WIN32
 
 
   void ReadDescriptorSet(const std::string& filename,
@@ -407,17 +407,13 @@ void CommandLineInterfaceTest::ExpectErrorSubstring(
   EXPECT_PRED_FORMAT2(testing::IsSubstring, expected_substring, error_text_);
 }
 
-void CommandLineInterfaceTest::ExpectErrorSubstringWithZeroReturnCode(
-    const std::string& expected_substring) {
-  EXPECT_EQ(0, return_code_);
-  EXPECT_PRED_FORMAT2(testing::IsSubstring, expected_substring, error_text_);
-}
-
+#if defined(_WIN32) && !defined(__CYGWIN__)
 bool CommandLineInterfaceTest::HasAlternateErrorSubstring(
     const std::string& expected_substring) {
   EXPECT_NE(0, return_code_);
   return error_text_.find(expected_substring) != std::string::npos;
 }
+#endif  // _WIN32 && !__CYGWIN__
 
 void CommandLineInterfaceTest::ExpectGenerated(
     const std::string& generator_name, const std::string& parameter,
@@ -457,11 +453,13 @@ void CommandLineInterfaceTest::CheckGeneratedAnnotations(
   MockCodeGenerator::CheckGeneratedAnnotations(name, file, temp_directory_);
 }
 
+#if defined(_WIN32)
 void CommandLineInterfaceTest::ExpectNullCodeGeneratorCalled(
     const std::string& parameter) {
   EXPECT_TRUE(null_generator_->called_);
   EXPECT_EQ(parameter, null_generator_->parameter_);
 }
+#endif  // _WIN32
 
 
 void CommandLineInterfaceTest::ReadDescriptorSet(

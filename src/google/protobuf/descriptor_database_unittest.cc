@@ -531,6 +531,46 @@ TEST(SimpleDescriptorDatabaseExtraTest, FindAllFileNames) {
   EXPECT_THAT(all_files, testing::ElementsAre("foo.proto"));
 }
 
+TEST(SimpleDescriptorDatabaseExtraTest, FindAllPackageNames) {
+  FileDescriptorProto f;
+  f.set_name("foo.proto");
+  f.set_package("foo");
+  f.add_message_type()->set_name("Foo");
+
+  FileDescriptorProto b;
+  b.set_name("bar.proto");
+  b.set_package("");
+  b.add_message_type()->set_name("Bar");
+
+  SimpleDescriptorDatabase db;
+  db.Add(f);
+  db.Add(b);
+
+  std::vector<string> packages;
+  EXPECT_TRUE(db.FindAllPackageNames(&packages));
+  EXPECT_THAT(packages, ::testing::UnorderedElementsAre("foo", ""));
+}
+
+TEST(SimpleDescriptorDatabaseExtraTest, FindAllMessageNames) {
+  FileDescriptorProto f;
+  f.set_name("foo.proto");
+  f.set_package("foo");
+  f.add_message_type()->set_name("Foo");
+
+  FileDescriptorProto b;
+  b.set_name("bar.proto");
+  b.set_package("");
+  b.add_message_type()->set_name("Bar");
+
+  SimpleDescriptorDatabase db;
+  db.Add(f);
+  db.Add(b);
+
+  std::vector<string> messages;
+  EXPECT_TRUE(db.FindAllMessageNames(&messages));
+  EXPECT_THAT(messages, ::testing::UnorderedElementsAre("foo.Foo", "Bar"));
+}
+
 // ===================================================================
 
 class MergedDescriptorDatabaseTest : public testing::Test {

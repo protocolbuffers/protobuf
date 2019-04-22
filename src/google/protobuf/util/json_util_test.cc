@@ -462,10 +462,9 @@ TEST_F(JsonUtilTest, TestParsingEnumIgnoreCase) {
         "  \"enum_value\":\"bar\"\n"
         "}";
     m.set_enum_value(proto3::FOO);
-    EXPECT_TRUE(FromJson(input, &m, options));
-    // Default behavior is case-insensitive.
-    // TODO(haon): Change the default behavior to case-sensitive.
-    ASSERT_EQ(proto3::BAR, m.enum_value());
+    EXPECT_FALSE(FromJson(input, &m, options));
+    // Default behavior is case-sensitive, so keep previous value.
+    ASSERT_EQ(proto3::FOO, m.enum_value());
   }
   {
     JsonParseOptions options;

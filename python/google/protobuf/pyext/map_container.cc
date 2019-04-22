@@ -100,9 +100,6 @@ struct MapIterator {
   // We store this so that if the map is modified during iteration we can throw
   // an error.
   uint64 version;
-  // True if the container is empty.  We signal this separately to avoid calling
-  // any of the iteration methods, which are non-const.
-  bool empty;
 };
 
 Message* MapContainer::GetMutableMessage() {
