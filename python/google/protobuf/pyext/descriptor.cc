@@ -1880,15 +1880,6 @@ PyObject* PyMethodDescriptor_FromDescriptor(
       &PyMethodDescriptor_Type, method_descriptor, NULL);
 }
 
-const MethodDescriptor* PyMethodDescriptor_AsDescriptor(PyObject* obj) {
-  if (!PyObject_TypeCheck(obj, &PyMethodDescriptor_Type)) {
-    PyErr_SetString(PyExc_TypeError, "Not a MethodDescriptor");
-    return NULL;
-  }
-  return reinterpret_cast<const MethodDescriptor*>(
-      reinterpret_cast<PyBaseDescriptor*>(obj)->descriptor);
-}
-
 // Add a enum values to a type dictionary.
 static bool AddEnumValues(PyTypeObject *type,
                           const EnumDescriptor* enum_descriptor) {

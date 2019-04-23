@@ -159,10 +159,6 @@ class BaseProtoStreamObjectWriterTest
 
   void CheckOutput(const Message& expected) { CheckOutput(expected, -1); }
 
-  const google::protobuf::Type* GetType(const Descriptor* descriptor) {
-    return helper_.GetTypeInfo()->GetTypeByTypeUrl(GetTypeUrl(descriptor));
-  }
-
   testing::TypeInfoTestHelper helper_;
   MockErrorListener listener_;
   std::unique_ptr<GrowingArrayByteSink> output_;

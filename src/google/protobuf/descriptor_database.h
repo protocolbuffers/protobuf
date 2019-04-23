@@ -120,6 +120,20 @@ class PROTOBUF_EXPORT DescriptorDatabase {
     return false;
   }
 
+  // Finds the package names and appends them to the output in an
+  // undefined order. This method is best-effort: it's not guaranteed that the
+  // database will find all packages. Returns true if the database supports
+  // searching all package names, otherwise returns false and leaves output
+  // unchanged.
+  bool FindAllPackageNames(std::vector<std::string>* output);
+
+  // Finds the message names and appends them to the output in an
+  // undefined order. This method is best-effort: it's not guaranteed that the
+  // database will find all messages. Returns true if the database supports
+  // searching all message names, otherwise returns false and leaves output
+  // unchanged.
+  bool FindAllMessageNames(std::vector<std::string>* output);
+
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(DescriptorDatabase);
 };

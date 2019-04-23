@@ -152,12 +152,12 @@ const char* SourceContext::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_
     CHK_(ptr);
     switch (tag >> 3) {
       // string file_name = 1;
-      case 1: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 10) goto handle_unusual;
-        ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8(mutable_file_name(), ptr, ctx, "google.protobuf.SourceContext.file_name");
-        CHK_(ptr);
-        break;
-      }
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8(mutable_file_name(), ptr, ctx, "google.protobuf.SourceContext.file_name");
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
@@ -166,7 +166,7 @@ const char* SourceContext::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_
         }
         ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
         CHK_(ptr != nullptr);
-        break;
+        continue;
       }
     }  // switch
   }  // while

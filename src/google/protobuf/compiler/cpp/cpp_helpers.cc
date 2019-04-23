@@ -32,6 +32,8 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+#include <google/protobuf/compiler/cpp/cpp_helpers.h>
+
 #include <functional>
 #include <limits>
 #include <map>
@@ -39,9 +41,8 @@
 #include <unordered_set>
 #include <vector>
 
-#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/compiler/cpp/cpp_helpers.h>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/descriptor.h>
 
 #include <google/protobuf/compiler/scc.h>
@@ -1340,15 +1341,6 @@ bool MaybeBootstrap(const Options& options, GeneratorContext* generator_context,
   }
 }
 
-bool ShouldRepeat(const FieldDescriptor* descriptor,
-                  internal::WireFormatLite::WireType wiretype) {
-  constexpr int kMaxTwoByteFieldNumber = 16 * 128;
-  return descriptor->number() < kMaxTwoByteFieldNumber &&
-         descriptor->is_repeated() &&
-         (!descriptor->is_packable() ||
-          wiretype != internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
-}
-
 class ParseLoopGenerator {
  public:
   ParseLoopGenerator(int num_hasbits, const Options& options,
@@ -1584,12 +1576,25 @@ class ParseLoopGenerator {
     }
   }
 
-  void GenerateCaseBody(internal::WireFormatLite::WireType wiretype,
-                        const FieldDescriptor* field) {
-    if (ShouldRepeat(field, wiretype)) {
-      format_("while (true) {\n");
-      format_.Indent();
-    }
+  // Convert a 1 or 2 byte varint into the equivalent value upon a direct load.
+  static uint32 SmallVarintValue(uint32 x) {
+    GOOGLE_DCHECK(x < 128 * 128);
+    if (x >= 128) x += (x & 0xFF80) + 128;
+    return x;
+  }
+
+  static bool ShouldRepeat(const FieldDescriptor* descriptor,
+                           internal::WireFormatLite::WireType wiretype) {
+    constexpr int kMaxTwoByteFieldNumber = 16 * 128;
+    return descriptor->number() < kMaxTwoByteFieldNumber &&
+           descriptor->is_repeated() &&
+           (!descriptor->is_packable() ||
+            wiretype != internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
+  }
+
+  void GenerateFieldBody(internal::WireFormatLite::WireType wiretype,
+                         const FieldDescriptor* field) {
+    uint32 tag = WireFormatLite::MakeTag(field->number(), wiretype);
     switch (wiretype) {
       case WireFormatLite::WIRETYPE_VARINT: {
         std::string type = PrimitiveTypeName(options_, field->cpp_type());
@@ -1599,17 +1604,20 @@ class ParseLoopGenerator {
               "$uint64$ val = $pi_ns$::ReadVarint(&ptr);\n"
               "CHK_(ptr);\n");
           if (!HasPreservingUnknownEnumSemantics(field)) {
-            format_(
-                "if (!$1$_IsValid(val)) {\n"
-                "  $pi_ns$::WriteVarint($2$, val, "
-                "mutable_unknown_fields());\n"
-                "  break;\n"
-                "}\n",
-                QualifiedClassName(field->enum_type(), options_),
-                field->number());
+            format_("if (PROTOBUF_PREDICT_TRUE($1$_IsValid(val))) {\n",
+                    QualifiedClassName(field->enum_type(), options_));
+            format_.Indent();
           }
           format_("$1$_$2$(static_cast<$3$>(val));\n", prefix, FieldName(field),
                   QualifiedClassName(field->enum_type(), options_));
+          if (!HasPreservingUnknownEnumSemantics(field)) {
+            format_.Outdent();
+            format_(
+                "} else {\n"
+                "  $pi_ns$::WriteVarint($1$, val, mutable_unknown_fields());\n"
+                "}\n",
+                field->number());
+          }
         } else {
           int size = field->type() == FieldDescriptor::TYPE_SINT32 ? 32 : 64;
           std::string zigzag;
@@ -1664,9 +1672,9 @@ class ParseLoopGenerator {
       }
       case WireFormatLite::WIRETYPE_START_GROUP: {
         format_(
-            "ptr = ctx->ParseGroup($1$_$2$(), ptr, tag);\n"
+            "ptr = ctx->ParseGroup($1$_$2$(), ptr, $3$);\n"
             "CHK_(ptr);\n",
-            field->is_repeated() ? "add" : "mutable", FieldName(field));
+            field->is_repeated() ? "add" : "mutable", FieldName(field), tag);
         break;
       }
       case WireFormatLite::WIRETYPE_END_GROUP: {
@@ -1674,56 +1682,30 @@ class ParseLoopGenerator {
         break;
       }
     }  // switch (wire_type)
-
-    if (ShouldRepeat(field, wiretype)) {
-      uint32 x = field->number() * 8 + wiretype;
-      int cnt = 1;
-      string type = "uint8";
-      if (x >= 128) {
-        x += (x & 0xFF80) + 128;
-        cnt = 2;
-        type = "uint16";
-      }
-      format_(
-          "if (!ctx->DataAvailable(ptr)) break;\n"
-          "if ($pi_ns$::UnalignedLoad<$1$>(ptr) != $2$) break;\n"
-          "ptr += $3$;\n",
-          IntTypeName(options_, type), x, cnt);
-      format_.Outdent();
-      format_("}\n");
-    }
-    format_("break;\n");
   }
 
-  void GenerateCaseBody(const FieldDescriptor* field) {
+  // Returns the tag for this field and in case of repeated packable fields,
+  // sets a fallback tag in fallback_tag_ptr.
+  static uint32 ExpectedTag(const FieldDescriptor* field,
+                            uint32* fallback_tag_ptr) {
+    uint32 expected_tag;
     if (field->is_packable()) {
       auto expected_wiretype = WireFormat::WireTypeForFieldType(field->type());
-      GOOGLE_CHECK(expected_wiretype != WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
-      uint32 expected_tag =
+      expected_tag =
           WireFormatLite::MakeTag(field->number(), expected_wiretype);
+      GOOGLE_CHECK(expected_wiretype != WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
       auto fallback_wiretype = WireFormatLite::WIRETYPE_LENGTH_DELIMITED;
       uint32 fallback_tag =
           WireFormatLite::MakeTag(field->number(), fallback_wiretype);
 
-      if (field->is_packed()) {
-        std::swap(expected_tag, fallback_tag);
-        std::swap(expected_wiretype, fallback_wiretype);
-      }
-
-      format_("if (static_cast<$uint8$>(tag) == $1$) {\n", expected_tag & 0xFF);
-      format_.Indent();
-      GenerateCaseBody(expected_wiretype, field);
-      format_.Outdent();
-      format_(
-          "} else if (static_cast<$uint8$>(tag) != $1$) goto handle_unusual;\n",
-          fallback_tag & 0xFF);
-      GenerateCaseBody(fallback_wiretype, field);
+      if (field->is_packed()) std::swap(expected_tag, fallback_tag);
+      *fallback_tag_ptr = fallback_tag;
     } else {
-      auto wiretype = WireFormat::WireTypeForField(field);
-      format_("if (static_cast<$uint8$>(tag) != $1$) goto handle_unusual;\n",
-              WireFormat::MakeTag(field) & 0xFF);
-      GenerateCaseBody(wiretype, field);
+      auto expected_wiretype = WireFormat::WireTypeForField(field);
+      expected_tag =
+          WireFormatLite::MakeTag(field->number(), expected_wiretype);
     }
+    return expected_tag;
   }
 
   void GenerateParseLoop(
@@ -1753,13 +1735,49 @@ class ParseLoopGenerator {
       }
       format_(
           "// $1$\n"
-          "case $2$: {\n",
+          "case $2$:\n",
           def, field->number());
       format_.Indent();
-      GenerateCaseBody(field);
+      uint32 fallback_tag = 0;
+      uint32 expected_tag = ExpectedTag(field, &fallback_tag);
+      format_(
+          "if (PROTOBUF_PREDICT_TRUE(static_cast<$uint8$>(tag) == $1$)) {\n",
+          expected_tag & 0xFF);
+      format_.Indent();
+      auto wiretype = WireFormatLite::GetTagWireType(expected_tag);
+      uint32 tag = WireFormatLite::MakeTag(field->number(), wiretype);
+      int tag_size = io::CodedOutputStream::VarintSize32(tag);
+      bool is_repeat = ShouldRepeat(field, wiretype);
+      if (is_repeat) {
+        format_(
+            "ptr -= $1$;\n"
+            "do {\n"
+            "  ptr += $1$;\n",
+            tag_size);
+        format_.Indent();
+      }
+      GenerateFieldBody(wiretype, field);
+      if (is_repeat) {
+        string type = tag_size == 2 ? "uint16" : "uint8";
+        format_.Outdent();
+        format_(
+            "  if (!ctx->DataAvailable(ptr)) break;\n"
+            "} while ($pi_ns$::UnalignedLoad<$1$>(ptr) == $2$);\n",
+            IntTypeName(options_, type), SmallVarintValue(tag));
+      }
       format_.Outdent();
-      format_("}\n");  // case
-    }                  // for fields
+      if (fallback_tag) {
+        format_("} else if (static_cast<$uint8$>(tag) == $1$) {\n",
+                fallback_tag & 0xFF);
+        format_.Indent();
+        GenerateFieldBody(WireFormatLite::GetTagWireType(fallback_tag), field);
+        format_.Outdent();
+      }
+      format_.Outdent();
+      format_(
+          "  } else goto handle_unusual;\n"
+          "  continue;\n");
+    }  // for loop over ordered fields
 
     // Default case
     format_("default: {\n");
@@ -1770,7 +1788,7 @@ class ParseLoopGenerator {
         "    goto success;\n"
         "  }\n");
     if (IsMapEntryMessage(descriptor)) {
-      format_("  break;\n");
+      format_("  continue;\n");
     } else {
       if (descriptor->extension_range_count() > 0) {
         format_("if (");
@@ -1792,17 +1810,16 @@ class ParseLoopGenerator {
         }
         format_(") {\n");
         format_(
-            "  ptr = _extensions_.ParseField(tag, ptr, \n"
-            "      internal_default_instance(), &_internal_metadata_, "
-            "ctx);\n"
+            "  ptr = _extensions_.ParseField(tag, ptr,\n"
+            "      internal_default_instance(), &_internal_metadata_, ctx);\n"
             "  CHK_(ptr != nullptr);\n"
-            "  break;\n"
+            "  continue;\n"
             "}\n");
       }
       format_(
           "  ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);\n"
           "  CHK_(ptr != nullptr);\n"
-          "  break;\n");
+          "  continue;\n");
     }
     format_("}\n");  // default case
     format_.Outdent();
