@@ -190,40 +190,24 @@ namespace Google.Protobuf
         {
             Extension extension;
             int lastFieldNumber = WireFormat.GetTagFieldNumber(stream.LastTag);
-            if (set == null)
+            
+            IExtensionValue extensionValue;
+            if (set != null && set.ValuesByNumber.TryGetValue(lastFieldNumber, out extensionValue))
             {
-                if (stream.ExtensionRegistry != null && stream.ExtensionRegistry.ContainsInputField(stream, typeof(TTarget), out extension))
-                {
-                    IExtensionValue value = extension.CreateValue();
-                    value.MergeFrom(stream);
-                    set = new ExtensionSet<TTarget>();
-                    set.ValuesByNumber.Add(extension.FieldNumber, value);
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
+                extensionValue.MergeFrom(stream);
+                return true;
+            }
+            else if (stream.ExtensionRegistry != null && stream.ExtensionRegistry.ContainsInputField(stream, typeof(TTarget), out extension))
+            {
+                IExtensionValue value = extension.CreateValue();
+                value.MergeFrom(stream);
+                set = (set ?? new ExtensionSet<TTarget>());
+                set.ValuesByNumber.Add(extension.FieldNumber, value);
+                return true;
             }
             else
             {
-                IExtensionValue extensionValue;
-                if (set.ValuesByNumber.TryGetValue(lastFieldNumber, out extensionValue))
-                {
-                    extensionValue.MergeFrom(stream);
-                    return true;
-                }
-                else if (stream.ExtensionRegistry != null && stream.ExtensionRegistry.ContainsInputField(stream, typeof(TTarget), out extension))
-                {
-                    IExtensionValue value = extension.CreateValue();
-                    value.MergeFrom(stream);
-                    set.ValuesByNumber.Add(extension.FieldNumber, value);
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
+                return false;
             }
         }
 
