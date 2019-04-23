@@ -60,18 +60,19 @@ namespace js {
 // Sorted list of JavaScript keywords. These cannot be used as names. If they
 // appear, we prefix them with "pb_".
 const char* kKeyword[] = {
-    "abstract",   "boolean",      "break",      "byte",    "case",
-    "catch",      "char",         "class",      "const",   "continue",
-    "debugger",   "default",      "delete",     "do",      "double",
-    "else",       "enum",         "export",     "extends", "false",
-    "final",      "finally",      "float",      "for",     "function",
-    "goto",       "if",           "implements", "import",  "in",
-    "instanceof", "int",          "interface",  "long",    "native",
-    "new",        "null",         "package",    "private", "protected",
-    "public",     "return",       "short",      "static",  "super",
-    "switch",     "synchronized", "this",       "throw",   "throws",
-    "transient",  "try",          "typeof",     "var",     "void",
-    "volatile",   "while",        "with",
+    "abstract", "await",      "boolean",   "break",        "byte",
+    "case",     "catch",      "char",      "class",        "const",
+    "continue", "debugger",   "default",   "delete",       "do",
+    "double",   "else",       "enum",      "export",       "extends",
+    "false",    "final",      "finally",   "float",        "for",
+    "function", "goto",       "if",        "implements",   "import",
+    "in",       "instanceof", "int",       "interface",    "let",
+    "long",     "native",     "new",       "null",         "package",
+    "private",  "protected",  "public",    "return",       "short",
+    "static",   "super",      "switch",    "synchronized", "this",
+    "throw",    "throws",     "transient", "true",         "try",
+    "typeof",   "var",        "void",      "volatile",     "while",
+    "with",     "yield",
 };
 
 static const int kNumKeyword = sizeof(kKeyword) / sizeof(char*);
