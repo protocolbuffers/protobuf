@@ -406,18 +406,29 @@ _upb_proto_library_aspect = aspect(
     fragments = ["cpp"],
 )
 
+
+def filter_none(elems):
+    out = []
+    for elem in elems:
+        if elem:
+            out.append(elem)
+    return out
+
+
 def _upb_proto_library_impl(ctx):
     if len(ctx.attr.deps) != 1:
         fail("only one deps dependency allowed.")
     dep = ctx.attr.deps[0]
     if CcInfo not in dep:
         fail("proto_library rule must generate CcInfo (have cc_api_version>0).")
+    lib = dep[CcInfo].linking_context.libraries_to_link[0]
+    files = filter_none([
+        lib.static_library,
+        lib.pic_static_library,
+        lib.dynamic_library,
+    ])
     return [
-        DefaultInfo(
-            files = depset(
-                [dep[CcInfo].linking_context.libraries_to_link[0].static_library],
-            ),
-        ),
+        DefaultInfo(files = depset(files)),
         dep[CcInfo],
     ]
 
