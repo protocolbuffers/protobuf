@@ -302,26 +302,20 @@ def _generate_output_file(ctx, src, extension):
     real_short_path = _get_real_short_path(src)
     output_filename = paths.replace_extension(real_short_path, extension)
     ret = ctx.new_file(ctx.genfiles_dir, output_filename)
-    real_genfiles_dir = ret.path[:-len(output_filename)]
-    return ret, real_genfiles_dir
+    return ret
 
 def _generate_output_files(ctx, package, file_names, file_types):
     result = {}
-    real_genfiles_dir = None
     for key in file_types.keys():
-        arr = []
-        for name in file_names:
-            file, real_genfiles_dir = _generate_output_file(ctx, name, file_types[key])
-            arr.append(file)
-        result[key] = arr
-    return result, real_genfiles_dir
+        result[key] = [_generate_output_file(ctx, name, file_types[key]) for name in file_names]
+    return result
 
 def cc_library_func(ctx, hdrs, srcs, deps):
     compilation_contexts = []
-    cc_infos = []
+    linking_contexts = []
     for dep in deps:
         if CcInfo in dep:
-            cc_infos.append(dep[CcInfo])
+            linking_contexts.append(dep[CcInfo].linking_context)
             compilation_contexts.append(dep[CcInfo].compilation_context)
     toolchain = find_cpp_toolchain(ctx)
     feature_configuration = cc_common.configure_features(
@@ -337,9 +331,6 @@ def cc_library_func(ctx, hdrs, srcs, deps):
         hdrs = hdrs,
         compilation_contexts = compilation_contexts,
     )
-    # create link action
-    linking_contexts = [provider.linking_context for provider in cc_infos]
-
     linking_info = cc_common.link(
         ctx = ctx,
         feature_configuration = feature_configuration,
@@ -359,7 +350,7 @@ def _upb_proto_library_aspect_impl(target, ctx):
         "srcs": ".upb.c",
         "hdrs": ".upb.h",
     }
-    files, real_genfiles_dir = _generate_output_files(
+    files = _generate_output_files(
         ctx = ctx,
         package = ctx.label.package,
         file_names = proto_sources,
