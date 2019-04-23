@@ -20,6 +20,7 @@ git_repository(
     commit = "25feb59620627b673df76813dfd66e3f565765e7",
     #sha256 = "d7a221b3d4fb4f05b7473795ccea9e05dab3b8721f6286a95fffbffc2d926f8b",
     remote = "https://github.com/haberman/protobuf.git",
+    shallow_since = "1541281400 -0700"
     #tag = "conformance-build-tag",
 )
 
@@ -27,6 +28,7 @@ git_repository(
     name = "absl",
     commit = "070f6e47b33a2909d039e620c873204f78809492",
     remote = "https://github.com/abseil/abseil-cpp.git",
+    shallow_since = "1541627663 -0500"
 )
 
 http_archive(

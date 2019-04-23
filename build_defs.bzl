@@ -337,67 +337,21 @@ def cc_library_func(ctx, hdrs, srcs, deps):
         hdrs = hdrs,
         compilation_contexts = compilation_contexts,
     )
-    output_file = ctx.new_file(ctx.bin_dir, "lib" + ctx.rule.attr.name + ".a")
-    library_to_link = cc_common.create_library_to_link(
-        actions = ctx.actions,
+    # create link action
+    linking_contexts = [provider.linking_context for provider in cc_infos]
+
+    linking_info = cc_common.link(
+        ctx = ctx,
         feature_configuration = feature_configuration,
         cc_toolchain = toolchain,
-        static_library = output_file,
-    )
-    archiver_path = cc_common.get_tool_for_action(
-        feature_configuration = feature_configuration,
-        action_name = CPP_LINK_STATIC_LIBRARY_ACTION_NAME,
-    )
-    archiver_variables = cc_common.create_link_variables(
-        feature_configuration = feature_configuration,
-        cc_toolchain = toolchain,
-        output_file = output_file.path,
-        is_using_linker = False,
-    )
-    command_line = cc_common.get_memory_inefficient_command_line(
-        feature_configuration = feature_configuration,
-        action_name = CPP_LINK_STATIC_LIBRARY_ACTION_NAME,
-        variables = archiver_variables,
+        cc_compilation_outputs = compilation_info.cc_compilation_outputs,
+        linking_contexts = linking_contexts,
     )
 
-    # Non-PIC objects only get emitted in opt builds.
-    use_pic = True
-    if ctx.var.get("COMPILATION_MODE") == "opt":
-        use_pic = False
-
-    object_files = compilation_info.cc_compilation_outputs.object_files(use_pic = use_pic)
-    args = ctx.actions.args()
-    args.add_all(command_line)
-    args.add_all(object_files)
-
-    env = cc_common.get_environment_variables(
-        feature_configuration = feature_configuration,
-        action_name = CPP_LINK_STATIC_LIBRARY_ACTION_NAME,
-        variables = archiver_variables,
-    )
-
-    ctx.actions.run(
-        executable = archiver_path,
-        arguments = [args],
-        env = env,
-        inputs = depset(
-            direct = object_files,
-            transitive = [
-                # TODO: Use CcToolchainInfo getters when available
-                # See https://github.com/bazelbuild/bazel/issues/7427.
-                ctx.attr._cc_toolchain.files,
-            ],
-        ),
-        outputs = [output_file],
-    )
-    linking_context = cc_common.create_linking_context(
-        libraries_to_link = [library_to_link],
-    )
-    info = CcInfo(
+    return CcInfo(
         compilation_context = compilation_info.compilation_context,
-        linking_context = linking_context,
+        linking_context = linking_info.linking_context,
     )
-    return cc_common.merge_cc_infos(cc_infos = [info] + cc_infos)
 
 def _upb_proto_library_aspect_impl(target, ctx):
     proto_sources = target[ProtoInfo].direct_sources
@@ -449,6 +403,7 @@ _upb_proto_library_aspect = aspect(
     },
     implementation = _upb_proto_library_aspect_impl,
     attr_aspects = ["deps"],
+    fragments = ["cpp"],
 )
 
 def _upb_proto_library_impl(ctx):
