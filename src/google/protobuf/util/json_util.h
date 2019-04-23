@@ -61,8 +61,7 @@ struct JsonParseOptions {
 
   JsonParseOptions()
       : ignore_unknown_fields(false),
-        // TODO(haon): Change this to false by default.
-        case_insensitive_enum_parsing(true) {}
+        case_insensitive_enum_parsing(false) {}
 };
 
 struct JsonPrintOptions {

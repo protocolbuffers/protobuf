@@ -31,9 +31,10 @@
 // LINT: ALLOW_GROUPS
 syntax = "proto2";
 
+package protobuf.experimental.lite;
+
 option java_package = "com.google.protobuf.testing";
 option java_outer_classname = "Proto2TestingLite";
-package protobuf.experimental.lite;
 
 
 message Proto2MessageLite {

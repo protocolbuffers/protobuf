@@ -124,7 +124,6 @@ class ImporterTest : public testing::Test {
   }
 
   // Return the collected error text
-  std::string error() const { return error_collector_.text_; }
   std::string warning() const { return error_collector_.warning_text_; }
 
   MockErrorCollector error_collector_;

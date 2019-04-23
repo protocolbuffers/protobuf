@@ -30,9 +30,10 @@
 
 syntax = "proto3";
 
+package protobuf.experimental;
+
 option java_package = "com.google.protobuf.testing";
 option java_outer_classname = "Proto3Testing";
-package protobuf.experimental;
 
 message Proto3SpecialFieldName {
   double regular_name = 1;

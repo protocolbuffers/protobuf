@@ -43,5 +43,6 @@ message Car {
 extend Car {
   optional bool turbo = 1001;
   optional bool self_driving = 1002;
+  optional bool flies = 1003;
   optional string plate = 9999;
 }

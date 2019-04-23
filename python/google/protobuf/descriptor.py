@@ -657,7 +657,8 @@ class EnumDescriptor(_NestedDescriptorBase):
     for value in self.values:
       value.type = self
     self.values_by_name = dict((v.name, v) for v in values)
-    self.values_by_number = dict((v.number, v) for v in values)
+    # Values are reversed to ensure that the first alias is retained.
+    self.values_by_number = dict((v.number, v) for v in reversed(values))
 
   def CopyToProto(self, proto):
     """Copies this to a descriptor_pb2.EnumDescriptorProto.

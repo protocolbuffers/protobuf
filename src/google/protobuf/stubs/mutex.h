@@ -52,9 +52,11 @@
   __attribute__((acquire_capability(__VA_ARGS__)))
 #define GOOGLE_PROTOBUF_RELEASE(...) \
   __attribute__((release_capability(__VA_ARGS__)))
+#define GOOGLE_PROTOBUF_CAPABILITY(x) __attribute__((capability(x)))
 #else
 #define GOOGLE_PROTOBUF_ACQUIRE(...)
 #define GOOGLE_PROTOBUF_RELEASE(...)
+#define GOOGLE_PROTOBUF_CAPABILITY(x)
 #endif
 
 #include <google/protobuf/port_def.inc>
@@ -91,7 +93,7 @@ class PROTOBUF_EXPORT CriticalSectionLock {
 // Mutex is a natural type to wrap. As both google and other organization have
 // specialized mutexes. gRPC also provides an injection mechanism for custom
 // mutexes.
-class PROTOBUF_EXPORT WrappedMutex {
+class PROTOBUF_EXPORT GOOGLE_PROTOBUF_CAPABILITY("mutex") WrappedMutex {
  public:
   WrappedMutex() = default;
   void Lock() GOOGLE_PROTOBUF_ACQUIRE() { mu_.lock(); }

@@ -73,11 +73,6 @@ class ScopedPythonPtr {
     return p;
   }
 
-  PyObjectStruct* operator->() const {
-    assert(ptr_ != NULL);
-    return ptr_;
-  }
-
   PyObjectStruct* get() const { return ptr_; }
 
   PyObject* as_pyobject() const { return reinterpret_cast<PyObject*>(ptr_); }

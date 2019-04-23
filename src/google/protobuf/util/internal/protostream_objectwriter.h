@@ -102,8 +102,7 @@ class PROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
           ignore_unknown_fields(false),
           ignore_unknown_enum_values(false),
           use_lower_camel_for_enums(false),
-          // TODO(haon): Change this to false by default.
-          case_insensitive_enum_parsing(true),
+          case_insensitive_enum_parsing(false),
           ignore_null_value_map_entry(false) {}
 
     // Default instance of Options with all options set to defaults.
