@@ -186,7 +186,7 @@ void PrimitiveFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {
   } else {
     printer->Print(
       "size += $tag_size$ + $fixed_size$;\n",
-      "fixed_size", SimpleItoa(fixedSize),
+      "fixed_size", StrCat(fixedSize),
       "tag_size", variables_["tag_size"]);
   }
   printer->Outdent();
