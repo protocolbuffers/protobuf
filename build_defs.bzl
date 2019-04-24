@@ -23,6 +23,10 @@ _shell_find_runfiles = """
   # --- end runfiles.bash initialization ---
 """
 
+load("@bazel_skylib//lib:paths.bzl", "paths")
+load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain")
+load("@bazel_tools//tools/build_defs/cc:action_names.bzl", "CPP_LINK_STATIC_LIBRARY_ACTION_NAME")
+
 def _librule(name):
     return name + "_lib"
 
@@ -42,12 +46,12 @@ def lua_cclibrary(name, srcs, hdrs = [], deps = [], luadeps = []):
         name = so_rule,
         linkshared = True,
         deps = [_librule(name)],
-            linkopts = select({
-        ":darwin": [
-            "-undefined dynamic_lookup",
-        ],
-        "//conditions:default": [],
-    })
+        linkopts = select({
+            ":darwin": [
+                "-undefined dynamic_lookup",
+            ],
+            "//conditions:default": [],
+        }),
     )
 
     native.genrule(
@@ -174,6 +178,9 @@ SrcList = provider(
 )
 
 def _file_list_aspect_impl(target, ctx):
+    if SrcList in target:
+        return []
+
     srcs = []
     hdrs = []
     for src in ctx.rule.attr.srcs:
@@ -196,7 +203,7 @@ def _upb_amalgamation(ctx):
     ctx.actions.run(
         inputs = inputs,
         outputs = ctx.outputs.outs,
-        arguments = ["", ctx.bin_dir.path + "/"] + [f.path for f in srcs],
+        arguments = [ctx.bin_dir.path + "/"] + [f.path for f in srcs] + ["-I" + root for root in _get_real_roots(inputs)],
         progress_message = "Making amalgamation",
         executable = ctx.executable.amalgamator,
     )
@@ -229,102 +236,207 @@ def map_dep(dep):
     else:
         return google3_dep_map[dep]
 
+def _get_real_short_path(file):
+    # For some reason, files from other archives have short paths that look like:
+    #   ../com_google_protobuf/google/protobuf/descriptor.proto
+    short_path = file.short_path
+    if short_path.startswith("../"):
+        second_slash = short_path.index("/", 3)
+        short_path = short_path[second_slash + 1:]
+    return short_path
+
+def _get_real_root(file):
+    real_short_path = _get_real_short_path(file)
+    return file.path[:-len(real_short_path) - 1]
+
+def _get_real_roots(files):
+    roots = {}
+    for file in files:
+        real_root = _get_real_root(file)
+        if real_root:
+            roots[real_root] = True
+    return roots.keys()
+
+def _generate_output_file(ctx, src, extension):
+    real_short_path = _get_real_short_path(src)
+    output_filename = paths.replace_extension(real_short_path, extension)
+    ret = ctx.new_file(ctx.genfiles_dir, output_filename)
+    return ret
+
+def filter_none(elems):
+    out = []
+    for elem in elems:
+        if elem:
+            out.append(elem)
+    return out
+
 # upb_proto_library() rule
 
-def _remove_up(string):
-    if string.startswith("../"):
-        string = string[3:]
-        pos = string.find("/")
-        string = string[pos + 1:]
+def cc_library_func(ctx, hdrs, srcs, deps):
+    compilation_contexts = []
+    linking_contexts = []
+    for dep in deps:
+        if CcInfo in dep:
+            linking_contexts.append(dep[CcInfo].linking_context)
+            compilation_contexts.append(dep[CcInfo].compilation_context)
+    toolchain = find_cpp_toolchain(ctx)
+    feature_configuration = cc_common.configure_features(
+        cc_toolchain = toolchain,
+        requested_features = ctx.features,
+        unsupported_features = ctx.disabled_features,
+    )
+    compilation_info = cc_common.compile(
+        ctx = ctx,
+        feature_configuration = feature_configuration,
+        cc_toolchain = toolchain,
+        srcs = srcs,
+        hdrs = hdrs,
+        compilation_contexts = compilation_contexts,
+    )
+    linking_info = cc_common.link(
+        ctx = ctx,
+        feature_configuration = feature_configuration,
+        cc_toolchain = toolchain,
+        cc_compilation_outputs = compilation_info.cc_compilation_outputs,
+        linking_contexts = linking_contexts,
+    )
 
-    return _remove_suffix(string, ".proto")
+    return CcInfo(
+        compilation_context = compilation_info.compilation_context,
+        linking_context = linking_info.linking_context,
+    )
 
-def _upb_proto_srcs_impl(ctx, suffix):
-    sources = []
-    outs = []
-    include_dirs = {}
+def _compile_upb_protos(ctx, proto_info, proto_sources, ext):
+    srcs = [_generate_output_file(ctx, name, ext + ".c") for name in proto_sources]
+    hdrs = [_generate_output_file(ctx, name, ext + ".h") for name in proto_sources]
+    transitive_sets = list(proto_info.transitive_descriptor_sets)
+    ctx.actions.run(
+        inputs = depset(
+            direct = [ctx.executable._upbc, proto_info.direct_descriptor_set],
+            transitive = [proto_info.transitive_descriptor_sets],
+        ),
+        outputs = srcs + hdrs,
+        executable = ctx.executable._protoc,
+        arguments = [
+                        "--upb_out=" + _get_real_root(srcs[0]),
+                        "--plugin=protoc-gen-upb=" + ctx.executable._upbc.path,
+                        "--descriptor_set_in=" + ":".join([f.path for f in transitive_sets]),
+                    ] +
+                    [_get_real_short_path(file) for file in proto_sources],
+                    progress_message = "Generating upb protos for :" + ctx.label.name,
+    )
+    return SrcList(srcs = srcs, hdrs = hdrs)
+
+# upb_proto_library() shared code #############################################
+
+# Can share these with upb_proto_library() once cc_common.link() supports name
+# param.
+
+def _upb_proto_rule_impl(ctx):
+    if len(ctx.attr.deps) != 1:
+        fail("only one deps dependency allowed.")
+    dep = ctx.attr.deps[0]
+    if CcInfo not in dep:
+        fail("proto_library rule must generate CcInfo (aspect should have handled this).")
+    lib = dep[CcInfo].linking_context.libraries_to_link[0]
+    files = filter_none([
+        lib.static_library,
+        lib.pic_static_library,
+        lib.dynamic_library,
+    ])
+    return [
+        DefaultInfo(files = depset(files)),
+        dep[CcInfo],
+    ]
+
+def _upb_proto_aspect_impl(target, ctx):
+    proto_info = target[ProtoInfo]
+    files = _compile_upb_protos(ctx, proto_info, proto_info.direct_sources, ctx.attr._ext)
+    cc_info = cc_library_func(
+        ctx = ctx,
+        hdrs = files.hdrs,
+        srcs = files.srcs,
+        deps = ctx.rule.attr.deps + [ctx.attr._upb],
+    )
+    return [cc_info]
+
+# upb_proto_library() ##########################################################
+
+_upb_proto_library_aspect = aspect(
+    attrs = {
+        "_upbc": attr.label(
+            executable = True,
+            cfg = "host",
+            default = ":protoc-gen-upb",
+        ),
+        "_protoc": attr.label(
+            executable = True,
+            cfg = "host",
+            default = map_dep("@com_google_protobuf//:protoc"),
+        ),
+        "_cc_toolchain": attr.label(default = "@bazel_tools//tools/cpp:current_cc_toolchain"),
+        "_upb": attr.label(default = ":upb"),
+        "_ext": attr.string(default = ".upb"),
+    },
+    implementation = _upb_proto_aspect_impl,
+    attr_aspects = ["deps"],
+    fragments = ["cpp"],
+)
+
+upb_proto_library = rule(
+    output_to_genfiles = True,
+    implementation = _upb_proto_rule_impl,
+    attrs = {
+        "deps": attr.label_list(
+            aspects = [_upb_proto_library_aspect],
+            allow_rules = ["proto_library"],
+            providers = [ProtoInfo],
+        ),
+    },
+)
+
+# upb_proto_srcs() #############################################################
+
+def _upb_proto_srcs_impl(ctx):
+    srcs = []
+    hdrs = []
     for dep in ctx.attr.deps:
         if hasattr(dep, "proto"):
-            for src in dep.proto.transitive_sources:
-                sources.append(src)
-                include_dir = _remove_suffix(src.path, _remove_up(src.short_path) + "." + src.extension)
-                if include_dir:
-                    include_dirs[include_dir] = True
-                outs.append(ctx.actions.declare_file(_remove_up(src.short_path) + suffix + ".h"))
-                outs.append(ctx.actions.declare_file(_remove_up(src.short_path) + suffix + ".c"))
-                outdir = _remove_suffix(outs[-1].path, _remove_up(src.short_path) + suffix + ".c")
+            proto_info = dep[ProtoInfo]
+            files = _compile_upb_protos(ctx, proto_info, proto_info.transitive_sources, ctx.attr.ext)
+            srcs += files.srcs
+            hdrs += files.hdrs
+    return [
+        SrcList(srcs = srcs, hdrs = hdrs),
+        DefaultInfo(files = depset(srcs + hdrs)),
+    ]
 
-    source_paths = [d.path for d in sources]
-    include_args = ["-I" + root for root in include_dirs.keys()]
-
-    ctx.actions.run(
-        inputs = [ctx.executable.upbc] + sources,
-        outputs = outs,
-        executable = ctx.executable.protoc,
-        arguments = ["--upb_out", outdir, "--plugin=protoc-gen-upb=" + ctx.executable.upbc.path] + include_args + source_paths,
-        progress_message = "Generating upb protos",
-    )
-
-    return [DefaultInfo(files = depset(outs))]
-
-def _upb_proto_library_srcs_impl(ctx):
-    return _upb_proto_srcs_impl(ctx, ".upb")
-
-def _upb_proto_reflection_library_srcs_impl(ctx):
-    return _upb_proto_srcs_impl(ctx, ".upbdefs")
-
-_upb_proto_library_srcs = rule(
+upb_proto_srcs = rule(
     attrs = {
-        "upbc": attr.label(
+        "_upbc": attr.label(
             executable = True,
             cfg = "host",
+            default = ":protoc-gen-upb",
         ),
-        "protoc": attr.label(
+        "_protoc": attr.label(
             executable = True,
             cfg = "host",
             default = map_dep("@com_google_protobuf//:protoc"),
         ),
         "deps": attr.label_list(),
+        "ext": attr.string(default = ".upb")
     },
-    implementation = _upb_proto_library_srcs_impl,
+    implementation = _upb_proto_srcs_impl,
 )
 
-def upb_proto_library(name, deps, upbc):
-    srcs_rule = name + "_srcs.cc"
-    _upb_proto_library_srcs(
-        name = srcs_rule,
-        upbc = upbc,
-        deps = deps,
-    )
-    native.cc_library(
-        name = name,
-        srcs = [":" + srcs_rule],
-        deps = [":upb"],
-        copts = ["-Ibazel-out/k8-fastbuild/bin"],
-    )
+# upb_proto_reflection_library() ###############################################
 
-_upb_proto_reflection_library_srcs = rule(
-    attrs = {
-        "upbc": attr.label(
-            executable = True,
-            cfg = "host",
-        ),
-        "protoc": attr.label(
-            executable = True,
-            cfg = "host",
-            default = map_dep("@com_google_protobuf//:protoc"),
-        ),
-        "deps": attr.label_list(),
-    },
-    implementation = _upb_proto_reflection_library_srcs_impl,
-)
-
-def upb_proto_reflection_library(name, deps, upbc):
+def upb_proto_reflection_library(name, deps):
     srcs_rule = name + "_defsrcs.cc"
-    _upb_proto_reflection_library_srcs(
+    upb_proto_srcs(
         name = srcs_rule,
-        upbc = upbc,
         deps = deps,
+        ext = ".upbdefs",
     )
     native.cc_library(
         name = name,

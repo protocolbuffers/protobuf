@@ -11,6 +11,7 @@ load(
     "upb_amalgamation",
     "upb_proto_library",
     "upb_proto_reflection_library",
+    "upb_proto_srcs",
 )
 
 licenses(["notice"])  # BSD (Google-authored w/ possible external contributions)
@@ -45,7 +46,6 @@ config_setting(
 cc_library(
     name = "upb",
     srcs = [
-        "google/protobuf/descriptor.upb.c",
         "upb/decode.c",
         "upb/encode.c",
         "upb/msg.c",
@@ -56,7 +56,6 @@ cc_library(
         "upb/upb.c",
     ],
     hdrs = [
-        "google/protobuf/descriptor.upb.h",
         "upb/decode.h",
         "upb/encode.h",
         "upb/generated_util.h",
@@ -65,6 +64,11 @@ cc_library(
     ],
     copts = COPTS,
     visibility = ["//visibility:public"],
+)
+
+upb_proto_library(
+    name = "descriptor_upbproto",
+    deps = ["@com_google_protobuf//:descriptor_proto"],
 )
 
 cc_library(
@@ -79,7 +83,10 @@ cc_library(
     ],
     copts = COPTS,
     visibility = ["//visibility:public"],
-    deps = [":upb"],
+    deps = [
+        ":descriptor_upbproto",
+        ":upb"
+    ],
 )
 
 # Internal C/C++ libraries #####################################################
@@ -196,6 +203,7 @@ cc_binary(
         map_dep("@com_google_protobuf//:protoc_lib"),
     ],
     copts = CPPOPTS,
+    visibility = ["//visibility:public"],
 )
 
 # We strip the tests and remaining rules from google3 until the upb_proto_library()
@@ -237,7 +245,6 @@ proto_library(
 
 upb_proto_reflection_library(
     name = "test_decoder_upbproto",
-    upbc = ":protoc-gen-upb",
     deps = ["test_decoder_proto"],
 )
 
@@ -252,11 +259,16 @@ cc_test(
     copts = CPPOPTS,
 )
 
+upb_proto_reflection_library(
+    name = "descriptor_upbreflection",
+    deps = ["@com_google_protobuf//:descriptor_proto"],
+)
+
 cc_test(
     name = "test_encoder",
     srcs = ["tests/pb/test_encoder.cc"],
-    data = ["google/protobuf/descriptor.pb"],
     deps = [
+        "descriptor_upbreflection",
         ":upb_cc_bindings",
         ":upb_pb",
         ":upb_test",
@@ -273,7 +285,6 @@ proto_library(
 
 upb_proto_reflection_library(
     name = "test_cpp_upbproto",
-    upbc = ":protoc-gen-upb",
     deps = ["test_cpp_proto"],
 )
 
@@ -300,23 +311,29 @@ cc_test(
 )
 
 proto_library(
+    name = "test_json_enum_from_separate",
+    srcs = ["tests/json/enum_from_separate_file.proto"],
+    deps = [":test_json_proto"],
+)
+
+proto_library(
     name = "test_json_proto",
-    srcs = [
-        "tests/json/test.proto",
-        # "tests/json/enum_from_separate_file.proto",
-    ],
+    srcs = ["tests/json/test.proto"],
 )
 
 upb_proto_reflection_library(
     name = "test_json_upbprotoreflection",
-    upbc = ":protoc-gen-upb",
     deps = ["test_json_proto"],
 )
 
 upb_proto_library(
+    name = "test_json_enum_from_separate_upbproto",
+    deps = [":test_json_enum_from_separate"],
+)
+
+upb_proto_library(
     name = "test_json_upbproto",
-    upbc = ":protoc-gen-upb",
-    deps = ["test_json_proto"],
+    deps = [":test_json_proto"],
 )
 
 cc_test(
@@ -335,11 +352,12 @@ cc_test(
 
 upb_proto_library(
     name = "conformance_proto_upb",
-    upbc = ":protoc-gen-upb",
-    deps = [
-        "@com_google_protobuf//:conformance_proto",
-        "@com_google_protobuf//:test_messages_proto3_proto",
-    ],
+    deps = ["@com_google_protobuf//:conformance_proto"],
+)
+
+upb_proto_library(
+    name = "test_messages_proto3_proto_upb",
+    deps = ["@com_google_protobuf//:test_messages_proto3_proto"],
 )
 
 cc_binary(
@@ -350,6 +368,7 @@ cc_binary(
     copts = COPTS + ["-Ibazel-out/k8-fastbuild/bin"],
     deps = [
         ":conformance_proto_upb",
+        ":test_messages_proto3_proto_upb",
         ":upb",
     ],
 )
@@ -378,6 +397,11 @@ py_binary(
     srcs = ["tools/amalgamate.py"],
 )
 
+upb_proto_srcs(
+    name = "descriptor_upbproto_srcs",
+    deps = ["@com_google_protobuf//:descriptor_proto"],
+)
+
 upb_amalgamation(
     name = "gen_amalgamation",
     outs = [
@@ -387,6 +411,7 @@ upb_amalgamation(
     amalgamator = ":amalgamate",
     libs = [
         ":upb",
+        ":descriptor_upbproto_srcs",
         ":reflection",
         ":handlers",
         ":upb_pb",
@@ -460,22 +485,29 @@ lua_test(
 
 # Test the CMake build #########################################################
 
+filegroup(
+    name = "cmake_files",
+    srcs = glob([
+        "CMakeLists.txt",
+        "generated_for_cmake/**/*",
+        "google/**/*",
+        "upbc/**/*",
+        "upb/**/*",
+        "tests/**/*",
+    ])
+)
+
 make_shell_script(
     name = "gen_run_cmake_build",
     out = "run_cmake_build.sh",
-    contents = "mkdir build && cd build && cmake .. && make -j8 && make test",
+    contents = "find . && mkdir build && cd build && cmake .. && make -j8 && make test",
 )
 
 sh_test(
     name = "cmake_build",
     srcs = ["run_cmake_build.sh"],
-    data = glob([
-        "CMakeLists.txt",
-        "google/**/*",
-        "upbc/**/*",
-        "upb/**/*",
-        "tests/**/*",
-    ]) + [
+    data = [
+        ":cmake_files",
         "@bazel_tools//tools/bash/runfiles",
     ],
 )
@@ -500,78 +532,47 @@ genrule(
     srcs = [
         "BUILD",
         "WORKSPACE",
+        ":cmake_files",
     ],
-    outs = ["generated/CMakeLists.txt"],
+    outs = ["generated-in/CMakeLists.txt"],
     cmd = "$(location :make_cmakelists) $@",
     tools = [":make_cmakelists"],
-)
-
-proto_library(
-    name = "descriptor_proto",
-    srcs = [
-        "google/protobuf/descriptor.proto",
-    ],
-)
-
-genrule(
-    name = "copy_upb_descriptor_pb",
-    srcs = [":descriptor_proto"],
-    outs = ["generated/google/protobuf/descriptor.pb"],
-    cmd = "cp $< $@",
-)
-
-proto_library(
-    name = "google_descriptor_proto",
-    srcs = [
-        "google/protobuf/descriptor.proto",
-    ],
-)
-
-genrule(
-    name = "generate_descriptor_c",
-    srcs = ["google/protobuf/descriptor.proto"],
-    outs = [
-        "generated/google/protobuf/descriptor.upb.h",
-        "generated/google/protobuf/descriptor.upb.c",
-    ],
-    cmd = "$(location @com_google_protobuf//:protoc) $< --upb_out=$(GENDIR)/generated --plugin=protoc-gen-upb=$(location :protoc-gen-upb)",
-    tools = [
-        ":protoc-gen-upb",
-        "@com_google_protobuf//:protoc",
-    ],
-)
-
-proto_library(
-    name = "json_test_proto",
-    srcs = ["tests/json/test.proto"],
-)
-
-genrule(
-    name = "copy_json_test_proto",
-    srcs = [":json_test_proto"],
-    outs = ["generated/tests/json/test.proto.pb"],
-    cmd = "cp $< $@",
 )
 
 genrule(
     name = "generate_json_ragel",
     srcs = ["upb/json/parser.rl"],
-    outs = ["generated/upb/json/parser.c"],
+    outs = ["upb/json/parser.c"],
     cmd = "$(location @ragel//:ragel) -C -o upb/json/parser.c $< && mv upb/json/parser.c $@",
     tools = ["@ragel"],
+)
+
+genrule(
+    name = "copy_json_ragel",
+    srcs = ["upb/json/parser.c"],
+    outs = ["generated-in/generated_for_cmake/upb/json/parser.c"],
+    cmd = "cp $< $@",
+)
+
+genrule(
+    name = "copy_protos",
+    srcs = [":descriptor_upbproto_srcs"],
+    outs = [
+        "generated-in/generated_for_cmake/google/protobuf/descriptor.upb.c",
+        "generated-in/generated_for_cmake/google/protobuf/descriptor.upb.h",
+    ],
+    cmd = "cp $(SRCS) $(@D)/generated-in/generated_for_cmake/google/protobuf",
 )
 
 generated_file_staleness_test(
     name = "test_generated_files",
     outs = [
         "CMakeLists.txt",
-        "google/protobuf/descriptor.pb",
-        "google/protobuf/descriptor.upb.c",
-        "google/protobuf/descriptor.upb.h",
-        "tests/json/test.proto.pb",
-        "upb/json/parser.c",
+        "generated_for_cmake/upb/json/parser.c",
+        "generated_for_cmake/google/protobuf/descriptor.upb.c",
+        "generated_for_cmake/google/protobuf/descriptor.upb.h",
     ],
-    generated_pattern = "generated/%s",
+    generated_pattern = "generated-in/%s",
 )
 
 # copybara:strip_end
