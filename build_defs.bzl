@@ -178,6 +178,9 @@ SrcList = provider(
 )
 
 def _file_list_aspect_impl(target, ctx):
+    if SrcList in target:
+        return []
+
     srcs = []
     hdrs = []
     for src in ctx.rule.attr.srcs:
@@ -200,7 +203,7 @@ def _upb_amalgamation(ctx):
     ctx.actions.run(
         inputs = inputs,
         outputs = ctx.outputs.outs,
-        arguments = ["", ctx.bin_dir.path + "/"] + [f.path for f in srcs],
+        arguments = [ctx.bin_dir.path + "/"] + [f.path for f in srcs] + ["-I" + root for root in _get_real_roots(inputs)],
         progress_message = "Making amalgamation",
         executable = ctx.executable.amalgamator,
     )
@@ -244,7 +247,7 @@ def _get_real_short_path(file):
 
 def _get_real_root(file):
     real_short_path = _get_real_short_path(file)
-    return file.path[:-len(real_short_path)]
+    return file.path[:-len(real_short_path) - 1]
 
 def _get_real_roots(files):
     roots = {}

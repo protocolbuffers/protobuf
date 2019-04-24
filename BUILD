@@ -11,6 +11,7 @@ load(
     "upb_amalgamation",
     "upb_proto_library",
     "upb_proto_reflection_library",
+    "upb_proto_srcs",
 )
 
 licenses(["notice"])  # BSD (Google-authored w/ possible external contributions)
@@ -395,6 +396,11 @@ py_binary(
     srcs = ["tools/amalgamate.py"],
 )
 
+upb_proto_srcs(
+    name = "descriptor_upbproto_srcs",
+    deps = ["@com_google_protobuf//:descriptor_proto"],
+)
+
 upb_amalgamation(
     name = "gen_amalgamation",
     outs = [
@@ -404,6 +410,7 @@ upb_amalgamation(
     amalgamator = ":amalgamate",
     libs = [
         ":upb",
+        ":descriptor_upbproto_srcs",
         ":reflection",
         ":handlers",
         ":upb_pb",
@@ -477,22 +484,29 @@ lua_test(
 
 # Test the CMake build #########################################################
 
+filegroup(
+    name = "cmake_files",
+    srcs = glob([
+        "CMakeLists.txt",
+        "generated_for_cmake/**/*",
+        "google/**/*",
+        "upbc/**/*",
+        "upb/**/*",
+        "tests/**/*",
+    ])
+)
+
 make_shell_script(
     name = "gen_run_cmake_build",
     out = "run_cmake_build.sh",
-    contents = "mkdir build && cd build && cmake .. && make -j8 && make test",
+    contents = "find . && mkdir build && cd build && cmake .. && make -j8 && make test",
 )
 
 sh_test(
     name = "cmake_build",
     srcs = ["run_cmake_build.sh"],
-    data = glob([
-        "CMakeLists.txt",
-        "google/**/*",
-        "upbc/**/*",
-        "upb/**/*",
-        "tests/**/*",
-    ]) + [
+    data = [
+        ":cmake_files",
         "@bazel_tools//tools/bash/runfiles",
     ],
 )
@@ -517,8 +531,9 @@ genrule(
     srcs = [
         "BUILD",
         "WORKSPACE",
+        ":cmake_files",
     ],
-    outs = ["generated/CMakeLists.txt"],
+    outs = ["generated-in/CMakeLists.txt"],
     cmd = "$(location :make_cmakelists) $@",
     tools = [":make_cmakelists"],
 )
@@ -526,18 +541,37 @@ genrule(
 genrule(
     name = "generate_json_ragel",
     srcs = ["upb/json/parser.rl"],
-    outs = ["generated/upb/json/parser.c"],
+    outs = ["upb/json/parser.c"],
     cmd = "$(location @ragel//:ragel) -C -o upb/json/parser.c $< && mv upb/json/parser.c $@",
     tools = ["@ragel"],
+)
+
+genrule(
+    name = "copy_json_ragel",
+    srcs = ["upb/json/parser.c"],
+    outs = ["generated-in/generated_for_cmake/upb/json/parser.c"],
+    cmd = "cp $< $@",
+)
+
+genrule(
+    name = "copy_protos",
+    srcs = [":descriptor_upbproto_srcs"],
+    outs = [
+        "generated-in/generated_for_cmake/google/protobuf/descriptor.upb.c",
+        "generated-in/generated_for_cmake/google/protobuf/descriptor.upb.h",
+    ],
+    cmd = "cp $(SRCS) $(@D)/generated-in/generated_for_cmake/google/protobuf",
 )
 
 generated_file_staleness_test(
     name = "test_generated_files",
     outs = [
         "CMakeLists.txt",
-        "upb/json/parser.c",
+        "generated_for_cmake/upb/json/parser.c",
+        "generated_for_cmake/google/protobuf/descriptor.upb.c",
+        "generated_for_cmake/google/protobuf/descriptor.upb.h",
     ],
-    generated_pattern = "generated/%s",
+    generated_pattern = "generated-in/%s",
 )
 
 # copybara:strip_end

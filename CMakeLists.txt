@@ -49,6 +49,7 @@ if(UPB_ENABLE_UBSAN)
 endif()
 
 include_directories(.)
+include_directories(generated)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 if(APPLE)
@@ -114,7 +115,6 @@ target_link_libraries(upb_pb
   table
   upb)
 add_library(upb_json
-  upb/json/parser.c
   upb/json/printer.c
   upb/json/parser.h
   upb/json/printer.h)
