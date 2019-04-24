@@ -244,7 +244,6 @@ proto_library(
 
 upb_proto_reflection_library(
     name = "test_decoder_upbproto",
-    upbc = ":protoc-gen-upb",
     deps = ["test_decoder_proto"],
 )
 
@@ -261,7 +260,6 @@ cc_test(
 
 upb_proto_reflection_library(
     name = "descriptor_upbreflection",
-    upbc = ":protoc-gen-upb",
     deps = ["@com_google_protobuf//:descriptor_proto"],
 )
 
@@ -286,7 +284,6 @@ proto_library(
 
 upb_proto_reflection_library(
     name = "test_cpp_upbproto",
-    upbc = ":protoc-gen-upb",
     deps = ["test_cpp_proto"],
 )
 
@@ -325,7 +322,6 @@ proto_library(
 
 upb_proto_reflection_library(
     name = "test_json_upbprotoreflection",
-    upbc = ":protoc-gen-upb",
     deps = ["test_json_proto"],
 )
 

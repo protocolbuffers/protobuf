@@ -125,6 +125,9 @@ class BuildFileFunctions(object):
   def upb_proto_reflection_library(self, **kwargs):
     pass
 
+  def upb_proto_srcs(self, **kwargs):
+    pass
+
   def genrule(self, **kwargs):
     pass
 
