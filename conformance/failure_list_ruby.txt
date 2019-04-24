@@ -65,3 +65,4 @@ Required.Proto3.JsonInput.IgnoreUnknownJsonNumber.ProtobufOutput
 Required.Proto3.JsonInput.IgnoreUnknownJsonObject.ProtobufOutput
 Required.Proto3.JsonInput.IgnoreUnknownJsonString.ProtobufOutput
 Required.Proto3.JsonInput.IgnoreUnknownJsonTrue.ProtobufOutput
+Required.Proto3.JsonInput.RejectTopLevelNull
