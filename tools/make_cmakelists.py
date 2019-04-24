@@ -239,7 +239,7 @@ class Converter(object):
     endif()
 
     include_directories(.)
-    include_directories(generated)
+    include_directories(generated_for_cmake)
     include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
     if(APPLE)
