@@ -62,14 +62,14 @@ void FieldGeneratorBase::SetCommonFieldVariables(
   uint tag = internal::WireFormat::MakeTag(descriptor_);
   uint8 tag_array[5];
   io::CodedOutputStream::WriteTagToArray(tag, tag_array);
-  string tag_bytes = SimpleItoa(tag_array[0]);
+  string tag_bytes = StrCat(tag_array[0]);
   for (int i = 1; i < tag_size; i++) {
-    tag_bytes += ", " + SimpleItoa(tag_array[i]);
+    tag_bytes += ", " + StrCat(tag_array[i]);
   }
 
   (*variables)["access_level"] = "public";
-  (*variables)["tag"] = SimpleItoa(tag);
-  (*variables)["tag_size"] = SimpleItoa(tag_size);
+  (*variables)["tag"] = StrCat(tag);
+  (*variables)["tag_size"] = StrCat(tag_size);
   (*variables)["tag_bytes"] = tag_bytes;
 
   (*variables)["property_name"] = property_name();
@@ -91,8 +91,8 @@ void FieldGeneratorBase::SetCommonFieldVariables(
     (*variables)["has_not_property_check"] = "!" + (*variables)["has_property_check"];
     (*variables)["other_has_not_property_check"] = "!" + (*variables)["other_has_property_check"];
     if (presenceIndex_ != -1) {
-      string hasBitsNumber = SimpleItoa(presenceIndex_ / 32);
-      string hasBitsMask = SimpleItoa(1 << (presenceIndex_ % 32));
+      string hasBitsNumber = StrCat(presenceIndex_ / 32);
+      string hasBitsMask = StrCat(1 << (presenceIndex_ % 32));
       (*variables)["has_field_check"] = "(_hasBits" + hasBitsNumber + " & " + hasBitsMask + ") != 0";
       (*variables)["set_has_field"] = "_hasBits" + hasBitsNumber + " |= " + hasBitsMask;
       (*variables)["clear_has_field"] = "_hasBits" + hasBitsNumber + " &= ~" + hasBitsMask;
@@ -339,15 +339,15 @@ std::string FieldGeneratorBase::default_value(const FieldDescriptor* descriptor)
       return SimpleFtoa(value) + "F";
     }
     case FieldDescriptor::TYPE_INT64:
-      return SimpleItoa(descriptor->default_value_int64()) + "L";
+      return StrCat(descriptor->default_value_int64()) + "L";
     case FieldDescriptor::TYPE_UINT64:
-      return SimpleItoa(descriptor->default_value_uint64()) + "UL";
+      return StrCat(descriptor->default_value_uint64()) + "UL";
     case FieldDescriptor::TYPE_INT32:
-      return SimpleItoa(descriptor->default_value_int32());
+      return StrCat(descriptor->default_value_int32());
     case FieldDescriptor::TYPE_FIXED64:
-      return SimpleItoa(descriptor->default_value_uint64()) + "UL";
+      return StrCat(descriptor->default_value_uint64()) + "UL";
     case FieldDescriptor::TYPE_FIXED32:
-      return SimpleItoa(descriptor->default_value_uint32());
+      return StrCat(descriptor->default_value_uint32());
     case FieldDescriptor::TYPE_BOOL:
       if (descriptor->default_value_bool()) {
         return "true";
@@ -359,15 +359,15 @@ std::string FieldGeneratorBase::default_value(const FieldDescriptor* descriptor)
     case FieldDescriptor::TYPE_BYTES:
       return GetBytesDefaultValueInternal(descriptor);
     case FieldDescriptor::TYPE_UINT32:
-      return SimpleItoa(descriptor->default_value_uint32());
+      return StrCat(descriptor->default_value_uint32());
     case FieldDescriptor::TYPE_SFIXED32:
-      return SimpleItoa(descriptor->default_value_int32());
+      return StrCat(descriptor->default_value_int32());
     case FieldDescriptor::TYPE_SFIXED64:
-      return SimpleItoa(descriptor->default_value_int64()) + "L";
+      return StrCat(descriptor->default_value_int64()) + "L";
     case FieldDescriptor::TYPE_SINT32:
-      return SimpleItoa(descriptor->default_value_int32());
+      return StrCat(descriptor->default_value_int32());
     case FieldDescriptor::TYPE_SINT64:
-      return SimpleItoa(descriptor->default_value_int64()) + "L";
+      return StrCat(descriptor->default_value_int64()) + "L";
     default:
       GOOGLE_LOG(FATAL)<< "Unknown field type.";
       return "";
@@ -375,7 +375,7 @@ std::string FieldGeneratorBase::default_value(const FieldDescriptor* descriptor)
 }
 
 std::string FieldGeneratorBase::number() {
-  return SimpleItoa(descriptor_->number());
+  return StrCat(descriptor_->number());
 }
 
 std::string FieldGeneratorBase::capitalized_type_name() {
