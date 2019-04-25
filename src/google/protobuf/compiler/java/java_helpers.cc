@@ -522,7 +522,7 @@ std::string DefaultValue(const FieldDescriptor* field, bool immutable,
       } else if (value != value) {
         return "Double.NaN";
       } else {
-        return StrCat(value) + "D";
+        return SimpleDtoa(value) + "D";
       }
     }
     case FieldDescriptor::CPPTYPE_FLOAT: {
@@ -534,7 +534,7 @@ std::string DefaultValue(const FieldDescriptor* field, bool immutable,
       } else if (value != value) {
         return "Float.NaN";
       } else {
-        return StrCat(value) + "F";
+        return SimpleFtoa(value) + "F";
       }
     }
     case FieldDescriptor::CPPTYPE_BOOL:

@@ -65,11 +65,11 @@ MessageFieldGenerator::MessageFieldGenerator(const FieldDescriptor* descriptor,
         internal::WireFormatLite::WIRETYPE_END_GROUP);
     uint8 tag_array[5];
     io::CodedOutputStream::WriteTagToArray(tag, tag_array);
-    string tag_bytes = StrCat(tag_array[0]);
+    string tag_bytes = SimpleItoa(tag_array[0]);
     for (int i = 1; i < tag_size; i++) {
-        tag_bytes += ", " + StrCat(tag_array[i]);
+        tag_bytes += ", " + SimpleItoa(tag_array[i]);
     }
-    variables_["end_tag"] = StrCat(tag);
+    variables_["end_tag"] = SimpleItoa(tag);
     variables_["end_tag_bytes"] = tag_bytes;
   }
 }

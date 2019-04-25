@@ -137,7 +137,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
   for (int i = 0; i < has_bit_field_count_; i++) {
     // don't use arrays since all arrays are heap allocated, saving allocations
     // use ints instead of bytes since bytes lack bitwise operators, saving casts
-    printer->Print("private int _hasBits$i$;\n", "i", StrCat(i));
+    printer->Print("private int _hasBits$i$;\n", "i", SimpleItoa(i));
   }
 
   WriteGeneratedCodeAttributes(printer);
@@ -149,10 +149,10 @@ void MessageGenerator::Generate(io::Printer* printer) {
   // Access the message descriptor via the relevant file descriptor or containing message descriptor.
   if (!descriptor_->containing_type()) {
     vars["descriptor_accessor"] = GetReflectionClassName(descriptor_->file())
-        + ".Descriptor.MessageTypes[" + StrCat(descriptor_->index()) + "]";
+        + ".Descriptor.MessageTypes[" + SimpleItoa(descriptor_->index()) + "]";
   } else {
     vars["descriptor_accessor"] = GetClassName(descriptor_->containing_type())
-        + ".Descriptor.NestedTypes[" + StrCat(descriptor_->index()) + "]";
+        + ".Descriptor.NestedTypes[" + SimpleItoa(descriptor_->index()) + "]";
   }
 
   WriteGeneratedCodeAttributes(printer);
@@ -198,7 +198,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
       "public const int $field_constant_name$ = $index$;\n",
       "field_name", fieldDescriptor->name(),
       "field_constant_name", GetFieldConstantName(fieldDescriptor),
-      "index", StrCat(fieldDescriptor->number()));
+      "index", SimpleItoa(fieldDescriptor->number()));
     std::unique_ptr<FieldGeneratorBase> generator(
         CreateFieldGeneratorInternal(fieldDescriptor));
     generator->GenerateMembers(printer);
@@ -221,7 +221,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
       const FieldDescriptor* field = descriptor_->oneof_decl(i)->field(j);
       printer->Print("$field_property_name$ = $index$,\n",
                      "field_property_name", GetPropertyName(field),
-                     "index", StrCat(field->number()));
+                     "index", SimpleItoa(field->number()));
     }
     printer->Outdent();
     printer->Print("}\n");
@@ -306,7 +306,7 @@ void MessageGenerator::GenerateCloningCode(io::Printer* printer) {
     "public $class_name$($class_name$ other) : this() {\n");
   printer->Indent();
   for (int i = 0; i < has_bit_field_count_; i++) {
-    printer->Print("_hasBits$i$ = other._hasBits$i$;\n", "i", StrCat(i));
+    printer->Print("_hasBits$i$ = other._hasBits$i$;\n", "i", SimpleItoa(i));
   }
   // Clone non-oneof fields first
   for (int i = 0; i < descriptor_->field_count(); i++) {
@@ -545,7 +545,7 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
       printer->Print(
         "$end_tag$:\n"
         "  return;\n",
-        "end_tag", StrCat(end_tag_));
+        "end_tag", SimpleItoa(end_tag_));
     }
   }
   for (int i = 0; i < fields_by_number().size(); i++) {
@@ -562,13 +562,13 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
       printer->Print(
         "case $packed_tag$:\n",
         "packed_tag",
-        StrCat(
+        SimpleItoa(
             internal::WireFormatLite::MakeTag(
                 field->number(),
                 internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED)));
     }
 
-    printer->Print("case $tag$: {\n", "tag", StrCat(tag));
+    printer->Print("case $tag$: {\n", "tag", SimpleItoa(tag));
     printer->Indent();
     std::unique_ptr<FieldGeneratorBase> generator(
         CreateFieldGeneratorInternal(field));
