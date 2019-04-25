@@ -733,9 +733,9 @@ std::string EscapeBase64(const std::string& in) {
   return result;
 }
 
-// Post-process the result of StrCat to *exactly* match the original codegen's
-// formatting (which is just .toString() on java.lang.Double or
-// java.lang.Float).
+// Post-process the result of SimpleFtoa/SimpleDtoa to *exactly* match the
+// original codegen's formatting (which is just .toString() on java.lang.Double
+// or java.lang.Float).
 std::string PostProcessFloat(std::string result) {
   // If inf, -inf or nan, replace with +Infinity, -Infinity or NaN.
   if (result == "inf") {
@@ -787,12 +787,12 @@ std::string PostProcessFloat(std::string result) {
 }
 
 std::string FloatToString(float value) {
-  std::string result = StrCat(value);
+  std::string result = SimpleFtoa(value);
   return PostProcessFloat(result);
 }
 
 std::string DoubleToString(double value) {
-  std::string result = StrCat(value);
+  std::string result = SimpleDtoa(value);
   return PostProcessFloat(result);
 }
 

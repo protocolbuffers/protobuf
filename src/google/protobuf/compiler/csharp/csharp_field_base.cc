@@ -325,7 +325,7 @@ std::string FieldGeneratorBase::default_value(const FieldDescriptor* descriptor)
       } else if (std::isnan(value)) {
         return "double.NaN";
       }
-      return StrCat(value) + "D";
+      return SimpleDtoa(value) + "D";
     }
     case FieldDescriptor::TYPE_FLOAT: {
       float value = descriptor->default_value_float();
@@ -336,7 +336,7 @@ std::string FieldGeneratorBase::default_value(const FieldDescriptor* descriptor)
       } else if (std::isnan(value)) {
         return "float.NaN";
       }
-      return StrCat(value) + "F";
+      return SimpleFtoa(value) + "F";
     }
     case FieldDescriptor::TYPE_INT64:
       return StrCat(descriptor->default_value_int64()) + "L";

@@ -818,10 +818,10 @@ string DefaultValue(const FieldDescriptor* field) {
       return StrCat(field->default_value_uint64()) + "ULL";
     case FieldDescriptor::CPPTYPE_DOUBLE:
       return HandleExtremeFloatingPoint(
-          StrCat(field->default_value_double()), false);
+          SimpleDtoa(field->default_value_double()), false);
     case FieldDescriptor::CPPTYPE_FLOAT:
       return HandleExtremeFloatingPoint(
-          StrCat(field->default_value_float()), true);
+          SimpleFtoa(field->default_value_float()), true);
     case FieldDescriptor::CPPTYPE_BOOL:
       return field->default_value_bool() ? "YES" : "NO";
     case FieldDescriptor::CPPTYPE_STRING: {
