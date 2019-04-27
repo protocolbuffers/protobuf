@@ -115,7 +115,6 @@
                     <include>FieldSet.java</include>
                     <include>FieldType.java</include>
                     <include>FloatArrayList.java</include>
-                    <include>GeneratedExtensionRegistryLoader.java</include>
                     <include>GeneratedMessageInfoFactory.java</include>
                     <include>GeneratedMessageLite.java</include>
                     <include>IntArrayList.java</include>
@@ -150,12 +149,6 @@
                     <include>OneofInfo.java</include>
                     <include>Parser.java</include>
                     <include>PrimitiveNonBoxingCollection.java</include>
-                    <include>ProtoField.java</include>
-                    <include>ProtoMessage.java</include>
-                    <include>ProtoOneof.java</include>
-                    <include>ProtoOneofCase.java</include>
-                    <include>ProtoPresenceBits.java</include>
-                    <include>ProtoPresenceCheckedField.java</include>
                     <include>ProtoSyntax.java</include>
                     <include>Protobuf.java</include>
                     <include>ProtobufArrayList.java</include>
