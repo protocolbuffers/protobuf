@@ -115,12 +115,14 @@ class PROTOBUF_EXPORT Tokenizer {
     TYPE_FLOAT,       // A floating point literal, with a fractional part and/or
                       // an exponent.  Always in decimal.  Again, never
                       // negative.
-    TYPE_STRING,      // A quoted sequence of escaped characters.  Either single
-                      // or double quotes can be used, but they must match.
-                      // A string literal cannot cross a line break.
-    TYPE_M_STRING,    // A quoted sequence of escaped characters.  Either single
-                      // or double quotes can be used, but they must match.
-                      // A string literal cannot cross a line break.
+    TYPE_STRING,      // A quoted sequence of escaped characters that form a
+                      // *string name*.  Either single or double quotes can be
+                      // used, but they must match.  A string literal cannot
+                      // cross a line break.
+    TYPE_M_STRING,    // A quoted sequence of escaped characters that form a
+                      // *string value*.  Either a backtick or triple double
+                      // quote can be used, but they must match.  A multiline
+                      // string literal cannot cross a line break.
     TYPE_SYMBOL,      // Any other printable character, like '!' or '+'.
                       // Symbols are always a single character, so "!+$%" is
                       // four tokens.
@@ -131,7 +133,7 @@ class PROTOBUF_EXPORT Tokenizer {
     TokenType type;
     std::string text;  // The exact text of the token as it appeared in
                        // the input.  e.g. tokens of TYPE_STRING and TYPE_M_STRING
-                       // will still be escaped and in quotes.
+                       // will still be escaped and in its relevant delimiters.
 
     // "line" and "column" specify the position of the first character of
     // the token within the input stream.  They are zero-based.
