@@ -327,6 +327,7 @@ class PROTOBUF_EXPORT EncodedDescriptorDatabase : public DescriptorDatabase {
                                    FileDescriptorProto* output) override;
   bool FindAllExtensionNumbers(const std::string& extendee_type,
                                std::vector<int>* output) override;
+  bool FindAllFileNames(std::vector<std::string>* output) override;
 
  private:
   SimpleDescriptorDatabase::DescriptorIndex<std::pair<const void*, int> >

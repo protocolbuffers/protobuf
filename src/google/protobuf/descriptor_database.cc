@@ -454,6 +454,12 @@ bool EncodedDescriptorDatabase::FindAllExtensionNumbers(
   return index_.FindAllExtensionNumbers(extendee_type, output);
 }
 
+bool EncodedDescriptorDatabase::FindAllFileNames(
+    std::vector<std::string>* output) {
+  index_.FindAllFileNames(output);
+  return true;
+}
+
 bool EncodedDescriptorDatabase::MaybeParse(
     std::pair<const void*, int> encoded_file, FileDescriptorProto* output) {
   if (encoded_file.first == NULL) return false;

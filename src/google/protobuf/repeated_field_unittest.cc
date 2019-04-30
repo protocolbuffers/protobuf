@@ -1634,7 +1634,6 @@ TEST_F(RepeatedPtrFieldPtrsIteratorTest, UninitializedConstPtrIterator) {
 // string
 // - i.e. *iter has type std::string*.
 struct StringLessThan {
-  bool operator()(const std::string* z, const std::string& y) { return *z < y; }
   bool operator()(const std::string* z, const std::string* y) const {
     return *z < *y;
   }

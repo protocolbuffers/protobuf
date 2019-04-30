@@ -419,20 +419,17 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
 
   printer->Print(
       "static {\n"
+      "  $classname$ defaultInstance = new $classname$();\n"
       "  // New instances are implicitly immutable so no need to make\n"
       "  // immutable.\n"
-      "  DEFAULT_INSTANCE = new $classname$();\n"
+      "  DEFAULT_INSTANCE = defaultInstance;\n"
+      // Register the default instance in a map. This map will be used by
+      // experimental runtime to lookup default instance given a class instance
+      // without using Java reflection.
+      "  com.google.protobuf.GeneratedMessageLite.registerDefaultInstance(\n"
+      "    $classname$.class, defaultInstance);\n"
       "}\n"
       "\n",
-      "classname", descriptor_->name());
-  // Register the default instance in a map. This map will be used by
-  // experimental runtime to lookup default instance given a class instance
-  // without using Java reflection.
-  printer->Print(
-      "static {\n"
-      "  com.google.protobuf.GeneratedMessageLite.registerDefaultInstance(\n"
-      "    $classname$.class, DEFAULT_INSTANCE);\n"
-      "}\n",
       "classname", descriptor_->name());
 
   printer->Print(

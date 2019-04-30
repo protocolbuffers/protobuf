@@ -45,6 +45,7 @@ namespace protobuf {
 namespace util {
 namespace converter {
 
+
 // An ObjectWriter implementation that outputs JSON. This ObjectWriter
 // supports writing a compact form or a pretty printed form.
 //

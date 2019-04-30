@@ -38,6 +38,8 @@ syntax = "proto2";
 
 package protobuf_unittest;
 
+import "google/protobuf/any.proto";
+
 option optimize_for = SPEED;
 
 message TestField {
@@ -69,6 +71,8 @@ message TestDiffMessage {
   repeated int32 rv = 11;                          // Test for combinations
   repeated string rw = 10;                         // Test for combinations
   repeated TestField rm = 12 [deprecated = true];  // Test for combinations
+  repeated google.protobuf.Any rany =
+      16;  // Test for repeated Any type resolution
 
   extensions 100 to 199;
 }

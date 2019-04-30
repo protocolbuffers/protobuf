@@ -1563,16 +1563,6 @@ public class JsonFormat {
           throw new InvalidProtocolBufferException(
               "Field " + field.getFullName() + " has already been set.");
         }
-        if (field.getContainingOneof() != null
-            && builder.getOneofFieldDescriptor(field.getContainingOneof()) != null) {
-          FieldDescriptor other = builder.getOneofFieldDescriptor(field.getContainingOneof());
-          throw new InvalidProtocolBufferException(
-              "Cannot set field "
-                  + field.getFullName()
-                  + " because another field "
-                  + other.getFullName()
-                  + " belonging to the same oneof has already been set ");
-        }
       }
       if (field.isRepeated() && json instanceof JsonNull) {
         // We allow "null" as value for all field types and treat it as if the
@@ -1583,9 +1573,12 @@ public class JsonFormat {
         mergeMapField(field, json, builder);
       } else if (field.isRepeated()) {
         mergeRepeatedField(field, json, builder);
+      } else if (field.getContainingOneof() != null) {
+        mergeOneofField(field, json, builder);
       } else {
         Object value = parseFieldValue(field, json, builder);
         if (value != null) {
+          // A field interpreted as "null" is means it's treated as absent.
           builder.setField(field, value);
         }
       }
@@ -1618,6 +1611,24 @@ public class JsonFormat {
         entryBuilder.setField(valueField, value);
         builder.addRepeatedField(field, entryBuilder.build());
       }
+    }
+
+    private void mergeOneofField(FieldDescriptor field, JsonElement json, Message.Builder builder)
+        throws InvalidProtocolBufferException {
+      Object value = parseFieldValue(field, json, builder);
+      if (value == null) {
+        // A field interpreted as "null" is means it's treated as absent.
+        return;
+      }
+      if (builder.getOneofFieldDescriptor(field.getContainingOneof()) != null) {
+        throw new InvalidProtocolBufferException(
+            "Cannot set field "
+                + field.getFullName()
+                + " because another field "
+                + builder.getOneofFieldDescriptor(field.getContainingOneof()).getFullName()
+                + " belonging to the same oneof has already been set ");
+      }
+      builder.setField(field, value);
     }
 
     private void mergeRepeatedField(
