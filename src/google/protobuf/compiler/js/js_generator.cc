@@ -1689,6 +1689,27 @@ void Generator::FindProvides(const GeneratorOptions& options,
   printer->Print("\n");
 }
 
+void FindProvidesForOneOfEnum(const GeneratorOptions& options,
+                              const OneofDescriptor* oneof,
+                              std::set<std::string>* provided) {
+  std::string name = GetMessagePath(options, oneof->containing_type()) + "." +
+                     JSOneofName(oneof) + "Case";
+  provided->insert(name);
+}
+
+void FindProvidesForOneOfEnums(const GeneratorOptions& options,
+                               io::Printer* printer, const Descriptor* desc,
+                               std::set<std::string>* provided) {
+  if (HasOneofFields(desc)) {
+    for (int i = 0; i < desc->oneof_decl_count(); i++) {
+      if (IgnoreOneof(desc->oneof_decl(i))) {
+        continue;
+      }
+      FindProvidesForOneOfEnum(options, desc->oneof_decl(i), provided);
+    }
+  }
+}
+
 void Generator::FindProvidesForMessage(const GeneratorOptions& options,
                                        io::Printer* printer,
                                        const Descriptor* desc,
@@ -1703,11 +1724,13 @@ void Generator::FindProvidesForMessage(const GeneratorOptions& options,
   for (int i = 0; i < desc->enum_type_count(); i++) {
     FindProvidesForEnum(options, printer, desc->enum_type(i), provided);
   }
+
+  FindProvidesForOneOfEnums(options, printer, desc, provided);
+
   for (int i = 0; i < desc->nested_type_count(); i++) {
     FindProvidesForMessage(options, printer, desc->nested_type(i), provided);
   }
 }
-
 void Generator::FindProvidesForEnum(const GeneratorOptions& options,
                                     io::Printer* printer,
                                     const EnumDescriptor* enumdesc,

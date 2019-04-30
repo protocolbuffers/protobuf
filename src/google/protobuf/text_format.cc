@@ -2408,18 +2408,6 @@ void TextFormat::Printer::PrintFieldValue(const Message& message,
   return Parser().ParseFieldValueFromString(input, field, message);
 }
 
-// Prints an integer as hex with a fixed number of digits dependent on the
-// integer type.
-template <typename IntType>
-static std::string PaddedHex(IntType value) {
-  std::string result;
-  result.reserve(sizeof(value) * 2);
-  for (int i = sizeof(value) * 2 - 1; i >= 0; i--) {
-    result.push_back(int_to_hex_digit(value >> (i * 4) & 0x0F));
-  }
-  return result;
-}
-
 void TextFormat::Printer::PrintUnknownFields(
     const UnknownFieldSet& unknown_fields, TextGenerator* generator) const {
   for (int i = 0; i < unknown_fields.field_count(); i++) {

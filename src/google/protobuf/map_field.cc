@@ -93,8 +93,6 @@ void MapFieldBase::SetRepeatedDirty() {
   state_.store(STATE_MODIFIED_REPEATED, std::memory_order_relaxed);
 }
 
-void* MapFieldBase::MutableRepeatedPtrField() const { return repeated_field_; }
-
 void MapFieldBase::SyncRepeatedFieldWithMap() const {
   // acquire here matches with release below to ensure that we can only see a
   // value of CLEAN after all previous changes have been synced.

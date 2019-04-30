@@ -104,7 +104,6 @@ class MapReflectionTester {
   void ExpectMapFieldsSetViaReflectionIterator(Message* message);
   void ExpectClearViaReflection(const Message& message);
   void ExpectClearViaReflectionIterator(Message* message);
-  void ExpectMapEntryClearViaReflection(Message* message);
   void GetMapValueViaMapReflection(Message* message,
                                    const std::string& field_name,
                                    const MapKey& map_key, MapValueRef* map_val);

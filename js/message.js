@@ -45,7 +45,7 @@ goog.require('jspb.BinaryReader');
 goog.require('jspb.Map');
 
 // Not needed in compilation units that have no protos with xids.
-goog.forwardDeclare('xid.String');
+goog.requireType('xid.String');
 
 
 
