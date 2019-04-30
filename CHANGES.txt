@@ -1,3 +1,74 @@
+2019-04-29 version 3.8.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  C++
+  * Use std::atomic<int32> in case of myriad2 platform
+  * Always declare enums to be int-sized
+  * Added DebugString() and ShortDebugString() methods on MessageLite
+  * Specialized different parse loop control flows
+  * Make hasbits potentially in register. The or's start forming an obstacle because it's a read modify store on the same mem address on each iteration.
+  * Move to an internal MACRO for parser validity checks.
+  * Improve map parsing performance.
+  * Make MergePartialFromCodedStream non virtual. This allows direct calls, potential inlining and is also a code health improvement
+  * Add an overall limit to parse_context to prevent reading past it. This allows to remove a annoying level of indirection.
+  * Fix a mistake, we shouldn't verify map key/value strings for utf8 in opt mode for proto2.
+  * Further improvements to cut binary size.
+  * Prepare to make MergePartialFromCodedStream non-virtual.
+  * A report on some interesting behavior change in python (caused by b/27494216) made me realize there is a check that needs to be done in case the parse ended on a end group tag.
+  * Add a note of caution to the comments around skip in CodedOutputStream.
+  * Simplify end check.
+  * Add overload for ParseMessage for MessageLite/Message types. If the explicit type is not known inlining won't help de-virtualizing the virtual call.
+  * Reduce linker input. It turns out that ParseMessage is not inlined, producing  template instantiations that are used only once and save nothing but cost more.
+  * Improve the parser.
+  * [c++17] Changed proto2::RepeatedPtrField iterators to no longer derive from the deprecated std::iterator class.
+  * Change the default value of case_insensitive_enum_parsing to false for JsonStringToMessage.
+  * Add a warning if a field name doesn't match the style guide.
+  * Fix TextFormat not round-trip correctly when float value is max float.
+  * Added locationed info for some errors at compiler
+  * Python reserved keywords are now working with getattr()/setattr() for most descriptors.
+  * Added AllowUnknownField() in text_format
+  * Append '_' to C++ reserved keywords for message, enum, extension
+  * Fix MSVC warning C4244 in protobuf's parse_context.h.
+  * Updating Iterators to be compatible with C++17 in MSVC.
+  * Use capability annotation in mutex.h
+  * Fix "UndefinedBehaviorSanitizer: cfi-bad-type"
+  * CriticalSectionLock class as a lightweight replacement for std::mutex on Windows platforms.
+  * Removed vestigial wire_format_lite_inl.h
+
+  C#
+  * Added System.Memory dependency.
+
+  Java
+  * Make Java protoc code generator ignore optimize_for LITE_RUNTIME. Users should instead use the Java lite protoc plugin.
+  * Change Extension getMessageDefaultInstance() to return Message instead of MessageLite.
+  * Prevent malicious input streams from leaking buffers for ByteString or ByteBuffer parsing.
+  * Release new Javalite runtime.
+  * Show warning in case potential file name conflict.
+  * Allow Java reserved keywords to be used in extensions.
+  * Added setAllowUnknownFields() in text format
+  * Add memoization to ExtensionRegistryLite.getEmptyRegistry()
+  * Improve performance of CodedOutputStream.writeUInt32NoTag
+  * Add an optimized mismatch-finding algorithm to UnsafeUtil.
+  * When serializing uint32 varints, check that we have MAX_VARINT32_SIZE bytes left, not just MAX_VARINT_SIZE.
+  * Minor optimization to RopeByteString.PieceIterator
+
+  JavaScript
+  * Simplify generated toObject code when the default value is used.
+
+  Python
+  * Changes implementation of Name() for enums that allow aliases in proto2 in Python to be in line with claims in C++ implementation (to return first value).
+  * Added double_format option in text format printer.
+  * Added iter and __contains__ to extension dict
+  * Added allow_unknown_field option in python text format parser
+  * Fixed Timestamp.ToDatetime() loses precision issue
+  * Support unknown field in text format printer.
+  * Float field will be convert to inf if bigger than struct.unpack('f', b'\xff\xff\x7f\x7f')[0] which is about 3.4028234664e+38,
+  convert to -inf if smaller than -3.4028234664e+38
+  * Allowed casting str->bytes in Message.__setstate__
+
+  Ruby
+  * Helper methods to get enum name for Ruby.
+
+
 2019-01-24 version 3.7.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   C++
