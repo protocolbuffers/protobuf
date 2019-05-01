@@ -350,7 +350,11 @@
 #ifdef _MSC_VER
 #pragma push_macro("GetMessage")
 #undef GetMessage
-#endif
+#pragma push_macro("IGNORE")
+#undef IGNORE
+#pragma push_macro("IN")
+#undef IN
+#endif  // _MSC_VER
 
 #if defined(__clang__)
 #pragma clang diagnostic push

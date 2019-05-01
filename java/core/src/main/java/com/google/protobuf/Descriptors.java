@@ -2031,6 +2031,16 @@ public final class Descriptors {
       return outputType;
     }
 
+    /** Get whether or not the inputs are streaming. */
+    public boolean isClientStreaming() {
+      return proto.getClientStreaming();
+    }
+
+    /** Get whether or not the outputs are streaming. */
+    public boolean isServerStreaming() {
+      return proto.getServerStreaming();
+    }
+
     /** Get the {@code MethodOptions}, defined in {@code descriptor.proto}. */
     public MethodOptions getOptions() {
       return proto.getOptions();

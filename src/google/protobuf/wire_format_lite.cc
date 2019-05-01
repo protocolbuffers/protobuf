@@ -290,25 +290,6 @@ void CodedOutputStreamFieldSkipper::SkipUnknownEnum(int field_number,
   unknown_fields_->WriteVarint64(value);
 }
 
-bool WireFormatLite::ReadPackedEnumNoInline(io::CodedInputStream* input,
-                                            bool (*is_valid)(int),
-                                            RepeatedField<int>* values) {
-  uint32 length;
-  if (!input->ReadVarint32(&length)) return false;
-  io::CodedInputStream::Limit limit = input->PushLimit(length);
-  while (input->BytesUntilLimit() > 0) {
-    int value;
-    if (!ReadPrimitive<int, WireFormatLite::TYPE_ENUM>(input, &value)) {
-      return false;
-    }
-    if (is_valid == NULL || is_valid(value)) {
-      values->Add(value);
-    }
-  }
-  input->PopLimit(limit);
-  return true;
-}
-
 bool WireFormatLite::ReadPackedEnumPreserveUnknowns(
     io::CodedInputStream* input, int field_number, bool (*is_valid)(int),
     io::CodedOutputStream* unknown_fields_stream, RepeatedField<int>* values) {

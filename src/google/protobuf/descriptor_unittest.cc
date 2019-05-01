@@ -1078,8 +1078,6 @@ class OneofDescriptorTest : public testing::Test {
   const FieldDescriptor* b_;
   const FieldDescriptor* c_;
   const FieldDescriptor* d_;
-  const FieldDescriptor* e_;
-  const FieldDescriptor* f_;
 };
 
 TEST_F(OneofDescriptorTest, Normal) {

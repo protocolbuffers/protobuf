@@ -621,10 +621,6 @@ TEST_F(MapImplTest, IteratorConstness) {
 }
 
 bool IsForwardIteratorHelper(std::forward_iterator_tag /*tag*/) { return true; }
-template <typename T>
-bool IsForwardIteratorHelper(T /*t*/) {
-  return false;
-}
 
 TEST_F(MapImplTest, IteratorCategory) {
   EXPECT_TRUE(IsForwardIteratorHelper(

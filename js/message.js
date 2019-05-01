@@ -44,8 +44,6 @@ goog.require('goog.crypt.base64');
 goog.require('jspb.BinaryReader');
 goog.require('jspb.Map');
 
-// Not needed in compilation units that have no protos with xids.
-goog.forwardDeclare('xid.String');
 
 
 
@@ -284,18 +282,6 @@ jspb.Message.prototype.convertedPrimitiveFields_;
  * @protected {?Array<number>|undefined}
  */
 jspb.Message.prototype.repeatedFields;
-
-
-/**
- * The xid of this proto type (The same for all instances of a proto). Provides
- * a way to identify a proto by stable obfuscated name.
- * @see {xid}.
- * Available if {@link jspb.generate_xid} is added as a Message option to
- * a protocol buffer.
- * @const {!xid.String|undefined} The xid or undefined if message is
- *     annotated to generate the xid.
- */
-jspb.Message.prototype.messageXid;
 
 
 

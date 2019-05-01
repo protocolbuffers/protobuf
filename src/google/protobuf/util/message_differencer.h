@@ -824,12 +824,14 @@ class PROTOBUF_EXPORT MessageDifferencer {
   // match. Clears output vectors and sets their values to indices of paired
   // messages, ie. if message1[0] matches message2[1], then match_list1[0] == 1
   // and match_list2[1] == 0. The unmatched indices are indicated by -1.
+  // Assumes the repeated field is not treated as a simple list.
   // This method returns false if the match failed. However, it doesn't mean
   // that the comparison succeeds when this method returns true (you need to
   // double-check in this case).
   bool MatchRepeatedFieldIndices(
       const Message& message1, const Message& message2,
       const FieldDescriptor* repeated_field,
+      const MapKeyComparator* key_comparator,
       const std::vector<SpecificField>& parent_fields,
       std::vector<int>* match_list1, std::vector<int>* match_list2);
 

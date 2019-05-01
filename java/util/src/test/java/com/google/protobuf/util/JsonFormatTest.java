@@ -464,18 +464,18 @@ public class JsonFormatTest extends TestCase {
     assertEquals(NullValue.NULL_VALUE, message.getOneofNullValue());
   }
 
-  public void testNullMessageInDuplicateOneof() throws Exception {
-    // Succeeds if null is first.
-    TestOneof.Builder successBuilder = TestOneof.newBuilder();
-    mergeFromJson("{\"oneofNestedMessage\": null, \"oneofInt32\": 1}", successBuilder);
+  public void testNullFirstInDuplicateOneof() throws Exception {
+    TestOneof.Builder builder = TestOneof.newBuilder();
+    mergeFromJson("{\"oneofNestedMessage\": null, \"oneofInt32\": 1}", builder);
+    TestOneof message = builder.build();
+    assertEquals(1, message.getOneofInt32());
+  }
 
-    // Fails if null is last.
-    try {
-      TestOneof.Builder builder = TestOneof.newBuilder();
-      mergeFromJson("{\"oneofInt32\": 1, \"oneofNestedMessage\": null}", builder);
-      fail();
-    } catch (InvalidProtocolBufferException expected) {
-    }
+  public void testNullLastInDuplicateOneof() throws Exception {
+    TestOneof.Builder builder = TestOneof.newBuilder();
+    mergeFromJson("{\"oneofInt32\": 1, \"oneofNestedMessage\": null}", builder);
+    TestOneof message = builder.build();
+    assertEquals(1, message.getOneofInt32());
   }
 
   public void testParserRejectDuplicatedFields() throws Exception {

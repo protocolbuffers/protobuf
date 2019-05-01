@@ -940,12 +940,23 @@ bool MessageDifferencer::CompareRepeatedField(
   std::vector<int> match_list1;
   std::vector<int> match_list2;
 
-  // Try to match indices of the repeated fields. Return false if match fails
-  // and there's no detailed report needed.
-  if (!MatchRepeatedFieldIndices(message1, message2, repeated_field,
-                                 *parent_fields, &match_list1, &match_list2) &&
-      reporter_ == NULL) {
-    return false;
+  const MapKeyComparator* key_comparator = GetMapKeyComparator(repeated_field);
+  bool smart_list = IsTreatedAsSmartList(repeated_field);
+  bool simple_list = key_comparator == nullptr &&
+                     !IsTreatedAsSet(repeated_field) &&
+                     !IsTreatedAsSmartSet(repeated_field) && !smart_list;
+
+  // For simple lists, we avoid matching repeated field indices, saving the
+  // memory allocations that would otherwise be needed for match_list1 and
+  // match_list2.
+  if (!simple_list) {
+    // Try to match indices of the repeated fields. Return false if match fails.
+    if (!MatchRepeatedFieldIndices(message1, message2, repeated_field,
+                                   key_comparator, *parent_fields, &match_list1,
+                                   &match_list2) &&
+        reporter_ == nullptr) {
+      return false;
+    }
   }
 
   bool fieldDifferent = false;
@@ -956,8 +967,11 @@ bool MessageDifferencer::CompareRepeatedField(
   // to be done later). Now to check if the paired elements are different.
   int next_unmatched_index = 0;
   for (int i = 0; i < count1; i++) {
-    if (match_list1[i] == -1) {
-      if (IsTreatedAsSmartList(repeated_field)) {
+    if (simple_list && i >= count2) {
+      break;
+    }
+    if (!simple_list && match_list1[i] == -1) {
+      if (smart_list) {
         if (reporter_ == nullptr) return false;
         specific_field.index = i;
         parent_fields->push_back(specific_field);
@@ -969,7 +983,7 @@ bool MessageDifferencer::CompareRepeatedField(
       }
       continue;
     }
-    if (IsTreatedAsSmartList(repeated_field)) {
+    if (smart_list) {
       for (int j = next_unmatched_index; j < match_list1[i]; ++j) {
         GOOGLE_CHECK_LE(0, j);
         if (reporter_ == nullptr) return false;
@@ -984,8 +998,12 @@ bool MessageDifferencer::CompareRepeatedField(
       }
     }
     specific_field.index = i;
-    specific_field.new_index = match_list1[i];
-    next_unmatched_index = match_list1[i] + 1;
+    if (simple_list) {
+      specific_field.new_index = i;
+    } else {
+      specific_field.new_index = match_list1[i];
+      next_unmatched_index = match_list1[i] + 1;
+    }
 
     const bool result = CompareFieldValueUsingParentFields(
         message1, message2, repeated_field, i, specific_field.new_index,
@@ -1015,7 +1033,8 @@ bool MessageDifferencer::CompareRepeatedField(
 
   // Report any remaining additions or deletions.
   for (int i = 0; i < count2; ++i) {
-    if (match_list2[i] != -1) continue;
+    if (!simple_list && match_list2[i] != -1) continue;
+    if (simple_list && i < count1) continue;
     if (!treated_as_subset) {
       fieldDifferent = true;
     }
@@ -1029,7 +1048,8 @@ bool MessageDifferencer::CompareRepeatedField(
   }
 
   for (int i = 0; i < count1; ++i) {
-    if (match_list1[i] != -1) continue;
+    if (!simple_list && match_list1[i] != -1) continue;
+    if (simple_list && i < count2) continue;
     assert(reporter_ != NULL);
     specific_field.index = i;
     parent_fields->push_back(specific_field);
@@ -1553,21 +1573,19 @@ bool MaximumMatcher::FindArgumentPathDFS(int v, std::vector<bool>* visited) {
 }  // namespace
 
 bool MessageDifferencer::MatchRepeatedFieldIndices(
-    const Message& message1,
-    const Message& message2,
+    const Message& message1, const Message& message2,
     const FieldDescriptor* repeated_field,
+    const MapKeyComparator* key_comparator,
     const std::vector<SpecificField>& parent_fields,
-    std::vector<int>* match_list1,
-    std::vector<int>* match_list2) {
+    std::vector<int>* match_list1, std::vector<int>* match_list2) {
   const int count1 =
       message1.GetReflection()->FieldSize(message1, repeated_field);
   const int count2 =
       message2.GetReflection()->FieldSize(message2, repeated_field);
-  const MapKeyComparator* key_comparator = GetMapKeyComparator(repeated_field);
+  const bool is_treated_as_smart_set = IsTreatedAsSmartSet(repeated_field);
 
   match_list1->assign(count1, -1);
   match_list2->assign(count2, -1);
-
   // Ensure that we don't report differences during the matching process. Since
   // field comparators could potentially use this message differencer object to
   // perform further comparisons, turn off reporting here and re-enable it
@@ -1576,114 +1594,100 @@ bool MessageDifferencer::MatchRepeatedFieldIndices(
   reporter_ = NULL;
   NumDiffsReporter num_diffs_reporter;
   std::vector<int32> num_diffs_list1;
-  if (IsTreatedAsSmartSet(repeated_field)) {
+  if (is_treated_as_smart_set) {
     num_diffs_list1.assign(count1, kint32max);
   }
 
   bool success = true;
   // Find potential match if this is a special repeated field.
-  if (key_comparator != nullptr || IsTreatedAsSet(repeated_field) ||
-      IsTreatedAsSmartSet(repeated_field) ||
-      IsTreatedAsSmartList(repeated_field)) {
-    if (scope_ == PARTIAL) {
-      // When partial matching is enabled, Compare(a, b) && Compare(a, c)
-      // doesn't necessarily imply Compare(b, c). Therefore a naive greedy
-      // algorithm will fail to find a maximum matching.
-      // Here we use the augmenting path algorithm.
-      MaximumMatcher::NodeMatchCallback* callback = ::google::protobuf::NewPermanentCallback(
-          this, &MessageDifferencer::IsMatch, repeated_field, key_comparator,
-          &message1, &message2, parent_fields, nullptr);
-      MaximumMatcher matcher(count1, count2, callback, match_list1,
-                             match_list2);
-      // If diff info is not needed, we should end the matching process as
-      // soon as possible if not all items can be matched.
-      bool early_return = (reporter == NULL);
-      int match_count = matcher.FindMaximumMatch(early_return);
-      if (match_count != count1 && reporter == NULL) return false;
-      success = success && (match_count == count1);
-    } else {
-      int start_offset = 0;
-      const bool is_treated_as_smart_set = IsTreatedAsSmartSet(repeated_field);
-      // If the two repeated fields are treated as sets, optimize for the case
-      // where both start with same items stored in the same order.
-      if (IsTreatedAsSet(repeated_field) || is_treated_as_smart_set ||
-          IsTreatedAsSmartList(repeated_field)) {
-        start_offset = std::min(count1, count2);
-        for (int i = 0; i < count1 && i < count2; i++) {
-          if (IsMatch(repeated_field, key_comparator, &message1, &message2,
-                      parent_fields, nullptr, i, i)) {
-            match_list1->at(i) = i;
-            match_list2->at(i) = i;
-          } else {
-            start_offset = i;
+  if (scope_ == PARTIAL) {
+    // When partial matching is enabled, Compare(a, b) && Compare(a, c)
+    // doesn't necessarily imply Compare(b, c). Therefore a naive greedy
+    // algorithm will fail to find a maximum matching.
+    // Here we use the augmenting path algorithm.
+    MaximumMatcher::NodeMatchCallback* callback = ::google::protobuf::NewPermanentCallback(
+        this, &MessageDifferencer::IsMatch, repeated_field, key_comparator,
+        &message1, &message2, parent_fields, nullptr);
+    MaximumMatcher matcher(count1, count2, callback, match_list1, match_list2);
+    // If diff info is not needed, we should end the matching process as
+    // soon as possible if not all items can be matched.
+    bool early_return = (reporter == nullptr);
+    int match_count = matcher.FindMaximumMatch(early_return);
+    if (match_count != count1 && early_return) return false;
+    success = success && (match_count == count1);
+  } else {
+    int start_offset = 0;
+    // If the two repeated fields are treated as sets, optimize for the case
+    // where both start with same items stored in the same order.
+    if (IsTreatedAsSet(repeated_field) || is_treated_as_smart_set ||
+        IsTreatedAsSmartList(repeated_field)) {
+      start_offset = std::min(count1, count2);
+      for (int i = 0; i < count1 && i < count2; i++) {
+        if (IsMatch(repeated_field, key_comparator, &message1, &message2,
+                    parent_fields, nullptr, i, i)) {
+          match_list1->at(i) = i;
+          match_list2->at(i) = i;
+        } else {
+          start_offset = i;
+          break;
+        }
+      }
+    }
+    for (int i = start_offset; i < count1; ++i) {
+      // Indicates any matched elements for this repeated field.
+      bool match = false;
+      int matched_j = -1;
+
+      for (int j = start_offset; j < count2; j++) {
+        if (match_list2->at(j) != -1) {
+          if (!is_treated_as_smart_set || num_diffs_list1[i] == 0) {
+            continue;
+          }
+        }
+
+        if (is_treated_as_smart_set) {
+          num_diffs_reporter.Reset();
+          match = IsMatch(repeated_field, key_comparator, &message1, &message2,
+                          parent_fields, &num_diffs_reporter, i, j);
+        } else {
+          match = IsMatch(repeated_field, key_comparator, &message1, &message2,
+                          parent_fields, nullptr, i, j);
+        }
+
+        if (is_treated_as_smart_set) {
+          if (match) {
+            num_diffs_list1[i] = 0;
+          } else if (repeated_field->cpp_type() ==
+                     FieldDescriptor::CPPTYPE_MESSAGE) {
+            // Replace with the one with fewer diffs.
+            const int32 num_diffs = num_diffs_reporter.GetNumDiffs();
+            if (num_diffs < num_diffs_list1[i]) {
+              num_diffs_list1[i] = num_diffs;
+              match = true;
+            }
+          }
+        }
+
+        if (match) {
+          matched_j = j;
+          if (!is_treated_as_smart_set || num_diffs_list1[i] == 0) {
             break;
           }
         }
       }
-      for (int i = start_offset; i < count1; ++i) {
-        // Indicates any matched elements for this repeated field.
-        bool match = false;
-        int matched_j = -1;
 
-        for (int j = start_offset; j < count2; j++) {
-          if (match_list2->at(j) != -1) {
-            if (!is_treated_as_smart_set || num_diffs_list1[i] == 0) {
-              continue;
-            }
-          }
-
-          if (is_treated_as_smart_set) {
-            num_diffs_reporter.Reset();
-            match =
-                IsMatch(repeated_field, key_comparator, &message1, &message2,
-                        parent_fields, &num_diffs_reporter, i, j);
-          } else {
-            match = IsMatch(repeated_field, key_comparator, &message1,
-                            &message2, parent_fields, nullptr, i, j);
-          }
-
-          if (is_treated_as_smart_set) {
-            if (match) {
-              num_diffs_list1[i] = 0;
-            } else if (repeated_field->cpp_type() ==
-                       FieldDescriptor::CPPTYPE_MESSAGE) {
-              // Replace with the one with fewer diffs.
-              const int32 num_diffs = num_diffs_reporter.GetNumDiffs();
-              if (num_diffs < num_diffs_list1[i]) {
-                num_diffs_list1[i] = num_diffs;
-                match = true;
-              }
-            }
-          }
-
-          if (match) {
-            matched_j = j;
-            if (!is_treated_as_smart_set || num_diffs_list1[i] == 0) {
-              break;
-            }
-          }
+      match = (matched_j != -1);
+      if (match) {
+        if (is_treated_as_smart_set && match_list2->at(matched_j) != -1) {
+          // This is to revert the previously matched index in list2.
+          match_list1->at(match_list2->at(matched_j)) = -1;
+          match = false;
         }
-
-        match = (matched_j != -1);
-        if (match) {
-          if (is_treated_as_smart_set &&
-              match_list2->at(matched_j) != -1) {
-            // This is to revert the previously matched index in list2.
-            match_list1->at(match_list2->at(matched_j)) = -1;
-            match = false;
-          }
-          match_list1->at(i) = matched_j;
-          match_list2->at(matched_j) = i;
-        }
-        if (!match && reporter == NULL) return false;
-        success = success && match;
+        match_list1->at(i) = matched_j;
+        match_list2->at(matched_j) = i;
       }
-    }
-  } else {
-    // If this field should be treated as list, just label the match_list.
-    for (int i = 0; i < count1 && i < count2; i++) {
-      match_list1->at(i) = i;
-      match_list2->at(i) = i;
+      if (!match && reporter == nullptr) return false;
+      success = success && match;
     }
   }
 

@@ -367,20 +367,7 @@ bool Generator::Generate(const FileDescriptor* file,
 
   return !printer.failed();
 }
-// BEGIN GOOGLE-INTERNAL
-// Strip the google3.third_party.py. prefix off of a module name as we
-// NEVER want that invalid module import path to be generated in google3.
-// Our sys.path has google3/third_party/py/ in it.  All modules from
-// that tree need to be imported using just their own name.
-// See http://go/ThirdPartyPython
-void StripThirdPartyPy(std::string* module_name) {
-  const std::string third_party_py_prefix = "google3.third_party.py.";
-  int len = third_party_py_prefix.length();
-  if (module_name->compare(0, len, third_party_py_prefix, 0, len) == 0) {
-    *module_name = module_name->erase(0, len);
-  }
-}
-// END GOOGLE-INTERNAL
+
 
 // Prints Python imports for all modules imported by |file|.
 void Generator::PrintImports() const {
@@ -389,9 +376,6 @@ void Generator::PrintImports() const {
 
     std::string module_name = ModuleName(filename);
     std::string module_alias = ModuleAlias(filename);
-    // BEGIN GOOGLE-INTERNAL
-    StripThirdPartyPy(&module_name);
-    // END GOOGLE-INTERNAL
     if (ContainsPythonKeyword(module_name)) {
       // If the module path contains a Python keyword, we have to quote the
       // module name and import it using importlib. Otherwise the usual kind of
@@ -422,9 +406,6 @@ void Generator::PrintImports() const {
   // Print public imports.
   for (int i = 0; i < file_->public_dependency_count(); ++i) {
     std::string module_name = ModuleName(file_->public_dependency(i)->name());
-    // BEGIN GOOGLE-INTERNAL
-    StripThirdPartyPy(&module_name);
-    // END GOOGLE-INTERNAL
     printer_->Print("from $module$ import *\n", "module", module_name);
   }
   printer_->Print("\n");
@@ -674,8 +655,8 @@ void Generator::PrintDescriptorKeyAndModuleName(
   printer_->Print("$descriptor_key$ = $descriptor_name$,\n", "descriptor_key",
                   kDescriptorKey, "descriptor_name",
                   ModuleLevelServiceDescriptorName(descriptor));
-  printer_->Print("__module__ = '$module_name$'\n", "module_name",
-                  ModuleName(file_->name()));
+  std::string module_name = ModuleName(file_->name());
+  printer_->Print("__module__ = '$module_name$'\n", "module_name", module_name);
 }
 
 void Generator::PrintServiceClass(const ServiceDescriptor& descriptor) const {
@@ -864,8 +845,9 @@ void Generator::PrintMessage(const Descriptor& message_descriptor,
   m["descriptor_key"] = kDescriptorKey;
   m["descriptor_name"] = ModuleLevelDescriptorName(message_descriptor);
   printer_->Print(m, "'$descriptor_key$' : $descriptor_name$,\n");
+  std::string module_name = ModuleName(file_->name());
   printer_->Print("'__module__' : '$module_name$'\n", "module_name",
-                  ModuleName(file_->name()));
+                  module_name);
   printer_->Print("# @@protoc_insertion_point(class_scope:$full_name$)\n",
                   "full_name", message_descriptor.full_name());
   printer_->Print("})\n");
