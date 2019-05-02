@@ -158,7 +158,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf/Google.Protobuf.csproj                          \
   csharp/src/Google.Protobuf/ICustomDiagnosticMessage.cs                     \
   csharp/src/Google.Protobuf/IDeepCloneable.cs                               \
-  csharp/src/Google.Protobuf/IExtensionMessage.cs                            \
+  csharp/src/Google.Protobuf/IExtendableMessage.cs                           \
   csharp/src/Google.Protobuf/IMessage.cs                                     \
   csharp/src/Google.Protobuf/InvalidJsonException.cs                         \
   csharp/src/Google.Protobuf/InvalidProtocolBufferException.cs               \
