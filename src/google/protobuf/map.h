@@ -937,7 +937,7 @@ class Map {
     // Return a randomish value.
     size_type Seed() const {
       size_type s = static_cast<size_type>(reinterpret_cast<uintptr_t>(this));
-#if defined(__x86_64__) && defined(__GNUC__)
+#if defined(__x86_64__) && defined(__GNUC__) && !defined(GOOGLE_PROTOBUF_NO_RDTSC)
       uint32 hi, lo;
       asm("rdtsc" : "=a"(lo), "=d"(hi));
       s += ((static_cast<uint64>(hi) << 32) | lo);
