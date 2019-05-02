@@ -627,7 +627,7 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
     printer->Print(
       "$end_tag$:\n"
       "  return;\n",
-      "end_tag", SimpleItoa(end_tag_));
+      "end_tag", StrCat(end_tag_));
   }
   if (has_extension_ranges_) {
     printer->Print(
@@ -641,12 +641,6 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
       "default:\n"
       "  _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);\n"
       "  break;\n");
-    if (end_tag_ != 0) {
-      printer->Print(
-        "$end_tag$:\n"
-        "  return;\n",
-        "end_tag", StrCat(end_tag_));
-    }
   }
   for (int i = 0; i < fields_by_number().size(); i++) {
     const FieldDescriptor* field = fields_by_number()[i];

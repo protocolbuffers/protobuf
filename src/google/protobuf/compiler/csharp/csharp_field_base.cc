@@ -63,13 +63,13 @@ void FieldGeneratorBase::SetCommonFieldVariables(
   uint tag = internal::WireFormat::MakeTag(descriptor_);
   uint8 tag_array[5];
   io::CodedOutputStream::WriteTagToArray(tag, tag_array);
-  string tag_bytes = SimpleItoa(tag_array[0]);
+  string tag_bytes = StrCat(tag_array[0]);
   for (int i = 1; i < part_tag_size; i++) {
-    tag_bytes += ", " + SimpleItoa(tag_array[i]);
+    tag_bytes += ", " + StrCat(tag_array[i]);
   }
 
-  (*variables)["tag"] = SimpleItoa(tag);
-  (*variables)["tag_size"] = SimpleItoa(tag_size);
+  (*variables)["tag"] = StrCat(tag);
+  (*variables)["tag_size"] = StrCat(tag_size);
   (*variables)["tag_bytes"] = tag_bytes;
 
   if (descriptor_->type() == FieldDescriptor::Type::TYPE_GROUP) {
@@ -77,12 +77,12 @@ void FieldGeneratorBase::SetCommonFieldVariables(
         descriptor_->number(),
         internal::WireFormatLite::WIRETYPE_END_GROUP);
     io::CodedOutputStream::WriteTagToArray(tag, tag_array);
-    tag_bytes = SimpleItoa(tag_array[0]);
+    tag_bytes = StrCat(tag_array[0]);
     for (int i = 1; i < part_tag_size; i++) {
-        tag_bytes += ", " + SimpleItoa(tag_array[i]);
+        tag_bytes += ", " + StrCat(tag_array[i]);
     }
 
-    variables_["end_tag"] = SimpleItoa(tag);
+    variables_["end_tag"] = StrCat(tag);
     variables_["end_tag_bytes"] = tag_bytes;
   }
 
