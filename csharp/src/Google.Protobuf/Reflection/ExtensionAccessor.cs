@@ -1,3 +1,4 @@
+﻿#region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
@@ -27,47 +28,42 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#endregion
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_CSHARP_REPEATED_PRIMITIVE_FIELD_H__
-#define GOOGLE_PROTOBUF_COMPILER_CSHARP_REPEATED_PRIMITIVE_FIELD_H__
+namespace Google.Protobuf.Reflection
+{
+    internal sealed class ExtensionAccessor : IFieldAccessor
+    {
+        private readonly Extension extension;
+        private readonly ReflectionUtil.IExtensionReflectionHelper helper;
 
-#include <string>
+        internal ExtensionAccessor(FieldDescriptor descriptor)
+        {
+            Descriptor = descriptor;
+            extension = descriptor.Extension;
+            helper = ReflectionUtil.CreateExtensionHelper(extension);
+        }
 
-#include <google/protobuf/compiler/code_generator.h>
-#include <google/protobuf/compiler/csharp/csharp_field_base.h>
+        public FieldDescriptor Descriptor { get; }
 
-namespace google {
-namespace protobuf {
-namespace compiler {
-namespace csharp {
+        public void Clear(IMessage message)
+        {
+            helper.ClearExtension(message);
+        }
 
-class RepeatedPrimitiveFieldGenerator : public FieldGeneratorBase {
- public:
-  RepeatedPrimitiveFieldGenerator(const FieldDescriptor* descriptor,
-                                  int presenceIndex, const Options* options);
-  ~RepeatedPrimitiveFieldGenerator();
+        public bool HasValue(IMessage message)
+        {
+            return helper.HasExtension(message);
+        }
 
-  RepeatedPrimitiveFieldGenerator(const RepeatedPrimitiveFieldGenerator&) = delete;
-  RepeatedPrimitiveFieldGenerator& operator=(const RepeatedPrimitiveFieldGenerator&) = delete;
+        public object GetValue(IMessage message)
+        {
+            return helper.GetExtension(message);
+        }
 
-  virtual void GenerateCloningCode(io::Printer* printer);
-  virtual void GenerateFreezingCode(io::Printer* printer);
-  virtual void GenerateMembers(io::Printer* printer);
-  virtual void GenerateMergingCode(io::Printer* printer);
-  virtual void GenerateParsingCode(io::Printer* printer);
-  virtual void GenerateSerializationCode(io::Printer* printer);
-  virtual void GenerateSerializedSizeCode(io::Printer* printer);
-  virtual void GenerateExtensionCode(io::Printer* printer);
-
-  virtual void WriteHash(io::Printer* printer);
-  virtual void WriteEquals(io::Printer* printer);
-  virtual void WriteToString(io::Printer* printer);
-};
-
-}  // namespace csharp
-}  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
-
-#endif  // GOOGLE_PROTOBUF_COMPILER_CSHARP_REPEATED_PRIMITIVE_FIELD_H__
-
+        public void SetValue(IMessage message, object value)
+        {
+            helper.SetExtension(message, value);
+        }
+    }
+}

@@ -48,11 +48,11 @@ namespace Conformance {
             "Z2xlLnByb3RvYnVmLmNvbmZvcm1hbmNlYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
-          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Conformance.WireFormat), typeof(global::Conformance.TestCategory), }, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.FailureSet), global::Conformance.FailureSet.Parser, new[]{ "Failure" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.ConformanceRequest), global::Conformance.ConformanceRequest.Parser, new[]{ "ProtobufPayload", "JsonPayload", "JspbPayload", "TextPayload", "RequestedOutputFormat", "MessageType", "TestCategory", "JspbEncodingOptions", "PrintUnknownFields" }, new[]{ "Payload" }, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.ConformanceResponse), global::Conformance.ConformanceResponse.Parser, new[]{ "ParseError", "SerializeError", "RuntimeError", "ProtobufPayload", "JsonPayload", "Skipped", "JspbPayload", "TextPayload" }, new[]{ "Result" }, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.JspbEncodingConfig), global::Conformance.JspbEncodingConfig.Parser, new[]{ "UseJspbArrayAnyFormat" }, null, null, null)
+          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Conformance.WireFormat), typeof(global::Conformance.TestCategory), }, null, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.FailureSet), global::Conformance.FailureSet.Parser, new[]{ "Failure" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.ConformanceRequest), global::Conformance.ConformanceRequest.Parser, new[]{ "ProtobufPayload", "JsonPayload", "JspbPayload", "TextPayload", "RequestedOutputFormat", "MessageType", "TestCategory", "JspbEncodingOptions", "PrintUnknownFields" }, new[]{ "Payload" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.ConformanceResponse), global::Conformance.ConformanceResponse.Parser, new[]{ "ParseError", "SerializeError", "RuntimeError", "ProtobufPayload", "JsonPayload", "Skipped", "JspbPayload", "TextPayload" }, new[]{ "Result" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.JspbEncodingConfig), global::Conformance.JspbEncodingConfig.Parser, new[]{ "UseJspbArrayAnyFormat" }, null, null, null, null)
           }));
     }
     #endregion
@@ -337,7 +337,7 @@ namespace Conformance {
 
     /// <summary>Field number for the "requested_output_format" field.</summary>
     public const int RequestedOutputFormatFieldNumber = 3;
-    private global::Conformance.WireFormat requestedOutputFormat_ = 0;
+    private global::Conformance.WireFormat requestedOutputFormat_ = global::Conformance.WireFormat.Unspecified;
     /// <summary>
     /// Which format should the testee serialize its message to?
     /// </summary>
@@ -367,7 +367,7 @@ namespace Conformance {
 
     /// <summary>Field number for the "test_category" field.</summary>
     public const int TestCategoryFieldNumber = 5;
-    private global::Conformance.TestCategory testCategory_ = 0;
+    private global::Conformance.TestCategory testCategory_ = global::Conformance.TestCategory.UnspecifiedTest;
     /// <summary>
     /// Each test is given a specific test category. Some category may need
     /// spedific support in testee programs. Refer to the defintion of TestCategory
@@ -464,9 +464,9 @@ namespace Conformance {
       if (payloadCase_ == PayloadOneofCase.JsonPayload) hash ^= JsonPayload.GetHashCode();
       if (payloadCase_ == PayloadOneofCase.JspbPayload) hash ^= JspbPayload.GetHashCode();
       if (payloadCase_ == PayloadOneofCase.TextPayload) hash ^= TextPayload.GetHashCode();
-      if (RequestedOutputFormat != 0) hash ^= RequestedOutputFormat.GetHashCode();
+      if (RequestedOutputFormat != global::Conformance.WireFormat.Unspecified) hash ^= RequestedOutputFormat.GetHashCode();
       if (MessageType.Length != 0) hash ^= MessageType.GetHashCode();
-      if (TestCategory != 0) hash ^= TestCategory.GetHashCode();
+      if (TestCategory != global::Conformance.TestCategory.UnspecifiedTest) hash ^= TestCategory.GetHashCode();
       if (jspbEncodingOptions_ != null) hash ^= JspbEncodingOptions.GetHashCode();
       if (PrintUnknownFields != false) hash ^= PrintUnknownFields.GetHashCode();
       hash ^= (int) payloadCase_;
@@ -491,7 +491,7 @@ namespace Conformance {
         output.WriteRawTag(18);
         output.WriteString(JsonPayload);
       }
-      if (RequestedOutputFormat != 0) {
+      if (RequestedOutputFormat != global::Conformance.WireFormat.Unspecified) {
         output.WriteRawTag(24);
         output.WriteEnum((int) RequestedOutputFormat);
       }
@@ -499,7 +499,7 @@ namespace Conformance {
         output.WriteRawTag(34);
         output.WriteString(MessageType);
       }
-      if (TestCategory != 0) {
+      if (TestCategory != global::Conformance.TestCategory.UnspecifiedTest) {
         output.WriteRawTag(40);
         output.WriteEnum((int) TestCategory);
       }
@@ -539,13 +539,13 @@ namespace Conformance {
       if (payloadCase_ == PayloadOneofCase.TextPayload) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(TextPayload);
       }
-      if (RequestedOutputFormat != 0) {
+      if (RequestedOutputFormat != global::Conformance.WireFormat.Unspecified) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) RequestedOutputFormat);
       }
       if (MessageType.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(MessageType);
       }
-      if (TestCategory != 0) {
+      if (TestCategory != global::Conformance.TestCategory.UnspecifiedTest) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) TestCategory);
       }
       if (jspbEncodingOptions_ != null) {
@@ -565,13 +565,13 @@ namespace Conformance {
       if (other == null) {
         return;
       }
-      if (other.RequestedOutputFormat != 0) {
+      if (other.RequestedOutputFormat != global::Conformance.WireFormat.Unspecified) {
         RequestedOutputFormat = other.RequestedOutputFormat;
       }
       if (other.MessageType.Length != 0) {
         MessageType = other.MessageType;
       }
-      if (other.TestCategory != 0) {
+      if (other.TestCategory != global::Conformance.TestCategory.UnspecifiedTest) {
         TestCategory = other.TestCategory;
       }
       if (other.jspbEncodingOptions_ != null) {

@@ -100,66 +100,6 @@ namespace Google.Protobuf.Test.Reflection
         delegate bool OptionFetcher<T>(int field, out T value);
 
         [Test]
-        public void EmptyOptionsIsShared()
-        {
-            var structOptions = Struct.Descriptor.CustomOptions;
-            var timestampOptions = Struct.Descriptor.CustomOptions;
-            Assert.AreSame(structOptions, timestampOptions);
-        }
-
-        [Test]
-        public void SimpleIntegerTest()
-        {
-            var stream = new MemoryStream();
-            var output = new CodedOutputStream(stream);
-            output.WriteTag(MakeTag(1, WireType.Varint));
-            output.WriteInt32(1234567);
-            output.Flush();
-            stream.Position = 0;
-            var input = new CodedInputStream(stream);
-            input.ReadTag();
-
-            var options = CustomOptions.Empty;
-            options = options.ReadOrSkipUnknownField(input);
-
-            int intValue;
-            Assert.True(options.TryGetInt32(1, out intValue));
-            Assert.AreEqual(1234567, intValue);
-
-            string stringValue;
-            // No ByteString stored values
-            Assert.False(options.TryGetString(1, out stringValue));
-            // Nothing stored for field 2
-            Assert.False(options.TryGetInt32(2, out intValue));
-        }
-
-        [Test]
-        public void SimpleStringTest()
-        {
-            var stream = new MemoryStream();
-            var output = new CodedOutputStream(stream);
-            output.WriteTag(MakeTag(1, WireType.LengthDelimited));
-            output.WriteString("value");
-            output.Flush();
-            stream.Position = 0;
-            var input = new CodedInputStream(stream);
-            input.ReadTag();
-
-            var options = CustomOptions.Empty;
-            options = options.ReadOrSkipUnknownField(input);
-
-            string stringValue;
-            Assert.True(options.TryGetString(1, out stringValue));
-            Assert.AreEqual("value", stringValue);
-
-            int intValue;
-            // No numeric stored values
-            Assert.False(options.TryGetInt32(1, out intValue));
-            // Nothing stored for field 2
-            Assert.False(options.TryGetString(2, out stringValue));
-        }
-
-        [Test]
         public void ScalarOptions()
         {
             var options = CustomOptionOtherValues.Descriptor.CustomOptions;
@@ -168,7 +108,7 @@ namespace Google.Protobuf.Test.Reflection
             AssertOption(1.234567890123456789d, options.TryGetDouble, DoubleOpt);
             AssertOption("Hello, \"World\"", options.TryGetString, StringOpt);
             AssertOption(ByteString.CopyFromUtf8("Hello\0World"), options.TryGetBytes, BytesOpt);
-            AssertOption((int) TestEnumType.TestOptionEnumType2, options.TryGetInt32, EnumOpt);
+            AssertOption((int)TestEnumType.TestOptionEnumType2, options.TryGetInt32, EnumOpt);
         }
 
         [Test]
@@ -177,11 +117,12 @@ namespace Google.Protobuf.Test.Reflection
             var options = VariousComplexOptions.Descriptor.CustomOptions;
             AssertOption(new ComplexOptionType1 { Foo = 42, Foo4 = { 99, 88 } }, options.TryGetMessage, ComplexOpt1);
             AssertOption(new ComplexOptionType2
-                {
-                    Baz = 987, Bar = new ComplexOptionType1 { Foo = 743 },
-                    Fred = new ComplexOptionType4 { Waldo = 321 },
-                    Barney = { new ComplexOptionType4 { Waldo = 101 }, new ComplexOptionType4 { Waldo = 212 } }
-                },
+            {
+                Baz = 987,
+                Bar = new ComplexOptionType1 { Foo = 743 },
+                Fred = new ComplexOptionType4 { Waldo = 321 },
+                Barney = { new ComplexOptionType4 { Waldo = 101 }, new ComplexOptionType4 { Waldo = 212 } }
+            },
                 options.TryGetMessage, ComplexOpt2);
             AssertOption(new ComplexOptionType3 { Qux = 9 }, options.TryGetMessage, ComplexOpt3);
         }
@@ -195,7 +136,7 @@ namespace Google.Protobuf.Test.Reflection
             var messageOptions = TestMessageWithCustomOptions.Descriptor.CustomOptions;
             AssertOption(-56, messageOptions.TryGetInt32, MessageOpt1);
 
-            var fieldOptions = TestMessageWithCustomOptions.Descriptor.Fields["field1"] .CustomOptions;
+            var fieldOptions = TestMessageWithCustomOptions.Descriptor.Fields["field1"].CustomOptions;
             AssertOption(8765432109UL, fieldOptions.TryGetFixed64, FieldOpt1);
 
             var oneofOptions = TestMessageWithCustomOptions.Descriptor.Oneofs[0].CustomOptions;
@@ -213,7 +154,7 @@ namespace Google.Protobuf.Test.Reflection
             AssertOption(-9876543210, serviceOptions.TryGetSInt64, ServiceOpt1);
 
             var methodOptions = service.Methods[0].CustomOptions;
-            AssertOption((int) UnitTest.Issues.TestProtos.MethodOpt1.Val2, methodOptions.TryGetInt32, CustomOptionNumber.MethodOpt1);
+            AssertOption((int)UnitTest.Issues.TestProtos.MethodOpt1.Val2, methodOptions.TryGetInt32, CustomOptionNumber.MethodOpt1);
         }
 
         [Test]
@@ -264,7 +205,7 @@ namespace Google.Protobuf.Test.Reflection
         private void AssertOption<T>(T expected, OptionFetcher<T> fetcher, CustomOptionNumber field)
         {
             T actual;
-            Assert.IsTrue(fetcher((int) field, out actual));
+            Assert.IsTrue(fetcher((int)field, out actual));
             Assert.AreEqual(expected, actual);
         }
     }

@@ -56,24 +56,41 @@ void FieldGeneratorBase::SetCommonFieldVariables(
   // repeated fields varies by wire format. The wire format is encoded in the bottom 3 bits, which
   // never effects the tag size.
   int tag_size = internal::WireFormat::TagSize(descriptor_->number(), descriptor_->type());
+  int part_tag_size = tag_size;
   if (descriptor_->type() == FieldDescriptor::TYPE_GROUP) {
-    tag_size /= 2;
+    part_tag_size /= 2;
   }
   uint tag = internal::WireFormat::MakeTag(descriptor_);
   uint8 tag_array[5];
   io::CodedOutputStream::WriteTagToArray(tag, tag_array);
   string tag_bytes = StrCat(tag_array[0]);
-  for (int i = 1; i < tag_size; i++) {
+  for (int i = 1; i < part_tag_size; i++) {
     tag_bytes += ", " + StrCat(tag_array[i]);
   }
 
-  (*variables)["access_level"] = "public";
   (*variables)["tag"] = StrCat(tag);
   (*variables)["tag_size"] = StrCat(tag_size);
   (*variables)["tag_bytes"] = tag_bytes;
 
+  if (descriptor_->type() == FieldDescriptor::Type::TYPE_GROUP) {
+    tag = internal::WireFormatLite::MakeTag(
+        descriptor_->number(),
+        internal::WireFormatLite::WIRETYPE_END_GROUP);
+    io::CodedOutputStream::WriteTagToArray(tag, tag_array);
+    tag_bytes = StrCat(tag_array[0]);
+    for (int i = 1; i < part_tag_size; i++) {
+        tag_bytes += ", " + StrCat(tag_array[i]);
+    }
+
+    variables_["end_tag"] = StrCat(tag);
+    variables_["end_tag_bytes"] = tag_bytes;
+  }
+
+  (*variables)["access_level"] = "public";
+
   (*variables)["property_name"] = property_name();
   (*variables)["type_name"] = type_name();
+  (*variables)["extended_type"] = GetClassName(descriptor_->containing_type());
   (*variables)["name"] = name();
   (*variables)["descriptor_name"] = descriptor_->name();
   (*variables)["default_value"] = default_value();
@@ -137,6 +154,11 @@ void FieldGeneratorBase::GenerateFreezingCode(io::Printer* printer) {
 void FieldGeneratorBase::GenerateCodecCode(io::Printer* printer) {
     // No-op: expect this to be overridden by appropriate types.
     // Could fail if we get called here though...
+}
+
+void FieldGeneratorBase::GenerateExtensionCode(io::Printer* printer) {
+  // No-op: only message fields, enum fields, primitives, 
+  // and repeated fields need this default is to not generate any code
 }
 
 void FieldGeneratorBase::AddDeprecatedFlag(io::Printer* printer) {
@@ -301,13 +323,8 @@ std::string FieldGeneratorBase::default_value() {
 std::string FieldGeneratorBase::default_value(const FieldDescriptor* descriptor) {
   switch (descriptor->type()) {
     case FieldDescriptor::TYPE_ENUM:
-      if (IsProto2(descriptor_->file())) {
-        return GetClassName(descriptor->default_value_enum()->type()) + "." +
-          GetEnumValueName(descriptor->default_value_enum()->type()->name(), descriptor->default_value_enum()->name());
-      }
-      else {
-        return "0";
-      }
+      return GetClassName(descriptor->default_value_enum()->type()) + "." +
+        GetEnumValueName(descriptor->default_value_enum()->type()->name(), descriptor->default_value_enum()->name());
     case FieldDescriptor::TYPE_MESSAGE:
     case FieldDescriptor::TYPE_GROUP:
       if (IsWrapperType(descriptor)) {
