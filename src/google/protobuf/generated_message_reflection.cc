@@ -203,8 +203,8 @@ GeneratedMessageReflection::GeneratedMessageReflection(
     const DescriptorPool* pool, MessageFactory* factory)
     : descriptor_(descriptor),
       schema_(schema),
-      descriptor_pool_((pool == NULL) ? DescriptorPool::generated_pool()
-                                      : pool),
+      descriptor_pool_(
+          (pool == nullptr) ? DescriptorPool::internal_generated_pool() : pool),
       message_factory_(factory),
       last_non_weak_field_index_(-1) {
   last_non_weak_field_index_ = descriptor_->field_count() - 1;
@@ -2250,7 +2250,7 @@ class AssignDescriptorsHelper {
         descriptor,
         MigrationToReflectionSchema(default_instance_data_, offsets_,
                                     *schemas_),
-        DescriptorPool::generated_pool(), factory_);
+        DescriptorPool::internal_generated_pool(), factory_);
     for (int i = 0; i < descriptor->enum_type_count(); i++) {
       AssignEnumDescriptor(descriptor->enum_type(i));
     }
@@ -2317,7 +2317,8 @@ void AssignDescriptorsImpl(const DescriptorTable* table) {
   }
   // Fill the arrays with pointers to descriptors and reflection classes.
   const FileDescriptor* file =
-      DescriptorPool::generated_pool()->FindFileByName(table->filename);
+      DescriptorPool::internal_generated_pool()->FindFileByName(
+          table->filename);
   GOOGLE_CHECK(file != NULL);
 
   MessageFactory* factory = MessageFactory::generated_factory();

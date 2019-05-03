@@ -101,6 +101,51 @@ struct MoveHelper<false, false, true, T> {  // strings and similar
   }
 };
 
+// Functions for operating on a map entry.  Does not contain any representation
+// (this class is not intended to be instantiated).
+template <typename Key, typename Value, WireFormatLite::FieldType kKeyFieldType,
+          WireFormatLite::FieldType kValueFieldType>
+struct MapEntryFuncs {
+  typedef MapTypeHandler<kKeyFieldType, Key> KeyTypeHandler;
+  typedef MapTypeHandler<kValueFieldType, Value> ValueTypeHandler;
+  static const int kKeyFieldNumber = 1;
+  static const int kValueFieldNumber = 2;
+
+  static void SerializeToCodedStream(int field_number, const Key& key,
+                                     const Value& value,
+                                     io::CodedOutputStream* output) {
+    WireFormatLite::WriteTag(field_number,
+                             WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
+    output->WriteVarint32(GetCachedSize(key, value));
+    KeyTypeHandler::Write(kKeyFieldNumber, key, output);
+    ValueTypeHandler::Write(kValueFieldNumber, value, output);
+  }
+
+  static ::google::protobuf::uint8* SerializeToArray(int field_number, const Key& key,
+                                   const Value& value, ::google::protobuf::uint8* output) {
+    output = WireFormatLite::WriteTagToArray(
+        field_number, WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
+    output = io::CodedOutputStream::WriteVarint32ToArray(
+        static_cast<uint32>(GetCachedSize(key, value)), output);
+    output = KeyTypeHandler::WriteToArray(kKeyFieldNumber, key, output);
+    output = ValueTypeHandler::WriteToArray(kValueFieldNumber, value, output);
+    return output;
+  }
+
+  static size_t ByteSizeLong(const Key& key, const Value& value) {
+    // Tags for key and value will both be one byte (field numbers 1 and 2).
+    size_t inner_length =
+        2 + KeyTypeHandler::ByteSize(key) + ValueTypeHandler::ByteSize(value);
+    return inner_length + io::CodedOutputStream::VarintSize32(inner_length);
+  }
+
+  static int GetCachedSize(const Key& key, const Value& value) {
+    // Tags for key and value will both be one byte (field numbers 1 and 2).
+    return 2 + KeyTypeHandler::GetCachedSize(key) +
+           ValueTypeHandler::GetCachedSize(value);
+  }
+};
+
 // MapEntryImpl is used to implement parsing and serialization of map entries.
 // It uses Curious Recursive Template Pattern (CRTP) to provide the type of
 // the eventual code to the template code.
@@ -108,6 +153,9 @@ template <typename Derived, typename Base, typename Key, typename Value,
           WireFormatLite::FieldType kKeyFieldType,
           WireFormatLite::FieldType kValueFieldType, int default_enum_value>
 class MapEntryImpl : public Base {
+ public:
+  typedef MapEntryFuncs<Key, Value, kKeyFieldType, kValueFieldType> Funcs;
+
  protected:
   // Provide utilities to parse/serialize key/value.  Provide utilities to
   // manipulate internal stored type.
@@ -350,20 +398,6 @@ class MapEntryImpl : public Base {
 
   Arena* GetArena() const override { return GetArenaNoVirtual(); }
 
-  // Create a MapEntryImpl for given key and value from Map in
-  // serialization. This function is only called when value is enum. Enum is
-  // treated differently because its type in MapEntry is int and its type in
-  // Map is enum. We cannot create a reference to int from an enum.
-  static Derived* EnumWrap(const Key& key, const Value value, Arena* arena) {
-    return Arena::CreateMessage<MapEnumEntryWrapper>(arena, key, value);
-  }
-
-  // Like above, but for all the other types. This avoids value copy to create
-  // MapEntryImpl from Map in serialization.
-  static Derived* Wrap(const Key& key, const Value& value, Arena* arena) {
-    return Arena::CreateMessage<MapEntryWrapper>(arena, key, value);
-  }
-
   // Parsing using MergePartialFromCodedStream, above, is not as
   // efficient as it could be.  This helper class provides a speedier way.
   template <typename MapField, typename Map>
@@ -535,71 +569,6 @@ class MapEntryImpl : public Base {
   void clear_has_value() { _has_bits_[0] &= ~0x00000002u; }
 
  public:
-  // Serializing a generated message containing map field involves serializing
-  // key-value pairs from Map. The wire format of each key-value pair
-  // after serialization should be the same as that of a MapEntry message
-  // containing the same key and value inside it.  However, Map doesn't
-  // store key and value as MapEntry message, which disables us to use existing
-  // code to serialize message. In order to use existing code to serialize
-  // message, we need to construct a MapEntry from key-value pair. But it
-  // involves copy of key and value to construct a MapEntry. In order to avoid
-  // this copy in constructing a MapEntry, we need the following class which
-  // only takes references of given key and value.
-  class MapEntryWrapper : public Derived {
-    typedef Derived BaseClass;
-    typedef typename BaseClass::KeyMapEntryAccessorType KeyMapEntryAccessorType;
-    typedef
-        typename BaseClass::ValueMapEntryAccessorType ValueMapEntryAccessorType;
-
-   public:
-    MapEntryWrapper(Arena* arena, const Key& key, const Value& value)
-        : Derived(arena), key_(key), value_(value) {
-      BaseClass::set_has_key();
-      BaseClass::set_has_value();
-    }
-    inline const KeyMapEntryAccessorType& key() const override { return key_; }
-    inline const ValueMapEntryAccessorType& value() const override {
-      return value_;
-    }
-
-   private:
-    const Key& key_;
-    const Value& value_;
-
-    friend class ::PROTOBUF_NAMESPACE_ID::Arena;
-    typedef void InternalArenaConstructable_;
-    typedef void DestructorSkippable_;
-  };
-
-  // Like above, but for enum value only, which stores value instead of
-  // reference of value field inside. This is needed because the type of value
-  // field in constructor is an enum, while we need to store it as an int. If we
-  // initialize a reference to int with a reference to enum, compiler will
-  // generate a temporary int from enum and initialize the reference to int with
-  // the temporary.
-  class MapEnumEntryWrapper : public Derived {
-    typedef Derived BaseClass;
-    typedef typename BaseClass::KeyMapEntryAccessorType KeyMapEntryAccessorType;
-    typedef
-        typename BaseClass::ValueMapEntryAccessorType ValueMapEntryAccessorType;
-
-   public:
-    MapEnumEntryWrapper(Arena* arena, const Key& key, const Value& value)
-        : Derived(arena), key_(key), value_(value) {
-      BaseClass::set_has_key();
-      BaseClass::set_has_value();
-    }
-    inline const KeyMapEntryAccessorType& key() const { return key_; }
-    inline const ValueMapEntryAccessorType& value() const { return value_; }
-
-   private:
-    const KeyMapEntryAccessorType& key_;
-    const ValueMapEntryAccessorType value_;
-
-    friend class ::PROTOBUF_NAMESPACE_ID::Arena;
-    typedef void DestructorSkippable_;
-  };
-
   inline Arena* GetArenaNoVirtual() const { return arena_; }
 
  public:  // Needed for constructing tables

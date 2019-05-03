@@ -143,26 +143,6 @@ bool Message::MergePartialFromCodedStream(io::CodedInputStream* input) {
 }
 #endif
 
-bool Message::ParseFromFileDescriptor(int file_descriptor) {
-  io::FileInputStream input(file_descriptor);
-  return ParseFromZeroCopyStream(&input) && input.GetErrno() == 0;
-}
-
-bool Message::ParsePartialFromFileDescriptor(int file_descriptor) {
-  io::FileInputStream input(file_descriptor);
-  return ParsePartialFromZeroCopyStream(&input) && input.GetErrno() == 0;
-}
-
-bool Message::ParseFromIstream(std::istream* input) {
-  io::IstreamInputStream zero_copy_input(input);
-  return ParseFromZeroCopyStream(&zero_copy_input) && input->eof();
-}
-
-bool Message::ParsePartialFromIstream(std::istream* input) {
-  io::IstreamInputStream zero_copy_input(input);
-  return ParsePartialFromZeroCopyStream(&zero_copy_input) && input->eof();
-}
-
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 namespace internal {
 
@@ -547,7 +527,6 @@ const char* Message::_InternalParse(const char* ptr,
 }
 #endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 
-
 void Message::SerializeWithCachedSizes(io::CodedOutputStream* output) const {
   const internal::SerializationTable* table =
       static_cast<const internal::SerializationTable*>(InternalGetTable());
@@ -573,30 +552,6 @@ void Message::SetCachedSize(int /* size */) const {
 size_t Message::SpaceUsedLong() const {
   return GetReflection()->SpaceUsedLong(*this);
 }
-
-bool Message::SerializeToFileDescriptor(int file_descriptor) const {
-  io::FileOutputStream output(file_descriptor);
-  return SerializeToZeroCopyStream(&output) && output.Flush();
-}
-
-bool Message::SerializePartialToFileDescriptor(int file_descriptor) const {
-  io::FileOutputStream output(file_descriptor);
-  return SerializePartialToZeroCopyStream(&output) && output.Flush();
-}
-
-bool Message::SerializeToOstream(std::ostream* output) const {
-  {
-    io::OstreamOutputStream zero_copy_output(output);
-    if (!SerializeToZeroCopyStream(&zero_copy_output)) return false;
-  }
-  return output->good();
-}
-
-bool Message::SerializePartialToOstream(std::ostream* output) const {
-  io::OstreamOutputStream zero_copy_output(output);
-  return SerializePartialToZeroCopyStream(&zero_copy_output);
-}
-
 
 // =============================================================================
 // Reflection and associated Template Specializations

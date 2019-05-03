@@ -1335,7 +1335,10 @@ DescriptorPool* DescriptorPool::internal_generated_pool() {
 }
 
 const DescriptorPool* DescriptorPool::generated_pool() {
-  return internal_generated_pool();
+  const DescriptorPool* pool = internal_generated_pool();
+  // Ensure that descriptor.proto has been registered in the generated pool.
+  DescriptorProto::descriptor();
+  return pool;
 }
 
 

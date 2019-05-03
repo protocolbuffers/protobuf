@@ -316,6 +316,18 @@ class TextFormatMessageToStringTests(TextFormatBase):
         'payload {{\n  {0}\n  {1}\n  {2}\n  {3}\n}}\n'.format(
             *formatted_fields))
 
+    # Test default float_format has 8 valid digits.
+    message.payload.optional_float = 1.2345678912
+    message.payload.optional_double = 1.2345678912
+    formatted_fields = ['optional_float: 1.2345679',
+                        'optional_double: 1.2345678912',
+                        'repeated_float: -5642', 'repeated_double: 7.89e-5']
+    text_message = text_format.MessageToString(message)
+    self.CompareToGoldenText(
+        self.RemoveRedundantZeros(text_message),
+        'payload {{\n  {0}\n  {1}\n  {2}\n  {3}\n}}\n'.format(
+            *formatted_fields))
+
   def testMessageToString(self, message_module):
     message = message_module.ForeignMessage()
     message.c = 123

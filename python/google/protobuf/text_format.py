@@ -133,10 +133,10 @@ def MessageToString(message,
   # type: (...) -> str
   """Convert protobuf message to text format.
 
-  Floating point values can be formatted compactly with 15 digits of
+  Double values can be formatted compactly with 15 digits of
   precision (which is the most that IEEE 754 "double" can guarantee)
-  using float_format='.15g'. To ensure that converting to text and back to a
-  proto will result in an identical value, float_format='.17g' should be used.
+  using double_format='.15g'. To ensure that converting to text and back to a
+  proto will result in an identical value, double_format='.17g' should be used.
 
   Args:
     message: The protocol buffers message.
@@ -153,11 +153,12 @@ def MessageToString(message,
       determined by the extension number. By default, use the field number
       order.
     float_format: If set, use this to specify float field formatting
-      (per the "Format Specification Mini-Language"); otherwise, str() is used.
-      Also affect double field if double_format is not set.
+      (per the "Format Specification Mini-Language"); otherwise, 8 valid digits
+      is used (default '.8g'). Also affect double field if double_format is
+      not set but float_format is set.
     double_format: If set, use this to specify double field formatting
-      (per the "Format Specification Mini-Language"); otherwise, float_format
-      is used.
+      (per the "Format Specification Mini-Language"); if it is not set but
+      float_format is set, use float_format. Otherwise, use str()
     use_field_number: If True, print field numbers instead of names.
     descriptor_pool: A DescriptorPool used to resolve Any types.
     indent: The initial indent level, in terms of spaces, for pretty print.
@@ -322,10 +323,10 @@ class _Printer(object):
                print_unknown_fields=False):
     """Initialize the Printer.
 
-    Floating point values can be formatted compactly with 15 digits of
-    precision (which is the most that IEEE 754 "double" can guarantee)
-    using float_format='.15g'. To ensure that converting to text and back to a
-    proto will result in an identical value, float_format='.17g' should be used.
+    Double values can be formatted compactly with 15 digits of precision
+    (which is the most that IEEE 754 "double" can guarantee) using
+    double_format='.15g'. To ensure that converting to text and back to a proto
+    will result in an identical value, double_format='.17g' should be used.
 
     Args:
       out: To record the text format result.
@@ -340,11 +341,13 @@ class _Printer(object):
       use_index_order: If True, print fields of a proto message using the order
         defined in source code instead of the field number. By default, use the
         field number order.
-      float_format: If set, use this to specify floating point number formatting
-        (per the "Format Specification Mini-Language"); otherwise, str() is
-        used. Also affect double field if double_format is not set.
-      double_format: If set, use this to specify double field formatting;
-        otherwise, float_format is used.
+      float_format: If set, use this to specify float field formatting
+        (per the "Format Specification Mini-Language"); otherwise, 8 valid
+        digits is used (default '.8g'). Also affect double field if
+        double_format is not set but float_format is set.
+      double_format: If set, use this to specify double field formatting
+        (per the "Format Specification Mini-Language"); if it is not set but
+        float_format is set, use float_format. Otherwise, str() is used.
       use_field_number: If True, print field numbers instead of names.
       descriptor_pool: A DescriptorPool used to resolve Any types.
       message_formatter: A function(message, indent, as_one_line): unicode|None
@@ -589,9 +592,11 @@ class _Printer(object):
         out.write('true')
       else:
         out.write('false')
-    elif (field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_FLOAT and
-          self.float_format is not None):
-      out.write('{1:{0}}'.format(self.float_format, value))
+    elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_FLOAT:
+      if self.float_format is not None:
+        out.write('{1:{0}}'.format(self.float_format, value))
+      else:
+        out.write(str(float(format(value, '.8g'))))
     elif (field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_DOUBLE and
           self.double_format is not None):
       out.write('{1:{0}}'.format(self.double_format, value))

@@ -123,8 +123,7 @@ public class ExtensionRegistryFactoryTest extends TestCase {
 
       assertTrue(
           "Test is using a non-lite extension",
-          GeneratedMessage.GeneratedExtension.class.isAssignableFrom(
-              NonNestedExtension.nonNestedExtension.getClass()));
+          Extension.class.isAssignableFrom(NonNestedExtension.nonNestedExtension.getClass()));
       assertNotNull(
           "Extension is registered in masqueraded full registry",
           fullRegistry2.findImmutableExtensionByName("protobuf_unittest.nonNestedExtension"));
