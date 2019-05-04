@@ -5406,6 +5406,8 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
+          case 132:
+            return;
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
@@ -5550,6 +5552,8 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
+          case 372:
+            return;
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
@@ -6279,6 +6283,8 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           uint tag;
           while ((tag = input.ReadTag()) != 0) {
             switch(tag) {
+              case 132:
+                return;
               default:
                 _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
                 break;

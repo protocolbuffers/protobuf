@@ -284,16 +284,33 @@ std::string GetEnumValueName(const std::string& enum_name, const std::string& en
 
 uint GetGroupEndTag(const Descriptor* descriptor) {
   const Descriptor* containing_type = descriptor->containing_type();
-  if (containing_type == NULL) {
-    return 0;
-  }
-  const FieldDescriptor* field;
-  for (int i = 0; i < containing_type->field_count(); i++) {
-    field = containing_type->field(i);
-    if (field->type() == FieldDescriptor::Type::TYPE_GROUP && field->message_type() == descriptor) {
-      return internal::WireFormatLite::MakeTag(field->number(), internal::WireFormatLite::WIRETYPE_END_GROUP);
+  if (containing_type != NULL) {
+    const FieldDescriptor* field;
+    for (int i = 0; i < containing_type->field_count(); i++) {
+      field = containing_type->field(i);
+      if (field->type() == FieldDescriptor::Type::TYPE_GROUP && field->message_type() == descriptor) {
+        return internal::WireFormatLite::MakeTag(field->number(), internal::WireFormatLite::WIRETYPE_END_GROUP);
+      }
+    }
+    for (int i = 0; i < containing_type->extension_count(); i++) {
+      field = containing_type->extension(i);
+      if (field->type() == FieldDescriptor::Type::TYPE_GROUP && field->message_type() == descriptor) {
+        return internal::WireFormatLite::MakeTag(field->number(), internal::WireFormatLite::WIRETYPE_END_GROUP);
+      }
+    }
+  } else {
+    const FileDescriptor* containing_file = descriptor->file();
+    if (containing_file != NULL) {
+      const FieldDescriptor* field;
+      for (int i = 0; i < containing_file->extension_count(); i++) {
+        field = containing_file->extension(i);
+        if (field->type() == FieldDescriptor::Type::TYPE_GROUP && field->message_type() == descriptor) {
+          return internal::WireFormatLite::MakeTag(field->number(), internal::WireFormatLite::WIRETYPE_END_GROUP);
+        }
+      }
     }
   }
+
   return 0;
 }
 

@@ -348,6 +348,56 @@ namespace Google.Protobuf
             Assert.AreEqual(message, parsed);
         }
 
+        [Test]
+        public void RoundTrip_Groups()
+        {
+            var message = new Proto2.TestAllTypes
+            {
+                OptionalGroup = new Proto2.TestAllTypes.Types.OptionalGroup
+                {
+                    A = 10
+                },
+                RepeatedGroup =
+                {
+                    new Proto2.TestAllTypes.Types.RepeatedGroup { A = 10 },
+                    new Proto2.TestAllTypes.Types.RepeatedGroup { A = 20 },
+                    new Proto2.TestAllTypes.Types.RepeatedGroup { A = 30 }
+                }
+            };
+
+            byte[] bytes = message.ToByteArray();
+            Proto2.TestAllTypes parsed = Proto2.TestAllTypes.Parser.ParseFrom(bytes);
+            Assert.AreEqual(message, parsed);
+        }
+
+        [Test]
+        public void RoundTrip_ExtensionGroups()
+        {
+            var message = new Proto2.TestAllExtensions();
+            message.SetExtension(Proto2.UnittestExtensions.OptionalGroupExtension, new Proto2.OptionalGroup_extension { A = 10 });
+            message.GetOrRegisterExtension(Proto2.UnittestExtensions.RepeatedGroupExtension).AddRange(new[]
+            {
+                new Proto2.RepeatedGroup_extension { A = 10 },
+                new Proto2.RepeatedGroup_extension { A = 20 },
+                new Proto2.RepeatedGroup_extension { A = 30 }
+            });
+
+            byte[] bytes = message.ToByteArray();
+            Proto2.TestAllExtensions extendable_parsed = Proto2.TestAllExtensions.Parser.WithExtensionRegistry(new ExtensionRegistry() { Proto2.UnittestExtensions.OptionalGroupExtension, Proto2.UnittestExtensions.RepeatedGroupExtension }).ParseFrom(bytes);
+            Assert.AreEqual(message, extendable_parsed);
+        }
+
+        [Test]
+        public void RoundTrip_NestedExtensionGroup()
+        {
+            var message = new Proto2.TestGroupExtension();
+            message.SetExtension(Proto2.TestNestedExtension.Extensions.OptionalGroupExtension, new Proto2.TestNestedExtension.Types.OptionalGroup_extension { A = 10 });
+
+            byte[] bytes = message.ToByteArray();
+            Proto2.TestGroupExtension extendable_parsed = Proto2.TestGroupExtension.Parser.WithExtensionRegistry(new ExtensionRegistry() { Proto2.TestNestedExtension.Extensions.OptionalGroupExtension }).ParseFrom(bytes);
+            Assert.AreEqual(message, extendable_parsed);
+        }
+
         // Note that not every map within map_unittest_proto3 is used. They all go through very
         // similar code paths. The fact that all maps are present is validation that we have codecs
         // for every type.

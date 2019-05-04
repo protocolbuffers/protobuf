@@ -123,6 +123,7 @@ namespace Google.Protobuf
                 OptionalString = "test",
                 OptionalUint32 = UInt32.MaxValue,
                 OptionalUint64 = UInt64.MaxValue,
+                OptionalGroup = new Proto2.TestAllTypes.Types.OptionalGroup { A = 10 },
                 RepeatedBool = { true, false },
                 RepeatedBytes = { ByteString.CopyFrom(1, 2, 3, 4), ByteString.CopyFrom(5, 6), ByteString.CopyFrom(new byte[1000]) },
                 RepeatedDouble = { -12.25, 23.5 },
@@ -144,6 +145,7 @@ namespace Google.Protobuf
                 RepeatedString = { "foo", "bar" },
                 RepeatedUint32 = { UInt32.MaxValue, UInt32.MinValue },
                 RepeatedUint64 = { UInt64.MaxValue, UInt32.MinValue },
+                RepeatedGroup = { new Proto2.TestAllTypes.Types.RepeatedGroup { A = 10 }, new Proto2.TestAllTypes.Types.RepeatedGroup { A = 20 } },
                 OneofString = "Oneof string"
             };
         }

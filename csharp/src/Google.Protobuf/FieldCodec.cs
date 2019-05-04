@@ -731,6 +731,7 @@ namespace Google.Protobuf
             ValueSizeCalculator = sizeCalculator;
             FixedSize = 0;
             Tag = tag;
+            EndTag = endTag;
             DefaultValue = defaultValue;
             tagSize = CodedOutputStream.ComputeRawVarint32Size(tag);
             if (endTag != 0)
