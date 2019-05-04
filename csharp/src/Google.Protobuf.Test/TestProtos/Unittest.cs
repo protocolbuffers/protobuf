@@ -5135,7 +5135,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
-  public sealed partial class TestAllExtensions : pb::IExtensionMessage<TestAllExtensions> {
+  public sealed partial class TestAllExtensions : pb::IExtendableMessage<TestAllExtensions> {
     private static readonly pb::MessageParser<TestAllExtensions> _parser = new pb::MessageParser<TestAllExtensions>(() => new TestAllExtensions());
     private pb::UnknownFieldSet _unknownFields;
     private pb::ExtensionSet<TestAllExtensions> _extensions;
@@ -5251,14 +5251,14 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       }
     }
 
-    public void RegisterExtension(pb::Extension extension) {
-      pb::ExtensionSet.Register(ref _extensions, extension);
-    }
     public TValue GetExtension<TValue>(pb::Extension<TestAllExtensions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
     public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<TestAllExtensions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
+    }
+    public pbc::RepeatedField<TValue> GetOrRegisterExtension<TValue>(pb::RepeatedExtension<TestAllExtensions, TValue> extension) {
+      return pb::ExtensionSet.GetOrRegister(ref _extensions, extension);
     }
     public void SetExtension<TValue>(pb::Extension<TestAllExtensions, TValue> extension, TValue value) {
       pb::ExtensionSet.Set(ref _extensions, extension, value);
@@ -5267,6 +5267,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       return pb::ExtensionSet.Has(ref _extensions, extension);
     }
     public void ClearExtension<TValue>(pb::Extension<TestAllExtensions, TValue> extension) {
+      pb::ExtensionSet.Clear(ref _extensions, extension);
+    }
+    public void ClearExtension<TValue>(pb::RepeatedExtension<TestAllExtensions, TValue> extension) {
       pb::ExtensionSet.Clear(ref _extensions, extension);
     }
 
@@ -5902,7 +5905,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
-  public sealed partial class TestGroupExtension : pb::IExtensionMessage<TestGroupExtension> {
+  public sealed partial class TestGroupExtension : pb::IExtendableMessage<TestGroupExtension> {
     private static readonly pb::MessageParser<TestGroupExtension> _parser = new pb::MessageParser<TestGroupExtension>(() => new TestGroupExtension());
     private pb::UnknownFieldSet _unknownFields;
     private pb::ExtensionSet<TestGroupExtension> _extensions;
@@ -6018,14 +6021,14 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       }
     }
 
-    public void RegisterExtension(pb::Extension extension) {
-      pb::ExtensionSet.Register(ref _extensions, extension);
-    }
     public TValue GetExtension<TValue>(pb::Extension<TestGroupExtension, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
     public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<TestGroupExtension, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
+    }
+    public pbc::RepeatedField<TValue> GetOrRegisterExtension<TValue>(pb::RepeatedExtension<TestGroupExtension, TValue> extension) {
+      return pb::ExtensionSet.GetOrRegister(ref _extensions, extension);
     }
     public void SetExtension<TValue>(pb::Extension<TestGroupExtension, TValue> extension, TValue value) {
       pb::ExtensionSet.Set(ref _extensions, extension, value);
@@ -6034,6 +6037,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       return pb::ExtensionSet.Has(ref _extensions, extension);
     }
     public void ClearExtension<TValue>(pb::Extension<TestGroupExtension, TValue> extension) {
+      pb::ExtensionSet.Clear(ref _extensions, extension);
+    }
+    public void ClearExtension<TValue>(pb::RepeatedExtension<TestGroupExtension, TValue> extension) {
       pb::ExtensionSet.Clear(ref _extensions, extension);
     }
 
@@ -8467,7 +8473,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
   /// Like above, but declare all field numbers as potential extensions.  No
   /// actual extensions should ever be defined for this type.
   /// </summary>
-  public sealed partial class TestEmptyMessageWithExtensions : pb::IExtensionMessage<TestEmptyMessageWithExtensions> {
+  public sealed partial class TestEmptyMessageWithExtensions : pb::IExtendableMessage<TestEmptyMessageWithExtensions> {
     private static readonly pb::MessageParser<TestEmptyMessageWithExtensions> _parser = new pb::MessageParser<TestEmptyMessageWithExtensions>(() => new TestEmptyMessageWithExtensions());
     private pb::UnknownFieldSet _unknownFields;
     private pb::ExtensionSet<TestEmptyMessageWithExtensions> _extensions;
@@ -8583,14 +8589,14 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       }
     }
 
-    public void RegisterExtension(pb::Extension extension) {
-      pb::ExtensionSet.Register(ref _extensions, extension);
-    }
     public TValue GetExtension<TValue>(pb::Extension<TestEmptyMessageWithExtensions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
     public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<TestEmptyMessageWithExtensions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
+    }
+    public pbc::RepeatedField<TValue> GetOrRegisterExtension<TValue>(pb::RepeatedExtension<TestEmptyMessageWithExtensions, TValue> extension) {
+      return pb::ExtensionSet.GetOrRegister(ref _extensions, extension);
     }
     public void SetExtension<TValue>(pb::Extension<TestEmptyMessageWithExtensions, TValue> extension, TValue value) {
       pb::ExtensionSet.Set(ref _extensions, extension, value);
@@ -8601,10 +8607,13 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     public void ClearExtension<TValue>(pb::Extension<TestEmptyMessageWithExtensions, TValue> extension) {
       pb::ExtensionSet.Clear(ref _extensions, extension);
     }
+    public void ClearExtension<TValue>(pb::RepeatedExtension<TestEmptyMessageWithExtensions, TValue> extension) {
+      pb::ExtensionSet.Clear(ref _extensions, extension);
+    }
 
   }
 
-  public sealed partial class TestMultipleExtensionRanges : pb::IExtensionMessage<TestMultipleExtensionRanges> {
+  public sealed partial class TestMultipleExtensionRanges : pb::IExtendableMessage<TestMultipleExtensionRanges> {
     private static readonly pb::MessageParser<TestMultipleExtensionRanges> _parser = new pb::MessageParser<TestMultipleExtensionRanges>(() => new TestMultipleExtensionRanges());
     private pb::UnknownFieldSet _unknownFields;
     private pb::ExtensionSet<TestMultipleExtensionRanges> _extensions;
@@ -8720,14 +8729,14 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       }
     }
 
-    public void RegisterExtension(pb::Extension extension) {
-      pb::ExtensionSet.Register(ref _extensions, extension);
-    }
     public TValue GetExtension<TValue>(pb::Extension<TestMultipleExtensionRanges, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
     public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<TestMultipleExtensionRanges, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
+    }
+    public pbc::RepeatedField<TValue> GetOrRegisterExtension<TValue>(pb::RepeatedExtension<TestMultipleExtensionRanges, TValue> extension) {
+      return pb::ExtensionSet.GetOrRegister(ref _extensions, extension);
     }
     public void SetExtension<TValue>(pb::Extension<TestMultipleExtensionRanges, TValue> extension, TValue value) {
       pb::ExtensionSet.Set(ref _extensions, extension, value);
@@ -8736,6 +8745,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       return pb::ExtensionSet.Has(ref _extensions, extension);
     }
     public void ClearExtension<TValue>(pb::Extension<TestMultipleExtensionRanges, TValue> extension) {
+      pb::ExtensionSet.Clear(ref _extensions, extension);
+    }
+    public void ClearExtension<TValue>(pb::RepeatedExtension<TestMultipleExtensionRanges, TValue> extension) {
       pb::ExtensionSet.Clear(ref _extensions, extension);
     }
 
@@ -11910,7 +11922,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
   /// We list fields out of order, to ensure that we're using field number and not
   /// field index to determine serialization order.
   /// </summary>
-  public sealed partial class TestFieldOrderings : pb::IExtensionMessage<TestFieldOrderings> {
+  public sealed partial class TestFieldOrderings : pb::IExtendableMessage<TestFieldOrderings> {
     private static readonly pb::MessageParser<TestFieldOrderings> _parser = new pb::MessageParser<TestFieldOrderings>(() => new TestFieldOrderings());
     private pb::UnknownFieldSet _unknownFields;
     private pb::ExtensionSet<TestFieldOrderings> _extensions;
@@ -12194,14 +12206,14 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       }
     }
 
-    public void RegisterExtension(pb::Extension extension) {
-      pb::ExtensionSet.Register(ref _extensions, extension);
-    }
     public TValue GetExtension<TValue>(pb::Extension<TestFieldOrderings, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
     public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<TestFieldOrderings, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
+    }
+    public pbc::RepeatedField<TValue> GetOrRegisterExtension<TValue>(pb::RepeatedExtension<TestFieldOrderings, TValue> extension) {
+      return pb::ExtensionSet.GetOrRegister(ref _extensions, extension);
     }
     public void SetExtension<TValue>(pb::Extension<TestFieldOrderings, TValue> extension, TValue value) {
       pb::ExtensionSet.Set(ref _extensions, extension, value);
@@ -12210,6 +12222,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       return pb::ExtensionSet.Has(ref _extensions, extension);
     }
     public void ClearExtension<TValue>(pb::Extension<TestFieldOrderings, TValue> extension) {
+      pb::ExtensionSet.Clear(ref _extensions, extension);
+    }
+    public void ClearExtension<TValue>(pb::RepeatedExtension<TestFieldOrderings, TValue> extension) {
       pb::ExtensionSet.Clear(ref _extensions, extension);
     }
 
@@ -19220,7 +19235,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
-  public sealed partial class TestPackedExtensions : pb::IExtensionMessage<TestPackedExtensions> {
+  public sealed partial class TestPackedExtensions : pb::IExtendableMessage<TestPackedExtensions> {
     private static readonly pb::MessageParser<TestPackedExtensions> _parser = new pb::MessageParser<TestPackedExtensions>(() => new TestPackedExtensions());
     private pb::UnknownFieldSet _unknownFields;
     private pb::ExtensionSet<TestPackedExtensions> _extensions;
@@ -19336,14 +19351,14 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       }
     }
 
-    public void RegisterExtension(pb::Extension extension) {
-      pb::ExtensionSet.Register(ref _extensions, extension);
-    }
     public TValue GetExtension<TValue>(pb::Extension<TestPackedExtensions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
     public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<TestPackedExtensions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
+    }
+    public pbc::RepeatedField<TValue> GetOrRegisterExtension<TValue>(pb::RepeatedExtension<TestPackedExtensions, TValue> extension) {
+      return pb::ExtensionSet.GetOrRegister(ref _extensions, extension);
     }
     public void SetExtension<TValue>(pb::Extension<TestPackedExtensions, TValue> extension, TValue value) {
       pb::ExtensionSet.Set(ref _extensions, extension, value);
@@ -19354,10 +19369,13 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     public void ClearExtension<TValue>(pb::Extension<TestPackedExtensions, TValue> extension) {
       pb::ExtensionSet.Clear(ref _extensions, extension);
     }
+    public void ClearExtension<TValue>(pb::RepeatedExtension<TestPackedExtensions, TValue> extension) {
+      pb::ExtensionSet.Clear(ref _extensions, extension);
+    }
 
   }
 
-  public sealed partial class TestUnpackedExtensions : pb::IExtensionMessage<TestUnpackedExtensions> {
+  public sealed partial class TestUnpackedExtensions : pb::IExtendableMessage<TestUnpackedExtensions> {
     private static readonly pb::MessageParser<TestUnpackedExtensions> _parser = new pb::MessageParser<TestUnpackedExtensions>(() => new TestUnpackedExtensions());
     private pb::UnknownFieldSet _unknownFields;
     private pb::ExtensionSet<TestUnpackedExtensions> _extensions;
@@ -19473,14 +19491,14 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       }
     }
 
-    public void RegisterExtension(pb::Extension extension) {
-      pb::ExtensionSet.Register(ref _extensions, extension);
-    }
     public TValue GetExtension<TValue>(pb::Extension<TestUnpackedExtensions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
     public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<TestUnpackedExtensions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
+    }
+    public pbc::RepeatedField<TValue> GetOrRegisterExtension<TValue>(pb::RepeatedExtension<TestUnpackedExtensions, TValue> extension) {
+      return pb::ExtensionSet.GetOrRegister(ref _extensions, extension);
     }
     public void SetExtension<TValue>(pb::Extension<TestUnpackedExtensions, TValue> extension, TValue value) {
       pb::ExtensionSet.Set(ref _extensions, extension, value);
@@ -19489,6 +19507,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       return pb::ExtensionSet.Has(ref _extensions, extension);
     }
     public void ClearExtension<TValue>(pb::Extension<TestUnpackedExtensions, TValue> extension) {
+      pb::ExtensionSet.Clear(ref _extensions, extension);
+    }
+    public void ClearExtension<TValue>(pb::RepeatedExtension<TestUnpackedExtensions, TValue> extension) {
       pb::ExtensionSet.Clear(ref _extensions, extension);
     }
 
@@ -20256,7 +20277,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
   /// Test that if an optional or required message/group field appears multiple
   /// times in the input, they need to be merged.
   /// </summary>
-  public sealed partial class TestParsingMerge : pb::IExtensionMessage<TestParsingMerge> {
+  public sealed partial class TestParsingMerge : pb::IExtendableMessage<TestParsingMerge> {
     private static readonly pb::MessageParser<TestParsingMerge> _parser = new pb::MessageParser<TestParsingMerge>(() => new TestParsingMerge());
     private pb::UnknownFieldSet _unknownFields;
     private pb::ExtensionSet<TestParsingMerge> _extensions;
@@ -20545,14 +20566,14 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       }
     }
 
-    public void RegisterExtension(pb::Extension extension) {
-      pb::ExtensionSet.Register(ref _extensions, extension);
-    }
     public TValue GetExtension<TValue>(pb::Extension<TestParsingMerge, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
     public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<TestParsingMerge, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
+    }
+    public pbc::RepeatedField<TValue> GetOrRegisterExtension<TValue>(pb::RepeatedExtension<TestParsingMerge, TValue> extension) {
+      return pb::ExtensionSet.GetOrRegister(ref _extensions, extension);
     }
     public void SetExtension<TValue>(pb::Extension<TestParsingMerge, TValue> extension, TValue value) {
       pb::ExtensionSet.Set(ref _extensions, extension, value);
@@ -20561,6 +20582,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       return pb::ExtensionSet.Has(ref _extensions, extension);
     }
     public void ClearExtension<TValue>(pb::Extension<TestParsingMerge, TValue> extension) {
+      pb::ExtensionSet.Clear(ref _extensions, extension);
+    }
+    public void ClearExtension<TValue>(pb::RepeatedExtension<TestParsingMerge, TValue> extension) {
       pb::ExtensionSet.Clear(ref _extensions, extension);
     }
 
@@ -22529,7 +22553,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
-  public sealed partial class TestHugeFieldNumbers : pb::IExtensionMessage<TestHugeFieldNumbers> {
+  public sealed partial class TestHugeFieldNumbers : pb::IExtendableMessage<TestHugeFieldNumbers> {
     private static readonly pb::MessageParser<TestHugeFieldNumbers> _parser = new pb::MessageParser<TestHugeFieldNumbers>(() => new TestHugeFieldNumbers());
     private pb::UnknownFieldSet _unknownFields;
     private pb::ExtensionSet<TestHugeFieldNumbers> _extensions;
@@ -23206,14 +23230,14 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       }
     }
 
-    public void RegisterExtension(pb::Extension extension) {
-      pb::ExtensionSet.Register(ref _extensions, extension);
-    }
     public TValue GetExtension<TValue>(pb::Extension<TestHugeFieldNumbers, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
     public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<TestHugeFieldNumbers, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
+    }
+    public pbc::RepeatedField<TValue> GetOrRegisterExtension<TValue>(pb::RepeatedExtension<TestHugeFieldNumbers, TValue> extension) {
+      return pb::ExtensionSet.GetOrRegister(ref _extensions, extension);
     }
     public void SetExtension<TValue>(pb::Extension<TestHugeFieldNumbers, TValue> extension, TValue value) {
       pb::ExtensionSet.Set(ref _extensions, extension, value);
@@ -23222,6 +23246,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       return pb::ExtensionSet.Has(ref _extensions, extension);
     }
     public void ClearExtension<TValue>(pb::Extension<TestHugeFieldNumbers, TValue> extension) {
+      pb::ExtensionSet.Clear(ref _extensions, extension);
+    }
+    public void ClearExtension<TValue>(pb::RepeatedExtension<TestHugeFieldNumbers, TValue> extension) {
       pb::ExtensionSet.Clear(ref _extensions, extension);
     }
 
@@ -23380,7 +23407,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
-  public sealed partial class TestExtensionInsideTable : pb::IExtensionMessage<TestExtensionInsideTable> {
+  public sealed partial class TestExtensionInsideTable : pb::IExtendableMessage<TestExtensionInsideTable> {
     private static readonly pb::MessageParser<TestExtensionInsideTable> _parser = new pb::MessageParser<TestExtensionInsideTable>(() => new TestExtensionInsideTable());
     private pb::UnknownFieldSet _unknownFields;
     private pb::ExtensionSet<TestExtensionInsideTable> _extensions;
@@ -23867,14 +23894,14 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       }
     }
 
-    public void RegisterExtension(pb::Extension extension) {
-      pb::ExtensionSet.Register(ref _extensions, extension);
-    }
     public TValue GetExtension<TValue>(pb::Extension<TestExtensionInsideTable, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
     public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<TestExtensionInsideTable, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
+    }
+    public pbc::RepeatedField<TValue> GetOrRegisterExtension<TValue>(pb::RepeatedExtension<TestExtensionInsideTable, TValue> extension) {
+      return pb::ExtensionSet.GetOrRegister(ref _extensions, extension);
     }
     public void SetExtension<TValue>(pb::Extension<TestExtensionInsideTable, TValue> extension, TValue value) {
       pb::ExtensionSet.Set(ref _extensions, extension, value);
@@ -23883,6 +23910,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       return pb::ExtensionSet.Has(ref _extensions, extension);
     }
     public void ClearExtension<TValue>(pb::Extension<TestExtensionInsideTable, TValue> extension) {
+      pb::ExtensionSet.Clear(ref _extensions, extension);
+    }
+    public void ClearExtension<TValue>(pb::RepeatedExtension<TestExtensionInsideTable, TValue> extension) {
       pb::ExtensionSet.Clear(ref _extensions, extension);
     }
 

@@ -240,7 +240,7 @@ namespace Google.Protobuf
 
             Assert.True(message.IsInitialized());
 
-            message.RegisterExtension(Proto2.TestRequired.Extensions.Multi);
+            message.GetOrRegisterExtension(Proto2.TestRequired.Extensions.Multi);
 
             Assert.True(message.IsInitialized());
 

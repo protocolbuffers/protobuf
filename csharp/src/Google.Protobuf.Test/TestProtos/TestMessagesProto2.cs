@@ -25,7 +25,7 @@ namespace ProtobufTestMessages.Proto2 {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "Cipnb29nbGUvcHJvdG9idWYvdGVzdF9tZXNzYWdlc19wcm90bzIucHJvdG8S",
-            "HXByb3RvYnVmX3Rlc3RfbWVzc2FnZXMucHJvdG8yIt4yChJUZXN0QWxsVHlw",
+            "HXByb3RvYnVmX3Rlc3RfbWVzc2FnZXMucHJvdG8yIuYyChJUZXN0QWxsVHlw",
             "ZXNQcm90bzISFgoOb3B0aW9uYWxfaW50MzIYASABKAUSFgoOb3B0aW9uYWxf",
             "aW50NjQYAiABKAMSFwoPb3B0aW9uYWxfdWludDMyGAMgASgNEhcKD29wdGlv",
             "bmFsX3VpbnQ2NBgEIAEoBBIXCg9vcHRpb25hbF9zaW50MzIYBSABKBESFwoP",
@@ -170,12 +170,19 @@ namespace ProtobufTestMessages.Proto2 {
             "ZXMucHJvdG8yLlRlc3RBbGxUeXBlc1Byb3RvMi5NZXNzYWdlU2V0Q29ycmVj",
             "dEV4dGVuc2lvbjIiOQoKTmVzdGVkRW51bRIHCgNGT08QABIHCgNCQVIQARIH",
             "CgNCQVoQAhIQCgNORUcQ////////////ASoFCHgQyQFCDQoLb25lb2ZfZmll",
-            "bGQiIQoURm9yZWlnbk1lc3NhZ2VQcm90bzISCQoBYxgBIAEoBSpGChFGb3Jl",
-            "aWduRW51bVByb3RvMhIPCgtGT1JFSUdOX0ZPTxAAEg8KC0ZPUkVJR05fQkFS",
-            "EAESDwoLRk9SRUlHTl9CQVoQAjpKCg9leHRlbnNpb25faW50MzISMS5wcm90",
-            "b2J1Zl90ZXN0X21lc3NhZ2VzLnByb3RvMi5UZXN0QWxsVHlwZXNQcm90bzIY",
-            "eCABKAVCLwooY29tLmdvb2dsZS5wcm90b2J1Zl90ZXN0X21lc3NhZ2VzLnBy",
-            "b3RvMkgB+AEB"));
+            "bGRKBgjoBxCQTiIhChRGb3JlaWduTWVzc2FnZVByb3RvMhIJCgFjGAEgASgF",
+            "IsECChVVbmtub3duVG9UZXN0QWxsVHlwZXMSFwoOb3B0aW9uYWxfaW50MzIY",
+            "6QcgASgFEhgKD29wdGlvbmFsX3N0cmluZxjqByABKAkSTAoObmVzdGVkX21l",
+            "c3NhZ2UY6wcgASgLMjMucHJvdG9idWZfdGVzdF9tZXNzYWdlcy5wcm90bzIu",
+            "Rm9yZWlnbk1lc3NhZ2VQcm90bzISWgoNb3B0aW9uYWxncm91cBjsByABKAoy",
+            "Qi5wcm90b2J1Zl90ZXN0X21lc3NhZ2VzLnByb3RvMi5Vbmtub3duVG9UZXN0",
+            "QWxsVHlwZXMuT3B0aW9uYWxHcm91cBIWCg1vcHRpb25hbF9ib29sGO4HIAEo",
+            "CBIXCg5yZXBlYXRlZF9pbnQzMhjzByADKAUaGgoNT3B0aW9uYWxHcm91cBIJ",
+            "CgFhGAEgASgFKkYKEUZvcmVpZ25FbnVtUHJvdG8yEg8KC0ZPUkVJR05fRk9P",
+            "EAASDwoLRk9SRUlHTl9CQVIQARIPCgtGT1JFSUdOX0JBWhACOkoKD2V4dGVu",
+            "c2lvbl9pbnQzMhIxLnByb3RvYnVmX3Rlc3RfbWVzc2FnZXMucHJvdG8yLlRl",
+            "c3RBbGxUeXBlc1Byb3RvMhh4IAEoBUIvCihjb20uZ29vZ2xlLnByb3RvYnVm",
+            "X3Rlc3RfbWVzc2FnZXMucHJvdG8ySAH4AQE="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::ProtobufTestMessages.Proto2.ForeignEnumProto2), }, new pb::Extension[] { TestMessagesProto2Extensions.ExtensionInt32 }, new pbr::GeneratedClrTypeInfo[] {
@@ -184,7 +191,8 @@ namespace ProtobufTestMessages.Proto2 {
             new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.MessageSetCorrect), global::ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.MessageSetCorrect.Parser, null, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.MessageSetCorrectExtension1), global::ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.MessageSetCorrectExtension1.Parser, new[]{ "Str" }, null, null, new pb::Extension[] { global::ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.MessageSetCorrectExtension1.Extensions.MessageSetExtension }, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.MessageSetCorrectExtension2), global::ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.MessageSetCorrectExtension2.Parser, new[]{ "I" }, null, null, new pb::Extension[] { global::ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.MessageSetCorrectExtension2.Extensions.MessageSetExtension }, null)}),
-            new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.Proto2.ForeignMessageProto2), global::ProtobufTestMessages.Proto2.ForeignMessageProto2.Parser, new[]{ "C" }, null, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.Proto2.ForeignMessageProto2), global::ProtobufTestMessages.Proto2.ForeignMessageProto2.Parser, new[]{ "C" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.Proto2.UnknownToTestAllTypes), global::ProtobufTestMessages.Proto2.UnknownToTestAllTypes.Parser, new[]{ "OptionalInt32", "OptionalString", "NestedMessage", "OptionalGroup", "OptionalBool", "RepeatedInt32" }, null, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.Proto2.UnknownToTestAllTypes.Types.OptionalGroup), global::ProtobufTestMessages.Proto2.UnknownToTestAllTypes.Types.OptionalGroup.Parser, new[]{ "A" }, null, null, null, null)})
           }));
     }
     #endregion
@@ -215,7 +223,7 @@ namespace ProtobufTestMessages.Proto2 {
   /// could trigger bugs that occur in any message type in this file.  We verify
   /// this stays true in a unit test.
   /// </summary>
-  public sealed partial class TestAllTypesProto2 : pb::IExtensionMessage<TestAllTypesProto2> {
+  public sealed partial class TestAllTypesProto2 : pb::IExtendableMessage<TestAllTypesProto2> {
     private static readonly pb::MessageParser<TestAllTypesProto2> _parser = new pb::MessageParser<TestAllTypesProto2>(() => new TestAllTypesProto2());
     private pb::UnknownFieldSet _unknownFields;
     private pb::ExtensionSet<TestAllTypesProto2> _extensions;
@@ -3274,14 +3282,14 @@ namespace ProtobufTestMessages.Proto2 {
       }
     }
 
-    public void RegisterExtension(pb::Extension extension) {
-      pb::ExtensionSet.Register(ref _extensions, extension);
-    }
     public TValue GetExtension<TValue>(pb::Extension<TestAllTypesProto2, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
     public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<TestAllTypesProto2, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
+    }
+    public pbc::RepeatedField<TValue> GetOrRegisterExtension<TValue>(pb::RepeatedExtension<TestAllTypesProto2, TValue> extension) {
+      return pb::ExtensionSet.GetOrRegister(ref _extensions, extension);
     }
     public void SetExtension<TValue>(pb::Extension<TestAllTypesProto2, TValue> extension, TValue value) {
       pb::ExtensionSet.Set(ref _extensions, extension, value);
@@ -3290,6 +3298,9 @@ namespace ProtobufTestMessages.Proto2 {
       return pb::ExtensionSet.Has(ref _extensions, extension);
     }
     public void ClearExtension<TValue>(pb::Extension<TestAllTypesProto2, TValue> extension) {
+      pb::ExtensionSet.Clear(ref _extensions, extension);
+    }
+    public void ClearExtension<TValue>(pb::RepeatedExtension<TestAllTypesProto2, TValue> extension) {
       pb::ExtensionSet.Clear(ref _extensions, extension);
     }
 
@@ -3688,7 +3699,7 @@ namespace ProtobufTestMessages.Proto2 {
       /// <summary>
       /// message_set test case.
       /// </summary>
-      public sealed partial class MessageSetCorrect : pb::IExtensionMessage<MessageSetCorrect> {
+      public sealed partial class MessageSetCorrect : pb::IExtendableMessage<MessageSetCorrect> {
         private static readonly pb::MessageParser<MessageSetCorrect> _parser = new pb::MessageParser<MessageSetCorrect>(() => new MessageSetCorrect());
         private pb::UnknownFieldSet _unknownFields;
         private pb::ExtensionSet<MessageSetCorrect> _extensions;
@@ -3804,14 +3815,14 @@ namespace ProtobufTestMessages.Proto2 {
           }
         }
 
-        public void RegisterExtension(pb::Extension extension) {
-          pb::ExtensionSet.Register(ref _extensions, extension);
-        }
         public TValue GetExtension<TValue>(pb::Extension<MessageSetCorrect, TValue> extension) {
           return pb::ExtensionSet.Get(ref _extensions, extension);
         }
         public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<MessageSetCorrect, TValue> extension) {
           return pb::ExtensionSet.Get(ref _extensions, extension);
+        }
+        public pbc::RepeatedField<TValue> GetOrRegisterExtension<TValue>(pb::RepeatedExtension<MessageSetCorrect, TValue> extension) {
+          return pb::ExtensionSet.GetOrRegister(ref _extensions, extension);
         }
         public void SetExtension<TValue>(pb::Extension<MessageSetCorrect, TValue> extension, TValue value) {
           pb::ExtensionSet.Set(ref _extensions, extension, value);
@@ -3820,6 +3831,9 @@ namespace ProtobufTestMessages.Proto2 {
           return pb::ExtensionSet.Has(ref _extensions, extension);
         }
         public void ClearExtension<TValue>(pb::Extension<MessageSetCorrect, TValue> extension) {
+          pb::ExtensionSet.Clear(ref _extensions, extension);
+        }
+        public void ClearExtension<TValue>(pb::RepeatedExtension<MessageSetCorrect, TValue> extension) {
           pb::ExtensionSet.Clear(ref _extensions, extension);
         }
 
@@ -4274,6 +4288,494 @@ namespace ProtobufTestMessages.Proto2 {
         }
       }
     }
+
+  }
+
+  public sealed partial class UnknownToTestAllTypes : pb::IMessage<UnknownToTestAllTypes> {
+    private static readonly pb::MessageParser<UnknownToTestAllTypes> _parser = new pb::MessageParser<UnknownToTestAllTypes>(() => new UnknownToTestAllTypes());
+    private pb::UnknownFieldSet _unknownFields;
+    private int _hasBits0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<UnknownToTestAllTypes> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ProtobufTestMessages.Proto2.TestMessagesProto2Reflection.Descriptor.MessageTypes[2]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public UnknownToTestAllTypes() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public UnknownToTestAllTypes(UnknownToTestAllTypes other) : this() {
+      _hasBits0 = other._hasBits0;
+      optionalInt32_ = other.optionalInt32_;
+      optionalString_ = other.optionalString_;
+      nestedMessage_ = other.HasNestedMessage ? other.nestedMessage_.Clone() : null;
+      optionalGroup_ = other.HasOptionalGroup ? other.optionalGroup_.Clone() : null;
+      optionalBool_ = other.optionalBool_;
+      repeatedInt32_ = other.repeatedInt32_.Clone();
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public UnknownToTestAllTypes Clone() {
+      return new UnknownToTestAllTypes(this);
+    }
+
+    /// <summary>Field number for the "optional_int32" field.</summary>
+    public const int OptionalInt32FieldNumber = 1001;
+    private readonly static int OptionalInt32DefaultValue = 0;
+
+    private int optionalInt32_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int OptionalInt32 {
+      get { if ((_hasBits0 & 1) != 0) { return optionalInt32_; } else { return OptionalInt32DefaultValue; } }
+      set {
+        _hasBits0 |= 1;
+        optionalInt32_ = value;
+      }
+    }
+    /// <summary>Gets whether the "optional_int32" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasOptionalInt32 {
+      get { return (_hasBits0 & 1) != 0; }
+    }
+    /// <summary>Clears the value of the "optional_int32" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearOptionalInt32() {
+      _hasBits0 &= ~1;
+    }
+
+    /// <summary>Field number for the "optional_string" field.</summary>
+    public const int OptionalStringFieldNumber = 1002;
+    private readonly static string OptionalStringDefaultValue = "";
+
+    private string optionalString_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string OptionalString {
+      get { return optionalString_ ?? OptionalStringDefaultValue; }
+      set {
+        optionalString_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+    /// <summary>Gets whether the "optional_string" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasOptionalString {
+      get { return optionalString_ != null; }
+    }
+    /// <summary>Clears the value of the "optional_string" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearOptionalString() {
+      optionalString_ = null;
+    }
+
+    /// <summary>Field number for the "nested_message" field.</summary>
+    public const int NestedMessageFieldNumber = 1003;
+    private global::ProtobufTestMessages.Proto2.ForeignMessageProto2 nestedMessage_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ProtobufTestMessages.Proto2.ForeignMessageProto2 NestedMessage {
+      get { return nestedMessage_; }
+      set {
+        nestedMessage_ = value;
+      }
+    }
+    /// <summary>Gets whether the nested_message field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasNestedMessage {
+      get { return nestedMessage_ != null; }
+    }
+    /// <summary>Clears the value of the nested_message field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearNestedMessage() {
+      nestedMessage_ = null;
+    }
+
+    /// <summary>Field number for the "optionalgroup" field.</summary>
+    public const int OptionalGroupFieldNumber = 1004;
+    private global::ProtobufTestMessages.Proto2.UnknownToTestAllTypes.Types.OptionalGroup optionalGroup_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ProtobufTestMessages.Proto2.UnknownToTestAllTypes.Types.OptionalGroup OptionalGroup {
+      get { return optionalGroup_; }
+      set {
+        optionalGroup_ = value;
+      }
+    }
+    /// <summary>Gets whether the optionalgroup field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasOptionalGroup {
+      get { return optionalGroup_ != null; }
+    }
+    /// <summary>Clears the value of the optionalgroup field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearOptionalGroup() {
+      optionalGroup_ = null;
+    }
+
+    /// <summary>Field number for the "optional_bool" field.</summary>
+    public const int OptionalBoolFieldNumber = 1006;
+    private readonly static bool OptionalBoolDefaultValue = false;
+
+    private bool optionalBool_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool OptionalBool {
+      get { if ((_hasBits0 & 2) != 0) { return optionalBool_; } else { return OptionalBoolDefaultValue; } }
+      set {
+        _hasBits0 |= 2;
+        optionalBool_ = value;
+      }
+    }
+    /// <summary>Gets whether the "optional_bool" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasOptionalBool {
+      get { return (_hasBits0 & 2) != 0; }
+    }
+    /// <summary>Clears the value of the "optional_bool" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearOptionalBool() {
+      _hasBits0 &= ~2;
+    }
+
+    /// <summary>Field number for the "repeated_int32" field.</summary>
+    public const int RepeatedInt32FieldNumber = 1011;
+    private static readonly pb::FieldCodec<int> _repeated_repeatedInt32_codec
+        = pb::FieldCodec.ForInt32(8088);
+    private readonly pbc::RepeatedField<int> repeatedInt32_ = new pbc::RepeatedField<int>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<int> RepeatedInt32 {
+      get { return repeatedInt32_; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as UnknownToTestAllTypes);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(UnknownToTestAllTypes other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (OptionalInt32 != other.OptionalInt32) return false;
+      if (OptionalString != other.OptionalString) return false;
+      if (!object.Equals(NestedMessage, other.NestedMessage)) return false;
+      if (!object.Equals(OptionalGroup, other.OptionalGroup)) return false;
+      if (OptionalBool != other.OptionalBool) return false;
+      if(!repeatedInt32_.Equals(other.repeatedInt32_)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (HasOptionalInt32) hash ^= OptionalInt32.GetHashCode();
+      if (HasOptionalString) hash ^= OptionalString.GetHashCode();
+      if (HasNestedMessage) hash ^= NestedMessage.GetHashCode();
+      if (HasOptionalGroup) hash ^= OptionalGroup.GetHashCode();
+      if (HasOptionalBool) hash ^= OptionalBool.GetHashCode();
+      hash ^= repeatedInt32_.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (HasOptionalInt32) {
+        output.WriteRawTag(200, 62);
+        output.WriteInt32(OptionalInt32);
+      }
+      if (HasOptionalString) {
+        output.WriteRawTag(210, 62);
+        output.WriteString(OptionalString);
+      }
+      if (HasNestedMessage) {
+        output.WriteRawTag(218, 62);
+        output.WriteMessage(NestedMessage);
+      }
+      if (HasOptionalGroup) {
+        output.WriteRawTag(227, 62);
+        output.WriteGroup(OptionalGroup);
+        output.WriteRawTag(228, 62);
+      }
+      if (HasOptionalBool) {
+        output.WriteRawTag(240, 62);
+        output.WriteBool(OptionalBool);
+      }
+      repeatedInt32_.WriteTo(output, _repeated_repeatedInt32_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (HasOptionalInt32) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(OptionalInt32);
+      }
+      if (HasOptionalString) {
+        size += 2 + pb::CodedOutputStream.ComputeStringSize(OptionalString);
+      }
+      if (HasNestedMessage) {
+        size += 2 + pb::CodedOutputStream.ComputeMessageSize(NestedMessage);
+      }
+      if (HasOptionalGroup) {
+        size += 4 + pb::CodedOutputStream.ComputeGroupSize(OptionalGroup);
+      }
+      if (HasOptionalBool) {
+        size += 2 + 1;
+      }
+      size += repeatedInt32_.CalculateSize(_repeated_repeatedInt32_codec);
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(UnknownToTestAllTypes other) {
+      if (other == null) {
+        return;
+      }
+      if (other.HasOptionalInt32) {
+        OptionalInt32 = other.OptionalInt32;
+      }
+      if (other.HasOptionalString) {
+        OptionalString = other.OptionalString;
+      }
+      if (other.HasNestedMessage) {
+        if (!HasNestedMessage) {
+          NestedMessage = new global::ProtobufTestMessages.Proto2.ForeignMessageProto2();
+        }
+        NestedMessage.MergeFrom(other.NestedMessage);
+      }
+      if (other.HasOptionalGroup) {
+        if (!HasOptionalGroup) {
+          OptionalGroup = new global::ProtobufTestMessages.Proto2.UnknownToTestAllTypes.Types.OptionalGroup();
+        }
+        OptionalGroup.MergeFrom(other.OptionalGroup);
+      }
+      if (other.HasOptionalBool) {
+        OptionalBool = other.OptionalBool;
+      }
+      repeatedInt32_.Add(other.repeatedInt32_);
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8008: {
+            OptionalInt32 = input.ReadInt32();
+            break;
+          }
+          case 8018: {
+            OptionalString = input.ReadString();
+            break;
+          }
+          case 8026: {
+            if (!HasNestedMessage) {
+              NestedMessage = new global::ProtobufTestMessages.Proto2.ForeignMessageProto2();
+            }
+            input.ReadMessage(NestedMessage);
+            break;
+          }
+          case 8035: {
+            if (!HasOptionalGroup) {
+              OptionalGroup = new global::ProtobufTestMessages.Proto2.UnknownToTestAllTypes.Types.OptionalGroup();
+            }
+            input.ReadGroup(OptionalGroup);
+            break;
+          }
+          case 8048: {
+            OptionalBool = input.ReadBool();
+            break;
+          }
+          case 8090:
+          case 8088: {
+            repeatedInt32_.AddEntriesFrom(input, _repeated_repeatedInt32_codec);
+            break;
+          }
+        }
+      }
+    }
+
+    #region Nested types
+    /// <summary>Container for nested types declared in the UnknownToTestAllTypes message type.</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static partial class Types {
+      public sealed partial class OptionalGroup : pb::IMessage<OptionalGroup> {
+        private static readonly pb::MessageParser<OptionalGroup> _parser = new pb::MessageParser<OptionalGroup>(() => new OptionalGroup());
+        private pb::UnknownFieldSet _unknownFields;
+        private int _hasBits0;
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public static pb::MessageParser<OptionalGroup> Parser { get { return _parser; } }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public static pbr::MessageDescriptor Descriptor {
+          get { return global::ProtobufTestMessages.Proto2.UnknownToTestAllTypes.Descriptor.NestedTypes[0]; }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        pbr::MessageDescriptor pb::IMessage.Descriptor {
+          get { return Descriptor; }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public OptionalGroup() {
+          OnConstruction();
+        }
+
+        partial void OnConstruction();
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public OptionalGroup(OptionalGroup other) : this() {
+          _hasBits0 = other._hasBits0;
+          a_ = other.a_;
+          _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public OptionalGroup Clone() {
+          return new OptionalGroup(this);
+        }
+
+        /// <summary>Field number for the "a" field.</summary>
+        public const int AFieldNumber = 1;
+        private readonly static int ADefaultValue = 0;
+
+        private int a_;
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public int A {
+          get { if ((_hasBits0 & 1) != 0) { return a_; } else { return ADefaultValue; } }
+          set {
+            _hasBits0 |= 1;
+            a_ = value;
+          }
+        }
+        /// <summary>Gets whether the "a" field is set</summary>
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public bool HasA {
+          get { return (_hasBits0 & 1) != 0; }
+        }
+        /// <summary>Clears the value of the "a" field</summary>
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void ClearA() {
+          _hasBits0 &= ~1;
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public override bool Equals(object other) {
+          return Equals(other as OptionalGroup);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public bool Equals(OptionalGroup other) {
+          if (ReferenceEquals(other, null)) {
+            return false;
+          }
+          if (ReferenceEquals(other, this)) {
+            return true;
+          }
+          if (A != other.A) return false;
+          return Equals(_unknownFields, other._unknownFields);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public override int GetHashCode() {
+          int hash = 1;
+          if (HasA) hash ^= A.GetHashCode();
+          if (_unknownFields != null) {
+            hash ^= _unknownFields.GetHashCode();
+          }
+          return hash;
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public override string ToString() {
+          return pb::JsonFormatter.ToDiagnosticString(this);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void WriteTo(pb::CodedOutputStream output) {
+          if (HasA) {
+            output.WriteRawTag(8);
+            output.WriteInt32(A);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(output);
+          }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public int CalculateSize() {
+          int size = 0;
+          if (HasA) {
+            size += 1 + pb::CodedOutputStream.ComputeInt32Size(A);
+          }
+          if (_unknownFields != null) {
+            size += _unknownFields.CalculateSize();
+          }
+          return size;
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void MergeFrom(OptionalGroup other) {
+          if (other == null) {
+            return;
+          }
+          if (other.HasA) {
+            A = other.A;
+          }
+          _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void MergeFrom(pb::CodedInputStream input) {
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              case 8036:
+                return;
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+                break;
+              case 8: {
+                A = input.ReadInt32();
+                break;
+              }
+            }
+          }
+        }
+
+      }
+
+    }
+    #endregion
 
   }
 

@@ -1587,7 +1587,7 @@ namespace Google.Protobuf.Reflection {
 
   }
 
-  internal sealed partial class ExtensionRangeOptions : pb::IExtendableMessage<ExtensionRangeOptions> {
+  public sealed partial class ExtensionRangeOptions : pb::IExtendableMessage<ExtensionRangeOptions> {
     private static readonly pb::MessageParser<ExtensionRangeOptions> _parser = new pb::MessageParser<ExtensionRangeOptions>(() => new ExtensionRangeOptions());
     private pb::UnknownFieldSet _unknownFields;
     internal pb::ExtensionSet<ExtensionRangeOptions> _extensions;
@@ -3815,7 +3815,7 @@ namespace Google.Protobuf.Reflection {
 
   }
 
-  internal sealed partial class FileOptions : pb::IExtendableMessage<FileOptions> {
+  public sealed partial class FileOptions : pb::IExtendableMessage<FileOptions> {
     private static readonly pb::MessageParser<FileOptions> _parser = new pb::MessageParser<FileOptions>(() => new FileOptions());
     private pb::UnknownFieldSet _unknownFields;
     internal pb::ExtensionSet<FileOptions> _extensions;
@@ -4912,7 +4912,7 @@ namespace Google.Protobuf.Reflection {
 
   }
 
-  internal sealed partial class MessageOptions : pb::IExtendableMessage<MessageOptions> {
+  public sealed partial class MessageOptions : pb::IExtendableMessage<MessageOptions> {
     private static readonly pb::MessageParser<MessageOptions> _parser = new pb::MessageParser<MessageOptions>(() => new MessageOptions());
     private pb::UnknownFieldSet _unknownFields;
     internal pb::ExtensionSet<MessageOptions> _extensions;
@@ -5295,7 +5295,7 @@ namespace Google.Protobuf.Reflection {
 
   }
 
-  internal sealed partial class FieldOptions : pb::IExtendableMessage<FieldOptions> {
+  public sealed partial class FieldOptions : pb::IExtendableMessage<FieldOptions> {
     private static readonly pb::MessageParser<FieldOptions> _parser = new pb::MessageParser<FieldOptions>(() => new FieldOptions());
     private pb::UnknownFieldSet _unknownFields;
     internal pb::ExtensionSet<FieldOptions> _extensions;
@@ -5801,7 +5801,7 @@ namespace Google.Protobuf.Reflection {
 
   }
 
-  internal sealed partial class OneofOptions : pb::IExtendableMessage<OneofOptions> {
+  public sealed partial class OneofOptions : pb::IExtendableMessage<OneofOptions> {
     private static readonly pb::MessageParser<OneofOptions> _parser = new pb::MessageParser<OneofOptions>(() => new OneofOptions());
     private pb::UnknownFieldSet _unknownFields;
     internal pb::ExtensionSet<OneofOptions> _extensions;
@@ -5964,7 +5964,7 @@ namespace Google.Protobuf.Reflection {
 
   }
 
-  internal sealed partial class EnumOptions : pb::IExtendableMessage<EnumOptions> {
+  public sealed partial class EnumOptions : pb::IExtendableMessage<EnumOptions> {
     private static readonly pb::MessageParser<EnumOptions> _parser = new pb::MessageParser<EnumOptions>(() => new EnumOptions());
     private pb::UnknownFieldSet _unknownFields;
     internal pb::ExtensionSet<EnumOptions> _extensions;
@@ -6221,7 +6221,7 @@ namespace Google.Protobuf.Reflection {
 
   }
 
-  internal sealed partial class EnumValueOptions : pb::IExtendableMessage<EnumValueOptions> {
+  public sealed partial class EnumValueOptions : pb::IExtendableMessage<EnumValueOptions> {
     private static readonly pb::MessageParser<EnumValueOptions> _parser = new pb::MessageParser<EnumValueOptions>(() => new EnumValueOptions());
     private pb::UnknownFieldSet _unknownFields;
     internal pb::ExtensionSet<EnumValueOptions> _extensions;
@@ -6433,7 +6433,7 @@ namespace Google.Protobuf.Reflection {
 
   }
 
-  internal sealed partial class ServiceOptions : pb::IExtendableMessage<ServiceOptions> {
+  public sealed partial class ServiceOptions : pb::IExtendableMessage<ServiceOptions> {
     private static readonly pb::MessageParser<ServiceOptions> _parser = new pb::MessageParser<ServiceOptions>(() => new ServiceOptions());
     private pb::UnknownFieldSet _unknownFields;
     internal pb::ExtensionSet<ServiceOptions> _extensions;
@@ -6645,7 +6645,7 @@ namespace Google.Protobuf.Reflection {
 
   }
 
-  internal sealed partial class MethodOptions : pb::IExtendableMessage<MethodOptions> {
+  public sealed partial class MethodOptions : pb::IExtendableMessage<MethodOptions> {
     private static readonly pb::MessageParser<MethodOptions> _parser = new pb::MessageParser<MethodOptions>(() => new MethodOptions());
     private pb::UnknownFieldSet _unknownFields;
     internal pb::ExtensionSet<MethodOptions> _extensions;

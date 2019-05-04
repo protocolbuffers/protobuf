@@ -176,7 +176,7 @@ namespace Google.Protobuf.Test.Reflection
             AssertOption(new Aggregate { S = "FieldAnnotation" }, fieldOptions.TryGetMessage, Fieldopt, AggregateMessage.Descriptor.Fields["fieldname"].GetOption);
         }
 
-        private void AssertOption<T, D>(T expected, OptionFetcher<T> fetcher, Extension<D, T> extension, Func<Extension<D, T>, T> descriptorOptionFetcher) where D : IExtensionMessage<D>
+        private void AssertOption<T, D>(T expected, OptionFetcher<T> fetcher, Extension<D, T> extension, Func<Extension<D, T>, T> descriptorOptionFetcher) where D : IExtendableMessage<D>
         {
             T customOptionsValue;
             T extensionValue = descriptorOptionFetcher(extension);
