@@ -114,8 +114,8 @@ inline int ToIntSize(size_t size) {
 //
 // Pay special attention to the initialization state of the object.
 // 1. The object is "uninitialized" to begin with.
-// 2. Call DefaultConstruct() only if the object is uninitialized.
-//    After the call, the object becomes "initialized".
+// 2. Call Construct() or DefaultConstruct() only if the object is
+//    uninitialized. After the call, the object becomes "initialized".
 // 3. Call get() and get_mutable() only if the object is initialized.
 // 4. Call Destruct() only if the object is initialized.
 //    After the call, the object becomes uninitialized.
@@ -123,6 +123,11 @@ template <typename T>
 class ExplicitlyConstructed {
  public:
   void DefaultConstruct() { new (&union_) T(); }
+
+  template <typename... Args>
+  void Construct(Args&&... args) {
+    new (&union_) T(std::forward<Args>(args)...);
+  }
 
   void Destruct() { get_mutable()->~T(); }
 
@@ -262,6 +267,18 @@ class PROTOBUF_EXPORT MessageLite {
   // Like ParseFromZeroCopyStream(), but accepts messages that are missing
   // required fields.
   bool ParsePartialFromZeroCopyStream(io::ZeroCopyInputStream* input);
+  // Parse a protocol buffer from a file descriptor.  If successful, the entire
+  // input will be consumed.
+  bool ParseFromFileDescriptor(int file_descriptor);
+  // Like ParseFromFileDescriptor(), but accepts messages that are missing
+  // required fields.
+  bool ParsePartialFromFileDescriptor(int file_descriptor);
+  // Parse a protocol buffer from a C++ istream.  If successful, the entire
+  // input will be consumed.
+  bool ParseFromIstream(std::istream* input);
+  // Like ParseFromIstream(), but accepts messages that are missing
+  // required fields.
+  bool ParsePartialFromIstream(std::istream* input);
   // Read a protocol buffer from the given zero-copy input stream, expecting
   // the message to be exactly "size" bytes long.  If successful, exactly
   // this many bytes will have been consumed from the input.
@@ -355,11 +372,23 @@ class PROTOBUF_EXPORT MessageLite {
   // Like SerializeAsString(), but allows missing required fields.
   std::string SerializePartialAsString() const;
 
+  // Serialize the message and write it to the given file descriptor.  All
+  // required fields must be set.
+  bool SerializeToFileDescriptor(int file_descriptor) const;
+  // Like SerializeToFileDescriptor(), but allows missing required fields.
+  bool SerializePartialToFileDescriptor(int file_descriptor) const;
+  // Serialize the message and write it to the given C++ ostream.  All
+  // required fields must be set.
+  bool SerializeToOstream(std::ostream* output) const;
+  // Like SerializeToOstream(), but allows missing required fields.
+  bool SerializePartialToOstream(std::ostream* output) const;
+
   // Like SerializeToString(), but appends to the data to the string's
   // existing contents.  All required fields must be set.
   bool AppendToString(std::string* output) const;
   // Like AppendToString(), but allows missing required fields.
   bool AppendPartialToString(std::string* output) const;
+
 
   // Computes the serialized size of the message.  This recursively calls
   // ByteSizeLong() on all embedded messages.

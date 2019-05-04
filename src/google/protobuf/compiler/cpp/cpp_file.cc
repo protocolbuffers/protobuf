@@ -892,11 +892,17 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* printer) {
       protodef_name, file_data.size(), sccs_.size(), num_deps,
       message_generators_.size());
 
-  format(
-      "// Force running AddDescriptors() at dynamic initialization time.\n"
-      "static bool $1$ = ("
-      "  ::$proto_ns$::internal::AddDescriptors(&$desc_table$), true);\n",
-      UniqueName("dynamic_init_dummy", file_, options_));
+  // For descriptor.proto we want to avoid doing any dynamic initialization,
+  // because in some situations that would otherwise pull in a lot of
+  // unnecessary code that can't be stripped by --gc-sections. Descriptor
+  // initialization will still be performed lazily when it's needed.
+  if (file_->name() != "net/proto2/proto/descriptor.proto") {
+    format(
+        "// Force running AddDescriptors() at dynamic initialization time.\n"
+        "static bool $1$ = ("
+        "  ::$proto_ns$::internal::AddDescriptors(&$desc_table$), true);\n",
+        UniqueName("dynamic_init_dummy", file_, options_));
+  }
 }
 
 void FileGenerator::GenerateInitForSCC(const SCC* scc, io::Printer* printer) {

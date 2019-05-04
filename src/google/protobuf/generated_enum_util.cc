@@ -28,56 +28,68 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLE_PROTOBUF_GENERATED_ENUM_UTIL_H__
-#define GOOGLE_PROTOBUF_GENERATED_ENUM_UTIL_H__
+#include <google/protobuf/generated_enum_util.h>
 
-#include <type_traits>
+#include <algorithm>
 
-#include <google/protobuf/message_lite.h>
-#include <google/protobuf/stubs/strutil.h>
-
-#include <google/protobuf/port_def.inc>
-
-#ifdef SWIG
-#error "You cannot SWIG proto headers"
-#endif
+#include <google/protobuf/generated_message_util.h>
 
 namespace google {
 namespace protobuf {
-
-// This type trait can be used to cause templates to only match proto2 enum
-// types.
-template <typename T>
-struct is_proto_enum : ::std::false_type {};
-
 namespace internal {
+namespace {
 
-// The table entry format for storing enum name-to-value mapping used with lite
-// protos. This struct and the following related functions should only be used
-// by protobuf generated code.
-struct EnumEntry {
-  StringPiece name;
-  int value;
-};
+bool EnumCompareByName(const EnumEntry& a, const EnumEntry& b) {
+  return StringPiece(a.name) < StringPiece(b.name);
+}
 
-// Looks up a numeric enum value given the string name.
-PROTOBUF_EXPORT bool LookUpEnumValue(const EnumEntry* enums, size_t size,
-                                     StringPiece name, int* value);
+// Gets the numeric value of the EnumEntry at the given index, but returns a
+// special value for the index -1. This gives a way to use std::lower_bound on a
+// sorted array of indices while searching for value that we associate with -1.
+int GetValue(const EnumEntry* enums, int i, int target) {
+  if (i == -1) {
+    return target;
+  } else {
+    return enums[i].value;
+  }
+}
 
-// Looks up an enum name given the numeric value.
-PROTOBUF_EXPORT int LookUpEnumName(const EnumEntry* enums,
-                                   const int* sorted_indices, size_t size,
-                                   int value);
+}  // namespace
 
-// Initializes the list of enum names in std::string form.
-PROTOBUF_EXPORT bool InitializeEnumStrings(
+bool LookUpEnumValue(const EnumEntry* enums, size_t size,
+                     StringPiece name, int* value) {
+  EnumEntry target{name, 0};
+  auto it = std::lower_bound(enums, enums + size, target, EnumCompareByName);
+  if (it != enums + size && it->name == name) {
+    *value = it->value;
+    return true;
+  }
+  return false;
+}
+
+int LookUpEnumName(const EnumEntry* enums, const int* sorted_indices,
+                   size_t size, int value) {
+  auto comparator = [enums, value](int a, int b) {
+    return GetValue(enums, a, value) < GetValue(enums, b, value);
+  };
+  auto it =
+      std::lower_bound(sorted_indices, sorted_indices + size, -1, comparator);
+  if (it != sorted_indices + size && enums[*it].value == value) {
+    return it - sorted_indices;
+  }
+  return -1;
+}
+
+bool InitializeEnumStrings(
     const EnumEntry* enums, const int* sorted_indices, size_t size,
-    internal::ExplicitlyConstructed<std::string>* enum_strings);
+    internal::ExplicitlyConstructed<std::string>* enum_strings) {
+  for (int i = 0; i < size; ++i) {
+    enum_strings[i].Construct(enums[sorted_indices[i]].name);
+    internal::OnShutdownDestroyString(enum_strings[i].get_mutable());
+  }
+  return true;
+}
 
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
-
-#include <google/protobuf/port_undef.inc>
-
-#endif  // GOOGLE_PROTOBUF_GENERATED_ENUM_UTIL_H__

@@ -285,35 +285,6 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // Convenience function useful in GDB.  Prints DebugString() to stdout.
   void PrintDebugString() const;
 
-  // Heavy I/O -------------------------------------------------------
-  // Additional parsing and serialization methods not implemented by
-  // MessageLite because they are not supported by the lite library.
-
-  // Parse a protocol buffer from a file descriptor.  If successful, the entire
-  // input will be consumed.
-  bool ParseFromFileDescriptor(int file_descriptor);
-  // Like ParseFromFileDescriptor(), but accepts messages that are missing
-  // required fields.
-  bool ParsePartialFromFileDescriptor(int file_descriptor);
-  // Parse a protocol buffer from a C++ istream.  If successful, the entire
-  // input will be consumed.
-  bool ParseFromIstream(std::istream* input);
-  // Like ParseFromIstream(), but accepts messages that are missing
-  // required fields.
-  bool ParsePartialFromIstream(std::istream* input);
-
-  // Serialize the message and write it to the given file descriptor.  All
-  // required fields must be set.
-  bool SerializeToFileDescriptor(int file_descriptor) const;
-  // Like SerializeToFileDescriptor(), but allows missing required fields.
-  bool SerializePartialToFileDescriptor(int file_descriptor) const;
-  // Serialize the message and write it to the given C++ ostream.  All
-  // required fields must be set.
-  bool SerializeToOstream(std::ostream* output) const;
-  // Like SerializeToOstream(), but allows missing required fields.
-  bool SerializePartialToOstream(std::ostream* output) const;
-
-
   // Reflection-based methods ----------------------------------------
   // These methods are pure-virtual in MessageLite, but Message provides
   // reflection-based default implementations.
