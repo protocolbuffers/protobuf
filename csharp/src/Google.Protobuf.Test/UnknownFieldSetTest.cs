@@ -33,6 +33,7 @@
 using System;
 using System.IO;
 using Google.Protobuf.TestProtos;
+using Proto2 = Google.Protobuf.TestProtos.Proto2;
 using NUnit.Framework;
 
 namespace Google.Protobuf
@@ -62,13 +63,13 @@ namespace Google.Protobuf
         [Test]
         public void TestMergeCodedInput()
         {
-            var message = SampleMessages.CreateFullTestAllTypes();
+            var message = SampleMessages.CreateFullTestAllTypesProto2();
             var emptyMessage = new TestEmptyMessage();
             emptyMessage.MergeFrom(message.ToByteArray());
             Assert.AreEqual(message.CalculateSize(), emptyMessage.CalculateSize());
             Assert.AreEqual(message.ToByteArray(), emptyMessage.ToByteArray());
 
-            var newMessage = new TestAllTypes();
+            var newMessage = new Proto2.TestAllTypes();
             newMessage.MergeFrom(emptyMessage.ToByteArray());
             Assert.AreEqual(message, newMessage);
             Assert.AreEqual(message.CalculateSize(), newMessage.CalculateSize());
@@ -77,7 +78,7 @@ namespace Google.Protobuf
         [Test]
         public void TestMergeMessage()
         {
-            var message = SampleMessages.CreateFullTestAllTypes();
+            var message = SampleMessages.CreateFullTestAllTypesProto2();
             var emptyMessage = new TestEmptyMessage();
             var otherEmptyMessage = new TestEmptyMessage();
             emptyMessage.MergeFrom(message.ToByteArray());
@@ -90,7 +91,7 @@ namespace Google.Protobuf
         [Test]
         public void TestEquals()
         {
-            var message = SampleMessages.CreateFullTestAllTypes();
+            var message = SampleMessages.CreateFullTestAllTypesProto2();
             var emptyMessage = new TestEmptyMessage();
             var otherEmptyMessage = new TestEmptyMessage();
             Assert.AreEqual(emptyMessage, otherEmptyMessage);
@@ -103,7 +104,7 @@ namespace Google.Protobuf
         [Test]
         public void TestHashCode()
         {
-            var message = SampleMessages.CreateFullTestAllTypes();
+            var message = SampleMessages.CreateFullTestAllTypesProto2();
             var emptyMessage = new TestEmptyMessage();
             int hashCode = emptyMessage.GetHashCode();
             emptyMessage.MergeFrom(message.ToByteArray());
@@ -119,7 +120,7 @@ namespace Google.Protobuf
             Assert.AreEqual(emptyMessage.CalculateSize(), otherEmptyMessage.CalculateSize());
             Assert.AreEqual(emptyMessage.ToByteArray(), otherEmptyMessage.ToByteArray());
 
-            var message = SampleMessages.CreateFullTestAllTypes();
+            var message = SampleMessages.CreateFullTestAllTypesProto2();
             emptyMessage.MergeFrom(message.ToByteArray());
             otherEmptyMessage = emptyMessage.Clone();
             Assert.AreEqual(message.CalculateSize(), otherEmptyMessage.CalculateSize());
@@ -129,7 +130,7 @@ namespace Google.Protobuf
         [Test]
         public void TestDiscardUnknownFields()
         {
-            var message = SampleMessages.CreateFullTestAllTypes();
+            var message = SampleMessages.CreateFullTestAllTypesProto2();
             var goldenEmptyMessage = new TestEmptyMessage();
             byte[] data = message.ToByteArray();
             int fullSize = message.CalculateSize();
