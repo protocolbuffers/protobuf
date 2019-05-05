@@ -138,11 +138,6 @@ namespace Google.Protobuf.Reflection
 
         internal bool GetIsExtensionsInitialized(IMessage message)
         {
-            if (!object.ReferenceEquals(message.Descriptor, this))
-            {
-                throw new InvalidOperationException("message's descriptor reference does not match this");
-            }
-
             if (Proto.ExtensionRange.Count == 0)
             {
                 return true;
