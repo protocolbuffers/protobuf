@@ -254,6 +254,14 @@ namespace Google.Protobuf
             extensionMessage.C = 3;
 
             Assert.True(message.IsInitialized());
+
+            message.SetExtension(Proto2.UnittestExtensions.OptionalBoolExtension, true);
+
+            Assert.True(message.IsInitialized());
+
+            message.GetOrRegisterExtension(Proto2.UnittestExtensions.RepeatedBoolExtension).Add(true);
+
+            Assert.True(message.IsInitialized());
         }
 
         [Test]
