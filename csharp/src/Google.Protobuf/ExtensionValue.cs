@@ -213,7 +213,23 @@ namespace Google.Protobuf
 
         public bool IsInitialized()
         {
-            return field.All(m => m is IMessage && (m as IMessage).IsInitialized());
+            for (int i = 0; i < field.Count; i++)
+            {
+                var element = field[i];
+                if (element is IMessage)
+                {
+                    if (!(element as IMessage).IsInitialized())
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            return true;
         }
     }
 }
