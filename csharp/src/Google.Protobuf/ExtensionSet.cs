@@ -115,6 +115,8 @@ namespace Google.Protobuf
         /// </summary>
         public static void Set<TTarget, TValue>(ref ExtensionSet<TTarget> set, Extension<TTarget, TValue> extension, TValue value) where TTarget : IExtendableMessage<TTarget>
         {
+            ProtoPreconditions.CheckNotNullUnconstrained(value, nameof(value));
+
             IExtensionValue extensionValue;
             if (set == null)
             {
