@@ -312,14 +312,19 @@ namespace Google.Protobuf.Reflection
         {
             public Func<IMessage, bool> CreateIsInitializedCaller()
             {
-                var field = typeof(T1).GetTypeInfo().GetDeclaredField("_extensions");
+                var prop = typeof(T1).GetTypeInfo().GetDeclaredProperty("_Extensions");
+#if NET35
+                var getFunc = (Func<T1, ExtensionSet<T1>>)prop.GetGetMethod(true).CreateDelegate(typeof(Func<T1, ExtensionSet<T1>>));
+#else
+                var getFunc = (Func<T1, ExtensionSet<T1>>)prop.GetMethod.CreateDelegate(typeof(Func<T1, ExtensionSet<T1>>));
+#endif
                 var initializedFunc = (Func<ExtensionSet<T1>, bool>)
                     typeof(ExtensionSet<T1>)
                         .GetTypeInfo()
                         .GetDeclaredMethod("IsInitialized")
                         .CreateDelegate(typeof(Func<ExtensionSet<T1>, bool>));
                 return (m) => {
-                    var set = field.GetValue(m) as ExtensionSet<T1>;
+                    var set = getFunc((T1)m);
                     return set == null || initializedFunc(set);
                 };
             }
