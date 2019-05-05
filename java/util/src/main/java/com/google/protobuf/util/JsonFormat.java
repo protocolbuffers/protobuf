@@ -448,11 +448,16 @@ public class JsonFormat {
     }
 
     /**
-     * Find a type by its full name. Returns null if it cannot be found in
-     * this {@link TypeRegistry}.
+     * Find a type by its full name. Returns null if it cannot be found in this {@link
+     * TypeRegistry}.
      */
     public Descriptor find(String name) {
       return types.get(name);
+    }
+
+    /* @Nullable */
+    Descriptor getDescriptorForTypeUrl(String typeUrl) throws InvalidProtocolBufferException {
+      return find(getTypeName(typeUrl));
     }
 
     private final Map<String, Descriptor> types;
@@ -461,9 +466,8 @@ public class JsonFormat {
       this.types = types;
     }
 
-    /**
-     * A Builder is used to build {@link TypeRegistry}.
-     */
+
+    /** A Builder is used to build {@link TypeRegistry}. */
     public static class Builder {
       private Builder() {}
 
@@ -801,15 +805,14 @@ public class JsonFormat {
         throw new InvalidProtocolBufferException("Invalid Any type.");
       }
       String typeUrl = (String) message.getField(typeUrlField);
-      String typeName = getTypeName(typeUrl);
-      Descriptor type = registry.find(typeName);
+      Descriptor type = registry.getDescriptorForTypeUrl(typeUrl);
       if (type == null) {
         throw new InvalidProtocolBufferException("Cannot find type for url: " + typeUrl);
       }
       ByteString content = (ByteString) message.getField(valueField);
       Message contentMessage =
           DynamicMessage.getDefaultInstance(type).getParserForType().parseFrom(content);
-      WellKnownTypePrinter printer = wellKnownTypePrinters.get(typeName);
+      WellKnownTypePrinter printer = wellKnownTypePrinters.get(getTypeName(typeUrl));
       if (printer != null) {
         // If the type is one of the well-known types, we use a special
         // formatting.
@@ -1443,7 +1446,7 @@ public class JsonFormat {
         throw new InvalidProtocolBufferException("Missing type url when parsing: " + json);
       }
       String typeUrl = typeUrlElement.getAsString();
-      Descriptor contentType = registry.find(getTypeName(typeUrl));
+      Descriptor contentType = registry.getDescriptorForTypeUrl(typeUrl);
       if (contentType == null) {
         throw new InvalidProtocolBufferException("Cannot resolve type: " + typeUrl);
       }
@@ -1560,16 +1563,6 @@ public class JsonFormat {
           throw new InvalidProtocolBufferException(
               "Field " + field.getFullName() + " has already been set.");
         }
-        if (field.getContainingOneof() != null
-            && builder.getOneofFieldDescriptor(field.getContainingOneof()) != null) {
-          FieldDescriptor other = builder.getOneofFieldDescriptor(field.getContainingOneof());
-          throw new InvalidProtocolBufferException(
-              "Cannot set field "
-                  + field.getFullName()
-                  + " because another field "
-                  + other.getFullName()
-                  + " belonging to the same oneof has already been set ");
-        }
       }
       if (field.isRepeated() && json instanceof JsonNull) {
         // We allow "null" as value for all field types and treat it as if the
@@ -1580,9 +1573,12 @@ public class JsonFormat {
         mergeMapField(field, json, builder);
       } else if (field.isRepeated()) {
         mergeRepeatedField(field, json, builder);
+      } else if (field.getContainingOneof() != null) {
+        mergeOneofField(field, json, builder);
       } else {
         Object value = parseFieldValue(field, json, builder);
         if (value != null) {
+          // A field interpreted as "null" is means it's treated as absent.
           builder.setField(field, value);
         }
       }
@@ -1615,6 +1611,24 @@ public class JsonFormat {
         entryBuilder.setField(valueField, value);
         builder.addRepeatedField(field, entryBuilder.build());
       }
+    }
+
+    private void mergeOneofField(FieldDescriptor field, JsonElement json, Message.Builder builder)
+        throws InvalidProtocolBufferException {
+      Object value = parseFieldValue(field, json, builder);
+      if (value == null) {
+        // A field interpreted as "null" is means it's treated as absent.
+        return;
+      }
+      if (builder.getOneofFieldDescriptor(field.getContainingOneof()) != null) {
+        throw new InvalidProtocolBufferException(
+            "Cannot set field "
+                + field.getFullName()
+                + " because another field "
+                + builder.getOneofFieldDescriptor(field.getContainingOneof()).getFullName()
+                + " belonging to the same oneof has already been set ");
+      }
+      builder.setField(field, value);
     }
 
     private void mergeRepeatedField(

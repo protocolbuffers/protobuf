@@ -43,3 +43,4 @@ Required.Proto3.ProtobufInput.DoubleFieldNormalizeSignalingNan.JsonOutput
 Required.Proto3.ProtobufInput.FloatFieldNormalizeQuietNan.JsonOutput
 Required.Proto3.ProtobufInput.FloatFieldNormalizeSignalingNan.JsonOutput
 Required.Proto3.ProtobufInput.ValidDataRepeated.FLOAT.JsonOutput
+Required.Proto3.JsonInput.RejectTopLevelNull

@@ -1,0 +1,18 @@
+mergeable:
+  pull_requests:
+    label:
+      and:
+        - must_exclude:
+            regex: '^disposition/DO NOT MERGE'
+            message: 'Pull request marked not mergeable'
+        - or:
+          - and:
+            - must_include:
+                regex: 'release notes: yes'
+                message: 'Please include release note: yes'
+            - must_include:
+                regex: '^(c#|c\+\+|cleanup|conformance tests|integration|java|javascript|go|objective-c|php|python|ruby)'
+                message: 'Please include at least a language label (e.g., c++, java, python). Or apply one of the following labels: cleanup, conformance tests, integration.'
+          - must_include:
+              regex: 'release notes: no'
+              message: 'Please include release note: no'

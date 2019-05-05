@@ -49,16 +49,14 @@ namespace protobuf {
 namespace util {
 namespace {
 
-using proto_util_converter::testing::MapIn;
 using proto3::BAR;
 using proto3::FOO;
+using proto3::TestAny;
 using proto3::TestEnumValue;
 using proto3::TestMap;
 using proto3::TestMessage;
 using proto3::TestOneof;
-using proto3::TestAny;
-
-static const char kTypeUrlPrefix[] = "type.googleapis.com";
+using proto_util_converter::testing::MapIn;
 
 // As functions defined in json_util.h are just thin wrappers around the
 // JSON conversion code in //net/proto2/util/converter, in this test we
@@ -67,8 +65,7 @@ static const char kTypeUrlPrefix[] = "type.googleapis.com";
 // tests are contained in the //net/proto2/util/converter directory.
 class JsonUtilTest : public ::testing::Test {
  protected:
-  JsonUtilTest() {
-  }
+  JsonUtilTest() {}
 
   std::string ToJson(const Message& message, const JsonPrintOptions& options) {
     std::string result;
@@ -339,8 +336,9 @@ TEST_F(JsonUtilTest, TestDynamicMessage) {
   DescriptorPool pool(&database);
   // A dynamic version of the test proto.
   DynamicMessageFactory factory;
-  std::unique_ptr<Message> message(factory.GetPrototype(
-      pool.FindMessageTypeByName("proto3.TestMessage"))->New());
+  std::unique_ptr<Message> message(
+      factory.GetPrototype(pool.FindMessageTypeByName("proto3.TestMessage"))
+          ->New());
   EXPECT_TRUE(FromJson(input, message.get()));
 
   // Convert to generated message for easy inspection.
@@ -464,10 +462,9 @@ TEST_F(JsonUtilTest, TestParsingEnumIgnoreCase) {
         "  \"enum_value\":\"bar\"\n"
         "}";
     m.set_enum_value(proto3::FOO);
-    EXPECT_TRUE(FromJson(input, &m, options));
-    // Default behavior is case-insensitive.
-    // TODO(haon): Change the default behavior to case-sensitive.
-    ASSERT_EQ(proto3::BAR, m.enum_value());
+    EXPECT_FALSE(FromJson(input, &m, options));
+    // Default behavior is case-sensitive, so keep previous value.
+    ASSERT_EQ(proto3::FOO, m.enum_value());
   }
   {
     JsonParseOptions options;
@@ -498,7 +495,9 @@ typedef std::pair<char*, int> Segment;
 class SegmentedZeroCopyOutputStream : public io::ZeroCopyOutputStream {
  public:
   explicit SegmentedZeroCopyOutputStream(std::list<Segment> segments)
-      : segments_(segments), last_segment_(static_cast<char*>(NULL), 0), byte_count_(0) {}
+      : segments_(segments),
+        last_segment_(static_cast<char*>(NULL), 0),
+        byte_count_(0) {}
 
   virtual bool Next(void** buffer, int* length) {
     if (segments_.empty()) {
@@ -627,8 +626,8 @@ TEST_F(JsonUtilTest, TestWrongJsonInput) {
   TypeResolver* resolver = NewTypeResolverForDescriptorPool(
       "type.googleapis.com", DescriptorPool::generated_pool());
 
-  auto result_status = util::JsonToBinaryStream(
-      resolver, message_type, &input_stream, &output_stream);
+  auto result_status = util::JsonToBinaryStream(resolver, message_type,
+                                                &input_stream, &output_stream);
 
   delete resolver;
 

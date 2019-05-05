@@ -66,8 +66,7 @@ std::string StripPackageName(const std::string& full_name,
 // Get the name of a message's Java class without package name prefix.
 std::string ClassNameWithoutPackage(const Descriptor* descriptor,
                                     bool immutable) {
-  return StripPackageName(descriptor->full_name(),
-                          descriptor->file());
+  return StripPackageName(descriptor->full_name(), descriptor->file());
 }
 
 // Get the name of an enum's Java class without package name prefix.
@@ -78,8 +77,8 @@ std::string ClassNameWithoutPackage(const EnumDescriptor* descriptor,
   if (message_descriptor == NULL) {
     return descriptor->name();
   } else {
-    return ClassNameWithoutPackage(message_descriptor, immutable) +
-           "." + descriptor->name();
+    return ClassNameWithoutPackage(message_descriptor, immutable) + "." +
+           descriptor->name();
   }
 }
 
@@ -128,11 +127,9 @@ bool MessageHasConflictingClassName(const Descriptor* message,
 
 }  // namespace
 
-ClassNameResolver::ClassNameResolver() {
-}
+ClassNameResolver::ClassNameResolver() {}
 
-ClassNameResolver::~ClassNameResolver() {
-}
+ClassNameResolver::~ClassNameResolver() {}
 
 std::string ClassNameResolver::GetFileDefaultImmutableClassName(
     const FileDescriptor* file) {
@@ -174,9 +171,9 @@ std::string ClassNameResolver::GetFileClassName(const FileDescriptor* file,
 
 // Check whether there is any type defined in the proto file that has
 // the given class name.
-bool ClassNameResolver::HasConflictingClassName(
-    const FileDescriptor* file, const std::string& classname,
-    NameEquality equality_mode) {
+bool ClassNameResolver::HasConflictingClassName(const FileDescriptor* file,
+                                                const std::string& classname,
+                                                NameEquality equality_mode) {
   for (int i = 0; i < file->enum_type_count(); i++) {
     if (CheckNameEquality(file->enum_type(i)->name(), classname) ==
         equality_mode) {
@@ -274,16 +271,14 @@ std::string ClassNameResolver::GetExtensionIdentifierName(
 
 std::string ClassNameResolver::GetJavaImmutableClassName(
     const Descriptor* descriptor) {
-  return GetJavaClassFullName(
-      ClassNameWithoutPackage(descriptor, true),
-      descriptor->file(), true);
+  return GetJavaClassFullName(ClassNameWithoutPackage(descriptor, true),
+                              descriptor->file(), true);
 }
 
 std::string ClassNameResolver::GetJavaImmutableClassName(
     const EnumDescriptor* descriptor) {
-  return GetJavaClassFullName(
-      ClassNameWithoutPackage(descriptor, true),
-      descriptor->file(), true);
+  return GetJavaClassFullName(ClassNameWithoutPackage(descriptor, true),
+                              descriptor->file(), true);
 }
 
 

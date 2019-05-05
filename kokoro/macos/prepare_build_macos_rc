@@ -23,7 +23,7 @@ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/
 source $HOME/.rvm/scripts/rvm
 brew uninstall node icu4c cmake
 brew prune
-brew install gflags gpg gpg2 node pcre ruby cmake
+brew install gflags gpg gpg2 node openssl pcre ruby cmake
 sudo chown -R $(whoami) /usr/local
 brew postinstall node
 

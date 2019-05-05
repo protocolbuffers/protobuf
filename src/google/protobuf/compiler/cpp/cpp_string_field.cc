@@ -68,8 +68,7 @@ void SetStringVariables(const FieldDescriptor* descriptor,
   // NOTE: Escaped here to unblock proto1->proto2 migration.
   // TODO(liujisi): Extend this to apply for other conflicting methods.
   (*variables)["release_name"] =
-      SafeFunctionName(descriptor->containing_type(),
-                       descriptor, "release_");
+      SafeFunctionName(descriptor->containing_type(), descriptor, "release_");
   (*variables)["full_name"] = descriptor->full_name();
 
   if (options.opensource_runtime) {
@@ -96,8 +95,7 @@ StringFieldGenerator::StringFieldGenerator(const FieldDescriptor* descriptor,
 
 StringFieldGenerator::~StringFieldGenerator() {}
 
-void StringFieldGenerator::
-GeneratePrivateMembers(io::Printer* printer) const {
+void StringFieldGenerator::GeneratePrivateMembers(io::Printer* printer) const {
   Formatter format(printer, variables_);
   if (inlined_) {
     format("::$proto_ns$::internal::InlinedStringField $name$_;\n");
@@ -118,8 +116,7 @@ GeneratePrivateMembers(io::Printer* printer) const {
   }
 }
 
-void StringFieldGenerator::
-GenerateStaticMembers(io::Printer* printer) const {
+void StringFieldGenerator::GenerateStaticMembers(io::Printer* printer) const {
   Formatter format(printer, variables_);
   if (!descriptor_->default_value_string().empty()) {
     // We make the default instance public, so it can be initialized by
@@ -132,8 +129,8 @@ GenerateStaticMembers(io::Printer* printer) const {
   }
 }
 
-void StringFieldGenerator::
-GenerateAccessorDeclarations(io::Printer* printer) const {
+void StringFieldGenerator::GenerateAccessorDeclarations(
+    io::Printer* printer) const {
   Formatter format(printer, variables_);
   // If we're using StringFieldGenerator for a field with a ctype, it's
   // because that ctype isn't actually implemented.  In particular, this is
@@ -208,8 +205,8 @@ GenerateAccessorDeclarations(io::Printer* printer) const {
   }
 }
 
-void StringFieldGenerator::
-GenerateInlineAccessorDefinitions(io::Printer* printer) const {
+void StringFieldGenerator::GenerateInlineAccessorDefinitions(
+    io::Printer* printer) const {
   Formatter format(printer, variables_);
   if (SupportsArenas(descriptor_)) {
     format(
@@ -389,8 +386,8 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
   }
 }
 
-void StringFieldGenerator::
-GenerateNonInlineAccessorDefinitions(io::Printer* printer) const {
+void StringFieldGenerator::GenerateNonInlineAccessorDefinitions(
+    io::Printer* printer) const {
   Formatter format(printer, variables_);
   if (!descriptor_->default_value_string().empty()) {
     // Initialized in GenerateDefaultInstanceAllocator.
@@ -400,8 +397,7 @@ GenerateNonInlineAccessorDefinitions(io::Printer* printer) const {
   }
 }
 
-void StringFieldGenerator::
-GenerateClearingCode(io::Printer* printer) const {
+void StringFieldGenerator::GenerateClearingCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
   // Two-dimension specialization here: supporting arenas or not, and default
   // value is the empty string or not. Complexity here ensures the minimal
@@ -424,8 +420,8 @@ GenerateClearingCode(io::Printer* printer) const {
   }
 }
 
-void StringFieldGenerator::
-GenerateMessageClearingCode(io::Printer* printer) const {
+void StringFieldGenerator::GenerateMessageClearingCode(
+    io::Printer* printer) const {
   Formatter format(printer, variables_);
   // Two-dimension specialization here: supporting arenas, field presence, or
   // not, and default value is the empty string or not. Complexity here ensures
@@ -435,8 +431,7 @@ GenerateMessageClearingCode(io::Printer* printer) const {
   // If we have field presence, then the Clear() method of the protocol buffer
   // will have checked that this field is set.  If so, we can avoid redundant
   // checks against default_variable.
-  const bool must_be_present =
-      HasFieldPresence(descriptor_->file());
+  const bool must_be_present = HasFieldPresence(descriptor_->file());
 
   if (inlined_ && must_be_present) {
     // Calling mutable_$name$() gives us a string reference and sets the has bit
@@ -481,8 +476,7 @@ GenerateMessageClearingCode(io::Printer* printer) const {
   }
 }
 
-void StringFieldGenerator::
-GenerateMergingCode(io::Printer* printer) const {
+void StringFieldGenerator::GenerateMergingCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
   if (SupportsArenas(descriptor_) || descriptor_->containing_oneof() != NULL) {
     // TODO(gpike): improve this
@@ -494,8 +488,7 @@ GenerateMergingCode(io::Printer* printer) const {
   }
 }
 
-void StringFieldGenerator::
-GenerateSwappingCode(io::Printer* printer) const {
+void StringFieldGenerator::GenerateSwappingCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
   if (inlined_) {
     format("$name$_.Swap(&other->$name$_);\n");
@@ -506,8 +499,7 @@ GenerateSwappingCode(io::Printer* printer) const {
   }
 }
 
-void StringFieldGenerator::
-GenerateConstructorCode(io::Printer* printer) const {
+void StringFieldGenerator::GenerateConstructorCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
   // TODO(ckennelly): Construct non-empty strings as part of the initializer
   // list.
@@ -519,8 +511,8 @@ GenerateConstructorCode(io::Printer* printer) const {
   format("$name$_.UnsafeSetDefault($default_variable$);\n");
 }
 
-void StringFieldGenerator::
-GenerateCopyConstructorCode(io::Printer* printer) const {
+void StringFieldGenerator::GenerateCopyConstructorCode(
+    io::Printer* printer) const {
   Formatter format(printer, variables_);
   GenerateConstructorCode(printer);
 
@@ -545,8 +537,7 @@ GenerateCopyConstructorCode(io::Printer* printer) const {
   format("}\n");
 }
 
-void StringFieldGenerator::
-GenerateDestructorCode(io::Printer* printer) const {
+void StringFieldGenerator::GenerateDestructorCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
   if (inlined_) {
     // The destructor is automatically invoked.
@@ -567,8 +558,8 @@ bool StringFieldGenerator::GenerateArenaDestructorCode(
   return true;
 }
 
-void StringFieldGenerator::
-GenerateDefaultInstanceAllocator(io::Printer* printer) const {
+void StringFieldGenerator::GenerateDefaultInstanceAllocator(
+    io::Printer* printer) const {
   Formatter format(printer, variables_);
   if (!descriptor_->default_value_string().empty()) {
     format(
@@ -580,8 +571,8 @@ GenerateDefaultInstanceAllocator(io::Printer* printer) const {
   }
 }
 
-void StringFieldGenerator::
-GenerateMergeFromCodedStream(io::Printer* printer) const {
+void StringFieldGenerator::GenerateMergeFromCodedStream(
+    io::Printer* printer) const {
   Formatter format(printer, variables_);
   // The google3 version of proto2 has ArenaStrings and parses into them
   // directly, but for the open-source release, we always parse into std::string
@@ -617,13 +608,12 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
   }
 }
 
-bool StringFieldGenerator::
-MergeFromCodedStreamNeedsArena() const {
+bool StringFieldGenerator::MergeFromCodedStreamNeedsArena() const {
   return !lite_ && !inlined_ && !options_.opensource_runtime;
 }
 
-void StringFieldGenerator::
-GenerateSerializeWithCachedSizes(io::Printer* printer) const {
+void StringFieldGenerator::GenerateSerializeWithCachedSizes(
+    io::Printer* printer) const {
   Formatter format(printer, variables_);
   if (descriptor_->type() == FieldDescriptor::TYPE_STRING) {
     GenerateUtf8CheckCodeForString(
@@ -637,8 +627,8 @@ GenerateSerializeWithCachedSizes(io::Printer* printer) const {
       "  $number$, this->$name$(), output);\n");
 }
 
-void StringFieldGenerator::
-GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const {
+void StringFieldGenerator::GenerateSerializeWithCachedSizesToArray(
+    io::Printer* printer) const {
   Formatter format(printer, variables_);
   if (descriptor_->type() == FieldDescriptor::TYPE_STRING) {
     GenerateUtf8CheckCodeForString(
@@ -652,8 +642,7 @@ GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const {
       "    $number$, this->$name$(), target);\n");
 }
 
-void StringFieldGenerator::
-GenerateByteSize(io::Printer* printer) const {
+void StringFieldGenerator::GenerateByteSize(io::Printer* printer) const {
   Formatter format(printer, variables_);
   format(
       "total_size += $tag_size$ +\n"
@@ -677,8 +666,8 @@ StringOneofFieldGenerator::StringOneofFieldGenerator(
 
 StringOneofFieldGenerator::~StringOneofFieldGenerator() {}
 
-void StringOneofFieldGenerator::
-GenerateInlineAccessorDefinitions(io::Printer* printer) const {
+void StringOneofFieldGenerator::GenerateInlineAccessorDefinitions(
+    io::Printer* printer) const {
   Formatter format(printer, variables_);
   if (SupportsArenas(descriptor_)) {
     format(
@@ -906,8 +895,8 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
   }
 }
 
-void StringOneofFieldGenerator::
-GenerateClearingCode(io::Printer* printer) const {
+void StringOneofFieldGenerator::GenerateClearingCode(
+    io::Printer* printer) const {
   Formatter format(printer, variables_);
   if (SupportsArenas(descriptor_)) {
     format(
@@ -918,26 +907,26 @@ GenerateClearingCode(io::Printer* printer) const {
   }
 }
 
-void StringOneofFieldGenerator::
-GenerateMessageClearingCode(io::Printer* printer) const {
+void StringOneofFieldGenerator::GenerateMessageClearingCode(
+    io::Printer* printer) const {
   return GenerateClearingCode(printer);
 }
 
-void StringOneofFieldGenerator::
-GenerateSwappingCode(io::Printer* printer) const {
+void StringOneofFieldGenerator::GenerateSwappingCode(
+    io::Printer* printer) const {
   // Don't print any swapping code. Swapping the union will swap this field.
 }
 
-void StringOneofFieldGenerator::
-GenerateConstructorCode(io::Printer* printer) const {
+void StringOneofFieldGenerator::GenerateConstructorCode(
+    io::Printer* printer) const {
   Formatter format(printer, variables_);
   format(
       "$ns$::_$classname$_default_instance_.$name$_.UnsafeSetDefault(\n"
       "    $default_variable$);\n");
 }
 
-void StringOneofFieldGenerator::
-GenerateDestructorCode(io::Printer* printer) const {
+void StringOneofFieldGenerator::GenerateDestructorCode(
+    io::Printer* printer) const {
   Formatter format(printer, variables_);
   format(
       "if (has_$name$()) {\n"
@@ -945,8 +934,8 @@ GenerateDestructorCode(io::Printer* printer) const {
       "}\n");
 }
 
-void StringOneofFieldGenerator::
-GenerateMergeFromCodedStream(io::Printer* printer) const {
+void StringOneofFieldGenerator::GenerateMergeFromCodedStream(
+    io::Printer* printer) const {
   Formatter format(printer, variables_);
   // See above: ArenaString is not included in the open-source release.
   if (!options_.opensource_runtime && SupportsArenas(descriptor_) && !lite_) {
@@ -982,7 +971,6 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
   }
 }
 
-
 // ===================================================================
 
 RepeatedStringFieldGenerator::RepeatedStringFieldGenerator(
@@ -993,14 +981,14 @@ RepeatedStringFieldGenerator::RepeatedStringFieldGenerator(
 
 RepeatedStringFieldGenerator::~RepeatedStringFieldGenerator() {}
 
-void RepeatedStringFieldGenerator::
-GeneratePrivateMembers(io::Printer* printer) const {
+void RepeatedStringFieldGenerator::GeneratePrivateMembers(
+    io::Printer* printer) const {
   Formatter format(printer, variables_);
   format("::$proto_ns$::RepeatedPtrField<std::string> $name$_;\n");
 }
 
-void RepeatedStringFieldGenerator::
-GenerateAccessorDeclarations(io::Printer* printer) const {
+void RepeatedStringFieldGenerator::GenerateAccessorDeclarations(
+    io::Printer* printer) const {
   Formatter format(printer, variables_);
   // See comment above about unknown ctypes.
   bool unknown_ctype = descriptor_->options().ctype() !=
@@ -1062,8 +1050,8 @@ GenerateAccessorDeclarations(io::Printer* printer) const {
   }
 }
 
-void RepeatedStringFieldGenerator::
-GenerateInlineAccessorDefinitions(io::Printer* printer) const {
+void RepeatedStringFieldGenerator::GenerateInlineAccessorDefinitions(
+    io::Printer* printer) const {
   Formatter format(printer, variables_);
   if (options_.safe_boundary_check) {
     format(
@@ -1157,37 +1145,37 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
       "}\n");
 }
 
-void RepeatedStringFieldGenerator::
-GenerateClearingCode(io::Printer* printer) const {
+void RepeatedStringFieldGenerator::GenerateClearingCode(
+    io::Printer* printer) const {
   Formatter format(printer, variables_);
   format("$name$_.Clear();\n");
 }
 
-void RepeatedStringFieldGenerator::
-GenerateMergingCode(io::Printer* printer) const {
+void RepeatedStringFieldGenerator::GenerateMergingCode(
+    io::Printer* printer) const {
   Formatter format(printer, variables_);
   format("$name$_.MergeFrom(from.$name$_);\n");
 }
 
-void RepeatedStringFieldGenerator::
-GenerateSwappingCode(io::Printer* printer) const {
+void RepeatedStringFieldGenerator::GenerateSwappingCode(
+    io::Printer* printer) const {
   Formatter format(printer, variables_);
   format("$name$_.InternalSwap(CastToBase(&other->$name$_));\n");
 }
 
-void RepeatedStringFieldGenerator::
-GenerateConstructorCode(io::Printer* printer) const {
+void RepeatedStringFieldGenerator::GenerateConstructorCode(
+    io::Printer* printer) const {
   // Not needed for repeated fields.
 }
 
-void RepeatedStringFieldGenerator::
-GenerateCopyConstructorCode(io::Printer* printer) const {
+void RepeatedStringFieldGenerator::GenerateCopyConstructorCode(
+    io::Printer* printer) const {
   Formatter format(printer, variables_);
   format("$name$_.CopyFrom(from.$name$_);");
 }
 
-void RepeatedStringFieldGenerator::
-GenerateMergeFromCodedStream(io::Printer* printer) const {
+void RepeatedStringFieldGenerator::GenerateMergeFromCodedStream(
+    io::Printer* printer) const {
   Formatter format(printer, variables_);
   format(
       "DO_(::$proto_ns$::internal::WireFormatLite::Read$declared_type$(\n"
@@ -1201,8 +1189,8 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
   }
 }
 
-void RepeatedStringFieldGenerator::
-GenerateSerializeWithCachedSizes(io::Printer* printer) const {
+void RepeatedStringFieldGenerator::GenerateSerializeWithCachedSizes(
+    io::Printer* printer) const {
   Formatter format(printer, variables_);
   format("for (int i = 0, n = this->$name$_size(); i < n; i++) {\n");
   format.Indent();
@@ -1219,8 +1207,8 @@ GenerateSerializeWithCachedSizes(io::Printer* printer) const {
       "}\n");
 }
 
-void RepeatedStringFieldGenerator::
-GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const {
+void RepeatedStringFieldGenerator::GenerateSerializeWithCachedSizesToArray(
+    io::Printer* printer) const {
   Formatter format(printer, variables_);
   format("for (int i = 0, n = this->$name$_size(); i < n; i++) {\n");
   format.Indent();
@@ -1237,8 +1225,8 @@ GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const {
       "}\n");
 }
 
-void RepeatedStringFieldGenerator::
-GenerateByteSize(io::Printer* printer) const {
+void RepeatedStringFieldGenerator::GenerateByteSize(
+    io::Printer* printer) const {
   Formatter format(printer, variables_);
   format(
       "total_size += $tag_size$ *\n"

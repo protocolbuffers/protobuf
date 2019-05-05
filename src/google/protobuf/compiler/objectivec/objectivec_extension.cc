@@ -85,7 +85,7 @@ void ExtensionGenerator::GenerateStaticVariablesInitialization(
   std::map<string, string> vars;
   vars["root_class_and_method_name"] = root_class_and_method_name_;
   vars["extended_type"] = ClassName(descriptor_->containing_type());
-  vars["number"] = SimpleItoa(descriptor_->number());
+  vars["number"] = StrCat(descriptor_->number());
 
   std::vector<string> options;
   if (descriptor_->is_repeated()) options.push_back("GPBExtensionRepeated");

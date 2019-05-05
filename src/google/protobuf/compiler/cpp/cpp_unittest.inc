@@ -1141,7 +1141,7 @@ TEST(GENERATED_ENUM_TEST_NAME, MinAndMax) {
 #ifndef PROTOBUF_TEST_NO_DESCRIPTORS
 
 TEST(GENERATED_ENUM_TEST_NAME, Name) {
-  // "Names" in the presence of dup values are a bit arbitrary.
+  // "Names" in the presence of dup values map to the first alias.
   EXPECT_EQ("FOO1", UNITTEST::TestEnumWithDupValue_Name(UNITTEST::FOO1));
   EXPECT_EQ("FOO1", UNITTEST::TestEnumWithDupValue_Name(UNITTEST::FOO2));
 

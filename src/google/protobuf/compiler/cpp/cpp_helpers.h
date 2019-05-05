@@ -75,10 +75,6 @@ inline std::string DeprecatedAttribute(const Options& options,
 extern const char kThickSeparator[];
 extern const char kThinSeparator[];
 
-inline bool IsProto1(const FileDescriptor* file, const Options& options) {
-  return false;
-}
-
 void SetCommonVars(const Options& options,
                    std::map<std::string, std::string>* variables);
 
@@ -129,9 +125,25 @@ inline std::string ClassName(const EnumDescriptor* descriptor, bool qualified) {
                    : ClassName(descriptor);
 }
 
-// Fully qualified name of the default_instance of this message.
+// Type name of default instance.
+std::string DefaultInstanceType(const Descriptor* descriptor,
+                                const Options& options);
+
+// Non-qualified name of the default_instance of this message.
 std::string DefaultInstanceName(const Descriptor* descriptor,
                                 const Options& options);
+
+// Fully qualified name of the default_instance of this message.
+std::string QualifiedDefaultInstanceName(const Descriptor* descriptor,
+                                         const Options& options);
+
+// DescriptorTable variable name.
+std::string DescriptorTableName(const FileDescriptor* file,
+                                const Options& options);
+
+// When declaring symbol externs from another file, this macro will supply the
+// dllexport needed for the target file, if any.
+std::string FileDllExport(const FileDescriptor* file, const Options& options);
 
 // Returns the name of a no-op function that we can call to introduce a linker
 // dependency on the given message type. This is used to implement implicit weak
@@ -142,6 +154,9 @@ std::string ReferenceFunctionName(const Descriptor* descriptor,
 // Name of the base class: google::protobuf::Message or google::protobuf::MessageLite.
 std::string SuperClassName(const Descriptor* descriptor,
                            const Options& options);
+
+// Adds an underscore if necessary to prevent conflicting with a keyword.
+std::string ResolveKeyword(const string& name);
 
 // Get the (unqualified) name that should be used for this field in C++ code.
 // The name is coerced to lower-case to emulate proto1 behavior.  People
@@ -165,8 +180,8 @@ std::string FieldConstantName(const FieldDescriptor* field);
 // Returns the scope where the field was defined (for extensions, this is
 // different from the message type to which the field applies).
 inline const Descriptor* FieldScope(const FieldDescriptor* field) {
-  return field->is_extension() ?
-    field->extension_scope() : field->containing_type();
+  return field->is_extension() ? field->extension_scope()
+                               : field->containing_type();
 }
 
 // Returns the fully-qualified type name field->message_type().  Usually this
@@ -537,10 +552,39 @@ class PROTOC_EXPORT MessageSCCAnalyzer {
   std::map<const SCC*, MessageAnalysis> analysis_cache_;
 };
 
+inline std::string SccInfoSymbol(const SCC* scc, const Options& options) {
+  return UniqueName("scc_info_" + ClassName(scc->GetRepresentative()),
+                    scc->GetRepresentative(), options);
+}
+
 void ListAllFields(const Descriptor* d,
                    std::vector<const FieldDescriptor*>* fields);
 void ListAllFields(const FileDescriptor* d,
                    std::vector<const FieldDescriptor*>* fields);
+
+template <class T>
+void ForEachField(const Descriptor* d, T&& func) {
+  for (int i = 0; i < d->nested_type_count(); i++) {
+    ForEachField(d->nested_type(i), std::forward<T&&>(func));
+  }
+  for (int i = 0; i < d->extension_count(); i++) {
+    func(d->extension(i));
+  }
+  for (int i = 0; i < d->field_count(); i++) {
+    func(d->field(i));
+  }
+}
+
+template <class T>
+void ForEachField(const FileDescriptor* d, T&& func) {
+  for (int i = 0; i < d->message_type_count(); i++) {
+    ForEachField(d->message_type(i), std::forward<T&&>(func));
+  }
+  for (int i = 0; i < d->extension_count(); i++) {
+    func(d->extension(i));
+  }
+}
+
 void ListAllTypesForServices(const FileDescriptor* fd,
                              std::vector<const Descriptor*>* types);
 
@@ -644,6 +688,7 @@ class PROTOC_EXPORT Formatter {
   static std::string ToString(const EnumValueDescriptor* d) {
     return Payload(d);
   }
+  static std::string ToString(const OneofDescriptor* d) { return Payload(d); }
 
   template <typename Descriptor>
   static std::string Payload(const Descriptor* descriptor) {
@@ -773,16 +818,15 @@ struct OneOfRangeImpl {
   };
 
   Iterator begin() const { return {0, descriptor}; }
-  Iterator end() const {
-    return {descriptor->oneof_decl_count(), descriptor};
-  }
+  Iterator end() const { return {descriptor->oneof_decl_count(), descriptor}; }
 
   const Descriptor* descriptor;
 };
 
 inline OneOfRangeImpl OneOfRange(const Descriptor* desc) { return {desc}; }
 
-void GenerateParserLoop(const Descriptor* descriptor, const Options& options,
+void GenerateParserLoop(const Descriptor* descriptor, int num_hasbits,
+                        const Options& options,
                         MessageSCCAnalyzer* scc_analyzer, io::Printer* printer);
 
 }  // namespace cpp

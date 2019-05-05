@@ -15,14 +15,13 @@
 #include <google/protobuf/wire_format.h>
 // @@protoc_insertion_point(includes)
 #include <google/protobuf/port_def.inc>
-
 PROTOBUF_NAMESPACE_OPEN
 class EmptyDefaultTypeInternal {
  public:
   ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<Empty> _instance;
 } _Empty_default_instance_;
 PROTOBUF_NAMESPACE_CLOSE
-static void InitDefaultsEmpty_google_2fprotobuf_2fempty_2eproto() {
+static void InitDefaultsscc_info_Empty_google_2fprotobuf_2fempty_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   {
@@ -34,11 +33,7 @@ static void InitDefaultsEmpty_google_2fprotobuf_2fempty_2eproto() {
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Empty_google_2fprotobuf_2fempty_2eproto =
-    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsEmpty_google_2fprotobuf_2fempty_2eproto}, {}};
-
-void InitDefaults_google_2fprotobuf_2fempty_2eproto() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_Empty_google_2fprotobuf_2fempty_2eproto.base);
-}
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsscc_info_Empty_google_2fprotobuf_2fempty_2eproto}, {}};
 
 static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_google_2fprotobuf_2fempty_2eproto[1];
 static constexpr ::PROTOBUF_NAMESPACE_ID::EnumDescriptor const** file_level_enum_descriptors_google_2fprotobuf_2fempty_2eproto = nullptr;
@@ -59,12 +54,6 @@ static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] =
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&PROTOBUF_NAMESPACE_ID::_Empty_default_instance_),
 };
 
-static ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptorsTable assign_descriptors_table_google_2fprotobuf_2fempty_2eproto = {
-  {}, AddDescriptors_google_2fprotobuf_2fempty_2eproto, "google/protobuf/empty.proto", schemas,
-  file_default_instances, TableStruct_google_2fprotobuf_2fempty_2eproto::offsets,
-  file_level_metadata_google_2fprotobuf_2fempty_2eproto, 1, file_level_enum_descriptors_google_2fprotobuf_2fempty_2eproto, file_level_service_descriptors_google_2fprotobuf_2fempty_2eproto,
-};
-
 const char descriptor_table_protodef_google_2fprotobuf_2fempty_2eproto[] =
   "\n\033google/protobuf/empty.proto\022\017google.pr"
   "otobuf\"\007\n\005EmptyBv\n\023com.google.protobufB\n"
@@ -72,21 +61,22 @@ const char descriptor_table_protodef_google_2fprotobuf_2fempty_2eproto[] =
   "/ptypes/empty\370\001\001\242\002\003GPB\252\002\036Google.Protobuf"
   ".WellKnownTypesb\006proto3"
   ;
-static ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fempty_2eproto = {
-  false, InitDefaults_google_2fprotobuf_2fempty_2eproto, 
-  descriptor_table_protodef_google_2fprotobuf_2fempty_2eproto,
-  "google/protobuf/empty.proto", &assign_descriptors_table_google_2fprotobuf_2fempty_2eproto, 183,
+static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_google_2fprotobuf_2fempty_2eproto_deps[1] = {
+};
+static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_google_2fprotobuf_2fempty_2eproto_sccs[1] = {
+  &scc_info_Empty_google_2fprotobuf_2fempty_2eproto.base,
+};
+static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_google_2fprotobuf_2fempty_2eproto_once;
+static bool descriptor_table_google_2fprotobuf_2fempty_2eproto_initialized = false;
+const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fempty_2eproto = {
+  &descriptor_table_google_2fprotobuf_2fempty_2eproto_initialized, descriptor_table_protodef_google_2fprotobuf_2fempty_2eproto, "google/protobuf/empty.proto", 183,
+  &descriptor_table_google_2fprotobuf_2fempty_2eproto_once, descriptor_table_google_2fprotobuf_2fempty_2eproto_sccs, descriptor_table_google_2fprotobuf_2fempty_2eproto_deps, 1, 0,
+  schemas, file_default_instances, TableStruct_google_2fprotobuf_2fempty_2eproto::offsets,
+  file_level_metadata_google_2fprotobuf_2fempty_2eproto, 1, file_level_enum_descriptors_google_2fprotobuf_2fempty_2eproto, file_level_service_descriptors_google_2fprotobuf_2fempty_2eproto,
 };
 
-void AddDescriptors_google_2fprotobuf_2fempty_2eproto() {
-  static constexpr ::PROTOBUF_NAMESPACE_ID::internal::InitFunc deps[1] =
-  {
-  };
- ::PROTOBUF_NAMESPACE_ID::internal::AddDescriptors(&descriptor_table_google_2fprotobuf_2fempty_2eproto, deps, 0);
-}
-
 // Force running AddDescriptors() at dynamic initialization time.
-static bool dynamic_init_dummy_google_2fprotobuf_2fempty_2eproto = []() { AddDescriptors_google_2fprotobuf_2fempty_2eproto(); return true; }();
+static bool dynamic_init_dummy_google_2fprotobuf_2fempty_2eproto = (  ::PROTOBUF_NAMESPACE_ID::internal::AddDescriptors(&descriptor_table_google_2fprotobuf_2fempty_2eproto), true);
 PROTOBUF_NAMESPACE_OPEN
 
 // ===================================================================
@@ -157,25 +147,30 @@ void Empty::Clear() {
 
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 const char* Empty::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
-  ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArena(); (void)arena;
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArenaNoVirtual(); (void)arena;
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
-    GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+    CHK_(ptr);
     switch (tag >> 3) {
       default: {
         if ((tag & 7) == 4 || tag == 0) {
           ctx->SetLastTag(tag);
-          return ptr;
+          goto success;
         }
-        ptr = UnknownFieldParse(tag,
-          _internal_metadata_.mutable_unknown_fields(), ptr, ctx);
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr != nullptr);
-        break;
+        ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
       }
     }  // switch
   }  // while
+success:
   return ptr;
+failure:
+  ptr = nullptr;
+  goto success;
+#undef CHK_
 }
 #else  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 bool Empty::MergePartialFromCodedStream(
@@ -316,8 +311,7 @@ void Empty::InternalSwap(Empty* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata Empty::GetMetadata() const {
-  ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::assign_descriptors_table_google_2fprotobuf_2fempty_2eproto);
-  return ::file_level_metadata_google_2fprotobuf_2fempty_2eproto[kIndexInFileMessages];
+  return GetMetadataStatic();
 }
 
 

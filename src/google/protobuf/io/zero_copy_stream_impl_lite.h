@@ -44,12 +44,12 @@
 #ifndef GOOGLE_PROTOBUF_IO_ZERO_COPY_STREAM_IMPL_LITE_H__
 #define GOOGLE_PROTOBUF_IO_ZERO_COPY_STREAM_IMPL_LITE_H__
 
+#include <iosfwd>
 #include <memory>
 #include <string>
-#include <iosfwd>
-#include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/stubs/callback.h>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/stubs/stl_util.h>
 
 
@@ -87,8 +87,8 @@ class PROTOBUF_EXPORT ArrayInputStream : public ZeroCopyInputStream {
   const int block_size_;     // How many bytes to return at a time.
 
   int position_;
-  int last_returned_size_;   // How many bytes we returned last time Next()
-                             // was called (used for error checking only).
+  int last_returned_size_;  // How many bytes we returned last time Next()
+                            // was called (used for error checking only).
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ArrayInputStream);
 };
@@ -114,13 +114,13 @@ class PROTOBUF_EXPORT ArrayOutputStream : public ZeroCopyOutputStream {
   int64 ByteCount() const override;
 
  private:
-  uint8* const data_;        // The byte array.
-  const int size_;           // Total size of the array.
-  const int block_size_;     // How many bytes to return at a time.
+  uint8* const data_;     // The byte array.
+  const int size_;        // Total size of the array.
+  const int block_size_;  // How many bytes to return at a time.
 
   int position_;
-  int last_returned_size_;   // How many bytes we returned last time Next()
-                             // was called (used for error checking only).
+  int last_returned_size_;  // How many bytes we returned last time Next()
+                            // was called (used for error checking only).
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ArrayOutputStream);
 };
@@ -146,9 +146,6 @@ class PROTOBUF_EXPORT StringOutputStream : public ZeroCopyOutputStream {
   bool Next(void** data, int* size) override;
   void BackUp(int count) override;
   int64 ByteCount() const override;
-
- protected:
-  void SetString(std::string* target);
 
  private:
   static const int kMinimumSize = 16;
@@ -394,7 +391,7 @@ inline char* mutable_string_data(std::string* s) {
 // Sometimes it's faster: in some scenarios p cannot be NULL, and then the
 // code can avoid that check.
 inline std::pair<char*, bool> as_string_data(std::string* s) {
-  char *p = mutable_string_data(s);
+  char* p = mutable_string_data(s);
   return std::make_pair(p, true);
 }
 

@@ -57,21 +57,6 @@ MessageFieldGenerator::MessageFieldGenerator(const FieldDescriptor* descriptor,
     variables_["has_property_check"] = name() + "_ != null";
     variables_["has_not_property_check"] = name() + "_ == null";
   }
-
-  if (descriptor_->type() == FieldDescriptor::Type::TYPE_GROUP) {
-    int tag_size = internal::WireFormat::TagSize(descriptor_->number(), descriptor_->type()) / 2;
-    uint tag = internal::WireFormatLite::MakeTag(
-        descriptor_->number(),
-        internal::WireFormatLite::WIRETYPE_END_GROUP);
-    uint8 tag_array[5];
-    io::CodedOutputStream::WriteTagToArray(tag, tag_array);
-    string tag_bytes = SimpleItoa(tag_array[0]);
-    for (int i = 1; i < tag_size; i++) {
-        tag_bytes += ", " + SimpleItoa(tag_array[i]);
-    }
-    variables_["end_tag"] = SimpleItoa(tag);
-    variables_["end_tag_bytes"] = tag_bytes;
-  }
 }
 
 MessageFieldGenerator::~MessageFieldGenerator() {
@@ -168,7 +153,7 @@ void MessageFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {
     printer->Print(
       variables_,
       "if ($has_property_check$) {\n"
-      "  size += $tag_size$ + $tag_size$ + pb::CodedOutputStream.ComputeGroupSize($property_name$);\n"
+      "  size += $tag_size$ + pb::CodedOutputStream.ComputeGroupSize($property_name$);\n"
       "}\n");
   }
 }
@@ -188,6 +173,16 @@ void MessageFieldGenerator::WriteToString(io::Printer* printer) {
   printer->Print(
     variables_,
     "PrintField(\"$field_name$\", has$property_name$, $name$_, writer);\n");
+}
+void MessageFieldGenerator::GenerateExtensionCode(io::Printer* printer) {
+  WritePropertyDocComment(printer, descriptor_);
+  AddDeprecatedFlag(printer);
+  printer->Print(
+    variables_,
+    "$access_level$ static readonly pb::Extension<$extended_type$, $type_name$> $property_name$ =\n"
+    "  new pb::Extension<$extended_type$, $type_name$>($number$, ");
+  GenerateCodecCode(printer);
+  printer->Print(");\n");
 }
 void MessageFieldGenerator::GenerateCloningCode(io::Printer* printer) {
   printer->Print(variables_,

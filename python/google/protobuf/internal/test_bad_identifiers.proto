@@ -43,10 +43,10 @@ message TestBadIdentifiers {
 // Make sure these reasonable extension names don't conflict with internal
 // variables.
 extend TestBadIdentifiers {
-  optional string message = 100 [default="foo"];
-  optional string descriptor = 101 [default="bar"];
-  optional string reflection = 102 [default="baz"];
-  optional string service = 103 [default="qux"];
+  optional string message = 100 [default = "foo"];
+  optional string descriptor = 101 [default = "bar"];
+  optional string reflection = 102 [default = "baz"];
+  optional string service = 103 [default = "qux"];
 }
 
 message AnotherMessage {}

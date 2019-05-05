@@ -48,15 +48,16 @@ namespace compiler {
 namespace java {
 
 ServiceGenerator::ServiceGenerator(const ServiceDescriptor* descriptor)
-  : descriptor_(descriptor) {}
+    : descriptor_(descriptor) {}
 
 ServiceGenerator::~ServiceGenerator() {}
 
 // ===================================================================
 ImmutableServiceGenerator::ImmutableServiceGenerator(
     const ServiceDescriptor* descriptor, Context* context)
-    : ServiceGenerator(descriptor), context_(context),
-    name_resolver_(context->GetNameResolver()) {}
+    : ServiceGenerator(descriptor),
+      context_(context),
+      name_resolver_(context->GetNameResolver()) {}
 
 ImmutableServiceGenerator::~ImmutableServiceGenerator() {}
 
@@ -66,15 +67,13 @@ void ImmutableServiceGenerator::Generate(io::Printer* printer) {
   MaybePrintGeneratedAnnotation(context_, printer, descriptor_,
                                 /* immutable = */ true);
   printer->Print(
-    "public $static$ abstract class $classname$\n"
-    "    implements com.google.protobuf.Service {\n",
-    "static", is_own_file ? "" : "static",
-    "classname", descriptor_->name());
+      "public $static$ abstract class $classname$\n"
+      "    implements com.google.protobuf.Service {\n",
+      "static", is_own_file ? "" : "static", "classname", descriptor_->name());
   printer->Indent();
 
-  printer->Print(
-    "protected $classname$() {}\n\n",
-    "classname", descriptor_->name());
+  printer->Print("protected $classname$() {}\n\n", "classname",
+                 descriptor_->name());
 
   GenerateInterface(printer);
 
@@ -103,9 +102,9 @@ void ImmutableServiceGenerator::Generate(io::Printer* printer) {
 
   // Add an insertion point.
   printer->Print(
-    "\n"
-    "// @@protoc_insertion_point(class_scope:$full_name$)\n",
-    "full_name", descriptor_->full_name());
+      "\n"
+      "// @@protoc_insertion_point(class_scope:$full_name$)\n",
+      "full_name", descriptor_->full_name());
 
   printer->Outdent();
   printer->Print("}\n\n");
@@ -114,10 +113,10 @@ void ImmutableServiceGenerator::Generate(io::Printer* printer) {
 void ImmutableServiceGenerator::GenerateGetDescriptorForType(
     io::Printer* printer) {
   printer->Print(
-    "public final com.google.protobuf.Descriptors.ServiceDescriptor\n"
-    "    getDescriptorForType() {\n"
-    "  return getDescriptor();\n"
-    "}\n");
+      "public final com.google.protobuf.Descriptors.ServiceDescriptor\n"
+      "    getDescriptorForType() {\n"
+      "  return getDescriptor();\n"
+      "}\n");
 }
 
 void ImmutableServiceGenerator::GenerateInterface(io::Printer* printer) {
@@ -131,10 +130,10 @@ void ImmutableServiceGenerator::GenerateInterface(io::Printer* printer) {
 void ImmutableServiceGenerator::GenerateNewReflectiveServiceMethod(
     io::Printer* printer) {
   printer->Print(
-    "public static com.google.protobuf.Service newReflectiveService(\n"
-    "    final Interface impl) {\n"
-    "  return new $classname$() {\n",
-    "classname", descriptor_->name());
+      "public static com.google.protobuf.Service newReflectiveService(\n"
+      "    final Interface impl) {\n"
+      "  return new $classname$() {\n",
+      "classname", descriptor_->name());
   printer->Indent();
   printer->Indent();
 
@@ -143,10 +142,10 @@ void ImmutableServiceGenerator::GenerateNewReflectiveServiceMethod(
     printer->Print("@java.lang.Override\n");
     GenerateMethodSignature(printer, method, IS_CONCRETE);
     printer->Print(
-      " {\n"
-      "  impl.$method$(controller, request, done);\n"
-      "}\n\n",
-      "method", UnderscoresToCamelCase(method));
+        " {\n"
+        "  impl.$method$(controller, request, done);\n"
+        "}\n\n",
+        "method", UnderscoresToCamelCase(method));
   }
 
   printer->Outdent();
@@ -158,9 +157,9 @@ void ImmutableServiceGenerator::GenerateNewReflectiveServiceMethod(
 void ImmutableServiceGenerator::GenerateNewReflectiveBlockingServiceMethod(
     io::Printer* printer) {
   printer->Print(
-    "public static com.google.protobuf.BlockingService\n"
-    "    newReflectiveBlockingService(final BlockingInterface impl) {\n"
-    "  return new com.google.protobuf.BlockingService() {\n");
+      "public static com.google.protobuf.BlockingService\n"
+      "    newReflectiveBlockingService(final BlockingInterface impl) {\n"
+      "  return new com.google.protobuf.BlockingService() {\n");
   printer->Indent();
   printer->Indent();
 
@@ -192,19 +191,19 @@ std::string ImmutableServiceGenerator::GetOutput(
 
 void ImmutableServiceGenerator::GenerateCallMethod(io::Printer* printer) {
   printer->Print(
-    "\n"
-    "public final void callMethod(\n"
-    "    com.google.protobuf.Descriptors.MethodDescriptor method,\n"
-    "    com.google.protobuf.RpcController controller,\n"
-    "    com.google.protobuf.Message request,\n"
-    "    com.google.protobuf.RpcCallback<\n"
-    "      com.google.protobuf.Message> done) {\n"
-    "  if (method.getService() != getDescriptor()) {\n"
-    "    throw new java.lang.IllegalArgumentException(\n"
-    "      \"Service.callMethod() given method descriptor for wrong \" +\n"
-    "      \"service type.\");\n"
-    "  }\n"
-    "  switch(method.getIndex()) {\n");
+      "\n"
+      "public final void callMethod(\n"
+      "    com.google.protobuf.Descriptors.MethodDescriptor method,\n"
+      "    com.google.protobuf.RpcController controller,\n"
+      "    com.google.protobuf.Message request,\n"
+      "    com.google.protobuf.RpcCallback<\n"
+      "      com.google.protobuf.Message> done) {\n"
+      "  if (method.getService() != getDescriptor()) {\n"
+      "    throw new java.lang.IllegalArgumentException(\n"
+      "      \"Service.callMethod() given method descriptor for wrong \" +\n"
+      "      \"service type.\");\n"
+      "  }\n"
+      "  switch(method.getIndex()) {\n");
   printer->Indent();
   printer->Indent();
 
@@ -213,45 +212,45 @@ void ImmutableServiceGenerator::GenerateCallMethod(io::Printer* printer) {
     std::map<std::string, std::string> vars;
     vars["index"] = StrCat(i);
     vars["method"] = UnderscoresToCamelCase(method);
-    vars["input"] = name_resolver_->GetImmutableClassName(
-        method->input_type());
+    vars["input"] = name_resolver_->GetImmutableClassName(method->input_type());
     vars["output"] = GetOutput(method);
-    printer->Print(vars,
-      "case $index$:\n"
-      "  this.$method$(controller, ($input$)request,\n"
-      "    com.google.protobuf.RpcUtil.<$output$>specializeCallback(\n"
-      "      done));\n"
-      "  return;\n");
+    printer->Print(
+        vars,
+        "case $index$:\n"
+        "  this.$method$(controller, ($input$)request,\n"
+        "    com.google.protobuf.RpcUtil.<$output$>specializeCallback(\n"
+        "      done));\n"
+        "  return;\n");
   }
 
   printer->Print(
-    "default:\n"
-    "  throw new java.lang.AssertionError(\"Can't get here.\");\n");
+      "default:\n"
+      "  throw new java.lang.AssertionError(\"Can't get here.\");\n");
 
   printer->Outdent();
   printer->Outdent();
 
   printer->Print(
-    "  }\n"
-    "}\n"
-    "\n");
+      "  }\n"
+      "}\n"
+      "\n");
 }
 
 void ImmutableServiceGenerator::GenerateCallBlockingMethod(
     io::Printer* printer) {
   printer->Print(
-    "\n"
-    "public final com.google.protobuf.Message callBlockingMethod(\n"
-    "    com.google.protobuf.Descriptors.MethodDescriptor method,\n"
-    "    com.google.protobuf.RpcController controller,\n"
-    "    com.google.protobuf.Message request)\n"
-    "    throws com.google.protobuf.ServiceException {\n"
-    "  if (method.getService() != getDescriptor()) {\n"
-    "    throw new java.lang.IllegalArgumentException(\n"
-    "      \"Service.callBlockingMethod() given method descriptor for \" +\n"
-    "      \"wrong service type.\");\n"
-    "  }\n"
-    "  switch(method.getIndex()) {\n");
+      "\n"
+      "public final com.google.protobuf.Message callBlockingMethod(\n"
+      "    com.google.protobuf.Descriptors.MethodDescriptor method,\n"
+      "    com.google.protobuf.RpcController controller,\n"
+      "    com.google.protobuf.Message request)\n"
+      "    throws com.google.protobuf.ServiceException {\n"
+      "  if (method.getService() != getDescriptor()) {\n"
+      "    throw new java.lang.IllegalArgumentException(\n"
+      "      \"Service.callBlockingMethod() given method descriptor for \" +\n"
+      "      \"wrong service type.\");\n"
+      "  }\n"
+      "  switch(method.getIndex()) {\n");
   printer->Indent();
   printer->Indent();
 
@@ -260,44 +259,43 @@ void ImmutableServiceGenerator::GenerateCallBlockingMethod(
     std::map<std::string, std::string> vars;
     vars["index"] = StrCat(i);
     vars["method"] = UnderscoresToCamelCase(method);
-    vars["input"] = name_resolver_->GetImmutableClassName(
-        method->input_type());
+    vars["input"] = name_resolver_->GetImmutableClassName(method->input_type());
     vars["output"] = GetOutput(method);
     printer->Print(vars,
-      "case $index$:\n"
-      "  return impl.$method$(controller, ($input$)request);\n");
+                   "case $index$:\n"
+                   "  return impl.$method$(controller, ($input$)request);\n");
   }
 
   printer->Print(
-    "default:\n"
-    "  throw new java.lang.AssertionError(\"Can't get here.\");\n");
+      "default:\n"
+      "  throw new java.lang.AssertionError(\"Can't get here.\");\n");
 
   printer->Outdent();
   printer->Outdent();
 
   printer->Print(
-    "  }\n"
-    "}\n"
-    "\n");
+      "  }\n"
+      "}\n"
+      "\n");
 }
 
 void ImmutableServiceGenerator::GenerateGetPrototype(RequestOrResponse which,
-                                            io::Printer* printer) {
+                                                     io::Printer* printer) {
   /*
    * TODO(cpovirk): The exception message says "Service.foo" when it may be
    * "BlockingService.foo."  Consider fixing.
    */
   printer->Print(
-    "public final com.google.protobuf.Message\n"
-    "    get$request_or_response$Prototype(\n"
-    "    com.google.protobuf.Descriptors.MethodDescriptor method) {\n"
-    "  if (method.getService() != getDescriptor()) {\n"
-    "    throw new java.lang.IllegalArgumentException(\n"
-    "      \"Service.get$request_or_response$Prototype() given method \" +\n"
-    "      \"descriptor for wrong service type.\");\n"
-    "  }\n"
-    "  switch(method.getIndex()) {\n",
-    "request_or_response", (which == REQUEST) ? "Request" : "Response");
+      "public final com.google.protobuf.Message\n"
+      "    get$request_or_response$Prototype(\n"
+      "    com.google.protobuf.Descriptors.MethodDescriptor method) {\n"
+      "  if (method.getService() != getDescriptor()) {\n"
+      "    throw new java.lang.IllegalArgumentException(\n"
+      "      \"Service.get$request_or_response$Prototype() given method \" +\n"
+      "      \"descriptor for wrong service type.\");\n"
+      "  }\n"
+      "  switch(method.getIndex()) {\n",
+      "request_or_response", (which == REQUEST) ? "Request" : "Response");
   printer->Indent();
   printer->Indent();
 
@@ -310,45 +308,46 @@ void ImmutableServiceGenerator::GenerateGetPrototype(RequestOrResponse which,
             ? name_resolver_->GetImmutableClassName(method->input_type())
             : GetOutput(method);
     printer->Print(vars,
-      "case $index$:\n"
-      "  return $type$.getDefaultInstance();\n");
+                   "case $index$:\n"
+                   "  return $type$.getDefaultInstance();\n");
   }
 
   printer->Print(
-    "default:\n"
-    "  throw new java.lang.AssertionError(\"Can't get here.\");\n");
+      "default:\n"
+      "  throw new java.lang.AssertionError(\"Can't get here.\");\n");
 
   printer->Outdent();
   printer->Outdent();
 
   printer->Print(
-    "  }\n"
-    "}\n"
-    "\n");
+      "  }\n"
+      "}\n"
+      "\n");
 }
 
 void ImmutableServiceGenerator::GenerateStub(io::Printer* printer) {
   printer->Print(
-    "public static Stub newStub(\n"
-    "    com.google.protobuf.RpcChannel channel) {\n"
-    "  return new Stub(channel);\n"
-    "}\n"
-    "\n"
-    "public static final class Stub extends $classname$ implements Interface {"
-    "\n",
-    "classname", name_resolver_->GetImmutableClassName(descriptor_));
+      "public static Stub newStub(\n"
+      "    com.google.protobuf.RpcChannel channel) {\n"
+      "  return new Stub(channel);\n"
+      "}\n"
+      "\n"
+      "public static final class Stub extends $classname$ implements Interface "
+      "{"
+      "\n",
+      "classname", name_resolver_->GetImmutableClassName(descriptor_));
   printer->Indent();
 
   printer->Print(
-    "private Stub(com.google.protobuf.RpcChannel channel) {\n"
-    "  this.channel = channel;\n"
-    "}\n"
-    "\n"
-    "private final com.google.protobuf.RpcChannel channel;\n"
-    "\n"
-    "public com.google.protobuf.RpcChannel getChannel() {\n"
-    "  return channel;\n"
-    "}\n");
+      "private Stub(com.google.protobuf.RpcChannel channel) {\n"
+      "  this.channel = channel;\n"
+      "}\n"
+      "\n"
+      "private final com.google.protobuf.RpcChannel channel;\n"
+      "\n"
+      "public com.google.protobuf.RpcChannel getChannel() {\n"
+      "  return channel;\n"
+      "}\n");
 
   for (int i = 0; i < descriptor_->method_count(); i++) {
     const MethodDescriptor* method = descriptor_->method(i);
@@ -361,15 +360,15 @@ void ImmutableServiceGenerator::GenerateStub(io::Printer* printer) {
     vars["index"] = StrCat(i);
     vars["output"] = GetOutput(method);
     printer->Print(vars,
-      "channel.callMethod(\n"
-      "  getDescriptor().getMethods().get($index$),\n"
-      "  controller,\n"
-      "  request,\n"
-      "  $output$.getDefaultInstance(),\n"
-      "  com.google.protobuf.RpcUtil.generalizeCallback(\n"
-      "    done,\n"
-      "    $output$.class,\n"
-      "    $output$.getDefaultInstance()));\n");
+                   "channel.callMethod(\n"
+                   "  getDescriptor().getMethods().get($index$),\n"
+                   "  controller,\n"
+                   "  request,\n"
+                   "  $output$.getDefaultInstance(),\n"
+                   "  com.google.protobuf.RpcUtil.generalizeCallback(\n"
+                   "    done,\n"
+                   "    $output$.class,\n"
+                   "    $output$.getDefaultInstance()));\n");
 
     printer->Outdent();
     printer->Print("}\n");
@@ -377,20 +376,19 @@ void ImmutableServiceGenerator::GenerateStub(io::Printer* printer) {
 
   printer->Outdent();
   printer->Print(
-    "}\n"
-    "\n");
+      "}\n"
+      "\n");
 }
 
 void ImmutableServiceGenerator::GenerateBlockingStub(io::Printer* printer) {
   printer->Print(
-    "public static BlockingInterface newBlockingStub(\n"
-    "    com.google.protobuf.BlockingRpcChannel channel) {\n"
-    "  return new BlockingStub(channel);\n"
-    "}\n"
-    "\n");
+      "public static BlockingInterface newBlockingStub(\n"
+      "    com.google.protobuf.BlockingRpcChannel channel) {\n"
+      "  return new BlockingStub(channel);\n"
+      "}\n"
+      "\n");
 
-  printer->Print(
-    "public interface BlockingInterface {");
+  printer->Print("public interface BlockingInterface {");
   printer->Indent();
 
   for (int i = 0; i < descriptor_->method_count(); i++) {
@@ -401,19 +399,20 @@ void ImmutableServiceGenerator::GenerateBlockingStub(io::Printer* printer) {
 
   printer->Outdent();
   printer->Print(
-    "}\n"
-    "\n");
+      "}\n"
+      "\n");
 
   printer->Print(
-    "private static final class BlockingStub implements BlockingInterface {\n");
+      "private static final class BlockingStub implements BlockingInterface "
+      "{\n");
   printer->Indent();
 
   printer->Print(
-    "private BlockingStub(com.google.protobuf.BlockingRpcChannel channel) {\n"
-    "  this.channel = channel;\n"
-    "}\n"
-    "\n"
-    "private final com.google.protobuf.BlockingRpcChannel channel;\n");
+      "private BlockingStub(com.google.protobuf.BlockingRpcChannel channel) {\n"
+      "  this.channel = channel;\n"
+      "}\n"
+      "\n"
+      "private final com.google.protobuf.BlockingRpcChannel channel;\n");
 
   for (int i = 0; i < descriptor_->method_count(); i++) {
     const MethodDescriptor* method = descriptor_->method(i);
@@ -425,50 +424,49 @@ void ImmutableServiceGenerator::GenerateBlockingStub(io::Printer* printer) {
     vars["index"] = StrCat(i);
     vars["output"] = GetOutput(method);
     printer->Print(vars,
-      "return ($output$) channel.callBlockingMethod(\n"
-      "  getDescriptor().getMethods().get($index$),\n"
-      "  controller,\n"
-      "  request,\n"
-      "  $output$.getDefaultInstance());\n");
+                   "return ($output$) channel.callBlockingMethod(\n"
+                   "  getDescriptor().getMethods().get($index$),\n"
+                   "  controller,\n"
+                   "  request,\n"
+                   "  $output$.getDefaultInstance());\n");
 
     printer->Outdent();
     printer->Print(
-      "}\n"
-      "\n");
+        "}\n"
+        "\n");
   }
 
   printer->Outdent();
   printer->Print("}\n");
 }
 
-void ImmutableServiceGenerator::GenerateMethodSignature(io::Printer* printer,
-                                               const MethodDescriptor* method,
-                                               IsAbstract is_abstract) {
+void ImmutableServiceGenerator::GenerateMethodSignature(
+    io::Printer* printer, const MethodDescriptor* method,
+    IsAbstract is_abstract) {
   std::map<std::string, std::string> vars;
   vars["name"] = UnderscoresToCamelCase(method);
   vars["input"] = name_resolver_->GetImmutableClassName(method->input_type());
   vars["output"] = GetOutput(method);
   vars["abstract"] = (is_abstract == IS_ABSTRACT) ? "abstract" : "";
   printer->Print(vars,
-    "public $abstract$ void $name$(\n"
-    "    com.google.protobuf.RpcController controller,\n"
-    "    $input$ request,\n"
-    "    com.google.protobuf.RpcCallback<$output$> done)");
+                 "public $abstract$ void $name$(\n"
+                 "    com.google.protobuf.RpcController controller,\n"
+                 "    $input$ request,\n"
+                 "    com.google.protobuf.RpcCallback<$output$> done)");
 }
 
 void ImmutableServiceGenerator::GenerateBlockingMethodSignature(
-    io::Printer* printer,
-    const MethodDescriptor* method) {
+    io::Printer* printer, const MethodDescriptor* method) {
   std::map<std::string, std::string> vars;
   vars["method"] = UnderscoresToCamelCase(method);
   vars["input"] = name_resolver_->GetImmutableClassName(method->input_type());
   vars["output"] = GetOutput(method);
   printer->Print(vars,
-    "\n"
-    "public $output$ $method$(\n"
-    "    com.google.protobuf.RpcController controller,\n"
-    "    $input$ request)\n"
-    "    throws com.google.protobuf.ServiceException");
+                 "\n"
+                 "public $output$ $method$(\n"
+                 "    com.google.protobuf.RpcController controller,\n"
+                 "    $input$ request)\n"
+                 "    throws com.google.protobuf.ServiceException");
 }
 
 }  // namespace java

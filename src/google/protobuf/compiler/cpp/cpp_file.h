@@ -90,6 +90,7 @@ class FileGenerator {
  private:
   // Internal type used by GenerateForwardDeclarations (defined in file.cc).
   class ForwardDeclarations;
+  struct CrossFileReferences;
 
   void IncludeFile(const std::string& google3_name, io::Printer* printer) {
     DoIncludeFile(google3_name, false, printer);
@@ -103,9 +104,12 @@ class FileGenerator {
 
   std::string CreateHeaderInclude(const std::string& basename,
                                   const FileDescriptor* file);
-  void GenerateInternalForwardDeclarations(
-      const std::vector<const FieldDescriptor*>& fields, const Options& options,
-      MessageSCCAnalyzer* scc_analyzer, io::Printer* printer);
+  void GetCrossFileReferencesForField(const FieldDescriptor* field,
+                                      CrossFileReferences* refs);
+  void GetCrossFileReferencesForFile(const FileDescriptor* file,
+                                     CrossFileReferences* refs);
+  void GenerateInternalForwardDeclarations(const CrossFileReferences& refs,
+                                           io::Printer* printer);
   void GenerateSourceIncludes(io::Printer* printer);
   void GenerateSourceDefaultInstance(int idx, io::Printer* printer);
 
@@ -163,9 +167,7 @@ class FileGenerator {
   const Descriptor* GetSCCRepresentative(const Descriptor* d) {
     return GetSCC(d)->GetRepresentative();
   }
-  const SCC* GetSCC(const Descriptor* d) {
-    return scc_analyzer_.GetSCC(d);
-  }
+  const SCC* GetSCC(const Descriptor* d) { return scc_analyzer_.GetSCC(d); }
 
   bool IsDepWeak(const FileDescriptor* dep) const {
     if (weak_deps_.count(dep) != 0) {
@@ -176,6 +178,7 @@ class FileGenerator {
   }
 
   std::set<const FileDescriptor*> weak_deps_;
+  std::vector<const SCC*> sccs_;
 
   const FileDescriptor* file_;
   const Options options_;

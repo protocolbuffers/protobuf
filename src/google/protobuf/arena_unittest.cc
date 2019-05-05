@@ -71,12 +71,8 @@ namespace protobuf {
 class Notifier {
  public:
   Notifier() : count_(0) {}
-  void Notify() {
-    count_++;
-  }
-  int GetCount() {
-    return count_;
-  }
+  void Notify() { count_++; }
+  int GetCount() { return count_; }
 
  private:
   int count_;
@@ -85,14 +81,13 @@ class Notifier {
 class SimpleDataType {
  public:
   SimpleDataType() : notifier_(NULL) {}
-  void SetNotifier(Notifier* notifier) {
-    notifier_ = notifier;
-  }
+  void SetNotifier(Notifier* notifier) { notifier_ = notifier; }
   virtual ~SimpleDataType() {
     if (notifier_ != NULL) {
       notifier_->Notify();
     }
   };
+
  private:
   Notifier* notifier_;
 };
@@ -227,8 +222,8 @@ TEST(ArenaTest, CreateWithFourConstructorArguments) {
   const std::string three("3");
   const PleaseDontCopyMe four(4);
   const MustBeConstructedWithOneThroughFour* new_object =
-      Arena::Create<MustBeConstructedWithOneThroughFour>(
-          &arena, 1, "2", three, &four);
+      Arena::Create<MustBeConstructedWithOneThroughFour>(&arena, 1, "2", three,
+                                                         &four);
   EXPECT_TRUE(new_object != NULL);
   ASSERT_EQ(1, new_object->one_);
   ASSERT_STREQ("2", new_object->two_);
@@ -462,7 +457,7 @@ TEST(ArenaTest, ReflectionSwapFields) {
 
 TEST(ArenaTest, SetAllocatedMessage) {
   Arena arena;
-  TestAllTypes *arena_message = Arena::CreateMessage<TestAllTypes>(&arena);
+  TestAllTypes* arena_message = Arena::CreateMessage<TestAllTypes>(&arena);
   TestAllTypes::NestedMessage* nested = new TestAllTypes::NestedMessage;
   nested->set_bb(118);
   arena_message->set_allocated_optional_nested_message(nested);
@@ -620,8 +615,7 @@ TEST(ArenaTest, SetAllocatedAcrossArenas) {
   heap_submessage->set_bb(42);
   arena1_message->set_allocated_optional_nested_message(heap_submessage);
   // Should keep same object and add to arena's Own()-list.
-  EXPECT_EQ(heap_submessage,
-            arena1_message->mutable_optional_nested_message());
+  EXPECT_EQ(heap_submessage, arena1_message->mutable_optional_nested_message());
   {
     Arena arena2;
     TestAllTypes::NestedMessage* arena2_submessage =
@@ -637,8 +631,7 @@ TEST(ArenaTest, SetAllocatedAcrossArenas) {
   arena1_submessage->set_bb(42);
   TestAllTypes* heap_message = new TestAllTypes;
   heap_message->set_allocated_optional_nested_message(arena1_submessage);
-  EXPECT_NE(arena1_submessage,
-            heap_message->mutable_optional_nested_message());
+  EXPECT_NE(arena1_submessage, heap_message->mutable_optional_nested_message());
   delete heap_message;
 }
 
@@ -648,15 +641,14 @@ TEST(ArenaTest, SetAllocatedAcrossArenasWithReflection) {
   TestAllTypes* arena1_message = Arena::CreateMessage<TestAllTypes>(&arena1);
   const Reflection* r = arena1_message->GetReflection();
   const Descriptor* d = arena1_message->GetDescriptor();
-  const FieldDescriptor* msg_field = d->FindFieldByName(
-      "optional_nested_message");
+  const FieldDescriptor* msg_field =
+      d->FindFieldByName("optional_nested_message");
   TestAllTypes::NestedMessage* heap_submessage =
       new TestAllTypes::NestedMessage();
   heap_submessage->set_bb(42);
   r->SetAllocatedMessage(arena1_message, heap_submessage, msg_field);
   // Should keep same object and add to arena's Own()-list.
-  EXPECT_EQ(heap_submessage,
-            arena1_message->mutable_optional_nested_message());
+  EXPECT_EQ(heap_submessage, arena1_message->mutable_optional_nested_message());
   {
     Arena arena2;
     TestAllTypes::NestedMessage* arena2_submessage =
@@ -672,8 +664,7 @@ TEST(ArenaTest, SetAllocatedAcrossArenasWithReflection) {
   arena1_submessage->set_bb(42);
   TestAllTypes* heap_message = new TestAllTypes;
   r->SetAllocatedMessage(heap_message, arena1_submessage, msg_field);
-  EXPECT_NE(arena1_submessage,
-            heap_message->mutable_optional_nested_message());
+  EXPECT_NE(arena1_submessage, heap_message->mutable_optional_nested_message());
   delete heap_message;
 }
 
@@ -728,11 +719,10 @@ TEST(ArenaTest, AddAllocatedToRepeatedField) {
     TestAllTypes::NestedMessage* heap_submessage =
         new TestAllTypes::NestedMessage();
     heap_submessage->set_bb(42);
-    arena1_message->mutable_repeated_nested_message()->
-        AddAllocated(heap_submessage);
+    arena1_message->mutable_repeated_nested_message()->AddAllocated(
+        heap_submessage);
     // Should not copy object -- will use arena_->Own().
-    EXPECT_EQ(heap_submessage,
-              &arena1_message->repeated_nested_message(i));
+    EXPECT_EQ(heap_submessage, &arena1_message->repeated_nested_message(i));
     EXPECT_EQ(42, arena1_message->repeated_nested_message(i).bb());
   }
 
@@ -743,11 +733,10 @@ TEST(ArenaTest, AddAllocatedToRepeatedField) {
     TestAllTypes::NestedMessage* arena2_submessage =
         Arena::CreateMessage<TestAllTypes::NestedMessage>(&arena2);
     arena2_submessage->set_bb(42);
-    arena1_message->mutable_repeated_nested_message()->
-        AddAllocated(arena2_submessage);
+    arena1_message->mutable_repeated_nested_message()->AddAllocated(
+        arena2_submessage);
     // Should copy object.
-    EXPECT_NE(arena2_submessage,
-              &arena1_message->repeated_nested_message(i));
+    EXPECT_NE(arena2_submessage, &arena1_message->repeated_nested_message(i));
     EXPECT_EQ(42, arena1_message->repeated_nested_message(i).bb());
   }
 
@@ -758,11 +747,10 @@ TEST(ArenaTest, AddAllocatedToRepeatedField) {
     TestAllTypes::NestedMessage* arena2_submessage =
         Arena::CreateMessage<TestAllTypes::NestedMessage>(&arena2);
     arena2_submessage->set_bb(42);
-    heap_message->mutable_repeated_nested_message()->
-        AddAllocated(arena2_submessage);
+    heap_message->mutable_repeated_nested_message()->AddAllocated(
+        arena2_submessage);
     // Should copy object.
-    EXPECT_NE(arena2_submessage,
-              &heap_message->repeated_nested_message(i));
+    EXPECT_NE(arena2_submessage, &heap_message->repeated_nested_message(i));
     EXPECT_EQ(42, heap_message->repeated_nested_message(i).bb());
   }
   delete heap_message;
@@ -771,8 +759,7 @@ TEST(ArenaTest, AddAllocatedToRepeatedField) {
   arena1_message->Clear();
   for (int i = 0; i < 10; i++) {
     std::string* s = new std::string("Test");
-    arena1_message->mutable_repeated_string()->
-        AddAllocated(s);
+    arena1_message->mutable_repeated_string()->AddAllocated(s);
     // Should not copy.
     EXPECT_EQ(s, &arena1_message->repeated_string(i));
     EXPECT_EQ("Test", arena1_message->repeated_string(i));
@@ -785,16 +772,14 @@ TEST(ArenaTest, AddAllocatedToRepeatedFieldViaReflection) {
   TestAllTypes* arena1_message = Arena::CreateMessage<TestAllTypes>(&arena1);
   const Reflection* r = arena1_message->GetReflection();
   const Descriptor* d = arena1_message->GetDescriptor();
-  const FieldDescriptor* fd =
-      d->FindFieldByName("repeated_nested_message");
+  const FieldDescriptor* fd = d->FindFieldByName("repeated_nested_message");
   for (int i = 0; i < 10; i++) {
     TestAllTypes::NestedMessage* heap_submessage =
         new TestAllTypes::NestedMessage;
     heap_submessage->set_bb(42);
     r->AddAllocatedMessage(arena1_message, fd, heap_submessage);
     // Should not copy object -- will use arena_->Own().
-    EXPECT_EQ(heap_submessage,
-              &arena1_message->repeated_nested_message(i));
+    EXPECT_EQ(heap_submessage, &arena1_message->repeated_nested_message(i));
     EXPECT_EQ(42, arena1_message->repeated_nested_message(i).bb());
   }
 
@@ -807,8 +792,7 @@ TEST(ArenaTest, AddAllocatedToRepeatedFieldViaReflection) {
     arena2_submessage->set_bb(42);
     r->AddAllocatedMessage(arena1_message, fd, arena2_submessage);
     // Should copy object.
-    EXPECT_NE(arena2_submessage,
-              &arena1_message->repeated_nested_message(i));
+    EXPECT_NE(arena2_submessage, &arena1_message->repeated_nested_message(i));
     EXPECT_EQ(42, arena1_message->repeated_nested_message(i).bb());
   }
 
@@ -821,8 +805,7 @@ TEST(ArenaTest, AddAllocatedToRepeatedFieldViaReflection) {
     arena2_submessage->set_bb(42);
     r->AddAllocatedMessage(heap_message, fd, arena2_submessage);
     // Should copy object.
-    EXPECT_NE(arena2_submessage,
-              &heap_message->repeated_nested_message(i));
+    EXPECT_NE(arena2_submessage, &heap_message->repeated_nested_message(i));
     EXPECT_EQ(42, heap_message->repeated_nested_message(i).bb());
   }
   delete heap_message;
@@ -841,9 +824,9 @@ TEST(ArenaTest, ReleaseLastRepeatedField) {
   }
 
   for (int i = 0; i < 10; i++) {
-    const TestAllTypes::NestedMessage *orig_submessage =
+    const TestAllTypes::NestedMessage* orig_submessage =
         &arena_message->repeated_nested_message(10 - 1 - i);  // last element
-    TestAllTypes::NestedMessage *released =
+    TestAllTypes::NestedMessage* released =
         arena_message->mutable_repeated_nested_message()->ReleaseLast();
     EXPECT_NE(released, orig_submessage);
     EXPECT_EQ(42, released->bb());
@@ -859,11 +842,11 @@ TEST(ArenaTest, ReleaseLastRepeatedField) {
   }
 
   for (int i = 0; i < 10; i++) {
-    const TestAllTypes::NestedMessage *orig_submessage =
+    const TestAllTypes::NestedMessage* orig_submessage =
         &arena_message->repeated_nested_message(10 - 1 - i);  // last element
-    TestAllTypes::NestedMessage *released =
-        arena_message->mutable_repeated_nested_message()->
-        UnsafeArenaReleaseLast();
+    TestAllTypes::NestedMessage* released =
+        arena_message->mutable_repeated_nested_message()
+            ->UnsafeArenaReleaseLast();
     EXPECT_EQ(released, orig_submessage);
     EXPECT_EQ(42, released->bb());
     // no delete -- |released| is on the arena.
@@ -962,12 +945,10 @@ TEST(ArenaTest, ArenaOneofReflection) {
   const Descriptor* desc = message->GetDescriptor();
   const Reflection* refl = message->GetReflection();
 
-  const FieldDescriptor* string_field = desc->FindFieldByName(
-      "oneof_string");
-  const FieldDescriptor* msg_field = desc->FindFieldByName(
-      "oneof_nested_message");
-  const OneofDescriptor* oneof = desc->FindOneofByName(
-      "oneof_field");
+  const FieldDescriptor* string_field = desc->FindFieldByName("oneof_string");
+  const FieldDescriptor* msg_field =
+      desc->FindFieldByName("oneof_nested_message");
+  const OneofDescriptor* oneof = desc->FindOneofByName("oneof_field");
 
   refl->SetString(message, string_field, "Test value");
   EXPECT_TRUE(refl->HasOneof(*message, oneof));
@@ -1051,12 +1032,12 @@ TEST(ArenaTest, ExtensionsOnArena) {
   // Ensure no leaks.
   TestAllExtensions* message_ext =
       Arena::CreateMessage<TestAllExtensions>(&arena);
-  message_ext->SetExtension(
-      protobuf_unittest::optional_int32_extension, 42);
+  message_ext->SetExtension(protobuf_unittest::optional_int32_extension, 42);
   message_ext->SetExtension(protobuf_unittest::optional_string_extension,
                             std::string("test"));
-  message_ext->MutableExtension(
-      protobuf_unittest::optional_nested_message_extension)->set_bb(42);
+  message_ext
+      ->MutableExtension(protobuf_unittest::optional_nested_message_extension)
+      ->set_bb(42);
 }
 
 TEST(ArenaTest, RepeatedFieldOnArena) {
@@ -1119,7 +1100,7 @@ TEST(ArenaTest, RepeatedFieldOnArena) {
   // code that may allocate messages or repeated fields of messages on an arena.
   {
     RepeatedPtrField<TestAllTypes>* repeated_ptr_on_arena =
-        Arena::CreateMessage< RepeatedPtrField<TestAllTypes> >(&arena);
+        Arena::CreateMessage<RepeatedPtrField<TestAllTypes> >(&arena);
     for (int i = 0; i < 10; i++) {
       // Add some elements and let the leak-checker ensure that everything is
       // freed.
@@ -1127,7 +1108,7 @@ TEST(ArenaTest, RepeatedFieldOnArena) {
     }
 
     RepeatedField<int>* repeated_int_on_arena =
-        Arena::CreateMessage< RepeatedField<int> >(&arena);
+        Arena::CreateMessage<RepeatedField<int> >(&arena);
     for (int i = 0; i < 100; i++) {
       repeated_int_on_arena->Add(i);
     }
@@ -1154,7 +1135,8 @@ TEST(ArenaTest, MutableMessageReflection) {
   EXPECT_EQ(submessage_expected, submessage);
   EXPECT_EQ(&arena, submessage->GetArena());
 
-  const FieldDescriptor* oneof_field = d->FindFieldByName("oneof_nested_message");
+  const FieldDescriptor* oneof_field =
+      d->FindFieldByName("oneof_nested_message");
   submessage = static_cast<TestAllTypes::NestedMessage*>(
       r->MutableMessage(message, oneof_field));
   submessage_expected = message->mutable_oneof_nested_message();
@@ -1364,6 +1346,7 @@ TEST(ArenaTest, GetArenaShouldReturnNullForNonArenaCompatibleTypes) {
   // Test that GetArena returns nullptr for types that have a GetArena alias.
   struct {
     using GetArena = Arena*;
+    GetArena unused;
   } has_get_arena_alias;
   EXPECT_EQ(nullptr, Arena::GetArena(&has_get_arena_alias));
 

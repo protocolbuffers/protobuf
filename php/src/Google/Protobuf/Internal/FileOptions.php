@@ -9,7 +9,6 @@ use Google\Protobuf\Internal\GPBWire;
 use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\InputStream;
 use Google\Protobuf\Internal\GPBUtil;
-use Google\Protobuf\Internal\GPBWrapperUtils;
 
 /**
  * Generated from protobuf message <code>google.protobuf.FileOptions</code>
@@ -176,8 +175,8 @@ class FileOptions extends \Google\Protobuf\Internal\Message
     private $has_php_namespace = false;
     /**
      * Use this option to change the namespace of php generated metadata classes.
-     * Default is empty. When this option is empty, the proto file name will be used
-     * for determining the namespace.
+     * Default is empty. When this option is empty, the proto file name will be
+     * used for determining the namespace.
      *
      * Generated from protobuf field <code>optional string php_metadata_namespace = 44;</code>
      */
@@ -281,8 +280,8 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *           determining the namespace.
      *     @type string $php_metadata_namespace
      *           Use this option to change the namespace of php generated metadata classes.
-     *           Default is empty. When this option is empty, the proto file name will be used
-     *           for determining the namespace.
+     *           Default is empty. When this option is empty, the proto file name will be
+     *           used for determining the namespace.
      *     @type string $ruby_package
      *           Use this option to change the package of ruby generated classes. Default
      *           is empty. When this option is not set, the package name will be used for
@@ -939,8 +938,8 @@ class FileOptions extends \Google\Protobuf\Internal\Message
 
     /**
      * Use this option to change the namespace of php generated metadata classes.
-     * Default is empty. When this option is empty, the proto file name will be used
-     * for determining the namespace.
+     * Default is empty. When this option is empty, the proto file name will be
+     * used for determining the namespace.
      *
      * Generated from protobuf field <code>optional string php_metadata_namespace = 44;</code>
      * @return string
@@ -952,8 +951,8 @@ class FileOptions extends \Google\Protobuf\Internal\Message
 
     /**
      * Use this option to change the namespace of php generated metadata classes.
-     * Default is empty. When this option is empty, the proto file name will be used
-     * for determining the namespace.
+     * Default is empty. When this option is empty, the proto file name will be
+     * used for determining the namespace.
      *
      * Generated from protobuf field <code>optional string php_metadata_namespace = 44;</code>
      * @param string $var

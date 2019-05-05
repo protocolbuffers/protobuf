@@ -34,8 +34,14 @@
 
 __author__ = 'jieluo@google.com (Jie Luo)'
 
-import collections
 import datetime
+
+try:
+  # Since python 3
+  import collections.abc as collections_abc
+except ImportError:
+  # Won't work after python 3.8
+  import collections as collections_abc
 
 try:
   import unittest2 as unittest  #PY26
@@ -248,6 +254,14 @@ class TimeUtilTest(TimeUtilTestBase):
     message.FromMilliseconds(1999)
     self.assertEqual(datetime.datetime(1970, 1, 1, 0, 0, 1, 999000),
                      message.ToDatetime())
+
+    dt = datetime.datetime(2555, 2, 22, 1, 2, 3, 456789)
+    message.FromDatetime(dt)
+    self.assertEqual(dt, message.ToDatetime())
+
+    dt = datetime.datetime.max
+    message.FromDatetime(dt)
+    self.assertEqual(dt, message.ToDatetime())
 
   def testDatetimeConversionWithTimezone(self):
     class TZ(datetime.tzinfo):
@@ -740,7 +754,7 @@ class StructTest(unittest.TestCase):
 
   def testStruct(self):
     struct = struct_pb2.Struct()
-    self.assertIsInstance(struct, collections.Mapping)
+    self.assertIsInstance(struct, collections_abc.Mapping)
     self.assertEqual(0, len(struct))
     struct_class = struct.__class__
 
@@ -749,7 +763,7 @@ class StructTest(unittest.TestCase):
     struct['key3'] = True
     struct.get_or_create_struct('key4')['subkey'] = 11.0
     struct_list = struct.get_or_create_list('key5')
-    self.assertIsInstance(struct_list, collections.Sequence)
+    self.assertIsInstance(struct_list, collections_abc.Sequence)
     struct_list.extend([6, 'seven', True, False, None])
     struct_list.add_struct()['subkey2'] = 9
     struct['key6'] = {'subkey': {}}

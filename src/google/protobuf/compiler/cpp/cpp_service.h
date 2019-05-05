@@ -69,10 +69,6 @@ class ServiceGenerator {
 
   // Source file stuff.
 
-  // Generate code that initializes the global variable storing the service's
-  // descriptor.
-  void GenerateDescriptorInitializer(io::Printer* printer, int index);
-
   // Generate implementations of everything declared by
   // GenerateDeclarations().
   void GenerateImplementation(io::Printer* printer);

@@ -38,8 +38,8 @@
 
 #include <google/protobuf/compiler/java/java_generator.h>
 #include <google/protobuf/compiler/command_line_interface.h>
-#include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/io/printer.h>
+#include <google/protobuf/io/zero_copy_stream.h>
 
 #include <google/protobuf/testing/file.h>
 #include <google/protobuf/testing/file.h>
@@ -107,13 +107,8 @@ TEST(JavaPluginTest, PluginTest) {
   std::string java_out = "--java_out=" + TestTempDir();
   std::string test_out = "--test_out=" + TestTempDir();
 
-  const char* argv[] = {
-    "protoc",
-    proto_path.c_str(),
-    java_out.c_str(),
-    test_out.c_str(),
-    "test.proto"
-  };
+  const char* argv[] = {"protoc", proto_path.c_str(), java_out.c_str(),
+                        test_out.c_str(), "test.proto"};
 
   EXPECT_EQ(0, cli.Run(5, argv));
 }

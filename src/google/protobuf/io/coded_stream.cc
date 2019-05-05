@@ -38,14 +38,14 @@
 // will not cross the end of the buffer, since we can avoid a lot
 // of branching in this case.
 
-#include <google/protobuf/io/coded_stream_inl.h>
+#include <limits.h>
 #include <algorithm>
 #include <utility>
-#include <limits.h>
-#include <google/protobuf/io/zero_copy_stream.h>
-#include <google/protobuf/arena.h>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/io/coded_stream_inl.h>
+#include <google/protobuf/io/zero_copy_stream.h>
+#include <google/protobuf/arena.h>
 #include <google/protobuf/stubs/stl_util.h>
 
 
@@ -61,8 +61,8 @@ static const int kMaxVarintBytes = 10;
 static const int kMaxVarint32Bytes = 5;
 
 
-inline bool NextNonEmpty(ZeroCopyInputStream* input,
-                         const void** data, int* size) {
+inline bool NextNonEmpty(ZeroCopyInputStream* input, const void** data,
+                         int* size) {
   bool success;
   do {
     success = input->Next(data, size);
@@ -124,8 +124,8 @@ CodedInputStream::Limit CodedInputStream::PushLimit(int byte_limit) {
   // and overflow. Also check that the new requested limit is before the
   // previous limit; otherwise we continue to enforce the previous limit.
   if (PROTOBUF_PREDICT_TRUE(byte_limit >= 0 &&
-                        byte_limit <= INT_MAX - current_position &&
-                        byte_limit < current_limit_ - current_position)) {
+                            byte_limit <= INT_MAX - current_position &&
+                            byte_limit < current_limit_ - current_position)) {
     current_limit_ = current_position + byte_limit;
     RecomputeBufferLimits();
   }
@@ -190,7 +190,8 @@ int CodedInputStream::BytesUntilTotalBytesLimit() const {
 
 void CodedInputStream::PrintTotalBytesLimitError() {
   GOOGLE_LOG(ERROR) << "A protocol message was rejected because it was too "
-                "big (more than " << total_bytes_limit_
+                "big (more than "
+             << total_bytes_limit_
              << " bytes).  To increase the limit (or to disable these "
                 "warnings), see CodedInputStream::SetTotalBytesLimit() "
                 "in net/proto2/io/public/coded_stream.h.";
@@ -333,9 +334,9 @@ const uint8* DecodeVarint64KnownSize(const uint8* buffer, uint64* value) {
 // part is buffer + (number of bytes read).  This function is always inlined,
 // so returning a pair is costless.
 PROTOBUF_ALWAYS_INLINE
-::std::pair<bool, const uint8*> ReadVarint32FromArray(
-    uint32 first_byte, const uint8* buffer,
-    uint32* value);
+::std::pair<bool, const uint8*> ReadVarint32FromArray(uint32 first_byte,
+                                                      const uint8* buffer,
+                                                      uint32* value);
 inline ::std::pair<bool, const uint8*> ReadVarint32FromArray(
     uint32 first_byte, const uint8* buffer, uint32* value) {
   // Fast path:  We have enough bytes left in the buffer to guarantee that
@@ -346,26 +347,35 @@ inline ::std::pair<bool, const uint8*> ReadVarint32FromArray(
   uint32 b;
   uint32 result = first_byte - 0x80;
   ++ptr;  // We just processed the first byte.  Move on to the second.
-  b = *(ptr++); result += b <<  7; if (!(b & 0x80)) goto done;
+  b = *(ptr++);
+  result += b << 7;
+  if (!(b & 0x80)) goto done;
   result -= 0x80 << 7;
-  b = *(ptr++); result += b << 14; if (!(b & 0x80)) goto done;
+  b = *(ptr++);
+  result += b << 14;
+  if (!(b & 0x80)) goto done;
   result -= 0x80 << 14;
-  b = *(ptr++); result += b << 21; if (!(b & 0x80)) goto done;
+  b = *(ptr++);
+  result += b << 21;
+  if (!(b & 0x80)) goto done;
   result -= 0x80 << 21;
-  b = *(ptr++); result += b << 28; if (!(b & 0x80)) goto done;
+  b = *(ptr++);
+  result += b << 28;
+  if (!(b & 0x80)) goto done;
   // "result -= 0x80 << 28" is irrevelant.
 
   // If the input is larger than 32 bits, we still need to read it all
   // and discard the high-order bits.
   for (int i = 0; i < kMaxVarintBytes - kMaxVarint32Bytes; i++) {
-    b = *(ptr++); if (!(b & 0x80)) goto done;
+    b = *(ptr++);
+    if (!(b & 0x80)) goto done;
   }
 
   // We have overrun the maximum size of a varint (10 bytes).  Assume
   // the data is corrupt.
   return std::make_pair(false, ptr);
 
- done:
+done:
   *value = result;
   return std::make_pair(true, ptr);
 }
@@ -424,7 +434,7 @@ int64 CodedInputStream::ReadVarint32Fallback(uint32 first_byte_or_zero) {
         << "Caller should provide us with *buffer_ when buffer is non-empty";
     uint32 temp;
     ::std::pair<bool, const uint8*> p =
-          ReadVarint32FromArray(first_byte_or_zero, buffer_, &temp);
+        ReadVarint32FromArray(first_byte_or_zero, buffer_, &temp);
     if (!p.first) return -1;
     buffer_ = p.second;
     return temp;
@@ -635,13 +645,13 @@ CodedOutputStream::CodedOutputStream(ZeroCopyOutputStream* output)
 
 CodedOutputStream::CodedOutputStream(ZeroCopyOutputStream* output,
                                      bool do_eager_refresh)
-  : output_(output),
-    buffer_(NULL),
-    buffer_size_(0),
-    total_bytes_(0),
-    had_error_(false),
-    aliasing_enabled_(false),
-    is_serialization_deterministic_(IsDefaultSerializationDeterministic()) {
+    : output_(output),
+      buffer_(NULL),
+      buffer_size_(0),
+      total_bytes_(0),
+      had_error_(false),
+      aliasing_enabled_(false),
+      is_serialization_deterministic_(IsDefaultSerializationDeterministic()) {
   if (do_eager_refresh) {
     // Eagerly Refresh() so buffer space is immediately available.
     Refresh();
@@ -652,9 +662,7 @@ CodedOutputStream::CodedOutputStream(ZeroCopyOutputStream* output,
   }
 }
 
-CodedOutputStream::~CodedOutputStream() {
-  Trim();
-}
+CodedOutputStream::~CodedOutputStream() { Trim(); }
 
 void CodedOutputStream::Trim() {
   if (buffer_size_ > 0) {
@@ -697,8 +705,8 @@ void CodedOutputStream::WriteRaw(const void* data, int size) {
   Advance(size);
 }
 
-uint8* CodedOutputStream::WriteRawToArray(
-    const void* data, int size, uint8* target) {
+uint8* CodedOutputStream::WriteRawToArray(const void* data, int size,
+                                          uint8* target) {
   memcpy(target, data, size);
   return target + size;
 }
@@ -706,7 +714,7 @@ uint8* CodedOutputStream::WriteRawToArray(
 
 void CodedOutputStream::WriteAliasedRaw(const void* data, int size) {
   if (size < buffer_size_
-      ) {
+  ) {
     WriteRaw(data, size);
   } else {
     Trim();

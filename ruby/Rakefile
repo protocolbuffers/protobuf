@@ -93,6 +93,7 @@ genproto_output << "tests/test_ruby_package.rb"
 genproto_output << "tests/test_ruby_package_proto2.rb"
 genproto_output << "tests/basic_test.rb"
 genproto_output << "tests/basic_test_proto2.rb"
+genproto_output << "tests/wrappers.rb"
 file "tests/generated_code.rb" => "tests/generated_code.proto" do |file_task|
   sh "../src/protoc --ruby_out=. tests/generated_code.proto"
 end
@@ -123,6 +124,10 @@ end
 
 file "tests/basic_test_proto2.rb" => "tests/basic_test_proto2.proto" do |file_task|
   sh "../src/protoc -I../src -I. --ruby_out=. tests/basic_test_proto2.proto"
+end
+
+file "tests/wrappers.rb" => "../src/google/protobuf/wrappers.proto" do |file_task|
+  sh "../src/protoc -I../src -I. --ruby_out=tests ../src/google/protobuf/wrappers.proto"
 end
 
 task :genproto => genproto_output

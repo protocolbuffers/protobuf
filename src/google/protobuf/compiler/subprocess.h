@@ -34,7 +34,7 @@
 #define GOOGLE_PROTOBUF_COMPILER_SUBPROCESS_H__
 
 #ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN   // right...
+#define WIN32_LEAN_AND_MEAN  // right...
 #include <windows.h>
 #else  // _WIN32
 #include <sys/types.h>
@@ -60,8 +60,8 @@ class PROTOC_EXPORT Subprocess {
   ~Subprocess();
 
   enum SearchMode {
-    SEARCH_PATH,   // Use PATH environment variable.
-    EXACT_NAME     // Program is an exact file name; don't use the PATH.
+    SEARCH_PATH,  // Use PATH environment variable.
+    EXACT_NAME    // Program is an exact file name; don't use the PATH.
   };
 
   // Start the subprocess.  Currently we don't provide a way to specify

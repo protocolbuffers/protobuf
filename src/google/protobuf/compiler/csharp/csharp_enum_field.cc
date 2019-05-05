@@ -36,6 +36,7 @@
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 
+#include <google/protobuf/compiler/csharp/csharp_doc_comment.h>
 #include <google/protobuf/compiler/csharp/csharp_helpers.h>
 #include <google/protobuf/compiler/csharp/csharp_options.h>
 #include <google/protobuf/compiler/csharp/csharp_enum_field.h>
@@ -75,9 +76,20 @@ void EnumFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {
 }
 
 void EnumFieldGenerator::GenerateCodecCode(io::Printer* printer) {
-    printer->Print(
-        variables_,
-        "pb::FieldCodec.ForEnum($tag$, x => (int) x, x => ($type_name$) x)");
+  printer->Print(
+      variables_,
+      "pb::FieldCodec.ForEnum($tag$, x => (int) x, x => ($type_name$) x, $default_value$)");
+}
+
+void EnumFieldGenerator::GenerateExtensionCode(io::Printer* printer) {
+  WritePropertyDocComment(printer, descriptor_);
+  AddDeprecatedFlag(printer);
+  printer->Print(
+    variables_,
+    "$access_level$ static readonly pb::Extension<$extended_type$, $type_name$> $property_name$ =\n"
+    "  new pb::Extension<$extended_type$, $type_name$>($number$, ");
+  GenerateCodecCode(printer);
+  printer->Print(");\n");
 }
 
 EnumOneofFieldGenerator::EnumOneofFieldGenerator(

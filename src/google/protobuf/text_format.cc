@@ -64,6 +64,8 @@
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/stl_util.h>
 
+#include <google/protobuf/port_def.inc>
+
 
 namespace google {
 namespace protobuf {
@@ -1313,7 +1315,9 @@ class TextFormat::Printer::TextGenerator
     while (size > buffer_size_) {
       // Data exceeds space in the buffer. Write what we can and request a new
       // buffer.
-      memset(buffer_, ' ', buffer_size_);
+      if (buffer_size_ > 0) {
+        memset(buffer_, ' ', buffer_size_);
+      }
       size -= buffer_size_;
       void* void_buffer;
       failed_ = !output_->Next(&void_buffer, &buffer_size_);
@@ -2402,18 +2406,6 @@ void TextFormat::Printer::PrintFieldValue(const Message& message,
 /* static */ bool TextFormat::ParseFieldValueFromString(
     const std::string& input, const FieldDescriptor* field, Message* message) {
   return Parser().ParseFieldValueFromString(input, field, message);
-}
-
-// Prints an integer as hex with a fixed number of digits dependent on the
-// integer type.
-template <typename IntType>
-static std::string PaddedHex(IntType value) {
-  std::string result;
-  result.reserve(sizeof(value) * 2);
-  for (int i = sizeof(value) * 2 - 1; i >= 0; i--) {
-    result.push_back(int_to_hex_digit(value >> (i * 4) & 0x0F));
-  }
-  return result;
 }
 
 void TextFormat::Printer::PrintUnknownFields(

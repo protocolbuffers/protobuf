@@ -65,15 +65,12 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
   switch (val->cpp_type()) {
     case FieldDescriptor::CPPTYPE_MESSAGE:
       (*variables)["val_cpp"] = FieldMessageTypeName(val, options);
-      (*variables)["wrapper"] = "MapEntryWrapper";
       break;
     case FieldDescriptor::CPPTYPE_ENUM:
       (*variables)["val_cpp"] = ClassName(val->enum_type(), true);
-      (*variables)["wrapper"] = "MapEnumEntryWrapper";
       break;
     default:
       (*variables)["val_cpp"] = PrimitiveTypeName(options, val->cpp_type());
-      (*variables)["wrapper"] = "MapEntryWrapper";
   }
   (*variables)["key_wire_type"] =
       "TYPE_" + ToUpper(DeclaredTypeMethodName(key->type()));
@@ -89,8 +86,7 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
     (*variables)["lite"] = "Lite";
   }
 
-  if (!IsProto3Field(descriptor) &&
-      val->type() == FieldDescriptor::TYPE_ENUM) {
+  if (!IsProto3Field(descriptor) && val->type() == FieldDescriptor::TYPE_ENUM) {
     const EnumValueDescriptor* default_value = val->default_value_enum();
     (*variables)["default_enum_value"] = Int32ToString(default_value->number());
   } else {
@@ -106,8 +102,7 @@ MapFieldGenerator::MapFieldGenerator(const FieldDescriptor* descriptor,
 
 MapFieldGenerator::~MapFieldGenerator() {}
 
-void MapFieldGenerator::
-GeneratePrivateMembers(io::Printer* printer) const {
+void MapFieldGenerator::GeneratePrivateMembers(io::Printer* printer) const {
   Formatter format(printer, variables_);
   format(
       "::$proto_ns$::internal::MapField$lite$<\n"
@@ -118,8 +113,8 @@ GeneratePrivateMembers(io::Printer* printer) const {
       "    $default_enum_value$ > $name$_;\n");
 }
 
-void MapFieldGenerator::
-GenerateAccessorDeclarations(io::Printer* printer) const {
+void MapFieldGenerator::GenerateAccessorDeclarations(
+    io::Printer* printer) const {
   Formatter format(printer, variables_);
   format(
       "$deprecated_attr$const ::$proto_ns$::Map< $key_cpp$, $val_cpp$ >&\n"
@@ -129,8 +124,8 @@ GenerateAccessorDeclarations(io::Printer* printer) const {
       descriptor_);
 }
 
-void MapFieldGenerator::
-GenerateInlineAccessorDefinitions(io::Printer* printer) const {
+void MapFieldGenerator::GenerateInlineAccessorDefinitions(
+    io::Printer* printer) const {
   Formatter format(printer, variables_);
   format(
       "inline const ::$proto_ns$::Map< $key_cpp$, $val_cpp$ >&\n"
@@ -145,32 +140,29 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
       "}\n");
 }
 
-void MapFieldGenerator::
-GenerateClearingCode(io::Printer* printer) const {
+void MapFieldGenerator::GenerateClearingCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
   format("$name$_.Clear();\n");
 }
 
-void MapFieldGenerator::
-GenerateMergingCode(io::Printer* printer) const {
+void MapFieldGenerator::GenerateMergingCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
   format("$name$_.MergeFrom(from.$name$_);\n");
 }
 
-void MapFieldGenerator::
-GenerateSwappingCode(io::Printer* printer) const {
+void MapFieldGenerator::GenerateSwappingCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
   format("$name$_.Swap(&other->$name$_);\n");
 }
 
-void MapFieldGenerator::
-GenerateCopyConstructorCode(io::Printer* printer) const {
+void MapFieldGenerator::GenerateCopyConstructorCode(
+    io::Printer* printer) const {
   GenerateConstructorCode(printer);
   GenerateMergingCode(printer);
 }
 
-void MapFieldGenerator::
-GenerateMergeFromCodedStream(io::Printer* printer) const {
+void MapFieldGenerator::GenerateMergeFromCodedStream(
+    io::Printer* printer) const {
   Formatter format(printer, variables_);
   const FieldDescriptor* key_field =
       descriptor_->message_type()->FindFieldByName("key");
@@ -255,17 +247,16 @@ static void GenerateSerializationLoop(const Formatter& format, bool string_key,
   }
   format.Indent();
 
-  format(
-      "$map_classname$::$wrapper$ entry(nullptr, $1$->first, $1$->second);\n",
-      ptr);
   if (to_array) {
     format(
-        "target = ::$proto_ns$::internal::WireFormatLite::InternalWrite"
-        "$declared_type$NoVirtualToArray($number$, entry, target);\n");
+        "target = $map_classname$::Funcs::SerializeToArray($number$, "
+        "$1$->first, $1$->second, target);\n",
+        ptr);
   } else {
     format(
-        "::$proto_ns$::internal::WireFormatLite::Write$stream_writer$($number$,"
-        " entry, output);\n");
+        "$map_classname$::Funcs::SerializeToCodedStream($number$, "
+        "$1$->first, $1$->second, output);\n",
+        ptr);
   }
 
   if (string_key || string_value) {
@@ -278,13 +269,13 @@ static void GenerateSerializationLoop(const Formatter& format, bool string_key,
   format("}\n");
 }
 
-void MapFieldGenerator::
-GenerateSerializeWithCachedSizes(io::Printer* printer) const {
+void MapFieldGenerator::GenerateSerializeWithCachedSizes(
+    io::Printer* printer) const {
   GenerateSerializeWithCachedSizes(printer, false);
 }
 
-void MapFieldGenerator::
-GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const {
+void MapFieldGenerator::GenerateSerializeWithCachedSizesToArray(
+    io::Printer* printer) const {
   GenerateSerializeWithCachedSizes(printer, true);
 }
 
@@ -367,8 +358,7 @@ void MapFieldGenerator::GenerateSerializeWithCachedSizes(io::Printer* printer,
   format("}\n");
 }
 
-void MapFieldGenerator::
-GenerateByteSize(io::Printer* printer) const {
+void MapFieldGenerator::GenerateByteSize(io::Printer* printer) const {
   Formatter format(printer, variables_);
   format(
       "total_size += $tag_size$ *\n"
@@ -376,9 +366,8 @@ GenerateByteSize(io::Printer* printer) const {
       "for (::$proto_ns$::Map< $key_cpp$, $val_cpp$ >::const_iterator\n"
       "    it = this->$name$().begin();\n"
       "    it != this->$name$().end(); ++it) {\n"
-      "  $map_classname$::$wrapper$ entry(nullptr, it->first, it->second);\n"
-      "  total_size += ::$proto_ns$::internal::WireFormatLite::\n"
-      "      $declared_type$SizeNoVirtual(entry);\n"
+      "  total_size += $map_classname$::Funcs::ByteSizeLong(it->first, "
+      "it->second);\n"
       "}\n");
 }
 

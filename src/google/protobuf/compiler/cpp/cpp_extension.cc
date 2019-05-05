@@ -60,8 +60,7 @@ std::string ExtendeeClassName(const FieldDescriptor* descriptor) {
 
 ExtensionGenerator::ExtensionGenerator(const FieldDescriptor* descriptor,
                                        const Options& options)
-  : descriptor_(descriptor),
-    options_(options) {
+    : descriptor_(descriptor), options_(options) {
   // Construct type_traits_.
   if (descriptor_->is_repeated()) {
     type_traits_ = "Repeated";
@@ -93,7 +92,7 @@ ExtensionGenerator::ExtensionGenerator(const FieldDescriptor* descriptor,
   variables_["extendee"] = ExtendeeClassName(descriptor_);
   variables_["type_traits"] = type_traits_;
   std::string name = descriptor_->name();
-  variables_["name"] = name;
+  variables_["name"] = ResolveKeyword(name);
   variables_["constant_name"] = FieldConstantName(descriptor_);
   variables_["field_type"] =
       StrCat(static_cast<int>(descriptor_->type()));
@@ -102,7 +101,7 @@ ExtensionGenerator::ExtensionGenerator(const FieldDescriptor* descriptor,
   std::string scope =
       IsScoped() ? ClassName(descriptor_->extension_scope(), false) + "::" : "";
   variables_["scope"] = scope;
-  std::string scoped_name = scope + name;
+  std::string scoped_name = scope + ResolveKeyword(name);
   variables_["scoped_name"] = scoped_name;
   variables_["number"] = StrCat(descriptor_->number());
 }

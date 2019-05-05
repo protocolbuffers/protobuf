@@ -48,6 +48,10 @@ build_cpp_tcmalloc() {
 }
 
 build_cpp_distcheck() {
+  grep -q -- "-Og" src/Makefile.am &&
+    echo "The -Og flag is incompatible with Clang versions older than 4.0." &&
+    exit 1
+
   # Initialize any submodules.
   git submodule update --init --recursive
   ./autogen.sh
@@ -117,6 +121,12 @@ build_csharp() {
   internal_build_cpp
   NUGET=/usr/local/bin/nuget.exe
 
+  # Disable some unwanted dotnet options
+  export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=true
+  export DOTNET_CLI_TELEMETRY_OPTOUT=true
+
+  # TODO(jtattermusch): is this still needed with "first time experience"
+  # disabled?
   # Perform "dotnet new" once to get the setup preprocessing out of the
   # way. That spews a lot of output (including backspaces) into logs
   # otherwise, and can cause problems. It doesn't matter if this step
@@ -467,6 +477,16 @@ build_php5.5_c() {
   # popd
 }
 
+build_php5.5_mixed() {
+  use_php 5.5
+  pushd php
+  rm -rf vendor
+  composer update
+  /bin/bash ./tests/compile_extension.sh ./ext/google/protobuf
+  php -dextension=./ext/google/protobuf/modules/protobuf.so ./vendor/bin/phpunit
+  popd
+}
+
 build_php5.5_zts_c() {
   use_php_zts 5.5
   cd php/tests && /bin/bash ./test.sh 5.5-zts && cd ../..
@@ -495,6 +515,16 @@ build_php5.6_c() {
   # pushd conformance
   # make test_php_c
   # popd
+}
+
+build_php5.6_mixed() {
+  use_php 5.6
+  pushd php
+  rm -rf vendor
+  composer update
+  /bin/bash ./tests/compile_extension.sh ./ext/google/protobuf
+  php -dextension=./ext/google/protobuf/modules/protobuf.so ./vendor/bin/phpunit
+  popd
 }
 
 build_php5.6_zts_c() {
@@ -550,6 +580,16 @@ build_php7.0_c() {
   # pushd conformance
   # make test_php_c
   # popd
+}
+
+build_php7.0_mixed() {
+  use_php 7.0
+  pushd php
+  rm -rf vendor
+  composer update
+  /bin/bash ./tests/compile_extension.sh ./ext/google/protobuf
+  php -dextension=./ext/google/protobuf/modules/protobuf.so ./vendor/bin/phpunit
+  popd
 }
 
 build_php7.0_zts_c() {
@@ -615,6 +655,16 @@ build_php7.1_c() {
   fi
 }
 
+build_php7.1_mixed() {
+  use_php 7.1
+  pushd php
+  rm -rf vendor
+  composer update
+  /bin/bash ./tests/compile_extension.sh ./ext/google/protobuf
+  php -dextension=./ext/google/protobuf/modules/protobuf.so ./vendor/bin/phpunit
+  popd
+}
+
 build_php7.1_zts_c() {
   use_php_zts 7.1
   cd php/tests && /bin/bash ./test.sh 7.1-zts && cd ../..
@@ -632,6 +682,10 @@ build_php_all_32() {
   build_php5.6_c
   build_php7.0_c
   build_php7.1_c $1
+  build_php5.5_mixed
+  build_php5.6_mixed
+  build_php7.0_mixed
+  build_php7.1_mixed
   build_php5.5_zts_c
   build_php5.6_zts_c
   build_php7.0_zts_c

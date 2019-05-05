@@ -188,13 +188,13 @@ class PROTOBUF_EXPORT Parser {
   //   have been passed around by const reference, for no particularly good
   //   reason.  We should probably go through and change them all to mutable
   //   pointer to make this more intuitive.
-  bool TryConsumeEndOfDeclaration(
-      const char* text, const LocationRecorder* location);
-  bool TryConsumeEndOfDeclarationFinishScope(
-      const char* text, const LocationRecorder* location);
+  bool TryConsumeEndOfDeclaration(const char* text,
+                                  const LocationRecorder* location);
+  bool TryConsumeEndOfDeclarationFinishScope(const char* text,
+                                             const LocationRecorder* location);
 
-  bool ConsumeEndOfDeclaration(
-      const char* text, const LocationRecorder* location);
+  bool ConsumeEndOfDeclaration(const char* text,
+                               const LocationRecorder* location);
 
   // -----------------------------------------------------------------
   // Error logging helpers
@@ -205,6 +205,10 @@ class PROTOBUF_EXPORT Parser {
   // Invokes error_collector_->AddError() with the line and column number
   // of the current token.
   void AddError(const std::string& error);
+
+  // Invokes error_collector_->AddWarning() with the line and column number
+  // of the current token.
+  void AddWarning(const string& warning);
 
   // Records a location in the SourceCodeInfo.location table (see
   // descriptor.proto).  We use RAII to ensure that the start and end locations
@@ -254,8 +258,11 @@ class PROTOBUF_EXPORT Parser {
     // was passed to RecordSourceLocationsTo(), if any.  SourceLocationTable
     // is an older way of keeping track of source locations which is still
     // used in some places.
-    void RecordLegacyLocation(const Message* descriptor,
+    void RecordLegacyLocation(
+        const Message* descriptor,
         DescriptorPool::ErrorCollector::ErrorLocation location);
+    void RecordLegacyImportLocation(const Message* descriptor,
+                                    const string& name);
 
     // Returns the number of path components in the recorder's current location.
     int CurrentPathSize() const;
@@ -402,8 +409,7 @@ class PROTOBUF_EXPORT Parser {
   // oneof_decl->label() since it will have had to parse the label before it
   // knew it was parsing a oneof.
   bool ParseOneof(OneofDescriptorProto* oneof_decl,
-                  DescriptorProto* containing_type,
-                  int oneof_index,
+                  DescriptorProto* containing_type, int oneof_index,
                   const LocationRecorder& oneof_location,
                   const LocationRecorder& containing_type_location,
                   const FileDescriptorProto* containing_file);
@@ -467,8 +473,7 @@ class PROTOBUF_EXPORT Parser {
   // Parse a single option name/value pair, e.g. "ctype = CORD".  The name
   // identifies a field of the given Message, and the value of that field
   // is set to the parsed value.
-  bool ParseOption(Message* options,
-                   const LocationRecorder& options_location,
+  bool ParseOption(Message* options, const LocationRecorder& options_location,
                    const FileDescriptorProto* containing_file,
                    OptionStyle style);
 
@@ -560,22 +565,29 @@ class PROTOBUF_EXPORT SourceLocationTable {
   // location" in the ErrorCollector interface).  Returns true if found, false
   // otherwise.
   bool Find(const Message* descriptor,
-            DescriptorPool::ErrorCollector::ErrorLocation location,
-            int* line, int* column) const;
+            DescriptorPool::ErrorCollector::ErrorLocation location, int* line,
+            int* column) const;
+  bool FindImport(const Message* descriptor, const string& name, int* line,
+                  int* column) const;
 
   // Adds a location to the table.
   void Add(const Message* descriptor,
-           DescriptorPool::ErrorCollector::ErrorLocation location,
-           int line, int column);
+           DescriptorPool::ErrorCollector::ErrorLocation location, int line,
+           int column);
+  void AddImport(const Message* descriptor, const string& name, int line,
+                 int column);
 
   // Clears the contents of the table.
   void Clear();
 
  private:
   typedef std::map<
-    std::pair<const Message*, DescriptorPool::ErrorCollector::ErrorLocation>,
-    std::pair<int, int> > LocationMap;
+      std::pair<const Message*, DescriptorPool::ErrorCollector::ErrorLocation>,
+      std::pair<int, int> >
+      LocationMap;
   LocationMap location_map_;
+  std::map<std::pair<const Message*, string>, std::pair<int, int> >
+      import_location_map_;
 };
 
 }  // namespace compiler
