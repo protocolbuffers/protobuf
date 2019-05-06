@@ -98,6 +98,20 @@ namespace Google.Protobuf.Reflection
         }
 
         [Test]
+        public void GetRepeatedExtensionValue()
+        {
+            // check to make sure repeated accessor uses GetOrRegister
+            var message = new Proto2.TestAllExtensions();
+
+            Assert.IsNull(message.GetExtension(RepeatedBoolExtension));
+            Assert.IsNotNull(Proto2.TestAllExtensions.Descriptor.FindFieldByNumber(RepeatedBoolExtension.FieldNumber).Accessor.GetValue(message));
+            Assert.IsNotNull(message.GetExtension(RepeatedBoolExtension));
+
+            message.ClearExtension(RepeatedBoolExtension);
+            Assert.IsNull(message.GetExtension(RepeatedBoolExtension));
+        }
+
+        [Test]
         public void Clear()
         {
             var message = SampleMessages.CreateFullTestAllTypes();
