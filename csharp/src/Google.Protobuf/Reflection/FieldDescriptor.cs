@@ -381,6 +381,11 @@ namespace Google.Protobuf.Reflection
 
         private IFieldAccessor CreateAccessor()
         {
+            if (Extension != null)
+            {
+                return new ExtensionAccessor(this);
+            }
+
             // If we're given no property name, that's because we really don't want an accessor.
             // This could be because it's a map message, or it could be that we're loading a FileDescriptor dynamically.
             // TODO: Support dynamic messages.
@@ -389,10 +394,6 @@ namespace Google.Protobuf.Reflection
                 return null;
             }
 
-            if (Extension != null)
-            {
-                return new ExtensionAccessor(this);
-            }
             var property = ContainingType.ClrType.GetProperty(propertyName);
             if (property == null)
             {

@@ -34,6 +34,8 @@ using System;
 using Google.Protobuf.TestProtos;
 using Proto2 = Google.Protobuf.TestProtos.Proto2;
 
+using static Google.Protobuf.TestProtos.Proto2.UnittestExtensions;
+
 namespace Google.Protobuf
 {
     /// <summary>
@@ -61,7 +63,7 @@ namespace Google.Protobuf
                 SingleImportMessage = new ImportMessage { D = 20 },
                 SingleInt32 = 100,
                 SingleInt64 = 3210987654321,
-                SingleNestedEnum = TestAllTypes.Types.NestedEnum.Foo,
+                SingleNestedEnum = TestProtos.TestAllTypes.Types.NestedEnum.Foo,
                 SingleNestedMessage = new TestAllTypes.Types.NestedMessage { Bb = 35 },
                 SinglePublicImportMessage = new PublicImportMessage { E = 54 },
                 SingleSfixed32 = -123,
@@ -83,7 +85,7 @@ namespace Google.Protobuf
                 RepeatedImportMessage = { new ImportMessage { D = 20 }, new ImportMessage { D = 25 } },
                 RepeatedInt32 = { 100, 200 },
                 RepeatedInt64 = { 3210987654321, Int64.MaxValue },
-                RepeatedNestedEnum = { TestAllTypes.Types.NestedEnum.Foo, TestAllTypes.Types.NestedEnum.Neg },
+                RepeatedNestedEnum = { TestProtos.TestAllTypes.Types.NestedEnum.Foo, TestProtos.TestAllTypes.Types.NestedEnum.Neg },
                 RepeatedNestedMessage = { new TestAllTypes.Types.NestedMessage { Bb = 35 }, new TestAllTypes.Types.NestedMessage { Bb = 10 } },
                 RepeatedPublicImportMessage = { new PublicImportMessage { E = 54 }, new PublicImportMessage { E = -1 } },
                 RepeatedSfixed32 = { -123, 123 },
@@ -148,6 +150,58 @@ namespace Google.Protobuf
                 RepeatedGroup = { new Proto2.TestAllTypes.Types.RepeatedGroup { A = 10 }, new Proto2.TestAllTypes.Types.RepeatedGroup { A = 20 } },
                 OneofString = "Oneof string"
             };
+        }
+
+        public static Proto2.TestAllExtensions CreateFullTestAllExtensions()
+        {
+            var message = new Proto2.TestAllExtensions();
+            message.SetExtension(OptionalBoolExtension, true);
+            message.SetExtension(OptionalBytesExtension, ByteString.CopyFrom(1, 2, 3, 4));
+            message.SetExtension(OptionalDoubleExtension, 23.5);
+            message.SetExtension(OptionalFixed32Extension, 23u);
+            message.SetExtension(OptionalFixed64Extension, 1234567890123u);
+            message.SetExtension(OptionalFloatExtension, 12.25f);
+            message.SetExtension(OptionalForeignEnumExtension, Proto2.ForeignEnum.ForeignBar);
+            message.SetExtension(OptionalForeignMessageExtension, new Proto2.ForeignMessage { C = 10 });
+            message.SetExtension(OptionalImportEnumExtension, Proto2.ImportEnum.ImportBaz);
+            message.SetExtension(OptionalImportMessageExtension, new Proto2.ImportMessage { D = 20 });
+            message.SetExtension(OptionalInt32Extension, 100);
+            message.SetExtension(OptionalInt64Extension, 3210987654321);
+            message.SetExtension(OptionalNestedEnumExtension, Proto2.TestAllTypes.Types.NestedEnum.Foo);
+            message.SetExtension(OptionalNestedMessageExtension, new Proto2.TestAllTypes.Types.NestedMessage { Bb = 35 });
+            message.SetExtension(OptionalPublicImportMessageExtension, new Proto2.PublicImportMessage { E = 54 });
+            message.SetExtension(OptionalSfixed32Extension, -123);
+            message.SetExtension(OptionalSfixed64Extension, -12345678901234);
+            message.SetExtension(OptionalSint32Extension, -456);
+            message.SetExtension(OptionalSint64Extension, -12345678901235);
+            message.SetExtension(OptionalStringExtension, "test");
+            message.SetExtension(OptionalUint32Extension, UInt32.MaxValue);
+            message.SetExtension(OptionalUint64Extension, UInt64.MaxValue);
+            message.SetExtension(OptionalGroupExtension, new Proto2.OptionalGroup_extension { A = 10 });
+            message.GetOrRegisterExtension(RepeatedBoolExtension).AddRange(new[] { true, false });
+            message.GetOrRegisterExtension(RepeatedBytesExtension).AddRange(new[] { ByteString.CopyFrom(1, 2, 3, 4), ByteString.CopyFrom(5, 6), ByteString.CopyFrom(new byte[1000]) });
+            message.GetOrRegisterExtension(RepeatedDoubleExtension).AddRange(new[] { -12.25, 23.5 });
+            message.GetOrRegisterExtension(RepeatedFixed32Extension).AddRange(new[] { UInt32.MaxValue, 23u });
+            message.GetOrRegisterExtension(RepeatedFixed64Extension).AddRange(new[] { UInt64.MaxValue, 1234567890123ul });
+            message.GetOrRegisterExtension(RepeatedFloatExtension).AddRange(new[] { 100f, 12.25f });
+            message.GetOrRegisterExtension(RepeatedForeignEnumExtension).AddRange(new[] { Proto2.ForeignEnum.ForeignFoo, Proto2.ForeignEnum.ForeignBar });
+            message.GetOrRegisterExtension(RepeatedForeignMessageExtension).AddRange(new[] { new Proto2.ForeignMessage(), new Proto2.ForeignMessage { C = 10 } });
+            message.GetOrRegisterExtension(RepeatedImportEnumExtension).AddRange(new[] { Proto2.ImportEnum.ImportBaz, Proto2.ImportEnum.ImportFoo });
+            message.GetOrRegisterExtension(RepeatedImportMessageExtension).AddRange(new[] { new Proto2.ImportMessage { D = 20 }, new Proto2.ImportMessage { D = 25 } });
+            message.GetOrRegisterExtension(RepeatedInt32Extension).AddRange(new[] { 100, 200 });
+            message.GetOrRegisterExtension(RepeatedInt64Extension).AddRange(new[] { 3210987654321, Int64.MaxValue });
+            message.GetOrRegisterExtension(RepeatedNestedEnumExtension).AddRange(new[] { Proto2.TestAllTypes.Types.NestedEnum.Foo, Proto2.TestAllTypes.Types.NestedEnum.Neg });
+            message.GetOrRegisterExtension(RepeatedNestedMessageExtension).AddRange(new[] { new Proto2.TestAllTypes.Types.NestedMessage { Bb = 35 }, new Proto2.TestAllTypes.Types.NestedMessage { Bb = 10 } });
+            message.GetOrRegisterExtension(RepeatedSfixed32Extension).AddRange(new[] { -123, 123 });
+            message.GetOrRegisterExtension(RepeatedSfixed64Extension).AddRange(new[] { -12345678901234, 12345678901234 });
+            message.GetOrRegisterExtension(RepeatedSint32Extension).AddRange(new[] { -456, 100 });
+            message.GetOrRegisterExtension(RepeatedSint64Extension).AddRange(new[] { -12345678901235, 123 });
+            message.GetOrRegisterExtension(RepeatedStringExtension).AddRange(new[] { "foo", "bar" });
+            message.GetOrRegisterExtension(RepeatedUint32Extension).AddRange(new[] { UInt32.MaxValue, UInt32.MinValue });
+            message.GetOrRegisterExtension(RepeatedUint64Extension).AddRange(new[] { UInt64.MaxValue, UInt32.MinValue });
+            message.GetOrRegisterExtension(RepeatedGroupExtension).AddRange(new[] { new Proto2.RepeatedGroup_extension { A = 10 }, new Proto2.RepeatedGroup_extension { A = 20 } });
+            message.SetExtension(OneofStringExtension, "Oneof string");
+            return message;
         }
     }
 }
