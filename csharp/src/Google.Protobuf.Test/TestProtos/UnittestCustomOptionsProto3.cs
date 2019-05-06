@@ -1966,7 +1966,7 @@ namespace UnitTest.Issues.TestProtos {
         }
         Fred.MergeFrom(other.Fred);
       }
-      barney_.Add(other.barney_);
+      barney_.MergeFrom(other.barney_);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 

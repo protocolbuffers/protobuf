@@ -321,8 +321,8 @@ namespace Google.Protobuf.WellKnownTypes {
       if (other.Name.Length != 0) {
         Name = other.Name;
       }
-      methods_.Add(other.methods_);
-      options_.Add(other.options_);
+      methods_.MergeFrom(other.methods_);
+      options_.MergeFrom(other.options_);
       if (other.Version.Length != 0) {
         Version = other.Version;
       }
@@ -332,7 +332,7 @@ namespace Google.Protobuf.WellKnownTypes {
         }
         SourceContext.MergeFrom(other.SourceContext);
       }
-      mixins_.Add(other.mixins_);
+      mixins_.MergeFrom(other.mixins_);
       if (other.Syntax != global::Google.Protobuf.WellKnownTypes.Syntax.Proto2) {
         Syntax = other.Syntax;
       }
@@ -648,7 +648,7 @@ namespace Google.Protobuf.WellKnownTypes {
       if (other.ResponseStreaming != false) {
         ResponseStreaming = other.ResponseStreaming;
       }
-      options_.Add(other.options_);
+      options_.MergeFrom(other.options_);
       if (other.Syntax != global::Google.Protobuf.WellKnownTypes.Syntax.Proto2) {
         Syntax = other.Syntax;
       }

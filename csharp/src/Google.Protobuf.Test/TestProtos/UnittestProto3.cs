@@ -1353,13 +1353,13 @@ namespace Google.Protobuf.TestProtos {
       repeatedBool_.Add(other.repeatedBool_);
       repeatedString_.Add(other.repeatedString_);
       repeatedBytes_.Add(other.repeatedBytes_);
-      repeatedNestedMessage_.Add(other.repeatedNestedMessage_);
-      repeatedForeignMessage_.Add(other.repeatedForeignMessage_);
-      repeatedImportMessage_.Add(other.repeatedImportMessage_);
+      repeatedNestedMessage_.MergeFrom(other.repeatedNestedMessage_);
+      repeatedForeignMessage_.MergeFrom(other.repeatedForeignMessage_);
+      repeatedImportMessage_.MergeFrom(other.repeatedImportMessage_);
       repeatedNestedEnum_.Add(other.repeatedNestedEnum_);
       repeatedForeignEnum_.Add(other.repeatedForeignEnum_);
       repeatedImportEnum_.Add(other.repeatedImportEnum_);
-      repeatedPublicImportMessage_.Add(other.repeatedPublicImportMessage_);
+      repeatedPublicImportMessage_.MergeFrom(other.repeatedPublicImportMessage_);
       switch (other.OneofFieldCase) {
         case OneofFieldOneofCase.OneofUint32:
           OneofUint32 = other.OneofUint32;
@@ -1928,7 +1928,7 @@ namespace Google.Protobuf.TestProtos {
         }
         Payload.MergeFrom(other.Payload);
       }
-      repeatedChild_.Add(other.repeatedChild_);
+      repeatedChild_.MergeFrom(other.repeatedChild_);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -3473,7 +3473,7 @@ namespace Google.Protobuf.TestProtos {
       repeatedPrimitiveField_.Add(other.repeatedPrimitiveField_);
       repeatedStringField_.Add(other.repeatedStringField_);
       repeatedEnumField_.Add(other.repeatedEnumField_);
-      repeatedMessageField_.Add(other.repeatedMessageField_);
+      repeatedMessageField_.MergeFrom(other.repeatedMessageField_);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 

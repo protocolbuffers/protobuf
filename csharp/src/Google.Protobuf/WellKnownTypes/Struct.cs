@@ -179,7 +179,7 @@ namespace Google.Protobuf.WellKnownTypes {
       if (other == null) {
         return;
       }
-      fields_.Add(other.fields_);
+      fields_.MergeFrom(other.fields_);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -663,7 +663,7 @@ namespace Google.Protobuf.WellKnownTypes {
       if (other == null) {
         return;
       }
-      values_.Add(other.values_);
+      values_.MergeFrom(other.values_);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 

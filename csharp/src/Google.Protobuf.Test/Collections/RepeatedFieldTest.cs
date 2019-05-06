@@ -405,6 +405,17 @@ namespace Google.Protobuf.Collections
         }
 
         [Test]
+        public void MergeFrom_Message()
+        {
+            var field1 = new RepeatedField<ForeignMessage>() { new ForeignMessage { C = 1 } };
+            var field2 = new RepeatedField<ForeignMessage>();
+            field2.MergeFrom(field1);
+            Assert.AreEqual(field2.Count, 1);
+            Assert.AreEqual(field2[0], field1[0]);
+            Assert.IsFalse(ReferenceEquals(field2[0], field1[0]));
+        }
+
+        [Test]
         public void WriteTo_PackedInt32()
         {
             uint tag = WireFormat.MakeTag(10, WireFormat.WireType.LengthDelimited);
@@ -445,7 +456,6 @@ namespace Google.Protobuf.Collections
             Assert.AreEqual(1000000, input.ReadInt32());
             Assert.IsTrue(input.IsAtEnd);
         }
-
         [Test]
         public void WriteTo_String()
         {

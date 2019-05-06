@@ -54,6 +54,15 @@ namespace Google.Protobuf.Collections
             map["x"].C = 30;
             Assert.AreEqual(20, clone["x"].C);
         }
+        [Test]
+        public void MergeFrom_Messages()
+        {
+            var map1 = new MapField<string, ForeignMessage> { { "x", new ForeignMessage { C = 20 } } };
+            var map2 = new MapField<string, ForeignMessage>();
+            map2.MergeFrom(map1);
+            Assert.AreEqual(map2["x"], map1["x"]);
+            Assert.IsFalse(ReferenceEquals(map2["x"], map1["x"]));
+        }
 
         [Test]
         public void NullValuesProhibited()

@@ -2694,31 +2694,31 @@ namespace ProtobufTestMessages.Proto3 {
       repeatedBool_.Add(other.repeatedBool_);
       repeatedString_.Add(other.repeatedString_);
       repeatedBytes_.Add(other.repeatedBytes_);
-      repeatedNestedMessage_.Add(other.repeatedNestedMessage_);
-      repeatedForeignMessage_.Add(other.repeatedForeignMessage_);
+      repeatedNestedMessage_.MergeFrom(other.repeatedNestedMessage_);
+      repeatedForeignMessage_.MergeFrom(other.repeatedForeignMessage_);
       repeatedNestedEnum_.Add(other.repeatedNestedEnum_);
       repeatedForeignEnum_.Add(other.repeatedForeignEnum_);
       repeatedStringPiece_.Add(other.repeatedStringPiece_);
       repeatedCord_.Add(other.repeatedCord_);
-      mapInt32Int32_.Add(other.mapInt32Int32_);
-      mapInt64Int64_.Add(other.mapInt64Int64_);
-      mapUint32Uint32_.Add(other.mapUint32Uint32_);
-      mapUint64Uint64_.Add(other.mapUint64Uint64_);
-      mapSint32Sint32_.Add(other.mapSint32Sint32_);
-      mapSint64Sint64_.Add(other.mapSint64Sint64_);
-      mapFixed32Fixed32_.Add(other.mapFixed32Fixed32_);
-      mapFixed64Fixed64_.Add(other.mapFixed64Fixed64_);
-      mapSfixed32Sfixed32_.Add(other.mapSfixed32Sfixed32_);
-      mapSfixed64Sfixed64_.Add(other.mapSfixed64Sfixed64_);
-      mapInt32Float_.Add(other.mapInt32Float_);
-      mapInt32Double_.Add(other.mapInt32Double_);
-      mapBoolBool_.Add(other.mapBoolBool_);
-      mapStringString_.Add(other.mapStringString_);
-      mapStringBytes_.Add(other.mapStringBytes_);
-      mapStringNestedMessage_.Add(other.mapStringNestedMessage_);
-      mapStringForeignMessage_.Add(other.mapStringForeignMessage_);
-      mapStringNestedEnum_.Add(other.mapStringNestedEnum_);
-      mapStringForeignEnum_.Add(other.mapStringForeignEnum_);
+      mapInt32Int32_.MergeFrom(other.mapInt32Int32_);
+      mapInt64Int64_.MergeFrom(other.mapInt64Int64_);
+      mapUint32Uint32_.MergeFrom(other.mapUint32Uint32_);
+      mapUint64Uint64_.MergeFrom(other.mapUint64Uint64_);
+      mapSint32Sint32_.MergeFrom(other.mapSint32Sint32_);
+      mapSint64Sint64_.MergeFrom(other.mapSint64Sint64_);
+      mapFixed32Fixed32_.MergeFrom(other.mapFixed32Fixed32_);
+      mapFixed64Fixed64_.MergeFrom(other.mapFixed64Fixed64_);
+      mapSfixed32Sfixed32_.MergeFrom(other.mapSfixed32Sfixed32_);
+      mapSfixed64Sfixed64_.MergeFrom(other.mapSfixed64Sfixed64_);
+      mapInt32Float_.MergeFrom(other.mapInt32Float_);
+      mapInt32Double_.MergeFrom(other.mapInt32Double_);
+      mapBoolBool_.MergeFrom(other.mapBoolBool_);
+      mapStringString_.MergeFrom(other.mapStringString_);
+      mapStringBytes_.MergeFrom(other.mapStringBytes_);
+      mapStringNestedMessage_.MergeFrom(other.mapStringNestedMessage_);
+      mapStringForeignMessage_.MergeFrom(other.mapStringForeignMessage_);
+      mapStringNestedEnum_.MergeFrom(other.mapStringNestedEnum_);
+      mapStringForeignEnum_.MergeFrom(other.mapStringForeignEnum_);
       if (other.optionalBoolWrapper_ != null) {
         if (optionalBoolWrapper_ == null || other.OptionalBoolWrapper != false) {
           OptionalBoolWrapper = other.OptionalBoolWrapper;
@@ -2764,15 +2764,15 @@ namespace ProtobufTestMessages.Proto3 {
           OptionalBytesWrapper = other.OptionalBytesWrapper;
         }
       }
-      repeatedBoolWrapper_.Add(other.repeatedBoolWrapper_);
-      repeatedInt32Wrapper_.Add(other.repeatedInt32Wrapper_);
-      repeatedInt64Wrapper_.Add(other.repeatedInt64Wrapper_);
-      repeatedUint32Wrapper_.Add(other.repeatedUint32Wrapper_);
-      repeatedUint64Wrapper_.Add(other.repeatedUint64Wrapper_);
-      repeatedFloatWrapper_.Add(other.repeatedFloatWrapper_);
-      repeatedDoubleWrapper_.Add(other.repeatedDoubleWrapper_);
-      repeatedStringWrapper_.Add(other.repeatedStringWrapper_);
-      repeatedBytesWrapper_.Add(other.repeatedBytesWrapper_);
+      repeatedBoolWrapper_.MergeFrom(other.repeatedBoolWrapper_);
+      repeatedInt32Wrapper_.MergeFrom(other.repeatedInt32Wrapper_);
+      repeatedInt64Wrapper_.MergeFrom(other.repeatedInt64Wrapper_);
+      repeatedUint32Wrapper_.MergeFrom(other.repeatedUint32Wrapper_);
+      repeatedUint64Wrapper_.MergeFrom(other.repeatedUint64Wrapper_);
+      repeatedFloatWrapper_.MergeFrom(other.repeatedFloatWrapper_);
+      repeatedDoubleWrapper_.MergeFrom(other.repeatedDoubleWrapper_);
+      repeatedStringWrapper_.MergeFrom(other.repeatedStringWrapper_);
+      repeatedBytesWrapper_.MergeFrom(other.repeatedBytesWrapper_);
       if (other.optionalDuration_ != null) {
         if (optionalDuration_ == null) {
           OptionalDuration = new global::Google.Protobuf.WellKnownTypes.Duration();
@@ -2809,13 +2809,13 @@ namespace ProtobufTestMessages.Proto3 {
         }
         OptionalValue.MergeFrom(other.OptionalValue);
       }
-      repeatedDuration_.Add(other.repeatedDuration_);
-      repeatedTimestamp_.Add(other.repeatedTimestamp_);
-      repeatedFieldmask_.Add(other.repeatedFieldmask_);
-      repeatedStruct_.Add(other.repeatedStruct_);
-      repeatedAny_.Add(other.repeatedAny_);
-      repeatedValue_.Add(other.repeatedValue_);
-      repeatedListValue_.Add(other.repeatedListValue_);
+      repeatedDuration_.MergeFrom(other.repeatedDuration_);
+      repeatedTimestamp_.MergeFrom(other.repeatedTimestamp_);
+      repeatedFieldmask_.MergeFrom(other.repeatedFieldmask_);
+      repeatedStruct_.MergeFrom(other.repeatedStruct_);
+      repeatedAny_.MergeFrom(other.repeatedAny_);
+      repeatedValue_.MergeFrom(other.repeatedValue_);
+      repeatedListValue_.MergeFrom(other.repeatedListValue_);
       if (other.Fieldname1 != 0) {
         Fieldname1 = other.Fieldname1;
       }

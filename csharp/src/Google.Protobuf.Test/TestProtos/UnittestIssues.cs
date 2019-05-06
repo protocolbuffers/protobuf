@@ -885,7 +885,7 @@ namespace UnitTest.Issues.TestProtos {
         }
         MessageValue.MergeFrom(other.MessageValue);
       }
-      messageArray_.Add(other.messageArray_);
+      messageArray_.MergeFrom(other.messageArray_);
       if (other.EnumValue != global::UnitTest.Issues.TestProtos.DeprecatedEnum.DeprecatedZero) {
         EnumValue = other.EnumValue;
       }

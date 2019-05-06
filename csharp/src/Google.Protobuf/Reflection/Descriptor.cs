@@ -292,7 +292,7 @@ namespace Google.Protobuf.Reflection {
       if (other == null) {
         return;
       }
-      file_.Add(other.file_);
+      file_.MergeFrom(other.file_);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -705,10 +705,10 @@ namespace Google.Protobuf.Reflection {
       dependency_.Add(other.dependency_);
       publicDependency_.Add(other.publicDependency_);
       weakDependency_.Add(other.weakDependency_);
-      messageType_.Add(other.messageType_);
-      enumType_.Add(other.enumType_);
-      service_.Add(other.service_);
-      extension_.Add(other.extension_);
+      messageType_.MergeFrom(other.messageType_);
+      enumType_.MergeFrom(other.enumType_);
+      service_.MergeFrom(other.service_);
+      extension_.MergeFrom(other.extension_);
       if (other.HasOptions) {
         if (!HasOptions) {
           Options = new global::Google.Protobuf.Reflection.FileOptions();
@@ -1075,19 +1075,19 @@ namespace Google.Protobuf.Reflection {
       if (other.HasName) {
         Name = other.Name;
       }
-      field_.Add(other.field_);
-      extension_.Add(other.extension_);
-      nestedType_.Add(other.nestedType_);
-      enumType_.Add(other.enumType_);
-      extensionRange_.Add(other.extensionRange_);
-      oneofDecl_.Add(other.oneofDecl_);
+      field_.MergeFrom(other.field_);
+      extension_.MergeFrom(other.extension_);
+      nestedType_.MergeFrom(other.nestedType_);
+      enumType_.MergeFrom(other.enumType_);
+      extensionRange_.MergeFrom(other.extensionRange_);
+      oneofDecl_.MergeFrom(other.oneofDecl_);
       if (other.HasOptions) {
         if (!HasOptions) {
           Options = new global::Google.Protobuf.Reflection.MessageOptions();
         }
         Options.MergeFrom(other.Options);
       }
-      reservedRange_.Add(other.reservedRange_);
+      reservedRange_.MergeFrom(other.reservedRange_);
       reservedName_.Add(other.reservedName_);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -1703,7 +1703,7 @@ namespace Google.Protobuf.Reflection {
       if (other == null) {
         return;
       }
-      uninterpretedOption_.Add(other.uninterpretedOption_);
+      uninterpretedOption_.MergeFrom(other.uninterpretedOption_);
       pb::ExtensionSet.MergeFrom(ref _extensions, other._extensions);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -2759,14 +2759,14 @@ namespace Google.Protobuf.Reflection {
       if (other.HasName) {
         Name = other.Name;
       }
-      value_.Add(other.value_);
+      value_.MergeFrom(other.value_);
       if (other.HasOptions) {
         if (!HasOptions) {
           Options = new global::Google.Protobuf.Reflection.EnumOptions();
         }
         Options.MergeFrom(other.Options);
       }
-      reservedRange_.Add(other.reservedRange_);
+      reservedRange_.MergeFrom(other.reservedRange_);
       reservedName_.Add(other.reservedName_);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -3414,7 +3414,7 @@ namespace Google.Protobuf.Reflection {
       if (other.HasName) {
         Name = other.Name;
       }
-      method_.Add(other.method_);
+      method_.MergeFrom(other.method_);
       if (other.HasOptions) {
         if (!HasOptions) {
           Options = new global::Google.Protobuf.Reflection.ServiceOptions();
@@ -4760,7 +4760,7 @@ namespace Google.Protobuf.Reflection {
       if (other.HasRubyPackage) {
         RubyPackage = other.RubyPackage;
       }
-      uninterpretedOption_.Add(other.uninterpretedOption_);
+      uninterpretedOption_.MergeFrom(other.uninterpretedOption_);
       pb::ExtensionSet.MergeFrom(ref _extensions, other._extensions);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -5232,7 +5232,7 @@ namespace Google.Protobuf.Reflection {
       if (other.HasMapEntry) {
         MapEntry = other.MapEntry;
       }
-      uninterpretedOption_.Add(other.uninterpretedOption_);
+      uninterpretedOption_.MergeFrom(other.uninterpretedOption_);
       pb::ExtensionSet.MergeFrom(ref _extensions, other._extensions);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -5699,7 +5699,7 @@ namespace Google.Protobuf.Reflection {
       if (other.HasWeak) {
         Weak = other.Weak;
       }
-      uninterpretedOption_.Add(other.uninterpretedOption_);
+      uninterpretedOption_.MergeFrom(other.uninterpretedOption_);
       pb::ExtensionSet.MergeFrom(ref _extensions, other._extensions);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -5917,7 +5917,7 @@ namespace Google.Protobuf.Reflection {
       if (other == null) {
         return;
       }
-      uninterpretedOption_.Add(other.uninterpretedOption_);
+      uninterpretedOption_.MergeFrom(other.uninterpretedOption_);
       pb::ExtensionSet.MergeFrom(ref _extensions, other._extensions);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -6166,7 +6166,7 @@ namespace Google.Protobuf.Reflection {
       if (other.HasDeprecated) {
         Deprecated = other.Deprecated;
       }
-      uninterpretedOption_.Add(other.uninterpretedOption_);
+      uninterpretedOption_.MergeFrom(other.uninterpretedOption_);
       pb::ExtensionSet.MergeFrom(ref _extensions, other._extensions);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -6382,7 +6382,7 @@ namespace Google.Protobuf.Reflection {
       if (other.HasDeprecated) {
         Deprecated = other.Deprecated;
       }
-      uninterpretedOption_.Add(other.uninterpretedOption_);
+      uninterpretedOption_.MergeFrom(other.uninterpretedOption_);
       pb::ExtensionSet.MergeFrom(ref _extensions, other._extensions);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -6594,7 +6594,7 @@ namespace Google.Protobuf.Reflection {
       if (other.HasDeprecated) {
         Deprecated = other.Deprecated;
       }
-      uninterpretedOption_.Add(other.uninterpretedOption_);
+      uninterpretedOption_.MergeFrom(other.uninterpretedOption_);
       pb::ExtensionSet.MergeFrom(ref _extensions, other._extensions);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -6843,7 +6843,7 @@ namespace Google.Protobuf.Reflection {
       if (other.HasIdempotencyLevel) {
         IdempotencyLevel = other.IdempotencyLevel;
       }
-      uninterpretedOption_.Add(other.uninterpretedOption_);
+      uninterpretedOption_.MergeFrom(other.uninterpretedOption_);
       pb::ExtensionSet.MergeFrom(ref _extensions, other._extensions);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -7236,7 +7236,7 @@ namespace Google.Protobuf.Reflection {
       if (other == null) {
         return;
       }
-      name_.Add(other.name_);
+      name_.MergeFrom(other.name_);
       if (other.HasIdentifierValue) {
         IdentifierValue = other.IdentifierValue;
       }
@@ -7646,7 +7646,7 @@ namespace Google.Protobuf.Reflection {
       if (other == null) {
         return;
       }
-      location_.Add(other.location_);
+      location_.MergeFrom(other.location_);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -8107,7 +8107,7 @@ namespace Google.Protobuf.Reflection {
       if (other == null) {
         return;
       }
-      annotation_.Add(other.annotation_);
+      annotation_.MergeFrom(other.annotation_);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 

@@ -307,9 +307,9 @@ namespace Google.Protobuf.WellKnownTypes {
       if (other.Name.Length != 0) {
         Name = other.Name;
       }
-      fields_.Add(other.fields_);
+      fields_.MergeFrom(other.fields_);
       oneofs_.Add(other.oneofs_);
-      options_.Add(other.options_);
+      options_.MergeFrom(other.options_);
       if (other.sourceContext_ != null) {
         if (sourceContext_ == null) {
           SourceContext = new global::Google.Protobuf.WellKnownTypes.SourceContext();
@@ -707,7 +707,7 @@ namespace Google.Protobuf.WellKnownTypes {
       if (other.Packed != false) {
         Packed = other.Packed;
       }
-      options_.Add(other.options_);
+      options_.MergeFrom(other.options_);
       if (other.JsonName.Length != 0) {
         JsonName = other.JsonName;
       }
@@ -1080,8 +1080,8 @@ namespace Google.Protobuf.WellKnownTypes {
       if (other.Name.Length != 0) {
         Name = other.Name;
       }
-      enumvalue_.Add(other.enumvalue_);
-      options_.Add(other.options_);
+      enumvalue_.MergeFrom(other.enumvalue_);
+      options_.MergeFrom(other.options_);
       if (other.sourceContext_ != null) {
         if (sourceContext_ == null) {
           SourceContext = new global::Google.Protobuf.WellKnownTypes.SourceContext();
@@ -1290,7 +1290,7 @@ namespace Google.Protobuf.WellKnownTypes {
       if (other.Number != 0) {
         Number = other.Number;
       }
-      options_.Add(other.options_);
+      options_.MergeFrom(other.options_);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
