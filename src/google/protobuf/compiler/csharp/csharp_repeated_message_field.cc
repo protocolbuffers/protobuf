@@ -87,9 +87,9 @@ void RepeatedMessageFieldGenerator::GenerateMembers(io::Printer* printer) {
 }
 
     void RepeatedMessageFieldGenerator::GenerateMergingCode(io::Printer* printer) {
-        printer->Print(
-                       variables_,
-                       "pbc::CollectionExtensions.MergeFrom<$type_name$>(other.$name$_, $name$_, $type_name$.Parser);\n");
+		printer->Print(
+			variables_,
+			"$name$_.MergeFrom(other.$name$_);\n");
     }
 
 void RepeatedMessageFieldGenerator::GenerateParsingCode(io::Printer* printer) {

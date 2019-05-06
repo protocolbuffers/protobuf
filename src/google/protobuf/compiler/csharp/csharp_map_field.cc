@@ -90,7 +90,7 @@ void MapFieldGenerator::GenerateMembers(io::Printer* printer) {
 void MapFieldGenerator::GenerateMergingCode(io::Printer* printer) {
 	printer->Print(
 		variables_,
-		"pbc::CollectionExtensions.MergeFrom<$key_type_name$, $value_type_name$>(other.$name$_, $name$_, $type_name$.Parser);\n");
+		"$name$_.MergeFrom(other.$name$_);\n");
 }
 
 void MapFieldGenerator::GenerateParsingCode(io::Printer* printer) {

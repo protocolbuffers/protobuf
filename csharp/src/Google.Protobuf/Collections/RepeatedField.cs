@@ -368,6 +368,24 @@ namespace Google.Protobuf.Collections
         }
 
         /// <summary>
+        /// Merge from another RepeatedField
+        /// </summary>
+        /// <param name="other">RepeatedField to merge from</param>
+        public void MergeFrom(RepeatedField<T> other)
+        {
+            ProtoPreconditions.CheckNotNull(other, nameof(other));
+            EnsureSize(Count + other.Count);
+            foreach (var item in other)
+            {
+                var cloneable = item as IDeepCloneable<T>;
+                if (cloneable != null)
+                    array[count++] = cloneable.Clone();
+                else
+                    array[count++] = item;
+            }
+        }
+
+        /// <summary>
         /// Returns an enumerator that iterates through the collection.
         /// </summary>
         /// <returns>

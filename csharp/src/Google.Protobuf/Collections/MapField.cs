@@ -124,6 +124,23 @@ namespace Google.Protobuf.Collections
         }
 
         /// <summary>
+        /// Merge from another MapField
+        /// </summary>
+        /// <param name="other">MapField to merge from</param>
+        public void MergeFrom(MapField<TKey, TValue> other)
+        {
+            ProtoPreconditions.CheckNotNull(other, nameof(other));
+            foreach(var item in other)
+            {
+                var cloneable = item.Value as IDeepCloneable<TValue>;
+                if (cloneable != null)
+                    this[item.Key] = cloneable.Clone();
+                else
+                    this[item.Key] = item.Value;
+            }
+        }
+
+        /// <summary>
         /// Determines whether the specified key is present in the map.
         /// </summary>
         /// <param name="key">The key to check.</param>
