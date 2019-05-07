@@ -285,7 +285,7 @@ def cc_library_func(ctx, hdrs, srcs, deps):
         requested_features = ctx.features,
         unsupported_features = ctx.disabled_features,
     )
-    compilation_info = cc_common.compile(
+    (compilation_context, compilation_outputs) = cc_common.compile(
         actions = ctx.actions,
         feature_configuration = feature_configuration,
         cc_toolchain = toolchain,
@@ -294,18 +294,18 @@ def cc_library_func(ctx, hdrs, srcs, deps):
         public_hdrs = hdrs,
         compilation_contexts = compilation_contexts,
     )
-    linking_info = cc_common.link(
+    (linking_context, linking_outputs) = cc_common.create_linking_context_from_compilation_outputs(
         actions = ctx.actions,
         name = "upb_lib",
         feature_configuration = feature_configuration,
         cc_toolchain = toolchain,
-        cc_compilation_outputs = compilation_info.cc_compilation_outputs,
+        compilation_outputs = compilation_outputs,
         linking_contexts = linking_contexts,
     )
 
     return CcInfo(
-        compilation_context = compilation_info.compilation_context,
-        linking_context = linking_info.linking_context,
+        compilation_context = compilation_context,
+        linking_context = linking_context,
     )
 
 def _compile_upb_protos(ctx, proto_info, proto_sources, ext):
