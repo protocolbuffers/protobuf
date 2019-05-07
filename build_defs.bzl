@@ -1,3 +1,7 @@
+
+load("@bazel_skylib//lib:paths.bzl", "paths")
+load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain")
+
 _shell_find_runfiles = """
   # --- begin runfiles.bash initialization ---
   # Copy-pasted from Bazel's Bash runfiles library (tools/bash/runfiles/runfiles.bash).
@@ -22,10 +26,6 @@ _shell_find_runfiles = """
   fi
   # --- end runfiles.bash initialization ---
 """
-
-load("@bazel_skylib//lib:paths.bzl", "paths")
-load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain")
-load("@bazel_tools//tools/build_defs/cc:action_names.bzl", "CPP_LINK_STATIC_LIBRARY_ACTION_NAME")
 
 def _librule(name):
     return name + "_lib"
@@ -286,15 +286,17 @@ def cc_library_func(ctx, hdrs, srcs, deps):
         unsupported_features = ctx.disabled_features,
     )
     compilation_info = cc_common.compile(
-        ctx = ctx,
+        actions = ctx.actions,
         feature_configuration = feature_configuration,
         cc_toolchain = toolchain,
+        name = "upb_lib",
         srcs = srcs,
-        hdrs = hdrs,
+        public_hdrs = hdrs,
         compilation_contexts = compilation_contexts,
     )
     linking_info = cc_common.link(
-        ctx = ctx,
+        actions = ctx.actions,
+        name = "upb_lib",
         feature_configuration = feature_configuration,
         cc_toolchain = toolchain,
         cc_compilation_outputs = compilation_info.cc_compilation_outputs,

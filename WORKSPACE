@@ -17,11 +17,16 @@ http_archive(
 
 git_repository(
     name = "com_google_protobuf",
-    commit = "25feb59620627b673df76813dfd66e3f565765e7",
-    #sha256 = "d7a221b3d4fb4f05b7473795ccea9e05dab3b8721f6286a95fffbffc2d926f8b",
-    remote = "https://github.com/haberman/protobuf.git",
-    shallow_since = "1541281400 -0700"
-    #tag = "conformance-build-tag",
+    commit = "ec1a70913e5793a7d0a7b5fbf7e0e4f75409dd41",
+    remote = "https://github.com/protocolbuffers/protobuf.git",
+)
+
+http_archive(
+    name = "zlib",
+    build_file = "@com_google_protobuf//:third_party/zlib.BUILD",
+    sha256 = "c3e5e9fdd5004dcb542feda5ee4f0ff0744628baf8ed2dd5d66f8ca1197cb1a1",
+    strip_prefix = "zlib-1.2.11",
+    urls = ["https://zlib.net/zlib-1.2.11.tar.gz"],
 )
 
 git_repository(
