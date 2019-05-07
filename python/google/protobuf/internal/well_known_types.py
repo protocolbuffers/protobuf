@@ -67,6 +67,8 @@ _DURATION_SECONDS_MAX = 315576000000
 class Any(object):
   """Class for Any Message type."""
 
+  __slots__ = ()
+
   def Pack(self, msg, type_url_prefix='type.googleapis.com/',
            deterministic=None):
     """Packs the specified message into current Any message."""
@@ -99,6 +101,8 @@ _EPOCH_DATETIME = datetime.utcfromtimestamp(0)
 
 class Timestamp(object):
   """Class for Timestamp message type."""
+
+  __slots__ = ()
 
   def ToJsonString(self):
     """Converts Timestamp to RFC 3339 date string format.
@@ -249,6 +253,8 @@ class Timestamp(object):
 
 class Duration(object):
   """Class for Duration message type."""
+
+  __slots__ = ()
 
   def ToJsonString(self):
     """Converts Duration to string format.
@@ -407,6 +413,8 @@ def _RoundTowardZero(value, divider):
 class FieldMask(object):
   """Class for FieldMask message type."""
 
+  __slots__ = ()
+
   def ToJsonString(self):
     """Converts FieldMask to string according to proto3 JSON spec."""
     camelcase_paths = []
@@ -562,6 +570,8 @@ class _FieldMaskTree(object):
             +- bar --- baz
   In the tree, each leaf node represents a field path.
   """
+
+  __slots__ = ('_root',)
 
   def __init__(self, field_mask=None):
     """Initializes the tree by FieldMask."""
@@ -743,7 +753,7 @@ def _GetStructValue(struct_value):
 class Struct(object):
   """Class for Struct message type."""
 
-  __slots__ = []
+  __slots__ = ()
 
   def __getitem__(self, key):
     return _GetStructValue(self.fields[key])
@@ -795,6 +805,8 @@ collections_abc.MutableMapping.register(Struct)
 
 class ListValue(object):
   """Class for ListValue message type."""
+
+  __slots__ = ()
 
   def __len__(self):
     return len(self.values)

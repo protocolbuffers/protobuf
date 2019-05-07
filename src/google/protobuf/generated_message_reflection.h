@@ -92,7 +92,7 @@ class WeakFieldMap;  // weak_field_map.h
 //                  used to obtain pointers to default instances of embedded
 //                  messages, which GetMessage() will return if the particular
 //                  sub-message has not been initialized yet.  (Thus, all
-//                  embedded message fields *must* have non-NULL pointers
+//                  embedded message fields *must* have non-null pointers
 //                  in the default instance.)
 //   offsets:       An array of ints giving the byte offsets.
 //                  For each oneof or weak field, the offset is relative to the
@@ -284,11 +284,11 @@ struct MigrationSchema {
 // field should be represented using the obvious C++ primitive type.  Enums and
 // Messages are different:
 //  - Singular Message fields are stored as a pointer to a Message.  These
-//    should start out NULL, except for in the default instance where they
+//    should start out nullptr, except for in the default instance where they
 //    should start out pointing to other default instances.
 //  - Enum fields are stored as an int.  This int must always contain
 //    a valid value, such that EnumDescriptor::FindValueByNumber() would
-//    not return NULL.
+//    not return nullptr.
 //  - Repeated fields are stored as RepeatedFields or RepeatedPtrFields
 //    of whatever type the individual field would be.  Strings and
 //    Messages use RepeatedPtrFields while everything else uses
@@ -365,7 +365,7 @@ class GeneratedMessageReflection final : public Reflection {
                    const FieldDescriptor* field) const override;
   const Message& GetMessage(const Message& message,
                             const FieldDescriptor* field,
-                            MessageFactory* factory = NULL) const override;
+                            MessageFactory* factory = nullptr) const override;
 
   const FieldDescriptor* GetOneofFieldDescriptor(
       const Message& message,
@@ -408,11 +408,11 @@ class GeneratedMessageReflection final : public Reflection {
   void SetEnumValue(Message* message, const FieldDescriptor* field,
                     int value) const override;
   Message* MutableMessage(Message* message, const FieldDescriptor* field,
-                          MessageFactory* factory = NULL) const override;
+                          MessageFactory* factory = nullptr) const override;
   void SetAllocatedMessage(Message* message, Message* sub_message,
                            const FieldDescriptor* field) const override;
   Message* ReleaseMessage(Message* message, const FieldDescriptor* field,
-                          MessageFactory* factory = NULL) const override;
+                          MessageFactory* factory = nullptr) const override;
 
   int32 GetRepeatedInt32(const Message& message, const FieldDescriptor* field,
                          int index) const override;
@@ -491,12 +491,16 @@ class GeneratedMessageReflection final : public Reflection {
   void AddEnumValue(Message* message, const FieldDescriptor* field,
                     int value) const override;
   Message* AddMessage(Message* message, const FieldDescriptor* field,
-                      MessageFactory* factory = NULL) const override;
+                      MessageFactory* factory = nullptr) const override;
   void AddAllocatedMessage(Message* message, const FieldDescriptor* field,
                            Message* new_entry) const override;
 
+  PROTOBUF_DEPRECATED_MSG(
+      "Please use DescriptorPool::FindExtensionByPrintableName instead")
   const FieldDescriptor* FindKnownExtensionByName(
       const std::string& name) const override;
+  PROTOBUF_DEPRECATED_MSG(
+      "Please use DescriptorPool::FindExtensionByNumber instead")
   const FieldDescriptor* FindKnownExtensionByNumber(int number) const override;
 
   bool SupportsUnknownEnumValues() const override;
@@ -642,7 +646,7 @@ class GeneratedMessageReflection final : public Reflection {
 
   Message* UnsafeArenaReleaseMessage(Message* message,
                                      const FieldDescriptor* field,
-                                     MessageFactory* factory = NULL) const;
+                                     MessageFactory* factory = nullptr) const;
 
   void UnsafeArenaSetAllocatedMessage(Message* message, Message* sub_message,
                                       const FieldDescriptor* field) const;

@@ -84,12 +84,12 @@
 //     // Get the descriptors for the fields we're interested in and verify
 //     // their types.
 //     const FieldDescriptor* text_field = descriptor->FindFieldByName("text");
-//     assert(text_field != NULL);
+//     assert(text_field != nullptr);
 //     assert(text_field->type() == FieldDescriptor::TYPE_STRING);
 //     assert(text_field->label() == FieldDescriptor::LABEL_OPTIONAL);
 //     const FieldDescriptor* numbers_field = descriptor->
 //                                            FindFieldByName("numbers");
-//     assert(numbers_field != NULL);
+//     assert(numbers_field != nullptr);
 //     assert(numbers_field->type() == FieldDescriptor::TYPE_INT32);
 //     assert(numbers_field->label() == FieldDescriptor::LABEL_REPEATED);
 //
@@ -212,11 +212,11 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   Message* New() const override = 0;
 
   // Construct a new instance on the arena. Ownership is passed to the caller
-  // if arena is a NULL. Default implementation allows for API compatibility
+  // if arena is a nullptr. Default implementation allows for API compatibility
   // during the Arena transition.
   Message* New(Arena* arena) const override {
     Message* message = New();
-    if (arena != NULL) {
+    if (arena != nullptr) {
       arena->Own(message);
     }
     return message;
@@ -442,12 +442,12 @@ class PROTOBUF_EXPORT Reflection {
   virtual void ClearOneof(Message* /*message*/,
                           const OneofDescriptor* /*oneof_descriptor*/) const {}
 
-  // Returns the field descriptor if the oneof is set. NULL otherwise.
+  // Returns the field descriptor if the oneof is set. nullptr otherwise.
   // TODO(jieluo) - make it pure virtual.
   virtual const FieldDescriptor* GetOneofFieldDescriptor(
       const Message& /*message*/,
       const OneofDescriptor* /*oneof_descriptor*/) const {
-    return NULL;
+    return nullptr;
   }
 
   // Removes the last element of a repeated field.
@@ -520,9 +520,9 @@ class PROTOBUF_EXPORT Reflection {
                            const FieldDescriptor* field) const = 0;
 
   // See MutableMessage() for the meaning of the "factory" parameter.
-  virtual const Message& GetMessage(const Message& message,
-                                    const FieldDescriptor* field,
-                                    MessageFactory* factory = NULL) const = 0;
+  virtual const Message& GetMessage(
+      const Message& message, const FieldDescriptor* field,
+      MessageFactory* factory = nullptr) const = 0;
 
   // Get a string value without copying, if possible.
   //
@@ -587,23 +587,23 @@ class PROTOBUF_EXPORT Reflection {
   // the compiled-in class for this type, NOT DynamicMessage.
   virtual Message* MutableMessage(Message* message,
                                   const FieldDescriptor* field,
-                                  MessageFactory* factory = NULL) const = 0;
+                                  MessageFactory* factory = nullptr) const = 0;
   // Replaces the message specified by 'field' with the already-allocated object
   // sub_message, passing ownership to the message.  If the field contained a
-  // message, that message is deleted.  If sub_message is NULL, the field is
+  // message, that message is deleted.  If sub_message is nullptr, the field is
   // cleared.
   virtual void SetAllocatedMessage(Message* message, Message* sub_message,
                                    const FieldDescriptor* field) const = 0;
   // Releases the message specified by 'field' and returns the pointer,
   // ReleaseMessage() will return the message the message object if it exists.
-  // Otherwise, it may or may not return NULL.  In any case, if the return value
-  // is non-NULL, the caller takes ownership of the pointer.
+  // Otherwise, it may or may not return nullptr.  In any case, if the return
+  // value is non-null, the caller takes ownership of the pointer.
   // If the field existed (HasField() is true), then the returned pointer will
   // be the same as the pointer returned by MutableMessage().
   // This function has the same effect as ClearField().
   virtual Message* ReleaseMessage(Message* message,
                                   const FieldDescriptor* field,
-                                  MessageFactory* factory = NULL) const = 0;
+                                  MessageFactory* factory = nullptr) const = 0;
 
 
   // Repeated field getters ------------------------------------------
@@ -725,7 +725,7 @@ class PROTOBUF_EXPORT Reflection {
                             int value) const = 0;
   // See MutableMessage() for comments on the "factory" parameter.
   virtual Message* AddMessage(Message* message, const FieldDescriptor* field,
-                              MessageFactory* factory = NULL) const = 0;
+                              MessageFactory* factory = nullptr) const = 0;
 
   // Appends an already-allocated object 'new_entry' to the repeated field
   // specified by 'field' passing ownership to the message.
@@ -821,12 +821,16 @@ class PROTOBUF_EXPORT Reflection {
   // Extensions ----------------------------------------------------------------
 
   // Try to find an extension of this message type by fully-qualified field
-  // name.  Returns NULL if no extension is known for this name or number.
+  // name.  Returns nullptr if no extension is known for this name or number.
+  PROTOBUF_DEPRECATED_MSG(
+      "Please use DescriptorPool::FindExtensionByPrintableName instead")
   virtual const FieldDescriptor* FindKnownExtensionByName(
       const std::string& name) const = 0;
 
   // Try to find an extension of this message type by field number.
-  // Returns NULL if no extension is known for this name or number.
+  // Returns nullptr if no extension is known for this name or number.
+  PROTOBUF_DEPRECATED_MSG(
+      "Please use DescriptorPool::FindExtensionByNumber instead")
   virtual const FieldDescriptor* FindKnownExtensionByNumber(
       int number) const = 0;
 
@@ -849,7 +853,7 @@ class PROTOBUF_EXPORT Reflection {
   //     reflection->SetEnumValue(message, field, new_value);
   //   } else {
   //     if (field_descriptor->enum_type()->
-  //             FindValueByNumber(new_value) != NULL) {
+  //             FindValueByNumber(new_value) != nullptr) {
   //       reflection->SetEnumValue(message, field, new_value);
   //     } else if (emit_unknown_enum_values) {
   //       reflection->MutableUnknownFields(message)->AddVarint(
@@ -879,7 +883,7 @@ class PROTOBUF_EXPORT Reflection {
   // Obtain a pointer to a Repeated Field Structure and do some type checking:
   //   on field->cpp_type(),
   //   on field->field_option().ctype() (if ctype >= 0)
-  //   of field->message_type() (if message_type != NULL).
+  //   of field->message_type() (if message_type != nullptr).
   // We use 2 routine rather than 4 (const vs mutable) x (scalar vs pointer).
   virtual void* MutableRawRepeatedField(
       Message* message, const FieldDescriptor* field, FieldDescriptor::CppType,
@@ -906,10 +910,10 @@ class PROTOBUF_EXPORT Reflection {
   // "cpp_type" and "message_type" are deduced from the type parameter T passed
   // to Get(Mutable)RepeatedFieldRef. If T is a generated message type,
   // "message_type" should be set to its descriptor. Otherwise "message_type"
-  // should be set to NULL. Implementations of this method should check whether
-  // "cpp_type"/"message_type" is consistent with the actual type of the field.
-  // We use 1 routine rather than 2 (const vs mutable) because it is protected
-  // and it doesn't change the message.
+  // should be set to nullptr. Implementations of this method should check
+  // whether "cpp_type"/"message_type" is consistent with the actual type of the
+  // field. We use 1 routine rather than 2 (const vs mutable) because it is
+  // protected and it doesn't change the message.
   virtual void* RepeatedFieldData(Message* message,
                                   const FieldDescriptor* field,
                                   FieldDescriptor::CppType cpp_type,
@@ -996,12 +1000,12 @@ class PROTOBUF_EXPORT Reflection {
   friend class MapIterator;
   virtual internal::MapFieldBase* MutableMapData(
       Message* /* message */, const FieldDescriptor* /* field */) const {
-    return NULL;
+    return nullptr;
   }
 
   virtual const internal::MapFieldBase* GetMapData(
       const Message& /* message */, const FieldDescriptor* /* field */) const {
-    return NULL;
+    return nullptr;
   }
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(Reflection);
@@ -1027,7 +1031,7 @@ class PROTOBUF_EXPORT MessageFactory {
   // outlive the MessageFactory.
   //
   // Some implementations do not support all types.  GetPrototype() will
-  // return NULL if the descriptor passed in is not supported.
+  // return nullptr if the descriptor passed in is not supported.
   //
   // This method may or may not be thread-safe depending on the implementation.
   // Each implementation should document its own degree thread-safety.
@@ -1039,7 +1043,7 @@ class PROTOBUF_EXPORT MessageFactory {
   //     FooMessage::descriptor()) == FooMessage::default_instance()
   // This factory supports all types which are found in
   // DescriptorPool::generated_pool().  If given a descriptor from any other
-  // pool, GetPrototype() will return NULL.  (You can also check if a
+  // pool, GetPrototype() will return nullptr.  (You can also check if a
   // descriptor is for a generated message by checking if
   // descriptor->file()->pool() == DescriptorPool::generated_pool().)
   //
@@ -1091,8 +1095,8 @@ DECLARE_GET_REPEATED_FIELD(bool)
 
 #undef DECLARE_GET_REPEATED_FIELD
 
-// Tries to downcast this message to a generated message type.  Returns NULL if
-// this class is not an instance of T.  This works even if RTTI is disabled.
+// Tries to downcast this message to a generated message type.  Returns nullptr
+// if this class is not an instance of T.  This works even if RTTI is disabled.
 //
 // This also has the effect of creating a strong reference to T that will
 // prevent the linker from stripping it out at link time.  This can be important
@@ -1180,14 +1184,14 @@ template <>
 inline const RepeatedPtrField<Message>& Reflection::GetRepeatedPtrField(
     const Message& message, const FieldDescriptor* field) const {
   return *static_cast<const RepeatedPtrField<Message>*>(GetRawRepeatedField(
-      message, field, FieldDescriptor::CPPTYPE_MESSAGE, -1, NULL));
+      message, field, FieldDescriptor::CPPTYPE_MESSAGE, -1, nullptr));
 }
 
 template <>
 inline RepeatedPtrField<Message>* Reflection::MutableRepeatedPtrField(
     Message* message, const FieldDescriptor* field) const {
   return static_cast<RepeatedPtrField<Message>*>(MutableRawRepeatedField(
-      message, field, FieldDescriptor::CPPTYPE_MESSAGE, -1, NULL));
+      message, field, FieldDescriptor::CPPTYPE_MESSAGE, -1, nullptr));
 }
 
 template <typename PB>

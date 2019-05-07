@@ -179,13 +179,6 @@ void MessageGenerator::Generate(io::Printer* printer) {
     "  get { return $descriptor_accessor$; }\n"
     "}\n"
     "\n");
-  WriteGeneratedCodeAttributes(printer);
-  printer->Print(
-    vars,
-    "pbr::MessageDescriptor pb::IMessage.Descriptor {\n"
-    "  get { return Descriptor; }\n"
-    "}\n"
-    "\n");
 
   // Parameterless constructor and partial OnConstruction method.
   WriteGeneratedCodeAttributes(printer);
@@ -398,6 +391,7 @@ void MessageGenerator::GenerateCloningCode(io::Printer* printer) {
   // Clone unknown fields
   printer->Print(
       "_unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);\n");
+
   if (has_extension_ranges_) {
     printer->Print(
         "_extensions = pb::ExtensionSet.Clone(other._extensions);\n");

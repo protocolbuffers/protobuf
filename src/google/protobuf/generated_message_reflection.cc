@@ -65,14 +65,14 @@ bool IsMapFieldInApi(const FieldDescriptor* field) { return field->is_map(); }
 bool ParseNamedEnum(const EnumDescriptor* descriptor, const std::string& name,
                     int* value) {
   const EnumValueDescriptor* d = descriptor->FindValueByName(name);
-  if (d == NULL) return false;
+  if (d == nullptr) return false;
   *value = d->number();
   return true;
 }
 
 const std::string& NameOfEnum(const EnumDescriptor* descriptor, int value) {
   const EnumValueDescriptor* d = descriptor->FindValueByNumber(value);
-  return (d == NULL ? GetEmptyString() : d->name());
+  return (d == nullptr ? GetEmptyString() : d->name());
 }
 
 // ===================================================================
@@ -331,7 +331,7 @@ size_t GeneratedMessageReflection::SpaceUsedLong(const Message& message) const {
             // external type's prototype, so there is no extra memory usage.
           } else {
             const Message* sub_message = GetRaw<const Message*>(message, field);
-            if (sub_message != NULL) {
+            if (sub_message != nullptr) {
               total_size += sub_message->SpaceUsedLong();
             }
           }
@@ -410,12 +410,12 @@ void GeneratedMessageReflection::SwapField(Message* message1, Message* message2,
         } else {
           Message** sub_msg1 = MutableRaw<Message*>(message1, field);
           Message** sub_msg2 = MutableRaw<Message*>(message2, field);
-          if (*sub_msg1 == NULL && *sub_msg2 == NULL) break;
+          if (*sub_msg1 == nullptr && *sub_msg2 == nullptr) break;
           if (*sub_msg1 && *sub_msg2) {
             (*sub_msg1)->GetReflection()->Swap(*sub_msg1, *sub_msg2);
             break;
           }
-          if (*sub_msg1 == NULL) {
+          if (*sub_msg1 == nullptr) {
             *sub_msg1 = (*sub_msg2)->New(message1->GetArena());
             (*sub_msg1)->CopyFrom(**sub_msg2);
             ClearField(message2, field);
@@ -480,11 +480,11 @@ void GeneratedMessageReflection::SwapOneofField(
   double temp_double;
   bool temp_bool;
   int temp_int;
-  Message* temp_message = NULL;
+  Message* temp_message = nullptr;
   std::string temp_string;
 
   // Stores message1's oneof field to a temp variable.
-  const FieldDescriptor* field1 = NULL;
+  const FieldDescriptor* field1 = nullptr;
   if (oneof_case1 > 0) {
     field1 = descriptor_->FindFieldByNumber(oneof_case1);
     // oneof_descriptor->field(oneof_case1);
@@ -613,7 +613,7 @@ void GeneratedMessageReflection::Swap(Message* message1,
     temp->MergeFrom(*message2);
     message2->CopyFrom(*message1);
     Swap(message1, temp);
-    if (GetArena(message1) == NULL) {
+    if (GetArena(message1) == nullptr) {
       delete temp;
     }
     return;
@@ -822,7 +822,7 @@ void GeneratedMessageReflection::ClearField(
               const std::string* default_ptr =
                   &DefaultRaw<ArenaStringPtr>(field).Get();
               MutableRaw<ArenaStringPtr>(message, field)
-                  ->SetAllocated(default_ptr, NULL, GetArena(message));
+                  ->SetAllocated(default_ptr, nullptr, GetArena(message));
               break;
             }
           }
@@ -832,11 +832,11 @@ void GeneratedMessageReflection::ClearField(
         case FieldDescriptor::CPPTYPE_MESSAGE:
           if (!schema_.HasHasbits()) {
             // Proto3 does not have has-bits and we need to set a message field
-            // to NULL in order to indicate its un-presence.
-            if (GetArena(message) == NULL) {
+            // to nullptr in order to indicate its un-presence.
+            if (GetArena(message) == nullptr) {
               delete *MutableRaw<Message*>(message, field);
             }
-            *MutableRaw<Message*>(message, field) = NULL;
+            *MutableRaw<Message*>(message, field) = nullptr;
           } else {
             (*MutableRaw<Message*>(message, field))->Clear();
           }
@@ -1023,7 +1023,7 @@ void GeneratedMessageReflection::ListFields(
   // fleetwide and properly allowing this optimization through public interfaces
   // seems more trouble than it is worth.
   const uint32* const has_bits =
-      schema_.HasHasbits() ? GetHasBits(message) : NULL;
+      schema_.HasHasbits() ? GetHasBits(message) : nullptr;
   const uint32* const has_bits_indices = schema_.has_bit_indices_;
   output->reserve(descriptor_->field_count());
   for (int i = 0; i <= last_non_weak_field_index_; i++) {
@@ -1187,7 +1187,7 @@ void GeneratedMessageReflection::SetString(Message* message,
       case FieldOptions::STRING: {
         if (IsInlined(field)) {
           MutableField<InlinedStringField>(message, field)
-              ->SetNoArena(NULL, value);
+              ->SetNoArena(nullptr, value);
           break;
         }
 
@@ -1318,7 +1318,7 @@ void GeneratedMessageReflection::SetEnumValue(Message* message,
     // unknown enum values.
     const EnumValueDescriptor* value_desc =
         field->enum_type()->FindValueByNumber(value);
-    if (value_desc == NULL) {
+    if (value_desc == nullptr) {
       MutableUnknownFields(message)->AddVarint(field->number(), value);
       return;
     }
@@ -1373,7 +1373,7 @@ void GeneratedMessageReflection::SetRepeatedEnumValue(
     // unknown enum values.
     const EnumValueDescriptor* value_desc =
         field->enum_type()->FindValueByNumber(value);
-    if (value_desc == NULL) {
+    if (value_desc == nullptr) {
       MutableUnknownFields(message)->AddVarint(field->number(), value);
       return;
     }
@@ -1409,7 +1409,7 @@ void GeneratedMessageReflection::AddEnumValue(Message* message,
     // unknown enum values.
     const EnumValueDescriptor* value_desc =
         field->enum_type()->FindValueByNumber(value);
-    if (value_desc == NULL) {
+    if (value_desc == nullptr) {
       MutableUnknownFields(message)->AddVarint(field->number(), value);
       return;
     }
@@ -1435,14 +1435,14 @@ const Message& GeneratedMessageReflection::GetMessage(
     MessageFactory* factory) const {
   USAGE_CHECK_ALL(GetMessage, SINGULAR, MESSAGE);
 
-  if (factory == NULL) factory = message_factory_;
+  if (factory == nullptr) factory = message_factory_;
 
   if (field->is_extension()) {
     return static_cast<const Message&>(GetExtensionSet(message).GetMessage(
         field->number(), field->message_type(), factory));
   } else {
     const Message* result = GetRaw<const Message*>(message, field);
-    if (result == NULL) {
+    if (result == nullptr) {
       result = DefaultRaw<const Message*>(field);
     }
     return *result;
@@ -1454,7 +1454,7 @@ Message* GeneratedMessageReflection::MutableMessage(
     MessageFactory* factory) const {
   USAGE_CHECK_ALL(MutableMessage, SINGULAR, MESSAGE);
 
-  if (factory == NULL) factory = message_factory_;
+  if (factory == nullptr) factory = message_factory_;
 
   if (field->is_extension()) {
     return static_cast<Message*>(
@@ -1475,7 +1475,7 @@ Message* GeneratedMessageReflection::MutableMessage(
       SetBit(message, field);
     }
 
-    if (*result_holder == NULL) {
+    if (*result_holder == nullptr) {
       const Message* default_message = DefaultRaw<const Message*>(field);
       *result_holder = default_message->New(message->GetArena());
     }
@@ -1494,7 +1494,7 @@ void GeneratedMessageReflection::UnsafeArenaSetAllocatedMessage(
         field->number(), field->type(), field, sub_message);
   } else {
     if (field->containing_oneof()) {
-      if (sub_message == NULL) {
+      if (sub_message == nullptr) {
         ClearOneof(message, field->containing_oneof());
         return;
       }
@@ -1504,13 +1504,13 @@ void GeneratedMessageReflection::UnsafeArenaSetAllocatedMessage(
       return;
     }
 
-    if (sub_message == NULL) {
+    if (sub_message == nullptr) {
       ClearBit(message, field);
     } else {
       SetBit(message, field);
     }
     Message** sub_message_holder = MutableRaw<Message*>(message, field);
-    if (GetArena(message) == NULL) {
+    if (GetArena(message) == nullptr) {
       delete *sub_message_holder;
     }
     *sub_message_holder = sub_message;
@@ -1523,8 +1523,9 @@ void GeneratedMessageReflection::SetAllocatedMessage(
   // If message and sub-message are in different memory ownership domains
   // (different arenas, or one is on heap and one is not), then we may need to
   // do a copy.
-  if (sub_message != NULL && sub_message->GetArena() != message->GetArena()) {
-    if (sub_message->GetArena() == NULL && message->GetArena() != NULL) {
+  if (sub_message != nullptr &&
+      sub_message->GetArena() != message->GetArena()) {
+    if (sub_message->GetArena() == nullptr && message->GetArena() != nullptr) {
       // Case 1: parent is on an arena and child is heap-allocated. We can add
       // the child to the arena's Own() list to free on arena destruction, then
       // set our pointer.
@@ -1548,7 +1549,7 @@ Message* GeneratedMessageReflection::UnsafeArenaReleaseMessage(
     MessageFactory* factory) const {
   USAGE_CHECK_ALL(ReleaseMessage, SINGULAR, MESSAGE);
 
-  if (factory == NULL) factory = message_factory_;
+  if (factory == nullptr) factory = message_factory_;
 
   if (field->is_extension()) {
     return static_cast<Message*>(
@@ -1562,12 +1563,12 @@ Message* GeneratedMessageReflection::UnsafeArenaReleaseMessage(
       if (HasOneofField(*message, field)) {
         *MutableOneofCase(message, field->containing_oneof()) = 0;
       } else {
-        return NULL;
+        return nullptr;
       }
     }
     Message** result = MutableRaw<Message*>(message, field);
     Message* ret = *result;
-    *result = NULL;
+    *result = nullptr;
     return ret;
   }
 }
@@ -1576,7 +1577,7 @@ Message* GeneratedMessageReflection::ReleaseMessage(
     Message* message, const FieldDescriptor* field,
     MessageFactory* factory) const {
   Message* released = UnsafeArenaReleaseMessage(message, field, factory);
-  if (GetArena(message) != NULL && released != NULL) {
+  if (GetArena(message) != nullptr && released != nullptr) {
     Message* copy_from_arena = released->New();
     copy_from_arena->CopyFrom(*released);
     released = copy_from_arena;
@@ -1628,17 +1629,17 @@ Message* GeneratedMessageReflection::AddMessage(Message* message,
                                                 MessageFactory* factory) const {
   USAGE_CHECK_ALL(AddMessage, REPEATED, MESSAGE);
 
-  if (factory == NULL) factory = message_factory_;
+  if (factory == nullptr) factory = message_factory_;
 
   if (field->is_extension()) {
     return static_cast<Message*>(
         MutableExtensionSet(message)->AddMessage(field, factory));
   } else {
-    Message* result = NULL;
+    Message* result = nullptr;
 
     // We can't use AddField<Message>() because RepeatedPtrFieldBase doesn't
     // know how to allocate one.
-    RepeatedPtrFieldBase* repeated = NULL;
+    RepeatedPtrFieldBase* repeated = nullptr;
     if (IsMapFieldInApi(field)) {
       repeated =
           MutableRaw<MapFieldBase>(message, field)->MutableRepeatedField();
@@ -1646,7 +1647,7 @@ Message* GeneratedMessageReflection::AddMessage(Message* message,
       repeated = MutableRaw<RepeatedPtrFieldBase>(message, field);
     }
     result = repeated->AddFromCleared<GenericTypeHandler<Message> >();
-    if (result == NULL) {
+    if (result == nullptr) {
       // We must allocate a new object.
       const Message* prototype;
       if (repeated->size() == 0) {
@@ -1672,7 +1673,7 @@ void GeneratedMessageReflection::AddAllocatedMessage(
   if (field->is_extension()) {
     MutableExtensionSet(message)->AddAllocatedMessage(field, new_entry);
   } else {
-    RepeatedPtrFieldBase* repeated = NULL;
+    RepeatedPtrFieldBase* repeated = nullptr;
     if (IsMapFieldInApi(field)) {
       repeated =
           MutableRaw<MapFieldBase>(message, field)->MutableRepeatedField();
@@ -1690,7 +1691,7 @@ void* GeneratedMessageReflection::MutableRawRepeatedField(
   if (field->cpp_type() != cpptype)
     ReportReflectionUsageTypeError(descriptor_, field,
                                    "MutableRawRepeatedField", cpptype);
-  if (desc != NULL)
+  if (desc != nullptr)
     GOOGLE_CHECK_EQ(field->message_type(), desc) << "wrong submessage type";
   if (field->is_extension()) {
     return MutableExtensionSet(message)->MutableRawRepeatedField(
@@ -1714,7 +1715,7 @@ const void* GeneratedMessageReflection::GetRawRepeatedField(
                                    cpptype);
   if (ctype >= 0)
     GOOGLE_CHECK_EQ(field->options().ctype(), ctype) << "subtype mismatch";
-  if (desc != NULL)
+  if (desc != nullptr)
     GOOGLE_CHECK_EQ(field->message_type(), desc) << "wrong submessage type";
   if (field->is_extension()) {
     // Should use extension_set::GetRawRepeatedField. However, the required
@@ -1737,7 +1738,7 @@ const FieldDescriptor* GeneratedMessageReflection::GetOneofFieldDescriptor(
     const Message& message, const OneofDescriptor* oneof_descriptor) const {
   uint32 field_number = GetOneofCase(message, oneof_descriptor);
   if (field_number == 0) {
-    return NULL;
+    return nullptr;
   }
   return descriptor_->FindFieldByNumber(field_number);
 }
@@ -1794,37 +1795,13 @@ int GeneratedMessageReflection::MapSize(const Message& message,
 
 const FieldDescriptor* GeneratedMessageReflection::FindKnownExtensionByName(
     const std::string& name) const {
-  if (!schema_.HasExtensionSet()) return NULL;
-
-  const FieldDescriptor* result = descriptor_pool_->FindExtensionByName(name);
-  if (result != NULL && result->containing_type() == descriptor_) {
-    return result;
-  }
-
-  if (descriptor_->options().message_set_wire_format()) {
-    // MessageSet extensions may be identified by type name.
-    const Descriptor* type = descriptor_pool_->FindMessageTypeByName(name);
-    if (type != NULL) {
-      // Look for a matching extension in the foreign type's scope.
-      const int type_extension_count = type->extension_count();
-      for (int i = 0; i < type_extension_count; i++) {
-        const FieldDescriptor* extension = type->extension(i);
-        if (extension->containing_type() == descriptor_ &&
-            extension->type() == FieldDescriptor::TYPE_MESSAGE &&
-            extension->is_optional() && extension->message_type() == type) {
-          // Found it.
-          return extension;
-        }
-      }
-    }
-  }
-
-  return NULL;
+  if (!schema_.HasExtensionSet()) return nullptr;
+  return descriptor_pool_->FindExtensionByPrintableName(descriptor_, name);
 }
 
 const FieldDescriptor* GeneratedMessageReflection::FindKnownExtensionByNumber(
     int number) const {
-  if (!schema_.HasExtensionSet()) return NULL;
+  if (!schema_.HasExtensionSet()) return nullptr;
   return descriptor_pool_->FindExtensionByNumber(descriptor_, number);
 }
 
@@ -1940,10 +1917,10 @@ inline bool GeneratedMessageReflection::HasBit(
   }
 
   // proto3: no has-bits. All fields present except messages, which are
-  // present only if their message-field pointer is non-NULL.
+  // present only if their message-field pointer is non-null.
   if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
     return !schema_.IsDefaultInstance(message) &&
-           GetRaw<const Message*>(message, field) != NULL;
+           GetRaw<const Message*>(message, field) != nullptr;
   } else {
     // Non-message field (and non-oneof, since that was handled in HasField()
     // before calling us), and singular (again, checked in HasField). So, this
@@ -2064,7 +2041,7 @@ inline void GeneratedMessageReflection::ClearOneof(
   uint32 oneof_case = GetOneofCase(*message, oneof_descriptor);
   if (oneof_case > 0) {
     const FieldDescriptor* field = descriptor_->FindFieldByNumber(oneof_case);
-    if (GetArena(message) == NULL) {
+    if (GetArena(message) == nullptr) {
       switch (field->cpp_type()) {
         case FieldDescriptor::CPPTYPE_STRING: {
           switch (field->options().ctype()) {
@@ -2177,7 +2154,7 @@ void* GeneratedMessageReflection::RepeatedFieldData(
       << "The type parameter T in RepeatedFieldRef<T> API doesn't match "
       << "the actual field type (for enums T should be the generated enum "
       << "type or int32).";
-  if (message_type != NULL) {
+  if (message_type != nullptr) {
     GOOGLE_CHECK_EQ(message_type, field->message_type());
   }
   if (field->is_extension()) {
@@ -2319,7 +2296,7 @@ void AssignDescriptorsImpl(const DescriptorTable* table) {
   const FileDescriptor* file =
       DescriptorPool::internal_generated_pool()->FindFileByName(
           table->filename);
-  GOOGLE_CHECK(file != NULL);
+  GOOGLE_CHECK(file != nullptr);
 
   MessageFactory* factory = MessageFactory::generated_factory();
 
