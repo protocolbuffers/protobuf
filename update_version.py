@@ -220,7 +220,7 @@ def UpdateObjectiveC():
   RewriteTextFile('Protobuf.podspec',
     lambda line : re.sub(
       r"^  s.version  = '.*'$",
-      "  s.version  = '%s'" % GetFullVersion(rc_suffix = '-rc.'),
+      "  s.version  = '%s'" % GetFullVersion(rc_suffix = '-rc'),
       line))
 
 
