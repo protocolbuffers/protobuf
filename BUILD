@@ -350,45 +350,45 @@ cc_test(
     copts = CPPOPTS,
 )
 
-#upb_proto_library(
-#    name = "conformance_proto_upb",
-#    deps = ["@com_google_protobuf//:conformance_proto"],
-#)
+upb_proto_library(
+    name = "conformance_proto_upb",
+    deps = ["@com_google_protobuf//:conformance_proto"],
+)
 
-#upb_proto_library(
-#    name = "test_messages_proto3_proto_upb",
-#    deps = ["@com_google_protobuf//:test_messages_proto3_proto"],
-#)
+upb_proto_library(
+    name = "test_messages_proto3_proto_upb",
+    deps = ["@com_google_protobuf//:test_messages_proto3_proto"],
+)
 
-#cc_binary(
-#    name = "conformance_upb",
-#    srcs = [
-#        "tests/conformance_upb.c",
-#    ],
-#    copts = COPTS + ["-Ibazel-out/k8-fastbuild/bin"],
-#    deps = [
-#        ":conformance_proto_upb",
-#        ":test_messages_proto3_proto_upb",
-#        ":upb",
-#    ],
-#)
-#
-#make_shell_script(
-#    name = "gen_test_conformance_upb",
-#    out = "test_conformance_upb.sh",
-#    contents = "$(rlocation com_google_protobuf/conformance_test_runner) $(rlocation upb/conformance_upb)",
-#)
-#
-#sh_test(
-#    name = "test_conformance_upb",
-#    srcs = ["test_conformance_upb.sh"],
-#    data = [
-#        "tests/conformance_upb_failures.txt",
-#        ":conformance_upb",
-#        "@bazel_tools//tools/bash/runfiles",
-#        "@com_google_protobuf//:conformance_test_runner",
-#    ],
-#)
+cc_binary(
+    name = "conformance_upb",
+    srcs = [
+        "tests/conformance_upb.c",
+    ],
+    copts = COPTS + ["-Ibazel-out/k8-fastbuild/bin"],
+    deps = [
+        ":conformance_proto_upb",
+        ":test_messages_proto3_proto_upb",
+        ":upb",
+    ],
+)
+
+make_shell_script(
+    name = "gen_test_conformance_upb",
+    out = "test_conformance_upb.sh",
+    contents = "$(rlocation com_google_protobuf/conformance_test_runner) $(rlocation upb/conformance_upb)",
+)
+
+sh_test(
+    name = "test_conformance_upb",
+    srcs = ["test_conformance_upb.sh"],
+    data = [
+        "tests/conformance_upb_failures.txt",
+        ":conformance_upb",
+        "@bazel_tools//tools/bash/runfiles",
+        "@com_google_protobuf//:conformance_test_runner",
+    ],
+)
 
 # Amalgamation #################################################################
 

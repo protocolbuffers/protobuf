@@ -43,8 +43,8 @@ class BuildFileFunctions(object):
     for file in files:
         if os.path.isfile(file):
             found_files.append(file)
-        elif os.path.isfile("generated/" + file):
-            found_files.append("generated/" + file)
+        elif os.path.isfile("generated_for_cmake/" + file):
+            found_files.append("generated_for_cmake/" + file)
         else:
             print("Warning: no such file: " + file)
 
