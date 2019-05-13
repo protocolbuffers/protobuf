@@ -68,7 +68,7 @@ cc_library(
 
 upb_proto_library(
     name = "descriptor_upbproto",
-    deps = ["@com_google_protobuf//:descriptor_proto"],
+    deps = [map_dep("@com_google_protobuf//:descriptor_proto")],
 )
 
 cc_library(

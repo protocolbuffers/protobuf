@@ -2,7 +2,10 @@
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@bazel_skylib//lib:versions.bzl", "versions")
 load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain")
+
+# copybara:strip_for_google3_begin
 load("@bazel_version//:bazel_version.bzl", "bazel_version")
+# copybara:strip_end
 
 _shell_find_runfiles = """
   # --- begin runfiles.bash initialization ---
@@ -227,6 +230,8 @@ is_bazel = not hasattr(native, "genmpm")
 google3_dep_map = {
     "@absl//absl/base:core_headers": "//third_party/absl/base:core_headers",
     "@absl//absl/strings": "//third_party/absl/strings",
+    "@bazel_tools//tools/cpp:current_cc_toolchain": "//tools/cpp:current_cc_toolchain",
+    "@com_google_protobuf//:descriptor_proto": "//net/proto2/proto:descriptor",
     "@com_google_protobuf//:protoc": "//third_party/protobuf:protoc",
     "@com_google_protobuf//:protobuf": "//third_party/protobuf:protobuf",
     "@com_google_protobuf//:protoc_lib": "//third_party/protobuf:libprotoc",
@@ -260,7 +265,10 @@ def _get_real_roots(files):
     return roots.keys()
 
 def _generate_output_file(ctx, src, extension):
-    real_short_path = _get_real_short_path(src)
+    if is_bazel:
+        real_short_path = _get_real_short_path(src)
+    else:
+        real_short_path = paths.relativize(src.short_path, ctx.label.package)
     output_filename = paths.replace_extension(real_short_path, extension)
     ret = ctx.new_file(ctx.genfiles_dir, output_filename)
     return ret
@@ -284,31 +292,37 @@ def cc_library_func(ctx, name, hdrs, srcs, dep_ccinfos):
         unsupported_features = ctx.disabled_features,
     )
 
-    if is_bazel:
-        if bazel_version == "0.24.1":
-            # Compatibility code until gRPC is on 0.25.2 or later.
-            compilation_info = cc_common.compile(
-                ctx = ctx,
-                feature_configuration = feature_configuration,
-                cc_toolchain = toolchain,
-                srcs = srcs,
-                hdrs = hdrs,
-                compilation_contexts = compilation_contexts,
-            )
-            linking_info = cc_common.link(
-                ctx = ctx,
-                feature_configuration = feature_configuration,
-                cc_toolchain = toolchain,
-                cc_compilation_outputs = compilation_info.cc_compilation_outputs,
-                linking_contexts = linking_contexts,
-            )
-            return CcInfo(
-                compilation_context = compilation_info.compilation_context,
-                linking_context = linking_info.linking_context,
-            )
+    # copybara:strip_for_google3_begin
+    if bazel_version == "0.24.1":
+        # Compatibility code until gRPC is on 0.25.2 or later.
+        compilation_info = cc_common.compile(
+            ctx = ctx,
+            feature_configuration = feature_configuration,
+            cc_toolchain = toolchain,
+            srcs = srcs,
+            hdrs = hdrs,
+            compilation_contexts = compilation_contexts,
+        )
+        linking_info = cc_common.link(
+            ctx = ctx,
+            feature_configuration = feature_configuration,
+            cc_toolchain = toolchain,
+            cc_compilation_outputs = compilation_info.cc_compilation_outputs,
+            linking_contexts = linking_contexts,
+        )
+        return CcInfo(
+            compilation_context = compilation_info.compilation_context,
+            linking_context = linking_info.linking_context,
+        )
 
-        if not versions.is_at_least("0.25.2", bazel_version):
-            fail("upb requires Bazel >=0.25.2 or 0.24.1")
+    if not versions.is_at_least("0.25.2", bazel_version):
+        fail("upb requires Bazel >=0.25.2 or 0.24.1")
+    # copybara:strip_end
+
+    blaze_only_args = {}
+
+    if not is_bazel:
+        blaze_only_args["grep_includes"] = ctx.file._grep_includes
 
     (compilation_context, compilation_outputs) = cc_common.compile(
         actions = ctx.actions,
@@ -318,6 +332,7 @@ def cc_library_func(ctx, name, hdrs, srcs, dep_ccinfos):
         srcs = srcs,
         public_hdrs = hdrs,
         compilation_contexts = compilation_contexts,
+        **blaze_only_args
     )
     (linking_context, linking_outputs) = cc_common.create_linking_context_from_compilation_outputs(
         actions = ctx.actions,
@@ -326,6 +341,7 @@ def cc_library_func(ctx, name, hdrs, srcs, dep_ccinfos):
         cc_toolchain = toolchain,
         compilation_outputs = compilation_outputs,
         linking_contexts = linking_contexts,
+        **blaze_only_args
     )
 
     return CcInfo(
@@ -383,7 +399,7 @@ def _upb_proto_aspect_impl(target, ctx):
     dep_ccinfos = [dep[CcInfo] for dep in deps if CcInfo in dep]
     cc_info = cc_library_func(
         ctx = ctx,
-        name = ctx.rule.attr.name,
+        name = ctx.rule.attr.name + "_upb",
         hdrs = files.hdrs,
         srcs = files.srcs,
         dep_ccinfos = dep_ccinfos,
@@ -392,8 +408,17 @@ def _upb_proto_aspect_impl(target, ctx):
 
 # upb_proto_library() ##########################################################
 
+def maybe_add(d):
+    if not is_bazel:
+        d["_grep_includes"] = attr.label(
+            allow_single_file = True,
+            cfg = "host",
+            default = "//tools/cpp:grep-includes",
+        )
+    return d
+
 _upb_proto_library_aspect = aspect(
-    attrs = {
+    attrs = maybe_add({
         "_upbc": attr.label(
             executable = True,
             cfg = "host",
@@ -404,10 +429,12 @@ _upb_proto_library_aspect = aspect(
             cfg = "host",
             default = map_dep("@com_google_protobuf//:protoc"),
         ),
-        "_cc_toolchain": attr.label(default = "@bazel_tools//tools/cpp:current_cc_toolchain"),
+        "_cc_toolchain": attr.label(
+            default = map_dep("@bazel_tools//tools/cpp:current_cc_toolchain"),
+        ),
         "_upb": attr.label(default = ":upb"),
         "_ext": attr.string(default = ".upb"),
-    },
+    }),
     implementation = _upb_proto_aspect_impl,
     attr_aspects = ["deps"],
     fragments = ["cpp"],
