@@ -175,6 +175,9 @@ class WorkspaceFileFunctions(object):
   def git_repository(self, **kwargs):
     pass
 
+  def bazel_version_repository(self, **kwargs):
+    pass
+
 
 class Converter(object):
   def __init__(self):
