@@ -1015,7 +1015,7 @@ struct FieldNumberSorter {
   }
 };
 
-inline bool IsIndexInHasBitSet(const uint32* has_bit_set,
+bool IsIndexInHasBitSet(const uint32* has_bit_set,
                                uint32 has_bit_index) {
   GOOGLE_DCHECK_NE(has_bit_index, ~0u);
   return ((has_bit_set[has_bit_index / 32] >> (has_bit_index % 32)) &
@@ -1288,7 +1288,7 @@ void Reflection::AddString(Message* message, const FieldDescriptor* field,
 
 // -------------------------------------------------------------------
 
-inline bool CreateUnknownEnumValues(const FileDescriptor* file) {
+bool CreateUnknownEnumValues(const FileDescriptor* file) {
   return file->syntax() == FileDescriptor::SYNTAX_PROTO3;
 }
 
@@ -1864,62 +1864,62 @@ Type* Reflection::MutableRaw(Message* message,
   return GetPointerAtOffset<Type>(message, schema_.GetFieldOffset(field));
 }
 
-inline const uint32* Reflection::GetHasBits(const Message& message) const {
+const uint32* Reflection::GetHasBits(const Message& message) const {
   GOOGLE_DCHECK(schema_.HasHasbits());
   return &GetConstRefAtOffset<uint32>(message, schema_.HasBitsOffset());
 }
 
-inline uint32* Reflection::MutableHasBits(Message* message) const {
+uint32* Reflection::MutableHasBits(Message* message) const {
   GOOGLE_DCHECK(schema_.HasHasbits());
   return GetPointerAtOffset<uint32>(message, schema_.HasBitsOffset());
 }
 
-inline uint32 Reflection::GetOneofCase(
+uint32 Reflection::GetOneofCase(
     const Message& message, const OneofDescriptor* oneof_descriptor) const {
   return GetConstRefAtOffset<uint32>(
       message, schema_.GetOneofCaseOffset(oneof_descriptor));
 }
 
-inline uint32* Reflection::MutableOneofCase(
+uint32* Reflection::MutableOneofCase(
     Message* message, const OneofDescriptor* oneof_descriptor) const {
   return GetPointerAtOffset<uint32>(
       message, schema_.GetOneofCaseOffset(oneof_descriptor));
 }
 
-inline const ExtensionSet& Reflection::GetExtensionSet(
+const ExtensionSet& Reflection::GetExtensionSet(
     const Message& message) const {
   return GetConstRefAtOffset<ExtensionSet>(message,
                                            schema_.GetExtensionSetOffset());
 }
 
-inline ExtensionSet* Reflection::MutableExtensionSet(Message* message) const {
+ExtensionSet* Reflection::MutableExtensionSet(Message* message) const {
   return GetPointerAtOffset<ExtensionSet>(message,
                                           schema_.GetExtensionSetOffset());
 }
 
-inline Arena* Reflection::GetArena(Message* message) const {
+Arena* Reflection::GetArena(Message* message) const {
   return GetInternalMetadataWithArena(*message).arena();
 }
 
-inline const InternalMetadataWithArena&
+const InternalMetadataWithArena&
 Reflection::GetInternalMetadataWithArena(const Message& message) const {
   return GetConstRefAtOffset<InternalMetadataWithArena>(
       message, schema_.GetMetadataOffset());
 }
 
-inline InternalMetadataWithArena* Reflection::MutableInternalMetadataWithArena(
+InternalMetadataWithArena* Reflection::MutableInternalMetadataWithArena(
     Message* message) const {
   return GetPointerAtOffset<InternalMetadataWithArena>(
       message, schema_.GetMetadataOffset());
 }
 
 template <typename Type>
-inline const Type& Reflection::DefaultRaw(const FieldDescriptor* field) const {
+const Type& Reflection::DefaultRaw(const FieldDescriptor* field) const {
   return *reinterpret_cast<const Type*>(schema_.GetFieldDefault(field));
 }
 
 // Simple accessors for manipulating has_bits_.
-inline bool Reflection::HasBit(const Message& message,
+bool Reflection::HasBit(const Message& message,
                                const FieldDescriptor* field) const {
   GOOGLE_DCHECK(!field->options().weak());
   if (schema_.HasHasbits()) {
@@ -1980,7 +1980,7 @@ inline bool Reflection::HasBit(const Message& message,
   }
 }
 
-inline void Reflection::SetBit(Message* message,
+void Reflection::SetBit(Message* message,
                                const FieldDescriptor* field) const {
   GOOGLE_DCHECK(!field->options().weak());
   if (!schema_.HasHasbits()) {
@@ -1991,7 +1991,7 @@ inline void Reflection::SetBit(Message* message,
       (static_cast<uint32>(1) << (index % 32));
 }
 
-inline void Reflection::ClearBit(Message* message,
+void Reflection::ClearBit(Message* message,
                                  const FieldDescriptor* field) const {
   GOOGLE_DCHECK(!field->options().weak());
   if (!schema_.HasHasbits()) {
@@ -2002,7 +2002,7 @@ inline void Reflection::ClearBit(Message* message,
       ~(static_cast<uint32>(1) << (index % 32));
 }
 
-inline void Reflection::SwapBit(Message* message1, Message* message2,
+void Reflection::SwapBit(Message* message1, Message* message2,
                                 const FieldDescriptor* field) const {
   GOOGLE_DCHECK(!field->options().weak());
   if (!schema_.HasHasbits()) {
@@ -2026,24 +2026,24 @@ bool Reflection::HasOneof(const Message& message,
   return (GetOneofCase(message, oneof_descriptor) > 0);
 }
 
-inline bool Reflection::HasOneofField(const Message& message,
+bool Reflection::HasOneofField(const Message& message,
                                       const FieldDescriptor* field) const {
   return (GetOneofCase(message, field->containing_oneof()) == field->number());
 }
 
-inline void Reflection::SetOneofCase(Message* message,
+void Reflection::SetOneofCase(Message* message,
                                      const FieldDescriptor* field) const {
   *MutableOneofCase(message, field->containing_oneof()) = field->number();
 }
 
-inline void Reflection::ClearOneofField(Message* message,
+void Reflection::ClearOneofField(Message* message,
                                         const FieldDescriptor* field) const {
   if (HasOneofField(*message, field)) {
     ClearOneof(message, field->containing_oneof());
   }
 }
 
-inline void Reflection::ClearOneof(
+void Reflection::ClearOneof(
     Message* message, const OneofDescriptor* oneof_descriptor) const {
   // TODO(jieluo): Consider to cache the unused object instead of deleting
   // it. It will be much faster if an application switches a lot from
@@ -2117,13 +2117,13 @@ void* Reflection::MutableRawRepeatedString(Message* message,
 // template instance is only called from one location.  These are
 // used for all types except messages.
 template <typename Type>
-inline const Type& Reflection::GetField(const Message& message,
+const Type& Reflection::GetField(const Message& message,
                                         const FieldDescriptor* field) const {
   return GetRaw<Type>(message, field);
 }
 
 template <typename Type>
-inline void Reflection::SetField(Message* message, const FieldDescriptor* field,
+void Reflection::SetField(Message* message, const FieldDescriptor* field,
                                  const Type& value) const {
   if (field->containing_oneof() && !HasOneofField(*message, field)) {
     ClearOneof(message, field->containing_oneof());
@@ -2134,7 +2134,7 @@ inline void Reflection::SetField(Message* message, const FieldDescriptor* field,
 }
 
 template <typename Type>
-inline Type* Reflection::MutableField(Message* message,
+Type* Reflection::MutableField(Message* message,
                                       const FieldDescriptor* field) const {
   field->containing_oneof() ? SetOneofCase(message, field)
                             : SetBit(message, field);
@@ -2142,28 +2142,28 @@ inline Type* Reflection::MutableField(Message* message,
 }
 
 template <typename Type>
-inline const Type& Reflection::GetRepeatedField(const Message& message,
+const Type& Reflection::GetRepeatedField(const Message& message,
                                                 const FieldDescriptor* field,
                                                 int index) const {
   return GetRaw<RepeatedField<Type> >(message, field).Get(index);
 }
 
 template <typename Type>
-inline const Type& Reflection::GetRepeatedPtrField(const Message& message,
+const Type& Reflection::GetRepeatedPtrField(const Message& message,
                                                    const FieldDescriptor* field,
                                                    int index) const {
   return GetRaw<RepeatedPtrField<Type> >(message, field).Get(index);
 }
 
 template <typename Type>
-inline void Reflection::SetRepeatedField(Message* message,
+void Reflection::SetRepeatedField(Message* message,
                                          const FieldDescriptor* field,
                                          int index, Type value) const {
   MutableRaw<RepeatedField<Type> >(message, field)->Set(index, value);
 }
 
 template <typename Type>
-inline Type* Reflection::MutableRepeatedField(Message* message,
+Type* Reflection::MutableRepeatedField(Message* message,
                                               const FieldDescriptor* field,
                                               int index) const {
   RepeatedPtrField<Type>* repeated =
@@ -2172,13 +2172,13 @@ inline Type* Reflection::MutableRepeatedField(Message* message,
 }
 
 template <typename Type>
-inline void Reflection::AddField(Message* message, const FieldDescriptor* field,
+void Reflection::AddField(Message* message, const FieldDescriptor* field,
                                  const Type& value) const {
   MutableRaw<RepeatedField<Type> >(message, field)->Add(value);
 }
 
 template <typename Type>
-inline Type* Reflection::AddField(Message* message,
+Type* Reflection::AddField(Message* message,
                                   const FieldDescriptor* field) const {
   RepeatedPtrField<Type>* repeated =
       MutableRaw<RepeatedPtrField<Type> >(message, field);
