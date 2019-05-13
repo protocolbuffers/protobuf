@@ -272,7 +272,7 @@ def filter_none(elems):
 
 # upb_proto_library() rule
 
-def cc_library_func(ctx, hdrs, srcs, deps):
+def cc_library_func(ctx, name, hdrs, srcs, deps):
     compilation_contexts = []
     linking_contexts = []
     for dep in deps:
@@ -289,14 +289,14 @@ def cc_library_func(ctx, hdrs, srcs, deps):
         actions = ctx.actions,
         feature_configuration = feature_configuration,
         cc_toolchain = toolchain,
-        name = "upb_lib",
+        name = name,
         srcs = srcs,
         public_hdrs = hdrs,
         compilation_contexts = compilation_contexts,
     )
     (linking_context, linking_outputs) = cc_common.create_linking_context_from_compilation_outputs(
         actions = ctx.actions,
-        name = "upb_lib",
+        name = name,
         feature_configuration = feature_configuration,
         cc_toolchain = toolchain,
         compilation_outputs = compilation_outputs,
@@ -356,6 +356,7 @@ def _upb_proto_aspect_impl(target, ctx):
     files = _compile_upb_protos(ctx, proto_info, proto_info.direct_sources, ctx.attr._ext)
     cc_info = cc_library_func(
         ctx = ctx,
+        name = ctx.rule.attr.name,
         hdrs = files.hdrs,
         srcs = files.srcs,
         deps = ctx.rule.attr.deps + [ctx.attr._upb],
