@@ -32,16 +32,16 @@ syntax = "proto3";
 
 package proto3;
 
-option java_package = "com.google.protobuf.util";
-option java_outer_classname = "JsonFormatProto3";
-
+import "google/protobuf/any.proto";
 import "google/protobuf/duration.proto";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
-import "google/protobuf/struct.proto";
-import "google/protobuf/any.proto";
-import "google/protobuf/field_mask.proto";
 import "google/protobuf/unittest.proto";
+
+option java_package = "com.google.protobuf.util";
+option java_outer_classname = "JsonFormatProto3";
 
 enum EnumType {
   FOO = 0;

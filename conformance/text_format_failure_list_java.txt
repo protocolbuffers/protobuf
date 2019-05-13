@@ -1,0 +1,6 @@
+Recommended.Proto3.ProtobufInput.GroupUnknownFields_Drop.TextFormatOutput
+Recommended.Proto3.ProtobufInput.MessageUnknownFields_Drop.TextFormatOutput
+Recommended.Proto3.ProtobufInput.RepeatedUnknownFields_Drop.TextFormatOutput
+Recommended.Proto3.ProtobufInput.ScalarUnknownFields_Drop.TextFormatOutput
+Required.Proto3.TextFormatInput.AnyField.ProtobufOutput
+Required.Proto3.TextFormatInput.AnyField.TextFormatOutput

@@ -68,6 +68,7 @@ ConformanceTestSuite::ConformanceRequestSetting::ConformanceRequestSetting(
       input_format_(input_format),
       output_format_(output_format),
       prototype_message_(prototype_message),
+      prototype_message_for_compare_(prototype_message.New()),
       test_name_(test_name) {
   switch (input_format) {
     case conformance::PROTOBUF: {
@@ -77,6 +78,16 @@ ConformanceTestSuite::ConformanceRequestSetting::ConformanceRequestSetting(
 
     case conformance::JSON: {
       request_.set_json_payload(input);
+      break;
+    }
+
+    case conformance::JSPB: {
+      request_.set_jspb_payload(input);
+      break;
+    }
+
+    case conformance::TEXT_FORMAT: {
+      request_.set_text_payload(input);
       break;
     }
 
@@ -92,7 +103,7 @@ ConformanceTestSuite::ConformanceRequestSetting::ConformanceRequestSetting(
 
 Message* ConformanceTestSuite::ConformanceRequestSetting::
     GetTestMessage() const {
-  return prototype_message_.New();
+  return prototype_message_for_compare_->New();
 }
 
 string ConformanceTestSuite::ConformanceRequestSetting::
@@ -126,6 +137,8 @@ string ConformanceTestSuite::ConformanceRequestSetting::
       return "ProtobufInput";
     case conformance::JSON:
       return "JsonInput";
+    case conformance::TEXT_FORMAT:
+      return "TextFormatInput";
     default:
       GOOGLE_LOG(FATAL) << "Unspecified output format";
   }
@@ -139,19 +152,12 @@ string ConformanceTestSuite::ConformanceRequestSetting::
       return "ProtobufOutput";
     case conformance::JSON:
       return "JsonOutput";
+    case conformance::TEXT_FORMAT:
+      return "TextFormatOutput";
     default:
       GOOGLE_LOG(FATAL) << "Unspecified output format";
   }
   return "";
-}
-
-void ConformanceTestSuite::SetFailureList(
-    const string& filename,
-    const std::vector<string>& failure_list) {
-  failure_list_filename_ = filename;
-  expected_to_fail_.clear();
-  std::copy(failure_list.begin(), failure_list.end(),
-            std::inserter(expected_to_fail_, expected_to_fail_.end()));
 }
 
 void ConformanceTestSuite::ReportSuccess(const string& test_name) {
@@ -215,22 +221,26 @@ void ConformanceTestSuite::RunValidInputTest(
 void ConformanceTestSuite::RunValidBinaryInputTest(
     const ConformanceRequestSetting& setting,
     const string& equivalent_wire_format) {
+  const ConformanceRequest& request = setting.GetRequest();
+  ConformanceResponse response;
+  RunTest(setting.GetTestName(), request, &response);
+  VerifyResponse(setting, equivalent_wire_format, response, true);
+}
+
+void ConformanceTestSuite::VerifyResponse(
+    const ConformanceRequestSetting& setting,
+    const string& equivalent_wire_format,
+    const ConformanceResponse& response,
+    bool need_report_success) {
+  Message* test_message = setting.GetTestMessage();
+  const ConformanceRequest& request = setting.GetRequest();
   const string& test_name = setting.GetTestName();
   ConformanceLevel level = setting.GetLevel();
-
   Message* reference_message = setting.GetTestMessage();
+
   GOOGLE_CHECK(
       reference_message->ParseFromString(equivalent_wire_format))
           << "Failed to parse wire data for test case: " << test_name;
-
-  const ConformanceRequest& request = setting.GetRequest();
-  ConformanceResponse response;
-
-  RunTest(test_name, request, &response);
-
-  Message* test_message = setting.GetTestMessage();
-
-  WireFormat requested_output = request.requested_output_format();
 
   switch (response.result_case()) {
     case ConformanceResponse::RESULT_NOT_SET:
@@ -249,53 +259,8 @@ void ConformanceTestSuite::RunValidBinaryInputTest(
       ReportSkip(test_name, request, response);
       return;
 
-    case ConformanceResponse::kJsonPayload: {
-      if (requested_output != conformance::JSON) {
-        ReportFailure(
-            test_name, level, request, response,
-            "Test was asked for protobuf output but provided JSON instead.");
-        return;
-      }
-      string binary_protobuf;
-      Status status =
-          JsonToBinaryString(type_resolver_.get(), type_url_,
-                             response.json_payload(), &binary_protobuf);
-      if (!status.ok()) {
-        ReportFailure(test_name, level, request, response,
-                      "JSON output we received from test was unparseable.");
-        return;
-      }
-
-      if (!test_message->ParseFromString(binary_protobuf)) {
-        ReportFailure(test_name, level, request, response,
-                    "INTERNAL ERROR: internal JSON->protobuf transcode "
-                    "yielded unparseable proto.");
-        return;
-      }
-
-      break;
-    }
-
-    case ConformanceResponse::kProtobufPayload: {
-      if (requested_output != conformance::PROTOBUF) {
-        ReportFailure(
-            test_name, level, request, response,
-            "Test was asked for JSON output but provided protobuf instead.");
-        return;
-      }
-
-      if (!test_message->ParseFromString(response.protobuf_payload())) {
-        ReportFailure(test_name, level, request, response,
-                   "Protobuf output we received from test was unparseable.");
-        return;
-      }
-
-      break;
-    }
-
     default:
-      GOOGLE_LOG(FATAL) << test_name << ": unknown payload type: "
-                        << response.result_case();
+      if (!ParseResponse(response, setting, test_message)) return;
   }
 
   MessageDifferencer differencer;
@@ -308,7 +273,9 @@ void ConformanceTestSuite::RunValidBinaryInputTest(
   bool check;
   check = differencer.Compare(*reference_message, *test_message);
   if (check) {
-    ReportSuccess(test_name);
+    if (need_report_success) {
+      ReportSuccess(test_name);
+    }
   } else {
     ReportFailure(test_name, level, request, response,
                   "Output was not equivalent to reference message: %s.",
@@ -375,8 +342,33 @@ bool ConformanceTestSuite::CheckSetEmpty(
   }
 }
 
-bool ConformanceTestSuite::RunSuite(
-    ConformanceTestRunner* runner, std::string* output) {
+string ConformanceTestSuite::WireFormatToString(
+    WireFormat wire_format) {
+  switch (wire_format) {
+    case conformance::PROTOBUF:
+      return "PROTOBUF";
+    case conformance::JSON:
+      return "JSON";
+    case conformance::JSPB:
+      return "JSPB";
+    case conformance::TEXT_FORMAT:
+      return "TEXT_FORMAT";
+    case conformance::UNSPECIFIED:
+      return "UNSPECIFIED";
+    default:
+      GOOGLE_LOG(FATAL) << "unknown wire type: "
+                        << wire_format;
+  }
+  return "";
+}
+
+void ConformanceTestSuite::AddExpectedFailedTest(const std::string& test_name) {
+  expected_to_fail_.insert(test_name);
+}
+
+bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
+                                    std::string* output, const string& filename,
+                                    conformance::FailureSet* failure_list) {
   runner_ = runner;
   successes_ = 0;
   expected_failures_ = 0;
@@ -387,6 +379,11 @@ bool ConformanceTestSuite::RunSuite(
 
   output_ = "\nCONFORMANCE TEST BEGIN ====================================\n\n";
 
+  failure_list_filename_ = filename;
+  expected_to_fail_.clear();
+  for (const string& failure : failure_list->failure()) {
+    AddExpectedFailedTest(failure);
+  }
   RunSuiteImpl();
 
   bool ok = true;

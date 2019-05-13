@@ -84,7 +84,7 @@ namespace google {
 namespace protobuf {
 
 void ParseFailureList(const char *filename,
-                      std::vector<string>* failure_list) {
+                      conformance::FailureSet *failure_list) {
   std::ifstream infile(filename);
 
   if (!infile.is_open()) {
@@ -101,7 +101,7 @@ void ParseFailureList(const char *filename,
     line = line.substr(0, line.find("#"));
 
     if (!line.empty()) {
-      failure_list->push_back(line);
+      failure_list->add_failure(line);
     }
   }
 }
@@ -119,6 +119,19 @@ void UsageError() {
           "                              should contain one test name per\n");
   fprintf(stderr,
           "                              line.  Use '#' for comments.\n");
+  fprintf(stderr,
+          "  --text_format_failure_list <filename>   Use to specify list \n");
+  fprintf(stderr,
+          "                              of tests that are expected to \n");
+  fprintf(stderr,
+          "                              fail in the \n");
+  fprintf(stderr,
+          "                              text_format_conformance_suite.  \n");
+  fprintf(stderr,
+          "                              File should contain one test name \n");
+  fprintf(stderr,
+          "                              per line.  Use '#' for comments.\n");
+
   fprintf(stderr,
           "  --enforce_recommended       Enforce that recommended test\n");
   fprintf(stderr,
@@ -175,43 +188,76 @@ void ForkPipeRunner::RunTest(
 }
 
 int ForkPipeRunner::Run(
-    int argc, char *argv[], ConformanceTestSuite* suite) {
-  char *program;
-  string failure_list_filename;
-  std::vector<string> failure_list;
-
-  for (int arg = 1; arg < argc; ++arg) {
-    if (strcmp(argv[arg], "--failure_list") == 0) {
-      if (++arg == argc) UsageError();
-      failure_list_filename = argv[arg];
-      ParseFailureList(argv[arg], &failure_list);
-    } else if (strcmp(argv[arg], "--verbose") == 0) {
-      suite->SetVerbose(true);
-    } else if (strcmp(argv[arg], "--enforce_recommended") == 0) {
-      suite->SetEnforceRecommended(true);
-    } else if (argv[arg][0] == '-') {
-      fprintf(stderr, "Unknown option: %s\n", argv[arg]);
-      UsageError();
-    } else {
-      if (arg != argc - 1) {
-        fprintf(stderr, "Too many arguments.\n");
-        UsageError();
-      }
-      program = argv[arg];
-    }
+    int argc, char *argv[], const std::vector<ConformanceTestSuite*>& suites) {
+  if (suites.empty()) {
+    fprintf(stderr, "No test suites found.\n");
+    return EXIT_FAILURE;
   }
+  bool all_ok = true;
+  for (ConformanceTestSuite* suite : suites) {
+    char *program;
+    string failure_list_filename;
+    conformance::FailureSet failure_list;
 
-  suite->SetFailureList(failure_list_filename, failure_list);
-  ForkPipeRunner runner(program);
+    for (int arg = 1; arg < argc; ++arg) {
+      if (strcmp(argv[arg], suite->GetFailureListFlagName().c_str()) == 0) {
+        if (++arg == argc) UsageError();
+        failure_list_filename = argv[arg];
+        ParseFailureList(argv[arg], &failure_list);
+      } else if (strcmp(argv[arg], "--verbose") == 0) {
+        suite->SetVerbose(true);
+      } else if (strcmp(argv[arg], "--enforce_recommended") == 0) {
+        suite->SetEnforceRecommended(true);
+      } else if (argv[arg][0] == '-') {
+        bool recognized_flag = false;
+        for (ConformanceTestSuite* suite : suites) {
+          if (strcmp(argv[arg], suite->GetFailureListFlagName().c_str()) == 0) {
+            if (++arg == argc) UsageError();
+            recognized_flag = true;
+          }
+        }
+        if (!recognized_flag) {
+          fprintf(stderr, "Unknown option: %s\n", argv[arg]);
+          UsageError();
+        }
+      } else {
+        if (arg != argc - 1) {
+          fprintf(stderr, "Too many arguments.\n");
+          UsageError();
+        }
+        program = argv[arg];
+      }
+    }
 
-  std::string output;
-  bool ok =  suite->RunSuite(&runner, &output);
+    ForkPipeRunner runner(program);
 
-  fwrite(output.c_str(), 1, output.size(), stderr);
+    std::string output;
+    all_ok = all_ok &&
+        suite->RunSuite(&runner, &output, failure_list_filename, &failure_list);
 
-  return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+    fwrite(output.c_str(), 1, output.size(), stderr);
+  }
+  return all_ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
+// TODO(haberman): make this work on Windows, instead of using these
+// UNIX-specific APIs.
+//
+// There is a platform-agnostic API in
+//    src/google/protobuf/compiler/subprocess.h
+//
+// However that API only supports sending a single message to the subprocess.
+// We really want to be able to send messages and receive responses one at a
+// time:
+//
+// 1. Spawning a new process for each test would take way too long for thousands
+//    of tests and subprocesses like java that can take 100ms or more to start
+//    up.
+//
+// 2. Sending all the tests in one big message and receiving all results in one
+//    big message would take away our visibility about which test(s) caused a
+//    crash or other fatal error.  It would also give us only a single failure
+//    instead of all of them.
 void ForkPipeRunner::SpawnTestProgram() {
   int toproc_pipe_fd[2];
   int fromproc_pipe_fd[2];

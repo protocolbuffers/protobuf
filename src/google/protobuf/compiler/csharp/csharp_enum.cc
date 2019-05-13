@@ -31,7 +31,6 @@
 #include <sstream>
 
 #include <google/protobuf/compiler/code_generator.h>
-#include <google/protobuf/compiler/plugin.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/printer.h>
@@ -80,12 +79,12 @@ void EnumGenerator::Generate(io::Printer* printer) {
           printer->Print("[pbr::OriginalName(\"$original_name$\", PreferredAlias = false)] $name$ = $number$,\n",
              "original_name", original_name,
              "name", name,
-             "number", SimpleItoa(number));
+             "number", StrCat(number));
       } else {
           printer->Print("[pbr::OriginalName(\"$original_name$\")] $name$ = $number$,\n",
              "original_name", original_name,
              "name", name,
-             "number", SimpleItoa(number));
+             "number", StrCat(number));
       }
   }
   printer->Outdent();

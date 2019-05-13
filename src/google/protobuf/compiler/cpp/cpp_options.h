@@ -42,6 +42,12 @@ class AccessInfoMap;
 
 namespace cpp {
 
+enum class EnforceOptimizeMode {
+  kNoEnforcement,  // Use the runtime specified by the file specific options.
+  kSpeed,          // This is the full runtime.
+  kLiteRuntime,
+};
+
 // Generator options (see generator.cc for a description of each):
 struct Options {
   std::string dllexport_decl;
@@ -49,13 +55,13 @@ struct Options {
   bool proto_h = false;
   bool transitive_pb_h = true;
   bool annotate_headers = false;
-  bool enforce_lite = false;
+  EnforceOptimizeMode enforce_mode = EnforceOptimizeMode::kNoEnforcement;
   bool table_driven_parsing = false;
   bool table_driven_serialization = false;
   bool lite_implicit_weak_fields = false;
   bool bootstrap = false;
   bool opensource_runtime = false;
-  bool opensource_include_paths = false;
+  std::string runtime_include_base;
   int num_cc_files = 0;
   std::string annotation_pragma_name;
   std::string annotation_guard_name;
@@ -66,6 +72,5 @@ struct Options {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
-
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_CPP_OPTIONS_H__

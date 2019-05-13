@@ -37,20 +37,22 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_IMPORTER_H__
 #define GOOGLE_PROTOBUF_COMPILER_IMPORTER_H__
 
-#include <string>
-#include <vector>
 #include <set>
+#include <string>
 #include <utility>
+#include <vector>
+#include <google/protobuf/compiler/parser.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor_database.h>
-#include <google/protobuf/compiler/parser.h>
 
 #include <google/protobuf/port_def.inc>
 
 namespace google {
 namespace protobuf {
 
-namespace io { class ZeroCopyInputStream; }
+namespace io {
+class ZeroCopyInputStream;
+}
 
 namespace compiler {
 
@@ -78,6 +80,11 @@ class DiskSourceTree;
 class PROTOBUF_EXPORT SourceTreeDescriptorDatabase : public DescriptorDatabase {
  public:
   SourceTreeDescriptorDatabase(SourceTree* source_tree);
+
+  // If non-NULL, fallback_database will be checked if a file doesn't exist in
+  // the specified source_tree.
+  SourceTreeDescriptorDatabase(SourceTree* source_tree,
+                               DescriptorDatabase* fallback_database);
   ~SourceTreeDescriptorDatabase();
 
   // Instructs the SourceTreeDescriptorDatabase to report any parse errors
@@ -110,6 +117,7 @@ class PROTOBUF_EXPORT SourceTreeDescriptorDatabase : public DescriptorDatabase {
   class SingleFileErrorCollector;
 
   SourceTree* source_tree_;
+  DescriptorDatabase* fallback_database_;
   MultiFileErrorCollector* error_collector_;
 
   class PROTOBUF_EXPORT ValidationErrorCollector
@@ -123,8 +131,9 @@ class PROTOBUF_EXPORT SourceTreeDescriptorDatabase : public DescriptorDatabase {
                   const Message* descriptor, ErrorLocation location,
                   const std::string& message) override;
 
-    void AddWarning(const std::string& filename, const std::string& element_name,
-                    const Message* descriptor, ErrorLocation location,
+    void AddWarning(const std::string& filename,
+                    const std::string& element_name, const Message* descriptor,
+                    ErrorLocation location,
                     const std::string& message) override;
 
    private:
@@ -147,8 +156,7 @@ class PROTOBUF_EXPORT SourceTreeDescriptorDatabase : public DescriptorDatabase {
 // TODO(kenton):  I feel like this class is not well-named.
 class PROTOBUF_EXPORT Importer {
  public:
-  Importer(SourceTree* source_tree,
-           MultiFileErrorCollector* error_collector);
+  Importer(SourceTree* source_tree, MultiFileErrorCollector* error_collector);
   ~Importer();
 
   // Import the given file and build a FileDescriptor representing it.  If
@@ -168,9 +176,7 @@ class PROTOBUF_EXPORT Importer {
 
   // The DescriptorPool in which all imported FileDescriptors and their
   // contents are stored.
-  inline const DescriptorPool* pool() const {
-    return &pool_;
-  }
+  inline const DescriptorPool* pool() const { return &pool_; }
 
   void AddUnusedImportTrackFile(const std::string& file_name);
   void ClearUnusedImportTrackFiles();
@@ -282,15 +288,15 @@ class PROTOBUF_EXPORT DiskSourceTree : public SourceTree {
   //   it is not useful.
   // * NO_MAPPING: Indicates that no mapping was found which contains this
   //   file.
-  DiskFileToVirtualFileResult
-    DiskFileToVirtualFile(const std::string& disk_file,
-                          std::string* virtual_file,
-                          std::string* shadowing_disk_file);
+  DiskFileToVirtualFileResult DiskFileToVirtualFile(
+      const std::string& disk_file, std::string* virtual_file,
+      std::string* shadowing_disk_file);
 
   // Given a virtual path, find the path to the file on disk.
   // Return true and update disk_file with the on-disk path if the file exists.
   // Return false and leave disk_file untouched if the file doesn't exist.
-  bool VirtualFileToDiskFile(const std::string& virtual_file, std::string* disk_file);
+  bool VirtualFileToDiskFile(const std::string& virtual_file,
+                             std::string* disk_file);
 
   // implements SourceTree -------------------------------------------
   io::ZeroCopyInputStream* Open(const std::string& filename) override;
@@ -304,7 +310,7 @@ class PROTOBUF_EXPORT DiskSourceTree : public SourceTree {
 
     inline Mapping(const std::string& virtual_path_param,
                    const std::string& disk_path_param)
-      : virtual_path(virtual_path_param), disk_path(disk_path_param) {}
+        : virtual_path(virtual_path_param), disk_path(disk_path_param) {}
   };
   std::vector<Mapping> mappings_;
   std::string last_error_message_;

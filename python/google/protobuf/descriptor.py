@@ -657,7 +657,8 @@ class EnumDescriptor(_NestedDescriptorBase):
     for value in self.values:
       value.type = self
     self.values_by_name = dict((v.name, v) for v in values)
-    self.values_by_number = dict((v.number, v) for v in values)
+    # Values are reversed to ensure that the first alias is retained.
+    self.values_by_number = dict((v.number, v) for v in reversed(values))
 
   def CopyToProto(self, proto):
     """Copies this to a descriptor_pb2.EnumDescriptorProto.
@@ -855,7 +856,7 @@ class FileDescriptor(DescriptorBase):
   dependencies: List of other FileDescriptors this FileDescriptor depends on.
   public_dependencies: A list of FileDescriptors, subset of the dependencies
     above, which were declared as "public".
-  message_types_by_name: Dict of message names of their descriptors.
+  message_types_by_name: Dict of message names and their descriptors.
   enum_types_by_name: Dict of enum names and their descriptors.
   extensions_by_name: Dict of extension names and their descriptors.
   services_by_name: Dict of services names and their descriptors.

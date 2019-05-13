@@ -38,7 +38,6 @@
 #include <google/protobuf/compiler/objectivec/objectivec_primitive_field.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/wire_format.h>
-#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/strutil.h>
 
 namespace google {
@@ -76,7 +75,7 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
   (*variables)["raw_field_name"] = raw_field_name;
   (*variables)["field_number_name"] =
       classname + "_FieldNumber_" + capitalized_name;
-  (*variables)["field_number"] = SimpleItoa(descriptor->number());
+  (*variables)["field_number"] = StrCat(descriptor->number());
   (*variables)["field_type"] = GetCapitalizedType(descriptor);
   (*variables)["deprecated_attribute"] = GetOptionalDeprecatedAttribute(descriptor);
   std::vector<string> field_flags;
@@ -214,7 +213,7 @@ void FieldGenerator::GenerateFieldDescription(
 }
 
 void FieldGenerator::SetRuntimeHasBit(int has_index) {
-  variables_["has_index"] = SimpleItoa(has_index);
+  variables_["has_index"] = StrCat(has_index);
 }
 
 void FieldGenerator::SetNoHasBit(void) {
@@ -237,7 +236,7 @@ void FieldGenerator::SetOneofIndexBase(int index_base) {
   if (descriptor_->containing_oneof() != NULL) {
     int index = descriptor_->containing_oneof()->index() + index_base;
     // Flip the sign to mark it as a oneof.
-    variables_["has_index"] = SimpleItoa(-index);
+    variables_["has_index"] = StrCat(-index);
   }
 }
 

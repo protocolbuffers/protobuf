@@ -69,10 +69,6 @@ class ServiceGenerator {
 
   // Source file stuff.
 
-  // Generate code that initializes the global variable storing the service's
-  // descriptor.
-  void GenerateDescriptorInitializer(io::Printer* printer, int index);
-
   // Generate implementations of everything declared by
   // GenerateDeclarations().
   void GenerateImplementation(io::Printer* printer);
@@ -110,6 +106,7 @@ class ServiceGenerator {
 
   const ServiceDescriptor* descriptor_;
   std::map<std::string, std::string> vars_;
+  const Options& options_;
 
   int index_in_metadata_;
 

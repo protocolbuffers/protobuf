@@ -57,5 +57,4 @@ extend Message1 {
   optional Message1 recursive_extension = 1001;
 }
 
-message RedactAllTypes {
-}
+message RedactAllTypes {}

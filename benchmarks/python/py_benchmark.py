@@ -8,7 +8,7 @@ import fnmatch
 import json
 
 parser = argparse.ArgumentParser(description="Python protobuf benchmark")
-parser.add_argument("data_files", metavar="dataFile", nargs="+", 
+parser.add_argument("data_files", metavar="dataFile", nargs="+",
                     help="testing data files.")
 parser.add_argument("--json", action="store_const", dest="json",
                     const="yes", default="no",
@@ -134,17 +134,18 @@ class Benchmark:
     t = self.dry_run(test_method_args, setup_method_args);
     if t < 3 :
       reps = int(math.ceil(3 / t)) * self.full_iteration
-    t = timeit.timeit(stmt="%s(%s)" % (self.test_method, test_method_args),
-                      setup=self.full_setup_code(setup_method_args),
-                      number=reps);
-    return self.total_bytes * 1.0 / 2 ** 20 / (1.0 * t / reps)
-  
+    if reps != self.full_iteration:
+        t = timeit.timeit(stmt="%s(%s)" % (self.test_method, test_method_args),
+                          setup=self.full_setup_code(setup_method_args),
+                          number=reps);
+    return self.total_bytes * 1.0 / 2 ** 20 / (1.0 * t / reps * self.full_iteration)
+
 
 if __name__ == "__main__":
   results = []
   for file in args.data_files:
     results.append(run_one_test(file))
-  
+
   if args.json != "no":
     print(json.dumps(results))
   else:

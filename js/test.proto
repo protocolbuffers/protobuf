@@ -39,8 +39,7 @@ import "google/protobuf/descriptor.proto";
 
 package jspb.test;
 
-message Empty {
-}
+message Empty {}
 
 enum OuterEnum {
   FOO = 1;
@@ -94,10 +93,11 @@ message Complex {
     required int32 an_int = 2;
   }
   required string a_string = 1;
-  required bool an_out_of_order_bool = 9;
+  optional bool an_out_of_order_bool = 9;
   optional Nested a_nested_message = 4;
   repeated Nested a_repeated_message = 5;
   repeated string a_repeated_string = 7;
+  optional double a_floating_point_field = 10;
 }
 
 message OuterMessage {
@@ -105,6 +105,13 @@ message OuterMessage {
   message Complex {
     optional int32 inner_complex_field = 1;
   }
+}
+
+message MineField {
+  // document.cookie is a banned property in a couple of conformance check
+  // configs at Google. Verify that having a field called cookie doesn't confuse
+  // the compiler and break the build.
+  optional string cookie = 1;
 }
 
 message IsExtension {
@@ -137,12 +144,13 @@ message DefaultValues {
     E1 = 13;
     E2 = 77;
   }
-  optional string string_field = 1 [default="default<>\'\"abc"];
-  optional bool bool_field = 2 [default=true];
-  optional int64 int_field = 3 [default=11];
-  optional Enum enum_field = 4 [default=E1];
-  optional string empty_field = 6 [default=""];
-  optional bytes bytes_field = 8 [default="moo"]; // Base64 encoding is "bW9v"
+  optional string string_field = 1 [default = "default<>\'\"abc"];
+  optional bool bool_field = 2 [default = true];
+  optional int64 int_field = 3 [default = 11];
+  optional Enum enum_field = 4 [default = E1];
+  optional string empty_field = 6 [default = ""];
+  optional bytes bytes_field = 8
+      [default = "moo"];  // Base64 encoding is "bW9v"
 }
 
 message FloatingPointFields {
@@ -154,6 +162,13 @@ message FloatingPointFields {
   required double required_double_field = 6;
   repeated double repeated_double_field = 7;
   optional double default_double_field = 8 [default = 2.0];
+}
+
+message BooleanFields {
+  optional bool optional_boolean_field = 1;
+  required bool required_boolean_field = 2;
+  repeated bool repeated_boolean_field = 3;
+  optional bool default_boolean_field = 4 [default = true];
 }
 
 message TestClone {
@@ -241,16 +256,26 @@ message TestEndsWithBytes {
   optional bytes data = 2;
 }
 
+// This message is for testing extension handling doesn't affect fields before
+// pivot. Don't add new field to this message. See b/117298778 for more detail.
+message TestLastFieldBeforePivot {
+  optional int32 last_field_before_pivot = 1;
+  extensions 100 to max;
+}
+
+extend TestLastFieldBeforePivot {
+  optional int32 extend_test_last_field_before_pivot_field = 101;
+}
+
 
 message Int64Types {
-  optional int64 int64_normal = 1 [jstype=JS_NORMAL];
-  optional sint64 int64_string = 2 [jstype=JS_STRING];
-  optional uint64 int64_number = 3 [jstype=JS_NUMBER];
+  optional int64 int64_normal = 1 [jstype = JS_NORMAL];
+  optional sint64 int64_string = 2 [jstype = JS_STRING];
+  optional uint64 int64_number = 3 [jstype = JS_NUMBER];
 
 }
 
 message TestMapFieldsNoBinary {
-
   map<string, string> map_string_string = 1;
   map<string, int32> map_string_int32 = 2;
   map<string, int64> map_string_int64 = 3;
@@ -274,7 +299,6 @@ enum MapValueEnumNoBinary {
 }
 
 message MapValueMessageNoBinary {
-
   optional int32 foo = 1;
 }
 
@@ -285,4 +309,5 @@ message Deeply {
     }
   }
 }
+
 

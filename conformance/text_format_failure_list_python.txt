@@ -1,0 +1,5 @@
+# This is the list of text format conformance tests that are known to fail right
+# now.
+# TODO: These should be fixed.
+Required.Proto3.TextFormatInput.FloatFieldMaxValue.ProtobufOutput
+Required.Proto3.TextFormatInput.FloatFieldMaxValue.TextFormatOutput

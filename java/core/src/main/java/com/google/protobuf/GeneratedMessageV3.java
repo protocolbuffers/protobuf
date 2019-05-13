@@ -364,7 +364,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
       throw e.unwrapIOException();
     }
   }
-  
+
   protected static boolean canUseUnsafe() {
     return UnsafeUtil.hasUnsafeArrayOperations() && UnsafeUtil.hasUnsafeByteBufferOperations();
   }
@@ -457,6 +457,29 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
   }
 
 
+
+  /**
+   * This class is used to make a generated protected method inaccessible from user's code (e.g.,
+   * the {@link #newInstance} method below). When this class is used as a parameter's type in a
+   * generated protected method, the method is visible to user's code in the same package, but
+   * since the constructor of this class is private to protobuf runtime, user's code can't obtain
+   * an instance of this class and as such can't actually make a method call on the protected
+   * method.
+   */
+  protected static final class UnusedPrivateParameter {
+    static final UnusedPrivateParameter INSTANCE = new UnusedPrivateParameter();
+
+    private UnusedPrivateParameter() {
+    }
+  }
+
+  /**
+   * Creates a new instance of this message type. Overridden in the generated code.
+   */
+  @SuppressWarnings({"unused"})
+  protected Object newInstance(UnusedPrivateParameter unused) {
+    throw new UnsupportedOperationException("This method must be overridden by the subclass.");
+  }
 
   /**
    * Used by parsing constructors in generated classes.
@@ -710,19 +733,23 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
       return (BuilderType) this;
     }
 
-    @Override
-    public BuilderType setUnknownFields(final UnknownFieldSet unknownFields) {
+    private BuilderType setUnknownFieldsInternal(final UnknownFieldSet unknownFields) {
       this.unknownFields = unknownFields;
       onChanged();
       return (BuilderType) this;
     }
 
+    @Override
+    public BuilderType setUnknownFields(final UnknownFieldSet unknownFields) {
+      return setUnknownFieldsInternal(unknownFields);
+    }
+
     /**
-     * Delegates to setUnknownFields. This method is obsolete, but we must retain it for
-     * compatibility with older generated code.
+     * This method is obsolete, but we must retain it for compatibility with
+     * older generated code.
      */
     protected BuilderType setUnknownFieldsProto3(final UnknownFieldSet unknownFields) {
-      return setUnknownFields(unknownFields);
+      return setUnknownFieldsInternal(unknownFields);
     }
 
     @Override
@@ -1678,6 +1705,15 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
         return (BuilderType) this;
       } else {
         return super.addRepeatedField(field, value);
+      }
+    }
+
+    @Override
+    public Message.Builder newBuilderForField(final FieldDescriptor field) {
+      if (field.isExtension()) {
+        return DynamicMessage.newBuilder(field.getMessageType());
+      } else {
+        return super.newBuilderForField(field);
       }
     }
 

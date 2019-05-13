@@ -51,9 +51,13 @@ class FieldGeneratorBase : public SourceGeneratorBase {
                      const Options* options);
   ~FieldGeneratorBase();
 
+  FieldGeneratorBase(const FieldGeneratorBase&) = delete;
+  FieldGeneratorBase& operator=(const FieldGeneratorBase&) = delete;
+
   virtual void GenerateCloningCode(io::Printer* printer) = 0;
   virtual void GenerateFreezingCode(io::Printer* printer);
   virtual void GenerateCodecCode(io::Printer* printer);
+  virtual void GenerateExtensionCode(io::Printer* printer);
   virtual void GenerateMembers(io::Printer* printer) = 0;
   virtual void GenerateMergingCode(io::Printer* printer) = 0;
   virtual void GenerateParsingCode(io::Printer* printer) = 0;
@@ -93,8 +97,6 @@ class FieldGeneratorBase : public SourceGeneratorBase {
   void SetCommonFieldVariables(std::map<string, string>* variables);
   std::string GetStringDefaultValueInternal(const FieldDescriptor* descriptor);
   std::string GetBytesDefaultValueInternal(const FieldDescriptor* descriptor);
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FieldGeneratorBase);
 };
 
 }  // namespace csharp

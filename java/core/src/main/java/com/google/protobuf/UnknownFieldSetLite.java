@@ -168,6 +168,72 @@ public final class UnknownFieldSetLite {
     }
   }
 
+  /** Serializes the set and writes it to {@code writer} using {@code MessageSet} wire format. */
+  void writeAsMessageSetTo(Writer writer) throws IOException {
+    if (writer.fieldOrder() == Writer.FieldOrder.DESCENDING) {
+      // Write fields in descending order.
+      for (int i = count - 1; i >= 0; i--) {
+        int fieldNumber = WireFormat.getTagFieldNumber(tags[i]);
+        writer.writeMessageSetItem(fieldNumber, objects[i]);
+      }
+    } else {
+      // Write fields in ascending order.
+      for (int i = 0; i < count; i++) {
+        int fieldNumber = WireFormat.getTagFieldNumber(tags[i]);
+        writer.writeMessageSetItem(fieldNumber, objects[i]);
+      }
+    }
+  }
+
+  /** Serializes the set and writes it to {@code writer}. */
+  public void writeTo(Writer writer) throws IOException {
+    if (count == 0) {
+      return;
+    }
+
+    // TODO: tags are not sorted, so there's no write order guarantees
+    if (writer.fieldOrder() == Writer.FieldOrder.ASCENDING) {
+      for (int i = 0; i < count; ++i) {
+        writeField(tags[i], objects[i], writer);
+      }
+    } else {
+      for (int i = count - 1; i >= 0; --i) {
+        writeField(tags[i], objects[i], writer);
+      }
+    }
+  }
+
+  private static void writeField(int tag, Object object, Writer writer) throws IOException {
+    int fieldNumber = WireFormat.getTagFieldNumber(tag);
+    switch (WireFormat.getTagWireType(tag)) {
+      case WireFormat.WIRETYPE_VARINT:
+        writer.writeInt64(fieldNumber, (Long) object);
+        break;
+      case WireFormat.WIRETYPE_FIXED32:
+        writer.writeFixed32(fieldNumber, (Integer) object);
+        break;
+      case WireFormat.WIRETYPE_FIXED64:
+        writer.writeFixed64(fieldNumber, (Long) object);
+        break;
+      case WireFormat.WIRETYPE_LENGTH_DELIMITED:
+        writer.writeBytes(fieldNumber, (ByteString) object);
+        break;
+      case WireFormat.WIRETYPE_START_GROUP:
+        if (writer.fieldOrder() == Writer.FieldOrder.ASCENDING) {
+          writer.writeStartGroup(fieldNumber);
+          ((UnknownFieldSetLite) object).writeTo(writer);
+          writer.writeEndGroup(fieldNumber);
+        } else {
+          writer.writeEndGroup(fieldNumber);
+          ((UnknownFieldSetLite) object).writeTo(writer);
+          writer.writeStartGroup(fieldNumber);
+        }
+        break;
+      default:
+        // TODO(liujisi): Change writeTo to throw IOException?
+        throw new RuntimeException(InvalidProtocolBufferException.invalidWireType());
+    }
+  }
 
   /**
    * Get the number of bytes required to encode this field, including field number, using {@code

@@ -118,7 +118,7 @@ class JsonStreamParserTest : public ::testing::Test {
         result = parser.FinishParse();
       }
     }
-    if (result.ok()){
+    if (result.ok()) {
       EXPECT_EQ(parser.recursion_depth(), 0);
     }
     return result;
@@ -138,9 +138,8 @@ class JsonStreamParserTest : public ::testing::Test {
   void DoErrorTest(StringPiece json, int split,
                    StringPiece error_prefix, bool coerce_utf8 = false,
                    bool allow_empty_null = false) {
-    util::Status result =
-        RunTest(json, split, coerce_utf8, allow_empty_null);
-    EXPECT_EQ(util::error::INVALID_ARGUMENT, result.error_code());
+    util::Status result = RunTest(json, split, coerce_utf8, allow_empty_null);
+    EXPECT_EQ(util::error::INVALID_ARGUMENT, result.code());
     StringPiece error_message(result.error_message());
     EXPECT_EQ(error_prefix, error_message.substr(0, error_prefix.size()));
   }
@@ -845,7 +844,7 @@ TEST_F(JsonStreamParserTest, UnknownCharactersInObject) {
 
 TEST_F(JsonStreamParserTest, DeepNestJsonNotExceedLimit) {
   int count = 99;
-  string str;
+  std::string str;
   for (int i = 0; i < count; ++i) {
     StrAppend(&str, "{'a':");
   }
@@ -871,7 +870,7 @@ TEST_F(JsonStreamParserTest, DeepNestJsonNotExceedLimit) {
 
 TEST_F(JsonStreamParserTest, DeepNestJsonExceedLimit) {
   int count = 98;
-  string str;
+  std::string str;
   for (int i = 0; i < count; ++i) {
     StrAppend(&str, "{'a':");
   }

@@ -33,7 +33,6 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
 #include <algorithm>
-#include <google/protobuf/stubs/hash.h>
 #include <limits>
 #include <vector>
 #include <sstream>
@@ -44,7 +43,6 @@
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/stubs/substitute.h>
 
 #include <google/protobuf/compiler/csharp/csharp_field_base.h>
 #include <google/protobuf/compiler/csharp/csharp_enum_field.h>
@@ -135,6 +133,12 @@ std::string GetReflectionClassUnqualifiedName(const FileDescriptor* descriptor) 
   return GetFileNameBase(descriptor) + "Reflection";
 }
 
+std::string GetExtensionClassUnqualifiedName(const FileDescriptor* descriptor) {
+  // TODO: Detect collisions with existing messages,
+  // and append an underscore if necessary.
+  return GetFileNameBase(descriptor) + "Extensions";
+}
+
 // TODO(jtattermusch): can we reuse a utility function?
 std::string UnderscoresToCamelCase(const std::string& input,
                                    bool cap_next_letter,
@@ -198,7 +202,7 @@ std::string ShoutyToPascalCase(const std::string& input) {
     char current = input[i];
     if (!ascii_isalnum(current)) {
       previous = current;
-      continue;      
+      continue;
     }
     if (!ascii_isalnum(previous)) {
       result += ascii_toupper(current);
@@ -228,7 +232,7 @@ std::string TryRemovePrefix(const std::string& prefix, const std::string& value)
       prefix_to_match += ascii_tolower(prefix[i]);
     }
   }
-  
+
   // This keeps track of how much of value we've consumed
   size_t prefix_index, value_index;
   for (prefix_index = 0, value_index = 0;
@@ -278,6 +282,19 @@ std::string GetEnumValueName(const std::string& enum_name, const std::string& en
   return result;
 }
 
+uint GetGroupEndTag(const Descriptor* descriptor) {
+  const Descriptor* containing_type = descriptor->containing_type();
+  if (containing_type == NULL) {
+    return 0;
+  }
+  const FieldDescriptor* field = containing_type->FindFieldByName(descriptor->name());
+  if (field != NULL && field->type() == FieldDescriptor::Type::TYPE_GROUP) {
+    return internal::WireFormatLite::MakeTag(field->number(), internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
+  } else {
+    return 0;
+  }
+}
+
 std::string ToCSharpName(const std::string& name, const FileDescriptor* file) {
   std::string result = GetFileNamespace(file);
   if (result != "") {
@@ -302,6 +319,15 @@ std::string GetReflectionClassName(const FileDescriptor* descriptor) {
   }
   result += GetReflectionClassUnqualifiedName(descriptor);
   return "global::" + result;
+}
+
+std::string GetFullExtensionName(const FieldDescriptor* descriptor) {
+  if (descriptor->extension_scope()) {
+    return GetClassName(descriptor->extension_scope()) + ".Extensions." + GetPropertyName(descriptor);
+  }
+  else {
+    return GetExtensionClassUnqualifiedName(descriptor->file())  + "." + GetPropertyName(descriptor);
+  }
 }
 
 std::string GetClassName(const Descriptor* descriptor) {
@@ -342,12 +368,10 @@ std::string GetPropertyName(const FieldDescriptor* descriptor) {
   return property_name;
 }
 
-std::string GetOutputFile(
-    const google::protobuf::FileDescriptor* descriptor,
-    const std::string file_extension,
-    const bool generate_directories,
-    const std::string base_namespace,
-    string* error) {
+std::string GetOutputFile(const FileDescriptor* descriptor,
+                          const std::string file_extension,
+                          const bool generate_directories,
+                          const std::string base_namespace, string* error) {
   string relative_filename = GetFileNameBase(descriptor) + file_extension;
   if (!generate_directories) {
     return relative_filename;

@@ -5,7 +5,10 @@
 ##
 # Select Xcode version
 
-export DEVELOPER_DIR=/Applications/Xcode_9.1.app/Contents/Developer
+# Remember to udpate the Xcode version when xcode_9.4.1 is not available.
+# If xcode is not available, it will probaly encounter the failure for 
+# "autom4te: need GNU m4 1.4 or later: /usr/bin/m4""
+export DEVELOPER_DIR=/Applications/Xcode_9.4.1.app/Contents/Developer
 
 ##
 # Select C/C++ compilers
@@ -18,9 +21,11 @@ export CXX=g++
 
 ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 source $HOME/.rvm/scripts/rvm
-brew tap homebrew/homebrew-php
-brew uninstall node icu4c
-brew install gflags gpg gpg2 node pcre php56 ruby
+brew uninstall node icu4c cmake
+brew prune
+brew install gflags gpg gpg2 node openssl pcre ruby cmake
+sudo chown -R $(whoami) /usr/local
+brew postinstall node
 
 ##
 # Install Tox

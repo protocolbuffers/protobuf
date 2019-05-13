@@ -1205,7 +1205,10 @@ public final class TextFormat {
      * </ul>
      */
     public enum SingularOverwritePolicy {
-      /** The last value is retained. */
+      /**
+       * Later values are merged with earlier values. For primitive fields or conflicting oneofs,
+       * the last value is retained.
+       */
       ALLOW_SINGULAR_OVERWRITES,
       /** An error is issued. */
       FORBID_SINGULAR_OVERWRITES
@@ -1213,16 +1216,19 @@ public final class TextFormat {
 
     private final boolean allowUnknownFields;
     private final boolean allowUnknownEnumValues;
+    private final boolean allowUnknownExtensions;
     private final SingularOverwritePolicy singularOverwritePolicy;
     private TextFormatParseInfoTree.Builder parseInfoTreeBuilder;
 
     private Parser(
         boolean allowUnknownFields,
         boolean allowUnknownEnumValues,
+        boolean allowUnknownExtensions,
         SingularOverwritePolicy singularOverwritePolicy,
         TextFormatParseInfoTree.Builder parseInfoTreeBuilder) {
       this.allowUnknownFields = allowUnknownFields;
       this.allowUnknownEnumValues = allowUnknownEnumValues;
+      this.allowUnknownExtensions = allowUnknownExtensions;
       this.singularOverwritePolicy = singularOverwritePolicy;
       this.parseInfoTreeBuilder = parseInfoTreeBuilder;
     }
@@ -1236,10 +1242,34 @@ public final class TextFormat {
     public static class Builder {
       private boolean allowUnknownFields = false;
       private boolean allowUnknownEnumValues = false;
+      private boolean allowUnknownExtensions = false;
       private SingularOverwritePolicy singularOverwritePolicy =
           SingularOverwritePolicy.ALLOW_SINGULAR_OVERWRITES;
       private TextFormatParseInfoTree.Builder parseInfoTreeBuilder = null;
 
+      /**
+       * Set whether this parser will allow unknown fields. By default, an exception is thrown if an
+       * unknown field is encountered. If this is set, the parser will only log a warning. Allow
+       * unknown fields will also allow unknown extensions.
+       *
+       * <p>Use of this parameter is discouraged which may hide some errors (e.g.
+       * spelling error on field name).
+       */
+      public Builder setAllowUnknownFields(boolean allowUnknownFields) {
+        this.allowUnknownFields = allowUnknownFields;
+        return this;
+      }
+
+      /**
+       * Set whether this parser will allow unknown extensions. By default, an
+       * exception is thrown if unknown extension is encountered. If this is set true,
+       * the parser will only log a warning. Allow unknown extensions does not mean
+       * allow normal unknown fields.
+       */
+      public Builder setAllowUnknownExtensions(boolean allowUnknownExtensions) {
+        this.allowUnknownExtensions = allowUnknownExtensions;
+        return this;
+      }
 
       /** Sets parser behavior when a non-repeated field appears more than once. */
       public Builder setSingularOverwritePolicy(SingularOverwritePolicy p) {
@@ -1256,6 +1286,7 @@ public final class TextFormat {
         return new Parser(
             allowUnknownFields,
             allowUnknownEnumValues,
+            allowUnknownExtensions,
             singularOverwritePolicy,
             parseInfoTreeBuilder);
       }
@@ -1315,25 +1346,56 @@ public final class TextFormat {
       return text;
     }
 
+    static final class UnknownField {
+      static enum Type {
+        FIELD, EXTENSION;
+      }
+
+      final String message;
+      final Type type;
+
+      UnknownField(String message, Type type) {
+        this.message = message;
+        this.type = type;
+      }
+    }
+
     // Check both unknown fields and unknown extensions and log warning messages
     // or throw exceptions according to the flag.
-    private void checkUnknownFields(final List<String> unknownFields) throws ParseException {
+    private void checkUnknownFields(final List<UnknownField> unknownFields) throws ParseException {
       if (unknownFields.isEmpty()) {
         return;
       }
 
       StringBuilder msg = new StringBuilder("Input contains unknown fields and/or extensions:");
-      for (String field : unknownFields) {
-        msg.append('\n').append(field);
+      for (UnknownField field : unknownFields) {
+        msg.append('\n').append(field.message);
       }
 
       if (allowUnknownFields) {
         logger.warning(msg.toString());
-      } else {
-        String[] lineColumn = unknownFields.get(0).split(":");
-        throw new ParseException(
-            Integer.parseInt(lineColumn[0]), Integer.parseInt(lineColumn[1]), msg.toString());
+        return;
       }
+
+      int firstErrorIndex = 0;
+      if (allowUnknownExtensions) {
+        boolean allUnknownExtensions = true;
+        for (UnknownField field : unknownFields) {
+          if (field.type == UnknownField.Type.FIELD) {
+            allUnknownExtensions = false;
+            break;
+          }
+          ++firstErrorIndex;
+        }
+        if (allUnknownExtensions) {
+          logger.warning(msg.toString());
+          return;
+        }
+      }
+
+      String[] lineColumn = unknownFields.get(firstErrorIndex).message.split(":");
+      throw new ParseException(
+          Integer.parseInt(lineColumn[0]), Integer.parseInt(lineColumn[1]), msg.toString());
     }
 
     /**
@@ -1348,7 +1410,7 @@ public final class TextFormat {
       final Tokenizer tokenizer = new Tokenizer(input);
       MessageReflection.BuilderAdapter target = new MessageReflection.BuilderAdapter(builder);
 
-      List<String> unknownFields = new ArrayList<String>();
+      List<UnknownField> unknownFields = new ArrayList<UnknownField>();
 
       while (!tokenizer.atEnd()) {
         mergeField(tokenizer, extensionRegistry, target, unknownFields);
@@ -1363,9 +1425,14 @@ public final class TextFormat {
         final Tokenizer tokenizer,
         final ExtensionRegistry extensionRegistry,
         final MessageReflection.MergeTarget target,
-        List<String> unknownFields)
+        List<UnknownField> unknownFields)
         throws ParseException {
-      mergeField(tokenizer, extensionRegistry, target, parseInfoTreeBuilder, unknownFields);
+      mergeField(
+          tokenizer,
+          extensionRegistry,
+          target,
+          parseInfoTreeBuilder,
+          unknownFields);
     }
 
     /** Parse a single field from {@code tokenizer} and merge it into {@code target}. */
@@ -1374,7 +1441,7 @@ public final class TextFormat {
         final ExtensionRegistry extensionRegistry,
         final MessageReflection.MergeTarget target,
         TextFormatParseInfoTree.Builder parseTreeBuilder,
-        List<String> unknownFields)
+        List<UnknownField> unknownFields)
         throws ParseException {
       FieldDescriptor field = null;
       int startLine = tokenizer.getLine();
@@ -1393,7 +1460,7 @@ public final class TextFormat {
         extension = target.findExtensionByName(extensionRegistry, name.toString());
 
         if (extension == null) {
-          unknownFields.add(
+          String message =
               (tokenizer.getPreviousLine() + 1)
                   + ":"
                   + (tokenizer.getPreviousColumn() + 1)
@@ -1401,7 +1468,8 @@ public final class TextFormat {
                   + type.getFullName()
                   + ".["
                   + name
-                  + "]");
+                  + "]";
+          unknownFields.add(new UnknownField(message, UnknownField.Type.EXTENSION));
         } else {
           if (extension.descriptor.getContainingType() != type) {
             throw tokenizer.parseExceptionPreviousToken(
@@ -1440,14 +1508,14 @@ public final class TextFormat {
         }
 
         if (field == null) {
-          unknownFields.add(
-              (tokenizer.getPreviousLine() + 1)
-                  + ":"
-                  + (tokenizer.getPreviousColumn() + 1)
-                  + ":\t"
-                  + type.getFullName()
-                  + "."
-                  + name);
+          String message = (tokenizer.getPreviousLine() + 1)
+                           + ":"
+                           + (tokenizer.getPreviousColumn() + 1)
+                           + ":\t"
+                           + type.getFullName()
+                           + "."
+                           + name;
+          unknownFields.add(new UnknownField(message, UnknownField.Type.FIELD));
         }
       }
 
@@ -1524,7 +1592,7 @@ public final class TextFormat {
         final FieldDescriptor field,
         final ExtensionRegistry.ExtensionInfo extension,
         final TextFormatParseInfoTree.Builder parseTreeBuilder,
-        List<String> unknownFields)
+        List<UnknownField> unknownFields)
         throws ParseException {
       // Support specifying repeated field values as a comma-separated list.
       // Ex."foo: [1, 2, 3]"
@@ -1566,8 +1634,27 @@ public final class TextFormat {
         final FieldDescriptor field,
         final ExtensionRegistry.ExtensionInfo extension,
         final TextFormatParseInfoTree.Builder parseTreeBuilder,
-        List<String> unknownFields)
+        List<UnknownField> unknownFields)
         throws ParseException {
+      if (singularOverwritePolicy == SingularOverwritePolicy.FORBID_SINGULAR_OVERWRITES
+          && !field.isRepeated()) {
+        if (target.hasField(field)) {
+          throw tokenizer.parseExceptionPreviousToken(
+              "Non-repeated field \"" + field.getFullName() + "\" cannot be overwritten.");
+        } else if (field.getContainingOneof() != null
+            && target.hasOneof(field.getContainingOneof())) {
+          Descriptors.OneofDescriptor oneof = field.getContainingOneof();
+          throw tokenizer.parseExceptionPreviousToken(
+              "Field \""
+                  + field.getFullName()
+                  + "\" is specified along with field \""
+                  + target.getOneofFieldDescriptor(oneof).getFullName()
+                  + "\", another member of oneof \""
+                  + oneof.getName()
+                  + "\".");
+        }
+      }
+
       Object value = null;
 
       if (field.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
@@ -1579,20 +1666,18 @@ public final class TextFormat {
           endToken = "}";
         }
 
-        final MessageReflection.MergeTarget subField;
-        subField =
-            target.newMergeTargetForField(
-                field, (extension == null) ? null : extension.defaultInstance);
+          Message defaultInstance = (extension == null) ? null : extension.defaultInstance;
+          MessageReflection.MergeTarget subField =
+              target.newMergeTargetForField(field, defaultInstance);
 
-        while (!tokenizer.tryConsume(endToken)) {
-          if (tokenizer.atEnd()) {
-            throw tokenizer.parseException("Expected \"" + endToken + "\".");
+          while (!tokenizer.tryConsume(endToken)) {
+            if (tokenizer.atEnd()) {
+              throw tokenizer.parseException("Expected \"" + endToken + "\".");
+            }
+            mergeField(tokenizer, extensionRegistry, subField, parseTreeBuilder, unknownFields);
           }
-          mergeField(tokenizer, extensionRegistry, subField, parseTreeBuilder, unknownFields);
-        }
 
-        value = subField.finish();
-
+          value = subField.finish();
       } else {
         switch (field.getType()) {
           case INT32:
@@ -1693,26 +1778,11 @@ public final class TextFormat {
         // TODO(b/29122459): If field.isMapField() and FORBID_SINGULAR_OVERWRITES mode,
         //     check for duplicate map keys here.
         target.addRepeatedField(field, value);
-      } else if ((singularOverwritePolicy == SingularOverwritePolicy.FORBID_SINGULAR_OVERWRITES)
-          && target.hasField(field)) {
-        throw tokenizer.parseExceptionPreviousToken(
-            "Non-repeated field \"" + field.getFullName() + "\" cannot be overwritten.");
-      } else if ((singularOverwritePolicy == SingularOverwritePolicy.FORBID_SINGULAR_OVERWRITES)
-          && field.getContainingOneof() != null
-          && target.hasOneof(field.getContainingOneof())) {
-        Descriptors.OneofDescriptor oneof = field.getContainingOneof();
-        throw tokenizer.parseExceptionPreviousToken(
-            "Field \""
-                + field.getFullName()
-                + "\" is specified along with field \""
-                + target.getOneofFieldDescriptor(oneof).getFullName()
-                + "\", another member of oneof \""
-                + oneof.getName()
-                + "\".");
       } else {
         target.setField(field, value);
       }
     }
+
 
     /** Skips the next field including the field's name and value. */
     private void skipField(Tokenizer tokenizer) throws ParseException {

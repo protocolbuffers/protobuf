@@ -42,6 +42,7 @@
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/stl_util.h>
+#include <google/protobuf/io/strtod.h>
 
 #ifdef _WIN32
 // MSVC has only _snprintf, not snprintf.
@@ -1115,10 +1116,12 @@ char* FastUInt64ToBufferLeft(uint64 u64, char* buffer) {
 }
 
 char* FastInt64ToBufferLeft(int64 i, char* buffer) {
-  uint64 u = i;
+  uint64 u = 0;
   if (i < 0) {
     *buffer++ = '-';
-    u = -i;
+    u -= i;
+  } else {
+    u = i;
   }
   return FastUInt64ToBufferLeft(u, buffer);
 }
@@ -1287,7 +1290,7 @@ char* DoubleToBuffer(double value, char* buffer) {
   // of a double.  This long double may have extra bits that make it compare
   // unequal to "value" even though it would be exactly equal if it were
   // truncated to a double.
-  volatile double parsed_value = strtod(buffer, nullptr);
+  volatile double parsed_value = io::NoLocaleStrtod(buffer, nullptr);
   if (parsed_value != value) {
     int snprintf_result =
       snprintf(buffer, kDoubleToBufferSize, "%.*g", DBL_DIG+2, value);
@@ -1339,7 +1342,7 @@ bool safe_strtof(const char* str, float* value) {
   char* endptr;
   errno = 0;  // errno only gets set on errors
 #if defined(_WIN32) || defined (__hpux)  // has no strtof()
-  *value = strtod(str, &endptr);
+  *value = io::NoLocaleStrtod(str, &endptr);
 #else
   *value = strtof(str, &endptr);
 #endif
@@ -1348,7 +1351,7 @@ bool safe_strtof(const char* str, float* value) {
 
 bool safe_strtod(const char* str, double* value) {
   char* endptr;
-  *value = strtod(str, &endptr);
+  *value = io::NoLocaleStrtod(str, &endptr);
   if (endptr != str) {
     while (ascii_isspace(*endptr)) ++endptr;
   }
@@ -1960,11 +1963,12 @@ int Base64UnescapeInternal(const char *src_param, int szsrc,
 // #include <sys/time.h>
 // #include <stdlib.h>
 // #include <string.h>
+// #include <stdio.h>
 // main()
 // {
 //   static const char Base64[] =
 //     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-//   char *pos;
+//   const char *pos;
 //   int idx, i, j;
 //   printf("    ");
 //   for (i = 0; i < 255; i += 8) {
@@ -1977,7 +1981,7 @@ int Base64UnescapeInternal(const char *src_param, int szsrc,
 //       if (idx == -1)
 //         printf(" %2d,     ", idx);
 //       else
-//         printf(" %2d/*%c*/,", idx, j);
+//         printf(" %2d/""*%c*""/,", idx, j);
 //     }
 //     printf("\n    ");
 //   }
@@ -1995,7 +1999,7 @@ static const signed char kUnBase64[] = {
   52/*0*/, 53/*1*/, 54/*2*/, 55/*3*/, 56/*4*/, 57/*5*/, 58/*6*/, 59/*7*/,
   60/*8*/, 61/*9*/, -1,      -1,      -1,      -1,      -1,      -1,
   -1,       0/*A*/,  1/*B*/,  2/*C*/,  3/*D*/,  4/*E*/,  5/*F*/,  6/*G*/,
-  07/*H*/,  8/*I*/,  9/*J*/, 10/*K*/, 11/*L*/, 12/*M*/, 13/*N*/, 14/*O*/,
+   7/*H*/,  8/*I*/,  9/*J*/, 10/*K*/, 11/*L*/, 12/*M*/, 13/*N*/, 14/*O*/,
   15/*P*/, 16/*Q*/, 17/*R*/, 18/*S*/, 19/*T*/, 20/*U*/, 21/*V*/, 22/*W*/,
   23/*X*/, 24/*Y*/, 25/*Z*/, -1,      -1,      -1,      -1,      -1,
   -1,      26/*a*/, 27/*b*/, 28/*c*/, 29/*d*/, 30/*e*/, 31/*f*/, 32/*g*/,
@@ -2029,7 +2033,7 @@ static const signed char kUnWebSafeBase64[] = {
   52/*0*/, 53/*1*/, 54/*2*/, 55/*3*/, 56/*4*/, 57/*5*/, 58/*6*/, 59/*7*/,
   60/*8*/, 61/*9*/, -1,      -1,      -1,      -1,      -1,      -1,
   -1,       0/*A*/,  1/*B*/,  2/*C*/,  3/*D*/,  4/*E*/,  5/*F*/,  6/*G*/,
-  07/*H*/,  8/*I*/,  9/*J*/, 10/*K*/, 11/*L*/, 12/*M*/, 13/*N*/, 14/*O*/,
+   7/*H*/,  8/*I*/,  9/*J*/, 10/*K*/, 11/*L*/, 12/*M*/, 13/*N*/, 14/*O*/,
   15/*P*/, 16/*Q*/, 17/*R*/, 18/*S*/, 19/*T*/, 20/*U*/, 21/*V*/, 22/*W*/,
   23/*X*/, 24/*Y*/, 25/*Z*/, -1,      -1,      -1,      -1,      63/*_*/,
   -1,      26/*a*/, 27/*b*/, 28/*c*/, 29/*d*/, 30/*e*/, 31/*f*/, 32/*g*/,

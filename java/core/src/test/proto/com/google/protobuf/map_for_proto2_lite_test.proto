@@ -44,12 +44,12 @@ message TestMap {
     QUX = 3;
   }
 
-  map<int32, int32>         int32_to_int32_field = 1;
-  map<int32, string>        int32_to_string_field = 2;
-  map<int32, bytes>         int32_to_bytes_field = 3;
-  map<int32, EnumValue>     int32_to_enum_field = 4;
-  map<int32, MessageValue>  int32_to_message_field = 5;
-  map<string, int32>        string_to_int32_field = 6;
+  map<int32, int32> int32_to_int32_field = 1;
+  map<int32, string> int32_to_string_field = 2;
+  map<int32, bytes> int32_to_bytes_field = 3;
+  map<int32, EnumValue> int32_to_enum_field = 4;
+  map<int32, MessageValue> int32_to_message_field = 5;
+  map<string, int32> string_to_int32_field = 6;
 
   message MessageWithRequiredFields {
     required int32 value = 1;
@@ -70,15 +70,20 @@ message TestRecursiveMap {
   map<int32, TestRecursiveMap> recursive_map_field = 2;
 }
 
-
 // a decoy of TestMap for testing parsing errors
 message BizarroTestMap {
-  map<int32, bytes> int32_to_int32_field = 1; // same key type, different value
-  map<string, int32> int32_to_string_field = 2; // different key and value types
-  map<string, int32> int32_to_bytes_field = 3; // different key types, same value
-  map<string, bytes> int32_to_enum_field = 4; // different key and value types
-  map<string, bytes> int32_to_message_field = 5; // different key and value types
-  map<string, bytes> string_to_int32_field = 6;  // same key type, different value
+  // same key type, different value
+  map<int32, bytes> int32_to_int32_field = 1;
+  // different key and value types
+  map<string, int32> int32_to_string_field = 2;
+  // different key types, same value
+  map<string, int32> int32_to_bytes_field = 3;
+  // different key and value types
+  map<string, bytes> int32_to_enum_field = 4;
+  // different key and value types
+  map<string, bytes> int32_to_message_field = 5;
+  // same key type, different value
+  map<string, bytes> string_to_int32_field = 6;
 }
 
 // Used to test that java reserved words can be used as protobuf field names
@@ -92,11 +97,13 @@ message ReservedAsMapField {
   map<string, uint32> class = 4;
   map<string, uint32> int = 5;
   map<string, uint32> void = 6;
-  map<string, uint32> string = 7; // These are also proto keywords
+  // These are also proto keywords
+  map<string, uint32> string = 7;
   map<string, uint32> package = 8;
-  map<string, uint32> enum = 9; // Most recent Java reserved word
-  map<string, uint32> null = 10;
+  // Most recent Java reserved word
+  map<string, uint32> enum = 9;
   // null is not a 'reserved word' per se but as a literal needs similar care
+  map<string, uint32> null = 10;
 }
 
 message ReservedAsMapFieldWithEnumValue {
@@ -110,11 +117,13 @@ message ReservedAsMapFieldWithEnumValue {
   map<string, SampleEnum> class = 4;
   map<string, SampleEnum> int = 5;
   map<string, SampleEnum> void = 6;
-  map<string, SampleEnum> string = 7; // These are also proto keywords
+  // These are also proto keywords
+  map<string, SampleEnum> string = 7;
   map<string, SampleEnum> package = 8;
-  map<string, SampleEnum> enum = 9; // Most recent Java reserved word
-  map<string, SampleEnum> null = 10;
+  // Most recent Java reserved word
+  map<string, SampleEnum> enum = 9;
   // null is not a 'reserved word' per se but as a literal needs similar care
+  map<string, SampleEnum> null = 10;
 }
 package map_for_proto2_lite_test;
 option java_package = "map_lite_test";

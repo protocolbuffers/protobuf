@@ -38,12 +38,12 @@ import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Stack;
 
 /**
  * Class to represent {@code ByteStrings} formed by concatenation of other ByteStrings, without
@@ -60,7 +60,7 @@ import java.util.Stack;
  * <p>Fundamentally the Rope algorithm represents the collection of pieces as a binary tree. BAP95
  * uses a Fibonacci bound relating depth to a minimum sequence length, sequences that are too short
  * relative to their depth cause a tree rebalance. More precisely, a tree of depth d is "balanced"
- * in the terminology of BAP95 if its length is at least F(d+2), where F(n) is the n-the Fibonacci
+ * in the terminology of BAP95 if its length is at least F(d+2), where F(n) is the n-th Fibonacci
  * number. Thus for depths 0, 1, 2, 3, 4, 5,... we have minimum lengths 1, 2, 3, 5, 8, 13,...
  *
  * @author carlanton@google.com (Carl Haverl)
@@ -77,36 +77,58 @@ final class RopeByteString extends ByteString {
    * in deeper binary trees.
    *
    * <p>For 32-bit integers, this array has length 46.
+   *
+   * <p>The correctness of this constant array is validated in tests.
    */
-  private static final int[] minLengthByDepth;
-
-  static {
-    // Dynamically generate the list of Fibonacci numbers the first time this
-    // class is accessed.
-    List<Integer> numbers = new ArrayList<Integer>();
-
-    // we skip the first Fibonacci number (1).  So instead of: 1 1 2 3 5 8 ...
-    // we have: 1 2 3 5 8 ...
-    int f1 = 1;
-    int f2 = 1;
-
-    // get all the values until we roll over.
-    while (f2 > 0) {
-      numbers.add(f2);
-      int temp = f1 + f2;
-      f1 = f2;
-      f2 = temp;
-    }
-
-    // we include this here so that we can index this array to [x + 1] in the
-    // loops below.
-    numbers.add(Integer.MAX_VALUE);
-    minLengthByDepth = new int[numbers.size()];
-    for (int i = 0; i < minLengthByDepth.length; i++) {
-      // unbox all the values
-      minLengthByDepth[i] = numbers.get(i);
-    }
-  }
+  static final int[] minLengthByDepth = {
+    1,
+    1,
+    2,
+    3,
+    5,
+    8,
+    13,
+    21,
+    34,
+    55,
+    89,
+    144,
+    233,
+    377,
+    610,
+    987,
+    1597,
+    2584,
+    4181,
+    6765,
+    10946,
+    17711,
+    28657,
+    46368,
+    75025,
+    121393,
+    196418,
+    317811,
+    514229,
+    832040,
+    1346269,
+    2178309,
+    3524578,
+    5702887,
+    9227465,
+    14930352,
+    24157817,
+    39088169,
+    63245986,
+    102334155,
+    165580141,
+    267914296,
+    433494437,
+    701408733,
+    1134903170,
+    1836311903,
+    Integer.MAX_VALUE
+  };
 
   private final int totalLength;
   private final ByteString left;
@@ -240,18 +262,53 @@ final class RopeByteString extends ByteString {
   @Override
   public byte byteAt(int index) {
     checkIndex(index, totalLength);
+    return internalByteAt(index);
+  }
 
+  @Override
+  byte internalByteAt(int index) {
     // Find the relevant piece by recursive descent
     if (index < leftLength) {
-      return left.byteAt(index);
+      return left.internalByteAt(index);
     }
 
-    return right.byteAt(index - leftLength);
+    return right.internalByteAt(index - leftLength);
   }
 
   @Override
   public int size() {
     return totalLength;
+  }
+
+  @Override
+  public ByteIterator iterator() {
+    return new AbstractByteIterator() {
+      final PieceIterator pieces = new PieceIterator(RopeByteString.this);
+      ByteIterator current = nextPiece();
+
+      private ByteIterator nextPiece() {
+        // NOTE: PieceIterator is guaranteed to return non-empty pieces, so this method will always
+        // return non-empty iterators (or null)
+        return pieces.hasNext() ? pieces.next().iterator() : null;
+      }
+
+      @Override
+      public boolean hasNext() {
+        return current != null;
+      }
+
+      @Override
+      public byte nextByte() {
+        if (current == null) {
+          throw new NoSuchElementException();
+        }
+        byte b = current.nextByte();
+        if (!current.hasNext()) {
+          current = nextPiece();
+        }
+        return b;
+      }
+    };
   }
 
   // =================================================================
@@ -388,6 +445,11 @@ final class RopeByteString extends ByteString {
     right.writeTo(output);
   }
 
+  @Override
+  void writeToReverse(ByteOutput output) throws IOException {
+    right.writeToReverse(output);
+    left.writeToReverse(output);
+  }
 
   @Override
   protected String toStringInternal(Charset charset) {
@@ -546,7 +608,7 @@ final class RopeByteString extends ByteString {
     // Stack containing the part of the string, starting from the left, that
     // we've already traversed.  The final string should be the equivalent of
     // concatenating the strings on the stack from bottom to top.
-    private final Stack<ByteString> prefixesStack = new Stack<ByteString>();
+    private final ArrayDeque<ByteString> prefixesStack = new ArrayDeque<>();
 
     private ByteString balance(ByteString left, ByteString right) {
       doBalance(left);
@@ -650,13 +712,20 @@ final class RopeByteString extends ByteString {
    *
    * <p>This iterator is used to implement {@link RopeByteString#equalsFragments(ByteString)}.
    */
-  private static class PieceIterator implements Iterator<LeafByteString> {
-
-    private final Stack<RopeByteString> breadCrumbs = new Stack<RopeByteString>();
+  private static final class PieceIterator implements Iterator<LeafByteString> {
+    private final ArrayDeque<RopeByteString> breadCrumbs;
     private LeafByteString next;
 
     private PieceIterator(ByteString root) {
-      next = getLeafByLeft(root);
+      if (root instanceof RopeByteString) {
+        RopeByteString rbs = (RopeByteString) root;
+        breadCrumbs = new ArrayDeque<>(rbs.getTreeDepth());
+        breadCrumbs.push(rbs);
+        next = getLeafByLeft(rbs.left);
+      } else {
+        breadCrumbs = null;
+        next = (LeafByteString) root;
+      }
     }
 
     private LeafByteString getLeafByLeft(ByteString root) {
@@ -673,7 +742,7 @@ final class RopeByteString extends ByteString {
       while (true) {
         // Almost always, we go through this loop exactly once.  However, if
         // we discover an empty string in the rope, we toss it and try again.
-        if (breadCrumbs.isEmpty()) {
+        if (breadCrumbs == null || breadCrumbs.isEmpty()) {
           return null;
         } else {
           LeafByteString result = getLeafByLeft(breadCrumbs.pop().right);

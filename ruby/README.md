@@ -9,10 +9,11 @@ install protoc as well to have Ruby code generation functionality.
 
 Installation from Gem
 ---------------------
+In Gemfile (Please check a version of Protocol Buffers you needed [RubyGems](https://rubygems.org/gems/google-protobuf)):
 
-When we release a version of Protocol Buffers, we will upload a Gem to
-[RubyGems](https://www.rubygems.org/). To use this pre-packaged gem, simply
-install it as you would any other gem:
+    gem 'google-protobuf'
+
+Or for using this pre-packaged gem, simply install it as you would any other gem:
 
     $ gem install [--prerelease] google-protobuf
 

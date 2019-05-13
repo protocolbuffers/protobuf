@@ -2,6 +2,11 @@ syntax = "proto2";
 
 package basic_test_proto2;
 
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/struct.proto";
+
 message Foo {
   optional Bar bar = 1;
   repeated Baz baz = 2;
@@ -114,4 +119,44 @@ message OneofMessage {
     TestMessage2 c = 3;
     TestEnum d = 4;
   }
+}
+
+message Wrapper {
+  optional google.protobuf.DoubleValue double = 1;
+  optional google.protobuf.FloatValue float = 2;
+  optional google.protobuf.Int32Value int32 = 3;
+  optional google.protobuf.Int64Value int64 = 4;
+  optional google.protobuf.UInt32Value uint32 = 5;
+  optional google.protobuf.UInt64Value uint64 = 6;
+  optional google.protobuf.BoolValue bool = 7;
+  optional google.protobuf.StringValue string = 8;
+  optional google.protobuf.BytesValue bytes = 9;
+  optional string real_string = 100;
+  oneof a_oneof {
+    string oneof_string = 10;
+  }
+}
+
+message TimeMessage {
+  optional google.protobuf.Timestamp timestamp = 1;
+  optional google.protobuf.Duration duration = 2;
+}
+
+message Enumer {
+  optional TestEnum optional_enum = 11;
+  repeated TestEnum repeated_enum = 22;
+  optional string a_const = 3;
+  oneof a_oneof {
+    string str = 100;
+    TestEnum const = 101;
+  }
+}
+
+message MyRepeatedStruct {
+  repeated MyStruct structs = 1;
+}
+
+message MyStruct {
+  optional string string = 1;
+  optional google.protobuf.Struct struct = 2;
 }

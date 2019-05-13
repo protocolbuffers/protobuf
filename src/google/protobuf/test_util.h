@@ -69,9 +69,7 @@ class ReflectionTester {
   void ExpectClearViaReflection(const Message& message);
 
   void SetPackedFieldsViaReflection(Message* message);
-  void ModifyPackedFieldsViaReflection(Message* message);
   void ExpectPackedFieldsSetViaReflection(const Message& message);
-  void ExpectPackedClearViaReflection(const Message& message);
 
   void RemoveLastRepeatedsViaReflection(Message* message);
   void ReleaseLastRepeatedsViaReflection(Message* message,
@@ -132,7 +130,8 @@ inline TestUtil::ReflectionTester::ReflectionTester(
   std::string package = base_descriptor->file()->package();
   const FieldDescriptor* import_descriptor =
       pool->FindFieldByName(package + ".TestAllTypes.optional_import_message");
-  std::string import_package = import_descriptor->message_type()->file()->package();
+  std::string import_package =
+      import_descriptor->message_type()->file()->package();
 
   nested_b_ = pool->FindFieldByName(package + ".TestAllTypes.NestedMessage.bb");
   foreign_c_ = pool->FindFieldByName(package + ".ForeignMessage.c");
@@ -1057,26 +1056,6 @@ inline void TestUtil::ReflectionTester::ExpectClearViaReflection(
                                                   &scratch));
 }
 
-inline void TestUtil::ReflectionTester::ExpectPackedClearViaReflection(
-    const Message& message) {
-  const Reflection* reflection = message.GetReflection();
-
-  EXPECT_EQ(0, reflection->FieldSize(message, F("packed_int32")));
-  EXPECT_EQ(0, reflection->FieldSize(message, F("packed_int64")));
-  EXPECT_EQ(0, reflection->FieldSize(message, F("packed_uint32")));
-  EXPECT_EQ(0, reflection->FieldSize(message, F("packed_uint64")));
-  EXPECT_EQ(0, reflection->FieldSize(message, F("packed_sint32")));
-  EXPECT_EQ(0, reflection->FieldSize(message, F("packed_sint64")));
-  EXPECT_EQ(0, reflection->FieldSize(message, F("packed_fixed32")));
-  EXPECT_EQ(0, reflection->FieldSize(message, F("packed_fixed64")));
-  EXPECT_EQ(0, reflection->FieldSize(message, F("packed_sfixed32")));
-  EXPECT_EQ(0, reflection->FieldSize(message, F("packed_sfixed64")));
-  EXPECT_EQ(0, reflection->FieldSize(message, F("packed_float")));
-  EXPECT_EQ(0, reflection->FieldSize(message, F("packed_double")));
-  EXPECT_EQ(0, reflection->FieldSize(message, F("packed_bool")));
-  EXPECT_EQ(0, reflection->FieldSize(message, F("packed_enum")));
-}
-
 // -------------------------------------------------------------------
 
 inline void TestUtil::ReflectionTester::ModifyRepeatedFieldsViaReflection(
@@ -1125,25 +1104,6 @@ inline void TestUtil::ReflectionTester::ModifyRepeatedFieldsViaReflection(
 
   reflection->SetRepeatedString(message, F("repeated_string_piece"), 1, "524");
   reflection->SetRepeatedString(message, F("repeated_cord"), 1, "525");
-}
-
-inline void TestUtil::ReflectionTester::ModifyPackedFieldsViaReflection(
-    Message* message) {
-  const Reflection* reflection = message->GetReflection();
-  reflection->SetRepeatedInt32(message, F("packed_int32"), 1, 801);
-  reflection->SetRepeatedInt64(message, F("packed_int64"), 1, 802);
-  reflection->SetRepeatedUInt32(message, F("packed_uint32"), 1, 803);
-  reflection->SetRepeatedUInt64(message, F("packed_uint64"), 1, 804);
-  reflection->SetRepeatedInt32(message, F("packed_sint32"), 1, 805);
-  reflection->SetRepeatedInt64(message, F("packed_sint64"), 1, 806);
-  reflection->SetRepeatedUInt32(message, F("packed_fixed32"), 1, 807);
-  reflection->SetRepeatedUInt64(message, F("packed_fixed64"), 1, 808);
-  reflection->SetRepeatedInt32(message, F("packed_sfixed32"), 1, 809);
-  reflection->SetRepeatedInt64(message, F("packed_sfixed64"), 1, 810);
-  reflection->SetRepeatedFloat(message, F("packed_float"), 1, 811);
-  reflection->SetRepeatedDouble(message, F("packed_double"), 1, 812);
-  reflection->SetRepeatedBool(message, F("packed_bool"), 1, true);
-  reflection->SetRepeatedEnum(message, F("packed_enum"), 1, foreign_foo_);
 }
 
 inline void TestUtil::ReflectionTester::RemoveLastRepeatedsViaReflection(
@@ -1269,8 +1229,7 @@ inline void TestUtil::ReflectionTester::ExpectMessagesReleasedViaReflection(
 // Check that the passed-in serialization is the canonical serialization we
 // expect for a TestFieldOrderings message filled in by
 // SetAllFieldsAndExtensions().
-inline void ExpectAllFieldsAndExtensionsInOrder(
-    const std::string& serialized) {
+inline void ExpectAllFieldsAndExtensionsInOrder(const std::string& serialized) {
   // We set each field individually, serialize separately, and concatenate all
   // the strings in canonical order to determine the expected serialization.
   std::string expected;

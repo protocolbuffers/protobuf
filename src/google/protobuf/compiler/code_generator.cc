@@ -46,11 +46,10 @@ namespace compiler {
 
 CodeGenerator::~CodeGenerator() {}
 
-bool CodeGenerator::GenerateAll(
-    const std::vector<const FileDescriptor*>& files,
-    const string& parameter,
-    GeneratorContext* generator_context,
-    string* error) const {
+bool CodeGenerator::GenerateAll(const std::vector<const FileDescriptor*>& files,
+                                const std::string& parameter,
+                                GeneratorContext* generator_context,
+                                std::string* error) const {
   // Default implemenation is just to call the per file method, and prefix any
   // error string with the file to provide context.
   bool succeeded = true;
@@ -58,8 +57,9 @@ bool CodeGenerator::GenerateAll(
     const FileDescriptor* file = files[i];
     succeeded = Generate(file, parameter, generator_context, error);
     if (!succeeded && error && error->empty()) {
-      *error = "Code generator returned false but provided no error "
-               "description.";
+      *error =
+          "Code generator returned false but provided no error "
+          "description.";
     }
     if (error && !error->empty()) {
       *error = file->name() + ": " + *error;
@@ -74,13 +74,13 @@ bool CodeGenerator::GenerateAll(
 
 GeneratorContext::~GeneratorContext() {}
 
-io::ZeroCopyOutputStream*
-GeneratorContext::OpenForAppend(const string& filename) {
+io::ZeroCopyOutputStream* GeneratorContext::OpenForAppend(
+    const std::string& filename) {
   return NULL;
 }
 
 io::ZeroCopyOutputStream* GeneratorContext::OpenForInsert(
-    const string& filename, const string& insertion_point) {
+    const std::string& filename, const std::string& insertion_point) {
   GOOGLE_LOG(FATAL) << "This GeneratorContext does not support insertion.";
   return NULL;  // make compiler happy
 }
@@ -98,14 +98,15 @@ void GeneratorContext::GetCompilerVersion(Version* version) const {
 }
 
 // Parses a set of comma-delimited name/value pairs.
-void ParseGeneratorParameter(const string& text,
-                             std::vector<std::pair<string, string> >* output) {
-  std::vector<string> parts = Split(text, ",", true);
+void ParseGeneratorParameter(
+    const std::string& text,
+    std::vector<std::pair<std::string, std::string> >* output) {
+  std::vector<std::string> parts = Split(text, ",", true);
 
   for (int i = 0; i < parts.size(); i++) {
-    string::size_type equals_pos = parts[i].find_first_of('=');
-    std::pair<string, string> value;
-    if (equals_pos == string::npos) {
+    std::string::size_type equals_pos = parts[i].find_first_of('=');
+    std::pair<std::string, std::string> value;
+    if (equals_pos == std::string::npos) {
       value.first = parts[i];
       value.second = "";
     } else {

@@ -10,37 +10,35 @@
   <email>protobuf-opensource@google.com</email>
   <active>yes</active>
  </lead>
- <date>2018-08-03</date>
- <time>11:02:07</time>
+ <date>2019-03-25</date>
+ <time>13:23:39</time>
  <version>
-  <release>3.6.1</release>
-  <api>3.6.1</api>
+  <release>3.7.1</release>
+  <api>3.7.1</api>
  </version>
  <stability>
   <release>stable</release>
   <api>stable</api>
  </stability>
  <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
- <notes>
-GA release.
- </notes>
+ <notes>GA release.</notes>
  <contents>
   <dir baseinstalldir="/" name="/">
-    <file baseinstalldir="/" name="config.m4" role="src" />
-    <file baseinstalldir="/" name="array.c" role="src" />
-    <file baseinstalldir="/" name="def.c" role="src" />
-    <file baseinstalldir="/" name="encode_decode.c" role="src" />
-    <file baseinstalldir="/" name="map.c" role="src" />
-    <file baseinstalldir="/" name="message.c" role="src" />
-    <file baseinstalldir="/" name="protobuf.c" role="src" />
-    <file baseinstalldir="/" name="protobuf.h" role="src" />
-    <file baseinstalldir="/" name="storage.c" role="src" />
-    <file baseinstalldir="/" name="type_check.c" role="src" />
-    <file baseinstalldir="/" name="upb.c" role="src" />
-    <file baseinstalldir="/" name="upb.h" role="src" />
-    <file baseinstalldir="/" name="utf8.c" role="src" />
-    <file baseinstalldir="/" name="utf8.h" role="src" />
-    <file baseinstalldir="/" name="LICENSE" role="doc" />
+    <file baseinstalldir="/" name="config.m4" role="src"/>
+    <file baseinstalldir="/" name="array.c" role="src"/>
+    <file baseinstalldir="/" name="def.c" role="src"/>
+    <file baseinstalldir="/" name="encode_decode.c" role="src"/>
+    <file baseinstalldir="/" name="map.c" role="src"/>
+    <file baseinstalldir="/" name="message.c" role="src"/>
+    <file baseinstalldir="/" name="protobuf.c" role="src"/>
+    <file baseinstalldir="/" name="protobuf.h" role="src"/>
+    <file baseinstalldir="/" name="storage.c" role="src"/>
+    <file baseinstalldir="/" name="type_check.c" role="src"/>
+    <file baseinstalldir="/" name="upb.c" role="src"/>
+    <file baseinstalldir="/" name="upb.h" role="src"/>
+    <file baseinstalldir="/" name="utf8.c" role="src"/>
+    <file baseinstalldir="/" name="utf8.h" role="src"/>
+    <file baseinstalldir="/" name="LICENSE" role="doc"/>
   </dir>
  </contents>
  <dependencies>
@@ -54,7 +52,7 @@ GA release.
   </required>
  </dependencies>
  <providesextension>protobuf</providesextension>
- <extsrcrelease />
+ <extsrcrelease/>
  <changelog>
   <release>
    <version>
@@ -263,6 +261,62 @@ G  A release.
    <notes>
 G  A release.
    </notes>
+  </release>
+  <release>
+   <version>
+    <release>3.7.0RC2</release>
+    <api>3.7.0</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <date>2019-02-1</date>
+   <time>10:22:43</time>
+   <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
+   <notes>GA release.</notes>
+  </release>
+  <release>
+   <version>
+    <release>3.7.0RC3</release>
+    <api>3.7.0</api>
+   </version>
+   <stability>
+    <release>beta</release>
+    <api>beta</api>
+   </stability>
+   <date>2019-02-22</date>
+   <time>11:31:21</time>
+   <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
+   <notes>GA release.</notes>
+  </release>
+  <release>
+   <version>
+    <release>3.7.0</release>
+    <api>3.7.0</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <date>2019-02-28</date>
+   <time>10:19:15</time>
+   <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
+   <notes>GA release.</notes>
+  </release>
+  <release>
+   <version>
+    <release>3.7.1</release>
+    <api>3.7.1</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <date>2019-03-25</date>
+   <time>13:23:39</time>
+   <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
+   <notes>GA release.</notes>
   </release>
  </changelog>
 </package>

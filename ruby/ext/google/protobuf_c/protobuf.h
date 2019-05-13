@@ -196,6 +196,8 @@ VALUE DescriptorPool_build(int argc, VALUE* argv, VALUE _self);
 VALUE DescriptorPool_lookup(VALUE _self, VALUE name);
 VALUE DescriptorPool_generated_pool(VALUE _self);
 
+extern VALUE generated_pool;
+
 void Descriptor_mark(void* _self);
 void Descriptor_free(void* _self);
 VALUE Descriptor_alloc(VALUE klass);
@@ -335,14 +337,16 @@ VALUE Builder_finalize_to_pool(VALUE _self, VALUE pool_rb);
 #define NATIVE_SLOT_MAX_SIZE sizeof(uint64_t)
 
 size_t native_slot_size(upb_fieldtype_t type);
-void native_slot_set(upb_fieldtype_t type,
+void native_slot_set(const char* name,
+                     upb_fieldtype_t type,
                      VALUE type_class,
                      void* memory,
                      VALUE value);
 // Atomically (with respect to Ruby VM calls) either update the value and set a
 // oneof case, or do neither. If |case_memory| is null, then no case value is
 // set.
-void native_slot_set_value_and_case(upb_fieldtype_t type,
+void native_slot_set_value_and_case(const char* name,
+                                    upb_fieldtype_t type,
                                     VALUE type_class,
                                     void* memory,
                                     VALUE value,
@@ -358,7 +362,7 @@ void native_slot_deep_copy(upb_fieldtype_t type, void* to, void* from);
 bool native_slot_eq(upb_fieldtype_t type, void* mem1, void* mem2);
 
 VALUE native_slot_encode_and_freeze_string(upb_fieldtype_t type, VALUE value);
-void native_slot_check_int_range_precision(upb_fieldtype_t type, VALUE value);
+void native_slot_check_int_range_precision(const char* name, upb_fieldtype_t type, VALUE value);
 
 extern rb_encoding* kRubyStringUtf8Encoding;
 extern rb_encoding* kRubyStringASCIIEncoding;
@@ -570,7 +574,7 @@ VALUE Message_index_set(VALUE _self, VALUE field_name, VALUE value);
 VALUE Message_descriptor(VALUE klass);
 VALUE Message_decode(VALUE klass, VALUE data);
 VALUE Message_encode(VALUE klass, VALUE msg_rb);
-VALUE Message_decode_json(VALUE klass, VALUE data);
+VALUE Message_decode_json(int argc, VALUE* argv, VALUE klass);
 VALUE Message_encode_json(int argc, VALUE* argv, VALUE klass);
 
 VALUE Google_Protobuf_discard_unknown(VALUE self, VALUE msg_rb);

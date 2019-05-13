@@ -52,7 +52,7 @@ class LiteArenaTest : public testing::Test {
 };
 
 TEST_F(LiteArenaTest, MapNoHeapAllocation) {
-  string data;
+  std::string data;
   data.reserve(128 * 1024);
 
   {
@@ -76,7 +76,7 @@ TEST_F(LiteArenaTest, UnknownFieldMemLeak) {
   protobuf_unittest::ForeignMessageArenaLite* message =
       Arena::CreateMessage<protobuf_unittest::ForeignMessageArenaLite>(
           arena_.get());
-  string data = "\012\000";
+  std::string data = "\012\000";
   int original_capacity = data.capacity();
   while (data.capacity() <= original_capacity) {
     data.append("a");

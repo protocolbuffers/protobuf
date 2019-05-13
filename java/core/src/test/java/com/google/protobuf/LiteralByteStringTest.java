@@ -369,13 +369,13 @@ public class LiteralByteStringTest extends TestCase {
           }
 
           @Override
-          public void writeLazy(byte[] value, int offset, int length) throws IOException {
-            Arrays.fill(value, offset, offset + length, (byte) 0);
+          public void write(ByteBuffer value) throws IOException {
+            throw new UnsupportedOperationException();
           }
 
           @Override
-          public void write(ByteBuffer value) throws IOException {
-            throw new UnsupportedOperationException();
+          public void writeLazy(byte[] value, int offset, int length) throws IOException {
+            Arrays.fill(value, offset, offset + length, (byte) 0);
           }
 
           @Override

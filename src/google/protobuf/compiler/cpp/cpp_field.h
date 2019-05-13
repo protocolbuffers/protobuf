@@ -64,8 +64,9 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
                              std::map<std::string, std::string>* variables,
                              const Options& options);
 
-void SetCommonOneofFieldVariables(const FieldDescriptor* descriptor,
-                                  std::map<std::string, std::string>* variables);
+void SetCommonOneofFieldVariables(
+    const FieldDescriptor* descriptor,
+    std::map<std::string, std::string>* variables);
 
 class FieldGenerator {
  public:
@@ -226,7 +227,6 @@ class FieldGeneratorMap {
 
  private:
   const Descriptor* descriptor_;
-  const Options& options_;
   std::vector<std::unique_ptr<FieldGenerator>> field_generators_;
 
   static FieldGenerator* MakeGoogleInternalGenerator(

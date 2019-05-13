@@ -31,7 +31,6 @@
 #include <sstream>
 
 #include <google/protobuf/compiler/code_generator.h>
-#include <google/protobuf/compiler/plugin.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/printer.h>
@@ -49,8 +48,7 @@ namespace protobuf {
 namespace compiler {
 namespace csharp {
 
-void GenerateFile(const google::protobuf::FileDescriptor* file,
-                  io::Printer* printer,
+void GenerateFile(const FileDescriptor* file, io::Printer* printer,
                   const Options* options) {
   ReflectionClassGenerator reflectionClassGenerator(file, options);
   reflectionClassGenerator.Generate(printer);
@@ -65,11 +63,11 @@ bool Generator::Generate(
   std::vector<std::pair<string, string> > options;
   ParseGeneratorParameter(parameter, &options);
 
-  // We only support proto3 - but we make an exception for descriptor.proto. 
+  // We only support proto3 - but we make an exception for descriptor.proto.
   if (file->syntax() != FileDescriptor::SYNTAX_PROTO3 && !IsDescriptorProto(file)) {
-    *error = "C# code generation only supports proto3 syntax"; 
+    *error = "C# code generation only supports proto3 syntax";
     return false;
-  } 
+  }
 
   struct Options cli_options;
 

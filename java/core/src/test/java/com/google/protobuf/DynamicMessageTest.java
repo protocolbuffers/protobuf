@@ -33,8 +33,10 @@ package com.google.protobuf;
 import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.OneofDescriptor;
+import protobuf_unittest.UnittestProto;
 import protobuf_unittest.UnittestProto.TestAllExtensions;
 import protobuf_unittest.UnittestProto.TestAllTypes;
+import protobuf_unittest.UnittestProto.TestAllTypes.NestedMessage;
 import protobuf_unittest.UnittestProto.TestEmptyMessage;
 import protobuf_unittest.UnittestProto.TestPackedTypes;
 import java.util.Arrays;
@@ -221,6 +223,17 @@ public class DynamicMessageTest extends TestCase {
     // Test Parser interface.
     Message message3 = message2.getParserForType().parseFrom(rawBytes);
     packedReflectionTester.assertPackedFieldsSetViaReflection(message3);
+  }
+
+  public void testGetBuilderForExtensionField() {
+    DynamicMessage.Builder builder = DynamicMessage.newBuilder(TestAllExtensions.getDescriptor());
+    Message.Builder fieldBuilder =
+        builder.newBuilderForField(UnittestProto.optionalNestedMessageExtension.getDescriptor());
+    final int expected = 7432;
+    FieldDescriptor field =
+        NestedMessage.getDescriptor().findFieldByNumber(NestedMessage.BB_FIELD_NUMBER);
+    fieldBuilder.setField(field, expected);
+    assertEquals(expected, fieldBuilder.build().getField(field));
   }
 
   public void testDynamicMessageCopy() throws Exception {

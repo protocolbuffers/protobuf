@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>com.google</groupId>
@@ -10,7 +8,7 @@
   </parent>
   <groupId>com.google.protobuf</groupId>
   <artifactId>protoc</artifactId>
-  <version>3.6.1</version>
+  <version>3.7.1</version>
   <packaging>pom</packaging>
   <name>Protobuf Compiler</name>
   <description>
@@ -82,6 +80,11 @@
                   <classifier>linux-aarch_64</classifier>
                   <type>exe</type>
                 </artifact>
+                <artifact>
+                  <file>${basedir}/target/linux/ppcle_64/protoc.exe</file>
+                  <classifier>linux-ppcle_64</classifier>
+                  <type>exe</type>
+                </artifact>
               </artifacts>
             </configuration>
           </execution>
@@ -98,7 +101,7 @@
              subsequent deployments it should be set to what Sonatype has
              created, so that all deployments will go to the same repository.
              -->
-        <staging.repository></staging.repository>
+        <staging.repository/>
       </properties>
       <build>
         <plugins>

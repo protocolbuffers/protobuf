@@ -31,4 +31,3 @@
 syntax = "proto2";
 
 package javatests.com.google.apps.jspb;
-

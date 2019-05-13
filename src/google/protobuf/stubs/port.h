@@ -431,7 +431,12 @@ class BigEndian {
 }  // namespace protobuf
 }  // namespace google
 
+#ifdef PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
+#define GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER \
+  PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
+#else
 #define GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER 0
+#endif
 
 #include <google/protobuf/port_undef.inc>
 

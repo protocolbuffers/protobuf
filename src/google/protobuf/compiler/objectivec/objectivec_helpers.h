@@ -62,7 +62,7 @@ string PROTOC_EXPORT EscapeTrigraphs(const string& to_escape);
 string PROTOC_EXPORT StripProto(const string& filename);
 
 // Remove white space from either end of a StringPiece.
-void PROTOC_EXPORT StringPieceTrimWhitespace(StringPiece* input);
+void PROTOC_EXPORT TrimWhitespace(StringPiece* input);
 
 // Returns true if the name requires a ns_returns_not_retained attribute applied
 // to it.
@@ -163,11 +163,22 @@ string GetOptionalDeprecatedAttribute(
   // The file is only passed when checking Messages & Enums, so those types
   // get tagged. At the moment, it doesn't seem to make sense to tag every
   // field or enum value with when the file is deprecated.
+  bool isFileLevelDeprecation = false;
   if (!isDeprecated && file) {
-    isDeprecated = file->options().deprecated();
+    isFileLevelDeprecation = file->options().deprecated();
+    isDeprecated = isFileLevelDeprecation;
   }
   if (isDeprecated) {
-    string result = "DEPRECATED_ATTRIBUTE";
+    string message;
+    const FileDescriptor* sourceFile = descriptor->file();
+    if (isFileLevelDeprecation) {
+      message = sourceFile->name() + " is deprecated.";
+    } else {
+      message = descriptor->full_name() + " is deprecated (see " +
+                sourceFile->name() + ").";
+    }
+
+    string result = string("GPB_DEPRECATED_MSG(\"") + message + "\")";
     if (preSpace) {
       result.insert(0, " ");
     }
@@ -230,6 +241,9 @@ class PROTOC_EXPORT TextFormatDecodeData {
   TextFormatDecodeData();
   ~TextFormatDecodeData();
 
+  TextFormatDecodeData(const TextFormatDecodeData&) = delete;
+  TextFormatDecodeData& operator=(const TextFormatDecodeData&) = delete;
+
   void AddString(int32 key, const string& input_for_decode,
                  const string& desired_output);
   size_t num_entries() const { return entries_.size(); }
@@ -239,8 +253,6 @@ class PROTOC_EXPORT TextFormatDecodeData {
                                     const string& desired_output);
 
  private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(TextFormatDecodeData);
-
   typedef std::pair<int32, string> DataEntry;
   std::vector<DataEntry> entries_;
 };

@@ -68,12 +68,12 @@ void PrintEnumVerifierLogic(io::Printer* printer,
                             const FieldDescriptor* descriptor,
                             const std::map<std::string, std::string>& variables,
                             const char* var_name,
-                            const char* terminating_string,
-                            bool enforce_lite);
+                            const char* terminating_string, bool enforce_lite);
 
 // Converts a name to camel-case. If cap_first_letter is true, capitalize the
 // first letter.
-std::string UnderscoresToCamelCase(const std::string& name, bool cap_first_letter);
+std::string UnderscoresToCamelCase(const std::string& name,
+                                   bool cap_first_letter);
 // Converts the field's name to camel-case, e.g. "foo_bar_baz" becomes
 // "fooBarBaz" or "FooBarBaz", respectively.
 std::string UnderscoresToCamelCase(const FieldDescriptor* field);
@@ -82,6 +82,9 @@ std::string UnderscoresToCapitalizedCamelCase(const FieldDescriptor* field);
 // Similar, but for method names.  (Typically, this merely has the effect
 // of lower-casing the first letter of the name.)
 std::string UnderscoresToCamelCase(const MethodDescriptor* method);
+
+// Same as UnderscoresToCamelCase, but checks for reserved keywords
+std::string UnderscoresToCamelCaseCheckReserved(const FieldDescriptor* field);
 
 // Similar to UnderscoresToCamelCase, but guarentees that the result is a
 // complete Java identifier by adding a _ if needed.
@@ -107,14 +110,6 @@ std::string FileJavaPackage(const FileDescriptor* file, bool immutable);
 
 // Returns output directory for the given package name.
 std::string JavaPackageToDir(std::string package_name);
-
-// Converts the given fully-qualified name in the proto namespace to its
-// fully-qualified name in the Java namespace, given that it is in the given
-// file.
-// TODO(xiaofeng): this method is deprecated and should be removed in the
-// future.
-std::string ToJavaName(const std::string& full_name,
-                  const FileDescriptor* file);
 
 // TODO(xiaofeng): the following methods are kept for they are exposed
 // publicly in //net/proto2/compiler/java/public/names.h. They return
@@ -154,10 +149,14 @@ inline bool IsDescriptorProto(const Descriptor* descriptor) {
          descriptor->file()->name() == "google/protobuf/descriptor.proto";
 }
 
+// Returns the stored type string used by the experimental runtime for oneof
+// fields.
+std::string GetOneofStoredType(const FieldDescriptor* field);
+
 
 // Whether we should generate multiple java files for messages.
-inline bool MultipleJavaFiles(
-    const FileDescriptor* descriptor, bool immutable) {
+inline bool MultipleJavaFiles(const FileDescriptor* descriptor,
+                              bool immutable) {
   return descriptor->options().java_multiple_files();
 }
 
@@ -179,7 +178,8 @@ inline bool IsOwnFile(const ServiceDescriptor* descriptor, bool immutable) {
 // annotation data for that descriptor. `suffix` is usually empty, but may
 // (e.g.) be "OrBuilder" for some generated interfaces.
 template <typename Descriptor>
-std::string AnnotationFileName(const Descriptor* descriptor, const std::string& suffix) {
+std::string AnnotationFileName(const Descriptor* descriptor,
+                               const std::string& suffix) {
   return descriptor->name() + suffix + ".java.pb.meta";
 }
 
@@ -195,7 +195,7 @@ void MaybePrintGeneratedAnnotation(Context* context, io::Printer* printer,
 
 // Get the unqualified name that should be used for a field's field
 // number constant.
-std::string FieldConstantName(const FieldDescriptor *field);
+std::string FieldConstantName(const FieldDescriptor* field);
 
 // Returns the type of the FieldDescriptor.
 // This does nothing interesting for the open source release, but is used for
@@ -230,9 +230,9 @@ const char* FieldTypeName(const FieldDescriptor::Type field_type);
 
 class ClassNameResolver;
 std::string DefaultValue(const FieldDescriptor* field, bool immutable,
-                    ClassNameResolver* name_resolver);
+                         ClassNameResolver* name_resolver);
 inline std::string ImmutableDefaultValue(const FieldDescriptor* field,
-                                    ClassNameResolver* name_resolver) {
+                                         ClassNameResolver* name_resolver) {
   return DefaultValue(field, true, name_resolver);
 }
 bool IsDefaultValueJavaDefault(const FieldDescriptor* field);
@@ -241,24 +241,19 @@ bool IsByteStringWithCustomDefaultValue(const FieldDescriptor* field);
 // Does this message class have descriptor and reflection methods?
 inline bool HasDescriptorMethods(const Descriptor* descriptor,
                                  bool enforce_lite) {
-  return !enforce_lite &&
-         descriptor->file()->options().optimize_for() !=
-             FileOptions::LITE_RUNTIME;
+  return !enforce_lite;
 }
 inline bool HasDescriptorMethods(const EnumDescriptor* descriptor,
                                  bool enforce_lite) {
-  return !enforce_lite &&
-         descriptor->file()->options().optimize_for() !=
-             FileOptions::LITE_RUNTIME;
+  return !enforce_lite;
 }
 inline bool HasDescriptorMethods(const FileDescriptor* descriptor,
                                  bool enforce_lite) {
-  return !enforce_lite &&
-         descriptor->options().optimize_for() != FileOptions::LITE_RUNTIME;
+  return !enforce_lite;
 }
 
 // Should we generate generic services for this file?
-inline bool HasGenericServices(const FileDescriptor *file, bool enforce_lite) {
+inline bool HasGenericServices(const FileDescriptor* file, bool enforce_lite) {
   return file->service_count() > 0 &&
          HasDescriptorMethods(file, enforce_lite) &&
          file->options().java_generic_services();
@@ -395,7 +390,7 @@ inline bool IsWrappersProtoFile(const FileDescriptor* descriptor) {
 
 inline bool CheckUtf8(const FieldDescriptor* descriptor) {
   return descriptor->file()->syntax() == FileDescriptor::SYNTAX_PROTO3 ||
-      descriptor->file()->options().java_string_check_utf8();
+         descriptor->file()->options().java_string_check_utf8();
 }
 
 inline std::string GeneratedCodeVersionSuffix() {

@@ -44,12 +44,12 @@
 #ifndef GOOGLE_PROTOBUF_IO_ZERO_COPY_STREAM_IMPL_LITE_H__
 #define GOOGLE_PROTOBUF_IO_ZERO_COPY_STREAM_IMPL_LITE_H__
 
+#include <iosfwd>
 #include <memory>
 #include <string>
-#include <iosfwd>
-#include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/stubs/callback.h>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/stubs/stl_util.h>
 
 
@@ -87,8 +87,8 @@ class PROTOBUF_EXPORT ArrayInputStream : public ZeroCopyInputStream {
   const int block_size_;     // How many bytes to return at a time.
 
   int position_;
-  int last_returned_size_;   // How many bytes we returned last time Next()
-                             // was called (used for error checking only).
+  int last_returned_size_;  // How many bytes we returned last time Next()
+                            // was called (used for error checking only).
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ArrayInputStream);
 };
@@ -114,13 +114,13 @@ class PROTOBUF_EXPORT ArrayOutputStream : public ZeroCopyOutputStream {
   int64 ByteCount() const override;
 
  private:
-  uint8* const data_;        // The byte array.
-  const int size_;           // Total size of the array.
-  const int block_size_;     // How many bytes to return at a time.
+  uint8* const data_;     // The byte array.
+  const int size_;        // Total size of the array.
+  const int block_size_;  // How many bytes to return at a time.
 
   int position_;
-  int last_returned_size_;   // How many bytes we returned last time Next()
-                             // was called (used for error checking only).
+  int last_returned_size_;  // How many bytes we returned last time Next()
+                            // was called (used for error checking only).
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ArrayOutputStream);
 };
@@ -146,9 +146,6 @@ class PROTOBUF_EXPORT StringOutputStream : public ZeroCopyOutputStream {
   bool Next(void** data, int* size) override;
   void BackUp(int count) override;
   int64 ByteCount() const override;
-
- protected:
-  void SetString(std::string* target);
 
  private:
   static const int kMinimumSize = 16;
@@ -343,6 +340,31 @@ class PROTOBUF_EXPORT CopyingOutputStreamAdaptor : public ZeroCopyOutputStream {
 
 // ===================================================================
 
+// A ZeroCopyInputStream which wraps some other stream and limits it to
+// a particular byte count.
+class PROTOBUF_EXPORT LimitingInputStream : public ZeroCopyInputStream {
+ public:
+  LimitingInputStream(ZeroCopyInputStream* input, int64 limit);
+  ~LimitingInputStream() override;
+
+  // implements ZeroCopyInputStream ----------------------------------
+  bool Next(const void** data, int* size) override;
+  void BackUp(int count) override;
+  bool Skip(int count) override;
+  int64 ByteCount() const override;
+
+
+ private:
+  ZeroCopyInputStream* input_;
+  int64 limit_;  // Decreases as we go, becomes negative if we overshoot.
+  int64 prior_bytes_read_;  // Bytes read on underlying stream at construction
+
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(LimitingInputStream);
+};
+
+
+// ===================================================================
+
 // mutable_string_data() and as_string_data() are workarounds to improve
 // the performance of writing new data to an existing string.  Unfortunately
 // the methods provided by the string class are suboptimal, and using memcpy()
@@ -359,13 +381,9 @@ class PROTOBUF_EXPORT CopyingOutputStreamAdaptor : public ZeroCopyOutputStream {
 // return value is valid until the next time the string is resized.  We
 // trust the caller to treat the return value as an array of length s->size().
 inline char* mutable_string_data(std::string* s) {
-#ifdef LANG_CXX11
   // This should be simpler & faster than string_as_array() because the latter
   // is guaranteed to return NULL when *s is empty, so it has to check for that.
   return &(*s)[0];
-#else
-  return string_as_array(s);
-#endif
 }
 
 // as_string_data(s) is equivalent to
@@ -373,12 +391,8 @@ inline char* mutable_string_data(std::string* s) {
 // Sometimes it's faster: in some scenarios p cannot be NULL, and then the
 // code can avoid that check.
 inline std::pair<char*, bool> as_string_data(std::string* s) {
-  char *p = mutable_string_data(s);
-#ifdef LANG_CXX11
+  char* p = mutable_string_data(s);
   return std::make_pair(p, true);
-#else
-  return std::make_pair(p, p != NULL);
-#endif
 }
 
 }  // namespace io

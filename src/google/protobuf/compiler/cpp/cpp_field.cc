@@ -57,18 +57,18 @@ namespace cpp {
 using internal::WireFormat;
 
 void SetCommonFieldVariables(const FieldDescriptor* descriptor,
-                             std::map<string, string>* variables,
+                             std::map<std::string, std::string>* variables,
                              const Options& options) {
   SetCommonVars(options, variables);
-  (*variables)["ns"] = Namespace(descriptor);
+  (*variables)["ns"] = Namespace(descriptor, options);
   (*variables)["name"] = FieldName(descriptor);
-  (*variables)["index"] = SimpleItoa(descriptor->index());
-  (*variables)["number"] = SimpleItoa(descriptor->number());
+  (*variables)["index"] = StrCat(descriptor->index());
+  (*variables)["number"] = StrCat(descriptor->number());
   (*variables)["classname"] = ClassName(FieldScope(descriptor), false);
   (*variables)["declared_type"] = DeclaredTypeMethodName(descriptor->type());
   (*variables)["field_member"] = FieldName(descriptor) + "_";
 
-  (*variables)["tag_size"] = SimpleItoa(
+  (*variables)["tag_size"] = StrCat(
       WireFormat::TagSize(descriptor->number(), descriptor->type()));
   (*variables)["deprecated_attr"] =
       DeprecatedAttribute(options, descriptor->options().deprecated());
@@ -77,7 +77,7 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
   (*variables)["clear_hasbit"] = "";
   if (HasFieldPresence(descriptor->file())) {
     (*variables)["set_hasbit_io"] =
-        "HasBitSetters::set_has_" + FieldName(descriptor) + "(this);";
+        "HasBitSetters::set_has_" + FieldName(descriptor) + "(&_has_bits_);";
   } else {
     (*variables)["set_hasbit_io"] = "";
   }
@@ -102,9 +102,10 @@ void FieldGenerator::SetHasBitIndex(int32 has_bit_index) {
       strings::Hex(1u << (has_bit_index % 32), strings::ZERO_PAD_8), "u;");
 }
 
-void SetCommonOneofFieldVariables(const FieldDescriptor* descriptor,
-                                  std::map<string, string>* variables) {
-  const string prefix = descriptor->containing_oneof()->name() + "_.";
+void SetCommonOneofFieldVariables(
+    const FieldDescriptor* descriptor,
+    std::map<std::string, std::string>* variables) {
+  const std::string prefix = descriptor->containing_oneof()->name() + "_.";
   (*variables)["oneof_name"] = descriptor->containing_oneof()->name();
   (*variables)["field_member"] =
       StrCat(prefix, (*variables)["name"], "_");
@@ -112,8 +113,8 @@ void SetCommonOneofFieldVariables(const FieldDescriptor* descriptor,
 
 FieldGenerator::~FieldGenerator() {}
 
-void FieldGenerator::
-GenerateMergeFromCodedStreamWithPacking(io::Printer* printer) const {
+void FieldGenerator::GenerateMergeFromCodedStreamWithPacking(
+    io::Printer* printer) const {
   // Reaching here indicates a bug. Cases are:
   //   - This FieldGenerator should support packing, but this method should be
   //     overridden.
@@ -121,15 +122,12 @@ GenerateMergeFromCodedStreamWithPacking(io::Printer* printer) const {
   //     never have been called.
   GOOGLE_LOG(FATAL) << "GenerateMergeFromCodedStreamWithPacking() "
              << "called on field generator that does not support packing.";
-
 }
 
 FieldGeneratorMap::FieldGeneratorMap(const Descriptor* descriptor,
                                      const Options& options,
                                      MessageSCCAnalyzer* scc_analyzer)
-    : descriptor_(descriptor),
-      options_(options),
-      field_generators_(descriptor->field_count()) {
+    : descriptor_(descriptor), field_generators_(descriptor->field_count()) {
   // Construct all the FieldGenerators.
   for (int i = 0; i < descriptor->field_count(); i++) {
     field_generators_[i].reset(

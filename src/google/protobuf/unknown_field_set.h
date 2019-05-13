@@ -43,15 +43,12 @@
 #include <vector>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
+#include <google/protobuf/parse_context.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/port.h>
 
 #include <google/protobuf/port_def.inc>
-
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-#include <google/protobuf/parse_context.h>
-#endif
 
 #ifdef SWIG
 #error "You cannot SWIG proto headers"
@@ -59,20 +56,20 @@
 
 namespace google {
 namespace protobuf {
-  namespace io {
-    class CodedInputStream;         // coded_stream.h
-    class CodedOutputStream;        // coded_stream.h
-    class ZeroCopyInputStream;      // zero_copy_stream.h
-  }
-  namespace internal {
-    class InternalMetadataWithArena;  // metadata.h
-    class WireFormat;               // wire_format.h
-    class MessageSetFieldSkipperUsingCord;
-                                    // extension_set_heavy.cc
-  }
+namespace io {
+class CodedInputStream;     // coded_stream.h
+class CodedOutputStream;    // coded_stream.h
+class ZeroCopyInputStream;  // zero_copy_stream.h
+}  // namespace io
+namespace internal {
+class InternalMetadataWithArena;  // metadata.h
+class WireFormat;                 // wire_format.h
+class MessageSetFieldSkipperUsingCord;
+// extension_set_heavy.cc
+}  // namespace internal
 
-class Message;                      // message.h
-class UnknownField;                 // below
+class Message;       // message.h
+class UnknownField;  // below
 
 // An UnknownFieldSet contains fields that were encountered while parsing a
 // message but were not defined by its type.  Keeping track of these can be
@@ -128,9 +125,7 @@ class PROTOBUF_EXPORT UnknownFieldSet {
   // Version of SpaceUsed() including sizeof(*this).
   size_t SpaceUsedLong() const;
 
-  int SpaceUsed() const {
-    return internal::ToIntSize(SpaceUsedLong());
-  }
+  int SpaceUsed() const { return internal::ToIntSize(SpaceUsedLong()); }
 
   // Returns the number of fields present in the UnknownFieldSet.
   inline int field_count() const;
@@ -175,26 +170,22 @@ class PROTOBUF_EXPORT UnknownFieldSet {
   }
 
   static const UnknownFieldSet* default_instance();
+
  private:
   // For InternalMergeFrom
   friend class UnknownField;
   // Merges from other UnknownFieldSet. This method assumes, that this object
-  // is newly created and has fields_ == NULL;
+  // is newly created and has no fields.
   void InternalMergeFrom(const UnknownFieldSet& other);
   void ClearFallback();
 
-  // fields_ is either NULL, or a pointer to a vector that is *non-empty*. We
-  // never hold the empty vector because we want the 'do we have any unknown
-  // fields' check to be fast, and avoid a cache miss: the UFS instance gets
-  // embedded in the message object, so 'fields_ != NULL' tests a member
-  // variable hot in the cache, without the need to go touch a vector somewhere
-  // else in memory.
-  std::vector<UnknownField>* fields_;
+  std::vector<UnknownField> fields_;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(UnknownFieldSet);
 };
 
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 namespace internal {
+
 inline void WriteVarint(uint32 num, uint64 val, UnknownFieldSet* unknown) {
   unknown->AddVarint(num, val);
 }
@@ -203,18 +194,26 @@ inline void WriteLengthDelimited(uint32 num, StringPiece val,
   unknown->AddLengthDelimited(num)->assign(val.data(), val.size());
 }
 
-const char* PackedValidEnumParser(const char* begin, const char* end,
-                                  void* object, ParseContext* ctx);
-const char* PackedValidEnumParserArg(const char* begin, const char* end,
-                                     void* object, ParseContext* ctx);
+PROTOBUF_EXPORT
+const char* PackedEnumParser(void* object, const char* ptr, ParseContext* ctx,
+                             bool (*is_valid)(int), UnknownFieldSet* unknown,
+                             int field_num);
+PROTOBUF_EXPORT
+const char* PackedEnumParserArg(void* object, const char* ptr,
+                                ParseContext* ctx,
+                                bool (*is_valid)(const void*, int),
+                                const void* data, UnknownFieldSet* unknown,
+                                int field_num);
 
-const char* UnknownGroupParse(const char* begin, const char* end, void* object,
+PROTOBUF_EXPORT
+const char* UnknownGroupParse(UnknownFieldSet* unknown, const char* ptr,
                               ParseContext* ctx);
-std::pair<const char*, bool> UnknownFieldParse(uint64 tag, ParseClosure parent,
-                                               const char* begin,
-                                               const char* end,
-                                               UnknownFieldSet* unknown,
-                                               ParseContext* ctx);
+PROTOBUF_EXPORT
+const char* UnknownFieldParse(uint64 tag, UnknownFieldSet* unknown,
+                              const char* ptr, ParseContext* ctx);
+PROTOBUF_EXPORT
+const char* UnknownFieldParse(uint32 tag, InternalMetadataWithArena* metadata,
+                              const char* ptr, ParseContext* ctx);
 
 }  // namespace internal
 #endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
@@ -265,10 +264,6 @@ class PROTOBUF_EXPORT UnknownField {
   // If this UnknownField contains a pointer, delete it.
   void Delete();
 
-  // Reset all the underlying pointers to NULL. A special function to be only
-  // used while merging from a temporary UFS.
-  void Reset();
-
   // Make a deep copy of any pointers in this UnknownField.
   void DeepCopy(const UnknownField& other);
 
@@ -277,7 +272,7 @@ class PROTOBUF_EXPORT UnknownField {
   inline void SetType(Type type);
 
   union LengthDelimited {
-    std::string* string_value_;
+    std::string* string_value;
   };
 
   uint32 number_;
@@ -294,40 +289,36 @@ class PROTOBUF_EXPORT UnknownField {
 // ===================================================================
 // inline implementations
 
-inline UnknownFieldSet::UnknownFieldSet() : fields_(NULL) {}
+inline UnknownFieldSet::UnknownFieldSet() {}
 
 inline UnknownFieldSet::~UnknownFieldSet() { Clear(); }
 
 inline void UnknownFieldSet::ClearAndFreeMemory() { Clear(); }
 
 inline void UnknownFieldSet::Clear() {
-  if (fields_ != NULL) {
+  if (!fields_.empty()) {
     ClearFallback();
   }
 }
 
-inline bool UnknownFieldSet::empty() const {
-  // Invariant: fields_ is never empty if present.
-  return !fields_;
-}
+inline bool UnknownFieldSet::empty() const { return fields_.empty(); }
 
 inline void UnknownFieldSet::Swap(UnknownFieldSet* x) {
-  std::swap(fields_, x->fields_);
+  fields_.swap(x->fields_);
 }
 
 inline int UnknownFieldSet::field_count() const {
-  return fields_ ? static_cast<int>(fields_->size()) : 0;
+  return static_cast<int>(fields_.size());
 }
 inline const UnknownField& UnknownFieldSet::field(int index) const {
-  GOOGLE_DCHECK(fields_ != NULL);
-  return (*fields_)[static_cast<size_t>(index)];
+  return (fields_)[static_cast<size_t>(index)];
 }
 inline UnknownField* UnknownFieldSet::mutable_field(int index) {
-  return &(*fields_)[static_cast<size_t>(index)];
+  return &(fields_)[static_cast<size_t>(index)];
 }
 
-inline void UnknownFieldSet::AddLengthDelimited(
-    int number, const std::string& value) {
+inline void UnknownFieldSet::AddLengthDelimited(int number,
+                                                const std::string& value) {
   AddLengthDelimited(number)->assign(value);
 }
 
@@ -353,7 +344,7 @@ inline uint64 UnknownField::fixed64() const {
 }
 inline const std::string& UnknownField::length_delimited() const {
   assert(type() == TYPE_LENGTH_DELIMITED);
-  return *data_.length_delimited_.string_value_;
+  return *data_.length_delimited_.string_value;
 }
 inline const UnknownFieldSet& UnknownField::group() const {
   assert(type() == TYPE_GROUP);
@@ -374,11 +365,11 @@ inline void UnknownField::set_fixed64(uint64 value) {
 }
 inline void UnknownField::set_length_delimited(const std::string& value) {
   assert(type() == TYPE_LENGTH_DELIMITED);
-  data_.length_delimited_.string_value_->assign(value);
+  data_.length_delimited_.string_value->assign(value);
 }
 inline std::string* UnknownField::mutable_length_delimited() {
   assert(type() == TYPE_LENGTH_DELIMITED);
-  return data_.length_delimited_.string_value_;
+  return data_.length_delimited_.string_value;
 }
 inline UnknownFieldSet* UnknownField::mutable_group() {
   assert(type() == TYPE_GROUP);
@@ -387,7 +378,7 @@ inline UnknownFieldSet* UnknownField::mutable_group() {
 
 inline size_t UnknownField::GetLengthDelimitedSize() const {
   GOOGLE_DCHECK_EQ(TYPE_LENGTH_DELIMITED, type());
-  return data_.length_delimited_.string_value_->size();
+  return data_.length_delimited_.string_value->size();
 }
 
 inline void UnknownField::SetType(Type type) {

@@ -60,13 +60,13 @@ def upload_result(result_list, metadata):
     new_result["labels"] = labels_string[1:]
     new_result["timestamp"] = _INITIAL_TIME
     print(labels_string)
- 
-     bq = big_query_utils.create_big_query()
-     row = big_query_utils.make_row(str(uuid.uuid4()), new_result)
-     if not big_query_utils.insert_rows(bq, _PROJECT_ID, _DATASET,
+
+    bq = big_query_utils.create_big_query()
+    row = big_query_utils.make_row(str(uuid.uuid4()), new_result)
+    if not big_query_utils.insert_rows(bq, _PROJECT_ID, _DATASET,
                                         _TABLE + "$" + _NOW,
                                         [row]):
-       print('Error when uploading result', new_result)
+      print('Error when uploading result', new_result)
 
 
 if __name__ == "__main__":
@@ -91,7 +91,7 @@ if __name__ == "__main__":
                       default="")
   parser.add_argument("-php_c", "--php_c_input_file",
                       help="The php with c ext benchmark result file's name",
-                      default="")    
+                      default="")
   args = parser.parse_args()
 
   metadata = get_metadata()

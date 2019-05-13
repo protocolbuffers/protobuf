@@ -1,7 +1,7 @@
 @rem Builds Google.Protobuf NuGet packages
 
 dotnet restore src/Google.Protobuf.sln
-dotnet pack -c Release src/Google.Protobuf.sln /p:SourceLinkCreate=true || goto :error
+dotnet pack -c Release src/Google.Protobuf.sln || goto :error
 
 goto :EOF
 

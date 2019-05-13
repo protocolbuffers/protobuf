@@ -1283,16 +1283,20 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
   NSUInteger fieldCount = fieldsArray.count;
   const GPBExtensionRange *extensionRanges = descriptor.extensionRanges;
   NSUInteger extensionRangesCount = descriptor.extensionRangesCount;
+  NSArray *sortedExtensions =
+      [[extensionMap_ allKeys] sortedArrayUsingSelector:@selector(compareByFieldNumber:)];
   for (NSUInteger i = 0, j = 0; i < fieldCount || j < extensionRangesCount;) {
     if (i == fieldCount) {
       [self writeExtensionsToCodedOutputStream:output
-                                         range:extensionRanges[j++]];
+                                         range:extensionRanges[j++]
+                              sortedExtensions:sortedExtensions];
     } else if (j == extensionRangesCount ||
                GPBFieldNumber(fieldsArray[i]) < extensionRanges[j].start) {
       [self writeField:fieldsArray[i++] toCodedOutputStream:output];
     } else {
       [self writeExtensionsToCodedOutputStream:output
-                                         range:extensionRanges[j++]];
+                                         range:extensionRanges[j++]
+                              sortedExtensions:sortedExtensions];
     }
   }
   if (descriptor.isWireFormat) {
@@ -1808,17 +1812,20 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
 }
 
 - (void)writeExtensionsToCodedOutputStream:(GPBCodedOutputStream *)output
-                                     range:(GPBExtensionRange)range {
-  NSArray *sortedExtensions = [[extensionMap_ allKeys]
-      sortedArrayUsingSelector:@selector(compareByFieldNumber:)];
+                                     range:(GPBExtensionRange)range
+                          sortedExtensions:(NSArray *)sortedExtensions {
   uint32_t start = range.start;
   uint32_t end = range.end;
   for (GPBExtensionDescriptor *extension in sortedExtensions) {
     uint32_t fieldNumber = extension.fieldNumber;
-    if (fieldNumber >= start && fieldNumber < end) {
-      id value = [extensionMap_ objectForKey:extension];
-      GPBWriteExtensionValueToOutputStream(extension, value, output);
+    if (fieldNumber < start) {
+      continue;
     }
+    if (fieldNumber >= end) {
+      break;
+    }
+    id value = [extensionMap_ objectForKey:extension];
+    GPBWriteExtensionValueToOutputStream(extension, value, output);
   }
 }
 
@@ -3249,6 +3256,22 @@ static void ResolveIvarSet(__unsafe_unretained GPBFieldDescriptor *field,
 }
 
 - (void)encodeWithCoder:(NSCoder *)aCoder {
+#if defined(DEBUG) && DEBUG
+  if (extensionMap_.count) {
+    // Hint to go along with the docs on GPBMessage about this.
+    //
+    // Note: This is incomplete, in that it only checked the "root" message,
+    // if a sub message in a field has extensions, the issue still exists. A
+    // recursive check could be done here (like the work in
+    // GPBMessageDropUnknownFieldsRecursively()), but that has the potential to
+    // be expensive and could slow down serialization in DEBUG enought to cause
+    // developers other problems.
+    NSLog(@"Warning: writing out a GPBMessage (%@) via NSCoding and it"
+          @" has %ld extensions; when read back in, those fields will be"
+          @" in the unknownFields property instead.",
+          [self class], (long)extensionMap_.count);
+  }
+#endif
   NSData *data = [self data];
   if (data.length) {
     [aCoder encodeObject:data forKey:kGPBDataCoderKey];

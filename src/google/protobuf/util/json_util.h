@@ -36,7 +36,7 @@
 #include <google/protobuf/message.h>
 #include <google/protobuf/util/type_resolver.h>
 #include <google/protobuf/stubs/bytestream.h>
-
+#include <google/protobuf/stubs/strutil.h>
 
 #include <google/protobuf/port_def.inc>
 
@@ -52,7 +52,16 @@ struct JsonParseOptions {
   // Whether to ignore unknown JSON fields during parsing
   bool ignore_unknown_fields;
 
-  JsonParseOptions() : ignore_unknown_fields(false) {}
+  // If true, when a lowercase enum value fails to parse, try convert it to
+  // UPPER_CASE and see if it matches a valid enum.
+  // WARNING: This option exists only to preserve legacy behavior. Avoid using
+  // this option. If your enum needs to support different casing, consider using
+  // allow_alias instead.
+  bool case_insensitive_enum_parsing;
+
+  JsonParseOptions()
+      : ignore_unknown_fields(false),
+        case_insensitive_enum_parsing(false) {}
 };
 
 struct JsonPrintOptions {
@@ -123,8 +132,9 @@ inline util::Status BinaryToJsonStream(
 }
 
 PROTOBUF_EXPORT util::Status BinaryToJsonString(
-    TypeResolver* resolver, const std::string& type_url, const std::string& binary_input,
-    std::string* json_output, const JsonPrintOptions& options);
+    TypeResolver* resolver, const std::string& type_url,
+    const std::string& binary_input, std::string* json_output,
+    const JsonPrintOptions& options);
 
 inline util::Status BinaryToJsonString(TypeResolver* resolver,
                                          const std::string& type_url,
@@ -145,8 +155,7 @@ PROTOBUF_EXPORT util::Status JsonToBinaryStream(
     io::ZeroCopyOutputStream* binary_output, const JsonParseOptions& options);
 
 inline util::Status JsonToBinaryStream(
-    TypeResolver* resolver,
-    const std::string& type_url,
+    TypeResolver* resolver, const std::string& type_url,
     io::ZeroCopyInputStream* json_input,
     io::ZeroCopyOutputStream* binary_output) {
   return JsonToBinaryStream(resolver, type_url, json_input, binary_output,

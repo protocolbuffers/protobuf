@@ -37,27 +37,16 @@
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
+#include <google/protobuf/any.pb.h>
 #include <google/protobuf/type.pb.h>
 #include <google/protobuf/repeated_field.h>
-#include <google/protobuf/stubs/stringpiece.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/stubs/stringpiece.h>
+
 #include <google/protobuf/stubs/status.h>
 #include <google/protobuf/stubs/statusor.h>
 
 #include <google/protobuf/port_def.inc>
-
-namespace google {
-namespace protobuf {
-class Method;
-class Any;
-class Bool;
-class Option;
-class Field;
-class Type;
-class Enum;
-class EnumValue;
-}  // namespace protobuf
-}  // namespace google
 
 namespace google {
 namespace protobuf {
@@ -118,7 +107,8 @@ PROTOBUF_EXPORT const StringPiece GetTypeWithoutUrl(
 // E.g:
 // GetFullTypeWithUrl("google.protobuf.Timestamp") returns the string
 // "type.googleapis.com/google.protobuf.Timestamp".
-PROTOBUF_EXPORT const std::string GetFullTypeWithUrl(StringPiece simple_type);
+PROTOBUF_EXPORT const std::string GetFullTypeWithUrl(
+    StringPiece simple_type);
 
 // Finds and returns option identified by name and option_name within the
 // provided map. Returns nullptr if none found.
@@ -187,7 +177,7 @@ PROTOBUF_EXPORT std::string FloatAsString(float value);
 // Convert from int32, int64, uint32, uint64, double or float to string.
 template <typename T>
 std::string ValueAsString(T value) {
-  return SimpleItoa(value);
+  return StrCat(value);
 }
 
 template <>
@@ -204,11 +194,6 @@ inline std::string ValueAsString(double value) {
 // value fits into double but not float (e.g., DBL_MAX).
 PROTOBUF_EXPORT bool SafeStrToFloat(StringPiece str, float* value);
 
-// Returns whether a StringPiece begins with the provided prefix.
-bool StringStartsWith(StringPiece text, StringPiece prefix);
-
-// Returns whether a StringPiece ends with the provided suffix.
-bool StringEndsWith(StringPiece text, StringPiece suffix);
 }  // namespace converter
 }  // namespace util
 }  // namespace protobuf

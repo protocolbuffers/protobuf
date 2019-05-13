@@ -45,7 +45,7 @@ import java.util.RandomAccess;
 final class FloatArrayList extends AbstractProtobufList<Float>
     implements FloatList, RandomAccess, PrimitiveNonBoxingCollection {
 
-  private static final FloatArrayList EMPTY_LIST = new FloatArrayList();
+  private static final FloatArrayList EMPTY_LIST = new FloatArrayList(new float[0], 0);
 
   static {
     EMPTY_LIST.makeImmutable();
@@ -104,7 +104,7 @@ final class FloatArrayList extends AbstractProtobufList<Float>
 
     final float[] arr = other.array;
     for (int i = 0; i < size; i++) {
-      if (array[i] != arr[i]) {
+      if (Float.floatToIntBits(array[i]) != Float.floatToIntBits(arr[i])) {
         return false;
       }
     }
@@ -236,7 +236,7 @@ final class FloatArrayList extends AbstractProtobufList<Float>
     ensureIsMutable();
     for (int i = 0; i < size; i++) {
       if (o.equals(array[i])) {
-        System.arraycopy(array, i + 1, array, i, size - i);
+        System.arraycopy(array, i + 1, array, i, size - i - 1);
         size--;
         modCount++;
         return true;
@@ -251,7 +251,7 @@ final class FloatArrayList extends AbstractProtobufList<Float>
     ensureIndexInRange(index);
     float value = array[index];
     if (index < size - 1) {
-      System.arraycopy(array, index + 1, array, index, size - index);
+      System.arraycopy(array, index + 1, array, index, size - index - 1);
     }
     size--;
     modCount++;

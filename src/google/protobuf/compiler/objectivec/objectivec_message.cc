@@ -32,7 +32,6 @@
 #include <iostream>
 #include <sstream>
 
-#include <google/protobuf/stubs/hash.h>
 #include <google/protobuf/compiler/objectivec/objectivec_message.h>
 #include <google/protobuf/compiler/objectivec/objectivec_enum.h>
 #include <google/protobuf/compiler/objectivec/objectivec_extension.h>
@@ -43,7 +42,7 @@
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/wire_format.h>
-#include <google/protobuf/wire_format_lite_inl.h>
+#include <google/protobuf/wire_format_lite.h>
 #include <google/protobuf/descriptor.pb.h>
 
 namespace google {
@@ -462,7 +461,7 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
         "typedef struct $classname$__storage_ {\n"
         "  uint32_t _has_storage_[$sizeof_has_storage$];\n",
         "classname", class_name_,
-        "sizeof_has_storage", SimpleItoa(sizeof_has_storage));
+        "sizeof_has_storage", StrCat(sizeof_has_storage));
     printer->Indent();
 
     for (int i = 0; i < descriptor_->field_count(); i++) {
@@ -583,8 +582,8 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
           "    static const GPBExtensionRange ranges[] = {\n");
       for (int i = 0; i < sorted_extensions.size(); i++) {
         printer->Print("      { .start = $start$, .end = $end$ },\n",
-                       "start", SimpleItoa(sorted_extensions[i]->start),
-                       "end", SimpleItoa(sorted_extensions[i]->end));
+                       "start", StrCat(sorted_extensions[i]->start),
+                       "end", StrCat(sorted_extensions[i]->end));
       }
       printer->Print(
           "    };\n"
@@ -605,7 +604,9 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
           "suffix", suffix_added);
     }
     printer->Print(
-        "    NSAssert(descriptor == nil, @\"Startup recursed!\");\n"
+        "    #if defined(DEBUG) && DEBUG\n"
+        "      NSAssert(descriptor == nil, @\"Startup recursed!\");\n"
+        "    #endif  // DEBUG\n"
         "    descriptor = localDescriptor;\n"
         "  }\n"
         "  return descriptor;\n"

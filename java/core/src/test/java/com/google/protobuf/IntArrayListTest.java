@@ -266,6 +266,13 @@ public class IntArrayListTest extends TestCase {
     assertFalse(list.addAll(IntArrayList.emptyList()));
   }
 
+  public void testEquals() {
+    IntArrayList list1 = new IntArrayList();
+    IntArrayList list2 = new IntArrayList();
+
+    assertEquals(list1, list2);
+  }
+
   public void testRemove() {
     list.addAll(TERTIARY_LIST);
     assertEquals(1, (int) list.remove(0));
@@ -294,11 +301,20 @@ public class IntArrayListTest extends TestCase {
     }
   }
 
-  public void testRemoveEndOfCapacity() {
+  public void testRemoveEnd_listAtCapacity() {
     IntList toRemove = IntArrayList.emptyList().mutableCopyWithCapacity(1);
     toRemove.addInt(3);
     toRemove.remove(0);
     assertEquals(0, toRemove.size());
+  }
+
+  public void testRemove_listAtCapacity() {
+    IntList toRemove = IntArrayList.emptyList().mutableCopyWithCapacity(2);
+    toRemove.addInt(3);
+    toRemove.addInt(4);
+    toRemove.remove(0);
+    assertEquals(1, toRemove.size());
+    assertEquals(4, (int) toRemove.get(0));
   }
 
   public void testSublistRemoveEndOfCapacity() {

@@ -192,5 +192,8 @@ with info about your project (name and website) so we can add an entry for you.
 1. CGSN Mooring Project
    * Website: https://bitbucket.org/ooicgsn/cgsn-mooring
    * Extensions: 1058
-   
+
+1. Container Storage Interface
+   * Website: https://github.com/container-storage-interface/spec
+   * Extensions: 1059-1069
 

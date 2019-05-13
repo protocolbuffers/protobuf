@@ -40,6 +40,7 @@
 #import "GPBUnknownFieldSet_PackagePrivate.h"
 #import "google/protobuf/Unittest.pbobjc.h"
 #import "google/protobuf/UnittestObjc.pbobjc.h"
+#import "google/protobuf/UnittestObjcOptions.pbobjc.h"
 
 @interface MessageTests : GPBTestCase
 @end
@@ -1980,6 +1981,51 @@
                  EnumTestMsg_MyEnum_NegTwo);
 }
 
+- (void)testReservedWordNaming {
+  // objectivec_helpers.cc has some special handing to make sure that
+  // some "reserved" objc names get renamed in a way so they
+  // don't conflict.
+  //
+  // This "test" confirms that the expected names are generated,
+  // otherwise the test itself will fail to compile.
+  self_Class *msg = [self_Class message];
+
+  // Some ObjC/C/C++ keywords.
+  msg.className_p = msg.hasClassName_p;
+  msg.cmd = msg.hasCmd;
+  msg.nullable_p = msg.hasNullable_p;
+  msg.typeof_p = msg.hasTypeof_p;
+  msg.instancetype_p = msg.hasInstancetype_p;
+  msg.nil_p = msg.hasNil_p;
+  msg.instancetype_p = msg.hasInstancetype_p;
+  msg.public_p = msg.hasPublic_p;
+
+  // Some that would override NSObject methods
+  msg.camltype = msg.hasCamltype;
+  msg.isNsdictionary = msg.hasIsNsdictionary;
+  msg.dealloc_p = msg.hasDealloc_p;
+  msg.zone_p = msg.hasZone_p;
+  msg.accessibilityLabel_p = msg.hasAccessibilityLabel_p;
+
+  // Some that we shouldn't need to handle.
+  msg.atomic = msg.hasAtomic;
+  msg.nonatomic = msg.hasNonatomic;
+  msg.strong = msg.hasStrong;
+  msg.nullResettable = msg.hasNullResettable;
+
+  // Some that would override GPBMessage methods
+  msg.clear_p = msg.hasClear_p;
+  msg.data_p = msg.hasData_p;
+
+  // Some MacTypes
+  msg.fixed = msg.hasFixed;
+  msg.style = msg.hasStyle;
+
+  // Some C Identifiers
+  msg.generic = msg.hasGeneric;
+  msg.block = msg.hasBlock;
+}
+
 - (void)testOneBasedEnumHolder {
   // Test case for https://github.com/protocolbuffers/protobuf/issues/1453
   // Message with no explicit defaults, but a non zero default for an enum.
@@ -2052,7 +2098,7 @@
   XCTAssertEqual([msg1 hash], [msg1Prime hash]);
 }
 
-- (void)testCopyingMapFileds {
+- (void)testCopyingMapFields {
   TestMessageOfMaps *msg = [TestMessageOfMaps message];
 
   msg.strToStr[@"foo"] = @"bar";
@@ -2101,6 +2147,40 @@
   XCTAssertEqualObjects([msg.intToMsg objectForKey:222], [msg2.intToMsg objectForKey:222]);
   XCTAssertTrue([msg.boolToMsg objectForKey:YES] != [msg2.boolToMsg objectForKey:YES]);  // ptr compare
   XCTAssertEqualObjects([msg.boolToMsg objectForKey:YES], [msg2.boolToMsg objectForKey:YES]);
+}
+
+- (void)testPrefixedNames {
+  // The fact that this compiles is sufficient as a test.
+  // The assertions are just there to avoid "not-used" warnings.
+
+  // Verify that enum types and values get the prefix.
+  GPBTESTTestObjcProtoPrefixEnum value = GPBTESTTestObjcProtoPrefixEnum_Value;
+  XCTAssertNotEqual(value, 0);
+
+  // Verify that roots get the prefix.
+  GPBTESTUnittestObjcOptionsRoot *root = nil;
+  XCTAssertNil(root);
+
+  // Verify that messages that don't already have the prefix get a prefix.
+  GPBTESTTestObjcProtoPrefixMessage *prefixedMessage = nil;
+  XCTAssertNil(prefixedMessage);
+
+  // Verify that messages that already have a prefix aren't prefixed twice.
+  GPBTESTTestHasAPrefixMessage *alreadyPrefixedMessage = nil;
+  XCTAssertNil(alreadyPrefixedMessage);
+
+  // Verify that enums that already have a prefix aren't prefixed twice.
+  GPBTESTTestHasAPrefixEnum prefixedValue = GPBTESTTestHasAPrefixEnum_ValueB;
+  XCTAssertNotEqual(prefixedValue, 0);
+
+  // Verify that classes named the same as prefixes are prefixed.
+  GPBTESTGPBTEST *prefixMessage = nil;
+  XCTAssertNil(prefixMessage);
+
+  // Verify that classes that have the prefix followed by a lowercase
+  // letter DO get the prefix.
+  GPBTESTGPBTESTshouldGetAPrefixMessage *shouldGetAPrefixMessage = nil;
+  XCTAssertNil(shouldGetAPrefixMessage);
 }
 
 @end

@@ -43,6 +43,8 @@ OPTIONS:
          Skip the Xcode Release configuration.
    --skip-xcode-osx
          Skip the invoke of Xcode to test the runtime on OS X.
+   --skip-xcode-tvos
+         Skip the invoke of Xcode to test the runtime on tvOS.
    --skip-objc-conformance
          Skip the Objective C conformance tests (run on OS X).
    --xcode-quiet
@@ -82,6 +84,7 @@ REGEN_DESCRIPTORS=no
 CORE_ONLY=no
 DO_XCODE_IOS_TESTS=yes
 DO_XCODE_OSX_TESTS=yes
+DO_XCODE_TVOS_TESTS=yes
 DO_XCODE_DEBUG=yes
 DO_XCODE_RELEASE=yes
 DO_OBJC_CONFORMANCE_TESTS=yes
@@ -111,12 +114,16 @@ while [[ $# != 0 ]]; do
     --skip-xcode )
       DO_XCODE_IOS_TESTS=no
       DO_XCODE_OSX_TESTS=no
+      DO_XCODE_TVOS_TESTS=no
       ;;
     --skip-xcode-ios )
       DO_XCODE_IOS_TESTS=no
       ;;
     --skip-xcode-osx )
       DO_XCODE_OSX_TESTS=no
+      ;;
+    --skip-xcode-tvos )
+      DO_XCODE_TVOS_TESTS=no
       ;;
     --skip-xcode-debug )
       DO_XCODE_DEBUG=no
@@ -156,8 +163,7 @@ if [[ "${DO_AUTOGEN}" == "yes" ]] ; then
   header "Running autogen & configure"
   ./autogen.sh
   ./configure \
-    CPPFLAGS="-mmacosx-version-min=10.9 -Wunused-const-variable -Wunused-function" \
-    CXXFLAGS="-Wnon-virtual-dtor -Woverloaded-virtual"
+    CPPFLAGS="-mmacosx-version-min=10.9 -Wunused-const-variable -Wunused-function"
 fi
 
 if [[ "${DO_CLEAN}" == "yes" ]] ; then
@@ -180,6 +186,19 @@ if [[ "${DO_CLEAN}" == "yes" ]] ; then
     XCODEBUILD_CLEAN_BASE_OSX=(
       xcodebuild
         -project objectivec/ProtocolBuffers_OSX.xcodeproj
+        -scheme ProtocolBuffers
+    )
+    if [[ "${DO_XCODE_DEBUG}" == "yes" ]] ; then
+      "${XCODEBUILD_CLEAN_BASE_OSX[@]}" -configuration Debug clean
+    fi
+    if [[ "${DO_XCODE_RELEASE}" == "yes" ]] ; then
+      "${XCODEBUILD_CLEAN_BASE_OSX[@]}" -configuration Release clean
+    fi
+  fi
+  if [[ "${DO_XCODE_TVOS_TESTS}" == "yes" ]] ; then
+    XCODEBUILD_CLEAN_BASE_OSX=(
+      xcodebuild
+        -project objectivec/ProtocolBuffers_tvOS.xcodeproj
         -scheme ProtocolBuffers
     )
     if [[ "${DO_XCODE_DEBUG}" == "yes" ]] ; then
@@ -314,6 +333,27 @@ if [[ "${DO_XCODE_OSX_TESTS}" == "yes" ]] ; then
   if [[ "${DO_XCODE_RELEASE}" == "yes" ]] ; then
     header "Doing Xcode OS X build/tests - Release"
     "${XCODEBUILD_TEST_BASE_OSX[@]}" -configuration Release test
+  fi
+fi
+if [[ "${DO_XCODE_TVOS_TESTS}" == "yes" ]] ; then
+  XCODEBUILD_TEST_BASE_TVOS=(
+    xcodebuild
+      -project objectivec/ProtocolBuffers_tvOS.xcodeproj
+      -scheme ProtocolBuffers
+      # Test on the oldest and current.
+      -destination "platform=tvOS Simulator,name=Apple TV 1080p,OS=9.0"
+      -destination "platform=tvOS Simulator,name=Apple TV,OS=latest"
+  )
+  if [[ "${XCODE_QUIET}" == "yes" ]] ; then
+    XCODEBUILD_TEST_BASE_TVOS+=( -quiet )
+  fi
+  if [[ "${DO_XCODE_DEBUG}" == "yes" ]] ; then
+    header "Doing Xcode tvOS build/tests - Debug"
+    "${XCODEBUILD_TEST_BASE_TVOS[@]}" -configuration Debug test
+  fi
+  if [[ "${DO_XCODE_RELEASE}" == "yes" ]] ; then
+    header "Doing Xcode tvOS build/tests - Release"
+    "${XCODEBUILD_TEST_BASE_TVOS[@]}" -configuration Release test
   fi
 fi
 

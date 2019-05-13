@@ -31,6 +31,9 @@
 // #undefs all macros defined in port_def.inc.  See comments in port_def.inc
 // for more info.
 
+#ifndef PROTOBUF_NAMESPACE
+#error "port_undef.inc must be included after port_def.inc"
+#endif
 #undef PROTOBUF_NAMESPACE
 #undef PROTOBUF_NAMESPACE_ID
 #undef PROTOBUF_ALWAYS_INLINE
@@ -41,11 +44,13 @@
 #undef PROTOBUF_DEPRECATED_MSG
 #undef PROTOBUF_FUNC_ALIGN
 #undef PROTOBUF_RETURNS_NONNULL
+#undef PROTOBUF_ATTRIBUTE_REINITIALIZES
 #undef PROTOBUF_RTTI
 #undef PROTOBUF_VERSION
 #undef PROTOBUF_VERSION_SUFFIX
 #undef PROTOBUF_FIELD_OFFSET
 #undef PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC
+#undef PROTOBUF_MIN_PROTOC_VERSION
 #undef PROTOBUF_PREDICT_TRUE
 #undef PROTOBUF_PREDICT_FALSE
 #undef PROTOBUF_LONGLONG
@@ -55,8 +60,18 @@
 #undef PROTOBUF_FALLTHROUGH_INTENDED
 #undef PROTOBUF_EXPORT
 #undef PROTOC_EXPORT
+#undef PROTOBUF_MUST_USE_RESULT
+#undef PROTOBUF_NAMESPACE_OPEN
+#undef PROTOBUF_NAMESPACE_CLOSE
+#undef PROTOBUF_UNUSED
 
 // Restore macro that may have been #undef'd in port_def.inc.
 #ifdef _MSC_VER
 #pragma pop_macro("GetMessage")
+#pragma pop_macro("IGNORE")
+#pragma pop_macro("IN")
+#endif
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
 #endif

@@ -41,7 +41,6 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/message.h>
-#include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 
 namespace google {
@@ -70,8 +69,6 @@ inline void SetOneof2(UNITTEST::TestOneof2* message);
 // the add_*() accessors.
 inline void ModifyRepeatedFields(UNITTEST::TestAllTypes* message);
 inline void ModifyRepeatedExtensions(UNITTEST::TestAllExtensions* message);
-inline void ModifyPackedFields(UNITTEST::TestPackedTypes* message);
-inline void ModifyPackedExtensions(UNITTEST::TestPackedExtensions* message);
 
 // Check that all fields have the values that they should have after
 // Set*Fields() is called.
@@ -91,17 +88,10 @@ inline void ExpectOneofSet2(const UNITTEST::TestOneof2& message);
 inline void ExpectRepeatedFieldsModified(const UNITTEST::TestAllTypes& message);
 inline void ExpectRepeatedExtensionsModified(
     const UNITTEST::TestAllExtensions& message);
-inline void ExpectPackedFieldsModified(
-    const UNITTEST::TestPackedTypes& message);
-inline void ExpectPackedExtensionsModified(
-    const UNITTEST::TestPackedExtensions& message);
 
 // Check that all fields have their default values.
 inline void ExpectClear(const UNITTEST::TestAllTypes& message);
 inline void ExpectExtensionsClear(const UNITTEST::TestAllExtensions& message);
-inline void ExpectPackedClear(const UNITTEST::TestPackedTypes& message);
-inline void ExpectPackedExtensionsClear(
-    const UNITTEST::TestPackedExtensions& message);
 inline void ExpectOneofClear(const UNITTEST::TestOneof2& message);
 
 // Check that all repeated fields have had their last elements removed.
@@ -854,25 +844,6 @@ inline void TestUtil::SetUnpackedFields(UNITTEST::TestUnpackedTypes* message) {
 
 // -------------------------------------------------------------------
 
-inline void TestUtil::ModifyPackedFields(UNITTEST::TestPackedTypes* message) {
-  message->set_packed_int32(1, 801);
-  message->set_packed_int64(1, 802);
-  message->set_packed_uint32(1, 803);
-  message->set_packed_uint64(1, 804);
-  message->set_packed_sint32(1, 805);
-  message->set_packed_sint64(1, 806);
-  message->set_packed_fixed32(1, 807);
-  message->set_packed_fixed64(1, 808);
-  message->set_packed_sfixed32(1, 809);
-  message->set_packed_sfixed64(1, 810);
-  message->set_packed_float(1, 811);
-  message->set_packed_double(1, 812);
-  message->set_packed_bool(1, true);
-  message->set_packed_enum(1, UNITTEST::FOREIGN_FOO);
-}
-
-// -------------------------------------------------------------------
-
 inline void TestUtil::ExpectPackedFieldsSet(
     const UNITTEST::TestPackedTypes& message) {
   ASSERT_EQ(2, message.packed_int32_size());
@@ -969,78 +940,6 @@ inline void TestUtil::ExpectUnpackedFieldsSet(
   EXPECT_EQ(712, message.unpacked_double(1));
   EXPECT_FALSE(message.unpacked_bool(1));
   EXPECT_EQ(UNITTEST::FOREIGN_BAZ, message.unpacked_enum(1));
-}
-
-// -------------------------------------------------------------------
-
-inline void TestUtil::ExpectPackedClear(
-    const UNITTEST::TestPackedTypes& message) {
-  // Packed repeated fields are empty.
-  EXPECT_EQ(0, message.packed_int32_size());
-  EXPECT_EQ(0, message.packed_int64_size());
-  EXPECT_EQ(0, message.packed_uint32_size());
-  EXPECT_EQ(0, message.packed_uint64_size());
-  EXPECT_EQ(0, message.packed_sint32_size());
-  EXPECT_EQ(0, message.packed_sint64_size());
-  EXPECT_EQ(0, message.packed_fixed32_size());
-  EXPECT_EQ(0, message.packed_fixed64_size());
-  EXPECT_EQ(0, message.packed_sfixed32_size());
-  EXPECT_EQ(0, message.packed_sfixed64_size());
-  EXPECT_EQ(0, message.packed_float_size());
-  EXPECT_EQ(0, message.packed_double_size());
-  EXPECT_EQ(0, message.packed_bool_size());
-  EXPECT_EQ(0, message.packed_enum_size());
-}
-
-// -------------------------------------------------------------------
-
-inline void TestUtil::ExpectPackedFieldsModified(
-    const UNITTEST::TestPackedTypes& message) {
-  // Do the same for packed repeated fields.
-  ASSERT_EQ(2, message.packed_int32_size());
-  ASSERT_EQ(2, message.packed_int64_size());
-  ASSERT_EQ(2, message.packed_uint32_size());
-  ASSERT_EQ(2, message.packed_uint64_size());
-  ASSERT_EQ(2, message.packed_sint32_size());
-  ASSERT_EQ(2, message.packed_sint64_size());
-  ASSERT_EQ(2, message.packed_fixed32_size());
-  ASSERT_EQ(2, message.packed_fixed64_size());
-  ASSERT_EQ(2, message.packed_sfixed32_size());
-  ASSERT_EQ(2, message.packed_sfixed64_size());
-  ASSERT_EQ(2, message.packed_float_size());
-  ASSERT_EQ(2, message.packed_double_size());
-  ASSERT_EQ(2, message.packed_bool_size());
-  ASSERT_EQ(2, message.packed_enum_size());
-
-  EXPECT_EQ(601, message.packed_int32(0));
-  EXPECT_EQ(602, message.packed_int64(0));
-  EXPECT_EQ(603, message.packed_uint32(0));
-  EXPECT_EQ(604, message.packed_uint64(0));
-  EXPECT_EQ(605, message.packed_sint32(0));
-  EXPECT_EQ(606, message.packed_sint64(0));
-  EXPECT_EQ(607, message.packed_fixed32(0));
-  EXPECT_EQ(608, message.packed_fixed64(0));
-  EXPECT_EQ(609, message.packed_sfixed32(0));
-  EXPECT_EQ(610, message.packed_sfixed64(0));
-  EXPECT_EQ(611, message.packed_float(0));
-  EXPECT_EQ(612, message.packed_double(0));
-  EXPECT_TRUE(message.packed_bool(0));
-  EXPECT_EQ(UNITTEST::FOREIGN_BAR, message.packed_enum(0));
-  // Actually verify the second (modified) elements now.
-  EXPECT_EQ(801, message.packed_int32(1));
-  EXPECT_EQ(802, message.packed_int64(1));
-  EXPECT_EQ(803, message.packed_uint32(1));
-  EXPECT_EQ(804, message.packed_uint64(1));
-  EXPECT_EQ(805, message.packed_sint32(1));
-  EXPECT_EQ(806, message.packed_sint64(1));
-  EXPECT_EQ(807, message.packed_fixed32(1));
-  EXPECT_EQ(808, message.packed_fixed64(1));
-  EXPECT_EQ(809, message.packed_sfixed32(1));
-  EXPECT_EQ(810, message.packed_sfixed64(1));
-  EXPECT_EQ(811, message.packed_float(1));
-  EXPECT_EQ(812, message.packed_double(1));
-  EXPECT_TRUE(message.packed_bool(1));
-  EXPECT_EQ(UNITTEST::FOREIGN_FOO, message.packed_enum(1));
 }
 
 // ===================================================================
@@ -1545,7 +1444,7 @@ inline void TestUtil::ExpectAllExtensionsSet(
 
 inline void TestUtil::ExpectExtensionsClear(
     const UNITTEST::TestAllExtensions& message) {
-  string serialized;
+  std::string serialized;
   ASSERT_TRUE(message.SerializeToString(&serialized));
   EXPECT_EQ("", serialized);
   EXPECT_EQ(0, message.ByteSizeLong());
@@ -1909,27 +1808,6 @@ inline void TestUtil::SetPackedExtensions(
 
 // -------------------------------------------------------------------
 
-inline void TestUtil::ModifyPackedExtensions(
-    UNITTEST::TestPackedExtensions* message) {
-  message->SetExtension(UNITTEST::packed_int32_extension, 1, 801);
-  message->SetExtension(UNITTEST::packed_int64_extension, 1, 802);
-  message->SetExtension(UNITTEST::packed_uint32_extension, 1, 803);
-  message->SetExtension(UNITTEST::packed_uint64_extension, 1, 804);
-  message->SetExtension(UNITTEST::packed_sint32_extension, 1, 805);
-  message->SetExtension(UNITTEST::packed_sint64_extension, 1, 806);
-  message->SetExtension(UNITTEST::packed_fixed32_extension, 1, 807);
-  message->SetExtension(UNITTEST::packed_fixed64_extension, 1, 808);
-  message->SetExtension(UNITTEST::packed_sfixed32_extension, 1, 809);
-  message->SetExtension(UNITTEST::packed_sfixed64_extension, 1, 810);
-  message->SetExtension(UNITTEST::packed_float_extension, 1, 811);
-  message->SetExtension(UNITTEST::packed_double_extension, 1, 812);
-  message->SetExtension(UNITTEST::packed_bool_extension, 1, true);
-  message->SetExtension(UNITTEST::packed_enum_extension, 1,
-                        UNITTEST::FOREIGN_FOO);
-}
-
-// -------------------------------------------------------------------
-
 inline void TestUtil::ExpectPackedExtensionsSet(
     const UNITTEST::TestPackedExtensions& message) {
   ASSERT_EQ(2, message.ExtensionSize(UNITTEST::packed_int32_extension));
@@ -1976,78 +1854,6 @@ inline void TestUtil::ExpectPackedExtensionsSet(
   EXPECT_EQ(712, message.GetExtension(UNITTEST::packed_double_extension, 1));
   EXPECT_FALSE(message.GetExtension(UNITTEST::packed_bool_extension, 1));
   EXPECT_EQ(UNITTEST::FOREIGN_BAZ,
-            message.GetExtension(UNITTEST::packed_enum_extension, 1));
-}
-
-// -------------------------------------------------------------------
-
-inline void TestUtil::ExpectPackedExtensionsClear(
-    const UNITTEST::TestPackedExtensions& message) {
-  EXPECT_EQ(0, message.ExtensionSize(UNITTEST::packed_int32_extension));
-  EXPECT_EQ(0, message.ExtensionSize(UNITTEST::packed_int64_extension));
-  EXPECT_EQ(0, message.ExtensionSize(UNITTEST::packed_uint32_extension));
-  EXPECT_EQ(0, message.ExtensionSize(UNITTEST::packed_uint64_extension));
-  EXPECT_EQ(0, message.ExtensionSize(UNITTEST::packed_sint32_extension));
-  EXPECT_EQ(0, message.ExtensionSize(UNITTEST::packed_sint64_extension));
-  EXPECT_EQ(0, message.ExtensionSize(UNITTEST::packed_fixed32_extension));
-  EXPECT_EQ(0, message.ExtensionSize(UNITTEST::packed_fixed64_extension));
-  EXPECT_EQ(0, message.ExtensionSize(UNITTEST::packed_sfixed32_extension));
-  EXPECT_EQ(0, message.ExtensionSize(UNITTEST::packed_sfixed64_extension));
-  EXPECT_EQ(0, message.ExtensionSize(UNITTEST::packed_float_extension));
-  EXPECT_EQ(0, message.ExtensionSize(UNITTEST::packed_double_extension));
-  EXPECT_EQ(0, message.ExtensionSize(UNITTEST::packed_bool_extension));
-  EXPECT_EQ(0, message.ExtensionSize(UNITTEST::packed_enum_extension));
-}
-
-// -------------------------------------------------------------------
-
-inline void TestUtil::ExpectPackedExtensionsModified(
-    const UNITTEST::TestPackedExtensions& message) {
-  ASSERT_EQ(2, message.ExtensionSize(UNITTEST::packed_int32_extension));
-  ASSERT_EQ(2, message.ExtensionSize(UNITTEST::packed_int64_extension));
-  ASSERT_EQ(2, message.ExtensionSize(UNITTEST::packed_uint32_extension));
-  ASSERT_EQ(2, message.ExtensionSize(UNITTEST::packed_uint64_extension));
-  ASSERT_EQ(2, message.ExtensionSize(UNITTEST::packed_sint32_extension));
-  ASSERT_EQ(2, message.ExtensionSize(UNITTEST::packed_sint64_extension));
-  ASSERT_EQ(2, message.ExtensionSize(UNITTEST::packed_fixed32_extension));
-  ASSERT_EQ(2, message.ExtensionSize(UNITTEST::packed_fixed64_extension));
-  ASSERT_EQ(2, message.ExtensionSize(UNITTEST::packed_sfixed32_extension));
-  ASSERT_EQ(2, message.ExtensionSize(UNITTEST::packed_sfixed64_extension));
-  ASSERT_EQ(2, message.ExtensionSize(UNITTEST::packed_float_extension));
-  ASSERT_EQ(2, message.ExtensionSize(UNITTEST::packed_double_extension));
-  ASSERT_EQ(2, message.ExtensionSize(UNITTEST::packed_bool_extension));
-  ASSERT_EQ(2, message.ExtensionSize(UNITTEST::packed_enum_extension));
-  EXPECT_EQ(601, message.GetExtension(UNITTEST::packed_int32_extension, 0));
-  EXPECT_EQ(602, message.GetExtension(UNITTEST::packed_int64_extension, 0));
-  EXPECT_EQ(603, message.GetExtension(UNITTEST::packed_uint32_extension, 0));
-  EXPECT_EQ(604, message.GetExtension(UNITTEST::packed_uint64_extension, 0));
-  EXPECT_EQ(605, message.GetExtension(UNITTEST::packed_sint32_extension, 0));
-  EXPECT_EQ(606, message.GetExtension(UNITTEST::packed_sint64_extension, 0));
-  EXPECT_EQ(607, message.GetExtension(UNITTEST::packed_fixed32_extension, 0));
-  EXPECT_EQ(608, message.GetExtension(UNITTEST::packed_fixed64_extension, 0));
-  EXPECT_EQ(609, message.GetExtension(UNITTEST::packed_sfixed32_extension, 0));
-  EXPECT_EQ(610, message.GetExtension(UNITTEST::packed_sfixed64_extension, 0));
-  EXPECT_EQ(611, message.GetExtension(UNITTEST::packed_float_extension, 0));
-  EXPECT_EQ(612, message.GetExtension(UNITTEST::packed_double_extension, 0));
-  EXPECT_TRUE(message.GetExtension(UNITTEST::packed_bool_extension, 0));
-  EXPECT_EQ(UNITTEST::FOREIGN_BAR,
-            message.GetExtension(UNITTEST::packed_enum_extension, 0));
-
-  // Actually verify the second (modified) elements now.
-  EXPECT_EQ(801, message.GetExtension(UNITTEST::packed_int32_extension, 1));
-  EXPECT_EQ(802, message.GetExtension(UNITTEST::packed_int64_extension, 1));
-  EXPECT_EQ(803, message.GetExtension(UNITTEST::packed_uint32_extension, 1));
-  EXPECT_EQ(804, message.GetExtension(UNITTEST::packed_uint64_extension, 1));
-  EXPECT_EQ(805, message.GetExtension(UNITTEST::packed_sint32_extension, 1));
-  EXPECT_EQ(806, message.GetExtension(UNITTEST::packed_sint64_extension, 1));
-  EXPECT_EQ(807, message.GetExtension(UNITTEST::packed_fixed32_extension, 1));
-  EXPECT_EQ(808, message.GetExtension(UNITTEST::packed_fixed64_extension, 1));
-  EXPECT_EQ(809, message.GetExtension(UNITTEST::packed_sfixed32_extension, 1));
-  EXPECT_EQ(810, message.GetExtension(UNITTEST::packed_sfixed64_extension, 1));
-  EXPECT_EQ(811, message.GetExtension(UNITTEST::packed_float_extension, 1));
-  EXPECT_EQ(812, message.GetExtension(UNITTEST::packed_double_extension, 1));
-  EXPECT_TRUE(message.GetExtension(UNITTEST::packed_bool_extension, 1));
-  EXPECT_EQ(UNITTEST::FOREIGN_FOO,
             message.GetExtension(UNITTEST::packed_enum_extension, 1));
 }
 

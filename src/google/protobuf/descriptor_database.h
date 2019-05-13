@@ -120,6 +120,20 @@ class PROTOBUF_EXPORT DescriptorDatabase {
     return false;
   }
 
+  // Finds the package names and appends them to the output in an
+  // undefined order. This method is best-effort: it's not guaranteed that the
+  // database will find all packages. Returns true if the database supports
+  // searching all package names, otherwise returns false and leaves output
+  // unchanged.
+  bool FindAllPackageNames(std::vector<std::string>* output);
+
+  // Finds the message names and appends them to the output in an
+  // undefined order. This method is best-effort: it's not guaranteed that the
+  // database will find all messages. Returns true if the database supports
+  // searching all message names, otherwise returns false and leaves output
+  // unchanged.
+  bool FindAllMessageNames(std::vector<std::string>* output);
+
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(DescriptorDatabase);
 };
@@ -183,13 +197,10 @@ class PROTOBUF_EXPORT SimpleDescriptorDatabase : public DescriptorDatabase {
    public:
     // Helpers to recursively add particular descriptors and all their contents
     // to the index.
-    bool AddFile(const FileDescriptorProto& file,
-                 Value value);
+    bool AddFile(const FileDescriptorProto& file, Value value);
     bool AddSymbol(const std::string& name, Value value);
-    bool AddNestedExtensions(const DescriptorProto& message_type,
-                             Value value);
-    bool AddExtension(const FieldDescriptorProto& field,
-                      Value value);
+    bool AddNestedExtensions(const DescriptorProto& message_type, Value value);
+    bool AddExtension(const FieldDescriptorProto& field, Value value);
 
     Value FindFile(const std::string& filename);
     Value FindSymbol(const std::string& name);
@@ -262,21 +273,20 @@ class PROTOBUF_EXPORT SimpleDescriptorDatabase : public DescriptorDatabase {
     // True if either the arguments are equal or super_symbol identifies a
     // parent symbol of sub_symbol (e.g. "foo.bar" is a parent of
     // "foo.bar.baz", but not a parent of "foo.barbaz").
-    bool IsSubSymbol(const std::string& sub_symbol, const std::string& super_symbol);
+    bool IsSubSymbol(const std::string& sub_symbol,
+                     const std::string& super_symbol);
 
     // Returns true if and only if all characters in the name are alphanumerics,
     // underscores, or periods.
     bool ValidateSymbolName(const std::string& name);
   };
 
-
   DescriptorIndex<const FileDescriptorProto*> index_;
   std::vector<const FileDescriptorProto*> files_to_delete_;
 
   // If file is non-NULL, copy it into *output and return true, otherwise
   // return false.
-  bool MaybeCopy(const FileDescriptorProto* file,
-                 FileDescriptorProto* output);
+  bool MaybeCopy(const FileDescriptorProto* file, FileDescriptorProto* output);
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(SimpleDescriptorDatabase);
 };
@@ -317,6 +327,7 @@ class PROTOBUF_EXPORT EncodedDescriptorDatabase : public DescriptorDatabase {
                                    FileDescriptorProto* output) override;
   bool FindAllExtensionNumbers(const std::string& extendee_type,
                                std::vector<int>* output) override;
+  bool FindAllFileNames(std::vector<std::string>* output) override;
 
  private:
   SimpleDescriptorDatabase::DescriptorIndex<std::pair<const void*, int> >

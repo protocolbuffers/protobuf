@@ -207,7 +207,7 @@ module BasicTestProto2
       e = assert_raise ArgumentError do
         TestMessage.new(:repeated_uint32 => "hello")
       end
-      assert_equal e.message, "Expected array as initializer value for repeated field 'repeated_uint32'."
+      assert_equal e.message, "Expected array as initializer value for repeated field 'repeated_uint32' (given String)."
     end
 
 

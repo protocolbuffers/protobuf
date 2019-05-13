@@ -168,7 +168,7 @@ public class IsValidUtf8Test extends TestCase {
     // A sanity check.
     int actual = 0;
     for (Shard shard : IsValidUtf8TestUtil.FOUR_BYTE_SHARDS) {
-      actual += shard.expected;
+      actual = (int) (actual + shard.expected);
     }
     assertEquals(IsValidUtf8TestUtil.EXPECTED_FOUR_BYTE_ROUNDTRIPPABLE_COUNT, actual);
   }

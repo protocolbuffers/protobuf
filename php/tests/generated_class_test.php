@@ -232,18 +232,42 @@ class GeneratedClassTest extends TestBase
         // Set string.
         $m->setOptionalEnum("1");
         $this->assertEquals(TestEnum::ONE, $m->getOptionalEnum());
+
+        // Test Enum methods
+        $this->assertEquals('ONE', TestEnum::name(1));
+        $this->assertEquals(1, TestEnum::value('ONE'));
+    }
+
+    /**
+     * @expectedException UnexpectedValueException
+     * @expectedExceptionMessage Enum Foo\TestEnum has no name defined for value -1
+     */
+    public function testInvalidEnumValueThrowsException()
+    {
+        TestEnum::name(-1);
+    }
+
+    /**
+     * @expectedException UnexpectedValueException
+     * @expectedExceptionMessage Enum Foo\TestEnum has no value defined for name DOES_NOT_EXIST
+     */
+    public function testInvalidEnumNameThrowsException()
+    {
+        TestEnum::value('DOES_NOT_EXIST');
     }
 
     public function testNestedEnum()
     {
         $m = new TestMessage();
         $m->setOptionalNestedEnum(NestedEnum::ZERO);
+        $this->assertTrue(true);
     }
 
     public function testLegacyNestedEnum()
     {
         $m = new TestMessage();
         $m->setOptionalNestedEnum(\Foo\TestMessage_NestedEnum::ZERO);
+        $this->assertTrue(true);
     }
 
     public function testLegacyTypehintWithNestedEnums()
@@ -383,6 +407,7 @@ class GeneratedClassTest extends TestBase
           $m = new TestMessage();
           $hex = hex2bin("ff");
           $m->setOptionalBytes($hex);
+          $this->assertTrue(true);
       }
 
     #########################################################
@@ -687,6 +712,8 @@ class GeneratedClassTest extends TestBase
         // test nested messages
         $sub = new NoNamespaceMessage\NestedMessage();
         $n->setNestedMessage($sub);
+
+        $this->assertTrue(true);
     }
 
     public function testEnumWithoutNamespace()
@@ -696,6 +723,7 @@ class GeneratedClassTest extends TestBase
         $repeatedNoNamespaceEnum = $m->getRepeatedNoNamespaceEnum();
         $repeatedNoNamespaceEnum[] = NoNameSpaceEnum::VALUE_A;
         $m->setRepeatedNoNamespaceEnum($repeatedNoNamespaceEnum);
+        $this->assertTrue(true);
     }
 
     #########################################################
@@ -1240,6 +1268,8 @@ class GeneratedClassTest extends TestBase
         $m = \Upper_enum_value\NotAllowed::NULL;
         $m = \Upper_enum_value\NotAllowed::VOID;
         $m = \Upper_enum_value\NotAllowed::ITERABLE;
+
+        $this->assertTrue(true);
     }
 
     #########################################################
@@ -1275,6 +1305,7 @@ class GeneratedClassTest extends TestBase
     {
         $m = new testLowerCaseMessage();
         $n = testLowerCaseEnum::VALUE;
+        $this->assertTrue(true);
     }
 
     #########################################################
@@ -1298,7 +1329,7 @@ class GeneratedClassTest extends TestBase
             'optional_double' => 1.6,
             'optional_bool' => true,
             'optional_string' => 'a',
-            'optional_bytes' => 'b',
+            'optional_bytes' => 'bbbb',
             'optional_enum' => TestEnum::ONE,
             'optional_message' => new Sub([
                 'a' => 33
@@ -1317,7 +1348,7 @@ class GeneratedClassTest extends TestBase
             'repeated_double' => [1.6, 2.6],
             'repeated_bool' => [true, false],
             'repeated_string' => ['a', 'c'],
-            'repeated_bytes' => ['b', 'd'],
+            'repeated_bytes' => ['bbbb', 'dddd'],
             'repeated_enum' => [TestEnum::ZERO, TestEnum::ONE],
             'repeated_message' => [new Sub(['a' => 34]),
                                    new Sub(['a' => 35])],
@@ -1335,12 +1366,99 @@ class GeneratedClassTest extends TestBase
             'map_int32_double' => [1 => 3.6],
             'map_bool_bool' => [true => true],
             'map_string_string' => ['e' => 'e'],
-            'map_int32_bytes' => [1 => 'f'],
+            'map_int32_bytes' => [1 => 'ffff'],
             'map_int32_enum' => [1 => TestEnum::ONE],
             'map_int32_message' => [1 => new Sub(['a' => 36])],
         ]);
 
         TestUtil::assertTestMessage($m);
+        $this->assertTrue(true);
+    }
+
+    public function testReferenceInArrayConstructor()
+    {
+        $keys = [[
+                    'optional_bool' => true,
+                    'repeated_bool' => [true],
+                    'map_bool_bool' => [true => true],
+                    'optional_double' => 1.0,
+                    'repeated_double' => [1.0],
+                    'map_int32_double' => [1 => 1.0],
+                    'optional_int32' => 1,
+                    'repeated_int32' => [1],
+                    'map_int32_int32' => [1 => 1],
+                    'optional_string' => 'a',
+                    'repeated_string' => ['a'],
+                    'map_string_string' => ['a' => 'a'],
+                    'optional_message' => ['a' => 1],
+                    'repeated_message' => [['a' => 1]],
+                    'map_int32_message' => [1 => ['a' => 1]],
+                ]];
+
+        foreach ($keys as &$key) {
+            foreach ($key as $id => &$value) {
+                if ($id === 'repeated_bool') {
+                    foreach ($value as &$element) {
+                    }
+                }
+                if ($id === 'map_bool_bool') {
+                    foreach ($value as $mapKey => &$element) {
+                    }
+                }
+                if ($id === 'repeated_double') {
+                    foreach ($value as &$element) {
+                    }
+                }
+                if ($id === 'map_int32_double') {
+                    foreach ($value as $mapKey => &$element) {
+                    }
+                }
+                if ($id === 'repeated_int32') {
+                    foreach ($value as &$element) {
+                    }
+                }
+                if ($id === 'map_int32_int32') {
+                    foreach ($value as $mapKey => &$element) {
+                    }
+                }
+                if ($id === 'repeated_string') {
+                    foreach ($value as &$element) {
+                    }
+                }
+                if ($id === 'map_string_string') {
+                    foreach ($value as $mapKey => &$element) {
+                    }
+                }
+                if ($id === 'optional_message') {
+                    $value = new Sub($value);
+                }
+                if ($id === 'repeated_message') {
+                    foreach ($value as &$element) {
+                        $element = new Sub($element);
+                    }
+                }
+                if ($id === 'map_int32_message') {
+                    foreach ($value as $mapKey => &$element) {
+                        $element = new Sub($element);
+                    }
+                }
+            }
+            $key = new TestMessage($key);
+        }
+    }
+
+    public function testOneofMessageInArrayConstructor()
+    {
+        $m = new TestMessage([
+            'oneof_message' => new Sub(),
+        ]);
+    }
+
+    public function testOneofStringInArrayConstructor()
+    {
+        $m = new TestMessage([
+            'oneof_string' => 'abc',
+        ]);
     }
 
     #########################################################
@@ -1354,5 +1472,36 @@ class GeneratedClassTest extends TestBase
         $n = new TestMessage();
         TestUtil::setTestMessage($n);
         $this->assertEquals($m, $n);
+    }
+
+    #########################################################
+    # Test reference of value
+    #########################################################
+
+    public function testValueIsReference()
+    {
+        // Bool element
+        $values = [true];
+        array_walk($values, function (&$value) {});
+        $m = new TestMessage();
+        $m->setOptionalBool($values[0]);
+
+        // Int32 element
+        $values = [1];
+        array_walk($values, function (&$value) {});
+        $m = new TestMessage();
+        $m->setOptionalInt32($values[0]);
+
+        // Double element
+        $values = [1.0];
+        array_walk($values, function (&$value) {});
+        $m = new TestMessage();
+        $m->setOptionalDouble($values[0]);
+
+        // String element
+        $values = ['a'];
+        array_walk($values, function (&$value) {});
+        $m = new TestMessage();
+        $m->setOptionalString($values[0]);
     }
 }

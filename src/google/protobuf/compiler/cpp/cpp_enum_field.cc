@@ -46,11 +46,11 @@ namespace cpp {
 namespace {
 
 void SetEnumVariables(const FieldDescriptor* descriptor,
-                      std::map<string, string>* variables,
+                      std::map<std::string, std::string>* variables,
                       const Options& options) {
   SetCommonFieldVariables(descriptor, variables, options);
   const EnumValueDescriptor* default_value = descriptor->default_value_enum();
-  (*variables)["type"] = ClassName(descriptor->enum_type(), true);
+  (*variables)["type"] = QualifiedClassName(descriptor->enum_type(), options);
   (*variables)["default"] = Int32ToString(default_value->number());
   (*variables)["full_name"] = descriptor->full_name();
 }
@@ -90,7 +90,7 @@ void EnumFieldGenerator::GenerateInlineAccessorDefinitions(
       "  return static_cast< $type$ >($name$_);\n"
       "}\n"
       "inline void $classname$::set_$name$($type$ value) {\n");
-  if (!HasPreservingUnknownEnumSemantics(descriptor_->file())) {
+  if (!HasPreservingUnknownEnumSemantics(descriptor_)) {
     format("  assert($type$_IsValid(value));\n");
   }
   format(
@@ -134,7 +134,7 @@ void EnumFieldGenerator::GenerateMergeFromCodedStream(
       "DO_((::$proto_ns$::internal::WireFormatLite::ReadPrimitive<\n"
       "         int, ::$proto_ns$::internal::WireFormatLite::TYPE_ENUM>(\n"
       "       input, &value)));\n");
-  if (HasPreservingUnknownEnumSemantics(descriptor_->file())) {
+  if (HasPreservingUnknownEnumSemantics(descriptor_)) {
     format("set_$name$(static_cast< $type$ >(value));\n");
   } else {
     format(
@@ -202,7 +202,7 @@ void EnumOneofFieldGenerator::GenerateInlineAccessorDefinitions(
       "  return static_cast< $type$ >($default$);\n"
       "}\n"
       "inline void $classname$::set_$name$($type$ value) {\n");
-  if (!HasPreservingUnknownEnumSemantics(descriptor_->file())) {
+  if (!HasPreservingUnknownEnumSemantics(descriptor_)) {
     format("  assert($type$_IsValid(value));\n");
   }
   format(
@@ -273,7 +273,7 @@ void RepeatedEnumFieldGenerator::GenerateInlineAccessorDefinitions(
       "  return static_cast< $type$ >($name$_.Get(index));\n"
       "}\n"
       "inline void $classname$::set_$name$(int index, $type$ value) {\n");
-  if (!HasPreservingUnknownEnumSemantics(descriptor_->file())) {
+  if (!HasPreservingUnknownEnumSemantics(descriptor_)) {
     format("  assert($type$_IsValid(value));\n");
   }
   format(
@@ -281,7 +281,7 @@ void RepeatedEnumFieldGenerator::GenerateInlineAccessorDefinitions(
       "  // @@protoc_insertion_point(field_set:$full_name$)\n"
       "}\n"
       "inline void $classname$::add_$name$($type$ value) {\n");
-  if (!HasPreservingUnknownEnumSemantics(descriptor_->file())) {
+  if (!HasPreservingUnknownEnumSemantics(descriptor_)) {
     format("  assert($type$_IsValid(value));\n");
   }
   format(
@@ -332,7 +332,7 @@ void RepeatedEnumFieldGenerator::GenerateMergeFromCodedStream(
       "DO_((::$proto_ns$::internal::WireFormatLite::ReadPrimitive<\n"
       "         int, ::$proto_ns$::internal::WireFormatLite::TYPE_ENUM>(\n"
       "       input, &value)));\n");
-  if (HasPreservingUnknownEnumSemantics(descriptor_->file())) {
+  if (HasPreservingUnknownEnumSemantics(descriptor_)) {
     format("add_$name$(static_cast< $type$ >(value));\n");
   } else {
     format(
@@ -359,14 +359,14 @@ void RepeatedEnumFieldGenerator::GenerateMergeFromCodedStreamWithPacking(
   Formatter format(printer, variables_);
   if (!descriptor_->is_packed()) {
     // This path is rarely executed, so we use a non-inlined implementation.
-    if (HasPreservingUnknownEnumSemantics(descriptor_->file())) {
+    if (HasPreservingUnknownEnumSemantics(descriptor_)) {
       format(
           "DO_((::$proto_ns$::internal::"
           "WireFormatLite::ReadPackedEnumPreserveUnknowns(\n"
           "       input,\n"
           "       $number$,\n"
-          "       NULL,\n"
-          "       NULL,\n"
+          "       nullptr,\n"
+          "       nullptr,\n"
           "       this->mutable_$name$())));\n");
     } else if (UseUnknownFieldSet(descriptor_->file(), options_)) {
       format(
@@ -398,7 +398,7 @@ void RepeatedEnumFieldGenerator::GenerateMergeFromCodedStreamWithPacking(
         "  DO_((::$proto_ns$::internal::WireFormatLite::ReadPrimitive<\n"
         "         int, ::$proto_ns$::internal::WireFormatLite::TYPE_ENUM>(\n"
         "       input, &value)));\n");
-    if (HasPreservingUnknownEnumSemantics(descriptor_->file())) {
+    if (HasPreservingUnknownEnumSemantics(descriptor_)) {
       format("  add_$name$(static_cast< $type$ >(value));\n");
     } else {
       format(

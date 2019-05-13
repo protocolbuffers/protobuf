@@ -90,21 +90,26 @@ class FileGenerator {
  private:
   // Internal type used by GenerateForwardDeclarations (defined in file.cc).
   class ForwardDeclarations;
+  struct CrossFileReferences;
 
   void IncludeFile(const std::string& google3_name, io::Printer* printer) {
     DoIncludeFile(google3_name, false, printer);
   }
-  void IncludeFileAndExport(const std::string& google3_name, io::Printer* printer) {
+  void IncludeFileAndExport(const std::string& google3_name,
+                            io::Printer* printer) {
     DoIncludeFile(google3_name, true, printer);
   }
   void DoIncludeFile(const std::string& google3_name, bool do_export,
                      io::Printer* printer);
 
   std::string CreateHeaderInclude(const std::string& basename,
-                             const FileDescriptor* file);
-  void GenerateInternalForwardDeclarations(
-      const std::vector<const FieldDescriptor*>& fields, const Options& options,
-      MessageSCCAnalyzer* scc_analyzer, io::Printer* printer);
+                                  const FileDescriptor* file);
+  void GetCrossFileReferencesForField(const FieldDescriptor* field,
+                                      CrossFileReferences* refs);
+  void GetCrossFileReferencesForFile(const FileDescriptor* file,
+                                     CrossFileReferences* refs);
+  void GenerateInternalForwardDeclarations(const CrossFileReferences& refs,
+                                           io::Printer* printer);
   void GenerateSourceIncludes(io::Printer* printer);
   void GenerateSourceDefaultInstance(int idx, io::Printer* printer);
 
@@ -116,10 +121,8 @@ class FileGenerator {
   void GenerateForwardDeclarations(io::Printer* printer);
 
   // Generates top or bottom of a header file.
-  void GenerateTopHeaderGuard(io::Printer* printer,
-                              const std::string& filename_identifier);
-  void GenerateBottomHeaderGuard(io::Printer* printer,
-                                 const std::string& filename_identifier);
+  void GenerateTopHeaderGuard(io::Printer* printer, bool pb_h);
+  void GenerateBottomHeaderGuard(io::Printer* printer, bool pb_h);
 
   // Generates #include directives.
   void GenerateLibraryIncludes(io::Printer* printer);
@@ -127,7 +130,8 @@ class FileGenerator {
 
   // Generate a pragma to pull in metadata using the given info_path (if
   // non-empty). info_path should be relative to printer's output.
-  void GenerateMetadataPragma(io::Printer* printer, const std::string& info_path);
+  void GenerateMetadataPragma(io::Printer* printer,
+                              const std::string& info_path);
 
   // Generates a couple of different pieces before definitions:
   void GenerateGlobalStateFunctionDeclarations(io::Printer* printer);
@@ -163,9 +167,7 @@ class FileGenerator {
   const Descriptor* GetSCCRepresentative(const Descriptor* d) {
     return GetSCC(d)->GetRepresentative();
   }
-  const SCC* GetSCC(const Descriptor* d) {
-    return scc_analyzer_.GetSCC(d);
-  }
+  const SCC* GetSCC(const Descriptor* d) { return scc_analyzer_.GetSCC(d); }
 
   bool IsDepWeak(const FileDescriptor* dep) const {
     if (weak_deps_.count(dep) != 0) {
@@ -176,6 +178,7 @@ class FileGenerator {
   }
 
   std::set<const FileDescriptor*> weak_deps_;
+  std::vector<const SCC*> sccs_;
 
   const FileDescriptor* file_;
   const Options options_;

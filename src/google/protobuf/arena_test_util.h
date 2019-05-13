@@ -78,10 +78,9 @@ namespace internal {
 
 class NoHeapChecker {
  public:
-  NoHeapChecker() {
-    capture_alloc.Hook();
-  }
+  NoHeapChecker() { capture_alloc.Hook(); }
   ~NoHeapChecker();
+
  private:
   class NewDeleteCapture {
    public:

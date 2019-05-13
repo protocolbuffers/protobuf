@@ -334,6 +334,14 @@ class MessageReflection {
     MergeTarget newMergeTargetForField(
         Descriptors.FieldDescriptor descriptor, Message defaultInstance);
 
+    /**
+     * Returns an empty merge target for a sub-field. When defaultInstance is provided, it indicates
+     * the descriptor is for an extension type, and implementations should create a new instance
+     * from the defaultInstance prototype directly.
+     */
+    MergeTarget newEmptyTargetForField(
+        Descriptors.FieldDescriptor descriptor, Message defaultInstance);
+
     /** Finishes the merge and returns the underlying object. */
     Object finish();
   }
@@ -494,11 +502,31 @@ class MessageReflection {
     @Override
     public MergeTarget newMergeTargetForField(
         Descriptors.FieldDescriptor field, Message defaultInstance) {
+      Message.Builder subBuilder;
       if (defaultInstance != null) {
-        return new BuilderAdapter(defaultInstance.newBuilderForType());
+        subBuilder = defaultInstance.newBuilderForType();
       } else {
-        return new BuilderAdapter(builder.newBuilderForField(field));
+        subBuilder = builder.newBuilderForField(field);
       }
+      if (!field.isRepeated()) {
+        Message originalMessage = (Message) getField(field);
+        if (originalMessage != null) {
+          subBuilder.mergeFrom(originalMessage);
+        }
+      }
+      return new BuilderAdapter(subBuilder);
+    }
+
+    @Override
+    public MergeTarget newEmptyTargetForField(
+        Descriptors.FieldDescriptor field, Message defaultInstance) {
+      Message.Builder subBuilder;
+      if (defaultInstance != null) {
+        subBuilder = defaultInstance.newBuilderForType();
+      } else {
+        subBuilder = builder.newBuilderForField(field);
+      }
+      return new BuilderAdapter(subBuilder);
     }
 
     @Override
@@ -662,6 +690,12 @@ class MessageReflection {
     }
 
     @Override
+    public MergeTarget newEmptyTargetForField(
+        Descriptors.FieldDescriptor descriptor, Message defaultInstance) {
+      throw new UnsupportedOperationException("newEmptyTargetForField() called on FieldSet object");
+    }
+
+    @Override
     public WireFormat.Utf8Validation getUtf8Validation(Descriptors.FieldDescriptor descriptor) {
       if (descriptor.needsUtf8Check()) {
         return WireFormat.Utf8Validation.STRICT;
@@ -770,12 +804,15 @@ class MessageReflection {
                 field, field.getEnumType().findValueByNumberCreatingIfUnknown(rawValue));
           } else {
             final Object value = field.getEnumType().findValueByNumber(rawValue);
+            // If the number isn't recognized as a valid value for this enum,
+            // add it to the unknown fields.
             if (value == null) {
-              // If the number isn't recognized as a valid value for this
-              // enum, drop it (don't even add it to unknownFields).
-              return true;
+              if (unknownFields != null) {
+                unknownFields.mergeVarintField(fieldNumber, rawValue);
+              }
+            } else {
+              target.addRepeatedField(field, value);
             }
-            target.addRepeatedField(field, value);
           }
         }
       } else {
@@ -807,7 +844,7 @@ class MessageReflection {
           } else {
             value = field.getEnumType().findValueByNumber(rawValue);
             // If the number isn't recognized as a valid value for this enum,
-            // drop it.
+            // add it to the unknown fields.
             if (value == null) {
               if (unknownFields != null) {
                 unknownFields.mergeVarintField(fieldNumber, rawValue);

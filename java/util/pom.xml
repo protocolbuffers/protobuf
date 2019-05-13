@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>com.google.protobuf</groupId>
     <artifactId>protobuf-parent</artifactId>
-    <version>3.6.1</version>
+    <version>3.7.1</version>
   </parent>
 
   <artifactId>protobuf-java-util</artifactId>
@@ -19,11 +17,20 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>protobuf-java</artifactId>
-      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.google.errorprone</groupId>
+      <artifactId>error_prone_annotations</artifactId>
+      <version>2.3.2</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava-testlib</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.google.code.gson</groupId>
@@ -65,10 +72,10 @@
 
                 <!-- Generate additional test protos for this module -->
                 <exec executable="${protoc}">
-                  <arg value="--java_out=${generated.testsources.dir}" />
-                  <arg value="--proto_path=${protobuf.source.dir}" />
-                  <arg value="--proto_path=src/test/proto" />
-                  <arg value="src/test/proto/com/google/protobuf/util/json_test.proto" />
+                  <arg value="--java_out=${generated.testsources.dir}"/>
+                  <arg value="--proto_path=${protobuf.source.dir}"/>
+                  <arg value="--proto_path=src/test/proto"/>
+                  <arg value="src/test/proto/com/google/protobuf/util/json_test.proto"/>
                 </exec>
               </target>
             </configuration>

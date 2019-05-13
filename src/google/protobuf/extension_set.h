@@ -47,15 +47,13 @@
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
+#include <google/protobuf/parse_context.h>
+#include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/port.h>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/wire_format_lite.h>
 
 #include <google/protobuf/port_def.inc>
-
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-#include <google/protobuf/parse_context.h>
-#endif
 
 #ifdef SWIG
 #error "You cannot SWIG proto headers"
@@ -121,9 +119,13 @@ struct ExtensionInfo {
     const void* arg;
   };
 
+  struct MessageInfo {
+    const MessageLite* prototype;
+  };
+
   union {
     EnumValidityCheck enum_validity_check;
-    const MessageLite* message_prototype;
+    MessageInfo message_info;
   };
 
   // The descriptor for this extension, if one exists and is known.  May be
@@ -251,7 +253,8 @@ class PROTOBUF_EXPORT ExtensionSet {
   double GetDouble(int number, double default_value) const;
   bool GetBool(int number, bool default_value) const;
   int GetEnum(int number, int default_value) const;
-  const std::string& GetString(int number, const std::string& default_value) const;
+  const std::string& GetString(int number,
+                               const std::string& default_value) const;
   const MessageLite& GetMessage(int number,
                                 const MessageLite& default_value) const;
   const MessageLite& GetMessage(int number, const Descriptor* message_type,
@@ -397,22 +400,44 @@ class PROTOBUF_EXPORT ExtensionSet {
 
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
   // Lite parser
-  std::pair<const char*, bool> ParseField(
-      uint64 tag, ParseClosure parent, const char* begin, const char* end,
-      const MessageLite* containing_type,
-      internal::InternalMetadataWithArenaLite* metadata,
-      internal::ParseContext* ctx);
+  const char* ParseField(uint64 tag, const char* ptr,
+                         const MessageLite* containing_type,
+                         internal::InternalMetadataWithArenaLite* metadata,
+                         internal::ParseContext* ctx);
   // Full parser
-  std::pair<const char*, bool> ParseField(
-      uint64 tag, ParseClosure parent, const char* begin, const char* end,
-      const Message* containing_type,
-      internal::InternalMetadataWithArena* metadata,
-      internal::ParseContext* ctx);
-  const char* ParseMessageSetItem(ParseClosure parent, const char* begin,
-                                  const char* end,
-                                  const Message* containing_type,
-                                  internal::InternalMetadataWithArena* metadata,
-                                  internal::ParseContext* ctx);
+  const char* ParseField(uint64 tag, const char* ptr,
+                         const Message* containing_type,
+                         internal::InternalMetadataWithArena* metadata,
+                         internal::ParseContext* ctx);
+  template <typename Msg, typename Metadata>
+  const char* ParseMessageSet(const char* ptr, const Msg* containing_type,
+                              Metadata* metadata, internal::ParseContext* ctx) {
+    struct MessageSetItem {
+      const char* _InternalParse(const char* ptr, ParseContext* ctx) {
+        return me->ParseMessageSetItem(ptr, containing_type, metadata, ctx);
+      }
+      ExtensionSet* me;
+      const Msg* containing_type;
+      Metadata* metadata;
+    } item{this, containing_type, metadata};
+    while (!ctx->Done(&ptr)) {
+      uint32 tag;
+      ptr = ReadTag(ptr, &tag);
+      GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+      if (tag == WireFormatLite::kMessageSetItemStartTag) {
+        ptr = ctx->ParseGroup(&item, ptr, tag);
+        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+      } else {
+        if (tag == 0 || (tag & 7) == 4) {
+          ctx->SetLastTag(tag);
+          return ptr;
+        }
+        ptr = ParseField(tag, ptr, containing_type, metadata, ctx);
+        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+      }
+    }
+    return ptr;
+  }
 #endif
 
   // Parse an entire message in MessageSet format.  Such messages have no
@@ -447,13 +472,11 @@ class PROTOBUF_EXPORT ExtensionSet {
   // Returns a pointer past the last written byte.
   uint8* InternalSerializeWithCachedSizesToArray(int start_field_number,
                                                  int end_field_number,
-                                                 bool deterministic,
                                                  uint8* target) const;
 
   // Like above but serializes in MessageSet format.
   void SerializeMessageSetWithCachedSizes(io::CodedOutputStream* output) const;
-  uint8* InternalSerializeMessageSetWithCachedSizesToArray(bool deterministic,
-                                                           uint8* target) const;
+  uint8* InternalSerializeMessageSetWithCachedSizesToArray(uint8* target) const;
 
   // For backward-compatibility, versions of two of the above methods that
   // serialize deterministically iff SetDefaultSerializationDeterministic()
@@ -514,15 +537,12 @@ class PROTOBUF_EXPORT ExtensionSet {
 
     virtual bool ReadMessage(const MessageLite& prototype,
                              io::CodedInputStream* input) = 0;
+#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
+    virtual const char* _InternalParse(const char* ptr, ParseContext* ctx) = 0;
+#endif
     virtual void WriteMessage(int number,
                               io::CodedOutputStream* output) const = 0;
     virtual uint8* WriteMessageToArray(int number, uint8* target) const = 0;
-    virtual uint8* InternalWriteMessageToArray(int number, bool,
-                                               uint8* target) const {
-      // TODO(gpike): make this pure virtual. This is a placeholder because we
-      // need to update third_party/upb, for example.
-      return WriteMessageToArray(number, target);
-    }
 
    private:
     virtual void UnusedKeyMethod();  // Dummy key method to avoid weak vtable.
@@ -592,12 +612,11 @@ class PROTOBUF_EXPORT ExtensionSet {
     void SerializeFieldWithCachedSizes(int number,
                                        io::CodedOutputStream* output) const;
     uint8* InternalSerializeFieldWithCachedSizesToArray(int number,
-                                                        bool deterministic,
                                                         uint8* target) const;
     void SerializeMessageSetItemWithCachedSizes(
         int number, io::CodedOutputStream* output) const;
     uint8* InternalSerializeMessageSetItemWithCachedSizesToArray(
-        int number, bool deterministic, uint8* target) const;
+        int number, uint8* target) const;
     size_t ByteSize(int number) const;
     size_t MessageSetItemByteSize(int number) const;
     void Clear();
@@ -691,13 +710,6 @@ class PROTOBUF_EXPORT ExtensionSet {
   // Merges existing Extension from other_extension
   void InternalExtensionMergeFrom(int number, const Extension& other_extension);
 
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  bool FindExtension(int wire_type, uint32 field,
-                     const Message* containing_type,
-                     const internal::ParseContext* ctx,
-                     ExtensionInfo* extension, bool* was_packed_on_wire);
-#endif
-
   // Returns true and fills field_number and extension if extension is found.
   // Note to support packed repeated field compatibility, it also fills whether
   // the tag on wire is packed, which can be different from
@@ -751,6 +763,53 @@ class PROTOBUF_EXPORT ExtensionSet {
                            ExtensionFinder* extension_finder,
                            MessageSetFieldSkipper* field_skipper);
 
+#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
+  bool FindExtension(int wire_type, uint32 field,
+                     const MessageLite* containing_type,
+                     const internal::ParseContext* ctx,
+                     ExtensionInfo* extension, bool* was_packed_on_wire) {
+    GeneratedExtensionFinder finder(containing_type);
+    return FindExtensionInfoFromFieldNumber(wire_type, field, &finder,
+                                            extension, was_packed_on_wire);
+  }
+  inline bool FindExtension(int wire_type, uint32 field,
+                            const Message* containing_type,
+                            const internal::ParseContext* ctx,
+                            ExtensionInfo* extension, bool* was_packed_on_wire);
+  // Used for MessageSet only
+  const char* ParseFieldMaybeLazily(
+      uint64 tag, const char* ptr, const MessageLite* containing_type,
+      internal::InternalMetadataWithArenaLite* metadata,
+      internal::ParseContext* ctx) {
+    // Lite MessageSet doesn't implement lazy.
+    return ParseField(tag, ptr, containing_type, metadata, ctx);
+  }
+  const char* ParseFieldMaybeLazily(
+      uint64 tag, const char* ptr, const Message* containing_type,
+      internal::InternalMetadataWithArena* metadata,
+      internal::ParseContext* ctx);
+  const char* ParseMessageSetItem(
+      const char* ptr, const MessageLite* containing_type,
+      internal::InternalMetadataWithArenaLite* metadata,
+      internal::ParseContext* ctx);
+  const char* ParseMessageSetItem(const char* ptr,
+                                  const Message* containing_type,
+                                  internal::InternalMetadataWithArena* metadata,
+                                  internal::ParseContext* ctx);
+
+  // Implemented in extension_set_inl.h to keep code out of the header file.
+  template <typename T>
+  const char* ParseFieldWithExtensionInfo(int number, bool was_packed_on_wire,
+                                          const ExtensionInfo& info,
+                                          T* metadata, const char* ptr,
+                                          internal::ParseContext* ctx);
+  template <typename Msg, typename Metadata>
+  const char* ParseMessageSetItemTmpl(const char* ptr,
+                                      const Msg* containing_type,
+                                      Metadata* metadata,
+                                      internal::ParseContext* ctx);
+#endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
+
   // Hack:  RepeatedPtrFieldBase declares ExtensionSet as a friend.  This
   //   friendship should automatically extend to ExtensionSet::Extension, but
   //   unfortunately some older compilers (e.g. GCC 3.4.4) do not implement this
@@ -797,42 +856,6 @@ class PROTOBUF_EXPORT ExtensionSet {
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ExtensionSet);
 };
-
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-template <typename Msg, typename Metadata>
-const char* ParseMessageSet(const char* begin, const char* end, Msg* msg,
-                            ExtensionSet* ext, Metadata* metadata,
-                            internal::ParseContext* ctx) {
-  auto ptr = begin;
-  int depth;
-  (void)depth;
-  while (ptr < end) {
-    uint32 tag;
-    ptr = Varint::Parse32Inline(ptr, &tag);
-    GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-    if (tag == WireFormatLite::kMessageSetItemStartTag) {
-      bool ok = ctx->PrepareGroup(tag, &depth);
-      GOOGLE_PROTOBUF_PARSER_ASSERT(ok);
-      ctx->extra_parse_data().payload.clear();
-      ptr = Msg::InternalParseMessageSetItem(ptr, end, msg, ctx);
-      GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-      if (ctx->GroupContinues(depth)) goto group_continues;
-    } else {
-      auto res =
-          ext->ParseField(tag, {Msg::_InternalParse, msg}, ptr, end,
-                          Msg::internal_default_instance(), metadata, ctx);
-      ptr = res.first;
-      if (res.second) break;
-    }
-  }
-  return ptr;
-group_continues:
-  GOOGLE_DCHECK(ptr >= end);
-  ctx->StoreGroup({Msg::_InternalParse, msg},
-                  {Msg::InternalParseMessageSetItem, msg}, depth);
-  return ptr;
-}
-#endif
 
 // These are just for convenience...
 inline void ExtensionSet::SetString(int number, FieldType type,
@@ -1044,15 +1067,15 @@ class PROTOBUF_EXPORT StringTypeTraits {
   typedef StringTypeTraits Singular;
 
   static inline const std::string& Get(int number, const ExtensionSet& set,
-                                  ConstType default_value) {
+                                       ConstType default_value) {
     return set.GetString(number, default_value);
   }
-  static inline void Set(int number, FieldType field_type, const std::string& value,
-                         ExtensionSet* set) {
+  static inline void Set(int number, FieldType field_type,
+                         const std::string& value, ExtensionSet* set) {
     set->SetString(number, field_type, value, NULL);
   }
   static inline std::string* Mutable(int number, FieldType field_type,
-                                ExtensionSet* set) {
+                                     ExtensionSet* set) {
     return set->MutableString(number, field_type, NULL);
   }
   template <typename ExtendeeT>
@@ -1071,7 +1094,7 @@ class PROTOBUF_EXPORT RepeatedStringTypeTraits {
   typedef RepeatedPtrField<std::string> RepeatedFieldType;
 
   static inline const std::string& Get(int number, const ExtensionSet& set,
-                                  int index) {
+                                       int index) {
     return set.GetRepeatedString(number, index);
   }
   static inline void Set(int number, int index, const std::string& value,
@@ -1086,7 +1109,7 @@ class PROTOBUF_EXPORT RepeatedStringTypeTraits {
     set->AddString(number, field_type, value, NULL);
   }
   static inline std::string* Add(int number, FieldType field_type,
-                            ExtensionSet* set) {
+                                 ExtensionSet* set) {
     return set->AddString(number, field_type, NULL);
   }
   static inline const RepeatedPtrField<std::string>& GetRepeated(
@@ -1095,10 +1118,8 @@ class PROTOBUF_EXPORT RepeatedStringTypeTraits {
         set.GetRawRepeatedField(number, GetDefaultRepeatedField()));
   }
 
-  static inline RepeatedPtrField<std::string>* MutableRepeated(int number,
-                                                          FieldType field_type,
-                                                          bool is_packed,
-                                                          ExtensionSet* set) {
+  static inline RepeatedPtrField<std::string>* MutableRepeated(
+      int number, FieldType field_type, bool is_packed, ExtensionSet* set) {
     return reinterpret_cast<RepeatedPtrField<std::string>*>(
         set->MutableRawRepeatedField(number, field_type, is_packed, NULL));
   }
@@ -1536,6 +1557,38 @@ class ExtensionIdentifier {
   }
 
 }  // namespace internal
+
+// Call this function to ensure that this extensions's reflection is linked into
+// the binary:
+//
+//   google::protobuf::LinkExtensionReflection(Foo::my_extension);
+//
+// This will ensure that the following lookup will succeed:
+//
+//   DescriptorPool::generated_pool()->FindExtensionByName("Foo.my_extension");
+//
+// This is often relevant for parsing extensions in text mode.
+//
+// As a side-effect, it will also guarantee that anything else from the same
+// .proto file will also be available for lookup in the generated pool.
+//
+// This function does not actually register the extension, so it does not need
+// to be called before the lookup.  However it does need to occur in a function
+// that cannot be stripped from the binary (ie. it must be reachable from main).
+//
+// Best practice is to call this function as close as possible to where the
+// reflection is actually needed.  This function is very cheap to call, so you
+// should not need to worry about its runtime overhead except in tight loops (on
+// x86-64 it compiles into two "mov" instructions).
+template <typename ExtendeeType, typename TypeTraitsType,
+          internal::FieldType field_type, bool is_packed>
+void LinkExtensionReflection(
+    const google::protobuf::internal::ExtensionIdentifier<
+        ExtendeeType, TypeTraitsType, field_type, is_packed>& extension) {
+  const void* volatile unused = &extension;
+  (void)&unused;  // Use address to avoid an extra load of volatile variable.
+}
+
 }  // namespace protobuf
 }  // namespace google
 

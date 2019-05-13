@@ -63,7 +63,8 @@ class Map;
 
 class MapIterator;
 
-template <typename Enum> struct is_proto_enum;
+template <typename Enum>
+struct is_proto_enum;
 
 namespace internal {
 template <typename Derived, typename Key, typename T,
@@ -96,8 +97,7 @@ class MapPair {
   MapPair(const Key& other_first, const T& other_second)
       : first(other_first), second(other_second) {}
   explicit MapPair(const Key& other_first) : first(other_first), second() {}
-  MapPair(const MapPair& other)
-      : first(other.first), second(other.second) {}
+  MapPair(const MapPair& other) : first(other.first), second(other.second) {}
 
   ~MapPair() {}
 
@@ -183,7 +183,8 @@ class Map {
 
  private:
   void Init() {
-    elements_ = Arena::Create<InnerMap>(arena_, 0u, hasher(), Allocator(arena_));
+    elements_ =
+        Arena::Create<InnerMap>(arena_, 0u, hasher(), Allocator(arena_));
   }
 
   // re-implement std::allocator to use arena allocator for memory allocation.
@@ -231,7 +232,7 @@ class Map {
 #if __cplusplus >= 201103L && !defined(GOOGLE_PROTOBUF_OS_APPLE) && \
     !defined(GOOGLE_PROTOBUF_OS_NACL) &&                            \
     !defined(GOOGLE_PROTOBUF_OS_EMSCRIPTEN)
-    template<class NodeType, class... Args>
+    template <class NodeType, class... Args>
     void construct(NodeType* p, Args&&... args) {
       // Clang 3.6 doesn't compile static casting to void* directly. (Issue
       // #1266) According C++ standard 5.2.9/1: "The static_cast operator shall
@@ -241,7 +242,7 @@ class Map {
           NodeType(std::forward<Args>(args)...);
     }
 
-    template<class NodeType>
+    template <class NodeType>
     void destroy(NodeType* p) {
       p->~NodeType();
     }
@@ -274,9 +275,7 @@ class Map {
 
     // To support gcc-4.4, which does not properly
     // support templated friend classes
-    Arena* arena() const {
-      return arena_;
-    }
+    Arena* arena() const { return arena_; }
 
    private:
     typedef void DestructorSkippable_;
@@ -414,7 +413,7 @@ class Map {
           : node_(NodePtrFromKeyPtr(*tree_it)), m_(m), bucket_index_(index) {
         // Invariant: iterators that use buckets with trees have an even
         // bucket_index_.
-        GOOGLE_DCHECK_EQ(bucket_index_ % 2, 0);
+        GOOGLE_DCHECK_EQ(bucket_index_ % 2, 0u);
       }
 
       // Advance through buckets, looking for the first that isn't empty.
@@ -454,7 +453,7 @@ class Map {
           if (is_list) {
             SearchFrom(bucket_index_ + 1);
           } else {
-            GOOGLE_DCHECK_EQ(bucket_index_ & 1, 0);
+            GOOGLE_DCHECK_EQ(bucket_index_ & 1, 0u);
             Tree* tree = static_cast<Tree*>(m_->table_[bucket_index_]);
             if (++tree_it == tree->end()) {
               SearchFrom(bucket_index_ + 2);
@@ -483,8 +482,7 @@ class Map {
         // Force bucket_index_ to be in range.
         bucket_index_ &= (m_->num_buckets_ - 1);
         // Common case: the bucket we think is relevant points to node_.
-        if (m_->table_[bucket_index_] == static_cast<void*>(node_))
-          return true;
+        if (m_->table_[bucket_index_] == static_cast<void*>(node_)) return true;
         // Less common: the bucket is a linked list with node_ somewhere in it,
         // but not at the head.
         if (m_->TableEntryIsNonEmptyList(bucket_index_)) {
@@ -559,6 +557,7 @@ class Map {
 
     iterator find(const Key& k) { return iterator(FindHelper(k).first); }
     const_iterator find(const Key& k) const { return find(k, NULL); }
+    bool contains(const Key& k) const { return find(k) != end(); }
 
     // In traditional C++ style, this performs "insert if not present."
     std::pair<iterator, bool> insert(const KeyValuePair& kv) {
@@ -719,10 +718,9 @@ class Map {
       GOOGLE_DCHECK_EQ(table_[b], table_[b ^ 1]);
       // Maintain the invariant that node->next is NULL for all Nodes in Trees.
       node->next = NULL;
-      return iterator(static_cast<Tree*>(table_[b])
-                      ->insert(KeyPtrFromNodePtr(node))
-                      .first,
-                      this, b & ~static_cast<size_t>(1));
+      return iterator(
+          static_cast<Tree*>(table_[b])->insert(KeyPtrFromNodePtr(node)).first,
+          this, b & ~static_cast<size_t>(1));
     }
 
     // Returns whether it did resize.  Currently this is only used when
@@ -833,7 +831,7 @@ class Map {
     }
     static bool TableEntryIsTree(void* const* table, size_type b) {
       return !TableEntryIsEmpty(table, b) &&
-          !TableEntryIsNonEmptyList(table, b);
+             !TableEntryIsNonEmptyList(table, b);
     }
     static bool TableEntryIsList(void* const* table, size_type b) {
       return !TableEntryIsTree(table, b);
@@ -939,9 +937,10 @@ class Map {
     // Return a randomish value.
     size_type Seed() const {
       size_type s = static_cast<size_type>(reinterpret_cast<uintptr_t>(this));
-#if defined(__x86_64__) && defined(__GNUC__)
+#if defined(__x86_64__) && defined(__GNUC__) && \
+    !defined(GOOGLE_PROTOBUF_NO_RDTSC)
       uint32 hi, lo;
-      asm("rdtsc" : "=a" (lo), "=d" (hi));
+      asm("rdtsc" : "=a"(lo), "=d"(hi));
       s += ((static_cast<uint64>(hi) << 32) | lo);
 #endif
       return s;
@@ -971,9 +970,7 @@ class Map {
     const_iterator() {}
     explicit const_iterator(const InnerIt& it) : it_(it) {}
 
-    const_reference operator*() const {
-      return *it_->value();
-    }
+    const_reference operator*() const { return *it_->value(); }
     const_pointer operator->() const { return &(operator*()); }
 
     const_iterator& operator++() {
@@ -1050,7 +1047,7 @@ class Map {
 
   // Element access
   T& operator[](const key_type& key) {
-    value_type** value =  &(*elements_)[key];
+    value_type** value = &(*elements_)[key];
     if (*value == NULL) {
       *value = CreateValueTypeInternal(key);
       internal::MapValueInitializer<is_proto_enum<T>::value, T>::Initialize(
@@ -1079,6 +1076,7 @@ class Map {
     return const_iterator(iterator(elements_->find(key)));
   }
   iterator find(const key_type& key) { return iterator(elements_->find(key)); }
+  bool contains(const Key& key) const { return elements_->contains(key); }
   std::pair<const_iterator, const_iterator> equal_range(
       const key_type& key) const {
     const_iterator it = find(key);

@@ -33,11 +33,12 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_JS_GENERATOR_H__
 #define GOOGLE_PROTOBUF_COMPILER_JS_GENERATOR_H__
 
-#include <string>
 #include <set>
+#include <string>
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/compiler/scc.h>
 #include <google/protobuf/compiler/code_generator.h>
 
 #include <google/protobuf/port_def.inc>
@@ -51,7 +52,9 @@ class FieldDescriptor;
 class OneofDescriptor;
 class FileDescriptor;
 
-namespace io { class Printer; }
+namespace io {
+class Printer;
+}
 
 namespace compiler {
 namespace js {
@@ -86,7 +89,7 @@ struct GeneratorOptions {
         annotate_code(false) {}
 
   bool ParseFromOptions(
-      const std::vector< std::pair< std::string, std::string > >& options,
+      const std::vector<std::pair<std::string, std::string> >& options,
       std::string* error);
 
   // Returns the file name extension to use for generated code.
@@ -98,7 +101,7 @@ struct GeneratorOptions {
     // Create an output file for each input .proto file.
     kOneOutputFilePerInputFile,
     // Create an output file for each type.
-    kOneOutputFilePerType,
+    kOneOutputFilePerSCC,
     // Put everything in a single file named by the library option.
     kEverythingInOneFile,
   };
@@ -122,8 +125,11 @@ struct GeneratorOptions {
   std::string extension;
   // Create a separate output file for each input file?
   bool one_output_file_per_input_file;
-  // If true, we should build .meta files that contain annotations for
-  // generated code. See GeneratedCodeInfo in descriptor.proto.
+  // If true, we should append annotations as commen on the last line for
+  // generated .js file. Annotations used by tools like https://kythe.io
+  // to provide cross-references between .js and .proto files. Annotations
+  // are enced as base64 proto of GeneratedCodeInfo message (see
+  // descriptor.proto).
   bool annotate_code;
 };
 
@@ -137,8 +143,7 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
   virtual ~Generator() {}
 
   virtual bool Generate(const FileDescriptor* file,
-                        const std::string& parameter,
-                        GeneratorContext* context,
+                        const std::string& parameter, GeneratorContext* context,
                         std::string* error) const {
     *error = "Unimplemented Generate() method. Call GenerateAll() instead.";
     return false;
@@ -148,29 +153,24 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
 
   virtual bool GenerateAll(const std::vector<const FileDescriptor*>& files,
                            const std::string& parameter,
-                           GeneratorContext* context,
-                           std::string* error) const;
+                           GeneratorContext* context, std::string* error) const;
 
  private:
   void GenerateHeader(const GeneratorOptions& options,
                       io::Printer* printer) const;
 
   // Generate goog.provides() calls.
-  void FindProvides(const GeneratorOptions& options,
-                    io::Printer* printer,
+  void FindProvides(const GeneratorOptions& options, io::Printer* printer,
                     const std::vector<const FileDescriptor*>& file,
                     std::set<std::string>* provided) const;
   void FindProvidesForFile(const GeneratorOptions& options,
-                           io::Printer* printer,
-                           const FileDescriptor* file,
+                           io::Printer* printer, const FileDescriptor* file,
                            std::set<std::string>* provided) const;
   void FindProvidesForMessage(const GeneratorOptions& options,
-                              io::Printer* printer,
-                              const Descriptor* desc,
+                              io::Printer* printer, const Descriptor* desc,
                               std::set<std::string>* provided) const;
   void FindProvidesForEnum(const GeneratorOptions& options,
-                           io::Printer* printer,
-                           const EnumDescriptor* enumdesc,
+                           io::Printer* printer, const EnumDescriptor* enumdesc,
                            std::set<std::string>* provided) const;
   // For extension fields at file scope.
   void FindProvidesForFields(const GeneratorOptions& options,
@@ -178,8 +178,7 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
                              const std::vector<const FieldDescriptor*>& fields,
                              std::set<std::string>* provided) const;
   // Print the goog.provides() found by the methods above.
-  void GenerateProvides(const GeneratorOptions& options,
-                        io::Printer* printer,
+  void GenerateProvides(const GeneratorOptions& options, io::Printer* printer,
                         std::set<std::string>* provided) const;
 
   // Generate goog.setTestOnly() if indicated.
@@ -191,17 +190,17 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
       const GeneratorOptions& options, io::Printer* printer,
       const std::vector<const FileDescriptor*>& files,
       std::set<std::string>* provided) const;
-  void GenerateRequiresForMessage(const GeneratorOptions& options,
-                        io::Printer* printer,
-                        const Descriptor* desc,
-                        std::set<std::string>* provided) const;
+  void GenerateRequiresForSCC(const GeneratorOptions& options,
+                              io::Printer* printer, const SCC* scc,
+                              std::set<std::string>* provided) const;
   // For extension fields at file scope.
   void GenerateRequiresForExtensions(
       const GeneratorOptions& options, io::Printer* printer,
       const std::vector<const FieldDescriptor*>& fields,
       std::set<std::string>* provided) const;
   void GenerateRequiresImpl(const GeneratorOptions& options,
-                            io::Printer* printer, std::set<std::string>* required,
+                            io::Printer* printer,
+                            std::set<std::string>* required,
                             std::set<std::string>* forwards,
                             std::set<std::string>* provided, bool require_jspb,
                             bool require_extension, bool require_map) const;
@@ -218,9 +217,12 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
                                 const FieldDescriptor* field,
                                 std::set<std::string>* required,
                                 std::set<std::string>* forwards) const;
-
-  void GenerateFile(const GeneratorOptions& options,
-                    io::Printer* printer,
+  // Generate all things in a proto file into one file.
+  // If use_short_name is true, the generated file's name will only be short
+  // name that without directory, otherwise filename equals file->name()
+  bool GenerateFile(const FileDescriptor* file, const GeneratorOptions& options,
+                    GeneratorContext* context, bool use_short_name) const;
+  void GenerateFile(const GeneratorOptions& options, io::Printer* printer,
                     const FileDescriptor* file) const;
 
   // Generate definitions for all message classes and enums in all files,
@@ -230,8 +232,7 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
       const std::vector<const FileDescriptor*>& file) const;
   // Helper for above.
   void GenerateFileAndDeps(const GeneratorOptions& options,
-                           io::Printer* printer,
-                           const FileDescriptor* root,
+                           io::Printer* printer, const FileDescriptor* root,
                            std::set<const FileDescriptor*>* all_files,
                            std::set<const FileDescriptor*>* generated) const;
 
@@ -246,8 +247,7 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
                                     bool use_default) const;
 
   // Generate definition for one class.
-  void GenerateClass(const GeneratorOptions& options,
-                     io::Printer* printer,
+  void GenerateClass(const GeneratorOptions& options, io::Printer* printer,
                      const Descriptor* desc) const;
   void GenerateClassConstructor(const GeneratorOptions& options,
                                 io::Printer* printer,
@@ -255,12 +255,17 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
   void GenerateClassFieldInfo(const GeneratorOptions& options,
                               io::Printer* printer,
                               const Descriptor* desc) const;
-  void GenerateClassXid(const GeneratorOptions& options,
-                        io::Printer* printer,
+  void GenerateClassConstructorAndDeclareExtensionFieldInfo(
+      const GeneratorOptions& options, io::Printer* printer,
+      const Descriptor* desc) const;
+  void GenerateClassXid(const GeneratorOptions& options, io::Printer* printer,
                         const Descriptor* desc) const;
   void GenerateOneofCaseDefinition(const GeneratorOptions& options,
                                    io::Printer* printer,
                                    const OneofDescriptor* oneof) const;
+  void GenerateObjectTypedef(const GeneratorOptions& options,
+                             io::Printer* printer,
+                             const Descriptor* desc) const;
   void GenerateClassToObject(const GeneratorOptions& options,
                              io::Printer* printer,
                              const Descriptor* desc) const;
@@ -273,17 +278,12 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
   void GenerateClassFieldFromObject(const GeneratorOptions& options,
                                     io::Printer* printer,
                                     const FieldDescriptor* field) const;
-  void GenerateClassClone(const GeneratorOptions& options,
-                          io::Printer* printer,
-                          const Descriptor* desc) const;
   void GenerateClassRegistration(const GeneratorOptions& options,
                                  io::Printer* printer,
                                  const Descriptor* desc) const;
   void GenerateClassFields(const GeneratorOptions& options,
-                           io::Printer* printer,
-                           const Descriptor* desc) const;
-  void GenerateClassField(const GeneratorOptions& options,
-                          io::Printer* printer,
+                           io::Printer* printer, const Descriptor* desc) const;
+  void GenerateClassField(const GeneratorOptions& options, io::Printer* printer,
                           const FieldDescriptor* desc) const;
   void GenerateClassExtensionFieldInfo(const GeneratorOptions& options,
                                        io::Printer* printer,
@@ -305,13 +305,11 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
                                          const FieldDescriptor* field) const;
 
   // Generate definition for one enum.
-  void GenerateEnum(const GeneratorOptions& options,
-                    io::Printer* printer,
+  void GenerateEnum(const GeneratorOptions& options, io::Printer* printer,
                     const EnumDescriptor* enumdesc) const;
 
   // Generate an extension definition.
-  void GenerateExtension(const GeneratorOptions& options,
-                         io::Printer* printer,
+  void GenerateExtension(const GeneratorOptions& options, io::Printer* printer,
                          const FieldDescriptor* field) const;
 
   // Generate addFoo() method for repeated primitive fields.

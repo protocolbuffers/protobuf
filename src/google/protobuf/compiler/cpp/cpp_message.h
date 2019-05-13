@@ -135,13 +135,6 @@ class MessageGenerator {
   // Generate the arena-specific destructor code.
   void GenerateArenaDestructorCode(io::Printer* printer);
 
-  // Helper for GenerateClear and others.  Optionally emits a condition that
-  // assumes the existence of the cached_has_bits variable, and returns true
-  // if the condition was printed.
-  bool MaybeGenerateOptionalFieldCondition(io::Printer* printer,
-                                           const FieldDescriptor* field,
-                                           int expected_has_bits_index);
-
   // Generate standard Message methods.
   void GenerateClear(io::Printer* printer);
   void GenerateOneofClear(io::Printer* printer);

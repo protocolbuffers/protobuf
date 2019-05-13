@@ -47,8 +47,8 @@
 #include <google/protobuf/compiler/cpp/cpp_unittest.h>
 
 #include <google/protobuf/unittest.pb.h>
-#include <google/protobuf/unittest_optimize_for.pb.h>
 #include <google/protobuf/unittest_embed_optimize_for.pb.h>
+#include <google/protobuf/unittest_optimize_for.pb.h>
 
 #include <google/protobuf/test_util.h>
 
@@ -96,23 +96,35 @@ TEST(GENERATED_MESSAGE_TEST_NAME, TestConflictingSymbolNames) {
   // parameter names.
   typedef protobuf_unittest::TestConflictingSymbolNamesExtension ExtensionMessage;
   message.AddExtension(ExtensionMessage::repeated_int32_ext, 123);
-  EXPECT_EQ(123,
-            message.GetExtension(ExtensionMessage::repeated_int32_ext, 0));
+  EXPECT_EQ(123, message.GetExtension(ExtensionMessage::repeated_int32_ext, 0));
 }
 
 TEST(GENERATED_MESSAGE_TEST_NAME, TestConflictingEnumNames) {
   protobuf_unittest::TestConflictingEnumNames message;
-  message.set_conflicting_enum(protobuf_unittest::TestConflictingEnumNames_NestedConflictingEnum_and_);
+  message.set_conflicting_enum(
+      protobuf_unittest::TestConflictingEnumNames_while_and_);
   EXPECT_EQ(1, message.conflicting_enum());
-  message.set_conflicting_enum(protobuf_unittest::TestConflictingEnumNames_NestedConflictingEnum_XOR);
+  message.set_conflicting_enum(
+      protobuf_unittest::TestConflictingEnumNames_while_XOR);
   EXPECT_EQ(5, message.conflicting_enum());
 
-
-  protobuf_unittest::ConflictingEnum conflicting_enum;
+  protobuf_unittest::bool_ conflicting_enum;
   conflicting_enum = protobuf_unittest::NOT_EQ;
   EXPECT_EQ(1, conflicting_enum);
   conflicting_enum = protobuf_unittest::return_;
   EXPECT_EQ(3, conflicting_enum);
+}
+
+TEST(GENERATED_MESSAGE_TEST_NAME, TestConflictingMessageNames) {
+  protobuf_unittest::NULL_ message;
+  message.set_int_(123);
+  EXPECT_EQ(message.int_(), 123);
+}
+
+TEST(GENERATED_MESSAGE_TEST_NAME, TestConflictingExtension) {
+  protobuf_unittest::TestConflictingSymbolNames message;
+  message.SetExtension(protobuf_unittest::void_, 123);
+  EXPECT_EQ(123, message.GetExtension(protobuf_unittest::void_));
 }
 
 }  // namespace cpp_unittest

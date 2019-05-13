@@ -154,12 +154,12 @@ module BasicTest
       e = assert_raise ArgumentError do
         MapMessage.new(:map_string_int32 => "hello")
       end
-      assert_equal e.message, "Expected Hash object as initializer value for map field 'map_string_int32'."
+      assert_equal e.message, "Expected Hash object as initializer value for map field 'map_string_int32' (given String)."
 
       e = assert_raise ArgumentError do
         TestMessage.new(:repeated_uint32 => "hello")
       end
-      assert_equal e.message, "Expected array as initializer value for repeated field 'repeated_uint32'."
+      assert_equal e.message, "Expected array as initializer value for repeated field 'repeated_uint32' (given String)."
     end
 
     def test_map_field
@@ -254,6 +254,19 @@ module BasicTest
                     "b" => TestMessage2.new(:foo => 2)}
     end
 
+    def test_protobuf_decode_json_ignore_unknown_fields
+      m = TestMessage.decode_json({
+        optional_string: "foo",
+        not_in_message: "some_value"
+      }.to_json, { ignore_unknown_fields: true })
+
+      assert_equal m.optional_string, "foo"
+      e = assert_raise Google::Protobuf::ParseError do
+        TestMessage.decode_json({ not_in_message: "some_value" }.to_json)
+      end
+      assert_match(/No such field: not_in_message/, e.message)
+    end
+
     def test_to_h
       m = TestMessage.new(:optional_bool => true, :optional_double => -10.100001, :optional_string => 'foo', :repeated_string => ['bar1', 'bar2'], :repeated_msg => [TestMessage2.new(:foo => 100)])
       expected_result = {
@@ -343,6 +356,26 @@ module BasicTest
       assert nil != file_descriptor
       assert_equal nil, file_descriptor.name
       assert_equal :proto3, file_descriptor.syntax
+    end
+
+    # Ruby 2.5 changed to raise FrozenError instead of RuntimeError
+    FrozenErrorType = Gem::Version.new(RUBY_VERSION) < Gem::Version.new('2.5') ? RuntimeError : FrozenError
+
+    def test_map_freeze
+      m = proto_module::MapMessage.new
+      m.map_string_int32['a'] = 5
+      m.map_string_msg['b'] = proto_module::TestMessage2.new
+
+      m.map_string_int32.freeze
+      m.map_string_msg.freeze
+
+      assert m.map_string_int32.frozen?
+      assert m.map_string_msg.frozen?
+
+      assert_raise(FrozenErrorType) { m.map_string_int32['foo'] = 1 }
+      assert_raise(FrozenErrorType) { m.map_string_msg['bar'] = proto_module::TestMessage2.new }
+      assert_raise(FrozenErrorType) { m.map_string_int32.delete('a') }
+      assert_raise(FrozenErrorType) { m.map_string_int32.clear }
     end
   end
 end

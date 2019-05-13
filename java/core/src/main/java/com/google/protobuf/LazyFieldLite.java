@@ -388,6 +388,18 @@ public class LazyFieldLite {
     }
   }
 
+  /** Writes this lazy field into a {@link Writer}. */
+  void writeTo(Writer writer, int fieldNumber) throws IOException {
+    if (memoizedBytes != null) {
+      writer.writeBytes(fieldNumber, memoizedBytes);
+    } else if (delayedBytes != null) {
+      writer.writeBytes(fieldNumber, delayedBytes);
+    } else if (value != null) {
+      writer.writeMessage(fieldNumber, value);
+    } else {
+      writer.writeBytes(fieldNumber, ByteString.EMPTY);
+    }
+  }
 
   /** Might lazily parse the bytes that were previously passed in. Is thread-safe. */
   protected void ensureInitialized(MessageLite defaultInstance) {

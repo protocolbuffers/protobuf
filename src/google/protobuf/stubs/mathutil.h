@@ -67,7 +67,7 @@ class MathUtil {
 
   template<typename T>
   static bool AlmostEquals(T a, T b) {
-    return ::google::protobuf::internal::AlmostEquals(a, b);
+    return internal::AlmostEquals(a, b);
   }
 
   // Largest of two values.

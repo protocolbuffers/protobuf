@@ -55,6 +55,7 @@ namespace Google.Protobuf
         private List<uint> fixed32List;
         private List<ulong> fixed64List;
         private List<ByteString> lengthDelimitedList;
+        private List<UnknownFieldSet> groupList;
 
         /// <summary>
         /// Creates a new UnknownField.
@@ -77,7 +78,8 @@ namespace Google.Protobuf
                    && Lists.Equals(varintList, otherField.varintList)
                    && Lists.Equals(fixed32List, otherField.fixed32List)
                    && Lists.Equals(fixed64List, otherField.fixed64List)
-                   && Lists.Equals(lengthDelimitedList, otherField.lengthDelimitedList);
+                   && Lists.Equals(lengthDelimitedList, otherField.lengthDelimitedList)
+                   && Lists.Equals(groupList, otherField.groupList);
         }
 
         /// <summary>
@@ -90,6 +92,7 @@ namespace Google.Protobuf
             hash = hash * 47 + Lists.GetHashCode(fixed32List);
             hash = hash * 47 + Lists.GetHashCode(fixed64List);
             hash = hash * 47 + Lists.GetHashCode(lengthDelimitedList);
+            hash = hash * 47 + Lists.GetHashCode(groupList);
             return hash;
         }
 
@@ -133,6 +136,15 @@ namespace Google.Protobuf
                     output.WriteBytes(value);
                 }
             }
+            if (groupList != null)
+            {
+                foreach (UnknownFieldSet value in groupList)
+                {
+                    output.WriteTag(fieldNumber, WireFormat.WireType.StartGroup);
+                    value.WriteTo(output);
+                    output.WriteTag(fieldNumber, WireFormat.WireType.EndGroup);
+                }
+            }
         }
 
         /// <summary>
@@ -159,13 +171,21 @@ namespace Google.Protobuf
             {
                 result += CodedOutputStream.ComputeTagSize(fieldNumber) * fixed64List.Count;
                 result += CodedOutputStream.ComputeFixed64Size(1) * fixed64List.Count;
-            }                
+            }
             if (lengthDelimitedList != null)
             {
                 result += CodedOutputStream.ComputeTagSize(fieldNumber) * lengthDelimitedList.Count;
                 foreach (ByteString value in lengthDelimitedList)
                 {
                     result += CodedOutputStream.ComputeBytesSize(value);
+                }
+            }
+            if (groupList != null)
+            {
+                result += CodedOutputStream.ComputeTagSize(fieldNumber) * 2 * groupList.Count;
+                foreach (UnknownFieldSet value in groupList)
+                {
+                    result += value.CalculateSize();
                 }
             }
             return result;
@@ -182,6 +202,7 @@ namespace Google.Protobuf
             fixed32List = AddAll(fixed32List, other.fixed32List);
             fixed64List = AddAll(fixed64List, other.fixed64List);
             lengthDelimitedList = AddAll(lengthDelimitedList, other.lengthDelimitedList);
+            groupList = AddAll(groupList, other.groupList);
             return this;
         }
 
@@ -242,6 +263,12 @@ namespace Google.Protobuf
         internal UnknownField AddLengthDelimited(ByteString value)
         {
             lengthDelimitedList = Add(lengthDelimitedList, value);
+            return this;
+        }
+
+        internal UnknownField AddGroup(UnknownFieldSet value)
+        {
+            groupList = Add(groupList, value);
             return this;
         }
 

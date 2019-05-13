@@ -123,8 +123,7 @@ public class ExtensionRegistryFactoryTest extends TestCase {
 
       assertTrue(
           "Test is using a non-lite extension",
-          GeneratedMessage.GeneratedExtension.class.isAssignableFrom(
-              NonNestedExtension.nonNestedExtension.getClass()));
+          Extension.class.isAssignableFrom(NonNestedExtension.nonNestedExtension.getClass()));
       assertNotNull(
           "Extension is registered in masqueraded full registry",
           fullRegistry2.findImmutableExtensionByName("protobuf_unittest.nonNestedExtension"));
@@ -238,7 +237,7 @@ public class ExtensionRegistryFactoryTest extends TestCase {
     classLoader.loadClass(ExtensionRegistryFactory.class.getName());
     Class<?> test = classLoader.loadClass(testClass.getName());
     String testName = getName();
-    test.getMethod(testName).invoke(test.newInstance());
+    test.getMethod(testName).invoke(test.getDeclaredConstructor().newInstance());
   }
 
   /**
@@ -273,7 +272,10 @@ public class ExtensionRegistryFactoryTest extends TestCase {
               resolveClass(loadedClass);
             }
           }
-        } catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException | SecurityException e) {
+          // Java 8+ would throw a SecurityException if we attempt to find a loaded class from
+          // java.lang.* package. We don't really care about those anyway, so just delegate to the
+          // parent class loader.
           loadedClass = super.loadClass(name, resolve);
         }
         return loadedClass;

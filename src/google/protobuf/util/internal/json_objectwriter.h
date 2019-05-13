@@ -45,6 +45,7 @@ namespace protobuf {
 namespace util {
 namespace converter {
 
+
 // An ObjectWriter implementation that outputs JSON. This ObjectWriter
 // supports writing a compact form or a pretty printed form.
 //
@@ -167,7 +168,8 @@ class PROTOBUF_EXPORT JsonObjectWriter : public StructuredObjectWriter {
   // Renders a simple value as a string. By default all non-string Render
   // methods convert their argument to a string and call this method. This
   // method can then be used to render the simple value without escaping it.
-  JsonObjectWriter* RenderSimple(StringPiece name, const std::string& value) {
+  JsonObjectWriter* RenderSimple(StringPiece name,
+                                 const std::string& value) {
     WritePrefix(name);
     stream_->WriteString(value);
     return this;

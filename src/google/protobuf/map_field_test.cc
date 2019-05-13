@@ -43,7 +43,6 @@
 #include <google/protobuf/map_field_inl.h>
 #include <google/protobuf/message.h>
 #include <google/protobuf/repeated_field.h>
-#include <google/protobuf/wire_format_lite_inl.h>
 #include <gtest/gtest.h>
 
 namespace google {
@@ -59,16 +58,8 @@ class MapFieldBaseStub : public MapFieldBase {
   typedef void DestructorSkippable_;
   MapFieldBaseStub() {}
   explicit MapFieldBaseStub(Arena* arena) : MapFieldBase(arena) {}
-  void SyncRepeatedFieldWithMap() const {
-    MapFieldBase::SyncRepeatedFieldWithMap();
-  }
-  void SyncMapWithRepeatedField() const {
-    MapFieldBase::SyncMapWithRepeatedField();
-  }
   // Get underlined repeated field without synchronizing map.
-  RepeatedPtrField<Message>* InternalRepeatedField() {
-    return repeated_field_;
-  }
+  RepeatedPtrField<Message>* InternalRepeatedField() { return repeated_field_; }
   bool IsMapClean() {
     return state_.load(std::memory_order_relaxed) != STATE_MODIFIED_MAP;
   }
@@ -81,29 +72,27 @@ class MapFieldBaseStub : public MapFieldBase {
   void SetRepeatedDirty() {
     state_.store(STATE_MODIFIED_REPEATED, std::memory_order_relaxed);
   }
-  bool ContainsMapKey(const MapKey& map_key) const {
+  bool ContainsMapKey(const MapKey& map_key) const override { return false; }
+  bool InsertOrLookupMapValue(const MapKey& map_key,
+                              MapValueRef* val) override {
     return false;
   }
-  bool InsertOrLookupMapValue(const MapKey& map_key, MapValueRef* val) {
+  bool DeleteMapValue(const MapKey& map_key) override { return false; }
+  bool EqualIterator(const MapIterator& a,
+                     const MapIterator& b) const override {
     return false;
   }
-  bool DeleteMapValue(const MapKey& map_key) {
-    return false;
-  }
-  bool EqualIterator(const MapIterator& a, const MapIterator& b) const {
-    return false;
-  }
-  int size() const { return 0; }
-  void MapBegin(MapIterator* map_iter) const {}
-  void MapEnd(MapIterator* map_iter) const {}
-  void Swap(MapFieldBase* other) {}
-  void InitializeIterator(MapIterator* map_iter) const {}
-  void DeleteIterator(MapIterator* map_iter) const {}
+  int size() const override { return 0; }
+  void Clear() override {}
+  void MapBegin(MapIterator* map_iter) const override {}
+  void MapEnd(MapIterator* map_iter) const override {}
+  void MergeFrom(const MapFieldBase& other) override {}
+  void Swap(MapFieldBase* other) override {}
+  void InitializeIterator(MapIterator* map_iter) const override {}
+  void DeleteIterator(MapIterator* map_iter) const override {}
   void CopyIterator(MapIterator* this_iterator,
-                    const MapIterator& other_iterator) const {}
-  void IncreaseIterator(MapIterator* map_iter) const {}
-  void SetDefaultMessageEntry(const Message* message) const {}
-  const Message* GetDefaultMessageEntry() const { return NULL; }
+                    const MapIterator& other_iterator) const override {}
+  void IncreaseIterator(MapIterator* map_iter) const override {}
 };
 
 class MapFieldBasePrimitiveTest : public ::testing::Test {
@@ -209,8 +198,7 @@ namespace {
 enum State { CLEAN, MAP_DIRTY, REPEATED_DIRTY };
 }  // anonymous namespace
 
-class MapFieldStateTest
-    : public testing::TestWithParam<State> {
+class MapFieldStateTest : public testing::TestWithParam<State> {
  public:
  protected:
   typedef unittest::TestMap_MapInt32Int32Entry_DoNotUse EntryType;
@@ -294,7 +282,11 @@ class MapFieldStateTest
     if (is_repeated_null) {
       EXPECT_TRUE(repeated_field == NULL);
     } else {
-      EXPECT_EQ(repeated_size, repeated_field->size());
+      if (repeated_field == nullptr) {
+        EXPECT_EQ(repeated_size, 0);
+      } else {
+        EXPECT_EQ(repeated_size, repeated_field->size());
+      }
     }
   }
 
@@ -303,8 +295,8 @@ class MapFieldStateTest
   State state_;
 };
 
-INSTANTIATE_TEST_CASE_P(MapFieldStateTestInstance, MapFieldStateTest,
-                        ::testing::Values(CLEAN, MAP_DIRTY, REPEATED_DIRTY));
+INSTANTIATE_TEST_SUITE_P(MapFieldStateTestInstance, MapFieldStateTest,
+                         ::testing::Values(CLEAN, MAP_DIRTY, REPEATED_DIRTY));
 
 TEST_P(MapFieldStateTest, GetMap) {
   map_field_->GetMap();
@@ -441,11 +433,7 @@ TEST_P(MapFieldStateTest, SwapRepeatedDirty) {
 TEST_P(MapFieldStateTest, Clear) {
   map_field_->Clear();
 
-  if (state_ != MAP_DIRTY) {
-    Expect(map_field_.get(), MAP_DIRTY, 0, 1, false);
-  } else {
-    Expect(map_field_.get(), MAP_DIRTY, 0, 0, true);
-  }
+  Expect(map_field_.get(), MAP_DIRTY, 0, 0, false);
 }
 
 TEST_P(MapFieldStateTest, SpaceUsedExcludingSelf) {

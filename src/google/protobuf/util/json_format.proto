@@ -35,8 +35,8 @@
 // A proto file we will use for unit testing.
 
 syntax = "proto2";
-package google.protobuf;
 
+package protobuf_unittest;
 
 message TestFlagsAndStrings {
   required int32 A = 1;
@@ -106,4 +106,14 @@ message TestBoolMap {
 message TestRecursion {
   optional int32 value = 1;
   optional TestRecursion child = 2;
+}
+
+message TestStringMap {
+  map<string, string> string_map = 1;
+}
+
+message TestStringSerializer {
+  optional string scalar_string = 1;
+  repeated string repeated_string = 2;
+  map<string, string> string_map = 3;
 }

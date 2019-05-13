@@ -31,7 +31,6 @@
 #include <sstream>
 
 #include <google/protobuf/compiler/code_generator.h>
-#include <google/protobuf/compiler/plugin.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/printer.h>
@@ -69,7 +68,7 @@ void PrimitiveFieldGenerator::GenerateMembers(io::Printer* printer) {
   // (Basically, should null-handling code be in the getter or the setter?)
   if (IsProto2(descriptor_->file())) {
     printer->Print(
-      variables_, 
+      variables_,
       "private readonly static $type_name$ $property_name$DefaultValue = $default_value$;\n\n");
   }
 
@@ -121,7 +120,7 @@ void PrimitiveFieldGenerator::GenerateMembers(io::Printer* printer) {
     printer->Print(variables_, "/// <summary>Gets whether the \"$descriptor_name$\" field is set</summary>\n");
     AddPublicMemberAttributes(printer);
     printer->Print(
-      variables_, 
+      variables_,
       "$access_level$ bool Has$property_name$ {\n"
       "  get { return ");
     if (IsNullable(descriptor_)) {
@@ -187,7 +186,7 @@ void PrimitiveFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {
   } else {
     printer->Print(
       "size += $tag_size$ + $fixed_size$;\n",
-      "fixed_size", SimpleItoa(fixedSize),
+      "fixed_size", StrCat(fixedSize),
       "tag_size", variables_["tag_size"]);
   }
   printer->Outdent();
@@ -226,7 +225,18 @@ void PrimitiveFieldGenerator::GenerateCloningCode(io::Printer* printer) {
 void PrimitiveFieldGenerator::GenerateCodecCode(io::Printer* printer) {
   printer->Print(
     variables_,
-    "pb::FieldCodec.For$capitalized_type_name$($tag$)");
+    "pb::FieldCodec.For$capitalized_type_name$($tag$, $default_value$)");
+}
+
+void PrimitiveFieldGenerator::GenerateExtensionCode(io::Printer* printer) {
+  WritePropertyDocComment(printer, descriptor_);
+  AddDeprecatedFlag(printer);
+  printer->Print(
+    variables_,
+    "$access_level$ static readonly pb::Extension<$extended_type$, $type_name$> $property_name$ =\n"
+    "  new pb::Extension<$extended_type$, $type_name$>($number$, ");
+  GenerateCodecCode(printer);
+  printer->Print(");\n");
 }
 
 PrimitiveOneofFieldGenerator::PrimitiveOneofFieldGenerator(

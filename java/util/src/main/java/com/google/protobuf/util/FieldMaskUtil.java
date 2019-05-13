@@ -36,12 +36,12 @@ import com.google.common.base.CaseFormat;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.primitives.Ints;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.FieldMask;
 import com.google.protobuf.Internal;
 import com.google.protobuf.Message;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -277,9 +277,7 @@ public class FieldMaskUtil {
 
     /**
      * Whether to replace message fields (i.e., discard existing content in
-     * destination message fields) when merging.
-     * Default behavior is to merge the source message field into the
-     * destination message field.
+     * destination message fields).
      */
     public boolean replaceMessageFields() {
       return replaceMessageFields;
@@ -287,9 +285,7 @@ public class FieldMaskUtil {
 
     /**
      * Whether to replace repeated fields (i.e., discard existing content in
-     * destination repeated fields) when merging.
-     * Default behavior is to append elements from source repeated field to the
-     * destination repeated field.
+     * destination repeated fields).
      */
     public boolean replaceRepeatedFields() {
       return replaceRepeatedFields;
@@ -297,30 +293,51 @@ public class FieldMaskUtil {
 
     /**
      * Whether to replace primitive (non-repeated and non-message) fields in
-     * destination message fields with the source primitive fields (i.e., if the
-     * field is set in the source, the value is copied to the
-     * destination; if the field is unset in the source, the field is cleared
-     * from the destination) when merging.
-     *
-     * <p>Default behavior is to always set the value of the source primitive
-     * field to the destination primitive field, and if the source field is
-     * unset, the default value of the source field is copied to the
-     * destination.
+     * destination message fields with the source primitive fields (i.e., clear
+     * destination field if source field is not set).
      */
     public boolean replacePrimitiveFields() {
       return replacePrimitiveFields;
     }
 
+    /**
+     * Specify whether to replace message fields. Defaults to false.
+     *
+     * <p>If true, discard existing content in destination message fields when merging.
+     *
+     * <p>If false, merge the source message field into the destination message field.
+     */
+    @CanIgnoreReturnValue
     public MergeOptions setReplaceMessageFields(boolean value) {
       replaceMessageFields = value;
       return this;
     }
 
+    /**
+     * Specify whether to replace repeated fields. Defaults to false.
+     *
+     * <p>If true, discard existing content in destination repeated fields) when merging.
+     *
+     * <p>If false, append elements from source repeated field to the destination repeated field.
+     */
+    @CanIgnoreReturnValue
     public MergeOptions setReplaceRepeatedFields(boolean value) {
       replaceRepeatedFields = value;
       return this;
     }
 
+    /**
+     * Specify whether to replace primitive (non-repeated and non-message) fields in destination
+     * message fields with the source primitive fields. Defaults to false.
+     *
+     * <p>If true, set the value of the destination primitive field to the source primitive field if
+     * the source field is set, but clear the destination field otherwise.
+     *
+     * <p>If false, always set the value of the destination primitive field to the source primitive
+     * field, and if the source field is unset, the default value of the source field is copied to
+     * the destination.
+     */
+    @CanIgnoreReturnValue
     public MergeOptions setReplacePrimitiveFields(boolean value) {
       replacePrimitiveFields = value;
       return this;

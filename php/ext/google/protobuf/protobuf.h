@@ -37,7 +37,7 @@
 #include "upb.h"
 
 #define PHP_PROTOBUF_EXTNAME "protobuf"
-#define PHP_PROTOBUF_VERSION "3.6.1"
+#define PHP_PROTOBUF_VERSION "3.7.1"
 
 #define MAX_LENGTH_OF_INT64 20
 #define SIZEOF_INT64 8
@@ -137,7 +137,8 @@
     const char* class_name = CLASSNAME;                                      \
     INIT_CLASS_ENTRY_EX(class_type, CLASSNAME, strlen(CLASSNAME),            \
                         LOWWERNAME##_methods);                               \
-    LOWWERNAME##_type = zend_register_internal_class(&class_type TSRMLS_CC); \
+    LOWWERNAME##_type = zend_register_internal_class_ex(                     \
+        &class_type, message_type, NULL TSRMLS_CC);                          \
     LOWWERNAME##_type->create_object = message_create;                       \
     zend_do_inheritance(LOWWERNAME##_type, message_type TSRMLS_CC);
 #define PHP_PROTO_INIT_SUBMSGCLASS_END \
@@ -309,8 +310,10 @@ static inline int php_proto_zend_hash_index_update_mem(HashTable* ht, ulong h,
 static inline int php_proto_zend_hash_update_zval(HashTable* ht,
                                                   const char* key, uint key_len,
                                                   zval* pData) {
+  void* result = NULL;
   zend_string* internal_key = zend_string_init(key, key_len, 0);
-  zend_hash_update(ht, internal_key, pData);
+  result = zend_hash_update(ht, internal_key, pData);
+  return result != NULL ? SUCCESS : FAILURE;
 }
 
 static inline int php_proto_zend_hash_update_mem(HashTable* ht, const char* key,
@@ -404,7 +407,8 @@ static inline int php_proto_zend_hash_get_current_data_ex(HashTable* ht,
     const char* class_name = CLASSNAME;                                      \
     INIT_CLASS_ENTRY_EX(class_type, CLASSNAME, strlen(CLASSNAME),            \
                         LOWWERNAME##_methods);                               \
-    LOWWERNAME##_type = zend_register_internal_class(&class_type TSRMLS_CC); \
+    LOWWERNAME##_type = zend_register_internal_class_ex(                     \
+        &class_type, message_type TSRMLS_CC);                                \
     zend_do_inheritance(LOWWERNAME##_type, message_type TSRMLS_CC);
 #define PHP_PROTO_INIT_SUBMSGCLASS_END \
   }
@@ -680,6 +684,7 @@ void double_value_init(TSRMLS_D);
 void duration_init(TSRMLS_D);
 void empty_init(TSRMLS_D);
 void enum_descriptor_init(TSRMLS_D);
+void enum_value_descriptor_init(TSRMLS_D);
 void enum_init(TSRMLS_D);
 void enum_value_init(TSRMLS_D);
 void field_cardinality_init(TSRMLS_D);
@@ -709,8 +714,8 @@ void struct_init(TSRMLS_D);
 void syntax_init(TSRMLS_D);
 void timestamp_init(TSRMLS_D);
 void type_init(TSRMLS_D);
-void uint32_value_init(TSRMLS_D);
-void uint64_value_init(TSRMLS_D);
+void u_int32_value_init(TSRMLS_D);
+void u_int64_value_init(TSRMLS_D);
 void util_init(TSRMLS_D);
 void value_init(TSRMLS_D);
 
@@ -758,15 +763,22 @@ PHP_METHOD(DescriptorPool, getEnumDescriptorByClassName);
 
 PHP_PROTO_WRAP_OBJECT_START(InternalDescriptorPool)
   upb_symtab* symtab;
-  HashTable* pending_list;
+  upb_handlercache* fill_handler_cache;
+  upb_handlercache* pb_serialize_handler_cache;
+  upb_handlercache* json_serialize_handler_cache;
+  upb_handlercache* json_serialize_handler_preserve_cache;
+  upb_pbcodecache* fill_method_cache;
+  upb_json_codecache* json_fill_method_cache;
 PHP_PROTO_WRAP_OBJECT_END
 
 PHP_METHOD(InternalDescriptorPool, getGeneratedPool);
 PHP_METHOD(InternalDescriptorPool, internalAddGeneratedFile);
 
 void internal_add_generated_file(const char* data, PHP_PROTO_SIZE data_len,
-                                 InternalDescriptorPool* pool TSRMLS_DC);
+                                 InternalDescriptorPool* pool,
+                                 bool use_nested_submsg TSRMLS_DC);
 void init_generated_pool_once(TSRMLS_D);
+void add_handlers_for_message(const void* closure, upb_handlers* h);
 
 // wrapper of generated pool
 #if PHP_MAJOR_VERSION < 7
@@ -783,15 +795,10 @@ void internal_descriptor_pool_free(zend_object* object);
 extern InternalDescriptorPool* generated_pool;  // The actual generated pool
 
 PHP_PROTO_WRAP_OBJECT_START(Descriptor)
+  InternalDescriptorPool* pool;
   const upb_msgdef* msgdef;
   MessageLayout* layout;
   zend_class_entry* klass;  // begins as NULL
-  const upb_handlers* fill_handlers;
-  const upb_pbdecodermethod* fill_method;
-  const upb_json_parsermethod* json_fill_method;
-  const upb_handlers* pb_serialize_handlers;
-  const upb_handlers* json_serialize_handlers;
-  const upb_handlers* json_serialize_handlers_preserve;
 PHP_PROTO_WRAP_OBJECT_END
 
 PHP_METHOD(Descriptor, getClass);
@@ -964,7 +971,7 @@ PHP_METHOD(Message, __construct);
 const upb_pbdecodermethod *new_fillmsg_decodermethod(Descriptor *desc,
                                                      const void *owner);
 void serialize_to_string(zval* val, zval* return_value TSRMLS_DC);
-void merge_from_string(const char* data, int data_len, const Descriptor* desc,
+void merge_from_string(const char* data, int data_len, Descriptor* desc,
                        MessageHeader* msg);
 
 PHP_METHOD(Message, serializeToString);
@@ -1162,7 +1169,7 @@ PHP_METHOD(RepeatedFieldIter, valid);
 // -----------------------------------------------------------------------------
 
 PHP_PROTO_WRAP_OBJECT_START(Oneof)
-  upb_oneofdef* oneofdef;
+  const upb_oneofdef* oneofdef;
   int index;    // Index of field in oneof. -1 if not set.
   char value[NATIVE_SLOT_MAX_SIZE];
 PHP_PROTO_WRAP_OBJECT_END
@@ -1301,6 +1308,12 @@ PHP_METHOD(Field, setJsonName);
 PHP_METHOD(Field, getDefaultValue);
 PHP_METHOD(Field, setDefaultValue);
 
+PHP_METHOD(Field_Cardinality, name);
+PHP_METHOD(Field_Cardinality, value);
+
+PHP_METHOD(Field_Kind, name);
+PHP_METHOD(Field_Kind, value);
+
 PHP_METHOD(FloatValue, __construct);
 PHP_METHOD(FloatValue, getValue);
 PHP_METHOD(FloatValue, setValue);
@@ -1341,6 +1354,9 @@ PHP_METHOD(Mixin, setName);
 PHP_METHOD(Mixin, getRoot);
 PHP_METHOD(Mixin, setRoot);
 
+PHP_METHOD(NullValue, name);
+PHP_METHOD(NullValue, value);
+
 PHP_METHOD(Option, __construct);
 PHP_METHOD(Option, getName);
 PHP_METHOD(Option, setName);
@@ -1358,6 +1374,9 @@ PHP_METHOD(StringValue, setValue);
 PHP_METHOD(Struct, __construct);
 PHP_METHOD(Struct, getFields);
 PHP_METHOD(Struct, setFields);
+
+PHP_METHOD(Syntax, name);
+PHP_METHOD(Syntax, value);
 
 PHP_METHOD(Type, __construct);
 PHP_METHOD(Type, getName);
@@ -1434,6 +1453,19 @@ extern zend_class_entry* value_type;
 upb_fieldtype_t to_fieldtype(upb_descriptortype_t type);
 const zend_class_entry* field_type_class(
     const upb_fielddef* field PHP_PROTO_TSRMLS_DC);
+void stringsink_uninit_opaque(void *sink);
+
+typedef struct {
+  upb_byteshandler handler;
+  upb_bytessink sink;
+  char *ptr;
+  size_t len, size;
+} stringsink;
+
+void stringsink_init(stringsink *sink);
+void stringsink_uninit(stringsink *sink);
+size_t stringsink_string(void *_sink, const void *hd, const char *ptr,
+                         size_t len, const upb_bufhandle *handle);
 
 // -----------------------------------------------------------------------------
 // Utilities.

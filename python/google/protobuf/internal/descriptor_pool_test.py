@@ -55,6 +55,7 @@ from google.protobuf.internal import factory_test2_pb2
 from google.protobuf.internal import file_options_test_pb2
 from google.protobuf.internal import more_messages_pb2
 from google.protobuf.internal import no_package_pb2
+from google.protobuf.internal import testing_refleaks
 from google.protobuf import descriptor
 from google.protobuf import descriptor_database
 from google.protobuf import descriptor_pool
@@ -529,10 +530,6 @@ class DescriptorPoolTestBase(object):
     conflict_fd = copy.deepcopy(unittest_fd)
     conflict_fd.name = 'other_file'
     if api_implementation.Type() == 'cpp':
-      try:
-        self.pool.Add(unittest_fd)
-        self.pool.Add(conflict_fd)
-      except TypeError:
         pass
     else:
       with warnings.catch_warnings(record=True) as w:
@@ -564,6 +561,7 @@ class DescriptorPoolTestBase(object):
                       str(w[0].message))
 
 
+@testing_refleaks.TestCase
 class DefaultDescriptorPoolTest(DescriptorPoolTestBase, unittest.TestCase):
 
   def setUp(self):
@@ -599,6 +597,7 @@ class DefaultDescriptorPoolTest(DescriptorPoolTestBase, unittest.TestCase):
         unittest_pb2.DESCRIPTOR.services_by_name['TestService'])
 
 
+@testing_refleaks.TestCase
 class CreateDescriptorPoolTest(DescriptorPoolTestBase, unittest.TestCase):
 
   def setUp(self):
@@ -620,6 +619,7 @@ class CreateDescriptorPoolTest(DescriptorPoolTestBase, unittest.TestCase):
         no_package_pb2.DESCRIPTOR.serialized_pb))
 
 
+@testing_refleaks.TestCase
 class SecondaryDescriptorFromDescriptorDB(DescriptorPoolTestBase,
                                           unittest.TestCase):
 
@@ -813,6 +813,7 @@ class ExtensionField(object):
     test.assertEqual(file_desc, field_desc.file)
 
 
+@testing_refleaks.TestCase
 class AddDescriptorTest(unittest.TestCase):
 
   def _TestMessage(self, prefix):

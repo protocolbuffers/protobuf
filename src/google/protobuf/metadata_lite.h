@@ -143,9 +143,10 @@ class InternalMetadataWithArenaBase {
     return reinterpret_cast<intptr_t>(ptr_) & kPtrTagMask;
   }
 
-  template<typename U> U* PtrValue() const {
-    return reinterpret_cast<U*>(
-        reinterpret_cast<intptr_t>(ptr_) & kPtrValueMask);
+  template <typename U>
+  U* PtrValue() const {
+    return reinterpret_cast<U*>(reinterpret_cast<intptr_t>(ptr_) &
+                                kPtrValueMask);
   }
 
   // If ptr_'s tag is kTagContainer, it points to an instance of this struct.
@@ -160,16 +161,17 @@ class InternalMetadataWithArenaBase {
     // Two-step assignment works around a bug in clang's static analyzer:
     // https://bugs.llvm.org/show_bug.cgi?id=34198.
     ptr_ = container;
-    ptr_ = reinterpret_cast<void*>(
-        reinterpret_cast<intptr_t>(ptr_) | kTagContainer);
+    ptr_ = reinterpret_cast<void*>(reinterpret_cast<intptr_t>(ptr_) |
+                                   kTagContainer);
     container->arena = my_arena;
     return &(container->unknown_fields);
   }
 };
 
-// We store unknown fields as a string right now, because there is currently no
-// good interface for reading unknown fields into an ArenaString.  We may want
-// to revisit this to allow unknown fields to be parsed onto the Arena.
+// We store unknown fields as a std::string right now, because there is
+// currently no good interface for reading unknown fields into an ArenaString.
+// We may want to revisit this to allow unknown fields to be parsed onto the
+// Arena.
 class InternalMetadataWithArenaLite
     : public InternalMetadataWithArenaBase<std::string,
                                            InternalMetadataWithArenaLite> {
@@ -180,21 +182,17 @@ class InternalMetadataWithArenaLite
       : InternalMetadataWithArenaBase<std::string,
                                       InternalMetadataWithArenaLite>(arena) {}
 
-  void DoSwap(std::string* other) {
-    mutable_unknown_fields()->swap(*other);
-  }
+  void DoSwap(std::string* other) { mutable_unknown_fields()->swap(*other); }
 
   void DoMergeFrom(const std::string& other) {
     mutable_unknown_fields()->append(other);
   }
 
-  void DoClear() {
-    mutable_unknown_fields()->clear();
-  }
+  void DoClear() { mutable_unknown_fields()->clear(); }
 
   static const std::string& default_instance() {
-    // Can't use GetEmptyStringAlreadyInited() here because empty string may
-    // not have been initalized yet. This happens when protocol compiler
+    // Can't use GetEmptyStringAlreadyInited() here because empty string
+    // may not have been initalized yet. This happens when protocol compiler
     // statically determines the user can't access defaults and omits init code
     // from proto constructors. However unknown fields are always part of a
     // proto so it needs to be lazily initailzed. See b/112613846.
@@ -204,9 +202,9 @@ class InternalMetadataWithArenaLite
 
 // This helper RAII class is needed to efficiently parse unknown fields. We
 // should only call mutable_unknown_fields if there are actual unknown fields.
-// The obvious thing to just use a stack string and swap it at the end of the
-// parse won't work, because the destructor of StringOutputStream needs to be
-// called before we can modify the string (it check-fails). Using
+// The obvious thing to just use a stack string and swap it at the end of
+// the parse won't work, because the destructor of StringOutputStream needs to
+// be called before we can modify the string (it check-fails). Using
 // LiteUnknownFieldSetter setter(&_internal_metadata_);
 // StringOutputStream stream(setter.buffer());
 // guarantees that the string is only swapped after stream is destroyed.

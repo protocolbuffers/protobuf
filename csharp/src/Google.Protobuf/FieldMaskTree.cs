@@ -41,7 +41,7 @@ namespace Google.Protobuf
     /// <summary>
     /// <para>A tree representation of a FieldMask. Each leaf node in this tree represent
     /// a field path in the FieldMask.</para>
-    /// 
+    ///
     /// <para>For example, FieldMask "foo.bar,foo.baz,bar.baz" as a tree will be:</para>
     /// <code>
     ///   [root] -+- foo -+- bar
@@ -50,7 +50,7 @@ namespace Google.Protobuf
     ///           |
     ///           +- bar --- baz
     /// </code>
-    /// 
+    ///
     /// <para>By representing FieldMasks with this tree structure we can easily convert
     /// a FieldMask to a canonical form, merge two FieldMasks, calculate the
     /// intersection to two FieldMasks and traverse all fields specified by the
@@ -120,7 +120,8 @@ namespace Google.Protobuf
                     return this;
                 }
 
-                if (!node.Children.TryGetValue(part, out var childNode))
+                Node childNode;
+                if (!node.Children.TryGetValue(part, out childNode))
                 {
                     createNewBranch = true;
                     childNode = new Node();
@@ -241,7 +242,7 @@ namespace Google.Protobuf
 
             Merge(root, "", source, destination, options);
         }
-        
+
         /// <summary>
         /// Merges all fields specified by a sub-tree from <paramref name="source"/> to <paramref name="destination"/>.
         /// </summary>

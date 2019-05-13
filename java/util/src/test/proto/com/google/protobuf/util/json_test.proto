@@ -32,21 +32,32 @@ syntax = "proto3";
 
 package json_test;
 
-option java_package = "com.google.protobuf.util";
-option java_outer_classname = "JsonTestProto";
-
 import "google/protobuf/any.proto";
-import "google/protobuf/wrappers.proto";
-import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";
 import "google/protobuf/field_mask.proto";
 import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
+option java_package = "com.google.protobuf.util.proto";
+option java_outer_classname = "JsonTestProto";
 
 message TestAllTypes {
   enum NestedEnum {
     FOO = 0;
     BAR = 1;
     BAZ = 2;
+  }
+
+  enum AliasedEnum {
+    option allow_alias = true;
+
+    ALIAS_FOO = 0;
+    ALIAS_BAR = 1;
+    ALIAS_BAZ = 2;
+    QUX = 2;
+    qux = 2;
+    bAz = 2;
   }
   message NestedMessage {
     int32 value = 1;
@@ -69,6 +80,7 @@ message TestAllTypes {
   bytes optional_bytes = 15;
   NestedMessage optional_nested_message = 18;
   NestedEnum optional_nested_enum = 21;
+  AliasedEnum optional_aliased_enum = 52;
 
   // Repeated
   repeated int32 repeated_int32 = 31;

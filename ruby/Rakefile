@@ -70,13 +70,13 @@ else
 
   task 'gem:windows' do
     require 'rake_compiler_dock'
-    RakeCompilerDock.sh "bundle && IN_DOCKER=true rake cross native gem RUBY_CC_VERSION=2.5.0:2.4.0:2.3.0:2.2.2:2.1.6:2.0.0"
+    RakeCompilerDock.sh "bundle && IN_DOCKER=true rake cross native gem RUBY_CC_VERSION=2.6.0:2.5.0:2.4.0:2.3.0"
   end
 
   if RUBY_PLATFORM =~ /darwin/
     task 'gem:native' do
       system "rake genproto"
-      system "rake cross native gem RUBY_CC_VERSION=2.5.0:2.4.0:2.3.0:2.2.2:2.1.6:2.0.0"
+      system "rake cross native gem RUBY_CC_VERSION=2.6.0:2.5.1:2.4.0:2.3.0"
     end
   else
     task 'gem:native' => [:genproto, 'gem:windows']
@@ -93,6 +93,7 @@ genproto_output << "tests/test_ruby_package.rb"
 genproto_output << "tests/test_ruby_package_proto2.rb"
 genproto_output << "tests/basic_test.rb"
 genproto_output << "tests/basic_test_proto2.rb"
+genproto_output << "tests/wrappers.rb"
 file "tests/generated_code.rb" => "tests/generated_code.proto" do |file_task|
   sh "../src/protoc --ruby_out=. tests/generated_code.proto"
 end
@@ -118,11 +119,15 @@ file "tests/test_ruby_package_proto2.rb" => "tests/test_ruby_package_proto2.prot
 end
 
 file "tests/basic_test.rb" => "tests/basic_test.proto" do |file_task|
-  sh "../src/protoc --ruby_out=. tests/basic_test.proto"
+  sh "../src/protoc -I../src -I. --ruby_out=. tests/basic_test.proto"
 end
 
 file "tests/basic_test_proto2.rb" => "tests/basic_test_proto2.proto" do |file_task|
-  sh "../src/protoc --ruby_out=. tests/basic_test_proto2.proto"
+  sh "../src/protoc -I../src -I. --ruby_out=. tests/basic_test_proto2.proto"
+end
+
+file "tests/wrappers.rb" => "../src/google/protobuf/wrappers.proto" do |file_task|
+  sh "../src/protoc -I../src -I. --ruby_out=tests ../src/google/protobuf/wrappers.proto"
 end
 
 task :genproto => genproto_output

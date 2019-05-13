@@ -353,8 +353,8 @@ public class UnknownFieldSetTest extends TestCase {
   /**
    * Asserts that the given field sets are not equal and have different hash codes.
    *
-   * @warning It's valid for non-equal objects to have the same hash code, so this test is stricter
-   *     than it needs to be. However, this should happen relatively rarely.
+   * <p><b>Note:</b> It's valid for non-equal objects to have the same hash code, so this test is
+   * stricter than it needs to be. However, this should happen relatively rarely.
    */
   private void checkNotEqual(UnknownFieldSet s1, UnknownFieldSet s2) {
     String equalsError = String.format("%s should not be equal to %s", s1, s2);

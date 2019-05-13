@@ -7,7 +7,7 @@ set -ex
 cd $(dirname $0)/../../..
 
 git submodule update --init --recursive
-bazel test :protobuf_test
+bazel test :protobuf_test --copt=-Werror --host_copt=-Werror
 
 cd examples
 bazel build :all

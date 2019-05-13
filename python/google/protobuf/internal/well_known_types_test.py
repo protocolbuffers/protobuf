@@ -34,8 +34,14 @@
 
 __author__ = 'jieluo@google.com (Jie Luo)'
 
-import collections
 import datetime
+
+try:
+  # Since python 3
+  import collections.abc as collections_abc
+except ImportError:
+  # Won't work after python 3.8
+  import collections as collections_abc
 
 try:
   import unittest2 as unittest  #PY26
@@ -47,6 +53,7 @@ from google.protobuf import duration_pb2
 from google.protobuf import field_mask_pb2
 from google.protobuf import struct_pb2
 from google.protobuf import timestamp_pb2
+from google.protobuf import map_unittest_pb2
 from google.protobuf import unittest_pb2
 from google.protobuf.internal import any_test_pb2
 from google.protobuf.internal import test_util
@@ -248,6 +255,14 @@ class TimeUtilTest(TimeUtilTestBase):
     self.assertEqual(datetime.datetime(1970, 1, 1, 0, 0, 1, 999000),
                      message.ToDatetime())
 
+    dt = datetime.datetime(2555, 2, 22, 1, 2, 3, 456789)
+    message.FromDatetime(dt)
+    self.assertEqual(dt, message.ToDatetime())
+
+    dt = datetime.datetime.max
+    message.FromDatetime(dt)
+    self.assertEqual(dt, message.ToDatetime())
+
   def testDatetimeConversionWithTimezone(self):
     class TZ(datetime.tzinfo):
 
@@ -293,12 +308,12 @@ class TimeUtilTest(TimeUtilTestBase):
   def testInvalidTimestamp(self):
     message = timestamp_pb2.Timestamp()
     self.assertRaisesRegexp(
-        well_known_types.ParseError,
+        ValueError,
         'Failed to parse timestamp: missing valid timezone offset.',
         message.FromJsonString,
         '')
     self.assertRaisesRegexp(
-        well_known_types.ParseError,
+        ValueError,
         'Failed to parse timestamp: invalid trailing data '
         '1970-01-01T00:00:01Ztrail.',
         message.FromJsonString,
@@ -309,12 +324,12 @@ class TimeUtilTest(TimeUtilTestBase):
         ' format \'%Y-%m-%dT%H:%M:%S\'',
         message.FromJsonString, '10000-01-01T00:00:00.00Z')
     self.assertRaisesRegexp(
-        well_known_types.ParseError,
+        ValueError,
         'nanos 0123456789012 more than 9 fractional digits.',
         message.FromJsonString,
         '1970-01-01T00:00:00.0123456789012Z')
     self.assertRaisesRegexp(
-        well_known_types.ParseError,
+        ValueError,
         (r'Invalid timezone offset value: \+08.'),
         message.FromJsonString,
         '1972-01-01T01:00:00.01+08',)
@@ -332,43 +347,43 @@ class TimeUtilTest(TimeUtilTestBase):
   def testInvalidDuration(self):
     message = duration_pb2.Duration()
     self.assertRaisesRegexp(
-        well_known_types.ParseError,
+        ValueError,
         'Duration must end with letter "s": 1.',
         message.FromJsonString, '1')
     self.assertRaisesRegexp(
-        well_known_types.ParseError,
+        ValueError,
         'Couldn\'t parse duration: 1...2s.',
         message.FromJsonString, '1...2s')
     text = '-315576000001.000000000s'
     self.assertRaisesRegexp(
-        well_known_types.Error,
+        ValueError,
         r'Duration is not valid\: Seconds -315576000001 must be in range'
         r' \[-315576000000\, 315576000000\].',
         message.FromJsonString, text)
     text = '315576000001.000000000s'
     self.assertRaisesRegexp(
-        well_known_types.Error,
+        ValueError,
         r'Duration is not valid\: Seconds 315576000001 must be in range'
         r' \[-315576000000\, 315576000000\].',
         message.FromJsonString, text)
     message.seconds = -315576000001
     message.nanos = 0
     self.assertRaisesRegexp(
-        well_known_types.Error,
+        ValueError,
         r'Duration is not valid\: Seconds -315576000001 must be in range'
         r' \[-315576000000\, 315576000000\].',
         message.ToJsonString)
     message.seconds = 0
     message.nanos = 999999999 + 1
     self.assertRaisesRegexp(
-        well_known_types.Error,
+        ValueError,
         r'Duration is not valid\: Nanos 1000000000 must be in range'
         r' \[-999999999\, 999999999\].',
         message.ToJsonString)
     message.seconds = -1
     message.nanos = 1
     self.assertRaisesRegexp(
-        well_known_types.Error,
+        ValueError,
         r'Duration is not valid\: Sign mismatch.',
         message.ToJsonString)
 
@@ -399,6 +414,7 @@ class FieldMaskTest(unittest.TestCase):
 
     mask.FromJsonString('')
     self.assertEqual('', mask.ToJsonString())
+    self.assertEqual([], mask.paths)
     mask.FromJsonString('fooBar')
     self.assertEqual(['foo_bar'], mask.paths)
     mask.FromJsonString('fooBar,barQuz')
@@ -511,6 +527,8 @@ class FieldMaskTest(unittest.TestCase):
     mask2.FromJsonString('bar,quz')
     out_mask.Intersect(mask1, mask2)
     self.assertEqual('', out_mask.ToJsonString())
+    self.assertEqual(len(out_mask.paths), 0)
+    self.assertEqual(out_mask.paths, [])
     # Overlap with duplicated paths.
     mask1.FromJsonString('foo,baz.bb')
     mask2.FromJsonString('baz.bb,quz')
@@ -525,8 +543,17 @@ class FieldMaskTest(unittest.TestCase):
     mask2.FromJsonString('foo.bar.baz,quz')
     out_mask.Intersect(mask1, mask2)
     self.assertEqual('foo.bar.baz', out_mask.ToJsonString())
+    # Intersect '' with ''
+    mask1.Clear()
+    mask2.Clear()
+    mask1.paths.append('')
+    mask2.paths.append('')
+    self.assertEqual(mask1.paths, [''])
+    self.assertEqual('', mask1.ToJsonString())
+    out_mask.Intersect(mask1, mask2)
+    self.assertEqual(out_mask.paths, [])
 
-  def testMergeMessage(self):
+  def testMergeMessageWithoutMapFields(self):
     # Test merge one field.
     src = unittest_pb2.TestAllTypes()
     test_util.SetAllFields(src)
@@ -635,6 +662,29 @@ class FieldMaskTest(unittest.TestCase):
     self.assertTrue(dst.HasField('foo_message'))
     self.assertFalse(dst.HasField('foo_lazy_message'))
 
+  def testMergeMessageWithMapField(self):
+    empty_map = map_unittest_pb2.TestRecursiveMapMessage()
+    src_level_2 = map_unittest_pb2.TestRecursiveMapMessage()
+    src_level_2.a['src level 2'].CopyFrom(empty_map)
+    src = map_unittest_pb2.TestRecursiveMapMessage()
+    src.a['common key'].CopyFrom(src_level_2)
+    src.a['src level 1'].CopyFrom(src_level_2)
+
+    dst_level_2 = map_unittest_pb2.TestRecursiveMapMessage()
+    dst_level_2.a['dst level 2'].CopyFrom(empty_map)
+    dst = map_unittest_pb2.TestRecursiveMapMessage()
+    dst.a['common key'].CopyFrom(dst_level_2)
+    dst.a['dst level 1'].CopyFrom(empty_map)
+
+    mask = field_mask_pb2.FieldMask()
+    mask.FromJsonString('a')
+    mask.MergeMessage(src, dst)
+
+    # map from dst is replaced with map from src.
+    self.assertEqual(dst.a['common key'], src_level_2)
+    self.assertEqual(dst.a['src level 1'], src_level_2)
+    self.assertEqual(dst.a['dst level 1'], empty_map)
+
   def testMergeErrors(self):
     src = unittest_pb2.TestAllTypes()
     dst = unittest_pb2.TestAllTypes()
@@ -658,7 +708,7 @@ class FieldMaskTest(unittest.TestCase):
 
     # No uppercase letter is allowed.
     self.assertRaisesRegexp(
-        well_known_types.Error,
+        ValueError,
         'Fail to print FieldMask to Json string: Path name Foo must '
         'not contain uppercase letters.',
         well_known_types._SnakeCaseToCamelCase,
@@ -668,19 +718,19 @@ class FieldMaskTest(unittest.TestCase):
     #   2. "_" cannot be followed by a digit.
     #   3. "_" cannot appear as the last character.
     self.assertRaisesRegexp(
-        well_known_types.Error,
+        ValueError,
         'Fail to print FieldMask to Json string: The character after a '
         '"_" must be a lowercase letter in path name foo__bar.',
         well_known_types._SnakeCaseToCamelCase,
         'foo__bar')
     self.assertRaisesRegexp(
-        well_known_types.Error,
+        ValueError,
         'Fail to print FieldMask to Json string: The character after a '
         '"_" must be a lowercase letter in path name foo_3bar.',
         well_known_types._SnakeCaseToCamelCase,
         'foo_3bar')
     self.assertRaisesRegexp(
-        well_known_types.Error,
+        ValueError,
         'Fail to print FieldMask to Json string: Trailing "_" in path '
         'name foo_bar_.',
         well_known_types._SnakeCaseToCamelCase,
@@ -694,7 +744,7 @@ class FieldMaskTest(unittest.TestCase):
     self.assertEqual('foo3_bar',
                      well_known_types._CamelCaseToSnakeCase('foo3Bar'))
     self.assertRaisesRegexp(
-        well_known_types.ParseError,
+        ValueError,
         'Fail to parse FieldMask: Path name foo_bar must not contain "_"s.',
         well_known_types._CamelCaseToSnakeCase,
         'foo_bar')
@@ -704,7 +754,7 @@ class StructTest(unittest.TestCase):
 
   def testStruct(self):
     struct = struct_pb2.Struct()
-    self.assertIsInstance(struct, collections.Mapping)
+    self.assertIsInstance(struct, collections_abc.Mapping)
     self.assertEqual(0, len(struct))
     struct_class = struct.__class__
 
@@ -713,7 +763,7 @@ class StructTest(unittest.TestCase):
     struct['key3'] = True
     struct.get_or_create_struct('key4')['subkey'] = 11.0
     struct_list = struct.get_or_create_list('key5')
-    self.assertIsInstance(struct_list, collections.Sequence)
+    self.assertIsInstance(struct_list, collections_abc.Sequence)
     struct_list.extend([6, 'seven', True, False, None])
     struct_list.add_struct()['subkey2'] = 9
     struct['key6'] = {'subkey': {}}

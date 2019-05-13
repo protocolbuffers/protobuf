@@ -72,13 +72,6 @@ class MapValueRef;
 }  // namespace protobuf
 }  // namespace google
 
-namespace google {
-namespace protobuf {
-namespace flat {
-class MetadataBuilder;
-}  // namespace flat
-}  // namespace protobuf
-}  // namespace google
 
 namespace google {
 namespace protobuf {
@@ -90,8 +83,8 @@ class ReflectionAccessor;
 class GeneratedMessageReflection;
 
 // Defined in other files.
-class ExtensionSet;             // extension_set.h
-class WeakFieldMap;             // weak_field_map.h
+class ExtensionSet;  // extension_set.h
+class WeakFieldMap;  // weak_field_map.h
 
 // This struct describes the internal layout of the message, hence this is
 // used to act on the message reflectively.
@@ -153,7 +146,7 @@ struct ReflectionSchema {
     if (field->containing_oneof()) {
       size_t offset =
           static_cast<size_t>(field->containing_type()->field_count() +
-          field->containing_oneof()->index());
+                              field->containing_oneof()->index());
       return OffsetValue(offsets_[offset], field->type());
     } else {
       return GetFieldOffsetNonOneof(field);
@@ -173,8 +166,8 @@ struct ReflectionSchema {
 
   uint32 GetOneofCaseOffset(const OneofDescriptor* oneof_descriptor) const {
     return static_cast<uint32>(oneof_case_offset_) +
-           static_cast<uint32>(
-               static_cast<size_t>(oneof_descriptor->index()) * sizeof(uint32));
+           static_cast<uint32>(static_cast<size_t>(oneof_descriptor->index()) *
+                               sizeof(uint32));
   }
 
   bool HasHasbits() const { return has_bits_offset_ != -1; }
@@ -218,7 +211,7 @@ struct ReflectionSchema {
 
   // Returns a pointer to the default value for this field.  The size and type
   // of the underlying data depends on the field's type.
-  const void *GetFieldDefault(const FieldDescriptor* field) const {
+  const void* GetFieldDefault(const FieldDescriptor* field) const {
     return reinterpret_cast<const uint8*>(default_instance_) +
            OffsetValue(offsets_[field->index()], field->type());
   }
@@ -231,7 +224,7 @@ struct ReflectionSchema {
   // them, ie.
   //
   //   ReflectionSchema schema = {a, b, c, d, e, ...};
- // private:
+  // private:
   const Message* default_instance_;
   const uint32* offsets_;
   const uint32* has_bit_indices_;
@@ -287,8 +280,8 @@ struct MigrationSchema {
 //
 // It is required that the user represents fields of each type in a standard
 // way, so that GeneratedMessageReflection can cast the void* pointer to
-// the appropriate type.  For primitive fields and string fields, each field
-// should be represented using the obvious C++ primitive type.  Enums and
+// the appropriate type.  For primitive fields and string fields, each
+// field should be represented using the obvious C++ primitive type.  Enums and
 // Messages are different:
 //  - Singular Message fields are stored as a pointer to a Message.  These
 //    should start out NULL, except for in the default instance where they
@@ -362,10 +355,10 @@ class GeneratedMessageReflection final : public Reflection {
   bool GetBool(const Message& message,
                const FieldDescriptor* field) const override;
   std::string GetString(const Message& message,
-                   const FieldDescriptor* field) const override;
+                        const FieldDescriptor* field) const override;
   const std::string& GetStringReference(const Message& message,
-                                   const FieldDescriptor* field,
-                                   std::string* scratch) const override;
+                                        const FieldDescriptor* field,
+                                        std::string* scratch) const override;
   const EnumValueDescriptor* GetEnum(
       const Message& message, const FieldDescriptor* field) const override;
   int GetEnumValue(const Message& message,
@@ -435,12 +428,12 @@ class GeneratedMessageReflection final : public Reflection {
                            int index) const override;
   bool GetRepeatedBool(const Message& message, const FieldDescriptor* field,
                        int index) const override;
-  std::string GetRepeatedString(const Message& message, const FieldDescriptor* field,
-                           int index) const override;
-  const std::string& GetRepeatedStringReference(const Message& message,
-                                           const FieldDescriptor* field,
-                                           int index,
-                                           std::string* scratch) const override;
+  std::string GetRepeatedString(const Message& message,
+                                const FieldDescriptor* field,
+                                int index) const override;
+  const std::string& GetRepeatedStringReference(
+      const Message& message, const FieldDescriptor* field, int index,
+      std::string* scratch) const override;
   const EnumValueDescriptor* GetRepeatedEnum(const Message& message,
                                              const FieldDescriptor* field,
                                              int index) const override;
@@ -538,7 +531,6 @@ class GeneratedMessageReflection final : public Reflection {
                           const Descriptor* message_type) const override;
 
  private:
-  friend class google::protobuf::flat::MetadataBuilder;
   friend class ReflectionAccessor;
   friend class upb::google_opensource::GMR_Handlers;
 
@@ -560,21 +552,18 @@ class GeneratedMessageReflection final : public Reflection {
 
   template <typename Type>
   const Type& GetRaw(const Message& message,
-                            const FieldDescriptor* field) const;
+                     const FieldDescriptor* field) const;
   template <typename Type>
-  inline Type* MutableRaw(Message* message,
-                          const FieldDescriptor* field) const;
+  inline Type* MutableRaw(Message* message, const FieldDescriptor* field) const;
   template <typename Type>
   inline const Type& DefaultRaw(const FieldDescriptor* field) const;
 
   inline const uint32* GetHasBits(const Message& message) const;
   inline uint32* MutableHasBits(Message* message) const;
-  inline uint32 GetOneofCase(
-      const Message& message,
-      const OneofDescriptor* oneof_descriptor) const;
+  inline uint32 GetOneofCase(const Message& message,
+                             const OneofDescriptor* oneof_descriptor) const;
   inline uint32* MutableOneofCase(
-      Message* message,
-      const OneofDescriptor* oneof_descriptor) const;
+      Message* message, const OneofDescriptor* oneof_descriptor) const;
   inline const ExtensionSet& GetExtensionSet(const Message& message) const;
   inline ExtensionSet* MutableExtensionSet(Message* message) const;
   inline Arena* GetArena(Message* message) const;
@@ -582,29 +571,24 @@ class GeneratedMessageReflection final : public Reflection {
   inline const InternalMetadataWithArena& GetInternalMetadataWithArena(
       const Message& message) const;
 
-  inline InternalMetadataWithArena*
-      MutableInternalMetadataWithArena(Message* message) const;
+  inline InternalMetadataWithArena* MutableInternalMetadataWithArena(
+      Message* message) const;
 
   inline bool IsInlined(const FieldDescriptor* field) const;
 
   inline bool HasBit(const Message& message,
                      const FieldDescriptor* field) const;
-  inline void SetBit(Message* message,
-                     const FieldDescriptor* field) const;
-  inline void ClearBit(Message* message,
-                       const FieldDescriptor* field) const;
-  inline void SwapBit(Message* message1,
-                      Message* message2,
+  inline void SetBit(Message* message, const FieldDescriptor* field) const;
+  inline void ClearBit(Message* message, const FieldDescriptor* field) const;
+  inline void SwapBit(Message* message1, Message* message2,
                       const FieldDescriptor* field) const;
 
   // This function only swaps the field. Should swap corresponding has_bit
   // before or after using this function.
-  void SwapField(Message* message1,
-                 Message* message2,
+  void SwapField(Message* message1, Message* message2,
                  const FieldDescriptor* field) const;
 
-  void SwapOneofField(Message* message1,
-                      Message* message2,
+  void SwapOneofField(Message* message1, Message* message2,
                       const OneofDescriptor* oneof_descriptor) const;
 
   inline bool HasOneofField(const Message& message,
@@ -618,8 +602,8 @@ class GeneratedMessageReflection final : public Reflection {
   inline const Type& GetField(const Message& message,
                               const FieldDescriptor* field) const;
   template <typename Type>
-  inline void SetField(Message* message,
-                       const FieldDescriptor* field, const Type& value) const;
+  inline void SetField(Message* message, const FieldDescriptor* field,
+                       const Type& value) const;
   template <typename Type>
   inline Type* MutableField(Message* message,
                             const FieldDescriptor* field) const;
@@ -632,46 +616,42 @@ class GeneratedMessageReflection final : public Reflection {
                                          const FieldDescriptor* field,
                                          int index) const;
   template <typename Type>
-  inline void SetRepeatedField(Message* message,
-                               const FieldDescriptor* field, int index,
-                               Type value) const;
+  inline void SetRepeatedField(Message* message, const FieldDescriptor* field,
+                               int index, Type value) const;
   template <typename Type>
   inline Type* MutableRepeatedField(Message* message,
                                     const FieldDescriptor* field,
                                     int index) const;
   template <typename Type>
-  inline void AddField(Message* message,
-                       const FieldDescriptor* field, const Type& value) const;
+  inline void AddField(Message* message, const FieldDescriptor* field,
+                       const Type& value) const;
   template <typename Type>
-  inline Type* AddField(Message* message,
-                        const FieldDescriptor* field) const;
+  inline Type* AddField(Message* message, const FieldDescriptor* field) const;
 
   int GetExtensionNumberOrDie(const Descriptor* type) const;
 
   // Internal versions of EnumValue API perform no checking. Called after checks
   // by public methods.
-  void SetEnumValueInternal(Message* message,
-                            const FieldDescriptor* field,
+  void SetEnumValueInternal(Message* message, const FieldDescriptor* field,
                             int value) const;
   void SetRepeatedEnumValueInternal(Message* message,
-                                    const FieldDescriptor* field,
-                                    int index,
+                                    const FieldDescriptor* field, int index,
                                     int value) const;
-  void AddEnumValueInternal(Message* message,
-                            const FieldDescriptor* field,
+  void AddEnumValueInternal(Message* message, const FieldDescriptor* field,
                             int value) const;
-
 
   Message* UnsafeArenaReleaseMessage(Message* message,
                                      const FieldDescriptor* field,
                                      MessageFactory* factory = NULL) const;
 
-  void UnsafeArenaSetAllocatedMessage(Message* message,
-                                      Message* sub_message,
+  void UnsafeArenaSetAllocatedMessage(Message* message, Message* sub_message,
                                       const FieldDescriptor* field) const;
 
-  internal::MapFieldBase* MapData(Message* message,
-                                  const FieldDescriptor* field) const override;
+  internal::MapFieldBase* MutableMapData(
+      Message* message, const FieldDescriptor* field) const override;
+
+  const internal::MapFieldBase* GetMapData(
+      const Message& message, const FieldDescriptor* field) const override;
 
   friend inline  // inline so nobody can call this function.
       void
@@ -679,12 +659,16 @@ class GeneratedMessageReflection final : public Reflection {
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(GeneratedMessageReflection);
 };
 
-typedef void (*InitFunc)();
-
-struct PROTOBUF_EXPORT AssignDescriptorsTable {
-  once_flag once;
-  InitFunc add_descriptors;
+struct PROTOBUF_EXPORT DescriptorTable {
+  bool* is_initialized;
+  const char* descriptor;
   const char* filename;
+  int size;  // of serialized descriptor
+  once_flag* once;
+  SCCInfoBase* const* init_default_instances;
+  const DescriptorTable* const* deps;
+  int num_sccs;
+  int num_deps;
   const MigrationSchema* schemas;
   const Message* const* default_instances;
   const uint32* offsets;
@@ -695,19 +679,19 @@ struct PROTOBUF_EXPORT AssignDescriptorsTable {
   const ServiceDescriptor** file_level_service_descriptors;
 };
 
-void PROTOBUF_EXPORT AssignDescriptors(AssignDescriptorsTable* table);
+// AssignDescriptors() pulls the compiled FileDescriptor from the DescriptorPool
+// and uses it to populate all of the global variables which store pointers to
+// the descriptor objects.  It also constructs the reflection objects.  It is
+// called the first time anyone calls descriptor() or GetReflection() on one of
+// the types defined in the file.  AssignDescriptors() is thread-safe.
+void PROTOBUF_EXPORT AssignDescriptors(const DescriptorTable* table);
 
-struct PROTOBUF_EXPORT DescriptorTable {
-  bool is_initialized;
-  InitFunc init_defaults;
-  const char* descriptor;
-  const char* filename;
-  AssignDescriptorsTable* assign_descriptors_table;
-  int size;  // of serialized descriptor
-};
-
-void PROTOBUF_EXPORT AddDescriptors(DescriptorTable* table,
-                                    const InitFunc* deps, int num_deps);
+// AddDescriptors() is a file-level procedure which adds the encoded
+// FileDescriptorProto for this .proto file to the global DescriptorPool for
+// generated files (DescriptorPool::generated_pool()). It ordinarily runs at
+// static initialization time, but is not used at all in LITE_RUNTIME mode.
+// AddDescriptors() is *not* thread-safe.
+void PROTOBUF_EXPORT AddDescriptors(const DescriptorTable* table);
 
 // These cannot be in lite so we put them in the reflection.
 PROTOBUF_EXPORT void UnknownFieldSetSerializer(const uint8* base, uint32 offset,

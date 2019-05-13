@@ -43,9 +43,11 @@
     #error "Python 3.0 - 3.2 are not supported."
   #endif
   #define PyString_AsStringAndSize(ob, charpp, sizep) \
-    (PyUnicode_Check(ob)? \
-       ((*(charpp) = PyUnicode_AsUTF8AndSize(ob, (sizep))) == NULL? -1: 0): \
-       PyBytes_AsStringAndSize(ob, (charpp), (sizep)))
+    (PyUnicode_Check(ob) ? ((*(charpp) = const_cast<char*>(                   \
+                               PyUnicode_AsUTF8AndSize(ob, (sizep)))) == NULL \
+                              ? -1                                            \
+                              : 0)                                            \
+                        : PyBytes_AsStringAndSize(ob, (charpp), (sizep)))
 #endif
 
 namespace google {
@@ -67,9 +69,7 @@ PyMessageFactory* NewMessageFactory(PyTypeObject* type, PyDescriptorPool* pool) 
   factory->message_factory = message_factory;
 
   factory->pool = pool;
-  // TODO(amauryfa): When the MessageFactory is not created from the
-  // DescriptorPool this reference should be owned, not borrowed.
-  // Py_INCREF(pool);
+  Py_INCREF(pool);
 
   factory->classes_by_descriptor = new PyMessageFactory::ClassesByMessageMap();
 
@@ -105,17 +105,35 @@ PyObject* New(PyTypeObject* type, PyObject* args, PyObject* kwargs) {
 static void Dealloc(PyObject* pself) {
   PyMessageFactory* self = reinterpret_cast<PyMessageFactory*>(pself);
 
-  // TODO(amauryfa): When the MessageFactory is not created from the
-  // DescriptorPool this reference should be owned, not borrowed.
-  // Py_CLEAR(self->pool);
   typedef PyMessageFactory::ClassesByMessageMap::iterator iterator;
   for (iterator it = self->classes_by_descriptor->begin();
        it != self->classes_by_descriptor->end(); ++it) {
-    Py_DECREF(it->second);
+    Py_CLEAR(it->second);
   }
   delete self->classes_by_descriptor;
   delete self->message_factory;
+  Py_CLEAR(self->pool);
   Py_TYPE(self)->tp_free(pself);
+}
+
+static int GcTraverse(PyObject* pself, visitproc visit, void* arg) {
+  PyMessageFactory* self = reinterpret_cast<PyMessageFactory*>(pself);
+  Py_VISIT(self->pool);
+  for (const auto& desc_and_class : *self->classes_by_descriptor) {
+    Py_VISIT(desc_and_class.second);
+  }
+  return 0;
+}
+
+static int GcClear(PyObject* pself) {
+  PyMessageFactory* self = reinterpret_cast<PyMessageFactory*>(pself);
+  // Here it's important to not clear self->pool, so that the C++ DescriptorPool
+  // is still alive when self->message_factory is destructed.
+  for (auto& desc_and_class : *self->classes_by_descriptor) {
+    Py_CLEAR(desc_and_class.second);
+  }
+
+  return 0;
 }
 
 // Add a message class to our database.
@@ -232,44 +250,44 @@ static PyGetSetDef Getters[] = {
 
 PyTypeObject PyMessageFactory_Type = {
     PyVarObject_HEAD_INIT(&PyType_Type, 0) FULL_MODULE_NAME
-    ".MessageFactory",                        // tp_name
-    sizeof(PyMessageFactory),                 // tp_basicsize
-    0,                                        // tp_itemsize
-    message_factory::Dealloc,                 // tp_dealloc
-    0,                                        // tp_print
-    0,                                        // tp_getattr
-    0,                                        // tp_setattr
-    0,                                        // tp_compare
-    0,                                        // tp_repr
-    0,                                        // tp_as_number
-    0,                                        // tp_as_sequence
-    0,                                        // tp_as_mapping
-    0,                                        // tp_hash
-    0,                                        // tp_call
-    0,                                        // tp_str
-    0,                                        // tp_getattro
-    0,                                        // tp_setattro
-    0,                                        // tp_as_buffer
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,  // tp_flags
-    "A static Message Factory",               // tp_doc
-    0,                                        // tp_traverse
-    0,                                        // tp_clear
-    0,                                        // tp_richcompare
-    0,                                        // tp_weaklistoffset
-    0,                                        // tp_iter
-    0,                                        // tp_iternext
-    message_factory::Methods,                 // tp_methods
-    0,                                        // tp_members
-    message_factory::Getters,                 // tp_getset
-    0,                                        // tp_base
-    0,                                        // tp_dict
-    0,                                        // tp_descr_get
-    0,                                        // tp_descr_set
-    0,                                        // tp_dictoffset
-    0,                                        // tp_init
-    0,                                        // tp_alloc
-    message_factory::New,                     // tp_new
-    PyObject_Del,                             // tp_free
+    ".MessageFactory",         // tp_name
+    sizeof(PyMessageFactory),  // tp_basicsize
+    0,                         // tp_itemsize
+    message_factory::Dealloc,  // tp_dealloc
+    0,                         // tp_print
+    0,                         // tp_getattr
+    0,                         // tp_setattr
+    0,                         // tp_compare
+    0,                         // tp_repr
+    0,                         // tp_as_number
+    0,                         // tp_as_sequence
+    0,                         // tp_as_mapping
+    0,                         // tp_hash
+    0,                         // tp_call
+    0,                         // tp_str
+    0,                         // tp_getattro
+    0,                         // tp_setattro
+    0,                         // tp_as_buffer
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_GC,  // tp_flags
+    "A static Message Factory",                                     // tp_doc
+    message_factory::GcTraverse,  // tp_traverse
+    message_factory::GcClear,     // tp_clear
+    0,                            // tp_richcompare
+    0,                            // tp_weaklistoffset
+    0,                            // tp_iter
+    0,                            // tp_iternext
+    message_factory::Methods,     // tp_methods
+    0,                            // tp_members
+    message_factory::Getters,     // tp_getset
+    0,                            // tp_base
+    0,                            // tp_dict
+    0,                            // tp_descr_get
+    0,                            // tp_descr_set
+    0,                            // tp_dictoffset
+    0,                            // tp_init
+    0,                            // tp_alloc
+    message_factory::New,         // tp_new
+    PyObject_GC_Del,              // tp_free
 };
 
 bool InitMessageFactory() {

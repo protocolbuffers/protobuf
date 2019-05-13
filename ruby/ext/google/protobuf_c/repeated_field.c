@@ -178,7 +178,7 @@ VALUE RepeatedField_index_set(VALUE _self, VALUE _index, VALUE val) {
   }
 
   memory = RepeatedField_memoryat(self, index, element_size);
-  native_slot_set(field_type, field_type_class, memory, val);
+  native_slot_set("", field_type, field_type_class, memory, val);
   return Qnil;
 }
 
@@ -217,12 +217,18 @@ VALUE RepeatedField_push(VALUE _self, VALUE val) {
 
   RepeatedField_reserve(self, self->size + 1);
   memory = (void *) (((uint8_t *)self->elements) + self->size * element_size);
-  native_slot_set(field_type, self->field_type_class, memory, val);
+  native_slot_set("", field_type, self->field_type_class, memory, val);
   // native_slot_set may raise an error; bump size only after set.
   self->size++;
   return _self;
 }
 
+VALUE RepeatedField_push_vararg(VALUE _self, VALUE args) {
+  for (int i = 0; i < RARRAY_LEN(args); i++) {
+    RepeatedField_push(_self, rb_ary_entry(args, i));
+  }
+  return _self;
+}
 
 // Used by parsing handlers.
 void RepeatedField_push_native(VALUE _self, void* data) {
@@ -635,7 +641,7 @@ void RepeatedField_register(VALUE module) {
   rb_define_method(klass, "[]", RepeatedField_index, -1);
   rb_define_method(klass, "at", RepeatedField_index, -1);
   rb_define_method(klass, "[]=", RepeatedField_index_set, 2);
-  rb_define_method(klass, "push", RepeatedField_push, 1);
+  rb_define_method(klass, "push", RepeatedField_push_vararg, -2);
   rb_define_method(klass, "<<", RepeatedField_push, 1);
   rb_define_private_method(klass, "pop_one", RepeatedField_pop_one, 0);
   rb_define_method(klass, "replace", RepeatedField_replace, 1);

@@ -69,8 +69,8 @@ class LocalTestResult(unittest.TestResult):
     pass
 
 
-class ReferenceLeakCheckerTestCase(unittest.TestCase):
-  """A TestCase which runs tests multiple times, collecting reference counts."""
+class ReferenceLeakCheckerMixin(object):
+  """A mixin class for TestCase, which checks reference counts."""
 
   NB_RUNS = 3
 
@@ -81,8 +81,8 @@ class ReferenceLeakCheckerTestCase(unittest.TestCase):
     self._saved_pickle_registry = copyreg.dispatch_table.copy()
 
     # Run the test twice, to warm up the instance attributes.
-    super(ReferenceLeakCheckerTestCase, self).run(result=result)
-    super(ReferenceLeakCheckerTestCase, self).run(result=result)
+    super(ReferenceLeakCheckerMixin, self).run(result=result)
+    super(ReferenceLeakCheckerMixin, self).run(result=result)
 
     oldrefcount = 0
     local_result = LocalTestResult(result)
@@ -90,7 +90,7 @@ class ReferenceLeakCheckerTestCase(unittest.TestCase):
     refcount_deltas = []
     for _ in range(self.NB_RUNS):
       oldrefcount = self._getRefcounts()
-      super(ReferenceLeakCheckerTestCase, self).run(result=local_result)
+      super(ReferenceLeakCheckerMixin, self).run(result=local_result)
       newrefcount = self._getRefcounts()
       refcount_deltas.append(newrefcount - oldrefcount)
     print(refcount_deltas, self)
@@ -112,12 +112,19 @@ class ReferenceLeakCheckerTestCase(unittest.TestCase):
 
 
 if hasattr(sys, 'gettotalrefcount'):
-  BaseTestCase = ReferenceLeakCheckerTestCase
+
+  def TestCase(test_class):
+    new_bases = (ReferenceLeakCheckerMixin,) + test_class.__bases__
+    new_class = type(test_class)(
+        test_class.__name__, new_bases, dict(test_class.__dict__))
+    return new_class
   SkipReferenceLeakChecker = unittest.skip
 
 else:
   # When PyDEBUG is not enabled, run the tests normally.
-  BaseTestCase = unittest.TestCase
+
+  def TestCase(test_class):
+    return test_class
 
   def SkipReferenceLeakChecker(reason):
     del reason  # Don't skip, so don't need a reason.

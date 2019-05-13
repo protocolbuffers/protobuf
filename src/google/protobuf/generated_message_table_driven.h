@@ -36,7 +36,6 @@
 #include <google/protobuf/map_field_lite.h>
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/wire_format_lite.h>
-#include <google/protobuf/wire_format_lite_inl.h>
 
 // We require C++11 and Clang to use constexpr for variables, as GCC 4.8
 // requires constexpr to be consistent between declarations of variables
@@ -51,6 +50,8 @@
 #ifdef SWIG
 #error "You cannot SWIG proto headers"
 #endif
+
+#include <google/protobuf/port_def.inc>
 
 namespace google {
 namespace protobuf {
@@ -78,6 +79,40 @@ enum ProcessingTypes {
 };
 
 static_assert(TYPE_MAP < kRepeatedMask, "Invalid enum");
+
+struct PROTOBUF_EXPORT FieldMetadata {
+  uint32 offset;  // offset of this field in the struct
+  uint32 tag;     // field * 8 + wire_type
+  // byte offset * 8 + bit_offset;
+  // if the high bit is set then this is the byte offset of the oneof_case
+  // for this field.
+  uint32 has_offset;
+  uint32 type;      // the type of this field.
+  const void* ptr;  // auxiliary data
+
+  // From the serializer point of view each fundamental type can occur in
+  // 4 different ways. For simplicity we treat all combinations as a cartesion
+  // product although not all combinations are allowed.
+  enum FieldTypeClass {
+    kPresence,
+    kNoPresence,
+    kRepeated,
+    kPacked,
+    kOneOf,
+    kNumTypeClasses  // must be last enum
+  };
+  // C++ protobuf has 20 fundamental types, were we added Cord and StringPiece
+  // and also distinquish the same types if they have different wire format.
+  enum {
+    kCordType = 19,
+    kStringPieceType = 20,
+    kInlinedType = 21,
+    kNumTypes = 21,
+    kSpecial = kNumTypes * kNumTypeClasses,
+  };
+
+  static int CalculateType(int fundamental_type, FieldTypeClass type_class);
+};
 
 // TODO(ckennelly):  Add a static assertion to ensure that these masks do not
 // conflict with wiretypes.
@@ -172,21 +207,18 @@ static_assert(sizeof(ParseTableField) <= 16, "ParseTableField is too large");
 // The tables must be composed of POD components to ensure link-time
 // initialization.
 static_assert(std::is_pod<ParseTableField>::value, "");
+static_assert(std::is_pod<AuxillaryParseTableField>::value, "");
 static_assert(std::is_pod<AuxillaryParseTableField::enum_aux>::value, "");
 static_assert(std::is_pod<AuxillaryParseTableField::message_aux>::value, "");
 static_assert(std::is_pod<AuxillaryParseTableField::string_aux>::value, "");
 static_assert(std::is_pod<ParseTable>::value, "");
-
-#ifndef __NVCC__  // This assertion currently fails under NVCC.
-static_assert(std::is_pod<AuxillaryParseTableField>::value, "");
-#endif
 
 // TODO(ckennelly): Consolidate these implementations into a single one, using
 // dynamic dispatch to the appropriate unknown field handler.
 bool MergePartialFromCodedStream(MessageLite* msg, const ParseTable& table,
                                  io::CodedInputStream* input);
 bool MergePartialFromCodedStreamLite(MessageLite* msg, const ParseTable& table,
-                                 io::CodedInputStream* input);
+                                     io::CodedInputStream* input);
 
 template <typename Entry>
 bool ParseMap(io::CodedInputStream* input, void* map_field) {
@@ -199,8 +231,109 @@ bool ParseMap(io::CodedInputStream* input, void* map_field) {
   return WireFormatLite::ReadMessageNoVirtual(input, &parser);
 }
 
+struct SerializationTable {
+  int num_fields;
+  const FieldMetadata* field_table;
+};
+
+PROTOBUF_EXPORT void SerializeInternal(const uint8* base,
+                                       const FieldMetadata* table,
+                                       int32 num_fields,
+                                       io::CodedOutputStream* output);
+
+inline void TableSerialize(const MessageLite& msg,
+                           const SerializationTable* table,
+                           io::CodedOutputStream* output) {
+  const FieldMetadata* field_table = table->field_table;
+  int num_fields = table->num_fields - 1;
+  const uint8* base = reinterpret_cast<const uint8*>(&msg);
+  // TODO(gerbens) This skips the first test if we could use the fast
+  // array serialization path, we should make this
+  // int cached_size =
+  //    *reinterpret_cast<const int32*>(base + field_table->offset);
+  // SerializeWithCachedSize(msg, field_table + 1, num_fields, cached_size, ...)
+  // But we keep conformance with the old way for now.
+  SerializeInternal(base, field_table + 1, num_fields, output);
+}
+
+uint8* SerializeInternalToArray(const uint8* base, const FieldMetadata* table,
+                                int32 num_fields, bool is_deterministic,
+                                uint8* buffer);
+
+inline uint8* TableSerializeToArray(const MessageLite& msg,
+                                    const SerializationTable* table,
+                                    bool is_deterministic, uint8* buffer) {
+  const uint8* base = reinterpret_cast<const uint8*>(&msg);
+  const FieldMetadata* field_table = table->field_table + 1;
+  int num_fields = table->num_fields - 1;
+  return SerializeInternalToArray(base, field_table, num_fields,
+                                  is_deterministic, buffer);
+}
+
+template <typename T>
+struct CompareHelper {
+  bool operator()(const T& a, const T& b) const { return a < b; }
+};
+
+template <>
+struct CompareHelper<ArenaStringPtr> {
+  bool operator()(const ArenaStringPtr& a, const ArenaStringPtr& b) const {
+    return a.Get() < b.Get();
+  }
+};
+
+struct CompareMapKey {
+  template <typename T>
+  bool operator()(const MapEntryHelper<T>& a,
+                  const MapEntryHelper<T>& b) const {
+    return Compare(a.key_, b.key_);
+  }
+  template <typename T>
+  bool Compare(const T& a, const T& b) const {
+    return CompareHelper<T>()(a, b);
+  }
+};
+
+template <typename MapFieldType, const SerializationTable* table>
+void MapFieldSerializer(const uint8* base, uint32 offset, uint32 tag,
+                        uint32 has_offset, io::CodedOutputStream* output) {
+  typedef MapEntryHelper<typename MapFieldType::EntryTypeTrait> Entry;
+  typedef typename MapFieldType::MapType::const_iterator Iter;
+
+  const MapFieldType& map_field =
+      *reinterpret_cast<const MapFieldType*>(base + offset);
+  const SerializationTable* t =
+      table +
+      has_offset;  // has_offset is overloaded for maps to mean table offset
+  if (!output->IsSerializationDeterministic()) {
+    for (Iter it = map_field.GetMap().begin(); it != map_field.GetMap().end();
+         ++it) {
+      Entry map_entry(*it);
+      output->WriteVarint32(tag);
+      output->WriteVarint32(map_entry._cached_size_);
+      SerializeInternal(reinterpret_cast<const uint8*>(&map_entry),
+                        t->field_table, t->num_fields, output);
+    }
+  } else {
+    std::vector<Entry> v;
+    for (Iter it = map_field.GetMap().begin(); it != map_field.GetMap().end();
+         ++it) {
+      v.push_back(Entry(*it));
+    }
+    std::sort(v.begin(), v.end(), CompareMapKey());
+    for (int i = 0; i < v.size(); i++) {
+      output->WriteVarint32(tag);
+      output->WriteVarint32(v[i]._cached_size_);
+      SerializeInternal(reinterpret_cast<const uint8*>(&v[i]), t->field_table,
+                        t->num_fields, output);
+    }
+  }
+}
+
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_GENERATED_MESSAGE_TABLE_DRIVEN_H__

@@ -30,6 +30,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
+using Google.Protobuf.Collections;
 using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Collections.Generic;
@@ -83,6 +84,8 @@ namespace Google.Protobuf.Reflection
                                                              (service, index) =>
                                                              new ServiceDescriptor(service, this, index));
 
+            Extensions = new ExtensionCollection(this, generatedCodeInfo?.Extensions);
+
             declarations = new Lazy<Dictionary<IDescriptor, DescriptorDeclaration>>(CreateDeclarationMap, LazyThreadSafetyMode.ExecutionAndPublication);
         }
 
@@ -98,64 +101,65 @@ namespace Google.Protobuf.Reflection
                 }
             }
             return dictionary;
+        }
 
-            IDescriptor FindDescriptorForPath(IList<int> path)
+        private IDescriptor FindDescriptorForPath(IList<int> path)
+        {
+            // All complete declarations have an even, non-empty path length
+            // (There can be an empty path for a descriptor declaration, but that can't have any comments,
+            // so we currently ignore it.)
+            if (path.Count == 0 || (path.Count & 1) != 0)
             {
-                // All complete declarations have an even, non-empty path length
-                // (There can be an empty path for a descriptor declaration, but that can't have any comments,
-                // so we currently ignore it.)
-                if (path.Count == 0 || (path.Count & 1) != 0)
-                {
-                    return null;
-                }
-                IReadOnlyList<DescriptorBase> topLevelList = GetNestedDescriptorListForField(path[0]);
-                DescriptorBase current = GetDescriptorFromList(topLevelList, path[1]);
-
-                for (int i = 2; current != null && i < path.Count; i += 2)
-                {
-                    var list = current.GetNestedDescriptorListForField(path[i]);
-                    current = GetDescriptorFromList(list, path[i + 1]);
-                }
-                return current;
+                return null;
             }
+            IReadOnlyList<DescriptorBase> topLevelList = GetNestedDescriptorListForField(path[0]);
+            DescriptorBase current = GetDescriptorFromList(topLevelList, path[1]);
 
-            DescriptorBase GetDescriptorFromList(IReadOnlyList<DescriptorBase> list, int index)
+            for (int i = 2; current != null && i < path.Count; i += 2)
             {
-                // This is fine: it may be a newer version of protobuf than we understand, with a new descriptor
-                // field.
-                if (list == null)
-                {
-                    return null;
-                }
-                // We *could* return null to silently continue, but this is basically data corruption.
-                if (index < 0 || index >= list.Count)
-                {
-                    // We don't have much extra information to give at this point unfortunately. If this becomes a problem,
-                    // we can pass in the complete path and report that and the file name.
-                    throw new InvalidProtocolBufferException($"Invalid descriptor location path: index out of range");
-                }
-                return list[index];
+                var list = current.GetNestedDescriptorListForField(path[i]);
+                current = GetDescriptorFromList(list, path[i + 1]);
             }
+            return current;
+        }
 
-            IReadOnlyList<DescriptorBase> GetNestedDescriptorListForField(int fieldNumber)
+        private DescriptorBase GetDescriptorFromList(IReadOnlyList<DescriptorBase> list, int index)
+        {
+            // This is fine: it may be a newer version of protobuf than we understand, with a new descriptor
+            // field.
+            if (list == null)
             {
-                switch (fieldNumber)
-                {
-                    case FileDescriptorProto.ServiceFieldNumber:
-                        return (IReadOnlyList<DescriptorBase>) Services;
-                    case FileDescriptorProto.MessageTypeFieldNumber:
-                        return (IReadOnlyList<DescriptorBase>) MessageTypes;
-                    case FileDescriptorProto.EnumTypeFieldNumber:
-                        return (IReadOnlyList<DescriptorBase>) EnumTypes;
-                    default:
-                        return null;
-                }
+                return null;
+            }
+            // We *could* return null to silently continue, but this is basically data corruption.
+            if (index < 0 || index >= list.Count)
+            {
+                // We don't have much extra information to give at this point unfortunately. If this becomes a problem,
+                // we can pass in the complete path and report that and the file name.
+                throw new InvalidProtocolBufferException($"Invalid descriptor location path: index out of range");
+            }
+            return list[index];
+        }
+
+        private IReadOnlyList<DescriptorBase> GetNestedDescriptorListForField(int fieldNumber)
+        {
+            switch (fieldNumber)
+            {
+                case FileDescriptorProto.ServiceFieldNumber:
+                    return (IReadOnlyList<DescriptorBase>) Services;
+                case FileDescriptorProto.MessageTypeFieldNumber:
+                    return (IReadOnlyList<DescriptorBase>) MessageTypes;
+                case FileDescriptorProto.EnumTypeFieldNumber:
+                    return (IReadOnlyList<DescriptorBase>) EnumTypes;
+                default:
+                    return null;
             }
         }
 
         internal DescriptorDeclaration GetDeclaration(IDescriptor descriptor)
         {
-            declarations.Value.TryGetValue(descriptor, out var declaration);
+            DescriptorDeclaration declaration;
+            declarations.Value.TryGetValue(descriptor, out declaration);
             return declaration;
         }
 
@@ -191,7 +195,8 @@ namespace Google.Protobuf.Reflection
                     throw new DescriptorValidationException(@this, "Invalid public dependency index.");
                 }
                 string name = proto.Dependency[index];
-                if (!nameToFileMap.TryGetValue(name, out var file))
+                FileDescriptor file;
+                if (!nameToFileMap.TryGetValue(name, out file))
                 {
                     if (!allowUnknownDependencies)
                     {
@@ -237,6 +242,11 @@ namespace Google.Protobuf.Reflection
         /// Unmodifiable list of top-level services declared in this file.
         /// </value>
         public IList<ServiceDescriptor> Services { get; }
+
+        /// <summary>
+        /// Unmodifiable list of top-level extensions declared in this file.
+        /// </summary>
+        public ExtensionCollection Extensions { get; }
 
         /// <value>
         /// Unmodifiable list of this file's dependencies (imports).
@@ -354,6 +364,8 @@ namespace Google.Protobuf.Reflection
             {
                 service.CrossLink();
             }
+
+            Extensions.CrossLink();
         }
 
         /// <summary>
@@ -369,10 +381,12 @@ namespace Google.Protobuf.Reflection
             FileDescriptor[] dependencies,
             GeneratedClrTypeInfo generatedCodeInfo)
         {
+            ExtensionRegistry registry = new ExtensionRegistry();
+            AddAllExtensions(dependencies, generatedCodeInfo, registry);
             FileDescriptorProto proto;
             try
             {
-                proto = FileDescriptorProto.Parser.ParseFrom(descriptorData);
+                proto = FileDescriptorProto.Parser.WithExtensionRegistry(registry).ParseFrom(descriptorData);
             }
             catch (InvalidProtocolBufferException e)
             {
@@ -389,6 +403,31 @@ namespace Google.Protobuf.Reflection
             {
                 throw new ArgumentException($"Invalid embedded descriptor for \"{proto.Name}\".", e);
             }
+        }
+
+        private static void AddAllExtensions(FileDescriptor[] dependencies, GeneratedClrTypeInfo generatedInfo, ExtensionRegistry registry)
+        {
+            registry.Add(dependencies.SelectMany(GetAllDependedExtensions).Concat(GetAllGeneratedExtensions(generatedInfo)).ToArray());
+        }
+
+        private static IEnumerable<Extension> GetAllGeneratedExtensions(GeneratedClrTypeInfo generated)
+        {
+            return generated.Extensions.Concat(generated.NestedTypes.Where(t => t != null).SelectMany(GetAllGeneratedExtensions));
+        }
+
+        private static IEnumerable<Extension> GetAllDependedExtensions(FileDescriptor descriptor)
+        {
+            return descriptor.Extensions.UnorderedExtensions
+                .Select(s => s.Extension)
+                .Concat(descriptor.Dependencies.Concat(descriptor.PublicDependencies).SelectMany(GetAllDependedExtensions))
+                .Concat(descriptor.MessageTypes.SelectMany(GetAllDependedExtensionsFromMessage));
+        }
+
+        private static IEnumerable<Extension> GetAllDependedExtensionsFromMessage(MessageDescriptor descriptor)
+        {
+            return descriptor.Extensions.UnorderedExtensions
+                .Select(s => s.Extension)
+                .Concat(descriptor.NestedTypes.SelectMany(GetAllDependedExtensionsFromMessage));
         }
 
         /// <summary>
@@ -414,7 +453,8 @@ namespace Google.Protobuf.Reflection
                 var dependencies = new List<FileDescriptor>();
                 foreach (var dependencyName in proto.Dependency)
                 {
-                    if (!descriptorsByName.TryGetValue(dependencyName, out var dependency))
+                    FileDescriptor dependency;
+                    if (!descriptorsByName.TryGetValue(dependencyName, out dependency))
                     {
                         throw new ArgumentException($"Dependency missing: {dependencyName}");
                     }
@@ -464,7 +504,27 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// The (possibly empty) set of custom options for this file.
         /// </summary>
-        public CustomOptions CustomOptions => Proto.Options?.CustomOptions ?? CustomOptions.Empty;
+        //[Obsolete("CustomOptions are obsolete. Use GetOption")]
+        public CustomOptions CustomOptions => new CustomOptions(Proto.Options._extensions?.ValuesByNumber);
+
+        /* // uncomment this in the full proto2 support PR
+        /// <summary>
+        /// Gets a single value enum option for this descriptor
+        /// </summary>
+        public T GetOption<T>(Extension<FileOptions, T> extension)
+        {
+            var value = Proto.Options.GetExtension(extension);
+            return value is IDeepCloneable<T> clonable ? clonable.Clone() : value;
+        }
+
+        /// <summary>
+        /// Gets a repeated value enum option for this descriptor
+        /// </summary>
+        public RepeatedField<T> GetOption<T>(RepeatedExtension<FileOptions, T> extension)
+        {
+            return Proto.Options.GetExtension(extension).Clone();
+        }
+        */
 
         /// <summary>
         /// Performs initialization for the given generic type argument.

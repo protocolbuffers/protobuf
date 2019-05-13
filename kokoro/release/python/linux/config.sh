@@ -6,6 +6,8 @@ function pre_build {
     # Runs in the root directory of this repository.
     pushd protobuf
 
+    yum install -y devtoolset-2-libatomic-devel
+
     # Build protoc
     ./autogen.sh
     ./configure

@@ -79,10 +79,10 @@ class ExtensionGenerator {
   virtual int GenerateRegistrationCode(io::Printer* printer) = 0;
 
  protected:
-  static void InitTemplateVars(const FieldDescriptor* descriptor,
-                               const std::string& scope, bool immutable,
-                               ClassNameResolver* name_resolver,
-                               std::map<std::string, std::string>* vars_pointer);
+  static void InitTemplateVars(
+      const FieldDescriptor* descriptor, const std::string& scope,
+      bool immutable, ClassNameResolver* name_resolver,
+      std::map<std::string, std::string>* vars_pointer);
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ExtensionGenerator);
@@ -100,7 +100,6 @@ class ImmutableExtensionGenerator : public ExtensionGenerator {
 
  protected:
   const FieldDescriptor* descriptor_;
-  Context* context_;
   ClassNameResolver* name_resolver_;
   std::string scope_;
 

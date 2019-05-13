@@ -879,7 +879,7 @@ void GenerateMessageToPool(const string& name_prefix, const Descriptor* message,
           "field", field->name(),
           "key", ToUpper(key->type_name()),
           "value", ToUpper(val->type_name()),
-          "number", SimpleItoa(field->number()),
+          "number", StrCat(field->number()),
           "other", EnumOrMessageSuffix(val, true));
     } else if (!field->containing_oneof()) {
       printer->Print(
@@ -888,7 +888,7 @@ void GenerateMessageToPool(const string& name_prefix, const Descriptor* message,
           "field", field->name(),
           "label", LabelForField(field),
           "type", ToUpper(field->type_name()),
-          "number", SimpleItoa(field->number()),
+          "number", StrCat(field->number()),
           "other", EnumOrMessageSuffix(field, true));
     }
   }
@@ -906,7 +906,7 @@ void GenerateMessageToPool(const string& name_prefix, const Descriptor* message,
           "\\Google\\Protobuf\\Internal\\GPBType::^type^, ^number^^other^)\n",
           "field", field->name(),
           "type", ToUpper(field->type_name()),
-          "number", SimpleItoa(field->number()),
+          "number", StrCat(field->number()),
           "other", EnumOrMessageSuffix(field, true));
     }
     printer->Print("->finish()\n");
@@ -1010,7 +1010,7 @@ void GenerateAddFileToPool(const FileDescriptor* file, bool is_descriptor,
 
     Outdent(printer);
     printer->Print(
-        "));\n\n");
+        "), true);\n\n");
   }
   printer->Print(
       "static::$is_initialized = true;\n");
@@ -1023,16 +1023,14 @@ void GenerateUseDeclaration(bool is_descriptor, io::Printer* printer) {
     printer->Print(
         "use Google\\Protobuf\\Internal\\GPBType;\n"
         "use Google\\Protobuf\\Internal\\RepeatedField;\n"
-        "use Google\\Protobuf\\Internal\\GPBUtil;\n"
-        "use Google\\Protobuf\\Internal\\GPBWrapperUtils;\n\n");
+        "use Google\\Protobuf\\Internal\\GPBUtil;\n\n");
   } else {
     printer->Print(
         "use Google\\Protobuf\\Internal\\GPBType;\n"
         "use Google\\Protobuf\\Internal\\GPBWire;\n"
         "use Google\\Protobuf\\Internal\\RepeatedField;\n"
         "use Google\\Protobuf\\Internal\\InputStream;\n"
-        "use Google\\Protobuf\\Internal\\GPBUtil;\n"
-        "use Google\\Protobuf\\Internal\\GPBWrapperUtils;\n\n");
+        "use Google\\Protobuf\\Internal\\GPBUtil;\n\n");
   }
 }
 
@@ -1146,13 +1144,17 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
     printer.Print(
         "namespace ^name^;\n\n",
         "name", fullname.substr(0, lastindex));
+
+    // We only need this 'use' statement if the enum has a namespace.
+    // Otherwise, we get a warning that the use statement has no effect.
+    printer.Print("use UnexpectedValueException;\n\n");
   }
+
+  GenerateEnumDocComment(&printer, en, is_descriptor);
 
   if (lastindex != string::npos) {
     fullname = fullname.substr(lastindex + 1);
   }
-
-  GenerateEnumDocComment(&printer, en, is_descriptor);
 
   printer.Print(
       "class ^name^\n"
@@ -1167,6 +1169,53 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
                   "name", ConstantNamePrefix(value->name()) + value->name(),
                   "number", IntToString(value->number()));
   }
+
+  printer.Print("\nprivate static $valueToName = [\n");
+  Indent(&printer);
+  for (int i = 0; i < en->value_count(); i++) {
+    const EnumValueDescriptor* value = en->value(i);
+    printer.Print("self::^name^ => '^name^',\n",
+                  "name", ConstantNamePrefix(value->name()) + value->name());
+  }
+  Outdent(&printer);
+  printer.Print("];\n");
+
+  printer.Print(
+      "\npublic static function name($value)\n"
+      "{\n");
+  Indent(&printer);
+  printer.Print("if (!isset(self::$valueToName[$value])) {\n");
+  Indent(&printer);
+  printer.Print("throw new UnexpectedValueException(sprintf(\n");
+  Indent(&printer);
+  Indent(&printer);
+  printer.Print("'Enum %s has no name defined for value %s', __CLASS__, $value));\n");
+  Outdent(&printer);
+  Outdent(&printer);
+  Outdent(&printer);
+  printer.Print("}\n"
+                "return self::$valueToName[$value];\n");
+  Outdent(&printer);
+  printer.Print("}\n\n");
+
+  printer.Print(
+      "\npublic static function value($name)\n"
+      "{\n");
+  Indent(&printer);
+  printer.Print("$const = __CLASS__ . '::' . strtoupper($name);\n"
+                "if (!defined($const)) {\n");
+  Indent(&printer);
+  printer.Print("throw new UnexpectedValueException(sprintf(\n");
+  Indent(&printer);
+  Indent(&printer);
+  printer.Print("'Enum %s has no value defined for name %s', __CLASS__, $name));\n");
+  Outdent(&printer);
+  Outdent(&printer);
+  Outdent(&printer);
+  printer.Print("}\n"
+                "return constant($const);\n");
+  Outdent(&printer);
+  printer.Print("}\n");
 
   Outdent(&printer);
   printer.Print("}\n\n");

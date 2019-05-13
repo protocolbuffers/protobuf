@@ -69,6 +69,7 @@ ProtoWriter::ProtoWriter(TypeResolver* type_resolver,
       ignore_unknown_fields_(false),
       ignore_unknown_enum_values_(false),
       use_lower_camel_for_enums_(false),
+      case_insensitive_enum_parsing_(true),
       element_(nullptr),
       size_insert_(),
       output_(output),
@@ -89,6 +90,7 @@ ProtoWriter::ProtoWriter(const TypeInfo* typeinfo,
       ignore_unknown_fields_(false),
       ignore_unknown_enum_values_(false),
       use_lower_camel_for_enums_(false),
+      case_insensitive_enum_parsing_(true),
       element_(nullptr),
       size_insert_(),
       output_(output),
@@ -250,7 +252,7 @@ inline Status WriteBool(int field_number, const DataPiece& data,
 // Writes a BYTES field, including tag, to the stream.
 inline Status WriteBytes(int field_number, const DataPiece& data,
                          CodedOutputStream* stream) {
-  StatusOr<string> c = data.ToBytes();
+  StatusOr<std::string> c = data.ToBytes();
   if (c.ok()) {
     WireFormatLite::WriteBytes(field_number, c.ValueOrDie(), stream);
   }
@@ -260,7 +262,7 @@ inline Status WriteBytes(int field_number, const DataPiece& data,
 // Writes a STRING field, including tag, to the stream.
 inline Status WriteString(int field_number, const DataPiece& data,
                           CodedOutputStream* stream) {
-  StatusOr<string> s = data.ToString();
+  StatusOr<std::string> s = data.ToString();
   if (s.ok()) {
     WireFormatLite::WriteString(field_number, s.ValueOrDie(), stream);
   }
@@ -311,10 +313,10 @@ ProtoWriter::ProtoElement::ProtoElement(ProtoWriter::ProtoElement* parent,
       typeinfo_(this->parent()->typeinfo_),
       proto3_(type.syntax() == google::protobuf::SYNTAX_PROTO3),
       type_(type),
-      size_index_(
-          !is_list && field->kind() == google::protobuf::Field_Kind_TYPE_MESSAGE
-              ? ow_->size_insert_.size()
-              : -1),
+      size_index_(!is_list && field->kind() ==
+                                  google::protobuf::Field_Kind_TYPE_MESSAGE
+                      ? ow_->size_insert_.size()
+                      : -1),
       array_index_(is_list ? 0 : -1),
       // oneof_indices_ values are 1-indexed (0 means not present).
       oneof_indices_(type_.oneofs_size() + 1) {
@@ -385,28 +387,46 @@ void ProtoWriter::ProtoElement::RegisterField(
   }
 }
 
-string ProtoWriter::ProtoElement::ToString() const {
-  if (parent() == nullptr) return "";
-  string loc = parent()->ToString();
-  if (!ow_->IsRepeated(*parent_field_) ||
-      parent()->parent_field_ != parent_field_) {
-    string name = parent_field_->name();
-    int i = 0;
-    while (i < name.size() && (ascii_isalnum(name[i]) || name[i] == '_')) ++i;
-    if (i > 0 && i == name.size()) {  // safe field name
-      if (loc.empty()) {
-        loc = name;
+std::string ProtoWriter::ProtoElement::ToString() const {
+  std::string loc = "";
+
+  // first populate a stack with the nodes since we need to process them
+  // from root to leaf when generating the string location
+  const ProtoWriter::ProtoElement* now = this;
+  std::stack<const ProtoWriter::ProtoElement*> element_stack;
+  while (now->parent() != nullptr) {
+    element_stack.push(now);
+    now = now->parent();
+  }
+
+  // now pop each node from the stack and append to the location string
+  while (!element_stack.empty()) {
+    now = element_stack.top();
+    element_stack.pop();
+
+    if (!ow_->IsRepeated(*(now->parent_field_)) ||
+        now->parent()->parent_field_ != now->parent_field_) {
+      std::string name = now->parent_field_->name();
+      int i = 0;
+      while (i < name.size() && (ascii_isalnum(name[i]) || name[i] == '_')) ++i;
+      if (i > 0 && i == name.size()) {  // safe field name
+        if (loc.empty()) {
+          loc = name;
+        } else {
+          StrAppend(&loc, ".", name);
+        }
       } else {
-        StrAppend(&loc, ".", name);
+        StrAppend(&loc, "[\"", CEscape(name), "\"]");
       }
-    } else {
-      StrAppend(&loc, "[\"", CEscape(name), "\"]");
+    }
+
+    int array_index_now = now->array_index_;
+    if (ow_->IsRepeated(*(now->parent_field_)) && array_index_now > 0) {
+      StrAppend(&loc, "[", array_index_now - 1, "]");
     }
   }
-  if (ow_->IsRepeated(*parent_field_) && array_index_ > 0) {
-    StrAppend(&loc, "[", array_index_ - 1, "]");
-  }
-  return loc.empty() ? "." : loc;
+
+  return loc;
 }
 
 bool ProtoWriter::ProtoElement::IsOneofIndexTaken(int32 index) {
@@ -571,9 +591,11 @@ Status ProtoWriter::WriteEnum(int field_number, const DataPiece& data,
                               const google::protobuf::Enum* enum_type,
                               CodedOutputStream* stream,
                               bool use_lower_camel_for_enums,
+                              bool case_insensitive_enum_parsing,
                               bool ignore_unknown_values) {
   bool is_unknown_enum_value = false;
   StatusOr<int> e = data.ToEnum(enum_type, use_lower_camel_for_enums,
+                                case_insensitive_enum_parsing,
                                 ignore_unknown_values, &is_unknown_enum_value);
   if (e.ok() && !is_unknown_enum_value) {
     WireFormatLite::WriteEnum(field_number, e.ValueOrDie(), stream);
@@ -671,14 +693,15 @@ ProtoWriter* ProtoWriter::RenderPrimitiveField(
       break;
     }
     case google::protobuf::Field_Kind_TYPE_ENUM: {
-      status = WriteEnum(field.number(), data,
-                         typeinfo_->GetEnumByTypeUrl(field.type_url()),
-                         stream_.get(), use_lower_camel_for_enums_,
-                         ignore_unknown_enum_values_);
+      status = WriteEnum(
+          field.number(), data, typeinfo_->GetEnumByTypeUrl(field.type_url()),
+          stream_.get(), use_lower_camel_for_enums_,
+          case_insensitive_enum_parsing_, ignore_unknown_enum_values_);
       break;
     }
     default:  // TYPE_GROUP or TYPE_MESSAGE
-      status = Status(INVALID_ARGUMENT, data.ToString().ValueOrDie());
+      status = Status(util::error::INVALID_ARGUMENT,
+                      data.ToString().ValueOrDie());
   }
 
   if (!status.ok()) {
@@ -687,7 +710,7 @@ ProtoWriter* ProtoWriter::RenderPrimitiveField(
       element_.reset(new ProtoElement(element_.release(), &field, type, false));
     }
     InvalidValue(google::protobuf::Field_Kind_Name(field.kind()),
-                 status.error_message());
+                 status.message());
     element_.reset(element()->pop());
     return this;
   }

@@ -130,6 +130,13 @@ It will generate *Visual Studio* solution file *protobuf.sln* in current directo
 If the *gmock* directory does not exist, and you do not want to build protobuf unit tests,
 you need to add *cmake* command argument `-Dprotobuf_BUILD_TESTS=OFF` to disable testing.
 
+To make a *Visual Studio* file for Visual Studio 15 2017, create the *Visual Studio*
+solution file above and edit the CmakeCache file.
+
+	C:Path\to\protobuf\cmake\build\solution\CMakeCache
+
+Then create the *Visual Studio* solution file again
+
 Compiling
 =========
 
@@ -170,9 +177,9 @@ You should see output similar to:
 
      Running main() from gmock_main.cc
      [==========] Running 1546 tests from 165 test cases.
-     
+
      ...
-     
+
      [==========] 1546 tests from 165 test cases ran. (2529 ms total)
      [  PASSED  ] 1546 tests.
 
@@ -191,7 +198,7 @@ To run specific tests:
      [ RUN      ] AnyTest.TestIs
      [       OK ] AnyTest.TestIs (0 ms)
      [----------] 3 tests from AnyTest (1 ms total)
-     
+
      [----------] Global test environment tear-down
      [==========] 3 tests from 1 test case ran. (2 ms total)
      [  PASSED  ] 3 tests.
@@ -303,7 +310,7 @@ If you already have ZLIB library and headers at some other location on your syst
 
 	-DZLIB_INCLUDE_DIR=<path to dir containing zlib headers>
 	-DZLIB_LIB=<path to dir containing zlib>
-	
+
 Build and testing protobuf as usual.
 
 Notes on Compiler Warnings

@@ -37,15 +37,11 @@
 #include <google/protobuf/compiler/objectivec/objectivec_field.h>
 #include <google/protobuf/compiler/objectivec/objectivec_helpers.h>
 #include <google/protobuf/compiler/objectivec/objectivec_oneof.h>
-#include <google/protobuf/stubs/common.h>
+#include <google/protobuf/descriptor.h>
+#include <google/protobuf/io/printer.h>
 
 namespace google {
 namespace protobuf {
-
-namespace io {
-class Printer;  // printer.h
-}  // namespace io
-
 namespace compiler {
 namespace objectivec {
 
@@ -58,6 +54,9 @@ class MessageGenerator {
                    const Descriptor* descriptor,
                    const Options& options);
   ~MessageGenerator();
+
+  MessageGenerator(const MessageGenerator&) = delete;
+  MessageGenerator& operator=(const MessageGenerator&) = delete;
 
   void GenerateStaticVariablesInitialization(io::Printer* printer);
   void GenerateEnumHeader(io::Printer* printer);
@@ -90,11 +89,11 @@ class MessageGenerator {
   std::vector<EnumGenerator*> enum_generators_;
   std::vector<MessageGenerator*> nested_message_generators_;
   std::vector<OneofGenerator*> oneof_generators_;
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MessageGenerator);
 };
+
 }  // namespace objectivec
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_MESSAGE_H__
