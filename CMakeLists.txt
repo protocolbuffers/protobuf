@@ -115,6 +115,7 @@ target_link_libraries(upb_pb
   table
   upb)
 add_library(upb_json
+  generated_for_cmake/upb/json/parser.c
   upb/json/printer.c
   upb/json/parser.h
   upb/json/printer.h)

@@ -4,7 +4,7 @@ package(
 )
 
 cc_binary(
-    name = "ragel",
+    name = "ragelc",
     srcs = [
         "ragel/rubycodegen.cpp",
         "ragel/goipgoto.h",

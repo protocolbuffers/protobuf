@@ -543,8 +543,8 @@ genrule(
     name = "generate_json_ragel",
     srcs = ["upb/json/parser.rl"],
     outs = ["upb/json/parser.c"],
-    cmd = "$(location @ragel//:ragel) -C -o upb/json/parser.c $< && mv upb/json/parser.c $@",
-    tools = ["@ragel"],
+    cmd = "$(location @ragel//:ragelc) -C -o upb/json/parser.c $< && mv upb/json/parser.c $@",
+    tools = ["@ragel//:ragelc"],
 )
 
 genrule(

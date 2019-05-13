@@ -1,3 +1,9 @@
+
+load("@bazel_skylib//lib:paths.bzl", "paths")
+load("@bazel_skylib//lib:versions.bzl", "versions")
+load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain")
+load("@bazel_version//:bazel_version.bzl", "bazel_version")
+
 _shell_find_runfiles = """
   # --- begin runfiles.bash initialization ---
   # Copy-pasted from Bazel's Bash runfiles library (tools/bash/runfiles/runfiles.bash).
@@ -22,10 +28,6 @@ _shell_find_runfiles = """
   fi
   # --- end runfiles.bash initialization ---
 """
-
-load("@bazel_skylib//lib:paths.bzl", "paths")
-load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain")
-load("@bazel_tools//tools/build_defs/cc:action_names.bzl", "CPP_LINK_STATIC_LIBRARY_ACTION_NAME")
 
 def _librule(name):
     return name + "_lib"
@@ -272,38 +274,63 @@ def filter_none(elems):
 
 # upb_proto_library() rule
 
-def cc_library_func(ctx, hdrs, srcs, deps):
-    compilation_contexts = []
-    linking_contexts = []
-    for dep in deps:
-        if CcInfo in dep:
-            linking_contexts.append(dep[CcInfo].linking_context)
-            compilation_contexts.append(dep[CcInfo].compilation_context)
+def cc_library_func(ctx, name, hdrs, srcs, dep_ccinfos):
+    compilation_contexts = [info.compilation_context for info in dep_ccinfos]
+    linking_contexts = [info.linking_context for info in dep_ccinfos]
     toolchain = find_cpp_toolchain(ctx)
     feature_configuration = cc_common.configure_features(
         cc_toolchain = toolchain,
         requested_features = ctx.features,
         unsupported_features = ctx.disabled_features,
     )
-    compilation_info = cc_common.compile(
-        ctx = ctx,
+
+    if is_bazel:
+        if bazel_version == "0.24.1":
+            # Compatibility code until gRPC is on 0.25.2 or later.
+            compilation_info = cc_common.compile(
+                ctx = ctx,
+                feature_configuration = feature_configuration,
+                cc_toolchain = toolchain,
+                srcs = srcs,
+                hdrs = hdrs,
+                compilation_contexts = compilation_contexts,
+            )
+            linking_info = cc_common.link(
+                ctx = ctx,
+                feature_configuration = feature_configuration,
+                cc_toolchain = toolchain,
+                cc_compilation_outputs = compilation_info.cc_compilation_outputs,
+                linking_contexts = linking_contexts,
+            )
+            return CcInfo(
+                compilation_context = compilation_info.compilation_context,
+                linking_context = linking_info.linking_context,
+            )
+
+        if not versions.is_at_least("0.25.2", bazel_version):
+            fail("upb requires Bazel >=0.25.2 or 0.24.1")
+
+    (compilation_context, compilation_outputs) = cc_common.compile(
+        actions = ctx.actions,
         feature_configuration = feature_configuration,
         cc_toolchain = toolchain,
+        name = name,
         srcs = srcs,
-        hdrs = hdrs,
+        public_hdrs = hdrs,
         compilation_contexts = compilation_contexts,
     )
-    linking_info = cc_common.link(
-        ctx = ctx,
+    (linking_context, linking_outputs) = cc_common.create_linking_context_from_compilation_outputs(
+        actions = ctx.actions,
+        name = name,
         feature_configuration = feature_configuration,
         cc_toolchain = toolchain,
-        cc_compilation_outputs = compilation_info.cc_compilation_outputs,
+        compilation_outputs = compilation_outputs,
         linking_contexts = linking_contexts,
     )
 
     return CcInfo(
-        compilation_context = compilation_info.compilation_context,
-        linking_context = linking_info.linking_context,
+        compilation_context = compilation_context,
+        linking_context = linking_context,
     )
 
 def _compile_upb_protos(ctx, proto_info, proto_sources, ext):
@@ -352,11 +379,14 @@ def _upb_proto_rule_impl(ctx):
 def _upb_proto_aspect_impl(target, ctx):
     proto_info = target[ProtoInfo]
     files = _compile_upb_protos(ctx, proto_info, proto_info.direct_sources, ctx.attr._ext)
+    deps = ctx.rule.attr.deps + [ctx.attr._upb]
+    dep_ccinfos = [dep[CcInfo] for dep in deps if CcInfo in dep]
     cc_info = cc_library_func(
         ctx = ctx,
+        name = ctx.rule.attr.name,
         hdrs = files.hdrs,
         srcs = files.srcs,
-        deps = ctx.rule.attr.deps + [ctx.attr._upb],
+        dep_ccinfos = dep_ccinfos,
     )
     return [cc_info]
 

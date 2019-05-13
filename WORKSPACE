@@ -3,6 +3,11 @@ workspace(name = "upb")
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+load(":repository_defs.bzl", "bazel_version_repository")
+
+bazel_version_repository(
+    name = "bazel_version"
+)
 
 http_archive(
     name = "lua",
@@ -17,11 +22,16 @@ http_archive(
 
 git_repository(
     name = "com_google_protobuf",
-    commit = "25feb59620627b673df76813dfd66e3f565765e7",
-    #sha256 = "d7a221b3d4fb4f05b7473795ccea9e05dab3b8721f6286a95fffbffc2d926f8b",
-    remote = "https://github.com/haberman/protobuf.git",
-    shallow_since = "1541281400 -0700"
-    #tag = "conformance-build-tag",
+    remote = "https://github.com/protocolbuffers/protobuf.git",
+    commit = "78ca77ac8799f67fda7b9a01cc691cd9fe526f25",
+)
+
+http_archive(
+    name = "zlib",
+    build_file = "@com_google_protobuf//:third_party/zlib.BUILD",
+    sha256 = "c3e5e9fdd5004dcb542feda5ee4f0ff0744628baf8ed2dd5d66f8ca1197cb1a1",
+    strip_prefix = "zlib-1.2.11",
+    urls = ["https://zlib.net/zlib-1.2.11.tar.gz"],
 )
 
 git_repository(
@@ -40,8 +50,7 @@ http_archive(
 )
 
 http_archive(
-    name = "bazel_skylib",
-    sha256 = "bbccf674aa441c266df9894182d80de104cabd19be98be002f6d478aaa31574d",
-    strip_prefix = "bazel-skylib-2169ae1c374aab4a09aa90e65efe1a3aad4e279b",
-    urls = ["https://github.com/bazelbuild/bazel-skylib/archive/2169ae1c374aab4a09aa90e65efe1a3aad4e279b.tar.gz"],
+   name = "bazel_skylib",
+   strip_prefix = "bazel-skylib-master",
+   urls = ["https://github.com/bazelbuild/bazel-skylib/archive/master.tar.gz"],
 )
