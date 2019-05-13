@@ -1021,6 +1021,10 @@ bool IsIndexInHasBitSet(const uint32* has_bit_set,
   return ((has_bit_set[has_bit_index / 32] >> (has_bit_index % 32)) &
           static_cast<uint32>(1)) != 0;
 }
+
+bool CreateUnknownEnumValues(const FileDescriptor* file) {
+  return file->syntax() == FileDescriptor::SYNTAX_PROTO3;
+}
 }  // namespace
 
 void Reflection::ListFields(const Message& message,
@@ -1287,10 +1291,6 @@ void Reflection::AddString(Message* message, const FieldDescriptor* field,
 
 
 // -------------------------------------------------------------------
-
-bool CreateUnknownEnumValues(const FileDescriptor* file) {
-  return file->syntax() == FileDescriptor::SYNTAX_PROTO3;
-}
 
 const EnumValueDescriptor* Reflection::GetEnum(
     const Message& message, const FieldDescriptor* field) const {
