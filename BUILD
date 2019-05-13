@@ -60,12 +60,12 @@ cc_library(
         "upb/msg.h",
         "upb/upb.h",
     ],
+    copts = COPTS,
     # Internal-only, but we have to make them public for generated code.
     textual_hdrs = [
         "upb/port_def.inc",
         "upb/port_undef.inc",
     ],
-    copts = COPTS,
     visibility = ["//visibility:public"],
 )
 
@@ -88,7 +88,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":descriptor_upbproto",
-        ":upb"
+        ":upb",
     ],
 )
 
@@ -108,8 +108,11 @@ cc_library(
         "upb/legacy_msg_reflection.c",
     ],
     hdrs = ["upb/legacy_msg_reflection.h"],
-    deps = [":upb"],
     copts = COPTS,
+    deps = [
+        ":table",
+        ":upb",
+    ],
 )
 
 cc_library(
@@ -154,6 +157,7 @@ cc_library(
     ],
 )
 
+# copybara:strip_for_google3_begin
 cc_library(
     name = "upb_json",
     srcs = [
@@ -170,6 +174,7 @@ cc_library(
         ":upb_pb",
     ],
 )
+# copybara:strip_end
 
 cc_library(
     name = "upb_cc_bindings",
@@ -189,30 +194,28 @@ cc_library(
         "upbc/message_layout.h",
     ],
     hdrs = ["upbc/generator.h"],
+    copts = CPPOPTS,
     deps = [
         map_dep("@absl//absl/base:core_headers"),
         map_dep("@absl//absl/strings"),
         map_dep("@com_google_protobuf//:protobuf"),
         map_dep("@com_google_protobuf//:protoc_lib"),
     ],
-    copts = CPPOPTS,
 )
 
 cc_binary(
     name = "protoc-gen-upb",
     srcs = ["upbc/main.cc"],
+    copts = CPPOPTS,
+    visibility = ["//visibility:public"],
     deps = [
         ":upbc_generator",
         map_dep("@com_google_protobuf//:protoc_lib"),
     ],
-    copts = CPPOPTS,
-    visibility = ["//visibility:public"],
 )
 
 # We strip the tests and remaining rules from google3 until the upb_proto_library()
 # and upb_proto_reflection_library() rules are fixed.
-
-# copybara:strip_for_google3_begin
 
 # C/C++ tests ##################################################################
 
@@ -232,11 +235,11 @@ cc_library(
 cc_test(
     name = "test_varint",
     srcs = ["tests/pb/test_varint.c"],
+    copts = COPTS,
     deps = [
         ":upb_pb",
         ":upb_test",
     ],
-    copts = COPTS,
 )
 
 proto_library(
@@ -254,12 +257,12 @@ upb_proto_reflection_library(
 cc_test(
     name = "test_decoder",
     srcs = ["tests/pb/test_decoder.cc"],
+    copts = CPPOPTS,
     deps = [
         ":test_decoder_upbproto",
         ":upb_pb",
         ":upb_test",
     ],
-    copts = CPPOPTS,
 )
 
 upb_proto_reflection_library(
@@ -270,13 +273,13 @@ upb_proto_reflection_library(
 cc_test(
     name = "test_encoder",
     srcs = ["tests/pb/test_encoder.cc"],
+    copts = CPPOPTS,
     deps = [
         "descriptor_upbreflection",
         ":upb_cc_bindings",
         ":upb_pb",
         ":upb_test",
     ],
-    copts = CPPOPTS,
 )
 
 proto_library(
@@ -294,25 +297,26 @@ upb_proto_reflection_library(
 cc_test(
     name = "test_cpp",
     srcs = ["tests/test_cpp.cc"],
+    copts = CPPOPTS,
     deps = [
         ":test_cpp_upbproto",
         ":upb",
         ":upb_pb",
         ":upb_test",
     ],
-    copts = CPPOPTS,
 )
 
 cc_test(
     name = "test_table",
     srcs = ["tests/test_table.cc"],
+    copts = CPPOPTS,
     deps = [
         ":upb",
         ":upb_test",
     ],
-    copts = CPPOPTS,
 )
 
+# copybara:strip_for_google3_begin
 proto_library(
     name = "test_json_enum_from_separate",
     srcs = ["tests/json/enum_from_separate_file.proto"],
@@ -344,14 +348,15 @@ cc_test(
     srcs = [
         "tests/json/test_json.cc",
     ],
+    copts = CPPOPTS,
     deps = [
-        ":test_json_upbprotoreflection",
         ":test_json_upbproto",
+        ":test_json_upbprotoreflection",
         ":upb_json",
         ":upb_test",
     ],
-    copts = CPPOPTS,
 )
+# copybara:strip_end
 
 upb_proto_library(
     name = "conformance_proto_upb",
@@ -392,6 +397,8 @@ sh_test(
         "@com_google_protobuf//:conformance_test_runner",
     ],
 )
+
+# copybara:strip_for_google3_begin
 
 # Amalgamation #################################################################
 
@@ -497,7 +504,7 @@ filegroup(
         "upbc/**/*",
         "upb/**/*",
         "tests/**/*",
-    ])
+    ]),
 )
 
 make_shell_script(
@@ -571,9 +578,9 @@ generated_file_staleness_test(
     name = "test_generated_files",
     outs = [
         "CMakeLists.txt",
-        "generated_for_cmake/upb/json/parser.c",
         "generated_for_cmake/google/protobuf/descriptor.upb.c",
         "generated_for_cmake/google/protobuf/descriptor.upb.h",
+        "generated_for_cmake/upb/json/parser.c",
     ],
     generated_pattern = "generated-in/%s",
 )

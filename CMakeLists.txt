@@ -87,6 +87,7 @@ add_library(legacy_msg_reflection
   upb/legacy_msg_reflection.c
   upb/legacy_msg_reflection.h)
 target_link_libraries(legacy_msg_reflection
+  table
   upb)
 add_library(handlers
   upb/handlers.c
