@@ -22,11 +22,8 @@ http_archive(
 
 git_repository(
     name = "com_google_protobuf",
-    # TODO(haberman): update to protobuf branch oncd this is merged:
-    #   https://github.com/protocolbuffers/protobuf/pull/6126
-    #remote = "https://github.com/protocolbuffers/protobuf.git",
-    commit = "2996da4d817dd006cd8599c74ad2364a897d6107",
-    remote = "https://github.com/haberman/protobuf.git",
+    remote = "https://github.com/protocolbuffers/protobuf.git",
+    commit = "78ca77ac8799f67fda7b9a01cc691cd9fe526f25",
 )
 
 http_archive(
