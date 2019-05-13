@@ -82,7 +82,7 @@ const std::string kEscapeTestStringEscaped =
 
 class TextFormatTest : public testing::Test {
  public:
-  static void SetUpTestCase() {
+  static void SetUpTestSuite() {
     GOOGLE_CHECK_OK(File::GetContents(
         TestUtil::GetTestDataPath(
             "net/proto2/internal/"
@@ -105,7 +105,7 @@ std::string TextFormatTest::static_proto_debug_string_;
 
 class TextFormatExtensionsTest : public testing::Test {
  public:
-  static void SetUpTestCase() {
+  static void SetUpTestSuite() {
     GOOGLE_CHECK_OK(File::GetContents(
         TestUtil::GetTestDataPath("net/proto2/internal/testdata/"
                                   "text_format_unittest_extensions_data.txt"),

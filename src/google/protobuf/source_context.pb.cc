@@ -55,7 +55,7 @@ static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] =
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&PROTOBUF_NAMESPACE_ID::_SourceContext_default_instance_),
 };
 
-const char descriptor_table_protodef_google_2fprotobuf_2fsource_5fcontext_2eproto[] =
+const char descriptor_table_protodef_google_2fprotobuf_2fsource_5fcontext_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
   "\n$google/protobuf/source_context.proto\022\017"
   "google.protobuf\"\"\n\rSourceContext\022\021\n\tfile"
   "_name\030\001 \001(\tB\225\001\n\023com.google.protobufB\022Sou"

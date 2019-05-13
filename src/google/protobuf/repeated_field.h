@@ -83,6 +83,7 @@ namespace google {
 namespace protobuf {
 
 class Message;
+class Reflection;
 
 namespace internal {
 
@@ -147,6 +148,11 @@ class RepeatedField final {
   // Appends a new element and return a pointer to it.
   // The new element is uninitialized if |Element| is a POD type.
   Element* Add();
+  // Append elements in the range [begin, end) after reserving
+  // the appropriate number of elements.
+  template <typename Iter>
+  void Add(Iter begin, Iter end);
+
   // Remove the last element in the array.
   void RemoveLast();
 
@@ -630,7 +636,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // The reflection implementation needs to call protected methods directly,
   // reinterpreting pointers as being to Message instead of a specific Message
   // subclass.
-  friend class GeneratedMessageReflection;
+  friend class ::PROTOBUF_NAMESPACE_ID::Reflection;
 
   // ExtensionSet stores repeated message extensions as
   // RepeatedPtrField<MessageLite>, but non-lite ExtensionSets need to implement
@@ -1071,26 +1077,7 @@ template <typename Element>
 template <typename Iter>
 RepeatedField<Element>::RepeatedField(Iter begin, const Iter& end)
     : current_size_(0), total_size_(0), ptr_(NULL) {
-  int reserve = internal::CalculateReserve(begin, end);
-  if (reserve != -1) {
-    if (reserve == 0) {
-      return;
-    }
-
-    Reserve(reserve);
-    // TODO(ckennelly):  The compiler loses track of the buffer freshly
-    // allocated by Reserve() by the time we call elements, so it cannot
-    // guarantee that elements does not alias [begin(), end()).
-    //
-    // If restrict is available, annotating the pointer obtained from elements()
-    // causes this to lower to memcpy instead of memmove.
-    std::copy(begin, end, elements());
-    current_size_ = reserve;
-  } else {
-    for (; begin != end; ++begin) {
-      Add(*begin);
-    }
-  }
+  Add(begin, end);
 }
 
 template <typename Element>
@@ -1232,6 +1219,31 @@ template <typename Element>
 inline Element* RepeatedField<Element>::Add() {
   if (current_size_ == total_size_) Reserve(total_size_ + 1);
   return &elements()[current_size_++];
+}
+
+template <typename Element>
+template <typename Iter>
+inline void RepeatedField<Element>::Add(Iter begin, Iter end) {
+  int reserve = internal::CalculateReserve(begin, end);
+  if (reserve != -1) {
+    if (reserve == 0) {
+      return;
+    }
+
+    Reserve(reserve + size());
+    // TODO(ckennelly):  The compiler loses track of the buffer freshly
+    // allocated by Reserve() by the time we call elements, so it cannot
+    // guarantee that elements does not alias [begin(), end()).
+    //
+    // If restrict is available, annotating the pointer obtained from elements()
+    // causes this to lower to memcpy instead of memmove.
+    std::copy(begin, end, elements() + size());
+    current_size_ = reserve + size();
+  } else {
+    for (; begin != end; ++begin) {
+      Add(*begin);
+    }
+  }
 }
 
 template <typename Element>

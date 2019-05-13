@@ -55,7 +55,7 @@ static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] =
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&PROTOBUF_NAMESPACE_ID::_FieldMask_default_instance_),
 };
 
-const char descriptor_table_protodef_google_2fprotobuf_2ffield_5fmask_2eproto[] =
+const char descriptor_table_protodef_google_2fprotobuf_2ffield_5fmask_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
   "\n google/protobuf/field_mask.proto\022\017goog"
   "le.protobuf\"\032\n\tFieldMask\022\r\n\005paths\030\001 \003(\tB"
   "\214\001\n\023com.google.protobufB\016FieldMaskProtoP"
