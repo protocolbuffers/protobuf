@@ -49,8 +49,6 @@ cc_library(
         "upb/decode.c",
         "upb/encode.c",
         "upb/msg.c",
-        "upb/port_def.inc",
-        "upb/port_undef.inc",
         "upb/table.c",
         "upb/table.int.h",
         "upb/upb.c",
@@ -61,6 +59,11 @@ cc_library(
         "upb/generated_util.h",
         "upb/msg.h",
         "upb/upb.h",
+    ],
+    # Internal-only, but we have to make them public for generated code.
+    textual_hdrs = [
+        "upb/port_def.inc",
+        "upb/port_undef.inc",
     ],
     copts = COPTS,
     visibility = ["//visibility:public"],

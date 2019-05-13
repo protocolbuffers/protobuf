@@ -192,6 +192,8 @@ def _file_list_aspect_impl(target, ctx):
         srcs += src.files.to_list()
     for hdr in ctx.rule.attr.hdrs:
         hdrs += hdr.files.to_list()
+    for hdr in ctx.rule.attr.textual_hdrs:
+        hdrs += hdr.files.to_list()
     return [SrcList(srcs = srcs, hdrs = hdrs)]
 
 _file_list_aspect = aspect(
@@ -372,16 +374,16 @@ def _compile_upb_protos(ctx, proto_info, proto_sources, ext):
 
 # upb_proto_library() shared code #############################################
 
-# Can share these with upb_proto_library() once cc_common.link() supports name
-# param.
+_WrappedCcInfo = provider(fields = ["cc_info"])
 
 def _upb_proto_rule_impl(ctx):
     if len(ctx.attr.deps) != 1:
         fail("only one deps dependency allowed.")
     dep = ctx.attr.deps[0]
-    if CcInfo not in dep:
-        fail("proto_library rule must generate CcInfo (aspect should have handled this).")
-    lib = dep[CcInfo].linking_context.libraries_to_link[0]
+    if _WrappedCcInfo not in dep:
+        fail("proto_library rule must generate _WrappedCcInfo (aspect should have handled this).")
+    cc_info = dep[_WrappedCcInfo].cc_info
+    lib = cc_info.linking_context.libraries_to_link[0]
     files = filter_none([
         lib.static_library,
         lib.pic_static_library,
@@ -389,7 +391,7 @@ def _upb_proto_rule_impl(ctx):
     ])
     return [
         DefaultInfo(files = depset(files)),
-        dep[CcInfo],
+        cc_info,
     ]
 
 def _upb_proto_aspect_impl(target, ctx):
@@ -397,6 +399,7 @@ def _upb_proto_aspect_impl(target, ctx):
     files = _compile_upb_protos(ctx, proto_info, proto_info.direct_sources, ctx.attr._ext)
     deps = ctx.rule.attr.deps + [ctx.attr._upb]
     dep_ccinfos = [dep[CcInfo] for dep in deps if CcInfo in dep]
+    dep_ccinfos += [dep[_WrappedCcInfo].cc_info for dep in deps if _WrappedCcInfo in dep]
     cc_info = cc_library_func(
         ctx = ctx,
         name = ctx.rule.attr.name + "_upb",
@@ -404,7 +407,7 @@ def _upb_proto_aspect_impl(target, ctx):
         srcs = files.srcs,
         dep_ccinfos = dep_ccinfos,
     )
-    return [cc_info]
+    return [_WrappedCcInfo(cc_info = cc_info)]
 
 # upb_proto_library() ##########################################################
 

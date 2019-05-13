@@ -64,8 +64,6 @@ add_library(upb
   upb/decode.c
   upb/encode.c
   upb/msg.c
-  upb/port_def.inc
-  upb/port_undef.inc
   upb/table.c
   upb/table.int.h
   upb/upb.c
