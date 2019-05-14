@@ -79,6 +79,7 @@ add_library(reflection
   upb/msgfactory.h)
 target_link_libraries(reflection
   descriptor_upbproto
+  table
   upb)
 add_library(table INTERFACE)
 target_link_libraries(table INTERFACE
@@ -110,6 +111,7 @@ add_library(upb_pb
   upb/pb/encoder.h
   upb/pb/textprinter.h)
 target_link_libraries(upb_pb
+  descriptor_upbproto
   handlers
   table
   upb)
@@ -123,10 +125,14 @@ target_link_libraries(upb_json
   upb_pb)
 add_library(upb_cc_bindings INTERFACE)
 target_link_libraries(upb_cc_bindings INTERFACE
+  descriptor_upbproto
+  handlers
   upb)
 add_library(upb_test
   tests/testmain.cc
   tests/test_util.h
   tests/upb_test.h)
+target_link_libraries(upb_test
+  handlers)
 
 

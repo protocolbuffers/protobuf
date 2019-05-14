@@ -87,6 +87,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":descriptor_upbproto",
+        ":table",
         ":upb",
     ],
 )
@@ -150,6 +151,7 @@ cc_library(
     ],
     copts = COPTS,
     deps = [
+        ":descriptor_upbproto",
         ":handlers",
         ":table",
         ":upb",
@@ -180,7 +182,11 @@ cc_library(
     hdrs = [
         "upb/bindings/stdc++/string.h",
     ],
-    deps = [":upb"],
+    deps = [
+        ":descriptor_upbproto",
+        ":handlers",
+        ":upb",
+    ],
 )
 
 # upb compiler #################################################################
@@ -229,6 +235,7 @@ cc_library(
         "tests/upb_test.h",
     ],
     copts = CPPOPTS,
+    deps = [":handlers"],
 )
 
 cc_test(
@@ -359,18 +366,19 @@ cc_test(
 
 upb_proto_library(
     name = "conformance_proto_upb",
-    deps = ["@com_google_protobuf//:conformance_proto"],
     testonly = 1,
+    deps = ["@com_google_protobuf//:conformance_proto"],
 )
 
 upb_proto_library(
     name = "test_messages_proto3_proto_upb",
-    deps = ["@com_google_protobuf//:test_messages_proto3_proto"],
     testonly = 1,
+    deps = ["@com_google_protobuf//:test_messages_proto3_proto"],
 )
 
 cc_binary(
     name = "conformance_upb",
+    testonly = 1,
     srcs = [
         "tests/conformance_upb.c",
     ],
@@ -380,7 +388,6 @@ cc_binary(
         ":test_messages_proto3_proto_upb",
         ":upb",
     ],
-    testonly = 1,
 )
 
 make_shell_script(
