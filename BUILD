@@ -129,6 +129,7 @@ cc_library(
     copts = COPTS,
     deps = [
         ":reflection",
+        ":table",
         ":upb",
     ],
 )
@@ -240,7 +241,10 @@ cc_library(
 
 cc_test(
     name = "test_varint",
-    srcs = ["tests/pb/test_varint.c"],
+    srcs = [
+        "tests/pb/test_varint.c" +
+        "upb/pb/varint.int.h",
+    ],
     copts = COPTS,
     deps = [
         ":upb_pb",
@@ -281,7 +285,8 @@ cc_test(
     srcs = ["tests/pb/test_encoder.cc"],
     copts = CPPOPTS,
     deps = [
-        "descriptor_upbreflection",
+        ":descriptor_upbproto",
+        ":descriptor_upbreflection",
         ":upb_cc_bindings",
         ":upb_pb",
         ":upb_test",
