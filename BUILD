@@ -7,7 +7,6 @@ load(
     "lua_library",
     "lua_test",
     "make_shell_script",
-    "map_dep",
     "upb_amalgamation",
     "upb_proto_library",
     "upb_proto_reflection_library",
@@ -71,7 +70,7 @@ cc_library(
 
 upb_proto_library(
     name = "descriptor_upbproto",
-    deps = [map_dep("@com_google_protobuf//:descriptor_proto")],
+    deps = ["@com_google_protobuf//:descriptor_proto"],
 )
 
 cc_library(
@@ -196,10 +195,10 @@ cc_library(
     hdrs = ["upbc/generator.h"],
     copts = CPPOPTS,
     deps = [
-        map_dep("@absl//absl/base:core_headers"),
-        map_dep("@absl//absl/strings"),
-        map_dep("@com_google_protobuf//:protobuf"),
-        map_dep("@com_google_protobuf//:protoc_lib"),
+        "@absl//absl/base:core_headers",
+        "@absl//absl/strings",
+        "@com_google_protobuf//:protobuf",
+        "@com_google_protobuf//:protoc_lib",
     ],
 )
 
@@ -210,7 +209,7 @@ cc_binary(
     visibility = ["//visibility:public"],
     deps = [
         ":upbc_generator",
-        map_dep("@com_google_protobuf//:protoc_lib"),
+        "@com_google_protobuf//:protoc_lib",
     ],
 )
 
@@ -384,7 +383,7 @@ cc_binary(
 make_shell_script(
     name = "gen_test_conformance_upb",
     out = "test_conformance_upb.sh",
-    contents = "$(rlocation com_google_protobuf/conformance_test_runner) $(rlocation upb/conformance_upb)",
+    contents = "$(rlocation @com_google_protobuf/conformance_test_runner) $(rlocation upb/conformance_upb)",
 )
 
 sh_test(

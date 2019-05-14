@@ -239,12 +239,6 @@ google3_dep_map = {
     "@com_google_protobuf//:protoc_lib": "//third_party/protobuf:libprotoc",
 }
 
-def map_dep(dep):
-    if is_bazel:
-        return dep
-    else:
-        return google3_dep_map[dep]
-
 def _get_real_short_path(file):
     # For some reason, files from other archives have short paths that look like:
     #   ../com_google_protobuf/google/protobuf/descriptor.proto
@@ -430,10 +424,10 @@ _upb_proto_library_aspect = aspect(
         "_protoc": attr.label(
             executable = True,
             cfg = "host",
-            default = map_dep("@com_google_protobuf//:protoc"),
+            default = "@com_google_protobuf//:protoc",
         ),
         "_cc_toolchain": attr.label(
-            default = map_dep("@bazel_tools//tools/cpp:current_cc_toolchain"),
+            default = "@bazel_tools//tools/cpp:current_cc_toolchain",
         ),
         "_upb": attr.label(default = ":upb"),
         "_ext": attr.string(default = ".upb"),
@@ -481,7 +475,7 @@ upb_proto_srcs = rule(
         "_protoc": attr.label(
             executable = True,
             cfg = "host",
-            default = map_dep("@com_google_protobuf//:protoc"),
+            default = "@com_google_protobuf//:protoc",
         ),
         "deps": attr.label_list(),
         "ext": attr.string(default = ".upb")
