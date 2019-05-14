@@ -229,16 +229,6 @@ upb_amalgamation = rule(
 
 is_bazel = not hasattr(native, "genmpm")
 
-google3_dep_map = {
-    "@absl//absl/base:core_headers": "//third_party/absl/base:core_headers",
-    "@absl//absl/strings": "//third_party/absl/strings",
-    "@bazel_tools//tools/cpp:current_cc_toolchain": "//tools/cpp:current_cc_toolchain",
-    "@com_google_protobuf//:descriptor_proto": "//net/proto2/proto:descriptor",
-    "@com_google_protobuf//:protoc": "//third_party/protobuf:protoc",
-    "@com_google_protobuf//:protobuf": "//third_party/protobuf:protobuf",
-    "@com_google_protobuf//:protoc_lib": "//third_party/protobuf:libprotoc",
-}
-
 def _get_real_short_path(file):
     # For some reason, files from other archives have short paths that look like:
     #   ../com_google_protobuf/google/protobuf/descriptor.proto
@@ -396,14 +386,12 @@ def _upb_proto_aspect_impl(target, ctx):
     dep_ccinfos += [dep[_WrappedCcInfo].cc_info for dep in deps if _WrappedCcInfo in dep]
     cc_info = cc_library_func(
         ctx = ctx,
-        name = ctx.rule.attr.name + "_upb",
+        name = ctx.rule.attr.name + ctx.attr._ext,
         hdrs = files.hdrs,
         srcs = files.srcs,
         dep_ccinfos = dep_ccinfos,
     )
     return [_WrappedCcInfo(cc_info = cc_info)]
-
-# upb_proto_library() ##########################################################
 
 def maybe_add(d):
     if not is_bazel:
@@ -413,6 +401,8 @@ def maybe_add(d):
             default = "//tools/cpp:grep-includes",
         )
     return d
+
+# upb_proto_library() ##########################################################
 
 _upb_proto_library_aspect = aspect(
     attrs = maybe_add({
@@ -443,6 +433,43 @@ upb_proto_library = rule(
     attrs = {
         "deps": attr.label_list(
             aspects = [_upb_proto_library_aspect],
+            allow_rules = ["proto_library"],
+            providers = [ProtoInfo],
+        ),
+    },
+)
+
+# upb_proto_reflection_library() ###############################################
+
+_upb_proto_reflection_library_aspect = aspect(
+    attrs = maybe_add({
+        "_upbc": attr.label(
+            executable = True,
+            cfg = "host",
+            default = ":protoc-gen-upb",
+        ),
+        "_protoc": attr.label(
+            executable = True,
+            cfg = "host",
+            default = "@com_google_protobuf//:protoc",
+        ),
+        "_cc_toolchain": attr.label(
+            default = "@bazel_tools//tools/cpp:current_cc_toolchain",
+        ),
+        "_upb": attr.label(default = ":reflection"),
+        "_ext": attr.string(default = ".upbdefs"),
+    }),
+    implementation = _upb_proto_aspect_impl,
+    attr_aspects = ["deps"],
+    fragments = ["cpp"],
+)
+
+upb_proto_reflection_library = rule(
+    output_to_genfiles = True,
+    implementation = _upb_proto_rule_impl,
+    attrs = {
+        "deps": attr.label_list(
+            aspects = [_upb_proto_reflection_library_aspect],
             allow_rules = ["proto_library"],
             providers = [ProtoInfo],
         ),
@@ -482,22 +509,6 @@ upb_proto_srcs = rule(
     },
     implementation = _upb_proto_srcs_impl,
 )
-
-# upb_proto_reflection_library() ###############################################
-
-def upb_proto_reflection_library(name, deps):
-    srcs_rule = name + "_defsrcs.cc"
-    upb_proto_srcs(
-        name = srcs_rule,
-        deps = deps,
-        ext = ".upbdefs",
-    )
-    native.cc_library(
-        name = name,
-        srcs = [":" + srcs_rule],
-        deps = [":upb", ":reflection"],
-        copts = ["-Ibazel-out/k8-fastbuild/bin"],
-    )
 
 def licenses(*args):
     # No-op (for Google-internal usage).

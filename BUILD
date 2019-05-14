@@ -250,7 +250,7 @@ proto_library(
 
 upb_proto_reflection_library(
     name = "test_decoder_upbproto",
-    deps = ["test_decoder_proto"],
+    deps = [":test_decoder_proto"],
 )
 
 cc_test(
