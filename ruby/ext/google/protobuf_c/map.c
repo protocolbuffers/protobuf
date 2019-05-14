@@ -538,8 +538,8 @@ VALUE Map_dup(VALUE _self) {
   return new_map;
 }
 
-/* :nodoc: */
-static VALUE Map_deep_copy(VALUE _self) {
+// Used by Google::Protobuf.deep_copy but not exposed directly.
+VALUE Map_deep_copy(VALUE _self) {
   Map* self = ruby_to_Map(_self);
   VALUE new_map = Map_new_this_type(_self);
   Map* new_self = ruby_to_Map(new_map);
@@ -851,6 +851,5 @@ void Map_register(VALUE module) {
   rb_define_method(klass, "to_h", Map_to_h, 0);
   rb_define_method(klass, "inspect", Map_inspect, 0);
   rb_define_method(klass, "merge", Map_merge, 1);
-  rb_define_method(klass, "deep_copy", Map_deep_copy, 0);
   rb_include_module(klass, rb_mEnumerable);
 }
