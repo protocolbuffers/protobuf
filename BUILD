@@ -1091,7 +1091,7 @@ cc_library(
     ],
 )
 
-cc_library(
+cc_binary(
     name = "conformance_test_runner",
     srcs = ["conformance/conformance_test_main.cc"],
     deps = [
