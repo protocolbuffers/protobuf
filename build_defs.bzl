@@ -356,7 +356,7 @@ def _upb_proto_rule_impl(ctx):
 def _upb_proto_aspect_impl(target, ctx):
     proto_info = target[ProtoInfo]
     files = _compile_upb_protos(ctx, proto_info, proto_info.direct_sources, ctx.attr._ext)
-    deps = ctx.rule.attr.deps + [ctx.attr._upb]
+    deps = ctx.rule.attr.deps + ctx.attr._upb
     dep_ccinfos = [dep[CcInfo] for dep in deps if CcInfo in dep]
     dep_ccinfos += [dep[_WrappedCcInfo].cc_info for dep in deps if _WrappedCcInfo in dep]
     cc_info = cc_library_func(
@@ -394,7 +394,7 @@ _upb_proto_library_aspect = aspect(
         "_cc_toolchain": attr.label(
             default = "@bazel_tools//tools/cpp:current_cc_toolchain",
         ),
-        "_upb": attr.label(default = ":upb"),
+        "_upb": attr.label_list(default = [":upb"]),
         "_ext": attr.string(default = ".upb"),
     }),
     implementation = _upb_proto_aspect_impl,
@@ -431,7 +431,12 @@ _upb_proto_reflection_library_aspect = aspect(
         "_cc_toolchain": attr.label(
             default = "@bazel_tools//tools/cpp:current_cc_toolchain",
         ),
-        "_upb": attr.label(default = ":reflection"),
+        "_upb": attr.label_list(
+            default = [
+                ":upb",
+                ":reflection",
+            ],
+        ),
         "_ext": attr.string(default = ".upbdefs"),
     }),
     implementation = _upb_proto_aspect_impl,

@@ -242,7 +242,7 @@ cc_library(
 cc_test(
     name = "test_varint",
     srcs = [
-        "tests/pb/test_varint.c" +
+        "tests/pb/test_varint.c",
         "upb/pb/varint.int.h",
     ],
     copts = COPTS,

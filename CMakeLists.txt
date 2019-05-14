@@ -98,6 +98,7 @@ add_library(handlers
   upb/sink.h)
 target_link_libraries(handlers
   reflection
+  table
   upb)
 add_library(upb_pb
   upb/pb/compile_decoder.c
