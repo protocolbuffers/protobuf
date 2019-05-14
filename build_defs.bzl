@@ -1,4 +1,3 @@
-
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@bazel_skylib//lib:versions.bzl", "versions")
 load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain")
@@ -278,6 +277,7 @@ def cc_library_func(ctx, name, hdrs, srcs, dep_ccinfos):
 
     if not versions.is_at_least("0.25.2", bazel_version):
         fail("upb requires Bazel >=0.25.2 or 0.24.1")
+
     # copybara:strip_end
 
     blaze_only_args = {}
@@ -327,7 +327,7 @@ def _compile_upb_protos(ctx, proto_info, proto_sources, ext):
                         "--descriptor_set_in=" + ":".join([f.path for f in transitive_sets]),
                     ] +
                     [_get_real_short_path(file) for file in proto_sources],
-                    progress_message = "Generating upb protos for :" + ctx.label.name,
+        progress_message = "Generating upb protos for :" + ctx.label.name,
     )
     return SrcList(srcs = srcs, hdrs = hdrs)
 
@@ -485,7 +485,7 @@ upb_proto_srcs = rule(
             default = "@com_google_protobuf//:protoc",
         ),
         "deps": attr.label_list(),
-        "ext": attr.string(default = ".upb")
+        "ext": attr.string(default = ".upb"),
     },
     implementation = _upb_proto_srcs_impl,
 )

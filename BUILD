@@ -282,25 +282,6 @@ cc_test(
     ],
 )
 
-upb_proto_reflection_library(
-    name = "descriptor_upbreflection",
-    deps = ["@com_google_protobuf//:descriptor_proto"],
-)
-
-cc_test(
-    name = "test_encoder",
-    srcs = ["tests/pb/test_encoder.cc"],
-    copts = CPPOPTS,
-    deps = [
-        ":descriptor_upbproto",
-        ":descriptor_upbreflection",
-        ":upb",
-        ":upb_cc_bindings",
-        ":upb_pb",
-        ":upb_test",
-    ],
-)
-
 proto_library(
     name = "test_cpp_proto",
     srcs = [
@@ -339,6 +320,25 @@ cc_test(
 )
 
 # copybara:strip_for_google3_begin
+upb_proto_reflection_library(
+    name = "descriptor_upbreflection",
+    deps = ["@com_google_protobuf//:descriptor_proto"],
+)
+
+cc_test(
+    name = "test_encoder",
+    srcs = ["tests/pb/test_encoder.cc"],
+    copts = CPPOPTS,
+    deps = [
+        ":descriptor_upbproto",
+        ":descriptor_upbreflection",
+        ":upb",
+        ":upb_cc_bindings",
+        ":upb_pb",
+        ":upb_test",
+    ],
+)
+
 proto_library(
     name = "test_json_enum_from_separate",
     srcs = ["tests/json/enum_from_separate_file.proto"],
