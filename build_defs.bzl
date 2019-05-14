@@ -7,31 +7,6 @@ load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain")
 load("@bazel_version//:bazel_version.bzl", "bazel_version")
 # copybara:strip_end
 
-_shell_find_runfiles = """
-  # --- begin runfiles.bash initialization ---
-  # Copy-pasted from Bazel's Bash runfiles library (tools/bash/runfiles/runfiles.bash).
-  set -euo pipefail
-  if [[ ! -d "${RUNFILES_DIR:-/dev/null}" && ! -f "${RUNFILES_MANIFEST_FILE:-/dev/null}" ]]; then
-    if [[ -f "$0.runfiles_manifest" ]]; then
-      export RUNFILES_MANIFEST_FILE="$0.runfiles_manifest"
-    elif [[ -f "$0.runfiles/MANIFEST" ]]; then
-      export RUNFILES_MANIFEST_FILE="$0.runfiles/MANIFEST"
-    elif [[ -f "$0.runfiles/bazel_tools/tools/bash/runfiles/runfiles.bash" ]]; then
-      export RUNFILES_DIR="$0.runfiles"
-    fi
-  fi
-  if [[ -f "${RUNFILES_DIR:-/dev/null}/bazel_tools/tools/bash/runfiles/runfiles.bash" ]]; then
-    source "${RUNFILES_DIR}/bazel_tools/tools/bash/runfiles/runfiles.bash"
-  elif [[ -f "${RUNFILES_MANIFEST_FILE:-/dev/null}" ]]; then
-    source "$(grep -m1 "^bazel_tools/tools/bash/runfiles/runfiles.bash " \
-              "$RUNFILES_MANIFEST_FILE" | cut -d ' ' -f 2-)"
-  else
-    echo >&2 "ERROR: cannot find @bazel_tools//tools/bash/runfiles:runfiles.bash"
-    exit 1
-  fi
-  # --- end runfiles.bash initialization ---
-"""
-
 def _librule(name):
     return name + "_lib"
 
@@ -96,11 +71,11 @@ def lua_library(name, srcs, strip_prefix, luadeps = []):
     )
 
 def make_shell_script(name, contents, out):
-    script_contents = (_shell_find_runfiles + contents).replace("$", "$$")
+    contents = contents.replace("$", "$$")
     native.genrule(
         name = "gen_" + name,
         outs = [out],
-        cmd = "(cat <<'HEREDOC'\n%s\nHEREDOC\n) > $@" % script_contents,
+        cmd = "(cat <<'HEREDOC'\n%s\nHEREDOC\n) > $@" % contents,
     )
 
 def _lua_binary_or_test(name, luamain, luadeps, rule):
@@ -120,7 +95,7 @@ $(rlocation lua/lua) $(rlocation upb/tools/upbc.lua) "$@"
     rule(
         name = name,
         srcs = [script],
-        data = ["@lua//:lua", "@bazel_tools//tools/bash/runfiles", luamain] + luadeps,
+        data = ["@lua//:lua", luamain] + luadeps,
     )
 
 def lua_binary(name, luamain, luadeps = []):

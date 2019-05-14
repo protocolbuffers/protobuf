@@ -360,11 +360,13 @@ cc_test(
 upb_proto_library(
     name = "conformance_proto_upb",
     deps = ["@com_google_protobuf//:conformance_proto"],
+    testonly = 1,
 )
 
 upb_proto_library(
     name = "test_messages_proto3_proto_upb",
     deps = ["@com_google_protobuf//:test_messages_proto3_proto"],
+    testonly = 1,
 )
 
 cc_binary(
@@ -378,6 +380,7 @@ cc_binary(
         ":test_messages_proto3_proto_upb",
         ":upb",
     ],
+    testonly = 1,
 )
 
 make_shell_script(
@@ -392,7 +395,6 @@ sh_test(
     data = [
         "tests/conformance_upb_failures.txt",
         ":conformance_upb",
-        "@bazel_tools//tools/bash/runfiles",
         "@com_google_protobuf//:conformance_test_runner",
     ],
 )
@@ -515,10 +517,7 @@ make_shell_script(
 sh_test(
     name = "cmake_build",
     srcs = ["run_cmake_build.sh"],
-    data = [
-        ":cmake_files",
-        "@bazel_tools//tools/bash/runfiles",
-    ],
+    data = [":cmake_files"],
 )
 
 # Generated files ##############################################################
