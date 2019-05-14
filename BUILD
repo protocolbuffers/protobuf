@@ -247,6 +247,7 @@ cc_test(
     ],
     copts = COPTS,
     deps = [
+        ":upb",
         ":upb_pb",
         ":upb_test",
     ],

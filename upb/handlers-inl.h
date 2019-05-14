@@ -10,6 +10,8 @@
 #include <stddef.h>
 #include "upb/handlers.h"
 
+#include "upb/port_def.inc"
+
 #ifdef __cplusplus
 
 /* Type detection and typedefs for integer types.
@@ -915,5 +917,7 @@ inline void Handler<T>::AddCleanup(upb_handlers* h) const {
 #undef UPB_UINT64_T
 #undef UPB_INT64ALT_T
 #undef UPB_UINT64ALT_T
+
+#include "upb/port_undef.inc"
 
 #endif  /* UPB_HANDLERS_INL_H_ */
