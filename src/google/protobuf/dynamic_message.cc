@@ -34,10 +34,10 @@
 //
 // DynamicMessage is implemented by constructing a data structure which
 // has roughly the same memory layout as a generated message would have.
-// Then, we use GeneratedMessageReflection to implement our reflection
-// interface.  All the other operations we need to implement (e.g.
-// parsing, copying, etc.) are already implemented in terms of
-// Reflection, so the rest is easy.
+// Then, we use Reflection to implement our reflection interface.  All
+// the other operations we need to implement (e.g.  parsing, copying,
+// etc.) are already implemented in terms of Reflection, so the rest is
+// easy.
 //
 // The up side of this strategy is that it's very efficient.  We don't
 // need to use hash_maps or generic representations of fields.  The
@@ -87,7 +87,6 @@ namespace protobuf {
 
 using internal::DynamicMapField;
 using internal::ExtensionSet;
-using internal::GeneratedMessageReflection;
 using internal::InternalMetadataWithArena;
 using internal::MapField;
 
@@ -248,7 +247,7 @@ class DynamicMessage : public Message {
     //   important (the prototype must be deleted *before* the offsets).
     std::unique_ptr<uint32[]> offsets;
     std::unique_ptr<uint32[]> has_bits_indices;
-    std::unique_ptr<const GeneratedMessageReflection> reflection;
+    std::unique_ptr<const Reflection> reflection;
     // Don't use a unique_ptr to hold the prototype: the destructor for
     // DynamicMessage needs to know whether it is the prototype, and does so by
     // looking back at this field. This would assume details about the
@@ -676,8 +675,8 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
   type_info->pool = (pool_ == NULL) ? type->file()->pool() : pool_;
   type_info->factory = this;
 
-  // We need to construct all the structures passed to
-  // GeneratedMessageReflection's constructor.  This includes:
+  // We need to construct all the structures passed to Reflection's constructor.
+  // This includes:
   // - A block of memory that contains space for all the message's fields.
   // - An array of integers indicating the byte offset of each field within
   //   this block.
@@ -801,8 +800,8 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
                                        type_info->size,
                                        type_info->weak_field_map_offset};
 
-  type_info->reflection.reset(new GeneratedMessageReflection(
-      type_info->type, schema, type_info->pool, this));
+  type_info->reflection.reset(
+      new Reflection(type_info->type, schema, type_info->pool, this));
 
   // Cross link prototypes.
   prototype->CrossLinkPrototypes();

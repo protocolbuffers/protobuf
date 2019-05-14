@@ -126,7 +126,6 @@ class MapEntry
             WireFormatLite::FieldType k_wire_type, WireFormatLite::FieldType,
             int default_enum>
   friend class internal::MapField;
-  friend class internal::GeneratedMessageReflection;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MapEntry);
 };

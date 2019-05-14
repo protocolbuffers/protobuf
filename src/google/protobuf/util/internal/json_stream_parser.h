@@ -40,10 +40,6 @@
 
 #include <google/protobuf/port_def.inc>
 
-namespace util {
-class Status;
-}  // namespace util
-
 namespace google {
 namespace protobuf {
 namespace util {

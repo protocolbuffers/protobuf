@@ -35,13 +35,14 @@
 // TODO(kenton):  Improve this unittest to bring it up to the standards of
 //   other proto2 unittests.
 
+#include <google/protobuf/repeated_field.h>
+
 #include <algorithm>
 #include <limits>
 #include <list>
+#include <sstream>
 #include <type_traits>
 #include <vector>
-
-#include <google/protobuf/repeated_field.h>
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
@@ -341,6 +342,71 @@ TEST(RepeatedField, Erase) {
   EXPECT_EQ(4, me.Get(0));
   EXPECT_EQ(7, me.Get(1));
   EXPECT_EQ(8, me.Get(2));
+}
+
+// Add contents of empty container to an empty field.
+TEST(RepeatedField, AddRange1) {
+  RepeatedField<int> me;
+  std::vector<int> values;
+
+  me.Add(values.begin(), values.end());
+  ASSERT_EQ(me.size(), 0);
+}
+
+// Add contents of container with one thing to an empty field.
+TEST(RepeatedField, AddRange2) {
+  RepeatedField<int> me;
+  std::vector<int> values;
+  values.push_back(-1);
+
+  me.Add(values.begin(), values.end());
+  ASSERT_EQ(me.size(), 1);
+  ASSERT_EQ(me.Get(0), values[0]);
+}
+
+// Add contents of container with more than one thing to an empty field.
+TEST(RepeatedField, AddRange3) {
+  RepeatedField<int> me;
+  std::vector<int> values;
+  values.push_back(0);
+  values.push_back(1);
+
+  me.Add(values.begin(), values.end());
+  ASSERT_EQ(me.size(), 2);
+  ASSERT_EQ(me.Get(0), values[0]);
+  ASSERT_EQ(me.Get(1), values[1]);
+}
+
+// Add contents of container with more than one thing to a non-empty field.
+TEST(RepeatedField, AddRange4) {
+  RepeatedField<int> me;
+  me.Add(0);
+  me.Add(1);
+
+  std::vector<int> values;
+  values.push_back(2);
+  values.push_back(3);
+
+  me.Add(values.begin(), values.end());
+  ASSERT_EQ(me.size(), 4);
+  ASSERT_EQ(me.Get(0), 0);
+  ASSERT_EQ(me.Get(1), 1);
+  ASSERT_EQ(me.Get(2), values[0]);
+  ASSERT_EQ(me.Get(3), values[1]);
+}
+
+// Add contents of a stringstream in order to test code paths where there is
+// an input iterator.
+TEST(RepeatedField, AddRange5) {
+  RepeatedField<int> me;
+
+  std::stringstream ss;
+  ss << 1 << ' ' << 2;
+
+  me.Add(std::istream_iterator<int>(ss), std::istream_iterator<int>());
+  ASSERT_EQ(me.size(), 2);
+  ASSERT_EQ(me.Get(0), 1);
+  ASSERT_EQ(me.Get(1), 2);
 }
 
 TEST(RepeatedField, CopyConstruct) {

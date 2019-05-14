@@ -1411,7 +1411,7 @@ bool MessageDifferencer::CompareUnknownFields(
     if (change_type == ADDITION || change_type == DELETION ||
         change_type == MODIFICATION) {
       if (reporter_ == NULL) {
-        // We found a difference and we have no reproter.
+        // We found a difference and we have no reporter.
         return false;
       }
       is_different = true;

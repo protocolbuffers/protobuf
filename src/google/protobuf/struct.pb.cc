@@ -124,7 +124,7 @@ static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] =
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&PROTOBUF_NAMESPACE_ID::_ListValue_default_instance_),
 };
 
-const char descriptor_table_protodef_google_2fprotobuf_2fstruct_2eproto[] =
+const char descriptor_table_protodef_google_2fprotobuf_2fstruct_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
   "\n\034google/protobuf/struct.proto\022\017google.p"
   "rotobuf\"\204\001\n\006Struct\0223\n\006fields\030\001 \003(\0132#.goo"
   "gle.protobuf.Struct.FieldsEntry\032E\n\013Field"
