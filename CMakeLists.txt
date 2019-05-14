@@ -114,6 +114,7 @@ add_library(upb_pb
 target_link_libraries(upb_pb
   descriptor_upbproto
   handlers
+  reflection
   table
   upb)
 add_library(upb_json
@@ -134,6 +135,7 @@ add_library(upb_test
   tests/test_util.h
   tests/upb_test.h)
 target_link_libraries(upb_test
-  handlers)
+  handlers
+  upb)
 
 
