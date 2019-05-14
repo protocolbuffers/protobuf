@@ -1,8 +1,7 @@
 
-#include <unordered_map>
-#include <unordered_set>
 #include <memory>
 
+#include "absl/container/flat_hash_map.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/substitute.h"
@@ -594,7 +593,7 @@ void WriteSource(const protobuf::FileDescriptor* file, Output& output) {
     std::string fields_array_ref = "NULL";
     std::string submsgs_array_ref = "NULL";
     std::string oneofs_array_ref = "NULL";
-    std::unordered_map<const protobuf::Descriptor*, int> submsg_indexes;
+    absl::flat_hash_map<const protobuf::Descriptor*, int> submsg_indexes;
     MessageLayout layout(message);
     std::vector<const protobuf::FieldDescriptor*> sorted_submsgs =
         SortedSubmessages(message);

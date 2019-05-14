@@ -207,6 +207,7 @@ cc_library(
     copts = CPPOPTS,
     deps = [
         "@absl//absl/base:core_headers",
+        "@absl//absl/container:flat_hash_map",
         "@absl//absl/strings",
         "@com_google_protobuf//:protobuf",
         "@com_google_protobuf//:protoc_lib",
