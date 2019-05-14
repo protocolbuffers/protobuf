@@ -355,8 +355,8 @@ VALUE RepeatedField_dup(VALUE _self) {
   return new_rptfield;
 }
 
-// Internal only: used by Google::Protobuf.deep_copy.
-VALUE RepeatedField_deep_copy(VALUE _self) {
+/* :nodoc: */
+static VALUE RepeatedField_deep_copy(VALUE _self) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
   VALUE new_rptfield = RepeatedField_new_this_type(_self);
   RepeatedField* new_rptfield_self = ruby_to_RepeatedField(new_rptfield);
@@ -656,5 +656,6 @@ void RepeatedField_register(VALUE module) {
   rb_define_method(klass, "hash", RepeatedField_hash, 0);
   rb_define_method(klass, "+", RepeatedField_plus, 1);
   rb_define_method(klass, "concat", RepeatedField_concat, 1);
+  rb_define_method(klass, "deep_copy", RepeatedField_deep_copy, 0);
   rb_include_module(klass, rb_mEnumerable);
 }
