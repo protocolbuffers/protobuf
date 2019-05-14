@@ -1535,7 +1535,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
   format.Outdent();
   format("};");
   GOOGLE_DCHECK(!need_to_emit_cached_size);
-}
+}  // NOLINT(readability/fn_size)
 
 void MessageGenerator::GenerateInlineMethods(io::Printer* printer) {
   if (IsMapEntryMessage(descriptor_)) return;

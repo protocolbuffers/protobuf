@@ -812,7 +812,8 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* printer) {
   // built into real descriptors at initialization time.
   const std::string protodef_name =
       UniqueName("descriptor_table_protodef", file_, options_);
-  format("const char $1$[] =\n", protodef_name);
+  format("const char $1$[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =\n",
+         protodef_name);
   format.Indent();
   FileDescriptorProto file_proto;
   file_->CopyTo(&file_proto);

@@ -54,7 +54,7 @@ static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] =
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&PROTOBUF_NAMESPACE_ID::_Empty_default_instance_),
 };
 
-const char descriptor_table_protodef_google_2fprotobuf_2fempty_2eproto[] =
+const char descriptor_table_protodef_google_2fprotobuf_2fempty_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
   "\n\033google/protobuf/empty.proto\022\017google.pr"
   "otobuf\"\007\n\005EmptyBv\n\023com.google.protobufB\n"
   "EmptyProtoP\001Z\'github.com/golang/protobuf"

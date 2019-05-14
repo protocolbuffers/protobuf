@@ -150,20 +150,13 @@ class ReflectionAccessor {
  public:
   static void* GetOffset(void* msg, const google::protobuf::FieldDescriptor* f,
                          const google::protobuf::Reflection* r) {
-    return static_cast<char*>(msg) + CheckedCast(r)->schema_.GetFieldOffset(f);
+    return static_cast<char*>(msg) + r->schema_.GetFieldOffset(f);
   }
 
   static void* GetRepeatedEnum(const Reflection* reflection,
                                const FieldDescriptor* field, Message* msg) {
     return reflection->MutableRawRepeatedField(
         msg, field, FieldDescriptor::CPPTYPE_ENUM, 0, nullptr);
-  }
-
- private:
-  static const GeneratedMessageReflection* CheckedCast(const Reflection* r) {
-    auto gr = dynamic_cast<const GeneratedMessageReflection*>(r);
-    GOOGLE_CHECK(gr != nullptr);
-    return gr;
   }
 };
 
@@ -554,64 +547,6 @@ size_t Message::SpaceUsedLong() const {
 }
 
 // =============================================================================
-// Reflection and associated Template Specializations
-
-Reflection::~Reflection() {}
-
-void Reflection::AddAllocatedMessage(Message* /* message */,
-                                     const FieldDescriptor* /*field */,
-                                     Message* /* new_entry */) const {}
-
-#define HANDLE_TYPE(TYPE, CPPTYPE, CTYPE)                               \
-  template <>                                                           \
-  const RepeatedField<TYPE>& Reflection::GetRepeatedField<TYPE>(        \
-      const Message& message, const FieldDescriptor* field) const {     \
-    return *static_cast<RepeatedField<TYPE>*>(MutableRawRepeatedField(  \
-        const_cast<Message*>(&message), field, CPPTYPE, CTYPE, NULL));  \
-  }                                                                     \
-                                                                        \
-  template <>                                                           \
-  RepeatedField<TYPE>* Reflection::MutableRepeatedField<TYPE>(          \
-      Message * message, const FieldDescriptor* field) const {          \
-    return static_cast<RepeatedField<TYPE>*>(                           \
-        MutableRawRepeatedField(message, field, CPPTYPE, CTYPE, NULL)); \
-  }
-
-HANDLE_TYPE(int32, FieldDescriptor::CPPTYPE_INT32, -1);
-HANDLE_TYPE(int64, FieldDescriptor::CPPTYPE_INT64, -1);
-HANDLE_TYPE(uint32, FieldDescriptor::CPPTYPE_UINT32, -1);
-HANDLE_TYPE(uint64, FieldDescriptor::CPPTYPE_UINT64, -1);
-HANDLE_TYPE(float, FieldDescriptor::CPPTYPE_FLOAT, -1);
-HANDLE_TYPE(double, FieldDescriptor::CPPTYPE_DOUBLE, -1);
-HANDLE_TYPE(bool, FieldDescriptor::CPPTYPE_BOOL, -1);
-
-
-#undef HANDLE_TYPE
-
-void* Reflection::MutableRawRepeatedString(Message* message,
-                                           const FieldDescriptor* field,
-                                           bool is_string) const {
-  return MutableRawRepeatedField(message, field,
-                                 FieldDescriptor::CPPTYPE_STRING,
-                                 FieldOptions::STRING, NULL);
-}
-
-
-MapIterator Reflection::MapBegin(Message* message,
-                                 const FieldDescriptor* field) const {
-  GOOGLE_LOG(FATAL) << "Unimplemented Map Reflection API.";
-  MapIterator iter(message, field);
-  return iter;
-}
-
-MapIterator Reflection::MapEnd(Message* message,
-                               const FieldDescriptor* field) const {
-  GOOGLE_LOG(FATAL) << "Unimplemented Map Reflection API.";
-  MapIterator iter(message, field);
-  return iter;
-}
-
-// =============================================================================
 // MessageFactory
 
 MessageFactory::~MessageFactory() {}
@@ -724,19 +659,6 @@ void MessageFactory::InternalRegisterGeneratedMessage(
   GeneratedMessageFactory::singleton()->RegisterType(descriptor, prototype);
 }
 
-
-MessageFactory* Reflection::GetMessageFactory() const {
-  GOOGLE_LOG(FATAL) << "Not implemented.";
-  return NULL;
-}
-
-void* Reflection::RepeatedFieldData(Message* message,
-                                    const FieldDescriptor* field,
-                                    FieldDescriptor::CppType cpp_type,
-                                    const Descriptor* message_type) const {
-  GOOGLE_LOG(FATAL) << "Not implemented.";
-  return NULL;
-}
 
 namespace {
 template <typename T>
