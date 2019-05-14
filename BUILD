@@ -8,9 +8,12 @@ load(
     "lua_test",
     "make_shell_script",
     "upb_amalgamation",
+)
+
+load(
+    ":upb_proto_library.bzl",
     "upb_proto_library",
     "upb_proto_reflection_library",
-    "upb_proto_srcs",
 )
 
 licenses(["notice"])  # BSD (Google-authored w/ possible external contributions)
@@ -434,11 +437,6 @@ py_binary(
     srcs = ["tools/amalgamate.py"],
 )
 
-upb_proto_srcs(
-    name = "descriptor_upbproto_srcs",
-    deps = ["@com_google_protobuf//:descriptor_proto"],
-)
-
 upb_amalgamation(
     name = "gen_amalgamation",
     outs = [
@@ -448,7 +446,7 @@ upb_amalgamation(
     amalgamator = ":amalgamate",
     libs = [
         ":upb",
-        ":descriptor_upbproto_srcs",
+        ":descriptor_upbproto",
         ":reflection",
         ":handlers",
         ":upb_pb",
@@ -590,7 +588,7 @@ genrule(
 
 genrule(
     name = "copy_protos",
-    srcs = [":descriptor_upbproto_srcs"],
+    srcs = [":descriptor_upbproto"],
     outs = [
         "generated-in/generated_for_cmake/google/protobuf/descriptor.upb.c",
         "generated-in/generated_for_cmake/google/protobuf/descriptor.upb.h",
