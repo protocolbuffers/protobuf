@@ -271,7 +271,10 @@ upb_proto_reflection_library(
 
 cc_test(
     name = "test_decoder",
-    srcs = ["tests/pb/test_decoder.cc"],
+    srcs = [
+        "tests/pb/test_decoder.cc",
+        "upb/pb/varint.int.h",
+    ],
     copts = CPPOPTS,
     deps = [
         ":handlers",
