@@ -154,6 +154,7 @@ cc_library(
     deps = [
         ":descriptor_upbproto",
         ":handlers",
+        ":reflection",
         ":table",
         ":upb",
     ],
@@ -236,7 +237,10 @@ cc_library(
         "tests/upb_test.h",
     ],
     copts = CPPOPTS,
-    deps = [":handlers"],
+    deps = [
+        ":handlers",
+        ":upb",
+    ],
 )
 
 cc_test(
@@ -270,7 +274,9 @@ cc_test(
     srcs = ["tests/pb/test_decoder.cc"],
     copts = CPPOPTS,
     deps = [
+        ":handlers",
         ":test_decoder_upbproto",
+        ":upb",
         ":upb_pb",
         ":upb_test",
     ],
@@ -288,6 +294,7 @@ cc_test(
     deps = [
         ":descriptor_upbproto",
         ":descriptor_upbreflection",
+        ":upb",
         ":upb_cc_bindings",
         ":upb_pb",
         ":upb_test",
@@ -311,6 +318,8 @@ cc_test(
     srcs = ["tests/test_cpp.cc"],
     copts = CPPOPTS,
     deps = [
+        ":handlers",
+        ":reflection",
         ":test_cpp_upbproto",
         ":upb",
         ":upb_pb",
@@ -323,6 +332,7 @@ cc_test(
     srcs = ["tests/test_table.cc"],
     copts = CPPOPTS,
     deps = [
+        ":table",
         ":upb",
         ":upb_test",
     ],
@@ -399,7 +409,7 @@ cc_binary(
 make_shell_script(
     name = "gen_test_conformance_upb",
     out = "test_conformance_upb.sh",
-    contents = "$(rlocation @com_google_protobuf/conformance_test_runner) $(rlocation upb/conformance_upb)",
+    contents = "external/com_google_protobuf/conformance_test_runner ./conformance_upb",
 )
 
 sh_test(

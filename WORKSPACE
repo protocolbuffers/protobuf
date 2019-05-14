@@ -22,8 +22,10 @@ http_archive(
 
 git_repository(
     name = "com_google_protobuf",
-    remote = "https://github.com/protocolbuffers/protobuf.git",
-    commit = "78ca77ac8799f67fda7b9a01cc691cd9fe526f25",
+    #remote = "https://github.com/protocolbuffers/protobuf.git",
+    #commit = "78ca77ac8799f67fda7b9a01cc691cd9fe526f25",
+    remote = "https://github.com/haberman/protobuf.git",
+    commit = "c659a4a4db2e27463e51c732df25730973956be2",
 )
 
 http_archive(

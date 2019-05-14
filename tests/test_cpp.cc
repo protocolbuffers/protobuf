@@ -12,14 +12,13 @@
 #include <sstream>
 
 #include "tests/test_cpp.upbdefs.h"
+#include "tests/upb_test.h"
 #include "upb/def.h"
 #include "upb/handlers.h"
 #include "upb/pb/decoder.h"
 #include "upb/pb/textprinter.h"
-#include "upb/upb.h"
-#include "upb_test.h"
-
 #include "upb/port_def.inc"
+#include "upb/upb.h"
 
 template <class T>
 void AssertInsert(T* const container, const typename T::value_type& val) {
