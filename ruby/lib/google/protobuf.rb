@@ -73,13 +73,5 @@ module Google
       klass.decode_json(json, options)
     end
 
-    # call-seq:
-    #     Google::Protobuf.deep_copy(obj) => copy_of_obj
-    #
-    # Performs a deep copy of a RepeatedField instance, a Map instance, or a
-    # message object, recursively copying its members.
-    def self.deep_copy(obj)
-      obj.deep_copy
-    end
   end
 end
