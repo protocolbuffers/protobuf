@@ -1,0 +1,10 @@
+---
+tasks:
+  ubuntu:
+    platform: ubuntu1604
+    test_targets:
+    - //...
+  macos:
+    platform: macos
+    test_targets:
+    - //...
