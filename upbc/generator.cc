@@ -487,7 +487,7 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message, Output& output
     }
   }
 
-  output("\n\n");
+  output("\n");
 }
 
 void WriteHeader(const protobuf::FileDescriptor* file, Output& output) {
@@ -495,15 +495,30 @@ void WriteHeader(const protobuf::FileDescriptor* file, Output& output) {
   output(
       "#ifndef $0_UPB_H_\n"
       "#define $0_UPB_H_\n\n"
-      "#include \"upb/generated_util.h\"\n\n"
-      "#include \"upb/msg.h\"\n\n"
+      "#include \"upb/generated_util.h\"\n"
+      "#include \"upb/msg.h\"\n"
       "#include \"upb/decode.h\"\n"
-      "#include \"upb/encode.h\"\n"
+      "#include \"upb/encode.h\"\n\n",
+      ToPreproc(file->name()));
+
+  for (int i = 0; i < file->public_dependency_count(); i++) {
+    const auto& name = file->public_dependency(i)->name();
+    if (i == 0) {
+      output("/* Public Imports. */\n");
+    }
+    output("#include \"$0\"\n", HeaderFilename(name));
+    if (i == file->public_dependency_count() - 1) {
+      output("\n");
+    }
+  }
+
+  output(
       "#include \"upb/port_def.inc\"\n"
+      "\n"
       "#ifdef __cplusplus\n"
       "extern \"C\" {\n"
-      "#endif\n\n",
-      ToPreproc(file->name()));
+      "#endif\n"
+      "\n");
 
   std::vector<const protobuf::Descriptor*> this_file_messages =
       SortedMessages(file);
@@ -540,12 +555,13 @@ void WriteHeader(const protobuf::FileDescriptor* file, Output& output) {
     output("extern const upb_msglayout $0;\n", MessageInit(pair.second));
   }
 
+  if (!this_file_messages.empty()) {
+    output("\n");
+  }
+
   std::vector<const protobuf::EnumDescriptor*> this_file_enums =
       SortedEnums(file);
 
-  output(
-      "\n"
-      "/* Enums */\n\n");
   for (auto enumdesc : this_file_enums) {
     output("typedef enum {\n");
     DumpEnumValues(enumdesc, output);

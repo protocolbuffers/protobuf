@@ -74,6 +74,7 @@ cc_library(
 upb_proto_library(
     name = "descriptor_upbproto",
     deps = ["@com_google_protobuf//:descriptor_proto"],
+    visibility = ["//visibility:public"],
 )
 
 cc_library(
