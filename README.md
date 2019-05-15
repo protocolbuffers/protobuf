@@ -9,7 +9,7 @@
 μpb (often written 'upb') is a small protobuf implementation written in C.
 
 upb generates a C API for creating, parsing, and serializing messages
-as declared in `.proto` files.  upb is heavily arena-based -- all
+as declared in `.proto` files.  upb is heavily arena-based: all
 messages always live in an arena (note: the arena can live in stack or
 static memory if desired).  Here is a simple example:
 
