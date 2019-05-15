@@ -10,16 +10,16 @@
 
 upb generates a C API for creating, parsing, and serializing messages
 as declared in `.proto` files.  upb is heavily arena-based -- all
-messages always live in an arena.  You control where the arena gets
-memory from, so the arena can come from stack memory, for example.
-Here is a simple example (`ConformanceRequest` and `ConformanceResponse`
-are generated message types):
+messages always live in an arena (note: the arena can live in stack or
+static memory if desired).  Here is a simple example:
 
 ```c
 #include "conformance/conformance.upb.h"
 
 void foo(const char* data, size_t size) {
   upb_arena *arena;
+
+  /* Generated message type. */
   conformance_ConformanceRequest *request;
   conformance_ConformanceResponse *response;
 
@@ -46,15 +46,10 @@ void foo(const char* data, size_t size) {
     }
   }
 
+  /* Frees all messages on the arena. */
   upb_arena_free(arena);
 }
 ```
-
-Messages are opaque, so you always have to use generated getter/setter
-methods to read/write fields.  This is somewhat unfortunate for C
-because the function names are long, but this is necessary to provide
-correct semantics for oneof fields, proto2 presence, etc.  It is also
-necessary for providing a stable ABI, in cases where that is desired.
 
 API and ABI are both subject to change!  Please do not distribute
 as a shared library for this reason (for now at least).
