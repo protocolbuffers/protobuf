@@ -16,10 +16,6 @@ load(
     "upb_proto_reflection_library",
 )
 
-package(
-    default_visibility = ["//visibility:private"],
-)
-
 licenses(["notice"])  # BSD (Google-authored w/ possible external contributions)
 
 exports_files([
