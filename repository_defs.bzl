@@ -1,4 +1,3 @@
-
 # A hacky way to work around the fact that native.bazel_version is only
 # available from WORKSPACE macros, not BUILD macros or rules.
 #
@@ -11,6 +10,6 @@ def _impl(repository_ctx):
     repository_ctx.file("BUILD", "")
 
 bazel_version_repository = repository_rule(
-    implementation=_impl,
-    local=True,
+    implementation = _impl,
+    local = True,
 )

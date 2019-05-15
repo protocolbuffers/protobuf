@@ -1,4 +1,3 @@
-
 workspace(name = "upb")
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
@@ -6,7 +5,7 @@ load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 load(":repository_defs.bzl", "bazel_version_repository")
 
 bazel_version_repository(
-    name = "bazel_version"
+    name = "bazel_version",
 )
 
 http_archive(
@@ -23,7 +22,7 @@ http_archive(
 git_repository(
     name = "com_google_protobuf",
     remote = "https://github.com/protocolbuffers/protobuf.git",
-    commit = "78ca77ac8799f67fda7b9a01cc691cd9fe526f25",
+    commit = "d41002663fd04325ead28439dfd5ce2822b0d6fb",
 )
 
 http_archive(
@@ -38,19 +37,19 @@ git_repository(
     name = "absl",
     commit = "070f6e47b33a2909d039e620c873204f78809492",
     remote = "https://github.com/abseil/abseil-cpp.git",
-    shallow_since = "1541627663 -0500"
+    shallow_since = "1541627663 -0500",
 )
 
 http_archive(
     name = "ragel",
-    sha256 = "5f156edb65d20b856d638dd9ee2dfb43285914d9aa2b6ec779dac0270cd56c3f",
     build_file = "//:ragel.BUILD",
+    sha256 = "5f156edb65d20b856d638dd9ee2dfb43285914d9aa2b6ec779dac0270cd56c3f",
     strip_prefix = "ragel-6.10",
     urls = ["http://www.colm.net/files/ragel/ragel-6.10.tar.gz"],
 )
 
 http_archive(
-   name = "bazel_skylib",
-   strip_prefix = "bazel-skylib-master",
-   urls = ["https://github.com/bazelbuild/bazel-skylib/archive/master.tar.gz"],
+    name = "bazel_skylib",
+    strip_prefix = "bazel-skylib-master",
+    urls = ["https://github.com/bazelbuild/bazel-skylib/archive/master.tar.gz"],
 )

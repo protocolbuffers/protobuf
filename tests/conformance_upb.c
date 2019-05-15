@@ -75,21 +75,16 @@ void DoTest(
       break;
     }
 
-    case conformance_ConformanceRequest_payload_json_payload: {
-      static const char msg[] = "JSON support not yet implemented.";
-      conformance_ConformanceResponse_set_skipped(
-          response, upb_strview_make(msg, sizeof(msg)));
-      return;
-    }
-
     case conformance_ConformanceRequest_payload_NOT_SET:
       fprintf(stderr, "conformance_upb: Request didn't have payload.\n");
       return;
 
-    default:
-      fprintf(stderr, "conformance_upb: Unexpected case: %d\n",
-              conformance_ConformanceRequest_payload_case(request));
-      exit(1);
+    default: {
+      static const char msg[] = "Unsupported input format.";
+      conformance_ConformanceResponse_set_skipped(
+          response, upb_strview_make(msg, sizeof(msg)));
+      return;
+    }
   }
 
   switch (conformance_ConformanceRequest_requested_output_format(request)) {
@@ -113,17 +108,12 @@ void DoTest(
       break;
     }
 
-    case conformance_JSON: {
-      static const char msg[] = "JSON support not yet implemented.";
+    default: {
+      static const char msg[] = "Unsupported output format.";
       conformance_ConformanceResponse_set_skipped(
           response, upb_strview_make(msg, sizeof(msg)));
-      break;
+      return;
     }
-
-    default:
-      fprintf(stderr, "conformance_upb: Unknown output format: %d\n",
-              conformance_ConformanceRequest_requested_output_format(request));
-      exit(1);
   }
 
   return;
