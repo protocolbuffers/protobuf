@@ -9,6 +9,6 @@ git_repository(
     commit = "d5af87d06bbe3abad66970ce9c7ae0a7de8bb3c6",
 )
 
-load("@upb//:workspace_deps.bzl", "upb_deps")
+load("@upb//bazel:workspace_deps.bzl", "upb_deps")
 
 upb_deps()

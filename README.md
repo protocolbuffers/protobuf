@@ -61,16 +61,21 @@ but full CMake support is an eventual goal).
 
 To use upb in your Bazel project, first add upb to your `WORKSPACE` file,
 either as a `git_repository()` or as a `new_local_repository()` with a
-Git Submodule:
+Git Submodule.  (For an example, see `examples/bazel/ in this repo).
 
 ```python
 # Add this to your WORKSPACE file.
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+
 git_repository(
     name = "upb",
     remote = "https://github.com/protocolbuffers/upb.git",
-    # You may want to substitute a more recent commit here.
     commit = "d5af87d06bbe3abad66970ce9c7ae0a7de8bb3c6",
 )
+
+load("@upb//bazel:workspace_deps.bzl", "upb_deps")
+
+upb_deps()
 ```
 
 Then in your BUILD file you can add `upb_proto_library()` rules that
@@ -79,7 +84,7 @@ example:
 
 ```python
 # Add this to your BUILD file.
-load(":upb_proto_library.bzl", "upb_proto_library")
+load("@upb//bazel:upb_proto_library.bzl", "upb_proto_library")
 
 proto_library(
     name = "foo_proto",
@@ -91,9 +96,9 @@ upb_proto_library(
     deps = [":foo_proto"],
 )
 
-cc_library(
-    name = "lib_that_uses_protos",
-    srcs = ["lib_that_uses_protos.cc"],
+cc_binary(
+    name = "test_binary",
+    srcs = ["test_binary.c"],
     deps = [":foo_upbproto"],
 )
 ```
