@@ -6,7 +6,7 @@ load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 git_repository(
     name = "upb",
     remote = "https://github.com/protocolbuffers/upb.git",
-    commit = "d5af87d06bbe3abad66970ce9c7ae0a7de8bb3c6",
+    commit = "d16bf99ac4658793748cda3251226059892b3b7b",
 )
 
 load("@upb//bazel:workspace_deps.bzl", "upb_deps")
