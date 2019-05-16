@@ -178,6 +178,9 @@ class WorkspaceFileFunctions(object):
   def bazel_version_repository(self, **kwargs):
     pass
 
+  def upb_deps(self):
+    pass
+
 
 class Converter(object):
   def __init__(self):
