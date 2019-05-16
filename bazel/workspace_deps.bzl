@@ -1,7 +1,7 @@
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
-load("@upb//:repository_defs.bzl", "bazel_version_repository")
+load("//bazel:repository_defs.bzl", "bazel_version_repository")
 
 def upb_deps():
     bazel_version_repository(

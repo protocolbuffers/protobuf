@@ -1,5 +1,5 @@
 load(
-    ":build_defs.bzl",
+    "//bazel:build_defs.bzl",
     "generated_file_staleness_test",
     "licenses",  # copybara:strip_for_google3
     "lua_binary",
@@ -11,7 +11,7 @@ load(
 )
 
 load(
-    ":upb_proto_library.bzl",
+    "//bazel:upb_proto_library.bzl",
     "upb_proto_library",
     "upb_proto_reflection_library",
 )

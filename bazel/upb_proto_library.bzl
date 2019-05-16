@@ -218,7 +218,7 @@ _upb_proto_library_aspect = aspect(
         "_upbc": attr.label(
             executable = True,
             cfg = "host",
-            default = ":protoc-gen-upb",
+            default = "//:protoc-gen-upb",
         ),
         "_protoc": attr.label(
             executable = True,
@@ -228,7 +228,7 @@ _upb_proto_library_aspect = aspect(
         "_cc_toolchain": attr.label(
             default = "@bazel_tools//tools/cpp:current_cc_toolchain",
         ),
-        "_upb": attr.label_list(default = [":upb"]),
+        "_upb": attr.label_list(default = ["//:upb"]),
         "_ext": attr.string(default = ".upb"),
     }),
     implementation = _upb_proto_aspect_impl,
@@ -255,7 +255,7 @@ _upb_proto_reflection_library_aspect = aspect(
         "_upbc": attr.label(
             executable = True,
             cfg = "host",
-            default = ":protoc-gen-upb",
+            default = "//:protoc-gen-upb",
         ),
         "_protoc": attr.label(
             executable = True,
@@ -267,8 +267,8 @@ _upb_proto_reflection_library_aspect = aspect(
         ),
         "_upb": attr.label_list(
             default = [
-                ":upb",
-                ":reflection",
+                "//:upb",
+                "//:reflection",
             ],
         ),
         "_ext": attr.string(default = ".upbdefs"),
