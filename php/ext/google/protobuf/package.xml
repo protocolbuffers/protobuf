@@ -26,6 +26,7 @@
   <dir baseinstalldir="/" name="/">
     <file baseinstalldir="/" name="config.m4" role="src"/>
     <file baseinstalldir="/" name="array.c" role="src"/>
+    <file baseinstalldir="/" name="builtin_descriptors.inc" role="src"/>
     <file baseinstalldir="/" name="def.c" role="src"/>
     <file baseinstalldir="/" name="encode_decode.c" role="src"/>
     <file baseinstalldir="/" name="map.c" role="src"/>
