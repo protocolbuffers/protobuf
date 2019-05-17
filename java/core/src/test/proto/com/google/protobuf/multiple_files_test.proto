@@ -41,7 +41,7 @@ package protobuf_unittest;
 import "google/protobuf/unittest.proto";
 import "google/protobuf/descriptor.proto";
 
-option java_generic_services = true; // auto-added
+option java_generic_services = true;  // auto-added
 option java_multiple_files = true;
 option java_outer_classname = "MultipleFilesTestProto";
 

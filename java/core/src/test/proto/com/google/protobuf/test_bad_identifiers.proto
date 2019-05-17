@@ -39,7 +39,7 @@ syntax = "proto2";
 // See:  http://go/proto2-generic-services-default
 package io_protocol_tests;
 
-option java_generic_services = true; // auto-added
+option java_generic_services = true;  // auto-added
 option java_package = "com.google.protobuf";
 option java_outer_classname = "TestBadIdentifiersProto";
 

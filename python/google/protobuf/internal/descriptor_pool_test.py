@@ -36,7 +36,6 @@ __author__ = 'matthewtoia@google.com (Matt Toia)'
 
 import copy
 import os
-import warnings
 
 try:
   import unittest2 as unittest  #PY26
@@ -532,33 +531,21 @@ class DescriptorPoolTestBase(object):
     if api_implementation.Type() == 'cpp':
         pass
     else:
-      with warnings.catch_warnings(record=True) as w:
-        # Cause all warnings to always be triggered.
-        warnings.simplefilter('always')
-        pool = copy.deepcopy(self.pool)
-        # No warnings to add the same descriptors.
-        file_descriptor = unittest_pb2.DESCRIPTOR
-        pool.AddDescriptor(
-            file_descriptor.message_types_by_name['TestAllTypes'])
-        pool.AddEnumDescriptor(
-            file_descriptor.enum_types_by_name['ForeignEnum'])
-        pool.AddServiceDescriptor(
-            file_descriptor.services_by_name['TestService'])
-        pool.AddExtensionDescriptor(
-            file_descriptor.extensions_by_name['optional_int32_extension'])
-        self.assertEqual(len(w), 0)
-        # Check warnings for conflict descriptors with the same name.
-        pool.Add(unittest_fd)
-        pool.Add(conflict_fd)
-        pool.FindFileByName(unittest_fd.name)
+      pool = copy.deepcopy(self.pool)
+      file_descriptor = unittest_pb2.DESCRIPTOR
+      pool.AddDescriptor(
+          file_descriptor.message_types_by_name['TestAllTypes'])
+      pool.AddEnumDescriptor(
+          file_descriptor.enum_types_by_name['ForeignEnum'])
+      pool.AddServiceDescriptor(
+          file_descriptor.services_by_name['TestService'])
+      pool.AddExtensionDescriptor(
+          file_descriptor.extensions_by_name['optional_int32_extension'])
+      pool.Add(unittest_fd)
+      pool.Add(conflict_fd)
+      pool.FindFileByName(unittest_fd.name)
+      with self.assertRaises(TypeError):
         pool.FindFileByName(conflict_fd.name)
-        self.assertTrue(len(w))
-        self.assertIs(w[0].category, RuntimeWarning)
-        self.assertIn('Conflict register for file "other_file": ',
-                      str(w[0].message))
-        self.assertIn('already defined in file '
-                      '"google/protobuf/unittest.proto"',
-                      str(w[0].message))
 
 
 @testing_refleaks.TestCase
