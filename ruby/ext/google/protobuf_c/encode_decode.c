@@ -672,9 +672,9 @@ static void add_handlers_for_oneof_field(upb_handlers *h,
 
 static bool unknown_field_handler(void* closure, const void* hd,
                                   const char* buf, size_t size) {
+  MessageHeader* msg = (MessageHeader*)closure;
   UPB_UNUSED(hd);
 
-  MessageHeader* msg = (MessageHeader*)closure;
   if (msg->unknown_fields == NULL) {
     msg->unknown_fields = malloc(sizeof(stringsink));
     stringsink_init(msg->unknown_fields);
@@ -691,6 +691,7 @@ void add_handlers_for_message(const void *closure, upb_handlers *h) {
   Descriptor* desc =
       ruby_to_Descriptor(get_msgdef_obj(descriptor_pool, msgdef));
   upb_msg_field_iter i;
+  upb_handlerattr attr = UPB_HANDLERATTR_INIT;
 
   // Ensure layout exists. We may be invoked to create handlers for a given
   // message if we are included as a submsg of another message type before our
@@ -707,7 +708,6 @@ void add_handlers_for_message(const void *closure, upb_handlers *h) {
     return;
   }
 
-  upb_handlerattr attr = UPB_HANDLERATTR_INIT;
   upb_handlers_setunknown(h, unknown_field_handler, &attr);
 
   for (upb_msg_field_begin(&i, desc->msgdef);
@@ -1018,12 +1018,13 @@ static void putary(VALUE ary, const upb_fielddef* f, upb_sink sink, int depth,
 static void put_ruby_value(VALUE value, const upb_fielddef* f, VALUE type_class,
                            int depth, upb_sink sink, bool emit_defaults,
                            bool is_json) {
+  upb_selector_t sel = 0;
+
   if (depth > ENCODE_MAX_NESTING) {
     rb_raise(rb_eRuntimeError,
              "Maximum recursion depth exceeded during encoding.");
   }
 
-  upb_selector_t sel = 0;
   if (upb_fielddef_isprimitive(f)) {
     sel = getsel(f, upb_handlers_getprimitivehandlertype(f));
   }
@@ -1346,9 +1347,11 @@ static void putmsg(VALUE msg_rb, const Descriptor* desc,
     }
   }
 
-  stringsink* unknown = msg->unknown_fields;
-  if (unknown != NULL) {
-    upb_sink_putunknown(sink, unknown->ptr, unknown->len);
+  {
+    stringsink* unknown = msg->unknown_fields;
+    if (unknown != NULL) {
+      upb_sink_putunknown(sink, unknown->ptr, unknown->len);
+    }
   }
 
   if (open_msg) {
@@ -1457,10 +1460,12 @@ static void discard_unknown(VALUE msg_rb, const Descriptor* desc) {
 
   TypedData_Get_Struct(msg_rb, MessageHeader, &Message_type, msg);
 
-  stringsink* unknown = msg->unknown_fields;
-  if (unknown != NULL) {
-    stringsink_uninit(unknown);
-    msg->unknown_fields = NULL;
+  {
+    stringsink* unknown = msg->unknown_fields;
+    if (unknown != NULL) {
+      stringsink_uninit(unknown);
+      msg->unknown_fields = NULL;
+    }
   }
 
   for (upb_msg_field_begin(&it, desc->msgdef);
@@ -1490,10 +1495,12 @@ static void discard_unknown(VALUE msg_rb, const Descriptor* desc) {
     }
 
     if (is_map_field(f)) {
-      if (!upb_fielddef_issubmsg(map_field_value(f))) continue;
-      VALUE map = DEREF(msg, offset, VALUE);
-      if (map == Qnil) continue;
+      VALUE map;
       Map_iter map_it;
+
+      if (!upb_fielddef_issubmsg(map_field_value(f))) continue;
+      map = DEREF(msg, offset, VALUE);
+      if (map == Qnil) continue;
       for (Map_begin(map, &map_it); !Map_done(&map_it); Map_next(&map_it)) {
         VALUE submsg = Map_iter_value(&map_it);
         VALUE descriptor = rb_ivar_get(submsg, descriptor_instancevar_interned);
@@ -1502,9 +1509,11 @@ static void discard_unknown(VALUE msg_rb, const Descriptor* desc) {
       }
     } else if (upb_fielddef_isseq(f)) {
       VALUE ary = DEREF(msg, offset, VALUE);
+      int size;
       int i;
+
       if (ary == Qnil) continue;
-      int size = NUM2INT(RepeatedField_length(ary));
+      size = NUM2INT(RepeatedField_length(ary));
       for (i = 0; i < size; i++) {
         void* memory = RepeatedField_index_native(ary, i);
         VALUE submsg = *((VALUE *)memory);
@@ -1514,9 +1523,12 @@ static void discard_unknown(VALUE msg_rb, const Descriptor* desc) {
       }
     } else {
       VALUE submsg = DEREF(msg, offset, VALUE);
+      VALUE descriptor;
+      const Descriptor* subdesc;
+
       if (submsg == Qnil) continue;
-      VALUE descriptor = rb_ivar_get(submsg, descriptor_instancevar_interned);
-      const Descriptor* subdesc = ruby_to_Descriptor(descriptor);
+      descriptor = rb_ivar_get(submsg, descriptor_instancevar_interned);
+      subdesc = ruby_to_Descriptor(descriptor);
       discard_unknown(submsg, subdesc);
     }
   }

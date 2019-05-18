@@ -186,21 +186,28 @@ void native_slot_set_value_and_case(const char* name,
             rb_obj_is_kind_of(value, rb_cTime)) {
           // Time -> Google::Protobuf::Timestamp
           VALUE hash = rb_hash_new();
-          rb_hash_aset(hash, rb_str_new2("seconds"), rb_funcall(value, rb_intern("to_i"), 0));
-          rb_hash_aset(hash, rb_str_new2("nanos"), rb_funcall(value, rb_intern("nsec"), 0));
+          rb_hash_aset(hash, rb_str_new2("seconds"),
+                       rb_funcall(value, rb_intern("to_i"), 0));
+          rb_hash_aset(hash, rb_str_new2("nanos"),
+                       rb_funcall(value, rb_intern("nsec"), 0));
           {
-            VALUE args[1] = { hash };
+            VALUE args[1] = {hash};
             converted_value = rb_class_new_instance(1, args, type_class);
           }
         } else if (strcmp(field_type_name, "Google::Protobuf::Duration") == 0 &&
                    rb_obj_is_kind_of(value, rb_cNumeric)) {
           // Numeric -> Google::Protobuf::Duration
           VALUE hash = rb_hash_new();
-          rb_hash_aset(hash, rb_str_new2("seconds"), rb_funcall(value, rb_intern("to_i"), 0));
-          VALUE n_value = rb_funcall(value, rb_intern("remainder"), 1, INT2NUM(1));
-          n_value = rb_funcall(n_value, rb_intern("*"), 1, INT2NUM(1000000000));
-          n_value = rb_funcall(n_value, rb_intern("round"), 0);
-          rb_hash_aset(hash, rb_str_new2("nanos"), n_value);
+          rb_hash_aset(hash, rb_str_new2("seconds"),
+                       rb_funcall(value, rb_intern("to_i"), 0));
+          {
+            VALUE n_value =
+                rb_funcall(value, rb_intern("remainder"), 1, INT2NUM(1));
+            n_value =
+                rb_funcall(n_value, rb_intern("*"), 1, INT2NUM(1000000000));
+            n_value = rb_funcall(n_value, rb_intern("round"), 0);
+            rb_hash_aset(hash, rb_str_new2("nanos"), n_value);
+          }
           {
             VALUE args[1] = { hash };
             converted_value = rb_class_new_instance(1, args, type_class);

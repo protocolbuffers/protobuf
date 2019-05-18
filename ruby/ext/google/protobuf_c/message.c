@@ -152,22 +152,29 @@ static VALUE ruby_wrapper_type(const MessageLayout* layout,
   if (is_wrapper_type_field(layout, field) && value != Qnil) {
     VALUE hash = rb_hash_new();
     rb_hash_aset(hash, rb_str_new2("value"), value);
-    VALUE args[1] = { hash };
-    return rb_class_new_instance(1, args, field_type_class(layout, field));
+    {
+      VALUE args[1] = {hash};
+      return rb_class_new_instance(1, args, field_type_class(layout, field));
+    }
   }
   return Qnil;
 }
 
 static int extract_method_call(VALUE method_name, MessageHeader* self,
                             const upb_fielddef **f, const upb_oneofdef **o) {
-  Check_Type(method_name, T_SYMBOL);
-
-  VALUE method_str = rb_id2str(SYM2ID(method_name));
-  char* name = RSTRING_PTR(method_str);
-  size_t name_len = RSTRING_LEN(method_str);
+  VALUE method_str;
+  char* name;
+  size_t name_len;
   int accessor_type;
   const upb_oneofdef* test_o;
   const upb_fielddef* test_f;
+  bool has_field;
+
+  Check_Type(method_name, T_SYMBOL);
+
+  method_str = rb_id2str(SYM2ID(method_name));
+  name = RSTRING_PTR(method_str);
+  name_len = RSTRING_LEN(method_str);
 
   if (name[name_len - 1] == '=') {
     accessor_type = METHOD_SETTER;
@@ -190,21 +197,22 @@ static int extract_method_call(VALUE method_name, MessageHeader* self,
     accessor_type = METHOD_GETTER;
   }
 
-  bool has_field = upb_msgdef_lookupname(self->descriptor->msgdef, name, name_len,
-                                                        &test_f, &test_o);
+  has_field = upb_msgdef_lookupname(self->descriptor->msgdef, name, name_len,
+                                    &test_f, &test_o);
 
   // Look for wrapper type accessor of the form <field_name>_as_value
   if (!has_field &&
       (accessor_type == METHOD_GETTER || accessor_type == METHOD_SETTER) &&
       name_len > 9 && strncmp(name + name_len - 9, "_as_value", 9) == 0) {
-    // Find the field name
+    const upb_oneofdef* test_o_wrapper;
+    const upb_fielddef* test_f_wrapper;
     char wrapper_field_name[name_len - 8];
+
+    // Find the field name
     strncpy(wrapper_field_name, name, name_len - 9);
     wrapper_field_name[name_len - 7] = '\0';
 
     // Check if field exists and is a wrapper type
-    const upb_oneofdef* test_o_wrapper;
-    const upb_fielddef* test_f_wrapper;
     if (upb_msgdef_lookupname(self->descriptor->msgdef, wrapper_field_name, name_len - 9,
                                              &test_f_wrapper, &test_o_wrapper) &&
         upb_fielddef_type(test_f_wrapper) == UPB_TYPE_MESSAGE &&
@@ -224,15 +232,15 @@ static int extract_method_call(VALUE method_name, MessageHeader* self,
   // Look for enum accessor of the form <enum_name>_const
   if (!has_field && accessor_type == METHOD_GETTER &&
       name_len > 6 && strncmp(name + name_len - 6, "_const", 6) == 0) {
+    const upb_oneofdef* test_o_enum;
+    const upb_fielddef* test_f_enum;
+    char enum_name[name_len - 5];
 
     // Find enum field name
-    char enum_name[name_len - 5];
     strncpy(enum_name, name, name_len - 6);
     enum_name[name_len - 4] = '\0';
 
     // Check if enum field exists
-    const upb_oneofdef* test_o_enum;
-    const upb_fielddef* test_f_enum;
     if (upb_msgdef_lookupname(self->descriptor->msgdef, enum_name, name_len - 6,
                                              &test_f_enum, &test_o_enum) &&
         upb_fielddef_type(test_f_enum) == UPB_TYPE_ENUM) {
@@ -293,13 +301,14 @@ VALUE Message_method_missing(int argc, VALUE* argv, VALUE _self) {
   MessageHeader* self;
   const upb_oneofdef* o;
   const upb_fielddef* f;
+  int accessor_type;
 
   TypedData_Get_Struct(_self, MessageHeader, &Message_type, self);
   if (argc < 1) {
     rb_raise(rb_eArgError, "Expected method name as first argument.");
   }
 
-  int accessor_type = extract_method_call(argv[0], self, &f, &o);
+  accessor_type = extract_method_call(argv[0], self, &f, &o);
   if (accessor_type == METHOD_UNKNOWN || (o == NULL && f == NULL) ) {
     return rb_call_super(argc, argv);
   } else if (accessor_type == METHOD_SETTER || accessor_type == METHOD_WRAPPER_SETTER) {
@@ -313,11 +322,12 @@ VALUE Message_method_missing(int argc, VALUE* argv, VALUE _self) {
 
   // Return which of the oneof fields are set
   if (o != NULL) {
+    const upb_fielddef* oneof_field = which_oneof_field(self, o);
+
     if (accessor_type == METHOD_SETTER) {
       rb_raise(rb_eRuntimeError, "Oneof accessors are read-only.");
     }
 
-    const upb_fielddef* oneof_field = which_oneof_field(self, o);
     if (accessor_type == METHOD_PRESENCE) {
       return oneof_field == NULL ? Qfalse : Qtrue;
     } else if (accessor_type == METHOD_CLEAR) {
@@ -379,13 +389,14 @@ VALUE Message_respond_to_missing(int argc, VALUE* argv, VALUE _self) {
   MessageHeader* self;
   const upb_oneofdef* o;
   const upb_fielddef* f;
+  int accessor_type;
 
   TypedData_Get_Struct(_self, MessageHeader, &Message_type, self);
   if (argc < 1) {
     rb_raise(rb_eArgError, "Expected method name as first argument.");
   }
 
-  int accessor_type = extract_method_call(argv[0], self, &f, &o);
+  accessor_type = extract_method_call(argv[0], self, &f, &o);
   if (accessor_type == METHOD_UNKNOWN) {
     return rb_call_super(argc, argv);
   } else if (o != NULL) {
@@ -613,6 +624,8 @@ VALUE Message_to_h(VALUE _self) {
        !upb_msg_field_done(&it);
        upb_msg_field_next(&it)) {
     const upb_fielddef* field = upb_msg_iter_field(&it);
+    VALUE msg_value;
+    VALUE msg_key;
 
     // For proto2, do not include fields which are not set.
     if (upb_msgdef_syntax(self->descriptor->msgdef) == UPB_SYNTAX_PROTO2 &&
@@ -621,9 +634,8 @@ VALUE Message_to_h(VALUE _self) {
       continue;
     }
 
-    VALUE msg_value = layout_get(self->descriptor->layout, Message_data(self),
-                                 field);
-    VALUE msg_key   = ID2SYM(rb_intern(upb_fielddef_name(field)));
+    msg_value = layout_get(self->descriptor->layout, Message_data(self), field);
+    msg_key = ID2SYM(rb_intern(upb_fielddef_name(field)));
     if (is_map_field(field)) {
       msg_value = Map_to_h(msg_value);
     } else if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {

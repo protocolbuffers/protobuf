@@ -56,6 +56,7 @@ static void rewrite_enum_default(const upb_symtab* symtab,
   char *end;
   long val;
   const upb_enumdef *e;
+  upb_strview type_name;
 
   /* Look for TYPE_ENUM fields that have a default. */
   if (google_protobuf_FieldDescriptorProto_type(field) !=
@@ -66,7 +67,7 @@ static void rewrite_enum_default(const upb_symtab* symtab,
   }
 
   defaultval = google_protobuf_FieldDescriptorProto_default_value(field);
-  upb_strview type_name = google_protobuf_FieldDescriptorProto_type_name(field);
+  type_name = google_protobuf_FieldDescriptorProto_type_name(field);
 
   if (defaultval.size == 0 || !isdigit(defaultval.data[0])) {
     return;
@@ -101,6 +102,8 @@ static void rewrite_enum_default(const upb_symtab* symtab,
     size_t i, n;
     const google_protobuf_EnumDescriptorProto* const* enums =
         google_protobuf_FileDescriptorProto_enum_type(file, &n);
+    const google_protobuf_EnumValueDescriptorProto* const* values;
+
     for (i = 0; i < n; i++) {
       if (upb_strview_eql(google_protobuf_EnumDescriptorProto_name(enums[i]),
                           upb_strview_makez(type_name_str))) {
@@ -113,8 +116,7 @@ static void rewrite_enum_default(const upb_symtab* symtab,
       return;
     }
 
-    const google_protobuf_EnumValueDescriptorProto* const* values =
-        google_protobuf_EnumDescriptorProto_value(matching_enum, &n);
+    values = google_protobuf_EnumDescriptorProto_value(matching_enum, &n);
     for (i = 0; i < n; i++) {
       if (google_protobuf_EnumValueDescriptorProto_number(values[i]) == val) {
         google_protobuf_FieldDescriptorProto_set_default_value(
@@ -188,8 +190,10 @@ static void rewrite_nesting(VALUE msg_ent, google_protobuf_DescriptorProto* msg,
   for (i = 0; i < submsg_count; i++) {
     VALUE submsg_ent = RARRAY_PTR(submsgs)[i];
     VALUE pos = rb_hash_aref(submsg_ent, ID2SYM(rb_intern("pos")));
+    upb_strview name;
+
     msg_msgs[i] = msgs[NUM2INT(pos)];
-    upb_strview name = google_protobuf_DescriptorProto_name(msg_msgs[i]);
+    name = google_protobuf_DescriptorProto_name(msg_msgs[i]);
     remove_path(&name);
     google_protobuf_DescriptorProto_set_name(msg_msgs[i], name);
     rewrite_nesting(submsg_ent, msg_msgs[i], msgs, enums, arena);
@@ -252,6 +256,8 @@ static void rewrite_names(VALUE _file_builder,
   VALUE enum_names = rb_ary_new();
   size_t msg_count, enum_count, i;
   VALUE new_package, nesting, msg_ents, enum_ents;
+  google_protobuf_DescriptorProto** msgs;
+  google_protobuf_EnumDescriptorProto** enums;
 
   if (google_protobuf_FileDescriptorProto_has_package(file_proto)) {
     upb_strview package_str =
@@ -259,17 +265,15 @@ static void rewrite_names(VALUE _file_builder,
     package = rb_str_new(package_str.data, package_str.size);
   }
 
-  google_protobuf_DescriptorProto** msgs =
-      google_protobuf_FileDescriptorProto_mutable_message_type(file_proto,
-                                                               &msg_count);
+  msgs = google_protobuf_FileDescriptorProto_mutable_message_type(file_proto,
+                                                                  &msg_count);
   for (i = 0; i < msg_count; i++) {
     upb_strview name = google_protobuf_DescriptorProto_name(msgs[i]);
     rb_ary_push(msg_names, rb_str_new(name.data, name.size));
   }
 
-  google_protobuf_EnumDescriptorProto** enums =
-      google_protobuf_FileDescriptorProto_mutable_enum_type(file_proto,
-                                                            &enum_count);
+  enums = google_protobuf_FileDescriptorProto_mutable_enum_type(file_proto,
+                                                                &enum_count);
   for (i = 0; i < enum_count; i++) {
     upb_strview name = google_protobuf_EnumDescriptorProto_name(enums[i]);
     rb_ary_push(enum_names, rb_str_new(name.data, name.size));
@@ -312,14 +316,14 @@ static void rewrite_names(VALUE _file_builder,
   Check_Type(msg_ents, T_ARRAY);
   Check_Type(enum_ents, T_ARRAY);
 
-  for (i = 0; i < RARRAY_LEN(msg_ents); i++) {
+  for (i = 0; i < (size_t)RARRAY_LEN(msg_ents); i++) {
     VALUE msg_ent = rb_ary_entry(msg_ents, i);
     VALUE pos = rb_hash_aref(msg_ent, ID2SYM(rb_intern("pos")));
     msgs[i] = msgs[NUM2INT(pos)];
     rewrite_nesting(msg_ent, msgs[i], msgs, enums, arena);
   }
 
-  for (i = 0; i < RARRAY_LEN(enum_ents); i++) {
+  for (i = 0; i < (size_t)RARRAY_LEN(enum_ents); i++) {
     VALUE enum_pos = rb_ary_entry(enum_ents, i);
     enums[i] = enums[NUM2INT(enum_pos)];
   }
@@ -382,9 +386,9 @@ void DescriptorPool_free(void* _self) {
  */
 VALUE DescriptorPool_alloc(VALUE klass) {
   DescriptorPool* self = ALLOC(DescriptorPool);
-  self->def_to_descriptor = rb_hash_new();
   VALUE ret = TypedData_Wrap_Struct(klass, &_DescriptorPool_type, self);
 
+  self->def_to_descriptor = rb_hash_new();
   self->symtab = upb_symtab_new();
   self->fill_handler_cache =
       upb_handlercache_new(add_handlers_for_message, (void*)ret);
@@ -441,13 +445,15 @@ VALUE DescriptorPool_build(int argc, VALUE* argv, VALUE _self) {
 VALUE DescriptorPool_lookup(VALUE _self, VALUE name) {
   DEFINE_SELF(DescriptorPool, self, _self);
   const char* name_str = get_str(name);
+  const upb_msgdef* msgdef;
+  const upb_enumdef* enumdef;
 
-  const upb_msgdef* msgdef = upb_symtab_lookupmsg(self->symtab, name_str);
+  msgdef = upb_symtab_lookupmsg(self->symtab, name_str);
   if (msgdef) {
     return get_msgdef_obj(_self, msgdef);
   }
 
-  const upb_enumdef* enumdef = upb_symtab_lookupenum(self->symtab, name_str);
+  enumdef = upb_symtab_lookupenum(self->symtab, name_str);
   if (enumdef) {
     return get_enumdef_obj(_self, enumdef);
   }
@@ -1461,13 +1467,14 @@ static void msgdef_add_field(VALUE msgbuilder_rb, upb_label_t label, VALUE name,
   DEFINE_SELF(MessageBuilderContext, self, msgbuilder_rb);
   FileBuilderContext* file_context =
       ruby_to_FileBuilderContext(self->file_builder);
-  google_protobuf_FieldDescriptorProto* field_proto =
-      google_protobuf_DescriptorProto_add_field(self->msg_proto,
-                                                file_context->arena);
+  google_protobuf_FieldDescriptorProto* field_proto;
+  VALUE name_str;
 
+  field_proto = google_protobuf_DescriptorProto_add_field(self->msg_proto,
+                                                          file_context->arena);
 
   Check_Type(name, T_SYMBOL);
-  VALUE name_str = rb_id2str(SYM2ID(name));
+  name_str = rb_id2str(SYM2ID(name));
 
   google_protobuf_FieldDescriptorProto_set_name(
       field_proto, FileBuilderContext_strdup(self->file_builder, name_str));
@@ -1641,6 +1648,8 @@ VALUE MessageBuilderContext_map(int argc, VALUE* argv, VALUE _self) {
   DEFINE_SELF(MessageBuilderContext, self, _self);
   VALUE name, key_type, value_type, number, type_class;
   VALUE mapentry_desc_name;
+  FileBuilderContext* file_builder;
+  upb_strview msg_name;
 
   if (argc < 4) {
     rb_raise(rb_eArgError, "Expected at least 4 arguments.");
@@ -1663,8 +1672,7 @@ VALUE MessageBuilderContext_map(int argc, VALUE* argv, VALUE _self) {
              "type.");
   }
 
-  FileBuilderContext* file_builder =
-      ruby_to_FileBuilderContext(self->file_builder);
+  file_builder = ruby_to_FileBuilderContext(self->file_builder);
 
   // TODO(haberman): remove this restriction, maps are supported in proto2.
   if (upb_strview_eql(
@@ -1676,17 +1684,19 @@ VALUE MessageBuilderContext_map(int argc, VALUE* argv, VALUE _self) {
 
   // Create a new message descriptor for the map entry message, and create a
   // repeated submessage field here with that type.
-  upb_strview msg_name = google_protobuf_DescriptorProto_name(self->msg_proto);
+  msg_name = google_protobuf_DescriptorProto_name(self->msg_proto);
   mapentry_desc_name = rb_str_new(msg_name.data, msg_name.size);
   mapentry_desc_name = rb_str_cat2(mapentry_desc_name, "_MapEntry_");
   mapentry_desc_name =
       rb_str_cat2(mapentry_desc_name, rb_id2name(SYM2ID(name)));
 
-  // message <msgname>_MapEntry_ { /* ... */ }
-  VALUE args[1] = { mapentry_desc_name };
-  VALUE types = rb_ary_new3(3, key_type, value_type, type_class);
-  rb_block_call(self->file_builder, rb_intern("add_message"), 1, args,
-                make_mapentry, types);
+  {
+    // message <msgname>_MapEntry_ { /* ... */ }
+    VALUE args[1] = {mapentry_desc_name};
+    VALUE types = rb_ary_new3(3, key_type, value_type, type_class);
+    rb_block_call(self->file_builder, rb_intern("add_message"), 1, args,
+                  make_mapentry, types);
+  }
 
   // If this file is in a package, we need to qualify the map entry type.
   if (google_protobuf_FileDescriptorProto_has_package(file_builder->file_proto)) {
@@ -1722,14 +1732,14 @@ VALUE MessageBuilderContext_oneof(VALUE _self, VALUE name) {
   upb_strview name_strview;
   FileBuilderContext* file_context =
       ruby_to_FileBuilderContext(self->file_builder);
+  google_protobuf_OneofDescriptorProto* oneof_proto;
 
   // Existing oneof_count becomes oneof_index.
   google_protobuf_DescriptorProto_oneof_decl(self->msg_proto, &oneof_count);
 
   // Create oneof_proto and set its name.
-  google_protobuf_OneofDescriptorProto* oneof_proto =
-      google_protobuf_DescriptorProto_add_oneof_decl(self->msg_proto,
-                                                     file_context->arena);
+  oneof_proto = google_protobuf_DescriptorProto_add_oneof_decl(
+      self->msg_proto, file_context->arena);
   name_str = rb_str_new2(rb_id2name(SYM2ID(name)));
   name_strview = upb_strview_makez(StringValueCStr(name_str));
   google_protobuf_OneofDescriptorProto_set_name(oneof_proto, name_strview);
@@ -1890,12 +1900,14 @@ VALUE EnumBuilderContext_value(VALUE _self, VALUE name, VALUE number) {
   DEFINE_SELF(EnumBuilderContext, self, _self);
   FileBuilderContext* file_builder =
       ruby_to_FileBuilderContext(self->file_builder);
-  Check_Type(name, T_SYMBOL);
-  VALUE name_str = rb_id2str(SYM2ID(name));
+  VALUE name_str;
+  google_protobuf_EnumValueDescriptorProto* enum_value;
 
-  google_protobuf_EnumValueDescriptorProto* enum_value =
-      google_protobuf_EnumDescriptorProto_add_value(self->enum_proto,
-                                                    file_builder->arena);
+  Check_Type(name, T_SYMBOL);
+  name_str = rb_id2str(SYM2ID(name));
+
+  enum_value = google_protobuf_EnumDescriptorProto_add_value(
+      self->enum_proto, file_builder->arena);
 
   google_protobuf_EnumValueDescriptorProto_set_name(
       enum_value, FileBuilderContext_strdup(self->file_builder, name_str));
@@ -1927,8 +1939,10 @@ void FileBuilderContext_free(void* _self) {
 upb_strview FileBuilderContext_strdup2(VALUE _self, const char *str) {
   DEFINE_SELF(FileBuilderContext, self, _self);
   upb_strview ret;
+  char *data;
+
   ret.size = strlen(str);
-  char *data = upb_malloc(upb_arena_alloc(self->arena), ret.size + 1);
+  data = upb_malloc(upb_arena_alloc(self->arena), ret.size + 1);
   ret.data = data;
   memcpy(data, str, ret.size);
   /* Null-terminate required by rewrite_enum_defaults() above. */
@@ -1982,13 +1996,16 @@ VALUE FileBuilderContext_initialize(VALUE _self, VALUE descriptor_pool,
       FileBuilderContext_strdup(_self, rb_str_new2("proto3")));
 
   if (options != Qnil) {
-    Check_Type(options, T_HASH);
+    VALUE syntax;
 
-    VALUE syntax = rb_hash_lookup2(options, ID2SYM(rb_intern("syntax")), Qnil);
+    Check_Type(options, T_HASH);
+    syntax = rb_hash_lookup2(options, ID2SYM(rb_intern("syntax")), Qnil);
 
     if (syntax != Qnil) {
+      VALUE syntax_str;
+
       Check_Type(syntax, T_SYMBOL);
-      VALUE syntax_str = rb_id2str(SYM2ID(syntax));
+      syntax_str = rb_id2str(SYM2ID(syntax));
       google_protobuf_FileDescriptorProto_set_syntax(
           self->file_proto, FileBuilderContext_strdup(_self, syntax_str));
     }
@@ -2037,11 +2054,11 @@ VALUE FileBuilderContext_add_enum(VALUE _self, VALUE name) {
 void FileBuilderContext_build(VALUE _self) {
   DEFINE_SELF(FileBuilderContext, self, _self);
   DescriptorPool* pool = ruby_to_DescriptorPool(self->descriptor_pool);
+  upb_status status;
 
   rewrite_enum_defaults(pool->symtab, self->file_proto);
   rewrite_names(_self, self->file_proto);
 
-  upb_status status;
   upb_status_clear(&status);
   if (!upb_symtab_addfile(pool->symtab, self->file_proto, &status)) {
     rb_raise(cTypeError, "Unable to add defs to DescriptorPool: %s",
@@ -2114,13 +2131,17 @@ VALUE Builder_initialize(VALUE _self, VALUE pool) {
 VALUE Builder_add_file(int argc, VALUE* argv, VALUE _self) {
   DEFINE_SELF(Builder, self, _self);
   VALUE name, options;
+  VALUE ctx;
+  VALUE block;
 
   rb_scan_args(argc, argv, "11", &name, &options);
 
-  VALUE args[3] = { self->descriptor_pool, name, options };
-  VALUE ctx = rb_class_new_instance(3, args, cFileBuilderContext);
+  {
+    VALUE args[3] = { self->descriptor_pool, name, options };
+    ctx = rb_class_new_instance(3, args, cFileBuilderContext);
+  }
 
-  VALUE block = rb_block_proc();
+  block = rb_block_proc();
   rb_funcall_with_block(ctx, rb_intern("instance_eval"), 0, NULL, block);
   FileBuilderContext_build(ctx);
 

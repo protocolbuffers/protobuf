@@ -5,7 +5,7 @@ require 'mkmf'
 if RUBY_PLATFORM =~ /darwin/ || RUBY_PLATFORM =~ /linux/
   # XOPEN_SOURCE needed for strptime:
   # https://stackoverflow.com/questions/35234152/strptime-giving-implicit-declaration-and-undefined-reference
-  $CFLAGS += " -std=gnu90 -O3 -DNDEBUG -D_XOPEN_SOURCE=700 -Wall"
+  $CFLAGS += " -std=gnu90 -O3 -DNDEBUG -D_XOPEN_SOURCE=700 -Wall -Wdeclaration-after-statement -Wsign-compare"
 else
   $CFLAGS += " -std=gnu90 -O3 -DNDEBUG"
 end
