@@ -154,17 +154,15 @@ static bool has_prefix(upb_strview str, upb_strview prefix) {
          memcmp(str.data, prefix.data, prefix.size) == 0;
 }
 
-static void remove_package(upb_strview *name, upb_strview package) {
-  size_t prefix_len = package.size + 1;
-  if (!has_prefix(*name, package) || prefix_len >= name->size ||
-      name->data[package.size] != '.') {
-    rb_raise(cTypeError,
-             "Bad package name, wasn't prefix: " UPB_STRVIEW_FORMAT
-             ", " UPB_STRVIEW_FORMAT,
-             UPB_STRVIEW_ARGS(*name), UPB_STRVIEW_ARGS(package));
+static void remove_scopes(upb_strview *name) {
+  for (int i = name->size - 1; i >= 0; i--) {
+    if (name->data[i] == '.') {
+      int prefix_len = i + 1;
+      name->data += prefix_len;
+      name->size -= prefix_len;
+      return;
+    }
   }
-  name->data += prefix_len;
-  name->size -= prefix_len;
 }
 
 static void remove_path(upb_strview *name) {
@@ -291,27 +289,27 @@ static void rewrite_names(VALUE _file_builder,
   VALUE new_package = rb_ary_entry(ret, 0);
   VALUE nesting = rb_ary_entry(ret, 1);
 
-  if (package == Qnil && new_package != Qnil) {
-    // We inferred a package name; set this package name on the file and remove
-    // the prefix from all msg/enum names.
+  // Rewrite package and names.
+  if (new_package != Qnil) {
     upb_strview new_package_str =
         FileBuilderContext_strdup(_file_builder, new_package);
     google_protobuf_FileDescriptorProto_set_package(file_proto,
                                                     new_package_str);
-
-    for (i = 0; i < msg_count; i++) {
-      upb_strview name = google_protobuf_DescriptorProto_name(msgs[i]);
-      remove_package(&name, new_package_str);
-      google_protobuf_DescriptorProto_set_name(msgs[i], name);
-    }
-
-    for (i = 0; i < enum_count; i++) {
-      upb_strview name = google_protobuf_EnumDescriptorProto_name(enums[i]);
-      remove_package(&name, new_package_str);
-      google_protobuf_EnumDescriptorProto_set_name(enums[i], name);
-    }
   }
 
+  for (i = 0; i < msg_count; i++) {
+    upb_strview name = google_protobuf_DescriptorProto_name(msgs[i]);
+    remove_scopes(&name);
+    google_protobuf_DescriptorProto_set_name(msgs[i], name);
+  }
+
+  for (i = 0; i < enum_count; i++) {
+    upb_strview name = google_protobuf_EnumDescriptorProto_name(enums[i]);
+    remove_scopes(&name);
+    google_protobuf_EnumDescriptorProto_set_name(enums[i], name);
+  }
+
+  // Rewrite nesting.
   VALUE msg_ents = rb_hash_aref(nesting, ID2SYM(rb_intern("msgs")));
   VALUE enum_ents = rb_hash_aref(nesting, ID2SYM(rb_intern("enums")));
 
