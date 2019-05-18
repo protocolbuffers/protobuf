@@ -388,9 +388,10 @@ VALUE DescriptorPool_alloc(VALUE klass) {
   DescriptorPool* self = ALLOC(DescriptorPool);
   VALUE ret;
 
-  self->def_to_descriptor = rb_hash_new();
+  self->def_to_descriptor = Qnil;
   ret = TypedData_Wrap_Struct(klass, &_DescriptorPool_type, self);
 
+  self->def_to_descriptor = rb_hash_new();
   self->symtab = upb_symtab_new();
   self->fill_handler_cache =
       upb_handlercache_new(add_handlers_for_message, (void*)ret);
@@ -2217,7 +2218,9 @@ VALUE Builder_build(VALUE _self) {
 static VALUE get_def_obj(VALUE _descriptor_pool, const void* ptr, VALUE klass) {
   DEFINE_SELF(DescriptorPool, descriptor_pool, _descriptor_pool);
   VALUE key = ULL2NUM((intptr_t)ptr);
-  VALUE def = rb_hash_aref(descriptor_pool->def_to_descriptor, key);
+  VALUE def;
+
+  def = rb_hash_aref(descriptor_pool->def_to_descriptor, key);
 
   if (ptr == NULL) {
     return Qnil;
