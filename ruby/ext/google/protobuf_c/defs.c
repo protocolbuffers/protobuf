@@ -355,7 +355,7 @@ static void rewrite_names(VALUE _file_builder,
 
 // Global singleton DescriptorPool. The user is free to create others, but this
 // is used by generated code.
-VALUE generated_pool;
+VALUE generated_pool = Qnil;
 
 DEFINE_CLASS(DescriptorPool, "Google::Protobuf::DescriptorPool");
 
