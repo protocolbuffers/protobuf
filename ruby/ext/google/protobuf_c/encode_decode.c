@@ -1195,7 +1195,7 @@ static void putjsonany(VALUE msg_rb, const Descriptor* desc, upb_sink sink,
 
 static void putjsonlistvalue(
     VALUE msg_rb, const Descriptor* desc,
-    upb_sink* sink, int depth, bool emit_defaults) {
+    upb_sink sink, int depth, bool emit_defaults) {
   upb_status status;
   upb_sink subsink;
   MessageHeader* msg = NULL;

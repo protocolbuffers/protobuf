@@ -626,4 +626,12 @@ extern ID descriptor_instancevar_interned;
 // Ruby.
 extern VALUE c_only_cookie;
 
+#ifdef NDEBUG
+#define UPB_ASSERT(expr) do {} while (false && (expr))
+#else
+#define UPB_ASSERT(expr) assert(expr)
+#endif
+
+#define UPB_UNUSED(var) (void)var
+
 #endif  // __GOOGLE_PROTOBUF_RUBY_PROTOBUF_H__

@@ -130,8 +130,9 @@ enum {
 };
 
 // Check if the field is a well known wrapper type
-static bool is_wrapper_type_field(const upb_fielddef* field) {
-  char* field_type_name = rb_class2name(field_type_class(field));
+static bool is_wrapper_type_field(const MessageLayout* layout,
+                                  const upb_fielddef* field) {
+  const char* field_type_name = rb_class2name(field_type_class(layout, field));
 
   return strcmp(field_type_name, "Google::Protobuf::DoubleValue") == 0 ||
          strcmp(field_type_name, "Google::Protobuf::FloatValue") == 0 ||
@@ -145,18 +146,19 @@ static bool is_wrapper_type_field(const upb_fielddef* field) {
 }
 
 // Get a new Ruby wrapper type and set the initial value
-static VALUE ruby_wrapper_type(const upb_fielddef* field, const VALUE* value) {
-  if (is_wrapper_type_field(field) && value != Qnil) {
+static VALUE ruby_wrapper_type(const MessageLayout* layout,
+                               const upb_fielddef* field, const VALUE value) {
+  if (is_wrapper_type_field(layout, field) && value != Qnil) {
     VALUE hash = rb_hash_new();
     rb_hash_aset(hash, rb_str_new2("value"), value);
     VALUE args[1] = { hash };
-    return rb_class_new_instance(1, args, field_type_class(field));
+    return rb_class_new_instance(1, args, field_type_class(layout, field));
   }
   return Qnil;
 }
 
 static int extract_method_call(VALUE method_name, MessageHeader* self,
-			       const upb_fielddef **f, const upb_oneofdef **o) {
+                            const upb_fielddef **f, const upb_oneofdef **o) {
   Check_Type(method_name, T_SYMBOL);
 
   VALUE method_str = rb_id2str(SYM2ID(method_name));
@@ -173,13 +175,13 @@ static int extract_method_call(VALUE method_name, MessageHeader* self,
     // we don't strip the prefix.
   } else if (strncmp("clear_", name, 6) == 0 &&
              !upb_msgdef_lookupname(self->descriptor->msgdef, name, name_len,
-				    &test_f, &test_o)) {
+                                &test_f, &test_o)) {
     accessor_type = METHOD_CLEAR;
     name = name + 6;
     name_len = name_len - 6;
   } else if (strncmp("has_", name, 4) == 0 && name[name_len - 1] == '?' &&
              !upb_msgdef_lookupname(self->descriptor->msgdef, name, name_len,
-				    &test_f, &test_o)) {
+                                &test_f, &test_o)) {
     accessor_type = METHOD_PRESENCE;
     name = name + 4;
     name_len = name_len - 5;
@@ -188,7 +190,7 @@ static int extract_method_call(VALUE method_name, MessageHeader* self,
   }
 
   bool has_field = upb_msgdef_lookupname(self->descriptor->msgdef, name, name_len,
-			                                   &test_f, &test_o);
+                                                        &test_f, &test_o);
 
   // Look for wrapper type accessor of the form <field_name>_as_value
   if (!has_field &&
@@ -203,9 +205,9 @@ static int extract_method_call(VALUE method_name, MessageHeader* self,
     const upb_oneofdef* test_o_wrapper;
     const upb_fielddef* test_f_wrapper;
     if (upb_msgdef_lookupname(self->descriptor->msgdef, wrapper_field_name, name_len - 9,
-			                        &test_f_wrapper, &test_o_wrapper) &&
+                                             &test_f_wrapper, &test_o_wrapper) &&
         upb_fielddef_type(test_f_wrapper) == UPB_TYPE_MESSAGE &&
-        is_wrapper_type_field(test_f_wrapper)) {
+        is_wrapper_type_field(self->descriptor->layout, test_f_wrapper)) {
       // It does exist!
       has_field = true;
       if (accessor_type == METHOD_SETTER) {
@@ -231,7 +233,7 @@ static int extract_method_call(VALUE method_name, MessageHeader* self,
     const upb_oneofdef* test_o_enum;
     const upb_fielddef* test_f_enum;
     if (upb_msgdef_lookupname(self->descriptor->msgdef, enum_name, name_len - 6,
-			                        &test_f_enum, &test_o_enum) &&
+                                             &test_f_enum, &test_o_enum) &&
         upb_fielddef_type(test_f_enum) == UPB_TYPE_ENUM) {
       // It does exist!
       has_field = true;
@@ -343,7 +345,7 @@ VALUE Message_method_missing(int argc, VALUE* argv, VALUE _self) {
     }
     return value;
   } else if (accessor_type == METHOD_WRAPPER_SETTER) {
-    VALUE wrapper = ruby_wrapper_type(f, argv[1]);
+    VALUE wrapper = ruby_wrapper_type(self->descriptor->layout, f, argv[1]);
     layout_set(self->descriptor->layout, Message_data(self), f, wrapper);
     return Qnil;
   } else if (accessor_type == METHOD_ENUM_GETTER) {
@@ -614,8 +616,8 @@ VALUE Message_to_h(VALUE _self) {
 
     // For proto2, do not include fields which are not set.
     if (upb_msgdef_syntax(self->descriptor->msgdef) == UPB_SYNTAX_PROTO2 &&
-	field_contains_hasbit(self->descriptor->layout, field) &&
-	!layout_has(self->descriptor->layout, Message_data(self), field)) {
+       field_contains_hasbit(self->descriptor->layout, field) &&
+       !layout_has(self->descriptor->layout, Message_data(self), field)) {
       continue;
     }
 

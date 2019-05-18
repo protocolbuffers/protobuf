@@ -179,8 +179,8 @@ void native_slot_set_value_and_case(const char* name,
         value = Qnil;
       } else if (CLASS_OF(value) != type_class) {
         // check for possible implicit conversions
-        VALUE converted_value = NULL;
-        char* field_type_name = rb_class2name(type_class);
+        VALUE converted_value = Qnil;
+        const char* field_type_name = rb_class2name(type_class);
 
         if (strcmp(field_type_name, "Google::Protobuf::Timestamp") == 0 &&
             rb_obj_is_kind_of(value, rb_cTime)) {
@@ -204,7 +204,7 @@ void native_slot_set_value_and_case(const char* name,
         }
 
         // raise if no suitable conversaion could be found
-        if (converted_value == NULL) {
+        if (converted_value == Qnil) {
           rb_raise(cTypeError,
                    "Invalid type %s to assign to submessage field '%s'.",
                   rb_class2name(CLASS_OF(value)), name);
