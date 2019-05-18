@@ -169,24 +169,22 @@ def generated_file_staleness_test(name, outs, generated_pattern):
 SrcList = provider(
     fields = {
         "srcs": "list of srcs",
-        "hdrs": "list of hdrs",
     },
 )
 
 def _file_list_aspect_impl(target, ctx):
     if GeneratedSrcs in target:
         srcs = target[GeneratedSrcs]
-        return [SrcList(srcs = srcs.srcs, hdrs = srcs.hdrs)]
+        return [SrcList(srcs = srcs.srcs + srcs.hdrs)]
 
     srcs = []
-    hdrs = []
     for src in ctx.rule.attr.srcs:
         srcs += src.files.to_list()
     for hdr in ctx.rule.attr.hdrs:
-        hdrs += hdr.files.to_list()
+        srcs += hdr.files.to_list()
     for hdr in ctx.rule.attr.textual_hdrs:
-        hdrs += hdr.files.to_list()
-    return [SrcList(srcs = srcs, hdrs = hdrs)]
+        srcs += hdr.files.to_list()
+    return [SrcList(srcs = srcs)]
 
 _file_list_aspect = aspect(
     implementation = _file_list_aspect_impl,
@@ -194,11 +192,9 @@ _file_list_aspect = aspect(
 
 def _upb_amalgamation(ctx):
     inputs = []
-    srcs = []
     for lib in ctx.attr.libs:
         inputs += lib[SrcList].srcs
-        inputs += lib[SrcList].hdrs
-        srcs += [src for src in lib[SrcList].srcs if src.path.endswith("c")]
+    srcs = [src for src in inputs if src.path.endswith("c")]
     ctx.actions.run(
         inputs = inputs,
         outputs = ctx.outputs.outs,
