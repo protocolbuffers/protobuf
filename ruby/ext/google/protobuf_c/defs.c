@@ -386,9 +386,11 @@ void DescriptorPool_free(void* _self) {
  */
 VALUE DescriptorPool_alloc(VALUE klass) {
   DescriptorPool* self = ALLOC(DescriptorPool);
-  VALUE ret = TypedData_Wrap_Struct(klass, &_DescriptorPool_type, self);
+  VALUE ret;
 
   self->def_to_descriptor = rb_hash_new();
+  ret = TypedData_Wrap_Struct(klass, &_DescriptorPool_type, self);
+
   self->symtab = upb_symtab_new();
   self->fill_handler_cache =
       upb_handlercache_new(add_handlers_for_message, (void*)ret);
