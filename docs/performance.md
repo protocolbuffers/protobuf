@@ -1,24 +1,24 @@
 # Protobuf Performance
-This benchmark result is tested on workstation with processor of Intel® Xeon® Processor E5-2630 and 32GB RAM
+The following benchmark testing results were produced on a workstation utilizing an Intel® Xeon® Processor E5-2630 with 32GB RAM.
 
-This table contains 3 languages' results:
+This table contains the benchmark test's results from three separate languages:
 
-* **C++** - For C++ there're 3 kinds of parsing ways:
-	* **new** - This is for using new operator for creating message instance.
-    * **new arena** - This is for using arena for creating new message instance.
+* **C++** - For C++, there are three parsing methods:
+	* **new** - This is for using a new operator for creating a message instance.
+    * **new arena** - This is for using arena for creating a new message instance.
     * **reuse** - This is for reusing the same message instance for parsing.
-* **Java** - For Java there're 3 kinds of parsing/Serialization ways:
+* **Java** - For Java, there are three parsing/serialization methods:
 	* **byte[]** - This is for parsing from a Byte Array.
     * **ByteString** - This is for parsing from a
     	com.google.protobuf.ByteString.
-    * **InputStream** - This is for parsing from a InputStream
-* **Python** - For Python there're 3 kinds of python protobuf for testing:
+    * **InputStream** - This is for parsing from an InputStream.
+* **Python** - For Python, there are three types of Python protobuf for testing:
 	* **C++-genereated-code** - This is for using cpp generated code of the
-    	proto file as dynamic linked library.
-	* **C++-reflection** - This is for using cpp reflection, which there's no
-    	generated code, but still using cpp protobuf library as dynamic linked
+    	proto file as a dynamic linked library.
+	* **C++-reflection** - This is for using cpp reflection, for which there is no
+    	generated code, but still uses the cpp protobuf library as a dynamic linked
         library.
-	* **pure-Python** - This is for pure Python version, which don't link with
+	* **pure-Python** - This is for the pure version of Python, which does not link with
     	any cpp protobuf library.
 
 ## Parsing performance
