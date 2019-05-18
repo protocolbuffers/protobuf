@@ -188,8 +188,10 @@ void native_slot_set_value_and_case(const char* name,
           VALUE hash = rb_hash_new();
           rb_hash_aset(hash, rb_str_new2("seconds"), rb_funcall(value, rb_intern("to_i"), 0));
           rb_hash_aset(hash, rb_str_new2("nanos"), rb_funcall(value, rb_intern("nsec"), 0));
-          VALUE args[1] = { hash };
-          converted_value = rb_class_new_instance(1, args, type_class);
+          {
+            VALUE args[1] = { hash };
+            converted_value = rb_class_new_instance(1, args, type_class);
+          }
         } else if (strcmp(field_type_name, "Google::Protobuf::Duration") == 0 &&
                    rb_obj_is_kind_of(value, rb_cNumeric)) {
           // Numeric -> Google::Protobuf::Duration
@@ -199,8 +201,10 @@ void native_slot_set_value_and_case(const char* name,
           n_value = rb_funcall(n_value, rb_intern("*"), 1, INT2NUM(1000000000));
           n_value = rb_funcall(n_value, rb_intern("round"), 0);
           rb_hash_aset(hash, rb_str_new2("nanos"), n_value);
-          VALUE args[1] = { hash };
-          converted_value = rb_class_new_instance(1, args, type_class);
+          {
+            VALUE args[1] = { hash };
+            converted_value = rb_class_new_instance(1, args, type_class);
+          }
         }
 
         // raise if no suitable conversaion could be found
@@ -463,15 +467,15 @@ static size_t align_up_to(size_t offset, size_t granularity) {
 MessageLayout* create_layout(const Descriptor* desc) {
   const upb_msgdef *msgdef = desc->msgdef;
   MessageLayout* layout = ALLOC(MessageLayout);
-  layout->desc = desc;
   int nfields = upb_msgdef_numfields(msgdef);
   upb_msg_field_iter it;
   upb_msg_oneof_iter oit;
   size_t off = 0;
+  size_t hasbit = 0;
 
+  layout->desc = desc;
   layout->fields = ALLOC_N(MessageField, nfields);
 
-  size_t hasbit = 0;
   for (upb_msg_field_begin(&it, msgdef);
        !upb_msg_field_done(&it);
        upb_msg_field_next(&it)) {

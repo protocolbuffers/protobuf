@@ -969,6 +969,7 @@ static void putary(VALUE ary, const upb_fielddef* f, upb_sink sink, int depth,
   upb_fieldtype_t type = upb_fielddef_type(f);
   upb_selector_t sel = 0;
   int size;
+  int i;
 
   if (ary == Qnil) return;
   if (!emit_defaults && NUM2INT(RepeatedField_length(ary)) == 0) return;
@@ -982,7 +983,7 @@ static void putary(VALUE ary, const upb_fielddef* f, upb_sink sink, int depth,
     sel = getsel(f, upb_handlers_getprimitivehandlertype(f));
   }
 
-  for (int i = 0; i < size; i++) {
+  for (i = 0; i < size; i++) {
     void* memory = RepeatedField_index_native(ary, i);
     switch (type) {
 #define T(upbtypeconst, upbtype, ctype)                     \
@@ -1157,12 +1158,10 @@ static void putjsonany(VALUE msg_rb, const Descriptor* desc, upb_sink sink,
   {
     uint32_t value_offset;
     VALUE value_str_rb;
-    const char* value_str;
     size_t value_len;
 
     value_offset = desc->layout->fields[upb_fielddef_index(value_field)].offset;
     value_str_rb = DEREF(Message_data(msg), value_offset, VALUE);
-    value_str = RSTRING_PTR(value_str_rb);
     value_len = RSTRING_LEN(value_str_rb);
 
     if (value_len > 0) {
@@ -1503,9 +1502,10 @@ static void discard_unknown(VALUE msg_rb, const Descriptor* desc) {
       }
     } else if (upb_fielddef_isseq(f)) {
       VALUE ary = DEREF(msg, offset, VALUE);
+      int i;
       if (ary == Qnil) continue;
       int size = NUM2INT(RepeatedField_length(ary));
-      for (int i = 0; i < size; i++) {
+      for (i = 0; i < size; i++) {
         void* memory = RepeatedField_index_native(ary, i);
         VALUE submsg = *((VALUE *)memory);
         VALUE descriptor = rb_ivar_get(submsg, descriptor_instancevar_interned);

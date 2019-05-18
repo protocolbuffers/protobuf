@@ -60,14 +60,15 @@ rb_data_type_t Message_type = {
 VALUE Message_alloc(VALUE klass) {
   VALUE descriptor = rb_ivar_get(klass, descriptor_instancevar_interned);
   Descriptor* desc = ruby_to_Descriptor(descriptor);
+  MessageHeader* msg;
+  VALUE ret;
 
   if (desc->layout == NULL) {
     desc->layout = create_layout(desc);
   }
 
-  MessageHeader* msg = (MessageHeader*)ALLOC_N(
-      uint8_t, sizeof(MessageHeader) + desc->layout->size);
-  VALUE ret;
+  msg = (MessageHeader*)ALLOC_N(uint8_t,
+                                sizeof(MessageHeader) + desc->layout->size);
 
   memset(Message_data(msg), 0, desc->layout->size);
 
@@ -356,9 +357,10 @@ VALUE Message_method_missing(int argc, VALUE* argv, VALUE _self) {
     // Map repeated fields to a new type with ints
     if (upb_fielddef_label(f) == UPB_LABEL_REPEATED) {
       int array_size = FIX2INT(rb_funcall(raw_value, rb_intern("length"), 0));
+      int i;
       VALUE array_args[1] = { ID2SYM(rb_intern("int64")) };
       VALUE array = rb_class_new_instance(1, array_args, CLASS_OF(raw_value));
-      for (int i = 0; i < array_size; i++) {
+      for (i = 0; i < array_size; i++) {
         VALUE entry = rb_funcall(enum_type, method, 1, rb_funcall(raw_value,
                                  rb_intern("at"), 1, INT2NUM(i)));
         rb_funcall(array, rb_intern("push"), 1, entry);
@@ -395,9 +397,6 @@ VALUE Message_respond_to_missing(int argc, VALUE* argv, VALUE _self) {
 
 VALUE create_submsg_from_hash(const MessageLayout* layout,
                               const upb_fielddef* f, VALUE hash) {
-  const upb_msgdef *d = upb_fielddef_msgsubdef(f);
-  assert(d != NULL);
-
   VALUE args[1] = { hash };
   return rb_class_new_instance(1, args, field_type_class(layout, f));
 }
@@ -439,6 +438,7 @@ int Message_initialize_kwarg(VALUE key, VALUE val, VALUE _self) {
     Map_merge_into_self(map, val);
   } else if (upb_fielddef_label(f) == UPB_LABEL_REPEATED) {
     VALUE ary;
+    int i;
 
     if (TYPE(val) != T_ARRAY) {
       rb_raise(rb_eArgError,
@@ -446,7 +446,7 @@ int Message_initialize_kwarg(VALUE key, VALUE val, VALUE _self) {
                name, rb_class2name(CLASS_OF(val)));
     }
     ary = layout_get(self->descriptor->layout, Message_data(self), f);
-    for (int i = 0; i < RARRAY_LEN(val); i++) {
+    for (i = 0; i < RARRAY_LEN(val); i++) {
       VALUE entry = rb_ary_entry(val, i);
       if (TYPE(entry) == T_HASH && upb_fielddef_issubmsg(f)) {
         entry = create_submsg_from_hash(self->descriptor->layout, f, entry);
@@ -634,7 +634,8 @@ VALUE Message_to_h(VALUE _self) {
       }
 
       if (upb_fielddef_type(field) == UPB_TYPE_MESSAGE) {
-        for (int i = 0; i < RARRAY_LEN(msg_value); i++) {
+        int i;
+        for (i = 0; i < RARRAY_LEN(msg_value); i++) {
           VALUE elem = rb_ary_entry(msg_value, i);
           rb_ary_store(msg_value, i, Message_to_h(elem));
         }
