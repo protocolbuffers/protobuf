@@ -12,7 +12,7 @@ This table contains 3 languages' results:
     * **ByteString** - This is for parsing from a
     	com.google.protobuf.ByteString.
     * **InputStream** - This is for parsing from a InputStream
-* **Python** - For Pythong there're 3 kinds of python protobuf for testing:
+* **Python** - For Python there're 3 kinds of python protobuf for testing:
 	* **C++-genereated-code** - This is for using cpp generated code of the
     	proto file as dynamic linked library.
 	* **C++-reflection** - This is for using cpp reflection, which there's no

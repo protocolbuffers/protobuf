@@ -60,7 +60,7 @@ import java.util.NoSuchElementException;
  * <p>Fundamentally the Rope algorithm represents the collection of pieces as a binary tree. BAP95
  * uses a Fibonacci bound relating depth to a minimum sequence length, sequences that are too short
  * relative to their depth cause a tree rebalance. More precisely, a tree of depth d is "balanced"
- * in the terminology of BAP95 if its length is at least F(d+2), where F(n) is the n-the Fibonacci
+ * in the terminology of BAP95 if its length is at least F(d+2), where F(n) is the n-th Fibonacci
  * number. Thus for depths 0, 1, 2, 3, 4, 5,... we have minimum lengths 1, 2, 3, 5, 8, 13,...
  *
  * @author carlanton@google.com (Carl Haverl)

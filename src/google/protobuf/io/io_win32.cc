@@ -42,7 +42,7 @@
 //
 // This file is only used on Windows, it's empty on other platforms.
 
-#if defined(_WIN32)
+#if defined(_WIN32) && !defined(_XBOX_ONE)
 
 // Comment this out to fall back to using the ANSI versions (open, mkdir, ...)
 // instead of the Unicode ones (_wopen, _wmkdir, ...). Doing so can be useful to

@@ -23,8 +23,16 @@ You can generate Java Lite code for your .proto files:
 Note that "optimize_for = LITE_RUNTIME" option in proto file is deprecated
 and will not have any effect any more.
 
-The latest Java Lite runtime is not yet fully released in any official
-version. You will need to build from our master's branch in order to use it.
+Include the generated Java files in your project and add a dependency on the
+protobuf Java runtime. If you are using Maven, use the following:
+
+```xml
+<dependency>
+  <groupId>com.google.protobuf</groupId>
+  <artifactId>protobuf-javalite</artifactId>
+  <version>3.8.0</version>
+</dependency>
+```
 
 For the older version of Java Lite (v3.0.0), please refer to:
 

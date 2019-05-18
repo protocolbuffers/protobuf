@@ -194,7 +194,7 @@ static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] =
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&PROTOBUF_NAMESPACE_ID::_Option_default_instance_),
 };
 
-const char descriptor_table_protodef_google_2fprotobuf_2ftype_2eproto[] =
+const char descriptor_table_protodef_google_2fprotobuf_2ftype_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
   "\n\032google/protobuf/type.proto\022\017google.pro"
   "tobuf\032\031google/protobuf/any.proto\032$google"
   "/protobuf/source_context.proto\"\327\001\n\004Type\022"

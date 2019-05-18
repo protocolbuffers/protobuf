@@ -156,6 +156,7 @@ def UpdateCpp():
         r'^#if .* < PROTOBUF_MIN_PROTOC_VERSION$',
         '#if %s < PROTOBUF_MIN_PROTOC_VERSION' % cpp_version,
         line)
+    return line
     
   RewriteTextFile('src/google/protobuf/stubs/common.h', RewriteCommon)
   RewriteTextFile('src/google/protobuf/port_def.inc', RewritePortDef)

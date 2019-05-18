@@ -662,7 +662,7 @@ class PROTOBUF_EXPORT MapValueRef {
   template <typename K, typename V>
   friend class internal::TypeDefinedMapFieldBase;
   friend class ::PROTOBUF_NAMESPACE_ID::MapIterator;
-  friend class internal::GeneratedMessageReflection;
+  friend class Reflection;
   friend class internal::DynamicMapField;
 
   void SetType(FieldDescriptor::CppType type) { type_ = type; }
