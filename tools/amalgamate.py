@@ -66,7 +66,7 @@ output_path = sys.argv[1]
 amalgamator = Amalgamator(output_path)
 files = []
 
-for arg in sys.argv[3:]:
+for arg in sys.argv[2:]:
   arg = arg.strip()
   if arg.startswith("-I"):
     amalgamator.add_include_path(arg[2:])
