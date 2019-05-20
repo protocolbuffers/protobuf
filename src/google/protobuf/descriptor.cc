@@ -1487,6 +1487,7 @@ const MethodDescriptor* DescriptorPool::FindMethodByName(
 
 const FieldDescriptor* DescriptorPool::FindExtensionByNumber(
     const Descriptor* extendee, int number) const {
+  if (extendee->extension_range_count() == 0) return nullptr;
   // A faster path to reduce lock contention in finding extensions, assuming
   // most extensions will be cache hit.
   if (mutex_ != nullptr) {

@@ -692,7 +692,11 @@ def _AddPropertiesForNonRepeatedScalarField(field, cls):
     # pylint: disable=protected-access
     # Testing the value for truthiness captures all of the proto3 defaults
     # (0, 0.0, enum 0, and False).
-    new_value = type_checker.CheckValue(new_value)
+    try:
+      new_value = type_checker.CheckValue(new_value)
+    except TypeError as e:
+      raise TypeError(
+          'Cannot set %s to %.1024r: %s' % (field.full_name, new_value, e))
     if clear_when_set_to_default and not new_value:
       self._fields.pop(field, None)
     else:

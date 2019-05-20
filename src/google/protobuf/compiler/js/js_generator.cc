@@ -2426,18 +2426,22 @@ void Generator::GenerateObjectTypedef(const GeneratorOptions& options,
       "method.\n"
       " * @record\n"
       " */\n"
-      "$typeName$ = function() {};\n\n",
+      "$typeName$ = function() {\n",
       "messageName", desc->name(), "typeName", type_name);
 
   for (int i = 0; i < desc->field_count(); i++) {
+    if (i > 0) {
+      printer->Print("\n");
+    }
     printer->Print(
-        "/** @type {$fieldType$|undefined} */\n"
-        "$typeName$.prototype.$fieldName$;\n\n",
-        "typeName", type_name, "fieldName",
-        JSObjectFieldName(options, desc->field(i)),
+        "  /** @type {$fieldType$|undefined} */\n"
+        "  this.$fieldName$;\n",
+        "fieldName", JSObjectFieldName(options, desc->field(i)),
         // TODO(b/121097361): Add type checking for field values.
         "fieldType", "?");
   }
+
+  printer->Print("};\n\n");
 }
 
 void Generator::GenerateClassFromObject(const GeneratorOptions& options,

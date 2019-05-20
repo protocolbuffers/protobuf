@@ -41,7 +41,7 @@ import benchmarks_pb2 as benchmarks_pb2
 
 
 def run_one_test(filename):
-  data = open(filename).read()
+  data = open(filename, "rb").read()
   benchmark_dataset = benchmarks_pb2.BenchmarkDataset()
   benchmark_dataset.ParseFromString(data)
   total_bytes = 0
@@ -69,7 +69,7 @@ def init(filename):
   message_list=[]
   counter = 0
   total_bytes = 0
-  data = open(filename).read()
+  data = open(filename, "rb").read()
   benchmark_dataset = benchmarks_pb2.BenchmarkDataset()
   benchmark_dataset.ParseFromString(data)
 

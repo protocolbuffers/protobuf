@@ -99,6 +99,8 @@ def _IsMessageSetExtension(field):
           field.label == descriptor.FieldDescriptor.LABEL_OPTIONAL)
 
 
+
+
 class DescriptorPool(object):
   """A collection of protobufs dynamically constructed by descriptor protos."""
 
@@ -161,18 +163,18 @@ class DescriptorPool(object):
 
         if not isinstance(desc, descriptor_type) or (
             old_file != file_name):
-          warn_msg = ('Conflict register for file "' + file_name +
-                      '": ' + desc_name +
-                      ' is already defined in file "' +
-                      old_file + '". Please fix the conflict by adding '
-                      'package name on the proto file, or use different '
-                      'name for the duplication. This warning will '
-                      'turn into error soon.')
+          error_msg = ('Conflict register for file "' + file_name +
+                       '": ' + desc_name +
+                       ' is already defined in file "' +
+                       old_file + '". Please fix the conflict by adding '
+                       'package name on the proto file, or use different '
+                       'name for the duplication.')
           if isinstance(desc, descriptor.EnumValueDescriptor):
-            warn_msg += ('\nNote: enum values appear as '
-                         'siblings of the enum type instead of '
-                         'children of it.')
-          warnings.warn(warn_msg, RuntimeWarning)
+            error_msg += ('\nNote: enum values appear as '
+                          'siblings of the enum type instead of '
+                          'children of it.')
+
+          raise TypeError(error_msg)
 
         return
 
