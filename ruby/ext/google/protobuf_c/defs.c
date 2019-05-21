@@ -1731,8 +1731,6 @@ VALUE MessageBuilderContext_map(int argc, VALUE* argv, VALUE _self) {
 VALUE MessageBuilderContext_oneof(VALUE _self, VALUE name) {
   DEFINE_SELF(MessageBuilderContext, self, _self);
   size_t oneof_count;
-  VALUE name_str;
-  upb_strview name_strview;
   FileBuilderContext* file_context =
       ruby_to_FileBuilderContext(self->file_builder);
   google_protobuf_OneofDescriptorProto* oneof_proto;
@@ -1743,9 +1741,8 @@ VALUE MessageBuilderContext_oneof(VALUE _self, VALUE name) {
   // Create oneof_proto and set its name.
   oneof_proto = google_protobuf_DescriptorProto_add_oneof_decl(
       self->msg_proto, file_context->arena);
-  name_str = rb_str_new2(rb_id2name(SYM2ID(name)));
-  name_strview = upb_strview_makez(StringValueCStr(name_str));
-  google_protobuf_OneofDescriptorProto_set_name(oneof_proto, name_strview);
+  google_protobuf_OneofDescriptorProto_set_name(
+      oneof_proto, FileBuilderContext_strdup_sym(self->file_builder, name));
 
   // Evaluate the block with the builder as argument.
   {
@@ -1903,17 +1900,13 @@ VALUE EnumBuilderContext_value(VALUE _self, VALUE name, VALUE number) {
   DEFINE_SELF(EnumBuilderContext, self, _self);
   FileBuilderContext* file_builder =
       ruby_to_FileBuilderContext(self->file_builder);
-  VALUE name_str;
   google_protobuf_EnumValueDescriptorProto* enum_value;
-
-  Check_Type(name, T_SYMBOL);
-  name_str = rb_id2str(SYM2ID(name));
 
   enum_value = google_protobuf_EnumDescriptorProto_add_value(
       self->enum_proto, file_builder->arena);
 
   google_protobuf_EnumValueDescriptorProto_set_name(
-      enum_value, FileBuilderContext_strdup(self->file_builder, name_str));
+      enum_value, FileBuilderContext_strdup_sym(self->file_builder, name));
   google_protobuf_EnumValueDescriptorProto_set_number(enum_value,
                                                       NUM2INT(number));
 
@@ -1954,8 +1947,12 @@ upb_strview FileBuilderContext_strdup2(VALUE _self, const char *str) {
 }
 
 upb_strview FileBuilderContext_strdup(VALUE _self, VALUE rb_str) {
-  const char *str = get_str(rb_str);
-  return FileBuilderContext_strdup2(_self, str);
+  return FileBuilderContext_strdup2(_self, get_str(rb_str));
+}
+
+upb_strview FileBuilderContext_strdup_sym(VALUE _self, VALUE rb_sym) {
+  Check_Type(rb_sym, T_SYMBOL);
+  return FileBuilderContext_strdup(_self, rb_id2str(SYM2ID(rb_sym)));
 }
 
 VALUE FileBuilderContext_alloc(VALUE klass) {
