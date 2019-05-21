@@ -13,7 +13,7 @@ This table contains the results of three separate languages:
     	com.google.protobuf.ByteString.
     * **InputStream** - This is for parsing from an InputStream.
 * **Python** - For Python, there are three types of Python protobuf for testing:
-	* **C++-genereated-code** - This is for using C++ generated code of the
+	* **C++-generated-code** - This is for using C++ generated code of the
     	proto file as a dynamic linked library.
 	* **C++-reflection** - This is for using C++ reflection, for which there's no
     	generated code, but still using C++ protobuf library as a dynamic linked
