@@ -101,8 +101,8 @@ message DescriptorProto {
   repeated EnumDescriptorProto enum_type = 4;
 
   message ExtensionRange {
-    optional int32 start = 1;
-    optional int32 end = 2;
+    optional int32 start = 1;  // Inclusive.
+    optional int32 end = 2;    // Exclusive.
 
     optional ExtensionRangeOptions options = 3;
   }
