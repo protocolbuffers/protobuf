@@ -847,7 +847,6 @@ void Map_register(VALUE module) {
   rb_define_method(klass, "dup", Map_dup, 0);
   rb_define_method(klass, "==", Map_eq, 1);
   rb_define_method(klass, "hash", Map_hash, 0);
-  rb_define_method(klass, "to_hash", Map_to_h, 0);
   rb_define_method(klass, "to_h", Map_to_h, 0);
   rb_define_method(klass, "inspect", Map_inspect, 0);
   rb_define_method(klass, "merge", Map_merge, 1);
