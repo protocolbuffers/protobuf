@@ -83,8 +83,8 @@ def _proto_gen_impl(ctx):
         import_flags = ["-I."]
 
     for dep in ctx.attr.deps:
-        import_flags += dep.proto.import_flags
-        deps += dep.proto.deps
+        import_flags += dep[ProtoInfo].import_flags
+        deps += dep[ProtoInfo].deps
 
     if not ctx.attr.gen_cc and not ctx.attr.gen_py and not ctx.executable.plugin:
         return struct(
@@ -177,7 +177,7 @@ def _proto_gen_impl(ctx):
 proto_gen = rule(
     attrs = {
         "srcs": attr.label_list(allow_files = True),
-        "deps": attr.label_list(providers = ["proto"]),
+        "deps": attr.label_list(providers = [ProtoInfo]),
         "includes": attr.string_list(),
         "protoc": attr.label(
             cfg = "host",
