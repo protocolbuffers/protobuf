@@ -158,10 +158,11 @@ def _proto_gen_impl(ctx):
                 if generated_out != out.path:
                     command += ";mv %s %s" % (generated_out, out.path)
                 ctx.actions.run_shell(
-                    inputs = inputs + [ctx.executable.protoc],
+                    inputs = inputs,
                     outputs = [out],
                     command = command,
                     mnemonic = "ProtoCompile",
+                    tools = [ctx.executable.protoc],
                     use_default_shell_env = True,
                 )
 
