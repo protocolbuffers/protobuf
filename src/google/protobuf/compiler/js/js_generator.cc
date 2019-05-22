@@ -3731,7 +3731,12 @@ bool Generator::GenerateAll(const std::vector<const FileDescriptor*>& files,
                            options.GetFileNameExtension();
     std::unique_ptr<io::ZeroCopyOutputStream> output(context->Open(filename));
     GOOGLE_CHECK(output.get());
-    io::Printer printer(output.get(), '$');
+    GeneratedCodeInfo annotations;
+    io::AnnotationProtoCollector<GeneratedCodeInfo> annotation_collector(
+        &annotations);
+    io::Printer printer(
+        output.get(), '$',
+        options.annotate_code ? &annotation_collector : nullptr);
 
     // Pull out all extensions -- we need these to generate all
     // provides/requires.
@@ -3762,6 +3767,9 @@ bool Generator::GenerateAll(const std::vector<const FileDescriptor*>& files,
 
     if (printer.failed()) {
       return false;
+    }
+    if (options.annotate_code) {
+      EmbedCodeAnnotations(annotations, &printer);
     }
   } else if (options.output_mode() == GeneratorOptions::kOneOutputFilePerSCC) {
     std::set<const Descriptor*> have_printed;

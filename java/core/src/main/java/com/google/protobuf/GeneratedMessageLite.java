@@ -262,12 +262,14 @@ public abstract class GeneratedMessageLite<
   }
 
   public void writeTo(CodedOutputStream output) throws IOException {
-    writeToInternal(output);
+    Protobuf.getInstance()
+        .schemaFor(this)
+        .writeTo(this, CodedOutputStreamWriter.forCodedOutput(output));
   }
 
   public int getSerializedSize() {
     if (memoizedSerializedSize == -1) {
-      memoizedSerializedSize = getSerializedSizeInternal();
+      memoizedSerializedSize = Protobuf.getInstance().schemaFor(this).getSerializedSize(this);
     }
     return memoizedSerializedSize;
   }

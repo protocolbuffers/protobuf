@@ -126,6 +126,21 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
     return internalGetFieldAccessorTable().descriptor;
   }
 
+  protected void mergeFromAndMakeImmutableInternal(
+      CodedInputStream input, ExtensionRegistryLite extensionRegistry)
+      throws InvalidProtocolBufferException {
+    Schema<GeneratedMessageV3> schema =
+        (Schema<GeneratedMessageV3>) Protobuf.getInstance().schemaFor(this);
+    try {
+      schema.mergeFrom(this, CodedInputStreamReader.forCodedInput(input), extensionRegistry);
+    } catch (InvalidProtocolBufferException e) {
+      throw e.setUnfinishedMessage(this);
+    } catch (IOException e) {
+      throw new InvalidProtocolBufferException(e).setUnfinishedMessage(this);
+    }
+    schema.makeImmutable(this);
+  }
+
   /**
    * Internal helper to return a modifiable map containing all the fields.
    * The returned Map is modifialbe so that the caller can add additional
@@ -438,6 +453,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
     return list.mutableCopyWithCapacity(
         size == 0 ? AbstractProtobufList.DEFAULT_CAPACITY : size * 2);
   }
+
 
   @Override
   public void writeTo(final CodedOutputStream output) throws IOException {

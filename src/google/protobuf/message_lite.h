@@ -246,6 +246,9 @@ class PROTOBUF_EXPORT MessageLite {
   // assume it will remain stable over time.
   std::string DebugString() const;
   std::string ShortDebugString() const { return DebugString(); }
+  // MessageLite::DebugString is already Utf8 Safe. This is to add compatibility
+  // with Message.
+  std::string Utf8DebugString() const { return DebugString(); }
 
   // Parsing ---------------------------------------------------------
   // Methods for parsing in protocol buffer format.  Most of these are
