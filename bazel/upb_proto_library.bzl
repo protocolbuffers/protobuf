@@ -70,6 +70,7 @@ def _cc_library_func(ctx, name, hdrs, srcs, dep_ccinfos):
     linking_contexts = [info.linking_context for info in dep_ccinfos]
     toolchain = find_cpp_toolchain(ctx)
     feature_configuration = cc_common.configure_features(
+        ctx = ctx,
         cc_toolchain = toolchain,
         requested_features = ctx.features,
         unsupported_features = ctx.disabled_features,
@@ -234,6 +235,7 @@ _upb_proto_library_aspect = aspect(
     implementation = _upb_proto_aspect_impl,
     attr_aspects = ["deps"],
     fragments = ["cpp"],
+    toolchains = ["@bazel_tools//tools/cpp:toolchain_type"],
 )
 
 upb_proto_library = rule(
@@ -276,6 +278,7 @@ _upb_proto_reflection_library_aspect = aspect(
     implementation = _upb_proto_aspect_impl,
     attr_aspects = ["deps"],
     fragments = ["cpp"],
+    toolchains = ["@bazel_tools//tools/cpp:toolchain_type"],
 )
 
 upb_proto_reflection_library = rule(
