@@ -16,6 +16,44 @@ use Google\Protobuf\UInt64Value;
 
 class WrapperTypeSettersTest extends TestBase
 {
+    public function testConflictNormalVsWrapper()
+    {
+        $m = new Foo\TestWrapperAccessorConflicts();
+
+        $m->setNormalVsWrapperValue1(1);
+        $this->assertSame(1, $m->getNormalVsWrapperValue1());
+
+        $m->setNormalVsWrapperValue2(1);
+        $this->assertSame(1, $m->getNormalVsWrapperValue2());
+
+        $wrapper = new Int32Value(["value" => 1]);
+        $m->setNormalVsWrapper($wrapper);
+        $this->assertSame(1, $m->getNormalVsWrapper()->getValue());
+    }
+
+    public function testConflictNormalVsNormal()
+    {
+        $m = new Foo\TestWrapperAccessorConflicts();
+
+        $m->setNormalVsNormalValue(1);
+        $this->assertSame(1, $m->getNormalVsNormalValue());
+
+        $m->setNormalVsNormal(1);
+        $this->assertSame(1, $m->getNormalVsNormal());
+    }
+
+    public function testConflictWrapperVsWrapper()
+    {
+        $m = new Foo\TestWrapperAccessorConflicts();
+
+        $m->setWrapperVsWrapperValueValue(1);
+        $this->assertSame(1, $m->getWrapperVsWrapperValueValue());
+
+        $wrapper = new Int32Value(["value" => 1]);
+        $m->setWrapperVsWrapperValue5($wrapper);
+        $this->assertSame(1, $m->getWrapperVsWrapperValue5()->getValue());
+    }
+
     /**
      * @dataProvider gettersAndSettersDataProvider
      */
