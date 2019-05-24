@@ -197,3 +197,7 @@ with info about your project (name and website) so we can add an entry for you.
    * Website: https://github.com/container-storage-interface/spec
    * Extensions: 1059-1069
 
+1. Protoc-gen-validate
+   * Website: https://github.com/envoyproxy/protoc-gen-validate
+   * Extensions: 1070
+   
