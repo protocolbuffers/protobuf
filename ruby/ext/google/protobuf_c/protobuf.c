@@ -109,8 +109,6 @@ void Init_protobuf_c() {
 
   rb_define_singleton_method(protobuf, "discard_unknown",
                              Google_Protobuf_discard_unknown, 1);
-  rb_define_singleton_method(protobuf, "deep_copy",
-                             Google_Protobuf_deep_copy, 1);
 
   kRubyStringUtf8Encoding = rb_utf8_encoding();
   kRubyStringASCIIEncoding = rb_usascii_encoding();

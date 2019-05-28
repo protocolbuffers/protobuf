@@ -511,8 +511,8 @@ VALUE Message_dup(VALUE _self) {
   return new_msg;
 }
 
-// Internal only; used by Google::Protobuf.deep_copy.
-VALUE Message_deep_copy(VALUE _self) {
+/* :nodoc: */
+static VALUE Message_deep_copy(VALUE _self) {
   MessageHeader* self;
   MessageHeader* new_msg_self;
   VALUE new_msg;
@@ -742,6 +742,7 @@ VALUE build_class_from_descriptor(Descriptor* desc) {
   rb_define_method(klass, "to_s", Message_inspect, 0);
   rb_define_method(klass, "[]", Message_index, 1);
   rb_define_method(klass, "[]=", Message_index_set, 2);
+  rb_define_method(klass, "deep_copy", Message_deep_copy, 0);
   rb_define_singleton_method(klass, "decode", Message_decode, 1);
   rb_define_singleton_method(klass, "encode", Message_encode, 1);
   rb_define_singleton_method(klass, "decode_json", Message_decode_json, -1);
@@ -828,22 +829,4 @@ VALUE build_module_from_enumdesc(EnumDescriptor* enumdesc) {
               get_def_obj(enumdesc->enumdef));
 
   return mod;
-}
-
-/*
- * call-seq:
- *     Google::Protobuf.deep_copy(obj) => copy_of_obj
- *
- * Performs a deep copy of a RepeatedField instance, a Map instance, or a
- * message object, recursively copying its members.
- */
-VALUE Google_Protobuf_deep_copy(VALUE self, VALUE obj) {
-  VALUE klass = CLASS_OF(obj);
-  if (klass == cRepeatedField) {
-    return RepeatedField_deep_copy(obj);
-  } else if (klass == cMap) {
-    return Map_deep_copy(obj);
-  } else {
-    return Message_deep_copy(obj);
-  }
 }
