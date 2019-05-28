@@ -73,8 +73,8 @@ namespace Google.Protobuf.Test.Reflection
         [Test]
         public void ScalarOptions()
         {
-            var options = CustomOptionOtherValues.Descriptor.CustomOptions;
             var d = CustomOptionOtherValues.Descriptor;
+            var options = d.CustomOptions;
             AssertOption(-100, options.TryGetInt32, Int32Opt, d.GetOption);
             AssertOption(12.3456789f, options.TryGetFloat, FloatOpt, d.GetOption);
             AssertOption(1.234567890123456789d, options.TryGetDouble, DoubleOpt, d.GetOption);
@@ -86,8 +86,9 @@ namespace Google.Protobuf.Test.Reflection
         [Test]
         public void MessageOptions()
         {
-            var options = VariousComplexOptions.Descriptor.CustomOptions;
-            AssertOption(new ComplexOptionType1 { Foo = 42, Foo4 = { 99, 88 } }, options.TryGetMessage, ComplexOpt1, VariousComplexOptions.Descriptor.GetOption);
+            var d = VariousComplexOptions.Descriptor;
+            var options = d.CustomOptions;
+            AssertOption(new ComplexOptionType1 { Foo = 42, Foo4 = { 99, 88 } }, options.TryGetMessage, ComplexOpt1, d.GetOption);
             AssertOption(new ComplexOptionType2
             {
                 Baz = 987,
@@ -95,8 +96,8 @@ namespace Google.Protobuf.Test.Reflection
                 Fred = new ComplexOptionType4 { Waldo = 321 },
                 Barney = { new ComplexOptionType4 { Waldo = 101 }, new ComplexOptionType4 { Waldo = 212 } }
             },
-                options.TryGetMessage, ComplexOpt2, VariousComplexOptions.Descriptor.GetOption);
-            AssertOption(new ComplexOptionType3 { Qux = 9 }, options.TryGetMessage, ComplexOpt3, VariousComplexOptions.Descriptor.GetOption);
+                options.TryGetMessage, ComplexOpt2, d.GetOption);
+            AssertOption(new ComplexOptionType3 { Qux = 9 }, options.TryGetMessage, ComplexOpt3, d.GetOption);
         }
 
         [Test]
@@ -132,8 +133,8 @@ namespace Google.Protobuf.Test.Reflection
         [Test]
         public void MinValues()
         {
-            var options = CustomOptionMinIntegerValues.Descriptor.CustomOptions;
             var d = CustomOptionMinIntegerValues.Descriptor;
+            var options = d.CustomOptions;
             AssertOption(false, options.TryGetBool, BoolOpt, d.GetOption);
             AssertOption(int.MinValue, options.TryGetInt32, Int32Opt, d.GetOption);
             AssertOption(long.MinValue, options.TryGetInt64, Int64Opt, d.GetOption);
@@ -150,8 +151,8 @@ namespace Google.Protobuf.Test.Reflection
         [Test]
         public void MaxValues()
         {
-            var options = CustomOptionMaxIntegerValues.Descriptor.CustomOptions;
             var d = CustomOptionMaxIntegerValues.Descriptor;
+            var options = d.CustomOptions;
             AssertOption(true, options.TryGetBool, BoolOpt, d.GetOption);
             AssertOption(int.MaxValue, options.TryGetInt32, Int32Opt, d.GetOption);
             AssertOption(long.MaxValue, options.TryGetInt64, Int64Opt, d.GetOption);

@@ -89,59 +89,35 @@ namespace Google.Protobuf.Reflection
         }
 
         [Test]
-        public void GetExtensionValue()
+        public void GetValue_IncorrectType()
         {
-            var message = SampleMessages.CreateFullTestAllExtensions();
-
-            // test that the reflector works, since the reflector just runs through IExtendableMessage
-            Assert.AreEqual(message.GetExtension(OptionalBoolExtension), Proto2.TestAllExtensions.Descriptor.FindFieldByNumber(OptionalBoolExtension.FieldNumber).Accessor.GetValue(message));
+            IMessage message = SampleMessages.CreateFullTestAllTypes();
+            var fields = message.Descriptor.Fields;
+            Assert.Throws<InvalidCastException>(() => fields[TestProtos.TestAllTypes.SingleBoolFieldNumber].Accessor.GetValue(new TestMap()));
         }
 
         [Test]
-        public void GetRepeatedExtensionValue()
+        public void HasValue_Proto3()
         {
-            // check to make sure repeated accessor uses GetOrRegister
-            var message = new Proto2.TestAllExtensions();
-
-            Assert.IsNull(message.GetExtension(RepeatedBoolExtension));
-            Assert.IsNotNull(Proto2.TestAllExtensions.Descriptor.FindFieldByNumber(RepeatedBoolExtension.FieldNumber).Accessor.GetValue(message));
-            Assert.IsNotNull(message.GetExtension(RepeatedBoolExtension));
-
-            message.ClearExtension(RepeatedBoolExtension);
-            Assert.IsNull(message.GetExtension(RepeatedBoolExtension));
+            IMessage message = SampleMessages.CreateFullTestAllTypes();
+            var fields = message.Descriptor.Fields;
+            Assert.Throws<InvalidOperationException>(() => fields[TestProtos.TestAllTypes.SingleBoolFieldNumber].Accessor.HasValue(message));
         }
 
         [Test]
-        public void Clear()
+        public void HasValue()
         {
-            var message = SampleMessages.CreateFullTestAllTypes();
-            var fields = TestProtos.TestAllTypes.Descriptor.Fields;
-            fields[TestProtos.TestAllTypes.SingleBoolFieldNumber].Accessor.Clear(message);
-            fields[TestProtos.TestAllTypes.SingleInt32FieldNumber].Accessor.Clear(message);
-            fields[TestProtos.TestAllTypes.SingleStringFieldNumber].Accessor.Clear(message);
-            fields[TestProtos.TestAllTypes.SingleBytesFieldNumber].Accessor.Clear(message);
-            fields[TestProtos.TestAllTypes.SingleForeignEnumFieldNumber].Accessor.Clear(message);
-            fields[TestProtos.TestAllTypes.SingleForeignMessageFieldNumber].Accessor.Clear(message);
-            fields[TestProtos.TestAllTypes.RepeatedDoubleFieldNumber].Accessor.Clear(message);
+            IMessage message = new Proto2.TestAllTypes();
+            var fields = message.Descriptor.Fields;
+            var accessor = fields[Proto2.TestAllTypes.OptionalBoolFieldNumber].Accessor;
 
-            var expected = new TestAllTypes(SampleMessages.CreateFullTestAllTypes())
-            {
-                SingleBool = false,
-                SingleInt32 = 0,
-                SingleString = "",
-                SingleBytes = ByteString.Empty,
-                SingleForeignEnum = 0,
-                SingleForeignMessage = null,
-            };
-            expected.RepeatedDouble.Clear();
+            Assert.False(accessor.HasValue(message));
 
-            Assert.AreEqual(expected, message);
+            accessor.SetValue(message, true);
+            Assert.True(accessor.HasValue(message));
 
-            // Separately, maps.
-            var mapMessage = new TestMap { MapStringString = { { "key1", "value1" }, { "key2", "value2" } } };
-            fields = TestMap.Descriptor.Fields;
-            fields[TestMap.MapStringStringFieldNumber].Accessor.Clear(mapMessage);
-            Assert.AreEqual(0, mapMessage.MapStringString.Count);
+            accessor.Clear(message);
+            Assert.False(accessor.HasValue(message));
         }
 
         [Test]
@@ -197,14 +173,6 @@ namespace Google.Protobuf.Reflection
         }
 
         [Test]
-        public void GetValue_IncorrectType()
-        {
-            IMessage message = SampleMessages.CreateFullTestAllTypes();
-            var fields = message.Descriptor.Fields;
-            Assert.Throws<InvalidCastException>(() => fields[TestProtos.TestAllTypes.SingleBoolFieldNumber].Accessor.GetValue(new TestMap()));
-        }
-
-        [Test]
         public void Oneof()
         {
             var message = new TestAllTypes();
@@ -225,6 +193,39 @@ namespace Google.Protobuf.Reflection
         }
 
         [Test]
+        public void Clear()
+        {
+            var message = SampleMessages.CreateFullTestAllTypes();
+            var fields = TestProtos.TestAllTypes.Descriptor.Fields;
+            fields[TestProtos.TestAllTypes.SingleBoolFieldNumber].Accessor.Clear(message);
+            fields[TestProtos.TestAllTypes.SingleInt32FieldNumber].Accessor.Clear(message);
+            fields[TestProtos.TestAllTypes.SingleStringFieldNumber].Accessor.Clear(message);
+            fields[TestProtos.TestAllTypes.SingleBytesFieldNumber].Accessor.Clear(message);
+            fields[TestProtos.TestAllTypes.SingleForeignEnumFieldNumber].Accessor.Clear(message);
+            fields[TestProtos.TestAllTypes.SingleForeignMessageFieldNumber].Accessor.Clear(message);
+            fields[TestProtos.TestAllTypes.RepeatedDoubleFieldNumber].Accessor.Clear(message);
+
+            var expected = new TestAllTypes(SampleMessages.CreateFullTestAllTypes())
+            {
+                SingleBool = false,
+                SingleInt32 = 0,
+                SingleString = "",
+                SingleBytes = ByteString.Empty,
+                SingleForeignEnum = 0,
+                SingleForeignMessage = null,
+            };
+            expected.RepeatedDouble.Clear();
+
+            Assert.AreEqual(expected, message);
+
+            // Separately, maps.
+            var mapMessage = new TestMap { MapStringString = { { "key1", "value1" }, { "key2", "value2" } } };
+            fields = TestMap.Descriptor.Fields;
+            fields[TestMap.MapStringStringFieldNumber].Accessor.Clear(mapMessage);
+            Assert.AreEqual(0, mapMessage.MapStringString.Count);
+        }
+
+        [Test]
         public void FieldDescriptor_ByName()
         {
             var descriptor = TestProtos.TestAllTypes.Descriptor;
@@ -239,6 +240,29 @@ namespace Google.Protobuf.Reflection
             var descriptor = TestProtos.TestAllTypes.Descriptor;
             Assert.Throws<KeyNotFoundException>(() => descriptor.Fields[999999].ToString());
             Assert.Throws<KeyNotFoundException>(() => descriptor.Fields["not found"].ToString());
+        }
+
+        [Test]
+        public void GetExtensionValue()
+        {
+            var message = SampleMessages.CreateFullTestAllExtensions();
+
+            // test that the reflector works, since the reflector just runs through IExtendableMessage
+            Assert.AreEqual(message.GetExtension(OptionalBoolExtension), Proto2.TestAllExtensions.Descriptor.FindFieldByNumber(OptionalBoolExtension.FieldNumber).Accessor.GetValue(message));
+        }
+
+        [Test]
+        public void GetRepeatedExtensionValue()
+        {
+            // check to make sure repeated accessor uses GetOrRegister
+            var message = new Proto2.TestAllExtensions();
+
+            Assert.IsNull(message.GetExtension(RepeatedBoolExtension));
+            Assert.IsNotNull(Proto2.TestAllExtensions.Descriptor.FindFieldByNumber(RepeatedBoolExtension.FieldNumber).Accessor.GetValue(message));
+            Assert.IsNotNull(message.GetExtension(RepeatedBoolExtension));
+
+            message.ClearExtension(RepeatedBoolExtension);
+            Assert.IsNull(message.GetExtension(RepeatedBoolExtension));
         }
     }
 }

@@ -45,7 +45,7 @@ namespace Google.Protobuf
     /// <summary>
     /// Tests around the generated TestAllTypes message.
     /// </summary>
-    public class GeneratedMessageTest
+    public partial class GeneratedMessageTest
     {
         [Test]
         public void EmptyMessageFieldDistinctFromMissingMessageField()
@@ -112,50 +112,6 @@ namespace Google.Protobuf
             Assert.AreEqual("", message.OneofString);
             Assert.AreEqual(ByteString.Empty, message.OneofBytes);
             Assert.IsNull(message.OneofNestedMessage);
-
-            // proto2 default values
-            var message2 = new Proto2.TestAllTypes();
-            Assert.AreEqual(true, message2.DefaultBool);
-            Assert.AreEqual(ByteString.CopyFromUtf8("world"), message2.DefaultBytes);
-            Assert.AreEqual("123", message2.DefaultCord);
-            Assert.AreEqual(52e3, message2.DefaultDouble);
-            Assert.AreEqual(47, message2.DefaultFixed32);
-            Assert.AreEqual(48, message2.DefaultFixed64);
-            Assert.AreEqual(51.5, message2.DefaultFloat);
-            Assert.AreEqual(Proto2.ForeignEnum.ForeignBar, message2.DefaultForeignEnum);
-            Assert.AreEqual(Proto2.ImportEnum.ImportBar, message2.DefaultImportEnum);
-            Assert.AreEqual(41, message2.DefaultInt32);
-            Assert.AreEqual(42, message2.DefaultInt64);
-            Assert.AreEqual(Proto2.TestAllTypes.Types.NestedEnum.Bar, message2.DefaultNestedEnum);
-            Assert.AreEqual(49, message2.DefaultSfixed32);
-            Assert.AreEqual(-50, message2.DefaultSfixed64);
-            Assert.AreEqual(-45, message2.DefaultSint32);
-            Assert.AreEqual(46, message2.DefaultSint64);
-            Assert.AreEqual("hello", message2.DefaultString);
-            Assert.AreEqual("abc", message2.DefaultStringPiece);
-            Assert.AreEqual(43, message2.DefaultUint32);
-            Assert.AreEqual(44, message2.DefaultUint64);
-
-            Assert.False(message2.HasDefaultBool);
-            Assert.False(message2.HasDefaultBytes);
-            Assert.False(message2.HasDefaultCord);
-            Assert.False(message2.HasDefaultDouble);
-            Assert.False(message2.HasDefaultFixed32);
-            Assert.False(message2.HasDefaultFixed64);
-            Assert.False(message2.HasDefaultFloat);
-            Assert.False(message2.HasDefaultForeignEnum);
-            Assert.False(message2.HasDefaultImportEnum);
-            Assert.False(message2.HasDefaultInt32);
-            Assert.False(message2.HasDefaultInt64);
-            Assert.False(message2.HasDefaultNestedEnum);
-            Assert.False(message2.HasDefaultSfixed32);
-            Assert.False(message2.HasDefaultSfixed64);
-            Assert.False(message2.HasDefaultSint32);
-            Assert.False(message2.HasDefaultSint64);
-            Assert.False(message2.HasDefaultString);
-            Assert.False(message2.HasDefaultStringPiece);
-            Assert.False(message2.HasDefaultUint32);
-            Assert.False(message2.HasDefaultUint64);
         }
 
         [Test]
@@ -166,115 +122,6 @@ namespace Google.Protobuf
             Assert.Throws<ArgumentNullException>(() => message.OneofString = null);
             Assert.Throws<ArgumentNullException>(() => message.SingleBytes = null);
             Assert.Throws<ArgumentNullException>(() => message.OneofBytes = null);
-        }
-
-        [Test]
-        public void FieldPresence()
-        {
-            var message = new Proto2.TestAllTypes();
-
-            Assert.False(message.HasOptionalBool);
-            Assert.False(message.OptionalBool);
-
-            message.OptionalBool = true;
-
-            Assert.True(message.HasOptionalBool);
-            Assert.True(message.OptionalBool);
-
-            message.OptionalBool = false;
-
-            Assert.True(message.HasOptionalBool);
-            Assert.False(message.OptionalBool);
-
-            message.ClearOptionalBool();
-
-            Assert.False(message.HasOptionalBool);
-            Assert.False(message.OptionalBool);
-
-            Assert.False(message.HasDefaultBool);
-            Assert.True(message.DefaultBool);
-
-            message.DefaultBool = false;
-
-            Assert.True(message.HasDefaultBool);
-            Assert.False(message.DefaultBool);
-
-            message.DefaultBool = true;
-
-            Assert.True(message.HasDefaultBool);
-            Assert.True(message.DefaultBool);
-
-            message.ClearDefaultBool();
-
-            Assert.False(message.HasDefaultBool);
-            Assert.True(message.DefaultBool);
-        }
-
-        [Test]
-        public void RequiredFields()
-        {
-            var message = new Proto2.TestRequired();
-            Assert.False(message.IsInitialized());
-
-            message.A = 1;
-            message.B = 2;
-            message.C = 3;
-
-            Assert.True(message.IsInitialized());
-        }
-
-        [Test]
-        public void RequiredFieldsInExtensions()
-        {
-            var message = new Proto2.TestAllExtensions();
-            Assert.True(message.IsInitialized());
-
-            message.SetExtension(Proto2.TestRequired.Extensions.Single, new Proto2.TestRequired());
-
-            Assert.False(message.IsInitialized());
-
-            var extensionMessage = message.GetExtension(Proto2.TestRequired.Extensions.Single);
-            extensionMessage.A = 1;
-            extensionMessage.B = 2;
-            extensionMessage.C = 3;
-
-            Assert.True(message.IsInitialized());
-
-            message.GetOrRegisterExtension(Proto2.TestRequired.Extensions.Multi);
-
-            Assert.True(message.IsInitialized());
-
-            message.GetExtension(Proto2.TestRequired.Extensions.Multi).Add(new Proto2.TestRequired());
-
-            Assert.False(message.IsInitialized());
-
-            extensionMessage = message.GetExtension(Proto2.TestRequired.Extensions.Multi)[0];
-            extensionMessage.A = 1;
-            extensionMessage.B = 2;
-            extensionMessage.C = 3;
-
-            Assert.True(message.IsInitialized());
-
-            message.SetExtension(Proto2.UnittestExtensions.OptionalBoolExtension, true);
-
-            Assert.True(message.IsInitialized());
-
-            message.GetOrRegisterExtension(Proto2.UnittestExtensions.RepeatedBoolExtension).Add(true);
-
-            Assert.True(message.IsInitialized());
-        }
-
-        [Test]
-        public void RequiredFieldInNestedMessageMapValue()
-        {
-            var message = new Proto2.TestRequiredMap();
-            message.Foo.Add(0, new Proto2.TestRequiredMap.Types.NestedMessage());
-
-            Assert.False(message.IsInitialized());
-
-            message.Foo[0].RequiredInt32 = 12;
-
-            Assert.True(message.IsInitialized());
         }
 
         [Test]
@@ -354,56 +201,6 @@ namespace Google.Protobuf
             byte[] bytes = message.ToByteArray();
             TestAllTypes parsed = TestAllTypes.Parser.ParseFrom(bytes);
             Assert.AreEqual(message, parsed);
-        }
-
-        [Test]
-        public void RoundTrip_Groups()
-        {
-            var message = new Proto2.TestAllTypes
-            {
-                OptionalGroup = new Proto2.TestAllTypes.Types.OptionalGroup
-                {
-                    A = 10
-                },
-                RepeatedGroup =
-                {
-                    new Proto2.TestAllTypes.Types.RepeatedGroup { A = 10 },
-                    new Proto2.TestAllTypes.Types.RepeatedGroup { A = 20 },
-                    new Proto2.TestAllTypes.Types.RepeatedGroup { A = 30 }
-                }
-            };
-
-            byte[] bytes = message.ToByteArray();
-            Proto2.TestAllTypes parsed = Proto2.TestAllTypes.Parser.ParseFrom(bytes);
-            Assert.AreEqual(message, parsed);
-        }
-
-        [Test]
-        public void RoundTrip_ExtensionGroups()
-        {
-            var message = new Proto2.TestAllExtensions();
-            message.SetExtension(Proto2.UnittestExtensions.OptionalGroupExtension, new Proto2.OptionalGroup_extension { A = 10 });
-            message.GetOrRegisterExtension(Proto2.UnittestExtensions.RepeatedGroupExtension).AddRange(new[]
-            {
-                new Proto2.RepeatedGroup_extension { A = 10 },
-                new Proto2.RepeatedGroup_extension { A = 20 },
-                new Proto2.RepeatedGroup_extension { A = 30 }
-            });
-
-            byte[] bytes = message.ToByteArray();
-            Proto2.TestAllExtensions extendable_parsed = Proto2.TestAllExtensions.Parser.WithExtensionRegistry(new ExtensionRegistry() { Proto2.UnittestExtensions.OptionalGroupExtension, Proto2.UnittestExtensions.RepeatedGroupExtension }).ParseFrom(bytes);
-            Assert.AreEqual(message, extendable_parsed);
-        }
-
-        [Test]
-        public void RoundTrip_NestedExtensionGroup()
-        {
-            var message = new Proto2.TestGroupExtension();
-            message.SetExtension(Proto2.TestNestedExtension.Extensions.OptionalGroupExtension, new Proto2.TestNestedExtension.Types.OptionalGroup_extension { A = 10 });
-
-            byte[] bytes = message.ToByteArray();
-            Proto2.TestGroupExtension extendable_parsed = Proto2.TestGroupExtension.Parser.WithExtensionRegistry(new ExtensionRegistry() { Proto2.TestNestedExtension.Extensions.OptionalGroupExtension }).ParseFrom(bytes);
-            Assert.AreEqual(message, extendable_parsed);
         }
 
         // Note that not every map within map_unittest_proto3 is used. They all go through very
