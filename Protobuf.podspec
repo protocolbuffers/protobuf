@@ -16,16 +16,16 @@ Pod::Spec.new do |s|
                :tag => "v#{s.version}" }
 
   s.source_files = 'objectivec/*.{h,m}',
-                   'objectivec/google/protobuf/Any.pbobjc.{h,m}',
-                   'objectivec/google/protobuf/Api.pbobjc.{h,m}',
-                   'objectivec/google/protobuf/Duration.pbobjc.{h,m}',
-                   'objectivec/google/protobuf/Empty.pbobjc.{h,m}',
-                   'objectivec/google/protobuf/FieldMask.pbobjc.{h,m}',
-                   'objectivec/google/protobuf/SourceContext.pbobjc.{h,m}',
-                   'objectivec/google/protobuf/Struct.pbobjc.{h,m}',
-                   'objectivec/google/protobuf/Timestamp.pbobjc.{h,m}',
-                   'objectivec/google/protobuf/Type.pbobjc.{h,m}',
-                   'objectivec/google/protobuf/Wrappers.pbobjc.{h,m}'
+                   'objectivec/google/Protobuf/Any.pbobjc.{h,m}',
+                   'objectivec/google/Protobuf/Api.pbobjc.{h,m}',
+                   'objectivec/google/Protobuf/Duration.pbobjc.{h,m}',
+                   'objectivec/google/Protobuf/Empty.pbobjc.{h,m}',
+                   'objectivec/google/Protobuf/FieldMask.pbobjc.{h,m}',
+                   'objectivec/google/Protobuf/SourceContext.pbobjc.{h,m}',
+                   'objectivec/google/Protobuf/Struct.pbobjc.{h,m}',
+                   'objectivec/google/Protobuf/Timestamp.pbobjc.{h,m}',
+                   'objectivec/google/Protobuf/Type.pbobjc.{h,m}',
+                   'objectivec/google/Protobuf/Wrappers.pbobjc.{h,m}'
   # The following would cause duplicate symbol definitions. GPBProtocolBuffers is expected to be
   # left out, as it's an umbrella implementation file.
   s.exclude_files = 'objectivec/GPBProtocolBuffers.m'
