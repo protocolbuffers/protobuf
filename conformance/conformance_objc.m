@@ -68,8 +68,7 @@ static ConformanceResponse *DoTest(ConformanceRequest *request) {
 
   switch (request.payloadOneOfCase) {
     case ConformanceRequest_Payload_OneOfCase_GPBUnsetOneOfCase:
-      response.runtimeError =
-          [NSString stringWithFormat:@"Request didn't have a payload: %@", request];
+      Die(@"Request didn't have a payload: %@", request);
       break;
 
     case ConformanceRequest_Payload_OneOfCase_ProtobufPayload: {
@@ -79,10 +78,7 @@ static ConformanceResponse *DoTest(ConformanceRequest *request) {
       } else if ([request.messageType isEqual:@"protobuf_test_messages.proto2.TestAllTypesProto2"]) {
         msgClass = [TestAllTypesProto2 class];
       } else {
-        response.runtimeError =
-            [NSString stringWithFormat:
-                @"Protobuf request had an unknown message_type: %@", request.messageType];
-        break;
+        Die(@"Protobuf request had an unknown message_type: %@", request.messageType);
       }
       NSError *error = nil;
       testMessage = [msgClass parseFromData:request.protobufPayload error:&error];
@@ -112,8 +108,7 @@ static ConformanceResponse *DoTest(ConformanceRequest *request) {
     switch (request.requestedOutputFormat) {
       case WireFormat_GPBUnrecognizedEnumeratorValue:
       case WireFormat_Unspecified:
-        response.runtimeError =
-            [NSString stringWithFormat:@"Unrecognized/unspecified output format: %@", request];
+        Die(@"Unrecognized/unspecified output format: %@", request);
         break;
 
       case WireFormat_Protobuf:

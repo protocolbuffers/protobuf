@@ -85,7 +85,7 @@ PROTOBUF_NAMESPACE_OPEN
 
 void FieldMask::InitAsDefaultInstance() {
 }
-class FieldMask::HasBitSetters {
+class FieldMask::_Internal {
  public:
 };
 

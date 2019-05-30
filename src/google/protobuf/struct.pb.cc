@@ -195,7 +195,7 @@ void Struct_FieldsEntry_DoNotUse::MergeFrom(
 
 void Struct::InitAsDefaultInstance() {
 }
-class Struct::HasBitSetters {
+class Struct::_Internal {
  public:
 };
 
@@ -578,18 +578,18 @@ void Value::InitAsDefaultInstance() {
   PROTOBUF_NAMESPACE_ID::_Value_default_instance_.list_value_ = const_cast< PROTOBUF_NAMESPACE_ID::ListValue*>(
       PROTOBUF_NAMESPACE_ID::ListValue::internal_default_instance());
 }
-class Value::HasBitSetters {
+class Value::_Internal {
  public:
   static const PROTOBUF_NAMESPACE_ID::Struct& struct_value(const Value* msg);
   static const PROTOBUF_NAMESPACE_ID::ListValue& list_value(const Value* msg);
 };
 
 const PROTOBUF_NAMESPACE_ID::Struct&
-Value::HasBitSetters::struct_value(const Value* msg) {
+Value::_Internal::struct_value(const Value* msg) {
   return *msg->kind_.struct_value_;
 }
 const PROTOBUF_NAMESPACE_ID::ListValue&
-Value::HasBitSetters::list_value(const Value* msg) {
+Value::_Internal::list_value(const Value* msg) {
   return *msg->kind_.list_value_;
 }
 void Value::set_allocated_struct_value(PROTOBUF_NAMESPACE_ID::Struct* struct_value) {
@@ -979,13 +979,13 @@ void Value::SerializeWithCachedSizes(
   // .google.protobuf.Struct struct_value = 5;
   if (has_struct_value()) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteMessageMaybeToArray(
-      5, HasBitSetters::struct_value(this), output);
+      5, _Internal::struct_value(this), output);
   }
 
   // .google.protobuf.ListValue list_value = 6;
   if (has_list_value()) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteMessageMaybeToArray(
-      6, HasBitSetters::list_value(this), output);
+      6, _Internal::list_value(this), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -1032,14 +1032,14 @@ void Value::SerializeWithCachedSizes(
   if (has_struct_value()) {
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
       InternalWriteMessageToArray(
-        5, HasBitSetters::struct_value(this), target);
+        5, _Internal::struct_value(this), target);
   }
 
   // .google.protobuf.ListValue list_value = 6;
   if (has_list_value()) {
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
       InternalWriteMessageToArray(
-        6, HasBitSetters::list_value(this), target);
+        6, _Internal::list_value(this), target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -1216,7 +1216,7 @@ void Value::InternalSwap(Value* other) {
 
 void ListValue::InitAsDefaultInstance() {
 }
-class ListValue::HasBitSetters {
+class ListValue::_Internal {
  public:
 };
 

@@ -1381,7 +1381,7 @@ constexpr int MethodOptions::IdempotencyLevel_ARRAYSIZE;
 
 void FileDescriptorSet::InitAsDefaultInstance() {
 }
-class FileDescriptorSet::HasBitSetters {
+class FileDescriptorSet::_Internal {
  public:
   using HasBits = decltype(std::declval<FileDescriptorSet>()._has_bits_);
 };
@@ -1690,7 +1690,7 @@ void FileDescriptorProto::InitAsDefaultInstance() {
   PROTOBUF_NAMESPACE_ID::_FileDescriptorProto_default_instance_._instance.get_mutable()->source_code_info_ = const_cast< PROTOBUF_NAMESPACE_ID::SourceCodeInfo*>(
       PROTOBUF_NAMESPACE_ID::SourceCodeInfo::internal_default_instance());
 }
-class FileDescriptorProto::HasBitSetters {
+class FileDescriptorProto::_Internal {
  public:
   using HasBits = decltype(std::declval<FileDescriptorProto>()._has_bits_);
   static void set_has_name(HasBits* has_bits) {
@@ -1713,11 +1713,11 @@ class FileDescriptorProto::HasBitSetters {
 };
 
 const PROTOBUF_NAMESPACE_ID::FileOptions&
-FileDescriptorProto::HasBitSetters::options(const FileDescriptorProto* msg) {
+FileDescriptorProto::_Internal::options(const FileDescriptorProto* msg) {
   return *msg->options_;
 }
 const PROTOBUF_NAMESPACE_ID::SourceCodeInfo&
-FileDescriptorProto::HasBitSetters::source_code_info(const FileDescriptorProto* msg) {
+FileDescriptorProto::_Internal::source_code_info(const FileDescriptorProto* msg) {
   return *msg->source_code_info_;
 }
 void FileDescriptorProto::unsafe_arena_set_allocated_options(
@@ -1899,7 +1899,7 @@ void FileDescriptorProto::Clear() {
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 const char* FileDescriptorProto::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
-  HasBitSetters::HasBits has_bits{};
+  _Internal::HasBits has_bits{};
   ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArenaNoVirtual(); (void)arena;
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
@@ -2318,13 +2318,13 @@ void FileDescriptorProto::SerializeWithCachedSizes(
   // optional .google.protobuf.FileOptions options = 8;
   if (cached_has_bits & 0x00000008u) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteMessageMaybeToArray(
-      8, HasBitSetters::options(this), output);
+      8, _Internal::options(this), output);
   }
 
   // optional .google.protobuf.SourceCodeInfo source_code_info = 9;
   if (cached_has_bits & 0x00000010u) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteMessageMaybeToArray(
-      9, HasBitSetters::source_code_info(this), output);
+      9, _Internal::source_code_info(this), output);
   }
 
   // repeated int32 public_dependency = 10;
@@ -2431,14 +2431,14 @@ void FileDescriptorProto::SerializeWithCachedSizes(
   if (cached_has_bits & 0x00000008u) {
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
       InternalWriteMessageToArray(
-        8, HasBitSetters::options(this), target);
+        8, _Internal::options(this), target);
   }
 
   // optional .google.protobuf.SourceCodeInfo source_code_info = 9;
   if (cached_has_bits & 0x00000010u) {
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
       InternalWriteMessageToArray(
-        9, HasBitSetters::source_code_info(this), target);
+        9, _Internal::source_code_info(this), target);
   }
 
   // repeated int32 public_dependency = 10;
@@ -2719,7 +2719,7 @@ void DescriptorProto_ExtensionRange::InitAsDefaultInstance() {
   PROTOBUF_NAMESPACE_ID::_DescriptorProto_ExtensionRange_default_instance_._instance.get_mutable()->options_ = const_cast< PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions*>(
       PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions::internal_default_instance());
 }
-class DescriptorProto_ExtensionRange::HasBitSetters {
+class DescriptorProto_ExtensionRange::_Internal {
  public:
   using HasBits = decltype(std::declval<DescriptorProto_ExtensionRange>()._has_bits_);
   static void set_has_start(HasBits* has_bits) {
@@ -2735,7 +2735,7 @@ class DescriptorProto_ExtensionRange::HasBitSetters {
 };
 
 const PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions&
-DescriptorProto_ExtensionRange::HasBitSetters::options(const DescriptorProto_ExtensionRange* msg) {
+DescriptorProto_ExtensionRange::_Internal::options(const DescriptorProto_ExtensionRange* msg) {
   return *msg->options_;
 }
 void DescriptorProto_ExtensionRange::unsafe_arena_set_allocated_options(
@@ -2840,7 +2840,7 @@ void DescriptorProto_ExtensionRange::Clear() {
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 const char* DescriptorProto_ExtensionRange::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
-  HasBitSetters::HasBits has_bits{};
+  _Internal::HasBits has_bits{};
   ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArenaNoVirtual(); (void)arena;
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
@@ -2850,7 +2850,7 @@ const char* DescriptorProto_ExtensionRange::_InternalParse(const char* ptr, ::PR
       // optional int32 start = 1;
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
-          HasBitSetters::set_has_start(&has_bits);
+          _Internal::set_has_start(&has_bits);
           start_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
@@ -2858,7 +2858,7 @@ const char* DescriptorProto_ExtensionRange::_InternalParse(const char* ptr, ::PR
       // optional int32 end = 2;
       case 2:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16)) {
-          HasBitSetters::set_has_end(&has_bits);
+          _Internal::set_has_end(&has_bits);
           end_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
@@ -2904,7 +2904,7 @@ bool DescriptorProto_ExtensionRange::MergePartialFromCodedStream(
       // optional int32 start = 1;
       case 1: {
         if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (8 & 0xFF)) {
-          HasBitSetters::set_has_start(&_has_bits_);
+          _Internal::set_has_start(&_has_bits_);
           DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
                    ::PROTOBUF_NAMESPACE_ID::int32, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_INT32>(
                  input, &start_)));
@@ -2917,7 +2917,7 @@ bool DescriptorProto_ExtensionRange::MergePartialFromCodedStream(
       // optional int32 end = 2;
       case 2: {
         if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (16 & 0xFF)) {
-          HasBitSetters::set_has_end(&_has_bits_);
+          _Internal::set_has_end(&_has_bits_);
           DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
                    ::PROTOBUF_NAMESPACE_ID::int32, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_INT32>(
                  input, &end_)));
@@ -2979,7 +2979,7 @@ void DescriptorProto_ExtensionRange::SerializeWithCachedSizes(
   // optional .google.protobuf.ExtensionRangeOptions options = 3;
   if (cached_has_bits & 0x00000001u) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteMessageMaybeToArray(
-      3, HasBitSetters::options(this), output);
+      3, _Internal::options(this), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -3010,7 +3010,7 @@ void DescriptorProto_ExtensionRange::SerializeWithCachedSizes(
   if (cached_has_bits & 0x00000001u) {
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
       InternalWriteMessageToArray(
-        3, HasBitSetters::options(this), target);
+        3, _Internal::options(this), target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -3158,7 +3158,7 @@ void DescriptorProto_ExtensionRange::InternalSwap(DescriptorProto_ExtensionRange
 
 void DescriptorProto_ReservedRange::InitAsDefaultInstance() {
 }
-class DescriptorProto_ReservedRange::HasBitSetters {
+class DescriptorProto_ReservedRange::_Internal {
  public:
   using HasBits = decltype(std::declval<DescriptorProto_ReservedRange>()._has_bits_);
   static void set_has_start(HasBits* has_bits) {
@@ -3246,7 +3246,7 @@ void DescriptorProto_ReservedRange::Clear() {
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 const char* DescriptorProto_ReservedRange::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
-  HasBitSetters::HasBits has_bits{};
+  _Internal::HasBits has_bits{};
   ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArenaNoVirtual(); (void)arena;
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
@@ -3256,7 +3256,7 @@ const char* DescriptorProto_ReservedRange::_InternalParse(const char* ptr, ::PRO
       // optional int32 start = 1;
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
-          HasBitSetters::set_has_start(&has_bits);
+          _Internal::set_has_start(&has_bits);
           start_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
@@ -3264,7 +3264,7 @@ const char* DescriptorProto_ReservedRange::_InternalParse(const char* ptr, ::PRO
       // optional int32 end = 2;
       case 2:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16)) {
-          HasBitSetters::set_has_end(&has_bits);
+          _Internal::set_has_end(&has_bits);
           end_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
@@ -3303,7 +3303,7 @@ bool DescriptorProto_ReservedRange::MergePartialFromCodedStream(
       // optional int32 start = 1;
       case 1: {
         if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (8 & 0xFF)) {
-          HasBitSetters::set_has_start(&_has_bits_);
+          _Internal::set_has_start(&_has_bits_);
           DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
                    ::PROTOBUF_NAMESPACE_ID::int32, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_INT32>(
                  input, &start_)));
@@ -3316,7 +3316,7 @@ bool DescriptorProto_ReservedRange::MergePartialFromCodedStream(
       // optional int32 end = 2;
       case 2: {
         if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (16 & 0xFF)) {
-          HasBitSetters::set_has_end(&_has_bits_);
+          _Internal::set_has_end(&_has_bits_);
           DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
                    ::PROTOBUF_NAMESPACE_ID::int32, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_INT32>(
                  input, &end_)));
@@ -3521,7 +3521,7 @@ void DescriptorProto::InitAsDefaultInstance() {
   PROTOBUF_NAMESPACE_ID::_DescriptorProto_default_instance_._instance.get_mutable()->options_ = const_cast< PROTOBUF_NAMESPACE_ID::MessageOptions*>(
       PROTOBUF_NAMESPACE_ID::MessageOptions::internal_default_instance());
 }
-class DescriptorProto::HasBitSetters {
+class DescriptorProto::_Internal {
  public:
   using HasBits = decltype(std::declval<DescriptorProto>()._has_bits_);
   static void set_has_name(HasBits* has_bits) {
@@ -3534,7 +3534,7 @@ class DescriptorProto::HasBitSetters {
 };
 
 const PROTOBUF_NAMESPACE_ID::MessageOptions&
-DescriptorProto::HasBitSetters::options(const DescriptorProto* msg) {
+DescriptorProto::_Internal::options(const DescriptorProto* msg) {
   return *msg->options_;
 }
 void DescriptorProto::unsafe_arena_set_allocated_options(
@@ -3672,7 +3672,7 @@ void DescriptorProto::Clear() {
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 const char* DescriptorProto::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
-  HasBitSetters::HasBits has_bits{};
+  _Internal::HasBits has_bits{};
   ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArenaNoVirtual(); (void)arena;
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
@@ -4025,7 +4025,7 @@ void DescriptorProto::SerializeWithCachedSizes(
   // optional .google.protobuf.MessageOptions options = 7;
   if (cached_has_bits & 0x00000002u) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteMessageMaybeToArray(
-      7, HasBitSetters::options(this), output);
+      7, _Internal::options(this), output);
   }
 
   // repeated .google.protobuf.OneofDescriptorProto oneof_decl = 8;
@@ -4125,7 +4125,7 @@ void DescriptorProto::SerializeWithCachedSizes(
   if (cached_has_bits & 0x00000002u) {
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
       InternalWriteMessageToArray(
-        7, HasBitSetters::options(this), target);
+        7, _Internal::options(this), target);
   }
 
   // repeated .google.protobuf.OneofDescriptorProto oneof_decl = 8;
@@ -4395,7 +4395,7 @@ void DescriptorProto::InternalSwap(DescriptorProto* other) {
 
 void ExtensionRangeOptions::InitAsDefaultInstance() {
 }
-class ExtensionRangeOptions::HasBitSetters {
+class ExtensionRangeOptions::_Internal {
  public:
   using HasBits = decltype(std::declval<ExtensionRangeOptions>()._has_bits_);
 };
@@ -4732,7 +4732,7 @@ void FieldDescriptorProto::InitAsDefaultInstance() {
   PROTOBUF_NAMESPACE_ID::_FieldDescriptorProto_default_instance_._instance.get_mutable()->options_ = const_cast< PROTOBUF_NAMESPACE_ID::FieldOptions*>(
       PROTOBUF_NAMESPACE_ID::FieldOptions::internal_default_instance());
 }
-class FieldDescriptorProto::HasBitSetters {
+class FieldDescriptorProto::_Internal {
  public:
   using HasBits = decltype(std::declval<FieldDescriptorProto>()._has_bits_);
   static void set_has_name(HasBits* has_bits) {
@@ -4769,7 +4769,7 @@ class FieldDescriptorProto::HasBitSetters {
 };
 
 const PROTOBUF_NAMESPACE_ID::FieldOptions&
-FieldDescriptorProto::HasBitSetters::options(const FieldDescriptorProto* msg) {
+FieldDescriptorProto::_Internal::options(const FieldDescriptorProto* msg) {
   return *msg->options_;
 }
 void FieldDescriptorProto::unsafe_arena_set_allocated_options(
@@ -4939,7 +4939,7 @@ void FieldDescriptorProto::Clear() {
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 const char* FieldDescriptorProto::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
-  HasBitSetters::HasBits has_bits{};
+  _Internal::HasBits has_bits{};
   ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArenaNoVirtual(); (void)arena;
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
@@ -4963,7 +4963,7 @@ const char* FieldDescriptorProto::_InternalParse(const char* ptr, ::PROTOBUF_NAM
       // optional int32 number = 3;
       case 3:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 24)) {
-          HasBitSetters::set_has_number(&has_bits);
+          _Internal::set_has_number(&has_bits);
           number_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
@@ -5016,7 +5016,7 @@ const char* FieldDescriptorProto::_InternalParse(const char* ptr, ::PROTOBUF_NAM
       // optional int32 oneof_index = 9;
       case 9:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 72)) {
-          HasBitSetters::set_has_oneof_index(&has_bits);
+          _Internal::set_has_oneof_index(&has_bits);
           oneof_index_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
@@ -5092,7 +5092,7 @@ bool FieldDescriptorProto::MergePartialFromCodedStream(
       // optional int32 number = 3;
       case 3: {
         if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (24 & 0xFF)) {
-          HasBitSetters::set_has_number(&_has_bits_);
+          _Internal::set_has_number(&_has_bits_);
           DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
                    ::PROTOBUF_NAMESPACE_ID::int32, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_INT32>(
                  input, &number_)));
@@ -5184,7 +5184,7 @@ bool FieldDescriptorProto::MergePartialFromCodedStream(
       // optional int32 oneof_index = 9;
       case 9: {
         if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (72 & 0xFF)) {
-          HasBitSetters::set_has_oneof_index(&_has_bits_);
+          _Internal::set_has_oneof_index(&_has_bits_);
           DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
                    ::PROTOBUF_NAMESPACE_ID::int32, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_INT32>(
                  input, &oneof_index_)));
@@ -5297,7 +5297,7 @@ void FieldDescriptorProto::SerializeWithCachedSizes(
   // optional .google.protobuf.FieldOptions options = 8;
   if (cached_has_bits & 0x00000020u) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteMessageMaybeToArray(
-      8, HasBitSetters::options(this), output);
+      8, _Internal::options(this), output);
   }
 
   // optional int32 oneof_index = 9;
@@ -5394,7 +5394,7 @@ void FieldDescriptorProto::SerializeWithCachedSizes(
   if (cached_has_bits & 0x00000020u) {
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
       InternalWriteMessageToArray(
-        8, HasBitSetters::options(this), target);
+        8, _Internal::options(this), target);
   }
 
   // optional int32 oneof_index = 9;
@@ -5645,7 +5645,7 @@ void OneofDescriptorProto::InitAsDefaultInstance() {
   PROTOBUF_NAMESPACE_ID::_OneofDescriptorProto_default_instance_._instance.get_mutable()->options_ = const_cast< PROTOBUF_NAMESPACE_ID::OneofOptions*>(
       PROTOBUF_NAMESPACE_ID::OneofOptions::internal_default_instance());
 }
-class OneofDescriptorProto::HasBitSetters {
+class OneofDescriptorProto::_Internal {
  public:
   using HasBits = decltype(std::declval<OneofDescriptorProto>()._has_bits_);
   static void set_has_name(HasBits* has_bits) {
@@ -5658,7 +5658,7 @@ class OneofDescriptorProto::HasBitSetters {
 };
 
 const PROTOBUF_NAMESPACE_ID::OneofOptions&
-OneofDescriptorProto::HasBitSetters::options(const OneofDescriptorProto* msg) {
+OneofDescriptorProto::_Internal::options(const OneofDescriptorProto* msg) {
   return *msg->options_;
 }
 void OneofDescriptorProto::unsafe_arena_set_allocated_options(
@@ -5764,7 +5764,7 @@ void OneofDescriptorProto::Clear() {
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 const char* OneofDescriptorProto::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
-  HasBitSetters::HasBits has_bits{};
+  _Internal::HasBits has_bits{};
   ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArenaNoVirtual(); (void)arena;
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
@@ -5883,7 +5883,7 @@ void OneofDescriptorProto::SerializeWithCachedSizes(
   // optional .google.protobuf.OneofOptions options = 2;
   if (cached_has_bits & 0x00000002u) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteMessageMaybeToArray(
-      2, HasBitSetters::options(this), output);
+      2, _Internal::options(this), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -5915,7 +5915,7 @@ void OneofDescriptorProto::SerializeWithCachedSizes(
   if (cached_has_bits & 0x00000002u) {
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
       InternalWriteMessageToArray(
-        2, HasBitSetters::options(this), target);
+        2, _Internal::options(this), target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -6052,7 +6052,7 @@ void OneofDescriptorProto::InternalSwap(OneofDescriptorProto* other) {
 
 void EnumDescriptorProto_EnumReservedRange::InitAsDefaultInstance() {
 }
-class EnumDescriptorProto_EnumReservedRange::HasBitSetters {
+class EnumDescriptorProto_EnumReservedRange::_Internal {
  public:
   using HasBits = decltype(std::declval<EnumDescriptorProto_EnumReservedRange>()._has_bits_);
   static void set_has_start(HasBits* has_bits) {
@@ -6140,7 +6140,7 @@ void EnumDescriptorProto_EnumReservedRange::Clear() {
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 const char* EnumDescriptorProto_EnumReservedRange::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
-  HasBitSetters::HasBits has_bits{};
+  _Internal::HasBits has_bits{};
   ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArenaNoVirtual(); (void)arena;
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
@@ -6150,7 +6150,7 @@ const char* EnumDescriptorProto_EnumReservedRange::_InternalParse(const char* pt
       // optional int32 start = 1;
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
-          HasBitSetters::set_has_start(&has_bits);
+          _Internal::set_has_start(&has_bits);
           start_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
@@ -6158,7 +6158,7 @@ const char* EnumDescriptorProto_EnumReservedRange::_InternalParse(const char* pt
       // optional int32 end = 2;
       case 2:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16)) {
-          HasBitSetters::set_has_end(&has_bits);
+          _Internal::set_has_end(&has_bits);
           end_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
@@ -6197,7 +6197,7 @@ bool EnumDescriptorProto_EnumReservedRange::MergePartialFromCodedStream(
       // optional int32 start = 1;
       case 1: {
         if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (8 & 0xFF)) {
-          HasBitSetters::set_has_start(&_has_bits_);
+          _Internal::set_has_start(&_has_bits_);
           DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
                    ::PROTOBUF_NAMESPACE_ID::int32, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_INT32>(
                  input, &start_)));
@@ -6210,7 +6210,7 @@ bool EnumDescriptorProto_EnumReservedRange::MergePartialFromCodedStream(
       // optional int32 end = 2;
       case 2: {
         if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (16 & 0xFF)) {
-          HasBitSetters::set_has_end(&_has_bits_);
+          _Internal::set_has_end(&_has_bits_);
           DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
                    ::PROTOBUF_NAMESPACE_ID::int32, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_INT32>(
                  input, &end_)));
@@ -6415,7 +6415,7 @@ void EnumDescriptorProto::InitAsDefaultInstance() {
   PROTOBUF_NAMESPACE_ID::_EnumDescriptorProto_default_instance_._instance.get_mutable()->options_ = const_cast< PROTOBUF_NAMESPACE_ID::EnumOptions*>(
       PROTOBUF_NAMESPACE_ID::EnumOptions::internal_default_instance());
 }
-class EnumDescriptorProto::HasBitSetters {
+class EnumDescriptorProto::_Internal {
  public:
   using HasBits = decltype(std::declval<EnumDescriptorProto>()._has_bits_);
   static void set_has_name(HasBits* has_bits) {
@@ -6428,7 +6428,7 @@ class EnumDescriptorProto::HasBitSetters {
 };
 
 const PROTOBUF_NAMESPACE_ID::EnumOptions&
-EnumDescriptorProto::HasBitSetters::options(const EnumDescriptorProto* msg) {
+EnumDescriptorProto::_Internal::options(const EnumDescriptorProto* msg) {
   return *msg->options_;
 }
 void EnumDescriptorProto::unsafe_arena_set_allocated_options(
@@ -6546,7 +6546,7 @@ void EnumDescriptorProto::Clear() {
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 const char* EnumDescriptorProto::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
-  HasBitSetters::HasBits has_bits{};
+  _Internal::HasBits has_bits{};
   ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArenaNoVirtual(); (void)arena;
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
@@ -6748,7 +6748,7 @@ void EnumDescriptorProto::SerializeWithCachedSizes(
   // optional .google.protobuf.EnumOptions options = 3;
   if (cached_has_bits & 0x00000002u) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteMessageMaybeToArray(
-      3, HasBitSetters::options(this), output);
+      3, _Internal::options(this), output);
   }
 
   // repeated .google.protobuf.EnumDescriptorProto.EnumReservedRange reserved_range = 4;
@@ -6807,7 +6807,7 @@ void EnumDescriptorProto::SerializeWithCachedSizes(
   if (cached_has_bits & 0x00000002u) {
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
       InternalWriteMessageToArray(
-        3, HasBitSetters::options(this), target);
+        3, _Internal::options(this), target);
   }
 
   // repeated .google.protobuf.EnumDescriptorProto.EnumReservedRange reserved_range = 4;
@@ -7001,7 +7001,7 @@ void EnumValueDescriptorProto::InitAsDefaultInstance() {
   PROTOBUF_NAMESPACE_ID::_EnumValueDescriptorProto_default_instance_._instance.get_mutable()->options_ = const_cast< PROTOBUF_NAMESPACE_ID::EnumValueOptions*>(
       PROTOBUF_NAMESPACE_ID::EnumValueOptions::internal_default_instance());
 }
-class EnumValueDescriptorProto::HasBitSetters {
+class EnumValueDescriptorProto::_Internal {
  public:
   using HasBits = decltype(std::declval<EnumValueDescriptorProto>()._has_bits_);
   static void set_has_name(HasBits* has_bits) {
@@ -7017,7 +7017,7 @@ class EnumValueDescriptorProto::HasBitSetters {
 };
 
 const PROTOBUF_NAMESPACE_ID::EnumValueOptions&
-EnumValueDescriptorProto::HasBitSetters::options(const EnumValueDescriptorProto* msg) {
+EnumValueDescriptorProto::_Internal::options(const EnumValueDescriptorProto* msg) {
   return *msg->options_;
 }
 void EnumValueDescriptorProto::unsafe_arena_set_allocated_options(
@@ -7128,7 +7128,7 @@ void EnumValueDescriptorProto::Clear() {
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 const char* EnumValueDescriptorProto::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
-  HasBitSetters::HasBits has_bits{};
+  _Internal::HasBits has_bits{};
   ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArenaNoVirtual(); (void)arena;
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
@@ -7145,7 +7145,7 @@ const char* EnumValueDescriptorProto::_InternalParse(const char* ptr, ::PROTOBUF
       // optional int32 number = 2;
       case 2:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16)) {
-          HasBitSetters::set_has_number(&has_bits);
+          _Internal::set_has_number(&has_bits);
           number_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
@@ -7206,7 +7206,7 @@ bool EnumValueDescriptorProto::MergePartialFromCodedStream(
       // optional int32 number = 2;
       case 2: {
         if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (16 & 0xFF)) {
-          HasBitSetters::set_has_number(&_has_bits_);
+          _Internal::set_has_number(&_has_bits_);
           DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
                    ::PROTOBUF_NAMESPACE_ID::int32, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_INT32>(
                  input, &number_)));
@@ -7273,7 +7273,7 @@ void EnumValueDescriptorProto::SerializeWithCachedSizes(
   // optional .google.protobuf.EnumValueOptions options = 3;
   if (cached_has_bits & 0x00000002u) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteMessageMaybeToArray(
-      3, HasBitSetters::options(this), output);
+      3, _Internal::options(this), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -7310,7 +7310,7 @@ void EnumValueDescriptorProto::SerializeWithCachedSizes(
   if (cached_has_bits & 0x00000002u) {
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
       InternalWriteMessageToArray(
-        3, HasBitSetters::options(this), target);
+        3, _Internal::options(this), target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -7461,7 +7461,7 @@ void ServiceDescriptorProto::InitAsDefaultInstance() {
   PROTOBUF_NAMESPACE_ID::_ServiceDescriptorProto_default_instance_._instance.get_mutable()->options_ = const_cast< PROTOBUF_NAMESPACE_ID::ServiceOptions*>(
       PROTOBUF_NAMESPACE_ID::ServiceOptions::internal_default_instance());
 }
-class ServiceDescriptorProto::HasBitSetters {
+class ServiceDescriptorProto::_Internal {
  public:
   using HasBits = decltype(std::declval<ServiceDescriptorProto>()._has_bits_);
   static void set_has_name(HasBits* has_bits) {
@@ -7474,7 +7474,7 @@ class ServiceDescriptorProto::HasBitSetters {
 };
 
 const PROTOBUF_NAMESPACE_ID::ServiceOptions&
-ServiceDescriptorProto::HasBitSetters::options(const ServiceDescriptorProto* msg) {
+ServiceDescriptorProto::_Internal::options(const ServiceDescriptorProto* msg) {
   return *msg->options_;
 }
 void ServiceDescriptorProto::unsafe_arena_set_allocated_options(
@@ -7584,7 +7584,7 @@ void ServiceDescriptorProto::Clear() {
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 const char* ServiceDescriptorProto::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
-  HasBitSetters::HasBits has_bits{};
+  _Internal::HasBits has_bits{};
   ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArenaNoVirtual(); (void)arena;
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
@@ -7735,7 +7735,7 @@ void ServiceDescriptorProto::SerializeWithCachedSizes(
   // optional .google.protobuf.ServiceOptions options = 3;
   if (cached_has_bits & 0x00000002u) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteMessageMaybeToArray(
-      3, HasBitSetters::options(this), output);
+      3, _Internal::options(this), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -7775,7 +7775,7 @@ void ServiceDescriptorProto::SerializeWithCachedSizes(
   if (cached_has_bits & 0x00000002u) {
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
       InternalWriteMessageToArray(
-        3, HasBitSetters::options(this), target);
+        3, _Internal::options(this), target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -7928,7 +7928,7 @@ void MethodDescriptorProto::InitAsDefaultInstance() {
   PROTOBUF_NAMESPACE_ID::_MethodDescriptorProto_default_instance_._instance.get_mutable()->options_ = const_cast< PROTOBUF_NAMESPACE_ID::MethodOptions*>(
       PROTOBUF_NAMESPACE_ID::MethodOptions::internal_default_instance());
 }
-class MethodDescriptorProto::HasBitSetters {
+class MethodDescriptorProto::_Internal {
  public:
   using HasBits = decltype(std::declval<MethodDescriptorProto>()._has_bits_);
   static void set_has_name(HasBits* has_bits) {
@@ -7953,7 +7953,7 @@ class MethodDescriptorProto::HasBitSetters {
 };
 
 const PROTOBUF_NAMESPACE_ID::MethodOptions&
-MethodDescriptorProto::HasBitSetters::options(const MethodDescriptorProto* msg) {
+MethodDescriptorProto::_Internal::options(const MethodDescriptorProto* msg) {
   return *msg->options_;
 }
 void MethodDescriptorProto::unsafe_arena_set_allocated_options(
@@ -8091,7 +8091,7 @@ void MethodDescriptorProto::Clear() {
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 const char* MethodDescriptorProto::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
-  HasBitSetters::HasBits has_bits{};
+  _Internal::HasBits has_bits{};
   ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArenaNoVirtual(); (void)arena;
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
@@ -8129,7 +8129,7 @@ const char* MethodDescriptorProto::_InternalParse(const char* ptr, ::PROTOBUF_NA
       // optional bool client_streaming = 5 [default = false];
       case 5:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 40)) {
-          HasBitSetters::set_has_client_streaming(&has_bits);
+          _Internal::set_has_client_streaming(&has_bits);
           client_streaming_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
@@ -8137,7 +8137,7 @@ const char* MethodDescriptorProto::_InternalParse(const char* ptr, ::PROTOBUF_NA
       // optional bool server_streaming = 6 [default = false];
       case 6:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 48)) {
-          HasBitSetters::set_has_server_streaming(&has_bits);
+          _Internal::set_has_server_streaming(&has_bits);
           server_streaming_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
@@ -8232,7 +8232,7 @@ bool MethodDescriptorProto::MergePartialFromCodedStream(
       // optional bool client_streaming = 5 [default = false];
       case 5: {
         if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (40 & 0xFF)) {
-          HasBitSetters::set_has_client_streaming(&_has_bits_);
+          _Internal::set_has_client_streaming(&_has_bits_);
           DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
                    bool, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_BOOL>(
                  input, &client_streaming_)));
@@ -8245,7 +8245,7 @@ bool MethodDescriptorProto::MergePartialFromCodedStream(
       // optional bool server_streaming = 6 [default = false];
       case 6: {
         if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (48 & 0xFF)) {
-          HasBitSetters::set_has_server_streaming(&_has_bits_);
+          _Internal::set_has_server_streaming(&_has_bits_);
           DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
                    bool, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_BOOL>(
                  input, &server_streaming_)));
@@ -8316,7 +8316,7 @@ void MethodDescriptorProto::SerializeWithCachedSizes(
   // optional .google.protobuf.MethodOptions options = 4;
   if (cached_has_bits & 0x00000008u) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteMessageMaybeToArray(
-      4, HasBitSetters::options(this), output);
+      4, _Internal::options(this), output);
   }
 
   // optional bool client_streaming = 5 [default = false];
@@ -8380,7 +8380,7 @@ void MethodDescriptorProto::SerializeWithCachedSizes(
   if (cached_has_bits & 0x00000008u) {
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
       InternalWriteMessageToArray(
-        4, HasBitSetters::options(this), target);
+        4, _Internal::options(this), target);
   }
 
   // optional bool client_streaming = 5 [default = false];
@@ -8570,7 +8570,7 @@ void MethodDescriptorProto::InternalSwap(MethodDescriptorProto* other) {
 
 void FileOptions::InitAsDefaultInstance() {
 }
-class FileOptions::HasBitSetters {
+class FileOptions::_Internal {
  public:
   using HasBits = decltype(std::declval<FileOptions>()._has_bits_);
   static void set_has_java_package(HasBits* has_bits) {
@@ -8849,7 +8849,7 @@ void FileOptions::Clear() {
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 const char* FileOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
-  HasBitSetters::HasBits has_bits{};
+  _Internal::HasBits has_bits{};
   ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArenaNoVirtual(); (void)arena;
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
@@ -8885,7 +8885,7 @@ const char* FileOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID
       // optional bool java_multiple_files = 10 [default = false];
       case 10:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 80)) {
-          HasBitSetters::set_has_java_multiple_files(&has_bits);
+          _Internal::set_has_java_multiple_files(&has_bits);
           java_multiple_files_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
@@ -8900,7 +8900,7 @@ const char* FileOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID
       // optional bool cc_generic_services = 16 [default = false];
       case 16:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 128)) {
-          HasBitSetters::set_has_cc_generic_services(&has_bits);
+          _Internal::set_has_cc_generic_services(&has_bits);
           cc_generic_services_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
@@ -8908,7 +8908,7 @@ const char* FileOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID
       // optional bool java_generic_services = 17 [default = false];
       case 17:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 136)) {
-          HasBitSetters::set_has_java_generic_services(&has_bits);
+          _Internal::set_has_java_generic_services(&has_bits);
           java_generic_services_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
@@ -8916,7 +8916,7 @@ const char* FileOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID
       // optional bool py_generic_services = 18 [default = false];
       case 18:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 144)) {
-          HasBitSetters::set_has_py_generic_services(&has_bits);
+          _Internal::set_has_py_generic_services(&has_bits);
           py_generic_services_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
@@ -8924,7 +8924,7 @@ const char* FileOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID
       // optional bool java_generate_equals_and_hash = 20 [deprecated = true];
       case 20:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 160)) {
-          HasBitSetters::set_has_java_generate_equals_and_hash(&has_bits);
+          _Internal::set_has_java_generate_equals_and_hash(&has_bits);
           java_generate_equals_and_hash_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
@@ -8932,7 +8932,7 @@ const char* FileOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID
       // optional bool deprecated = 23 [default = false];
       case 23:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 184)) {
-          HasBitSetters::set_has_deprecated(&has_bits);
+          _Internal::set_has_deprecated(&has_bits);
           deprecated_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
@@ -8940,7 +8940,7 @@ const char* FileOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID
       // optional bool java_string_check_utf8 = 27 [default = false];
       case 27:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 216)) {
-          HasBitSetters::set_has_java_string_check_utf8(&has_bits);
+          _Internal::set_has_java_string_check_utf8(&has_bits);
           java_string_check_utf8_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
@@ -8948,7 +8948,7 @@ const char* FileOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID
       // optional bool cc_enable_arenas = 31 [default = false];
       case 31:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 248)) {
-          HasBitSetters::set_has_cc_enable_arenas(&has_bits);
+          _Internal::set_has_cc_enable_arenas(&has_bits);
           cc_enable_arenas_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
@@ -8991,7 +8991,7 @@ const char* FileOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID
       // optional bool php_generic_services = 42 [default = false];
       case 42:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 80)) {
-          HasBitSetters::set_has_php_generic_services(&has_bits);
+          _Internal::set_has_php_generic_services(&has_bits);
           php_generic_services_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
@@ -9111,7 +9111,7 @@ bool FileOptions::MergePartialFromCodedStream(
       // optional bool java_multiple_files = 10 [default = false];
       case 10: {
         if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (80 & 0xFF)) {
-          HasBitSetters::set_has_java_multiple_files(&_has_bits_);
+          _Internal::set_has_java_multiple_files(&_has_bits_);
           DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
                    bool, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_BOOL>(
                  input, &java_multiple_files_)));
@@ -9139,7 +9139,7 @@ bool FileOptions::MergePartialFromCodedStream(
       // optional bool cc_generic_services = 16 [default = false];
       case 16: {
         if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (128 & 0xFF)) {
-          HasBitSetters::set_has_cc_generic_services(&_has_bits_);
+          _Internal::set_has_cc_generic_services(&_has_bits_);
           DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
                    bool, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_BOOL>(
                  input, &cc_generic_services_)));
@@ -9152,7 +9152,7 @@ bool FileOptions::MergePartialFromCodedStream(
       // optional bool java_generic_services = 17 [default = false];
       case 17: {
         if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (136 & 0xFF)) {
-          HasBitSetters::set_has_java_generic_services(&_has_bits_);
+          _Internal::set_has_java_generic_services(&_has_bits_);
           DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
                    bool, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_BOOL>(
                  input, &java_generic_services_)));
@@ -9165,7 +9165,7 @@ bool FileOptions::MergePartialFromCodedStream(
       // optional bool py_generic_services = 18 [default = false];
       case 18: {
         if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (144 & 0xFF)) {
-          HasBitSetters::set_has_py_generic_services(&_has_bits_);
+          _Internal::set_has_py_generic_services(&_has_bits_);
           DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
                    bool, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_BOOL>(
                  input, &py_generic_services_)));
@@ -9178,7 +9178,7 @@ bool FileOptions::MergePartialFromCodedStream(
       // optional bool java_generate_equals_and_hash = 20 [deprecated = true];
       case 20: {
         if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (160 & 0xFF)) {
-          HasBitSetters::set_has_java_generate_equals_and_hash(&_has_bits_);
+          _Internal::set_has_java_generate_equals_and_hash(&_has_bits_);
           DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
                    bool, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_BOOL>(
                  input, &java_generate_equals_and_hash_)));
@@ -9191,7 +9191,7 @@ bool FileOptions::MergePartialFromCodedStream(
       // optional bool deprecated = 23 [default = false];
       case 23: {
         if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (184 & 0xFF)) {
-          HasBitSetters::set_has_deprecated(&_has_bits_);
+          _Internal::set_has_deprecated(&_has_bits_);
           DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
                    bool, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_BOOL>(
                  input, &deprecated_)));
@@ -9204,7 +9204,7 @@ bool FileOptions::MergePartialFromCodedStream(
       // optional bool java_string_check_utf8 = 27 [default = false];
       case 27: {
         if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (216 & 0xFF)) {
-          HasBitSetters::set_has_java_string_check_utf8(&_has_bits_);
+          _Internal::set_has_java_string_check_utf8(&_has_bits_);
           DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
                    bool, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_BOOL>(
                  input, &java_string_check_utf8_)));
@@ -9217,7 +9217,7 @@ bool FileOptions::MergePartialFromCodedStream(
       // optional bool cc_enable_arenas = 31 [default = false];
       case 31: {
         if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (248 & 0xFF)) {
-          HasBitSetters::set_has_cc_enable_arenas(&_has_bits_);
+          _Internal::set_has_cc_enable_arenas(&_has_bits_);
           DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
                    bool, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_BOOL>(
                  input, &cc_enable_arenas_)));
@@ -9305,7 +9305,7 @@ bool FileOptions::MergePartialFromCodedStream(
       // optional bool php_generic_services = 42 [default = false];
       case 42: {
         if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (336 & 0xFF)) {
-          HasBitSetters::set_has_php_generic_services(&_has_bits_);
+          _Internal::set_has_php_generic_services(&_has_bits_);
           DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
                    bool, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_BOOL>(
                  input, &php_generic_services_)));
@@ -10091,7 +10091,7 @@ void FileOptions::InternalSwap(FileOptions* other) {
 
 void MessageOptions::InitAsDefaultInstance() {
 }
-class MessageOptions::HasBitSetters {
+class MessageOptions::_Internal {
  public:
   using HasBits = decltype(std::declval<MessageOptions>()._has_bits_);
   static void set_has_message_set_wire_format(HasBits* has_bits) {
@@ -10192,7 +10192,7 @@ void MessageOptions::Clear() {
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 const char* MessageOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
-  HasBitSetters::HasBits has_bits{};
+  _Internal::HasBits has_bits{};
   ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArenaNoVirtual(); (void)arena;
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
@@ -10202,7 +10202,7 @@ const char* MessageOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE
       // optional bool message_set_wire_format = 1 [default = false];
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
-          HasBitSetters::set_has_message_set_wire_format(&has_bits);
+          _Internal::set_has_message_set_wire_format(&has_bits);
           message_set_wire_format_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
@@ -10210,7 +10210,7 @@ const char* MessageOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE
       // optional bool no_standard_descriptor_accessor = 2 [default = false];
       case 2:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16)) {
-          HasBitSetters::set_has_no_standard_descriptor_accessor(&has_bits);
+          _Internal::set_has_no_standard_descriptor_accessor(&has_bits);
           no_standard_descriptor_accessor_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
@@ -10218,7 +10218,7 @@ const char* MessageOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE
       // optional bool deprecated = 3 [default = false];
       case 3:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 24)) {
-          HasBitSetters::set_has_deprecated(&has_bits);
+          _Internal::set_has_deprecated(&has_bits);
           deprecated_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
@@ -10226,7 +10226,7 @@ const char* MessageOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE
       // optional bool map_entry = 7;
       case 7:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 56)) {
-          HasBitSetters::set_has_map_entry(&has_bits);
+          _Internal::set_has_map_entry(&has_bits);
           map_entry_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
@@ -10283,7 +10283,7 @@ bool MessageOptions::MergePartialFromCodedStream(
       // optional bool message_set_wire_format = 1 [default = false];
       case 1: {
         if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (8 & 0xFF)) {
-          HasBitSetters::set_has_message_set_wire_format(&_has_bits_);
+          _Internal::set_has_message_set_wire_format(&_has_bits_);
           DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
                    bool, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_BOOL>(
                  input, &message_set_wire_format_)));
@@ -10296,7 +10296,7 @@ bool MessageOptions::MergePartialFromCodedStream(
       // optional bool no_standard_descriptor_accessor = 2 [default = false];
       case 2: {
         if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (16 & 0xFF)) {
-          HasBitSetters::set_has_no_standard_descriptor_accessor(&_has_bits_);
+          _Internal::set_has_no_standard_descriptor_accessor(&_has_bits_);
           DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
                    bool, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_BOOL>(
                  input, &no_standard_descriptor_accessor_)));
@@ -10309,7 +10309,7 @@ bool MessageOptions::MergePartialFromCodedStream(
       // optional bool deprecated = 3 [default = false];
       case 3: {
         if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (24 & 0xFF)) {
-          HasBitSetters::set_has_deprecated(&_has_bits_);
+          _Internal::set_has_deprecated(&_has_bits_);
           DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
                    bool, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_BOOL>(
                  input, &deprecated_)));
@@ -10322,7 +10322,7 @@ bool MessageOptions::MergePartialFromCodedStream(
       // optional bool map_entry = 7;
       case 7: {
         if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (56 & 0xFF)) {
-          HasBitSetters::set_has_map_entry(&_has_bits_);
+          _Internal::set_has_map_entry(&_has_bits_);
           DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
                    bool, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_BOOL>(
                  input, &map_entry_)));
@@ -10622,7 +10622,7 @@ void MessageOptions::InternalSwap(MessageOptions* other) {
 
 void FieldOptions::InitAsDefaultInstance() {
 }
-class FieldOptions::HasBitSetters {
+class FieldOptions::_Internal {
  public:
   using HasBits = decltype(std::declval<FieldOptions>()._has_bits_);
   static void set_has_ctype(HasBits* has_bits) {
@@ -10734,7 +10734,7 @@ void FieldOptions::Clear() {
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 const char* FieldOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
-  HasBitSetters::HasBits has_bits{};
+  _Internal::HasBits has_bits{};
   ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArenaNoVirtual(); (void)arena;
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
@@ -10756,7 +10756,7 @@ const char* FieldOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_I
       // optional bool packed = 2;
       case 2:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16)) {
-          HasBitSetters::set_has_packed(&has_bits);
+          _Internal::set_has_packed(&has_bits);
           packed_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
@@ -10764,7 +10764,7 @@ const char* FieldOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_I
       // optional bool deprecated = 3 [default = false];
       case 3:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 24)) {
-          HasBitSetters::set_has_deprecated(&has_bits);
+          _Internal::set_has_deprecated(&has_bits);
           deprecated_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
@@ -10772,7 +10772,7 @@ const char* FieldOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_I
       // optional bool lazy = 5 [default = false];
       case 5:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 40)) {
-          HasBitSetters::set_has_lazy(&has_bits);
+          _Internal::set_has_lazy(&has_bits);
           lazy_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
@@ -10792,7 +10792,7 @@ const char* FieldOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_I
       // optional bool weak = 10 [default = false];
       case 10:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 80)) {
-          HasBitSetters::set_has_weak(&has_bits);
+          _Internal::set_has_weak(&has_bits);
           weak_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
@@ -10868,7 +10868,7 @@ bool FieldOptions::MergePartialFromCodedStream(
       // optional bool packed = 2;
       case 2: {
         if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (16 & 0xFF)) {
-          HasBitSetters::set_has_packed(&_has_bits_);
+          _Internal::set_has_packed(&_has_bits_);
           DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
                    bool, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_BOOL>(
                  input, &packed_)));
@@ -10881,7 +10881,7 @@ bool FieldOptions::MergePartialFromCodedStream(
       // optional bool deprecated = 3 [default = false];
       case 3: {
         if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (24 & 0xFF)) {
-          HasBitSetters::set_has_deprecated(&_has_bits_);
+          _Internal::set_has_deprecated(&_has_bits_);
           DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
                    bool, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_BOOL>(
                  input, &deprecated_)));
@@ -10894,7 +10894,7 @@ bool FieldOptions::MergePartialFromCodedStream(
       // optional bool lazy = 5 [default = false];
       case 5: {
         if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (40 & 0xFF)) {
-          HasBitSetters::set_has_lazy(&_has_bits_);
+          _Internal::set_has_lazy(&_has_bits_);
           DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
                    bool, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_BOOL>(
                  input, &lazy_)));
@@ -10926,7 +10926,7 @@ bool FieldOptions::MergePartialFromCodedStream(
       // optional bool weak = 10 [default = false];
       case 10: {
         if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (80 & 0xFF)) {
-          HasBitSetters::set_has_weak(&_has_bits_);
+          _Internal::set_has_weak(&_has_bits_);
           DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
                    bool, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_BOOL>(
                  input, &weak_)));
@@ -11270,7 +11270,7 @@ void FieldOptions::InternalSwap(FieldOptions* other) {
 
 void OneofOptions::InitAsDefaultInstance() {
 }
-class OneofOptions::HasBitSetters {
+class OneofOptions::_Internal {
  public:
   using HasBits = decltype(std::declval<OneofOptions>()._has_bits_);
 };
@@ -11605,7 +11605,7 @@ void OneofOptions::InternalSwap(OneofOptions* other) {
 
 void EnumOptions::InitAsDefaultInstance() {
 }
-class EnumOptions::HasBitSetters {
+class EnumOptions::_Internal {
  public:
   using HasBits = decltype(std::declval<EnumOptions>()._has_bits_);
   static void set_has_allow_alias(HasBits* has_bits) {
@@ -11698,7 +11698,7 @@ void EnumOptions::Clear() {
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 const char* EnumOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
-  HasBitSetters::HasBits has_bits{};
+  _Internal::HasBits has_bits{};
   ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArenaNoVirtual(); (void)arena;
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
@@ -11708,7 +11708,7 @@ const char* EnumOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID
       // optional bool allow_alias = 2;
       case 2:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16)) {
-          HasBitSetters::set_has_allow_alias(&has_bits);
+          _Internal::set_has_allow_alias(&has_bits);
           allow_alias_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
@@ -11716,7 +11716,7 @@ const char* EnumOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID
       // optional bool deprecated = 3 [default = false];
       case 3:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 24)) {
-          HasBitSetters::set_has_deprecated(&has_bits);
+          _Internal::set_has_deprecated(&has_bits);
           deprecated_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
@@ -11773,7 +11773,7 @@ bool EnumOptions::MergePartialFromCodedStream(
       // optional bool allow_alias = 2;
       case 2: {
         if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (16 & 0xFF)) {
-          HasBitSetters::set_has_allow_alias(&_has_bits_);
+          _Internal::set_has_allow_alias(&_has_bits_);
           DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
                    bool, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_BOOL>(
                  input, &allow_alias_)));
@@ -11786,7 +11786,7 @@ bool EnumOptions::MergePartialFromCodedStream(
       // optional bool deprecated = 3 [default = false];
       case 3: {
         if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (24 & 0xFF)) {
-          HasBitSetters::set_has_deprecated(&_has_bits_);
+          _Internal::set_has_deprecated(&_has_bits_);
           DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
                    bool, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_BOOL>(
                  input, &deprecated_)));
@@ -12048,7 +12048,7 @@ void EnumOptions::InternalSwap(EnumOptions* other) {
 
 void EnumValueOptions::InitAsDefaultInstance() {
 }
-class EnumValueOptions::HasBitSetters {
+class EnumValueOptions::_Internal {
  public:
   using HasBits = decltype(std::declval<EnumValueOptions>()._has_bits_);
   static void set_has_deprecated(HasBits* has_bits) {
@@ -12131,7 +12131,7 @@ void EnumValueOptions::Clear() {
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 const char* EnumValueOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
-  HasBitSetters::HasBits has_bits{};
+  _Internal::HasBits has_bits{};
   ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArenaNoVirtual(); (void)arena;
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
@@ -12141,7 +12141,7 @@ const char* EnumValueOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPA
       // optional bool deprecated = 1 [default = false];
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
-          HasBitSetters::set_has_deprecated(&has_bits);
+          _Internal::set_has_deprecated(&has_bits);
           deprecated_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
@@ -12198,7 +12198,7 @@ bool EnumValueOptions::MergePartialFromCodedStream(
       // optional bool deprecated = 1 [default = false];
       case 1: {
         if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (8 & 0xFF)) {
-          HasBitSetters::set_has_deprecated(&_has_bits_);
+          _Internal::set_has_deprecated(&_has_bits_);
           DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
                    bool, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_BOOL>(
                  input, &deprecated_)));
@@ -12435,7 +12435,7 @@ void EnumValueOptions::InternalSwap(EnumValueOptions* other) {
 
 void ServiceOptions::InitAsDefaultInstance() {
 }
-class ServiceOptions::HasBitSetters {
+class ServiceOptions::_Internal {
  public:
   using HasBits = decltype(std::declval<ServiceOptions>()._has_bits_);
   static void set_has_deprecated(HasBits* has_bits) {
@@ -12518,7 +12518,7 @@ void ServiceOptions::Clear() {
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 const char* ServiceOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
-  HasBitSetters::HasBits has_bits{};
+  _Internal::HasBits has_bits{};
   ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArenaNoVirtual(); (void)arena;
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
@@ -12528,7 +12528,7 @@ const char* ServiceOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE
       // optional bool deprecated = 33 [default = false];
       case 33:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
-          HasBitSetters::set_has_deprecated(&has_bits);
+          _Internal::set_has_deprecated(&has_bits);
           deprecated_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
@@ -12585,7 +12585,7 @@ bool ServiceOptions::MergePartialFromCodedStream(
       // optional bool deprecated = 33 [default = false];
       case 33: {
         if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (264 & 0xFF)) {
-          HasBitSetters::set_has_deprecated(&_has_bits_);
+          _Internal::set_has_deprecated(&_has_bits_);
           DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
                    bool, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_BOOL>(
                  input, &deprecated_)));
@@ -12822,7 +12822,7 @@ void ServiceOptions::InternalSwap(ServiceOptions* other) {
 
 void MethodOptions::InitAsDefaultInstance() {
 }
-class MethodOptions::HasBitSetters {
+class MethodOptions::_Internal {
  public:
   using HasBits = decltype(std::declval<MethodOptions>()._has_bits_);
   static void set_has_deprecated(HasBits* has_bits) {
@@ -12918,7 +12918,7 @@ void MethodOptions::Clear() {
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 const char* MethodOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
-  HasBitSetters::HasBits has_bits{};
+  _Internal::HasBits has_bits{};
   ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArenaNoVirtual(); (void)arena;
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
@@ -12928,7 +12928,7 @@ const char* MethodOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_
       // optional bool deprecated = 33 [default = false];
       case 33:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
-          HasBitSetters::set_has_deprecated(&has_bits);
+          _Internal::set_has_deprecated(&has_bits);
           deprecated_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
@@ -12997,7 +12997,7 @@ bool MethodOptions::MergePartialFromCodedStream(
       // optional bool deprecated = 33 [default = false];
       case 33: {
         if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (264 & 0xFF)) {
-          HasBitSetters::set_has_deprecated(&_has_bits_);
+          _Internal::set_has_deprecated(&_has_bits_);
           DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
                    bool, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_BOOL>(
                  input, &deprecated_)));
@@ -13281,7 +13281,7 @@ void MethodOptions::InternalSwap(MethodOptions* other) {
 
 void UninterpretedOption_NamePart::InitAsDefaultInstance() {
 }
-class UninterpretedOption_NamePart::HasBitSetters {
+class UninterpretedOption_NamePart::_Internal {
  public:
   using HasBits = decltype(std::declval<UninterpretedOption_NamePart>()._has_bits_);
   static void set_has_name_part(HasBits* has_bits) {
@@ -13372,7 +13372,7 @@ void UninterpretedOption_NamePart::Clear() {
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 const char* UninterpretedOption_NamePart::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
-  HasBitSetters::HasBits has_bits{};
+  _Internal::HasBits has_bits{};
   ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArenaNoVirtual(); (void)arena;
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
@@ -13389,7 +13389,7 @@ const char* UninterpretedOption_NamePart::_InternalParse(const char* ptr, ::PROT
       // required bool is_extension = 2;
       case 2:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16)) {
-          HasBitSetters::set_has_is_extension(&has_bits);
+          _Internal::set_has_is_extension(&has_bits);
           is_extension_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
@@ -13443,7 +13443,7 @@ bool UninterpretedOption_NamePart::MergePartialFromCodedStream(
       // required bool is_extension = 2;
       case 2: {
         if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (16 & 0xFF)) {
-          HasBitSetters::set_has_is_extension(&_has_bits_);
+          _Internal::set_has_is_extension(&_has_bits_);
           DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
                    bool, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_BOOL>(
                  input, &is_extension_)));
@@ -13672,7 +13672,7 @@ void UninterpretedOption_NamePart::InternalSwap(UninterpretedOption_NamePart* ot
 
 void UninterpretedOption::InitAsDefaultInstance() {
 }
-class UninterpretedOption::HasBitSetters {
+class UninterpretedOption::_Internal {
  public:
   using HasBits = decltype(std::declval<UninterpretedOption>()._has_bits_);
   static void set_has_identifier_value(HasBits* has_bits) {
@@ -13813,7 +13813,7 @@ void UninterpretedOption::Clear() {
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 const char* UninterpretedOption::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
-  HasBitSetters::HasBits has_bits{};
+  _Internal::HasBits has_bits{};
   ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArenaNoVirtual(); (void)arena;
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
@@ -13842,7 +13842,7 @@ const char* UninterpretedOption::_InternalParse(const char* ptr, ::PROTOBUF_NAME
       // optional uint64 positive_int_value = 4;
       case 4:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 32)) {
-          HasBitSetters::set_has_positive_int_value(&has_bits);
+          _Internal::set_has_positive_int_value(&has_bits);
           positive_int_value_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
@@ -13850,7 +13850,7 @@ const char* UninterpretedOption::_InternalParse(const char* ptr, ::PROTOBUF_NAME
       // optional int64 negative_int_value = 5;
       case 5:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 40)) {
-          HasBitSetters::set_has_negative_int_value(&has_bits);
+          _Internal::set_has_negative_int_value(&has_bits);
           negative_int_value_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
@@ -13858,7 +13858,7 @@ const char* UninterpretedOption::_InternalParse(const char* ptr, ::PROTOBUF_NAME
       // optional double double_value = 6;
       case 6:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 49)) {
-          HasBitSetters::set_has_double_value(&has_bits);
+          _Internal::set_has_double_value(&has_bits);
           double_value_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<double>(ptr);
           ptr += sizeof(double);
         } else goto handle_unusual;
@@ -13937,7 +13937,7 @@ bool UninterpretedOption::MergePartialFromCodedStream(
       // optional uint64 positive_int_value = 4;
       case 4: {
         if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (32 & 0xFF)) {
-          HasBitSetters::set_has_positive_int_value(&_has_bits_);
+          _Internal::set_has_positive_int_value(&_has_bits_);
           DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
                    ::PROTOBUF_NAMESPACE_ID::uint64, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_UINT64>(
                  input, &positive_int_value_)));
@@ -13950,7 +13950,7 @@ bool UninterpretedOption::MergePartialFromCodedStream(
       // optional int64 negative_int_value = 5;
       case 5: {
         if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (40 & 0xFF)) {
-          HasBitSetters::set_has_negative_int_value(&_has_bits_);
+          _Internal::set_has_negative_int_value(&_has_bits_);
           DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
                    ::PROTOBUF_NAMESPACE_ID::int64, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_INT64>(
                  input, &negative_int_value_)));
@@ -13963,7 +13963,7 @@ bool UninterpretedOption::MergePartialFromCodedStream(
       // optional double double_value = 6;
       case 6: {
         if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (49 & 0xFF)) {
-          HasBitSetters::set_has_double_value(&_has_bits_);
+          _Internal::set_has_double_value(&_has_bits_);
           DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
                    double, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_DOUBLE>(
                  input, &double_value_)));
@@ -14333,7 +14333,7 @@ void UninterpretedOption::InternalSwap(UninterpretedOption* other) {
 
 void SourceCodeInfo_Location::InitAsDefaultInstance() {
 }
-class SourceCodeInfo_Location::HasBitSetters {
+class SourceCodeInfo_Location::_Internal {
  public:
   using HasBits = decltype(std::declval<SourceCodeInfo_Location>()._has_bits_);
   static void set_has_leading_comments(HasBits* has_bits) {
@@ -14445,7 +14445,7 @@ void SourceCodeInfo_Location::Clear() {
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 const char* SourceCodeInfo_Location::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
-  HasBitSetters::HasBits has_bits{};
+  _Internal::HasBits has_bits{};
   ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArenaNoVirtual(); (void)arena;
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
@@ -14935,7 +14935,7 @@ void SourceCodeInfo_Location::InternalSwap(SourceCodeInfo_Location* other) {
 
 void SourceCodeInfo::InitAsDefaultInstance() {
 }
-class SourceCodeInfo::HasBitSetters {
+class SourceCodeInfo::_Internal {
  public:
   using HasBits = decltype(std::declval<SourceCodeInfo>()._has_bits_);
 };
@@ -15239,7 +15239,7 @@ void SourceCodeInfo::InternalSwap(SourceCodeInfo* other) {
 
 void GeneratedCodeInfo_Annotation::InitAsDefaultInstance() {
 }
-class GeneratedCodeInfo_Annotation::HasBitSetters {
+class GeneratedCodeInfo_Annotation::_Internal {
  public:
   using HasBits = decltype(std::declval<GeneratedCodeInfo_Annotation>()._has_bits_);
   static void set_has_source_file(HasBits* has_bits) {
@@ -15346,7 +15346,7 @@ void GeneratedCodeInfo_Annotation::Clear() {
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 const char* GeneratedCodeInfo_Annotation::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
-  HasBitSetters::HasBits has_bits{};
+  _Internal::HasBits has_bits{};
   ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArenaNoVirtual(); (void)arena;
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
@@ -15373,7 +15373,7 @@ const char* GeneratedCodeInfo_Annotation::_InternalParse(const char* ptr, ::PROT
       // optional int32 begin = 3;
       case 3:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 24)) {
-          HasBitSetters::set_has_begin(&has_bits);
+          _Internal::set_has_begin(&has_bits);
           begin_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
@@ -15381,7 +15381,7 @@ const char* GeneratedCodeInfo_Annotation::_InternalParse(const char* ptr, ::PROT
       // optional int32 end = 4;
       case 4:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 32)) {
-          HasBitSetters::set_has_end(&has_bits);
+          _Internal::set_has_end(&has_bits);
           end_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
@@ -15451,7 +15451,7 @@ bool GeneratedCodeInfo_Annotation::MergePartialFromCodedStream(
       // optional int32 begin = 3;
       case 3: {
         if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (24 & 0xFF)) {
-          HasBitSetters::set_has_begin(&_has_bits_);
+          _Internal::set_has_begin(&_has_bits_);
           DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
                    ::PROTOBUF_NAMESPACE_ID::int32, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_INT32>(
                  input, &begin_)));
@@ -15464,7 +15464,7 @@ bool GeneratedCodeInfo_Annotation::MergePartialFromCodedStream(
       // optional int32 end = 4;
       case 4: {
         if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (32 & 0xFF)) {
-          HasBitSetters::set_has_end(&_has_bits_);
+          _Internal::set_has_end(&_has_bits_);
           DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
                    ::PROTOBUF_NAMESPACE_ID::int32, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_INT32>(
                  input, &end_)));
@@ -15741,7 +15741,7 @@ void GeneratedCodeInfo_Annotation::InternalSwap(GeneratedCodeInfo_Annotation* ot
 
 void GeneratedCodeInfo::InitAsDefaultInstance() {
 }
-class GeneratedCodeInfo::HasBitSetters {
+class GeneratedCodeInfo::_Internal {
  public:
   using HasBits = decltype(std::declval<GeneratedCodeInfo>()._has_bits_);
 };

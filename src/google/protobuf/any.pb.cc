@@ -111,7 +111,7 @@ bool Any::ParseAnyTypeUrl(const string& type_url,
                                              full_type_name);
 }
 
-class Any::HasBitSetters {
+class Any::_Internal {
  public:
 };
 
@@ -131,11 +131,11 @@ Any::Any(const Any& from)
       _any_metadata_(&type_url_, &value_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   type_url_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  if (from.type_url().size() > 0) {
+  if (!from.type_url().empty()) {
     type_url_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.type_url_);
   }
   value_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  if (from.value().size() > 0) {
+  if (!from.value().empty()) {
     value_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.value_);
   }
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Any)

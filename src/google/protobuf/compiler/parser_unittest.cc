@@ -65,9 +65,15 @@ class MockErrorCollector : public io::ErrorCollector {
   MockErrorCollector() = default;
   ~MockErrorCollector() override = default;
 
+  std::string warning_;
   std::string text_;
 
   // implements ErrorCollector ---------------------------------------
+  void AddWarning(int line, int column, const std::string& message) override {
+    strings::SubstituteAndAppend(&warning_, "$0:$1: $2\n", line, column,
+                                 message);
+  }
+
   void AddError(int line, int column, const std::string& message) override {
     strings::SubstituteAndAppend(&text_, "$0:$1: $2\n", line, column, message);
   }
@@ -221,6 +227,43 @@ TEST_F(ParserTest, WarnIfSyntaxIdentifierOmmitted) {
   EXPECT_TRUE(parser_->Parse(input_.get(), &file));
   EXPECT_TRUE(GetCapturedTestStderr().find("No syntax specified") !=
               string::npos);
+}
+
+TEST_F(ParserTest, WarnIfFieldNameIsNotUpperCamel) {
+  SetupParser(
+      "syntax = \"proto2\";"
+      "message abc {}");
+  FileDescriptorProto file;
+  EXPECT_TRUE(parser_->Parse(input_.get(), &file));
+  EXPECT_TRUE(error_collector_.warning_.find(
+                  "Message name should be in UpperCamelCase. Found: abc.") !=
+              string::npos);
+}
+
+TEST_F(ParserTest, WarnIfFieldNameIsNotLowerUnderscore) {
+  SetupParser(
+      "syntax = \"proto2\";"
+      "message A {"
+      "  optional string SongName = 1;"
+      "}");
+  FileDescriptorProto file;
+  EXPECT_TRUE(parser_->Parse(input_.get(), &file));
+  EXPECT_TRUE(error_collector_.warning_.find(
+                  "Field name should be lowercase. Found: SongName") !=
+              string::npos);
+}
+
+TEST_F(ParserTest, WarnIfFieldNameContainsNumberImmediatelyFollowUnderscore) {
+  SetupParser(
+      "syntax = \"proto2\";"
+      "message A {"
+      "  optional string song_name_1 = 1;"
+      "}");
+  FileDescriptorProto file;
+  EXPECT_TRUE(parser_->Parse(input_.get(), &file));
+  EXPECT_TRUE(error_collector_.warning_.find(
+                  "Number should not come right after an underscore. Found: "
+                  "song_name_1.") != string::npos);
 }
 
 // ===================================================================

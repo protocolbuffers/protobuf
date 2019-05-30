@@ -3083,11 +3083,13 @@ static std::string DeterministicSerialization(const T& t) {
   const int size = t.ByteSize();
   std::string result(size, '\0');
   io::ArrayOutputStream array_stream(::google::protobuf::string_as_array(&result), size);
-  io::CodedOutputStream output_stream(&array_stream);
-  output_stream.SetSerializationDeterministic(true);
-  t.SerializeWithCachedSizes(&output_stream);
-  EXPECT_FALSE(output_stream.HadError());
-  EXPECT_EQ(size, output_stream.ByteCount());
+  {
+    io::CodedOutputStream output_stream(&array_stream);
+    output_stream.SetSerializationDeterministic(true);
+    t.SerializeWithCachedSizes(&output_stream);
+    EXPECT_FALSE(output_stream.HadError());
+    EXPECT_EQ(size, output_stream.ByteCount());
+  }
   EXPECT_EQ(result, DeterministicSerializationWithSerializeToCodedStream(t));
   EXPECT_EQ(result,
             DeterministicSerializationWithSerializePartialToCodedStream(t));

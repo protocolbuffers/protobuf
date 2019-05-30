@@ -217,7 +217,7 @@ class PROTOBUF_EXPORT Any :
 
   // @@protoc_insertion_point(class_scope:google.protobuf.Any)
  private:
-  class HasBitSetters;
+  class _Internal;
 
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr type_url_;

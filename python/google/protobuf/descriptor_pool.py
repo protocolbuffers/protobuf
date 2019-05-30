@@ -99,8 +99,6 @@ def _IsMessageSetExtension(field):
           field.label == descriptor.FieldDescriptor.LABEL_OPTIONAL)
 
 
-
-
 class DescriptorPool(object):
   """A collection of protobufs dynamically constructed by descriptor protos."""
 

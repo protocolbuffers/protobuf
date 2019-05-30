@@ -262,7 +262,7 @@ class PROTOBUF_EXPORT Api :
 
   // @@protoc_insertion_point(class_scope:google.protobuf.Api)
  private:
-  class HasBitSetters;
+  class _Internal;
 
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< PROTOBUF_NAMESPACE_ID::Method > methods_;
@@ -454,7 +454,7 @@ class PROTOBUF_EXPORT Method :
 
   // @@protoc_insertion_point(class_scope:google.protobuf.Method)
  private:
-  class HasBitSetters;
+  class _Internal;
 
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< PROTOBUF_NAMESPACE_ID::Option > options_;
@@ -604,7 +604,7 @@ class PROTOBUF_EXPORT Mixin :
 
   // @@protoc_insertion_point(class_scope:google.protobuf.Mixin)
  private:
-  class HasBitSetters;
+  class _Internal;
 
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr name_;

@@ -86,7 +86,7 @@ PROTOBUF_NAMESPACE_OPEN
 
 void Duration::InitAsDefaultInstance() {
 }
-class Duration::HasBitSetters {
+class Duration::_Internal {
  public:
 };
 

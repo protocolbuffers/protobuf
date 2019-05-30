@@ -208,6 +208,11 @@ const FieldDescriptor* DefaultFinderFindExtension(Message* message,
                                                                   name);
 }
 
+const FieldDescriptor* DefaultFinderFindExtensionByNumber(
+    const Descriptor* descriptor, int number) {
+  return descriptor->file()->pool()->FindExtensionByNumber(descriptor, number);
+}
+
 const Descriptor* DefaultFinderFindAnyType(const Message& message,
                                            const std::string& prefix,
                                            const std::string& name) {
@@ -459,8 +464,10 @@ class TextFormat::Parser::ParserImpl {
       if (allow_field_number_ &&
           safe_strto32(field_name, &field_number)) {
         if (descriptor->IsExtensionNumber(field_number)) {
-          field = descriptor->file()->pool()->FindExtensionByNumber(
-              descriptor, field_number);
+          field = finder_
+                      ? finder_->FindExtensionByNumber(descriptor, field_number)
+                      : DefaultFinderFindExtensionByNumber(descriptor,
+                                                           field_number);
         } else if (descriptor->IsReservedNumber(field_number)) {
           reserved_field = true;
         } else {
@@ -1352,6 +1359,11 @@ TextFormat::Finder::~Finder() {}
 const FieldDescriptor* TextFormat::Finder::FindExtension(
     Message* message, const std::string& name) const {
   return DefaultFinderFindExtension(message, name);
+}
+
+const FieldDescriptor* TextFormat::Finder::FindExtensionByNumber(
+    const Descriptor* descriptor, int number) const {
+  return DefaultFinderFindExtensionByNumber(descriptor, number);
 }
 
 const Descriptor* TextFormat::Finder::FindAnyType(

@@ -383,7 +383,7 @@ class PROTOBUF_EXPORT Type :
 
   // @@protoc_insertion_point(class_scope:google.protobuf.Type)
  private:
-  class HasBitSetters;
+  class _Internal;
 
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
@@ -747,7 +747,7 @@ class PROTOBUF_EXPORT Field :
 
   // @@protoc_insertion_point(class_scope:google.protobuf.Field)
  private:
-  class HasBitSetters;
+  class _Internal;
 
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
@@ -954,7 +954,7 @@ class PROTOBUF_EXPORT Enum :
 
   // @@protoc_insertion_point(class_scope:google.protobuf.Enum)
  private:
-  class HasBitSetters;
+  class _Internal;
 
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
@@ -1132,7 +1132,7 @@ class PROTOBUF_EXPORT EnumValue :
 
   // @@protoc_insertion_point(class_scope:google.protobuf.EnumValue)
  private:
-  class HasBitSetters;
+  class _Internal;
 
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
@@ -1302,7 +1302,7 @@ class PROTOBUF_EXPORT Option :
 
   // @@protoc_insertion_point(class_scope:google.protobuf.Option)
  private:
-  class HasBitSetters;
+  class _Internal;
 
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;

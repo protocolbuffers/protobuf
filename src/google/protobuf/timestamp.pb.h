@@ -201,7 +201,7 @@ class PROTOBUF_EXPORT Timestamp :
 
   // @@protoc_insertion_point(class_scope:google.protobuf.Timestamp)
  private:
-  class HasBitSetters;
+  class _Internal;
 
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;

@@ -269,7 +269,7 @@ void MessageFieldGenerator::GenerateInternalAccessorDeclarations(
 
 void MessageFieldGenerator::GenerateInternalAccessorDefinitions(
     io::Printer* printer) const {
-  // In theory, these accessors could be inline in HasBitSetters. However, in
+  // In theory, these accessors could be inline in _Internal. However, in
   // practice, the linker is then not able to throw them out making implicit
   // weak dependencies not work at all.
   Formatter format(printer, variables_);
@@ -278,7 +278,7 @@ void MessageFieldGenerator::GenerateInternalAccessorDefinitions(
     // MergePartialFromCodedStream, and their purpose is to provide access to
     // the field without creating a strong dependency on the message type.
     format(
-        "const ::$proto_ns$::MessageLite& $classname$::HasBitSetters::$name$(\n"
+        "const ::$proto_ns$::MessageLite& $classname$::_Internal::$name$(\n"
         "    const $classname$* msg) {\n"
         "  if (msg->$name$_ != nullptr) {\n"
         "    return *msg->$name$_;\n"
@@ -293,7 +293,7 @@ void MessageFieldGenerator::GenerateInternalAccessorDefinitions(
     if (SupportsArenas(descriptor_)) {
       format(
           "::$proto_ns$::MessageLite*\n"
-          "$classname$::HasBitSetters::mutable_$name$($classname$* msg) {\n");
+          "$classname$::_Internal::mutable_$name$($classname$* msg) {\n");
       if (HasFieldPresence(descriptor_->file())) {
         format("  msg->$set_hasbit$\n");
       }
@@ -315,7 +315,7 @@ void MessageFieldGenerator::GenerateInternalAccessorDefinitions(
     } else {
       format(
           "::$proto_ns$::MessageLite*\n"
-          "$classname$::HasBitSetters::mutable_$name$($classname$* msg) {\n");
+          "$classname$::_Internal::mutable_$name$($classname$* msg) {\n");
       if (HasFieldPresence(descriptor_->file())) {
         format("  msg->$set_hasbit$\n");
       }
@@ -339,7 +339,7 @@ void MessageFieldGenerator::GenerateInternalAccessorDefinitions(
     // message fields under serialize.
     format(
         "const $type$&\n"
-        "$classname$::HasBitSetters::$name$(const $classname$* msg) {\n"
+        "$classname$::_Internal::$name$(const $classname$* msg) {\n"
         "  return *msg->$field_member$;\n"
         "}\n");
   }
@@ -382,8 +382,8 @@ void MessageFieldGenerator::GenerateMergingCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
   if (implicit_weak_field_) {
     format(
-        "HasBitSetters::mutable_$name$(this)->CheckTypeAndMergeFrom(\n"
-        "    HasBitSetters::$name$(&from));\n");
+        "_Internal::mutable_$name$(this)->CheckTypeAndMergeFrom(\n"
+        "    _Internal::$name$(&from));\n");
   } else {
     format("mutable_$name$()->$type$::MergeFrom(from.$name$());\n");
   }
@@ -430,7 +430,7 @@ void MessageFieldGenerator::GenerateMergeFromCodedStream(
   if (implicit_weak_field_) {
     format(
         "DO_(::$proto_ns$::internal::WireFormatLite::ReadMessage(\n"
-        "     input, HasBitSetters::mutable_$name$(this)));\n");
+        "     input, _Internal::mutable_$name$(this)));\n");
   } else if (descriptor_->type() == FieldDescriptor::TYPE_MESSAGE) {
     format(
         "DO_(::$proto_ns$::internal::WireFormatLite::ReadMessage(\n"
@@ -447,7 +447,7 @@ void MessageFieldGenerator::GenerateSerializeWithCachedSizes(
   Formatter format(printer, variables_);
   format(
       "::$proto_ns$::internal::WireFormatLite::Write$stream_writer$(\n"
-      "  $number$, HasBitSetters::$name$(this), output);\n");
+      "  $number$, _Internal::$name$(this), output);\n");
 }
 
 void MessageFieldGenerator::GenerateSerializeWithCachedSizesToArray(
@@ -456,7 +456,7 @@ void MessageFieldGenerator::GenerateSerializeWithCachedSizesToArray(
   format(
       "target = ::$proto_ns$::internal::WireFormatLite::\n"
       "  InternalWrite$declared_type$ToArray(\n"
-      "    $number$, HasBitSetters::$name$(this), target);\n");
+      "    $number$, _Internal::$name$(this), target);\n");
 }
 
 void MessageFieldGenerator::GenerateByteSize(io::Printer* printer) const {
