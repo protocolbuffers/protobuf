@@ -38,7 +38,7 @@ and the protobuf runtime for the language you want to build.
 
 You can simply run "make" to build the example for all languages (except for
 Go). However, since different language has different installation requirement,
-it will likely fail. It's better to follow individual instrutions below to
+it will likely fail. It's better to follow individual instructions below to
 build only the language you are interested in.
 
 ### C++
