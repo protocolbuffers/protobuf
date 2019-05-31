@@ -307,7 +307,7 @@ PROTOBUF_NAMESPACE_OPEN
 
 void DoubleValue::InitAsDefaultInstance() {
 }
-class DoubleValue::HasBitSetters {
+class DoubleValue::_Internal {
  public:
 };
 
@@ -592,7 +592,7 @@ void DoubleValue::InternalSwap(DoubleValue* other) {
 
 void FloatValue::InitAsDefaultInstance() {
 }
-class FloatValue::HasBitSetters {
+class FloatValue::_Internal {
  public:
 };
 
@@ -877,7 +877,7 @@ void FloatValue::InternalSwap(FloatValue* other) {
 
 void Int64Value::InitAsDefaultInstance() {
 }
-class Int64Value::HasBitSetters {
+class Int64Value::_Internal {
  public:
 };
 
@@ -1164,7 +1164,7 @@ void Int64Value::InternalSwap(Int64Value* other) {
 
 void UInt64Value::InitAsDefaultInstance() {
 }
-class UInt64Value::HasBitSetters {
+class UInt64Value::_Internal {
  public:
 };
 
@@ -1451,7 +1451,7 @@ void UInt64Value::InternalSwap(UInt64Value* other) {
 
 void Int32Value::InitAsDefaultInstance() {
 }
-class Int32Value::HasBitSetters {
+class Int32Value::_Internal {
  public:
 };
 
@@ -1738,7 +1738,7 @@ void Int32Value::InternalSwap(Int32Value* other) {
 
 void UInt32Value::InitAsDefaultInstance() {
 }
-class UInt32Value::HasBitSetters {
+class UInt32Value::_Internal {
  public:
 };
 
@@ -2025,7 +2025,7 @@ void UInt32Value::InternalSwap(UInt32Value* other) {
 
 void BoolValue::InitAsDefaultInstance() {
 }
-class BoolValue::HasBitSetters {
+class BoolValue::_Internal {
  public:
 };
 
@@ -2310,7 +2310,7 @@ void BoolValue::InternalSwap(BoolValue* other) {
 
 void StringValue::InitAsDefaultInstance() {
 }
-class StringValue::HasBitSetters {
+class StringValue::_Internal {
  public:
 };
 
@@ -2335,7 +2335,7 @@ StringValue::StringValue(const StringValue& from)
       _internal_metadata_(nullptr) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   value_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  if (from.value().size() > 0) {
+  if (!from.value().empty()) {
     value_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.value(),
       GetArenaNoVirtual());
   }
@@ -2617,7 +2617,7 @@ void StringValue::InternalSwap(StringValue* other) {
 
 void BytesValue::InitAsDefaultInstance() {
 }
-class BytesValue::HasBitSetters {
+class BytesValue::_Internal {
  public:
 };
 
@@ -2642,7 +2642,7 @@ BytesValue::BytesValue(const BytesValue& from)
       _internal_metadata_(nullptr) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   value_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  if (from.value().size() > 0) {
+  if (!from.value().empty()) {
     value_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.value(),
       GetArenaNoVirtual());
   }

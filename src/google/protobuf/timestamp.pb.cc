@@ -86,7 +86,7 @@ PROTOBUF_NAMESPACE_OPEN
 
 void Timestamp::InitAsDefaultInstance() {
 }
-class Timestamp::HasBitSetters {
+class Timestamp::_Internal {
  public:
 };
 

@@ -83,7 +83,7 @@ PROTOBUF_NAMESPACE_OPEN
 
 void Empty::InitAsDefaultInstance() {
 }
-class Empty::HasBitSetters {
+class Empty::_Internal {
  public:
 };
 

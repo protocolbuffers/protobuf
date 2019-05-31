@@ -77,7 +77,7 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
   (*variables)["clear_hasbit"] = "";
   if (HasFieldPresence(descriptor->file())) {
     (*variables)["set_hasbit_io"] =
-        "HasBitSetters::set_has_" + FieldName(descriptor) + "(&_has_bits_);";
+        "_Internal::set_has_" + FieldName(descriptor) + "(&_has_bits_);";
   } else {
     (*variables)["set_hasbit_io"] = "";
   }

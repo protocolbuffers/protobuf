@@ -101,6 +101,12 @@
         <version>26.0-jre</version>
         <scope>test</scope>
       </dependency>
+      <dependency>
+        <groupId>com.google.truth</groupId>
+        <artifactId>truth</artifactId>
+        <version>0.45</version>
+        <scope>test</scope>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 

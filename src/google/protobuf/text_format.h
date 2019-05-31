@@ -208,6 +208,11 @@ class PROTOBUF_EXPORT TextFormat {
     virtual const FieldDescriptor* FindExtension(Message* message,
                                                  const std::string& name) const;
 
+    // Similar to FindExtension, but uses a Descriptor and the extension number
+    // instead of using a Message and the name when doing the look up.
+    virtual const FieldDescriptor* FindExtensionByNumber(
+        const Descriptor* descriptor, int number) const;
+
     // Find the message type for an Any proto.
     // Returns NULL if no message is known for this name.
     // The base implementation only accepts prefixes of type.googleprod.com/ or

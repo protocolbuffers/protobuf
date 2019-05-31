@@ -271,7 +271,7 @@ class PROTOBUF_EXPORT Struct :
 
   // @@protoc_insertion_point(class_scope:google.protobuf.Struct)
  private:
-  class HasBitSetters;
+  class _Internal;
 
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
@@ -498,7 +498,7 @@ class PROTOBUF_EXPORT Value :
   KindCase kind_case() const;
   // @@protoc_insertion_point(class_scope:google.protobuf.Value)
  private:
-  class HasBitSetters;
+  class _Internal;
   void set_has_null_value();
   void set_has_number_value();
   void set_has_string_value();
@@ -664,7 +664,7 @@ class PROTOBUF_EXPORT ListValue :
 
   // @@protoc_insertion_point(class_scope:google.protobuf.ListValue)
  private:
-  class HasBitSetters;
+  class _Internal;
 
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;

@@ -1392,7 +1392,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
   format(" private:\n");
   format.Indent();
   // TODO(seongkim): Remove hack to track field access and remove this class.
-  format("class HasBitSetters;\n");
+  format("class _Internal;\n");
 
 
   for (auto field : FieldRange(descriptor_)) {
@@ -1990,7 +1990,7 @@ void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
   }
 
   format(
-      "class $classname$::HasBitSetters {\n"
+      "class $classname$::_Internal {\n"
       " public:\n");
   format.Indent();
   if (HasFieldPresence(descriptor_->file()) && HasBitsSize() != 0) {

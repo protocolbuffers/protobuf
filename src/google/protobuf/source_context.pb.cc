@@ -86,7 +86,7 @@ PROTOBUF_NAMESPACE_OPEN
 
 void SourceContext::InitAsDefaultInstance() {
 }
-class SourceContext::HasBitSetters {
+class SourceContext::_Internal {
  public:
 };
 
@@ -104,7 +104,7 @@ SourceContext::SourceContext(const SourceContext& from)
       _internal_metadata_(nullptr) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   file_name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  if (from.file_name().size() > 0) {
+  if (!from.file_name().empty()) {
     file_name_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.file_name_);
   }
   // @@protoc_insertion_point(copy_constructor:google.protobuf.SourceContext)

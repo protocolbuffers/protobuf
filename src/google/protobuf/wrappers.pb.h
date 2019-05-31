@@ -227,7 +227,7 @@ class PROTOBUF_EXPORT DoubleValue :
 
   // @@protoc_insertion_point(class_scope:google.protobuf.DoubleValue)
  private:
-  class HasBitSetters;
+  class _Internal;
 
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
@@ -368,7 +368,7 @@ class PROTOBUF_EXPORT FloatValue :
 
   // @@protoc_insertion_point(class_scope:google.protobuf.FloatValue)
  private:
-  class HasBitSetters;
+  class _Internal;
 
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
@@ -509,7 +509,7 @@ class PROTOBUF_EXPORT Int64Value :
 
   // @@protoc_insertion_point(class_scope:google.protobuf.Int64Value)
  private:
-  class HasBitSetters;
+  class _Internal;
 
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
@@ -650,7 +650,7 @@ class PROTOBUF_EXPORT UInt64Value :
 
   // @@protoc_insertion_point(class_scope:google.protobuf.UInt64Value)
  private:
-  class HasBitSetters;
+  class _Internal;
 
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
@@ -791,7 +791,7 @@ class PROTOBUF_EXPORT Int32Value :
 
   // @@protoc_insertion_point(class_scope:google.protobuf.Int32Value)
  private:
-  class HasBitSetters;
+  class _Internal;
 
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
@@ -932,7 +932,7 @@ class PROTOBUF_EXPORT UInt32Value :
 
   // @@protoc_insertion_point(class_scope:google.protobuf.UInt32Value)
  private:
-  class HasBitSetters;
+  class _Internal;
 
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
@@ -1073,7 +1073,7 @@ class PROTOBUF_EXPORT BoolValue :
 
   // @@protoc_insertion_point(class_scope:google.protobuf.BoolValue)
  private:
-  class HasBitSetters;
+  class _Internal;
 
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
@@ -1229,7 +1229,7 @@ class PROTOBUF_EXPORT StringValue :
 
   // @@protoc_insertion_point(class_scope:google.protobuf.StringValue)
  private:
-  class HasBitSetters;
+  class _Internal;
 
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
@@ -1385,7 +1385,7 @@ class PROTOBUF_EXPORT BytesValue :
 
   // @@protoc_insertion_point(class_scope:google.protobuf.BytesValue)
  private:
-  class HasBitSetters;
+  class _Internal;
 
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;

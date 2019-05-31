@@ -157,6 +157,16 @@ bool IsLowerUnderscore(const string& name) {
   return true;
 }
 
+bool IsNumberFollowUnderscore(const string& name) {
+  for (int i = 1; i < name.length(); i++) {
+    const char c = name[i];
+    if (IsNumber(c) && name[i - 1] == '_') {
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // anonymous namespace
 
 // Makes code slightly more readable.  The meaning of "DO(foo)" is
@@ -1002,6 +1012,12 @@ bool Parser::ParseMessageFieldNoLabel(
     if (!IsLowerUnderscore(field->name())) {
       AddWarning(
           "Field name should be lowercase. Found: " + field->name() +
+          ". See: https://developers.google.com/protocol-buffers/docs/style");
+    }
+    if (IsNumberFollowUnderscore(field->name())) {
+      AddWarning(
+          "Number should not come right after an underscore. Found: " +
+          field->name() +
           ". See: https://developers.google.com/protocol-buffers/docs/style");
     }
   }
