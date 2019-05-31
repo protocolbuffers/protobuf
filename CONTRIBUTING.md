@@ -83,6 +83,10 @@ the final release.
   Ultimately, the green signal will be provided by our testing infrastructure.
   The reviewer will help you if there are test failures that seem not related
   to the change you are making.
+
+## Reviewer Guidelines
+
+* Make sure that all tests are passing before approval.
 * Apply the "release notes: yes" label if the pull request's description should
   be included in the next release (e.g., any new feature / bug fix).
   Apply the "release notes: no" label if the pull request's description should
@@ -92,4 +96,3 @@ the final release.
   pull request. This will make it easier to identify which languages the pull
   request affects, allowing us to better identify appropriate reviewer, create
   a better release note, and make it easier to identify issues in the future.
-  
