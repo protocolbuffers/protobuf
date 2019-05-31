@@ -4,7 +4,7 @@
     <Description>C# runtime library for Protocol Buffers - Google's data interchange format.</Description>
     <Copyright>Copyright 2015, Google Inc.</Copyright>
     <AssemblyTitle>Google Protocol Buffers</AssemblyTitle>
-    <VersionPrefix>3.7.1</VersionPrefix>
+    <VersionPrefix>3.8.0</VersionPrefix>
     <LangVersion>6</LangVersion>
     <Authors>Google Inc.</Authors>
     <TargetFrameworks>netstandard1.0;netstandard2.0;net45</TargetFrameworks>
@@ -32,11 +32,11 @@
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-    <PackageReference Include="System.Memory" Version="4.5.2" />
+    <PackageReference Include="System.Memory" Version="4.5.2"/>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta2-18618-05" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" Version="1.0.0-beta2-18618-05"/>
   </ItemGroup>
 
 </Project>

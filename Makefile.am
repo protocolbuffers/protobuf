@@ -1235,6 +1235,7 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)   \
   python/release/wheel/protobuf_optimized_pip.sh \
   python/release/wheel/README.md         \
   six.BUILD                              \
+  third_party/zlib.BUILD                 \
   util/python/BUILD
 
 

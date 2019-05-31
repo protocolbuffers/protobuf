@@ -10,11 +10,11 @@
   <email>protobuf-opensource@google.com</email>
   <active>yes</active>
  </lead>
- <date>2019-03-25</date>
- <time>13:23:39</time>
+ <date>2019-05-21</date>
+ <time>14:07:13</time>
  <version>
-  <release>3.7.1</release>
-  <api>3.7.1</api>
+  <release>3.8.0</release>
+  <api>3.8.0</api>
  </version>
  <stability>
   <release>stable</release>
@@ -26,6 +26,7 @@
   <dir baseinstalldir="/" name="/">
     <file baseinstalldir="/" name="config.m4" role="src"/>
     <file baseinstalldir="/" name="array.c" role="src"/>
+    <file baseinstalldir="/" name="builtin_descriptors.inc" role="src"/>
     <file baseinstalldir="/" name="def.c" role="src"/>
     <file baseinstalldir="/" name="encode_decode.c" role="src"/>
     <file baseinstalldir="/" name="map.c" role="src"/>
@@ -315,6 +316,34 @@ G  A release.
    </stability>
    <date>2019-03-25</date>
    <time>13:23:39</time>
+   <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
+   <notes>GA release.</notes>
+  </release>
+  <release>
+   <version>
+    <release>3.8.0RC1</release>
+    <api>3.8.0</api>
+   </version>
+   <stability>
+    <release>beta</release>
+    <api>beta</api>
+   </stability>
+   <date>2019-04-23</date>
+   <time>16:14:52</time>
+   <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
+   <notes>GA release.</notes>
+  </release>
+  <release>
+   <version>
+    <release>3.8.0</release>
+    <api>3.8.0</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <date>2019-05-21</date>
+   <time>14:07:13</time>
    <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
    <notes>GA release.</notes>
   </release>
