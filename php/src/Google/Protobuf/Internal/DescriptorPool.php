@@ -55,7 +55,7 @@ class DescriptorPool
         return self::$pool;
     }
 
-    public function internalAddGeneratedFile($data)
+    public function internalAddGeneratedFile($data, $use_nested = false)
     {
         $files = new FileDescriptorSet();
         $files->mergeFromString($data);
