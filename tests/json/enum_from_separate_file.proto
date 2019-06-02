@@ -1,0 +1,9 @@
+syntax = "proto2";
+
+import "tests/json/test.proto";
+
+package upb.test.json;
+
+message ImportEnum {
+  optional MyEnum e = 1;
+}

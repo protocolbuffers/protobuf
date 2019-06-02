@@ -3,43 +3,25 @@
 #include "tests/upb_test.h"
 #include "upb/bindings/stdc++/string.h"
 #include "google/protobuf/descriptor.upb.h"
+#include "google/protobuf/descriptor.upbdefs.h"
 #include "upb/pb/decoder.h"
 #include "upb/pb/encoder.h"
 
 #include "upb/port_def.inc"
-
-std::string read_string(const char *filename) {
-  size_t len;
-  char *str = upb_readfile(filename, &len);
-  ASSERT(str);
-  if (!str) { return std::string(); }
-  std::string ret = std::string(str, len);
-  free(str);
-  return ret;
-}
+#include <iostream>
 
 void test_pb_roundtrip() {
-  std::string input = read_string("google/protobuf/descriptor.pb");
+  std::string input(
+      google_protobuf_descriptor_proto_upbdefinit.descriptor.data,
+      google_protobuf_descriptor_proto_upbdefinit.descriptor.size);
+  std::cout << input.size() << "\n";
   upb::SymbolTable symtab;
   upb::HandlerCache encoder_cache(upb::pb::EncoderPtr::NewCache());
   upb::pb::CodeCache decoder_cache(&encoder_cache);
   upb::Arena arena;
-  google_protobuf_FileDescriptorSet *set =
-      google_protobuf_FileDescriptorSet_parse(input.c_str(), input.size(),
-                                              arena.ptr());
-  ASSERT(set);
-  size_t n;
-  const google_protobuf_FileDescriptorProto *const *files =
-      google_protobuf_FileDescriptorSet_file(set, &n);
-  ASSERT(n == 1);
   upb::Status status;
-  upb::FileDefPtr file_def = symtab.AddFile(files[0], &status);
-  if (!file_def) {
-    fprintf(stderr, "Error building def: %s\n", status.error_message());
-    ASSERT(false);
-  }
-  upb::MessageDefPtr md =
-      symtab.LookupMessage("google.protobuf.FileDescriptorSet");
+  upb::MessageDefPtr md(
+      google_protobuf_FileDescriptorProto_getmsgdef(symtab.ptr()));
   ASSERT(md);
   const upb::Handlers *encoder_handlers = encoder_cache.Get(md);
   ASSERT(encoder_handlers);

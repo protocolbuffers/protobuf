@@ -725,8 +725,8 @@ bool upb_msg_getscalarhandlerdata(const upb_handlers *h,
 }  /* extern "C" */
 #endif
 
-#include "upb/handlers-inl.h"
-
 #include "upb/port_undef.inc"
+
+#include "upb/handlers-inl.h"
 
 #endif  /* UPB_HANDLERS_H */

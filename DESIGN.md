@@ -2,9 +2,6 @@
 μpb Design
 ----------
 
-**NOTE:** the design described here is being implemented currently, but is not
-yet complete.  The repo is in heavy transition right now.
-
 μpb has the following design goals:
 
 - C89 compatible.
@@ -62,22 +59,14 @@ link μpb will never need to worry about this.
 TODO
 ----
 
-The current state of the repo is quite different than what is described above.
-Here are the major items that need to be implemented.
-
-1. implement the core generic protobuf binary encoder/decoder that uses a
-   `upb_msglayout*`.
-2. remove all mention of handlers, sink, etc. from core into their own module.
-   All of the handlers stuff needs substantial revision, but moving it out of
-   core is the first priority.
-3. move all of the def/refcounted stuff out of core.  The defs also need
-   substantial revision, but moving them out of core is the first priority.
-4. revise our generated code until it is in a state where we feel comfortable
-   committing to API/ABI stability for it.  This may involve moving different
-   parts of the generated code into separate files, like keeping the serialized
-   descriptor in a separate file from the compact msglayout.
-5. revise all of the existing encoders/decoders and handlers.  We probably
-   will want to keep handlers, since they let us decouple encoders/decoders
-   from `upb_msg`, but we need to simplify all of that a LOT.  Likely we will
-   want to make handlers only per-message instead of per-field, except for
-   variable-length fields.
+1. revise our generated code until it is in a state where we feel comfortable
+   committing to API/ABI stability for it.  In particular there is an open
+   question of whether non-ABI-compatible field accesses should have a
+   fastpath different from the ABI-compatible field access.
+1. Add missing features (maps, extensions, unknown fields).
+1. Flesh out C++ wrappers.
+1. *(lower-priority)*: revise all of the existing encoders/decoders and
+   handlers.  We probably will want to keep handlers, since they let us decouple
+   encoders/decoders from `upb_msg`, but we need to simplify all of that a LOT.
+   Likely we will want to make handlers only per-message instead of per-field,
+   except for variable-length fields.

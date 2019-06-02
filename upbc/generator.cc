@@ -1,8 +1,7 @@
 
-#include <unordered_map>
-#include <unordered_set>
 #include <memory>
 
+#include "absl/container/flat_hash_map.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/substitute.h"
@@ -362,7 +361,7 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message, Output& output
         fullname);
     output(
         "UPB_INLINE $0_oneofcases $1_$2_case(const $1* msg) { "
-        "return UPB_FIELD_AT(msg, int, $3); }\n"
+        "return ($0_oneofcases)UPB_FIELD_AT(msg, int32_t, $3); }\n"
         "\n",
         fullname, msgname, oneof->name(),
         GetSizeInit(layout.GetOneofCaseOffset(oneof)));
@@ -499,7 +498,7 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message, Output& output
     }
   }
 
-  output("\n\n");
+  output("\n");
 }
 
 void WriteHeader(const protobuf::FileDescriptor* file, Output& output) {
@@ -507,15 +506,30 @@ void WriteHeader(const protobuf::FileDescriptor* file, Output& output) {
   output(
       "#ifndef $0_UPB_H_\n"
       "#define $0_UPB_H_\n\n"
-      "#include \"upb/generated_util.h\"\n\n"
-      "#include \"upb/msg.h\"\n\n"
+      "#include \"upb/generated_util.h\"\n"
+      "#include \"upb/msg.h\"\n"
       "#include \"upb/decode.h\"\n"
-      "#include \"upb/encode.h\"\n"
+      "#include \"upb/encode.h\"\n\n",
+      ToPreproc(file->name()));
+
+  for (int i = 0; i < file->public_dependency_count(); i++) {
+    const auto& name = file->public_dependency(i)->name();
+    if (i == 0) {
+      output("/* Public Imports. */\n");
+    }
+    output("#include \"$0\"\n", HeaderFilename(name));
+    if (i == file->public_dependency_count() - 1) {
+      output("\n");
+    }
+  }
+
+  output(
       "#include \"upb/port_def.inc\"\n"
+      "\n"
       "#ifdef __cplusplus\n"
       "extern \"C\" {\n"
-      "#endif\n\n",
-      ToPreproc(file->name()));
+      "#endif\n"
+      "\n");
 
   std::vector<const protobuf::Descriptor*> this_file_messages =
       SortedMessages(file);
@@ -552,12 +566,13 @@ void WriteHeader(const protobuf::FileDescriptor* file, Output& output) {
     output("extern const upb_msglayout $0;\n", MessageInit(pair.second));
   }
 
+  if (!this_file_messages.empty()) {
+    output("\n");
+  }
+
   std::vector<const protobuf::EnumDescriptor*> this_file_enums =
       SortedEnums(file);
 
-  output(
-      "\n"
-      "/* Enums */\n\n");
   for (auto enumdesc : this_file_enums) {
     output("typedef enum {\n");
     DumpEnumValues(enumdesc, output);
@@ -605,7 +620,7 @@ void WriteSource(const protobuf::FileDescriptor* file, Output& output) {
     std::string fields_array_ref = "NULL";
     std::string submsgs_array_ref = "NULL";
     std::string oneofs_array_ref = "NULL";
-    std::unordered_map<const protobuf::Descriptor*, int> submsg_indexes;
+    absl::flat_hash_map<const protobuf::Descriptor*, int> submsg_indexes;
     MessageLayout layout(message);
     std::vector<const protobuf::FieldDescriptor*> sorted_submsgs =
         SortedSubmessages(message);

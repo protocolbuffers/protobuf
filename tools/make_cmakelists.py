@@ -11,6 +11,7 @@ from __future__ import print_function
 
 import sys
 import textwrap
+import os
 
 def StripColons(deps):
   return map(lambda x: x[1:], deps)
@@ -38,12 +39,20 @@ class BuildFileFunctions(object):
     if kwargs["name"] == "amalgamation" or kwargs["name"] == "upbc_generator":
       return
     files = kwargs.get("srcs", []) + kwargs.get("hdrs", [])
+    found_files = []
+    for file in files:
+        if os.path.isfile(file):
+            found_files.append(file)
+        elif os.path.isfile("generated_for_cmake/" + file):
+            found_files.append("generated_for_cmake/" + file)
+        else:
+            print("Warning: no such file: " + file)
 
     if filter(IsSourceFile, files):
       # Has sources, make this a normal library.
       self.converter.toplevel += "add_library(%s\n  %s)\n" % (
           kwargs["name"],
-          "\n  ".join(files)
+          "\n  ".join(found_files)
       )
       self._add_deps(kwargs)
     else:
@@ -125,6 +134,9 @@ class BuildFileFunctions(object):
   def upb_proto_reflection_library(self, **kwargs):
     pass
 
+  def upb_proto_srcs(self, **kwargs):
+    pass
+
   def genrule(self, **kwargs):
     pass
 
@@ -138,6 +150,9 @@ class BuildFileFunctions(object):
     return []
 
   def licenses(self, *args):
+    pass
+
+  def filegroup(self, **kwargs):
     pass
 
   def map_dep(self, arg):
@@ -158,6 +173,12 @@ class WorkspaceFileFunctions(object):
     pass
 
   def git_repository(self, **kwargs):
+    pass
+
+  def bazel_version_repository(self, **kwargs):
+    pass
+
+  def upb_deps(self):
     pass
 
 
@@ -224,6 +245,7 @@ class Converter(object):
     endif()
 
     include_directories(.)
+    include_directories(generated_for_cmake)
     include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
     if(APPLE)
