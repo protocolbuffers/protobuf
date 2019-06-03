@@ -150,14 +150,14 @@ static bool upb_skip_unknownfielddata(upb_decstate *d, uint32_t tag,
     }
     case UPB_WIRE_TYPE_DELIMITED: {
       int len;
-      return upb_decode_string(&d->ptr, d->limit, &len);
+      CHK(upb_decode_string(&d->ptr, d->limit, &len));
       d->ptr += len;
+      return true;
     }
     case UPB_WIRE_TYPE_START_GROUP:
       return upb_skip_unknowngroup(d, tag >> 3);
     case UPB_WIRE_TYPE_END_GROUP:
-      CHK((tag >> 3) == group_fieldnum);
-      return true;
+      return (tag >> 3) == group_fieldnum;
   }
   return false;
 }
@@ -479,7 +479,7 @@ static bool upb_decode_toarray(upb_decstate *d, upb_decframe *frame,
       const upb_msglayout *subm;
       upb_msg *submsg = upb_addmsg(frame, field, &subm);
       CHK(submsg);
-      return upb_decode_message(d, submsg, subm);
+      return upb_decode_msgfield(d, submsg, subm, len);
     }
     case UPB_DESCRIPTOR_TYPE_GROUP:
       return upb_append_unknown(d, frame);
@@ -599,6 +599,8 @@ bool upb_decode(const char *buf, size_t size, void *msg, const upb_msglayout *l,
   state.ptr = buf;
   state.limit = buf + size;
   state.arena = arena;
+  state.depth = 64;
+  state.parse_status = 0;
 
   CHK(upb_decode_message(&state, msg, l));
   return state.parse_status == 0;
