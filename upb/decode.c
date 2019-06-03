@@ -250,6 +250,7 @@ static bool upb_decode_addval(upb_decframe *frame,
 
   if (field->label == UPB_LABEL_REPEATED) {
     arr = upb_getorcreatearr(frame, field);
+    CHK(arr);
     field_mem = upb_array_reserve(arr, 1, size);
     CHK(field_mem);
   }
@@ -383,6 +384,7 @@ static bool upb_decode_toarray(upb_decstate *d, upb_decframe *frame,
                                const upb_msglayout_field *field,
                                upb_strview val) {
   upb_array *arr = upb_getorcreatearr(frame, field);
+  CHK(arr);
 
 #define VARINT_CASE(ctype, decode)                           \
   {                                                          \
@@ -513,7 +515,7 @@ static bool upb_decode_field(upb_decstate *d, upb_decframe *frame) {
         frame->limit = d->ptr;
         return true;
       default:
-        return false;
+        CHK(false);
     }
   } else {
     CHK(field_number != 0);

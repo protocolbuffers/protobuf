@@ -2,8 +2,8 @@
 #ifndef UPBC_MESSAGE_LAYOUT_H
 #define UPBC_MESSAGE_LAYOUT_H
 
-#include <unordered_map>
 #include "absl/base/macros.h"
+#include "absl/container/flat_hash_map.h"
 #include "google/protobuf/descriptor.h"
 
 namespace upbc {
@@ -70,7 +70,7 @@ class MessageLayout {
   Size Place(SizeAndAlign size_and_align);
 
   template <class K, class V>
-  static V GetMapValue(const std::unordered_map<K, V>& map, K key) {
+  static V GetMapValue(const absl::flat_hash_map<K, V>& map, K key) {
     auto iter = map.find(key);
     if (iter == map.end()) {
       fprintf(stderr, "No value for field.\n");
@@ -92,11 +92,11 @@ class MessageLayout {
   static int64_t FieldLayoutRank(
       const google::protobuf::FieldDescriptor* field);
 
-  std::unordered_map<const google::protobuf::FieldDescriptor*, Size>
+  absl::flat_hash_map<const google::protobuf::FieldDescriptor*, Size>
       field_offsets_;
-  std::unordered_map<const google::protobuf::FieldDescriptor*, int>
+  absl::flat_hash_map<const google::protobuf::FieldDescriptor*, int>
       hasbit_indexes_;
-  std::unordered_map<const google::protobuf::OneofDescriptor*, Size>
+  absl::flat_hash_map<const google::protobuf::OneofDescriptor*, Size>
       oneof_case_offsets_;
   Size maxalign_;
   Size size_;

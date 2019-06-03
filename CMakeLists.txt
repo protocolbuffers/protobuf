@@ -49,6 +49,7 @@ if(UPB_ENABLE_UBSAN)
 endif()
 
 include_directories(.)
+include_directories(generated_for_cmake)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 if(APPLE)
@@ -60,16 +61,12 @@ endif()
 enable_testing()
 
 add_library(upb
-  google/protobuf/descriptor.upb.c
   upb/decode.c
   upb/encode.c
   upb/msg.c
-  upb/port_def.inc
-  upb/port_undef.inc
   upb/table.c
   upb/table.int.h
   upb/upb.c
-  google/protobuf/descriptor.upb.h
   upb/decode.h
   upb/encode.h
   upb/generated_util.h
@@ -81,6 +78,8 @@ add_library(reflection
   upb/def.h
   upb/msgfactory.h)
 target_link_libraries(reflection
+  descriptor_upbproto
+  table
   upb)
 add_library(table INTERFACE)
 target_link_libraries(table INTERFACE
@@ -89,6 +88,7 @@ add_library(legacy_msg_reflection
   upb/legacy_msg_reflection.c
   upb/legacy_msg_reflection.h)
 target_link_libraries(legacy_msg_reflection
+  table
   upb)
 add_library(handlers
   upb/handlers.c
@@ -98,6 +98,7 @@ add_library(handlers
   upb/sink.h)
 target_link_libraries(handlers
   reflection
+  table
   upb)
 add_library(upb_pb
   upb/pb/compile_decoder.c
@@ -111,11 +112,13 @@ add_library(upb_pb
   upb/pb/encoder.h
   upb/pb/textprinter.h)
 target_link_libraries(upb_pb
+  descriptor_upbproto
   handlers
+  reflection
   table
   upb)
 add_library(upb_json
-  upb/json/parser.c
+  generated_for_cmake/upb/json/parser.c
   upb/json/printer.c
   upb/json/parser.h
   upb/json/printer.h)
@@ -124,10 +127,15 @@ target_link_libraries(upb_json
   upb_pb)
 add_library(upb_cc_bindings INTERFACE)
 target_link_libraries(upb_cc_bindings INTERFACE
+  descriptor_upbproto
+  handlers
   upb)
 add_library(upb_test
   tests/testmain.cc
   tests/test_util.h
   tests/upb_test.h)
+target_link_libraries(upb_test
+  handlers
+  upb)
 
 

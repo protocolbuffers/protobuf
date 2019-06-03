@@ -1,0 +1,7 @@
+
+syntax = "proto2";
+
+message Foo {
+  optional int64 time = 1;
+  optional string greeting = 2;
+}

@@ -251,7 +251,7 @@ static const upb_msglayout *const google_protobuf_FileOptions_submsgs[1] = {
   &google_protobuf_UninterpretedOption_msginit,
 };
 
-static const upb_msglayout_field google_protobuf_FileOptions__fields[19] = {
+static const upb_msglayout_field google_protobuf_FileOptions__fields[21] = {
   {1, UPB_SIZE(28, 32), 11, 0, 9, 1},
   {8, UPB_SIZE(36, 48), 12, 0, 9, 1},
   {9, UPB_SIZE(8, 8), 1, 0, 14, 1},
@@ -270,13 +270,15 @@ static const upb_msglayout_field google_protobuf_FileOptions__fields[19] = {
   {40, UPB_SIZE(76, 128), 17, 0, 9, 1},
   {41, UPB_SIZE(84, 144), 18, 0, 9, 1},
   {42, UPB_SIZE(24, 24), 10, 0, 8, 1},
-  {999, UPB_SIZE(92, 160), 0, 0, 11, 3},
+  {44, UPB_SIZE(92, 160), 19, 0, 9, 1},
+  {45, UPB_SIZE(100, 176), 20, 0, 9, 1},
+  {999, UPB_SIZE(108, 192), 0, 0, 11, 3},
 };
 
 const upb_msglayout google_protobuf_FileOptions_msginit = {
   &google_protobuf_FileOptions_submsgs[0],
   &google_protobuf_FileOptions__fields[0],
-  UPB_SIZE(96, 176), 19, false,
+  UPB_SIZE(112, 208), 21, false,
 };
 
 static const upb_msglayout *const google_protobuf_MessageOptions_submsgs[1] = {

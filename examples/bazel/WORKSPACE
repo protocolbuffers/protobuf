@@ -1,0 +1,14 @@
+
+workspace(name = "upb_example")
+
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+
+git_repository(
+    name = "upb",
+    remote = "https://github.com/protocolbuffers/upb.git",
+    commit = "d16bf99ac4658793748cda3251226059892b3b7b",
+)
+
+load("@upb//bazel:workspace_deps.bzl", "upb_deps")
+
+upb_deps()
