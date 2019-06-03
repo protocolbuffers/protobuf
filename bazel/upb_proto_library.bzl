@@ -230,7 +230,10 @@ _upb_proto_library_aspect = aspect(
         "_cc_toolchain": attr.label(
             default = "@bazel_tools//tools/cpp:current_cc_toolchain",
         ),
-        "_upb": attr.label_list(default = ["//:upb"]),
+        "_upb": attr.label_list(default = [
+            "//:generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
+            "//:upb"
+        ]),
         "_ext": attr.string(default = ".upb"),
     }),
     implementation = _upb_proto_aspect_impl,
