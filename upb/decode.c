@@ -33,17 +33,9 @@ typedef struct {
   const char *ptr;           /* Current parsing position. */
   const char *field_start;   /* Start of this field. */
   const char *limit;         /* End of delimited region or end of buffer. */
-  int depth;
-
-  /* Signals how the parse ended:
-   * - when 0: parse ended at delimited limit.
-   * - when 1: parse ended due to end-of-stream.
-   * - otherwise: parse ended due to a terminating tag (either 0 or END_GROUP).
-   *
-   * In the last case, tag-1 is stored, to avoid conflicting with case 0. */
-  uint32_t parse_status;
-
   upb_arena *arena;
+  int depth;
+  uint32_t end_group;  /* Set to field number of END_GROUP tag, if any. */
 } upb_decstate;
 
 /* Data passed by value to each parsing function. */
@@ -163,14 +155,14 @@ static bool upb_skip_unknownfielddata(upb_decstate *d, uint32_t tag,
 }
 
 static bool upb_skip_unknowngroup(upb_decstate *d, int field_number) {
-  while (d->ptr < d->limit && d->parse_status == 0) {
+  while (d->ptr < d->limit && d->end_group == 0) {
     uint32_t tag = 0;
     CHK(upb_decode_varint32(&d->ptr, d->limit, &tag));
     CHK(upb_skip_unknownfielddata(d, tag, field_number));
   }
 
-  CHK(d->parse_status == field_number);
-  d->parse_status = 0;
+  CHK(d->end_group == field_number);
+  d->end_group = 0;
   return true;
 }
 
@@ -316,7 +308,7 @@ static bool upb_decode_msgfield(upb_decstate *d, upb_msg *msg,
   upb_decode_message(d, msg, layout);
   d->depth++;
   d->limit = saved_limit;
-  CHK(d->parse_status == 0);
+  CHK(d->end_group == 0);
   return true;
 }
 
@@ -326,8 +318,8 @@ static bool upb_decode_groupfield(upb_decstate *d, upb_msg *msg,
   CHK(--d->depth >= 0);
   upb_decode_message(d, msg, layout);
   d->depth++;
-  CHK(d->parse_status == field_number);
-  d->parse_status = 0;
+  CHK(d->end_group == field_number);
+  d->end_group = 0;
   return true;
 }
 
@@ -567,7 +559,7 @@ static bool upb_decode_field(upb_decstate *d, upb_decframe *frame) {
         return upb_decode_groupfield(d, group, layout, field_number);
       }
       case UPB_WIRE_TYPE_END_GROUP:
-        d->parse_status = field_number;
+        d->end_group = field_number;
         return true;
       default:
         CHK(false);
@@ -600,10 +592,10 @@ bool upb_decode(const char *buf, size_t size, void *msg, const upb_msglayout *l,
   state.limit = buf + size;
   state.arena = arena;
   state.depth = 64;
-  state.parse_status = 0;
+  state.end_group = 0;
 
   CHK(upb_decode_message(&state, msg, l));
-  return state.parse_status == 0;
+  return state.end_group == 0;
 }
 
 #undef CHK
