@@ -249,6 +249,17 @@ cc_binary(
 
 # C/C++ tests ##################################################################
 
+cc_binary(
+    name = "benchmark",
+    testonly = 1,
+    srcs = ["tests/benchmark.cc"],
+    deps = [
+        ":descriptor_upbproto",
+        ":descriptor_upbreflection",
+        "@com_github_google_benchmark//:benchmark_main",
+    ],
+)
+
 cc_library(
     name = "upb_test",
     testonly = 1,
