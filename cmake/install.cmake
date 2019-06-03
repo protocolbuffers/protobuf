@@ -33,7 +33,7 @@ if (protobuf_BUILD_PROTOC_BINARIES)
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT protoc)
   if (UNIX AND NOT APPLE)
     set_property(TARGET protoc
-      PROPERTY INSTALL_RPATH "$ORIGIN/../lib")
+      PROPERTY INSTALL_RPATH "$ORIGIN/../${CMAKE_INSTALL_LIBDIR}")
   elseif (APPLE)
     set_property(TARGET protoc
       PROPERTY INSTALL_RPATH "@loader_path/../lib")
