@@ -174,13 +174,14 @@ static bool upb_skip_unknowngroup(upb_decstate *d, int field_number) {
   return true;
 }
 
-static bool upb_array_grow(upb_array *arr, size_t elements, size_t elem_size) {
+static bool upb_array_grow(upb_array *arr, size_t elements, size_t elem_size,
+                           upb_arena *arena) {
   size_t needed = arr->len + elements;
   size_t new_size = UPB_MAX(arr->size, 8);
   size_t new_bytes;
   size_t old_bytes;
   void *new_data;
-  upb_alloc *alloc = upb_arena_alloc(arr->arena);
+  upb_alloc *alloc = upb_arena_alloc(arena);
 
   while (new_size < needed) {
     new_size *= 2;
@@ -197,16 +198,16 @@ static bool upb_array_grow(upb_array *arr, size_t elements, size_t elem_size) {
 }
 
 static void *upb_array_reserve(upb_array *arr, size_t elements,
-                               size_t elem_size) {
+                               size_t elem_size, upb_arena *arena) {
   if (arr->size - arr->len < elements) {
-    CHK(upb_array_grow(arr, elements, elem_size));
+    CHK(upb_array_grow(arr, elements, elem_size, arena));
   }
   return (char*)arr->data + (arr->len * elem_size);
 }
 
 bool upb_array_add(upb_array *arr, size_t elements, size_t elem_size,
-                   const void *data) {
-  void *dest = upb_array_reserve(arr, elements, elem_size);
+                   const void *data, upb_arena *arena) {
+  void *dest = upb_array_reserve(arr, elements, elem_size, arena);
 
   CHK(dest);
   arr->len += elements;
@@ -226,8 +227,7 @@ static upb_array *upb_getorcreatearr(upb_decframe *frame,
   upb_array *arr = upb_getarr(frame, field);
 
   if (!arr) {
-    upb_fieldtype_t type = upb_desctype_to_fieldtype[field->descriptortype];
-    arr = upb_array_new(type, frame->state->arena);
+    arr = upb_array_new(frame->state->arena);
     CHK(arr);
     *(upb_array**)&frame->msg[field->offset] = arr;
   }
@@ -260,7 +260,7 @@ static upb_msg *upb_addmsg(upb_decframe *frame,
   *subm = frame->layout->submsgs[field->submsg_index];
   submsg = upb_msg_new(*subm, frame->state->arena);
   CHK(submsg);
-  upb_array_add(arr, 1, sizeof(submsg), &submsg);
+  upb_array_add(arr, 1, sizeof(submsg), &submsg, frame->state->arena);
 
   return submsg;
 }
@@ -287,7 +287,7 @@ static bool upb_decode_addval(upb_decframe *frame,
   if (field->label == UPB_LABEL_REPEATED) {
     arr = upb_getorcreatearr(frame, field);
     CHK(arr);
-    field_mem = upb_array_reserve(arr, 1, size);
+    field_mem = upb_array_reserve(arr, 1, size, frame->state->arena);
     CHK(field_mem);
   }
 
@@ -414,7 +414,7 @@ static bool upb_decode_fixedpacked(upb_decstate *d, upb_array *arr,
   size_t elements = len / elem_size;
 
   CHK((size_t)(elements * elem_size) == len);
-  CHK(upb_array_add(arr, elements, elem_size, d->ptr));
+  CHK(upb_array_add(arr, elements, elem_size, d->ptr, d->arena));
   d->ptr += len;
 
   return true;
@@ -433,26 +433,26 @@ static bool upb_decode_toarray(upb_decstate *d, upb_decframe *frame,
   upb_array *arr = upb_getorcreatearr(frame, field);
   CHK(arr);
 
-#define VARINT_CASE(ctype, decode)                           \
-  {                                                          \
-    const char *ptr = d->ptr;                                \
-    const char *limit = ptr + len;                           \
-    while (ptr < limit) {                                    \
-      uint64_t val;                                          \
-      ctype decoded;                                         \
-      CHK(upb_decode_varint(&ptr, limit, &val));             \
-      decoded = (decode)(val);                               \
-      CHK(upb_array_add(arr, 1, sizeof(decoded), &decoded)); \
-    }                                                        \
-    d->ptr = ptr;                                            \
-    return true;                                             \
+#define VARINT_CASE(ctype, decode)                                     \
+  {                                                                    \
+    const char *ptr = d->ptr;                                          \
+    const char *limit = ptr + len;                                     \
+    while (ptr < limit) {                                              \
+      uint64_t val;                                                    \
+      ctype decoded;                                                   \
+      CHK(upb_decode_varint(&ptr, limit, &val));                       \
+      decoded = (decode)(val);                                         \
+      CHK(upb_array_add(arr, 1, sizeof(decoded), &decoded, d->arena)); \
+    }                                                                  \
+    d->ptr = ptr;                                                      \
+    return true;                                                       \
   }
 
   switch (field->descriptortype) {
     case UPB_DESCRIPTOR_TYPE_STRING:
     case UPB_DESCRIPTOR_TYPE_BYTES: {
       upb_strview str = upb_decode_strfield(d, len);
-      return upb_array_add(arr, 1, sizeof(str), &str);
+      return upb_array_add(arr, 1, sizeof(str), &str, d->arena);
     }
     case UPB_DESCRIPTOR_TYPE_FLOAT:
     case UPB_DESCRIPTOR_TYPE_FIXED32:

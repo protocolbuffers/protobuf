@@ -74,19 +74,16 @@ upb_msg *upb_msg_new(const upb_msglayout *l, upb_arena *a) {
   return msg;
 }
 
-upb_array *upb_array_new(upb_fieldtype_t type, upb_arena *a) {
-  upb_alloc *alloc = upb_arena_alloc(a);
-  upb_array *ret = upb_malloc(alloc, sizeof(upb_array));
+upb_array *upb_array_new(upb_arena *a) {
+  upb_array *ret = upb_arena_malloc(a, sizeof(upb_array));
 
   if (!ret) {
     return NULL;
   }
 
-  ret->type = type;
   ret->data = NULL;
   ret->len = 0;
   ret->size = 0;
-  ret->arena = a;
 
   return ret;
 }
