@@ -42,7 +42,7 @@ def _generate_output_file(ctx, src, extension):
     else:
         real_short_path = paths.relativize(src.short_path, ctx.label.package)
     output_filename = paths.replace_extension(real_short_path, extension)
-    ret = ctx.new_file(ctx.genfiles_dir, output_filename)
+    ret = ctx.actions.declare_file(output_filename)
     return ret
 
 def _filter_none(elems):
@@ -149,12 +149,13 @@ _WrappedGeneratedSrcs = provider(fields = ["srcs"])
 def _compile_upb_protos(ctx, proto_info, proto_sources, ext):
     srcs = [_generate_output_file(ctx, name, ext + ".c") for name in proto_sources]
     hdrs = [_generate_output_file(ctx, name, ext + ".h") for name in proto_sources]
-    transitive_sets = list(proto_info.transitive_descriptor_sets)
+    transitive_sets = proto_info.transitive_descriptor_sets.to_list()
     ctx.actions.run(
         inputs = depset(
-            direct = [ctx.executable._upbc, proto_info.direct_descriptor_set],
+            direct = [proto_info.direct_descriptor_set],
             transitive = [proto_info.transitive_descriptor_sets],
         ),
+        tools = [ctx.executable._upbc],
         outputs = srcs + hdrs,
         executable = ctx.executable._protoc,
         arguments = [
@@ -229,7 +230,10 @@ _upb_proto_library_aspect = aspect(
         "_cc_toolchain": attr.label(
             default = "@bazel_tools//tools/cpp:current_cc_toolchain",
         ),
-        "_upb": attr.label_list(default = ["//:upb"]),
+        "_upb": attr.label_list(default = [
+            "//:generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
+            "//:upb"
+        ]),
         "_ext": attr.string(default = ".upb"),
     }),
     implementation = _upb_proto_aspect_impl,
