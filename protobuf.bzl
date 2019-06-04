@@ -139,6 +139,7 @@ def _proto_gen_impl(ctx):
                 outputs = outs,
                 arguments = args + import_flags + [src.path],
                 executable = ctx.executable.protoc,
+                tools = [ctx.executable.protoc],
                 mnemonic = "ProtoCompile",
                 use_default_shell_env = True,
             )
