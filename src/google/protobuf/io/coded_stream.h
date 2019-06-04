@@ -664,7 +664,7 @@ class PROTOBUF_EXPORT CodedInputStream {
 // individual value.
 // i.e., in the example above:
 //
-//   CodedOutputStream coded_output = new CodedOutputStream(raw_output);
+//   CodedOutputStream* coded_output = new CodedOutputStream(raw_output);
 //   int magic_number = 1234;
 //   char text[] = "Hello world!";
 //
