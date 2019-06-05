@@ -75,7 +75,7 @@ typedef NS_ENUM(uint8_t, GPBFieldType) {
 /** Number of extension ranges declared for the message. */
 @property(nonatomic, readonly) uint32_t extensionRangesCount;
 /** Descriptor for the file where the message was defined. */
-@property(nonatomic, readonly, assign) GPBFileDescriptor *file;
+@property(nonatomic, readonly) GPBFileDescriptor *file;
 
 /** Whether the message is in wire format or not. */
 @property(nonatomic, readonly, getter=isWireFormat) BOOL wireFormat;
@@ -188,10 +188,10 @@ typedef NS_ENUM(uint8_t, GPBFieldType) {
 @property(nonatomic, readonly, getter=isPackable) BOOL packable;
 
 /** The containing oneof if this field is part of one, nil otherwise. */
-@property(nonatomic, readonly, assign, nullable) GPBOneofDescriptor *containingOneof;
+@property(nonatomic, readonly, nullable) GPBOneofDescriptor *containingOneof;
 
 /** Class of the message if the field is of message type. */
-@property(nonatomic, readonly, assign, nullable) Class msgClass;
+@property(nonatomic, readonly, nullable) Class msgClass;
 
 /** Descriptor for the enum if this field is an enum. */
 @property(nonatomic, readonly, strong, nullable) GPBEnumDescriptor *enumDescriptor;
