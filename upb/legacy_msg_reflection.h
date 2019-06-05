@@ -123,12 +123,13 @@ upb_fieldtype_t upb_array_type(const upb_array *arr);
 /* Read-only interface.  Safe for anyone to call. */
 
 size_t upb_array_size(const upb_array *arr);
-upb_msgval upb_array_get(const upb_array *arr, size_t i);
+upb_msgval upb_array_get(const upb_array *arr, upb_fieldtype_t type, size_t i);
 
 /* Write interface.  May only be called by the message's owner who can enforce
  * its memory management invariants. */
 
-bool upb_array_set(upb_array *arr, size_t i, upb_msgval val);
+bool upb_array_set(upb_array *arr, upb_fieldtype_t type, size_t i,
+                   upb_msgval val, upb_arena *arena);
 
 /** upb_map *******************************************************************/
 

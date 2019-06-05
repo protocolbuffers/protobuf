@@ -338,7 +338,7 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message, Output& output
       "UPB_INLINE $0 *$0_parse(const char *buf, size_t size,\n"
       "                        upb_arena *arena) {\n"
       "  $0 *ret = $0_new(arena);\n"
-      "  return (ret && upb_decode(buf, size, ret, &$1)) ? ret : NULL;\n"
+      "  return (ret && upb_decode(buf, size, ret, &$1, arena)) ? ret : NULL;\n"
       "}\n"
       "UPB_INLINE char *$0_serialize(const $0 *msg, upb_arena *arena, size_t "
       "*len) {\n"

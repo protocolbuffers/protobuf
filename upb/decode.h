@@ -12,7 +12,7 @@ extern "C" {
 #endif
 
 bool upb_decode(const char *buf, size_t size, upb_msg *msg,
-                const upb_msglayout *l);
+                const upb_msglayout *l, upb_arena *arena);
 
 #ifdef __cplusplus
 }  /* extern "C" */

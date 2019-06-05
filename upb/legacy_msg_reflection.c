@@ -167,18 +167,15 @@ size_t upb_array_size(const upb_array *arr) {
   return arr->len;
 }
 
-upb_fieldtype_t upb_array_type(const upb_array *arr) {
-  return arr->type;
-}
-
-upb_msgval upb_array_get(const upb_array *arr, size_t i) {
-  size_t element_size = upb_msgval_sizeof(arr->type);
+upb_msgval upb_array_get(const upb_array *arr, upb_fieldtype_t type, size_t i) {
+  size_t element_size = upb_msgval_sizeof(type);
   UPB_ASSERT(i < arr->len);
   return upb_msgval_read(arr->data, i * element_size, element_size);
 }
 
-bool upb_array_set(upb_array *arr, size_t i, upb_msgval val) {
-  size_t element_size = upb_msgval_sizeof(arr->type);
+bool upb_array_set(upb_array *arr, upb_fieldtype_t type, size_t i,
+                   upb_msgval val, upb_arena *arena) {
+  size_t element_size = upb_msgval_sizeof(type);
   UPB_ASSERT(i <= arr->len);
 
   if (i == arr->len) {
@@ -189,7 +186,7 @@ bool upb_array_set(upb_array *arr, size_t i, upb_msgval val) {
       size_t new_size = UPB_MAX(arr->size * 2, 8);
       size_t new_bytes = new_size * element_size;
       size_t old_bytes = arr->size * element_size;
-      upb_alloc *alloc = upb_arena_alloc(arr->arena);
+      upb_alloc *alloc = upb_arena_alloc(arena);
       upb_msgval *new_data =
           upb_realloc(alloc, arr->data, old_bytes, new_bytes);
 
@@ -207,7 +204,6 @@ bool upb_array_set(upb_array *arr, size_t i, upb_msgval val) {
   upb_msgval_write(arr->data, i * element_size, val, element_size);
   return true;
 }
-
 
 /** upb_map *******************************************************************/
 
