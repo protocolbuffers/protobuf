@@ -129,7 +129,7 @@ char lupb_arena_cache_key;
  * Callers can be guaranteed that it will be alive as long as |L| is.
  * TODO(haberman): we shouldn't use a global arena!  We should have
  * one arena for a parse, or per independently-created message. */
-static upb_arena *lupb_arena_get(lua_State *L) {
+upb_arena *lupb_arena_get(lua_State *L) {
   upb_arena *arena;
 
   lua_pushlightuserdata(L, &lupb_arena_cache_key);
@@ -473,6 +473,7 @@ typedef struct {
    * case but simplifies the code.  Could optimize away if desired. */
   const lupb_msgclass *lmsgclass;
   upb_array *arr;
+  upb_fieldtype_t type;
 } lupb_array;
 
 #define ARRAY_MSGCLASS_INDEX 0
@@ -540,8 +541,9 @@ static int lupb_array_new(lua_State *L) {
   }
 
   larray = lupb_newuserdata(L, sizeof(*larray), LUPB_ARRAY);
+  larray->type = type;
   larray->lmsgclass = lmsgclass;
-  larray->arr = upb_array_new(type, lupb_arena_get(L));
+  larray->arr = upb_array_new(lupb_arena_get(L));
 
   return 1;
 }
@@ -552,7 +554,7 @@ static int lupb_array_newindex(lua_State *L) {
   uint32_t n = lupb_array_checkindex(L, 2, upb_array_size(larray->arr) + 1);
   upb_msgval msgval = lupb_tomsgval(L, type, 3, larray->lmsgclass);
 
-  upb_array_set(larray->arr, n, msgval);
+  upb_array_set(larray->arr, larray->type, n, msgval, lupb_arena_get(L));
 
   if (lupb_istypewrapped(type)) {
     lupb_uservalseti(L, 1, n, 3);
@@ -570,7 +572,8 @@ static int lupb_array_index(lua_State *L) {
   if (lupb_istypewrapped(type)) {
     lupb_uservalgeti(L, 1, n);
   } else {
-    lupb_pushmsgval(L, upb_array_type(array), upb_array_get(array, n));
+    lupb_pushmsgval(L, upb_array_type(array),
+                    upb_array_get(array, larray->type, n));
   }
 
   return 1;

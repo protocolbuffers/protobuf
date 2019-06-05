@@ -17,7 +17,7 @@ static int lupb_pb_decode(lua_State *L) {
   upb_msg *msg = lupb_msg_checkmsg2(L, 1, &layout);
   const char *pb = lua_tolstring(L, 2, &len);
 
-  upb_decode(pb, len, msg, layout);
+  upb_decode(pb, len, msg, layout, lupb_arena_get(L));
   /* TODO(haberman): check for error. */
 
   return 0;

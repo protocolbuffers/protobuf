@@ -48,23 +48,19 @@ typedef struct upb_msglayout {
 
 /* Our internal representation for repeated fields. */
 typedef struct {
-  upb_fieldtype_t type;
   void *data;   /* Each element is element_size. */
   size_t len;   /* Measured in elements. */
   size_t size;  /* Measured in elements. */
-  upb_arena *arena;
 } upb_array;
 
 upb_msg *upb_msg_new(const upb_msglayout *l, upb_arena *a);
 upb_msg *upb_msg_new(const upb_msglayout *l, upb_arena *a);
 
-/* Returns the arena for the given message. */
-upb_arena *upb_msg_arena(const upb_msg *msg);
-
-void upb_msg_addunknown(upb_msg *msg, const char *data, size_t len);
+void upb_msg_addunknown(upb_msg *msg, const char *data, size_t len,
+                        upb_arena *arena);
 const char *upb_msg_getunknown(const upb_msg *msg, size_t *len);
 
-upb_array *upb_array_new(upb_fieldtype_t type, upb_arena *a);
+upb_array *upb_array_new(upb_arena *a);
 
 #ifdef __cplusplus
 }  /* extern "C" */

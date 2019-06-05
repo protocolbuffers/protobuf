@@ -111,6 +111,7 @@ typedef struct lupb_msgclass lupb_msgclass;
 
 upb_arena *lupb_arena_check(lua_State *L, int narg);
 int lupb_arena_new(lua_State *L);
+upb_arena *lupb_arena_get(lua_State *L);
 int lupb_msg_pushref(lua_State *L, int msgclass, void *msg);
 const upb_msg *lupb_msg_checkmsg(lua_State *L, int narg,
                                  const lupb_msgclass *lmsgclass);

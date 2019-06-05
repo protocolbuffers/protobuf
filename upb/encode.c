@@ -12,29 +12,6 @@
 #define UPB_PB_VARINT_MAX_LEN 10
 #define CHK(x) do { if (!(x)) { return false; } } while(0)
 
-/* Maps descriptor type -> upb field type.  */
-static const uint8_t upb_desctype_to_fieldtype2[] = {
-  UPB_WIRE_TYPE_END_GROUP,  /* ENDGROUP */
-  UPB_TYPE_DOUBLE,          /* DOUBLE */
-  UPB_TYPE_FLOAT,           /* FLOAT */
-  UPB_TYPE_INT64,           /* INT64 */
-  UPB_TYPE_UINT64,          /* UINT64 */
-  UPB_TYPE_INT32,           /* INT32 */
-  UPB_TYPE_UINT64,          /* FIXED64 */
-  UPB_TYPE_UINT32,          /* FIXED32 */
-  UPB_TYPE_BOOL,            /* BOOL */
-  UPB_TYPE_STRING,          /* STRING */
-  UPB_TYPE_MESSAGE,         /* GROUP */
-  UPB_TYPE_MESSAGE,         /* MESSAGE */
-  UPB_TYPE_BYTES,           /* BYTES */
-  UPB_TYPE_UINT32,          /* UINT32 */
-  UPB_TYPE_ENUM,            /* ENUM */
-  UPB_TYPE_INT32,           /* SFIXED32 */
-  UPB_TYPE_INT64,           /* SFIXED64 */
-  UPB_TYPE_INT32,           /* SINT32 */
-  UPB_TYPE_INT64,           /* SINT64 */
-};
-
 static size_t upb_encode_varint(uint64_t val, char *buf) {
   size_t i;
   if (val < 128) { buf[0] = val; return 1; }
@@ -165,8 +142,6 @@ static bool upb_encode_array(upb_encstate *e, const char *field_mem,
   if (arr == NULL || arr->len == 0) {
     return true;
   }
-
-  UPB_ASSERT(arr->type == upb_desctype_to_fieldtype2[f->descriptortype]);
 
 #define VARINT_CASE(ctype, encode) { \
   ctype *start = arr->data; \

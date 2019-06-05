@@ -46,7 +46,7 @@ UPB_INLINE void *_upb_array_resize_accessor(void *msg, size_t ofs, size_t size,
   upb_array *arr = *PTR_AT(msg, ofs, upb_array*);
 
   if (!arr) {
-    arr = upb_array_new(type, arena);
+    arr = upb_array_new(arena);
     if (!arr) return NULL;
     *PTR_AT(msg, ofs, upb_array*) = arr;
   }
