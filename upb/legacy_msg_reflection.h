@@ -10,6 +10,11 @@
 struct upb_mapiter;
 typedef struct upb_mapiter upb_mapiter;
 
+/* A distinct pointer type to represent all maps for reflection. */
+typedef struct {
+  int x;
+} upb_map;
+
 /** upb_msgval ****************************************************************/
 
 /* A union representing all possible protobuf values.  Used for generic get/set
@@ -139,15 +144,11 @@ bool upb_array_set(upb_array *arr, upb_fieldtype_t type, size_t i,
  * So you must ensure that any string or message values outlive the map, and you
  * must delete them manually when they are no longer required. */
 
-upb_map *upb_map_new(upb_fieldtype_t ktype, upb_fieldtype_t vtype,
-                     upb_arena *a);
-
 /* Read-only interface.  Safe for anyone to call. */
 
 size_t upb_map_size(const upb_map *map);
-upb_fieldtype_t upb_map_keytype(const upb_map *map);
-upb_fieldtype_t upb_map_valuetype(const upb_map *map);
-bool upb_map_get(const upb_map *map, upb_msgval key, upb_msgval *val);
+bool upb_map_get(const upb_map *map, upb_fieldtype_t key_type, upb_msgval key,
+                 upb_msgval *val);
 
 /* Write interface.  May only be called by the message's owner who can enforce
  * its memory management invariants. */
@@ -155,12 +156,12 @@ bool upb_map_get(const upb_map *map, upb_msgval key, upb_msgval *val);
 /* Sets or overwrites an entry in the map.  Return value indicates whether
  * the operation succeeded or failed with OOM, and also whether an existing
  * key was replaced or not. */
-bool upb_map_set(upb_map *map,
-                 upb_msgval key, upb_msgval val,
-                 upb_msgval *valremoved);
+bool upb_map_set(upb_map *map, upb_fieldtype_t key_type, upb_msgval key,
+                 upb_msgval val, upb_msgval *valremoved, upb_arena *arena);
 
 /* Deletes an entry in the map.  Returns true if the key was present. */
-bool upb_map_del(upb_map *map, upb_msgval key);
+bool upb_map_del(upb_map *map, upb_fieldtype_t key_type, upb_msgval key,
+                 upb_arena *arena);
 
 /** upb_mapiter ***************************************************************/
 
@@ -172,8 +173,10 @@ bool upb_map_del(upb_map *map, upb_msgval key);
 
 size_t upb_mapiter_sizeof();
 
-void upb_mapiter_begin(upb_mapiter *i, const upb_map *t);
-upb_mapiter *upb_mapiter_new(const upb_map *t, upb_alloc *a);
+void upb_mapiter_begin(upb_mapiter *i, upb_fieldtype_t key_type,
+                       const upb_map *t);
+upb_mapiter *upb_mapiter_new(const upb_map *t, upb_fieldtype_t key_type,
+                             upb_alloc *a);
 void upb_mapiter_free(upb_mapiter *i, upb_alloc *a);
 void upb_mapiter_next(upb_mapiter *i);
 bool upb_mapiter_done(const upb_mapiter *i);

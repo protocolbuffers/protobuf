@@ -85,24 +85,6 @@ static upb_msgval upb_msgval_fromval(upb_value val) {
   return ret;
 }
 
-static upb_ctype_t upb_fieldtotabtype(upb_fieldtype_t type) {
-  switch (type) {
-    case UPB_TYPE_FLOAT: return UPB_CTYPE_FLOAT;
-    case UPB_TYPE_DOUBLE: return UPB_CTYPE_DOUBLE;
-    case UPB_TYPE_BOOL: return UPB_CTYPE_BOOL;
-    case UPB_TYPE_BYTES:
-    case UPB_TYPE_MESSAGE:
-    case UPB_TYPE_STRING: return UPB_CTYPE_CONSTPTR;
-    case UPB_TYPE_ENUM:
-    case UPB_TYPE_INT32: return UPB_CTYPE_INT32;
-    case UPB_TYPE_UINT32: return UPB_CTYPE_UINT32;
-    case UPB_TYPE_INT64: return UPB_CTYPE_INT64;
-    case UPB_TYPE_UINT64: return UPB_CTYPE_UINT64;
-    default: UPB_ASSERT(false); return 0;
-  }
-}
-
-
 /** upb_msg *******************************************************************/
 
 /* If we always read/write as a consistent type to each address, this shouldn't
@@ -255,48 +237,16 @@ static upb_msgval upb_map_fromkey(upb_fieldtype_t type, const char *key,
   UPB_UNREACHABLE();
 }
 
-upb_map *upb_map_new(upb_fieldtype_t ktype, upb_fieldtype_t vtype,
-                     upb_arena *a) {
-  upb_ctype_t vtabtype = upb_fieldtotabtype(vtype);
-  upb_alloc *alloc = upb_arena_alloc(a);
-  upb_map *map = upb_malloc(alloc, sizeof(upb_map));
-
-  if (!map) {
-    return NULL;
-  }
-
-  UPB_ASSERT(upb_fieldtype_mapkeyok(ktype));
-  map->key_type = ktype;
-  map->val_type = vtype;
-  map->arena = a;
-
-  if (!upb_strtable_init2(&map->strtab, vtabtype, alloc)) {
-    return NULL;
-  }
-
-  return map;
-}
-
-size_t upb_map_size(const upb_map *map) {
-  return upb_strtable_count(&map->strtab);
-}
-
-upb_fieldtype_t upb_map_keytype(const upb_map *map) {
-  return map->key_type;
-}
-
-upb_fieldtype_t upb_map_valuetype(const upb_map *map) {
-  return map->val_type;
-}
-
-bool upb_map_get(const upb_map *map, upb_msgval key, upb_msgval *val) {
+bool upb_map_get(const upb_map *map, upb_fieldtype_t key_type, upb_msgval key,
+                 upb_msgval *val) {
+  const upb_strmap *map2 = (const upb_strmap*)map;
   upb_value tabval;
   const char *key_str;
   size_t key_len;
   bool ret;
 
-  upb_map_tokey(map->key_type, &key, &key_str, &key_len);
-  ret = upb_strtable_lookup2(&map->strtab, key_str, key_len, &tabval);
+  upb_map_tokey(key_type, &key, &key_str, &key_len);
+  ret = upb_strtable_lookup2(&map2->table, key_str, key_len, &tabval);
   if (ret) {
     memcpy(val, &tabval, sizeof(tabval));
   }
@@ -304,34 +254,36 @@ bool upb_map_get(const upb_map *map, upb_msgval key, upb_msgval *val) {
   return ret;
 }
 
-bool upb_map_set(upb_map *map, upb_msgval key, upb_msgval val,
-                 upb_msgval *removed) {
+bool upb_map_set(upb_map *map, upb_fieldtype_t key_type, upb_msgval key,
+                 upb_msgval val, upb_msgval *removed, upb_arena *arena) {
+  upb_strmap *map2 = (upb_strmap*)map;
   const char *key_str;
   size_t key_len;
   upb_value tabval = upb_toval(val);
   upb_value removedtabval;
-  upb_alloc *a = upb_arena_alloc(map->arena);
+  upb_alloc *a = upb_arena_alloc(arena);
 
-  upb_map_tokey(map->key_type, &key, &key_str, &key_len);
+  upb_map_tokey(key_type, &key, &key_str, &key_len);
 
   /* TODO(haberman): add overwrite operation to minimize number of lookups. */
-  if (upb_strtable_lookup2(&map->strtab, key_str, key_len, NULL)) {
-    upb_strtable_remove3(&map->strtab, key_str, key_len, &removedtabval, a);
+  if (upb_strtable_lookup2(&map2->table, key_str, key_len, NULL)) {
+    upb_strtable_remove3(&map2->table, key_str, key_len, &removedtabval, a);
     memcpy(&removed, &removedtabval, sizeof(removed));
   }
 
-  return upb_strtable_insert3(&map->strtab, key_str, key_len, tabval, a);
+  return upb_strtable_insert3(&map2->table, key_str, key_len, tabval, a);
 }
 
-bool upb_map_del(upb_map *map, upb_msgval key) {
+bool upb_map_del(upb_map *map, upb_fieldtype_t key_type, upb_msgval key,
+                 upb_arena *arena) {
+  upb_strmap *map2 = (upb_strmap*)map;
   const char *key_str;
   size_t key_len;
-  upb_alloc *a = upb_arena_alloc(map->arena);
+  upb_alloc *a = upb_arena_alloc(arena);
 
-  upb_map_tokey(map->key_type, &key, &key_str, &key_len);
-  return upb_strtable_remove3(&map->strtab, key_str, key_len, NULL, a);
+  upb_map_tokey(key_type, &key, &key_str, &key_len);
+  return upb_strtable_remove3(&map2->table, key_str, key_len, NULL, a);
 }
-
 
 /** upb_mapiter ***************************************************************/
 
@@ -344,19 +296,22 @@ size_t upb_mapiter_sizeof() {
   return sizeof(upb_mapiter);
 }
 
-void upb_mapiter_begin(upb_mapiter *i, const upb_map *map) {
-  upb_strtable_begin(&i->iter, &map->strtab);
-  i->key_type = map->key_type;
+void upb_mapiter_begin(upb_mapiter *i, upb_fieldtype_t key_type,
+                       const upb_map *map) {
+  const upb_strmap *map2 = (const upb_strmap*)map;
+  upb_strtable_begin(&i->iter, &map2->table);
+  i->key_type = key_type;
 }
 
-upb_mapiter *upb_mapiter_new(const upb_map *t, upb_alloc *a) {
+upb_mapiter *upb_mapiter_new(const upb_map *map, upb_fieldtype_t key_type,
+                             upb_alloc *a) {
   upb_mapiter *ret = upb_malloc(a, upb_mapiter_sizeof());
 
   if (!ret) {
     return NULL;
   }
 
-  upb_mapiter_begin(ret, t);
+  upb_mapiter_begin(ret, key_type, map);
   return ret;
 }
 

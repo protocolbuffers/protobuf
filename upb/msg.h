@@ -55,27 +55,24 @@ typedef struct {
   size_t size;  /* Measured in elements. */
 } upb_array;
 
-/* Our internal representation for maps. */
+/* Our internal representation for maps.  They are arrays but also have a side
+ * index.  These start with array so the parser can begin with a simple array
+ * path and do the table insert as a separate step.
+ *
+ * Right now we use strmaps for everything.  We'll likely want to use
+ * integer-specific maps for integer-keyed maps.*/
 typedef struct {
-  /* First element must be upb_array so code like parser/serializer can treat
-   * map fields as array. */
   upb_array array;
-
-  /* A side index whose values are indexes into the array. May be NULL. */
-  union {
-    upb_strtable *strtab;
-    upb_inttable *inttab;
-  } table;
-} upb_map;
+  upb_strtable table;  /* Values are indices into array. */
+} upb_strmap;
 
 upb_msg *upb_msg_new(const upb_msglayout *l, upb_arena *a);
-upb_msg *upb_msg_new(const upb_msglayout *l, upb_arena *a);
+upb_array *upb_array_new(upb_arena *a);
+upb_strmap *upb_map_new(upb_arena *a);
 
 void upb_msg_addunknown(upb_msg *msg, const char *data, size_t len,
                         upb_arena *arena);
 const char *upb_msg_getunknown(const upb_msg *msg, size_t *len);
-
-upb_array *upb_array_new(upb_arena *a);
 
 #ifdef __cplusplus
 }  /* extern "C" */
