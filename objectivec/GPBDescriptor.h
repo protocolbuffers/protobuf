@@ -305,7 +305,7 @@ typedef NS_ENUM(uint8_t, GPBFieldType) {
 /** Whether the extension is packable. */
 @property(nonatomic, readonly, getter=isPackable) BOOL packable;
 /** The class of the message if the extension is of message type. */
-@property(nonatomic, readonly, assign) Class msgClass;
+@property(nonatomic, readonly) Class msgClass;
 /** The singleton name for the extension. */
 @property(nonatomic, readonly) NSString *singletonName;
 /** The enum descriptor if the extension is of enum type. */
