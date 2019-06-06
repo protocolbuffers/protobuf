@@ -72,6 +72,7 @@ nobase_include_HEADERS =                                         \
   google/protobuf/stubs/hash.h                                   \
   google/protobuf/stubs/logging.h                                \
   google/protobuf/stubs/macros.h                                 \
+  google/protobuf/stubs/map_util.h                               \
   google/protobuf/stubs/mutex.h                                  \
   google/protobuf/stubs/once.h                                   \
   google/protobuf/stubs/platform_macros.h                        \
