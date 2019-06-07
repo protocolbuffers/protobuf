@@ -404,6 +404,7 @@ namespace Google.Protobuf
         /// <summary>
         /// Writes the entire byte array to the provided stream.
         /// </summary>
+        /// <param name="outputStream">The stream to which to write.</param>
         public void WriteTo(Stream outputStream)
         {
             outputStream.Write(bytes, 0, bytes.Length);
@@ -413,9 +414,20 @@ namespace Google.Protobuf
         /// <summary>
         /// Writes the entire byte array to the provided stream.
         /// </summary>
+        /// <param name="outputStream">The stream to which to write.</param>
         public Task WriteToAsync(Stream outputStream)
         {
             return outputStream.WriteAsync(bytes, 0, bytes.Length);
+        }
+
+        /// <summary>
+        /// Writes the entire byte array to the provided stream.
+        /// </summary>
+        /// <param name="outputStream">The stream to which to write.</param>
+        /// <param name="cancellationToken">A cancellation token for this request.</param>
+        public Task WriteToAsync(Stream outputStream, CancellationToken cancellationToken)
+        {
+            return outputStream.WriteAsync(bytes, 0, bytes.Length, cancellationToken);
         }
 #endif
     }
