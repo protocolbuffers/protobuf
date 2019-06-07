@@ -353,8 +353,6 @@ bool protobuf_convert_to_bool(zval* from, int8_t* to) {
       *to = (int8_t)(Z_LVAL_P(from) != 0);
       break;
     case IS_STRING: {
-      char* strval = Z_STRVAL_P(from);
-
       if (Z_STRLEN_P(from) == 0 ||
           (Z_STRLEN_P(from) == 1 && Z_STRVAL_P(from)[0] == '0')) {
         *to = 0;
@@ -442,7 +440,11 @@ PHP_METHOD(Util, checkMessage) {
   if (!instanceof_function(Z_OBJCE_P(val), klass TSRMLS_CC)) {
     zend_throw_exception_ex(NULL, 0 TSRMLS_CC,
                             "Given value is not an instance of %s.",
+#if PHP_MAJOR_VERSION >= 7
+                            ZSTR_VAL(klass->name));
+#else
                             klass->name);
+#endif
     return;
   }
   RETURN_ZVAL(val, 1, 0);
@@ -487,7 +489,11 @@ void check_repeated_field(const zend_class_entry* klass, PHP_PROTO_LONG type,
     if (!instanceof_function(Z_OBJCE_P(val), repeated_field_type TSRMLS_CC)) {
       zend_throw_exception_ex(NULL, 0 TSRMLS_CC,
                               "Given value is not an instance of %s.",
+#if PHP_MAJOR_VERSION >= 7
+                              ZSTR_VAL(repeated_field_type->name));
+#else
                               repeated_field_type->name);
+#endif
       return;
     }
     RepeatedField* intern = UNBOX(RepeatedField, val);
@@ -499,7 +505,11 @@ void check_repeated_field(const zend_class_entry* klass, PHP_PROTO_LONG type,
     if (klass != NULL && intern->msg_ce != klass) {
       zend_throw_exception_ex(NULL, 0 TSRMLS_CC,
                               "Expect a repeated field of %s, but %s is given.",
+#if PHP_MAJOR_VERSION >= 7
+                              ZSTR_VAL(klass->name), ZSTR_VAL(intern->msg_ce->name));
+#else
                               klass->name, intern->msg_ce->name);
+#endif
       return;
     }
     RETURN_ZVAL(val, 1, 0);
@@ -563,7 +573,11 @@ void check_map_field(const zend_class_entry* klass, PHP_PROTO_LONG key_type,
     if (!instanceof_function(Z_OBJCE_P(val), map_field_type TSRMLS_CC)) {
       zend_throw_exception_ex(NULL, 0 TSRMLS_CC,
                               "Given value is not an instance of %s.",
+#if PHP_MAJOR_VERSION >= 7
+                              ZSTR_VAL(map_field_type->name));
+#else
                               map_field_type->name);
+#endif
       return;
     }
     Map* intern = UNBOX(Map, val);
@@ -582,7 +596,11 @@ void check_map_field(const zend_class_entry* klass, PHP_PROTO_LONG key_type,
     if (klass != NULL && intern->msg_ce != klass) {
       zend_throw_exception_ex(NULL, 0 TSRMLS_CC,
                               "Expect a map field of %s, but %s is given.",
+#if PHP_MAJOR_VERSION >= 7
+                              ZSTR_VAL(klass->name), ZSTR_VAL(intern->msg_ce->name));
+#else
                               klass->name, intern->msg_ce->name);
+#endif
       return;
     }
     RETURN_ZVAL(val, 1, 0);
