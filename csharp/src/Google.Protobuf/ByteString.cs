@@ -402,11 +402,21 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Writes the entire byte array to the provided stream
+        /// Writes the entire byte array to the provided stream.
         /// </summary>
         public void WriteTo(Stream outputStream)
         {
             outputStream.Write(bytes, 0, bytes.Length);
         }
+
+#if !NET35
+        /// <summary>
+        /// Writes the entire byte array to the provided stream.
+        /// </summary>
+        public Task WriteToAsync(Stream outputStream)
+        {
+            return outputStream.WriteAsync(bytes, 0, bytes.Length);
+        }
+#endif
     }
 }
