@@ -55,7 +55,7 @@ namespace Google.Protobuf
         private readonly byte[] bytes;
 
         /// <summary>
-        /// Unsafe operations that can cause IO Failure and/or other catestrophic side-effects.
+        /// Unsafe operations that can cause IO Failure and/or other catastrophic side-effects.
         /// </summary>
         internal static class Unsafe
         {
@@ -248,7 +248,7 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Retuns the byte at the given index.
+        /// Gets the byte at the given index.
         /// </summary>
         public byte this[int index]
         {
@@ -396,9 +396,23 @@ namespace Google.Protobuf
         /// <summary>
         /// Copies the entire byte array to the destination array provided at the offset specified.
         /// </summary>
+        /// <param name="array">The destination array.</param>
+        /// <param name="position">The destination offset within <paramref name="array"/>.</param>
         public void CopyTo(byte[] array, int position)
         {
             ByteArray.Copy(bytes, 0, array, position, bytes.Length);
+        }
+
+        /// <summary>
+        /// Copies a slice of the byte array to the destination array provided at the offset specified.
+        /// </summary>
+        /// <param name="srcOffset">The starting index within the <see cref="ByteString"/>.</param>
+        /// <param name="dst">The destination array.</param>
+        /// <param name="dstOffset">The destination index within <paramref name="dst"/>.</param>
+        /// <param name="count">The number of bytes to copy.</param>
+        public void CopyTo(int srcOffset, byte[] dst, int dstOffset, int count)
+        {
+            ByteArray.Copy(bytes, srcOffset, dst, dstOffset, count);
         }
 
         /// <summary>
