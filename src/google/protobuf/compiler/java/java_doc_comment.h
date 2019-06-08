@@ -54,6 +54,10 @@ namespace java {
 
 void WriteMessageDocComment(io::Printer* printer, const Descriptor* message);
 void WriteFieldDocComment(io::Printer* printer, const FieldDescriptor* field);
+void WriteFieldGetterDocComment(io::Printer* printer, const FieldDescriptor* field);
+void WriteFieldHaserDocComment(io::Printer* printer, const FieldDescriptor* field);
+void WriteFieldSetterDocComment(io::Printer* printer, const FieldDescriptor* field);
+void WriteFieldClearerDocComment(io::Printer* printer, const FieldDescriptor* field);
 void WriteEnumDocComment(io::Printer* printer, const EnumDescriptor* enum_);
 void WriteEnumValueDocComment(io::Printer* printer,
                               const EnumValueDescriptor* value);

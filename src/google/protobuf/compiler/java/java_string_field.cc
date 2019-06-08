@@ -190,14 +190,14 @@ int ImmutableStringFieldGenerator::GetNumBitsForBuilder() const {
 void ImmutableStringFieldGenerator::GenerateInterfaceMembers(
     io::Printer* printer) const {
   if (SupportFieldPresence(descriptor_->file())) {
-    WriteFieldDocComment(printer, descriptor_);
+    WriteFieldHaserDocComment(printer, descriptor_);
     printer->Print(variables_,
                    "$deprecation$boolean has$capitalized_name$();\n");
   }
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldGetterDocComment(printer, descriptor_);
   printer->Print(variables_,
                  "$deprecation$java.lang.String get$capitalized_name$();\n");
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldGetterDocComment(printer, descriptor_);
   printer->Print(variables_,
                  "$deprecation$com.google.protobuf.ByteString\n"
                  "    get$capitalized_name$Bytes();\n");
@@ -209,7 +209,7 @@ void ImmutableStringFieldGenerator::GenerateMembers(
   PrintExtraFieldInfo(variables_, printer);
 
   if (SupportFieldPresence(descriptor_->file())) {
-    WriteFieldDocComment(printer, descriptor_);
+    WriteFieldHaserDocComment(printer, descriptor_);
     printer->Print(
         variables_,
         "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
@@ -218,7 +218,7 @@ void ImmutableStringFieldGenerator::GenerateMembers(
     printer->Annotate("{", "}", descriptor_);
   }
 
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldGetterDocComment(printer, descriptor_);
   printer->Print(
       variables_,
       "$deprecation$public java.lang.String ${$get$capitalized_name$$}$() {\n"
@@ -242,7 +242,7 @@ void ImmutableStringFieldGenerator::GenerateMembers(
                  "    return s;\n"
                  "  }\n"
                  "}\n");
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldGetterDocComment(printer, descriptor_);
   printer->Print(variables_,
                  "$deprecation$public com.google.protobuf.ByteString\n"
                  "    ${$get$capitalized_name$Bytes$}$() {\n"
@@ -265,7 +265,7 @@ void ImmutableStringFieldGenerator::GenerateBuilderMembers(
   printer->Print(variables_,
                  "private java.lang.Object $name$_ $default_init$;\n");
   if (SupportFieldPresence(descriptor_->file())) {
-    WriteFieldDocComment(printer, descriptor_);
+    WriteFieldHaserDocComment(printer, descriptor_);
     printer->Print(
         variables_,
         "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
@@ -274,7 +274,7 @@ void ImmutableStringFieldGenerator::GenerateBuilderMembers(
     printer->Annotate("{", "}", descriptor_);
   }
 
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldGetterDocComment(printer, descriptor_);
   printer->Print(
       variables_,
       "$deprecation$public java.lang.String ${$get$capitalized_name$$}$() {\n"
@@ -299,7 +299,7 @@ void ImmutableStringFieldGenerator::GenerateBuilderMembers(
                  "  }\n"
                  "}\n");
 
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldGetterDocComment(printer, descriptor_);
   printer->Print(variables_,
                  "$deprecation$public com.google.protobuf.ByteString\n"
                  "    ${$get$capitalized_name$Bytes$}$() {\n"
@@ -316,7 +316,7 @@ void ImmutableStringFieldGenerator::GenerateBuilderMembers(
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
 
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldSetterDocComment(printer, descriptor_);
   printer->Print(variables_,
                  "$deprecation$public Builder ${$set$capitalized_name$$}$(\n"
                  "    java.lang.String value) {\n"
@@ -327,7 +327,7 @@ void ImmutableStringFieldGenerator::GenerateBuilderMembers(
                  "  return this;\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldClearerDocComment(printer, descriptor_);
   printer->Print(
       variables_,
       "$deprecation$public Builder ${$clear$capitalized_name$$}$() {\n"
@@ -342,7 +342,7 @@ void ImmutableStringFieldGenerator::GenerateBuilderMembers(
                  "  return this;\n"
                  "}\n");
 
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldSetterDocComment(printer, descriptor_);
   printer->Print(
       variables_,
       "$deprecation$public Builder ${$set$capitalized_name$Bytes$}$(\n"

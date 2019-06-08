@@ -198,11 +198,11 @@ int ImmutablePrimitiveFieldLiteGenerator::GetNumBitsForMessage() const {
 void ImmutablePrimitiveFieldLiteGenerator::GenerateInterfaceMembers(
     io::Printer* printer) const {
   if (SupportFieldPresence(descriptor_->file())) {
-    WriteFieldDocComment(printer, descriptor_);
+    WriteFieldHaserDocComment(printer, descriptor_);
     printer->Print(variables_,
                    "$deprecation$boolean has$capitalized_name$();\n");
   }
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldGetterDocComment(printer, descriptor_);
   printer->Print(variables_, "$deprecation$$type$ get$capitalized_name$();\n");
 }
 
@@ -218,7 +218,7 @@ void ImmutablePrimitiveFieldLiteGenerator::GenerateMembers(
   printer->Print(variables_, "private $field_type$ $name$_;\n");
   PrintExtraFieldInfo(variables_, printer);
   if (SupportFieldPresence(descriptor_->file())) {
-    WriteFieldDocComment(printer, descriptor_);
+    WriteFieldHaserDocComment(printer, descriptor_);
     printer->Print(
         variables_,
         "@java.lang.Override\n"
@@ -228,7 +228,7 @@ void ImmutablePrimitiveFieldLiteGenerator::GenerateMembers(
     printer->Annotate("{", "}", descriptor_);
   }
 
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldGetterDocComment(printer, descriptor_);
   printer->Print(variables_,
                  "@java.lang.Override\n"
                  "$deprecation$public $type$ ${$get$capitalized_name$$}$() {\n"
@@ -264,7 +264,7 @@ void ImmutablePrimitiveFieldLiteGenerator::GenerateMembers(
 void ImmutablePrimitiveFieldLiteGenerator::GenerateBuilderMembers(
     io::Printer* printer) const {
   if (SupportFieldPresence(descriptor_->file())) {
-    WriteFieldDocComment(printer, descriptor_);
+    WriteFieldHaserDocComment(printer, descriptor_);
     printer->Print(
         variables_,
         "@java.lang.Override\n"
@@ -274,7 +274,7 @@ void ImmutablePrimitiveFieldLiteGenerator::GenerateBuilderMembers(
     printer->Annotate("{", "}", descriptor_);
   }
 
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldGetterDocComment(printer, descriptor_);
   printer->Print(variables_,
                  "@java.lang.Override\n"
                  "$deprecation$public $type$ ${$get$capitalized_name$$}$() {\n"
@@ -347,7 +347,7 @@ void ImmutablePrimitiveOneofFieldLiteGenerator::GenerateMembers(
     io::Printer* printer) const {
   PrintExtraFieldInfo(variables_, printer);
   if (SupportFieldPresence(descriptor_->file())) {
-    WriteFieldDocComment(printer, descriptor_);
+    WriteFieldHaserDocComment(printer, descriptor_);
     printer->Print(
         variables_,
         "@java.lang.Override\n"
@@ -357,7 +357,7 @@ void ImmutablePrimitiveOneofFieldLiteGenerator::GenerateMembers(
     printer->Annotate("{", "}", descriptor_);
   }
 
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldGetterDocComment(printer, descriptor_);
   printer->Print(variables_,
                  "@java.lang.Override\n"
                  "$deprecation$public $type$ ${$get$capitalized_name$$}$() {\n"
@@ -397,7 +397,7 @@ void ImmutablePrimitiveOneofFieldLiteGenerator::GenerateFieldInfo(
 void ImmutablePrimitiveOneofFieldLiteGenerator::GenerateBuilderMembers(
     io::Printer* printer) const {
   if (SupportFieldPresence(descriptor_->file())) {
-    WriteFieldDocComment(printer, descriptor_);
+    WriteFieldHaserDocComment(printer, descriptor_);
     printer->Print(
         variables_,
         "@java.lang.Override\n"
@@ -407,7 +407,7 @@ void ImmutablePrimitiveOneofFieldLiteGenerator::GenerateBuilderMembers(
     printer->Annotate("{", "}", descriptor_);
   }
 
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldGetterDocComment(printer, descriptor_);
   printer->Print(variables_,
                  "@java.lang.Override\n"
                  "$deprecation$public $type$ ${$get$capitalized_name$$}$() {\n"

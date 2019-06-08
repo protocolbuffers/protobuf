@@ -144,12 +144,12 @@ void ImmutableMessageFieldGenerator::GenerateInterfaceMembers(
   // interface so that builders can choose dynamically to either return a
   // message or a nested builder, so that asking for the interface doesn't
   // cause a message to ever be built.
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldHaserDocComment(printer, descriptor_);
   printer->Print(variables_, "$deprecation$boolean has$capitalized_name$();\n");
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldGetterDocComment(printer, descriptor_);
   printer->Print(variables_, "$deprecation$$type$ get$capitalized_name$();\n");
 
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldGetterDocComment(printer, descriptor_);
   printer->Print(
       variables_,
       "$deprecation$$type$OrBuilder get$capitalized_name$OrBuilder();\n");
@@ -161,14 +161,14 @@ void ImmutableMessageFieldGenerator::GenerateMembers(
   PrintExtraFieldInfo(variables_, printer);
 
   if (SupportFieldPresence(descriptor_->file())) {
-    WriteFieldDocComment(printer, descriptor_);
+    WriteFieldHaserDocComment(printer, descriptor_);
     printer->Print(
         variables_,
         "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
         "  return $get_has_field_bit_message$;\n"
         "}\n");
     printer->Annotate("{", "}", descriptor_);
-    WriteFieldDocComment(printer, descriptor_);
+    WriteFieldGetterDocComment(printer, descriptor_);
     printer->Print(
         variables_,
         "$deprecation$public $type$ ${$get$capitalized_name$$}$() {\n"
@@ -185,14 +185,14 @@ void ImmutableMessageFieldGenerator::GenerateMembers(
         "}\n");
     printer->Annotate("{", "}", descriptor_);
   } else {
-    WriteFieldDocComment(printer, descriptor_);
+    WriteFieldHaserDocComment(printer, descriptor_);
     printer->Print(
         variables_,
         "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
         "  return $name$_ != null;\n"
         "}\n");
     printer->Annotate("{", "}", descriptor_);
-    WriteFieldDocComment(printer, descriptor_);
+    WriteFieldGetterDocComment(printer, descriptor_);
     printer->Print(
         variables_,
         "$deprecation$public $type$ ${$get$capitalized_name$$}$() {\n"
@@ -261,7 +261,7 @@ void ImmutableMessageFieldGenerator::GenerateBuilderMembers(
   // field of type "Field" called "Field".
 
   // boolean hasField()
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldHaserDocComment(printer, descriptor_);
   if (support_field_presence) {
     printer->Print(
         variables_,
@@ -279,14 +279,14 @@ void ImmutableMessageFieldGenerator::GenerateBuilderMembers(
   }
 
   // Field getField()
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldGetterDocComment(printer, descriptor_);
   PrintNestedBuilderFunction(
       printer, "$deprecation$public $type$ ${$get$capitalized_name$$}$()",
       "return $name$_ == null ? $type$.getDefaultInstance() : $name$_;\n",
       "return $name$Builder_.getMessage();\n", NULL);
 
   // Field.Builder setField(Field value)
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldSetterDocComment(printer, descriptor_);
   PrintNestedBuilderFunction(
       printer,
       "$deprecation$public Builder ${$set$capitalized_name$$}$($type$ value)",
@@ -303,7 +303,7 @@ void ImmutableMessageFieldGenerator::GenerateBuilderMembers(
       "return this;\n");
 
   // Field.Builder setField(Field.Builder builderForValue)
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldSetterDocComment(printer, descriptor_);
   PrintNestedBuilderFunction(
       printer,
       "$deprecation$public Builder ${$set$capitalized_name$$}$(\n"
@@ -347,7 +347,7 @@ void ImmutableMessageFieldGenerator::GenerateBuilderMembers(
       "return this;\n");
 
   // Field.Builder clearField()
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldClearerDocComment(printer, descriptor_);
   PrintNestedBuilderFunction(
       printer, "$deprecation$public Builder ${$clear$capitalized_name$$}$()",
 
@@ -535,13 +535,13 @@ ImmutableMessageOneofFieldGenerator::~ImmutableMessageOneofFieldGenerator() {}
 void ImmutableMessageOneofFieldGenerator::GenerateMembers(
     io::Printer* printer) const {
   PrintExtraFieldInfo(variables_, printer);
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldHaserDocComment(printer, descriptor_);
   printer->Print(variables_,
                  "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
                  "  return $has_oneof_case_message$;\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldGetterDocComment(printer, descriptor_);
   printer->Print(variables_,
                  "$deprecation$public $type$ ${$get$capitalized_name$$}$() {\n"
                  "  if ($has_oneof_case_message$) {\n"
@@ -579,7 +579,7 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderMembers(
   // field of type "Field" called "Field".
 
   // boolean hasField()
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldHaserDocComment(printer, descriptor_);
   printer->Print(variables_,
                  "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
                  "  return $has_oneof_case_message$;\n"
@@ -587,7 +587,7 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderMembers(
   printer->Annotate("{", "}", descriptor_);
 
   // Field getField()
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldGetterDocComment(printer, descriptor_);
   PrintNestedBuilderFunction(
       printer, "$deprecation$public $type$ ${$get$capitalized_name$$}$()",
 

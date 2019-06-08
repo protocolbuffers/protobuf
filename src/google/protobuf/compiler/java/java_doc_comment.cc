@@ -173,18 +173,52 @@ void WriteMessageDocComment(io::Printer* printer, const Descriptor* message) {
 }
 
 void WriteFieldDocComment(io::Printer* printer, const FieldDescriptor* field) {
-  // In theory we should have slightly different comments for setters, getters,
-  // etc., but in practice everyone already knows the difference between these
-  // so it's redundant information.
-
   // We start the comment with the main body based on the comments from the
-  // .proto file (if present). We then end with the field declaration, e.g.:
+  // .proto file (if present). We then continue with the field declaration, e.g.:
   //   optional string foo = 5;
+  // And then we end with the javadoc tags if applicable.
   // If the field is a group, the debug string might end with {.
   printer->Print("/**\n");
   WriteDocCommentBody(printer, field);
   printer->Print(" * <code>$def$</code>\n", "def",
                  EscapeJavadoc(FirstLineOf(field->DebugString())));
+  printer->Print(" */\n");
+}
+
+void WriteFieldGetterDocComment(io::Printer* printer, const FieldDescriptor* field) {
+  printer->Print("/**\n");
+  WriteDocCommentBody(printer, field);
+  printer->Print(" * <code>$def$</code>\n", "def", 
+                 EscapeJavadoc(FirstLineOf(field->DebugString())));
+  printer->Print(" * @return The $name$.\n", "name", field->camelcase_name());
+  printer->Print(" */\n");
+}
+
+void WriteFieldHaserDocComment(io::Printer* printer, const FieldDescriptor* field) {
+  printer->Print("/**\n");
+  WriteDocCommentBody(printer, field);
+  printer->Print(" * <code>$def$</code>\n", "def",
+                 EscapeJavadoc(FirstLineOf(field->DebugString())));
+  printer->Print(" * @return Whether the $name$ field is set.\n", "name", field->camelcase_name());
+  printer->Print(" */\n");
+}
+
+void WriteFieldSetterDocComment(io::Printer* printer, const FieldDescriptor* field) {
+  printer->Print("/**\n");
+  WriteDocCommentBody(printer, field);
+  printer->Print(" * <code>$def$</code>\n", "def",
+                 EscapeJavadoc(FirstLineOf(field->DebugString())));
+  printer->Print(" * @param value The $name$ to set.\n", "name", field->camelcase_name());
+  printer->Print(" * @return This builder for chaining.\n");
+  printer->Print(" */\n");
+}
+
+void WriteFieldClearerDocComment(io::Printer* printer, const FieldDescriptor* field) {
+  printer->Print("/**\n");
+  WriteDocCommentBody(printer, field);
+  printer->Print(" * <code>$def$</code>\n", "def",
+                 EscapeJavadoc(FirstLineOf(field->DebugString())));
+  printer->Print(" * @return This builder for chaining.\n");
   printer->Print(" */\n");
 }
 

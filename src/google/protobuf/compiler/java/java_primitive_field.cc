@@ -219,7 +219,7 @@ void ImmutablePrimitiveFieldGenerator::GenerateMembers(
   printer->Print(variables_, "private $field_type$ $name$_;\n");
   PrintExtraFieldInfo(variables_, printer);
   if (SupportFieldPresence(descriptor_->file())) {
-    WriteFieldDocComment(printer, descriptor_);
+    WriteFieldHaserDocComment(printer, descriptor_);
     printer->Print(
         variables_,
         "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
@@ -228,7 +228,7 @@ void ImmutablePrimitiveFieldGenerator::GenerateMembers(
     printer->Annotate("{", "}", descriptor_);
   }
 
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldGetterDocComment(printer, descriptor_);
   printer->Print(variables_,
                  "$deprecation$public $type$ ${$get$capitalized_name$$}$() {\n"
                  "  return $name$_;\n"
@@ -241,7 +241,7 @@ void ImmutablePrimitiveFieldGenerator::GenerateBuilderMembers(
   printer->Print(variables_, "private $field_type$ $name$_ $default_init$;\n");
 
   if (SupportFieldPresence(descriptor_->file())) {
-    WriteFieldDocComment(printer, descriptor_);
+    WriteFieldHaserDocComment(printer, descriptor_);
     printer->Print(
         variables_,
         "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
@@ -250,7 +250,7 @@ void ImmutablePrimitiveFieldGenerator::GenerateBuilderMembers(
     printer->Annotate("{", "}", descriptor_);
   }
 
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldGetterDocComment(printer, descriptor_);
   printer->Print(variables_,
                  "$deprecation$public $type$ ${$get$capitalized_name$$}$() {\n"
                  "  return $name$_;\n"
@@ -492,7 +492,7 @@ void ImmutablePrimitiveOneofFieldGenerator::GenerateMembers(
     io::Printer* printer) const {
   PrintExtraFieldInfo(variables_, printer);
   if (SupportFieldPresence(descriptor_->file())) {
-    WriteFieldDocComment(printer, descriptor_);
+    WriteFieldHaserDocComment(printer, descriptor_);
     printer->Print(
         variables_,
         "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
@@ -501,7 +501,7 @@ void ImmutablePrimitiveOneofFieldGenerator::GenerateMembers(
     printer->Annotate("{", "}", descriptor_);
   }
 
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldGetterDocComment(printer, descriptor_);
   printer->Print(variables_,
                  "$deprecation$public $type$ ${$get$capitalized_name$$}$() {\n"
                  "  if ($has_oneof_case_message$) {\n"
@@ -515,7 +515,7 @@ void ImmutablePrimitiveOneofFieldGenerator::GenerateMembers(
 void ImmutablePrimitiveOneofFieldGenerator::GenerateBuilderMembers(
     io::Printer* printer) const {
   if (SupportFieldPresence(descriptor_->file())) {
-    WriteFieldDocComment(printer, descriptor_);
+    WriteFieldHaserDocComment(printer, descriptor_);
     printer->Print(
         variables_,
         "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
@@ -524,7 +524,7 @@ void ImmutablePrimitiveOneofFieldGenerator::GenerateBuilderMembers(
     printer->Annotate("{", "}", descriptor_);
   }
 
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldGetterDocComment(printer, descriptor_);
   printer->Print(variables_,
                  "$deprecation$public $type$ ${$get$capitalized_name$$}$() {\n"
                  "  if ($has_oneof_case_message$) {\n"
