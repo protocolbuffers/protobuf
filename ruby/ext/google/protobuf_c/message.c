@@ -737,7 +737,6 @@ VALUE build_class_from_descriptor(Descriptor* desc) {
   rb_define_method(klass, "eql?", Message_eq, 1);
   rb_define_method(klass, "hash", Message_hash, 0);
   rb_define_method(klass, "to_h", Message_to_h, 0);
-  rb_define_method(klass, "to_hash", Message_to_h, 0);
   rb_define_method(klass, "inspect", Message_inspect, 0);
   rb_define_method(klass, "to_s", Message_inspect, 0);
   rb_define_method(klass, "[]", Message_index, 1);
