@@ -47,6 +47,11 @@ AC_CANONICAL_TARGET
 
 AM_INIT_AUTOMAKE([1.9 tar-ustar subdir-objects])
 
+# Silent rules enabled: the output is minimal but informative.
+# In particular, the warnings from the compiler stick out very clearly.
+# To see all logs, use the --disable-silent-rules on configure or via make V=1
+AM_SILENT_RULES([yes])
+
 AC_ARG_WITH([zlib],
   [AS_HELP_STRING([--with-zlib],
     [include classes for streaming compressed data in and out @<:@default=check@:>@])],
