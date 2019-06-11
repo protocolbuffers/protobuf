@@ -157,7 +157,7 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
 
  private:
   void GenerateHeader(const GeneratorOptions& options,
-                      io::Printer* printer) const;
+                      const FileDescriptor* file, io::Printer* printer) const;
 
   // Generate goog.provides() calls.
   void FindProvides(const GeneratorOptions& options, io::Printer* printer,

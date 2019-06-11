@@ -116,10 +116,21 @@ class PROTOBUF_EXPORT Empty :
   static constexpr int kIndexInFileMessages =
     0;
 
-  void UnsafeArenaSwap(Empty* other);
-  void Swap(Empty* other);
   friend void swap(Empty& a, Empty& b) {
     a.Swap(&b);
+  }
+  inline void Swap(Empty* other) {
+    if (other == this) return;
+    if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(Empty* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
+    InternalSwap(other);
   }
 
   // implements Message ----------------------------------------------

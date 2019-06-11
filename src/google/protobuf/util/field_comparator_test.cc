@@ -388,6 +388,20 @@ TEST_F(DefaultFieldComparatorTest,
   EXPECT_EQ(
       FieldComparator::SAME,
       comparator_.Compare(message_1_, message_2_, field_double, -1, -1, NULL));
+
+  // Finite values and inf should not be equal, even for a positive fraction.
+  message_1_.set_optional_float(std::numeric_limits<float>::infinity());
+  message_2_.set_optional_float(0.0f);
+  message_1_.set_optional_double(std::numeric_limits<double>::infinity());
+  message_2_.set_optional_double(0.0);
+  comparator_.SetFractionAndMargin(field_float, 0.1, 0.0);
+  comparator_.SetFractionAndMargin(field_double, 0.1, 0.0);
+  EXPECT_EQ(FieldComparator::DIFFERENT,
+            comparator_.Compare(message_1_, message_2_, field_float, -1, -1,
+                                nullptr));
+  EXPECT_EQ(FieldComparator::DIFFERENT,
+            comparator_.Compare(message_1_, message_2_, field_double, -1, -1,
+                                nullptr));
 }
 
 TEST_F(DefaultFieldComparatorTest,

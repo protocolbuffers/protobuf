@@ -1386,10 +1386,6 @@ class FileDescriptorSet::_Internal {
   using HasBits = decltype(std::declval<FileDescriptorSet>()._has_bits_);
 };
 
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int FileDescriptorSet::kFileFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
-
 FileDescriptorSet::FileDescriptorSet()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
@@ -1651,25 +1647,6 @@ bool FileDescriptorSet::IsInitialized() const {
   return true;
 }
 
-void FileDescriptorSet::Swap(FileDescriptorSet* other) {
-  if (other == this) return;
-  if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
-    InternalSwap(other);
-  } else {
-    FileDescriptorSet* temp = New(GetArenaNoVirtual());
-    temp->MergeFrom(*other);
-    other->CopyFrom(*this);
-    InternalSwap(temp);
-    if (GetArenaNoVirtual() == nullptr) {
-      delete temp;
-    }
-  }
-}
-void FileDescriptorSet::UnsafeArenaSwap(FileDescriptorSet* other) {
-  if (other == this) return;
-  GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
-  InternalSwap(other);
-}
 void FileDescriptorSet::InternalSwap(FileDescriptorSet* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
@@ -1746,21 +1723,6 @@ void FileDescriptorProto::unsafe_arena_set_allocated_source_code_info(
   }
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.FileDescriptorProto.source_code_info)
 }
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int FileDescriptorProto::kNameFieldNumber;
-const int FileDescriptorProto::kPackageFieldNumber;
-const int FileDescriptorProto::kDependencyFieldNumber;
-const int FileDescriptorProto::kPublicDependencyFieldNumber;
-const int FileDescriptorProto::kWeakDependencyFieldNumber;
-const int FileDescriptorProto::kMessageTypeFieldNumber;
-const int FileDescriptorProto::kEnumTypeFieldNumber;
-const int FileDescriptorProto::kServiceFieldNumber;
-const int FileDescriptorProto::kExtensionFieldNumber;
-const int FileDescriptorProto::kOptionsFieldNumber;
-const int FileDescriptorProto::kSourceCodeInfoFieldNumber;
-const int FileDescriptorProto::kSyntaxFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
-
 FileDescriptorProto::FileDescriptorProto()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
@@ -2668,25 +2630,6 @@ bool FileDescriptorProto::IsInitialized() const {
   return true;
 }
 
-void FileDescriptorProto::Swap(FileDescriptorProto* other) {
-  if (other == this) return;
-  if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
-    InternalSwap(other);
-  } else {
-    FileDescriptorProto* temp = New(GetArenaNoVirtual());
-    temp->MergeFrom(*other);
-    other->CopyFrom(*this);
-    InternalSwap(temp);
-    if (GetArenaNoVirtual() == nullptr) {
-      delete temp;
-    }
-  }
-}
-void FileDescriptorProto::UnsafeArenaSwap(FileDescriptorProto* other) {
-  if (other == this) return;
-  GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
-  InternalSwap(other);
-}
 void FileDescriptorProto::InternalSwap(FileDescriptorProto* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
@@ -2751,12 +2694,6 @@ void DescriptorProto_ExtensionRange::unsafe_arena_set_allocated_options(
   }
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.DescriptorProto.ExtensionRange.options)
 }
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int DescriptorProto_ExtensionRange::kStartFieldNumber;
-const int DescriptorProto_ExtensionRange::kEndFieldNumber;
-const int DescriptorProto_ExtensionRange::kOptionsFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
-
 DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
@@ -3121,25 +3058,6 @@ bool DescriptorProto_ExtensionRange::IsInitialized() const {
   return true;
 }
 
-void DescriptorProto_ExtensionRange::Swap(DescriptorProto_ExtensionRange* other) {
-  if (other == this) return;
-  if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
-    InternalSwap(other);
-  } else {
-    DescriptorProto_ExtensionRange* temp = New(GetArenaNoVirtual());
-    temp->MergeFrom(*other);
-    other->CopyFrom(*this);
-    InternalSwap(temp);
-    if (GetArenaNoVirtual() == nullptr) {
-      delete temp;
-    }
-  }
-}
-void DescriptorProto_ExtensionRange::UnsafeArenaSwap(DescriptorProto_ExtensionRange* other) {
-  if (other == this) return;
-  GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
-  InternalSwap(other);
-}
 void DescriptorProto_ExtensionRange::InternalSwap(DescriptorProto_ExtensionRange* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
@@ -3168,11 +3086,6 @@ class DescriptorProto_ReservedRange::_Internal {
     (*has_bits)[0] |= 2u;
   }
 };
-
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int DescriptorProto_ReservedRange::kStartFieldNumber;
-const int DescriptorProto_ReservedRange::kEndFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 DescriptorProto_ReservedRange::DescriptorProto_ReservedRange()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
@@ -3483,25 +3396,6 @@ bool DescriptorProto_ReservedRange::IsInitialized() const {
   return true;
 }
 
-void DescriptorProto_ReservedRange::Swap(DescriptorProto_ReservedRange* other) {
-  if (other == this) return;
-  if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
-    InternalSwap(other);
-  } else {
-    DescriptorProto_ReservedRange* temp = New(GetArenaNoVirtual());
-    temp->MergeFrom(*other);
-    other->CopyFrom(*this);
-    InternalSwap(temp);
-    if (GetArenaNoVirtual() == nullptr) {
-      delete temp;
-    }
-  }
-}
-void DescriptorProto_ReservedRange::UnsafeArenaSwap(DescriptorProto_ReservedRange* other) {
-  if (other == this) return;
-  GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
-  InternalSwap(other);
-}
 void DescriptorProto_ReservedRange::InternalSwap(DescriptorProto_ReservedRange* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
@@ -3550,19 +3444,6 @@ void DescriptorProto::unsafe_arena_set_allocated_options(
   }
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.DescriptorProto.options)
 }
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int DescriptorProto::kNameFieldNumber;
-const int DescriptorProto::kFieldFieldNumber;
-const int DescriptorProto::kExtensionFieldNumber;
-const int DescriptorProto::kNestedTypeFieldNumber;
-const int DescriptorProto::kEnumTypeFieldNumber;
-const int DescriptorProto::kExtensionRangeFieldNumber;
-const int DescriptorProto::kOneofDeclFieldNumber;
-const int DescriptorProto::kOptionsFieldNumber;
-const int DescriptorProto::kReservedRangeFieldNumber;
-const int DescriptorProto::kReservedNameFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
-
 DescriptorProto::DescriptorProto()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
@@ -4350,25 +4231,6 @@ bool DescriptorProto::IsInitialized() const {
   return true;
 }
 
-void DescriptorProto::Swap(DescriptorProto* other) {
-  if (other == this) return;
-  if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
-    InternalSwap(other);
-  } else {
-    DescriptorProto* temp = New(GetArenaNoVirtual());
-    temp->MergeFrom(*other);
-    other->CopyFrom(*this);
-    InternalSwap(temp);
-    if (GetArenaNoVirtual() == nullptr) {
-      delete temp;
-    }
-  }
-}
-void DescriptorProto::UnsafeArenaSwap(DescriptorProto* other) {
-  if (other == this) return;
-  GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
-  InternalSwap(other);
-}
 void DescriptorProto::InternalSwap(DescriptorProto* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
@@ -4399,10 +4261,6 @@ class ExtensionRangeOptions::_Internal {
  public:
   using HasBits = decltype(std::declval<ExtensionRangeOptions>()._has_bits_);
 };
-
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int ExtensionRangeOptions::kUninterpretedOptionFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 ExtensionRangeOptions::ExtensionRangeOptions()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
@@ -4694,25 +4552,6 @@ bool ExtensionRangeOptions::IsInitialized() const {
   return true;
 }
 
-void ExtensionRangeOptions::Swap(ExtensionRangeOptions* other) {
-  if (other == this) return;
-  if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
-    InternalSwap(other);
-  } else {
-    ExtensionRangeOptions* temp = New(GetArenaNoVirtual());
-    temp->MergeFrom(*other);
-    other->CopyFrom(*this);
-    InternalSwap(temp);
-    if (GetArenaNoVirtual() == nullptr) {
-      delete temp;
-    }
-  }
-}
-void ExtensionRangeOptions::UnsafeArenaSwap(ExtensionRangeOptions* other) {
-  if (other == this) return;
-  GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
-  InternalSwap(other);
-}
 void ExtensionRangeOptions::InternalSwap(ExtensionRangeOptions* other) {
   using std::swap;
   _extensions_.Swap(&other->_extensions_);
@@ -4785,19 +4624,6 @@ void FieldDescriptorProto::unsafe_arena_set_allocated_options(
   }
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.FieldDescriptorProto.options)
 }
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int FieldDescriptorProto::kNameFieldNumber;
-const int FieldDescriptorProto::kNumberFieldNumber;
-const int FieldDescriptorProto::kLabelFieldNumber;
-const int FieldDescriptorProto::kTypeFieldNumber;
-const int FieldDescriptorProto::kTypeNameFieldNumber;
-const int FieldDescriptorProto::kExtendeeFieldNumber;
-const int FieldDescriptorProto::kDefaultValueFieldNumber;
-const int FieldDescriptorProto::kOneofIndexFieldNumber;
-const int FieldDescriptorProto::kJsonNameFieldNumber;
-const int FieldDescriptorProto::kOptionsFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
-
 FieldDescriptorProto::FieldDescriptorProto()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
@@ -5594,25 +5420,6 @@ bool FieldDescriptorProto::IsInitialized() const {
   return true;
 }
 
-void FieldDescriptorProto::Swap(FieldDescriptorProto* other) {
-  if (other == this) return;
-  if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
-    InternalSwap(other);
-  } else {
-    FieldDescriptorProto* temp = New(GetArenaNoVirtual());
-    temp->MergeFrom(*other);
-    other->CopyFrom(*this);
-    InternalSwap(temp);
-    if (GetArenaNoVirtual() == nullptr) {
-      delete temp;
-    }
-  }
-}
-void FieldDescriptorProto::UnsafeArenaSwap(FieldDescriptorProto* other) {
-  if (other == this) return;
-  GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
-  InternalSwap(other);
-}
 void FieldDescriptorProto::InternalSwap(FieldDescriptorProto* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
@@ -5674,11 +5481,6 @@ void OneofDescriptorProto::unsafe_arena_set_allocated_options(
   }
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.OneofDescriptorProto.options)
 }
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int OneofDescriptorProto::kNameFieldNumber;
-const int OneofDescriptorProto::kOptionsFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
-
 OneofDescriptorProto::OneofDescriptorProto()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
@@ -6015,25 +5817,6 @@ bool OneofDescriptorProto::IsInitialized() const {
   return true;
 }
 
-void OneofDescriptorProto::Swap(OneofDescriptorProto* other) {
-  if (other == this) return;
-  if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
-    InternalSwap(other);
-  } else {
-    OneofDescriptorProto* temp = New(GetArenaNoVirtual());
-    temp->MergeFrom(*other);
-    other->CopyFrom(*this);
-    InternalSwap(temp);
-    if (GetArenaNoVirtual() == nullptr) {
-      delete temp;
-    }
-  }
-}
-void OneofDescriptorProto::UnsafeArenaSwap(OneofDescriptorProto* other) {
-  if (other == this) return;
-  GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
-  InternalSwap(other);
-}
 void OneofDescriptorProto::InternalSwap(OneofDescriptorProto* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
@@ -6062,11 +5845,6 @@ class EnumDescriptorProto_EnumReservedRange::_Internal {
     (*has_bits)[0] |= 2u;
   }
 };
-
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int EnumDescriptorProto_EnumReservedRange::kStartFieldNumber;
-const int EnumDescriptorProto_EnumReservedRange::kEndFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 EnumDescriptorProto_EnumReservedRange::EnumDescriptorProto_EnumReservedRange()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
@@ -6377,25 +6155,6 @@ bool EnumDescriptorProto_EnumReservedRange::IsInitialized() const {
   return true;
 }
 
-void EnumDescriptorProto_EnumReservedRange::Swap(EnumDescriptorProto_EnumReservedRange* other) {
-  if (other == this) return;
-  if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
-    InternalSwap(other);
-  } else {
-    EnumDescriptorProto_EnumReservedRange* temp = New(GetArenaNoVirtual());
-    temp->MergeFrom(*other);
-    other->CopyFrom(*this);
-    InternalSwap(temp);
-    if (GetArenaNoVirtual() == nullptr) {
-      delete temp;
-    }
-  }
-}
-void EnumDescriptorProto_EnumReservedRange::UnsafeArenaSwap(EnumDescriptorProto_EnumReservedRange* other) {
-  if (other == this) return;
-  GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
-  InternalSwap(other);
-}
 void EnumDescriptorProto_EnumReservedRange::InternalSwap(EnumDescriptorProto_EnumReservedRange* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
@@ -6444,14 +6203,6 @@ void EnumDescriptorProto::unsafe_arena_set_allocated_options(
   }
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.EnumDescriptorProto.options)
 }
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int EnumDescriptorProto::kNameFieldNumber;
-const int EnumDescriptorProto::kValueFieldNumber;
-const int EnumDescriptorProto::kOptionsFieldNumber;
-const int EnumDescriptorProto::kReservedRangeFieldNumber;
-const int EnumDescriptorProto::kReservedNameFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
-
 EnumDescriptorProto::EnumDescriptorProto()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
@@ -6959,25 +6710,6 @@ bool EnumDescriptorProto::IsInitialized() const {
   return true;
 }
 
-void EnumDescriptorProto::Swap(EnumDescriptorProto* other) {
-  if (other == this) return;
-  if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
-    InternalSwap(other);
-  } else {
-    EnumDescriptorProto* temp = New(GetArenaNoVirtual());
-    temp->MergeFrom(*other);
-    other->CopyFrom(*this);
-    InternalSwap(temp);
-    if (GetArenaNoVirtual() == nullptr) {
-      delete temp;
-    }
-  }
-}
-void EnumDescriptorProto::UnsafeArenaSwap(EnumDescriptorProto* other) {
-  if (other == this) return;
-  GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
-  InternalSwap(other);
-}
 void EnumDescriptorProto::InternalSwap(EnumDescriptorProto* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
@@ -7033,12 +6765,6 @@ void EnumValueDescriptorProto::unsafe_arena_set_allocated_options(
   }
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.EnumValueDescriptorProto.options)
 }
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int EnumValueDescriptorProto::kNameFieldNumber;
-const int EnumValueDescriptorProto::kNumberFieldNumber;
-const int EnumValueDescriptorProto::kOptionsFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
-
 EnumValueDescriptorProto::EnumValueDescriptorProto()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
@@ -7421,25 +7147,6 @@ bool EnumValueDescriptorProto::IsInitialized() const {
   return true;
 }
 
-void EnumValueDescriptorProto::Swap(EnumValueDescriptorProto* other) {
-  if (other == this) return;
-  if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
-    InternalSwap(other);
-  } else {
-    EnumValueDescriptorProto* temp = New(GetArenaNoVirtual());
-    temp->MergeFrom(*other);
-    other->CopyFrom(*this);
-    InternalSwap(temp);
-    if (GetArenaNoVirtual() == nullptr) {
-      delete temp;
-    }
-  }
-}
-void EnumValueDescriptorProto::UnsafeArenaSwap(EnumValueDescriptorProto* other) {
-  if (other == this) return;
-  GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
-  InternalSwap(other);
-}
 void EnumValueDescriptorProto::InternalSwap(EnumValueDescriptorProto* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
@@ -7490,12 +7197,6 @@ void ServiceDescriptorProto::unsafe_arena_set_allocated_options(
   }
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.ServiceDescriptorProto.options)
 }
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int ServiceDescriptorProto::kNameFieldNumber;
-const int ServiceDescriptorProto::kMethodFieldNumber;
-const int ServiceDescriptorProto::kOptionsFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
-
 ServiceDescriptorProto::ServiceDescriptorProto()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
@@ -7888,25 +7589,6 @@ bool ServiceDescriptorProto::IsInitialized() const {
   return true;
 }
 
-void ServiceDescriptorProto::Swap(ServiceDescriptorProto* other) {
-  if (other == this) return;
-  if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
-    InternalSwap(other);
-  } else {
-    ServiceDescriptorProto* temp = New(GetArenaNoVirtual());
-    temp->MergeFrom(*other);
-    other->CopyFrom(*this);
-    InternalSwap(temp);
-    if (GetArenaNoVirtual() == nullptr) {
-      delete temp;
-    }
-  }
-}
-void ServiceDescriptorProto::UnsafeArenaSwap(ServiceDescriptorProto* other) {
-  if (other == this) return;
-  GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
-  InternalSwap(other);
-}
 void ServiceDescriptorProto::InternalSwap(ServiceDescriptorProto* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
@@ -7969,15 +7651,6 @@ void MethodDescriptorProto::unsafe_arena_set_allocated_options(
   }
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.MethodDescriptorProto.options)
 }
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int MethodDescriptorProto::kNameFieldNumber;
-const int MethodDescriptorProto::kInputTypeFieldNumber;
-const int MethodDescriptorProto::kOutputTypeFieldNumber;
-const int MethodDescriptorProto::kOptionsFieldNumber;
-const int MethodDescriptorProto::kClientStreamingFieldNumber;
-const int MethodDescriptorProto::kServerStreamingFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
-
 MethodDescriptorProto::MethodDescriptorProto()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
@@ -8527,25 +8200,6 @@ bool MethodDescriptorProto::IsInitialized() const {
   return true;
 }
 
-void MethodDescriptorProto::Swap(MethodDescriptorProto* other) {
-  if (other == this) return;
-  if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
-    InternalSwap(other);
-  } else {
-    MethodDescriptorProto* temp = New(GetArenaNoVirtual());
-    temp->MergeFrom(*other);
-    other->CopyFrom(*this);
-    InternalSwap(temp);
-    if (GetArenaNoVirtual() == nullptr) {
-      delete temp;
-    }
-  }
-}
-void MethodDescriptorProto::UnsafeArenaSwap(MethodDescriptorProto* other) {
-  if (other == this) return;
-  GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
-  InternalSwap(other);
-}
 void MethodDescriptorProto::InternalSwap(MethodDescriptorProto* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
@@ -8634,30 +8288,6 @@ class FileOptions::_Internal {
     (*has_bits)[0] |= 512u;
   }
 };
-
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int FileOptions::kJavaPackageFieldNumber;
-const int FileOptions::kJavaOuterClassnameFieldNumber;
-const int FileOptions::kJavaMultipleFilesFieldNumber;
-const int FileOptions::kJavaGenerateEqualsAndHashFieldNumber;
-const int FileOptions::kJavaStringCheckUtf8FieldNumber;
-const int FileOptions::kOptimizeForFieldNumber;
-const int FileOptions::kGoPackageFieldNumber;
-const int FileOptions::kCcGenericServicesFieldNumber;
-const int FileOptions::kJavaGenericServicesFieldNumber;
-const int FileOptions::kPyGenericServicesFieldNumber;
-const int FileOptions::kPhpGenericServicesFieldNumber;
-const int FileOptions::kDeprecatedFieldNumber;
-const int FileOptions::kCcEnableArenasFieldNumber;
-const int FileOptions::kObjcClassPrefixFieldNumber;
-const int FileOptions::kCsharpNamespaceFieldNumber;
-const int FileOptions::kSwiftPrefixFieldNumber;
-const int FileOptions::kPhpClassPrefixFieldNumber;
-const int FileOptions::kPhpNamespaceFieldNumber;
-const int FileOptions::kPhpMetadataNamespaceFieldNumber;
-const int FileOptions::kRubyPackageFieldNumber;
-const int FileOptions::kUninterpretedOptionFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 FileOptions::FileOptions()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
@@ -10025,25 +9655,6 @@ bool FileOptions::IsInitialized() const {
   return true;
 }
 
-void FileOptions::Swap(FileOptions* other) {
-  if (other == this) return;
-  if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
-    InternalSwap(other);
-  } else {
-    FileOptions* temp = New(GetArenaNoVirtual());
-    temp->MergeFrom(*other);
-    other->CopyFrom(*this);
-    InternalSwap(temp);
-    if (GetArenaNoVirtual() == nullptr) {
-      delete temp;
-    }
-  }
-}
-void FileOptions::UnsafeArenaSwap(FileOptions* other) {
-  if (other == this) return;
-  GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
-  InternalSwap(other);
-}
 void FileOptions::InternalSwap(FileOptions* other) {
   using std::swap;
   _extensions_.Swap(&other->_extensions_);
@@ -10107,14 +9718,6 @@ class MessageOptions::_Internal {
     (*has_bits)[0] |= 8u;
   }
 };
-
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int MessageOptions::kMessageSetWireFormatFieldNumber;
-const int MessageOptions::kNoStandardDescriptorAccessorFieldNumber;
-const int MessageOptions::kDeprecatedFieldNumber;
-const int MessageOptions::kMapEntryFieldNumber;
-const int MessageOptions::kUninterpretedOptionFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 MessageOptions::MessageOptions()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
@@ -10582,25 +10185,6 @@ bool MessageOptions::IsInitialized() const {
   return true;
 }
 
-void MessageOptions::Swap(MessageOptions* other) {
-  if (other == this) return;
-  if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
-    InternalSwap(other);
-  } else {
-    MessageOptions* temp = New(GetArenaNoVirtual());
-    temp->MergeFrom(*other);
-    other->CopyFrom(*this);
-    InternalSwap(temp);
-    if (GetArenaNoVirtual() == nullptr) {
-      delete temp;
-    }
-  }
-}
-void MessageOptions::UnsafeArenaSwap(MessageOptions* other) {
-  if (other == this) return;
-  GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
-  InternalSwap(other);
-}
 void MessageOptions::InternalSwap(MessageOptions* other) {
   using std::swap;
   _extensions_.Swap(&other->_extensions_);
@@ -10644,16 +10228,6 @@ class FieldOptions::_Internal {
     (*has_bits)[0] |= 16u;
   }
 };
-
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int FieldOptions::kCtypeFieldNumber;
-const int FieldOptions::kPackedFieldNumber;
-const int FieldOptions::kJstypeFieldNumber;
-const int FieldOptions::kLazyFieldNumber;
-const int FieldOptions::kDeprecatedFieldNumber;
-const int FieldOptions::kWeakFieldNumber;
-const int FieldOptions::kUninterpretedOptionFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 FieldOptions::FieldOptions()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
@@ -11228,25 +10802,6 @@ bool FieldOptions::IsInitialized() const {
   return true;
 }
 
-void FieldOptions::Swap(FieldOptions* other) {
-  if (other == this) return;
-  if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
-    InternalSwap(other);
-  } else {
-    FieldOptions* temp = New(GetArenaNoVirtual());
-    temp->MergeFrom(*other);
-    other->CopyFrom(*this);
-    InternalSwap(temp);
-    if (GetArenaNoVirtual() == nullptr) {
-      delete temp;
-    }
-  }
-}
-void FieldOptions::UnsafeArenaSwap(FieldOptions* other) {
-  if (other == this) return;
-  GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
-  InternalSwap(other);
-}
 void FieldOptions::InternalSwap(FieldOptions* other) {
   using std::swap;
   _extensions_.Swap(&other->_extensions_);
@@ -11274,10 +10829,6 @@ class OneofOptions::_Internal {
  public:
   using HasBits = decltype(std::declval<OneofOptions>()._has_bits_);
 };
-
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int OneofOptions::kUninterpretedOptionFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 OneofOptions::OneofOptions()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
@@ -11569,25 +11120,6 @@ bool OneofOptions::IsInitialized() const {
   return true;
 }
 
-void OneofOptions::Swap(OneofOptions* other) {
-  if (other == this) return;
-  if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
-    InternalSwap(other);
-  } else {
-    OneofOptions* temp = New(GetArenaNoVirtual());
-    temp->MergeFrom(*other);
-    other->CopyFrom(*this);
-    InternalSwap(temp);
-    if (GetArenaNoVirtual() == nullptr) {
-      delete temp;
-    }
-  }
-}
-void OneofOptions::UnsafeArenaSwap(OneofOptions* other) {
-  if (other == this) return;
-  GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
-  InternalSwap(other);
-}
 void OneofOptions::InternalSwap(OneofOptions* other) {
   using std::swap;
   _extensions_.Swap(&other->_extensions_);
@@ -11615,12 +11147,6 @@ class EnumOptions::_Internal {
     (*has_bits)[0] |= 2u;
   }
 };
-
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int EnumOptions::kAllowAliasFieldNumber;
-const int EnumOptions::kDeprecatedFieldNumber;
-const int EnumOptions::kUninterpretedOptionFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 EnumOptions::EnumOptions()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
@@ -12010,25 +11536,6 @@ bool EnumOptions::IsInitialized() const {
   return true;
 }
 
-void EnumOptions::Swap(EnumOptions* other) {
-  if (other == this) return;
-  if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
-    InternalSwap(other);
-  } else {
-    EnumOptions* temp = New(GetArenaNoVirtual());
-    temp->MergeFrom(*other);
-    other->CopyFrom(*this);
-    InternalSwap(temp);
-    if (GetArenaNoVirtual() == nullptr) {
-      delete temp;
-    }
-  }
-}
-void EnumOptions::UnsafeArenaSwap(EnumOptions* other) {
-  if (other == this) return;
-  GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
-  InternalSwap(other);
-}
 void EnumOptions::InternalSwap(EnumOptions* other) {
   using std::swap;
   _extensions_.Swap(&other->_extensions_);
@@ -12055,11 +11562,6 @@ class EnumValueOptions::_Internal {
     (*has_bits)[0] |= 1u;
   }
 };
-
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int EnumValueOptions::kDeprecatedFieldNumber;
-const int EnumValueOptions::kUninterpretedOptionFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 EnumValueOptions::EnumValueOptions()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
@@ -12398,25 +11900,6 @@ bool EnumValueOptions::IsInitialized() const {
   return true;
 }
 
-void EnumValueOptions::Swap(EnumValueOptions* other) {
-  if (other == this) return;
-  if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
-    InternalSwap(other);
-  } else {
-    EnumValueOptions* temp = New(GetArenaNoVirtual());
-    temp->MergeFrom(*other);
-    other->CopyFrom(*this);
-    InternalSwap(temp);
-    if (GetArenaNoVirtual() == nullptr) {
-      delete temp;
-    }
-  }
-}
-void EnumValueOptions::UnsafeArenaSwap(EnumValueOptions* other) {
-  if (other == this) return;
-  GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
-  InternalSwap(other);
-}
 void EnumValueOptions::InternalSwap(EnumValueOptions* other) {
   using std::swap;
   _extensions_.Swap(&other->_extensions_);
@@ -12442,11 +11925,6 @@ class ServiceOptions::_Internal {
     (*has_bits)[0] |= 1u;
   }
 };
-
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int ServiceOptions::kDeprecatedFieldNumber;
-const int ServiceOptions::kUninterpretedOptionFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 ServiceOptions::ServiceOptions()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
@@ -12785,25 +12263,6 @@ bool ServiceOptions::IsInitialized() const {
   return true;
 }
 
-void ServiceOptions::Swap(ServiceOptions* other) {
-  if (other == this) return;
-  if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
-    InternalSwap(other);
-  } else {
-    ServiceOptions* temp = New(GetArenaNoVirtual());
-    temp->MergeFrom(*other);
-    other->CopyFrom(*this);
-    InternalSwap(temp);
-    if (GetArenaNoVirtual() == nullptr) {
-      delete temp;
-    }
-  }
-}
-void ServiceOptions::UnsafeArenaSwap(ServiceOptions* other) {
-  if (other == this) return;
-  GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
-  InternalSwap(other);
-}
 void ServiceOptions::InternalSwap(ServiceOptions* other) {
   using std::swap;
   _extensions_.Swap(&other->_extensions_);
@@ -12832,12 +12291,6 @@ class MethodOptions::_Internal {
     (*has_bits)[0] |= 2u;
   }
 };
-
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int MethodOptions::kDeprecatedFieldNumber;
-const int MethodOptions::kIdempotencyLevelFieldNumber;
-const int MethodOptions::kUninterpretedOptionFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 MethodOptions::MethodOptions()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
@@ -13243,25 +12696,6 @@ bool MethodOptions::IsInitialized() const {
   return true;
 }
 
-void MethodOptions::Swap(MethodOptions* other) {
-  if (other == this) return;
-  if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
-    InternalSwap(other);
-  } else {
-    MethodOptions* temp = New(GetArenaNoVirtual());
-    temp->MergeFrom(*other);
-    other->CopyFrom(*this);
-    InternalSwap(temp);
-    if (GetArenaNoVirtual() == nullptr) {
-      delete temp;
-    }
-  }
-}
-void MethodOptions::UnsafeArenaSwap(MethodOptions* other) {
-  if (other == this) return;
-  GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
-  InternalSwap(other);
-}
 void MethodOptions::InternalSwap(MethodOptions* other) {
   using std::swap;
   _extensions_.Swap(&other->_extensions_);
@@ -13291,11 +12725,6 @@ class UninterpretedOption_NamePart::_Internal {
     (*has_bits)[0] |= 2u;
   }
 };
-
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int UninterpretedOption_NamePart::kNamePartFieldNumber;
-const int UninterpretedOption_NamePart::kIsExtensionFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 UninterpretedOption_NamePart::UninterpretedOption_NamePart()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
@@ -13635,25 +13064,6 @@ bool UninterpretedOption_NamePart::IsInitialized() const {
   return true;
 }
 
-void UninterpretedOption_NamePart::Swap(UninterpretedOption_NamePart* other) {
-  if (other == this) return;
-  if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
-    InternalSwap(other);
-  } else {
-    UninterpretedOption_NamePart* temp = New(GetArenaNoVirtual());
-    temp->MergeFrom(*other);
-    other->CopyFrom(*this);
-    InternalSwap(temp);
-    if (GetArenaNoVirtual() == nullptr) {
-      delete temp;
-    }
-  }
-}
-void UninterpretedOption_NamePart::UnsafeArenaSwap(UninterpretedOption_NamePart* other) {
-  if (other == this) return;
-  GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
-  InternalSwap(other);
-}
 void UninterpretedOption_NamePart::InternalSwap(UninterpretedOption_NamePart* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
@@ -13694,16 +13104,6 @@ class UninterpretedOption::_Internal {
     (*has_bits)[0] |= 4u;
   }
 };
-
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int UninterpretedOption::kNameFieldNumber;
-const int UninterpretedOption::kIdentifierValueFieldNumber;
-const int UninterpretedOption::kPositiveIntValueFieldNumber;
-const int UninterpretedOption::kNegativeIntValueFieldNumber;
-const int UninterpretedOption::kDoubleValueFieldNumber;
-const int UninterpretedOption::kStringValueFieldNumber;
-const int UninterpretedOption::kAggregateValueFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 UninterpretedOption::UninterpretedOption()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
@@ -14289,25 +13689,6 @@ bool UninterpretedOption::IsInitialized() const {
   return true;
 }
 
-void UninterpretedOption::Swap(UninterpretedOption* other) {
-  if (other == this) return;
-  if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
-    InternalSwap(other);
-  } else {
-    UninterpretedOption* temp = New(GetArenaNoVirtual());
-    temp->MergeFrom(*other);
-    other->CopyFrom(*this);
-    InternalSwap(temp);
-    if (GetArenaNoVirtual() == nullptr) {
-      delete temp;
-    }
-  }
-}
-void UninterpretedOption::UnsafeArenaSwap(UninterpretedOption* other) {
-  if (other == this) return;
-  GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
-  InternalSwap(other);
-}
 void UninterpretedOption::InternalSwap(UninterpretedOption* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
@@ -14343,14 +13724,6 @@ class SourceCodeInfo_Location::_Internal {
     (*has_bits)[0] |= 2u;
   }
 };
-
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int SourceCodeInfo_Location::kPathFieldNumber;
-const int SourceCodeInfo_Location::kSpanFieldNumber;
-const int SourceCodeInfo_Location::kLeadingCommentsFieldNumber;
-const int SourceCodeInfo_Location::kTrailingCommentsFieldNumber;
-const int SourceCodeInfo_Location::kLeadingDetachedCommentsFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 SourceCodeInfo_Location::SourceCodeInfo_Location()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
@@ -14894,25 +14267,6 @@ bool SourceCodeInfo_Location::IsInitialized() const {
   return true;
 }
 
-void SourceCodeInfo_Location::Swap(SourceCodeInfo_Location* other) {
-  if (other == this) return;
-  if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
-    InternalSwap(other);
-  } else {
-    SourceCodeInfo_Location* temp = New(GetArenaNoVirtual());
-    temp->MergeFrom(*other);
-    other->CopyFrom(*this);
-    InternalSwap(temp);
-    if (GetArenaNoVirtual() == nullptr) {
-      delete temp;
-    }
-  }
-}
-void SourceCodeInfo_Location::UnsafeArenaSwap(SourceCodeInfo_Location* other) {
-  if (other == this) return;
-  GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
-  InternalSwap(other);
-}
 void SourceCodeInfo_Location::InternalSwap(SourceCodeInfo_Location* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
@@ -14939,10 +14293,6 @@ class SourceCodeInfo::_Internal {
  public:
   using HasBits = decltype(std::declval<SourceCodeInfo>()._has_bits_);
 };
-
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int SourceCodeInfo::kLocationFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 SourceCodeInfo::SourceCodeInfo()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
@@ -15204,25 +14554,6 @@ bool SourceCodeInfo::IsInitialized() const {
   return true;
 }
 
-void SourceCodeInfo::Swap(SourceCodeInfo* other) {
-  if (other == this) return;
-  if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
-    InternalSwap(other);
-  } else {
-    SourceCodeInfo* temp = New(GetArenaNoVirtual());
-    temp->MergeFrom(*other);
-    other->CopyFrom(*this);
-    InternalSwap(temp);
-    if (GetArenaNoVirtual() == nullptr) {
-      delete temp;
-    }
-  }
-}
-void SourceCodeInfo::UnsafeArenaSwap(SourceCodeInfo* other) {
-  if (other == this) return;
-  GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
-  InternalSwap(other);
-}
 void SourceCodeInfo::InternalSwap(SourceCodeInfo* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
@@ -15252,13 +14583,6 @@ class GeneratedCodeInfo_Annotation::_Internal {
     (*has_bits)[0] |= 4u;
   }
 };
-
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int GeneratedCodeInfo_Annotation::kPathFieldNumber;
-const int GeneratedCodeInfo_Annotation::kSourceFileFieldNumber;
-const int GeneratedCodeInfo_Annotation::kBeginFieldNumber;
-const int GeneratedCodeInfo_Annotation::kEndFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
@@ -15702,25 +15026,6 @@ bool GeneratedCodeInfo_Annotation::IsInitialized() const {
   return true;
 }
 
-void GeneratedCodeInfo_Annotation::Swap(GeneratedCodeInfo_Annotation* other) {
-  if (other == this) return;
-  if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
-    InternalSwap(other);
-  } else {
-    GeneratedCodeInfo_Annotation* temp = New(GetArenaNoVirtual());
-    temp->MergeFrom(*other);
-    other->CopyFrom(*this);
-    InternalSwap(temp);
-    if (GetArenaNoVirtual() == nullptr) {
-      delete temp;
-    }
-  }
-}
-void GeneratedCodeInfo_Annotation::UnsafeArenaSwap(GeneratedCodeInfo_Annotation* other) {
-  if (other == this) return;
-  GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
-  InternalSwap(other);
-}
 void GeneratedCodeInfo_Annotation::InternalSwap(GeneratedCodeInfo_Annotation* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
@@ -15745,10 +15050,6 @@ class GeneratedCodeInfo::_Internal {
  public:
   using HasBits = decltype(std::declval<GeneratedCodeInfo>()._has_bits_);
 };
-
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int GeneratedCodeInfo::kAnnotationFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 GeneratedCodeInfo::GeneratedCodeInfo()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
@@ -16010,25 +15311,6 @@ bool GeneratedCodeInfo::IsInitialized() const {
   return true;
 }
 
-void GeneratedCodeInfo::Swap(GeneratedCodeInfo* other) {
-  if (other == this) return;
-  if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
-    InternalSwap(other);
-  } else {
-    GeneratedCodeInfo* temp = New(GetArenaNoVirtual());
-    temp->MergeFrom(*other);
-    other->CopyFrom(*this);
-    InternalSwap(temp);
-    if (GetArenaNoVirtual() == nullptr) {
-      delete temp;
-    }
-  }
-}
-void GeneratedCodeInfo::UnsafeArenaSwap(GeneratedCodeInfo* other) {
-  if (other == this) return;
-  GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
-  InternalSwap(other);
-}
 void GeneratedCodeInfo::InternalSwap(GeneratedCodeInfo* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);

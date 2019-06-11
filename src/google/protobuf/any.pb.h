@@ -126,9 +126,12 @@ class PROTOBUF_EXPORT Any :
   }
   static bool ParseAnyTypeUrl(const string& type_url,
                               std::string* full_type_name);
-  void Swap(Any* other);
   friend void swap(Any& a, Any& b) {
     a.Swap(&b);
+  }
+  inline void Swap(Any* other) {
+    if (other == this) return;
+    InternalSwap(other);
   }
 
   // implements Message ----------------------------------------------
@@ -191,9 +194,12 @@ class PROTOBUF_EXPORT Any :
 
   // accessors -------------------------------------------------------
 
+  enum : int {
+    kTypeUrlFieldNumber = 1,
+    kValueFieldNumber = 2,
+  };
   // string type_url = 1;
   void clear_type_url();
-  static const int kTypeUrlFieldNumber = 1;
   const std::string& type_url() const;
   void set_type_url(const std::string& value);
   void set_type_url(std::string&& value);
@@ -205,7 +211,6 @@ class PROTOBUF_EXPORT Any :
 
   // bytes value = 2;
   void clear_value();
-  static const int kValueFieldNumber = 2;
   const std::string& value() const;
   void set_value(const std::string& value);
   void set_value(std::string&& value);

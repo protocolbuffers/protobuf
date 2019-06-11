@@ -982,7 +982,7 @@ class PROTOBUF_EXPORT Reflection final {
   inline const internal::InternalMetadataWithArena&
   GetInternalMetadataWithArena(const Message& message) const;
 
-  inline internal::InternalMetadataWithArena* MutableInternalMetadataWithArena(
+  internal::InternalMetadataWithArena* MutableInternalMetadataWithArena(
       Message* message) const;
 
   inline bool IsInlined(const FieldDescriptor* field) const;

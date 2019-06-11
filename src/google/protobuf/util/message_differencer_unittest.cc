@@ -1158,6 +1158,65 @@ TEST(MessageDifferencerTest, RepeatedFieldSmartSetTest) {
       diff_report);
 }
 
+TEST(MessageDifferencerTest, RepeatedFieldSmartSetTest_IdenticalElements) {
+  // Create the testing protos
+  protobuf_unittest::TestDiffMessage msg1;
+  protobuf_unittest::TestDiffMessage msg2;
+  protobuf_unittest::TestField elem;
+
+  elem.set_a(1);
+  elem.set_b(1);
+  elem.set_c(1);
+
+  *msg1.add_rm() = elem;
+  *msg1.add_rm() = elem;
+  *msg2.add_rm() = elem;
+  *msg2.add_rm() = elem;
+
+  util::MessageDifferencer differencer;
+  differencer.set_repeated_field_comparison(
+      util::MessageDifferencer::AS_SMART_SET);
+  EXPECT_TRUE(differencer.Compare(msg1, msg2));
+}
+
+TEST(MessageDifferencerTest, RepeatedFieldSmartSetTest_PreviouslyMatch) {
+  // Create the testing protos
+  protobuf_unittest::TestDiffMessage msg1;
+  protobuf_unittest::TestDiffMessage msg2;
+  protobuf_unittest::TestField elem1_1, elem1_2;
+  protobuf_unittest::TestField elem2_1, elem2_2;
+
+  elem1_1.set_a(1);
+  elem1_1.set_b(1);
+  elem1_1.set_c(1);
+  elem1_2.set_a(1);
+  elem1_2.set_b(1);
+  elem1_2.set_c(0);
+
+  elem2_1.set_a(1);
+  elem2_1.set_b(1);
+  elem2_1.set_c(1);
+  elem2_2.set_a(1);
+  elem2_2.set_b(0);
+  elem2_2.set_c(1);
+
+  *msg1.add_rm() = elem1_1;
+  *msg1.add_rm() = elem2_1;
+  *msg2.add_rm() = elem1_2;
+  *msg2.add_rm() = elem2_2;
+
+  string diff_report;
+  util::MessageDifferencer differencer;
+  differencer.ReportDifferencesToString(&diff_report);
+  differencer.set_repeated_field_comparison(
+      util::MessageDifferencer::AS_SMART_SET);
+  EXPECT_FALSE(differencer.Compare(msg1, msg2));
+  EXPECT_EQ(
+      "modified: rm[0].c: 1 -> 0\n"
+      "modified: rm[1].b: 1 -> 0\n",
+      diff_report);
+}
+
 TEST(MessageDifferencerTest, RepeatedFieldSmartSet_MultipleMatches) {
   // Create the testing protos
   protobuf_unittest::TestDiffMessage msg1;

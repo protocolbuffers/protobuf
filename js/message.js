@@ -958,19 +958,19 @@ jspb.Message.getMapField = function(msg, fieldNumber, noLazyCreate,
   // If we already have a map in the map wrappers, return that.
   if (fieldNumber in msg.wrappers_) {
     return msg.wrappers_[fieldNumber];
-  } else if (noLazyCreate) {
-    return undefined;
-  } else {
-    // Wrap the underlying elements array with a Map.
-    var arr = jspb.Message.getField(msg, fieldNumber);
-    if (!arr) {
-      arr = [];
-      jspb.Message.setField(msg, fieldNumber, arr);
-    }
-    return msg.wrappers_[fieldNumber] =
-        new jspb.Map(
-            /** @type {!Array<!Array<!Object>>} */ (arr), opt_valueCtor);
   }
+  var arr = jspb.Message.getField(msg, fieldNumber);
+  // Wrap the underlying elements array with a Map.
+  if (!arr) {
+    if (noLazyCreate) {
+      return undefined;
+    }
+    arr = [];
+    jspb.Message.setField(msg, fieldNumber, arr);
+  }
+  return msg.wrappers_[fieldNumber] =
+      new jspb.Map(
+          /** @type {!Array<!Array<!Object>>} */ (arr), opt_valueCtor);
 };
 
 

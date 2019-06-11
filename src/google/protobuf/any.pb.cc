@@ -115,11 +115,6 @@ class Any::_Internal {
  public:
 };
 
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int Any::kTypeUrlFieldNumber;
-const int Any::kValueFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
-
 Any::Any()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr), _any_metadata_(&type_url_, &value_) {
   SharedCtor();
@@ -419,10 +414,6 @@ bool Any::IsInitialized() const {
   return true;
 }
 
-void Any::Swap(Any* other) {
-  if (other == this) return;
-  InternalSwap(other);
-}
 void Any::InternalSwap(Any* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);

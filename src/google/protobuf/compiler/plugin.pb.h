@@ -139,9 +139,12 @@ class PROTOC_EXPORT Version :
   static constexpr int kIndexInFileMessages =
     0;
 
-  void Swap(Version* other);
   friend void swap(Version& a, Version& b) {
     a.Swap(&b);
+  }
+  inline void Swap(Version* other) {
+    if (other == this) return;
+    InternalSwap(other);
   }
 
   // implements Message ----------------------------------------------
@@ -204,10 +207,15 @@ class PROTOC_EXPORT Version :
 
   // accessors -------------------------------------------------------
 
+  enum : int {
+    kSuffixFieldNumber = 4,
+    kMajorFieldNumber = 1,
+    kMinorFieldNumber = 2,
+    kPatchFieldNumber = 3,
+  };
   // optional string suffix = 4;
   bool has_suffix() const;
   void clear_suffix();
-  static const int kSuffixFieldNumber = 4;
   const std::string& suffix() const;
   void set_suffix(const std::string& value);
   void set_suffix(std::string&& value);
@@ -220,21 +228,18 @@ class PROTOC_EXPORT Version :
   // optional int32 major = 1;
   bool has_major() const;
   void clear_major();
-  static const int kMajorFieldNumber = 1;
   ::PROTOBUF_NAMESPACE_ID::int32 major() const;
   void set_major(::PROTOBUF_NAMESPACE_ID::int32 value);
 
   // optional int32 minor = 2;
   bool has_minor() const;
   void clear_minor();
-  static const int kMinorFieldNumber = 2;
   ::PROTOBUF_NAMESPACE_ID::int32 minor() const;
   void set_minor(::PROTOBUF_NAMESPACE_ID::int32 value);
 
   // optional int32 patch = 3;
   bool has_patch() const;
   void clear_patch();
-  static const int kPatchFieldNumber = 3;
   ::PROTOBUF_NAMESPACE_ID::int32 patch() const;
   void set_patch(::PROTOBUF_NAMESPACE_ID::int32 value);
 
@@ -304,9 +309,12 @@ class PROTOC_EXPORT CodeGeneratorRequest :
   static constexpr int kIndexInFileMessages =
     1;
 
-  void Swap(CodeGeneratorRequest* other);
   friend void swap(CodeGeneratorRequest& a, CodeGeneratorRequest& b) {
     a.Swap(&b);
+  }
+  inline void Swap(CodeGeneratorRequest* other) {
+    if (other == this) return;
+    InternalSwap(other);
   }
 
   // implements Message ----------------------------------------------
@@ -369,10 +377,15 @@ class PROTOC_EXPORT CodeGeneratorRequest :
 
   // accessors -------------------------------------------------------
 
+  enum : int {
+    kFileToGenerateFieldNumber = 1,
+    kProtoFileFieldNumber = 15,
+    kParameterFieldNumber = 2,
+    kCompilerVersionFieldNumber = 3,
+  };
   // repeated string file_to_generate = 1;
   int file_to_generate_size() const;
   void clear_file_to_generate();
-  static const int kFileToGenerateFieldNumber = 1;
   const std::string& file_to_generate(int index) const;
   std::string* mutable_file_to_generate(int index);
   void set_file_to_generate(int index, const std::string& value);
@@ -390,7 +403,6 @@ class PROTOC_EXPORT CodeGeneratorRequest :
   // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
   int proto_file_size() const;
   void clear_proto_file();
-  static const int kProtoFileFieldNumber = 15;
   PROTOBUF_NAMESPACE_ID::FileDescriptorProto* mutable_proto_file(int index);
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< PROTOBUF_NAMESPACE_ID::FileDescriptorProto >*
       mutable_proto_file();
@@ -402,7 +414,6 @@ class PROTOC_EXPORT CodeGeneratorRequest :
   // optional string parameter = 2;
   bool has_parameter() const;
   void clear_parameter();
-  static const int kParameterFieldNumber = 2;
   const std::string& parameter() const;
   void set_parameter(const std::string& value);
   void set_parameter(std::string&& value);
@@ -415,7 +426,6 @@ class PROTOC_EXPORT CodeGeneratorRequest :
   // optional .google.protobuf.compiler.Version compiler_version = 3;
   bool has_compiler_version() const;
   void clear_compiler_version();
-  static const int kCompilerVersionFieldNumber = 3;
   const PROTOBUF_NAMESPACE_ID::compiler::Version& compiler_version() const;
   PROTOBUF_NAMESPACE_ID::compiler::Version* release_compiler_version();
   PROTOBUF_NAMESPACE_ID::compiler::Version* mutable_compiler_version();
@@ -487,9 +497,12 @@ class PROTOC_EXPORT CodeGeneratorResponse_File :
   static constexpr int kIndexInFileMessages =
     2;
 
-  void Swap(CodeGeneratorResponse_File* other);
   friend void swap(CodeGeneratorResponse_File& a, CodeGeneratorResponse_File& b) {
     a.Swap(&b);
+  }
+  inline void Swap(CodeGeneratorResponse_File* other) {
+    if (other == this) return;
+    InternalSwap(other);
   }
 
   // implements Message ----------------------------------------------
@@ -552,10 +565,14 @@ class PROTOC_EXPORT CodeGeneratorResponse_File :
 
   // accessors -------------------------------------------------------
 
+  enum : int {
+    kNameFieldNumber = 1,
+    kInsertionPointFieldNumber = 2,
+    kContentFieldNumber = 15,
+  };
   // optional string name = 1;
   bool has_name() const;
   void clear_name();
-  static const int kNameFieldNumber = 1;
   const std::string& name() const;
   void set_name(const std::string& value);
   void set_name(std::string&& value);
@@ -568,7 +585,6 @@ class PROTOC_EXPORT CodeGeneratorResponse_File :
   // optional string insertion_point = 2;
   bool has_insertion_point() const;
   void clear_insertion_point();
-  static const int kInsertionPointFieldNumber = 2;
   const std::string& insertion_point() const;
   void set_insertion_point(const std::string& value);
   void set_insertion_point(std::string&& value);
@@ -581,7 +597,6 @@ class PROTOC_EXPORT CodeGeneratorResponse_File :
   // optional string content = 15;
   bool has_content() const;
   void clear_content();
-  static const int kContentFieldNumber = 15;
   const std::string& content() const;
   void set_content(const std::string& value);
   void set_content(std::string&& value);
@@ -656,9 +671,12 @@ class PROTOC_EXPORT CodeGeneratorResponse :
   static constexpr int kIndexInFileMessages =
     3;
 
-  void Swap(CodeGeneratorResponse* other);
   friend void swap(CodeGeneratorResponse& a, CodeGeneratorResponse& b) {
     a.Swap(&b);
+  }
+  inline void Swap(CodeGeneratorResponse* other) {
+    if (other == this) return;
+    InternalSwap(other);
   }
 
   // implements Message ----------------------------------------------
@@ -723,10 +741,13 @@ class PROTOC_EXPORT CodeGeneratorResponse :
 
   // accessors -------------------------------------------------------
 
+  enum : int {
+    kFileFieldNumber = 15,
+    kErrorFieldNumber = 1,
+  };
   // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;
   int file_size() const;
   void clear_file();
-  static const int kFileFieldNumber = 15;
   PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File* mutable_file(int index);
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File >*
       mutable_file();
@@ -738,7 +759,6 @@ class PROTOC_EXPORT CodeGeneratorResponse :
   // optional string error = 1;
   bool has_error() const;
   void clear_error();
-  static const int kErrorFieldNumber = 1;
   const std::string& error() const;
   void set_error(const std::string& value);
   void set_error(std::string&& value);

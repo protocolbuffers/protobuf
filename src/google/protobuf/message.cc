@@ -158,6 +158,11 @@ class ReflectionAccessor {
     return reflection->MutableRawRepeatedField(
         msg, field, FieldDescriptor::CPPTYPE_ENUM, 0, nullptr);
   }
+
+  static InternalMetadataWithArena* MutableInternalMetadataWithArena(
+      const Reflection* reflection, Message* msg) {
+    return reflection->MutableInternalMetadataWithArena(msg);
+  }
 };
 
 }  // namespace internal
@@ -263,7 +268,9 @@ const char* ParsePackedField(const FieldDescriptor* field, Message* msg,
       } else {
         return internal::PackedEnumParserArg(
             object, ptr, ctx, ReflectiveValidator, field->enum_type(),
-            reflection->MutableUnknownFields(msg), field->number());
+            internal::ReflectionAccessor::MutableInternalMetadataWithArena(
+                reflection, msg),
+            field->number());
       }
     }
       HANDLE_PACKED_TYPE(FIXED32, uint32, Fixed32);

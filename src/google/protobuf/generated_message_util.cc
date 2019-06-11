@@ -747,6 +747,15 @@ MessageLite* DuplicateIfNonNullInternal(MessageLite* message) {
   }
 }
 
+void GenericSwap(MessageLite* m1, MessageLite* m2) {
+  std::unique_ptr<MessageLite> tmp(m1->New());
+  tmp->CheckTypeAndMergeFrom(*m1);
+  m1->Clear();
+  m1->CheckTypeAndMergeFrom(*m2);
+  m2->Clear();
+  m2->CheckTypeAndMergeFrom(*tmp);
+}
+
 // Returns a message owned by this Arena.  This may require Own()ing or
 // duplicating the message.
 MessageLite* GetOwnedMessageInternal(Arena* message_arena,

@@ -1427,7 +1427,7 @@ inline uint8* WireFormatLite::WritePrimitiveNoTagToArray(
   const int n = value.size();
   GOOGLE_DCHECK_GT(n, 0);
 
-  const T* ii = value.unsafe_data();
+  const T* ii = value.data();
   int i = 0;
   do {
     target = Writer(ii[i], target);
@@ -1445,7 +1445,7 @@ inline uint8* WireFormatLite::WriteFixedNoTagToArray(
   const int n = value.size();
   GOOGLE_DCHECK_GT(n, 0);
 
-  const T* ii = value.unsafe_data();
+  const T* ii = value.data();
   const int bytes = n * static_cast<int>(sizeof(ii[0]));
   memcpy(target, ii, static_cast<size_t>(bytes));
   return target + bytes;
@@ -1591,7 +1591,7 @@ inline uint8* WireFormatLite::WritePrimitiveToArray(
     return target;
   }
 
-  const T* ii = value.unsafe_data();
+  const T* ii = value.data();
   int i = 0;
   do {
     target = Writer(field_number, ii[i], target);
