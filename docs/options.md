@@ -197,3 +197,7 @@ with info about your project (name and website) so we can add an entry for you.
    * Website: https://github.com/container-storage-interface/spec
    * Extensions: 1059-1069
 
+1. TwirpQL Plugin
+   * Website: https://twirpql.dev
+   * Extensions: 1070
+
