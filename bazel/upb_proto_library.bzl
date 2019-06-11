@@ -38,7 +38,7 @@ def _get_real_roots(files):
 
 def _generate_output_file(ctx, src, extension):
     real_short_path = _get_real_short_path(src)
-    real_short_path = paths.relativize(src.short_path, ctx.label.package)
+    real_short_path = paths.relativize(real_short_path, ctx.label.package)
     output_filename = paths.replace_extension(real_short_path, extension)
     ret = ctx.actions.declare_file(output_filename)
     return ret
