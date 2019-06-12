@@ -110,9 +110,12 @@ class PROTOBUF_EXPORT SourceContext :
   static constexpr int kIndexInFileMessages =
     0;
 
-  void Swap(SourceContext* other);
   friend void swap(SourceContext& a, SourceContext& b) {
     a.Swap(&b);
+  }
+  inline void Swap(SourceContext* other) {
+    if (other == this) return;
+    InternalSwap(other);
   }
 
   // implements Message ----------------------------------------------
@@ -175,9 +178,11 @@ class PROTOBUF_EXPORT SourceContext :
 
   // accessors -------------------------------------------------------
 
+  enum : int {
+    kFileNameFieldNumber = 1,
+  };
   // string file_name = 1;
   void clear_file_name();
-  static const int kFileNameFieldNumber = 1;
   const std::string& file_name() const;
   void set_file_name(const std::string& value);
   void set_file_name(std::string&& value);

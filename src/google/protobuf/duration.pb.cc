@@ -90,11 +90,6 @@ class Duration::_Internal {
  public:
 };
 
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int Duration::kSecondsFieldNumber;
-const int Duration::kNanosFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
-
 Duration::Duration()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
@@ -386,25 +381,6 @@ bool Duration::IsInitialized() const {
   return true;
 }
 
-void Duration::Swap(Duration* other) {
-  if (other == this) return;
-  if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
-    InternalSwap(other);
-  } else {
-    Duration* temp = New(GetArenaNoVirtual());
-    temp->MergeFrom(*other);
-    other->CopyFrom(*this);
-    InternalSwap(temp);
-    if (GetArenaNoVirtual() == nullptr) {
-      delete temp;
-    }
-  }
-}
-void Duration::UnsafeArenaSwap(Duration* other) {
-  if (other == this) return;
-  GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
-  InternalSwap(other);
-}
 void Duration::InternalSwap(Duration* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);

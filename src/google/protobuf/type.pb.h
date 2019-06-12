@@ -229,10 +229,21 @@ class PROTOBUF_EXPORT Type :
   static constexpr int kIndexInFileMessages =
     0;
 
-  void UnsafeArenaSwap(Type* other);
-  void Swap(Type* other);
   friend void swap(Type& a, Type& b) {
     a.Swap(&b);
+  }
+  inline void Swap(Type* other) {
+    if (other == this) return;
+    if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(Type* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
+    InternalSwap(other);
   }
 
   // implements Message ----------------------------------------------
@@ -300,10 +311,17 @@ class PROTOBUF_EXPORT Type :
 
   // accessors -------------------------------------------------------
 
+  enum : int {
+    kFieldsFieldNumber = 2,
+    kOneofsFieldNumber = 3,
+    kOptionsFieldNumber = 4,
+    kNameFieldNumber = 1,
+    kSourceContextFieldNumber = 5,
+    kSyntaxFieldNumber = 6,
+  };
   // repeated .google.protobuf.Field fields = 2;
   int fields_size() const;
   void clear_fields();
-  static const int kFieldsFieldNumber = 2;
   PROTOBUF_NAMESPACE_ID::Field* mutable_fields(int index);
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< PROTOBUF_NAMESPACE_ID::Field >*
       mutable_fields();
@@ -315,7 +333,6 @@ class PROTOBUF_EXPORT Type :
   // repeated string oneofs = 3;
   int oneofs_size() const;
   void clear_oneofs();
-  static const int kOneofsFieldNumber = 3;
   const std::string& oneofs(int index) const;
   std::string* mutable_oneofs(int index);
   void set_oneofs(int index, const std::string& value);
@@ -333,7 +350,6 @@ class PROTOBUF_EXPORT Type :
   // repeated .google.protobuf.Option options = 4;
   int options_size() const;
   void clear_options();
-  static const int kOptionsFieldNumber = 4;
   PROTOBUF_NAMESPACE_ID::Option* mutable_options(int index);
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< PROTOBUF_NAMESPACE_ID::Option >*
       mutable_options();
@@ -344,7 +360,6 @@ class PROTOBUF_EXPORT Type :
 
   // string name = 1;
   void clear_name();
-  static const int kNameFieldNumber = 1;
   const std::string& name() const;
   void set_name(const std::string& value);
   void set_name(std::string&& value);
@@ -366,7 +381,6 @@ class PROTOBUF_EXPORT Type :
   // .google.protobuf.SourceContext source_context = 5;
   bool has_source_context() const;
   void clear_source_context();
-  static const int kSourceContextFieldNumber = 5;
   const PROTOBUF_NAMESPACE_ID::SourceContext& source_context() const;
   PROTOBUF_NAMESPACE_ID::SourceContext* release_source_context();
   PROTOBUF_NAMESPACE_ID::SourceContext* mutable_source_context();
@@ -377,7 +391,6 @@ class PROTOBUF_EXPORT Type :
 
   // .google.protobuf.Syntax syntax = 6;
   void clear_syntax();
-  static const int kSyntaxFieldNumber = 6;
   PROTOBUF_NAMESPACE_ID::Syntax syntax() const;
   void set_syntax(PROTOBUF_NAMESPACE_ID::Syntax value);
 
@@ -450,10 +463,21 @@ class PROTOBUF_EXPORT Field :
   static constexpr int kIndexInFileMessages =
     1;
 
-  void UnsafeArenaSwap(Field* other);
-  void Swap(Field* other);
   friend void swap(Field& a, Field& b) {
     a.Swap(&b);
+  }
+  inline void Swap(Field* other) {
+    if (other == this) return;
+    if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(Field* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
+    InternalSwap(other);
   }
 
   // implements Message ----------------------------------------------
@@ -619,10 +643,21 @@ class PROTOBUF_EXPORT Field :
 
   // accessors -------------------------------------------------------
 
+  enum : int {
+    kOptionsFieldNumber = 9,
+    kNameFieldNumber = 4,
+    kTypeUrlFieldNumber = 6,
+    kJsonNameFieldNumber = 10,
+    kDefaultValueFieldNumber = 11,
+    kKindFieldNumber = 1,
+    kCardinalityFieldNumber = 2,
+    kNumberFieldNumber = 3,
+    kOneofIndexFieldNumber = 7,
+    kPackedFieldNumber = 8,
+  };
   // repeated .google.protobuf.Option options = 9;
   int options_size() const;
   void clear_options();
-  static const int kOptionsFieldNumber = 9;
   PROTOBUF_NAMESPACE_ID::Option* mutable_options(int index);
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< PROTOBUF_NAMESPACE_ID::Option >*
       mutable_options();
@@ -633,7 +668,6 @@ class PROTOBUF_EXPORT Field :
 
   // string name = 4;
   void clear_name();
-  static const int kNameFieldNumber = 4;
   const std::string& name() const;
   void set_name(const std::string& value);
   void set_name(std::string&& value);
@@ -654,7 +688,6 @@ class PROTOBUF_EXPORT Field :
 
   // string type_url = 6;
   void clear_type_url();
-  static const int kTypeUrlFieldNumber = 6;
   const std::string& type_url() const;
   void set_type_url(const std::string& value);
   void set_type_url(std::string&& value);
@@ -675,7 +708,6 @@ class PROTOBUF_EXPORT Field :
 
   // string json_name = 10;
   void clear_json_name();
-  static const int kJsonNameFieldNumber = 10;
   const std::string& json_name() const;
   void set_json_name(const std::string& value);
   void set_json_name(std::string&& value);
@@ -696,7 +728,6 @@ class PROTOBUF_EXPORT Field :
 
   // string default_value = 11;
   void clear_default_value();
-  static const int kDefaultValueFieldNumber = 11;
   const std::string& default_value() const;
   void set_default_value(const std::string& value);
   void set_default_value(std::string&& value);
@@ -717,31 +748,26 @@ class PROTOBUF_EXPORT Field :
 
   // .google.protobuf.Field.Kind kind = 1;
   void clear_kind();
-  static const int kKindFieldNumber = 1;
   PROTOBUF_NAMESPACE_ID::Field_Kind kind() const;
   void set_kind(PROTOBUF_NAMESPACE_ID::Field_Kind value);
 
   // .google.protobuf.Field.Cardinality cardinality = 2;
   void clear_cardinality();
-  static const int kCardinalityFieldNumber = 2;
   PROTOBUF_NAMESPACE_ID::Field_Cardinality cardinality() const;
   void set_cardinality(PROTOBUF_NAMESPACE_ID::Field_Cardinality value);
 
   // int32 number = 3;
   void clear_number();
-  static const int kNumberFieldNumber = 3;
   ::PROTOBUF_NAMESPACE_ID::int32 number() const;
   void set_number(::PROTOBUF_NAMESPACE_ID::int32 value);
 
   // int32 oneof_index = 7;
   void clear_oneof_index();
-  static const int kOneofIndexFieldNumber = 7;
   ::PROTOBUF_NAMESPACE_ID::int32 oneof_index() const;
   void set_oneof_index(::PROTOBUF_NAMESPACE_ID::int32 value);
 
   // bool packed = 8;
   void clear_packed();
-  static const int kPackedFieldNumber = 8;
   bool packed() const;
   void set_packed(bool value);
 
@@ -818,10 +844,21 @@ class PROTOBUF_EXPORT Enum :
   static constexpr int kIndexInFileMessages =
     2;
 
-  void UnsafeArenaSwap(Enum* other);
-  void Swap(Enum* other);
   friend void swap(Enum& a, Enum& b) {
     a.Swap(&b);
+  }
+  inline void Swap(Enum* other) {
+    if (other == this) return;
+    if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(Enum* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
+    InternalSwap(other);
   }
 
   // implements Message ----------------------------------------------
@@ -889,10 +926,16 @@ class PROTOBUF_EXPORT Enum :
 
   // accessors -------------------------------------------------------
 
+  enum : int {
+    kEnumvalueFieldNumber = 2,
+    kOptionsFieldNumber = 3,
+    kNameFieldNumber = 1,
+    kSourceContextFieldNumber = 4,
+    kSyntaxFieldNumber = 5,
+  };
   // repeated .google.protobuf.EnumValue enumvalue = 2;
   int enumvalue_size() const;
   void clear_enumvalue();
-  static const int kEnumvalueFieldNumber = 2;
   PROTOBUF_NAMESPACE_ID::EnumValue* mutable_enumvalue(int index);
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< PROTOBUF_NAMESPACE_ID::EnumValue >*
       mutable_enumvalue();
@@ -904,7 +947,6 @@ class PROTOBUF_EXPORT Enum :
   // repeated .google.protobuf.Option options = 3;
   int options_size() const;
   void clear_options();
-  static const int kOptionsFieldNumber = 3;
   PROTOBUF_NAMESPACE_ID::Option* mutable_options(int index);
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< PROTOBUF_NAMESPACE_ID::Option >*
       mutable_options();
@@ -915,7 +957,6 @@ class PROTOBUF_EXPORT Enum :
 
   // string name = 1;
   void clear_name();
-  static const int kNameFieldNumber = 1;
   const std::string& name() const;
   void set_name(const std::string& value);
   void set_name(std::string&& value);
@@ -937,7 +978,6 @@ class PROTOBUF_EXPORT Enum :
   // .google.protobuf.SourceContext source_context = 4;
   bool has_source_context() const;
   void clear_source_context();
-  static const int kSourceContextFieldNumber = 4;
   const PROTOBUF_NAMESPACE_ID::SourceContext& source_context() const;
   PROTOBUF_NAMESPACE_ID::SourceContext* release_source_context();
   PROTOBUF_NAMESPACE_ID::SourceContext* mutable_source_context();
@@ -948,7 +988,6 @@ class PROTOBUF_EXPORT Enum :
 
   // .google.protobuf.Syntax syntax = 5;
   void clear_syntax();
-  static const int kSyntaxFieldNumber = 5;
   PROTOBUF_NAMESPACE_ID::Syntax syntax() const;
   void set_syntax(PROTOBUF_NAMESPACE_ID::Syntax value);
 
@@ -1020,10 +1059,21 @@ class PROTOBUF_EXPORT EnumValue :
   static constexpr int kIndexInFileMessages =
     3;
 
-  void UnsafeArenaSwap(EnumValue* other);
-  void Swap(EnumValue* other);
   friend void swap(EnumValue& a, EnumValue& b) {
     a.Swap(&b);
+  }
+  inline void Swap(EnumValue* other) {
+    if (other == this) return;
+    if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(EnumValue* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
+    InternalSwap(other);
   }
 
   // implements Message ----------------------------------------------
@@ -1091,10 +1141,14 @@ class PROTOBUF_EXPORT EnumValue :
 
   // accessors -------------------------------------------------------
 
+  enum : int {
+    kOptionsFieldNumber = 3,
+    kNameFieldNumber = 1,
+    kNumberFieldNumber = 2,
+  };
   // repeated .google.protobuf.Option options = 3;
   int options_size() const;
   void clear_options();
-  static const int kOptionsFieldNumber = 3;
   PROTOBUF_NAMESPACE_ID::Option* mutable_options(int index);
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< PROTOBUF_NAMESPACE_ID::Option >*
       mutable_options();
@@ -1105,7 +1159,6 @@ class PROTOBUF_EXPORT EnumValue :
 
   // string name = 1;
   void clear_name();
-  static const int kNameFieldNumber = 1;
   const std::string& name() const;
   void set_name(const std::string& value);
   void set_name(std::string&& value);
@@ -1126,7 +1179,6 @@ class PROTOBUF_EXPORT EnumValue :
 
   // int32 number = 2;
   void clear_number();
-  static const int kNumberFieldNumber = 2;
   ::PROTOBUF_NAMESPACE_ID::int32 number() const;
   void set_number(::PROTOBUF_NAMESPACE_ID::int32 value);
 
@@ -1196,10 +1248,21 @@ class PROTOBUF_EXPORT Option :
   static constexpr int kIndexInFileMessages =
     4;
 
-  void UnsafeArenaSwap(Option* other);
-  void Swap(Option* other);
   friend void swap(Option& a, Option& b) {
     a.Swap(&b);
+  }
+  inline void Swap(Option* other) {
+    if (other == this) return;
+    if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(Option* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
+    InternalSwap(other);
   }
 
   // implements Message ----------------------------------------------
@@ -1267,9 +1330,12 @@ class PROTOBUF_EXPORT Option :
 
   // accessors -------------------------------------------------------
 
+  enum : int {
+    kNameFieldNumber = 1,
+    kValueFieldNumber = 2,
+  };
   // string name = 1;
   void clear_name();
-  static const int kNameFieldNumber = 1;
   const std::string& name() const;
   void set_name(const std::string& value);
   void set_name(std::string&& value);
@@ -1291,7 +1357,6 @@ class PROTOBUF_EXPORT Option :
   // .google.protobuf.Any value = 2;
   bool has_value() const;
   void clear_value();
-  static const int kValueFieldNumber = 2;
   const PROTOBUF_NAMESPACE_ID::Any& value() const;
   PROTOBUF_NAMESPACE_ID::Any* release_value();
   PROTOBUF_NAMESPACE_ID::Any* mutable_value();

@@ -116,10 +116,21 @@ class PROTOBUF_EXPORT Duration :
   static constexpr int kIndexInFileMessages =
     0;
 
-  void UnsafeArenaSwap(Duration* other);
-  void Swap(Duration* other);
   friend void swap(Duration& a, Duration& b) {
     a.Swap(&b);
+  }
+  inline void Swap(Duration* other) {
+    if (other == this) return;
+    if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(Duration* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
+    InternalSwap(other);
   }
 
   // implements Message ----------------------------------------------
@@ -187,15 +198,17 @@ class PROTOBUF_EXPORT Duration :
 
   // accessors -------------------------------------------------------
 
+  enum : int {
+    kSecondsFieldNumber = 1,
+    kNanosFieldNumber = 2,
+  };
   // int64 seconds = 1;
   void clear_seconds();
-  static const int kSecondsFieldNumber = 1;
   ::PROTOBUF_NAMESPACE_ID::int64 seconds() const;
   void set_seconds(::PROTOBUF_NAMESPACE_ID::int64 value);
 
   // int32 nanos = 2;
   void clear_nanos();
-  static const int kNanosFieldNumber = 2;
   ::PROTOBUF_NAMESPACE_ID::int32 nanos() const;
   void set_nanos(::PROTOBUF_NAMESPACE_ID::int32 value);
 

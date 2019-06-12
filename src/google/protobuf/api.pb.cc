@@ -196,16 +196,6 @@ void Api::clear_source_context() {
   }
   source_context_ = nullptr;
 }
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int Api::kNameFieldNumber;
-const int Api::kMethodsFieldNumber;
-const int Api::kOptionsFieldNumber;
-const int Api::kVersionFieldNumber;
-const int Api::kSourceContextFieldNumber;
-const int Api::kMixinsFieldNumber;
-const int Api::kSyntaxFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
-
 Api::Api()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
@@ -777,10 +767,6 @@ bool Api::IsInitialized() const {
   return true;
 }
 
-void Api::Swap(Api* other) {
-  if (other == this) return;
-  InternalSwap(other);
-}
 void Api::InternalSwap(Api* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
@@ -811,16 +797,6 @@ class Method::_Internal {
 void Method::clear_options() {
   options_.Clear();
 }
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int Method::kNameFieldNumber;
-const int Method::kRequestTypeUrlFieldNumber;
-const int Method::kRequestStreamingFieldNumber;
-const int Method::kResponseTypeUrlFieldNumber;
-const int Method::kResponseStreamingFieldNumber;
-const int Method::kOptionsFieldNumber;
-const int Method::kSyntaxFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
-
 Method::Method()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
@@ -1374,10 +1350,6 @@ bool Method::IsInitialized() const {
   return true;
 }
 
-void Method::Swap(Method* other) {
-  if (other == this) return;
-  InternalSwap(other);
-}
 void Method::InternalSwap(Method* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
@@ -1405,11 +1377,6 @@ void Mixin::InitAsDefaultInstance() {
 class Mixin::_Internal {
  public:
 };
-
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int Mixin::kNameFieldNumber;
-const int Mixin::kRootFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 Mixin::Mixin()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
@@ -1721,10 +1688,6 @@ bool Mixin::IsInitialized() const {
   return true;
 }
 
-void Mixin::Swap(Mixin* other) {
-  if (other == this) return;
-  InternalSwap(other);
-}
 void Mixin::InternalSwap(Mixin* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);

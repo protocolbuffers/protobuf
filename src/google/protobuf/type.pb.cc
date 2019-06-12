@@ -388,15 +388,6 @@ void Type::clear_source_context() {
   }
   source_context_ = nullptr;
 }
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int Type::kNameFieldNumber;
-const int Type::kFieldsFieldNumber;
-const int Type::kOneofsFieldNumber;
-const int Type::kOptionsFieldNumber;
-const int Type::kSourceContextFieldNumber;
-const int Type::kSyntaxFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
-
 Type::Type()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
@@ -930,25 +921,6 @@ bool Type::IsInitialized() const {
   return true;
 }
 
-void Type::Swap(Type* other) {
-  if (other == this) return;
-  if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
-    InternalSwap(other);
-  } else {
-    Type* temp = New(GetArenaNoVirtual());
-    temp->MergeFrom(*other);
-    other->CopyFrom(*this);
-    InternalSwap(temp);
-    if (GetArenaNoVirtual() == nullptr) {
-      delete temp;
-    }
-  }
-}
-void Type::UnsafeArenaSwap(Type* other) {
-  if (other == this) return;
-  GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
-  InternalSwap(other);
-}
 void Type::InternalSwap(Type* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
@@ -973,19 +945,6 @@ void Field::InitAsDefaultInstance() {
 class Field::_Internal {
  public:
 };
-
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int Field::kKindFieldNumber;
-const int Field::kCardinalityFieldNumber;
-const int Field::kNumberFieldNumber;
-const int Field::kNameFieldNumber;
-const int Field::kTypeUrlFieldNumber;
-const int Field::kOneofIndexFieldNumber;
-const int Field::kPackedFieldNumber;
-const int Field::kOptionsFieldNumber;
-const int Field::kJsonNameFieldNumber;
-const int Field::kDefaultValueFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 Field::Field()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
@@ -1702,25 +1661,6 @@ bool Field::IsInitialized() const {
   return true;
 }
 
-void Field::Swap(Field* other) {
-  if (other == this) return;
-  if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
-    InternalSwap(other);
-  } else {
-    Field* temp = New(GetArenaNoVirtual());
-    temp->MergeFrom(*other);
-    other->CopyFrom(*this);
-    InternalSwap(temp);
-    if (GetArenaNoVirtual() == nullptr) {
-      delete temp;
-    }
-  }
-}
-void Field::UnsafeArenaSwap(Field* other) {
-  if (other == this) return;
-  GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
-  InternalSwap(other);
-}
 void Field::InternalSwap(Field* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
@@ -1779,14 +1719,6 @@ void Enum::clear_source_context() {
   }
   source_context_ = nullptr;
 }
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int Enum::kNameFieldNumber;
-const int Enum::kEnumvalueFieldNumber;
-const int Enum::kOptionsFieldNumber;
-const int Enum::kSourceContextFieldNumber;
-const int Enum::kSyntaxFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
-
 Enum::Enum()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
@@ -2260,25 +2192,6 @@ bool Enum::IsInitialized() const {
   return true;
 }
 
-void Enum::Swap(Enum* other) {
-  if (other == this) return;
-  if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
-    InternalSwap(other);
-  } else {
-    Enum* temp = New(GetArenaNoVirtual());
-    temp->MergeFrom(*other);
-    other->CopyFrom(*this);
-    InternalSwap(temp);
-    if (GetArenaNoVirtual() == nullptr) {
-      delete temp;
-    }
-  }
-}
-void Enum::UnsafeArenaSwap(Enum* other) {
-  if (other == this) return;
-  GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
-  InternalSwap(other);
-}
 void Enum::InternalSwap(Enum* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
@@ -2302,12 +2215,6 @@ void EnumValue::InitAsDefaultInstance() {
 class EnumValue::_Internal {
  public:
 };
-
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int EnumValue::kNameFieldNumber;
-const int EnumValue::kNumberFieldNumber;
-const int EnumValue::kOptionsFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 EnumValue::EnumValue()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
@@ -2671,25 +2578,6 @@ bool EnumValue::IsInitialized() const {
   return true;
 }
 
-void EnumValue::Swap(EnumValue* other) {
-  if (other == this) return;
-  if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
-    InternalSwap(other);
-  } else {
-    EnumValue* temp = New(GetArenaNoVirtual());
-    temp->MergeFrom(*other);
-    other->CopyFrom(*this);
-    InternalSwap(temp);
-    if (GetArenaNoVirtual() == nullptr) {
-      delete temp;
-    }
-  }
-}
-void EnumValue::UnsafeArenaSwap(EnumValue* other) {
-  if (other == this) return;
-  GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
-  InternalSwap(other);
-}
 void EnumValue::InternalSwap(EnumValue* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
@@ -2738,11 +2626,6 @@ void Option::clear_value() {
   }
   value_ = nullptr;
 }
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int Option::kNameFieldNumber;
-const int Option::kValueFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
-
 Option::Option()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
@@ -3059,25 +2942,6 @@ bool Option::IsInitialized() const {
   return true;
 }
 
-void Option::Swap(Option* other) {
-  if (other == this) return;
-  if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
-    InternalSwap(other);
-  } else {
-    Option* temp = New(GetArenaNoVirtual());
-    temp->MergeFrom(*other);
-    other->CopyFrom(*this);
-    InternalSwap(temp);
-    if (GetArenaNoVirtual() == nullptr) {
-      delete temp;
-    }
-  }
-}
-void Option::UnsafeArenaSwap(Option* other) {
-  if (other == this) return;
-  GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
-  InternalSwap(other);
-}
 void Option::InternalSwap(Option* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);

@@ -199,10 +199,6 @@ class Struct::_Internal {
  public:
 };
 
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int Struct::kFieldsFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
-
 Struct::Struct()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
@@ -535,25 +531,6 @@ bool Struct::IsInitialized() const {
   return true;
 }
 
-void Struct::Swap(Struct* other) {
-  if (other == this) return;
-  if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
-    InternalSwap(other);
-  } else {
-    Struct* temp = New(GetArenaNoVirtual());
-    temp->MergeFrom(*other);
-    other->CopyFrom(*this);
-    InternalSwap(temp);
-    if (GetArenaNoVirtual() == nullptr) {
-      delete temp;
-    }
-  }
-}
-void Struct::UnsafeArenaSwap(Struct* other) {
-  if (other == this) return;
-  GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
-  InternalSwap(other);
-}
 void Struct::InternalSwap(Struct* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
@@ -622,15 +599,6 @@ void Value::set_allocated_list_value(PROTOBUF_NAMESPACE_ID::ListValue* list_valu
   }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Value.list_value)
 }
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int Value::kNullValueFieldNumber;
-const int Value::kNumberValueFieldNumber;
-const int Value::kStringValueFieldNumber;
-const int Value::kBoolValueFieldNumber;
-const int Value::kStructValueFieldNumber;
-const int Value::kListValueFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
-
 Value::Value()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
@@ -1181,25 +1149,6 @@ bool Value::IsInitialized() const {
   return true;
 }
 
-void Value::Swap(Value* other) {
-  if (other == this) return;
-  if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
-    InternalSwap(other);
-  } else {
-    Value* temp = New(GetArenaNoVirtual());
-    temp->MergeFrom(*other);
-    other->CopyFrom(*this);
-    InternalSwap(temp);
-    if (GetArenaNoVirtual() == nullptr) {
-      delete temp;
-    }
-  }
-}
-void Value::UnsafeArenaSwap(Value* other) {
-  if (other == this) return;
-  GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
-  InternalSwap(other);
-}
 void Value::InternalSwap(Value* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
@@ -1219,10 +1168,6 @@ void ListValue::InitAsDefaultInstance() {
 class ListValue::_Internal {
  public:
 };
-
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int ListValue::kValuesFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 ListValue::ListValue()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
@@ -1482,25 +1427,6 @@ bool ListValue::IsInitialized() const {
   return true;
 }
 
-void ListValue::Swap(ListValue* other) {
-  if (other == this) return;
-  if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
-    InternalSwap(other);
-  } else {
-    ListValue* temp = New(GetArenaNoVirtual());
-    temp->MergeFrom(*other);
-    other->CopyFrom(*this);
-    InternalSwap(temp);
-    if (GetArenaNoVirtual() == nullptr) {
-      delete temp;
-    }
-  }
-}
-void ListValue::UnsafeArenaSwap(ListValue* other) {
-  if (other == this) return;
-  GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
-  InternalSwap(other);
-}
 void ListValue::InternalSwap(ListValue* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);

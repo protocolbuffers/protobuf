@@ -116,10 +116,21 @@ class PROTOBUF_EXPORT FieldMask :
   static constexpr int kIndexInFileMessages =
     0;
 
-  void UnsafeArenaSwap(FieldMask* other);
-  void Swap(FieldMask* other);
   friend void swap(FieldMask& a, FieldMask& b) {
     a.Swap(&b);
+  }
+  inline void Swap(FieldMask* other) {
+    if (other == this) return;
+    if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(FieldMask* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
+    InternalSwap(other);
   }
 
   // implements Message ----------------------------------------------
@@ -187,10 +198,12 @@ class PROTOBUF_EXPORT FieldMask :
 
   // accessors -------------------------------------------------------
 
+  enum : int {
+    kPathsFieldNumber = 1,
+  };
   // repeated string paths = 1;
   int paths_size() const;
   void clear_paths();
-  static const int kPathsFieldNumber = 1;
   const std::string& paths(int index) const;
   std::string* mutable_paths(int index);
   void set_paths(int index, const std::string& value);

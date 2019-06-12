@@ -1489,9 +1489,9 @@ class ParseLoopGenerator {
       std::string enum_validator;
       if (field->type() == FieldDescriptor::TYPE_ENUM &&
           !HasPreservingUnknownEnumSemantics(field)) {
-        enum_validator = StrCat(
-            ", ", QualifiedClassName(field->enum_type(), options_),
-            "_IsValid, mutable_unknown_fields(), ", field->number());
+        enum_validator =
+            StrCat(", ", QualifiedClassName(field->enum_type(), options_),
+                         "_IsValid, &_internal_metadata_, ", field->number());
       }
       format_("ptr = $pi_ns$::Packed$1$Parser(mutable_$2$(), ptr, ctx$3$);\n",
               DeclaredTypeMethodName(field->type()), FieldName(field),

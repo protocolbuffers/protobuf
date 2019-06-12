@@ -90,10 +90,6 @@ class SourceContext::_Internal {
  public:
 };
 
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int SourceContext::kFileNameFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
-
 SourceContext::SourceContext()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
@@ -343,10 +339,6 @@ bool SourceContext::IsInitialized() const {
   return true;
 }
 
-void SourceContext::Swap(SourceContext* other) {
-  if (other == this) return;
-  InternalSwap(other);
-}
 void SourceContext::InternalSwap(SourceContext* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);

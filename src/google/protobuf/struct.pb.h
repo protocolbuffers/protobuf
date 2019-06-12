@@ -188,10 +188,21 @@ class PROTOBUF_EXPORT Struct :
   static constexpr int kIndexInFileMessages =
     1;
 
-  void UnsafeArenaSwap(Struct* other);
-  void Swap(Struct* other);
   friend void swap(Struct& a, Struct& b) {
     a.Swap(&b);
+  }
+  inline void Swap(Struct* other) {
+    if (other == this) return;
+    if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(Struct* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
+    InternalSwap(other);
   }
 
   // implements Message ----------------------------------------------
@@ -260,10 +271,12 @@ class PROTOBUF_EXPORT Struct :
 
   // accessors -------------------------------------------------------
 
+  enum : int {
+    kFieldsFieldNumber = 1,
+  };
   // map<string, .google.protobuf.Value> fields = 1;
   int fields_size() const;
   void clear_fields();
-  static const int kFieldsFieldNumber = 1;
   const ::PROTOBUF_NAMESPACE_ID::Map< std::string, PROTOBUF_NAMESPACE_ID::Value >&
       fields() const;
   ::PROTOBUF_NAMESPACE_ID::Map< std::string, PROTOBUF_NAMESPACE_ID::Value >*
@@ -348,10 +361,21 @@ class PROTOBUF_EXPORT Value :
   static constexpr int kIndexInFileMessages =
     2;
 
-  void UnsafeArenaSwap(Value* other);
-  void Swap(Value* other);
   friend void swap(Value& a, Value& b) {
     a.Swap(&b);
+  }
+  inline void Swap(Value* other) {
+    if (other == this) return;
+    if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(Value* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
+    InternalSwap(other);
   }
 
   // implements Message ----------------------------------------------
@@ -419,12 +443,19 @@ class PROTOBUF_EXPORT Value :
 
   // accessors -------------------------------------------------------
 
+  enum : int {
+    kNullValueFieldNumber = 1,
+    kNumberValueFieldNumber = 2,
+    kStringValueFieldNumber = 3,
+    kBoolValueFieldNumber = 4,
+    kStructValueFieldNumber = 5,
+    kListValueFieldNumber = 6,
+  };
   // .google.protobuf.NullValue null_value = 1;
   private:
   bool has_null_value() const;
   public:
   void clear_null_value();
-  static const int kNullValueFieldNumber = 1;
   PROTOBUF_NAMESPACE_ID::NullValue null_value() const;
   void set_null_value(PROTOBUF_NAMESPACE_ID::NullValue value);
 
@@ -433,7 +464,6 @@ class PROTOBUF_EXPORT Value :
   bool has_number_value() const;
   public:
   void clear_number_value();
-  static const int kNumberValueFieldNumber = 2;
   double number_value() const;
   void set_number_value(double value);
 
@@ -442,7 +472,6 @@ class PROTOBUF_EXPORT Value :
   bool has_string_value() const;
   public:
   void clear_string_value();
-  static const int kStringValueFieldNumber = 3;
   const std::string& string_value() const;
   void set_string_value(const std::string& value);
   void set_string_value(std::string&& value);
@@ -466,14 +495,12 @@ class PROTOBUF_EXPORT Value :
   bool has_bool_value() const;
   public:
   void clear_bool_value();
-  static const int kBoolValueFieldNumber = 4;
   bool bool_value() const;
   void set_bool_value(bool value);
 
   // .google.protobuf.Struct struct_value = 5;
   bool has_struct_value() const;
   void clear_struct_value();
-  static const int kStructValueFieldNumber = 5;
   const PROTOBUF_NAMESPACE_ID::Struct& struct_value() const;
   PROTOBUF_NAMESPACE_ID::Struct* release_struct_value();
   PROTOBUF_NAMESPACE_ID::Struct* mutable_struct_value();
@@ -485,7 +512,6 @@ class PROTOBUF_EXPORT Value :
   // .google.protobuf.ListValue list_value = 6;
   bool has_list_value() const;
   void clear_list_value();
-  static const int kListValueFieldNumber = 6;
   const PROTOBUF_NAMESPACE_ID::ListValue& list_value() const;
   PROTOBUF_NAMESPACE_ID::ListValue* release_list_value();
   PROTOBUF_NAMESPACE_ID::ListValue* mutable_list_value();
@@ -579,10 +605,21 @@ class PROTOBUF_EXPORT ListValue :
   static constexpr int kIndexInFileMessages =
     3;
 
-  void UnsafeArenaSwap(ListValue* other);
-  void Swap(ListValue* other);
   friend void swap(ListValue& a, ListValue& b) {
     a.Swap(&b);
+  }
+  inline void Swap(ListValue* other) {
+    if (other == this) return;
+    if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(ListValue* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
+    InternalSwap(other);
   }
 
   // implements Message ----------------------------------------------
@@ -650,10 +687,12 @@ class PROTOBUF_EXPORT ListValue :
 
   // accessors -------------------------------------------------------
 
+  enum : int {
+    kValuesFieldNumber = 1,
+  };
   // repeated .google.protobuf.Value values = 1;
   int values_size() const;
   void clear_values();
-  static const int kValuesFieldNumber = 1;
   PROTOBUF_NAMESPACE_ID::Value* mutable_values(int index);
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< PROTOBUF_NAMESPACE_ID::Value >*
       mutable_values();

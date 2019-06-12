@@ -90,11 +90,6 @@ class Timestamp::_Internal {
  public:
 };
 
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int Timestamp::kSecondsFieldNumber;
-const int Timestamp::kNanosFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
-
 Timestamp::Timestamp()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
@@ -386,25 +381,6 @@ bool Timestamp::IsInitialized() const {
   return true;
 }
 
-void Timestamp::Swap(Timestamp* other) {
-  if (other == this) return;
-  if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
-    InternalSwap(other);
-  } else {
-    Timestamp* temp = New(GetArenaNoVirtual());
-    temp->MergeFrom(*other);
-    other->CopyFrom(*this);
-    InternalSwap(temp);
-    if (GetArenaNoVirtual() == nullptr) {
-      delete temp;
-    }
-  }
-}
-void Timestamp::UnsafeArenaSwap(Timestamp* other) {
-  if (other == this) return;
-  GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
-  InternalSwap(other);
-}
 void Timestamp::InternalSwap(Timestamp* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);

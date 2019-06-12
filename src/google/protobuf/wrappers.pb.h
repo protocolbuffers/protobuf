@@ -148,10 +148,21 @@ class PROTOBUF_EXPORT DoubleValue :
   static constexpr int kIndexInFileMessages =
     0;
 
-  void UnsafeArenaSwap(DoubleValue* other);
-  void Swap(DoubleValue* other);
   friend void swap(DoubleValue& a, DoubleValue& b) {
     a.Swap(&b);
+  }
+  inline void Swap(DoubleValue* other) {
+    if (other == this) return;
+    if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(DoubleValue* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
+    InternalSwap(other);
   }
 
   // implements Message ----------------------------------------------
@@ -219,9 +230,11 @@ class PROTOBUF_EXPORT DoubleValue :
 
   // accessors -------------------------------------------------------
 
+  enum : int {
+    kValueFieldNumber = 1,
+  };
   // double value = 1;
   void clear_value();
-  static const int kValueFieldNumber = 1;
   double value() const;
   void set_value(double value);
 
@@ -289,10 +302,21 @@ class PROTOBUF_EXPORT FloatValue :
   static constexpr int kIndexInFileMessages =
     1;
 
-  void UnsafeArenaSwap(FloatValue* other);
-  void Swap(FloatValue* other);
   friend void swap(FloatValue& a, FloatValue& b) {
     a.Swap(&b);
+  }
+  inline void Swap(FloatValue* other) {
+    if (other == this) return;
+    if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(FloatValue* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
+    InternalSwap(other);
   }
 
   // implements Message ----------------------------------------------
@@ -360,9 +384,11 @@ class PROTOBUF_EXPORT FloatValue :
 
   // accessors -------------------------------------------------------
 
+  enum : int {
+    kValueFieldNumber = 1,
+  };
   // float value = 1;
   void clear_value();
-  static const int kValueFieldNumber = 1;
   float value() const;
   void set_value(float value);
 
@@ -430,10 +456,21 @@ class PROTOBUF_EXPORT Int64Value :
   static constexpr int kIndexInFileMessages =
     2;
 
-  void UnsafeArenaSwap(Int64Value* other);
-  void Swap(Int64Value* other);
   friend void swap(Int64Value& a, Int64Value& b) {
     a.Swap(&b);
+  }
+  inline void Swap(Int64Value* other) {
+    if (other == this) return;
+    if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(Int64Value* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
+    InternalSwap(other);
   }
 
   // implements Message ----------------------------------------------
@@ -501,9 +538,11 @@ class PROTOBUF_EXPORT Int64Value :
 
   // accessors -------------------------------------------------------
 
+  enum : int {
+    kValueFieldNumber = 1,
+  };
   // int64 value = 1;
   void clear_value();
-  static const int kValueFieldNumber = 1;
   ::PROTOBUF_NAMESPACE_ID::int64 value() const;
   void set_value(::PROTOBUF_NAMESPACE_ID::int64 value);
 
@@ -571,10 +610,21 @@ class PROTOBUF_EXPORT UInt64Value :
   static constexpr int kIndexInFileMessages =
     3;
 
-  void UnsafeArenaSwap(UInt64Value* other);
-  void Swap(UInt64Value* other);
   friend void swap(UInt64Value& a, UInt64Value& b) {
     a.Swap(&b);
+  }
+  inline void Swap(UInt64Value* other) {
+    if (other == this) return;
+    if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(UInt64Value* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
+    InternalSwap(other);
   }
 
   // implements Message ----------------------------------------------
@@ -642,9 +692,11 @@ class PROTOBUF_EXPORT UInt64Value :
 
   // accessors -------------------------------------------------------
 
+  enum : int {
+    kValueFieldNumber = 1,
+  };
   // uint64 value = 1;
   void clear_value();
-  static const int kValueFieldNumber = 1;
   ::PROTOBUF_NAMESPACE_ID::uint64 value() const;
   void set_value(::PROTOBUF_NAMESPACE_ID::uint64 value);
 
@@ -712,10 +764,21 @@ class PROTOBUF_EXPORT Int32Value :
   static constexpr int kIndexInFileMessages =
     4;
 
-  void UnsafeArenaSwap(Int32Value* other);
-  void Swap(Int32Value* other);
   friend void swap(Int32Value& a, Int32Value& b) {
     a.Swap(&b);
+  }
+  inline void Swap(Int32Value* other) {
+    if (other == this) return;
+    if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(Int32Value* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
+    InternalSwap(other);
   }
 
   // implements Message ----------------------------------------------
@@ -783,9 +846,11 @@ class PROTOBUF_EXPORT Int32Value :
 
   // accessors -------------------------------------------------------
 
+  enum : int {
+    kValueFieldNumber = 1,
+  };
   // int32 value = 1;
   void clear_value();
-  static const int kValueFieldNumber = 1;
   ::PROTOBUF_NAMESPACE_ID::int32 value() const;
   void set_value(::PROTOBUF_NAMESPACE_ID::int32 value);
 
@@ -853,10 +918,21 @@ class PROTOBUF_EXPORT UInt32Value :
   static constexpr int kIndexInFileMessages =
     5;
 
-  void UnsafeArenaSwap(UInt32Value* other);
-  void Swap(UInt32Value* other);
   friend void swap(UInt32Value& a, UInt32Value& b) {
     a.Swap(&b);
+  }
+  inline void Swap(UInt32Value* other) {
+    if (other == this) return;
+    if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(UInt32Value* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
+    InternalSwap(other);
   }
 
   // implements Message ----------------------------------------------
@@ -924,9 +1000,11 @@ class PROTOBUF_EXPORT UInt32Value :
 
   // accessors -------------------------------------------------------
 
+  enum : int {
+    kValueFieldNumber = 1,
+  };
   // uint32 value = 1;
   void clear_value();
-  static const int kValueFieldNumber = 1;
   ::PROTOBUF_NAMESPACE_ID::uint32 value() const;
   void set_value(::PROTOBUF_NAMESPACE_ID::uint32 value);
 
@@ -994,10 +1072,21 @@ class PROTOBUF_EXPORT BoolValue :
   static constexpr int kIndexInFileMessages =
     6;
 
-  void UnsafeArenaSwap(BoolValue* other);
-  void Swap(BoolValue* other);
   friend void swap(BoolValue& a, BoolValue& b) {
     a.Swap(&b);
+  }
+  inline void Swap(BoolValue* other) {
+    if (other == this) return;
+    if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(BoolValue* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
+    InternalSwap(other);
   }
 
   // implements Message ----------------------------------------------
@@ -1065,9 +1154,11 @@ class PROTOBUF_EXPORT BoolValue :
 
   // accessors -------------------------------------------------------
 
+  enum : int {
+    kValueFieldNumber = 1,
+  };
   // bool value = 1;
   void clear_value();
-  static const int kValueFieldNumber = 1;
   bool value() const;
   void set_value(bool value);
 
@@ -1135,10 +1226,21 @@ class PROTOBUF_EXPORT StringValue :
   static constexpr int kIndexInFileMessages =
     7;
 
-  void UnsafeArenaSwap(StringValue* other);
-  void Swap(StringValue* other);
   friend void swap(StringValue& a, StringValue& b) {
     a.Swap(&b);
+  }
+  inline void Swap(StringValue* other) {
+    if (other == this) return;
+    if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(StringValue* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
+    InternalSwap(other);
   }
 
   // implements Message ----------------------------------------------
@@ -1206,9 +1308,11 @@ class PROTOBUF_EXPORT StringValue :
 
   // accessors -------------------------------------------------------
 
+  enum : int {
+    kValueFieldNumber = 1,
+  };
   // string value = 1;
   void clear_value();
-  static const int kValueFieldNumber = 1;
   const std::string& value() const;
   void set_value(const std::string& value);
   void set_value(std::string&& value);
@@ -1291,10 +1395,21 @@ class PROTOBUF_EXPORT BytesValue :
   static constexpr int kIndexInFileMessages =
     8;
 
-  void UnsafeArenaSwap(BytesValue* other);
-  void Swap(BytesValue* other);
   friend void swap(BytesValue& a, BytesValue& b) {
     a.Swap(&b);
+  }
+  inline void Swap(BytesValue* other) {
+    if (other == this) return;
+    if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(BytesValue* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
+    InternalSwap(other);
   }
 
   // implements Message ----------------------------------------------
@@ -1362,9 +1477,11 @@ class PROTOBUF_EXPORT BytesValue :
 
   // accessors -------------------------------------------------------
 
+  enum : int {
+    kValueFieldNumber = 1,
+  };
   // bytes value = 1;
   void clear_value();
-  static const int kValueFieldNumber = 1;
   const std::string& value() const;
   void set_value(const std::string& value);
   void set_value(std::string&& value);

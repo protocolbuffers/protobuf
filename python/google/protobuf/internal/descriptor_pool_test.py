@@ -615,18 +615,86 @@ class SecondaryDescriptorFromDescriptorDB(DescriptorPoolTestBase,
         factory_test1_pb2.DESCRIPTOR.serialized_pb)
     self.factory_test2_fd = descriptor_pb2.FileDescriptorProto.FromString(
         factory_test2_pb2.DESCRIPTOR.serialized_pb)
-    db = descriptor_database.DescriptorDatabase()
-    db.Add(self.factory_test1_fd)
-    db.Add(self.factory_test2_fd)
-    db.Add(descriptor_pb2.FileDescriptorProto.FromString(
+    self.db = descriptor_database.DescriptorDatabase()
+    self.db.Add(self.factory_test1_fd)
+    self.db.Add(self.factory_test2_fd)
+    self.db.Add(descriptor_pb2.FileDescriptorProto.FromString(
         unittest_import_public_pb2.DESCRIPTOR.serialized_pb))
-    db.Add(descriptor_pb2.FileDescriptorProto.FromString(
+    self.db.Add(descriptor_pb2.FileDescriptorProto.FromString(
         unittest_import_pb2.DESCRIPTOR.serialized_pb))
-    db.Add(descriptor_pb2.FileDescriptorProto.FromString(
+    self.db.Add(descriptor_pb2.FileDescriptorProto.FromString(
         unittest_pb2.DESCRIPTOR.serialized_pb))
-    db.Add(descriptor_pb2.FileDescriptorProto.FromString(
+    self.db.Add(descriptor_pb2.FileDescriptorProto.FromString(
         no_package_pb2.DESCRIPTOR.serialized_pb))
-    self.pool = descriptor_pool.DescriptorPool(descriptor_db=db)
+    self.pool = descriptor_pool.DescriptorPool(descriptor_db=self.db)
+
+  def testErrorCollector(self):
+    file_proto = descriptor_pb2.FileDescriptorProto()
+    file_proto.package = 'collector'
+    file_proto.name = 'error_file'
+    message_type = file_proto.message_type.add()
+    message_type.name = 'ErrorMessage'
+    field = message_type.field.add()
+    field.number = 1
+    field.name = 'nested_message_field'
+    field.label = descriptor.FieldDescriptor.LABEL_OPTIONAL
+    field.type = descriptor.FieldDescriptor.TYPE_MESSAGE
+    field.type_name = 'SubMessage'
+    oneof = message_type.oneof_decl.add()
+    oneof.name = 'MyOneof'
+    enum_type = file_proto.enum_type.add()
+    enum_type.name = 'MyEnum'
+    enum_value = enum_type.value.add()
+    enum_value.name = 'MyEnumValue'
+    enum_value.number = 0
+    self.db.Add(file_proto)
+
+    self.assertRaisesRegexp(KeyError, 'SubMessage',
+                            self.pool.FindMessageTypeByName,
+                            'collector.ErrorMessage')
+    self.assertRaisesRegexp(KeyError, 'SubMessage',
+                            self.pool.FindFileByName, 'error_file')
+    with self.assertRaises(KeyError) as exc:
+      self.pool.FindFileByName('none_file')
+    self.assertIn(str(exc.exception), ('\'none_file\'',
+                                       '\"Couldn\'t find file none_file\"'))
+
+    # Pure python _ConvertFileProtoToFileDescriptor() method has side effect
+    # that all the symbols found in the file will load into the pool even the
+    # file can not build. So when FindMessageTypeByName('ErrorMessage') was
+    # called the first time, a KeyError will be raised but call the find
+    # method later will return a descriptor which is not build.
+    # TODO(jieluo): fix pure python to revert the load if file can not be build
+    if api_implementation.Type() == 'cpp':
+      error_msg = ('Invalid proto descriptor for file "error_file":\\n  '
+                   'collector.ErrorMessage.nested_message_field: "SubMessage" '
+                   'is not defined.\\n  collector.ErrorMessage.MyOneof: Oneof '
+                   'must have at least one field.\\n\'')
+      with self.assertRaises(KeyError) as exc:
+        self.pool.FindMessageTypeByName('collector.ErrorMessage')
+      self.assertEqual(str(exc.exception), '\'Couldn\\\'t build file for '
+                       'message collector.ErrorMessage\\n' + error_msg)
+
+      with self.assertRaises(KeyError) as exc:
+        self.pool.FindFieldByName('collector.ErrorMessage.nested_message_field')
+      self.assertEqual(str(exc.exception), '\'Couldn\\\'t build file for field'
+                       ' collector.ErrorMessage.nested_message_field\\n'
+                       + error_msg)
+
+      with self.assertRaises(KeyError) as exc:
+        self.pool.FindEnumTypeByName('collector.MyEnum')
+      self.assertEqual(str(exc.exception), '\'Couldn\\\'t build file for enum'
+                       ' collector.MyEnum\\n' + error_msg)
+
+      with self.assertRaises(KeyError) as exc:
+        self.pool.FindFileContainingSymbol('collector.MyEnumValue')
+      self.assertEqual(str(exc.exception), '\'Couldn\\\'t build file for symbol'
+                       ' collector.MyEnumValue\\n' + error_msg)
+
+      with self.assertRaises(KeyError) as exc:
+        self.pool.FindOneofByName('collector.ErrorMessage.MyOneof')
+      self.assertEqual(str(exc.exception), '\'Couldn\\\'t build file for oneof'
+                       ' collector.ErrorMessage.MyOneof\\n' + error_msg)
 
 
 class ProtoFile(object):

@@ -71,8 +71,7 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
             MutableRawRepeatedField(number, extension.type, extension.is_packed,
                                     extension.descriptor),
             ptr, ctx, extension.enum_validity_check.func,
-            extension.enum_validity_check.arg,
-            metadata->mutable_unknown_fields(), number);
+            extension.enum_validity_check.arg, metadata, number);
       case WireFormatLite::TYPE_STRING:
       case WireFormatLite::TYPE_BYTES:
       case WireFormatLite::TYPE_GROUP:

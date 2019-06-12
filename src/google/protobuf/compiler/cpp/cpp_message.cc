@@ -714,6 +714,18 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* printer) {
     ordered_fields.push_back(field);
   }
 
+  if (!ordered_fields.empty()) {
+    format("enum : int {\n");
+    for (auto field : ordered_fields) {
+      Formatter::SaveState save(&format);
+
+      std::map<std::string, std::string> vars;
+      SetCommonFieldVariables(field, &vars, options_);
+      format.AddMap(vars);
+      format("  ${1$$2$$}$ = $number$,\n", field, FieldConstantName(field));
+    }
+    format("};\n");
+  }
   for (auto field : ordered_fields) {
     PrintFieldComment(format, field);
 
@@ -735,10 +747,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* printer) {
           field);
     }
 
-    format(
-        "$deprecated_attr$void ${1$clear_$name$$}$();\n"
-        "$deprecated_attr$static const int ${1$$2$$}$ = $number$;\n",
-        field, FieldConstantName(field));
+    format("$deprecated_attr$void ${1$clear_$name$$}$();\n", field);
 
     // Generate type-specific accessor declarations.
     field_generators_.get(field).GenerateAccessorDeclarations(printer);
@@ -1159,10 +1168,6 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
       "\n",
       index_in_file_messages_);
 
-  if (SupportsArenas(descriptor_)) {
-    format("void UnsafeArenaSwap($classname$* other);\n");
-  }
-
   if (IsAnyMessage(descriptor_, options_)) {
     format(
         "// implements Any -----------------------------------------------\n"
@@ -1205,10 +1210,34 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
              ShouldMarkNewAsFinal(descriptor_, options_) ? "final" : "");
 
   format(
-      "void Swap($classname$* other);\n"
       "friend void swap($classname$& a, $classname$& b) {\n"
       "  a.Swap(&b);\n"
-      "}\n"
+      "}\n");
+
+  if (SupportsArenas(descriptor_)) {
+    format(
+        "inline void Swap($classname$* other) {\n"
+        "  if (other == this) return;\n"
+        "  if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {\n"
+        "    InternalSwap(other);\n"
+        "  } else {\n"
+        "    ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);\n"
+        "  }\n"
+        "}\n"
+        "void UnsafeArenaSwap($classname$* other) {\n"
+        "  if (other == this) return;\n"
+        "  $DCHK$(GetArenaNoVirtual() == other->GetArenaNoVirtual());\n"
+        "  InternalSwap(other);\n"
+        "}\n");
+  } else {
+    format(
+        "inline void Swap($classname$* other) {\n"
+        "  if (other == this) return;\n"
+        "  InternalSwap(other);\n"
+        "}\n");
+  }
+
+  format(
       "\n"
       "// implements Message ----------------------------------------------\n"
       "\n"
@@ -2030,15 +2059,6 @@ void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
       GenerateFieldClear(field, false, format);
     }
   }
-
-  // Generate field number constants.
-  format("#if !defined(_MSC_VER) || _MSC_VER >= 1900\n");
-  for (auto field : FieldRange(descriptor_)) {
-    format("const int $classname$::$1$;\n", FieldConstantName(field));
-  }
-  format(
-      "#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900\n"
-      "\n");
 
   GenerateStructors(printer);
   format("\n");
@@ -3003,40 +3023,7 @@ void MessageGenerator::GenerateOneofClear(io::Printer* printer) {
 
 void MessageGenerator::GenerateSwap(io::Printer* printer) {
   Formatter format(printer, variables_);
-  if (SupportsArenas(descriptor_)) {
-    // Generate the Swap member function. This is a lightweight wrapper around
-    // UnsafeArenaSwap() / MergeFrom() with temporaries, depending on the memory
-    // ownership situation: swapping across arenas or between an arena and a
-    // heap requires copying.
-    format(
-        "void $classname$::Swap($classname$* other) {\n"
-        "  if (other == this) return;\n"
-        "  if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {\n"
-        "    InternalSwap(other);\n"
-        "  } else {\n"
-        "    $classname$* temp = New(GetArenaNoVirtual());\n"
-        "    temp->MergeFrom(*other);\n"
-        "    other->CopyFrom(*this);\n"
-        "    InternalSwap(temp);\n"
-        "    if (GetArenaNoVirtual() == nullptr) {\n"
-        "      delete temp;\n"
-        "    }\n"
-        "  }\n"
-        "}\n"
-        "void $classname$::UnsafeArenaSwap($classname$* other) {\n"
-        "  if (other == this) return;\n"
-        "  $DCHK$(GetArenaNoVirtual() == other->GetArenaNoVirtual());\n"
-        "  InternalSwap(other);\n"
-        "}\n");
-  } else {
-    format(
-        "void $classname$::Swap($classname$* other) {\n"
-        "  if (other == this) return;\n"
-        "  InternalSwap(other);\n"
-        "}\n");
-  }
 
-  // Generate the UnsafeArenaSwap member function.
   format("void $classname$::InternalSwap($classname$* other) {\n");
   format.Indent();
   format("using std::swap;\n");

@@ -225,13 +225,6 @@ class Version::_Internal {
   }
 };
 
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int Version::kMajorFieldNumber;
-const int Version::kMinorFieldNumber;
-const int Version::kPatchFieldNumber;
-const int Version::kSuffixFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
-
 Version::Version()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
@@ -631,10 +624,6 @@ bool Version::IsInitialized() const {
   return true;
 }
 
-void Version::Swap(Version* other) {
-  if (other == this) return;
-  InternalSwap(other);
-}
 void Version::InternalSwap(Version* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
@@ -676,13 +665,6 @@ CodeGeneratorRequest::_Internal::compiler_version(const CodeGeneratorRequest* ms
 void CodeGeneratorRequest::clear_proto_file() {
   proto_file_.Clear();
 }
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int CodeGeneratorRequest::kFileToGenerateFieldNumber;
-const int CodeGeneratorRequest::kParameterFieldNumber;
-const int CodeGeneratorRequest::kProtoFileFieldNumber;
-const int CodeGeneratorRequest::kCompilerVersionFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
-
 CodeGeneratorRequest::CodeGeneratorRequest()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
@@ -1115,10 +1097,6 @@ bool CodeGeneratorRequest::IsInitialized() const {
   return true;
 }
 
-void CodeGeneratorRequest::Swap(CodeGeneratorRequest* other) {
-  if (other == this) return;
-  InternalSwap(other);
-}
 void CodeGeneratorRequest::InternalSwap(CodeGeneratorRequest* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
@@ -1152,12 +1130,6 @@ class CodeGeneratorResponse_File::_Internal {
     (*has_bits)[0] |= 4u;
   }
 };
-
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int CodeGeneratorResponse_File::kNameFieldNumber;
-const int CodeGeneratorResponse_File::kInsertionPointFieldNumber;
-const int CodeGeneratorResponse_File::kContentFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 CodeGeneratorResponse_File::CodeGeneratorResponse_File()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
@@ -1551,10 +1523,6 @@ bool CodeGeneratorResponse_File::IsInitialized() const {
   return true;
 }
 
-void CodeGeneratorResponse_File::Swap(CodeGeneratorResponse_File* other) {
-  if (other == this) return;
-  InternalSwap(other);
-}
 void CodeGeneratorResponse_File::InternalSwap(CodeGeneratorResponse_File* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
@@ -1583,11 +1551,6 @@ class CodeGeneratorResponse::_Internal {
     (*has_bits)[0] |= 1u;
   }
 };
-
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int CodeGeneratorResponse::kErrorFieldNumber;
-const int CodeGeneratorResponse::kFileFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 CodeGeneratorResponse::CodeGeneratorResponse()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
@@ -1902,10 +1865,6 @@ bool CodeGeneratorResponse::IsInitialized() const {
   return true;
 }
 
-void CodeGeneratorResponse::Swap(CodeGeneratorResponse* other) {
-  if (other == this) return;
-  InternalSwap(other);
-}
 void CodeGeneratorResponse::InternalSwap(CodeGeneratorResponse* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
