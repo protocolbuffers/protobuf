@@ -89,11 +89,16 @@ static HashTable* message_get_properties(zval* object TSRMLS_DC);
 
 // Define object free method.
 PHP_PROTO_OBJECT_FREE_START(MessageHeader, message)
-  if (*(void**)intern->data != NULL) {
-    stringsink_uninit_opaque(*(void**)intern->data);
-    FREE(*(void**)intern->data);
+  // data may not be initialized because this is a subclass of proto message,
+  // e.g., mock. In that case, there is no need to free internal data.
+  if (message_data(intern) != NULL) {
+    // Free unknown fields
+    if (*(void**)message_data(intern) != NULL) {
+      stringsink_uninit_opaque(*(void**)message_data(intern));
+      FREE(*(void**)message_data(intern));
+    }
+    FREE(intern->data);
   }
-  FREE(intern->data);
 PHP_PROTO_OBJECT_FREE_END
 
 PHP_PROTO_OBJECT_DTOR_START(MessageHeader, message)
@@ -155,7 +160,19 @@ static void message_set_property(zval* object, zval* member, zval* value,
     return;
   }
 
-  message_set_property_internal(object, member, value TSRMLS_CC);
+  MessageHeader* self = UNBOX(MessageHeader, object);
+
+  if (!message_data(self)) {
+    // This is a subclass of proto message, which doesn't have internal data
+    // setup. For this, resort to the php setter for help.
+#if PHP_MAJOR_VERSION < 7
+    std_object_handlers.write_property(object, member, value, key TSRMLS_CC);
+#else
+    std_object_handlers.write_property(object, member, value, cache_slot);
+#endif
+  } else {
+    message_set_property_internal(object, member, value TSRMLS_CC);
+  }
 }
 
 static zval* message_get_property_internal(zval* object,
@@ -215,7 +232,20 @@ static zval* message_get_property(zval* object, zval* member, int type,
     return PHP_PROTO_GLOBAL_UNINITIALIZED_ZVAL;
   }
 
-  return message_get_property_internal(object, member TSRMLS_CC);
+  MessageHeader* self = UNBOX(MessageHeader, object);
+
+  if (!message_data(self)) {
+    // This is a subclass of proto message, which doesn't have internal data
+    // setup. For this, resort to the php getter for help.
+#if PHP_MAJOR_VERSION < 7
+    return std_object_handlers.read_property(object, member, type, key TSRMLS_CC);
+#else
+    return std_object_handlers.read_property(
+        object, member, type, cache_slot, rv);
+#endif
+  } else {
+    return message_get_property_internal(object, member TSRMLS_CC);
+  }
 }
 
 #if PHP_MAJOR_VERSION < 7
@@ -352,6 +382,8 @@ void Message_construct(zval* msg, zval* array_wrapper) {
   if (EXPECTED(class_added(ce))) {
     intern = UNBOX(MessageHeader, msg);
     custom_data_init(ce, intern PHP_PROTO_TSRMLS_CC);
+  } else {
+    intern = UNBOX(MessageHeader, msg);
   }
 
   if (array_wrapper == NULL) {

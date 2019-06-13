@@ -24,6 +24,9 @@ use Foo\testLowerCaseEnum;
 use PBEmpty\PBEcho\TestEmptyPackage;
 use Php\Test\TestNamespace;
 
+class ExtendTestMessage extends TestMessage {
+}
+
 class GeneratedClassTest extends TestBase
 {
 
@@ -1503,5 +1506,17 @@ class GeneratedClassTest extends TestBase
         array_walk($values, function (&$value) {});
         $m = new TestMessage();
         $m->setOptionalString($values[0]);
+    }
+
+    #########################################################
+    # Test Mock
+    #########################################################
+
+    public function testMock()
+    {
+        $m = $this->createMock(TestMessage::class);
+        $m->method("getOptionalInt32")->willReturn(1);
+
+        $this->assertEquals(1, $m->getOptionalInt32());
     }
 }
