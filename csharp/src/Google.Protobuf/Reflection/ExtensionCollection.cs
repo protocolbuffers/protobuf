@@ -41,15 +41,11 @@ namespace Google.Protobuf.Reflection
     /// </summary>
     public class ExtensionCollection
     {
-        private readonly FileDescriptor file;
-        private readonly MessageDescriptor message;
-
         private IDictionary<MessageDescriptor, IList<FieldDescriptor>> extensionsByTypeInDeclarationOrder;
         private IDictionary<MessageDescriptor, IList<FieldDescriptor>> extensionsByTypeInNumberOrder;
 
         internal ExtensionCollection(FileDescriptor file, Extension[] extensions)
         {
-            this.file = file;
             UnorderedExtensions = DescriptorUtil.ConvertAndMakeReadOnly(
                 file.Proto.Extension,
                 (extension, i) => new FieldDescriptor(extension, file, null, i, null, extensions?[i]));
@@ -57,7 +53,6 @@ namespace Google.Protobuf.Reflection
 
         internal ExtensionCollection(MessageDescriptor message, Extension[] extensions)
         {
-            this.message = message;
             UnorderedExtensions = DescriptorUtil.ConvertAndMakeReadOnly(
                 message.Proto.Extension,
                 (extension, i) => new FieldDescriptor(extension, message.File, message, i, null, extensions?[i]));
