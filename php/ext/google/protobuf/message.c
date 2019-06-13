@@ -382,8 +382,6 @@ void Message_construct(zval* msg, zval* array_wrapper) {
   if (EXPECTED(class_added(ce))) {
     intern = UNBOX(MessageHeader, msg);
     custom_data_init(ce, intern PHP_PROTO_TSRMLS_CC);
-  } else {
-    intern = UNBOX(MessageHeader, msg);
   }
 
   if (array_wrapper == NULL) {

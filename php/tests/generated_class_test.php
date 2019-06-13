@@ -24,9 +24,6 @@ use Foo\testLowerCaseEnum;
 use PBEmpty\PBEcho\TestEmptyPackage;
 use Php\Test\TestNamespace;
 
-class ExtendTestMessage extends TestMessage {
-}
-
 class GeneratedClassTest extends TestBase
 {
 
