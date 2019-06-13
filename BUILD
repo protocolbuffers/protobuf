@@ -356,6 +356,20 @@ cc_test(
     ],
 )
 
+# OSS-Fuzz test
+cc_binary(
+    name = "file_descriptor_parsenew_fuzzer",
+    srcs = ["tests/file_descriptor_parsenew_fuzzer.cc"],
+    copts = CPPOTS + ["-fsanitizer=fuzzer,address"],
+    deps = [
+        ":descriptor_upbproto",
+        ":descriptor_upbreflection",
+        ":upb",
+        ":upb_pb",
+        ":upb_test",
+    ],
+)
+
 # copybara:strip_for_google3_begin
 upb_proto_reflection_library(
     name = "descriptor_upbreflection",
