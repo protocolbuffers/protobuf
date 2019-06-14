@@ -1509,12 +1509,25 @@ class GeneratedClassTest extends TestBase
     # Test Mock
     #########################################################
 
-    public function testMock()
+    public function testMessageMock()
     {
         if (method_exists(\PHPUnit\Framework\TestCase::class,'createMock')) {
             $m = $this->createMock(TestMessage::class);
             $m->method("getOptionalInt32")->willReturn(1);
             $this->assertEquals(1, $m->getOptionalInt32());
+        } else {
+            $this->assertTrue(true);
+        }
+    }
+
+    public function testSubMessageMock()
+    {
+        if (method_exists(\PHPUnit\Framework\TestCase::class,'createMock')) {
+            $m = new TestMessage();
+            $subm = $this->createMock(Sub::class);
+            $m->setOptionalMessage($subm);
+            $m->setRepeatedMessage([$subm]);
+            $m->setMapInt32Message([1 => $subm]);
         } else {
             $this->assertTrue(true);
         }

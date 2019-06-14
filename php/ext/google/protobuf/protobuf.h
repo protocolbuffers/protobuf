@@ -255,6 +255,9 @@
 #define php_proto_zend_lookup_class(name, name_length, ce) \
   zend_lookup_class(name, name_length, ce TSRMLS_CC)
 
+#define php_instanceof_function(instance_ce, class_ce) \
+  instanceof_function(instance_ce, class_ce TSRMLS_CC)
+
 #define PHP_PROTO_RETVAL_ZVAL(value) ZVAL_ZVAL(return_value, value, 1, 0)
 
 #else  // PHP_MAJOR_VERSION >= 7
@@ -522,6 +525,9 @@ static inline int php_proto_zend_lookup_class(
   zend_string_release(zstr_name);
   return *ce != NULL ? SUCCESS : FAILURE;
 }
+
+#define php_instanceof_function(instance_ce, class_ce) \
+  instanceof_function(instance_ce, class_ce)
 
 #define PHP_PROTO_RETVAL_ZVAL(value) ZVAL_COPY(return_value, value)
 
