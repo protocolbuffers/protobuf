@@ -114,7 +114,7 @@ bool native_slot_set(upb_fieldtype_t type, const zend_class_entry* klass,
         return false;
       }
       if (Z_TYPE_P(value) == IS_OBJECT &&
-          !instanceof_function(Z_OBJCE_P(value), klass)) {
+          !php_instanceof_function(Z_OBJCE_P(value), klass)) {
         zend_error(E_USER_ERROR, "Given message does not have correct class.");
         return false;
       }
@@ -197,7 +197,7 @@ bool native_slot_set_by_array(upb_fieldtype_t type,
         return false;
       }
       if (Z_TYPE_P(value) == IS_OBJECT &&
-          !instanceof_function(Z_OBJCE_P(value), klass)) {
+          !php_instanceof_function(Z_OBJCE_P(value), klass)) {
         zend_error(E_USER_ERROR, "Given message does not have correct class.");
         return false;
       }
@@ -255,7 +255,7 @@ bool native_slot_set_by_map(upb_fieldtype_t type, const zend_class_entry* klass,
         return false;
       }
       if (Z_TYPE_P(value) == IS_OBJECT &&
-          !instanceof_function(Z_OBJCE_P(value), klass)) {
+          !php_instanceof_function(Z_OBJCE_P(value), klass)) {
         zend_error(E_USER_ERROR, "Given message does not have correct class.");
         return false;
       }
