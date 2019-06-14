@@ -208,8 +208,8 @@ static size_t fmt_bool(bool val, char* buf, size_t length) {
   return n;
 }
 
-static size_t fmt_int32(long val, char* buf, size_t length) {
-  size_t n = _upb_snprintf(buf, length, "%ld", val);
+static size_t fmt_int32(long long val, char* buf, size_t length) {
+  size_t n = _upb_snprintf(buf, length, "%lld", val);
   CHKLENGTH(n > 0 && n < length);
   return n;
 }
@@ -220,8 +220,8 @@ static size_t fmt_uint32(unsigned long long val, char* buf, size_t length) {
   return n;
 }
 
-static size_t fmt_int64(long val, char* buf, size_t length) {
-  size_t n = _upb_snprintf(buf, length, "\"%ld\"", val);
+static size_t fmt_int64(long long val, char* buf, size_t length) {
+  size_t n = _upb_snprintf(buf, length, "\"%lld\"", val);
   CHKLENGTH(n > 0 && n < length);
   return n;
 }
