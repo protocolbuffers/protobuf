@@ -201,3 +201,6 @@ with info about your project (name and website) so we can add an entry for you.
    * Website: https://twirpql.dev
    * Extensions: 1070
 
+1. SwissBorg
+   * Website: https://swissborg.com
+   * Extensions: 1071
