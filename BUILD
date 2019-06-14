@@ -218,7 +218,7 @@ cc_library(
 # TODO(keveman): Remove this target once the support gets added to Bazel.
 cc_library(
     name = "protobuf_headers",
-    hdrs = glob(["src/**/*.h"]),
+    hdrs = glob(["src/**/*.h", "src/**/*.inc"]),
     includes = ["src/"],
     visibility = ["//visibility:public"],
 )
