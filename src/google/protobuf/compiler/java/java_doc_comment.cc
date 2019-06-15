@@ -185,42 +185,177 @@ void WriteFieldDocComment(io::Printer* printer, const FieldDescriptor* field) {
   printer->Print(" */\n");
 }
 
-void WriteFieldGetterDocComment(io::Printer* printer, const FieldDescriptor* field) {
+void WriteFieldAccessorDocComment(io::Printer* printer, 
+                                  const FieldDescriptor* field,
+                                  const FieldAccessorType type,
+                                  const bool builder) {
   printer->Print("/**\n");
   WriteDocCommentBody(printer, field);
   printer->Print(" * <code>$def$</code>\n", "def", 
                  EscapeJavadoc(FirstLineOf(field->DebugString())));
-  printer->Print(" * @return The $name$.\n", "name", field->camelcase_name());
+  switch (type) {
+    case HAZZER:
+      printer->Print(" * @return Whether the $name$ field is set.\n", "name", 
+                     field->camelcase_name());
+      break;
+    case GETTER:
+      printer->Print(" * @return The $name$.\n", "name",
+                     field->camelcase_name());
+      break;
+    case SETTER:
+      printer->Print(" * @param value The $name$ to set.\n", "name",
+                     field->camelcase_name());
+      break;
+    case CLEARER:
+      // Print nothing
+      break;
+    // Repeated
+    case LIST_COUNT:
+      printer->Print(" * @return The number of $name$(s).\n", "name",
+                 field->camelcase_name());
+      break;
+    case LIST_GETTER:
+      printer->Print(" * @return A list containing the $name$(s).\n", "name",
+                     field->camelcase_name());
+      break;
+    case LIST_INDEXED_GETTER:
+      printer->Print(" * @param index The index of the element to return.\n");
+      printer->Print(" * @return The $name$(s) at the given index.\n", "name",
+                     field->camelcase_name());
+      break;
+    case LIST_INDEXED_SETTER:
+      printer->Print(" * @param index The index to set the value at.\n");
+      printer->Print(" * @param value The $name$ to set.\n", "name",
+                     field->camelcase_name());
+      break;
+    case LIST_ADDER:
+      printer->Print(" * @param value The $name$ to add.\n", "name",
+                     field->camelcase_name());
+      break;
+    case LIST_MULTI_ADDER:
+      printer->Print(" * @param values The $name$(s) to add.\n", "name",
+                 field->camelcase_name());
+      break;
+  }
+  if (builder) {
+    printer->Print(" * @return This builder for chaining.\n");
+  }
   printer->Print(" */\n");
 }
 
-void WriteFieldHaserDocComment(io::Printer* printer, const FieldDescriptor* field) {
+void WriteFieldEnumValueAccessorDocComment(io::Printer* printer, 
+                                           const FieldDescriptor* field,
+                                           const FieldAccessorType type,
+                                           const bool builder) {
   printer->Print("/**\n");
   WriteDocCommentBody(printer, field);
-  printer->Print(" * <code>$def$</code>\n", "def",
+  printer->Print(" * <code>$def$</code>\n", "def", 
                  EscapeJavadoc(FirstLineOf(field->DebugString())));
-  printer->Print(" * @return Whether the $name$ field is set.\n", "name", field->camelcase_name());
+  switch (type) {
+    case HAZZER:
+      // Should never happen
+      break;
+    case GETTER:
+      printer->Print(" * @return The enum value for $name$.\n", "name",
+                 field->camelcase_name());
+      break;
+    case SETTER:
+      printer->Print(" * @param value The enum value for $name$ to set.\n",
+                     "name", field->camelcase_name());
+      break;
+    case CLEARER:
+      // Print nothing
+      break;
+    // Repeated
+    case LIST_COUNT:
+      // Should never happen
+      break;
+    case LIST_GETTER:
+      printer->Print(" * @return A list containing the enum values for $name$(s).\n",
+                     "name", field->camelcase_name());
+      break;
+    case LIST_INDEXED_GETTER:
+      printer->Print(" * @param index The index of the value to return.\n");
+      printer->Print(" * @return The enum value of the $name$ at the given index.\n",
+                     "name", field->camelcase_name());
+      break;
+    case LIST_INDEXED_SETTER:
+      printer->Print(" * @param index The index of the value to return.\n");
+      printer->Print(" * @param value The enum value of the $name$ to set.\n",
+                     "name", field->camelcase_name());
+      break;
+    case LIST_ADDER:
+      printer->Print(" * @param value The enum value of the $name$ to add.\n",
+                     "name", field->camelcase_name());
+      break;
+    case LIST_MULTI_ADDER:
+      printer->Print(" * @param values The enum values of the $name$(s) to add.\n",
+                     "name", field->camelcase_name());
+      break;
+  }
+  if (builder) {
+    printer->Print(" * @return This builder for chaining.\n");
+  }
   printer->Print(" */\n");
 }
 
-void WriteFieldSetterDocComment(io::Printer* printer, const FieldDescriptor* field) {
+void WriteFieldStringBytesAccessorDocComment(io::Printer* printer, 
+                                             const FieldDescriptor* field,
+                                             const FieldAccessorType type,
+                                             const bool builder) {
   printer->Print("/**\n");
   WriteDocCommentBody(printer, field);
-  printer->Print(" * <code>$def$</code>\n", "def",
+  printer->Print(" * <code>$def$</code>\n", "def", 
                  EscapeJavadoc(FirstLineOf(field->DebugString())));
-  printer->Print(" * @param value The $name$ to set.\n", "name", field->camelcase_name());
-  printer->Print(" * @return This builder for chaining.\n");
+  switch (type) {
+    case HAZZER:
+      // Should never happen
+      break;
+    case GETTER:
+      printer->Print(" * @return The bytes for $name$.\n", "name",
+                 field->camelcase_name());
+      break;
+    case SETTER:
+      printer->Print(" * @param value The bytes for $name$ to set.\n",
+                     "name", field->camelcase_name());
+      break;
+    case CLEARER:
+      // Print nothing
+      break;
+    // Repeated
+    case LIST_COUNT:
+      // Should never happen
+      break;
+    case LIST_GETTER:
+      printer->Print(" * @return A list containing the bytes for $name$(s).\n",
+                     "name", field->camelcase_name());
+      break;
+    case LIST_INDEXED_GETTER:
+      printer->Print(" * @param index The index of the value to return.\n");
+      printer->Print(" * @return The bytes of the $name$ at the given index.\n",
+                     "name", field->camelcase_name());
+      break;
+    case LIST_INDEXED_SETTER:
+      printer->Print(" * @param index The index of the value to return.\n");
+      printer->Print(" * @param value The bytes of the $name$ to set.\n",
+                     "name", field->camelcase_name());
+      break;
+    case LIST_ADDER:
+      printer->Print(" * @param value The bytes of the $name$ to add.\n",
+                     "name", field->camelcase_name());
+      break;
+    case LIST_MULTI_ADDER:
+      printer->Print(" * @param values The bytes of the $name$(s) to add.\n",
+                     "name", field->camelcase_name());
+      break;
+  }
+  if (builder) {
+    printer->Print(" * @return This builder for chaining.\n");
+  }
   printer->Print(" */\n");
 }
 
-void WriteFieldClearerDocComment(io::Printer* printer, const FieldDescriptor* field) {
-  printer->Print("/**\n");
-  WriteDocCommentBody(printer, field);
-  printer->Print(" * <code>$def$</code>\n", "def",
-                 EscapeJavadoc(FirstLineOf(field->DebugString())));
-  printer->Print(" * @return This builder for chaining.\n");
-  printer->Print(" */\n");
-}
+// Enum
 
 void WriteEnumDocComment(io::Printer* printer, const EnumDescriptor* enum_) {
   printer->Print("/**\n");
