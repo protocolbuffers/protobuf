@@ -80,6 +80,7 @@ message Recursive2 {
 message MapMessage {
   map<string, int32> map_string_int32 = 1;
   map<string, TestMessage2> map_string_msg = 2;
+  map<string, TestEnum> map_string_enum = 3;
 }
 
 message MapMessageWireEquiv {
