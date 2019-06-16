@@ -389,6 +389,9 @@ static bool endmap_handler(void *closure, const void *hd, upb_status* s) {
   if (mapdata->value_field_type == UPB_TYPE_MESSAGE ||
       mapdata->value_field_type == UPB_TYPE_ENUM) {
     value_field_typeclass = get_def_obj(mapdata->value_field_subdef);
+    if (mapdata->value_field_type == UPB_TYPE_ENUM) {
+      value_field_typeclass = EnumDescriptor_enummodule(value_field_typeclass);
+    }
   }
 
   value = native_slot_get(
