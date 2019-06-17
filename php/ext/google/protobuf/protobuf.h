@@ -37,7 +37,7 @@
 #include "upb.h"
 
 #define PHP_PROTOBUF_EXTNAME "protobuf"
-#define PHP_PROTOBUF_VERSION "3.8.0"
+#define PHP_PROTOBUF_VERSION "3.9.0RC1"
 
 #define MAX_LENGTH_OF_INT64 20
 #define SIZEOF_INT64 8
