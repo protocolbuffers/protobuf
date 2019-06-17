@@ -48,7 +48,7 @@ class BuildFileFunctions(object):
         else:
             print("Warning: no such file: " + file)
 
-    if filter(IsSourceFile, files):
+    if list(filter(IsSourceFile, files)):
       # Has sources, make this a normal library.
       self.converter.toplevel += "add_library(%s\n  %s)\n" % (
           kwargs["name"],
@@ -272,8 +272,8 @@ def GetDict(obj):
 
 globs = GetDict(converter)
 
-execfile("WORKSPACE", GetDict(WorkspaceFileFunctions(converter)))
-execfile("BUILD", GetDict(BuildFileFunctions(converter)))
+exec(open("WORKSPACE").read(), GetDict(WorkspaceFileFunctions(converter)))
+exec(open("BUILD").read(), GetDict(BuildFileFunctions(converter)))
 
 with open(sys.argv[1], "w") as f:
   f.write(converter.convert())

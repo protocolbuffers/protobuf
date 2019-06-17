@@ -43,6 +43,11 @@ config_setting(
     visibility = ["//visibility:public"],
 )
 
+config_setting(
+    name = "fuzz",
+    values = {"define": "fuzz=true"},
+)
+
 # Public C/C++ libraries #######################################################
 
 cc_library(
@@ -358,15 +363,20 @@ cc_test(
 
 # OSS-Fuzz test
 cc_binary(
+    testonly = 1,
     name = "file_descriptor_parsenew_fuzzer",
     srcs = ["tests/file_descriptor_parsenew_fuzzer.cc"],
-    copts = CPPOTS + ["-fsanitizer=fuzzer,address"],
+    copts = CPPOPTS + select({
+        "//conditions:default": [],
+        ":fuzz": ["-fsanitizer=fuzzer,address"],
+    }),
+    defines = select({
+        "//conditions:default": [],
+        ":fuzz": ["HAVE_FUZZER"],
+    }),
     deps = [
         ":descriptor_upbproto",
-        ":descriptor_upbreflection",
         ":upb",
-        ":upb_pb",
-        ":upb_test",
     ],
 )
 
