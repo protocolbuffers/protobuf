@@ -1,3 +1,3 @@
 FROM grpctesting/rake-compiler-dock_53c22085d091183c528303791e7771359f699bcf
 
-RUN /bin/bash -l -c "gem install bundler"
+RUN /bin/bash -l -c "gem install bundler -v 1.17.3"
