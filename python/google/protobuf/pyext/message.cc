@@ -2991,8 +2991,12 @@ bool InitProto2MessageModule(PyObject *m) {
         reinterpret_cast<PyObject*>(
             &RepeatedCompositeContainer_Type));
 
-    // Register them as collections.Sequence
+    // Register them as MutableSequence.
+#if PY_MAJOR_VERSION >= 3
+    ScopedPyObjectPtr collections(PyImport_ImportModule("collections.abc"));
+#else
     ScopedPyObjectPtr collections(PyImport_ImportModule("collections"));
+#endif
     if (collections == NULL) {
       return false;
     }
