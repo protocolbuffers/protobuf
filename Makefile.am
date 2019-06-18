@@ -1218,6 +1218,7 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)   \
   examples/pubspec.yaml                  \
   examples/third_party/zlib.BUILD        \
   protobuf.bzl                           \
+  protobuf_deps.bzl                      \
   python/release/wheel/build_wheel_manylinux.sh  \
   python/release/wheel/Dockerfile                \
   python/release/wheel/protobuf_optimized_pip.sh \
