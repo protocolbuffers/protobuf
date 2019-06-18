@@ -17,7 +17,7 @@ use Google\Protobuf\Internal\GPBUtil;
  *
  * Generated from protobuf message <code>google.protobuf.DescriptorProto.ReservedRange</code>
  */
-class ReservedRange extends \Google\Protobuf\Internal\Message
+final class ReservedRange extends \Google\Protobuf\Internal\Message
 {
     /**
      * Inclusive.
