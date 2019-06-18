@@ -77,23 +77,19 @@ class MockErrorCollector : public MultiFileErrorCollector {
 
 class MockGeneratorContext : public GeneratorContext {
  public:
-  MockGeneratorContext() {}
-  ~MockGeneratorContext() {
-    STLDeleteValues(&files_);
-  }
-
   void ExpectFileMatches(const string& virtual_filename,
                          const string& physical_filename) {
-    string* expected_contents = FindPtrOrNull(files_, virtual_filename);
-    ASSERT_TRUE(expected_contents != NULL)
+    auto it = files_.find(virtual_filename);
+    ASSERT_TRUE(it != files_.end())
       << "Generator failed to generate file: " << virtual_filename;
+    string expected_contents = *it->second;
 
     string actual_contents;
     GOOGLE_CHECK_OK(
         File::GetContentsAsText(TestSourceDir() + "/" + physical_filename,
                           &actual_contents, true))
         << "Unable to get " << physical_filename;
-    EXPECT_TRUE(actual_contents == *expected_contents)
+    EXPECT_TRUE(actual_contents == expected_contents)
       << physical_filename << " needs to be regenerated.  Please run "
          "generate_descriptor_proto.sh. Then add this file "
          "to your CL.";
@@ -102,15 +98,13 @@ class MockGeneratorContext : public GeneratorContext {
   // implements GeneratorContext --------------------------------------
 
   virtual io::ZeroCopyOutputStream* Open(const string& filename) {
-    string** map_slot = &files_[filename];
-    delete *map_slot;
-    *map_slot = new string;
-
-    return new io::StringOutputStream(*map_slot);
+    auto& map_slot = files_[filename];
+    map_slot.reset(new std::string);
+    return new io::StringOutputStream(map_slot.get());
   }
 
  private:
-  std::map<string, string*> files_;
+  std::map<std::string, std::unique_ptr<std::string>> files_;
 };
 
 class GenerateAndTest {
