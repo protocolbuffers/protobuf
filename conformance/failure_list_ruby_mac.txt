@@ -5,7 +5,6 @@ Recommended.Proto3.JsonInput.BytesFieldBase64Url.JsonOutput
 Recommended.Proto3.JsonInput.BytesFieldBase64Url.ProtobufOutput
 Recommended.Proto3.JsonInput.DurationHas3FractionalDigits.Validator
 Recommended.Proto3.JsonInput.DurationHas6FractionalDigits.Validator
-Recommended.Proto3.JsonInput.Int64FieldBeString.Validator
 Recommended.Proto3.JsonInput.MapFieldValueIsNull
 Recommended.Proto3.JsonInput.RepeatedFieldMessageElementIsNull
 Recommended.Proto3.JsonInput.RepeatedFieldPrimitiveElementIsNull
@@ -15,7 +14,6 @@ Recommended.Proto3.JsonInput.StringFieldUnpairedHighSurrogate
 Recommended.Proto3.JsonInput.StringFieldUnpairedLowSurrogate
 Recommended.Proto3.JsonInput.TimestampHas3FractionalDigits.Validator
 Recommended.Proto3.JsonInput.TimestampHas6FractionalDigits.Validator
-Recommended.Proto3.JsonInput.Uint64FieldBeString.Validator
 Required.DurationProtoInputTooLarge.JsonOutput
 Required.DurationProtoInputTooSmall.JsonOutput
 Required.Proto3.JsonInput.DoubleFieldMaxNegativeValue.JsonOutput

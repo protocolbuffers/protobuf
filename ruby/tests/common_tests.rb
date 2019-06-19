@@ -1108,9 +1108,9 @@ module CommonTests
 
     expected = {
       optionalInt32: 0,
-      optionalInt64: 0,
+      optionalInt64: "0",
       optionalUint32: 0,
-      optionalUint64: 0,
+      optionalUint64: "0",
       optionalBool: false,
       optionalFloat: 0,
       optionalDouble: 0,
@@ -1142,9 +1142,9 @@ module CommonTests
 
     expected = {
       optionalInt32: 0,
-      optionalInt64: 0,
+      optionalInt64: "0",
       optionalUint32: 0,
-      optionalUint64: 0,
+      optionalUint64: "0",
       optionalBool: false,
       optionalFloat: 0,
       optionalDouble: 0,
@@ -1177,9 +1177,9 @@ module CommonTests
 
     expected = {
       optionalInt32: 0,
-      optionalInt64: 0,
+      optionalInt64: "0",
       optionalUint32: 0,
-      optionalUint64: 0,
+      optionalUint64: "0",
       optionalBool: false,
       optionalFloat: 0,
       optionalDouble: 0,
