@@ -17,7 +17,7 @@ use Google\Protobuf\Internal\GPBUtil;
  *
  * Generated from protobuf message <code>google.protobuf.GeneratedCodeInfo</code>
  */
-class GeneratedCodeInfo extends \Google\Protobuf\Internal\Message
+final class GeneratedCodeInfo extends \Google\Protobuf\Internal\Message
 {
     /**
      * An Annotation connects some span of text in generated code to an element
