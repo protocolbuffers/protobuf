@@ -86,13 +86,9 @@ PROTOBUF_NAMESPACE_OPEN
 
 void SourceContext::InitAsDefaultInstance() {
 }
-class SourceContext::HasBitSetters {
+class SourceContext::_Internal {
  public:
 };
-
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int SourceContext::kFileNameFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 SourceContext::SourceContext()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
@@ -104,7 +100,7 @@ SourceContext::SourceContext(const SourceContext& from)
       _internal_metadata_(nullptr) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   file_name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  if (from.file_name().size() > 0) {
+  if (!from.file_name().empty()) {
     file_name_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.file_name_);
   }
   // @@protoc_insertion_point(copy_constructor:google.protobuf.SourceContext)
@@ -343,10 +339,6 @@ bool SourceContext::IsInitialized() const {
   return true;
 }
 
-void SourceContext::Swap(SourceContext* other) {
-  if (other == this) return;
-  InternalSwap(other);
-}
 void SourceContext::InternalSwap(SourceContext* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);

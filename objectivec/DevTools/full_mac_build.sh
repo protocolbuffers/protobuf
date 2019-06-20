@@ -41,7 +41,7 @@ OPTIONS:
          Skip the Xcode Debug configuration.
    --skip-xcode-release
          Skip the Xcode Release configuration.
-   --skip-xcode-osx
+   --skip-xcode-osx | --skip-xcode-macos
          Skip the invoke of Xcode to test the runtime on OS X.
    --skip-xcode-tvos
          Skip the invoke of Xcode to test the runtime on tvOS.
@@ -119,7 +119,7 @@ while [[ $# != 0 ]]; do
     --skip-xcode-ios )
       DO_XCODE_IOS_TESTS=no
       ;;
-    --skip-xcode-osx )
+    --skip-xcode-osx | --skip-xcode-macos)
       DO_XCODE_OSX_TESTS=no
       ;;
     --skip-xcode-tvos )
@@ -280,7 +280,16 @@ if [[ "${DO_XCODE_IOS_TESTS}" == "yes" ]] ; then
           -disable-concurrent-testing
       )
       ;;
-    10.[0-1]* )
+    10.*)
+      XCODEBUILD_TEST_BASE_IOS+=(
+          -destination "platform=iOS Simulator,name=iPhone 4s,OS=8.1" # 32bit
+          -destination "platform=iOS Simulator,name=iPhone 7,OS=latest" # 64bit
+          # 10.x also seems to often fail running destinations in parallel (with
+          # 32bit one include atleast)
+          -disable-concurrent-destination-testing
+      )
+      ;;
+    11.0* )
       XCODEBUILD_TEST_BASE_IOS+=(
           -destination "platform=iOS Simulator,name=iPhone 4s,OS=8.1" # 32bit
           -destination "platform=iOS Simulator,name=iPhone 7,OS=latest" # 64bit
@@ -340,10 +349,27 @@ if [[ "${DO_XCODE_TVOS_TESTS}" == "yes" ]] ; then
     xcodebuild
       -project objectivec/ProtocolBuffers_tvOS.xcodeproj
       -scheme ProtocolBuffers
-      # Test on the oldest and current.
-      -destination "platform=tvOS Simulator,name=Apple TV 1080p,OS=9.0"
-      -destination "platform=tvOS Simulator,name=Apple TV,OS=latest"
   )
+  case "${XCODE_VERSION}" in
+    [6-9].* )
+      echo "ERROR: Xcode 10.0 or higher is required to build the test suite." 1>&2
+      exit 11
+      ;;
+    10.* | 11.* )
+      XCODEBUILD_TEST_BASE_TVOS+=(
+        # Test on the oldest and current.
+        -destination "platform=tvOS Simulator,name=Apple TV,OS=11.0"
+        -destination "platform=tvOS Simulator,name=Apple TV 4K,OS=latest"
+      )
+      ;;
+    * )
+      echo ""
+      echo "ATTENTION: Time to update the simulator targets for Xcode ${XCODE_VERSION}"
+      echo ""
+      echo "ERROR: Build aborted!"
+      exit 2
+      ;;
+  esac
   if [[ "${XCODE_QUIET}" == "yes" ]] ; then
     XCODEBUILD_TEST_BASE_TVOS+=( -quiet )
   fi

@@ -718,11 +718,11 @@ PROTOBUF_EXPORT PROTOBUF_MUST_USE_RESULT const char* PackedEnumParser(
     void* object, const char* ptr, ParseContext* ctx);
 PROTOBUF_EXPORT PROTOBUF_MUST_USE_RESULT const char* PackedEnumParser(
     void* object, const char* ptr, ParseContext* ctx, bool (*is_valid)(int),
-    std::string* unknown, int field_num);
+    InternalMetadataWithArenaLite* metadata, int field_num);
 PROTOBUF_EXPORT PROTOBUF_MUST_USE_RESULT const char* PackedEnumParserArg(
     void* object, const char* ptr, ParseContext* ctx,
-    bool (*is_valid)(const void*, int), const void* data, std::string* unknown,
-    int field_num);
+    bool (*is_valid)(const void*, int), const void* data,
+    InternalMetadataWithArenaLite* metadata, int field_num);
 
 PROTOBUF_EXPORT PROTOBUF_MUST_USE_RESULT const char* PackedBoolParser(
     void* object, const char* ptr, ParseContext* ctx);

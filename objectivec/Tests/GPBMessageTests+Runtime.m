@@ -1482,7 +1482,7 @@
   [msg release];
   msg = [[Message2 alloc] init];
 
-  uint32_t values[] = {
+  int32_t values[] = {
     Message2_O_OneOfCase_OneofInt32,
     Message2_O_OneOfCase_OneofInt64,
     Message2_O_OneOfCase_OneofUint32,
@@ -1992,7 +1992,7 @@
   [msg release];
   msg = [[Message3 alloc] init];
 
-  uint32_t values[] = {
+  int32_t values[] = {
     Message3_O_OneOfCase_OneofInt32,
     Message3_O_OneOfCase_OneofInt64,
     Message3_O_OneOfCase_OneofUint32,
@@ -2113,7 +2113,7 @@
 
   Message2 *msg = [[Message2 alloc] init];
 
-  uint32_t values[] = {
+  int32_t values[] = {
     Message2_O_OneOfCase_OneofInt32,
     Message2_O_OneOfCase_OneofInt64,
     Message2_O_OneOfCase_OneofUint32,
@@ -2242,7 +2242,7 @@
 
   Message3 *msg = [[Message3 alloc] init];
 
-  uint32_t values[] = {
+  int32_t values[] = {
     Message3_O_OneOfCase_OneofInt32,
     Message3_O_OneOfCase_OneofInt64,
     Message3_O_OneOfCase_OneofUint32,

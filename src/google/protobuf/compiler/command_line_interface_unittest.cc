@@ -2023,6 +2023,10 @@ TEST_F(CommandLineInterfaceTest, GeneratorPluginNotFound) {
   // Error written to stdout by child process after exec() fails.
   ExpectErrorSubstring("no_such_file: program not found or is not executable");
 
+  ExpectErrorSubstring(
+      "Please specify a program using absolute path or make sure "
+      "the program is available in your PATH system variable");
+
   // Error written by parent process when child fails.
   ExpectErrorSubstring(
       "--badplug_out: prefix-gen-badplug: Plugin failed with status code 1.");

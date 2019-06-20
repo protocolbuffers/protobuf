@@ -170,10 +170,12 @@ module BasicTest
       m = MapMessage.new(
         :map_string_int32 => {"a" => 1, "b" => 2},
         :map_string_msg => {"a" => TestMessage2.new(:foo => 1),
-                            "b" => TestMessage2.new(:foo => 2)})
+                            "b" => TestMessage2.new(:foo => 2)},
+        :map_string_enum => {"a" => :A, "b" => :B})
       assert m.map_string_int32.keys.sort == ["a", "b"]
       assert m.map_string_int32["a"] == 1
       assert m.map_string_msg["b"].foo == 2
+      assert m.map_string_enum["a"] == :A
 
       m.map_string_int32["c"] = 3
       assert m.map_string_int32["c"] == 3
@@ -206,8 +208,9 @@ module BasicTest
       m = MapMessage.new(
         :map_string_int32 => {"a" => 1, "b" => 2},
         :map_string_msg => {"a" => TestMessage2.new(:foo => 1),
-                            "b" => TestMessage2.new(:foo => 2)})
-      expected = "<BasicTest::MapMessage: map_string_int32: {\"b\"=>2, \"a\"=>1}, map_string_msg: {\"b\"=><BasicTest::TestMessage2: foo: 2>, \"a\"=><BasicTest::TestMessage2: foo: 1>}>"
+                            "b" => TestMessage2.new(:foo => 2)},
+        :map_string_enum => {"a" => :A, "b" => :B})
+      expected = "<BasicTest::MapMessage: map_string_int32: {\"b\"=>2, \"a\"=>1}, map_string_msg: {\"b\"=><BasicTest::TestMessage2: foo: 2>, \"a\"=><BasicTest::TestMessage2: foo: 1>}, map_string_enum: {\"b\"=>:B, \"a\"=>:A}>"
       assert_equal expected, m.inspect
     end
 
@@ -237,7 +240,8 @@ module BasicTest
       m = MapMessage.new(
         :map_string_int32 => {"a" => 1, "b" => 2},
         :map_string_msg => {"a" => TestMessage2.new(:foo => 1),
-                            "b" => TestMessage2.new(:foo => 2)})
+                            "b" => TestMessage2.new(:foo => 2)},
+        :map_string_enum => {"a" => :A, "b" => :B})
       m2 = MapMessage.decode(MapMessage.encode(m))
       assert m == m2
 
@@ -298,10 +302,12 @@ module BasicTest
       m = MapMessage.new(
         :map_string_int32 => {"a" => 1, "b" => 2},
         :map_string_msg => {"a" => TestMessage2.new(:foo => 1),
-                            "b" => TestMessage2.new(:foo => 2)})
+                            "b" => TestMessage2.new(:foo => 2)},
+        :map_string_enum => {"a" => :A, "b" => :B})
       expected_result = {
         :map_string_int32 => {"a" => 1, "b" => 2},
-        :map_string_msg => {"a" => {:foo => 1}, "b" => {:foo => 2}}
+        :map_string_msg => {"a" => {:foo => 1}, "b" => {:foo => 2}},
+        :map_string_enum => {"a" => :A, "b" => :B}
       }
       assert_equal expected_result, m.to_h
     end
@@ -311,26 +317,26 @@ module BasicTest
       # TODO: Fix JSON in JRuby version.
       return if RUBY_PLATFORM == "java"
       m = MapMessage.new(:map_string_int32 => {"a" => 1})
-      expected = {mapStringInt32: {a: 1}, mapStringMsg: {}}
-      expected_preserve = {map_string_int32: {a: 1}, map_string_msg: {}}
-      assert JSON.parse(MapMessage.encode_json(m), :symbolize_names => true) == expected
+      expected = {mapStringInt32: {a: 1}, mapStringMsg: {}, mapStringEnum: {}}
+      expected_preserve = {map_string_int32: {a: 1}, map_string_msg: {}, map_string_enum: {}}
+      assert_equal JSON.parse(MapMessage.encode_json(m), :symbolize_names => true), expected
 
       json = MapMessage.encode_json(m, :preserve_proto_fieldnames => true)
-      assert JSON.parse(json, :symbolize_names => true) == expected_preserve
+      assert_equal JSON.parse(json, :symbolize_names => true), expected_preserve
 
       m2 = MapMessage.decode_json(MapMessage.encode_json(m))
-      assert m == m2
+      assert_equal m, m2
     end
 
     def test_json_maps_emit_defaults_submsg
       # TODO: Fix JSON in JRuby version.
       return if RUBY_PLATFORM == "java"
       m = MapMessage.new(:map_string_msg => {"a" => TestMessage2.new})
-      expected = {mapStringInt32: {}, mapStringMsg: {a: {foo: 0}}}
+      expected = {mapStringInt32: {}, mapStringMsg: {a: {foo: 0}}, mapStringEnum: {}}
 
       actual = MapMessage.encode_json(m, :emit_defaults => true)
 
-      assert JSON.parse(actual, :symbolize_names => true) == expected
+      assert_equal JSON.parse(actual, :symbolize_names => true), expected
     end
 
     def test_respond_to

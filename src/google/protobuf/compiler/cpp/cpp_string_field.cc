@@ -519,7 +519,7 @@ void StringFieldGenerator::GenerateCopyConstructorCode(
   if (HasFieldPresence(descriptor_->file())) {
     format("if (from.has_$name$()) {\n");
   } else {
-    format("if (from.$name$().size() > 0) {\n");
+    format("if (!from.$name$().empty()) {\n");
   }
 
   format.Indent();

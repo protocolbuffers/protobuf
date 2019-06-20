@@ -17,7 +17,7 @@ AC_PREREQ(2.59)
 # In the SVN trunk, the version should always be the next anticipated release
 # version with the "-pre" suffix.  (We used to use "-SNAPSHOT" but this pushed
 # the size of one file name in the dist tarfile over the 99-char limit.)
-AC_INIT([Protocol Buffers],[3.7.1],[protobuf@googlegroups.com],[protobuf])
+AC_INIT([Protocol Buffers],[3.8.0],[protobuf@googlegroups.com],[protobuf])
 
 AM_MAINTAINER_MODE([enable])
 
@@ -46,6 +46,11 @@ AS_IF([test "x${ac_cv_env_CXXFLAGS_set}" = "x"],
 AC_CANONICAL_TARGET
 
 AM_INIT_AUTOMAKE([1.9 tar-ustar subdir-objects])
+
+# Silent rules enabled: the output is minimal but informative.
+# In particular, the warnings from the compiler stick out very clearly.
+# To see all logs, use the --disable-silent-rules on configure or via make V=1
+AM_SILENT_RULES([yes])
 
 AC_ARG_WITH([zlib],
   [AS_HELP_STRING([--with-zlib],

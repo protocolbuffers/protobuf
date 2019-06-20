@@ -234,7 +234,7 @@ public class UnknownEnumValueTest extends TestCase {
     TestAllTypes message = builder.build();
 
     // We can print a message with unknown enum values.
-    String textData = TextFormat.printToString(message);
+    String textData = TextFormat.printer().printToString(message);
     assertEquals(
         "optional_nested_enum: UNKNOWN_ENUM_VALUE_NestedEnum_4321\n"
             + "repeated_nested_enum: UNKNOWN_ENUM_VALUE_NestedEnum_5432\n"

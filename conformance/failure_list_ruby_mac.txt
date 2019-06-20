@@ -51,11 +51,6 @@ Required.Proto3.JsonInput.RepeatedUint32Wrapper.JsonOutput
 Required.Proto3.JsonInput.RepeatedUint64Wrapper.JsonOutput
 Required.Proto3.JsonInput.StringFieldSurrogatePair.JsonOutput
 Required.Proto3.JsonInput.StringFieldSurrogatePair.ProtobufOutput
-Required.Proto3.JsonInput.TimestampJsonInputTooSmall
-Required.Proto3.JsonInput.TimestampMinValue.JsonOutput
-Required.Proto3.JsonInput.TimestampMinValue.ProtobufOutput
-Required.Proto3.JsonInput.TimestampRepeatedValue.JsonOutput
-Required.Proto3.JsonInput.TimestampRepeatedValue.ProtobufOutput
 Required.Proto3.ProtobufInput.DoubleFieldNormalizeQuietNan.JsonOutput
 Required.Proto3.ProtobufInput.DoubleFieldNormalizeSignalingNan.JsonOutput
 Required.Proto3.ProtobufInput.FloatFieldNormalizeQuietNan.JsonOutput

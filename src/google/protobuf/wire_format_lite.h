@@ -244,9 +244,7 @@ class PROTOBUF_EXPORT WireFormatLite {
   static int64 ZigZagDecode64(uint64 n);
 
   // =================================================================
-  // Methods for reading/writing individual field.  The implementations
-  // of these methods are defined in wire_format_lite_inl.h; you must #include
-  // that file to use these.
+  // Methods for reading/writing individual field.
 
   // Read fields, not including tags.  The assumption is that you already
   // read the tag to determine what field to read.
@@ -1429,7 +1427,7 @@ inline uint8* WireFormatLite::WritePrimitiveNoTagToArray(
   const int n = value.size();
   GOOGLE_DCHECK_GT(n, 0);
 
-  const T* ii = value.unsafe_data();
+  const T* ii = value.data();
   int i = 0;
   do {
     target = Writer(ii[i], target);
@@ -1447,7 +1445,7 @@ inline uint8* WireFormatLite::WriteFixedNoTagToArray(
   const int n = value.size();
   GOOGLE_DCHECK_GT(n, 0);
 
-  const T* ii = value.unsafe_data();
+  const T* ii = value.data();
   const int bytes = n * static_cast<int>(sizeof(ii[0]));
   memcpy(target, ii, static_cast<size_t>(bytes));
   return target + bytes;
@@ -1593,7 +1591,7 @@ inline uint8* WireFormatLite::WritePrimitiveToArray(
     return target;
   }
 
-  const T* ii = value.unsafe_data();
+  const T* ii = value.data();
   int i = 0;
   do {
     target = Writer(field_number, ii[i], target);

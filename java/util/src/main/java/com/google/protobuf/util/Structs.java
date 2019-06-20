@@ -28,56 +28,38 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_FILE_H__
-#define GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_FILE_H__
+package com.google.protobuf.util;
 
-#include <string>
-#include <set>
-#include <vector>
-#include <google/protobuf/compiler/objectivec/objectivec_helpers.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/io/printer.h>
+import com.google.protobuf.Struct;
+import com.google.protobuf.Value;
 
-namespace google {
-namespace protobuf {
-namespace compiler {
-namespace objectivec {
+/** Utilities to help create {@code google.protobuf.Struct} messages. */
+public final class Structs {
 
-class EnumGenerator;
-class ExtensionGenerator;
-class MessageGenerator;
+  /**
+   * Returns a struct containing the key-value pair.
+   */
+  public static Struct of(String k1, Value v1) {
+    return Struct.newBuilder().putFields(k1, v1).build();
+  }
 
-class FileGenerator {
- public:
-  FileGenerator(const FileDescriptor* file, const Options& options);
-  ~FileGenerator();
+  /**
+   * Returns a struct containing each of the key-value pairs.
+   *
+   * <p>Providing duplicate keys is undefined behavior.
+   */
+  public static Struct of(String k1, Value v1, String k2, Value v2) {
+    return Struct.newBuilder().putFields(k1, v1).putFields(k2, v2).build();
+  }
 
-  FileGenerator(const FileGenerator&) = delete;
-  FileGenerator& operator=(const FileGenerator&) = delete;
+  /**
+   * Returns a struct containing each of the key-value pairs.
+   *
+   * <p>Providing duplicate keys is undefined behavior.
+   */
+  public static Struct of(String k1, Value v1, String k2, Value v2, String k3, Value v3) {
+    return Struct.newBuilder().putFields(k1, v1).putFields(k2, v2).putFields(k3, v3).build();
+  }
 
-  void GenerateSource(io::Printer* printer);
-  void GenerateHeader(io::Printer* printer);
-
-  const string& RootClassName() const { return root_class_name_; }
-
- private:
-  const FileDescriptor* file_;
-  string root_class_name_;
-  bool is_bundled_proto_;
-
-  std::vector<std::unique_ptr<EnumGenerator>> enum_generators_;
-  std::vector<std::unique_ptr<MessageGenerator>> message_generators_;
-  std::vector<std::unique_ptr<ExtensionGenerator>> extension_generators_;
-
-  const Options options_;
-
-  void PrintFileRuntimePreamble(
-      io::Printer* printer, const std::set<string>& headers_to_import) const;
-};
-
-}  // namespace objectivec
-}  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
-
-#endif  // GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_FILE_H__
+  private Structs() {}
+}

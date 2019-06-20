@@ -208,7 +208,7 @@ namespace compiler {
 
 void Version::InitAsDefaultInstance() {
 }
-class Version::HasBitSetters {
+class Version::_Internal {
  public:
   using HasBits = decltype(std::declval<Version>()._has_bits_);
   static void set_has_major(HasBits* has_bits) {
@@ -224,13 +224,6 @@ class Version::HasBitSetters {
     (*has_bits)[0] |= 1u;
   }
 };
-
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int Version::kMajorFieldNumber;
-const int Version::kMinorFieldNumber;
-const int Version::kPatchFieldNumber;
-const int Version::kSuffixFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 Version::Version()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
@@ -300,7 +293,7 @@ void Version::Clear() {
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 const char* Version::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
-  HasBitSetters::HasBits has_bits{};
+  _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
@@ -309,7 +302,7 @@ const char* Version::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::in
       // optional int32 major = 1;
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
-          HasBitSetters::set_has_major(&has_bits);
+          _Internal::set_has_major(&has_bits);
           major_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
@@ -317,7 +310,7 @@ const char* Version::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::in
       // optional int32 minor = 2;
       case 2:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16)) {
-          HasBitSetters::set_has_minor(&has_bits);
+          _Internal::set_has_minor(&has_bits);
           minor_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
@@ -325,7 +318,7 @@ const char* Version::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::in
       // optional int32 patch = 3;
       case 3:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 24)) {
-          HasBitSetters::set_has_patch(&has_bits);
+          _Internal::set_has_patch(&has_bits);
           patch_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
@@ -371,7 +364,7 @@ bool Version::MergePartialFromCodedStream(
       // optional int32 major = 1;
       case 1: {
         if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (8 & 0xFF)) {
-          HasBitSetters::set_has_major(&_has_bits_);
+          _Internal::set_has_major(&_has_bits_);
           DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
                    ::PROTOBUF_NAMESPACE_ID::int32, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_INT32>(
                  input, &major_)));
@@ -384,7 +377,7 @@ bool Version::MergePartialFromCodedStream(
       // optional int32 minor = 2;
       case 2: {
         if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (16 & 0xFF)) {
-          HasBitSetters::set_has_minor(&_has_bits_);
+          _Internal::set_has_minor(&_has_bits_);
           DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
                    ::PROTOBUF_NAMESPACE_ID::int32, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_INT32>(
                  input, &minor_)));
@@ -397,7 +390,7 @@ bool Version::MergePartialFromCodedStream(
       // optional int32 patch = 3;
       case 3: {
         if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (24 & 0xFF)) {
-          HasBitSetters::set_has_patch(&_has_bits_);
+          _Internal::set_has_patch(&_has_bits_);
           DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
                    ::PROTOBUF_NAMESPACE_ID::int32, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_INT32>(
                  input, &patch_)));
@@ -631,10 +624,6 @@ bool Version::IsInitialized() const {
   return true;
 }
 
-void Version::Swap(Version* other) {
-  if (other == this) return;
-  InternalSwap(other);
-}
 void Version::InternalSwap(Version* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
@@ -657,7 +646,7 @@ void CodeGeneratorRequest::InitAsDefaultInstance() {
   PROTOBUF_NAMESPACE_ID::compiler::_CodeGeneratorRequest_default_instance_._instance.get_mutable()->compiler_version_ = const_cast< PROTOBUF_NAMESPACE_ID::compiler::Version*>(
       PROTOBUF_NAMESPACE_ID::compiler::Version::internal_default_instance());
 }
-class CodeGeneratorRequest::HasBitSetters {
+class CodeGeneratorRequest::_Internal {
  public:
   using HasBits = decltype(std::declval<CodeGeneratorRequest>()._has_bits_);
   static void set_has_parameter(HasBits* has_bits) {
@@ -670,19 +659,12 @@ class CodeGeneratorRequest::HasBitSetters {
 };
 
 const PROTOBUF_NAMESPACE_ID::compiler::Version&
-CodeGeneratorRequest::HasBitSetters::compiler_version(const CodeGeneratorRequest* msg) {
+CodeGeneratorRequest::_Internal::compiler_version(const CodeGeneratorRequest* msg) {
   return *msg->compiler_version_;
 }
 void CodeGeneratorRequest::clear_proto_file() {
   proto_file_.Clear();
 }
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int CodeGeneratorRequest::kFileToGenerateFieldNumber;
-const int CodeGeneratorRequest::kParameterFieldNumber;
-const int CodeGeneratorRequest::kProtoFileFieldNumber;
-const int CodeGeneratorRequest::kCompilerVersionFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
-
 CodeGeneratorRequest::CodeGeneratorRequest()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
@@ -757,7 +739,7 @@ void CodeGeneratorRequest::Clear() {
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 const char* CodeGeneratorRequest::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
-  HasBitSetters::HasBits has_bits{};
+  _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
@@ -936,7 +918,7 @@ void CodeGeneratorRequest::SerializeWithCachedSizes(
   // optional .google.protobuf.compiler.Version compiler_version = 3;
   if (cached_has_bits & 0x00000002u) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteMessageMaybeToArray(
-      3, HasBitSetters::compiler_version(this), output);
+      3, _Internal::compiler_version(this), output);
   }
 
   // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
@@ -987,7 +969,7 @@ void CodeGeneratorRequest::SerializeWithCachedSizes(
   if (cached_has_bits & 0x00000002u) {
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
       InternalWriteMessageToArray(
-        3, HasBitSetters::compiler_version(this), target);
+        3, _Internal::compiler_version(this), target);
   }
 
   // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
@@ -1115,10 +1097,6 @@ bool CodeGeneratorRequest::IsInitialized() const {
   return true;
 }
 
-void CodeGeneratorRequest::Swap(CodeGeneratorRequest* other) {
-  if (other == this) return;
-  InternalSwap(other);
-}
 void CodeGeneratorRequest::InternalSwap(CodeGeneratorRequest* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
@@ -1139,7 +1117,7 @@ void CodeGeneratorRequest::InternalSwap(CodeGeneratorRequest* other) {
 
 void CodeGeneratorResponse_File::InitAsDefaultInstance() {
 }
-class CodeGeneratorResponse_File::HasBitSetters {
+class CodeGeneratorResponse_File::_Internal {
  public:
   using HasBits = decltype(std::declval<CodeGeneratorResponse_File>()._has_bits_);
   static void set_has_name(HasBits* has_bits) {
@@ -1152,12 +1130,6 @@ class CodeGeneratorResponse_File::HasBitSetters {
     (*has_bits)[0] |= 4u;
   }
 };
-
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int CodeGeneratorResponse_File::kNameFieldNumber;
-const int CodeGeneratorResponse_File::kInsertionPointFieldNumber;
-const int CodeGeneratorResponse_File::kContentFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 CodeGeneratorResponse_File::CodeGeneratorResponse_File()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
@@ -1236,7 +1208,7 @@ void CodeGeneratorResponse_File::Clear() {
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 const char* CodeGeneratorResponse_File::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
-  HasBitSetters::HasBits has_bits{};
+  _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
@@ -1551,10 +1523,6 @@ bool CodeGeneratorResponse_File::IsInitialized() const {
   return true;
 }
 
-void CodeGeneratorResponse_File::Swap(CodeGeneratorResponse_File* other) {
-  if (other == this) return;
-  InternalSwap(other);
-}
 void CodeGeneratorResponse_File::InternalSwap(CodeGeneratorResponse_File* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
@@ -1576,18 +1544,13 @@ void CodeGeneratorResponse_File::InternalSwap(CodeGeneratorResponse_File* other)
 
 void CodeGeneratorResponse::InitAsDefaultInstance() {
 }
-class CodeGeneratorResponse::HasBitSetters {
+class CodeGeneratorResponse::_Internal {
  public:
   using HasBits = decltype(std::declval<CodeGeneratorResponse>()._has_bits_);
   static void set_has_error(HasBits* has_bits) {
     (*has_bits)[0] |= 1u;
   }
 };
-
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int CodeGeneratorResponse::kErrorFieldNumber;
-const int CodeGeneratorResponse::kFileFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 CodeGeneratorResponse::CodeGeneratorResponse()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
@@ -1648,7 +1611,7 @@ void CodeGeneratorResponse::Clear() {
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 const char* CodeGeneratorResponse::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
-  HasBitSetters::HasBits has_bits{};
+  _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
@@ -1902,10 +1865,6 @@ bool CodeGeneratorResponse::IsInitialized() const {
   return true;
 }
 
-void CodeGeneratorResponse::Swap(CodeGeneratorResponse* other) {
-  if (other == this) return;
-  InternalSwap(other);
-}
 void CodeGeneratorResponse::InternalSwap(CodeGeneratorResponse* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);

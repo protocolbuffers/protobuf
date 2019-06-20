@@ -61,135 +61,132 @@ public final class TextFormat {
    * Outputs a textual representation of the Protocol Message supplied into the parameter output.
    * (This representation is the new version of the classic "ProtocolPrinter" output from the
    * original Protocol Buffer system)
+   *
+   * @deprecated Use {@code printer().print(MessageOrBuilder, Appendable)}
    */
+  @Deprecated
   public static void print(final MessageOrBuilder message, final Appendable output)
       throws IOException {
-    Printer.DEFAULT.print(message, multiLineOutput(output));
+    printer().print(message, output);
   }
 
-  /** Outputs a textual representation of {@code fields} to {@code output}. */
+  /**
+   * Outputs a textual representation of {@code fields} to {@code output}.
+   *
+   * @deprecated Use {@code printer().print(UnknownFieldSet, Appendable)}
+   */
+  @Deprecated
   public static void print(final UnknownFieldSet fields, final Appendable output)
       throws IOException {
-    Printer.DEFAULT.printUnknownFields(fields, multiLineOutput(output));
+    printer().print(fields, output);
   }
 
-  /** Same as {@code print()}, except that non-ASCII characters are not escaped. */
+  /**
+   * Same as {@code print()}, except that non-ASCII characters are not escaped.
+   *
+   * @deprecated Use {@code printer().escapingNonAscii(false).print(MessageOrBuilder, Appendable)}
+   */
+  @Deprecated
   public static void printUnicode(final MessageOrBuilder message, final Appendable output)
       throws IOException {
-    Printer.UNICODE.print(message, multiLineOutput(output));
+    printer().escapingNonAscii(false).print(message, output);
   }
 
-  /** Same as {@code print()}, except that non-ASCII characters are not escaped. */
+  /**
+   * Same as {@code print()}, except that non-ASCII characters are not escaped.
+   *
+   * @deprecated Use {@code printer().escapingNonAscii(false).print(UnknownFieldSet, Appendable)}
+   */
+  @Deprecated
   public static void printUnicode(final UnknownFieldSet fields, final Appendable output)
       throws IOException {
-    Printer.UNICODE.printUnknownFields(fields, multiLineOutput(output));
+    printer().escapingNonAscii(false).print(fields, output);
   }
 
   /**
    * Generates a human readable form of this message, useful for debugging and other purposes, with
-   * no newline characters.
+   * no newline characters. This is just a trivial wrapper around
+   * {@link TextFormat.Printer#shortDebugString(MessageOrBuilder)}.
    */
   public static String shortDebugString(final MessageOrBuilder message) {
-    try {
-      final StringBuilder text = new StringBuilder();
-      Printer.DEFAULT.print(message, singleLineOutput(text));
-      return text.toString();
-    } catch (IOException e) {
-      throw new IllegalStateException(e);
-    }
+    return printer().shortDebugString(message);
   }
 
   /**
    * Generates a human readable form of the field, useful for debugging and other purposes, with no
    * newline characters.
+   *
+   * @deprecated Use {@code printer().shortDebugString(FieldDescriptor, Object)}
    */
+  @Deprecated
   public static String shortDebugString(final FieldDescriptor field, final Object value) {
-    try {
-      final StringBuilder text = new StringBuilder();
-      Printer.DEFAULT.printField(field, value, singleLineOutput(text));
-      return text.toString();
-    } catch (IOException e) {
-      throw new IllegalStateException(e);
-    }
+    return printer().shortDebugString(field, value);
   }
 
   /**
    * Generates a human readable form of the unknown fields, useful for debugging and other purposes,
    * with no newline characters.
+   *
+   * @deprecated Use {@code printer().shortDebugString(UnknownFieldSet)}
    */
+  @Deprecated
   public static String shortDebugString(final UnknownFieldSet fields) {
-    try {
-      final StringBuilder text = new StringBuilder();
-      Printer.DEFAULT.printUnknownFields(fields, singleLineOutput(text));
-      return text.toString();
-    } catch (IOException e) {
-      throw new IllegalStateException(e);
-    }
+    return printer().shortDebugString(fields);
   }
 
-  /** Like {@code print()}, but writes directly to a {@code String} and returns it. */
+  /**
+   * Like {@code print()}, but writes directly to a {@code String} and returns it.
+   *
+   * @deprecated Use {@link MessageOrBuilder#toString()}
+   */
+  @Deprecated
   public static String printToString(final MessageOrBuilder message) {
-    try {
-      final StringBuilder text = new StringBuilder();
-      print(message, text);
-      return text.toString();
-    } catch (IOException e) {
-      throw new IllegalStateException(e);
-    }
+    return printer().printToString(message);
   }
 
-  /** Like {@code print()}, but writes directly to a {@code String} and returns it. */
+  /**
+   * Like {@code print()}, but writes directly to a {@code String} and returns it.
+   *
+   * @deprecated Use {@link UnknownFieldSet#toString()}
+   */
+  @Deprecated
   public static String printToString(final UnknownFieldSet fields) {
-    try {
-      final StringBuilder text = new StringBuilder();
-      print(fields, text);
-      return text.toString();
-    } catch (IOException e) {
-      throw new IllegalStateException(e);
-    }
+    return printer().printToString(fields);
   }
 
   /**
    * Same as {@code printToString()}, except that non-ASCII characters in string type fields are not
    * escaped in backslash+octals.
+   *
+   * @deprecated Use {@code printer().escapingNonAscii(false).printToString(MessageOrBuilder)}
    */
+  @Deprecated
   public static String printToUnicodeString(final MessageOrBuilder message) {
-    try {
-      final StringBuilder text = new StringBuilder();
-      Printer.UNICODE.print(message, multiLineOutput(text));
-      return text.toString();
-    } catch (IOException e) {
-      throw new IllegalStateException(e);
-    }
+    return printer().escapingNonAscii(false).printToString(message);
   }
 
   /**
    * Same as {@code printToString()}, except that non-ASCII characters in string type fields are not
    * escaped in backslash+octals.
+   *
+   * @deprecated Use {@code printer().escapingNonAscii(false).printToString(UnknownFieldSet)}
    */
+  @Deprecated
   public static String printToUnicodeString(final UnknownFieldSet fields) {
-    try {
-      final StringBuilder text = new StringBuilder();
-      Printer.UNICODE.printUnknownFields(fields, multiLineOutput(text));
-      return text.toString();
-    } catch (IOException e) {
-      throw new IllegalStateException(e);
-    }
+    return printer().escapingNonAscii(false).printToString(fields);
   }
 
+  /** @deprecated Use {@code printer().printField(FieldDescriptor, Object, Appendable)} */
+  @Deprecated
   public static void printField(
       final FieldDescriptor field, final Object value, final Appendable output) throws IOException {
-    Printer.DEFAULT.printField(field, value, multiLineOutput(output));
+    printer().printField(field, value, output);
   }
 
+  /** @deprecated Use {@code printer().printFieldToString(FieldDescriptor, Object)} */
+  @Deprecated
   public static String printFieldToString(final FieldDescriptor field, final Object value) {
-    try {
-      final StringBuilder text = new StringBuilder();
-      printField(field, value, text);
-      return text.toString();
-    } catch (IOException e) {
-      throw new IllegalStateException(e);
-    }
+    return printer().printFieldToString(field, value);
   }
 
   /**
@@ -198,29 +195,34 @@ public final class TextFormat {
    * <p>Same as {@code printFieldValue()}, except that non-ASCII characters in string type fields
    * are not escaped in backslash+octals.
    *
+   * @deprecated Use {@code printer().escapingNonAscii(false).printFieldValue(FieldDescriptor,
+   *     Object, Appendable)}
    * @param field the descriptor of the field
    * @param value the value of the field
    * @param output the output to which to append the formatted value
    * @throws ClassCastException if the value is not appropriate for the given field descriptor
    * @throws IOException if there is an exception writing to the output
    */
+  @Deprecated
   public static void printUnicodeFieldValue(
       final FieldDescriptor field, final Object value, final Appendable output) throws IOException {
-    Printer.UNICODE.printFieldValue(field, value, multiLineOutput(output));
+    printer().escapingNonAscii(false).printFieldValue(field, value, output);
   }
 
   /**
    * Outputs a textual representation of the value of given field value.
    *
+   * @deprecated Use {@code printer().printFieldValue(FieldDescriptor, Object, Appendable)}
    * @param field the descriptor of the field
    * @param value the value of the field
    * @param output the output to which to append the formatted value
    * @throws ClassCastException if the value is not appropriate for the given field descriptor
    * @throws IOException if there is an exception writing to the output
    */
+  @Deprecated
   public static void printFieldValue(
       final FieldDescriptor field, final Object value, final Appendable output) throws IOException {
-    Printer.DEFAULT.printFieldValue(field, value, multiLineOutput(output));
+    printer().printFieldValue(field, value, output);
   }
 
   /**
@@ -256,7 +258,7 @@ public final class TextFormat {
           generator.print("{");
           generator.eol();
           generator.indent();
-          Printer.DEFAULT.printUnknownFields(message, generator);
+          Printer.printUnknownFields(message, generator);
           generator.outdent();
           generator.print("}");
         } catch (InvalidProtocolBufferException e) {
@@ -267,19 +269,23 @@ public final class TextFormat {
         }
         break;
       case WireFormat.WIRETYPE_START_GROUP:
-        Printer.DEFAULT.printUnknownFields((UnknownFieldSet) value, generator);
+        Printer.printUnknownFields((UnknownFieldSet) value, generator);
         break;
       default:
         throw new IllegalArgumentException("Bad tag: " + tag);
     }
   }
 
+  /** Printer instance which escapes non-ASCII characters. */
+  public static Printer printer() {
+    return Printer.DEFAULT;
+  }
+
   /** Helper class for converting protobufs to text. */
-  private static final class Printer {
+  public static final class Printer {
+
     // Printer instance which escapes non-ASCII characters.
-    static final Printer DEFAULT = new Printer(true);
-    // Printer instance which emits Unicode (it still escapes newlines and quotes in strings).
-    static final Printer UNICODE = new Printer(false);
+    private static final Printer DEFAULT = new Printer(true);
 
     /** Whether to escape non ASCII characters with backslash and octal. */
     private final boolean escapeNonAscii;
@@ -288,12 +294,51 @@ public final class TextFormat {
       this.escapeNonAscii = escapeNonAscii;
     }
 
+    /**
+     * Return a new Printer instance with the specified escape mode.
+     *
+     * @param escapeNonAscii If true, the new Printer will escape non-ASCII characters (this is the
+     *     default behavior. If false, the new Printer will print non-ASCII characters as is. In
+     *     either case, the new Printer still escapes newlines and quotes in strings.
+     * @return a new Printer that clones all other configurations from the current {@link Printer},
+     *     with the escape mode set to the given parameter.
+     */
+    public Printer escapingNonAscii(boolean escapeNonAscii) {
+      return new Printer(escapeNonAscii);
+    }
+
+    /**
+     * Outputs a textual representation of the Protocol Message supplied into the parameter output.
+     * (This representation is the new version of the classic "ProtocolPrinter" output from the
+     * original Protocol Buffer system)
+     */
+    public void print(final MessageOrBuilder message, final Appendable output) throws IOException {
+      print(message, multiLineOutput(output));
+    }
+
+    /** Outputs a textual representation of {@code fields} to {@code output}. */
+    public void print(final UnknownFieldSet fields, final Appendable output) throws IOException {
+      printUnknownFields(fields, multiLineOutput(output));
+    }
+
     private void print(final MessageOrBuilder message, final TextGenerator generator)
         throws IOException {
-      for (Map.Entry<FieldDescriptor, Object> field : message.getAllFields().entrySet()) {
-        printField(field.getKey(), field.getValue(), generator);
+      printMessage(message, generator);
+    }
+
+    public String printFieldToString(final FieldDescriptor field, final Object value) {
+      try {
+        final StringBuilder text = new StringBuilder();
+        printField(field, value, text);
+        return text.toString();
+      } catch (IOException e) {
+        throw new IllegalStateException(e);
       }
-      printUnknownFields(message.getUnknownFields(), generator);
+    }
+
+    public void printField(final FieldDescriptor field, final Object value, final Appendable output)
+        throws IOException {
+      printField(field, value, multiLineOutput(output));
     }
 
     private void printField(
@@ -309,46 +354,19 @@ public final class TextFormat {
       }
     }
 
-    private void printSingleField(
-        final FieldDescriptor field, final Object value, final TextGenerator generator)
+    /**
+     * Outputs a textual representation of the value of given field value.
+     *
+     * @param field the descriptor of the field
+     * @param value the value of the field
+     * @param output the output to which to append the formatted value
+     * @throws ClassCastException if the value is not appropriate for the given field descriptor
+     * @throws IOException if there is an exception writing to the output
+     */
+    public void printFieldValue(
+        final FieldDescriptor field, final Object value, final Appendable output)
         throws IOException {
-      if (field.isExtension()) {
-        generator.print("[");
-        // We special-case MessageSet elements for compatibility with proto1.
-        if (field.getContainingType().getOptions().getMessageSetWireFormat()
-            && (field.getType() == FieldDescriptor.Type.MESSAGE)
-            && (field.isOptional())
-            // object equality
-            && (field.getExtensionScope() == field.getMessageType())) {
-          generator.print(field.getMessageType().getFullName());
-        } else {
-          generator.print(field.getFullName());
-        }
-        generator.print("]");
-      } else {
-        if (field.getType() == FieldDescriptor.Type.GROUP) {
-          // Groups must be serialized with their original capitalization.
-          generator.print(field.getMessageType().getName());
-        } else {
-          generator.print(field.getName());
-        }
-      }
-
-      if (field.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
-        generator.print(" {");
-        generator.eol();
-        generator.indent();
-      } else {
-        generator.print(": ");
-      }
-
-      printFieldValue(field, value, generator);
-
-      if (field.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
-        generator.outdent();
-        generator.print("}");
-      }
-      generator.eol();
+      printFieldValue(field, value, multiLineOutput(output));
     }
 
     private void printFieldValue(
@@ -419,7 +437,157 @@ public final class TextFormat {
       }
     }
 
-    private void printUnknownFields(
+    /** Like {@code print()}, but writes directly to a {@code String} and returns it. */
+    public String printToString(final MessageOrBuilder message) {
+      try {
+        final StringBuilder text = new StringBuilder();
+        print(message, text);
+        return text.toString();
+      } catch (IOException e) {
+        throw new IllegalStateException(e);
+      }
+    }
+    /** Like {@code print()}, but writes directly to a {@code String} and returns it. */
+    public String printToString(final UnknownFieldSet fields) {
+      try {
+        final StringBuilder text = new StringBuilder();
+        print(fields, text);
+        return text.toString();
+      } catch (IOException e) {
+        throw new IllegalStateException(e);
+      }
+    }
+
+    /**
+     * Generates a human readable form of this message, useful for debugging and other purposes,
+     * with no newline characters.
+     */
+    public String shortDebugString(final MessageOrBuilder message) {
+      try {
+        final StringBuilder text = new StringBuilder();
+        print(message, singleLineOutput(text));
+        return text.toString();
+      } catch (IOException e) {
+        throw new IllegalStateException(e);
+      }
+    }
+
+    /**
+     * Generates a human readable form of the field, useful for debugging and other purposes, with
+     * no newline characters.
+     */
+    public String shortDebugString(final FieldDescriptor field, final Object value) {
+      try {
+        final StringBuilder text = new StringBuilder();
+        printField(field, value, singleLineOutput(text));
+        return text.toString();
+      } catch (IOException e) {
+        throw new IllegalStateException(e);
+      }
+    }
+
+    /**
+     * Generates a human readable form of the unknown fields, useful for debugging and other
+     * purposes, with no newline characters.
+     */
+    public String shortDebugString(final UnknownFieldSet fields) {
+      try {
+        final StringBuilder text = new StringBuilder();
+        printUnknownFields(fields, singleLineOutput(text));
+        return text.toString();
+      } catch (IOException e) {
+        throw new IllegalStateException(e);
+      }
+    }
+
+    private static void printUnknownFieldValue(
+        final int tag, final Object value, final TextGenerator generator) throws IOException {
+      switch (WireFormat.getTagWireType(tag)) {
+        case WireFormat.WIRETYPE_VARINT:
+          generator.print(unsignedToString((Long) value));
+          break;
+        case WireFormat.WIRETYPE_FIXED32:
+          generator.print(String.format((Locale) null, "0x%08x", (Integer) value));
+          break;
+        case WireFormat.WIRETYPE_FIXED64:
+          generator.print(String.format((Locale) null, "0x%016x", (Long) value));
+          break;
+        case WireFormat.WIRETYPE_LENGTH_DELIMITED:
+          try {
+            // Try to parse and print the field as an embedded message
+            UnknownFieldSet message = UnknownFieldSet.parseFrom((ByteString) value);
+            generator.print("{");
+            generator.eol();
+            generator.indent();
+            printUnknownFields(message, generator);
+            generator.outdent();
+            generator.print("}");
+          } catch (InvalidProtocolBufferException e) {
+            // If not parseable as a message, print as a String
+            generator.print("\"");
+            generator.print(escapeBytes((ByteString) value));
+            generator.print("\"");
+          }
+          break;
+        case WireFormat.WIRETYPE_START_GROUP:
+          printUnknownFields((UnknownFieldSet) value, generator);
+          break;
+        default:
+          throw new IllegalArgumentException("Bad tag: " + tag);
+      }
+    }
+
+    private void printMessage(final MessageOrBuilder message, final TextGenerator generator)
+        throws IOException {
+      for (Map.Entry<FieldDescriptor, Object> field : message.getAllFields().entrySet()) {
+        printField(field.getKey(), field.getValue(), generator);
+      }
+      printUnknownFields(message.getUnknownFields(), generator);
+    }
+
+    private void printSingleField(
+        final FieldDescriptor field, final Object value, final TextGenerator generator)
+        throws IOException {
+      if (field.isExtension()) {
+        generator.print("[");
+        // We special-case MessageSet elements for compatibility with proto1.
+        if (field.getContainingType().getOptions().getMessageSetWireFormat()
+            && (field.getType() == FieldDescriptor.Type.MESSAGE)
+            && (field.isOptional())
+            // object equality
+            && (field.getExtensionScope() == field.getMessageType())) {
+          generator.print(field.getMessageType().getFullName());
+        } else {
+          generator.print(field.getFullName());
+        }
+        generator.print("]");
+      } else {
+        if (field.getType() == FieldDescriptor.Type.GROUP) {
+          // Groups must be serialized with their original capitalization.
+          generator.print(field.getMessageType().getName());
+        } else {
+          generator.print(field.getName());
+        }
+      }
+
+      if (field.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
+        generator.print(" {");
+        generator.eol();
+        generator.indent();
+      } else {
+        generator.print(": ");
+      }
+
+      printFieldValue(field, value, generator);
+
+      if (field.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
+        generator.outdent();
+        generator.print("}");
+      }
+      generator.eol();
+    }
+
+    private static void printUnknownFields(
         final UnknownFieldSet unknownFields, final TextGenerator generator) throws IOException {
       for (Map.Entry<Integer, UnknownFieldSet.Field> entry : unknownFields.asMap().entrySet()) {
         final int number = entry.getKey();
@@ -445,7 +613,7 @@ public final class TextFormat {
       }
     }
 
-    private void printUnknownField(
+    private static void printUnknownField(
         final int number, final int wireType, final List<?> values, final TextGenerator generator)
         throws IOException {
       for (final Object value : values) {
@@ -1994,7 +2162,7 @@ public final class TextFormat {
     return escapeBytes(ByteString.copyFromUtf8(input));
   }
 
-  /** Escape double quotes and backslashes in a String for unicode output of a message. */
+  /** Escape double quotes and backslashes in a String for emittingUnicode output of a message. */
   public static String escapeDoubleQuotesAndBackslashes(final String input) {
     return TextFormatEscaper.escapeDoubleQuotesAndBackslashes(input);
   }

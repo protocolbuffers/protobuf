@@ -1381,7 +1381,7 @@ class ParseLoopGenerator {
     // For now only optimize small hasbits.
     if (hasbits_size != 1) hasbits_size = 0;
     if (hasbits_size) {
-      format_("HasBitSetters::HasBits has_bits{};\n");
+      format_("_Internal::HasBits has_bits{};\n");
       format_.Set("has_bits", "has_bits");
     } else {
       format_.Set("has_bits", "_has_bits_");
@@ -1420,7 +1420,7 @@ class ParseLoopGenerator {
       field_name = ", kFieldName";
     }
     if (HasFieldPresence(field->file())) {
-      format_("HasBitSetters::set_has_$1$(&$has_bits$);\n", FieldName(field));
+      format_("_Internal::set_has_$1$(&$has_bits$);\n", FieldName(field));
     }
     string default_string =
         field->default_value_string().empty()
@@ -1489,9 +1489,9 @@ class ParseLoopGenerator {
       std::string enum_validator;
       if (field->type() == FieldDescriptor::TYPE_ENUM &&
           !HasPreservingUnknownEnumSemantics(field)) {
-        enum_validator = StrCat(
-            ", ", QualifiedClassName(field->enum_type(), options_),
-            "_IsValid, mutable_unknown_fields(), ", field->number());
+        enum_validator =
+            StrCat(", ", QualifiedClassName(field->enum_type(), options_),
+                         "_IsValid, &_internal_metadata_, ", field->number());
       }
       format_("ptr = $pi_ns$::Packed$1$Parser(mutable_$2$(), ptr, ctx$3$);\n",
               DeclaredTypeMethodName(field->type()), FieldName(field),
@@ -1536,7 +1536,7 @@ class ParseLoopGenerator {
                   FieldName(field), field->containing_oneof()->name());
             } else if (HasFieldPresence(field->file())) {
               format_(
-                  "HasBitSetters::set_has_$1$(&$has_bits$);\n"
+                  "_Internal::set_has_$1$(&$has_bits$);\n"
                   "ptr = ctx->ParseMessage(&$1$_, ptr);\n",
                   FieldName(field));
             } else {
@@ -1546,7 +1546,7 @@ class ParseLoopGenerator {
           } else if (IsImplicitWeakField(field, options_, scc_analyzer_)) {
             if (!field->is_repeated()) {
               format_(
-                  "ptr = ctx->ParseMessage(HasBitSetters::mutable_$1$(this), "
+                  "ptr = ctx->ParseMessage(_Internal::mutable_$1$(this), "
                   "ptr);\n",
                   FieldName(field));
             } else {
@@ -1633,7 +1633,7 @@ class ParseLoopGenerator {
                 prefix, FieldName(field), zigzag);
           } else {
             if (HasFieldPresence(field->file())) {
-              format_("HasBitSetters::set_has_$1$(&$has_bits$);\n",
+              format_("_Internal::set_has_$1$(&$has_bits$);\n",
                       FieldName(field));
             }
             format_(
@@ -1655,8 +1655,7 @@ class ParseLoopGenerator {
               prefix, FieldName(field), type);
         } else {
           if (HasFieldPresence(field->file())) {
-            format_("HasBitSetters::set_has_$1$(&$has_bits$);\n",
-                    FieldName(field));
+            format_("_Internal::set_has_$1$(&$has_bits$);\n", FieldName(field));
           }
           format_(
               "$1$_ = $pi_ns$::UnalignedLoad<$2$>(ptr);\n"

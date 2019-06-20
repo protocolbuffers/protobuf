@@ -140,11 +140,11 @@ public final class UnknownFieldSet implements MessageLite {
 
   /**
    * Converts the set to a string in protocol buffer text format. This is just a trivial wrapper
-   * around {@link TextFormat#printToString(UnknownFieldSet)}.
+   * around {@link TextFormat.Printer#printToString(UnknownFieldSet)}.
    */
   @Override
   public String toString() {
-    return TextFormat.printToString(this);
+    return TextFormat.printer().printToString(this);
   }
 
   /**

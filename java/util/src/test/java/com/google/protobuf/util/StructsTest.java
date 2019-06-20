@@ -28,56 +28,32 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_FILE_H__
-#define GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_FILE_H__
+package com.google.protobuf.util;
 
-#include <string>
-#include <set>
-#include <vector>
-#include <google/protobuf/compiler/objectivec/objectivec_helpers.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/io/printer.h>
+import static com.google.common.truth.Truth.assertThat;
 
-namespace google {
-namespace protobuf {
-namespace compiler {
-namespace objectivec {
+import com.google.protobuf.Struct;
+import junit.framework.TestCase;
 
-class EnumGenerator;
-class ExtensionGenerator;
-class MessageGenerator;
+public final class StructsTest extends TestCase {
 
-class FileGenerator {
- public:
-  FileGenerator(const FileDescriptor* file, const Options& options);
-  ~FileGenerator();
+  public void test1pair_constructsObject() throws Exception {
+    Struct.Builder expected = Struct.newBuilder();
+    JsonFormat.parser().merge("{\"k1\": 1}", expected);
+    assertThat(Structs.of("k1", Values.of(1))).isEqualTo(expected.build());
+  }
 
-  FileGenerator(const FileGenerator&) = delete;
-  FileGenerator& operator=(const FileGenerator&) = delete;
+  public void test2pair_constructsObject() throws Exception {
+    Struct.Builder expected = Struct.newBuilder();
+    JsonFormat.parser().merge("{\"k1\": 1, \"k2\": 2}", expected);
+    assertThat(Structs.of("k1", Values.of(1), "k2", Values.of(2))).isEqualTo(expected.build());
+  }
 
-  void GenerateSource(io::Printer* printer);
-  void GenerateHeader(io::Printer* printer);
+  public void test3pair_constructsObject() throws Exception {
+    Struct.Builder expected = Struct.newBuilder();
+    JsonFormat.parser().merge("{\"k1\": 1, \"k2\": 2, \"k3\": 3}", expected);
+    assertThat(Structs.of("k1", Values.of(1), "k2", Values.of(2), "k3", Values.of(3)))
+        .isEqualTo(expected.build());
+  }
 
-  const string& RootClassName() const { return root_class_name_; }
-
- private:
-  const FileDescriptor* file_;
-  string root_class_name_;
-  bool is_bundled_proto_;
-
-  std::vector<std::unique_ptr<EnumGenerator>> enum_generators_;
-  std::vector<std::unique_ptr<MessageGenerator>> message_generators_;
-  std::vector<std::unique_ptr<ExtensionGenerator>> extension_generators_;
-
-  const Options options_;
-
-  void PrintFileRuntimePreamble(
-      io::Printer* printer, const std::set<string>& headers_to_import) const;
-};
-
-}  // namespace objectivec
-}  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
-
-#endif  // GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_FILE_H__
+}

@@ -421,14 +421,15 @@ const char* PackedEnumParser(void* object, const char* ptr, ParseContext* ctx) {
 }
 
 const char* PackedEnumParser(void* object, const char* ptr, ParseContext* ctx,
-                             bool (*is_valid)(int), std::string* unknown,
+                             bool (*is_valid)(int),
+                             InternalMetadataWithArenaLite* metadata,
                              int field_num) {
   return ctx->ReadPackedVarint(
-      ptr, [object, is_valid, unknown, field_num](uint64 val) {
+      ptr, [object, is_valid, metadata, field_num](uint64 val) {
         if (is_valid(val)) {
           static_cast<RepeatedField<int>*>(object)->Add(val);
         } else {
-          WriteVarint(field_num, val, unknown);
+          WriteVarint(field_num, val, metadata->mutable_unknown_fields());
         }
       });
 }
@@ -436,14 +437,15 @@ const char* PackedEnumParser(void* object, const char* ptr, ParseContext* ctx,
 const char* PackedEnumParserArg(void* object, const char* ptr,
                                 ParseContext* ctx,
                                 bool (*is_valid)(const void*, int),
-                                const void* data, std::string* unknown,
+                                const void* data,
+                                InternalMetadataWithArenaLite* metadata,
                                 int field_num) {
   return ctx->ReadPackedVarint(
-      ptr, [object, is_valid, data, unknown, field_num](uint64 val) {
+      ptr, [object, is_valid, data, metadata, field_num](uint64 val) {
         if (is_valid(data, val)) {
           static_cast<RepeatedField<int>*>(object)->Add(val);
         } else {
-          WriteVarint(field_num, val, unknown);
+          WriteVarint(field_num, val, metadata->mutable_unknown_fields());
         }
       });
 }

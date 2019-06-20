@@ -13,7 +13,7 @@ use Google\Protobuf\Internal\GPBUtil;
 /**
  * Generated from protobuf message <code>google.protobuf.FileOptions</code>
  */
-class FileOptions extends \Google\Protobuf\Internal\Message
+final class FileOptions extends \Google\Protobuf\Internal\Message
 {
     /**
      * Sets the Java package where classes generated from this .proto will be
