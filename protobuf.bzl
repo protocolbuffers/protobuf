@@ -83,8 +83,8 @@ def _proto_gen_impl(ctx):
         import_flags = ["-I."]
 
     for dep in ctx.attr.deps:
-        import_flags += dep.proto.import_flags
-        deps += dep.proto.deps
+        import_flags += dep[ProtoInfo].import_flags
+        deps += dep[ProtoInfo].deps
 
     if not ctx.attr.gen_cc and not ctx.attr.gen_py and not ctx.executable.plugin:
         return struct(
