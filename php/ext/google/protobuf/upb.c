@@ -12431,14 +12431,28 @@ static size_t fmt_bool(bool val, char* buf, size_t length) {
   return n;
 }
 
-static size_t fmt_int64(long val, char* buf, size_t length) {
-  size_t n = _upb_snprintf(buf, length, "%ld", val);
+static size_t fmt_int64_as_number(long long val, char* buf, size_t length) {
+  size_t n = _upb_snprintf(buf, length, "%lld", val);
   CHKLENGTH(n > 0 && n < length);
   return n;
 }
 
-static size_t fmt_uint64(unsigned long long val, char* buf, size_t length) {
+static size_t fmt_uint64_as_number(
+    unsigned long long val, char* buf, size_t length) {
   size_t n = _upb_snprintf(buf, length, "%llu", val);
+  CHKLENGTH(n > 0 && n < length);
+  return n;
+}
+
+static size_t fmt_int64_as_string(long long val, char* buf, size_t length) {
+  size_t n = _upb_snprintf(buf, length, "\"%lld\"", val);
+  CHKLENGTH(n > 0 && n < length);
+  return n;
+}
+
+static size_t fmt_uint64_as_string(
+    unsigned long long val, char* buf, size_t length) {
+  size_t n = _upb_snprintf(buf, length, "\"%llu\"", val);
   CHKLENGTH(n > 0 && n < length);
   return n;
 }
@@ -12486,8 +12500,11 @@ static bool putkey(void *closure, const void *handler_data) {
   static bool putmapkey_##type(void *closure, const void *handler_data,      \
                             type val) {                                      \
     upb_json_printer *p = closure;                                           \
+    char data[64];                                                           \
+    size_t length = fmt_func(val, data, sizeof(data));                       \
+    UPB_UNUSED(handler_data);                                                \
     print_data(p, "\"", 1);                                                  \
-    CHK(put##type(closure, handler_data, val));                              \
+    print_data(p, data, length);                                             \
     print_data(p, "\":", 2);                                                 \
     return true;                                                             \
   }
@@ -12495,17 +12512,17 @@ static bool putkey(void *closure, const void *handler_data) {
 TYPE_HANDLERS(double,   fmt_double)
 TYPE_HANDLERS(float,    fmt_float)
 TYPE_HANDLERS(bool,     fmt_bool)
-TYPE_HANDLERS(int32_t,  fmt_int64)
-TYPE_HANDLERS(uint32_t, fmt_int64)
-TYPE_HANDLERS(int64_t,  fmt_int64)
-TYPE_HANDLERS(uint64_t, fmt_uint64)
+TYPE_HANDLERS(int32_t,  fmt_int64_as_number)
+TYPE_HANDLERS(uint32_t, fmt_int64_as_number)
+TYPE_HANDLERS(int64_t,  fmt_int64_as_string)
+TYPE_HANDLERS(uint64_t, fmt_uint64_as_string)
 
 /* double and float are not allowed to be map keys. */
 TYPE_HANDLERS_MAPKEY(bool,     fmt_bool)
-TYPE_HANDLERS_MAPKEY(int32_t,  fmt_int64)
-TYPE_HANDLERS_MAPKEY(uint32_t, fmt_int64)
-TYPE_HANDLERS_MAPKEY(int64_t,  fmt_int64)
-TYPE_HANDLERS_MAPKEY(uint64_t, fmt_uint64)
+TYPE_HANDLERS_MAPKEY(int32_t,  fmt_int64_as_number)
+TYPE_HANDLERS_MAPKEY(uint32_t, fmt_int64_as_number)
+TYPE_HANDLERS_MAPKEY(int64_t,  fmt_int64_as_number)
+TYPE_HANDLERS_MAPKEY(uint64_t, fmt_uint64_as_number)
 
 #undef TYPE_HANDLERS
 #undef TYPE_HANDLERS_MAPKEY

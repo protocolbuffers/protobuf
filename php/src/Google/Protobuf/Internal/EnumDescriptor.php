@@ -39,17 +39,26 @@ class EnumDescriptor
 
     public function getValueByNumber($number)
     {
-        return $this->value[$number];
+        if (isset($this->value[$number])) {
+            return $this->value[$number];
+        }
+        return null;
     }
 
     public function getValueByName($name)
     {
-        return $this->name_to_value[$name];
+        if (isset($this->name_to_value[$name])) {
+            return $this->name_to_value[$name];
+        }
+        return null;
     }
 
     public function getValueDescriptorByIndex($index)
     {
-        return $this->value_descriptor[$index];
+        if (isset($this->value_descriptor[$index])) {
+            return $this->value_descriptor[$index];
+        }
+        return null;
     }
 
     public function getValueCount()

@@ -16,7 +16,7 @@ use Google\Protobuf\Internal\GPBUtil;
  *
  * Generated from protobuf message <code>google.protobuf.FileDescriptorSet</code>
  */
-class FileDescriptorSet extends \Google\Protobuf\Internal\Message
+final class FileDescriptorSet extends \Google\Protobuf\Internal\Message
 {
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.FileDescriptorProto file = 1;</code>

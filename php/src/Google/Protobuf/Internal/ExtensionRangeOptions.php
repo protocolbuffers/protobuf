@@ -13,7 +13,7 @@ use Google\Protobuf\Internal\GPBUtil;
 /**
  * Generated from protobuf message <code>google.protobuf.ExtensionRangeOptions</code>
  */
-class ExtensionRangeOptions extends \Google\Protobuf\Internal\Message
+final class ExtensionRangeOptions extends \Google\Protobuf\Internal\Message
 {
     /**
      * The parser stores options it doesn't recognize here. See above.
