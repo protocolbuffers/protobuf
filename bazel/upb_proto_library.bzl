@@ -37,10 +37,8 @@ def _get_real_roots(files):
     return roots.keys()
 
 def _generate_output_file(ctx, src, extension):
-    if _is_bazel:
-        real_short_path = _get_real_short_path(src)
-    else:
-        real_short_path = paths.relativize(src.short_path, ctx.label.package)
+    real_short_path = _get_real_short_path(src)
+    real_short_path = paths.relativize(real_short_path, ctx.label.package)
     output_filename = paths.replace_extension(real_short_path, extension)
     ret = ctx.actions.declare_file(output_filename)
     return ret
@@ -177,7 +175,7 @@ def _upb_proto_rule_impl(ctx):
              "_WrappedGeneratedSrcs (aspect should have handled this).")
     cc_info = dep[_WrappedCcInfo].cc_info
     srcs = dep[_WrappedGeneratedSrcs].srcs
-    lib = cc_info.linking_context.libraries_to_link[0]
+    lib = cc_info.linking_context.libraries_to_link.to_list()[0]
     files = _filter_none([
         lib.static_library,
         lib.pic_static_library,
