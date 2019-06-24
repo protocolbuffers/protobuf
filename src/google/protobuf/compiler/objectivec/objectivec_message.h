@@ -85,10 +85,10 @@ class MessageGenerator {
   FieldGeneratorMap field_generators_;
   const string class_name_;
   const string deprecated_attribute_;
-  std::vector<ExtensionGenerator*> extension_generators_;
-  std::vector<EnumGenerator*> enum_generators_;
-  std::vector<MessageGenerator*> nested_message_generators_;
-  std::vector<OneofGenerator*> oneof_generators_;
+  std::vector<std::unique_ptr<ExtensionGenerator>> extension_generators_;
+  std::vector<std::unique_ptr<EnumGenerator>> enum_generators_;
+  std::vector<std::unique_ptr<MessageGenerator>> nested_message_generators_;
+  std::vector<std::unique_ptr<OneofGenerator>> oneof_generators_;
 };
 
 }  // namespace objectivec

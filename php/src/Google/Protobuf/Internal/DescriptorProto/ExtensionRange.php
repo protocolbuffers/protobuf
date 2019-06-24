@@ -13,7 +13,7 @@ use Google\Protobuf\Internal\GPBUtil;
 /**
  * Generated from protobuf message <code>google.protobuf.DescriptorProto.ExtensionRange</code>
  */
-class ExtensionRange extends \Google\Protobuf\Internal\Message
+final class ExtensionRange extends \Google\Protobuf\Internal\Message
 {
     /**
      * Inclusive.

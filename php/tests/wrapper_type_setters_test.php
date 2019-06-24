@@ -16,44 +16,6 @@ use Google\Protobuf\UInt64Value;
 
 class WrapperTypeSettersTest extends TestBase
 {
-    public function testConflictNormalVsWrapper()
-    {
-        $m = new Foo\TestWrapperAccessorConflicts();
-
-        $m->setNormalVsWrapperValue1(1);
-        $this->assertSame(1, $m->getNormalVsWrapperValue1());
-
-        $m->setNormalVsWrapperValue2(1);
-        $this->assertSame(1, $m->getNormalVsWrapperValue2());
-
-        $wrapper = new Int32Value(["value" => 1]);
-        $m->setNormalVsWrapper($wrapper);
-        $this->assertSame(1, $m->getNormalVsWrapper()->getValue());
-    }
-
-    public function testConflictNormalVsNormal()
-    {
-        $m = new Foo\TestWrapperAccessorConflicts();
-
-        $m->setNormalVsNormalValue(1);
-        $this->assertSame(1, $m->getNormalVsNormalValue());
-
-        $m->setNormalVsNormal(1);
-        $this->assertSame(1, $m->getNormalVsNormal());
-    }
-
-    public function testConflictWrapperVsWrapper()
-    {
-        $m = new Foo\TestWrapperAccessorConflicts();
-
-        $m->setWrapperVsWrapperValueValue(1);
-        $this->assertSame(1, $m->getWrapperVsWrapperValueValue());
-
-        $wrapper = new Int32Value(["value" => 1]);
-        $m->setWrapperVsWrapperValue5($wrapper);
-        $this->assertSame(1, $m->getWrapperVsWrapperValue5()->getValue());
-    }
-
     /**
      * @dataProvider gettersAndSettersDataProvider
      */
@@ -98,26 +60,26 @@ class WrapperTypeSettersTest extends TestBase
     public function gettersAndSettersDataProvider()
     {
         return [
-            [TestWrapperSetters::class, DoubleValue::class, "setDoubleValue", "setDoubleValueValue", "getDoubleValue", "getDoubleValueValue", [
+            [TestWrapperSetters::class, DoubleValue::class, "setDoubleValue", "setDoubleValueUnwrapped", "getDoubleValue", "getDoubleValueUnwrapped", [
                 [1.1, new DoubleValue(["value" => 1.1])],
                 [2.2, new DoubleValue(["value" => 2.2])],
                 [null, null],
                 [0, new DoubleValue()],
             ]],
-            [TestWrapperSetters::class, FloatValue::class, "setFloatValue", "setFloatValueValue", "getFloatValue", "getFloatValueValue", [
+            [TestWrapperSetters::class, FloatValue::class, "setFloatValue", "setFloatValueUnwrapped", "getFloatValue", "getFloatValueUnwrapped", [
                 [1.1, new FloatValue(["value" => 1.1])],
                 [2.2, new FloatValue(["value" => 2.2])],
                 [null, null],
                 [0, new FloatValue()],
             ]],
-            [TestWrapperSetters::class, Int64Value::class, "setInt64Value", "setInt64ValueValue", "getInt64Value", "getInt64ValueValue", [
+            [TestWrapperSetters::class, Int64Value::class, "setInt64Value", "setInt64ValueUnwrapped", "getInt64Value", "getInt64ValueUnwrapped", [
                 [123, new Int64Value(["value" => 123])],
                 [-789, new Int64Value(["value" => -789])],
                 [null, null],
                 [0, new Int64Value()],
                 [5.5, new Int64Value(["value" => 5])], // Test conversion from float to int
             ]],
-            [TestWrapperSetters::class, UInt64Value::class, "setUInt64Value", "setUInt64ValueValue", "getUInt64Value", "getUInt64ValueValue", [
+            [TestWrapperSetters::class, UInt64Value::class, "setUInt64Value", "setUInt64ValueUnwrapped", "getUInt64Value", "getUInt64ValueUnwrapped", [
                 [123, new UInt64Value(["value" => 123])],
                 [789, new UInt64Value(["value" => 789])],
                 [null, null],
@@ -125,14 +87,14 @@ class WrapperTypeSettersTest extends TestBase
                 [5.5, new UInt64Value(["value" => 5])], // Test conversion from float to int
                 [-7, new UInt64Value(["value" => -7])], // Test conversion from -ve to +ve
             ]],
-            [TestWrapperSetters::class, Int32Value::class, "setInt32Value", "setInt32ValueValue", "getInt32Value", "getInt32ValueValue", [
+            [TestWrapperSetters::class, Int32Value::class, "setInt32Value", "setInt32ValueUnwrapped", "getInt32Value", "getInt32ValueUnwrapped", [
                 [123, new Int32Value(["value" => 123])],
                 [-789, new Int32Value(["value" => -789])],
                 [null, null],
                 [0, new Int32Value()],
                 [5.5, new Int32Value(["value" => 5])], // Test conversion from float to int
             ]],
-            [TestWrapperSetters::class, UInt32Value::class, "setUInt32Value", "setUInt32ValueValue", "getUInt32Value", "getUInt32ValueValue", [
+            [TestWrapperSetters::class, UInt32Value::class, "setUInt32Value", "setUInt32ValueUnwrapped", "getUInt32Value", "getUInt32ValueUnwrapped", [
                 [123, new UInt32Value(["value" => 123])],
                 [789, new UInt32Value(["value" => 789])],
                 [null, null],
@@ -140,12 +102,12 @@ class WrapperTypeSettersTest extends TestBase
                 [5.5, new UInt32Value(["value" => 5])], // Test conversion from float to int
                 [-7, new UInt32Value(["value" => -7])], // Test conversion from -ve to +ve
             ]],
-            [TestWrapperSetters::class, BoolValue::class, "setBoolValue", "setBoolValueValue", "getBoolValue", "getBoolValueValue", [
+            [TestWrapperSetters::class, BoolValue::class, "setBoolValue", "setBoolValueUnwrapped", "getBoolValue", "getBoolValueUnwrapped", [
                 [true, new BoolValue(["value" => true])],
                 [false, new BoolValue(["value" => false])],
                 [null, null],
             ]],
-            [TestWrapperSetters::class, StringValue::class, "setStringValue", "setStringValueValue", "getStringValue", "getStringValueValue", [
+            [TestWrapperSetters::class, StringValue::class, "setStringValue", "setStringValueUnwrapped", "getStringValue", "getStringValueUnwrapped", [
                 ["asdf", new StringValue(["value" => "asdf"])],
                 ["", new StringValue(["value" => ""])],
                 [null, null],
@@ -155,7 +117,7 @@ class WrapperTypeSettersTest extends TestBase
                 [-7, new StringValue(["value" => "-7"])], // Test conversion from number to string
                 [-7.5, new StringValue(["value" => "-7.5"])], // Test conversion from number to string
             ]],
-            [TestWrapperSetters::class, BytesValue::class, "setBytesValue", "setBytesValueValue", "getBytesValue", "getBytesValueValue", [
+            [TestWrapperSetters::class, BytesValue::class, "setBytesValue", "setBytesValueUnwrapped", "getBytesValue", "getBytesValueUnwrapped", [
                 ["asdf", new BytesValue(["value" => "asdf"])],
                 ["", new BytesValue(["value" => ""])],
                 [null, null],
@@ -165,12 +127,12 @@ class WrapperTypeSettersTest extends TestBase
                 [-7, new BytesValue(["value" => "-7"])], // Test conversion from number to bytes
                 [-7.5, new BytesValue(["value" => "-7.5"])], // Test conversion from number to bytes
             ]],
-            [TestWrapperSetters::class, DoubleValue::class, "setDoubleValueOneof", "setDoubleValueOneofValue", "getDoubleValueOneof", "getDoubleValueOneofValue", [
+            [TestWrapperSetters::class, DoubleValue::class, "setDoubleValueOneof", "setDoubleValueOneofUnwrapped", "getDoubleValueOneof", "getDoubleValueOneofUnwrapped", [
                 [1.1, new DoubleValue(["value" => 1.1])],
                 [2.2, new DoubleValue(["value" => 2.2])],
                 [null, null],
                 [0, new DoubleValue()],
-            ]],[TestWrapperSetters::class, StringValue::class, "setStringValueOneof", "setStringValueOneofValue", "getStringValueOneof", "getStringValueOneofValue", [
+            ]],[TestWrapperSetters::class, StringValue::class, "setStringValueOneof", "setStringValueOneofUnwrapped", "getStringValueOneof", "getStringValueOneofUnwrapped", [
                 ["asdf", new StringValue(["value" => "asdf"])],
                 ["", new StringValue(["value" => ""])],
                 [null, null],
@@ -195,47 +157,47 @@ class WrapperTypeSettersTest extends TestBase
     public function invalidSettersDataProvider()
     {
         return [
-            [TestWrapperSetters::class, "setDoubleValueValue", "abc"],
-            [TestWrapperSetters::class, "setDoubleValueValue", []],
-            [TestWrapperSetters::class, "setDoubleValueValue", new stdClass()],
-            [TestWrapperSetters::class, "setDoubleValueValue", new DoubleValue()],
+            [TestWrapperSetters::class, "setDoubleValueUnwrapped", "abc"],
+            [TestWrapperSetters::class, "setDoubleValueUnwrapped", []],
+            [TestWrapperSetters::class, "setDoubleValueUnwrapped", new stdClass()],
+            [TestWrapperSetters::class, "setDoubleValueUnwrapped", new DoubleValue()],
 
-            [TestWrapperSetters::class, "setFloatValueValue", "abc"],
-            [TestWrapperSetters::class, "setFloatValueValue", []],
-            [TestWrapperSetters::class, "setFloatValueValue", new stdClass()],
-            [TestWrapperSetters::class, "setFloatValueValue", new FloatValue()],
+            [TestWrapperSetters::class, "setFloatValueUnwrapped", "abc"],
+            [TestWrapperSetters::class, "setFloatValueUnwrapped", []],
+            [TestWrapperSetters::class, "setFloatValueUnwrapped", new stdClass()],
+            [TestWrapperSetters::class, "setFloatValueUnwrapped", new FloatValue()],
 
-            [TestWrapperSetters::class, "setInt64ValueValue", "abc"],
-            [TestWrapperSetters::class, "setInt64ValueValue", []],
-            [TestWrapperSetters::class, "setInt64ValueValue", new stdClass()],
-            [TestWrapperSetters::class, "setInt64ValueValue", new Int64Value()],
+            [TestWrapperSetters::class, "setInt64ValueUnwrapped", "abc"],
+            [TestWrapperSetters::class, "setInt64ValueUnwrapped", []],
+            [TestWrapperSetters::class, "setInt64ValueUnwrapped", new stdClass()],
+            [TestWrapperSetters::class, "setInt64ValueUnwrapped", new Int64Value()],
 
-            [TestWrapperSetters::class, "setUInt64ValueValue", "abc"],
-            [TestWrapperSetters::class, "setUInt64ValueValue", []],
-            [TestWrapperSetters::class, "setUInt64ValueValue", new stdClass()],
-            [TestWrapperSetters::class, "setUInt64ValueValue", new UInt64Value()],
+            [TestWrapperSetters::class, "setUInt64ValueUnwrapped", "abc"],
+            [TestWrapperSetters::class, "setUInt64ValueUnwrapped", []],
+            [TestWrapperSetters::class, "setUInt64ValueUnwrapped", new stdClass()],
+            [TestWrapperSetters::class, "setUInt64ValueUnwrapped", new UInt64Value()],
 
-            [TestWrapperSetters::class, "setInt32ValueValue", "abc"],
-            [TestWrapperSetters::class, "setInt32ValueValue", []],
-            [TestWrapperSetters::class, "setInt32ValueValue", new stdClass()],
-            [TestWrapperSetters::class, "setInt32ValueValue", new Int32Value()],
+            [TestWrapperSetters::class, "setInt32ValueUnwrapped", "abc"],
+            [TestWrapperSetters::class, "setInt32ValueUnwrapped", []],
+            [TestWrapperSetters::class, "setInt32ValueUnwrapped", new stdClass()],
+            [TestWrapperSetters::class, "setInt32ValueUnwrapped", new Int32Value()],
 
-            [TestWrapperSetters::class, "setUInt32ValueValue", "abc"],
-            [TestWrapperSetters::class, "setUInt32ValueValue", []],
-            [TestWrapperSetters::class, "setUInt32ValueValue", new stdClass()],
-            [TestWrapperSetters::class, "setUInt32ValueValue", new UInt32Value()],
+            [TestWrapperSetters::class, "setUInt32ValueUnwrapped", "abc"],
+            [TestWrapperSetters::class, "setUInt32ValueUnwrapped", []],
+            [TestWrapperSetters::class, "setUInt32ValueUnwrapped", new stdClass()],
+            [TestWrapperSetters::class, "setUInt32ValueUnwrapped", new UInt32Value()],
 
-            [TestWrapperSetters::class, "setBoolValueValue", []],
-            [TestWrapperSetters::class, "setBoolValueValue", new stdClass()],
-            [TestWrapperSetters::class, "setBoolValueValue", new BoolValue()],
+            [TestWrapperSetters::class, "setBoolValueUnwrapped", []],
+            [TestWrapperSetters::class, "setBoolValueUnwrapped", new stdClass()],
+            [TestWrapperSetters::class, "setBoolValueUnwrapped", new BoolValue()],
 
-            [TestWrapperSetters::class, "setStringValueValue", []],
-            [TestWrapperSetters::class, "setStringValueValue", new stdClass()],
-            [TestWrapperSetters::class, "setStringValueValue", new StringValue()],
+            [TestWrapperSetters::class, "setStringValueUnwrapped", []],
+            [TestWrapperSetters::class, "setStringValueUnwrapped", new stdClass()],
+            [TestWrapperSetters::class, "setStringValueUnwrapped", new StringValue()],
 
-            [TestWrapperSetters::class, "setBytesValueValue", []],
-            [TestWrapperSetters::class, "setBytesValueValue", new stdClass()],
-            [TestWrapperSetters::class, "setBytesValueValue", new BytesValue()],
+            [TestWrapperSetters::class, "setBytesValueUnwrapped", []],
+            [TestWrapperSetters::class, "setBytesValueUnwrapped", new stdClass()],
+            [TestWrapperSetters::class, "setBytesValueUnwrapped", new BytesValue()],
         ];
     }
 

@@ -655,88 +655,50 @@ void GenerateOneofField(const OneofDescriptor* oneof, io::Printer* printer) {
 
 void GenerateFieldAccessor(const FieldDescriptor* field, bool is_descriptor,
                            io::Printer* printer) {
-  bool need_other_name_for_accessor = false;
-  bool need_other_name_for_wrapper_accessor = false;
-  const Descriptor* desc = field->containing_type();
-
-  if (!field->is_repeated() &&
-      field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
-      IsWrapperType(field)) {
-    // Check if there is any field called xxx_value
-    const FieldDescriptor* other =
-        desc->FindFieldByName(StrCat(field->name(), "_value"));
-    if (other != NULL) {
-      need_other_name_for_wrapper_accessor = true;
-    }
-  }
-
-  if (strings::EndsWith(field->name(), "_value")) {
-    std::size_t pos = (field->name()).find("_value");  
-    string name = (field->name()).substr(0, pos);
-    const FieldDescriptor* other = desc->FindFieldByName(name);
-    if (other != NULL &&
-        !other->is_repeated() &&
-        other->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
-        IsWrapperType(other)) {
-      need_other_name_for_accessor = true;
-    }
-  }
-
   const OneofDescriptor* oneof = field->containing_oneof();
 
   // Generate getter.
   if (oneof != NULL) {
     GenerateFieldDocComment(printer, field, is_descriptor, kFieldGetter);
     printer->Print(
-        "public function get^camel_name^^field_number^()\n"
+        "public function get^camel_name^()\n"
         "{\n"
         "    return $this->readOneof(^number^);\n"
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true),
-        "number", IntToString(field->number()),
-        "field_number", need_other_name_for_accessor ?
-            StrCat(field->number()) : "");
+        "number", IntToString(field->number()));
   } else {
     GenerateFieldDocComment(printer, field, is_descriptor, kFieldGetter);
     printer->Print(
-        "public function get^camel_name^^field_number^()\n"
+        "public function get^camel_name^()\n"
         "{\n"
         "    return $this->^name^;\n"
         "}\n\n",
-        "camel_name", UnderscoresToCamelCase(field->name(), true),
-        "name", field->name(),
-        "field_number", need_other_name_for_accessor ?
-            StrCat(field->number()) : "");
+        "camel_name", UnderscoresToCamelCase(field->name(), true), "name",
+        field->name());
   }
 
-  // For wrapper types, generate an additional getXXXValue getter
+  // For wrapper types, generate an additional getXXXUnwrapped getter
   if (!field->is_map() &&
       !field->is_repeated() &&
       field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
       IsWrapperType(field)) {
     GenerateWrapperFieldGetterDocComment(printer, field);
-
     printer->Print(
-        "public function get^camel_name^Value^field_number1^()\n"
+        "public function get^camel_name^Unwrapped()\n"
         "{\n"
-        "    $wrapper = $this->get^camel_name^^field_number2^();\n"
+        "    $wrapper = $this->get^camel_name^();\n"
         "    return is_null($wrapper) ? null : $wrapper->getValue();\n"
         "}\n\n",
-        "camel_name", UnderscoresToCamelCase(field->name(), true),
-        "field_number1", need_other_name_for_wrapper_accessor ?
-            StrCat(field->number()) : "",
-        "field_number2", need_other_name_for_accessor ?
-            StrCat(field->number()) : "");
+        "camel_name", UnderscoresToCamelCase(field->name(), true));
   }
 
   // Generate setter.
   GenerateFieldDocComment(printer, field, is_descriptor, kFieldSetter);
   printer->Print(
-      "public function set^camel_name^^field_number^($var)\n"
+      "public function set^camel_name^($var)\n"
       "{\n",
-      "camel_name", UnderscoresToCamelCase(field->name(), true),
-      "field_number", need_other_name_for_accessor ?
-          StrCat(field->number()) : "");
+      "camel_name", UnderscoresToCamelCase(field->name(), true));
 
   Indent(printer);
 
@@ -836,17 +798,13 @@ void GenerateFieldAccessor(const FieldDescriptor* field, bool is_descriptor,
       IsWrapperType(field)) {
     GenerateWrapperFieldSetterDocComment(printer, field);
     printer->Print(
-        "public function set^camel_name^Value^field_number1^($var)\n"
+        "public function set^camel_name^Unwrapped($var)\n"
         "{\n"
         "    $wrappedVar = is_null($var) ? null : new \\^wrapper_type^(['value' => $var]);\n"
-        "    return $this->set^camel_name^^field_number2^($wrappedVar);\n"
+        "    return $this->set^camel_name^($wrappedVar);\n"
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true),
-        "wrapper_type", LegacyFullClassName(field->message_type(), is_descriptor),
-        "field_number1", need_other_name_for_wrapper_accessor ?
-            StrCat(field->number()) : "",
-        "field_number2", need_other_name_for_accessor ?
-            StrCat(field->number()) : "");
+        "wrapper_type", LegacyFullClassName(field->message_type(), is_descriptor));
   }
 
   // Generate has method for proto2 only.
@@ -1307,7 +1265,7 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
   }
 
   printer.Print(
-      "class ^name^ extends \\Google\\Protobuf\\Internal\\Message\n"
+      "final class ^name^ extends \\Google\\Protobuf\\Internal\\Message\n"
       "{\n",
       "name", fullname);
   Indent(&printer);

@@ -1980,12 +1980,12 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
       "repeated_timestamp: {seconds: 253402300799 nanos: 999999999}");
   RunValidJsonTest(
       "TimestampWithPositiveOffset", REQUIRED,
-      R"({"optionalTimestamp": "1970-01-01T08:00:00+08:00"})",
-      "optional_timestamp: {seconds: 0}");
+      R"({"optionalTimestamp": "1970-01-01T08:00:01+08:00"})",
+      "optional_timestamp: {seconds: 1}");
   RunValidJsonTest(
       "TimestampWithNegativeOffset", REQUIRED,
-      R"({"optionalTimestamp": "1969-12-31T16:00:00-08:00"})",
-      "optional_timestamp: {seconds: 0}");
+      R"({"optionalTimestamp": "1969-12-31T16:00:01-08:00"})",
+      "optional_timestamp: {seconds: 1}");
   RunValidJsonTest(
       "TimestampNull", REQUIRED,
       R"({"optionalTimestamp": null})",
