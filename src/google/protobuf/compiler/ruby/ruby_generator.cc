@@ -371,7 +371,7 @@ void GenerateMessageAssignment(const std::string& prefix,
     "prefix", prefix,
     "name", RubifyConstant(message->name()));
   printer->Print(
-    "Google::Protobuf::DescriptorPool.generated_pool."
+    "::Google::Protobuf::DescriptorPool.generated_pool."
     "lookup(\"$full_name$\").msgclass\n",
     "full_name", message->full_name());
 
@@ -391,7 +391,7 @@ void GenerateEnumAssignment(const std::string& prefix, const EnumDescriptor* en,
     "prefix", prefix,
     "name", RubifyConstant(en->name()));
   printer->Print(
-    "Google::Protobuf::DescriptorPool.generated_pool."
+    "::Google::Protobuf::DescriptorPool.generated_pool."
     "lookup(\"$full_name$\").enummodule\n",
     "full_name", en->full_name());
 }

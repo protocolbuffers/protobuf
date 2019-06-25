@@ -69,9 +69,9 @@ end
 module A
   module B
     module C
-      TestMessage = Google::Protobuf::DescriptorPool.generated_pool.lookup("A.B.C.TestMessage").msgclass
-      TestMessage::NestedMessage = Google::Protobuf::DescriptorPool.generated_pool.lookup("A.B.C.TestMessage.NestedMessage").msgclass
-      TestEnum = Google::Protobuf::DescriptorPool.generated_pool.lookup("A.B.C.TestEnum").enummodule
+      TestMessage = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("A.B.C.TestMessage").msgclass
+      TestMessage::NestedMessage = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("A.B.C.TestMessage.NestedMessage").msgclass
+      TestEnum = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("A.B.C.TestEnum").enummodule
     end
   end
 end
