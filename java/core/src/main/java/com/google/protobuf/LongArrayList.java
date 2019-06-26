@@ -46,7 +46,6 @@ final class LongArrayList extends AbstractProtobufList<Long>
     implements LongList, RandomAccess, PrimitiveNonBoxingCollection {
 
   private static final LongArrayList EMPTY_LIST = new LongArrayList(new long[0], 0);
-
   static {
     EMPTY_LIST.makeImmutable();
   }
@@ -160,6 +159,12 @@ final class LongArrayList extends AbstractProtobufList<Long>
   }
 
   @Override
+  public boolean add(Long element) {
+    addLong(element);
+    return true;
+  }
+
+  @Override
   public void add(int index, Long element) {
     addLong(index, element);
   }
@@ -167,7 +172,17 @@ final class LongArrayList extends AbstractProtobufList<Long>
   /** Like {@link #add(Long)} but more efficient in that it doesn't box the element. */
   @Override
   public void addLong(long element) {
-    addLong(size, element);
+    ensureIsMutable();
+    if (size == array.length) {
+      // Resize to 1.5x the size
+      int length = ((size * 3) / 2) + 1;
+      long[] newArray = new long[length];
+
+      System.arraycopy(array, 0, newArray, 0, size);
+      array = newArray;
+    }
+
+    array[size++] = element;
   }
 
   /** Like {@link #add(int, Long)} but more efficient in that it doesn't box the element. */

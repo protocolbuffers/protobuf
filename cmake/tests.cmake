@@ -114,7 +114,7 @@ endforeach(proto_file)
 
 set(common_test_files
   ${protobuf_source_dir}/src/google/protobuf/arena_test_util.cc
-  ${protobuf_source_dir}/src/google/protobuf/map_test_util.cc
+  ${protobuf_source_dir}/src/google/protobuf/map_test_util.inc
   ${protobuf_source_dir}/src/google/protobuf/test_util.cc
   ${protobuf_source_dir}/src/google/protobuf/test_util.inc
   ${protobuf_source_dir}/src/google/protobuf/testing/file.cc

@@ -299,15 +299,11 @@ void SerializeMessageNoTable(const MessageLite* msg,
 }
 
 void SerializeMessageNoTable(const MessageLite* msg, ArrayOutput* output) {
-  if (output->is_deterministic) {
-    io::ArrayOutputStream array_stream(output->ptr, INT_MAX);
-    io::CodedOutputStream o(&array_stream);
-    o.SetSerializationDeterministic(true);
-    msg->SerializeWithCachedSizes(&o);
-    output->ptr += o.ByteCount();
-  } else {
-    output->ptr = msg->InternalSerializeWithCachedSizesToArray(output->ptr);
-  }
+  io::ArrayOutputStream array_stream(output->ptr, INT_MAX);
+  io::CodedOutputStream o(&array_stream);
+  o.SetSerializationDeterministic(output->is_deterministic);
+  msg->SerializeWithCachedSizes(&o);
+  output->ptr += o.ByteCount();
 }
 
 // Helper to branch to fast path if possible
@@ -316,16 +312,6 @@ void SerializeMessageDispatch(const MessageLite& msg,
                               int32 cached_size,
                               io::CodedOutputStream* output) {
   const uint8* base = reinterpret_cast<const uint8*>(&msg);
-  if (!output->IsSerializationDeterministic()) {
-    // Try the fast path
-    uint8* ptr = output->GetDirectBufferForNBytesAndAdvance(cached_size);
-    if (ptr) {
-      // We use virtual dispatch to enable dedicated generated code for the
-      // fast path.
-      msg.InternalSerializeWithCachedSizesToArray(ptr);
-      return;
-    }
-  }
   SerializeInternal(base, field_table, num_fields, output);
 }
 

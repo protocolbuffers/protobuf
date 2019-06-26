@@ -699,7 +699,7 @@ $(protoc_outputs): unittest_proto_middleman
 COMMON_TEST_SOURCES =                                          \
   google/protobuf/arena_test_util.cc                           \
   google/protobuf/arena_test_util.h                            \
-  google/protobuf/map_test_util.cc                             \
+  google/protobuf/map_test_util.inc                            \
   google/protobuf/map_test_util.h                              \
   google/protobuf/map_test_util_impl.h                         \
   google/protobuf/test_util.cc                                 \

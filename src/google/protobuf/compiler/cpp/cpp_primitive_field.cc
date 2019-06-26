@@ -146,10 +146,12 @@ void PrimitiveFieldGenerator::GenerateInlineAccessorDefinitions(
   Formatter format(printer, variables_);
   format(
       "inline $type$ $classname$::$name$() const {\n"
+      "$annotate_accessor$"
       "  // @@protoc_insertion_point(field_get:$full_name$)\n"
       "  return $name$_;\n"
       "}\n"
       "inline void $classname$::set_$name$($type$ value) {\n"
+      "$annotate_accessor$"
       "  $set_hasbit$\n"
       "  $name$_ = value;\n"
       "  // @@protoc_insertion_point(field_set:$full_name$)\n"
@@ -194,18 +196,11 @@ void PrimitiveFieldGenerator::GenerateMergeFromCodedStream(
       "       input, &$name$_)));\n");
 }
 
-void PrimitiveFieldGenerator::GenerateSerializeWithCachedSizes(
-    io::Printer* printer) const {
-  Formatter format(printer, variables_);
-  format(
-      "::$proto_ns$::internal::WireFormatLite::Write$declared_type$("
-      "$number$, this->$name$(), output);\n");
-}
-
 void PrimitiveFieldGenerator::GenerateSerializeWithCachedSizesToArray(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
   format(
+      "stream->EnsureSpace(&target);\n"
       "target = "
       "::$proto_ns$::internal::WireFormatLite::Write$declared_type$ToArray("
       "$number$, this->$name$(), target);\n");
@@ -239,6 +234,7 @@ void PrimitiveOneofFieldGenerator::GenerateInlineAccessorDefinitions(
   Formatter format(printer, variables_);
   format(
       "inline $type$ $classname$::$name$() const {\n"
+      "$annotate_accessor$"
       "  // @@protoc_insertion_point(field_get:$full_name$)\n"
       "  if (has_$name$()) {\n"
       "    return $field_member$;\n"
@@ -246,6 +242,7 @@ void PrimitiveOneofFieldGenerator::GenerateInlineAccessorDefinitions(
       "  return $default$;\n"
       "}\n"
       "inline void $classname$::set_$name$($type$ value) {\n"
+      "$annotate_accessor$"
       "  if (!has_$name$()) {\n"
       "    clear_$oneof_name$();\n"
       "    set_has_$name$();\n"
@@ -331,24 +328,29 @@ void RepeatedPrimitiveFieldGenerator::GenerateInlineAccessorDefinitions(
   Formatter format(printer, variables_);
   format(
       "inline $type$ $classname$::$name$(int index) const {\n"
+      "$annotate_accessor$"
       "  // @@protoc_insertion_point(field_get:$full_name$)\n"
       "  return $name$_.Get(index);\n"
       "}\n"
       "inline void $classname$::set_$name$(int index, $type$ value) {\n"
+      "$annotate_accessor$"
       "  $name$_.Set(index, value);\n"
       "  // @@protoc_insertion_point(field_set:$full_name$)\n"
       "}\n"
       "inline void $classname$::add_$name$($type$ value) {\n"
+      "$annotate_accessor$"
       "  $name$_.Add(value);\n"
       "  // @@protoc_insertion_point(field_add:$full_name$)\n"
       "}\n"
       "inline const ::$proto_ns$::RepeatedField< $type$ >&\n"
       "$classname$::$name$() const {\n"
+      "$annotate_accessor$"
       "  // @@protoc_insertion_point(field_list:$full_name$)\n"
       "  return $name$_;\n"
       "}\n"
       "inline ::$proto_ns$::RepeatedField< $type$ >*\n"
       "$classname$::mutable_$name$() {\n"
+      "$annotate_accessor$"
       "  // @@protoc_insertion_point(field_mutable_list:$full_name$)\n"
       "  return &$name$_;\n"
       "}\n");
@@ -403,72 +405,33 @@ void RepeatedPrimitiveFieldGenerator::GenerateMergeFromCodedStreamWithPacking(
       "       input, this->mutable_$name$())));\n");
 }
 
-void RepeatedPrimitiveFieldGenerator::GenerateSerializeWithCachedSizes(
-    io::Printer* printer) const {
-  Formatter format(printer, variables_);
-  bool array_written = false;
-  if (descriptor_->is_packed()) {
-    // Write the tag and the size.
-    format(
-        "if (this->$name$_size() > 0) {\n"
-        "  ::$proto_ns$::internal::WireFormatLite::WriteTag("
-        "$number$, "
-        "::$proto_ns$::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, "
-        "output);\n"
-        "  output->WriteVarint32(_$name$_cached_byte_size_.load(\n"
-        "      std::memory_order_relaxed));\n");
-
-    if (FixedSize(descriptor_->type()) > 0) {
-      // TODO(ckennelly): Use RepeatedField<T>::unsafe_data() via
-      // WireFormatLite to access the contents of this->$name$_ to save a branch
-      // here.
-      format(
-          "  "
-          "::$proto_ns$::internal::WireFormatLite::Write$declared_type$Array(\n"
-          "    this->$name$().data(), this->$name$_size(), output);\n");
-      array_written = true;  // Wrote array all at once
-    }
-    format("}\n");
-  }
-  if (!array_written) {
-    format("for (int i = 0, n = this->$name$_size(); i < n; i++) {\n");
-    if (descriptor_->is_packed()) {
-      format(
-          "  "
-          "::$proto_ns$::internal::WireFormatLite::Write$declared_type$NoTag(\n"
-          "    this->$name$(i), output);\n");
-    } else {
-      format(
-          "  ::$proto_ns$::internal::WireFormatLite::Write$declared_type$(\n"
-          "    $number$, this->$name$(i), output);\n");
-    }
-    format("}\n");
-  }
-}
-
 void RepeatedPrimitiveFieldGenerator::GenerateSerializeWithCachedSizesToArray(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
   if (descriptor_->is_packed()) {
-    // Write the tag and the size.
-    format(
-        "if (this->$name$_size() > 0) {\n"
-        "  target = ::$proto_ns$::internal::WireFormatLite::WriteTagToArray(\n"
-        "    $number$,\n"
-        "    "
-        "::$proto_ns$::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED,\n"
-        "    target);\n"
-        "  target = "
-        "::$proto_ns$::io::CodedOutputStream::WriteVarint32ToArray(\n"
-        "      _$name$_cached_byte_size_.load(std::memory_order_relaxed),\n"
-        "       target);\n"
-        "  target = ::$proto_ns$::internal::WireFormatLite::\n"
-        "    Write$declared_type$NoTagToArray(this->$name$_, target);\n"
-        "}\n");
+    if (FixedSize(descriptor_->type()) > 0) {
+      format(
+          "if (this->$name$_size() > 0) {\n"
+          "  target = stream->WriteFixedPacked($number$, $name$_, target);\n"
+          "}\n");
+    } else {
+      format(
+          "{\n"
+          "  int byte_size = "
+          "_$name$_cached_byte_size_.load(std::memory_order_relaxed);\n"
+          "  if (byte_size > 0) {\n"
+          "    target = stream->Write$declared_type$Packed(\n"
+          "        $number$, $name$_, byte_size, target);\n"
+          "  }\n"
+          "}\n");
+    }
   } else {
     format(
-        "target = ::$proto_ns$::internal::WireFormatLite::\n"
-        "  Write$declared_type$ToArray($number$, this->$name$_, target);\n");
+        "for (const auto& x : this->$name$()) {\n"
+        "  stream->EnsureSpace(&target);\n"
+        "  target = ::$proto_ns$::internal::WireFormatLite::"
+        "Write$declared_type$ToArray($number$, x, target);\n"
+        "}\n");
   }
 }
 

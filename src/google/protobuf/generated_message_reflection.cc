@@ -1701,7 +1701,9 @@ void* Reflection::MutableRawRepeatedField(Message* message,
                                           int ctype,
                                           const Descriptor* desc) const {
   USAGE_CHECK_REPEATED("MutableRawRepeatedField");
-  if (field->cpp_type() != cpptype)
+  if (field->cpp_type() != cpptype &&
+      (field->cpp_type() != FieldDescriptor::CPPTYPE_ENUM ||
+       cpptype != FieldDescriptor::CPPTYPE_INT32))
     ReportReflectionUsageTypeError(descriptor_, field,
                                    "MutableRawRepeatedField", cpptype);
   if (desc != nullptr)

@@ -172,11 +172,8 @@ class MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type> {
   static inline const char* Read(const char* ptr, ParseContext* ctx,
                                  MapEntryAccessorType* value);
 
-  static inline void Write(int field, const MapEntryAccessorType& value,
-                           io::CodedOutputStream* output);
-  static inline uint8* WriteToArray(int field,
-                                    const MapEntryAccessorType& value,
-                                    uint8* target);
+  static inline uint8* Write(int field, const MapEntryAccessorType& value,
+                             uint8* ptr, io::EpsCopyOutputStream* stream);
 
   // Functions to manipulate data on memory. ========================
   static inline const Type& GetExternalReference(const Type* value);
@@ -230,11 +227,8 @@ class MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type> {
                             MapEntryAccessorType* value);                     \
     static inline const char* Read(const char* begin, ParseContext* ctx,      \
                                    MapEntryAccessorType* value);              \
-    static inline void Write(int field, const MapEntryAccessorType& value,    \
-                             io::CodedOutputStream* output);                  \
-    static inline uint8* WriteToArray(int field,                              \
-                                      const MapEntryAccessorType& value,      \
-                                      uint8* target);                         \
+    static inline uint8* Write(int field, const MapEntryAccessorType& value,  \
+                               uint8* ptr, io::EpsCopyOutputStream* stream);  \
     static inline const MapEntryAccessorType& GetExternalReference(           \
         const TypeOnMemory& value);                                           \
     static inline void DeleteNoArena(const TypeOnMemory& x);                  \
@@ -365,34 +359,35 @@ GET_FIXED_CACHED_SIZE(BOOL, Bool)
 #undef GET_FIXED_CACHED_SIZE
 
 template <typename Type>
-inline void MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::Write(
-    int field, const MapEntryAccessorType& value,
-    io::CodedOutputStream* output) {
-  WireFormatLite::WriteMessageMaybeToArray(field, value, output);
-}
-
-template <typename Type>
-inline uint8* MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::WriteToArray(
-    int field, const MapEntryAccessorType& value, uint8* target) {
-  return WireFormatLite::InternalWriteMessageToArray(field, value, target);
+inline uint8* MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::Write(
+    int field, const MapEntryAccessorType& value, uint8* ptr,
+    io::EpsCopyOutputStream* stream) {
+  stream->EnsureSpace(&ptr);
+  return WireFormatLite::InternalWriteMessageToArray(field, value, ptr, stream);
 }
 
 #define WRITE_METHOD(FieldType, DeclaredType)                                  \
   template <typename Type>                                                     \
-  inline void MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::Write(   \
-      int field, const MapEntryAccessorType& value,                            \
-      io::CodedOutputStream* output) {                                         \
-    return WireFormatLite::Write##DeclaredType(field, value, output);          \
-  }                                                                            \
-  template <typename Type>                                                     \
-  inline uint8*                                                                \
-  MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::WriteToArray(        \
-      int field, const MapEntryAccessorType& value, uint8* target) {           \
-    return WireFormatLite::Write##DeclaredType##ToArray(field, value, target); \
+  inline uint8* MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::Write( \
+      int field, const MapEntryAccessorType& value, uint8* ptr,                \
+      io::EpsCopyOutputStream* stream) {                                       \
+    stream->EnsureSpace(&ptr);                                                 \
+    return stream->Write##DeclaredType(field, value, ptr);                     \
   }
 
 WRITE_METHOD(STRING, String)
 WRITE_METHOD(BYTES, Bytes)
+
+#undef WRITE_METHOD
+#define WRITE_METHOD(FieldType, DeclaredType)                                  \
+  template <typename Type>                                                     \
+  inline uint8* MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::Write( \
+      int field, const MapEntryAccessorType& value, uint8* ptr,                \
+      io::EpsCopyOutputStream* stream) {                                       \
+    stream->EnsureSpace(&ptr);                                                 \
+    return WireFormatLite::Write##DeclaredType##ToArray(field, value, ptr);    \
+  }
+
 WRITE_METHOD(INT64, Int64)
 WRITE_METHOD(UINT64, UInt64)
 WRITE_METHOD(INT32, Int32)

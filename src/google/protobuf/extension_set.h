@@ -69,13 +69,9 @@ class MessageLite;      // message_lite.h
 class Message;          // message.h
 class MessageFactory;   // message.h
 class UnknownFieldSet;  // unknown_field_set.h
-namespace io {
-class CodedInputStream;   // coded_stream.h
-class CodedOutputStream;  // coded_stream.h
-}  // namespace io
 namespace internal {
 class FieldSkipper;  // wire_format_lite.h
-}
+}  // namespace internal
 }  // namespace protobuf
 }  // namespace google
 
@@ -463,20 +459,28 @@ class PROTOBUF_EXPORT ExtensionSet {
   // to the output stream, using the cached sizes computed when ByteSize() was
   // last called.  Note that the range bounds are inclusive-exclusive.
   void SerializeWithCachedSizes(int start_field_number, int end_field_number,
-                                io::CodedOutputStream* output) const;
+                                io::CodedOutputStream* output) const {
+    output->SetCur(InternalSerializeWithCachedSizesToArray(
+        start_field_number, end_field_number, output->Cur(),
+        output->EpsCopy()));
+  }
 
   // Same as SerializeWithCachedSizes, but without any bounds checking.
   // The caller must ensure that target has sufficient capacity for the
   // serialized extensions.
   //
   // Returns a pointer past the last written byte.
-  uint8* InternalSerializeWithCachedSizesToArray(int start_field_number,
-                                                 int end_field_number,
-                                                 uint8* target) const;
+  uint8* InternalSerializeWithCachedSizesToArray(
+      int start_field_number, int end_field_number, uint8* target,
+      io::EpsCopyOutputStream* stream) const;
 
   // Like above but serializes in MessageSet format.
-  void SerializeMessageSetWithCachedSizes(io::CodedOutputStream* output) const;
-  uint8* InternalSerializeMessageSetWithCachedSizesToArray(uint8* target) const;
+  void SerializeMessageSetWithCachedSizes(io::CodedOutputStream* output) const {
+    output->SetCur(InternalSerializeMessageSetWithCachedSizesToArray(
+        output->Cur(), output->EpsCopy()));
+  }
+  uint8* InternalSerializeMessageSetWithCachedSizesToArray(
+      uint8* target, io::EpsCopyOutputStream* stream) const;
 
   // For backward-compatibility, versions of two of the above methods that
   // serialize deterministically iff SetDefaultSerializationDeterministic()
@@ -540,9 +544,8 @@ class PROTOBUF_EXPORT ExtensionSet {
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
     virtual const char* _InternalParse(const char* ptr, ParseContext* ctx) = 0;
 #endif
-    virtual void WriteMessage(int number,
-                              io::CodedOutputStream* output) const = 0;
-    virtual uint8* WriteMessageToArray(int number, uint8* target) const = 0;
+    virtual uint8* WriteMessageToArray(
+        int number, uint8* target, io::EpsCopyOutputStream* stream) const = 0;
 
    private:
     virtual void UnusedKeyMethod();  // Dummy key method to avoid weak vtable.
@@ -609,14 +612,10 @@ class PROTOBUF_EXPORT ExtensionSet {
     const FieldDescriptor* descriptor;
 
     // Some helper methods for operations on a single Extension.
-    void SerializeFieldWithCachedSizes(int number,
-                                       io::CodedOutputStream* output) const;
-    uint8* InternalSerializeFieldWithCachedSizesToArray(int number,
-                                                        uint8* target) const;
-    void SerializeMessageSetItemWithCachedSizes(
-        int number, io::CodedOutputStream* output) const;
+    uint8* InternalSerializeFieldWithCachedSizesToArray(
+        int number, uint8* target, io::EpsCopyOutputStream* stream) const;
     uint8* InternalSerializeMessageSetItemWithCachedSizesToArray(
-        int number, uint8* target) const;
+        int number, uint8* target, io::EpsCopyOutputStream* stream) const;
     size_t ByteSize(int number) const;
     size_t MessageSetItemByteSize(int number) const;
     void Clear();

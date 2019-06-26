@@ -84,16 +84,13 @@ class MockErrorCollector : public MultiFileErrorCollector {
 
 class MockGeneratorContext : public GeneratorContext {
  public:
-  MockGeneratorContext() {}
-  ~MockGeneratorContext() { STLDeleteValues(&files_); }
-
   void ExpectFileMatches(const std::string& virtual_filename,
                          const std::string& physical_filename) {
-    std::string* expected_contents =
-        FindPtrOrNull(files_, virtual_filename);
-    ASSERT_TRUE(expected_contents != NULL)
+    auto it = files_.find(virtual_filename);
+    ASSERT_TRUE(it != files_.end())
         << "Generator failed to generate file: " << virtual_filename;
 
+    std::string expected_contents = *it->second;
     std::string actual_contents;
     GOOGLE_CHECK_OK(
         File::GetContents(TestUtil::TestSourceDir() + "/" + physical_filename,
@@ -102,13 +99,13 @@ class MockGeneratorContext : public GeneratorContext {
     CleanStringLineEndings(&actual_contents, false);
 
 #ifdef WRITE_FILES  // Define to debug mismatched files.
-    GOOGLE_CHECK_OK(File::SetContents("/tmp/expected.cc", *expected_contents,
+    GOOGLE_CHECK_OK(File::SetContents("/tmp/expected.cc", expected_contents,
                                true));
     GOOGLE_CHECK_OK(
         File::SetContents("/tmp/actual.cc", actual_contents, true));
 #endif
 
-    ASSERT_EQ(*expected_contents, actual_contents)
+    ASSERT_EQ(expected_contents, actual_contents)
         << physical_filename
         << " needs to be regenerated.  Please run "
            "generate_descriptor_proto.sh. "
@@ -118,15 +115,13 @@ class MockGeneratorContext : public GeneratorContext {
   // implements GeneratorContext --------------------------------------
 
   virtual io::ZeroCopyOutputStream* Open(const std::string& filename) {
-    std::string** map_slot = &files_[filename];
-    delete *map_slot;
-    *map_slot = new std::string;
-
-    return new io::StringOutputStream(*map_slot);
+    auto& map_slot = files_[filename];
+    map_slot.reset(new std::string);
+    return new io::StringOutputStream(map_slot.get());
   }
 
  private:
-  std::map<std::string, std::string*> files_;
+  std::map<std::string, std::unique_ptr<std::string>> files_;
 };
 
 const char kDescriptorParameter[] = "dllexport_decl=PROTOBUF_EXPORT";

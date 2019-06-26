@@ -439,7 +439,7 @@ void ProtoWriter::ProtoElement::TakeOneofIndex(int32 index) {
 
 void ProtoWriter::InvalidName(StringPiece unknown_name,
                               StringPiece message) {
-  listener_->InvalidName(location(), ToSnakeCase(unknown_name), message);
+  listener_->InvalidName(location(), unknown_name, message);
 }
 
 void ProtoWriter::InvalidValue(StringPiece type_name,

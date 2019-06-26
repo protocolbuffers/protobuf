@@ -649,13 +649,13 @@ class DescriptorPool::Tables {
   FileDescriptorTables* AllocateFileTables();
 
  private:
-  std::vector<std::string*> strings_;  // All strings in the pool.
-  std::vector<Message*> messages_;     // All messages in the pool.
-  std::vector<internal::once_flag*>
-      once_dynamics_;  // All internal::call_onces in the pool.
-  std::vector<FileDescriptorTables*>
-      file_tables_;                 // All file tables in the pool.
-  std::vector<void*> allocations_;  // All other memory allocated in the pool.
+  // All other memory allocated in the pool.  Must be first as other objects can
+  // point into these.
+  std::vector<std::unique_ptr<char[]>> allocations_;
+  std::vector<std::unique_ptr<std::string>> strings_;
+  std::vector<std::unique_ptr<Message>> messages_;
+  std::vector<std::unique_ptr<internal::once_flag>> once_dynamics_;
+  std::vector<std::unique_ptr<FileDescriptorTables>> file_tables_;
 
   SymbolsByNameMap symbols_by_name_;
   FilesByNameMap files_by_name_;
@@ -806,15 +806,6 @@ DescriptorPool::Tables::Tables()
 
 DescriptorPool::Tables::~Tables() {
   GOOGLE_DCHECK(checkpoints_.empty());
-  // Note that the deletion order is important, since the destructors of some
-  // messages may refer to objects in allocations_.
-  STLDeleteElements(&messages_);
-  for (int i = 0; i < allocations_.size(); i++) {
-    operator delete(allocations_[i]);
-  }
-  STLDeleteElements(&strings_);
-  STLDeleteElements(&file_tables_);
-  STLDeleteElements(&once_dynamics_);
 }
 
 FileDescriptorTables::FileDescriptorTables()
@@ -875,22 +866,6 @@ void DescriptorPool::Tables::RollbackToLastCheckpoint() {
   files_after_checkpoint_.resize(checkpoint.pending_files_before_checkpoint);
   extensions_after_checkpoint_.resize(
       checkpoint.pending_extensions_before_checkpoint);
-
-  STLDeleteContainerPointers(
-      strings_.begin() + checkpoint.strings_before_checkpoint, strings_.end());
-  STLDeleteContainerPointers(
-      messages_.begin() + checkpoint.messages_before_checkpoint,
-      messages_.end());
-  STLDeleteContainerPointers(
-      once_dynamics_.begin() + checkpoint.once_dynamics_before_checkpoint,
-      once_dynamics_.end());
-  STLDeleteContainerPointers(
-      file_tables_.begin() + checkpoint.file_tables_before_checkpoint,
-      file_tables_.end());
-  for (int i = checkpoint.allocations_before_checkpoint;
-       i < allocations_.size(); i++) {
-    operator delete(allocations_[i]);
-  }
 
   strings_.resize(checkpoint.strings_before_checkpoint);
   messages_.resize(checkpoint.messages_before_checkpoint);
@@ -1194,32 +1169,32 @@ Type* DescriptorPool::Tables::AllocateArray(int count) {
 
 std::string* DescriptorPool::Tables::AllocateString(const std::string& value) {
   std::string* result = new std::string(value);
-  strings_.push_back(result);
+  strings_.emplace_back(result);
   return result;
 }
 
 std::string* DescriptorPool::Tables::AllocateEmptyString() {
   std::string* result = new std::string();
-  strings_.push_back(result);
+  strings_.emplace_back(result);
   return result;
 }
 
 internal::once_flag* DescriptorPool::Tables::AllocateOnceDynamic() {
   internal::once_flag* result = new internal::once_flag();
-  once_dynamics_.push_back(result);
+  once_dynamics_.emplace_back(result);
   return result;
 }
 
 template <typename Type>
 Type* DescriptorPool::Tables::AllocateMessage(Type* /* dummy */) {
   Type* result = new Type;
-  messages_.push_back(result);
+  messages_.emplace_back(result);
   return result;
 }
 
 FileDescriptorTables* DescriptorPool::Tables::AllocateFileTables() {
   FileDescriptorTables* result = new FileDescriptorTables;
-  file_tables_.push_back(result);
+  file_tables_.emplace_back(result);
   return result;
 }
 
@@ -1230,9 +1205,8 @@ void* DescriptorPool::Tables::AllocateBytes(int size) {
   // allocators...
   if (size == 0) return nullptr;
 
-  void* result = operator new(size);
-  allocations_.push_back(result);
-  return result;
+  allocations_.emplace_back(new char[size]);
+  return allocations_.back().get();
 }
 
 void FileDescriptorTables::BuildLocationsByPath(
