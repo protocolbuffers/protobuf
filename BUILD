@@ -490,7 +490,6 @@ cc_proto_library(
 COMMON_TEST_SRCS = [
     # AUTOGEN(common_test_srcs)
     "src/google/protobuf/arena_test_util.cc",
-    "src/google/protobuf/map_test_util.cc",
     "src/google/protobuf/test_util.cc",
     "src/google/protobuf/test_util.inc",
     "src/google/protobuf/testing/file.cc",
