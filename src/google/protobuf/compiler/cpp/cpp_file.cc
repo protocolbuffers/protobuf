@@ -33,9 +33,11 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
 #include <google/protobuf/compiler/cpp/cpp_file.h>
+
 #include <map>
 #include <memory>
 #include <set>
+#include <unordered_set>
 #include <vector>
 
 #include <google/protobuf/compiler/cpp/cpp_enum.h>
@@ -394,10 +396,6 @@ void FileGenerator::GenerateSourceIncludes(io::Printer* printer) {
       "#include <algorithm>\n"  // for swap()
       "\n",
       CreateHeaderInclude(target_basename, file_));
-
-  if (options_.opensource_runtime) {
-    DoIncludeFile("net/proto2/public/stubs/common.h", false, printer);
-  }
 
   IncludeFile("net/proto2/io/public/coded_stream.h", printer);
   // TODO(gerbens) This is to include parse_context.h, we need a better way

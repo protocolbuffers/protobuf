@@ -110,10 +110,15 @@
 #define GOOGLE_PROTOBUF_IO_CODED_STREAM_H__
 
 #include <assert.h>
+
 #include <atomic>
 #include <climits>
+#include <cstddef>
+#include <cstring>
 #include <string>
+#include <type_traits>
 #include <utility>
+
 #ifdef _MSC_VER
 // Assuming windows is always little-endian.
 #if !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
@@ -133,7 +138,9 @@
 #endif
 #endif
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/port.h>
+#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/port.h>
 
 
@@ -644,6 +651,384 @@ class PROTOBUF_EXPORT CodedInputStream {
   friend class google::protobuf::internal::EpsCopyByteStream;
 };
 
+// EpsCopyOutputStream wraps a ZeroCopyOutputStream and exposes a new stream,
+// which has the property you can write kSlopBytes (16 bytes) from the current
+// position without bounds checks. The cursor into the stream is managed by
+// the user of the class and is an explicit parameter in the methods. Careful
+// use of this class, ie. keep ptr a local variable, eliminates the need to
+// for the compiler to sync the ptr value between register and memory.
+class PROTOBUF_EXPORT EpsCopyOutputStream {
+ public:
+  enum { kSlopBytes = 16 };
+
+  // Initialize from a stream.
+  EpsCopyOutputStream(ZeroCopyOutputStream* stream, bool deterministic,
+                      uint8** pp)
+      : end_(buffer_),
+        stream_(stream),
+        is_serialization_deterministic_(deterministic) {
+    *pp = buffer_;
+  }
+
+  // Only for array serialization. No overflow protection, end_ will be the
+  // pointed to the end of the array. When using this the total size is already
+  // known, so no need to maintain the slop region.
+  EpsCopyOutputStream(void* data, int size, bool deterministic)
+      : end_(static_cast<uint8*>(data) + size),
+        buffer_end_(nullptr),
+        stream_(nullptr),
+        is_serialization_deterministic_(deterministic) {}
+
+  // Initialize from stream but with the first buffer already given (eager).
+  EpsCopyOutputStream(void* data, int size, ZeroCopyOutputStream* stream,
+                      bool deterministic, uint8** pp)
+      : stream_(stream), is_serialization_deterministic_(deterministic) {
+    *pp = SetInitialBuffer(data, size);
+  }
+
+  // Flush everything that's written into the underlying ZeroCopyOutputStream
+  // and trims the underlying stream to the location of ptr.
+  uint8* Trim(uint8* ptr);
+
+  // After this it's guaranteed you can safely write kSlopBytes to ptr. This
+  // will never fail! The underlying stream can produce an error. Use HadError
+  // to check for errors.
+  void EnsureSpace(uint8** ptr) {
+    if (PROTOBUF_PREDICT_FALSE(*ptr >= end_)) {
+      *ptr = EnsureSpaceFallback(*ptr);
+    }
+  }
+
+  uint8* WriteRaw(const void* data, int size, uint8* ptr) {
+    if (PROTOBUF_PREDICT_FALSE(end_ - ptr < size)) {
+      return WriteRawFallback(data, size, ptr);
+    }
+    std::memcpy(ptr, data, size);
+    return ptr + size;
+  }
+  // Writes the buffer specified by data, size to the stream. Possibly by
+  // aliasing the buffer (ie. not copying the data). The caller is responsible
+  // to make sure the buffer is alive for the duration of the
+  // ZeroCopyOutputStream.
+  uint8* WriteRawMaybeAliased(const void* data, int size, uint8* ptr) {
+    if (aliasing_enabled_) {
+      return WriteAliasedRaw(data, size, ptr);
+    } else {
+      return WriteRaw(data, size, ptr);
+    }
+  }
+
+
+  uint8* WriteStringMaybeAliased(uint32 num, const std::string& s, uint8* ptr) {
+    std::ptrdiff_t size = s.size();
+    if (PROTOBUF_PREDICT_FALSE(
+            size >= 128 || end_ - ptr + 16 - TagSize(num << 3) - 1 < size)) {
+      return WriteStringMaybeAliasedOutline(num, s, ptr);
+    }
+    ptr = UnsafeVarint((num << 3) | 2, ptr);
+    *ptr++ = static_cast<uint8>(size);
+    std::memcpy(ptr, s.data(), size);
+    return ptr + size;
+  }
+  uint8* WriteBytesMaybeAliased(uint32 num, const std::string& s, uint8* ptr) {
+    return WriteStringMaybeAliased(num, s, ptr);
+  }
+
+  template <typename T>
+  PROTOBUF_ALWAYS_INLINE uint8* WriteString(uint32 num, const T& s,
+                                            uint8* ptr) {
+    std::ptrdiff_t size = s.size();
+    if (PROTOBUF_PREDICT_FALSE(
+            size >= 128 || end_ - ptr + 16 - TagSize(num << 3) - 1 < size)) {
+      return WriteStringOutline(num, s, ptr);
+    }
+    ptr = UnsafeVarint((num << 3) | 2, ptr);
+    *ptr++ = static_cast<uint8>(size);
+    std::memcpy(ptr, s.data(), size);
+    return ptr + size;
+  }
+  template <typename T>
+  uint8* WriteBytes(uint32 num, const T& s, uint8* ptr) {
+    return WriteString(num, s, ptr);
+  }
+
+  template <typename T>
+  PROTOBUF_ALWAYS_INLINE uint8* WriteInt32Packed(int num, const T& r, int size,
+                                                 uint8* ptr) {
+    return WriteVarintPacked(num, r, size, ptr, Encode64);
+  }
+  template <typename T>
+  PROTOBUF_ALWAYS_INLINE uint8* WriteUInt32Packed(int num, const T& r, int size,
+                                                  uint8* ptr) {
+    return WriteVarintPacked(num, r, size, ptr, Encode32);
+  }
+  template <typename T>
+  PROTOBUF_ALWAYS_INLINE uint8* WriteSInt32Packed(int num, const T& r, int size,
+                                                  uint8* ptr) {
+    return WriteVarintPacked(num, r, size, ptr, ZigZagEncode32);
+  }
+  template <typename T>
+  PROTOBUF_ALWAYS_INLINE uint8* WriteInt64Packed(int num, const T& r, int size,
+                                                 uint8* ptr) {
+    return WriteVarintPacked(num, r, size, ptr, Encode64);
+  }
+  template <typename T>
+  PROTOBUF_ALWAYS_INLINE uint8* WriteUInt64Packed(int num, const T& r, int size,
+                                                  uint8* ptr) {
+    return WriteVarintPacked(num, r, size, ptr, Encode64);
+  }
+  template <typename T>
+  PROTOBUF_ALWAYS_INLINE uint8* WriteSInt64Packed(int num, const T& r, int size,
+                                                  uint8* ptr) {
+    return WriteVarintPacked(num, r, size, ptr, ZigZagEncode64);
+  }
+  template <typename T>
+  PROTOBUF_ALWAYS_INLINE uint8* WriteEnumPacked(int num, const T& r, int size,
+                                                uint8* ptr) {
+    return WriteVarintPacked(num, r, size, ptr, Encode64);
+  }
+
+  template <typename T>
+  PROTOBUF_ALWAYS_INLINE uint8* WriteFixedPacked(int num, const T& r,
+                                                 uint8* ptr) {
+    EnsureSpace(&ptr);
+    constexpr auto element_size = sizeof(typename T::value_type);
+    auto size = r.size() * element_size;
+    ptr = WriteLengthDelim(num, size, ptr);
+    return WriteRawLittleEndian<element_size>(r.data(), static_cast<int>(size),
+                                              ptr);
+  }
+
+  // Returns true if there was an underlying I/O error since this object was
+  // created.
+  bool HadError() const { return had_error_; }
+
+  // Instructs the EpsCopyOutputStream to allow the underlying
+  // ZeroCopyOutputStream to hold pointers to the original structure instead of
+  // copying, if it supports it (i.e. output->AllowsAliasing() is true).  If the
+  // underlying stream does not support aliasing, then enabling it has no
+  // affect.  For now, this only affects the behavior of
+  // WriteRawMaybeAliased().
+  //
+  // NOTE: It is caller's responsibility to ensure that the chunk of memory
+  // remains live until all of the data has been consumed from the stream.
+  void EnableAliasing(bool enabled);
+
+  // Deterministic serialization, if requested, guarantees that for a given
+  // binary, equal messages will always be serialized to the same bytes. This
+  // implies:
+  //   . repeated serialization of a message will return the same bytes
+  //   . different processes of the same binary (which may be executing on
+  //     different machines) will serialize equal messages to the same bytes.
+  //
+  // Note the deterministic serialization is NOT canonical across languages; it
+  // is also unstable across different builds with schema changes due to unknown
+  // fields. Users who need canonical serialization, e.g., persistent storage in
+  // a canonical form, fingerprinting, etc., should define their own
+  // canonicalization specification and implement the serializer using
+  // reflection APIs rather than relying on this API.
+  //
+  // If deterministic serialization is requested, the serializer will
+  // sort map entries by keys in lexicographical order or numerical order.
+  // (This is an implementation detail and may subject to change.)
+  //
+  // There are two ways to determine whether serialization should be
+  // deterministic for this CodedOutputStream.  If SetSerializationDeterministic
+  // has not yet been called, then the default comes from the global default,
+  // which is false, until SetDefaultSerializationDeterministic has been called.
+  // Otherwise, SetSerializationDeterministic has been called, and the last
+  // value passed to it is all that matters.
+  void SetSerializationDeterministic(bool value) {
+    is_serialization_deterministic_ = value;
+  }
+  // See above.  Also, note that users of this CodedOutputStream may need to
+  // call IsSerializationDeterministic() to serialize in the intended way.  This
+  // CodedOutputStream cannot enforce a desire for deterministic serialization
+  // by itself.
+  bool IsSerializationDeterministic() const {
+    return is_serialization_deterministic_;
+  }
+
+  // The number of bytes writen to the stream at position ptr, relative to the
+  // stream's overall position.
+  int64 ByteCount(uint8* ptr) const;
+
+
+ private:
+  uint8* end_;
+  uint8* buffer_end_ = buffer_;
+  uint8 buffer_[2 * kSlopBytes];
+  ZeroCopyOutputStream* stream_;
+  bool had_error_ = false;
+  bool aliasing_enabled_ = false;  // See EnableAliasing().
+  bool is_serialization_deterministic_;
+
+  uint8* EnsureSpaceFallback(uint8* ptr);
+  inline uint8* Next();
+  int Flush(uint8* ptr);
+  std::ptrdiff_t GetSize(uint8* ptr) const {
+    GOOGLE_DCHECK(ptr <= end_ + kSlopBytes);  // NOLINT
+    return end_ + kSlopBytes - ptr;
+  }
+
+  uint8* Error() {
+    had_error_ = true;
+    // We use the patch buffer to always guarantee space to write to.
+    end_ = buffer_ + kSlopBytes;
+    return buffer_;
+  }
+
+  static constexpr int TagSize(uint32 tag) {
+    return (tag < (1 << 7))
+               ? 1
+               : (tag < (1 << 14))
+                     ? 2
+                     : (tag < (1 << 21)) ? 3 : (tag < (1 << 28)) ? 4 : 5;
+  }
+
+  PROTOBUF_ALWAYS_INLINE uint8* WriteTag(uint32 num, uint32 wt, uint8* ptr) {
+    GOOGLE_DCHECK(ptr < end_);  // NOLINT
+    return UnsafeVarint((num << 3) | wt, ptr);
+  }
+
+  PROTOBUF_ALWAYS_INLINE uint8* WriteLengthDelim(int num, uint32 size,
+                                                 uint8* ptr) {
+    ptr = WriteTag(num, 2, ptr);
+    return UnsafeWriteSize(size, ptr);
+  }
+
+  uint8* WriteRawFallback(const void* data, int size, uint8* ptr);
+
+  uint8* WriteAliasedRaw(const void* data, int size, uint8* ptr);
+
+  uint8* WriteStringMaybeAliasedOutline(uint32 num, const std::string& s,
+                                        uint8* ptr);
+  uint8* WriteStringOutline(uint32 num, const std::string& s, uint8* ptr);
+
+  template <typename T, typename E>
+  PROTOBUF_ALWAYS_INLINE uint8* WriteVarintPacked(int num, const T& r, int size,
+                                                  uint8* ptr, const E& encode) {
+    EnsureSpace(&ptr);
+    ptr = WriteLengthDelim(num, size, ptr);
+    auto it = r.data();
+    auto end = it + r.size();
+    do {
+      EnsureSpace(&ptr);
+      ptr = UnsafeVarint(encode(*it++), ptr);
+    } while (it < end);
+    return ptr;
+  }
+
+  static uint32 Encode32(uint32 v) { return v; }
+  static uint64 Encode64(uint64 v) { return v; }
+  static uint32 ZigZagEncode32(int32 v) {
+    return (static_cast<uint32>(v) << 1) ^ static_cast<uint32>(v >> 31);
+  }
+  static uint64 ZigZagEncode64(int64 v) {
+    return (static_cast<uint64>(v) << 1) ^ static_cast<uint64>(v >> 63);
+  }
+
+  template <typename T>
+  PROTOBUF_ALWAYS_INLINE static uint8* UnsafeVarint(T value, uint8* ptr) {
+    static_assert(std::is_unsigned<T>::value,
+                  "Varint serialization must be unsigned");
+    if (value < 0x80) {
+      ptr[0] = static_cast<uint8>(value);
+      return ptr + 1;
+    }
+    ptr[0] = static_cast<uint8>(value | 0x80);
+    value >>= 7;
+    if (value < 0x80) {
+      ptr[1] = static_cast<uint8>(value);
+      return ptr + 2;
+    }
+    ptr++;
+    do {
+      *ptr = static_cast<uint8>(value | 0x80);
+      value >>= 7;
+      ++ptr;
+    } while (PROTOBUF_PREDICT_FALSE(value >= 0x80));
+    *ptr++ = static_cast<uint8>(value);
+    return ptr;
+  }
+
+  PROTOBUF_ALWAYS_INLINE static uint8* UnsafeWriteSize(uint32 value,
+                                                       uint8* ptr) {
+    while (PROTOBUF_PREDICT_FALSE(value >= 0x80)) {
+      *ptr = static_cast<uint8>(value | 0x80);
+      value >>= 7;
+      ++ptr;
+    }
+    *ptr++ = static_cast<uint8>(value);
+    return ptr;
+  }
+
+  template <int S>
+  uint8* WriteRawLittleEndian(const void* data, int size, uint8* ptr);
+#ifndef PROTOBUF_LITTLE_ENDIAN
+  uint8* WriteRawLittleEndian32(const void* data, int size, uint8* ptr);
+  uint8* WriteRawLittleEndian64(const void* data, int size, uint8* ptr);
+#endif
+
+  // These methods are for CodedOutputStream. Ideally they should be private
+  // but to match current behavior of CodedOutputStream as close as possible
+  // we allow it some functionality.
+ public:
+  uint8* SetInitialBuffer(void* data, int size) {
+    auto ptr = static_cast<uint8*>(data);
+    if (size > kSlopBytes) {
+      end_ = ptr + size - kSlopBytes;
+      buffer_end_ = nullptr;
+      return ptr;
+    } else {
+      end_ = buffer_ + size;
+      buffer_end_ = ptr;
+      return buffer_;
+    }
+  }
+
+ private:
+  // Needed by CodedOutputStream HadError. HadError needs to flush the patch
+  // buffers to ensure there is no error as of yet.
+  uint8* FlushAndResetBuffer(uint8*);
+
+  // The following functions mimick the old CodedOutputStream behavior as close
+  // as possible. They flush the current state to the stream, behave as
+  // the old CodedOutputStream and then return to normal operation.
+  bool Skip(int count, uint8** pp);
+  bool GetDirectBufferPointer(void** data, int* size, uint8** pp);
+  uint8* GetDirectBufferForNBytesAndAdvance(int size, uint8** pp);
+
+  friend class CodedOutputStream;
+};
+
+template <>
+inline uint8* EpsCopyOutputStream::WriteRawLittleEndian<1>(const void* data,
+                                                           int size,
+                                                           uint8* ptr) {
+  return WriteRaw(data, size, ptr);
+}
+template <>
+inline uint8* EpsCopyOutputStream::WriteRawLittleEndian<4>(const void* data,
+                                                           int size,
+                                                           uint8* ptr) {
+#ifdef PROTOBUF_LITTLE_ENDIAN
+  return WriteRaw(data, size, ptr);
+#else
+  return WriteRawLittleEndian32(data, size, ptr);
+#endif
+}
+template <>
+inline uint8* EpsCopyOutputStream::WriteRawLittleEndian<8>(const void* data,
+                                                           int size,
+                                                           uint8* ptr) {
+#ifdef PROTOBUF_LITTLE_ENDIAN
+  return WriteRaw(data, size, ptr);
+#else
+  return WriteRawLittleEndian64(data, size, ptr);
+#endif
+}
+
 // Class which encodes and writes binary data which is composed of varint-
 // encoded integers and fixed-width pieces.  Wraps a ZeroCopyOutputStream.
 // Most users will not need to deal with CodedOutputStream.
@@ -674,7 +1059,7 @@ class PROTOBUF_EXPORT CodedInputStream {
 //
 //   uint8* buffer =
 //       coded_output->GetDirectBufferForNBytesAndAdvance(coded_size);
-//   if (buffer != NULL) {
+//   if (buffer != nullptr) {
 //     // The output stream has enough space in the buffer: write directly to
 //     // the array.
 //     buffer = CodedOutputStream::WriteLittleEndian32ToArray(magic_number,
@@ -693,19 +1078,29 @@ class PROTOBUF_EXPORT CodedInputStream {
 class PROTOBUF_EXPORT CodedOutputStream {
  public:
   // Create an CodedOutputStream that writes to the given ZeroCopyOutputStream.
-  explicit CodedOutputStream(ZeroCopyOutputStream* output);
-  CodedOutputStream(ZeroCopyOutputStream* output, bool do_eager_refresh);
+  explicit CodedOutputStream(ZeroCopyOutputStream* stream)
+      : CodedOutputStream(stream, true) {}
+  CodedOutputStream(ZeroCopyOutputStream* stream, bool do_eager_refresh);
 
   // Destroy the CodedOutputStream and position the underlying
   // ZeroCopyOutputStream immediately after the last byte written.
   ~CodedOutputStream();
+
+  // Returns true if there was an underlying I/O error since this object was
+  // created. On should call Trim before this function in order to catch all
+  // errors.
+  bool HadError() {
+    cur_ = impl_.FlushAndResetBuffer(cur_);
+    GOOGLE_DCHECK(cur_);
+    return impl_.HadError();
+  }
 
   // Trims any unused space in the underlying buffer so that its size matches
   // the number of bytes written by this stream. The underlying buffer will
   // automatically be trimmed when this stream is destroyed; this call is only
   // necessary if the underlying buffer is accessed *before* the stream is
   // destroyed.
-  void Trim();
+  void Trim() { cur_ = impl_.Trim(cur_); }
 
   // Skips a number of bytes, leaving the bytes unmodified in the underlying
   // buffer.  Returns false if an underlying write error occurs.  This is
@@ -713,7 +1108,7 @@ class PROTOBUF_EXPORT CodedOutputStream {
   // Note of caution, the skipped bytes may contain uninitialized data. The
   // caller must make sure that the skipped bytes are properly initialized,
   // otherwise you might leak bytes from your heap.
-  bool Skip(int count);
+  bool Skip(int count) { return impl_.Skip(count, &cur_); }
 
   // Sets *data to point directly at the unwritten part of the
   // CodedOutputStream's underlying buffer, and *size to the size of that
@@ -723,7 +1118,9 @@ class PROTOBUF_EXPORT CodedOutputStream {
   // the consumed bytes.  This may be useful for implementing external fast
   // serialization routines for types of data not covered by the
   // CodedOutputStream interface.
-  bool GetDirectBufferPointer(void** data, int* size);
+  bool GetDirectBufferPointer(void** data, int* size) {
+    return impl_.GetDirectBufferPointer(data, size, &cur_);
+  }
 
   // If there are at least "size" bytes available in the current buffer,
   // returns a pointer directly into the buffer and advances over these bytes.
@@ -732,10 +1129,14 @@ class PROTOBUF_EXPORT CodedOutputStream {
   // there are not enough bytes available, returns NULL.  The return pointer is
   // invalidated as soon as any other non-const method of CodedOutputStream
   // is called.
-  inline uint8* GetDirectBufferForNBytesAndAdvance(int size);
+  inline uint8* GetDirectBufferForNBytesAndAdvance(int size) {
+    return impl_.GetDirectBufferForNBytesAndAdvance(size, &cur_);
+  }
 
   // Write raw bytes, copying them from the given buffer.
-  void WriteRaw(const void* buffer, int size);
+  void WriteRaw(const void* buffer, int size) {
+    cur_ = impl_.WriteRaw(buffer, size, cur_);
+  }
   // Like WriteRaw()  but will try to write aliased data if aliasing is
   // turned on.
   void WriteRawMaybeAliased(const void* data, int size);
@@ -755,23 +1156,18 @@ class PROTOBUF_EXPORT CodedOutputStream {
                                            uint8* target);
 
 
-  // Instructs the CodedOutputStream to allow the underlying
-  // ZeroCopyOutputStream to hold pointers to the original structure instead of
-  // copying, if it supports it (i.e. output->AllowsAliasing() is true).  If the
-  // underlying stream does not support aliasing, then enabling it has no
-  // affect.  For now, this only affects the behavior of
-  // WriteRawMaybeAliased().
-  //
-  // NOTE: It is caller's responsibility to ensure that the chunk of memory
-  // remains live until all of the data has been consumed from the stream.
-  void EnableAliasing(bool enabled);
-
   // Write a 32-bit little-endian integer.
-  void WriteLittleEndian32(uint32 value);
+  void WriteLittleEndian32(uint32 value) {
+    impl_.EnsureSpace(&cur_);
+    SetCur(WriteLittleEndian32ToArray(value, Cur()));
+  }
   // Like WriteLittleEndian32()  but writing directly to the target array.
   static uint8* WriteLittleEndian32ToArray(uint32 value, uint8* target);
   // Write a 64-bit little-endian integer.
-  void WriteLittleEndian64(uint64 value);
+  void WriteLittleEndian64(uint64 value) {
+    impl_.EnsureSpace(&cur_);
+    SetCur(WriteLittleEndian64ToArray(value, Cur()));
+  }
   // Like WriteLittleEndian64()  but writing directly to the target array.
   static uint8* WriteLittleEndian64ToArray(uint64 value, uint8* target);
 
@@ -822,45 +1218,31 @@ class PROTOBUF_EXPORT CodedOutputStream {
   };
 
   // Returns the total number of bytes written since this object was created.
-  inline int ByteCount() const;
+  int ByteCount() const {
+    return static_cast<int>(impl_.ByteCount(cur_) - start_count_);
+  }
 
-  // Returns true if there was an underlying I/O error since this object was
-  // created.
-  bool HadError() const { return had_error_; }
+  // Instructs the CodedOutputStream to allow the underlying
+  // ZeroCopyOutputStream to hold pointers to the original structure instead of
+  // copying, if it supports it (i.e. output->AllowsAliasing() is true).  If the
+  // underlying stream does not support aliasing, then enabling it has no
+  // affect.  For now, this only affects the behavior of
+  // WriteRawMaybeAliased().
+  //
+  // NOTE: It is caller's responsibility to ensure that the chunk of memory
+  // remains live until all of the data has been consumed from the stream.
+  void EnableAliasing(bool enabled) { impl_.EnableAliasing(enabled); }
 
-  // Deterministic serialization, if requested, guarantees that for a given
-  // binary, equal messages will always be serialized to the same bytes. This
-  // implies:
-  //   . repeated serialization of a message will return the same bytes
-  //   . different processes of the same binary (which may be executing on
-  //     different machines) will serialize equal messages to the same bytes.
-  //
-  // Note the deterministic serialization is NOT canonical across languages; it
-  // is also unstable across different builds with schema changes due to unknown
-  // fields. Users who need canonical serialization, e.g., persistent storage in
-  // a canonical form, fingerprinting, etc., should define their own
-  // canonicalization specification and implement the serializer using
-  // reflection APIs rather than relying on this API.
-  //
-  // If deterministic serialization is requested, the serializer will
-  // sort map entries by keys in lexicographical order or numerical order.
-  // (This is an implementation detail and may subject to change.)
-  //
-  // There are two ways to determine whether serialization should be
-  // deterministic for this CodedOutputStream.  If SetSerializationDeterministic
-  // has not yet been called, then the default comes from the global default,
-  // which is false, until SetDefaultSerializationDeterministic has been called.
-  // Otherwise, SetSerializationDeterministic has been called, and the last
-  // value passed to it is all that matters.
   void SetSerializationDeterministic(bool value) {
-    is_serialization_deterministic_ = value;
+    impl_.SetSerializationDeterministic(value);
   }
   // See above.  Also, note that users of this CodedOutputStream may need to
   // call IsSerializationDeterministic() to serialize in the intended way.  This
   // CodedOutputStream cannot enforce a desire for deterministic serialization
   // by itself.
+
   bool IsSerializationDeterministic() const {
-    return is_serialization_deterministic_;
+    return impl_.IsSerializationDeterministic();
   }
 
   static bool IsDefaultSerializationDeterministic() {
@@ -868,33 +1250,18 @@ class PROTOBUF_EXPORT CodedOutputStream {
                std::memory_order_relaxed) != 0;
   }
 
+  template <typename Func>
+  void Serialize(const Func& func);
+
+  uint8* Cur() const { return cur_; }
+  void SetCur(uint8* ptr) { cur_ = ptr; }
+  EpsCopyOutputStream* EpsCopy() { return &impl_; }
+
  private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(CodedOutputStream);
-
-  ZeroCopyOutputStream* output_;
-  uint8* buffer_;
-  int buffer_size_;
-  int total_bytes_;        // Sum of sizes of all buffers seen so far.
-  bool had_error_;         // Whether an error occurred during output.
-  bool aliasing_enabled_;  // See EnableAliasing().
-  bool is_serialization_deterministic_;
+  EpsCopyOutputStream impl_;
+  uint8* cur_;
+  int64 start_count_;
   static std::atomic<bool> default_serialization_deterministic_;
-
-  // Advance the buffer by a given number of bytes.
-  void Advance(int amount);
-
-  // Called when the buffer runs out to request more data.  Implies an
-  // Advance(buffer_size_).
-  bool Refresh();
-
-  // Like WriteRaw() but may avoid copying if the underlying
-  // ZeroCopyOutputStream supports it.
-  void WriteAliasedRaw(const void* buffer, int size);
-
-  // If this write might cross the end of the buffer, we compose the bytes first
-  // then use WriteRaw().
-  void WriteVarint32SlowPath(uint32 value);
-  void WriteVarint64SlowPath(uint64 value);
 
   // See above.  Other projects may use "friend" to allow them to call this.
   // After SetDefaultSerializationDeterministic() completes, all protocol
@@ -907,6 +1274,7 @@ class PROTOBUF_EXPORT CodedOutputStream {
   static void SetDefaultSerializationDeterministic() {
     default_serialization_deterministic_.store(true, std::memory_order_relaxed);
   }
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(CodedOutputStream);
 };
 
 // inline methods ====================================================
@@ -1109,7 +1477,7 @@ inline const uint8* CodedInputStream::ExpectTagFromArray(const uint8* buffer,
       return buffer + 2;
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 inline void CodedInputStream::GetDirectBufferPointerInline(const void** data,
@@ -1136,36 +1504,109 @@ inline int CodedInputStream::CurrentPosition() const {
   return total_bytes_read_ - (BufferSize() + buffer_size_after_limit_);
 }
 
-inline uint8* CodedOutputStream::GetDirectBufferForNBytesAndAdvance(int size) {
-  if (buffer_size_ < size) {
-    return NULL;
-  } else {
-    uint8* result = buffer_;
-    Advance(size);
-    return result;
+inline void CodedInputStream::Advance(int amount) { buffer_ += amount; }
+
+inline void CodedInputStream::SetRecursionLimit(int limit) {
+  recursion_budget_ += limit - recursion_limit_;
+  recursion_limit_ = limit;
+}
+
+inline bool CodedInputStream::IncrementRecursionDepth() {
+  --recursion_budget_;
+  return recursion_budget_ >= 0;
+}
+
+inline void CodedInputStream::DecrementRecursionDepth() {
+  if (recursion_budget_ < recursion_limit_) ++recursion_budget_;
+}
+
+inline void CodedInputStream::UnsafeDecrementRecursionDepth() {
+  assert(recursion_budget_ < recursion_limit_);
+  ++recursion_budget_;
+}
+
+inline void CodedInputStream::SetExtensionRegistry(const DescriptorPool* pool,
+                                                   MessageFactory* factory) {
+  extension_pool_ = pool;
+  extension_factory_ = factory;
+}
+
+inline const DescriptorPool* CodedInputStream::GetExtensionPool() {
+  return extension_pool_;
+}
+
+inline MessageFactory* CodedInputStream::GetExtensionFactory() {
+  return extension_factory_;
+}
+
+inline int CodedInputStream::BufferSize() const {
+  return static_cast<int>(buffer_end_ - buffer_);
+}
+
+inline CodedInputStream::CodedInputStream(ZeroCopyInputStream* input)
+    : buffer_(nullptr),
+      buffer_end_(nullptr),
+      input_(input),
+      total_bytes_read_(0),
+      overflow_bytes_(0),
+      last_tag_(0),
+      legitimate_message_end_(false),
+      aliasing_enabled_(false),
+      current_limit_(kint32max),
+      buffer_size_after_limit_(0),
+      total_bytes_limit_(kDefaultTotalBytesLimit),
+      recursion_budget_(default_recursion_limit_),
+      recursion_limit_(default_recursion_limit_),
+      extension_pool_(nullptr),
+      extension_factory_(nullptr) {
+  // Eagerly Refresh() so buffer space is immediately available.
+  Refresh();
+}
+
+inline CodedInputStream::CodedInputStream(const uint8* buffer, int size)
+    : buffer_(buffer),
+      buffer_end_(buffer + size),
+      input_(nullptr),
+      total_bytes_read_(size),
+      overflow_bytes_(0),
+      last_tag_(0),
+      legitimate_message_end_(false),
+      aliasing_enabled_(false),
+      current_limit_(size),
+      buffer_size_after_limit_(0),
+      total_bytes_limit_(kDefaultTotalBytesLimit),
+      recursion_budget_(default_recursion_limit_),
+      recursion_limit_(default_recursion_limit_),
+      extension_pool_(nullptr),
+      extension_factory_(nullptr) {
+  // Note that setting current_limit_ == size is important to prevent some
+  // code paths from trying to access input_ and segfaulting.
+}
+
+inline bool CodedInputStream::IsFlat() const { return input_ == nullptr; }
+
+inline bool CodedInputStream::Skip(int count) {
+  if (count < 0) return false;  // security: count is often user-supplied
+
+  const int original_buffer_size = BufferSize();
+
+  if (count <= original_buffer_size) {
+    // Just skipping within the current buffer.  Easy.
+    Advance(count);
+    return true;
   }
+
+  return SkipFallback(count, original_buffer_size);
 }
 
 inline uint8* CodedOutputStream::WriteVarint32ToArray(uint32 value,
                                                       uint8* target) {
-  while (value >= 0x80) {
-    *target = static_cast<uint8>(value | 0x80);
-    value >>= 7;
-    ++target;
-  }
-  *target = static_cast<uint8>(value);
-  return target + 1;
+  return EpsCopyOutputStream::UnsafeVarint(value, target);
 }
 
 inline uint8* CodedOutputStream::WriteVarint64ToArray(uint64 value,
                                                       uint8* target) {
-  while (value >= 0x80) {
-    *target = static_cast<uint8>(value | 0x80);
-    value >>= 7;
-    ++target;
-  }
-  *target = static_cast<uint8>(value);
-  return target + 1;
+  return EpsCopyOutputStream::UnsafeVarint(value, target);
 }
 
 inline void CodedOutputStream::WriteVarint32SignExtended(int32 value) {
@@ -1211,29 +1652,13 @@ inline uint8* CodedOutputStream::WriteLittleEndian64ToArray(uint64 value,
 }
 
 inline void CodedOutputStream::WriteVarint32(uint32 value) {
-  if (buffer_size_ >= 5) {
-    // Fast path:  We have enough bytes left in the buffer to guarantee that
-    // this write won't cross the end, so we can skip the checks.
-    uint8* target = buffer_;
-    uint8* end = WriteVarint32ToArray(value, target);
-    int size = static_cast<int>(end - target);
-    Advance(size);
-  } else {
-    WriteVarint32SlowPath(value);
-  }
+  impl_.EnsureSpace(&cur_);
+  SetCur(WriteVarint32ToArray(value, Cur()));
 }
 
 inline void CodedOutputStream::WriteVarint64(uint64 value) {
-  if (buffer_size_ >= 10) {
-    // Fast path:  We have enough bytes left in the buffer to guarantee that
-    // this write won't cross the end, so we can skip the checks.
-    uint8* target = buffer_;
-    uint8* end = WriteVarint64ToArray(value, target);
-    int size = static_cast<int>(end - target);
-    Advance(size);
-  } else {
-    WriteVarint64SlowPath(value);
-  }
+  impl_.EnsureSpace(&cur_);
+  SetCur(WriteVarint64ToArray(value, Cur()));
 }
 
 inline void CodedOutputStream::WriteTag(uint32 value) { WriteVarint32(value); }
@@ -1276,120 +1701,18 @@ inline void CodedOutputStream::WriteString(const std::string& str) {
 
 inline void CodedOutputStream::WriteRawMaybeAliased(const void* data,
                                                     int size) {
-  if (aliasing_enabled_) {
-    WriteAliasedRaw(data, size);
-  } else {
-    WriteRaw(data, size);
-  }
+  cur_ = impl_.WriteRawMaybeAliased(data, size, cur_);
+}
+
+inline uint8* CodedOutputStream::WriteRawToArray(const void* data, int size,
+                                                 uint8* target) {
+  memcpy(target, data, size);
+  return target + size;
 }
 
 inline uint8* CodedOutputStream::WriteStringToArray(const std::string& str,
                                                     uint8* target) {
   return WriteRawToArray(str.data(), static_cast<int>(str.size()), target);
-}
-
-inline int CodedOutputStream::ByteCount() const {
-  return total_bytes_ - buffer_size_;
-}
-
-inline void CodedInputStream::Advance(int amount) { buffer_ += amount; }
-
-inline void CodedOutputStream::Advance(int amount) {
-  buffer_ += amount;
-  buffer_size_ -= amount;
-}
-
-inline void CodedInputStream::SetRecursionLimit(int limit) {
-  recursion_budget_ += limit - recursion_limit_;
-  recursion_limit_ = limit;
-}
-
-inline bool CodedInputStream::IncrementRecursionDepth() {
-  --recursion_budget_;
-  return recursion_budget_ >= 0;
-}
-
-inline void CodedInputStream::DecrementRecursionDepth() {
-  if (recursion_budget_ < recursion_limit_) ++recursion_budget_;
-}
-
-inline void CodedInputStream::UnsafeDecrementRecursionDepth() {
-  assert(recursion_budget_ < recursion_limit_);
-  ++recursion_budget_;
-}
-
-inline void CodedInputStream::SetExtensionRegistry(const DescriptorPool* pool,
-                                                   MessageFactory* factory) {
-  extension_pool_ = pool;
-  extension_factory_ = factory;
-}
-
-inline const DescriptorPool* CodedInputStream::GetExtensionPool() {
-  return extension_pool_;
-}
-
-inline MessageFactory* CodedInputStream::GetExtensionFactory() {
-  return extension_factory_;
-}
-
-inline int CodedInputStream::BufferSize() const {
-  return static_cast<int>(buffer_end_ - buffer_);
-}
-
-inline CodedInputStream::CodedInputStream(ZeroCopyInputStream* input)
-    : buffer_(NULL),
-      buffer_end_(NULL),
-      input_(input),
-      total_bytes_read_(0),
-      overflow_bytes_(0),
-      last_tag_(0),
-      legitimate_message_end_(false),
-      aliasing_enabled_(false),
-      current_limit_(kint32max),
-      buffer_size_after_limit_(0),
-      total_bytes_limit_(kDefaultTotalBytesLimit),
-      recursion_budget_(default_recursion_limit_),
-      recursion_limit_(default_recursion_limit_),
-      extension_pool_(NULL),
-      extension_factory_(NULL) {
-  // Eagerly Refresh() so buffer space is immediately available.
-  Refresh();
-}
-
-inline CodedInputStream::CodedInputStream(const uint8* buffer, int size)
-    : buffer_(buffer),
-      buffer_end_(buffer + size),
-      input_(NULL),
-      total_bytes_read_(size),
-      overflow_bytes_(0),
-      last_tag_(0),
-      legitimate_message_end_(false),
-      aliasing_enabled_(false),
-      current_limit_(size),
-      buffer_size_after_limit_(0),
-      total_bytes_limit_(kDefaultTotalBytesLimit),
-      recursion_budget_(default_recursion_limit_),
-      recursion_limit_(default_recursion_limit_),
-      extension_pool_(NULL),
-      extension_factory_(NULL) {
-  // Note that setting current_limit_ == size is important to prevent some
-  // code paths from trying to access input_ and segfaulting.
-}
-
-inline bool CodedInputStream::IsFlat() const { return input_ == NULL; }
-
-inline bool CodedInputStream::Skip(int count) {
-  if (count < 0) return false;  // security: count is often user-supplied
-
-  const int original_buffer_size = BufferSize();
-
-  if (count <= original_buffer_size) {
-    // Just skipping within the current buffer.  Easy.
-    Advance(count);
-    return true;
-  }
-
-  return SkipFallback(count, original_buffer_size);
 }
 
 }  // namespace io

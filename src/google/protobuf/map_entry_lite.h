@@ -111,25 +111,17 @@ struct MapEntryFuncs {
   static const int kKeyFieldNumber = 1;
   static const int kValueFieldNumber = 2;
 
-  static void SerializeToCodedStream(int field_number, const Key& key,
-                                     const Value& value,
-                                     io::CodedOutputStream* output) {
-    WireFormatLite::WriteTag(field_number,
-                             WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
-    output->WriteVarint32(GetCachedSize(key, value));
-    KeyTypeHandler::Write(kKeyFieldNumber, key, output);
-    ValueTypeHandler::Write(kValueFieldNumber, value, output);
-  }
+  static uint8* InternalSerialize(int field_number, const Key& key,
+                                  const Value& value, uint8* ptr,
+                                  io::EpsCopyOutputStream* stream) {
+    stream->EnsureSpace(&ptr);
+    ptr = WireFormatLite::WriteTagToArray(
+        field_number, WireFormatLite::WIRETYPE_LENGTH_DELIMITED, ptr);
+    ptr = io::CodedOutputStream::WriteVarint32ToArray(GetCachedSize(key, value),
+                                                      ptr);
 
-  static ::google::protobuf::uint8* SerializeToArray(int field_number, const Key& key,
-                                   const Value& value, ::google::protobuf::uint8* output) {
-    output = WireFormatLite::WriteTagToArray(
-        field_number, WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
-    output = io::CodedOutputStream::WriteVarint32ToArray(
-        static_cast<uint32>(GetCachedSize(key, value)), output);
-    output = KeyTypeHandler::WriteToArray(kKeyFieldNumber, key, output);
-    output = ValueTypeHandler::WriteToArray(kValueFieldNumber, value, output);
-    return output;
+    ptr = KeyTypeHandler::Write(kKeyFieldNumber, key, ptr, stream);
+    return ValueTypeHandler::Write(kValueFieldNumber, value, ptr, stream);
   }
 
   static size_t ByteSizeLong(const Key& key, const Value& value) {
@@ -324,16 +316,10 @@ class MapEntryImpl : public Base {
     return size;
   }
 
-  void SerializeWithCachedSizes(io::CodedOutputStream* output) const override {
-    KeyTypeHandler::Write(kKeyFieldNumber, key(), output);
-    ValueTypeHandler::Write(kValueFieldNumber, value(), output);
-  }
-
   ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
-      ::google::protobuf::uint8* output) const override {
-    output = KeyTypeHandler::WriteToArray(kKeyFieldNumber, key(), output);
-    output = ValueTypeHandler::WriteToArray(kValueFieldNumber, value(), output);
-    return output;
+      ::google::protobuf::uint8* ptr, io::EpsCopyOutputStream* stream) const override {
+    ptr = KeyTypeHandler::Write(kKeyFieldNumber, key(), ptr, stream);
+    return ValueTypeHandler::Write(kValueFieldNumber, value(), ptr, stream);
   }
 
   // Don't override SerializeWithCachedSizesToArray.  Use MessageLite's.

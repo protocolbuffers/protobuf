@@ -185,7 +185,6 @@ class PROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
   util::Status RenderPacked(const google::protobuf::Field* field,
                               ObjectWriter* ow) const;
 
-
   // Renders a google.protobuf.Timestamp value to ObjectWriter
   static util::Status RenderTimestamp(const ProtoStreamObjectSource* os,
                                         const google::protobuf::Type& type,

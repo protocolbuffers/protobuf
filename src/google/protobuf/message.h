@@ -304,7 +304,8 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   bool MergePartialFromCodedStream(io::CodedInputStream* input) override;
 #endif
   size_t ByteSizeLong() const override;
-  void SerializeWithCachedSizes(io::CodedOutputStream* output) const override;
+  uint8* InternalSerializeWithCachedSizesToArray(
+      uint8* target, io::EpsCopyOutputStream* stream) const override;
 
  private:
   // This is called only by the default implementation of ByteSize(), to

@@ -375,14 +375,6 @@ inline bool HasGenericServices(const FileDescriptor* file,
          file->options().cc_generic_services();
 }
 
-// Should we generate a separate, super-optimized code path for serializing to
-// flat arrays?  We don't do this in Lite mode because we'd rather reduce code
-// size.
-inline bool HasFastArraySerialization(const FileDescriptor* file,
-                                      const Options& options) {
-  return GetOptimizeFor(file, options) == FileOptions::SPEED;
-}
-
 inline bool IsProto2MessageSet(const Descriptor* descriptor,
                                const Options& options) {
   return !options.opensource_runtime &&

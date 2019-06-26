@@ -81,6 +81,7 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
   } else {
     (*variables)["set_hasbit_io"] = "";
   }
+  (*variables)["annotate_accessor"] = "";
 
   // These variables are placeholders to pick out the beginning and ends of
   // identifiers for annotations (when doing so with existing variables would

@@ -56,11 +56,6 @@
 
 namespace google {
 namespace protobuf {
-namespace io {
-class CodedInputStream;     // coded_stream.h
-class CodedOutputStream;    // coded_stream.h
-class ZeroCopyInputStream;  // zero_copy_stream.h
-}  // namespace io
 namespace internal {
 class InternalMetadataWithArena;  // metadata.h
 class WireFormat;                 // wire_format.h
@@ -256,10 +251,14 @@ class PROTOBUF_EXPORT UnknownField {
   // These methods can take advantage of the underlying implementation and may
   // archieve a better performance than using getters to retrieve the data and
   // do the serialization yourself.
-  void SerializeLengthDelimitedNoTag(io::CodedOutputStream* output) const;
-  uint8* SerializeLengthDelimitedNoTagToArray(uint8* target) const;
+  void SerializeLengthDelimitedNoTag(io::CodedOutputStream* output) const {
+    output->SetCur(InternalSerializeLengthDelimitedNoTag(output->Cur(),
+                                                         output->EpsCopy()));
+  }
 
   inline size_t GetLengthDelimitedSize() const;
+  uint8* InternalSerializeLengthDelimitedNoTag(
+      uint8* target, io::EpsCopyOutputStream* stream) const;
 
 
   // If this UnknownField contains a pointer, delete it.

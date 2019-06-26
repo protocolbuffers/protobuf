@@ -527,14 +527,10 @@ const char* Message::_InternalParse(const char* ptr,
 }
 #endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 
-void Message::SerializeWithCachedSizes(io::CodedOutputStream* output) const {
-  const internal::SerializationTable* table =
-      static_cast<const internal::SerializationTable*>(InternalGetTable());
-  if (table == 0) {
-    WireFormat::SerializeWithCachedSizes(*this, GetCachedSize(), output);
-  } else {
-    internal::TableSerialize(*this, table, output);
-  }
+uint8* Message::InternalSerializeWithCachedSizesToArray(
+    uint8* target, io::EpsCopyOutputStream* stream) const {
+  return WireFormat::InternalSerializeWithCachedSizesToArray(*this, target,
+                                                             stream);
 }
 
 size_t Message::ByteSizeLong() const {
