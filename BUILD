@@ -367,11 +367,7 @@ cc_binary(
     srcs = ["tests/file_descriptor_parsenew_fuzzer.cc"],
     copts = CPPOPTS + select({
         "//conditions:default": [],
-        ":fuzz": [
-            "-fsanitize=fuzzer,address",
-            "-fsanitize=fuzzer,memory",
-            "-fsanitize=fuzzer,undefined",
-        ],
+        ":fuzz": ["-fsanitize=fuzzer,address"],
     }),
     defines = select({
         "//conditions:default": [],
