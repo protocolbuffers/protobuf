@@ -271,13 +271,13 @@ void WriteFieldEnumValueAccessorDocComment(io::Printer* printer,
       // Should never happen
       break;
     case LIST_GETTER:
-      printer->Print(" * @return A list containing the enum values for $name$(s).\n",
-                     "name", field->camelcase_name());
+      printer->Print(" * @return A list containing the enum values for "
+                     "$name$(s).\n", "name", field->camelcase_name());
       break;
     case LIST_INDEXED_GETTER:
       printer->Print(" * @param index The index of the value to return.\n");
-      printer->Print(" * @return The enum value of the $name$ at the given index.\n",
-                     "name", field->camelcase_name());
+      printer->Print(" * @return The enum value of the $name$ at the given "
+                     "index.\n", "name", field->camelcase_name());
       break;
     case LIST_INDEXED_SETTER:
       printer->Print(" * @param index The index to set the value at.\n");
@@ -289,8 +289,8 @@ void WriteFieldEnumValueAccessorDocComment(io::Printer* printer,
                      "name", field->camelcase_name());
       break;
     case LIST_MULTI_ADDER:
-      printer->Print(" * @param values The enum values of the $name$(s) to add.\n",
-                     "name", field->camelcase_name());
+      printer->Print(" * @param values The enum values of the $name$(s) to "
+                     "add.\n", "name", field->camelcase_name());
       break;
   }
   if (builder) {
