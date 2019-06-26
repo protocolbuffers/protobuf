@@ -168,6 +168,10 @@ build_golang() {
 use_java() {
   version=$1
   case "$version" in
+    jdk8)
+      export PATH=/usr/lib/jvm/java-8-openjdk-amd64/bin:$PATH
+      export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+      ;;
     jdk7)
       export PATH=/usr/lib/jvm/java-7-openjdk-amd64/bin:$PATH
       export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
@@ -225,6 +229,10 @@ build_java_compatibility() {
   # 3.0.0-beta-4 and the current version.
   cd java/compatibility_tests/v2.5.0
   ./test.sh 3.0.0-beta-4
+}
+build_java_linkage_monitor() {
+  use_java jdk8
+  # TODO(#6303): Call Linkage Monitor
 }
 
 build_objectivec_ios() {
@@ -712,6 +720,7 @@ Usage: $0 { cpp |
             java_jdk7 |
             java_oracle7 |
             java_compatibility |
+            java_linkage_monitor |
             objectivec_ios |
             objectivec_ios_debug |
             objectivec_ios_release |
