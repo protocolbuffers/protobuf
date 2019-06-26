@@ -273,7 +273,8 @@ void ImmutableStringFieldLiteGenerator::GenerateBuilderMembers(
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
 
-  WriteFieldAccessorDocComment(printer, descriptor_, SETTER, true);
+  WriteFieldAccessorDocComment(printer, descriptor_, SETTER,
+                               /* builder */ true);
   printer->Print(variables_,
                  "$deprecation$public Builder ${$set$capitalized_name$$}$(\n"
                  "    java.lang.String value) {\n"
@@ -282,7 +283,8 @@ void ImmutableStringFieldLiteGenerator::GenerateBuilderMembers(
                  "  return this;\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
-  WriteFieldAccessorDocComment(printer, descriptor_, CLEARER, true);
+  WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
+                               /* builder */ true);
   printer->Print(
       variables_,
       "$deprecation$public Builder ${$clear$capitalized_name$$}$() {\n"
@@ -292,7 +294,8 @@ void ImmutableStringFieldLiteGenerator::GenerateBuilderMembers(
       "}\n");
   printer->Annotate("{", "}", descriptor_);
 
-  WriteFieldStringBytesAccessorDocComment(printer, descriptor_, SETTER, true);
+  WriteFieldStringBytesAccessorDocComment(printer, descriptor_, SETTER,
+                               /* builder */ true);
   printer->Print(
       variables_,
       "$deprecation$public Builder ${$set$capitalized_name$Bytes$}$(\n"
@@ -451,7 +454,8 @@ void ImmutableStringOneofFieldLiteGenerator::GenerateBuilderMembers(
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
 
-  WriteFieldAccessorDocComment(printer, descriptor_, SETTER, true);
+  WriteFieldAccessorDocComment(printer, descriptor_, SETTER,
+                               /* builder */ true);
   printer->Print(variables_,
                  "$deprecation$public Builder ${$set$capitalized_name$$}$(\n"
                  "    java.lang.String value) {\n"
@@ -460,7 +464,8 @@ void ImmutableStringOneofFieldLiteGenerator::GenerateBuilderMembers(
                  "  return this;\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
-  WriteFieldAccessorDocComment(printer, descriptor_, CLEARER, true);
+  WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
+                               /* builder */ true);
   printer->Print(
       variables_,
       "$deprecation$public Builder ${$clear$capitalized_name$$}$() {\n"
@@ -470,7 +475,8 @@ void ImmutableStringOneofFieldLiteGenerator::GenerateBuilderMembers(
       "}\n");
   printer->Annotate("{", "}", descriptor_);
 
-  WriteFieldStringBytesAccessorDocComment(printer, descriptor_, SETTER);
+  WriteFieldStringBytesAccessorDocComment(printer, descriptor_, SETTER,
+                               /* builder */ true);
   printer->Print(
       variables_,
       "$deprecation$public Builder ${$set$capitalized_name$Bytes$}$(\n"
@@ -651,7 +657,8 @@ void RepeatedImmutableStringFieldLiteGenerator::GenerateBuilderMembers(
                  "  return instance.get$capitalized_name$Bytes(index);\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
-  WriteFieldAccessorDocComment(printer, descriptor_, LIST_INDEXED_SETTER, true);
+  WriteFieldAccessorDocComment(printer, descriptor_, LIST_INDEXED_SETTER,
+                               /* builder */ true);
   printer->Print(variables_,
                  "$deprecation$public Builder ${$set$capitalized_name$$}$(\n"
                  "    int index, java.lang.String value) {\n"
@@ -660,7 +667,8 @@ void RepeatedImmutableStringFieldLiteGenerator::GenerateBuilderMembers(
                  "  return this;\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
-  WriteFieldAccessorDocComment(printer, descriptor_, LIST_ADDER);
+  WriteFieldAccessorDocComment(printer, descriptor_, LIST_ADDER,
+                               /* builder */ true);
   printer->Print(variables_,
                  "$deprecation$public Builder ${$add$capitalized_name$$}$(\n"
                  "    java.lang.String value) {\n"
@@ -669,7 +677,8 @@ void RepeatedImmutableStringFieldLiteGenerator::GenerateBuilderMembers(
                  "  return this;\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
-  WriteFieldAccessorDocComment(printer, descriptor_, LIST_MULTI_ADDER, true);
+  WriteFieldAccessorDocComment(printer, descriptor_, LIST_MULTI_ADDER,
+                               /* builder */ true);
   printer->Print(variables_,
                  "$deprecation$public Builder ${$addAll$capitalized_name$$}$(\n"
                  "    java.lang.Iterable<java.lang.String> values) {\n"
@@ -678,7 +687,8 @@ void RepeatedImmutableStringFieldLiteGenerator::GenerateBuilderMembers(
                  "  return this;\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
-  WriteFieldAccessorDocComment(printer, descriptor_, CLEARER, true);
+  WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
+                               /* builder */ true);
   printer->Print(
       variables_,
       "$deprecation$public Builder ${$clear$capitalized_name$$}$() {\n"
@@ -689,7 +699,7 @@ void RepeatedImmutableStringFieldLiteGenerator::GenerateBuilderMembers(
   printer->Annotate("{", "}", descriptor_);
 
   WriteFieldStringBytesAccessorDocComment(printer, descriptor_, LIST_ADDER,
-                                          true);
+                                          /* builder */ true);
   printer->Print(
       variables_,
       "$deprecation$public Builder ${$add$capitalized_name$Bytes$}$(\n"

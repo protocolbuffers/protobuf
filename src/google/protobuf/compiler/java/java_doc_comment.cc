@@ -280,7 +280,7 @@ void WriteFieldEnumValueAccessorDocComment(io::Printer* printer,
                      "name", field->camelcase_name());
       break;
     case LIST_INDEXED_SETTER:
-      printer->Print(" * @param index The index of the value to return.\n");
+      printer->Print(" * @param index The index to set the value at.\n");
       printer->Print(" * @param value The enum value of the $name$ to set.\n",
                      "name", field->camelcase_name());
       break;
@@ -336,7 +336,7 @@ void WriteFieldStringBytesAccessorDocComment(io::Printer* printer,
                      "name", field->camelcase_name());
       break;
     case LIST_INDEXED_SETTER:
-      printer->Print(" * @param index The index of the value to return.\n");
+      printer->Print(" * @param index The index to set the value at.\n");
       printer->Print(" * @param value The bytes of the $name$ to set.\n",
                      "name", field->camelcase_name());
       break;
