@@ -66,7 +66,7 @@ RUN apt-get clean && apt-get update && apt-get install -y --force-yes \
   openjdk-7-jdk \
   # -- For java_oracle7 -- \
   oracle-java7-installer \
-  # -- For java_linkage_monitor
+  # -- For java_linkage_monitor \
   openjdk-8-jdk \
   # -- For python / python_cpp -- \
   python-setuptools \
