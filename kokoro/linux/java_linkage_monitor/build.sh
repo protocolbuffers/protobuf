@@ -10,7 +10,9 @@
 # Change to repo root
 cd $(dirname $0)/../../..
 
-export DOCKERFILE_DIR=kokoro/linux/64-bit
+export DOCKERHUB_ORGANIZATION=protobuftesting
+# The image of the Dockerfile sha1 is fetched from the organization
+export DOCKERFILE_DIR=kokoro/linux/dockerfile/test/java_stretch
 export DOCKER_RUN_SCRIPT=kokoro/linux/pull_request_in_docker.sh
 export OUTPUT_DIR=testoutput
 export TEST_SET="java_linkage_monitor"
