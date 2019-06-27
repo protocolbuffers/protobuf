@@ -439,6 +439,8 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
     printer->Print(
         vars,
         "/**\n"
+        " * @param value The number of the enum to look for.\n"
+        " * @return The enum associated with the given number.\n"
         " * @deprecated Use {@link #forNumber(int)} instead.\n"
         " */\n"
         "@java.lang.Deprecated\n"

@@ -156,16 +156,16 @@ int ImmutableEnumFieldGenerator::GetNumBitsForBuilder() const {
 void ImmutableEnumFieldGenerator::GenerateInterfaceMembers(
     io::Printer* printer) const {
   if (SupportFieldPresence(descriptor_->file())) {
-    WriteFieldDocComment(printer, descriptor_);
+    WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
     printer->Print(variables_,
                    "$deprecation$boolean has$capitalized_name$();\n");
   }
   if (SupportUnknownEnumValue(descriptor_->file())) {
-    WriteFieldDocComment(printer, descriptor_);
+    WriteFieldEnumValueAccessorDocComment(printer, descriptor_, GETTER);
     printer->Print(variables_,
                    "$deprecation$int get$capitalized_name$Value();\n");
   }
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldAccessorDocComment(printer, descriptor_, GETTER);
   printer->Print(variables_, "$deprecation$$type$ get$capitalized_name$();\n");
 }
 
@@ -173,7 +173,7 @@ void ImmutableEnumFieldGenerator::GenerateMembers(io::Printer* printer) const {
   printer->Print(variables_, "private int $name$_;\n");
   PrintExtraFieldInfo(variables_, printer);
   if (SupportFieldPresence(descriptor_->file())) {
-    WriteFieldDocComment(printer, descriptor_);
+    WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
     printer->Print(
         variables_,
         "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
@@ -182,7 +182,7 @@ void ImmutableEnumFieldGenerator::GenerateMembers(io::Printer* printer) const {
     printer->Annotate("{", "}", descriptor_);
   }
   if (SupportUnknownEnumValue(descriptor_->file())) {
-    WriteFieldDocComment(printer, descriptor_);
+    WriteFieldEnumValueAccessorDocComment(printer, descriptor_, GETTER);
     printer->Print(
         variables_,
         "$deprecation$public int ${$get$capitalized_name$Value$}$() {\n"
@@ -190,7 +190,7 @@ void ImmutableEnumFieldGenerator::GenerateMembers(io::Printer* printer) const {
         "}\n");
     printer->Annotate("{", "}", descriptor_);
   }
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldAccessorDocComment(printer, descriptor_, GETTER);
   printer->Print(variables_,
                  "$deprecation$public $type$ ${$get$capitalized_name$$}$() {\n"
                  "  @SuppressWarnings(\"deprecation\")\n"
@@ -204,7 +204,7 @@ void ImmutableEnumFieldGenerator::GenerateBuilderMembers(
     io::Printer* printer) const {
   printer->Print(variables_, "private int $name$_ = $default_number$;\n");
   if (SupportFieldPresence(descriptor_->file())) {
-    WriteFieldDocComment(printer, descriptor_);
+    WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
     printer->Print(
         variables_,
         "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
@@ -213,14 +213,15 @@ void ImmutableEnumFieldGenerator::GenerateBuilderMembers(
     printer->Annotate("{", "}", descriptor_);
   }
   if (SupportUnknownEnumValue(descriptor_->file())) {
-    WriteFieldDocComment(printer, descriptor_);
+    WriteFieldEnumValueAccessorDocComment(printer, descriptor_, GETTER);
     printer->Print(
         variables_,
         "$deprecation$public int ${$get$capitalized_name$Value$}$() {\n"
         "  return $name$_;\n"
         "}\n");
     printer->Annotate("{", "}", descriptor_);
-    WriteFieldDocComment(printer, descriptor_);
+    WriteFieldEnumValueAccessorDocComment(printer, descriptor_, SETTER,
+                               /* builder */ true);
     printer->Print(variables_,
                    "$deprecation$public Builder "
                    "${$set$capitalized_name$Value$}$(int value) {\n"
@@ -230,7 +231,7 @@ void ImmutableEnumFieldGenerator::GenerateBuilderMembers(
                    "}\n");
     printer->Annotate("{", "}", descriptor_);
   }
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldAccessorDocComment(printer, descriptor_, GETTER);
   printer->Print(variables_,
                  "$deprecation$public $type$ ${$get$capitalized_name$$}$() {\n"
                  "  @SuppressWarnings(\"deprecation\")\n"
@@ -238,7 +239,8 @@ void ImmutableEnumFieldGenerator::GenerateBuilderMembers(
                  "  return result == null ? $unknown$ : result;\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldAccessorDocComment(printer, descriptor_, SETTER,
+                               /* builder */ true);
   printer->Print(variables_,
                  "$deprecation$public Builder "
                  "${$set$capitalized_name$$}$($type$ value) {\n"
@@ -251,7 +253,8 @@ void ImmutableEnumFieldGenerator::GenerateBuilderMembers(
                  "  return this;\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
+                               /* builder */ true);
   printer->Print(
       variables_,
       "$deprecation$public Builder ${$clear$capitalized_name$$}$() {\n"
@@ -385,7 +388,7 @@ void ImmutableEnumOneofFieldGenerator::GenerateMembers(
     io::Printer* printer) const {
   PrintExtraFieldInfo(variables_, printer);
   if (SupportFieldPresence(descriptor_->file())) {
-    WriteFieldDocComment(printer, descriptor_);
+    WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
     printer->Print(
         variables_,
         "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
@@ -394,7 +397,7 @@ void ImmutableEnumOneofFieldGenerator::GenerateMembers(
     printer->Annotate("{", "}", descriptor_);
   }
   if (SupportUnknownEnumValue(descriptor_->file())) {
-    WriteFieldDocComment(printer, descriptor_);
+    WriteFieldEnumValueAccessorDocComment(printer, descriptor_, GETTER);
     printer->Print(
         variables_,
         "$deprecation$public int ${$get$capitalized_name$Value$}$() {\n"
@@ -405,7 +408,7 @@ void ImmutableEnumOneofFieldGenerator::GenerateMembers(
         "}\n");
     printer->Annotate("{", "}", descriptor_);
   }
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldAccessorDocComment(printer, descriptor_, GETTER);
   printer->Print(variables_,
                  "$deprecation$public $type$ ${$get$capitalized_name$$}$() {\n"
                  "  if ($has_oneof_case_message$) {\n"
@@ -422,7 +425,7 @@ void ImmutableEnumOneofFieldGenerator::GenerateMembers(
 void ImmutableEnumOneofFieldGenerator::GenerateBuilderMembers(
     io::Printer* printer) const {
   if (SupportFieldPresence(descriptor_->file())) {
-    WriteFieldDocComment(printer, descriptor_);
+    WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
     printer->Print(
         variables_,
         "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
@@ -431,7 +434,7 @@ void ImmutableEnumOneofFieldGenerator::GenerateBuilderMembers(
     printer->Annotate("{", "}", descriptor_);
   }
   if (SupportUnknownEnumValue(descriptor_->file())) {
-    WriteFieldDocComment(printer, descriptor_);
+    WriteFieldEnumValueAccessorDocComment(printer, descriptor_, GETTER);
     printer->Print(
         variables_,
         "$deprecation$public int ${$get$capitalized_name$Value$}$() {\n"
@@ -441,7 +444,8 @@ void ImmutableEnumOneofFieldGenerator::GenerateBuilderMembers(
         "  return $default_number$;\n"
         "}\n");
     printer->Annotate("{", "}", descriptor_);
-    WriteFieldDocComment(printer, descriptor_);
+    WriteFieldEnumValueAccessorDocComment(printer, descriptor_, SETTER,
+                                          /* builder */ true);
     printer->Print(variables_,
                    "$deprecation$public Builder "
                    "${$set$capitalized_name$Value$}$(int value) {\n"
@@ -452,7 +456,7 @@ void ImmutableEnumOneofFieldGenerator::GenerateBuilderMembers(
                    "}\n");
     printer->Annotate("{", "}", descriptor_);
   }
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldAccessorDocComment(printer, descriptor_, GETTER);
   printer->Print(variables_,
                  "$deprecation$public $type$ ${$get$capitalized_name$$}$() {\n"
                  "  if ($has_oneof_case_message$) {\n"
@@ -464,7 +468,8 @@ void ImmutableEnumOneofFieldGenerator::GenerateBuilderMembers(
                  "  return $default$;\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldAccessorDocComment(printer, descriptor_, SETTER,
+                               /* builder */ true);
   printer->Print(variables_,
                  "$deprecation$public Builder "
                  "${$set$capitalized_name$$}$($type$ value) {\n"
@@ -477,7 +482,8 @@ void ImmutableEnumOneofFieldGenerator::GenerateBuilderMembers(
                  "  return this;\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
+                               /* builder */ true);
   printer->Print(
       variables_,
       "$deprecation$public Builder ${$clear$capitalized_name$$}$() {\n"
@@ -603,22 +609,23 @@ int RepeatedImmutableEnumFieldGenerator::GetNumBitsForBuilder() const {
 
 void RepeatedImmutableEnumFieldGenerator::GenerateInterfaceMembers(
     io::Printer* printer) const {
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldAccessorDocComment(printer, descriptor_, LIST_GETTER);
   printer->Print(
       variables_,
       "$deprecation$java.util.List<$type$> get$capitalized_name$List();\n");
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldAccessorDocComment(printer, descriptor_, LIST_COUNT);
   printer->Print(variables_,
                  "$deprecation$int get$capitalized_name$Count();\n");
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldAccessorDocComment(printer, descriptor_, LIST_INDEXED_GETTER);
   printer->Print(variables_,
                  "$deprecation$$type$ get$capitalized_name$(int index);\n");
   if (SupportUnknownEnumValue(descriptor_->file())) {
-    WriteFieldDocComment(printer, descriptor_);
+    WriteFieldEnumValueAccessorDocComment(printer, descriptor_, LIST_GETTER);
     printer->Print(variables_,
                    "$deprecation$java.util.List<java.lang.Integer>\n"
                    "get$capitalized_name$ValueList();\n");
-    WriteFieldDocComment(printer, descriptor_);
+    WriteFieldEnumValueAccessorDocComment(printer, descriptor_,
+                                          LIST_INDEXED_GETTER);
     printer->Print(variables_,
                    "$deprecation$int get$capitalized_name$Value(int index);\n");
   }
@@ -641,7 +648,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateMembers(
       "          }\n"
       "        };\n");
   PrintExtraFieldInfo(variables_, printer);
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldAccessorDocComment(printer, descriptor_, LIST_GETTER);
   printer->Print(
       variables_,
       "$deprecation$public java.util.List<$type$> "
@@ -650,14 +657,14 @@ void RepeatedImmutableEnumFieldGenerator::GenerateMembers(
       "      java.lang.Integer, $type$>($name$_, $name$_converter_);\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_);
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldAccessorDocComment(printer, descriptor_, LIST_ADDER);
   printer->Print(
       variables_,
       "$deprecation$public int ${$get$capitalized_name$Count$}$() {\n"
       "  return $name$_.size();\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_);
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldAccessorDocComment(printer, descriptor_, LIST_INDEXED_GETTER);
   printer->Print(
       variables_,
       "$deprecation$public $type$ ${$get$capitalized_name$$}$(int index) {\n"
@@ -665,14 +672,15 @@ void RepeatedImmutableEnumFieldGenerator::GenerateMembers(
       "}\n");
   printer->Annotate("{", "}", descriptor_);
   if (SupportUnknownEnumValue(descriptor_->file())) {
-    WriteFieldDocComment(printer, descriptor_);
+    WriteFieldEnumValueAccessorDocComment(printer, descriptor_, LIST_GETTER);
     printer->Print(variables_,
                    "$deprecation$public java.util.List<java.lang.Integer>\n"
                    "${$get$capitalized_name$ValueList$}$() {\n"
                    "  return $name$_;\n"
                    "}\n");
     printer->Annotate("{", "}", descriptor_);
-    WriteFieldDocComment(printer, descriptor_);
+    WriteFieldEnumValueAccessorDocComment(printer, descriptor_,
+                                          LIST_INDEXED_GETTER);
     printer->Print(variables_,
                    "$deprecation$public int "
                    "${$get$capitalized_name$Value$}$(int index) {\n"
@@ -709,7 +717,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
       "  }\n"
       "}\n");
 
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldAccessorDocComment(printer, descriptor_, LIST_GETTER);
   printer->Print(
       variables_,
       // Note:  We return an unmodifiable list because otherwise the caller
@@ -722,21 +730,22 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
       "      java.lang.Integer, $type$>($name$_, $name$_converter_);\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_);
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldAccessorDocComment(printer, descriptor_, LIST_COUNT);
   printer->Print(
       variables_,
       "$deprecation$public int ${$get$capitalized_name$Count$}$() {\n"
       "  return $name$_.size();\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_);
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldAccessorDocComment(printer, descriptor_, LIST_INDEXED_GETTER);
   printer->Print(
       variables_,
       "$deprecation$public $type$ ${$get$capitalized_name$$}$(int index) {\n"
       "  return $name$_converter_.convert($name$_.get(index));\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_);
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldAccessorDocComment(printer, descriptor_, LIST_INDEXED_SETTER,
+                               /* builder */ true);
   printer->Print(variables_,
                  "$deprecation$public Builder ${$set$capitalized_name$$}$(\n"
                  "    int index, $type$ value) {\n"
@@ -749,7 +758,8 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
                  "  return this;\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldAccessorDocComment(printer, descriptor_, LIST_ADDER,
+                               /* builder */ true);
   printer->Print(variables_,
                  "$deprecation$public Builder "
                  "${$add$capitalized_name$$}$($type$ value) {\n"
@@ -762,7 +772,8 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
                  "  return this;\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldAccessorDocComment(printer, descriptor_, LIST_MULTI_ADDER,
+                               /* builder */ true);
   printer->Print(variables_,
                  "$deprecation$public Builder ${$addAll$capitalized_name$$}$(\n"
                  "    java.lang.Iterable<? extends $type$> values) {\n"
@@ -774,7 +785,8 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
                  "  return this;\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
+                               /* builder */ true);
   printer->Print(
       variables_,
       "$deprecation$public Builder ${$clear$capitalized_name$$}$() {\n"
@@ -786,21 +798,24 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
   printer->Annotate("{", "}", descriptor_);
 
   if (SupportUnknownEnumValue(descriptor_->file())) {
-    WriteFieldDocComment(printer, descriptor_);
+    WriteFieldEnumValueAccessorDocComment(printer, descriptor_, LIST_GETTER);
     printer->Print(variables_,
                    "$deprecation$public java.util.List<java.lang.Integer>\n"
                    "${$get$capitalized_name$ValueList$}$() {\n"
                    "  return java.util.Collections.unmodifiableList($name$_);\n"
                    "}\n");
     printer->Annotate("{", "}", descriptor_);
-    WriteFieldDocComment(printer, descriptor_);
+    WriteFieldEnumValueAccessorDocComment(printer, descriptor_,
+                                          LIST_INDEXED_GETTER);
     printer->Print(variables_,
                    "$deprecation$public int "
                    "${$get$capitalized_name$Value$}$(int index) {\n"
                    "  return $name$_.get(index);\n"
                    "}\n");
     printer->Annotate("{", "}", descriptor_);
-    WriteFieldDocComment(printer, descriptor_);
+    WriteFieldEnumValueAccessorDocComment(printer, descriptor_,
+                                          LIST_INDEXED_GETTER,
+                                          /* builder */ true);
     printer->Print(
         variables_,
         "$deprecation$public Builder ${$set$capitalized_name$Value$}$(\n"
@@ -811,7 +826,8 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
         "  return this;\n"
         "}\n");
     printer->Annotate("{", "}", descriptor_);
-    WriteFieldDocComment(printer, descriptor_);
+    WriteFieldEnumValueAccessorDocComment(printer, descriptor_, LIST_ADDER,
+                                          /* builder */ true);
     printer->Print(variables_,
                    "$deprecation$public Builder "
                    "${$add$capitalized_name$Value$}$(int value) {\n"
@@ -821,7 +837,8 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
                    "  return this;\n"
                    "}\n");
     printer->Annotate("{", "}", descriptor_);
-    WriteFieldDocComment(printer, descriptor_);
+    WriteFieldEnumValueAccessorDocComment(printer, descriptor_,
+                                          LIST_MULTI_ADDER, /* builder */ true);
     printer->Print(
         variables_,
         "$deprecation$public Builder ${$addAll$capitalized_name$Value$}$(\n"
