@@ -380,7 +380,7 @@ inline bool WireFormatLite::ReadPackedFixedSizePrimitive(
 #else
     values->Reserve(old_entries + new_entries);
     CType value;
-    for (int i = 0; i < new_entries; ++i) {
+    for (uint32 i = 0; i < new_entries; ++i) {
       if (!ReadPrimitive<CType, DeclaredType>(input, &value)) return false;
       values->AddAlreadyReserved(value);
     }
