@@ -27,9 +27,9 @@ RUN apt-get install -y \
   # -- For all Java builds -- \
   maven \
   # -- For java_jdk7 -- \
-  #openjdk-7-jdk \
+  openjdk-7-jdk \
   # -- For java_oracle7 -- \
-  #oracle-java7-installer \
+  oracle-java7-installer \
   # -- For java_linkage_monitor \
   openjdk-8-jdk \
   && apt-get clean
