@@ -9,7 +9,6 @@ load(
     "make_shell_script",
     "upb_amalgamation",
 )
-
 load(
     "//bazel:upb_proto_library.bzl",
     "upb_proto_library",
@@ -81,23 +80,23 @@ cc_library(
 # give up any backward compatibility guarantees.
 cc_library(
     name = "generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
-    textual_hdrs = [
-        "upb/port_def.inc",
-        "upb/port_undef.inc",
-    ],
     hdrs = [
         "upb/generated_util.h",
         "upb/msg.h",
     ],
-    deps = [":upb"],
     copts = COPTS,
+    textual_hdrs = [
+        "upb/port_def.inc",
+        "upb/port_undef.inc",
+    ],
     visibility = ["//visibility:public"],
+    deps = [":upb"],
 )
 
 upb_proto_library(
     name = "descriptor_upbproto",
-    deps = ["@com_google_protobuf//:descriptor_proto"],
     visibility = ["//visibility:public"],
+    deps = ["@com_google_protobuf//:descriptor_proto"],
 )
 
 cc_library(
@@ -363,12 +362,12 @@ cc_test(
 
 # OSS-Fuzz test
 cc_binary(
-    testonly = 1,
     name = "file_descriptor_parsenew_fuzzer",
+    testonly = 1,
     srcs = ["tests/file_descriptor_parsenew_fuzzer.cc"],
     copts = CPPOPTS + select({
         "//conditions:default": [],
-        ":fuzz": ["-fsanitizer=fuzzer,address"],
+        ":fuzz": ["-fsanitize=fuzzer,address"],
     }),
     defines = select({
         "//conditions:default": [],
