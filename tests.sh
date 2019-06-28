@@ -233,11 +233,22 @@ build_java_compatibility() {
 build_java_linkage_monitor() {
   use_java jdk8
   internal_build_cpp
-  cd java/bom
-  $MVN versions:set -DnextSnapshot=true
+  cd java
+
+  # Example: "3.9.0"
+  VERSION=`grep '<version>' pom.xml |head -1 |perl -nle 'print $1 if m/<version>(\d+\.\d+.\d+)/'`
+  cd bom
+  $MVN versions:set -DnewVersion=${VERSION}-SNAPSHOT
   cd ..
-  $MVN versions:set -DnextSnapshot=true
-  $MVN test && $MVN install
+  $MVN versions:set -DnewVersion=${VERSION}-SNAPSHOT
+  $MVN install -Dmaven.test.skip=true
+
+  # Linkage Monitor
+  JAR=linkage-monitor-latest-all-deps.jar
+  curl -v -O "https://storage.googleapis.com/cloud-opensource-java-linkage-monitor/${JAR}"
+
+  # Fails if there's new linkage errors compared with baseline
+  java -jar $JAR com.google.cloud:libraries-bom
 }
 
 build_objectivec_ios() {
