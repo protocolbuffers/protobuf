@@ -232,7 +232,12 @@ build_java_compatibility() {
 }
 build_java_linkage_monitor() {
   use_java jdk8
-  # TODO(#6303): Call Linkage Monitor
+  internal_build_cpp
+  cd java/bom
+  $MVN versions:set -DnextSnapshot=true
+  cd ..
+  $MVN versions:set -DnextSnapshot=true
+  $MVN test && $MVN install
 }
 
 build_objectivec_ios() {
