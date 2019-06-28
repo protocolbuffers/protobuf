@@ -22,6 +22,10 @@
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+    <DefineConstants>$(DefineConstants);GOOGLE_PROTOBUF_SUPPORT_SYSTEM_MEMORY</DefineConstants>
+  </PropertyGroup>
+
   <!--
     - Override target frameworks on non-Windows to just .NET Core
     - Doing this conditionally in the initial PropertyGroup confuses
