@@ -32,6 +32,7 @@
 
 #include <assert.h>
 #include <algorithm>
+#include <cctype>
 #include <limits>
 #include <map>
 #include <memory>
@@ -2822,13 +2823,65 @@ void Generator::GenerateClassField(const GeneratorOptions& options,
       printer->Annotate("settername", field);
     } else {
       // Otherwise, use the regular setField function.
-      printer->Print(
+      std::string jstype = JSTypeName(options, field, bytes_mode);
+      // for primitives, do a type check to avoid passing incorrect types
+      // an exception is passing null or undefined, as these will clear the field
+      if(IsPrimitive(jstype)) {
+        // if the field is repeated, first check that it is indeed an array type.
+        // for each element in the passed array, check the type of the element.
+        std::string jsTypeWrapper = jstype; // allow conversion for incorrect types via conversion functions (i.e. Number("123"))
+        jsTypeWrapper[0] = toupper(jsTypeWrapper[0]); // all primitive conversion functions start with a capital letter
+
+        if(field->is_repeated()) {
+          printer->Print(
+            "$class$.prototype.$settername$ = function(value) {\n"
+            "  if(value != null) {\n"
+            "    if(Array.isArray(value)) {\n"
+            "      value.forEach((element, index) => {\n"
+            "        if(element != null && typeof element !== '$type$') {\n"
+            "          value[index] = $typewrapper$(element); \n"
+            "        }\n"
+            "      });\n"
+            "    } else {\n"
+            "        throw 'Cannot set field. Must pass an array to set repeated fields.';\n"
+            "    }\n"
+            "  }\n"
+            "  jspb.Message.set$oneoftag$Field(this, $index$",
+            "class", GetMessagePath(options, field->containing_type()),
+            "type",
+            jstype,
+            "typewrapper",
+            jsTypeWrapper,
+            "settername", "set" + JSGetterName(options, field), "oneoftag",
+            (field->containing_oneof() ? "Oneof" : ""), "index",
+            JSFieldIndex(field));
+        } else {
+          // otherwise, just check the type of the singular element passed and convert it if necessary
+          printer->Print(
+            "$class$.prototype.$settername$ = function(value) {\n"
+            "  if(value != null && typeof value  !== '$type$') {\n"
+            "    value = $typewrapper$(value); \n"
+            "  }\n"
+            "  jspb.Message.set$oneoftag$Field(this, $index$",
+            "class", GetMessagePath(options, field->containing_type()),
+            "typewrapper",
+            jsTypeWrapper,
+            "type",
+            jstype,
+            "settername", "set" + JSGetterName(options, field), "oneoftag",
+            (field->containing_oneof() ? "Oneof" : ""), "index",
+            JSFieldIndex(field));
+        }    
+      } else {
+        printer->Print(
           "$class$.prototype.$settername$ = function(value) {\n"
           "  jspb.Message.set$oneoftag$Field(this, $index$",
           "class", GetMessagePath(options, field->containing_type()),
           "settername", "set" + JSGetterName(options, field), "oneoftag",
           (field->containing_oneof() ? "Oneof" : ""), "index",
           JSFieldIndex(field));
+      }
+
       printer->Annotate("settername", field);
       printer->Print(
           "$oneofgroup$, $type$value$rptvalueinit$$typeclose$);$returnvalue$\n"
