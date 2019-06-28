@@ -920,6 +920,37 @@ describe('Message test suite', function() {
     assertBooleanFieldFalse(message.getRepeatedBooleanFieldList()[1]);
   });
 
+  it('testFieldsOfDifferentTypesAreConverted', function() {
+    var assertNan = function(x) {
+        assertTrue(
+            'Expected ' + x + ' (' + goog.typeOf(x) + ') to be NaN.',
+            goog.isNumber(x) && isNaN(x));
+    };
+
+    var assertArrayEqualsWithNan = function(arr1, arr2) {
+        assertTrue('Arrays are not equal. Expected [' + arr2 + '] and got [' + arr1 + ']',
+            arr1.length === arr2.length && arr1.every((element, index) => {
+                return (element === arr2[index]) || (isNaN(element) && isNaN(arr2[index]));
+            })
+        );
+    }
+    
+    var message = new proto.jspb.test.FloatingPointFields;
+
+    message.setOptionalFloatField('123');
+    message.setRequiredFloatField('12a3');
+    message.setRepeatedFloatFieldList(['aaa', '((/2*7u*', '123', '123.456789', 'Infinity']);
+    message.setOptionalDoubleField(true);
+    message.setRequiredDoubleField('-123.0000');
+    message.setRepeatedDoubleFieldList([false, null, 123.456, '5/6'])
+    assertEquals(message.getOptionalFloatField(), 123);
+    assertNan(message.getRequiredFloatField());
+    assertArrayEqualsWithNan(message.getRepeatedFloatFieldList(), [NaN, NaN, 123, 123.456789, Infinity]);
+    assertEquals(message.getOptionalDoubleField(), 1);
+    assertEquals(message.getRequiredDoubleField(), -123);
+    assertArrayEqualsWithNan(message.getRepeatedDoubleFieldList(), [0, 0, 123.456, NaN]);
+  });
+
   it('testExtensionReverseOrder', function() {
     var message2 =
         new proto.jspb.exttest.reverse.TestExtensionReverseOrderMessage2;
