@@ -247,7 +247,6 @@ build_java_linkage_monitor() {
   # Linkage Monitor
   JAR=linkage-monitor-latest-all-deps.jar
   curl -v -O "https://storage.googleapis.com/cloud-opensource-java-linkage-monitor/${JAR}"
-
   # Fails if there's new linkage errors compared with baseline
   java -jar $JAR com.google.cloud:libraries-bom
 }
