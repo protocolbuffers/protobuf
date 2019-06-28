@@ -235,7 +235,8 @@ build_java_linkage_monitor() {
   internal_build_cpp
   cd java
 
-  # Example: "3.9.0"
+  # Set java artifact version with SNAPSHOT. Linkage Monitor works with SNAPSHOT versions.
+  # Example: "3.9.0" (without 'rc')
   VERSION=`grep '<version>' pom.xml |head -1 |perl -nle 'print $1 if m/<version>(\d+\.\d+.\d+)/'`
   cd bom
   $MVN versions:set -DnewVersion=${VERSION}-SNAPSHOT
