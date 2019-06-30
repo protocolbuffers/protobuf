@@ -270,7 +270,7 @@ inline void GOOGLE_UNALIGNED_STORE64(void *p, uint64 v) {
 #define bswap_32(x) OSSwapInt32(x)
 #define bswap_64(x) OSSwapInt64(x)
 
-#elif !defined(__GLIBC__) && !defined(__BIONIC__) && !defined(__CYGWIN__)
+#elif (!defined(__GLIBC__) && !defined(__BIONIC__) && !defined(__CYGWIN__)) || defined(__ANDROID__)
 
 #ifndef bswap_16
 static inline uint16 bswap_16(uint16 x) {
