@@ -244,11 +244,13 @@ build_java_linkage_monitor() {
   cd bom
   $MVN versions:set -DnewVersion=${VERSION}-SNAPSHOT
   cd ..
+  # Linkage Monitor uses $HOME/.m2 local repository
+  MVN="mvn -e -B -Dhttps.protocols=TLSv1.2"
   $MVN versions:set -DnewVersion=${VERSION}-SNAPSHOT
   # Installs the snapshot version locally
   $MVN install -Dmaven.test.skip=true
 
-  # Linkage Monitor uses the snapshot versions to verify compatibility
+  # Linkage Monitor uses the snapshot versions installed in $HOME/.m2 to verify compatibility
   JAR=linkage-monitor-latest-all-deps.jar
   curl -v -O "https://storage.googleapis.com/cloud-opensource-java-linkage-monitor/${JAR}"
   # Fails if there's new linkage errors compared with baseline
