@@ -13,7 +13,7 @@ use Google\Protobuf\Internal\GPBUtil;
 /**
  * Generated from protobuf message <code>google.protobuf.ServiceOptions</code>
  */
-final class ServiceOptions extends \Google\Protobuf\Internal\Message
+class ServiceOptions extends \Google\Protobuf\Internal\Message
 {
     /**
      * Is this service deprecated?

@@ -19,7 +19,7 @@ use Google\Protobuf\Internal\GPBUtil;
  *
  * Generated from protobuf message <code>google.protobuf.EnumDescriptorProto.EnumReservedRange</code>
  */
-final class EnumReservedRange extends \Google\Protobuf\Internal\Message
+class EnumReservedRange extends \Google\Protobuf\Internal\Message
 {
     /**
      * Inclusive.
