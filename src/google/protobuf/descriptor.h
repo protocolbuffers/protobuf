@@ -81,6 +81,7 @@
 #endif
 
 
+namespace unity {
 namespace google {
 namespace protobuf {
 
@@ -2433,6 +2434,7 @@ inline FileDescriptor::Syntax FileDescriptor::syntax() const {
 
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #undef PROTOBUF_INTERNAL_CHECK_CLASS_SIZE
 #include <google/protobuf/port_undef.inc>

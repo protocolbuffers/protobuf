@@ -30,6 +30,7 @@
 
 #include <google/protobuf/util/internal/error_listener.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace util {
@@ -40,3 +41,4 @@ namespace converter {
 }  // namespace util
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

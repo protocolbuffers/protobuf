@@ -62,6 +62,7 @@
 #error "You cannot SWIG proto headers"
 #endif
 
+namespace unity {
 namespace google {
 namespace protobuf {
 
@@ -585,6 +586,7 @@ T* OnShutdownDelete(T* p) {
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #include <google/protobuf/port_undef.inc>
 

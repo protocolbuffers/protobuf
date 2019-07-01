@@ -38,6 +38,7 @@
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/io/printer.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -71,5 +72,6 @@ class ReflectionClassGenerator : public SourceGeneratorBase {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_CSHARP_REFLECTION_CLASS_H__

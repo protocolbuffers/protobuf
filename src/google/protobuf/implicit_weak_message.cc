@@ -39,6 +39,7 @@
 
 PROTOBUF_PRAGMA_INIT_SEG
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace internal {
@@ -68,5 +69,6 @@ const ImplicitWeakMessage* ImplicitWeakMessage::default_instance() {
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #include <google/protobuf/port_undef.inc>

@@ -32,6 +32,7 @@
 
 #include <google/protobuf/util/internal/datapiece.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace util {
@@ -91,3 +92,4 @@ void ObjectWriter::RenderDataPieceTo(const DataPiece& data,
 }  // namespace util
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

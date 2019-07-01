@@ -45,6 +45,7 @@
 #include <google/protobuf/util/internal/json_escaping.h>
 
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace util {
@@ -993,3 +994,4 @@ JsonStreamParser::TokenType JsonStreamParser::GetNextTokenType() {
 }  // namespace util
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

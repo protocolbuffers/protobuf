@@ -34,6 +34,7 @@
 
 #include <google/protobuf/service.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 
@@ -43,3 +44,4 @@ RpcController::~RpcController() {}
 
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

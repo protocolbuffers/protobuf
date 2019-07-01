@@ -41,6 +41,7 @@
 // Must be last.
 #include <google/protobuf/port_def.inc>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -381,5 +382,6 @@ std::string ClassNameResolver::GetDowngradedClassName(
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #include <google/protobuf/port_undef.inc>

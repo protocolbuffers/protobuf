@@ -49,6 +49,7 @@
 #include <iostream>
 #include <fstream>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 
@@ -300,3 +301,4 @@ struct ForceShutdown {
 
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

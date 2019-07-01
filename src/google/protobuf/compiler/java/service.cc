@@ -44,6 +44,7 @@
 // Must be last.
 #include <google/protobuf/port_def.inc>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace compiler {

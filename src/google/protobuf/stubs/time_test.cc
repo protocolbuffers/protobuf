@@ -32,6 +32,7 @@
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace internal {
@@ -259,3 +260,4 @@ TEST(DateTimeTest, ParseString) {
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

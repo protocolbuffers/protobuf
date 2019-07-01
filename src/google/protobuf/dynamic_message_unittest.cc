@@ -54,6 +54,7 @@
 #include <gtest/gtest.h>
 #include <google/protobuf/test_util.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 
@@ -325,3 +326,4 @@ INSTANTIATE_TEST_SUITE_P(UseArena, DynamicMessageTest, ::testing::Bool());
 
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

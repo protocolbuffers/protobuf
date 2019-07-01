@@ -46,6 +46,7 @@
 #include <google/protobuf/compiler/csharp/csharp_options.h>
 #include <google/protobuf/compiler/csharp/csharp_reflection_class.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -328,3 +329,4 @@ void ReflectionClassGenerator::WriteGeneratedCodeInfo(const Descriptor* descript
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

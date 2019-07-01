@@ -58,7 +58,7 @@
 // Must be included last.
 #include <google/protobuf/port_def.inc>
 
-
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace util {
@@ -329,7 +329,7 @@ util::Status ProtoStreamObjectSource::RenderTimestamp(
   }
 
   ow->RenderString(field_name,
-                   ::google::protobuf::internal::FormatTime(seconds, nanos));
+                   ::unity::google::protobuf::internal::FormatTime(seconds, nanos));
 
   return util::Status();
 }
@@ -706,7 +706,7 @@ void ProtoStreamObjectSource::InitRendererMap() {
       &ProtoStreamObjectSource::RenderStructListValue;
   (*renderers_)["google.protobuf.FieldMask"] =
       &ProtoStreamObjectSource::RenderFieldMask;
-  ::google::protobuf::internal::OnShutdown(&DeleteRendererMap);
+  ::unity::google::protobuf::internal::OnShutdown(&DeleteRendererMap);
 }
 
 void ProtoStreamObjectSource::DeleteRendererMap() {
@@ -1112,3 +1112,4 @@ const std::string FormatNanos(uint32_t nanos, bool with_trailing_zeros) {
 }  // namespace util
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

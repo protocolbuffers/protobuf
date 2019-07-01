@@ -49,6 +49,7 @@
 // Must be included last.
 #include <google/protobuf/port_def.inc>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace internal {
@@ -84,3 +85,4 @@ TEST(MapTest, Aligned8OnArena) { MapTest_Aligned<AlignedAs8, true>(); }
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

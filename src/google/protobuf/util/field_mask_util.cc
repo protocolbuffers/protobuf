@@ -39,6 +39,7 @@
 // Must be included last.
 #include <google/protobuf/port_def.inc>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace util {
@@ -718,3 +719,4 @@ bool FieldMaskUtil::TrimMessage(const FieldMask& mask, Message* message,
 }  // namespace util
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

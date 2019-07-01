@@ -35,6 +35,7 @@
 
 #include <google/protobuf/stubs/common.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 class FieldDescriptor;    // descriptor.h
@@ -50,7 +51,9 @@ class Context;             // context.h
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -99,5 +102,6 @@ class ImmutableGeneratorFactory : public GeneratorFactory {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_GENERATOR_FACTORY_H__

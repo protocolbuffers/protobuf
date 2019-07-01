@@ -45,6 +45,7 @@
 // NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
 // error cases, so it seems to be ok to use as a back door for errors.
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -679,3 +680,4 @@ void FileGenerator::PrintFileRuntimePreamble(
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

@@ -46,6 +46,7 @@
 #error "You cannot SWIG proto headers"
 #endif
 
+namespace unity {
 namespace google {
 namespace protobuf {
 class Arena;
@@ -57,7 +58,9 @@ class MapField;
 }
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace internal {
@@ -128,6 +131,7 @@ class MapEntry : public MapEntryImpl<Derived, Message, Key, Value,
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #include <google/protobuf/port_undef.inc>
 

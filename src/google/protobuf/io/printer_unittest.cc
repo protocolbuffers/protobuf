@@ -43,6 +43,7 @@
 #include <gtest/gtest.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace io {
@@ -733,3 +734,4 @@ TEST(Printer, FormatInternal) {
 }  // namespace io
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

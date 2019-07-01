@@ -48,6 +48,7 @@
 #include <google/protobuf/compiler/java/helpers.h>
 #include <google/protobuf/compiler/java/name_resolver.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -1109,3 +1110,4 @@ std::string RepeatedImmutablePrimitiveFieldGenerator::GetBoxedType() const {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

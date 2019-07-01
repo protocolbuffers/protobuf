@@ -36,6 +36,7 @@
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/stubs/strutil.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -186,3 +187,4 @@ RepeatedPrimitiveFieldGenerator::~RepeatedPrimitiveFieldGenerator() {}
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

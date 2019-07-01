@@ -42,6 +42,7 @@
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/status.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace util {
@@ -70,5 +71,6 @@ util::Status DecodeCompactFieldMaskPaths(StringPiece paths,
 }  // namespace util
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #endif  // GOOGLE_PROTOBUF_UTIL_INTERNAL_FIELD_MASK_UTILITY_H__

@@ -44,3 +44,4 @@ namespace util {}
 
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

@@ -156,6 +156,7 @@
 
 #include <google/protobuf/port_def.inc>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace stringpiece_internal {
@@ -384,6 +385,7 @@ using ::google::protobuf::stringpiece_internal::StringPiece;
 
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 GOOGLE_PROTOBUF_HASH_NAMESPACE_DECLARATION_START
 template<> struct hash<StringPiece> {

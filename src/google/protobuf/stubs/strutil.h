@@ -41,6 +41,7 @@
 #include <google/protobuf/port_def.inc>
 #include <vector>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 
@@ -944,6 +945,7 @@ double NoLocaleStrtod(const char* str, char** endptr);
 
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #include <google/protobuf/port_undef.inc>
 

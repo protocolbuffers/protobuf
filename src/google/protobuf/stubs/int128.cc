@@ -38,6 +38,7 @@
 
 #include <google/protobuf/port_def.inc>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 
@@ -189,5 +190,6 @@ std::ostream& operator<<(std::ostream& o, const uint128& b) {
 
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #include <google/protobuf/port_undef.inc>  // NOLINT

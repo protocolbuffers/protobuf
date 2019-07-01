@@ -40,6 +40,7 @@
 #include <google/protobuf/compiler/annotation_test_util.h>
 #include <google/protobuf/compiler/cpp/helpers.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -159,3 +160,4 @@ TEST_F(CppMetadataTest, CapturesMessageNames) {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

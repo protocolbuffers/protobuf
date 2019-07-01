@@ -55,6 +55,7 @@
 #error "You cannot SWIG proto headers"
 #endif
 
+namespace unity {
 namespace google {
 namespace protobuf {
 class DynamicMessage;
@@ -936,6 +937,7 @@ class PROTOBUF_EXPORT MapIterator {
 
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #ifdef _MSC_VER
 #pragma warning(pop)  // restore warning C4265

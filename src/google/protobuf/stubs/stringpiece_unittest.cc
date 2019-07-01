@@ -39,6 +39,7 @@
 #include <google/protobuf/stubs/hash.h>
 #include <gtest/gtest.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace {
@@ -693,3 +694,4 @@ TEST(NonNegativeLenTest, NonNegativeLen) {
 }  // namespace
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

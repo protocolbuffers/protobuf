@@ -38,6 +38,7 @@
 
 using UNITTEST::TestAllTypes;
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace {
@@ -147,3 +148,4 @@ TEST(LITE_TEST_NAME, OneofHazzers) {
 }  // namespace
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

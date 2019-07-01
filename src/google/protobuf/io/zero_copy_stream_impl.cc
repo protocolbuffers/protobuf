@@ -50,6 +50,7 @@
 #include <google/protobuf/stubs/stl_util.h>
 
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace io {
@@ -370,3 +371,4 @@ int64_t ConcatenatingInputStream::ByteCount() const {
 }  // namespace io
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

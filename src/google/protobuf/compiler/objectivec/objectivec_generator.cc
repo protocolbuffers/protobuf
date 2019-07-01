@@ -39,6 +39,7 @@
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/stubs/strutil.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -299,3 +300,4 @@ bool ObjectiveCGenerator::GenerateAll(
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

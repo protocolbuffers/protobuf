@@ -50,6 +50,7 @@
 
 #include <google/protobuf/stubs/strutil.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -210,3 +211,4 @@ bool JavaGenerator::Generate(const FileDescriptor* file,
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

@@ -55,6 +55,7 @@
 // Must be included last.
 #include <google/protobuf/port_def.inc>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace util {
@@ -383,6 +384,7 @@ class PROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
 }  // namespace util
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #include <google/protobuf/port_undef.inc>
 

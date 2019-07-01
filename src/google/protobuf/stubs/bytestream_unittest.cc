@@ -37,6 +37,7 @@
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace strings {
@@ -144,3 +145,4 @@ TEST(ByteSinkTest, Flush) {
 }  // namespace strings
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

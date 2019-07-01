@@ -41,6 +41,7 @@
 #include <google/protobuf/compiler/cpp/helpers.h>
 #include <google/protobuf/descriptor.pb.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -191,3 +192,4 @@ void ExtensionGenerator::GenerateDefinition(io::Printer* printer) {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

@@ -67,6 +67,7 @@
 #error "You cannot SWIG proto headers"
 #endif
 
+namespace unity {
 namespace google {
 namespace protobuf {
 
@@ -1213,6 +1214,7 @@ extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE RepeatedIterator<double>;
 
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #include <google/protobuf/port_undef.inc>
 

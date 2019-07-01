@@ -88,6 +88,7 @@
 // Must be included last.
 #include <google/protobuf/port_def.inc>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 
@@ -822,5 +823,6 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
 
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #include <google/protobuf/port_undef.inc>  // NOLINT

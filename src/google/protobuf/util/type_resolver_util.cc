@@ -44,6 +44,7 @@
 #include <google/protobuf/port_def.inc>
 // clang-format on
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace util {
@@ -368,3 +369,4 @@ TypeResolver* NewTypeResolverForDescriptorPool(const std::string& url_prefix,
 }  // namespace util
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

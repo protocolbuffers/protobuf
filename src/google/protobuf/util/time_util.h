@@ -56,6 +56,7 @@ struct timeval {
 // Must be included last.
 #include <google/protobuf/port_def.inc>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace util {
@@ -168,7 +169,9 @@ class PROTOBUF_EXPORT TimeUtil {
 }  // namespace util
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
+namespace unity {
 namespace google {
 namespace protobuf {
 // Overloaded operators for Duration.
@@ -308,6 +311,7 @@ inline std::ostream& operator<<(std::ostream& out, const Timestamp& t) {
 
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #include <google/protobuf/port_undef.inc>
 

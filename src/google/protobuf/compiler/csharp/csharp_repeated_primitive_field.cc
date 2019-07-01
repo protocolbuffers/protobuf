@@ -41,6 +41,7 @@
 #include <google/protobuf/compiler/csharp/csharp_helpers.h>
 #include <google/protobuf/compiler/csharp/csharp_repeated_primitive_field.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -143,3 +144,4 @@ void RepeatedPrimitiveFieldGenerator::GenerateExtensionCode(io::Printer* printer
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

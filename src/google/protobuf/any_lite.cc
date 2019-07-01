@@ -34,6 +34,7 @@
 #include <google/protobuf/arenastring.h>
 #include <google/protobuf/generated_message_util.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace internal {
@@ -94,3 +95,4 @@ bool ParseAnyTypeUrl(StringPiece type_url, std::string* full_type_name) {
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

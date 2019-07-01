@@ -54,6 +54,7 @@
 #error "You cannot SWIG proto headers"
 #endif
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace internal {
@@ -68,7 +69,9 @@ class MapFieldLite;
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace internal {
@@ -190,7 +193,7 @@ class MapEntryImpl : public Base {
   std::string GetTypeName() const override { return ""; }
 
   void CheckTypeAndMergeFrom(const MessageLite& other) override {
-    MergeFromInternal(*::google::protobuf::internal::DownCast<const Derived*>(&other));
+    MergeFromInternal(*::unity::google::protobuf::internal::DownCast<const Derived*>(&other));
   }
 
   const char* _InternalParse(const char* ptr, ParseContext* ctx) final {
@@ -557,6 +560,7 @@ class MapSorterPtr {
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #include <google/protobuf/port_undef.inc>
 

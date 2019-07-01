@@ -48,6 +48,7 @@
 #include <google/protobuf/io/io_win32.h>
 #include <google/protobuf/stubs/logging.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 
@@ -213,3 +214,4 @@ bool File::ChangeWorkingDirectory(const std::string& new_working_directory) {
 
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

@@ -40,6 +40,7 @@
 
 #include <google/protobuf/stubs/common.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 class FieldDescriptor;  // descriptor.h
@@ -54,7 +55,9 @@ class Printer;  // printer.h
 }
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -111,5 +114,6 @@ class ImmutableExtensionGenerator : public ExtensionGenerator {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_EXTENSION_H__

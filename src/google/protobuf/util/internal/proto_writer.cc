@@ -50,6 +50,7 @@
 // Must be included last.
 #include <google/protobuf/port_def.inc>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace util {
@@ -825,3 +826,4 @@ void ProtoWriter::WriteTag(const google::protobuf::Field& field) {
 }  // namespace util
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

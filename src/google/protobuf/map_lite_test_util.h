@@ -33,6 +33,7 @@
 
 #include <google/protobuf/map_lite_unittest.pb.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 
@@ -76,5 +77,6 @@ class MapLiteTestUtil {
 
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #endif  // GOOGLE_PROTOBUF_MAP_LITE_TEST_UTIL_H__

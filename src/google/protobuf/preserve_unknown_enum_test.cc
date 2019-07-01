@@ -35,6 +35,7 @@
 #include <google/protobuf/dynamic_message.h>
 #include <gtest/gtest.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace {
@@ -288,3 +289,4 @@ TEST(PreserveUnknownEnumTest, SupportsUnknownEnumValuesAPI) {
 }
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

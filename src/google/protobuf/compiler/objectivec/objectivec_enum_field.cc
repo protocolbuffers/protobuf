@@ -35,6 +35,7 @@
 #include <google/protobuf/compiler/objectivec/objectivec_helpers.h>
 #include <google/protobuf/io/printer.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -149,3 +150,4 @@ void RepeatedEnumFieldGenerator::FinishInitialization(void) {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

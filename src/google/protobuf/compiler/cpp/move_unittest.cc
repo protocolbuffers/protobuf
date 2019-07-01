@@ -37,6 +37,7 @@
 #include <type_traits>
 #endif
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -167,3 +168,4 @@ TEST(MovableMessageTest, Noexcept) {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

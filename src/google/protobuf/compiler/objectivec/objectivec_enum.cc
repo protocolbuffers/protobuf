@@ -37,6 +37,7 @@
 #include <google/protobuf/stubs/strutil.h>
 #include <algorithm> // std::find()
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -258,3 +259,4 @@ void EnumGenerator::GenerateSource(io::Printer* printer) {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

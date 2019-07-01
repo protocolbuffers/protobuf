@@ -32,6 +32,7 @@
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 #include <gtest/gtest.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -382,3 +383,4 @@ TEST(ObjCHelper, ParseSimple_RejectLinesNoMessage) {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

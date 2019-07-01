@@ -57,13 +57,16 @@
 // Must be included last.
 #include <google/protobuf/port_def.inc>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 class MapKey;           // map_field.h
 class UnknownFieldSet;  // unknown_field_set.h
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace internal {
@@ -408,6 +411,7 @@ uint8_t* SerializeMapKeyWithCachedSizes(const FieldDescriptor* field,
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #include <google/protobuf/port_undef.inc>
 

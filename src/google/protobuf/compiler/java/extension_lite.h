@@ -37,6 +37,7 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/compiler/java/extension.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -71,5 +72,6 @@ class ImmutableExtensionLiteGenerator : public ExtensionGenerator {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_EXTENSION_LITE_H__

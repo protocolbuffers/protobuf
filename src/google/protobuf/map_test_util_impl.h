@@ -38,6 +38,7 @@
 
 namespace protobuf_unittest {}  // namespace protobuf_unittest
 
+namespace unity {
 namespace google {
 namespace protobuf {
 
@@ -472,5 +473,6 @@ void MapTestUtilImpl::ExpectMapFieldsModified(const MapMessage& message) {
 
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #endif  // GOOGLE_PROTOBUF_MAP_TEST_UTIL_IMPL_H__

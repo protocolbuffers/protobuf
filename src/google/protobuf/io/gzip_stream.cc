@@ -41,6 +41,7 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace io {
@@ -330,5 +331,6 @@ bool GzipOutputStream::Close() {
 }  // namespace io
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #endif  // HAVE_ZLIB

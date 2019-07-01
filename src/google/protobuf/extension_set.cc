@@ -54,6 +54,8 @@
 // clang-format off
 #include <google/protobuf/port_def.inc>  // must be last.
 // clang-format on
+
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace internal {
@@ -1963,5 +1965,6 @@ LazyEagerVerifyFnType FindExtensionLazyEagerVerifyFn(
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #include <google/protobuf/port_undef.inc>

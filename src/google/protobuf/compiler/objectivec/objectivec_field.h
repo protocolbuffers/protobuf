@@ -36,6 +36,7 @@
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/io/printer.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -186,5 +187,6 @@ class FieldGeneratorMap {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_FIELD_H__

@@ -36,6 +36,7 @@
 #include <google/protobuf/util/internal/error_listener.h>
 #include <google/protobuf/util/internal/location_tracker.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace util {
@@ -64,5 +65,6 @@ class MockErrorListener : public ErrorListener {
 }  // namespace util
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #endif  // GOOGLE_PROTOBUF_UTIL_INTERNAL_MOCK_ERROR_LISTENER_H__

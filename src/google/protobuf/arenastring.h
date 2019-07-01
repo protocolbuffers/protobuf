@@ -50,6 +50,7 @@
 #endif
 
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace internal {
@@ -474,6 +475,7 @@ inline std::string* ArenaStringPtr::UnsafeMutablePointer() {
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #include <google/protobuf/port_undef.inc>
 

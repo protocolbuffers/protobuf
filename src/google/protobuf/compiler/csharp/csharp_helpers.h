@@ -45,6 +45,7 @@
 
 #include <google/protobuf/port_def.inc>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -192,6 +193,7 @@ inline bool RequiresPresenceBit(const FieldDescriptor* descriptor) {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #include <google/protobuf/port_undef.inc>
 

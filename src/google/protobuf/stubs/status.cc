@@ -34,6 +34,7 @@
 #include <string>
 #include <utility>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace util {
@@ -260,3 +261,4 @@ Status UnknownError(StringPiece message) {
 }  // namespace util
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

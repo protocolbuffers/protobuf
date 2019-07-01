@@ -36,6 +36,7 @@
 
 #include <google/protobuf/stubs/common.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 
@@ -103,5 +104,6 @@ class File {
 
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #endif  // GOOGLE_PROTOBUF_TESTING_FILE_H__

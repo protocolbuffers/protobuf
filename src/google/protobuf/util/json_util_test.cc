@@ -45,6 +45,7 @@
 #include <google/protobuf/util/type_resolver.h>
 #include <google/protobuf/util/type_resolver_util.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace util {
@@ -670,3 +671,4 @@ TEST_F(JsonUtilTest, HtmlEscape) {
 }  // namespace util
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

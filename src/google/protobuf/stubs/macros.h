@@ -31,6 +31,7 @@
 #ifndef GOOGLE_PROTOBUF_MACROS_H__
 #define GOOGLE_PROTOBUF_MACROS_H__
 
+namespace unity {
 namespace google {
 namespace protobuf {
 
@@ -89,5 +90,6 @@ namespace protobuf {
 
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #endif  // GOOGLE_PROTOBUF_MACROS_H__

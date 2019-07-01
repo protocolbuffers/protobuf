@@ -59,6 +59,7 @@
 // Must be last.
 #include <google/protobuf/port_def.inc>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -999,5 +1000,6 @@ void ImmutableMessageLiteGenerator::GenerateKotlinExtensions(
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #include <google/protobuf/port_undef.inc>

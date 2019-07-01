@@ -10,6 +10,7 @@
 // ===================================================================
 // emulates google3/base/callback.h
 
+namespace unity {
 namespace google {
 namespace protobuf {
 
@@ -577,6 +578,7 @@ void PROTOBUF_EXPORT DoNothing();
 
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #include <google/protobuf/port_undef.inc>
 

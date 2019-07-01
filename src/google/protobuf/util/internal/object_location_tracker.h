@@ -36,6 +36,7 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/util/internal/location_tracker.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace util {
@@ -60,5 +61,6 @@ class ObjectLocationTracker : public LocationTrackerInterface {
 }  // namespace util
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #endif  // GOOGLE_PROTOBUF_UTIL_INTERNAL_OBJECT_LOCATION_TRACKER_H__

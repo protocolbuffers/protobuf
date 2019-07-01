@@ -50,6 +50,7 @@
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/strutil.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -546,3 +547,4 @@ TEST_F(DiskSourceTreeTest, VirtualFileToDiskFile) {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

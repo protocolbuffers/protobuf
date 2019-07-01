@@ -40,6 +40,7 @@
 
 #include <string>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 
@@ -97,4 +98,5 @@ std::string CapitalizedFieldName(const FieldDescriptor* descriptor);
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 #endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_NAMES_H__

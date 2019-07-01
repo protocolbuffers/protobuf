@@ -36,6 +36,7 @@
 #include <google/protobuf/port_def.inc>
 #include <type_traits>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace internal {
@@ -132,6 +133,7 @@ using internal::bit_cast;
 
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #include <google/protobuf/port_undef.inc>
 

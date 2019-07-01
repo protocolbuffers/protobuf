@@ -62,6 +62,7 @@
 #error "You cannot SWIG proto headers"
 #endif
 
+namespace unity {
 namespace google {
 namespace protobuf {
 class Arena;
@@ -79,7 +80,9 @@ enum class LazyVerifyOption;
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace internal {
@@ -1555,6 +1558,7 @@ void LinkExtensionReflection(
 
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #include <google/protobuf/port_undef.inc>
 

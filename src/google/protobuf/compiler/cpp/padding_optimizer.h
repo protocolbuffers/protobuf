@@ -37,6 +37,7 @@
 
 #include <google/protobuf/compiler/cpp/message_layout_helper.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -61,5 +62,6 @@ class PaddingOptimizer : public MessageLayoutHelper {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_CPP_PADDING_OPTIMIZER_H__

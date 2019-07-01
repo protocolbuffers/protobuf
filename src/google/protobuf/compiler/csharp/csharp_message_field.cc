@@ -44,6 +44,7 @@
 #include <google/protobuf/compiler/csharp/csharp_message_field.h>
 #include <google/protobuf/compiler/csharp/csharp_options.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -291,3 +292,4 @@ void MessageOneofFieldGenerator::GenerateCloningCode(io::Printer* printer) {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

@@ -123,6 +123,7 @@
 #error "Protobuf requires at least C++11."
 #endif
 
+namespace unity {
 namespace google {
 namespace protobuf {
 
@@ -407,6 +408,7 @@ class BigEndian {
 
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #include <google/protobuf/port_undef.inc>
 

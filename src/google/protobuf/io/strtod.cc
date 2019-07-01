@@ -40,6 +40,7 @@
 
 #include <google/protobuf/stubs/strutil.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace io {
@@ -80,3 +81,4 @@ double NoLocaleStrtod(const char* str, char** endptr) {
 }  // namespace io
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

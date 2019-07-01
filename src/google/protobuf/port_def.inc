@@ -198,14 +198,16 @@
 #if defined(PROTOBUF_NAMESPACE) || defined(PROTOBUF_NAMESPACE_ID)
 #error PROTOBUF_NAMESPACE or PROTOBUF_NAMESPACE_ID was previously defined
 #endif
-#define PROTOBUF_NAMESPACE "google::protobuf"
-#define PROTOBUF_NAMESPACE_ID google::protobuf
+#define PROTOBUF_NAMESPACE "unity::google::protobuf"
+#define PROTOBUF_NAMESPACE_ID unity::google::protobuf
 #define PROTOBUF_NAMESPACE_OPEN \
+  namespace unity {             \
   namespace google {            \
   namespace protobuf {
 #define PROTOBUF_NAMESPACE_CLOSE \
   } /* namespace protobuf */     \
   } /* namespace google */
+  } /* namespace unity */
 
 #ifdef PROTOBUF_ALWAYS_INLINE
 #error PROTOBUF_ALWAYS_INLINE was previously defined

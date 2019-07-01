@@ -48,6 +48,7 @@
 using proto3_arena_unittest::ForeignMessage;
 using proto3_arena_unittest::TestAllTypes;
 
+namespace unity {
 namespace google {
 namespace protobuf {
 
@@ -633,3 +634,4 @@ TEST(Proto3OptionalTest, PlainFields) {
 }  // namespace
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

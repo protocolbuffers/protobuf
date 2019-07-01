@@ -38,6 +38,7 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -65,5 +66,6 @@ class ZipWriter {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_ZIP_WRITER_H__

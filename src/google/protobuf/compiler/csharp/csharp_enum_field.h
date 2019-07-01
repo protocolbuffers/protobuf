@@ -34,6 +34,7 @@
 #include <google/protobuf/compiler/code_generator.h>
 #include <google/protobuf/compiler/csharp/csharp_primitive_field.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -76,6 +77,7 @@ class EnumOneofFieldGenerator : public PrimitiveOneofFieldGenerator {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_CSHARP_ENUM_FIELD_H__
 

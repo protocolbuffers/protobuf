@@ -49,6 +49,7 @@
 #include <google/protobuf/port_def.inc>
 // clang-format on
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace util {
@@ -414,3 +415,4 @@ bool SafeStrToFloat(StringPiece str, float* value) {
 }  // namespace util
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

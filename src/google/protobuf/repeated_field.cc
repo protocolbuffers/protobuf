@@ -42,6 +42,7 @@
 // Must be included last.
 #include <google/protobuf/port_def.inc>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 
@@ -67,5 +68,6 @@ template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedIterator<double>;
 
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #include <google/protobuf/port_undef.inc>

@@ -35,6 +35,7 @@
 
 #include <google/protobuf/compiler/java/field.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -70,5 +71,6 @@ class ImmutableMapFieldLiteGenerator : public ImmutableFieldLiteGenerator {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_MAP_FIELD_LITE_H__

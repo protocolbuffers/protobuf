@@ -47,6 +47,7 @@
 // Must be included last.
 #include <google/protobuf/port_def.inc>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 // This file doesn't use these declarations, but some .cc files do.
@@ -1271,6 +1272,7 @@ inline void ExpectAllFieldsAndExtensionsInOrder(const std::string& serialized) {
 }  // namespace TestUtil
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #include <google/protobuf/port_undef.inc>
 

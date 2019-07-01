@@ -49,6 +49,7 @@
 #include <google/protobuf/compiler/csharp/csharp_message.h>
 #include <google/protobuf/compiler/csharp/csharp_names.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -777,3 +778,4 @@ FieldGeneratorBase* MessageGenerator::CreateFieldGeneratorInternal(
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

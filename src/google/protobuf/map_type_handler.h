@@ -41,6 +41,7 @@
 #error "You cannot SWIG proto headers"
 #endif
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace internal {
@@ -732,5 +733,6 @@ struct MapEntryFuncs {
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #endif  // GOOGLE_PROTOBUF_MAP_TYPE_HANDLER_H__

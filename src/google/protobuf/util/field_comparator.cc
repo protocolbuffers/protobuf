@@ -41,6 +41,7 @@
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/mathutil.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace util {
@@ -208,3 +209,4 @@ FieldComparator::ComparisonResult SimpleFieldComparator::ResultFromBoolean(
 }  // namespace util
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

@@ -42,6 +42,7 @@
 // Must be included last.
 #include <google/protobuf/port_def.inc>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace io {
@@ -198,6 +199,7 @@ class PROTOBUF_EXPORT ZeroCopyStreamByteSink : public strings::ByteSink {
 }  // namespace util
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #include <google/protobuf/port_undef.inc>
 

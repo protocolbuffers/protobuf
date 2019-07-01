@@ -40,6 +40,7 @@
 
 #include <google/protobuf/compiler/ruby/ruby_generator.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -573,3 +574,4 @@ bool Generator::Generate(
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

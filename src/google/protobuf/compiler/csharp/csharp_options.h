@@ -33,6 +33,7 @@
 
 #include <string>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -77,5 +78,6 @@ struct Options {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_CSHARP_OPTIONS_H__

@@ -44,6 +44,7 @@
 
 #include <google/protobuf/stubs/strutil.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace internal {
@@ -544,3 +545,4 @@ TEST(ReflectionOpsTest, GenericSwap) {
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

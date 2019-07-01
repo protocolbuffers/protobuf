@@ -44,6 +44,7 @@
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -165,3 +166,4 @@ bool AnnotationMatchesSubstring(const std::string& file_content,
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

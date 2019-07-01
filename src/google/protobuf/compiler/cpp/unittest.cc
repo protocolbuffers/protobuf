@@ -66,6 +66,7 @@
 // Must include after the above macros.
 #include <google/protobuf/compiler/cpp/unittest.inc>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -131,3 +132,4 @@ TEST(GENERATED_MESSAGE_TEST_NAME, TestConflictingExtension) {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

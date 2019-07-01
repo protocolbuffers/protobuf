@@ -71,6 +71,7 @@
 // Must be included last.
 #include <google/protobuf/port_def.inc>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -2785,3 +2786,4 @@ INSTANTIATE_TEST_SUITE_P(FileDescriptorSetSource, EncodeDecodeTest,
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

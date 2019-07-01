@@ -34,6 +34,7 @@
 #include <gtest/gtest.h>
 #include <google/protobuf/stubs/stl_util.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace {
@@ -58,3 +59,4 @@ TEST(WellKnownTypesTest, AllKnownTypesAreIncluded) {
 
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

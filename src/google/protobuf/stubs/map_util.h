@@ -42,6 +42,7 @@
 
 #include <google/protobuf/stubs/common.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace internal {
@@ -765,5 +766,6 @@ void AppendValuesFromMap(const MapContainer& map_container,
 
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #endif  // GOOGLE_PROTOBUF_STUBS_MAP_UTIL_H__

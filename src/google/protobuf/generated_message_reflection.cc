@@ -75,6 +75,7 @@ using google::protobuf::internal::RepeatedPtrFieldBase;
 using google::protobuf::internal::StringSpaceUsedExcludingSelfLong;
 using google::protobuf::internal::WrappedMutex;
 
+namespace unity {
 namespace google {
 namespace protobuf {
 
@@ -3164,5 +3165,6 @@ bool IsDescendant(Message& root, const Message& message) {
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #include <google/protobuf/port_undef.inc>

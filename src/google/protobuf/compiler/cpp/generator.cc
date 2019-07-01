@@ -46,6 +46,7 @@
 #include <google/protobuf/compiler/cpp/helpers.h>
 #include <google/protobuf/descriptor.pb.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -277,3 +278,4 @@ bool CppGenerator::Generate(const FileDescriptor* file,
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

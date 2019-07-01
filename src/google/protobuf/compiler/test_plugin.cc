@@ -40,6 +40,7 @@
 #include <google/protobuf/compiler/mock_code_generator.h>
 #include <google/protobuf/compiler/plugin.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -52,6 +53,7 @@ int ProtobufMain(int argc, char* argv[]) {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 int main(int argc, char* argv[]) {
 #ifdef _MSC_VER

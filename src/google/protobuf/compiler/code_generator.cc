@@ -40,6 +40,7 @@
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/stubs/strutil.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -135,3 +136,4 @@ std::string StripProto(const std::string& filename) {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

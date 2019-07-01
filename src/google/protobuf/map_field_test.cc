@@ -48,6 +48,7 @@
 // Must be included last.
 #include <google/protobuf/port_def.inc>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 
@@ -536,3 +537,4 @@ TEST(MapFieldTest, ConstInit) {
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

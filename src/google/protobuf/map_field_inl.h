@@ -42,6 +42,7 @@
 #error "You cannot SWIG proto headers"
 #endif
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace internal {
@@ -371,5 +372,6 @@ size_t MapField<Derived, Key, T, kKeyFieldType,
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #endif  // GOOGLE_PROTOBUF_MAP_FIELD_INL_H__

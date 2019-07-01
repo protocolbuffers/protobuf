@@ -36,6 +36,7 @@
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/stubs/strutil.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -114,3 +115,4 @@ void WriteMethodDocComment(io::Printer* printer, const MethodDescriptor* method)
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

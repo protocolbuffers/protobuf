@@ -42,6 +42,7 @@
 
 namespace GOOGLE_NAMESPACE = google::protobuf::internal;
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace internal {
@@ -128,3 +129,4 @@ TEST(TemplateUtilTest, TestIdentity) {
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

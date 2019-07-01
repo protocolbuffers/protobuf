@@ -59,6 +59,7 @@
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/stl_util.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -193,3 +194,4 @@ TEST(BootstrapTest, OptionNotExist) {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

@@ -38,6 +38,7 @@
 #include <google/protobuf/compiler/csharp/csharp_source_generator_base.h>
 #include <google/protobuf/compiler/csharp/csharp_helpers.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -90,5 +91,6 @@ class MessageGenerator : public SourceGeneratorBase {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_CSHARP_MESSAGE_H__

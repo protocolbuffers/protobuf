@@ -38,6 +38,7 @@
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 #include <google/protobuf/util/message_differencer.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace TestUtil {
@@ -102,5 +103,6 @@ class BoundedArrayInputStream : public io::ZeroCopyInputStream {
 }  // namespace TestUtil
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #endif  // GOOGLE_PROTOBUF_TEST_UTIL2_H__
