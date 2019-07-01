@@ -1012,7 +1012,7 @@ cc_library(
 
 proto_lang_toolchain(
     name = "cc_toolchain",
-    blacklisted_protos = [":_internal_wkt_protos_genrule"],
+    blacklisted_protos = [proto + "_proto" for proto in WELL_KNOWN_PROTO_MAP.keys()],
     command_line = "--cpp_out=$(OUT)",
     runtime = ":protobuf",
     visibility = ["//visibility:public"],
