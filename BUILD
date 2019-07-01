@@ -27,25 +27,25 @@ ZLIB_DEPS = ["@zlib//:zlib"]
 
 MSVC_COPTS = [
     "/DHAVE_PTHREAD",
-    "/wd4018", # -Wno-sign-compare
-    "/wd4065", # switch statement contains 'default' but no 'case' labels
-    "/wd4146", # unary minus operator applied to unsigned type, result still unsigned
-    "/wd4244", # 'conversion' conversion from 'type1' to 'type2', possible loss of data
-    "/wd4251", # 'identifier' : class 'type' needs to have dll-interface to be used by clients of class 'type2'
-    "/wd4267", # 'var' : conversion from 'size_t' to 'type', possible loss of data
-    "/wd4305", # 'identifier' : truncation from 'type1' to 'type2'
-    "/wd4307", # 'operator' : integral constant overflow
-    "/wd4309", # 'conversion' : truncation of constant value
-    "/wd4334", # 'operator' : result of 32-bit shift implicitly converted to 64 bits (was 64-bit shift intended?)
-    "/wd4355", # 'this' : used in base member initializer list
-    "/wd4506", # no definition for inline function 'function'
-    "/wd4514", # -Wno-unused-function
-    "/wd4800", # 'type' : forcing value to bool 'true' or 'false' (performance warning)
-    "/wd4996", # The compiler encountered a deprecated declaration.
+    "/wd4018",  # -Wno-sign-compare
+    "/wd4065",  # switch statement contains 'default' but no 'case' labels
+    "/wd4146",  # unary minus operator applied to unsigned type, result still unsigned
+    "/wd4244",  # 'conversion' conversion from 'type1' to 'type2', possible loss of data
+    "/wd4251",  # 'identifier' : class 'type' needs to have dll-interface to be used by clients of class 'type2'
+    "/wd4267",  # 'var' : conversion from 'size_t' to 'type', possible loss of data
+    "/wd4305",  # 'identifier' : truncation from 'type1' to 'type2'
+    "/wd4307",  # 'operator' : integral constant overflow
+    "/wd4309",  # 'conversion' : truncation of constant value
+    "/wd4334",  # 'operator' : result of 32-bit shift implicitly converted to 64 bits (was 64-bit shift intended?)
+    "/wd4355",  # 'this' : used in base member initializer list
+    "/wd4506",  # no definition for inline function 'function'
+    "/wd4514",  # -Wno-unused-function
+    "/wd4800",  # 'type' : forcing value to bool 'true' or 'false' (performance warning)
+    "/wd4996",  # The compiler encountered a deprecated declaration.
 ]
 
 COPTS = select({
-    ":msvc" : MSVC_COPTS,
+    ":msvc": MSVC_COPTS,
     "//conditions:default": [
         "-DHAVE_PTHREAD",
         "-DHAVE_ZLIB",
@@ -59,7 +59,10 @@ COPTS = select({
 
 load(":compiler_config_setting.bzl", "create_compiler_config_setting")
 
-create_compiler_config_setting(name = "msvc", value = "msvc-cl")
+create_compiler_config_setting(
+    name = "msvc",
+    value = "msvc-cl",
+)
 
 config_setting(
     name = "android",
@@ -91,7 +94,10 @@ LINK_OPTS = select({
         # Suppress linker warnings about files with no symbols defined.
         "-ignore:4221",
     ],
-    "//conditions:default": ["-lpthread", "-lm"],
+    "//conditions:default": [
+        "-lpthread",
+        "-lm",
+    ],
 })
 
 load(
@@ -135,7 +141,10 @@ cc_library(
         "src/google/protobuf/stubs/time.cc",
         "src/google/protobuf/wire_format_lite.cc",
     ],
-    hdrs = glob(["src/google/protobuf/**/*.h", "src/google/protobuf/**/*.inc"]),
+    hdrs = glob([
+        "src/google/protobuf/**/*.h",
+        "src/google/protobuf/**/*.inc",
+    ]),
     copts = COPTS,
     includes = ["src/"],
     linkopts = LINK_OPTS,
@@ -205,7 +214,10 @@ cc_library(
         "src/google/protobuf/wire_format.cc",
         "src/google/protobuf/wrappers.pb.cc",
     ],
-    hdrs = glob(["src/**/*.h", "src/**/*.inc"]),
+    hdrs = glob([
+        "src/**/*.h",
+        "src/**/*.inc",
+    ]),
     copts = COPTS,
     includes = ["src/"],
     linkopts = LINK_OPTS,
@@ -219,7 +231,10 @@ cc_library(
 # TODO(keveman): Remove this target once the support gets added to Bazel.
 cc_library(
     name = "protobuf_headers",
-    hdrs = glob(["src/**/*.h", "src/**/*.inc"]),
+    hdrs = glob([
+        "src/**/*.h",
+        "src/**/*.inc",
+    ]),
     includes = ["src/"],
     visibility = ["//visibility:public"],
 )
@@ -227,18 +242,33 @@ cc_library(
 # Map of all well known protos.
 # name => (include path, imports)
 WELL_KNOWN_PROTO_MAP = {
-    "any" : ("google/protobuf/any.proto", []),
-    "api" : ("google/protobuf/api.proto", ["source_context", "type"]),
-    "compiler_plugin" : ("google/protobuf/compiler/plugin.proto", ["descriptor"]),
-    "descriptor" : ("google/protobuf/descriptor.proto", []),
-    "duration" : ("google/protobuf/duration.proto", []),
-    "empty" : ("google/protobuf/empty.proto", []),
-    "field_mask" : ("google/protobuf/field_mask.proto", []),
-    "source_context" : ("google/protobuf/source_context.proto", []),
-    "struct" : ("google/protobuf/struct.proto", []),
-    "timestamp" : ("google/protobuf/timestamp.proto", []),
-    "type" : ("google/protobuf/type.proto", ["any", "source_context"]),
-    "wrappers" : ("google/protobuf/wrappers.proto", []),
+    "any": ("google/protobuf/any.proto", []),
+    "api": (
+        "google/protobuf/api.proto",
+        [
+            "source_context",
+            "type",
+        ],
+    ),
+    "compiler_plugin": (
+        "google/protobuf/compiler/plugin.proto",
+        ["descriptor"],
+    ),
+    "descriptor": ("google/protobuf/descriptor.proto", []),
+    "duration": ("google/protobuf/duration.proto", []),
+    "empty": ("google/protobuf/empty.proto", []),
+    "field_mask": ("google/protobuf/field_mask.proto", []),
+    "source_context": ("google/protobuf/source_context.proto", []),
+    "struct": ("google/protobuf/struct.proto", []),
+    "timestamp": ("google/protobuf/timestamp.proto", []),
+    "type": (
+        "google/protobuf/type.proto",
+        [
+            "any",
+            "source_context",
+        ],
+    ),
+    "wrappers": ("google/protobuf/wrappers.proto", []),
 }
 
 RELATIVE_WELL_KNOWN_PROTOS = [proto[1][0] for proto in WELL_KNOWN_PROTO_MAP.items()]
@@ -284,9 +314,9 @@ internal_copied_filegroup(
 [proto_library(
     name = proto[0] + "_proto",
     srcs = [proto[1][0]],
-    deps = [dep + "_proto" for dep in proto[1][1]],
     visibility = ["//visibility:public"],
-    ) for proto in WELL_KNOWN_PROTO_MAP.items()]
+    deps = [dep + "_proto" for dep in proto[1][1]],
+) for proto in WELL_KNOWN_PROTO_MAP.items()]
 
 ################################################################################
 # Protocol Buffers Compiler
@@ -514,11 +544,14 @@ cc_binary(
 cc_test(
     name = "win32_test",
     srcs = ["src/google/protobuf/io/io_win32_unittest.cc"],
+    tags = [
+        "manual",
+        "windows",
+    ],
     deps = [
         ":protobuf_lite",
         "//external:gtest_main",
     ],
-    tags = ["manual", "windows"],
 )
 
 cc_test(
@@ -598,11 +631,11 @@ cc_test(
         "src/google/protobuf/well_known_types_unittest.cc",
         "src/google/protobuf/wire_format_unittest.cc",
     ] + select({
-        "//conditions:default" : [
+        "//conditions:default": [
             # Doesn't pass on Windows with MSVC
             "src/google/protobuf/compiler/command_line_interface_unittest.cc",
         ],
-        ":msvc": []
+        ":msvc": [],
     }),
     copts = COPTS,
     data = [
@@ -640,8 +673,11 @@ java_library(
         ":gen_well_known_protos_java",
     ],
     javacopts = select({
-       "//:jdk9": ["--add-modules=jdk.unsupported"],
-       "//conditions:default": ["-source 7", "-target 7"],
+        "//:jdk9": ["--add-modules=jdk.unsupported"],
+        "//conditions:default": [
+            "-source 7",
+            "-target 7",
+        ],
     }),
     visibility = ["//visibility:public"],
 )
@@ -752,7 +788,10 @@ java_library(
     srcs = glob([
         "java/util/src/main/java/com/google/protobuf/util/*.java",
     ]),
-    javacopts = ["-source 7", "-target 7"],
+    javacopts = [
+        "-source 7",
+        "-target 7",
+    ],
     visibility = ["//visibility:public"],
     deps = [
         "protobuf_java",
@@ -869,11 +908,11 @@ py_proto_library(
     }),
     default_runtime = "",
     protoc = ":protoc",
+    py_extra_srcs = glob(["python/**/__init__.py"]),
     py_libs = [
         ":python_srcs",
         "//external:six",
     ],
-    py_extra_srcs = glob(["python/**/__init__.py"]),
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
 )
@@ -965,18 +1004,18 @@ internal_protobuf_py_tests(
 cc_library(
     name = "proto_api",
     hdrs = ["python/google/protobuf/proto_api.h"],
+    visibility = ["//visibility:public"],
     deps = [
         "//external:python_headers",
     ],
-    visibility = ["//visibility:public"],
 )
 
 proto_lang_toolchain(
     name = "cc_toolchain",
+    blacklisted_protos = [":_internal_wkt_protos_genrule"],
     command_line = "--cpp_out=$(OUT)",
     runtime = ":protobuf",
     visibility = ["//visibility:public"],
-    blacklisted_protos = [":_internal_wkt_protos_genrule"],
 )
 
 proto_lang_toolchain(
@@ -1079,22 +1118,22 @@ genrule(
     name = "generated_protos",
     srcs = ["src/google/protobuf/unittest_import.proto"],
     outs = ["unittest_gen.proto"],
-    cmd = "cat $(SRCS) | sed 's|google/|src/google/|' >  $(OUTS)"
+    cmd = "cat $(SRCS) | sed 's|google/|src/google/|' >  $(OUTS)",
 )
 
 proto_library(
     name = "generated_protos_proto",
     srcs = [
-        "unittest_gen.proto",
         "src/google/protobuf/unittest_import_public.proto",
+        "unittest_gen.proto",
     ],
 )
 
 py_proto_library(
     name = "generated_protos_py",
     srcs = [
-        "unittest_gen.proto",
         "src/google/protobuf/unittest_import_public.proto",
+        "unittest_gen.proto",
     ],
     default_runtime = "",
     protoc = ":protoc",
@@ -1113,6 +1152,7 @@ proto_library(
 proto_library(
     name = "test_messages_proto3_proto",
     srcs = ["src/google/protobuf/test_messages_proto3.proto"],
+    visibility = ["//visibility:public"],
     deps = [
         ":any_proto",
         ":duration_proto",
@@ -1121,7 +1161,6 @@ proto_library(
         ":timestamp_proto",
         ":wrappers_proto",
     ],
-    visibility = ["//visibility:public"],
 )
 
 cc_proto_library(
@@ -1150,8 +1189,8 @@ cc_proto_library(
 
 cc_library(
     name = "jsoncpp",
-    hdrs = ["conformance/third_party/jsoncpp/json.h"],
     srcs = ["conformance/third_party/jsoncpp/jsoncpp.cpp"],
+    hdrs = ["conformance/third_party/jsoncpp/json.h"],
     includes = ["conformance"],
 )
 
@@ -1164,8 +1203,11 @@ cc_library(
     hdrs = [
         "conformance/conformance_test.h",
     ],
+    includes = [
+        "conformance",
+        "src",
+    ],
     deps = [":conformance_proto_cc"],
-    includes = ["conformance", "src"],
 )
 
 cc_library(
@@ -1194,10 +1236,10 @@ cc_library(
 cc_binary(
     name = "conformance_test_runner",
     srcs = ["conformance/conformance_test_main.cc"],
+    visibility = ["//visibility:public"],
     deps = [
         ":binary_json_conformance_suite",
         ":conformance_test",
         ":text_format_conformance_suite",
     ],
-    visibility = ["//visibility:public"],
 )
