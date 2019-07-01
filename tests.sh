@@ -236,16 +236,16 @@ build_java_linkage_monitor() {
 
   use_java jdk8
   internal_build_cpp
-  cd java
 
+  # Linkage Monitor uses $HOME/.m2 local repository
+  MVN="mvn -e -B -Dhttps.protocols=TLSv1.2"
+  cd java
   # Sets java artifact version with SNAPSHOT, as Linkage Monitor looks for SNAPSHOT versions.
   # Example: "3.9.0" (without 'rc')
   VERSION=`grep '<version>' pom.xml |head -1 |perl -nle 'print $1 if m/<version>(\d+\.\d+.\d+)/'`
   cd bom
   $MVN versions:set -DnewVersion=${VERSION}-SNAPSHOT
   cd ..
-  # Linkage Monitor uses $HOME/.m2 local repository
-  MVN="mvn -e -B -Dhttps.protocols=TLSv1.2"
   $MVN versions:set -DnewVersion=${VERSION}-SNAPSHOT
   # Installs the snapshot version locally
   $MVN install -Dmaven.test.skip=true
