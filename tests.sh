@@ -231,8 +231,30 @@ build_java_compatibility() {
   ./test.sh 3.0.0-beta-4
 }
 build_java_linkage_monitor() {
+  # Linkage Monitor checks compatibility with other Google libraries
+  # https://github.com/GoogleCloudPlatform/cloud-opensource-java/tree/master/linkage-monitor
+
   use_java jdk8
-  # TODO(#6303): Call Linkage Monitor
+  internal_build_cpp
+
+  # Linkage Monitor uses $HOME/.m2 local repository
+  MVN="mvn -e -B -Dhttps.protocols=TLSv1.2"
+  cd java
+  # Sets java artifact version with SNAPSHOT, as Linkage Monitor looks for SNAPSHOT versions.
+  # Example: "3.9.0" (without 'rc')
+  VERSION=`grep '<version>' pom.xml |head -1 |perl -nle 'print $1 if m/<version>(\d+\.\d+.\d+)/'`
+  cd bom
+  $MVN versions:set -DnewVersion=${VERSION}-SNAPSHOT
+  cd ..
+  $MVN versions:set -DnewVersion=${VERSION}-SNAPSHOT
+  # Installs the snapshot version locally
+  $MVN install -Dmaven.test.skip=true
+
+  # Linkage Monitor uses the snapshot versions installed in $HOME/.m2 to verify compatibility
+  JAR=linkage-monitor-latest-all-deps.jar
+  curl -v -O "https://storage.googleapis.com/cloud-opensource-java-linkage-monitor/${JAR}"
+  # Fails if there's new linkage errors compared with baseline
+  java -jar $JAR com.google.cloud:libraries-bom
 }
 
 build_objectivec_ios() {
