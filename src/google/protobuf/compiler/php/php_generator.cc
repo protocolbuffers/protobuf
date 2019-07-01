@@ -1265,7 +1265,7 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
   }
 
   printer.Print(
-      "final class ^name^ extends \\Google\\Protobuf\\Internal\\Message\n"
+      "class ^name^ extends \\Google\\Protobuf\\Internal\\Message\n"
       "{\n",
       "name", fullname);
   Indent(&printer);
