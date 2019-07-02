@@ -101,7 +101,7 @@ namespace Google.Protobuf.Reflection
         {
             IMessage message = SampleMessages.CreateFullTestAllTypes();
             var fields = message.Descriptor.Fields;
-            Assert.Throws<InvalidOperationException>(() => fields[TestProtos.TestAllTypes.SingleBoolFieldNumber].Accessor.HasValue(message));
+            Assert.Throws<InvalidOperationException>(() => (fields[TestProtos.TestAllTypes.SingleBoolFieldNumber].Accessor as IFieldPresenceAccessor).HasValue(message));
         }
 
         [Test]
@@ -109,7 +109,7 @@ namespace Google.Protobuf.Reflection
         {
             IMessage message = new Proto2.TestAllTypes();
             var fields = message.Descriptor.Fields;
-            var accessor = fields[Proto2.TestAllTypes.OptionalBoolFieldNumber].Accessor;
+            var accessor = fields[Proto2.TestAllTypes.OptionalBoolFieldNumber].Accessor as IFieldPresenceAccessor;
 
             Assert.False(accessor.HasValue(message));
 

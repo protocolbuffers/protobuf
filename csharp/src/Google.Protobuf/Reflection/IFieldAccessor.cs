@@ -52,11 +52,6 @@ namespace Google.Protobuf.Reflection
         void Clear(IMessage message);
 
         /// <summary>
-        /// Indicates whether the field in the specified message is set. For proto3 fields, this throws an <see cref="InvalidOperationException"/>
-        /// </summary>
-        bool HasValue(IMessage message);
-
-        /// <summary>
         /// Fetches the field value. For repeated values, this will be an
         /// <see cref="IList"/> implementation. For map values, this will be an
         /// <see cref="IDictionary"/> implementation.
@@ -72,5 +67,16 @@ namespace Google.Protobuf.Reflection
         /// </remarks>
         /// <exception cref="InvalidOperationException">The field is not a "simple" field.</exception>
         void SetValue(IMessage message, object value);
+    }
+
+    /// <summary>
+    /// Allows field presence to be checked reflectively. This is implemented for all single field accessors
+    /// </summary>
+    public interface IFieldPresenceAccessor : IFieldAccessor
+    {
+        /// <summary>
+        /// Indicates whether the field in the specified message is set. For proto3 fields, this throws an <see cref="InvalidOperationException"/>
+        /// </summary>
+        bool HasValue(IMessage message);
     }
 }

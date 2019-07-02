@@ -71,7 +71,7 @@ namespace Google.Protobuf.Reflection
 
         /// <summary>
         /// Empty Type[] used when calling GetProperty to force property instead of indexer fetching.
-        /// </summary>getFieldFunc
+        /// </summary>
         internal static readonly Type[] EmptyTypes = new Type[0];
 
         /// <summary>

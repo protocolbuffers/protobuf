@@ -148,12 +148,12 @@ namespace Google.Protobuf
         /// </summary>
         public static bool IsInitialized(this IMessage message)
         {
-            if (message.Descriptor.File.Proto.Syntax == "proto3")
+            if (message.Descriptor.File.Syntax == Syntax.Proto3)
             {
                 return true;
             }
 
-            if (!message.Descriptor.GetIsExtensionsInitialized(message))
+            if (!message.Descriptor.IsExtensionsInitialized(message))
             {
                 return false;
             }
@@ -183,7 +183,7 @@ namespace Google.Protobuf
                     }
                     else if (f.FieldType == FieldType.Message || f.FieldType == FieldType.Group)
                     {
-                        if (f.Accessor.HasValue(message))
+                        if ((f.Accessor as IFieldPresenceAccessor).HasValue(message))
                         {
                             return ((IMessage)f.Accessor.GetValue(message)).IsInitialized();
                         }
@@ -194,7 +194,7 @@ namespace Google.Protobuf
                     }
                     else if (f.IsRequired)
                     {
-                        return f.Accessor.HasValue(message);
+                        return (f.Accessor as IFieldPresenceAccessor).HasValue(message);
                     }
                     else
                     {

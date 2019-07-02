@@ -39,7 +39,7 @@ namespace Google.Protobuf.Reflection
     /// <summary>
     /// Accessor for single fields.
     /// </summary>
-    internal sealed class SingleFieldAccessor : FieldAccessorBase
+    internal sealed class SingleFieldAccessor : FieldAccessorBase, IFieldPresenceAccessor
     {
         // All the work here is actually done in the constructor - it creates the appropriate delegates.
         // There are various cases to consider, based on the property type (message, string/bytes, or "genuine" primitive)
@@ -57,7 +57,7 @@ namespace Google.Protobuf.Reflection
                 throw new ArgumentException("Not all required properties/methods available");
             }
             setValueDelegate = ReflectionUtil.CreateActionIMessageObject(property.GetSetMethod());
-            if (descriptor.File.Proto.Syntax == "proto3")
+            if (descriptor.File.Syntax == Syntax.Proto3)
             {
                 hasDelegate = message => {
                   throw new InvalidOperationException("HasValue is not implemented for proto3 fields");

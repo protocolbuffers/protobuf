@@ -136,7 +136,7 @@ namespace Google.Protobuf.Reflection
 
         internal DescriptorProto Proto { get; }
 
-        internal bool GetIsExtensionsInitialized(IMessage message)
+        internal bool IsExtensionsInitialized(IMessage message)
         {
             if (Proto.ExtensionRange.Count == 0)
             {
