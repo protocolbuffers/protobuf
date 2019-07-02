@@ -25,7 +25,7 @@ namespace ProtobufTestMessages.Proto2 {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "Cipnb29nbGUvcHJvdG9idWYvdGVzdF9tZXNzYWdlc19wcm90bzIucHJvdG8S",
-            "HXByb3RvYnVmX3Rlc3RfbWVzc2FnZXMucHJvdG8yIuYyChJUZXN0QWxsVHlw",
+            "HXByb3RvYnVmX3Rlc3RfbWVzc2FnZXMucHJvdG8yIv45ChJUZXN0QWxsVHlw",
             "ZXNQcm90bzISFgoOb3B0aW9uYWxfaW50MzIYASABKAUSFgoOb3B0aW9uYWxf",
             "aW50NjQYAiABKAMSFwoPb3B0aW9uYWxfdWludDMyGAMgASgNEhcKD29wdGlv",
             "bmFsX3VpbnQ2NBgEIAEoBBIXCg9vcHRpb25hbF9zaW50MzIYBSABKBESFwoP",
@@ -63,130 +63,151 @@ namespace ProtobufTestMessages.Proto2 {
             "bnVtEk8KFXJlcGVhdGVkX2ZvcmVpZ25fZW51bRg0IAMoDjIwLnByb3RvYnVm",
             "X3Rlc3RfbWVzc2FnZXMucHJvdG8yLkZvcmVpZ25FbnVtUHJvdG8yEiEKFXJl",
             "cGVhdGVkX3N0cmluZ19waWVjZRg2IAMoCUICCAISGQoNcmVwZWF0ZWRfY29y",
-            "ZBg3IAMoCUICCAESXQoPbWFwX2ludDMyX2ludDMyGDggAygLMkQucHJvdG9i",
-            "dWZfdGVzdF9tZXNzYWdlcy5wcm90bzIuVGVzdEFsbFR5cGVzUHJvdG8yLk1h",
-            "cEludDMySW50MzJFbnRyeRJdCg9tYXBfaW50NjRfaW50NjQYOSADKAsyRC5w",
+            "ZBg3IAMoCUICCAESGAoMcGFja2VkX2ludDMyGEsgAygFQgIQARIYCgxwYWNr",
+            "ZWRfaW50NjQYTCADKANCAhABEhkKDXBhY2tlZF91aW50MzIYTSADKA1CAhAB",
+            "EhkKDXBhY2tlZF91aW50NjQYTiADKARCAhABEhkKDXBhY2tlZF9zaW50MzIY",
+            "TyADKBFCAhABEhkKDXBhY2tlZF9zaW50NjQYUCADKBJCAhABEhoKDnBhY2tl",
+            "ZF9maXhlZDMyGFEgAygHQgIQARIaCg5wYWNrZWRfZml4ZWQ2NBhSIAMoBkIC",
+            "EAESGwoPcGFja2VkX3NmaXhlZDMyGFMgAygPQgIQARIbCg9wYWNrZWRfc2Zp",
+            "eGVkNjQYVCADKBBCAhABEhgKDHBhY2tlZF9mbG9hdBhVIAMoAkICEAESGQoN",
+            "cGFja2VkX2RvdWJsZRhWIAMoAUICEAESFwoLcGFja2VkX2Jvb2wYVyADKAhC",
+            "AhABElwKEnBhY2tlZF9uZXN0ZWRfZW51bRhYIAMoDjI8LnByb3RvYnVmX3Rl",
+            "c3RfbWVzc2FnZXMucHJvdG8yLlRlc3RBbGxUeXBlc1Byb3RvMi5OZXN0ZWRF",
+            "bnVtQgIQARIaCg51bnBhY2tlZF9pbnQzMhhZIAMoBUICEAASGgoOdW5wYWNr",
+            "ZWRfaW50NjQYWiADKANCAhAAEhsKD3VucGFja2VkX3VpbnQzMhhbIAMoDUIC",
+            "EAASGwoPdW5wYWNrZWRfdWludDY0GFwgAygEQgIQABIbCg91bnBhY2tlZF9z",
+            "aW50MzIYXSADKBFCAhAAEhsKD3VucGFja2VkX3NpbnQ2NBheIAMoEkICEAAS",
+            "HAoQdW5wYWNrZWRfZml4ZWQzMhhfIAMoB0ICEAASHAoQdW5wYWNrZWRfZml4",
+            "ZWQ2NBhgIAMoBkICEAASHQoRdW5wYWNrZWRfc2ZpeGVkMzIYYSADKA9CAhAA",
+            "Eh0KEXVucGFja2VkX3NmaXhlZDY0GGIgAygQQgIQABIaCg51bnBhY2tlZF9m",
+            "bG9hdBhjIAMoAkICEAASGwoPdW5wYWNrZWRfZG91YmxlGGQgAygBQgIQABIZ",
+            "Cg11bnBhY2tlZF9ib29sGGUgAygIQgIQABJeChR1bnBhY2tlZF9uZXN0ZWRf",
+            "ZW51bRhmIAMoDjI8LnByb3RvYnVmX3Rlc3RfbWVzc2FnZXMucHJvdG8yLlRl",
+            "c3RBbGxUeXBlc1Byb3RvMi5OZXN0ZWRFbnVtQgIQABJdCg9tYXBfaW50MzJf",
+            "aW50MzIYOCADKAsyRC5wcm90b2J1Zl90ZXN0X21lc3NhZ2VzLnByb3RvMi5U",
+            "ZXN0QWxsVHlwZXNQcm90bzIuTWFwSW50MzJJbnQzMkVudHJ5El0KD21hcF9p",
+            "bnQ2NF9pbnQ2NBg5IAMoCzJELnByb3RvYnVmX3Rlc3RfbWVzc2FnZXMucHJv",
+            "dG8yLlRlc3RBbGxUeXBlc1Byb3RvMi5NYXBJbnQ2NEludDY0RW50cnkSYQoR",
+            "bWFwX3VpbnQzMl91aW50MzIYOiADKAsyRi5wcm90b2J1Zl90ZXN0X21lc3Nh",
+            "Z2VzLnByb3RvMi5UZXN0QWxsVHlwZXNQcm90bzIuTWFwVWludDMyVWludDMy",
+            "RW50cnkSYQoRbWFwX3VpbnQ2NF91aW50NjQYOyADKAsyRi5wcm90b2J1Zl90",
+            "ZXN0X21lc3NhZ2VzLnByb3RvMi5UZXN0QWxsVHlwZXNQcm90bzIuTWFwVWlu",
+            "dDY0VWludDY0RW50cnkSYQoRbWFwX3NpbnQzMl9zaW50MzIYPCADKAsyRi5w",
             "cm90b2J1Zl90ZXN0X21lc3NhZ2VzLnByb3RvMi5UZXN0QWxsVHlwZXNQcm90",
-            "bzIuTWFwSW50NjRJbnQ2NEVudHJ5EmEKEW1hcF91aW50MzJfdWludDMyGDog",
-            "AygLMkYucHJvdG9idWZfdGVzdF9tZXNzYWdlcy5wcm90bzIuVGVzdEFsbFR5",
-            "cGVzUHJvdG8yLk1hcFVpbnQzMlVpbnQzMkVudHJ5EmEKEW1hcF91aW50NjRf",
-            "dWludDY0GDsgAygLMkYucHJvdG9idWZfdGVzdF9tZXNzYWdlcy5wcm90bzIu",
-            "VGVzdEFsbFR5cGVzUHJvdG8yLk1hcFVpbnQ2NFVpbnQ2NEVudHJ5EmEKEW1h",
-            "cF9zaW50MzJfc2ludDMyGDwgAygLMkYucHJvdG9idWZfdGVzdF9tZXNzYWdl",
-            "cy5wcm90bzIuVGVzdEFsbFR5cGVzUHJvdG8yLk1hcFNpbnQzMlNpbnQzMkVu",
-            "dHJ5EmEKEW1hcF9zaW50NjRfc2ludDY0GD0gAygLMkYucHJvdG9idWZfdGVz",
-            "dF9tZXNzYWdlcy5wcm90bzIuVGVzdEFsbFR5cGVzUHJvdG8yLk1hcFNpbnQ2",
-            "NFNpbnQ2NEVudHJ5EmUKE21hcF9maXhlZDMyX2ZpeGVkMzIYPiADKAsySC5w",
+            "bzIuTWFwU2ludDMyU2ludDMyRW50cnkSYQoRbWFwX3NpbnQ2NF9zaW50NjQY",
+            "PSADKAsyRi5wcm90b2J1Zl90ZXN0X21lc3NhZ2VzLnByb3RvMi5UZXN0QWxs",
+            "VHlwZXNQcm90bzIuTWFwU2ludDY0U2ludDY0RW50cnkSZQoTbWFwX2ZpeGVk",
+            "MzJfZml4ZWQzMhg+IAMoCzJILnByb3RvYnVmX3Rlc3RfbWVzc2FnZXMucHJv",
+            "dG8yLlRlc3RBbGxUeXBlc1Byb3RvMi5NYXBGaXhlZDMyRml4ZWQzMkVudHJ5",
+            "EmUKE21hcF9maXhlZDY0X2ZpeGVkNjQYPyADKAsySC5wcm90b2J1Zl90ZXN0",
+            "X21lc3NhZ2VzLnByb3RvMi5UZXN0QWxsVHlwZXNQcm90bzIuTWFwRml4ZWQ2",
+            "NEZpeGVkNjRFbnRyeRJpChVtYXBfc2ZpeGVkMzJfc2ZpeGVkMzIYQCADKAsy",
+            "Si5wcm90b2J1Zl90ZXN0X21lc3NhZ2VzLnByb3RvMi5UZXN0QWxsVHlwZXNQ",
+            "cm90bzIuTWFwU2ZpeGVkMzJTZml4ZWQzMkVudHJ5EmkKFW1hcF9zZml4ZWQ2",
+            "NF9zZml4ZWQ2NBhBIAMoCzJKLnByb3RvYnVmX3Rlc3RfbWVzc2FnZXMucHJv",
+            "dG8yLlRlc3RBbGxUeXBlc1Byb3RvMi5NYXBTZml4ZWQ2NFNmaXhlZDY0RW50",
+            "cnkSXQoPbWFwX2ludDMyX2Zsb2F0GEIgAygLMkQucHJvdG9idWZfdGVzdF9t",
+            "ZXNzYWdlcy5wcm90bzIuVGVzdEFsbFR5cGVzUHJvdG8yLk1hcEludDMyRmxv",
+            "YXRFbnRyeRJfChBtYXBfaW50MzJfZG91YmxlGEMgAygLMkUucHJvdG9idWZf",
+            "dGVzdF9tZXNzYWdlcy5wcm90bzIuVGVzdEFsbFR5cGVzUHJvdG8yLk1hcElu",
+            "dDMyRG91YmxlRW50cnkSWQoNbWFwX2Jvb2xfYm9vbBhEIAMoCzJCLnByb3Rv",
+            "YnVmX3Rlc3RfbWVzc2FnZXMucHJvdG8yLlRlc3RBbGxUeXBlc1Byb3RvMi5N",
+            "YXBCb29sQm9vbEVudHJ5EmEKEW1hcF9zdHJpbmdfc3RyaW5nGEUgAygLMkYu",
+            "cHJvdG9idWZfdGVzdF9tZXNzYWdlcy5wcm90bzIuVGVzdEFsbFR5cGVzUHJv",
+            "dG8yLk1hcFN0cmluZ1N0cmluZ0VudHJ5El8KEG1hcF9zdHJpbmdfYnl0ZXMY",
+            "RiADKAsyRS5wcm90b2J1Zl90ZXN0X21lc3NhZ2VzLnByb3RvMi5UZXN0QWxs",
+            "VHlwZXNQcm90bzIuTWFwU3RyaW5nQnl0ZXNFbnRyeRJwChltYXBfc3RyaW5n",
+            "X25lc3RlZF9tZXNzYWdlGEcgAygLMk0ucHJvdG9idWZfdGVzdF9tZXNzYWdl",
+            "cy5wcm90bzIuVGVzdEFsbFR5cGVzUHJvdG8yLk1hcFN0cmluZ05lc3RlZE1l",
+            "c3NhZ2VFbnRyeRJyChptYXBfc3RyaW5nX2ZvcmVpZ25fbWVzc2FnZRhIIAMo",
+            "CzJOLnByb3RvYnVmX3Rlc3RfbWVzc2FnZXMucHJvdG8yLlRlc3RBbGxUeXBl",
+            "c1Byb3RvMi5NYXBTdHJpbmdGb3JlaWduTWVzc2FnZUVudHJ5EmoKFm1hcF9z",
+            "dHJpbmdfbmVzdGVkX2VudW0YSSADKAsySi5wcm90b2J1Zl90ZXN0X21lc3Nh",
+            "Z2VzLnByb3RvMi5UZXN0QWxsVHlwZXNQcm90bzIuTWFwU3RyaW5nTmVzdGVk",
+            "RW51bUVudHJ5EmwKF21hcF9zdHJpbmdfZm9yZWlnbl9lbnVtGEogAygLMksu",
+            "cHJvdG9idWZfdGVzdF9tZXNzYWdlcy5wcm90bzIuVGVzdEFsbFR5cGVzUHJv",
+            "dG8yLk1hcFN0cmluZ0ZvcmVpZ25FbnVtRW50cnkSFgoMb25lb2ZfdWludDMy",
+            "GG8gASgNSAASXwoUb25lb2ZfbmVzdGVkX21lc3NhZ2UYcCABKAsyPy5wcm90",
+            "b2J1Zl90ZXN0X21lc3NhZ2VzLnByb3RvMi5UZXN0QWxsVHlwZXNQcm90bzIu",
+            "TmVzdGVkTWVzc2FnZUgAEhYKDG9uZW9mX3N0cmluZxhxIAEoCUgAEhUKC29u",
+            "ZW9mX2J5dGVzGHIgASgMSAASFAoKb25lb2ZfYm9vbBhzIAEoCEgAEhYKDG9u",
+            "ZW9mX3VpbnQ2NBh0IAEoBEgAEhUKC29uZW9mX2Zsb2F0GHUgASgCSAASFgoM",
+            "b25lb2ZfZG91YmxlGHYgASgBSAASUgoKb25lb2ZfZW51bRh3IAEoDjI8LnBy",
+            "b3RvYnVmX3Rlc3RfbWVzc2FnZXMucHJvdG8yLlRlc3RBbGxUeXBlc1Byb3Rv",
+            "Mi5OZXN0ZWRFbnVtSAASRQoEZGF0YRjJASABKAoyNi5wcm90b2J1Zl90ZXN0",
+            "X21lc3NhZ2VzLnByb3RvMi5UZXN0QWxsVHlwZXNQcm90bzIuRGF0YRITCgpm",
+            "aWVsZG5hbWUxGJEDIAEoBRIUCgtmaWVsZF9uYW1lMhiSAyABKAUSFQoMX2Zp",
+            "ZWxkX25hbWUzGJMDIAEoBRIWCg1maWVsZF9fbmFtZTRfGJQDIAEoBRIUCgtm",
+            "aWVsZDBuYW1lNRiVAyABKAUSFgoNZmllbGRfMF9uYW1lNhiWAyABKAUSEwoK",
+            "ZmllbGROYW1lNxiXAyABKAUSEwoKRmllbGROYW1lOBiYAyABKAUSFAoLZmll",
+            "bGRfTmFtZTkYmQMgASgFEhUKDEZpZWxkX05hbWUxMBiaAyABKAUSFQoMRklF",
+            "TERfTkFNRTExGJsDIAEoBRIVCgxGSUVMRF9uYW1lMTIYnAMgASgFEhcKDl9f",
+            "ZmllbGRfbmFtZTEzGJ0DIAEoBRIXCg5fX0ZpZWxkX25hbWUxNBieAyABKAUS",
+            "FgoNZmllbGRfX25hbWUxNRifAyABKAUSFgoNZmllbGRfX05hbWUxNhigAyAB",
+            "KAUSFwoOZmllbGRfbmFtZTE3X18YoQMgASgFEhcKDkZpZWxkX25hbWUxOF9f",
+            "GKIDIAEoBRpiCg1OZXN0ZWRNZXNzYWdlEgkKAWEYASABKAUSRgoLY29yZWN1",
+            "cnNpdmUYAiABKAsyMS5wcm90b2J1Zl90ZXN0X21lc3NhZ2VzLnByb3RvMi5U",
+            "ZXN0QWxsVHlwZXNQcm90bzIaNAoSTWFwSW50MzJJbnQzMkVudHJ5EgsKA2tl",
+            "eRgBIAEoBRINCgV2YWx1ZRgCIAEoBToCOAEaNAoSTWFwSW50NjRJbnQ2NEVu",
+            "dHJ5EgsKA2tleRgBIAEoAxINCgV2YWx1ZRgCIAEoAzoCOAEaNgoUTWFwVWlu",
+            "dDMyVWludDMyRW50cnkSCwoDa2V5GAEgASgNEg0KBXZhbHVlGAIgASgNOgI4",
+            "ARo2ChRNYXBVaW50NjRVaW50NjRFbnRyeRILCgNrZXkYASABKAQSDQoFdmFs",
+            "dWUYAiABKAQ6AjgBGjYKFE1hcFNpbnQzMlNpbnQzMkVudHJ5EgsKA2tleRgB",
+            "IAEoERINCgV2YWx1ZRgCIAEoEToCOAEaNgoUTWFwU2ludDY0U2ludDY0RW50",
+            "cnkSCwoDa2V5GAEgASgSEg0KBXZhbHVlGAIgASgSOgI4ARo4ChZNYXBGaXhl",
+            "ZDMyRml4ZWQzMkVudHJ5EgsKA2tleRgBIAEoBxINCgV2YWx1ZRgCIAEoBzoC",
+            "OAEaOAoWTWFwRml4ZWQ2NEZpeGVkNjRFbnRyeRILCgNrZXkYASABKAYSDQoF",
+            "dmFsdWUYAiABKAY6AjgBGjoKGE1hcFNmaXhlZDMyU2ZpeGVkMzJFbnRyeRIL",
+            "CgNrZXkYASABKA8SDQoFdmFsdWUYAiABKA86AjgBGjoKGE1hcFNmaXhlZDY0",
+            "U2ZpeGVkNjRFbnRyeRILCgNrZXkYASABKBASDQoFdmFsdWUYAiABKBA6AjgB",
+            "GjQKEk1hcEludDMyRmxvYXRFbnRyeRILCgNrZXkYASABKAUSDQoFdmFsdWUY",
+            "AiABKAI6AjgBGjUKE01hcEludDMyRG91YmxlRW50cnkSCwoDa2V5GAEgASgF",
+            "Eg0KBXZhbHVlGAIgASgBOgI4ARoyChBNYXBCb29sQm9vbEVudHJ5EgsKA2tl",
+            "eRgBIAEoCBINCgV2YWx1ZRgCIAEoCDoCOAEaNgoUTWFwU3RyaW5nU3RyaW5n",
+            "RW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgJOgI4ARo1ChNNYXBT",
+            "dHJpbmdCeXRlc0VudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoDDoC",
+            "OAEafgobTWFwU3RyaW5nTmVzdGVkTWVzc2FnZUVudHJ5EgsKA2tleRgBIAEo",
+            "CRJOCgV2YWx1ZRgCIAEoCzI/LnByb3RvYnVmX3Rlc3RfbWVzc2FnZXMucHJv",
+            "dG8yLlRlc3RBbGxUeXBlc1Byb3RvMi5OZXN0ZWRNZXNzYWdlOgI4ARpzChxN",
+            "YXBTdHJpbmdGb3JlaWduTWVzc2FnZUVudHJ5EgsKA2tleRgBIAEoCRJCCgV2",
+            "YWx1ZRgCIAEoCzIzLnByb3RvYnVmX3Rlc3RfbWVzc2FnZXMucHJvdG8yLkZv",
+            "cmVpZ25NZXNzYWdlUHJvdG8yOgI4ARp4ChhNYXBTdHJpbmdOZXN0ZWRFbnVt",
+            "RW50cnkSCwoDa2V5GAEgASgJEksKBXZhbHVlGAIgASgOMjwucHJvdG9idWZf",
+            "dGVzdF9tZXNzYWdlcy5wcm90bzIuVGVzdEFsbFR5cGVzUHJvdG8yLk5lc3Rl",
+            "ZEVudW06AjgBGm0KGU1hcFN0cmluZ0ZvcmVpZ25FbnVtRW50cnkSCwoDa2V5",
+            "GAEgASgJEj8KBXZhbHVlGAIgASgOMjAucHJvdG9idWZfdGVzdF9tZXNzYWdl",
+            "cy5wcm90bzIuRm9yZWlnbkVudW1Qcm90bzI6AjgBGjMKBERhdGESFAoLZ3Jv",
+            "dXBfaW50MzIYygEgASgFEhUKDGdyb3VwX3VpbnQzMhjLASABKA0aIQoRTWVz",
+            "c2FnZVNldENvcnJlY3QqCAgEEP////8HOgIIARrgAQobTWVzc2FnZVNldENv",
+            "cnJlY3RFeHRlbnNpb24xEgsKA3N0chgZIAEoCTKzAQoVbWVzc2FnZV9zZXRf",
+            "ZXh0ZW5zaW9uEkMucHJvdG9idWZfdGVzdF9tZXNzYWdlcy5wcm90bzIuVGVz",
+            "dEFsbFR5cGVzUHJvdG8yLk1lc3NhZ2VTZXRDb3JyZWN0GPm7XiABKAsyTS5w",
             "cm90b2J1Zl90ZXN0X21lc3NhZ2VzLnByb3RvMi5UZXN0QWxsVHlwZXNQcm90",
-            "bzIuTWFwRml4ZWQzMkZpeGVkMzJFbnRyeRJlChNtYXBfZml4ZWQ2NF9maXhl",
-            "ZDY0GD8gAygLMkgucHJvdG9idWZfdGVzdF9tZXNzYWdlcy5wcm90bzIuVGVz",
-            "dEFsbFR5cGVzUHJvdG8yLk1hcEZpeGVkNjRGaXhlZDY0RW50cnkSaQoVbWFw",
-            "X3NmaXhlZDMyX3NmaXhlZDMyGEAgAygLMkoucHJvdG9idWZfdGVzdF9tZXNz",
-            "YWdlcy5wcm90bzIuVGVzdEFsbFR5cGVzUHJvdG8yLk1hcFNmaXhlZDMyU2Zp",
-            "eGVkMzJFbnRyeRJpChVtYXBfc2ZpeGVkNjRfc2ZpeGVkNjQYQSADKAsySi5w",
-            "cm90b2J1Zl90ZXN0X21lc3NhZ2VzLnByb3RvMi5UZXN0QWxsVHlwZXNQcm90",
-            "bzIuTWFwU2ZpeGVkNjRTZml4ZWQ2NEVudHJ5El0KD21hcF9pbnQzMl9mbG9h",
-            "dBhCIAMoCzJELnByb3RvYnVmX3Rlc3RfbWVzc2FnZXMucHJvdG8yLlRlc3RB",
-            "bGxUeXBlc1Byb3RvMi5NYXBJbnQzMkZsb2F0RW50cnkSXwoQbWFwX2ludDMy",
-            "X2RvdWJsZRhDIAMoCzJFLnByb3RvYnVmX3Rlc3RfbWVzc2FnZXMucHJvdG8y",
-            "LlRlc3RBbGxUeXBlc1Byb3RvMi5NYXBJbnQzMkRvdWJsZUVudHJ5ElkKDW1h",
-            "cF9ib29sX2Jvb2wYRCADKAsyQi5wcm90b2J1Zl90ZXN0X21lc3NhZ2VzLnBy",
-            "b3RvMi5UZXN0QWxsVHlwZXNQcm90bzIuTWFwQm9vbEJvb2xFbnRyeRJhChFt",
-            "YXBfc3RyaW5nX3N0cmluZxhFIAMoCzJGLnByb3RvYnVmX3Rlc3RfbWVzc2Fn",
-            "ZXMucHJvdG8yLlRlc3RBbGxUeXBlc1Byb3RvMi5NYXBTdHJpbmdTdHJpbmdF",
-            "bnRyeRJfChBtYXBfc3RyaW5nX2J5dGVzGEYgAygLMkUucHJvdG9idWZfdGVz",
-            "dF9tZXNzYWdlcy5wcm90bzIuVGVzdEFsbFR5cGVzUHJvdG8yLk1hcFN0cmlu",
-            "Z0J5dGVzRW50cnkScAoZbWFwX3N0cmluZ19uZXN0ZWRfbWVzc2FnZRhHIAMo",
-            "CzJNLnByb3RvYnVmX3Rlc3RfbWVzc2FnZXMucHJvdG8yLlRlc3RBbGxUeXBl",
-            "c1Byb3RvMi5NYXBTdHJpbmdOZXN0ZWRNZXNzYWdlRW50cnkScgoabWFwX3N0",
-            "cmluZ19mb3JlaWduX21lc3NhZ2UYSCADKAsyTi5wcm90b2J1Zl90ZXN0X21l",
-            "c3NhZ2VzLnByb3RvMi5UZXN0QWxsVHlwZXNQcm90bzIuTWFwU3RyaW5nRm9y",
-            "ZWlnbk1lc3NhZ2VFbnRyeRJqChZtYXBfc3RyaW5nX25lc3RlZF9lbnVtGEkg",
-            "AygLMkoucHJvdG9idWZfdGVzdF9tZXNzYWdlcy5wcm90bzIuVGVzdEFsbFR5",
-            "cGVzUHJvdG8yLk1hcFN0cmluZ05lc3RlZEVudW1FbnRyeRJsChdtYXBfc3Ry",
-            "aW5nX2ZvcmVpZ25fZW51bRhKIAMoCzJLLnByb3RvYnVmX3Rlc3RfbWVzc2Fn",
-            "ZXMucHJvdG8yLlRlc3RBbGxUeXBlc1Byb3RvMi5NYXBTdHJpbmdGb3JlaWdu",
-            "RW51bUVudHJ5EhYKDG9uZW9mX3VpbnQzMhhvIAEoDUgAEl8KFG9uZW9mX25l",
-            "c3RlZF9tZXNzYWdlGHAgASgLMj8ucHJvdG9idWZfdGVzdF9tZXNzYWdlcy5w",
-            "cm90bzIuVGVzdEFsbFR5cGVzUHJvdG8yLk5lc3RlZE1lc3NhZ2VIABIWCgxv",
-            "bmVvZl9zdHJpbmcYcSABKAlIABIVCgtvbmVvZl9ieXRlcxhyIAEoDEgAEhQK",
-            "Cm9uZW9mX2Jvb2wYcyABKAhIABIWCgxvbmVvZl91aW50NjQYdCABKARIABIV",
-            "CgtvbmVvZl9mbG9hdBh1IAEoAkgAEhYKDG9uZW9mX2RvdWJsZRh2IAEoAUgA",
-            "ElIKCm9uZW9mX2VudW0YdyABKA4yPC5wcm90b2J1Zl90ZXN0X21lc3NhZ2Vz",
-            "LnByb3RvMi5UZXN0QWxsVHlwZXNQcm90bzIuTmVzdGVkRW51bUgAEkUKBGRh",
-            "dGEYyQEgASgKMjYucHJvdG9idWZfdGVzdF9tZXNzYWdlcy5wcm90bzIuVGVz",
-            "dEFsbFR5cGVzUHJvdG8yLkRhdGESEwoKZmllbGRuYW1lMRiRAyABKAUSFAoL",
-            "ZmllbGRfbmFtZTIYkgMgASgFEhUKDF9maWVsZF9uYW1lMxiTAyABKAUSFgoN",
-            "ZmllbGRfX25hbWU0XxiUAyABKAUSFAoLZmllbGQwbmFtZTUYlQMgASgFEhYK",
-            "DWZpZWxkXzBfbmFtZTYYlgMgASgFEhMKCmZpZWxkTmFtZTcYlwMgASgFEhMK",
-            "CkZpZWxkTmFtZTgYmAMgASgFEhQKC2ZpZWxkX05hbWU5GJkDIAEoBRIVCgxG",
-            "aWVsZF9OYW1lMTAYmgMgASgFEhUKDEZJRUxEX05BTUUxMRibAyABKAUSFQoM",
-            "RklFTERfbmFtZTEyGJwDIAEoBRIXCg5fX2ZpZWxkX25hbWUxMxidAyABKAUS",
-            "FwoOX19GaWVsZF9uYW1lMTQYngMgASgFEhYKDWZpZWxkX19uYW1lMTUYnwMg",
-            "ASgFEhYKDWZpZWxkX19OYW1lMTYYoAMgASgFEhcKDmZpZWxkX25hbWUxN19f",
-            "GKEDIAEoBRIXCg5GaWVsZF9uYW1lMThfXxiiAyABKAUaYgoNTmVzdGVkTWVz",
-            "c2FnZRIJCgFhGAEgASgFEkYKC2NvcmVjdXJzaXZlGAIgASgLMjEucHJvdG9i",
-            "dWZfdGVzdF9tZXNzYWdlcy5wcm90bzIuVGVzdEFsbFR5cGVzUHJvdG8yGjQK",
-            "Ek1hcEludDMySW50MzJFbnRyeRILCgNrZXkYASABKAUSDQoFdmFsdWUYAiAB",
-            "KAU6AjgBGjQKEk1hcEludDY0SW50NjRFbnRyeRILCgNrZXkYASABKAMSDQoF",
-            "dmFsdWUYAiABKAM6AjgBGjYKFE1hcFVpbnQzMlVpbnQzMkVudHJ5EgsKA2tl",
-            "eRgBIAEoDRINCgV2YWx1ZRgCIAEoDToCOAEaNgoUTWFwVWludDY0VWludDY0",
-            "RW50cnkSCwoDa2V5GAEgASgEEg0KBXZhbHVlGAIgASgEOgI4ARo2ChRNYXBT",
-            "aW50MzJTaW50MzJFbnRyeRILCgNrZXkYASABKBESDQoFdmFsdWUYAiABKBE6",
-            "AjgBGjYKFE1hcFNpbnQ2NFNpbnQ2NEVudHJ5EgsKA2tleRgBIAEoEhINCgV2",
-            "YWx1ZRgCIAEoEjoCOAEaOAoWTWFwRml4ZWQzMkZpeGVkMzJFbnRyeRILCgNr",
-            "ZXkYASABKAcSDQoFdmFsdWUYAiABKAc6AjgBGjgKFk1hcEZpeGVkNjRGaXhl",
-            "ZDY0RW50cnkSCwoDa2V5GAEgASgGEg0KBXZhbHVlGAIgASgGOgI4ARo6ChhN",
-            "YXBTZml4ZWQzMlNmaXhlZDMyRW50cnkSCwoDa2V5GAEgASgPEg0KBXZhbHVl",
-            "GAIgASgPOgI4ARo6ChhNYXBTZml4ZWQ2NFNmaXhlZDY0RW50cnkSCwoDa2V5",
-            "GAEgASgQEg0KBXZhbHVlGAIgASgQOgI4ARo0ChJNYXBJbnQzMkZsb2F0RW50",
-            "cnkSCwoDa2V5GAEgASgFEg0KBXZhbHVlGAIgASgCOgI4ARo1ChNNYXBJbnQz",
-            "MkRvdWJsZUVudHJ5EgsKA2tleRgBIAEoBRINCgV2YWx1ZRgCIAEoAToCOAEa",
-            "MgoQTWFwQm9vbEJvb2xFbnRyeRILCgNrZXkYASABKAgSDQoFdmFsdWUYAiAB",
-            "KAg6AjgBGjYKFE1hcFN0cmluZ1N0cmluZ0VudHJ5EgsKA2tleRgBIAEoCRIN",
-            "CgV2YWx1ZRgCIAEoCToCOAEaNQoTTWFwU3RyaW5nQnl0ZXNFbnRyeRILCgNr",
-            "ZXkYASABKAkSDQoFdmFsdWUYAiABKAw6AjgBGn4KG01hcFN0cmluZ05lc3Rl",
-            "ZE1lc3NhZ2VFbnRyeRILCgNrZXkYASABKAkSTgoFdmFsdWUYAiABKAsyPy5w",
-            "cm90b2J1Zl90ZXN0X21lc3NhZ2VzLnByb3RvMi5UZXN0QWxsVHlwZXNQcm90",
-            "bzIuTmVzdGVkTWVzc2FnZToCOAEacwocTWFwU3RyaW5nRm9yZWlnbk1lc3Nh",
-            "Z2VFbnRyeRILCgNrZXkYASABKAkSQgoFdmFsdWUYAiABKAsyMy5wcm90b2J1",
-            "Zl90ZXN0X21lc3NhZ2VzLnByb3RvMi5Gb3JlaWduTWVzc2FnZVByb3RvMjoC",
-            "OAEaeAoYTWFwU3RyaW5nTmVzdGVkRW51bUVudHJ5EgsKA2tleRgBIAEoCRJL",
-            "CgV2YWx1ZRgCIAEoDjI8LnByb3RvYnVmX3Rlc3RfbWVzc2FnZXMucHJvdG8y",
-            "LlRlc3RBbGxUeXBlc1Byb3RvMi5OZXN0ZWRFbnVtOgI4ARptChlNYXBTdHJp",
-            "bmdGb3JlaWduRW51bUVudHJ5EgsKA2tleRgBIAEoCRI/CgV2YWx1ZRgCIAEo",
-            "DjIwLnByb3RvYnVmX3Rlc3RfbWVzc2FnZXMucHJvdG8yLkZvcmVpZ25FbnVt",
-            "UHJvdG8yOgI4ARozCgREYXRhEhQKC2dyb3VwX2ludDMyGMoBIAEoBRIVCgxn",
-            "cm91cF91aW50MzIYywEgASgNGiEKEU1lc3NhZ2VTZXRDb3JyZWN0KggIBBD/",
-            "////BzoCCAEa4AEKG01lc3NhZ2VTZXRDb3JyZWN0RXh0ZW5zaW9uMRILCgNz",
-            "dHIYGSABKAkyswEKFW1lc3NhZ2Vfc2V0X2V4dGVuc2lvbhJDLnByb3RvYnVm",
-            "X3Rlc3RfbWVzc2FnZXMucHJvdG8yLlRlc3RBbGxUeXBlc1Byb3RvMi5NZXNz",
-            "YWdlU2V0Q29ycmVjdBj5u14gASgLMk0ucHJvdG9idWZfdGVzdF9tZXNzYWdl",
-            "cy5wcm90bzIuVGVzdEFsbFR5cGVzUHJvdG8yLk1lc3NhZ2VTZXRDb3JyZWN0",
-            "RXh0ZW5zaW9uMRrfAQobTWVzc2FnZVNldENvcnJlY3RFeHRlbnNpb24yEgkK",
-            "AWkYCSABKAUytAEKFW1lc3NhZ2Vfc2V0X2V4dGVuc2lvbhJDLnByb3RvYnVm",
-            "X3Rlc3RfbWVzc2FnZXMucHJvdG8yLlRlc3RBbGxUeXBlc1Byb3RvMi5NZXNz",
-            "YWdlU2V0Q29ycmVjdBiQs/wBIAEoCzJNLnByb3RvYnVmX3Rlc3RfbWVzc2Fn",
-            "ZXMucHJvdG8yLlRlc3RBbGxUeXBlc1Byb3RvMi5NZXNzYWdlU2V0Q29ycmVj",
-            "dEV4dGVuc2lvbjIiOQoKTmVzdGVkRW51bRIHCgNGT08QABIHCgNCQVIQARIH",
-            "CgNCQVoQAhIQCgNORUcQ////////////ASoFCHgQyQFCDQoLb25lb2ZfZmll",
-            "bGRKBgjoBxCQTiIhChRGb3JlaWduTWVzc2FnZVByb3RvMhIJCgFjGAEgASgF",
-            "IsECChVVbmtub3duVG9UZXN0QWxsVHlwZXMSFwoOb3B0aW9uYWxfaW50MzIY",
-            "6QcgASgFEhgKD29wdGlvbmFsX3N0cmluZxjqByABKAkSTAoObmVzdGVkX21l",
-            "c3NhZ2UY6wcgASgLMjMucHJvdG9idWZfdGVzdF9tZXNzYWdlcy5wcm90bzIu",
-            "Rm9yZWlnbk1lc3NhZ2VQcm90bzISWgoNb3B0aW9uYWxncm91cBjsByABKAoy",
-            "Qi5wcm90b2J1Zl90ZXN0X21lc3NhZ2VzLnByb3RvMi5Vbmtub3duVG9UZXN0",
-            "QWxsVHlwZXMuT3B0aW9uYWxHcm91cBIWCg1vcHRpb25hbF9ib29sGO4HIAEo",
-            "CBIXCg5yZXBlYXRlZF9pbnQzMhjzByADKAUaGgoNT3B0aW9uYWxHcm91cBIJ",
-            "CgFhGAEgASgFKkYKEUZvcmVpZ25FbnVtUHJvdG8yEg8KC0ZPUkVJR05fRk9P",
-            "EAASDwoLRk9SRUlHTl9CQVIQARIPCgtGT1JFSUdOX0JBWhACOkoKD2V4dGVu",
-            "c2lvbl9pbnQzMhIxLnByb3RvYnVmX3Rlc3RfbWVzc2FnZXMucHJvdG8yLlRl",
-            "c3RBbGxUeXBlc1Byb3RvMhh4IAEoBUIvCihjb20uZ29vZ2xlLnByb3RvYnVm",
-            "X3Rlc3RfbWVzc2FnZXMucHJvdG8ySAH4AQE="));
+            "bzIuTWVzc2FnZVNldENvcnJlY3RFeHRlbnNpb24xGt8BChtNZXNzYWdlU2V0",
+            "Q29ycmVjdEV4dGVuc2lvbjISCQoBaRgJIAEoBTK0AQoVbWVzc2FnZV9zZXRf",
+            "ZXh0ZW5zaW9uEkMucHJvdG9idWZfdGVzdF9tZXNzYWdlcy5wcm90bzIuVGVz",
+            "dEFsbFR5cGVzUHJvdG8yLk1lc3NhZ2VTZXRDb3JyZWN0GJCz/AEgASgLMk0u",
+            "cHJvdG9idWZfdGVzdF9tZXNzYWdlcy5wcm90bzIuVGVzdEFsbFR5cGVzUHJv",
+            "dG8yLk1lc3NhZ2VTZXRDb3JyZWN0RXh0ZW5zaW9uMiI5CgpOZXN0ZWRFbnVt",
+            "EgcKA0ZPTxAAEgcKA0JBUhABEgcKA0JBWhACEhAKA05FRxD///////////8B",
+            "KgUIeBDJAUINCgtvbmVvZl9maWVsZEoGCOgHEJBOIiEKFEZvcmVpZ25NZXNz",
+            "YWdlUHJvdG8yEgkKAWMYASABKAUiwQIKFVVua25vd25Ub1Rlc3RBbGxUeXBl",
+            "cxIXCg5vcHRpb25hbF9pbnQzMhjpByABKAUSGAoPb3B0aW9uYWxfc3RyaW5n",
+            "GOoHIAEoCRJMCg5uZXN0ZWRfbWVzc2FnZRjrByABKAsyMy5wcm90b2J1Zl90",
+            "ZXN0X21lc3NhZ2VzLnByb3RvMi5Gb3JlaWduTWVzc2FnZVByb3RvMhJaCg1v",
+            "cHRpb25hbGdyb3VwGOwHIAEoCjJCLnByb3RvYnVmX3Rlc3RfbWVzc2FnZXMu",
+            "cHJvdG8yLlVua25vd25Ub1Rlc3RBbGxUeXBlcy5PcHRpb25hbEdyb3VwEhYK",
+            "DW9wdGlvbmFsX2Jvb2wY7gcgASgIEhcKDnJlcGVhdGVkX2ludDMyGPMHIAMo",
+            "BRoaCg1PcHRpb25hbEdyb3VwEgkKAWEYASABKAUqRgoRRm9yZWlnbkVudW1Q",
+            "cm90bzISDwoLRk9SRUlHTl9GT08QABIPCgtGT1JFSUdOX0JBUhABEg8KC0ZP",
+            "UkVJR05fQkFaEAI6SgoPZXh0ZW5zaW9uX2ludDMyEjEucHJvdG9idWZfdGVz",
+            "dF9tZXNzYWdlcy5wcm90bzIuVGVzdEFsbFR5cGVzUHJvdG8yGHggASgFQi8K",
+            "KGNvbS5nb29nbGUucHJvdG9idWZfdGVzdF9tZXNzYWdlcy5wcm90bzJIAfgB",
+            "AQ=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::ProtobufTestMessages.Proto2.ForeignEnumProto2), }, new pb::Extension[] { TestMessagesProto2Extensions.ExtensionInt32 }, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.Proto2.TestAllTypesProto2), global::ProtobufTestMessages.Proto2.TestAllTypesProto2.Parser, new[]{ "OptionalInt32", "OptionalInt64", "OptionalUint32", "OptionalUint64", "OptionalSint32", "OptionalSint64", "OptionalFixed32", "OptionalFixed64", "OptionalSfixed32", "OptionalSfixed64", "OptionalFloat", "OptionalDouble", "OptionalBool", "OptionalString", "OptionalBytes", "OptionalNestedMessage", "OptionalForeignMessage", "OptionalNestedEnum", "OptionalForeignEnum", "OptionalStringPiece", "OptionalCord", "RecursiveMessage", "RepeatedInt32", "RepeatedInt64", "RepeatedUint32", "RepeatedUint64", "RepeatedSint32", "RepeatedSint64", "RepeatedFixed32", "RepeatedFixed64", "RepeatedSfixed32", "RepeatedSfixed64", "RepeatedFloat", "RepeatedDouble", "RepeatedBool", "RepeatedString", "RepeatedBytes", "RepeatedNestedMessage", "RepeatedForeignMessage", "RepeatedNestedEnum", "RepeatedForeignEnum", "RepeatedStringPiece", "RepeatedCord", "MapInt32Int32", "MapInt64Int64", "MapUint32Uint32", "MapUint64Uint64", "MapSint32Sint32", "MapSint64Sint64", "MapFixed32Fixed32", "MapFixed64Fixed64", "MapSfixed32Sfixed32", "MapSfixed64Sfixed64", "MapInt32Float", "MapInt32Double", "MapBoolBool", "MapStringString", "MapStringBytes", "MapStringNestedMessage", "MapStringForeignMessage", "MapStringNestedEnum", "MapStringForeignEnum", "OneofUint32", "OneofNestedMessage", "OneofString", "OneofBytes", "OneofBool", "OneofUint64", "OneofFloat", "OneofDouble", "OneofEnum", "Data", "Fieldname1", "FieldName2", "FieldName3", "FieldName4", "Field0Name5", "Field0Name6", "FieldName7", "FieldName8", "FieldName9", "FieldName10", "FIELDNAME11", "FIELDName12", "FieldName13", "FieldName14", "FieldName15", "FieldName16", "FieldName17", "FieldName18" }, new[]{ "OneofField" }, new[]{ typeof(global::ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.NestedEnum) }, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.NestedMessage), global::ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.NestedMessage.Parser, new[]{ "A", "Corecursive" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.Proto2.TestAllTypesProto2), global::ProtobufTestMessages.Proto2.TestAllTypesProto2.Parser, new[]{ "OptionalInt32", "OptionalInt64", "OptionalUint32", "OptionalUint64", "OptionalSint32", "OptionalSint64", "OptionalFixed32", "OptionalFixed64", "OptionalSfixed32", "OptionalSfixed64", "OptionalFloat", "OptionalDouble", "OptionalBool", "OptionalString", "OptionalBytes", "OptionalNestedMessage", "OptionalForeignMessage", "OptionalNestedEnum", "OptionalForeignEnum", "OptionalStringPiece", "OptionalCord", "RecursiveMessage", "RepeatedInt32", "RepeatedInt64", "RepeatedUint32", "RepeatedUint64", "RepeatedSint32", "RepeatedSint64", "RepeatedFixed32", "RepeatedFixed64", "RepeatedSfixed32", "RepeatedSfixed64", "RepeatedFloat", "RepeatedDouble", "RepeatedBool", "RepeatedString", "RepeatedBytes", "RepeatedNestedMessage", "RepeatedForeignMessage", "RepeatedNestedEnum", "RepeatedForeignEnum", "RepeatedStringPiece", "RepeatedCord", "PackedInt32", "PackedInt64", "PackedUint32", "PackedUint64", "PackedSint32", "PackedSint64", "PackedFixed32", "PackedFixed64", "PackedSfixed32", "PackedSfixed64", "PackedFloat", "PackedDouble", "PackedBool", "PackedNestedEnum", "UnpackedInt32", "UnpackedInt64", "UnpackedUint32", "UnpackedUint64", "UnpackedSint32", "UnpackedSint64", "UnpackedFixed32", "UnpackedFixed64", "UnpackedSfixed32", "UnpackedSfixed64", "UnpackedFloat", "UnpackedDouble", "UnpackedBool", "UnpackedNestedEnum", "MapInt32Int32", "MapInt64Int64", "MapUint32Uint32", "MapUint64Uint64", "MapSint32Sint32", "MapSint64Sint64", "MapFixed32Fixed32", "MapFixed64Fixed64", "MapSfixed32Sfixed32", "MapSfixed64Sfixed64", "MapInt32Float", "MapInt32Double", "MapBoolBool", "MapStringString", "MapStringBytes", "MapStringNestedMessage", "MapStringForeignMessage", "MapStringNestedEnum", "MapStringForeignEnum", "OneofUint32", "OneofNestedMessage", "OneofString", "OneofBytes", "OneofBool", "OneofUint64", "OneofFloat", "OneofDouble", "OneofEnum", "Data", "Fieldname1", "FieldName2", "FieldName3", "FieldName4", "Field0Name5", "Field0Name6", "FieldName7", "FieldName8", "FieldName9", "FieldName10", "FIELDNAME11", "FIELDName12", "FieldName13", "FieldName14", "FieldName15", "FieldName16", "FieldName17", "FieldName18" }, new[]{ "OneofField" }, new[]{ typeof(global::ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.NestedEnum) }, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.NestedMessage), global::ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.NestedMessage.Parser, new[]{ "A", "Corecursive" }, null, null, null, null),
             null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.Data), global::ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.Data.Parser, new[]{ "GroupInt32", "GroupUint32" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.MessageSetCorrect), global::ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.MessageSetCorrect.Parser, null, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.MessageSetCorrectExtension1), global::ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.MessageSetCorrectExtension1.Parser, new[]{ "Str" }, null, null, new pb::Extension[] { global::ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.MessageSetCorrectExtension1.Extensions.MessageSetExtension }, null),
@@ -297,6 +318,34 @@ namespace ProtobufTestMessages.Proto2 {
       repeatedForeignEnum_ = other.repeatedForeignEnum_.Clone();
       repeatedStringPiece_ = other.repeatedStringPiece_.Clone();
       repeatedCord_ = other.repeatedCord_.Clone();
+      packedInt32_ = other.packedInt32_.Clone();
+      packedInt64_ = other.packedInt64_.Clone();
+      packedUint32_ = other.packedUint32_.Clone();
+      packedUint64_ = other.packedUint64_.Clone();
+      packedSint32_ = other.packedSint32_.Clone();
+      packedSint64_ = other.packedSint64_.Clone();
+      packedFixed32_ = other.packedFixed32_.Clone();
+      packedFixed64_ = other.packedFixed64_.Clone();
+      packedSfixed32_ = other.packedSfixed32_.Clone();
+      packedSfixed64_ = other.packedSfixed64_.Clone();
+      packedFloat_ = other.packedFloat_.Clone();
+      packedDouble_ = other.packedDouble_.Clone();
+      packedBool_ = other.packedBool_.Clone();
+      packedNestedEnum_ = other.packedNestedEnum_.Clone();
+      unpackedInt32_ = other.unpackedInt32_.Clone();
+      unpackedInt64_ = other.unpackedInt64_.Clone();
+      unpackedUint32_ = other.unpackedUint32_.Clone();
+      unpackedUint64_ = other.unpackedUint64_.Clone();
+      unpackedSint32_ = other.unpackedSint32_.Clone();
+      unpackedSint64_ = other.unpackedSint64_.Clone();
+      unpackedFixed32_ = other.unpackedFixed32_.Clone();
+      unpackedFixed64_ = other.unpackedFixed64_.Clone();
+      unpackedSfixed32_ = other.unpackedSfixed32_.Clone();
+      unpackedSfixed64_ = other.unpackedSfixed64_.Clone();
+      unpackedFloat_ = other.unpackedFloat_.Clone();
+      unpackedDouble_ = other.unpackedDouble_.Clone();
+      unpackedBool_ = other.unpackedBool_.Clone();
+      unpackedNestedEnum_ = other.unpackedNestedEnum_.Clone();
       mapInt32Int32_ = other.mapInt32Int32_.Clone();
       mapInt64Int64_ = other.mapInt64Int64_.Clone();
       mapUint32Uint32_ = other.mapUint32Uint32_.Clone();
@@ -1103,6 +1152,292 @@ namespace ProtobufTestMessages.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<string> RepeatedCord {
       get { return repeatedCord_; }
+    }
+
+    /// <summary>Field number for the "packed_int32" field.</summary>
+    public const int PackedInt32FieldNumber = 75;
+    private static readonly pb::FieldCodec<int> _repeated_packedInt32_codec
+        = pb::FieldCodec.ForInt32(602);
+    private readonly pbc::RepeatedField<int> packedInt32_ = new pbc::RepeatedField<int>();
+    /// <summary>
+    /// Packed
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<int> PackedInt32 {
+      get { return packedInt32_; }
+    }
+
+    /// <summary>Field number for the "packed_int64" field.</summary>
+    public const int PackedInt64FieldNumber = 76;
+    private static readonly pb::FieldCodec<long> _repeated_packedInt64_codec
+        = pb::FieldCodec.ForInt64(610);
+    private readonly pbc::RepeatedField<long> packedInt64_ = new pbc::RepeatedField<long>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<long> PackedInt64 {
+      get { return packedInt64_; }
+    }
+
+    /// <summary>Field number for the "packed_uint32" field.</summary>
+    public const int PackedUint32FieldNumber = 77;
+    private static readonly pb::FieldCodec<uint> _repeated_packedUint32_codec
+        = pb::FieldCodec.ForUInt32(618);
+    private readonly pbc::RepeatedField<uint> packedUint32_ = new pbc::RepeatedField<uint>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<uint> PackedUint32 {
+      get { return packedUint32_; }
+    }
+
+    /// <summary>Field number for the "packed_uint64" field.</summary>
+    public const int PackedUint64FieldNumber = 78;
+    private static readonly pb::FieldCodec<ulong> _repeated_packedUint64_codec
+        = pb::FieldCodec.ForUInt64(626);
+    private readonly pbc::RepeatedField<ulong> packedUint64_ = new pbc::RepeatedField<ulong>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<ulong> PackedUint64 {
+      get { return packedUint64_; }
+    }
+
+    /// <summary>Field number for the "packed_sint32" field.</summary>
+    public const int PackedSint32FieldNumber = 79;
+    private static readonly pb::FieldCodec<int> _repeated_packedSint32_codec
+        = pb::FieldCodec.ForSInt32(634);
+    private readonly pbc::RepeatedField<int> packedSint32_ = new pbc::RepeatedField<int>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<int> PackedSint32 {
+      get { return packedSint32_; }
+    }
+
+    /// <summary>Field number for the "packed_sint64" field.</summary>
+    public const int PackedSint64FieldNumber = 80;
+    private static readonly pb::FieldCodec<long> _repeated_packedSint64_codec
+        = pb::FieldCodec.ForSInt64(642);
+    private readonly pbc::RepeatedField<long> packedSint64_ = new pbc::RepeatedField<long>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<long> PackedSint64 {
+      get { return packedSint64_; }
+    }
+
+    /// <summary>Field number for the "packed_fixed32" field.</summary>
+    public const int PackedFixed32FieldNumber = 81;
+    private static readonly pb::FieldCodec<uint> _repeated_packedFixed32_codec
+        = pb::FieldCodec.ForFixed32(650);
+    private readonly pbc::RepeatedField<uint> packedFixed32_ = new pbc::RepeatedField<uint>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<uint> PackedFixed32 {
+      get { return packedFixed32_; }
+    }
+
+    /// <summary>Field number for the "packed_fixed64" field.</summary>
+    public const int PackedFixed64FieldNumber = 82;
+    private static readonly pb::FieldCodec<ulong> _repeated_packedFixed64_codec
+        = pb::FieldCodec.ForFixed64(658);
+    private readonly pbc::RepeatedField<ulong> packedFixed64_ = new pbc::RepeatedField<ulong>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<ulong> PackedFixed64 {
+      get { return packedFixed64_; }
+    }
+
+    /// <summary>Field number for the "packed_sfixed32" field.</summary>
+    public const int PackedSfixed32FieldNumber = 83;
+    private static readonly pb::FieldCodec<int> _repeated_packedSfixed32_codec
+        = pb::FieldCodec.ForSFixed32(666);
+    private readonly pbc::RepeatedField<int> packedSfixed32_ = new pbc::RepeatedField<int>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<int> PackedSfixed32 {
+      get { return packedSfixed32_; }
+    }
+
+    /// <summary>Field number for the "packed_sfixed64" field.</summary>
+    public const int PackedSfixed64FieldNumber = 84;
+    private static readonly pb::FieldCodec<long> _repeated_packedSfixed64_codec
+        = pb::FieldCodec.ForSFixed64(674);
+    private readonly pbc::RepeatedField<long> packedSfixed64_ = new pbc::RepeatedField<long>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<long> PackedSfixed64 {
+      get { return packedSfixed64_; }
+    }
+
+    /// <summary>Field number for the "packed_float" field.</summary>
+    public const int PackedFloatFieldNumber = 85;
+    private static readonly pb::FieldCodec<float> _repeated_packedFloat_codec
+        = pb::FieldCodec.ForFloat(682);
+    private readonly pbc::RepeatedField<float> packedFloat_ = new pbc::RepeatedField<float>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<float> PackedFloat {
+      get { return packedFloat_; }
+    }
+
+    /// <summary>Field number for the "packed_double" field.</summary>
+    public const int PackedDoubleFieldNumber = 86;
+    private static readonly pb::FieldCodec<double> _repeated_packedDouble_codec
+        = pb::FieldCodec.ForDouble(690);
+    private readonly pbc::RepeatedField<double> packedDouble_ = new pbc::RepeatedField<double>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<double> PackedDouble {
+      get { return packedDouble_; }
+    }
+
+    /// <summary>Field number for the "packed_bool" field.</summary>
+    public const int PackedBoolFieldNumber = 87;
+    private static readonly pb::FieldCodec<bool> _repeated_packedBool_codec
+        = pb::FieldCodec.ForBool(698);
+    private readonly pbc::RepeatedField<bool> packedBool_ = new pbc::RepeatedField<bool>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<bool> PackedBool {
+      get { return packedBool_; }
+    }
+
+    /// <summary>Field number for the "packed_nested_enum" field.</summary>
+    public const int PackedNestedEnumFieldNumber = 88;
+    private static readonly pb::FieldCodec<global::ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.NestedEnum> _repeated_packedNestedEnum_codec
+        = pb::FieldCodec.ForEnum(706, x => (int) x, x => (global::ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.NestedEnum) x);
+    private readonly pbc::RepeatedField<global::ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.NestedEnum> packedNestedEnum_ = new pbc::RepeatedField<global::ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.NestedEnum>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<global::ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.NestedEnum> PackedNestedEnum {
+      get { return packedNestedEnum_; }
+    }
+
+    /// <summary>Field number for the "unpacked_int32" field.</summary>
+    public const int UnpackedInt32FieldNumber = 89;
+    private static readonly pb::FieldCodec<int> _repeated_unpackedInt32_codec
+        = pb::FieldCodec.ForInt32(712);
+    private readonly pbc::RepeatedField<int> unpackedInt32_ = new pbc::RepeatedField<int>();
+    /// <summary>
+    /// Unpacked
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<int> UnpackedInt32 {
+      get { return unpackedInt32_; }
+    }
+
+    /// <summary>Field number for the "unpacked_int64" field.</summary>
+    public const int UnpackedInt64FieldNumber = 90;
+    private static readonly pb::FieldCodec<long> _repeated_unpackedInt64_codec
+        = pb::FieldCodec.ForInt64(720);
+    private readonly pbc::RepeatedField<long> unpackedInt64_ = new pbc::RepeatedField<long>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<long> UnpackedInt64 {
+      get { return unpackedInt64_; }
+    }
+
+    /// <summary>Field number for the "unpacked_uint32" field.</summary>
+    public const int UnpackedUint32FieldNumber = 91;
+    private static readonly pb::FieldCodec<uint> _repeated_unpackedUint32_codec
+        = pb::FieldCodec.ForUInt32(728);
+    private readonly pbc::RepeatedField<uint> unpackedUint32_ = new pbc::RepeatedField<uint>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<uint> UnpackedUint32 {
+      get { return unpackedUint32_; }
+    }
+
+    /// <summary>Field number for the "unpacked_uint64" field.</summary>
+    public const int UnpackedUint64FieldNumber = 92;
+    private static readonly pb::FieldCodec<ulong> _repeated_unpackedUint64_codec
+        = pb::FieldCodec.ForUInt64(736);
+    private readonly pbc::RepeatedField<ulong> unpackedUint64_ = new pbc::RepeatedField<ulong>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<ulong> UnpackedUint64 {
+      get { return unpackedUint64_; }
+    }
+
+    /// <summary>Field number for the "unpacked_sint32" field.</summary>
+    public const int UnpackedSint32FieldNumber = 93;
+    private static readonly pb::FieldCodec<int> _repeated_unpackedSint32_codec
+        = pb::FieldCodec.ForSInt32(744);
+    private readonly pbc::RepeatedField<int> unpackedSint32_ = new pbc::RepeatedField<int>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<int> UnpackedSint32 {
+      get { return unpackedSint32_; }
+    }
+
+    /// <summary>Field number for the "unpacked_sint64" field.</summary>
+    public const int UnpackedSint64FieldNumber = 94;
+    private static readonly pb::FieldCodec<long> _repeated_unpackedSint64_codec
+        = pb::FieldCodec.ForSInt64(752);
+    private readonly pbc::RepeatedField<long> unpackedSint64_ = new pbc::RepeatedField<long>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<long> UnpackedSint64 {
+      get { return unpackedSint64_; }
+    }
+
+    /// <summary>Field number for the "unpacked_fixed32" field.</summary>
+    public const int UnpackedFixed32FieldNumber = 95;
+    private static readonly pb::FieldCodec<uint> _repeated_unpackedFixed32_codec
+        = pb::FieldCodec.ForFixed32(765);
+    private readonly pbc::RepeatedField<uint> unpackedFixed32_ = new pbc::RepeatedField<uint>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<uint> UnpackedFixed32 {
+      get { return unpackedFixed32_; }
+    }
+
+    /// <summary>Field number for the "unpacked_fixed64" field.</summary>
+    public const int UnpackedFixed64FieldNumber = 96;
+    private static readonly pb::FieldCodec<ulong> _repeated_unpackedFixed64_codec
+        = pb::FieldCodec.ForFixed64(769);
+    private readonly pbc::RepeatedField<ulong> unpackedFixed64_ = new pbc::RepeatedField<ulong>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<ulong> UnpackedFixed64 {
+      get { return unpackedFixed64_; }
+    }
+
+    /// <summary>Field number for the "unpacked_sfixed32" field.</summary>
+    public const int UnpackedSfixed32FieldNumber = 97;
+    private static readonly pb::FieldCodec<int> _repeated_unpackedSfixed32_codec
+        = pb::FieldCodec.ForSFixed32(781);
+    private readonly pbc::RepeatedField<int> unpackedSfixed32_ = new pbc::RepeatedField<int>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<int> UnpackedSfixed32 {
+      get { return unpackedSfixed32_; }
+    }
+
+    /// <summary>Field number for the "unpacked_sfixed64" field.</summary>
+    public const int UnpackedSfixed64FieldNumber = 98;
+    private static readonly pb::FieldCodec<long> _repeated_unpackedSfixed64_codec
+        = pb::FieldCodec.ForSFixed64(785);
+    private readonly pbc::RepeatedField<long> unpackedSfixed64_ = new pbc::RepeatedField<long>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<long> UnpackedSfixed64 {
+      get { return unpackedSfixed64_; }
+    }
+
+    /// <summary>Field number for the "unpacked_float" field.</summary>
+    public const int UnpackedFloatFieldNumber = 99;
+    private static readonly pb::FieldCodec<float> _repeated_unpackedFloat_codec
+        = pb::FieldCodec.ForFloat(797);
+    private readonly pbc::RepeatedField<float> unpackedFloat_ = new pbc::RepeatedField<float>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<float> UnpackedFloat {
+      get { return unpackedFloat_; }
+    }
+
+    /// <summary>Field number for the "unpacked_double" field.</summary>
+    public const int UnpackedDoubleFieldNumber = 100;
+    private static readonly pb::FieldCodec<double> _repeated_unpackedDouble_codec
+        = pb::FieldCodec.ForDouble(801);
+    private readonly pbc::RepeatedField<double> unpackedDouble_ = new pbc::RepeatedField<double>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<double> UnpackedDouble {
+      get { return unpackedDouble_; }
+    }
+
+    /// <summary>Field number for the "unpacked_bool" field.</summary>
+    public const int UnpackedBoolFieldNumber = 101;
+    private static readonly pb::FieldCodec<bool> _repeated_unpackedBool_codec
+        = pb::FieldCodec.ForBool(808);
+    private readonly pbc::RepeatedField<bool> unpackedBool_ = new pbc::RepeatedField<bool>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<bool> UnpackedBool {
+      get { return unpackedBool_; }
+    }
+
+    /// <summary>Field number for the "unpacked_nested_enum" field.</summary>
+    public const int UnpackedNestedEnumFieldNumber = 102;
+    private static readonly pb::FieldCodec<global::ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.NestedEnum> _repeated_unpackedNestedEnum_codec
+        = pb::FieldCodec.ForEnum(816, x => (int) x, x => (global::ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.NestedEnum) x);
+    private readonly pbc::RepeatedField<global::ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.NestedEnum> unpackedNestedEnum_ = new pbc::RepeatedField<global::ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.NestedEnum>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<global::ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.NestedEnum> UnpackedNestedEnum {
+      get { return unpackedNestedEnum_; }
     }
 
     /// <summary>Field number for the "map_int32_int32" field.</summary>
@@ -2044,6 +2379,34 @@ namespace ProtobufTestMessages.Proto2 {
       if(!repeatedForeignEnum_.Equals(other.repeatedForeignEnum_)) return false;
       if(!repeatedStringPiece_.Equals(other.repeatedStringPiece_)) return false;
       if(!repeatedCord_.Equals(other.repeatedCord_)) return false;
+      if(!packedInt32_.Equals(other.packedInt32_)) return false;
+      if(!packedInt64_.Equals(other.packedInt64_)) return false;
+      if(!packedUint32_.Equals(other.packedUint32_)) return false;
+      if(!packedUint64_.Equals(other.packedUint64_)) return false;
+      if(!packedSint32_.Equals(other.packedSint32_)) return false;
+      if(!packedSint64_.Equals(other.packedSint64_)) return false;
+      if(!packedFixed32_.Equals(other.packedFixed32_)) return false;
+      if(!packedFixed64_.Equals(other.packedFixed64_)) return false;
+      if(!packedSfixed32_.Equals(other.packedSfixed32_)) return false;
+      if(!packedSfixed64_.Equals(other.packedSfixed64_)) return false;
+      if(!packedFloat_.Equals(other.packedFloat_)) return false;
+      if(!packedDouble_.Equals(other.packedDouble_)) return false;
+      if(!packedBool_.Equals(other.packedBool_)) return false;
+      if(!packedNestedEnum_.Equals(other.packedNestedEnum_)) return false;
+      if(!unpackedInt32_.Equals(other.unpackedInt32_)) return false;
+      if(!unpackedInt64_.Equals(other.unpackedInt64_)) return false;
+      if(!unpackedUint32_.Equals(other.unpackedUint32_)) return false;
+      if(!unpackedUint64_.Equals(other.unpackedUint64_)) return false;
+      if(!unpackedSint32_.Equals(other.unpackedSint32_)) return false;
+      if(!unpackedSint64_.Equals(other.unpackedSint64_)) return false;
+      if(!unpackedFixed32_.Equals(other.unpackedFixed32_)) return false;
+      if(!unpackedFixed64_.Equals(other.unpackedFixed64_)) return false;
+      if(!unpackedSfixed32_.Equals(other.unpackedSfixed32_)) return false;
+      if(!unpackedSfixed64_.Equals(other.unpackedSfixed64_)) return false;
+      if(!unpackedFloat_.Equals(other.unpackedFloat_)) return false;
+      if(!unpackedDouble_.Equals(other.unpackedDouble_)) return false;
+      if(!unpackedBool_.Equals(other.unpackedBool_)) return false;
+      if(!unpackedNestedEnum_.Equals(other.unpackedNestedEnum_)) return false;
       if (!MapInt32Int32.Equals(other.MapInt32Int32)) return false;
       if (!MapInt64Int64.Equals(other.MapInt64Int64)) return false;
       if (!MapUint32Uint32.Equals(other.MapUint32Uint32)) return false;
@@ -2144,6 +2507,34 @@ namespace ProtobufTestMessages.Proto2 {
       hash ^= repeatedForeignEnum_.GetHashCode();
       hash ^= repeatedStringPiece_.GetHashCode();
       hash ^= repeatedCord_.GetHashCode();
+      hash ^= packedInt32_.GetHashCode();
+      hash ^= packedInt64_.GetHashCode();
+      hash ^= packedUint32_.GetHashCode();
+      hash ^= packedUint64_.GetHashCode();
+      hash ^= packedSint32_.GetHashCode();
+      hash ^= packedSint64_.GetHashCode();
+      hash ^= packedFixed32_.GetHashCode();
+      hash ^= packedFixed64_.GetHashCode();
+      hash ^= packedSfixed32_.GetHashCode();
+      hash ^= packedSfixed64_.GetHashCode();
+      hash ^= packedFloat_.GetHashCode();
+      hash ^= packedDouble_.GetHashCode();
+      hash ^= packedBool_.GetHashCode();
+      hash ^= packedNestedEnum_.GetHashCode();
+      hash ^= unpackedInt32_.GetHashCode();
+      hash ^= unpackedInt64_.GetHashCode();
+      hash ^= unpackedUint32_.GetHashCode();
+      hash ^= unpackedUint64_.GetHashCode();
+      hash ^= unpackedSint32_.GetHashCode();
+      hash ^= unpackedSint64_.GetHashCode();
+      hash ^= unpackedFixed32_.GetHashCode();
+      hash ^= unpackedFixed64_.GetHashCode();
+      hash ^= unpackedSfixed32_.GetHashCode();
+      hash ^= unpackedSfixed64_.GetHashCode();
+      hash ^= unpackedFloat_.GetHashCode();
+      hash ^= unpackedDouble_.GetHashCode();
+      hash ^= unpackedBool_.GetHashCode();
+      hash ^= unpackedNestedEnum_.GetHashCode();
       hash ^= MapInt32Int32.GetHashCode();
       hash ^= MapInt64Int64.GetHashCode();
       hash ^= MapUint32Uint32.GetHashCode();
@@ -2336,6 +2727,34 @@ namespace ProtobufTestMessages.Proto2 {
       mapStringForeignMessage_.WriteTo(output, _map_mapStringForeignMessage_codec);
       mapStringNestedEnum_.WriteTo(output, _map_mapStringNestedEnum_codec);
       mapStringForeignEnum_.WriteTo(output, _map_mapStringForeignEnum_codec);
+      packedInt32_.WriteTo(output, _repeated_packedInt32_codec);
+      packedInt64_.WriteTo(output, _repeated_packedInt64_codec);
+      packedUint32_.WriteTo(output, _repeated_packedUint32_codec);
+      packedUint64_.WriteTo(output, _repeated_packedUint64_codec);
+      packedSint32_.WriteTo(output, _repeated_packedSint32_codec);
+      packedSint64_.WriteTo(output, _repeated_packedSint64_codec);
+      packedFixed32_.WriteTo(output, _repeated_packedFixed32_codec);
+      packedFixed64_.WriteTo(output, _repeated_packedFixed64_codec);
+      packedSfixed32_.WriteTo(output, _repeated_packedSfixed32_codec);
+      packedSfixed64_.WriteTo(output, _repeated_packedSfixed64_codec);
+      packedFloat_.WriteTo(output, _repeated_packedFloat_codec);
+      packedDouble_.WriteTo(output, _repeated_packedDouble_codec);
+      packedBool_.WriteTo(output, _repeated_packedBool_codec);
+      packedNestedEnum_.WriteTo(output, _repeated_packedNestedEnum_codec);
+      unpackedInt32_.WriteTo(output, _repeated_unpackedInt32_codec);
+      unpackedInt64_.WriteTo(output, _repeated_unpackedInt64_codec);
+      unpackedUint32_.WriteTo(output, _repeated_unpackedUint32_codec);
+      unpackedUint64_.WriteTo(output, _repeated_unpackedUint64_codec);
+      unpackedSint32_.WriteTo(output, _repeated_unpackedSint32_codec);
+      unpackedSint64_.WriteTo(output, _repeated_unpackedSint64_codec);
+      unpackedFixed32_.WriteTo(output, _repeated_unpackedFixed32_codec);
+      unpackedFixed64_.WriteTo(output, _repeated_unpackedFixed64_codec);
+      unpackedSfixed32_.WriteTo(output, _repeated_unpackedSfixed32_codec);
+      unpackedSfixed64_.WriteTo(output, _repeated_unpackedSfixed64_codec);
+      unpackedFloat_.WriteTo(output, _repeated_unpackedFloat_codec);
+      unpackedDouble_.WriteTo(output, _repeated_unpackedDouble_codec);
+      unpackedBool_.WriteTo(output, _repeated_unpackedBool_codec);
+      unpackedNestedEnum_.WriteTo(output, _repeated_unpackedNestedEnum_codec);
       if (HasOneofUint32) {
         output.WriteRawTag(248, 6);
         output.WriteUInt32(OneofUint32);
@@ -2547,6 +2966,34 @@ namespace ProtobufTestMessages.Proto2 {
       size += repeatedForeignEnum_.CalculateSize(_repeated_repeatedForeignEnum_codec);
       size += repeatedStringPiece_.CalculateSize(_repeated_repeatedStringPiece_codec);
       size += repeatedCord_.CalculateSize(_repeated_repeatedCord_codec);
+      size += packedInt32_.CalculateSize(_repeated_packedInt32_codec);
+      size += packedInt64_.CalculateSize(_repeated_packedInt64_codec);
+      size += packedUint32_.CalculateSize(_repeated_packedUint32_codec);
+      size += packedUint64_.CalculateSize(_repeated_packedUint64_codec);
+      size += packedSint32_.CalculateSize(_repeated_packedSint32_codec);
+      size += packedSint64_.CalculateSize(_repeated_packedSint64_codec);
+      size += packedFixed32_.CalculateSize(_repeated_packedFixed32_codec);
+      size += packedFixed64_.CalculateSize(_repeated_packedFixed64_codec);
+      size += packedSfixed32_.CalculateSize(_repeated_packedSfixed32_codec);
+      size += packedSfixed64_.CalculateSize(_repeated_packedSfixed64_codec);
+      size += packedFloat_.CalculateSize(_repeated_packedFloat_codec);
+      size += packedDouble_.CalculateSize(_repeated_packedDouble_codec);
+      size += packedBool_.CalculateSize(_repeated_packedBool_codec);
+      size += packedNestedEnum_.CalculateSize(_repeated_packedNestedEnum_codec);
+      size += unpackedInt32_.CalculateSize(_repeated_unpackedInt32_codec);
+      size += unpackedInt64_.CalculateSize(_repeated_unpackedInt64_codec);
+      size += unpackedUint32_.CalculateSize(_repeated_unpackedUint32_codec);
+      size += unpackedUint64_.CalculateSize(_repeated_unpackedUint64_codec);
+      size += unpackedSint32_.CalculateSize(_repeated_unpackedSint32_codec);
+      size += unpackedSint64_.CalculateSize(_repeated_unpackedSint64_codec);
+      size += unpackedFixed32_.CalculateSize(_repeated_unpackedFixed32_codec);
+      size += unpackedFixed64_.CalculateSize(_repeated_unpackedFixed64_codec);
+      size += unpackedSfixed32_.CalculateSize(_repeated_unpackedSfixed32_codec);
+      size += unpackedSfixed64_.CalculateSize(_repeated_unpackedSfixed64_codec);
+      size += unpackedFloat_.CalculateSize(_repeated_unpackedFloat_codec);
+      size += unpackedDouble_.CalculateSize(_repeated_unpackedDouble_codec);
+      size += unpackedBool_.CalculateSize(_repeated_unpackedBool_codec);
+      size += unpackedNestedEnum_.CalculateSize(_repeated_unpackedNestedEnum_codec);
       size += mapInt32Int32_.CalculateSize(_map_mapInt32Int32_codec);
       size += mapInt64Int64_.CalculateSize(_map_mapInt64Int64_codec);
       size += mapUint32Uint32_.CalculateSize(_map_mapUint32Uint32_codec);
@@ -2760,6 +3207,34 @@ namespace ProtobufTestMessages.Proto2 {
       repeatedForeignEnum_.Add(other.repeatedForeignEnum_);
       repeatedStringPiece_.Add(other.repeatedStringPiece_);
       repeatedCord_.Add(other.repeatedCord_);
+      packedInt32_.Add(other.packedInt32_);
+      packedInt64_.Add(other.packedInt64_);
+      packedUint32_.Add(other.packedUint32_);
+      packedUint64_.Add(other.packedUint64_);
+      packedSint32_.Add(other.packedSint32_);
+      packedSint64_.Add(other.packedSint64_);
+      packedFixed32_.Add(other.packedFixed32_);
+      packedFixed64_.Add(other.packedFixed64_);
+      packedSfixed32_.Add(other.packedSfixed32_);
+      packedSfixed64_.Add(other.packedSfixed64_);
+      packedFloat_.Add(other.packedFloat_);
+      packedDouble_.Add(other.packedDouble_);
+      packedBool_.Add(other.packedBool_);
+      packedNestedEnum_.Add(other.packedNestedEnum_);
+      unpackedInt32_.Add(other.unpackedInt32_);
+      unpackedInt64_.Add(other.unpackedInt64_);
+      unpackedUint32_.Add(other.unpackedUint32_);
+      unpackedUint64_.Add(other.unpackedUint64_);
+      unpackedSint32_.Add(other.unpackedSint32_);
+      unpackedSint64_.Add(other.unpackedSint64_);
+      unpackedFixed32_.Add(other.unpackedFixed32_);
+      unpackedFixed64_.Add(other.unpackedFixed64_);
+      unpackedSfixed32_.Add(other.unpackedSfixed32_);
+      unpackedSfixed64_.Add(other.unpackedSfixed64_);
+      unpackedFloat_.Add(other.unpackedFloat_);
+      unpackedDouble_.Add(other.unpackedDouble_);
+      unpackedBool_.Add(other.unpackedBool_);
+      unpackedNestedEnum_.Add(other.unpackedNestedEnum_);
       mapInt32Int32_.Add(other.mapInt32Int32_);
       mapInt64Int64_.Add(other.mapInt64Int64_);
       mapUint32Uint32_.Add(other.mapUint32Uint32_);
@@ -3156,6 +3631,146 @@ namespace ProtobufTestMessages.Proto2 {
           }
           case 594: {
             mapStringForeignEnum_.AddEntriesFrom(input, _map_mapStringForeignEnum_codec);
+            break;
+          }
+          case 602:
+          case 600: {
+            packedInt32_.AddEntriesFrom(input, _repeated_packedInt32_codec);
+            break;
+          }
+          case 610:
+          case 608: {
+            packedInt64_.AddEntriesFrom(input, _repeated_packedInt64_codec);
+            break;
+          }
+          case 618:
+          case 616: {
+            packedUint32_.AddEntriesFrom(input, _repeated_packedUint32_codec);
+            break;
+          }
+          case 626:
+          case 624: {
+            packedUint64_.AddEntriesFrom(input, _repeated_packedUint64_codec);
+            break;
+          }
+          case 634:
+          case 632: {
+            packedSint32_.AddEntriesFrom(input, _repeated_packedSint32_codec);
+            break;
+          }
+          case 642:
+          case 640: {
+            packedSint64_.AddEntriesFrom(input, _repeated_packedSint64_codec);
+            break;
+          }
+          case 650:
+          case 653: {
+            packedFixed32_.AddEntriesFrom(input, _repeated_packedFixed32_codec);
+            break;
+          }
+          case 658:
+          case 657: {
+            packedFixed64_.AddEntriesFrom(input, _repeated_packedFixed64_codec);
+            break;
+          }
+          case 666:
+          case 669: {
+            packedSfixed32_.AddEntriesFrom(input, _repeated_packedSfixed32_codec);
+            break;
+          }
+          case 674:
+          case 673: {
+            packedSfixed64_.AddEntriesFrom(input, _repeated_packedSfixed64_codec);
+            break;
+          }
+          case 682:
+          case 685: {
+            packedFloat_.AddEntriesFrom(input, _repeated_packedFloat_codec);
+            break;
+          }
+          case 690:
+          case 689: {
+            packedDouble_.AddEntriesFrom(input, _repeated_packedDouble_codec);
+            break;
+          }
+          case 698:
+          case 696: {
+            packedBool_.AddEntriesFrom(input, _repeated_packedBool_codec);
+            break;
+          }
+          case 706:
+          case 704: {
+            packedNestedEnum_.AddEntriesFrom(input, _repeated_packedNestedEnum_codec);
+            break;
+          }
+          case 714:
+          case 712: {
+            unpackedInt32_.AddEntriesFrom(input, _repeated_unpackedInt32_codec);
+            break;
+          }
+          case 722:
+          case 720: {
+            unpackedInt64_.AddEntriesFrom(input, _repeated_unpackedInt64_codec);
+            break;
+          }
+          case 730:
+          case 728: {
+            unpackedUint32_.AddEntriesFrom(input, _repeated_unpackedUint32_codec);
+            break;
+          }
+          case 738:
+          case 736: {
+            unpackedUint64_.AddEntriesFrom(input, _repeated_unpackedUint64_codec);
+            break;
+          }
+          case 746:
+          case 744: {
+            unpackedSint32_.AddEntriesFrom(input, _repeated_unpackedSint32_codec);
+            break;
+          }
+          case 754:
+          case 752: {
+            unpackedSint64_.AddEntriesFrom(input, _repeated_unpackedSint64_codec);
+            break;
+          }
+          case 762:
+          case 765: {
+            unpackedFixed32_.AddEntriesFrom(input, _repeated_unpackedFixed32_codec);
+            break;
+          }
+          case 770:
+          case 769: {
+            unpackedFixed64_.AddEntriesFrom(input, _repeated_unpackedFixed64_codec);
+            break;
+          }
+          case 778:
+          case 781: {
+            unpackedSfixed32_.AddEntriesFrom(input, _repeated_unpackedSfixed32_codec);
+            break;
+          }
+          case 786:
+          case 785: {
+            unpackedSfixed64_.AddEntriesFrom(input, _repeated_unpackedSfixed64_codec);
+            break;
+          }
+          case 794:
+          case 797: {
+            unpackedFloat_.AddEntriesFrom(input, _repeated_unpackedFloat_codec);
+            break;
+          }
+          case 802:
+          case 801: {
+            unpackedDouble_.AddEntriesFrom(input, _repeated_unpackedDouble_codec);
+            break;
+          }
+          case 810:
+          case 808: {
+            unpackedBool_.AddEntriesFrom(input, _repeated_unpackedBool_codec);
+            break;
+          }
+          case 818:
+          case 816: {
+            unpackedNestedEnum_.AddEntriesFrom(input, _repeated_unpackedNestedEnum_codec);
             break;
           }
           case 888: {
