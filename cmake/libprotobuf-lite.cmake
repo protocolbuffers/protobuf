@@ -64,6 +64,9 @@ endif()
 add_library(libprotobuf-lite ${protobuf_SHARED_OR_STATIC}
   ${libprotobuf_lite_files} ${libprotobuf_lite_includes} ${libprotobuf_lite_rc_files})
 target_link_libraries(libprotobuf-lite ${CMAKE_THREAD_LIBS_INIT})
+if(protobuf_LINK_LIBATOMIC)
+  target_link_libraries(libprotobuf-lite atomic)
+endif()
 target_include_directories(libprotobuf-lite PUBLIC ${protobuf_source_dir}/src)
 if(MSVC AND protobuf_BUILD_SHARED_LIBS)
   target_compile_definitions(libprotobuf-lite
