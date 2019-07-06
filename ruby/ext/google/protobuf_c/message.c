@@ -183,13 +183,13 @@ static int extract_method_call(VALUE method_name, MessageHeader* self,
     // we don't strip the prefix.
   } else if (strncmp("clear_", name, 6) == 0 &&
              !upb_msgdef_lookupname(self->descriptor->msgdef, name, name_len,
-                                &test_f, &test_o)) {
+                                    &test_f, &test_o)) {
     accessor_type = METHOD_CLEAR;
     name = name + 6;
     name_len = name_len - 6;
   } else if (strncmp("has_", name, 4) == 0 && name[name_len - 1] == '?' &&
              !upb_msgdef_lookupname(self->descriptor->msgdef, name, name_len,
-                                &test_f, &test_o)) {
+                                    &test_f, &test_o)) {
     accessor_type = METHOD_PRESENCE;
     name = name + 4;
     name_len = name_len - 5;
@@ -213,8 +213,8 @@ static int extract_method_call(VALUE method_name, MessageHeader* self,
     wrapper_field_name[name_len - 7] = '\0';
 
     // Check if field exists and is a wrapper type
-    if (upb_msgdef_lookupname(self->descriptor->msgdef, wrapper_field_name, name_len - 9,
-                                             &test_f_wrapper, &test_o_wrapper) &&
+    if (upb_msgdef_lookupname(self->descriptor->msgdef, wrapper_field_name,
+                              name_len - 9, &test_f_wrapper, &test_o_wrapper) &&
         upb_fielddef_type(test_f_wrapper) == UPB_TYPE_MESSAGE &&
         is_wrapper_type_field(self->descriptor->layout, test_f_wrapper)) {
       // It does exist!

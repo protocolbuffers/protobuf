@@ -315,6 +315,7 @@ void FileBuilderContext_register(VALUE module);
 FileBuilderContext* ruby_to_FileBuilderContext(VALUE _self);
 upb_strview FileBuilderContext_strdup(VALUE _self, VALUE rb_str);
 upb_strview FileBuilderContext_strdup_name(VALUE _self, VALUE rb_str);
+upb_strview FileBuilderContext_strdup_sym(VALUE _self, VALUE rb_sym);
 VALUE FileBuilderContext_initialize(VALUE _self, VALUE descriptor_pool,
                                     VALUE name, VALUE options);
 VALUE FileBuilderContext_add_message(VALUE _self, VALUE name);

@@ -220,20 +220,20 @@ module BasicTest
       m.map_string_int32['aaa'] = 3
     end
 
-    def test_concurrent_decoding
-      o = Outer.new
-      o.items[0] = Inner.new
-      raw = Outer.encode(o)
+    #def test_concurrent_decoding
+    #  o = Outer.new
+    #  o.items[0] = Inner.new
+    #  raw = Outer.encode(o)
 
-      thds = 2.times.map do
-        Thread.new do
-          100000.times do
-            assert_equal o, Outer.decode(raw)
-          end
-        end
-      end
-      thds.map(&:join)
-    end
+    #  thds = 2.times.map do
+    #    Thread.new do
+    #      100000.times do
+    #        assert_equal o, Outer.decode(raw)
+    #      end
+    #    end
+    #  end
+    #  thds.map(&:join)
+    #end
 
     def test_map_encode_decode
       m = MapMessage.new(
@@ -269,6 +269,14 @@ module BasicTest
       end
       assert_match(/No such field: not_in_message/, e.message)
     end
+
+    #def test_json_quoted_string
+    #  m = TestMessage.decode_json(%q(
+    #    "optionalInt64": "1",,
+    #  }))
+    #  puts(m)
+    #  assert_equal 1, m.optional_int32
+    #end
 
     def test_to_h
       m = TestMessage.new(:optional_bool => true, :optional_double => -10.100001, :optional_string => 'foo', :repeated_string => ['bar1', 'bar2'], :repeated_msg => [TestMessage2.new(:foo => 100)])
