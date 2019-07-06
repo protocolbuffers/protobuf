@@ -15,7 +15,7 @@ use Google\Protobuf\Internal\GPBUtil;
  *
  * Generated from protobuf message <code>google.protobuf.ServiceDescriptorProto</code>
  */
-class ServiceDescriptorProto extends \Google\Protobuf\Internal\Message
+final class ServiceDescriptorProto extends \Google\Protobuf\Internal\Message
 {
     /**
      * Generated from protobuf field <code>optional string name = 1;</code>

@@ -59,6 +59,10 @@ typedef struct PyDescriptorPool {
   // The C++ pool containing Descriptors.
   DescriptorPool* pool;
 
+  // The error collector to store error info. Can be NULL. This pointer is
+  // owned.
+  DescriptorPool::ErrorCollector* error_collector;
+
   // The C++ pool acting as an underlay. Can be NULL.
   // This pointer is not owned and must stay alive.
   const DescriptorPool* underlay;

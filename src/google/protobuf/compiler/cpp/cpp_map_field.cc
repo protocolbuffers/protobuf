@@ -50,11 +50,6 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
                          const Options& options) {
   SetCommonFieldVariables(descriptor, variables, options);
   (*variables)["type"] = ClassName(descriptor->message_type(), false);
-  (*variables)["stream_writer"] =
-      (*variables)["declared_type"] +
-      (HasFastArraySerialization(descriptor->message_type()->file(), options)
-           ? "MaybeToArray"
-           : "");
   (*variables)["full_name"] = descriptor->full_name();
 
   const FieldDescriptor* key =
@@ -130,11 +125,13 @@ void MapFieldGenerator::GenerateInlineAccessorDefinitions(
   format(
       "inline const ::$proto_ns$::Map< $key_cpp$, $val_cpp$ >&\n"
       "$classname$::$name$() const {\n"
+      "$annotate_accessor$"
       "  // @@protoc_insertion_point(field_map:$full_name$)\n"
       "  return $name$_.GetMap();\n"
       "}\n"
       "inline ::$proto_ns$::Map< $key_cpp$, $val_cpp$ >*\n"
       "$classname$::mutable_$name$() {\n"
+      "$annotate_accessor$"
       "  // @@protoc_insertion_point(field_mutable_map:$full_name$)\n"
       "  return $name$_.MutableMap();\n"
       "}\n");
@@ -231,7 +228,7 @@ void MapFieldGenerator::GenerateMergeFromCodedStream(
 }
 
 static void GenerateSerializationLoop(const Formatter& format, bool string_key,
-                                      bool string_value, bool to_array,
+                                      bool string_value,
                                       bool is_deterministic) {
   std::string ptr;
   if (is_deterministic) {
@@ -247,17 +244,10 @@ static void GenerateSerializationLoop(const Formatter& format, bool string_key,
   }
   format.Indent();
 
-  if (to_array) {
-    format(
-        "target = $map_classname$::Funcs::SerializeToArray($number$, "
-        "$1$->first, $1$->second, target);\n",
-        ptr);
-  } else {
-    format(
-        "$map_classname$::Funcs::SerializeToCodedStream($number$, "
-        "$1$->first, $1$->second, output);\n",
-        ptr);
-  }
+  format(
+      "target = $map_classname$::Funcs::InternalSerialize($number$, "
+      "$1$->first, $1$->second, target, stream);\n",
+      ptr);
 
   if (string_key || string_value) {
     // ptr is either an actual pointer or an iterator, either way we can
@@ -269,18 +259,8 @@ static void GenerateSerializationLoop(const Formatter& format, bool string_key,
   format("}\n");
 }
 
-void MapFieldGenerator::GenerateSerializeWithCachedSizes(
-    io::Printer* printer) const {
-  GenerateSerializeWithCachedSizes(printer, false);
-}
-
 void MapFieldGenerator::GenerateSerializeWithCachedSizesToArray(
     io::Printer* printer) const {
-  GenerateSerializeWithCachedSizes(printer, true);
-}
-
-void MapFieldGenerator::GenerateSerializeWithCachedSizes(io::Printer* printer,
-                                                         bool to_array) const {
   Formatter format(printer, variables_);
   format("if (!this->$name$().empty()) {\n");
   format.Indent();
@@ -332,7 +312,7 @@ void MapFieldGenerator::GenerateSerializeWithCachedSizes(io::Printer* printer,
 
   format(
       "\n"
-      "if ($1$ &&\n"
+      "if (stream->IsSerializationDeterministic() &&\n"
       "    this->$name$().size() > 1) {\n"
       "  ::std::unique_ptr<SortItem[]> items(\n"
       "      new SortItem[this->$name$().size()]);\n"
@@ -344,14 +324,13 @@ void MapFieldGenerator::GenerateSerializeWithCachedSizes(io::Printer* printer,
       "      it != this->$name$().end(); ++it, ++n) {\n"
       "    items[static_cast<ptrdiff_t>(n)] = SortItem(&*it);\n"
       "  }\n"
-      "  ::std::sort(&items[0], &items[static_cast<ptrdiff_t>(n)], Less());\n",
-      to_array ? "false" : "output->IsSerializationDeterministic()");
+      "  ::std::sort(&items[0], &items[static_cast<ptrdiff_t>(n)], Less());\n");
   format.Indent();
-  GenerateSerializationLoop(format, string_key, string_value, to_array, true);
+  GenerateSerializationLoop(format, string_key, string_value, true);
   format.Outdent();
   format("} else {\n");
   format.Indent();
-  GenerateSerializationLoop(format, string_key, string_value, to_array, false);
+  GenerateSerializationLoop(format, string_key, string_value, false);
   format.Outdent();
   format("}\n");
   format.Outdent();

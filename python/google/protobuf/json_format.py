@@ -233,12 +233,8 @@ class _Printer(object):
           js[name] = [self._FieldToJsonObject(field, k)
                       for k in value]
         elif field.is_extension:
-          f = field
-          if (f.containing_type.GetOptions().message_set_wire_format and
-              f.type == descriptor.FieldDescriptor.TYPE_MESSAGE and
-              f.label == descriptor.FieldDescriptor.LABEL_OPTIONAL):
-            f = f.message_type
-          name = '[%s.%s]' % (f.full_name, name)
+          full_qualifier = field.full_name[:-len(field.name)]
+          name = '[%s%s]' % (full_qualifier, name)
           js[name] = self._FieldToJsonObject(field, value)
         else:
           js[name] = self._FieldToJsonObject(field, value)
@@ -493,10 +489,16 @@ class _Parser(object):
             raise ParseError('Message type {0} does not have extensions'.format(
                 message_descriptor.full_name))
           identifier = name[1:-1]  # strip [] brackets
-          identifier = '.'.join(identifier.split('.')[:-1])
           # pylint: disable=protected-access
           field = message.Extensions._FindExtensionByName(identifier)
           # pylint: enable=protected-access
+          if not field:
+            # Try looking for extension by the message type name, dropping the
+            # field name following the final . separator in full_name.
+            identifier = '.'.join(identifier.split('.')[:-1])
+            # pylint: disable=protected-access
+            field = message.Extensions._FindExtensionByName(identifier)
+            # pylint: enable=protected-access
         if not field:
           if self.ignore_unknown_fields:
             continue

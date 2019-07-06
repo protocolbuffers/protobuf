@@ -18,7 +18,7 @@ else
 PTHREAD_DEF =
 endif
 
-PROTOBUF_VERSION = 18:1:0
+PROTOBUF_VERSION = 20:0:0
 
 if GCC
 # Turn on all warnings except for sign comparison (we ignore sign comparison
@@ -72,6 +72,7 @@ nobase_include_HEADERS =                                         \
   google/protobuf/stubs/hash.h                                   \
   google/protobuf/stubs/logging.h                                \
   google/protobuf/stubs/macros.h                                 \
+  google/protobuf/stubs/map_util.h                               \
   google/protobuf/stubs/mutex.h                                  \
   google/protobuf/stubs/once.h                                   \
   google/protobuf/stubs/platform_macros.h                        \
@@ -698,7 +699,7 @@ $(protoc_outputs): unittest_proto_middleman
 COMMON_TEST_SOURCES =                                          \
   google/protobuf/arena_test_util.cc                           \
   google/protobuf/arena_test_util.h                            \
-  google/protobuf/map_test_util.cc                             \
+  google/protobuf/map_test_util.inc                            \
   google/protobuf/map_test_util.h                              \
   google/protobuf/map_test_util_impl.h                         \
   google/protobuf/test_util.cc                                 \

@@ -10460,6 +10460,48 @@ static void start_timestamp_zone(upb_json_parser *p, const char *ptr) {
   capture_begin(p, ptr);
 }
 
+#define EPOCH_YEAR 1970
+#define TM_YEAR_BASE 1900
+
+static bool isleap(int year) {
+  return (year % 4) == 0 && (year % 100 != 0 || (year % 400) == 0);
+}
+
+const unsigned short int __mon_yday[2][13] = {
+    /* Normal years.  */
+    { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365 },
+    /* Leap years.  */
+    { 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366 }
+};
+
+int64_t epoch(int year, int yday, int hour, int min, int sec) {
+  int64_t years = year - EPOCH_YEAR;
+
+  int64_t leap_days = years / 4 - years / 100 + years / 400;
+
+  int64_t days = years * 365 + yday + leap_days;
+  int64_t hours = days * 24 + hour;
+  int64_t mins = hours * 60 + min;
+  int64_t secs = mins * 60 + sec;
+  return secs;
+}
+
+
+static int64_t upb_mktime(const struct tm *tp) {
+  int sec = tp->tm_sec;
+  int min = tp->tm_min;
+  int hour = tp->tm_hour;
+  int mday = tp->tm_mday;
+  int mon = tp->tm_mon;
+  int year = tp->tm_year + TM_YEAR_BASE;
+
+  /* Calculate day of year from year, month, and day of month. */
+  int mon_yday = ((__mon_yday[isleap(year)][mon]) - 1);
+  int yday = mon_yday + mday; 
+
+  return epoch(year, yday, hour, min, sec);
+}
+
 static bool end_timestamp_zone(upb_json_parser *p, const char *ptr) {
   size_t len;
   const char *buf;
@@ -10487,7 +10529,7 @@ static bool end_timestamp_zone(upb_json_parser *p, const char *ptr) {
   }
 
   /* Normalize tm */
-  seconds = mktime(&p->tm);
+  seconds = upb_mktime(&p->tm);
 
   /* Check timestamp boundary */
   if (seconds < -62135596800) {
@@ -12389,14 +12431,28 @@ static size_t fmt_bool(bool val, char* buf, size_t length) {
   return n;
 }
 
-static size_t fmt_int64(long val, char* buf, size_t length) {
-  size_t n = _upb_snprintf(buf, length, "%ld", val);
+static size_t fmt_int64_as_number(long long val, char* buf, size_t length) {
+  size_t n = _upb_snprintf(buf, length, "%lld", val);
   CHKLENGTH(n > 0 && n < length);
   return n;
 }
 
-static size_t fmt_uint64(unsigned long long val, char* buf, size_t length) {
+static size_t fmt_uint64_as_number(
+    unsigned long long val, char* buf, size_t length) {
   size_t n = _upb_snprintf(buf, length, "%llu", val);
+  CHKLENGTH(n > 0 && n < length);
+  return n;
+}
+
+static size_t fmt_int64_as_string(long long val, char* buf, size_t length) {
+  size_t n = _upb_snprintf(buf, length, "\"%lld\"", val);
+  CHKLENGTH(n > 0 && n < length);
+  return n;
+}
+
+static size_t fmt_uint64_as_string(
+    unsigned long long val, char* buf, size_t length) {
+  size_t n = _upb_snprintf(buf, length, "\"%llu\"", val);
   CHKLENGTH(n > 0 && n < length);
   return n;
 }
@@ -12444,8 +12500,11 @@ static bool putkey(void *closure, const void *handler_data) {
   static bool putmapkey_##type(void *closure, const void *handler_data,      \
                             type val) {                                      \
     upb_json_printer *p = closure;                                           \
+    char data[64];                                                           \
+    size_t length = fmt_func(val, data, sizeof(data));                       \
+    UPB_UNUSED(handler_data);                                                \
     print_data(p, "\"", 1);                                                  \
-    CHK(put##type(closure, handler_data, val));                              \
+    print_data(p, data, length);                                             \
     print_data(p, "\":", 2);                                                 \
     return true;                                                             \
   }
@@ -12453,17 +12512,17 @@ static bool putkey(void *closure, const void *handler_data) {
 TYPE_HANDLERS(double,   fmt_double)
 TYPE_HANDLERS(float,    fmt_float)
 TYPE_HANDLERS(bool,     fmt_bool)
-TYPE_HANDLERS(int32_t,  fmt_int64)
-TYPE_HANDLERS(uint32_t, fmt_int64)
-TYPE_HANDLERS(int64_t,  fmt_int64)
-TYPE_HANDLERS(uint64_t, fmt_uint64)
+TYPE_HANDLERS(int32_t,  fmt_int64_as_number)
+TYPE_HANDLERS(uint32_t, fmt_int64_as_number)
+TYPE_HANDLERS(int64_t,  fmt_int64_as_string)
+TYPE_HANDLERS(uint64_t, fmt_uint64_as_string)
 
 /* double and float are not allowed to be map keys. */
 TYPE_HANDLERS_MAPKEY(bool,     fmt_bool)
-TYPE_HANDLERS_MAPKEY(int32_t,  fmt_int64)
-TYPE_HANDLERS_MAPKEY(uint32_t, fmt_int64)
-TYPE_HANDLERS_MAPKEY(int64_t,  fmt_int64)
-TYPE_HANDLERS_MAPKEY(uint64_t, fmt_uint64)
+TYPE_HANDLERS_MAPKEY(int32_t,  fmt_int64_as_number)
+TYPE_HANDLERS_MAPKEY(uint32_t, fmt_int64_as_number)
+TYPE_HANDLERS_MAPKEY(int64_t,  fmt_int64_as_number)
+TYPE_HANDLERS_MAPKEY(uint64_t, fmt_uint64_as_number)
 
 #undef TYPE_HANDLERS
 #undef TYPE_HANDLERS_MAPKEY

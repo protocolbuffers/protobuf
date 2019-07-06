@@ -1065,10 +1065,12 @@ done:
 }
 
 char* FastInt32ToBufferLeft(int32 i, char* buffer) {
-  uint32 u = i;
+  uint32 u = 0;
   if (i < 0) {
     *buffer++ = '-';
-    u = -i;
+    u -= i;
+  } else {
+    u = i;
   }
   return FastUInt32ToBufferLeft(u, buffer);
 }

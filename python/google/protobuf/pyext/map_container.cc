@@ -464,10 +464,13 @@ int MapReflectionFriend::ScalarMapSetItem(PyObject* _self, PyObject* key,
   }
 }
 
-static PyObject* ScalarMapGet(PyObject* self, PyObject* args) {
+static PyObject* ScalarMapGet(PyObject* self, PyObject* args,
+                              PyObject* kwargs) {
+  static char* kwlist[] = {"key", "default", nullptr};
   PyObject* key;
   PyObject* default_value = NULL;
-  if (PyArg_ParseTuple(args, "O|O", &key, &default_value) < 0) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|O", kwlist, &key,
+                                   &default_value)) {
     return NULL;
   }
 
@@ -532,23 +535,23 @@ static void ScalarMapDealloc(PyObject* _self) {
 }
 
 static PyMethodDef ScalarMapMethods[] = {
-  { "__contains__", MapReflectionFriend::Contains, METH_O,
-    "Tests whether a key is a member of the map." },
-  { "clear", (PyCFunction)Clear, METH_NOARGS,
-    "Removes all elements from the map." },
-  { "get", ScalarMapGet, METH_VARARGS,
-    "Gets the value for the given key if present, or otherwise a default" },
-  { "GetEntryClass", (PyCFunction)GetEntryClass, METH_NOARGS,
-    "Return the class used to build Entries of (key, value) pairs." },
-  { "MergeFrom", (PyCFunction)MapReflectionFriend::MergeFrom, METH_O,
-    "Merges a map into the current map." },
-  /*
-  { "__deepcopy__", (PyCFunction)DeepCopy, METH_VARARGS,
-    "Makes a deep copy of the class." },
-  { "__reduce__", (PyCFunction)Reduce, METH_NOARGS,
-    "Outputs picklable representation of the repeated field." },
-  */
-  {NULL, NULL},
+    {"__contains__", MapReflectionFriend::Contains, METH_O,
+     "Tests whether a key is a member of the map."},
+    {"clear", (PyCFunction)Clear, METH_NOARGS,
+     "Removes all elements from the map."},
+    {"get", (PyCFunction)ScalarMapGet, METH_VARARGS | METH_KEYWORDS,
+     "Gets the value for the given key if present, or otherwise a default"},
+    {"GetEntryClass", (PyCFunction)GetEntryClass, METH_NOARGS,
+     "Return the class used to build Entries of (key, value) pairs."},
+    {"MergeFrom", (PyCFunction)MapReflectionFriend::MergeFrom, METH_O,
+     "Merges a map into the current map."},
+    /*
+    { "__deepcopy__", (PyCFunction)DeepCopy, METH_VARARGS,
+      "Makes a deep copy of the class." },
+    { "__reduce__", (PyCFunction)Reduce, METH_NOARGS,
+      "Outputs picklable representation of the repeated field." },
+    */
+    {NULL, NULL},
 };
 
 PyTypeObject *ScalarMapContainer_Type;
@@ -773,10 +776,12 @@ PyObject* MapReflectionFriend::MessageMapToStr(PyObject* _self) {
   return PyObject_Repr(dict.get());
 }
 
-PyObject* MessageMapGet(PyObject* self, PyObject* args) {
+PyObject* MessageMapGet(PyObject* self, PyObject* args, PyObject* kwargs) {
+  static char* kwlist[] = {"key", "default", nullptr};
   PyObject* key;
   PyObject* default_value = NULL;
-  if (PyArg_ParseTuple(args, "O|O", &key, &default_value) < 0) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|O", kwlist, &key,
+                                   &default_value)) {
     return NULL;
   }
 
@@ -810,25 +815,25 @@ static void MessageMapDealloc(PyObject* _self) {
 }
 
 static PyMethodDef MessageMapMethods[] = {
-  { "__contains__", (PyCFunction)MapReflectionFriend::Contains, METH_O,
-    "Tests whether the map contains this element."},
-  { "clear", (PyCFunction)Clear, METH_NOARGS,
-    "Removes all elements from the map."},
-  { "get", MessageMapGet, METH_VARARGS,
-    "Gets the value for the given key if present, or otherwise a default" },
-  { "get_or_create", MapReflectionFriend::MessageMapGetItem, METH_O,
-    "Alias for getitem, useful to make explicit that the map is mutated." },
-  { "GetEntryClass", (PyCFunction)GetEntryClass, METH_NOARGS,
-    "Return the class used to build Entries of (key, value) pairs." },
-  { "MergeFrom", (PyCFunction)MapReflectionFriend::MergeFrom, METH_O,
-    "Merges a map into the current map." },
-  /*
-  { "__deepcopy__", (PyCFunction)DeepCopy, METH_VARARGS,
-    "Makes a deep copy of the class." },
-  { "__reduce__", (PyCFunction)Reduce, METH_NOARGS,
-    "Outputs picklable representation of the repeated field." },
-  */
-  {NULL, NULL},
+    {"__contains__", (PyCFunction)MapReflectionFriend::Contains, METH_O,
+     "Tests whether the map contains this element."},
+    {"clear", (PyCFunction)Clear, METH_NOARGS,
+     "Removes all elements from the map."},
+    {"get", (PyCFunction)MessageMapGet, METH_VARARGS | METH_KEYWORDS,
+     "Gets the value for the given key if present, or otherwise a default"},
+    {"get_or_create", MapReflectionFriend::MessageMapGetItem, METH_O,
+     "Alias for getitem, useful to make explicit that the map is mutated."},
+    {"GetEntryClass", (PyCFunction)GetEntryClass, METH_NOARGS,
+     "Return the class used to build Entries of (key, value) pairs."},
+    {"MergeFrom", (PyCFunction)MapReflectionFriend::MergeFrom, METH_O,
+     "Merges a map into the current map."},
+    /*
+    { "__deepcopy__", (PyCFunction)DeepCopy, METH_VARARGS,
+      "Makes a deep copy of the class." },
+    { "__reduce__", (PyCFunction)Reduce, METH_NOARGS,
+      "Outputs picklable representation of the repeated field." },
+    */
+    {NULL, NULL},
 };
 
 PyTypeObject *MessageMapContainer_Type;

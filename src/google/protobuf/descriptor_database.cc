@@ -111,6 +111,9 @@ bool DescriptorDatabase::FindAllMessageNames(std::vector<std::string>* output) {
 
 // ===================================================================
 
+SimpleDescriptorDatabase::SimpleDescriptorDatabase() {}
+SimpleDescriptorDatabase::~SimpleDescriptorDatabase() {}
+
 template <typename Value>
 bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddFile(
     const FileDescriptorProto& file, Value value) {
@@ -127,14 +130,15 @@ bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddFile(
 
   for (int i = 0; i < file.message_type_size(); i++) {
     if (!AddSymbol(path + file.message_type(i).name(), value)) return false;
-    if (!AddNestedExtensions(file.message_type(i), value)) return false;
+    if (!AddNestedExtensions(file.name(), file.message_type(i), value))
+      return false;
   }
   for (int i = 0; i < file.enum_type_size(); i++) {
     if (!AddSymbol(path + file.enum_type(i).name(), value)) return false;
   }
   for (int i = 0; i < file.extension_size(); i++) {
     if (!AddSymbol(path + file.extension(i).name(), value)) return false;
-    if (!AddExtension(file.extension(i), value)) return false;
+    if (!AddExtension(file.name(), file.extension(i), value)) return false;
   }
   for (int i = 0; i < file.service_size(); i++) {
     if (!AddSymbol(path + file.service(i).name(), value)) return false;
@@ -203,19 +207,22 @@ bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddSymbol(
 
 template <typename Value>
 bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddNestedExtensions(
-    const DescriptorProto& message_type, Value value) {
+    const std::string& filename, const DescriptorProto& message_type,
+    Value value) {
   for (int i = 0; i < message_type.nested_type_size(); i++) {
-    if (!AddNestedExtensions(message_type.nested_type(i), value)) return false;
+    if (!AddNestedExtensions(filename, message_type.nested_type(i), value))
+      return false;
   }
   for (int i = 0; i < message_type.extension_size(); i++) {
-    if (!AddExtension(message_type.extension(i), value)) return false;
+    if (!AddExtension(filename, message_type.extension(i), value)) return false;
   }
   return true;
 }
 
 template <typename Value>
 bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddExtension(
-    const FieldDescriptorProto& field, Value value) {
+    const std::string& filename, const FieldDescriptorProto& field,
+    Value value) {
   if (!field.extendee().empty() && field.extendee()[0] == '.') {
     // The extension is fully-qualified.  We can use it as a lookup key in
     // the by_symbol_ table.
@@ -226,7 +233,7 @@ bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddExtension(
       GOOGLE_LOG(ERROR) << "Extension conflicts with extension already in database: "
                     "extend "
                  << field.extendee() << " { " << field.name() << " = "
-                 << field.number() << " }";
+                 << field.number() << " } from:" << filename;
       return false;
     }
   } else {
@@ -324,11 +331,6 @@ bool SimpleDescriptorDatabase::DescriptorIndex<Value>::ValidateSymbolName(
 
 // -------------------------------------------------------------------
 
-SimpleDescriptorDatabase::SimpleDescriptorDatabase() {}
-SimpleDescriptorDatabase::~SimpleDescriptorDatabase() {
-  STLDeleteElements(&files_to_delete_);
-}
-
 bool SimpleDescriptorDatabase::Add(const FileDescriptorProto& file) {
   FileDescriptorProto* new_file = new FileDescriptorProto;
   new_file->CopyFrom(file);
@@ -336,7 +338,7 @@ bool SimpleDescriptorDatabase::Add(const FileDescriptorProto& file) {
 }
 
 bool SimpleDescriptorDatabase::AddAndOwn(const FileDescriptorProto* file) {
-  files_to_delete_.push_back(file);
+  files_to_delete_.emplace_back(file);
   return index_.AddFile(*file, file);
 }
 

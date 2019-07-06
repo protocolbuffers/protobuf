@@ -1640,7 +1640,8 @@ bool MessageDifferencer::MatchRepeatedFieldIndices(
 
       for (int j = start_offset; j < count2; j++) {
         if (match_list2->at(j) != -1) {
-          if (!is_treated_as_smart_set || num_diffs_list1[i] == 0) {
+          if (!is_treated_as_smart_set || num_diffs_list1[i] == 0 ||
+              num_diffs_list1[match_list2->at(j)] == 0) {
             continue;
           }
         }
@@ -1662,8 +1663,13 @@ bool MessageDifferencer::MatchRepeatedFieldIndices(
             // Replace with the one with fewer diffs.
             const int32 num_diffs = num_diffs_reporter.GetNumDiffs();
             if (num_diffs < num_diffs_list1[i]) {
-              num_diffs_list1[i] = num_diffs;
-              match = true;
+              // If j has been already matched to some element, ensure the
+              // current num_diffs is smaller.
+              if (match_list2->at(j) == -1 ||
+                  num_diffs < num_diffs_list1[match_list2->at(j)]) {
+                num_diffs_list1[i] = num_diffs;
+                match = true;
+              }
             }
           }
         }

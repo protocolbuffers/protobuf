@@ -16,7 +16,7 @@ use Google\Protobuf\Internal\GPBUtil;
  *
  * Generated from protobuf message <code>google.protobuf.SourceCodeInfo</code>
  */
-class SourceCodeInfo extends \Google\Protobuf\Internal\Message
+final class SourceCodeInfo extends \Google\Protobuf\Internal\Message
 {
     /**
      * A Location identifies a piece of source code in a .proto file which

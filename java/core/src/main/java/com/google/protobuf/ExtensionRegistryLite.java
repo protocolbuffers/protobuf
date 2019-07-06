@@ -76,6 +76,10 @@ public class ExtensionRegistryLite {
   // applications. Need to support this feature on smaller granularity.
   private static volatile boolean eagerlyParseMessageSets = false;
 
+  // short circuit the ExtensionRegistryFactory via assumevalues trickery
+  @SuppressWarnings("JavaOptionalSuggestions")
+  private static boolean doFullRuntimeInheritanceCheck = true;
+
   // Visible for testing.
   static final String EXTENSION_CLASS_NAME = "com.google.protobuf.Extension";
 
@@ -107,7 +111,9 @@ public class ExtensionRegistryLite {
    * available.
    */
   public static ExtensionRegistryLite newInstance() {
-    return ExtensionRegistryFactory.create();
+    return doFullRuntimeInheritanceCheck
+        ? ExtensionRegistryFactory.create()
+        : new ExtensionRegistryLite();
   }
 
   private static volatile ExtensionRegistryLite emptyRegistry;
@@ -122,7 +128,11 @@ public class ExtensionRegistryLite {
       synchronized (ExtensionRegistryLite.class) {
         result = emptyRegistry;
         if (result == null) {
-          result = emptyRegistry = ExtensionRegistryFactory.createEmpty();
+          result =
+              emptyRegistry =
+                  doFullRuntimeInheritanceCheck
+                      ? ExtensionRegistryFactory.createEmpty()
+                      : EMPTY_REGISTRY_LITE;
         }
       }
     }
@@ -163,7 +173,7 @@ public class ExtensionRegistryLite {
     if (GeneratedMessageLite.GeneratedExtension.class.isAssignableFrom(extension.getClass())) {
       add((GeneratedMessageLite.GeneratedExtension<?, ?>) extension);
     }
-    if (ExtensionRegistryFactory.isFullRegistry(this)) {
+    if (doFullRuntimeInheritanceCheck && ExtensionRegistryFactory.isFullRegistry(this)) {
       try {
         this.getClass().getMethod("add", extensionClass).invoke(this, extension);
       } catch (Exception e) {

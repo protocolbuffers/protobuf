@@ -1194,6 +1194,9 @@ namespace Google.Protobuf.Reflection {
         private readonly static int StartDefaultValue = 0;
 
         private int start_;
+        /// <summary>
+        /// Inclusive.
+        /// </summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int Start {
           get { if ((_hasBits0 & 1) != 0) { return start_; } else { return StartDefaultValue; } }
@@ -1218,6 +1221,9 @@ namespace Google.Protobuf.Reflection {
         private readonly static int EndDefaultValue = 0;
 
         private int end_;
+        /// <summary>
+        /// Exclusive.
+        /// </summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int End {
           get { if ((_hasBits0 & 2) != 0) { return end_; } else { return EndDefaultValue; } }

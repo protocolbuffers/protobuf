@@ -50,9 +50,9 @@ using type_info = ::type_info;
 #include <typeinfo>
 #endif
 
-#include <google/protobuf/arena_impl.h>
 #include <google/protobuf/port.h>
 #include <type_traits>
+#include <google/protobuf/arena_impl.h>
 
 #include <google/protobuf/port_def.inc>
 
@@ -245,7 +245,7 @@ struct ArenaOptions {
 // well as protobuf container types like RepeatedPtrField and Map. The protocol
 // is internal to protobuf and is not guaranteed to be stable. Non-proto types
 // should not rely on this protocol.
-class PROTOBUF_EXPORT Arena final {
+class PROTOBUF_EXPORT alignas(8) Arena final {
  public:
   // Arena constructor taking custom options. See ArenaOptions below for
   // descriptions of the options available.

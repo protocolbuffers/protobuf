@@ -493,11 +493,15 @@ java_EXTRA_DIST=                                                                
   java/util/src/main/java/com/google/protobuf/util/FieldMaskUtil.java              \
   java/util/src/main/java/com/google/protobuf/util/JsonFormat.java                 \
   java/util/src/main/java/com/google/protobuf/util/TimeUtil.java                   \
+  java/util/src/main/java/com/google/protobuf/util/Structs.java                    \
   java/util/src/main/java/com/google/protobuf/util/Timestamps.java                 \
+  java/util/src/main/java/com/google/protobuf/util/Values.java                     \
   java/util/src/test/java/com/google/protobuf/util/FieldMaskTreeTest.java          \
   java/util/src/test/java/com/google/protobuf/util/FieldMaskUtilTest.java          \
   java/util/src/test/java/com/google/protobuf/util/JsonFormatTest.java             \
+  java/util/src/test/java/com/google/protobuf/util/StructsTest.java                 \
   java/util/src/test/java/com/google/protobuf/util/TimeUtilTest.java               \
+  java/util/src/test/java/com/google/protobuf/util/ValuesTest.java                 \
   java/util/src/test/proto/com/google/protobuf/util/json_test.proto
 
 objectivec_EXTRA_DIST=                                                       \
@@ -1226,11 +1230,13 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)   \
   examples/pubspec.yaml                  \
   examples/third_party/zlib.BUILD        \
   protobuf.bzl                           \
+  protobuf_deps.bzl                      \
   python/release/wheel/build_wheel_manylinux.sh  \
   python/release/wheel/Dockerfile                \
   python/release/wheel/protobuf_optimized_pip.sh \
   python/release/wheel/README.md         \
   six.BUILD                              \
+  third_party/zlib.BUILD                 \
   util/python/BUILD
 
 

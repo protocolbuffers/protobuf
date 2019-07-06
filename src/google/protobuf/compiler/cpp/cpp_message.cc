@@ -714,6 +714,18 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* printer) {
     ordered_fields.push_back(field);
   }
 
+  if (!ordered_fields.empty()) {
+    format("enum : int {\n");
+    for (auto field : ordered_fields) {
+      Formatter::SaveState save(&format);
+
+      std::map<std::string, std::string> vars;
+      SetCommonFieldVariables(field, &vars, options_);
+      format.AddMap(vars);
+      format("  ${1$$2$$}$ = $number$,\n", field, FieldConstantName(field));
+    }
+    format("};\n");
+  }
   for (auto field : ordered_fields) {
     PrintFieldComment(format, field);
 
@@ -735,10 +747,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* printer) {
           field);
     }
 
-    format(
-        "$deprecated_attr$void ${1$clear_$name$$}$();\n"
-        "$deprecated_attr$static const int ${1$$2$$}$ = $number$;\n",
-        field, FieldConstantName(field));
+    format("$deprecated_attr$void ${1$clear_$name$$}$();\n", field);
 
     // Generate type-specific accessor declarations.
     field_generators_.get(field).GenerateAccessorDeclarations(printer);
@@ -776,6 +785,7 @@ void MessageGenerator::GenerateSingularFieldHasBits(
   if (field->options().weak()) {
     format(
         "inline bool $classname$::has_$name$() const {\n"
+        "$annotate_accessor$"
         "  return _weak_field_map_.Has($number$);\n"
         "}\n");
     return;
@@ -791,6 +801,7 @@ void MessageGenerator::GenerateSingularFieldHasBits(
                strings::Hex(1u << (has_bit_index % 32), strings::ZERO_PAD_8));
     format(
         "inline bool $classname$::has_$name$() const {\n"
+        "$annotate_accessor$"
         "  return (_has_bits_[$has_array_index$] & 0x$has_mask$u) != 0;\n"
         "}\n");
   } else {
@@ -799,11 +810,13 @@ void MessageGenerator::GenerateSingularFieldHasBits(
       if (IsLazy(field, options_)) {
         format(
             "inline bool $classname$::has_$name$() const {\n"
+            "$annotate_accessor$"
             "  return !$name$_.IsCleared();\n"
             "}\n");
       } else {
         format(
             "inline bool $classname$::has_$name$() const {\n"
+            "$annotate_accessor$"
             "  return this != internal_default_instance() "
             "&& $name$_ != nullptr;\n"
             "}\n");
@@ -838,9 +851,11 @@ void MessageGenerator::GenerateOneofMemberHasBits(const FieldDescriptor* field,
   // _oneof_case_[index] against a constant everywhere).
   format(
       "inline bool $classname$::has_$name$() const {\n"
+      "$annotate_accessor$"
       "  return $oneof_name$_case() == k$field_name$;\n"
       "}\n"
       "inline void $classname$::set_has_$name$() {\n"
+      "$annotate_accessor$"
       "  _oneof_case_[$oneof_index$] = k$field_name$;\n"
       "}\n");
 }
@@ -851,7 +866,9 @@ void MessageGenerator::GenerateFieldClear(const FieldDescriptor* field,
   if (is_inline) {
     format("inline ");
   }
-  format("void $classname$::clear_$name$() {\n");
+  format(
+      "void $classname$::clear_$name$() {\n"
+      "$annotate_accessor$");
 
   format.Indent();
 
@@ -900,6 +917,7 @@ void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* printer) {
     if (field->is_repeated()) {
       format(
           "inline int $classname$::$name$_size() const {\n"
+          "$annotate_accessor$"
           "  return $name$_.size();\n"
           "}\n");
     } else if (field->containing_oneof()) {
@@ -1159,10 +1177,6 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
       "\n",
       index_in_file_messages_);
 
-  if (SupportsArenas(descriptor_)) {
-    format("void UnsafeArenaSwap($classname$* other);\n");
-  }
-
   if (IsAnyMessage(descriptor_, options_)) {
     format(
         "// implements Any -----------------------------------------------\n"
@@ -1205,10 +1219,34 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
              ShouldMarkNewAsFinal(descriptor_, options_) ? "final" : "");
 
   format(
-      "void Swap($classname$* other);\n"
       "friend void swap($classname$& a, $classname$& b) {\n"
       "  a.Swap(&b);\n"
-      "}\n"
+      "}\n");
+
+  if (SupportsArenas(descriptor_)) {
+    format(
+        "inline void Swap($classname$* other) {\n"
+        "  if (other == this) return;\n"
+        "  if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {\n"
+        "    InternalSwap(other);\n"
+        "  } else {\n"
+        "    ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);\n"
+        "  }\n"
+        "}\n"
+        "void UnsafeArenaSwap($classname$* other) {\n"
+        "  if (other == this) return;\n"
+        "  $DCHK$(GetArenaNoVirtual() == other->GetArenaNoVirtual());\n"
+        "  InternalSwap(other);\n"
+        "}\n");
+  } else {
+    format(
+        "inline void Swap($classname$* other) {\n"
+        "  if (other == this) return;\n"
+        "  InternalSwap(other);\n"
+        "}\n");
+  }
+
+  format(
       "\n"
       "// implements Message ----------------------------------------------\n"
       "\n"
@@ -1256,23 +1294,15 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
         "#else\n"
         "bool MergePartialFromCodedStream(\n"
         "    ::$proto_ns$::io::CodedInputStream* input) final;\n"
-        "#endif  // $GOOGLE_PROTOBUF$_ENABLE_EXPERIMENTAL_PARSER\n");
+        "#endif  // $GOOGLE_PROTOBUF$_ENABLE_EXPERIMENTAL_PARSER\n"
+        "$uint8$* InternalSerializeWithCachedSizesToArray(\n"
+        "    $uint8$* target, ::$proto_ns$::io::EpsCopyOutputStream* stream) "
+        "const final;\n");
 
-    if (!options_.table_driven_serialization ||
-        descriptor_->options().message_set_wire_format()) {
-      format(
-          "void SerializeWithCachedSizes(\n"
-          "    ::$proto_ns$::io::CodedOutputStream* output) const final;\n");
-    }
     // DiscardUnknownFields() is implemented in message.cc using reflections. We
     // need to implement this function in generated code for messages.
     if (!UseUnknownFieldSet(descriptor_->file(), options_)) {
       format("void DiscardUnknownFields()$ full_final$;\n");
-    }
-    if (HasFastArraySerialization(descriptor_->file(), options_)) {
-      format(
-          "$uint8$* InternalSerializeWithCachedSizesToArray(\n"
-          "    $uint8$* target) const final;\n");
     }
   }
 
@@ -1392,7 +1422,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
   format(" private:\n");
   format.Indent();
   // TODO(seongkim): Remove hack to track field access and remove this class.
-  format("class HasBitSetters;\n");
+  format("class _Internal;\n");
 
 
   for (auto field : FieldRange(descriptor_)) {
@@ -1990,7 +2020,7 @@ void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
   }
 
   format(
-      "class $classname$::HasBitSetters {\n"
+      "class $classname$::_Internal {\n"
       " public:\n");
   format.Indent();
   if (HasFieldPresence(descriptor_->file()) && HasBitsSize() != 0) {
@@ -2031,15 +2061,6 @@ void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
     }
   }
 
-  // Generate field number constants.
-  format("#if !defined(_MSC_VER) || _MSC_VER >= 1900\n");
-  for (auto field : FieldRange(descriptor_)) {
-    format("const int $classname$::$1$;\n", FieldConstantName(field));
-  }
-  format(
-      "#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900\n"
-      "\n");
-
   GenerateStructors(printer);
   format("\n");
 
@@ -2055,13 +2076,8 @@ void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
     GenerateMergeFromCodedStream(printer);
     format("\n");
 
-    GenerateSerializeWithCachedSizes(printer);
+    GenerateSerializeWithCachedSizesToArray(printer);
     format("\n");
-
-    if (HasFastArraySerialization(descriptor_->file(), options_)) {
-      GenerateSerializeWithCachedSizesToArray(printer);
-      format("\n");
-    }
 
     GenerateByteSize(printer);
     format("\n");
@@ -3003,40 +3019,7 @@ void MessageGenerator::GenerateOneofClear(io::Printer* printer) {
 
 void MessageGenerator::GenerateSwap(io::Printer* printer) {
   Formatter format(printer, variables_);
-  if (SupportsArenas(descriptor_)) {
-    // Generate the Swap member function. This is a lightweight wrapper around
-    // UnsafeArenaSwap() / MergeFrom() with temporaries, depending on the memory
-    // ownership situation: swapping across arenas or between an arena and a
-    // heap requires copying.
-    format(
-        "void $classname$::Swap($classname$* other) {\n"
-        "  if (other == this) return;\n"
-        "  if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {\n"
-        "    InternalSwap(other);\n"
-        "  } else {\n"
-        "    $classname$* temp = New(GetArenaNoVirtual());\n"
-        "    temp->MergeFrom(*other);\n"
-        "    other->CopyFrom(*this);\n"
-        "    InternalSwap(temp);\n"
-        "    if (GetArenaNoVirtual() == nullptr) {\n"
-        "      delete temp;\n"
-        "    }\n"
-        "  }\n"
-        "}\n"
-        "void $classname$::UnsafeArenaSwap($classname$* other) {\n"
-        "  if (other == this) return;\n"
-        "  $DCHK$(GetArenaNoVirtual() == other->GetArenaNoVirtual());\n"
-        "  InternalSwap(other);\n"
-        "}\n");
-  } else {
-    format(
-        "void $classname$::Swap($classname$* other) {\n"
-        "  if (other == this) return;\n"
-        "  InternalSwap(other);\n"
-        "}\n");
-  }
 
-  // Generate the UnsafeArenaSwap member function.
   format("void $classname$::InternalSwap($classname$* other) {\n");
   format.Indent();
   format("using std::swap;\n");
@@ -3687,12 +3670,11 @@ void MessageGenerator::GenerateMergeFromCodedStream(io::Printer* printer) {
 }
 
 void MessageGenerator::GenerateSerializeOneofFields(
-    io::Printer* printer, const std::vector<const FieldDescriptor*>& fields,
-    bool to_array) {
+    io::Printer* printer, const std::vector<const FieldDescriptor*>& fields) {
   Formatter format(printer, variables_);
   GOOGLE_CHECK(!fields.empty());
   if (fields.size() == 1) {
-    GenerateSerializeOneField(printer, fields[0], to_array, -1);
+    GenerateSerializeOneField(printer, fields[0], -1);
     return;
   }
   // We have multiple mutually exclusive choices.  Emit a switch statement.
@@ -3702,12 +3684,8 @@ void MessageGenerator::GenerateSerializeOneofFields(
   for (auto field : fields) {
     format("case k$1$:\n", UnderscoresToCamelCase(field->name(), true));
     format.Indent();
-    if (to_array) {
-      field_generators_.get(field).GenerateSerializeWithCachedSizesToArray(
-          printer);
-    } else {
-      field_generators_.get(field).GenerateSerializeWithCachedSizes(printer);
-    }
+    field_generators_.get(field).GenerateSerializeWithCachedSizesToArray(
+        printer);
     format("break;\n");
     format.Outdent();
   }
@@ -3720,7 +3698,6 @@ void MessageGenerator::GenerateSerializeOneofFields(
 
 void MessageGenerator::GenerateSerializeOneField(io::Printer* printer,
                                                  const FieldDescriptor* field,
-                                                 bool to_array,
                                                  int cached_has_bits_index) {
   Formatter format(printer, variables_);
   if (!field->options().weak()) {
@@ -3748,12 +3725,7 @@ void MessageGenerator::GenerateSerializeOneField(io::Printer* printer,
     have_enclosing_if = EmitFieldNonDefaultCondition(printer, "this->", field);
   }
 
-  if (to_array) {
-    field_generators_.get(field).GenerateSerializeWithCachedSizesToArray(
-        printer);
-  } else {
-    field_generators_.get(field).GenerateSerializeWithCachedSizes(printer);
-  }
+  field_generators_.get(field).GenerateSerializeWithCachedSizesToArray(printer);
 
   if (have_enclosing_if) {
     format.Outdent();
@@ -3763,57 +3735,15 @@ void MessageGenerator::GenerateSerializeOneField(io::Printer* printer,
 }
 
 void MessageGenerator::GenerateSerializeOneExtensionRange(
-    io::Printer* printer, const Descriptor::ExtensionRange* range,
-    bool to_array) {
-  std::map<std::string, std::string> vars;
+    io::Printer* printer, const Descriptor::ExtensionRange* range) {
+  std::map<std::string, std::string> vars = variables_;
   vars["start"] = StrCat(range->start);
   vars["end"] = StrCat(range->end);
   Formatter format(printer, vars);
   format("// Extension range [$start$, $end$)\n");
-  if (to_array) {
-    format(
-        "target = _extensions_.InternalSerializeWithCachedSizesToArray(\n"
-        "    $start$, $end$, target);\n\n");
-  } else {
-    format(
-        "_extensions_.SerializeWithCachedSizes($start$, $end$, output);\n"
-        "\n");
-  }
-}
-
-void MessageGenerator::GenerateSerializeWithCachedSizes(io::Printer* printer) {
-  Formatter format(printer, variables_);
-  if (descriptor_->options().message_set_wire_format()) {
-    // Special-case MessageSet.
-    format(
-        "void $classname$::SerializeWithCachedSizes(\n"
-        "    ::$proto_ns$::io::CodedOutputStream* output) const {\n"
-        "  _extensions_.SerializeMessageSetWithCachedSizes(output);\n");
-    std::map<std::string, std::string> vars;
-    SetUnknkownFieldsVariable(descriptor_, options_, &vars);
-    format.AddMap(vars);
-    format(
-        "  "
-        "::$proto_ns$::internal::SerializeUnknownMessageSetItems(\n"
-        "      $unknown_fields$, output);\n");
-    format("}\n");
-    return;
-  }
-  if (options_.table_driven_serialization) return;
-
   format(
-      "void $classname$::SerializeWithCachedSizes(\n"
-      "    ::$proto_ns$::io::CodedOutputStream* output) const {\n");
-  format.Indent();
-
-  format("// @@protoc_insertion_point(serialize_start:$full_name$)\n");
-
-  GenerateSerializeWithCachedSizesBody(printer, false);
-
-  format("// @@protoc_insertion_point(serialize_end:$full_name$)\n");
-
-  format.Outdent();
-  format("}\n");
+      "target = _extensions_.InternalSerializeWithCachedSizesToArray(\n"
+      "    $start$, $end$, target, stream);\n\n");
 }
 
 void MessageGenerator::GenerateSerializeWithCachedSizesToArray(
@@ -3823,17 +3753,17 @@ void MessageGenerator::GenerateSerializeWithCachedSizesToArray(
     // Special-case MessageSet.
     format(
         "$uint8$* $classname$::InternalSerializeWithCachedSizesToArray(\n"
-        "    $uint8$* target) const {\n"
+        "    $uint8$* target, ::$proto_ns$::io::EpsCopyOutputStream* stream) "
+        "const {\n"
         "  target = _extensions_."
-        "InternalSerializeMessageSetWithCachedSizesToArray(target);\n");
-    GOOGLE_CHECK(UseUnknownFieldSet(descriptor_->file(), options_));
+        "InternalSerializeMessageSetWithCachedSizesToArray(target, stream);\n");
     std::map<std::string, std::string> vars;
     SetUnknkownFieldsVariable(descriptor_, options_, &vars);
     format.AddMap(vars);
     format(
-        "  target = ::$proto_ns$::internal::WireFormat::\n"
-        "             SerializeUnknownMessageSetItemsToArray(\n"
-        "               $unknown_fields$, target);\n");
+        "  target = ::$proto_ns$::internal::"
+        "InternalSerializeUnknownMessageSetItemsToArray(\n"
+        "               $unknown_fields$, target, stream);\n");
     format(
         "  return target;\n"
         "}\n");
@@ -3842,12 +3772,13 @@ void MessageGenerator::GenerateSerializeWithCachedSizesToArray(
 
   format(
       "$uint8$* $classname$::InternalSerializeWithCachedSizesToArray(\n"
-      "    $uint8$* target) const {\n");
+      "    $uint8$* target, ::$proto_ns$::io::EpsCopyOutputStream* stream) "
+      "const {\n");
   format.Indent();
 
   format("// @@protoc_insertion_point(serialize_to_array_start:$full_name$)\n");
 
-  GenerateSerializeWithCachedSizesBody(printer, true);
+  GenerateSerializeWithCachedSizesBody(printer);
 
   format("// @@protoc_insertion_point(serialize_to_array_end:$full_name$)\n");
 
@@ -3858,7 +3789,7 @@ void MessageGenerator::GenerateSerializeWithCachedSizesToArray(
 }
 
 void MessageGenerator::GenerateSerializeWithCachedSizesBody(
-    io::Printer* printer, bool to_array) {
+    io::Printer* printer) {
   Formatter format(printer, variables_);
   // If there are multiple fields in a row from the same oneof then we
   // coalesce them and emit a switch statement.  This is more efficient
@@ -3867,11 +3798,9 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(
   // compiler's emitted code might check has_y() even when has_x() is true.
   class LazySerializerEmitter {
    public:
-    LazySerializerEmitter(MessageGenerator* mg, io::Printer* printer,
-                          bool to_array)
+    LazySerializerEmitter(MessageGenerator* mg, io::Printer* printer)
         : mg_(mg),
           format_(printer),
-          to_array_(to_array),
           eager_(!HasFieldPresence(mg->descriptor_->file())),
           cached_has_bit_index_(-1) {}
 
@@ -3901,7 +3830,7 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(
           }
         }
 
-        mg_->GenerateSerializeOneField(format_.printer(), field, to_array_,
+        mg_->GenerateSerializeOneField(format_.printer(), field,
                                        cached_has_bit_index_);
       } else {
         v_.push_back(field);
@@ -3910,7 +3839,7 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(
 
     void Flush() {
       if (!v_.empty()) {
-        mg_->GenerateSerializeOneofFields(format_.printer(), v_, to_array_);
+        mg_->GenerateSerializeOneofFields(format_.printer(), v_);
         v_.clear();
       }
     }
@@ -3925,7 +3854,6 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(
 
     MessageGenerator* mg_;
     Formatter format_;
-    const bool to_array_;
     const bool eager_;
     std::vector<const FieldDescriptor*> v_;
 
@@ -3957,7 +3885,7 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(
 
   // Merge the fields and the extension ranges, both sorted by field number.
   {
-    LazySerializerEmitter e(this, printer, to_array);
+    LazySerializerEmitter e(this, printer);
     const FieldDescriptor* last_weak_field = nullptr;
     int i, j;
     for (i = 0, j = 0;
@@ -3982,8 +3910,7 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(
           last_weak_field = nullptr;
         }
         e.Flush();
-        GenerateSerializeOneExtensionRange(printer, sorted_extensions[j++],
-                                           to_array);
+        GenerateSerializeOneExtensionRange(printer, sorted_extensions[j++]);
       }
     }
     if (last_weak_field != nullptr) {
@@ -3994,27 +3921,21 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(
   std::map<std::string, std::string> vars;
   SetUnknkownFieldsVariable(descriptor_, options_, &vars);
   format.AddMap(vars);
+  format("if (PROTOBUF_PREDICT_FALSE($have_unknown_fields$)) {\n");
+  format.Indent();
   if (UseUnknownFieldSet(descriptor_->file(), options_)) {
-    format("if ($have_unknown_fields$) {\n");
-    format.Indent();
-    if (to_array) {
-      format(
-          "target = "
-          "::$proto_ns$::internal::WireFormat::SerializeUnknownFieldsToArray(\n"
-          "    $unknown_fields$, target);\n");
-    } else {
-      format(
-          "::$proto_ns$::internal::WireFormat::SerializeUnknownFields(\n"
-          "    $unknown_fields$, output);\n");
-    }
-    format.Outdent();
-
-    format("}\n");
+    format(
+        "target = "
+        "::$proto_ns$::internal::WireFormat::"
+        "InternalSerializeUnknownFieldsToArray(\n"
+        "    $unknown_fields$, target, stream);\n");
   } else {
     format(
-        "output->WriteRaw($unknown_fields$.data(),\n"
-        "                 static_cast<int>($unknown_fields$.size()));\n");
+        "target = stream->WriteRaw($unknown_fields$.data(),\n"
+        "    static_cast<int>($unknown_fields$.size()), target);\n");
   }
+  format.Outdent();
+  format("}\n");
 }
 
 std::vector<uint32> MessageGenerator::RequiredFieldsBitMask() const {
@@ -4125,18 +4046,6 @@ void MessageGenerator::GenerateByteSize(io::Printer* printer) {
   std::map<std::string, std::string> vars;
   SetUnknkownFieldsVariable(descriptor_, options_, &vars);
   format.AddMap(vars);
-  if (UseUnknownFieldSet(descriptor_->file(), options_)) {
-    format(
-        "if ($have_unknown_fields$) {\n"
-        "  total_size +=\n"
-        "    ::$proto_ns$::internal::WireFormat::ComputeUnknownFieldsSize(\n"
-        "      $unknown_fields$);\n"
-        "}\n");
-  } else {
-    format(
-        "total_size += $unknown_fields$.size();\n"
-        "\n");
-  }
 
   // Handle required fields (if any).  We expect all of them to be
   // present, so emit one conditional that checks for that.  If they are all
@@ -4314,6 +4223,19 @@ void MessageGenerator::GenerateByteSize(io::Printer* printer) {
     // TagSize + MessageSize
     format("total_size += _weak_field_map_.ByteSizeLong();\n");
   }
+
+  format("if (PROTOBUF_PREDICT_FALSE($have_unknown_fields$)) {\n");
+  if (UseUnknownFieldSet(descriptor_->file(), options_)) {
+    // We go out of our way to put the computation of the uncommon path of
+    // unknown fields in tail position. This allows for better code generation
+    // of this function for simple protos.
+    format(
+        "  return ::$proto_ns$::internal::ComputeUnknownFieldsSize(\n"
+        "      _internal_metadata_, total_size, &_cached_size_);\n");
+  } else {
+    format("  total_size += $unknown_fields$.size();\n");
+  }
+  format("}\n");
 
   // We update _cached_size_ even though this is a const method.  Because
   // const methods might be called concurrently this needs to be atomic

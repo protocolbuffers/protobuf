@@ -1725,6 +1725,7 @@ class Proto3Test(unittest.TestCase):
 
     self.assertIsNone(msg.map_int32_int32.get(5))
     self.assertEqual(10, msg.map_int32_int32.get(5, 10))
+    self.assertEqual(10, msg.map_int32_int32.get(key=5, default=10))
     self.assertIsNone(msg.map_int32_int32.get(5))
 
     msg.map_int32_int32[5] = 15
@@ -1735,6 +1736,7 @@ class Proto3Test(unittest.TestCase):
 
     self.assertIsNone(msg.map_int32_foreign_message.get(5))
     self.assertEqual(10, msg.map_int32_foreign_message.get(5, 10))
+    self.assertEqual(10, msg.map_int32_foreign_message.get(key=5, default=10))
 
     submsg = msg.map_int32_foreign_message[5]
     self.assertIs(submsg, msg.map_int32_foreign_message.get(5))

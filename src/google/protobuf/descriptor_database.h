@@ -47,7 +47,7 @@
 #include <google/protobuf/port_def.inc>
 
 #ifdef SWIG
-#define PROTOBUF_EXPORT
+#error "You cannot SWIG proto headers"
 #endif
 
 namespace google {
@@ -199,8 +199,10 @@ class PROTOBUF_EXPORT SimpleDescriptorDatabase : public DescriptorDatabase {
     // to the index.
     bool AddFile(const FileDescriptorProto& file, Value value);
     bool AddSymbol(const std::string& name, Value value);
-    bool AddNestedExtensions(const DescriptorProto& message_type, Value value);
-    bool AddExtension(const FieldDescriptorProto& field, Value value);
+    bool AddNestedExtensions(const std::string& filename,
+                             const DescriptorProto& message_type, Value value);
+    bool AddExtension(const std::string& filename,
+                      const FieldDescriptorProto& field, Value value);
 
     Value FindFile(const std::string& filename);
     Value FindSymbol(const std::string& name);
@@ -282,7 +284,7 @@ class PROTOBUF_EXPORT SimpleDescriptorDatabase : public DescriptorDatabase {
   };
 
   DescriptorIndex<const FileDescriptorProto*> index_;
-  std::vector<const FileDescriptorProto*> files_to_delete_;
+  std::vector<std::unique_ptr<const FileDescriptorProto>> files_to_delete_;
 
   // If file is non-NULL, copy it into *output and return true, otherwise
   // return false.

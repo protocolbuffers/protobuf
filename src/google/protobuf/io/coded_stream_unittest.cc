@@ -1009,41 +1009,6 @@ TEST_F(CodedStreamTest, GetDirectBufferPointerInlineInput) {
   EXPECT_EQ(0, size);
 }
 
-TEST_F(CodedStreamTest, GetDirectBufferPointerOutput) {
-  ArrayOutputStream output(buffer_, sizeof(buffer_), 8);
-  CodedOutputStream coded_output(&output);
-
-  void* ptr;
-  int size;
-
-  EXPECT_TRUE(coded_output.GetDirectBufferPointer(&ptr, &size));
-  EXPECT_EQ(buffer_, ptr);
-  EXPECT_EQ(8, size);
-
-  // Peeking again should return the same pointer.
-  EXPECT_TRUE(coded_output.GetDirectBufferPointer(&ptr, &size));
-  EXPECT_EQ(buffer_, ptr);
-  EXPECT_EQ(8, size);
-
-  // Skip forward in the same buffer then peek again.
-  EXPECT_TRUE(coded_output.Skip(3));
-  EXPECT_TRUE(coded_output.GetDirectBufferPointer(&ptr, &size));
-  EXPECT_EQ(buffer_ + 3, ptr);
-  EXPECT_EQ(5, size);
-
-  // Skip to end of buffer and peek -- should get next buffer.
-  EXPECT_TRUE(coded_output.Skip(5));
-  EXPECT_TRUE(coded_output.GetDirectBufferPointer(&ptr, &size));
-  EXPECT_EQ(buffer_ + 8, ptr);
-  EXPECT_EQ(8, size);
-
-  // Skip over multiple buffers.
-  EXPECT_TRUE(coded_output.Skip(22));
-  EXPECT_TRUE(coded_output.GetDirectBufferPointer(&ptr, &size));
-  EXPECT_EQ(buffer_ + 30, ptr);
-  EXPECT_EQ(2, size);
-}
-
 // -------------------------------------------------------------------
 // Limits
 

@@ -332,7 +332,6 @@ Status ProtoStreamObjectSource::RenderPacked(
   return util::Status();
 }
 
-
 Status ProtoStreamObjectSource::RenderTimestamp(
     const ProtoStreamObjectSource* os, const google::protobuf::Type& type,
     StringPiece field_name, ObjectWriter* ow) {
@@ -746,7 +745,6 @@ void ProtoStreamObjectSource::InitRendererMap() {
       &ProtoStreamObjectSource::RenderFieldMask;
   ::google::protobuf::internal::OnShutdown(&DeleteRendererMap);
 }
-
 
 void ProtoStreamObjectSource::DeleteRendererMap() {
   delete ProtoStreamObjectSource::renderers_;

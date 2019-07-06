@@ -145,6 +145,7 @@ PROTOBUF_EXPORT MessageLite* DuplicateIfNonNullInternal(MessageLite* message);
 PROTOBUF_EXPORT MessageLite* GetOwnedMessageInternal(Arena* message_arena,
                                                      MessageLite* submessage,
                                                      Arena* submessage_arena);
+PROTOBUF_EXPORT void GenericSwap(MessageLite* m1, MessageLite* m2);
 
 template <typename T>
 T* DuplicateIfNonNull(T* message) {

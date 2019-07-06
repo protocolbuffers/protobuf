@@ -101,8 +101,8 @@ message DescriptorProto {
   repeated EnumDescriptorProto enum_type = 4;
 
   message ExtensionRange {
-    optional int32 start = 1;
-    optional int32 end = 2;
+    optional int32 start = 1;  // Inclusive.
+    optional int32 end = 2;    // Exclusive.
 
     optional ExtensionRangeOptions options = 3;
   }
@@ -427,6 +427,7 @@ message FileOptions {
   // is empty. When this option is not set, the package name will be used for
   // determining the ruby package.
   optional string ruby_package = 45;
+
 
   // The parser stores options it doesn't recognize here.
   // See the documentation for the "Options" section above.

@@ -54,6 +54,7 @@ from google.protobuf import unittest_mset_pb2
 from google.protobuf import unittest_pb2
 from google.protobuf import descriptor_pool
 from google.protobuf import json_format
+from google.protobuf.util import json_format_pb2
 from google.protobuf.util import json_format_proto3_pb2
 
 
@@ -246,6 +247,22 @@ class JsonFormatTest(JsonFormatBase):
         },
     }
     self.assertEqual(golden_dict, message_dict)
+
+  def testExtensionSerializationDictMatchesProto3SpecMore(self):
+    """See go/proto3-json-spec for spec.
+    """
+    message = json_format_pb2.TestMessageWithExtension()
+    ext = json_format_pb2.TestExtension.ext
+    message.Extensions[ext].value = 'stuff'
+    message_dict = json_format.MessageToDict(
+        message
+    )
+    expected_dict = {
+        '[protobuf_unittest.TestExtension.ext]': {
+            'value': u'stuff',
+        },
+    }
+    self.assertEqual(expected_dict, message_dict)
 
 
   def testExtensionSerializationJsonMatchesProto3Spec(self):
