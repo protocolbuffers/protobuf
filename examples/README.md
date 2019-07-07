@@ -135,7 +135,7 @@ Build the Dart samples in this directory with `make dart`.
 To run the examples:
 
 ```sh
-$ dart add_person.dart addessbook.data
+$ dart add_person.dart addressbook.data
 $ dart list_people.dart addressbook.data
 ```
 
