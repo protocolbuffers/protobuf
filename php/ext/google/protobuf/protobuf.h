@@ -948,6 +948,8 @@ void layout_merge(MessageLayout* layout, MessageHeader* from,
 const char* layout_get_oneof_case(MessageLayout* layout, const void* storage,
                                   const upb_oneofdef* oneof TSRMLS_DC);
 void free_layout(MessageLayout* layout);
+uint32_t* slot_oneof_case(MessageLayout* layout, const void* storage,
+                          const upb_fielddef* field);
 void* slot_memory(MessageLayout* layout, const void* storage,
                   const upb_fielddef* field);
 
