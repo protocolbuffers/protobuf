@@ -524,6 +524,7 @@ inline const char* ReadSFIXED32(const char* ptr, int32* value) {
   template <typename Type>                                                  \
   const char* MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::Read( \
       const char* begin, ParseContext* ctx, MapEntryAccessorType* value) {  \
+    (void) ctx;                                                             \
     return Read##FieldType(begin, value);                                   \
   }
 
