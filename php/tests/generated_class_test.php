@@ -1452,6 +1452,8 @@ class GeneratedClassTest extends TestBase
         $m = new TestMessage([
             'oneof_message' => new Sub(),
         ]);
+        $this->assertSame('oneof_message', $m->getMyOneof());
+        $this->assertNotNull($m->getOneofMessage());
     }
 
     public function testOneofStringInArrayConstructor()
