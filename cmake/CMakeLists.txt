@@ -137,6 +137,8 @@ endif (HAVE_ZLIB)
 set(protobuf_LINK_LIBATOMIC false)
 if (NOT MSVC)
   include(CheckCXXSourceCompiles)
+  set(OLD_CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS})
+  set(CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS} -std=c++11)
   check_cxx_source_compiles("
     #include <atomic>
     int main() {
@@ -146,6 +148,7 @@ if (NOT MSVC)
   if (NOT protobuf_HAVE_BUILTIN_ATOMICS)
     set(protobuf_LINK_LIBATOMIC true)
   endif (NOT protobuf_HAVE_BUILTIN_ATOMICS)
+  set(CMAKE_REQUIRED_FLAGS ${OLD_CMAKE_REQUIRED_FLAGS})
 endif (NOT MSVC)
 
 if (protobuf_BUILD_SHARED_LIBS)
