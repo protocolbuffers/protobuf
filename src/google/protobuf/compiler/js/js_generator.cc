@@ -275,7 +275,7 @@ char ToLowerASCII(char c) {
   }
 }
 
-std::vector<std::string> ParseLowerUnderscore(const std::string& input) {
+std::vector<std::string> ParseUnderscore(const std::string& input) {
   std::vector<std::string> words;
   std::string running = "";
   for (int i = 0; i < input.size(); i++) {
@@ -285,7 +285,7 @@ std::vector<std::string> ParseLowerUnderscore(const std::string& input) {
         running.clear();
       }
     } else {
-      running += ToLowerASCII(input[i]);
+      running += input[i];
     }
   }
   if (!running.empty()) {
@@ -486,8 +486,8 @@ std::string JSIdent(const GeneratorOptions& options,
                  ? ToUpperCamel(ParseUpperCamel(field->message_type()->name()))
                  : ToLowerCamel(ParseUpperCamel(field->message_type()->name()));
   } else {
-    result = is_upper_camel ? ToUpperCamel(ParseLowerUnderscore(field->name()))
-                            : ToLowerCamel(ParseLowerUnderscore(field->name()));
+    result = is_upper_camel ? ToUpperCamel(ParseUnderscore(field->name()))
+                            : ToLowerCamel(ParseUnderscore(field->name()));
   }
   if (is_map || field->is_map()) {
     // JSPB-style or proto3-style map.
@@ -549,7 +549,7 @@ std::string JSGetterName(const GeneratorOptions& options,
 
 
 std::string JSOneofName(const OneofDescriptor* oneof) {
-  return ToUpperCamel(ParseLowerUnderscore(oneof->name()));
+  return ToUpperCamel(ParseUnderscore(oneof->name()));
 }
 
 // Returns the index corresponding to this field in the JSPB array (underlying
