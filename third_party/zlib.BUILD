@@ -52,9 +52,12 @@ cc_library(
         # choice of <> or "" delimiter when including itself.
     ] + _ZLIB_HEADERS,
     hdrs = _ZLIB_PREFIXED_HEADERS,
-    copts = [
-        "-Wno-unused-variable",
-        "-Wno-implicit-function-declaration",
-    ],
+    copts = select({
+        "@bazel_tools//src/conditions:windows": [],
+        "//conditions:default": [
+            "-Wno-unused-variable",
+            "-Wno-implicit-function-declaration",
+        ],
+    }),
     includes = ["zlib/include/"],
 )
