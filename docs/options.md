@@ -205,3 +205,6 @@ with info about your project (name and website) so we can add an entry for you.
    * Website: https://github.com/envoyproxy/protoc-gen-validate
    * Extensions: 1071
 
+1. protokt
+   * Website: https://github.com/toasttab/protokt (Currently Private but will be open soon.)
+   * Extensions: 1072
