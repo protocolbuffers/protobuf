@@ -145,9 +145,6 @@
               <configuration>
                 <failOnError>false</failOnError>
               </configuration>
-              <configuration>
-                <failOnError>false</failOnError>
-              </configuration>
             </execution>
           </executions>
         </plugin>
