@@ -72,6 +72,8 @@ module Google
     end
 
     Timestamp.class_eval do
+      include Comparable
+
       if RUBY_VERSION < "2.5"
         def to_time
           Time.at(self.to_f)
@@ -93,6 +95,10 @@ module Google
 
       def to_f
         self.seconds + (self.nanos.quo(1_000_000_000))
+      end
+
+      def <=>(target)
+        self.to_time <=> target.to_time
       end
     end
 

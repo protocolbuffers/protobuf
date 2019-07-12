@@ -25,6 +25,15 @@ class TestWellKnownTypes < Test::Unit::TestCase
     ts.from_time(time)
     assert_equal 654321321, ts.nanos
     assert_equal time, ts.to_time
+
+    # comparison
+    larger = Google::Protobuf::Timestamp.new(seconds: 123456)
+    smaller = Google::Protobuf::Timestamp.new(seconds: 12345)
+    assert( (larger <=> smaller) > 0 )
+    assert( (larger <=> larger) == 0 )
+    assert( (smaller <=> larger) < 0 )
+    assert( larger > smaller )
+    assert( !(larger < smaller))
   end
 
   def test_duration
