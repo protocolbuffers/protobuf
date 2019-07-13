@@ -1151,7 +1151,8 @@ static void putmap(VALUE map, const upb_fielddef *f, upb_sink *sink,
 }
 
 static const upb_handlers* msgdef_json_serialize_handlers(
-    Descriptor* desc, bool preserve_proto_fieldnames);
+    Descriptor* desc, bool preserve_proto_fieldnames, 
+    bool always_show_enums_as_ints);
 
 static void putjsonany(VALUE msg_rb, const Descriptor* desc,
                        upb_sink* sink, int depth, bool emit_defaults) {
@@ -1227,7 +1228,7 @@ static void putjsonany(VALUE msg_rb, const Descriptor* desc,
       }
 
       subsink.handlers =
-          msgdef_json_serialize_handlers(payload_desc, true);
+          msgdef_json_serialize_handlers(payload_desc, true, true);
       subsink.closure = sink->closure;
       putmsg(payload_msg_rb, payload_desc, &subsink, depth, emit_defaults, true,
              is_wellknown);
@@ -1411,19 +1412,22 @@ static const upb_handlers* msgdef_pb_serialize_handlers(Descriptor* desc) {
 }
 
 static const upb_handlers* msgdef_json_serialize_handlers(
-    Descriptor* desc, bool preserve_proto_fieldnames) {
+    Descriptor* desc, bool preserve_proto_fieldnames,
+    bool always_show_enums_as_ints) {
   if (preserve_proto_fieldnames) {
     if (desc->json_serialize_handlers == NULL) {
       desc->json_serialize_handlers =
           upb_json_printer_newhandlers(
-              desc->msgdef, true, &desc->json_serialize_handlers);
+              desc->msgdef, true, always_show_enums_as_ints, 
+              &desc->json_serialize_handlers);
     }
     return desc->json_serialize_handlers;
   } else {
     if (desc->json_serialize_handlers_preserve == NULL) {
       desc->json_serialize_handlers_preserve =
           upb_json_printer_newhandlers(
-              desc->msgdef, false, &desc->json_serialize_handlers_preserve);
+              desc->msgdef, false, always_show_enums_as_ints, 
+              &desc->json_serialize_handlers_preserve);
     }
     return desc->json_serialize_handlers_preserve;
   }
@@ -1473,6 +1477,7 @@ VALUE Message_encode(VALUE klass, VALUE msg_rb) {
  * @param options [Hash] options for the decoder
  *  preserve_proto_fieldnames: set true to use original fieldnames (default is to camelCase)
  *  emit_defaults: set true to emit 0/false values (default is to omit them)
+ *  always_show_enums_as_ints: set true to print enums as int values (default is strings)
  */
 VALUE Message_encode_json(int argc, VALUE* argv, VALUE klass) {
   VALUE descriptor = rb_ivar_get(klass, descriptor_instancevar_interned);
@@ -1480,6 +1485,7 @@ VALUE Message_encode_json(int argc, VALUE* argv, VALUE klass) {
   VALUE msg_rb;
   VALUE preserve_proto_fieldnames = Qfalse;
   VALUE emit_defaults = Qfalse;
+  VALUE always_show_enums_as_ints = Qfalse;
   stringsink sink;
 
   if (argc < 1 || argc > 2) {
@@ -1498,13 +1504,17 @@ VALUE Message_encode_json(int argc, VALUE* argv, VALUE klass) {
 
     emit_defaults = rb_hash_lookup2(
         hash_args, ID2SYM(rb_intern("emit_defaults")), Qfalse);
+
+    always_show_enums_as_ints = rb_hash_lookup2(
+        hash_args, ID2SYM(rb_intern("always_show_enums_as_ints")), Qfalse);
   }
 
   stringsink_init(&sink);
 
   {
     const upb_handlers* serialize_handlers =
-        msgdef_json_serialize_handlers(desc, RTEST(preserve_proto_fieldnames));
+        msgdef_json_serialize_handlers(desc, RTEST(preserve_proto_fieldnames), 
+        RTEST(always_show_enums_as_ints));
     upb_json_printer* printer;
     stackenv se;
     VALUE ret;

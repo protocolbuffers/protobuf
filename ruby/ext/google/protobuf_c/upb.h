@@ -10589,9 +10589,13 @@ class upb::json::Printer {
   /* Returns handlers for printing according to the specified schema.
    * If preserve_proto_fieldnames is true, the output JSON will use the
    * original .proto field names (ie. {"my_field":3}) instead of using
-   * camelCased names, which is the default: (eg. {"myField":3}). */
+   * camelCased names, which is the default: (eg. {"myField":3}). 
+   * If always_show_enums_as_ints is true, the output JSON will use the
+   * int value  for enums (ie. {"foo":1} instead of the enum string, 
+   * which is the default: (ie. {"foo":"bar"}). */
   static reffed_ptr<const Handlers> NewHandlers(const upb::MessageDef* md,
-                                                bool preserve_proto_fieldnames);
+                                                bool preserve_proto_fieldnames,
+                                                bool always_show_enums_as_ints);
 
   static const size_t kSize = UPB_JSON_PRINTER_SIZE;
 
@@ -10609,6 +10613,7 @@ upb_json_printer *upb_json_printer_create(upb_env *e, const upb_handlers *h,
 upb_sink *upb_json_printer_input(upb_json_printer *p);
 const upb_handlers *upb_json_printer_newhandlers(const upb_msgdef *md,
                                                  bool preserve_fieldnames,
+                                                 bool always_show_enums_as_ints,
                                                  const void *owner);
 
 UPB_END_EXTERN_C
@@ -10623,9 +10628,9 @@ inline Printer* Printer::Create(Environment* env, const upb::Handlers* handlers,
 }
 inline Sink* Printer::input() { return upb_json_printer_input(this); }
 inline reffed_ptr<const Handlers> Printer::NewHandlers(
-    const upb::MessageDef *md, bool preserve_proto_fieldnames) {
+    const upb::MessageDef *md, bool preserve_proto_fieldnames, bool always_show_enums_as_ints) {
   const Handlers* h = upb_json_printer_newhandlers(
-      md, preserve_proto_fieldnames, &h);
+      md, preserve_proto_fieldnames, always_show_enums_as_ints, &h);
   return reffed_ptr<const Handlers>(h, &h);
 }
 }  /* namespace json */
