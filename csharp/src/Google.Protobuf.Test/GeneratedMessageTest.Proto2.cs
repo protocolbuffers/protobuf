@@ -1,5 +1,8 @@
 ﻿using Google.Protobuf.TestProtos.Proto2;
+using Proto2 = Google.Protobuf.TestProtos.Proto2;
 using NUnit.Framework;
+
+using static Google.Protobuf.TestProtos.Proto2.UnittestExtensions;
 
 namespace Google.Protobuf
 {
@@ -24,7 +27,7 @@ namespace Google.Protobuf
             Assert.IsNull(message.OptionalImportMessage);
             Assert.AreEqual(0, message.OptionalInt32);
             Assert.AreEqual(0L, message.OptionalInt64);
-            Assert.AreEqual(TestAllTypes.Types.NestedEnum.Foo, message.OptionalNestedEnum);
+            Assert.AreEqual(Proto2.TestAllTypes.Types.NestedEnum.Foo, message.OptionalNestedEnum);
             Assert.IsNull(message.OptionalNestedMessage);
             Assert.IsNull(message.OptionalPublicImportMessage);
             Assert.AreEqual(0, message.OptionalSfixed32);
@@ -57,7 +60,7 @@ namespace Google.Protobuf
             Assert.AreEqual(0, message.RepeatedUint64.Count);
 
             // Oneof fields
-            Assert.AreEqual(TestAllTypes.OneofFieldOneofCase.None, message.OneofFieldCase);
+            Assert.AreEqual(Proto2.TestAllTypes.OneofFieldOneofCase.None, message.OneofFieldCase);
             Assert.AreEqual(0, message.OneofUint32);
             Assert.AreEqual("", message.OneofString);
             Assert.AreEqual(ByteString.Empty, message.OneofBytes);
@@ -74,7 +77,7 @@ namespace Google.Protobuf
             Assert.AreEqual(ImportEnum.ImportBar, message.DefaultImportEnum);
             Assert.AreEqual(41, message.DefaultInt32);
             Assert.AreEqual(42, message.DefaultInt64);
-            Assert.AreEqual(TestAllTypes.Types.NestedEnum.Bar, message.DefaultNestedEnum);
+            Assert.AreEqual(Proto2.TestAllTypes.Types.NestedEnum.Bar, message.DefaultNestedEnum);
             Assert.AreEqual(49, message.DefaultSfixed32);
             Assert.AreEqual(-50, message.DefaultSfixed64);
             Assert.AreEqual(-45, message.DefaultSint32);
@@ -104,6 +107,103 @@ namespace Google.Protobuf
             Assert.False(message.HasDefaultStringPiece);
             Assert.False(message.HasDefaultUint32);
             Assert.False(message.HasDefaultUint64);
+        }
+
+        [Test]
+        public void DefaultExtensionValues()
+        {
+            var message = new TestAllExtensions();
+            Assert.AreEqual(false, message.GetExtension(OptionalBoolExtension));
+            Assert.AreEqual(ByteString.Empty, message.GetExtension(OptionalBytesExtension));
+            Assert.AreEqual(0.0, message.GetExtension(OptionalDoubleExtension));
+            Assert.AreEqual(0, message.GetExtension(OptionalFixed32Extension));
+            Assert.AreEqual(0L, message.GetExtension(OptionalFixed64Extension));
+            Assert.AreEqual(0.0f, message.GetExtension(OptionalFloatExtension));
+            Assert.AreEqual(ForeignEnum.ForeignFoo, message.GetExtension(OptionalForeignEnumExtension));
+            Assert.IsNull(message.GetExtension(OptionalForeignMessageExtension));
+            Assert.AreEqual(ImportEnum.ImportFoo, message.GetExtension(OptionalImportEnumExtension));
+            Assert.IsNull(message.GetExtension(OptionalImportMessageExtension));
+            Assert.AreEqual(0, message.GetExtension(OptionalInt32Extension));
+            Assert.AreEqual(0L, message.GetExtension(OptionalInt64Extension));
+            Assert.AreEqual(Proto2.TestAllTypes.Types.NestedEnum.Foo, message.GetExtension(OptionalNestedEnumExtension));
+            Assert.IsNull(message.GetExtension(OptionalNestedMessageExtension));
+            Assert.IsNull(message.GetExtension(OptionalPublicImportMessageExtension));
+            Assert.AreEqual(0, message.GetExtension(OptionalSfixed32Extension));
+            Assert.AreEqual(0L, message.GetExtension(OptionalSfixed64Extension));
+            Assert.AreEqual(0, message.GetExtension(OptionalSint32Extension));
+            Assert.AreEqual(0L, message.GetExtension(OptionalSint64Extension));
+            Assert.AreEqual("", message.GetExtension(OptionalStringExtension));
+            Assert.AreEqual(0U, message.GetExtension(OptionalUint32Extension));
+            Assert.AreEqual(0UL, message.GetExtension(OptionalUint64Extension));
+
+            // Repeated fields
+            Assert.IsNull(message.GetExtension(RepeatedBoolExtension));
+            Assert.IsNull(message.GetExtension(RepeatedBytesExtension));
+            Assert.IsNull(message.GetExtension(RepeatedDoubleExtension));
+            Assert.IsNull(message.GetExtension(RepeatedFixed32Extension));
+            Assert.IsNull(message.GetExtension(RepeatedFixed64Extension));
+            Assert.IsNull(message.GetExtension(RepeatedFloatExtension));
+            Assert.IsNull(message.GetExtension(RepeatedForeignEnumExtension));
+            Assert.IsNull(message.GetExtension(RepeatedForeignMessageExtension));
+            Assert.IsNull(message.GetExtension(RepeatedImportEnumExtension));
+            Assert.IsNull(message.GetExtension(RepeatedImportMessageExtension));
+            Assert.IsNull(message.GetExtension(RepeatedNestedEnumExtension));
+            Assert.IsNull(message.GetExtension(RepeatedNestedMessageExtension));
+            Assert.IsNull(message.GetExtension(RepeatedSfixed32Extension));
+            Assert.IsNull(message.GetExtension(RepeatedSfixed64Extension));
+            Assert.IsNull(message.GetExtension(RepeatedSint32Extension));
+            Assert.IsNull(message.GetExtension(RepeatedSint64Extension));
+            Assert.IsNull(message.GetExtension(RepeatedStringExtension));
+            Assert.IsNull(message.GetExtension(RepeatedUint32Extension));
+            Assert.IsNull(message.GetExtension(RepeatedUint64Extension));
+
+            // Oneof fields
+            Assert.AreEqual(0, message.GetExtension(OneofUint32Extension));
+            Assert.AreEqual("", message.GetExtension(OneofStringExtension));
+            Assert.AreEqual(ByteString.Empty, message.GetExtension(OneofBytesExtension));
+            Assert.IsNull(message.GetExtension(OneofNestedMessageExtension));
+
+            Assert.AreEqual(true, message.GetExtension(DefaultBoolExtension));
+            Assert.AreEqual(ByteString.CopyFromUtf8("world"), message.GetExtension(DefaultBytesExtension));
+            Assert.AreEqual("123", message.GetExtension(DefaultCordExtension));
+            Assert.AreEqual(52e3, message.GetExtension(DefaultDoubleExtension));
+            Assert.AreEqual(47, message.GetExtension(DefaultFixed32Extension));
+            Assert.AreEqual(48, message.GetExtension(DefaultFixed64Extension));
+            Assert.AreEqual(51.5, message.GetExtension(DefaultFloatExtension));
+            Assert.AreEqual(ForeignEnum.ForeignBar, message.GetExtension(DefaultForeignEnumExtension));
+            Assert.AreEqual(ImportEnum.ImportBar, message.GetExtension(DefaultImportEnumExtension));
+            Assert.AreEqual(41, message.GetExtension(DefaultInt32Extension));
+            Assert.AreEqual(42, message.GetExtension(DefaultInt64Extension));
+            Assert.AreEqual(Proto2.TestAllTypes.Types.NestedEnum.Bar, message.GetExtension(DefaultNestedEnumExtension));
+            Assert.AreEqual(49, message.GetExtension(DefaultSfixed32Extension));
+            Assert.AreEqual(-50, message.GetExtension(DefaultSfixed64Extension));
+            Assert.AreEqual(-45, message.GetExtension(DefaultSint32Extension));
+            Assert.AreEqual(46, message.GetExtension(DefaultSint64Extension));
+            Assert.AreEqual("hello", message.GetExtension(DefaultStringExtension));
+            Assert.AreEqual("abc", message.GetExtension(DefaultStringPieceExtension));
+            Assert.AreEqual(43, message.GetExtension(DefaultUint32Extension));
+            Assert.AreEqual(44, message.GetExtension(DefaultUint64Extension));
+
+            Assert.False(message.HasExtension(DefaultBoolExtension));
+            Assert.False(message.HasExtension(DefaultBytesExtension));
+            Assert.False(message.HasExtension(DefaultCordExtension));
+            Assert.False(message.HasExtension(DefaultDoubleExtension));
+            Assert.False(message.HasExtension(DefaultFixed32Extension));
+            Assert.False(message.HasExtension(DefaultFixed64Extension));
+            Assert.False(message.HasExtension(DefaultFloatExtension));
+            Assert.False(message.HasExtension(DefaultForeignEnumExtension));
+            Assert.False(message.HasExtension(DefaultImportEnumExtension));
+            Assert.False(message.HasExtension(DefaultInt32Extension));
+            Assert.False(message.HasExtension(DefaultInt64Extension));
+            Assert.False(message.HasExtension(DefaultNestedEnumExtension));
+            Assert.False(message.HasExtension(DefaultSfixed32Extension));
+            Assert.False(message.HasExtension(DefaultSfixed64Extension));
+            Assert.False(message.HasExtension(DefaultSint32Extension));
+            Assert.False(message.HasExtension(DefaultSint64Extension));
+            Assert.False(message.HasExtension(DefaultStringExtension));
+            Assert.False(message.HasExtension(DefaultStringPieceExtension));
+            Assert.False(message.HasExtension(DefaultUint32Extension));
+            Assert.False(message.HasExtension(DefaultUint64Extension));
         }
 
         [Test]
@@ -233,7 +333,7 @@ namespace Google.Protobuf
             };
 
             byte[] bytes = message.ToByteArray();
-            TestAllTypes parsed = TestAllTypes.Parser.ParseFrom(bytes);
+            TestAllTypes parsed = Proto2.TestAllTypes.Parser.ParseFrom(bytes);
             Assert.AreEqual(message, parsed);
         }
 
