@@ -93,7 +93,7 @@ struct ExpandWildcardsResult {
 // `consume`. The resulting paths may not be absolute nor normalized.
 //
 // The function returns a value from `ExpandWildcardsResult`.
-LIBPROTOBUF_EXPORT int expand_wildcards(
+LIBPROTOBUF_EXPORT int ExpandWildcards(
     const std::string& path, std::function<void(const std::string&)> consume);
 
 namespace strings {

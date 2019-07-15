@@ -430,7 +430,7 @@ TEST_F(IoWin32Test, ExpandWildcardsInRelativePathTest) {
   vector<string> found_bad;
   // Assert matching a relative path pattern. Results should also be relative.
   int result = 
-      expand_wildcards(
+      ExpandWildcards(
           string(kUtf8Text) + "\\foo*.proto",
           [&found_a, &found_b, &found_bad](const string& p) {
             if (p == string(kUtf8Text) + "\\foo_a.proto") {
@@ -452,7 +452,7 @@ TEST_F(IoWin32Test, ExpandWildcardsInRelativePathTest) {
   found_a = 0;
   found_bad.clear();
   result = 
-      expand_wildcards(
+      ExpandWildcards(
           string(kUtf8Text) + "\\foo_a.proto",
           [&found_a, &found_bad](const string& p) {
             if (p == string(kUtf8Text) + "\\foo_a.proto") {
@@ -482,7 +482,7 @@ TEST_F(IoWin32Test, ExpandWildcardsInAbsolutePathTest) {
   // Assert matching an absolute path. The results should also use absolute
   // path.
   int result = 
-      expand_wildcards(
+      ExpandWildcards(
           string(test_tmpdir) + "\\" + kUtf8Text + "\\foo*.proto",
           [this, &found_a, &found_b, &found_bad](const string& p) {
             if (p == string(this->test_tmpdir)
@@ -510,7 +510,7 @@ TEST_F(IoWin32Test, ExpandWildcardsInAbsolutePathTest) {
   found_a = 0;
   found_bad.clear();
   result = 
-      expand_wildcards(
+      ExpandWildcards(
           string(test_tmpdir) + "\\" + kUtf8Text + "\\foo_a.proto",
           [this, &found_a, &found_bad](const string& p) {
             if (p == string(this->test_tmpdir)
@@ -545,7 +545,7 @@ TEST_F(IoWin32Test, ExpandWildcardsIgnoresDirectoriesTest) {
   // Assert that the pattern matches exactly the expected files, and using the
   // absolute path as did the input pattern.
   int result = 
-      expand_wildcards(
+      ExpandWildcards(
           string(kUtf8Text) + "\\foo*.proto",
           [&found_a, &found_c, &found_bad](const string& p) {
             if (p == string(kUtf8Text) + "\\foo_a.proto") {
@@ -573,17 +573,17 @@ TEST_F(IoWin32Test, ExpandWildcardsFailsIfNoFileMatchesTest) {
   EXPECT_TRUE(SetCurrentDirectoryW(wtest_tmpdir.c_str()));
 
   // Control test: should match foo*.proto
-  int result = expand_wildcards(
+  int result = ExpandWildcards(
       string(kUtf8Text) + "\\foo*.proto", [](const string&) {});
   EXPECT_EQ(result, ExpandWildcardsResult::kSuccess);
 
   // Control test: should match foo_a.proto
-  result = expand_wildcards(
+  result = ExpandWildcards(
       string(kUtf8Text) + "\\foo_a.proto", [](const string&) {});
   EXPECT_EQ(result, ExpandWildcardsResult::kSuccess);
 
   // Actual test: should not match anything.
-  result = expand_wildcards(
+  result = ExpandWildcards(
       string(kUtf8Text) + "\\bar*.proto", [](const string&) {});
   ASSERT_EQ(result, ExpandWildcardsResult::kErrorNoMatchingFile);
 }

@@ -1432,7 +1432,7 @@ CommandLineInterface::InterpretArgument(const std::string& name,
 #if defined(_WIN32)
     // On Windows, the shell (typically cmd.exe) does not expand wildcards in
     // file names (e.g. foo\*.proto), so we do it ourselves.
-    switch (google::protobuf::io::win32::expand_wildcards(
+    switch (google::protobuf::io::win32::ExpandWildcards(
           value,
           [this](const string& path) {
             this->input_files_.push_back(path);
