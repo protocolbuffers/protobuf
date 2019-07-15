@@ -88,6 +88,12 @@ namespace Google.Protobuf
                 "Protocol message contained an invalid tag (zero).");
         }
 
+        internal static InvalidProtocolBufferException InvalidWireType()
+        {
+            return new InvalidProtocolBufferException(
+                "Protocol message contained a tag with an invalid wire type.");
+        }
+
         internal static InvalidProtocolBufferException InvalidBase64(Exception innerException)
         {
             return new InvalidProtocolBufferException("Invalid base64 data", innerException);
@@ -125,5 +131,10 @@ namespace Google.Protobuf
             return new InvalidProtocolBufferException(
                 "Stream of protocol messages had invalid tag. Expected tag is length-delimited field 1.");
         }
-    }
+
+        internal static InvalidProtocolBufferException MissingFields()
+        {
+            return new InvalidProtocolBufferException("Message was missing required fields");
+        }
+}
 }

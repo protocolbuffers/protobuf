@@ -38,9 +38,9 @@ import java.io.ObjectOutputStream;
 import java.io.UnsupportedEncodingException;
 
 /**
- * This class tests {@link BoundedByteString}, which extends {@link LiteralByteString},
- * by inheriting the tests from {@link LiteralByteStringTest}.  The only method which
- * is strange enough that it needs to be overridden here is {@link #testToString()}.
+ * This class tests {@link BoundedByteString}, which extends {@link LiteralByteString}, by
+ * inheriting the tests from {@link LiteralByteStringTest}. The only method which is strange enough
+ * that it needs to be overridden here is {@link #testToString()}.
  *
  * @author carlanton@google.com (Carl Haverl)
  */
@@ -63,12 +63,16 @@ public class BoundedByteStringTest extends LiteralByteStringTest {
     String testString = "I love unicode \u1234\u5678 characters";
     ByteString unicode = ByteString.wrap(testString.getBytes(Internal.UTF_8));
     ByteString chopped = unicode.substring(2, unicode.size() - 6);
-    assertEquals(classUnderTest + ".substring() must have the expected type",
-        classUnderTest, getActualClassName(chopped));
+    assertEquals(
+        classUnderTest + ".substring() must have the expected type",
+        classUnderTest,
+        getActualClassName(chopped));
 
     String roundTripString = chopped.toString(UTF_8);
-    assertEquals(classUnderTest + " unicode bytes must match",
-        testString.substring(2, testString.length() - 6), roundTripString);
+    assertEquals(
+        classUnderTest + " unicode bytes must match",
+        testString.substring(2, testString.length() - 6),
+        roundTripString);
   }
 
   @Override
@@ -76,12 +80,16 @@ public class BoundedByteStringTest extends LiteralByteStringTest {
     String testString = "I love unicode \u1234\u5678 characters";
     ByteString unicode = ByteString.wrap(testString.getBytes(Internal.UTF_8));
     ByteString chopped = unicode.substring(2, unicode.size() - 6);
-    assertEquals(classUnderTest + ".substring() must have the expected type",
-        classUnderTest, getActualClassName(chopped));
+    assertEquals(
+        classUnderTest + ".substring() must have the expected type",
+        classUnderTest,
+        getActualClassName(chopped));
 
     String roundTripString = chopped.toString(Internal.UTF_8);
-    assertEquals(classUnderTest + " unicode bytes must match",
-        testString.substring(2, testString.length() - 6), roundTripString);
+    assertEquals(
+        classUnderTest + " unicode bytes must match",
+        testString.substring(2, testString.length() - 6),
+        roundTripString);
   }
 
   @Override

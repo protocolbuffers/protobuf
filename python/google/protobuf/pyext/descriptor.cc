@@ -189,6 +189,21 @@ const FileDescriptor* GetFileDescriptor(const MethodDescriptor* descriptor) {
   return descriptor->service()->file();
 }
 
+bool Reparse(
+    PyMessageFactory* message_factory, const Message& from, Message* to) {
+  // Reparse message.
+  string serialized;
+  from.SerializeToString(&serialized);
+  io::CodedInputStream input(
+      reinterpret_cast<const uint8*>(serialized.c_str()), serialized.size());
+  input.SetExtensionRegistry(message_factory->pool->pool,
+                             message_factory->message_factory);
+  bool success = to->ParseFromCodedStream(&input);
+  if (!success) {
+    return false;
+  }
+  return true;
+}
 // Converts options into a Python protobuf, and cache the result.
 //
 // This is a bit tricky because options can contain extension fields defined in
@@ -234,6 +249,7 @@ static PyObject* GetOrBuildOptions(const DescriptorClass *descriptor) {
   }
   ScopedPyObjectPtr value(
       PyEval_CallObject(message_class->AsPyObject(), NULL));
+  Py_DECREF(message_class);
   if (value == NULL) {
     return NULL;
   }
@@ -251,15 +267,8 @@ static PyObject* GetOrBuildOptions(const DescriptorClass *descriptor) {
     cmsg->message->CopyFrom(options);
   } else {
     // Reparse options string!  XXX call cmessage::MergeFromString
-    string serialized;
-    options.SerializeToString(&serialized);
-    io::CodedInputStream input(
-        reinterpret_cast<const uint8*>(serialized.c_str()), serialized.size());
-    input.SetExtensionRegistry(message_factory->pool->pool,
-                               message_factory->message_factory);
-    bool success = cmsg->message->MergePartialFromCodedStream(&input);
-    if (!success) {
-      PyErr_Format(PyExc_ValueError, "Error parsing Options message");
+    if (!Reparse(message_factory, options, cmsg->message)) {
+      PyErr_Format(PyExc_ValueError, "Error reparsing Options message");
       return NULL;
     }
   }
@@ -290,6 +299,16 @@ static PyObject* CopyToPythonProto(const DescriptorClass *descriptor,
   DescriptorProtoClass* descriptor_message =
       static_cast<DescriptorProtoClass*>(message->message);
   descriptor->CopyTo(descriptor_message);
+  // Custom options might in unknown extensions. Reparse
+  // the descriptor_message. Can't skip reparse when options unknown
+  // fields is empty, because they might in sub descriptors' options.
+  PyMessageFactory* message_factory =
+      GetDefaultDescriptorPool()->py_message_factory;
+  if (!Reparse(message_factory, *descriptor_message, descriptor_message)) {
+    PyErr_Format(PyExc_ValueError, "Error reparsing descriptor message");
+    return nullptr;
+  }
+
   Py_RETURN_NONE;
 }
 
@@ -345,7 +364,7 @@ PyObject* NewInternedDescriptor(PyTypeObject* type,
     return it->second;
   }
   // Create a new descriptor object
-  PyBaseDescriptor* py_descriptor = PyObject_New(
+  PyBaseDescriptor* py_descriptor = PyObject_GC_New(
       PyBaseDescriptor, type);
   if (py_descriptor == NULL) {
     return NULL;
@@ -367,17 +386,32 @@ PyObject* NewInternedDescriptor(PyTypeObject* type,
   Py_INCREF(pool);
   py_descriptor->pool = pool;
 
+  PyObject_GC_Track(py_descriptor);
+
   if (was_created) {
     *was_created = true;
   }
   return reinterpret_cast<PyObject*>(py_descriptor);
 }
 
-static void Dealloc(PyBaseDescriptor* self) {
+static void Dealloc(PyObject* pself) {
+  PyBaseDescriptor* self = reinterpret_cast<PyBaseDescriptor*>(pself);
   // Remove from interned dictionary
   interned_descriptors->erase(self->descriptor);
   Py_CLEAR(self->pool);
-  Py_TYPE(self)->tp_free(reinterpret_cast<PyObject*>(self));
+  Py_TYPE(self)->tp_free(pself);
+}
+
+static int GcTraverse(PyObject* pself, visitproc visit, void* arg) {
+  PyBaseDescriptor* self = reinterpret_cast<PyBaseDescriptor*>(pself);
+  Py_VISIT(self->pool);
+  return 0;
+}
+
+static int GcClear(PyObject* pself) {
+  PyBaseDescriptor* self = reinterpret_cast<PyBaseDescriptor*>(pself);
+  Py_CLEAR(self->pool);
+  return 0;
 }
 
 static PyGetSetDef Getters[] = {
@@ -385,36 +419,36 @@ static PyGetSetDef Getters[] = {
 };
 
 PyTypeObject PyBaseDescriptor_Type = {
-  PyVarObject_HEAD_INIT(&PyType_Type, 0)
-  FULL_MODULE_NAME ".DescriptorBase",   // tp_name
-  sizeof(PyBaseDescriptor),             // tp_basicsize
-  0,                                    // tp_itemsize
-  (destructor)Dealloc,                  // tp_dealloc
-  0,                                    // tp_print
-  0,                                    // tp_getattr
-  0,                                    // tp_setattr
-  0,                                    // tp_compare
-  0,                                    // tp_repr
-  0,                                    // tp_as_number
-  0,                                    // tp_as_sequence
-  0,                                    // tp_as_mapping
-  0,                                    // tp_hash
-  0,                                    // tp_call
-  0,                                    // tp_str
-  0,                                    // tp_getattro
-  0,                                    // tp_setattro
-  0,                                    // tp_as_buffer
-  Py_TPFLAGS_DEFAULT,                   // tp_flags
-  "Descriptors base class",             // tp_doc
-  0,                                    // tp_traverse
-  0,                                    // tp_clear
-  0,                                    // tp_richcompare
-  0,                                    // tp_weaklistoffset
-  0,                                    // tp_iter
-  0,                                    // tp_iternext
-  0,                                    // tp_methods
-  0,                                    // tp_members
-  Getters,                              // tp_getset
+    PyVarObject_HEAD_INIT(&PyType_Type, 0) FULL_MODULE_NAME
+    ".DescriptorBase",                        // tp_name
+    sizeof(PyBaseDescriptor),                 // tp_basicsize
+    0,                                        // tp_itemsize
+    (destructor)Dealloc,                      // tp_dealloc
+    0,                                        // tp_print
+    0,                                        // tp_getattr
+    0,                                        // tp_setattr
+    0,                                        // tp_compare
+    0,                                        // tp_repr
+    0,                                        // tp_as_number
+    0,                                        // tp_as_sequence
+    0,                                        // tp_as_mapping
+    0,                                        // tp_hash
+    0,                                        // tp_call
+    0,                                        // tp_str
+    0,                                        // tp_getattro
+    0,                                        // tp_setattro
+    0,                                        // tp_as_buffer
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC,  // tp_flags
+    "Descriptors base class",                 // tp_doc
+    GcTraverse,                               // tp_traverse
+    GcClear,                                  // tp_clear
+    0,                                        // tp_richcompare
+    0,                                        // tp_weaklistoffset
+    0,                                        // tp_iter
+    0,                                        // tp_iternext
+    0,                                        // tp_methods
+    0,                                        // tp_members
+    Getters,                                  // tp_getset
 };
 
 }  // namespace descriptor
@@ -1290,7 +1324,7 @@ static const FileDescriptor* _GetDescriptor(PyFileDescriptor *self) {
 
 static void Dealloc(PyFileDescriptor* self) {
   Py_XDECREF(self->serialized_pb);
-  descriptor::Dealloc(&self->base);
+  descriptor::Dealloc(reinterpret_cast<PyObject*>(self));
 }
 
 static PyObject* GetPool(PyFileDescriptor *self, void *closure) {
@@ -1418,45 +1452,45 @@ static PyMethodDef Methods[] = {
 }  // namespace file_descriptor
 
 PyTypeObject PyFileDescriptor_Type = {
-  PyVarObject_HEAD_INIT(&PyType_Type, 0)
-  FULL_MODULE_NAME ".FileDescriptor",   // tp_name
-  sizeof(PyFileDescriptor),             // tp_basicsize
-  0,                                    // tp_itemsize
-  (destructor)file_descriptor::Dealloc,  // tp_dealloc
-  0,                                    // tp_print
-  0,                                    // tp_getattr
-  0,                                    // tp_setattr
-  0,                                    // tp_compare
-  0,                                    // tp_repr
-  0,                                    // tp_as_number
-  0,                                    // tp_as_sequence
-  0,                                    // tp_as_mapping
-  0,                                    // tp_hash
-  0,                                    // tp_call
-  0,                                    // tp_str
-  0,                                    // tp_getattro
-  0,                                    // tp_setattro
-  0,                                    // tp_as_buffer
-  Py_TPFLAGS_DEFAULT,                   // tp_flags
-  "A File Descriptor",                  // tp_doc
-  0,                                    // tp_traverse
-  0,                                    // tp_clear
-  0,                                    // tp_richcompare
-  0,                                    // tp_weaklistoffset
-  0,                                    // tp_iter
-  0,                                    // tp_iternext
-  file_descriptor::Methods,             // tp_methods
-  0,                                    // tp_members
-  file_descriptor::Getters,             // tp_getset
-  &descriptor::PyBaseDescriptor_Type,   // tp_base
-  0,                                    // tp_dict
-  0,                                    // tp_descr_get
-  0,                                    // tp_descr_set
-  0,                                    // tp_dictoffset
-  0,                                    // tp_init
-  0,                                    // tp_alloc
-  0,                                    // tp_new
-  PyObject_Del,                         // tp_free
+    PyVarObject_HEAD_INIT(&PyType_Type, 0) FULL_MODULE_NAME
+    ".FileDescriptor",                     // tp_name
+    sizeof(PyFileDescriptor),              // tp_basicsize
+    0,                                     // tp_itemsize
+    (destructor)file_descriptor::Dealloc,  // tp_dealloc
+    0,                                     // tp_print
+    0,                                     // tp_getattr
+    0,                                     // tp_setattr
+    0,                                     // tp_compare
+    0,                                     // tp_repr
+    0,                                     // tp_as_number
+    0,                                     // tp_as_sequence
+    0,                                     // tp_as_mapping
+    0,                                     // tp_hash
+    0,                                     // tp_call
+    0,                                     // tp_str
+    0,                                     // tp_getattro
+    0,                                     // tp_setattro
+    0,                                     // tp_as_buffer
+    Py_TPFLAGS_DEFAULT,                    // tp_flags
+    "A File Descriptor",                   // tp_doc
+    0,                                     // tp_traverse
+    0,                                     // tp_clear
+    0,                                     // tp_richcompare
+    0,                                     // tp_weaklistoffset
+    0,                                     // tp_iter
+    0,                                     // tp_iternext
+    file_descriptor::Methods,              // tp_methods
+    0,                                     // tp_members
+    file_descriptor::Getters,              // tp_getset
+    &descriptor::PyBaseDescriptor_Type,    // tp_base
+    0,                                     // tp_dict
+    0,                                     // tp_descr_get
+    0,                                     // tp_descr_set
+    0,                                     // tp_dictoffset
+    0,                                     // tp_init
+    0,                                     // tp_alloc
+    0,                                     // tp_new
+    PyObject_GC_Del,                       // tp_free
 };
 
 PyObject* PyFileDescriptor_FromDescriptor(
@@ -1844,15 +1878,6 @@ PyObject* PyMethodDescriptor_FromDescriptor(
     const MethodDescriptor* method_descriptor) {
   return descriptor::NewInternedDescriptor(
       &PyMethodDescriptor_Type, method_descriptor, NULL);
-}
-
-const MethodDescriptor* PyMethodDescriptor_AsDescriptor(PyObject* obj) {
-  if (!PyObject_TypeCheck(obj, &PyMethodDescriptor_Type)) {
-    PyErr_SetString(PyExc_TypeError, "Not a MethodDescriptor");
-    return NULL;
-  }
-  return reinterpret_cast<const MethodDescriptor*>(
-      reinterpret_cast<PyBaseDescriptor*>(obj)->descriptor);
 }
 
 // Add a enum values to a type dictionary.

@@ -30,17 +30,15 @@
 
 goog.require('goog.crypt.base64');
 goog.require('goog.testing.asserts');
-
 // CommonJS-LoadFromFile: testbinary_pb proto.jspb.test
 goog.require('proto.jspb.test.ForeignMessage');
-
 // CommonJS-LoadFromFile: proto3_test_pb proto.jspb.test
 goog.require('proto.jspb.test.Proto3Enum');
 goog.require('proto.jspb.test.TestProto3');
-
+// CommonJS-LoadFromFile: google/protobuf/any_pb proto.google.protobuf
+goog.require('proto.google.protobuf.Any');
 // CommonJS-LoadFromFile: google/protobuf/timestamp_pb proto.google.protobuf
 goog.require('proto.google.protobuf.Timestamp');
-
 // CommonJS-LoadFromFile: google/protobuf/struct_pb proto.google.protobuf
 goog.require('proto.google.protobuf.Struct');
 
@@ -377,6 +375,7 @@ describe('proto3Test', function() {
 
   });
 
+
   it('testTimestampWellKnownType', function() {
     var msg = new proto.google.protobuf.Timestamp();
     msg.fromDate(new Date(123456789));
@@ -384,6 +383,9 @@ describe('proto3Test', function() {
     assertEquals(789000000, msg.getNanos());
     var date = msg.toDate();
     assertEquals(123456789, date.getTime());
+    var anotherMsg = proto.google.protobuf.Timestamp.fromDate(date);
+    assertEquals(msg.getSeconds(), anotherMsg.getSeconds());
+    assertEquals(msg.getNanos(), anotherMsg.getNanos());
   });
 
   it('testStructWellKnownType', function() {

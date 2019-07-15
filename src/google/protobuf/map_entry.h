@@ -38,7 +38,7 @@
 #include <google/protobuf/port.h>
 #include <google/protobuf/reflection_ops.h>
 #include <google/protobuf/unknown_field_set.h>
-#include <google/protobuf/wire_format_lite_inl.h>
+#include <google/protobuf/wire_format_lite.h>
 
 #include <google/protobuf/port_def.inc>
 
@@ -121,12 +121,11 @@ class MapEntry
   InternalMetadataWithArena _internal_metadata_;
 
  private:
-  friend class ::GOOGLE_PROTOBUF_NAMESPACE_ID::Arena;
+  friend class ::PROTOBUF_NAMESPACE_ID::Arena;
   template <typename C, typename K, typename V,
             WireFormatLite::FieldType k_wire_type, WireFormatLite::FieldType,
             int default_enum>
   friend class internal::MapField;
-  friend class internal::GeneratedMessageReflection;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MapEntry);
 };

@@ -34,6 +34,8 @@
 #include <google/protobuf/stubs/macros.h>
 #include <google/protobuf/stubs/port.h>
 
+#include <google/protobuf/port_def.inc>
+
 // ===================================================================
 // emulates google3/base/logging.h
 
@@ -70,7 +72,7 @@ namespace internal {
 
 class LogFinisher;
 
-class LIBPROTOBUF_EXPORT LogMessage {
+class PROTOBUF_EXPORT LogMessage {
  public:
   LogMessage(LogLevel level, const char* filename, int line);
   ~LogMessage();
@@ -87,7 +89,7 @@ class LIBPROTOBUF_EXPORT LogMessage {
   LogMessage& operator<<(double value);
   LogMessage& operator<<(void* value);
   LogMessage& operator<<(const StringPiece& value);
-  LogMessage& operator<<(const ::google::protobuf::util::Status& status);
+  LogMessage& operator<<(const util::Status& status);
   LogMessage& operator<<(const uint128& value);
 
  private:
@@ -102,7 +104,7 @@ class LIBPROTOBUF_EXPORT LogMessage {
 
 // Used to make the entire "LOG(BLAH) << etc." expression have a void return
 // type and print a newline after each message.
-class LIBPROTOBUF_EXPORT LogFinisher {
+class PROTOBUF_EXPORT LogFinisher {
  public:
   void operator=(LogMessage& other);
 };
@@ -141,10 +143,10 @@ inline bool IsOk(bool status) { return status; }
 #undef GOOGLE_DCHECK_GT
 #undef GOOGLE_DCHECK_GE
 
-#define GOOGLE_LOG(LEVEL)                                                 \
-  ::google::protobuf::internal::LogFinisher() =                           \
-    ::google::protobuf::internal::LogMessage(                             \
-      ::google::protobuf::LOGLEVEL_##LEVEL, __FILE__, __LINE__)
+#define GOOGLE_LOG(LEVEL)                          \
+  ::google::protobuf::internal::LogFinisher() = \
+      ::google::protobuf::internal::LogMessage( \
+          ::google::protobuf::LOGLEVEL_##LEVEL, __FILE__, __LINE__)
 #define GOOGLE_LOG_IF(LEVEL, CONDITION) \
   !(CONDITION) ? (void)0 : GOOGLE_LOG(LEVEL)
 
@@ -168,8 +170,8 @@ T* CheckNotNull(const char* /* file */, int /* line */,
   return val;
 }
 }  // namespace internal
-#define GOOGLE_CHECK_NOTNULL(A) \
-  ::google::protobuf::internal::CheckNotNull(\
+#define GOOGLE_CHECK_NOTNULL(A)               \
+  ::google::protobuf::internal::CheckNotNull( \
       __FILE__, __LINE__, "'" #A "' must not be nullptr", (A))
 
 #ifdef NDEBUG
@@ -216,7 +218,7 @@ typedef void LogHandler(LogLevel level, const char* filename, int line,
 // have some code that tends to trigger them frequently and you know
 // the warnings are not important to you), use the LogSilencer class
 // below.
-LIBPROTOBUF_EXPORT LogHandler* SetLogHandler(LogHandler* new_func);
+PROTOBUF_EXPORT LogHandler* SetLogHandler(LogHandler* new_func);
 
 // Create a LogSilencer if you want to temporarily suppress all log
 // messages.  As long as any LogSilencer objects exist, non-fatal
@@ -225,7 +227,7 @@ LIBPROTOBUF_EXPORT LogHandler* SetLogHandler(LogHandler* new_func);
 // accidentally suppress log messages occurring in another thread, but
 // since messages are generally for debugging purposes only, this isn't
 // a big deal.  If you want to intercept log messages, use SetLogHandler().
-class LIBPROTOBUF_EXPORT LogSilencer {
+class PROTOBUF_EXPORT LogSilencer {
  public:
   LogSilencer();
   ~LogSilencer();
@@ -233,5 +235,7 @@ class LIBPROTOBUF_EXPORT LogSilencer {
 
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_STUBS_LOGGING_H_

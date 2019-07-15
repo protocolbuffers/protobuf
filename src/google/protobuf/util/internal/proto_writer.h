@@ -36,6 +36,7 @@
 #include <vector>
 
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/type.pb.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/descriptor.h>
@@ -48,20 +49,7 @@
 #include <google/protobuf/stubs/hash.h>
 #include <google/protobuf/stubs/status.h>
 
-namespace google {
-namespace protobuf {
-namespace io {
-class CodedOutputStream;
-}  // namespace io
-}  // namespace protobuf
-}  // namespace google
-
-namespace google {
-namespace protobuf {
-class Type;
-class Field;
-}  // namespace protobuf
-}  // namespace google
+#include <google/protobuf/port_def.inc>
 
 namespace google {
 namespace protobuf {
@@ -76,7 +64,7 @@ class ObjectLocationTracker;
 // special types by inheriting from it or by wrapping it.
 //
 // It also supports streaming.
-class LIBPROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
+class PROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
  public:
 // Constructor. Does not take ownership of any parameter passed in.
   ProtoWriter(TypeResolver* type_resolver, const google::protobuf::Type& type,
@@ -152,12 +140,23 @@ class LIBPROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
     ignore_unknown_fields_ = ignore_unknown_fields;
   }
 
+  bool ignore_unknown_fields() { return ignore_unknown_fields_; }
+
+  void set_ignore_unknown_enum_values(bool ignore_unknown_enum_values) {
+    ignore_unknown_enum_values_ = ignore_unknown_enum_values;
+  }
+
   void set_use_lower_camel_for_enums(bool use_lower_camel_for_enums) {
     use_lower_camel_for_enums_ = use_lower_camel_for_enums;
   }
 
+  void set_case_insensitive_enum_parsing(bool case_insensitive_enum_parsing) {
+    case_insensitive_enum_parsing_ = case_insensitive_enum_parsing;
+  }
+
  protected:
-  class LIBPROTOBUF_EXPORT ProtoElement : public BaseElement, public LocationTrackerInterface {
+  class PROTOBUF_EXPORT ProtoElement : public BaseElement,
+                                       public LocationTrackerInterface {
    public:
     // Constructor for the root element. No parent nor field.
     ProtoElement(const TypeInfo* typeinfo, const google::protobuf::Type& type,
@@ -187,7 +186,7 @@ class LIBPROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
     void RegisterField(const google::protobuf::Field* field);
 
     // To report location on error messages.
-    string ToString() const override;
+    std::string ToString() const override;
 
     ProtoElement* parent() const override {
       return static_cast<ProtoElement*>(BaseElement::parent());
@@ -308,6 +307,7 @@ class LIBPROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
                                   const google::protobuf::Enum* enum_type,
                                   io::CodedOutputStream* stream,
                                   bool use_lower_camel_for_enums,
+                                  bool case_insensitive_enum_parsing,
                                   bool ignore_unknown_values);
 
   // Variables for describing the structure of the input tree:
@@ -321,12 +321,18 @@ class LIBPROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
   // Indicates whether we finished writing root message completely.
   bool done_;
 
-  // If true, don't report unknown field names and enum values to the listener.
+  // If true, don't report unknown field names to the listener.
   bool ignore_unknown_fields_;
+
+  // If true, don't report unknown enum values to the listener.
+  bool ignore_unknown_enum_values_;
 
   // If true, check if enum name in camel case or without underscore matches the
   // field name.
   bool use_lower_camel_for_enums_;
+
+  // If true, check if enum name in UPPER_CASE matches the field name.
+  bool case_insensitive_enum_parsing_;
 
   // Variable for internal state processing:
   // element_    : the current element.
@@ -342,7 +348,7 @@ class LIBPROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
   // adapter_ : internal adapter between CodedOutputStream and buffer_.
   // stream_  : wrapper for writing tags and other encodings in wire format.
   strings::ByteSink* output_;
-  string buffer_;
+  std::string buffer_;
   io::StringOutputStream adapter_;
   std::unique_ptr<io::CodedOutputStream> stream_;
 
@@ -361,5 +367,7 @@ class LIBPROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
 }  // namespace util
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_UTIL_CONVERTER_PROTO_WRITER_H__

@@ -44,9 +44,7 @@ import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * A {@link ByteString} that wraps around a {@link ByteBuffer}.
- */
+/** A {@link ByteString} that wraps around a {@link ByteBuffer}. */
 final class NioByteString extends ByteString.LeafByteString {
   private final ByteBuffer buffer;
 
@@ -60,16 +58,12 @@ final class NioByteString extends ByteString.LeafByteString {
   // =================================================================
   // Serializable
 
-  /**
-   * Magic method that lets us override serialization behavior.
-   */
+  /** Magic method that lets us override serialization behavior. */
   private Object writeReplace() {
     return ByteString.copyFrom(buffer.slice());
   }
 
-  /**
-   * Magic method that lets us override deserialization behavior.
-   */
+  /** Magic method that lets us override deserialization behavior. */
   private void readObject(@SuppressWarnings("unused") ObjectInputStream in) throws IOException {
     throw new InvalidObjectException("NioByteString instances are not to be serialized directly");
   }
@@ -85,6 +79,13 @@ final class NioByteString extends ByteString.LeafByteString {
     } catch (IndexOutOfBoundsException e) {
       throw new ArrayIndexOutOfBoundsException(e.getMessage());
     }
+  }
+
+  @Override
+  public byte internalByteAt(int index) {
+    // it isn't possible to avoid the bounds checking inside of ByteBuffer, so just use the default
+    // implementation.
+    return byteAt(index);
   }
 
   @Override

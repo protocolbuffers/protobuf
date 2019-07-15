@@ -13,13 +13,17 @@ generate Java code for your .proto files:
     $ protoc --java_out=${OUTPUT_DIR} path/to/your/proto/file
 
 Include the generated Java files in your project and add a dependency on the
-protobuf Java runtime. If you are using Maven, use the following:
+protobuf Java runtime.
+
+### Maven
+
+If you are using Maven, use the following:
 
 ```xml
 <dependency>
   <groupId>com.google.protobuf</groupId>
   <artifactId>protobuf-java</artifactId>
-  <version>3.5.1</version>
+  <version>3.8.0</version>
 </dependency>
 ```
 
@@ -33,9 +37,17 @@ protobuf-java-util package:
 <dependency>
   <groupId>com.google.protobuf</groupId>
   <artifactId>protobuf-java-util</artifactId>
-  <version>3.5.1</version>
+  <version>3.8.0</version>
 </dependency>
 ```
+
+### Gradle
+
+If you are using Gradle, add the following to your `build.gradle` file's dependencies:
+```
+    compile 'com.google.protobuf:protobuf-java:3.8.0'
+```
+Again, be sure to check that the version number maches (or is newer than) the version number of protoc that you are using.
 
 ### Use Java Protocol Buffers on Android
 

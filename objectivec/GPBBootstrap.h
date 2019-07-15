@@ -91,6 +91,24 @@
 #endif
 #endif
 
+/**
+ * Attribute used for Objective-C proto interface deprecations without messages.
+ **/
+#ifndef GPB_DEPRECATED
+#define GPB_DEPRECATED __attribute__((deprecated))
+#endif
+
+/**
+ * Attribute used for Objective-C proto interface deprecations with messages.
+ **/
+#ifndef GPB_DEPRECATED_MSG
+#if __has_extension(attribute_deprecated_with_message)
+#define GPB_DEPRECATED_MSG(msg) __attribute__((deprecated(msg)))
+#else
+#define GPB_DEPRECATED_MSG(msg) __attribute__((deprecated))
+#endif
+#endif
+
 // If property name starts with init we need to annotate it to get past ARC.
 // http://stackoverflow.com/questions/18723226/how-do-i-annotate-an-objective-c-property-with-an-objc-method-family/18723227#18723227
 //

@@ -13,7 +13,7 @@ use Google\Protobuf\Internal\GPBUtil;
 /**
  * Generated from protobuf message <code>google.protobuf.SourceCodeInfo.Location</code>
  */
-class Location extends \Google\Protobuf\Internal\Message
+final class Location extends \Google\Protobuf\Internal\Message
 {
     /**
      * Identifies which part of the FileDescriptorProto was defined at this

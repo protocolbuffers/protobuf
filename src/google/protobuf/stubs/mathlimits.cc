@@ -40,42 +40,6 @@
 namespace google {
 namespace protobuf {
 
-// MSVC++ 2005 and older compilers think the header declaration was a
-// definition, and erroneously flag these as a duplicate definition.
-#if defined(COMPILER_MSVC) || __cpluscplus < 201103L
-
-#define DEF_COMMON_LIMITS(Type)
-#define DEF_UNSIGNED_INT_LIMITS(Type)
-#define DEF_SIGNED_INT_LIMITS(Type)
-#define DEF_PRECISION_LIMITS(Type)
-
-#else
-
-#define DEF_COMMON_LIMITS(Type) \
-const bool MathLimits<Type>::kIsSigned; \
-const bool MathLimits<Type>::kIsInteger; \
-const int MathLimits<Type>::kMin10Exp; \
-const int MathLimits<Type>::kMax10Exp;
-
-#define DEF_UNSIGNED_INT_LIMITS(Type) \
-DEF_COMMON_LIMITS(Type) \
-const Type MathLimits<Type>::kPosMin; \
-const Type MathLimits<Type>::kPosMax; \
-const Type MathLimits<Type>::kMin; \
-const Type MathLimits<Type>::kMax; \
-const Type MathLimits<Type>::kEpsilon; \
-const Type MathLimits<Type>::kStdError;
-
-#define DEF_SIGNED_INT_LIMITS(Type) \
-DEF_UNSIGNED_INT_LIMITS(Type) \
-const Type MathLimits<Type>::kNegMin; \
-const Type MathLimits<Type>::kNegMax;
-
-#define DEF_PRECISION_LIMITS(Type) \
-const int MathLimits<Type>::kPrecisionDigits;
-
-#endif  // not COMPILER_MSVC
-
 // http://en.wikipedia.org/wiki/Quadruple_precision_floating-point_format#Double-double_arithmetic
 // With some compilers (gcc 4.6.x) on some platforms (powerpc64),
 // "long double" is implemented as a pair of double: "double double" format.
@@ -101,7 +65,6 @@ const int MathLimits<Type>::kPrecisionDigits;
 // max(DBL_EPSILON * DBL_EPSILON, kEpsilon) rather than a multiple of kEpsilon.
 
 #define DEF_FP_LIMITS(Type, PREFIX) \
-DEF_COMMON_LIMITS(Type) \
 const Type MathLimits<Type>::kPosMin = PREFIX##_MIN; \
 const Type MathLimits<Type>::kPosMax = PREFIX##_MAX; \
 const Type MathLimits<Type>::kMin = -MathLimits<Type>::kPosMax; \
@@ -113,32 +76,14 @@ const Type MathLimits<Type>::kEpsilon = PREFIX##_EPSILON; \
 const Type MathLimits<Type>::kStdError = \
   32 * (DBL_EPSILON * DBL_EPSILON > MathLimits<Type>::kEpsilon \
       ? DBL_EPSILON * DBL_EPSILON : MathLimits<Type>::kEpsilon); \
-DEF_PRECISION_LIMITS(Type) \
 const Type MathLimits<Type>::kNaN = HUGE_VAL - HUGE_VAL; \
 const Type MathLimits<Type>::kPosInf = HUGE_VAL; \
 const Type MathLimits<Type>::kNegInf = -HUGE_VAL;
-
-// The following are *not* casts!
-DEF_SIGNED_INT_LIMITS(int8)
-DEF_SIGNED_INT_LIMITS(int16)  // NOLINT(readability/casting)
-DEF_SIGNED_INT_LIMITS(int32)  // NOLINT(readability/casting)
-DEF_SIGNED_INT_LIMITS(int64)  // NOLINT(readability/casting)
-DEF_UNSIGNED_INT_LIMITS(uint8)
-DEF_UNSIGNED_INT_LIMITS(uint16)  // NOLINT(readability/casting)
-DEF_UNSIGNED_INT_LIMITS(uint32)  // NOLINT(readability/casting)
-DEF_UNSIGNED_INT_LIMITS(uint64)  // NOLINT(readability/casting)
-
-DEF_SIGNED_INT_LIMITS(long int)
-DEF_UNSIGNED_INT_LIMITS(unsigned long int)
 
 DEF_FP_LIMITS(float, FLT)
 DEF_FP_LIMITS(double, DBL)
 DEF_FP_LIMITS(long double, LDBL);
 
-#undef DEF_COMMON_LIMITS
-#undef DEF_SIGNED_INT_LIMITS
-#undef DEF_UNSIGNED_INT_LIMITS
 #undef DEF_FP_LIMITS
-#undef DEF_PRECISION_LIMITS
 }  // namespace protobuf
 }  // namespace google

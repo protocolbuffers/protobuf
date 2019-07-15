@@ -84,13 +84,13 @@ python setup.py sdist upload -r https://test.pypi.org/legacy/
 
 # Test locally with different python versions.
 run_install_test ${TESTING_VERSION} python2.7 https://test.pypi.org/simple
-run_install_test ${TESTING_VERSION} python3.4 https://test.pypi.org/simple
+run_install_test ${TESTING_VERSION} python3 https://test.pypi.org/simple
 
 # Deploy egg/wheel packages to testing PyPI and test again.
 python setup.py bdist_egg bdist_wheel upload -r https://test.pypi.org/legacy/
 
 run_install_test ${TESTING_VERSION} python2.7 https://test.pypi.org/simple
-run_install_test ${TESTING_VERSION} python3.4 https://test.pypi.org/simple
+run_install_test ${TESTING_VERSION} python3 https://test.pypi.org/simple
 
 echo "All install tests have passed using testing PyPI."
 
@@ -108,7 +108,7 @@ if [ $TESTING_ONLY -eq 0 ]; then
   # include files you may not want in the package. E.g., if you have built
   # and tested with --cpp_implemenation, bdist_xxx will include the _message.so
   # file even when you no longer pass the --cpp_implemenation flag. See:
-  #   https://github.com/google/protobuf/issues/3042
+  #   https://github.com/protocolbuffers/protobuf/issues/3042
   python setup.py clean build bdist_egg bdist_wheel upload
 else
   # Set the version number back (i.e., remove dev suffix).

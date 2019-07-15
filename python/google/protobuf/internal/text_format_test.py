@@ -50,9 +50,11 @@ except ImportError:
 from google.protobuf import any_pb2
 from google.protobuf import any_test_pb2
 from google.protobuf import map_unittest_pb2
+from google.protobuf import unittest_custom_options_pb2
 from google.protobuf import unittest_mset_pb2
 from google.protobuf import unittest_pb2
 from google.protobuf import unittest_proto3_arena_pb2
+from google.protobuf import descriptor_pb2
 from google.protobuf.internal import any_test_pb2 as test_extend_any
 from google.protobuf.internal import message_set_extensions_pb2
 from google.protobuf.internal import test_util
@@ -175,7 +177,10 @@ class TextFormatMessageToStringTests(TextFormatBase):
         'repeated_nested_message {\n  bb: 32\n}\n'
         'repeated_foreign_enum: [FOREIGN_FOO, FOREIGN_BAR, FOREIGN_BAZ]\n')
     if as_one_line:
-      expected_ascii = expected_ascii.replace('\n ', '').replace('\n', '')
+      expected_ascii = expected_ascii.replace('\n', ' ')
+      expected_ascii = re.sub(r'\s+', ' ', expected_ascii)
+      expected_ascii = re.sub(r'\s$', '', expected_ascii)
+
     actual_ascii = text_format.MessageToString(
         message, use_short_repeated_primitives=True,
         as_one_line=as_one_line)
@@ -184,7 +189,7 @@ class TextFormatMessageToStringTests(TextFormatBase):
     text_format.Parse(actual_ascii, parsed_message)
     self.assertEqual(parsed_message, message)
 
-  def tesPrintShortFormatRepeatedFields(self, message_module, as_one_line):
+  def testPrintShortFormatRepeatedFields(self, message_module):
     self.VerifyPrintShortFormatRepeatedFields(message_module, False)
     self.VerifyPrintShortFormatRepeatedFields(message_module, True)
 
@@ -263,13 +268,6 @@ class TextFormatMessageToStringTests(TextFormatBase):
   def testPrintFloatFormat(self, message_module):
     # Check that float_format argument is passed to sub-message formatting.
     message = message_module.NestedTestAllTypes()
-    # We use 1.25 as it is a round number in binary.  The proto 32-bit float
-    # will not gain additional imprecise digits as a 64-bit Python float and
-    # show up in its str.  32-bit 1.2 is noisy when extended to 64-bit:
-    #  >>> struct.unpack('f', struct.pack('f', 1.2))[0]
-    #  1.2000000476837158
-    #  >>> struct.unpack('f', struct.pack('f', 1.25))[0]
-    #  1.25
     message.payload.optional_float = 1.25
     # Check rounding at 15 significant digits
     message.payload.optional_double = -.000003456789012345678
@@ -292,6 +290,43 @@ class TextFormatMessageToStringTests(TextFormatBase):
     self.CompareToGoldenText(
         self.RemoveRedundantZeros(text_message),
         'payload {{ {0} {1} {2} {3} }}'.format(*formatted_fields))
+
+    # 32-bit 1.2 is noisy when extended to 64-bit:
+    #  >>> struct.unpack('f', struct.pack('f', 1.2))[0]
+    #  1.2000000476837158
+    # TODO(jieluo): change to 1.2 with cl/241634942.
+    message.payload.optional_float = 1.2000000476837158
+    formatted_fields = ['optional_float: 1.2',
+                        'optional_double: -3.45678901234568e-6',
+                        'repeated_float: -5642', 'repeated_double: 7.89e-5']
+    text_message = text_format.MessageToString(message, float_format='.7g',
+                                               double_format='.15g')
+    self.CompareToGoldenText(
+        self.RemoveRedundantZeros(text_message),
+        'payload {{\n  {0}\n  {1}\n  {2}\n  {3}\n}}\n'.format(
+            *formatted_fields))
+
+    # Test only set float_format affect both float and double fields.
+    formatted_fields = ['optional_float: 1.2',
+                        'optional_double: -3.456789e-6',
+                        'repeated_float: -5642', 'repeated_double: 7.89e-5']
+    text_message = text_format.MessageToString(message, float_format='.7g')
+    self.CompareToGoldenText(
+        self.RemoveRedundantZeros(text_message),
+        'payload {{\n  {0}\n  {1}\n  {2}\n  {3}\n}}\n'.format(
+            *formatted_fields))
+
+    # Test default float_format has 8 valid digits.
+    message.payload.optional_float = 1.2345678912
+    message.payload.optional_double = 1.2345678912
+    formatted_fields = ['optional_float: 1.2345679',
+                        'optional_double: 1.2345678912',
+                        'repeated_float: -5642', 'repeated_double: 7.89e-5']
+    text_message = text_format.MessageToString(message)
+    self.CompareToGoldenText(
+        self.RemoveRedundantZeros(text_message),
+        'payload {{\n  {0}\n  {1}\n  {2}\n  {3}\n}}\n'.format(
+            *formatted_fields))
 
   def testMessageToString(self, message_module):
     message = message_module.ForeignMessage()
@@ -357,6 +392,63 @@ class TextFormatMessageToStringTests(TextFormatBase):
     printer.PrintFieldValue(field, value)
     self.assertEqual('0.0', out.getvalue())
     out.close()
+
+  def testCustomOptions(self, message_module):
+    message_descriptor = (unittest_custom_options_pb2.
+                          TestMessageWithCustomOptions.DESCRIPTOR)
+    message_proto = descriptor_pb2.DescriptorProto()
+    message_descriptor.CopyToProto(message_proto)
+    expected_text = (
+        'name: "TestMessageWithCustomOptions"\n'
+        'field {\n'
+        '  name: "field1"\n'
+        '  number: 1\n'
+        '  label: LABEL_OPTIONAL\n'
+        '  type: TYPE_STRING\n'
+        '  options {\n'
+        '    ctype: CORD\n'
+        '    [protobuf_unittest.field_opt1]: 8765432109\n'
+        '  }\n'
+        '}\n'
+        'field {\n'
+        '  name: "oneof_field"\n'
+        '  number: 2\n'
+        '  label: LABEL_OPTIONAL\n'
+        '  type: TYPE_INT32\n'
+        '  oneof_index: 0\n'
+        '}\n'
+        'enum_type {\n'
+        '  name: "AnEnum"\n'
+        '  value {\n'
+        '    name: "ANENUM_VAL1"\n'
+        '    number: 1\n'
+        '  }\n'
+        '  value {\n'
+        '    name: "ANENUM_VAL2"\n'
+        '    number: 2\n'
+        '    options {\n'
+        '      [protobuf_unittest.enum_value_opt1]: 123\n'
+        '    }\n'
+        '  }\n'
+        '  options {\n'
+        '    [protobuf_unittest.enum_opt1]: -789\n'
+        '  }\n'
+        '}\n'
+        'options {\n'
+        '  message_set_wire_format: false\n'
+        '  [protobuf_unittest.message_opt1]: -56\n'
+        '}\n'
+        'oneof_decl {\n'
+        '  name: "AnOneof"\n'
+        '  options {\n'
+        '    [protobuf_unittest.oneof_opt1]: -99\n'
+        '  }\n'
+        '}\n')
+    self.assertEqual(expected_text,
+                     text_format.MessageToString(message_proto))
+    parsed_proto = descriptor_pb2.DescriptorProto()
+    text_format.Parse(expected_text, parsed_proto)
+    self.assertEqual(message_proto, parsed_proto)
 
 
 @_parameterized.parameters(unittest_pb2, unittest_proto3_arena_pb2)
@@ -434,6 +526,14 @@ class TextFormatParserTests(TextFormatBase):
     self.assertEqual(msg2.optional_string, u'')
     text_format.Parse(text, msg2)
     self.assertEqual(msg2.optional_string, u'café')
+
+  def testParseDoubleToFloat(self, message_module):
+    message = message_module.TestAllTypes()
+    text = ('repeated_float: 3.4028235e+39\n'
+            'repeated_float: 1.4028235e-39\n')
+    text_format.Parse(text, message)
+    self.assertEqual(message.repeated_float[0], float('inf'))
+    self.assertAlmostEqual(message.repeated_float[1], 1.4028235e-39)
 
   def testParseExotic(self, message_module):
     message = message_module.TestAllTypes()
@@ -528,6 +628,12 @@ class TextFormatParserTests(TextFormatBase):
     six.assertRaisesRegex(self, text_format.ParseError, (
         r'1:1 : Message type "\w+.TestAllTypes" has no field named '
         r'"unknown_field".'), text_format.Parse, text, message)
+    text = ('optional_int32: 123\n'
+            'unknown_field: 8\n'
+            'optional_nested_message { bb: 45 }')
+    text_format.Parse(text, message, allow_unknown_field=True)
+    self.assertEqual(message.optional_nested_message.bb, 45)
+    self.assertEqual(message.optional_int32, 123)
 
   def testParseBadEnumValue(self, message_module):
     message = message_module.TestAllTypes()
@@ -653,6 +759,24 @@ class TextFormatParserTests(TextFormatBase):
     self.assertEqual(m.optional_string, self._GOLDEN_UNICODE)
     self.assertEqual(m.repeated_bytes[0], self._GOLDEN_BYTES)
 
+  def testParseDuplicateMessages(self, message_module):
+    message = message_module.TestAllTypes()
+    text = ('optional_nested_message { bb: 1 } '
+            'optional_nested_message { bb: 2 }')
+    six.assertRaisesRegex(self, text_format.ParseError, (
+        r'1:59 : Message type "\w+.TestAllTypes" '
+        r'should not have multiple "optional_nested_message" fields.'),
+                          text_format.Parse, text,
+                          message)
+
+  def testParseDuplicateScalars(self, message_module):
+    message = message_module.TestAllTypes()
+    text = ('optional_int32: 42 ' 'optional_int32: 67')
+    six.assertRaisesRegex(self, text_format.ParseError, (
+        r'1:36 : Message type "\w+.TestAllTypes" should not '
+        r'have multiple "optional_int32" fields.'), text_format.Parse, text,
+                          message)
+
 
 @_parameterized.parameters(unittest_pb2, unittest_proto3_arena_pb2)
 class TextFormatMergeTests(TextFormatBase):
@@ -709,6 +833,39 @@ class OnlyWorksWithProto2RightNowTests(TextFormatBase):
     self.CompareToGoldenFile(
         self.RemoveRedundantZeros(text_format.MessageToString(message)),
         'text_format_unittest_data_oneof_implemented.txt')
+
+  def testPrintUnknownFields(self):
+    message = unittest_pb2.TestAllTypes()
+    message.optional_int32 = 101
+    message.optional_double = 102.0
+    message.optional_string = u'hello'
+    message.optional_bytes = b'103'
+    message.optionalgroup.a = 104
+    message.optional_nested_message.bb = 105
+    all_data = message.SerializeToString()
+    empty_message = unittest_pb2.TestEmptyMessage()
+    empty_message.ParseFromString(all_data)
+    self.assertEqual('1: 101\n'
+                     '12: 4636878028842991616\n'
+                     '14: "hello"\n'
+                     '15: "103"\n'
+                     '16 {\n'
+                     '  17: 104\n'
+                     '}\n'
+                     '18 {\n'
+                     '  1: 105\n'
+                     '}\n',
+                     text_format.MessageToString(empty_message,
+                                                 print_unknown_fields=True))
+    self.assertEqual('1: 101 '
+                     '12: 4636878028842991616 '
+                     '14: "hello" '
+                     '15: "103" '
+                     '16 { 17: 104 } '
+                     '18 { 1: 105 }',
+                     text_format.MessageToString(empty_message,
+                                                 print_unknown_fields=True,
+                                                 as_one_line=True))
 
   def testPrintInIndexOrder(self):
     message = unittest_pb2.TestFieldOrderings()
@@ -832,6 +989,29 @@ class OnlyWorksWithProto2RightNowTests(TextFormatBase):
         '  key: 111\n'
         '  value {\n'
         '    c: 5\n'
+        '  }\n'
+        '}\n')
+
+  # In cpp implementation, __str__ calls the cpp implementation of text format.
+  def testPrintMapUsingCppImplementation(self):
+    message = map_unittest_pb2.TestMap()
+    inner_msg = message.map_int32_foreign_message[111]
+    inner_msg.c = 1
+    self.assertEqual(
+        str(message),
+        'map_int32_foreign_message {\n'
+        '  key: 111\n'
+        '  value {\n'
+        '    c: 1\n'
+        '  }\n'
+        '}\n')
+    inner_msg.c = 2
+    self.assertEqual(
+        str(message),
+        'map_int32_foreign_message {\n'
+        '  key: 111\n'
+        '  value {\n'
+        '    c: 2\n'
         '  }\n'
         '}\n')
 
@@ -1208,16 +1388,6 @@ class Proto2Tests(TextFormatBase):
         '"protobuf_unittest.optional_int32_extension" extensions.'),
                           text_format.Parse, text, message)
 
-  def testParseDuplicateMessages(self):
-    message = unittest_pb2.TestAllTypes()
-    text = ('optional_nested_message { bb: 1 } '
-            'optional_nested_message { bb: 2 }')
-    six.assertRaisesRegex(self, text_format.ParseError, (
-        '1:59 : Message type "protobuf_unittest.TestAllTypes" '
-        'should not have multiple "optional_nested_message" fields.'),
-                          text_format.Parse, text,
-                          message)
-
   def testParseDuplicateExtensionMessages(self):
     message = unittest_pb2.TestAllExtensions()
     text = ('[protobuf_unittest.optional_nested_message_extension]: {} '
@@ -1227,14 +1397,6 @@ class Proto2Tests(TextFormatBase):
         'should not have multiple '
         '"protobuf_unittest.optional_nested_message_extension" extensions.'),
                           text_format.Parse, text, message)
-
-  def testParseDuplicateScalars(self):
-    message = unittest_pb2.TestAllTypes()
-    text = ('optional_int32: 42 ' 'optional_int32: 67')
-    six.assertRaisesRegex(self, text_format.ParseError, (
-        '1:36 : Message type "protobuf_unittest.TestAllTypes" should not '
-        'have multiple "optional_int32" fields.'), text_format.Parse, text,
-                          message)
 
   def testParseGroupNotClosed(self):
     message = unittest_pb2.TestAllTypes()
@@ -1396,6 +1558,24 @@ class Proto3Tests(unittest.TestCase):
         ' [type.googleapis.com/protobuf_unittest.OneString]'
         ' < data: "string" > '
         '>')
+
+  def testPrintAndParseMessageInvalidAny(self):
+    packed_message = unittest_pb2.OneString()
+    packed_message.data = 'string'
+    message = any_test_pb2.TestAny()
+    message.any_value.Pack(packed_message)
+    # Only include string after last '/' in type_url.
+    message.any_value.type_url = message.any_value.TypeName()
+    text = text_format.MessageToString(message)
+    self.assertEqual(
+        text, 'any_value {\n'
+        '  type_url: "protobuf_unittest.OneString"\n'
+        '  value: "\\n\\006string"\n'
+        '}\n')
+
+    parsed_message = any_test_pb2.TestAny()
+    text_format.Parse(text, parsed_message)
+    self.assertEqual(message, parsed_message)
 
   def testUnknownEnums(self):
     message = unittest_proto3_arena_pb2.TestAllTypes()
@@ -1865,6 +2045,89 @@ class PrettyPrinterTest(TextFormatBase):
          'optional_nested_message { My lucky number is 1 } '
          'repeated_nested_message { My lucky number is 42 } '
          'repeated_nested_message { My lucky number is 99 }'))
+
+    out = text_format.TextWriter(False)
+    text_format.PrintField(
+        message_module.TestAllTypes.DESCRIPTOR.fields_by_name[
+            'optional_nested_message'],
+        message.optional_nested_message,
+        out,
+        message_formatter=printer)
+    self.assertEqual(
+        'optional_nested_message {\n  My lucky number is 1\n}\n',
+        out.getvalue())
+    out.close()
+
+    out = text_format.TextWriter(False)
+    text_format.PrintFieldValue(
+        message_module.TestAllTypes.DESCRIPTOR.fields_by_name[
+            'optional_nested_message'],
+        message.optional_nested_message,
+        out,
+        message_formatter=printer)
+    self.assertEqual(
+        '{\n  My lucky number is 1\n}',
+        out.getvalue())
+    out.close()
+
+
+class WhitespaceTest(TextFormatBase):
+
+  def setUp(self):
+    self.out = text_format.TextWriter(False)
+    self.addCleanup(self.out.close)
+    self.message = unittest_pb2.NestedTestAllTypes()
+    self.message.child.payload.optional_string = 'value'
+    self.field = self.message.DESCRIPTOR.fields_by_name['child']
+    self.value = self.message.child
+
+  def testMessageToString(self):
+    self.CompareToGoldenText(
+        text_format.MessageToString(self.message),
+        textwrap.dedent("""\
+            child {
+              payload {
+                optional_string: "value"
+              }
+            }
+            """))
+
+  def testPrintMessage(self):
+    text_format.PrintMessage(self.message, self.out)
+    self.CompareToGoldenText(
+        self.out.getvalue(),
+        textwrap.dedent("""\
+            child {
+              payload {
+                optional_string: "value"
+              }
+            }
+            """))
+
+  def testPrintField(self):
+    text_format.PrintField(self.field, self.value, self.out)
+    self.CompareToGoldenText(
+        self.out.getvalue(),
+        textwrap.dedent("""\
+            child {
+              payload {
+                optional_string: "value"
+              }
+            }
+            """))
+
+  def testPrintFieldValue(self):
+    text_format.PrintFieldValue(
+        self.field, self.value, self.out)
+    self.CompareToGoldenText(
+        self.out.getvalue(),
+        textwrap.dedent("""\
+            {
+              payload {
+                optional_string: "value"
+              }
+            }"""))
+
 
 if __name__ == '__main__':
   unittest.main()

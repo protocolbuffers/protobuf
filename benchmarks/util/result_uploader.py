@@ -59,12 +59,13 @@ def upload_result(result_list, metadata):
       labels_string += ",|%s:%s|" % (key, result[key])
     new_result["labels"] = labels_string[1:]
     new_result["timestamp"] = _INITIAL_TIME
+    print(labels_string)
 
     bq = big_query_utils.create_big_query()
     row = big_query_utils.make_row(str(uuid.uuid4()), new_result)
     if not big_query_utils.insert_rows(bq, _PROJECT_ID, _DATASET,
-                                       _TABLE + "$" + _NOW,
-                                       [row]):
+                                        _TABLE + "$" + _NOW,
+                                        [row]):
       print('Error when uploading result', new_result)
 
 
@@ -82,6 +83,15 @@ if __name__ == "__main__":
   parser.add_argument("-go", "--go_input_file",
                       help="The golang benchmark result file's name",
                       default="")
+  parser.add_argument("-node", "--node_input_file",
+                      help="The node.js benchmark result file's name",
+                      default="")
+  parser.add_argument("-php", "--php_input_file",
+                      help="The pure php benchmark result file's name",
+                      default="")
+  parser.add_argument("-php_c", "--php_c_input_file",
+                      help="The php with c ext benchmark result file's name",
+                      default="")
   args = parser.parse_args()
 
   metadata = get_metadata()
@@ -90,5 +100,8 @@ if __name__ == "__main__":
       cpp_file=args.cpp_input_file,
       java_file=args.java_input_file,
       python_file=args.python_input_file,
-      go_file=args.go_input_file
+      go_file=args.go_input_file,
+      node_file=args.node_input_file,
+      php_file=args.php_input_file,
+      php_c_file=args.php_c_input_file,
   ), metadata)

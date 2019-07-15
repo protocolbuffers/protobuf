@@ -31,8 +31,8 @@ namespace Google.Protobuf.WellKnownTypes {
             "dWYuV2VsbEtub3duVHlwZXNiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
-          new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Any), global::Google.Protobuf.WellKnownTypes.Any.Parser, new[]{ "TypeUrl", "Value" }, null, null, null)
+          new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Any), global::Google.Protobuf.WellKnownTypes.Any.Parser, new[]{ "TypeUrl", "Value" }, null, null, null, null)
           }));
     }
     #endregion
@@ -159,7 +159,8 @@ namespace Google.Protobuf.WellKnownTypes {
     private string typeUrl_ = "";
     /// <summary>
     /// A URL/resource name that uniquely identifies the type of the serialized
-    /// protocol buffer message. The last segment of the URL's path must represent
+    /// protocol buffer message. This string must contain at least
+    /// one "/" character. The last segment of the URL's path must represent
     /// the fully qualified name of the type (as in
     /// `path/google.protobuf.Duration`). The name should be in a canonical form
     /// (e.g., leading "." is not accepted).

@@ -33,7 +33,6 @@
 
 #include <string>
 
-#include <google/protobuf/stubs/common.h>
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -45,10 +44,11 @@ struct Options {
       file_extension(".cs"),
       base_namespace(""),
       base_namespace_specified(false),
-      internal_access(false) {
+      internal_access(false),
+      serializable(false) {
   }
   // Extension of the generated file. Defaults to ".cs"
-  string file_extension;
+  std::string file_extension;
   // Base namespace to use to create directory hierarchy. Defaults to "".
   // This option allows the simple creation of a conventional C# file layout,
   // where directories are created relative to a project-specific base
@@ -59,7 +59,7 @@ struct Options {
   //
   // If no base namespace is specified, all files are generated in the
   // --csharp_out directory, with no subdirectories created automatically.
-  string base_namespace;
+  std::string base_namespace;
   // Whether the base namespace has been explicitly specified by the user.
   // This is required as the base namespace can be explicitly set to the empty
   // string, meaning "create a full directory hierarchy, starting from the first
@@ -68,12 +68,14 @@ struct Options {
   // Whether the generated classes should have accessibility level of "internal".
   // Defaults to false that generates "public" classes.
   bool internal_access;
+  // Whether the generated classes should have a global::System.Serializable attribute added
+  // Defaults to false
+  bool serializable;
 };
 
 }  // namespace csharp
 }  // namespace compiler
 }  // namespace protobuf
-
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_COMPILER_CSHARP_OPTIONS_H__

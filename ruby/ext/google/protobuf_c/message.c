@@ -79,7 +79,7 @@ VALUE Message_alloc(VALUE klass) {
   return ret;
 }
 
-static VALUE which_oneof_field(MessageHeader* self, const upb_oneofdef* o) {
+static const upb_fielddef* which_oneof_field(MessageHeader* self, const upb_oneofdef* o) {
   upb_oneof_iter it;
   size_t case_ofs;
   uint32_t oneof_case;
@@ -88,7 +88,7 @@ static VALUE which_oneof_field(MessageHeader* self, const upb_oneofdef* o) {
 
   // If no fields in the oneof, always nil.
   if (upb_oneofdef_numfields(o) == 0) {
-    return Qnil;
+    return NULL;
   }
   // Grab the first field in the oneof so we can get its layout info to find the
   // oneof_case field.
@@ -103,22 +103,165 @@ static VALUE which_oneof_field(MessageHeader* self, const upb_oneofdef* o) {
   oneof_case = *((uint32_t*)((char*)Message_data(self) + case_ofs));
 
   if (oneof_case == ONEOF_CASE_NONE) {
-    return Qnil;
+    return NULL;
   }
 
   // oneof_case is a field index, so find that field.
   f = upb_oneofdef_itof(o, oneof_case);
   assert(f != NULL);
 
-  return ID2SYM(rb_intern(upb_fielddef_name(f)));
+  return f;
+}
+
+enum {
+  METHOD_UNKNOWN = 0,
+  METHOD_GETTER = 1,
+  METHOD_SETTER = 2,
+  METHOD_CLEAR = 3,
+  METHOD_PRESENCE = 4,
+  METHOD_ENUM_GETTER = 5,
+  METHOD_WRAPPER_GETTER = 6,
+  METHOD_WRAPPER_SETTER = 7
+};
+
+// Check if the field is a well known wrapper type
+static bool is_wrapper_type_field(const upb_fielddef* field) {
+  char* field_type_name = rb_class2name(field_type_class(field));
+
+  return strcmp(field_type_name, "Google::Protobuf::DoubleValue") == 0 ||
+         strcmp(field_type_name, "Google::Protobuf::FloatValue") == 0 ||
+         strcmp(field_type_name, "Google::Protobuf::Int32Value") == 0 ||
+         strcmp(field_type_name, "Google::Protobuf::Int64Value") == 0 ||
+         strcmp(field_type_name, "Google::Protobuf::UInt32Value") == 0 ||
+         strcmp(field_type_name, "Google::Protobuf::UInt64Value") == 0 ||
+         strcmp(field_type_name, "Google::Protobuf::BoolValue") == 0 ||
+         strcmp(field_type_name, "Google::Protobuf::StringValue") == 0 ||
+         strcmp(field_type_name, "Google::Protobuf::BytesValue") == 0;
+}
+
+// Get a new Ruby wrapper type and set the initial value
+static VALUE ruby_wrapper_type(const upb_fielddef* field, const VALUE* value) {
+  if (is_wrapper_type_field(field) && value != Qnil) {
+    VALUE hash = rb_hash_new();
+    rb_hash_aset(hash, rb_str_new2("value"), value);
+    VALUE args[1] = { hash };
+    return rb_class_new_instance(1, args, field_type_class(field));
+  }
+  return Qnil;
+}
+
+static int extract_method_call(VALUE method_name, MessageHeader* self,
+			       const upb_fielddef **f, const upb_oneofdef **o) {
+  Check_Type(method_name, T_SYMBOL);
+
+  VALUE method_str = rb_id2str(SYM2ID(method_name));
+  char* name = RSTRING_PTR(method_str);
+  size_t name_len = RSTRING_LEN(method_str);
+  int accessor_type;
+  const upb_oneofdef* test_o;
+  const upb_fielddef* test_f;
+
+  if (name[name_len - 1] == '=') {
+    accessor_type = METHOD_SETTER;
+    name_len--;
+    // We want to ensure if the proto has something named clear_foo or has_foo?,
+    // we don't strip the prefix.
+  } else if (strncmp("clear_", name, 6) == 0 &&
+             !upb_msgdef_lookupname(self->descriptor->msgdef, name, name_len,
+				    &test_f, &test_o)) {
+    accessor_type = METHOD_CLEAR;
+    name = name + 6;
+    name_len = name_len - 6;
+  } else if (strncmp("has_", name, 4) == 0 && name[name_len - 1] == '?' &&
+             !upb_msgdef_lookupname(self->descriptor->msgdef, name, name_len,
+				    &test_f, &test_o)) {
+    accessor_type = METHOD_PRESENCE;
+    name = name + 4;
+    name_len = name_len - 5;
+  } else {
+    accessor_type = METHOD_GETTER;
+  }
+
+  bool has_field = upb_msgdef_lookupname(self->descriptor->msgdef, name, name_len,
+			                                   &test_f, &test_o);
+
+  // Look for wrapper type accessor of the form <field_name>_as_value
+  if (!has_field &&
+      (accessor_type == METHOD_GETTER || accessor_type == METHOD_SETTER) &&
+      name_len > 9 && strncmp(name + name_len - 9, "_as_value", 9) == 0) {
+    // Find the field name
+    char wrapper_field_name[name_len - 8];
+    strncpy(wrapper_field_name, name, name_len - 9);
+    wrapper_field_name[name_len - 7] = '\0';
+
+    // Check if field exists and is a wrapper type
+    const upb_oneofdef* test_o_wrapper;
+    const upb_fielddef* test_f_wrapper;
+    if (upb_msgdef_lookupname(self->descriptor->msgdef, wrapper_field_name, name_len - 9,
+			                        &test_f_wrapper, &test_o_wrapper) &&
+        upb_fielddef_type(test_f_wrapper) == UPB_TYPE_MESSAGE &&
+        is_wrapper_type_field(test_f_wrapper)) {
+      // It does exist!
+      has_field = true;
+      if (accessor_type == METHOD_SETTER) {
+        accessor_type = METHOD_WRAPPER_SETTER;
+      } else {
+        accessor_type = METHOD_WRAPPER_GETTER;
+      }
+      test_o = test_o_wrapper;
+      test_f = test_f_wrapper;
+    }
+  }
+
+  // Look for enum accessor of the form <enum_name>_const
+  if (!has_field && accessor_type == METHOD_GETTER &&
+      name_len > 6 && strncmp(name + name_len - 6, "_const", 6) == 0) {
+
+    // Find enum field name
+    char enum_name[name_len - 5];
+    strncpy(enum_name, name, name_len - 6);
+    enum_name[name_len - 4] = '\0';
+
+    // Check if enum field exists
+    const upb_oneofdef* test_o_enum;
+    const upb_fielddef* test_f_enum;
+    if (upb_msgdef_lookupname(self->descriptor->msgdef, enum_name, name_len - 6,
+			                        &test_f_enum, &test_o_enum) &&
+        upb_fielddef_type(test_f_enum) == UPB_TYPE_ENUM) {
+      // It does exist!
+      has_field = true;
+      accessor_type = METHOD_ENUM_GETTER;
+      test_o = test_o_enum;
+      test_f = test_f_enum;
+    }
+  }
+
+  // Verify the name corresponds to a oneof or field in this message.
+  if (!has_field) {
+    return METHOD_UNKNOWN;
+  }
+
+  // Method calls like 'has_foo?' are not allowed if field "foo" does not have
+  // a hasbit (e.g. repeated fields or non-message type fields for proto3
+  // syntax).
+  if (accessor_type == METHOD_PRESENCE && test_f != NULL &&
+      !upb_fielddef_haspresence(test_f)) {
+    return METHOD_UNKNOWN;
+  }
+
+  *o = test_o;
+  *f = test_f;
+  return accessor_type;
 }
 
 /*
  * call-seq:
  *     Message.method_missing(*args)
  *
- * Provides accessors and setters for message fields according to their field
- * names. For any field whose name does not conflict with a built-in method, an
+ * Provides accessors and setters and methods to clear and check for presence of
+ * message fields according to their field names.
+ *
+ * For any field whose name does not conflict with a built-in method, an
  * accessor is provided with the same name as the field, and a setter is
  * provided with the name of the field plus the '=' suffix. Thus, given a
  * message instance 'msg' with field 'foo', the following code is valid:
@@ -129,13 +272,17 @@ static VALUE which_oneof_field(MessageHeader* self, const upb_oneofdef* o) {
  * This method also provides read-only accessors for oneofs. If a oneof exists
  * with name 'my_oneof', then msg.my_oneof will return a Ruby symbol equal to
  * the name of the field in that oneof that is currently set, or nil if none.
+ *
+ * It also provides methods of the form 'clear_fieldname' to clear the value
+ * of the field 'fieldname'. For basic data types, this will set the default
+ * value of the field.
+ *
+ * Additionally, it provides methods of the form 'has_fieldname?', which returns
+ * true if the field 'fieldname' is set in the message object, else false. For
+ * 'proto3' syntax, calling this for a basic type field will result in an error.
  */
 VALUE Message_method_missing(int argc, VALUE* argv, VALUE _self) {
   MessageHeader* self;
-  VALUE method_name, method_str;
-  char* name;
-  size_t name_len;
-  bool setter;
   const upb_oneofdef* o;
   const upb_fielddef* f;
 
@@ -143,54 +290,84 @@ VALUE Message_method_missing(int argc, VALUE* argv, VALUE _self) {
   if (argc < 1) {
     rb_raise(rb_eArgError, "Expected method name as first argument.");
   }
-  method_name = argv[0];
-  if (!SYMBOL_P(method_name)) {
-    rb_raise(rb_eArgError, "Expected symbol as method name.");
-  }
-  method_str = rb_id2str(SYM2ID(method_name));
-  name = RSTRING_PTR(method_str);
-  name_len = RSTRING_LEN(method_str);
-  setter = false;
 
-  // Setters have names that end in '='.
-  if (name[name_len - 1] == '=') {
-    setter = true;
-    name_len--;
-  }
-
-  // See if this name corresponds to either a oneof or field in this message.
-  if (!upb_msgdef_lookupname(self->descriptor->msgdef, name, name_len, &f,
-                             &o)) {
+  int accessor_type = extract_method_call(argv[0], self, &f, &o);
+  if (accessor_type == METHOD_UNKNOWN || (o == NULL && f == NULL) ) {
     return rb_call_super(argc, argv);
+  } else if (accessor_type == METHOD_SETTER || accessor_type == METHOD_WRAPPER_SETTER) {
+    if (argc != 2) {
+      rb_raise(rb_eArgError, "Expected 2 arguments, received %d", argc);
+    }
+    rb_check_frozen(_self);
+  } else if (argc != 1) {
+    rb_raise(rb_eArgError, "Expected 1 argument, received %d", argc);
   }
 
+  // Return which of the oneof fields are set
   if (o != NULL) {
-    // This is a oneof -- return which field inside the oneof is set.
-    if (setter) {
+    if (accessor_type == METHOD_SETTER) {
       rb_raise(rb_eRuntimeError, "Oneof accessors are read-only.");
     }
-    return which_oneof_field(self, o);
-  } else {
-    // This is a field -- get or set the field's value.
-    assert(f);
-    if (setter) {
-      if (argc < 2) {
-        rb_raise(rb_eArgError, "No value provided to setter.");
+
+    const upb_fielddef* oneof_field = which_oneof_field(self, o);
+    if (accessor_type == METHOD_PRESENCE) {
+      return oneof_field == NULL ? Qfalse : Qtrue;
+    } else if (accessor_type == METHOD_CLEAR) {
+      if (oneof_field != NULL) {
+        layout_clear(self->descriptor->layout, Message_data(self), oneof_field);
       }
-      layout_set(self->descriptor->layout, Message_data(self), f, argv[1]);
       return Qnil;
     } else {
-      return layout_get(self->descriptor->layout, Message_data(self), f);
+      // METHOD_ACCESSOR
+      return oneof_field == NULL ? Qnil :
+        ID2SYM(rb_intern(upb_fielddef_name(oneof_field)));
     }
+  // Otherwise we're operating on a single proto field
+  } else if (accessor_type == METHOD_SETTER) {
+    layout_set(self->descriptor->layout, Message_data(self), f, argv[1]);
+    return Qnil;
+  } else if (accessor_type == METHOD_CLEAR) {
+    layout_clear(self->descriptor->layout, Message_data(self), f);
+    return Qnil;
+  } else if (accessor_type == METHOD_PRESENCE) {
+    return layout_has(self->descriptor->layout, Message_data(self), f);
+  } else if (accessor_type == METHOD_WRAPPER_GETTER) {
+    VALUE value = layout_get(self->descriptor->layout, Message_data(self), f);
+    if (value != Qnil) {
+      value = rb_funcall(value, rb_intern("value"), 0);
+    }
+    return value;
+  } else if (accessor_type == METHOD_WRAPPER_SETTER) {
+    VALUE wrapper = ruby_wrapper_type(f, argv[1]);
+    layout_set(self->descriptor->layout, Message_data(self), f, wrapper);
+    return Qnil;
+  } else if (accessor_type == METHOD_ENUM_GETTER) {
+    VALUE enum_type = field_type_class(f);
+    VALUE method = rb_intern("const_get");
+    VALUE raw_value = layout_get(self->descriptor->layout, Message_data(self), f);
+
+    // Map repeated fields to a new type with ints
+    if (upb_fielddef_label(f) == UPB_LABEL_REPEATED) {
+      int array_size = FIX2INT(rb_funcall(raw_value, rb_intern("length"), 0));
+      VALUE array_args[1] = { ID2SYM(rb_intern("int64")) };
+      VALUE array = rb_class_new_instance(1, array_args, CLASS_OF(raw_value));
+      for (int i = 0; i < array_size; i++) {
+        VALUE entry = rb_funcall(enum_type, method, 1, rb_funcall(raw_value,
+                                 rb_intern("at"), 1, INT2NUM(i)));
+        rb_funcall(array, rb_intern("push"), 1, entry);
+      }
+      return array;
+    }
+    // Convert the value for singular fields
+    return rb_funcall(enum_type, method, 1, raw_value);
+  } else {
+    return layout_get(self->descriptor->layout, Message_data(self), f);
   }
 }
 
+
 VALUE Message_respond_to_missing(int argc, VALUE* argv, VALUE _self) {
   MessageHeader* self;
-  VALUE method_name, method_str;
-  char* name;
-  size_t name_len;
-  bool setter;
   const upb_oneofdef* o;
   const upb_fielddef* f;
 
@@ -198,30 +375,15 @@ VALUE Message_respond_to_missing(int argc, VALUE* argv, VALUE _self) {
   if (argc < 1) {
     rb_raise(rb_eArgError, "Expected method name as first argument.");
   }
-  method_name = argv[0];
-  if (!SYMBOL_P(method_name)) {
-    rb_raise(rb_eArgError, "Expected symbol as method name.");
-  }
-  method_str = rb_id2str(SYM2ID(method_name));
-  name = RSTRING_PTR(method_str);
-  name_len = RSTRING_LEN(method_str);
-  setter = false;
 
-  // Setters have names that end in '='.
-  if (name[name_len - 1] == '=') {
-    setter = true;
-    name_len--;
-  }
-
-  // See if this name corresponds to either a oneof or field in this message.
-  if (!upb_msgdef_lookupname(self->descriptor->msgdef, name, name_len, &f,
-                             &o)) {
+  int accessor_type = extract_method_call(argv[0], self, &f, &o);
+  if (accessor_type == METHOD_UNKNOWN) {
     return rb_call_super(argc, argv);
+  } else if (o != NULL) {
+    return accessor_type == METHOD_SETTER ? Qfalse : Qtrue;
+  } else {
+    return Qtrue;
   }
-  if (o != NULL) {
-    return setter ? Qfalse : Qtrue;
-  }
-  return Qtrue;
 }
 
 VALUE create_submsg_from_hash(const upb_fielddef *f, VALUE hash) {
@@ -265,7 +427,8 @@ int Message_initialize_kwarg(VALUE key, VALUE val, VALUE _self) {
 
     if (TYPE(val) != T_HASH) {
       rb_raise(rb_eArgError,
-               "Expected Hash object as initializer value for map field '%s'.", name);
+               "Expected Hash object as initializer value for map field '%s' (given %s).",
+               name, rb_class2name(CLASS_OF(val)));
     }
     map = layout_get(self->descriptor->layout, Message_data(self), f);
     Map_merge_into_self(map, val);
@@ -274,7 +437,8 @@ int Message_initialize_kwarg(VALUE key, VALUE val, VALUE _self) {
 
     if (TYPE(val) != T_ARRAY) {
       rb_raise(rb_eArgError,
-               "Expected array as initializer value for repeated field '%s'.", name);
+               "Expected array as initializer value for repeated field '%s' (given %s).",
+               name, rb_class2name(CLASS_OF(val)));
     }
     ary = layout_get(self->descriptor->layout, Message_data(self), f);
     for (int i = 0; i < RARRAY_LEN(val); i++) {
@@ -444,13 +608,25 @@ VALUE Message_to_h(VALUE _self) {
        !upb_msg_field_done(&it);
        upb_msg_field_next(&it)) {
     const upb_fielddef* field = upb_msg_iter_field(&it);
+
+    // For proto2, do not include fields which are not set.
+    if (upb_msgdef_syntax(self->descriptor->msgdef) == UPB_SYNTAX_PROTO2 &&
+	field_contains_hasbit(self->descriptor->layout, field) &&
+	!layout_has(self->descriptor->layout, Message_data(self), field)) {
+      continue;
+    }
+
     VALUE msg_value = layout_get(self->descriptor->layout, Message_data(self),
                                  field);
     VALUE msg_key   = ID2SYM(rb_intern(upb_fielddef_name(field)));
-    if (upb_fielddef_ismap(field)) {
+    if (is_map_field(field)) {
       msg_value = Map_to_h(msg_value);
     } else if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
       msg_value = RepeatedField_to_ary(msg_value);
+      if (upb_msgdef_syntax(self->descriptor->msgdef) == UPB_SYNTAX_PROTO2 &&
+          RARRAY_LEN(msg_value) == 0) {
+        continue;
+      }
 
       if (upb_fielddef_type(field) == UPB_TYPE_MESSAGE) {
         for (int i = 0; i < RARRAY_LEN(msg_value); i++) {
@@ -458,6 +634,7 @@ VALUE Message_to_h(VALUE _self) {
           rb_ary_store(msg_value, i, Message_to_h(elem));
         }
       }
+
     } else if (msg_value != Qnil &&
                upb_fielddef_type(field) == UPB_TYPE_MESSAGE) {
       msg_value = Message_to_h(msg_value);
@@ -557,15 +734,16 @@ VALUE build_class_from_descriptor(Descriptor* desc) {
   // Also define #clone so that we don't inherit Object#clone.
   rb_define_method(klass, "clone", Message_dup, 0);
   rb_define_method(klass, "==", Message_eq, 1);
+  rb_define_method(klass, "eql?", Message_eq, 1);
   rb_define_method(klass, "hash", Message_hash, 0);
   rb_define_method(klass, "to_h", Message_to_h, 0);
-  rb_define_method(klass, "to_hash", Message_to_h, 0);
   rb_define_method(klass, "inspect", Message_inspect, 0);
+  rb_define_method(klass, "to_s", Message_inspect, 0);
   rb_define_method(klass, "[]", Message_index, 1);
   rb_define_method(klass, "[]=", Message_index_set, 2);
   rb_define_singleton_method(klass, "decode", Message_decode, 1);
   rb_define_singleton_method(klass, "encode", Message_encode, 1);
-  rb_define_singleton_method(klass, "decode_json", Message_decode_json, 1);
+  rb_define_singleton_method(klass, "decode_json", Message_decode_json, -1);
   rb_define_singleton_method(klass, "encode_json", Message_encode_json, -1);
   rb_define_singleton_method(klass, "descriptor", Message_descriptor, 0);
 
@@ -635,10 +813,9 @@ VALUE build_module_from_enumdesc(EnumDescriptor* enumdesc) {
     const char* name = upb_enum_iter_name(&it);
     int32_t value = upb_enum_iter_number(&it);
     if (name[0] < 'A' || name[0] > 'Z') {
-      rb_raise(cTypeError,
-               "Enum value '%s' does not start with an uppercase letter "
-               "as is required for Ruby constants.",
-               name);
+      rb_warn("Enum value '%s' does not start with an uppercase letter "
+              "as is required for Ruby constants.",
+              name);
     }
     rb_define_const(mod, name, INT2NUM(value));
   }

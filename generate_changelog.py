@@ -62,4 +62,4 @@ for language in languages:
   print("")
 
 print("To view a commit on GitHub: " +
-      "https://github.com/google/protobuf/commit/<commit id>")
+      "https://github.com/protocolbuffers/protobuf/commit/<commit id>")

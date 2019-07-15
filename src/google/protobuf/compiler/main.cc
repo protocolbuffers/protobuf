@@ -41,6 +41,8 @@
 #include <google/protobuf/compiler/php/php_generator.h>
 #include <google/protobuf/compiler/ruby/ruby_generator.h>
 
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -55,10 +57,9 @@ int ProtobufMain(int argc, char* argv[]) {
   cli.RegisterGenerator("--cpp_out", "--cpp_opt", &cpp_generator,
                         "Generate C++ header and source.");
 
-#ifdef GOOGLE_PROTOBUF_USE_OPENSOURCE_GOOGLE3_RUNTIME
-  cpp_generator.set_runtime(cpp::CppGenerator::Runtime::kOpensourceGoogle3);
-#elif defined(GOOGLE_PROTOBUF_USE_OPENSOURCE_RUNTIME)
-  cpp_generator.set_runtime(cpp::CppGenerator::Runtime::kOpensource);
+#ifdef GOOGLE_PROTOBUF_RUNTIME_INCLUDE_BASE
+  cpp_generator.set_opensource_runtime(true);
+  cpp_generator.set_runtime_include_base(GOOGLE_PROTOBUF_RUNTIME_INCLUDE_BASE);
 #endif
 
   // Proto2 Java
@@ -105,5 +106,5 @@ int ProtobufMain(int argc, char* argv[]) {
 }  // namespace google
 
 int main(int argc, char* argv[]) {
-  return google::protobuf::compiler::ProtobufMain(argc, argv);
+  return PROTOBUF_NAMESPACE_ID::compiler::ProtobufMain(argc, argv);
 }

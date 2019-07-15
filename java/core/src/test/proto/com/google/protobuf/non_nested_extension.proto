@@ -41,10 +41,9 @@ message MessageToBeExtended {
   extensions 1 to max;
 }
 
-message MyNonNestedExtension {
-}
+message MyNonNestedExtension {}
 
 extend MessageToBeExtended {
   optional MyNonNestedExtension nonNestedExtension = 1;
+  optional string if = 2000;
 }
-

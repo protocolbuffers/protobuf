@@ -145,7 +145,9 @@ php/ext/google/protobuf/Makefile.objects
 php/ext/google/protobuf/acinclude.m4
 php/ext/google/protobuf/build/
 php/ext/google/protobuf/config.h
+php/ext/google/protobuf/config.h.in~
 php/ext/google/protobuf/config.nice
+php/ext/google/protobuf/configure.ac
 php/ext/google/protobuf/configure.in
 php/ext/google/protobuf/mkinstalldirs
 php/ext/google/protobuf/run-tests.php
@@ -171,9 +173,14 @@ js/testproto_libs2.js
 
 # ruby test output
 ruby/lib/
+ruby/tests/basic_test_pb.rb
+ruby/tests/basic_test_proto2_pb.rb
 ruby/tests/generated_code_pb.rb
 ruby/tests/test_import_pb.rb
 ruby/tests/test_ruby_package_pb.rb
+ruby/tests/generated_code_proto2_pb.rb
+ruby/tests/test_import_proto2_pb.rb
+ruby/tests/test_ruby_package_proto2_pb.rb
 ruby/Gemfile.lock
 ruby/compatibility_tests/v3.0.0/protoc
 ruby/compatibility_tests/v3.0.0/tests/generated_code_pb.rb
@@ -189,3 +196,10 @@ cmake/cmake-build-debug/
 
 # Visual Studio 2017
 .vs
+
+# Visual Studio Code
+/.vscode/
+
+# IntelliJ
+.idea
+*.iml

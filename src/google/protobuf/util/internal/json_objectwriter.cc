@@ -36,6 +36,7 @@
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/util/internal/utility.h>
+
 #include <google/protobuf/util/internal/json_escaping.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/mathlimits.h>
@@ -89,19 +90,19 @@ JsonObjectWriter* JsonObjectWriter::RenderBool(StringPiece name,
 
 JsonObjectWriter* JsonObjectWriter::RenderInt32(StringPiece name,
                                                 int32 value) {
-  return RenderSimple(name, SimpleItoa(value));
+  return RenderSimple(name, StrCat(value));
 }
 
 JsonObjectWriter* JsonObjectWriter::RenderUint32(StringPiece name,
                                                  uint32 value) {
-  return RenderSimple(name, SimpleItoa(value));
+  return RenderSimple(name, StrCat(value));
 }
 
 JsonObjectWriter* JsonObjectWriter::RenderInt64(StringPiece name,
                                                 int64 value) {
   WritePrefix(name);
   WriteChar('"');
-  stream_->WriteString(SimpleItoa(value));
+  stream_->WriteString(StrCat(value));
   WriteChar('"');
   return this;
 }
@@ -110,7 +111,7 @@ JsonObjectWriter* JsonObjectWriter::RenderUint64(StringPiece name,
                                                  uint64 value) {
   WritePrefix(name);
   WriteChar('"');
-  stream_->WriteString(SimpleItoa(value));
+  stream_->WriteString(StrCat(value));
   WriteChar('"');
   return this;
 }
@@ -148,7 +149,7 @@ JsonObjectWriter* JsonObjectWriter::RenderString(StringPiece name,
 JsonObjectWriter* JsonObjectWriter::RenderBytes(StringPiece name,
                                                 StringPiece value) {
   WritePrefix(name);
-  string base64;
+  std::string base64;
 
   if (use_websafe_base64_for_bytes_)
     WebSafeBase64EscapeWithPadding(value.ToString(), &base64);

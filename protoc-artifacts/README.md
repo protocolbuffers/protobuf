@@ -90,7 +90,7 @@ To checkout protobuf (run within the container):
 
 ```
 $ # Replace v3.5.1 with the version you want
-$ wget -O - https://github.com/google/protobuf/archive/v3.5.1.tar.gz | tar xvzp
+$ wget -O - https://github.com/protocolbuffers/protobuf/archive/v3.5.1.tar.gz | tar xvzp
 ```
 
 ### Windows build
@@ -120,6 +120,8 @@ target directory layout:
         + x86_32
           protoc.exe
         + aarch_64
+          protoc.exe
+        + ppcle_64
           protoc.exe
       + osx
         + x86_64

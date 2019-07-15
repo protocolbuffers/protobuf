@@ -448,6 +448,36 @@ void GPBMaybeClearOneof(GPBMessage *self, GPBOneofDescriptor *oneof,
 //%  GPBSetObjectIvarWithField(self, field, (id)value);
 //%}
 //%
+//%PDDM-DEFINE IVAR_ALIAS_DEFN_COPY_OBJECT(NAME, TYPE)
+//%// Only exists for public api, no core code should use this.
+//%TYPE *GPBGetMessage##NAME##Field(GPBMessage *self,
+//% TYPE$S             NAME$S       GPBFieldDescriptor *field) {
+//%#if defined(DEBUG) && DEBUG
+//%  NSCAssert(DataTypesEquivalent(GPBGetFieldDataType(field),
+//%                                GPBDataType##NAME),
+//%            @"Attempting to get value of TYPE from field %@ "
+//%            @"of %@ which is of type %@.",
+//%            [self class], field.name,
+//%            TypeToString(GPBGetFieldDataType(field)));
+//%#endif
+//%  return (TYPE *)GPBGetObjectIvarWithField(self, field);
+//%}
+//%
+//%// Only exists for public api, no core code should use this.
+//%void GPBSetMessage##NAME##Field(GPBMessage *self,
+//%                   NAME$S     GPBFieldDescriptor *field,
+//%                   NAME$S     TYPE *value) {
+//%#if defined(DEBUG) && DEBUG
+//%  NSCAssert(DataTypesEquivalent(GPBGetFieldDataType(field),
+//%                                GPBDataType##NAME),
+//%            @"Attempting to set field %@ of %@ which is of type %@ with "
+//%            @"value of type TYPE.",
+//%            [self class], field.name,
+//%            TypeToString(GPBGetFieldDataType(field)));
+//%#endif
+//%  GPBSetCopyObjectIvarWithField(self, field, (id)value);
+//%}
+//%
 
 // Object types are handled slightly differently, they need to be released
 // and retained.
@@ -482,6 +512,24 @@ static void GPBSetObjectIvarWithField(GPBMessage *self,
   GPBSetRetainedObjectIvarWithFieldInternal(self, field, [value retain],
                                             syntax);
 }
+
+static void GPBSetCopyObjectIvarWithField(GPBMessage *self,
+                                          GPBFieldDescriptor *field, id value);
+
+// GPBSetCopyObjectIvarWithField is blocked from the analyzer because it flags
+// a leak for the -copy even though GPBSetRetainedObjectIvarWithFieldInternal
+// is marked as consuming the value. Note: For some reason this doesn't happen
+// with the -retain in GPBSetObjectIvarWithField.
+#if !defined(__clang_analyzer__)
+// This exists only for briging some aliased types, nothing else should use it.
+static void GPBSetCopyObjectIvarWithField(GPBMessage *self,
+                                          GPBFieldDescriptor *field, id value) {
+  if (self == nil || field == nil) return;
+  GPBFileSyntax syntax = [self descriptor].file.syntax;
+  GPBSetRetainedObjectIvarWithFieldInternal(self, field, [value copy],
+                                            syntax);
+}
+#endif  // !defined(__clang_analyzer__)
 
 void GPBSetObjectIvarWithFieldInternal(GPBMessage *self,
                                        GPBFieldDescriptor *field, id value,
@@ -1168,7 +1216,7 @@ void GPBSetDoubleIvarWithFieldInternal(GPBMessage *self,
 
 // Aliases are function calls that are virtually the same.
 
-//%PDDM-EXPAND IVAR_ALIAS_DEFN_OBJECT(String, NSString)
+//%PDDM-EXPAND IVAR_ALIAS_DEFN_COPY_OBJECT(String, NSString)
 // This block of code is generated, do not edit it directly.
 
 // Only exists for public api, no core code should use this.
@@ -1197,10 +1245,10 @@ void GPBSetMessageStringField(GPBMessage *self,
             [self class], field.name,
             TypeToString(GPBGetFieldDataType(field)));
 #endif
-  GPBSetObjectIvarWithField(self, field, (id)value);
+  GPBSetCopyObjectIvarWithField(self, field, (id)value);
 }
 
-//%PDDM-EXPAND IVAR_ALIAS_DEFN_OBJECT(Bytes, NSData)
+//%PDDM-EXPAND IVAR_ALIAS_DEFN_COPY_OBJECT(Bytes, NSData)
 // This block of code is generated, do not edit it directly.
 
 // Only exists for public api, no core code should use this.
@@ -1229,7 +1277,7 @@ void GPBSetMessageBytesField(GPBMessage *self,
             [self class], field.name,
             TypeToString(GPBGetFieldDataType(field)));
 #endif
-  GPBSetObjectIvarWithField(self, field, (id)value);
+  GPBSetCopyObjectIvarWithField(self, field, (id)value);
 }
 
 //%PDDM-EXPAND IVAR_ALIAS_DEFN_OBJECT(Message, GPBMessage)
@@ -1817,7 +1865,7 @@ static void AppendTextFormatForMessageExtensionRange(GPBMessage *message,
       // Not there yet.
       continue;
     }
-    if (fieldNumber > end) {
+    if (fieldNumber >= end) {
       // Done.
       break;
     }
@@ -1901,10 +1949,10 @@ static void AppendTextFormatForMessageExtensionRange(GPBMessage *message,
 
       }  // switch(extDataType)
 
-    }  //  for(numValues)
+      // End the line.
+      [toStr appendFormat:@"%@\n", lineEnding];
 
-    // End the line.
-    [toStr appendFormat:@"%@\n", lineEnding];
+    }  //  for(numValues)
 
   }  // for..in(activeExtensions)
 }

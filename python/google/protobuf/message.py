@@ -172,17 +172,19 @@ class Message(object):
       we *do* stop because of an END_GROUP tag, the number
       of bytes returned does not include the bytes
       for the END_GROUP tag information.
+
+    Raises:
+      message.DecodeError if the input cannot be parsed.
     """
     raise NotImplementedError
 
   def ParseFromString(self, serialized):
     """Parse serialized protocol buffer data into this message.
 
-    Like MergeFromString(), except we clear the object first and
-    do not return the value that MergeFromString returns.
+    Like MergeFromString(), except we clear the object first.
     """
     self.Clear()
-    self.MergeFromString(serialized)
+    return self.MergeFromString(serialized)
 
   def SerializeToString(self, **kwargs):
     """Serializes the protocol message to a binary string.
@@ -309,4 +311,9 @@ class Message(object):
   def __setstate__(self, state):
     """Support the pickle protocol."""
     self.__init__()
-    self.ParseFromString(state['serialized'])
+    serialized = state['serialized']
+    # On Python 3, using encoding='latin1' is required for unpickling
+    # protos pickled by Python 2.
+    if not isinstance(serialized, bytes):
+      serialized = serialized.encode('latin1')
+    self.ParseFromString(serialized)

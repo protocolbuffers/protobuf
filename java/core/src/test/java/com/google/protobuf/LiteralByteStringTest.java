@@ -46,9 +46,9 @@ import java.util.NoSuchElementException;
 import junit.framework.TestCase;
 
 /**
- * Test {@code LiteralByteString} by setting up a reference string in {@link #setUp()}.
- * This class is designed to be extended for testing extensions of {@code LiteralByteString}
- * such as {@code BoundedByteString}, see {@link BoundedByteStringTest}.
+ * Test {@code LiteralByteString} by setting up a reference string in {@link #setUp()}. This class
+ * is designed to be extended for testing extensions of {@code LiteralByteString} such as {@code
+ * BoundedByteString}, see {@link BoundedByteStringTest}.
  *
  * @author carlanton@google.com (Carl Haverl)
  */
@@ -114,7 +114,9 @@ public class LiteralByteStringTest extends TestCase {
   }
 
   public void testSize() {
-    assertEquals(classUnderTest + " must have the expected size", referenceBytes.length,
+    assertEquals(
+        classUnderTest + " must have the expected size",
+        referenceBytes.length,
         stringUnderTest.size());
   }
 
@@ -146,10 +148,9 @@ public class LiteralByteStringTest extends TestCase {
 
     try {
       // Copy one too many bytes
-      stringUnderTest.copyTo(destination, stringUnderTest.size() + 1 - length,
-          destinationOffset, length);
-      fail("Should have thrown an exception when copying too many bytes of a "
-          + classUnderTest);
+      stringUnderTest.copyTo(
+          destination, stringUnderTest.size() + 1 - length, destinationOffset, length);
+      fail("Should have thrown an exception when copying too many bytes of a " + classUnderTest);
     } catch (IndexOutOfBoundsException expected) {
       // This is success
     }
@@ -157,8 +158,9 @@ public class LiteralByteStringTest extends TestCase {
     try {
       // Copy with illegal negative sourceOffset
       stringUnderTest.copyTo(destination, -1, destinationOffset, length);
-      fail("Should have thrown an exception when given a negative sourceOffset in "
-          + classUnderTest);
+      fail(
+          "Should have thrown an exception when given a negative sourceOffset in "
+              + classUnderTest);
     } catch (IndexOutOfBoundsException expected) {
       // This is success
     }
@@ -166,8 +168,9 @@ public class LiteralByteStringTest extends TestCase {
     try {
       // Copy with illegal negative destinationOffset
       stringUnderTest.copyTo(destination, 0, -1, length);
-      fail("Should have thrown an exception when given a negative destinationOffset in "
-          + classUnderTest);
+      fail(
+          "Should have thrown an exception when given a negative destinationOffset in "
+              + classUnderTest);
     } catch (IndexOutOfBoundsException expected) {
       // This is success
     }
@@ -175,8 +178,7 @@ public class LiteralByteStringTest extends TestCase {
     try {
       // Copy with illegal negative size
       stringUnderTest.copyTo(destination, 0, 0, -1);
-      fail("Should have thrown an exception when given a negative size in "
-          + classUnderTest);
+      fail("Should have thrown an exception when given a negative size in " + classUnderTest);
     } catch (IndexOutOfBoundsException expected) {
       // This is success
     }
@@ -184,8 +186,9 @@ public class LiteralByteStringTest extends TestCase {
     try {
       // Copy with illegal too-large sourceOffset
       stringUnderTest.copyTo(destination, 2 * stringUnderTest.size(), 0, length);
-      fail("Should have thrown an exception when the destinationOffset is too large in "
-          + classUnderTest);
+      fail(
+          "Should have thrown an exception when the destinationOffset is too large in "
+              + classUnderTest);
     } catch (IndexOutOfBoundsException expected) {
       // This is success
     }
@@ -193,8 +196,9 @@ public class LiteralByteStringTest extends TestCase {
     try {
       // Copy with illegal too-large destinationOffset
       stringUnderTest.copyTo(destination, 0, 2 * destination.length, length);
-      fail("Should have thrown an exception when the destinationOffset is too large in "
-          + classUnderTest);
+      fail(
+          "Should have thrown an exception when the destinationOffset is too large in "
+              + classUnderTest);
     } catch (IndexOutOfBoundsException expected) {
       // This is success
     }
@@ -203,7 +207,8 @@ public class LiteralByteStringTest extends TestCase {
   public void testCopyTo_ByteBuffer() {
     ByteBuffer myBuffer = ByteBuffer.allocate(referenceBytes.length);
     stringUnderTest.copyTo(myBuffer);
-    assertTrue(classUnderTest + ".copyTo(ByteBuffer) must give back the same bytes",
+    assertTrue(
+        classUnderTest + ".copyTo(ByteBuffer) must give back the same bytes",
         Arrays.equals(referenceBytes, myBuffer.array()));
   }
 
@@ -233,17 +238,15 @@ public class LiteralByteStringTest extends TestCase {
   }
 
   /**
-   * Discards {@code n} bytes of data from the input stream. This method
-   * will block until the full amount has been skipped. Does not close the
-   * stream.
+   * Discards {@code n} bytes of data from the input stream. This method will block until the full
+   * amount has been skipped. Does not close the stream.
+   *
    * <p>Copied from com.google.common.io.ByteStreams to avoid adding dependency.
    *
    * @param in the input stream to read from
    * @param n the number of bytes to skip
-   * @throws EOFException if this stream reaches the end before skipping all
-   *     the bytes
-   * @throws IOException if an I/O error occurs, or the stream does not
-   *     support skipping
+   * @throws EOFException if this stream reaches the end before skipping all the bytes
+   * @throws IOException if an I/O error occurs, or the stream does not support skipping
    */
   static void skipFully(InputStream in, long n) throws IOException {
     long toSkip = n;
@@ -253,8 +256,12 @@ public class LiteralByteStringTest extends TestCase {
         // Force a blocking read to avoid infinite loop
         if (in.read() == -1) {
           long skipped = toSkip - n;
-          throw new EOFException("reached end of stream after skipping "
-              + skipped + " bytes; " + toSkip + " bytes expected");
+          throw new EOFException(
+              "reached end of stream after skipping "
+                  + skipped
+                  + " bytes; "
+                  + toSkip
+                  + " bytes expected");
         }
         n--;
       } else {
@@ -269,7 +276,8 @@ public class LiteralByteStringTest extends TestCase {
     assertTrue(byteBuffer.remaining() == referenceBytes.length);
     assertTrue(byteBuffer.isReadOnly());
     byteBuffer.get(roundTripBytes);
-    assertTrue(classUnderTest + ".asReadOnlyByteBuffer() must give back the same bytes",
+    assertTrue(
+        classUnderTest + ".asReadOnlyByteBuffer() must give back the same bytes",
         Arrays.equals(referenceBytes, roundTripBytes));
   }
 
@@ -285,13 +293,15 @@ public class LiteralByteStringTest extends TestCase {
       bytesSeen += thisLength;
     }
     assertTrue(bytesSeen == referenceBytes.length);
-    assertTrue(classUnderTest + ".asReadOnlyByteBufferTest() must give back the same bytes",
+    assertTrue(
+        classUnderTest + ".asReadOnlyByteBufferTest() must give back the same bytes",
         Arrays.equals(referenceBytes, roundTripBytes));
   }
 
   public void testToByteArray() {
     byte[] roundTripBytes = stringUnderTest.toByteArray();
-    assertTrue(classUnderTest + ".toByteArray() must give back the same bytes",
+    assertTrue(
+        classUnderTest + ".toByteArray() must give back the same bytes",
         Arrays.equals(referenceBytes, roundTripBytes));
   }
 
@@ -299,78 +309,85 @@ public class LiteralByteStringTest extends TestCase {
     ByteArrayOutputStream bos = new ByteArrayOutputStream();
     stringUnderTest.writeTo(bos);
     byte[] roundTripBytes = bos.toByteArray();
-    assertTrue(classUnderTest + ".writeTo() must give back the same bytes",
+    assertTrue(
+        classUnderTest + ".writeTo() must give back the same bytes",
         Arrays.equals(referenceBytes, roundTripBytes));
   }
 
   public void testWriteToShouldNotExposeInternalBufferToOutputStream() throws IOException {
-    OutputStream os = new OutputStream() {
-      @Override
-      public void write(byte[] b, int off, int len) {
-        Arrays.fill(b, off, off + len, (byte) 0);
-      }
+    OutputStream os =
+        new OutputStream() {
+          @Override
+          public void write(byte[] b, int off, int len) {
+            Arrays.fill(b, off, off + len, (byte) 0);
+          }
 
-      @Override
-      public void write(int b) {
-        throw new UnsupportedOperationException();
-      }
-    };
+          @Override
+          public void write(int b) {
+            throw new UnsupportedOperationException();
+          }
+        };
 
     stringUnderTest.writeTo(os);
-    assertTrue(classUnderTest + ".writeTo() must not grant access to underlying array",
+    assertTrue(
+        classUnderTest + ".writeTo() must not grant access to underlying array",
         Arrays.equals(referenceBytes, stringUnderTest.toByteArray()));
   }
 
   public void testWriteToInternalShouldExposeInternalBufferToOutputStream() throws IOException {
-    OutputStream os = new OutputStream() {
-      @Override
-      public void write(byte[] b, int off, int len) {
-        Arrays.fill(b, off, off + len, (byte) 0);
-      }
+    OutputStream os =
+        new OutputStream() {
+          @Override
+          public void write(byte[] b, int off, int len) {
+            Arrays.fill(b, off, off + len, (byte) 0);
+          }
 
-      @Override
-      public void write(int b) {
-        throw new UnsupportedOperationException();
-      }
-    };
+          @Override
+          public void write(int b) {
+            throw new UnsupportedOperationException();
+          }
+        };
 
     stringUnderTest.writeToInternal(os, 0, stringUnderTest.size());
     byte[] allZeros = new byte[stringUnderTest.size()];
-    assertTrue(classUnderTest + ".writeToInternal() must grant access to underlying array",
+    assertTrue(
+        classUnderTest + ".writeToInternal() must grant access to underlying array",
         Arrays.equals(allZeros, stringUnderTest.toByteArray()));
   }
 
   public void testWriteToShouldExposeInternalBufferToByteOutput() throws IOException {
-    ByteOutput out = new ByteOutput() {
-      @Override
-      public void write(byte value) throws IOException {
-        throw new UnsupportedOperationException();
-      }
+    ByteOutput out =
+        new ByteOutput() {
+          @Override
+          public void write(byte value) throws IOException {
+            throw new UnsupportedOperationException();
+          }
 
-      @Override
-      public void write(byte[] value, int offset, int length) throws IOException {
-        throw new UnsupportedOperationException();
-      }
+          @Override
+          public void write(byte[] value, int offset, int length) throws IOException {
+            throw new UnsupportedOperationException();
+          }
 
-      @Override
-      public void writeLazy(byte[] value, int offset, int length) throws IOException {
-        Arrays.fill(value, offset, offset + length, (byte) 0);
-      }
+          @Override
+          public void write(ByteBuffer value) throws IOException {
+            throw new UnsupportedOperationException();
+          }
 
-      @Override
-      public void write(ByteBuffer value) throws IOException {
-        throw new UnsupportedOperationException();
-      }
+          @Override
+          public void writeLazy(byte[] value, int offset, int length) throws IOException {
+            Arrays.fill(value, offset, offset + length, (byte) 0);
+          }
 
-      @Override
-      public void writeLazy(ByteBuffer value) throws IOException {
-        throw new UnsupportedOperationException();
-      }
-    };
+          @Override
+          public void writeLazy(ByteBuffer value) throws IOException {
+            throw new UnsupportedOperationException();
+          }
+        };
 
     stringUnderTest.writeTo(out);
     byte[] allZeros = new byte[stringUnderTest.size()];
-    assertTrue(classUnderTest + ".writeToInternal() must grant access to underlying array",
+    assertTrue(
+        classUnderTest + ".writeToInternal() must grant access to underlying array",
         Arrays.equals(allZeros, stringUnderTest.toByteArray()));
   }
 
@@ -378,21 +395,22 @@ public class LiteralByteStringTest extends TestCase {
     ByteArrayOutputStream bos = new ByteArrayOutputStream();
     ByteString.Output output = ByteString.newOutput();
     stringUnderTest.writeTo(output);
-    assertEquals("Output Size returns correct result",
-        output.size(), stringUnderTest.size());
+    assertEquals("Output Size returns correct result", output.size(), stringUnderTest.size());
     output.writeTo(bos);
-    assertTrue("Output.writeTo() must give back the same bytes",
+    assertTrue(
+        "Output.writeTo() must give back the same bytes",
         Arrays.equals(referenceBytes, bos.toByteArray()));
 
     // write the output stream to itself! This should cause it to double
     output.writeTo(output);
-    assertEquals("Writing an output stream to itself is successful",
-        stringUnderTest.concat(stringUnderTest), output.toByteString());
+    assertEquals(
+        "Writing an output stream to itself is successful",
+        stringUnderTest.concat(stringUnderTest),
+        output.toByteString());
 
     output.reset();
     assertEquals("Output.reset() resets the output", 0, output.size());
-    assertEquals("Output.reset() resets the output",
-        ByteString.EMPTY, output.toByteString());
+    assertEquals("Output.reset() resets the output", ByteString.EMPTY, output.toByteString());
   }
 
   public void testToString() throws UnsupportedEncodingException {
@@ -410,9 +428,10 @@ public class LiteralByteStringTest extends TestCase {
   }
 
   public void testToString_returnsCanonicalEmptyString() {
-    assertSame(classUnderTest + " must be the same string references",
+    assertSame(
+        classUnderTest + " must be the same string references",
         ByteString.EMPTY.toString(Internal.UTF_8),
-        ByteString.wrap(new byte[]{}).toString(Internal.UTF_8));
+        ByteString.wrap(new byte[] {}).toString(Internal.UTF_8));
   }
 
   public void testToString_raisesException() {
@@ -434,17 +453,23 @@ public class LiteralByteStringTest extends TestCase {
   public void testEquals() {
     assertEquals(classUnderTest + " must not equal null", false, stringUnderTest.equals(null));
     assertEquals(classUnderTest + " must equal self", stringUnderTest, stringUnderTest);
-    assertFalse(classUnderTest + " must not equal the empty string",
+    assertFalse(
+        classUnderTest + " must not equal the empty string",
         stringUnderTest.equals(ByteString.EMPTY));
-    assertEquals(classUnderTest + " empty strings must be equal",
-        ByteString.wrap(new byte[]{}), stringUnderTest.substring(55, 55));
-    assertEquals(classUnderTest + " must equal another string with the same value",
-        stringUnderTest, ByteString.wrap(referenceBytes));
+    assertEquals(
+        classUnderTest + " empty strings must be equal",
+        ByteString.wrap(new byte[] {}),
+        stringUnderTest.substring(55, 55));
+    assertEquals(
+        classUnderTest + " must equal another string with the same value",
+        stringUnderTest,
+        ByteString.wrap(referenceBytes));
 
     byte[] mungedBytes = new byte[referenceBytes.length];
     System.arraycopy(referenceBytes, 0, mungedBytes, 0, referenceBytes.length);
     mungedBytes[mungedBytes.length - 5] = (byte) (mungedBytes[mungedBytes.length - 5] ^ 0xFF);
-    assertFalse(classUnderTest + " must not equal every string with the same length",
+    assertFalse(
+        classUnderTest + " must not equal every string with the same length",
         stringUnderTest.equals(ByteString.wrap(mungedBytes)));
   }
 
@@ -454,32 +479,35 @@ public class LiteralByteStringTest extends TestCase {
   }
 
   public void testPeekCachedHashCode() {
-    assertEquals(classUnderTest + ".peekCachedHashCode() should return zero at first", 0,
+    assertEquals(
+        classUnderTest + ".peekCachedHashCode() should return zero at first",
+        0,
         stringUnderTest.peekCachedHashCode());
     stringUnderTest.hashCode();
-    assertEquals(classUnderTest + ".peekCachedHashCode should return zero at first",
-        expectedHashCode, stringUnderTest.peekCachedHashCode());
+    assertEquals(
+        classUnderTest + ".peekCachedHashCode should return zero at first",
+        expectedHashCode,
+        stringUnderTest.peekCachedHashCode());
   }
 
   public void testPartialHash() {
     // partialHash() is more strenuously tested elsewhere by testing hashes of substrings.
     // This test would fail if the expected hash were 1.  It's not.
     int hash = stringUnderTest.partialHash(stringUnderTest.size(), 0, stringUnderTest.size());
-    assertEquals(classUnderTest + ".partialHash() must yield expected hashCode",
-        expectedHashCode, hash);
+    assertEquals(
+        classUnderTest + ".partialHash() must yield expected hashCode", expectedHashCode, hash);
   }
 
   public void testNewInput() throws IOException {
     InputStream input = stringUnderTest.newInput();
-    assertEquals("InputStream.available() returns correct value",
-        stringUnderTest.size(), input.available());
+    assertEquals(
+        "InputStream.available() returns correct value", stringUnderTest.size(), input.available());
     boolean stillEqual = true;
     for (byte referenceByte : referenceBytes) {
       int expectedInt = (referenceByte & 0xFF);
       stillEqual = (expectedInt == input.read());
     }
-    assertEquals("InputStream.available() returns correct value",
-        0, input.available());
+    assertEquals("InputStream.available() returns correct value", 0, input.available());
     assertTrue(classUnderTest + " must give the same bytes from the InputStream", stillEqual);
     assertEquals(classUnderTest + " InputStream must now be exhausted", -1, input.read());
   }
@@ -490,43 +518,44 @@ public class LiteralByteStringTest extends TestCase {
     int nearEndIndex = stringSize * 2 / 3;
     long skipped1 = input.skip(nearEndIndex);
     assertEquals("InputStream.skip()", skipped1, nearEndIndex);
-    assertEquals("InputStream.available()",
-        stringSize - skipped1, input.available());
+    assertEquals("InputStream.available()", stringSize - skipped1, input.available());
     assertTrue("InputStream.mark() is available", input.markSupported());
     input.mark(0);
-    assertEquals("InputStream.skip(), read()",
-        stringUnderTest.byteAt(nearEndIndex) & 0xFF, input.read());
-    assertEquals("InputStream.available()",
-                 stringSize - skipped1 - 1, input.available());
+    assertEquals(
+        "InputStream.skip(), read()", stringUnderTest.byteAt(nearEndIndex) & 0xFF, input.read());
+    assertEquals("InputStream.available()", stringSize - skipped1 - 1, input.available());
     long skipped2 = input.skip(stringSize);
-    assertEquals("InputStream.skip() incomplete",
-        skipped2, stringSize - skipped1 - 1);
+    assertEquals("InputStream.skip() incomplete", skipped2, stringSize - skipped1 - 1);
     assertEquals("InputStream.skip(), no more input", 0, input.available());
     assertEquals("InputStream.skip(), no more input", -1, input.read());
     input.reset();
-    assertEquals("InputStream.reset() succeded",
-                 stringSize - skipped1, input.available());
-    assertEquals("InputStream.reset(), read()",
-        stringUnderTest.byteAt(nearEndIndex) & 0xFF, input.read());
+    assertEquals("InputStream.reset() succeded", stringSize - skipped1, input.available());
+    assertEquals(
+        "InputStream.reset(), read()", stringUnderTest.byteAt(nearEndIndex) & 0xFF, input.read());
   }
 
   public void testNewCodedInput() throws IOException {
     CodedInputStream cis = stringUnderTest.newCodedInput();
     byte[] roundTripBytes = cis.readRawBytes(referenceBytes.length);
-    assertTrue(classUnderTest + " must give the same bytes back from the CodedInputStream",
+    assertTrue(
+        classUnderTest + " must give the same bytes back from the CodedInputStream",
         Arrays.equals(referenceBytes, roundTripBytes));
     assertTrue(classUnderTest + " CodedInputStream must now be exhausted", cis.isAtEnd());
   }
 
   /**
-   * Make sure we keep things simple when concatenating with empty. See also
-   * {@link ByteStringTest#testConcat_empty()}.
+   * Make sure we keep things simple when concatenating with empty. See also {@link
+   * ByteStringTest#testConcat_empty()}.
    */
   public void testConcat_empty() {
-    assertSame(classUnderTest + " concatenated with empty must give " + classUnderTest,
-        stringUnderTest.concat(ByteString.EMPTY), stringUnderTest);
-    assertSame("empty concatenated with " + classUnderTest + " must give " + classUnderTest,
-        ByteString.EMPTY.concat(stringUnderTest), stringUnderTest);
+    assertSame(
+        classUnderTest + " concatenated with empty must give " + classUnderTest,
+        stringUnderTest.concat(ByteString.EMPTY),
+        stringUnderTest);
+    assertSame(
+        "empty concatenated with " + classUnderTest + " must give " + classUnderTest,
+        ByteString.EMPTY.concat(stringUnderTest),
+        stringUnderTest);
   }
 
   public void testJavaSerialization() throws Exception {

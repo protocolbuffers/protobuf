@@ -19,8 +19,8 @@ message Issue307 {
 }
 
 // Old issue 13: http://code.google.com/p/protobuf-csharp-port/issues/detail?id=13
-// New issue 309: https://github.com/google/protobuf/issues/309
- 
+// New issue 309: https://github.com/protocolbuffers/protobuf/issues/309
+
 // message A {
 //    optional int32 _A = 1;
 // }
@@ -35,7 +35,7 @@ message Issue307 {
 
 // Similar issue with numeric names
 // Java code failed too, so probably best for this to be a restriction.
-// See https://github.com/google/protobuf/issues/308
+// See https://github.com/protocolbuffers/protobuf/issues/308
 // message NumberField {
 //    optional int32 _01 = 1;
 // }
@@ -101,21 +101,21 @@ message TestJsonFieldOrdering {
   // that will require fixing other tests in multiple platforms.
   // Alternatively, consider just adding this to
   // unittest_proto3.proto if multiple platforms want it.
-  
+
   int32 plain_int32 = 4;
 
   oneof o1 {
     string o1_string = 2;
     int32 o1_int32 = 5;
   }
-  
+
   string plain_string = 1;
-  
+
   oneof o2 {
     int32 o2_int32 = 6;
     string o2_string = 3;
   }
-  
+
 }
 
 message TestJsonName {

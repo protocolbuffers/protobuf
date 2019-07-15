@@ -82,7 +82,7 @@ class RandomAccessRepeatedFieldAccessor : public RepeatedFieldAccessor {
 
 // Base class for RepeatedFieldAccessor implementations that manipulates
 // RepeatedField<T>.
-template<typename T>
+template <typename T>
 class RepeatedFieldWrapper : public RandomAccessRepeatedFieldAccessor {
  public:
   RepeatedFieldWrapper() {}
@@ -127,9 +127,9 @@ class RepeatedFieldWrapper : public RandomAccessRepeatedFieldAccessor {
   virtual T ConvertToT(const Value* value) const = 0;
 
   // Convert an object stored in RepeatedPtrField to an object that will be
-  // returned by this accessor. If the two objects have the same type (true
-  // for string fields with ctype=STRING), a pointer to the source object can
-  // be returned directly. Otherwise, data should be copied from value to
+  // returned by this accessor. If the two objects have the same type (true for
+  // string fields with ctype=STRING), a pointer to the source object can be
+  // returned directly. Otherwise, data should be copied from value to
   // scratch_space and scratch_space should be returned.
   virtual const Value* ConvertFromT(const T& value,
                                     Value* scratch_space) const = 0;
@@ -137,7 +137,7 @@ class RepeatedFieldWrapper : public RandomAccessRepeatedFieldAccessor {
 
 // Base class for RepeatedFieldAccessor implementations that manipulates
 // RepeatedPtrField<T>.
-template<typename T>
+template <typename T>
 class RepeatedPtrFieldWrapper : public RandomAccessRepeatedFieldAccessor {
  public:
   bool IsEmpty(const Field* data) const override {
@@ -189,9 +189,9 @@ class RepeatedPtrFieldWrapper : public RandomAccessRepeatedFieldAccessor {
   virtual void ConvertToT(const Value* value, T* result) const = 0;
 
   // Convert an object stored in RepeatedPtrField to an object that will be
-  // returned by this accessor. If the two objects have the same type (true
-  // for string fields with ctype=STRING), a pointer to the source object can
-  // be returned directly. Otherwise, data should be copied from value to
+  // returned by this accessor. If the two objects have the same type (true for
+  // string fields with ctype=STRING), a pointer to the source object can be
+  // returned directly. Otherwise, data should be copied from value to
   // scratch_space and scratch_space should be returned.
   virtual const Value* ConvertFromT(const T& value,
                                     Value* scratch_space) const = 0;
@@ -203,7 +203,7 @@ class MapFieldAccessor final : public RandomAccessRepeatedFieldAccessor {
  public:
   MapFieldAccessor() {}
   virtual ~MapFieldAccessor() {}
-  virtual bool IsEmpty(const Field* data) const {
+  bool IsEmpty(const Field* data) const override {
     return GetRepeatedField(data)->empty();
   }
   int Size(const Field* data) const override {
@@ -293,7 +293,7 @@ class RepeatedFieldPrimitiveAccessor final : public RepeatedFieldWrapper<T> {
 // Default implementation of RepeatedFieldAccessor for string fields with
 // ctype=STRING.
 class RepeatedPtrFieldStringAccessor final
-    : public RepeatedPtrFieldWrapper<string> {
+    : public RepeatedPtrFieldWrapper<std::string> {
   typedef void Field;
   typedef void Value;
   using RepeatedFieldAccessor::Add;
@@ -305,26 +305,26 @@ class RepeatedPtrFieldStringAccessor final
     if (this == other_mutator) {
       MutableRepeatedField(data)->Swap(MutableRepeatedField(other_data));
     } else {
-      RepeatedPtrField<string> tmp;
+      RepeatedPtrField<std::string> tmp;
       tmp.Swap(MutableRepeatedField(data));
       int other_size = other_mutator->Size(other_data);
       for (int i = 0; i < other_size; ++i) {
-        Add<string>(data, other_mutator->Get<string>(other_data, i));
+        Add<std::string>(data, other_mutator->Get<std::string>(other_data, i));
       }
       int size = Size(data);
       other_mutator->Clear(other_data);
       for (int i = 0; i < size; ++i) {
-        other_mutator->Add<string>(other_data, tmp.Get(i));
+        other_mutator->Add<std::string>(other_data, tmp.Get(i));
       }
     }
   }
 
  protected:
-  string* New(const Value*) const override { return new string(); }
-  void ConvertToT(const Value* value, string* result) const override {
-    *result = *static_cast<const string*>(value);
+  std::string* New(const Value*) const override { return new std::string(); }
+  void ConvertToT(const Value* value, std::string* result) const override {
+    *result = *static_cast<const std::string*>(value);
   }
-  const Value* ConvertFromT(const string& value,
+  const Value* ConvertFromT(const std::string& value,
                             Value* scratch_space) const override {
     return static_cast<const Value*>(&value);
   }

@@ -46,9 +46,12 @@ struct Options;
 class WrapperFieldGenerator : public FieldGeneratorBase {
  public:
   WrapperFieldGenerator(const FieldDescriptor* descriptor,
-                        int fieldOrdinal,
+                        int presenceIndex,
                         const Options *options);
   ~WrapperFieldGenerator();
+
+  WrapperFieldGenerator(const WrapperFieldGenerator&) = delete;
+  WrapperFieldGenerator& operator=(const WrapperFieldGenerator&) = delete;
 
   virtual void GenerateCodecCode(io::Printer* printer);
   virtual void GenerateCloningCode(io::Printer* printer);
@@ -57,6 +60,7 @@ class WrapperFieldGenerator : public FieldGeneratorBase {
   virtual void GenerateParsingCode(io::Printer* printer);
   virtual void GenerateSerializationCode(io::Printer* printer);
   virtual void GenerateSerializedSizeCode(io::Printer* printer);
+  virtual void GenerateExtensionCode(io::Printer* printer);
 
   virtual void WriteHash(io::Printer* printer);
   virtual void WriteEquals(io::Printer* printer);
@@ -64,24 +68,23 @@ class WrapperFieldGenerator : public FieldGeneratorBase {
 
  private:
   bool is_value_type; // True for int32 etc; false for bytes and string
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(WrapperFieldGenerator);
 };
 
 class WrapperOneofFieldGenerator : public WrapperFieldGenerator {
  public:
   WrapperOneofFieldGenerator(const FieldDescriptor* descriptor,
-                             int fieldOrdinal,
+                             int presenceIndex,
                              const Options *options);
   ~WrapperOneofFieldGenerator();
+
+  WrapperOneofFieldGenerator(const WrapperOneofFieldGenerator&) = delete;
+  WrapperOneofFieldGenerator& operator=(const WrapperOneofFieldGenerator&) = delete;
 
   virtual void GenerateMembers(io::Printer* printer);
   virtual void GenerateMergingCode(io::Printer* printer);
   virtual void GenerateParsingCode(io::Printer* printer);
   virtual void GenerateSerializationCode(io::Printer* printer);
   virtual void GenerateSerializedSizeCode(io::Printer* printer);
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(WrapperOneofFieldGenerator);
 };
 
 }  // namespace csharp

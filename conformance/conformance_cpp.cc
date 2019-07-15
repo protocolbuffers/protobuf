@@ -36,6 +36,7 @@
 #include <google/protobuf/test_messages_proto3.pb.h>
 #include <google/protobuf/test_messages_proto2.pb.h>
 #include <google/protobuf/message.h>
+#include <google/protobuf/text_format.h>
 #include <google/protobuf/util/json_util.h>
 #include <google/protobuf/util/type_resolver_util.h>
 
@@ -45,17 +46,47 @@ using google::protobuf::Descriptor;
 using google::protobuf::DescriptorPool;
 using google::protobuf::Message;
 using google::protobuf::MessageFactory;
+using google::protobuf::TextFormat;
 using google::protobuf::util::BinaryToJsonString;
 using google::protobuf::util::JsonParseOptions;
 using google::protobuf::util::JsonToBinaryString;
 using google::protobuf::util::NewTypeResolverForDescriptorPool;
 using google::protobuf::util::Status;
 using google::protobuf::util::TypeResolver;
-using protobuf_test_messages::proto3::TestAllTypesProto3;
 using protobuf_test_messages::proto2::TestAllTypesProto2;
+using protobuf_test_messages::proto3::TestAllTypesProto3;
 using std::string;
 
 static const char kTypeUrlPrefix[] = "type.googleapis.com";
+
+const char* kFailures[] = {
+#if !GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
+    "Required.Proto2.ProtobufInput."
+    "PrematureEofInDelimitedDataForKnownNonRepeatedValue.MESSAGE",
+    "Required.Proto2.ProtobufInput."
+    "PrematureEofInDelimitedDataForKnownRepeatedValue.MESSAGE",
+    "Required.Proto2.ProtobufInput.PrematureEofInPackedField.BOOL",
+    "Required.Proto2.ProtobufInput.PrematureEofInPackedField.ENUM",
+    "Required.Proto2.ProtobufInput.PrematureEofInPackedField.INT32",
+    "Required.Proto2.ProtobufInput.PrematureEofInPackedField.INT64",
+    "Required.Proto2.ProtobufInput.PrematureEofInPackedField.SINT32",
+    "Required.Proto2.ProtobufInput.PrematureEofInPackedField.SINT64",
+    "Required.Proto2.ProtobufInput.PrematureEofInPackedField.UINT32",
+    "Required.Proto2.ProtobufInput.PrematureEofInPackedField.UINT64",
+    "Required.Proto3.ProtobufInput."
+    "PrematureEofInDelimitedDataForKnownNonRepeatedValue.MESSAGE",
+    "Required.Proto3.ProtobufInput."
+    "PrematureEofInDelimitedDataForKnownRepeatedValue.MESSAGE",
+    "Required.Proto3.ProtobufInput.PrematureEofInPackedField.BOOL",
+    "Required.Proto3.ProtobufInput.PrematureEofInPackedField.ENUM",
+    "Required.Proto3.ProtobufInput.PrematureEofInPackedField.INT32",
+    "Required.Proto3.ProtobufInput.PrematureEofInPackedField.INT64",
+    "Required.Proto3.ProtobufInput.PrematureEofInPackedField.SINT32",
+    "Required.Proto3.ProtobufInput.PrematureEofInPackedField.SINT64",
+    "Required.Proto3.ProtobufInput.PrematureEofInPackedField.UINT32",
+    "Required.Proto3.ProtobufInput.PrematureEofInPackedField.UINT64",
+#endif
+};
 
 static string GetTypeUrl(const Descriptor* message) {
   return string(kTypeUrlPrefix) + "/" + message->full_name();
@@ -134,9 +165,28 @@ void DoTest(const ConformanceRequest& request, ConformanceResponse* response) {
       break;
     }
 
+    case ConformanceRequest::kTextPayload: {
+      if (!TextFormat::ParseFromString(request.text_payload(), test_message)) {
+        response->set_parse_error("Parse error");
+        return;
+      }
+      break;
+    }
+
     case ConformanceRequest::PAYLOAD_NOT_SET:
       GOOGLE_LOG(FATAL) << "Request didn't have payload.";
       break;
+
+    default:
+      GOOGLE_LOG(FATAL) << "unknown payload type: "
+                        << request.payload_case();
+      break;
+  }
+
+  conformance::FailureSet failures;
+  if (descriptor == failures.GetDescriptor()) {
+    for (const char* s : kFailures) failures.add_failure(s);
+    test_message = &failures;
   }
 
   switch (request.requested_output_format()) {
@@ -160,6 +210,14 @@ void DoTest(const ConformanceRequest& request, ConformanceResponse* response) {
             status.error_message().as_string());
         return;
       }
+      break;
+    }
+
+    case conformance::TEXT_FORMAT: {
+      TextFormat::Printer printer;
+      printer.SetHideUnknownFields(!request.print_unknown_fields());
+      GOOGLE_CHECK(printer.PrintToString(*test_message,
+                                         response->mutable_text_payload()));
       break;
     }
 

@@ -14,8 +14,19 @@ use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBWire;
 use Google\Protobuf\Internal\CodedOutputStream;
 
+/**
+ * Please note, this test is only intended to be run without the protobuf C
+ * extension.
+ */
 class ImplementationTest extends TestBase
 {
+    public function setUp()
+    {
+        if (extension_loaded('protobuf')) {
+            $this->markTestSkipped();
+        }
+    }
+
     public function testReadInt32()
     {
         $value = null;
@@ -504,7 +515,7 @@ class ImplementationTest extends TestBase
     {
         $m = new TestMessage();
         TestUtil::setTestMessage($m);
-        $this->assertSame(506, $m->byteSize());
+        $this->assertSame(518, $m->byteSize());
     }
 
     public function testPackedByteSize()

@@ -45,10 +45,8 @@ import junit.framework.TestCase;
  */
 public class IntArrayListTest extends TestCase {
 
-  private static final IntArrayList UNARY_LIST =
-      newImmutableIntArrayList(1);
-  private static final IntArrayList TERTIARY_LIST =
-      newImmutableIntArrayList(1, 2, 3);
+  private static final IntArrayList UNARY_LIST = newImmutableIntArrayList(1);
+  private static final IntArrayList TERTIARY_LIST = newImmutableIntArrayList(1, 2, 3);
 
   private IntArrayList list;
 
@@ -225,9 +223,7 @@ public class IntArrayListTest extends TestCase {
     for (int i = 0; i < 6; i++) {
       list.add(Integer.valueOf(5 + i));
     }
-    assertEquals(
-        asList(0, 1, 4, 2, 3, 5, 6, 7, 8, 9, 10),
-        list);
+    assertEquals(asList(0, 1, 4, 2, 3, 5, 6, 7, 8, 9, 10), list);
 
     try {
       list.add(-1, 5);
@@ -270,6 +266,13 @@ public class IntArrayListTest extends TestCase {
     assertFalse(list.addAll(IntArrayList.emptyList()));
   }
 
+  public void testEquals() {
+    IntArrayList list1 = new IntArrayList();
+    IntArrayList list2 = new IntArrayList();
+
+    assertEquals(list1, list2);
+  }
+
   public void testRemove() {
     list.addAll(TERTIARY_LIST);
     assertEquals(1, (int) list.remove(0));
@@ -298,17 +301,24 @@ public class IntArrayListTest extends TestCase {
     }
   }
 
-  public void testRemoveEndOfCapacity() {
-    IntList toRemove =
-        IntArrayList.emptyList().mutableCopyWithCapacity(1);
+  public void testRemoveEnd_listAtCapacity() {
+    IntList toRemove = IntArrayList.emptyList().mutableCopyWithCapacity(1);
     toRemove.addInt(3);
     toRemove.remove(0);
     assertEquals(0, toRemove.size());
   }
 
+  public void testRemove_listAtCapacity() {
+    IntList toRemove = IntArrayList.emptyList().mutableCopyWithCapacity(2);
+    toRemove.addInt(3);
+    toRemove.addInt(4);
+    toRemove.remove(0);
+    assertEquals(1, toRemove.size());
+    assertEquals(4, (int) toRemove.get(0));
+  }
+
   public void testSublistRemoveEndOfCapacity() {
-    IntList toRemove =
-        IntArrayList.emptyList().mutableCopyWithCapacity(1);
+    IntList toRemove = IntArrayList.emptyList().mutableCopyWithCapacity(1);
     toRemove.addInt(3);
     toRemove.subList(0, 1).clear();
     assertEquals(0, toRemove.size());

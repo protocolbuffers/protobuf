@@ -33,13 +33,44 @@
 goog.setTestOnly();
 
 goog.require('goog.json');
-goog.require('goog.string');
 goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
 goog.require('goog.userAgent');
 
 // CommonJS-LoadFromFile: google-protobuf jspb
 goog.require('jspb.Message');
+
+// CommonJS-LoadFromFile: test15_pb proto.jspb.filenametest.package1
+goog.require('proto.jspb.filenametest.package1.b');
+
+// CommonJS-LoadFromFile: test14_pb proto.jspb.filenametest.package2
+goog.require('proto.jspb.filenametest.package2.TestMessage');
+
+// CommonJS-LoadFromFile: test13_pb proto.jspb.filenametest.package1
+goog.require('proto.jspb.filenametest.package1.a');
+goog.require('proto.jspb.filenametest.package1.TestMessage');
+
+// CommonJS-LoadFromFile: test12_pb proto.jspb.circulartest
+goog.require('proto.jspb.circulartest.ExtensionContainingType1');
+goog.require('proto.jspb.circulartest.ExtensionContainingType2');
+goog.require('proto.jspb.circulartest.ExtensionField1');
+goog.require('proto.jspb.circulartest.ExtensionField2');
+goog.require('proto.jspb.circulartest.ExtensionField3');
+goog.require('proto.jspb.circulartest.MapField1');
+goog.require('proto.jspb.circulartest.MapField2');
+goog.require('proto.jspb.circulartest.MessageField1');
+goog.require('proto.jspb.circulartest.MessageField2');
+goog.require('proto.jspb.circulartest.NestedEnum1');
+goog.require('proto.jspb.circulartest.NestedEnum2');
+goog.require('proto.jspb.circulartest.NestedMessage1');
+goog.require('proto.jspb.circulartest.NestedMessage2');
+goog.require('proto.jspb.circulartest.RepeatedMessageField1');
+goog.require('proto.jspb.circulartest.RepeatedMessageField2');
+
+// CommonJS-LoadFromFile: test11_pb proto.jspb.exttest.reverse
+goog.require('proto.jspb.exttest.reverse.TestExtensionReverseOrderMessage1');
+goog.require('proto.jspb.exttest.reverse.TestExtensionReverseOrderMessage2');
+goog.require('proto.jspb.exttest.reverse.c');
 
 // CommonJS-LoadFromFile: test8_pb proto.jspb.exttest.nested
 goog.require('proto.jspb.exttest.nested.TestNestedExtensionsMessage');
@@ -55,6 +86,7 @@ goog.require('proto.jspb.exttest.floatingMsgField');
 goog.require('proto.jspb.exttest.floatingMsgFieldTwo');
 
 // CommonJS-LoadFromFile: test_pb proto.jspb.test
+goog.require('proto.jspb.test.BooleanFields');
 goog.require('proto.jspb.test.CloneExtension');
 goog.require('proto.jspb.test.Complex');
 goog.require('proto.jspb.test.DefaultValues');
@@ -77,6 +109,7 @@ goog.require('proto.jspb.test.TestCloneExtension');
 goog.require('proto.jspb.test.TestEndsWithBytes');
 goog.require('proto.jspb.test.TestGroup');
 goog.require('proto.jspb.test.TestGroup1');
+goog.require('proto.jspb.test.TestLastFieldBeforePivot');
 goog.require('proto.jspb.test.TestMessageWithOneof');
 goog.require('proto.jspb.test.TestReservedNames');
 goog.require('proto.jspb.test.TestReservedNamesExtension');
@@ -117,58 +150,63 @@ describe('Message test suite', function() {
   });
 
   it('testComplexConversion', function() {
-    var data1 = ['a',,, [, 11], [[, 22], [, 33]],, ['s1', 's2'],, 1];
-    var data2 = ['a',,, [, 11], [[, 22], [, 33]],, ['s1', 's2'],, 1];
+    var data1 = ['a', , , [, 11], [[, 22], [, 33]], , ['s1', 's2'], , 1];
+    var data2 = ['a', , , [, 11], [[, 22], [, 33]], , ['s1', 's2'], , 1];
     var foo = new proto.jspb.test.Complex(data1);
     var bar = new proto.jspb.test.Complex(data2);
     var result = foo.toObject();
-    assertObjectEquals({
-      aString: 'a',
-      anOutOfOrderBool: 1,
-      aNestedMessage: {
-        anInt: 11
-      },
-      aRepeatedMessageList: [{anInt: 22}, {anInt: 33}],
-      aRepeatedStringList: ['s1', 's2']
-    }, result);
+    assertObjectEquals(
+        {
+          aString: 'a',
+          anOutOfOrderBool: true,
+          aNestedMessage: {anInt: 11},
+          aRepeatedMessageList: [{anInt: 22}, {anInt: 33}],
+          aRepeatedStringList: ['s1', 's2'],
+          aFloatingPointField: undefined,
+        },
+        result);
 
     // Now test with the jspb instances included.
     result = foo.toObject(true /* opt_includeInstance */);
-    assertObjectEquals({
-      aString: 'a',
-      anOutOfOrderBool: 1,
-      aNestedMessage: {
-        anInt: 11,
-        $jspbMessageInstance: foo.getANestedMessage()
-      },
-      aRepeatedMessageList: [
-        {anInt: 22, $jspbMessageInstance: foo.getARepeatedMessageList()[0]},
-        {anInt: 33, $jspbMessageInstance: foo.getARepeatedMessageList()[1]}
-      ],
-      aRepeatedStringList: ['s1', 's2'],
-      $jspbMessageInstance: foo
-    }, result);
+    assertObjectEquals(
+        {
+          aString: 'a',
+          anOutOfOrderBool: true,
+          aNestedMessage:
+              {anInt: 11, $jspbMessageInstance: foo.getANestedMessage()},
+          aRepeatedMessageList: [
+            {anInt: 22, $jspbMessageInstance: foo.getARepeatedMessageList()[0]},
+            {anInt: 33, $jspbMessageInstance: foo.getARepeatedMessageList()[1]}
+          ],
+          aRepeatedStringList: ['s1', 's2'],
+          aFloatingPointField: undefined,
+          $jspbMessageInstance: foo
+        },
+        result);
 
   });
 
   it('testMissingFields', function() {
     var foo = new proto.jspb.test.Complex([
-        undefined, undefined, undefined, [],
-        undefined, undefined, undefined, undefined]);
+      undefined, undefined, undefined, [], undefined, undefined, undefined,
+      undefined
+    ]);
     var bar = new proto.jspb.test.Complex([
-        undefined, undefined, undefined, [],
-        undefined, undefined, undefined, undefined]);
+      undefined, undefined, undefined, [], undefined, undefined, undefined,
+      undefined
+    ]);
     var result = foo.toObject();
-    assertObjectEquals({
-      aString: undefined,
-      anOutOfOrderBool: undefined,
-      aNestedMessage: {
-        anInt: undefined
-      },
-      // Note: JsPb converts undefined repeated fields to empty arrays.
-      aRepeatedMessageList: [],
-      aRepeatedStringList: []
-    }, result);
+    assertObjectEquals(
+        {
+          aString: undefined,
+          anOutOfOrderBool: undefined,
+          aNestedMessage: {anInt: undefined},
+          // Note: JsPb converts undefined repeated fields to empty arrays.
+          aRepeatedMessageList: [],
+          aRepeatedStringList: [],
+          aFloatingPointField: undefined,
+        },
+        result);
 
   });
 
@@ -182,20 +220,21 @@ describe('Message test suite', function() {
   it('testSpecialCases', function() {
     // Note: Some property names are reserved in JavaScript.
     // These names are converted to the Js property named pb_<reserved_name>.
-    var special =
-        new proto.jspb.test.SpecialCases(['normal', 'default', 'function',
-        'var']);
+    var special = new proto.jspb.test.SpecialCases(
+        ['normal', 'default', 'function', 'var']);
     var result = special.toObject();
-    assertObjectEquals({
-      normal: 'normal',
-      pb_default: 'default',
-      pb_function: 'function',
-      pb_var: 'var'
-    }, result);
+    assertObjectEquals(
+        {
+          normal: 'normal',
+          pb_default: 'default',
+          pb_function: 'function',
+          pb_var: 'var'
+        },
+        result);
   });
 
   it('testDefaultValues', function() {
-    var defaultString = "default<>\'\"abc";
+    var defaultString = 'default<>\'"abc';
     var response = new proto.jspb.test.DefaultValues();
 
     // Test toObject
@@ -259,8 +298,10 @@ describe('Message test suite', function() {
 
     // Test that clearing the values reverts them to the default state.
     response = makeDefault(['blah', false, 111, 77]);
-    response.clearStringField(); response.clearBoolField();
-    response.clearIntField(); response.clearEnumField();
+    response.clearStringField();
+    response.clearBoolField();
+    response.clearIntField();
+    response.clearEnumField();
     assertEquals(defaultString, response.getStringField());
     assertEquals(true, response.getBoolField());
     assertEquals(11, response.getIntField());
@@ -272,8 +313,10 @@ describe('Message test suite', function() {
 
     // Test that setFoo(null) clears the values.
     response = makeDefault(['blah', false, 111, 77]);
-    response.setStringField(null); response.setBoolField(null);
-    response.setIntField(undefined); response.setEnumField(undefined);
+    response.setStringField(null);
+    response.setBoolField(null);
+    response.setIntField(undefined);
+    response.setEnumField(undefined);
     assertEquals(defaultString, response.getStringField());
     assertEquals(true, response.getBoolField());
     assertEquals(11, response.getIntField());
@@ -284,54 +327,18 @@ describe('Message test suite', function() {
     assertFalse(response.hasEnumField());
   });
 
-  it('testClearFields', function() {
-    var data = ['str', true, [11], [[22], [33]], ['s1', 's2']];
-    var foo = new proto.jspb.test.OptionalFields(data);
-    foo.clearAString();
-    foo.clearABool();
-    foo.clearANestedMessage();
-    foo.clearARepeatedMessageList();
-    foo.clearARepeatedStringList();
-    assertEquals('', foo.getAString());
-    assertEquals(false, foo.getABool());
-    assertUndefined(foo.getANestedMessage());
-    assertFalse(foo.hasAString());
-    assertFalse(foo.hasABool());
-    assertObjectEquals([], foo.getARepeatedMessageList());
-    assertObjectEquals([], foo.getARepeatedStringList());
-    // NOTE: We want the missing fields in 'expected' to be undefined,
-    // but we actually get a sparse array instead. We could use something
-    // like [1,undefined,2] to avoid this, except that this is still
-    // sparse on IE. No comment...
-    var expected = [,,, [], []];
-    expected[0] = expected[1] = expected[2] = undefined;
-    assertObjectEquals(expected, foo.toArray());
-  });
-
-  it('testDifferenceRawObject', /** @suppress {visibility} */ function() {
-    var p1 = new proto.jspb.test.HasExtensions(['hi', 'diff', {}]);
-    var p2 = new proto.jspb.test.HasExtensions(['hi', 'what',
-                                               {1000: 'unique'}]);
-    var diff = /** @type {proto.jspb.test.HasExtensions} */
-        (jspb.Message.difference(p1, p2));
-    assertEquals('', diff.getStr1());
-    assertEquals('what', diff.getStr2());
-    assertEquals('', diff.getStr3());
-    assertEquals('unique', diff.extensionObject_[1000]);
-  });
-
   it('testEqualsSimple', function() {
     var s1 = new proto.jspb.test.Simple1(['hi']);
     assertTrue(jspb.Message.equals(s1, new proto.jspb.test.Simple1(['hi'])));
     assertFalse(jspb.Message.equals(s1, new proto.jspb.test.Simple1(['bye'])));
     var s1b = new proto.jspb.test.Simple1(['hi', ['hello']]);
-    assertTrue(jspb.Message.equals(s1b,
-        new proto.jspb.test.Simple1(['hi', ['hello']])));
-    assertTrue(jspb.Message.equals(s1b,
-        new proto.jspb.test.Simple1(['hi', ['hello', undefined,
-                                            undefined, undefined]])));
-    assertFalse(jspb.Message.equals(s1b,
-        new proto.jspb.test.Simple1(['no', ['hello']])));
+    assertTrue(jspb.Message.equals(
+        s1b, new proto.jspb.test.Simple1(['hi', ['hello']])));
+    assertTrue(jspb.Message.equals(s1b, new proto.jspb.test.Simple1([
+      'hi', ['hello', undefined, undefined, undefined]
+    ])));
+    assertFalse(jspb.Message.equals(
+        s1b, new proto.jspb.test.Simple1(['no', ['hello']])));
     // Test with messages of different types
     var s2 = new proto.jspb.test.Simple2(['hi']);
     assertFalse(jspb.Message.equals(s1, s2));
@@ -339,18 +346,18 @@ describe('Message test suite', function() {
 
   it('testEquals_softComparison', function() {
     var s1 = new proto.jspb.test.Simple1(['hi', [], null]);
-    assertTrue(jspb.Message.equals(s1,
-        new proto.jspb.test.Simple1(['hi', []])));
+    assertTrue(
+        jspb.Message.equals(s1, new proto.jspb.test.Simple1(['hi', []])));
 
     var s1b = new proto.jspb.test.Simple1(['hi', [], true]);
-    assertTrue(jspb.Message.equals(s1b,
-        new proto.jspb.test.Simple1(['hi', [], 1])));
+    assertTrue(
+        jspb.Message.equals(s1b, new proto.jspb.test.Simple1(['hi', [], 1])));
   });
 
   it('testEqualsComplex', function() {
-    var data1 = ['a',,, [, 11], [[, 22], [, 33]],, ['s1', 's2'],, 1];
-    var data2 = ['a',,, [, 11], [[, 22], [, 34]],, ['s1', 's2'],, 1];
-    var data3 = ['a',,, [, 11], [[, 22]],, ['s1', 's2'],, 1];
+    var data1 = ['a', , , [, 11], [[, 22], [, 33]], , ['s1', 's2'], , 1];
+    var data2 = ['a', , , [, 11], [[, 22], [, 34]], , ['s1', 's2'], , 1];
+    var data3 = ['a', , , [, 11], [[, 22]], , ['s1', 's2'], , 1];
     var data4 = ['hi'];
     var c1a = new proto.jspb.test.Complex(data1);
     var c1b = new proto.jspb.test.Complex(data1);
@@ -367,42 +374,34 @@ describe('Message test suite', function() {
   it('testEqualsExtensionsConstructed', function() {
     assertTrue(jspb.Message.equals(
         new proto.jspb.test.HasExtensions([]),
-        new proto.jspb.test.HasExtensions([{}])
-    ));
+        new proto.jspb.test.HasExtensions([{}])));
     assertTrue(jspb.Message.equals(
         new proto.jspb.test.HasExtensions(['hi', {100: [{200: 'a'}]}]),
-        new proto.jspb.test.HasExtensions(['hi', {100: [{200: 'a'}]}])
-    ));
+        new proto.jspb.test.HasExtensions(['hi', {100: [{200: 'a'}]}])));
     assertFalse(jspb.Message.equals(
         new proto.jspb.test.HasExtensions(['hi', {100: [{200: 'a'}]}]),
-        new proto.jspb.test.HasExtensions(['hi', {100: [{200: 'b'}]}])
-    ));
+        new proto.jspb.test.HasExtensions(['hi', {100: [{200: 'b'}]}])));
     assertTrue(jspb.Message.equals(
         new proto.jspb.test.HasExtensions([{100: [{200: 'a'}]}]),
-        new proto.jspb.test.HasExtensions([{100: [{200: 'a'}]}])
-    ));
+        new proto.jspb.test.HasExtensions([{100: [{200: 'a'}]}])));
     assertTrue(jspb.Message.equals(
         new proto.jspb.test.HasExtensions([{100: [{200: 'a'}]}]),
-        new proto.jspb.test.HasExtensions([,,, {100: [{200: 'a'}]}])
-    ));
+        new proto.jspb.test.HasExtensions([, , , {100: [{200: 'a'}]}])));
     assertTrue(jspb.Message.equals(
-        new proto.jspb.test.HasExtensions([,,, {100: [{200: 'a'}]}]),
-        new proto.jspb.test.HasExtensions([{100: [{200: 'a'}]}])
-    ));
+        new proto.jspb.test.HasExtensions([, , , {100: [{200: 'a'}]}]),
+        new proto.jspb.test.HasExtensions([{100: [{200: 'a'}]}])));
     assertTrue(jspb.Message.equals(
         new proto.jspb.test.HasExtensions(['hi', {100: [{200: 'a'}]}]),
-        new proto.jspb.test.HasExtensions(['hi',,, {100: [{200: 'a'}]}])
-    ));
+        new proto.jspb.test.HasExtensions(['hi', , , {100: [{200: 'a'}]}])));
     assertTrue(jspb.Message.equals(
-        new proto.jspb.test.HasExtensions(['hi',,, {100: [{200: 'a'}]}]),
-        new proto.jspb.test.HasExtensions(['hi', {100: [{200: 'a'}]}])
-    ));
+        new proto.jspb.test.HasExtensions(['hi', , , {100: [{200: 'a'}]}]),
+        new proto.jspb.test.HasExtensions(['hi', {100: [{200: 'a'}]}])));
   });
 
   it('testEqualsExtensionsUnconstructed', function() {
     assertTrue(jspb.Message.compareFields([], [{}]));
-    assertTrue(jspb.Message.compareFields([,,, {}], []));
-    assertTrue(jspb.Message.compareFields([,,, {}], [,, {}]));
+    assertTrue(jspb.Message.compareFields([, , , {}], []));
+    assertTrue(jspb.Message.compareFields([, , , {}], [, , {}]));
     assertTrue(jspb.Message.compareFields(
         ['hi', {100: [{200: 'a'}]}], ['hi', {100: [{200: 'a'}]}]));
     assertFalse(jspb.Message.compareFields(
@@ -410,13 +409,19 @@ describe('Message test suite', function() {
     assertTrue(jspb.Message.compareFields(
         [{100: [{200: 'a'}]}], [{100: [{200: 'a'}]}]));
     assertTrue(jspb.Message.compareFields(
-        [{100: [{200: 'a'}]}], [,,, {100: [{200: 'a'}]}]));
+        [{100: [{200: 'a'}]}], [, , , {100: [{200: 'a'}]}]));
     assertTrue(jspb.Message.compareFields(
-        [,,, {100: [{200: 'a'}]}], [{100: [{200: 'a'}]}]));
+        [, , , {100: [{200: 'a'}]}], [{100: [{200: 'a'}]}]));
     assertTrue(jspb.Message.compareFields(
-        ['hi', {100: [{200: 'a'}]}], ['hi',,, {100: [{200: 'a'}]}]));
+        ['hi', {100: [{200: 'a'}]}], ['hi', , , {100: [{200: 'a'}]}]));
     assertTrue(jspb.Message.compareFields(
-        ['hi',,, {100: [{200: 'a'}]}], ['hi', {100: [{200: 'a'}]}]));
+        ['hi', , , {100: [{200: 'a'}]}], ['hi', {100: [{200: 'a'}]}]));
+  });
+
+  it('testInitializeMessageWithLastFieldNull', function() {
+    // This tests for regression to bug http://b/117298778
+    var msg = new proto.jspb.test.TestLastFieldBeforePivot([null]);
+    assertNotUndefined(msg.getLastFieldBeforePivot());
   });
 
   it('testEqualsNonFinite', function() {
@@ -434,13 +439,13 @@ describe('Message test suite', function() {
   it('testToMap', function() {
     var p1 = new proto.jspb.test.Simple1(['k', ['v']]);
     var p2 = new proto.jspb.test.Simple1(['k1', ['v1', 'v2']]);
-    var soymap = jspb.Message.toMap([p1, p2],
-        proto.jspb.test.Simple1.prototype.getAString,
+    var soymap = jspb.Message.toMap(
+        [p1, p2], proto.jspb.test.Simple1.prototype.getAString,
         proto.jspb.test.Simple1.prototype.toObject);
     assertEquals('k', soymap['k'].aString);
     assertArrayEquals(['v'], soymap['k'].aRepeatedStringList);
-    var protomap = jspb.Message.toMap([p1, p2],
-        proto.jspb.test.Simple1.prototype.getAString);
+    var protomap = jspb.Message.toMap(
+        [p1, p2], proto.jspb.test.Simple1.prototype.getAString);
     assertEquals('k', protomap['k'].getAString());
     assertArrayEquals(['v'], protomap['k'].getARepeatedStringList());
   });
@@ -461,8 +466,12 @@ describe('Message test suite', function() {
     extension.setExt('e1');
     original.setExtension(proto.jspb.test.IsExtension.extField, extension);
     var clone = original.clone();
-    assertArrayEquals(['v1',, ['x1', ['y1', 'z1']],,
-      [['x2', ['y2', 'z2']], ['x3', ['y3', 'z3']]], bytes1,, { 100: [, 'e1'] }],
+    assertArrayEquals(
+        [
+          'v1', , ['x1', ['y1', 'z1']], ,
+          [['x2', ['y2', 'z2']], ['x3', ['y3', 'z3']]], bytes1, ,
+          {100: [, 'e1']}
+        ],
         clone.toArray());
     clone.setStr('v2');
     var simple4 = new proto.jspb.test.Simple1(['a1', ['b1', 'c1']]);
@@ -479,11 +488,19 @@ describe('Message test suite', function() {
     var newExtension = new proto.jspb.test.CloneExtension();
     newExtension.setExt('e2');
     clone.setExtension(proto.jspb.test.CloneExtension.extField, newExtension);
-    assertArrayEquals(['v2',, ['a1', ['b1', 'c1']],,
-      [['a2', ['b2', 'c2']], ['a3', ['b3', 'c3']]], bytes2,, { 100: [, 'e2'] }],
+    assertArrayEquals(
+        [
+          'v2', , ['a1', ['b1', 'c1']], ,
+          [['a2', ['b2', 'c2']], ['a3', ['b3', 'c3']]], bytes2, ,
+          {100: [, 'e2']}
+        ],
         clone.toArray());
-    assertArrayEquals(['v1',, ['x1', ['y1', 'z1']],,
-      [['x2', ['y2', 'z2']], ['x3', ['y3', 'z3']]], bytes1,, { 100: [, 'e1'] }],
+    assertArrayEquals(
+        [
+          'v1', , ['x1', ['y1', 'z1']], ,
+          [['x2', ['y2', 'z2']], ['x3', ['y3', 'z3']]], bytes1, ,
+          {100: [, 'e1']}
+        ],
         original.toArray());
   });
 
@@ -515,11 +532,12 @@ describe('Message test suite', function() {
     jspb.Message.copyInto(original, dest);
     assertArrayEquals(original.toArray(), dest.toArray());
     assertEquals('x1', dest.getSimple1().getAString());
-    assertEquals('e1',
+    assertEquals(
+        'e1',
         dest.getExtension(proto.jspb.test.CloneExtension.extField).getExt());
     dest.getSimple1().setAString('new value');
-    assertNotEquals(dest.getSimple1().getAString(),
-        original.getSimple1().getAString());
+    assertNotEquals(
+        dest.getSimple1().getAString(), original.getSimple1().getAString());
     if (supportsUint8Array) {
       dest.getBytesField()[0] = 7;
       assertObjectEquals(bytes1, original.getBytesField());
@@ -529,12 +547,12 @@ describe('Message test suite', function() {
       assertObjectEquals(bytes1, original.getBytesField());
       assertObjectEquals('789', dest.getBytesField());
     }
-    dest.getExtension(proto.jspb.test.CloneExtension.extField).
-        setExt('new value');
+    dest.getExtension(proto.jspb.test.CloneExtension.extField)
+        .setExt('new value');
     assertNotEquals(
         dest.getExtension(proto.jspb.test.CloneExtension.extField).getExt(),
-        original.getExtension(
-            proto.jspb.test.CloneExtension.extField).getExt());
+        original.getExtension(proto.jspb.test.CloneExtension.extField)
+            .getExt());
   });
 
   it('testCopyInto_notSameType', function() {
@@ -552,26 +570,32 @@ describe('Message test suite', function() {
     var extension2 = new proto.jspb.test.Simple1(['str', ['s1', 's2']]);
     var extendable = new proto.jspb.test.HasExtensions(['v1', 'v2', 'v3']);
     extendable.setExtension(proto.jspb.test.IsExtension.extField, extension1);
-    extendable.setExtension(proto.jspb.test.IndirectExtension.simple,
-                            extension2);
+    extendable.setExtension(
+        proto.jspb.test.IndirectExtension.simple, extension2);
     extendable.setExtension(proto.jspb.test.IndirectExtension.str, 'xyzzy');
-    extendable.setExtension(proto.jspb.test.IndirectExtension.repeatedStrList,
-        ['a', 'b']);
+    extendable.setExtension(
+        proto.jspb.test.IndirectExtension.repeatedStrList, ['a', 'b']);
     var s1 = new proto.jspb.test.Simple1(['foo', ['s1', 's2']]);
     var s2 = new proto.jspb.test.Simple1(['bar', ['t1', 't2']]);
     extendable.setExtension(
-        proto.jspb.test.IndirectExtension.repeatedSimpleList,
-        [s1, s2]);
-    assertObjectEquals(extension1,
+        proto.jspb.test.IndirectExtension.repeatedSimpleList, [s1, s2]);
+    assertObjectEquals(
+        extension1,
         extendable.getExtension(proto.jspb.test.IsExtension.extField));
-    assertObjectEquals(extension2,
+    assertObjectEquals(
+        extension2,
         extendable.getExtension(proto.jspb.test.IndirectExtension.simple));
-    assertObjectEquals('xyzzy',
+    assertObjectEquals(
+        'xyzzy',
         extendable.getExtension(proto.jspb.test.IndirectExtension.str));
-    assertObjectEquals(['a', 'b'], extendable.getExtension(
-        proto.jspb.test.IndirectExtension.repeatedStrList));
-    assertObjectEquals([s1, s2], extendable.getExtension(
-        proto.jspb.test.IndirectExtension.repeatedSimpleList));
+    assertObjectEquals(
+        ['a', 'b'],
+        extendable.getExtension(
+            proto.jspb.test.IndirectExtension.repeatedStrList));
+    assertObjectEquals(
+        [s1, s2],
+        extendable.getExtension(
+            proto.jspb.test.IndirectExtension.repeatedSimpleList));
     // Not supported yet, but it should work...
     extendable.setExtension(proto.jspb.test.IndirectExtension.simple, null);
     assertNull(
@@ -590,29 +614,35 @@ describe('Message test suite', function() {
     var extendable = new proto.jspb.test.HasExtensions(['v1', 'v2', 'v3']);
     var extension = new proto.jspb.test.Simple1(['foo', ['s1', 's2']]);
     extendable.setExtension(proto.jspb.test.simple1, extension);
-    assertObjectEquals(extension,
-        extendable.getExtension(proto.jspb.test.simple1));
+    assertObjectEquals(
+        extension, extendable.getExtension(proto.jspb.test.simple1));
 
     // From _lib mode.
     extension = new proto.jspb.test.ExtensionMessage(['s1']);
     extendable = new proto.jspb.test.TestExtensionsMessage([16]);
     extendable.setExtension(proto.jspb.test.floatingMsgField, extension);
     extendable.setExtension(proto.jspb.test.floatingStrField, 's2');
-    assertObjectEquals(extension,
-        extendable.getExtension(proto.jspb.test.floatingMsgField));
-    assertObjectEquals('s2',
-        extendable.getExtension(proto.jspb.test.floatingStrField));
+    assertObjectEquals(
+        extension, extendable.getExtension(proto.jspb.test.floatingMsgField));
+    assertObjectEquals(
+        's2', extendable.getExtension(proto.jspb.test.floatingStrField));
     assertNotUndefined(proto.jspb.exttest.floatingMsgField);
     assertNotUndefined(proto.jspb.exttest.floatingMsgFieldTwo);
     assertNotUndefined(proto.jspb.exttest.beta.floatingStrField);
   });
 
   it('testNestedExtensions', function() {
-    var extendable = new proto.jspb.exttest.nested.TestNestedExtensionsMessage();
-    var extension = new proto.jspb.exttest.nested.TestOuterMessage.NestedExtensionMessage(['s1']);
-    extendable.setExtension(proto.jspb.exttest.nested.TestOuterMessage.innerExtension, extension);
-    assertObjectEquals(extension,
-        extendable.getExtension(proto.jspb.exttest.nested.TestOuterMessage.innerExtension));
+    var extendable =
+        new proto.jspb.exttest.nested.TestNestedExtensionsMessage();
+    var extension =
+        new proto.jspb.exttest.nested.TestOuterMessage.NestedExtensionMessage(
+            ['s1']);
+    extendable.setExtension(
+        proto.jspb.exttest.nested.TestOuterMessage.innerExtension, extension);
+    assertObjectEquals(
+        extension,
+        extendable.getExtension(
+            proto.jspb.exttest.nested.TestOuterMessage.innerExtension));
   });
 
   it('testToObject_extendedObject', function() {
@@ -620,60 +650,72 @@ describe('Message test suite', function() {
     var extension2 = new proto.jspb.test.Simple1(['str', ['s1', 's2'], true]);
     var extendable = new proto.jspb.test.HasExtensions(['v1', 'v2', 'v3']);
     extendable.setExtension(proto.jspb.test.IsExtension.extField, extension1);
-    extendable.setExtension(proto.jspb.test.IndirectExtension.simple,
-                            extension2);
+    extendable.setExtension(
+        proto.jspb.test.IndirectExtension.simple, extension2);
     extendable.setExtension(proto.jspb.test.IndirectExtension.str, 'xyzzy');
-    extendable.setExtension(proto.jspb.test.IndirectExtension.repeatedStrList,
-        ['a', 'b']);
+    extendable.setExtension(
+        proto.jspb.test.IndirectExtension.repeatedStrList, ['a', 'b']);
     var s1 = new proto.jspb.test.Simple1(['foo', ['s1', 's2'], true]);
     var s2 = new proto.jspb.test.Simple1(['bar', ['t1', 't2'], false]);
     extendable.setExtension(
-        proto.jspb.test.IndirectExtension.repeatedSimpleList,
-        [s1, s2]);
-    assertObjectEquals({
-      str1: 'v1', str2: 'v2', str3: 'v3',
-      extField: { ext1: 'ext1field' },
-      simple: {
-        aString: 'str', aRepeatedStringList: ['s1', 's2'], aBoolean: true
-      },
-      str: 'xyzzy',
-      repeatedStrList: ['a', 'b'],
-      repeatedSimpleList: [
-        { aString: 'foo', aRepeatedStringList: ['s1', 's2'], aBoolean: true},
-        { aString: 'bar', aRepeatedStringList: ['t1', 't2'], aBoolean: false}
-      ]
-    }, extendable.toObject());
+        proto.jspb.test.IndirectExtension.repeatedSimpleList, [s1, s2]);
+    assertObjectEquals(
+        {
+          str1: 'v1',
+          str2: 'v2',
+          str3: 'v3',
+          extField: {ext1: 'ext1field'},
+          simple: {
+            aString: 'str',
+            aRepeatedStringList: ['s1', 's2'],
+            aBoolean: true
+          },
+          str: 'xyzzy',
+          repeatedStrList: ['a', 'b'],
+          repeatedSimpleList: [
+            {aString: 'foo', aRepeatedStringList: ['s1', 's2'], aBoolean: true},
+            {aString: 'bar', aRepeatedStringList: ['t1', 't2'], aBoolean: false}
+          ]
+        },
+        extendable.toObject());
 
     // Now, with instances included.
-    assertObjectEquals({
-      str1: 'v1', str2: 'v2', str3: 'v3',
-      extField: {
-        ext1: 'ext1field',
-        $jspbMessageInstance:
-            extendable.getExtension(proto.jspb.test.IsExtension.extField)
-      },
-      simple: {
-        aString: 'str',
-        aRepeatedStringList: ['s1', 's2'],
-        aBoolean: true,
-        $jspbMessageInstance:
-            extendable.getExtension(proto.jspb.test.IndirectExtension.simple)
-      },
-      str: 'xyzzy',
-      repeatedStrList: ['a', 'b'],
-      repeatedSimpleList: [{
-        aString: 'foo',
-        aRepeatedStringList: ['s1', 's2'],
-        aBoolean: true,
-        $jspbMessageInstance: s1
-      }, {
-        aString: 'bar',
-        aRepeatedStringList: ['t1', 't2'],
-        aBoolean: false,
-        $jspbMessageInstance: s2
-      }],
-      $jspbMessageInstance: extendable
-    }, extendable.toObject(true /* opt_includeInstance */));
+    assertObjectEquals(
+        {
+          str1: 'v1',
+          str2: 'v2',
+          str3: 'v3',
+          extField: {
+            ext1: 'ext1field',
+            $jspbMessageInstance:
+                extendable.getExtension(proto.jspb.test.IsExtension.extField)
+          },
+          simple: {
+            aString: 'str',
+            aRepeatedStringList: ['s1', 's2'],
+            aBoolean: true,
+            $jspbMessageInstance: extendable.getExtension(
+                proto.jspb.test.IndirectExtension.simple)
+          },
+          str: 'xyzzy',
+          repeatedStrList: ['a', 'b'],
+          repeatedSimpleList: [
+            {
+              aString: 'foo',
+              aRepeatedStringList: ['s1', 's2'],
+              aBoolean: true,
+              $jspbMessageInstance: s1
+            },
+            {
+              aString: 'bar',
+              aRepeatedStringList: ['t1', 't2'],
+              aBoolean: false,
+              $jspbMessageInstance: s2
+            }
+          ],
+          $jspbMessageInstance: extendable
+        },
+        extendable.toObject(true /* opt_includeInstance */));
   });
 
   it('testInitialization_emptyArray', function() {
@@ -706,7 +748,8 @@ describe('Message test suite', function() {
      });
 
   it('testToObject_hasExtensionField', function() {
-    var data = new proto.jspb.test.HasExtensions(['str1', {100: ['ext1'], 102: ''}]);
+    var data =
+        new proto.jspb.test.HasExtensions(['str1', {100: ['ext1'], 102: ''}]);
     var obj = data.toObject();
     assertEquals('str1', obj.str1);
     assertEquals('ext1', obj.extField.ext1);
@@ -726,8 +769,7 @@ describe('Message test suite', function() {
     var extensionMessage = new proto.jspb.test.IsExtension(['is_extension']);
     data.setExtension(proto.jspb.test.IsExtension.extField, extensionMessage);
     var obj = data.toObject();
-    assertNotNull(
-        data.getExtension(proto.jspb.test.IsExtension.extField));
+    assertNotNull(data.getExtension(proto.jspb.test.IsExtension.extField));
     assertEquals('is_extension', obj.extField.ext1);
   });
 
@@ -744,16 +786,18 @@ describe('Message test suite', function() {
     var groups = group.getRepeatedGroupList();
     assertEquals('g1', groups[0].getId());
     assertObjectEquals([true, false], groups[0].getSomeBoolList());
-    assertObjectEquals({id: 'g1', someBoolList: [true, false]},
-        groups[0].toObject());
-    assertObjectEquals({
-      repeatedGroupList: [{id: 'g1', someBoolList: [true, false]}],
-      requiredGroup: {id: undefined},
-      optionalGroup: undefined,
-      requiredSimple: {aRepeatedStringList: [], aString: undefined},
-      optionalSimple: undefined,
-      id: undefined
-    }, group.toObject());
+    assertObjectEquals(
+        {id: 'g1', someBoolList: [true, false]}, groups[0].toObject());
+    assertObjectEquals(
+        {
+          repeatedGroupList: [{id: 'g1', someBoolList: [true, false]}],
+          requiredGroup: {id: undefined},
+          optionalGroup: undefined,
+          requiredSimple: {aRepeatedStringList: [], aString: undefined},
+          optionalSimple: undefined,
+          id: undefined
+        },
+        group.toObject());
     var group1 = new proto.jspb.test.TestGroup1();
     group1.setGroup(someGroup);
     assertEquals(someGroup, group1.getGroup());
@@ -770,93 +814,29 @@ describe('Message test suite', function() {
     message.setExtension$(11);
     message.setExtension(proto.jspb.test.TestReservedNamesExtension.foo, 12);
     assertEquals(11, message.getExtension$());
-    assertEquals(12, message.getExtension(
-        proto.jspb.test.TestReservedNamesExtension.foo));
+    assertEquals(
+        12,
+        message.getExtension(proto.jspb.test.TestReservedNamesExtension.foo));
     assertObjectEquals({extension: 11, foo: 12}, message.toObject());
   });
 
   it('testInitializeMessageWithUnsetOneof', function() {
     var message = new proto.jspb.test.TestMessageWithOneof([]);
     assertEquals(
-        proto.jspb.test.TestMessageWithOneof.PartialOneofCase.
-            PARTIAL_ONEOF_NOT_SET,
+        proto.jspb.test.TestMessageWithOneof.PartialOneofCase
+            .PARTIAL_ONEOF_NOT_SET,
         message.getPartialOneofCase());
     assertEquals(
-        proto.jspb.test.TestMessageWithOneof.RecursiveOneofCase.
-            RECURSIVE_ONEOF_NOT_SET,
+        proto.jspb.test.TestMessageWithOneof.RecursiveOneofCase
+            .RECURSIVE_ONEOF_NOT_SET,
         message.getRecursiveOneofCase());
-  });
-
-  it('testInitializeMessageWithSingleValueSetInOneof', function() {
-    var message = new proto.jspb.test.TestMessageWithOneof([,, 'x']);
-
-    assertEquals('x', message.getPone());
-    assertEquals('', message.getPthree());
-    assertEquals(
-        proto.jspb.test.TestMessageWithOneof.PartialOneofCase.PONE,
-        message.getPartialOneofCase());
-  });
-
-  it('testKeepsLastWireValueSetInUnion_multipleValues', function() {
-    var message = new proto.jspb.test.TestMessageWithOneof([,, 'x',, 'y']);
-
-    assertEquals('', message.getPone());
-    assertEquals('y', message.getPthree());
-    assertEquals(
-        proto.jspb.test.TestMessageWithOneof.PartialOneofCase.PTHREE,
-        message.getPartialOneofCase());
-  });
-
-  it('testSettingOneofFieldClearsOthers', function() {
-    var message = new proto.jspb.test.TestMessageWithOneof;
-    assertEquals('', message.getPone());
-    assertEquals('', message.getPthree());
-    assertFalse(message.hasPone());
-    assertFalse(message.hasPthree());
-
-    message.setPone('hi');
-    assertEquals('hi', message.getPone());
-    assertEquals('', message.getPthree());
-    assertTrue(message.hasPone());
-    assertFalse(message.hasPthree());
-
-    message.setPthree('bye');
-    assertEquals('', message.getPone());
-    assertEquals('bye', message.getPthree());
-    assertFalse(message.hasPone());
-    assertTrue(message.hasPthree());
-  });
-
-  it('testSettingOneofFieldDoesNotClearFieldsFromOtherUnions', function() {
-    var other = new proto.jspb.test.TestMessageWithOneof;
-    var message = new proto.jspb.test.TestMessageWithOneof;
-    assertEquals('', message.getPone());
-    assertEquals('', message.getPthree());
-    assertUndefined(message.getRone());
-    assertFalse(message.hasPone());
-    assertFalse(message.hasPthree());
-
-    message.setPone('hi');
-    message.setRone(other);
-    assertEquals('hi', message.getPone());
-    assertEquals('', message.getPthree());
-    assertEquals(other, message.getRone());
-    assertTrue(message.hasPone());
-    assertFalse(message.hasPthree());
-
-    message.setPthree('bye');
-    assertEquals('', message.getPone());
-    assertEquals('bye', message.getPthree());
-    assertEquals(other, message.getRone());
-    assertFalse(message.hasPone());
-    assertTrue(message.hasPthree());
   });
 
   it('testUnsetsOneofCaseWhenFieldIsCleared', function() {
     var message = new proto.jspb.test.TestMessageWithOneof;
     assertEquals(
-        proto.jspb.test.TestMessageWithOneof.PartialOneofCase.
-            PARTIAL_ONEOF_NOT_SET,
+        proto.jspb.test.TestMessageWithOneof.PartialOneofCase
+            .PARTIAL_ONEOF_NOT_SET,
         message.getPartialOneofCase());
 
     message.setPone('hi');
@@ -866,192 +846,20 @@ describe('Message test suite', function() {
 
     message.clearPone();
     assertEquals(
-        proto.jspb.test.TestMessageWithOneof.PartialOneofCase.
-            PARTIAL_ONEOF_NOT_SET,
+        proto.jspb.test.TestMessageWithOneof.PartialOneofCase
+            .PARTIAL_ONEOF_NOT_SET,
         message.getPartialOneofCase());
-  });
-
-  it('testMessageWithDefaultOneofValues', function() {
-    var message = new proto.jspb.test.TestMessageWithOneof;
-    assertEquals(1234, message.getAone());
-    assertEquals(0, message.getAtwo());
-    assertEquals(
-        proto.jspb.test.TestMessageWithOneof.DefaultOneofACase
-            .DEFAULT_ONEOF_A_NOT_SET,
-        message.getDefaultOneofACase());
-
-    message.setAone(567);
-    assertEquals(567, message.getAone());
-    assertEquals(0, message.getAtwo());
-    assertEquals(
-        proto.jspb.test.TestMessageWithOneof.DefaultOneofACase.AONE,
-        message.getDefaultOneofACase());
-
-    message.setAtwo(890);
-    assertEquals(1234, message.getAone());
-    assertEquals(890, message.getAtwo());
-    assertEquals(
-        proto.jspb.test.TestMessageWithOneof.DefaultOneofACase.ATWO,
-        message.getDefaultOneofACase());
-
-    message.clearAtwo();
-    assertEquals(1234, message.getAone());
-    assertEquals(0, message.getAtwo());
-    assertEquals(
-        proto.jspb.test.TestMessageWithOneof.DefaultOneofACase
-            .DEFAULT_ONEOF_A_NOT_SET,
-        message.getDefaultOneofACase());
-  });
-
-  it('testMessageWithDefaultOneofValues_defaultNotOnFirstField', function() {
-    var message = new proto.jspb.test.TestMessageWithOneof;
-    assertEquals(0, message.getBone());
-    assertEquals(1234, message.getBtwo());
-    assertFalse(message.hasBone());
-    assertFalse(message.hasBtwo());
-    assertEquals(
-        proto.jspb.test.TestMessageWithOneof.DefaultOneofBCase
-            .DEFAULT_ONEOF_B_NOT_SET,
-        message.getDefaultOneofBCase());
-
-    message.setBone(2);
-    assertEquals(2, message.getBone());
-    assertEquals(1234, message.getBtwo());
-    assertTrue(message.hasBone());
-    assertFalse(message.hasBtwo());
-    assertEquals(
-        proto.jspb.test.TestMessageWithOneof.DefaultOneofBCase.BONE,
-        message.getDefaultOneofBCase());
-
-    message.setBtwo(3);
-    assertEquals(0, message.getBone());
-    assertFalse(message.hasBone());
-    assertTrue(message.hasBtwo());
-    assertEquals(3, message.getBtwo());
-    assertEquals(
-        proto.jspb.test.TestMessageWithOneof.DefaultOneofBCase.BTWO,
-        message.getDefaultOneofBCase());
-
-    message.clearBtwo();
-    assertEquals(0, message.getBone());
-    assertFalse(message.hasBone());
-    assertFalse(message.hasBtwo());
-    assertEquals(1234, message.getBtwo());
-    assertEquals(
-        proto.jspb.test.TestMessageWithOneof.DefaultOneofBCase
-            .DEFAULT_ONEOF_B_NOT_SET,
-        message.getDefaultOneofBCase());
-  });
-
-  it('testInitializeMessageWithOneofDefaults', function() {
-    var message =
-        new proto.jspb.test.TestMessageWithOneof(new Array(9).concat(567));
-    assertEquals(567, message.getAone());
-    assertEquals(0, message.getAtwo());
-    assertEquals(
-        proto.jspb.test.TestMessageWithOneof.DefaultOneofACase.AONE,
-        message.getDefaultOneofACase());
-
-    message =
-        new proto.jspb.test.TestMessageWithOneof(new Array(10).concat(890));
-    assertEquals(1234, message.getAone());
-    assertEquals(890, message.getAtwo());
-    assertEquals(
-        proto.jspb.test.TestMessageWithOneof.DefaultOneofACase.ATWO,
-        message.getDefaultOneofACase());
-
-    message =
-        new proto.jspb.test.TestMessageWithOneof(new Array(9).concat(567, 890));
-    assertEquals(1234, message.getAone());
-    assertEquals(890, message.getAtwo());
-    assertEquals(
-        proto.jspb.test.TestMessageWithOneof.DefaultOneofACase.ATWO,
-        message.getDefaultOneofACase());
-  });
-
-  it('testInitializeMessageWithOneofDefaults_defaultNotSetOnFirstField',
-      function() {
-        var message;
-
-        message =
-            new proto.jspb.test.TestMessageWithOneof(new Array(11).concat(567));
-        assertEquals(567, message.getBone());
-        assertEquals(1234, message.getBtwo());
-        assertEquals(
-            proto.jspb.test.TestMessageWithOneof.DefaultOneofBCase.BONE,
-            message.getDefaultOneofBCase());
-
-        message =
-            new proto.jspb.test.TestMessageWithOneof(new Array(12).concat(890));
-        assertEquals(0, message.getBone());
-        assertEquals(890, message.getBtwo());
-        assertEquals(
-            proto.jspb.test.TestMessageWithOneof.DefaultOneofBCase.BTWO,
-            message.getDefaultOneofBCase());
-
-        message = new proto.jspb.test.TestMessageWithOneof(
-            new Array(11).concat(567, 890));
-        assertEquals(0, message.getBone());
-        assertEquals(890, message.getBtwo());
-        assertEquals(
-            proto.jspb.test.TestMessageWithOneof.DefaultOneofBCase.BTWO,
-            message.getDefaultOneofBCase());
-      });
-
-  it('testOneofContainingAnotherMessage', function() {
-    var message = new proto.jspb.test.TestMessageWithOneof;
-    assertEquals(
-        proto.jspb.test.TestMessageWithOneof.RecursiveOneofCase.
-            RECURSIVE_ONEOF_NOT_SET,
-        message.getRecursiveOneofCase());
-
-    var other = new proto.jspb.test.TestMessageWithOneof;
-    message.setRone(other);
-    assertEquals(other, message.getRone());
-    assertEquals('', message.getRtwo());
-    assertEquals(
-        proto.jspb.test.TestMessageWithOneof.RecursiveOneofCase.RONE,
-        message.getRecursiveOneofCase());
-
-    message.setRtwo('hi');
-    assertUndefined(message.getRone());
-    assertEquals('hi', message.getRtwo());
-    assertEquals(
-        proto.jspb.test.TestMessageWithOneof.RecursiveOneofCase.RTWO,
-        message.getRecursiveOneofCase());
-  });
-
-  it('testQueryingOneofCaseEnsuresOnlyOneFieldIsSetInUnderlyingArray',
-     function() {
-    var message = new proto.jspb.test.TestMessageWithOneof;
-    message.setPone('x');
-    assertEquals('x', message.getPone());
-    assertEquals('', message.getPthree());
-    assertEquals(
-        proto.jspb.test.TestMessageWithOneof.PartialOneofCase.PONE,
-        message.getPartialOneofCase());
-
-    var array = message.toArray();
-    assertEquals('x', array[2]);
-    assertUndefined(array[4]);
-    array[4] = 'y';
-
-    assertEquals(
-        proto.jspb.test.TestMessageWithOneof.PartialOneofCase.PTHREE,
-        message.getPartialOneofCase());
-    assertUndefined(array[2]);
-    assertEquals('y', array[4]);
   });
 
   it('testFloatingPointFieldsSupportNan', function() {
     var assertNan = function(x) {
-      assertTrue('Expected ' + x + ' (' + goog.typeOf(x) + ') to be NaN.',
+      assertTrue(
+          'Expected ' + x + ' (' + goog.typeOf(x) + ') to be NaN.',
           goog.isNumber(x) && isNaN(x));
     };
 
     var message = new proto.jspb.test.FloatingPointFields([
-      'NaN', 'NaN', ['NaN', 'NaN'], 'NaN',
-      'NaN', 'NaN', ['NaN', 'NaN'], 'NaN'
+      'NaN', 'NaN', ['NaN', 'NaN'], 'NaN', 'NaN', 'NaN', ['NaN', 'NaN'], 'NaN'
     ]);
     assertNan(message.getOptionalFloatField());
     assertNan(message.getRequiredFloatField());
@@ -1063,6 +871,208 @@ describe('Message test suite', function() {
     assertNan(message.getRepeatedDoubleFieldList()[0]);
     assertNan(message.getRepeatedDoubleFieldList()[1]);
     assertNan(message.getDefaultDoubleField());
+  });
+
+  it('testFloatingPointsAreConvertedFromStringInput', function() {
+    var assertInf = function(x) {
+      assertTrue(
+          'Expected ' + x + ' (' + goog.typeOf(x) + ') to be Infinity.',
+          x === Infinity);
+    };
+    var message = new proto.jspb.test.FloatingPointFields([
+      Infinity, 'Infinity', ['Infinity', Infinity], 'Infinity', 'Infinity',
+      'Infinity', ['Infinity', Infinity], 'Infinity'
+    ]);
+    assertInf(message.getOptionalFloatField());
+    assertInf(message.getRequiredFloatField());
+    assertInf(message.getRepeatedFloatFieldList()[0]);
+    assertInf(message.getRepeatedFloatFieldList()[1]);
+    assertInf(message.getDefaultFloatField());
+    assertInf(message.getOptionalDoubleField());
+    assertInf(message.getRequiredDoubleField());
+    assertInf(message.getRepeatedDoubleFieldList()[0]);
+    assertInf(message.getRepeatedDoubleFieldList()[1]);
+    assertInf(message.getDefaultDoubleField());
+  });
+
+  it('testBooleansAreConvertedFromNumberInput', function() {
+    var assertBooleanFieldTrue = function(x) {
+      assertTrue(
+          'Expected ' + x + ' (' + goog.typeOf(x) + ') to be True.',
+          x === true);
+    };
+    var message = new proto.jspb.test.BooleanFields([1, 1, [true, 1]]);
+    assertBooleanFieldTrue(message.getOptionalBooleanField());
+    assertBooleanFieldTrue(message.getRequiredBooleanField());
+    assertBooleanFieldTrue(message.getRepeatedBooleanFieldList()[0]);
+    assertBooleanFieldTrue(message.getRepeatedBooleanFieldList()[1]);
+    assertBooleanFieldTrue(message.getDefaultBooleanField());
+
+    var assertBooleanFieldFalse = function(x) {
+      assertTrue(
+          'Expected ' + x + ' (' + goog.typeOf(x) + ') to be False.',
+          x === false);
+    };
+    message = new proto.jspb.test.BooleanFields([0, 0, [0, 0]]);
+    assertBooleanFieldFalse(message.getOptionalBooleanField());
+    assertBooleanFieldFalse(message.getRequiredBooleanField());
+    assertBooleanFieldFalse(message.getRepeatedBooleanFieldList()[0]);
+    assertBooleanFieldFalse(message.getRepeatedBooleanFieldList()[1]);
+  });
+
+  it('testExtensionReverseOrder', function() {
+    var message2 =
+        new proto.jspb.exttest.reverse.TestExtensionReverseOrderMessage2;
+
+    message2.setExtension(
+        proto.jspb.exttest.reverse.TestExtensionReverseOrderMessage1.a, 233);
+    message2.setExtension(
+        proto.jspb.exttest.reverse.TestExtensionReverseOrderMessage1
+            .TestExtensionReverseOrderNestedMessage1.b,
+        2333);
+    message2.setExtension(proto.jspb.exttest.reverse.c, 23333);
+
+    assertEquals(
+        233,
+        message2.getExtension(
+            proto.jspb.exttest.reverse.TestExtensionReverseOrderMessage1.a));
+    assertEquals(
+        2333,
+        message2.getExtension(
+            proto.jspb.exttest.reverse.TestExtensionReverseOrderMessage1
+                .TestExtensionReverseOrderNestedMessage1.b));
+    assertEquals(23333, message2.getExtension(proto.jspb.exttest.reverse.c));
+  });
+
+  it('testCircularDepsBaseOnMessageField', function() {
+    var nestMessage1 = new proto.jspb.circulartest.MessageField1;
+    var nestMessage2 = new proto.jspb.circulartest.MessageField2;
+    var message1 = new proto.jspb.circulartest.MessageField1;
+    var message2 = new proto.jspb.circulartest.MessageField2;
+
+    nestMessage1.setA(1);
+    nestMessage2.setA(2);
+    message1.setB(nestMessage2);
+    message2.setB(nestMessage1);
+
+
+    assertEquals(2, message1.getB().getA());
+    assertEquals(1, message2.getB().getA());
+  });
+
+
+  it('testCircularDepsBaseOnRepeatedMessageField', function() {
+    var nestMessage1 = new proto.jspb.circulartest.RepeatedMessageField1;
+    var nestMessage2 = new proto.jspb.circulartest.RepeatedMessageField2;
+    var message1 = new proto.jspb.circulartest.RepeatedMessageField1;
+    var message2 = new proto.jspb.circulartest.RepeatedMessageField2;
+
+    nestMessage1.setA(1);
+    nestMessage2.setA(2);
+    message1.setB(nestMessage2);
+    message2.addB(nestMessage1);
+
+
+    assertEquals(2, message1.getB().getA());
+    assertEquals(1, message2.getBList()[0].getA());
+  });
+
+  it('testCircularDepsBaseOnMapField', function() {
+    var nestMessage1 = new proto.jspb.circulartest.MapField1;
+    var nestMessage2 = new proto.jspb.circulartest.MapField2;
+    var message1 = new proto.jspb.circulartest.MapField1;
+    var message2 = new proto.jspb.circulartest.MapField2;
+
+    nestMessage1.setA(1);
+    nestMessage2.setA(2);
+    message1.setB(nestMessage2);
+    message2.getBMap().set(1, nestMessage1);
+
+
+    assertEquals(2, message1.getB().getA());
+    assertEquals(1, message2.getBMap().get(1).getA());
+  });
+
+  it('testCircularDepsBaseOnNestedMessage', function() {
+    var nestMessage1 =
+        new proto.jspb.circulartest.NestedMessage1.NestedNestedMessage;
+    var nestMessage2 = new proto.jspb.circulartest.NestedMessage2;
+    var message1 = new proto.jspb.circulartest.NestedMessage1;
+    var message2 = new proto.jspb.circulartest.NestedMessage2;
+
+    nestMessage1.setA(1);
+    nestMessage2.setA(2);
+    message1.setB(nestMessage2);
+    message2.setB(nestMessage1);
+
+
+    assertEquals(2, message1.getB().getA());
+    assertEquals(1, message2.getB().getA());
+  });
+
+  it('testCircularDepsBaseOnNestedEnum', function() {
+    var nestMessage2 = new proto.jspb.circulartest.NestedEnum2;
+    var message1 = new proto.jspb.circulartest.NestedEnum1;
+    var message2 = new proto.jspb.circulartest.NestedEnum2;
+
+    nestMessage2.setA(2);
+    message1.setB(nestMessage2);
+    message2.setB(proto.jspb.circulartest.NestedEnum1.NestedNestedEnum.VALUE_1);
+
+
+    assertEquals(2, message1.getB().getA());
+    assertEquals(
+        proto.jspb.circulartest.NestedEnum1.NestedNestedEnum.VALUE_1,
+        message2.getB());
+  });
+
+  it('testCircularDepsBaseOnExtensionContainingType', function() {
+    var nestMessage2 = new proto.jspb.circulartest.ExtensionContainingType2;
+    var message1 = new proto.jspb.circulartest.ExtensionContainingType1;
+
+    nestMessage2.setA(2);
+    message1.setB(nestMessage2);
+    message1.setExtension(
+        proto.jspb.circulartest.ExtensionContainingType2.c, 1);
+
+
+    assertEquals(2, message1.getB().getA());
+    assertEquals(
+        1,
+        message1.getExtension(
+            proto.jspb.circulartest.ExtensionContainingType2.c));
+  });
+
+  it('testCircularDepsBaseOnExtensionField', function() {
+    var nestMessage2 = new proto.jspb.circulartest.ExtensionField2;
+    var message1 = new proto.jspb.circulartest.ExtensionField1;
+    var message3 = new proto.jspb.circulartest.ExtensionField3;
+
+    nestMessage2.setA(2);
+    message1.setB(nestMessage2);
+    message3.setExtension(proto.jspb.circulartest.ExtensionField2.c, message1);
+
+
+    assertEquals(
+        2,
+        message3.getExtension(proto.jspb.circulartest.ExtensionField2.c)
+            .getB()
+            .getA());
+  });
+
+  it('testSameMessageNameOuputs', function() {
+    var package1Message = new proto.jspb.filenametest.package1.TestMessage;
+    var package2Message = new proto.jspb.filenametest.package2.TestMessage;
+
+    package1Message.setExtension(proto.jspb.filenametest.package1.a, 10);
+    package1Message.setExtension(proto.jspb.filenametest.package1.b, 11);
+    package2Message.setA(12);
+
+    assertEquals(
+        10, package1Message.getExtension(proto.jspb.filenametest.package1.a));
+    assertEquals(
+        11, package1Message.getExtension(proto.jspb.filenametest.package1.b));
+    assertEquals(12, package2Message.getA());
   });
 
 });

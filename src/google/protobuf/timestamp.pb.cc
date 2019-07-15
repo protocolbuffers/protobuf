@@ -5,126 +5,105 @@
 
 #include <algorithm>
 
-#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/extension_set.h>
-#include <google/protobuf/wire_format_lite_inl.h>
+#include <google/protobuf/wire_format_lite.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/generated_message_reflection.h>
 #include <google/protobuf/reflection_ops.h>
 #include <google/protobuf/wire_format.h>
-// This is a temporary google only hack
-#ifdef GOOGLE_PROTOBUF_ENFORCE_UNIQUENESS
-#include "third_party/protobuf/version.h"
-#endif
 // @@protoc_insertion_point(includes)
 #include <google/protobuf/port_def.inc>
-
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 class TimestampDefaultTypeInternal {
  public:
-  ::google::protobuf::internal::ExplicitlyConstructed<Timestamp> _instance;
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<Timestamp> _instance;
 } _Timestamp_default_instance_;
-}  // namespace protobuf
-}  // namespace google
-static void InitDefaultsTimestamp_google_2fprotobuf_2ftimestamp_2eproto() {
+PROTOBUF_NAMESPACE_CLOSE
+static void InitDefaultsscc_info_Timestamp_google_2fprotobuf_2ftimestamp_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   {
-    void* ptr = &::google::protobuf::_Timestamp_default_instance_;
-    new (ptr) ::google::protobuf::Timestamp();
-    ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
+    void* ptr = &PROTOBUF_NAMESPACE_ID::_Timestamp_default_instance_;
+    new (ptr) PROTOBUF_NAMESPACE_ID::Timestamp();
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  ::google::protobuf::Timestamp::InitAsDefaultInstance();
+  PROTOBUF_NAMESPACE_ID::Timestamp::InitAsDefaultInstance();
 }
 
-LIBPROTOBUF_EXPORT ::google::protobuf::internal::SCCInfo<0> scc_info_Timestamp_google_2fprotobuf_2ftimestamp_2eproto =
-    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsTimestamp_google_2fprotobuf_2ftimestamp_2eproto}, {}};
+PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Timestamp_google_2fprotobuf_2ftimestamp_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsscc_info_Timestamp_google_2fprotobuf_2ftimestamp_2eproto}, {}};
 
-void InitDefaults_google_2fprotobuf_2ftimestamp_2eproto() {
-  ::google::protobuf::internal::InitSCC(&scc_info_Timestamp_google_2fprotobuf_2ftimestamp_2eproto.base);
-}
+static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_google_2fprotobuf_2ftimestamp_2eproto[1];
+static constexpr ::PROTOBUF_NAMESPACE_ID::EnumDescriptor const** file_level_enum_descriptors_google_2fprotobuf_2ftimestamp_2eproto = nullptr;
+static constexpr ::PROTOBUF_NAMESPACE_ID::ServiceDescriptor const** file_level_service_descriptors_google_2fprotobuf_2ftimestamp_2eproto = nullptr;
 
-::google::protobuf::Metadata file_level_metadata_google_2fprotobuf_2ftimestamp_2eproto[1];
-constexpr ::google::protobuf::EnumDescriptor const** file_level_enum_descriptors_google_2fprotobuf_2ftimestamp_2eproto = nullptr;
-constexpr ::google::protobuf::ServiceDescriptor const** file_level_service_descriptors_google_2fprotobuf_2ftimestamp_2eproto = nullptr;
-
-const ::google::protobuf::uint32 TableStruct_google_2fprotobuf_2ftimestamp_2eproto::offsets[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
+const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_google_2fprotobuf_2ftimestamp_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
   ~0u,  // no _has_bits_
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::google::protobuf::Timestamp, _internal_metadata_),
+  PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::Timestamp, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::google::protobuf::Timestamp, seconds_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::google::protobuf::Timestamp, nanos_),
+  PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::Timestamp, seconds_),
+  PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::Timestamp, nanos_),
 };
-static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-  { 0, -1, sizeof(::google::protobuf::Timestamp)},
-};
-
-static ::google::protobuf::Message const * const file_default_instances[] = {
-  reinterpret_cast<const ::google::protobuf::Message*>(&::google::protobuf::_Timestamp_default_instance_),
+static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
+  { 0, -1, sizeof(PROTOBUF_NAMESPACE_ID::Timestamp)},
 };
 
-::google::protobuf::internal::AssignDescriptorsTable assign_descriptors_table_google_2fprotobuf_2ftimestamp_2eproto = {
-  {}, AddDescriptors_google_2fprotobuf_2ftimestamp_2eproto, "google/protobuf/timestamp.proto", schemas,
-  file_default_instances, TableStruct_google_2fprotobuf_2ftimestamp_2eproto::offsets,
-  file_level_metadata_google_2fprotobuf_2ftimestamp_2eproto, 1, file_level_enum_descriptors_google_2fprotobuf_2ftimestamp_2eproto, file_level_service_descriptors_google_2fprotobuf_2ftimestamp_2eproto,
+static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] = {
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&PROTOBUF_NAMESPACE_ID::_Timestamp_default_instance_),
 };
 
-::google::protobuf::internal::DescriptorTable descriptor_table_google_2fprotobuf_2ftimestamp_2eproto = {
-  false, InitDefaults_google_2fprotobuf_2ftimestamp_2eproto, 
+const char descriptor_table_protodef_google_2fprotobuf_2ftimestamp_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
   "\n\037google/protobuf/timestamp.proto\022\017googl"
   "e.protobuf\"+\n\tTimestamp\022\017\n\007seconds\030\001 \001(\003"
   "\022\r\n\005nanos\030\002 \001(\005B~\n\023com.google.protobufB\016"
   "TimestampProtoP\001Z+github.com/golang/prot"
   "obuf/ptypes/timestamp\370\001\001\242\002\003GPB\252\002\036Google."
   "Protobuf.WellKnownTypesb\006proto3"
-,
-  "google/protobuf/timestamp.proto", &assign_descriptors_table_google_2fprotobuf_2ftimestamp_2eproto, 231,
+  ;
+static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_google_2fprotobuf_2ftimestamp_2eproto_deps[1] = {
+};
+static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_google_2fprotobuf_2ftimestamp_2eproto_sccs[1] = {
+  &scc_info_Timestamp_google_2fprotobuf_2ftimestamp_2eproto.base,
+};
+static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_google_2fprotobuf_2ftimestamp_2eproto_once;
+static bool descriptor_table_google_2fprotobuf_2ftimestamp_2eproto_initialized = false;
+const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google_2fprotobuf_2ftimestamp_2eproto = {
+  &descriptor_table_google_2fprotobuf_2ftimestamp_2eproto_initialized, descriptor_table_protodef_google_2fprotobuf_2ftimestamp_2eproto, "google/protobuf/timestamp.proto", 231,
+  &descriptor_table_google_2fprotobuf_2ftimestamp_2eproto_once, descriptor_table_google_2fprotobuf_2ftimestamp_2eproto_sccs, descriptor_table_google_2fprotobuf_2ftimestamp_2eproto_deps, 1, 0,
+  schemas, file_default_instances, TableStruct_google_2fprotobuf_2ftimestamp_2eproto::offsets,
+  file_level_metadata_google_2fprotobuf_2ftimestamp_2eproto, 1, file_level_enum_descriptors_google_2fprotobuf_2ftimestamp_2eproto, file_level_service_descriptors_google_2fprotobuf_2ftimestamp_2eproto,
 };
 
-void AddDescriptors_google_2fprotobuf_2ftimestamp_2eproto() {
-  static constexpr ::google::protobuf::internal::InitFunc deps[1] =
-  {
-  };
- ::google::protobuf::internal::AddDescriptors(&descriptor_table_google_2fprotobuf_2ftimestamp_2eproto, deps, 0);
-}
-
 // Force running AddDescriptors() at dynamic initialization time.
-static bool dynamic_init_dummy_google_2fprotobuf_2ftimestamp_2eproto = []() { AddDescriptors_google_2fprotobuf_2ftimestamp_2eproto(); return true; }();
-namespace google {
-namespace protobuf {
+static bool dynamic_init_dummy_google_2fprotobuf_2ftimestamp_2eproto = (  ::PROTOBUF_NAMESPACE_ID::internal::AddDescriptors(&descriptor_table_google_2fprotobuf_2ftimestamp_2eproto), true);
+PROTOBUF_NAMESPACE_OPEN
 
 // ===================================================================
 
 void Timestamp::InitAsDefaultInstance() {
 }
-class Timestamp::HasBitSetters {
+class Timestamp::_Internal {
  public:
 };
 
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int Timestamp::kSecondsFieldNumber;
-const int Timestamp::kNanosFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
-
 Timestamp::Timestamp()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.Timestamp)
 }
-Timestamp::Timestamp(::google::protobuf::Arena* arena)
-  : ::google::protobuf::Message(),
+Timestamp::Timestamp(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(),
   _internal_metadata_(arena) {
   SharedCtor();
   RegisterArenaDtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Timestamp)
 }
 Timestamp::Timestamp(const Timestamp& from)
-  : ::google::protobuf::Message(),
-      _internal_metadata_(NULL) {
+  : ::PROTOBUF_NAMESPACE_ID::Message(),
+      _internal_metadata_(nullptr) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   ::memcpy(&seconds_, &from.seconds_,
     static_cast<size_t>(reinterpret_cast<char*>(&nanos_) -
@@ -144,27 +123,27 @@ Timestamp::~Timestamp() {
 }
 
 void Timestamp::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaNoVirtual() == NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() == nullptr);
 }
 
 void Timestamp::ArenaDtor(void* object) {
   Timestamp* _this = reinterpret_cast< Timestamp* >(object);
   (void)_this;
 }
-void Timestamp::RegisterArenaDtor(::google::protobuf::Arena*) {
+void Timestamp::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
 }
 void Timestamp::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
 const Timestamp& Timestamp::default_instance() {
-  ::google::protobuf::internal::InitSCC(&::scc_info_Timestamp_google_2fprotobuf_2ftimestamp_2eproto.base);
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_Timestamp_google_2fprotobuf_2ftimestamp_2eproto.base);
   return *internal_default_instance();
 }
 
 
 void Timestamp::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Timestamp)
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
@@ -175,80 +154,64 @@ void Timestamp::Clear() {
 }
 
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-const char* Timestamp::_InternalParse(const char* begin, const char* end, void* object,
-                  ::google::protobuf::internal::ParseContext* ctx) {
-  auto msg = static_cast<Timestamp*>(object);
-  ::google::protobuf::uint32 size; (void)size;
-  int depth; (void)depth;
-  ::google::protobuf::internal::ParseFunc parser_till_end; (void)parser_till_end;
-  auto ptr = begin;
-  while (ptr < end) {
-    ::google::protobuf::uint32 tag;
-    ptr = Varint::Parse32Inline(ptr, &tag);
-    if (!ptr) goto error;
+const char* Timestamp::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArenaNoVirtual(); (void)arena;
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
     switch (tag >> 3) {
-      case 0: goto error;
       // int64 seconds = 1;
-      case 1: {
-        if (static_cast<::google::protobuf::uint8>(tag) != 8) goto handle_unusual;
-        ::google::protobuf::uint64 val;
-        ptr = Varint::Parse64(ptr, &val);
-        if (!ptr) goto error;
-        ::google::protobuf::int64 value = val;
-        msg->set_seconds(value);
-        break;
-      }
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
+          seconds_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // int32 nanos = 2;
-      case 2: {
-        if (static_cast<::google::protobuf::uint8>(tag) != 16) goto handle_unusual;
-        ::google::protobuf::uint64 val;
-        ptr = Varint::Parse64(ptr, &val);
-        if (!ptr) goto error;
-        ::google::protobuf::int32 value = val;
-        msg->set_nanos(value);
-        break;
-      }
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16)) {
+          nanos_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       default: {
-      handle_unusual: (void)&&handle_unusual;
-        if ((tag & 7) == 4) {
-          if (!ctx->ValidEndGroup(tag)) goto error;
-          return ptr;
+      handle_unusual:
+        if ((tag & 7) == 4 || tag == 0) {
+          ctx->SetLastTag(tag);
+          goto success;
         }
-        auto res = UnknownFieldParse(tag, {_InternalParse, msg},
-          ptr, end, msg->_internal_metadata_.mutable_unknown_fields(), ctx);
-        ptr = res.first;
-        if (res.second) return ptr;
+        ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
       }
     }  // switch
   }  // while
+success:
   return ptr;
-error:
-  return nullptr;
-len_delim_till_end: (void)&&len_delim_till_end;
-  return ctx->StoreAndTailCall(ptr, end, {_InternalParse, msg},
-                                 {parser_till_end, object}, size);
-group_continues: (void)&&group_continues;
-  GOOGLE_DCHECK(ptr >= end);
-  ctx->StoreGroup({_InternalParse, msg}, {parser_till_end, object}, depth);
-  return ptr;
+failure:
+  ptr = nullptr;
+  goto success;
+#undef CHK_
 }
 #else  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 bool Timestamp::MergePartialFromCodedStream(
-    ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!GOOGLE_PROTOBUF_PREDICT_TRUE(EXPRESSION)) goto failure
-  ::google::protobuf::uint32 tag;
+    ::PROTOBUF_NAMESPACE_ID::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!PROTOBUF_PREDICT_TRUE(EXPRESSION)) goto failure
+  ::PROTOBUF_NAMESPACE_ID::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.Timestamp)
   for (;;) {
-    ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
+    ::std::pair<::PROTOBUF_NAMESPACE_ID::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
     tag = p.first;
     if (!p.second) goto handle_unusual;
-    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+    switch (::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::GetTagFieldNumber(tag)) {
       // int64 seconds = 1;
       case 1: {
-        if (static_cast< ::google::protobuf::uint8>(tag) == (8 & 0xFF)) {
+        if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (8 & 0xFF)) {
 
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   ::google::protobuf::int64, ::google::protobuf::internal::WireFormatLite::TYPE_INT64>(
+          DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
+                   ::PROTOBUF_NAMESPACE_ID::int64, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_INT64>(
                  input, &seconds_)));
         } else {
           goto handle_unusual;
@@ -258,10 +221,10 @@ bool Timestamp::MergePartialFromCodedStream(
 
       // int32 nanos = 2;
       case 2: {
-        if (static_cast< ::google::protobuf::uint8>(tag) == (16 & 0xFF)) {
+        if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (16 & 0xFF)) {
 
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+          DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
+                   ::PROTOBUF_NAMESPACE_ID::int32, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_INT32>(
                  input, &nanos_)));
         } else {
           goto handle_unusual;
@@ -274,7 +237,7 @@ bool Timestamp::MergePartialFromCodedStream(
         if (tag == 0) {
           goto success;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
+        DO_(::PROTOBUF_NAMESPACE_ID::internal::WireFormat::SkipField(
               input, tag, _internal_metadata_.mutable_unknown_fields()));
         break;
       }
@@ -290,49 +253,27 @@ failure:
 }
 #endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 
-void Timestamp::SerializeWithCachedSizes(
-    ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:google.protobuf.Timestamp)
-  ::google::protobuf::uint32 cached_has_bits = 0;
-  (void) cached_has_bits;
-
-  // int64 seconds = 1;
-  if (this->seconds() != 0) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt64(1, this->seconds(), output);
-  }
-
-  // int32 nanos = 2;
-  if (this->nanos() != 0) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->nanos(), output);
-  }
-
-  if (_internal_metadata_.have_unknown_fields()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        _internal_metadata_.unknown_fields(), output);
-  }
-  // @@protoc_insertion_point(serialize_end:google.protobuf.Timestamp)
-}
-
-::google::protobuf::uint8* Timestamp::InternalSerializeWithCachedSizesToArray(
-    bool deterministic, ::google::protobuf::uint8* target) const {
-  (void)deterministic; // Unused
+::PROTOBUF_NAMESPACE_ID::uint8* Timestamp::InternalSerializeWithCachedSizesToArray(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Timestamp)
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   // int64 seconds = 1;
   if (this->seconds() != 0) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt64ToArray(1, this->seconds(), target);
+    stream->EnsureSpace(&target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt64ToArray(1, this->seconds(), target);
   }
 
   // int32 nanos = 2;
   if (this->nanos() != 0) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->nanos(), target);
+    stream->EnsureSpace(&target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt32ToArray(2, this->nanos(), target);
   }
 
-  if (_internal_metadata_.have_unknown_fields()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        _internal_metadata_.unknown_fields(), target);
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target, stream);
   }
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.Timestamp)
   return target;
@@ -342,43 +283,42 @@ size_t Timestamp::ByteSizeLong() const {
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.Timestamp)
   size_t total_size = 0;
 
-  if (_internal_metadata_.have_unknown_fields()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        _internal_metadata_.unknown_fields());
-  }
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
   // int64 seconds = 1;
   if (this->seconds() != 0) {
     total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::Int64Size(
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int64Size(
         this->seconds());
   }
 
   // int32 nanos = 2;
   if (this->nanos() != 0) {
     total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::Int32Size(
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int32Size(
         this->nanos());
   }
 
-  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
+        _internal_metadata_, total_size, &_cached_size_);
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
   SetCachedSize(cached_size);
   return total_size;
 }
 
-void Timestamp::MergeFrom(const ::google::protobuf::Message& from) {
+void Timestamp::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
 // @@protoc_insertion_point(generalized_merge_from_start:google.protobuf.Timestamp)
   GOOGLE_DCHECK_NE(&from, this);
   const Timestamp* source =
-      ::google::protobuf::DynamicCastToGenerated<Timestamp>(
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<Timestamp>(
           &from);
-  if (source == NULL) {
+  if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.Timestamp)
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
   } else {
   // @@protoc_insertion_point(generalized_merge_from_cast_success:google.protobuf.Timestamp)
     MergeFrom(*source);
@@ -389,7 +329,7 @@ void Timestamp::MergeFrom(const Timestamp& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Timestamp)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   if (from.seconds() != 0) {
@@ -400,7 +340,7 @@ void Timestamp::MergeFrom(const Timestamp& from) {
   }
 }
 
-void Timestamp::CopyFrom(const ::google::protobuf::Message& from) {
+void Timestamp::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
 // @@protoc_insertion_point(generalized_copy_from_start:google.protobuf.Timestamp)
   if (&from == this) return;
   Clear();
@@ -418,25 +358,6 @@ bool Timestamp::IsInitialized() const {
   return true;
 }
 
-void Timestamp::Swap(Timestamp* other) {
-  if (other == this) return;
-  if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
-    InternalSwap(other);
-  } else {
-    Timestamp* temp = New(GetArenaNoVirtual());
-    temp->MergeFrom(*other);
-    other->CopyFrom(*this);
-    InternalSwap(temp);
-    if (GetArenaNoVirtual() == NULL) {
-      delete temp;
-    }
-  }
-}
-void Timestamp::UnsafeArenaSwap(Timestamp* other) {
-  if (other == this) return;
-  GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
-  InternalSwap(other);
-}
 void Timestamp::InternalSwap(Timestamp* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
@@ -444,21 +365,18 @@ void Timestamp::InternalSwap(Timestamp* other) {
   swap(nanos_, other->nanos_);
 }
 
-::google::protobuf::Metadata Timestamp::GetMetadata() const {
-  ::google::protobuf::internal::AssignDescriptors(&::assign_descriptors_table_google_2fprotobuf_2ftimestamp_2eproto);
-  return ::file_level_metadata_google_2fprotobuf_2ftimestamp_2eproto[kIndexInFileMessages];
+::PROTOBUF_NAMESPACE_ID::Metadata Timestamp::GetMetadata() const {
+  return GetMetadataStatic();
 }
 
 
 // @@protoc_insertion_point(namespace_scope)
-}  // namespace protobuf
-}  // namespace google
-namespace google {
-namespace protobuf {
-template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::google::protobuf::Timestamp* Arena::CreateMaybeMessage< ::google::protobuf::Timestamp >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::Timestamp >(arena);
+PROTOBUF_NAMESPACE_CLOSE
+PROTOBUF_NAMESPACE_OPEN
+template<> PROTOBUF_NOINLINE PROTOBUF_NAMESPACE_ID::Timestamp* Arena::CreateMaybeMessage< PROTOBUF_NAMESPACE_ID::Timestamp >(Arena* arena) {
+  return Arena::CreateMessageInternal< PROTOBUF_NAMESPACE_ID::Timestamp >(arena);
 }
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 // @@protoc_insertion_point(global_scope)
+#include <google/protobuf/port_undef.inc>

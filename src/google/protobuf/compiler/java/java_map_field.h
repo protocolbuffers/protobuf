@@ -40,9 +40,9 @@ namespace java {
 
 class ImmutableMapFieldGenerator : public ImmutableFieldGenerator {
  public:
-  explicit ImmutableMapFieldGenerator(
-      const FieldDescriptor* descriptor, int messageBitIndex,
-      int builderBitIndex, Context* context);
+  explicit ImmutableMapFieldGenerator(const FieldDescriptor* descriptor,
+                                      int messageBitIndex, int builderBitIndex,
+                                      Context* context);
   ~ImmutableMapFieldGenerator();
 
   // implements ImmutableFieldGenerator ---------------------------------------
@@ -63,11 +63,11 @@ class ImmutableMapFieldGenerator : public ImmutableFieldGenerator {
   void GenerateEqualsCode(io::Printer* printer) const;
   void GenerateHashCode(io::Printer* printer) const;
 
-  string GetBoxedType() const;
+  std::string GetBoxedType() const;
 
  private:
   const FieldDescriptor* descriptor_;
-  std::map<string, string> variables_;
+  std::map<std::string, std::string> variables_;
   ClassNameResolver* name_resolver_;
   void GenerateMapGetters(io::Printer* printer) const;
 };

@@ -50,8 +50,7 @@ import java.util.Random;
 import java.util.logging.Logger;
 
 /**
- * Shared testing code for {@link IsValidUtf8Test} and
- * {@link IsValidUtf8FourByteTest}.
+ * Shared testing code for {@link IsValidUtf8Test} and {@link IsValidUtf8FourByteTest}.
  *
  * @author jonp@google.com (Jon Perlow)
  * @author martinrb@google.com (Martin Buchholz)
@@ -65,44 +64,47 @@ final class IsValidUtf8TestUtil {
     ByteString newByteString(byte[] bytes);
   }
 
-  static final ByteStringFactory LITERAL_FACTORY = new ByteStringFactory() {
-    @Override
-    public ByteString newByteString(byte[] bytes) {
-      return ByteString.wrap(bytes);
-    }
-  };
+  static final ByteStringFactory LITERAL_FACTORY =
+      new ByteStringFactory() {
+        @Override
+        public ByteString newByteString(byte[] bytes) {
+          return ByteString.wrap(bytes);
+        }
+      };
 
-  static final ByteStringFactory HEAP_NIO_FACTORY = new ByteStringFactory() {
-    @Override
-    public ByteString newByteString(byte[] bytes) {
-      return new NioByteString(ByteBuffer.wrap(bytes));
-    }
-  };
+  static final ByteStringFactory HEAP_NIO_FACTORY =
+      new ByteStringFactory() {
+        @Override
+        public ByteString newByteString(byte[] bytes) {
+          return new NioByteString(ByteBuffer.wrap(bytes));
+        }
+      };
 
   private static ThreadLocal<SoftReference<ByteBuffer>> directBuffer =
       new ThreadLocal<SoftReference<ByteBuffer>>();
 
   /**
-   * Factory for direct {@link ByteBuffer} instances. To reduce direct memory usage, this
-   * uses a thread local direct buffer. This means that each call will overwrite the buffer's
-   * contents from the previous call, so the calling code must be careful not to continue using
-   * a buffer returned from a previous invocation.
+   * Factory for direct {@link ByteBuffer} instances. To reduce direct memory usage, this uses a
+   * thread local direct buffer. This means that each call will overwrite the buffer's contents from
+   * the previous call, so the calling code must be careful not to continue using a buffer returned
+   * from a previous invocation.
    */
-  static final ByteStringFactory DIRECT_NIO_FACTORY = new ByteStringFactory() {
-    @Override
-    public ByteString newByteString(byte[] bytes) {
-      SoftReference<ByteBuffer> ref = directBuffer.get();
-      ByteBuffer buffer = ref == null ? null : ref.get();
-      if (buffer == null || buffer.capacity() < bytes.length) {
-        buffer = ByteBuffer.allocateDirect(bytes.length);
-        directBuffer.set(new SoftReference<ByteBuffer>(buffer));
-      }
-      buffer.clear();
-      buffer.put(bytes);
-      buffer.flip();
-      return new NioByteString(buffer);
-    }
-  };
+  static final ByteStringFactory DIRECT_NIO_FACTORY =
+      new ByteStringFactory() {
+        @Override
+        public ByteString newByteString(byte[] bytes) {
+          SoftReference<ByteBuffer> ref = directBuffer.get();
+          ByteBuffer buffer = ref == null ? null : ref.get();
+          if (buffer == null || buffer.capacity() < bytes.length) {
+            buffer = ByteBuffer.allocateDirect(bytes.length);
+            directBuffer.set(new SoftReference<ByteBuffer>(buffer));
+          }
+          buffer.clear();
+          buffer.put(bytes);
+          buffer.flip();
+          return new NioByteString(buffer);
+        }
+      };
 
   // 128 - [chars 0x0000 to 0x007f]
   static final long ONE_BYTE_ROUNDTRIPPABLE_CHARACTERS = 0x007f - 0x0000 + 1;
@@ -116,9 +118,10 @@ final class IsValidUtf8TestUtil {
   // 18,304
   static final long EXPECTED_TWO_BYTE_ROUNDTRIPPABLE_COUNT =
       // Both bytes are one byte characters
-      (long) Math.pow(EXPECTED_ONE_BYTE_ROUNDTRIPPABLE_COUNT, 2) +
-      // The possible number of two byte characters
-      TWO_BYTE_ROUNDTRIPPABLE_CHARACTERS;
+      (long) Math.pow(EXPECTED_ONE_BYTE_ROUNDTRIPPABLE_COUNT, 2)
+          +
+          // The possible number of two byte characters
+          TWO_BYTE_ROUNDTRIPPABLE_CHARACTERS;
 
   // 2048
   static final long THREE_BYTE_SURROGATES = 2 * 1024;
@@ -130,11 +133,13 @@ final class IsValidUtf8TestUtil {
   // 2,650,112
   static final long EXPECTED_THREE_BYTE_ROUNDTRIPPABLE_COUNT =
       // All one byte characters
-      (long) Math.pow(EXPECTED_ONE_BYTE_ROUNDTRIPPABLE_COUNT, 3) +
-      // One two byte character and a one byte character
-      2 * TWO_BYTE_ROUNDTRIPPABLE_CHARACTERS * ONE_BYTE_ROUNDTRIPPABLE_CHARACTERS +
-      // Three byte characters
-      THREE_BYTE_ROUNDTRIPPABLE_CHARACTERS;
+      (long) Math.pow(EXPECTED_ONE_BYTE_ROUNDTRIPPABLE_COUNT, 3)
+          +
+          // One two byte character and a one byte character
+          2 * TWO_BYTE_ROUNDTRIPPABLE_CHARACTERS * ONE_BYTE_ROUNDTRIPPABLE_CHARACTERS
+          +
+          // Three byte characters
+          THREE_BYTE_ROUNDTRIPPABLE_CHARACTERS;
 
   // 1,048,576 [chars 0x10000L to 0x10FFFF]
   static final long FOUR_BYTE_ROUNDTRIPPABLE_CHARACTERS = 0x10FFFF - 0x10000L + 1;
@@ -142,24 +147,28 @@ final class IsValidUtf8TestUtil {
   // 289,571,839
   static final long EXPECTED_FOUR_BYTE_ROUNDTRIPPABLE_COUNT =
       // All one byte characters
-      (long) Math.pow(EXPECTED_ONE_BYTE_ROUNDTRIPPABLE_COUNT, 4) +
-      // One and three byte characters
-      2 * THREE_BYTE_ROUNDTRIPPABLE_CHARACTERS * ONE_BYTE_ROUNDTRIPPABLE_CHARACTERS +
-      // Two two byte characters
-      TWO_BYTE_ROUNDTRIPPABLE_CHARACTERS * TWO_BYTE_ROUNDTRIPPABLE_CHARACTERS +
-      // Permutations of one and two byte characters
-      3 * TWO_BYTE_ROUNDTRIPPABLE_CHARACTERS * ONE_BYTE_ROUNDTRIPPABLE_CHARACTERS
-      * ONE_BYTE_ROUNDTRIPPABLE_CHARACTERS
-      +
-      // Four byte characters
-      FOUR_BYTE_ROUNDTRIPPABLE_CHARACTERS;
+      (long) Math.pow(EXPECTED_ONE_BYTE_ROUNDTRIPPABLE_COUNT, 4)
+          +
+          // One and three byte characters
+          2 * THREE_BYTE_ROUNDTRIPPABLE_CHARACTERS * ONE_BYTE_ROUNDTRIPPABLE_CHARACTERS
+          +
+          // Two two byte characters
+          TWO_BYTE_ROUNDTRIPPABLE_CHARACTERS * TWO_BYTE_ROUNDTRIPPABLE_CHARACTERS
+          +
+          // Permutations of one and two byte characters
+          3
+              * TWO_BYTE_ROUNDTRIPPABLE_CHARACTERS
+              * ONE_BYTE_ROUNDTRIPPABLE_CHARACTERS
+              * ONE_BYTE_ROUNDTRIPPABLE_CHARACTERS
+          +
+          // Four byte characters
+          FOUR_BYTE_ROUNDTRIPPABLE_CHARACTERS;
 
   static final class Shard {
     final long index;
     final long start;
     final long lim;
     final long expected;
-
 
     public Shard(long index, long start, long lim, long expected) {
       assertTrue(start < lim);
@@ -206,13 +215,12 @@ final class IsValidUtf8TestUtil {
   static final List<Shard> FOUR_BYTE_SHARDS =
       generateFourByteShards(128, FOUR_BYTE_SHARDS_EXPECTED_ROUNTRIPPABLES);
 
-
   private static List<Shard> generateFourByteShards(int numShards, long[] expected) {
     assertEquals(numShards, expected.length);
     List<Shard> shards = new ArrayList<Shard>(numShards);
-    long LIM = 1L << 32;
-    long increment = LIM / numShards;
-    assertTrue(LIM % numShards == 0);
+    long lim = 1L << 32;
+    long increment = lim / numShards;
+    assertTrue(lim % numShards == 0);
     for (int i = 0; i < numShards; i++) {
       shards.add(new Shard(i, increment * i, increment * (i + 1), expected[i]));
     }
@@ -220,8 +228,7 @@ final class IsValidUtf8TestUtil {
   }
 
   /**
-   * Helper to run the loop to test all the permutations for the number of bytes
-   * specified.
+   * Helper to run the loop to test all the permutations for the number of bytes specified.
    *
    * @param factory the factory for {@link ByteString} instances.
    * @param numBytes the number of bytes in the byte array
@@ -232,16 +239,15 @@ final class IsValidUtf8TestUtil {
   }
 
   /**
-   * Helper to run the loop to test all the permutations for the number of bytes
-   * specified. This overload is useful for debugging to get the loop to start
-   * at a certain character.
+   * Helper to run the loop to test all the permutations for the number of bytes specified. This
+   * overload is useful for debugging to get the loop to start at a certain character.
    *
    * @param factory the factory for {@link ByteString} instances.
    * @param numBytes the number of bytes in the byte array
    * @param expectedCount the expected number of roundtrippable permutations
    * @param start the starting bytes encoded as a long as big-endian
-   * @param lim the limit of bytes to process encoded as a long as big-endian,
-   *     or -1 to mean the max limit for numBytes
+   * @param lim the limit of bytes to process encoded as a long as big-endian, or -1 to mean the max
+   *     limit for numBytes
    */
   static void testBytes(
       ByteStringFactory factory, int numBytes, long expectedCount, long start, long lim) {
@@ -301,9 +307,10 @@ final class IsValidUtf8TestUtil {
       assertEquals(isRoundTrippable, (state3 == Utf8.COMPLETE));
 
       // Test ropes built out of small partial sequences
-      ByteString rope = RopeByteString.newInstanceForTest(
-          bs.substring(0, i),
-          RopeByteString.newInstanceForTest(bs.substring(i, j), bs.substring(j, numBytes)));
+      ByteString rope =
+          RopeByteString.newInstanceForTest(
+              bs.substring(0, i),
+              RopeByteString.newInstanceForTest(bs.substring(i, j), bs.substring(j, numBytes)));
       assertSame(RopeByteString.class, rope.getClass());
 
       ByteString[] byteStrings = {bs, bs.substring(0, numBytes), rope};
@@ -336,27 +343,28 @@ final class IsValidUtf8TestUtil {
   }
 
   /**
-   * Variation of {@link #testBytes} that does less allocation using the
-   * low-level encoders/decoders directly. Checked in because it's useful for
-   * debugging when trying to process bytes faster, but since it doesn't use the
-   * actual String class, it's possible for incompatibilities to develop
+   * Variation of {@link #testBytes} that does less allocation using the low-level encoders/decoders
+   * directly. Checked in because it's useful for debugging when trying to process bytes faster, but
+   * since it doesn't use the actual String class, it's possible for incompatibilities to develop
    * (although unlikely).
    *
    * @param factory the factory for {@link ByteString} instances.
    * @param numBytes the number of bytes in the byte array
    * @param expectedCount the expected number of roundtrippable permutations
    * @param start the starting bytes encoded as a long as big-endian
-   * @param lim the limit of bytes to process encoded as a long as big-endian,
-   *     or -1 to mean the max limit for numBytes
+   * @param lim the limit of bytes to process encoded as a long as big-endian, or -1 to mean the max
+   *     limit for numBytes
    */
   static void testBytesUsingByteBuffers(
       ByteStringFactory factory, int numBytes, long expectedCount, long start, long lim) {
     CharsetDecoder decoder =
-        Internal.UTF_8.newDecoder()
+        Internal.UTF_8
+            .newDecoder()
             .onMalformedInput(CodingErrorAction.REPLACE)
             .onUnmappableCharacter(CodingErrorAction.REPLACE);
     CharsetEncoder encoder =
-        Internal.UTF_8.newEncoder()
+        Internal.UTF_8
+            .newEncoder()
             .onMalformedInput(CodingErrorAction.REPLACE)
             .onUnmappableCharacter(CodingErrorAction.REPLACE);
     byte[] bytes = new byte[numBytes];
@@ -434,8 +442,10 @@ final class IsValidUtf8TestUtil {
   }
 
   private static void outputFailure(long byteChar, byte[] bytes, byte[] after, int len) {
-    fail("Failure: (" + Long.toHexString(byteChar) + ") " + toHexString(bytes) + " => "
-        + toHexString(after, len));
+    fail(
+        String.format(
+            "Failure: (%s) %s => %s",
+            Long.toHexString(byteChar), toHexString(bytes), toHexString(after, len)));
   }
 
   private static String toHexString(byte[] b) {

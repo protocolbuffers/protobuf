@@ -47,31 +47,31 @@ import junit.framework.TestSuite;
  * creates.
  *
  * <p>This test simulates the runtime behaviour of the ExtensionRegistryFactory by delegating test
- * definitions to two inner classes {@link InnerTest} and {@link InnerLiteTest}, the latter of
- * which is executed using a custom ClassLoader, simulating the ProtoLite environment.
+ * definitions to two inner classes {@link InnerTest} and {@link InnerLiteTest}, the latter of which
+ * is executed using a custom ClassLoader, simulating the ProtoLite environment.
  *
- * <p>The test mechanism employed here is based on the pattern in
- * {@code com.google.common.util.concurrent.AbstractFutureFallbackAtomicHelperTest}
+ * <p>The test mechanism employed here is based on the pattern in {@code
+ * com.google.common.util.concurrent.AbstractFutureFallbackAtomicHelperTest}
  */
 public class ExtensionRegistryFactoryTest extends TestCase {
 
   // A classloader which blacklists some non-Lite classes.
   private static final ClassLoader LITE_CLASS_LOADER = getLiteOnlyClassLoader();
 
-  /**
-   * Defines the set of test methods which will be run.
-   */
+  /** Defines the set of test methods which will be run. */
   static interface RegistryTests {
     void testCreate();
+
     void testEmpty();
+
     void testIsFullRegistry();
+
     void testAdd();
+
     void testAdd_immutable();
   }
 
-  /**
-   * Test implementations for the non-Lite usage of ExtensionRegistryFactory.
-   */
+  /** Test implementations for the non-Lite usage of ExtensionRegistryFactory. */
   public static class InnerTest implements RegistryTests {
 
     @Override
@@ -108,20 +108,24 @@ public class ExtensionRegistryFactoryTest extends TestCase {
       ExtensionRegistry fullRegistry1 = (ExtensionRegistry) registry1;
       ExtensionRegistry fullRegistry2 = (ExtensionRegistry) registry2;
 
-      assertTrue("Test is using a non-lite extension",
+      assertTrue(
+          "Test is using a non-lite extension",
           GeneratedMessageLite.GeneratedExtension.class.isAssignableFrom(
               NonNestedExtensionLite.nonNestedExtensionLite.getClass()));
-      assertNull("Extension is not registered in masqueraded full registry",
+      assertNull(
+          "Extension is not registered in masqueraded full registry",
           fullRegistry1.findImmutableExtensionByName("protobuf_unittest.nonNestedExtension"));
       GeneratedMessageLite.GeneratedExtension<NonNestedExtensionLite.MessageLiteToBeExtended, ?>
-      extension = registry1.findLiteExtensionByNumber(
-          NonNestedExtensionLite.MessageLiteToBeExtended.getDefaultInstance(), 1);
+          extension =
+              registry1.findLiteExtensionByNumber(
+                  NonNestedExtensionLite.MessageLiteToBeExtended.getDefaultInstance(), 1);
       assertNotNull("Extension registered in lite registry", extension);
 
-      assertTrue("Test is using a non-lite extension",
-          GeneratedMessage.GeneratedExtension.class.isAssignableFrom(
-          NonNestedExtension.nonNestedExtension.getClass()));
-      assertNotNull("Extension is registered in masqueraded full registry",
+      assertTrue(
+          "Test is using a non-lite extension",
+          Extension.class.isAssignableFrom(NonNestedExtension.nonNestedExtension.getClass()));
+      assertNotNull(
+          "Extension is registered in masqueraded full registry",
           fullRegistry2.findImmutableExtensionByName("protobuf_unittest.nonNestedExtension"));
     }
 
@@ -131,27 +135,29 @@ public class ExtensionRegistryFactoryTest extends TestCase {
       try {
         NonNestedExtensionLite.registerAllExtensions(registry1);
         fail();
-      } catch (UnsupportedOperationException expected) {}
+      } catch (UnsupportedOperationException expected) {
+      }
       try {
         registry1.add(NonNestedExtensionLite.nonNestedExtensionLite);
         fail();
-      } catch (UnsupportedOperationException expected) {}
+      } catch (UnsupportedOperationException expected) {
+      }
 
       ExtensionRegistryLite registry2 = ExtensionRegistryLite.newInstance().getUnmodifiable();
       try {
         NonNestedExtension.registerAllExtensions((ExtensionRegistry) registry2);
         fail();
-      } catch (IllegalArgumentException expected) {}
+      } catch (IllegalArgumentException expected) {
+      }
       try {
         registry2.add(NonNestedExtension.nonNestedExtension);
         fail();
-      } catch (IllegalArgumentException expected) {}
+      } catch (IllegalArgumentException expected) {
+      }
     }
   }
 
-  /**
-   * Test implementations for the Lite usage of ExtensionRegistryFactory.
-   */
+  /** Test implementations for the Lite usage of ExtensionRegistryFactory. */
   public static final class InnerLiteTest implements RegistryTests {
 
     @Override
@@ -180,8 +186,9 @@ public class ExtensionRegistryFactoryTest extends TestCase {
       ExtensionRegistryLite registry = ExtensionRegistryLite.newInstance();
       NonNestedExtensionLite.registerAllExtensions(registry);
       GeneratedMessageLite.GeneratedExtension<NonNestedExtensionLite.MessageLiteToBeExtended, ?>
-          extension = registry.findLiteExtensionByNumber(
-              NonNestedExtensionLite.MessageLiteToBeExtended.getDefaultInstance(), 1);
+          extension =
+              registry.findLiteExtensionByNumber(
+                  NonNestedExtensionLite.MessageLiteToBeExtended.getDefaultInstance(), 1);
       assertNotNull("Extension is registered in Lite registry", extension);
     }
 
@@ -191,13 +198,12 @@ public class ExtensionRegistryFactoryTest extends TestCase {
       try {
         NonNestedExtensionLite.registerAllExtensions(registry);
         fail();
-      } catch (UnsupportedOperationException expected) {}
+      } catch (UnsupportedOperationException expected) {
+      }
     }
   }
 
-  /**
-   * Defines a suite of tests which the JUnit3 runner retrieves by reflection.
-   */
+  /** Defines a suite of tests which the JUnit3 runner retrieves by reflection. */
   public static Test suite() {
     TestSuite suite = new TestSuite();
     for (Method method : RegistryTests.class.getMethods()) {
@@ -231,12 +237,12 @@ public class ExtensionRegistryFactoryTest extends TestCase {
     classLoader.loadClass(ExtensionRegistryFactory.class.getName());
     Class<?> test = classLoader.loadClass(testClass.getName());
     String testName = getName();
-    test.getMethod(testName).invoke(test.newInstance());
+    test.getMethod(testName).invoke(test.getDeclaredConstructor().newInstance());
   }
 
   /**
-   * Constructs a custom ClassLoader blacklisting the classes which are inspected in the SUT
-   * to determine the Lite/non-Lite runtime.
+   * Constructs a custom ClassLoader blacklisting the classes which are inspected in the SUT to
+   * determine the Lite/non-Lite runtime.
    */
   private static ClassLoader getLiteOnlyClassLoader() {
     ClassLoader testClassLoader = ExtensionRegistryFactoryTest.class.getClassLoader();
@@ -250,8 +256,8 @@ public class ExtensionRegistryFactoryTest extends TestCase {
     // Construct a URLClassLoader delegating to the system ClassLoader, and looking up classes
     // in jar files based on the URLs already configured for this test's UrlClassLoader.
     // Certain classes throw a ClassNotFoundException by design.
-    return new URLClassLoader(((URLClassLoader) testClassLoader).getURLs(),
-        ClassLoader.getSystemClassLoader()) {
+    return new URLClassLoader(
+        ((URLClassLoader) testClassLoader).getURLs(), ClassLoader.getSystemClassLoader()) {
       @Override
       public Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
         if (classNamesNotInLite.contains(name)) {
@@ -266,7 +272,10 @@ public class ExtensionRegistryFactoryTest extends TestCase {
               resolveClass(loadedClass);
             }
           }
-        } catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException | SecurityException e) {
+          // Java 8+ would throw a SecurityException if we attempt to find a loaded class from
+          // java.lang.* package. We don't really care about those anyway, so just delegate to the
+          // parent class loader.
           loadedClass = super.loadClass(name, resolve);
         }
         return loadedClass;

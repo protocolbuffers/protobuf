@@ -57,9 +57,8 @@ struct PyMessageFactory {
   // The C++ one creates messages, when the Python one creates classes.
   MessageFactory* message_factory;
 
-  // borrowed reference to a Python DescriptorPool.
-  // TODO(amauryfa): invert the dependency: the MessageFactory owns the
-  // DescriptorPool, not the opposite.
+  // Owned reference to a Python DescriptorPool.
+  // This reference must stay until the message_factory is destructed.
   PyDescriptorPool* pool;
 
   // Make our own mapping to retrieve Python classes from C++ descriptors.

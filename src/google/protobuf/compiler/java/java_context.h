@@ -40,16 +40,16 @@
 
 namespace google {
 namespace protobuf {
-  class FileDescriptor;
-  class FieldDescriptor;
-  class OneofDescriptor;
-  class Descriptor;
-  class EnumDescriptor;
-  namespace compiler {
-    namespace java {
-      class ClassNameResolver;  // name_resolver.h
-    }
-  }
+class FileDescriptor;
+class FieldDescriptor;
+class OneofDescriptor;
+class Descriptor;
+class EnumDescriptor;
+namespace compiler {
+namespace java {
+class ClassNameResolver;  // name_resolver.h
+}
+}  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
 

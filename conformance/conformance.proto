@@ -55,18 +55,32 @@ enum WireFormat {
   UNSPECIFIED = 0;
   PROTOBUF = 1;
   JSON = 2;
+  JSPB = 3;  // Google internal only. Opensource testees just skip it.
+  TEXT_FORMAT = 4;
 }
 
 enum TestCategory {
   UNSPECIFIED_TEST = 0;
   BINARY_TEST = 1;  // Test binary wire format.
-  JSON_TEST = 2;  // Test json wire format.
+  JSON_TEST = 2;    // Test json wire format.
   // Similar to JSON_TEST. However, during parsing json, testee should ignore
   // unknown fields. This feature is optional. Each implementation can descide
   // whether to support it.  See
   // https://developers.google.com/protocol-buffers/docs/proto3#json_options
   // for more detail.
   JSON_IGNORE_UNKNOWN_PARSING_TEST = 3;
+  // Test jspb wire format. Google internal only. Opensource testees just skip it.
+  JSPB_TEST = 4;
+  // Test text format. For cpp, java and python, testees can already deal with
+  // this type. Testees of other languages can simply skip it.
+  TEXT_FORMAT_TEST = 5;
+}
+
+// The conformance runner will request a list of failures as the first request.
+// This will be known by message_type == "conformance.FailureSet", a conformance
+// test should return a serialized FailureSet in protobuf_payload.
+message FailureSet {
+  repeated string failure = 1;
 }
 
 // Represents a single test case's input.  The testee should:
@@ -85,6 +99,9 @@ message ConformanceRequest {
   oneof payload {
     bytes protobuf_payload = 1;
     string json_payload = 2;
+    // Google internal only.  Opensource testees just skip it.
+    string jspb_payload = 7;
+    string text_payload = 8;
   }
 
   // Which format should the testee serialize its message to?
@@ -99,6 +116,13 @@ message ConformanceRequest {
   // spedific support in testee programs. Refer to the defintion of TestCategory
   // for more information.
   TestCategory test_category = 5;
+
+  // Specify details for how to encode jspb.
+  JspbEncodingConfig jspb_encoding_options = 6;
+
+  // This can be used in json and text format. If true, testee should print
+  // unknown fields instead of ignore. This feature is optional.
+  bool print_unknown_fields = 9;
 }
 
 // Represents a single test case's output.
@@ -132,5 +156,21 @@ message ConformanceResponse {
     // For when the testee skipped the test, likely because a certain feature
     // wasn't supported, like JSON input/output.
     string skipped = 5;
+
+    // If the input was successfully parsed and the requested output was JSPB,
+    // serialize to JSPB and set it in this field. JSPB is google internal only
+    // format. Opensource testees can just skip it.
+    string jspb_payload = 7;
+
+    // If the input was successfully parsed and the requested output was
+    // TEXT_FORMAT, serialize to TEXT_FORMAT and set it in this field.
+    string text_payload = 8;
   }
 }
+
+// Encoding options for jspb format.
+message JspbEncodingConfig {
+  // Encode the value field of Any as jspb array if ture, otherwise binary.
+  bool use_jspb_array_any_format = 1;
+}
+

@@ -368,7 +368,9 @@ message FooResponse {}
 message FooClientMessage {}
 message FooServerMessage{}
 
+// This is a test service
 service TestService {
+  // This is a test method
   rpc Foo(FooRequest) returns (FooResponse);
   rpc Bar(BarRequest) returns (BarResponse);
 }
@@ -378,3 +380,31 @@ message BarRequest  {}
 message BarResponse {}
 
 message TestEmptyMessage {}
+
+// This is leading detached comment 1
+
+// This is leading detached comment 2
+
+// This is a leading comment
+message CommentMessage {
+  // Leading nested message comment
+  message NestedCommentMessage {
+    // Leading nested message field comment
+    string nested_text = 1;
+  }
+
+  // Leading nested enum comment
+  enum NestedCommentEnum {
+    // Zero value comment
+    ZERO_VALUE = 0;
+  }
+
+  // Leading field comment
+  string text = 1; // Trailing field comment
+}
+
+// Leading enum comment
+enum CommentEnum {
+  // Zero value comment
+  ZERO_VALUE = 0;
+}

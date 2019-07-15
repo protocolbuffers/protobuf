@@ -34,12 +34,12 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 
 /**
- * LazyField encapsulates the logic of lazily parsing message fields. It stores
- * the message in a ByteString initially and then parse it on-demand.
+ * LazyField encapsulates the logic of lazily parsing message fields. It stores the message in a
+ * ByteString initially and then parse it on-demand.
  *
- * Most of key methods are implemented in {@link LazyFieldLite} but this class
- * can contain default instance of the message to provide {@code hashCode()},
- * {@code euqals()} and {@code toString()}.
+ * <p>Most of key methods are implemented in {@link LazyFieldLite} but this class can contain
+ * default instance of the message to provide {@code hashCode()}, {@code euqals()} and {@code
+ * toString()}.
  *
  * @author xiangl@google.com (Xiang Li)
  */
@@ -51,8 +51,8 @@ public class LazyField extends LazyFieldLite {
    */
   private final MessageLite defaultInstance;
 
-  public LazyField(MessageLite defaultInstance,
-      ExtensionRegistryLite extensionRegistry, ByteString bytes) {
+  public LazyField(
+      MessageLite defaultInstance, ExtensionRegistryLite extensionRegistry, ByteString bytes) {
     super(extensionRegistry, bytes);
 
     this.defaultInstance = defaultInstance;
@@ -85,8 +85,8 @@ public class LazyField extends LazyFieldLite {
   // ====================================================
 
   /**
-   * LazyEntry and LazyIterator are used to encapsulate the LazyField, when
-   * users iterate all fields from FieldSet.
+   * LazyEntry and LazyIterator are used to encapsulate the LazyField, when users iterate all fields
+   * from FieldSet.
    */
   static class LazyEntry<K> implements Entry<K, Object> {
     private Entry<K, LazyField> entry;
@@ -118,7 +118,7 @@ public class LazyField extends LazyFieldLite {
       if (!(value instanceof MessageLite)) {
         throw new IllegalArgumentException(
             "LazyField now only used for MessageSet, "
-            + "and the value of MessageSet must be an instance of MessageLite");
+                + "and the value of MessageSet must be an instance of MessageLite");
       }
       return entry.getValue().setValue((MessageLite) value);
     }

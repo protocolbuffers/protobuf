@@ -34,7 +34,7 @@ patch "$CROSS_RUBY" << EOF
 +    '--without-gmp',
      '--with-ext='
    ]
- 
+
 @@ -151,6 +153,7 @@
  # make
  file "#{USER_HOME}/builds/#{MINGW_HOST}/#{RUBY_CC_VERSION}/ruby.exe" => ["#{USER_HOME}/builds/#{MINGW_HOST}/#{RUBY_CC_VERSION}/Makefile"] do |t|
@@ -47,7 +47,7 @@ EOF
 
 MAKE="make -j8"
 
-for v in 2.5.0 2.4.0 2.3.0 2.2.2 2.1.6 2.0.0-p645 ; do
+for v in 2.6.0 2.5.1 2.4.0 2.3.0 ; do
   ccache -c
   rake -f "$CROSS_RUBY" cross-ruby VERSION="$v" HOST=x86_64-darwin11 MAKE="$MAKE"
 done

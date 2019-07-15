@@ -39,6 +39,8 @@
 
 #include <google/protobuf/stubs/common.h>
 
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
 
@@ -55,7 +57,7 @@ class MessageDifferencer;
 // Regular users should consider using or subclassing DefaultFieldComparator
 // rather than this interface.
 // Currently, this does not support comparing unknown fields.
-class LIBPROTOBUF_EXPORT FieldComparator {
+class PROTOBUF_EXPORT FieldComparator {
  public:
   FieldComparator();
   virtual ~FieldComparator();
@@ -95,15 +97,15 @@ class LIBPROTOBUF_EXPORT FieldComparator {
 // Basic implementation of FieldComparator.  Supports three modes of floating
 // point value comparison: exact, approximate using MathUtil::AlmostEqual
 // method, and arbitrarily precise using MathUtil::WithinFractionOrMargin.
-class LIBPROTOBUF_EXPORT DefaultFieldComparator : public FieldComparator {
+class PROTOBUF_EXPORT DefaultFieldComparator : public FieldComparator {
  public:
   enum FloatComparison {
-     EXACT,               // Floats and doubles are compared exactly.
-     APPROXIMATE,         // Floats and doubles are compared using the
-                          // MathUtil::AlmostEqual method or
-                          // MathUtil::WithinFractionOrMargin method.
-     // TODO(ksroka): Introduce third value to differenciate uses of AlmostEqual
-     //               and WithinFractionOrMargin.
+    EXACT,        // Floats and doubles are compared exactly.
+    APPROXIMATE,  // Floats and doubles are compared using the
+                  // MathUtil::AlmostEqual method or
+                  // MathUtil::WithinFractionOrMargin method.
+    // TODO(ksroka): Introduce third value to differentiate uses of AlmostEqual
+    //               and WithinFractionOrMargin.
   };
 
   // Creates new comparator with float comparison set to EXACT.
@@ -120,9 +122,7 @@ class LIBPROTOBUF_EXPORT DefaultFieldComparator : public FieldComparator {
     float_comparison_ = float_comparison;
   }
 
-  FloatComparison float_comparison() const {
-    return float_comparison_;
-  }
+  FloatComparison float_comparison() const { return float_comparison_; }
 
   // Set whether the FieldComparator shall treat floats or doubles that are both
   // NaN as equal (treat_nan_as_equal = true) or as different
@@ -131,9 +131,7 @@ class LIBPROTOBUF_EXPORT DefaultFieldComparator : public FieldComparator {
     treat_nan_as_equal_ = treat_nan_as_equal;
   }
 
-  bool treat_nan_as_equal() const {
-    return treat_nan_as_equal_;
-  }
+  bool treat_nan_as_equal() const { return treat_nan_as_equal_; }
 
   // Sets the fraction and margin for the float comparison of a given field.
   // Uses MathUtil::WithinFractionOrMargin to compare the values.
@@ -165,12 +163,8 @@ class LIBPROTOBUF_EXPORT DefaultFieldComparator : public FieldComparator {
   struct Tolerance {
     double fraction;
     double margin;
-    Tolerance()
-        : fraction(0.0),
-          margin(0.0) {}
-    Tolerance(double f, double m)
-        : fraction(f),
-          margin(m) {}
+    Tolerance() : fraction(0.0), margin(0.0) {}
+    Tolerance(double f, double m) : fraction(f), margin(m) {}
   };
 
   // Defines the map to store the tolerances for floating point comparison.
@@ -180,7 +174,8 @@ class LIBPROTOBUF_EXPORT DefaultFieldComparator : public FieldComparator {
   // basic types (instead of submessages). They return true on success. One
   // can use ResultFromBoolean() to convert that boolean to a ComparisonResult
   // value.
-  bool CompareBool(const FieldDescriptor& field, bool value_1, bool value_2) {
+  bool CompareBool(const FieldDescriptor& /* unused */, bool value_1,
+                   bool value_2) {
     return value_1 == value_2;
   }
 
@@ -197,27 +192,27 @@ class LIBPROTOBUF_EXPORT DefaultFieldComparator : public FieldComparator {
   // CompareFloat.
   bool CompareFloat(const FieldDescriptor& field, float value_1, float value_2);
 
-  bool CompareInt32(const FieldDescriptor& field, int32 value_1,
+  bool CompareInt32(const FieldDescriptor& /* unused */, int32 value_1,
                     int32 value_2) {
     return value_1 == value_2;
   }
 
-  bool CompareInt64(const FieldDescriptor& field, int64 value_1,
+  bool CompareInt64(const FieldDescriptor& /* unused */, int64 value_1,
                     int64 value_2) {
     return value_1 == value_2;
   }
 
-  bool CompareString(const FieldDescriptor& field, const string& value_1,
-                     const string& value_2) {
+  bool CompareString(const FieldDescriptor& /* unused */,
+                     const std::string& value_1, const std::string& value_2) {
     return value_1 == value_2;
   }
 
-  bool CompareUInt32(const FieldDescriptor& field, uint32 value_1,
+  bool CompareUInt32(const FieldDescriptor& /* unused */, uint32 value_1,
                      uint32 value_2) {
     return value_1 == value_2;
   }
 
-  bool CompareUInt64(const FieldDescriptor& field, uint64 value_1,
+  bool CompareUInt64(const FieldDescriptor& /* unused */, uint64 value_1,
                      uint64 value_2) {
     return value_1 == value_2;
   }
@@ -259,5 +254,7 @@ class LIBPROTOBUF_EXPORT DefaultFieldComparator : public FieldComparator {
 }  // namespace util
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_UTIL_FIELD_COMPARATOR_H__

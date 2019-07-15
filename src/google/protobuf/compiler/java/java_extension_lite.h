@@ -61,9 +61,8 @@ class ImmutableExtensionLiteGenerator : public ExtensionGenerator {
 
  private:
   const FieldDescriptor* descriptor_;
-  Context* context_;
   ClassNameResolver* name_resolver_;
-  string scope_;
+  std::string scope_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ImmutableExtensionLiteGenerator);
 };

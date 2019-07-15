@@ -69,13 +69,10 @@ public class UnknownFieldSetTest extends TestCase {
   ByteString getBizarroData() throws Exception {
     UnknownFieldSet.Builder bizarroFields = UnknownFieldSet.newBuilder();
 
-    UnknownFieldSet.Field varintField =
-      UnknownFieldSet.Field.newBuilder().addVarint(1).build();
-    UnknownFieldSet.Field fixed32Field =
-      UnknownFieldSet.Field.newBuilder().addFixed32(1).build();
+    UnknownFieldSet.Field varintField = UnknownFieldSet.Field.newBuilder().addVarint(1).build();
+    UnknownFieldSet.Field fixed32Field = UnknownFieldSet.Field.newBuilder().addFixed32(1).build();
 
-    for (Map.Entry<Integer, UnknownFieldSet.Field> entry :
-         unknownFields.asMap().entrySet()) {
+    for (Map.Entry<Integer, UnknownFieldSet.Field> entry : unknownFields.asMap().entrySet()) {
       if (entry.getValue().getVarintList().isEmpty()) {
         // Original field is not a varint, so use a varint.
         bizarroFields.addField(entry.getKey(), varintField);
@@ -102,34 +99,30 @@ public class UnknownFieldSetTest extends TestCase {
   public void testVarint() throws Exception {
     UnknownFieldSet.Field field = getField("optional_int32");
     assertEquals(1, field.getVarintList().size());
-    assertEquals(allFields.getOptionalInt32(),
-                 (long) field.getVarintList().get(0));
+    assertEquals(allFields.getOptionalInt32(), (long) field.getVarintList().get(0));
   }
 
   public void testFixed32() throws Exception {
     UnknownFieldSet.Field field = getField("optional_fixed32");
     assertEquals(1, field.getFixed32List().size());
-    assertEquals(allFields.getOptionalFixed32(),
-                 (int) field.getFixed32List().get(0));
+    assertEquals(allFields.getOptionalFixed32(), (int) field.getFixed32List().get(0));
   }
 
   public void testFixed64() throws Exception {
     UnknownFieldSet.Field field = getField("optional_fixed64");
     assertEquals(1, field.getFixed64List().size());
-    assertEquals(allFields.getOptionalFixed64(),
-                 (long) field.getFixed64List().get(0));
+    assertEquals(allFields.getOptionalFixed64(), (long) field.getFixed64List().get(0));
   }
 
   public void testLengthDelimited() throws Exception {
     UnknownFieldSet.Field field = getField("optional_bytes");
     assertEquals(1, field.getLengthDelimitedList().size());
-    assertEquals(allFields.getOptionalBytes(),
-                 field.getLengthDelimitedList().get(0));
+    assertEquals(allFields.getOptionalBytes(), field.getLengthDelimitedList().get(0));
   }
 
   public void testGroup() throws Exception {
     Descriptors.FieldDescriptor nestedFieldDescriptor =
-      TestAllTypes.OptionalGroup.getDescriptor().findFieldByName("a");
+        TestAllTypes.OptionalGroup.getDescriptor().findFieldByName("a");
     assertNotNull(nestedFieldDescriptor);
 
     UnknownFieldSet.Field field = getField("optionalgroup");
@@ -139,11 +132,9 @@ public class UnknownFieldSetTest extends TestCase {
     assertEquals(1, group.asMap().size());
     assertTrue(group.hasField(nestedFieldDescriptor.getNumber()));
 
-    UnknownFieldSet.Field nestedField =
-      group.getField(nestedFieldDescriptor.getNumber());
+    UnknownFieldSet.Field nestedField = group.getField(nestedFieldDescriptor.getNumber());
     assertEquals(1, nestedField.getVarintList().size());
-    assertEquals(allFields.getOptionalGroup().getA(),
-                 (long) nestedField.getVarintList().get(0));
+    assertEquals(allFields.getOptionalGroup().getA(), (long) nestedField.getVarintList().get(0));
   }
 
   public void testSerialize() throws Exception {
@@ -154,59 +145,44 @@ public class UnknownFieldSetTest extends TestCase {
   }
 
   public void testCopyFrom() throws Exception {
-    TestEmptyMessage message =
-      TestEmptyMessage.newBuilder().mergeFrom(emptyMessage).build();
+    TestEmptyMessage message = TestEmptyMessage.newBuilder().mergeFrom(emptyMessage).build();
 
     assertEquals(emptyMessage.toString(), message.toString());
   }
 
   public void testMergeFrom() throws Exception {
     TestEmptyMessage source =
-      TestEmptyMessage.newBuilder()
-        .setUnknownFields(
-          UnknownFieldSet.newBuilder()
-            .addField(2,
-              UnknownFieldSet.Field.newBuilder()
-                .addVarint(2).build())
-            .addField(3,
-              UnknownFieldSet.Field.newBuilder()
-                .addVarint(4).build())
-            .build())
-        .build();
+        TestEmptyMessage.newBuilder()
+            .setUnknownFields(
+                UnknownFieldSet.newBuilder()
+                    .addField(2, UnknownFieldSet.Field.newBuilder().addVarint(2).build())
+                    .addField(3, UnknownFieldSet.Field.newBuilder().addVarint(4).build())
+                    .build())
+            .build();
     TestEmptyMessage destination =
-      TestEmptyMessage.newBuilder()
-        .setUnknownFields(
-          UnknownFieldSet.newBuilder()
-            .addField(1,
-              UnknownFieldSet.Field.newBuilder()
-                .addVarint(1).build())
-            .addField(3,
-              UnknownFieldSet.Field.newBuilder()
-                .addVarint(3).build())
-            .build())
-        .mergeFrom(source)
-        .build();
+        TestEmptyMessage.newBuilder()
+            .setUnknownFields(
+                UnknownFieldSet.newBuilder()
+                    .addField(1, UnknownFieldSet.Field.newBuilder().addVarint(1).build())
+                    .addField(3, UnknownFieldSet.Field.newBuilder().addVarint(3).build())
+                    .build())
+            .mergeFrom(source)
+            .build();
 
-    assertEquals(
-      "1: 1\n" +
-      "2: 2\n" +
-      "3: 3\n" +
-      "3: 4\n",
-      destination.toString());
+    assertEquals("1: 1\n2: 2\n3: 3\n3: 4\n", destination.toString());
   }
 
   public void testClear() throws Exception {
-    UnknownFieldSet fields =
-      UnknownFieldSet.newBuilder().mergeFrom(unknownFields).clear().build();
+    UnknownFieldSet fields = UnknownFieldSet.newBuilder().mergeFrom(unknownFields).clear().build();
     assertTrue(fields.asMap().isEmpty());
   }
 
   public void testClearMessage() throws Exception {
     TestEmptyMessage message =
-      TestEmptyMessage.newBuilder().mergeFrom(emptyMessage).clear().build();
+        TestEmptyMessage.newBuilder().mergeFrom(emptyMessage).clear().build();
     assertEquals(0, message.getSerializedSize());
   }
-  
+
   public void testClearField() throws Exception {
     int fieldNumber = unknownFields.asMap().keySet().iterator().next();
     UnknownFieldSet fields =
@@ -218,10 +194,9 @@ public class UnknownFieldSetTest extends TestCase {
     // Test mixing known and unknown fields when parsing.
 
     UnknownFieldSet fields =
-      UnknownFieldSet.newBuilder(unknownFields)
-        .addField(123456,
-          UnknownFieldSet.Field.newBuilder().addVarint(654321).build())
-        .build();
+        UnknownFieldSet.newBuilder(unknownFields)
+            .addField(123456, UnknownFieldSet.Field.newBuilder().addVarint(654321).build())
+            .build();
 
     ByteString data = fields.toByteString();
     TestAllTypes destination = TestAllTypes.parseFrom(data);
@@ -229,8 +204,7 @@ public class UnknownFieldSetTest extends TestCase {
     TestUtil.assertAllFieldsSet(destination);
     assertEquals(1, destination.getUnknownFields().asMap().size());
 
-    UnknownFieldSet.Field field =
-      destination.getUnknownFields().getField(123456);
+    UnknownFieldSet.Field field = destination.getUnknownFields().getField(123456);
     assertEquals(1, field.getVarintList().size());
     assertEquals(654321, (long) field.getVarintList().get(0));
   }
@@ -253,10 +227,9 @@ public class UnknownFieldSetTest extends TestCase {
     // they are declared as extension numbers.
 
     TestEmptyMessageWithExtensions message =
-      TestEmptyMessageWithExtensions.parseFrom(allFieldsData);
+        TestEmptyMessageWithExtensions.parseFrom(allFieldsData);
 
-    assertEquals(unknownFields.asMap().size(),
-                 message.getUnknownFields().asMap().size());
+    assertEquals(unknownFields.asMap().size(), message.getUnknownFields().asMap().size());
     assertEquals(allFieldsData, message.toByteString());
   }
 
@@ -265,134 +238,99 @@ public class UnknownFieldSetTest extends TestCase {
     // when parsing extensions.
 
     ByteString bizarroData = getBizarroData();
-    TestAllExtensions allExtensionsMessage =
-      TestAllExtensions.parseFrom(bizarroData);
+    TestAllExtensions allExtensionsMessage = TestAllExtensions.parseFrom(bizarroData);
     TestEmptyMessage emptyMessage = TestEmptyMessage.parseFrom(bizarroData);
 
     // All fields should have been interpreted as unknown, so the debug strings
     // should be the same.
-    assertEquals(emptyMessage.toString(),
-                 allExtensionsMessage.toString());
+    assertEquals(emptyMessage.toString(), allExtensionsMessage.toString());
   }
 
   public void testParseUnknownEnumValue() throws Exception {
     Descriptors.FieldDescriptor singularField =
-      TestAllTypes.getDescriptor().findFieldByName("optional_nested_enum");
+        TestAllTypes.getDescriptor().findFieldByName("optional_nested_enum");
     Descriptors.FieldDescriptor repeatedField =
-      TestAllTypes.getDescriptor().findFieldByName("repeated_nested_enum");
+        TestAllTypes.getDescriptor().findFieldByName("repeated_nested_enum");
     assertNotNull(singularField);
     assertNotNull(repeatedField);
 
     ByteString data =
-      UnknownFieldSet.newBuilder()
-        .addField(singularField.getNumber(),
-          UnknownFieldSet.Field.newBuilder()
-            .addVarint(TestAllTypes.NestedEnum.BAR.getNumber())
-            .addVarint(5)   // not valid
-            .build())
-        .addField(repeatedField.getNumber(),
-          UnknownFieldSet.Field.newBuilder()
-            .addVarint(TestAllTypes.NestedEnum.FOO.getNumber())
-            .addVarint(4)   // not valid
-            .addVarint(TestAllTypes.NestedEnum.BAZ.getNumber())
-            .addVarint(6)   // not valid
-            .build())
-        .build()
-        .toByteString();
+        UnknownFieldSet.newBuilder()
+            .addField(
+                singularField.getNumber(),
+                UnknownFieldSet.Field.newBuilder()
+                    .addVarint(TestAllTypes.NestedEnum.BAR.getNumber())
+                    .addVarint(5) // not valid
+                    .build())
+            .addField(
+                repeatedField.getNumber(),
+                UnknownFieldSet.Field.newBuilder()
+                    .addVarint(TestAllTypes.NestedEnum.FOO.getNumber())
+                    .addVarint(4) // not valid
+                    .addVarint(TestAllTypes.NestedEnum.BAZ.getNumber())
+                    .addVarint(6) // not valid
+                    .build())
+            .build()
+            .toByteString();
 
     {
       TestAllTypes message = TestAllTypes.parseFrom(data);
-      assertEquals(TestAllTypes.NestedEnum.BAR,
-                   message.getOptionalNestedEnum());
+      assertEquals(TestAllTypes.NestedEnum.BAR, message.getOptionalNestedEnum());
       assertEquals(
-        Arrays.asList(TestAllTypes.NestedEnum.FOO, TestAllTypes.NestedEnum.BAZ),
-        message.getRepeatedNestedEnumList());
-      assertEquals(Arrays.asList(5L),
-                   message.getUnknownFields()
-                          .getField(singularField.getNumber())
-                          .getVarintList());
-      assertEquals(Arrays.asList(4L, 6L),
-                   message.getUnknownFields()
-                          .getField(repeatedField.getNumber())
-                          .getVarintList());
+          Arrays.asList(TestAllTypes.NestedEnum.FOO, TestAllTypes.NestedEnum.BAZ),
+          message.getRepeatedNestedEnumList());
+      assertEquals(
+          Arrays.asList(5L),
+          message.getUnknownFields().getField(singularField.getNumber()).getVarintList());
+      assertEquals(
+          Arrays.asList(4L, 6L),
+          message.getUnknownFields().getField(repeatedField.getNumber()).getVarintList());
     }
 
     {
       TestAllExtensions message =
-        TestAllExtensions.parseFrom(data, TestUtil.getExtensionRegistry());
-      assertEquals(TestAllTypes.NestedEnum.BAR,
-        message.getExtension(UnittestProto.optionalNestedEnumExtension));
+          TestAllExtensions.parseFrom(data, TestUtil.getExtensionRegistry());
       assertEquals(
-        Arrays.asList(TestAllTypes.NestedEnum.FOO, TestAllTypes.NestedEnum.BAZ),
-        message.getExtension(UnittestProto.repeatedNestedEnumExtension));
-      assertEquals(Arrays.asList(5L),
-                   message.getUnknownFields()
-                          .getField(singularField.getNumber())
-                          .getVarintList());
-      assertEquals(Arrays.asList(4L, 6L),
-                   message.getUnknownFields()
-                          .getField(repeatedField.getNumber())
-                          .getVarintList());
+          TestAllTypes.NestedEnum.BAR,
+          message.getExtension(UnittestProto.optionalNestedEnumExtension));
+      assertEquals(
+          Arrays.asList(TestAllTypes.NestedEnum.FOO, TestAllTypes.NestedEnum.BAZ),
+          message.getExtension(UnittestProto.repeatedNestedEnumExtension));
+      assertEquals(
+          Arrays.asList(5L),
+          message.getUnknownFields().getField(singularField.getNumber()).getVarintList());
+      assertEquals(
+          Arrays.asList(4L, 6L),
+          message.getUnknownFields().getField(repeatedField.getNumber()).getVarintList());
     }
   }
 
   public void testLargeVarint() throws Exception {
     ByteString data =
-      UnknownFieldSet.newBuilder()
-        .addField(1,
-          UnknownFieldSet.Field.newBuilder()
-            .addVarint(0x7FFFFFFFFFFFFFFFL)
-            .build())
-        .build()
-        .toByteString();
+        UnknownFieldSet.newBuilder()
+            .addField(1, UnknownFieldSet.Field.newBuilder().addVarint(0x7FFFFFFFFFFFFFFFL).build())
+            .build()
+            .toByteString();
     UnknownFieldSet parsed = UnknownFieldSet.parseFrom(data);
     UnknownFieldSet.Field field = parsed.getField(1);
     assertEquals(1, field.getVarintList().size());
-    assertEquals(0x7FFFFFFFFFFFFFFFL, (long)field.getVarintList().get(0));
+    assertEquals(0x7FFFFFFFFFFFFFFFL, (long) field.getVarintList().get(0));
   }
 
   public void testEqualsAndHashCode() {
-    UnknownFieldSet.Field fixed32Field =
-        UnknownFieldSet.Field.newBuilder()
-            .addFixed32(1)
-            .build();
-    UnknownFieldSet.Field fixed64Field =
-        UnknownFieldSet.Field.newBuilder()
-            .addFixed64(1)
-            .build();
-    UnknownFieldSet.Field varIntField =
-        UnknownFieldSet.Field.newBuilder()
-            .addVarint(1)
-            .build();
+    UnknownFieldSet.Field fixed32Field = UnknownFieldSet.Field.newBuilder().addFixed32(1).build();
+    UnknownFieldSet.Field fixed64Field = UnknownFieldSet.Field.newBuilder().addFixed64(1).build();
+    UnknownFieldSet.Field varIntField = UnknownFieldSet.Field.newBuilder().addVarint(1).build();
     UnknownFieldSet.Field lengthDelimitedField =
-        UnknownFieldSet.Field.newBuilder()
-            .addLengthDelimited(ByteString.EMPTY)
-            .build();
+        UnknownFieldSet.Field.newBuilder().addLengthDelimited(ByteString.EMPTY).build();
     UnknownFieldSet.Field groupField =
-        UnknownFieldSet.Field.newBuilder()
-            .addGroup(unknownFields)
-            .build();
+        UnknownFieldSet.Field.newBuilder().addGroup(unknownFields).build();
 
-    UnknownFieldSet a =
-        UnknownFieldSet.newBuilder()
-            .addField(1, fixed32Field)
-            .build();
-    UnknownFieldSet b =
-        UnknownFieldSet.newBuilder()
-            .addField(1, fixed64Field)
-            .build();
-    UnknownFieldSet c =
-        UnknownFieldSet.newBuilder()
-            .addField(1, varIntField)
-            .build();
-    UnknownFieldSet d =
-        UnknownFieldSet.newBuilder()
-            .addField(1, lengthDelimitedField)
-            .build();
-    UnknownFieldSet e =
-        UnknownFieldSet.newBuilder()
-            .addField(1, groupField)
-            .build();
+    UnknownFieldSet a = UnknownFieldSet.newBuilder().addField(1, fixed32Field).build();
+    UnknownFieldSet b = UnknownFieldSet.newBuilder().addField(1, fixed64Field).build();
+    UnknownFieldSet c = UnknownFieldSet.newBuilder().addField(1, varIntField).build();
+    UnknownFieldSet d = UnknownFieldSet.newBuilder().addField(1, lengthDelimitedField).build();
+    UnknownFieldSet e = UnknownFieldSet.newBuilder().addField(1, groupField).build();
 
     checkEqualsIsConsistent(a);
     checkEqualsIsConsistent(b);
@@ -413,12 +351,10 @@ public class UnknownFieldSetTest extends TestCase {
   }
 
   /**
-   * Asserts that the given field sets are not equal and have different
-   * hash codes.
+   * Asserts that the given field sets are not equal and have different hash codes.
    *
-   * @warning It's valid for non-equal objects to have the same hash code, so
-   *   this test is stricter than it needs to be. However, this should happen
-   *   relatively rarely.
+   * <p><b>Note:</b> It's valid for non-equal objects to have the same hash code, so this test is
+   * stricter than it needs to be. However, this should happen relatively rarely.
    */
   private void checkNotEqual(UnknownFieldSet s1, UnknownFieldSet s2) {
     String equalsError = String.format("%s should not be equal to %s", s1, s2);
@@ -430,9 +366,7 @@ public class UnknownFieldSetTest extends TestCase {
         s1.hashCode() == s2.hashCode());
   }
 
-  /**
-   * Asserts that the given field sets are equal and have identical hash codes.
-   */
+  /** Asserts that the given field sets are equal and have identical hash codes. */
   private void checkEqualsIsConsistent(UnknownFieldSet set) {
     // Object should be equal to itself.
     assertEquals(set, set);

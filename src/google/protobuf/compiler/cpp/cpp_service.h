@@ -57,7 +57,7 @@ class ServiceGenerator {
  public:
   // See generator.cc for the meaning of dllexport_decl.
   explicit ServiceGenerator(const ServiceDescriptor* descriptor,
-                            const std::map<string, string>& vars,
+                            const std::map<std::string, std::string>& vars,
                             const Options& options);
   ~ServiceGenerator();
 
@@ -68,10 +68,6 @@ class ServiceGenerator {
   void GenerateDeclarations(io::Printer* printer);
 
   // Source file stuff.
-
-  // Generate code that initializes the global variable storing the service's
-  // descriptor.
-  void GenerateDescriptorInitializer(io::Printer* printer, int index);
 
   // Generate implementations of everything declared by
   // GenerateDeclarations().
@@ -109,7 +105,8 @@ class ServiceGenerator {
   void GenerateStubMethods(io::Printer* printer);
 
   const ServiceDescriptor* descriptor_;
-  std::map<string, string> vars_;
+  std::map<std::string, std::string> vars_;
+  const Options& options_;
 
   int index_in_metadata_;
 

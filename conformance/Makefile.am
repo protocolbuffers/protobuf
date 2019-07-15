@@ -107,6 +107,7 @@ other_language_protoc_outputs =                                \
   google/protobuf/wrappers_pb2.py                              \
   Conformance/ConformanceRequest.php                           \
   Conformance/ConformanceResponse.php                          \
+  Conformance/FailureSet.php                                   \
   Conformance/WireFormat.php                                   \
   GPBMetadata/Conformance.php                                  \
   GPBMetadata/Google/Protobuf/Any.php                          \
@@ -206,6 +207,11 @@ EXTRA_DIST =                  \
 
 conformance_test_runner_LDADD = $(top_srcdir)/src/libprotobuf.la
 conformance_test_runner_SOURCES = conformance_test.h conformance_test.cc \
+                                  conformance_test_main.cc               \
+                                  binary_json_conformance_suite.h        \
+                                  binary_json_conformance_suite.cc       \
+                                  text_format_conformance_suite.h        \
+                                  text_format_conformance_suite.cc       \
                                   conformance_test_runner.cc             \
                                   third_party/jsoncpp/json.h             \
                                   third_party/jsoncpp/jsoncpp.cpp
@@ -310,7 +316,7 @@ conformance-java-lite: javac_middleman_lite
 conformance-csharp: $(other_language_protoc_outputs)
 	@echo "Writing shortcut script conformance-csharp..."
 	@echo '#! /bin/sh' > conformance-csharp
-	@echo 'dotnet ../csharp/src/Google.Protobuf.Conformance/bin/Release/netcoreapp1.0/Google.Protobuf.Conformance.dll "$$@"' >> conformance-csharp
+	@echo 'dotnet ../csharp/src/Google.Protobuf.Conformance/bin/Release/netcoreapp2.1/Google.Protobuf.Conformance.dll "$$@"' >> conformance-csharp
 	@chmod +x conformance-csharp
 
 conformance-php:
@@ -330,30 +336,33 @@ test_cpp: protoc_middleman conformance-test-runner conformance-cpp
 	./conformance-test-runner --enforce_recommended --failure_list failure_list_cpp.txt ./conformance-cpp
 
 test_java: protoc_middleman conformance-test-runner conformance-java
-	./conformance-test-runner --enforce_recommended --failure_list failure_list_java.txt ./conformance-java
+	./conformance-test-runner --enforce_recommended --failure_list failure_list_java.txt --text_format_failure_list text_format_failure_list_java.txt ./conformance-java
 
 test_java_lite: protoc_middleman conformance-test-runner conformance-java-lite
 	./conformance-test-runner --enforce_recommended ./conformance-java-lite
 
 test_csharp: protoc_middleman conformance-test-runner conformance-csharp
-	./conformance-test-runner --enforce_recommended --failure_list failure_list_csharp.txt ./conformance-csharp
+	./conformance-test-runner --enforce_recommended --failure_list failure_list_csharp.txt --text_format_failure_list text_format_failure_list_csharp.txt ./conformance-csharp
 
 test_ruby: protoc_middleman conformance-test-runner $(other_language_protoc_outputs)
-	RUBYLIB=../ruby/lib:. ./conformance-test-runner --enforce_recommended --failure_list failure_list_ruby.txt ./conformance_ruby.rb
+	RUBYLIB=../ruby/lib:. ./conformance-test-runner --enforce_recommended --failure_list failure_list_ruby.txt --text_format_failure_list text_format_failure_list_ruby.txt ./conformance_ruby.rb
+
+test_ruby_mac: protoc_middleman conformance-test-runner $(other_language_protoc_outputs)
+	RUBYLIB=../ruby/lib:. ./conformance-test-runner --enforce_recommended --failure_list failure_list_ruby_mac.txt --text_format_failure_list text_format_failure_list_ruby.txt ./conformance_ruby.rb
 
 test_php: protoc_middleman conformance-test-runner conformance-php $(other_language_protoc_outputs)
-	./conformance-test-runner --enforce_recommended --failure_list failure_list_php.txt ./conformance-php
+	./conformance-test-runner --enforce_recommended --failure_list failure_list_php.txt --text_format_failure_list text_format_failure_list_php.txt ./conformance-php
 
 test_php_c: protoc_middleman conformance-test-runner conformance-php-c $(other_language_protoc_outputs)
-	./conformance-test-runner --enforce_recommended --failure_list failure_list_php_c.txt ./conformance-php-c
+	./conformance-test-runner --enforce_recommended --failure_list failure_list_php_c.txt --text_format_failure_list text_format_failure_list_php.txt ./conformance-php-c
 
 test_php_zts_c: protoc_middleman conformance-test-runner conformance-php-c $(other_language_protoc_outputs)
-	./conformance-test-runner --enforce_recommended --failure_list failure_list_php_zts_c.txt ./conformance-php-c
+	./conformance-test-runner --enforce_recommended --failure_list failure_list_php_zts_c.txt --text_format_failure_list text_format_failure_list_php.txt ./conformance-php-c
 
 # These depend on library paths being properly set up.  The easiest way to
 # run them is to just use "tox" from the python dir.
 test_python: protoc_middleman conformance-test-runner
-	./conformance-test-runner --enforce_recommended --failure_list failure_list_python.txt ./conformance_python.py
+	./conformance-test-runner --enforce_recommended --failure_list failure_list_python.txt --text_format_failure_list text_format_failure_list_python.txt ./conformance_python.py
 
 test_python_cpp: protoc_middleman conformance-test-runner
 	./conformance-test-runner --enforce_recommended --failure_list failure_list_python_cpp.txt ./conformance_python.py

@@ -37,7 +37,9 @@
 
 syntax = "proto2";
 
-package google.protobuf.testing;
+package proto_util_converter.testing;
+
+import "google/protobuf/util/internal/testdata/anys.proto";
 
 // A book
 message Book {
@@ -72,6 +74,13 @@ message Book {
   // Useful for testing JSON snake/camel-case conversions.
   optional string snake_field = 12;
 
+  // Used to test type not found in type info. Messages defined in other files
+  // are not added when adding Book to type info.
+  optional AnyWrapper type_not_found = 13;
+
+  // Used to test invalid value inside of primitive repeated fields.
+  repeated int32 primitive_repeated = 14;
+
   extensions 200 to 499;
 }
 
@@ -92,10 +101,10 @@ message Author {
 // For testing resiliency of our protostream parser.
 // Field numbers of Author are reused for something else.
 message BadAuthor {
-  optional string id = 1;  // non-length-delimited to length-delimited.
-  repeated uint64 name = 2;  // string to repeated (both length-delimited).
+  optional string id = 1;         // non-length-delimited to length-delimited.
+  repeated uint64 name = 2;       // string to repeated (both length-delimited).
   optional string pseudonym = 3;  // Repeated to optional.
-  repeated bool alive = 4 [packed=true];  // Optional to repeated.
+  repeated bool alive = 4 [packed = true];  // Optional to repeated.
 }
 
 // All primitive types
@@ -147,23 +156,23 @@ message Primitive {
 // The field numbers should match their non-packed version in Primitive message.
 message PackedPrimitive {
   // repeated 32 bit numbers:
-  repeated fixed32 rep_fix32 = 16 [packed=true];
-  repeated uint32 rep_u32 = 17 [packed=true];
-  repeated int32 rep_i32 = 18 [packed=true];
-  repeated sfixed32 rep_sf32 = 19 [packed=true];
-  repeated sint32 rep_s32 = 20 [packed=true];
+  repeated fixed32 rep_fix32 = 16 [packed = true];
+  repeated uint32 rep_u32 = 17 [packed = true];
+  repeated int32 rep_i32 = 18 [packed = true];
+  repeated sfixed32 rep_sf32 = 19 [packed = true];
+  repeated sint32 rep_s32 = 20 [packed = true];
 
   // repeated 64 bit numbers:
-  repeated fixed64 rep_fix64 = 21 [packed=true];
-  repeated uint64 rep_u64 = 22 [packed=true];
-  repeated int64 rep_i64 = 23 [packed=true];
-  repeated sfixed64 rep_sf64 = 24 [packed=true];
-  repeated sint64 rep_s64 = 25 [packed=true];
+  repeated fixed64 rep_fix64 = 21 [packed = true];
+  repeated uint64 rep_u64 = 22 [packed = true];
+  repeated int64 rep_i64 = 23 [packed = true];
+  repeated sfixed64 rep_sf64 = 24 [packed = true];
+  repeated sint64 rep_s64 = 25 [packed = true];
 
   // repeated other stuff:
-  repeated float rep_float = 28 [packed=true];
-  repeated double rep_double = 29 [packed=true];
-  repeated bool rep_bool = 30 [packed=true];
+  repeated float rep_float = 28 [packed = true];
+  repeated double rep_double = 29 [packed = true];
+  repeated bool rep_bool = 30 [packed = true];
 }
 
 // Test extensions.
@@ -183,7 +192,7 @@ message NestedBook {
 // For testing resiliency of our protostream parser.
 // Field number of NestedBook is reused for something else.
 message BadNestedBook {
-  repeated uint32 book = 1 [packed=true];  // Packed to optional message.
+  repeated uint32 book = 1 [packed = true];  // Packed to optional message.
 }
 
 // A recursively defined message.
@@ -196,7 +205,7 @@ message Cyclic {
 }
 
 // Test that two messages can have different fields mapped to the same JSON
-// name. See: https://github.com/google/protobuf/issues/1415
+// name. See: https://github.com/protocolbuffers/protobuf/issues/1415
 message TestJsonName1 {
   optional int32 one_value = 1 [json_name = "value"];
 }

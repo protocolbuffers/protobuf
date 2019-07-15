@@ -2,7 +2,11 @@
 
 require 'mkmf'
 
-unless RUBY_PLATFORM =~ /mswin|mingw/
+if RUBY_PLATFORM =~ /darwin/ || RUBY_PLATFORM =~ /linux/
+  # XOPEN_SOURCE needed for strptime:
+  # https://stackoverflow.com/questions/35234152/strptime-giving-implicit-declaration-and-undefined-reference
+  $CFLAGS += " -std=c99 -O3 -DNDEBUG -D_XOPEN_SOURCE=700"
+else
   $CFLAGS += " -std=c99 -O3 -DNDEBUG"
 end
 

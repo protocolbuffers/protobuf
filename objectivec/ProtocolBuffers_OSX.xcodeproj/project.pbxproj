@@ -92,6 +92,7 @@
 		F4E675A11B21D0000054530B /* Struct.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = F4E675911B21D0000054530B /* Struct.pbobjc.m */; };
 		F4E675A31B21D0000054530B /* Type.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = F4E675931B21D0000054530B /* Type.pbobjc.m */; };
 		F4E675A51B21D0000054530B /* Wrappers.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = F4E675951B21D0000054530B /* Wrappers.pbobjc.m */; };
+		F4F53F8A219CC4F2001EABF4 /* text_format_extensions_unittest_data.txt in Resources */ = {isa = PBXBuildFile; fileRef = F4F53F89219CC4F2001EABF4 /* text_format_extensions_unittest_data.txt */; };
 		F4F8D8831D789FD9002CE128 /* GPBUnittestProtos2.m in Sources */ = {isa = PBXBuildFile; fileRef = F4F8D8811D789FCE002CE128 /* GPBUnittestProtos2.m */; };
 /* End PBXBuildFile section */
 
@@ -149,7 +150,7 @@
 		8B09AAF614B663A7007B4184 /* unittest_objc.proto */ = {isa = PBXFileReference; lastKnownFileType = text; path = unittest_objc.proto; sourceTree = "<group>"; };
 		8B210CCD159383D60032D72D /* golden_message */ = {isa = PBXFileReference; lastKnownFileType = file; path = golden_message; sourceTree = "<group>"; };
 		8B210CCF159386920032D72D /* golden_packed_fields_message */ = {isa = PBXFileReference; lastKnownFileType = file; path = golden_packed_fields_message; sourceTree = "<group>"; };
-		8B4248B81A8C254000BC1EC6 /* protobuf */ = {isa = PBXFileReference; lastKnownFileType = text; name = protobuf; path = ../../Intermediates/ProtocolBuffers_OSX.build/DerivedSources/protos/google/protobuf; sourceTree = BUILT_PRODUCTS_DIR; };
+		8B35468421A616F6000BD30D /* unittest_objc_options.proto */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.protobuf; path = unittest_objc_options.proto; sourceTree = "<group>"; };
 		8B4248B91A8C256900BC1EC6 /* UnitTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UnitTests-Bridging-Header.h"; sourceTree = "<group>"; };
 		8B4248BA1A8C256A00BC1EC6 /* GPBSwiftTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GPBSwiftTests.swift; sourceTree = "<group>"; };
 		8B4248CF1A927E1500BC1EC6 /* GPBWellKnownTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GPBWellKnownTypes.h; sourceTree = "<group>"; };
@@ -266,6 +267,7 @@
 		F4E675AB1B21D05C0054530B /* struct.proto */ = {isa = PBXFileReference; lastKnownFileType = text; name = struct.proto; path = ../src/google/protobuf/struct.proto; sourceTree = "<group>"; };
 		F4E675AC1B21D05C0054530B /* type.proto */ = {isa = PBXFileReference; lastKnownFileType = text; name = type.proto; path = ../src/google/protobuf/type.proto; sourceTree = "<group>"; };
 		F4E675AD1B21D05C0054530B /* wrappers.proto */ = {isa = PBXFileReference; lastKnownFileType = text; name = wrappers.proto; path = ../src/google/protobuf/wrappers.proto; sourceTree = "<group>"; };
+		F4F53F89219CC4F2001EABF4 /* text_format_extensions_unittest_data.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = text_format_extensions_unittest_data.txt; sourceTree = "<group>"; };
 		F4F8D8811D789FCE002CE128 /* GPBUnittestProtos2.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBUnittestProtos2.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -438,7 +440,6 @@
 		7461B6940F94FDDD00A0C422 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
-				8B4248B81A8C254000BC1EC6 /* protobuf */,
 				8B210CCD159383D60032D72D /* golden_message */,
 				8B210CCF159386920032D72D /* golden_packed_fields_message */,
 				8B8B615C17DF7056002EE618 /* GPBARCUnittestProtos.m */,
@@ -496,6 +497,7 @@
 				7461B6BA0F94FDF900A0C422 /* GPBUtilitiesTests.m */,
 				8B4248DB1A92933A00BC1EC6 /* GPBWellKnownTypesTest.m */,
 				7461B6BC0F94FDF900A0C422 /* GPBWireFormatTests.m */,
+				F4F53F89219CC4F2001EABF4 /* text_format_extensions_unittest_data.txt */,
 				F45E57C61AE6DC6A000B7D99 /* text_format_map_unittest_data.txt */,
 				F43C88CF191D77FC009E917D /* text_format_unittest_data.txt */,
 				8B7E6A7414893DBA00F8884A /* unittest_custom_options.proto */,
@@ -507,6 +509,7 @@
 				8BBD9DB016DD1DC8008E1EC1 /* unittest_lite.proto */,
 				8B7E6A7B14893DBC00F8884A /* unittest_mset.proto */,
 				8B7E6A7C14893DBC00F8884A /* unittest_no_generic_services.proto */,
+				8B35468421A616F6000BD30D /* unittest_objc_options.proto */,
 				F4CF31701B162ED800BD9B06 /* unittest_objc_startup.proto */,
 				8B09AAF614B663A7007B4184 /* unittest_objc.proto */,
 				8B7E6A7D14893DBC00F8884A /* unittest_optimize_for.proto */,
@@ -640,7 +643,7 @@
 				LastUpgradeCheck = 0930;
 				TargetAttributes = {
 					8BBEA4A5147C727100C4ADB7 = {
-						LastSwiftMigration = 0800;
+						LastSwiftMigration = 0940;
 						TestTargetID = 8B9A5EA41831993600A9D33B;
 					};
 					F45BBC141B0CE3C6002D064D = {
@@ -673,6 +676,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8B210CCE159383D60032D72D /* golden_message in Resources */,
+				F4F53F8A219CC4F2001EABF4 /* text_format_extensions_unittest_data.txt in Resources */,
 				F43C88D0191D77FC009E917D /* text_format_unittest_data.txt in Resources */,
 				8B210CD0159386920032D72D /* golden_packed_fields_message in Resources */,
 				F45E57C71AE6DC6A000B7D99 /* text_format_map_unittest_data.txt in Resources */,
@@ -820,8 +824,8 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				COMBINE_HIDPI_IMAGES = YES;
-				HEADER_SEARCH_PATHS = "$(SRCROOT)";
 				PRODUCT_NAME = ProtocolBuffers;
+				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)";
 			};
 			name = Debug;
 		};
@@ -830,8 +834,8 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				COMBINE_HIDPI_IMAGES = YES;
-				HEADER_SEARCH_PATHS = "$(SRCROOT)";
 				PRODUCT_NAME = ProtocolBuffers;
+				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)";
 			};
 			name = Release;
 		};
@@ -841,10 +845,6 @@
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				COMBINE_HIDPI_IMAGES = YES;
-				HEADER_SEARCH_PATHS = (
-					"${PROJECT_DERIVED_FILE_DIR}/protos",
-					"$(SRCROOT)",
-				);
 				INFOPLIST_FILE = "Tests/UnitTests-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				OTHER_LDFLAGS = "-ObjC";
@@ -852,7 +852,8 @@
 				PRODUCT_NAME = UnitTests;
 				SWIFT_OBJC_BRIDGING_HEADER = "Tests/UnitTests-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 3.0;
+				SWIFT_VERSION = 4.0;
+				USER_HEADER_SEARCH_PATHS = "${PROJECT_DERIVED_FILE_DIR}/protos $(SRCROOT)";
 				WARNING_CFLAGS = (
 					"$(inherited)",
 					"-Wno-documentation-unknown-command",
@@ -868,17 +869,14 @@
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				COMBINE_HIDPI_IMAGES = YES;
-				HEADER_SEARCH_PATHS = (
-					"${PROJECT_DERIVED_FILE_DIR}/protos",
-					"$(SRCROOT)",
-				);
 				INFOPLIST_FILE = "Tests/UnitTests-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.yourcompany.${PRODUCT_NAME:identifier}";
 				PRODUCT_NAME = UnitTests;
 				SWIFT_OBJC_BRIDGING_HEADER = "Tests/UnitTests-Bridging-Header.h";
-				SWIFT_VERSION = 3.0;
+				SWIFT_VERSION = 4.0;
+				USER_HEADER_SEARCH_PATHS = "${PROJECT_DERIVED_FILE_DIR}/protos $(SRCROOT)";
 				WARNING_CFLAGS = (
 					"$(inherited)",
 					"-Wno-documentation-unknown-command",
@@ -891,7 +889,7 @@
 		C01FCF4F08A954540054247B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = YES;
+				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_SECURITY_FLOATLOOPCOUNTER = YES;
 				CLANG_ANALYZER_SECURITY_INSECUREAPI_RAND = YES;
@@ -947,6 +945,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				RUN_CLANG_STATIC_ANALYZER = YES;
 				SDKROOT = macosx;
+				USE_HEADERMAP = NO;
 				WARNING_CFLAGS = (
 					"-Wdocumentation-unknown-command",
 					"-Wundef",
@@ -961,7 +960,7 @@
 		C01FCF5008A954540054247B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = YES;
+				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_SECURITY_FLOATLOOPCOUNTER = YES;
 				CLANG_ANALYZER_SECURITY_INSECUREAPI_RAND = YES;
@@ -1015,6 +1014,7 @@
 				RUN_CLANG_STATIC_ANALYZER = YES;
 				SDKROOT = macosx;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				USE_HEADERMAP = NO;
 				WARNING_CFLAGS = (
 					"-Wdocumentation-unknown-command",
 					"-Wundef",
@@ -1031,8 +1031,8 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				COMBINE_HIDPI_IMAGES = YES;
-				HEADER_SEARCH_PATHS = "$(SRCROOT)";
 				PRODUCT_NAME = TestSingleSourceBuild;
+				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)";
 			};
 			name = Debug;
 		};
@@ -1041,8 +1041,8 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				COMBINE_HIDPI_IMAGES = YES;
-				HEADER_SEARCH_PATHS = "$(SRCROOT)";
 				PRODUCT_NAME = TestSingleSourceBuild;
+				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)";
 			};
 			name = Release;
 		};

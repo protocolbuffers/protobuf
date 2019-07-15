@@ -43,6 +43,7 @@
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/stubs/strutil.h>
+
 #include <google/protobuf/stubs/map_util.h>
 
 namespace google {
@@ -59,7 +60,7 @@ EnumLiteGenerator::EnumLiteGenerator(const EnumDescriptor* descriptor,
   for (int i = 0; i < descriptor_->value_count(); i++) {
     const EnumValueDescriptor* value = descriptor_->value(i);
     const EnumValueDescriptor* canonical_value =
-      descriptor_->FindValueByNumber(value->number());
+        descriptor_->FindValueByNumber(value->number());
 
     if (value == canonical_value) {
       canonical_values_.push_back(value);
@@ -85,15 +86,14 @@ void EnumLiteGenerator::Generate(io::Printer* printer) {
   printer->Indent();
 
   for (int i = 0; i < canonical_values_.size(); i++) {
-    std::map<string, string> vars;
+    std::map<std::string, std::string> vars;
     vars["name"] = canonical_values_[i]->name();
-    vars["number"] = SimpleItoa(canonical_values_[i]->number());
+    vars["number"] = StrCat(canonical_values_[i]->number());
     WriteEnumValueDocComment(printer, canonical_values_[i]);
     if (canonical_values_[i]->options().deprecated()) {
       printer->Print("@java.lang.Deprecated\n");
     }
-    printer->Print(vars,
-      "$name$($number$),\n");
+    printer->Print(vars, "$name$($number$),\n");
     printer->Annotate("name", canonical_values_[i]);
   }
 
@@ -103,31 +103,31 @@ void EnumLiteGenerator::Generate(io::Printer* printer) {
   }
 
   printer->Print(
-    ";\n"
-    "\n");
+      ";\n"
+      "\n");
 
   // -----------------------------------------------------------------
 
   for (int i = 0; i < aliases_.size(); i++) {
-    std::map<string, string> vars;
+    std::map<std::string, std::string> vars;
     vars["classname"] = descriptor_->name();
     vars["name"] = aliases_[i].value->name();
     vars["canonical_name"] = aliases_[i].canonical_value->name();
     WriteEnumValueDocComment(printer, aliases_[i].value);
-    printer->Print(vars,
-      "public static final $classname$ $name$ = $canonical_name$;\n");
+    printer->Print(
+        vars, "public static final $classname$ $name$ = $canonical_name$;\n");
     printer->Annotate("name", aliases_[i].value);
   }
 
   for (int i = 0; i < descriptor_->value_count(); i++) {
-    std::map<string, string> vars;
+    std::map<std::string, std::string> vars;
     vars["name"] = descriptor_->value(i)->name();
-    vars["number"] = SimpleItoa(descriptor_->value(i)->number());
+    vars["number"] = StrCat(descriptor_->value(i)->number());
     vars["{"] = "";
     vars["}"] = "";
     WriteEnumValueDocComment(printer, descriptor_->value(i));
     printer->Print(vars,
-      "public static final int ${$$name$_VALUE$}$ = $number$;\n");
+                   "public static final int ${$$name$_VALUE$}$ = $number$;\n");
     printer->Annotate("{", "}", descriptor_->value(i));
   }
   printer->Print("\n");
@@ -150,6 +150,8 @@ void EnumLiteGenerator::Generate(io::Printer* printer) {
       "}\n"
       "\n"
       "/**\n"
+      " * @param value The number of the enum to look for.\n"
+      " * @return The enum associated with the given number.\n"
       " * @deprecated Use {@link #forNumber(int)} instead.\n"
       " */\n"
       "@java.lang.Deprecated\n"
@@ -166,7 +168,7 @@ void EnumLiteGenerator::Generate(io::Printer* printer) {
   for (int i = 0; i < canonical_values_.size(); i++) {
     printer->Print("case $number$: return $name$;\n", "name",
                    canonical_values_[i]->name(), "number",
-                   SimpleItoa(canonical_values_[i]->number()));
+                   StrCat(canonical_values_[i]->number()));
   }
 
   printer->Outdent();
@@ -207,32 +209,20 @@ void EnumLiteGenerator::Generate(io::Printer* printer) {
       "classname", descriptor_->name());
 
   printer->Print(
-    "private final int value;\n\n"
-    "private $classname$(int value) {\n",
-    "classname", descriptor_->name());
+      "private final int value;\n\n"
+      "private $classname$(int value) {\n",
+      "classname", descriptor_->name());
   printer->Print(
-    "  this.value = value;\n"
-    "}\n");
+      "  this.value = value;\n"
+      "}\n");
 
   printer->Print(
-    "\n"
-    "// @@protoc_insertion_point(enum_scope:$full_name$)\n",
-    "full_name", descriptor_->full_name());
+      "\n"
+      "// @@protoc_insertion_point(enum_scope:$full_name$)\n",
+      "full_name", descriptor_->full_name());
 
   printer->Outdent();
   printer->Print("}\n\n");
-}
-
-bool EnumLiteGenerator::CanUseEnumValues() {
-  if (canonical_values_.size() != descriptor_->value_count()) {
-    return false;
-  }
-  for (int i = 0; i < descriptor_->value_count(); i++) {
-    if (descriptor_->value(i)->name() != canonical_values_[i]->name()) {
-      return false;
-    }
-  }
-  return true;
 }
 
 }  // namespace java

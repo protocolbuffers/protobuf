@@ -27,9 +27,9 @@
       </license>
     </licenses>
     <scm>
-      <url>https://github.com/google/protobuf</url>
+      <url>https://github.com/protocolbuffers/protobuf</url>
       <connection>
-        scm:git:https://github.com/google/protobuf.git
+        scm:git:https://github.com/protocolbuffers/protobuf.git
       </connection>
     </scm>
 

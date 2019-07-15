@@ -1,6 +1,7 @@
 <?php
 
 namespace Google\Protobuf\Benchmark;
+ini_set('memory_limit', '4096M');
 
 const NAME = "PhpBenchmark.php";
 
@@ -32,7 +33,7 @@ class BenchmarkMethod
             (new $args[1]())->mergeFromString($payloads->offsetGet($i));
         }
     }
-    
+
     // $args: array of message
     static function serialize(&$args) {
         foreach ($args as &$temp_message) {
@@ -48,7 +49,7 @@ class Benchmark
     private $benchmark_time;
     private $total_bytes;
     private $coefficient;
-    
+
     public function __construct($benchmark_name, $args, $total_bytes,
         $benchmark_time = 5.0) {
             $this->args = $args;
@@ -57,15 +58,15 @@ class Benchmark
             $this->total_bytes = $total_bytes;
             $this->coefficient = pow (10, 0) / pow(2, 20);
     }
-    
+
     public function runBenchmark() {
         $t = $this->runBenchmarkWithTimes(1);
         $times = ceil($this->benchmark_time / $t);
         return $this->total_bytes * $times /
-        $this->runBenchmarkWithTimes($times) *
+        ($times == 1 ? $t : $this->runBenchmarkWithTimes($times)) *
         $this->coefficient;
     }
-    
+
     private function runBenchmarkWithTimes($times) {
         $st = microtime(true);
         for ($i = 0; $i < $times; $i++) {
@@ -93,7 +94,7 @@ function getMessageName(&$dataset) {
     }
 }
 
-function runBenchmark($file) {
+function runBenchmark($file, $behavior_prefix) {
     $datafile = fopen($file, "r") or die("Unable to open file " . $file);
     $bytes = fread($datafile, filesize($file));
     $dataset = new BenchmarkDataset(NULL);
@@ -108,19 +109,19 @@ function runBenchmark($file) {
         array_push($message_list, $new_message);
         $total_bytes += strlen($payloads->offsetGet($i));
     }
-    
+
     $parse_benchmark = new Benchmark(
         "\Google\Protobuf\Benchmark\BenchmarkMethod::parse",
         array($dataset, $message_name), $total_bytes);
     $serialize_benchmark = new Benchmark(
         "\Google\Protobuf\Benchmark\BenchmarkMethod::serialize",
         $message_list, $total_bytes);
-    
+
     return array(
         "filename" => $file,
         "benchmarks" => array(
-            "parse_php" => $parse_benchmark->runBenchmark(),
-            "serailize_php" => $serialize_benchmark->runBenchmark()
+            $behavior_prefix . "_parse" => $parse_benchmark->runBenchmark(),
+            $behavior_prefix . "_serailize" => $serialize_benchmark->runBenchmark()
         ),
         "message_name" => $dataset->getMessageName()
     );
@@ -129,15 +130,27 @@ function runBenchmark($file) {
 // main
 $json_output = false;
 $results = array();
+$behavior_prefix = "";
+
 foreach ($argv as $index => $arg) {
     if ($index == 0) {
         continue;
     }
     if ($arg == "--json") {
         $json_output = true;
+    } else if (strpos($arg, "--behavior_prefix") == 0) {
+        $behavior_prefix = str_replace("--behavior_prefix=", "", $arg);
+    }
+}
+
+foreach ($argv as $index => $arg) {
+    if ($index == 0) {
+        continue;
+    }
+    if (substr($arg, 0, 2) == "--") {
         continue;
     } else {
-        array_push($results, runBenchmark($arg));
+        array_push($results, runBenchmark($arg, $behavior_prefix));
     }
 }
 

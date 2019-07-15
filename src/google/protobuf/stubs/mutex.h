@@ -32,6 +32,17 @@
 
 #include <mutex>
 
+#ifdef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
+
+#include <windows.h>
+
+// GetMessage conflicts with GeneratedMessageReflection::GetMessage().
+#ifdef GetMessage
+#undef GetMessage
+#endif
+
+#endif
+
 #include <google/protobuf/stubs/macros.h>
 
 // Define thread-safety annotations for use below, if we are building with
@@ -41,10 +52,14 @@
   __attribute__((acquire_capability(__VA_ARGS__)))
 #define GOOGLE_PROTOBUF_RELEASE(...) \
   __attribute__((release_capability(__VA_ARGS__)))
+#define GOOGLE_PROTOBUF_CAPABILITY(x) __attribute__((capability(x)))
 #else
 #define GOOGLE_PROTOBUF_ACQUIRE(...)
 #define GOOGLE_PROTOBUF_RELEASE(...)
+#define GOOGLE_PROTOBUF_CAPABILITY(x)
 #endif
+
+#include <google/protobuf/port_def.inc>
 
 // ===================================================================
 // emulates google3/base/mutex.h
@@ -54,10 +69,31 @@ namespace internal {
 
 #define GOOGLE_PROTOBUF_LINKER_INITIALIZED
 
+#ifdef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
+
+// This class is a lightweight replacement for std::mutex on Windows platforms.
+// std::mutex does not work on Windows XP SP2 with the latest VC++ libraries,
+// because it utilizes the Concurrency Runtime that is only supported on Windows
+// XP SP3 and above.
+class PROTOBUF_EXPORT CriticalSectionLock {
+ public:
+  CriticalSectionLock() { InitializeCriticalSection(&critical_section_); }
+  ~CriticalSectionLock() { DeleteCriticalSection(&critical_section_); }
+  void lock() { EnterCriticalSection(&critical_section_); }
+  void unlock() { LeaveCriticalSection(&critical_section_); }
+
+ private:
+  CRITICAL_SECTION critical_section_;
+
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(CriticalSectionLock);
+};
+
+#endif
+
 // Mutex is a natural type to wrap. As both google and other organization have
 // specialized mutexes. gRPC also provides an injection mechanism for custom
 // mutexes.
-class LIBPROTOBUF_EXPORT WrappedMutex {
+class PROTOBUF_EXPORT GOOGLE_PROTOBUF_CAPABILITY("mutex") WrappedMutex {
  public:
   WrappedMutex() = default;
   void Lock() GOOGLE_PROTOBUF_ACQUIRE() { mu_.lock(); }
@@ -67,13 +103,17 @@ class LIBPROTOBUF_EXPORT WrappedMutex {
   void AssertHeld() const {}
 
  private:
+#ifndef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
   std::mutex mu_;
+#else  // ifndef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
+  CriticalSectionLock mu_;
+#endif  // #ifndef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
 };
 
 using Mutex = WrappedMutex;
 
 // MutexLock(mu) acquires mu when constructed and releases it when destroyed.
-class LIBPROTOBUF_EXPORT MutexLock {
+class PROTOBUF_EXPORT MutexLock {
  public:
   explicit MutexLock(Mutex *mu) : mu_(mu) { this->mu_->Lock(); }
   ~MutexLock() { this->mu_->Unlock(); }
@@ -87,7 +127,7 @@ typedef MutexLock ReaderMutexLock;
 typedef MutexLock WriterMutexLock;
 
 // MutexLockMaybe is like MutexLock, but is a no-op when mu is nullptr.
-class LIBPROTOBUF_EXPORT MutexLockMaybe {
+class PROTOBUF_EXPORT MutexLockMaybe {
  public:
   explicit MutexLockMaybe(Mutex *mu) :
     mu_(mu) { if (this->mu_ != nullptr) { this->mu_->Lock(); } }
@@ -140,5 +180,7 @@ using internal::MutexLockMaybe;
 
 #undef GOOGLE_PROTOBUF_ACQUIRE
 #undef GOOGLE_PROTOBUF_RELEASE
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_STUBS_MUTEX_H_

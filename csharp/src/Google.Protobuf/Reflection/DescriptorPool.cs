@@ -45,21 +45,21 @@ namespace Google.Protobuf.Reflection
         private readonly IDictionary<string, IDescriptor> descriptorsByName =
             new Dictionary<string, IDescriptor>();
 
-        private readonly IDictionary<DescriptorIntPair, FieldDescriptor> fieldsByNumber =
-            new Dictionary<DescriptorIntPair, FieldDescriptor>();
+        private readonly IDictionary<ObjectIntPair<IDescriptor>, FieldDescriptor> fieldsByNumber =
+            new Dictionary<ObjectIntPair<IDescriptor>, FieldDescriptor>();
 
-        private readonly IDictionary<DescriptorIntPair, EnumValueDescriptor> enumValuesByNumber =
-            new Dictionary<DescriptorIntPair, EnumValueDescriptor>();
+        private readonly IDictionary<ObjectIntPair<IDescriptor>, EnumValueDescriptor> enumValuesByNumber =
+            new Dictionary<ObjectIntPair<IDescriptor>, EnumValueDescriptor>();
 
         private readonly HashSet<FileDescriptor> dependencies;
 
-        internal DescriptorPool(FileDescriptor[] dependencyFiles)
+        internal DescriptorPool(IEnumerable<FileDescriptor> dependencyFiles)
         {
             dependencies = new HashSet<FileDescriptor>();
-            for (int i = 0; i < dependencyFiles.Length; i++)
+            foreach (var dependencyFile in dependencyFiles)
             {
-                dependencies.Add(dependencyFiles[i]);
-                ImportPublicDependencies(dependencyFiles[i]);
+                dependencies.Add(dependencyFile);
+                ImportPublicDependencies(dependencyFile);
             }
 
             foreach (FileDescriptor dependency in dependencyFiles)
@@ -209,14 +209,14 @@ namespace Google.Protobuf.Reflection
         internal FieldDescriptor FindFieldByNumber(MessageDescriptor messageDescriptor, int number)
         {
             FieldDescriptor ret;
-            fieldsByNumber.TryGetValue(new DescriptorIntPair(messageDescriptor, number), out ret);
+            fieldsByNumber.TryGetValue(new ObjectIntPair<IDescriptor>(messageDescriptor, number), out ret);
             return ret;
         }
 
         internal EnumValueDescriptor FindEnumValueByNumber(EnumDescriptor enumDescriptor, int number)
         {
             EnumValueDescriptor ret;
-            enumValuesByNumber.TryGetValue(new DescriptorIntPair(enumDescriptor, number), out ret);
+            enumValuesByNumber.TryGetValue(new ObjectIntPair<IDescriptor>(enumDescriptor, number), out ret);
             return ret;
         }
 
@@ -227,7 +227,8 @@ namespace Google.Protobuf.Reflection
         /// containing type and number already exists.</exception>
         internal void AddFieldByNumber(FieldDescriptor field)
         {
-            DescriptorIntPair key = new DescriptorIntPair(field.ContainingType, field.FieldNumber);
+            // for extensions, we use the extended type, otherwise we use the containing type
+            ObjectIntPair<IDescriptor> key = new ObjectIntPair<IDescriptor>(field.Proto.HasExtendee ? field.ExtendeeType : field.ContainingType, field.FieldNumber);
             FieldDescriptor old;
             if (fieldsByNumber.TryGetValue(key, out old))
             {
@@ -246,7 +247,7 @@ namespace Google.Protobuf.Reflection
         /// </summary>
         internal void AddEnumValueByNumber(EnumValueDescriptor enumValue)
         {
-            DescriptorIntPair key = new DescriptorIntPair(enumValue.EnumDescriptor, enumValue.Number);
+            ObjectIntPair<IDescriptor> key = new ObjectIntPair<IDescriptor>(enumValue.EnumDescriptor, enumValue.Number);
             if (!enumValuesByNumber.ContainsKey(key))
             {
                 enumValuesByNumber[key] = enumValue;
@@ -327,41 +328,6 @@ namespace Google.Protobuf.Reflection
             else
             {
                 return result;
-            }
-        }
-
-        /// <summary>
-        /// Struct used to hold the keys for the fieldByNumber table.
-        /// </summary>
-        private struct DescriptorIntPair : IEquatable<DescriptorIntPair>
-        {
-            private readonly int number;
-            private readonly IDescriptor descriptor;
-
-            internal DescriptorIntPair(IDescriptor descriptor, int number)
-            {
-                this.number = number;
-                this.descriptor = descriptor;
-            }
-
-            public bool Equals(DescriptorIntPair other)
-            {
-                return descriptor == other.descriptor
-                       && number == other.number;
-            }
-
-            public override bool Equals(object obj)
-            {
-                if (obj is DescriptorIntPair)
-                {
-                    return Equals((DescriptorIntPair) obj);
-                }
-                return false;
-            }
-
-            public override int GetHashCode()
-            {
-                return descriptor.GetHashCode()*((1 << 16) - 1) + number;
             }
         }
     }

@@ -42,6 +42,8 @@
 #include <google/protobuf/compiler/code_generator.h>
 #include <google/protobuf/io/printer.h>
 
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -73,6 +75,8 @@ std::string StripDotProto(const std::string& proto_file);
 
 // Gets unqualified name of the reflection class
 std::string GetReflectionClassUnqualifiedName(const FileDescriptor* descriptor);
+// Gets unqualified name of the extension class
+std::string GetExtensionClassUnqualifiedName(const FileDescriptor* descriptor);
 
 std::string GetClassName(const EnumDescriptor* descriptor);
 
@@ -96,7 +100,8 @@ std::string UnderscoresToPascalCase(const std::string& input);
 
 // Note that we wouldn't normally want to export this (we're not expecting
 // it to be used outside libprotoc itself) but this exposes it for testing.
-std::string LIBPROTOC_EXPORT GetEnumValueName(const std::string& enum_name, const std::string& enum_value_name);
+std::string PROTOC_EXPORT GetEnumValueName(const std::string& enum_name,
+                                           const std::string& enum_value_name);
 
 // TODO(jtattermusch): perhaps we could move this to strutil
 std::string StringToBase64(const std::string& input);
@@ -104,14 +109,21 @@ std::string StringToBase64(const std::string& input);
 std::string FileDescriptorToBase64(const FileDescriptor* descriptor);
 
 FieldGeneratorBase* CreateFieldGenerator(const FieldDescriptor* descriptor,
-                                         int fieldOrdinal,
+                                         int presenceIndex,
                                          const Options* options);
+
+std::string GetFullExtensionName(const FieldDescriptor* descriptor);
+
+bool IsNullable(const FieldDescriptor* descriptor);
 
 // Determines whether the given message is a map entry message,
 // i.e. one implicitly created by protoc due to a map<key, value> field.
 inline bool IsMapEntryMessage(const Descriptor* descriptor) {
   return descriptor->options().map_entry();
 }
+
+// Checks if this descriptor is for a group and gets its end tag or 0 if it's not a group
+uint GetGroupEndTag(const Descriptor* descriptor);
 
 // Determines whether we're generating code for the proto representation of
 // descriptors etc, for use in the runtime. This is the only type which is
@@ -141,8 +153,15 @@ inline bool IsWrapperType(const FieldDescriptor* descriptor) {
       descriptor->message_type()->file()->name() == "google/protobuf/wrappers.proto";
 }
 
+inline bool IsProto2(const FileDescriptor* descriptor) {
+  return descriptor->syntax() == FileDescriptor::SYNTAX_PROTO2;
+}
+
 }  // namespace csharp
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
+
 #endif  // GOOGLE_PROTOBUF_COMPILER_CSHARP_HELPERS_H__

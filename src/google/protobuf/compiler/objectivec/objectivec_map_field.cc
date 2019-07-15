@@ -32,11 +32,8 @@
 #include <string>
 
 #include <google/protobuf/compiler/objectivec/objectivec_map_field.h>
-#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/compiler/objectivec/objectivec_helpers.h>
 #include <google/protobuf/io/printer.h>
-#include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/stubs/substitute.h>
 
 namespace google {
 namespace protobuf {

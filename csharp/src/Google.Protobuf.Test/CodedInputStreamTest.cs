@@ -327,14 +327,14 @@ namespace Google.Protobuf
         [Test]
         public void MaliciousRecursion()
         {
-            ByteString data64 = MakeRecursiveMessage(64).ToByteString();
-            ByteString data65 = MakeRecursiveMessage(65).ToByteString();
+            ByteString atRecursiveLimit = MakeRecursiveMessage(CodedInputStream.DefaultRecursionLimit).ToByteString();
+            ByteString beyondRecursiveLimit = MakeRecursiveMessage(CodedInputStream.DefaultRecursionLimit + 1).ToByteString();
 
-            AssertMessageDepth(TestRecursiveMessage.Parser.ParseFrom(data64), 64);
+            AssertMessageDepth(TestRecursiveMessage.Parser.ParseFrom(atRecursiveLimit), CodedInputStream.DefaultRecursionLimit);
 
-            Assert.Throws<InvalidProtocolBufferException>(() => TestRecursiveMessage.Parser.ParseFrom(data65));
+            Assert.Throws<InvalidProtocolBufferException>(() => TestRecursiveMessage.Parser.ParseFrom(beyondRecursiveLimit));
 
-            CodedInputStream input = CodedInputStream.CreateWithLimits(new MemoryStream(data64.ToByteArray()), 1000000, 63);
+            CodedInputStream input = CodedInputStream.CreateWithLimits(new MemoryStream(atRecursiveLimit.ToByteArray()), 1000000, CodedInputStream.DefaultRecursionLimit - 1);
             Assert.Throws<InvalidProtocolBufferException>(() => TestRecursiveMessage.Parser.ParseFrom(input));
         }
 
@@ -371,6 +371,42 @@ namespace Google.Protobuf
             Assert.AreEqual(tag, input.ReadTag());
             string text = input.ReadString();
             Assert.AreEqual('\ufffd', text[0]);
+        }
+
+        [Test]
+        public void ReadNegativeSizedStringThrowsInvalidProtocolBufferException()
+        {
+            MemoryStream ms = new MemoryStream();
+            CodedOutputStream output = new CodedOutputStream(ms);
+
+            uint tag = WireFormat.MakeTag(1, WireFormat.WireType.LengthDelimited);
+            output.WriteRawVarint32(tag);
+            output.WriteLength(-1);
+            output.Flush();
+            ms.Position = 0;
+
+            CodedInputStream input = new CodedInputStream(ms);
+
+            Assert.AreEqual(tag, input.ReadTag());
+            Assert.Throws<InvalidProtocolBufferException>(() => input.ReadString());
+        }
+
+        [Test]
+        public void ReadNegativeSizedBytesThrowsInvalidProtocolBufferException()
+        {
+            MemoryStream ms = new MemoryStream();
+            CodedOutputStream output = new CodedOutputStream(ms);
+
+            uint tag = WireFormat.MakeTag(1, WireFormat.WireType.LengthDelimited);
+            output.WriteRawVarint32(tag);
+            output.WriteLength(-1);
+            output.Flush();
+            ms.Position = 0;
+
+            CodedInputStream input = new CodedInputStream(ms);
+
+            Assert.AreEqual(tag, input.ReadTag());
+            Assert.Throws<InvalidProtocolBufferException>(() => input.ReadBytes());
         }
 
         /// <summary>

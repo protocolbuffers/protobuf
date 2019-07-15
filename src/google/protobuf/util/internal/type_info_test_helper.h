@@ -72,13 +72,13 @@ class TypeInfoTestHelper {
   TypeInfo* GetTypeInfo();
 
   ProtoStreamObjectSource* NewProtoSource(io::CodedInputStream* coded_input,
-                                          const string& type_url);
+                                          const std::string& type_url);
 
   ProtoStreamObjectWriter* NewProtoWriter(
-      const string& type_url, strings::ByteSink* output,
+      const std::string& type_url, strings::ByteSink* output,
       ErrorListener* listener, const ProtoStreamObjectWriter::Options& options);
 
-  DefaultValueObjectWriter* NewDefaultValueWriter(const string& type_url,
+  DefaultValueObjectWriter* NewDefaultValueWriter(const std::string& type_url,
                                                   ObjectWriter* writer);
 
  private:

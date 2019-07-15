@@ -161,6 +161,11 @@ bool native_slot_set(upb_fieldtype_t type, const zend_class_entry* klass,
 bool native_slot_set_by_array(upb_fieldtype_t type,
                               const zend_class_entry* klass, void* memory,
                               zval* value TSRMLS_DC) {
+#if PHP_MAJOR_VERSION >= 7
+  if (Z_ISREF_P(value)) {
+    ZVAL_DEREF(value);
+  }
+#endif
   switch (type) {
     case UPB_TYPE_STRING:
     case UPB_TYPE_BYTES: {
@@ -180,7 +185,8 @@ bool native_slot_set_by_array(upb_fieldtype_t type,
       PHP_PROTO_ZVAL_STRINGL(DEREF(memory, zval*), Z_STRVAL_P(value),
                              Z_STRLEN_P(value), 1);
 #else
-      *(zend_string**)memory = zend_string_dup(Z_STR_P(value), 0);
+      *(zend_string**)memory =
+          zend_string_init(Z_STRVAL_P(value), Z_STRLEN_P(value), 0);
 #endif
       break;
     }
@@ -212,6 +218,11 @@ bool native_slot_set_by_array(upb_fieldtype_t type,
 
 bool native_slot_set_by_map(upb_fieldtype_t type, const zend_class_entry* klass,
                             void* memory, zval* value TSRMLS_DC) {
+#if PHP_MAJOR_VERSION >= 7
+  if (Z_ISREF_P(value)) {
+    ZVAL_DEREF(value);
+  }
+#endif
   switch (type) {
     case UPB_TYPE_STRING:
     case UPB_TYPE_BYTES: {
@@ -231,7 +242,8 @@ bool native_slot_set_by_map(upb_fieldtype_t type, const zend_class_entry* klass,
       PHP_PROTO_ZVAL_STRINGL(DEREF(memory, zval*), Z_STRVAL_P(value),
                              Z_STRLEN_P(value), 1);
 #else
-      *(zend_string**)memory = zend_string_dup(Z_STR_P(value), 0);
+      *(zend_string**)memory =
+          zend_string_init(Z_STRVAL_P(value), Z_STRLEN_P(value), 0);
 #endif
       break;
     }
@@ -541,11 +553,11 @@ const zend_class_entry* field_type_class(
     const upb_fielddef* field PHP_PROTO_TSRMLS_DC) {
   if (upb_fielddef_type(field) == UPB_TYPE_MESSAGE) {
     Descriptor* desc = UNBOX_HASHTABLE_VALUE(
-        Descriptor, get_def_obj(upb_fielddef_subdef(field)));
+        Descriptor, get_def_obj(upb_fielddef_msgsubdef(field)));
     return desc->klass;
   } else if (upb_fielddef_type(field) == UPB_TYPE_ENUM) {
     EnumDescriptor* desc = UNBOX_HASHTABLE_VALUE(
-        EnumDescriptor, get_def_obj(upb_fielddef_subdef(field)));
+        EnumDescriptor, get_def_obj(upb_fielddef_enumsubdef(field)));
     return desc->klass;
   }
   return NULL;
@@ -730,16 +742,13 @@ MessageLayout* create_layout(const upb_msgdef* msgdef) {
   }
 
   layout->size = off;
-
   layout->msgdef = msgdef;
-  upb_msgdef_ref(layout->msgdef, &layout->msgdef);
 
   return layout;
 }
 
 void free_layout(MessageLayout* layout) {
   FREE(layout->fields);
-  upb_msgdef_unref(layout->msgdef, &layout->msgdef);
   FREE(layout);
 }
 

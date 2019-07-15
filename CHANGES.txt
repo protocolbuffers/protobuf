@@ -1,3 +1,140 @@
+2019-04-29 version 3.8.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  C++
+  * Use std::atomic<int32> in case of myriad2 platform
+  * Always declare enums to be int-sized
+  * Added DebugString() and ShortDebugString() methods on MessageLite
+  * Specialized different parse loop control flows
+  * Make hasbits potentially in register. The or's start forming an obstacle because it's a read modify store on the same mem address on each iteration.
+  * Move to an internal MACRO for parser validity checks.
+  * Improve map parsing performance.
+  * Make MergePartialFromCodedStream non virtual. This allows direct calls, potential inlining and is also a code health improvement
+  * Add an overall limit to parse_context to prevent reading past it. This allows to remove a annoying level of indirection.
+  * Fix a mistake, we shouldn't verify map key/value strings for utf8 in opt mode for proto2.
+  * Further improvements to cut binary size.
+  * Prepare to make MergePartialFromCodedStream non-virtual.
+  * A report on some interesting behavior change in python (caused by b/27494216) made me realize there is a check that needs to be done in case the parse ended on a end group tag.
+  * Add a note of caution to the comments around skip in CodedOutputStream.
+  * Simplify end check.
+  * Add overload for ParseMessage for MessageLite/Message types. If the explicit type is not known inlining won't help de-virtualizing the virtual call.
+  * Reduce linker input. It turns out that ParseMessage is not inlined, producing  template instantiations that are used only once and save nothing but cost more.
+  * Improve the parser.
+  * [c++17] Changed proto2::RepeatedPtrField iterators to no longer derive from the deprecated std::iterator class.
+  * Change the default value of case_insensitive_enum_parsing to false for JsonStringToMessage.
+  * Add a warning if a field name doesn't match the style guide.
+  * Fix TextFormat not round-trip correctly when float value is max float.
+  * Added locationed info for some errors at compiler
+  * Python reserved keywords are now working with getattr()/setattr() for most descriptors.
+  * Added AllowUnknownField() in text_format
+  * Append '_' to C++ reserved keywords for message, enum, extension
+  * Fix MSVC warning C4244 in protobuf's parse_context.h.
+  * Updating Iterators to be compatible with C++17 in MSVC.
+  * Use capability annotation in mutex.h
+  * Fix "UndefinedBehaviorSanitizer: cfi-bad-type"
+  * CriticalSectionLock class as a lightweight replacement for std::mutex on Windows platforms.
+  * Removed vestigial wire_format_lite_inl.h
+
+  C#
+  * Added System.Memory dependency.
+
+  Java
+  * Make Java protoc code generator ignore optimize_for LITE_RUNTIME. Users should instead use the Java lite protoc plugin.
+  * Change Extension getMessageDefaultInstance() to return Message instead of MessageLite.
+  * Prevent malicious input streams from leaking buffers for ByteString or ByteBuffer parsing.
+  * Release new Javalite runtime.
+  * Show warning in case potential file name conflict.
+  * Allow Java reserved keywords to be used in extensions.
+  * Added setAllowUnknownFields() in text format
+  * Add memoization to ExtensionRegistryLite.getEmptyRegistry()
+  * Improve performance of CodedOutputStream.writeUInt32NoTag
+  * Add an optimized mismatch-finding algorithm to UnsafeUtil.
+  * When serializing uint32 varints, check that we have MAX_VARINT32_SIZE bytes left, not just MAX_VARINT_SIZE.
+  * Minor optimization to RopeByteString.PieceIterator
+
+  JavaScript
+  * Simplify generated toObject code when the default value is used.
+
+  Python
+  * Changes implementation of Name() for enums that allow aliases in proto2 in Python to be in line with claims in C++ implementation (to return first value).
+  * Added double_format option in text format printer.
+  * Added iter and __contains__ to extension dict
+  * Added allow_unknown_field option in python text format parser
+  * Fixed Timestamp.ToDatetime() loses precision issue
+  * Support unknown field in text format printer.
+  * Float field will be convert to inf if bigger than struct.unpack('f', b'\xff\xff\x7f\x7f')[0] which is about 3.4028234664e+38,
+  convert to -inf if smaller than -3.4028234664e+38
+  * Allowed casting str->bytes in Message.__setstate__
+
+  Ruby
+  * Helper methods to get enum name for Ruby.
+
+
+2019-01-24 version 3.7.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  C++
+  * Introduced new MOMI (maybe-outside-memory-interval) parser.
+  * Add an option to json_util to parse enum as case-insensitive. In the future, enum parsing in json_util will become case-sensitive.
+  * Added conformance test for enum aliases
+  * Added support for --cpp_out=speed:...
+  * Added use of C++ override keyword where appropriate
+  * Many other cleanups and fixes.
+
+  Java
+  * Fix illegal reflective access warning in JDK 9+
+  * Add BOM
+
+  Python
+  * Added Python 3.7 compatibility.
+  * Modified ParseFromString to return bytes parsed .
+  * Introduce Proto C API.
+  * FindFileContainingSymbol in descriptor pool is now able to find field and enum values.
+  * reflection.MakeClass()  and  reflection.ParseMessage() are deprecated.
+  * Added DescriptorPool.FindMethodByName() method in pure python (c extension alreay has it)
+  * Flipped proto3 to preserve unknown fields by default.
+  * Added support for memoryview in python3 proto message parsing.
+  * Added MergeFrom for repeated scalar fields in c extension (pure python already has it)
+  * Surrogates are now rejected at setters in python3.
+  * Added public unknown field API.
+  * RecursionLimit is also set to max if allow_oversize_protos is enabled.
+  * Disallow duplicate scalars in proto3 text_format parse.
+  * Fix some segment faults for c extension map field.
+
+  PHP
+  * Most issues for json encoding/decoding in the c extension have been fixed. There are still some edge cases not fixed. For more details, check conformance/failure_list_php_c.txt.
+  * Supports php 7.3
+  * Added helper methods to convert between enum values and names.
+  * Allow setting/getting wrapper message fields using primitive values.
+  * Various bug fixes.
+
+  Ruby
+  * Ruby 2.6 support.
+  * Drops support for ruby < 2.3.
+  * Most issues for json encoding/decoding in the c extension have been fixed. There are still some edge cases not fixed. For more details, check conformance/failure_list_ruby.txt.
+  * Json parsing can specify an option to ignore unknown fields: msg.decode_json(data, {ignore_unknown_fields: true}).
+  * Added support for proto2 syntax (partially).
+  * Various bug fixes.
+
+  Csharp
+  * More support for FieldMask include merge, intersect and more.
+  * Increasing the default recursion limit to 100.
+  * Support loading FileDescriptors dynamically.
+  * Provide access to comments from descriptors.
+  * Added Any.Is method.
+  * Compatible with C# 6
+  * Added IComparable and comparison operators on Timestamp.
+
+  Objective C
+  * Add ability to introspect list of enum values (#4678)
+  * Copy the value when setting message/data fields (#5215)
+  * Support suppressing the objc package prefix checks on a list of files (#5309)
+  * More complete keyword and NSObject method (via categories) checks for field names, can result in more fields being rename, but avoids the collisions at runtime (#5289)
+  * Small fixes to TextFormat generation for extensions (#5362)
+  * Provide more details/context in deprecation messages (#5412)
+  * Array/Dictionary enumeration blocks NS_NOESCAPE annotation for Swift (#5421)
+  * Properly annotate extensions for ARC when their names imply behaviors (#5427)
+  * Enum alias name collision improvements (#5480)
+
+
 2018-07-27 version 3.6.1 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   C++
@@ -102,7 +239,7 @@
   Planned Future Changes
   * Make C++ implementation C++11 only: we plan to require C++11 to build
     protobuf code starting from 3.6.0 release. Please join this github issue:
-    https://github.com/google/protobuf/issues/2780 to provide your feedback.
+    https://github.com/protocolbuffers/protobuf/issues/2780 to provide your feedback.
 
   protoc
   * Fixed a bug introduced in 3.5.0 and protoc in Windows now accepts non-ascii
@@ -133,7 +270,7 @@
   Planned Future Changes
   * Make C++ implementation C++11 only: we plan to require C++11 to build
     protobuf code starting from 3.6.0 release. Please join this github issue:
-    https://github.com/google/protobuf/issues/2780 to provide your feedback.
+    https://github.com/protocolbuffers/protobuf/issues/2780 to provide your feedback.
 
   General
   * Unknown fields are now preserved in proto3 for most of the language
@@ -220,14 +357,14 @@
 
         For issues and discussions:
 
-          https://github.com/google/protobuf/issues/272
+          https://github.com/protocolbuffers/protobuf/issues/272
 
       - Make C++ implementation C++11 only: we plan to require C++11 to build
         protobuf code starting from 3.5.0 or 3.6.0 release, after unknown fields
         semantic changes are finished. Please join this
         github issue:
 
-          https://github.com/google/protobuf/issues/2780
+          https://github.com/protocolbuffers/protobuf/issues/2780
 
         to provide your feedback.
 
@@ -347,14 +484,14 @@
 
         for the timeline and follow up this github issue:
 
-          https://github.com/google/protobuf/issues/272
+          https://github.com/protocolbuffers/protobuf/issues/272
 
         for discussion.
       - Make C++ implementation C++11 only: we plan to require C++11 to build
         protobuf code starting from 3.4.0 or 3.5.0 release. Please join this
         github issue:
 
-          https://github.com/google/protobuf/issues/2780
+          https://github.com/protocolbuffers/protobuf/issues/2780
 
         to provide your feedback.
 
@@ -581,7 +718,7 @@
     details about APIs.
 
   Objective-C
-  * Helpers are now provided for working the the Any well known type (see
+  * Helpers are now provided for working the Any well known type (see
     GPBWellKnownTypes.h for the api additions).
   * Some improvements in startup code (especially when extensions aren’t used).
 

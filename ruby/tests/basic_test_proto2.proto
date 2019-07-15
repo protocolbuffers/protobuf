@@ -1,0 +1,162 @@
+syntax = "proto2";
+
+package basic_test_proto2;
+
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/struct.proto";
+
+message Foo {
+  optional Bar bar = 1;
+  repeated Baz baz = 2;
+}
+
+message Bar {
+  optional string msg = 1;
+}
+
+message Baz {
+  optional string msg = 1;
+}
+
+message TestMessage {
+  optional int32 optional_int32 = 1;
+  optional int64 optional_int64 = 2;
+  optional uint32 optional_uint32 = 3;
+  optional uint64 optional_uint64 = 4;
+  optional bool optional_bool = 5;
+  optional float optional_float = 6;
+  optional double optional_double = 7;
+  optional string optional_string = 8;
+  optional bytes optional_bytes = 9;
+  optional TestMessage2 optional_msg = 10;
+  optional TestEnum optional_enum = 11;
+
+  repeated int32 repeated_int32 = 12;
+  repeated int64 repeated_int64 = 13;
+  repeated uint32 repeated_uint32 = 14;
+  repeated uint64 repeated_uint64 = 15;
+  repeated bool repeated_bool = 16;
+  repeated float repeated_float = 17;
+  repeated double repeated_double = 18;
+  repeated string repeated_string = 19;
+  repeated bytes repeated_bytes = 20;
+  repeated TestMessage2 repeated_msg = 21;
+  repeated TestEnum repeated_enum = 22;
+}
+
+message TestMessage2 {
+  optional int32 foo = 1;
+}
+
+message TestMessageDefaults {
+  optional int32 optional_int32 = 1 [default = 1];
+  optional int64 optional_int64 = 2 [default = 2];
+  optional uint32 optional_uint32 = 3 [default = 3];
+  optional uint64 optional_uint64 = 4 [default = 4];
+  optional bool optional_bool = 5 [default = true];
+  optional float optional_float = 6 [default = 6];
+  optional double optional_double = 7 [default = 7];
+  optional string optional_string = 8 [default = "Default Str"];
+  optional bytes optional_bytes = 9 [default = "\xCF\xA5s\xBD\xBA\xE6fubar"];
+  optional TestMessage2 optional_msg = 10;
+  optional TestNonZeroEnum optional_enum = 11 [default = B2];
+}
+
+enum TestEnum {
+  Default = 0;
+  A = 1;
+  B = 2;
+  C = 3;
+}
+
+enum TestNonZeroEnum {
+  A2 = 1;
+  B2 = 2;
+  C2 = 3;
+}
+
+message TestEmbeddedMessageParent {
+  optional TestEmbeddedMessageChild child_msg = 1;
+  optional int32 number = 2;
+
+  repeated TestEmbeddedMessageChild repeated_msg = 3;
+  repeated int32 repeated_number = 4;
+}
+
+message TestEmbeddedMessageChild {
+  optional TestMessage sub_child = 1;
+}
+
+message Recursive1 {
+  optional Recursive2 foo = 1;
+}
+
+message Recursive2 {
+  optional Recursive1 foo = 1;
+}
+
+message MapMessageWireEquiv {
+  repeated MapMessageWireEquiv_entry1 map_string_int32 = 1;
+  repeated MapMessageWireEquiv_entry2 map_string_msg = 2;
+}
+
+message MapMessageWireEquiv_entry1 {
+  optional string key = 1;
+  optional int32 value = 2;
+}
+
+message MapMessageWireEquiv_entry2 {
+  optional string key = 1;
+  optional TestMessage2 value = 2;
+}
+
+message OneofMessage {
+  oneof my_oneof {
+    string a = 1;
+    int32 b = 2;
+    TestMessage2 c = 3;
+    TestEnum d = 4;
+  }
+}
+
+message Wrapper {
+  optional google.protobuf.DoubleValue double = 1;
+  optional google.protobuf.FloatValue float = 2;
+  optional google.protobuf.Int32Value int32 = 3;
+  optional google.protobuf.Int64Value int64 = 4;
+  optional google.protobuf.UInt32Value uint32 = 5;
+  optional google.protobuf.UInt64Value uint64 = 6;
+  optional google.protobuf.BoolValue bool = 7;
+  optional google.protobuf.StringValue string = 8;
+  optional google.protobuf.BytesValue bytes = 9;
+  optional string real_string = 100;
+  oneof a_oneof {
+    string oneof_string = 10;
+  }
+}
+
+message TimeMessage {
+  optional google.protobuf.Timestamp timestamp = 1;
+  optional google.protobuf.Duration duration = 2;
+}
+
+message Enumer {
+  optional TestEnum optional_enum = 11;
+  repeated TestEnum repeated_enum = 22;
+  optional string a_const = 3;
+  oneof a_oneof {
+    string str = 100;
+    TestEnum const = 101;
+  }
+}
+
+message MyRepeatedStruct {
+  repeated MyStruct structs = 1;
+}
+
+message MyStruct {
+  optional string string = 1;
+  optional google.protobuf.Struct struct = 2;
+}

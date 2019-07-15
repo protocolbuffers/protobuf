@@ -44,9 +44,11 @@ from google.protobuf import unittest_pb2
 from google.protobuf import descriptor_pb2
 from google.protobuf.internal import factory_test2_pb2
 from google.protobuf.internal import no_package_pb2
+from google.protobuf.internal import testing_refleaks
 from google.protobuf import descriptor_database
 
 
+@testing_refleaks.TestCase
 class DescriptorDatabaseTest(unittest.TestCase):
 
   def testAdd(self):
@@ -103,9 +105,8 @@ class DescriptorDatabaseTest(unittest.TestCase):
     self.assertEqual(file_desc_proto2, db.FindFileContainingSymbol(
         'protobuf_unittest.TestAllTypes.none_field'))
 
-    self.assertRaises(KeyError,
-                      db.FindFileContainingSymbol,
-                      'protobuf_unittest.NoneMessage')
+    with self.assertRaisesRegexp(KeyError, r'\'protobuf_unittest\.NoneMessage\''):
+      db.FindFileContainingSymbol('protobuf_unittest.NoneMessage')
 
   def testConflictRegister(self):
     db = descriptor_database.DescriptorDatabase()
@@ -114,19 +115,18 @@ class DescriptorDatabaseTest(unittest.TestCase):
     db.Add(unittest_fd)
     conflict_fd = descriptor_pb2.FileDescriptorProto.FromString(
         unittest_pb2.DESCRIPTOR.serialized_pb)
-    conflict_fd.name = 'other_file'
+    conflict_fd.name = 'other_file2'
     with warnings.catch_warnings(record=True) as w:
       # Cause all warnings to always be triggered.
       warnings.simplefilter('always')
       db.Add(conflict_fd)
       self.assertTrue(len(w))
       self.assertIs(w[0].category, RuntimeWarning)
-      self.assertIn('Conflict register for file "other_file": ',
+      self.assertIn('Conflict register for file "other_file2": ',
                     str(w[0].message))
       self.assertIn('already defined in file '
                     '"google/protobuf/unittest.proto"',
                     str(w[0].message))
-
 
 if __name__ == '__main__':
   unittest.main()

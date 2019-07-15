@@ -72,7 +72,7 @@ class DynamicMessageTest : public ::testing::TestWithParam<bool> {
   const Descriptor* proto3_descriptor_;
   const Message* proto3_prototype_;
 
-  DynamicMessageTest(): factory_(&pool_) {}
+  DynamicMessageTest() : factory_(&pool_) {}
 
   virtual void SetUp() {
     // We want to make sure that DynamicMessage works (particularly with
@@ -86,11 +86,11 @@ class DynamicMessageTest : public ::testing::TestWithParam<bool> {
 
     unittest::TestAllTypes::descriptor()->file()->CopyTo(&unittest_file);
     unittest_import::ImportMessage::descriptor()->file()->CopyTo(
-      &unittest_import_file);
+        &unittest_import_file);
     unittest_import::PublicImportMessage::descriptor()->file()->CopyTo(
-      &unittest_import_public_file);
-    proto2_nofieldpresence_unittest::TestAllTypes::descriptor()->
-        file()->CopyTo(&unittest_no_field_presence_file);
+        &unittest_import_public_file);
+    proto2_nofieldpresence_unittest::TestAllTypes::descriptor()->file()->CopyTo(
+        &unittest_no_field_presence_file);
 
     ASSERT_TRUE(pool_.BuildFile(unittest_import_public_file) != NULL);
     ASSERT_TRUE(pool_.BuildFile(unittest_import_file) != NULL);
@@ -102,23 +102,22 @@ class DynamicMessageTest : public ::testing::TestWithParam<bool> {
     prototype_ = factory_.GetPrototype(descriptor_);
 
     extensions_descriptor_ =
-      pool_.FindMessageTypeByName("protobuf_unittest.TestAllExtensions");
+        pool_.FindMessageTypeByName("protobuf_unittest.TestAllExtensions");
     ASSERT_TRUE(extensions_descriptor_ != NULL);
     extensions_prototype_ = factory_.GetPrototype(extensions_descriptor_);
 
     packed_descriptor_ =
-      pool_.FindMessageTypeByName("protobuf_unittest.TestPackedTypes");
+        pool_.FindMessageTypeByName("protobuf_unittest.TestPackedTypes");
     ASSERT_TRUE(packed_descriptor_ != NULL);
     packed_prototype_ = factory_.GetPrototype(packed_descriptor_);
 
     oneof_descriptor_ =
-      pool_.FindMessageTypeByName("protobuf_unittest.TestOneof2");
+        pool_.FindMessageTypeByName("protobuf_unittest.TestOneof2");
     ASSERT_TRUE(oneof_descriptor_ != NULL);
     oneof_prototype_ = factory_.GetPrototype(oneof_descriptor_);
 
-    proto3_descriptor_ =
-      pool_.FindMessageTypeByName(
-          "proto2_nofieldpresence_unittest.TestAllTypes");
+    proto3_descriptor_ = pool_.FindMessageTypeByName(
+        "proto2_nofieldpresence_unittest.TestAllTypes");
     ASSERT_TRUE(proto3_descriptor_ != NULL);
     proto3_prototype_ = factory_.GetPrototype(proto3_descriptor_);
   }
@@ -146,7 +145,7 @@ TEST_P(DynamicMessageTest, IndependentOffsets) {
   // one to a unique value then checking that they all still have those
   // unique values (i.e. they don't stomp each other).
   Arena arena;
-  Message* message = prototype_->New(GetParam()? &arena : NULL);
+  Message* message = prototype_->New(GetParam() ? &arena : NULL);
   TestUtil::ReflectionTester reflection_tester(descriptor_);
 
   reflection_tester.SetAllFieldsViaReflection(message);
@@ -160,7 +159,7 @@ TEST_P(DynamicMessageTest, IndependentOffsets) {
 TEST_P(DynamicMessageTest, Extensions) {
   // Check that extensions work.
   Arena arena;
-  Message* message = extensions_prototype_->New(GetParam()? &arena : NULL);
+  Message* message = extensions_prototype_->New(GetParam() ? &arena : NULL);
   TestUtil::ReflectionTester reflection_tester(extensions_descriptor_);
 
   reflection_tester.SetAllFieldsViaReflection(message);
@@ -174,7 +173,7 @@ TEST_P(DynamicMessageTest, Extensions) {
 TEST_P(DynamicMessageTest, PackedFields) {
   // Check that packed fields work properly.
   Arena arena;
-  Message* message = packed_prototype_->New(GetParam()? &arena : NULL);
+  Message* message = packed_prototype_->New(GetParam() ? &arena : NULL);
   TestUtil::ReflectionTester reflection_tester(packed_descriptor_);
 
   reflection_tester.SetPackedFieldsViaReflection(message);
@@ -188,23 +187,25 @@ TEST_P(DynamicMessageTest, PackedFields) {
 TEST_P(DynamicMessageTest, Oneof) {
   // Check that oneof fields work properly.
   Arena arena;
-  Message* message = oneof_prototype_->New(GetParam()? &arena : NULL);
+  Message* message = oneof_prototype_->New(GetParam() ? &arena : NULL);
 
   // Check default values.
   const Descriptor* descriptor = message->GetDescriptor();
   const Reflection* reflection = message->GetReflection();
-  EXPECT_EQ(0, reflection->GetInt32(
-      *message, descriptor->FindFieldByName("foo_int")));
+  EXPECT_EQ(0, reflection->GetInt32(*message,
+                                    descriptor->FindFieldByName("foo_int")));
   EXPECT_EQ("", reflection->GetString(
-      *message, descriptor->FindFieldByName("foo_string")));
+                    *message, descriptor->FindFieldByName("foo_string")));
+  EXPECT_EQ("", reflection->GetString(*message,
+                                      descriptor->FindFieldByName("foo_cord")));
   EXPECT_EQ("", reflection->GetString(
-      *message, descriptor->FindFieldByName("foo_cord")));
+                    *message, descriptor->FindFieldByName("foo_string_piece")));
   EXPECT_EQ("", reflection->GetString(
-      *message, descriptor->FindFieldByName("foo_string_piece")));
-  EXPECT_EQ("", reflection->GetString(
-      *message, descriptor->FindFieldByName("foo_bytes")));
-  EXPECT_EQ(unittest::TestOneof2::FOO, reflection->GetEnum(
-      *message, descriptor->FindFieldByName("foo_enum"))->number());
+                    *message, descriptor->FindFieldByName("foo_bytes")));
+  EXPECT_EQ(
+      unittest::TestOneof2::FOO,
+      reflection->GetEnum(*message, descriptor->FindFieldByName("foo_enum"))
+          ->number());
   const Descriptor* nested_descriptor;
   const Message* nested_prototype;
   nested_descriptor =
@@ -219,23 +220,26 @@ TEST_P(DynamicMessageTest, Oneof) {
       pool_.FindMessageTypeByName("protobuf_unittest.TestOneof2.FooGroup");
   foogroup_prototype = factory_.GetPrototype(foogroup_descriptor);
   EXPECT_EQ(foogroup_prototype,
-            &reflection->GetMessage(
-                *message, descriptor->FindFieldByName("foogroup")));
+            &reflection->GetMessage(*message,
+                                    descriptor->FindFieldByName("foogroup")));
   EXPECT_NE(foogroup_prototype,
             &reflection->GetMessage(
                 *message, descriptor->FindFieldByName("foo_lazy_message")));
-  EXPECT_EQ(5, reflection->GetInt32(
-      *message, descriptor->FindFieldByName("bar_int")));
+  EXPECT_EQ(5, reflection->GetInt32(*message,
+                                    descriptor->FindFieldByName("bar_int")));
   EXPECT_EQ("STRING", reflection->GetString(
-      *message, descriptor->FindFieldByName("bar_string")));
+                          *message, descriptor->FindFieldByName("bar_string")));
   EXPECT_EQ("CORD", reflection->GetString(
-      *message, descriptor->FindFieldByName("bar_cord")));
-  EXPECT_EQ("SPIECE", reflection->GetString(
-      *message, descriptor->FindFieldByName("bar_string_piece")));
+                        *message, descriptor->FindFieldByName("bar_cord")));
+  EXPECT_EQ("SPIECE",
+            reflection->GetString(
+                *message, descriptor->FindFieldByName("bar_string_piece")));
   EXPECT_EQ("BYTES", reflection->GetString(
-      *message, descriptor->FindFieldByName("bar_bytes")));
-  EXPECT_EQ(unittest::TestOneof2::BAR, reflection->GetEnum(
-      *message, descriptor->FindFieldByName("bar_enum"))->number());
+                         *message, descriptor->FindFieldByName("bar_bytes")));
+  EXPECT_EQ(
+      unittest::TestOneof2::BAR,
+      reflection->GetEnum(*message, descriptor->FindFieldByName("bar_enum"))
+          ->number());
 
   // Check set functions.
   TestUtil::ReflectionTester reflection_tester(oneof_descriptor_);
@@ -254,7 +258,7 @@ TEST_P(DynamicMessageTest, SpaceUsed) {
   // to test very much here.  Just make sure it appears to be working.
 
   Arena arena;
-  Message* message = prototype_->New(GetParam()? &arena : NULL);
+  Message* message = prototype_->New(GetParam() ? &arena : NULL);
   TestUtil::ReflectionTester reflection_tester(descriptor_);
 
   int initial_space_used = message->SpaceUsed();
@@ -316,7 +320,7 @@ TEST_F(DynamicMessageTest, Proto3) {
   delete message;
 }
 
-INSTANTIATE_TEST_CASE_P(UseArena, DynamicMessageTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(UseArena, DynamicMessageTest, ::testing::Bool());
 
 }  // namespace protobuf
 }  // namespace google

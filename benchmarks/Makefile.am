@@ -25,6 +25,7 @@ make_tmp_dir:
 	mkdir -p 'tmp/java/src/main/java'
 	touch make_tmp_dir
 
+
 # We have to cd to $(srcdir) before executing protoc because $(protoc_inputs) is
 # relative to srcdir, which may not be the same as the current directory when
 # building out-of-tree.
@@ -90,8 +91,8 @@ $(benchmarks_protoc_outputs_proto2_header): protoc_middleman2
 
 initialize_submodule:
 	oldpwd=`pwd`
-	cd $(top_srcdir) && git submodule update --init -r third_party/benchmark
-	cd $(top_srcdir)/third_party/benchmark && cmake -DCMAKE_BUILD_TYPE=Release && make
+	cd $(top_srcdir) && git submodule update --init -r third_party/benchmark && \
+		cd third_party/benchmark && cmake -DCMAKE_BUILD_TYPE=Release && make
 	cd $$oldpwd
 	touch initialize_submodule
 
@@ -126,7 +127,7 @@ java_benchmark_testing_files =                                      \
 	java/src/main/java/com/google/protobuf/ProtoCaliperBenchmark.java
 
 javac_middleman: $(java_benchmark_testing_files) protoc_middleman protoc_middleman2
-	cp -r $(srcdir)/java tmp 
+	cp -r $(srcdir)/java tmp
 	mkdir -p tmp/java/lib
 	cp $(top_srcdir)/java/core/target/*.jar tmp/java/lib/protobuf-java.jar
 	cd tmp/java && mvn clean compile assembly:single -Dprotobuf.version=$(PACKAGE_VERSION) && cd ../..
@@ -253,19 +254,19 @@ go_protoc_middleman: make_tmp_dir $(top_srcdir)/src/protoc$(EXEEXT) $(benchmarks
 	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --go_out=$$oldpwd/tmp $(benchmarks_protoc_inputs_proto2_message4) )
 	touch go_protoc_middleman
 
-go-benchmark: go_protoc_middleman 
+go-benchmark: go_protoc_middleman
 	@echo "Writing shortcut script go-benchmark..."
 	@echo '#! /bin/bash' > go-benchmark
 	@echo 'cd $(srcdir)/go' >> go-benchmark
 	@echo 'all_data=""' >> go-benchmark
 	@echo 'conf=()' >> go-benchmark
 	@echo 'data_files=()' >> go-benchmark
-	@echo 'for arg in $$@; do if [[ $${arg:0:1} == "-" ]]; then conf+=($$arg); else data_files+=("../$$arg"); fi; done' >> go-benchmark
+	@echo 'for arg in $$@; do if [[ $${arg:0:1} == "-" ]]; then conf+=($$arg); else data_files+=("$$arg"); fi; done' >> go-benchmark
 	@echo 'go test -bench=. $${conf[*]} -- $${data_files[*]}' >> go-benchmark
 	@echo 'cd ..' >> go-benchmark
 	@chmod +x go-benchmark
 
-go: go_protoc_middleman go-benchmark 
+go: go_protoc_middleman go-benchmark
 	./go-benchmark $(all_data)
 
 ############# GO RULES END ##############
@@ -322,9 +323,9 @@ $(cpp_no_group_benchmarks_protoc_outputs_proto2_header): cpp_no_group_protoc_mid
 generate_cpp_no_group_benchmark_code:
 	cp $(srcdir)/cpp/cpp_benchmark.cc gogo/cpp_no_group/cpp_benchmark.cc
 	sed -i -e "s/\#include \"datasets/\#include \"gogo\/cpp_no_group\/datasets/g" gogo/cpp_no_group/cpp_benchmark.cc
-	sed -i -e "s/\#include \"benchmarks.pb.h/\#include \"gogo\/cpp_no_group\/benchmarks.pb.h/g" gogo/cpp_no_group/cpp_benchmark.cc  
+	sed -i -e "s/\#include \"benchmarks.pb.h/\#include \"gogo\/cpp_no_group\/benchmarks.pb.h/g" gogo/cpp_no_group/cpp_benchmark.cc
 	touch generate_cpp_no_group_benchmark_code
-	
+
 bin_PROGRAMS += cpp-no-group-benchmark
 cpp_no_group_benchmark_LDADD = $(top_srcdir)/src/libprotobuf.la $(top_srcdir)/third_party/benchmark/src/libbenchmark.a
 cpp_no_group_benchmark_SOURCES = gogo/cpp_no_group/cpp_benchmark.cc
@@ -343,7 +344,7 @@ nodist_cpp_no_group_benchmark_SOURCES =                                    \
 
 cpp_no_group: cpp_no_group_protoc_middleman generate_gogo_data cpp-no-group-benchmark
 	./cpp-no-group-benchmark $(gogo_data)
- 
+
 gogo_proto_middleman: protoc-gen-gogoproto
 	mkdir -p "tmp/gogo_proto"
 	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I$(srcdir) -I$(top_srcdir) --plugin=protoc-gen-gogoproto --gogoproto_out=$$oldpwd/tmp/gogo_proto $(benchmarks_protoc_inputs) $(benchmarks_protoc_inputs_benchmark_wrapper) $(benchmarks_protoc_inputs_proto2) )
@@ -355,7 +356,7 @@ generate_gogo_data: protoc_middleman protoc_middleman2 gogo-data-scrubber
 	mkdir -p `dirname $(gogo_data)`
 	./gogo-data-scrubber $(all_data) $(gogo_data)
 	touch generate_gogo_data
-	
+
 make_tmp_dir_gogo:
 	mkdir -p tmp/go_no_group/benchmark_code
 	mkdir -p tmp/gogofast/benchmark_code
@@ -435,10 +436,10 @@ gogo-benchmark:
 
 go_no_group: go_no_group_protoc_middleman generate_gogo_data generate_all_gogo_benchmark_code gogo-benchmark
 	./gogo-benchmark go_no_group $(gogo_data)
-	
-gogofast: gogofast_protoc_middleman generate_gogo_data gogo-benchmark generate_all_gogo_benchmark_code 
+
+gogofast: gogofast_protoc_middleman generate_gogo_data gogo-benchmark generate_all_gogo_benchmark_code
 	./gogo-benchmark gogofast $(gogo_data)
-	
+
 gogofaster: gogofaster_protoc_middleman  generate_gogo_data gogo-benchmark generate_all_gogo_benchmark_code
 	./gogo-benchmark gogofaster $(gogo_data)
 
@@ -448,7 +449,7 @@ gogoslick: gogoslick_protoc_middleman  generate_gogo_data gogo-benchmark generat
 
 ############# GOGO RULES END ############
 
- 
+
 ############ UTIL RULES BEGIN ############
 
 bin_PROGRAMS += protoc-gen-gogoproto gogo-data-scrubber protoc-gen-proto2_to_proto3 proto3-data-stripper
@@ -481,7 +482,7 @@ nodist_proto3_data_stripper_SOURCES =                                      \
 	$(benchmarks_protoc_outputs_proto2_header)                               \
 	$(benchmarks_protoc_outputs_header)
 
-	
+
 ############ UTIL RULES END ############
 
 ############ PROTO3 PREPARATION BEGIN #############
@@ -510,7 +511,7 @@ proto3_middleman_php: proto3_proto_middleman
 
 php-benchmark: proto3_middleman_php generate_proto3_data
 	mkdir -p "tmp/php/Google/Protobuf/Benchmark" && cp php/PhpBenchmark.php "tmp/php/Google/Protobuf/Benchmark"
-	cp php/autoload.php "tmp/php"  
+	cp php/autoload.php "tmp/php"
 	@echo "Writing shortcut script php-benchmark..."
 	@echo '#! /bin/bash' > php-benchmark
 	@echo 'export PROTOBUF_PHP_SRCDIR="$$(cd $(top_srcdir) && pwd)/php/src"' >> php-benchmark
@@ -521,19 +522,18 @@ php-benchmark: proto3_middleman_php generate_proto3_data
 	@chmod +x php-benchmark
 
 php: php-benchmark proto3_middleman_php
-	./php-benchmark $(proto3_data)
+	./php-benchmark --behavior_prefix="php" $(proto3_data)
 
 php_c_extension:
-	cd $(top_srcdir)/php/ext/google/protobuf && ./configure CFLAGS='-O3' && make -j8
+	cd $(top_srcdir)/php/ext/google/protobuf && phpize && ./configure CFLAGS='-O3' && make -j8
 
 php-c-benchmark: proto3_middleman_php generate_proto3_data php_c_extension php_c_extension
-	mkdir -p "tmp/php/Google/Protobuf/Benchmark" && cp php/PhpBenchmark.php "tmp/php/Google/Protobuf/Benchmark" 
-	cp php/autoload.php "tmp/php"  
+	mkdir -p "tmp/php/Google/Protobuf/Benchmark" && cp php/PhpBenchmark.php "tmp/php/Google/Protobuf/Benchmark"
+	cp php/autoload.php "tmp/php"
 	@echo "Writing shortcut script php-c-benchmark..."
 	@echo '#! /bin/bash' > php-c-benchmark
 	@echo 'export PROTOBUF_PHP_SRCDIR="$$(cd $(top_srcdir) && pwd)/php/src"' >> php-c-benchmark
 	@echo 'export PROTOBUF_PHP_EXTDIR="$$PROTOBUF_PHP_SRCDIR/../ext/google/protobuf/modules"' >> php-c-benchmark
-	@echo 'echo "$$PROTOBUF_PHP_EXTDIR/protobuf.so"' >> php-c-benchmark
 	@echo 'cd tmp/php' >> php-c-benchmark
 	@echo 'export CURRENT_DIR=$$(pwd)' >> php-c-benchmark
 	@echo 'php -d auto_prepend_file="autoload.php" -d include_path="$$(pwd)" -d extension="$$PROTOBUF_PHP_EXTDIR/protobuf.so" Google/Protobuf/Benchmark/PhpBenchmark.php $$@' >> php-c-benchmark
@@ -541,7 +541,7 @@ php-c-benchmark: proto3_middleman_php generate_proto3_data php_c_extension php_c
 	@chmod +x php-c-benchmark
 
 php_c: php-c-benchmark proto3_middleman_php
-	./php-c-benchmark $(proto3_data)
+	./php-c-benchmark --behavior_prefix="php_c" $(proto3_data)
 
 
 ############ PHP RULES END #################
@@ -655,4 +655,4 @@ CLEANFILES =                                                               \
 
 clean-local:
 	-rm -rf tmp/*
-	
+

@@ -37,21 +37,17 @@
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/type.pb.h>
+#include <google/protobuf/util/internal/type_info.h>
 #include <google/protobuf/util/internal/object_source.h>
 #include <google/protobuf/util/internal/object_writer.h>
-#include <google/protobuf/util/internal/type_info.h>
 #include <google/protobuf/util/type_resolver.h>
 #include <google/protobuf/stubs/stringpiece.h>
 #include <google/protobuf/stubs/hash.h>
 #include <google/protobuf/stubs/status.h>
 #include <google/protobuf/stubs/statusor.h>
 
-namespace google {
-namespace protobuf {
-class Field;
-class Type;
-}  // namespace protobuf
-}  // namespace google
+
+#include <google/protobuf/port_def.inc>
 
 namespace google {
 namespace protobuf {
@@ -73,7 +69,7 @@ class TypeInfo;
 //                              <your message google::protobuf::Type>);
 //
 //   Status status = os.WriteTo(<some ObjectWriter>);
-class LIBPROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
+class PROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
  public:
   ProtoStreamObjectSource(io::CodedInputStream* stream,
                           TypeResolver* type_resolver,
@@ -153,14 +149,14 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
       const google::protobuf::Type& type, uint32 tag) const;
 
   // Renders a field value to the ObjectWriter.
-  util::Status RenderField(const google::protobuf::Field* field,
-                             StringPiece field_name,
-                             ObjectWriter* ow) const;
+  virtual util::Status RenderField(const google::protobuf::Field* field,
+                                     StringPiece field_name,
+                                     ObjectWriter* ow) const;
 
   // Reads field value according to Field spec in 'field' and returns the read
   // value as string. This only works for primitive datatypes (no message
   // types).
-  const string ReadFieldValueAsString(
+  const std::string ReadFieldValueAsString(
       const google::protobuf::Field& field) const;
 
 
@@ -258,10 +254,10 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
                                         StringPiece name,
                                         ObjectWriter* ow);
 
-  static std::unordered_map<string, TypeRenderer>* renderers_;
+  static std::unordered_map<std::string, TypeRenderer>* renderers_;
   static void InitRendererMap();
   static void DeleteRendererMap();
-  static TypeRenderer* FindTypeRenderer(const string& type_url);
+  static TypeRenderer* FindTypeRenderer(const std::string& type_url);
 
   // Same as above but renders all non-message field types. Callers don't call
   // this function directly. They just use RenderField.
@@ -323,6 +319,11 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
   // Whether to add trailing zeros for timestamp and duration.
   bool add_trailing_zeros_for_timestamp_and_duration_;
 
+  // Whether output the empty object or not. If false, output JSON string like:
+  // "'objectName' : {}". If true, then no outputs. This only happens when all
+  // the fields of the message are filtered out by field mask.
+  bool suppress_empty_object_;
+
   GOOGLE_DISALLOW_IMPLICIT_CONSTRUCTORS(ProtoStreamObjectSource);
 };
 
@@ -330,5 +331,7 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
 }  // namespace util
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_UTIL_CONVERTER_PROTOSTREAM_OBJECTSOURCE_H__

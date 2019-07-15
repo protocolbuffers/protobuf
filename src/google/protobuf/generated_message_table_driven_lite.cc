@@ -36,7 +36,6 @@
 #include <google/protobuf/metadata_lite.h>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/wire_format_lite.h>
-#include <google/protobuf/wire_format_lite_inl.h>
 
 namespace google {
 namespace protobuf {
@@ -44,15 +43,18 @@ namespace internal {
 
 namespace {
 
-string* MutableUnknownFields(MessageLite* msg, int64 arena_offset) {
+std::string* MutableUnknownFields(MessageLite* msg, int64 arena_offset) {
   return Raw<InternalMetadataWithArenaLite>(msg, arena_offset)
       ->mutable_unknown_fields();
 }
 
 struct UnknownFieldHandlerLite {
+  // TODO(mvels): consider renaming UnknownFieldHandler to (TableDrivenTraits?),
+  // and conflating InternalMetaData into it, simplifying the template.
+  static constexpr bool IsLite() { return true; }
+
   static bool Skip(MessageLite* msg, const ParseTable& table,
-                   io::CodedInputStream* input,
-                   int tag) {
+                   io::CodedInputStream* input, int tag) {
     GOOGLE_DCHECK(!table.unknown_field_set);
     io::StringOutputStream unknown_fields_string(
         MutableUnknownFields(msg, table.arena_offset));
@@ -62,8 +64,8 @@ struct UnknownFieldHandlerLite {
                                                &unknown_fields_stream);
   }
 
-  static void Varint(MessageLite* msg, const ParseTable& table,
-                     int tag, int value) {
+  static void Varint(MessageLite* msg, const ParseTable& table, int tag,
+                     int value) {
     GOOGLE_DCHECK(!table.unknown_field_set);
 
     io::StringOutputStream unknown_fields_string(
@@ -73,9 +75,8 @@ struct UnknownFieldHandlerLite {
     unknown_fields_stream.WriteVarint32(value);
   }
 
-  static bool ParseExtension(
-      MessageLite* msg, const ParseTable& table,
-      io::CodedInputStream* input, int tag) {
+  static bool ParseExtension(MessageLite* msg, const ParseTable& table,
+                             io::CodedInputStream* input, int tag) {
     ExtensionSet* extensions = GetExtensionSet(msg, table.extension_offset);
     if (extensions == NULL) {
       return false;
@@ -87,15 +88,15 @@ struct UnknownFieldHandlerLite {
     io::StringOutputStream unknown_fields_string(
         MutableUnknownFields(msg, table.arena_offset));
     io::CodedOutputStream unknown_fields_stream(&unknown_fields_string, false);
-    return extensions->ParseField(
-        tag, input, prototype, &unknown_fields_stream);
+    return extensions->ParseField(tag, input, prototype,
+                                  &unknown_fields_stream);
   }
 };
 
 }  // namespace
 
-bool MergePartialFromCodedStreamLite(
-    MessageLite* msg, const ParseTable& table, io::CodedInputStream* input) {
+bool MergePartialFromCodedStreamLite(MessageLite* msg, const ParseTable& table,
+                                     io::CodedInputStream* input) {
   return MergePartialFromCodedStreamImpl<UnknownFieldHandlerLite,
                                          InternalMetadataWithArenaLite>(
       msg, table, input);

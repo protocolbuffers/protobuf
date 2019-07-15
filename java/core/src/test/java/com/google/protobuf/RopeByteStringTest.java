@@ -40,8 +40,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 
 /**
- * This class tests {@link RopeByteString} by inheriting the tests from
- * {@link LiteralByteStringTest}.  Only a couple of methods are overridden.
+ * This class tests {@link RopeByteString} by inheriting the tests from {@link
+ * LiteralByteStringTest}. Only a couple of methods are overridden.
  *
  * <p>A full test of the result of {@link RopeByteString#substring(int, int)} is found in the
  * separate class {@link RopeByteStringSubstringTest}.
@@ -62,10 +62,25 @@ public class RopeByteStringTest extends LiteralByteStringTest {
     expectedHashCode = -1214197238;
   }
 
+  public void testMinLengthByDepth() {
+    // minLengthByDepth should match the Fibonacci sequence
+    int a = 1;
+    int b = 1;
+    int i;
+    for (i = 0; a > 0; i++) {
+      assertEquals(a, RopeByteString.minLengthByDepth[i]);
+      int c = a + b;
+      a = b;
+      b = c;
+    }
+    assertEquals(Integer.MAX_VALUE, RopeByteString.minLengthByDepth[i]);
+    assertEquals(i + 1, RopeByteString.minLengthByDepth.length);
+  }
+
   @Override
   public void testGetTreeDepth() {
-    assertEquals(classUnderTest + " must have the expected tree depth",
-        4, stringUnderTest.getTreeDepth());
+    assertEquals(
+        classUnderTest + " must have the expected tree depth", 4, stringUnderTest.getTreeDepth());
   }
 
   public void testBalance() {
@@ -79,17 +94,22 @@ public class RopeByteStringTest extends LiteralByteStringTest {
       concatenated = concatenated.concat(ByteString.copyFrom(testBytes, i * pieceSize, pieceSize));
     }
 
-    assertEquals(classUnderTest + " from string must have the expected type",
-        classUnderTest, getActualClassName(concatenated));
-    assertTrue(classUnderTest + " underlying bytes must match after balancing",
+    assertEquals(
+        classUnderTest + " from string must have the expected type",
+        classUnderTest,
+        getActualClassName(concatenated));
+    assertTrue(
+        classUnderTest + " underlying bytes must match after balancing",
         Arrays.equals(testBytes, concatenated.toByteArray()));
     ByteString testString = ByteString.copyFrom(testBytes);
-    assertTrue(classUnderTest + " balanced string must equal flat string",
-        concatenated.equals(testString));
-    assertTrue(classUnderTest + " flat string must equal balanced string",
-        testString.equals(concatenated));
-    assertEquals(classUnderTest + " balanced string must have same hash code as flat string",
-        testString.hashCode(), concatenated.hashCode());
+    assertEquals(
+        classUnderTest + " balanced string must equal flat string", testString, concatenated);
+    assertEquals(
+        classUnderTest + " flat string must equal balanced string", concatenated, testString);
+    assertEquals(
+        classUnderTest + " balanced string must have same hash code as flat string",
+        testString.hashCode(),
+        concatenated.hashCode());
   }
 
   @Override
@@ -107,15 +127,18 @@ public class RopeByteStringTest extends LiteralByteStringTest {
     }
     String testString = builder.toString();
 
-    assertEquals(classUnderTest + " from string must have the expected type",
-        classUnderTest, getActualClassName(unicode));
+    assertEquals(
+        classUnderTest + " from string must have the expected type",
+        classUnderTest,
+        getActualClassName(unicode));
     String roundTripString = unicode.toString(UTF_8);
-    assertEquals(classUnderTest + " unicode bytes must match",
-        testString, roundTripString);
+    assertEquals(classUnderTest + " unicode bytes must match", testString, roundTripString);
     ByteString flatString = ByteString.copyFromUtf8(testString);
     assertEquals(classUnderTest + " string must equal the flat string", flatString, unicode);
-    assertEquals(classUnderTest + " string must must have same hashCode as the flat string",
-        flatString.hashCode(), unicode.hashCode());
+    assertEquals(
+        classUnderTest + " string must must have same hashCode as the flat string",
+        flatString.hashCode(),
+        unicode.hashCode());
   }
 
   @Override
@@ -133,30 +156,34 @@ public class RopeByteStringTest extends LiteralByteStringTest {
     }
     String testString = builder.toString();
 
-    assertEquals(classUnderTest + " from string must have the expected type",
-        classUnderTest, getActualClassName(unicode));
+    assertEquals(
+        classUnderTest + " from string must have the expected type",
+        classUnderTest,
+        getActualClassName(unicode));
     String roundTripString = unicode.toString(Internal.UTF_8);
-    assertEquals(classUnderTest + " unicode bytes must match",
-        testString, roundTripString);
+    assertEquals(classUnderTest + " unicode bytes must match", testString, roundTripString);
     ByteString flatString = ByteString.copyFromUtf8(testString);
     assertEquals(classUnderTest + " string must equal the flat string", flatString, unicode);
-    assertEquals(classUnderTest + " string must must have same hashCode as the flat string",
-        flatString.hashCode(), unicode.hashCode());
+    assertEquals(
+        classUnderTest + " string must must have same hashCode as the flat string",
+        flatString.hashCode(),
+        unicode.hashCode());
   }
 
   @Override
   public void testToString_returnsCanonicalEmptyString() {
     RopeByteString ropeByteString =
         RopeByteString.newInstanceForTest(ByteString.EMPTY, ByteString.EMPTY);
-    assertSame(classUnderTest + " must be the same string references",
-        ByteString.EMPTY.toString(Internal.UTF_8), ropeByteString.toString(Internal.UTF_8));
+    assertSame(
+        classUnderTest + " must be the same string references",
+        ByteString.EMPTY.toString(Internal.UTF_8),
+        ropeByteString.toString(Internal.UTF_8));
   }
 
   @Override
   public void testToString_raisesException() {
     try {
-      ByteString byteString =
-          RopeByteString.newInstanceForTest(ByteString.EMPTY, ByteString.EMPTY);
+      ByteString byteString = RopeByteString.newInstanceForTest(ByteString.EMPTY, ByteString.EMPTY);
       byteString.toString("invalid");
       fail("Should have thrown an exception.");
     } catch (UnsupportedEncodingException expected) {
@@ -164,8 +191,9 @@ public class RopeByteStringTest extends LiteralByteStringTest {
     }
 
     try {
-      ByteString byteString = RopeByteString.concatenate(ByteString.copyFromUtf8("foo"),
-          ByteString.copyFromUtf8("bar"));
+      ByteString byteString =
+          RopeByteString.concatenate(
+              ByteString.copyFromUtf8("foo"), ByteString.copyFromUtf8("bar"));
       byteString.toString("invalid");
       fail("Should have thrown an exception.");
     } catch (UnsupportedEncodingException expected) {

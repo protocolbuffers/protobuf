@@ -70,8 +70,8 @@ class SharedCodeGenerator {
   ~SharedCodeGenerator();
 
   void Generate(GeneratorContext* generator_context,
-                std::vector<string>* file_list,
-                std::vector<string>* annotation_file_list);
+                std::vector<std::string>* file_list,
+                std::vector<std::string>* annotation_file_list);
 
   void GenerateDescriptors(io::Printer* printer);
 
@@ -81,7 +81,6 @@ class SharedCodeGenerator {
   const Options options_;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(SharedCodeGenerator);
 };
-
 
 }  // namespace java
 }  // namespace compiler

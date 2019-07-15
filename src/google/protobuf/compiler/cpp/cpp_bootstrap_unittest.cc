@@ -50,6 +50,7 @@
 #include <google/protobuf/test_util2.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/descriptor.h>
+#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/stl_util.h>
@@ -71,34 +72,40 @@ class MockErrorCollector : public MultiFileErrorCollector {
   MockErrorCollector() {}
   ~MockErrorCollector() {}
 
-  string text_;
+  std::string text_;
 
   // implements ErrorCollector ---------------------------------------
-  void AddError(const string& filename, int line, int column,
-                const string& message) {
-    strings::SubstituteAndAppend(&text_, "$0:$1:$2: $3\n",
-                                 filename, line, column, message);
+  void AddError(const std::string& filename, int line, int column,
+                const std::string& message) {
+    strings::SubstituteAndAppend(&text_, "$0:$1:$2: $3\n", filename, line,
+                                 column, message);
   }
 };
 
 class MockGeneratorContext : public GeneratorContext {
  public:
-  MockGeneratorContext() {}
-  ~MockGeneratorContext() { STLDeleteValues(&files_); }
+  void ExpectFileMatches(const std::string& virtual_filename,
+                         const std::string& physical_filename) {
+    auto it = files_.find(virtual_filename);
+    ASSERT_TRUE(it != files_.end())
+        << "Generator failed to generate file: " << virtual_filename;
 
-  void ExpectFileMatches(const string& virtual_filename,
-                         const string& physical_filename) {
-    string* expected_contents = FindPtrOrNull(files_, virtual_filename);
-    ASSERT_TRUE(expected_contents != NULL)
-      << "Generator failed to generate file: " << virtual_filename;
-
-    string actual_contents;
+    std::string expected_contents = *it->second;
+    std::string actual_contents;
     GOOGLE_CHECK_OK(
         File::GetContents(TestUtil::TestSourceDir() + "/" + physical_filename,
                           &actual_contents, true))
         << physical_filename;
     CleanStringLineEndings(&actual_contents, false);
-    EXPECT_EQ(*expected_contents, actual_contents)
+
+#ifdef WRITE_FILES  // Define to debug mismatched files.
+    GOOGLE_CHECK_OK(File::SetContents("/tmp/expected.cc", expected_contents,
+                               true));
+    GOOGLE_CHECK_OK(
+        File::SetContents("/tmp/actual.cc", actual_contents, true));
+#endif
+
+    ASSERT_EQ(expected_contents, actual_contents)
         << physical_filename
         << " needs to be regenerated.  Please run "
            "generate_descriptor_proto.sh. "
@@ -107,21 +114,19 @@ class MockGeneratorContext : public GeneratorContext {
 
   // implements GeneratorContext --------------------------------------
 
-  virtual io::ZeroCopyOutputStream* Open(const string& filename) {
-    string** map_slot = &files_[filename];
-    delete *map_slot;
-    *map_slot = new string;
-
-    return new io::StringOutputStream(*map_slot);
+  virtual io::ZeroCopyOutputStream* Open(const std::string& filename) {
+    auto& map_slot = files_[filename];
+    map_slot.reset(new std::string);
+    return new io::StringOutputStream(map_slot.get());
   }
 
  private:
-  std::map<string, string*> files_;
+  std::map<std::string, std::unique_ptr<std::string>> files_;
 };
 
-const char kDescriptorParameter[] = "dllexport_decl=LIBPROTOBUF_EXPORT";
-const char kPluginParameter[] = "dllexport_decl=LIBPROTOC_EXPORT";
-const char kNormalParameter[] = "";
+const char kDescriptorParameter[] = "dllexport_decl=PROTOBUF_EXPORT";
+const char kPluginParameter[] = "dllexport_decl=PROTOC_EXPORT";
+
 
 const char* test_protos[][2] = {
     {"google/protobuf/descriptor", kDescriptorParameter},
@@ -131,12 +136,16 @@ const char* test_protos[][2] = {
 TEST(BootstrapTest, GeneratedFilesMatch) {
   // We need a mapping from the actual file to virtual and actual path
   // of the data to compare to.
-  std::map<string, string> vpath_map;
-  std::map<string, string> rpath_map;
-  rpath_map["third_party/protobuf/src/google/protobuf/test_messages_proto2"] =
-      "net/proto2/z_generated_example/test_messages_proto2";
-  rpath_map["third_party/protobuf/src/google/protobuf/test_messages_proto3"] =
-      "net/proto2/z_generated_example/test_messages_proto3";
+  std::map<std::string, std::string> vpath_map;
+  std::map<std::string, std::string> rpath_map;
+  rpath_map
+      ["third_party/protobuf_legacy_opensource/src/google/protobuf/"
+       "test_messages_proto2"] =
+          "net/proto2/z_generated_example/test_messages_proto2";
+  rpath_map
+      ["third_party/protobuf_legacy_opensource/src/google/protobuf/"
+       "test_messages_proto3"] =
+          "net/proto2/z_generated_example/test_messages_proto3";
   rpath_map["net/proto2/internal/proto2_weak"] =
       "net/proto2/z_generated_example/proto2_weak";
 
@@ -147,18 +156,22 @@ TEST(BootstrapTest, GeneratedFilesMatch) {
     MockErrorCollector error_collector;
     Importer importer(&source_tree, &error_collector);
     const FileDescriptor* file =
-        importer.Import(file_parameter[0] + string(".proto"));
+        importer.Import(file_parameter[0] + std::string(".proto"));
     ASSERT_TRUE(file != nullptr)
         << "Can't import file " << file_parameter[0] + string(".proto") << "\n";
     EXPECT_EQ("", error_collector.text_);
     CppGenerator generator;
     MockGeneratorContext context;
-    string error;
+#ifdef GOOGLE_PROTOBUF_RUNTIME_INCLUDE_BASE
+    generator.set_opensource_runtime(true);
+    generator.set_runtime_include_base(GOOGLE_PROTOBUF_RUNTIME_INCLUDE_BASE);
+#endif
+    std::string error;
     ASSERT_TRUE(generator.Generate(file, file_parameter[1], &context, &error));
 
-    string vpath =
+    std::string vpath =
         FindWithDefault(vpath_map, file_parameter[0], file_parameter[0]);
-    string rpath =
+    std::string rpath =
         FindWithDefault(rpath_map, file_parameter[0], file_parameter[0]);
     context.ExpectFileMatches(vpath + ".pb.cc", rpath + ".pb.cc");
     context.ExpectFileMatches(vpath + ".pb.h", rpath + ".pb.h");

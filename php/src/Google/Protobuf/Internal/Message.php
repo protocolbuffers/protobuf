@@ -716,7 +716,7 @@ class Message
      *
      * @param string $data Binary protobuf data.
      * @return null.
-     * @throws Exception Invalid data.
+     * @throws \Exception Invalid data.
      */
     public function mergeFromString($data)
     {
@@ -734,7 +734,7 @@ class Message
      *
      * @param string $data Json protobuf data.
      * @return null.
-     * @throws Exception Invalid data.
+     * @throws \Exception Invalid data.
      */
     public function mergeFromJsonString($data)
     {
@@ -831,6 +831,9 @@ class Message
             case GPBType::STRING:
                 if (is_null($value)) {
                     return $this->defaultValue($field);
+                }
+                if (is_numeric($value)) {
+                    return strval($value);
                 }
                 if (!is_string($value)) {
                     throw new GPBDecodeException(
@@ -973,9 +976,12 @@ class Message
      * ]);
      * ```
      *
+     * This method will trigger an error if it is passed data that cannot
+     * be converted to the correct type. For example, a StringValue field
+     * must receive data that is either a string or a StringValue object.
+     *
      * @param array $array An array containing message properties and values.
      * @return null.
-     * @throws Exception Invalid data.
      */
     protected function mergeFromArray(array $array)
     {
@@ -987,7 +993,82 @@ class Message
                     'Invalid message property: ' . $key);
             }
             $setter = $field->getSetter();
+            if ($field->isMap()) {
+                $valueField = $field->getMessageType()->getFieldByName('value');
+                if (!is_null($valueField) && $valueField->isWrapperType()) {
+                    self::normalizeArrayElementsToMessageType($value, $valueField->getMessageType()->getClass());
+                }
+            } elseif ($field->isWrapperType()) {
+                $class = $field->getMessageType()->getClass();
+                if ($field->isRepeated()) {
+                    self::normalizeArrayElementsToMessageType($value, $class);
+                } else {
+                    self::normalizeToMessageType($value, $class);
+                }
+            }
             $this->$setter($value);
+        }
+    }
+
+    /**
+     * Tries to normalize the elements in $value into a provided protobuf
+     * wrapper type $class. If $value is any type other than array, we do
+     * not do any conversion, and instead rely on the existing protobuf
+     * type checking. If $value is an array, we process each element and
+     * try to convert it to an instance of $class.
+     *
+     * @param mixed $value The array of values to normalize.
+     * @param string $class The expected wrapper class name
+     */
+    private static function normalizeArrayElementsToMessageType(&$value, $class)
+    {
+        if (!is_array($value)) {
+            // In the case that $value is not an array, we do not want to
+            // attempt any conversion. Note that this includes the cases
+            // when $value is a RepeatedField of MapField. In those cases,
+            // we do not need to convert the elements, as they should
+            // already be the correct types.
+            return;
+        } else {
+            // Normalize each element in the array.
+            foreach ($value as $key => &$elementValue) {
+              self::normalizeToMessageType($elementValue, $class);
+            }
+        }
+    }
+
+    /**
+     * Tries to normalize $value into a provided protobuf wrapper type $class.
+     * If $value is any type other than an object, we attempt to construct an
+     * instance of $class and assign $value to it using the setValue method
+     * shared by all wrapper types.
+     *
+     * This method will raise an error if it receives a type that cannot be
+     * assigned to the wrapper type via setValue.
+     *
+     * @param mixed $value The value to normalize.
+     * @param string $class The expected wrapper class name
+     */
+    private static function normalizeToMessageType(&$value, $class)
+    {
+        if (is_null($value) || is_object($value)) {
+            // This handles the case that $value is an instance of $class. We
+            // choose not to do any more strict checking here, relying on the
+            // existing type checking done by GPBUtil.
+            return;
+        } else {
+            // Try to instantiate $class and set the value
+            try {
+                $msg = new $class;
+                $msg->setValue($value);
+                $value = $msg;
+                return;
+            } catch (\Exception $exception) {
+                trigger_error(
+                    "Error normalizing value to type '$class': " . $exception->getMessage(),
+                    E_USER_ERROR
+                );
+            }
         }
     }
 
@@ -1157,9 +1238,17 @@ class Message
     public function parseFromJsonStream($input)
     {
         $array = json_decode($input->getData(), true, 512, JSON_BIGINT_AS_STRING);
+        if ($this instanceof \Google\Protobuf\ListValue) {
+            $array = ["values"=>$array];
+        }
         if (is_null($array)) {
-            throw new GPBDecodeException(
-                "Cannot decode json string.");
+            if ($this instanceof \Google\Protobuf\Value) {
+              $this->setNullValue(\Google\Protobuf\NullValue::NULL_VALUE);
+              return;
+            } else {
+              throw new GPBDecodeException(
+                  "Cannot decode json string: " . $input->getData());
+            }
         }
         try {
             $this->mergeFromJsonArray($array);
@@ -1338,6 +1427,24 @@ class Message
             $timestamp = GPBUtil::formatTimestamp($this);
             $timestamp = json_encode($timestamp);
             $output->writeRaw($timestamp, strlen($timestamp));
+        } elseif (get_class($this) === 'Google\Protobuf\ListValue') {
+            $field = $this->desc->getField()[1];
+            if (!$this->existField($field)) {
+                $output->writeRaw("[]", 2);
+            } else {
+                if (!$this->serializeFieldToJsonStream($output, $field)) {
+                    return false;
+                }
+            }
+        } elseif (get_class($this) === 'Google\Protobuf\Struct') {
+            $field = $this->desc->getField()[1];
+            if (!$this->existField($field)) {
+                $output->writeRaw("{}", 2);
+            } else {
+                if (!$this->serializeFieldToJsonStream($output, $field)) {
+                    return false;
+                }
+            }
         } else {
             if (!GPBUtil::hasSpecialJsonMapping($this)) {
                 $output->writeRaw("{", 1);
@@ -1799,6 +1906,24 @@ class Message
             $timestamp = GPBUtil::formatTimestamp($this);
             $timestamp = json_encode($timestamp);
             $size += strlen($timestamp);
+        } elseif (get_class($this) === 'Google\Protobuf\ListValue') {
+            $field = $this->desc->getField()[1];
+            if ($this->existField($field)) {
+                $field_size = $this->fieldJsonByteSize($field);
+                $size += $field_size;
+            } else {
+                // Size for "[]".
+                $size += 2;
+            }
+        } elseif (get_class($this) === 'Google\Protobuf\Struct') {
+            $field = $this->desc->getField()[1];
+            if ($this->existField($field)) {
+                $field_size = $this->fieldJsonByteSize($field);
+                $size += $field_size;
+            } else {
+                // Size for "{}".
+                $size += 2;
+            }
         } else {
             if (!GPBUtil::hasSpecialJsonMapping($this)) {
                 // Size for "{}".

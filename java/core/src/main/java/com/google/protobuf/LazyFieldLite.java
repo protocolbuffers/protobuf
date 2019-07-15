@@ -33,23 +33,23 @@ package com.google.protobuf;
 import java.io.IOException;
 
 /**
- * LazyFieldLite encapsulates the logic of lazily parsing message fields. It stores
- * the message in a ByteString initially and then parses it on-demand.
+ * LazyFieldLite encapsulates the logic of lazily parsing message fields. It stores the message in a
+ * ByteString initially and then parses it on-demand.
  *
- * LazyFieldLite is thread-compatible: concurrent reads are safe once the proto that this
+ * <p>LazyFieldLite is thread-compatible: concurrent reads are safe once the proto that this
  * LazyFieldLite is a part of is no longer being mutated by its Builder. However, explicit
  * synchronization is needed under read/write situations.
  *
- * When a LazyFieldLite is used in the context of a MessageLite object, its behavior is considered
- * to be immutable and none of the setter methods in its API are expected to be invoked. All of the
- * getters are expected to be thread-safe. When used in the context of a MessageLite.Builder,
- * setters can be invoked, but there is no guarantee of thread safety.
- * 
- * TODO(yatin,dweis): Consider splitting this class's functionality and put the mutable methods
+ * <p>When a LazyFieldLite is used in the context of a MessageLite object, its behavior is
+ * considered to be immutable and none of the setter methods in its API are expected to be invoked.
+ * All of the getters are expected to be thread-safe. When used in the context of a
+ * MessageLite.Builder, setters can be invoked, but there is no guarantee of thread safety.
+ *
+ * <p>TODO(yatin,dweis): Consider splitting this class's functionality and put the mutable methods
  * into a separate builder class to allow us to give stronger compile-time guarantees.
  *
- * This class is internal implementation detail of the protobuf library, so you don't need to use it
- * directly.
+ * <p>This class is internal implementation detail of the protobuf library, so you don't need to use
+ * it directly.
  *
  * @author xiangl@google.com (Xiang Li)
  */
@@ -57,23 +57,27 @@ public class LazyFieldLite {
   private static final ExtensionRegistryLite EMPTY_REGISTRY =
       ExtensionRegistryLite.getEmptyRegistry();
 
-  /**
+  /*
    * The value associated with the LazyFieldLite object is stored in one or more of the following
    * three fields (delayedBytes, value, memoizedBytes). They should together be interpreted as
    * follows.
-   * 1) delayedBytes can be non-null, while value and memoizedBytes is null. The object will be in
-   *    this state while the value for the object has not yet been parsed.
-   * 2) Both delayedBytes and value are non-null. The object transitions to this state as soon as
-   *    some caller needs to access the value (by invoking getValue()).
-   * 3) memoizedBytes is merely an optimization for calls to LazyFieldLite.toByteString() to avoid
-   *    recomputing the ByteString representation on each call. Instead, when the value is parsed
-   *    from delayedBytes, we will also assign the contents of delayedBytes to memoizedBytes (since
-   *    that is the ByteString representation of value).
-   * 4) Finally, if the LazyFieldLite was created directly with a parsed MessageLite value, then
-   *    delayedBytes will be null, and memoizedBytes will be initialized only upon the first call to
-   *    LazyFieldLite.toByteString().
    *
-   * Given the above conditions, any caller that needs a serialized representation of this object
+   * 1) delayedBytes can be non-null, while value and memoizedBytes is null. The object will be in
+   * this state while the value for the object has not yet been parsed.
+   *
+   * 2) Both delayedBytes and value are non-null. The object transitions to this state as soon as
+   * some caller needs to access the value (by invoking getValue()).
+   *
+   * 3) memoizedBytes is merely an optimization for calls to LazyFieldLite.toByteString() to avoid
+   * recomputing the ByteString representation on each call. Instead, when the value is parsed from
+   * delayedBytes, we will also assign the contents of delayedBytes to memoizedBytes (since that is
+   * the ByteString representation of value).
+   *
+   * 4) Finally, if the LazyFieldLite was created directly with a parsed MessageLite value, then
+   * delayedBytes will be null, and memoizedBytes will be initialized only upon the first call to
+   * LazyFieldLite.toByteString().
+   *
+   * <p>Given the above conditions, any caller that needs a serialized representation of this object
    * must first check if the memoizedBytes or delayedBytes ByteString is non-null and use it
    * directly; if both of those are null, it can look at the parsed value field. Similarly, any
    * caller that needs a parsed value must first check if the value field is already non-null, if
@@ -84,16 +88,16 @@ public class LazyFieldLite {
    * A delayed-parsed version of the contents of this field. When this field is non-null, then the
    * "value" field is allowed to be null until the time that the value needs to be read.
    *
-   * When delayedBytes is non-null then {@code extensionRegistry} is required to also be non-null.
-   * {@code value} and {@code memoizedBytes} will be initialized lazily.
+   * <p>When delayedBytes is non-null then {@code extensionRegistry} is required to also be
+   * non-null. {@code value} and {@code memoizedBytes} will be initialized lazily.
    */
   private ByteString delayedBytes;
 
   /**
    * An {@code ExtensionRegistryLite} for parsing bytes. It is non-null on a best-effort basis. It
-   * is only guaranteed to be non-null if this message was initialized using bytes and an
-   * {@code ExtensionRegistry}. If it directly had a value set then it will be null, unless it has
-   * been merged with another {@code LazyFieldLite} that had an {@code ExtensionRegistry}.
+   * is only guaranteed to be non-null if this message was initialized using bytes and an {@code
+   * ExtensionRegistry}. If it directly had a value set then it will be null, unless it has been
+   * merged with another {@code LazyFieldLite} that had an {@code ExtensionRegistry}.
    */
   private ExtensionRegistryLite extensionRegistry;
 
@@ -105,25 +109,20 @@ public class LazyFieldLite {
 
   /**
    * The memoized bytes for {@code value}. This is an optimization for the toByteString() method to
-   * not have to recompute its return-value on each invocation.
-   * TODO(yatin): Figure out whether this optimization is actually necessary.
+   * not have to recompute its return-value on each invocation. TODO(yatin): Figure out whether this
+   * optimization is actually necessary.
    */
   private volatile ByteString memoizedBytes;
 
-  /**
-   * Constructs a LazyFieldLite with bytes that will be parsed lazily.
-   */
+  /** Constructs a LazyFieldLite with bytes that will be parsed lazily. */
   public LazyFieldLite(ExtensionRegistryLite extensionRegistry, ByteString bytes) {
     checkArguments(extensionRegistry, bytes);
     this.extensionRegistry = extensionRegistry;
     this.delayedBytes = bytes;
   }
 
-  /**
-   * Constructs a LazyFieldLite with no contents, and no ability to parse extensions.
-   */
-  public LazyFieldLite() {
-  }
+  /** Constructs a LazyFieldLite with no contents, and no ability to parse extensions. */
+  public LazyFieldLite() {}
 
   /**
    * Constructs a LazyFieldLite instance with a value. The LazyFieldLite may not be able to parse
@@ -140,13 +139,13 @@ public class LazyFieldLite {
     if (this == o) {
       return true;
     }
-    
+
     if (!(o instanceof LazyFieldLite)) {
       return false;
     }
 
     LazyFieldLite other = (LazyFieldLite) o;
-    
+
     // Lazy fields do not work well with equals... If both are delayedBytes, we do not have a
     // mechanism to deserialize them so we rely on bytes equality. Otherwise we coerce into an
     // actual message (if necessary) and call equals on the message itself. This implies that two
@@ -163,7 +162,7 @@ public class LazyFieldLite {
       return getValue(value2.getDefaultInstanceForType()).equals(value2);
     }
   }
-  
+
   @Override
   public int hashCode() {
     // We can't provide a memoizable hash code for lazy fields. The byte strings may have different
@@ -171,7 +170,7 @@ public class LazyFieldLite {
     // a message here if we were not already holding a value.
     return 1;
   }
-  
+
   /**
    * Determines whether this LazyFieldLite instance represents the default instance of this type.
    */
@@ -183,8 +182,8 @@ public class LazyFieldLite {
   /**
    * Clears the value state of this instance.
    *
-   * <p>LazyField is not thread-safe for write access. Synchronizations are needed
-   * under read/write situations.
+   * <p>LazyField is not thread-safe for write access. Synchronizations are needed under read/write
+   * situations.
    */
   public void clear() {
     // Don't clear the ExtensionRegistry. It might prove useful later on when merging in another
@@ -198,8 +197,8 @@ public class LazyFieldLite {
   /**
    * Overrides the contents of this LazyField.
    *
-   * <p>LazyField is not thread-safe for write access. Synchronizations are needed
-   * under read/write situations.
+   * <p>LazyField is not thread-safe for write access. Synchronizations are needed under read/write
+   * situations.
    */
   public void set(LazyFieldLite other) {
     this.delayedBytes = other.delayedBytes;
@@ -218,7 +217,7 @@ public class LazyFieldLite {
    * Returns message instance. It may do some thread-safe delayed parsing of bytes.
    *
    * @param defaultInstance its message's default instance. It's also used to get parser for the
-   * message type.
+   *     message type.
    */
   public MessageLite getValue(MessageLite defaultInstance) {
     ensureInitialized(defaultInstance);
@@ -228,8 +227,8 @@ public class LazyFieldLite {
   /**
    * Sets the value of the instance and returns the old value without delay parsing anything.
    *
-   * <p>LazyField is not thread-safe for write access. Synchronizations are needed
-   * under read/write situations.
+   * <p>LazyField is not thread-safe for write access. Synchronizations are needed under read/write
+   * situations.
    */
   public MessageLite setValue(MessageLite value) {
     MessageLite originalValue = this.value;
@@ -244,8 +243,8 @@ public class LazyFieldLite {
    * contain data. If the other field has an {@code ExtensionRegistry} but this does not, then this
    * field will copy over that {@code ExtensionRegistry}.
    *
-   * <p>LazyField is not thread-safe for write access. Synchronizations are needed
-   * under read/write situations.
+   * <p>LazyField is not thread-safe for write access. Synchronizations are needed under read/write
+   * situations.
    */
   public void merge(LazyFieldLite other) {
     if (other.containsDefaultInstance()) {
@@ -287,12 +286,12 @@ public class LazyFieldLite {
     // At this point we have two fully parsed messages.
     setValue(this.value.toBuilder().mergeFrom(other.value).build());
   }
-  
+
   /**
    * Merges another instance's contents from a stream.
    *
-   * <p>LazyField is not thread-safe for write access. Synchronizations are needed
-   * under read/write situations.
+   * <p>LazyField is not thread-safe for write access. Synchronizations are needed under read/write
+   * situations.
    */
   public void mergeFrom(CodedInputStream input, ExtensionRegistryLite extensionRegistry)
       throws IOException {
@@ -339,9 +338,7 @@ public class LazyFieldLite {
     }
   }
 
-  /**
-   * Sets this field with bytes to delay-parse.
-   */
+  /** Sets this field with bytes to delay-parse. */
   public void setByteString(ByteString bytes, ExtensionRegistryLite extensionRegistry) {
     checkArguments(extensionRegistry, bytes);
     this.delayedBytes = bytes;
@@ -351,9 +348,8 @@ public class LazyFieldLite {
   }
 
   /**
-   * Due to the optional field can be duplicated at the end of serialized
-   * bytes, which will make the serialized size changed after LazyField
-   * parsed. Be careful when using this method.
+   * Due to the optional field can be duplicated at the end of serialized bytes, which will make the
+   * serialized size changed after LazyField parsed. Be careful when using this method.
    */
   public int getSerializedSize() {
     // We *must* return delayed bytes size if it was ever set because the dependent messages may
@@ -369,9 +365,7 @@ public class LazyFieldLite {
     }
   }
 
-  /**
-   * Returns a BytesString for this field in a thread-safe way.
-   */
+  /** Returns a BytesString for this field in a thread-safe way. */
   public ByteString toByteString() {
     if (memoizedBytes != null) {
       return memoizedBytes;
@@ -394,10 +388,20 @@ public class LazyFieldLite {
     }
   }
 
+  /** Writes this lazy field into a {@link Writer}. */
+  void writeTo(Writer writer, int fieldNumber) throws IOException {
+    if (memoizedBytes != null) {
+      writer.writeBytes(fieldNumber, memoizedBytes);
+    } else if (delayedBytes != null) {
+      writer.writeBytes(fieldNumber, delayedBytes);
+    } else if (value != null) {
+      writer.writeMessage(fieldNumber, value);
+    } else {
+      writer.writeBytes(fieldNumber, ByteString.EMPTY);
+    }
+  }
 
-  /**
-   * Might lazily parse the bytes that were previously passed in. Is thread-safe.
-   */
+  /** Might lazily parse the bytes that were previously passed in. Is thread-safe. */
   protected void ensureInitialized(MessageLite defaultInstance) {
     if (value != null) {
       return;
@@ -409,8 +413,8 @@ public class LazyFieldLite {
       try {
         if (delayedBytes != null) {
           // The extensionRegistry shouldn't be null here since we have delayedBytes.
-          MessageLite parsedValue = defaultInstance.getParserForType()
-              .parseFrom(delayedBytes, extensionRegistry);
+          MessageLite parsedValue =
+              defaultInstance.getParserForType().parseFrom(delayedBytes, extensionRegistry);
           this.value = parsedValue;
           this.memoizedBytes = delayedBytes;
         } else {
@@ -425,7 +429,6 @@ public class LazyFieldLite {
       }
     }
   }
-
 
   private static void checkArguments(ExtensionRegistryLite extensionRegistry, ByteString bytes) {
     if (extensionRegistry == null) {

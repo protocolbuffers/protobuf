@@ -37,10 +37,9 @@ syntax = "proto2";
 
 // Some generic_services option(s) added automatically.
 // See:  http://go/proto2-generic-services-default
-option java_generic_services = true;   // auto-added
-
 package io_protocol_tests;
 
+option java_generic_services = true;  // auto-added
 option java_package = "com.google.protobuf";
 option java_outer_classname = "TestBadIdentifiersProto";
 
@@ -52,9 +51,11 @@ message TestMessage {
 
 message Descriptor {
   option no_standard_descriptor_accessor = true;
+
   optional string descriptor = 1;
   message NestedDescriptor {
     option no_standard_descriptor_accessor = true;
+
     optional string descriptor = 1;
   }
   optional NestedDescriptor nested_descriptor = 2;
@@ -78,12 +79,12 @@ message Deprecated {
     FOO = 1;
 
     // Test if @Deprecated annotation conflicts with Deprecated message name.
-    BAR = 2 [ deprecated = true ];
+    BAR = 2 [deprecated = true];
   }
 
-  optional int32 field1 = 1 [deprecated=true];
-  optional TestEnum field2 = 2 [deprecated=true];
-  optional TestMessage field3 = 3 [deprecated=true];
+  optional int32 field1 = 1 [deprecated = true];
+  optional TestEnum field2 = 2 [deprecated = true];
+  optional TestMessage field3 = 3 [deprecated = true];
 }
 
 message Override {
@@ -124,8 +125,7 @@ message TestConflictingFieldNames {
     UNKNOWN = 0;
     FOO = 1;
   }
-  message TestMessage {
-  }
+  message TestMessage {}
   repeated int32 int32_field = 1;
   repeated TestEnum enum_field = 2;
   repeated string string_field = 3;
@@ -138,10 +138,10 @@ message TestConflictingFieldNames {
   optional bytes bytes_field_count = 14;
   optional TestMessage message_field_count = 15;
 
-  repeated int32 Int32Field = 21;  // NO_PROTO3
-  repeated TestEnum EnumField = 22;  // NO_PROTO3
-  repeated string StringField = 23;  // NO_PROTO3
-  repeated bytes BytesField = 24;  // NO_PROTO3
+  repeated int32 Int32Field = 21;          // NO_PROTO3
+  repeated TestEnum EnumField = 22;        // NO_PROTO3
+  repeated string StringField = 23;        // NO_PROTO3
+  repeated bytes BytesField = 24;          // NO_PROTO3
   repeated TestMessage MessageField = 25;  // NO_PROTO3
 
   // This field conflicts with "int32_field" as they both generate
@@ -149,9 +149,9 @@ message TestConflictingFieldNames {
   required int32 int32_field_list = 31;  // NO_PROTO3
 
   // These field pairs have the same Java converted name
-  optional string field_name = 32; // NO_PROTO3
-  optional string field__name = 33; // NO_PROTO3
-  optional int32 _2conflict = 34; // NO_PROTO3
+  optional string field_name = 32;   // NO_PROTO3
+  optional string field__name = 33;  // NO_PROTO3
+  optional int32 _2conflict = 34;    // NO_PROTO3
   optional int32 __2conflict = 35;
 
   extensions 1000 to max;  // NO_PROTO3
@@ -161,8 +161,8 @@ message TestConflictingFieldNames {
     // We don't generate accessors for extensions so the following extension
     // fields don't conflict with the repeated field "int64_field".
     optional int64 int64_field_count = 1001;  // NO_PROTO3
-    optional int64 int64_field_list = 1002;  // NO_PROTO3
-  }  // NO_PROTO3
+    optional int64 int64_field_list = 1002;   // NO_PROTO3
+  }                                           // NO_PROTO3
 }
 
 message TestMapField {

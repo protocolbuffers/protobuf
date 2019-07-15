@@ -44,9 +44,12 @@ namespace csharp {
 class MapFieldGenerator : public FieldGeneratorBase {
  public:
   MapFieldGenerator(const FieldDescriptor* descriptor,
-                    int fieldOrdinal,
+                    int presenceIndex,
                     const Options* options);
   ~MapFieldGenerator();
+
+  MapFieldGenerator(const MapFieldGenerator&) = delete;
+  MapFieldGenerator& operator=(const MapFieldGenerator&) = delete;
 
   virtual void GenerateCloningCode(io::Printer* printer);
   virtual void GenerateFreezingCode(io::Printer* printer);
@@ -59,9 +62,6 @@ class MapFieldGenerator : public FieldGeneratorBase {
   virtual void WriteHash(io::Printer* printer);
   virtual void WriteEquals(io::Printer* printer);
   virtual void WriteToString(io::Printer* printer);
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MapFieldGenerator);
 };
 
 }  // namespace csharp

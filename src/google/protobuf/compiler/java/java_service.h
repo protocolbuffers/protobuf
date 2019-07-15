@@ -83,7 +83,6 @@ class ImmutableServiceGenerator : public ServiceGenerator {
   virtual void Generate(io::Printer* printer);
 
  private:
-
   // Generate the getDescriptorForType() method.
   void GenerateGetDescriptorForType(io::Printer* printer);
 
@@ -125,7 +124,7 @@ class ImmutableServiceGenerator : public ServiceGenerator {
                                        const MethodDescriptor* method);
 
   // Return the output type of the method.
-  string GetOutput(const MethodDescriptor* method);
+  std::string GetOutput(const MethodDescriptor* method);
 
   Context* context_;
   ClassNameResolver* name_resolver_;

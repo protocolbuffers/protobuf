@@ -31,11 +31,8 @@
 // Author: kenton@google.com (Kenton Varda)
 
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/once.h>
-#include <google/protobuf/stubs/status.h>
-#include <google/protobuf/stubs/stringpiece.h>
-#include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/stubs/int128.h>
+
+#include <atomic>
 #include <errno.h>
 #include <sstream>
 #include <stdio.h>
@@ -53,6 +50,17 @@
 #if defined(__ANDROID__)
 #include <android/log.h>
 #endif
+
+#include <google/protobuf/stubs/callback.h>
+#include <google/protobuf/stubs/logging.h>
+#include <google/protobuf/stubs/mutex.h>
+#include <google/protobuf/stubs/once.h>
+#include <google/protobuf/stubs/status.h>
+#include <google/protobuf/stubs/stringpiece.h>
+#include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/stubs/int128.h>
+
+#include <google/protobuf/port_def.inc>
 
 namespace google {
 namespace protobuf {
@@ -173,22 +181,7 @@ void NullLogHandler(LogLevel /* level */, const char* /* filename */,
 }
 
 static LogHandler* log_handler_ = &DefaultLogHandler;
-static int log_silencer_count_ = 0;
-
-static Mutex* log_silencer_count_mutex_ = nullptr;
-GOOGLE_PROTOBUF_DECLARE_ONCE(log_silencer_count_init_);
-
-void DeleteLogSilencerCount() {
-  delete log_silencer_count_mutex_;
-  log_silencer_count_mutex_ = nullptr;
-}
-void InitLogSilencerCount() {
-  log_silencer_count_mutex_ = new Mutex;
-  OnShutdown(&DeleteLogSilencerCount);
-}
-void InitLogSilencerCountOnce() {
-  GoogleOnceInit(&log_silencer_count_init_, &InitLogSilencerCount);
-}
+static std::atomic<int> log_silencer_count_ = ATOMIC_VAR_INIT(0);
 
 LogMessage& LogMessage::operator<<(const string& value) {
   message_ += value;
@@ -205,8 +198,7 @@ LogMessage& LogMessage::operator<<(const StringPiece& value) {
   return *this;
 }
 
-LogMessage& LogMessage::operator<<(
-    const ::google::protobuf::util::Status& status) {
+LogMessage& LogMessage::operator<<(const util::Status& status) {
   message_ += status.ToString();
   return *this;
 }
@@ -242,8 +234,8 @@ DECLARE_STREAM_OPERATOR(long         , "%ld")
 DECLARE_STREAM_OPERATOR(unsigned long, "%lu")
 DECLARE_STREAM_OPERATOR(double       , "%g" )
 DECLARE_STREAM_OPERATOR(void*        , "%p" )
-DECLARE_STREAM_OPERATOR(long long         , "%" GOOGLE_LL_FORMAT "d")
-DECLARE_STREAM_OPERATOR(unsigned long long, "%" GOOGLE_LL_FORMAT "u")
+DECLARE_STREAM_OPERATOR(long long         , "%" PROTOBUF_LL_FORMAT "d")
+DECLARE_STREAM_OPERATOR(unsigned long long, "%" PROTOBUF_LL_FORMAT "u")
 #undef DECLARE_STREAM_OPERATOR
 
 LogMessage::LogMessage(LogLevel level, const char* filename, int line)
@@ -254,8 +246,6 @@ void LogMessage::Finish() {
   bool suppress = false;
 
   if (level_ != LOGLEVEL_FATAL) {
-    InitLogSilencerCountOnce();
-    MutexLock lock(log_silencer_count_mutex_);
     suppress = log_silencer_count_ > 0;
   }
 
@@ -292,14 +282,10 @@ LogHandler* SetLogHandler(LogHandler* new_func) {
 }
 
 LogSilencer::LogSilencer() {
-  internal::InitLogSilencerCountOnce();
-  MutexLock lock(internal::log_silencer_count_mutex_);
   ++internal::log_silencer_count_;
 };
 
 LogSilencer::~LogSilencer() {
-  internal::InitLogSilencerCountOnce();
-  MutexLock lock(internal::log_silencer_count_mutex_);
   --internal::log_silencer_count_;
 };
 
@@ -335,7 +321,6 @@ uint32 ghtonl(uint32 x) {
 
 namespace internal {
 
-typedef void OnShutdownFunc();
 struct ShutdownData {
   ~ShutdownData() {
     std::reverse(functions.begin(), functions.end());
@@ -352,7 +337,8 @@ struct ShutdownData {
 };
 
 static void RunZeroArgFunc(const void* arg) {
-  reinterpret_cast<void (*)()>(const_cast<void*>(arg))();
+  void (*func)() = reinterpret_cast<void (*)()>(const_cast<void*>(arg));
+  func();
 }
 
 void OnShutdown(void (*func)()) {

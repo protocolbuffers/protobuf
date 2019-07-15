@@ -31,7 +31,6 @@
 package com.google.protobuf;
 
 import com.google.protobuf.Internal.ProtobufList;
-
 import java.util.AbstractList;
 import java.util.Collection;
 import java.util.List;
@@ -39,23 +38,19 @@ import java.util.RandomAccess;
 
 /**
  * An abstract implementation of {@link ProtobufList} which manages mutability semantics. All mutate
- * methods must check if the list is mutable before proceeding. Subclasses must invoke
- * {@link #ensureIsMutable()} manually when overriding those methods.
- * <p>
- * This implementation assumes all subclasses are array based, supporting random access.
+ * methods must check if the list is mutable before proceeding. Subclasses must invoke {@link
+ * #ensureIsMutable()} manually when overriding those methods.
+ *
+ * <p>This implementation assumes all subclasses are array based, supporting random access.
  */
 abstract class AbstractProtobufList<E> extends AbstractList<E> implements ProtobufList<E> {
 
   protected static final int DEFAULT_CAPACITY = 10;
 
-  /**
-   * Whether or not this list is modifiable.
-   */
+  /** Whether or not this list is modifiable. */
   private boolean isMutable;
 
-  /**
-   * Constructs a mutable list by default.
-   */
+  /** Constructs a mutable list by default. */
   AbstractProtobufList() {
     isMutable = true;
   }
@@ -115,7 +110,7 @@ abstract class AbstractProtobufList<E> extends AbstractList<E> implements Protob
     ensureIsMutable();
     return super.addAll(c);
   }
-  
+
   @Override
   public boolean addAll(int index, Collection<? extends E> c) {
     ensureIsMutable();
@@ -127,47 +122,47 @@ abstract class AbstractProtobufList<E> extends AbstractList<E> implements Protob
     ensureIsMutable();
     super.clear();
   }
-  
+
   @Override
   public boolean isModifiable() {
     return isMutable;
   }
-  
+
   @Override
   public final void makeImmutable() {
     isMutable = false;
   }
-  
+
   @Override
   public E remove(int index) {
     ensureIsMutable();
     return super.remove(index);
   }
-  
+
   @Override
   public boolean remove(Object o) {
     ensureIsMutable();
     return super.remove(o);
   }
-  
+
   @Override
   public boolean removeAll(Collection<?> c) {
     ensureIsMutable();
     return super.removeAll(c);
   }
-  
+
   @Override
   public boolean retainAll(Collection<?> c) {
     ensureIsMutable();
     return super.retainAll(c);
   }
-  
+
   @Override
   public E set(int index, E element) {
     ensureIsMutable();
     return super.set(index, element);
   }
-  
+
   /**
    * Throws an {@link UnsupportedOperationException} if the list is immutable. Subclasses are
    * responsible for invoking this method on mutate operations.

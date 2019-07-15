@@ -620,9 +620,8 @@ bool UpdateReturnCopy(Collection* const collection,
 // twice. Unlike UpdateReturnCopy this also does not come with the issue of an
 // undefined previous* in case new data was inserted.
 template <class Collection>
-typename Collection::value_type::second_type* const
-InsertOrReturnExisting(Collection* const collection,
-                       const typename Collection::value_type& vt) {
+typename Collection::value_type::second_type* InsertOrReturnExisting(
+    Collection* const collection, const typename Collection::value_type& vt) {
   std::pair<typename Collection::iterator, bool> ret = collection->insert(vt);
   if (ret.second) {
     return nullptr;  // Inserted, no existing previous value.
@@ -633,8 +632,7 @@ InsertOrReturnExisting(Collection* const collection,
 
 // Same as above, except for explicit key and data.
 template <class Collection>
-typename Collection::value_type::second_type* const
-InsertOrReturnExisting(
+typename Collection::value_type::second_type* InsertOrReturnExisting(
     Collection* const collection,
     const typename Collection::value_type::first_type& key,
     const typename Collection::value_type::second_type& data) {

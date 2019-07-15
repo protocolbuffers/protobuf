@@ -174,8 +174,8 @@ message ForeignMessageLite {
 
 enum ForeignEnumLite {
   FOREIGN_LITE_FOO = 4;
-  FOREIGN_LITE_BAR = 5;
   FOREIGN_LITE_BAZ = 6;
+  FOREIGN_LITE_BAR = 5;
 }
 
 message TestPackedTypesLite {
@@ -472,4 +472,17 @@ message PackedFixed32 {
 
 message NonPackedFixed32 {
   repeated fixed32 repeated_fixed32 = 2048;
+}
+
+// Test an enum that has multiple values with the same number.
+message DupEnum {
+  enum TestEnumWithDupValueLite {
+    option allow_alias = true;
+
+    FOO1 = 1;
+    BAR1 = 2;
+    BAZ = 3;
+    FOO2 = 1;
+    BAR2 = 2;
+  }
 }

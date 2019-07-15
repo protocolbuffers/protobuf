@@ -50,7 +50,7 @@ class ObjectLocationTracker : public LocationTrackerInterface {
   ~ObjectLocationTracker() override {}
 
   // Returns empty because nothing is tracked.
-  string ToString() const override { return ""; }
+  std::string ToString() const override { return ""; }
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ObjectLocationTracker);

@@ -139,58 +139,62 @@ namespace Google.Protobuf.TestProtos {
             "NBj//w8gAygEIigKG1Rlc3RDb21tZW50SW5qZWN0aW9uTWVzc2FnZRIJCgFh",
             "GAEgASgJIgwKCkZvb1JlcXVlc3QiDQoLRm9vUmVzcG9uc2UiEgoQRm9vQ2xp",
             "ZW50TWVzc2FnZSISChBGb29TZXJ2ZXJNZXNzYWdlIgwKCkJhclJlcXVlc3Qi",
-            "DQoLQmFyUmVzcG9uc2UiEgoQVGVzdEVtcHR5TWVzc2FnZSpZCgtGb3JlaWdu",
-            "RW51bRIXChNGT1JFSUdOX1VOU1BFQ0lGSUVEEAASDwoLRk9SRUlHTl9GT08Q",
-            "BBIPCgtGT1JFSUdOX0JBUhAFEg8KC0ZPUkVJR05fQkFaEAYqdQoUVGVzdEVu",
-            "dW1XaXRoRHVwVmFsdWUSKAokVEVTVF9FTlVNX1dJVEhfRFVQX1ZBTFVFX1VO",
-            "U1BFQ0lGSUVEEAASCAoERk9PMRABEggKBEJBUjEQAhIHCgNCQVoQAxIICgRG",
-            "T08yEAESCAoEQkFSMhACGgIQASqdAQoOVGVzdFNwYXJzZUVudW0SIAocVEVT",
-            "VF9TUEFSU0VfRU5VTV9VTlNQRUNJRklFRBAAEgwKCFNQQVJTRV9BEHsSDgoI",
-            "U1BBUlNFX0IQpucDEg8KCFNQQVJTRV9DELKxgAYSFQoIU1BBUlNFX0QQ8f//",
-            "////////ARIVCghTUEFSU0VfRRC03vz///////8BEgwKCFNQQVJTRV9HEAIy",
-            "nQEKC1Rlc3RTZXJ2aWNlEkYKA0ZvbxIeLnByb3RvYnVmX3VuaXR0ZXN0My5G",
-            "b29SZXF1ZXN0Gh8ucHJvdG9idWZfdW5pdHRlc3QzLkZvb1Jlc3BvbnNlEkYK",
-            "A0JhchIeLnByb3RvYnVmX3VuaXR0ZXN0My5CYXJSZXF1ZXN0Gh8ucHJvdG9i",
-            "dWZfdW5pdHRlc3QzLkJhclJlc3BvbnNlQixCDVVuaXR0ZXN0UHJvdG+qAhpH",
-            "b29nbGUuUHJvdG9idWYuVGVzdFByb3Rvc2IGcHJvdG8z"));
+            "DQoLQmFyUmVzcG9uc2UiEgoQVGVzdEVtcHR5TWVzc2FnZSJwCg5Db21tZW50",
+            "TWVzc2FnZRIMCgR0ZXh0GAEgASgJGisKFE5lc3RlZENvbW1lbnRNZXNzYWdl",
+            "EhMKC25lc3RlZF90ZXh0GAEgASgJIiMKEU5lc3RlZENvbW1lbnRFbnVtEg4K",
+            "ClpFUk9fVkFMVUUQACpZCgtGb3JlaWduRW51bRIXChNGT1JFSUdOX1VOU1BF",
+            "Q0lGSUVEEAASDwoLRk9SRUlHTl9GT08QBBIPCgtGT1JFSUdOX0JBUhAFEg8K",
+            "C0ZPUkVJR05fQkFaEAYqdQoUVGVzdEVudW1XaXRoRHVwVmFsdWUSKAokVEVT",
+            "VF9FTlVNX1dJVEhfRFVQX1ZBTFVFX1VOU1BFQ0lGSUVEEAASCAoERk9PMRAB",
+            "EggKBEJBUjEQAhIHCgNCQVoQAxIICgRGT08yEAESCAoEQkFSMhACGgIQASqd",
+            "AQoOVGVzdFNwYXJzZUVudW0SIAocVEVTVF9TUEFSU0VfRU5VTV9VTlNQRUNJ",
+            "RklFRBAAEgwKCFNQQVJTRV9BEHsSDgoIU1BBUlNFX0IQpucDEg8KCFNQQVJT",
+            "RV9DELKxgAYSFQoIU1BBUlNFX0QQ8f//////////ARIVCghTUEFSU0VfRRC0",
+            "3vz///////8BEgwKCFNQQVJTRV9HEAIqHQoLQ29tbWVudEVudW0SDgoKWkVS",
+            "T19WQUxVRRAAMp0BCgtUZXN0U2VydmljZRJGCgNGb28SHi5wcm90b2J1Zl91",
+            "bml0dGVzdDMuRm9vUmVxdWVzdBofLnByb3RvYnVmX3VuaXR0ZXN0My5Gb29S",
+            "ZXNwb25zZRJGCgNCYXISHi5wcm90b2J1Zl91bml0dGVzdDMuQmFyUmVxdWVz",
+            "dBofLnByb3RvYnVmX3VuaXR0ZXN0My5CYXJSZXNwb25zZUIsQg1Vbml0dGVz",
+            "dFByb3RvqgIaR29vZ2xlLlByb3RvYnVmLlRlc3RQcm90b3NiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.TestProtos.UnittestImportProto3Reflection.Descriptor, },
-          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Google.Protobuf.TestProtos.ForeignEnum), typeof(global::Google.Protobuf.TestProtos.TestEnumWithDupValue), typeof(global::Google.Protobuf.TestProtos.TestSparseEnum), }, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestAllTypes), global::Google.Protobuf.TestProtos.TestAllTypes.Parser, new[]{ "SingleInt32", "SingleInt64", "SingleUint32", "SingleUint64", "SingleSint32", "SingleSint64", "SingleFixed32", "SingleFixed64", "SingleSfixed32", "SingleSfixed64", "SingleFloat", "SingleDouble", "SingleBool", "SingleString", "SingleBytes", "SingleNestedMessage", "SingleForeignMessage", "SingleImportMessage", "SingleNestedEnum", "SingleForeignEnum", "SingleImportEnum", "SinglePublicImportMessage", "RepeatedInt32", "RepeatedInt64", "RepeatedUint32", "RepeatedUint64", "RepeatedSint32", "RepeatedSint64", "RepeatedFixed32", "RepeatedFixed64", "RepeatedSfixed32", "RepeatedSfixed64", "RepeatedFloat", "RepeatedDouble", "RepeatedBool", "RepeatedString", "RepeatedBytes", "RepeatedNestedMessage", "RepeatedForeignMessage", "RepeatedImportMessage", "RepeatedNestedEnum", "RepeatedForeignEnum", "RepeatedImportEnum", "RepeatedPublicImportMessage", "OneofUint32", "OneofNestedMessage", "OneofString", "OneofBytes" }, new[]{ "OneofField" }, new[]{ typeof(global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum) }, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage), global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage.Parser, new[]{ "Bb" }, null, null, null)}),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.NestedTestAllTypes), global::Google.Protobuf.TestProtos.NestedTestAllTypes.Parser, new[]{ "Child", "Payload", "RepeatedChild" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestDeprecatedFields), global::Google.Protobuf.TestProtos.TestDeprecatedFields.Parser, new[]{ "DeprecatedInt32" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.ForeignMessage), global::Google.Protobuf.TestProtos.ForeignMessage.Parser, new[]{ "C" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestReservedFields), global::Google.Protobuf.TestProtos.TestReservedFields.Parser, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestForeignNested), global::Google.Protobuf.TestProtos.TestForeignNested.Parser, new[]{ "ForeignNested" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestReallyLargeTagNumber), global::Google.Protobuf.TestProtos.TestReallyLargeTagNumber.Parser, new[]{ "A", "Bb" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestRecursiveMessage), global::Google.Protobuf.TestProtos.TestRecursiveMessage.Parser, new[]{ "A", "I" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestMutualRecursionA), global::Google.Protobuf.TestProtos.TestMutualRecursionA.Parser, new[]{ "Bb" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestMutualRecursionB), global::Google.Protobuf.TestProtos.TestMutualRecursionB.Parser, new[]{ "A", "OptionalInt32" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestEnumAllowAlias), global::Google.Protobuf.TestProtos.TestEnumAllowAlias.Parser, new[]{ "Value" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestCamelCaseFieldNames), global::Google.Protobuf.TestProtos.TestCamelCaseFieldNames.Parser, new[]{ "PrimitiveField", "StringField", "EnumField", "MessageField", "RepeatedPrimitiveField", "RepeatedStringField", "RepeatedEnumField", "RepeatedMessageField" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestFieldOrderings), global::Google.Protobuf.TestProtos.TestFieldOrderings.Parser, new[]{ "MyString", "MyInt", "MyFloat", "SingleNestedMessage" }, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestFieldOrderings.Types.NestedMessage), global::Google.Protobuf.TestProtos.TestFieldOrderings.Types.NestedMessage.Parser, new[]{ "Oo", "Bb" }, null, null, null)}),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.SparseEnumMessage), global::Google.Protobuf.TestProtos.SparseEnumMessage.Parser, new[]{ "SparseEnum" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.OneString), global::Google.Protobuf.TestProtos.OneString.Parser, new[]{ "Data" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.MoreString), global::Google.Protobuf.TestProtos.MoreString.Parser, new[]{ "Data" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.OneBytes), global::Google.Protobuf.TestProtos.OneBytes.Parser, new[]{ "Data" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.MoreBytes), global::Google.Protobuf.TestProtos.MoreBytes.Parser, new[]{ "Data" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.Int32Message), global::Google.Protobuf.TestProtos.Int32Message.Parser, new[]{ "Data" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.Uint32Message), global::Google.Protobuf.TestProtos.Uint32Message.Parser, new[]{ "Data" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.Int64Message), global::Google.Protobuf.TestProtos.Int64Message.Parser, new[]{ "Data" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.Uint64Message), global::Google.Protobuf.TestProtos.Uint64Message.Parser, new[]{ "Data" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.BoolMessage), global::Google.Protobuf.TestProtos.BoolMessage.Parser, new[]{ "Data" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestOneof), global::Google.Protobuf.TestProtos.TestOneof.Parser, new[]{ "FooInt", "FooString", "FooMessage" }, new[]{ "Foo" }, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestPackedTypes), global::Google.Protobuf.TestProtos.TestPackedTypes.Parser, new[]{ "PackedInt32", "PackedInt64", "PackedUint32", "PackedUint64", "PackedSint32", "PackedSint64", "PackedFixed32", "PackedFixed64", "PackedSfixed32", "PackedSfixed64", "PackedFloat", "PackedDouble", "PackedBool", "PackedEnum" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestUnpackedTypes), global::Google.Protobuf.TestProtos.TestUnpackedTypes.Parser, new[]{ "UnpackedInt32", "UnpackedInt64", "UnpackedUint32", "UnpackedUint64", "UnpackedSint32", "UnpackedSint64", "UnpackedFixed32", "UnpackedFixed64", "UnpackedSfixed32", "UnpackedSfixed64", "UnpackedFloat", "UnpackedDouble", "UnpackedBool", "UnpackedEnum" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestRepeatedScalarDifferentTagSizes), global::Google.Protobuf.TestProtos.TestRepeatedScalarDifferentTagSizes.Parser, new[]{ "RepeatedFixed32", "RepeatedInt32", "RepeatedFixed64", "RepeatedInt64", "RepeatedFloat", "RepeatedUint64" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestCommentInjectionMessage), global::Google.Protobuf.TestProtos.TestCommentInjectionMessage.Parser, new[]{ "A" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.FooRequest), global::Google.Protobuf.TestProtos.FooRequest.Parser, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.FooResponse), global::Google.Protobuf.TestProtos.FooResponse.Parser, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.FooClientMessage), global::Google.Protobuf.TestProtos.FooClientMessage.Parser, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.FooServerMessage), global::Google.Protobuf.TestProtos.FooServerMessage.Parser, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.BarRequest), global::Google.Protobuf.TestProtos.BarRequest.Parser, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.BarResponse), global::Google.Protobuf.TestProtos.BarResponse.Parser, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestEmptyMessage), global::Google.Protobuf.TestProtos.TestEmptyMessage.Parser, null, null, null, null)
+          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Google.Protobuf.TestProtos.ForeignEnum), typeof(global::Google.Protobuf.TestProtos.TestEnumWithDupValue), typeof(global::Google.Protobuf.TestProtos.TestSparseEnum), typeof(global::Google.Protobuf.TestProtos.CommentEnum), }, null, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestAllTypes), global::Google.Protobuf.TestProtos.TestAllTypes.Parser, new[]{ "SingleInt32", "SingleInt64", "SingleUint32", "SingleUint64", "SingleSint32", "SingleSint64", "SingleFixed32", "SingleFixed64", "SingleSfixed32", "SingleSfixed64", "SingleFloat", "SingleDouble", "SingleBool", "SingleString", "SingleBytes", "SingleNestedMessage", "SingleForeignMessage", "SingleImportMessage", "SingleNestedEnum", "SingleForeignEnum", "SingleImportEnum", "SinglePublicImportMessage", "RepeatedInt32", "RepeatedInt64", "RepeatedUint32", "RepeatedUint64", "RepeatedSint32", "RepeatedSint64", "RepeatedFixed32", "RepeatedFixed64", "RepeatedSfixed32", "RepeatedSfixed64", "RepeatedFloat", "RepeatedDouble", "RepeatedBool", "RepeatedString", "RepeatedBytes", "RepeatedNestedMessage", "RepeatedForeignMessage", "RepeatedImportMessage", "RepeatedNestedEnum", "RepeatedForeignEnum", "RepeatedImportEnum", "RepeatedPublicImportMessage", "OneofUint32", "OneofNestedMessage", "OneofString", "OneofBytes" }, new[]{ "OneofField" }, new[]{ typeof(global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum) }, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage), global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage.Parser, new[]{ "Bb" }, null, null, null, null)}),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.NestedTestAllTypes), global::Google.Protobuf.TestProtos.NestedTestAllTypes.Parser, new[]{ "Child", "Payload", "RepeatedChild" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestDeprecatedFields), global::Google.Protobuf.TestProtos.TestDeprecatedFields.Parser, new[]{ "DeprecatedInt32" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.ForeignMessage), global::Google.Protobuf.TestProtos.ForeignMessage.Parser, new[]{ "C" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestReservedFields), global::Google.Protobuf.TestProtos.TestReservedFields.Parser, null, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestForeignNested), global::Google.Protobuf.TestProtos.TestForeignNested.Parser, new[]{ "ForeignNested" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestReallyLargeTagNumber), global::Google.Protobuf.TestProtos.TestReallyLargeTagNumber.Parser, new[]{ "A", "Bb" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestRecursiveMessage), global::Google.Protobuf.TestProtos.TestRecursiveMessage.Parser, new[]{ "A", "I" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestMutualRecursionA), global::Google.Protobuf.TestProtos.TestMutualRecursionA.Parser, new[]{ "Bb" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestMutualRecursionB), global::Google.Protobuf.TestProtos.TestMutualRecursionB.Parser, new[]{ "A", "OptionalInt32" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestEnumAllowAlias), global::Google.Protobuf.TestProtos.TestEnumAllowAlias.Parser, new[]{ "Value" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestCamelCaseFieldNames), global::Google.Protobuf.TestProtos.TestCamelCaseFieldNames.Parser, new[]{ "PrimitiveField", "StringField", "EnumField", "MessageField", "RepeatedPrimitiveField", "RepeatedStringField", "RepeatedEnumField", "RepeatedMessageField" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestFieldOrderings), global::Google.Protobuf.TestProtos.TestFieldOrderings.Parser, new[]{ "MyString", "MyInt", "MyFloat", "SingleNestedMessage" }, null, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestFieldOrderings.Types.NestedMessage), global::Google.Protobuf.TestProtos.TestFieldOrderings.Types.NestedMessage.Parser, new[]{ "Oo", "Bb" }, null, null, null, null)}),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.SparseEnumMessage), global::Google.Protobuf.TestProtos.SparseEnumMessage.Parser, new[]{ "SparseEnum" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.OneString), global::Google.Protobuf.TestProtos.OneString.Parser, new[]{ "Data" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.MoreString), global::Google.Protobuf.TestProtos.MoreString.Parser, new[]{ "Data" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.OneBytes), global::Google.Protobuf.TestProtos.OneBytes.Parser, new[]{ "Data" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.MoreBytes), global::Google.Protobuf.TestProtos.MoreBytes.Parser, new[]{ "Data" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.Int32Message), global::Google.Protobuf.TestProtos.Int32Message.Parser, new[]{ "Data" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.Uint32Message), global::Google.Protobuf.TestProtos.Uint32Message.Parser, new[]{ "Data" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.Int64Message), global::Google.Protobuf.TestProtos.Int64Message.Parser, new[]{ "Data" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.Uint64Message), global::Google.Protobuf.TestProtos.Uint64Message.Parser, new[]{ "Data" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.BoolMessage), global::Google.Protobuf.TestProtos.BoolMessage.Parser, new[]{ "Data" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestOneof), global::Google.Protobuf.TestProtos.TestOneof.Parser, new[]{ "FooInt", "FooString", "FooMessage" }, new[]{ "Foo" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestPackedTypes), global::Google.Protobuf.TestProtos.TestPackedTypes.Parser, new[]{ "PackedInt32", "PackedInt64", "PackedUint32", "PackedUint64", "PackedSint32", "PackedSint64", "PackedFixed32", "PackedFixed64", "PackedSfixed32", "PackedSfixed64", "PackedFloat", "PackedDouble", "PackedBool", "PackedEnum" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestUnpackedTypes), global::Google.Protobuf.TestProtos.TestUnpackedTypes.Parser, new[]{ "UnpackedInt32", "UnpackedInt64", "UnpackedUint32", "UnpackedUint64", "UnpackedSint32", "UnpackedSint64", "UnpackedFixed32", "UnpackedFixed64", "UnpackedSfixed32", "UnpackedSfixed64", "UnpackedFloat", "UnpackedDouble", "UnpackedBool", "UnpackedEnum" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestRepeatedScalarDifferentTagSizes), global::Google.Protobuf.TestProtos.TestRepeatedScalarDifferentTagSizes.Parser, new[]{ "RepeatedFixed32", "RepeatedInt32", "RepeatedFixed64", "RepeatedInt64", "RepeatedFloat", "RepeatedUint64" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestCommentInjectionMessage), global::Google.Protobuf.TestProtos.TestCommentInjectionMessage.Parser, new[]{ "A" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.FooRequest), global::Google.Protobuf.TestProtos.FooRequest.Parser, null, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.FooResponse), global::Google.Protobuf.TestProtos.FooResponse.Parser, null, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.FooClientMessage), global::Google.Protobuf.TestProtos.FooClientMessage.Parser, null, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.FooServerMessage), global::Google.Protobuf.TestProtos.FooServerMessage.Parser, null, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.BarRequest), global::Google.Protobuf.TestProtos.BarRequest.Parser, null, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.BarResponse), global::Google.Protobuf.TestProtos.BarResponse.Parser, null, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestEmptyMessage), global::Google.Protobuf.TestProtos.TestEmptyMessage.Parser, null, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.CommentMessage), global::Google.Protobuf.TestProtos.CommentMessage.Parser, new[]{ "Text" }, null, new[]{ typeof(global::Google.Protobuf.TestProtos.CommentMessage.Types.NestedCommentEnum) }, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.CommentMessage.Types.NestedCommentMessage), global::Google.Protobuf.TestProtos.CommentMessage.Types.NestedCommentMessage.Parser, new[]{ "NestedText" }, null, null, null, null)})
           }));
     }
     #endregion
@@ -231,6 +235,16 @@ namespace Google.Protobuf.TestProtos {
     /// SPARSE_F = 0;
     /// </summary>
     [pbr::OriginalName("SPARSE_G")] SparseG = 2,
+  }
+
+  /// <summary>
+  /// Leading enum comment
+  /// </summary>
+  public enum CommentEnum {
+    /// <summary>
+    /// Zero value comment
+    /// </summary>
+    [pbr::OriginalName("ZERO_VALUE")] ZeroValue = 0,
   }
 
   #endregion
@@ -535,7 +549,7 @@ namespace Google.Protobuf.TestProtos {
 
     /// <summary>Field number for the "single_nested_enum" field.</summary>
     public const int SingleNestedEnumFieldNumber = 21;
-    private global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum singleNestedEnum_ = 0;
+    private global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum singleNestedEnum_ = global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum.Unspecified;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum SingleNestedEnum {
       get { return singleNestedEnum_; }
@@ -546,7 +560,7 @@ namespace Google.Protobuf.TestProtos {
 
     /// <summary>Field number for the "single_foreign_enum" field.</summary>
     public const int SingleForeignEnumFieldNumber = 22;
-    private global::Google.Protobuf.TestProtos.ForeignEnum singleForeignEnum_ = 0;
+    private global::Google.Protobuf.TestProtos.ForeignEnum singleForeignEnum_ = global::Google.Protobuf.TestProtos.ForeignEnum.ForeignUnspecified;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Google.Protobuf.TestProtos.ForeignEnum SingleForeignEnum {
       get { return singleForeignEnum_; }
@@ -557,7 +571,7 @@ namespace Google.Protobuf.TestProtos {
 
     /// <summary>Field number for the "single_import_enum" field.</summary>
     public const int SingleImportEnumFieldNumber = 23;
-    private global::Google.Protobuf.TestProtos.ImportEnum singleImportEnum_ = 0;
+    private global::Google.Protobuf.TestProtos.ImportEnum singleImportEnum_ = global::Google.Protobuf.TestProtos.ImportEnum.Unspecified;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Google.Protobuf.TestProtos.ImportEnum SingleImportEnum {
       get { return singleImportEnum_; }
@@ -957,9 +971,9 @@ namespace Google.Protobuf.TestProtos {
       if (singleNestedMessage_ != null) hash ^= SingleNestedMessage.GetHashCode();
       if (singleForeignMessage_ != null) hash ^= SingleForeignMessage.GetHashCode();
       if (singleImportMessage_ != null) hash ^= SingleImportMessage.GetHashCode();
-      if (SingleNestedEnum != 0) hash ^= SingleNestedEnum.GetHashCode();
-      if (SingleForeignEnum != 0) hash ^= SingleForeignEnum.GetHashCode();
-      if (SingleImportEnum != 0) hash ^= SingleImportEnum.GetHashCode();
+      if (SingleNestedEnum != global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum.Unspecified) hash ^= SingleNestedEnum.GetHashCode();
+      if (SingleForeignEnum != global::Google.Protobuf.TestProtos.ForeignEnum.ForeignUnspecified) hash ^= SingleForeignEnum.GetHashCode();
+      if (SingleImportEnum != global::Google.Protobuf.TestProtos.ImportEnum.Unspecified) hash ^= SingleImportEnum.GetHashCode();
       if (singlePublicImportMessage_ != null) hash ^= SinglePublicImportMessage.GetHashCode();
       hash ^= repeatedInt32_.GetHashCode();
       hash ^= repeatedInt64_.GetHashCode();
@@ -1073,15 +1087,15 @@ namespace Google.Protobuf.TestProtos {
         output.WriteRawTag(162, 1);
         output.WriteMessage(SingleImportMessage);
       }
-      if (SingleNestedEnum != 0) {
+      if (SingleNestedEnum != global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum.Unspecified) {
         output.WriteRawTag(168, 1);
         output.WriteEnum((int) SingleNestedEnum);
       }
-      if (SingleForeignEnum != 0) {
+      if (SingleForeignEnum != global::Google.Protobuf.TestProtos.ForeignEnum.ForeignUnspecified) {
         output.WriteRawTag(176, 1);
         output.WriteEnum((int) SingleForeignEnum);
       }
-      if (SingleImportEnum != 0) {
+      if (SingleImportEnum != global::Google.Protobuf.TestProtos.ImportEnum.Unspecified) {
         output.WriteRawTag(184, 1);
         output.WriteEnum((int) SingleImportEnum);
       }
@@ -1189,13 +1203,13 @@ namespace Google.Protobuf.TestProtos {
       if (singleImportMessage_ != null) {
         size += 2 + pb::CodedOutputStream.ComputeMessageSize(SingleImportMessage);
       }
-      if (SingleNestedEnum != 0) {
+      if (SingleNestedEnum != global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum.Unspecified) {
         size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) SingleNestedEnum);
       }
-      if (SingleForeignEnum != 0) {
+      if (SingleForeignEnum != global::Google.Protobuf.TestProtos.ForeignEnum.ForeignUnspecified) {
         size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) SingleForeignEnum);
       }
-      if (SingleImportEnum != 0) {
+      if (SingleImportEnum != global::Google.Protobuf.TestProtos.ImportEnum.Unspecified) {
         size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) SingleImportEnum);
       }
       if (singlePublicImportMessage_ != null) {
@@ -1293,34 +1307,34 @@ namespace Google.Protobuf.TestProtos {
       }
       if (other.singleNestedMessage_ != null) {
         if (singleNestedMessage_ == null) {
-          singleNestedMessage_ = new global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage();
+          SingleNestedMessage = new global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage();
         }
         SingleNestedMessage.MergeFrom(other.SingleNestedMessage);
       }
       if (other.singleForeignMessage_ != null) {
         if (singleForeignMessage_ == null) {
-          singleForeignMessage_ = new global::Google.Protobuf.TestProtos.ForeignMessage();
+          SingleForeignMessage = new global::Google.Protobuf.TestProtos.ForeignMessage();
         }
         SingleForeignMessage.MergeFrom(other.SingleForeignMessage);
       }
       if (other.singleImportMessage_ != null) {
         if (singleImportMessage_ == null) {
-          singleImportMessage_ = new global::Google.Protobuf.TestProtos.ImportMessage();
+          SingleImportMessage = new global::Google.Protobuf.TestProtos.ImportMessage();
         }
         SingleImportMessage.MergeFrom(other.SingleImportMessage);
       }
-      if (other.SingleNestedEnum != 0) {
+      if (other.SingleNestedEnum != global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum.Unspecified) {
         SingleNestedEnum = other.SingleNestedEnum;
       }
-      if (other.SingleForeignEnum != 0) {
+      if (other.SingleForeignEnum != global::Google.Protobuf.TestProtos.ForeignEnum.ForeignUnspecified) {
         SingleForeignEnum = other.SingleForeignEnum;
       }
-      if (other.SingleImportEnum != 0) {
+      if (other.SingleImportEnum != global::Google.Protobuf.TestProtos.ImportEnum.Unspecified) {
         SingleImportEnum = other.SingleImportEnum;
       }
       if (other.singlePublicImportMessage_ != null) {
         if (singlePublicImportMessage_ == null) {
-          singlePublicImportMessage_ = new global::Google.Protobuf.TestProtos.PublicImportMessage();
+          SinglePublicImportMessage = new global::Google.Protobuf.TestProtos.PublicImportMessage();
         }
         SinglePublicImportMessage.MergeFrom(other.SinglePublicImportMessage);
       }
@@ -1437,42 +1451,42 @@ namespace Google.Protobuf.TestProtos {
           }
           case 146: {
             if (singleNestedMessage_ == null) {
-              singleNestedMessage_ = new global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage();
+              SingleNestedMessage = new global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage();
             }
-            input.ReadMessage(singleNestedMessage_);
+            input.ReadMessage(SingleNestedMessage);
             break;
           }
           case 154: {
             if (singleForeignMessage_ == null) {
-              singleForeignMessage_ = new global::Google.Protobuf.TestProtos.ForeignMessage();
+              SingleForeignMessage = new global::Google.Protobuf.TestProtos.ForeignMessage();
             }
-            input.ReadMessage(singleForeignMessage_);
+            input.ReadMessage(SingleForeignMessage);
             break;
           }
           case 162: {
             if (singleImportMessage_ == null) {
-              singleImportMessage_ = new global::Google.Protobuf.TestProtos.ImportMessage();
+              SingleImportMessage = new global::Google.Protobuf.TestProtos.ImportMessage();
             }
-            input.ReadMessage(singleImportMessage_);
+            input.ReadMessage(SingleImportMessage);
             break;
           }
           case 168: {
-            singleNestedEnum_ = (global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum) input.ReadEnum();
+            SingleNestedEnum = (global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum) input.ReadEnum();
             break;
           }
           case 176: {
-            singleForeignEnum_ = (global::Google.Protobuf.TestProtos.ForeignEnum) input.ReadEnum();
+            SingleForeignEnum = (global::Google.Protobuf.TestProtos.ForeignEnum) input.ReadEnum();
             break;
           }
           case 184: {
-            singleImportEnum_ = (global::Google.Protobuf.TestProtos.ImportEnum) input.ReadEnum();
+            SingleImportEnum = (global::Google.Protobuf.TestProtos.ImportEnum) input.ReadEnum();
             break;
           }
           case 210: {
             if (singlePublicImportMessage_ == null) {
-              singlePublicImportMessage_ = new global::Google.Protobuf.TestProtos.PublicImportMessage();
+              SinglePublicImportMessage = new global::Google.Protobuf.TestProtos.PublicImportMessage();
             }
-            input.ReadMessage(singlePublicImportMessage_);
+            input.ReadMessage(SinglePublicImportMessage);
             break;
           }
           case 250:
@@ -1904,13 +1918,13 @@ namespace Google.Protobuf.TestProtos {
       }
       if (other.child_ != null) {
         if (child_ == null) {
-          child_ = new global::Google.Protobuf.TestProtos.NestedTestAllTypes();
+          Child = new global::Google.Protobuf.TestProtos.NestedTestAllTypes();
         }
         Child.MergeFrom(other.Child);
       }
       if (other.payload_ != null) {
         if (payload_ == null) {
-          payload_ = new global::Google.Protobuf.TestProtos.TestAllTypes();
+          Payload = new global::Google.Protobuf.TestProtos.TestAllTypes();
         }
         Payload.MergeFrom(other.Payload);
       }
@@ -1928,16 +1942,16 @@ namespace Google.Protobuf.TestProtos {
             break;
           case 10: {
             if (child_ == null) {
-              child_ = new global::Google.Protobuf.TestProtos.NestedTestAllTypes();
+              Child = new global::Google.Protobuf.TestProtos.NestedTestAllTypes();
             }
-            input.ReadMessage(child_);
+            input.ReadMessage(Child);
             break;
           }
           case 18: {
             if (payload_ == null) {
-              payload_ = new global::Google.Protobuf.TestProtos.TestAllTypes();
+              Payload = new global::Google.Protobuf.TestProtos.TestAllTypes();
             }
-            input.ReadMessage(payload_);
+            input.ReadMessage(Payload);
             break;
           }
           case 26: {
@@ -2424,7 +2438,7 @@ namespace Google.Protobuf.TestProtos {
       }
       if (other.foreignNested_ != null) {
         if (foreignNested_ == null) {
-          foreignNested_ = new global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage();
+          ForeignNested = new global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage();
         }
         ForeignNested.MergeFrom(other.ForeignNested);
       }
@@ -2441,9 +2455,9 @@ namespace Google.Protobuf.TestProtos {
             break;
           case 10: {
             if (foreignNested_ == null) {
-              foreignNested_ = new global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage();
+              ForeignNested = new global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage();
             }
-            input.ReadMessage(foreignNested_);
+            input.ReadMessage(ForeignNested);
             break;
           }
         }
@@ -2744,7 +2758,7 @@ namespace Google.Protobuf.TestProtos {
       }
       if (other.a_ != null) {
         if (a_ == null) {
-          a_ = new global::Google.Protobuf.TestProtos.TestRecursiveMessage();
+          A = new global::Google.Protobuf.TestProtos.TestRecursiveMessage();
         }
         A.MergeFrom(other.A);
       }
@@ -2764,9 +2778,9 @@ namespace Google.Protobuf.TestProtos {
             break;
           case 10: {
             if (a_ == null) {
-              a_ = new global::Google.Protobuf.TestProtos.TestRecursiveMessage();
+              A = new global::Google.Protobuf.TestProtos.TestRecursiveMessage();
             }
-            input.ReadMessage(a_);
+            input.ReadMessage(A);
             break;
           }
           case 16: {
@@ -2889,7 +2903,7 @@ namespace Google.Protobuf.TestProtos {
       }
       if (other.bb_ != null) {
         if (bb_ == null) {
-          bb_ = new global::Google.Protobuf.TestProtos.TestMutualRecursionB();
+          Bb = new global::Google.Protobuf.TestProtos.TestMutualRecursionB();
         }
         Bb.MergeFrom(other.Bb);
       }
@@ -2906,9 +2920,9 @@ namespace Google.Protobuf.TestProtos {
             break;
           case 10: {
             if (bb_ == null) {
-              bb_ = new global::Google.Protobuf.TestProtos.TestMutualRecursionB();
+              Bb = new global::Google.Protobuf.TestProtos.TestMutualRecursionB();
             }
-            input.ReadMessage(bb_);
+            input.ReadMessage(Bb);
             break;
           }
         }
@@ -3045,7 +3059,7 @@ namespace Google.Protobuf.TestProtos {
       }
       if (other.a_ != null) {
         if (a_ == null) {
-          a_ = new global::Google.Protobuf.TestProtos.TestMutualRecursionA();
+          A = new global::Google.Protobuf.TestProtos.TestMutualRecursionA();
         }
         A.MergeFrom(other.A);
       }
@@ -3065,9 +3079,9 @@ namespace Google.Protobuf.TestProtos {
             break;
           case 10: {
             if (a_ == null) {
-              a_ = new global::Google.Protobuf.TestProtos.TestMutualRecursionA();
+              A = new global::Google.Protobuf.TestProtos.TestMutualRecursionA();
             }
-            input.ReadMessage(a_);
+            input.ReadMessage(A);
             break;
           }
           case 16: {
@@ -3116,7 +3130,7 @@ namespace Google.Protobuf.TestProtos {
 
     /// <summary>Field number for the "value" field.</summary>
     public const int ValueFieldNumber = 1;
-    private global::Google.Protobuf.TestProtos.TestEnumWithDupValue value_ = 0;
+    private global::Google.Protobuf.TestProtos.TestEnumWithDupValue value_ = global::Google.Protobuf.TestProtos.TestEnumWithDupValue.Unspecified;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Google.Protobuf.TestProtos.TestEnumWithDupValue Value {
       get { return value_; }
@@ -3145,7 +3159,7 @@ namespace Google.Protobuf.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (Value != 0) hash ^= Value.GetHashCode();
+      if (Value != global::Google.Protobuf.TestProtos.TestEnumWithDupValue.Unspecified) hash ^= Value.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -3159,7 +3173,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Value != 0) {
+      if (Value != global::Google.Protobuf.TestProtos.TestEnumWithDupValue.Unspecified) {
         output.WriteRawTag(8);
         output.WriteEnum((int) Value);
       }
@@ -3171,7 +3185,7 @@ namespace Google.Protobuf.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (Value != 0) {
+      if (Value != global::Google.Protobuf.TestProtos.TestEnumWithDupValue.Unspecified) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Value);
       }
       if (_unknownFields != null) {
@@ -3185,7 +3199,7 @@ namespace Google.Protobuf.TestProtos {
       if (other == null) {
         return;
       }
-      if (other.Value != 0) {
+      if (other.Value != global::Google.Protobuf.TestProtos.TestEnumWithDupValue.Unspecified) {
         Value = other.Value;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
@@ -3200,7 +3214,7 @@ namespace Google.Protobuf.TestProtos {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 8: {
-            value_ = (global::Google.Protobuf.TestProtos.TestEnumWithDupValue) input.ReadEnum();
+            Value = (global::Google.Protobuf.TestProtos.TestEnumWithDupValue) input.ReadEnum();
             break;
           }
         }
@@ -3278,7 +3292,7 @@ namespace Google.Protobuf.TestProtos {
 
     /// <summary>Field number for the "EnumField" field.</summary>
     public const int EnumFieldFieldNumber = 3;
-    private global::Google.Protobuf.TestProtos.ForeignEnum enumField_ = 0;
+    private global::Google.Protobuf.TestProtos.ForeignEnum enumField_ = global::Google.Protobuf.TestProtos.ForeignEnum.ForeignUnspecified;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Google.Protobuf.TestProtos.ForeignEnum EnumField {
       get { return enumField_; }
@@ -3367,7 +3381,7 @@ namespace Google.Protobuf.TestProtos {
       int hash = 1;
       if (PrimitiveField != 0) hash ^= PrimitiveField.GetHashCode();
       if (StringField.Length != 0) hash ^= StringField.GetHashCode();
-      if (EnumField != 0) hash ^= EnumField.GetHashCode();
+      if (EnumField != global::Google.Protobuf.TestProtos.ForeignEnum.ForeignUnspecified) hash ^= EnumField.GetHashCode();
       if (messageField_ != null) hash ^= MessageField.GetHashCode();
       hash ^= repeatedPrimitiveField_.GetHashCode();
       hash ^= repeatedStringField_.GetHashCode();
@@ -3394,7 +3408,7 @@ namespace Google.Protobuf.TestProtos {
         output.WriteRawTag(18);
         output.WriteString(StringField);
       }
-      if (EnumField != 0) {
+      if (EnumField != global::Google.Protobuf.TestProtos.ForeignEnum.ForeignUnspecified) {
         output.WriteRawTag(24);
         output.WriteEnum((int) EnumField);
       }
@@ -3420,7 +3434,7 @@ namespace Google.Protobuf.TestProtos {
       if (StringField.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(StringField);
       }
-      if (EnumField != 0) {
+      if (EnumField != global::Google.Protobuf.TestProtos.ForeignEnum.ForeignUnspecified) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) EnumField);
       }
       if (messageField_ != null) {
@@ -3447,12 +3461,12 @@ namespace Google.Protobuf.TestProtos {
       if (other.StringField.Length != 0) {
         StringField = other.StringField;
       }
-      if (other.EnumField != 0) {
+      if (other.EnumField != global::Google.Protobuf.TestProtos.ForeignEnum.ForeignUnspecified) {
         EnumField = other.EnumField;
       }
       if (other.messageField_ != null) {
         if (messageField_ == null) {
-          messageField_ = new global::Google.Protobuf.TestProtos.ForeignMessage();
+          MessageField = new global::Google.Protobuf.TestProtos.ForeignMessage();
         }
         MessageField.MergeFrom(other.MessageField);
       }
@@ -3480,14 +3494,14 @@ namespace Google.Protobuf.TestProtos {
             break;
           }
           case 24: {
-            enumField_ = (global::Google.Protobuf.TestProtos.ForeignEnum) input.ReadEnum();
+            EnumField = (global::Google.Protobuf.TestProtos.ForeignEnum) input.ReadEnum();
             break;
           }
           case 34: {
             if (messageField_ == null) {
-              messageField_ = new global::Google.Protobuf.TestProtos.ForeignMessage();
+              MessageField = new global::Google.Protobuf.TestProtos.ForeignMessage();
             }
-            input.ReadMessage(messageField_);
+            input.ReadMessage(MessageField);
             break;
           }
           case 58:
@@ -3697,7 +3711,7 @@ namespace Google.Protobuf.TestProtos {
       }
       if (other.singleNestedMessage_ != null) {
         if (singleNestedMessage_ == null) {
-          singleNestedMessage_ = new global::Google.Protobuf.TestProtos.TestFieldOrderings.Types.NestedMessage();
+          SingleNestedMessage = new global::Google.Protobuf.TestProtos.TestFieldOrderings.Types.NestedMessage();
         }
         SingleNestedMessage.MergeFrom(other.SingleNestedMessage);
       }
@@ -3726,9 +3740,9 @@ namespace Google.Protobuf.TestProtos {
           }
           case 1602: {
             if (singleNestedMessage_ == null) {
-              singleNestedMessage_ = new global::Google.Protobuf.TestProtos.TestFieldOrderings.Types.NestedMessage();
+              SingleNestedMessage = new global::Google.Protobuf.TestProtos.TestFieldOrderings.Types.NestedMessage();
             }
-            input.ReadMessage(singleNestedMessage_);
+            input.ReadMessage(SingleNestedMessage);
             break;
           }
         }
@@ -3942,7 +3956,7 @@ namespace Google.Protobuf.TestProtos {
 
     /// <summary>Field number for the "sparse_enum" field.</summary>
     public const int SparseEnumFieldNumber = 1;
-    private global::Google.Protobuf.TestProtos.TestSparseEnum sparseEnum_ = 0;
+    private global::Google.Protobuf.TestProtos.TestSparseEnum sparseEnum_ = global::Google.Protobuf.TestProtos.TestSparseEnum.Unspecified;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Google.Protobuf.TestProtos.TestSparseEnum SparseEnum {
       get { return sparseEnum_; }
@@ -3971,7 +3985,7 @@ namespace Google.Protobuf.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (SparseEnum != 0) hash ^= SparseEnum.GetHashCode();
+      if (SparseEnum != global::Google.Protobuf.TestProtos.TestSparseEnum.Unspecified) hash ^= SparseEnum.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -3985,7 +3999,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (SparseEnum != 0) {
+      if (SparseEnum != global::Google.Protobuf.TestProtos.TestSparseEnum.Unspecified) {
         output.WriteRawTag(8);
         output.WriteEnum((int) SparseEnum);
       }
@@ -3997,7 +4011,7 @@ namespace Google.Protobuf.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (SparseEnum != 0) {
+      if (SparseEnum != global::Google.Protobuf.TestProtos.TestSparseEnum.Unspecified) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) SparseEnum);
       }
       if (_unknownFields != null) {
@@ -4011,7 +4025,7 @@ namespace Google.Protobuf.TestProtos {
       if (other == null) {
         return;
       }
-      if (other.SparseEnum != 0) {
+      if (other.SparseEnum != global::Google.Protobuf.TestProtos.TestSparseEnum.Unspecified) {
         SparseEnum = other.SparseEnum;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
@@ -4026,7 +4040,7 @@ namespace Google.Protobuf.TestProtos {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 8: {
-            sparseEnum_ = (global::Google.Protobuf.TestProtos.TestSparseEnum) input.ReadEnum();
+            SparseEnum = (global::Google.Protobuf.TestProtos.TestSparseEnum) input.ReadEnum();
             break;
           }
         }
@@ -7298,6 +7312,293 @@ namespace Google.Protobuf.TestProtos {
         }
       }
     }
+
+  }
+
+  /// <summary>
+  /// This is a leading comment
+  /// </summary>
+  public sealed partial class CommentMessage : pb::IMessage<CommentMessage> {
+    private static readonly pb::MessageParser<CommentMessage> _parser = new pb::MessageParser<CommentMessage>(() => new CommentMessage());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<CommentMessage> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[35]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public CommentMessage() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public CommentMessage(CommentMessage other) : this() {
+      text_ = other.text_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public CommentMessage Clone() {
+      return new CommentMessage(this);
+    }
+
+    /// <summary>Field number for the "text" field.</summary>
+    public const int TextFieldNumber = 1;
+    private string text_ = "";
+    /// <summary>
+    /// Leading field comment
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string Text {
+      get { return text_; }
+      set {
+        text_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as CommentMessage);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(CommentMessage other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Text != other.Text) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Text.Length != 0) hash ^= Text.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Text.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(Text);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Text.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Text);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(CommentMessage other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Text.Length != 0) {
+        Text = other.Text;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            Text = input.ReadString();
+            break;
+          }
+        }
+      }
+    }
+
+    #region Nested types
+    /// <summary>Container for nested types declared in the CommentMessage message type.</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static partial class Types {
+      /// <summary>
+      /// Leading nested enum comment
+      /// </summary>
+      public enum NestedCommentEnum {
+        /// <summary>
+        /// Zero value comment
+        /// </summary>
+        [pbr::OriginalName("ZERO_VALUE")] ZeroValue = 0,
+      }
+
+      /// <summary>
+      /// Leading nested message comment
+      /// </summary>
+      public sealed partial class NestedCommentMessage : pb::IMessage<NestedCommentMessage> {
+        private static readonly pb::MessageParser<NestedCommentMessage> _parser = new pb::MessageParser<NestedCommentMessage>(() => new NestedCommentMessage());
+        private pb::UnknownFieldSet _unknownFields;
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public static pb::MessageParser<NestedCommentMessage> Parser { get { return _parser; } }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public static pbr::MessageDescriptor Descriptor {
+          get { return global::Google.Protobuf.TestProtos.CommentMessage.Descriptor.NestedTypes[0]; }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        pbr::MessageDescriptor pb::IMessage.Descriptor {
+          get { return Descriptor; }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public NestedCommentMessage() {
+          OnConstruction();
+        }
+
+        partial void OnConstruction();
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public NestedCommentMessage(NestedCommentMessage other) : this() {
+          nestedText_ = other.nestedText_;
+          _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public NestedCommentMessage Clone() {
+          return new NestedCommentMessage(this);
+        }
+
+        /// <summary>Field number for the "nested_text" field.</summary>
+        public const int NestedTextFieldNumber = 1;
+        private string nestedText_ = "";
+        /// <summary>
+        /// Leading nested message field comment
+        /// </summary>
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public string NestedText {
+          get { return nestedText_; }
+          set {
+            nestedText_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+          }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public override bool Equals(object other) {
+          return Equals(other as NestedCommentMessage);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public bool Equals(NestedCommentMessage other) {
+          if (ReferenceEquals(other, null)) {
+            return false;
+          }
+          if (ReferenceEquals(other, this)) {
+            return true;
+          }
+          if (NestedText != other.NestedText) return false;
+          return Equals(_unknownFields, other._unknownFields);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public override int GetHashCode() {
+          int hash = 1;
+          if (NestedText.Length != 0) hash ^= NestedText.GetHashCode();
+          if (_unknownFields != null) {
+            hash ^= _unknownFields.GetHashCode();
+          }
+          return hash;
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public override string ToString() {
+          return pb::JsonFormatter.ToDiagnosticString(this);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void WriteTo(pb::CodedOutputStream output) {
+          if (NestedText.Length != 0) {
+            output.WriteRawTag(10);
+            output.WriteString(NestedText);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(output);
+          }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public int CalculateSize() {
+          int size = 0;
+          if (NestedText.Length != 0) {
+            size += 1 + pb::CodedOutputStream.ComputeStringSize(NestedText);
+          }
+          if (_unknownFields != null) {
+            size += _unknownFields.CalculateSize();
+          }
+          return size;
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void MergeFrom(NestedCommentMessage other) {
+          if (other == null) {
+            return;
+          }
+          if (other.NestedText.Length != 0) {
+            NestedText = other.NestedText;
+          }
+          _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void MergeFrom(pb::CodedInputStream input) {
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+                break;
+              case 10: {
+                NestedText = input.ReadString();
+                break;
+              }
+            }
+          }
+        }
+
+      }
+
+    }
+    #endregion
 
   }
 

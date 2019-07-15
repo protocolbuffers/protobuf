@@ -39,6 +39,7 @@ try:
   import unittest2 as unittest  #PY26
 except ImportError:
   import unittest
+from google.protobuf import map_unittest_pb2
 from google.protobuf import unittest_mset_pb2
 from google.protobuf import unittest_pb2
 from google.protobuf import unittest_proto3_arena_pb2
@@ -52,10 +53,8 @@ from google.protobuf.internal import type_checkers
 from google.protobuf import descriptor
 
 
-BaseTestCase = testing_refleaks.BaseTestCase
-
-
-class UnknownFieldsTest(BaseTestCase):
+@testing_refleaks.TestCase
+class UnknownFieldsTest(unittest.TestCase):
 
   def setUp(self):
     self.descriptor = unittest_pb2.TestAllTypes.DESCRIPTOR
@@ -138,8 +137,21 @@ class UnknownFieldsTest(BaseTestCase):
     self.assertEqual(
         b'', message.repeated_nested_message[0].SerializeToString())
 
+    msg = map_unittest_pb2.TestMap()
+    msg.map_int32_all_types[1].optional_nested_message.ParseFromString(
+        other_message.SerializeToString())
+    msg.map_string_string['1'] = 'test'
+    self.assertNotEqual(
+        b'',
+        msg.map_int32_all_types[1].optional_nested_message.SerializeToString())
+    msg.DiscardUnknownFields()
+    self.assertEqual(
+        b'',
+        msg.map_int32_all_types[1].optional_nested_message.SerializeToString())
 
-class UnknownFieldsAccessorsTest(BaseTestCase):
+
+@testing_refleaks.TestCase
+class UnknownFieldsAccessorsTest(unittest.TestCase):
 
   def setUp(self):
     self.descriptor = unittest_pb2.TestAllTypes.DESCRIPTOR
@@ -335,7 +347,8 @@ class UnknownFieldsAccessorsTest(BaseTestCase):
     self.assertEqual(message.SerializeToString(), self.all_fields_data)
 
 
-class UnknownEnumValuesTest(BaseTestCase):
+@testing_refleaks.TestCase
+class UnknownEnumValuesTest(unittest.TestCase):
 
   def setUp(self):
     self.descriptor = missing_enum_values_pb2.TestEnumValues.DESCRIPTOR

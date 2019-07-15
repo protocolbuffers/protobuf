@@ -31,7 +31,6 @@
 #include <sstream>
 
 #include <google/protobuf/compiler/code_generator.h>
-#include <google/protobuf/compiler/plugin.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/printer.h>
@@ -49,8 +48,7 @@ namespace protobuf {
 namespace compiler {
 namespace csharp {
 
-void GenerateFile(const google::protobuf::FileDescriptor* file,
-                  io::Printer* printer,
+void GenerateFile(const FileDescriptor* file, io::Printer* printer,
                   const Options* options) {
   ReflectionClassGenerator reflectionClassGenerator(file, options);
   reflectionClassGenerator.Generate(printer);
@@ -81,6 +79,8 @@ bool Generator::Generate(
       cli_options.base_namespace_specified = true;
     } else if (options[i].first == "internal_access") {
       cli_options.internal_access = true;
+    } else if (options[i].first == "serializable") {
+      cli_options.serializable = true;
     } else {
       *error = "Unknown generator option: " + options[i].first;
       return false;

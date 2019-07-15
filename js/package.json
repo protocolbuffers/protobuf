@@ -1,6 +1,6 @@
 {
   "name": "google-protobuf",
-  "version": "3.6.1",
+  "version": "3.9.0-rc.1",
   "description": "Protocol Buffers for JavaScript",
   "main": "google-protobuf.js",
   "files": [
@@ -9,9 +9,9 @@
   "dependencies": {},
   "devDependencies": {
     "glob": "~6.0.4",
-    "google-closure-compiler": "~20160619.0.0",
-    "google-closure-library": "~20160125.0.0",
-    "gulp": "~3.9.0",
+    "google-closure-compiler": "~20190301.0.0",
+    "google-closure-library": "~20190301.0.0",
+    "gulp": "~4.0.1",
     "jasmine": "~2.4.1"
   },
   "scripts": {
@@ -19,7 +19,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/google/protobuf/tree/master/js"
+    "url": "https://github.com/protocolbuffers/protobuf/tree/master/js"
   },
   "author": "Google Protocol Buffers Team",
   "license": "BSD-3-Clause"

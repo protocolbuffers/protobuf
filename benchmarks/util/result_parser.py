@@ -18,7 +18,7 @@ def __get_data_size(filename):
     return __file_size_map[filename]
   benchmark_dataset = benchmarks_pb2.BenchmarkDataset()
   benchmark_dataset.ParseFromString(
-      open(filename).read())
+      open(filename, "rb").read())
   size = 0
   count = 0
   for payload in benchmark_dataset.payload:
@@ -29,7 +29,7 @@ def __get_data_size(filename):
 
 
 def __extract_file_name(file_name):
-  name_list = re.split("[/\.]", file_name)
+  name_list = re.split(r"[/\.]", file_name)
   short_file_name = ""
   for name in name_list:
     if name[:14] == "google_message":
@@ -45,9 +45,10 @@ __results = []
 #   "benchmarks": [
 #     {
 #       "bytes_per_second": int,
-#       "cpu_time": int,
+#       "cpu_time_ns": double,
+#       "iterations": int,
 #       "name: string,
-#       "time_unit: string,
+#       "real_time_ns: double,
 #       ...
 #     },
 #     ...
@@ -59,7 +60,7 @@ def __parse_cpp_result(filename):
     return
   if filename[0] != '/':
     filename = os.path.dirname(os.path.abspath(__file__)) + '/' + filename
-  with open(filename) as f:
+  with open(filename, "rb") as f:
     results = json.loads(f.read())
     for benchmark in results["benchmarks"]:
       data_filename = "".join(
@@ -75,6 +76,36 @@ def __parse_cpp_result(filename):
       })
 
 
+# Synthetic benchmark results example:
+# [
+#   "benchmarks": [
+#     {
+#       "cpu_time_ns": double,
+#       "iterations": int,
+#       "name: string,
+#       "real_time_ns: double,
+#       ...
+#     },
+#     ...
+#   ],
+#   ...
+# ]
+def __parse_synthetic_result(filename):
+  if filename == "":
+    return
+  if filename[0] != "/":
+    filename = os.path.dirname(os.path.abspath(__file__)) + "/" + filename
+  with open(filename, "rb") as f:
+    results = json.loads(f.read())
+    for benchmark in results["benchmarks"]:
+      __results.append({
+          "language": "cpp",
+          "dataFilename": "",
+          "behavior": "synthetic",
+          "throughput": 10.0**9 / benchmark["cpu_time_ns"]
+      })
+
+
 # Python results example:
 # [
 #   [
@@ -84,7 +115,6 @@ def __parse_cpp_result(filename):
 #         behavior: results,
 #         ...
 #       },
-#       "message_name": STRING
 #     },
 #     ...
 #   ], #pure-python
@@ -95,7 +125,7 @@ def __parse_python_result(filename):
     return
   if filename[0] != '/':
     filename = os.path.dirname(os.path.abspath(__file__)) + '/' + filename
-  with open(filename) as f:
+  with open(filename, "rb") as f:
     results_list = json.loads(f.read())
     for results in results_list:
       for result in results:
@@ -105,8 +135,7 @@ def __parse_python_result(filename):
             "language": "python",
             "dataFilename": __extract_file_name(result["filename"]),
             "behavior": behavior,
-            "throughput": avg_size /
-                          result["benchmarks"][behavior] * 1e9 / 2 ** 20
+            "throughput": result["benchmarks"][behavior]
           })
 
 
@@ -146,7 +175,7 @@ def __parse_java_result(filename):
     return
   if filename[0] != '/':
     filename = os.path.dirname(os.path.abspath(__file__)) + '/' + filename
-  with open(filename) as f:
+  with open(filename, "rb") as f:
     results = json.loads(f.read())
     for result in results:
       total_weight = 0
@@ -182,14 +211,14 @@ def __parse_go_result(filename):
     return
   if filename[0] != '/':
     filename = os.path.dirname(os.path.abspath(__file__)) + '/' + filename
-  with open(filename) as f:
+  with open(filename, "rb") as f:
     for line in f:
-      result_list = re.split("[\ \t]+", line)
+      result_list = re.split(r"[\ \t]+", line)
       if result_list[0][:9] != "Benchmark":
         continue
       first_slash_index = result_list[0].find('/')
       last_slash_index = result_list[0].rfind('/')
-      full_filename = result_list[0][first_slash_index+4:last_slash_index] # delete ../ prefix
+      full_filename = result_list[0][first_slash_index+1:last_slash_index]
       total_bytes, _ = __get_data_size(full_filename)
       behavior_with_suffix = result_list[0][last_slash_index+1:]
       last_dash = behavior_with_suffix.rfind("-")
@@ -204,7 +233,52 @@ def __parse_go_result(filename):
         "language": "go"
       })
 
-def get_result_from_file(cpp_file="", java_file="", python_file="", go_file=""):
+
+# Self built json results example:
+#
+# [
+#   {
+#     "filename": string,
+#     "benchmarks": {
+#       behavior: results,
+#       ...
+#     },
+#   },
+#   ...
+# ]
+def __parse_custom_result(filename, language):
+  if filename == "":
+    return
+  if filename[0] != '/':
+    filename = os.path.dirname(os.path.abspath(__file__)) + '/' + filename
+  with open(filename, "rb") as f:
+    results = json.loads(f.read())
+    for result in results:
+      _, avg_size = __get_data_size(result["filename"])
+      for behavior in result["benchmarks"]:
+        __results.append({
+          "language": language,
+          "dataFilename": __extract_file_name(result["filename"]),
+          "behavior": behavior,
+          "throughput": result["benchmarks"][behavior]
+        })
+
+
+def __parse_js_result(filename, language):
+  return __parse_custom_result(filename, language)
+
+def __parse_php_result(filename, language):
+  return __parse_custom_result(filename, language)
+
+
+def get_result_from_file(cpp_file="",
+                         java_file="",
+                         python_file="",
+                         go_file="",
+                         synthetic_file="",
+                         node_file="",
+                         php_c_file="",
+                         php_file=""):
   results = {}
   if cpp_file != "":
     __parse_cpp_result(cpp_file)
@@ -214,5 +288,13 @@ def get_result_from_file(cpp_file="", java_file="", python_file="", go_file=""):
     __parse_python_result(python_file)
   if go_file != "":
     __parse_go_result(go_file)
+  if synthetic_file != "":
+    __parse_synthetic_result(synthetic_file)
+  if node_file != "":
+    __parse_js_result(node_file, "node")
+  if php_file != "":
+    __parse_php_result(php_file, "php")
+  if php_c_file != "":
+    __parse_php_result(php_c_file, "php")
 
   return __results

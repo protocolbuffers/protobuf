@@ -32,6 +32,7 @@ package com.google.protobuf;
 
 import static com.google.protobuf.WireFormat.FIXED32_SIZE;
 import static com.google.protobuf.WireFormat.FIXED64_SIZE;
+import static com.google.protobuf.WireFormat.MAX_VARINT32_SIZE;
 import static com.google.protobuf.WireFormat.MAX_VARINT_SIZE;
 import static java.lang.Math.max;
 
@@ -47,12 +48,11 @@ import java.util.logging.Logger;
 /**
  * Encodes and writes protocol message fields.
  *
- * <p>This class contains two kinds of methods:  methods that write specific
- * protocol message constructs and field types (e.g. {@link #writeTag} and
- * {@link #writeInt32}) and methods that write low-level values (e.g.
- * {@link #writeRawVarint32} and {@link #writeRawBytes}).  If you are
- * writing encoded protocol messages, you should use the former methods, but if
- * you are writing some other format of your own design, use the latter.
+ * <p>This class contains two kinds of methods: methods that write specific protocol message
+ * constructs and field types (e.g. {@link #writeTag} and {@link #writeInt32}) and methods that
+ * write low-level values (e.g. {@link #writeRawVarint32} and {@link #writeRawBytes}). If you are
+ * writing encoded protocol messages, you should use the former methods, but if you are writing some
+ * other format of your own design, use the latter.
  *
  * <p>This class is totally unsynchronized.
  */
@@ -60,23 +60,20 @@ public abstract class CodedOutputStream extends ByteOutput {
   private static final Logger logger = Logger.getLogger(CodedOutputStream.class.getName());
   private static final boolean HAS_UNSAFE_ARRAY_OPERATIONS = UnsafeUtil.hasUnsafeArrayOperations();
 
-  /**
-   * @deprecated Use {@link #computeFixed32SizeNoTag(int)} instead.
-   */
-  @Deprecated
-  public static final int LITTLE_ENDIAN_32_SIZE = FIXED32_SIZE;
+  /** Used to adapt to the experimental {@link Writer} interface. */
+  CodedOutputStreamWriter wrapper;
 
-  /**
-   * The buffer size used in {@link #newInstance(OutputStream)}.
-   */
+  /** @deprecated Use {@link #computeFixed32SizeNoTag(int)} instead. */
+  @Deprecated public static final int LITTLE_ENDIAN_32_SIZE = FIXED32_SIZE;
+
+  /** The buffer size used in {@link #newInstance(OutputStream)}. */
   public static final int DEFAULT_BUFFER_SIZE = 4096;
 
   /**
-   * Returns the buffer size to efficiently write dataLength bytes to this
-   * CodedOutputStream. Used by AbstractMessageLite.
+   * Returns the buffer size to efficiently write dataLength bytes to this CodedOutputStream. Used
+   * by AbstractMessageLite.
    *
-   * @return the buffer size to efficiently write dataLength bytes to this
-   *         CodedOutputStream.
+   * @return the buffer size to efficiently write dataLength bytes to this CodedOutputStream.
    */
   static int computePreferredBufferSize(int dataLength) {
     if (dataLength > DEFAULT_BUFFER_SIZE) {
@@ -88,9 +85,9 @@ public abstract class CodedOutputStream extends ByteOutput {
   /**
    * Create a new {@code CodedOutputStream} wrapping the given {@code OutputStream}.
    *
-   * <p> NOTE: The provided {@link OutputStream} <strong>MUST NOT</strong> retain access or
-   * modify the provided byte arrays. Doing so may result in corrupted data, which would be
-   * difficult to debug.
+   * <p>NOTE: The provided {@link OutputStream} <strong>MUST NOT</strong> retain access or modify
+   * the provided byte arrays. Doing so may result in corrupted data, which would be difficult to
+   * debug.
    */
   public static CodedOutputStream newInstance(final OutputStream output) {
     return newInstance(output, DEFAULT_BUFFER_SIZE);
@@ -100,30 +97,28 @@ public abstract class CodedOutputStream extends ByteOutput {
    * Create a new {@code CodedOutputStream} wrapping the given {@code OutputStream} with a given
    * buffer size.
    *
-   * <p> NOTE: The provided {@link OutputStream} <strong>MUST NOT</strong> retain access or
-   * modify the provided byte arrays. Doing so may result in corrupted data, which would be
-   * difficult to debug.
+   * <p>NOTE: The provided {@link OutputStream} <strong>MUST NOT</strong> retain access or modify
+   * the provided byte arrays. Doing so may result in corrupted data, which would be difficult to
+   * debug.
    */
   public static CodedOutputStream newInstance(final OutputStream output, final int bufferSize) {
     return new OutputStreamEncoder(output, bufferSize);
   }
 
   /**
-   * Create a new {@code CodedOutputStream} that writes directly to the given
-   * byte array.  If more bytes are written than fit in the array,
-   * {@link OutOfSpaceException} will be thrown.  Writing directly to a flat
-   * array is faster than writing to an {@code OutputStream}.  See also
-   * {@link ByteString#newCodedBuilder}.
+   * Create a new {@code CodedOutputStream} that writes directly to the given byte array. If more
+   * bytes are written than fit in the array, {@link OutOfSpaceException} will be thrown. Writing
+   * directly to a flat array is faster than writing to an {@code OutputStream}. See also {@link
+   * ByteString#newCodedBuilder}.
    */
   public static CodedOutputStream newInstance(final byte[] flatArray) {
     return newInstance(flatArray, 0, flatArray.length);
   }
 
   /**
-   * Create a new {@code CodedOutputStream} that writes directly to the given
-   * byte array slice.  If more bytes are written than fit in the slice,
-   * {@link OutOfSpaceException} will be thrown.  Writing directly to a flat
-   * array is faster than writing to an {@code OutputStream}.  See also
+   * Create a new {@code CodedOutputStream} that writes directly to the given byte array slice. If
+   * more bytes are written than fit in the slice, {@link OutOfSpaceException} will be thrown.
+   * Writing directly to a flat array is faster than writing to an {@code OutputStream}. See also
    * {@link ByteString#newCodedBuilder}.
    */
   public static CodedOutputStream newInstance(
@@ -162,9 +157,9 @@ public abstract class CodedOutputStream extends ByteOutput {
    * implies:
    *
    * <ul>
-   * <li>repeated serialization of a message will return the same bytes
-   * <li>different processes of the same binary (which may be executing on different machines) will
-   *     serialize equal messages to the same bytes.
+   *   <li>repeated serialization of a message will return the same bytes
+   *   <li>different processes of the same binary (which may be executing on different machines)
+   *       will serialize equal messages to the same bytes.
    * </ul>
    *
    * <p>Note the deterministic serialization is NOT canonical across languages; it is also unstable
@@ -173,14 +168,14 @@ public abstract class CodedOutputStream extends ByteOutput {
    * their own canonicalization specification and implement the serializer using reflection APIs
    * rather than relying on this API.
    *
-   * <p> Once set, the serializer will:  (Note this is an implementation detail and may subject to
+   * <p>Once set, the serializer will: (Note this is an implementation detail and may subject to
    * change in the future)
    *
    * <ul>
-   * <li> sort map entries by keys in lexicographical order or numerical order. Note: For string
-   *     keys, the order is based on comparing the Unicode value of each character in the strings.
-   *     The order may be different from the deterministic serialization in other languages where
-   *     maps are sorted on the lexicographical order of the UTF8 encoded keys.
+   *   <li>sort map entries by keys in lexicographical order or numerical order. Note: For string
+   *       keys, the order is based on comparing the Unicode value of each character in the strings.
+   *       The order may be different from the deterministic serialization in other languages where
+   *       maps are sorted on the lexicographical order of the UTF8 encoded keys.
    * </ul>
    */
   public void useDeterministicSerialization() {
@@ -190,31 +185,32 @@ public abstract class CodedOutputStream extends ByteOutput {
   boolean isSerializationDeterministic() {
     return serializationDeterministic;
   }
+
   private boolean serializationDeterministic;
 
   /**
    * Create a new {@code CodedOutputStream} that writes to the given {@link ByteBuffer}.
    *
    * @deprecated the size parameter is no longer used since use of an internal buffer is useless
-   * (and wasteful) when writing to a {@link ByteBuffer}. Use {@link #newInstance(ByteBuffer)}
-   * instead.
+   *     (and wasteful) when writing to a {@link ByteBuffer}. Use {@link #newInstance(ByteBuffer)}
+   *     instead.
    */
   @Deprecated
-  public static CodedOutputStream newInstance(ByteBuffer byteBuffer,
-      @SuppressWarnings("unused") int unused) {
+  public static CodedOutputStream newInstance(
+      ByteBuffer byteBuffer, @SuppressWarnings("unused") int unused) {
     return newInstance(byteBuffer);
   }
 
   /**
    * Create a new {@code CodedOutputStream} that writes to the provided {@link ByteOutput}.
    *
-   * <p> NOTE: The {@link ByteOutput} <strong>MUST NOT</strong> modify the provided buffers. Doing
-   * so may result in corrupted data, which would be difficult to debug.
+   * <p>NOTE: The {@link ByteOutput} <strong>MUST NOT</strong> modify the provided buffers. Doing so
+   * may result in corrupted data, which would be difficult to debug.
    *
    * @param byteOutput the output target for encoded bytes.
    * @param bufferSize the size of the internal scratch buffer to be used for string encoding.
-   * Setting this to {@code 0} will disable buffering, requiring an allocation for each encoded
-   * string.
+   *     Setting this to {@code 0} will disable buffering, requiring an allocation for each encoded
+   *     string.
    */
   static CodedOutputStream newInstance(ByteOutput byteOutput, int bufferSize) {
     if (bufferSize < 0) {
@@ -225,8 +221,7 @@ public abstract class CodedOutputStream extends ByteOutput {
   }
 
   // Disallow construction outside of this class.
-  private CodedOutputStream() {
-  }
+  private CodedOutputStream() {}
 
   // -----------------------------------------------------------------
 
@@ -294,8 +289,8 @@ public abstract class CodedOutputStream extends ByteOutput {
   public abstract void writeBool(int fieldNumber, boolean value) throws IOException;
 
   /**
-   * Write an enum field, including tag, to the stream. The provided value is the numeric
-   * value used to represent the enum value on the wire (not the enum ordinal value).
+   * Write an enum field, including tag, to the stream. The provided value is the numeric value used
+   * to represent the enum value on the wire (not the enum ordinal value).
    */
   public final void writeEnum(final int fieldNumber, final int value) throws IOException {
     writeInt32(fieldNumber, value);
@@ -319,21 +314,17 @@ public abstract class CodedOutputStream extends ByteOutput {
       throws IOException;
 
   /**
-   * Write a {@code bytes} field, including tag, to the stream.
-   * This method will write all content of the ByteBuffer regardless of the
-   * current position and limit (i.e., the number of bytes to be written is
-   * value.capacity(), not value.remaining()). Furthermore, this method doesn't
-   * alter the state of the passed-in ByteBuffer. Its position, limit, mark,
-   * etc. will remain unchanged. If you only want to write the remaining bytes
-   * of a ByteBuffer, you can call
-   * {@code writeByteBuffer(fieldNumber, byteBuffer.slice())}.
+   * Write a {@code bytes} field, including tag, to the stream. This method will write all content
+   * of the ByteBuffer regardless of the current position and limit (i.e., the number of bytes to be
+   * written is value.capacity(), not value.remaining()). Furthermore, this method doesn't alter the
+   * state of the passed-in ByteBuffer. Its position, limit, mark, etc. will remain unchanged. If
+   * you only want to write the remaining bytes of a ByteBuffer, you can call {@code
+   * writeByteBuffer(fieldNumber, byteBuffer.slice())}.
    */
   // Abstract to avoid overhead of additional virtual method calls.
   public abstract void writeByteBuffer(int fieldNumber, ByteBuffer value) throws IOException;
 
-  /**
-   * Write a single byte.
-   */
+  /** Write a single byte. */
   public final void writeRawByte(final byte value) throws IOException {
     write(value);
   }
@@ -348,9 +339,7 @@ public abstract class CodedOutputStream extends ByteOutput {
     write(value, 0, value.length);
   }
 
-  /**
-   * Write part of an array of bytes.
-   */
+  /** Write part of an array of bytes. */
   public final void writeRawBytes(final byte[] value, int offset, int length) throws IOException {
     write(value, offset, length);
   }
@@ -361,13 +350,11 @@ public abstract class CodedOutputStream extends ByteOutput {
   }
 
   /**
-   * Write a ByteBuffer. This method will write all content of the ByteBuffer
-   * regardless of the current position and limit (i.e., the number of bytes
-   * to be written is value.capacity(), not value.remaining()). Furthermore,
-   * this method doesn't alter the state of the passed-in ByteBuffer. Its
-   * position, limit, mark, etc. will remain unchanged. If you only want to
-   * write the remaining bytes of a ByteBuffer, you can call
-   * {@code writeRawBytes(byteBuffer.slice())}.
+   * Write a ByteBuffer. This method will write all content of the ByteBuffer regardless of the
+   * current position and limit (i.e., the number of bytes to be written is value.capacity(), not
+   * value.remaining()). Furthermore, this method doesn't alter the state of the passed-in
+   * ByteBuffer. Its position, limit, mark, etc. will remain unchanged. If you only want to write
+   * the remaining bytes of a ByteBuffer, you can call {@code writeRawBytes(byteBuffer.slice())}.
    */
   // Abstract to avoid overhead of additional virtual method calls.
   public abstract void writeRawBytes(final ByteBuffer value) throws IOException;
@@ -377,18 +364,22 @@ public abstract class CodedOutputStream extends ByteOutput {
   public abstract void writeMessage(final int fieldNumber, final MessageLite value)
       throws IOException;
 
+  /** Write an embedded message field, including tag, to the stream. */
+  // Abstract to avoid overhead of additional virtual method calls.
+  abstract void writeMessage(final int fieldNumber, final MessageLite value, Schema schema)
+      throws IOException;
 
   /**
-   * Write a MessageSet extension field to the stream.  For historical reasons,
-   * the wire format differs from normal fields.
+   * Write a MessageSet extension field to the stream. For historical reasons, the wire format
+   * differs from normal fields.
    */
   // Abstract to avoid overhead of additional virtual method calls.
   public abstract void writeMessageSetExtension(final int fieldNumber, final MessageLite value)
       throws IOException;
 
   /**
-   * Write an unparsed MessageSet extension field to the stream.  For
-   * historical reasons, the wire format differs from normal fields.
+   * Write an unparsed MessageSet extension field to the stream. For historical reasons, the wire
+   * format differs from normal fields.
    */
   // Abstract to avoid overhead of additional virtual method calls.
   public abstract void writeRawMessageSetExtension(final int fieldNumber, final ByteString value)
@@ -457,8 +448,8 @@ public abstract class CodedOutputStream extends ByteOutput {
   }
 
   /**
-   * Write an enum field to the stream. The provided value is the numeric
-   * value used to represent the enum value on the wire (not the enum ordinal value).
+   * Write an enum field to the stream. The provided value is the numeric value used to represent
+   * the enum value on the wire (not the enum ordinal value).
    */
   public final void writeEnumNoTag(final int value) throws IOException {
     writeInt32NoTag(value);
@@ -482,8 +473,11 @@ public abstract class CodedOutputStream extends ByteOutput {
   // Abstract to avoid overhead of additional virtual method calls.
   public abstract void writeMessageNoTag(final MessageLite value) throws IOException;
 
+  /** Write an embedded message field to the stream. */
+  // Abstract to avoid overhead of additional virtual method calls.
+  abstract void writeMessageNoTag(final MessageLite value, Schema schema) throws IOException;
 
-  //=================================================================
+  // =================================================================
 
   @ExperimentalApi
   @Override
@@ -508,171 +502,177 @@ public abstract class CodedOutputStream extends ByteOutput {
   // =================================================================
 
   /**
-   * Compute the number of bytes that would be needed to encode an
-   * {@code int32} field, including tag.
+   * Compute the number of bytes that would be needed to encode an {@code int32} field, including
+   * tag.
    */
   public static int computeInt32Size(final int fieldNumber, final int value) {
     return computeTagSize(fieldNumber) + computeInt32SizeNoTag(value);
   }
 
   /**
-   * Compute the number of bytes that would be needed to encode a
-   * {@code uint32} field, including tag.
+   * Compute the number of bytes that would be needed to encode a {@code uint32} field, including
+   * tag.
    */
   public static int computeUInt32Size(final int fieldNumber, final int value) {
     return computeTagSize(fieldNumber) + computeUInt32SizeNoTag(value);
   }
 
   /**
-   * Compute the number of bytes that would be needed to encode an
-   * {@code sint32} field, including tag.
+   * Compute the number of bytes that would be needed to encode an {@code sint32} field, including
+   * tag.
    */
   public static int computeSInt32Size(final int fieldNumber, final int value) {
     return computeTagSize(fieldNumber) + computeSInt32SizeNoTag(value);
   }
 
   /**
-   * Compute the number of bytes that would be needed to encode a
-   * {@code fixed32} field, including tag.
+   * Compute the number of bytes that would be needed to encode a {@code fixed32} field, including
+   * tag.
    */
   public static int computeFixed32Size(final int fieldNumber, final int value) {
     return computeTagSize(fieldNumber) + computeFixed32SizeNoTag(value);
   }
 
   /**
-   * Compute the number of bytes that would be needed to encode an
-   * {@code sfixed32} field, including tag.
+   * Compute the number of bytes that would be needed to encode an {@code sfixed32} field, including
+   * tag.
    */
   public static int computeSFixed32Size(final int fieldNumber, final int value) {
     return computeTagSize(fieldNumber) + computeSFixed32SizeNoTag(value);
   }
 
   /**
-   * Compute the number of bytes that would be needed to encode an
-   * {@code int64} field, including tag.
+   * Compute the number of bytes that would be needed to encode an {@code int64} field, including
+   * tag.
    */
   public static int computeInt64Size(final int fieldNumber, final long value) {
     return computeTagSize(fieldNumber) + computeInt64SizeNoTag(value);
   }
 
   /**
-   * Compute the number of bytes that would be needed to encode a
-   * {@code uint64} field, including tag.
+   * Compute the number of bytes that would be needed to encode a {@code uint64} field, including
+   * tag.
    */
   public static int computeUInt64Size(final int fieldNumber, final long value) {
     return computeTagSize(fieldNumber) + computeUInt64SizeNoTag(value);
   }
 
   /**
-   * Compute the number of bytes that would be needed to encode an
-   * {@code sint64} field, including tag.
+   * Compute the number of bytes that would be needed to encode an {@code sint64} field, including
+   * tag.
    */
   public static int computeSInt64Size(final int fieldNumber, final long value) {
     return computeTagSize(fieldNumber) + computeSInt64SizeNoTag(value);
   }
 
   /**
-   * Compute the number of bytes that would be needed to encode a
-   * {@code fixed64} field, including tag.
+   * Compute the number of bytes that would be needed to encode a {@code fixed64} field, including
+   * tag.
    */
   public static int computeFixed64Size(final int fieldNumber, final long value) {
     return computeTagSize(fieldNumber) + computeFixed64SizeNoTag(value);
   }
 
   /**
-   * Compute the number of bytes that would be needed to encode an
-   * {@code sfixed64} field, including tag.
+   * Compute the number of bytes that would be needed to encode an {@code sfixed64} field, including
+   * tag.
    */
   public static int computeSFixed64Size(final int fieldNumber, final long value) {
     return computeTagSize(fieldNumber) + computeSFixed64SizeNoTag(value);
   }
 
   /**
-   * Compute the number of bytes that would be needed to encode a
-   * {@code float} field, including tag.
+   * Compute the number of bytes that would be needed to encode a {@code float} field, including
+   * tag.
    */
   public static int computeFloatSize(final int fieldNumber, final float value) {
     return computeTagSize(fieldNumber) + computeFloatSizeNoTag(value);
   }
 
   /**
-   * Compute the number of bytes that would be needed to encode a
-   * {@code double} field, including tag.
+   * Compute the number of bytes that would be needed to encode a {@code double} field, including
+   * tag.
    */
   public static int computeDoubleSize(final int fieldNumber, final double value) {
     return computeTagSize(fieldNumber) + computeDoubleSizeNoTag(value);
   }
 
   /**
-   * Compute the number of bytes that would be needed to encode a
-   * {@code bool} field, including tag.
+   * Compute the number of bytes that would be needed to encode a {@code bool} field, including tag.
    */
   public static int computeBoolSize(final int fieldNumber, final boolean value) {
     return computeTagSize(fieldNumber) + computeBoolSizeNoTag(value);
   }
 
   /**
-   * Compute the number of bytes that would be needed to encode an
-   * enum field, including tag. The provided value is the numeric
-   * value used to represent the enum value on the wire (not the enum ordinal value).
+   * Compute the number of bytes that would be needed to encode an enum field, including tag. The
+   * provided value is the numeric value used to represent the enum value on the wire (not the enum
+   * ordinal value).
    */
   public static int computeEnumSize(final int fieldNumber, final int value) {
     return computeTagSize(fieldNumber) + computeEnumSizeNoTag(value);
   }
 
   /**
-   * Compute the number of bytes that would be needed to encode a
-   * {@code string} field, including tag.
+   * Compute the number of bytes that would be needed to encode a {@code string} field, including
+   * tag.
    */
   public static int computeStringSize(final int fieldNumber, final String value) {
     return computeTagSize(fieldNumber) + computeStringSizeNoTag(value);
   }
 
   /**
-   * Compute the number of bytes that would be needed to encode a
-   * {@code bytes} field, including tag.
+   * Compute the number of bytes that would be needed to encode a {@code bytes} field, including
+   * tag.
    */
   public static int computeBytesSize(final int fieldNumber, final ByteString value) {
     return computeTagSize(fieldNumber) + computeBytesSizeNoTag(value);
   }
 
   /**
-   * Compute the number of bytes that would be needed to encode a
-   * {@code bytes} field, including tag.
+   * Compute the number of bytes that would be needed to encode a {@code bytes} field, including
+   * tag.
    */
   public static int computeByteArraySize(final int fieldNumber, final byte[] value) {
     return computeTagSize(fieldNumber) + computeByteArraySizeNoTag(value);
   }
 
   /**
-   * Compute the number of bytes that would be needed to encode a
-   * {@code bytes} field, including tag.
+   * Compute the number of bytes that would be needed to encode a {@code bytes} field, including
+   * tag.
    */
   public static int computeByteBufferSize(final int fieldNumber, final ByteBuffer value) {
     return computeTagSize(fieldNumber) + computeByteBufferSizeNoTag(value);
   }
 
   /**
-   * Compute the number of bytes that would be needed to encode an
-   * embedded message in lazy field, including tag.
+   * Compute the number of bytes that would be needed to encode an embedded message in lazy field,
+   * including tag.
    */
   public static int computeLazyFieldSize(final int fieldNumber, final LazyFieldLite value) {
     return computeTagSize(fieldNumber) + computeLazyFieldSizeNoTag(value);
   }
 
   /**
-   * Compute the number of bytes that would be needed to encode an
-   * embedded message field, including tag.
+   * Compute the number of bytes that would be needed to encode an embedded message field, including
+   * tag.
    */
   public static int computeMessageSize(final int fieldNumber, final MessageLite value) {
     return computeTagSize(fieldNumber) + computeMessageSizeNoTag(value);
   }
 
+  /**
+   * Compute the number of bytes that would be needed to encode an embedded message field, including
+   * tag.
+   */
+  static int computeMessageSize(
+      final int fieldNumber, final MessageLite value, final Schema schema) {
+    return computeTagSize(fieldNumber) + computeMessageSizeNoTag(value, schema);
+  }
 
   /**
-   * Compute the number of bytes that would be needed to encode a
-   * MessageSet extension to the stream.  For historical reasons,
-   * the wire format differs from normal fields.
+   * Compute the number of bytes that would be needed to encode a MessageSet extension to the
+   * stream. For historical reasons, the wire format differs from normal fields.
    */
   public static int computeMessageSetExtensionSize(final int fieldNumber, final MessageLite value) {
     return computeTagSize(WireFormat.MESSAGE_SET_ITEM) * 2
@@ -681,9 +681,8 @@ public abstract class CodedOutputStream extends ByteOutput {
   }
 
   /**
-   * Compute the number of bytes that would be needed to encode an
-   * unparsed MessageSet extension field to the stream.  For
-   * historical reasons, the wire format differs from normal fields.
+   * Compute the number of bytes that would be needed to encode an unparsed MessageSet extension
+   * field to the stream. For historical reasons, the wire format differs from normal fields.
    */
   public static int computeRawMessageSetExtensionSize(
       final int fieldNumber, final ByteString value) {
@@ -693,9 +692,9 @@ public abstract class CodedOutputStream extends ByteOutput {
   }
 
   /**
-   * Compute the number of bytes that would be needed to encode an
-   * lazily parsed MessageSet extension field to the stream.  For
-   * historical reasons, the wire format differs from normal fields.
+   * Compute the number of bytes that would be needed to encode an lazily parsed MessageSet
+   * extension field to the stream. For historical reasons, the wire format differs from normal
+   * fields.
    */
   public static int computeLazyFieldMessageSetExtensionSize(
       final int fieldNumber, final LazyFieldLite value) {
@@ -712,8 +711,8 @@ public abstract class CodedOutputStream extends ByteOutput {
   }
 
   /**
-   * Compute the number of bytes that would be needed to encode an
-   * {@code int32} field, including tag.
+   * Compute the number of bytes that would be needed to encode an {@code int32} field, including
+   * tag.
    */
   public static int computeInt32SizeNoTag(final int value) {
     if (value >= 0) {
@@ -724,12 +723,9 @@ public abstract class CodedOutputStream extends ByteOutput {
     }
   }
 
-  /**
-   * Compute the number of bytes that would be needed to encode a
-   * {@code uint32} field.
-   */
+  /** Compute the number of bytes that would be needed to encode a {@code uint32} field. */
   public static int computeUInt32SizeNoTag(final int value) {
-    if ((value & (~0 <<  7)) == 0) {
+    if ((value & (~0 << 7)) == 0) {
       return 1;
     }
     if ((value & (~0 << 14)) == 0) {
@@ -744,41 +740,32 @@ public abstract class CodedOutputStream extends ByteOutput {
     return 5;
   }
 
-  /**
-   * Compute the number of bytes that would be needed to encode an
-   * {@code sint32} field.
-   */
+  /** Compute the number of bytes that would be needed to encode an {@code sint32} field. */
   public static int computeSInt32SizeNoTag(final int value) {
     return computeUInt32SizeNoTag(encodeZigZag32(value));
   }
 
-  /**
-   * Compute the number of bytes that would be needed to encode a
-   * {@code fixed32} field.
-   */
+  /** Compute the number of bytes that would be needed to encode a {@code fixed32} field. */
   public static int computeFixed32SizeNoTag(@SuppressWarnings("unused") final int unused) {
     return FIXED32_SIZE;
   }
 
-  /**
-   * Compute the number of bytes that would be needed to encode an
-   * {@code sfixed32} field.
-   */
+  /** Compute the number of bytes that would be needed to encode an {@code sfixed32} field. */
   public static int computeSFixed32SizeNoTag(@SuppressWarnings("unused") final int unused) {
     return FIXED32_SIZE;
   }
 
   /**
-   * Compute the number of bytes that would be needed to encode an
-   * {@code int64} field, including tag.
+   * Compute the number of bytes that would be needed to encode an {@code int64} field, including
+   * tag.
    */
   public static int computeInt64SizeNoTag(final long value) {
     return computeUInt64SizeNoTag(value);
   }
 
   /**
-   * Compute the number of bytes that would be needed to encode a
-   * {@code uint64} field, including tag.
+   * Compute the number of bytes that would be needed to encode a {@code uint64} field, including
+   * tag.
    */
   public static int computeUInt64SizeNoTag(long value) {
     // handle two popular special cases up front ...
@@ -791,10 +778,12 @@ public abstract class CodedOutputStream extends ByteOutput {
     // ... leaving us with 8 remaining, which we can divide and conquer
     int n = 2;
     if ((value & (~0L << 35)) != 0L) {
-      n += 4; value >>>= 28;
+      n += 4;
+      value >>>= 28;
     }
     if ((value & (~0L << 21)) != 0L) {
-      n += 2; value >>>= 14;
+      n += 2;
+      value >>>= 14;
     }
     if ((value & (~0L << 14)) != 0L) {
       n += 1;
@@ -802,67 +791,51 @@ public abstract class CodedOutputStream extends ByteOutput {
     return n;
   }
 
-  /**
-   * Compute the number of bytes that would be needed to encode an
-   * {@code sint64} field.
-   */
+  /** Compute the number of bytes that would be needed to encode an {@code sint64} field. */
   public static int computeSInt64SizeNoTag(final long value) {
     return computeUInt64SizeNoTag(encodeZigZag64(value));
   }
 
-  /**
-   * Compute the number of bytes that would be needed to encode a
-   * {@code fixed64} field.
-   */
+  /** Compute the number of bytes that would be needed to encode a {@code fixed64} field. */
   public static int computeFixed64SizeNoTag(@SuppressWarnings("unused") final long unused) {
     return FIXED64_SIZE;
   }
 
-  /**
-   * Compute the number of bytes that would be needed to encode an
-   * {@code sfixed64} field.
-   */
+  /** Compute the number of bytes that would be needed to encode an {@code sfixed64} field. */
   public static int computeSFixed64SizeNoTag(@SuppressWarnings("unused") final long unused) {
     return FIXED64_SIZE;
   }
 
   /**
-   * Compute the number of bytes that would be needed to encode a
-   * {@code float} field, including tag.
+   * Compute the number of bytes that would be needed to encode a {@code float} field, including
+   * tag.
    */
   public static int computeFloatSizeNoTag(@SuppressWarnings("unused") final float unused) {
     return FIXED32_SIZE;
   }
 
   /**
-   * Compute the number of bytes that would be needed to encode a
-   * {@code double} field, including tag.
+   * Compute the number of bytes that would be needed to encode a {@code double} field, including
+   * tag.
    */
   public static int computeDoubleSizeNoTag(@SuppressWarnings("unused") final double unused) {
     return FIXED64_SIZE;
   }
 
-  /**
-   * Compute the number of bytes that would be needed to encode a
-   * {@code bool} field.
-   */
+  /** Compute the number of bytes that would be needed to encode a {@code bool} field. */
   public static int computeBoolSizeNoTag(@SuppressWarnings("unused") final boolean unused) {
     return 1;
   }
 
   /**
-   * Compute the number of bytes that would be needed to encode an enum field.
-   * The provided value is the numeric value used to represent the enum value on the wire
-   * (not the enum ordinal value).
+   * Compute the number of bytes that would be needed to encode an enum field. The provided value is
+   * the numeric value used to represent the enum value on the wire (not the enum ordinal value).
    */
   public static int computeEnumSizeNoTag(final int value) {
     return computeInt32SizeNoTag(value);
   }
 
-  /**
-   * Compute the number of bytes that would be needed to encode a
-   * {@code string} field.
-   */
+  /** Compute the number of bytes that would be needed to encode a {@code string} field. */
   public static int computeStringSizeNoTag(final String value) {
     int length;
     try {
@@ -877,59 +850,50 @@ public abstract class CodedOutputStream extends ByteOutput {
   }
 
   /**
-   * Compute the number of bytes that would be needed to encode an embedded
-   * message stored in lazy field.
+   * Compute the number of bytes that would be needed to encode an embedded message stored in lazy
+   * field.
    */
   public static int computeLazyFieldSizeNoTag(final LazyFieldLite value) {
     return computeLengthDelimitedFieldSize(value.getSerializedSize());
   }
 
-  /**
-   * Compute the number of bytes that would be needed to encode a
-   * {@code bytes} field.
-   */
+  /** Compute the number of bytes that would be needed to encode a {@code bytes} field. */
   public static int computeBytesSizeNoTag(final ByteString value) {
     return computeLengthDelimitedFieldSize(value.size());
   }
 
-  /**
-   * Compute the number of bytes that would be needed to encode a
-   * {@code bytes} field.
-   */
+  /** Compute the number of bytes that would be needed to encode a {@code bytes} field. */
   public static int computeByteArraySizeNoTag(final byte[] value) {
     return computeLengthDelimitedFieldSize(value.length);
   }
 
-  /**
-   * Compute the number of bytes that would be needed to encode a
-   * {@code bytes} field.
-   */
+  /** Compute the number of bytes that would be needed to encode a {@code bytes} field. */
   public static int computeByteBufferSizeNoTag(final ByteBuffer value) {
     return computeLengthDelimitedFieldSize(value.capacity());
   }
 
-  /**
-   * Compute the number of bytes that would be needed to encode an embedded
-   * message field.
-   */
+  /** Compute the number of bytes that would be needed to encode an embedded message field. */
   public static int computeMessageSizeNoTag(final MessageLite value) {
     return computeLengthDelimitedFieldSize(value.getSerializedSize());
   }
 
+  /** Compute the number of bytes that would be needed to encode an embedded message field. */
+  static int computeMessageSizeNoTag(final MessageLite value, final Schema schema) {
+    return computeLengthDelimitedFieldSize(((AbstractMessageLite) value).getSerializedSize(schema));
+  }
 
   static int computeLengthDelimitedFieldSize(int fieldLength) {
     return computeUInt32SizeNoTag(fieldLength) + fieldLength;
   }
 
   /**
-   * Encode a ZigZag-encoded 32-bit value.  ZigZag encodes signed integers
-   * into values that can be efficiently encoded with varint.  (Otherwise,
-   * negative values must be sign-extended to 64 bits to be varint encoded,
-   * thus always taking 10 bytes on the wire.)
+   * Encode a ZigZag-encoded 32-bit value. ZigZag encodes signed integers into values that can be
+   * efficiently encoded with varint. (Otherwise, negative values must be sign-extended to 64 bits
+   * to be varint encoded, thus always taking 10 bytes on the wire.)
    *
    * @param n A signed 32-bit integer.
-   * @return An unsigned 32-bit integer, stored in a signed int because
-   *         Java has no explicit unsigned support.
+   * @return An unsigned 32-bit integer, stored in a signed int because Java has no explicit
+   *     unsigned support.
    */
   public static int encodeZigZag32(final int n) {
     // Note:  the right-shift must be arithmetic
@@ -937,14 +901,13 @@ public abstract class CodedOutputStream extends ByteOutput {
   }
 
   /**
-   * Encode a ZigZag-encoded 64-bit value.  ZigZag encodes signed integers
-   * into values that can be efficiently encoded with varint.  (Otherwise,
-   * negative values must be sign-extended to 64 bits to be varint encoded,
-   * thus always taking 10 bytes on the wire.)
+   * Encode a ZigZag-encoded 64-bit value. ZigZag encodes signed integers into values that can be
+   * efficiently encoded with varint. (Otherwise, negative values must be sign-extended to 64 bits
+   * to be varint encoded, thus always taking 10 bytes on the wire.)
    *
    * @param n A signed 64-bit integer.
-   * @return An unsigned 64-bit integer, stored in a signed int because
-   *         Java has no explicit unsigned support.
+   * @return An unsigned 64-bit integer, stored in a signed int because Java has no explicit
+   *     unsigned support.
    */
   public static long encodeZigZag64(final long n) {
     // Note:  the right-shift must be arithmetic
@@ -954,23 +917,22 @@ public abstract class CodedOutputStream extends ByteOutput {
   // =================================================================
 
   /**
-   * Flushes the stream and forces any buffered bytes to be written.  This
-   * does not flush the underlying OutputStream.
+   * Flushes the stream and forces any buffered bytes to be written. This does not flush the
+   * underlying OutputStream.
    */
   public abstract void flush() throws IOException;
 
   /**
-   * If writing to a flat array, return the space left in the array.
-   * Otherwise, throws {@code UnsupportedOperationException}.
+   * If writing to a flat array, return the space left in the array. Otherwise, throws {@code
+   * UnsupportedOperationException}.
    */
   public abstract int spaceLeft();
 
   /**
-   * Verifies that {@link #spaceLeft()} returns zero.  It's common to create
-   * a byte array that is exactly big enough to hold a message, then write to
-   * it with a {@code CodedOutputStream}.  Calling {@code checkNoSpaceLeft()}
-   * after writing verifies that the message was actually as big as expected,
-   * which can help catch bugs.
+   * Verifies that {@link #spaceLeft()} returns zero. It's common to create a byte array that is
+   * exactly big enough to hold a message, then write to it with a {@code CodedOutputStream}.
+   * Calling {@code checkNoSpaceLeft()} after writing verifies that the message was actually as big
+   * as expected, which can help catch bugs.
    */
   public final void checkNoSpaceLeft() {
     if (spaceLeft() != 0) {
@@ -979,9 +941,8 @@ public abstract class CodedOutputStream extends ByteOutput {
   }
 
   /**
-   * If you create a CodedOutputStream around a simple flat array, you must
-   * not attempt to write more bytes than the array has space.  Otherwise,
-   * this exception will be thrown.
+   * If you create a CodedOutputStream around a simple flat array, you must not attempt to write
+   * more bytes than the array has space. Otherwise, this exception will be thrown.
    */
   public static class OutOfSpaceException extends IOException {
     private static final long serialVersionUID = -6947486886997889499L;
@@ -1007,9 +968,8 @@ public abstract class CodedOutputStream extends ByteOutput {
   }
 
   /**
-   * Get the total number of bytes successfully written to this stream.  The
-   * returned value is not guaranteed to be accurate if exceptions have been
-   * found in the middle of writing.
+   * Get the total number of bytes successfully written to this stream. The returned value is not
+   * guaranteed to be accurate if exceptions have been found in the middle of writing.
    */
   public abstract int getTotalBytesWritten();
 
@@ -1021,8 +981,10 @@ public abstract class CodedOutputStream extends ByteOutput {
 
   final void inefficientWriteStringNoTag(String value, UnpairedSurrogateException cause)
       throws IOException {
-    logger.log(Level.WARNING,
-        "Converting ill-formed UTF-16. Your Protocol Buffer will not round trip correctly!", cause);
+    logger.log(
+        Level.WARNING,
+        "Converting ill-formed UTF-16. Your Protocol Buffer will not round trip correctly!",
+        cause);
 
     // Unfortunately there does not appear to be any way to tell Java to encode
     // UTF-8 directly into our buffer, so we have to let it create its own byte
@@ -1053,6 +1015,18 @@ public abstract class CodedOutputStream extends ByteOutput {
     writeTag(fieldNumber, WireFormat.WIRETYPE_END_GROUP);
   }
 
+  /**
+   * Write a {@code group} field, including tag, to the stream.
+   *
+   * @deprecated groups are deprecated.
+   */
+  @Deprecated
+  final void writeGroup(final int fieldNumber, final MessageLite value, Schema schema)
+      throws IOException {
+    writeTag(fieldNumber, WireFormat.WIRETYPE_START_GROUP);
+    writeGroupNoTag(value, schema);
+    writeTag(fieldNumber, WireFormat.WIRETYPE_END_GROUP);
+  }
 
   /**
    * Write a {@code group} field to the stream.
@@ -1064,10 +1038,19 @@ public abstract class CodedOutputStream extends ByteOutput {
     value.writeTo(this);
   }
 
+  /**
+   * Write a {@code group} field to the stream.
+   *
+   * @deprecated groups are deprecated.
+   */
+  @Deprecated
+  final void writeGroupNoTag(final MessageLite value, Schema schema) throws IOException {
+    schema.writeTo(value, wrapper);
+  }
 
   /**
-   * Compute the number of bytes that would be needed to encode a
-   * {@code group} field, including tag.
+   * Compute the number of bytes that would be needed to encode a {@code group} field, including
+   * tag.
    *
    * @deprecated groups are deprecated.
    */
@@ -1076,20 +1059,32 @@ public abstract class CodedOutputStream extends ByteOutput {
     return computeTagSize(fieldNumber) * 2 + computeGroupSizeNoTag(value);
   }
 
-
   /**
-   * Compute the number of bytes that would be needed to encode a
-   * {@code group} field.
+   * Compute the number of bytes that would be needed to encode a {@code group} field, including
+   * tag.
+   *
+   * @deprecated groups are deprecated.
    */
+  @Deprecated
+  static int computeGroupSize(final int fieldNumber, final MessageLite value, Schema schema) {
+    return computeTagSize(fieldNumber) * 2 + computeGroupSizeNoTag(value, schema);
+  }
+
+  /** Compute the number of bytes that would be needed to encode a {@code group} field. */
   @Deprecated
   public static int computeGroupSizeNoTag(final MessageLite value) {
     return value.getSerializedSize();
   }
 
+  /** Compute the number of bytes that would be needed to encode a {@code group} field. */
+  @Deprecated
+  static int computeGroupSizeNoTag(final MessageLite value, Schema schema) {
+    return ((AbstractMessageLite) value).getSerializedSize(schema);
+  }
 
   /**
-   * Encode and write a varint.  {@code value} is treated as
-   * unsigned, so it won't be sign-extended if negative.
+   * Encode and write a varint. {@code value} is treated as unsigned, so it won't be sign-extended
+   * if negative.
    *
    * @deprecated use {@link #writeUInt32NoTag} instead.
    */
@@ -1109,9 +1104,8 @@ public abstract class CodedOutputStream extends ByteOutput {
   }
 
   /**
-   * Compute the number of bytes that would be needed to encode a varint.
-   * {@code value} is treated as unsigned, so it won't be sign-extended if
-   * negative.
+   * Compute the number of bytes that would be needed to encode a varint. {@code value} is treated
+   * as unsigned, so it won't be sign-extended if negative.
    *
    * @deprecated use {@link #computeUInt32SizeNoTag(int)} instead.
    */
@@ -1152,9 +1146,7 @@ public abstract class CodedOutputStream extends ByteOutput {
 
   // =================================================================
 
-  /**
-   * A {@link CodedOutputStream} that writes directly to a byte array.
-   */
+  /** A {@link CodedOutputStream} that writes directly to a byte array. */
   private static class ArrayEncoder extends CodedOutputStream {
     private final byte[] buffer;
     private final int offset;
@@ -1166,9 +1158,10 @@ public abstract class CodedOutputStream extends ByteOutput {
         throw new NullPointerException("buffer");
       }
       if ((offset | length | (buffer.length - (offset + length))) < 0) {
-        throw new IllegalArgumentException(String.format(
-            "Array range is invalid. Buffer.length=%d, offset=%d, length=%d",
-            buffer.length, offset, length));
+        throw new IllegalArgumentException(
+            String.format(
+                "Array range is invalid. Buffer.length=%d, offset=%d, length=%d",
+                buffer.length, offset, length));
       }
       this.buffer = buffer;
       this.offset = offset;
@@ -1281,6 +1274,13 @@ public abstract class CodedOutputStream extends ByteOutput {
       writeMessageNoTag(value);
     }
 
+    @Override
+    final void writeMessage(final int fieldNumber, final MessageLite value, Schema schema)
+        throws IOException {
+      writeTag(fieldNumber, WireFormat.WIRETYPE_LENGTH_DELIMITED);
+      writeUInt32NoTag(((AbstractMessageLite) value).getSerializedSize(schema));
+      schema.writeTo(value, wrapper);
+    }
 
     @Override
     public final void writeMessageSetExtension(final int fieldNumber, final MessageLite value)
@@ -1306,6 +1306,11 @@ public abstract class CodedOutputStream extends ByteOutput {
       value.writeTo(this);
     }
 
+    @Override
+    final void writeMessageNoTag(final MessageLite value, Schema schema) throws IOException {
+      writeUInt32NoTag(((AbstractMessageLite) value).getSerializedSize(schema));
+      schema.writeTo(value, wrapper);
+    }
 
     @Override
     public final void write(byte value) throws IOException {
@@ -1329,16 +1334,34 @@ public abstract class CodedOutputStream extends ByteOutput {
 
     @Override
     public final void writeUInt32NoTag(int value) throws IOException {
-      if (HAS_UNSAFE_ARRAY_OPERATIONS && spaceLeft() >= MAX_VARINT_SIZE) {
-        while (true) {
-          if ((value & ~0x7F) == 0) {
-            UnsafeUtil.putByte(buffer, position++, (byte) value);
-            return;
-          } else {
-            UnsafeUtil.putByte(buffer, position++, (byte) ((value & 0x7F) | 0x80));
-            value >>>= 7;
-          }
+      if (HAS_UNSAFE_ARRAY_OPERATIONS
+          && !Android.isOnAndroidDevice()
+          && spaceLeft() >= MAX_VARINT32_SIZE) {
+        if ((value & ~0x7F) == 0) {
+          UnsafeUtil.putByte(buffer, position++, (byte) value);
+          return;
         }
+        UnsafeUtil.putByte(buffer, position++, (byte) (value | 0x80));
+        value >>>= 7;
+        if ((value & ~0x7F) == 0) {
+          UnsafeUtil.putByte(buffer, position++, (byte) value);
+          return;
+        }
+        UnsafeUtil.putByte(buffer, position++, (byte) (value | 0x80));
+        value >>>= 7;
+        if ((value & ~0x7F) == 0) {
+          UnsafeUtil.putByte(buffer, position++, (byte) value);
+          return;
+        }
+        UnsafeUtil.putByte(buffer, position++, (byte) (value | 0x80));
+        value >>>= 7;
+        if ((value & ~0x7F) == 0) {
+          UnsafeUtil.putByte(buffer, position++, (byte) value);
+          return;
+        }
+        UnsafeUtil.putByte(buffer, position++, (byte) (value | 0x80));
+        value >>>= 7;
+        UnsafeUtil.putByte(buffer, position++, (byte) value);
       } else {
         try {
           while (true) {
@@ -1501,15 +1524,17 @@ public abstract class CodedOutputStream extends ByteOutput {
   }
 
   /**
-   * A {@link CodedOutputStream} that writes directly to a heap {@link ByteBuffer}. Writes are
-   * done directly to the underlying array. The buffer position is only updated after a flush.
+   * A {@link CodedOutputStream} that writes directly to a heap {@link ByteBuffer}. Writes are done
+   * directly to the underlying array. The buffer position is only updated after a flush.
    */
   private static final class HeapNioEncoder extends ArrayEncoder {
     private final ByteBuffer byteBuffer;
     private int initialPosition;
 
     HeapNioEncoder(ByteBuffer byteBuffer) {
-      super(byteBuffer.array(), byteBuffer.arrayOffset() + byteBuffer.position(),
+      super(
+          byteBuffer.array(),
+          byteBuffer.arrayOffset() + byteBuffer.position(),
           byteBuffer.remaining());
       this.byteBuffer = byteBuffer;
       this.initialPosition = byteBuffer.position();
@@ -1604,20 +1629,24 @@ public abstract class CodedOutputStream extends ByteOutput {
     }
 
     @Override
-    public void writeByteBuffer(final int fieldNumber, final ByteBuffer value)
-        throws IOException {
+    public void writeByteBuffer(final int fieldNumber, final ByteBuffer value) throws IOException {
       writeTag(fieldNumber, WireFormat.WIRETYPE_LENGTH_DELIMITED);
       writeUInt32NoTag(value.capacity());
       writeRawBytes(value);
     }
 
     @Override
-    public void writeMessage(final int fieldNumber, final MessageLite value)
-        throws IOException {
+    public void writeMessage(final int fieldNumber, final MessageLite value) throws IOException {
       writeTag(fieldNumber, WireFormat.WIRETYPE_LENGTH_DELIMITED);
       writeMessageNoTag(value);
     }
 
+    @Override
+    void writeMessage(final int fieldNumber, final MessageLite value, Schema schema)
+        throws IOException {
+      writeTag(fieldNumber, WireFormat.WIRETYPE_LENGTH_DELIMITED);
+      writeMessageNoTag(value, schema);
+    }
 
     @Override
     public void writeMessageSetExtension(final int fieldNumber, final MessageLite value)
@@ -1643,6 +1672,11 @@ public abstract class CodedOutputStream extends ByteOutput {
       value.writeTo(this);
     }
 
+    @Override
+    void writeMessageNoTag(final MessageLite value, Schema schema) throws IOException {
+      writeUInt32NoTag(((AbstractMessageLite) value).getSerializedSize(schema));
+      schema.writeTo(value, wrapper);
+    }
 
     @Override
     public void write(byte value) throws IOException {
@@ -1940,6 +1974,11 @@ public abstract class CodedOutputStream extends ByteOutput {
       writeMessageNoTag(value);
     }
 
+    @Override
+    void writeMessage(int fieldNumber, MessageLite value, Schema schema) throws IOException {
+      writeTag(fieldNumber, WireFormat.WIRETYPE_LENGTH_DELIMITED);
+      writeMessageNoTag(value, schema);
+    }
 
     @Override
     public void writeMessageSetExtension(int fieldNumber, MessageLite value) throws IOException {
@@ -1963,6 +2002,11 @@ public abstract class CodedOutputStream extends ByteOutput {
       value.writeTo(this);
     }
 
+    @Override
+    void writeMessageNoTag(MessageLite value, Schema schema) throws IOException {
+      writeUInt32NoTag(((AbstractMessageLite) value).getSerializedSize(schema));
+      schema.writeTo(value, wrapper);
+    }
 
     @Override
     public void write(byte value) throws IOException {
@@ -2186,9 +2230,7 @@ public abstract class CodedOutputStream extends ByteOutput {
     }
   }
 
-  /**
-   * Abstract base class for buffered encoders.
-   */
+  /** Abstract base class for buffered encoders. */
   private abstract static class AbstractBufferedEncoder extends CodedOutputStream {
     final byte[] buffer;
     final int limit;
@@ -2346,8 +2388,8 @@ public abstract class CodedOutputStream extends ByteOutput {
 
   /**
    * A {@link CodedOutputStream} that decorates a {@link ByteOutput}. It internal buffer only to
-   * support string encoding operations. All other writes are just passed through to the
-   * {@link ByteOutput}.
+   * support string encoding operations. All other writes are just passed through to the {@link
+   * ByteOutput}.
    */
   private static final class ByteOutputEncoder extends AbstractBufferedEncoder {
     private final ByteOutput out;
@@ -2433,8 +2475,7 @@ public abstract class CodedOutputStream extends ByteOutput {
     }
 
     @Override
-    public void writeByteBuffer(final int fieldNumber, final ByteBuffer value)
-        throws IOException {
+    public void writeByteBuffer(final int fieldNumber, final ByteBuffer value) throws IOException {
       writeTag(fieldNumber, WireFormat.WIRETYPE_LENGTH_DELIMITED);
       writeUInt32NoTag(value.capacity());
       writeRawBytes(value);
@@ -2464,12 +2505,17 @@ public abstract class CodedOutputStream extends ByteOutput {
     }
 
     @Override
-    public void writeMessage(final int fieldNumber, final MessageLite value)
-        throws IOException {
+    public void writeMessage(final int fieldNumber, final MessageLite value) throws IOException {
       writeTag(fieldNumber, WireFormat.WIRETYPE_LENGTH_DELIMITED);
       writeMessageNoTag(value);
     }
 
+    @Override
+    void writeMessage(final int fieldNumber, final MessageLite value, Schema schema)
+        throws IOException {
+      writeTag(fieldNumber, WireFormat.WIRETYPE_LENGTH_DELIMITED);
+      writeMessageNoTag(value, schema);
+    }
 
     @Override
     public void writeMessageSetExtension(final int fieldNumber, final MessageLite value)
@@ -2495,6 +2541,11 @@ public abstract class CodedOutputStream extends ByteOutput {
       value.writeTo(this);
     }
 
+    @Override
+    void writeMessageNoTag(final MessageLite value, Schema schema) throws IOException {
+      writeUInt32NoTag(((AbstractMessageLite) value).getSerializedSize(schema));
+      schema.writeTo(value, wrapper);
+    }
 
     @Override
     public void write(byte value) throws IOException {
@@ -2517,7 +2568,7 @@ public abstract class CodedOutputStream extends ByteOutput {
 
     @Override
     public void writeUInt32NoTag(int value) throws IOException {
-      flushIfNotAvailable(MAX_VARINT_SIZE);
+      flushIfNotAvailable(MAX_VARINT32_SIZE);
       bufferUInt32NoTag(value);
     }
 
@@ -2738,8 +2789,7 @@ public abstract class CodedOutputStream extends ByteOutput {
     }
 
     @Override
-    public void writeByteBuffer(final int fieldNumber, final ByteBuffer value)
-        throws IOException {
+    public void writeByteBuffer(final int fieldNumber, final ByteBuffer value) throws IOException {
       writeTag(fieldNumber, WireFormat.WIRETYPE_LENGTH_DELIMITED);
       writeUInt32NoTag(value.capacity());
       writeRawBytes(value);
@@ -2769,12 +2819,17 @@ public abstract class CodedOutputStream extends ByteOutput {
     }
 
     @Override
-    public void writeMessage(final int fieldNumber, final MessageLite value)
-        throws IOException {
+    public void writeMessage(final int fieldNumber, final MessageLite value) throws IOException {
       writeTag(fieldNumber, WireFormat.WIRETYPE_LENGTH_DELIMITED);
       writeMessageNoTag(value);
     }
 
+    @Override
+    void writeMessage(final int fieldNumber, final MessageLite value, Schema schema)
+        throws IOException {
+      writeTag(fieldNumber, WireFormat.WIRETYPE_LENGTH_DELIMITED);
+      writeMessageNoTag(value, schema);
+    }
 
     @Override
     public void writeMessageSetExtension(final int fieldNumber, final MessageLite value)
@@ -2800,6 +2855,11 @@ public abstract class CodedOutputStream extends ByteOutput {
       value.writeTo(this);
     }
 
+    @Override
+    void writeMessageNoTag(final MessageLite value, Schema schema) throws IOException {
+      writeUInt32NoTag(((AbstractMessageLite) value).getSerializedSize(schema));
+      schema.writeTo(value, wrapper);
+    }
 
     @Override
     public void write(byte value) throws IOException {
@@ -2822,7 +2882,7 @@ public abstract class CodedOutputStream extends ByteOutput {
 
     @Override
     public void writeUInt32NoTag(int value) throws IOException {
-      flushIfNotAvailable(MAX_VARINT_SIZE);
+      flushIfNotAvailable(MAX_VARINT32_SIZE);
       bufferUInt32NoTag(value);
     }
 
@@ -2916,8 +2976,7 @@ public abstract class CodedOutputStream extends ByteOutput {
     }
 
     @Override
-    public void write(byte[] value, int offset, int length)
-        throws IOException {
+    public void write(byte[] value, int offset, int length) throws IOException {
       if (limit - position >= length) {
         // We have room in the current buffer.
         System.arraycopy(value, offset, buffer, position, length);

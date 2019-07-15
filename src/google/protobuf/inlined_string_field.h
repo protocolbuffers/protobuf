@@ -50,153 +50,143 @@ class Arena;
 
 namespace internal {
 
-// InlinedStringField wraps a ::std::string instance and exposes an API similar to
-// ArenaStringPtr's wrapping of a ::std::string* instance.  As ::std::string is never
-// allocated on the Arena, we expose only the *NoArena methods of
+// InlinedStringField wraps a std::string instance and exposes an API similar to
+// ArenaStringPtr's wrapping of a std::string* instance.  As std::string is
+// never allocated on the Arena, we expose only the *NoArena methods of
 // ArenaStringPtr.
 //
 // default_value parameters are taken for consistency with ArenaStringPtr, but
 // are not used for most methods.  With inlining, these should be removed from
 // the generated binary.
-class LIBPROTOBUF_EXPORT InlinedStringField {
+class PROTOBUF_EXPORT InlinedStringField {
  public:
-  InlinedStringField() GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE;
-  explicit InlinedStringField(const ::std::string& default_value);
+  InlinedStringField() PROTOBUF_ALWAYS_INLINE;
+  explicit InlinedStringField(const std::string& default_value);
 
-  void AssignWithDefault(const ::std::string* default_value,
-                         const InlinedStringField& from)
-      GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE;
+  void AssignWithDefault(const std::string* default_value,
+                         const InlinedStringField& from) PROTOBUF_ALWAYS_INLINE;
 
-  void ClearToEmpty(const ::std::string* default_value,
-                    Arena* arena) GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE {
+  void ClearToEmpty(const std::string* default_value,
+                    Arena* /*arena*/) PROTOBUF_ALWAYS_INLINE {
     ClearToEmptyNoArena(default_value);
   }
-  void ClearNonDefaultToEmpty() GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE {
+  void ClearNonDefaultToEmpty() PROTOBUF_ALWAYS_INLINE {
     ClearNonDefaultToEmptyNoArena();
   }
-  void ClearToEmptyNoArena(const ::std::string* default_value)
-      GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE {
+  void ClearToEmptyNoArena(const std::string* /*default_value*/)
+      PROTOBUF_ALWAYS_INLINE {
     ClearNonDefaultToEmptyNoArena();
   }
-  void ClearNonDefaultToEmptyNoArena() GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE;
+  void ClearNonDefaultToEmptyNoArena() PROTOBUF_ALWAYS_INLINE;
 
-  void ClearToDefault(const ::std::string* default_value,
-                      Arena* arena) GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE {
+  void ClearToDefault(const std::string* default_value,
+                      Arena* /*arena*/) PROTOBUF_ALWAYS_INLINE {
     ClearToDefaultNoArena(default_value);
   }
-  void ClearToDefaultNoArena(const ::std::string* default_value)
-      GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE;
+  void ClearToDefaultNoArena(const std::string* default_value)
+      PROTOBUF_ALWAYS_INLINE;
 
-  void Destroy(const ::std::string* default_value,
-               Arena* arena) GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE {
+  void Destroy(const std::string* default_value,
+               Arena* /*arena*/) PROTOBUF_ALWAYS_INLINE {
     DestroyNoArena(default_value);
   }
-  void DestroyNoArena(const ::std::string* default_value)
-      GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE;
+  void DestroyNoArena(const std::string* default_value) PROTOBUF_ALWAYS_INLINE;
 
-  const ::std::string& Get() const GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE {
-    return GetNoArena();
-  }
-  const ::std::string& GetNoArena() const GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE;
+  const std::string& Get() const PROTOBUF_ALWAYS_INLINE { return GetNoArena(); }
+  const std::string& GetNoArena() const PROTOBUF_ALWAYS_INLINE;
 
-  ::std::string* Mutable(const ::std::string* default_value,
-                    Arena* arena) GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE {
+  std::string* Mutable(const std::string* default_value,
+                       Arena* /*arena*/) PROTOBUF_ALWAYS_INLINE {
     return MutableNoArena(default_value);
   }
-  ::std::string* MutableNoArena(const ::std::string* default_value)
-      GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE;
+  std::string* MutableNoArena(const std::string* default_value)
+      PROTOBUF_ALWAYS_INLINE;
 
-  ::std::string* Release(const ::std::string* default_value, Arena* arena) {
+  std::string* Release(const std::string* default_value, Arena* /*arena*/) {
     return ReleaseNoArena(default_value);
   }
-  ::std::string* ReleaseNonDefault(const ::std::string* default_value, Arena* arena) {
+  std::string* ReleaseNonDefault(const std::string* default_value,
+                                 Arena* /*arena*/) {
     return ReleaseNonDefaultNoArena(default_value);
   }
-  ::std::string* ReleaseNoArena(const ::std::string* default_value) {
+  std::string* ReleaseNoArena(const std::string* default_value) {
     return ReleaseNonDefaultNoArena(default_value);
   }
-  ::std::string* ReleaseNonDefaultNoArena(const ::std::string* default_value);
+  std::string* ReleaseNonDefaultNoArena(const std::string* default_value);
 
-  void Set(const ::std::string* default_value, StringPiece value,
-           Arena* arena) GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE {
+  void Set(const std::string* default_value, StringPiece value,
+           Arena* /*arena*/) PROTOBUF_ALWAYS_INLINE {
     SetNoArena(default_value, value);
   }
-  void SetLite(const ::std::string* default_value, StringPiece value,
-               Arena* arena) GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE {
+  void SetLite(const std::string* default_value, StringPiece value,
+               Arena* /*arena*/) PROTOBUF_ALWAYS_INLINE {
     SetNoArena(default_value, value);
   }
-  void SetNoArena(const ::std::string* default_value, StringPiece value)
-      GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE;
+  void SetNoArena(const std::string* default_value,
+                  StringPiece value) PROTOBUF_ALWAYS_INLINE;
 
-  void Set(const ::std::string* default_value, const ::std::string& value,
-           Arena* arena) GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE {
+  void Set(const std::string* default_value, const std::string& value,
+           Arena* /*arena*/) PROTOBUF_ALWAYS_INLINE {
     SetNoArena(default_value, value);
   }
-  void SetLite(const ::std::string* default_value, const ::std::string& value,
-               Arena* arena) GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE {
+  void SetLite(const std::string* default_value, const std::string& value,
+               Arena* /*arena*/) PROTOBUF_ALWAYS_INLINE {
     SetNoArena(default_value, value);
   }
-  void SetNoArena(const ::std::string* default_value, const ::std::string& value)
-      GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE;
+  void SetNoArena(const std::string* default_value,
+                  const std::string& value) PROTOBUF_ALWAYS_INLINE;
 
-#if LANG_CXX11
-  void SetNoArena(const ::std::string* default_value,
-                  ::std::string&& value) GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE;
-#endif
-  void SetAllocated(const ::std::string* default_value,
-                    ::std::string* value,
-                    Arena* arena) {
+  void SetNoArena(const std::string* default_value,
+                  std::string&& value) PROTOBUF_ALWAYS_INLINE;
+  void SetAllocated(const std::string* default_value, std::string* value,
+                    Arena* /*arena*/) {
     SetAllocatedNoArena(default_value, value);
   }
-  void SetAllocatedNoArena(const ::std::string* default_value,
-                           ::std::string* value);
-  void Swap(InlinedStringField* from) GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE;
-  ::std::string* UnsafeMutablePointer();
-  void UnsafeSetDefault(const ::std::string* default_value);
-  ::std::string* UnsafeArenaRelease(const ::std::string* default_value, Arena* arena);
-  void UnsafeArenaSetAllocated(
-      const ::std::string* default_value, ::std::string* value, Arena* arena);
+  void SetAllocatedNoArena(const std::string* default_value,
+                           std::string* value);
+  void Swap(InlinedStringField* from) PROTOBUF_ALWAYS_INLINE;
+  std::string* UnsafeMutablePointer();
+  void UnsafeSetDefault(const std::string* default_value);
+  std::string* UnsafeArenaRelease(const std::string* default_value,
+                                  Arena* arena);
+  void UnsafeArenaSetAllocated(const std::string* default_value,
+                               std::string* value, Arena* arena);
 
-  bool IsDefault(const ::std::string* default_value) {
-    return false;
-  }
+  bool IsDefault(const std::string* /*default_value*/) { return false; }
+
  private:
-  ::std::string value_;
+  std::string value_;
 };
 
 inline InlinedStringField::InlinedStringField() {}
 
-inline InlinedStringField::InlinedStringField(const ::std::string& default_value) :
-  value_(default_value) {}
+inline InlinedStringField::InlinedStringField(const std::string& default_value)
+    : value_(default_value) {}
 
 inline void InlinedStringField::AssignWithDefault(
-    const ::std::string* default_value, const InlinedStringField& from) {
+    const std::string* /*default_value*/, const InlinedStringField& from) {
   value_ = from.value_;
 }
 
-inline const ::std::string& InlinedStringField::GetNoArena() const {
+inline const std::string& InlinedStringField::GetNoArena() const {
   return value_;
 }
 
-inline ::std::string* InlinedStringField::MutableNoArena(const ::std::string*) {
+inline std::string* InlinedStringField::MutableNoArena(const std::string*) {
   return &value_;
 }
 
 inline void InlinedStringField::SetAllocatedNoArena(
-    const ::std::string* default_value, ::std::string* value) {
+    const std::string* default_value, std::string* value) {
   if (value == NULL) {
     value_.assign(*default_value);
   } else {
-#if LANG_CXX11
     value_.assign(std::move(*value));
-#else
-    value_.swap(*value);
-#endif
     delete value;
   }
 }
 
-inline void InlinedStringField::DestroyNoArena(const ::std::string*) {
+inline void InlinedStringField::DestroyNoArena(const std::string*) {
   // This is invoked from the generated message's ArenaDtor, which is used to
   // clean up objects not allocated on the Arena.
   this->~InlinedStringField();
@@ -207,54 +197,52 @@ inline void InlinedStringField::ClearNonDefaultToEmptyNoArena() {
 }
 
 inline void InlinedStringField::ClearToDefaultNoArena(
-    const ::std::string* default_value) {
+    const std::string* default_value) {
   value_.assign(*default_value);
 }
 
-inline ::std::string* InlinedStringField::ReleaseNonDefaultNoArena(
-    const ::std::string* default_value) {
-  ::std::string* released = new ::std::string(*default_value);
+inline std::string* InlinedStringField::ReleaseNonDefaultNoArena(
+    const std::string* default_value) {
+  std::string* released = new std::string(*default_value);
   value_.swap(*released);
   return released;
 }
 
-inline void InlinedStringField::SetNoArena(const ::std::string* default_value,
+inline void InlinedStringField::SetNoArena(const std::string* /*default_value*/,
                                            StringPiece value) {
   value_.assign(value.data(), value.length());
 }
 
-inline void InlinedStringField::SetNoArena(
-    const ::std::string* default_value, const ::std::string& value) {
+inline void InlinedStringField::SetNoArena(const std::string* /*default_value*/,
+                                           const std::string& value) {
   value_.assign(value);
 }
 
-#if LANG_CXX11
-inline void InlinedStringField::SetNoArena(
-    const ::std::string* default_value, ::std::string&& value) {
+inline void InlinedStringField::SetNoArena(const std::string* /*default_value*/,
+                                           std::string&& value) {
   value_.assign(std::move(value));
 }
-#endif
 
 inline void InlinedStringField::Swap(InlinedStringField* from) {
   value_.swap(from->value_);
 }
 
-inline ::std::string* InlinedStringField::UnsafeMutablePointer() {
+inline std::string* InlinedStringField::UnsafeMutablePointer() {
   return &value_;
 }
 
 inline void InlinedStringField::UnsafeSetDefault(
-    const ::std::string* default_value) {
+    const std::string* default_value) {
   value_.assign(*default_value);
 }
 
-inline ::std::string* InlinedStringField::UnsafeArenaRelease(
-    const ::std::string* default_value, Arena* arena) {
+inline std::string* InlinedStringField::UnsafeArenaRelease(
+    const std::string* default_value, Arena* /*arena*/) {
   return ReleaseNoArena(default_value);
 }
 
 inline void InlinedStringField::UnsafeArenaSetAllocated(
-    const ::std::string* default_value, ::std::string* value, Arena* arena) {
+    const std::string* default_value, std::string* value, Arena* /*arena*/) {
   if (value == NULL) {
     value_.assign(*default_value);
   } else {

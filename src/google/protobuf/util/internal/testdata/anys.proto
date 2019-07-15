@@ -30,12 +30,12 @@
 
 syntax = "proto3";
 
-package google.protobuf.testing;
+package proto_util_converter.testing;
 
 import "google/protobuf/any.proto";
+import "google/protobuf/duration.proto";
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
-import "google/protobuf/duration.proto";
 import "google/protobuf/wrappers.proto";
 
 // Top-level test cases proto used by MarshallingTest. See description
@@ -58,9 +58,13 @@ message AnyTestCases {
   AnyWrapper any_with_message_containing_repeated_message = 14;
   AnyWrapper recursive_any_with_type_field_at_end = 15;
   AnyWrapper repeated_any = 16;
+  AnyWrapper empty_any_with_null_type_url = 17;
 
   google.protobuf.Any top_level_any = 50;
   google.protobuf.Any top_level_any_with_type_field_at_end = 51;
+  google.protobuf.Any top_level_any_with_pivot_one = 52;
+  google.protobuf.Any top_level_any_with_pivot_two = 53;
+  google.protobuf.Any top_level_any_unordered = 54;
 }
 
 message AnyWrapper {

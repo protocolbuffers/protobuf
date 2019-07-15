@@ -38,7 +38,7 @@ and the protobuf runtime for the language you want to build.
 
 You can simply run "make" to build the example for all languages (except for
 Go). However, since different language has different installation requirement,
-it will likely fail. It's better to follow individual instrutions below to
+it will likely fail. It's better to follow individual instructions below to
 build only the language you are interested in.
 
 ### C++
@@ -119,6 +119,26 @@ is created if it does not exist.  To view the data, run:
 
     ./list_people_go addressbook.data
 
-Observe that the C++, Python, and Java examples in this directory run in a
+Observe that the C++, Python, Java, and Dart examples in this directory run in a
 similar way and can view/modify files created by the Go example and vice
 versa.
+
+### Dart
+
+First, follow the instructions in [../README.md](../README.md) to install the Protocol Buffer Compiler (protoc).
+
+Then, install the Dart Protocol Buffer plugin as described [here](https://github.com/dart-lang/dart-protoc-plugin#how-to-build-and-use).
+Note, the executable `bin/protoc-gen-dart` must be in your `PATH` for `protoc` to find it.
+
+Build the Dart samples in this directory with `make dart`.
+
+To run the examples:
+
+```sh
+$ dart add_person.dart addressbook.data
+$ dart list_people.dart addressbook.data
+```
+
+The two programs take a protocol buffer encoded file as their parameter.
+The first can be used to add a person to the file. The file is created
+if it does not exist. The second displays the data in the file.

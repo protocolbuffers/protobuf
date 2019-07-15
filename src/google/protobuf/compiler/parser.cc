@@ -38,6 +38,7 @@
 #include <limits>
 #include <unordered_map>
 
+
 #include <google/protobuf/stubs/hash.h>
 
 #include <google/protobuf/stubs/casts.h>
@@ -59,28 +60,28 @@ using internal::WireFormat;
 
 namespace {
 
-typedef std::unordered_map<string, FieldDescriptorProto::Type> TypeNameMap;
+typedef std::unordered_map<std::string, FieldDescriptorProto::Type> TypeNameMap;
 
 TypeNameMap MakeTypeNameTable() {
   TypeNameMap result;
 
-  result["double"  ] = FieldDescriptorProto::TYPE_DOUBLE;
-  result["float"   ] = FieldDescriptorProto::TYPE_FLOAT;
-  result["uint64"  ] = FieldDescriptorProto::TYPE_UINT64;
-  result["fixed64" ] = FieldDescriptorProto::TYPE_FIXED64;
-  result["fixed32" ] = FieldDescriptorProto::TYPE_FIXED32;
-  result["bool"    ] = FieldDescriptorProto::TYPE_BOOL;
-  result["string"  ] = FieldDescriptorProto::TYPE_STRING;
-  result["group"   ] = FieldDescriptorProto::TYPE_GROUP;
+  result["double"] = FieldDescriptorProto::TYPE_DOUBLE;
+  result["float"] = FieldDescriptorProto::TYPE_FLOAT;
+  result["uint64"] = FieldDescriptorProto::TYPE_UINT64;
+  result["fixed64"] = FieldDescriptorProto::TYPE_FIXED64;
+  result["fixed32"] = FieldDescriptorProto::TYPE_FIXED32;
+  result["bool"] = FieldDescriptorProto::TYPE_BOOL;
+  result["string"] = FieldDescriptorProto::TYPE_STRING;
+  result["group"] = FieldDescriptorProto::TYPE_GROUP;
 
-  result["bytes"   ] = FieldDescriptorProto::TYPE_BYTES;
-  result["uint32"  ] = FieldDescriptorProto::TYPE_UINT32;
+  result["bytes"] = FieldDescriptorProto::TYPE_BYTES;
+  result["uint32"] = FieldDescriptorProto::TYPE_UINT32;
   result["sfixed32"] = FieldDescriptorProto::TYPE_SFIXED32;
   result["sfixed64"] = FieldDescriptorProto::TYPE_SFIXED64;
-  result["int32"   ] = FieldDescriptorProto::TYPE_INT32;
-  result["int64"   ] = FieldDescriptorProto::TYPE_INT64;
-  result["sint32"  ] = FieldDescriptorProto::TYPE_SINT32;
-  result["sint64"  ] = FieldDescriptorProto::TYPE_SINT64;
+  result["int32"] = FieldDescriptorProto::TYPE_INT32;
+  result["int64"] = FieldDescriptorProto::TYPE_INT64;
+  result["sint32"] = FieldDescriptorProto::TYPE_SINT32;
+  result["sint64"] = FieldDescriptorProto::TYPE_SINT64;
 
   return result;
 }
@@ -89,8 +90,8 @@ const TypeNameMap kTypeNames = MakeTypeNameTable();
 
 // Camel-case the field name and append "Entry" for generated map entry name.
 // e.g. map<KeyType, ValueType> foo_map => FooMapEntry
-string MapEntryName(const string& field_name) {
-  string result;
+std::string MapEntryName(const std::string& field_name) {
+  std::string result;
   static const char kSuffix[] = "Entry";
   result.reserve(field_name.size() + sizeof(kSuffix));
   bool cap_next = true;
@@ -113,26 +114,81 @@ string MapEntryName(const string& field_name) {
   return result;
 }
 
+bool IsUppercase(char c) { return c >= 'A' && c <= 'Z'; }
+
+bool IsLowercase(char c) { return c >= 'a' && c <= 'z'; }
+
+bool IsNumber(char c) { return c >= '0' && c <= '9'; }
+
+bool IsUpperCamelCase(const string& name) {
+  if (name.empty()) {
+    return true;
+  }
+  // Name must start with an upper case character.
+  if (!IsUppercase(name[0])) {
+    return false;
+  }
+  // Must not contains underscore.
+  for (int i = 1; i < name.length(); i++) {
+    if (name[i] == '_') {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool IsUpperUnderscore(const string& name) {
+  for (int i = 0; i < name.length(); i++) {
+    const char c = name[i];
+    if (!IsUppercase(c) && c != '_' && !IsNumber(c)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool IsLowerUnderscore(const string& name) {
+  for (int i = 0; i < name.length(); i++) {
+    const char c = name[i];
+    if (!IsLowercase(c) && c != '_' && !IsNumber(c)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool IsNumberFollowUnderscore(const string& name) {
+  for (int i = 1; i < name.length(); i++) {
+    const char c = name[i];
+    if (IsNumber(c) && name[i - 1] == '_') {
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // anonymous namespace
 
 // Makes code slightly more readable.  The meaning of "DO(foo)" is
 // "Execute foo and fail if it fails.", where failure is indicated by
 // returning false.
-#define DO(STATEMENT) if (STATEMENT) {} else return false
+#define DO(STATEMENT) \
+  if (STATEMENT) {    \
+  } else              \
+    return false
 
 // ===================================================================
 
 Parser::Parser()
-  : input_(NULL),
-    error_collector_(NULL),
-    source_location_table_(NULL),
-    had_errors_(false),
-    require_syntax_identifier_(false),
-    stop_after_syntax_identifier_(false) {
+    : input_(NULL),
+      error_collector_(NULL),
+      source_location_table_(NULL),
+      had_errors_(false),
+      require_syntax_identifier_(false),
+      stop_after_syntax_identifier_(false) {
 }
 
-Parser::~Parser() {
-}
+Parser::~Parser() {}
 
 // ===================================================================
 
@@ -144,9 +200,7 @@ inline bool Parser::LookingAtType(io::Tokenizer::TokenType token_type) {
   return input_->current().type == token_type;
 }
 
-inline bool Parser::AtEnd() {
-  return LookingAtType(io::Tokenizer::TYPE_END);
-}
+inline bool Parser::AtEnd() { return LookingAtType(io::Tokenizer::TYPE_END); }
 
 bool Parser::TryConsume(const char* text) {
   if (LookingAt(text)) {
@@ -175,7 +229,7 @@ bool Parser::Consume(const char* text) {
   }
 }
 
-bool Parser::ConsumeIdentifier(string* output, const char* error) {
+bool Parser::ConsumeIdentifier(std::string* output, const char* error) {
   if (LookingAtType(io::Tokenizer::TYPE_IDENTIFIER)) {
     *output = input_->current().text;
     input_->Next();
@@ -189,8 +243,8 @@ bool Parser::ConsumeIdentifier(string* output, const char* error) {
 bool Parser::ConsumeInteger(int* output, const char* error) {
   if (LookingAtType(io::Tokenizer::TYPE_INTEGER)) {
     uint64 value = 0;
-    if (!io::Tokenizer::ParseInteger(input_->current().text,
-                                     kint32max, &value)) {
+    if (!io::Tokenizer::ParseInteger(input_->current().text, kint32max,
+                                     &value)) {
       AddError("Integer out of range.");
       // We still return true because we did, in fact, parse an integer.
     }
@@ -242,8 +296,8 @@ bool Parser::ConsumeNumber(double* output, const char* error) {
   } else if (LookingAtType(io::Tokenizer::TYPE_INTEGER)) {
     // Also accept integers.
     uint64 value = 0;
-    if (!io::Tokenizer::ParseInteger(input_->current().text,
-                                     kuint64max, &value)) {
+    if (!io::Tokenizer::ParseInteger(input_->current().text, kuint64max,
+                                     &value)) {
       AddError("Integer out of range.");
       // We still return true because we did, in fact, parse a number.
     }
@@ -264,7 +318,7 @@ bool Parser::ConsumeNumber(double* output, const char* error) {
   }
 }
 
-bool Parser::ConsumeString(string* output, const char* error) {
+bool Parser::ConsumeString(std::string* output, const char* error) {
   if (LookingAtType(io::Tokenizer::TYPE_STRING)) {
     io::Tokenizer::ParseString(input_->current().text, output);
     input_->Next();
@@ -280,11 +334,11 @@ bool Parser::ConsumeString(string* output, const char* error) {
   }
 }
 
-bool Parser::TryConsumeEndOfDeclaration(
-    const char* text, const LocationRecorder* location) {
+bool Parser::TryConsumeEndOfDeclaration(const char* text,
+                                        const LocationRecorder* location) {
   if (LookingAt(text)) {
-    string leading, trailing;
-    std::vector<string> detached;
+    std::string leading, trailing;
+    std::vector<std::string> detached;
     input_->NextWithComments(&trailing, &detached, &leading);
 
     // Save the leading comments for next time, and recall the leading comments
@@ -311,8 +365,8 @@ bool Parser::TryConsumeEndOfDeclaration(
   }
 }
 
-bool Parser::ConsumeEndOfDeclaration(
-    const char* text, const LocationRecorder* location) {
+bool Parser::ConsumeEndOfDeclaration(const char* text,
+                                     const LocationRecorder* location) {
   if (TryConsumeEndOfDeclaration(text, location)) {
     return true;
   } else {
@@ -323,15 +377,22 @@ bool Parser::ConsumeEndOfDeclaration(
 
 // -------------------------------------------------------------------
 
-void Parser::AddError(int line, int column, const string& error) {
+void Parser::AddError(int line, int column, const std::string& error) {
   if (error_collector_ != NULL) {
     error_collector_->AddError(line, column, error);
   }
   had_errors_ = true;
 }
 
-void Parser::AddError(const string& error) {
+void Parser::AddError(const std::string& error) {
   AddError(input_->current().line, input_->current().column, error);
+}
+
+void Parser::AddWarning(const string& warning) {
+  if (error_collector_ != nullptr) {
+    error_collector_->AddWarning(input_->current().line,
+                                 input_->current().column, warning);
+  }
 }
 
 // -------------------------------------------------------------------
@@ -407,11 +468,20 @@ void Parser::LocationRecorder::EndAt(const io::Tokenizer::Token& token) {
   location_->add_span(token.end_column);
 }
 
-void Parser::LocationRecorder::RecordLegacyLocation(const Message* descriptor,
+void Parser::LocationRecorder::RecordLegacyLocation(
+    const Message* descriptor,
     DescriptorPool::ErrorCollector::ErrorLocation location) {
   if (parser_->source_location_table_ != NULL) {
     parser_->source_location_table_->Add(
         descriptor, location, location_->span(0), location_->span(1));
+  }
+}
+
+void Parser::LocationRecorder::RecordLegacyImportLocation(
+    const Message* descriptor, const string& name) {
+  if (parser_->source_location_table_ != nullptr) {
+    parser_->source_location_table_->AddImport(
+        descriptor, name, location_->span(0), location_->span(1));
   }
 }
 
@@ -420,8 +490,8 @@ int Parser::LocationRecorder::CurrentPathSize() const {
 }
 
 void Parser::LocationRecorder::AttachComments(
-    string* leading, string* trailing,
-    std::vector<string>* detached_comments) const {
+    std::string* leading, std::string* trailing,
+    std::vector<std::string>* detached_comments) const {
   GOOGLE_CHECK(!location_->has_leading_comments());
   GOOGLE_CHECK(!location_->has_trailing_comments());
 
@@ -432,8 +502,7 @@ void Parser::LocationRecorder::AttachComments(
     location_->mutable_trailing_comments()->swap(*trailing);
   }
   for (int i = 0; i < detached_comments->size(); ++i) {
-    location_->add_leading_detached_comments()->swap(
-        (*detached_comments)[i]);
+    location_->add_leading_detached_comments()->swap((*detached_comments)[i]);
   }
   detached_comments->clear();
 }
@@ -495,7 +564,7 @@ bool Parser::ValidateEnum(const EnumDescriptorProto* proto) {
   }
 
   if (has_allow_alias && !allow_alias) {
-    string error =
+    std::string error =
         "\"" + proto->name() +
         "\" declares 'option allow_alias = false;' which has no effect. "
         "Please remove the declaration.";
@@ -507,7 +576,7 @@ bool Parser::ValidateEnum(const EnumDescriptorProto* proto) {
   std::set<int> used_values;
   bool has_duplicates = false;
   for (int i = 0; i < proto->value_size(); ++i) {
-    const EnumValueDescriptorProto enum_value = proto->value(i);
+    const EnumValueDescriptorProto& enum_value = proto->value(i);
     if (used_values.find(enum_value.number()) != used_values.end()) {
       has_duplicates = true;
       break;
@@ -516,7 +585,7 @@ bool Parser::ValidateEnum(const EnumDescriptorProto* proto) {
     }
   }
   if (allow_alias && !has_duplicates) {
-    string error =
+    std::string error =
         "\"" + proto->name() +
         "\" declares support for enum aliases but no enum values share field "
         "numbers. Please remove the unnecessary 'option allow_alias = true;' "
@@ -525,6 +594,19 @@ bool Parser::ValidateEnum(const EnumDescriptorProto* proto) {
     // and does not use it protect future authors.
     AddError(error);
     return false;
+  }
+
+  // Enforce that enum constants must be UPPER_CASE except in case of
+  // enum_alias.
+  if (!allow_alias) {
+    for (const auto& enum_value : proto->value()) {
+      if (!IsUpperUnderscore(enum_value.name())) {
+        AddWarning(
+            "Enum constant should be in UPPER_CASE. Found: " +
+            enum_value.name() +
+            ". See https://developers.google.com/protocol-buffers/docs/style");
+      }
+    }
   }
 
   return true;
@@ -550,6 +632,8 @@ bool Parser::Parse(io::Tokenizer* input, FileDescriptorProto* file) {
 
   {
     LocationRecorder root_location(this);
+    root_location.RecordLegacyLocation(file,
+                                       DescriptorPool::ErrorCollector::OTHER);
 
     if (require_syntax_identifier_ || LookingAt("syntax")) {
       if (!ParseSyntaxIdentifier(root_location)) {
@@ -560,8 +644,8 @@ bool Parser::Parse(io::Tokenizer* input, FileDescriptorProto* file) {
       // Store the syntax into the file.
       if (file != NULL) file->set_syntax(syntax_identifier_);
     } else if (!stop_after_syntax_identifier_) {
-      GOOGLE_LOG(WARNING) << "No syntax specified for the proto file: "
-                   << file->name() << ". Please use 'syntax = \"proto2\";' "
+      GOOGLE_LOG(WARNING) << "No syntax specified for the proto file: " << file->name()
+                   << ". Please use 'syntax = \"proto2\";' "
                    << "or 'syntax = \"proto3\";' to specify a syntax "
                    << "version. (Defaulted to proto2 syntax.)";
       syntax_identifier_ = "proto2";
@@ -600,7 +684,7 @@ bool Parser::ParseSyntaxIdentifier(const LocationRecorder& parent) {
       "File must begin with a syntax statement, e.g. 'syntax = \"proto2\";'."));
   DO(Consume("="));
   io::Tokenizer::Token syntax_token = input_->current();
-  string syntax;
+  std::string syntax;
   DO(ConsumeString(&syntax, "Expected syntax identifier."));
   DO(ConsumeEndOfDeclaration(";", &syntax_location));
 
@@ -609,8 +693,9 @@ bool Parser::ParseSyntaxIdentifier(const LocationRecorder& parent) {
   if (syntax != "proto2" && syntax != "proto3" &&
       !stop_after_syntax_identifier_) {
     AddError(syntax_token.line, syntax_token.column,
-      "Unrecognized syntax identifier \"" + syntax + "\".  This parser "
-      "only recognizes \"proto2\" and \"proto3\".");
+             "Unrecognized syntax identifier \"" + syntax +
+                 "\".  This parser "
+                 "only recognizes \"proto2\" and \"proto3\".");
     return false;
   }
 
@@ -624,34 +709,34 @@ bool Parser::ParseTopLevelStatement(FileDescriptorProto* file,
     return true;
   } else if (LookingAt("message")) {
     LocationRecorder location(root_location,
-      FileDescriptorProto::kMessageTypeFieldNumber, file->message_type_size());
+                              FileDescriptorProto::kMessageTypeFieldNumber,
+                              file->message_type_size());
     return ParseMessageDefinition(file->add_message_type(), location, file);
   } else if (LookingAt("enum")) {
     LocationRecorder location(root_location,
-      FileDescriptorProto::kEnumTypeFieldNumber, file->enum_type_size());
+                              FileDescriptorProto::kEnumTypeFieldNumber,
+                              file->enum_type_size());
     return ParseEnumDefinition(file->add_enum_type(), location, file);
   } else if (LookingAt("service")) {
     LocationRecorder location(root_location,
-      FileDescriptorProto::kServiceFieldNumber, file->service_size());
+                              FileDescriptorProto::kServiceFieldNumber,
+                              file->service_size());
     return ParseServiceDefinition(file->add_service(), location, file);
   } else if (LookingAt("extend")) {
     LocationRecorder location(root_location,
-        FileDescriptorProto::kExtensionFieldNumber);
-    return ParseExtend(file->mutable_extension(),
-                       file->mutable_message_type(),
-                       root_location,
-                       FileDescriptorProto::kMessageTypeFieldNumber,
-                       location, file);
+                              FileDescriptorProto::kExtensionFieldNumber);
+    return ParseExtend(
+        file->mutable_extension(), file->mutable_message_type(), root_location,
+        FileDescriptorProto::kMessageTypeFieldNumber, location, file);
   } else if (LookingAt("import")) {
     return ParseImport(file->mutable_dependency(),
                        file->mutable_public_dependency(),
-                       file->mutable_weak_dependency(),
-                       root_location, file);
+                       file->mutable_weak_dependency(), root_location, file);
   } else if (LookingAt("package")) {
     return ParsePackage(file, root_location, file);
   } else if (LookingAt("option")) {
     LocationRecorder location(root_location,
-        FileDescriptorProto::kOptionsFieldNumber);
+                              FileDescriptorProto::kOptionsFieldNumber);
     return ParseOption(file->mutable_options(), location, file,
                        OPTION_STATEMENT);
   } else {
@@ -664,16 +749,21 @@ bool Parser::ParseTopLevelStatement(FileDescriptorProto* file,
 // Messages
 
 bool Parser::ParseMessageDefinition(
-    DescriptorProto* message,
-    const LocationRecorder& message_location,
+    DescriptorProto* message, const LocationRecorder& message_location,
     const FileDescriptorProto* containing_file) {
   DO(Consume("message"));
   {
     LocationRecorder location(message_location,
                               DescriptorProto::kNameFieldNumber);
-    location.RecordLegacyLocation(
-        message, DescriptorPool::ErrorCollector::NAME);
+    location.RecordLegacyLocation(message,
+                                  DescriptorPool::ErrorCollector::NAME);
     DO(ConsumeIdentifier(message->mutable_name(), "Expected message name."));
+    if (!IsUpperCamelCase(message->name())) {
+      AddWarning(
+          "Message name should be in UpperCamelCase. Found: " +
+          message->name() +
+          ". See https://developers.google.com/protocol-buffers/docs/style");
+    }
   }
   DO(ParseMessageBlock(message, message_location, containing_file));
   return true;
@@ -701,9 +791,8 @@ bool IsMessageSetWireFormatMessage(const DescriptorProto& message) {
 // tag number can only be determined after all options have been parsed.
 void AdjustExtensionRangesWithMaxEndNumber(DescriptorProto* message) {
   const bool is_message_set = IsMessageSetWireFormatMessage(*message);
-  const int max_extension_number = is_message_set ?
-      kint32max :
-      FieldDescriptor::kMaxNumber + 1;
+  const int max_extension_number =
+      is_message_set ? kint32max : FieldDescriptor::kMaxNumber + 1;
   for (int i = 0; i < message->extension_range_size(); ++i) {
     if (message->extension_range(i).end() == kMaxRangeSentinel) {
       message->mutable_extension_range(i)->set_end(max_extension_number);
@@ -716,9 +805,8 @@ void AdjustExtensionRangesWithMaxEndNumber(DescriptorProto* message) {
 // tag number can only be determined after all options have been parsed.
 void AdjustReservedRangesWithMaxEndNumber(DescriptorProto* message) {
   const bool is_message_set = IsMessageSetWireFormatMessage(*message);
-  const int max_field_number = is_message_set ?
-      kint32max :
-      FieldDescriptor::kMaxNumber + 1;
+  const int max_field_number =
+      is_message_set ? kint32max : FieldDescriptor::kMaxNumber + 1;
   for (int i = 0; i < message->reserved_range_size(); ++i) {
     if (message->reserved_range(i).end() == kMaxRangeSentinel) {
       message->mutable_reserved_range(i)->set_end(max_field_number);
@@ -783,34 +871,28 @@ bool Parser::ParseMessageStatement(DescriptorProto* message,
     LocationRecorder location(message_location,
                               DescriptorProto::kExtensionFieldNumber);
     return ParseExtend(message->mutable_extension(),
-                       message->mutable_nested_type(),
-                       message_location,
-                       DescriptorProto::kNestedTypeFieldNumber,
-                       location, containing_file);
+                       message->mutable_nested_type(), message_location,
+                       DescriptorProto::kNestedTypeFieldNumber, location,
+                       containing_file);
   } else if (LookingAt("option")) {
     LocationRecorder location(message_location,
                               DescriptorProto::kOptionsFieldNumber);
-    return ParseOption(message->mutable_options(), location,
-                       containing_file, OPTION_STATEMENT);
+    return ParseOption(message->mutable_options(), location, containing_file,
+                       OPTION_STATEMENT);
   } else if (LookingAt("oneof")) {
     int oneof_index = message->oneof_decl_size();
-    LocationRecorder oneof_location(message_location,
-                                    DescriptorProto::kOneofDeclFieldNumber,
-                                    oneof_index);
+    LocationRecorder oneof_location(
+        message_location, DescriptorProto::kOneofDeclFieldNumber, oneof_index);
 
-    return ParseOneof(message->add_oneof_decl(), message,
-                      oneof_index, oneof_location, message_location,
-                      containing_file);
+    return ParseOneof(message->add_oneof_decl(), message, oneof_index,
+                      oneof_location, message_location, containing_file);
   } else {
     LocationRecorder location(message_location,
                               DescriptorProto::kFieldFieldNumber,
                               message->field_size());
-    return ParseMessageField(message->add_field(),
-                             message->mutable_nested_type(),
-                             message_location,
-                             DescriptorProto::kNestedTypeFieldNumber,
-                             location,
-                             containing_file);
+    return ParseMessageField(
+        message->add_field(), message->mutable_nested_type(), message_location,
+        DescriptorProto::kNestedTypeFieldNumber, location, containing_file);
   }
 }
 
@@ -838,13 +920,11 @@ bool Parser::ParseMessageField(FieldDescriptorProto* field,
 
   return ParseMessageFieldNoLabel(field, messages, parent_location,
                                   location_field_number_for_nested_type,
-                                  field_location,
-                                  containing_file);
+                                  field_location, containing_file);
 }
 
 bool Parser::ParseMessageFieldNoLabel(
-    FieldDescriptorProto* field,
-    RepeatedPtrField<DescriptorProto>* messages,
+    FieldDescriptorProto* field, RepeatedPtrField<DescriptorProto>* messages,
     const LocationRecorder& parent_location,
     int location_field_number_for_nested_type,
     const LocationRecorder& field_location,
@@ -857,7 +937,7 @@ bool Parser::ParseMessageFieldNoLabel(
 
     bool type_parsed = false;
     FieldDescriptorProto::Type type = FieldDescriptorProto::TYPE_INT32;
-    string type_name;
+    std::string type_name;
 
     // Special case map field. We only treat the field as a map field if the
     // field type name starts with the word "map" with a following "<".
@@ -928,6 +1008,18 @@ bool Parser::ParseMessageFieldNoLabel(
                               FieldDescriptorProto::kNameFieldNumber);
     location.RecordLegacyLocation(field, DescriptorPool::ErrorCollector::NAME);
     DO(ConsumeIdentifier(field->mutable_name(), "Expected field name."));
+
+    if (!IsLowerUnderscore(field->name())) {
+      AddWarning(
+          "Field name should be lowercase. Found: " + field->name() +
+          ". See: https://developers.google.com/protocol-buffers/docs/style");
+    }
+    if (IsNumberFollowUnderscore(field->name())) {
+      AddWarning(
+          "Number should not come right after an underscore. Found: " +
+          field->name() +
+          ". See: https://developers.google.com/protocol-buffers/docs/style");
+    }
   }
   DO(Consume("=", "Missing field number."));
 
@@ -935,8 +1027,8 @@ bool Parser::ParseMessageFieldNoLabel(
   {
     LocationRecorder location(field_location,
                               FieldDescriptorProto::kNumberFieldNumber);
-    location.RecordLegacyLocation(
-        field, DescriptorPool::ErrorCollector::NUMBER);
+    location.RecordLegacyLocation(field,
+                                  DescriptorPool::ErrorCollector::NUMBER);
     int number;
     DO(ConsumeInteger(&number, "Expected field number."));
     field->set_number(number);
@@ -963,8 +1055,8 @@ bool Parser::ParseMessageFieldNoLabel(
                                 DescriptorProto::kNameFieldNumber);
       location.StartAt(name_token);
       location.EndAt(name_token);
-      location.RecordLegacyLocation(
-          group, DescriptorPool::ErrorCollector::NAME);
+      location.RecordLegacyLocation(group,
+                                    DescriptorPool::ErrorCollector::NAME);
     }
 
     // The field's type_name also comes from the name.  Confusing!
@@ -980,7 +1072,7 @@ bool Parser::ParseMessageFieldNoLabel(
     // not use groups; it should use nested messages.
     if (group->name()[0] < 'A' || 'Z' < group->name()[0]) {
       AddError(name_token.line, name_token.column,
-        "Group names must start with a capital letter.");
+               "Group names must start with a capital letter.");
     }
     LowerString(field->mutable_name());
 
@@ -1007,7 +1099,7 @@ void Parser::GenerateMapEntry(const MapField& map_field,
                               FieldDescriptorProto* field,
                               RepeatedPtrField<DescriptorProto>* messages) {
   DescriptorProto* entry = messages->Add();
-  string entry_name = MapEntryName(field->name());
+  std::string entry_name = MapEntryName(field->name());
   field->set_type_name(entry_name);
   entry->set_name(entry_name);
   entry->mutable_options()->set_map_entry(true);
@@ -1056,12 +1148,12 @@ void Parser::GenerateMapEntry(const MapField& map_field,
         option.name(0).name_part() == "enforce_utf8" &&
         !option.name(0).is_extension()) {
       if (key_field->type() == FieldDescriptorProto::TYPE_STRING) {
-        key_field->mutable_options()->add_uninterpreted_option()
-            ->CopyFrom(option);
+        key_field->mutable_options()->add_uninterpreted_option()->CopyFrom(
+            option);
       }
       if (value_field->type() == FieldDescriptorProto::TYPE_STRING) {
-        value_field->mutable_options()->add_uninterpreted_option()
-            ->CopyFrom(option);
+        value_field->mutable_options()->add_uninterpreted_option()->CopyFrom(
+            option);
       }
     }
   }
@@ -1087,8 +1179,8 @@ bool Parser::ParseFieldOptions(FieldDescriptorProto* field,
       // Like default value, this "json_name" is not an actual option.
       DO(ParseJsonName(field, field_location, containing_file));
     } else {
-      DO(ParseOption(field->mutable_options(), location,
-                     containing_file, OPTION_ASSIGNMENT));
+      DO(ParseOption(field->mutable_options(), location, containing_file,
+                     OPTION_ASSIGNMENT));
     }
   } while (TryConsume(","));
 
@@ -1097,8 +1189,7 @@ bool Parser::ParseFieldOptions(FieldDescriptorProto* field,
 }
 
 bool Parser::ParseDefaultAssignment(
-    FieldDescriptorProto* field,
-    const LocationRecorder& field_location,
+    FieldDescriptorProto* field, const LocationRecorder& field_location,
     const FileDescriptorProto* containing_file) {
   if (field->has_default_value()) {
     AddError("Already set option \"default\".");
@@ -1110,9 +1201,9 @@ bool Parser::ParseDefaultAssignment(
 
   LocationRecorder location(field_location,
                             FieldDescriptorProto::kDefaultValueFieldNumber);
-  location.RecordLegacyLocation(
-      field, DescriptorPool::ErrorCollector::DEFAULT_VALUE);
-  string* default_value = field->mutable_default_value();
+  location.RecordLegacyLocation(field,
+                                DescriptorPool::ErrorCollector::DEFAULT_VALUE);
+  std::string* default_value = field->mutable_default_value();
 
   if (!field->has_type()) {
     // The field has a type name, but we don't know if it is a message or an
@@ -1154,7 +1245,7 @@ bool Parser::ParseDefaultAssignment(
       DO(ConsumeInteger64(max_value, &value,
                           "Expected integer for field default value."));
       // And stringify it again.
-      default_value->append(SimpleItoa(value));
+      default_value->append(StrCat(value));
       break;
     }
 
@@ -1177,7 +1268,7 @@ bool Parser::ParseDefaultAssignment(
       DO(ConsumeInteger64(max_value, &value,
                           "Expected integer for field default value."));
       // And stringify it again.
-      default_value->append(SimpleItoa(value));
+      default_value->append(StrCat(value));
       break;
     }
 
@@ -1210,7 +1301,8 @@ bool Parser::ParseDefaultAssignment(
       // Note: When file opton java_string_check_utf8 is true, if a
       // non-string representation (eg byte[]) is later supported, it must
       // be checked for UTF-8-ness.
-      DO(ConsumeString(default_value, "Expected string for field default "
+      DO(ConsumeString(default_value,
+                       "Expected string for field default "
                        "value."));
       break;
 
@@ -1220,8 +1312,9 @@ bool Parser::ParseDefaultAssignment(
       break;
 
     case FieldDescriptorProto::TYPE_ENUM:
-      DO(ConsumeIdentifier(default_value, "Expected enum identifier for field "
-                                          "default value."));
+      DO(ConsumeIdentifier(default_value,
+                           "Expected enum identifier for field "
+                           "default value."));
       break;
 
     case FieldDescriptorProto::TYPE_MESSAGE:
@@ -1233,34 +1326,37 @@ bool Parser::ParseDefaultAssignment(
   return true;
 }
 
-bool Parser::ParseJsonName(
-    FieldDescriptorProto* field,
-    const LocationRecorder& field_location,
-    const FileDescriptorProto* containing_file) {
+bool Parser::ParseJsonName(FieldDescriptorProto* field,
+                           const LocationRecorder& field_location,
+                           const FileDescriptorProto* containing_file) {
   if (field->has_json_name()) {
     AddError("Already set option \"json_name\".");
     field->clear_json_name();
   }
 
+  LocationRecorder location(field_location,
+                            FieldDescriptorProto::kJsonNameFieldNumber);
+  location.RecordLegacyLocation(field,
+                                DescriptorPool::ErrorCollector::OPTION_NAME);
+
   DO(Consume("json_name"));
   DO(Consume("="));
 
-  LocationRecorder location(field_location,
-                            FieldDescriptorProto::kJsonNameFieldNumber);
-  location.RecordLegacyLocation(
+  LocationRecorder value_location(location);
+  value_location.RecordLegacyLocation(
       field, DescriptorPool::ErrorCollector::OPTION_VALUE);
+
   DO(ConsumeString(field->mutable_json_name(),
                    "Expected string for JSON name."));
   return true;
 }
 
-
 bool Parser::ParseOptionNamePart(UninterpretedOption* uninterpreted_option,
                                  const LocationRecorder& part_location,
                                  const FileDescriptorProto* containing_file) {
   UninterpretedOption::NamePart* name = uninterpreted_option->add_name();
-  string identifier;  // We parse identifiers into this string.
-  if (LookingAt("(")) {  // This is an extension.
+  std::string identifier;  // We parse identifiers into this string.
+  if (LookingAt("(")) {    // This is an extension.
     DO(Consume("("));
 
     {
@@ -1292,7 +1388,7 @@ bool Parser::ParseOptionNamePart(UninterpretedOption* uninterpreted_option,
   return true;
 }
 
-bool Parser::ParseUninterpretedBlock(string* value) {
+bool Parser::ParseUninterpretedBlock(std::string* value) {
   // Note that enclosing braces are not added to *value.
   // We do NOT use ConsumeEndOfStatement for this brace because it's delimiting
   // an expression, not a block of statements.
@@ -1324,8 +1420,8 @@ bool Parser::ParseOption(Message* options,
                          const FileDescriptorProto* containing_file,
                          OptionStyle style) {
   // Create an entry in the uninterpreted_option field.
-  const FieldDescriptor* uninterpreted_option_field = options->GetDescriptor()->
-      FindFieldByName("uninterpreted_option");
+  const FieldDescriptor* uninterpreted_option_field =
+      options->GetDescriptor()->FindFieldByName("uninterpreted_option");
   GOOGLE_CHECK(uninterpreted_option_field != NULL)
       << "No field named \"uninterpreted_option\" in the Options proto.";
 
@@ -1339,9 +1435,9 @@ bool Parser::ParseOption(Message* options,
     DO(Consume("option"));
   }
 
-  UninterpretedOption* uninterpreted_option = down_cast<UninterpretedOption*>(
-      options->GetReflection()->AddMessage(options,
-                                           uninterpreted_option_field));
+  UninterpretedOption* uninterpreted_option =
+      down_cast<UninterpretedOption*>(options->GetReflection()->AddMessage(
+          options, uninterpreted_option_field));
 
   // Parse dot-separated name.
   {
@@ -1393,7 +1489,7 @@ bool Parser::ParseOption(Message* options,
           AddError("Invalid '-' symbol before identifier.");
           return false;
         }
-        string value;
+        std::string value;
         DO(ConsumeIdentifier(&value, "Expected identifier."));
         uninterpreted_option->set_identifier_value(value);
         break;
@@ -1431,7 +1527,7 @@ bool Parser::ParseOption(Message* options,
           AddError("Invalid '-' symbol before string.");
           return false;
         }
-        string value;
+        std::string value;
         DO(ConsumeString(&value, "Expected string."));
         uninterpreted_option->set_string_value(value);
         break;
@@ -1472,8 +1568,8 @@ bool Parser::ParseExtensions(DescriptorProto* message,
                               message->extension_range_size());
 
     DescriptorProto::ExtensionRange* range = message->add_extension_range();
-    location.RecordLegacyLocation(
-        range, DescriptorPool::ErrorCollector::NUMBER);
+    location.RecordLegacyLocation(range,
+                                  DescriptorPool::ErrorCollector::NUMBER);
 
     int start, end;
     io::Tokenizer::Token start_token;
@@ -1538,8 +1634,8 @@ bool Parser::ParseExtensions(DescriptorProto* message,
     // Then copy the extension range options to all of the other ranges we've
     // parsed.
     for (int i = old_range_size + 1; i < message->extension_range_size(); i++) {
-      message->mutable_extension_range(i)->mutable_options()
-          ->CopyFrom(*options);
+      message->mutable_extension_range(i)->mutable_options()->CopyFrom(
+          *options);
     }
     // and copy source locations to the other ranges, too
     for (int i = old_range_size; i < message->extension_range_size(); i++) {
@@ -1564,15 +1660,18 @@ bool Parser::ParseExtensions(DescriptorProto* message,
 // name literals.
 bool Parser::ParseReserved(DescriptorProto* message,
                            const LocationRecorder& message_location) {
+  io::Tokenizer::Token start_token = input_->current();
   // Parse the declaration.
   DO(Consume("reserved"));
   if (LookingAtType(io::Tokenizer::TYPE_STRING)) {
     LocationRecorder location(message_location,
                               DescriptorProto::kReservedNameFieldNumber);
+    location.StartAt(start_token);
     return ParseReservedNames(message, location);
   } else {
     LocationRecorder location(message_location,
                               DescriptorProto::kReservedRangeFieldNumber);
+    location.StartAt(start_token);
     return ParseReservedNumbers(message, location);
   }
 }
@@ -1600,9 +1699,8 @@ bool Parser::ParseReservedNumbers(DescriptorProto* message,
       LocationRecorder start_location(
           location, DescriptorProto::ReservedRange::kStartFieldNumber);
       start_token = input_->current();
-      DO(ConsumeInteger(&start, (first ?
-                                 "Expected field name or number range." :
-                                 "Expected field number range.")));
+      DO(ConsumeInteger(&start, (first ? "Expected field name or number range."
+                                       : "Expected field number range.")));
     }
 
     if (TryConsume("to")) {
@@ -1638,16 +1736,19 @@ bool Parser::ParseReservedNumbers(DescriptorProto* message,
 }
 
 bool Parser::ParseReserved(EnumDescriptorProto* message,
-                          const LocationRecorder& message_location) {
+                           const LocationRecorder& message_location) {
+  io::Tokenizer::Token start_token = input_->current();
   // Parse the declaration.
   DO(Consume("reserved"));
   if (LookingAtType(io::Tokenizer::TYPE_STRING)) {
     LocationRecorder location(message_location,
                               DescriptorProto::kReservedNameFieldNumber);
+    location.StartAt(start_token);
     return ParseReservedNames(message, location);
   } else {
     LocationRecorder location(message_location,
                               DescriptorProto::kReservedRangeFieldNumber);
+    location.StartAt(start_token);
     return ParseReservedNumbers(message, location);
   }
 }
@@ -1676,9 +1777,9 @@ bool Parser::ParseReservedNumbers(EnumDescriptorProto* message,
       LocationRecorder start_location(
           location, EnumDescriptorProto::EnumReservedRange::kStartFieldNumber);
       start_token = input_->current();
-      DO(ConsumeSignedInteger(&start, (first ?
-                                 "Expected enum value or number range." :
-                                 "Expected enum number range.")));
+      DO(ConsumeSignedInteger(&start,
+                              (first ? "Expected enum value or number range."
+                                     : "Expected enum number range.")));
     }
 
     if (TryConsume("to")) {
@@ -1718,7 +1819,7 @@ bool Parser::ParseExtend(RepeatedPtrField<FieldDescriptorProto>* extensions,
 
   // Parse the extendee type.
   io::Tokenizer::Token extendee_start = input_->current();
-  string extendee;
+  std::string extendee;
   DO(ParseUserDefinedType(&extendee));
   io::Tokenizer::Token extendee_end = input_->previous();
 
@@ -1754,8 +1855,7 @@ bool Parser::ParseExtend(RepeatedPtrField<FieldDescriptorProto>* extensions,
     field->set_extendee(extendee);
 
     if (!ParseMessageField(field, messages, parent_location,
-                           location_field_number_for_nested_type,
-                           location,
+                           location_field_number_for_nested_type, location,
                            containing_file)) {
       // This statement failed to parse.  Skip it, but keep looping to parse
       // other statements.
@@ -1767,8 +1867,7 @@ bool Parser::ParseExtend(RepeatedPtrField<FieldDescriptorProto>* extensions,
 }
 
 bool Parser::ParseOneof(OneofDescriptorProto* oneof_decl,
-                        DescriptorProto* containing_type,
-                        int oneof_index,
+                        DescriptorProto* containing_type, int oneof_index,
                         const LocationRecorder& oneof_location,
                         const LocationRecorder& containing_type_location,
                         const FileDescriptorProto* containing_file) {
@@ -1800,11 +1899,11 @@ bool Parser::ParseOneof(OneofDescriptorProto* oneof_decl,
 
     // Print a nice error if the user accidentally tries to place a label
     // on an individual member of a oneof.
-    if (LookingAt("required") ||
-        LookingAt("optional") ||
+    if (LookingAt("required") || LookingAt("optional") ||
         LookingAt("repeated")) {
-      AddError("Fields in oneofs must not have labels (required / optional "
-               "/ repeated).");
+      AddError(
+          "Fields in oneofs must not have labels (required / optional "
+          "/ repeated).");
       // We can continue parsing here because we understand what the user
       // meant.  The error report will still make parsing fail overall.
       input_->Next();
@@ -1818,12 +1917,10 @@ bool Parser::ParseOneof(OneofDescriptorProto* oneof_decl,
     field->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
     field->set_oneof_index(oneof_index);
 
-    if (!ParseMessageFieldNoLabel(field,
-                                  containing_type->mutable_nested_type(),
+    if (!ParseMessageFieldNoLabel(field, containing_type->mutable_nested_type(),
                                   containing_type_location,
                                   DescriptorProto::kNestedTypeFieldNumber,
-                                  field_location,
-                                  containing_file)) {
+                                  field_location, containing_file)) {
       // This statement failed to parse.  Skip it, but keep looping to parse
       // other statements.
       SkipStatement();
@@ -1844,8 +1941,8 @@ bool Parser::ParseEnumDefinition(EnumDescriptorProto* enum_type,
   {
     LocationRecorder location(enum_location,
                               EnumDescriptorProto::kNameFieldNumber);
-    location.RecordLegacyLocation(
-        enum_type, DescriptorPool::ErrorCollector::NAME);
+    location.RecordLegacyLocation(enum_type,
+                                  DescriptorPool::ErrorCollector::NAME);
     DO(ConsumeIdentifier(enum_type->mutable_name(), "Expected enum name."));
   }
 
@@ -1886,13 +1983,14 @@ bool Parser::ParseEnumStatement(EnumDescriptorProto* enum_type,
   } else if (LookingAt("option")) {
     LocationRecorder location(enum_location,
                               EnumDescriptorProto::kOptionsFieldNumber);
-    return ParseOption(enum_type->mutable_options(), location,
-                       containing_file, OPTION_STATEMENT);
+    return ParseOption(enum_type->mutable_options(), location, containing_file,
+                       OPTION_STATEMENT);
   } else if (LookingAt("reserved")) {
     return ParseReserved(enum_type, enum_location);
   } else {
     LocationRecorder location(enum_location,
-        EnumDescriptorProto::kValueFieldNumber, enum_type->value_size());
+                              EnumDescriptorProto::kValueFieldNumber,
+                              enum_type->value_size());
     return ParseEnumConstant(enum_type->add_value(), location, containing_file);
   }
 }
@@ -1904,8 +2002,8 @@ bool Parser::ParseEnumConstant(EnumValueDescriptorProto* enum_value,
   {
     LocationRecorder location(enum_value_location,
                               EnumValueDescriptorProto::kNameFieldNumber);
-    location.RecordLegacyLocation(
-        enum_value, DescriptorPool::ErrorCollector::NAME);
+    location.RecordLegacyLocation(enum_value,
+                                  DescriptorPool::ErrorCollector::NAME);
     DO(ConsumeIdentifier(enum_value->mutable_name(),
                          "Expected enum constant name."));
   }
@@ -1914,10 +2012,10 @@ bool Parser::ParseEnumConstant(EnumValueDescriptorProto* enum_value,
 
   // Parse value.
   {
-    LocationRecorder location(
-        enum_value_location, EnumValueDescriptorProto::kNumberFieldNumber);
-    location.RecordLegacyLocation(
-        enum_value, DescriptorPool::ErrorCollector::NUMBER);
+    LocationRecorder location(enum_value_location,
+                              EnumValueDescriptorProto::kNumberFieldNumber);
+    location.RecordLegacyLocation(enum_value,
+                                  DescriptorPool::ErrorCollector::NUMBER);
 
     int number;
     DO(ConsumeSignedInteger(&number, "Expected integer."));
@@ -1938,14 +2036,14 @@ bool Parser::ParseEnumConstantOptions(
     const FileDescriptorProto* containing_file) {
   if (!LookingAt("[")) return true;
 
-  LocationRecorder location(
-      enum_value_location, EnumValueDescriptorProto::kOptionsFieldNumber);
+  LocationRecorder location(enum_value_location,
+                            EnumValueDescriptorProto::kOptionsFieldNumber);
 
   DO(Consume("["));
 
   do {
-    DO(ParseOption(value->mutable_options(), location,
-                   containing_file, OPTION_ASSIGNMENT));
+    DO(ParseOption(value->mutable_options(), location, containing_file,
+                   OPTION_ASSIGNMENT));
   } while (TryConsume(","));
 
   DO(Consume("]"));
@@ -1956,16 +2054,15 @@ bool Parser::ParseEnumConstantOptions(
 // Services
 
 bool Parser::ParseServiceDefinition(
-    ServiceDescriptorProto* service,
-    const LocationRecorder& service_location,
+    ServiceDescriptorProto* service, const LocationRecorder& service_location,
     const FileDescriptorProto* containing_file) {
   DO(Consume("service"));
 
   {
     LocationRecorder location(service_location,
                               ServiceDescriptorProto::kNameFieldNumber);
-    location.RecordLegacyLocation(
-        service, DescriptorPool::ErrorCollector::NAME);
+    location.RecordLegacyLocation(service,
+                                  DescriptorPool::ErrorCollector::NAME);
     DO(ConsumeIdentifier(service->mutable_name(), "Expected service name."));
   }
 
@@ -2001,13 +2098,14 @@ bool Parser::ParseServiceStatement(ServiceDescriptorProto* service,
     // empty statement; ignore
     return true;
   } else if (LookingAt("option")) {
-    LocationRecorder location(
-        service_location, ServiceDescriptorProto::kOptionsFieldNumber);
-    return ParseOption(service->mutable_options(), location,
-                       containing_file, OPTION_STATEMENT);
+    LocationRecorder location(service_location,
+                              ServiceDescriptorProto::kOptionsFieldNumber);
+    return ParseOption(service->mutable_options(), location, containing_file,
+                       OPTION_STATEMENT);
   } else {
     LocationRecorder location(service_location,
-        ServiceDescriptorProto::kMethodFieldNumber, service->method_size());
+                              ServiceDescriptorProto::kMethodFieldNumber,
+                              service->method_size());
     return ParseServiceMethod(service->add_method(), location, containing_file);
   }
 }
@@ -2020,8 +2118,7 @@ bool Parser::ParseServiceMethod(MethodDescriptorProto* method,
   {
     LocationRecorder location(method_location,
                               MethodDescriptorProto::kNameFieldNumber);
-    location.RecordLegacyLocation(
-        method, DescriptorPool::ErrorCollector::NAME);
+    location.RecordLegacyLocation(method, DescriptorPool::ErrorCollector::NAME);
     DO(ConsumeIdentifier(method->mutable_name(), "Expected method name."));
   }
 
@@ -2031,16 +2128,16 @@ bool Parser::ParseServiceMethod(MethodDescriptorProto* method,
     if (LookingAt("stream")) {
       LocationRecorder location(
           method_location, MethodDescriptorProto::kClientStreamingFieldNumber);
-      location.RecordLegacyLocation(
-          method, DescriptorPool::ErrorCollector::OTHER);
+      location.RecordLegacyLocation(method,
+                                    DescriptorPool::ErrorCollector::OTHER);
       method->set_client_streaming(true);
       DO(Consume("stream"));
 
     }
     LocationRecorder location(method_location,
                               MethodDescriptorProto::kInputTypeFieldNumber);
-    location.RecordLegacyLocation(
-        method, DescriptorPool::ErrorCollector::INPUT_TYPE);
+    location.RecordLegacyLocation(method,
+                                  DescriptorPool::ErrorCollector::INPUT_TYPE);
     DO(ParseUserDefinedType(method->mutable_input_type()));
   }
   DO(Consume(")"));
@@ -2052,16 +2149,16 @@ bool Parser::ParseServiceMethod(MethodDescriptorProto* method,
     if (LookingAt("stream")) {
       LocationRecorder location(
           method_location, MethodDescriptorProto::kServerStreamingFieldNumber);
-      location.RecordLegacyLocation(
-          method, DescriptorPool::ErrorCollector::OTHER);
+      location.RecordLegacyLocation(method,
+                                    DescriptorPool::ErrorCollector::OTHER);
       DO(Consume("stream"));
       method->set_server_streaming(true);
 
     }
     LocationRecorder location(method_location,
                               MethodDescriptorProto::kOutputTypeFieldNumber);
-    location.RecordLegacyLocation(
-        method, DescriptorPool::ErrorCollector::OUTPUT_TYPE);
+    location.RecordLegacyLocation(method,
+                                  DescriptorPool::ErrorCollector::OUTPUT_TYPE);
     DO(ParseUserDefinedType(method->mutable_output_type()));
   }
   DO(Consume(")"));
@@ -2094,10 +2191,9 @@ bool Parser::ParseMethodOptions(const LocationRecorder& parent_location,
     if (TryConsumeEndOfDeclaration(";", NULL)) {
       // empty statement; ignore
     } else {
-      LocationRecorder location(parent_location,
-                                optionsFieldNumber);
-      if (!ParseOption(mutable_options, location,
-                       containing_file, OPTION_STATEMENT)) {
+      LocationRecorder location(parent_location, optionsFieldNumber);
+      if (!ParseOption(mutable_options, location, containing_file,
+                       OPTION_STATEMENT)) {
         // This statement failed to parse.  Skip it, but keep looping to
         // parse other statements.
         SkipStatement();
@@ -2126,7 +2222,7 @@ bool Parser::ParseLabel(FieldDescriptorProto::Label* label,
 }
 
 bool Parser::ParseType(FieldDescriptorProto::Type* type,
-                       string* type_name) {
+                       std::string* type_name) {
   TypeNameMap::const_iterator iter = kTypeNames.find(input_->current().text);
   if (iter != kTypeNames.end()) {
     *type = iter->second;
@@ -2137,7 +2233,7 @@ bool Parser::ParseType(FieldDescriptorProto::Type* type,
   return true;
 }
 
-bool Parser::ParseUserDefinedType(string* type_name) {
+bool Parser::ParseUserDefinedType(std::string* type_name) {
   type_name->clear();
 
   TypeNameMap::const_iterator iter = kTypeNames.find(input_->current().text);
@@ -2158,7 +2254,7 @@ bool Parser::ParseUserDefinedType(string* type_name) {
   if (TryConsume(".")) type_name->append(".");
 
   // Consume the first part of the name.
-  string identifier;
+  std::string identifier;
   DO(ConsumeIdentifier(&identifier, "Expected type name."));
   type_name->append(identifier);
 
@@ -2184,59 +2280,59 @@ bool Parser::ParsePackage(FileDescriptorProto* file,
     file->clear_package();
   }
 
+  LocationRecorder location(root_location,
+                            FileDescriptorProto::kPackageFieldNumber);
+  location.RecordLegacyLocation(file, DescriptorPool::ErrorCollector::NAME);
+
   DO(Consume("package"));
 
-  {
-    LocationRecorder location(root_location,
-                              FileDescriptorProto::kPackageFieldNumber);
-    location.RecordLegacyLocation(file, DescriptorPool::ErrorCollector::NAME);
-
-    while (true) {
-      string identifier;
-      DO(ConsumeIdentifier(&identifier, "Expected identifier."));
-      file->mutable_package()->append(identifier);
-      if (!TryConsume(".")) break;
-      file->mutable_package()->append(".");
-    }
-
-    location.EndAt(input_->previous());
-
-    DO(ConsumeEndOfDeclaration(";", &location));
+  while (true) {
+    std::string identifier;
+    DO(ConsumeIdentifier(&identifier, "Expected identifier."));
+    file->mutable_package()->append(identifier);
+    if (!TryConsume(".")) break;
+    file->mutable_package()->append(".");
   }
+
+  DO(ConsumeEndOfDeclaration(";", &location));
 
   return true;
 }
 
-bool Parser::ParseImport(RepeatedPtrField<string>* dependency,
+bool Parser::ParseImport(RepeatedPtrField<std::string>* dependency,
                          RepeatedField<int32>* public_dependency,
                          RepeatedField<int32>* weak_dependency,
                          const LocationRecorder& root_location,
                          const FileDescriptorProto* containing_file) {
+  LocationRecorder location(root_location,
+                            FileDescriptorProto::kDependencyFieldNumber,
+                            dependency->size());
+
   DO(Consume("import"));
+
   if (LookingAt("public")) {
-    LocationRecorder location(
+    LocationRecorder public_location(
         root_location, FileDescriptorProto::kPublicDependencyFieldNumber,
         public_dependency->size());
     DO(Consume("public"));
     *public_dependency->Add() = dependency->size();
   } else if (LookingAt("weak")) {
-    LocationRecorder location(
+    LocationRecorder weak_location(
         root_location, FileDescriptorProto::kWeakDependencyFieldNumber,
         weak_dependency->size());
+    weak_location.RecordLegacyImportLocation(containing_file, "weak");
     DO(Consume("weak"));
     *weak_dependency->Add() = dependency->size();
   }
-  {
-    LocationRecorder location(root_location,
-                              FileDescriptorProto::kDependencyFieldNumber,
-                              dependency->size());
-    DO(ConsumeString(dependency->Add(),
-      "Expected a string naming the file to import."));
 
-    location.EndAt(input_->previous());
+  string import_file;
+  DO(ConsumeString(&import_file,
+                   "Expected a string naming the file to import."));
+  *dependency->Add() = import_file;
+  location.RecordLegacyImportLocation(containing_file, import_file);
 
-    DO(ConsumeEndOfDeclaration(";", &location));
-  }
+  DO(ConsumeEndOfDeclaration(";", &location));
+
   return true;
 }
 
@@ -2247,16 +2343,32 @@ SourceLocationTable::~SourceLocationTable() {}
 
 bool SourceLocationTable::Find(
     const Message* descriptor,
-    DescriptorPool::ErrorCollector::ErrorLocation location,
-    int* line, int* column) const {
+    DescriptorPool::ErrorCollector::ErrorLocation location, int* line,
+    int* column) const {
   const std::pair<int, int>* result =
       FindOrNull(location_map_, std::make_pair(descriptor, location));
   if (result == NULL) {
-    *line   = -1;
+    *line = -1;
     *column = 0;
     return false;
   } else {
-    *line   = result->first;
+    *line = result->first;
+    *column = result->second;
+    return true;
+  }
+}
+
+bool SourceLocationTable::FindImport(const Message* descriptor,
+                                     const string& name, int* line,
+                                     int* column) const {
+  const std::pair<int, int>* result =
+      FindOrNull(import_location_map_, std::make_pair(descriptor, name));
+  if (result == nullptr) {
+    *line = -1;
+    *column = 0;
+    return false;
+  } else {
+    *line = result->first;
     *column = result->second;
     return true;
   }
@@ -2264,15 +2376,19 @@ bool SourceLocationTable::Find(
 
 void SourceLocationTable::Add(
     const Message* descriptor,
-    DescriptorPool::ErrorCollector::ErrorLocation location,
-    int line, int column) {
+    DescriptorPool::ErrorCollector::ErrorLocation location, int line,
+    int column) {
   location_map_[std::make_pair(descriptor, location)] =
       std::make_pair(line, column);
 }
 
-void SourceLocationTable::Clear() {
-  location_map_.clear();
+void SourceLocationTable::AddImport(const Message* descriptor,
+                                    const string& name, int line, int column) {
+  import_location_map_[std::make_pair(descriptor, name)] =
+      std::make_pair(line, column);
 }
+
+void SourceLocationTable::Clear() { location_map_.clear(); }
 
 }  // namespace compiler
 }  // namespace protobuf

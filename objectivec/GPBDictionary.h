@@ -109,7 +109,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndUInt32sUsingBlock:
-    (void (^)(uint32_t key, uint32_t value, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(uint32_t key, uint32_t value, BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -204,7 +204,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndInt32sUsingBlock:
-    (void (^)(uint32_t key, int32_t value, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(uint32_t key, int32_t value, BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -299,7 +299,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndUInt64sUsingBlock:
-    (void (^)(uint32_t key, uint64_t value, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(uint32_t key, uint64_t value, BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -394,7 +394,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndInt64sUsingBlock:
-    (void (^)(uint32_t key, int64_t value, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(uint32_t key, int64_t value, BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -489,7 +489,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndBoolsUsingBlock:
-    (void (^)(uint32_t key, BOOL value, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(uint32_t key, BOOL value, BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -584,7 +584,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndFloatsUsingBlock:
-    (void (^)(uint32_t key, float value, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(uint32_t key, float value, BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -679,7 +679,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndDoublesUsingBlock:
-    (void (^)(uint32_t key, double value, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(uint32_t key, double value, BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -795,7 +795,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndEnumsUsingBlock:
-    (void (^)(uint32_t key, int32_t value, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(uint32_t key, int32_t value, BOOL *stop))block;
 
 /**
  * Gets the raw enum value for the given key.
@@ -822,7 +822,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:     A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndRawValuesUsingBlock:
-    (void (^)(uint32_t key, int32_t rawValue, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(uint32_t key, int32_t rawValue, BOOL *stop))block;
 
 /**
  * Adds the keys and raw enum values from another dictionary.
@@ -935,7 +935,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:        A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndObjectsUsingBlock:
-    (void (^)(uint32_t key, ObjectType object, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(uint32_t key, ObjectType object, BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -1030,7 +1030,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndUInt32sUsingBlock:
-    (void (^)(int32_t key, uint32_t value, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(int32_t key, uint32_t value, BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -1125,7 +1125,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndInt32sUsingBlock:
-    (void (^)(int32_t key, int32_t value, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(int32_t key, int32_t value, BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -1220,7 +1220,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndUInt64sUsingBlock:
-    (void (^)(int32_t key, uint64_t value, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(int32_t key, uint64_t value, BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -1315,7 +1315,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndInt64sUsingBlock:
-    (void (^)(int32_t key, int64_t value, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(int32_t key, int64_t value, BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -1410,7 +1410,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndBoolsUsingBlock:
-    (void (^)(int32_t key, BOOL value, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(int32_t key, BOOL value, BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -1505,7 +1505,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndFloatsUsingBlock:
-    (void (^)(int32_t key, float value, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(int32_t key, float value, BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -1600,7 +1600,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndDoublesUsingBlock:
-    (void (^)(int32_t key, double value, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(int32_t key, double value, BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -1716,7 +1716,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndEnumsUsingBlock:
-    (void (^)(int32_t key, int32_t value, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(int32_t key, int32_t value, BOOL *stop))block;
 
 /**
  * Gets the raw enum value for the given key.
@@ -1743,7 +1743,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:     A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndRawValuesUsingBlock:
-    (void (^)(int32_t key, int32_t rawValue, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(int32_t key, int32_t rawValue, BOOL *stop))block;
 
 /**
  * Adds the keys and raw enum values from another dictionary.
@@ -1856,7 +1856,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:        A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndObjectsUsingBlock:
-    (void (^)(int32_t key, ObjectType object, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(int32_t key, ObjectType object, BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -1951,7 +1951,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndUInt32sUsingBlock:
-    (void (^)(uint64_t key, uint32_t value, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(uint64_t key, uint32_t value, BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -2046,7 +2046,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndInt32sUsingBlock:
-    (void (^)(uint64_t key, int32_t value, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(uint64_t key, int32_t value, BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -2141,7 +2141,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndUInt64sUsingBlock:
-    (void (^)(uint64_t key, uint64_t value, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(uint64_t key, uint64_t value, BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -2236,7 +2236,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndInt64sUsingBlock:
-    (void (^)(uint64_t key, int64_t value, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(uint64_t key, int64_t value, BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -2331,7 +2331,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndBoolsUsingBlock:
-    (void (^)(uint64_t key, BOOL value, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(uint64_t key, BOOL value, BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -2426,7 +2426,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndFloatsUsingBlock:
-    (void (^)(uint64_t key, float value, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(uint64_t key, float value, BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -2521,7 +2521,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndDoublesUsingBlock:
-    (void (^)(uint64_t key, double value, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(uint64_t key, double value, BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -2637,7 +2637,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndEnumsUsingBlock:
-    (void (^)(uint64_t key, int32_t value, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(uint64_t key, int32_t value, BOOL *stop))block;
 
 /**
  * Gets the raw enum value for the given key.
@@ -2664,7 +2664,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:     A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndRawValuesUsingBlock:
-    (void (^)(uint64_t key, int32_t rawValue, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(uint64_t key, int32_t rawValue, BOOL *stop))block;
 
 /**
  * Adds the keys and raw enum values from another dictionary.
@@ -2777,7 +2777,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:        A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndObjectsUsingBlock:
-    (void (^)(uint64_t key, ObjectType object, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(uint64_t key, ObjectType object, BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -2872,7 +2872,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndUInt32sUsingBlock:
-    (void (^)(int64_t key, uint32_t value, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(int64_t key, uint32_t value, BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -2967,7 +2967,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndInt32sUsingBlock:
-    (void (^)(int64_t key, int32_t value, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(int64_t key, int32_t value, BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -3062,7 +3062,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndUInt64sUsingBlock:
-    (void (^)(int64_t key, uint64_t value, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(int64_t key, uint64_t value, BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -3157,7 +3157,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndInt64sUsingBlock:
-    (void (^)(int64_t key, int64_t value, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(int64_t key, int64_t value, BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -3252,7 +3252,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndBoolsUsingBlock:
-    (void (^)(int64_t key, BOOL value, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(int64_t key, BOOL value, BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -3347,7 +3347,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndFloatsUsingBlock:
-    (void (^)(int64_t key, float value, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(int64_t key, float value, BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -3442,7 +3442,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndDoublesUsingBlock:
-    (void (^)(int64_t key, double value, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(int64_t key, double value, BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -3558,7 +3558,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndEnumsUsingBlock:
-    (void (^)(int64_t key, int32_t value, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(int64_t key, int32_t value, BOOL *stop))block;
 
 /**
  * Gets the raw enum value for the given key.
@@ -3585,7 +3585,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:     A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndRawValuesUsingBlock:
-    (void (^)(int64_t key, int32_t rawValue, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(int64_t key, int32_t rawValue, BOOL *stop))block;
 
 /**
  * Adds the keys and raw enum values from another dictionary.
@@ -3698,7 +3698,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:        A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndObjectsUsingBlock:
-    (void (^)(int64_t key, ObjectType object, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(int64_t key, ObjectType object, BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -3793,7 +3793,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndUInt32sUsingBlock:
-    (void (^)(BOOL key, uint32_t value, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(BOOL key, uint32_t value, BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -3888,7 +3888,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndInt32sUsingBlock:
-    (void (^)(BOOL key, int32_t value, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(BOOL key, int32_t value, BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -3983,7 +3983,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndUInt64sUsingBlock:
-    (void (^)(BOOL key, uint64_t value, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(BOOL key, uint64_t value, BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -4078,7 +4078,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndInt64sUsingBlock:
-    (void (^)(BOOL key, int64_t value, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(BOOL key, int64_t value, BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -4173,7 +4173,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndBoolsUsingBlock:
-    (void (^)(BOOL key, BOOL value, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(BOOL key, BOOL value, BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -4268,7 +4268,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndFloatsUsingBlock:
-    (void (^)(BOOL key, float value, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(BOOL key, float value, BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -4363,7 +4363,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndDoublesUsingBlock:
-    (void (^)(BOOL key, double value, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(BOOL key, double value, BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -4479,7 +4479,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndEnumsUsingBlock:
-    (void (^)(BOOL key, int32_t value, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(BOOL key, int32_t value, BOOL *stop))block;
 
 /**
  * Gets the raw enum value for the given key.
@@ -4506,7 +4506,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:     A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndRawValuesUsingBlock:
-    (void (^)(BOOL key, int32_t rawValue, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(BOOL key, int32_t rawValue, BOOL *stop))block;
 
 /**
  * Adds the keys and raw enum values from another dictionary.
@@ -4619,7 +4619,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:        A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndObjectsUsingBlock:
-    (void (^)(BOOL key, ObjectType object, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(BOOL key, ObjectType object, BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -4714,7 +4714,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndUInt32sUsingBlock:
-    (void (^)(NSString *key, uint32_t value, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(NSString *key, uint32_t value, BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -4809,7 +4809,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndInt32sUsingBlock:
-    (void (^)(NSString *key, int32_t value, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(NSString *key, int32_t value, BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -4904,7 +4904,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndUInt64sUsingBlock:
-    (void (^)(NSString *key, uint64_t value, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(NSString *key, uint64_t value, BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -4999,7 +4999,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndInt64sUsingBlock:
-    (void (^)(NSString *key, int64_t value, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(NSString *key, int64_t value, BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -5094,7 +5094,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndBoolsUsingBlock:
-    (void (^)(NSString *key, BOOL value, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(NSString *key, BOOL value, BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -5189,7 +5189,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndFloatsUsingBlock:
-    (void (^)(NSString *key, float value, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(NSString *key, float value, BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -5284,7 +5284,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndDoublesUsingBlock:
-    (void (^)(NSString *key, double value, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(NSString *key, double value, BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -5400,7 +5400,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndEnumsUsingBlock:
-    (void (^)(NSString *key, int32_t value, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(NSString *key, int32_t value, BOOL *stop))block;
 
 /**
  * Gets the raw enum value for the given key.
@@ -5427,7 +5427,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:     A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndRawValuesUsingBlock:
-    (void (^)(NSString *key, int32_t rawValue, BOOL *stop))block;
+    (void (NS_NOESCAPE ^)(NSString *key, int32_t rawValue, BOOL *stop))block;
 
 /**
  * Adds the keys and raw enum values from another dictionary.
@@ -5693,7 +5693,7 @@ NS_ASSUME_NONNULL_END
 //% *   **stop**:     A pointer to a boolean that when set stops the enumeration.
 //% **/
 //%- (void)enumerateKeysAndRawValuesUsingBlock:
-//%    (void (^)(KEY_TYPE KisP##key, VALUE_TYPE rawValue, BOOL *stop))block;
+//%    (void (NS_NOESCAPE ^)(KEY_TYPE KisP##key, VALUE_TYPE rawValue, BOOL *stop))block;
 //%
 //%/**
 //% * Adds the keys and raw enum values from another dictionary.
@@ -5728,7 +5728,7 @@ NS_ASSUME_NONNULL_END
 //% *   **stop**: ##VNAME_VAR$S## A pointer to a boolean that when set stops the enumeration.
 //% **/
 //%- (void)enumerateKeysAnd##VNAME##sUsingBlock:
-//%    (void (^)(KEY_TYPE KisP##key, VALUE_TYPE VNAME_VAR, BOOL *stop))block;
+//%    (void (NS_NOESCAPE ^)(KEY_TYPE KisP##key, VALUE_TYPE VNAME_VAR, BOOL *stop))block;
 
 //%PDDM-DEFINE DICTIONARY_MUTABLE_INTERFACE(KEY_NAME, KEY_TYPE, KisP, VALUE_NAME, VALUE_TYPE, VHELPER, VNAME, VNAME_VAR)
 //%/**

@@ -35,11 +35,13 @@
 // This file tests that various identifiers work as field and type names even
 // though the same identifiers are used internally by the C++ code generator.
 
+// LINT: LEGACY_NAMES
+
 syntax = "proto2";
 
 // Some generic_services option(s) added automatically.
 // See:  http://go/proto2-generic-services-default
-option cc_generic_services = true;     // auto-added
+option cc_generic_services = true; // auto-added
 
 // We don't put this in a package within proto2 because we need to make sure
 // that the generated code doesn't depend on being in the proto2 namespace.
@@ -55,17 +57,29 @@ message TestConflictingSymbolNames {
   optional int32 output = 2;
   optional string length = 3;
   repeated int32 i = 4;
-  repeated string new_element = 5 [ctype=STRING_PIECE];
+  repeated string new_element = 5 [ctype = STRING_PIECE];
   optional int32 total_size = 6;
   optional int32 tag = 7;
 
   enum TestEnum { FOO = 0; }
-  message Data1 { repeated int32 data = 1; }
-  message Data2 { repeated TestEnum data = 1; }
-  message Data3 { repeated string data = 1; }
-  message Data4 { repeated Data4 data = 1; }
-  message Data5 { repeated string data = 1 [ctype=STRING_PIECE]; }
-  message Data6 { repeated string data = 1 [ctype=CORD]; }
+  message Data1 {
+    repeated int32 data = 1;
+  }
+  message Data2 {
+    repeated TestEnum data = 1;
+  }
+  message Data3 {
+    repeated string data = 1;
+  }
+  message Data4 {
+    repeated Data4 data = 1;
+  }
+  message Data5 {
+    repeated string data = 1 [ctype = STRING_PIECE];
+  }
+  message Data6 {
+    repeated string data = 1 [ctype = CORD];
+  }
 
   optional int32 source = 8;
   optional int32 value = 9;
@@ -91,10 +105,10 @@ message TestConflictingSymbolNames {
   optional uint32 reflection = 27;
 
   message Cord {}
-  optional string some_cord = 28 [ctype=CORD];
+  optional string some_cord = 28 [ctype = CORD];
 
   message StringPiece {}
-  optional string some_string_piece = 29 [ctype=STRING_PIECE];
+  optional string some_string_piece = 29 [ctype = STRING_PIECE];
 
   // Some keywords.
   optional uint32 int = 30;
@@ -125,14 +139,15 @@ message TestConflictingSymbolNames {
   extensions 1000 to max;  // NO_PROTO3
 }
 
-message TestConflictingSymbolNamesExtension {                    // NO_PROTO3
-  extend TestConflictingSymbolNames {                            // NO_PROTO3
-    repeated int32 repeated_int32_ext = 20423638 [packed=true];  // NO_PROTO3
-  }                                                              // NO_PROTO3
-}                                                                // NO_PROTO3
+message TestConflictingSymbolNamesExtension {                      // NO_PROTO3
+  extend TestConflictingSymbolNames {                              // NO_PROTO3
+    repeated int32 repeated_int32_ext = 20423638 [packed = true];  // NO_PROTO3
+  }                                                                // NO_PROTO3
+}  // NO_PROTO3
 
 message TestConflictingEnumNames {  // NO_PROTO3
-  enum NestedConflictingEnum {      // NO_PROTO3
+  enum while {                      // NO_PROTO3
+    default = 0;                    // NO_PROTO3
     and = 1;                        // NO_PROTO3
     class = 2;                      // NO_PROTO3
     int = 3;                        // NO_PROTO3
@@ -140,16 +155,25 @@ message TestConflictingEnumNames {  // NO_PROTO3
     XOR = 5;                        // NO_PROTO3
   }                                 // NO_PROTO3
 
-  optional NestedConflictingEnum conflicting_enum = 1;  // NO_PROTO3
+  optional while conflicting_enum = 1;  // NO_PROTO3
 }  // NO_PROTO3
 
-enum ConflictingEnum {  // NO_PROTO3
+enum bool {             // NO_PROTO3
+  default = 0;          // NO_PROTO3
   NOT_EQ = 1;           // NO_PROTO3
   volatile = 2;         // NO_PROTO3
   return = 3;           // NO_PROTO3
 }  // NO_PROTO3
 
 message DummyMessage {}
+
+message NULL {
+  optional int32 int = 1;
+}
+
+extend TestConflictingSymbolNames {  // NO_PROTO3
+  optional int32 void = 314253;      // NO_PROTO3
+}                                    // NO_PROTO3
 
 // Message names that could conflict.
 message Shutdown {}

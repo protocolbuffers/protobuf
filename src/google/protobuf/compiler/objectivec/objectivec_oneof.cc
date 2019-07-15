@@ -46,7 +46,7 @@ OneofGenerator::OneofGenerator(const OneofDescriptor* descriptor)
   variables_["enum_name"] = OneofEnumName(descriptor_);
   variables_["name"] = OneofName(descriptor_);
   variables_["capitalized_name"] = OneofNameCapitalized(descriptor_);
-  variables_["raw_index"] = SimpleItoa(descriptor_->index());
+  variables_["raw_index"] = StrCat(descriptor_->index());
   const Descriptor* msg_descriptor = descriptor_->containing_type();
   variables_["owning_message_class"] = ClassName(msg_descriptor);
 
@@ -65,7 +65,7 @@ OneofGenerator::~OneofGenerator() {}
 void OneofGenerator::SetOneofIndexBase(int index_base) {
   int index = descriptor_->index() + index_base;
   // Flip the sign to mark it as a oneof.
-  variables_["index"] = SimpleItoa(-index);
+  variables_["index"] = StrCat(-index);
 }
 
 void OneofGenerator::GenerateCaseEnum(io::Printer* printer) {
@@ -84,7 +84,7 @@ void OneofGenerator::GenerateCaseEnum(io::Printer* printer) {
         "$enum_name$_$field_name$ = $field_number$,\n",
         "enum_name", enum_name,
         "field_name", field_name,
-        "field_number", SimpleItoa(field->number()));
+        "field_number", StrCat(field->number()));
   }
   printer->Outdent();
   printer->Print(

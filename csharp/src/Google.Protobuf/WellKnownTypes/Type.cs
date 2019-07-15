@@ -62,12 +62,12 @@ namespace Google.Protobuf.WellKnownTypes {
             "bEtub3duVHlwZXNiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.AnyReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.SourceContextReflection.Descriptor, },
-          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Google.Protobuf.WellKnownTypes.Syntax), }, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Type), global::Google.Protobuf.WellKnownTypes.Type.Parser, new[]{ "Name", "Fields", "Oneofs", "Options", "SourceContext", "Syntax" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Field), global::Google.Protobuf.WellKnownTypes.Field.Parser, new[]{ "Kind", "Cardinality", "Number", "Name", "TypeUrl", "OneofIndex", "Packed", "Options", "JsonName", "DefaultValue" }, null, new[]{ typeof(global::Google.Protobuf.WellKnownTypes.Field.Types.Kind), typeof(global::Google.Protobuf.WellKnownTypes.Field.Types.Cardinality) }, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Enum), global::Google.Protobuf.WellKnownTypes.Enum.Parser, new[]{ "Name", "Enumvalue", "Options", "SourceContext", "Syntax" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.WellKnownTypes.EnumValue), global::Google.Protobuf.WellKnownTypes.EnumValue.Parser, new[]{ "Name", "Number", "Options" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Option), global::Google.Protobuf.WellKnownTypes.Option.Parser, new[]{ "Name", "Value" }, null, null, null)
+          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Google.Protobuf.WellKnownTypes.Syntax), }, null, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Type), global::Google.Protobuf.WellKnownTypes.Type.Parser, new[]{ "Name", "Fields", "Oneofs", "Options", "SourceContext", "Syntax" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Field), global::Google.Protobuf.WellKnownTypes.Field.Parser, new[]{ "Kind", "Cardinality", "Number", "Name", "TypeUrl", "OneofIndex", "Packed", "Options", "JsonName", "DefaultValue" }, null, new[]{ typeof(global::Google.Protobuf.WellKnownTypes.Field.Types.Kind), typeof(global::Google.Protobuf.WellKnownTypes.Field.Types.Cardinality) }, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Enum), global::Google.Protobuf.WellKnownTypes.Enum.Parser, new[]{ "Name", "Enumvalue", "Options", "SourceContext", "Syntax" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.WellKnownTypes.EnumValue), global::Google.Protobuf.WellKnownTypes.EnumValue.Parser, new[]{ "Name", "Number", "Options" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Option), global::Google.Protobuf.WellKnownTypes.Option.Parser, new[]{ "Name", "Value" }, null, null, null, null)
           }));
     }
     #endregion
@@ -202,7 +202,7 @@ namespace Google.Protobuf.WellKnownTypes {
 
     /// <summary>Field number for the "syntax" field.</summary>
     public const int SyntaxFieldNumber = 6;
-    private global::Google.Protobuf.WellKnownTypes.Syntax syntax_ = 0;
+    private global::Google.Protobuf.WellKnownTypes.Syntax syntax_ = global::Google.Protobuf.WellKnownTypes.Syntax.Proto2;
     /// <summary>
     /// The source syntax.
     /// </summary>
@@ -244,7 +244,7 @@ namespace Google.Protobuf.WellKnownTypes {
       hash ^= oneofs_.GetHashCode();
       hash ^= options_.GetHashCode();
       if (sourceContext_ != null) hash ^= SourceContext.GetHashCode();
-      if (Syntax != 0) hash ^= Syntax.GetHashCode();
+      if (Syntax != global::Google.Protobuf.WellKnownTypes.Syntax.Proto2) hash ^= Syntax.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -269,7 +269,7 @@ namespace Google.Protobuf.WellKnownTypes {
         output.WriteRawTag(42);
         output.WriteMessage(SourceContext);
       }
-      if (Syntax != 0) {
+      if (Syntax != global::Google.Protobuf.WellKnownTypes.Syntax.Proto2) {
         output.WriteRawTag(48);
         output.WriteEnum((int) Syntax);
       }
@@ -290,7 +290,7 @@ namespace Google.Protobuf.WellKnownTypes {
       if (sourceContext_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(SourceContext);
       }
-      if (Syntax != 0) {
+      if (Syntax != global::Google.Protobuf.WellKnownTypes.Syntax.Proto2) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Syntax);
       }
       if (_unknownFields != null) {
@@ -312,11 +312,11 @@ namespace Google.Protobuf.WellKnownTypes {
       options_.Add(other.options_);
       if (other.sourceContext_ != null) {
         if (sourceContext_ == null) {
-          sourceContext_ = new global::Google.Protobuf.WellKnownTypes.SourceContext();
+          SourceContext = new global::Google.Protobuf.WellKnownTypes.SourceContext();
         }
         SourceContext.MergeFrom(other.SourceContext);
       }
-      if (other.Syntax != 0) {
+      if (other.Syntax != global::Google.Protobuf.WellKnownTypes.Syntax.Proto2) {
         Syntax = other.Syntax;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
@@ -348,13 +348,13 @@ namespace Google.Protobuf.WellKnownTypes {
           }
           case 42: {
             if (sourceContext_ == null) {
-              sourceContext_ = new global::Google.Protobuf.WellKnownTypes.SourceContext();
+              SourceContext = new global::Google.Protobuf.WellKnownTypes.SourceContext();
             }
-            input.ReadMessage(sourceContext_);
+            input.ReadMessage(SourceContext);
             break;
           }
           case 48: {
-            syntax_ = (global::Google.Protobuf.WellKnownTypes.Syntax) input.ReadEnum();
+            Syntax = (global::Google.Protobuf.WellKnownTypes.Syntax) input.ReadEnum();
             break;
           }
         }
@@ -411,7 +411,7 @@ namespace Google.Protobuf.WellKnownTypes {
 
     /// <summary>Field number for the "kind" field.</summary>
     public const int KindFieldNumber = 1;
-    private global::Google.Protobuf.WellKnownTypes.Field.Types.Kind kind_ = 0;
+    private global::Google.Protobuf.WellKnownTypes.Field.Types.Kind kind_ = global::Google.Protobuf.WellKnownTypes.Field.Types.Kind.TypeUnknown;
     /// <summary>
     /// The field type.
     /// </summary>
@@ -425,7 +425,7 @@ namespace Google.Protobuf.WellKnownTypes {
 
     /// <summary>Field number for the "cardinality" field.</summary>
     public const int CardinalityFieldNumber = 2;
-    private global::Google.Protobuf.WellKnownTypes.Field.Types.Cardinality cardinality_ = 0;
+    private global::Google.Protobuf.WellKnownTypes.Field.Types.Cardinality cardinality_ = global::Google.Protobuf.WellKnownTypes.Field.Types.Cardinality.Unknown;
     /// <summary>
     /// The field cardinality.
     /// </summary>
@@ -579,8 +579,8 @@ namespace Google.Protobuf.WellKnownTypes {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (Kind != 0) hash ^= Kind.GetHashCode();
-      if (Cardinality != 0) hash ^= Cardinality.GetHashCode();
+      if (Kind != global::Google.Protobuf.WellKnownTypes.Field.Types.Kind.TypeUnknown) hash ^= Kind.GetHashCode();
+      if (Cardinality != global::Google.Protobuf.WellKnownTypes.Field.Types.Cardinality.Unknown) hash ^= Cardinality.GetHashCode();
       if (Number != 0) hash ^= Number.GetHashCode();
       if (Name.Length != 0) hash ^= Name.GetHashCode();
       if (TypeUrl.Length != 0) hash ^= TypeUrl.GetHashCode();
@@ -602,11 +602,11 @@ namespace Google.Protobuf.WellKnownTypes {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Kind != 0) {
+      if (Kind != global::Google.Protobuf.WellKnownTypes.Field.Types.Kind.TypeUnknown) {
         output.WriteRawTag(8);
         output.WriteEnum((int) Kind);
       }
-      if (Cardinality != 0) {
+      if (Cardinality != global::Google.Protobuf.WellKnownTypes.Field.Types.Cardinality.Unknown) {
         output.WriteRawTag(16);
         output.WriteEnum((int) Cardinality);
       }
@@ -647,10 +647,10 @@ namespace Google.Protobuf.WellKnownTypes {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (Kind != 0) {
+      if (Kind != global::Google.Protobuf.WellKnownTypes.Field.Types.Kind.TypeUnknown) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Kind);
       }
-      if (Cardinality != 0) {
+      if (Cardinality != global::Google.Protobuf.WellKnownTypes.Field.Types.Cardinality.Unknown) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Cardinality);
       }
       if (Number != 0) {
@@ -686,10 +686,10 @@ namespace Google.Protobuf.WellKnownTypes {
       if (other == null) {
         return;
       }
-      if (other.Kind != 0) {
+      if (other.Kind != global::Google.Protobuf.WellKnownTypes.Field.Types.Kind.TypeUnknown) {
         Kind = other.Kind;
       }
-      if (other.Cardinality != 0) {
+      if (other.Cardinality != global::Google.Protobuf.WellKnownTypes.Field.Types.Cardinality.Unknown) {
         Cardinality = other.Cardinality;
       }
       if (other.Number != 0) {
@@ -726,11 +726,11 @@ namespace Google.Protobuf.WellKnownTypes {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 8: {
-            kind_ = (global::Google.Protobuf.WellKnownTypes.Field.Types.Kind) input.ReadEnum();
+            Kind = (global::Google.Protobuf.WellKnownTypes.Field.Types.Kind) input.ReadEnum();
             break;
           }
           case 16: {
-            cardinality_ = (global::Google.Protobuf.WellKnownTypes.Field.Types.Cardinality) input.ReadEnum();
+            Cardinality = (global::Google.Protobuf.WellKnownTypes.Field.Types.Cardinality) input.ReadEnum();
             break;
           }
           case 24: {
@@ -979,7 +979,7 @@ namespace Google.Protobuf.WellKnownTypes {
 
     /// <summary>Field number for the "syntax" field.</summary>
     public const int SyntaxFieldNumber = 5;
-    private global::Google.Protobuf.WellKnownTypes.Syntax syntax_ = 0;
+    private global::Google.Protobuf.WellKnownTypes.Syntax syntax_ = global::Google.Protobuf.WellKnownTypes.Syntax.Proto2;
     /// <summary>
     /// The source syntax.
     /// </summary>
@@ -1019,7 +1019,7 @@ namespace Google.Protobuf.WellKnownTypes {
       hash ^= enumvalue_.GetHashCode();
       hash ^= options_.GetHashCode();
       if (sourceContext_ != null) hash ^= SourceContext.GetHashCode();
-      if (Syntax != 0) hash ^= Syntax.GetHashCode();
+      if (Syntax != global::Google.Protobuf.WellKnownTypes.Syntax.Proto2) hash ^= Syntax.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -1043,7 +1043,7 @@ namespace Google.Protobuf.WellKnownTypes {
         output.WriteRawTag(34);
         output.WriteMessage(SourceContext);
       }
-      if (Syntax != 0) {
+      if (Syntax != global::Google.Protobuf.WellKnownTypes.Syntax.Proto2) {
         output.WriteRawTag(40);
         output.WriteEnum((int) Syntax);
       }
@@ -1063,7 +1063,7 @@ namespace Google.Protobuf.WellKnownTypes {
       if (sourceContext_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(SourceContext);
       }
-      if (Syntax != 0) {
+      if (Syntax != global::Google.Protobuf.WellKnownTypes.Syntax.Proto2) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Syntax);
       }
       if (_unknownFields != null) {
@@ -1084,11 +1084,11 @@ namespace Google.Protobuf.WellKnownTypes {
       options_.Add(other.options_);
       if (other.sourceContext_ != null) {
         if (sourceContext_ == null) {
-          sourceContext_ = new global::Google.Protobuf.WellKnownTypes.SourceContext();
+          SourceContext = new global::Google.Protobuf.WellKnownTypes.SourceContext();
         }
         SourceContext.MergeFrom(other.SourceContext);
       }
-      if (other.Syntax != 0) {
+      if (other.Syntax != global::Google.Protobuf.WellKnownTypes.Syntax.Proto2) {
         Syntax = other.Syntax;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
@@ -1116,13 +1116,13 @@ namespace Google.Protobuf.WellKnownTypes {
           }
           case 34: {
             if (sourceContext_ == null) {
-              sourceContext_ = new global::Google.Protobuf.WellKnownTypes.SourceContext();
+              SourceContext = new global::Google.Protobuf.WellKnownTypes.SourceContext();
             }
-            input.ReadMessage(sourceContext_);
+            input.ReadMessage(SourceContext);
             break;
           }
           case 40: {
-            syntax_ = (global::Google.Protobuf.WellKnownTypes.Syntax) input.ReadEnum();
+            Syntax = (global::Google.Protobuf.WellKnownTypes.Syntax) input.ReadEnum();
             break;
           }
         }
@@ -1467,7 +1467,7 @@ namespace Google.Protobuf.WellKnownTypes {
       }
       if (other.value_ != null) {
         if (value_ == null) {
-          value_ = new global::Google.Protobuf.WellKnownTypes.Any();
+          Value = new global::Google.Protobuf.WellKnownTypes.Any();
         }
         Value.MergeFrom(other.Value);
       }
@@ -1488,9 +1488,9 @@ namespace Google.Protobuf.WellKnownTypes {
           }
           case 18: {
             if (value_ == null) {
-              value_ = new global::Google.Protobuf.WellKnownTypes.Any();
+              Value = new global::Google.Protobuf.WellKnownTypes.Any();
             }
-            input.ReadMessage(value_);
+            input.ReadMessage(Value);
             break;
           }
         }

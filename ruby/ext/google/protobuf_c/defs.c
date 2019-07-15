@@ -122,7 +122,7 @@ void DescriptorPool_register(VALUE module) {
       module, "DescriptorPool", rb_cObject);
   rb_define_alloc_func(klass, DescriptorPool_alloc);
   rb_define_method(klass, "add", DescriptorPool_add, 1);
-  rb_define_method(klass, "build", DescriptorPool_build, 0);
+  rb_define_method(klass, "build", DescriptorPool_build, -1);
   rb_define_method(klass, "lookup", DescriptorPool_lookup, 1);
   rb_define_singleton_method(klass, "generated_pool",
                              DescriptorPool_generated_pool, 0);
@@ -181,7 +181,7 @@ VALUE DescriptorPool_add(VALUE _self, VALUE def) {
  * Builder#add_enum within the block as appropriate.  This is the recommended,
  * idiomatic way to define new message and enum types.
  */
-VALUE DescriptorPool_build(VALUE _self) {
+VALUE DescriptorPool_build(int argc, VALUE* argv, VALUE _self) {
   VALUE ctx = rb_class_new_instance(0, NULL, cBuilder);
   VALUE block = rb_block_proc();
   rb_funcall_with_block(ctx, rb_intern("instance_eval"), 0, NULL, block);
@@ -289,6 +289,7 @@ void Descriptor_register(VALUE module) {
   VALUE klass = rb_define_class_under(
       module, "Descriptor", rb_cObject);
   rb_define_alloc_func(klass, Descriptor_alloc);
+  rb_define_method(klass, "initialize", Descriptor_initialize, 1);
   rb_define_method(klass, "each", Descriptor_each, 0);
   rb_define_method(klass, "lookup", Descriptor_lookup, 1);
   rb_define_method(klass, "add_field", Descriptor_add_field, 1);
@@ -298,9 +299,40 @@ void Descriptor_register(VALUE module) {
   rb_define_method(klass, "msgclass", Descriptor_msgclass, 0);
   rb_define_method(klass, "name", Descriptor_name, 0);
   rb_define_method(klass, "name=", Descriptor_name_set, 1);
+  rb_define_method(klass, "file_descriptor", Descriptor_file_descriptor, 0);
   rb_include_module(klass, rb_mEnumerable);
   rb_gc_register_address(&cDescriptor);
   cDescriptor = klass;
+}
+
+/*
+ * call-seq:
+ *    Descriptor.new(file_descriptor)
+ *
+ * Initializes a new descriptor and assigns a file descriptor to it.
+ */
+VALUE Descriptor_initialize(VALUE _self, VALUE file_descriptor_rb) {
+  DEFINE_SELF(Descriptor, self, _self);
+
+  FileDescriptor* file_descriptor = ruby_to_FileDescriptor(file_descriptor_rb);
+
+  CHECK_UPB(
+        upb_filedef_addmsg(file_descriptor->filedef, self->msgdef, NULL, &status),
+        "Failed to associate message to file descriptor.");
+  add_def_obj(file_descriptor->filedef, file_descriptor_rb);
+
+  return Qnil;
+}
+
+/*
+ * call-seq:
+ *    Descriptor.file_descriptor
+ *
+ * Returns the FileDescriptor object this message belongs to.
+ */
+VALUE Descriptor_file_descriptor(VALUE _self) {
+  DEFINE_SELF(Descriptor, self, _self);
+  return get_def_obj(upb_def_file(self->msgdef));
 }
 
 /*
@@ -471,6 +503,142 @@ VALUE Descriptor_msgclass(VALUE _self) {
 }
 
 // -----------------------------------------------------------------------------
+// FileDescriptor.
+// -----------------------------------------------------------------------------
+
+DEFINE_CLASS(FileDescriptor, "Google::Protobuf::FileDescriptor");
+
+void FileDescriptor_mark(void* _self) {
+}
+
+void FileDescriptor_free(void* _self) {
+  FileDescriptor* self = _self;
+  upb_filedef_unref(self->filedef, &self->filedef);
+  xfree(self);
+}
+
+/*
+ * call-seq:
+ *     FileDescriptor.new => file
+ *
+ * Returns a new file descriptor. The syntax must be set before it's passed
+ * to a builder.
+ */
+VALUE FileDescriptor_alloc(VALUE klass) {
+  FileDescriptor* self = ALLOC(FileDescriptor);
+  VALUE ret = TypedData_Wrap_Struct(klass, &_FileDescriptor_type, self);
+  upb_filedef* filedef = upb_filedef_new(&self->filedef);
+  self->filedef = filedef;
+  return ret;
+}
+
+void FileDescriptor_register(VALUE module) {
+  VALUE klass = rb_define_class_under(
+      module, "FileDescriptor", rb_cObject);
+  rb_define_alloc_func(klass, FileDescriptor_alloc);
+  rb_define_method(klass, "initialize", FileDescriptor_initialize, -1);
+  rb_define_method(klass, "name", FileDescriptor_name, 0);
+  rb_define_method(klass, "syntax", FileDescriptor_syntax, 0);
+  rb_define_method(klass, "syntax=", FileDescriptor_syntax_set, 1);
+  rb_gc_register_address(&cFileDescriptor);
+  cFileDescriptor = klass;
+}
+
+/*
+ * call-seq:
+ *     FileDescriptor.new(name, options = nil) => file
+ *
+ * Initializes a new file descriptor with the given file name.
+ * Also accepts an optional "options" hash, specifying other optional
+ * metadata about the file. The options hash currently accepts the following
+ *   * "syntax": :proto2 or :proto3 (default: :proto3)
+ */
+VALUE FileDescriptor_initialize(int argc, VALUE* argv, VALUE _self) {
+  DEFINE_SELF(FileDescriptor, self, _self);
+
+  VALUE name_rb;
+  VALUE options = Qnil;
+  rb_scan_args(argc, argv, "11", &name_rb, &options);
+
+  if (name_rb != Qnil) {
+    Check_Type(name_rb, T_STRING);
+    const char* name = get_str(name_rb);
+    CHECK_UPB(upb_filedef_setname(self->filedef, name, &status),
+	      "Error setting file name");
+  }
+
+  // Default syntax is proto3.
+  VALUE syntax = ID2SYM(rb_intern("proto3"));
+  if (options != Qnil) {
+    Check_Type(options, T_HASH);
+
+    if (rb_funcall(options, rb_intern("key?"), 1,
+		   ID2SYM(rb_intern("syntax"))) == Qtrue) {
+      syntax = rb_hash_lookup(options, ID2SYM(rb_intern("syntax")));
+    }
+  }
+  FileDescriptor_syntax_set(_self, syntax);
+
+  return Qnil;
+}
+
+/*
+ * call-seq:
+ *     FileDescriptor.name => name
+ *
+ * Returns the name of the file.
+ */
+VALUE FileDescriptor_name(VALUE _self) {
+  DEFINE_SELF(FileDescriptor, self, _self);
+  const char* name = upb_filedef_name(self->filedef);
+  return name == NULL ? Qnil : rb_str_new2(name);
+}
+
+/*
+ * call-seq:
+ *     FileDescriptor.syntax => syntax
+ *
+ * Returns this file descriptors syntax.
+ *
+ * Valid syntax versions are:
+ *     :proto2 or :proto3.
+ */
+VALUE FileDescriptor_syntax(VALUE _self) {
+  DEFINE_SELF(FileDescriptor, self, _self);
+
+  switch (upb_filedef_syntax(self->filedef)) {
+    case UPB_SYNTAX_PROTO3: return ID2SYM(rb_intern("proto3"));
+    case UPB_SYNTAX_PROTO2: return ID2SYM(rb_intern("proto2"));
+    default: return Qnil;
+  }
+}
+
+/*
+ * call-seq:
+ *     FileDescriptor.syntax = version
+ *
+ * Sets this file descriptor's syntax, can be :proto3 or :proto2.
+ */
+VALUE FileDescriptor_syntax_set(VALUE _self, VALUE syntax_rb) {
+  DEFINE_SELF(FileDescriptor, self, _self);
+  Check_Type(syntax_rb, T_SYMBOL);
+
+  upb_syntax_t syntax;
+  if (SYM2ID(syntax_rb) == rb_intern("proto3")) {
+    syntax = UPB_SYNTAX_PROTO3;
+  } else if (SYM2ID(syntax_rb) == rb_intern("proto2")) {
+    syntax = UPB_SYNTAX_PROTO2;
+  } else {
+    rb_raise(rb_eArgError, "Expected :proto3 or :proto3, received '%s'",
+	     rb_id2name(SYM2ID(syntax_rb)));
+  }
+
+  CHECK_UPB(upb_filedef_setsyntax(self->filedef, syntax, &status),
+          "Error setting file syntax for proto");
+  return Qnil;
+}
+
+// -----------------------------------------------------------------------------
 // FieldDescriptor.
 // -----------------------------------------------------------------------------
 
@@ -509,6 +677,8 @@ void FieldDescriptor_register(VALUE module) {
   rb_define_method(klass, "name=", FieldDescriptor_name_set, 1);
   rb_define_method(klass, "type", FieldDescriptor_type, 0);
   rb_define_method(klass, "type=", FieldDescriptor_type_set, 1);
+  rb_define_method(klass, "default", FieldDescriptor_default, 0);
+  rb_define_method(klass, "default=", FieldDescriptor_default_set, 1);
   rb_define_method(klass, "label", FieldDescriptor_label, 0);
   rb_define_method(klass, "label=", FieldDescriptor_label_set, 1);
   rb_define_method(klass, "number", FieldDescriptor_number, 0);
@@ -516,6 +686,8 @@ void FieldDescriptor_register(VALUE module) {
   rb_define_method(klass, "submsg_name", FieldDescriptor_submsg_name, 0);
   rb_define_method(klass, "submsg_name=", FieldDescriptor_submsg_name_set, 1);
   rb_define_method(klass, "subtype", FieldDescriptor_subtype, 0);
+  rb_define_method(klass, "has?", FieldDescriptor_has, 1);
+  rb_define_method(klass, "clear", FieldDescriptor_clear, 1);
   rb_define_method(klass, "get", FieldDescriptor_get, 1);
   rb_define_method(klass, "set", FieldDescriptor_set, 2);
   rb_gc_register_address(&cFieldDescriptor);
@@ -693,6 +865,71 @@ VALUE FieldDescriptor_type_set(VALUE _self, VALUE type) {
 
 /*
  * call-seq:
+ *     FieldDescriptor.default => default
+ *
+ * Returns this field's default, as a Ruby object, or nil if not yet set.
+ */
+VALUE FieldDescriptor_default(VALUE _self) {
+  DEFINE_SELF(FieldDescriptor, self, _self);
+  return layout_get_default(self->fielddef);
+}
+
+/*
+ * call-seq:
+ *     FieldDescriptor.default = default
+ *
+ * Sets this field's default value. Raises an exception when calling with
+ * proto syntax 3.
+ */
+VALUE FieldDescriptor_default_set(VALUE _self, VALUE default_value) {
+  DEFINE_SELF(FieldDescriptor, self, _self);
+  upb_fielddef* mut_def = check_field_notfrozen(self->fielddef);
+
+  switch (upb_fielddef_type(mut_def)) {
+    case UPB_TYPE_FLOAT:
+      upb_fielddef_setdefaultfloat(mut_def, NUM2DBL(default_value));
+      break;
+    case UPB_TYPE_DOUBLE:
+      upb_fielddef_setdefaultdouble(mut_def, NUM2DBL(default_value));
+      break;
+    case UPB_TYPE_BOOL:
+      if (!RB_TYPE_P(default_value, T_TRUE) &&
+	  !RB_TYPE_P(default_value, T_FALSE) &&
+	  !RB_TYPE_P(default_value, T_NIL)) {
+        rb_raise(cTypeError, "Expected boolean for default value.");
+      }
+
+      upb_fielddef_setdefaultbool(mut_def, RTEST(default_value));
+      break;
+    case UPB_TYPE_ENUM:
+    case UPB_TYPE_INT32:
+      upb_fielddef_setdefaultint32(mut_def, NUM2INT(default_value));
+      break;
+    case UPB_TYPE_INT64:
+      upb_fielddef_setdefaultint64(mut_def, NUM2INT(default_value));
+      break;
+    case UPB_TYPE_UINT32:
+      upb_fielddef_setdefaultuint32(mut_def, NUM2UINT(default_value));
+      break;
+    case UPB_TYPE_UINT64:
+      upb_fielddef_setdefaultuint64(mut_def, NUM2UINT(default_value));
+      break;
+    case UPB_TYPE_STRING:
+    case UPB_TYPE_BYTES:
+      CHECK_UPB(upb_fielddef_setdefaultcstr(mut_def, StringValuePtr(default_value),
+					    &status),
+                "Error setting default string");
+      break;
+    default:
+      rb_raise(rb_eArgError, "Defaults not supported on field %s.%s",
+	       upb_fielddef_fullname(mut_def), upb_fielddef_name(mut_def));
+  }
+
+  return Qnil;
+}
+
+/*
+ * call-seq:
  *     FieldDescriptor.label => label
  *
  * Returns this field's label (i.e., plurality), as a Ruby symbol.
@@ -857,6 +1094,44 @@ VALUE FieldDescriptor_get(VALUE _self, VALUE msg_rb) {
     rb_raise(cTypeError, "get method called on wrong message type");
   }
   return layout_get(msg->descriptor->layout, Message_data(msg), self->fielddef);
+}
+
+/*
+ * call-seq:
+ *     FieldDescriptor.has?(message) => boolean
+ *
+ * Returns whether the value is set on the given message. Raises an
+ * exception when calling with proto syntax 3.
+ */
+VALUE FieldDescriptor_has(VALUE _self, VALUE msg_rb) {
+  DEFINE_SELF(FieldDescriptor, self, _self);
+  MessageHeader* msg;
+  TypedData_Get_Struct(msg_rb, MessageHeader, &Message_type, msg);
+  if (msg->descriptor->msgdef != upb_fielddef_containingtype(self->fielddef)) {
+    rb_raise(cTypeError, "has method called on wrong message type");
+  } else if (!upb_fielddef_haspresence(self->fielddef)) {
+    rb_raise(rb_eArgError, "does not track presence");
+  }
+
+  return layout_has(msg->descriptor->layout, Message_data(msg), self->fielddef);
+}
+
+/*
+ * call-seq:
+ *     FieldDescriptor.clear(message)
+ *
+ * Clears the field from the message if it's set.
+ */
+VALUE FieldDescriptor_clear(VALUE _self, VALUE msg_rb) {
+  DEFINE_SELF(FieldDescriptor, self, _self);
+  MessageHeader* msg;
+  TypedData_Get_Struct(msg_rb, MessageHeader, &Message_type, msg);
+  if (msg->descriptor->msgdef != upb_fielddef_containingtype(self->fielddef)) {
+    rb_raise(cTypeError, "has method called on wrong message type");
+  }
+
+  layout_clear(msg->descriptor->layout, Message_data(msg), self->fielddef);
+  return Qnil;
 }
 
 /*
@@ -1029,6 +1304,7 @@ void EnumDescriptor_register(VALUE module) {
   VALUE klass = rb_define_class_under(
       module, "EnumDescriptor", rb_cObject);
   rb_define_alloc_func(klass, EnumDescriptor_alloc);
+  rb_define_method(klass, "initialize", EnumDescriptor_initialize, 1);
   rb_define_method(klass, "name", EnumDescriptor_name, 0);
   rb_define_method(klass, "name=", EnumDescriptor_name_set, 1);
   rb_define_method(klass, "add_value", EnumDescriptor_add_value, 2);
@@ -1036,9 +1312,39 @@ void EnumDescriptor_register(VALUE module) {
   rb_define_method(klass, "lookup_value", EnumDescriptor_lookup_value, 1);
   rb_define_method(klass, "each", EnumDescriptor_each, 0);
   rb_define_method(klass, "enummodule", EnumDescriptor_enummodule, 0);
+  rb_define_method(klass, "file_descriptor", EnumDescriptor_file_descriptor, 0);
   rb_include_module(klass, rb_mEnumerable);
   rb_gc_register_address(&cEnumDescriptor);
   cEnumDescriptor = klass;
+}
+
+/*
+ * call-seq:
+ *    Descriptor.new(file_descriptor)
+ *
+ * Initializes a new descriptor and assigns a file descriptor to it.
+ */
+VALUE EnumDescriptor_initialize(VALUE _self, VALUE file_descriptor_rb) {
+  DEFINE_SELF(EnumDescriptor, self, _self);
+  FileDescriptor* file_descriptor = ruby_to_FileDescriptor(file_descriptor_rb);
+  CHECK_UPB(
+        upb_filedef_addenum(file_descriptor->filedef, self->enumdef,
+			    NULL, &status),
+        "Failed to associate enum to file descriptor.");
+  add_def_obj(file_descriptor->filedef, file_descriptor_rb);
+
+  return Qnil;
+}
+
+/*
+ * call-seq:
+ *    Descriptor.file_descriptor
+ *
+ * Returns the FileDescriptor object this enum belongs to.
+ */
+VALUE EnumDescriptor_file_descriptor(VALUE _self) {
+  DEFINE_SELF(EnumDescriptor, self, _self);
+  return get_def_obj(upb_def_file(self->enumdef));
 }
 
 /*
@@ -1223,34 +1529,56 @@ VALUE MessageBuilderContext_initialize(VALUE _self,
   return Qnil;
 }
 
-static VALUE msgdef_add_field(VALUE msgdef,
+static VALUE msgdef_add_field(VALUE msgdef_rb,
                               const char* label, VALUE name,
                               VALUE type, VALUE number,
-                              VALUE type_class) {
-  VALUE fielddef = rb_class_new_instance(0, NULL, cFieldDescriptor);
+                              VALUE type_class,
+                              VALUE options) {
+  VALUE fielddef_rb = rb_class_new_instance(0, NULL, cFieldDescriptor);
   VALUE name_str = rb_str_new2(rb_id2name(SYM2ID(name)));
 
-  rb_funcall(fielddef, rb_intern("label="), 1, ID2SYM(rb_intern(label)));
-  rb_funcall(fielddef, rb_intern("name="), 1, name_str);
-  rb_funcall(fielddef, rb_intern("type="), 1, type);
-  rb_funcall(fielddef, rb_intern("number="), 1, number);
+  rb_funcall(fielddef_rb, rb_intern("label="), 1, ID2SYM(rb_intern(label)));
+  rb_funcall(fielddef_rb, rb_intern("name="), 1, name_str);
+  rb_funcall(fielddef_rb, rb_intern("type="), 1, type);
+  rb_funcall(fielddef_rb, rb_intern("number="), 1, number);
 
   if (type_class != Qnil) {
-    if (TYPE(type_class) != T_STRING) {
-      rb_raise(rb_eArgError, "Expected string for type class");
-    }
+    Check_Type(type_class, T_STRING);
+
     // Make it an absolute type name by prepending a dot.
     type_class = rb_str_append(rb_str_new2("."), type_class);
-    rb_funcall(fielddef, rb_intern("submsg_name="), 1, type_class);
+    rb_funcall(fielddef_rb, rb_intern("submsg_name="), 1, type_class);
   }
 
-  rb_funcall(msgdef, rb_intern("add_field"), 1, fielddef);
-  return fielddef;
+  if (options != Qnil) {
+    Check_Type(options, T_HASH);
+
+    if (rb_funcall(options, rb_intern("key?"), 1,
+		   ID2SYM(rb_intern("default"))) == Qtrue) {
+      Descriptor* msgdef = ruby_to_Descriptor(msgdef_rb);
+      if (upb_msgdef_syntax((upb_msgdef*)msgdef->msgdef) == UPB_SYNTAX_PROTO3) {
+        rb_raise(rb_eArgError, "Cannot set :default when using proto3 syntax.");
+      }
+
+      FieldDescriptor* fielddef = ruby_to_FieldDescriptor(fielddef_rb);
+      if (!upb_fielddef_haspresence((upb_fielddef*)fielddef->fielddef) ||
+	  upb_fielddef_issubmsg((upb_fielddef*)fielddef->fielddef)) {
+        rb_raise(rb_eArgError, "Cannot set :default on this kind of field.");
+      }
+
+      rb_funcall(fielddef_rb, rb_intern("default="), 1,
+		 rb_hash_lookup(options, ID2SYM(rb_intern("default"))));
+    }
+  }
+
+  rb_funcall(msgdef_rb, rb_intern("add_field"), 1, fielddef_rb);
+  return fielddef_rb;
 }
 
 /*
  * call-seq:
- *     MessageBuilderContext.optional(name, type, number, type_class = nil)
+ *     MessageBuilderContext.optional(name, type, number, type_class = nil,
+ *                                    options = nil)
  *
  * Defines a new optional field on this message type with the given type, tag
  * number, and type class (for message and enum fields). The type must be a Ruby
@@ -1259,23 +1587,26 @@ static VALUE msgdef_add_field(VALUE msgdef,
  */
 VALUE MessageBuilderContext_optional(int argc, VALUE* argv, VALUE _self) {
   DEFINE_SELF(MessageBuilderContext, self, _self);
-  VALUE name, type, number, type_class;
+  VALUE name, type, number;
+  VALUE type_class, options = Qnil;
 
-  if (argc < 3) {
-    rb_raise(rb_eArgError, "Expected at least 3 arguments.");
+  rb_scan_args(argc, argv, "32", &name, &type, &number, &type_class, &options);
+
+  // Allow passing (name, type, number, options) or
+  // (name, type, number, type_class, options)
+  if (argc == 4 && RB_TYPE_P(type_class, T_HASH)) {
+    options = type_class;
+    type_class = Qnil;
   }
-  name = argv[0];
-  type = argv[1];
-  number = argv[2];
-  type_class = (argc > 3) ? argv[3] : Qnil;
 
   return msgdef_add_field(self->descriptor, "optional",
-                          name, type, number, type_class);
+                          name, type, number, type_class, options);
 }
 
 /*
  * call-seq:
- *     MessageBuilderContext.required(name, type, number, type_class = nil)
+ *     MessageBuilderContext.required(name, type, number, type_class = nil,
+ *                                    options = nil)
  *
  * Defines a new required field on this message type with the given type, tag
  * number, and type class (for message and enum fields). The type must be a Ruby
@@ -1288,18 +1619,20 @@ VALUE MessageBuilderContext_optional(int argc, VALUE* argv, VALUE _self) {
  */
 VALUE MessageBuilderContext_required(int argc, VALUE* argv, VALUE _self) {
   DEFINE_SELF(MessageBuilderContext, self, _self);
-  VALUE name, type, number, type_class;
+  VALUE name, type, number;
+  VALUE type_class, options = Qnil;
 
-  if (argc < 3) {
-    rb_raise(rb_eArgError, "Expected at least 3 arguments.");
+  rb_scan_args(argc, argv, "32", &name, &type, &number, &type_class, &options);
+
+  // Allow passing (name, type, number, options) or
+  // (name, type, number, type_class, options)
+  if (argc == 4 && RB_TYPE_P(type_class, T_HASH)) {
+    options = type_class;
+    type_class = Qnil;
   }
-  name = argv[0];
-  type = argv[1];
-  number = argv[2];
-  type_class = (argc > 3) ? argv[3] : Qnil;
 
   return msgdef_add_field(self->descriptor, "required",
-                          name, type, number, type_class);
+                          name, type, number, type_class, options);
 }
 
 /*
@@ -1324,7 +1657,7 @@ VALUE MessageBuilderContext_repeated(int argc, VALUE* argv, VALUE _self) {
   type_class = (argc > 3) ? argv[3] : Qnil;
 
   return msgdef_add_field(self->descriptor, "repeated",
-                          name, type, number, type_class);
+                          name, type, number, type_class, Qnil);
 }
 
 /*
@@ -1365,9 +1698,17 @@ VALUE MessageBuilderContext_map(int argc, VALUE* argv, VALUE _self) {
              "type.");
   }
 
+  Descriptor* descriptor = ruby_to_Descriptor(self->descriptor);
+  if (upb_msgdef_syntax(descriptor->msgdef) == UPB_SYNTAX_PROTO2) {
+    rb_raise(rb_eArgError,
+	     "Cannot add a native map field using proto2 syntax.");
+  }
+
   // Create a new message descriptor for the map entry message, and create a
   // repeated submessage field here with that type.
-  mapentry_desc = rb_class_new_instance(0, NULL, cDescriptor);
+  VALUE file_descriptor_rb =
+      rb_funcall(self->descriptor, rb_intern("file_descriptor"), 0);
+  mapentry_desc = rb_class_new_instance(1, &file_descriptor_rb, cDescriptor);
   mapentry_desc_name = rb_funcall(self->descriptor, rb_intern("name"), 0);
   mapentry_desc_name = rb_str_cat2(mapentry_desc_name, "_MapEntry_");
   mapentry_desc_name = rb_str_cat2(mapentry_desc_name,
@@ -1410,8 +1751,8 @@ VALUE MessageBuilderContext_map(int argc, VALUE* argv, VALUE _self) {
   {
     // Add the map-entry message type to the current builder, and use the type
     // to create the map field itself.
-    Builder* builder_self = ruby_to_Builder(self->builder);
-    rb_ary_push(builder_self->pending_list, mapentry_desc);
+    Builder* builder = ruby_to_Builder(self->builder);
+    rb_ary_push(builder->pending_list, mapentry_desc);
   }
 
   {
@@ -1514,7 +1855,8 @@ VALUE OneofBuilderContext_initialize(VALUE _self,
 
 /*
  * call-seq:
- *     OneofBuilderContext.optional(name, type, number, type_class = nil)
+ *     OneofBuilderContext.optional(name, type, number, type_class = nil,
+ *                                  default_value = nil)
  *
  * Defines a new optional field in this oneof with the given type, tag number,
  * and type class (for message and enum fields). The type must be a Ruby symbol
@@ -1523,18 +1865,13 @@ VALUE OneofBuilderContext_initialize(VALUE _self,
  */
 VALUE OneofBuilderContext_optional(int argc, VALUE* argv, VALUE _self) {
   DEFINE_SELF(OneofBuilderContext, self, _self);
-  VALUE name, type, number, type_class;
+  VALUE name, type, number;
+  VALUE type_class, options = Qnil;
 
-  if (argc < 3) {
-    rb_raise(rb_eArgError, "Expected at least 3 arguments.");
-  }
-  name = argv[0];
-  type = argv[1];
-  number = argv[2];
-  type_class = (argc > 3) ? argv[3] : Qnil;
+  rb_scan_args(argc, argv, "32", &name, &type, &number, &type_class, &options);
 
   return msgdef_add_field(self->descriptor, "optional",
-                          name, type, number, type_class);
+                          name, type, number, type_class, options);
 }
 
 // -----------------------------------------------------------------------------
@@ -1604,6 +1941,112 @@ VALUE EnumBuilderContext_value(VALUE _self, VALUE name, VALUE number) {
   return enumdef_add_value(self->enumdesc, name, number);
 }
 
+
+// -----------------------------------------------------------------------------
+// FileBuilderContext.
+// -----------------------------------------------------------------------------
+
+DEFINE_CLASS(FileBuilderContext,
+	     "Google::Protobuf::Internal::FileBuilderContext");
+
+void FileBuilderContext_mark(void* _self) {
+  FileBuilderContext* self = _self;
+  rb_gc_mark(self->pending_list);
+  rb_gc_mark(self->file_descriptor);
+  rb_gc_mark(self->builder);
+}
+
+void FileBuilderContext_free(void* _self) {
+  FileBuilderContext* self = _self;
+  xfree(self);
+}
+
+VALUE FileBuilderContext_alloc(VALUE klass) {
+  FileBuilderContext* self = ALLOC(FileBuilderContext);
+  VALUE ret = TypedData_Wrap_Struct(klass, &_FileBuilderContext_type, self);
+  self->pending_list = Qnil;
+  self->file_descriptor = Qnil;
+  self->builder = Qnil;
+  return ret;
+}
+
+void FileBuilderContext_register(VALUE module) {
+  VALUE klass = rb_define_class_under(module, "FileBuilderContext", rb_cObject);
+  rb_define_alloc_func(klass, FileBuilderContext_alloc);
+  rb_define_method(klass, "initialize", FileBuilderContext_initialize, 2);
+  rb_define_method(klass, "add_message", FileBuilderContext_add_message, 1);
+  rb_define_method(klass, "add_enum", FileBuilderContext_add_enum, 1);
+  rb_gc_register_address(&cFileBuilderContext);
+  cFileBuilderContext = klass;
+}
+
+/*
+ * call-seq:
+ *     FileBuilderContext.new(file_descriptor, builder) => context
+ *
+ * Create a new file builder context for the given file descriptor and
+ * builder context. This class is intended to serve as a DSL context to be used
+ * with #instance_eval.
+ */
+VALUE FileBuilderContext_initialize(VALUE _self, VALUE file_descriptor,
+				    VALUE builder) {
+  DEFINE_SELF(FileBuilderContext, self, _self);
+  self->pending_list = rb_ary_new();
+  self->file_descriptor = file_descriptor;
+  self->builder = builder;
+  return Qnil;
+}
+
+/*
+ * call-seq:
+ *     FileBuilderContext.add_message(name, &block)
+ *
+ * Creates a new, empty descriptor with the given name, and invokes the block in
+ * the context of a MessageBuilderContext on that descriptor. The block can then
+ * call, e.g., MessageBuilderContext#optional and MessageBuilderContext#repeated
+ * methods to define the message fields.
+ *
+ * This is the recommended, idiomatic way to build message definitions.
+ */
+VALUE FileBuilderContext_add_message(VALUE _self, VALUE name) {
+  DEFINE_SELF(FileBuilderContext, self, _self);
+  VALUE msgdef = rb_class_new_instance(1, &self->file_descriptor, cDescriptor);
+  VALUE args[2] = { msgdef, self->builder };
+  VALUE ctx = rb_class_new_instance(2, args, cMessageBuilderContext);
+  VALUE block = rb_block_proc();
+  rb_funcall(msgdef, rb_intern("name="), 1, name);
+  rb_funcall_with_block(ctx, rb_intern("instance_eval"), 0, NULL, block);
+  rb_ary_push(self->pending_list, msgdef);
+  return Qnil;
+}
+
+/*
+ * call-seq:
+ *     FileBuilderContext.add_enum(name, &block)
+ *
+ * Creates a new, empty enum descriptor with the given name, and invokes the
+ * block in the context of an EnumBuilderContext on that descriptor. The block
+ * can then call EnumBuilderContext#add_value to define the enum values.
+ *
+ * This is the recommended, idiomatic way to build enum definitions.
+ */
+VALUE FileBuilderContext_add_enum(VALUE _self, VALUE name) {
+  DEFINE_SELF(FileBuilderContext, self, _self);
+  VALUE enumdef =
+      rb_class_new_instance(1, &self->file_descriptor, cEnumDescriptor);
+  VALUE ctx = rb_class_new_instance(1, &enumdef, cEnumBuilderContext);
+  VALUE block = rb_block_proc();
+  rb_funcall(enumdef, rb_intern("name="), 1, name);
+  rb_funcall_with_block(ctx, rb_intern("instance_eval"), 0, NULL, block);
+  rb_ary_push(self->pending_list, enumdef);
+  return Qnil;
+}
+
+VALUE FileBuilderContext_pending_descriptors(VALUE _self) {
+  DEFINE_SELF(FileBuilderContext, self, _self);
+  return self->pending_list;
+}
+
 // -----------------------------------------------------------------------------
 // Builder.
 // -----------------------------------------------------------------------------
@@ -1613,6 +2056,7 @@ DEFINE_CLASS(Builder, "Google::Protobuf::Internal::Builder");
 void Builder_mark(void* _self) {
   Builder* self = _self;
   rb_gc_mark(self->pending_list);
+  rb_gc_mark(self->default_file_descriptor);
 }
 
 void Builder_free(void* _self) {
@@ -1635,15 +2079,17 @@ VALUE Builder_alloc(VALUE klass) {
       klass, &_Builder_type, self);
   self->pending_list = Qnil;
   self->defs = NULL;
+  self->default_file_descriptor = Qnil;
   return ret;
 }
 
 void Builder_register(VALUE module) {
   VALUE klass = rb_define_class_under(module, "Builder", rb_cObject);
   rb_define_alloc_func(klass, Builder_alloc);
+  rb_define_method(klass, "initialize", Builder_initialize, 0);
+  rb_define_method(klass, "add_file", Builder_add_file, -1);
   rb_define_method(klass, "add_message", Builder_add_message, 1);
   rb_define_method(klass, "add_enum", Builder_add_enum, 1);
-  rb_define_method(klass, "initialize", Builder_initialize, 0);
   rb_define_method(klass, "finalize_to_pool", Builder_finalize_to_pool, 1);
   rb_gc_register_address(&cBuilder);
   cBuilder = klass;
@@ -1651,13 +2097,40 @@ void Builder_register(VALUE module) {
 
 /*
  * call-seq:
- *     Builder.new(d) => builder
+ *    Builder.new
  *
- * Create a new message builder.
+ * Initializes a new builder.
  */
 VALUE Builder_initialize(VALUE _self) {
   DEFINE_SELF(Builder, self, _self);
   self->pending_list = rb_ary_new();
+  VALUE file_name = Qnil;
+  self->default_file_descriptor =
+      rb_class_new_instance(1, &file_name, cFileDescriptor);
+  return Qnil;
+}
+
+/*
+ * call-seq:
+ *     Builder.add_file(name, options = nil, &block)
+ *
+ * Creates a new, file descriptor with the given name and options and invokes
+ * the block in the context of a FileBuilderContext on that descriptor. The
+ * block can then call FileBuilderContext#add_message or
+ * FileBuilderContext#add_enum to define new messages or enums, respectively.
+ *
+ * This is the recommended, idiomatic way to build file descriptors.
+ */
+VALUE Builder_add_file(int argc, VALUE* argv, VALUE _self) {
+  DEFINE_SELF(Builder, self, _self);
+  VALUE file_descriptor = rb_class_new_instance(argc, argv, cFileDescriptor);
+  VALUE args[2] = { file_descriptor, _self };
+  VALUE ctx = rb_class_new_instance(2, args, cFileBuilderContext);
+  VALUE block = rb_block_proc();
+  rb_funcall_with_block(ctx, rb_intern("instance_eval"), 0, NULL, block);
+
+  rb_ary_concat(self->pending_list,
+      FileBuilderContext_pending_descriptors(ctx));
   return Qnil;
 }
 
@@ -1665,16 +2138,17 @@ VALUE Builder_initialize(VALUE _self) {
  * call-seq:
  *     Builder.add_message(name, &block)
  *
- * Creates a new, empty descriptor with the given name, and invokes the block in
- * the context of a MessageBuilderContext on that descriptor. The block can then
- * call, e.g., MessageBuilderContext#optional and MessageBuilderContext#repeated
- * methods to define the message fields.
+ * Old and deprecated way to create a new descriptor.
+ * See FileBuilderContext.add_message for the recommended way.
  *
- * This is the recommended, idiomatic way to build message definitions.
+ * Exists for backwards compatibility to allow building descriptor pool for
+ * files generated by protoc which don't add messages within "add_file" block.
+ * Descriptors created this way get assigned to a default empty FileDescriptor.
  */
 VALUE Builder_add_message(VALUE _self, VALUE name) {
   DEFINE_SELF(Builder, self, _self);
-  VALUE msgdef = rb_class_new_instance(0, NULL, cDescriptor);
+  VALUE msgdef =
+      rb_class_new_instance(1, &self->default_file_descriptor, cDescriptor);
   VALUE args[2] = { msgdef, _self };
   VALUE ctx = rb_class_new_instance(2, args, cMessageBuilderContext);
   VALUE block = rb_block_proc();
@@ -1688,15 +2162,18 @@ VALUE Builder_add_message(VALUE _self, VALUE name) {
  * call-seq:
  *     Builder.add_enum(name, &block)
  *
- * Creates a new, empty enum descriptor with the given name, and invokes the
- * block in the context of an EnumBuilderContext on that descriptor. The block
- * can then call EnumBuilderContext#add_value to define the enum values.
+ * Old and deprecated way to create a new enum descriptor.
+ * See FileBuilderContext.add_enum for the recommended way.
  *
- * This is the recommended, idiomatic way to build enum definitions.
+ * Exists for backwards compatibility to allow building descriptor pool for
+ * files generated by protoc which don't add enums within "add_file" block.
+ * Enum descriptors created this way get assigned to a default empty
+ * FileDescriptor.
  */
 VALUE Builder_add_enum(VALUE _self, VALUE name) {
   DEFINE_SELF(Builder, self, _self);
-  VALUE enumdef = rb_class_new_instance(0, NULL, cEnumDescriptor);
+  VALUE enumdef =
+      rb_class_new_instance(1, &self->default_file_descriptor, cEnumDescriptor);
   VALUE ctx = rb_class_new_instance(1, &enumdef, cEnumBuilderContext);
   VALUE block = rb_block_proc();
   rb_funcall(enumdef, rb_intern("name="), 1, name);
@@ -1705,7 +2182,7 @@ VALUE Builder_add_enum(VALUE _self, VALUE name) {
   return Qnil;
 }
 
-static void validate_msgdef(const upb_msgdef* msgdef) {
+static void proto3_validate_msgdef(const upb_msgdef* msgdef) {
   // Verify that no required fields exist. proto3 does not support these.
   upb_msg_field_iter it;
   for (upb_msg_field_begin(&it, msgdef);
@@ -1718,7 +2195,7 @@ static void validate_msgdef(const upb_msgdef* msgdef) {
   }
 }
 
-static void validate_enumdef(const upb_enumdef* enumdef) {
+static void proto3_validate_enumdef(const upb_enumdef* enumdef) {
   // Verify that an entry exists with integer value 0. (This is the default
   // value.)
   const char* lookup = upb_enumdef_iton(enumdef, 0);
@@ -1753,10 +2230,16 @@ VALUE Builder_finalize_to_pool(VALUE _self, VALUE pool_rb) {
     VALUE def_rb = rb_ary_entry(self->pending_list, i);
     if (CLASS_OF(def_rb) == cDescriptor) {
       self->defs[i] = (upb_def*)ruby_to_Descriptor(def_rb)->msgdef;
-      validate_msgdef((const upb_msgdef*)self->defs[i]);
+
+      if (upb_filedef_syntax(upb_def_file(self->defs[i])) == UPB_SYNTAX_PROTO3) {
+        proto3_validate_msgdef((const upb_msgdef*)self->defs[i]);
+      }
     } else if (CLASS_OF(def_rb) == cEnumDescriptor) {
       self->defs[i] = (upb_def*)ruby_to_EnumDescriptor(def_rb)->enumdef;
-      validate_enumdef((const upb_enumdef*)self->defs[i]);
+
+      if (upb_filedef_syntax(upb_def_file(self->defs[i])) == UPB_SYNTAX_PROTO3) {
+        proto3_validate_enumdef((const upb_enumdef*)self->defs[i]);
+      }
     }
   }
 

@@ -51,6 +51,8 @@
 
 #include <google/protobuf/stubs/common.h>
 
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
 namespace internal {
@@ -64,7 +66,7 @@ namespace internal {
 // if it makes sense to do so.:w
 inline bool memeq(const char* a, const char* b, size_t n) {
   size_t n_rounded_down = n & ~static_cast<size_t>(7);
-  if (GOOGLE_PREDICT_FALSE(n_rounded_down == 0)) {  // n <= 7
+  if (PROTOBUF_PREDICT_FALSE(n_rounded_down == 0)) {  // n <= 7
     return memcmp(a, b, n) == 0;
   }
   // n >= 8
@@ -149,5 +151,7 @@ inline void memcpy_inlined(char *dst, const char *src, size_t size) {
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_STUBS_FASTMEM_H_

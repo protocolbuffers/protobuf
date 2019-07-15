@@ -31,6 +31,9 @@
 #ifndef GOOGLE_PROTOBUF_MAP_FIELD_LITE_H__
 #define GOOGLE_PROTOBUF_MAP_FIELD_LITE_H__
 
+#include <type_traits>
+#include <google/protobuf/parse_context.h>
+#include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/map.h>
 #include <google/protobuf/map_entry_lite.h>
 #include <google/protobuf/port.h>
@@ -106,14 +109,52 @@ class MapFieldLite {
     return EntryType::Wrap(key, t, arena_);
   }
 
+  const char* _InternalParse(const char* ptr, ParseContext* ctx) {
+    typename Derived::template Parser<MapFieldLite, Map<Key, T>> parser(this);
+    return parser._InternalParse(ptr, ctx);
+  }
+
+  template <typename Metadata>
+  const char* ParseWithEnumValidation(const char* ptr, ParseContext* ctx,
+                                      bool (*is_valid)(int), uint32 field_num,
+                                      Metadata* metadata) {
+    typename Derived::template Parser<MapFieldLite, Map<Key, T>> parser(this);
+    return parser.ParseWithEnumValidation(ptr, ctx, is_valid, field_num,
+                                          metadata);
+  }
+
  private:
   typedef void DestructorSkippable_;
 
   Arena* arena_;
   Map<Key, T> map_;
 
-  friend class ::GOOGLE_PROTOBUF_NAMESPACE_ID::Arena;
+  friend class ::PROTOBUF_NAMESPACE_ID::Arena;
 };
+
+template <typename T, typename Metadata>
+struct EnumParseWrapper {
+  const char* _InternalParse(const char* ptr, ParseContext* ctx) {
+    return map_field->ParseWithEnumValidation(ptr, ctx, is_valid, field_num,
+                                              metadata);
+  }
+  T* map_field;
+  bool (*is_valid)(int);
+  uint32 field_num;
+  Metadata* metadata;
+};
+
+// Helper function because the typenames of maps are horrendous to print. This
+// leverages compiler type deduction, to keep all type data out of the
+// generated code
+template <typename T, typename Metadata>
+EnumParseWrapper<T, Metadata> InitEnumParseWrapper(T* map_field,
+                                                   bool (*is_valid)(int),
+                                                   uint32 field_num,
+                                                   Metadata* metadata) {
+  return EnumParseWrapper<T, Metadata>{map_field, is_valid, field_num,
+                                       metadata};
+}
 
 // True if IsInitialized() is true for value field in all elements of t. T is
 // expected to be message.  It's useful to have this helper here to keep the
@@ -135,7 +176,7 @@ template <typename T, typename Key, typename Value,
           WireFormatLite::FieldType kKeyFieldType,
           WireFormatLite::FieldType kValueFieldType, int default_enum_value>
 struct MapEntryToMapField<MapEntryLite<T, Key, Value, kKeyFieldType,
-                                       kValueFieldType, default_enum_value> > {
+                                       kValueFieldType, default_enum_value>> {
   typedef MapFieldLite<MapEntryLite<T, Key, Value, kKeyFieldType,
                                     kValueFieldType, default_enum_value>,
                        Key, Value, kKeyFieldType, kValueFieldType,

@@ -39,7 +39,7 @@ PYTHON_VERSIONS=('cp27-cp27mu' 'cp33-cp33m' 'cp34-cp34m' 'cp35-cp35m' 'cp36-cp36
 
 mkdir -p ${DIR}
 cd ${DIR}
-curl -SsL -O https://github.com/google/protobuf/archive/v${PROTOBUF_VERSION}.tar.gz
+curl -SsL -O https://github.com/protocolbuffers/protobuf/archive/v${PROTOBUF_VERSION}.tar.gz
 tar xzf v${PROTOBUF_VERSION}.tar.gz
 cd $DIR/protobuf-${PROTOBUF_VERSION}
 

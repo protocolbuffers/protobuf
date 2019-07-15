@@ -43,7 +43,7 @@ namespace Google.Protobuf
 #pragma warning disable 0414 // Used by tests via reflection - do not remove!
         private static readonly List<ICodecTestData> Codecs = new List<ICodecTestData>
         {
-            new FieldCodecTestData<bool>(FieldCodec.ForBool(100), true, "Bool"),
+            new FieldCodecTestData<bool>(FieldCodec.ForBool(100), true, "FixedBool"),
             new FieldCodecTestData<string>(FieldCodec.ForString(100), "sample", "String"),
             new FieldCodecTestData<ByteString>(FieldCodec.ForBytes(100), ByteString.CopyFrom(1, 2, 3), "Bytes"),
             new FieldCodecTestData<int>(FieldCodec.ForInt32(100), -1000, "Int32"),
@@ -56,8 +56,8 @@ namespace Google.Protobuf
             new FieldCodecTestData<long>(FieldCodec.ForSFixed64(100), -1000, "SFixed64"),
             new FieldCodecTestData<ulong>(FieldCodec.ForUInt64(100), 1234, "UInt64"),
             new FieldCodecTestData<ulong>(FieldCodec.ForFixed64(100), 1234, "Fixed64"),
-            new FieldCodecTestData<float>(FieldCodec.ForFloat(100), 1234.5f, "Float"),
-            new FieldCodecTestData<double>(FieldCodec.ForDouble(100), 1234567890.5d, "Double"),
+            new FieldCodecTestData<float>(FieldCodec.ForFloat(100), 1234.5f, "FixedFloat"),
+            new FieldCodecTestData<double>(FieldCodec.ForDouble(100), 1234567890.5d, "FixedDouble"),
             new FieldCodecTestData<ForeignEnum>(
                 FieldCodec.ForEnum(100, t => (int) t, t => (ForeignEnum) t), ForeignEnum.ForeignBaz, "Enum"),
             new FieldCodecTestData<ForeignMessage>(

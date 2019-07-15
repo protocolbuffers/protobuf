@@ -39,8 +39,7 @@ import java.util.List;
 import junit.framework.TestCase;
 
 /**
- * Misc. unit tests for message operations that apply to both generated
- * and dynamic messages.
+ * Misc. unit tests for message operations that apply to both generated and dynamic messages.
  *
  * @author kenton@google.com Kenton Varda
  */
@@ -49,30 +48,31 @@ public class MessageTest extends TestCase {
   // Message-merging tests.
 
   static final TestAllTypes MERGE_SOURCE =
-    TestAllTypes.newBuilder()
-      .setOptionalInt32(1)
-      .setOptionalString("foo")
-      .setOptionalForeignMessage(ForeignMessage.getDefaultInstance())
-      .addRepeatedString("bar")
-      .build();
+      TestAllTypes.newBuilder()
+          .setOptionalInt32(1)
+          .setOptionalString("foo")
+          .setOptionalForeignMessage(ForeignMessage.getDefaultInstance())
+          .addRepeatedString("bar")
+          .build();
 
   static final TestAllTypes MERGE_DEST =
-    TestAllTypes.newBuilder()
-      .setOptionalInt64(2)
-      .setOptionalString("baz")
-      .setOptionalForeignMessage(ForeignMessage.newBuilder().setC(3).build())
-      .addRepeatedString("qux")
-      .build();
+      TestAllTypes.newBuilder()
+          .setOptionalInt64(2)
+          .setOptionalString("baz")
+          .setOptionalForeignMessage(ForeignMessage.newBuilder().setC(3).build())
+          .addRepeatedString("qux")
+          .build();
 
   static final String MERGE_RESULT_TEXT =
-      "optional_int32: 1\n" +
-      "optional_int64: 2\n" +
-      "optional_string: \"foo\"\n" +
-      "optional_foreign_message {\n" +
-      "  c: 3\n" +
-      "}\n" +
-      "repeated_string: \"qux\"\n" +
-      "repeated_string: \"bar\"\n";
+      ""
+          + "optional_int32: 1\n"
+          + "optional_int64: 2\n"
+          + "optional_string: \"foo\"\n"
+          + "optional_foreign_message {\n"
+          + "  c: 3\n"
+          + "}\n"
+          + "repeated_string: \"qux\"\n"
+          + "repeated_string: \"bar\"\n";
 
   public void testParsingWithNullExtensionRegistry() throws Exception {
     try {
@@ -83,23 +83,20 @@ public class MessageTest extends TestCase {
   }
 
   public void testMergeFrom() throws Exception {
-    TestAllTypes result =
-      TestAllTypes.newBuilder(MERGE_DEST)
-        .mergeFrom(MERGE_SOURCE).build();
+    TestAllTypes result = TestAllTypes.newBuilder(MERGE_DEST).mergeFrom(MERGE_SOURCE).build();
 
     assertEquals(MERGE_RESULT_TEXT, result.toString());
   }
 
   /**
-   * Test merging a DynamicMessage into a GeneratedMessage.  As long as they
-   * have the same descriptor, this should work, but it is an entirely different
-   * code path.
+   * Test merging a DynamicMessage into a GeneratedMessage. As long as they have the same
+   * descriptor, this should work, but it is an entirely different code path.
    */
   public void testMergeFromDynamic() throws Exception {
     TestAllTypes result =
-      TestAllTypes.newBuilder(MERGE_DEST)
-        .mergeFrom(DynamicMessage.newBuilder(MERGE_SOURCE).build())
-        .build();
+        TestAllTypes.newBuilder(MERGE_DEST)
+            .mergeFrom(DynamicMessage.newBuilder(MERGE_SOURCE).build())
+            .build();
 
     assertEquals(MERGE_RESULT_TEXT, result.toString());
   }
@@ -107,9 +104,9 @@ public class MessageTest extends TestCase {
   /** Test merging two DynamicMessages. */
   public void testDynamicMergeFrom() throws Exception {
     DynamicMessage result =
-      DynamicMessage.newBuilder(MERGE_DEST)
-        .mergeFrom(DynamicMessage.newBuilder(MERGE_SOURCE).build())
-        .build();
+        DynamicMessage.newBuilder(MERGE_DEST)
+            .mergeFrom(DynamicMessage.newBuilder(MERGE_SOURCE).build())
+            .build();
 
     assertEquals(MERGE_RESULT_TEXT, result.toString());
   }
@@ -117,10 +114,9 @@ public class MessageTest extends TestCase {
   // =================================================================
   // Required-field-related tests.
 
-  private static final TestRequired TEST_REQUIRED_UNINITIALIZED =
-    TestRequired.getDefaultInstance();
+  private static final TestRequired TEST_REQUIRED_UNINITIALIZED = TestRequired.getDefaultInstance();
   private static final TestRequired TEST_REQUIRED_INITIALIZED =
-    TestRequired.newBuilder().setA(1).setB(2).setC(3).build();
+      TestRequired.newBuilder().setA(1).setB(2).setC(3).build();
 
   public void testRequired() throws Exception {
     TestRequired.Builder builder = TestRequired.newBuilder();
@@ -189,20 +185,18 @@ public class MessageTest extends TestCase {
 
     assertTrue(builder.isInitialized());
 
-    builder.setField(descriptor.findFieldByName("optional_message"),
-                     TEST_REQUIRED_UNINITIALIZED);
+    builder.setField(descriptor.findFieldByName("optional_message"), TEST_REQUIRED_UNINITIALIZED);
     assertFalse(builder.isInitialized());
 
-    builder.setField(descriptor.findFieldByName("optional_message"),
-                     TEST_REQUIRED_INITIALIZED);
+    builder.setField(descriptor.findFieldByName("optional_message"), TEST_REQUIRED_INITIALIZED);
     assertTrue(builder.isInitialized());
 
-    builder.addRepeatedField(descriptor.findFieldByName("repeated_message"),
-                             TEST_REQUIRED_UNINITIALIZED);
+    builder.addRepeatedField(
+        descriptor.findFieldByName("repeated_message"), TEST_REQUIRED_UNINITIALIZED);
     assertFalse(builder.isInitialized());
 
-    builder.setRepeatedField(descriptor.findFieldByName("repeated_message"), 0,
-                             TEST_REQUIRED_INITIALIZED);
+    builder.setRepeatedField(
+        descriptor.findFieldByName("repeated_message"), 0, TEST_REQUIRED_INITIALIZED);
     assertTrue(builder.isInitialized());
   }
 
@@ -224,35 +218,35 @@ public class MessageTest extends TestCase {
   public void testNestedUninitializedException() throws Exception {
     try {
       TestRequiredForeign.newBuilder()
-        .setOptionalMessage(TEST_REQUIRED_UNINITIALIZED)
-        .addRepeatedMessage(TEST_REQUIRED_UNINITIALIZED)
-        .addRepeatedMessage(TEST_REQUIRED_UNINITIALIZED)
-        .build();
+          .setOptionalMessage(TEST_REQUIRED_UNINITIALIZED)
+          .addRepeatedMessage(TEST_REQUIRED_UNINITIALIZED)
+          .addRepeatedMessage(TEST_REQUIRED_UNINITIALIZED)
+          .build();
       fail("Should have thrown an exception.");
     } catch (UninitializedMessageException e) {
       assertEquals(
-        "Message missing required fields: " +
-        "optional_message.a, " +
-        "optional_message.b, " +
-        "optional_message.c, " +
-        "repeated_message[0].a, " +
-        "repeated_message[0].b, " +
-        "repeated_message[0].c, " +
-        "repeated_message[1].a, " +
-        "repeated_message[1].b, " +
-        "repeated_message[1].c",
-        e.getMessage());
+          "Message missing required fields: "
+              + "optional_message.a, "
+              + "optional_message.b, "
+              + "optional_message.c, "
+              + "repeated_message[0].a, "
+              + "repeated_message[0].b, "
+              + "repeated_message[0].c, "
+              + "repeated_message[1].a, "
+              + "repeated_message[1].b, "
+              + "repeated_message[1].c",
+          e.getMessage());
     }
   }
 
   public void testBuildNestedPartial() throws Exception {
     // We're mostly testing that no exception is thrown.
     TestRequiredForeign message =
-      TestRequiredForeign.newBuilder()
-        .setOptionalMessage(TEST_REQUIRED_UNINITIALIZED)
-        .addRepeatedMessage(TEST_REQUIRED_UNINITIALIZED)
-        .addRepeatedMessage(TEST_REQUIRED_UNINITIALIZED)
-        .buildPartial();
+        TestRequiredForeign.newBuilder()
+            .setOptionalMessage(TEST_REQUIRED_UNINITIALIZED)
+            .addRepeatedMessage(TEST_REQUIRED_UNINITIALIZED)
+            .addRepeatedMessage(TEST_REQUIRED_UNINITIALIZED)
+            .buildPartial();
     assertFalse(message.isInitialized());
   }
 
@@ -267,28 +261,29 @@ public class MessageTest extends TestCase {
 
   public void testParseNestedUnititialized() throws Exception {
     ByteString data =
-      TestRequiredForeign.newBuilder()
-        .setOptionalMessage(TEST_REQUIRED_UNINITIALIZED)
-        .addRepeatedMessage(TEST_REQUIRED_UNINITIALIZED)
-        .addRepeatedMessage(TEST_REQUIRED_UNINITIALIZED)
-        .buildPartial().toByteString();
+        TestRequiredForeign.newBuilder()
+            .setOptionalMessage(TEST_REQUIRED_UNINITIALIZED)
+            .addRepeatedMessage(TEST_REQUIRED_UNINITIALIZED)
+            .addRepeatedMessage(TEST_REQUIRED_UNINITIALIZED)
+            .buildPartial()
+            .toByteString();
 
     try {
       TestRequiredForeign.parseFrom(data);
       fail("Should have thrown an exception.");
     } catch (InvalidProtocolBufferException e) {
       assertEquals(
-        "Message missing required fields: " +
-        "optional_message.a, " +
-        "optional_message.b, " +
-        "optional_message.c, " +
-        "repeated_message[0].a, " +
-        "repeated_message[0].b, " +
-        "repeated_message[0].c, " +
-        "repeated_message[1].a, " +
-        "repeated_message[1].b, " +
-        "repeated_message[1].c",
-        e.getMessage());
+          "Message missing required fields: "
+              + "optional_message.a, "
+              + "optional_message.b, "
+              + "optional_message.c, "
+              + "repeated_message[0].a, "
+              + "repeated_message[0].b, "
+              + "repeated_message[0].c, "
+              + "repeated_message[1].a, "
+              + "repeated_message[1].b, "
+              + "repeated_message[1].c",
+          e.getMessage());
     }
   }
 
@@ -303,9 +298,7 @@ public class MessageTest extends TestCase {
 
   public void testDynamicBuildPartial() throws Exception {
     // We're mostly testing that no exception is thrown.
-    DynamicMessage message =
-      DynamicMessage.newBuilder(TestRequired.getDescriptor())
-        .buildPartial();
+    DynamicMessage message = DynamicMessage.newBuilder(TestRequired.getDescriptor()).buildPartial();
     assertFalse(message.isInitialized());
   }
 
@@ -318,43 +311,44 @@ public class MessageTest extends TestCase {
       assertEquals("Message missing required fields: a, b, c", e.getMessage());
     }
   }
-  
+
   /** Test reading unset repeated message from DynamicMessage. */
   public void testDynamicRepeatedMessageNull() throws Exception {
-    Descriptors.Descriptor descriptor = TestRequired.getDescriptor();
+    TestRequired.getDescriptor();
     DynamicMessage result =
-      DynamicMessage.newBuilder(TestAllTypes.getDescriptor())
-        .mergeFrom(DynamicMessage.newBuilder(MERGE_SOURCE).build())
-        .build();
+        DynamicMessage.newBuilder(TestAllTypes.getDescriptor())
+            .mergeFrom(DynamicMessage.newBuilder(MERGE_SOURCE).build())
+            .build();
 
-    assertTrue(result.getField(result.getDescriptorForType()
-        .findFieldByName("repeated_foreign_message")) instanceof List<?>);
+    assertTrue(
+        result.getField(result.getDescriptorForType().findFieldByName("repeated_foreign_message"))
+            instanceof List<?>);
     assertEquals(
         0,
         result.getRepeatedFieldCount(
             result.getDescriptorForType().findFieldByName("repeated_foreign_message")));
   }
-  
+
   /** Test reading repeated message from DynamicMessage. */
   public void testDynamicRepeatedMessageNotNull() throws Exception {
-
-    TestAllTypes REPEATED_NESTED =
-      TestAllTypes.newBuilder()
-        .setOptionalInt32(1)
-        .setOptionalString("foo")
-        .setOptionalForeignMessage(ForeignMessage.getDefaultInstance())
-        .addRepeatedString("bar")
-        .addRepeatedForeignMessage(ForeignMessage.getDefaultInstance())
-        .addRepeatedForeignMessage(ForeignMessage.getDefaultInstance())
-        .build();
-    Descriptors.Descriptor descriptor = TestRequired.getDescriptor();
+    TestAllTypes repeatedNested =
+        TestAllTypes.newBuilder()
+            .setOptionalInt32(1)
+            .setOptionalString("foo")
+            .setOptionalForeignMessage(ForeignMessage.getDefaultInstance())
+            .addRepeatedString("bar")
+            .addRepeatedForeignMessage(ForeignMessage.getDefaultInstance())
+            .addRepeatedForeignMessage(ForeignMessage.getDefaultInstance())
+            .build();
+    TestRequired.getDescriptor();
     DynamicMessage result =
-      DynamicMessage.newBuilder(TestAllTypes.getDescriptor())
-        .mergeFrom(DynamicMessage.newBuilder(REPEATED_NESTED).build())
-        .build();
+        DynamicMessage.newBuilder(TestAllTypes.getDescriptor())
+            .mergeFrom(DynamicMessage.newBuilder(repeatedNested).build())
+            .build();
 
-    assertTrue(result.getField(result.getDescriptorForType()
-        .findFieldByName("repeated_foreign_message")) instanceof List<?>);
+    assertTrue(
+        result.getField(result.getDescriptorForType().findFieldByName("repeated_foreign_message"))
+            instanceof List<?>);
     assertEquals(
         2,
         result.getRepeatedFieldCount(

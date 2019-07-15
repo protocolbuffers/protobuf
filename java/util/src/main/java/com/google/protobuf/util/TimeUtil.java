@@ -325,6 +325,7 @@ public final class TimeUtil {
   // Multiplications and divisions.
 
   // TODO(kak): Delete this.
+  @SuppressWarnings("DurationSecondsToDouble")
   public static Duration multiply(Duration duration, double times) {
     double result = duration.getSeconds() * times + duration.getNanos() * times / 1000000000.0;
     if (result < Long.MIN_VALUE || result > Long.MAX_VALUE) {

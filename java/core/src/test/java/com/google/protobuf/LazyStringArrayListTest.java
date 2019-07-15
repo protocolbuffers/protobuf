@@ -46,13 +46,13 @@ import junit.framework.TestCase;
  */
 public class LazyStringArrayListTest extends TestCase {
 
-  private static String STRING_A = "A";
-  private static String STRING_B = "B";
-  private static String STRING_C = "C";
+  private static final String STRING_A = "A";
+  private static final String STRING_B = "B";
+  private static final String STRING_C = "C";
 
-  private static ByteString BYTE_STRING_A = ByteString.copyFromUtf8("A");
-  private static ByteString BYTE_STRING_B = ByteString.copyFromUtf8("B");
-  private static ByteString BYTE_STRING_C = ByteString.copyFromUtf8("C");
+  private static final ByteString BYTE_STRING_A = ByteString.copyFromUtf8("A");
+  private static final ByteString BYTE_STRING_B = ByteString.copyFromUtf8("B");
+  private static final ByteString BYTE_STRING_C = ByteString.copyFromUtf8("C");
 
   public void testJustStrings() {
     LazyStringArrayList list = new LazyStringArrayList();
@@ -175,7 +175,7 @@ public class LazyStringArrayListTest extends TestCase {
     assertSame(BYTE_STRING_B, list2.getByteString(1));
     assertSame(BYTE_STRING_C, list2.getByteString(2));
   }
-  
+
   public void testModificationWithIteration() {
     LazyStringArrayList list = new LazyStringArrayList();
     list.addAll(asList(STRING_A, STRING_B, STRING_C));
@@ -183,12 +183,12 @@ public class LazyStringArrayListTest extends TestCase {
     assertEquals(3, list.size());
     assertEquals(STRING_A, list.get(0));
     assertEquals(STRING_A, iterator.next());
-    
+
     // Does not structurally modify.
     iterator = list.iterator();
     list.set(0, STRING_B);
     iterator.next();
-    
+
     list.remove(0);
     try {
       iterator.next();
@@ -196,7 +196,7 @@ public class LazyStringArrayListTest extends TestCase {
     } catch (ConcurrentModificationException e) {
       // expected
     }
-    
+
     iterator = list.iterator();
     list.add(0, STRING_C);
     try {
@@ -206,7 +206,7 @@ public class LazyStringArrayListTest extends TestCase {
       // expected
     }
   }
-  
+
   public void testMakeImmutable() {
     LazyStringArrayList list = new LazyStringArrayList();
     list.add(STRING_A);
@@ -214,52 +214,52 @@ public class LazyStringArrayListTest extends TestCase {
     list.add(STRING_C);
     list.makeImmutable();
     assertGenericListImmutable(list, STRING_A);
-    
+
     // LazyStringArrayList has extra methods not covered in the generic
     // assertion.
-    
+
     try {
       list.add(BYTE_STRING_A.toByteArray());
       fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
-    
+
     try {
       list.add(BYTE_STRING_A);
       fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
-    
+
     try {
       list.addAllByteArray(Collections.singletonList(BYTE_STRING_A.toByteArray()));
       fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
-    
+
     try {
       list.addAllByteString(asList(BYTE_STRING_A));
       fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
-    
+
     try {
       list.mergeFrom(new LazyStringArrayList());
       fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
-    
+
     try {
       list.set(0, BYTE_STRING_A.toByteArray());
       fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
-    
+
     try {
       list.set(0, BYTE_STRING_A);
       fail();
@@ -267,20 +267,20 @@ public class LazyStringArrayListTest extends TestCase {
       // expected
     }
   }
-  
+
   public void testImmutabilityPropagation() {
     LazyStringArrayList list = new LazyStringArrayList();
     list.add(STRING_A);
     list.makeImmutable();
 
     assertGenericListImmutable(list.asByteStringList(), BYTE_STRING_A);
-    
+
     // Arrays use reference equality so need to retrieve the underlying value
     // to properly test deep immutability.
     List<byte[]> byteArrayList = list.asByteArrayList();
     assertGenericListImmutable(byteArrayList, byteArrayList.get(0));
   }
-  
+
   @SuppressWarnings("unchecked")
   private static <T> void assertGenericListImmutable(List<T> list, T value) {
     try {
@@ -289,21 +289,21 @@ public class LazyStringArrayListTest extends TestCase {
     } catch (UnsupportedOperationException e) {
       // expected
     }
-    
+
     try {
       list.add(0, value);
       fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
-    
+
     try {
       list.addAll(asList(value));
       fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
-    
+
     try {
       list.addAll(0, asList(value));
       fail();
@@ -317,42 +317,42 @@ public class LazyStringArrayListTest extends TestCase {
     } catch (UnsupportedOperationException e) {
       // expected
     }
-    
+
     try {
       list.remove(0);
       fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
-    
+
     try {
       list.remove(value);
       fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
-    
+
     try {
       list.removeAll(asList(value));
       fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
-    
+
     try {
       list.retainAll(asList());
       fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
-    
+
     try {
       list.retainAll(asList());
       fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
-    
+
     try {
       list.set(0, value);
       fail();

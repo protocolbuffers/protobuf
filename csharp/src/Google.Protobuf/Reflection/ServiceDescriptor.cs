@@ -30,8 +30,10 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
+using Google.Protobuf.Collections;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace Google.Protobuf.Reflection
 {
@@ -58,6 +60,17 @@ namespace Google.Protobuf.Reflection
         /// </summary>
         public override string Name { get { return proto.Name; } }
 
+        internal override IReadOnlyList<DescriptorBase> GetNestedDescriptorListForField(int fieldNumber)
+        {
+            switch (fieldNumber)
+            {
+                case ServiceDescriptorProto.MethodFieldNumber:
+                    return (IReadOnlyList<DescriptorBase>) methods;
+                default:
+                    return null;
+            }
+        }
+
         internal ServiceDescriptorProto Proto { get { return proto; } }
 
         /// <value>
@@ -81,7 +94,27 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// The (possibly empty) set of custom options for this service.
         /// </summary>
-        public CustomOptions CustomOptions => Proto.Options?.CustomOptions ?? CustomOptions.Empty;
+        //[Obsolete("CustomOptions are obsolete. Use GetOption")]
+        public CustomOptions CustomOptions => new CustomOptions(Proto.Options._extensions?.ValuesByNumber);
+
+        /* // uncomment this in the full proto2 support PR
+        /// <summary>
+        /// Gets a single value enum option for this descriptor
+        /// </summary>
+        public T GetOption<T>(Extension<ServiceOptions, T> extension)
+        {
+            var value = Proto.Options.GetExtension(extension);
+            return value is IDeepCloneable<T> clonable ? clonable.Clone() : value;
+        }
+
+        /// <summary>
+        /// Gets a repeated value enum option for this descriptor
+        /// </summary>
+        public RepeatedField<T> GetOption<T>(RepeatedExtension<ServiceOptions, T> extension)
+        {
+            return Proto.Options.GetExtension(extension).Clone();
+        }
+        */
 
         internal void CrossLink()
         {
@@ -92,3 +125,4 @@ namespace Google.Protobuf.Reflection
         }
     }
 }
+ 

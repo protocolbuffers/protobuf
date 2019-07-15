@@ -800,6 +800,38 @@ jspb.BinaryWriter.prototype.writeMessage = function(
 
 
 /**
+ * Writes a message set extension to the buffer.
+ * @param {number} field The field number for the extension.
+ * @param {?MessageType} value The extension message object to write. Note that
+ *     message set can only have extensions with type of optional message.
+ * @param {function(!MessageTypeNonNull, !jspb.BinaryWriter)} writerCallback
+ *     Will be invoked with the value to write and the writer to write it with.
+ * @template MessageType
+ * Use go/closure-ttl to declare a non-nullable version of MessageType.  Replace
+ * the null in blah|null with none.  This is necessary because the compiler will
+ * infer MessageType to be nullable if the value parameter is nullable.
+ * @template MessageTypeNonNull :=
+ *     cond(isUnknown(MessageType), unknown(),
+ *       mapunion(MessageType, (X) =>
+ *         cond(eq(X, 'null'), none(), X)))
+ * =:
+ */
+jspb.BinaryWriter.prototype.writeMessageSet = function(
+    field, value, writerCallback) {
+  if (value == null) return;
+  // The wire format for a message set is defined by
+  // google3/net/proto/message_set.proto
+  this.writeFieldHeader_(1, jspb.BinaryConstants.WireType.START_GROUP);
+  this.writeFieldHeader_(2, jspb.BinaryConstants.WireType.VARINT);
+  this.encoder_.writeSignedVarint32(field);
+  var bookmark = this.beginDelimited_(3);
+  writerCallback(value, this);
+  this.endDelimited_(bookmark);
+  this.writeFieldHeader_(1, jspb.BinaryConstants.WireType.END_GROUP);
+};
+
+
+/**
  * Writes a group message to the buffer.
  *
  * @param {number} field The field number.

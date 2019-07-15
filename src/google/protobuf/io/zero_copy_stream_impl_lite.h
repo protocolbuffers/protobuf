@@ -44,14 +44,16 @@
 #ifndef GOOGLE_PROTOBUF_IO_ZERO_COPY_STREAM_IMPL_LITE_H__
 #define GOOGLE_PROTOBUF_IO_ZERO_COPY_STREAM_IMPL_LITE_H__
 
+#include <iosfwd>
 #include <memory>
 #include <string>
-#include <iosfwd>
-#include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/stubs/callback.h>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/stubs/stl_util.h>
 
+
+#include <google/protobuf/port_def.inc>
 
 namespace google {
 namespace protobuf {
@@ -60,7 +62,7 @@ namespace io {
 // ===================================================================
 
 // A ZeroCopyInputStream backed by an in-memory array of bytes.
-class LIBPROTOBUF_EXPORT ArrayInputStream : public ZeroCopyInputStream {
+class PROTOBUF_EXPORT ArrayInputStream : public ZeroCopyInputStream {
  public:
   // Create an InputStream that returns the bytes pointed to by "data".
   // "data" remains the property of the caller but must remain valid until
@@ -85,8 +87,8 @@ class LIBPROTOBUF_EXPORT ArrayInputStream : public ZeroCopyInputStream {
   const int block_size_;     // How many bytes to return at a time.
 
   int position_;
-  int last_returned_size_;   // How many bytes we returned last time Next()
-                             // was called (used for error checking only).
+  int last_returned_size_;  // How many bytes we returned last time Next()
+                            // was called (used for error checking only).
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ArrayInputStream);
 };
@@ -94,7 +96,7 @@ class LIBPROTOBUF_EXPORT ArrayInputStream : public ZeroCopyInputStream {
 // ===================================================================
 
 // A ZeroCopyOutputStream backed by an in-memory array of bytes.
-class LIBPROTOBUF_EXPORT ArrayOutputStream : public ZeroCopyOutputStream {
+class PROTOBUF_EXPORT ArrayOutputStream : public ZeroCopyOutputStream {
  public:
   // Create an OutputStream that writes to the bytes pointed to by "data".
   // "data" remains the property of the caller but must remain valid until
@@ -112,13 +114,13 @@ class LIBPROTOBUF_EXPORT ArrayOutputStream : public ZeroCopyOutputStream {
   int64 ByteCount() const override;
 
  private:
-  uint8* const data_;        // The byte array.
-  const int size_;           // Total size of the array.
-  const int block_size_;     // How many bytes to return at a time.
+  uint8* const data_;     // The byte array.
+  const int size_;        // Total size of the array.
+  const int block_size_;  // How many bytes to return at a time.
 
   int position_;
-  int last_returned_size_;   // How many bytes we returned last time Next()
-                             // was called (used for error checking only).
+  int last_returned_size_;  // How many bytes we returned last time Next()
+                            // was called (used for error checking only).
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ArrayOutputStream);
 };
@@ -126,7 +128,7 @@ class LIBPROTOBUF_EXPORT ArrayOutputStream : public ZeroCopyOutputStream {
 // ===================================================================
 
 // A ZeroCopyOutputStream which appends bytes to a string.
-class LIBPROTOBUF_EXPORT StringOutputStream : public ZeroCopyOutputStream {
+class PROTOBUF_EXPORT StringOutputStream : public ZeroCopyOutputStream {
  public:
   // Create a StringOutputStream which appends bytes to the given string.
   // The string remains property of the caller, but it is mutated in arbitrary
@@ -137,7 +139,7 @@ class LIBPROTOBUF_EXPORT StringOutputStream : public ZeroCopyOutputStream {
   // Hint:  If you call target->reserve(n) before creating the stream,
   //   the first call to Next() will return at least n bytes of buffer
   //   space.
-  explicit StringOutputStream(string* target);
+  explicit StringOutputStream(std::string* target);
   ~StringOutputStream() override = default;
 
   // implements ZeroCopyOutputStream ---------------------------------
@@ -145,13 +147,10 @@ class LIBPROTOBUF_EXPORT StringOutputStream : public ZeroCopyOutputStream {
   void BackUp(int count) override;
   int64 ByteCount() const override;
 
- protected:
-  void SetString(string* target);
-
  private:
   static const int kMinimumSize = 16;
 
-  string* target_;
+  std::string* target_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(StringOutputStream);
 };
@@ -173,7 +172,7 @@ class LIBPROTOBUF_EXPORT StringOutputStream : public ZeroCopyOutputStream {
 // CopyingInputStream implementations should avoid buffering if possible.
 // CopyingInputStreamAdaptor does its own buffering and will read data
 // in large blocks.
-class LIBPROTOBUF_EXPORT CopyingInputStream {
+class PROTOBUF_EXPORT CopyingInputStream {
  public:
   virtual ~CopyingInputStream() {}
 
@@ -199,7 +198,7 @@ class LIBPROTOBUF_EXPORT CopyingInputStream {
 // If you want to read from file descriptors or C++ istreams, this is
 // already implemented for you:  use FileInputStream or IstreamInputStream
 // respectively.
-class LIBPROTOBUF_EXPORT CopyingInputStreamAdaptor : public ZeroCopyInputStream {
+class PROTOBUF_EXPORT CopyingInputStreamAdaptor : public ZeroCopyInputStream {
  public:
   // Creates a stream that reads from the given CopyingInputStream.
   // If a block_size is given, it specifies the number of bytes that
@@ -267,7 +266,7 @@ class LIBPROTOBUF_EXPORT CopyingInputStreamAdaptor : public ZeroCopyInputStream 
 // CopyingOutputStream implementations should avoid buffering if possible.
 // CopyingOutputStreamAdaptor does its own buffering and will write data
 // in large blocks.
-class LIBPROTOBUF_EXPORT CopyingOutputStream {
+class PROTOBUF_EXPORT CopyingOutputStream {
  public:
   virtual ~CopyingOutputStream() {}
 
@@ -283,7 +282,7 @@ class LIBPROTOBUF_EXPORT CopyingOutputStream {
 // If you want to write to file descriptors or C++ ostreams, this is
 // already implemented for you:  use FileOutputStream or OstreamOutputStream
 // respectively.
-class LIBPROTOBUF_EXPORT CopyingOutputStreamAdaptor : public ZeroCopyOutputStream {
+class PROTOBUF_EXPORT CopyingOutputStreamAdaptor : public ZeroCopyOutputStream {
  public:
   // Creates a stream that writes to the given Unix file descriptor.
   // If a block_size is given, it specifies the size of the buffers
@@ -341,6 +340,31 @@ class LIBPROTOBUF_EXPORT CopyingOutputStreamAdaptor : public ZeroCopyOutputStrea
 
 // ===================================================================
 
+// A ZeroCopyInputStream which wraps some other stream and limits it to
+// a particular byte count.
+class PROTOBUF_EXPORT LimitingInputStream : public ZeroCopyInputStream {
+ public:
+  LimitingInputStream(ZeroCopyInputStream* input, int64 limit);
+  ~LimitingInputStream() override;
+
+  // implements ZeroCopyInputStream ----------------------------------
+  bool Next(const void** data, int* size) override;
+  void BackUp(int count) override;
+  bool Skip(int count) override;
+  int64 ByteCount() const override;
+
+
+ private:
+  ZeroCopyInputStream* input_;
+  int64 limit_;  // Decreases as we go, becomes negative if we overshoot.
+  int64 prior_bytes_read_;  // Bytes read on underlying stream at construction
+
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(LimitingInputStream);
+};
+
+
+// ===================================================================
+
 // mutable_string_data() and as_string_data() are workarounds to improve
 // the performance of writing new data to an existing string.  Unfortunately
 // the methods provided by the string class are suboptimal, and using memcpy()
@@ -356,31 +380,25 @@ class LIBPROTOBUF_EXPORT CopyingOutputStreamAdaptor : public ZeroCopyOutputStrea
 // Return a pointer to mutable characters underlying the given string.  The
 // return value is valid until the next time the string is resized.  We
 // trust the caller to treat the return value as an array of length s->size().
-inline char* mutable_string_data(string* s) {
-#ifdef LANG_CXX11
+inline char* mutable_string_data(std::string* s) {
   // This should be simpler & faster than string_as_array() because the latter
   // is guaranteed to return NULL when *s is empty, so it has to check for that.
   return &(*s)[0];
-#else
-  return string_as_array(s);
-#endif
 }
 
 // as_string_data(s) is equivalent to
 //  ({ char* p = mutable_string_data(s); make_pair(p, p != NULL); })
 // Sometimes it's faster: in some scenarios p cannot be NULL, and then the
 // code can avoid that check.
-inline std::pair<char*, bool> as_string_data(string* s) {
-  char *p = mutable_string_data(s);
-#ifdef LANG_CXX11
+inline std::pair<char*, bool> as_string_data(std::string* s) {
+  char* p = mutable_string_data(s);
   return std::make_pair(p, true);
-#else
-  return std::make_pair(p, p != NULL);
-#endif
 }
 
 }  // namespace io
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_IO_ZERO_COPY_STREAM_IMPL_LITE_H__

@@ -35,8 +35,8 @@
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/field_mask.pb.h>
-#include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/test_util.h>
+#include <google/protobuf/unittest.pb.h>
 #include <gtest/gtest.h>
 
 namespace google {
@@ -45,8 +45,8 @@ namespace util {
 
 class SnakeCaseCamelCaseTest : public ::testing::Test {
  protected:
-  string SnakeCaseToCamelCase(const string& input) {
-    string output;
+  string SnakeCaseToCamelCase(const std::string& input) {
+    std::string output;
     if (FieldMaskUtil::SnakeCaseToCamelCase(input, &output)) {
       return output;
     } else {
@@ -54,8 +54,8 @@ class SnakeCaseCamelCaseTest : public ::testing::Test {
     }
   }
 
-  string CamelCaseToSnakeCase(const string& input) {
-    string output;
+  string CamelCaseToSnakeCase(const std::string& input) {
+    std::string output;
     if (FieldMaskUtil::CamelCaseToSnakeCase(input, &output)) {
       return output;
     } else {
@@ -92,10 +92,10 @@ TEST_F(SnakeCaseCamelCaseTest, CamelToSnake) {
 TEST_F(SnakeCaseCamelCaseTest, RoundTripTest) {
   // Enumerates all possible snake_case names and test that converting it to
   // camelCase and then to snake_case again will yield the original name.
-  string name = "___abc123";
+  std::string name = "___abc123";
   std::sort(name.begin(), name.end());
   do {
-    string camelName = SnakeCaseToCamelCase(name);
+    std::string camelName = SnakeCaseToCamelCase(name);
     if (camelName != "#FAIL#") {
       EXPECT_EQ(name, CamelCaseToSnakeCase(camelName));
     }
@@ -106,18 +106,18 @@ TEST_F(SnakeCaseCamelCaseTest, RoundTripTest) {
   name = "abcABC123";
   std::sort(name.begin(), name.end());
   do {
-    string camelName = CamelCaseToSnakeCase(name);
+    std::string camelName = CamelCaseToSnakeCase(name);
     if (camelName != "#FAIL#") {
       EXPECT_EQ(name, SnakeCaseToCamelCase(camelName));
     }
   } while (std::next_permutation(name.begin(), name.end()));
 }
 
+using google::protobuf::FieldMask;
+using protobuf_unittest::NestedTestAllTypes;
 using protobuf_unittest::TestAllTypes;
 using protobuf_unittest::TestRequired;
 using protobuf_unittest::TestRequiredMessage;
-using protobuf_unittest::NestedTestAllTypes;
-using google::protobuf::FieldMask;
 
 TEST(FieldMaskUtilTest, StringFormat) {
   FieldMask mask;
@@ -140,7 +140,7 @@ TEST(FieldMaskUtilTest, StringFormat) {
 
 TEST(FieldMaskUtilTest, JsonStringFormat) {
   FieldMask mask;
-  string value;
+  std::string value;
   EXPECT_TRUE(FieldMaskUtil::ToJsonString(mask, &value));
   EXPECT_EQ("", value);
   mask.add_paths("foo_bar");
@@ -707,16 +707,14 @@ TEST(FieldMaskUtilTest, TrimMessage) {
   required_msg_2.clear_repeated_message();
   required_msg_2.mutable_required_message()->clear_dummy2();
   FieldMaskUtil::TrimMessage(mask, &trimmed_required_msg_2, options);
-  EXPECT_EQ(trimmed_required_msg_2.DebugString(),
-            required_msg_2.DebugString());
+  EXPECT_EQ(trimmed_required_msg_2.DebugString(), required_msg_2.DebugString());
 
   FieldMaskUtil::FromString("required_message", &mask);
   required_msg_2.mutable_required_message()->set_dummy2(7890);
   trimmed_required_msg_2.mutable_required_message()->set_dummy2(7890);
   required_msg_2.clear_optional_message();
   FieldMaskUtil::TrimMessage(mask, &trimmed_required_msg_2, options);
-  EXPECT_EQ(trimmed_required_msg_2.DebugString(),
-            required_msg_2.DebugString());
+  EXPECT_EQ(trimmed_required_msg_2.DebugString(), required_msg_2.DebugString());
 
   // Test trim required message with keep_required_fields is set false.
   FieldMaskUtil::FromString("required_message.dummy2", &mask);
@@ -725,8 +723,7 @@ TEST(FieldMaskUtilTest, TrimMessage) {
   required_msg_2.mutable_required_message()->clear_c();
   options.set_keep_required_fields(false);
   FieldMaskUtil::TrimMessage(mask, &trimmed_required_msg_2, options);
-  EXPECT_EQ(trimmed_required_msg_2.DebugString(),
-            required_msg_2.DebugString());
+  EXPECT_EQ(trimmed_required_msg_2.DebugString(), required_msg_2.DebugString());
 
   // Verify that trimming an empty message has no effect. In particular, fields
   // mentioned in the field mask should not be created or changed.

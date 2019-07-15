@@ -167,7 +167,8 @@ static void map_begin_internal(Map *map, MapIter *iter) {
   upb_strtable_begin(&iter->it, &map->table);
 }
 
-static HashTable *map_field_get_gc(zval *object, CACHED_VALUE **table, int *n) {
+static HashTable *map_field_get_gc(zval *object, CACHED_VALUE **table,
+                                   int *n TSRMLS_DC) {
   // TODO(teboring): Unfortunately, zend engine does not support garbage
   // collection for custom array. We have to use zend engine's native array
   // instead.
@@ -294,7 +295,7 @@ static bool map_field_read_dimension(zval *object, zval *key, int type,
   }
 }
 
-static bool map_index_unset(Map *intern, const char* keyval, int length) {
+static void map_index_unset(Map *intern, const char* keyval, int length) {
   upb_value old_value;
   if (upb_strtable_remove2(&intern->table, keyval, length, &old_value)) {
     switch (intern->value_type) {

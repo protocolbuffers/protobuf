@@ -37,9 +37,9 @@ namespace Google.Protobuf.Examples.AddressBook {
             "ZHJlc3NCb29rYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, },
-          new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Examples.AddressBook.Person), global::Google.Protobuf.Examples.AddressBook.Person.Parser, new[]{ "Name", "Id", "Email", "Phones", "LastUpdated" }, null, new[]{ typeof(global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType) }, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneNumber), global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneNumber.Parser, new[]{ "Number", "Type" }, null, null, null)}),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Examples.AddressBook.AddressBook), global::Google.Protobuf.Examples.AddressBook.AddressBook.Parser, new[]{ "People" }, null, null, null)
+          new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Examples.AddressBook.Person), global::Google.Protobuf.Examples.AddressBook.Person.Parser, new[]{ "Name", "Id", "Email", "Phones", "LastUpdated" }, null, new[]{ typeof(global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType) }, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneNumber), global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneNumber.Parser, new[]{ "Number", "Type" }, null, null, null, null)}),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Examples.AddressBook.AddressBook), global::Google.Protobuf.Examples.AddressBook.AddressBook.Parser, new[]{ "People" }, null, null, null, null)
           }));
     }
     #endregion
@@ -247,7 +247,7 @@ namespace Google.Protobuf.Examples.AddressBook {
       phones_.Add(other.phones_);
       if (other.lastUpdated_ != null) {
         if (lastUpdated_ == null) {
-          lastUpdated_ = new global::Google.Protobuf.WellKnownTypes.Timestamp();
+          LastUpdated = new global::Google.Protobuf.WellKnownTypes.Timestamp();
         }
         LastUpdated.MergeFrom(other.LastUpdated);
       }
@@ -280,9 +280,9 @@ namespace Google.Protobuf.Examples.AddressBook {
           }
           case 42: {
             if (lastUpdated_ == null) {
-              lastUpdated_ = new global::Google.Protobuf.WellKnownTypes.Timestamp();
+              LastUpdated = new global::Google.Protobuf.WellKnownTypes.Timestamp();
             }
-            input.ReadMessage(lastUpdated_);
+            input.ReadMessage(LastUpdated);
             break;
           }
         }
@@ -347,7 +347,7 @@ namespace Google.Protobuf.Examples.AddressBook {
 
         /// <summary>Field number for the "type" field.</summary>
         public const int TypeFieldNumber = 2;
-        private global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType type_ = 0;
+        private global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType type_ = global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType.Mobile;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType Type {
           get { return type_; }
@@ -378,7 +378,7 @@ namespace Google.Protobuf.Examples.AddressBook {
         public override int GetHashCode() {
           int hash = 1;
           if (Number.Length != 0) hash ^= Number.GetHashCode();
-          if (Type != 0) hash ^= Type.GetHashCode();
+          if (Type != global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType.Mobile) hash ^= Type.GetHashCode();
           if (_unknownFields != null) {
             hash ^= _unknownFields.GetHashCode();
           }
@@ -396,7 +396,7 @@ namespace Google.Protobuf.Examples.AddressBook {
             output.WriteRawTag(10);
             output.WriteString(Number);
           }
-          if (Type != 0) {
+          if (Type != global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType.Mobile) {
             output.WriteRawTag(16);
             output.WriteEnum((int) Type);
           }
@@ -411,7 +411,7 @@ namespace Google.Protobuf.Examples.AddressBook {
           if (Number.Length != 0) {
             size += 1 + pb::CodedOutputStream.ComputeStringSize(Number);
           }
-          if (Type != 0) {
+          if (Type != global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType.Mobile) {
             size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Type);
           }
           if (_unknownFields != null) {
@@ -428,7 +428,7 @@ namespace Google.Protobuf.Examples.AddressBook {
           if (other.Number.Length != 0) {
             Number = other.Number;
           }
-          if (other.Type != 0) {
+          if (other.Type != global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType.Mobile) {
             Type = other.Type;
           }
           _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
@@ -447,7 +447,7 @@ namespace Google.Protobuf.Examples.AddressBook {
                 break;
               }
               case 16: {
-                type_ = (global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType) input.ReadEnum();
+                Type = (global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType) input.ReadEnum();
                 break;
               }
             }

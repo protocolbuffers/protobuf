@@ -35,6 +35,9 @@
 
 #include <string>
 #include <google/protobuf/compiler/code_generator.h>
+#include <google/protobuf/descriptor.h>
+
+#include <google/protobuf/port_def.inc>
 
 namespace google {
 namespace protobuf {
@@ -45,10 +48,13 @@ namespace objectivec {
 // header.  If you create your own protocol compiler binary and you want it to
 // support ObjectiveC output, you can do so by registering an instance of this
 // CodeGenerator with the CommandLineInterface in your main() function.
-class LIBPROTOC_EXPORT ObjectiveCGenerator : public CodeGenerator {
+class PROTOC_EXPORT ObjectiveCGenerator : public CodeGenerator {
  public:
   ObjectiveCGenerator();
   ~ObjectiveCGenerator();
+
+  ObjectiveCGenerator(const ObjectiveCGenerator&) = delete;
+  ObjectiveCGenerator& operator=(const ObjectiveCGenerator&) = delete;
 
   // implements CodeGenerator ----------------------------------------
   bool HasGenerateAll() const;
@@ -60,13 +66,13 @@ class LIBPROTOC_EXPORT ObjectiveCGenerator : public CodeGenerator {
                    const string& parameter,
                    GeneratorContext* context,
                    string* error) const;
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ObjectiveCGenerator);
 };
 
 }  // namespace objectivec
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
+
 #endif  // GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_GENERATOR_H__

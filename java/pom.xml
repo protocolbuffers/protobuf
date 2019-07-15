@@ -1,17 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>com.google</groupId>
-    <artifactId>google</artifactId>
-    <version>1</version>
-  </parent>
 
   <groupId>com.google.protobuf</groupId>
   <artifactId>protobuf-parent</artifactId>
-  <version>3.6.1</version>
+  <version>3.9.0-rc-1</version>
   <packaging>pom</packaging>
 
   <name>Protocol Buffers [Parent]</name>
@@ -21,6 +14,17 @@
     Protocol Buffers are a way of encoding structured data in an efficient yet
     extensible format.
   </description>
+
+  <developers>
+    <developer>
+      <id>haon</id>
+      <name>Hao Nguyen</name>
+      <email>haon@google.com</email>
+      <organization>Google</organization>
+      <organizationUrl>https://cloud.google.com</organizationUrl>
+      <timezone>America/Los_Angeles</timezone>
+    </developer>
+  </developers>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -44,8 +48,8 @@
   </licenses>
 
   <scm>
-    <url>https://github.com/google/protobuf</url>
-    <connection>scm:git:https://github.com/google/protobuf.git</connection>
+    <url>https://github.com/protocolbuffers/protobuf</url>
+    <connection>scm:git:https://github.com/protocolbuffers/protobuf.git</connection>
   </scm>
 
   <distributionManagement>
@@ -61,6 +65,13 @@
 
   <dependencyManagement>
     <dependencies>
+      <dependency>
+        <groupId>com.google.protobuf</groupId>
+        <artifactId>protobuf-bom</artifactId>
+        <version>${project.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
       <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
@@ -82,7 +93,19 @@
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
-        <version>19.0</version>
+        <version>28.0-android</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava-testlib</artifactId>
+        <version>28.0-jre</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.google.truth</groupId>
+        <artifactId>truth</artifactId>
+        <version>0.45</version>
+        <scope>test</scope>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -205,6 +228,8 @@
   </profiles>
 
   <modules>
+    <module>bom</module>
+    <module>lite</module>
     <module>core</module>
     <module>util</module>
   </modules>

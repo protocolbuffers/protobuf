@@ -113,39 +113,34 @@ namespace {
 // Note:  No class is allowed to contain '\0', since this is used to mark end-
 //   of-input and is handled specially.
 
-#define CHARACTER_CLASS(NAME, EXPRESSION)      \
-  class NAME {                                 \
-   public:                                     \
-    static inline bool InClass(char c) {       \
-      return EXPRESSION;                       \
-    }                                          \
+#define CHARACTER_CLASS(NAME, EXPRESSION)                     \
+  class NAME {                                                \
+   public:                                                    \
+    static inline bool InClass(char c) { return EXPRESSION; } \
   }
 
-CHARACTER_CLASS(Whitespace, c == ' ' || c == '\n' || c == '\t' ||
-                            c == '\r' || c == '\v' || c == '\f');
-CHARACTER_CLASS(WhitespaceNoNewline, c == ' ' || c == '\t' ||
-                                     c == '\r' || c == '\v' || c == '\f');
+CHARACTER_CLASS(Whitespace, c == ' ' || c == '\n' || c == '\t' || c == '\r' ||
+                                c == '\v' || c == '\f');
+CHARACTER_CLASS(WhitespaceNoNewline,
+                c == ' ' || c == '\t' || c == '\r' || c == '\v' || c == '\f');
 
-CHARACTER_CLASS(Unprintable, c < ' ' && c > '\0');
+CHARACTER_CLASS(Unprintable, c<' ' && c> '\0');
 
 CHARACTER_CLASS(Digit, '0' <= c && c <= '9');
 CHARACTER_CLASS(OctalDigit, '0' <= c && c <= '7');
-CHARACTER_CLASS(HexDigit, ('0' <= c && c <= '9') ||
-                          ('a' <= c && c <= 'f') ||
-                          ('A' <= c && c <= 'F'));
+CHARACTER_CLASS(HexDigit, ('0' <= c && c <= '9') || ('a' <= c && c <= 'f') ||
+                              ('A' <= c && c <= 'F'));
 
-CHARACTER_CLASS(Letter, ('a' <= c && c <= 'z') ||
-                        ('A' <= c && c <= 'Z') ||
-                        (c == '_'));
+CHARACTER_CLASS(Letter,
+                ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || (c == '_'));
 
 CHARACTER_CLASS(Alphanumeric, ('a' <= c && c <= 'z') ||
-                              ('A' <= c && c <= 'Z') ||
-                              ('0' <= c && c <= '9') ||
-                              (c == '_'));
+                                  ('A' <= c && c <= 'Z') ||
+                                  ('0' <= c && c <= '9') || (c == '_'));
 
 CHARACTER_CLASS(Escape, c == 'a' || c == 'b' || c == 'f' || c == 'n' ||
-                        c == 'r' || c == 't' || c == 'v' || c == '\\' ||
-                        c == '?' || c == '\'' || c == '\"');
+                            c == 'r' || c == 't' || c == 'v' || c == '\\' ||
+                            c == '?' || c == '\'' || c == '\"');
 
 #undef CHARACTER_CLASS
 
@@ -161,20 +156,32 @@ inline int DigitValue(char digit) {
 // Inline because it's only used in one place.
 inline char TranslateEscape(char c) {
   switch (c) {
-    case 'a':  return '\a';
-    case 'b':  return '\b';
-    case 'f':  return '\f';
-    case 'n':  return '\n';
-    case 'r':  return '\r';
-    case 't':  return '\t';
-    case 'v':  return '\v';
-    case '\\': return '\\';
-    case '?':  return '\?';    // Trigraphs = :(
-    case '\'': return '\'';
-    case '"':  return '\"';
+    case 'a':
+      return '\a';
+    case 'b':
+      return '\b';
+    case 'f':
+      return '\f';
+    case 'n':
+      return '\n';
+    case 'r':
+      return '\r';
+    case 't':
+      return '\t';
+    case 'v':
+      return '\v';
+    case '\\':
+      return '\\';
+    case '?':
+      return '\?';  // Trigraphs = :(
+    case '\'':
+      return '\'';
+    case '"':
+      return '\"';
 
     // We expect escape sequences to have been validated separately.
-    default:   return '?';
+    default:
+      return '?';
   }
 }
 
@@ -186,21 +193,20 @@ ErrorCollector::~ErrorCollector() {}
 
 Tokenizer::Tokenizer(ZeroCopyInputStream* input,
                      ErrorCollector* error_collector)
-  : input_(input),
-    error_collector_(error_collector),
-    buffer_(NULL),
-    buffer_size_(0),
-    buffer_pos_(0),
-    read_error_(false),
-    line_(0),
-    column_(0),
-    record_target_(NULL),
-    record_start_(-1),
-    allow_f_after_float_(false),
-    comment_style_(CPP_COMMENT_STYLE),
-    require_space_after_number_(true),
-    allow_multiline_strings_(false) {
-
+    : input_(input),
+      error_collector_(error_collector),
+      buffer_(NULL),
+      buffer_size_(0),
+      buffer_pos_(0),
+      read_error_(false),
+      line_(0),
+      column_(0),
+      record_target_(NULL),
+      record_start_(-1),
+      allow_f_after_float_(false),
+      comment_style_(CPP_COMMENT_STYLE),
+      require_space_after_number_(true),
+      allow_multiline_strings_(false) {
   current_.line = 0;
   current_.column = 0;
   current_.end_column = 0;
@@ -249,7 +255,8 @@ void Tokenizer::Refresh() {
 
   // If we're in a token, append the rest of the buffer to it.
   if (record_target_ != NULL && record_start_ < buffer_size_) {
-    record_target_->append(buffer_ + record_start_, buffer_size_ - record_start_);
+    record_target_->append(buffer_ + record_start_,
+                           buffer_size_ - record_start_);
     record_start_ = 0;
   }
 
@@ -271,7 +278,7 @@ void Tokenizer::Refresh() {
   current_char_ = buffer_[0];
 }
 
-inline void Tokenizer::RecordTo(string* target) {
+inline void Tokenizer::RecordTo(std::string* target) {
   record_target_ = target;
   record_start_ = buffer_pos_;
 }
@@ -282,14 +289,15 @@ inline void Tokenizer::StopRecording() {
   //   be helpful by detecting the NULL pointer, even though there's nothing
   //   wrong with reading zero bytes from NULL.
   if (buffer_pos_ != record_start_) {
-    record_target_->append(buffer_ + record_start_, buffer_pos_ - record_start_);
+    record_target_->append(buffer_ + record_start_,
+                           buffer_pos_ - record_start_);
   }
   record_target_ = NULL;
   record_start_ = -1;
 }
 
 inline void Tokenizer::StartToken() {
-  current_.type = TYPE_START;    // Just for the sake of initializing it.
+  current_.type = TYPE_START;  // Just for the sake of initializing it.
   current_.text.clear();
   current_.line = line_;
   current_.column = column_;
@@ -304,12 +312,12 @@ inline void Tokenizer::EndToken() {
 // -------------------------------------------------------------------
 // Helper methods that consume characters.
 
-template<typename CharacterClass>
+template <typename CharacterClass>
 inline bool Tokenizer::LookingAt() {
   return CharacterClass::InClass(current_char_);
 }
 
-template<typename CharacterClass>
+template <typename CharacterClass>
 inline bool Tokenizer::TryConsumeOne() {
   if (CharacterClass::InClass(current_char_)) {
     NextChar();
@@ -328,14 +336,14 @@ inline bool Tokenizer::TryConsume(char c) {
   }
 }
 
-template<typename CharacterClass>
+template <typename CharacterClass>
 inline void Tokenizer::ConsumeZeroOrMore() {
   while (CharacterClass::InClass(current_char_)) {
     NextChar();
   }
 }
 
-template<typename CharacterClass>
+template <typename CharacterClass>
 inline void Tokenizer::ConsumeOneOrMore(const char* error) {
   if (!CharacterClass::InClass(current_char_)) {
     AddError(error);
@@ -381,25 +389,21 @@ void Tokenizer::ConsumeString(char delimiter) {
           }
           // Possibly followed by another hex digit, but again we don't care.
         } else if (TryConsume('u')) {
-          if (!TryConsumeOne<HexDigit>() ||
-              !TryConsumeOne<HexDigit>() ||
-              !TryConsumeOne<HexDigit>() ||
-              !TryConsumeOne<HexDigit>()) {
+          if (!TryConsumeOne<HexDigit>() || !TryConsumeOne<HexDigit>() ||
+              !TryConsumeOne<HexDigit>() || !TryConsumeOne<HexDigit>()) {
             AddError("Expected four hex digits for \\u escape sequence.");
           }
         } else if (TryConsume('U')) {
           // We expect 8 hex digits; but only the range up to 0x10ffff is
           // legal.
-          if (!TryConsume('0') ||
-              !TryConsume('0') ||
+          if (!TryConsume('0') || !TryConsume('0') ||
               !(TryConsume('0') || TryConsume('1')) ||
-              !TryConsumeOne<HexDigit>() ||
-              !TryConsumeOne<HexDigit>() ||
-              !TryConsumeOne<HexDigit>() ||
-              !TryConsumeOne<HexDigit>() ||
+              !TryConsumeOne<HexDigit>() || !TryConsumeOne<HexDigit>() ||
+              !TryConsumeOne<HexDigit>() || !TryConsumeOne<HexDigit>() ||
               !TryConsumeOne<HexDigit>()) {
-            AddError("Expected eight hex digits up to 10ffff for \\U escape "
-                     "sequence");
+            AddError(
+                "Expected eight hex digits up to 10ffff for \\U escape "
+                "sequence");
           }
         } else {
           AddError("Invalid escape sequence in string literal.");
@@ -465,7 +469,7 @@ Tokenizer::TokenType Tokenizer::ConsumeNumber(bool started_with_zero,
   } else if (current_char_ == '.') {
     if (is_float) {
       AddError(
-        "Already saw decimal point or exponent; can't have another one.");
+          "Already saw decimal point or exponent; can't have another one.");
     } else {
       AddError("Hex and octal numbers must be integers.");
     }
@@ -474,7 +478,7 @@ Tokenizer::TokenType Tokenizer::ConsumeNumber(bool started_with_zero,
   return is_float ? TYPE_FLOAT : TYPE_INTEGER;
 }
 
-void Tokenizer::ConsumeLineComment(string* content) {
+void Tokenizer::ConsumeLineComment(std::string* content) {
   if (content != NULL) RecordTo(content);
 
   while (current_char_ != '\0' && current_char_ != '\n') {
@@ -485,17 +489,15 @@ void Tokenizer::ConsumeLineComment(string* content) {
   if (content != NULL) StopRecording();
 }
 
-void Tokenizer::ConsumeBlockComment(string* content) {
+void Tokenizer::ConsumeBlockComment(std::string* content) {
   int start_line = line_;
   int start_column = column_ - 2;
 
   if (content != NULL) RecordTo(content);
 
   while (true) {
-    while (current_char_ != '\0' &&
-           current_char_ != '*' &&
-           current_char_ != '/' &&
-           current_char_ != '\n') {
+    while (current_char_ != '\0' && current_char_ != '*' &&
+           current_char_ != '/' && current_char_ != '\n') {
       NextChar();
     }
 
@@ -524,11 +526,11 @@ void Tokenizer::ConsumeBlockComment(string* content) {
       // Note:  We didn't consume the '*' because if there is a '/' after it
       //   we want to interpret that as the end of the comment.
       AddError(
-        "\"/*\" inside block comment.  Block comments cannot be nested.");
+          "\"/*\" inside block comment.  Block comments cannot be nested.");
     } else if (current_char_ == '\0') {
       AddError("End-of-file inside block comment.");
-      error_collector_->AddError(
-        start_line, start_column, "  Comment started here.");
+      error_collector_->AddError(start_line, start_column,
+                                 "  Comment started here.");
       if (content != NULL) StopRecording();
       break;
     }
@@ -613,8 +615,9 @@ bool Tokenizer::Next() {
               current_.line == previous_.line &&
               current_.column == previous_.end_column) {
             // We don't accept syntax like "blah.123".
-            error_collector_->AddError(line_, column_ - 2,
-              "Need space between identifier and decimal point.");
+            error_collector_->AddError(
+                line_, column_ - 2,
+                "Need space between identifier and decimal point.");
           }
           current_.type = ConsumeNumber(false, true);
         } else {
@@ -631,7 +634,8 @@ bool Tokenizer::Next() {
       } else {
         // Check if the high order bit is set.
         if (current_char_ & 0x80) {
-          error_collector_->AddError(line_, column_,
+          error_collector_->AddError(
+              line_, column_,
               StringPrintf("Interpreting non ascii codepoint %d.",
                            static_cast<unsigned char>(current_char_)));
         }
@@ -664,9 +668,9 @@ namespace {
 // next_leading_comments.
 class CommentCollector {
  public:
-  CommentCollector(string* prev_trailing_comments,
-                   std::vector<string>* detached_comments,
-                   string* next_leading_comments)
+  CommentCollector(std::string* prev_trailing_comments,
+                   std::vector<std::string>* detached_comments,
+                   std::string* next_leading_comments)
       : prev_trailing_comments_(prev_trailing_comments),
         detached_comments_(detached_comments),
         next_leading_comments_(next_leading_comments),
@@ -687,7 +691,7 @@ class CommentCollector {
 
   // About to read a line comment.  Get the comment buffer pointer in order to
   // read into it.
-  string* GetBufferForLineComment() {
+  std::string* GetBufferForLineComment() {
     // We want to combine with previous line comments, but not block comments.
     if (has_comment_ && !is_line_comment_) {
       Flush();
@@ -699,7 +703,7 @@ class CommentCollector {
 
   // About to read a block comment.  Get the comment buffer pointer in order to
   // read into it.
-  string* GetBufferForBlockComment() {
+  std::string* GetBufferForBlockComment() {
     if (has_comment_) {
       Flush();
     }
@@ -731,16 +735,14 @@ class CommentCollector {
     }
   }
 
-  void DetachFromPrev() {
-    can_attach_to_prev_ = false;
-  }
+  void DetachFromPrev() { can_attach_to_prev_ = false; }
 
  private:
-  string* prev_trailing_comments_;
-  std::vector<string>* detached_comments_;
-  string* next_leading_comments_;
+  std::string* prev_trailing_comments_;
+  std::vector<std::string>* detached_comments_;
+  std::string* next_leading_comments_;
 
-  string comment_buffer_;
+  std::string comment_buffer_;
 
   // True if any comments were read into comment_buffer_.  This can be true even
   // if comment_buffer_ is empty, namely if the comment was "/**/".
@@ -754,11 +756,11 @@ class CommentCollector {
   bool can_attach_to_prev_;
 };
 
-} // namespace
+}  // namespace
 
-bool Tokenizer::NextWithComments(string* prev_trailing_comments,
-                                 std::vector<string>* detached_comments,
-                                 string* next_leading_comments) {
+bool Tokenizer::NextWithComments(std::string* prev_trailing_comments,
+                                 std::vector<std::string>* detached_comments,
+                                 std::string* next_leading_comments) {
   CommentCollector collector(prev_trailing_comments, detached_comments,
                              next_leading_comments);
 
@@ -767,8 +769,9 @@ bool Tokenizer::NextWithComments(string* prev_trailing_comments,
     // beginning. Only UTF-8 BOM (0xEF 0xBB 0xBF) is accepted.
     if (TryConsume((char)0xEF)) {
       if (!TryConsume((char)0xBB) || !TryConsume((char)0xBF)) {
-        AddError("Proto file starts with 0xEF but not UTF-8 BOM. "
-                 "Only UTF-8 is accepted for proto file.");
+        AddError(
+            "Proto file starts with 0xEF but not UTF-8 BOM. "
+            "Only UTF-8 is accepted for proto file.");
         return false;
       }
     }
@@ -836,9 +839,7 @@ bool Tokenizer::NextWithComments(string* prev_trailing_comments,
           collector.DetachFromPrev();
         } else {
           bool result = Next();
-          if (!result ||
-              current_.text == "}" ||
-              current_.text == "]" ||
+          if (!result || current_.text == "}" || current_.text == "]" ||
               current_.text == ")") {
             // It looks like we're at the end of a scope.  In this case it
             // makes no sense to attach a comment to the following token.
@@ -858,12 +859,12 @@ bool Tokenizer::NextWithComments(string* prev_trailing_comments,
 // are given is text that the tokenizer actually parsed as a token
 // of the given type.
 
-bool Tokenizer::ParseInteger(const string& text, uint64 max_value,
+bool Tokenizer::ParseInteger(const std::string& text, uint64 max_value,
                              uint64* output) {
   // Sadly, we can't just use strtoul() since it is only 32-bit and strtoull()
   // is non-standard.  I hate the C standard library.  :(
 
-//  return strtoull(text.c_str(), NULL, 0);
+  //  return strtoull(text.c_str(), NULL, 0);
 
   const char* ptr = text.c_str();
   int base = 10;
@@ -897,7 +898,7 @@ bool Tokenizer::ParseInteger(const string& text, uint64 max_value,
   return true;
 }
 
-double Tokenizer::ParseFloat(const string& text) {
+double Tokenizer::ParseFloat(const std::string& text) {
   const char* start = text.c_str();
   char* end;
   double result = NoLocaleStrtod(start, &end);
@@ -917,36 +918,31 @@ double Tokenizer::ParseFloat(const string& text) {
   }
 
   GOOGLE_LOG_IF(DFATAL, end - start != text.size() || *start == '-')
-    << " Tokenizer::ParseFloat() passed text that could not have been"
-       " tokenized as a float: " << CEscape(text);
+      << " Tokenizer::ParseFloat() passed text that could not have been"
+         " tokenized as a float: "
+      << CEscape(text);
   return result;
 }
 
 // Helper to append a Unicode code point to a string as UTF8, without bringing
 // in any external dependencies.
-static void AppendUTF8(uint32 code_point, string* output) {
+static void AppendUTF8(uint32 code_point, std::string* output) {
   uint32 tmp = 0;
   int len = 0;
   if (code_point <= 0x7f) {
     tmp = code_point;
     len = 1;
   } else if (code_point <= 0x07ff) {
-    tmp = 0x0000c080 |
-        ((code_point & 0x07c0) << 2) |
-        (code_point & 0x003f);
+    tmp = 0x0000c080 | ((code_point & 0x07c0) << 2) | (code_point & 0x003f);
     len = 2;
   } else if (code_point <= 0xffff) {
-    tmp = 0x00e08080 |
-        ((code_point & 0xf000) << 4) |
-        ((code_point & 0x0fc0) << 2) |
-        (code_point & 0x003f);
+    tmp = 0x00e08080 | ((code_point & 0xf000) << 4) |
+          ((code_point & 0x0fc0) << 2) | (code_point & 0x003f);
     len = 3;
   } else if (code_point <= 0x1fffff) {
-    tmp = 0xf0808080 |
-        ((code_point & 0x1c0000) << 6) |
-        ((code_point & 0x03f000) << 4) |
-        ((code_point & 0x000fc0) << 2) |
-        (code_point & 0x003f);
+    tmp = 0xf0808080 | ((code_point & 0x1c0000) << 6) |
+          ((code_point & 0x03f000) << 4) | ((code_point & 0x000fc0) << 2) |
+          (code_point & 0x003f);
     len = 4;
   } else {
     // UTF-16 is only defined for code points up to 0x10FFFF, and UTF-8 is
@@ -986,7 +982,7 @@ static inline bool IsHeadSurrogate(uint32 code_point) {
 
 static inline bool IsTrailSurrogate(uint32 code_point) {
   return (code_point >= kMinTrailSurrogate) &&
-      (code_point < kMaxTrailSurrogate);
+         (code_point < kMaxTrailSurrogate);
 }
 
 // Combine a head and trail surrogate into a single Unicode code point.
@@ -994,7 +990,7 @@ static uint32 AssembleUTF16(uint32 head_surrogate, uint32 trail_surrogate) {
   GOOGLE_DCHECK(IsHeadSurrogate(head_surrogate));
   GOOGLE_DCHECK(IsTrailSurrogate(trail_surrogate));
   return 0x10000 + (((head_surrogate - kMinHeadSurrogate) << 10) |
-      (trail_surrogate - kMinTrailSurrogate));
+                    (trail_surrogate - kMinTrailSurrogate));
 }
 
 // Convert the escape sequence parameter to a number of expected hex digits.
@@ -1012,8 +1008,7 @@ static const char* FetchUnicodePoint(const char* ptr, uint32* code_point) {
   const char* p = ptr;
   // Fetch the code point.
   const int len = UnicodeLength(*p++);
-  if (!ReadHexDigits(p, len, code_point))
-    return ptr;
+  if (!ReadHexDigits(p, len, code_point)) return ptr;
   p += len;
 
   // Check if the code point we read is a "head surrogate." If so, then we
@@ -1036,14 +1031,15 @@ static const char* FetchUnicodePoint(const char* ptr, uint32* code_point) {
 
 // The text string must begin and end with single or double quote
 // characters.
-void Tokenizer::ParseStringAppend(const string& text, string* output) {
+void Tokenizer::ParseStringAppend(const std::string& text,
+                                  std::string* output) {
   // Reminder: text[0] is always a quote character.  (If text is
   // empty, it's invalid, so we'll just return).
   const size_t text_size = text.size();
   if (text_size == 0) {
-    GOOGLE_LOG(DFATAL)
-      << " Tokenizer::ParseStringAppend() passed text that could not"
-         " have been tokenized as a string: " << CEscape(text);
+    GOOGLE_LOG(DFATAL) << " Tokenizer::ParseStringAppend() passed text that could not"
+                   " have been tokenized as a string: "
+                << CEscape(text);
     return;
   }
 
@@ -1114,23 +1110,19 @@ void Tokenizer::ParseStringAppend(const string& text, string* output) {
   }
 }
 
-template<typename CharacterClass>
-static bool AllInClass(const string& s) {
+template <typename CharacterClass>
+static bool AllInClass(const std::string& s) {
   for (int i = 0; i < s.size(); ++i) {
-    if (!CharacterClass::InClass(s[i]))
-      return false;
+    if (!CharacterClass::InClass(s[i])) return false;
   }
   return true;
 }
 
-bool Tokenizer::IsIdentifier(const string& text) {
+bool Tokenizer::IsIdentifier(const std::string& text) {
   // Mirrors IDENTIFIER definition in Tokenizer::Next() above.
-  if (text.size() == 0)
-    return false;
-  if (!Letter::InClass(text.at(0)))
-    return false;
-  if (!AllInClass<Alphanumeric>(text.substr(1)))
-    return false;
+  if (text.size() == 0) return false;
+  if (!Letter::InClass(text.at(0))) return false;
+  if (!AllInClass<Alphanumeric>(text.substr(1))) return false;
   return true;
 }
 

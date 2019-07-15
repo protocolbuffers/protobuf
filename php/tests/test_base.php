@@ -4,7 +4,7 @@ use Foo\TestMessage;
 use Foo\TestEnum;
 use Foo\TestMessage\Sub;
 
-class TestBase extends PHPUnit_Framework_TestCase
+class TestBase extends \PHPUnit\Framework\TestCase
 {
 
     public function setFields(TestMessage $m)
@@ -28,7 +28,7 @@ class TestBase extends PHPUnit_Framework_TestCase
         $this->assertSame(1.6,  $m->getOptionalDouble());
         $this->assertSame(true, $m->getOptionalBool());
         $this->assertSame('a',  $m->getOptionalString());
-        $this->assertSame('b',  $m->getOptionalBytes());
+        $this->assertSame('bbbb',  $m->getOptionalBytes());
         $this->assertSame(TestEnum::ONE, $m->getOptionalEnum());
         $this->assertSame(33,   $m->getOptionalMessage()->getA());
         if (PHP_INT_SIZE == 4) {
@@ -59,7 +59,7 @@ class TestBase extends PHPUnit_Framework_TestCase
         $this->assertEquals(1.6,  $m->getRepeatedDouble()[0]);
         $this->assertEquals(true, $m->getRepeatedBool()[0]);
         $this->assertEquals('a',  $m->getRepeatedString()[0]);
-        $this->assertEquals('b',  $m->getRepeatedBytes()[0]);
+        $this->assertEquals('bbbb',  $m->getRepeatedBytes()[0]);
         $this->assertEquals(34,   $m->getRepeatedMessage()[0]->GetA());
 
         $this->assertEquals(-52,   $m->getRepeatedInt32()[1]);
@@ -76,7 +76,7 @@ class TestBase extends PHPUnit_Framework_TestCase
         $this->assertEquals(2.6,   $m->getRepeatedDouble()[1]);
         $this->assertEquals(false, $m->getRepeatedBool()[1]);
         $this->assertEquals('c',   $m->getRepeatedString()[1]);
-        $this->assertEquals('d',   $m->getRepeatedBytes()[1]);
+        $this->assertEquals('dddd',   $m->getRepeatedBytes()[1]);
         $this->assertEquals(35,    $m->getRepeatedMessage()[1]->GetA());
 
         if (PHP_INT_SIZE == 4) {
@@ -101,7 +101,7 @@ class TestBase extends PHPUnit_Framework_TestCase
         $this->assertEquals(3.6, $m->getMapInt32Double()[1]);
         $this->assertEquals(true , $m->getMapBoolBool()[true]);
         $this->assertEquals('e', $m->getMapStringString()['e']);
-        $this->assertEquals('f', $m->getMapInt32Bytes()[1]);
+        $this->assertEquals('ffff', $m->getMapInt32Bytes()[1]);
         $this->assertEquals(TestEnum::ONE, $m->getMapInt32Enum()[1]);
         $this->assertEquals(36, $m->getMapInt32Message()[1]->GetA());
     }
@@ -146,7 +146,7 @@ class TestBase extends PHPUnit_Framework_TestCase
         $this->assertEquals(1.6,  $m->getRepeatedDouble()[0]);
         $this->assertEquals(true, $m->getRepeatedBool()[0]);
         $this->assertEquals('a',  $m->getRepeatedString()[0]);
-        $this->assertEquals('b',  $m->getRepeatedBytes()[0]);
+        $this->assertEquals('bbbb',  $m->getRepeatedBytes()[0]);
         $this->assertEquals(TestEnum::ZERO,  $m->getRepeatedEnum()[0]);
         $this->assertEquals(34,   $m->getRepeatedMessage()[0]->GetA());
 
@@ -164,7 +164,7 @@ class TestBase extends PHPUnit_Framework_TestCase
         $this->assertEquals(2.6,   $m->getRepeatedDouble()[1]);
         $this->assertEquals(false, $m->getRepeatedBool()[1]);
         $this->assertEquals('c',   $m->getRepeatedString()[1]);
-        $this->assertEquals('d',   $m->getRepeatedBytes()[1]);
+        $this->assertEquals('dddd',   $m->getRepeatedBytes()[1]);
         $this->assertEquals(TestEnum::ONE,  $m->getRepeatedEnum()[1]);
         $this->assertEquals(35,    $m->getRepeatedMessage()[1]->GetA());
 
@@ -338,5 +338,6 @@ class TestBase extends PHPUnit_Framework_TestCase
   // This test is to avoid the warning of no test by php unit.
   public function testNone()
   {
+      $this->assertTrue(true);
   }
 }

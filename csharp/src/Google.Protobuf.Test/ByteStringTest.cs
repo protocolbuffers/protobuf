@@ -227,7 +227,7 @@ namespace Google.Protobuf
         {
             // We used to have an awful hash algorithm where only the last four
             // bytes were relevant. This is a regression test for
-            // https://github.com/google/protobuf/issues/2511
+            // https://github.com/protocolbuffers/protobuf/issues/2511
 
             ByteString b1 = ByteString.CopyFrom(100, 1, 2, 3, 4);
             ByteString b2 = ByteString.CopyFrom(200, 1, 2, 3, 4);

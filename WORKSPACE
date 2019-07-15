@@ -1,10 +1,15 @@
 workspace(name = "com_google_protobuf")
+
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+load("//:protobuf_deps.bzl", "protobuf_deps")
+
+# Load common dependencies.
+protobuf_deps()
 
 new_local_repository(
     name = "submodule_gmock",
+    build_file = "@//:third_party/googletest/BUILD.bazel",
     path = "third_party/googletest",
-    build_file = "@//:third_party/googletest/BUILD.bazel"
 )
 
 http_archive(
@@ -59,4 +64,14 @@ maven_jar(
 bind(
     name = "gson",
     actual = "@gson_maven//jar",
+)
+
+maven_jar(
+    name = "error_prone_annotations_maven",
+    artifact = "com.google.errorprone:error_prone_annotations:2.3.2",
+)
+
+bind(
+    name = "error_prone_annotations",
+    actual = "@error_prone_annotations_maven//jar",
 )

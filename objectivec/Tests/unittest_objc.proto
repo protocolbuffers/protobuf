@@ -103,37 +103,89 @@ message self {
   }
 
   // Singular
-  optional   bool id                =  1;
-  optional   bool _cmd              =  2;
-  optional   bool in                =  3;
-  optional   bool out               =  4;
-  optional   bool inout             =  5;
-  optional   bool bycopy            =  6;
-  optional   bool byref             =  7;
-  optional   bool oneway            =  8;
-  optional   bool dealloc           =  9;
-  optional   bool zone              = 10;
-  optional   bool isProxy           = 11;
-  optional   bool copy              = 12;
-  optional   bool readonly          = 13;
-  optional   bool default           = 14;
-  optional   bool assign            = 15;
-  optional   bool getter            = 16;
-  optional   bool setter            = 17;
-  optional   bool weak              = 18;
-  optional   bool public            = 19;
-  optional   bool case              = 20;
+  // Objective C Keywords
+  optional bool id                =  1;
+  optional bool _cmd              =  2;
+  // super is used as submessage above
+  optional bool in                =  4;
+  optional bool out               =  5;
+  optional bool inout             =  6;
+  optional bool bycopy            =  7;
+  optional bool byref             =  8;
+  optional bool oneway            =  9;
+  optional bool self              =  10;
+  optional bool instancetype      =  11;
+  optional bool nullable          =  12;
+  optional bool nonnull           =  13;
+  optional bool nil               =  14;
+  // Nil and nil can't be in the same message
+  optional bool YES               =  16;
+  optional bool NO                =  17;
+  optional bool weak              =  18;
 
-  optional   autorelease SubEnum    = 25;
+  // Some C/C++ Keywords
+  optional bool case              = 30;
+  optional bool if                = 31;
+  optional bool and_eq            = 32;
+  optional bool public            = 33;
+  optional bool private           = 34;
+  optional bool typename          = 35;
+  optional bool static_cast       = 36;
+  optional bool typeof            = 37;
+  optional bool restrict          = 38;
+  optional bool NULL              = 39;
 
- optional group New = 50 {
-   optional string copy = 51;
- }
-  optional group MutableCopy = 60 {
-    optional int32 extensionRegistry = 61;
+  // Some NSObject Methods
+  optional bool dealloc           = 110;
+  optional bool isProxy           = 111;
+  optional bool copy              = 112;
+  optional bool description       = 113;
+  optional bool zone              = 114;
+  optional bool className         = 115;
+  optional bool __retain_OA       = 116;
+  optional bool CAMLType          = 117;
+  optional bool isNSDictionary__  = 118;
+  optional bool accessibilityLabel = 119;
+
+  // Some Objc "keywords" that we shouldn't
+  // have to worry about because they
+  // can only appear in specialized areas.
+  optional bool assign            = 200;
+  optional bool getter            = 201;
+  optional bool setter            = 202;
+  optional bool atomic            = 203;
+  optional bool nonatomic         = 204;
+  optional bool strong            = 205;
+  optional bool null_resettable   = 206;
+  optional bool readonly          = 207;
+
+  // Some GPBMessage methods
+  optional bool clear             = 300;
+  optional bool data              = 301;
+  optional bool descriptor        = 302;
+  optional bool delimitedData     = 303;
+
+  // Some MacTypes
+  optional bool Fixed             = 400;
+  optional bool Point             = 401;
+  optional bool FixedPoint        = 402;
+  optional bool Style             = 403;
+
+  // C/C++ reserved identifiers
+  optional bool _Generic          = 500;
+  optional bool __block           = 501;
+
+  // Try a keyword as a type
+  optional autorelease SubEnum    = 1000;
+
+  optional group New = 2000 {
+   optional string copy = 1;
+  }
+  optional group MutableCopy = 2001 {
+    optional int32 extensionRegistry = 1;
   }
 
-  extensions 90 to 94;
+  extensions 3000 to 3999;
 
 }
 
@@ -177,11 +229,11 @@ enum Time {
 }
 
 extend self {
-  repeated    int32 debugDescription    =  90 [packed = true];
-  repeated    int64 finalize            =  91 [packed = true];
-  repeated   uint32 hash                =  92 [packed = true];
-  repeated   uint64 classForCoder       =  93 [packed = true];
-  repeated   sint32 byref               =  94 [packed = true];
+  repeated    int32 debugDescription    =  3000 [packed = true];
+  repeated    int64 finalize            =  3001 [packed = true];
+  repeated   uint32 hash                =  3002 [packed = true];
+  repeated   uint64 classForCoder       =  3003 [packed = true];
+  repeated   sint32 byref               =  3004 [packed = true];
 }
 
 // Test handing of fields that start with init* since Xcode 5's ARC support
@@ -357,6 +409,335 @@ message ObjCRetainedFoo {
   repeated Foo mutableCopy_Val_upper_enum_repeated = 724;
   repeated Foo mutableCopyvalue_lower_no_underscore_enum_repeated = 725;
   repeated Foo mutableCopyValue_upper_no_underscore_enum_repeated = 726;
+
+  extensions 1000 to 3999;
+}
+
+// Extension fields with retained names.
+extend ObjCRetainedFoo {
+  optional string new_val_lower_complex = 1011;
+  optional string new_Val_upper_complex = 1012;
+  optional string newvalue_lower_no_underscore_complex = 1013;
+  optional string newValue_upper_no_underscore_complex = 1014;
+
+  optional int32 new_val_lower_primitive = 1015;
+  optional int32 new_Val_upper_primitive = 1016;
+  optional int32 newvalue_lower_no_underscore_primitive = 1017;
+  optional int32 newValue_upper_no_underscore_primitive = 1018;
+
+  optional self new_val_lower_message = 1019;
+  optional self new_Val_upper_message = 1020;
+  optional self newvalue_lower_no_underscore_message = 1021;
+  optional self newValue_upper_no_underscore_message = 1022;
+
+  optional Foo new_val_lower_enum = 1023;
+  optional Foo new_Val_upper_enum = 1024;
+  optional Foo newvalue_lower_no_underscore_enum = 1025;
+  optional Foo newValue_upper_no_underscore_enum = 1026;
+
+  repeated string new_val_lower_complex_repeated = 1111;
+  repeated string new_Val_upper_complex_repeated = 1112;
+  repeated string newvalue_lower_no_underscore_complex_repeated = 1113;
+  repeated string newValue_upper_no_underscore_complex_repeated = 1114;
+
+  repeated int32 new_val_lower_primitive_repeated = 1115;
+  repeated int32 new_Val_upper_primitive_repeated = 1116;
+  repeated int32 newvalue_lower_no_underscore_primitive_repeated = 1117;
+  repeated int32 newValue_upper_no_underscore_primitive_repeated = 1118;
+
+  repeated self new_val_lower_message_repeated = 1119;
+  repeated self new_Val_upper_message_repeated = 1120;
+  repeated self newvalue_lower_no_underscore_message_repeated = 1121;
+  repeated self newValue_upper_no_underscore_message_repeated = 1122;
+
+  repeated Foo new_val_lower_enum_repeated = 1123;
+  repeated Foo new_Val_upper_enum_repeated = 1124;
+  repeated Foo newvalue_lower_no_underscore_enum_repeated = 1125;
+  repeated Foo newValue_upper_no_underscore_enum_repeated = 1126;
+
+  optional string alloc_val_lower_complex = 1211;
+  optional string alloc_Val_upper_complex = 1212;
+  optional string allocvalue_lower_no_underscore_complex = 1213;
+  optional string allocValue_upper_no_underscore_complex = 1214;
+
+  optional int32 alloc_val_lower_primitive = 1215;
+  optional int32 alloc_Val_upper_primitive = 1216;
+  optional int32 allocvalue_lower_no_underscore_primitive = 1217;
+  optional int32 allocValue_upper_no_underscore_primitive = 1218;
+
+  optional self alloc_val_lower_message = 1219;
+  optional self alloc_Val_upper_message = 1220;
+  optional self allocvalue_lower_no_underscore_message = 1221;
+  optional self allocValue_upper_no_underscore_message = 1222;
+
+  optional Foo alloc_val_lower_enum = 1223;
+  optional Foo alloc_Val_upper_enum = 1224;
+  optional Foo allocvalue_lower_no_underscore_enum = 1225;
+  optional Foo allocValue_upper_no_underscore_enum = 1226;
+
+  repeated string alloc_val_lower_complex_repeated = 1311;
+  repeated string alloc_Val_upper_complex_repeated = 1312;
+  repeated string allocvalue_lower_no_underscore_complex_repeated = 1313;
+  repeated string allocValue_upper_no_underscore_complex_repeated = 1314;
+
+  repeated int32 alloc_val_lower_primitive_repeated = 1315;
+  repeated int32 alloc_Val_upper_primitive_repeated = 1316;
+  repeated int32 allocvalue_lower_no_underscore_primitive_repeated = 1317;
+  repeated int32 allocValue_upper_no_underscore_primitive_repeated = 1318;
+
+  repeated self alloc_val_lower_message_repeated = 1319;
+  repeated self alloc_Val_upper_message_repeated = 1320;
+  repeated self allocvalue_lower_no_underscore_message_repeated = 1321;
+  repeated self allocValue_upper_no_underscore_message_repeated = 1322;
+
+  repeated Foo alloc_val_lower_enum_repeated = 1323;
+  repeated Foo alloc_Val_upper_enum_repeated = 1324;
+  repeated Foo allocvalue_lower_no_underscore_enum_repeated = 1325;
+  repeated Foo allocValue_upper_no_underscore_enum_repeated = 1326;
+
+  optional string copy_val_lower_complex = 1411;
+  optional string copy_Val_upper_complex = 1412;
+  optional string copyvalue_lower_no_underscore_complex = 1413;
+  optional string copyValue_upper_no_underscore_complex = 1414;
+
+  optional int32 copy_val_lower_primitive = 1415;
+  optional int32 copy_Val_upper_primitive = 1416;
+  optional int32 copyvalue_lower_no_underscore_primitive = 1417;
+  optional int32 copyValue_upper_no_underscore_primitive = 1418;
+
+  optional self copy_val_lower_message = 1419;
+  optional self copy_Val_upper_message = 1420;
+  optional self copyvalue_lower_no_underscore_message = 1421;
+  optional self copyValue_upper_no_underscore_message = 1422;
+
+  optional Foo copy_val_lower_enum = 1423;
+  optional Foo copy_Val_upper_enum = 1424;
+  optional Foo copyvalue_lower_no_underscore_enum = 1425;
+  optional Foo copyValue_upper_no_underscore_enum = 1426;
+
+  repeated string copy_val_lower_complex_repeated = 1511;
+  repeated string copy_Val_upper_complex_repeated = 1512;
+  repeated string copyvalue_lower_no_underscore_complex_repeated = 1513;
+  repeated string copyValue_upper_no_underscore_complex_repeated = 1514;
+
+  repeated int32 copy_val_lower_primitive_repeated = 1515;
+  repeated int32 copy_Val_upper_primitive_repeated = 1516;
+  repeated int32 copyvalue_lower_no_underscore_primitive_repeated = 1517;
+  repeated int32 copyValue_upper_no_underscore_primitive_repeated = 1518;
+
+  repeated self copy_val_lower_message_repeated = 1519;
+  repeated self copy_Val_upper_message_repeated = 1520;
+  repeated self copyvalue_lower_no_underscore_message_repeated = 1521;
+  repeated self copyValue_upper_no_underscore_message_repeated = 1522;
+
+  repeated Foo copy_val_lower_enum_repeated = 1523;
+  repeated Foo copy_Val_upper_enum_repeated = 1524;
+  repeated Foo copyvalue_lower_no_underscore_enum_repeated = 1525;
+  repeated Foo copyValue_upper_no_underscore_enum_repeated = 1526;
+
+  optional string mutableCopy_val_lower_complex = 1611;
+  optional string mutableCopy_Val_upper_complex = 1612;
+  optional string mutableCopyvalue_lower_no_underscore_complex = 1613;
+  optional string mutableCopyValue_upper_no_underscore_complex = 1614;
+
+  optional int32 mutableCopy_val_lower_primitive = 1615;
+  optional int32 mutableCopy_Val_upper_primitive = 1616;
+  optional int32 mutableCopyvalue_lower_no_underscore_primitive = 1617;
+  optional int32 mutableCopyValue_upper_no_underscore_primitive = 1618;
+
+  optional self mutableCopy_val_lower_message = 1619;
+  optional self mutableCopy_Val_upper_message = 1620;
+  optional self mutableCopyvalue_lower_no_underscore_message = 1621;
+  optional self mutableCopyValue_upper_no_underscore_message = 1622;
+
+  optional Foo mutableCopy_val_lower_enum = 1623;
+  optional Foo mutableCopy_Val_upper_enum = 1624;
+  optional Foo mutableCopyvalue_lower_no_underscore_enum = 1625;
+  optional Foo mutableCopyValue_upper_no_underscore_enum = 1626;
+
+  repeated string mutableCopy_val_lower_complex_repeated = 1711;
+  repeated string mutableCopy_Val_upper_complex_repeated = 1712;
+  repeated string mutableCopyvalue_lower_no_underscore_complex_repeated = 1713;
+  repeated string mutableCopyValue_upper_no_underscore_complex_repeated = 1714;
+
+  repeated int32 mutableCopy_val_lower_primitive_repeated = 1715;
+  repeated int32 mutableCopy_Val_upper_primitive_repeated = 1716;
+  repeated int32 mutableCopyvalue_lower_no_underscore_primitive_repeated = 1717;
+  repeated int32 mutableCopyValue_upper_no_underscore_primitive_repeated = 1718;
+
+  repeated self mutableCopy_val_lower_message_repeated = 1719;
+  repeated self mutableCopy_Val_upper_message_repeated = 1720;
+  repeated self mutableCopyvalue_lower_no_underscore_message_repeated = 1721;
+  repeated self mutableCopyValue_upper_no_underscore_message_repeated = 1722;
+
+  repeated Foo mutableCopy_val_lower_enum_repeated = 1723;
+  repeated Foo mutableCopy_Val_upper_enum_repeated = 1724;
+  repeated Foo mutableCopyvalue_lower_no_underscore_enum_repeated = 1725;
+  repeated Foo mutableCopyValue_upper_no_underscore_enum_repeated = 1726;
+}
+
+message JustToScopeExtensions {
+  extend ObjCRetainedFoo {
+    optional string new_val_lower_complex = 2011;
+    optional string new_Val_upper_complex = 2012;
+    optional string newvalue_lower_no_underscore_complex = 2013;
+    optional string newValue_upper_no_underscore_complex = 2014;
+
+    optional int32 new_val_lower_primitive = 2015;
+    optional int32 new_Val_upper_primitive = 2016;
+    optional int32 newvalue_lower_no_underscore_primitive = 2017;
+    optional int32 newValue_upper_no_underscore_primitive = 2018;
+
+    optional self new_val_lower_message = 2019;
+    optional self new_Val_upper_message = 2020;
+    optional self newvalue_lower_no_underscore_message = 2021;
+    optional self newValue_upper_no_underscore_message = 2022;
+
+    optional Foo new_val_lower_enum = 2023;
+    optional Foo new_Val_upper_enum = 2024;
+    optional Foo newvalue_lower_no_underscore_enum = 2025;
+    optional Foo newValue_upper_no_underscore_enum = 2026;
+
+    repeated string new_val_lower_complex_repeated = 2111;
+    repeated string new_Val_upper_complex_repeated = 2112;
+    repeated string newvalue_lower_no_underscore_complex_repeated = 2113;
+    repeated string newValue_upper_no_underscore_complex_repeated = 2114;
+
+    repeated int32 new_val_lower_primitive_repeated = 2115;
+    repeated int32 new_Val_upper_primitive_repeated = 2116;
+    repeated int32 newvalue_lower_no_underscore_primitive_repeated = 2117;
+    repeated int32 newValue_upper_no_underscore_primitive_repeated = 2118;
+
+    repeated self new_val_lower_message_repeated = 2119;
+    repeated self new_Val_upper_message_repeated = 2120;
+    repeated self newvalue_lower_no_underscore_message_repeated = 2121;
+    repeated self newValue_upper_no_underscore_message_repeated = 2122;
+
+    repeated Foo new_val_lower_enum_repeated = 2123;
+    repeated Foo new_Val_upper_enum_repeated = 2124;
+    repeated Foo newvalue_lower_no_underscore_enum_repeated = 2125;
+    repeated Foo newValue_upper_no_underscore_enum_repeated = 2126;
+
+    optional string alloc_val_lower_complex = 2211;
+    optional string alloc_Val_upper_complex = 2212;
+    optional string allocvalue_lower_no_underscore_complex = 2213;
+    optional string allocValue_upper_no_underscore_complex = 2214;
+
+    optional int32 alloc_val_lower_primitive = 2215;
+    optional int32 alloc_Val_upper_primitive = 2216;
+    optional int32 allocvalue_lower_no_underscore_primitive = 2217;
+    optional int32 allocValue_upper_no_underscore_primitive = 2218;
+
+    optional self alloc_val_lower_message = 2219;
+    optional self alloc_Val_upper_message = 2220;
+    optional self allocvalue_lower_no_underscore_message = 2221;
+    optional self allocValue_upper_no_underscore_message = 2222;
+
+    optional Foo alloc_val_lower_enum = 2223;
+    optional Foo alloc_Val_upper_enum = 2224;
+    optional Foo allocvalue_lower_no_underscore_enum = 2225;
+    optional Foo allocValue_upper_no_underscore_enum = 2226;
+
+    repeated string alloc_val_lower_complex_repeated = 2311;
+    repeated string alloc_Val_upper_complex_repeated = 2312;
+    repeated string allocvalue_lower_no_underscore_complex_repeated = 2313;
+    repeated string allocValue_upper_no_underscore_complex_repeated = 2314;
+
+    repeated int32 alloc_val_lower_primitive_repeated = 2315;
+    repeated int32 alloc_Val_upper_primitive_repeated = 2316;
+    repeated int32 allocvalue_lower_no_underscore_primitive_repeated = 2317;
+    repeated int32 allocValue_upper_no_underscore_primitive_repeated = 2318;
+
+    repeated self alloc_val_lower_message_repeated = 2319;
+    repeated self alloc_Val_upper_message_repeated = 2320;
+    repeated self allocvalue_lower_no_underscore_message_repeated = 2321;
+    repeated self allocValue_upper_no_underscore_message_repeated = 2322;
+
+    repeated Foo alloc_val_lower_enum_repeated = 2323;
+    repeated Foo alloc_Val_upper_enum_repeated = 2324;
+    repeated Foo allocvalue_lower_no_underscore_enum_repeated = 2325;
+    repeated Foo allocValue_upper_no_underscore_enum_repeated = 2326;
+
+    optional string copy_val_lower_complex = 2411;
+    optional string copy_Val_upper_complex = 2412;
+    optional string copyvalue_lower_no_underscore_complex = 2413;
+    optional string copyValue_upper_no_underscore_complex = 2414;
+
+    optional int32 copy_val_lower_primitive = 2415;
+    optional int32 copy_Val_upper_primitive = 2416;
+    optional int32 copyvalue_lower_no_underscore_primitive = 2417;
+    optional int32 copyValue_upper_no_underscore_primitive = 2418;
+
+    optional self copy_val_lower_message = 2419;
+    optional self copy_Val_upper_message = 2420;
+    optional self copyvalue_lower_no_underscore_message = 2421;
+    optional self copyValue_upper_no_underscore_message = 2422;
+
+    optional Foo copy_val_lower_enum = 2423;
+    optional Foo copy_Val_upper_enum = 2424;
+    optional Foo copyvalue_lower_no_underscore_enum = 2425;
+    optional Foo copyValue_upper_no_underscore_enum = 2426;
+
+    repeated string copy_val_lower_complex_repeated = 2511;
+    repeated string copy_Val_upper_complex_repeated = 2512;
+    repeated string copyvalue_lower_no_underscore_complex_repeated = 2513;
+    repeated string copyValue_upper_no_underscore_complex_repeated = 2514;
+
+    repeated int32 copy_val_lower_primitive_repeated = 2515;
+    repeated int32 copy_Val_upper_primitive_repeated = 2516;
+    repeated int32 copyvalue_lower_no_underscore_primitive_repeated = 2517;
+    repeated int32 copyValue_upper_no_underscore_primitive_repeated = 2518;
+
+    repeated self copy_val_lower_message_repeated = 2519;
+    repeated self copy_Val_upper_message_repeated = 2520;
+    repeated self copyvalue_lower_no_underscore_message_repeated = 2521;
+    repeated self copyValue_upper_no_underscore_message_repeated = 2522;
+
+    repeated Foo copy_val_lower_enum_repeated = 2523;
+    repeated Foo copy_Val_upper_enum_repeated = 2524;
+    repeated Foo copyvalue_lower_no_underscore_enum_repeated = 2525;
+    repeated Foo copyValue_upper_no_underscore_enum_repeated = 2526;
+
+    optional string mutableCopy_val_lower_complex = 2611;
+    optional string mutableCopy_Val_upper_complex = 2612;
+    optional string mutableCopyvalue_lower_no_underscore_complex = 2613;
+    optional string mutableCopyValue_upper_no_underscore_complex = 2614;
+
+    optional int32 mutableCopy_val_lower_primitive = 2615;
+    optional int32 mutableCopy_Val_upper_primitive = 2616;
+    optional int32 mutableCopyvalue_lower_no_underscore_primitive = 2617;
+    optional int32 mutableCopyValue_upper_no_underscore_primitive = 2618;
+
+    optional self mutableCopy_val_lower_message = 2619;
+    optional self mutableCopy_Val_upper_message = 2620;
+    optional self mutableCopyvalue_lower_no_underscore_message = 2621;
+    optional self mutableCopyValue_upper_no_underscore_message = 2622;
+
+    optional Foo mutableCopy_val_lower_enum = 2623;
+    optional Foo mutableCopy_Val_upper_enum = 2624;
+    optional Foo mutableCopyvalue_lower_no_underscore_enum = 2625;
+    optional Foo mutableCopyValue_upper_no_underscore_enum = 2626;
+
+    repeated string mutableCopy_val_lower_complex_repeated = 2711;
+    repeated string mutableCopy_Val_upper_complex_repeated = 2712;
+    repeated string mutableCopyvalue_lower_no_underscore_complex_repeated = 2713;
+    repeated string mutableCopyValue_upper_no_underscore_complex_repeated = 2714;
+
+    repeated int32 mutableCopy_val_lower_primitive_repeated = 2715;
+    repeated int32 mutableCopy_Val_upper_primitive_repeated = 2716;
+    repeated int32 mutableCopyvalue_lower_no_underscore_primitive_repeated = 2717;
+    repeated int32 mutableCopyValue_upper_no_underscore_primitive_repeated = 2718;
+
+    repeated self mutableCopy_val_lower_message_repeated = 2719;
+    repeated self mutableCopy_Val_upper_message_repeated = 2720;
+    repeated self mutableCopyvalue_lower_no_underscore_message_repeated = 2721;
+    repeated self mutableCopyValue_upper_no_underscore_message_repeated = 2722;
+
+    repeated Foo mutableCopy_val_lower_enum_repeated = 2723;
+    repeated Foo mutableCopy_Val_upper_enum_repeated = 2724;
+    repeated Foo mutableCopyvalue_lower_no_underscore_enum_repeated = 2725;
+    repeated Foo mutableCopyValue_upper_no_underscore_enum_repeated = 2726;
+  }
 }
 
 // Test handling of fields that are the retained names.
@@ -433,7 +814,7 @@ message EnumTestMsg {
   repeated MyEnum mumble = 4;
 }
 
-// Test case for https://github.com/google/protobuf/issues/1453
+// Test case for https://github.com/protocolbuffers/protobuf/issues/1453
 // Message with no explicit defaults, but a non zero default for an enum.
 message MessageWithOneBasedEnum {
   enum OneBasedEnum {
@@ -485,4 +866,19 @@ message BoolOnlyMessage {
 // conditional to support the framework import style.
 message WKTRefereceMessage {
   optional google.protobuf.Any an_any = 1;
+}
+
+// This is in part a compile test, it ensures that when aliases end up with
+// the same ObjC name, we drop them to avoid the duplication names. There
+// is a test to ensure the descriptors are still generated to support
+// reflection and TextFormat.
+enum TestEnumObjCNameCollision {
+  option allow_alias = true;
+
+  FOO = 1;
+  foo = 1;
+
+  BAR = 2;
+  mumble = 2;
+  MUMBLE = 2;
 }

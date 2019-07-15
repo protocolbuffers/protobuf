@@ -30,7 +30,9 @@
 
 #include <Python.h>
 
+#include <google/protobuf/pyext/descriptor_pool.h>
 #include <google/protobuf/pyext/message.h>
+#include <google/protobuf/pyext/message_factory.h>
 #include <google/protobuf/proto_api.h>
 
 #include <google/protobuf/message_lite.h>
@@ -45,37 +47,42 @@ struct ApiImplementation : google::protobuf::python::PyProto_API {
   google::protobuf::Message* GetMutableMessagePointer(PyObject* msg) const override {
     return google::protobuf::python::PyMessage_GetMutableMessagePointer(msg);
   }
+  const google::protobuf::DescriptorPool* GetDefaultDescriptorPool() const override {
+    return google::protobuf::python::GetDefaultDescriptorPool()->pool;
+  }
+
+  google::protobuf::MessageFactory* GetDefaultMessageFactory() const override {
+    return google::protobuf::python::GetDefaultDescriptorPool()
+        ->py_message_factory->message_factory;
+  }
 };
 
 }  // namespace
 
 static const char module_docstring[] =
-"python-proto2 is a module that can be used to enhance proto2 Python API\n"
-"performance.\n"
-"\n"
-"It provides access to the protocol buffers C++ reflection API that\n"
-"implements the basic protocol buffer functions.";
+    "python-proto2 is a module that can be used to enhance proto2 Python API\n"
+    "performance.\n"
+    "\n"
+    "It provides access to the protocol buffers C++ reflection API that\n"
+    "implements the basic protocol buffer functions.";
 
 static PyMethodDef ModuleMethods[] = {
-  {"SetAllowOversizeProtos",
-    (PyCFunction)google::protobuf::python::cmessage::SetAllowOversizeProtos,
-    METH_O, "Enable/disable oversize proto parsing."},
-  // DO NOT USE: For migration and testing only.
-  { NULL, NULL}
-};
+    {"SetAllowOversizeProtos",
+     (PyCFunction)google::protobuf::python::cmessage::SetAllowOversizeProtos, METH_O,
+     "Enable/disable oversize proto parsing."},
+    // DO NOT USE: For migration and testing only.
+    {NULL, NULL}};
 
 #if PY_MAJOR_VERSION >= 3
-static struct PyModuleDef _module = {
-  PyModuleDef_HEAD_INIT,
-  "_message",
-  module_docstring,
-  -1,
-  ModuleMethods,  /* m_methods */
-  NULL,
-  NULL,
-  NULL,
-  NULL
-};
+static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
+                                     "_message",
+                                     module_docstring,
+                                     -1,
+                                     ModuleMethods, /* m_methods */
+                                     NULL,
+                                     NULL,
+                                     NULL,
+                                     NULL};
 #define INITFUNC PyInit__message
 #define INITFUNC_ERRORVAL NULL
 #else  // Python 2

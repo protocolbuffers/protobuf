@@ -5,13 +5,16 @@ require_once('test_util.php');
 
 use Google\Protobuf\RepeatedField;
 use Google\Protobuf\GPBType;
+use Foo\TestAny;
 use Foo\TestEnum;
 use Foo\TestMessage;
 use Foo\TestMessage\Sub;
 use Foo\TestPackedMessage;
 use Foo\TestRandomFieldOrder;
 use Foo\TestUnpackedMessage;
+use Google\Protobuf\Any;
 use Google\Protobuf\DoubleValue;
+use Google\Protobuf\FieldMask;
 use Google\Protobuf\FloatValue;
 use Google\Protobuf\Int32Value;
 use Google\Protobuf\UInt32Value;
@@ -20,6 +23,10 @@ use Google\Protobuf\UInt64Value;
 use Google\Protobuf\BoolValue;
 use Google\Protobuf\StringValue;
 use Google\Protobuf\BytesValue;
+use Google\Protobuf\Value;
+use Google\Protobuf\ListValue;
+use Google\Protobuf\Struct;
+use Google\Protobuf\GPBEmpty;
 
 class EncodeDecodeTest extends TestBase
 {
@@ -27,6 +34,7 @@ class EncodeDecodeTest extends TestBase
     {
         $m = new TestMessage();
         $m->mergeFromJsonString("{\"optionalInt32\":1}");
+        $this->assertEquals(1, $m->getOptionalInt32());
     }
 
     public function testDecodeTopLevelBoolValue()
@@ -40,11 +48,25 @@ class EncodeDecodeTest extends TestBase
         $this->assertEquals(false, $m->getValue());
     }
 
+    public function testEncodeTopLevelBoolValue()
+    {
+        $m = new BoolValue();
+        $m->setValue(true);
+        $this->assertSame("true", $m->serializeToJsonString());
+    }
+
     public function testDecodeTopLevelDoubleValue()
     {
         $m = new DoubleValue();
         $m->mergeFromJsonString("1.5");
         $this->assertEquals(1.5, $m->getValue());
+    }
+
+    public function testEncodeTopLevelDoubleValue()
+    {
+        $m = new DoubleValue();
+        $m->setValue(1.5);
+        $this->assertSame("1.5", $m->serializeToJsonString());
     }
 
     public function testDecodeTopLevelFloatValue()
@@ -54,11 +76,25 @@ class EncodeDecodeTest extends TestBase
         $this->assertEquals(1.5, $m->getValue());
     }
 
+    public function testEncodeTopLevelFloatValue()
+    {
+        $m = new FloatValue();
+        $m->setValue(1.5);
+        $this->assertSame("1.5", $m->serializeToJsonString());
+    }
+
     public function testDecodeTopLevelInt32Value()
     {
         $m = new Int32Value();
         $m->mergeFromJsonString("1");
         $this->assertEquals(1, $m->getValue());
+    }
+
+    public function testEncodeTopLevelInt32Value()
+    {
+        $m = new Int32Value();
+        $m->setValue(1);
+        $this->assertSame("1", $m->serializeToJsonString());
     }
 
     public function testDecodeTopLevelUInt32Value()
@@ -68,12 +104,26 @@ class EncodeDecodeTest extends TestBase
         $this->assertEquals(1, $m->getValue());
     }
 
+    public function testEncodeTopLevelUInt32Value()
+    {
+        $m = new UInt32Value();
+        $m->setValue(1);
+        $this->assertSame("1", $m->serializeToJsonString());
+    }
+
     public function testDecodeTopLevelInt64Value()
     {
         $m = new Int64Value();
         $m->mergeFromJsonString("1");
         $this->assertEquals(1, $m->getValue());
     }
+
+    # public function testEncodeTopLevelInt64Value()
+    # {
+    #     $m = new Int64Value();
+    #     $m->setValue(1);
+    #     $this->assertSame("\"1\"", $m->serializeToJsonString());
+    # }
 
     public function testDecodeTopLevelUInt64Value()
     {
@@ -82,6 +132,13 @@ class EncodeDecodeTest extends TestBase
         $this->assertEquals(1, $m->getValue());
     }
 
+    # public function testEncodeTopLevelUInt64Value()
+    # {
+    #     $m = new UInt64Value();
+    #     $m->setValue(1);
+    #     $this->assertSame("\"1\"", $m->serializeToJsonString());
+    # }
+
     public function testDecodeTopLevelStringValue()
     {
         $m = new StringValue();
@@ -89,11 +146,42 @@ class EncodeDecodeTest extends TestBase
         $this->assertSame("a", $m->getValue());
     }
 
+    public function testEncodeTopLevelStringValue()
+    {
+        $m = new StringValue();
+        $m->setValue("a");
+        $this->assertSame("\"a\"", $m->serializeToJsonString());
+    }
+
     public function testDecodeTopLevelBytesValue()
     {
         $m = new BytesValue();
         $m->mergeFromJsonString("\"YQ==\"");
         $this->assertSame("a", $m->getValue());
+    }
+
+    public function testEncodeTopLevelBytesValue()
+    {
+        $m = new BytesValue();
+        $m->setValue("a");
+        $this->assertSame("\"YQ==\"", $m->serializeToJsonString());
+    }
+
+    public function generateRandomString($length = 10) {
+        $randomString = str_repeat("+", $length);
+        for ($i = 0; $i < $length; $i++) {
+            $randomString[$i] = rand(0, 255);
+        }
+        return $randomString;
+    }
+
+    public function testEncodeTopLevelLongBytesValue()
+    {
+        $m = new BytesValue();
+        $data = $this->generateRandomString(12007);
+        $m->setValue($data);
+        $expected = "\"" . base64_encode($data) . "\"";
+        $this->assertSame(strlen($expected), strlen($m->serializeToJsonString()));
     }
 
     public function testEncode()
@@ -196,6 +284,40 @@ class EncodeDecodeTest extends TestBase
 
     }
 
+    public function testJsonEncodeDecodeOneof()
+    {
+        $m = new TestMessage();
+
+        $m->setOneofEnum(TestEnum::ONE);
+        $data = $m->serializeToJsonString();
+        $n = new TestMessage();
+        $n->mergeFromJsonString($data);
+        $this->assertSame("oneof_enum", $n->getMyOneof());
+        $this->assertSame(TestEnum::ONE, $n->getOneofEnum());
+
+        $m->setOneofString("a");
+        $data = $m->serializeToJsonString();
+        $n = new TestMessage();
+        $n->mergeFromJsonString($data);
+        $this->assertSame("oneof_string", $n->getMyOneof());
+        $this->assertSame("a", $n->getOneofString());
+
+        $m->setOneofBytes("bbbb");
+        $data = $m->serializeToJsonString();
+        $n = new TestMessage();
+        $n->mergeFromJsonString($data);
+        $this->assertSame("oneof_bytes", $n->getMyOneof());
+        $this->assertSame("bbbb", $n->getOneofBytes());
+
+        $sub_m = new Sub();
+        $m->setOneofMessage($sub_m);
+        $data = $m->serializeToJsonString();
+        $n = new TestMessage();
+        $n->mergeFromJsonString($data);
+        $this->assertSame("oneof_message", $n->getMyOneof());
+        $this->assertFalse(is_null($n->getOneofMessage()));
+    }
+
     public function testPackedEncode()
     {
         $from = new TestPackedMessage();
@@ -209,6 +331,7 @@ class EncodeDecodeTest extends TestBase
         $to = new TestPackedMessage();
         $to->mergeFromString(TestUtil::getGoldenTestPackedMessage());
         TestUtil::assertTestPackedMessage($to);
+        $this->assertTrue(true);
     }
 
     public function testPackedDecodeUnpacked()
@@ -216,6 +339,7 @@ class EncodeDecodeTest extends TestBase
         $to = new TestPackedMessage();
         $to->mergeFromString(TestUtil::getGoldenTestUnpackedMessage());
         TestUtil::assertTestPackedMessage($to);
+        $this->assertTrue(true);
     }
 
     public function testUnpackedEncode()
@@ -231,6 +355,7 @@ class EncodeDecodeTest extends TestBase
         $to = new TestUnpackedMessage();
         $to->mergeFromString(TestUtil::getGoldenTestPackedMessage());
         TestUtil::assertTestPackedMessage($to);
+        $this->assertTrue(true);
     }
 
     public function testUnpackedDecodeUnpacked()
@@ -238,6 +363,7 @@ class EncodeDecodeTest extends TestBase
         $to = new TestUnpackedMessage();
         $to->mergeFromString(TestUtil::getGoldenTestUnpackedMessage());
         TestUtil::assertTestPackedMessage($to);
+        $this->assertTrue(true);
     }
 
     public function testDecodeInt64()
@@ -294,6 +420,7 @@ class EncodeDecodeTest extends TestBase
         $data = hex2bin('c80501');
         $m = new TestMessage();
         $m->mergeFromString($data);
+        $this->assertTrue(true);
     }
 
     public function testEncodeNegativeInt32()
@@ -594,6 +721,129 @@ class EncodeDecodeTest extends TestBase
         $this->assertSame("9a0400", bin2hex($to));
     }
 
+    public function testJsonUnknown()
+    {
+        // Test unknown number
+        $m = new TestMessage();
+        $m->mergeFromJsonString("{\"unknown\":1,
+                                \"optionalInt32\":1}", true);
+        $this->assertSame(1, $m->getOptionalInt32());
+
+        // Test unknown bool
+        $m = new TestMessage();
+        $m->mergeFromJsonString("{\"unknown\":true,
+                                \"optionalInt32\":1}", true);
+        $this->assertSame(1, $m->getOptionalInt32());
+
+        // Test unknown string
+        $m = new TestMessage();
+        $m->mergeFromJsonString("{\"unknown\":\"abc\",
+                                \"optionalInt32\":1}", true);
+        $this->assertSame(1, $m->getOptionalInt32());
+
+        // Test unknown null
+        $m = new TestMessage();
+        $m->mergeFromJsonString("{\"unknown\":null,
+                                \"optionalInt32\":1}", true);
+        $this->assertSame(1, $m->getOptionalInt32());
+
+        // Test unknown array
+        $m = new TestMessage();
+        $m->mergeFromJsonString("{\"unknown\":[],
+                                \"optionalInt32\":1}", true);
+        $this->assertSame(1, $m->getOptionalInt32());
+
+        // Test unknown number array
+        $m = new TestMessage();
+        $m->mergeFromJsonString("{\"unknown\":[1],
+                                \"optionalInt32\":1}", true);
+        $this->assertSame(1, $m->getOptionalInt32());
+
+        // Test unknown bool array
+        $m = new TestMessage();
+        $m->mergeFromJsonString("{\"unknown\":[true],
+                                \"optionalInt32\":1}", true);
+        $this->assertSame(1, $m->getOptionalInt32());
+
+        // Test unknown string array
+        $m = new TestMessage();
+        $m->mergeFromJsonString("{\"unknown\":[\"a\"],
+                                \"optionalInt32\":1}", true);
+        $this->assertSame(1, $m->getOptionalInt32());
+
+        // Test unknown null array
+        $m = new TestMessage();
+        $m->mergeFromJsonString("{\"unknown\":[null],
+                                \"optionalInt32\":1}", true);
+        $this->assertSame(1, $m->getOptionalInt32());
+
+        // Test unknown array array
+        $m = new TestMessage();
+        $m->mergeFromJsonString("{\"unknown\":[[]],
+                                \"optionalInt32\":1}", true);
+        $this->assertSame(1, $m->getOptionalInt32());
+
+        // Test unknown object array
+        $m = new TestMessage();
+        $m->mergeFromJsonString("{\"unknown\":[{}],
+                                \"optionalInt32\":1}", true);
+        $this->assertSame(1, $m->getOptionalInt32());
+
+        // Test unknown double value array
+        $m = new TestMessage();
+        $m->mergeFromJsonString("{\"unknown\":[1, 2],
+                                \"optionalInt32\":1}", true);
+        $this->assertSame(1, $m->getOptionalInt32());
+
+        // Test unknown object
+        $m = new TestMessage();
+        $m->mergeFromJsonString("{\"unknown\":{},
+                                \"optionalInt32\":1}", true);
+        $this->assertSame(1, $m->getOptionalInt32());
+
+        // Test unknown number object
+        $m = new TestMessage();
+        $m->mergeFromJsonString("{\"unknown\":{\"a\":1},
+                                \"optionalInt32\":1}", true);
+        $this->assertSame(1, $m->getOptionalInt32());
+
+        // Test unknown bool object
+        $m = new TestMessage();
+        $m->mergeFromJsonString("{\"unknown\":{\"a\":true},
+                                \"optionalInt32\":1}", true);
+        $this->assertSame(1, $m->getOptionalInt32());
+
+        // Test unknown string object
+        $m = new TestMessage();
+        $m->mergeFromJsonString("{\"unknown\":{\"a\":\"a\"},
+                                \"optionalInt32\":1}", true);
+        $this->assertSame(1, $m->getOptionalInt32());
+
+        // Test unknown null object
+        $m = new TestMessage();
+        $m->mergeFromJsonString("{\"unknown\":{\"a\":null},
+                                \"optionalInt32\":1}", true);
+        $this->assertSame(1, $m->getOptionalInt32());
+
+        // Test unknown array object
+        $m = new TestMessage();
+        $m->mergeFromJsonString("{\"unknown\":{\"a\":[]},
+                                \"optionalInt32\":1}", true);
+        $this->assertSame(1, $m->getOptionalInt32());
+
+        // Test unknown object object
+        $m = new TestMessage();
+        $m->mergeFromJsonString("{\"unknown\":{\"a\":{}},
+                                \"optionalInt32\":1}", true);
+        $this->assertSame(1, $m->getOptionalInt32());
+
+        // Test unknown double value object
+        $m = new TestMessage();
+        $m->mergeFromJsonString("{\"unknown\":{\"a\":1, \"b\":1},
+                                \"optionalInt32\":1}", true);
+        $this->assertSame(1, $m->getOptionalInt32());
+    }
+
     public function testJsonEncode()
     {
         $from = new TestMessage();
@@ -603,4 +853,326 @@ class EncodeDecodeTest extends TestBase
         $to->mergeFromJsonString($data);
         $this->expectFields($to);
     }
+
+    public function testDecodeDuration()
+    {
+        $m = new Google\Protobuf\Duration();
+        $m->mergeFromJsonString("\"1234.5678s\"");
+        $this->assertEquals(1234, $m->getSeconds());
+        $this->assertEquals(567800000, $m->getNanos());
+    }
+
+    public function testEncodeDuration()
+    {
+        $m = new Google\Protobuf\Duration();
+        $m->setSeconds(1234);
+        $m->setNanos(999999999);
+        $this->assertEquals("\"1234.999999999s\"", $m->serializeToJsonString());
+    }
+
+    public function testDecodeTimestamp()
+    {
+        $m = new Google\Protobuf\Timestamp();
+        $m->mergeFromJsonString("\"2000-01-01T00:00:00.123456789Z\"");
+        $this->assertEquals(946684800, $m->getSeconds());
+        $this->assertEquals(123456789, $m->getNanos());
+    }
+
+    public function testEncodeTimestamp()
+    {
+        $m = new Google\Protobuf\Timestamp();
+        $m->setSeconds(946684800);
+        $m->setNanos(123456789);
+        $this->assertEquals("\"2000-01-01T00:00:00.123456789Z\"",
+                            $m->serializeToJsonString());
+    }
+
+    public function testDecodeTopLevelValue()
+    {
+        $m = new Value();
+        $m->mergeFromJsonString("\"a\"");
+        $this->assertSame("a", $m->getStringValue());
+
+        $m = new Value();
+        $m->mergeFromJsonString("1.5");
+        $this->assertSame(1.5, $m->getNumberValue());
+
+        $m = new Value();
+        $m->mergeFromJsonString("true");
+        $this->assertSame(true, $m->getBoolValue());
+
+        $m = new Value();
+        $m->mergeFromJsonString("null");
+        $this->assertSame("null_value", $m->getKind());
+
+        $m = new Value();
+        $m->mergeFromJsonString("[1]");
+        $this->assertSame("list_value", $m->getKind());
+
+        $m = new Value();
+        $m->mergeFromJsonString("{\"a\":1}");
+        $this->assertSame("struct_value", $m->getKind());
+    }
+
+    public function testEncodeTopLevelValue()
+    {
+        $m = new Value();
+        $m->setStringValue("a");
+        $this->assertSame("\"a\"", $m->serializeToJsonString());
+
+        $m = new Value();
+        $m->setNumberValue(1.5);
+        $this->assertSame("1.5", $m->serializeToJsonString());
+
+        $m = new Value();
+        $m->setBoolValue(true);
+        $this->assertSame("true", $m->serializeToJsonString());
+
+        $m = new Value();
+        $m->setNullValue(0);
+        $this->assertSame("null", $m->serializeToJsonString());
+    }
+
+    public function testDecodeTopLevelListValue()
+    {
+        $m = new ListValue();
+        $m->mergeFromJsonString("[1]");
+        $this->assertSame(1.0, $m->getValues()[0]->getNumberValue());
+    }
+
+    public function testEncodeTopLevelListValue()
+    {
+        $m = new ListValue();
+        $arr = $m->getValues();
+        $sub = new Value();
+        $sub->setNumberValue(1.5);
+        $arr[] = $sub;
+        $this->assertSame("[1.5]", $m->serializeToJsonString());
+    }
+
+    public function testEncodeEmptyListValue()
+    {
+        $m = new Struct();
+        $m->setFields(['test' => (new Value())->setListValue(new ListValue())]);
+        $this->assertSame('{"test":[]}', $m->serializeToJsonString());
+    }
+
+    public function testDecodeTopLevelStruct()
+    {
+        $m = new Struct();
+        $m->mergeFromJsonString("{\"a\":{\"b\":1}}");
+        $this->assertSame(1.0, $m->getFields()["a"]
+                                 ->getStructValue()
+                                 ->getFields()["b"]->getNumberValue());
+    }
+
+    public function testEncodeTopLevelStruct()
+    {
+        $m = new Struct();
+        $map = $m->getFields();
+        $sub = new Value();
+        $sub->setNumberValue(1.5);
+        $map["a"] = $sub;
+        $this->assertSame("{\"a\":1.5}", $m->serializeToJsonString());
+    }
+
+    public function testEncodeEmptyStruct()
+    {
+        $m = new Struct();
+        $m->setFields(['test' => (new Value())->setStructValue(new Struct())]);
+        $this->assertSame('{"test":{}}', $m->serializeToJsonString());
+    }
+
+    public function testDecodeTopLevelAny()
+    {
+        // Make sure packed message has been created at least once.
+        $packed = new TestMessage();
+
+        $m1 = new Any();
+        $m1->mergeFromJsonString(
+            "{\"optionalInt32\": 1, " .
+            "\"@type\":\"type.googleapis.com/foo.TestMessage\"}");
+        $this->assertSame("type.googleapis.com/foo.TestMessage",
+                          $m1->getTypeUrl());
+        $this->assertSame("0801", bin2hex($m1->getValue()));
+
+        $m2 = new Any();
+        $m2->mergeFromJsonString(
+            "{\"@type\":\"type.googleapis.com/foo.TestMessage\", " .
+            "\"optionalInt32\": 1}");
+        $this->assertSame("type.googleapis.com/foo.TestMessage",
+                          $m2->getTypeUrl());
+        $this->assertSame("0801", bin2hex($m2->getValue()));
+
+        $m3 = new Any();
+        $m3->mergeFromJsonString(
+            "{\"optionalInt32\": 1, " .
+            "\"@type\":\"type.googleapis.com/foo.TestMessage\", " .
+            "\"optionalInt64\": 2}");
+        $this->assertSame("type.googleapis.com/foo.TestMessage",
+                          $m3->getTypeUrl());
+        $this->assertSame("08011002", bin2hex($m3->getValue()));
+    }
+
+    public function testDecodeAny()
+    {
+        // Make sure packed message has been created at least once.
+        $packed = new TestMessage();
+
+        $m1 = new TestAny();
+        $m1->mergeFromJsonString(
+            "{\"any\": {\"optionalInt32\": 1, " .
+            "\"@type\":\"type.googleapis.com/foo.TestMessage\"}}");
+        $this->assertSame("type.googleapis.com/foo.TestMessage",
+                          $m1->getAny()->getTypeUrl());
+        $this->assertSame("0801", bin2hex($m1->getAny()->getValue()));
+
+        $m2 = new TestAny();
+        $m2->mergeFromJsonString(
+            "{\"any\":{\"@type\":\"type.googleapis.com/foo.TestMessage\", " .
+            "\"optionalInt32\": 1}}");
+        $this->assertSame("type.googleapis.com/foo.TestMessage",
+                          $m2->getAny()->getTypeUrl());
+        $this->assertSame("0801", bin2hex($m2->getAny()->getValue()));
+
+        $m3 = new TestAny();
+        $m3->mergeFromJsonString(
+            "{\"any\":{\"optionalInt32\": 1, " .
+            "\"@type\":\"type.googleapis.com/foo.TestMessage\", " .
+            "\"optionalInt64\": 2}}");
+        $this->assertSame("type.googleapis.com/foo.TestMessage",
+                          $m3->getAny()->getTypeUrl());
+        $this->assertSame("08011002", bin2hex($m3->getAny()->getValue()));
+    }
+
+    public function testDecodeAnyWithWellKnownPacked()
+    {
+        // Make sure packed message has been created at least once.
+        $packed = new Int32Value();
+
+        $m1 = new TestAny();
+        $m1->mergeFromJsonString(
+            "{\"any\":" .
+            "  {\"@type\":\"type.googleapis.com/google.protobuf.Int32Value\"," .
+            "   \"value\":1}}");
+        $this->assertSame("type.googleapis.com/google.protobuf.Int32Value",
+                          $m1->getAny()->getTypeUrl());
+        $this->assertSame("0801", bin2hex($m1->getAny()->getValue()));
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testDecodeAnyWithUnknownPacked()
+    {
+        $m = new TestAny();
+        $m->mergeFromJsonString(
+            "{\"any\":" .
+            "  {\"@type\":\"type.googleapis.com/unknown\"," .
+            "   \"value\":1}}");
+    }
+
+    public function testEncodeTopLevelAny()
+    {
+        // Test a normal message.
+        $packed = new TestMessage();
+        $packed->setOptionalInt32(123);
+        $packed->setOptionalString("abc");
+
+        $m = new Any();
+        $m->pack($packed);
+        $expected1 =
+            "{\"@type\":\"type.googleapis.com/foo.TestMessage\"," .
+            "\"optional_int32\":123,\"optional_string\":\"abc\"}";
+        $expected2 =
+            "{\"@type\":\"type.googleapis.com/foo.TestMessage\"," .
+            "\"optionalInt32\":123,\"optionalString\":\"abc\"}";
+        $result = $m->serializeToJsonString();
+        $this->assertTrue($expected1 === $result || $expected2 === $result);
+
+        // Test a well known message.
+        $packed = new Int32Value();
+        $packed->setValue(123);
+
+        $m = new Any();
+        $m->pack($packed);
+        $this->assertSame(
+            "{\"@type\":\"type.googleapis.com/google.protobuf.Int32Value\"," .
+            "\"value\":123}",
+            $m->serializeToJsonString());
+
+        // Test an Any message.
+        $outer = new Any();
+        $outer->pack($m);
+        $this->assertSame(
+            "{\"@type\":\"type.googleapis.com/google.protobuf.Any\"," .
+            "\"value\":{\"@type\":\"type.googleapis.com/google.protobuf.Int32Value\"," .
+            "\"value\":123}}",
+            $outer->serializeToJsonString());
+
+        // Test a Timestamp message.
+        $packed = new Google\Protobuf\Timestamp();
+        $packed->setSeconds(946684800);
+        $packed->setNanos(123456789);
+        $m = new Any();
+        $m->pack($packed);
+        $this->assertSame(
+            "{\"@type\":\"type.googleapis.com/google.protobuf.Timestamp\"," .
+            "\"value\":\"2000-01-01T00:00:00.123456789Z\"}",
+            $m->serializeToJsonString());
+    }
+
+    public function testDecodeTopLevelFieldMask()
+    {
+        $m = new TestMessage();
+        $m->setMapStringString(['a'=>'abcdefg']);
+        $data1 = $m->serializeToJsonString();
+        $n = new TestMessage();
+        $n->mergeFromJsonString($data1);
+        $data2 = $n->serializeToJsonString();
+        $this->assertSame($data1, $data2);
+
+        $m = new FieldMask();
+        $m->mergeFromJsonString("\"foo.barBaz,qux\"");
+        $this->assertSame("foo.bar_baz", $m->getPaths()[0]);
+        $this->assertSame("qux", $m->getPaths()[1]);
+    }
+
+    public function testEncodeTopLevelFieldMask()
+    {
+        $m = new FieldMask();
+        $m->setPaths(["foo.bar_baz", "qux"]);
+        $this->assertSame("\"foo.barBaz,qux\"", $m->serializeToJsonString());
+    }
+
+    public function testDecodeEmptyFieldMask()
+    {
+        $m = new FieldMask();
+        $m->mergeFromJsonString("\"\"");
+        $this->assertEquals("", $m->serializeToString());
+    }
+
+    public function testJsonDecodeMapWithDefaultValueKey()
+    {
+        $m = new TestMessage();
+        $m->getMapInt32Int32()[0] = 0;
+        $this->assertSame("{\"mapInt32Int32\":{\"0\":0}}",
+                          $m->serializeToJsonString());
+
+        $m = new TestMessage();
+        $m->getMapStringString()[""] = "";
+        $this->assertSame("{\"mapStringString\":{\"\":\"\"}}",
+                          $m->serializeToJsonString());
+    }
+
+    public function testJsonDecodeNumericStringMapKey()
+    {
+        $m = new TestMessage();
+        $m->getMapStringString()["1"] = "1";
+        $data = $m->serializeToJsonString();
+        $this->assertSame("{\"mapStringString\":{\"1\":\"1\"}}", $data);
+        $n = new TestMessage();
+        $n->mergeFromJsonString($data);
+    }
+
 }

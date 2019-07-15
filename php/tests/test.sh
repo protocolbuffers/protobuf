@@ -7,14 +7,9 @@ export C_INCLUDE_PATH=/usr/local/php-$VERSION/include/php/main:/usr/local/php-$V
 export CPLUS_INCLUDE_PATH=/usr/local/php-$VERSION/include/php/main:/usr/local/php-$VERSION/include/php:$CPLUS_INCLUDE_PATH
 
 # Compile c extension
-pushd ../ext/google/protobuf/
-make clean || true
-set -e
-# Add following in configure for debug: --enable-debug CFLAGS='-g -O0'
-phpize && ./configure CFLAGS='-g -O0' && make
-popd
+/bin/bash ./compile_extension.sh ../ext/google/protobuf
 
-tests=( array_test.php encode_decode_test.php generated_class_test.php map_field_test.php well_known_test.php descriptors_test.php )
+tests=( array_test.php encode_decode_test.php generated_class_test.php map_field_test.php well_known_test.php descriptors_test.php wrapper_type_setters_test.php)
 
 for t in "${tests[@]}"
 do

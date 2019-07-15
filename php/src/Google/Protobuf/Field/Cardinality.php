@@ -4,6 +4,8 @@
 
 namespace Google\Protobuf\Field;
 
+use UnexpectedValueException;
+
 /**
  * Whether a field is optional, required, or repeated.
  *
@@ -35,6 +37,32 @@ class Cardinality
      * Generated from protobuf enum <code>CARDINALITY_REPEATED = 3;</code>
      */
     const CARDINALITY_REPEATED = 3;
+
+    private static $valueToName = [
+        self::CARDINALITY_UNKNOWN => 'CARDINALITY_UNKNOWN',
+        self::CARDINALITY_OPTIONAL => 'CARDINALITY_OPTIONAL',
+        self::CARDINALITY_REQUIRED => 'CARDINALITY_REQUIRED',
+        self::CARDINALITY_REPEATED => 'CARDINALITY_REPEATED',
+    ];
+
+    public static function name($value)
+    {
+        if (!isset(self::$valueToName[$value])) {
+            throw new UnexpectedValueException(sprintf(
+                    'Enum %s has no name defined for value %s', __CLASS__, $value));
+        }
+        return self::$valueToName[$value];
+    }
+
+    public static function value($name)
+    {
+        $const = __CLASS__ . '::' . strtoupper($name);
+        if (!defined($const)) {
+            throw new UnexpectedValueException(sprintf(
+                    'Enum %s has no value defined for name %s', __CLASS__, $name));
+        }
+        return constant($const);
+    }
 }
 
 // Adding a class alias for backwards compatibility with the previous class name.

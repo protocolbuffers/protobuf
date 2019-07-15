@@ -33,9 +33,9 @@ package com.google.protobuf;
 import junit.framework.TestCase;
 
 /**
- * Tests that proto2 api generation doesn't cause compile errors when
- * compiling protocol buffers that have names that would otherwise conflict
- * if not fully qualified (like @Deprecated and @Override).
+ * Tests that proto2 api generation doesn't cause compile errors when compiling protocol buffers
+ * that have names that would otherwise conflict if not fully qualified (like @Deprecated
+ * and @Override).
  *
  * @author jonp@google.com (Jon Perlow)
  */
@@ -48,17 +48,11 @@ public class TestBadIdentifiers extends TestCase {
   }
 
   public void testGetDescriptor() {
-    Descriptors.FileDescriptor fileDescriptor =
-        TestBadIdentifiersProto.getDescriptor();
-    String descriptorField = TestBadIdentifiersProto.Descriptor
-        .getDefaultInstance().getDescriptor();
-    Descriptors.Descriptor protoDescriptor = TestBadIdentifiersProto.Descriptor
-        .getDefaultInstance().getDescriptorForType();
-    String nestedDescriptorField = TestBadIdentifiersProto.Descriptor
-        .NestedDescriptor.getDefaultInstance().getDescriptor();
-    Descriptors.Descriptor nestedProtoDescriptor = TestBadIdentifiersProto
-        .Descriptor.NestedDescriptor.getDefaultInstance()
-        .getDescriptorForType();
+    TestBadIdentifiersProto.getDescriptor();
+    TestBadIdentifiersProto.Descriptor.getDefaultInstance().getDescriptor();
+    TestBadIdentifiersProto.Descriptor.getDefaultInstance().getDescriptorForType();
+    TestBadIdentifiersProto.Descriptor.NestedDescriptor.getDefaultInstance().getDescriptor();
+    TestBadIdentifiersProto.Descriptor.NestedDescriptor.getDefaultInstance().getDescriptorForType();
   }
 
   public void testConflictingFieldNames() throws Exception {
@@ -87,10 +81,16 @@ public class TestBadIdentifiers extends TestCase {
     assertEquals(0, message.getInt32FieldList31());
 
     assertEquals(0, message.getInt64FieldCount());
-    assertEquals(0L, message.getExtension(
-        TestBadIdentifiersProto.TestConflictingFieldNames.int64FieldCount).longValue());
-    assertEquals(0L, message.getExtension(
-        TestBadIdentifiersProto.TestConflictingFieldNames.int64FieldList).longValue());
+    assertEquals(
+        0L,
+        message
+            .getExtension(TestBadIdentifiersProto.TestConflictingFieldNames.int64FieldCount)
+            .longValue());
+    assertEquals(
+        0L,
+        message
+            .getExtension(TestBadIdentifiersProto.TestConflictingFieldNames.int64FieldList)
+            .longValue());
 
     assertEquals("", message.getFieldName32());
     assertEquals("", message.getFieldName33());

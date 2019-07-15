@@ -36,18 +36,18 @@
 #ifndef GOOGLE_PROTOBUF_IO_CODED_STREAM_INL_H__
 #define GOOGLE_PROTOBUF_IO_CODED_STREAM_INL_H__
 
+#include <string>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
-#include <string>
 #include <google/protobuf/stubs/stl_util.h>
 
 namespace google {
 namespace protobuf {
 namespace io {
 
-inline bool CodedInputStream::InternalReadStringInline(string* buffer,
+inline bool CodedInputStream::InternalReadStringInline(std::string* buffer,
                                                        int size) {
   if (size < 0) return false;  // security: size is often user-supplied
 
