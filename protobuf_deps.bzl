@@ -13,3 +13,11 @@ def protobuf_deps():
             strip_prefix = "zlib-1.2.11",
             urls = ["https://zlib.net/zlib-1.2.11.tar.gz"],
         )
+
+    if "six" not in native.existing_rules():
+        http_archive(
+            name = "six",
+            build_file = "@//:six.BUILD",
+            sha256 = "105f8d68616f8248e24bf0e9372ef04d3cc10104f1980f54d57b2ce73a5ad56a",
+            urls = ["https://pypi.python.org/packages/source/s/six/six-1.10.0.tar.gz#md5=34eed507548117b2ab523ab14b2f8b55"],
+        )
