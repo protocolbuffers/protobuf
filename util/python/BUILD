@@ -9,7 +9,7 @@
 # includes the following local_repository rule that points to this directory:
 #
 # new_local_repository(
-#   name = "python",
+#   name = "python_headers",
 #   path = __workspace_dir__ + "/util/python",
 # )
 cc_library(
