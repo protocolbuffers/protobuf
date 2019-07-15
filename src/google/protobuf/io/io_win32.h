@@ -92,12 +92,8 @@ struct ExpandWildcardsResult {
 // in the last path segment. This function passes all matching file names to
 // `consume`. The resulting paths may not be absolute nor normalized.
 //
-// The function returns true if the path did not contain any wildcards (in
-// which case the path may or may not exist), or the path did contain wildcards
-// and it matched at least one file.
-// The function returns false if the path contained wildcards but it did not
-// match any files.
-LIBPROTOBUF_EXPORT bool expand_wildcards(
+// The function returns a value from `ExpandWildcardsResult`.
+LIBPROTOBUF_EXPORT int expand_wildcards(
     const std::string& path, std::function<void(const std::string&)> consume);
 
 namespace strings {

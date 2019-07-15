@@ -362,7 +362,7 @@ wstring testonly_utf8_to_winpath(const char* path) {
   return as_windows_path(path, &wpath) ? wpath : wstring();
 }
 
-bool expand_wildcards(
+int expand_wildcards(
     const string& path, std::function<void(const string&)> consume) {
   if (path.find_first_of("*?") == string::npos) {
     // There are no wildcards in the path, we don't need to expand it.
