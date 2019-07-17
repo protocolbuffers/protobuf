@@ -3161,6 +3161,7 @@ void Generator::GenerateClassDeserializeBinaryField(
       printer->Print(", null");
     }
     printer->Print(", $defaultKey$", "defaultKey", JSFieldDefault(key_field));
+    printer->Print(", $defaultValue$", "defaultValue", JSFieldDefault(value_field));
     printer->Print(");\n");
     printer->Print("         });\n");
   } else {
