@@ -42,6 +42,8 @@ README](https://github.com/protocolbuffers/protobuf/blob/master/src/README.md).
 Once you have `protoc` compiled, you can run the tests by typing:
 
     $ cd js
+    # Here the js folder is the working folder of your project, 
+    # it can be any other name according to your actual circumstances
     $ npm install
     $ npm test
 
