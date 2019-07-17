@@ -65,7 +65,10 @@ _DURATION_SECONDS_MAX = 315576000000
 
 
 class Any(object):
-  """Class for Any Message type."""
+  """Mixin class for Any message type.
+  NOTE: This class is not intended to be used directly.
+  These methods get added to google.protobuf.any_pb2.Any type.
+  """
 
   __slots__ = ()
 
@@ -100,7 +103,10 @@ _EPOCH_DATETIME = datetime.utcfromtimestamp(0)
 
 
 class Timestamp(object):
-  """Class for Timestamp message type."""
+  """Mixin class for Timestamp message type.
+  NOTE: This class is not intended to be used directly.
+  These methods get added to google.protobuf.timestamp_pb2.Timestamp type.
+  """
 
   __slots__ = ()
 
@@ -252,7 +258,10 @@ class Timestamp(object):
 
 
 class Duration(object):
-  """Class for Duration message type."""
+  """Mixin class for Duration message type.
+  NOTE: This class is not intended to be used directly.
+  These methods get added to google.protobuf.duration_pb2.Duration type.
+  """
 
   __slots__ = ()
 
@@ -411,7 +420,10 @@ def _RoundTowardZero(value, divider):
 
 
 class FieldMask(object):
-  """Class for FieldMask message type."""
+  """Class for FieldMask message type.
+  NOTE: This class is not intended to be used directly.
+  These methods get added to google.protobuf.field_mask_pb2.FieldMask type.
+  """
 
   __slots__ = ()
 
@@ -751,7 +763,10 @@ def _GetStructValue(struct_value):
 
 
 class Struct(object):
-  """Class for Struct message type."""
+  """Class for Struct message type.
+  NOTE: This class is not intended to be used directly.
+  These methods get added to google.protobuf.struct_pb2.Struct type.
+  """
 
   __slots__ = ()
 
@@ -804,7 +819,10 @@ collections_abc.MutableMapping.register(Struct)
 
 
 class ListValue(object):
-  """Class for ListValue message type."""
+  """Class for ListValue message type.
+  NOTE: This class is not intended to be used directly.
+  These methods get added to google.protobuf.struct_pb2.ListValue type.
+  """
 
   __slots__ = ()
 
