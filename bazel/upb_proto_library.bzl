@@ -175,7 +175,7 @@ def _upb_proto_rule_impl(ctx):
              "_WrappedGeneratedSrcsInfo (aspect should have handled this).")
     cc_info = dep[_WrappedCcInfo].cc_info
     srcs = dep[_WrappedGeneratedSrcsInfo].srcs
-    lib = cc_info.linking_context.libraries_to_link.to_list()[0]
+    lib = cc_info.linking_context.libraries_to_link[0]
     files = _filter_none([
         lib.static_library,
         lib.pic_static_library,
