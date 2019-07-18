@@ -174,7 +174,8 @@ void WriteMessageDocComment(io::Printer* printer, const Descriptor* message) {
 
 void WriteFieldDocComment(io::Printer* printer, const FieldDescriptor* field) {
   // We start the comment with the main body based on the comments from the
-  // .proto file (if present). We then continue with the field declaration, e.g.:
+  // .proto file (if present). We then continue with the field declaration,
+  // e.g.:
   //   optional string foo = 5;
   // And then we end with the javadoc tags if applicable.
   // If the field is a group, the debug string might end with {.
@@ -185,17 +186,17 @@ void WriteFieldDocComment(io::Printer* printer, const FieldDescriptor* field) {
   printer->Print(" */\n");
 }
 
-void WriteFieldAccessorDocComment(io::Printer* printer, 
+void WriteFieldAccessorDocComment(io::Printer* printer,
                                   const FieldDescriptor* field,
                                   const FieldAccessorType type,
                                   const bool builder) {
   printer->Print("/**\n");
   WriteDocCommentBody(printer, field);
-  printer->Print(" * <code>$def$</code>\n", "def", 
+  printer->Print(" * <code>$def$</code>\n", "def",
                  EscapeJavadoc(FirstLineOf(field->DebugString())));
   switch (type) {
     case HAZZER:
-      printer->Print(" * @return Whether the $name$ field is set.\n", "name", 
+      printer->Print(" * @return Whether the $name$ field is set.\n", "name",
                      field->camelcase_name());
       break;
     case GETTER:
@@ -211,16 +212,16 @@ void WriteFieldAccessorDocComment(io::Printer* printer,
       break;
     // Repeated
     case LIST_COUNT:
-      printer->Print(" * @return The number of $name$(s).\n", "name",
-                 field->camelcase_name());
+      printer->Print(" * @return The count of $name$.\n", "name",
+                     field->camelcase_name());
       break;
     case LIST_GETTER:
-      printer->Print(" * @return A list containing the $name$(s).\n", "name",
+      printer->Print(" * @return A list containing the $name$.\n", "name",
                      field->camelcase_name());
       break;
     case LIST_INDEXED_GETTER:
       printer->Print(" * @param index The index of the element to return.\n");
-      printer->Print(" * @return The $name$(s) at the given index.\n", "name",
+      printer->Print(" * @return The $name$ at the given index.\n", "name",
                      field->camelcase_name());
       break;
     case LIST_INDEXED_SETTER:
@@ -233,8 +234,8 @@ void WriteFieldAccessorDocComment(io::Printer* printer,
                      field->camelcase_name());
       break;
     case LIST_MULTI_ADDER:
-      printer->Print(" * @param values The $name$(s) to add.\n", "name",
-                 field->camelcase_name());
+      printer->Print(" * @param values The $name$ to add.\n", "name",
+                     field->camelcase_name());
       break;
   }
   if (builder) {
@@ -243,25 +244,28 @@ void WriteFieldAccessorDocComment(io::Printer* printer,
   printer->Print(" */\n");
 }
 
-void WriteFieldEnumValueAccessorDocComment(io::Printer* printer, 
+void WriteFieldEnumValueAccessorDocComment(io::Printer* printer,
                                            const FieldDescriptor* field,
                                            const FieldAccessorType type,
                                            const bool builder) {
   printer->Print("/**\n");
   WriteDocCommentBody(printer, field);
-  printer->Print(" * <code>$def$</code>\n", "def", 
+  printer->Print(" * <code>$def$</code>\n", "def",
                  EscapeJavadoc(FirstLineOf(field->DebugString())));
   switch (type) {
     case HAZZER:
       // Should never happen
       break;
     case GETTER:
-      printer->Print(" * @return The enum value for $name$.\n", "name",
-                 field->camelcase_name());
+      printer->Print(
+          " * @return The enum numeric value on the wire for $name$.\n", "name",
+          field->camelcase_name());
       break;
     case SETTER:
-      printer->Print(" * @param value The enum value for $name$ to set.\n",
-                     "name", field->camelcase_name());
+      printer->Print(
+          " * @param value The enum numeric value on the wire for $name$ to "
+          "set.\n",
+          "name", field->camelcase_name());
       break;
     case CLEARER:
       // Print nothing
@@ -271,26 +275,36 @@ void WriteFieldEnumValueAccessorDocComment(io::Printer* printer,
       // Should never happen
       break;
     case LIST_GETTER:
-      printer->Print(" * @return A list containing the enum values for "
-                     "$name$(s).\n", "name", field->camelcase_name());
+      printer->Print(
+          " * @return A list containing the enum numeric values on the wire "
+          "for $name$.\n",
+          "name", field->camelcase_name());
       break;
     case LIST_INDEXED_GETTER:
       printer->Print(" * @param index The index of the value to return.\n");
-      printer->Print(" * @return The enum value of the $name$ at the given "
-                     "index.\n", "name", field->camelcase_name());
+      printer->Print(
+          " * @return The enum numeric value on the wire of $name$ at the "
+          "given index.\n",
+          "name", field->camelcase_name());
       break;
     case LIST_INDEXED_SETTER:
       printer->Print(" * @param index The index to set the value at.\n");
-      printer->Print(" * @param value The enum value of the $name$ to set.\n",
-                     "name", field->camelcase_name());
+      printer->Print(
+          " * @param value The enum numeric value on the wire for $name$ to "
+          "set.\n",
+          "name", field->camelcase_name());
       break;
     case LIST_ADDER:
-      printer->Print(" * @param value The enum value of the $name$ to add.\n",
-                     "name", field->camelcase_name());
+      printer->Print(
+          " * @param value The enum numeric value on the wire for $name$ to "
+          "add.\n",
+          "name", field->camelcase_name());
       break;
     case LIST_MULTI_ADDER:
-      printer->Print(" * @param values The enum values of the $name$(s) to "
-                     "add.\n", "name", field->camelcase_name());
+      printer->Print(
+          " * @param values The enum numeric values on the wire for $name$ to "
+          "add.\n",
+          "name", field->camelcase_name());
       break;
   }
   if (builder) {
@@ -299,13 +313,13 @@ void WriteFieldEnumValueAccessorDocComment(io::Printer* printer,
   printer->Print(" */\n");
 }
 
-void WriteFieldStringBytesAccessorDocComment(io::Printer* printer, 
+void WriteFieldStringBytesAccessorDocComment(io::Printer* printer,
                                              const FieldDescriptor* field,
                                              const FieldAccessorType type,
                                              const bool builder) {
   printer->Print("/**\n");
   WriteDocCommentBody(printer, field);
-  printer->Print(" * <code>$def$</code>\n", "def", 
+  printer->Print(" * <code>$def$</code>\n", "def",
                  EscapeJavadoc(FirstLineOf(field->DebugString())));
   switch (type) {
     case HAZZER:
@@ -313,11 +327,11 @@ void WriteFieldStringBytesAccessorDocComment(io::Printer* printer,
       break;
     case GETTER:
       printer->Print(" * @return The bytes for $name$.\n", "name",
-                 field->camelcase_name());
+                     field->camelcase_name());
       break;
     case SETTER:
-      printer->Print(" * @param value The bytes for $name$ to set.\n",
-                     "name", field->camelcase_name());
+      printer->Print(" * @param value The bytes for $name$ to set.\n", "name",
+                     field->camelcase_name());
       break;
     case CLEARER:
       // Print nothing
@@ -327,7 +341,7 @@ void WriteFieldStringBytesAccessorDocComment(io::Printer* printer,
       // Should never happen
       break;
     case LIST_GETTER:
-      printer->Print(" * @return A list containing the bytes for $name$(s).\n",
+      printer->Print(" * @return A list containing the bytes for $name$.\n",
                      "name", field->camelcase_name());
       break;
     case LIST_INDEXED_GETTER:
@@ -345,7 +359,7 @@ void WriteFieldStringBytesAccessorDocComment(io::Printer* printer,
                      "name", field->camelcase_name());
       break;
     case LIST_MULTI_ADDER:
-      printer->Print(" * @param values The bytes of the $name$(s) to add.\n",
+      printer->Print(" * @param values The bytes of the $name$ to add.\n",
                      "name", field->camelcase_name());
       break;
   }

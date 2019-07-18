@@ -32,9 +32,10 @@ package com.google.protobuf;
 
 import com.google.protobuf.Internal.ProtobufList;
 import java.util.Arrays;
+import java.util.RandomAccess;
 
 /** Implements {@link ProtobufList} for non-primitive and {@link String} types. */
-final class ProtobufArrayList<E> extends AbstractProtobufList<E> {
+final class ProtobufArrayList<E> extends AbstractProtobufList<E> implements RandomAccess {
 
   private static final ProtobufArrayList<Object> EMPTY_LIST =
       new ProtobufArrayList<Object>(new Object[0], 0);

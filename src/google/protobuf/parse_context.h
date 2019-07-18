@@ -124,7 +124,9 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
 
   // If return value is negative it's an error
   PROTOBUF_MUST_USE_RESULT int PushLimit(const char* ptr, int limit) {
-    GOOGLE_DCHECK(limit >= 0);
+    GOOGLE_DCHECK(limit >= 0 && limit <= INT_MAX - kSlopBytes);
+    // This add is safe due to the invariant above, because
+    // ptr - buffer_end_ <= kSlopBytes.
     limit += static_cast<int>(ptr - buffer_end_);
     limit_end_ = buffer_end_ + (std::min)(0, limit);
     auto old_limit = limit_;
@@ -343,8 +345,7 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
   const Data& data() const { return data_; }
 
   template <typename T>
-  PROTOBUF_MUST_USE_RESULT PROTOBUF_ALWAYS_INLINE const char* ParseMessage(
-      T* msg, const char* ptr);
+  PROTOBUF_MUST_USE_RESULT const char* ParseMessage(T* msg, const char* ptr);
   // We outline when the type is generic and we go through a virtual
   const char* ParseMessage(MessageLite* msg, const char* ptr);
   const char* ParseMessage(Message* msg, const char* ptr);
@@ -374,32 +375,122 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
   Data data_;
 };
 
+template <uint32 tag>
+bool ExpectTag(const char* ptr) {
+  if (tag < 128) {
+    return *ptr == tag;
+  } else {
+    static_assert(tag < 128 * 128, "We only expect tags for 1 or 2 bytes");
+    char buf[2] = {static_cast<char>(tag | 0x80), static_cast<char>(tag >> 7)};
+    return std::memcmp(ptr, buf, 2) == 0;
+  }
+}
+
+template <int>
+struct EndianHelper;
+
+template <>
+struct EndianHelper<1> {
+  static uint8 Load(const void* p) { return *static_cast<const uint8*>(p); }
+};
+
+template <>
+struct EndianHelper<2> {
+  static uint16 Load(const void* p) {
+    uint16 tmp;
+    std::memcpy(&tmp, p, 2);
+#ifndef PROTOBUF_LITTLE_ENDIAN
+    tmp = bswap_16(tmp);
+#endif
+    return tmp;
+  }
+};
+
+template <>
+struct EndianHelper<4> {
+  static uint32 Load(const void* p) {
+    uint32 tmp;
+    std::memcpy(&tmp, p, 4);
+#ifndef PROTOBUF_LITTLE_ENDIAN
+    tmp = bswap_32(tmp);
+#endif
+    return tmp;
+  }
+};
+
+template <>
+struct EndianHelper<8> {
+  static uint64 Load(const void* p) {
+    uint64 tmp;
+    std::memcpy(&tmp, p, 8);
+#ifndef PROTOBUF_LITTLE_ENDIAN
+    tmp = bswap_64(tmp);
+#endif
+    return tmp;
+  }
+};
+
 template <typename T>
-T UnalignedLoad(const void* p) {
+T UnalignedLoad(const char* p) {
+  auto tmp = EndianHelper<sizeof(T)>::Load(p);
   T res;
-  memcpy(&res, p, sizeof(T));
+  memcpy(&res, &tmp, sizeof(T));
   return res;
 }
 
-// TODO(gerbens) Experiment with best implementation.
-// Clang unrolls loop and generating pretty good code on O2, gcc doesn't.
-// Unclear if we want 64 bit parse loop unrolled, inlined or opaque function
-// call. Hence experimentation is needed.
-// Important guarantee is that it doesn't read more than size bytes from p.
-template <int size, typename T>
+std::pair<const char*, uint32> VarintParseSlow32(const char* p, uint32 res);
+std::pair<const char*, uint64> VarintParseSlow64(const char* p, uint32 res);
+
+inline const char* VarintParseSlow(const char* p, uint32 res, uint32* out) {
+  auto tmp = VarintParseSlow32(p, res);
+  *out = tmp.second;
+  return tmp.first;
+}
+
+inline const char* VarintParseSlow(const char* p, uint32 res, uint64* out) {
+  auto tmp = VarintParseSlow64(p, res);
+  *out = tmp.second;
+  return tmp.first;
+}
+
+template <typename T>
 PROTOBUF_MUST_USE_RESULT const char* VarintParse(const char* p, T* out) {
-  T res = 1;
-  for (int i = 0; i < size; i++) {
-    T byte = static_cast<uint8>(p[i]);
-    res += (byte - 1) << (i * 7);
-    int j = i + 1;
-    if (PROTOBUF_PREDICT_TRUE(byte < 128)) {
-      *out = res;
-      return p + j;
-    }
+  auto ptr = reinterpret_cast<const uint8*>(p);
+  uint32 res = ptr[0];
+  if (!(res & 0x80)) {
+    *out = res;
+    return p + 1;
   }
-  *out = 0;
-  return nullptr;
+  uint32 byte = ptr[1];
+  res += (byte - 1) << 7;
+  if (!(byte & 0x80)) {
+    *out = res;
+    return p + 2;
+  }
+  return VarintParseSlow(p, res, out);
+}
+
+// Used for tags, could read up to 5 bytes which must be available.
+// Caller must ensure its safe to call.
+
+std::pair<const char*, uint32> ReadTagFallback(const char* p, uint32 res);
+
+// Same as ParseVarint but only accept 5 bytes at most.
+inline const char* ReadTag(const char* p, uint32* out, uint32 max_tag = 0) {
+  uint32 res = static_cast<uint8>(p[0]);
+  if (res < 128) {
+    *out = res;
+    return p + 1;
+  }
+  uint32 second = static_cast<uint8>(p[1]);
+  res += (second - 1) << 7;
+  if (second < 128) {
+    *out = res;
+    return p + 2;
+  }
+  auto tmp = ReadTagFallback(p, res);
+  *out = tmp.second;
+  return tmp.first;
 }
 
 // Decode 2 consecutive bytes of a varint and returns the value, shifted left
@@ -412,7 +503,8 @@ PROTOBUF_MUST_USE_RESULT const char* VarintParse(const char* p, T* out) {
 // adc [rsi], 1
 // add eax, eax
 // and eax, edi
-inline uint32 DecodeTwoBytes(uint32 value, const char** ptr) {
+inline uint32 DecodeTwoBytes(const char** ptr) {
+  uint32 value = UnalignedLoad<uint16>(*ptr);
   // Sign extend the low byte continuation bit
   uint32_t x = static_cast<int8_t>(value);
   // This add is an amazing operation, it cancels the low byte continuation bit
@@ -425,90 +517,25 @@ inline uint32 DecodeTwoBytes(uint32 value, const char** ptr) {
   return value & (x + x);  // Mask out the high byte iff no continuation
 }
 
-// Used for tags, could read up to 5 bytes which must be available.
-// Caller must ensure its safe to call.
-
-std::pair<const char*, uint32> ReadTagFallback(const char* p, uint32 res);
-
-inline const char* ReadTag(const char* p, uint32* out) {
-  uint32 res = static_cast<uint8>(p[0]);
-  if (res < 128) {
+// More efficient varint parsing for big varints
+inline const char* ParseBigVarint(const char* p, uint64* out) {
+  auto pnew = p;
+  auto tmp = DecodeTwoBytes(&pnew);
+  uint64 res = tmp >> 1;
+  if (PROTOBUF_PREDICT_TRUE(std::int16_t(tmp) >= 0)) {
     *out = res;
-    return p + 1;
+    return pnew;
   }
-  uint32 second = static_cast<uint8>(p[1]);
-  res += (second - 1) << 7;
-  if (second < 128) {
-    *out = res;
-    return p + 2;
-  }
-  auto tmp = ReadTagFallback(p + 2, res);
-  *out = tmp.second;
-  return tmp.first;
-}
-
-// Will preload the next 2 bytes
-inline const char* ReadTag(const char* p, uint32* out, uint32* preload) {
-  uint32 res = static_cast<uint8>(p[0]);
-  if (res < 128) {
-    *out = res;
-    *preload = UnalignedLoad<uint16>(p + 1);
-    return p + 1;
-  }
-  uint32 second = static_cast<uint8>(p[1]);
-  res += (second - 1) << 7;
-  if (second < 128) {
-    *out = res;
-    *preload = UnalignedLoad<uint16>(p + 2);
-    return p + 2;
-  }
-  auto tmp = ReadTagFallback(p + 2, res);
-  *out = tmp.second;
-  return tmp.first;
-}
-
-inline std::pair<const char*, uint64> ParseVarint64FallbackInline(const char* p,
-                                                                  uint64 res) {
-  res >>= 1;
-  for (std::uint32_t i = 0; i < 4; i++) {
-    auto pnew = p + 2 * i;
-    auto tmp = DecodeTwoBytes(UnalignedLoad<uint16>(pnew), &pnew);
-    res += (static_cast<std::uint64_t>(tmp) - 2) << (14 * (i + 1) - 1);
+  for (std::uint32_t i = 1; i < 5; i++) {
+    pnew = p + 2 * i;
+    tmp = DecodeTwoBytes(&pnew);
+    res += (static_cast<std::uint64_t>(tmp) - 2) << (14 * i - 1);
     if (PROTOBUF_PREDICT_TRUE(std::int16_t(tmp) >= 0)) {
-      return {pnew, res};
+      *out = res;
+      return pnew;
     }
   }
-  return {nullptr, res};
-}
-
-inline const char* ParseVarint64Inline(const char* p, uint64* out) {
-  auto tmp = DecodeTwoBytes(UnalignedLoad<uint16>(p), &p);
-  if (PROTOBUF_PREDICT_TRUE(static_cast<int16>(tmp) >= 0)) {
-    *out = tmp >> 1;
-    return p;
-  }
-  auto x = ParseVarint64FallbackInline(p, tmp);
-  *out = x.second;
-  return x.first;
-}
-
-std::pair<const char*, uint64> ParseVarint64Fallback(const char* p, uint64 res);
-
-inline const char* ParseVarint64(const char* p, uint32 preload, uint64* out) {
-  auto tmp = DecodeTwoBytes(preload, &p);
-  if (PROTOBUF_PREDICT_TRUE(static_cast<int16>(tmp) >= 0)) {
-    *out = tmp >> 1;
-    return p;
-  }
-  auto x = ParseVarint64Fallback(p, tmp);
-  *out = x.second;
-  return x.first;
-}
-
-// Used for reading varint wiretype values, could read up to 10 bytes.
-// Caller must ensure its safe to call.
-inline const char* ParseVarint64(const char* p, uint64* out) {
-  return ParseVarint64(p, UnalignedLoad<uint16>(p), out);
+  return nullptr;
 }
 
 std::pair<const char*, int32> ReadSizeFallback(const char* p, uint32 first);
@@ -534,37 +561,19 @@ inline uint32 ReadSize(const char** pp) {
 // stack frames that scale as O(num fields).
 inline uint64 ReadVarint(const char** p) {
   uint64 tmp;
-  *p = ParseVarint64(*p, &tmp);
+  *p = VarintParse(*p, &tmp);
   return tmp;
 }
 
 inline int64 ReadVarintZigZag64(const char** p) {
   uint64 tmp;
-  *p = ParseVarint64(*p, &tmp);
+  *p = VarintParse(*p, &tmp);
   return WireFormatLite::ZigZagDecode64(tmp);
 }
 
 inline int32 ReadVarintZigZag32(const char** p) {
   uint64 tmp;
-  *p = ParseVarint64(*p, &tmp);
-  return WireFormatLite::ZigZagDecode32(static_cast<uint32>(tmp));
-}
-
-inline uint64 ReadVarint(const char** p, uint32 preload) {
-  uint64 tmp;
-  *p = ParseVarint64(*p, preload, &tmp);
-  return tmp;
-}
-
-inline int64 ReadVarintZigZag64(const char** p, uint32 preload) {
-  uint64 tmp;
-  *p = ParseVarint64(*p, preload, &tmp);
-  return WireFormatLite::ZigZagDecode64(tmp);
-}
-
-inline int32 ReadVarintZigZag32(const char** p, uint32 preload) {
-  uint64 tmp;
-  *p = ParseVarint64(*p, preload, &tmp);
+  *p = VarintParse(*p, &tmp);
   return WireFormatLite::ZigZagDecode32(static_cast<uint32>(tmp));
 }
 
@@ -590,7 +599,7 @@ const char* EpsCopyInputStream::ReadPackedVarint(const char* ptr, Add add) {
   if (old < 0) return nullptr;
   while (!DoneWithCheck(&ptr, -1)) {
     uint64 varint;
-    ptr = ParseVarint64(ptr, &varint);
+    ptr = VarintParse(ptr, &varint);
     if (!ptr) return nullptr;
     add(varint);
   }
@@ -643,7 +652,7 @@ PROTOBUF_MUST_USE_RESULT const char* FieldParser(uint64 tag, T& field_parser,
   switch (tag & 7) {
     case WireType::WIRETYPE_VARINT: {
       uint64 value;
-      ptr = ParseVarint64(ptr, &value);
+      ptr = VarintParse(ptr, &value);
       GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
       field_parser.AddVarint(number, value);
       break;

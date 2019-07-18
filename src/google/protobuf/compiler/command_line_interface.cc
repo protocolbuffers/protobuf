@@ -70,7 +70,6 @@
 #include <google/protobuf/compiler/plugin.pb.h>
 #include <google/protobuf/compiler/code_generator.h>
 #include <google/protobuf/compiler/importer.h>
-#include <google/protobuf/io/io_win32.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
@@ -81,6 +80,7 @@
 #include <google/protobuf/stubs/substitute.h>
 
 
+#include <google/protobuf/io/io_win32.h>
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/stl_util.h>
 

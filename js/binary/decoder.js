@@ -247,20 +247,6 @@ jspb.BinaryDecoder = function(opt_bytes, opt_start, opt_length) {
   this.cursor_ = 0;
 
   /**
-   * Temporary storage for the low 32 bits of 64-bit data types that we're
-   * decoding.
-   * @private {number}
-   */
-  this.tempLow_ = 0;
-
-  /**
-   * Temporary storage for the high 32 bits of 64-bit data types that we're
-   * decoding.
-   * @private {number}
-   */
-  this.tempHigh_ = 0;
-
-  /**
    * Set to true if this decoder encountered an error due to corrupt data.
    * @private {boolean}
    */
@@ -442,9 +428,9 @@ jspb.BinaryDecoder.prototype.getError = function() {
 
 
 /**
- * Reads an unsigned varint from the binary stream and stores it as a split
- * 64-bit integer. Since this does not convert the value to a number, no
- * precision is lost.
+ * Reads an unsigned varint from the binary stream and invokes the conversion
+ * function with the value in two signed 32 bit integers to produce the result.
+ * Since this does not convert the value to a number, no precision is lost.
  *
  * It's possible for an unsigned varint to be incorrectly encoded - more than
  * 64 bits' worth of data could be present. If this happens, this method will
@@ -454,49 +440,69 @@ jspb.BinaryDecoder.prototype.getError = function() {
  * details on the format, see
  * https://developers.google.com/protocol-buffers/docs/encoding
  *
- * @private
+ * @param {function(number, number): T} convert Conversion function to produce
+ *     the result value, takes parameters (lowBits, highBits).
+ * @return {T}
+ * @template T
  */
-jspb.BinaryDecoder.prototype.readSplitVarint64_ = function() {
-  var temp;
+jspb.BinaryDecoder.prototype.readSplitVarint64 = function(convert) {
+  var temp = 128;
   var lowBits = 0;
   var highBits = 0;
 
   // Read the first four bytes of the varint, stopping at the terminator if we
   // see it.
-  for (var i = 0; i < 4; i++) {
+  for (var i = 0; i < 4 && temp >= 128; i++) {
     temp = this.bytes_[this.cursor_++];
     lowBits |= (temp & 0x7F) << (i * 7);
-    if (temp < 128) {
-      this.tempLow_ = lowBits >>> 0;
-      this.tempHigh_ = 0;
-      return;
-    }
   }
 
-  // Read the fifth byte, which straddles the low and high dwords.
-  temp = this.bytes_[this.cursor_++];
-  lowBits |= (temp & 0x7F) << 28;
-  highBits |= (temp & 0x7F) >> 4;
-  if (temp < 128) {
-    this.tempLow_ = lowBits >>> 0;
-    this.tempHigh_ = highBits >>> 0;
-    return;
-  }
-
-  // Read the sixth through tenth byte.
-  for (var i = 0; i < 5; i++) {
+  if (temp >= 128) {
+    // Read the fifth byte, which straddles the low and high dwords.
     temp = this.bytes_[this.cursor_++];
-    highBits |= (temp & 0x7F) << (i * 7 + 3);
-    if (temp < 128) {
-      this.tempLow_ = lowBits >>> 0;
-      this.tempHigh_ = highBits >>> 0;
-      return;
+    lowBits |= (temp & 0x7F) << 28;
+    highBits |= (temp & 0x7F) >> 4;
+  }
+
+  if (temp >= 128) {
+    // Read the sixth through tenth byte.
+    for (var i = 0; i < 5 && temp >= 128; i++) {
+      temp = this.bytes_[this.cursor_++];
+      highBits |= (temp & 0x7F) << (i * 7 + 3);
     }
+  }
+
+  if (temp < 128) {
+    return convert(lowBits >>> 0, highBits >>> 0);
   }
 
   // If we did not see the terminator, the encoding was invalid.
   goog.asserts.fail('Failed to read varint, encoding is invalid.');
   this.error_ = true;
+};
+
+
+/**
+ * Reads a 64-bit fixed-width value from the stream and invokes the conversion
+ * function with the value in two signed 32 bit integers to produce the result.
+ * Since this does not convert the value to a number, no precision is lost.
+ *
+ * @param {function(number, number): T} convert Conversion function to produce
+ *     the result value, takes parameters (lowBits, highBits).
+ * @return {T}
+ * @template T
+ */
+jspb.BinaryDecoder.prototype.readSplitFixed64 = function(convert) {
+  var bytes = this.bytes_;
+  var cursor = this.cursor_;
+  this.cursor_ += 8;
+  var lowBits = 0;
+  var highBits = 0;
+  for (var i = cursor + 7; i >= cursor; i--) {
+    lowBits = (lowBits << 8) | bytes[i];
+    highBits = (highBits << 8) | bytes[i + 4];
+  }
+  return convert(lowBits, highBits);
 };
 
 
@@ -668,8 +674,7 @@ jspb.BinaryDecoder.prototype.readZigzagVarint32 = function() {
  *     integer exceeds 2^53.
  */
 jspb.BinaryDecoder.prototype.readUnsignedVarint64 = function() {
-  this.readSplitVarint64_();
-  return jspb.utils.joinUint64(this.tempLow_, this.tempHigh_);
+  return this.readSplitVarint64(jspb.utils.joinUint64);
 };
 
 
@@ -680,8 +685,7 @@ jspb.BinaryDecoder.prototype.readUnsignedVarint64 = function() {
  * @return {string} The decoded unsigned varint as a decimal string.
  */
 jspb.BinaryDecoder.prototype.readUnsignedVarint64String = function() {
-  this.readSplitVarint64_();
-  return jspb.utils.joinUnsignedDecimalString(this.tempLow_, this.tempHigh_);
+  return this.readSplitVarint64(jspb.utils.joinUnsignedDecimalString);
 };
 
 
@@ -694,8 +698,7 @@ jspb.BinaryDecoder.prototype.readUnsignedVarint64String = function() {
  *     integer exceeds 2^53.
  */
 jspb.BinaryDecoder.prototype.readSignedVarint64 = function() {
-  this.readSplitVarint64_();
-  return jspb.utils.joinInt64(this.tempLow_, this.tempHigh_);
+  return this.readSplitVarint64(jspb.utils.joinInt64);
 };
 
 
@@ -706,8 +709,7 @@ jspb.BinaryDecoder.prototype.readSignedVarint64 = function() {
  * @return {string} The decoded signed varint as a decimal string.
  */
 jspb.BinaryDecoder.prototype.readSignedVarint64String = function() {
-  this.readSplitVarint64_();
-  return jspb.utils.joinSignedDecimalString(this.tempLow_, this.tempHigh_);
+  return this.readSplitVarint64(jspb.utils.joinSignedDecimalString);
 };
 
 
@@ -725,8 +727,7 @@ jspb.BinaryDecoder.prototype.readSignedVarint64String = function() {
  *     integer exceeds 2^53.
  */
 jspb.BinaryDecoder.prototype.readZigzagVarint64 = function() {
-  this.readSplitVarint64_();
-  return jspb.utils.joinZigzag64(this.tempLow_, this.tempHigh_);
+  return this.readSplitVarint64(jspb.utils.joinZigzag64);
 };
 
 
@@ -1039,8 +1040,7 @@ jspb.BinaryDecoder.prototype.readBytes = function(length) {
  * @return {string} The hash value.
  */
 jspb.BinaryDecoder.prototype.readVarintHash64 = function() {
-  this.readSplitVarint64_();
-  return jspb.utils.joinHash64(this.tempLow_, this.tempHigh_);
+  return this.readSplitVarint64(jspb.utils.joinHash64);
 };
 
 

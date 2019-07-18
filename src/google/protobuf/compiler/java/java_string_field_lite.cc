@@ -295,7 +295,7 @@ void ImmutableStringFieldLiteGenerator::GenerateBuilderMembers(
   printer->Annotate("{", "}", descriptor_);
 
   WriteFieldStringBytesAccessorDocComment(printer, descriptor_, SETTER,
-                               /* builder */ true);
+                                          /* builder */ true);
   printer->Print(
       variables_,
       "$deprecation$public Builder ${$set$capitalized_name$Bytes$}$(\n"
@@ -476,7 +476,7 @@ void ImmutableStringOneofFieldLiteGenerator::GenerateBuilderMembers(
   printer->Annotate("{", "}", descriptor_);
 
   WriteFieldStringBytesAccessorDocComment(printer, descriptor_, SETTER,
-                               /* builder */ true);
+                                          /* builder */ true);
   printer->Print(
       variables_,
       "$deprecation$public Builder ${$set$capitalized_name$Bytes$}$(\n"

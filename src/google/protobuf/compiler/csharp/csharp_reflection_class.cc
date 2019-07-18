@@ -28,6 +28,36 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 #include <sstream>
 
 #include <google/protobuf/compiler/code_generator.h>
@@ -36,6 +66,10 @@
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/stubs/strutil.h>
+
+
+
+
 
 
 #include <google/protobuf/compiler/csharp/csharp_enum.h>
@@ -213,7 +247,7 @@ void ReflectionClassGenerator::WriteDescriptor(io::Printer* printer) {
     for (int i = 0; i < file_->extension_count(); i++) {
       extensions.push_back(GetFullExtensionName(file_->extension(i)));
     }
-    printer->Print("new pb::Extension[] { $extensions$ }, ", "extensions", JoinStrings(extensions, ", "));
+    printer->Print("new pb::Extension[] { $extensions$ }, ", "extensions", Join(extensions, ", "));
   }
   else {
     printer->Print("null, ");
@@ -264,7 +298,7 @@ void ReflectionClassGenerator::WriteGeneratedCodeInfo(const Descriptor* descript
       for (int i = 0; i < descriptor->field_count(); i++) {
           fields.push_back(GetPropertyName(descriptor->field(i)));
       }
-      printer->Print("new[]{ \"$fields$\" }, ", "fields", JoinStrings(fields, "\", \""));
+      printer->Print("new[]{ \"$fields$\" }, ", "fields", Join(fields, "\", \""));
   }
   else {
       printer->Print("null, ");
@@ -276,7 +310,7 @@ void ReflectionClassGenerator::WriteGeneratedCodeInfo(const Descriptor* descript
       for (int i = 0; i < descriptor->oneof_decl_count(); i++) {
           oneofs.push_back(UnderscoresToCamelCase(descriptor->oneof_decl(i)->name(), true));
       }
-      printer->Print("new[]{ \"$oneofs$\" }, ", "oneofs", JoinStrings(oneofs, "\", \""));
+      printer->Print("new[]{ \"$oneofs$\" }, ", "oneofs", Join(oneofs, "\", \""));
   }
   else {
       printer->Print("null, ");
@@ -288,7 +322,7 @@ void ReflectionClassGenerator::WriteGeneratedCodeInfo(const Descriptor* descript
       for (int i = 0; i < descriptor->enum_type_count(); i++) {
           enums.push_back(GetClassName(descriptor->enum_type(i)));
       }
-      printer->Print("new[]{ typeof($enums$) }, ", "enums", JoinStrings(enums, "), typeof("));
+      printer->Print("new[]{ typeof($enums$) }, ", "enums", Join(enums, "), typeof("));
   }
   else {
       printer->Print("null, ");
@@ -300,7 +334,7 @@ void ReflectionClassGenerator::WriteGeneratedCodeInfo(const Descriptor* descript
     for (int i = 0; i < descriptor->extension_count(); i++) {
       extensions.push_back(GetFullExtensionName(descriptor->extension(i)));
     }
-    printer->Print("new pb::Extension[] { $extensions$ }, ", "extensions", JoinStrings(extensions, ", "));
+    printer->Print("new pb::Extension[] { $extensions$ }, ", "extensions", Join(extensions, ", "));
   }
   else {
     printer->Print("null, ");
