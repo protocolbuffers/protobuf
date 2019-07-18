@@ -362,7 +362,7 @@ wstring testonly_utf8_to_winpath(const char* path) {
   return as_windows_path(path, &wpath) ? wpath : wstring();
 }
 
-int ExpandWildcards(
+ExpandWildcardsResult ExpandWildcards(
     const string& path, std::function<void(const string&)> consume) {
   if (path.find_first_of("*?") == string::npos) {
     // There are no wildcards in the path, we don't need to expand it.
@@ -392,7 +392,7 @@ int ExpandWildcards(
     dirname = path.substr(0, pos + 1);
   }
 
-  int matched = ExpandWildcardsResult::kErrorNoMatchingFile;
+  ExpandWildcardsResult matched = ExpandWildcardsResult::kErrorNoMatchingFile;
   do {
     // Ignore ".", "..", and directories.
     if ((metadata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0
@@ -430,7 +430,7 @@ int ExpandWildcards(
     dirname = path.substr(0, pos + 1);
   }
 
-  int matched = ExpandWildcardsResult::kErrorNoMatchingFile;
+  ExpandWildcardsResult matched = ExpandWildcardsResult::kErrorNoMatchingFile;
   do {
     // Ignore ".", "..", and directories.
     if ((metadata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0

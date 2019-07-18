@@ -429,7 +429,7 @@ TEST_F(IoWin32Test, ExpandWildcardsInRelativePathTest) {
   int found_b = 0;
   vector<string> found_bad;
   // Assert matching a relative path pattern. Results should also be relative.
-  int result = 
+  ExpandWildcardsResult result = 
       ExpandWildcards(
           string(kUtf8Text) + "\\foo*.proto",
           [&found_a, &found_b, &found_bad](const string& p) {
@@ -481,7 +481,7 @@ TEST_F(IoWin32Test, ExpandWildcardsInAbsolutePathTest) {
   vector<string> found_bad;
   // Assert matching an absolute path. The results should also use absolute
   // path.
-  int result = 
+  ExpandWildcardsResult result = 
       ExpandWildcards(
           string(test_tmpdir) + "\\" + kUtf8Text + "\\foo*.proto",
           [this, &found_a, &found_b, &found_bad](const string& p) {
@@ -544,7 +544,7 @@ TEST_F(IoWin32Test, ExpandWildcardsIgnoresDirectoriesTest) {
   vector<string> found_bad;
   // Assert that the pattern matches exactly the expected files, and using the
   // absolute path as did the input pattern.
-  int result = 
+  ExpandWildcardsResult result = 
       ExpandWildcards(
           string(kUtf8Text) + "\\foo*.proto",
           [&found_a, &found_c, &found_bad](const string& p) {
@@ -573,7 +573,7 @@ TEST_F(IoWin32Test, ExpandWildcardsFailsIfNoFileMatchesTest) {
   EXPECT_TRUE(SetCurrentDirectoryW(wtest_tmpdir.c_str()));
 
   // Control test: should match foo*.proto
-  int result = ExpandWildcards(
+  ExpandWildcardsResult result = ExpandWildcards(
       string(kUtf8Text) + "\\foo*.proto", [](const string&) {});
   EXPECT_EQ(result, ExpandWildcardsResult::kSuccess);
 
