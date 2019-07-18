@@ -242,38 +242,36 @@ cc_library(
 # Map of all well known protos.
 # name => (include path, imports)
 WELL_KNOWN_PROTO_MAP = {
-    "any": ("google/protobuf/any.proto", []),
+    "any": ("src/google/protobuf/any.proto", []),
     "api": (
-        "google/protobuf/api.proto",
+        "src/google/protobuf/api.proto",
         [
             "source_context",
             "type",
         ],
     ),
     "compiler_plugin": (
-        "google/protobuf/compiler/plugin.proto",
+        "src/google/protobuf/compiler/plugin.proto",
         ["descriptor"],
     ),
-    "descriptor": ("google/protobuf/descriptor.proto", []),
-    "duration": ("google/protobuf/duration.proto", []),
-    "empty": ("google/protobuf/empty.proto", []),
-    "field_mask": ("google/protobuf/field_mask.proto", []),
-    "source_context": ("google/protobuf/source_context.proto", []),
-    "struct": ("google/protobuf/struct.proto", []),
-    "timestamp": ("google/protobuf/timestamp.proto", []),
+    "descriptor": ("src/google/protobuf/descriptor.proto", []),
+    "duration": ("src/google/protobuf/duration.proto", []),
+    "empty": ("src/google/protobuf/empty.proto", []),
+    "field_mask": ("src/google/protobuf/field_mask.proto", []),
+    "source_context": ("src/google/protobuf/source_context.proto", []),
+    "struct": ("src/google/protobuf/struct.proto", []),
+    "timestamp": ("src/google/protobuf/timestamp.proto", []),
     "type": (
-        "google/protobuf/type.proto",
+        "src/google/protobuf/type.proto",
         [
             "any",
             "source_context",
         ],
     ),
-    "wrappers": ("google/protobuf/wrappers.proto", []),
+    "wrappers": ("src/google/protobuf/wrappers.proto", []),
 }
 
-RELATIVE_WELL_KNOWN_PROTOS = [proto[1][0] for proto in WELL_KNOWN_PROTO_MAP.items()]
-
-WELL_KNOWN_PROTOS = ["src/" + s for s in RELATIVE_WELL_KNOWN_PROTOS]
+WELL_KNOWN_PROTOS = [value[0] for value in WELL_KNOWN_PROTO_MAP.values()]
 
 filegroup(
     name = "well_known_protos",
@@ -303,17 +301,10 @@ cc_proto_library(
 # )
 ################################################################################
 
-internal_copied_filegroup(
-    name = "_internal_wkt_protos",
-    srcs = WELL_KNOWN_PROTOS,
-    dest = "",
-    strip_prefix = "src",
-    visibility = ["//visibility:private"],
-)
-
 [proto_library(
     name = proto[0] + "_proto",
     srcs = [proto[1][0]],
+    strip_import_prefix = "src",
     visibility = ["//visibility:public"],
     deps = [dep + "_proto" for dep in proto[1][1]],
 ) for proto in WELL_KNOWN_PROTO_MAP.items()]
@@ -893,7 +884,7 @@ internal_copied_filegroup(
 
 # TODO(dzc): Remove this once py_proto_library can have labels in srcs, in
 # which case we can simply add :protos_python in srcs.
-COPIED_WELL_KNOWN_PROTOS = ["python/" + s for s in RELATIVE_WELL_KNOWN_PROTOS]
+COPIED_WELL_KNOWN_PROTOS = ["python/" + s[4:] for s in WELL_KNOWN_PROTOS]
 
 py_proto_library(
     name = "protobuf_python",
