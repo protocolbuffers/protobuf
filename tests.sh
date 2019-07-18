@@ -147,6 +147,9 @@ build_csharp() {
 
   # Run csharp compatibility test between 3.0.0 and the current version.
   csharp/compatibility_tests/v3.0.0/test.sh 3.0.0
+
+  # Run csharp compatibility test between 3.7.0 and the curretn version.
+  csharp/compatibility_tests/v3.0.0/test.sh 3.7.0
 }
 
 build_golang() {
