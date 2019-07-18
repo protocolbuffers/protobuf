@@ -44,18 +44,17 @@
 
 #include <vector>
 
-#include <google/protobuf/io/coded_stream_inl.h>
 #include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 #include <google/protobuf/arenastring.h>
 #include <google/protobuf/extension_set.h>
 #include <google/protobuf/generated_message_table_driven.h>
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/metadata_lite.h>
 #include <google/protobuf/stubs/mutex.h>
+#include <google/protobuf/port_def.inc>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/wire_format_lite.h>
-
-#include <google/protobuf/port_def.inc>
 
 
 namespace google {
@@ -766,10 +765,19 @@ void InitSCC_DFS(SCCInfoBase* scc) {
       SCCInfoBase::kUninitialized)
     return;
   scc->visit_status.store(SCCInfoBase::kRunning, std::memory_order_relaxed);
-  // Each base is followed by an array of pointers to deps
-  auto deps = reinterpret_cast<SCCInfoBase* const*>(scc + 1);
-  for (int i = 0; i < scc->num_deps; i++) {
-    if (deps[i]) InitSCC_DFS(deps[i]);
+  // Each base is followed by an array of void*, containing first pointers to
+  // SCCInfoBase and then pointers-to-pointers to SCCInfoBase.
+  auto deps = reinterpret_cast<void**>(scc + 1);
+  auto strong_deps = reinterpret_cast<SCCInfoBase* const*>(deps);
+  for (int i = 0; i < scc->num_deps; ++i) {
+    if (strong_deps[i]) InitSCC_DFS(strong_deps[i]);
+  }
+  auto implicit_weak_deps =
+      reinterpret_cast<SCCInfoBase** const*>(deps + scc->num_deps);
+  for (int i = 0; i < scc->num_implicit_weak_deps; ++i) {
+    if (*implicit_weak_deps[i]) {
+      InitSCC_DFS(*implicit_weak_deps[i]);
+    }
   }
   scc->init_func();
   // Mark done (note we use memory order release here), other threads could

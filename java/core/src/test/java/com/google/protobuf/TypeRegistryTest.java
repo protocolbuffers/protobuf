@@ -28,12 +28,43 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-syntax = "proto3";
+package com.google.protobuf;
 
-package one.two.a_three;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 
-option ruby_package = "A::B::C";
+import com.google.protobuf.Descriptors.Descriptor;
+import protobuf_unittest.UnittestProto;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
-message Four {
-  string a_string = 1;
+@RunWith(JUnit4.class)
+public final class TypeRegistryTest {
+
+  @Test
+  public void findDescriptorByFullName() throws Exception {
+    Descriptor descriptor = UnittestProto.TestAllTypes.getDescriptor();
+    assertNull(TypeRegistry.getEmptyTypeRegistry().find(descriptor.getFullName()));
+
+    assertSame(
+        descriptor,
+        TypeRegistry.newBuilder().add(descriptor).build().find(descriptor.getFullName()));
+  }
+
+  @Test
+  public void findDescriptorByTypeUrl() throws Exception {
+    Descriptor descriptor = UnittestProto.TestAllTypes.getDescriptor();
+    assertNull(
+        TypeRegistry.getEmptyTypeRegistry()
+            .getDescriptorForTypeUrl("type.googleapis.com/" + descriptor.getFullName()));
+
+    assertSame(
+        descriptor,
+        TypeRegistry.newBuilder()
+            .add(descriptor)
+            .build()
+            .getDescriptorForTypeUrl("type.googleapis.com/" + descriptor.getFullName()));
+  }
+
 }

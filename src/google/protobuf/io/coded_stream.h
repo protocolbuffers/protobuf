@@ -139,8 +139,8 @@
 #endif
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/port.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/port.h>
 #include <google/protobuf/stubs/port.h>
 
 
@@ -219,17 +219,8 @@ class PROTOBUF_EXPORT CodedInputStream {
   // Read raw bytes, copying them into the given buffer.
   bool ReadRaw(void* buffer, int size);
 
-  // Like the above, with inlined optimizations. This should only be used
-  // by the protobuf implementation.
-  PROTOBUF_ALWAYS_INLINE
-  bool InternalReadRawInline(void* buffer, int size);
-
   // Like ReadRaw, but reads into a string.
   bool ReadString(std::string* buffer, int size);
-  // Like the above, with inlined optimizations. This should only be used
-  // by the protobuf implementation.
-  PROTOBUF_ALWAYS_INLINE
-  bool InternalReadStringInline(std::string* buffer, int size);
 
 
   // Read a 32-bit little-endian integer.

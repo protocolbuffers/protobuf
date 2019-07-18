@@ -428,7 +428,6 @@ jspb.utils.joinHash64 = function(bitsLow, bitsHigh) {
   return String.fromCharCode(a, b, c, d, e, f, g, h);
 };
 
-
 /**
  * Individual digits for number->string conversion.
  * @const {!Array<string>}
@@ -438,6 +437,11 @@ jspb.utils.DIGITS = [
   '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
 ];
 
+/** @const @private {number} '0' */
+jspb.utils.ZERO_CHAR_CODE_ = 48;
+
+/** @const @private {number} 'a' */
+jspb.utils.A_CHAR_CODE_ = 97;
 
 /**
  * Losslessly converts a 64-bit unsigned integer in 32:32 split representation
@@ -487,27 +491,20 @@ jspb.utils.joinUnsignedDecimalString = function(bitsLow, bitsHigh) {
     digitB %= base;
   }
 
-  // Convert base-1e7 digits to base-10, omitting leading zeroes.
-  var table = jspb.utils.DIGITS;
-  var start = false;
-  var result = '';
-
-  function emit(digit) {
-    var temp = base;
-    for (var i = 0; i < 7; i++) {
-      temp /= 10;
-      var decimalDigit = ((digit / temp) % 10) >>> 0;
-      if ((decimalDigit == 0) && !start) continue;
-      start = true;
-      result += table[decimalDigit];
+  // Convert base-1e7 digits to base-10, with optional leading zeroes.
+  function decimalFrom1e7(digit1e7, needLeadingZeros) {
+    var partial = digit1e7 ? String(digit1e7) : '';
+    if (needLeadingZeros) {
+      return '0000000'.slice(partial.length) + partial;
     }
+    return partial;
   }
 
-  if (digitC || start) emit(digitC);
-  if (digitB || start) emit(digitB);
-  if (digitA || start) emit(digitA);
-
-  return result;
+  return decimalFrom1e7(digitC, /*needLeadingZeros=*/ 0) +
+      decimalFrom1e7(digitB, /*needLeadingZeros=*/ digitC) +
+      // If the final 1e7 digit didn't need leading zeros, we would have
+      // returned via the trivial code path at the top.
+      decimalFrom1e7(digitA, /*needLeadingZeros=*/ 1);
 };
 
 
@@ -605,7 +602,7 @@ jspb.utils.decimalStringToHash64 = function(dec) {
 
   // For each decimal digit, set result to 10*result + digit.
   for (var i = 0; i < dec.length; i++) {
-    muladd(10, jspb.utils.DIGITS.indexOf(dec[i]));
+    muladd(10, dec.charCodeAt(i) - jspb.utils.ZERO_CHAR_CODE_);
   }
 
   // If there's a minus sign, convert into two's complement.
@@ -627,6 +624,28 @@ jspb.utils.splitDecimalString = function(value) {
   jspb.utils.splitHash64(jspb.utils.decimalStringToHash64(value));
 };
 
+/**
+ * @param {number} nibble A 4-bit integer.
+ * @return {string}
+ * @private
+ */
+jspb.utils.toHexDigit_ = function(nibble) {
+  return String.fromCharCode(
+      nibble < 10 ? jspb.utils.ZERO_CHAR_CODE_ + nibble :
+                    jspb.utils.A_CHAR_CODE_ - 10 + nibble);
+};
+
+/**
+ * @param {number} hexCharCode
+ * @return {number}
+ * @private
+ */
+jspb.utils.fromHexCharCode_ = function(hexCharCode) {
+  if (hexCharCode >= jspb.utils.A_CHAR_CODE_) {
+    return hexCharCode - jspb.utils.A_CHAR_CODE_ + 10;
+  }
+  return hexCharCode - jspb.utils.ZERO_CHAR_CODE_;
+};
 
 /**
  * Converts an 8-character hash string into its hexadecimal representation.
@@ -640,8 +659,8 @@ jspb.utils.hash64ToHexString = function(hash) {
 
   for (var i = 0; i < 8; i++) {
     var c = hash.charCodeAt(7 - i);
-    temp[i * 2 + 2] = jspb.utils.DIGITS[c >> 4];
-    temp[i * 2 + 3] = jspb.utils.DIGITS[c & 0xF];
+    temp[i * 2 + 2] = jspb.utils.toHexDigit_(c >> 4);
+    temp[i * 2 + 3] = jspb.utils.toHexDigit_(c & 0xF);
   }
 
   var result = temp.join('');
@@ -662,8 +681,8 @@ jspb.utils.hexStringToHash64 = function(hex) {
 
   var result = '';
   for (var i = 0; i < 8; i++) {
-    var hi = jspb.utils.DIGITS.indexOf(hex[i * 2 + 2]);
-    var lo = jspb.utils.DIGITS.indexOf(hex[i * 2 + 3]);
+    var hi = jspb.utils.fromHexCharCode_(hex.charCodeAt(i * 2 + 2));
+    var lo = jspb.utils.fromHexCharCode_(hex.charCodeAt(i * 2 + 3));
     result = String.fromCharCode(hi * 16 + lo) + result;
   }
 

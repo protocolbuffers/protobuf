@@ -4535,8 +4535,7 @@ TEST_F(ValidationErrorTest, RequiredExtension) {
       "  }"
       "}",
 
-      "foo.proto: Foo.foo: TYPE: Message extensions cannot have required "
-      "fields.\n");
+      "foo.proto: Foo.foo: TYPE: The extension Foo.foo cannot be required.\n");
 }
 
 TEST_F(ValidationErrorTest, UndefinedFieldType) {
