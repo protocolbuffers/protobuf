@@ -893,7 +893,7 @@ py_proto_library(
     py_extra_srcs = glob(["python/**/__init__.py"]),
     py_libs = [
         ":python_srcs",
-        "//external:six",
+        "@six//:six",
     ],
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
