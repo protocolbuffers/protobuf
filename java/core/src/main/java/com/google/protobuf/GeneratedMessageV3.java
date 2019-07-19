@@ -1363,7 +1363,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
       extends Builder<BuilderType>
       implements ExtendableMessageOrBuilder<MessageType> {
 
-    private FieldSet<FieldDescriptor> extensions = FieldSet.emptySet();
+    private FieldSet.Builder<FieldDescriptor> extensions;
 
     protected ExtendableBuilder() {}
 
@@ -1374,18 +1374,18 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
 
     // For immutable message conversion.
     void internalSetExtensionSet(FieldSet<FieldDescriptor> extensions) {
-      this.extensions = extensions;
+      this.extensions = FieldSet.Builder.fromFieldSet(extensions);
     }
 
     @Override
     public BuilderType clear() {
-      extensions = FieldSet.emptySet();
+      extensions = null;
       return super.clear();
     }
 
     private void ensureExtensionsIsMutable() {
-      if (extensions.isImmutable()) {
-        extensions = extensions.clone();
+      if (extensions == null) {
+        extensions = FieldSet.newBuilder();
       }
     }
 
@@ -1408,7 +1408,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
       Extension<MessageType, Type> extension = checkNotLite(extensionLite);
 
       verifyExtensionContainingType(extension);
-      return extensions.hasField(extension.getDescriptor());
+      return extensions == null ? false : extensions.hasField(extension.getDescriptor());
     }
 
     /** Get the number of elements in a repeated extension. */
@@ -1419,7 +1419,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
 
       verifyExtensionContainingType(extension);
       final FieldDescriptor descriptor = extension.getDescriptor();
-      return extensions.getRepeatedFieldCount(descriptor);
+      return extensions == null ? 0 : extensions.getRepeatedFieldCount(descriptor);
     }
 
     /** Get the value of an extension. */
@@ -1429,7 +1429,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
 
       verifyExtensionContainingType(extension);
       FieldDescriptor descriptor = extension.getDescriptor();
-      final Object value = extensions.getField(descriptor);
+      final Object value = extensions == null ? null : extensions.getField(descriptor);
       if (value == null) {
         if (descriptor.isRepeated()) {
           return (Type) Collections.emptyList();
@@ -1453,8 +1453,11 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
 
       verifyExtensionContainingType(extension);
       FieldDescriptor descriptor = extension.getDescriptor();
-      return (Type) extension.singularFromReflectionType(
-          extensions.getRepeatedField(descriptor, index));
+      if (extensions == null) {
+        throw new IndexOutOfBoundsException();
+      }
+      return (Type)
+          extension.singularFromReflectionType(extensions.getRepeatedField(descriptor, index));
     }
 
     /** Set the value of an extension. */
@@ -1605,7 +1608,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
 
     /** Called by subclasses to check if all extensions are initialized. */
     protected boolean extensionsAreInitialized() {
-      return extensions.isInitialized();
+      return extensions == null ? true : extensions.isInitialized();
     }
 
     /**
@@ -1613,8 +1616,9 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
      * building the message.
      */
     private FieldSet<FieldDescriptor> buildExtensions() {
-      extensions.makeImmutable();
-      return extensions;
+      return extensions == null
+          ? (FieldSet<FieldDescriptor>) FieldSet.emptySet()
+          : extensions.build();
     }
 
     @Override
@@ -1628,7 +1632,9 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
     @Override
     public Map<FieldDescriptor, Object> getAllFields() {
       final Map<FieldDescriptor, Object> result = super.getAllFieldsMutable();
-      result.putAll(extensions.getAllFields());
+      if (extensions != null) {
+        result.putAll(extensions.getAllFields());
+      }
       return Collections.unmodifiableMap(result);
     }
 
@@ -1636,7 +1642,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
     public Object getField(final FieldDescriptor field) {
       if (field.isExtension()) {
         verifyContainingType(field);
-        final Object value = extensions.getField(field);
+        final Object value = extensions == null ? null : extensions.getField(field);
         if (value == null) {
           if (field.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
             // Lacking an ExtensionRegistry, we have no way to determine the
@@ -1654,10 +1660,43 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
     }
 
     @Override
+    public Message.Builder getFieldBuilder(final FieldDescriptor field) {
+      if (field.isExtension()) {
+        verifyContainingType(field);
+        if (field.getJavaType() != FieldDescriptor.JavaType.MESSAGE) {
+          throw new UnsupportedOperationException(
+              "getFieldBuilder() called on a non-Message type.");
+        }
+        ensureExtensionsIsMutable();
+        final Object value = extensions.getFieldAllowBuilders(field);
+        if (value == null) {
+          Message.Builder builder = DynamicMessage.newBuilder(field.getMessageType());
+          extensions.setField(field, builder);
+          onChanged();
+          return builder;
+        } else {
+          if (value instanceof Message.Builder) {
+            return (Message.Builder) value;
+          } else if (value instanceof Message) {
+            Message.Builder builder = ((Message) value).toBuilder();
+            extensions.setField(field, builder);
+            onChanged();
+            return builder;
+          } else {
+            throw new UnsupportedOperationException(
+                "getRepeatedFieldBuilder() called on a non-Message type.");
+          }
+        }
+      } else {
+        return super.getFieldBuilder(field);
+      }
+    }
+
+    @Override
     public int getRepeatedFieldCount(final FieldDescriptor field) {
       if (field.isExtension()) {
         verifyContainingType(field);
-        return extensions.getRepeatedFieldCount(field);
+        return extensions == null ? 0 : extensions.getRepeatedFieldCount(field);
       } else {
         return super.getRepeatedFieldCount(field);
       }
@@ -1668,6 +1707,9 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
                                    final int index) {
       if (field.isExtension()) {
         verifyContainingType(field);
+        if (extensions == null) {
+          throw new IndexOutOfBoundsException();
+        }
         return extensions.getRepeatedField(field, index);
       } else {
         return super.getRepeatedField(field, index);
@@ -1675,10 +1717,36 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
     }
 
     @Override
+    public Message.Builder getRepeatedFieldBuilder(final FieldDescriptor field, final int index) {
+      if (field.isExtension()) {
+        verifyContainingType(field);
+        ensureExtensionsIsMutable();
+        if (field.getJavaType() != FieldDescriptor.JavaType.MESSAGE) {
+          throw new UnsupportedOperationException(
+              "getRepeatedFieldBuilder() called on a non-Message type.");
+        }
+        final Object value = extensions.getRepeatedFieldAllowBuilders(field, index);
+        if (value instanceof Message.Builder) {
+          return (Message.Builder) value;
+        } else if (value instanceof Message) {
+          Message.Builder builder = ((Message) value).toBuilder();
+          extensions.setRepeatedField(field, index, builder);
+          onChanged();
+          return builder;
+        } else {
+          throw new UnsupportedOperationException(
+              "getRepeatedFieldBuilder() called on a non-Message type.");
+        }
+      } else {
+        return super.getRepeatedFieldBuilder(field, index);
+      }
+    }
+
+    @Override
     public boolean hasField(final FieldDescriptor field) {
       if (field.isExtension()) {
         verifyContainingType(field);
-        return extensions.hasField(field);
+        return extensions == null ? false : extensions.hasField(field);
       } else {
         return super.hasField(field);
       }
@@ -1749,9 +1817,11 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
     }
 
     protected final void mergeExtensionFields(final ExtendableMessage other) {
-      ensureExtensionsIsMutable();
-      extensions.mergeFrom(other.extensions);
-      onChanged();
+      if (other.extensions != null) {
+        ensureExtensionsIsMutable();
+        extensions.mergeFrom(other.extensions);
+        onChanged();
+      }
     }
 
     private void verifyContainingType(final FieldDescriptor field) {

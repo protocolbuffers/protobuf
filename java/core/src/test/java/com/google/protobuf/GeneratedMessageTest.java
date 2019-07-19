@@ -115,6 +115,160 @@ public class GeneratedMessageTest extends TestCase {
     GeneratedMessageV3.setAlwaysUseFieldBuildersForTesting(false);
   }
 
+  public void testGetFieldBuilderForExtensionField() {
+    TestAllExtensions.Builder builder = TestAllExtensions.newBuilder();
+    Message.Builder fieldBuilder =
+        builder.getFieldBuilder(UnittestProto.optionalNestedMessageExtension.getDescriptor());
+    int expected = 7432;
+    FieldDescriptor field =
+        NestedMessage.getDescriptor().findFieldByNumber(NestedMessage.BB_FIELD_NUMBER);
+    fieldBuilder.setField(field, expected);
+    assertEquals(
+        expected,
+        builder.build().getExtension(UnittestProto.optionalNestedMessageExtension).getBb());
+
+    // fieldBuilder still updates the builder after builder build() has been called.
+    expected += 100;
+    fieldBuilder.setField(field, expected);
+    assertEquals(
+        expected,
+        builder.build().getExtension(UnittestProto.optionalNestedMessageExtension).getBb());
+  }
+
+  public void testGetFieldBuilderWithExistingMessage() {
+    TestAllExtensions.Builder builder = TestAllExtensions.newBuilder();
+    builder.setExtension(
+        UnittestProto.optionalNestedMessageExtension,
+        NestedMessage.newBuilder().setBb(123).build());
+    Message.Builder fieldBuilder =
+        builder.getFieldBuilder(UnittestProto.optionalNestedMessageExtension.getDescriptor());
+    int expected = 7432;
+    FieldDescriptor field =
+        NestedMessage.getDescriptor().findFieldByNumber(NestedMessage.BB_FIELD_NUMBER);
+    fieldBuilder.setField(field, expected);
+    assertEquals(
+        expected,
+        builder.build().getExtension(UnittestProto.optionalNestedMessageExtension).getBb());
+
+    // fieldBuilder still updates the builder after builder build() has been called.
+    expected += 100;
+    fieldBuilder.setField(field, expected);
+    assertEquals(
+        expected,
+        builder.build().getExtension(UnittestProto.optionalNestedMessageExtension).getBb());
+  }
+
+  public void testGetFieldBuilderWithExistingBuilder() {
+    TestAllExtensions.Builder builder = TestAllExtensions.newBuilder();
+    NestedMessage.Builder nestedMessageBuilder = NestedMessage.newBuilder().setBb(123);
+    builder.setField(
+        UnittestProto.optionalNestedMessageExtension.getDescriptor(), nestedMessageBuilder);
+    Message.Builder fieldBuilder =
+        builder.getFieldBuilder(UnittestProto.optionalNestedMessageExtension.getDescriptor());
+    int expected = 7432;
+    FieldDescriptor field =
+        NestedMessage.getDescriptor().findFieldByNumber(NestedMessage.BB_FIELD_NUMBER);
+    fieldBuilder.setField(field, expected);
+    assertEquals(
+        expected,
+        builder.build().getExtension(UnittestProto.optionalNestedMessageExtension).getBb());
+
+    // Existing nestedMessageBuilder will also update builder.
+    expected += 100;
+    nestedMessageBuilder.setBb(expected);
+    assertEquals(
+        expected,
+        builder.build().getExtension(UnittestProto.optionalNestedMessageExtension).getBb());
+
+    // fieldBuilder still updates the builder.
+    expected += 100;
+    fieldBuilder.setField(field, expected);
+    assertEquals(
+        expected,
+        builder.build().getExtension(UnittestProto.optionalNestedMessageExtension).getBb());
+  }
+
+  public void testGetRepeatedFieldBuilderForExtensionField() {
+    TestAllExtensions.Builder builder = TestAllExtensions.newBuilder();
+    builder.addExtension(
+        UnittestProto.repeatedNestedMessageExtension,
+        NestedMessage.newBuilder().setBb(123).build());
+    Message.Builder fieldBuilder =
+        builder.getRepeatedFieldBuilder(
+            UnittestProto.repeatedNestedMessageExtension.getDescriptor(), 0);
+    int expected = 7432;
+    FieldDescriptor field =
+        NestedMessage.getDescriptor().findFieldByNumber(NestedMessage.BB_FIELD_NUMBER);
+    fieldBuilder.setField(field, expected);
+    assertEquals(
+        expected,
+        builder.build().getExtension(UnittestProto.repeatedNestedMessageExtension, 0).getBb());
+
+    // fieldBuilder still updates the builder after builder build() has been called.
+    expected += 100;
+    fieldBuilder.setField(field, expected);
+    assertEquals(
+        expected,
+        builder.build().getExtension(UnittestProto.repeatedNestedMessageExtension, 0).getBb());
+  }
+
+  public void testGetRepeatedFieldBuilderForExistingBuilder() {
+    TestAllExtensions.Builder builder = TestAllExtensions.newBuilder();
+    NestedMessage.Builder nestedMessageBuilder = NestedMessage.newBuilder().setBb(123);
+    builder.addRepeatedField(
+        UnittestProto.repeatedNestedMessageExtension.getDescriptor(), nestedMessageBuilder);
+    Message.Builder fieldBuilder =
+        builder.getRepeatedFieldBuilder(
+            UnittestProto.repeatedNestedMessageExtension.getDescriptor(), 0);
+    int expected = 7432;
+    FieldDescriptor field =
+        NestedMessage.getDescriptor().findFieldByNumber(NestedMessage.BB_FIELD_NUMBER);
+    fieldBuilder.setField(field, expected);
+    assertEquals(
+        expected,
+        builder.build().getExtension(UnittestProto.repeatedNestedMessageExtension, 0).getBb());
+
+    // Existing nestedMessageBuilder will also update builder.
+    expected += 100;
+    nestedMessageBuilder.setBb(expected);
+    assertEquals(
+        expected,
+        builder.build().getExtension(UnittestProto.repeatedNestedMessageExtension, 0).getBb());
+
+    // fieldBuilder still updates the builder.
+    expected += 100;
+    fieldBuilder.setField(field, expected);
+    assertEquals(
+        expected,
+        builder.build().getExtension(UnittestProto.repeatedNestedMessageExtension, 0).getBb());
+  }
+
+  public void testGetExtensionFieldOutOfBound() {
+    TestAllExtensions.Builder builder = TestAllExtensions.newBuilder();
+    try {
+      builder.getRepeatedField(UnittestProto.repeatedNestedMessageExtension.getDescriptor(), 0);
+      fail("Expected IndexOutOfBoundsException to be thrown");
+    } catch (IndexOutOfBoundsException expected) {
+    }
+    try {
+      builder.getExtension(UnittestProto.repeatedNestedMessageExtension, 0);
+      fail("Expected IndexOutOfBoundsException to be thrown");
+    } catch (IndexOutOfBoundsException expected) {
+    }
+    TestAllExtensions extensionsMessage = builder.build();
+    try {
+      extensionsMessage.getRepeatedField(
+          UnittestProto.repeatedNestedMessageExtension.getDescriptor(), 0);
+      fail("Expected IndexOutOfBoundsException to be thrown");
+    } catch (IndexOutOfBoundsException expected) {
+    }
+    try {
+      extensionsMessage.getExtension(UnittestProto.repeatedNestedMessageExtension, 0);
+      fail("Expected IndexOutOfBoundsException to be thrown");
+    } catch (IndexOutOfBoundsException expected) {
+    }
+  }
+
   public void testDefaultInstance() throws Exception {
     assertSame(
         TestAllTypes.getDefaultInstance(),
