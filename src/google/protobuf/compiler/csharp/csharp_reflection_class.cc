@@ -213,7 +213,7 @@ void ReflectionClassGenerator::WriteDescriptor(io::Printer* printer) {
     for (int i = 0; i < file_->extension_count(); i++) {
       extensions.push_back(GetFullExtensionName(file_->extension(i)));
     }
-    printer->Print("new pb::Extension[] { $extensions$ }, ", "extensions", JoinStrings(extensions, ", "));
+    printer->Print("new pb::Extension[] { $extensions$ }, ", "extensions", Join(extensions, ", "));
   }
   else {
     printer->Print("null, ");
@@ -264,7 +264,7 @@ void ReflectionClassGenerator::WriteGeneratedCodeInfo(const Descriptor* descript
       for (int i = 0; i < descriptor->field_count(); i++) {
           fields.push_back(GetPropertyName(descriptor->field(i)));
       }
-      printer->Print("new[]{ \"$fields$\" }, ", "fields", JoinStrings(fields, "\", \""));
+      printer->Print("new[]{ \"$fields$\" }, ", "fields", Join(fields, "\", \""));
   }
   else {
       printer->Print("null, ");
@@ -276,7 +276,7 @@ void ReflectionClassGenerator::WriteGeneratedCodeInfo(const Descriptor* descript
       for (int i = 0; i < descriptor->oneof_decl_count(); i++) {
           oneofs.push_back(UnderscoresToCamelCase(descriptor->oneof_decl(i)->name(), true));
       }
-      printer->Print("new[]{ \"$oneofs$\" }, ", "oneofs", JoinStrings(oneofs, "\", \""));
+      printer->Print("new[]{ \"$oneofs$\" }, ", "oneofs", Join(oneofs, "\", \""));
   }
   else {
       printer->Print("null, ");
@@ -288,7 +288,7 @@ void ReflectionClassGenerator::WriteGeneratedCodeInfo(const Descriptor* descript
       for (int i = 0; i < descriptor->enum_type_count(); i++) {
           enums.push_back(GetClassName(descriptor->enum_type(i)));
       }
-      printer->Print("new[]{ typeof($enums$) }, ", "enums", JoinStrings(enums, "), typeof("));
+      printer->Print("new[]{ typeof($enums$) }, ", "enums", Join(enums, "), typeof("));
   }
   else {
       printer->Print("null, ");
@@ -300,7 +300,7 @@ void ReflectionClassGenerator::WriteGeneratedCodeInfo(const Descriptor* descript
     for (int i = 0; i < descriptor->extension_count(); i++) {
       extensions.push_back(GetFullExtensionName(descriptor->extension(i)));
     }
-    printer->Print("new pb::Extension[] { $extensions$ }, ", "extensions", JoinStrings(extensions, ", "));
+    printer->Print("new pb::Extension[] { $extensions$ }, ", "extensions", Join(extensions, ", "));
   }
   else {
     printer->Print("null, ");

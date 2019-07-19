@@ -42,7 +42,6 @@
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/stringpiece.h>
-
 #include <google/protobuf/stubs/status.h>
 #include <google/protobuf/stubs/statusor.h>
 

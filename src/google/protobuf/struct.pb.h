@@ -485,6 +485,11 @@ class PROTOBUF_EXPORT Value :
   "    future release.")
   void unsafe_arena_set_allocated_string_value(
       std::string* string_value);
+  private:
+  const std::string& _internal_string_value() const;
+  void _internal_set_string_value(const std::string& value);
+  std::string* _internal_mutable_string_value();
+  public:
 
   // bool bool_value = 4;
   private:
@@ -496,6 +501,9 @@ class PROTOBUF_EXPORT Value :
 
   // .google.protobuf.Struct struct_value = 5;
   bool has_struct_value() const;
+  private:
+  bool _internal_has_struct_value() const;
+  public:
   void clear_struct_value();
   const PROTOBUF_NAMESPACE_ID::Struct& struct_value() const;
   PROTOBUF_NAMESPACE_ID::Struct* release_struct_value();
@@ -507,6 +515,9 @@ class PROTOBUF_EXPORT Value :
 
   // .google.protobuf.ListValue list_value = 6;
   bool has_list_value() const;
+  private:
+  bool _internal_has_list_value() const;
+  public:
   void clear_list_value();
   const PROTOBUF_NAMESPACE_ID::ListValue& list_value() const;
   PROTOBUF_NAMESPACE_ID::ListValue* release_list_value();
@@ -816,12 +827,23 @@ inline void Value::clear_string_value() {
 }
 inline const std::string& Value::string_value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Value.string_value)
+  return _internal_string_value();
+}
+inline void Value::set_string_value(const std::string& value) {
+  _internal_set_string_value(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.Value.string_value)
+}
+inline std::string* Value::mutable_string_value() {
+  // @@protoc_insertion_point(field_mutable:google.protobuf.Value.string_value)
+  return _internal_mutable_string_value();
+}
+inline const std::string& Value::_internal_string_value() const {
   if (has_string_value()) {
     return kind_.string_value_.Get();
   }
   return *&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited();
 }
-inline void Value::set_string_value(const std::string& value) {
+inline void Value::_internal_set_string_value(const std::string& value) {
   if (!has_string_value()) {
     clear_kind();
     set_has_string_value();
@@ -829,7 +851,6 @@ inline void Value::set_string_value(const std::string& value) {
   }
   kind_.string_value_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value,
       GetArenaNoVirtual());
-  // @@protoc_insertion_point(field_set:google.protobuf.Value.string_value)
 }
 inline void Value::set_string_value(std::string&& value) {
   // @@protoc_insertion_point(field_set:google.protobuf.Value.string_value)
@@ -866,7 +887,7 @@ inline void Value::set_string_value(const char* value,
       GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.Value.string_value)
 }
-inline std::string* Value::mutable_string_value() {
+inline std::string* Value::_internal_mutable_string_value() {
   if (!has_string_value()) {
     clear_kind();
     set_has_string_value();
@@ -874,7 +895,6 @@ inline std::string* Value::mutable_string_value() {
   }
   return kind_.string_value_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
       GetArenaNoVirtual());
-  // @@protoc_insertion_point(field_mutable:google.protobuf.Value.string_value)
 }
 inline std::string* Value::release_string_value() {
   // @@protoc_insertion_point(field_release:google.protobuf.Value.string_value)

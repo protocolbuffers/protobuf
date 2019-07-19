@@ -620,7 +620,7 @@ class _FieldProperty(property):
 def _AddPropertiesForRepeatedField(field, cls):
   """Adds a public property for a "repeated" protocol message field.  Clients
   can use this property to get the value of the field, which will be either a
-  _RepeatedScalarFieldContainer or _RepeatedCompositeFieldContainer (see
+  RepeatedScalarFieldContainer or RepeatedCompositeFieldContainer (see
   below).
 
   Note that when clients add values to these containers, we perform

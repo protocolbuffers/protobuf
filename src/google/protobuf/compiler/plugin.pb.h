@@ -213,6 +213,9 @@ class PROTOC_EXPORT Version :
   };
   // optional string suffix = 4;
   bool has_suffix() const;
+  private:
+  bool _internal_has_suffix() const;
+  public:
   void clear_suffix();
   const std::string& suffix() const;
   void set_suffix(const std::string& value);
@@ -222,21 +225,35 @@ class PROTOC_EXPORT Version :
   std::string* mutable_suffix();
   std::string* release_suffix();
   void set_allocated_suffix(std::string* suffix);
+  private:
+  const std::string& _internal_suffix() const;
+  void _internal_set_suffix(const std::string& value);
+  std::string* _internal_mutable_suffix();
+  public:
 
   // optional int32 major = 1;
   bool has_major() const;
+  private:
+  bool _internal_has_major() const;
+  public:
   void clear_major();
   ::PROTOBUF_NAMESPACE_ID::int32 major() const;
   void set_major(::PROTOBUF_NAMESPACE_ID::int32 value);
 
   // optional int32 minor = 2;
   bool has_minor() const;
+  private:
+  bool _internal_has_minor() const;
+  public:
   void clear_minor();
   ::PROTOBUF_NAMESPACE_ID::int32 minor() const;
   void set_minor(::PROTOBUF_NAMESPACE_ID::int32 value);
 
   // optional int32 patch = 3;
   bool has_patch() const;
+  private:
+  bool _internal_has_patch() const;
+  public:
   void clear_patch();
   ::PROTOBUF_NAMESPACE_ID::int32 patch() const;
   void set_patch(::PROTOBUF_NAMESPACE_ID::int32 value);
@@ -395,6 +412,9 @@ class PROTOC_EXPORT CodeGeneratorRequest :
   void add_file_to_generate(const char* value, size_t size);
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>& file_to_generate() const;
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>* mutable_file_to_generate();
+  private:
+  std::string* _internal_add_file_to_generate();
+  public:
 
   // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
   int proto_file_size() const;
@@ -409,6 +429,9 @@ class PROTOC_EXPORT CodeGeneratorRequest :
 
   // optional string parameter = 2;
   bool has_parameter() const;
+  private:
+  bool _internal_has_parameter() const;
+  public:
   void clear_parameter();
   const std::string& parameter() const;
   void set_parameter(const std::string& value);
@@ -418,9 +441,17 @@ class PROTOC_EXPORT CodeGeneratorRequest :
   std::string* mutable_parameter();
   std::string* release_parameter();
   void set_allocated_parameter(std::string* parameter);
+  private:
+  const std::string& _internal_parameter() const;
+  void _internal_set_parameter(const std::string& value);
+  std::string* _internal_mutable_parameter();
+  public:
 
   // optional .google.protobuf.compiler.Version compiler_version = 3;
   bool has_compiler_version() const;
+  private:
+  bool _internal_has_compiler_version() const;
+  public:
   void clear_compiler_version();
   const PROTOBUF_NAMESPACE_ID::compiler::Version& compiler_version() const;
   PROTOBUF_NAMESPACE_ID::compiler::Version* release_compiler_version();
@@ -566,6 +597,9 @@ class PROTOC_EXPORT CodeGeneratorResponse_File :
   };
   // optional string name = 1;
   bool has_name() const;
+  private:
+  bool _internal_has_name() const;
+  public:
   void clear_name();
   const std::string& name() const;
   void set_name(const std::string& value);
@@ -575,9 +609,17 @@ class PROTOC_EXPORT CodeGeneratorResponse_File :
   std::string* mutable_name();
   std::string* release_name();
   void set_allocated_name(std::string* name);
+  private:
+  const std::string& _internal_name() const;
+  void _internal_set_name(const std::string& value);
+  std::string* _internal_mutable_name();
+  public:
 
   // optional string insertion_point = 2;
   bool has_insertion_point() const;
+  private:
+  bool _internal_has_insertion_point() const;
+  public:
   void clear_insertion_point();
   const std::string& insertion_point() const;
   void set_insertion_point(const std::string& value);
@@ -587,9 +629,17 @@ class PROTOC_EXPORT CodeGeneratorResponse_File :
   std::string* mutable_insertion_point();
   std::string* release_insertion_point();
   void set_allocated_insertion_point(std::string* insertion_point);
+  private:
+  const std::string& _internal_insertion_point() const;
+  void _internal_set_insertion_point(const std::string& value);
+  std::string* _internal_mutable_insertion_point();
+  public:
 
   // optional string content = 15;
   bool has_content() const;
+  private:
+  bool _internal_has_content() const;
+  public:
   void clear_content();
   const std::string& content() const;
   void set_content(const std::string& value);
@@ -599,6 +649,11 @@ class PROTOC_EXPORT CodeGeneratorResponse_File :
   std::string* mutable_content();
   std::string* release_content();
   void set_allocated_content(std::string* content);
+  private:
+  const std::string& _internal_content() const;
+  void _internal_set_content(const std::string& value);
+  std::string* _internal_mutable_content();
+  public:
 
   // @@protoc_insertion_point(class_scope:google.protobuf.compiler.CodeGeneratorResponse.File)
  private:
@@ -750,6 +805,9 @@ class PROTOC_EXPORT CodeGeneratorResponse :
 
   // optional string error = 1;
   bool has_error() const;
+  private:
+  bool _internal_has_error() const;
+  public:
   void clear_error();
   const std::string& error() const;
   void set_error(const std::string& value);
@@ -759,6 +817,11 @@ class PROTOC_EXPORT CodeGeneratorResponse :
   std::string* mutable_error();
   std::string* release_error();
   void set_allocated_error(std::string* error);
+  private:
+  const std::string& _internal_error() const;
+  void _internal_set_error(const std::string& value);
+  std::string* _internal_mutable_error();
+  public:
 
   // @@protoc_insertion_point(class_scope:google.protobuf.compiler.CodeGeneratorResponse)
  private:
@@ -783,8 +846,11 @@ class PROTOC_EXPORT CodeGeneratorResponse :
 // Version
 
 // optional int32 major = 1;
-inline bool Version::has_major() const {
+inline bool Version::_internal_has_major() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline bool Version::has_major() const {
+  return _internal_has_major();
 }
 inline void Version::clear_major() {
   major_ = 0;
@@ -801,8 +867,11 @@ inline void Version::set_major(::PROTOBUF_NAMESPACE_ID::int32 value) {
 }
 
 // optional int32 minor = 2;
-inline bool Version::has_minor() const {
+inline bool Version::_internal_has_minor() const {
   return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline bool Version::has_minor() const {
+  return _internal_has_minor();
 }
 inline void Version::clear_minor() {
   minor_ = 0;
@@ -819,8 +888,11 @@ inline void Version::set_minor(::PROTOBUF_NAMESPACE_ID::int32 value) {
 }
 
 // optional int32 patch = 3;
-inline bool Version::has_patch() const {
+inline bool Version::_internal_has_patch() const {
   return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline bool Version::has_patch() const {
+  return _internal_has_patch();
 }
 inline void Version::clear_patch() {
   patch_ = 0;
@@ -837,8 +909,11 @@ inline void Version::set_patch(::PROTOBUF_NAMESPACE_ID::int32 value) {
 }
 
 // optional string suffix = 4;
-inline bool Version::has_suffix() const {
+inline bool Version::_internal_has_suffix() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline bool Version::has_suffix() const {
+  return _internal_has_suffix();
 }
 inline void Version::clear_suffix() {
   suffix_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
@@ -846,12 +921,22 @@ inline void Version::clear_suffix() {
 }
 inline const std::string& Version::suffix() const {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.Version.suffix)
-  return suffix_.GetNoArena();
+  return _internal_suffix();
 }
 inline void Version::set_suffix(const std::string& value) {
+  _internal_set_suffix(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.compiler.Version.suffix)
+}
+inline std::string* Version::mutable_suffix() {
+  // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.Version.suffix)
+  return _internal_mutable_suffix();
+}
+inline const std::string& Version::_internal_suffix() const {
+  return suffix_.GetNoArena();
+}
+inline void Version::_internal_set_suffix(const std::string& value) {
   _has_bits_[0] |= 0x00000001u;
   suffix_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:google.protobuf.compiler.Version.suffix)
 }
 inline void Version::set_suffix(std::string&& value) {
   _has_bits_[0] |= 0x00000001u;
@@ -871,9 +956,8 @@ inline void Version::set_suffix(const char* value, size_t size) {
       ::std::string(reinterpret_cast<const char*>(value), size));
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.compiler.Version.suffix)
 }
-inline std::string* Version::mutable_suffix() {
+inline std::string* Version::_internal_mutable_suffix() {
   _has_bits_[0] |= 0x00000001u;
-  // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.Version.suffix)
   return suffix_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 inline std::string* Version::release_suffix() {
@@ -905,6 +989,10 @@ inline int CodeGeneratorRequest::file_to_generate_size() const {
 inline void CodeGeneratorRequest::clear_file_to_generate() {
   file_to_generate_.Clear();
 }
+inline std::string* CodeGeneratorRequest::add_file_to_generate() {
+  // @@protoc_insertion_point(field_add_mutable:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
+  return _internal_add_file_to_generate();
+}
 inline const std::string& CodeGeneratorRequest::file_to_generate(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
   return file_to_generate_.Get(index);
@@ -931,8 +1019,7 @@ inline void CodeGeneratorRequest::set_file_to_generate(int index, const char* va
     reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
 }
-inline std::string* CodeGeneratorRequest::add_file_to_generate() {
-  // @@protoc_insertion_point(field_add_mutable:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
+inline std::string* CodeGeneratorRequest::_internal_add_file_to_generate() {
   return file_to_generate_.Add();
 }
 inline void CodeGeneratorRequest::add_file_to_generate(const std::string& value) {
@@ -964,8 +1051,11 @@ CodeGeneratorRequest::mutable_file_to_generate() {
 }
 
 // optional string parameter = 2;
-inline bool CodeGeneratorRequest::has_parameter() const {
+inline bool CodeGeneratorRequest::_internal_has_parameter() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline bool CodeGeneratorRequest::has_parameter() const {
+  return _internal_has_parameter();
 }
 inline void CodeGeneratorRequest::clear_parameter() {
   parameter_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
@@ -973,12 +1063,22 @@ inline void CodeGeneratorRequest::clear_parameter() {
 }
 inline const std::string& CodeGeneratorRequest::parameter() const {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorRequest.parameter)
-  return parameter_.GetNoArena();
+  return _internal_parameter();
 }
 inline void CodeGeneratorRequest::set_parameter(const std::string& value) {
+  _internal_set_parameter(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorRequest.parameter)
+}
+inline std::string* CodeGeneratorRequest::mutable_parameter() {
+  // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorRequest.parameter)
+  return _internal_mutable_parameter();
+}
+inline const std::string& CodeGeneratorRequest::_internal_parameter() const {
+  return parameter_.GetNoArena();
+}
+inline void CodeGeneratorRequest::_internal_set_parameter(const std::string& value) {
   _has_bits_[0] |= 0x00000001u;
   parameter_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorRequest.parameter)
 }
 inline void CodeGeneratorRequest::set_parameter(std::string&& value) {
   _has_bits_[0] |= 0x00000001u;
@@ -998,9 +1098,8 @@ inline void CodeGeneratorRequest::set_parameter(const char* value, size_t size) 
       ::std::string(reinterpret_cast<const char*>(value), size));
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.compiler.CodeGeneratorRequest.parameter)
 }
-inline std::string* CodeGeneratorRequest::mutable_parameter() {
+inline std::string* CodeGeneratorRequest::_internal_mutable_parameter() {
   _has_bits_[0] |= 0x00000001u;
-  // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorRequest.parameter)
   return parameter_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 inline std::string* CodeGeneratorRequest::release_parameter() {
@@ -1049,8 +1148,11 @@ CodeGeneratorRequest::proto_file() const {
 }
 
 // optional .google.protobuf.compiler.Version compiler_version = 3;
-inline bool CodeGeneratorRequest::has_compiler_version() const {
+inline bool CodeGeneratorRequest::_internal_has_compiler_version() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline bool CodeGeneratorRequest::has_compiler_version() const {
+  return _internal_has_compiler_version();
 }
 inline void CodeGeneratorRequest::clear_compiler_version() {
   if (compiler_version_ != nullptr) compiler_version_->Clear();
@@ -1102,8 +1204,11 @@ inline void CodeGeneratorRequest::set_allocated_compiler_version(PROTOBUF_NAMESP
 // CodeGeneratorResponse_File
 
 // optional string name = 1;
-inline bool CodeGeneratorResponse_File::has_name() const {
+inline bool CodeGeneratorResponse_File::_internal_has_name() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline bool CodeGeneratorResponse_File::has_name() const {
+  return _internal_has_name();
 }
 inline void CodeGeneratorResponse_File::clear_name() {
   name_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
@@ -1111,12 +1216,22 @@ inline void CodeGeneratorResponse_File::clear_name() {
 }
 inline const std::string& CodeGeneratorResponse_File::name() const {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorResponse.File.name)
-  return name_.GetNoArena();
+  return _internal_name();
 }
 inline void CodeGeneratorResponse_File::set_name(const std::string& value) {
+  _internal_set_name(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.File.name)
+}
+inline std::string* CodeGeneratorResponse_File::mutable_name() {
+  // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorResponse.File.name)
+  return _internal_mutable_name();
+}
+inline const std::string& CodeGeneratorResponse_File::_internal_name() const {
+  return name_.GetNoArena();
+}
+inline void CodeGeneratorResponse_File::_internal_set_name(const std::string& value) {
   _has_bits_[0] |= 0x00000001u;
   name_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.File.name)
 }
 inline void CodeGeneratorResponse_File::set_name(std::string&& value) {
   _has_bits_[0] |= 0x00000001u;
@@ -1136,9 +1251,8 @@ inline void CodeGeneratorResponse_File::set_name(const char* value, size_t size)
       ::std::string(reinterpret_cast<const char*>(value), size));
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.compiler.CodeGeneratorResponse.File.name)
 }
-inline std::string* CodeGeneratorResponse_File::mutable_name() {
+inline std::string* CodeGeneratorResponse_File::_internal_mutable_name() {
   _has_bits_[0] |= 0x00000001u;
-  // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorResponse.File.name)
   return name_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 inline std::string* CodeGeneratorResponse_File::release_name() {
@@ -1160,8 +1274,11 @@ inline void CodeGeneratorResponse_File::set_allocated_name(std::string* name) {
 }
 
 // optional string insertion_point = 2;
-inline bool CodeGeneratorResponse_File::has_insertion_point() const {
+inline bool CodeGeneratorResponse_File::_internal_has_insertion_point() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline bool CodeGeneratorResponse_File::has_insertion_point() const {
+  return _internal_has_insertion_point();
 }
 inline void CodeGeneratorResponse_File::clear_insertion_point() {
   insertion_point_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
@@ -1169,12 +1286,22 @@ inline void CodeGeneratorResponse_File::clear_insertion_point() {
 }
 inline const std::string& CodeGeneratorResponse_File::insertion_point() const {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorResponse.File.insertion_point)
-  return insertion_point_.GetNoArena();
+  return _internal_insertion_point();
 }
 inline void CodeGeneratorResponse_File::set_insertion_point(const std::string& value) {
+  _internal_set_insertion_point(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.File.insertion_point)
+}
+inline std::string* CodeGeneratorResponse_File::mutable_insertion_point() {
+  // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorResponse.File.insertion_point)
+  return _internal_mutable_insertion_point();
+}
+inline const std::string& CodeGeneratorResponse_File::_internal_insertion_point() const {
+  return insertion_point_.GetNoArena();
+}
+inline void CodeGeneratorResponse_File::_internal_set_insertion_point(const std::string& value) {
   _has_bits_[0] |= 0x00000002u;
   insertion_point_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.File.insertion_point)
 }
 inline void CodeGeneratorResponse_File::set_insertion_point(std::string&& value) {
   _has_bits_[0] |= 0x00000002u;
@@ -1194,9 +1321,8 @@ inline void CodeGeneratorResponse_File::set_insertion_point(const char* value, s
       ::std::string(reinterpret_cast<const char*>(value), size));
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.compiler.CodeGeneratorResponse.File.insertion_point)
 }
-inline std::string* CodeGeneratorResponse_File::mutable_insertion_point() {
+inline std::string* CodeGeneratorResponse_File::_internal_mutable_insertion_point() {
   _has_bits_[0] |= 0x00000002u;
-  // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorResponse.File.insertion_point)
   return insertion_point_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 inline std::string* CodeGeneratorResponse_File::release_insertion_point() {
@@ -1218,8 +1344,11 @@ inline void CodeGeneratorResponse_File::set_allocated_insertion_point(std::strin
 }
 
 // optional string content = 15;
-inline bool CodeGeneratorResponse_File::has_content() const {
+inline bool CodeGeneratorResponse_File::_internal_has_content() const {
   return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline bool CodeGeneratorResponse_File::has_content() const {
+  return _internal_has_content();
 }
 inline void CodeGeneratorResponse_File::clear_content() {
   content_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
@@ -1227,12 +1356,22 @@ inline void CodeGeneratorResponse_File::clear_content() {
 }
 inline const std::string& CodeGeneratorResponse_File::content() const {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorResponse.File.content)
-  return content_.GetNoArena();
+  return _internal_content();
 }
 inline void CodeGeneratorResponse_File::set_content(const std::string& value) {
+  _internal_set_content(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.File.content)
+}
+inline std::string* CodeGeneratorResponse_File::mutable_content() {
+  // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorResponse.File.content)
+  return _internal_mutable_content();
+}
+inline const std::string& CodeGeneratorResponse_File::_internal_content() const {
+  return content_.GetNoArena();
+}
+inline void CodeGeneratorResponse_File::_internal_set_content(const std::string& value) {
   _has_bits_[0] |= 0x00000004u;
   content_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.File.content)
 }
 inline void CodeGeneratorResponse_File::set_content(std::string&& value) {
   _has_bits_[0] |= 0x00000004u;
@@ -1252,9 +1391,8 @@ inline void CodeGeneratorResponse_File::set_content(const char* value, size_t si
       ::std::string(reinterpret_cast<const char*>(value), size));
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.compiler.CodeGeneratorResponse.File.content)
 }
-inline std::string* CodeGeneratorResponse_File::mutable_content() {
+inline std::string* CodeGeneratorResponse_File::_internal_mutable_content() {
   _has_bits_[0] |= 0x00000004u;
-  // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorResponse.File.content)
   return content_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 inline std::string* CodeGeneratorResponse_File::release_content() {
@@ -1280,8 +1418,11 @@ inline void CodeGeneratorResponse_File::set_allocated_content(std::string* conte
 // CodeGeneratorResponse
 
 // optional string error = 1;
-inline bool CodeGeneratorResponse::has_error() const {
+inline bool CodeGeneratorResponse::_internal_has_error() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline bool CodeGeneratorResponse::has_error() const {
+  return _internal_has_error();
 }
 inline void CodeGeneratorResponse::clear_error() {
   error_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
@@ -1289,12 +1430,22 @@ inline void CodeGeneratorResponse::clear_error() {
 }
 inline const std::string& CodeGeneratorResponse::error() const {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorResponse.error)
-  return error_.GetNoArena();
+  return _internal_error();
 }
 inline void CodeGeneratorResponse::set_error(const std::string& value) {
+  _internal_set_error(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.error)
+}
+inline std::string* CodeGeneratorResponse::mutable_error() {
+  // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorResponse.error)
+  return _internal_mutable_error();
+}
+inline const std::string& CodeGeneratorResponse::_internal_error() const {
+  return error_.GetNoArena();
+}
+inline void CodeGeneratorResponse::_internal_set_error(const std::string& value) {
   _has_bits_[0] |= 0x00000001u;
   error_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.error)
 }
 inline void CodeGeneratorResponse::set_error(std::string&& value) {
   _has_bits_[0] |= 0x00000001u;
@@ -1314,9 +1465,8 @@ inline void CodeGeneratorResponse::set_error(const char* value, size_t size) {
       ::std::string(reinterpret_cast<const char*>(value), size));
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.compiler.CodeGeneratorResponse.error)
 }
-inline std::string* CodeGeneratorResponse::mutable_error() {
+inline std::string* CodeGeneratorResponse::_internal_mutable_error() {
   _has_bits_[0] |= 0x00000001u;
-  // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorResponse.error)
   return error_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 inline std::string* CodeGeneratorResponse::release_error() {

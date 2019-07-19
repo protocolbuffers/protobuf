@@ -32,7 +32,7 @@ static void InitDefaultsscc_info_Any_google_2fprotobuf_2fany_2eproto() {
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Any_google_2fprotobuf_2fany_2eproto =
-    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsscc_info_Any_google_2fprotobuf_2fany_2eproto}, {}};
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_Any_google_2fprotobuf_2fany_2eproto}, {}};
 
 static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_google_2fprotobuf_2fany_2eproto[1];
 static constexpr ::PROTOBUF_NAMESPACE_ID::EnumDescriptor const** file_level_enum_descriptors_google_2fprotobuf_2fany_2eproto = nullptr;
@@ -125,11 +125,11 @@ Any::Any(const Any& from)
       _any_metadata_(&type_url_, &value_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   type_url_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  if (!from.type_url().empty()) {
+  if (!from._internal_type_url().empty()) {
     type_url_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.type_url_);
   }
   value_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  if (!from.value().empty()) {
+  if (!from._internal_value().empty()) {
     value_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.value_);
   }
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Any)
@@ -182,14 +182,14 @@ const char* Any::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::intern
       // string type_url = 1;
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
-          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8(mutable_type_url(), ptr, ctx, "google.protobuf.Any.type_url");
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8(_internal_mutable_type_url(), ptr, ctx, "google.protobuf.Any.type_url");
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
       // bytes value = 2;
       case 2:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 18)) {
-          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(mutable_value(), ptr, ctx);
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(_internal_mutable_value(), ptr, ctx);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -227,9 +227,9 @@ bool Any::MergePartialFromCodedStream(
       case 1: {
         if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (10 & 0xFF)) {
           DO_(::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadString(
-                input, this->mutable_type_url()));
+                input, this->_internal_mutable_type_url()));
           DO_(::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
-            this->type_url().data(), static_cast<int>(this->type_url().length()),
+            this->_internal_type_url().data(), static_cast<int>(this->_internal_type_url().length()),
             ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::PARSE,
             "google.protobuf.Any.type_url"));
         } else {
@@ -242,7 +242,7 @@ bool Any::MergePartialFromCodedStream(
       case 2: {
         if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (18 & 0xFF)) {
           DO_(::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadBytes(
-                input, this->mutable_value()));
+                input, this->_internal_mutable_value()));
         } else {
           goto handle_unusual;
         }
@@ -279,17 +279,17 @@ failure:
   // string type_url = 1;
   if (this->type_url().size() > 0) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
-      this->type_url().data(), static_cast<int>(this->type_url().length()),
+      this->_internal_type_url().data(), static_cast<int>(this->_internal_type_url().length()),
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.Any.type_url");
     target = stream->WriteStringMaybeAliased(
-        1, this->type_url(), target);
+        1, this->_internal_type_url(), target);
   }
 
   // bytes value = 2;
   if (this->value().size() > 0) {
     target = stream->WriteBytesMaybeAliased(
-        2, this->value(), target);
+        2, this->_internal_value(), target);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -312,14 +312,14 @@ size_t Any::ByteSizeLong() const {
   if (this->type_url().size() > 0) {
     total_size += 1 +
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
-        this->type_url());
+        this->_internal_type_url());
   }
 
   // bytes value = 2;
   if (this->value().size() > 0) {
     total_size += 1 +
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::BytesSize(
-        this->value());
+        this->_internal_value());
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {

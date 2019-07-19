@@ -43,7 +43,6 @@
 #include <google/protobuf/util/type_resolver.h>
 #include <google/protobuf/util/type_resolver_util.h>
 #include <google/protobuf/stubs/bytestream.h>
-
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/status_macros.h>
 

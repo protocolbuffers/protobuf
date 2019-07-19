@@ -37,6 +37,7 @@
 #include <float.h>
 #include <math.h>
 #include <stdio.h>
+
 #include <algorithm>
 #include <climits>
 #include <limits>
@@ -45,7 +46,6 @@
 #include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/any.h>
 #include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/io/strtod.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/tokenizer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
@@ -54,17 +54,14 @@
 #include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/map_field.h>
 #include <google/protobuf/message.h>
+#include <google/protobuf/port_def.inc>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/unknown_field_set.h>
 #include <google/protobuf/wire_format_lite.h>
 #include <google/protobuf/stubs/strutil.h>
-
-
-
+#include <google/protobuf/io/strtod.h>
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/stl_util.h>
-
-#include <google/protobuf/port_def.inc>
 
 
 namespace google {
@@ -1239,6 +1236,10 @@ class TextFormat::Printer::TextGenerator
     --indent_level_;
   }
 
+  size_t GetCurrentIndentationSize() const override {
+    return 2 * indent_level_;
+  }
+
   // Print text to the output stream.
   void Print(const char* text, size_t size) override {
     if (indent_level_ > 0) {
@@ -1309,7 +1310,7 @@ class TextFormat::Printer::TextGenerator
       return;
     }
     GOOGLE_DCHECK(!failed_);
-    int size = 2 * indent_level_;
+    int size = GetCurrentIndentationSize();
 
     while (size > buffer_size_) {
       // Data exceeds space in the buffer. Write what we can and request a new
