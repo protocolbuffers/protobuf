@@ -370,8 +370,6 @@ ExpandWildcardsResult ExpandWildcards(
     return ExpandWildcardsResult::kSuccess;
   }
 
-#ifdef SUPPORT_LONGPATHS
-
   wstring wpath;
   if (!as_windows_path(path.c_str(), &wpath)) {
     return ExpandWildcardsResult::kErrorInputPathConversion;
@@ -412,40 +410,6 @@ ExpandWildcardsResult ExpandWildcards(
   } while (::FindNextFileW(handle, &metadata));
   FindClose(handle);
   return matched;
-
-#else  // not SUPPORT_LONGPATHS
-
-  static const string kDot = ".";
-  static const string kDotDot = "..";
-  WIN32_FIND_DATAA metadata;
-  HANDLE handle = ::FindFirstFileA(path.c_str(), &metadata);
-  if (handle == INVALID_HANDLE_VALUE) {
-    // The pattern does not match any files (or directories).
-    return ExpandWildcardsResult::kErrorNoMatchingFile;
-  }
-
-  string::size_type pos = path.find_last_of("\\/");
-  string dirname;
-  if (pos != string::npos) {
-    dirname = path.substr(0, pos + 1);
-  }
-
-  ExpandWildcardsResult matched = ExpandWildcardsResult::kErrorNoMatchingFile;
-  do {
-    // Ignore ".", "..", and directories.
-    if ((metadata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0
-        && kDot != metadata.cFileName && kDotDot != metadata.cFileName) {
-      matched = ExpandWildcardsResult::kSuccess;
-      if (!dirname.empty()) {
-        consume(dirname + metadata.cFileName);
-      } else {
-        consume(metadata.cFileName);
-      }
-    }
-  } while (::FindNextFileA(handle, &metadata));
-  FindClose(handle);
-  return matched;
-#endif  // SUPPORT_LONGPATHS
 }
 
 namespace strings {
