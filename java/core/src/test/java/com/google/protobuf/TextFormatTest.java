@@ -33,9 +33,14 @@ package com.google.protobuf;
 import static com.google.protobuf.TestUtil.TEST_REQUIRED_INITIALIZED;
 import static com.google.protobuf.TestUtil.TEST_REQUIRED_UNINITIALIZED;
 
+import com.google.protobuf.DescriptorProtos.DescriptorProto;
+import com.google.protobuf.DescriptorProtos.FieldDescriptorProto;
+import com.google.protobuf.DescriptorProtos.FileDescriptorProto;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
+import com.google.protobuf.Descriptors.FileDescriptor;
 import com.google.protobuf.TextFormat.Parser.SingularOverwritePolicy;
+import any_test.AnyTestProto.TestAny;
 import map_test.MapTestProto.TestMap;
 import protobuf_unittest.UnittestMset.TestMessageSetExtension1;
 import protobuf_unittest.UnittestMset.TestMessageSetExtension2;
@@ -48,6 +53,7 @@ import protobuf_unittest.UnittestProto.TestOneof2;
 import protobuf_unittest.UnittestProto.TestRequired;
 import proto2_wireformat_unittest.UnittestMsetWireFormat.TestMessageSet;
 import java.io.StringReader;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 import junit.framework.TestCase;
@@ -504,6 +510,191 @@ public class TextFormatTest extends TestCase {
         builder);
     assertEquals(1, builder.getOptionalInt32());
     assertEquals(2, builder.getOptionalInt64());
+  }
+
+  public void testPrintAny_customBuiltTypeRegistry() throws Exception {
+    TestAny testAny =
+        TestAny.newBuilder()
+            .setValue(
+                Any.newBuilder()
+                    .setTypeUrl("type.googleapis.com/" + TestAllTypes.getDescriptor().getFullName())
+                    .setValue(
+                        TestAllTypes.newBuilder().setOptionalInt32(12345).build().toByteString())
+                    .build())
+            .build();
+    String actual =
+        TextFormat.printer()
+            .usingTypeRegistry(TypeRegistry.newBuilder().add(TestAllTypes.getDescriptor()).build())
+            .printToString(testAny);
+    String expected =
+        "value {\n"
+            + "  [type.googleapis.com/protobuf_unittest.TestAllTypes] {\n"
+            + "    optional_int32: 12345\n"
+            + "  }\n"
+            + "}\n";
+    assertEquals(expected, actual);
+  }
+
+  private static Descriptor createDescriptorForAny(FieldDescriptorProto... fields)
+      throws Exception {
+    FileDescriptor fileDescriptor =
+        FileDescriptor.buildFrom(
+            FileDescriptorProto.newBuilder()
+                .setName("any.proto")
+                .setPackage("google.protobuf")
+                .setSyntax("proto3")
+                .addMessageType(
+                    DescriptorProto.newBuilder()
+                        .setName("Any")
+                        .addAllField(Arrays.asList(fields)))
+                .build(),
+            new FileDescriptor[0]);
+    return fileDescriptor.getMessageTypes().get(0);
+  }
+
+  public void testPrintAny_anyWithDynamicMessage() throws Exception {
+    Descriptor descriptor =
+        createDescriptorForAny(
+            FieldDescriptorProto.newBuilder()
+                .setName("type_url")
+                .setNumber(1)
+                .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+                .setType(FieldDescriptorProto.Type.TYPE_STRING)
+                .build(),
+            FieldDescriptorProto.newBuilder()
+                .setName("value")
+                .setNumber(2)
+                .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+                .setType(FieldDescriptorProto.Type.TYPE_BYTES)
+                .build());
+    DynamicMessage testAny =
+        DynamicMessage.newBuilder(descriptor)
+            .setField(
+                descriptor.findFieldByNumber(1),
+                "type.googleapis.com/" + TestAllTypes.getDescriptor().getFullName())
+            .setField(
+                descriptor.findFieldByNumber(2),
+                TestAllTypes.newBuilder().setOptionalInt32(12345).build().toByteString())
+            .build();
+    String actual =
+        TextFormat.printer()
+            .usingTypeRegistry(TypeRegistry.newBuilder().add(TestAllTypes.getDescriptor()).build())
+            .printToString(testAny);
+    String expected =
+        "[type.googleapis.com/protobuf_unittest.TestAllTypes] {\n"
+            + "  optional_int32: 12345\n"
+            + "}\n";
+    assertEquals(expected, actual);
+  }
+
+  public void testPrintAny_anyFromWithNoValueField() throws Exception {
+    Descriptor descriptor =
+        createDescriptorForAny(
+            FieldDescriptorProto.newBuilder()
+                .setName("type_url")
+                .setNumber(1)
+                .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+                .setType(FieldDescriptorProto.Type.TYPE_STRING)
+                .build());
+    DynamicMessage testAny =
+        DynamicMessage.newBuilder(descriptor)
+            .setField(
+                descriptor.findFieldByNumber(1),
+                "type.googleapis.com/" + TestAllTypes.getDescriptor().getFullName())
+            .build();
+    String actual =
+        TextFormat.printer()
+            .usingTypeRegistry(TypeRegistry.newBuilder().add(TestAllTypes.getDescriptor()).build())
+            .printToString(testAny);
+    String expected = "type_url: \"type.googleapis.com/protobuf_unittest.TestAllTypes\"\n";
+    assertEquals(expected, actual);
+  }
+
+  public void testPrintAny_anyFromWithNoTypeUrlField() throws Exception {
+    Descriptor descriptor =
+        createDescriptorForAny(
+            FieldDescriptorProto.newBuilder()
+                .setName("value")
+                .setNumber(2)
+                .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+                .setType(FieldDescriptorProto.Type.TYPE_BYTES)
+                .build());
+    DynamicMessage testAny =
+        DynamicMessage.newBuilder(descriptor)
+            .setField(
+                descriptor.findFieldByNumber(2),
+                TestAllTypes.newBuilder().setOptionalInt32(12345).build().toByteString())
+            .build();
+    String actual =
+        TextFormat.printer()
+            .usingTypeRegistry(TypeRegistry.newBuilder().add(TestAllTypes.getDescriptor()).build())
+            .printToString(testAny);
+    String expected = "value: \"\\b\\271`\"\n";
+    assertEquals(expected, actual);
+  }
+
+  public void testPrintAny_anyWithInvalidFieldType() throws Exception {
+    Descriptor descriptor =
+        createDescriptorForAny(
+            FieldDescriptorProto.newBuilder()
+                .setName("type_url")
+                .setNumber(1)
+                .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+                .setType(FieldDescriptorProto.Type.TYPE_STRING)
+                .build(),
+            FieldDescriptorProto.newBuilder()
+                .setName("value")
+                .setNumber(2)
+                .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+                .setType(FieldDescriptorProto.Type.TYPE_STRING)
+                .build());
+    DynamicMessage testAny =
+        DynamicMessage.newBuilder(descriptor)
+            .setField(
+                descriptor.findFieldByNumber(1),
+                "type.googleapis.com/" + TestAllTypes.getDescriptor().getFullName())
+            .setField(descriptor.findFieldByNumber(2), "test")
+            .build();
+    String actual =
+        TextFormat.printer()
+            .usingTypeRegistry(TypeRegistry.newBuilder().add(TestAllTypes.getDescriptor()).build())
+            .printToString(testAny);
+    String expected =
+        "type_url: \"type.googleapis.com/protobuf_unittest.TestAllTypes\"\n" + "value: \"test\"\n";
+    assertEquals(expected, actual);
+  }
+
+
+  public void testMergeAny_customBuiltTypeRegistry() throws Exception {
+    TestAny.Builder builder = TestAny.newBuilder();
+    TextFormat.Parser.newBuilder()
+        .setTypeRegistry(TypeRegistry.newBuilder().add(TestAllTypes.getDescriptor()).build())
+        .build()
+        .merge(
+            "value: {\n"
+                + "[type.googleapis.com/protobuf_unittest.TestAllTypes] {\n"
+                + "optional_int32: 12345\n"
+                + "optional_nested_message {\n"
+                + "  bb: 123\n"
+                + "}\n"
+                + "}\n"
+                + "}",
+            builder);
+    assertEquals(
+        TestAny.newBuilder()
+            .setValue(
+                Any.newBuilder()
+                    .setTypeUrl("type.googleapis.com/" + TestAllTypes.getDescriptor().getFullName())
+                    .setValue(
+                        TestAllTypes.newBuilder()
+                            .setOptionalInt32(12345)
+                            .setOptionalNestedMessage(
+                                TestAllTypes.NestedMessage.newBuilder().setBb(123))
+                            .build()
+                            .toByteString())
+                    .build())
+            .build(),
+        builder.build());
   }
 
 

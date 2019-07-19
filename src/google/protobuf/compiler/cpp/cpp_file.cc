@@ -51,8 +51,6 @@
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/stubs/strutil.h>
 
-
-
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -440,17 +438,22 @@ void FileGenerator::GenerateSourceIncludes(io::Printer* printer) {
 void FileGenerator::GenerateSourceDefaultInstance(int idx,
                                                   io::Printer* printer) {
   Formatter format(printer, variables_);
+  MessageGenerator* generator = message_generators_[idx].get();
   format(
       "class $1$ {\n"
       " public:\n"
       "  ::$proto_ns$::internal::ExplicitlyConstructed<$2$> _instance;\n",
-      DefaultInstanceType(message_generators_[idx]->descriptor_, options_),
-      message_generators_[idx]->classname_);
+      DefaultInstanceType(generator->descriptor_, options_),
+      generator->classname_);
   format.Indent();
-  message_generators_[idx]->GenerateExtraDefaultFields(printer);
+  generator->GenerateExtraDefaultFields(printer);
   format.Outdent();
-  format("} $1$;\n",
-         DefaultInstanceName(message_generators_[idx]->descriptor_, options_));
+  format("} $1$;\n", DefaultInstanceName(generator->descriptor_, options_));
+  if (options_.lite_implicit_weak_fields) {
+    format("$1$DefaultTypeInternal* $2$ = &$3$;\n", generator->classname_,
+           DefaultInstancePtr(generator->descriptor_, options_),
+           DefaultInstanceName(generator->descriptor_, options_));
+  }
 }
 
 // A list of things defined in one .pb.cc file that we need to reference from
@@ -513,19 +516,43 @@ void FileGenerator::GenerateInternalForwardDeclarations(
   }
 
   for (auto scc : Sorted(refs.weak_sccs)) {
-    format(
-        "extern __attribute__((weak)) ::$proto_ns$::internal::SCCInfo<$1$> "
-        "$2$;\n",
-        scc->children.size(), SccInfoSymbol(scc, options_));
+    // We do things a little bit differently for proto1-style weak fields versus
+    // lite implicit weak fields, even though they are trying to accomplish
+    // similar things. We need to support implicit weak fields on iOS, and the
+    // Apple linker only supports weak definitions, not weak declarations. For
+    // that reason we need a pointer type which we can weakly define to be null.
+    // However, code size considerations prevent us from using the same approach
+    // for proto1-style weak fields.
+    if (options_.lite_implicit_weak_fields) {
+      format("extern ::$proto_ns$::internal::SCCInfo<$1$> $2$;\n",
+             scc->children.size(), SccInfoSymbol(scc, options_));
+      format(
+          "__attribute__((weak)) ::$proto_ns$::internal::SCCInfo<$1$>*\n"
+          "    $2$ = nullptr;\n",
+          scc->children.size(), SccInfoPtrSymbol(scc, options_));
+    } else {
+      format(
+          "extern __attribute__((weak)) ::$proto_ns$::internal::SCCInfo<$1$> "
+          "$2$;\n",
+          scc->children.size(), SccInfoSymbol(scc, options_));
+    }
   }
 
   {
     NamespaceOpener ns(format);
     for (auto instance : Sorted(refs.weak_default_instances)) {
       ns.ChangeTo(Namespace(instance, options_));
-      format("extern __attribute__((weak)) $1$ $2$;\n",
-             DefaultInstanceType(instance, options_),
-             DefaultInstanceName(instance, options_));
+      if (options_.lite_implicit_weak_fields) {
+        format("extern $1$ $2$;\n", DefaultInstanceType(instance, options_),
+               DefaultInstanceName(instance, options_));
+        format("__attribute__((weak)) $1$* $2$ = nullptr;\n",
+               DefaultInstanceType(instance, options_),
+               DefaultInstancePtr(instance, options_));
+      } else {
+        format("extern __attribute__((weak)) $1$ $2$;\n",
+               DefaultInstanceType(instance, options_),
+               DefaultInstanceName(instance, options_));
+      }
     }
   }
 
@@ -555,7 +582,8 @@ void FileGenerator::GenerateSourceForMessage(int idx, io::Printer* printer) {
   GenerateInternalForwardDeclarations(refs, printer);
 
   if (IsSCCRepresentative(message_generators_[idx]->descriptor_)) {
-    GenerateInitForSCC(GetSCC(message_generators_[idx]->descriptor_), printer);
+    GenerateInitForSCC(GetSCC(message_generators_[idx]->descriptor_), refs,
+                       printer);
   }
 
   {  // package namespace
@@ -649,7 +677,7 @@ void FileGenerator::GenerateSource(io::Printer* printer) {
 
     // Now generate the InitDefaults for each SCC.
     for (auto scc : sccs_) {
-      GenerateInitForSCC(scc, printer);
+      GenerateInitForSCC(scc, refs, printer);
     }
 
     if (HasDescriptorMethods(file_, options_)) {
@@ -904,7 +932,9 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* printer) {
   }
 }
 
-void FileGenerator::GenerateInitForSCC(const SCC* scc, io::Printer* printer) {
+void FileGenerator::GenerateInitForSCC(const SCC* scc,
+                                       const CrossFileReferences& refs,
+                                       io::Printer* printer) {
   Formatter format(printer, variables_);
   // We use static and not anonymous namespace because symbol names are
   // substantially shorter.
@@ -954,17 +984,46 @@ void FileGenerator::GenerateInitForSCC(const SCC* scc, io::Printer* printer) {
   format.Outdent();
   format("}\n\n");
 
+  // If we are using lite implicit weak fields then we need to distinguish
+  // between regular SCC dependencies and ones that we need to reference weakly
+  // through an extra pointer indirection.
+  std::vector<const SCC*> regular_sccs;
+  std::vector<const SCC*> implicit_weak_sccs;
+  for (const SCC* child : scc->children) {
+    if (options_.lite_implicit_weak_fields &&
+        refs.weak_sccs.find(child) != refs.weak_sccs.end()) {
+      implicit_weak_sccs.push_back(child);
+    } else {
+      regular_sccs.push_back(child);
+    }
+  }
+
   format(
       "$dllexport_decl $::$proto_ns$::internal::SCCInfo<$1$> $2$ =\n"
       "    "
       "{{ATOMIC_VAR_INIT(::$proto_ns$::internal::SCCInfoBase::kUninitialized), "
-      "$1$, InitDefaults$2$}, {",
+      "$3$, $4$, InitDefaults$2$}, {",
       scc->children.size(),  // 1
-      SccInfoSymbol(scc, options_));
-  for (const SCC* child : scc->children) {
+      SccInfoSymbol(scc, options_), regular_sccs.size(),
+      implicit_weak_sccs.size());
+  for (const SCC* child : regular_sccs) {
     format("\n      &$1$.base,", SccInfoSymbol(child, options_));
   }
+  for (const SCC* child : implicit_weak_sccs) {
+    format(
+        "\n      reinterpret_cast<::$proto_ns$::internal::SCCInfoBase**>("
+        "\n          &$1$),",
+        SccInfoPtrSymbol(child, options_));
+  }
   format("}};\n\n");
+
+  if (options_.lite_implicit_weak_fields) {
+    format(
+        "$dllexport_decl $::$proto_ns$::internal::SCCInfo<$1$>*\n"
+        "    $2$ = &$3$;\n\n",
+        scc->children.size(), SccInfoPtrSymbol(scc, options_),
+        SccInfoSymbol(scc, options_));
+  }
 }
 
 void FileGenerator::GenerateTables(io::Printer* printer) {

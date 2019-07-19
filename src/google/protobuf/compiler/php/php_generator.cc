@@ -1463,7 +1463,7 @@ static void GenerateDocCommentBodyForLocation(
     // HTML-escape them so that they don't accidentally close the doc comment.
     comments = EscapePhpdoc(comments);
 
-    std::vector<string> lines = Split(comments, "\n");
+    std::vector<string> lines = Split(comments, "\n", true);
     while (!lines.empty() && lines.back().empty()) {
       lines.pop_back();
     }

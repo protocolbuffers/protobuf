@@ -213,7 +213,6 @@ libprotobuf_lite_la_SOURCES =                                  \
   google/protobuf/repeated_field.cc                            \
   google/protobuf/wire_format_lite.cc                          \
   google/protobuf/io/coded_stream.cc                           \
-  google/protobuf/io/coded_stream_inl.h                        \
   google/protobuf/io/strtod.cc                                 \
   google/protobuf/io/zero_copy_stream.cc                       \
   google/protobuf/io/zero_copy_stream_impl.cc                  \

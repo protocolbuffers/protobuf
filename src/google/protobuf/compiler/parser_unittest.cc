@@ -48,7 +48,6 @@
 #include <google/protobuf/text_format.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/substitute.h>
-
 #include <google/protobuf/stubs/map_util.h>
 
 #include <google/protobuf/testing/googletest.h>

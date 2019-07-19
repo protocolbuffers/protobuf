@@ -113,8 +113,8 @@ public final class TextFormat {
   }
 
   /**
-   * Generates a human readable form of the field, useful for debugging and other purposes, with no
-   * newline characters.
+   * Generates a human readable form of the field, useful for debugging and other purposes, with
+   * no newline characters.
    *
    * @deprecated Use {@code printer().shortDebugString(FieldDescriptor, Object)}
    */
@@ -122,10 +122,10 @@ public final class TextFormat {
   public static String shortDebugString(final FieldDescriptor field, final Object value) {
     return printer().shortDebugString(field, value);
   }
-
+  //
   /**
-   * Generates a human readable form of the unknown fields, useful for debugging and other purposes,
-   * with no newline characters.
+   * Generates a human readable form of the unknown fields, useful for debugging and other
+   * purposes, with no newline characters.
    *
    * @deprecated Use {@code printer().shortDebugString(UnknownFieldSet)}
    */
@@ -166,8 +166,8 @@ public final class TextFormat {
   }
 
   /**
-   * Same as {@code printToString()}, except that non-ASCII characters in string type fields are not
-   * escaped in backslash+octals.
+   * Same as {@code printToString()}, except that non-ASCII characters in string type fields are
+   * not escaped in backslash+octals.
    *
    * @deprecated Use {@code printer().escapingNonAscii(false).printToString(UnknownFieldSet)}
    */
@@ -175,20 +175,21 @@ public final class TextFormat {
   public static String printToUnicodeString(final UnknownFieldSet fields) {
     return printer().escapingNonAscii(false).printToString(fields);
   }
-
+  //
   /** @deprecated Use {@code printer().printField(FieldDescriptor, Object, Appendable)} */
   @Deprecated
   public static void printField(
-      final FieldDescriptor field, final Object value, final Appendable output) throws IOException {
+      final FieldDescriptor field, final Object value, final Appendable output)
+      throws IOException {
     printer().printField(field, value, output);
   }
-
+  //
   /** @deprecated Use {@code printer().printFieldToString(FieldDescriptor, Object)} */
   @Deprecated
   public static String printFieldToString(final FieldDescriptor field, final Object value) {
     return printer().printFieldToString(field, value);
   }
-
+  //
   /**
    * Outputs a unicode textual representation of the value of given field value.
    *
@@ -205,7 +206,8 @@ public final class TextFormat {
    */
   @Deprecated
   public static void printUnicodeFieldValue(
-      final FieldDescriptor field, final Object value, final Appendable output) throws IOException {
+      final FieldDescriptor field, final Object value, final Appendable output)
+      throws IOException {
     printer().escapingNonAscii(false).printFieldValue(field, value, output);
   }
 
@@ -285,13 +287,16 @@ public final class TextFormat {
   public static final class Printer {
 
     // Printer instance which escapes non-ASCII characters.
-    private static final Printer DEFAULT = new Printer(true);
+    private static final Printer DEFAULT = new Printer(true, TypeRegistry.getEmptyTypeRegistry());
 
     /** Whether to escape non ASCII characters with backslash and octal. */
     private final boolean escapeNonAscii;
 
-    private Printer(boolean escapeNonAscii) {
+    private final TypeRegistry typeRegistry;
+
+    private Printer(boolean escapeNonAscii, TypeRegistry typeRegistry) {
       this.escapeNonAscii = escapeNonAscii;
+      this.typeRegistry = typeRegistry;
     }
 
     /**
@@ -304,7 +309,20 @@ public final class TextFormat {
      *     with the escape mode set to the given parameter.
      */
     public Printer escapingNonAscii(boolean escapeNonAscii) {
-      return new Printer(escapeNonAscii);
+      return new Printer(escapeNonAscii, typeRegistry);
+    }
+
+    /**
+     * Creates a new {@link Printer} using the given typeRegistry. The new Printer clones all other
+     * configurations from the current {@link Printer}.
+     *
+     * @throws IllegalArgumentException if a registry is already set.
+     */
+    public Printer usingTypeRegistry(TypeRegistry typeRegistry) {
+      if (this.typeRegistry != TypeRegistry.getEmptyTypeRegistry()) {
+        throw new IllegalArgumentException("Only one typeRegistry is allowed.");
+      }
+      return new Printer(escapeNonAscii, typeRegistry);
     }
 
     /**
@@ -323,7 +341,64 @@ public final class TextFormat {
 
     private void print(final MessageOrBuilder message, final TextGenerator generator)
         throws IOException {
+      if (message.getDescriptorForType().getFullName().equals("google.protobuf.Any")
+          && printAny(message, generator)) {
+        return;
+      }
       printMessage(message, generator);
+    }
+
+    /**
+     * Attempt to print the 'google.protobuf.Any' message in a human-friendly format. Returns false
+     * if the message isn't a valid 'google.protobuf.Any' message (in which case the message should
+     * be rendered just like a regular message to help debugging).
+     */
+    private boolean printAny(final MessageOrBuilder message, final TextGenerator generator)
+        throws IOException {
+      Descriptor messageType = message.getDescriptorForType();
+      FieldDescriptor typeUrlField = messageType.findFieldByNumber(1);
+      FieldDescriptor valueField = messageType.findFieldByNumber(2);
+      if (typeUrlField == null
+          || typeUrlField.getType() != FieldDescriptor.Type.STRING
+          || valueField == null
+          || valueField.getType() != FieldDescriptor.Type.BYTES) {
+        // The message may look like an Any but isn't actually an Any message (might happen if the
+        // user tries to use DynamicMessage to construct an Any from incomplete Descriptor).
+        return false;
+      }
+      String typeUrl = (String) message.getField(typeUrlField);
+      // If type_url is not set, we will not be able to decode the content of the value, so just
+      // print out the Any like a regular message.
+      if (typeUrl.isEmpty()) {
+        return false;
+      }
+      Object value = message.getField(valueField);
+
+      Message.Builder contentBuilder = null;
+      try {
+        Descriptor contentType = typeRegistry.getDescriptorForTypeUrl(typeUrl);
+        if (contentType == null) {
+          return false;
+        }
+        contentBuilder = DynamicMessage.getDefaultInstance(contentType).newBuilderForType();
+        contentBuilder.mergeFrom((ByteString) value);
+      } catch (InvalidProtocolBufferException e) {
+        // The value of Any is malformed. We cannot print it out nicely, so fallback to printing out
+        // the type_url and value as bytes. Note that we fail open here to be consistent with
+        // text_format.cc, and also to allow a way for users to inspect the content of the broken
+        // message.
+        return false;
+      }
+      generator.print("[");
+      generator.print(typeUrl);
+      generator.print("] {");
+      generator.eol();
+      generator.indent();
+      print(contentBuilder, generator);
+      generator.outdent();
+      generator.print("}");
+      generator.eol();
+      return true;
     }
 
     public String printFieldToString(final FieldDescriptor field, final Object value) {
@@ -1382,6 +1457,7 @@ public final class TextFormat {
       FORBID_SINGULAR_OVERWRITES
     }
 
+    private final TypeRegistry typeRegistry;
     private final boolean allowUnknownFields;
     private final boolean allowUnknownEnumValues;
     private final boolean allowUnknownExtensions;
@@ -1389,11 +1465,13 @@ public final class TextFormat {
     private TextFormatParseInfoTree.Builder parseInfoTreeBuilder;
 
     private Parser(
+        TypeRegistry typeRegistry,
         boolean allowUnknownFields,
         boolean allowUnknownEnumValues,
         boolean allowUnknownExtensions,
         SingularOverwritePolicy singularOverwritePolicy,
         TextFormatParseInfoTree.Builder parseInfoTreeBuilder) {
+      this.typeRegistry = typeRegistry;
       this.allowUnknownFields = allowUnknownFields;
       this.allowUnknownEnumValues = allowUnknownEnumValues;
       this.allowUnknownExtensions = allowUnknownExtensions;
@@ -1414,6 +1492,18 @@ public final class TextFormat {
       private SingularOverwritePolicy singularOverwritePolicy =
           SingularOverwritePolicy.ALLOW_SINGULAR_OVERWRITES;
       private TextFormatParseInfoTree.Builder parseInfoTreeBuilder = null;
+      private TypeRegistry typeRegistry = TypeRegistry.getEmptyTypeRegistry();
+
+      /**
+       * Sets the TypeRegistry for resolving Any. If this is not set, TextFormat will not be able to
+       * parse Any unless Any is write as bytes.
+       *
+       * @throws IllegalArgumentException if a registry is already set.
+       */
+      public Builder setTypeRegistry(TypeRegistry typeRegistry) {
+        this.typeRegistry = typeRegistry;
+        return this;
+      }
 
       /**
        * Set whether this parser will allow unknown fields. By default, an exception is thrown if an
@@ -1452,6 +1542,7 @@ public final class TextFormat {
 
       public Parser build() {
         return new Parser(
+            typeRegistry,
             allowUnknownFields,
             allowUnknownEnumValues,
             allowUnknownExtensions,
@@ -1834,6 +1925,14 @@ public final class TextFormat {
           endToken = "}";
         }
 
+        // Try to parse human readable format of Any in the form: [type_url]: { ... }
+        if (field.getMessageType().getFullName().equals("google.protobuf.Any")
+            && tokenizer.tryConsume("[")) {
+          value =
+              consumeAnyFieldValue(
+                  tokenizer, extensionRegistry, field, parseTreeBuilder, unknownFields);
+          tokenizer.consume(endToken);
+        } else {
           Message defaultInstance = (extension == null) ? null : extension.defaultInstance;
           MessageReflection.MergeTarget subField =
               target.newMergeTargetForField(field, defaultInstance);
@@ -1846,6 +1945,8 @@ public final class TextFormat {
           }
 
           value = subField.finish();
+        }
+
       } else {
         switch (field.getType()) {
           case INT32:
@@ -1951,6 +2052,71 @@ public final class TextFormat {
       }
     }
 
+    private Object consumeAnyFieldValue(
+        final Tokenizer tokenizer,
+        final ExtensionRegistry extensionRegistry,
+        final FieldDescriptor field,
+        final TextFormatParseInfoTree.Builder parseTreeBuilder,
+        List<UnknownField> unknownFields)
+        throws ParseException {
+      // Try to parse human readable format of Any in the form: [type_url]: { ... }
+      StringBuilder typeUrlBuilder = new StringBuilder();
+      // Parse the type_url inside [].
+      while (true) {
+        typeUrlBuilder.append(tokenizer.consumeIdentifier());
+        if (tokenizer.tryConsume("]")) {
+          break;
+        }
+        if (tokenizer.tryConsume("/")) {
+          typeUrlBuilder.append("/");
+        } else if (tokenizer.tryConsume(".")) {
+          typeUrlBuilder.append(".");
+        } else {
+          throw tokenizer.parseExceptionPreviousToken("Expected a valid type URL.");
+        }
+      }
+      tokenizer.tryConsume(":");
+      final String anyEndToken;
+      if (tokenizer.tryConsume("<")) {
+        anyEndToken = ">";
+      } else {
+        tokenizer.consume("{");
+        anyEndToken = "}";
+      }
+      String typeUrl = typeUrlBuilder.toString();
+      Descriptor contentType = null;
+      try {
+        contentType = typeRegistry.getDescriptorForTypeUrl(typeUrl);
+      } catch (InvalidProtocolBufferException e) {
+        throw tokenizer.parseException("Invalid valid type URL. Found: " + typeUrl);
+      }
+      if (contentType == null) {
+        throw tokenizer.parseException(
+            "Unable to parse Any of type: "
+                + typeUrl
+                + ". Please make sure that the TypeRegistry contains the descriptors for the given"
+                + " types.");
+      }
+      Message.Builder contentBuilder =
+          DynamicMessage.getDefaultInstance(contentType).newBuilderForType();
+      MessageReflection.BuilderAdapter contentTarget =
+          new MessageReflection.BuilderAdapter(contentBuilder);
+      while (!tokenizer.tryConsume(anyEndToken)) {
+        mergeField(tokenizer, extensionRegistry, contentTarget, parseTreeBuilder, unknownFields);
+      }
+
+      // Serialize the content and put it back into an Any. Note that we can't depend on Any here
+      // because of a cyclic dependency (java_proto_library for any_java_proto depends on the
+      // protobuf_impl), so we need to construct the Any using proto reflection.
+      Descriptor anyDescriptor = field.getMessageType();
+      Message.Builder anyBuilder =
+          DynamicMessage.getDefaultInstance(anyDescriptor).newBuilderForType();
+      anyBuilder.setField(anyDescriptor.findFieldByName("type_url"), typeUrlBuilder.toString());
+      anyBuilder.setField(
+          anyDescriptor.findFieldByName("value"), contentBuilder.build().toByteString());
+
+      return anyBuilder.build();
+    }
 
     /** Skips the next field including the field's name and value. */
     private void skipField(Tokenizer tokenizer) throws ParseException {

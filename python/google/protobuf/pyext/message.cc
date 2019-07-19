@@ -47,7 +47,6 @@
 #endif
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/io/strtod.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 #include <google/protobuf/descriptor.pb.h>
@@ -63,14 +62,17 @@
 #include <google/protobuf/pyext/message_factory.h>
 #include <google/protobuf/pyext/repeated_composite_container.h>
 #include <google/protobuf/pyext/repeated_scalar_container.h>
-#include <google/protobuf/pyext/unknown_fields.h>
 #include <google/protobuf/pyext/safe_numerics.h>
 #include <google/protobuf/pyext/scoped_pyobject_ptr.h>
+#include <google/protobuf/pyext/unknown_fields.h>
 #include <google/protobuf/util/message_differencer.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/io/strtod.h>
 #include <google/protobuf/stubs/map_util.h>
 
+// clang-format off
 #include <google/protobuf/port_def.inc>
+// clang-format on
 
 #if PY_MAJOR_VERSION >= 3
   #define PyInt_AsLong PyLong_AsLong

@@ -38,7 +38,6 @@
 #include <limits>
 #include <unordered_map>
 
-
 #include <google/protobuf/stubs/hash.h>
 
 #include <google/protobuf/stubs/casts.h>

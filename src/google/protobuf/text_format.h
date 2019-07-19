@@ -103,6 +103,8 @@ class PROTOBUF_EXPORT TextFormat {
 
     virtual void Indent() {}
     virtual void Outdent() {}
+    // Returns the current indentation size in characters.
+    virtual size_t GetCurrentIndentationSize() const { return 0; }
 
     // Print text to the output stream.
     virtual void Print(const char* text, size_t size) = 0;
