@@ -3,6 +3,10 @@
 # Build file to set up and run tests
 set -ex
 
+# Install the latest Bazel version available
+use_bazel.sh latest
+bazel version
+
 # Change to repo root
 cd $(dirname $0)/../../..
 
