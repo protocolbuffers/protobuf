@@ -789,9 +789,18 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
     {zz64(kInt64Max), std::to_string(kInt64Max)},
     {zz64(kInt64Min), std::to_string(kInt64Min)}
   });
+  TestValidDataForType(FieldDescriptor::TYPE_STRING, {
+    {delim("Hello world!"), "\"Hello world!\""},
+    {delim("\'\"\?\\\a\b\f\n\r\t\v"),
+          "\"\x27\\\"\x3F\\\\\x07\x08\x0C\\n\x0D\x09\x0B\""},  // escape
+    {delim("谷歌"), "\"谷歌\""},  // Google in Chinese
+    {delim("\u8C37\u6B4C"), "\"谷歌\""},  // unicode escape
+    {delim("\u8c37\u6b4c"), "\"谷歌\""},  // lowercase unicode
+    {delim("\xF0\x9F\x98\x81"), "\"\xF0\x9F\x98\x81\""},  // emoji: 😁
+    {delim(""), "\"\""},
+  });
 
   // TODO(haberman):
-  // TestValidDataForType(FieldDescriptor::TYPE_STRING
   // TestValidDataForType(FieldDescriptor::TYPE_GROUP
   // TestValidDataForType(FieldDescriptor::TYPE_MESSAGE
   // TestValidDataForType(FieldDescriptor::TYPE_BYTES
