@@ -11,7 +11,7 @@ bazel version
 cd $(dirname $0)/../../..
 
 git submodule update --init --recursive
-bazel test :protobuf_test --copt=-Werror --host_copt=-Werror
+bazel test :build_files_updated_unittest :protobuf_test --copt=-Werror --host_copt=-Werror
 
 cd examples
 bazel build :all
