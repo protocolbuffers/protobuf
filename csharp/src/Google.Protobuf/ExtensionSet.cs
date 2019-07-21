@@ -40,11 +40,11 @@ namespace Google.Protobuf
     /// <summary>
     /// Methods for managing <see cref="ExtensionSet{TTarget}"/>s with null checking.
     /// 
-    /// Most users will not use this class directly
+    /// Most users will not use this class directly and its API is experimental and subject to change.
     /// </summary>
     public static class ExtensionSet
     {
-        private static bool GetValue<TTarget>(ref ExtensionSet<TTarget> set, Extension extension, out IExtensionValue value) where TTarget : IExtendableMessage<TTarget>
+        private static bool TryGetValue<TTarget>(ref ExtensionSet<TTarget> set, Extension extension, out IExtensionValue value) where TTarget : IExtendableMessage<TTarget>
         {
             if (set == null)
             {
@@ -60,7 +60,7 @@ namespace Google.Protobuf
         public static TValue Get<TTarget, TValue>(ref ExtensionSet<TTarget> set, Extension<TTarget, TValue> extension) where TTarget : IExtendableMessage<TTarget>
         {
             IExtensionValue value;
-            if (GetValue(ref set, extension, out value))
+            if (TryGetValue(ref set, extension, out value))
             {
                 return ((ExtensionValue<TValue>)value).GetValue();
             }
@@ -76,7 +76,7 @@ namespace Google.Protobuf
         public static RepeatedField<TValue> Get<TTarget, TValue>(ref ExtensionSet<TTarget> set, RepeatedExtension<TTarget, TValue> extension) where TTarget : IExtendableMessage<TTarget>
         {
             IExtensionValue value;
-            if (GetValue(ref set, extension, out value))
+            if (TryGetValue(ref set, extension, out value))
             {
                 return ((RepeatedExtensionValue<TValue>)value).GetValue();
             }
@@ -111,7 +111,7 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Sets the value of the specified extension
+        /// Sets the value of the specified extension. This will make a new instance of ExtensionSet if the set is null.
         /// </summary>
         public static void Set<TTarget, TValue>(ref ExtensionSet<TTarget> set, Extension<TTarget, TValue> extension, TValue value) where TTarget : IExtendableMessage<TTarget>
         {
@@ -140,14 +140,7 @@ namespace Google.Protobuf
         public static bool Has<TTarget, TValue>(ref ExtensionSet<TTarget> set, Extension<TTarget, TValue> extension) where TTarget : IExtendableMessage<TTarget>
         {
             IExtensionValue value;
-            if (GetValue(ref set, extension, out value))
-            {
-                return ((ExtensionValue<TValue>)value).HasValue;
-            }
-            else 
-            {
-                return false;
-            }
+            return TryGetValue(ref set, extension, out value);
         }
 
         /// <summary>

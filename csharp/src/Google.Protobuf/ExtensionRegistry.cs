@@ -38,7 +38,7 @@ using System.Linq;
 namespace Google.Protobuf
 {
     /// <summary>
-    /// Provides extensions to messages while parsing
+    /// Provides extensions to messages while parsing. This API is experimental and subject to change.
     /// </summary>
     public sealed class ExtensionRegistry : ICollection<Extension>, IDeepCloneable<ExtensionRegistry>
     {
