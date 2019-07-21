@@ -183,7 +183,7 @@ namespace Google.Protobuf
                     }
                     else if (f.FieldType == FieldType.Message || f.FieldType == FieldType.Group)
                     {
-                        if ((f.Accessor as IFieldPresenceAccessor).HasValue(message))
+                        if (f.Accessor.HasValue(message))
                         {
                             return ((IMessage)f.Accessor.GetValue(message)).IsInitialized();
                         }
@@ -194,7 +194,7 @@ namespace Google.Protobuf
                     }
                     else if (f.IsRequired)
                     {
-                        return (f.Accessor as IFieldPresenceAccessor).HasValue(message);
+                        return f.Accessor.HasValue(message);
                     }
                     else
                     {

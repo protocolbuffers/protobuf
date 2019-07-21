@@ -39,7 +39,7 @@ namespace Google.Protobuf.Reflection
     /// <summary>
     /// Accessor for single fields.
     /// </summary>
-    internal sealed class SingleFieldAccessor : FieldAccessorBase, IFieldPresenceAccessor
+    internal sealed class SingleFieldAccessor : FieldAccessorBase
     {
         // All the work here is actually done in the constructor - it creates the appropriate delegates.
         // There are various cases to consider, based on the property type (message, string/bytes, or "genuine" primitive)
