@@ -44,9 +44,9 @@ namespace Google.Protobuf
         /// <summary>
         /// Internal use. Creates a new extension with the specified field number.
         /// </summary>
-        protected Extension(int number)
+        protected Extension(int fieldNumber)
         {
-            FieldNumber = number;
+            FieldNumber = fieldNumber;
         }
 
         internal abstract IExtensionValue CreateValue();
@@ -69,7 +69,7 @@ namespace Google.Protobuf
         /// <summary>
         /// Creates a new extension identifier with the specified field number and codec
         /// </summary>
-        public Extension(int number, FieldCodec<TValue> codec) : base(number)
+        public Extension(int fieldNumber, FieldCodec<TValue> codec) : base(fieldNumber)
         {
             this.codec = codec;
         }
@@ -96,7 +96,7 @@ namespace Google.Protobuf
         /// <summary>
         /// Creates a new repeated extension identifier with the specified field number and codec
         /// </summary>
-        public RepeatedExtension(int number, FieldCodec<TValue> codec) : base(number)
+        public RepeatedExtension(int fieldNumber, FieldCodec<TValue> codec) : base(fieldNumber)
         {
             this.codec = codec;
         }
