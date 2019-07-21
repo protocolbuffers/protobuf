@@ -402,8 +402,15 @@ namespace Google.Protobuf
         /// <returns>A codec for the given tag.</returns>
         public static FieldCodec<T> ForMessage<T>(uint tag, MessageParser<T> parser) where T : class, IMessage<T>
         {
-            return new FieldCodec<T>(input => { T message = parser.CreateTemplate(); input.ReadMessage(message); return message; },
-                (output, value) => output.WriteMessage(value), (CodedInputStream i, ref T v) => 
+            return new FieldCodec<T>(
+                input => 
+                { 
+                    T message = parser.CreateTemplate(); 
+                    input.ReadMessage(message); 
+                    return message; 
+                },
+                (output, value) => output.WriteMessage(value),
+                (CodedInputStream i, ref T v) => 
                 {
                     if (v == null)
                     {
@@ -427,7 +434,8 @@ namespace Google.Protobuf
                         v.MergeFrom(v2);
                     }
                     return true;
-                }, message => CodedOutputStream.ComputeMessageSize(message), tag);
+                }, 
+                message => CodedOutputStream.ComputeMessageSize(message), tag);
         }
 
         /// <summary>
@@ -439,8 +447,16 @@ namespace Google.Protobuf
         /// <returns>A codec for given tag</returns>
         public static FieldCodec<T> ForGroup<T>(uint startTag, uint endTag, MessageParser<T> parser) where T : class, IMessage<T>
         {
-            return new FieldCodec<T>(input => { T message = parser.CreateTemplate(); input.ReadGroup(message); return message; },
-                (output, value) => output.WriteGroup(value), (CodedInputStream i, ref T v) => {
+            return new FieldCodec<T>(
+                input => 
+                { 
+                    T message = parser.CreateTemplate();
+                    input.ReadGroup(message);
+                    return message;
+                },
+                (output, value) => output.WriteGroup(value), 
+                (CodedInputStream i, ref T v) => 
+                {
                     if (v == null)
                     {
                         v = parser.CreateTemplate();
@@ -463,7 +479,8 @@ namespace Google.Protobuf
                         v.MergeFrom(v2);
                     }
                     return true;
-                }, message => CodedOutputStream.ComputeGroupSize(message), startTag, endTag);
+                }, 
+                message => CodedOutputStream.ComputeGroupSize(message), startTag, endTag);
         }
 
         /// <summary>
