@@ -83,16 +83,6 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Adds the specified extensions to the registry
-        /// </summary>
-        public void Add(params Extension[] newExtensions)
-        {
-            ProtoPreconditions.CheckNotNull(newExtensions, nameof(newExtensions));
-
-            Add((IEnumerable<Extension>)newExtensions);
-        }
-
-        /// <summary>
         /// Adds the specified extensions to the reigstry
         /// </summary>
         public void Add(IEnumerable<Extension> newExtensions)
