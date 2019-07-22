@@ -159,7 +159,7 @@ def _compile_upb_protos(ctx, proto_info, proto_sources, ext):
         arguments = [
                         "--upb_out=" + _get_real_root(srcs[0]),
                         "--plugin=protoc-gen-upb=" + ctx.executable._upbc.path,
-                        "--descriptor_set_in=" + ":".join([f.path for f in transitive_sets]),
+                        "--descriptor_set_in=" + ctx.configuration.host_path_separator.join([f.path for f in transitive_sets]),
                     ] +
                     [_get_real_short_path(file) for file in proto_sources],
         progress_message = "Generating upb protos for :" + ctx.label.name,
