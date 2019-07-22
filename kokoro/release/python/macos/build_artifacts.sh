@@ -51,7 +51,6 @@ build_artifact_version() {
 }
 
 build_artifact_version 2.7
-build_artifact_version 3.4
 build_artifact_version 3.5
 build_artifact_version 3.6
 build_artifact_version 3.7
