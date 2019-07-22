@@ -1,6 +1,6 @@
 """Internal rules for building upb."""
 
-load(":upb_proto_library.bzl", "GeneratedSrcs")
+load(":upb_proto_library.bzl", "GeneratedSrcsInfo")
 
 def _librule(name):
     return name + "_lib"
@@ -173,8 +173,8 @@ SrcList = provider(
 )
 
 def _file_list_aspect_impl(target, ctx):
-    if GeneratedSrcs in target:
-        srcs = target[GeneratedSrcs]
+    if GeneratedSrcsInfo in target:
+        srcs = target[GeneratedSrcsInfo]
         return [SrcList(srcs = srcs.srcs + srcs.hdrs)]
 
     srcs = []

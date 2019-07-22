@@ -37,10 +37,8 @@ def _get_real_roots(files):
     return roots.keys()
 
 def _generate_output_file(ctx, src, extension):
-    if _is_bazel:
-        real_short_path = _get_real_short_path(src)
-    else:
-        real_short_path = paths.relativize(src.short_path, ctx.label.package)
+    real_short_path = _get_real_short_path(src)
+    real_short_path = paths.relativize(real_short_path, ctx.label.package)
     output_filename = paths.replace_extension(real_short_path, extension)
     ret = ctx.actions.declare_file(output_filename)
     return ret
@@ -136,7 +134,7 @@ def _cc_library_func(ctx, name, hdrs, srcs, dep_ccinfos):
 
 # upb_proto_library / upb_proto_reflection_library shared code #################
 
-GeneratedSrcs = provider(
+GeneratedSrcsInfo = provider(
     fields = {
         "srcs": "list of srcs",
         "hdrs": "list of hdrs",
@@ -144,7 +142,7 @@ GeneratedSrcs = provider(
 )
 
 _WrappedCcInfo = provider(fields = ["cc_info"])
-_WrappedGeneratedSrcs = provider(fields = ["srcs"])
+_WrappedGeneratedSrcsInfo = provider(fields = ["srcs"])
 
 def _compile_upb_protos(ctx, proto_info, proto_sources, ext):
     srcs = [_generate_output_file(ctx, name, ext + ".c") for name in proto_sources]
@@ -166,18 +164,18 @@ def _compile_upb_protos(ctx, proto_info, proto_sources, ext):
                     [_get_real_short_path(file) for file in proto_sources],
         progress_message = "Generating upb protos for :" + ctx.label.name,
     )
-    return GeneratedSrcs(srcs = srcs, hdrs = hdrs)
+    return GeneratedSrcsInfo(srcs = srcs, hdrs = hdrs)
 
 def _upb_proto_rule_impl(ctx):
     if len(ctx.attr.deps) != 1:
         fail("only one deps dependency allowed.")
     dep = ctx.attr.deps[0]
-    if _WrappedCcInfo not in dep or _WrappedGeneratedSrcs not in dep:
+    if _WrappedCcInfo not in dep or _WrappedGeneratedSrcsInfo not in dep:
         fail("proto_library rule must generate _WrappedCcInfo and " +
-             "_WrappedGeneratedSrcs (aspect should have handled this).")
+             "_WrappedGeneratedSrcsInfo (aspect should have handled this).")
     cc_info = dep[_WrappedCcInfo].cc_info
-    srcs = dep[_WrappedGeneratedSrcs].srcs
-    lib = cc_info.linking_context.libraries_to_link[0]
+    srcs = dep[_WrappedGeneratedSrcsInfo].srcs
+    lib = cc_info.linking_context.libraries_to_link.to_list()[0]
     files = _filter_none([
         lib.static_library,
         lib.pic_static_library,
@@ -202,7 +200,7 @@ def _upb_proto_aspect_impl(target, ctx):
         srcs = files.srcs,
         dep_ccinfos = dep_ccinfos,
     )
-    return [_WrappedCcInfo(cc_info = cc_info), _WrappedGeneratedSrcs(srcs = files)]
+    return [_WrappedCcInfo(cc_info = cc_info), _WrappedGeneratedSrcsInfo(srcs = files)]
 
 def _maybe_add(d):
     if not _is_bazel:
