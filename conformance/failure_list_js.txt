@@ -11,3 +11,4 @@ Required.Proto3.ProtobufInput.ValidDataRepeated.SINT32.ProtobufOutput
 Required.Proto3.ProtobufInput.ValidDataRepeated.SINT64.ProtobufOutput
 Required.Proto3.ProtobufInput.ValidDataRepeated.UINT32.ProtobufOutput
 Required.Proto3.ProtobufInput.ValidDataRepeated.UINT64.ProtobufOutput
+Required.Proto3.ProtobufInput.ValidDataRepeated.ENUM.ProtobufOutput
