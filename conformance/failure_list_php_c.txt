@@ -44,3 +44,5 @@ Required.Proto3.ProtobufInput.ValidDataRepeated.FLOAT.JsonOutput
 Required.Proto3.JsonInput.RejectTopLevelNull
 Required.Proto3.ProtobufInput.ValidDataRepeated.STRING.JsonOutput
 Required.Proto3.ProtobufInput.ValidDataRepeated.STRING.ProtobufOutput
+Required.Proto3.ProtobufInput.ValidDataRepeated.BYTES.JsonOutput
+Required.Proto3.ProtobufInput.ValidDataRepeated.BYTES.ProtobufOutput
