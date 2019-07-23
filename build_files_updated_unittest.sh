@@ -2,6 +2,8 @@
 
 # This script verifies that BUILD files and cmake files are in sync with src/Makefile.am
 
+set -euo pipefail
+
 cp "BUILD" "BUILD.orginal"
 cp "cmake/extract_includes.bat.in" "cmake/extract_includes.bat.in.orginal"
 cp "cmake/libprotobuf-lite.cmake" "cmake/libprotobuf-lite.cmake.orginal"

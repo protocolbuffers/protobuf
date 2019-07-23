@@ -105,6 +105,7 @@ nobase_include_HEADERS =                                         \
   google/protobuf/has_bits.h                                     \
   google/protobuf/implicit_weak_message.h                        \
   google/protobuf/inlined_string_field.h                         \
+  google/protobuf/io/io_win32.h                                \
   google/protobuf/map_entry.h                                    \
   google/protobuf/map_entry_lite.h                               \
   google/protobuf/map_field.h                                    \
@@ -184,7 +185,6 @@ libprotobuf_lite_la_SOURCES =                                  \
   google/protobuf/stubs/int128.cc                              \
   google/protobuf/stubs/int128.h                               \
   google/protobuf/io/io_win32.cc                               \
-  google/protobuf/io/io_win32.h                                \
   google/protobuf/stubs/map_util.h                             \
   google/protobuf/stubs/mathutil.h                             \
   google/protobuf/stubs/status.cc                              \
