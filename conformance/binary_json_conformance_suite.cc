@@ -804,11 +804,16 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
     {delim("\xfb"), "\"\xfb\""},
     {delim(""), "\"\""},
   });
+  TestValidDataForType(FieldDescriptor::TYPE_ENUM, {
+    {varint(0), "FOO"},
+    {varint(1), "BAR"},
+    {varint(2), "BAZ"},
+    {varint(-1), "NEG"},
+  });
 
   // TODO(haberman):
   // TestValidDataForType(FieldDescriptor::TYPE_GROUP
   // TestValidDataForType(FieldDescriptor::TYPE_MESSAGE
-  // TestValidDataForType(FieldDescriptor::TYPE_ENUM
 
   RunValidJsonTest("HelloWorld", REQUIRED,
                    "{\"optionalString\":\"Hello, World!\"}",
