@@ -250,6 +250,11 @@ def UpdateObjectiveC():
       r"^  s.version  = '.*'$",
       "  s.version  = '%s'" % GetFullVersion(rc_suffix = '-rc'),
       line))
+  RewriteTextFile('Protobuf-C++.podspec',
+    lambda line : re.sub(
+      r"^  s.version  = '.*'$",
+      "  s.version  = '%s'" % GetFullVersion(rc_suffix = '-rc'),
+      line))
 
 
 def UpdatePhp():
