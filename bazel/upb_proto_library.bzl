@@ -159,7 +159,7 @@ def _compile_upb_protos(ctx, proto_info, proto_sources, ext):
         arguments = [
                         "--upb_out=" + _get_real_root(srcs[0]),
                         "--plugin=protoc-gen-upb=" + ctx.executable._upbc.path,
-                        "--descriptor_set_in=" + ":".join([f.path for f in transitive_sets]),
+                        "--descriptor_set_in=" + ctx.configuration.host_path_separator.join([f.path for f in transitive_sets]),
                     ] +
                     [_get_real_short_path(file) for file in proto_sources],
         progress_message = "Generating upb protos for :" + ctx.label.name,
@@ -175,7 +175,10 @@ def _upb_proto_rule_impl(ctx):
              "_WrappedGeneratedSrcsInfo (aspect should have handled this).")
     cc_info = dep[_WrappedCcInfo].cc_info
     srcs = dep[_WrappedGeneratedSrcsInfo].srcs
-    lib = cc_info.linking_context.libraries_to_link.to_list()[0]
+    if (type(cc_info.linking_context.libraries_to_link) == "list"):
+        lib = cc_info.linking_context.libraries_to_link[0]
+    else:
+        lib = cc_info.linking_context.libraries_to_link.to_list()[0]
     files = _filter_none([
         lib.static_library,
         lib.pic_static_library,

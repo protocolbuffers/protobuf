@@ -43,6 +43,11 @@ config_setting(
 )
 
 config_setting(
+    name = "windows",
+    constraint_values = ["@bazel_tools//platforms:windows"],
+)
+
+config_setting(
     name = "fuzz",
     values = {"define": "fuzz=true"},
 )
@@ -68,7 +73,10 @@ cc_library(
         "upb/encode.h",
         "upb/upb.h",
     ],
-    copts = COPTS,
+    copts = select({
+        ":windows": [],
+        "//conditions:default": COPTS
+    }),
     visibility = ["//visibility:public"],
 )
 
@@ -84,7 +92,10 @@ cc_library(
         "upb/generated_util.h",
         "upb/msg.h",
     ],
-    copts = COPTS,
+    copts = select({
+        ":windows": [],
+        "//conditions:default": COPTS
+    }),
     textual_hdrs = [
         "upb/port_def.inc",
         "upb/port_undef.inc",
@@ -109,7 +120,10 @@ cc_library(
         "upb/def.h",
         "upb/msgfactory.h",
     ],
-    copts = COPTS,
+    copts = select({
+        ":windows": [],
+        "//conditions:default": COPTS
+    }),
     visibility = ["//visibility:public"],
     deps = [
         ":descriptor_upbproto",
@@ -134,7 +148,10 @@ cc_library(
         "upb/legacy_msg_reflection.c",
     ],
     hdrs = ["upb/legacy_msg_reflection.h"],
-    copts = COPTS,
+    copts = select({
+        ":windows": [],
+        "//conditions:default": COPTS
+    }),
     deps = [
         ":table",
         ":upb",
@@ -152,7 +169,10 @@ cc_library(
         "upb/handlers.h",
         "upb/sink.h",
     ],
-    copts = COPTS,
+    copts = select({
+        ":windows": [],
+        "//conditions:default": COPTS
+    }),
     deps = [
         ":reflection",
         ":table",
@@ -176,7 +196,10 @@ cc_library(
         "upb/pb/encoder.h",
         "upb/pb/textprinter.h",
     ],
-    copts = COPTS,
+    copts = select({
+        ":windows": [],
+        "//conditions:default": COPTS
+    }),
     deps = [
         ":descriptor_upbproto",
         ":handlers",
@@ -197,7 +220,10 @@ cc_library(
         "upb/json/parser.h",
         "upb/json/printer.h",
     ],
-    copts = COPTS,
+    copts = select({
+        ":windows": [],
+        "//conditions:default": COPTS
+    }),
     deps = [
         ":upb",
         ":upb_pb",
@@ -227,7 +253,10 @@ cc_library(
         "upbc/message_layout.h",
     ],
     hdrs = ["upbc/generator.h"],
-    copts = CPPOPTS,
+    copts = select({
+        ":windows": [],
+        "//conditions:default": CPPOPTS
+    }),
     deps = [
         "@absl//absl/base:core_headers",
         "@absl//absl/container:flat_hash_map",
@@ -240,7 +269,10 @@ cc_library(
 cc_binary(
     name = "protoc-gen-upb",
     srcs = ["upbc/main.cc"],
-    copts = CPPOPTS,
+    copts = select({
+        ":windows": [],
+        "//conditions:default": CPPOPTS
+    }),
     visibility = ["//visibility:public"],
     deps = [
         ":upbc_generator",
@@ -274,7 +306,10 @@ cc_library(
         "tests/test_util.h",
         "tests/upb_test.h",
     ],
-    copts = CPPOPTS,
+    copts = select({
+        ":windows": [],
+        "//conditions:default": CPPOPTS
+    }),
     deps = [
         ":handlers",
         ":upb",
@@ -287,7 +322,10 @@ cc_test(
         "tests/pb/test_varint.c",
         "upb/pb/varint.int.h",
     ],
-    copts = COPTS,
+    copts = select({
+        ":windows": [],
+        "//conditions:default": COPTS
+    }),
     deps = [
         ":upb",
         ":upb_pb",
@@ -313,7 +351,10 @@ cc_test(
         "tests/pb/test_decoder.cc",
         "upb/pb/varint.int.h",
     ],
-    copts = CPPOPTS,
+    copts = select({
+        ":windows": [],
+        "//conditions:default": CPPOPTS
+    }),
     deps = [
         ":handlers",
         ":test_decoder_upbproto",
@@ -338,7 +379,10 @@ upb_proto_reflection_library(
 cc_test(
     name = "test_cpp",
     srcs = ["tests/test_cpp.cc"],
-    copts = CPPOPTS,
+    copts = select({
+        ":windows": [],
+        "//conditions:default": CPPOPTS
+    }),
     deps = [
         ":handlers",
         ":reflection",
@@ -352,7 +396,10 @@ cc_test(
 cc_test(
     name = "test_table",
     srcs = ["tests/test_table.cc"],
-    copts = CPPOPTS,
+    copts = select({
+        ":windows": [],
+        "//conditions:default": CPPOPTS
+    }),
     deps = [
         ":table",
         ":upb",
@@ -365,7 +412,10 @@ cc_binary(
     name = "file_descriptor_parsenew_fuzzer",
     testonly = 1,
     srcs = ["tests/file_descriptor_parsenew_fuzzer.cc"],
-    copts = CPPOPTS + select({
+    copts = select({
+        ":windows": [],
+        "//conditions:default": CPPOPTS
+    }) + select({
         "//conditions:default": [],
         ":fuzz": ["-fsanitize=fuzzer,address"],
     }),
@@ -388,7 +438,10 @@ upb_proto_reflection_library(
 cc_test(
     name = "test_encoder",
     srcs = ["tests/pb/test_encoder.cc"],
-    copts = CPPOPTS,
+    copts = select({
+        ":windows": [],
+        "//conditions:default": CPPOPTS
+    }),
     deps = [
         ":descriptor_upbproto",
         ":descriptor_upbreflection",
@@ -430,7 +483,10 @@ cc_test(
     srcs = [
         "tests/json/test_json.cc",
     ],
-    copts = CPPOPTS,
+    copts = select({
+        ":windows": [],
+        "//conditions:default": CPPOPTS
+    }),
     deps = [
         ":test_json_upbproto",
         ":test_json_upbprotoreflection",
@@ -458,7 +514,10 @@ cc_binary(
     srcs = [
         "tests/conformance_upb.c",
     ],
-    copts = COPTS + ["-Ibazel-out/k8-fastbuild/bin"],
+    copts = select({
+        ":windows": [],
+        "//conditions:default": COPTS
+    }) + ["-Ibazel-out/k8-fastbuild/bin"],
     deps = [
         ":conformance_proto_upb",
         ":test_messages_proto3_proto_upb",
@@ -512,7 +571,10 @@ cc_library(
     name = "amalgamation",
     srcs = ["upb.c"],
     hdrs = ["upb.h"],
-    copts = COPTS,
+    copts = select({
+        ":windows": [],
+        "//conditions:default": COPTS
+    }),
 )
 
 # Lua libraries. ###############################################################

@@ -71,6 +71,14 @@
 #define UPB_NORETURN
 #endif
 
+#if defined(_WIN32) || defined(WIN32)
+/* Windows versions */
+#include <stdarg.h>
+#include <stdio.h>
+#define _upb_snprintf _snprintf_s
+#define _upb_vsnprintf _vsnprintf_s
+#define _upb_va_copy(a, b) va_copy(a, b)
+#else
 #if __STDC_VERSION__ >= 199901L || __cplusplus >= 201103L
 /* C99/C++11 versions. */
 #include <stdio.h>
@@ -88,6 +96,7 @@
 #define _upb_va_copy(a, b) __va_copy(a, b)
 #else
 #error Need implementations of [v]snprintf and va_copy
+#endif
 #endif
 
 #ifdef __cplusplus
