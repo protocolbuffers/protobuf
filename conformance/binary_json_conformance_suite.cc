@@ -799,11 +799,15 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
     {delim("\xF0\x9F\x98\x81"), "\"\xF0\x9F\x98\x81\""},  // emoji: 😁
     {delim(""), "\"\""},
   });
+  TestValidDataForType(FieldDescriptor::TYPE_BYTES, {
+    {delim("\x01\x02"), "\"\x01\x02\""},
+    {delim("\xfb"), "\"\xfb\""},
+    {delim(""), "\"\""},
+  });
 
   // TODO(haberman):
   // TestValidDataForType(FieldDescriptor::TYPE_GROUP
   // TestValidDataForType(FieldDescriptor::TYPE_MESSAGE
-  // TestValidDataForType(FieldDescriptor::TYPE_BYTES
   // TestValidDataForType(FieldDescriptor::TYPE_ENUM
 
   RunValidJsonTest("HelloWorld", REQUIRED,
