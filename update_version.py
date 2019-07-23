@@ -34,6 +34,8 @@ Example:
 """
   exit(1)
 
+LAST_MAJOR_VERSION = NEW_VERSION_INFO[0] + '.' + str(int(NEW_VERSION_INFO[1]) - 1) + '.0'
+
 RC_VERSION = 0
 if len(sys.argv) > 2:
   RC_VERSION = int(sys.argv[2])
@@ -186,6 +188,12 @@ def UpdateCsharp():
       Find(Find(document.documentElement, 'metadata'), 'version'),
       GetFullVersion(rc_suffix = '-rc')))
 
+  RewriteTextFile('csharp/compatibility_tests/v3.0.0/test.sh',
+    lambda line : re.sub(
+      r'LAST_MAJOR=.*$',
+      'LAST_MAJOR=%s' % LAST_MAJOR_VERSION,
+      line))
+
 
 def UpdateJava():
   RewriteXml('java/pom.xml',
@@ -331,6 +339,13 @@ def UpdateRuby():
       '  s.version     = "%s"' % GetFullVersion(rc_suffix = '.rc.'),
       line))
 
+def UpdateTests():
+  RewriteTextFile('tests.sh',
+    lambda line : re.sub(
+      r'LAST_MAJOR=.*$',
+      'LAST_MAJOR=%s' % LAST_MAJOR_VERSION,
+      line))
+
 
 UpdateConfigure()
 UpdateCsharp()
@@ -342,3 +357,4 @@ UpdateObjectiveC()
 UpdatePhp()
 UpdatePython()
 UpdateRuby()
+UpdateTests()

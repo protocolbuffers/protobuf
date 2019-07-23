@@ -34,6 +34,8 @@ cd $(dirname $0)
 # these tests).
 TEST_VERSION=3.0.0
 
+LAST_MAJOR=3.8.0
+
 # The old version of protobuf that we are testing compatibility against. This
 # is usually the same as TEST_VERSION (i.e., we use the tests extracted from
 # that version to test compatibility of the newest runtime against it), but it
@@ -52,9 +54,9 @@ case "$1" in
     OLD_VERSION=3.1.0
     OLD_VERSION_PROTOC=http://repo1.maven.org/maven2/com/google/protobuf/protoc/3.1.0/protoc-3.1.0-linux-x86_64.exe
     ;;
-  3.7.0)
-    OLD_VERSION=3.7.0
-    OLD_VERSION_PROTOC=http://repo1.maven.org/maven2/com/google/protobuf/protoc/3.7.0/protoc-3.7.0-linux-x86_64.exe
+  $LAST_MAJOR)
+    OLD_VERSION=$LAST_MAJOR
+    OLD_VERSION_PROTOC=http://repo1.maven.org/maven2/com/google/protobuf/protoc/$OLD_VERSION/protoc-$OLD_VERSION-linux-x86_64.exe
     ;;
   *)
     echo "[ERROR]: Unknown version number: $1"
