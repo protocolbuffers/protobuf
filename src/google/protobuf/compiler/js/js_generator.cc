@@ -1651,9 +1651,13 @@ void Generator::GenerateHeader(const GeneratorOptions& options,
       " *     field starts with 'MSG_' and isn't a translatable "
       "message.\n"
       " * @public\n"
-      " */\n"
-      "// GENERATED CODE -- DO NOT EDIT!\n"
-      "\n");
+      " */\n");
+
+    if (options.disable_eslint) {
+      printer->Print("/*globals require, proto, COMPILED */ \n");
+    }
+
+    printer->Print("// GENERATED CODE -- DO NOT EDIT!\n\n");
 }
 
 void Generator::FindProvidesForFile(const GeneratorOptions& options,
@@ -3520,6 +3524,12 @@ bool GeneratorOptions::ParseFromOptions(
         return false;
       }
       annotate_code = true;
+    } else if (options[i].first == "disable_eslint") {
+      if (!options[i].second.empty()) {
+        *error = "Unexpected option value for disable_eslint";
+        return false;
+      }
+      disable_eslint = true;
     } else {
       // Assume any other option is an output directory, as long as it is a bare
       // `key` rather than a `key=value` option.

@@ -86,7 +86,8 @@ struct GeneratorOptions {
         error_on_name_conflict(false),
         extension(".js"),
         one_output_file_per_input_file(false),
-        annotate_code(false) {}
+        annotate_code(false),
+        disable_eslint(false) {}
 
   bool ParseFromOptions(
       const std::vector<std::pair<std::string, std::string> >& options,
@@ -131,6 +132,10 @@ struct GeneratorOptions {
   // are enced as base64 proto of GeneratedCodeInfo message (see
   // descriptor.proto).
   bool annotate_code;
+  // If true, we add a eslint parser option in the generated .js files to
+  // avoid the eslint error shown in the issue referenced below:
+  // https://github.com/protocolbuffers/protobuf/issues/6102
+  bool disable_eslint;
 };
 
 // CodeGenerator implementation which generates a JavaScript source file and
