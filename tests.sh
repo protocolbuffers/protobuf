@@ -148,9 +148,9 @@ build_csharp() {
   # Run csharp compatibility test between 3.0.0 and the current version.
   csharp/compatibility_tests/v3.0.0/test.sh 3.0.0
 
-  LAST_MAJOR=3.8.0
-  # Run csharp compatibility test between last major and the current version.
-  csharp/compatibility_tests/v3.0.0/test.sh $LAST_MAJOR
+  LAST_RELEASED=3.9.0
+  # Run csharp compatibility test between last released and the current version.
+  csharp/compatibility_tests/v3.0.0/test.sh $LAST_RELEASED
 }
 
 build_golang() {
