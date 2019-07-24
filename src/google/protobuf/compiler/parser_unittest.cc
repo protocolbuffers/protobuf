@@ -2808,6 +2808,35 @@ TEST_F(SourceInfoTest, Fields) {
   EXPECT_TRUE(HasSpan(file_.message_type(0), "name"));
 }
 
+TEST_F(SourceInfoTest, Proto3Fields) {
+  EXPECT_TRUE(
+      Parse("syntax = \"proto3\";\n"
+            "message Foo {\n"
+            "  $a$int32$b$ $c$bar$d$ = $e$1$f$;$g$\n"
+            "  $h$repeated$i$ $j$X.Y$k$ $l$baz$m$ = $n$2$o$;$p$\n"
+            "}\n"));
+
+  const FieldDescriptorProto& field1 = file_.message_type(0).field(0);
+  const FieldDescriptorProto& field2 = file_.message_type(0).field(1);
+
+  EXPECT_TRUE(HasSpan('a', 'g', field1));
+  EXPECT_TRUE(HasSpan('a', 'b', field1, "type"));
+  EXPECT_TRUE(HasSpan('c', 'd', field1, "name"));
+  EXPECT_TRUE(HasSpan('e', 'f', field1, "number"));
+
+  EXPECT_TRUE(HasSpan('h', 'p', field2));
+  EXPECT_TRUE(HasSpan('h', 'i', field2, "label"));
+  EXPECT_TRUE(HasSpan('j', 'k', field2, "type_name"));
+  EXPECT_TRUE(HasSpan('l', 'm', field2, "name"));
+  EXPECT_TRUE(HasSpan('n', 'o', field2, "number"));
+
+  // Ignore these.
+  EXPECT_TRUE(HasSpan(file_));
+  EXPECT_TRUE(HasSpan(file_, "syntax"));
+  EXPECT_TRUE(HasSpan(file_.message_type(0)));
+  EXPECT_TRUE(HasSpan(file_.message_type(0), "name"));
+}
+
 TEST_F(SourceInfoTest, Extensions) {
   EXPECT_TRUE(
       Parse("$a$extend $b$Foo$c$ {\n"
