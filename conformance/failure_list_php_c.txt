@@ -46,3 +46,5 @@ Required.Proto3.ProtobufInput.ValidDataRepeated.STRING.JsonOutput
 Required.Proto3.ProtobufInput.ValidDataRepeated.STRING.ProtobufOutput
 Required.Proto3.ProtobufInput.ValidDataRepeated.BYTES.JsonOutput
 Required.Proto3.ProtobufInput.ValidDataRepeated.BYTES.ProtobufOutput
+Required.Proto3.ProtobufInput.RepeatedScalarMessageMerge.JsonOutput
+Required.Proto3.ProtobufInput.RepeatedScalarMessageMerge.ProtobufOutput

@@ -623,20 +623,18 @@ void BinaryAndJsonConformanceSuite::TestValidDataForType(
 
 void BinaryAndJsonConformanceSuite::TestValidDataForRepeatedScalarMessage() {
   std::vector<std::string> values = {
-    delim(cat(tag(2, WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
-              delim(cat(
-                  tag(1, WireFormatLite::WIRETYPE_VARINT), varint(1234),
-                  tag(2, WireFormatLite::WIRETYPE_VARINT), varint(1234),
-                  tag(31, WireFormatLite::WIRETYPE_VARINT), varint(1234)
-              ))
-    )),
-    delim(cat(tag(2, WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
-              delim(cat(
-                  tag(1, WireFormatLite::WIRETYPE_VARINT), varint(4321),
-                  tag(3, WireFormatLite::WIRETYPE_VARINT), varint(4321),
-                  tag(31, WireFormatLite::WIRETYPE_VARINT), varint(4321)
-              ))
-    )),
+      delim(cat(tag(2, WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+                delim(cat(
+                    tag(1, WireFormatLite::WIRETYPE_VARINT), varint(1234),
+                    tag(2, WireFormatLite::WIRETYPE_VARINT), varint(1234),
+                    tag(31, WireFormatLite::WIRETYPE_VARINT), varint(1234)
+                )))),
+      delim(cat(tag(2, WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+                delim(cat(
+                    tag(1, WireFormatLite::WIRETYPE_VARINT), varint(4321),
+                    tag(3, WireFormatLite::WIRETYPE_VARINT), varint(4321),
+                    tag(31, WireFormatLite::WIRETYPE_VARINT), varint(4321)
+                )))),
   };
 
   const std::string expected =
