@@ -149,10 +149,6 @@ string tag(uint32_t fieldnum, char wire_type) {
   return varint((fieldnum << 3) | wire_type);
 }
 
-string submsg(uint32_t fn, const string& buf) {
-  return cat( tag(fn, WireFormatLite::WIRETYPE_LENGTH_DELIMITED), delim(buf) );
-}
-
 #define UNKNOWN_FIELD 666
 
 const FieldDescriptor* GetFieldForType(FieldDescriptor::Type type,
@@ -594,17 +590,24 @@ void BinaryAndJsonConformanceSuite::TestValidDataForType(
     const FieldDescriptor* field = GetFieldForType(type, false, is_proto3);
     const FieldDescriptor* rep_field = GetFieldForType(type, true, is_proto3);
 
-    RunValidProtobufTest("ValidDataScalar" + type_name, REQUIRED,
-                         cat(tag(field->number(), wire_type), values[0].first),
-                         field->name() + ": " + values[0].second, is_proto3);
+    for (size_t i = 0; i < values.size(); i++) {
+      RunValidProtobufTest(StrCat("ValidDataScalar", type_name, "[", i, "]"),
+                           REQUIRED,
+                           cat(tag(field->number(), wire_type), values[0].first),
+                           field->name() + ": " + values[0].second, is_proto3);
+    }
 
     string proto;
     string text = field->name() + ": " + values.back().second;
     for (size_t i = 0; i < values.size(); i++) {
       proto += cat(tag(field->number(), wire_type), values[i].first);
     }
-    RunValidProtobufTest("RepeatedScalarSelectsLast" + type_name, REQUIRED,
-                         proto, text, is_proto3);
+    // For scalar message fields, repeated values are merged, which is tested
+    // separately.
+    if (type != FieldDescriptor::TYPE_MESSAGE) {
+      RunValidProtobufTest("RepeatedScalarSelectsLast" + type_name, REQUIRED,
+                           proto, text, is_proto3);
+    }
 
     proto.clear();
     text.clear();
@@ -615,6 +618,48 @@ void BinaryAndJsonConformanceSuite::TestValidDataForType(
     }
     RunValidProtobufTest("ValidDataRepeated" + type_name, REQUIRED,
                          proto, text, is_proto3);
+  }
+}
+
+void BinaryAndJsonConformanceSuite::TestValidDataForRepeatedScalarMessage() {
+  std::vector<std::string> values = {
+      delim(cat(tag(2, WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+                delim(cat(
+                    tag(1, WireFormatLite::WIRETYPE_VARINT), varint(1234),
+                    tag(2, WireFormatLite::WIRETYPE_VARINT), varint(1234),
+                    tag(31, WireFormatLite::WIRETYPE_VARINT), varint(1234)
+                )))),
+      delim(cat(tag(2, WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+                delim(cat(
+                    tag(1, WireFormatLite::WIRETYPE_VARINT), varint(4321),
+                    tag(3, WireFormatLite::WIRETYPE_VARINT), varint(4321),
+                    tag(31, WireFormatLite::WIRETYPE_VARINT), varint(4321)
+                )))),
+  };
+
+  const std::string expected =
+      R"({
+        corecursive: {
+          optional_int32: 4321,
+          optional_int64: 1234,
+          optional_uint32: 4321,
+          repeated_int32: [1234, 4321],
+        }
+      })";
+
+  for (int is_proto3 = 0; is_proto3 < 2; is_proto3++) {
+    string proto;
+    const FieldDescriptor* field =
+        GetFieldForType(FieldDescriptor::TYPE_MESSAGE, false, is_proto3);
+    for (size_t i = 0; i < values.size(); i++) {
+      proto +=
+          cat(tag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+              values[i]);
+    }
+
+    RunValidProtobufTest(
+        "RepeatedScalarMessageMerge", REQUIRED, proto,
+        field->name() + ": " + expected, is_proto3);
   }
 }
 
@@ -810,10 +855,15 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
     {varint(2), "BAZ"},
     {varint(-1), "NEG"},
   });
+  TestValidDataForRepeatedScalarMessage();
+  TestValidDataForType(FieldDescriptor::TYPE_MESSAGE, {
+    {delim(cat(tag(1, WireFormatLite::WIRETYPE_VARINT), varint(1234))),
+     "{a: 1234}"},
+    {delim(""), "{}"},
+  });
 
   // TODO(haberman):
   // TestValidDataForType(FieldDescriptor::TYPE_GROUP
-  // TestValidDataForType(FieldDescriptor::TYPE_MESSAGE
 
   RunValidJsonTest("HelloWorld", REQUIRED,
                    "{\"optionalString\":\"Hello, World!\"}",

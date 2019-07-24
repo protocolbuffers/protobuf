@@ -18,3 +18,5 @@ Required.Proto3.JsonInput.Uint64FieldNotInteger
 Required.Proto3.JsonInput.Int32FieldLeadingSpace
 Required.Proto3.JsonInput.OneofFieldDuplicate
 Required.Proto3.ProtobufInput.ValidDataRepeated.FLOAT.JsonOutput
+Required.Proto3.ProtobufInput.RepeatedScalarMessageMerge.JsonOutput
+Required.Proto3.ProtobufInput.RepeatedScalarMessageMerge.ProtobufOutput
