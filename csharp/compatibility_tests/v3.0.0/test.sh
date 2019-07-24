@@ -54,7 +54,7 @@ case "$1" in
     OLD_VERSION=3.1.0
     OLD_VERSION_PROTOC=http://repo1.maven.org/maven2/com/google/protobuf/protoc/3.1.0/protoc-3.1.0-linux-x86_64.exe
     ;;
-  $LAST_MAJOR)
+  $LAST_RELEASED)
     OLD_VERSION=$LAST_RELEASED
     OLD_VERSION_PROTOC=http://repo1.maven.org/maven2/com/google/protobuf/protoc/$OLD_VERSION/protoc-$OLD_VERSION-linux-x86_64.exe
     ;;
