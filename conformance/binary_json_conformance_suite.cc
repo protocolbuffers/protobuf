@@ -623,9 +623,32 @@ void BinaryAndJsonConformanceSuite::TestValidDataForType(
 
 void BinaryAndJsonConformanceSuite::TestValidDataForRepeatedScalarMessage() {
   std::vector<std::string> values = {
-    delim(cat(tag(1, WireFormatLite::WIRETYPE_VARINT), varint(1234))),
+    delim(cat(tag(2, WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+              delim(cat(
+                  tag(1, WireFormatLite::WIRETYPE_VARINT), varint(1234),
+                  tag(2, WireFormatLite::WIRETYPE_VARINT), varint(1234),
+                  tag(31, WireFormatLite::WIRETYPE_VARINT), varint(1234)
+              ))
+    )),
+    delim(cat(tag(2, WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+              delim(cat(
+                  tag(1, WireFormatLite::WIRETYPE_VARINT), varint(4321),
+                  tag(3, WireFormatLite::WIRETYPE_VARINT), varint(4321),
+                  tag(31, WireFormatLite::WIRETYPE_VARINT), varint(4321)
+              ))
+    )),
   };
-  const std::string expected = "{a: 1234}";
+
+  const std::string expected =
+      R"({
+        corecursive: {
+          optional_int32: 4321,
+          optional_int64: 1234,
+          optional_uint32: 4321,
+          repeated_int32: [1234, 4321],
+        }
+      })";
+
   for (int is_proto3 = 0; is_proto3 < 2; is_proto3++) {
     string proto;
     const FieldDescriptor* field =
@@ -834,7 +857,7 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
     {varint(2), "BAZ"},
     {varint(-1), "NEG"},
   });
-  TestValidDataForScalarMessageType();
+  TestValidDataForRepeatedScalarMessage();
   TestValidDataForType(FieldDescriptor::TYPE_MESSAGE, {
     {delim(cat(tag(1, WireFormatLite::WIRETYPE_VARINT), varint(1234))),
      "{a: 1234}"},
