@@ -67,10 +67,16 @@ set -ex
 # Change to the script's directory.
 cd $(dirname $0)
 
+LAST_RELEASED=3.9.0
+
 # The old version of protobuf that we are testing compatibility against.
 case "$1" in
   ""|3.5.0)
     OLD_VERSION=3.5.0
+    OLD_VERSION_PROTOC=http://repo1.maven.org/maven2/com/google/protobuf/protoc/$OLD_VERSION/protoc-$OLD_VERSION-linux-x86_64.exe
+    ;;
+  $LAST_RELEASED)
+    OLD_VERSION=$LAST_RELEASED
     OLD_VERSION_PROTOC=http://repo1.maven.org/maven2/com/google/protobuf/protoc/$OLD_VERSION/protoc-$OLD_VERSION-linux-x86_64.exe
     ;;
   *)
@@ -82,7 +88,7 @@ esac
 # Extract the latest protobuf version number.
 VERSION_NUMBER=`grep "PHP_PROTOBUF_VERSION" ../ext/google/protobuf/protobuf.h | sed "s|#define PHP_PROTOBUF_VERSION \"\(.*\)\"|\1|"`
 
-echo "Running compatibility tests between $VERSION_NUMBER and $OLD_VERSION"
+echo "Running compatibility tests between current $VERSION_NUMBER and released $OLD_VERSION"
 
 # Check protoc
 [ -f ../../src/protoc ] || {

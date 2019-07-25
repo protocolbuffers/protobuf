@@ -9,6 +9,8 @@ cd $(dirname $0)
 # these tests).
 TEST_VERSION=2.5.0
 
+LAST_RELEASED=3.9.0
+
 # The old version of protobuf that we are testing compatibility against. This
 # is usually the same as TEST_VERSION (i.e., we use the tests extracted from
 # that version to test compatibility of the newest runtime against it), but it
@@ -35,9 +37,9 @@ case "$1" in
     OLD_VERSION=3.0.0-beta-3
     OLD_VERSION_PROTOC=http://repo1.maven.org/maven2/com/google/protobuf/protoc/3.0.0-beta-3/protoc-3.0.0-beta-3-linux-x86_64.exe
     ;;
-  3.0.0-beta-4)
-    OLD_VERSION=3.0.0-beta-4
-    OLD_VERSION_PROTOC=http://repo1.maven.org/maven2/com/google/protobuf/protoc/3.0.0-beta-4/protoc-3.0.0-beta-4-linux-x86_64.exe
+  LAST_RELEASED)
+    OLD_VERSION=$LAST_RELEASED
+    OLD_VERSION_PROTOC=http://repo1.maven.org/maven2/com/google/protobuf/protoc/$OLD_VERSION/protoc-$OLD_VERSION-linux-x86_64.exe
     ;;
   *)
     echo "[ERROR]: Unknown version number: $1"
@@ -48,7 +50,7 @@ esac
 # Extract the latest protobuf version number.
 VERSION_NUMBER=`grep "^__version__ = '.*'" ../../google/protobuf/__init__.py | sed "s|__version__ = '\(.*\)'|\1|"`
 
-echo "Running compatibility tests between $VERSION_NUMBER and $OLD_VERSION"
+echo "Running compatibility tests between current $VERSION_NUMBER and released $OLD_VERSION"
 
 # Check protoc
 [ -f ../../../src/protoc ] || {

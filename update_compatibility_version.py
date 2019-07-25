@@ -49,20 +49,15 @@ def RewriteTextFile(filename, line_rewriter):
   f.close()
 
 
-def UpdateCsharp():
-  RewriteTextFile('csharp/compatibility_tests/v3.0.0/test.sh',
+def UpdateFile(filename):
+  RewriteTextFile(filename,
     lambda line : re.sub(
       r'LAST_RELEASED=.*$',
       'LAST_RELEASED=%s' % NEW_VERSION,
       line))
 
-def UpdateTests():
-  RewriteTextFile('tests.sh',
-    lambda line : re.sub(
-      r'LAST_RELEASED=.*$',
-      'LAST_RELEASED=%s' % NEW_VERSION,
-      line))
-
-
-UpdateCsharp()
-UpdateTests()
+UpdateFile('csharp/compatibility_tests/v3.0.0/test.sh')
+UpdateFile('php/tests/compatibility_test.sh')
+UpdateFile('java/compatibility_tests/v2.5.0/test.sh')
+UpdateFile('python/compatibility_tests/v2.5.0/test.sh')
+UpdateFile('tests.sh')
