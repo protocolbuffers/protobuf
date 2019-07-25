@@ -1654,7 +1654,7 @@ void Generator::GenerateHeader(const GeneratorOptions& options,
       " */\n");
 
     if (options.disable_eslint) {
-      printer->Print("/*globals require, proto, COMPILED */ \n");
+      printer->Print("/* eslint-disable */ \n");
     }
 
     printer->Print("// GENERATED CODE -- DO NOT EDIT!\n\n");
