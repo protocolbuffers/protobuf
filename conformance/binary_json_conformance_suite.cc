@@ -63,6 +63,18 @@ static string GetTypeUrl(const Descriptor* message) {
   return string(kTypeUrlPrefix) + "/" + message->full_name();
 }
 
+static bool is_primitive(FieldDescriptor::Type type) {
+  switch (type) {
+    case FieldDescriptor::TYPE_MESSAGE:
+    case FieldDescriptor::TYPE_GROUP:
+    case FieldDescriptor::TYPE_STRING:
+    case FieldDescriptor::TYPE_BYTES:
+      return false;
+    default:
+      return true;
+  }
+}
+
 /* Routines for building arbitrary protos *************************************/
 
 // We would use CodedOutputStream except that we want more freedom to build
@@ -371,12 +383,21 @@ void BinaryAndJsonConformanceSuite::RunValidProtobufTest(
 void BinaryAndJsonConformanceSuite::RunValidBinaryProtobufTest(
     const string& test_name, ConformanceLevel level,
     const string& input_protobuf, bool is_proto3) {
+  RunValidBinaryProtobufTest(
+      test_name, level, input_protobuf, input_protobuf, is_proto3);
+}
+
+void BinaryAndJsonConformanceSuite::RunValidBinaryProtobufTest(
+    const string& test_name, ConformanceLevel level,
+    const string& input_protobuf,
+    const string& expected_protobuf,
+    bool is_proto3) {
   std::unique_ptr<Message> prototype = NewTestMessage(is_proto3);
   ConformanceRequestSetting setting(
       level, conformance::PROTOBUF, conformance::PROTOBUF,
       conformance::BINARY_TEST,
       *prototype, test_name, input_protobuf);
-  RunValidBinaryInputTest(setting, input_protobuf);
+  RunValidBinaryInputTest(setting, expected_protobuf, true);
 }
 
 void BinaryAndJsonConformanceSuite::RunValidProtobufTestWithMessage(
@@ -609,15 +630,103 @@ void BinaryAndJsonConformanceSuite::TestValidDataForType(
                            proto, text, is_proto3);
     }
 
-    proto.clear();
-    text.clear();
+    if (is_primitive(type)) {
+      string packed_proto;
+      string unpacked_proto;
+      string packed_proto_expected;
+      string unpacked_proto_expected;
 
-    for (size_t i = 0; i < values.size(); i++) {
-      proto += cat(tag(rep_field->number(), wire_type), values[i].first);
-      text += rep_field->name() + ": " + values[i].second + " ";
+      text.clear();
+
+      for (size_t i = 0; i < values.size(); i++) {
+        text += rep_field->name() + ": " + values[i].second + " ";
+
+        // Primitive values may have different varint representation.
+        // Change them to the canonical one.
+        string canonical_value;
+        if (type == FieldDescriptor::TYPE_BOOL) {
+          canonical_value =
+              values[i].first == varint(0) ? varint(0) : varint(1);
+        } else if (type == FieldDescriptor::TYPE_INT32) {
+          if (values[i].first == longvarint(12345, 2) ||
+              values[i].first == longvarint(12345, 7)) {
+            canonical_value = varint(12345);
+          } else if (values[i].first == varint(1LL << 33)) {
+            canonical_value = varint(0);
+          } else if (values[i].first == varint((1LL << 33) - 1)) {
+            canonical_value = varint(-1);
+          } else {
+            canonical_value = values[i].first;
+          }
+        } else if (type == FieldDescriptor::TYPE_UINT32) {
+          if (values[i].first == longvarint(12345, 2) ||
+              values[i].first == longvarint(12345, 7)) {
+            canonical_value = varint(12345);
+          } else if (values[i].first == varint(1LL << 33)) {
+            canonical_value = varint(0);
+          } else if (values[i].first == varint((1LL << 33) - 1)) {
+            canonical_value = varint((1LL << 32) - 1);
+          } else {
+            canonical_value = values[i].first;
+          }
+        } else {
+          canonical_value = values[i].first;
+        }
+
+        unpacked_proto +=
+            cat(tag(rep_field->number(), wire_type), values[i].first);
+        unpacked_proto_expected +=
+            cat(tag(rep_field->number(), wire_type), canonical_value);
+        packed_proto += values[i].first;
+        packed_proto_expected += canonical_value;
+      }
+      packed_proto =
+          cat(tag(rep_field->number(),
+                  WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+              delim(packed_proto));
+      packed_proto_expected =
+          cat(tag(rep_field->number(),
+                  WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+              delim(packed_proto_expected));
+
+      // Ensures both packed and unpacked data can be parsed.
+      RunValidProtobufTest(
+          StrCat("ValidDataRepeated", type_name, ".UnpackedInput"),
+          REQUIRED, unpacked_proto, text, is_proto3);
+      RunValidProtobufTest(
+          StrCat("ValidDataRepeated", type_name, ".PackedInput"),
+          REQUIRED, packed_proto, text, is_proto3);
+
+      // proto2 should encode as unpacked by default and proto3 should encode as
+      // packed by default.
+      string expected_proto =
+          rep_field->is_packed() ? packed_proto_expected :
+                                   unpacked_proto_expected;
+      RunValidBinaryProtobufTest(
+          StrCat("ValidDataRepeated", type_name,
+                 ".UnpackedInput.DefaultOutput"),
+          RECOMMENDED,
+          unpacked_proto,
+          expected_proto, is_proto3);
+      RunValidBinaryProtobufTest(
+          StrCat("ValidDataRepeated", type_name,
+                 ".PackedInput.DefaultOutput"),
+          RECOMMENDED,
+          packed_proto,
+          expected_proto, is_proto3);
+    } else {
+      proto.clear();
+      text.clear();
+
+      for (size_t i = 0; i < values.size(); i++) {
+        proto += cat(tag(rep_field->number(), wire_type), values[i].first);
+        text += rep_field->name() + ": " + values[i].second + " ";
+      }
+
+      RunValidProtobufTest(
+          StrCat("ValidDataRepeated", type_name),
+          REQUIRED, proto, text, is_proto3);
     }
-    RunValidProtobufTest("ValidDataRepeated" + type_name, REQUIRED,
-                         proto, text, is_proto3);
   }
 }
 
@@ -780,12 +889,12 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
     {varint(0), "0"}
   });
   TestValidDataForType(FieldDescriptor::TYPE_INT32, {
-    {varint(12345), "12345"},
-    {longvarint(12345, 2), "12345"},
-    {longvarint(12345, 7), "12345"},
-    {varint(kInt32Max), std::to_string(kInt32Max)},
-    {varint(kInt32Min), std::to_string(kInt32Min)},
-    {varint(1LL << 33), std::to_string(static_cast<int32>(1LL << 33))},
+    // {varint(12345), "12345"},
+    // {longvarint(12345, 2), "12345"},
+    // {longvarint(12345, 7), "12345"},
+    // {varint(kInt32Max), std::to_string(kInt32Max)},
+    // {varint(kInt32Min), std::to_string(kInt32Min)},
+    // {varint(1LL << 33), std::to_string(static_cast<int32>(1LL << 33))},
     {varint((1LL << 33) - 1),
      std::to_string(static_cast<int32>((1LL << 33) - 1))},
   });
