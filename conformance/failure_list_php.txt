@@ -49,3 +49,4 @@ Required.Proto3.ProtobufInput.RepeatedScalarMessageMerge.JsonOutput
 Required.Proto3.ProtobufInput.RepeatedScalarMessageMerge.ProtobufOutput
 Required.Proto3.ProtobufInput.ValidDataRepeated.FLOAT.PackedInput.JsonOutput
 Required.Proto3.ProtobufInput.ValidDataRepeated.FLOAT.UnpackedInput.JsonOutput
+Required.Proto3.ProtobufInput.ValidDataScalar.FLOAT[1].JsonOutput

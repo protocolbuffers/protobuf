@@ -91,5 +91,6 @@ Required.Proto3.ProtobufInput.FloatFieldNormalizeQuietNan.JsonOutput
 Required.Proto3.ProtobufInput.FloatFieldNormalizeSignalingNan.JsonOutput
 Required.Proto3.ProtobufInput.ValidDataRepeated.FLOAT.PackedInput.JsonOutput
 Required.Proto3.ProtobufInput.ValidDataRepeated.FLOAT.UnpackedInput.JsonOutput
+Required.Proto3.ProtobufInput.ValidDataScalar.FLOAT[1].JsonOutput
 Required.TimestampProtoInputTooLarge.JsonOutput
 Required.TimestampProtoInputTooSmall.JsonOutput
