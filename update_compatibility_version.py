@@ -62,3 +62,4 @@ UpdateFile('php/tests/compatibility_test.sh')
 UpdateFile('java/compatibility_tests/v2.5.0/test.sh')
 UpdateFile('python/compatibility_tests/v2.5.0/test.sh')
 UpdateFile('tests.sh')
+
