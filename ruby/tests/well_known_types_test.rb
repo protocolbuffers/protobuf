@@ -139,4 +139,58 @@ class TestWellKnownTypes < Test::Unit::TestCase
     assert any.is(Google::Protobuf::Timestamp)
     assert_equal ts, any.unpack(Google::Protobuf::Timestamp)
   end
+
+  def test_struct_init
+    s = Google::Protobuf::Struct.new(fields: {'a' => Google::Protobuf::Value.new({number_value: 4.4})})
+    assert_equal 4.4, s['a']
+
+    s = Google::Protobuf::Struct.new(fields: {'a' => {number_value: 2.2}})
+    assert_equal 2.2, s['a']
+
+    s = Google::Protobuf::Struct.new(fields: {a: {number_value: 1.1}})
+    assert_equal 1.1, s[:a]
+  end
+
+  def test_struct_nested_init
+    s = Google::Protobuf::Struct.new(
+      fields: {
+        'a' => {string_value: 'A'},
+        'b' => {struct_value: {
+          fields: {
+            'x' => {list_value: {values: [{number_value: 1.0}, {string_value: "ok"}]}},
+            'y' => {bool_value: true}}}
+        },
+        'c' => {struct_value: {}}
+      }
+    )
+    assert_equal 'A', s['a']
+    assert_equal 'A', s[:a]
+    expected_b_x = [Google::Protobuf::Value.new(number_value: 1.0), Google::Protobuf::Value.new(string_value: "ok")]
+    assert_equal expected_b_x, s['b']['x'].values
+    assert_equal expected_b_x, s[:b][:x].values
+    assert_equal expected_b_x, s['b'][:x].values
+    assert_equal expected_b_x, s[:b]['x'].values
+    assert_equal true, s['b']['y']
+    assert_equal true, s[:b][:y]
+    assert_equal true, s[:b]['y']
+    assert_equal true, s['b'][:y]
+    assert_equal Google::Protobuf::Struct.new, s['c']
+    assert_equal Google::Protobuf::Struct.new, s[:c]
+
+    s = Google::Protobuf::Struct.new(
+      fields: {
+        a: {string_value: 'Eh'},
+        b: {struct_value: {
+          fields: {
+            y: {bool_value: false}}}
+        }
+      }
+    )
+    assert_equal 'Eh', s['a']
+    assert_equal 'Eh', s[:a]
+    assert_equal false, s['b']['y']
+    assert_equal false, s[:b][:y]
+    assert_equal false, s['b'][:y]
+    assert_equal false, s[:b]['y']
+  end
 end
