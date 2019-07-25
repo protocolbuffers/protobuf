@@ -56,7 +56,7 @@ using std::string;
 
 namespace {
 
-static string ToHexString(const string& binary_string) {
+static string ToOctString(const string& binary_string) {
   string hex_string;
   for (size_t i = 0; i < binary_string.size(); i++) {
     uint8_t c = binary_string.at(i);
@@ -300,8 +300,8 @@ void ConformanceTestSuite::VerifyResponse(
     const string& protobuf_payload =  response.protobuf_payload();
     check = (equivalent_wire_format.compare(
         0, protobuf_payload.size(), protobuf_payload) == 0);
-    differences = StrCat("Expect: ", ToHexString(equivalent_wire_format),
-                         ", but got: ", ToHexString(protobuf_payload));
+    differences = StrCat("Expect: ", ToOctString(equivalent_wire_format),
+                         ", but got: ", ToOctString(protobuf_payload));
   } else {
     check = differencer.Compare(*reference_message, *test_message);
   }
