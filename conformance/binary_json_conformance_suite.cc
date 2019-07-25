@@ -889,12 +889,12 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
     {varint(0), "0"}
   });
   TestValidDataForType(FieldDescriptor::TYPE_INT32, {
-    // {varint(12345), "12345"},
-    // {longvarint(12345, 2), "12345"},
-    // {longvarint(12345, 7), "12345"},
-    // {varint(kInt32Max), std::to_string(kInt32Max)},
-    // {varint(kInt32Min), std::to_string(kInt32Min)},
-    // {varint(1LL << 33), std::to_string(static_cast<int32>(1LL << 33))},
+    {varint(12345), "12345"},
+    {longvarint(12345, 2), "12345"},
+    {longvarint(12345, 7), "12345"},
+    {varint(kInt32Max), std::to_string(kInt32Max)},
+    {varint(kInt32Min), std::to_string(kInt32Min)},
+    {varint(1LL << 33), std::to_string(static_cast<int32>(1LL << 33))},
     {varint((1LL << 33) - 1),
      std::to_string(static_cast<int32>((1LL << 33) - 1))},
   });
