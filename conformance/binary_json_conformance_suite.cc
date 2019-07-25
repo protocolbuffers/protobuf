@@ -63,18 +63,6 @@ static string GetTypeUrl(const Descriptor* message) {
   return string(kTypeUrlPrefix) + "/" + message->full_name();
 }
 
-static bool is_primitive(FieldDescriptor::Type type) {
-  switch (type) {
-    case FieldDescriptor::TYPE_MESSAGE:
-    case FieldDescriptor::TYPE_GROUP:
-    case FieldDescriptor::TYPE_STRING:
-    case FieldDescriptor::TYPE_BYTES:
-      return false;
-    default:
-      return true;
-  }
-}
-
 /* Routines for building arbitrary protos *************************************/
 
 // We would use CodedOutputStream except that we want more freedom to build
@@ -630,7 +618,7 @@ void BinaryAndJsonConformanceSuite::TestValidDataForType(
                            proto, text, is_proto3);
     }
 
-    if (is_primitive(type)) {
+    if (FieldDescriptor::IsTypePackable(type)) {
       string packed_proto;
       string unpacked_proto;
       string packed_proto_expected;
