@@ -49,18 +49,17 @@
 // debug failing tests if that's caused by the long path support.
 #define SUPPORT_LONGPATHS
 
+#include <google/protobuf/io/io_win32.h>
+
 #include <ctype.h>
 #include <direct.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <io.h>
-#include <memory>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <wctype.h>
 #include <windows.h>
-
-#include <google/protobuf/io/io_win32.h>
 
 #include <memory>
 #include <sstream>

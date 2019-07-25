@@ -206,6 +206,11 @@ class PROTOBUF_EXPORT Any :
   std::string* mutable_type_url();
   std::string* release_type_url();
   void set_allocated_type_url(std::string* type_url);
+  private:
+  const std::string& _internal_type_url() const;
+  void _internal_set_type_url(const std::string& value);
+  std::string* _internal_mutable_type_url();
+  public:
 
   // bytes value = 2;
   void clear_value();
@@ -217,6 +222,11 @@ class PROTOBUF_EXPORT Any :
   std::string* mutable_value();
   std::string* release_value();
   void set_allocated_value(std::string* value);
+  private:
+  const std::string& _internal_value() const;
+  void _internal_set_value(const std::string& value);
+  std::string* _internal_mutable_value();
+  public:
 
   // @@protoc_insertion_point(class_scope:google.protobuf.Any)
  private:
@@ -246,12 +256,22 @@ inline void Any::clear_type_url() {
 }
 inline const std::string& Any::type_url() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Any.type_url)
-  return type_url_.GetNoArena();
+  return _internal_type_url();
 }
 inline void Any::set_type_url(const std::string& value) {
+  _internal_set_type_url(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.Any.type_url)
+}
+inline std::string* Any::mutable_type_url() {
+  // @@protoc_insertion_point(field_mutable:google.protobuf.Any.type_url)
+  return _internal_mutable_type_url();
+}
+inline const std::string& Any::_internal_type_url() const {
+  return type_url_.GetNoArena();
+}
+inline void Any::_internal_set_type_url(const std::string& value) {
   
   type_url_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:google.protobuf.Any.type_url)
 }
 inline void Any::set_type_url(std::string&& value) {
   
@@ -271,9 +291,8 @@ inline void Any::set_type_url(const char* value, size_t size) {
       ::std::string(reinterpret_cast<const char*>(value), size));
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.Any.type_url)
 }
-inline std::string* Any::mutable_type_url() {
+inline std::string* Any::_internal_mutable_type_url() {
   
-  // @@protoc_insertion_point(field_mutable:google.protobuf.Any.type_url)
   return type_url_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 inline std::string* Any::release_type_url() {
@@ -297,12 +316,22 @@ inline void Any::clear_value() {
 }
 inline const std::string& Any::value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Any.value)
-  return value_.GetNoArena();
+  return _internal_value();
 }
 inline void Any::set_value(const std::string& value) {
+  _internal_set_value(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.Any.value)
+}
+inline std::string* Any::mutable_value() {
+  // @@protoc_insertion_point(field_mutable:google.protobuf.Any.value)
+  return _internal_mutable_value();
+}
+inline const std::string& Any::_internal_value() const {
+  return value_.GetNoArena();
+}
+inline void Any::_internal_set_value(const std::string& value) {
   
   value_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:google.protobuf.Any.value)
 }
 inline void Any::set_value(std::string&& value) {
   
@@ -322,9 +351,8 @@ inline void Any::set_value(const void* value, size_t size) {
       ::std::string(reinterpret_cast<const char*>(value), size));
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.Any.value)
 }
-inline std::string* Any::mutable_value() {
+inline std::string* Any::_internal_mutable_value() {
   
-  // @@protoc_insertion_point(field_mutable:google.protobuf.Any.value)
   return value_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 inline std::string* Any::release_value() {

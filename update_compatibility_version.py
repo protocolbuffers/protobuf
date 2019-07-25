@@ -56,6 +56,7 @@ def UpdateFile(filename):
       'LAST_RELEASED=%s' % NEW_VERSION,
       line))
 
+
 UpdateFile('csharp/compatibility_tests/v3.0.0/test.sh')
 UpdateFile('php/tests/compatibility_test.sh')
 UpdateFile('java/compatibility_tests/v2.5.0/test.sh')

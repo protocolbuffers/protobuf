@@ -44,7 +44,6 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/descriptor.h>
-
 #include <google/protobuf/compiler/scc.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
@@ -52,8 +51,6 @@
 #include <google/protobuf/wire_format_lite.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
-
-
 #include <google/protobuf/stubs/hash.h>
 
 #include <google/protobuf/port_def.inc>
@@ -202,6 +199,10 @@ std::string IntTypeName(const Options& options, const std::string& type) {
 void SetIntVar(const Options& options, const std::string& type,
                std::map<std::string, std::string>* variables) {
   (*variables)[type] = IntTypeName(options, type);
+}
+
+bool HasInternalAccessors(const FieldOptions::CType ctype) {
+  return ctype == FieldOptions::STRING;
 }
 
 }  // namespace
@@ -373,10 +374,20 @@ std::string DefaultInstanceName(const Descriptor* descriptor,
   return "_" + ClassName(descriptor, false) + "_default_instance_";
 }
 
+std::string DefaultInstancePtr(const Descriptor* descriptor,
+                               const Options& options) {
+  return DefaultInstanceName(descriptor, options) + "ptr_";
+}
+
 std::string QualifiedDefaultInstanceName(const Descriptor* descriptor,
                                          const Options& options) {
   return QualifiedFileLevelSymbol(
       descriptor->file(), DefaultInstanceName(descriptor, options), options);
+}
+
+std::string QualifiedDefaultInstancePtr(const Descriptor* descriptor,
+                                        const Options& options) {
+  return QualifiedDefaultInstanceName(descriptor, options) + "ptr_";
 }
 
 std::string DescriptorTableName(const FileDescriptor* file,
@@ -1125,7 +1136,7 @@ bool IsImplicitWeakField(const FieldDescriptor* field, const Options& options,
                          MessageSCCAnalyzer* scc_analyzer) {
   return UsingImplicitWeakFields(field->file(), options) &&
          field->type() == FieldDescriptor::TYPE_MESSAGE &&
-         !field->is_required() && !field->is_map() &&
+         !field->is_required() && !field->is_map() && !field->is_extension() &&
          field->containing_oneof() == nullptr &&
          !IsWellKnownMessage(field->message_type()->file()) &&
          field->message_type()->file()->name() !=
@@ -1479,7 +1490,8 @@ class ParseLoopGenerator {
         name = "StringPieceParser" + utf8;
         break;
     }
-    format_("ptr = $pi_ns$::Inline$1$($2$_$3$(), ptr, ctx$4$);\n", name,
+    format_("ptr = $pi_ns$::Inline$1$($2$$3$_$4$(), ptr, ctx$5$);\n", name,
+            HasInternalAccessors(ctype) ? "_internal_" : "",
             field->is_repeated() && !field->is_packable() ? "add" : "mutable",
             FieldName(field), field_name);
   }
@@ -1551,10 +1563,9 @@ class ParseLoopGenerator {
                   FieldName(field));
             } else {
               format_(
-                  "ptr = ctx->ParseMessage("
-                  "CastToBase(&$1$_)->AddWeak(reinterpret_cast<const "
-                  "::$proto_ns$::MessageLite*>(&$2$::_$3$_default_instance_)), "
-                  "ptr);\n",
+                  "ptr = ctx->ParseMessage($1$_.AddWeak(reinterpret_cast<const "
+                  "::$proto_ns$::MessageLite*>($2$::_$3$_default_instance_ptr_)"
+                  "), ptr);\n",
                   FieldName(field), Namespace(field->message_type(), options_),
                   ClassName(field->message_type()));
             }
@@ -1757,12 +1768,11 @@ class ParseLoopGenerator {
       }
       GenerateFieldBody(wiretype, field);
       if (is_repeat) {
-        string type = tag_size == 2 ? "uint16" : "uint8";
         format_.Outdent();
         format_(
             "  if (!ctx->DataAvailable(ptr)) break;\n"
-            "} while ($pi_ns$::UnalignedLoad<$1$>(ptr) == $2$);\n",
-            IntTypeName(options_, type), SmallVarintValue(tag));
+            "} while ($pi_ns$::ExpectTag<$1$>(ptr));\n",
+            tag);
       }
       format_.Outdent();
       if (fallback_tag) {

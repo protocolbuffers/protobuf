@@ -34,12 +34,12 @@
 //
 // This file contains tests and benchmarks.
 
-#include <memory>
-#include <vector>
-
 #include <google/protobuf/io/coded_stream.h>
 
 #include <limits.h>
+
+#include <memory>
+#include <vector>
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>

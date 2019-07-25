@@ -49,9 +49,174 @@ namespace Google.Protobuf
         /// Retrieves a codec suitable for a string field with the given tag.
         /// </summary>
         /// <param name="tag">The tag.</param>
+        /// <returns>A codec for the given tag.</returns>
+        public static FieldCodec<string> ForString(uint tag)
+        {
+            return FieldCodec.ForString(tag, "");
+        }
+
+        /// <summary>
+        /// Retrieves a codec suitable for a bytes field with the given tag.
+        /// </summary>
+        /// <param name="tag">The tag.</param>
+        /// <returns>A codec for the given tag.</returns>
+        public static FieldCodec<ByteString> ForBytes(uint tag)
+        {
+            return FieldCodec.ForBytes(tag, ByteString.Empty);
+        }
+
+        /// <summary>
+        /// Retrieves a codec suitable for a bool field with the given tag.
+        /// </summary>
+        /// <param name="tag">The tag.</param>
+        /// <returns>A codec for the given tag.</returns>
+        public static FieldCodec<bool> ForBool(uint tag)
+        {
+            return FieldCodec.ForBool(tag, false);
+        }
+
+        /// <summary>
+        /// Retrieves a codec suitable for an int32 field with the given tag.
+        /// </summary>
+        /// <param name="tag">The tag.</param>
+        /// <returns>A codec for the given tag.</returns>
+        public static FieldCodec<int> ForInt32(uint tag)
+        {
+            return FieldCodec.ForInt32(tag, 0);
+        }
+
+        /// <summary>
+        /// Retrieves a codec suitable for an sint32 field with the given tag.
+        /// </summary>
+        /// <param name="tag">The tag.</param>
+        /// <returns>A codec for the given tag.</returns>
+        public static FieldCodec<int> ForSInt32(uint tag)
+        {
+            return FieldCodec.ForSInt32(tag, 0);
+        }
+
+        /// <summary>
+        /// Retrieves a codec suitable for a fixed32 field with the given tag.
+        /// </summary>
+        /// <param name="tag">The tag.</param>
+        /// <returns>A codec for the given tag.</returns>
+        public static FieldCodec<uint> ForFixed32(uint tag)
+        {
+            return FieldCodec.ForFixed32(tag, 0);
+        }
+
+        /// <summary>
+        /// Retrieves a codec suitable for an sfixed32 field with the given tag.
+        /// </summary>
+        /// <param name="tag">The tag.</param>
+        /// <returns>A codec for the given tag.</returns>
+        public static FieldCodec<int> ForSFixed32(uint tag)
+        {
+            return FieldCodec.ForSFixed32(tag, 0);
+        }
+
+        /// <summary>
+        /// Retrieves a codec suitable for a uint32 field with the given tag.
+        /// </summary>
+        /// <param name="tag">The tag.</param>
+        /// <returns>A codec for the given tag.</returns>
+        public static FieldCodec<uint> ForUInt32(uint tag)
+        {
+            return FieldCodec.ForUInt32(tag, 0);
+        }
+
+        /// <summary>
+        /// Retrieves a codec suitable for an int64 field with the given tag.
+        /// </summary>
+        /// <param name="tag">The tag.</param>
+        /// <returns>A codec for the given tag.</returns>
+        public static FieldCodec<long> ForInt64(uint tag)
+        {
+            return FieldCodec.ForInt64(tag, 0);
+        }
+
+        /// <summary>
+        /// Retrieves a codec suitable for an sint64 field with the given tag.
+        /// </summary>
+        /// <param name="tag">The tag.</param>
+        /// <returns>A codec for the given tag.</returns>
+        public static FieldCodec<long> ForSInt64(uint tag)
+        {
+            return FieldCodec.ForSInt64(tag, 0);
+        }
+
+        /// <summary>
+        /// Retrieves a codec suitable for a fixed64 field with the given tag.
+        /// </summary>
+        /// <param name="tag">The tag.</param>
+        /// <returns>A codec for the given tag.</returns>
+        public static FieldCodec<ulong> ForFixed64(uint tag)
+        {
+            return FieldCodec.ForFixed64(tag, 0);
+        }
+
+        /// <summary>
+        /// Retrieves a codec suitable for an sfixed64 field with the given tag.
+        /// </summary>
+        /// <param name="tag">The tag.</param>
+        /// <returns>A codec for the given tag.</returns>
+        public static FieldCodec<long> ForSFixed64(uint tag)
+        {
+            return FieldCodec.ForSFixed64(tag, 0);
+        }
+
+        /// <summary>
+        /// Retrieves a codec suitable for a uint64 field with the given tag.
+        /// </summary>
+        /// <param name="tag">The tag.</param>
+        /// <returns>A codec for the given tag.</returns>
+        public static FieldCodec<ulong> ForUInt64(uint tag)
+        {
+            return FieldCodec.ForUInt64(tag, 0);
+        }
+
+        /// <summary>
+        /// Retrieves a codec suitable for a float field with the given tag.
+        /// </summary>
+        /// <param name="tag">The tag.</param>
+        /// <returns>A codec for the given tag.</returns>
+        public static FieldCodec<float> ForFloat(uint tag)
+        {
+            return FieldCodec.ForFloat(tag, 0);
+        }
+
+        /// <summary>
+        /// Retrieves a codec suitable for a double field with the given tag.
+        /// </summary>
+        /// <param name="tag">The tag.</param>
+        /// <returns>A codec for the given tag.</returns>
+        public static FieldCodec<double> ForDouble(uint tag)
+        {
+            return FieldCodec.ForDouble(tag, 0);
+        }
+
+        // Enums are tricky. We can probably use expression trees to build these delegates automatically,
+        // but it's easy to generate the code for it.
+
+        /// <summary>
+        /// Retrieves a codec suitable for an enum field with the given tag.
+        /// </summary>
+        /// <param name="tag">The tag.</param>
+        /// <param name="toInt32">A conversion function from <see cref="Int32"/> to the enum type.</param>
+        /// <param name="fromInt32">A conversion function from the enum type to <see cref="Int32"/>.</param>
+        /// <returns>A codec for the given tag.</returns>
+        public static FieldCodec<T> ForEnum<T>(uint tag, Func<T, int> toInt32, Func<int, T> fromInt32)
+        {
+            return FieldCodec.ForEnum(tag, toInt32, fromInt32, default(T));
+        }
+
+        /// <summary>
+        /// Retrieves a codec suitable for a string field with the given tag.
+        /// </summary>
+        /// <param name="tag">The tag.</param>
         /// <param name="defaultValue">The default value.</param>
         /// <returns>A codec for the given tag.</returns>
-        public static FieldCodec<string> ForString(uint tag, string defaultValue = "")
+        public static FieldCodec<string> ForString(uint tag, string defaultValue)
         {
             return new FieldCodec<string>(input => input.ReadString(), (output, value) => output.WriteString(value), CodedOutputStream.ComputeStringSize, tag);
         }
@@ -62,7 +227,7 @@ namespace Google.Protobuf
         /// <param name="tag">The tag.</param>
         /// <param name="defaultValue">The default value.</param>
         /// <returns>A codec for the given tag.</returns>
-        public static FieldCodec<ByteString> ForBytes(uint tag, ByteString defaultValue = null)
+        public static FieldCodec<ByteString> ForBytes(uint tag, ByteString defaultValue)
         {
             return new FieldCodec<ByteString>(input => input.ReadBytes(), (output, value) => output.WriteBytes(value), CodedOutputStream.ComputeBytesSize, tag);
         }
@@ -73,7 +238,7 @@ namespace Google.Protobuf
         /// <param name="tag">The tag.</param>
         /// <param name="defaultValue">The default value.</param>
         /// <returns>A codec for the given tag.</returns>
-        public static FieldCodec<bool> ForBool(uint tag, bool defaultValue = false)
+        public static FieldCodec<bool> ForBool(uint tag, bool defaultValue)
         {
             return new FieldCodec<bool>(input => input.ReadBool(), (output, value) => output.WriteBool(value), CodedOutputStream.BoolSize, tag);
         }
@@ -84,7 +249,7 @@ namespace Google.Protobuf
         /// <param name="tag">The tag.</param>
         /// <param name="defaultValue">The default value.</param>
         /// <returns>A codec for the given tag.</returns>
-        public static FieldCodec<int> ForInt32(uint tag, int defaultValue = 0)
+        public static FieldCodec<int> ForInt32(uint tag, int defaultValue)
         {
             return new FieldCodec<int>(input => input.ReadInt32(), (output, value) => output.WriteInt32(value), CodedOutputStream.ComputeInt32Size, tag);
         }
@@ -95,7 +260,7 @@ namespace Google.Protobuf
         /// <param name="tag">The tag.</param>
         /// <param name="defaultValue">The default value.</param>
         /// <returns>A codec for the given tag.</returns>
-        public static FieldCodec<int> ForSInt32(uint tag, int defaultValue = 0)
+        public static FieldCodec<int> ForSInt32(uint tag, int defaultValue)
         {
             return new FieldCodec<int>(input => input.ReadSInt32(), (output, value) => output.WriteSInt32(value), CodedOutputStream.ComputeSInt32Size, tag);
         }
@@ -106,7 +271,7 @@ namespace Google.Protobuf
         /// <param name="tag">The tag.</param>
         /// <param name="defaultValue">The default value.</param>
         /// <returns>A codec for the given tag.</returns>
-        public static FieldCodec<uint> ForFixed32(uint tag, uint defaultValue = 0)
+        public static FieldCodec<uint> ForFixed32(uint tag, uint defaultValue)
         {
             return new FieldCodec<uint>(input => input.ReadFixed32(), (output, value) => output.WriteFixed32(value), 4, tag);
         }
@@ -117,7 +282,7 @@ namespace Google.Protobuf
         /// <param name="tag">The tag.</param>
         /// <param name="defaultValue">The default value.</param>
         /// <returns>A codec for the given tag.</returns>
-        public static FieldCodec<int> ForSFixed32(uint tag, int defaultValue = 0)
+        public static FieldCodec<int> ForSFixed32(uint tag, int defaultValue)
         {
             return new FieldCodec<int>(input => input.ReadSFixed32(), (output, value) => output.WriteSFixed32(value), 4, tag);
         }
@@ -128,7 +293,7 @@ namespace Google.Protobuf
         /// <param name="tag">The tag.</param>
         /// <param name="defaultValue">The default value.</param>
         /// <returns>A codec for the given tag.</returns>
-        public static FieldCodec<uint> ForUInt32(uint tag, uint defaultValue = 0)
+        public static FieldCodec<uint> ForUInt32(uint tag, uint defaultValue)
         {
             return new FieldCodec<uint>(input => input.ReadUInt32(), (output, value) => output.WriteUInt32(value), CodedOutputStream.ComputeUInt32Size, tag);
         }
@@ -139,7 +304,7 @@ namespace Google.Protobuf
         /// <param name="tag">The tag.</param>
         /// <param name="defaultValue">The default value.</param>
         /// <returns>A codec for the given tag.</returns>
-        public static FieldCodec<long> ForInt64(uint tag, long defaultValue = 0)
+        public static FieldCodec<long> ForInt64(uint tag, long defaultValue)
         {
             return new FieldCodec<long>(input => input.ReadInt64(), (output, value) => output.WriteInt64(value), CodedOutputStream.ComputeInt64Size, tag);
         }
@@ -150,7 +315,7 @@ namespace Google.Protobuf
         /// <param name="tag">The tag.</param>
         /// <param name="defaultValue">The default value.</param>
         /// <returns>A codec for the given tag.</returns>
-        public static FieldCodec<long> ForSInt64(uint tag, long defaultValue = 0)
+        public static FieldCodec<long> ForSInt64(uint tag, long defaultValue)
         {
             return new FieldCodec<long>(input => input.ReadSInt64(), (output, value) => output.WriteSInt64(value), CodedOutputStream.ComputeSInt64Size, tag);
         }
@@ -161,7 +326,7 @@ namespace Google.Protobuf
         /// <param name="tag">The tag.</param>
         /// <param name="defaultValue">The default value.</param>
         /// <returns>A codec for the given tag.</returns>
-        public static FieldCodec<ulong> ForFixed64(uint tag, ulong defaultValue = 0)
+        public static FieldCodec<ulong> ForFixed64(uint tag, ulong defaultValue)
         {
             return new FieldCodec<ulong>(input => input.ReadFixed64(), (output, value) => output.WriteFixed64(value), 8, tag);
         }
@@ -172,7 +337,7 @@ namespace Google.Protobuf
         /// <param name="tag">The tag.</param>
         /// <param name="defaultValue">The default value.</param>
         /// <returns>A codec for the given tag.</returns>
-        public static FieldCodec<long> ForSFixed64(uint tag, long defaultValue = 0)
+        public static FieldCodec<long> ForSFixed64(uint tag, long defaultValue)
         {
             return new FieldCodec<long>(input => input.ReadSFixed64(), (output, value) => output.WriteSFixed64(value), 8, tag);
         }
@@ -183,7 +348,7 @@ namespace Google.Protobuf
         /// <param name="tag">The tag.</param>
         /// <param name="defaultValue">The default value.</param>
         /// <returns>A codec for the given tag.</returns>
-        public static FieldCodec<ulong> ForUInt64(uint tag, ulong defaultValue = 0)
+        public static FieldCodec<ulong> ForUInt64(uint tag, ulong defaultValue)
         {
             return new FieldCodec<ulong>(input => input.ReadUInt64(), (output, value) => output.WriteUInt64(value), CodedOutputStream.ComputeUInt64Size, tag);
         }
@@ -194,7 +359,7 @@ namespace Google.Protobuf
         /// <param name="tag">The tag.</param>
         /// <param name="defaultValue">The default value.</param>
         /// <returns>A codec for the given tag.</returns>
-        public static FieldCodec<float> ForFloat(uint tag, float defaultValue = 0)
+        public static FieldCodec<float> ForFloat(uint tag, float defaultValue)
         {
             return new FieldCodec<float>(input => input.ReadFloat(), (output, value) => output.WriteFloat(value), CodedOutputStream.FloatSize, tag);
         }
@@ -205,7 +370,7 @@ namespace Google.Protobuf
         /// <param name="tag">The tag.</param>
         /// <param name="defaultValue">The default value.</param>
         /// <returns>A codec for the given tag.</returns>
-        public static FieldCodec<double> ForDouble(uint tag, double defaultValue = 0)
+        public static FieldCodec<double> ForDouble(uint tag, double defaultValue)
         {
             return new FieldCodec<double>(input => input.ReadDouble(), (output, value) => output.WriteDouble(value), CodedOutputStream.DoubleSize, tag);
         }
@@ -221,7 +386,7 @@ namespace Google.Protobuf
         /// <param name="fromInt32">A conversion function from the enum type to <see cref="Int32"/>.</param>
         /// <param name="defaultValue">The default value.</param>
         /// <returns>A codec for the given tag.</returns>
-        public static FieldCodec<T> ForEnum<T>(uint tag, Func<T, int> toInt32, Func<int, T> fromInt32, T defaultValue = default(T))
+        public static FieldCodec<T> ForEnum<T>(uint tag, Func<T, int> toInt32, Func<int, T> fromInt32, T defaultValue)
         {
             return new FieldCodec<T>(input => fromInt32(
                 input.ReadEnum()),

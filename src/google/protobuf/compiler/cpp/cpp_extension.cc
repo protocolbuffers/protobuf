@@ -39,8 +39,6 @@
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/stubs/strutil.h>
 
-
-
 namespace google {
 namespace protobuf {
 namespace compiler {

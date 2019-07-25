@@ -37,7 +37,6 @@
 #include <google/protobuf/util/internal/object_writer.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <gtest/gtest.h>
-
 #include <google/protobuf/stubs/status.h>
 
 

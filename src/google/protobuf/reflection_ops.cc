@@ -45,7 +45,6 @@
 #include <google/protobuf/unknown_field_set.h>
 #include <google/protobuf/stubs/strutil.h>
 
-
 #include <google/protobuf/port_def.inc>
 
 namespace google {

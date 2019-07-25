@@ -109,6 +109,7 @@ class BinaryAndJsonConformanceSuite : public ConformanceTestSuite {
   void TestValidDataForType(
       google::protobuf::FieldDescriptor::Type,
       std::vector<std::pair<std::string, std::string>> values);
+  void TestValidDataForRepeatedScalarMessage();
 
   std::unique_ptr<google::protobuf::util::TypeResolver>
       type_resolver_;

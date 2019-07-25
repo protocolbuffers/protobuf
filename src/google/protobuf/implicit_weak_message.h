@@ -32,15 +32,17 @@
 #define GOOGLE_PROTOBUF_IMPLICIT_WEAK_MESSAGE_H__
 
 #include <string>
+
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/arena.h>
 #include <google/protobuf/message_lite.h>
-
-#include <google/protobuf/port_def.inc>
+#include <google/protobuf/repeated_field.h>
 
 #ifdef SWIG
 #error "You cannot SWIG proto headers"
 #endif
+
+#include <google/protobuf/port_def.inc>
 
 // This file is logically internal-only and should only be used by protobuf
 // generated code.
@@ -104,15 +106,9 @@ class PROTOBUF_EXPORT ImplicitWeakMessage : public MessageLite {
 template <typename ImplicitWeakType>
 class ImplicitWeakTypeHandler {
  public:
-  typedef ImplicitWeakType Type;
-  typedef MessageLite WeakType;
+  typedef MessageLite Type;
   static const bool Moveable = false;
 
-  // With implicit weak fields, we need separate NewFromPrototype and
-  // NewFromPrototypeWeak functions. The former is used when we want to create a
-  // strong dependency on the message type, and it just delegates to the
-  // GenericTypeHandler. The latter avoids creating a strong dependency, by
-  // simply calling MessageLite::New.
   static inline MessageLite* NewFromPrototype(const MessageLite* prototype,
                                               Arena* arena = NULL) {
     return prototype->New(arena);
@@ -133,12 +129,66 @@ class ImplicitWeakTypeHandler {
   static void Merge(const MessageLite& from, MessageLite* to) {
     to->CheckTypeAndMergeFrom(from);
   }
-  static inline size_t SpaceUsedLong(const Type& value) {
-    return value.SpaceUsedLong();
-  }
 };
 
 }  // namespace internal
+
+template <typename T>
+struct WeakRepeatedPtrField {
+  using TypeHandler = internal::ImplicitWeakTypeHandler<T>;
+  WeakRepeatedPtrField() : weak() {}
+  explicit WeakRepeatedPtrField(Arena* arena) : weak(arena) {}
+  ~WeakRepeatedPtrField() { weak.template Destroy<TypeHandler>(); }
+
+  typedef internal::RepeatedPtrIterator<MessageLite> iterator;
+  typedef internal::RepeatedPtrIterator<const MessageLite> const_iterator;
+  typedef internal::RepeatedPtrOverPtrsIterator<MessageLite*, void*>
+      pointer_iterator;
+  typedef internal::RepeatedPtrOverPtrsIterator<const MessageLite* const,
+                                                const void* const>
+      const_pointer_iterator;
+
+  iterator begin() { return iterator(base().raw_data()); }
+  const_iterator begin() const { return iterator(base().raw_data()); }
+  const_iterator cbegin() const { return begin(); }
+  iterator end() { return begin() + base().size(); }
+  const_iterator end() const { return begin() + base().size(); }
+  const_iterator cend() const { return end(); }
+  pointer_iterator pointer_begin() {
+    return pointer_iterator(base().raw_mutable_data());
+  }
+  const_pointer_iterator pointer_begin() const {
+    return const_pointer_iterator(base().raw_mutable_data());
+  }
+  pointer_iterator pointer_end() {
+    return pointer_iterator(base().raw_mutable_data() + base().size());
+  }
+  const_pointer_iterator pointer_end() const {
+    return const_pointer_iterator(base().raw_mutable_data() + base().size());
+  }
+
+  MessageLite* AddWeak(const MessageLite* prototype) {
+    return base().AddWeak(prototype);
+  }
+  T* Add() { return weak.Add(); }
+  void Clear() { base().template Clear<TypeHandler>(); }
+  void MergeFrom(const WeakRepeatedPtrField& other) {
+    base().template MergeFrom<TypeHandler>(other.base());
+  }
+  void InternalSwap(WeakRepeatedPtrField* other) {
+    base().InternalSwap(&other->base());
+  }
+
+  const internal::RepeatedPtrFieldBase& base() const { return weak; }
+  internal::RepeatedPtrFieldBase& base() { return weak; }
+  // Union disables running the destructor. Which would create a strong link.
+  // Instead we explicitly destroy the underlying base through the virtual
+  // destructor.
+  union {
+    RepeatedPtrField<T> weak;
+  };
+};
+
 }  // namespace protobuf
 }  // namespace google
 

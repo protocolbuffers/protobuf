@@ -71,6 +71,9 @@ static VALUE table_key(Map* self, VALUE key,
     case UPB_TYPE_BYTES:
     case UPB_TYPE_STRING:
       // Strings: use string content directly.
+      if (TYPE(key) == T_SYMBOL) {
+        key = rb_id2str(SYM2ID(key));
+      }
       Check_Type(key, T_STRING);
       key = native_slot_encode_and_freeze_string(self->key_type, key);
       *out_key = RSTRING_PTR(key);
@@ -396,6 +399,11 @@ VALUE Map_index_set(VALUE _self, VALUE key, VALUE value) {
   upb_value v;
   void* mem;
   key = table_key(self, key, keybuf, &keyval, &length);
+
+  if (TYPE(value) == T_HASH) {
+    VALUE args[1] = { value };
+    value = rb_class_new_instance(1, args, self->value_type_class);
+  }
 
   mem = value_memory(&v);
   native_slot_set("", self->value_type, self->value_type_class, mem, value);

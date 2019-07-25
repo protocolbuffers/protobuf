@@ -51,7 +51,6 @@
 #include <gmock/gmock.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
-
 #include <google/protobuf/stubs/stl_util.h>
 
 namespace google {

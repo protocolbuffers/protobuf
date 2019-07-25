@@ -160,10 +160,11 @@
 #ifdef GOOGLE_ATTRIBUTE_ALWAYS_INLINE
 #define PROTOBUF_ALWAYS_INLINE GOOGLE_ATTRIBUTE_ALWAYS_INLINE
 #else
-#if defined(__GNUC__) && (__GNUC__ > 3 ||(__GNUC__ == 3 && __GNUC_MINOR__ >= 1))
+#if defined(__GNUC__) && \
+    (__GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 1))
 // For functions we want to force inline.
 // Introduced in gcc 3.1.
-#define PROTOBUF_ALWAYS_INLINE __attribute__ ((always_inline))
+#define PROTOBUF_ALWAYS_INLINE __attribute__((always_inline))
 #else
 // Other compilers will have to figure it out for themselves.
 #define PROTOBUF_ALWAYS_INLINE
@@ -173,10 +174,11 @@
 #ifdef GOOGLE_ATTRIBUTE_NOINLINE
 #define PROTOBUF_NOINLINE GOOGLE_ATTRIBUTE_NOINLINE
 #else
-#if defined(__GNUC__) && (__GNUC__ > 3 ||(__GNUC__ == 3 && __GNUC_MINOR__ >= 1))
+#if defined(__GNUC__) && \
+    (__GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 1))
 // For functions we want to force not inline.
 // Introduced in gcc 3.1.
-#define PROTOBUF_NOINLINE __attribute__ ((noinline))
+#define PROTOBUF_NOINLINE __attribute__((noinline))
 #elif defined(_MSC_VER) && (_MSC_VER >= 1400)
 // Seems to have been around since at least Visual Studio 2005
 #define PROTOBUF_NOINLINE __declspec(noinline)
@@ -190,9 +192,10 @@
 #define PROTOBUF_FUNC_ALIGN GOOGLE_ATTRIBUTE_FUNC_ALIGN
 #else
 #if defined(__clang__) || \
-    defined(__GNUC__) && (__GNUC__ > 4 ||(__GNUC__ == 4 && __GNUC_MINOR__ >= 3))
+    defined(__GNUC__) &&  \
+        (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3))
 // Function alignment attribute introduced in gcc 4.3
-#define PROTOBUF_FUNC_ALIGN(bytes) __attribute__ ((aligned(bytes)))
+#define PROTOBUF_FUNC_ALIGN(bytes) __attribute__((aligned(bytes)))
 #else
 #define PROTOBUF_FUNC_ALIGN(bytes)
 #endif
@@ -312,10 +315,10 @@
 // For Clang we use __builtin_offsetof() and suppress the warning,
 // to avoid Control Flow Integrity and UBSan vptr sanitizers from
 // crashing while trying to validate the invalid reinterpet_casts.
-#define PROTOBUF_FIELD_OFFSET(TYPE, FIELD) \
-  _Pragma("clang diagnostic push")                                   \
-  _Pragma("clang diagnostic ignored \"-Winvalid-offsetof\"")         \
-  __builtin_offsetof(TYPE, FIELD)                                    \
+#define PROTOBUF_FIELD_OFFSET(TYPE, FIELD)                   \
+  _Pragma("clang diagnostic push")                           \
+  _Pragma("clang diagnostic ignored \"-Winvalid-offsetof\"") \
+  __builtin_offsetof(TYPE, FIELD)                            \
   _Pragma("clang diagnostic pop")
 #else
 // Note that we calculate relative to the pointer value 16 here since if we
@@ -327,7 +330,6 @@
                              &reinterpret_cast<const TYPE*>(16)->FIELD) - \
                          reinterpret_cast<const char*>(16))
 #endif
-
 
 #if defined(_MSC_VER) && defined(PROTOBUF_USE_DLLS)
 #ifdef LIBPROTOBUF_EXPORTS

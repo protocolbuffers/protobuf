@@ -197,10 +197,19 @@ struct PROTOBUF_EXPORT SCCInfoBase {
   std::atomic<int> visit_status;
 #endif
   int num_deps;
+  int num_implicit_weak_deps;
   void (*init_func)();
   // This is followed by an array  of num_deps
   // const SCCInfoBase* deps[];
 };
+
+// Zero-length arrays are a language extension available in GCC and Clang but
+// not MSVC.
+#ifdef __GNUC__
+#define PROTOBUF_ARRAY_SIZE(n) (n)
+#else
+#define PROTOBUF_ARRAY_SIZE(n) ((n) ? (n) : 1)
+#endif
 
 template <int N>
 struct SCCInfo {
@@ -208,9 +217,14 @@ struct SCCInfo {
   // Semantically this is const SCCInfo<T>* which is is a templated type.
   // The obvious inheriting from SCCInfoBase mucks with struct initialization.
   // Attempts showed the compiler was generating dynamic initialization code.
-  // Zero length arrays produce warnings with MSVC.
-  SCCInfoBase* deps[N ? N : 1];
+  // This deps array consists of base.num_deps pointers to SCCInfoBase followed
+  // by base.num_implicit_weak_deps pointers to SCCInfoBase*. We need the extra
+  // pointer indirection for implicit weak fields. We cannot use a union type
+  // here, since that would prevent the array from being linker-initialized.
+  void* deps[PROTOBUF_ARRAY_SIZE(N)];
 };
+
+#undef PROTOBUF_ARRAY_SIZE
 
 PROTOBUF_EXPORT void InitSCCImpl(SCCInfoBase* scc);
 

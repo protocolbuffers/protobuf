@@ -92,6 +92,7 @@ copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\fastmem.h" incl
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\hash.h" include\google\protobuf\stubs\hash.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\logging.h" include\google\protobuf\stubs\logging.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\macros.h" include\google\protobuf\stubs\macros.h
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\map_util.h" include\google\protobuf\stubs\map_util.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\mutex.h" include\google\protobuf\stubs\mutex.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\once.h" include\google\protobuf\stubs\once.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\platform_macros.h" include\google\protobuf\stubs\platform_macros.h

@@ -49,7 +49,6 @@
 #include <google/protobuf/port.h>
 #include <google/protobuf/stubs/strutil.h>
 
-
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -133,9 +132,18 @@ std::string DefaultInstanceType(const Descriptor* descriptor,
 std::string DefaultInstanceName(const Descriptor* descriptor,
                                 const Options& options);
 
+// Non-qualified name of the default instance pointer. This is used only for
+// implicit weak fields, where we need an extra indirection.
+std::string DefaultInstancePtr(const Descriptor* descriptor,
+                               const Options& options);
+
 // Fully qualified name of the default_instance of this message.
 std::string QualifiedDefaultInstanceName(const Descriptor* descriptor,
                                          const Options& options);
+
+// Fully qualified name of the default instance pointer.
+std::string QualifiedDefaultInstancePtr(const Descriptor* descriptor,
+                                        const Options& options);
 
 // DescriptorTable variable name.
 std::string DescriptorTableName(const FileDescriptor* file,
@@ -546,6 +554,11 @@ class PROTOC_EXPORT MessageSCCAnalyzer {
 
 inline std::string SccInfoSymbol(const SCC* scc, const Options& options) {
   return UniqueName("scc_info_" + ClassName(scc->GetRepresentative()),
+                    scc->GetRepresentative(), options);
+}
+
+inline std::string SccInfoPtrSymbol(const SCC* scc, const Options& options) {
+  return UniqueName("scc_info_ptr_" + ClassName(scc->GetRepresentative()),
                     scc->GetRepresentative(), options);
 }
 

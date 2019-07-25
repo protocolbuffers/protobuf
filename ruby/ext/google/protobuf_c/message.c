@@ -192,7 +192,7 @@ static int extract_method_call(VALUE method_name, MessageHeader* self,
     // Find the field name
     char wrapper_field_name[name_len - 8];
     strncpy(wrapper_field_name, name, name_len - 9);
-    wrapper_field_name[name_len - 7] = '\0';
+    wrapper_field_name[name_len - 9] = '\0';
 
     // Check if field exists and is a wrapper type
     const upb_oneofdef* test_o_wrapper;
@@ -220,7 +220,7 @@ static int extract_method_call(VALUE method_name, MessageHeader* self,
     // Find enum field name
     char enum_name[name_len - 5];
     strncpy(enum_name, name, name_len - 6);
-    enum_name[name_len - 4] = '\0';
+    enum_name[name_len - 6] = '\0';
 
     // Check if enum field exists
     const upb_oneofdef* test_o_enum;

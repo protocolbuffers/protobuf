@@ -36,7 +36,6 @@
 #include <google/protobuf/util/message_differencer.h>
 #include <google/protobuf/testing/googletest.h>
 
-
 namespace google {
 namespace protobuf {
 namespace TestUtil {
