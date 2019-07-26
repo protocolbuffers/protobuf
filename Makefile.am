@@ -1230,7 +1230,6 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)   \
   examples/list_people.py                \
   examples/list_people_test.go           \
   examples/pubspec.yaml                  \
-  examples/third_party/zlib.BUILD        \
   protobuf.bzl                           \
   protobuf_deps.bzl                      \
   python/release/wheel/build_wheel_manylinux.sh  \
