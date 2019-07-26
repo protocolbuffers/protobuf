@@ -371,12 +371,21 @@ void BinaryAndJsonConformanceSuite::RunValidProtobufTest(
 void BinaryAndJsonConformanceSuite::RunValidBinaryProtobufTest(
     const string& test_name, ConformanceLevel level,
     const string& input_protobuf, bool is_proto3) {
+  RunValidBinaryProtobufTest(
+      test_name, level, input_protobuf, input_protobuf, is_proto3);
+}
+
+void BinaryAndJsonConformanceSuite::RunValidBinaryProtobufTest(
+    const string& test_name, ConformanceLevel level,
+    const string& input_protobuf,
+    const string& expected_protobuf,
+    bool is_proto3) {
   std::unique_ptr<Message> prototype = NewTestMessage(is_proto3);
   ConformanceRequestSetting setting(
       level, conformance::PROTOBUF, conformance::PROTOBUF,
       conformance::BINARY_TEST,
       *prototype, test_name, input_protobuf);
-  RunValidBinaryInputTest(setting, input_protobuf);
+  RunValidBinaryInputTest(setting, expected_protobuf, true);
 }
 
 void BinaryAndJsonConformanceSuite::RunValidProtobufTestWithMessage(
@@ -590,34 +599,107 @@ void BinaryAndJsonConformanceSuite::TestValidDataForType(
     const FieldDescriptor* field = GetFieldForType(type, false, is_proto3);
     const FieldDescriptor* rep_field = GetFieldForType(type, true, is_proto3);
 
+    // Test singular data for singular fields.
     for (size_t i = 0; i < values.size(); i++) {
+      string proto =
+          cat(tag(field->number(), wire_type), values[i].first);
+      string expected_proto =
+          cat(tag(field->number(), wire_type), values[i].second);
+      std::unique_ptr<Message> test_message = NewTestMessage(is_proto3);
+      test_message->MergeFromString(expected_proto);
+      string text = test_message->DebugString();
+
       RunValidProtobufTest(StrCat("ValidDataScalar", type_name, "[", i, "]"),
-                           REQUIRED,
-                           cat(tag(field->number(), wire_type), values[0].first),
-                           field->name() + ": " + values[0].second, is_proto3);
+                           REQUIRED, proto, text, is_proto3);
     }
 
-    string proto;
-    string text = field->name() + ": " + values.back().second;
-    for (size_t i = 0; i < values.size(); i++) {
-      proto += cat(tag(field->number(), wire_type), values[i].first);
-    }
+    // Test repeated data for singular fields.
     // For scalar message fields, repeated values are merged, which is tested
     // separately.
     if (type != FieldDescriptor::TYPE_MESSAGE) {
+      string proto;
+      for (size_t i = 0; i < values.size(); i++) {
+        proto += cat(tag(field->number(), wire_type), values[i].first);
+      }
+      string expected_proto =
+          cat(tag(field->number(), wire_type), values.back().second);
+      std::unique_ptr<Message> test_message = NewTestMessage(is_proto3);
+      test_message->MergeFromString(expected_proto);
+      string text = test_message->DebugString();
+
       RunValidProtobufTest("RepeatedScalarSelectsLast" + type_name, REQUIRED,
                            proto, text, is_proto3);
     }
 
-    proto.clear();
-    text.clear();
+    // Test repeated fields.
+    if (FieldDescriptor::IsTypePackable(type)) {
+      string packed_proto;
+      string unpacked_proto;
+      string packed_proto_expected;
+      string unpacked_proto_expected;
 
-    for (size_t i = 0; i < values.size(); i++) {
-      proto += cat(tag(rep_field->number(), wire_type), values[i].first);
-      text += rep_field->name() + ": " + values[i].second + " ";
+      for (size_t i = 0; i < values.size(); i++) {
+        unpacked_proto +=
+            cat(tag(rep_field->number(), wire_type), values[i].first);
+        unpacked_proto_expected +=
+            cat(tag(rep_field->number(), wire_type), values[i].second);
+        packed_proto += values[i].first;
+        packed_proto_expected += values[i].second;
+      }
+      packed_proto =
+          cat(tag(rep_field->number(),
+                  WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+              delim(packed_proto));
+      packed_proto_expected =
+          cat(tag(rep_field->number(),
+                  WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+              delim(packed_proto_expected));
+
+      std::unique_ptr<Message> test_message = NewTestMessage(is_proto3);
+      test_message->MergeFromString(packed_proto_expected);
+      string text = test_message->DebugString();
+
+      // Ensures both packed and unpacked data can be parsed.
+      RunValidProtobufTest(
+          StrCat("ValidDataRepeated", type_name, ".UnpackedInput"),
+          REQUIRED, unpacked_proto, text, is_proto3);
+      RunValidProtobufTest(
+          StrCat("ValidDataRepeated", type_name, ".PackedInput"),
+          REQUIRED, packed_proto, text, is_proto3);
+
+      // proto2 should encode as unpacked by default and proto3 should encode as
+      // packed by default.
+      string expected_proto =
+          rep_field->is_packed() ? packed_proto_expected :
+                                   unpacked_proto_expected;
+      RunValidBinaryProtobufTest(
+          StrCat("ValidDataRepeated", type_name,
+                 ".UnpackedInput.DefaultOutput"),
+          RECOMMENDED,
+          unpacked_proto,
+          expected_proto, is_proto3);
+      RunValidBinaryProtobufTest(
+          StrCat("ValidDataRepeated", type_name,
+                 ".PackedInput.DefaultOutput"),
+          RECOMMENDED,
+          packed_proto,
+          expected_proto, is_proto3);
+    } else {
+      string proto;
+      string expected_proto;
+      for (size_t i = 0; i < values.size(); i++) {
+        proto += cat(tag(rep_field->number(), wire_type), values[i].first);
+        expected_proto +=
+            cat(tag(rep_field->number(), wire_type), values[i].second);
+      }
+      std::unique_ptr<Message> test_message = NewTestMessage(is_proto3);
+      test_message->MergeFromString(expected_proto);
+      string text = test_message->DebugString();
+
+      RunValidProtobufTest(
+          StrCat("ValidDataRepeated", type_name),
+          REQUIRED, proto, text, is_proto3);
     }
-    RunValidProtobufTest("ValidDataRepeated" + type_name, REQUIRED,
-                         proto, text, is_proto3);
   }
 }
 
@@ -759,107 +841,105 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
   uint32 kUint32Max = 4294967295UL;
 
   TestValidDataForType(FieldDescriptor::TYPE_DOUBLE, {
-    {dbl(0.1), "0.1"},
-    {dbl(1.7976931348623157e+308), "1.7976931348623157e+308"},
-    {dbl(2.22507385850720138309e-308), "2.22507385850720138309e-308"}
+    {dbl(0.1), dbl(0.1)},
+    {dbl(1.7976931348623157e+308), dbl(1.7976931348623157e+308)},
+    {dbl(2.22507385850720138309e-308), dbl(2.22507385850720138309e-308)}
   });
   TestValidDataForType(FieldDescriptor::TYPE_FLOAT, {
-    {flt(0.1), "0.1"},
-    {flt(1.00000075e-36), "1.00000075e-36"},
-    {flt(3.402823e+38), "3.402823e+38"},  // 3.40282347e+38
-    {flt(1.17549435e-38f), "1.17549435e-38"}
+    {flt(0.1), flt(0.1)},
+    {flt(1.00000075e-36), flt(1.00000075e-36)},
+    {flt(3.402823e+38), flt(3.402823e+38)},  // 3.40282347e+38
+    {flt(1.17549435e-38f), flt(1.17549435e-38)}
   });
   TestValidDataForType(FieldDescriptor::TYPE_INT64, {
-    {varint(12345), "12345"},
-    {varint(kInt64Max), std::to_string(kInt64Max)},
-    {varint(kInt64Min), std::to_string(kInt64Min)}
+    {varint(12345), varint(12345)},
+    {varint(kInt64Max), varint(kInt64Max)},
+    {varint(kInt64Min), varint(kInt64Min)}
   });
   TestValidDataForType(FieldDescriptor::TYPE_UINT64, {
-    {varint(12345), "12345"},
-    {varint(kUint64Max), std::to_string(kUint64Max)},
-    {varint(0), "0"}
+    {varint(12345), varint(12345)},
+    {varint(kUint64Max), varint(kUint64Max)},
+    {varint(0), varint(0)}
   });
   TestValidDataForType(FieldDescriptor::TYPE_INT32, {
-    {varint(12345), "12345"},
-    {longvarint(12345, 2), "12345"},
-    {longvarint(12345, 7), "12345"},
-    {varint(kInt32Max), std::to_string(kInt32Max)},
-    {varint(kInt32Min), std::to_string(kInt32Min)},
-    {varint(1LL << 33), std::to_string(static_cast<int32>(1LL << 33))},
-    {varint((1LL << 33) - 1),
-     std::to_string(static_cast<int32>((1LL << 33) - 1))},
+    {varint(12345), varint(12345)},
+    {longvarint(12345, 2), varint(12345)},
+    {longvarint(12345, 7), varint(12345)},
+    {varint(kInt32Max), varint(kInt32Max)},
+    {varint(kInt32Min), varint(kInt32Min)},
+    {varint(1LL << 33), varint(0)},
+    {varint((1LL << 33) - 1), varint(-1)},
   });
   TestValidDataForType(FieldDescriptor::TYPE_UINT32, {
-    {varint(12345), "12345"},
-    {longvarint(12345, 2), "12345"},
-    {longvarint(12345, 7), "12345"},
-    {varint(kUint32Max), std::to_string(kUint32Max)},  // UINT32_MAX
-    {varint(0), "0"},
-    {varint(1LL << 33), std::to_string(static_cast<uint32>(1LL << 33))},
-    {varint((1LL << 33) - 1),
-     std::to_string(static_cast<uint32>((1LL << 33) - 1))},
+    {varint(12345), varint(12345)},
+    {longvarint(12345, 2), varint(12345)},
+    {longvarint(12345, 7), varint(12345)},
+    {varint(kUint32Max), varint(kUint32Max)},  // UINT32_MAX
+    {varint(0), varint(0)},
+    {varint(1LL << 33), varint(0)},
+    {varint((1LL << 33) - 1), varint((1LL << 32) - 1)},
   });
   TestValidDataForType(FieldDescriptor::TYPE_FIXED64, {
-    {u64(12345), "12345"},
-    {u64(kUint64Max), std::to_string(kUint64Max)},
-    {u64(0), "0"}
+    {u64(12345), u64(12345)},
+    {u64(kUint64Max), u64(kUint64Max)},
+    {u64(0), u64(0)}
   });
   TestValidDataForType(FieldDescriptor::TYPE_FIXED32, {
-    {u32(12345), "12345"},
-    {u32(kUint32Max), std::to_string(kUint32Max)},  // UINT32_MAX
-    {u32(0), "0"}
+    {u32(12345), u32(12345)},
+    {u32(kUint32Max), u32(kUint32Max)},  // UINT32_MAX
+    {u32(0), u32(0)}
   });
   TestValidDataForType(FieldDescriptor::TYPE_SFIXED64, {
-    {u64(12345), "12345"},
-    {u64(kInt64Max), std::to_string(kInt64Max)},
-    {u64(kInt64Min), std::to_string(kInt64Min)}
+    {u64(12345), u64(12345)},
+    {u64(kInt64Max), u64(kInt64Max)},
+    {u64(kInt64Min), u64(kInt64Min)}
   });
   TestValidDataForType(FieldDescriptor::TYPE_SFIXED32, {
-    {u32(12345), "12345"},
-    {u32(kInt32Max), std::to_string(kInt32Max)},
-    {u32(kInt32Min), std::to_string(kInt32Min)}
+    {u32(12345), u32(12345)},
+    {u32(kInt32Max), u32(kInt32Max)},
+    {u32(kInt32Min), u32(kInt32Min)}
   });
   TestValidDataForType(FieldDescriptor::TYPE_BOOL, {
-    {varint(1), "true"},
-    {varint(0), "false"},
-    {varint(12345678), "true"}
+    {varint(1), varint(1)},
+    {varint(0), varint(0)},
+    {varint(12345678), varint(1)}
   });
   TestValidDataForType(FieldDescriptor::TYPE_SINT32, {
-    {zz32(12345), "12345"},
-    {zz32(kInt32Max), std::to_string(kInt32Max)},
-    {zz32(kInt32Min), std::to_string(kInt32Min)}
+    {zz32(12345), zz32(12345)},
+    {zz32(kInt32Max), zz32(kInt32Max)},
+    {zz32(kInt32Min), zz32(kInt32Min)}
   });
   TestValidDataForType(FieldDescriptor::TYPE_SINT64, {
-    {zz64(12345), "12345"},
-    {zz64(kInt64Max), std::to_string(kInt64Max)},
-    {zz64(kInt64Min), std::to_string(kInt64Min)}
+    {zz64(12345), zz64(12345)},
+    {zz64(kInt64Max), zz64(kInt64Max)},
+    {zz64(kInt64Min), zz64(kInt64Min)}
   });
   TestValidDataForType(FieldDescriptor::TYPE_STRING, {
-    {delim("Hello world!"), "\"Hello world!\""},
+    {delim("Hello world!"), delim("Hello world!")},
     {delim("\'\"\?\\\a\b\f\n\r\t\v"),
-          "\"\x27\\\"\x3F\\\\\x07\x08\x0C\\n\x0D\x09\x0B\""},  // escape
-    {delim("谷歌"), "\"谷歌\""},  // Google in Chinese
-    {delim("\u8C37\u6B4C"), "\"谷歌\""},  // unicode escape
-    {delim("\u8c37\u6b4c"), "\"谷歌\""},  // lowercase unicode
-    {delim("\xF0\x9F\x98\x81"), "\"\xF0\x9F\x98\x81\""},  // emoji: 😁
-    {delim(""), "\"\""},
+     delim("\'\"\?\\\a\b\f\n\r\t\v")},  // escape
+    {delim("谷歌"), delim("谷歌")},  // Google in Chinese
+    {delim("\u8C37\u6B4C"), delim("谷歌")},  // unicode escape
+    {delim("\u8c37\u6b4c"), delim("谷歌")},  // lowercase unicode
+    {delim("\xF0\x9F\x98\x81"), delim("\xF0\x9F\x98\x81")},  // emoji: 😁
+    {delim(""), delim("")},
   });
   TestValidDataForType(FieldDescriptor::TYPE_BYTES, {
-    {delim("\x01\x02"), "\"\x01\x02\""},
-    {delim("\xfb"), "\"\xfb\""},
-    {delim(""), "\"\""},
+    {delim("\x01\x02"), delim("\x01\x02")},
+    {delim("\xfb"), delim("\xfb")},
+    {delim(""), delim("")},
   });
   TestValidDataForType(FieldDescriptor::TYPE_ENUM, {
-    {varint(0), "FOO"},
-    {varint(1), "BAR"},
-    {varint(2), "BAZ"},
-    {varint(-1), "NEG"},
+    {varint(0), varint(0)},
+    {varint(1), varint(1)},
+    {varint(2), varint(2)},
+    {varint(-1), varint(-1)},
   });
   TestValidDataForRepeatedScalarMessage();
   TestValidDataForType(FieldDescriptor::TYPE_MESSAGE, {
     {delim(cat(tag(1, WireFormatLite::WIRETYPE_VARINT), varint(1234))),
-     "{a: 1234}"},
-    {delim(""), "{}"},
+     delim(cat(tag(1, WireFormatLite::WIRETYPE_VARINT), varint(1234)))},
+    {delim(""), delim("")},
   });
 
   // TODO(haberman):

@@ -261,7 +261,8 @@ class ConformanceTestSuite {
       const ConformanceRequestSetting& setting,
       const string& equivalent_wire_format,
       const conformance::ConformanceResponse& response,
-      bool need_report_success);
+      bool need_report_success,
+      bool require_same_wire_format);
 
   void ReportSuccess(const std::string& test_name);
   void ReportFailure(const string& test_name,
@@ -276,7 +277,8 @@ class ConformanceTestSuite {
   void RunValidInputTest(const ConformanceRequestSetting& setting,
                          const string& equivalent_text_format);
   void RunValidBinaryInputTest(const ConformanceRequestSetting& setting,
-                               const string& equivalent_wire_format);
+                               const string& equivalent_wire_format,
+                               bool require_same_wire_format = false);
 
   void RunTest(const std::string& test_name,
                const conformance::ConformanceRequest& request,
