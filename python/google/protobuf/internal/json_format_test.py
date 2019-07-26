@@ -1131,6 +1131,13 @@ class JsonFormatTest(JsonFormatBase):
                     'uint32Value': 4, 'stringValue': 'bla'},
                    indent=2, sort_keys=True))
 
+  def testEnsureAscii(self):
+    text = b'\xe3\x83\x88\xe3\x83\x88\xe3\x83\xad'.decode('utf-8')
+    message = json_format_proto3_pb2.TestMessage(string_value=text)
+    self.assertEqual(
+        json_format.MessageToJson(message, ensure_ascii=False),
+        json.dumps({'stringValue': text}, indent=2, ensure_ascii=False))
+
 
 if __name__ == '__main__':
   unittest.main()
