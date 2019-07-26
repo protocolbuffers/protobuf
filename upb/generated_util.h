@@ -87,11 +87,11 @@ UPB_INLINE bool _upb_has_field(const void *msg, size_t idx) {
 }
 
 UPB_INLINE bool _upb_sethas(const void *msg, size_t idx) {
-  return (*PTR_AT(msg, idx / 8, char)) |= (1 << (idx % 8));
+  return (*PTR_AT(msg, idx / 8, char)) |= (char)(1 << (idx % 8));
 }
 
 UPB_INLINE bool _upb_clearhas(const void *msg, size_t idx) {
-  return (*PTR_AT(msg, idx / 8, char)) &= ~(1 << (idx % 8));
+  return (*PTR_AT(msg, idx / 8, char)) &= (char)(~(1 << (idx % 8)));
 }
 
 UPB_INLINE bool _upb_has_oneof_field(const void *msg, size_t case_ofs, int32_t num) {
