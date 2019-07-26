@@ -9,43 +9,13 @@ cd $(dirname $0)
 # these tests).
 TEST_VERSION=2.5.0
 
-LAST_RELEASED=3.9.0
-
 # The old version of protobuf that we are testing compatibility against. This
 # is usually the same as TEST_VERSION (i.e., we use the tests extracted from
 # that version to test compatibility of the newest runtime against it), but it
 # is also possible to use this same test set to test the compatibiilty of the
 # latest version against other versions.
-case "$1" in
-  ""|2.5.0)
-    OLD_VERSION=2.5.0
-    OLD_VERSION_PROTOC=https://github.com/xfxyjwf/protobuf-compiler-release/raw/master/v2.5.0/linux/protoc
-    ;;
-  2.6.1)
-    OLD_VERSION=2.6.1
-    OLD_VERSION_PROTOC=http://repo1.maven.org/maven2/com/google/protobuf/protoc/2.6.1-build2/protoc-2.6.1-build2-linux-x86_64.exe
-    ;;
-  3.0.0-beta-1)
-    OLD_VERSION=3.0.0-beta-1
-    OLD_VERSION_PROTOC=http://repo1.maven.org/maven2/com/google/protobuf/protoc/3.0.0-beta-1/protoc-3.0.0-beta-1-linux-x86_64.exe
-    ;;
-  3.0.0-beta-2)
-    OLD_VERSION=3.0.0-beta-2
-    OLD_VERSION_PROTOC=http://repo1.maven.org/maven2/com/google/protobuf/protoc/3.0.0-beta-2/protoc-3.0.0-beta-2-linux-x86_64.exe
-    ;;
-  3.0.0-beta-3)
-    OLD_VERSION=3.0.0-beta-3
-    OLD_VERSION_PROTOC=http://repo1.maven.org/maven2/com/google/protobuf/protoc/3.0.0-beta-3/protoc-3.0.0-beta-3-linux-x86_64.exe
-    ;;
-  LAST_RELEASED)
-    OLD_VERSION=$LAST_RELEASED
-    OLD_VERSION_PROTOC=http://repo1.maven.org/maven2/com/google/protobuf/protoc/$OLD_VERSION/protoc-$OLD_VERSION-linux-x86_64.exe
-    ;;
-  *)
-    echo "[ERROR]: Unknown version number: $1"
-    exit 1
-    ;;
-esac
+OLD_VERSION=$1
+OLD_VERSION_PROTOC=http://repo1.maven.org/maven2/com/google/protobuf/protoc/$OLD_VERSION/protoc-$OLD_VERSION-linux-x86_64.exe
 
 # Extract the latest protobuf version number.
 VERSION_NUMBER=`grep "^__version__ = '.*'" ../../google/protobuf/__init__.py | sed "s|__version__ = '\(.*\)'|\1|"`

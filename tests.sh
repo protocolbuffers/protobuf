@@ -6,7 +6,7 @@
 
 # For when some other test needs the C++ main build, including protoc and
 # libprotobuf.
-LAST_RELEASED=3.9.0
+LAST_RELEASED=3.11.1
 
 internal_build_cpp() {
   if [ -f src/protoc ]; then
