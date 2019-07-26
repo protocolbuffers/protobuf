@@ -1,4 +1,4 @@
-package(default_visibility = ["//visibility:public"])
+load("@rules_cc//cc:defs.bzl", "cc_library")
 
 licenses(["notice"])  # BSD/MIT-like license (for zlib)
 
@@ -26,7 +26,6 @@ genrule(
     srcs = _ZLIB_HEADERS,
     outs = _ZLIB_PREFIXED_HEADERS,
     cmd = "cp $(SRCS) $(@D)/zlib/include/",
-    visibility = ["//visibility:private"],
 )
 
 cc_library(
@@ -60,4 +59,5 @@ cc_library(
         ],
     }),
     includes = ["zlib/include/"],
+    visibility = ["//visibility:public"],
 )

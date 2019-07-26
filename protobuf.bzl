@@ -1,3 +1,4 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
 load("@bazel_skylib//lib:versions.bzl", "versions")
 
 def _GetPath(ctx, path):
@@ -276,7 +277,7 @@ def cc_proto_library(
         )
 
         # An empty cc_library to make rule dependency consistent.
-        native.cc_library(
+        cc_library(
             name = name,
             **kargs
         )
@@ -307,8 +308,7 @@ def cc_proto_library(
         cc_libs = cc_libs + [default_runtime]
     if use_grpc_plugin:
         cc_libs = cc_libs + ["//external:grpc_lib"]
-
-    native.cc_library(
+    cc_library(
         name = name,
         srcs = gen_srcs,
         hdrs = gen_hdrs,
