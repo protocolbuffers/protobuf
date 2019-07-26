@@ -174,7 +174,7 @@ const FieldDescriptor* GetFieldForType(
   }
 
   string packed_string = "";
-  const string repeated_string = repeated ? "Repeated " : "Singular";
+  const string repeated_string = repeated ? "Repeated " : "Singular ";
   const string proto_string = is_proto3 ? "Proto3" : "Proto2";
   if (packed == Packed::TRUE) {
     packed_string = "Packed ";
