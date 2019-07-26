@@ -21,6 +21,8 @@ function generate_proto() {
 
   $PROTOC1 --php_out=generated proto/test_include.proto
   $PROTOC2 --php_out=generated                 \
+    -I../../src -I.                            \
+    proto/empty/echo.proto                     \
     proto/test.proto                           \
     proto/test_no_namespace.proto              \
     proto/test_prefix.proto                    \
@@ -34,6 +36,7 @@ function generate_proto() {
     proto/test_reserved_message_upper.proto    \
     proto/test_service.proto                   \
     proto/test_service_namespace.proto         \
+    proto/test_wrapper_type_setters.proto      \
     proto/test_descriptors.proto
 
   pushd ../../src

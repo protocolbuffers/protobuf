@@ -669,7 +669,6 @@ build_php7.0_mac() {
 
 build_php_compatibility() {
   internal_build_cpp
-  php/tests/compatibility_test.sh 3.5.0
   php/tests/compatibility_test.sh $LAST_RELEASED
 }
 
