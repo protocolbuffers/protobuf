@@ -57,18 +57,18 @@ using std::string;
 namespace {
 
 static string ToOctString(const string& binary_string) {
-  string hex_string;
+  string oct_string;
   for (size_t i = 0; i < binary_string.size(); i++) {
     uint8_t c = binary_string.at(i);
     uint8_t high = c / 64;
     uint8_t mid = (c % 64) / 8;
     uint8_t low = c % 8;
-    hex_string.push_back('\\');
-    hex_string.push_back('0' + high);
-    hex_string.push_back('0' + mid);
-    hex_string.push_back('0' + low);
+    oct_string.push_back('\\');
+    oct_string.push_back('0' + high);
+    oct_string.push_back('0' + mid);
+    oct_string.push_back('0' + low);
   }
-  return hex_string;
+  return oct_string;
 }
 
 }
@@ -298,8 +298,7 @@ void ConformanceTestSuite::VerifyResponse(
     GOOGLE_DCHECK_EQ(response.result_case(),
                     ConformanceResponse::kProtobufPayload);
     const string& protobuf_payload =  response.protobuf_payload();
-    check = (equivalent_wire_format.compare(
-        0, protobuf_payload.size(), protobuf_payload) == 0);
+    check = equivalent_wire_format == protobuf_payload;
     differences = StrCat("Expect: ", ToOctString(equivalent_wire_format),
                          ", but got: ", ToOctString(protobuf_payload));
   } else {
