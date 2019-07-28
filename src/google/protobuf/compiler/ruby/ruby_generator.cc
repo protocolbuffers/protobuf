@@ -537,7 +537,8 @@ bool GenerateFile(const FileDescriptor* file, io::Printer* printer,
   }
 
   // TODO: Remove this when ruby supports extensions for proto2 syntax.
-  if (file->extension_count() > 0) {
+  if (file->syntax() == FileDescriptor::SYNTAX_PROTO2 &&
+      file->extension_count() > 0) {
     *error = "Extensions are not yet supported for proto2 .proto files.";
     return false;
   }
