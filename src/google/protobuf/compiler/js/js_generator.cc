@@ -3142,7 +3142,15 @@ void Generator::GenerateClassDeserializeBinaryField(
       printer->Print(", null");
     }
     printer->Print(", $defaultKey$", "defaultKey", JSFieldDefault(key_field));
-    printer->Print(", $defaultValue$", "defaultValue", JSFieldDefault(value_field));
+    if (value_field->type() == FieldDescriptor::TYPE_MESSAGE) {
+      printer->Print(
+          ", new $messageType$()",
+	  "messageType",
+	  GetMessagePath(options, value_field->message_type()));
+    } else {
+      printer->Print(
+          ", $defaultValue$", "defaultValue", JSFieldDefault(value_field));
+    }
     printer->Print(");\n");
     printer->Print("         });\n");
   } else {
