@@ -924,6 +924,39 @@ class StructTest(unittest.TestCase):
     self.assertEqual(False, struct['key5'][0][0])
     self.assertEqual(5, struct['key5'][0][1])
 
+  def test_to_dict_returns_native_python_types(self):
+    dictionary1 = {
+        'key1': 5,
+        'key2': 'abc',
+        'key3': True,
+        'key4': {'subkey': 11.0},
+        'key5': [6, 'seven', True, False, None, {'subkey2': 9}],
+        'key6': [['nested_list', True]],
+        'empty_struct': {},
+        'empty_list': []
+    }
+
+    dictionary2 = {
+        'foo': 'bar',
+        'nested': {
+            'a': [1, 2,3],
+            'c': 'd',
+            'f': {'g': {'h': 'j', 'm': [{'a': '1', 'd': True}]}}
+        }
+    }
+
+    struct = struct_pb2.Struct()
+    struct.update(dictionary1)
+
+    struct_as_dict = struct.to_dict()
+    self.assertEqual(struct_as_dict, dictionary1)
+
+    struct = struct_pb2.Struct()
+    struct.update(dictionary2)
+
+    struct_as_dict = struct.to_dict()
+    self.assertEqual(struct_as_dict, dictionary2)
+
 
 class AnyTest(unittest.TestCase):
 

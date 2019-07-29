@@ -750,6 +750,23 @@ def _GetStructValue(struct_value):
     raise ValueError('Value not set')
 
 
+def _StructToDict(struct_value):
+  if isinstance(struct_value, Struct):
+    result = {}
+    for dict_key, dict_value in struct_value.items():
+      result[dict_key] = _StructToDict(dict_value)
+
+    return result
+  elif isinstance(struct_value, ListValue):
+    result = []
+    for list_item in struct_value:
+      result.append(_StructToDict(list_item))
+    return result
+  elif getattr(struct_value, 'WhichOneof', None):
+    return _GetStructValue(struct_value)
+  else:
+    return struct_value
+
 class Struct(object):
   """Class for Struct message type."""
 
@@ -799,6 +816,9 @@ class Struct(object):
   def update(self, dictionary):  # pylint: disable=invalid-name
     for key, value in dictionary.items():
       _SetStructValue(self.fields[key], value)
+
+  def to_dict(self):
+    return _StructToDict(self)
 
 collections_abc.MutableMapping.register(Struct)
 
