@@ -475,6 +475,10 @@ jspb.Map.deserializeBinary = function(map, reader, keyReaderFn, valueReaderFn,
   var key = opt_defaultKey;
   var value = opt_defaultValue;
 
+  if (map.valueCtor_) {
+    value = new map.valueCtor_();
+  }
+
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -488,7 +492,6 @@ jspb.Map.deserializeBinary = function(map, reader, keyReaderFn, valueReaderFn,
       // Value.
       if (map.valueCtor_) {
         goog.asserts.assert(opt_valueReaderCallback);
-        value = new map.valueCtor_();
         valueReaderFn.call(reader, value, opt_valueReaderCallback);
       } else {
         value =
