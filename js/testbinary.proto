@@ -257,7 +257,7 @@ message MapEntryOptionalValuesBoolValue {
 
 message MapEntryOptionalValuesDoubleValue {
   optional string key = 1;
-  optional bool value = 2;
+  optional double value = 2;
 }
 
 message MapEntryOptionalValuesEnumValue {
