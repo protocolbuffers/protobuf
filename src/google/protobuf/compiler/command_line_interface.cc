@@ -1427,7 +1427,32 @@ CommandLineInterface::InterpretArgument(const std::string& name,
       return PARSE_ARGUMENT_FAIL;
     }
 
+#if defined(_WIN32)
+    // On Windows, the shell (typically cmd.exe) does not expand wildcards in
+    // file names (e.g. foo\*.proto), so we do it ourselves.
+    switch (google::protobuf::io::win32::ExpandWildcards(
+          value,
+          [this](const string& path) {
+            this->input_files_.push_back(path);
+          })) {
+      case google::protobuf::io::win32::ExpandWildcardsResult::kSuccess:
+        break;
+      case google::protobuf::io::win32::ExpandWildcardsResult::kErrorNoMatchingFile:
+        // Path does not exist, is not a file, or it's longer than MAX_PATH and
+        // long path handling is disabled.
+        std::cerr << "Invalid file name pattern or missing input file \""
+                  << value << "\"" << std::endl;
+        return PARSE_ARGUMENT_FAIL;
+      default:
+        std::cerr << "Cannot convert path \"" << value
+                  << "\" to or from Windows style" << std::endl;
+        return PARSE_ARGUMENT_FAIL;
+    }
+#else  // not _WIN32
+    // On other platforms than Windows (e.g. Linux, Mac OS) the shell (typically
+    // Bash) expands wildcards.
     input_files_.push_back(value);
+#endif  // _WIN32
 
   } else if (name == "-I" || name == "--proto_path") {
     // Java's -classpath (and some other languages) delimits path components
