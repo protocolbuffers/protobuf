@@ -224,6 +224,7 @@
                     <exclude>TextFormatParseLocationTest.java</exclude>
                     <exclude>TextFormatTest.java</exclude>
                     <exclude>TestUtil.java</exclude>
+                    <exclude>TypeRegistryTest.java</exclude>
                     <exclude>UnknownEnumValueTest.java</exclude>
                     <exclude>UnknownFieldSetLiteTest.java</exclude>
                     <exclude>UnknownFieldSetTest.java</exclude>

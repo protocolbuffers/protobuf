@@ -215,6 +215,9 @@ class PROTOBUF_EXPORT FieldMask :
   void add_paths(const char* value, size_t size);
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>& paths() const;
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>* mutable_paths();
+  private:
+  std::string* _internal_add_paths();
+  public:
 
   // @@protoc_insertion_point(class_scope:google.protobuf.FieldMask)
  private:
@@ -246,6 +249,10 @@ inline int FieldMask::paths_size() const {
 inline void FieldMask::clear_paths() {
   paths_.Clear();
 }
+inline std::string* FieldMask::add_paths() {
+  // @@protoc_insertion_point(field_add_mutable:google.protobuf.FieldMask.paths)
+  return _internal_add_paths();
+}
 inline const std::string& FieldMask::paths(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldMask.paths)
   return paths_.Get(index);
@@ -272,8 +279,7 @@ inline void FieldMask::set_paths(int index, const char* value, size_t size) {
     reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.FieldMask.paths)
 }
-inline std::string* FieldMask::add_paths() {
-  // @@protoc_insertion_point(field_add_mutable:google.protobuf.FieldMask.paths)
+inline std::string* FieldMask::_internal_add_paths() {
   return paths_.Add();
 }
 inline void FieldMask::add_paths(const std::string& value) {

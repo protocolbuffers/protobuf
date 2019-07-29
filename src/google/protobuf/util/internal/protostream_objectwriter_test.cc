@@ -1719,6 +1719,45 @@ TEST_P(ProtoStreamObjectWriterStructTest, OptionStructIntAsStringsTest) {
   CheckOutput(struct_type);
 }
 
+TEST_P(ProtoStreamObjectWriterStructTest, Struct32BitIntsAndFloatsTest) {
+  StructType struct_type;
+  google::protobuf::Struct* s = struct_type.mutable_object();
+  s->mutable_fields()->operator[]("k1").set_number_value(1.5);
+  s->mutable_fields()->operator[]("k2").set_number_value(100);
+  s->mutable_fields()->operator[]("k3").set_number_value(100);
+  ResetProtoWriter();
+
+  ow_->StartObject("")
+      ->StartObject("object")
+      ->RenderFloat("k1", 1.5)
+      ->RenderInt32("k2", 100)
+      ->RenderUint32("k3", 100)
+      ->EndObject()
+      ->EndObject();
+  CheckOutput(struct_type);
+}
+
+TEST_P(ProtoStreamObjectWriterStructTest,
+       Struct32BitIntsAndFloatsAsStringsTest) {
+  StructType struct_type;
+  google::protobuf::Struct* s = struct_type.mutable_object();
+  s->mutable_fields()->operator[]("k1").set_string_value("1.5");
+  s->mutable_fields()->operator[]("k2").set_string_value("100");
+  s->mutable_fields()->operator[]("k3").set_string_value("100");
+
+  options_.struct_integers_as_strings = true;
+  ResetProtoWriter();
+
+  ow_->StartObject("")
+      ->StartObject("object")
+      ->RenderFloat("k1", 1.5)
+      ->RenderInt32("k2", 100)
+      ->RenderUint32("k3", 100)
+      ->EndObject()
+      ->EndObject();
+  CheckOutput(struct_type);
+}
+
 TEST_P(ProtoStreamObjectWriterStructTest, ValuePreservesNull) {
   ValueWrapper value;
   value.mutable_value()->set_null_value(google::protobuf::NULL_VALUE);

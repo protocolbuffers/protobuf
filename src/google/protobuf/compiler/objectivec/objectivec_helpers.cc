@@ -48,7 +48,7 @@
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/io/io_win32.h>
-#include <google/protobuf/stubs/port.h>
+#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/strutil.h>
 
 // NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
@@ -931,7 +931,7 @@ string BuildCommentsString(const SourceLocation& location,
                                ? location.trailing_comments
                                : location.leading_comments;
   std::vector<string> lines;
-  SplitStringAllowEmpty(comments, "\n", &lines);
+  lines = Split(comments, "\n", false);
   while (!lines.empty() && lines.back().empty()) {
     lines.pop_back();
   }

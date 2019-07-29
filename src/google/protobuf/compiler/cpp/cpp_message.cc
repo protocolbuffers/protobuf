@@ -55,8 +55,6 @@
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
-
-
 #include <google/protobuf/stubs/hash.h>
 
 
@@ -738,7 +736,12 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* printer) {
     if (field->is_repeated()) {
       format("$deprecated_attr$int ${1$$name$_size$}$() const;\n", field);
     } else if (HasHasMethod(field)) {
-      format("$deprecated_attr$bool ${1$has_$name$$}$() const;\n", field);
+      format(
+          "$deprecated_attr$bool ${1$has_$name$$}$() const;\n"
+          "private:\n"
+          "bool _internal_has_$name$() const;\n"
+          "public:\n",
+          field);
     } else if (HasPrivateHasMethod(field)) {
       format(
           "private:\n"
@@ -800,9 +803,12 @@ void MessageGenerator::GenerateSingularFieldHasBits(
     format.Set("has_mask",
                strings::Hex(1u << (has_bit_index % 32), strings::ZERO_PAD_8));
     format(
+        "inline bool $classname$::_internal_has_$name$() const {\n"
+        "  return (_has_bits_[$has_array_index$] & 0x$has_mask$u) != 0;\n"
+        "}\n"
         "inline bool $classname$::has_$name$() const {\n"
         "$annotate_accessor$"
-        "  return (_has_bits_[$has_array_index$] & 0x$has_mask$u) != 0;\n"
+        "  return _internal_has_$name$();\n"
         "}\n");
   } else {
     // Message fields have a has_$name$() method.
@@ -849,13 +855,28 @@ void MessageGenerator::GenerateOneofMemberHasBits(const FieldDescriptor* field,
   // Oneofs also have has_$name$() but only as a private helper
   // method, so that generated code is slightly cleaner (vs.  comparing
   // _oneof_case_[index] against a constant everywhere).
+  //
+  // If has_$name$() is private, there is no need to add an internal accessor.
+  // Only annotate public accessors.
+  if (HasPrivateHasMethod(field)) {
+    format(
+        "inline bool $classname$::has_$name$() const {\n"
+        "  return $oneof_name$_case() == k$field_name$;\n"
+        "}\n");
+  } else {
+    format(
+        "inline bool $classname$::_internal_has_$name$() const {\n"
+        "  return $oneof_name$_case() == k$field_name$;\n"
+        "}\n"
+        "inline bool $classname$::has_$name$() const {\n"
+        "$annotate_accessor$"
+        "  return _internal_has_$name$();\n"
+        "}\n");
+  }
+  // set_has_$name$() for oneof fields is always private; hence should not be
+  // annotated.
   format(
-      "inline bool $classname$::has_$name$() const {\n"
-      "$annotate_accessor$"
-      "  return $oneof_name$_case() == k$field_name$;\n"
-      "}\n"
       "inline void $classname$::set_has_$name$() {\n"
-      "$annotate_accessor$"
       "  _oneof_case_[$oneof_index$] = k$field_name$;\n"
       "}\n");
 }
@@ -918,8 +939,12 @@ void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* printer) {
       format(
           "inline int $classname$::$name$_size() const {\n"
           "$annotate_accessor$"
-          "  return $name$_.size();\n"
-          "}\n");
+          "  return $name$_$1$.size();\n"
+          "}\n",
+          IsImplicitWeakField(field, options_, scc_analyzer_) &&
+                  field->message_type()
+              ? ".weak"
+              : "");
     } else if (field->containing_oneof()) {
       format.Set("field_name", UnderscoresToCamelCase(field->name(), true));
       format.Set("oneof_name", field->containing_oneof()->name());
@@ -1943,10 +1968,18 @@ void MessageGenerator::GenerateDefaultInstanceInitializer(
                                          options_));  // 1
         continue;
       }
-      format(
-          "$package_ns$::$name$_ = const_cast< $1$*>(\n"
-          "    $1$::internal_default_instance());\n",
-          FieldMessageTypeName(field, options_));
+      if (IsImplicitWeakField(field, options_, scc_analyzer_)) {
+        format(
+            "$package_ns$::$name$_ = reinterpret_cast<$1$*>(\n"
+            "    $2$);\n",
+            FieldMessageTypeName(field, options_),
+            QualifiedDefaultInstancePtr(field->message_type(), options_));
+      } else {
+        format(
+            "$package_ns$::$name$_ = const_cast< $1$*>(\n"
+            "    $1$::internal_default_instance());\n",
+            FieldMessageTypeName(field, options_));
+      }
     } else if (field->containing_oneof() &&
                HasDescriptorMethods(descriptor_->file(), options_)) {
       field_generators_.get(field).GenerateConstructorCode(printer);
@@ -4295,7 +4328,9 @@ void MessageGenerator::GenerateIsInitialized(io::Printer* printer) {
       if (field->is_repeated()) {
         if (IsImplicitWeakField(field, options_, scc_analyzer_)) {
           format(
-              "if (!::$proto_ns$::internal::AllAreInitializedWeak(this->$1$_))"
+              "if "
+              "(!::$proto_ns$::internal::AllAreInitializedWeak(this->$1$_.weak)"
+              ")"
               " return false;\n",
               FieldName(field));
         } else {

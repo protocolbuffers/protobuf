@@ -204,6 +204,20 @@ module BasicTest
       end
     end
 
+    def test_map_field_with_symbol
+      m = MapMessage.new
+      assert m.map_string_int32 == {}
+      assert m.map_string_msg == {}
+
+      m = MapMessage.new(
+        :map_string_int32 => {a: 1, "b" => 2},
+        :map_string_msg => {a: TestMessage2.new(:foo => 1),
+                            b: TestMessage2.new(:foo => 10)})
+      assert_equal 1, m.map_string_int32[:a]
+      assert_equal 2, m.map_string_int32[:b]
+      assert_equal 10, m.map_string_msg[:b].foo
+    end
+
     def test_map_inspect
       m = MapMessage.new(
         :map_string_int32 => {"a" => 1, "b" => 2},

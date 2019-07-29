@@ -50,9 +50,9 @@ using type_info = ::type_info;
 #include <typeinfo>
 #endif
 
-#include <google/protobuf/port.h>
 #include <type_traits>
 #include <google/protobuf/arena_impl.h>
+#include <google/protobuf/port.h>
 
 #include <google/protobuf/port_def.inc>
 

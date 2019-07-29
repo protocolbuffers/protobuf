@@ -48,9 +48,9 @@
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/io/coded_stream_inl.h>
-#include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/arena.h>
+#include <google/protobuf/io/zero_copy_stream.h>
+#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 #include <google/protobuf/stubs/stl_util.h>
 
 
@@ -190,12 +190,13 @@ int CodedInputStream::BytesUntilTotalBytesLimit() const {
 }
 
 void CodedInputStream::PrintTotalBytesLimitError() {
-  GOOGLE_LOG(ERROR) << "A protocol message was rejected because it was too "
-                "big (more than "
-             << total_bytes_limit_
-             << " bytes).  To increase the limit (or to disable these "
-                "warnings), see CodedInputStream::SetTotalBytesLimit() "
-                "in net/proto2/io/public/coded_stream.h.";
+  GOOGLE_LOG(ERROR)
+      << "A protocol message was rejected because it was too "
+         "big (more than "
+      << total_bytes_limit_
+      << " bytes).  To increase the limit (or to disable these "
+         "warnings), see CodedInputStream::SetTotalBytesLimit() "
+         "in third_party/protobuf/src/google/protobuf/io/coded_stream.h.";
 }
 
 bool CodedInputStream::SkipFallback(int count, int original_buffer_size) {
@@ -238,12 +239,39 @@ bool CodedInputStream::GetDirectBufferPointer(const void** data, int* size) {
 }
 
 bool CodedInputStream::ReadRaw(void* buffer, int size) {
-  return InternalReadRawInline(buffer, size);
+  int current_buffer_size;
+  while ((current_buffer_size = BufferSize()) < size) {
+    // Reading past end of buffer.  Copy what we have, then refresh.
+    memcpy(buffer, buffer_, current_buffer_size);
+    buffer = reinterpret_cast<uint8*>(buffer) + current_buffer_size;
+    size -= current_buffer_size;
+    Advance(current_buffer_size);
+    if (!Refresh()) return false;
+  }
+
+  memcpy(buffer, buffer_, size);
+  Advance(size);
+
+  return true;
 }
 
 bool CodedInputStream::ReadString(std::string* buffer, int size) {
   if (size < 0) return false;  // security: size is often user-supplied
-  return InternalReadStringInline(buffer, size);
+
+  if (BufferSize() >= size) {
+    STLStringResizeUninitialized(buffer, size);
+    std::pair<char*, bool> z = as_string_data(buffer);
+    if (z.second) {
+      // Oddly enough, memcpy() requires its first two args to be non-NULL even
+      // if we copy 0 bytes.  So, we have ensured that z.first is non-NULL here.
+      GOOGLE_DCHECK(z.first != NULL);
+      memcpy(z.first, buffer_, size);
+      Advance(size);
+    }
+    return true;
+  }
+
+  return ReadStringFallback(buffer, size);
 }
 
 bool CodedInputStream::ReadStringFallback(std::string* buffer, int size) {

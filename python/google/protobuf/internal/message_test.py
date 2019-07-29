@@ -1998,6 +1998,13 @@ class Proto3Test(unittest.TestCase):
     m1.MergeFrom(m2)
     self.assertEqual(10, m2.map_int32_foreign_message[123].c)
 
+    # Test merge maps within different message types.
+    m1 = map_unittest_pb2.TestMap()
+    m2 = map_unittest_pb2.TestMessageMap()
+    m2.map_int32_message[123].optional_int32 = 10
+    m1.map_int32_all_types.MergeFrom(m2.map_int32_message)
+    self.assertEqual(10, m1.map_int32_all_types[123].optional_int32)
+
   def testMergeFromBadType(self):
     msg = map_unittest_pb2.TestMap()
     with self.assertRaisesRegexp(

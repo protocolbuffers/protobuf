@@ -40,6 +40,8 @@
 #if defined(_WIN32)
 
 #define WIN32_LEAN_AND_MEAN
+#include <google/protobuf/io/io_win32.h>
+
 #include <errno.h>
 #include <fcntl.h>
 #include <stdlib.h>
@@ -49,13 +51,12 @@
 #include <wchar.h>
 #include <windows.h>
 
-#include <google/protobuf/io/io_win32.h>
-#include <gtest/gtest.h>
-
 #include <memory>
 #include <sstream>
 #include <string>
 #include <vector>
+
+#include <gtest/gtest.h>
 
 namespace google {
 namespace protobuf {

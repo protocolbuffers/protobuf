@@ -446,21 +446,6 @@ class PROTOBUF_EXPORT MessageLite {
 #endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 
  protected:
-  // CastToBase allows generated code to cast a RepeatedPtrField<T> to
-  // RepeatedPtrFieldBase. We try to restrict access to RepeatedPtrFieldBase
-  // because it is an implementation detail that user code should not access
-  // directly.
-  template <typename T>
-  static internal::RepeatedPtrFieldBase* CastToBase(
-      RepeatedPtrField<T>* repeated) {
-    return repeated;
-  }
-  template <typename T>
-  static const internal::RepeatedPtrFieldBase& CastToBase(
-      const RepeatedPtrField<T>& repeated) {
-    return repeated;
-  }
-
   template <typename T>
   static T* CreateMaybeMessage(Arena* arena) {
     return Arena::CreateMaybeMessage<T>(arena);

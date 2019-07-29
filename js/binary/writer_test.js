@@ -40,6 +40,7 @@
 
 goog.require('goog.crypt');
 goog.require('goog.testing.asserts');
+goog.require('jspb.BinaryReader');
 goog.require('jspb.BinaryWriter');
 
 
@@ -129,5 +130,75 @@ describe('binaryWriterTest', function() {
     assertEquals('CgF/', writer.getResultBase64String());
     assertEquals('CgF/', writer.getResultBase64String(false));
     assertEquals('CgF_', writer.getResultBase64String(true));
+  });
+
+  it('writes split 64 fields', function() {
+    var writer = new jspb.BinaryWriter();
+    writer.writeSplitVarint64(1, 0x1, 0x2);
+    writer.writeSplitVarint64(1, 0xFFFFFFFF, 0xFFFFFFFF);
+    writer.writeSplitFixed64(2, 0x1, 0x2);
+    writer.writeSplitFixed64(2, 0xFFFFFFF0, 0xFFFFFFFF);
+    function lo(i) {
+      return i + 1;
+    }
+    function hi(i) {
+      return i + 2;
+    }
+    writer.writeRepeatedSplitVarint64(3, [0, 1, 2], lo, hi);
+    writer.writeRepeatedSplitFixed64(4, [0, 1, 2], lo, hi);
+    writer.writePackedSplitVarint64(5, [0, 1, 2], lo, hi);
+    writer.writePackedSplitFixed64(6, [0, 1, 2], lo, hi);
+
+    function bitsAsArray(lowBits, highBits) {
+      return [lowBits >>> 0, highBits >>> 0];
+    }
+    var reader = jspb.BinaryReader.alloc(writer.getResultBuffer());
+    reader.nextField();
+    expect(reader.getFieldNumber()).toEqual(1);
+    expect(reader.readSplitVarint64(bitsAsArray)).toEqual([0x1, 0x2]);
+
+    reader.nextField();
+    expect(reader.getFieldNumber()).toEqual(1);
+    expect(reader.readSplitVarint64(bitsAsArray)).toEqual([
+      0xFFFFFFFF, 0xFFFFFFFF
+    ]);
+
+    reader.nextField();
+    expect(reader.getFieldNumber()).toEqual(2);
+    expect(reader.readSplitFixed64(bitsAsArray)).toEqual([0x1, 0x2]);
+
+    reader.nextField();
+    expect(reader.getFieldNumber()).toEqual(2);
+    expect(reader.readSplitFixed64(bitsAsArray)).toEqual([
+      0xFFFFFFF0, 0xFFFFFFFF
+    ]);
+
+    for (let i = 0; i < 3; i++) {
+      reader.nextField();
+      expect(reader.getFieldNumber()).toEqual(3);
+      expect(reader.readSplitVarint64(bitsAsArray)).toEqual([i + 1, i + 2]);
+    }
+
+    for (let i = 0; i < 3; i++) {
+      reader.nextField();
+      expect(reader.getFieldNumber()).toEqual(4);
+      expect(reader.readSplitFixed64(bitsAsArray)).toEqual([i + 1, i + 2]);
+    }
+
+    reader.nextField();
+    expect(reader.getFieldNumber()).toEqual(5);
+    expect(reader.readPackedInt64String()).toEqual([
+      String(2 * 2 ** 32 + 1),
+      String(3 * 2 ** 32 + 2),
+      String(4 * 2 ** 32 + 3),
+    ]);
+
+    reader.nextField();
+    expect(reader.getFieldNumber()).toEqual(6);
+    expect(reader.readPackedFixed64String()).toEqual([
+      String(2 * 2 ** 32 + 1),
+      String(3 * 2 ** 32 + 2),
+      String(4 * 2 ** 32 + 3),
+    ]);
   });
 });

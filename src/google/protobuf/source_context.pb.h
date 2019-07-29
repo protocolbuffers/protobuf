@@ -189,6 +189,11 @@ class PROTOBUF_EXPORT SourceContext :
   std::string* mutable_file_name();
   std::string* release_file_name();
   void set_allocated_file_name(std::string* file_name);
+  private:
+  const std::string& _internal_file_name() const;
+  void _internal_set_file_name(const std::string& value);
+  std::string* _internal_mutable_file_name();
+  public:
 
   // @@protoc_insertion_point(class_scope:google.protobuf.SourceContext)
  private:
@@ -216,12 +221,22 @@ inline void SourceContext::clear_file_name() {
 }
 inline const std::string& SourceContext::file_name() const {
   // @@protoc_insertion_point(field_get:google.protobuf.SourceContext.file_name)
-  return file_name_.GetNoArena();
+  return _internal_file_name();
 }
 inline void SourceContext::set_file_name(const std::string& value) {
+  _internal_set_file_name(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.SourceContext.file_name)
+}
+inline std::string* SourceContext::mutable_file_name() {
+  // @@protoc_insertion_point(field_mutable:google.protobuf.SourceContext.file_name)
+  return _internal_mutable_file_name();
+}
+inline const std::string& SourceContext::_internal_file_name() const {
+  return file_name_.GetNoArena();
+}
+inline void SourceContext::_internal_set_file_name(const std::string& value) {
   
   file_name_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:google.protobuf.SourceContext.file_name)
 }
 inline void SourceContext::set_file_name(std::string&& value) {
   
@@ -241,9 +256,8 @@ inline void SourceContext::set_file_name(const char* value, size_t size) {
       ::std::string(reinterpret_cast<const char*>(value), size));
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.SourceContext.file_name)
 }
-inline std::string* SourceContext::mutable_file_name() {
+inline std::string* SourceContext::_internal_mutable_file_name() {
   
-  // @@protoc_insertion_point(field_mutable:google.protobuf.SourceContext.file_name)
   return file_name_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 inline std::string* SourceContext::release_file_name() {

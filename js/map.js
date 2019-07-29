@@ -465,11 +465,15 @@ jspb.Map.prototype.serializeBinary = function(
  *    entries with unset keys is required for maps to be backwards compatible
  *    with the repeated message representation described here: goo.gl/zuoLAC
  *
+ * @param {V=} opt_defaultValue
+ *    The default value for the type of map values.
+ *
  */
 jspb.Map.deserializeBinary = function(map, reader, keyReaderFn, valueReaderFn,
-                                      opt_valueReaderCallback, opt_defaultKey) {
+                                      opt_valueReaderCallback, opt_defaultKey,
+                                      opt_defaultValue) {
   var key = opt_defaultKey;
-  var value = undefined;
+  var value = opt_defaultValue;
 
   while (reader.nextField()) {
     if (reader.isEndGroup()) {

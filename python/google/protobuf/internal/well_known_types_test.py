@@ -871,6 +871,15 @@ class StructTest(unittest.TestCase):
     self.assertEqual([6, True, False, None, inner_struct],
                      list(struct['key5'].items()))
 
+  def testStructAssignment(self):
+    # Tests struct assignment from another struct
+    s1 = struct_pb2.Struct()
+    s2 = struct_pb2.Struct()
+    for value in [1, 'a', [1], ['a'], {'a': 'b'}]:
+      s1['x'] = value
+      s2['x'] = s1['x']
+      self.assertEqual(s1['x'], s2['x'])
+
   def testMergeFrom(self):
     struct = struct_pb2.Struct()
     struct_class = struct.__class__

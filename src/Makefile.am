@@ -105,6 +105,7 @@ nobase_include_HEADERS =                                         \
   google/protobuf/has_bits.h                                     \
   google/protobuf/implicit_weak_message.h                        \
   google/protobuf/inlined_string_field.h                         \
+  google/protobuf/io/io_win32.h                                \
   google/protobuf/map_entry.h                                    \
   google/protobuf/map_entry_lite.h                               \
   google/protobuf/map_field.h                                    \
@@ -184,7 +185,6 @@ libprotobuf_lite_la_SOURCES =                                  \
   google/protobuf/stubs/int128.cc                              \
   google/protobuf/stubs/int128.h                               \
   google/protobuf/io/io_win32.cc                               \
-  google/protobuf/io/io_win32.h                                \
   google/protobuf/stubs/map_util.h                             \
   google/protobuf/stubs/mathutil.h                             \
   google/protobuf/stubs/status.cc                              \
@@ -213,7 +213,6 @@ libprotobuf_lite_la_SOURCES =                                  \
   google/protobuf/repeated_field.cc                            \
   google/protobuf/wire_format_lite.cc                          \
   google/protobuf/io/coded_stream.cc                           \
-  google/protobuf/io/coded_stream_inl.h                        \
   google/protobuf/io/strtod.cc                                 \
   google/protobuf/io/zero_copy_stream.cc                       \
   google/protobuf/io/zero_copy_stream_impl.cc                  \
@@ -728,6 +727,9 @@ protobuf_test_CPPFLAGS = -I$(GOOGLETEST_SRC_DIR)/include \
 # since test_util.cc takes forever to compile with optimization (with GCC).
 # See configure.ac for more info.
 protobuf_test_CXXFLAGS = $(NO_OPT_CXXFLAGS)
+# Doesn't pass on Windows with MSVC
+NON_MSVC_TEST_SOURCES =                                        \
+  google/protobuf/compiler/command_line_interface_unittest.cc
 protobuf_test_SOURCES =                                        \
   google/protobuf/stubs/bytestream_unittest.cc                 \
   google/protobuf/stubs/common_unittest.cc                     \
@@ -773,7 +775,6 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/io/zero_copy_stream_unittest.cc              \
   google/protobuf/compiler/annotation_test_util.h              \
   google/protobuf/compiler/annotation_test_util.cc             \
-  google/protobuf/compiler/command_line_interface_unittest.cc  \
   google/protobuf/compiler/importer_unittest.cc                \
   google/protobuf/compiler/mock_code_generator.cc              \
   google/protobuf/compiler/mock_code_generator.h               \
@@ -805,6 +806,7 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/util/message_differencer_unittest.cc         \
   google/protobuf/util/time_util_test.cc                       \
   google/protobuf/util/type_resolver_util_test.cc              \
+  $(NON_MSVC_TEST_SOURCES)                                     \
   $(COMMON_TEST_SOURCES)
 nodist_protobuf_test_SOURCES = $(protoc_outputs)
 $(am_protobuf_test_OBJECTS): unittest_proto_middleman

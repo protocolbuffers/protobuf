@@ -28,29 +28,43 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// Author: Darick Tong (darick@google.com)
-syntax = "proto2";
+package com.google.protobuf;
 
-package protobuf_unittest;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 
-message Proto1 {
-  option experimental_java_message_interface =
-      "com.google.protobuf.ExtraInterfaces.HasBoolValue";
-  option experimental_java_message_interface =
-      "com.google.protobuf.ExtraInterfaces.HasStringValue<Proto1>";
-  option experimental_java_builder_interface =
-      "com.google.protobuf.ExtraInterfaces.HasStringValueBuilder"
-      "<Proto1, Builder>";
+import com.google.protobuf.Descriptors.Descriptor;
+import protobuf_unittest.UnittestProto;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
-  optional string string_value = 1;
-  optional bool bool_value = 2;
-  optional bytes byte_value = 3;
-  optional int32 int_value = 4;
-}
+@RunWith(JUnit4.class)
+public final class TypeRegistryTest {
 
-message Proto2 {
-  option experimental_java_message_interface =
-      "com.google.protobuf.ExtraInterfaces.HasBoolValue";
+  @Test
+  public void findDescriptorByFullName() throws Exception {
+    Descriptor descriptor = UnittestProto.TestAllTypes.getDescriptor();
+    assertNull(TypeRegistry.getEmptyTypeRegistry().find(descriptor.getFullName()));
 
-  optional bool bool_value = 1;
+    assertSame(
+        descriptor,
+        TypeRegistry.newBuilder().add(descriptor).build().find(descriptor.getFullName()));
+  }
+
+  @Test
+  public void findDescriptorByTypeUrl() throws Exception {
+    Descriptor descriptor = UnittestProto.TestAllTypes.getDescriptor();
+    assertNull(
+        TypeRegistry.getEmptyTypeRegistry()
+            .getDescriptorForTypeUrl("type.googleapis.com/" + descriptor.getFullName()));
+
+    assertSame(
+        descriptor,
+        TypeRegistry.newBuilder()
+            .add(descriptor)
+            .build()
+            .getDescriptorForTypeUrl("type.googleapis.com/" + descriptor.getFullName()));
+  }
+
 }

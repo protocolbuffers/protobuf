@@ -1,5 +1,9 @@
 # Bazel (https://bazel.build/) BUILD file for Protobuf.
 
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test", "objc_library")
+load("@rules_java//java:defs.bzl", "java_library")
+load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain", "proto_library")
+
 licenses(["notice"])
 
 exports_files(["LICENSE"])
@@ -103,10 +107,10 @@ LINK_OPTS = select({
 load(
     ":protobuf.bzl",
     "cc_proto_library",
-    "py_proto_library",
     "internal_copied_filegroup",
     "internal_gen_well_known_protos_java",
     "internal_protobuf_py_tests",
+    "py_proto_library",
 )
 
 cc_library(
@@ -493,6 +497,7 @@ cc_proto_library(
 COMMON_TEST_SRCS = [
     # AUTOGEN(common_test_srcs)
     "src/google/protobuf/arena_test_util.cc",
+    "src/google/protobuf/map_test_util.inc",
     "src/google/protobuf/test_util.cc",
     "src/google/protobuf/test_util.inc",
     "src/google/protobuf/testing/file.cc",
@@ -605,7 +610,7 @@ cc_test(
         "src/google/protobuf/wire_format_unittest.cc",
     ] + select({
         "//conditions:default": [
-            # Doesn't pass on Windows with MSVC
+            # AUTOGEN(non_msvc_test_srcs)
             "src/google/protobuf/compiler/command_line_interface_unittest.cc",
         ],
         ":msvc": [],
@@ -1214,5 +1219,22 @@ cc_binary(
         ":binary_json_conformance_suite",
         ":conformance_test",
         ":text_format_conformance_suite",
+    ],
+)
+
+sh_test(
+    name = "build_files_updated_unittest",
+    srcs = [
+        "build_files_updated_unittest.sh",
+    ],
+    data = [
+        "BUILD",
+        "cmake/extract_includes.bat.in",
+        "cmake/libprotobuf.cmake",
+        "cmake/libprotobuf-lite.cmake",
+        "cmake/libprotoc.cmake",
+        "cmake/tests.cmake",
+        "src/Makefile.am",
+        "update_file_lists.sh",
     ],
 )

@@ -407,6 +407,26 @@ describe('binaryReaderTest', function() {
       -6, '08 8B 80 80 80 80 80 80 80 80 00');
   });
 
+  /**
+   * Tests reading 64-bit integers as split values.
+   */
+  it('handles split 64 fields', function() {
+    var writer = new jspb.BinaryWriter();
+    writer.writeInt64String(1, '4294967296');
+    writer.writeSfixed64String(2, '4294967298');
+    var reader = jspb.BinaryReader.alloc(writer.getResultBuffer());
+
+    function rejoin(lowBits, highBits) {
+      return highBits * 2 ** 32 + (lowBits >>> 0);
+    }
+    reader.nextField();
+    expect(reader.getFieldNumber()).toEqual(1);
+    expect(reader.readSplitVarint64(rejoin)).toEqual(0x100000000);
+
+    reader.nextField();
+    expect(reader.getFieldNumber()).toEqual(2);
+    expect(reader.readSplitFixed64(rejoin)).toEqual(0x100000002);
+  });
 
   /**
    * Tests 64-bit fields that are handled as strings.
