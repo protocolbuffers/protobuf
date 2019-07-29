@@ -488,7 +488,7 @@ jspb.Map.deserializeBinary = function(map, reader, keyReaderFn, valueReaderFn,
       // Value.
       if (map.valueCtor_) {
         goog.asserts.assert(opt_valueReaderCallback);
-        value = new map.valueCtor_();
+        goog.asserts.assert(value);
         valueReaderFn.call(reader, value, opt_valueReaderCallback);
       } else {
         value =
