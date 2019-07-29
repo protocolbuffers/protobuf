@@ -77,7 +77,7 @@ PROTOBUF_EXPORT int stat(const char* path, struct _stat* buffer);
 PROTOBUF_EXPORT int write(int fd, const void* buffer, size_t size);
 PROTOBUF_EXPORT std::wstring testonly_utf8_to_winpath(const char* path);
 
-enum ExpandWildcardsResult {
+enum class ExpandWildcardsResult {
   kSuccess = 0,
   kErrorNoMatchingFile = 1,
   kErrorInputPathConversion = 2,
