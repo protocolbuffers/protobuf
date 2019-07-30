@@ -639,6 +639,7 @@ int Find(PyContainer* self, PyObject* item) {
   // the .proto file definition.
   const void* descriptor_ptr = PyDescriptor_AsVoidPtr(item);
   if (descriptor_ptr == NULL) {
+    PyErr_Clear();
     // Not a descriptor, it cannot be in the list.
     return -1;
   }
