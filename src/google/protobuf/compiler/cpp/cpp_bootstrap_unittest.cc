@@ -178,6 +178,19 @@ TEST(BootstrapTest, GeneratedFilesMatch) {
   }
 }
 
+//test Generate in cpp_generator.cc
+TEST(BootstrapTest, OptionNotExist)
+{
+  cpp::CppGenerator generator;
+  DescriptorPool pool;
+  GeneratorContext *generator_context = nullptr;
+  std::string parameter = "aaa";
+  string error;
+  ASSERT_FALSE(generator.Generate(pool.FindFileByName("google/protobuf/descriptor.proto"),
+                                  parameter, generator_context, &error));
+  EXPECT_EQ(error, "Unknown generator option: " + parameter);
+}
+
 }  // namespace
 
 }  // namespace cpp
