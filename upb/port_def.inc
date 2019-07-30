@@ -75,8 +75,13 @@
 /* Windows versions */
 #include <stdarg.h>
 #include <stdio.h>
-#define _upb_snprintf _snprintf_s
-#define _upb_vsnprintf _vsnprintf_s
+#if defined(_MSC_VER) && _MSC_VER < 1900
+#define _upb_snprintf _snprintf
+#define _upb_vsnprintf _vsnprintf
+#else
+#define _upb_snprintf snprintf
+#define _upb_vsnprintf vsnprintf
+#endif
 #define _upb_va_copy(a, b) va_copy(a, b)
 #else
 #if __STDC_VERSION__ >= 199901L || __cplusplus >= 201103L
