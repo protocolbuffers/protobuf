@@ -76,8 +76,11 @@
 #include <stdarg.h>
 #include <stdio.h>
 #if defined(_MSC_VER) && _MSC_VER < 1900
-#define _upb_snprintf _snprintf
-#define _upb_vsnprintf _vsnprintf
+int msvc_vsnprintf(char* s, size_t n, const char* format, va_list arg);
+int msvc_snprintf(char* s, size_t n, const char* format, ...);
+#define UPB_MSVC_VSNPRINTF
+#define _upb_snprintf msvc_snprintf
+#define _upb_vsnprintf msvc_vsnprintf
 #else
 #define _upb_snprintf snprintf
 #define _upb_vsnprintf vsnprintf
@@ -134,4 +137,12 @@
 #define UPB_UNREACHABLE() do { assert(0); __builtin_unreachable(); } while(0)
 #else
 #define UPB_UNREACHABLE() do { assert(0); } while(0)
+#endif
+
+/* UPB_INFINITY representing floating-point positive infinity. */
+#include <math.h>
+#ifdef INFINITY
+#define UPB_INFINITY INFINITY
+#else
+#define UPB_INFINITY (1.0 / 0.0)
 #endif

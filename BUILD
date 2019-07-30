@@ -62,6 +62,7 @@ cc_library(
         "upb/generated_util.h",
         "upb/msg.c",
         "upb/msg.h",
+        "upb/port.c",
         "upb/port_def.inc",
         "upb/port_undef.inc",
         "upb/table.c",
