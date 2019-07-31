@@ -2958,7 +2958,7 @@ const upb_byteshandler *upb_json_parsermethod_inputhandler(
   return &m->input_handler_;
 }
 
-upb_json_codecache *upb_json_codecache_new() {
+upb_json_codecache *upb_json_codecache_new(void) {
   upb_alloc *alloc;
   upb_json_codecache *c;
 

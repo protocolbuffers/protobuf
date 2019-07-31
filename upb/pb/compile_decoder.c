@@ -69,7 +69,7 @@ static void freegroup(mgroup *g) {
   upb_gfree(g);
 }
 
-mgroup *newgroup() {
+mgroup *newgroup(void) {
   mgroup *g = upb_gmalloc(sizeof(*g));
   upb_inttable_init(&g->methods, UPB_CTYPE_PTR);
   g->bytecode = NULL;

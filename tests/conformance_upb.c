@@ -119,7 +119,7 @@ void DoTest(
   return;
 }
 
-bool DoTestIo() {
+bool DoTestIo(void) {
   upb_arena *arena;
   upb_alloc *alloc;
   upb_status status;
@@ -168,7 +168,7 @@ bool DoTestIo() {
   return true;
 }
 
-int main() {
+int main(void) {
   while (1) {
     if (!DoTestIo()) {
       fprintf(stderr, "conformance_upb: received EOF from test runner "

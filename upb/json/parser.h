@@ -113,7 +113,7 @@ typedef struct upb_json_codecache upb_json_codecache;
 extern "C" {
 #endif
 
-upb_json_codecache *upb_json_codecache_new();
+upb_json_codecache *upb_json_codecache_new(void);
 void upb_json_codecache_free(upb_json_codecache *cache);
 const upb_json_parsermethod* upb_json_codecache_get(upb_json_codecache* cache,
                                                     const upb_msgdef* md);
