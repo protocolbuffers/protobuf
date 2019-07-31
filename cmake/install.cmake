@@ -22,15 +22,20 @@ foreach(_library ${_protobuf_libraries})
     set_property(TARGET ${_library}
       PROPERTY INSTALL_RPATH "@loader_path")
   endif()
+  if ( ${_library} STREQUAL "libprotoc" )
+    set( _component "devel" )
+  else()
+    set( _component ${_library} )
+  endif()
   install(TARGETS ${_library} EXPORT protobuf-targets
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT ${_library}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT ${_library}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT ${_library})
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT ${_component}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT ${_component}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT ${_component})
 endforeach()
 
 if (protobuf_BUILD_PROTOC_BINARIES)
   install(TARGETS protoc EXPORT protobuf-targets
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT protoc)
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT devel)
   if (UNIX AND NOT APPLE)
     set_property(TARGET protoc
       PROPERTY INSTALL_RPATH "$ORIGIN/../${CMAKE_INSTALL_LIBDIR}")
@@ -40,7 +45,11 @@ if (protobuf_BUILD_PROTOC_BINARIES)
   endif()
 endif (protobuf_BUILD_PROTOC_BINARIES)
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/protobuf.pc ${CMAKE_CURRENT_BINARY_DIR}/protobuf-lite.pc DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+install(
+    FILES ${CMAKE_CURRENT_BINARY_DIR}/protobuf.pc ${CMAKE_CURRENT_BINARY_DIR}/protobuf-lite.pc
+    COMPONENT devel
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig"
+)
 
 file(STRINGS extract_includes.bat.in _extract_strings
   REGEX "^copy")
@@ -54,7 +63,7 @@ foreach(_extract_string ${_extract_strings})
   if(EXISTS "${_extract_from}")
     install(FILES "${_extract_from}"
       DESTINATION "${_extract_to}"
-      COMPONENT protobuf-headers
+      COMPONENT devel
       RENAME "${_extract_name}")
   else()
     message(AUTHOR_WARNING "The file \"${_extract_from}\" is listed in "
@@ -91,7 +100,7 @@ foreach(_file ${nobase_dist_proto_DATA})
   if(EXISTS "${_file_from}")
     install(FILES "${_file_from}"
       DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${_file_path}"
-      COMPONENT protobuf-protos
+      COMPONENT devel
       RENAME "${_file_name}")
   else()
     message(AUTHOR_WARNING "The file \"${_file_from}\" is listed in "
@@ -135,11 +144,11 @@ endif (protobuf_BUILD_PROTOC_BINARIES)
 install(EXPORT protobuf-targets
   DESTINATION "${CMAKE_INSTALL_CMAKEDIR}"
   NAMESPACE protobuf::
-  COMPONENT protobuf-export)
+  COMPONENT devel)
 
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_CMAKEDIR}/
   DESTINATION "${CMAKE_INSTALL_CMAKEDIR}"
-  COMPONENT protobuf-export
+  COMPONENT devel
   PATTERN protobuf-targets.cmake EXCLUDE
 )
 
