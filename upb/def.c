@@ -1633,7 +1633,7 @@ void upb_symtab_free(upb_symtab *s) {
   upb_gfree(s);
 }
 
-upb_symtab *upb_symtab_new() {
+upb_symtab *upb_symtab_new(void) {
   upb_symtab *s = upb_gmalloc(sizeof(*s));
   upb_alloc *alloc;
 

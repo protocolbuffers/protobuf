@@ -524,7 +524,7 @@ void upb_pb_encoder_reset(upb_pb_encoder *e) {
 
 /* public API *****************************************************************/
 
-upb_handlercache *upb_pb_encoder_newcache() {
+upb_handlercache *upb_pb_encoder_newcache(void) {
   return upb_handlercache_new(newhandlers_callback, NULL);
 }
 

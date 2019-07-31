@@ -45,7 +45,7 @@ upb_pb_encoder* upb_pb_encoder_create(upb_arena* a, const upb_handlers* h,
 
 /* Lazily builds and caches handlers that will push encoded data to a bytessink.
  * Any msgdef objects used with this object must outlive it. */
-upb_handlercache *upb_pb_encoder_newcache();
+upb_handlercache *upb_pb_encoder_newcache(void);
 
 #ifdef __cplusplus
 }  /* extern "C" { */

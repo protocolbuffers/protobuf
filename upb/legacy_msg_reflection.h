@@ -173,7 +173,7 @@ bool upb_map_del(upb_map *map, upb_msgval key);
  * and if you keep invalidating the iterator during iteration, the program may
  * enter an infinite loop. */
 
-size_t upb_mapiter_sizeof();
+size_t upb_mapiter_sizeof(void);
 
 void upb_mapiter_begin(upb_mapiter *i, const upb_map *t);
 upb_mapiter *upb_mapiter_new(const upb_map *t, upb_alloc *a);
