@@ -256,3 +256,9 @@ endif (protobuf_BUILD_EXAMPLES)
 if(protobuf_VERBOSE)
     message(STATUS "Protocol Buffers Configuring done")
 endif()
+
+
+include(cpack.cmake)
+
+# This must always be last!
+include( CPack )
