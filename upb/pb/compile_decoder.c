@@ -149,7 +149,7 @@ static int32_t getofs(uint32_t instruction) {
 
 static void setofs(uint32_t *instruction, int32_t ofs) {
   if (op_has_longofs(*instruction)) {
-    *instruction = getop(*instruction) | ofs << 8;
+    *instruction = getop(*instruction) | (uint32_t)ofs << 8;
   } else {
     *instruction = (*instruction & ~0xff00) | ((ofs & 0xff) << 8);
   }
