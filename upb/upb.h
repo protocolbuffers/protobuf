@@ -159,7 +159,15 @@ UPB_INLINE void upb_free(upb_alloc *alloc, void *ptr) {
 
 /* The global allocator used by upb.  Uses the standard malloc()/free(). */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern upb_alloc upb_alloc_global;
+
+#ifdef __cplusplus
+}  /* extern "C" */
+#endif
 
 /* Functions that hard-code the global malloc.
  *
