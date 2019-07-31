@@ -181,11 +181,11 @@ const char neginf[] = "\"-Infinity\"";
 const char inf[] = "\"Infinity\"";
 
 static size_t fmt_double(double val, char* buf, size_t length) {
-  if (val == (1.0 / 0.0)) {
+  if (val == UPB_INFINITY) {
     CHKLENGTH(length >= strlen(inf));
     strcpy(buf, inf);
     return strlen(inf);
-  } else if (val == (-1.0 / 0.0)) {
+  } else if (val == -UPB_INFINITY) {
     CHKLENGTH(length >= strlen(neginf));
     strcpy(buf, neginf);
     return strlen(neginf);
