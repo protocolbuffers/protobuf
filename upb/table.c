@@ -646,7 +646,7 @@ void upb_inttable_compact2(upb_inttable *t, upb_alloc *a) {
     size_t arr_size = max[size_lg2] + 1;  /* +1 so arr[max] will fit. */
     size_t hash_count = upb_inttable_count(t) - arr_count;
     size_t hash_size = hash_count ? (hash_count / MAX_LOAD) + 1 : 0;
-    size_t hashsize_lg2 = log2ceil(hash_size);
+    int hashsize_lg2 = log2ceil(hash_size);
 
     upb_inttable_sizedinit(&new_t, t->t.ctype, arr_size, hashsize_lg2, a);
     upb_inttable_begin(&i, t);
@@ -798,7 +798,7 @@ uint32_t MurmurHash2(const void * key, size_t len, uint32_t seed) {
   const uint32_t m = 0x5bd1e995;
   const int32_t r = 24;
   const uint8_t * data = (const uint8_t *)key;
-  uint32_t h = seed ^ len;
+  uint32_t h = (uint32_t)(seed ^ len);
   uint8_t align = (uintptr_t)data & 3;
 
   if(align && (len >= 4)) {
