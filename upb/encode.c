@@ -25,8 +25,8 @@ static size_t upb_encode_varint(uint64_t val, char *buf) {
   return i;
 }
 
-static uint32_t upb_zzencode_32(int32_t n) { return (n << 1) ^ (n >> 31); }
-static uint64_t upb_zzencode_64(int64_t n) { return (n << 1) ^ (n >> 63); }
+static uint32_t upb_zzencode_32(int32_t n) { return ((uint32_t)n << 1) ^ (n >> 31); }
+static uint64_t upb_zzencode_64(int64_t n) { return ((uint64_t)n << 1) ^ (n >> 63); }
 
 typedef struct {
   upb_alloc *alloc;
