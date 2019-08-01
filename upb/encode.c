@@ -48,7 +48,9 @@ static bool upb_encode_growbuffer(upb_encstate *e, size_t bytes) {
   CHK(new_buf);
 
   /* We want previous data at the end, realloc() put it at the beginning. */
-  memmove(new_buf + new_size - old_size, e->buf, old_size);
+  if (old_size > 0) {
+    memmove(new_buf + new_size - old_size, e->buf, old_size);
+  }
 
   e->ptr = new_buf + new_size - (e->limit - e->ptr);
   e->limit = new_buf + new_size;
