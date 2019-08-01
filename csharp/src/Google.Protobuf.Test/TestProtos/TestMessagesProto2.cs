@@ -3904,8 +3904,8 @@ namespace ProtobufTestMessages.Proto2 {
     public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<TestAllTypesProto2, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
-    public pbc::RepeatedField<TValue> GetOrRegisterExtension<TValue>(pb::RepeatedExtension<TestAllTypesProto2, TValue> extension) {
-      return pb::ExtensionSet.GetOrRegister(ref _extensions, extension);
+    public pbc::RepeatedField<TValue> GetOrInitializeExtension<TValue>(pb::RepeatedExtension<TestAllTypesProto2, TValue> extension) {
+      return pb::ExtensionSet.GetOrInitialize(ref _extensions, extension);
     }
     public void SetExtension<TValue>(pb::Extension<TestAllTypesProto2, TValue> extension, TValue value) {
       pb::ExtensionSet.Set(ref _extensions, extension, value);
@@ -4438,8 +4438,8 @@ namespace ProtobufTestMessages.Proto2 {
         public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<MessageSetCorrect, TValue> extension) {
           return pb::ExtensionSet.Get(ref _extensions, extension);
         }
-        public pbc::RepeatedField<TValue> GetOrRegisterExtension<TValue>(pb::RepeatedExtension<MessageSetCorrect, TValue> extension) {
-          return pb::ExtensionSet.GetOrRegister(ref _extensions, extension);
+        public pbc::RepeatedField<TValue> GetOrInitializeExtension<TValue>(pb::RepeatedExtension<MessageSetCorrect, TValue> extension) {
+          return pb::ExtensionSet.GetOrInitialize(ref _extensions, extension);
         }
         public void SetExtension<TValue>(pb::Extension<MessageSetCorrect, TValue> extension, TValue value) {
           pb::ExtensionSet.Set(ref _extensions, extension, value);

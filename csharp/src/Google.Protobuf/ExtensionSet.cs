@@ -89,7 +89,7 @@ namespace Google.Protobuf
         /// <summary>
         /// Gets the value of the specified repeated extension, registering it if it doesn't exist
         /// </summary>
-        public static RepeatedField<TValue> GetOrRegister<TTarget, TValue>(ref ExtensionSet<TTarget> set, RepeatedExtension<TTarget, TValue> extension) where TTarget : IExtendableMessage<TTarget>
+        public static RepeatedField<TValue> GetOrInitialize<TTarget, TValue>(ref ExtensionSet<TTarget> set, RepeatedExtension<TTarget, TValue> extension) where TTarget : IExtendableMessage<TTarget>
         {
             IExtensionValue value;
             if (set == null)

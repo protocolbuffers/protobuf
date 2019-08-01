@@ -230,7 +230,7 @@ namespace Google.Protobuf.Reflection
                 }
                 else if (extension is RepeatedExtension<T1, T3>)
                 {
-                    return extensionMessage.GetOrRegisterExtension(extension as RepeatedExtension<T1, T3>);
+                    return extensionMessage.GetOrInitializeExtension(extension as RepeatedExtension<T1, T3>);
                 }
                 else
                 {

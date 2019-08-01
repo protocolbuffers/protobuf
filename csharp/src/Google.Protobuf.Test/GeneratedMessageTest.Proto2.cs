@@ -278,7 +278,7 @@ namespace Google.Protobuf
 
             Assert.True(message.IsInitialized());
 
-            message.GetOrRegisterExtension(TestRequired.Extensions.Multi);
+            message.GetOrInitializeExtension(TestRequired.Extensions.Multi);
 
             Assert.True(message.IsInitialized());
 
@@ -297,7 +297,7 @@ namespace Google.Protobuf
 
             Assert.True(message.IsInitialized());
 
-            message.GetOrRegisterExtension(UnittestExtensions.RepeatedBoolExtension).Add(true);
+            message.GetOrInitializeExtension(UnittestExtensions.RepeatedBoolExtension).Add(true);
 
             Assert.True(message.IsInitialized());
         }
@@ -342,7 +342,7 @@ namespace Google.Protobuf
         {
             var message = new TestAllExtensions();
             message.SetExtension(UnittestExtensions.OptionalGroupExtension, new OptionalGroup_extension { A = 10 });
-            message.GetOrRegisterExtension(UnittestExtensions.RepeatedGroupExtension).AddRange(new[]
+            message.GetOrInitializeExtension(UnittestExtensions.RepeatedGroupExtension).AddRange(new[]
             {
                 new RepeatedGroup_extension { A = 10 },
                 new RepeatedGroup_extension { A = 20 },

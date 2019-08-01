@@ -5258,8 +5258,8 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<TestAllExtensions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
-    public pbc::RepeatedField<TValue> GetOrRegisterExtension<TValue>(pb::RepeatedExtension<TestAllExtensions, TValue> extension) {
-      return pb::ExtensionSet.GetOrRegister(ref _extensions, extension);
+    public pbc::RepeatedField<TValue> GetOrInitializeExtension<TValue>(pb::RepeatedExtension<TestAllExtensions, TValue> extension) {
+      return pb::ExtensionSet.GetOrInitialize(ref _extensions, extension);
     }
     public void SetExtension<TValue>(pb::Extension<TestAllExtensions, TValue> extension, TValue value) {
       pb::ExtensionSet.Set(ref _extensions, extension, value);
@@ -6033,8 +6033,8 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<TestGroupExtension, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
-    public pbc::RepeatedField<TValue> GetOrRegisterExtension<TValue>(pb::RepeatedExtension<TestGroupExtension, TValue> extension) {
-      return pb::ExtensionSet.GetOrRegister(ref _extensions, extension);
+    public pbc::RepeatedField<TValue> GetOrInitializeExtension<TValue>(pb::RepeatedExtension<TestGroupExtension, TValue> extension) {
+      return pb::ExtensionSet.GetOrInitialize(ref _extensions, extension);
     }
     public void SetExtension<TValue>(pb::Extension<TestGroupExtension, TValue> extension, TValue value) {
       pb::ExtensionSet.Set(ref _extensions, extension, value);
@@ -8604,8 +8604,8 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<TestEmptyMessageWithExtensions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
-    public pbc::RepeatedField<TValue> GetOrRegisterExtension<TValue>(pb::RepeatedExtension<TestEmptyMessageWithExtensions, TValue> extension) {
-      return pb::ExtensionSet.GetOrRegister(ref _extensions, extension);
+    public pbc::RepeatedField<TValue> GetOrInitializeExtension<TValue>(pb::RepeatedExtension<TestEmptyMessageWithExtensions, TValue> extension) {
+      return pb::ExtensionSet.GetOrInitialize(ref _extensions, extension);
     }
     public void SetExtension<TValue>(pb::Extension<TestEmptyMessageWithExtensions, TValue> extension, TValue value) {
       pb::ExtensionSet.Set(ref _extensions, extension, value);
@@ -8745,8 +8745,8 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<TestMultipleExtensionRanges, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
-    public pbc::RepeatedField<TValue> GetOrRegisterExtension<TValue>(pb::RepeatedExtension<TestMultipleExtensionRanges, TValue> extension) {
-      return pb::ExtensionSet.GetOrRegister(ref _extensions, extension);
+    public pbc::RepeatedField<TValue> GetOrInitializeExtension<TValue>(pb::RepeatedExtension<TestMultipleExtensionRanges, TValue> extension) {
+      return pb::ExtensionSet.GetOrInitialize(ref _extensions, extension);
     }
     public void SetExtension<TValue>(pb::Extension<TestMultipleExtensionRanges, TValue> extension, TValue value) {
       pb::ExtensionSet.Set(ref _extensions, extension, value);
@@ -12223,8 +12223,8 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<TestFieldOrderings, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
-    public pbc::RepeatedField<TValue> GetOrRegisterExtension<TValue>(pb::RepeatedExtension<TestFieldOrderings, TValue> extension) {
-      return pb::ExtensionSet.GetOrRegister(ref _extensions, extension);
+    public pbc::RepeatedField<TValue> GetOrInitializeExtension<TValue>(pb::RepeatedExtension<TestFieldOrderings, TValue> extension) {
+      return pb::ExtensionSet.GetOrInitialize(ref _extensions, extension);
     }
     public void SetExtension<TValue>(pb::Extension<TestFieldOrderings, TValue> extension, TValue value) {
       pb::ExtensionSet.Set(ref _extensions, extension, value);
@@ -19369,8 +19369,8 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<TestPackedExtensions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
-    public pbc::RepeatedField<TValue> GetOrRegisterExtension<TValue>(pb::RepeatedExtension<TestPackedExtensions, TValue> extension) {
-      return pb::ExtensionSet.GetOrRegister(ref _extensions, extension);
+    public pbc::RepeatedField<TValue> GetOrInitializeExtension<TValue>(pb::RepeatedExtension<TestPackedExtensions, TValue> extension) {
+      return pb::ExtensionSet.GetOrInitialize(ref _extensions, extension);
     }
     public void SetExtension<TValue>(pb::Extension<TestPackedExtensions, TValue> extension, TValue value) {
       pb::ExtensionSet.Set(ref _extensions, extension, value);
@@ -19510,8 +19510,8 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<TestUnpackedExtensions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
-    public pbc::RepeatedField<TValue> GetOrRegisterExtension<TValue>(pb::RepeatedExtension<TestUnpackedExtensions, TValue> extension) {
-      return pb::ExtensionSet.GetOrRegister(ref _extensions, extension);
+    public pbc::RepeatedField<TValue> GetOrInitializeExtension<TValue>(pb::RepeatedExtension<TestUnpackedExtensions, TValue> extension) {
+      return pb::ExtensionSet.GetOrInitialize(ref _extensions, extension);
     }
     public void SetExtension<TValue>(pb::Extension<TestUnpackedExtensions, TValue> extension, TValue value) {
       pb::ExtensionSet.Set(ref _extensions, extension, value);
@@ -20586,8 +20586,8 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<TestParsingMerge, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
-    public pbc::RepeatedField<TValue> GetOrRegisterExtension<TValue>(pb::RepeatedExtension<TestParsingMerge, TValue> extension) {
-      return pb::ExtensionSet.GetOrRegister(ref _extensions, extension);
+    public pbc::RepeatedField<TValue> GetOrInitializeExtension<TValue>(pb::RepeatedExtension<TestParsingMerge, TValue> extension) {
+      return pb::ExtensionSet.GetOrInitialize(ref _extensions, extension);
     }
     public void SetExtension<TValue>(pb::Extension<TestParsingMerge, TValue> extension, TValue value) {
       pb::ExtensionSet.Set(ref _extensions, extension, value);
@@ -23251,8 +23251,8 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<TestHugeFieldNumbers, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
-    public pbc::RepeatedField<TValue> GetOrRegisterExtension<TValue>(pb::RepeatedExtension<TestHugeFieldNumbers, TValue> extension) {
-      return pb::ExtensionSet.GetOrRegister(ref _extensions, extension);
+    public pbc::RepeatedField<TValue> GetOrInitializeExtension<TValue>(pb::RepeatedExtension<TestHugeFieldNumbers, TValue> extension) {
+      return pb::ExtensionSet.GetOrInitialize(ref _extensions, extension);
     }
     public void SetExtension<TValue>(pb::Extension<TestHugeFieldNumbers, TValue> extension, TValue value) {
       pb::ExtensionSet.Set(ref _extensions, extension, value);
@@ -23916,8 +23916,8 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<TestExtensionInsideTable, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
-    public pbc::RepeatedField<TValue> GetOrRegisterExtension<TValue>(pb::RepeatedExtension<TestExtensionInsideTable, TValue> extension) {
-      return pb::ExtensionSet.GetOrRegister(ref _extensions, extension);
+    public pbc::RepeatedField<TValue> GetOrInitializeExtension<TValue>(pb::RepeatedExtension<TestExtensionInsideTable, TValue> extension) {
+      return pb::ExtensionSet.GetOrInitialize(ref _extensions, extension);
     }
     public void SetExtension<TValue>(pb::Extension<TestExtensionInsideTable, TValue> extension, TValue value) {
       pb::ExtensionSet.Set(ref _extensions, extension, value);
