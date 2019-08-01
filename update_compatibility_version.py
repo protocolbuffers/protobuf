@@ -49,20 +49,9 @@ def RewriteTextFile(filename, line_rewriter):
   f.close()
 
 
-def UpdateCsharp():
-  RewriteTextFile('csharp/compatibility_tests/v3.0.0/test.sh',
-    lambda line : re.sub(
-      r'LAST_RELEASED=.*$',
-      'LAST_RELEASED=%s' % NEW_VERSION,
-      line))
+RewriteTextFile('tests.sh',
+  lambda line : re.sub(
+    r'LAST_RELEASED=.*$',
+    'LAST_RELEASED=%s' % NEW_VERSION,
+    line))
 
-def UpdateTests():
-  RewriteTextFile('tests.sh',
-    lambda line : re.sub(
-      r'LAST_RELEASED=.*$',
-      'LAST_RELEASED=%s' % NEW_VERSION,
-      line))
-
-
-UpdateCsharp()
-UpdateTests()
