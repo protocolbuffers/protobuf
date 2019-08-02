@@ -151,7 +151,7 @@ string tag(uint32_t fieldnum, char wire_type) {
 
 #define UNKNOWN_FIELD 666
 
-enum Packed {
+enum class Packed {
   UNSPECIFIED = 0,
   TRUE = 1,
   FALSE = 2,
