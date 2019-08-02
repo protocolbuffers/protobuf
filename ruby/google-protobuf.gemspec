@@ -7,6 +7,7 @@ Gem::Specification.new do |s|
   s.homepage    = "https://developers.google.com/protocol-buffers"
   s.authors     = ["Protobuf Authors"]
   s.email       = "protobuf@googlegroups.com"
+  s.metadata    = { "source_code_uri" => "https://github.com/protocolbuffers/protobuf/tree/master/ruby" }
   s.require_paths = ["lib"]
   s.files       = Dir.glob('lib/**/*.rb')
   if RUBY_PLATFORM == "java"
