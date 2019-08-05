@@ -6,6 +6,8 @@
 
 # For when some other test needs the C++ main build, including protoc and
 # libprotobuf.
+LAST_RELEASED=3.9.0
+
 internal_build_cpp() {
   if [ -f src/protoc ]; then
     # Already built.
@@ -148,7 +150,6 @@ build_csharp() {
   # Run csharp compatibility test between 3.0.0 and the current version.
   csharp/compatibility_tests/v3.0.0/test.sh 3.0.0
 
-  LAST_RELEASED=3.9.0
   # Run csharp compatibility test between last released and the current version.
   csharp/compatibility_tests/v3.0.0/test.sh $LAST_RELEASED
 }
@@ -233,6 +234,9 @@ build_java_compatibility() {
   # 3.0.0-beta-4 and the current version.
   cd java/compatibility_tests/v2.5.0
   ./test.sh 3.0.0-beta-4
+
+  # Test the last released and current version.
+  ./test.sh $LAST_RELEASED
 }
 build_java_linkage_monitor() {
   # Linkage Monitor checks compatibility with other Google libraries
@@ -406,6 +410,9 @@ build_python_compatibility() {
   ./test.sh 2.5.0
   # Test between 3.0.0-beta-1 and the current version.
   ./test.sh 3.0.0-beta-1
+
+  # Test between last released and current version.
+  ./test.sh $LAST_RELEASED
 }
 
 build_ruby23() {
@@ -662,7 +669,7 @@ build_php7.0_mac() {
 
 build_php_compatibility() {
   internal_build_cpp
-  php/tests/compatibility_test.sh
+  php/tests/compatibility_test.sh $LAST_RELEASED
 }
 
 build_php7.1() {

@@ -1,6 +1,14 @@
 # JSON input or output tests are skipped (in conformance_objc.m) as mobile
 # platforms don't support JSON wire format to avoid code bloat.
 Recommended.Proto2.ProtobufInput.ValidDataRepeated.ENUM.PackedInput.DefaultOutput.ProtobufOutput
+Recommended.Proto2.ProtobufInput.ValidDataRepeated.ENUM.PackedInput.PackedOutput.ProtobufOutput
+Recommended.Proto2.ProtobufInput.ValidDataRepeated.ENUM.PackedInput.UnpackedOutput.ProtobufOutput
 Recommended.Proto2.ProtobufInput.ValidDataRepeated.ENUM.UnpackedInput.DefaultOutput.ProtobufOutput
+Recommended.Proto2.ProtobufInput.ValidDataRepeated.ENUM.UnpackedInput.PackedOutput.ProtobufOutput
+Recommended.Proto2.ProtobufInput.ValidDataRepeated.ENUM.UnpackedInput.UnpackedOutput.ProtobufOutput
 Recommended.Proto3.ProtobufInput.ValidDataRepeated.ENUM.PackedInput.DefaultOutput.ProtobufOutput
+Recommended.Proto3.ProtobufInput.ValidDataRepeated.ENUM.PackedInput.PackedOutput.ProtobufOutput
+Recommended.Proto3.ProtobufInput.ValidDataRepeated.ENUM.PackedInput.UnpackedOutput.ProtobufOutput
 Recommended.Proto3.ProtobufInput.ValidDataRepeated.ENUM.UnpackedInput.DefaultOutput.ProtobufOutput
+Recommended.Proto3.ProtobufInput.ValidDataRepeated.ENUM.UnpackedInput.PackedOutput.ProtobufOutput
+Recommended.Proto3.ProtobufInput.ValidDataRepeated.ENUM.UnpackedInput.UnpackedOutput.ProtobufOutput
