@@ -269,6 +269,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   void SetBool(int number, FieldType type, bool value, desc);
   void SetEnum(int number, FieldType type, int value, desc);
   void SetString(int number, FieldType type, const std::string& value, desc);
+  void SetString(int number, FieldType type, std::string&& value, desc);
   std::string* MutableString(int number, FieldType type, desc);
   MessageLite* MutableMessage(int number, FieldType type,
                               const MessageLite& prototype, desc);
@@ -332,6 +333,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   void SetRepeatedBool(int number, int index, bool value);
   void SetRepeatedEnum(int number, int index, int value);
   void SetRepeatedString(int number, int index, const std::string& value);
+  void SetRepeatedString(int number, int index, std::string&& value);
   std::string* MutableRepeatedString(int number, int index);
   MessageLite* MutableRepeatedMessage(int number, int index);
 
@@ -345,6 +347,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   void AddBool(int number, FieldType type, bool packed, bool value, desc);
   void AddEnum(int number, FieldType type, bool packed, int value, desc);
   void AddString(int number, FieldType type, const std::string& value, desc);
+  void AddString(int number, FieldType type, std::string&& value, desc);
   std::string* AddString(int number, FieldType type, desc);
   MessageLite* AddMessage(int number, FieldType type,
                           const MessageLite& prototype, desc);
@@ -862,16 +865,29 @@ inline void ExtensionSet::SetString(int number, FieldType type,
                                     const FieldDescriptor* descriptor) {
   MutableString(number, type, descriptor)->assign(value);
 }
+inline void ExtensionSet::SetString(int number, FieldType type,
+                                    std::string&& value,
+                                    const FieldDescriptor* descriptor) {
+  *MutableString(number, type, descriptor) = std::move(value);
+}
 inline void ExtensionSet::SetRepeatedString(int number, int index,
                                             const std::string& value) {
   MutableRepeatedString(number, index)->assign(value);
+}
+inline void ExtensionSet::SetRepeatedString(int number, int index,
+                                            std::string&& value) {
+  *MutableRepeatedString(number, index) = std::move(value);
 }
 inline void ExtensionSet::AddString(int number, FieldType type,
                                     const std::string& value,
                                     const FieldDescriptor* descriptor) {
   AddString(number, type, descriptor)->assign(value);
 }
-
+inline void ExtensionSet::AddString(int number, FieldType type,
+                                    std::string&& value,
+                                    const FieldDescriptor* descriptor) {
+  *AddString(number, type, descriptor) = std::move(value);
+}
 // ===================================================================
 // Glue for generated extension accessors
 
