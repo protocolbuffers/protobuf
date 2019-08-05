@@ -788,11 +788,11 @@ bool CheckAndSetString(
 
   string value_string(value, value_len);
   if (append) {
-    reflection->AddString(message, descriptor, value_string);
+    reflection->AddString(message, descriptor, std::move(value_string));
   } else if (index < 0) {
-    reflection->SetString(message, descriptor, value_string);
+    reflection->SetString(message, descriptor, std::move(value_string));
   } else {
-    reflection->SetRepeatedString(message, descriptor, index, value_string);
+    reflection->SetRepeatedString(message, descriptor, index, std::move(value_string));
   }
   return true;
 }
