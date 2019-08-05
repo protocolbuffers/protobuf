@@ -1223,6 +1223,38 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
 }
 
 
+void Reflection::SetString(Message* message, const FieldDescriptor* field,
+                           const std::string&& value) const {
+  USAGE_CHECK_ALL(SetString, SINGULAR, STRING);
+  if (field->is_extension()) {
+    return MutableExtensionSet(message)->SetString(field->number(),
+                                                   field->type(), value, field);
+  } else {
+    switch (field->options().ctype()) {
+      default:  // TODO(kenton):  Support other string reps.
+      case FieldOptions::STRING: {
+        if (IsInlined(field)) {
+          MutableField<InlinedStringField>(message, field)
+              ->SetNoArena(nullptr, value);
+          break;
+        }
+
+        const std::string* default_ptr =
+            &DefaultRaw<ArenaStringPtr>(field).Get();
+        if (field->containing_oneof() && !HasOneofField(*message, field)) {
+          ClearOneof(message, field->containing_oneof());
+          MutableField<ArenaStringPtr>(message, field)
+              ->UnsafeSetDefault(default_ptr);
+        }
+        *(MutableField<ArenaStringPtr>(message, field)
+            ->Mutable(default_ptr, GetArena(message))) = value;
+        break;
+      }
+    }
+  }
+}
+
+
 std::string Reflection::GetRepeatedString(const Message& message,
                                           const FieldDescriptor* field,
                                           int index) const {
