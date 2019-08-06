@@ -117,7 +117,8 @@ class PROTOBUF_EXPORT JsonObjectWriter : public StructuredObjectWriter {
     use_websafe_base64_for_bytes_ = value;
   }
 
-  // We report as done if we're not in the middle of an element and we have emitted at least one
+  // We report as done if we're not in the middle of an element and we
+  // have emitted at least one object
   bool done() override { return element()->is_root() && done_; }
 
  protected:
