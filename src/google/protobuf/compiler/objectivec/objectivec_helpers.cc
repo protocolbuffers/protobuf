@@ -981,7 +981,7 @@ string BuildCommentsString(const SourceLocation& location,
 // want to put the library in a framework is an interesting question. The
 // problem is it means changing sources shipped with the library to actually
 // use a different value; so it isn't as simple as a option.
-const char* const ProtobufLibraryFrameworkName = "Protobuf";
+const char* const ProtobufLibraryFrameworkName = "protobuf";
 
 string ProtobufFrameworkImportSymbol(const string& framework_name) {
   // GPB_USE_[framework_name]_FRAMEWORK_IMPORTS

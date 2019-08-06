@@ -8,7 +8,7 @@
 #endif
 
 #if GPB_USE_PROTOBUF_FRAMEWORK_IMPORTS
- #import <Protobuf/GPBProtocolBuffers_RuntimeSupport.h>
+ #import <protobuf/GPBProtocolBuffers_RuntimeSupport.h>
 #else
  #import "GPBProtocolBuffers_RuntimeSupport.h"
 #endif
@@ -16,9 +16,9 @@
 #import <stdatomic.h>
 
 #if GPB_USE_PROTOBUF_FRAMEWORK_IMPORTS
- #import <Protobuf/Type.pbobjc.h>
- #import <Protobuf/Any.pbobjc.h>
- #import <Protobuf/SourceContext.pbobjc.h>
+ #import <protobuf/Type.pbobjc.h>
+ #import <protobuf/Any.pbobjc.h>
+ #import <protobuf/SourceContext.pbobjc.h>
 #else
  #import "google/protobuf/Type.pbobjc.h"
  #import "google/protobuf/Any.pbobjc.h"
