@@ -15,7 +15,7 @@ use Google\Protobuf\Internal\GPBUtil;
  *
  * Generated from protobuf message <code>google.protobuf.EnumValueDescriptorProto</code>
  */
-final class EnumValueDescriptorProto extends \Google\Protobuf\Internal\Message
+class EnumValueDescriptorProto extends \Google\Protobuf\Internal\Message
 {
     /**
      * Generated from protobuf field <code>optional string name = 1;</code>

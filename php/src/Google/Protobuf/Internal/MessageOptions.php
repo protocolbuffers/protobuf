@@ -13,7 +13,7 @@ use Google\Protobuf\Internal\GPBUtil;
 /**
  * Generated from protobuf message <code>google.protobuf.MessageOptions</code>
  */
-final class MessageOptions extends \Google\Protobuf\Internal\Message
+class MessageOptions extends \Google\Protobuf\Internal\Message
 {
     /**
      * Set true to use the old proto1 MessageSet wire format for extensions.

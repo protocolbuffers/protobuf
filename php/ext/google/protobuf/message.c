@@ -471,11 +471,14 @@ void Message_construct(zval* msg, zval* array_wrapper) {
       if (upb_fielddef_containingoneof(field)) {
         void* memory = slot_memory(intern->descriptor->layout,
                                    message_data(intern), field);
+        uint32_t* oneof_case = slot_oneof_case(intern->descriptor->layout,
+                                               message_data(intern), field);
         int property_cache_index =
             intern->descriptor->layout->fields[upb_fielddef_index(field)]
                 .cache_index;
         cached = OBJ_PROP(Z_OBJ_P(msg), property_cache_index);
         *(CACHED_VALUE**)(memory) = cached;
+        *oneof_case = upb_fielddef_number(field);
       } else {
         zend_property_info* property_info;
         PHP_PROTO_FAKE_SCOPE_BEGIN(Z_OBJCE_P(msg));

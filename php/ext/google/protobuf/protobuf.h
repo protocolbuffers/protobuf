@@ -37,7 +37,7 @@
 #include "upb.h"
 
 #define PHP_PROTOBUF_EXTNAME "protobuf"
-#define PHP_PROTOBUF_VERSION "3.9.0RC1"
+#define PHP_PROTOBUF_VERSION "3.9.1"
 
 #define MAX_LENGTH_OF_INT64 20
 #define SIZEOF_INT64 8
@@ -948,6 +948,8 @@ void layout_merge(MessageLayout* layout, MessageHeader* from,
 const char* layout_get_oneof_case(MessageLayout* layout, const void* storage,
                                   const upb_oneofdef* oneof TSRMLS_DC);
 void free_layout(MessageLayout* layout);
+uint32_t* slot_oneof_case(MessageLayout* layout, const void* storage,
+                          const upb_fielddef* field);
 void* slot_memory(MessageLayout* layout, const void* storage,
                   const upb_fielddef* field);
 
