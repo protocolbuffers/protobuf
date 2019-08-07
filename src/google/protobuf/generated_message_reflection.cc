@@ -1191,18 +1191,18 @@ const std::string& Reflection::GetStringReference(const Message& message,
 
 
 void Reflection::SetString(Message* message, const FieldDescriptor* field,
-                           const std::string& value) const {
+                           std::string value) const {
   USAGE_CHECK_ALL(SetString, SINGULAR, STRING);
   if (field->is_extension()) {
     return MutableExtensionSet(message)->SetString(field->number(),
-                                                   field->type(), value, field);
+                                                   field->type(), std::move(value), field);
   } else {
     switch (field->options().ctype()) {
       default:  // TODO(kenton):  Support other string reps.
       case FieldOptions::STRING: {
         if (IsInlined(field)) {
           MutableField<InlinedStringField>(message, field)
-              ->SetNoArena(nullptr, value);
+              ->SetNoArena(nullptr, std::move(value));
           break;
         }
 
@@ -1214,40 +1214,7 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
               ->UnsafeSetDefault(default_ptr);
         }
         MutableField<ArenaStringPtr>(message, field)
-            ->Mutable(default_ptr, GetArena(message))
-            ->assign(value);
-        break;
-      }
-    }
-  }
-}
-
-
-void Reflection::SetString(Message* message, const FieldDescriptor* field,
-                           std::string&& value) const {
-  USAGE_CHECK_ALL(SetString, SINGULAR, STRING);
-  if (field->is_extension()) {
-    return MutableExtensionSet(message)->SetString(field->number(),
-                                                   field->type(), std::move(value), field);
-  } else {
-    switch (field->options().ctype()) {
-      default:  // TODO(kenton):  Support other string reps.
-      case FieldOptions::STRING: {
-        if (IsInlined(field)) {
-          MutableField<InlinedStringField>(message, field)
-              ->SetNoArena(nullptr, value);
-          break;
-        }
-
-        const std::string* default_ptr =
-            &DefaultRaw<ArenaStringPtr>(field).Get();
-        if (field->containing_oneof() && !HasOneofField(*message, field)) {
-          ClearOneof(message, field->containing_oneof());
-          MutableField<ArenaStringPtr>(message, field)
-              ->UnsafeSetDefault(default_ptr);
-        }
-        *(MutableField<ArenaStringPtr>(message, field)
-            ->Mutable(default_ptr, GetArena(message))) = std::move(value);
+            ->Mutable(default_ptr, GetArena(message))->assign(std::move(value));
         break;
       }
     }
@@ -1288,25 +1255,7 @@ const std::string& Reflection::GetRepeatedStringReference(
 
 void Reflection::SetRepeatedString(Message* message,
                                    const FieldDescriptor* field, int index,
-                                   const std::string& value) const {
-  USAGE_CHECK_ALL(SetRepeatedString, REPEATED, STRING);
-  if (field->is_extension()) {
-    MutableExtensionSet(message)->SetRepeatedString(field->number(), index,
-                                                    value);
-  } else {
-    switch (field->options().ctype()) {
-      default:  // TODO(kenton):  Support other string reps.
-      case FieldOptions::STRING:
-        *MutableRepeatedField<std::string>(message, field, index) = value;
-        break;
-    }
-  }
-}
-
-
-void Reflection::SetRepeatedString(Message* message,
-                                   const FieldDescriptor* field, int index,
-                                   std::string&& value) const {
+                                   std::string value) const {
   USAGE_CHECK_ALL(SetRepeatedString, REPEATED, STRING);
   if (field->is_extension()) {
     MutableExtensionSet(message)->SetRepeatedString(field->number(), index,
@@ -1315,23 +1264,7 @@ void Reflection::SetRepeatedString(Message* message,
     switch (field->options().ctype()) {
       default:  // TODO(kenton):  Support other string reps.
       case FieldOptions::STRING:
-        *MutableRepeatedField<std::string>(message, field, index) = std::move(value);
-        break;
-    }
-  }
-}
-
-void Reflection::AddString(Message* message, const FieldDescriptor* field,
-                           const std::string& value) const {
-  USAGE_CHECK_ALL(AddString, REPEATED, STRING);
-  if (field->is_extension()) {
-    MutableExtensionSet(message)->AddString(field->number(), field->type(),
-                                            value, field);
-  } else {
-    switch (field->options().ctype()) {
-      default:  // TODO(kenton):  Support other string reps.
-      case FieldOptions::STRING:
-        *AddField<std::string>(message, field) = value;
+        MutableRepeatedField<std::string>(message, field, index)->assign(std::move(value));
         break;
     }
   }
@@ -1339,7 +1272,7 @@ void Reflection::AddString(Message* message, const FieldDescriptor* field,
 
 
 void Reflection::AddString(Message* message, const FieldDescriptor* field,
-                           std::string&& value) const {
+                           std::string value) const {
   USAGE_CHECK_ALL(AddString, REPEATED, STRING);
   if (field->is_extension()) {
     MutableExtensionSet(message)->AddString(field->number(), field->type(),
@@ -1348,11 +1281,12 @@ void Reflection::AddString(Message* message, const FieldDescriptor* field,
     switch (field->options().ctype()) {
       default:  // TODO(kenton):  Support other string reps.
       case FieldOptions::STRING:
-        *AddField<std::string>(message, field) = std::move(value);
+        AddField<std::string>(message, field)->assign(std::move(value));
         break;
     }
   }
 }
+
 
 // -------------------------------------------------------------------
 

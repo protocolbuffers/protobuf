@@ -539,9 +539,7 @@ class PROTOBUF_EXPORT Reflection final {
   void SetBool(Message* message, const FieldDescriptor* field,
                bool value) const;
   void SetString(Message* message, const FieldDescriptor* field,
-                 const std::string& value) const;
-  void SetString(Message* message, const FieldDescriptor* field,
-                 std::string&& value) const;
+                 std::string value) const;
   void SetEnum(Message* message, const FieldDescriptor* field,
                const EnumValueDescriptor* value) const;
   // Set an enum field's value with an integer rather than EnumValueDescriptor.
@@ -641,9 +639,7 @@ class PROTOBUF_EXPORT Reflection final {
   void SetRepeatedBool(Message* message, const FieldDescriptor* field,
                        int index, bool value) const;
   void SetRepeatedString(Message* message, const FieldDescriptor* field,
-                         int index, const std::string& value) const;
-  void SetRepeatedString(Message* message, const FieldDescriptor* field,
-                         int index, std::string&& value) const;
+                         int index, std::string value) const;
   void SetRepeatedEnum(Message* message, const FieldDescriptor* field,
                        int index, const EnumValueDescriptor* value) const;
   // Set an enum field's value with an integer rather than EnumValueDescriptor.
@@ -680,9 +676,7 @@ class PROTOBUF_EXPORT Reflection final {
   void AddBool(Message* message, const FieldDescriptor* field,
                bool value) const;
   void AddString(Message* message, const FieldDescriptor* field,
-                 const std::string& value) const;
-  void AddString(Message* message, const FieldDescriptor* field,
-                 std::string&& value) const;
+                 std::string value) const;
   void AddEnum(Message* message, const FieldDescriptor* field,
                const EnumValueDescriptor* value) const;
   // Add an integer value to a repeated enum field rather than
