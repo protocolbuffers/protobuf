@@ -1517,8 +1517,14 @@ class GeneratedClassTest extends TestBase
     /**
      * @expectedException Exception
      */
-    public function testNoSegfault()
+    public function testNoSegfaultWithError()
     {
         new TestMessage(['optional_int32' => $this->throwIntendedException()]);
+    }
+
+    public function testNoExceptionWithVarDump()
+    {
+        $m = new TestMessage(['optional_int32' => 1]);
+        var_dump($m);
     }
 }
