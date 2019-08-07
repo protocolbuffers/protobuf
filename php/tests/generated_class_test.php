@@ -1504,4 +1504,21 @@ class GeneratedClassTest extends TestBase
         $m = new TestMessage();
         $m->setOptionalString($values[0]);
     }
+
+    #########################################################
+    # Test no segfault when error happens
+    #########################################################
+
+    function throwIntendedException()
+    {
+        throw new Exception('Intended');
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testNoSegfault()
+    {
+        new TestMessage(['optional_int32' => $this->throwIntendedException()]);
+    }
 }
