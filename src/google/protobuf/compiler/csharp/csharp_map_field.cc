@@ -88,9 +88,19 @@ void MapFieldGenerator::GenerateMembers(io::Printer* printer) {
 }
 
 void MapFieldGenerator::GenerateMergingCode(io::Printer* printer) {
-	printer->Print(
-		variables_,
-		"$name$_.MergeFrom(other.$name$_);\n");
+  auto key_descriptor =descriptor_->message_type()->FindFieldByName("key");
+  auto value_descriptor =descriptor_->message_type()->FindFieldByName("value");
+  bool merge = (key_descriptor->type() == FieldDescriptor::TYPE_MESSAGE && !IsWrapperType(key_descriptor))
+    || (value_descriptor->type() == FieldDescriptor::TYPE_MESSAGE && !IsWrapperType(value_descriptor));
+  if(merge){
+    printer->Print(
+      variables_,
+      "$name$_.MergeFrom(other.$name$_);\n");
+  } else {
+    printer->Print(
+      variables_,
+      "$name$_.Add(other.$name$_);\n");
+  }
 }
 
 void MapFieldGenerator::GenerateParsingCode(io::Printer* printer) {

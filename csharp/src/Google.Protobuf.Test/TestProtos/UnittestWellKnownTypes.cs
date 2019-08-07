@@ -1298,15 +1298,15 @@ namespace Google.Protobuf.TestProtos {
       structField_.MergeFrom(other.structField_);
       timestampField_.MergeFrom(other.timestampField_);
       typeField_.MergeFrom(other.typeField_);
-      doubleField_.MergeFrom(other.doubleField_);
-      floatField_.MergeFrom(other.floatField_);
-      int64Field_.MergeFrom(other.int64Field_);
-      uint64Field_.MergeFrom(other.uint64Field_);
-      int32Field_.MergeFrom(other.int32Field_);
-      uint32Field_.MergeFrom(other.uint32Field_);
-      boolField_.MergeFrom(other.boolField_);
-      stringField_.MergeFrom(other.stringField_);
-      bytesField_.MergeFrom(other.bytesField_);
+      doubleField_.Add(other.doubleField_);
+      floatField_.Add(other.floatField_);
+      int64Field_.Add(other.int64Field_);
+      uint64Field_.Add(other.uint64Field_);
+      int32Field_.Add(other.int32Field_);
+      uint32Field_.Add(other.uint32Field_);
+      boolField_.Add(other.boolField_);
+      stringField_.Add(other.stringField_);
+      bytesField_.Add(other.bytesField_);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -2520,15 +2520,15 @@ namespace Google.Protobuf.TestProtos {
       structField_.MergeFrom(other.structField_);
       timestampField_.MergeFrom(other.timestampField_);
       typeField_.MergeFrom(other.typeField_);
-      doubleField_.MergeFrom(other.doubleField_);
-      floatField_.MergeFrom(other.floatField_);
-      int64Field_.MergeFrom(other.int64Field_);
-      uint64Field_.MergeFrom(other.uint64Field_);
-      int32Field_.MergeFrom(other.int32Field_);
-      uint32Field_.MergeFrom(other.uint32Field_);
-      boolField_.MergeFrom(other.boolField_);
-      stringField_.MergeFrom(other.stringField_);
-      bytesField_.MergeFrom(other.bytesField_);
+      doubleField_.Add(other.doubleField_);
+      floatField_.Add(other.floatField_);
+      int64Field_.Add(other.int64Field_);
+      uint64Field_.Add(other.uint64Field_);
+      int32Field_.Add(other.int32Field_);
+      uint32Field_.Add(other.uint32Field_);
+      boolField_.Add(other.boolField_);
+      stringField_.Add(other.stringField_);
+      bytesField_.Add(other.bytesField_);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
