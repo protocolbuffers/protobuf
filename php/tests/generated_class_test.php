@@ -1524,7 +1524,7 @@ class GeneratedClassTest extends TestBase
 
     public function testNoExceptionWithVarDump()
     {
-        $m = new TestMessage(['optional_int32' => 1]);
+        $m = new Sub(['a' => 1]);
         var_dump($m);
     }
 }
