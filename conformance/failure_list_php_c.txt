@@ -58,8 +58,6 @@ Required.Proto3.JsonInput.FloatFieldInfinity.JsonOutput
 Required.Proto3.JsonInput.FloatFieldNan.JsonOutput
 Required.Proto3.JsonInput.FloatFieldNegativeInfinity.JsonOutput
 Required.Proto3.JsonInput.OneofFieldDuplicate
-Required.Proto3.JsonInput.OptionalWrapperTypesWithNonDefaultValue.JsonOutput
-Required.Proto3.JsonInput.OptionalWrapperTypesWithNonDefaultValue.ProtobufOutput
 Required.Proto3.JsonInput.RejectTopLevelNull
 Required.Proto3.JsonInput.StringFieldSurrogatePair.JsonOutput
 Required.Proto3.JsonInput.StringFieldSurrogatePair.ProtobufOutput
