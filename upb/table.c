@@ -283,7 +283,7 @@ static upb_tabkey strcopy(lookupkey_t k2, upb_alloc *a) {
 static uint32_t strhash(upb_tabkey key) {
   uint32_t len;
   char *str = upb_tabstr(key, &len);
-  return MurmurHash2(str, len, 0);
+  return upb_murmur_hash2(str, len, 0);
 }
 
 static bool streql(upb_tabkey k1, lookupkey_t k2) {
@@ -344,20 +344,20 @@ bool upb_strtable_insert3(upb_strtable *t, const char *k, size_t len,
   tabkey = strcopy(key, a);
   if (tabkey == 0) return false;
 
-  hash = MurmurHash2(key.str.str, key.str.len, 0);
+  hash = upb_murmur_hash2(key.str.str, key.str.len, 0);
   insert(&t->t, key, tabkey, v, hash, &strhash, &streql);
   return true;
 }
 
 bool upb_strtable_lookup2(const upb_strtable *t, const char *key, size_t len,
                           upb_value *v) {
-  uint32_t hash = MurmurHash2(key, len, 0);
+  uint32_t hash = upb_murmur_hash2(key, len, 0);
   return lookup(&t->t, strkey2(key, len), v, hash, &streql);
 }
 
 bool upb_strtable_remove3(upb_strtable *t, const char *key, size_t len,
                          upb_value *val, upb_alloc *alloc) {
-  uint32_t hash = MurmurHash2(key, len, 0);
+  uint32_t hash = upb_murmur_hash2(key, len, 0);
   upb_tabkey tabkey;
   if (rm(&t->t, strkey2(key, len), val, &tabkey, hash, &streql)) {
     upb_free(alloc, (void*)tabkey);
@@ -743,7 +743,7 @@ bool upb_inttable_iter_isequal(const upb_inttable_iter *i1,
  *   1. It will not work incrementally.
  *   2. It will not produce the same results on little-endian and big-endian
  *      machines. */
-uint32_t MurmurHash2(const void *key, size_t len, uint32_t seed) {
+uint32_t upb_murmur_hash2(const void *key, size_t len, uint32_t seed) {
   /* 'm' and 'r' are mixing constants generated offline.
    * They're not really 'magic', they just happen to work well. */
   const uint32_t m = 0x5bd1e995;
@@ -794,7 +794,7 @@ uint32_t MurmurHash2(const void *key, size_t len, uint32_t seed) {
 
 #define MIX(h,k,m) { k *= m; k ^= k >> r; k *= m; h *= m; h ^= k; }
 
-uint32_t MurmurHash2(const void * key, size_t len, uint32_t seed) {
+uint32_t upb_murmur_hash2(const void * key, size_t len, uint32_t seed) {
   const uint32_t m = 0x5bd1e995;
   const int32_t r = 24;
   const uint8_t * data = (const uint8_t *)key;
