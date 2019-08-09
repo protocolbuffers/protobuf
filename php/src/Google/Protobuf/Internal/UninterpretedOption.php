@@ -20,7 +20,7 @@ use Google\Protobuf\Internal\GPBUtil;
  *
  * Generated from protobuf message <code>google.protobuf.UninterpretedOption</code>
  */
-final class UninterpretedOption extends \Google\Protobuf\Internal\Message
+class UninterpretedOption extends \Google\Protobuf\Internal\Message
 {
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.UninterpretedOption.NamePart name = 2;</code>
