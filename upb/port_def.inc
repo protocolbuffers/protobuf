@@ -45,14 +45,14 @@
 /* UPB_INLINE: inline if possible, emit standalone code if required. */
 #ifdef __cplusplus
 #define UPB_INLINE inline
-#elif defined (__GNUC__)
+#elif defined (__GNUC__) || defined(__clang__)
 #define UPB_INLINE static __inline__
 #else
 #define UPB_INLINE static
 #endif
 
 /* Hints to the compiler about likely/unlikely branches. */
-#ifdef __GNUC__
+#if defined (__GNUC__) || defined(__clang__)
 #define UPB_LIKELY(x) __builtin_expect((x),1)
 #define UPB_UNLIKELY(x) __builtin_expect((x),0)
 #else
@@ -139,7 +139,7 @@ int msvc_snprintf(char* s, size_t n, const char* format, ...);
  * exist in debug mode.  This turns into regular assert. */
 #define UPB_ASSERT_DEBUGVAR(expr) assert(expr)
 
-#ifdef __GNUC__
+#if defined(__GNUC__) || defined(__clang__)
 #define UPB_UNREACHABLE() do { assert(0); __builtin_unreachable(); } while(0)
 #else
 #define UPB_UNREACHABLE() do { assert(0); } while(0)
