@@ -13,7 +13,7 @@ use Google\Protobuf\Internal\GPBUtil;
 /**
  * Generated from protobuf message <code>google.protobuf.EnumOptions</code>
  */
-final class EnumOptions extends \Google\Protobuf\Internal\Message
+class EnumOptions extends \Google\Protobuf\Internal\Message
 {
     /**
      * Set this option to true to allow mapping different tag names to the same

@@ -13,7 +13,7 @@ use Google\Protobuf\Internal\GPBUtil;
 /**
  * Generated from protobuf message <code>google.protobuf.EnumValueOptions</code>
  */
-final class EnumValueOptions extends \Google\Protobuf\Internal\Message
+class EnumValueOptions extends \Google\Protobuf\Internal\Message
 {
     /**
      * Is this enum value deprecated?

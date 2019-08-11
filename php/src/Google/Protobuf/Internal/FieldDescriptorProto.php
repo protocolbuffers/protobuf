@@ -15,7 +15,7 @@ use Google\Protobuf\Internal\GPBUtil;
  *
  * Generated from protobuf message <code>google.protobuf.FieldDescriptorProto</code>
  */
-final class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
+class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
 {
     /**
      * Generated from protobuf field <code>optional string name = 1;</code>

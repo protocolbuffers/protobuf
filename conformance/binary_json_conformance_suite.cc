@@ -151,18 +151,43 @@ string tag(uint32_t fieldnum, char wire_type) {
 
 #define UNKNOWN_FIELD 666
 
-const FieldDescriptor* GetFieldForType(FieldDescriptor::Type type,
-                                       bool repeated, bool is_proto3) {
+enum class Packed {
+  UNSPECIFIED = 0,
+  TRUE = 1,
+  FALSE = 2,
+};
 
+const FieldDescriptor* GetFieldForType(
+    FieldDescriptor::Type type, bool repeated, bool is_proto3,
+    Packed packed = Packed::UNSPECIFIED) {
   const Descriptor* d = is_proto3 ?
       TestAllTypesProto3().GetDescriptor() : TestAllTypesProto2().GetDescriptor();
   for (int i = 0; i < d->field_count(); i++) {
     const FieldDescriptor* f = d->field(i);
     if (f->type() == type && f->is_repeated() == repeated) {
+      if (packed == Packed::TRUE && !f->is_packed() ||
+          packed == Packed::FALSE && f->is_packed()) {
+        continue;
+      }
       return f;
     }
   }
-  GOOGLE_LOG(FATAL) << "Couldn't find field with type " << (int)type;
+
+  string packed_string = "";
+  const string repeated_string = repeated ? "Repeated " : "Singular ";
+  const string proto_string = is_proto3 ? "Proto3" : "Proto2";
+  if (packed == Packed::TRUE) {
+    packed_string = "Packed ";
+  }
+  if (packed == Packed::FALSE) {
+    packed_string = "Unpacked ";
+  }
+  GOOGLE_LOG(FATAL) << "Couldn't find field with type: "
+                    << repeated_string.c_str()
+                    << packed_string.c_str()
+                    << FieldDescriptor::TypeName(type)
+                    << " for "
+                    << proto_string.c_str();
   return nullptr;
 }
 
@@ -633,57 +658,114 @@ void BinaryAndJsonConformanceSuite::TestValidDataForType(
 
     // Test repeated fields.
     if (FieldDescriptor::IsTypePackable(type)) {
-      string packed_proto;
-      string unpacked_proto;
+      const FieldDescriptor* packed_field =
+          GetFieldForType(type, true, is_proto3, Packed::TRUE);
+      const FieldDescriptor* unpacked_field =
+          GetFieldForType(type, true, is_proto3, Packed::FALSE);
+
+      string default_proto_packed;
+      string default_proto_unpacked;
+      string default_proto_packed_expected;
+      string default_proto_unpacked_expected;
+      string packed_proto_packed;
+      string packed_proto_unpacked;
       string packed_proto_expected;
+      string unpacked_proto_packed;
+      string unpacked_proto_unpacked;
       string unpacked_proto_expected;
 
       for (size_t i = 0; i < values.size(); i++) {
-        unpacked_proto +=
+        default_proto_unpacked +=
             cat(tag(rep_field->number(), wire_type), values[i].first);
-        unpacked_proto_expected +=
+        default_proto_unpacked_expected +=
             cat(tag(rep_field->number(), wire_type), values[i].second);
-        packed_proto += values[i].first;
+        default_proto_packed += values[i].first;
+        default_proto_packed_expected += values[i].second;
+        packed_proto_unpacked +=
+            cat(tag(packed_field->number(), wire_type), values[i].first);
+        packed_proto_packed += values[i].first;
         packed_proto_expected += values[i].second;
+        unpacked_proto_unpacked +=
+            cat(tag(unpacked_field->number(), wire_type), values[i].first);
+        unpacked_proto_packed += values[i].first;
+        unpacked_proto_expected +=
+            cat(tag(unpacked_field->number(), wire_type), values[i].second);
       }
-      packed_proto =
+      default_proto_packed =
           cat(tag(rep_field->number(),
                   WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
-              delim(packed_proto));
-      packed_proto_expected =
+              delim(default_proto_packed));
+      default_proto_packed_expected =
           cat(tag(rep_field->number(),
+                  WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+              delim(default_proto_packed_expected));
+      packed_proto_packed =
+          cat(tag(packed_field->number(),
+                  WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+              delim(packed_proto_packed));
+      packed_proto_expected =
+          cat(tag(packed_field->number(),
                   WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
               delim(packed_proto_expected));
+      unpacked_proto_packed =
+          cat(tag(unpacked_field->number(),
+                  WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+              delim(unpacked_proto_packed));
+
 
       std::unique_ptr<Message> test_message = NewTestMessage(is_proto3);
-      test_message->MergeFromString(packed_proto_expected);
+      test_message->MergeFromString(default_proto_packed_expected);
       string text = test_message->DebugString();
 
       // Ensures both packed and unpacked data can be parsed.
       RunValidProtobufTest(
           StrCat("ValidDataRepeated", type_name, ".UnpackedInput"),
-          REQUIRED, unpacked_proto, text, is_proto3);
+          REQUIRED, default_proto_unpacked, text, is_proto3);
       RunValidProtobufTest(
           StrCat("ValidDataRepeated", type_name, ".PackedInput"),
-          REQUIRED, packed_proto, text, is_proto3);
+          REQUIRED, default_proto_packed, text, is_proto3);
 
       // proto2 should encode as unpacked by default and proto3 should encode as
       // packed by default.
       string expected_proto =
-          rep_field->is_packed() ? packed_proto_expected :
-                                   unpacked_proto_expected;
+          rep_field->is_packed() ? default_proto_packed_expected :
+                                   default_proto_unpacked_expected;
       RunValidBinaryProtobufTest(
           StrCat("ValidDataRepeated", type_name,
                  ".UnpackedInput.DefaultOutput"),
           RECOMMENDED,
-          unpacked_proto,
+          default_proto_unpacked,
           expected_proto, is_proto3);
       RunValidBinaryProtobufTest(
           StrCat("ValidDataRepeated", type_name,
                  ".PackedInput.DefaultOutput"),
           RECOMMENDED,
-          packed_proto,
+          default_proto_packed,
           expected_proto, is_proto3);
+      RunValidBinaryProtobufTest(
+          StrCat("ValidDataRepeated", type_name,
+                 ".UnpackedInput.PackedOutput"),
+          RECOMMENDED,
+          packed_proto_unpacked,
+          packed_proto_expected, is_proto3);
+      RunValidBinaryProtobufTest(
+          StrCat("ValidDataRepeated", type_name,
+                 ".PackedInput.PackedOutput"),
+          RECOMMENDED,
+          packed_proto_packed,
+          packed_proto_expected, is_proto3);
+      RunValidBinaryProtobufTest(
+          StrCat("ValidDataRepeated", type_name,
+                 ".UnpackedInput.UnpackedOutput"),
+          RECOMMENDED,
+          unpacked_proto_unpacked,
+          unpacked_proto_expected, is_proto3);
+      RunValidBinaryProtobufTest(
+          StrCat("ValidDataRepeated", type_name,
+                 ".PackedInput.UnpackedOutput"),
+          RECOMMENDED,
+          unpacked_proto_packed,
+          unpacked_proto_expected, is_proto3);
     } else {
       string proto;
       string expected_proto;

@@ -1,3 +1,56 @@
+2019-06-28 version 3.9.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  C++
+  * Optimize and simplify implementation of RepeatedPtrFieldBase
+  * Don't create unnecessary unknown field sets.
+  * Remove branch from accessors to repeated field element array.
+  * Added delimited parse and serialize util.
+  * Reduce size by not emitting constants for fieldnumbers
+  * Fix a bug when comparing finite and infinite field values with explicit tolerances.
+  * TextFormat::Parser should use a custom Finder to look up extensions by number if one is provided.
+  * Add MessageLite::Utf8DebugString() to make MessageLite more compatible with Message.
+  * Fail fast for better performance in DescriptorPool::FindExtensionByNumber() if descriptor has no defined extensions.
+  * Adding the file name to help debug colliding extensions
+  * Added FieldDescriptor::PrintableNameForExtension() and DescriptorPool::FindExtensionByPrintableName().
+    The latter will replace Reflection::FindKnownExtensionByName().
+  * Replace NULL with nullptr
+  * Created a new Add method in repeated field that allows adding a range of elements all at once.
+  * Enabled enum name-to-value mapping functions for C++ lite
+  * Avoid dynamic initialization in descriptor.proto generated code
+  * Move stream functions to MessageLite from Message.
+  * Move all zero_copy_stream functionality to io_lite.
+  * Do not create array of matched fields for simple repeated fields
+  * Enabling silent mode by default to reduce make compilation noise. (#6237)
+
+  Java
+  * Expose TextFormat.Printer and make it configurable. Deprecate the static methods.
+  * Library for constructing google.protobuf.Struct and google.protobuf.Value
+  * Make OneofDescriptor extend GenericDescriptor.
+  * Expose streamingness of service methods from MethodDescriptor.
+  * Fix a bug where TextFormat fails to parse Any filed with > 1 embedded message sub-fields.
+  * Establish consistent JsonFormat behavior for nulls in oneofs, regardless of order.
+  * Update GSON version to 3.8.5. (#6268)
+  * Add `protobuf_java_lite` Bazel target. (#6177)
+
+  Python
+  * Change implementation of Name() for enums that allow aliases in proto2 in Python
+    to be in line with claims in C++ implementation (to return first value).
+  * Explicitly say what field cannot be set when the new value fails a type check.
+  * Duplicate register in descriptor pool will raise errors
+  * Add __slots__ to all well_known_types classes, custom attributes are not allowed anymore.
+  * text_format only present 8 valid digits for float fields by default
+
+  JavaScript
+  * Add Oneof enum to the list of goog.provide
+
+  PHP
+  * Make php message class final to avoid mocking. (#6277)
+  * Rename get/setXXXValue to get/setXXXWrapper. (#6295)
+
+  Ruby
+  * Remove to_hash methods. (#6166)
+
+
 2019-04-29 version 3.8.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   C++

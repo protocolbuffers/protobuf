@@ -288,7 +288,7 @@
 
 // Shared google3/opensource definitions. //////////////////////////////////////
 
-#define PROTOBUF_VERSION 3009000
+#define PROTOBUF_VERSION 3009001
 #define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC 3009000
 #define PROTOBUF_MIN_PROTOC_VERSION 3009000
 #define PROTOBUF_VERSION_SUFFIX ""

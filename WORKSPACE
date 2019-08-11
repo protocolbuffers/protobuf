@@ -5,17 +5,16 @@ local_repository(
     path = "examples",
 )
 
+local_repository(
+    name = "submodule_gmock",
+    path = "third_party/googletest",
+)
+
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("//:protobuf_deps.bzl", "protobuf_deps")
 
 # Load common dependencies.
 protobuf_deps()
-
-new_local_repository(
-    name = "submodule_gmock",
-    build_file = "@//:third_party/googletest/BUILD.bazel",
-    path = "third_party/googletest",
-)
 
 http_archive(
     name = "six",

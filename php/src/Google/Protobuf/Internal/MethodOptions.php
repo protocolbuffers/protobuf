@@ -13,7 +13,7 @@ use Google\Protobuf\Internal\GPBUtil;
 /**
  * Generated from protobuf message <code>google.protobuf.MethodOptions</code>
  */
-final class MethodOptions extends \Google\Protobuf\Internal\Message
+class MethodOptions extends \Google\Protobuf\Internal\Message
 {
     /**
      * Is this method deprecated?
