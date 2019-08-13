@@ -21,9 +21,9 @@ export CXX=g++
 
 ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 source $HOME/.rvm/scripts/rvm
-brew uninstall node icu4c cmake
+brew uninstall node icu4c cmake wget
 brew prune
-brew install gflags gpg gpg2 node openssl pcre ruby cmake
+brew install gflags gpg gpg2 node openssl pcre ruby cmake wget
 sudo chown -R $(whoami) /usr/local
 brew postinstall node
 
