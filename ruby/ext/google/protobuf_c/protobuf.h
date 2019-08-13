@@ -592,6 +592,11 @@ const upb_pbdecodermethod *new_fillmsg_decodermethod(
 #define ENCODE_MAX_NESTING 63
 
 // -----------------------------------------------------------------------------
+// A cache of frozen string objects to use as field defaults.
+// -----------------------------------------------------------------------------
+VALUE get_frozen_string(const char* data, size_t size, bool binary);
+
+// -----------------------------------------------------------------------------
 // Global map from upb {msg,enum}defs to wrapper Descriptor/EnumDescriptor
 // instances.
 // -----------------------------------------------------------------------------
