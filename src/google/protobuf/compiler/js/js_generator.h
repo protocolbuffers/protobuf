@@ -40,6 +40,7 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/compiler/scc.h>
 #include <google/protobuf/compiler/code_generator.h>
+#include <google/protobuf/descriptor.pb.h>
 
 #include <google/protobuf/port_def.inc>
 
@@ -86,7 +87,8 @@ struct GeneratorOptions {
         error_on_name_conflict(false),
         extension(".js"),
         one_output_file_per_input_file(false),
-        annotate_code(false) {}
+        annotate_code(false),
+        int64_type(FieldOptions_JSType_JS_NUMBER) {}
 
   bool ParseFromOptions(
       const std::vector<std::pair<std::string, std::string> >& options,
@@ -131,6 +133,8 @@ struct GeneratorOptions {
   // are enced as base64 proto of GeneratedCodeInfo message (see
   // descriptor.proto).
   bool annotate_code;
+  // Default type of 64-bit integers if jstype is not specified
+  FieldOptions_JSType int64_type;
 };
 
 // CodeGenerator implementation which generates a JavaScript source file and
@@ -243,6 +247,7 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
 
   void GenerateFieldValueExpression(io::Printer* printer,
                                     const char* obj_reference,
+                                    const GeneratorOptions& options,
                                     const FieldDescriptor* field,
                                     bool use_default) const;
 

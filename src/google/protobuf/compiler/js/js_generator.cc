@@ -796,45 +796,53 @@ std::string DoubleToString(double value) {
 
 // Return true if this is an integral field that should be represented as string
 // in JS.
-bool IsIntegralFieldWithStringJSType(const FieldDescriptor* field) {
+bool IsIntegralFieldWithStringJSType(const GeneratorOptions& options,
+                                     const FieldDescriptor* field) {
   switch (field->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT64:
     case FieldDescriptor::CPPTYPE_UINT64:
       // The default value of JSType is JS_NORMAL, which behaves the same as
       // JS_NUMBER.
-      return field->options().jstype() == FieldOptions::JS_STRING;
+      return field->options().jstype() == FieldOptions::JS_STRING ||
+          (field->options().jstype() == FieldOptions::JS_NORMAL && options.int64_type == FieldOptions::JS_STRING);
     default:
       return false;
   }
 }
 
-std::string MaybeNumberString(const FieldDescriptor* field,
+std::string MaybeNumberString(const GeneratorOptions& options,
+                              const FieldDescriptor* field,
                               const std::string& orig) {
-  return IsIntegralFieldWithStringJSType(field) ? ("\"" + orig + "\"") : orig;
+  return IsIntegralFieldWithStringJSType(options, field) ? ("\"" + orig + "\"") : orig;
 }
 
-std::string JSFieldDefault(const FieldDescriptor* field) {
+std::string JSFieldDefault(const GeneratorOptions& options,
+                           const FieldDescriptor* field) {
   if (field->is_repeated()) {
     return "[]";
   }
 
   switch (field->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32:
-      return MaybeNumberString(field,
+      return MaybeNumberString(options,
+                               field,
                                StrCat(field->default_value_int32()));
     case FieldDescriptor::CPPTYPE_UINT32:
       // The original codegen is in Java, and Java protobufs store unsigned
       // integer values as signed integer values. In order to exactly match the
       // output, we need to reinterpret as base-2 signed. Ugh.
       return MaybeNumberString(
+          options,
           field,
           StrCat(static_cast<int32>(field->default_value_uint32())));
     case FieldDescriptor::CPPTYPE_INT64:
-      return MaybeNumberString(field,
+      return MaybeNumberString(options,
+                               field,
                                StrCat(field->default_value_int64()));
     case FieldDescriptor::CPPTYPE_UINT64:
       // See above note for uint32 -- reinterpreting as signed.
       return MaybeNumberString(
+          options,
           field,
           StrCat(static_cast<int64>(field->default_value_uint64())));
     case FieldDescriptor::CPPTYPE_ENUM:
@@ -910,8 +918,9 @@ std::string ProtoTypeName(const GeneratorOptions& options,
   }
 }
 
-std::string JSIntegerTypeName(const FieldDescriptor* field) {
-  return IsIntegralFieldWithStringJSType(field) ? "string" : "number";
+std::string JSIntegerTypeName(const GeneratorOptions& options,
+                              const FieldDescriptor* field) {
+  return IsIntegralFieldWithStringJSType(options, field) ? "string" : "number";
 }
 
 std::string JSStringTypeName(const GeneratorOptions& options,
@@ -938,13 +947,13 @@ std::string JSTypeName(const GeneratorOptions& options,
     case FieldDescriptor::CPPTYPE_BOOL:
       return "boolean";
     case FieldDescriptor::CPPTYPE_INT32:
-      return JSIntegerTypeName(field);
+      return JSIntegerTypeName(options, field);
     case FieldDescriptor::CPPTYPE_INT64:
-      return JSIntegerTypeName(field);
+      return JSIntegerTypeName(options, field);
     case FieldDescriptor::CPPTYPE_UINT32:
-      return JSIntegerTypeName(field);
+      return JSIntegerTypeName(options, field);
     case FieldDescriptor::CPPTYPE_UINT64:
-      return JSIntegerTypeName(field);
+      return JSIntegerTypeName(options, field);
     case FieldDescriptor::CPPTYPE_FLOAT:
       return "number";
     case FieldDescriptor::CPPTYPE_DOUBLE:
@@ -1081,17 +1090,19 @@ std::string JSFieldTypeAnnotation(const GeneratorOptions& options,
   return jstype;
 }
 
-std::string JSBinaryReaderMethodType(const FieldDescriptor* field) {
+std::string JSBinaryReaderMethodType(const GeneratorOptions& options,
+                                     const FieldDescriptor* field) {
   std::string name = field->type_name();
   if (name[0] >= 'a' && name[0] <= 'z') {
     name[0] = (name[0] - 'a') + 'A';
   }
-  return IsIntegralFieldWithStringJSType(field) ? (name + "String") : name;
+  return IsIntegralFieldWithStringJSType(options, field) ? (name + "String") : name;
 }
 
-std::string JSBinaryReadWriteMethodName(const FieldDescriptor* field,
+std::string JSBinaryReadWriteMethodName(const GeneratorOptions& options,
+                                        const FieldDescriptor* field,
                                         bool is_writer) {
-  std::string name = JSBinaryReaderMethodType(field);
+  std::string name = JSBinaryReaderMethodType(options, field);
   if (field->is_packed()) {
     name = "Packed" + name;
   } else if (is_writer && field->is_repeated()) {
@@ -1103,7 +1114,7 @@ std::string JSBinaryReadWriteMethodName(const FieldDescriptor* field,
 std::string JSBinaryReaderMethodName(const GeneratorOptions& options,
                                      const FieldDescriptor* field) {
   return "jspb.BinaryReader.prototype.read" +
-         JSBinaryReadWriteMethodName(field, /* is_writer = */ false);
+         JSBinaryReadWriteMethodName(options, field, /* is_writer = */ false);
 }
 
 std::string JSBinaryWriterMethodName(const GeneratorOptions& options,
@@ -1113,11 +1124,12 @@ std::string JSBinaryWriterMethodName(const GeneratorOptions& options,
     return "jspb.BinaryWriter.prototype.writeMessageSet";
   }
   return "jspb.BinaryWriter.prototype.write" +
-         JSBinaryReadWriteMethodName(field, /* is_writer = */ true);
+         JSBinaryReadWriteMethodName(options, field, /* is_writer = */ true);
 }
 
 
-std::string JSTypeTag(const FieldDescriptor* desc) {
+std::string JSTypeTag(const GeneratorOptions& options,
+                      const FieldDescriptor* desc) {
   switch (desc->type()) {
     case FieldDescriptor::TYPE_DOUBLE:
     case FieldDescriptor::TYPE_FLOAT:
@@ -1132,7 +1144,7 @@ std::string JSTypeTag(const FieldDescriptor* desc) {
     case FieldDescriptor::TYPE_SINT64:
     case FieldDescriptor::TYPE_SFIXED32:
     case FieldDescriptor::TYPE_SFIXED64:
-      if (IsIntegralFieldWithStringJSType(desc)) {
+      if (IsIntegralFieldWithStringJSType(options, desc)) {
         return "StringInt";
       } else {
         return "Int";
@@ -2285,6 +2297,7 @@ void Generator::GenerateClassToObject(const GeneratorOptions& options,
 
 void Generator::GenerateFieldValueExpression(io::Printer* printer,
                                              const char* obj_reference,
+                                             const GeneratorOptions& options,
                                              const FieldDescriptor* field,
                                              bool use_default) const {
   const bool is_float_or_double =
@@ -2294,7 +2307,7 @@ void Generator::GenerateFieldValueExpression(io::Printer* printer,
 
   const string with_default = use_default ? "WithDefault" : "";
   const string default_arg =
-      use_default ? StrCat(", ", JSFieldDefault(field)) : "";
+      use_default ? StrCat(", ", JSFieldDefault(options, field)) : "";
   const string cardinality = field->is_repeated() ? "Repeated" : "";
   string type = "";
   if (is_float_or_double) {
@@ -2396,7 +2409,7 @@ void Generator::GenerateClassFieldToObject(const GeneratorOptions& options,
     if (!use_default) {
       printer->Print("(f = ");
     }
-    GenerateFieldValueExpression(printer, "msg", field, use_default);
+    GenerateFieldValueExpression(printer, "msg", options, field, use_default);
     if (!use_default) {
       printer->Print(") == null ? undefined : f");
     }
@@ -2753,7 +2766,7 @@ void Generator::GenerateClassField(const GeneratorOptions& options,
       use_default = false;
     }
 
-    GenerateFieldValueExpression(printer, "this", field, use_default);
+    GenerateFieldValueExpression(printer, "this", options, field, use_default);
 
     if (untyped) {
       printer->Print(
@@ -2802,7 +2815,7 @@ void Generator::GenerateClassField(const GeneratorOptions& options,
           "\n",
           "class", GetMessagePath(options, field->containing_type()),
           "settername", "set" + JSGetterName(options, field), "typetag",
-          JSTypeTag(field), "index", JSFieldIndex(field));
+          JSTypeTag(options, field), "index", JSFieldIndex(field));
       printer->Annotate("settername", field);
     } else {
       // Otherwise, use the regular setField function.
@@ -3141,7 +3154,7 @@ void Generator::GenerateClassDeserializeBinaryField(
     } else {
       printer->Print(", null");
     }
-    printer->Print(", $defaultKey$", "defaultKey", JSFieldDefault(key_field));
+    printer->Print(", $defaultKey$", "defaultKey", JSFieldDefault(options, key_field));
     printer->Print(");\n");
     printer->Print("         });\n");
   } else {
@@ -3164,7 +3177,7 @@ void Generator::GenerateClassDeserializeBinaryField(
           JSFieldTypeAnnotation(options, field, false, true,
                                 /* singular_if_not_packed */ true, BYTES_U8),
           "reader",
-          JSBinaryReadWriteMethodName(field, /* is_writer = */ false));
+          JSBinaryReadWriteMethodName(options, field, /* is_writer = */ false));
     }
 
     if (field->is_repeated() && !field->is_packed()) {
@@ -3271,7 +3284,7 @@ void Generator::GenerateClassSerializeBinaryField(
         case FieldDescriptor::CPPTYPE_INT64:
         case FieldDescriptor::CPPTYPE_UINT32:
         case FieldDescriptor::CPPTYPE_UINT64: {
-          if (IsIntegralFieldWithStringJSType(field)) {
+          if (IsIntegralFieldWithStringJSType(options, field)) {
             // We can use `parseInt` here even though it will not be precise for
             // 64-bit quantities because we are only testing for zero/nonzero,
             // and JS numbers (64-bit floating point values, i.e., doubles) are
@@ -3323,7 +3336,7 @@ void Generator::GenerateClassSerializeBinaryField(
         "    writer.write$method$(\n"
         "      $index$,\n"
         "      f",
-        "method", JSBinaryReadWriteMethodName(field, /* is_writer = */ true),
+        "method", JSBinaryReadWriteMethodName(options, field, /* is_writer = */ true),
         "index", StrCat(field->number()));
 
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
@@ -3520,6 +3533,15 @@ bool GeneratorOptions::ParseFromOptions(
         return false;
       }
       annotate_code = true;
+    } else if (options[i].first == "int64_type") {
+      if (options[i].second == "number") {
+        int64_type = FieldOptions::JS_NUMBER;
+      } else if (options[i].second == "string") {
+        int64_type = FieldOptions::JS_STRING;
+      } else {
+        *error = "Unexpected option value for int64_type";
+        return false;
+      }
     } else {
       // Assume any other option is an output directory, as long as it is a bare
       // `key` rather than a `key=value` option.
