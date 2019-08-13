@@ -66,7 +66,10 @@ namespace Google.Protobuf.Reflection
 
         internal FieldDescriptorProto Proto { get; }
 
-        internal Extension Extension { get; }
+        /// <summary>
+        /// An extension identifier for this field, or <c>null</c> if this field isn't an extension.
+        /// </summary>
+        public Extension Extension { get; }
 
         internal FieldDescriptor(FieldDescriptorProto proto, FileDescriptor file,
                                  MessageDescriptor parent, int index, string propertyName, Extension extension)
