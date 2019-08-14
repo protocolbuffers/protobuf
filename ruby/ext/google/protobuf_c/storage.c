@@ -96,17 +96,19 @@ VALUE native_slot_encode_and_freeze_string(upb_fieldtype_t type, VALUE value) {
       kRubyStringUtf8Encoding : kRubyString8bitEncoding;
   VALUE desired_encoding_value = rb_enc_from_encoding(desired_encoding);
 
-  // Note: this will not duplicate underlying string data unless necessary.
-  value = rb_str_encode(value, desired_encoding_value, 0, Qnil);
+  if (rb_obj_encoding(value) != desired_encoding_value || !OBJ_FROZEN(value)) {
+    // Note: this will not duplicate underlying string data unless necessary.
+    value = rb_str_encode(value, desired_encoding_value, 0, Qnil);
 
-  if (type == UPB_TYPE_STRING &&
-      rb_enc_str_coderange(value) == ENC_CODERANGE_BROKEN) {
-    rb_raise(rb_eEncodingError, "String is invalid UTF-8");
+    if (type == UPB_TYPE_STRING &&
+        rb_enc_str_coderange(value) == ENC_CODERANGE_BROKEN) {
+      rb_raise(rb_eEncodingError, "String is invalid UTF-8");
+    }
+
+    // Ensure the data remains valid.  Since we called #encode a moment ago,
+    // this does not freeze the string the user assigned.
+    rb_obj_freeze(value);
   }
-
-  // Ensure the data remains valid.  Since we called #encode a moment ago,
-  // this does not freeze the string the user assigned.
-  rb_obj_freeze(value);
 
   return value;
 }
@@ -729,12 +731,8 @@ VALUE layout_get_default(const upb_fielddef *field) {
     case UPB_TYPE_BYTES: {
       size_t size;
       const char *str = upb_fielddef_defaultstr(field, &size);
-      VALUE str_rb = rb_str_new(str, size);
-
-      rb_enc_associate(str_rb, (upb_fielddef_type(field) == UPB_TYPE_BYTES) ?
-                 kRubyString8bitEncoding : kRubyStringUtf8Encoding);
-      rb_obj_freeze(str_rb);
-      return str_rb;
+      return get_frozen_string(str, size,
+                               upb_fielddef_type(field) == UPB_TYPE_BYTES);
     }
     default: return Qnil;
   }
