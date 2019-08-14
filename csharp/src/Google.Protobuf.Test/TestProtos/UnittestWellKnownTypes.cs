@@ -163,11 +163,11 @@ namespace Google.Protobuf.TestProtos {
             "dFByb3Rvc2IGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.AnyReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.ApiReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.DurationReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.EmptyReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.FieldMaskReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.SourceContextReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.StructReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.TypeReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.WrappersReflection.Descriptor, },
-          new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestWellKnownTypes), global::Google.Protobuf.TestProtos.TestWellKnownTypes.Parser, new[]{ "AnyField", "ApiField", "DurationField", "EmptyField", "FieldMaskField", "SourceContextField", "StructField", "TimestampField", "TypeField", "DoubleField", "FloatField", "Int64Field", "Uint64Field", "Int32Field", "Uint32Field", "BoolField", "StringField", "BytesField", "ValueField" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.RepeatedWellKnownTypes), global::Google.Protobuf.TestProtos.RepeatedWellKnownTypes.Parser, new[]{ "AnyField", "ApiField", "DurationField", "EmptyField", "FieldMaskField", "SourceContextField", "StructField", "TimestampField", "TypeField", "DoubleField", "FloatField", "Int64Field", "Uint64Field", "Int32Field", "Uint32Field", "BoolField", "StringField", "BytesField" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.OneofWellKnownTypes), global::Google.Protobuf.TestProtos.OneofWellKnownTypes.Parser, new[]{ "AnyField", "ApiField", "DurationField", "EmptyField", "FieldMaskField", "SourceContextField", "StructField", "TimestampField", "TypeField", "DoubleField", "FloatField", "Int64Field", "Uint64Field", "Int32Field", "Uint32Field", "BoolField", "StringField", "BytesField" }, new[]{ "OneofField" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.MapWellKnownTypes), global::Google.Protobuf.TestProtos.MapWellKnownTypes.Parser, new[]{ "AnyField", "ApiField", "DurationField", "EmptyField", "FieldMaskField", "SourceContextField", "StructField", "TimestampField", "TypeField", "DoubleField", "FloatField", "Int64Field", "Uint64Field", "Int32Field", "Uint32Field", "BoolField", "StringField", "BytesField" }, null, null, null, new pbr::GeneratedClrTypeInfo[] { null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, })
+          new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestWellKnownTypes), global::Google.Protobuf.TestProtos.TestWellKnownTypes.Parser, new[]{ "AnyField", "ApiField", "DurationField", "EmptyField", "FieldMaskField", "SourceContextField", "StructField", "TimestampField", "TypeField", "DoubleField", "FloatField", "Int64Field", "Uint64Field", "Int32Field", "Uint32Field", "BoolField", "StringField", "BytesField", "ValueField" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.RepeatedWellKnownTypes), global::Google.Protobuf.TestProtos.RepeatedWellKnownTypes.Parser, new[]{ "AnyField", "ApiField", "DurationField", "EmptyField", "FieldMaskField", "SourceContextField", "StructField", "TimestampField", "TypeField", "DoubleField", "FloatField", "Int64Field", "Uint64Field", "Int32Field", "Uint32Field", "BoolField", "StringField", "BytesField" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.OneofWellKnownTypes), global::Google.Protobuf.TestProtos.OneofWellKnownTypes.Parser, new[]{ "AnyField", "ApiField", "DurationField", "EmptyField", "FieldMaskField", "SourceContextField", "StructField", "TimestampField", "TypeField", "DoubleField", "FloatField", "Int64Field", "Uint64Field", "Int32Field", "Uint32Field", "BoolField", "StringField", "BytesField" }, new[]{ "OneofField" }, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.MapWellKnownTypes), global::Google.Protobuf.TestProtos.MapWellKnownTypes.Parser, new[]{ "AnyField", "ApiField", "DurationField", "EmptyField", "FieldMaskField", "SourceContextField", "StructField", "TimestampField", "TypeField", "DoubleField", "FloatField", "Int64Field", "Uint64Field", "Int32Field", "Uint32Field", "BoolField", "StringField", "BytesField" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, })
           }));
     }
     #endregion
@@ -2211,7 +2211,7 @@ namespace Google.Protobuf.TestProtos {
     /// <summary>Field number for the "any_field" field.</summary>
     public const int AnyFieldFieldNumber = 1;
     private static readonly pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Any>.Codec _map_anyField_codec
-        = new pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Any>.Codec(pb::FieldCodec.ForInt32(8, 0), pb::FieldCodec.ForMessage(18, global::Google.Protobuf.WellKnownTypes.Any.Parser), 10);
+        = new pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Any>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForMessage(18, global::Google.Protobuf.WellKnownTypes.Any.Parser), 10);
     private readonly pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Any> anyField_ = new pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Any>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Any> AnyField {
@@ -2221,7 +2221,7 @@ namespace Google.Protobuf.TestProtos {
     /// <summary>Field number for the "api_field" field.</summary>
     public const int ApiFieldFieldNumber = 2;
     private static readonly pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Api>.Codec _map_apiField_codec
-        = new pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Api>.Codec(pb::FieldCodec.ForInt32(8, 0), pb::FieldCodec.ForMessage(18, global::Google.Protobuf.WellKnownTypes.Api.Parser), 18);
+        = new pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Api>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForMessage(18, global::Google.Protobuf.WellKnownTypes.Api.Parser), 18);
     private readonly pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Api> apiField_ = new pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Api>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Api> ApiField {
@@ -2231,7 +2231,7 @@ namespace Google.Protobuf.TestProtos {
     /// <summary>Field number for the "duration_field" field.</summary>
     public const int DurationFieldFieldNumber = 3;
     private static readonly pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Duration>.Codec _map_durationField_codec
-        = new pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Duration>.Codec(pb::FieldCodec.ForInt32(8, 0), pb::FieldCodec.ForMessage(18, global::Google.Protobuf.WellKnownTypes.Duration.Parser), 26);
+        = new pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Duration>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForMessage(18, global::Google.Protobuf.WellKnownTypes.Duration.Parser), 26);
     private readonly pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Duration> durationField_ = new pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Duration>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Duration> DurationField {
@@ -2241,7 +2241,7 @@ namespace Google.Protobuf.TestProtos {
     /// <summary>Field number for the "empty_field" field.</summary>
     public const int EmptyFieldFieldNumber = 4;
     private static readonly pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Empty>.Codec _map_emptyField_codec
-        = new pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Empty>.Codec(pb::FieldCodec.ForInt32(8, 0), pb::FieldCodec.ForMessage(18, global::Google.Protobuf.WellKnownTypes.Empty.Parser), 34);
+        = new pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Empty>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForMessage(18, global::Google.Protobuf.WellKnownTypes.Empty.Parser), 34);
     private readonly pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Empty> emptyField_ = new pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Empty>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Empty> EmptyField {
@@ -2251,7 +2251,7 @@ namespace Google.Protobuf.TestProtos {
     /// <summary>Field number for the "field_mask_field" field.</summary>
     public const int FieldMaskFieldFieldNumber = 5;
     private static readonly pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.FieldMask>.Codec _map_fieldMaskField_codec
-        = new pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.FieldMask>.Codec(pb::FieldCodec.ForInt32(8, 0), pb::FieldCodec.ForMessage(18, global::Google.Protobuf.WellKnownTypes.FieldMask.Parser), 42);
+        = new pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.FieldMask>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForMessage(18, global::Google.Protobuf.WellKnownTypes.FieldMask.Parser), 42);
     private readonly pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.FieldMask> fieldMaskField_ = new pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.FieldMask>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.FieldMask> FieldMaskField {
@@ -2261,7 +2261,7 @@ namespace Google.Protobuf.TestProtos {
     /// <summary>Field number for the "source_context_field" field.</summary>
     public const int SourceContextFieldFieldNumber = 6;
     private static readonly pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.SourceContext>.Codec _map_sourceContextField_codec
-        = new pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.SourceContext>.Codec(pb::FieldCodec.ForInt32(8, 0), pb::FieldCodec.ForMessage(18, global::Google.Protobuf.WellKnownTypes.SourceContext.Parser), 50);
+        = new pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.SourceContext>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForMessage(18, global::Google.Protobuf.WellKnownTypes.SourceContext.Parser), 50);
     private readonly pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.SourceContext> sourceContextField_ = new pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.SourceContext>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.SourceContext> SourceContextField {
@@ -2271,7 +2271,7 @@ namespace Google.Protobuf.TestProtos {
     /// <summary>Field number for the "struct_field" field.</summary>
     public const int StructFieldFieldNumber = 7;
     private static readonly pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Struct>.Codec _map_structField_codec
-        = new pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Struct>.Codec(pb::FieldCodec.ForInt32(8, 0), pb::FieldCodec.ForMessage(18, global::Google.Protobuf.WellKnownTypes.Struct.Parser), 58);
+        = new pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Struct>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForMessage(18, global::Google.Protobuf.WellKnownTypes.Struct.Parser), 58);
     private readonly pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Struct> structField_ = new pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Struct>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Struct> StructField {
@@ -2281,7 +2281,7 @@ namespace Google.Protobuf.TestProtos {
     /// <summary>Field number for the "timestamp_field" field.</summary>
     public const int TimestampFieldFieldNumber = 8;
     private static readonly pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Timestamp>.Codec _map_timestampField_codec
-        = new pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Timestamp>.Codec(pb::FieldCodec.ForInt32(8, 0), pb::FieldCodec.ForMessage(18, global::Google.Protobuf.WellKnownTypes.Timestamp.Parser), 66);
+        = new pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Timestamp>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForMessage(18, global::Google.Protobuf.WellKnownTypes.Timestamp.Parser), 66);
     private readonly pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Timestamp> timestampField_ = new pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Timestamp>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Timestamp> TimestampField {
@@ -2291,7 +2291,7 @@ namespace Google.Protobuf.TestProtos {
     /// <summary>Field number for the "type_field" field.</summary>
     public const int TypeFieldFieldNumber = 9;
     private static readonly pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Type>.Codec _map_typeField_codec
-        = new pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Type>.Codec(pb::FieldCodec.ForInt32(8, 0), pb::FieldCodec.ForMessage(18, global::Google.Protobuf.WellKnownTypes.Type.Parser), 74);
+        = new pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Type>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForMessage(18, global::Google.Protobuf.WellKnownTypes.Type.Parser), 74);
     private readonly pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Type> typeField_ = new pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Type>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Type> TypeField {
@@ -2301,7 +2301,7 @@ namespace Google.Protobuf.TestProtos {
     /// <summary>Field number for the "double_field" field.</summary>
     public const int DoubleFieldFieldNumber = 10;
     private static readonly pbc::MapField<int, double?>.Codec _map_doubleField_codec
-        = new pbc::MapField<int, double?>.Codec(pb::FieldCodec.ForInt32(8, 0), pb::FieldCodec.ForStructWrapper<double>(18), 82);
+        = new pbc::MapField<int, double?>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForStructWrapper<double>(18), 82);
     private readonly pbc::MapField<int, double?> doubleField_ = new pbc::MapField<int, double?>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::MapField<int, double?> DoubleField {
@@ -2311,7 +2311,7 @@ namespace Google.Protobuf.TestProtos {
     /// <summary>Field number for the "float_field" field.</summary>
     public const int FloatFieldFieldNumber = 11;
     private static readonly pbc::MapField<int, float?>.Codec _map_floatField_codec
-        = new pbc::MapField<int, float?>.Codec(pb::FieldCodec.ForInt32(8, 0), pb::FieldCodec.ForStructWrapper<float>(18), 90);
+        = new pbc::MapField<int, float?>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForStructWrapper<float>(18), 90);
     private readonly pbc::MapField<int, float?> floatField_ = new pbc::MapField<int, float?>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::MapField<int, float?> FloatField {
@@ -2321,7 +2321,7 @@ namespace Google.Protobuf.TestProtos {
     /// <summary>Field number for the "int64_field" field.</summary>
     public const int Int64FieldFieldNumber = 12;
     private static readonly pbc::MapField<int, long?>.Codec _map_int64Field_codec
-        = new pbc::MapField<int, long?>.Codec(pb::FieldCodec.ForInt32(8, 0), pb::FieldCodec.ForStructWrapper<long>(18), 98);
+        = new pbc::MapField<int, long?>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForStructWrapper<long>(18), 98);
     private readonly pbc::MapField<int, long?> int64Field_ = new pbc::MapField<int, long?>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::MapField<int, long?> Int64Field {
@@ -2331,7 +2331,7 @@ namespace Google.Protobuf.TestProtos {
     /// <summary>Field number for the "uint64_field" field.</summary>
     public const int Uint64FieldFieldNumber = 13;
     private static readonly pbc::MapField<int, ulong?>.Codec _map_uint64Field_codec
-        = new pbc::MapField<int, ulong?>.Codec(pb::FieldCodec.ForInt32(8, 0), pb::FieldCodec.ForStructWrapper<ulong>(18), 106);
+        = new pbc::MapField<int, ulong?>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForStructWrapper<ulong>(18), 106);
     private readonly pbc::MapField<int, ulong?> uint64Field_ = new pbc::MapField<int, ulong?>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::MapField<int, ulong?> Uint64Field {
@@ -2341,7 +2341,7 @@ namespace Google.Protobuf.TestProtos {
     /// <summary>Field number for the "int32_field" field.</summary>
     public const int Int32FieldFieldNumber = 14;
     private static readonly pbc::MapField<int, int?>.Codec _map_int32Field_codec
-        = new pbc::MapField<int, int?>.Codec(pb::FieldCodec.ForInt32(8, 0), pb::FieldCodec.ForStructWrapper<int>(18), 114);
+        = new pbc::MapField<int, int?>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForStructWrapper<int>(18), 114);
     private readonly pbc::MapField<int, int?> int32Field_ = new pbc::MapField<int, int?>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::MapField<int, int?> Int32Field {
@@ -2351,7 +2351,7 @@ namespace Google.Protobuf.TestProtos {
     /// <summary>Field number for the "uint32_field" field.</summary>
     public const int Uint32FieldFieldNumber = 15;
     private static readonly pbc::MapField<int, uint?>.Codec _map_uint32Field_codec
-        = new pbc::MapField<int, uint?>.Codec(pb::FieldCodec.ForInt32(8, 0), pb::FieldCodec.ForStructWrapper<uint>(18), 122);
+        = new pbc::MapField<int, uint?>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForStructWrapper<uint>(18), 122);
     private readonly pbc::MapField<int, uint?> uint32Field_ = new pbc::MapField<int, uint?>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::MapField<int, uint?> Uint32Field {
@@ -2361,7 +2361,7 @@ namespace Google.Protobuf.TestProtos {
     /// <summary>Field number for the "bool_field" field.</summary>
     public const int BoolFieldFieldNumber = 16;
     private static readonly pbc::MapField<int, bool?>.Codec _map_boolField_codec
-        = new pbc::MapField<int, bool?>.Codec(pb::FieldCodec.ForInt32(8, 0), pb::FieldCodec.ForStructWrapper<bool>(18), 130);
+        = new pbc::MapField<int, bool?>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForStructWrapper<bool>(18), 130);
     private readonly pbc::MapField<int, bool?> boolField_ = new pbc::MapField<int, bool?>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::MapField<int, bool?> BoolField {
@@ -2371,7 +2371,7 @@ namespace Google.Protobuf.TestProtos {
     /// <summary>Field number for the "string_field" field.</summary>
     public const int StringFieldFieldNumber = 17;
     private static readonly pbc::MapField<int, string>.Codec _map_stringField_codec
-        = new pbc::MapField<int, string>.Codec(pb::FieldCodec.ForInt32(8, 0), pb::FieldCodec.ForClassWrapper<string>(18), 138);
+        = new pbc::MapField<int, string>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForClassWrapper<string>(18), 138);
     private readonly pbc::MapField<int, string> stringField_ = new pbc::MapField<int, string>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::MapField<int, string> StringField {
@@ -2381,7 +2381,7 @@ namespace Google.Protobuf.TestProtos {
     /// <summary>Field number for the "bytes_field" field.</summary>
     public const int BytesFieldFieldNumber = 18;
     private static readonly pbc::MapField<int, pb::ByteString>.Codec _map_bytesField_codec
-        = new pbc::MapField<int, pb::ByteString>.Codec(pb::FieldCodec.ForInt32(8, 0), pb::FieldCodec.ForClassWrapper<pb::ByteString>(18), 146);
+        = new pbc::MapField<int, pb::ByteString>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForClassWrapper<pb::ByteString>(18), 146);
     private readonly pbc::MapField<int, pb::ByteString> bytesField_ = new pbc::MapField<int, pb::ByteString>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::MapField<int, pb::ByteString> BytesField {

@@ -160,29 +160,29 @@ namespace Google.Protobuf.Reflection {
             "AQGiAgNHUEKqAhpHb29nbGUuUHJvdG9idWYuUmVmbGVjdGlvbg=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
-          new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.FileDescriptorSet), global::Google.Protobuf.Reflection.FileDescriptorSet.Parser, new[]{ "File" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.FileDescriptorProto), global::Google.Protobuf.Reflection.FileDescriptorProto.Parser, new[]{ "Name", "Package", "Dependency", "PublicDependency", "WeakDependency", "MessageType", "EnumType", "Service", "Extension", "Options", "SourceCodeInfo", "Syntax" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.DescriptorProto), global::Google.Protobuf.Reflection.DescriptorProto.Parser, new[]{ "Name", "Field", "Extension", "NestedType", "EnumType", "ExtensionRange", "OneofDecl", "Options", "ReservedRange", "ReservedName" }, null, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.DescriptorProto.Types.ExtensionRange), global::Google.Protobuf.Reflection.DescriptorProto.Types.ExtensionRange.Parser, new[]{ "Start", "End", "Options" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.DescriptorProto.Types.ReservedRange), global::Google.Protobuf.Reflection.DescriptorProto.Types.ReservedRange.Parser, new[]{ "Start", "End" }, null, null, null, null)}),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.ExtensionRangeOptions), global::Google.Protobuf.Reflection.ExtensionRangeOptions.Parser, new[]{ "UninterpretedOption" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.FieldDescriptorProto), global::Google.Protobuf.Reflection.FieldDescriptorProto.Parser, new[]{ "Name", "Number", "Label", "Type", "TypeName", "Extendee", "DefaultValue", "OneofIndex", "JsonName", "Options" }, null, new[]{ typeof(global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Type), typeof(global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Label) }, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.OneofDescriptorProto), global::Google.Protobuf.Reflection.OneofDescriptorProto.Parser, new[]{ "Name", "Options" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.EnumDescriptorProto), global::Google.Protobuf.Reflection.EnumDescriptorProto.Parser, new[]{ "Name", "Value", "Options", "ReservedRange", "ReservedName" }, null, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.EnumDescriptorProto.Types.EnumReservedRange), global::Google.Protobuf.Reflection.EnumDescriptorProto.Types.EnumReservedRange.Parser, new[]{ "Start", "End" }, null, null, null, null)}),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.EnumValueDescriptorProto), global::Google.Protobuf.Reflection.EnumValueDescriptorProto.Parser, new[]{ "Name", "Number", "Options" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.ServiceDescriptorProto), global::Google.Protobuf.Reflection.ServiceDescriptorProto.Parser, new[]{ "Name", "Method", "Options" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.MethodDescriptorProto), global::Google.Protobuf.Reflection.MethodDescriptorProto.Parser, new[]{ "Name", "InputType", "OutputType", "Options", "ClientStreaming", "ServerStreaming" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.FileOptions), global::Google.Protobuf.Reflection.FileOptions.Parser, new[]{ "JavaPackage", "JavaOuterClassname", "JavaMultipleFiles", "JavaGenerateEqualsAndHash", "JavaStringCheckUtf8", "OptimizeFor", "GoPackage", "CcGenericServices", "JavaGenericServices", "PyGenericServices", "PhpGenericServices", "Deprecated", "CcEnableArenas", "ObjcClassPrefix", "CsharpNamespace", "SwiftPrefix", "PhpClassPrefix", "PhpNamespace", "PhpMetadataNamespace", "RubyPackage", "UninterpretedOption" }, null, new[]{ typeof(global::Google.Protobuf.Reflection.FileOptions.Types.OptimizeMode) }, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.MessageOptions), global::Google.Protobuf.Reflection.MessageOptions.Parser, new[]{ "MessageSetWireFormat", "NoStandardDescriptorAccessor", "Deprecated", "MapEntry", "UninterpretedOption" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.FieldOptions), global::Google.Protobuf.Reflection.FieldOptions.Parser, new[]{ "Ctype", "Packed", "Jstype", "Lazy", "Deprecated", "Weak", "UninterpretedOption" }, null, new[]{ typeof(global::Google.Protobuf.Reflection.FieldOptions.Types.CType), typeof(global::Google.Protobuf.Reflection.FieldOptions.Types.JSType) }, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.OneofOptions), global::Google.Protobuf.Reflection.OneofOptions.Parser, new[]{ "UninterpretedOption" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.EnumOptions), global::Google.Protobuf.Reflection.EnumOptions.Parser, new[]{ "AllowAlias", "Deprecated", "UninterpretedOption" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.EnumValueOptions), global::Google.Protobuf.Reflection.EnumValueOptions.Parser, new[]{ "Deprecated", "UninterpretedOption" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.ServiceOptions), global::Google.Protobuf.Reflection.ServiceOptions.Parser, new[]{ "Deprecated", "UninterpretedOption" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.MethodOptions), global::Google.Protobuf.Reflection.MethodOptions.Parser, new[]{ "Deprecated", "IdempotencyLevel", "UninterpretedOption" }, null, new[]{ typeof(global::Google.Protobuf.Reflection.MethodOptions.Types.IdempotencyLevel) }, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.UninterpretedOption), global::Google.Protobuf.Reflection.UninterpretedOption.Parser, new[]{ "Name", "IdentifierValue", "PositiveIntValue", "NegativeIntValue", "DoubleValue", "StringValue", "AggregateValue" }, null, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.UninterpretedOption.Types.NamePart), global::Google.Protobuf.Reflection.UninterpretedOption.Types.NamePart.Parser, new[]{ "NamePart_", "IsExtension" }, null, null, null, null)}),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.SourceCodeInfo), global::Google.Protobuf.Reflection.SourceCodeInfo.Parser, new[]{ "Location" }, null, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.SourceCodeInfo.Types.Location), global::Google.Protobuf.Reflection.SourceCodeInfo.Types.Location.Parser, new[]{ "Path", "Span", "LeadingComments", "TrailingComments", "LeadingDetachedComments" }, null, null, null, null)}),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.GeneratedCodeInfo), global::Google.Protobuf.Reflection.GeneratedCodeInfo.Parser, new[]{ "Annotation" }, null, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.GeneratedCodeInfo.Types.Annotation), global::Google.Protobuf.Reflection.GeneratedCodeInfo.Types.Annotation.Parser, new[]{ "Path", "SourceFile", "Begin", "End" }, null, null, null, null)})
+          new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.FileDescriptorSet), global::Google.Protobuf.Reflection.FileDescriptorSet.Parser, new[]{ "File" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.FileDescriptorProto), global::Google.Protobuf.Reflection.FileDescriptorProto.Parser, new[]{ "Name", "Package", "Dependency", "PublicDependency", "WeakDependency", "MessageType", "EnumType", "Service", "Extension", "Options", "SourceCodeInfo", "Syntax" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.DescriptorProto), global::Google.Protobuf.Reflection.DescriptorProto.Parser, new[]{ "Name", "Field", "Extension", "NestedType", "EnumType", "ExtensionRange", "OneofDecl", "Options", "ReservedRange", "ReservedName" }, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.DescriptorProto.Types.ExtensionRange), global::Google.Protobuf.Reflection.DescriptorProto.Types.ExtensionRange.Parser, new[]{ "Start", "End", "Options" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.DescriptorProto.Types.ReservedRange), global::Google.Protobuf.Reflection.DescriptorProto.Types.ReservedRange.Parser, new[]{ "Start", "End" }, null, null, null)}),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.ExtensionRangeOptions), global::Google.Protobuf.Reflection.ExtensionRangeOptions.Parser, new[]{ "UninterpretedOption" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.FieldDescriptorProto), global::Google.Protobuf.Reflection.FieldDescriptorProto.Parser, new[]{ "Name", "Number", "Label", "Type", "TypeName", "Extendee", "DefaultValue", "OneofIndex", "JsonName", "Options" }, null, new[]{ typeof(global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Type), typeof(global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Label) }, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.OneofDescriptorProto), global::Google.Protobuf.Reflection.OneofDescriptorProto.Parser, new[]{ "Name", "Options" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.EnumDescriptorProto), global::Google.Protobuf.Reflection.EnumDescriptorProto.Parser, new[]{ "Name", "Value", "Options", "ReservedRange", "ReservedName" }, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.EnumDescriptorProto.Types.EnumReservedRange), global::Google.Protobuf.Reflection.EnumDescriptorProto.Types.EnumReservedRange.Parser, new[]{ "Start", "End" }, null, null, null)}),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.EnumValueDescriptorProto), global::Google.Protobuf.Reflection.EnumValueDescriptorProto.Parser, new[]{ "Name", "Number", "Options" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.ServiceDescriptorProto), global::Google.Protobuf.Reflection.ServiceDescriptorProto.Parser, new[]{ "Name", "Method", "Options" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.MethodDescriptorProto), global::Google.Protobuf.Reflection.MethodDescriptorProto.Parser, new[]{ "Name", "InputType", "OutputType", "Options", "ClientStreaming", "ServerStreaming" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.FileOptions), global::Google.Protobuf.Reflection.FileOptions.Parser, new[]{ "JavaPackage", "JavaOuterClassname", "JavaMultipleFiles", "JavaGenerateEqualsAndHash", "JavaStringCheckUtf8", "OptimizeFor", "GoPackage", "CcGenericServices", "JavaGenericServices", "PyGenericServices", "PhpGenericServices", "Deprecated", "CcEnableArenas", "ObjcClassPrefix", "CsharpNamespace", "SwiftPrefix", "PhpClassPrefix", "PhpNamespace", "PhpMetadataNamespace", "RubyPackage", "UninterpretedOption" }, null, new[]{ typeof(global::Google.Protobuf.Reflection.FileOptions.Types.OptimizeMode) }, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.MessageOptions), global::Google.Protobuf.Reflection.MessageOptions.Parser, new[]{ "MessageSetWireFormat", "NoStandardDescriptorAccessor", "Deprecated", "MapEntry", "UninterpretedOption" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.FieldOptions), global::Google.Protobuf.Reflection.FieldOptions.Parser, new[]{ "Ctype", "Packed", "Jstype", "Lazy", "Deprecated", "Weak", "UninterpretedOption" }, null, new[]{ typeof(global::Google.Protobuf.Reflection.FieldOptions.Types.CType), typeof(global::Google.Protobuf.Reflection.FieldOptions.Types.JSType) }, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.OneofOptions), global::Google.Protobuf.Reflection.OneofOptions.Parser, new[]{ "UninterpretedOption" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.EnumOptions), global::Google.Protobuf.Reflection.EnumOptions.Parser, new[]{ "AllowAlias", "Deprecated", "UninterpretedOption" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.EnumValueOptions), global::Google.Protobuf.Reflection.EnumValueOptions.Parser, new[]{ "Deprecated", "UninterpretedOption" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.ServiceOptions), global::Google.Protobuf.Reflection.ServiceOptions.Parser, new[]{ "Deprecated", "UninterpretedOption" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.MethodOptions), global::Google.Protobuf.Reflection.MethodOptions.Parser, new[]{ "Deprecated", "IdempotencyLevel", "UninterpretedOption" }, null, new[]{ typeof(global::Google.Protobuf.Reflection.MethodOptions.Types.IdempotencyLevel) }, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.UninterpretedOption), global::Google.Protobuf.Reflection.UninterpretedOption.Parser, new[]{ "Name", "IdentifierValue", "PositiveIntValue", "NegativeIntValue", "DoubleValue", "StringValue", "AggregateValue" }, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.UninterpretedOption.Types.NamePart), global::Google.Protobuf.Reflection.UninterpretedOption.Types.NamePart.Parser, new[]{ "NamePart_", "IsExtension" }, null, null, null)}),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.SourceCodeInfo), global::Google.Protobuf.Reflection.SourceCodeInfo.Parser, new[]{ "Location" }, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.SourceCodeInfo.Types.Location), global::Google.Protobuf.Reflection.SourceCodeInfo.Types.Location.Parser, new[]{ "Path", "Span", "LeadingComments", "TrailingComments", "LeadingDetachedComments" }, null, null, null)}),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.GeneratedCodeInfo), global::Google.Protobuf.Reflection.GeneratedCodeInfo.Parser, new[]{ "Annotation" }, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.GeneratedCodeInfo.Types.Annotation), global::Google.Protobuf.Reflection.GeneratedCodeInfo.Types.Annotation.Parser, new[]{ "Path", "SourceFile", "Begin", "End" }, null, null, null)})
           }));
     }
     #endregion
@@ -1587,10 +1587,9 @@ namespace Google.Protobuf.Reflection {
 
   }
 
-  internal sealed partial class ExtensionRangeOptions : pb::IExtendableMessage<ExtensionRangeOptions> {
+  internal sealed partial class ExtensionRangeOptions : pb::IMessage<ExtensionRangeOptions> {
     private static readonly pb::MessageParser<ExtensionRangeOptions> _parser = new pb::MessageParser<ExtensionRangeOptions>(() => new ExtensionRangeOptions());
     private pb::UnknownFieldSet _unknownFields;
-    internal pb::ExtensionSet<ExtensionRangeOptions> _extensions;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<ExtensionRangeOptions> Parser { get { return _parser; } }
 
@@ -1615,7 +1614,6 @@ namespace Google.Protobuf.Reflection {
     public ExtensionRangeOptions(ExtensionRangeOptions other) : this() {
       uninterpretedOption_ = other.uninterpretedOption_.Clone();
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
-      _extensions = pb::ExtensionSet.Clone(other._extensions);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1650,9 +1648,6 @@ namespace Google.Protobuf.Reflection {
         return true;
       }
       if(!uninterpretedOption_.Equals(other.uninterpretedOption_)) return false;
-      if (!Equals(_extensions, other._extensions)) {
-        return false;
-      }
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -1660,9 +1655,6 @@ namespace Google.Protobuf.Reflection {
     public override int GetHashCode() {
       int hash = 1;
       hash ^= uninterpretedOption_.GetHashCode();
-      if (_extensions != null) {
-        hash ^= _extensions.GetHashCode();
-      }
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -1677,9 +1669,6 @@ namespace Google.Protobuf.Reflection {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
       uninterpretedOption_.WriteTo(output, _repeated_uninterpretedOption_codec);
-      if (_extensions != null) {
-        _extensions.WriteTo(output);
-      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -1689,9 +1678,6 @@ namespace Google.Protobuf.Reflection {
     public int CalculateSize() {
       int size = 0;
       size += uninterpretedOption_.CalculateSize(_repeated_uninterpretedOption_codec);
-      if (_extensions != null) {
-        size += _extensions.CalculateSize();
-      }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -1704,7 +1690,6 @@ namespace Google.Protobuf.Reflection {
         return;
       }
       uninterpretedOption_.Add(other.uninterpretedOption_);
-      pb::ExtensionSet.MergeFrom(ref _extensions, other._extensions);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -1714,9 +1699,7 @@ namespace Google.Protobuf.Reflection {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (!pb::ExtensionSet.TryMergeFieldFrom(ref _extensions, input)) {
-              _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
-            }
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 7994: {
             uninterpretedOption_.AddEntriesFrom(input, _repeated_uninterpretedOption_codec);
@@ -1724,28 +1707,6 @@ namespace Google.Protobuf.Reflection {
           }
         }
       }
-    }
-
-    public TValue GetExtension<TValue>(pb::Extension<ExtensionRangeOptions, TValue> extension) {
-      return pb::ExtensionSet.Get(ref _extensions, extension);
-    }
-    public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<ExtensionRangeOptions, TValue> extension) {
-      return pb::ExtensionSet.Get(ref _extensions, extension);
-    }
-    public pbc::RepeatedField<TValue> GetOrRegisterExtension<TValue>(pb::RepeatedExtension<ExtensionRangeOptions, TValue> extension) {
-      return pb::ExtensionSet.GetOrRegister(ref _extensions, extension);
-    }
-    public void SetExtension<TValue>(pb::Extension<ExtensionRangeOptions, TValue> extension, TValue value) {
-      pb::ExtensionSet.Set(ref _extensions, extension, value);
-    }
-    public bool HasExtension<TValue>(pb::Extension<ExtensionRangeOptions, TValue> extension) {
-      return pb::ExtensionSet.Has(ref _extensions, extension);
-    }
-    public void ClearExtension<TValue>(pb::Extension<ExtensionRangeOptions, TValue> extension) {
-      pb::ExtensionSet.Clear(ref _extensions, extension);
-    }
-    public void ClearExtension<TValue>(pb::RepeatedExtension<ExtensionRangeOptions, TValue> extension) {
-      pb::ExtensionSet.Clear(ref _extensions, extension);
     }
 
   }
@@ -3815,10 +3776,9 @@ namespace Google.Protobuf.Reflection {
 
   }
 
-  internal sealed partial class FileOptions : pb::IExtendableMessage<FileOptions> {
+  internal sealed partial class FileOptions : pb::IMessage<FileOptions> {
     private static readonly pb::MessageParser<FileOptions> _parser = new pb::MessageParser<FileOptions>(() => new FileOptions());
     private pb::UnknownFieldSet _unknownFields;
-    internal pb::ExtensionSet<FileOptions> _extensions;
     private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<FileOptions> Parser { get { return _parser; } }
@@ -3832,6 +3792,8 @@ namespace Google.Protobuf.Reflection {
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
+
+    internal CustomOptions CustomOptions{ get; private set; } = CustomOptions.Empty;
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public FileOptions() {
@@ -3865,7 +3827,6 @@ namespace Google.Protobuf.Reflection {
       rubyPackage_ = other.rubyPackage_;
       uninterpretedOption_ = other.uninterpretedOption_.Clone();
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
-      _extensions = pb::ExtensionSet.Clone(other._extensions);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4487,9 +4448,6 @@ namespace Google.Protobuf.Reflection {
       if (PhpMetadataNamespace != other.PhpMetadataNamespace) return false;
       if (RubyPackage != other.RubyPackage) return false;
       if(!uninterpretedOption_.Equals(other.uninterpretedOption_)) return false;
-      if (!Equals(_extensions, other._extensions)) {
-        return false;
-      }
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -4517,9 +4475,6 @@ namespace Google.Protobuf.Reflection {
       if (HasPhpMetadataNamespace) hash ^= PhpMetadataNamespace.GetHashCode();
       if (HasRubyPackage) hash ^= RubyPackage.GetHashCode();
       hash ^= uninterpretedOption_.GetHashCode();
-      if (_extensions != null) {
-        hash ^= _extensions.GetHashCode();
-      }
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -4614,9 +4569,6 @@ namespace Google.Protobuf.Reflection {
         output.WriteString(RubyPackage);
       }
       uninterpretedOption_.WriteTo(output, _repeated_uninterpretedOption_codec);
-      if (_extensions != null) {
-        _extensions.WriteTo(output);
-      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -4686,9 +4638,6 @@ namespace Google.Protobuf.Reflection {
         size += 2 + pb::CodedOutputStream.ComputeStringSize(RubyPackage);
       }
       size += uninterpretedOption_.CalculateSize(_repeated_uninterpretedOption_codec);
-      if (_extensions != null) {
-        size += _extensions.CalculateSize();
-      }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -4761,7 +4710,6 @@ namespace Google.Protobuf.Reflection {
         RubyPackage = other.RubyPackage;
       }
       uninterpretedOption_.Add(other.uninterpretedOption_);
-      pb::ExtensionSet.MergeFrom(ref _extensions, other._extensions);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -4771,9 +4719,7 @@ namespace Google.Protobuf.Reflection {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (!pb::ExtensionSet.TryMergeFieldFrom(ref _extensions, input)) {
-              _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
-            }
+            CustomOptions = CustomOptions.ReadOrSkipUnknownField(input);
             break;
           case 10: {
             JavaPackage = input.ReadString();
@@ -4863,28 +4809,6 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
-    public TValue GetExtension<TValue>(pb::Extension<FileOptions, TValue> extension) {
-      return pb::ExtensionSet.Get(ref _extensions, extension);
-    }
-    public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<FileOptions, TValue> extension) {
-      return pb::ExtensionSet.Get(ref _extensions, extension);
-    }
-    public pbc::RepeatedField<TValue> GetOrRegisterExtension<TValue>(pb::RepeatedExtension<FileOptions, TValue> extension) {
-      return pb::ExtensionSet.GetOrRegister(ref _extensions, extension);
-    }
-    public void SetExtension<TValue>(pb::Extension<FileOptions, TValue> extension, TValue value) {
-      pb::ExtensionSet.Set(ref _extensions, extension, value);
-    }
-    public bool HasExtension<TValue>(pb::Extension<FileOptions, TValue> extension) {
-      return pb::ExtensionSet.Has(ref _extensions, extension);
-    }
-    public void ClearExtension<TValue>(pb::Extension<FileOptions, TValue> extension) {
-      pb::ExtensionSet.Clear(ref _extensions, extension);
-    }
-    public void ClearExtension<TValue>(pb::RepeatedExtension<FileOptions, TValue> extension) {
-      pb::ExtensionSet.Clear(ref _extensions, extension);
-    }
-
     #region Nested types
     /// <summary>Container for nested types declared in the FileOptions message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4912,10 +4836,9 @@ namespace Google.Protobuf.Reflection {
 
   }
 
-  internal sealed partial class MessageOptions : pb::IExtendableMessage<MessageOptions> {
+  internal sealed partial class MessageOptions : pb::IMessage<MessageOptions> {
     private static readonly pb::MessageParser<MessageOptions> _parser = new pb::MessageParser<MessageOptions>(() => new MessageOptions());
     private pb::UnknownFieldSet _unknownFields;
-    internal pb::ExtensionSet<MessageOptions> _extensions;
     private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<MessageOptions> Parser { get { return _parser; } }
@@ -4929,6 +4852,8 @@ namespace Google.Protobuf.Reflection {
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
+
+    internal CustomOptions CustomOptions{ get; private set; } = CustomOptions.Empty;
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public MessageOptions() {
@@ -4946,7 +4871,6 @@ namespace Google.Protobuf.Reflection {
       mapEntry_ = other.mapEntry_;
       uninterpretedOption_ = other.uninterpretedOption_.Clone();
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
-      _extensions = pb::ExtensionSet.Clone(other._extensions);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -5135,9 +5059,6 @@ namespace Google.Protobuf.Reflection {
       if (Deprecated != other.Deprecated) return false;
       if (MapEntry != other.MapEntry) return false;
       if(!uninterpretedOption_.Equals(other.uninterpretedOption_)) return false;
-      if (!Equals(_extensions, other._extensions)) {
-        return false;
-      }
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -5149,9 +5070,6 @@ namespace Google.Protobuf.Reflection {
       if (HasDeprecated) hash ^= Deprecated.GetHashCode();
       if (HasMapEntry) hash ^= MapEntry.GetHashCode();
       hash ^= uninterpretedOption_.GetHashCode();
-      if (_extensions != null) {
-        hash ^= _extensions.GetHashCode();
-      }
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -5182,9 +5100,6 @@ namespace Google.Protobuf.Reflection {
         output.WriteBool(MapEntry);
       }
       uninterpretedOption_.WriteTo(output, _repeated_uninterpretedOption_codec);
-      if (_extensions != null) {
-        _extensions.WriteTo(output);
-      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -5206,9 +5121,6 @@ namespace Google.Protobuf.Reflection {
         size += 1 + 1;
       }
       size += uninterpretedOption_.CalculateSize(_repeated_uninterpretedOption_codec);
-      if (_extensions != null) {
-        size += _extensions.CalculateSize();
-      }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -5233,7 +5145,6 @@ namespace Google.Protobuf.Reflection {
         MapEntry = other.MapEntry;
       }
       uninterpretedOption_.Add(other.uninterpretedOption_);
-      pb::ExtensionSet.MergeFrom(ref _extensions, other._extensions);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -5243,9 +5154,7 @@ namespace Google.Protobuf.Reflection {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (!pb::ExtensionSet.TryMergeFieldFrom(ref _extensions, input)) {
-              _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
-            }
+            CustomOptions = CustomOptions.ReadOrSkipUnknownField(input);
             break;
           case 8: {
             MessageSetWireFormat = input.ReadBool();
@@ -5271,34 +5180,11 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
-    public TValue GetExtension<TValue>(pb::Extension<MessageOptions, TValue> extension) {
-      return pb::ExtensionSet.Get(ref _extensions, extension);
-    }
-    public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<MessageOptions, TValue> extension) {
-      return pb::ExtensionSet.Get(ref _extensions, extension);
-    }
-    public pbc::RepeatedField<TValue> GetOrRegisterExtension<TValue>(pb::RepeatedExtension<MessageOptions, TValue> extension) {
-      return pb::ExtensionSet.GetOrRegister(ref _extensions, extension);
-    }
-    public void SetExtension<TValue>(pb::Extension<MessageOptions, TValue> extension, TValue value) {
-      pb::ExtensionSet.Set(ref _extensions, extension, value);
-    }
-    public bool HasExtension<TValue>(pb::Extension<MessageOptions, TValue> extension) {
-      return pb::ExtensionSet.Has(ref _extensions, extension);
-    }
-    public void ClearExtension<TValue>(pb::Extension<MessageOptions, TValue> extension) {
-      pb::ExtensionSet.Clear(ref _extensions, extension);
-    }
-    public void ClearExtension<TValue>(pb::RepeatedExtension<MessageOptions, TValue> extension) {
-      pb::ExtensionSet.Clear(ref _extensions, extension);
-    }
-
   }
 
-  internal sealed partial class FieldOptions : pb::IExtendableMessage<FieldOptions> {
+  internal sealed partial class FieldOptions : pb::IMessage<FieldOptions> {
     private static readonly pb::MessageParser<FieldOptions> _parser = new pb::MessageParser<FieldOptions>(() => new FieldOptions());
     private pb::UnknownFieldSet _unknownFields;
-    internal pb::ExtensionSet<FieldOptions> _extensions;
     private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<FieldOptions> Parser { get { return _parser; } }
@@ -5312,6 +5198,8 @@ namespace Google.Protobuf.Reflection {
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
+
+    internal CustomOptions CustomOptions{ get; private set; } = CustomOptions.Empty;
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public FieldOptions() {
@@ -5331,7 +5219,6 @@ namespace Google.Protobuf.Reflection {
       weak_ = other.weak_;
       uninterpretedOption_ = other.uninterpretedOption_.Clone();
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
-      _extensions = pb::ExtensionSet.Clone(other._extensions);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -5580,9 +5467,6 @@ namespace Google.Protobuf.Reflection {
       if (Deprecated != other.Deprecated) return false;
       if (Weak != other.Weak) return false;
       if(!uninterpretedOption_.Equals(other.uninterpretedOption_)) return false;
-      if (!Equals(_extensions, other._extensions)) {
-        return false;
-      }
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -5596,9 +5480,6 @@ namespace Google.Protobuf.Reflection {
       if (HasDeprecated) hash ^= Deprecated.GetHashCode();
       if (HasWeak) hash ^= Weak.GetHashCode();
       hash ^= uninterpretedOption_.GetHashCode();
-      if (_extensions != null) {
-        hash ^= _extensions.GetHashCode();
-      }
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -5637,9 +5518,6 @@ namespace Google.Protobuf.Reflection {
         output.WriteBool(Weak);
       }
       uninterpretedOption_.WriteTo(output, _repeated_uninterpretedOption_codec);
-      if (_extensions != null) {
-        _extensions.WriteTo(output);
-      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -5667,9 +5545,6 @@ namespace Google.Protobuf.Reflection {
         size += 1 + 1;
       }
       size += uninterpretedOption_.CalculateSize(_repeated_uninterpretedOption_codec);
-      if (_extensions != null) {
-        size += _extensions.CalculateSize();
-      }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -5700,7 +5575,6 @@ namespace Google.Protobuf.Reflection {
         Weak = other.Weak;
       }
       uninterpretedOption_.Add(other.uninterpretedOption_);
-      pb::ExtensionSet.MergeFrom(ref _extensions, other._extensions);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -5710,9 +5584,7 @@ namespace Google.Protobuf.Reflection {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (!pb::ExtensionSet.TryMergeFieldFrom(ref _extensions, input)) {
-              _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
-            }
+            CustomOptions = CustomOptions.ReadOrSkipUnknownField(input);
             break;
           case 8: {
             Ctype = (global::Google.Protobuf.Reflection.FieldOptions.Types.CType) input.ReadEnum();
@@ -5744,28 +5616,6 @@ namespace Google.Protobuf.Reflection {
           }
         }
       }
-    }
-
-    public TValue GetExtension<TValue>(pb::Extension<FieldOptions, TValue> extension) {
-      return pb::ExtensionSet.Get(ref _extensions, extension);
-    }
-    public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<FieldOptions, TValue> extension) {
-      return pb::ExtensionSet.Get(ref _extensions, extension);
-    }
-    public pbc::RepeatedField<TValue> GetOrRegisterExtension<TValue>(pb::RepeatedExtension<FieldOptions, TValue> extension) {
-      return pb::ExtensionSet.GetOrRegister(ref _extensions, extension);
-    }
-    public void SetExtension<TValue>(pb::Extension<FieldOptions, TValue> extension, TValue value) {
-      pb::ExtensionSet.Set(ref _extensions, extension, value);
-    }
-    public bool HasExtension<TValue>(pb::Extension<FieldOptions, TValue> extension) {
-      return pb::ExtensionSet.Has(ref _extensions, extension);
-    }
-    public void ClearExtension<TValue>(pb::Extension<FieldOptions, TValue> extension) {
-      pb::ExtensionSet.Clear(ref _extensions, extension);
-    }
-    public void ClearExtension<TValue>(pb::RepeatedExtension<FieldOptions, TValue> extension) {
-      pb::ExtensionSet.Clear(ref _extensions, extension);
     }
 
     #region Nested types
@@ -5801,10 +5651,9 @@ namespace Google.Protobuf.Reflection {
 
   }
 
-  internal sealed partial class OneofOptions : pb::IExtendableMessage<OneofOptions> {
+  internal sealed partial class OneofOptions : pb::IMessage<OneofOptions> {
     private static readonly pb::MessageParser<OneofOptions> _parser = new pb::MessageParser<OneofOptions>(() => new OneofOptions());
     private pb::UnknownFieldSet _unknownFields;
-    internal pb::ExtensionSet<OneofOptions> _extensions;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<OneofOptions> Parser { get { return _parser; } }
 
@@ -5818,6 +5667,8 @@ namespace Google.Protobuf.Reflection {
       get { return Descriptor; }
     }
 
+    internal CustomOptions CustomOptions{ get; private set; } = CustomOptions.Empty;
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public OneofOptions() {
       OnConstruction();
@@ -5829,7 +5680,6 @@ namespace Google.Protobuf.Reflection {
     public OneofOptions(OneofOptions other) : this() {
       uninterpretedOption_ = other.uninterpretedOption_.Clone();
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
-      _extensions = pb::ExtensionSet.Clone(other._extensions);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -5864,9 +5714,6 @@ namespace Google.Protobuf.Reflection {
         return true;
       }
       if(!uninterpretedOption_.Equals(other.uninterpretedOption_)) return false;
-      if (!Equals(_extensions, other._extensions)) {
-        return false;
-      }
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -5874,9 +5721,6 @@ namespace Google.Protobuf.Reflection {
     public override int GetHashCode() {
       int hash = 1;
       hash ^= uninterpretedOption_.GetHashCode();
-      if (_extensions != null) {
-        hash ^= _extensions.GetHashCode();
-      }
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -5891,9 +5735,6 @@ namespace Google.Protobuf.Reflection {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
       uninterpretedOption_.WriteTo(output, _repeated_uninterpretedOption_codec);
-      if (_extensions != null) {
-        _extensions.WriteTo(output);
-      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -5903,9 +5744,6 @@ namespace Google.Protobuf.Reflection {
     public int CalculateSize() {
       int size = 0;
       size += uninterpretedOption_.CalculateSize(_repeated_uninterpretedOption_codec);
-      if (_extensions != null) {
-        size += _extensions.CalculateSize();
-      }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -5918,7 +5756,6 @@ namespace Google.Protobuf.Reflection {
         return;
       }
       uninterpretedOption_.Add(other.uninterpretedOption_);
-      pb::ExtensionSet.MergeFrom(ref _extensions, other._extensions);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -5928,9 +5765,7 @@ namespace Google.Protobuf.Reflection {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (!pb::ExtensionSet.TryMergeFieldFrom(ref _extensions, input)) {
-              _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
-            }
+            CustomOptions = CustomOptions.ReadOrSkipUnknownField(input);
             break;
           case 7994: {
             uninterpretedOption_.AddEntriesFrom(input, _repeated_uninterpretedOption_codec);
@@ -5940,34 +5775,11 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
-    public TValue GetExtension<TValue>(pb::Extension<OneofOptions, TValue> extension) {
-      return pb::ExtensionSet.Get(ref _extensions, extension);
-    }
-    public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<OneofOptions, TValue> extension) {
-      return pb::ExtensionSet.Get(ref _extensions, extension);
-    }
-    public pbc::RepeatedField<TValue> GetOrRegisterExtension<TValue>(pb::RepeatedExtension<OneofOptions, TValue> extension) {
-      return pb::ExtensionSet.GetOrRegister(ref _extensions, extension);
-    }
-    public void SetExtension<TValue>(pb::Extension<OneofOptions, TValue> extension, TValue value) {
-      pb::ExtensionSet.Set(ref _extensions, extension, value);
-    }
-    public bool HasExtension<TValue>(pb::Extension<OneofOptions, TValue> extension) {
-      return pb::ExtensionSet.Has(ref _extensions, extension);
-    }
-    public void ClearExtension<TValue>(pb::Extension<OneofOptions, TValue> extension) {
-      pb::ExtensionSet.Clear(ref _extensions, extension);
-    }
-    public void ClearExtension<TValue>(pb::RepeatedExtension<OneofOptions, TValue> extension) {
-      pb::ExtensionSet.Clear(ref _extensions, extension);
-    }
-
   }
 
-  internal sealed partial class EnumOptions : pb::IExtendableMessage<EnumOptions> {
+  internal sealed partial class EnumOptions : pb::IMessage<EnumOptions> {
     private static readonly pb::MessageParser<EnumOptions> _parser = new pb::MessageParser<EnumOptions>(() => new EnumOptions());
     private pb::UnknownFieldSet _unknownFields;
-    internal pb::ExtensionSet<EnumOptions> _extensions;
     private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<EnumOptions> Parser { get { return _parser; } }
@@ -5981,6 +5793,8 @@ namespace Google.Protobuf.Reflection {
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
+
+    internal CustomOptions CustomOptions{ get; private set; } = CustomOptions.Empty;
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public EnumOptions() {
@@ -5996,7 +5810,6 @@ namespace Google.Protobuf.Reflection {
       deprecated_ = other.deprecated_;
       uninterpretedOption_ = other.uninterpretedOption_.Clone();
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
-      _extensions = pb::ExtensionSet.Clone(other._extensions);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -6091,9 +5904,6 @@ namespace Google.Protobuf.Reflection {
       if (AllowAlias != other.AllowAlias) return false;
       if (Deprecated != other.Deprecated) return false;
       if(!uninterpretedOption_.Equals(other.uninterpretedOption_)) return false;
-      if (!Equals(_extensions, other._extensions)) {
-        return false;
-      }
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -6103,9 +5913,6 @@ namespace Google.Protobuf.Reflection {
       if (HasAllowAlias) hash ^= AllowAlias.GetHashCode();
       if (HasDeprecated) hash ^= Deprecated.GetHashCode();
       hash ^= uninterpretedOption_.GetHashCode();
-      if (_extensions != null) {
-        hash ^= _extensions.GetHashCode();
-      }
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -6128,9 +5935,6 @@ namespace Google.Protobuf.Reflection {
         output.WriteBool(Deprecated);
       }
       uninterpretedOption_.WriteTo(output, _repeated_uninterpretedOption_codec);
-      if (_extensions != null) {
-        _extensions.WriteTo(output);
-      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -6146,9 +5950,6 @@ namespace Google.Protobuf.Reflection {
         size += 1 + 1;
       }
       size += uninterpretedOption_.CalculateSize(_repeated_uninterpretedOption_codec);
-      if (_extensions != null) {
-        size += _extensions.CalculateSize();
-      }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -6167,7 +5968,6 @@ namespace Google.Protobuf.Reflection {
         Deprecated = other.Deprecated;
       }
       uninterpretedOption_.Add(other.uninterpretedOption_);
-      pb::ExtensionSet.MergeFrom(ref _extensions, other._extensions);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -6177,9 +5977,7 @@ namespace Google.Protobuf.Reflection {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (!pb::ExtensionSet.TryMergeFieldFrom(ref _extensions, input)) {
-              _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
-            }
+            CustomOptions = CustomOptions.ReadOrSkipUnknownField(input);
             break;
           case 16: {
             AllowAlias = input.ReadBool();
@@ -6197,34 +5995,11 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
-    public TValue GetExtension<TValue>(pb::Extension<EnumOptions, TValue> extension) {
-      return pb::ExtensionSet.Get(ref _extensions, extension);
-    }
-    public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<EnumOptions, TValue> extension) {
-      return pb::ExtensionSet.Get(ref _extensions, extension);
-    }
-    public pbc::RepeatedField<TValue> GetOrRegisterExtension<TValue>(pb::RepeatedExtension<EnumOptions, TValue> extension) {
-      return pb::ExtensionSet.GetOrRegister(ref _extensions, extension);
-    }
-    public void SetExtension<TValue>(pb::Extension<EnumOptions, TValue> extension, TValue value) {
-      pb::ExtensionSet.Set(ref _extensions, extension, value);
-    }
-    public bool HasExtension<TValue>(pb::Extension<EnumOptions, TValue> extension) {
-      return pb::ExtensionSet.Has(ref _extensions, extension);
-    }
-    public void ClearExtension<TValue>(pb::Extension<EnumOptions, TValue> extension) {
-      pb::ExtensionSet.Clear(ref _extensions, extension);
-    }
-    public void ClearExtension<TValue>(pb::RepeatedExtension<EnumOptions, TValue> extension) {
-      pb::ExtensionSet.Clear(ref _extensions, extension);
-    }
-
   }
 
-  internal sealed partial class EnumValueOptions : pb::IExtendableMessage<EnumValueOptions> {
+  internal sealed partial class EnumValueOptions : pb::IMessage<EnumValueOptions> {
     private static readonly pb::MessageParser<EnumValueOptions> _parser = new pb::MessageParser<EnumValueOptions>(() => new EnumValueOptions());
     private pb::UnknownFieldSet _unknownFields;
-    internal pb::ExtensionSet<EnumValueOptions> _extensions;
     private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<EnumValueOptions> Parser { get { return _parser; } }
@@ -6239,6 +6014,8 @@ namespace Google.Protobuf.Reflection {
       get { return Descriptor; }
     }
 
+    internal CustomOptions CustomOptions{ get; private set; } = CustomOptions.Empty;
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public EnumValueOptions() {
       OnConstruction();
@@ -6252,7 +6029,6 @@ namespace Google.Protobuf.Reflection {
       deprecated_ = other.deprecated_;
       uninterpretedOption_ = other.uninterpretedOption_.Clone();
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
-      _extensions = pb::ExtensionSet.Clone(other._extensions);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -6318,9 +6094,6 @@ namespace Google.Protobuf.Reflection {
       }
       if (Deprecated != other.Deprecated) return false;
       if(!uninterpretedOption_.Equals(other.uninterpretedOption_)) return false;
-      if (!Equals(_extensions, other._extensions)) {
-        return false;
-      }
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -6329,9 +6102,6 @@ namespace Google.Protobuf.Reflection {
       int hash = 1;
       if (HasDeprecated) hash ^= Deprecated.GetHashCode();
       hash ^= uninterpretedOption_.GetHashCode();
-      if (_extensions != null) {
-        hash ^= _extensions.GetHashCode();
-      }
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -6350,9 +6120,6 @@ namespace Google.Protobuf.Reflection {
         output.WriteBool(Deprecated);
       }
       uninterpretedOption_.WriteTo(output, _repeated_uninterpretedOption_codec);
-      if (_extensions != null) {
-        _extensions.WriteTo(output);
-      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -6365,9 +6132,6 @@ namespace Google.Protobuf.Reflection {
         size += 1 + 1;
       }
       size += uninterpretedOption_.CalculateSize(_repeated_uninterpretedOption_codec);
-      if (_extensions != null) {
-        size += _extensions.CalculateSize();
-      }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -6383,7 +6147,6 @@ namespace Google.Protobuf.Reflection {
         Deprecated = other.Deprecated;
       }
       uninterpretedOption_.Add(other.uninterpretedOption_);
-      pb::ExtensionSet.MergeFrom(ref _extensions, other._extensions);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -6393,9 +6156,7 @@ namespace Google.Protobuf.Reflection {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (!pb::ExtensionSet.TryMergeFieldFrom(ref _extensions, input)) {
-              _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
-            }
+            CustomOptions = CustomOptions.ReadOrSkipUnknownField(input);
             break;
           case 8: {
             Deprecated = input.ReadBool();
@@ -6409,34 +6170,11 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
-    public TValue GetExtension<TValue>(pb::Extension<EnumValueOptions, TValue> extension) {
-      return pb::ExtensionSet.Get(ref _extensions, extension);
-    }
-    public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<EnumValueOptions, TValue> extension) {
-      return pb::ExtensionSet.Get(ref _extensions, extension);
-    }
-    public pbc::RepeatedField<TValue> GetOrRegisterExtension<TValue>(pb::RepeatedExtension<EnumValueOptions, TValue> extension) {
-      return pb::ExtensionSet.GetOrRegister(ref _extensions, extension);
-    }
-    public void SetExtension<TValue>(pb::Extension<EnumValueOptions, TValue> extension, TValue value) {
-      pb::ExtensionSet.Set(ref _extensions, extension, value);
-    }
-    public bool HasExtension<TValue>(pb::Extension<EnumValueOptions, TValue> extension) {
-      return pb::ExtensionSet.Has(ref _extensions, extension);
-    }
-    public void ClearExtension<TValue>(pb::Extension<EnumValueOptions, TValue> extension) {
-      pb::ExtensionSet.Clear(ref _extensions, extension);
-    }
-    public void ClearExtension<TValue>(pb::RepeatedExtension<EnumValueOptions, TValue> extension) {
-      pb::ExtensionSet.Clear(ref _extensions, extension);
-    }
-
   }
 
-  internal sealed partial class ServiceOptions : pb::IExtendableMessage<ServiceOptions> {
+  internal sealed partial class ServiceOptions : pb::IMessage<ServiceOptions> {
     private static readonly pb::MessageParser<ServiceOptions> _parser = new pb::MessageParser<ServiceOptions>(() => new ServiceOptions());
     private pb::UnknownFieldSet _unknownFields;
-    internal pb::ExtensionSet<ServiceOptions> _extensions;
     private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<ServiceOptions> Parser { get { return _parser; } }
@@ -6451,6 +6189,8 @@ namespace Google.Protobuf.Reflection {
       get { return Descriptor; }
     }
 
+    internal CustomOptions CustomOptions{ get; private set; } = CustomOptions.Empty;
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ServiceOptions() {
       OnConstruction();
@@ -6464,7 +6204,6 @@ namespace Google.Protobuf.Reflection {
       deprecated_ = other.deprecated_;
       uninterpretedOption_ = other.uninterpretedOption_.Clone();
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
-      _extensions = pb::ExtensionSet.Clone(other._extensions);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -6530,9 +6269,6 @@ namespace Google.Protobuf.Reflection {
       }
       if (Deprecated != other.Deprecated) return false;
       if(!uninterpretedOption_.Equals(other.uninterpretedOption_)) return false;
-      if (!Equals(_extensions, other._extensions)) {
-        return false;
-      }
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -6541,9 +6277,6 @@ namespace Google.Protobuf.Reflection {
       int hash = 1;
       if (HasDeprecated) hash ^= Deprecated.GetHashCode();
       hash ^= uninterpretedOption_.GetHashCode();
-      if (_extensions != null) {
-        hash ^= _extensions.GetHashCode();
-      }
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -6562,9 +6295,6 @@ namespace Google.Protobuf.Reflection {
         output.WriteBool(Deprecated);
       }
       uninterpretedOption_.WriteTo(output, _repeated_uninterpretedOption_codec);
-      if (_extensions != null) {
-        _extensions.WriteTo(output);
-      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -6577,9 +6307,6 @@ namespace Google.Protobuf.Reflection {
         size += 2 + 1;
       }
       size += uninterpretedOption_.CalculateSize(_repeated_uninterpretedOption_codec);
-      if (_extensions != null) {
-        size += _extensions.CalculateSize();
-      }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -6595,7 +6322,6 @@ namespace Google.Protobuf.Reflection {
         Deprecated = other.Deprecated;
       }
       uninterpretedOption_.Add(other.uninterpretedOption_);
-      pb::ExtensionSet.MergeFrom(ref _extensions, other._extensions);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -6605,9 +6331,7 @@ namespace Google.Protobuf.Reflection {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (!pb::ExtensionSet.TryMergeFieldFrom(ref _extensions, input)) {
-              _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
-            }
+            CustomOptions = CustomOptions.ReadOrSkipUnknownField(input);
             break;
           case 264: {
             Deprecated = input.ReadBool();
@@ -6621,34 +6345,11 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
-    public TValue GetExtension<TValue>(pb::Extension<ServiceOptions, TValue> extension) {
-      return pb::ExtensionSet.Get(ref _extensions, extension);
-    }
-    public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<ServiceOptions, TValue> extension) {
-      return pb::ExtensionSet.Get(ref _extensions, extension);
-    }
-    public pbc::RepeatedField<TValue> GetOrRegisterExtension<TValue>(pb::RepeatedExtension<ServiceOptions, TValue> extension) {
-      return pb::ExtensionSet.GetOrRegister(ref _extensions, extension);
-    }
-    public void SetExtension<TValue>(pb::Extension<ServiceOptions, TValue> extension, TValue value) {
-      pb::ExtensionSet.Set(ref _extensions, extension, value);
-    }
-    public bool HasExtension<TValue>(pb::Extension<ServiceOptions, TValue> extension) {
-      return pb::ExtensionSet.Has(ref _extensions, extension);
-    }
-    public void ClearExtension<TValue>(pb::Extension<ServiceOptions, TValue> extension) {
-      pb::ExtensionSet.Clear(ref _extensions, extension);
-    }
-    public void ClearExtension<TValue>(pb::RepeatedExtension<ServiceOptions, TValue> extension) {
-      pb::ExtensionSet.Clear(ref _extensions, extension);
-    }
-
   }
 
-  internal sealed partial class MethodOptions : pb::IExtendableMessage<MethodOptions> {
+  internal sealed partial class MethodOptions : pb::IMessage<MethodOptions> {
     private static readonly pb::MessageParser<MethodOptions> _parser = new pb::MessageParser<MethodOptions>(() => new MethodOptions());
     private pb::UnknownFieldSet _unknownFields;
-    internal pb::ExtensionSet<MethodOptions> _extensions;
     private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<MethodOptions> Parser { get { return _parser; } }
@@ -6662,6 +6363,8 @@ namespace Google.Protobuf.Reflection {
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
+
+    internal CustomOptions CustomOptions{ get; private set; } = CustomOptions.Empty;
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public MethodOptions() {
@@ -6677,7 +6380,6 @@ namespace Google.Protobuf.Reflection {
       idempotencyLevel_ = other.idempotencyLevel_;
       uninterpretedOption_ = other.uninterpretedOption_.Clone();
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
-      _extensions = pb::ExtensionSet.Clone(other._extensions);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -6768,9 +6470,6 @@ namespace Google.Protobuf.Reflection {
       if (Deprecated != other.Deprecated) return false;
       if (IdempotencyLevel != other.IdempotencyLevel) return false;
       if(!uninterpretedOption_.Equals(other.uninterpretedOption_)) return false;
-      if (!Equals(_extensions, other._extensions)) {
-        return false;
-      }
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -6780,9 +6479,6 @@ namespace Google.Protobuf.Reflection {
       if (HasDeprecated) hash ^= Deprecated.GetHashCode();
       if (HasIdempotencyLevel) hash ^= IdempotencyLevel.GetHashCode();
       hash ^= uninterpretedOption_.GetHashCode();
-      if (_extensions != null) {
-        hash ^= _extensions.GetHashCode();
-      }
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -6805,9 +6501,6 @@ namespace Google.Protobuf.Reflection {
         output.WriteEnum((int) IdempotencyLevel);
       }
       uninterpretedOption_.WriteTo(output, _repeated_uninterpretedOption_codec);
-      if (_extensions != null) {
-        _extensions.WriteTo(output);
-      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -6823,9 +6516,6 @@ namespace Google.Protobuf.Reflection {
         size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) IdempotencyLevel);
       }
       size += uninterpretedOption_.CalculateSize(_repeated_uninterpretedOption_codec);
-      if (_extensions != null) {
-        size += _extensions.CalculateSize();
-      }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -6844,7 +6534,6 @@ namespace Google.Protobuf.Reflection {
         IdempotencyLevel = other.IdempotencyLevel;
       }
       uninterpretedOption_.Add(other.uninterpretedOption_);
-      pb::ExtensionSet.MergeFrom(ref _extensions, other._extensions);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -6854,9 +6543,7 @@ namespace Google.Protobuf.Reflection {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (!pb::ExtensionSet.TryMergeFieldFrom(ref _extensions, input)) {
-              _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
-            }
+            CustomOptions = CustomOptions.ReadOrSkipUnknownField(input);
             break;
           case 264: {
             Deprecated = input.ReadBool();
@@ -6872,28 +6559,6 @@ namespace Google.Protobuf.Reflection {
           }
         }
       }
-    }
-
-    public TValue GetExtension<TValue>(pb::Extension<MethodOptions, TValue> extension) {
-      return pb::ExtensionSet.Get(ref _extensions, extension);
-    }
-    public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<MethodOptions, TValue> extension) {
-      return pb::ExtensionSet.Get(ref _extensions, extension);
-    }
-    public pbc::RepeatedField<TValue> GetOrRegisterExtension<TValue>(pb::RepeatedExtension<MethodOptions, TValue> extension) {
-      return pb::ExtensionSet.GetOrRegister(ref _extensions, extension);
-    }
-    public void SetExtension<TValue>(pb::Extension<MethodOptions, TValue> extension, TValue value) {
-      pb::ExtensionSet.Set(ref _extensions, extension, value);
-    }
-    public bool HasExtension<TValue>(pb::Extension<MethodOptions, TValue> extension) {
-      return pb::ExtensionSet.Has(ref _extensions, extension);
-    }
-    public void ClearExtension<TValue>(pb::Extension<MethodOptions, TValue> extension) {
-      pb::ExtensionSet.Clear(ref _extensions, extension);
-    }
-    public void ClearExtension<TValue>(pb::RepeatedExtension<MethodOptions, TValue> extension) {
-      pb::ExtensionSet.Clear(ref _extensions, extension);
     }
 
     #region Nested types

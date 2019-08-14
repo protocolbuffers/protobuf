@@ -181,17 +181,6 @@ void WrapperFieldGenerator::GenerateCodecCode(io::Printer* printer) {
   }
 }
 
-void WrapperFieldGenerator::GenerateExtensionCode(io::Printer* printer) {
-  WritePropertyDocComment(printer, descriptor_);
-  AddDeprecatedFlag(printer);
-  printer->Print(
-    variables_,
-    "$access_level$ static readonly pb::Extension<$extended_type$, $type_name$> $property_name$ =\n"
-    "  new pb::Extension<$extended_type$, $type_name$>($number$, ");
-  GenerateCodecCode(printer);
-  printer->Print(");\n");
-}
-
 WrapperOneofFieldGenerator::WrapperOneofFieldGenerator(
     const FieldDescriptor* descriptor, int presenceIndex, const Options *options)
     : WrapperFieldGenerator(descriptor, presenceIndex, options) {

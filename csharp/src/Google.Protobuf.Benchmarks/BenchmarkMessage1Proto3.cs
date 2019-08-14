@@ -55,9 +55,9 @@ namespace Benchmarks.Proto3 {
             "YmVuY2htYXJrc0gB+AEBYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
-          new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Benchmarks.Proto3.GoogleMessage1), global::Benchmarks.Proto3.GoogleMessage1.Parser, new[]{ "Field1", "Field9", "Field18", "Field80", "Field81", "Field2", "Field3", "Field280", "Field6", "Field22", "Field4", "Field5", "Field59", "Field7", "Field16", "Field130", "Field12", "Field17", "Field13", "Field14", "Field104", "Field100", "Field101", "Field102", "Field103", "Field29", "Field30", "Field60", "Field271", "Field272", "Field150", "Field23", "Field24", "Field25", "Field15", "Field78", "Field67", "Field68", "Field128", "Field129", "Field131" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Benchmarks.Proto3.GoogleMessage1SubMessage), global::Benchmarks.Proto3.GoogleMessage1SubMessage.Parser, new[]{ "Field1", "Field2", "Field3", "Field15", "Field12", "Field13", "Field14", "Field16", "Field19", "Field20", "Field28", "Field21", "Field22", "Field23", "Field206", "Field203", "Field204", "Field205", "Field207", "Field300" }, null, null, null, null)
+          new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::Benchmarks.Proto3.GoogleMessage1), global::Benchmarks.Proto3.GoogleMessage1.Parser, new[]{ "Field1", "Field9", "Field18", "Field80", "Field81", "Field2", "Field3", "Field280", "Field6", "Field22", "Field4", "Field5", "Field59", "Field7", "Field16", "Field130", "Field12", "Field17", "Field13", "Field14", "Field104", "Field100", "Field101", "Field102", "Field103", "Field29", "Field30", "Field60", "Field271", "Field272", "Field150", "Field23", "Field24", "Field25", "Field15", "Field78", "Field67", "Field68", "Field128", "Field129", "Field131" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Benchmarks.Proto3.GoogleMessage1SubMessage), global::Benchmarks.Proto3.GoogleMessage1SubMessage.Parser, new[]{ "Field1", "Field2", "Field3", "Field15", "Field12", "Field13", "Field14", "Field16", "Field19", "Field20", "Field28", "Field21", "Field22", "Field23", "Field206", "Field203", "Field204", "Field205", "Field207", "Field300" }, null, null, null)
           }));
     }
     #endregion

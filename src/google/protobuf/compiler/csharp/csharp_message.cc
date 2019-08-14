@@ -63,8 +63,7 @@ MessageGenerator::MessageGenerator(const Descriptor* descriptor,
     : SourceGeneratorBase(descriptor->file(), options),
       descriptor_(descriptor),
       has_bit_field_count_(0),
-      end_tag_(GetGroupEndTag(descriptor)),
-      has_extension_ranges_(descriptor->extension_range_count() > 0) {
+      end_tag_(GetGroupEndTag(descriptor)) {
   // fields by number
   for (int i = 0; i < descriptor_->field_count(); i++) {
     fields_by_number_.push_back(descriptor_->field(i));
@@ -124,15 +123,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
 
   printer->Print(
     vars,
-    "$access_level$ sealed partial class $class_name$ : ");
-
-  if (has_extension_ranges_) {
-    printer->Print(vars, "pb::IExtendableMessage<$class_name$>");
-  }
-  else {
-    printer->Print(vars, "pb::IMessage<$class_name$>");
-  }
-  printer->Print(" {\n");
+    "$access_level$ sealed partial class $class_name$ : pb::IMessage<$class_name$> {\n");
   printer->Indent();
 
   // All static fields and properties
@@ -142,14 +133,6 @@ void MessageGenerator::Generate(io::Printer* printer) {
 
   printer->Print(
       "private pb::UnknownFieldSet _unknownFields;\n");
-
-  if (has_extension_ranges_) {
-    if (IsDescriptorProto(descriptor_->file())) {
-      printer->Print(vars, "internal pb::ExtensionSet<$class_name$> _extensions;\n"); // CustomOptions compatibility
-    } else {
-      printer->Print(vars, "private pb::ExtensionSet<$class_name$> _extensions;\n");
-    }
-  }
 
   for (int i = 0; i < has_bit_field_count_; i++) {
     // don't use arrays since all arrays are heap allocated, saving allocations
@@ -186,6 +169,12 @@ void MessageGenerator::Generate(io::Printer* printer) {
     "  get { return Descriptor; }\n"
     "}\n"
     "\n");
+  // CustomOptions property, only for options messages
+  if (IsDescriptorOptionMessage(descriptor_)) {
+    printer->Print(
+      "internal CustomOptions CustomOptions{ get; private set; } = CustomOptions.Empty;\n"
+       "\n");
+  }
 
   // Parameterless constructor and partial OnConstruction method.
   WriteGeneratedCodeAttributes(printer);
@@ -261,32 +250,6 @@ void MessageGenerator::Generate(io::Printer* printer) {
   GenerateMessageSerializationMethods(printer);
   GenerateMergingMethods(printer);
 
-  if (has_extension_ranges_) {
-    printer->Print(
-      vars,
-      "public TValue GetExtension<TValue>(pb::Extension<$class_name$, TValue> extension) {\n"
-      "  return pb::ExtensionSet.Get(ref _extensions, extension);\n"
-      "}\n"
-      "public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<$class_name$, TValue> extension) {\n"
-      "  return pb::ExtensionSet.Get(ref _extensions, extension);\n"
-      "}\n"
-      "public pbc::RepeatedField<TValue> GetOrRegisterExtension<TValue>(pb::RepeatedExtension<$class_name$, TValue> extension) {\n"
-      "  return pb::ExtensionSet.GetOrRegister(ref _extensions, extension);\n"
-      "}\n"
-      "public void SetExtension<TValue>(pb::Extension<$class_name$, TValue> extension, TValue value) {\n"
-      "  pb::ExtensionSet.Set(ref _extensions, extension, value);\n"
-      "}\n"
-      "public bool HasExtension<TValue>(pb::Extension<$class_name$, TValue> extension) {\n"
-      "  return pb::ExtensionSet.Has(ref _extensions, extension);\n"
-      "}\n"
-      "public void ClearExtension<TValue>(pb::Extension<$class_name$, TValue> extension) {\n"
-      "  pb::ExtensionSet.Clear(ref _extensions, extension);\n"
-      "}\n"
-      "public void ClearExtension<TValue>(pb::RepeatedExtension<$class_name$, TValue> extension) {\n"
-      "  pb::ExtensionSet.Clear(ref _extensions, extension);\n"
-      "}\n\n");
-  }
-
   // Nested messages and enums
   if (HasNestedGeneratedTypes()) {
     printer->Print(
@@ -312,26 +275,6 @@ void MessageGenerator::Generate(io::Printer* printer) {
     printer->Print("}\n"
                    "#endregion\n"
                    "\n");
-  }
-
-  if (descriptor_->extension_count() > 0) {
-    printer->Print(
-      vars,
-      "#region Extensions\n"
-      "/// <summary>Container for extensions for other messages declared in the $class_name$ message type.</summary>\n");
-    WriteGeneratedCodeAttributes(printer);
-    printer->Print("internal static partial class Extensions {\n");
-    printer->Indent();
-    for (int i = 0; i < descriptor_->extension_count(); i++) {
-      std::unique_ptr<FieldGeneratorBase> generator(
-        CreateFieldGeneratorInternal(descriptor_->extension(i)));
-      generator->GenerateExtensionCode(printer);
-    }
-    printer->Outdent();
-    printer->Print(
-      "}\n"
-      "#endregion\n"
-      "\n");
   }
 
   printer->Outdent();
@@ -398,10 +341,6 @@ void MessageGenerator::GenerateCloningCode(io::Printer* printer) {
   // Clone unknown fields
   printer->Print(
       "_unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);\n");
-  if (has_extension_ranges_) {
-    printer->Print(
-        "_extensions = pb::ExtensionSet.Clone(other._extensions);\n");
-  }
 
   printer->Outdent();
   printer->Print("}\n\n");
@@ -448,12 +387,6 @@ void MessageGenerator::GenerateFrameworkMethods(io::Printer* printer) {
         printer->Print("if ($property_name$Case != other.$property_name$Case) return false;\n",
             "property_name", UnderscoresToCamelCase(descriptor_->oneof_decl(i)->name(), true));
     }
-    if (has_extension_ranges_) {
-      printer->Print(
-          "if (!Equals(_extensions, other._extensions)) {\n"
-          "  return false;\n"
-          "}\n");
-    }
     printer->Outdent();
     printer->Print(
         "  return Equals(_unknownFields, other._unknownFields);\n"
@@ -474,12 +407,6 @@ void MessageGenerator::GenerateFrameworkMethods(io::Printer* printer) {
     for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
         printer->Print("hash ^= (int) $name$Case_;\n",
             "name", UnderscoresToCamelCase(descriptor_->oneof_decl(i)->name(), false));
-    }
-    if (has_extension_ranges_) {
-      printer->Print(
-        "if (_extensions != null) {\n"
-        "  hash ^= _extensions.GetHashCode();\n"
-        "}\n");
     }
     printer->Print(
         "if (_unknownFields != null) {\n"
@@ -509,14 +436,6 @@ void MessageGenerator::GenerateMessageSerializationMethods(io::Printer* printer)
     generator->GenerateSerializationCode(printer);
   }
 
-  if (has_extension_ranges_) {
-    // Serialize extensions
-    printer->Print(
-      "if (_extensions != null) {\n"
-      "  _extensions.WriteTo(output);\n"
-      "}\n");
-  }
-
   // Serialize unknown fields
   printer->Print(
     "if (_unknownFields != null) {\n"
@@ -537,13 +456,6 @@ void MessageGenerator::GenerateMessageSerializationMethods(io::Printer* printer)
     std::unique_ptr<FieldGeneratorBase> generator(
         CreateFieldGeneratorInternal(descriptor_->field(i)));
     generator->GenerateSerializedSizeCode(printer);
-  }
-
-  if (has_extension_ranges_) {
-    printer->Print(
-      "if (_extensions != null) {\n"
-      "  size += _extensions.CalculateSize();\n"
-      "}\n");
   }
 
   printer->Print(
@@ -601,11 +513,6 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
     printer->Outdent();
     printer->Print("}\n\n");
   }
-  // Merge extensions
-  if (has_extension_ranges_) {
-    printer->Print("pb::ExtensionSet.MergeFrom(ref _extensions, other._extensions);\n");
-  }
-
   // Merge unknown fields.
   printer->Print(
       "_unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);\n");
@@ -623,24 +530,23 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
     "  switch(tag) {\n");
   printer->Indent();
   printer->Indent();
-  if (end_tag_ != 0) {
-    printer->Print(
-      "$end_tag$:\n"
-      "  return;\n",
-      "end_tag", StrCat(end_tag_));
-  }
-  if (has_extension_ranges_) {
+  // Option messages need to store unknown fields so that options can be parsed later.
+  if (IsDescriptorOptionMessage(descriptor_)) {
     printer->Print(
       "default:\n"
-      "  if (!pb::ExtensionSet.TryMergeFieldFrom(ref _extensions, input)) {\n"
-      "    _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);\n"
-      "  }\n"
+      "  CustomOptions = CustomOptions.ReadOrSkipUnknownField(input);\n"
       "  break;\n");
   } else {
     printer->Print(
       "default:\n"
       "  _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);\n"
       "  break;\n");
+    if (end_tag_ != 0) {
+      printer->Print(
+        "$end_tag$:\n"
+        "  return;\n",
+        "end_tag", StrCat(end_tag_));
+    }
   }
   for (int i = 0; i < fields_by_number().size(); i++) {
     const FieldDescriptor* field = fields_by_number()[i];

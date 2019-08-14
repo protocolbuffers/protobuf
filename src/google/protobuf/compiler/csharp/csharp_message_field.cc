@@ -174,16 +174,6 @@ void MessageFieldGenerator::WriteToString(io::Printer* printer) {
     variables_,
     "PrintField(\"$field_name$\", has$property_name$, $name$_, writer);\n");
 }
-void MessageFieldGenerator::GenerateExtensionCode(io::Printer* printer) {
-  WritePropertyDocComment(printer, descriptor_);
-  AddDeprecatedFlag(printer);
-  printer->Print(
-    variables_,
-    "$access_level$ static readonly pb::Extension<$extended_type$, $type_name$> $property_name$ =\n"
-    "  new pb::Extension<$extended_type$, $type_name$>($number$, ");
-  GenerateCodecCode(printer);
-  printer->Print(");\n");
-}
 void MessageFieldGenerator::GenerateCloningCode(io::Printer* printer) {
   printer->Print(variables_,
     "$name$_ = other.$has_property_check$ ? other.$name$_.Clone() : null;\n");

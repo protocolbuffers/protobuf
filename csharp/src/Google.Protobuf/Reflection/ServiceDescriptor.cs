@@ -95,7 +95,7 @@ namespace Google.Protobuf.Reflection
         /// The (possibly empty) set of custom options for this service.
         /// </summary>
         //[Obsolete("CustomOptions are obsolete. Use GetOption")]
-        public CustomOptions CustomOptions => new CustomOptions(Proto.Options._extensions?.ValuesByNumber);
+        public CustomOptions CustomOptions => Proto.Options.CustomOptions;
 
         /* // uncomment this in the full proto2 support PR
         /// <summary>
