@@ -30,8 +30,8 @@ namespace Benchmarks {
             "a3NiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
-          new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Benchmarks.BenchmarkDataset), global::Benchmarks.BenchmarkDataset.Parser, new[]{ "Name", "MessageName", "Payload" }, null, null, null, null)
+          new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::Benchmarks.BenchmarkDataset), global::Benchmarks.BenchmarkDataset.Parser, new[]{ "Name", "MessageName", "Payload" }, null, null, null)
           }));
     }
     #endregion

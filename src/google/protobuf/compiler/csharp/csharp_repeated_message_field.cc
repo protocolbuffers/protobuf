@@ -137,25 +137,6 @@ void RepeatedMessageFieldGenerator::GenerateCloningCode(io::Printer* printer) {
 void RepeatedMessageFieldGenerator::GenerateFreezingCode(io::Printer* printer) {
 }
 
-void RepeatedMessageFieldGenerator::GenerateExtensionCode(io::Printer* printer) {
-  WritePropertyDocComment(printer, descriptor_);
-  AddDeprecatedFlag(printer);
-  printer->Print(
-    variables_,
-    "$access_level$ static readonly pb::RepeatedExtension<$extended_type$, $type_name$> $property_name$ =\n"
-    "  new pb::RepeatedExtension<$extended_type$, $type_name$>($number$, ");
-  if (IsWrapperType(descriptor_)) {
-    std::unique_ptr<FieldGeneratorBase> single_generator(
-      new WrapperFieldGenerator(descriptor_, -1, this->options()));
-    single_generator->GenerateCodecCode(printer);
-  } else {
-    std::unique_ptr<FieldGeneratorBase> single_generator(
-      new MessageFieldGenerator(descriptor_, -1, this->options()));
-    single_generator->GenerateCodecCode(printer);
-  }
-  printer->Print(");\n");
-}
-
 }  // namespace csharp
 }  // namespace compiler
 }  // namespace protobuf

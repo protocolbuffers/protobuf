@@ -138,106 +138,32 @@ namespace UnitTest.Issues.TestProtos {
             "Eg5GaWxlQW5ub3RhdGlvbhoWEhROZXN0ZWRGaWxlQW5ub3RhdGlvbmIGcHJv",
             "dG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
-          new pbr::FileDescriptor[] { global::Google.Protobuf.Reflection.DescriptorReflection.Descriptor, },
-          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::UnitTest.Issues.TestProtos.MethodOpt1), typeof(global::UnitTest.Issues.TestProtos.AggregateEnum), }, new pb::Extension[] { UnittestCustomOptionsProto3Extensions.FileOpt1, UnittestCustomOptionsProto3Extensions.MessageOpt1, UnittestCustomOptionsProto3Extensions.FieldOpt1, UnittestCustomOptionsProto3Extensions.OneofOpt1, UnittestCustomOptionsProto3Extensions.EnumOpt1, UnittestCustomOptionsProto3Extensions.EnumValueOpt1, UnittestCustomOptionsProto3Extensions.ServiceOpt1, UnittestCustomOptionsProto3Extensions.MethodOpt1, UnittestCustomOptionsProto3Extensions.BoolOpt, UnittestCustomOptionsProto3Extensions.Int32Opt, UnittestCustomOptionsProto3Extensions.Int64Opt, UnittestCustomOptionsProto3Extensions.Uint32Opt, UnittestCustomOptionsProto3Extensions.Uint64Opt, UnittestCustomOptionsProto3Extensions.Sint32Opt, UnittestCustomOptionsProto3Extensions.Sint64Opt, UnittestCustomOptionsProto3Extensions.Fixed32Opt, UnittestCustomOptionsProto3Extensions.Fixed64Opt, UnittestCustomOptionsProto3Extensions.Sfixed32Opt, UnittestCustomOptionsProto3Extensions.Sfixed64Opt, UnittestCustomOptionsProto3Extensions.FloatOpt, UnittestCustomOptionsProto3Extensions.DoubleOpt, UnittestCustomOptionsProto3Extensions.StringOpt, UnittestCustomOptionsProto3Extensions.BytesOpt, UnittestCustomOptionsProto3Extensions.EnumOpt, UnittestCustomOptionsProto3Extensions.MessageTypeOpt, UnittestCustomOptionsProto3Extensions.ComplexOpt1, UnittestCustomOptionsProto3Extensions.ComplexOpt2, UnittestCustomOptionsProto3Extensions.ComplexOpt3, UnittestCustomOptionsProto3Extensions.Fileopt, UnittestCustomOptionsProto3Extensions.Msgopt, UnittestCustomOptionsProto3Extensions.Fieldopt, UnittestCustomOptionsProto3Extensions.Enumopt, UnittestCustomOptionsProto3Extensions.Enumvalopt, UnittestCustomOptionsProto3Extensions.Serviceopt, UnittestCustomOptionsProto3Extensions.Methodopt }, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.TestMessageWithCustomOptions), global::UnitTest.Issues.TestProtos.TestMessageWithCustomOptions.Parser, new[]{ "Field1", "OneofField" }, new[]{ "AnOneof" }, new[]{ typeof(global::UnitTest.Issues.TestProtos.TestMessageWithCustomOptions.Types.AnEnum) }, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.CustomOptionFooRequest), global::UnitTest.Issues.TestProtos.CustomOptionFooRequest.Parser, null, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.CustomOptionFooResponse), global::UnitTest.Issues.TestProtos.CustomOptionFooResponse.Parser, null, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.CustomOptionFooClientMessage), global::UnitTest.Issues.TestProtos.CustomOptionFooClientMessage.Parser, null, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.CustomOptionFooServerMessage), global::UnitTest.Issues.TestProtos.CustomOptionFooServerMessage.Parser, null, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.DummyMessageContainingEnum), global::UnitTest.Issues.TestProtos.DummyMessageContainingEnum.Parser, null, null, new[]{ typeof(global::UnitTest.Issues.TestProtos.DummyMessageContainingEnum.Types.TestEnumType) }, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.DummyMessageInvalidAsOptionType), global::UnitTest.Issues.TestProtos.DummyMessageInvalidAsOptionType.Parser, null, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.CustomOptionMinIntegerValues), global::UnitTest.Issues.TestProtos.CustomOptionMinIntegerValues.Parser, null, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.CustomOptionMaxIntegerValues), global::UnitTest.Issues.TestProtos.CustomOptionMaxIntegerValues.Parser, null, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.CustomOptionOtherValues), global::UnitTest.Issues.TestProtos.CustomOptionOtherValues.Parser, null, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.SettingRealsFromPositiveInts), global::UnitTest.Issues.TestProtos.SettingRealsFromPositiveInts.Parser, null, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.SettingRealsFromNegativeInts), global::UnitTest.Issues.TestProtos.SettingRealsFromNegativeInts.Parser, null, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.ComplexOptionType1), global::UnitTest.Issues.TestProtos.ComplexOptionType1.Parser, new[]{ "Foo", "Foo2", "Foo3", "Foo4" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.ComplexOptionType2), global::UnitTest.Issues.TestProtos.ComplexOptionType2.Parser, new[]{ "Bar", "Baz", "Fred", "Barney" }, null, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.ComplexOptionType2.Types.ComplexOptionType4), global::UnitTest.Issues.TestProtos.ComplexOptionType2.Types.ComplexOptionType4.Parser, new[]{ "Waldo" }, null, null, new pb::Extension[] { global::UnitTest.Issues.TestProtos.ComplexOptionType2.Types.ComplexOptionType4.Extensions.ComplexOpt4 }, null)}),
-            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.ComplexOptionType3), global::UnitTest.Issues.TestProtos.ComplexOptionType3.Parser, new[]{ "Qux" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.VariousComplexOptions), global::UnitTest.Issues.TestProtos.VariousComplexOptions.Parser, null, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.Aggregate), global::UnitTest.Issues.TestProtos.Aggregate.Parser, new[]{ "I", "S", "Sub" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.AggregateMessage), global::UnitTest.Issues.TestProtos.AggregateMessage.Parser, new[]{ "Fieldname" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.NestedOptionType), global::UnitTest.Issues.TestProtos.NestedOptionType.Parser, null, null, new[]{ typeof(global::UnitTest.Issues.TestProtos.NestedOptionType.Types.NestedEnum) }, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.NestedOptionType.Types.NestedMessage), global::UnitTest.Issues.TestProtos.NestedOptionType.Types.NestedMessage.Parser, new[]{ "NestedField" }, null, null, null, null)})
+          new pbr::FileDescriptor[] { pbr::FileDescriptor.DescriptorProtoFileDescriptor, },
+          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::UnitTest.Issues.TestProtos.MethodOpt1), typeof(global::UnitTest.Issues.TestProtos.AggregateEnum), }, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.TestMessageWithCustomOptions), global::UnitTest.Issues.TestProtos.TestMessageWithCustomOptions.Parser, new[]{ "Field1", "OneofField" }, new[]{ "AnOneof" }, new[]{ typeof(global::UnitTest.Issues.TestProtos.TestMessageWithCustomOptions.Types.AnEnum) }, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.CustomOptionFooRequest), global::UnitTest.Issues.TestProtos.CustomOptionFooRequest.Parser, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.CustomOptionFooResponse), global::UnitTest.Issues.TestProtos.CustomOptionFooResponse.Parser, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.CustomOptionFooClientMessage), global::UnitTest.Issues.TestProtos.CustomOptionFooClientMessage.Parser, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.CustomOptionFooServerMessage), global::UnitTest.Issues.TestProtos.CustomOptionFooServerMessage.Parser, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.DummyMessageContainingEnum), global::UnitTest.Issues.TestProtos.DummyMessageContainingEnum.Parser, null, null, new[]{ typeof(global::UnitTest.Issues.TestProtos.DummyMessageContainingEnum.Types.TestEnumType) }, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.DummyMessageInvalidAsOptionType), global::UnitTest.Issues.TestProtos.DummyMessageInvalidAsOptionType.Parser, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.CustomOptionMinIntegerValues), global::UnitTest.Issues.TestProtos.CustomOptionMinIntegerValues.Parser, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.CustomOptionMaxIntegerValues), global::UnitTest.Issues.TestProtos.CustomOptionMaxIntegerValues.Parser, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.CustomOptionOtherValues), global::UnitTest.Issues.TestProtos.CustomOptionOtherValues.Parser, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.SettingRealsFromPositiveInts), global::UnitTest.Issues.TestProtos.SettingRealsFromPositiveInts.Parser, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.SettingRealsFromNegativeInts), global::UnitTest.Issues.TestProtos.SettingRealsFromNegativeInts.Parser, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.ComplexOptionType1), global::UnitTest.Issues.TestProtos.ComplexOptionType1.Parser, new[]{ "Foo", "Foo2", "Foo3", "Foo4" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.ComplexOptionType2), global::UnitTest.Issues.TestProtos.ComplexOptionType2.Parser, new[]{ "Bar", "Baz", "Fred", "Barney" }, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.ComplexOptionType2.Types.ComplexOptionType4), global::UnitTest.Issues.TestProtos.ComplexOptionType2.Types.ComplexOptionType4.Parser, new[]{ "Waldo" }, null, null, null)}),
+            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.ComplexOptionType3), global::UnitTest.Issues.TestProtos.ComplexOptionType3.Parser, new[]{ "Qux" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.VariousComplexOptions), global::UnitTest.Issues.TestProtos.VariousComplexOptions.Parser, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.Aggregate), global::UnitTest.Issues.TestProtos.Aggregate.Parser, new[]{ "I", "S", "Sub" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.AggregateMessage), global::UnitTest.Issues.TestProtos.AggregateMessage.Parser, new[]{ "Fieldname" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.NestedOptionType), global::UnitTest.Issues.TestProtos.NestedOptionType.Parser, null, null, new[]{ typeof(global::UnitTest.Issues.TestProtos.NestedOptionType.Types.NestedEnum) }, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.NestedOptionType.Types.NestedMessage), global::UnitTest.Issues.TestProtos.NestedOptionType.Types.NestedMessage.Parser, new[]{ "NestedField" }, null, null, null)})
           }));
     }
     #endregion
 
   }
-  /// <summary>Holder for extension identifiers generated from the top level of unittest_custom_options_proto3.proto</summary>
-  internal static partial class UnittestCustomOptionsProto3Extensions {
-    public static readonly pb::Extension<global::Google.Protobuf.Reflection.FileOptions, ulong> FileOpt1 =
-      new pb::Extension<global::Google.Protobuf.Reflection.FileOptions, ulong>(7736974, pb::FieldCodec.ForUInt64(61895792, 0UL));
-    public static readonly pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, int> MessageOpt1 =
-      new pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, int>(7739036, pb::FieldCodec.ForInt32(61912288, 0));
-    public static readonly pb::Extension<global::Google.Protobuf.Reflection.FieldOptions, ulong> FieldOpt1 =
-      new pb::Extension<global::Google.Protobuf.Reflection.FieldOptions, ulong>(7740936, pb::FieldCodec.ForFixed64(61927489, 0UL));
-    public static readonly pb::Extension<global::Google.Protobuf.Reflection.OneofOptions, int> OneofOpt1 =
-      new pb::Extension<global::Google.Protobuf.Reflection.OneofOptions, int>(7740111, pb::FieldCodec.ForInt32(61920888, 0));
-    public static readonly pb::Extension<global::Google.Protobuf.Reflection.EnumOptions, int> EnumOpt1 =
-      new pb::Extension<global::Google.Protobuf.Reflection.EnumOptions, int>(7753576, pb::FieldCodec.ForSFixed32(62028613, 0));
-    public static readonly pb::Extension<global::Google.Protobuf.Reflection.EnumValueOptions, int> EnumValueOpt1 =
-      new pb::Extension<global::Google.Protobuf.Reflection.EnumValueOptions, int>(1560678, pb::FieldCodec.ForInt32(12485424, 0));
-    public static readonly pb::Extension<global::Google.Protobuf.Reflection.ServiceOptions, long> ServiceOpt1 =
-      new pb::Extension<global::Google.Protobuf.Reflection.ServiceOptions, long>(7887650, pb::FieldCodec.ForSInt64(63101200, 0L));
-    public static readonly pb::Extension<global::Google.Protobuf.Reflection.MethodOptions, global::UnitTest.Issues.TestProtos.MethodOpt1> MethodOpt1 =
-      new pb::Extension<global::Google.Protobuf.Reflection.MethodOptions, global::UnitTest.Issues.TestProtos.MethodOpt1>(7890860, pb::FieldCodec.ForEnum(63126880, x => (int) x, x => (global::UnitTest.Issues.TestProtos.MethodOpt1) x, global::UnitTest.Issues.TestProtos.MethodOpt1.Unspecified));
-    public static readonly pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, bool> BoolOpt =
-      new pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, bool>(7706090, pb::FieldCodec.ForBool(61648720, false));
-    public static readonly pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, int> Int32Opt =
-      new pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, int>(7705709, pb::FieldCodec.ForInt32(61645672, 0));
-    public static readonly pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, long> Int64Opt =
-      new pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, long>(7705542, pb::FieldCodec.ForInt64(61644336, 0L));
-    public static readonly pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, uint> Uint32Opt =
-      new pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, uint>(7704880, pb::FieldCodec.ForUInt32(61639040, 0));
-    public static readonly pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, ulong> Uint64Opt =
-      new pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, ulong>(7702367, pb::FieldCodec.ForUInt64(61618936, 0UL));
-    public static readonly pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, int> Sint32Opt =
-      new pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, int>(7701568, pb::FieldCodec.ForSInt32(61612544, 0));
-    public static readonly pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, long> Sint64Opt =
-      new pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, long>(7700863, pb::FieldCodec.ForSInt64(61606904, 0L));
-    public static readonly pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, uint> Fixed32Opt =
-      new pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, uint>(7700307, pb::FieldCodec.ForFixed32(61602461, 0));
-    public static readonly pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, ulong> Fixed64Opt =
-      new pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, ulong>(7700194, pb::FieldCodec.ForFixed64(61601553, 0UL));
-    public static readonly pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, int> Sfixed32Opt =
-      new pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, int>(7698645, pb::FieldCodec.ForSFixed32(61589165, 0));
-    public static readonly pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, long> Sfixed64Opt =
-      new pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, long>(7685475, pb::FieldCodec.ForSFixed64(61483801, 0L));
-    public static readonly pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, float> FloatOpt =
-      new pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, float>(7675390, pb::FieldCodec.ForFloat(61403125, 0F));
-    public static readonly pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, double> DoubleOpt =
-      new pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, double>(7673293, pb::FieldCodec.ForDouble(61386345, 0D));
-    public static readonly pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, string> StringOpt =
-      new pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, string>(7673285, pb::FieldCodec.ForString(61386282, ""));
-    public static readonly pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, pb::ByteString> BytesOpt =
-      new pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, pb::ByteString>(7673238, pb::FieldCodec.ForBytes(61385906, pb::ByteString.Empty));
-    public static readonly pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, global::UnitTest.Issues.TestProtos.DummyMessageContainingEnum.Types.TestEnumType> EnumOpt =
-      new pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, global::UnitTest.Issues.TestProtos.DummyMessageContainingEnum.Types.TestEnumType>(7673233, pb::FieldCodec.ForEnum(61385864, x => (int) x, x => (global::UnitTest.Issues.TestProtos.DummyMessageContainingEnum.Types.TestEnumType) x, global::UnitTest.Issues.TestProtos.DummyMessageContainingEnum.Types.TestEnumType.TestOptionEnumUnspecified));
-    public static readonly pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, global::UnitTest.Issues.TestProtos.DummyMessageInvalidAsOptionType> MessageTypeOpt =
-      new pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, global::UnitTest.Issues.TestProtos.DummyMessageInvalidAsOptionType>(7665967, pb::FieldCodec.ForMessage(61327738, global::UnitTest.Issues.TestProtos.DummyMessageInvalidAsOptionType.Parser));
-    public static readonly pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, global::UnitTest.Issues.TestProtos.ComplexOptionType1> ComplexOpt1 =
-      new pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, global::UnitTest.Issues.TestProtos.ComplexOptionType1>(7646756, pb::FieldCodec.ForMessage(61174050, global::UnitTest.Issues.TestProtos.ComplexOptionType1.Parser));
-    public static readonly pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, global::UnitTest.Issues.TestProtos.ComplexOptionType2> ComplexOpt2 =
-      new pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, global::UnitTest.Issues.TestProtos.ComplexOptionType2>(7636949, pb::FieldCodec.ForMessage(61095594, global::UnitTest.Issues.TestProtos.ComplexOptionType2.Parser));
-    public static readonly pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, global::UnitTest.Issues.TestProtos.ComplexOptionType3> ComplexOpt3 =
-      new pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, global::UnitTest.Issues.TestProtos.ComplexOptionType3>(7636463, pb::FieldCodec.ForMessage(61091706, global::UnitTest.Issues.TestProtos.ComplexOptionType3.Parser));
-    public static readonly pb::Extension<global::Google.Protobuf.Reflection.FileOptions, global::UnitTest.Issues.TestProtos.Aggregate> Fileopt =
-      new pb::Extension<global::Google.Protobuf.Reflection.FileOptions, global::UnitTest.Issues.TestProtos.Aggregate>(15478479, pb::FieldCodec.ForMessage(123827834, global::UnitTest.Issues.TestProtos.Aggregate.Parser));
-    public static readonly pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, global::UnitTest.Issues.TestProtos.Aggregate> Msgopt =
-      new pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, global::UnitTest.Issues.TestProtos.Aggregate>(15480088, pb::FieldCodec.ForMessage(123840706, global::UnitTest.Issues.TestProtos.Aggregate.Parser));
-    public static readonly pb::Extension<global::Google.Protobuf.Reflection.FieldOptions, global::UnitTest.Issues.TestProtos.Aggregate> Fieldopt =
-      new pb::Extension<global::Google.Protobuf.Reflection.FieldOptions, global::UnitTest.Issues.TestProtos.Aggregate>(15481374, pb::FieldCodec.ForMessage(123850994, global::UnitTest.Issues.TestProtos.Aggregate.Parser));
-    public static readonly pb::Extension<global::Google.Protobuf.Reflection.EnumOptions, global::UnitTest.Issues.TestProtos.Aggregate> Enumopt =
-      new pb::Extension<global::Google.Protobuf.Reflection.EnumOptions, global::UnitTest.Issues.TestProtos.Aggregate>(15483218, pb::FieldCodec.ForMessage(123865746, global::UnitTest.Issues.TestProtos.Aggregate.Parser));
-    public static readonly pb::Extension<global::Google.Protobuf.Reflection.EnumValueOptions, global::UnitTest.Issues.TestProtos.Aggregate> Enumvalopt =
-      new pb::Extension<global::Google.Protobuf.Reflection.EnumValueOptions, global::UnitTest.Issues.TestProtos.Aggregate>(15486921, pb::FieldCodec.ForMessage(123895370, global::UnitTest.Issues.TestProtos.Aggregate.Parser));
-    public static readonly pb::Extension<global::Google.Protobuf.Reflection.ServiceOptions, global::UnitTest.Issues.TestProtos.Aggregate> Serviceopt =
-      new pb::Extension<global::Google.Protobuf.Reflection.ServiceOptions, global::UnitTest.Issues.TestProtos.Aggregate>(15497145, pb::FieldCodec.ForMessage(123977162, global::UnitTest.Issues.TestProtos.Aggregate.Parser));
-    public static readonly pb::Extension<global::Google.Protobuf.Reflection.MethodOptions, global::UnitTest.Issues.TestProtos.Aggregate> Methodopt =
-      new pb::Extension<global::Google.Protobuf.Reflection.MethodOptions, global::UnitTest.Issues.TestProtos.Aggregate>(15512713, pb::FieldCodec.ForMessage(124101706, global::UnitTest.Issues.TestProtos.Aggregate.Parser));
-  }
-
   #region Enums
   public enum MethodOpt1 {
     [pbr::OriginalName("METHODOPT1_UNSPECIFIED")] Unspecified = 0,
@@ -2134,15 +2060,6 @@ namespace UnitTest.Issues.TestProtos {
             }
           }
         }
-
-        #region Extensions
-        /// <summary>Container for extensions for other messages declared in the ComplexOptionType4 message type.</summary>
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        internal static partial class Extensions {
-          public static readonly pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, global::UnitTest.Issues.TestProtos.ComplexOptionType2.Types.ComplexOptionType4> ComplexOpt4 =
-            new pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, global::UnitTest.Issues.TestProtos.ComplexOptionType2.Types.ComplexOptionType4>(7633546, pb::FieldCodec.ForMessage(61068370, global::UnitTest.Issues.TestProtos.ComplexOptionType2.Types.ComplexOptionType4.Parser));
-        }
-        #endregion
 
       }
 

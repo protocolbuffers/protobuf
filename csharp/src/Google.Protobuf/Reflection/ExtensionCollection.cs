@@ -48,14 +48,14 @@ namespace Google.Protobuf.Reflection
         {
             UnorderedExtensions = DescriptorUtil.ConvertAndMakeReadOnly(
                 file.Proto.Extension,
-                (extension, i) => new FieldDescriptor(extension, file, null, i, null, extensions?[i]));
+                (extension, i) => new FieldDescriptor(extension, file, null, i, null, extensions != null && extensions.Length != 0 ? extensions[i] : null));
         }
 
         internal ExtensionCollection(MessageDescriptor message, Extension[] extensions)
         {
             UnorderedExtensions = DescriptorUtil.ConvertAndMakeReadOnly(
                 message.Proto.Extension,
-                (extension, i) => new FieldDescriptor(extension, message.File, message, i, null, extensions?[i]));
+                (extension, i) => new FieldDescriptor(extension, message.File, message, i, null, extensions != null && extensions.Length != 0 ? extensions[i] : null));
         }
 
         /// <summary>
