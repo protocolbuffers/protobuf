@@ -1725,6 +1725,7 @@ class Proto3Test(unittest.TestCase):
 
     self.assertIsNone(msg.map_int32_int32.get(5))
     self.assertEqual(10, msg.map_int32_int32.get(5, 10))
+    self.assertEqual(10, msg.map_int32_int32.get(key=5, default=10))
     self.assertIsNone(msg.map_int32_int32.get(5))
 
     msg.map_int32_int32[5] = 15
@@ -1735,6 +1736,7 @@ class Proto3Test(unittest.TestCase):
 
     self.assertIsNone(msg.map_int32_foreign_message.get(5))
     self.assertEqual(10, msg.map_int32_foreign_message.get(5, 10))
+    self.assertEqual(10, msg.map_int32_foreign_message.get(key=5, default=10))
 
     submsg = msg.map_int32_foreign_message[5]
     self.assertIs(submsg, msg.map_int32_foreign_message.get(5))
@@ -1995,6 +1997,13 @@ class Proto3Test(unittest.TestCase):
     m2.map_int32_foreign_message[123].c = 10
     m1.MergeFrom(m2)
     self.assertEqual(10, m2.map_int32_foreign_message[123].c)
+
+    # Test merge maps within different message types.
+    m1 = map_unittest_pb2.TestMap()
+    m2 = map_unittest_pb2.TestMessageMap()
+    m2.map_int32_message[123].optional_int32 = 10
+    m1.map_int32_all_types.MergeFrom(m2.map_int32_message)
+    self.assertEqual(10, m1.map_int32_all_types[123].optional_int32)
 
   def testMergeFromBadType(self):
     msg = map_unittest_pb2.TestMap()

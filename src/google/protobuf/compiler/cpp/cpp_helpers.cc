@@ -44,7 +44,6 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/descriptor.h>
-
 #include <google/protobuf/compiler/scc.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
@@ -52,8 +51,6 @@
 #include <google/protobuf/wire_format_lite.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
-
-
 #include <google/protobuf/stubs/hash.h>
 
 #include <google/protobuf/port_def.inc>
@@ -202,6 +199,10 @@ std::string IntTypeName(const Options& options, const std::string& type) {
 void SetIntVar(const Options& options, const std::string& type,
                std::map<std::string, std::string>* variables) {
   (*variables)[type] = IntTypeName(options, type);
+}
+
+bool HasInternalAccessors(const FieldOptions::CType ctype) {
+  return ctype == FieldOptions::STRING;
 }
 
 }  // namespace
@@ -373,10 +374,20 @@ std::string DefaultInstanceName(const Descriptor* descriptor,
   return "_" + ClassName(descriptor, false) + "_default_instance_";
 }
 
+std::string DefaultInstancePtr(const Descriptor* descriptor,
+                               const Options& options) {
+  return DefaultInstanceName(descriptor, options) + "ptr_";
+}
+
 std::string QualifiedDefaultInstanceName(const Descriptor* descriptor,
                                          const Options& options) {
   return QualifiedFileLevelSymbol(
       descriptor->file(), DefaultInstanceName(descriptor, options), options);
+}
+
+std::string QualifiedDefaultInstancePtr(const Descriptor* descriptor,
+                                        const Options& options) {
+  return QualifiedDefaultInstanceName(descriptor, options) + "ptr_";
 }
 
 std::string DescriptorTableName(const FileDescriptor* file,
@@ -1125,7 +1136,7 @@ bool IsImplicitWeakField(const FieldDescriptor* field, const Options& options,
                          MessageSCCAnalyzer* scc_analyzer) {
   return UsingImplicitWeakFields(field->file(), options) &&
          field->type() == FieldDescriptor::TYPE_MESSAGE &&
-         !field->is_required() && !field->is_map() &&
+         !field->is_required() && !field->is_map() && !field->is_extension() &&
          field->containing_oneof() == nullptr &&
          !IsWellKnownMessage(field->message_type()->file()) &&
          field->message_type()->file()->name() !=
@@ -1381,7 +1392,7 @@ class ParseLoopGenerator {
     // For now only optimize small hasbits.
     if (hasbits_size != 1) hasbits_size = 0;
     if (hasbits_size) {
-      format_("HasBitSetters::HasBits has_bits{};\n");
+      format_("_Internal::HasBits has_bits{};\n");
       format_.Set("has_bits", "has_bits");
     } else {
       format_.Set("has_bits", "_has_bits_");
@@ -1420,7 +1431,7 @@ class ParseLoopGenerator {
       field_name = ", kFieldName";
     }
     if (HasFieldPresence(field->file())) {
-      format_("HasBitSetters::set_has_$1$(&$has_bits$);\n", FieldName(field));
+      format_("_Internal::set_has_$1$(&$has_bits$);\n", FieldName(field));
     }
     string default_string =
         field->default_value_string().empty()
@@ -1479,7 +1490,8 @@ class ParseLoopGenerator {
         name = "StringPieceParser" + utf8;
         break;
     }
-    format_("ptr = $pi_ns$::Inline$1$($2$_$3$(), ptr, ctx$4$);\n", name,
+    format_("ptr = $pi_ns$::Inline$1$($2$$3$_$4$(), ptr, ctx$5$);\n", name,
+            HasInternalAccessors(ctype) ? "_internal_" : "",
             field->is_repeated() && !field->is_packable() ? "add" : "mutable",
             FieldName(field), field_name);
   }
@@ -1489,9 +1501,9 @@ class ParseLoopGenerator {
       std::string enum_validator;
       if (field->type() == FieldDescriptor::TYPE_ENUM &&
           !HasPreservingUnknownEnumSemantics(field)) {
-        enum_validator = StrCat(
-            ", ", QualifiedClassName(field->enum_type(), options_),
-            "_IsValid, mutable_unknown_fields(), ", field->number());
+        enum_validator =
+            StrCat(", ", QualifiedClassName(field->enum_type(), options_),
+                         "_IsValid, &_internal_metadata_, ", field->number());
       }
       format_("ptr = $pi_ns$::Packed$1$Parser(mutable_$2$(), ptr, ctx$3$);\n",
               DeclaredTypeMethodName(field->type()), FieldName(field),
@@ -1536,7 +1548,7 @@ class ParseLoopGenerator {
                   FieldName(field), field->containing_oneof()->name());
             } else if (HasFieldPresence(field->file())) {
               format_(
-                  "HasBitSetters::set_has_$1$(&$has_bits$);\n"
+                  "_Internal::set_has_$1$(&$has_bits$);\n"
                   "ptr = ctx->ParseMessage(&$1$_, ptr);\n",
                   FieldName(field));
             } else {
@@ -1546,15 +1558,14 @@ class ParseLoopGenerator {
           } else if (IsImplicitWeakField(field, options_, scc_analyzer_)) {
             if (!field->is_repeated()) {
               format_(
-                  "ptr = ctx->ParseMessage(HasBitSetters::mutable_$1$(this), "
+                  "ptr = ctx->ParseMessage(_Internal::mutable_$1$(this), "
                   "ptr);\n",
                   FieldName(field));
             } else {
               format_(
-                  "ptr = ctx->ParseMessage("
-                  "CastToBase(&$1$_)->AddWeak(reinterpret_cast<const "
-                  "::$proto_ns$::MessageLite*>(&$2$::_$3$_default_instance_)), "
-                  "ptr);\n",
+                  "ptr = ctx->ParseMessage($1$_.AddWeak(reinterpret_cast<const "
+                  "::$proto_ns$::MessageLite*>($2$::_$3$_default_instance_ptr_)"
+                  "), ptr);\n",
                   FieldName(field), Namespace(field->message_type(), options_),
                   ClassName(field->message_type()));
             }
@@ -1633,7 +1644,7 @@ class ParseLoopGenerator {
                 prefix, FieldName(field), zigzag);
           } else {
             if (HasFieldPresence(field->file())) {
-              format_("HasBitSetters::set_has_$1$(&$has_bits$);\n",
+              format_("_Internal::set_has_$1$(&$has_bits$);\n",
                       FieldName(field));
             }
             format_(
@@ -1655,8 +1666,7 @@ class ParseLoopGenerator {
               prefix, FieldName(field), type);
         } else {
           if (HasFieldPresence(field->file())) {
-            format_("HasBitSetters::set_has_$1$(&$has_bits$);\n",
-                    FieldName(field));
+            format_("_Internal::set_has_$1$(&$has_bits$);\n", FieldName(field));
           }
           format_(
               "$1$_ = $pi_ns$::UnalignedLoad<$2$>(ptr);\n"
@@ -1758,12 +1768,11 @@ class ParseLoopGenerator {
       }
       GenerateFieldBody(wiretype, field);
       if (is_repeat) {
-        string type = tag_size == 2 ? "uint16" : "uint8";
         format_.Outdent();
         format_(
             "  if (!ctx->DataAvailable(ptr)) break;\n"
-            "} while ($pi_ns$::UnalignedLoad<$1$>(ptr) == $2$);\n",
-            IntTypeName(options_, type), SmallVarintValue(tag));
+            "} while ($pi_ns$::ExpectTag<$1$>(ptr));\n",
+            tag);
       }
       format_.Outdent();
       if (fallback_tag) {

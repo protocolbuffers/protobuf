@@ -46,7 +46,6 @@ final class IntArrayList extends AbstractProtobufList<Integer>
     implements IntList, RandomAccess, PrimitiveNonBoxingCollection {
 
   private static final IntArrayList EMPTY_LIST = new IntArrayList(new int[0], 0);
-
   static {
     EMPTY_LIST.makeImmutable();
   }
@@ -160,6 +159,12 @@ final class IntArrayList extends AbstractProtobufList<Integer>
   }
 
   @Override
+  public boolean add(Integer element) {
+    addInt(element);
+    return true;
+  }
+
+  @Override
   public void add(int index, Integer element) {
     addInt(index, element);
   }
@@ -167,7 +172,17 @@ final class IntArrayList extends AbstractProtobufList<Integer>
   /** Like {@link #add(Integer)} but more efficient in that it doesn't box the element. */
   @Override
   public void addInt(int element) {
-    addInt(size, element);
+    ensureIsMutable();
+    if (size == array.length) {
+      // Resize to 1.5x the size
+      int length = ((size * 3) / 2) + 1;
+      int[] newArray = new int[length];
+
+      System.arraycopy(array, 0, newArray, 0, size);
+      array = newArray;
+    }
+
+    array[size++] = element;
   }
 
   /** Like {@link #add(int, Integer)} but more efficient in that it doesn't box the element. */

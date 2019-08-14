@@ -85,7 +85,7 @@ public interface Message extends MessageLite, MessageOrBuilder {
 
   /**
    * Converts the message to a string in protocol buffer text format. This is just a trivial wrapper
-   * around {@link TextFormat#printToString(MessageOrBuilder)}.
+   * around {@link TextFormat.Printer#printToString(MessageOrBuilder)}.
    */
   @Override
   String toString();

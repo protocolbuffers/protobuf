@@ -370,16 +370,8 @@ static bool endmap_handler(void *closure, const void *hd, upb_status* s) {
       mapdata->key_field_type, Qnil,
       &frame->key_storage);
 
-  VALUE value_field_typeclass = Qnil;
-  VALUE value;
-
-  if (mapdata->value_field_type == UPB_TYPE_MESSAGE ||
-      mapdata->value_field_type == UPB_TYPE_ENUM) {
-    value_field_typeclass = mapdata->subklass;
-  }
-
-  value = native_slot_get(
-      mapdata->value_field_type, value_field_typeclass,
+  VALUE value = native_slot_get(
+      mapdata->value_field_type, mapdata->subklass,
       &frame->value_storage);
 
   Map_index_set(frame->map, key, value);

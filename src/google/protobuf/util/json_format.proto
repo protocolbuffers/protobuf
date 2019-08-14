@@ -117,3 +117,14 @@ message TestStringSerializer {
   repeated string repeated_string = 2;
   map<string, string> string_map = 3;
 }
+
+message TestMessageWithExtension {
+  extensions 100 to max;
+}
+
+message TestExtension {
+  extend TestMessageWithExtension {
+    optional TestExtension ext = 100;
+  }
+  optional string value = 1;
+}

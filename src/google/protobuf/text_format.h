@@ -103,6 +103,8 @@ class PROTOBUF_EXPORT TextFormat {
 
     virtual void Indent() {}
     virtual void Outdent() {}
+    // Returns the current indentation size in characters.
+    virtual size_t GetCurrentIndentationSize() const { return 0; }
 
     // Print text to the output stream.
     virtual void Print(const char* text, size_t size) = 0;
@@ -208,6 +210,11 @@ class PROTOBUF_EXPORT TextFormat {
     virtual const FieldDescriptor* FindExtension(Message* message,
                                                  const std::string& name) const;
 
+    // Similar to FindExtension, but uses a Descriptor and the extension number
+    // instead of using a Message and the name when doing the look up.
+    virtual const FieldDescriptor* FindExtensionByNumber(
+        const Descriptor* descriptor, int number) const;
+
     // Find the message type for an Any proto.
     // Returns NULL if no message is known for this name.
     // The base implementation only accepts prefixes of type.googleprod.com/ or
@@ -229,7 +236,6 @@ class PROTOBUF_EXPORT TextFormat {
   class PROTOBUF_EXPORT Printer {
    public:
     Printer();
-    ~Printer();
 
     // Like TextFormat::Print
     bool Print(const Message& message, io::ZeroCopyOutputStream* output) const;
@@ -387,28 +393,29 @@ class PROTOBUF_EXPORT TextFormat {
 
     bool PrintAny(const Message& message, TextGenerator* generator) const;
 
+    const FastFieldValuePrinter* GetFieldPrinter(
+        const FieldDescriptor* field) const {
+      auto it = custom_printers_.find(field);
+      return it == custom_printers_.end() ? default_field_value_printer_.get()
+                                          : it->second.get();
+    }
+
     int initial_indent_level_;
-
     bool single_line_mode_;
-
     bool use_field_number_;
-
     bool use_short_repeated_primitives_;
-
     bool hide_unknown_fields_;
-
     bool print_message_fields_in_index_order_;
-
     bool expand_any_;
-
     int64 truncate_string_field_longer_than_;
 
     std::unique_ptr<const FastFieldValuePrinter> default_field_value_printer_;
-    typedef std::map<const FieldDescriptor*, const FastFieldValuePrinter*>
+    typedef std::map<const FieldDescriptor*,
+                     std::unique_ptr<const FastFieldValuePrinter>>
         CustomPrinterMap;
     CustomPrinterMap custom_printers_;
 
-    typedef std::map<const Descriptor*, const MessagePrinter*>
+    typedef std::map<const Descriptor*, std::unique_ptr<const MessagePrinter>>
         CustomMessagePrinterMap;
     CustomMessagePrinterMap custom_message_printers_;
 
@@ -461,8 +468,9 @@ class PROTOBUF_EXPORT TextFormat {
   // value parsed from the text.
   class PROTOBUF_EXPORT ParseInfoTree {
    public:
-    ParseInfoTree();
-    ~ParseInfoTree();
+    ParseInfoTree() = default;
+    ParseInfoTree(const ParseInfoTree&) = delete;
+    ParseInfoTree& operator=(const ParseInfoTree&) = delete;
 
     // Returns the parse location for index-th value of the field in the parsed
     // text. If none exists, returns a location with line = -1. Index should be
@@ -491,13 +499,12 @@ class PROTOBUF_EXPORT TextFormat {
 
     // Defines the map from the index-th field descriptor to the nested parse
     // info tree.
-    typedef std::map<const FieldDescriptor*, std::vector<ParseInfoTree*> >
+    typedef std::map<const FieldDescriptor*,
+                     std::vector<std::unique_ptr<ParseInfoTree>>>
         NestedMap;
 
     LocationMap locations_;
     NestedMap nested_;
-
-    GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ParseInfoTree);
   };
 
   // For more control over parsing, use this class.

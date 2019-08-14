@@ -8,9 +8,9 @@
 #endif
 
 #if GPB_USE_PROTOBUF_FRAMEWORK_IMPORTS
- #import <Protobuf/GPBDescriptor.h>
- #import <Protobuf/GPBMessage.h>
- #import <Protobuf/GPBRootObject.h>
+ #import <protobuf/GPBDescriptor.h>
+ #import <protobuf/GPBMessage.h>
+ #import <protobuf/GPBRootObject.h>
 #else
  #import "GPBDescriptor.h"
  #import "GPBMessage.h"
@@ -77,7 +77,7 @@ typedef GPB_ENUM(GPBDuration_FieldNumber) {
  *     if (duration.seconds < 0 && duration.nanos > 0) {
  *       duration.seconds += 1;
  *       duration.nanos -= 1000000000;
- *     } else if (durations.seconds > 0 && duration.nanos < 0) {
+ *     } else if (duration.seconds > 0 && duration.nanos < 0) {
  *       duration.seconds -= 1;
  *       duration.nanos += 1000000000;
  *     }

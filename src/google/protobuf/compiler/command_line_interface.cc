@@ -34,7 +34,6 @@
 
 #include <google/protobuf/compiler/command_line_interface.h>
 
-
 #include <google/protobuf/stubs/platform_macros.h>
 
 #include <stdio.h>
@@ -71,7 +70,6 @@
 #include <google/protobuf/compiler/plugin.pb.h>
 #include <google/protobuf/compiler/code_generator.h>
 #include <google/protobuf/compiler/importer.h>
-#include <google/protobuf/io/io_win32.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
@@ -80,6 +78,7 @@
 #include <google/protobuf/text_format.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
+#include <google/protobuf/io/io_win32.h>
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/stl_util.h>
 
@@ -366,7 +365,6 @@ class CommandLineInterface::ErrorPrinter
 class CommandLineInterface::GeneratorContextImpl : public GeneratorContext {
  public:
   GeneratorContextImpl(const std::vector<const FileDescriptor*>& parsed_files);
-  ~GeneratorContextImpl();
 
   // Write all files in the directory to disk at the given output location,
   // which must end in a '/'.
@@ -397,7 +395,7 @@ class CommandLineInterface::GeneratorContextImpl : public GeneratorContext {
 
   // map instead of unordered_map so that files are written in order (good when
   // writing zips).
-  std::map<std::string, std::string*> files_;
+  std::map<std::string, std::string> files_;
   const std::vector<const FileDescriptor*>& parsed_files_;
   bool had_error_;
 };
@@ -446,10 +444,6 @@ CommandLineInterface::GeneratorContextImpl::GeneratorContextImpl(
     const std::vector<const FileDescriptor*>& parsed_files)
     : parsed_files_(parsed_files), had_error_(false) {}
 
-CommandLineInterface::GeneratorContextImpl::~GeneratorContextImpl() {
-  STLDeleteValues(&files_);
-}
-
 bool CommandLineInterface::GeneratorContextImpl::WriteAllToDisk(
     const std::string& prefix) {
   if (had_error_) {
@@ -460,12 +454,10 @@ bool CommandLineInterface::GeneratorContextImpl::WriteAllToDisk(
     return false;
   }
 
-  for (std::map<std::string, std::string*>::const_iterator iter =
-           files_.begin();
-       iter != files_.end(); ++iter) {
-    const std::string& relative_filename = iter->first;
-    const char* data = iter->second->data();
-    int size = iter->second->size();
+  for (const auto& pair : files_) {
+    const std::string& relative_filename = pair.first;
+    const char* data = pair.second.data();
+    int size = pair.second.size();
 
     if (!TryCreateParentDirectory(prefix, relative_filename)) {
       return false;
@@ -549,10 +541,8 @@ bool CommandLineInterface::GeneratorContextImpl::WriteAllToZip(
   io::FileOutputStream stream(file_descriptor);
   ZipWriter zip_writer(&stream);
 
-  for (std::map<std::string, std::string*>::const_iterator iter =
-           files_.begin();
-       iter != files_.end(); ++iter) {
-    zip_writer.Write(iter->first, *iter->second);
+  for (const auto& pair : files_) {
+    zip_writer.Write(pair.first, pair.second);
   }
 
   zip_writer.WriteDirectory();
@@ -569,20 +559,19 @@ bool CommandLineInterface::GeneratorContextImpl::WriteAllToZip(
 }
 
 void CommandLineInterface::GeneratorContextImpl::AddJarManifest() {
-  std::string** map_slot = &files_["META-INF/MANIFEST.MF"];
-  if (*map_slot == NULL) {
-    *map_slot = new std::string(
+  auto pair = files_.insert({"META-INF/MANIFEST.MF", ""});
+  if (pair.second) {
+    pair.first->second =
         "Manifest-Version: 1.0\n"
         "Created-By: 1.6.0 (protoc)\n"
-        "\n");
+        "\n";
   }
 }
 
 void CommandLineInterface::GeneratorContextImpl::GetOutputFilenames(
     std::vector<std::string>* output_filenames) {
-  for (std::map<std::string, std::string*>::iterator iter = files_.begin();
-       iter != files_.end(); ++iter) {
-    output_filenames->push_back(iter->first);
+  for (const auto& pair : files_) {
+    output_filenames->push_back(pair.first);
   }
 }
 
@@ -623,17 +612,16 @@ CommandLineInterface::MemoryOutputStream::MemoryOutputStream(
 
 void CommandLineInterface::MemoryOutputStream::UpdateMetadata(
     size_t insertion_offset, size_t insertion_length) {
-  std::map<std::string, std::string*>::iterator meta_file =
-      directory_->files_.find(filename_ + ".meta");
-  if (meta_file == directory_->files_.end() || !meta_file->second) {
+  auto it = directory_->files_.find(filename_ + ".meta");
+  if (it == directory_->files_.end()) {
     // No metadata was recorded for this file.
     return;
   }
-  std::string* encoded_data = meta_file->second;
+  std::string& encoded_data = it->second;
   GeneratedCodeInfo metadata;
   bool is_text_format = false;
-  if (!metadata.ParseFromString(*encoded_data)) {
-    if (!TextFormat::ParseFromString(*encoded_data, &metadata)) {
+  if (!metadata.ParseFromString(encoded_data)) {
+    if (!TextFormat::ParseFromString(encoded_data, &metadata)) {
       // The metadata is invalid.
       std::cerr << filename_
                 << ".meta: Could not parse metadata as wire or text format."
@@ -653,9 +641,9 @@ void CommandLineInterface::MemoryOutputStream::UpdateMetadata(
     }
   }
   if (is_text_format) {
-    TextFormat::PrintToString(metadata, encoded_data);
+    TextFormat::PrintToString(metadata, &encoded_data);
   } else {
-    metadata.SerializeToString(encoded_data);
+    metadata.SerializeToString(&encoded_data);
   }
 }
 
@@ -664,13 +652,15 @@ CommandLineInterface::MemoryOutputStream::~MemoryOutputStream() {
   inner_.reset();
 
   // Insert into the directory.
-  std::string** map_slot = &directory_->files_[filename_];
+  auto pair = directory_->files_.insert({filename_, ""});
+  auto it = pair.first;
+  bool already_present = !pair.second;
 
   if (insertion_point_.empty()) {
     // This was just a regular Open().
-    if (*map_slot != NULL) {
+    if (already_present) {
       if (append_mode_) {
-        (*map_slot)->append(data_);
+        it->second.append(data_);
       } else {
         std::cerr << filename_ << ": Tried to write the same file twice."
                   << std::endl;
@@ -679,8 +669,7 @@ CommandLineInterface::MemoryOutputStream::~MemoryOutputStream() {
       return;
     }
 
-    *map_slot = new std::string;
-    (*map_slot)->swap(data_);
+    it->second.swap(data_);
   } else {
     // This was an OpenForInsert().
 
@@ -690,14 +679,14 @@ CommandLineInterface::MemoryOutputStream::~MemoryOutputStream() {
     }
 
     // Find the file we are going to insert into.
-    if (*map_slot == NULL) {
+    if (!already_present) {
       std::cerr << filename_
                 << ": Tried to insert into file that doesn't exist."
                 << std::endl;
       directory_->had_error_ = true;
       return;
     }
-    std::string* target = *map_slot;
+    std::string* target = &it->second;
 
     // Find the insertion point.
     std::string magic_string =
@@ -896,28 +885,27 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
           !HasSuffixString(output_location, ".jar")) {
         AddTrailingSlash(&output_location);
       }
-      GeneratorContextImpl** map_slot = &output_directories[output_location];
 
-      if (*map_slot == NULL) {
+      auto& generator = output_directories[output_location];
+
+      if (!generator) {
         // First time we've seen this output location.
-        *map_slot = new GeneratorContextImpl(parsed_files);
+        generator.reset(new GeneratorContextImpl(parsed_files));
       }
 
-      if (!GenerateOutput(parsed_files, output_directives_[i], *map_slot)) {
-        STLDeleteValues(&output_directories);
+      if (!GenerateOutput(parsed_files, output_directives_[i],
+                          generator.get())) {
         return 1;
       }
     }
   }
 
   // Write all output to disk.
-  for (GeneratorContextMap::iterator iter = output_directories.begin();
-       iter != output_directories.end(); ++iter) {
-    const std::string& location = iter->first;
-    GeneratorContextImpl* directory = iter->second;
+  for (const auto& pair : output_directories) {
+    const std::string& location = pair.first;
+    GeneratorContextImpl* directory = pair.second.get();
     if (HasSuffixString(location, "/")) {
       if (!directory->WriteAllToDisk(location)) {
-        STLDeleteValues(&output_directories);
         return 1;
       }
     } else {
@@ -926,7 +914,6 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
       }
 
       if (!directory->WriteAllToZip(location)) {
-        STLDeleteValues(&output_directories);
         return 1;
       }
     }
@@ -939,8 +926,6 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
       return 1;
     }
   }
-
-  STLDeleteValues(&output_directories);
 
   if (!descriptor_set_out_name_.empty()) {
     if (!WriteDescriptorSet(parsed_files)) {
@@ -1442,7 +1427,32 @@ CommandLineInterface::InterpretArgument(const std::string& name,
       return PARSE_ARGUMENT_FAIL;
     }
 
+#if defined(_WIN32)
+    // On Windows, the shell (typically cmd.exe) does not expand wildcards in
+    // file names (e.g. foo\*.proto), so we do it ourselves.
+    switch (google::protobuf::io::win32::ExpandWildcards(
+          value,
+          [this](const string& path) {
+            this->input_files_.push_back(path);
+          })) {
+      case google::protobuf::io::win32::ExpandWildcardsResult::kSuccess:
+        break;
+      case google::protobuf::io::win32::ExpandWildcardsResult::kErrorNoMatchingFile:
+        // Path does not exist, is not a file, or it's longer than MAX_PATH and
+        // long path handling is disabled.
+        std::cerr << "Invalid file name pattern or missing input file \""
+                  << value << "\"" << std::endl;
+        return PARSE_ARGUMENT_FAIL;
+      default:
+        std::cerr << "Cannot convert path \"" << value
+                  << "\" to or from Windows style" << std::endl;
+        return PARSE_ARGUMENT_FAIL;
+    }
+#else  // not _WIN32
+    // On other platforms than Windows (e.g. Linux, Mac OS) the shell (typically
+    // Bash) expands wildcards.
     input_files_.push_back(value);
+#endif  // _WIN32
 
   } else if (name == "-I" || name == "--proto_path") {
     // Java's -classpath (and some other languages) delimits path components
@@ -1955,10 +1965,9 @@ bool CommandLineInterface::GenerateDependencyManifestFile(
   }
 
   std::vector<std::string> output_filenames;
-  for (GeneratorContextMap::const_iterator iter = output_directories.begin();
-       iter != output_directories.end(); ++iter) {
-    const std::string& location = iter->first;
-    GeneratorContextImpl* directory = iter->second;
+  for (const auto& pair : output_directories) {
+    const std::string& location = pair.first;
+    GeneratorContextImpl* directory = pair.second.get();
     std::vector<std::string> relative_output_filenames;
     directory->GetOutputFilenames(&relative_output_filenames);
     for (int i = 0; i < relative_output_filenames.size(); i++) {

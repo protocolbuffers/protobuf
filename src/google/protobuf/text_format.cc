@@ -37,6 +37,7 @@
 #include <float.h>
 #include <math.h>
 #include <stdio.h>
+
 #include <algorithm>
 #include <climits>
 #include <limits>
@@ -45,7 +46,6 @@
 #include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/any.h>
 #include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/io/strtod.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/tokenizer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
@@ -54,17 +54,14 @@
 #include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/map_field.h>
 #include <google/protobuf/message.h>
+#include <google/protobuf/port_def.inc>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/unknown_field_set.h>
 #include <google/protobuf/wire_format_lite.h>
 #include <google/protobuf/stubs/strutil.h>
-
-
-
+#include <google/protobuf/io/strtod.h>
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/stl_util.h>
-
-#include <google/protobuf/port_def.inc>
 
 
 namespace google {
@@ -128,15 +125,6 @@ void Message::PrintDebugString() const { printf("%s", DebugString().c_str()); }
 
 // ===========================================================================
 // Implementation of the parse information tree class.
-TextFormat::ParseInfoTree::ParseInfoTree() {}
-
-TextFormat::ParseInfoTree::~ParseInfoTree() {
-  // Remove any nested information trees, as they are owned by this tree.
-  for (NestedMap::iterator it = nested_.begin(); it != nested_.end(); ++it) {
-    STLDeleteElements(&(it->second));
-  }
-}
-
 void TextFormat::ParseInfoTree::RecordLocation(
     const FieldDescriptor* field, TextFormat::ParseLocation location) {
   locations_[field].push_back(location);
@@ -145,11 +133,9 @@ void TextFormat::ParseInfoTree::RecordLocation(
 TextFormat::ParseInfoTree* TextFormat::ParseInfoTree::CreateNested(
     const FieldDescriptor* field) {
   // Owned by us in the map.
-  TextFormat::ParseInfoTree* instance = new TextFormat::ParseInfoTree();
-  std::vector<TextFormat::ParseInfoTree*>* trees = &nested_[field];
-  GOOGLE_CHECK(trees);
-  trees->push_back(instance);
-  return instance;
+  auto& vec = nested_[field];
+  vec.emplace_back(new TextFormat::ParseInfoTree());
+  return vec.back().get();
 }
 
 void CheckFieldIndex(const FieldDescriptor* field, int index) {
@@ -189,13 +175,12 @@ TextFormat::ParseInfoTree* TextFormat::ParseInfoTree::GetTreeForNested(
     index = 0;
   }
 
-  const std::vector<TextFormat::ParseInfoTree*>* trees =
-      FindOrNull(nested_, field);
-  if (trees == nullptr || index >= trees->size()) {
+  auto it = nested_.find(field);
+  if (it == nested_.end() || index >= it->second.size()) {
     return nullptr;
   }
 
-  return (*trees)[index];
+  return it->second[index].get();
 }
 
 namespace {
@@ -206,6 +191,11 @@ const FieldDescriptor* DefaultFinderFindExtension(Message* message,
   const Descriptor* descriptor = message->GetDescriptor();
   return descriptor->file()->pool()->FindExtensionByPrintableName(descriptor,
                                                                   name);
+}
+
+const FieldDescriptor* DefaultFinderFindExtensionByNumber(
+    const Descriptor* descriptor, int number) {
+  return descriptor->file()->pool()->FindExtensionByNumber(descriptor, number);
 }
 
 const Descriptor* DefaultFinderFindAnyType(const Message& message,
@@ -459,8 +449,10 @@ class TextFormat::Parser::ParserImpl {
       if (allow_field_number_ &&
           safe_strto32(field_name, &field_number)) {
         if (descriptor->IsExtensionNumber(field_number)) {
-          field = descriptor->file()->pool()->FindExtensionByNumber(
-              descriptor, field_number);
+          field = finder_
+                      ? finder_->FindExtensionByNumber(descriptor, field_number)
+                      : DefaultFinderFindExtensionByNumber(descriptor,
+                                                           field_number);
         } else if (descriptor->IsReservedNumber(field_number)) {
           reserved_field = true;
         } else {
@@ -1244,6 +1236,10 @@ class TextFormat::Printer::TextGenerator
     --indent_level_;
   }
 
+  size_t GetCurrentIndentationSize() const override {
+    return 2 * indent_level_;
+  }
+
   // Print text to the output stream.
   void Print(const char* text, size_t size) override {
     if (indent_level_ > 0) {
@@ -1314,7 +1310,7 @@ class TextFormat::Printer::TextGenerator
       return;
     }
     GOOGLE_DCHECK(!failed_);
-    int size = 2 * indent_level_;
+    int size = GetCurrentIndentationSize();
 
     while (size > buffer_size_) {
       // Data exceeds space in the buffer. Write what we can and request a new
@@ -1352,6 +1348,11 @@ TextFormat::Finder::~Finder() {}
 const FieldDescriptor* TextFormat::Finder::FindExtension(
     Message* message, const std::string& name) const {
   return DefaultFinderFindExtension(message, name);
+}
+
+const FieldDescriptor* TextFormat::Finder::FindExtensionByNumber(
+    const Descriptor* descriptor, int number) const {
+  return DefaultFinderFindExtensionByNumber(descriptor, number);
 }
 
 const Descriptor* TextFormat::Finder::FindAnyType(
@@ -1795,11 +1796,6 @@ TextFormat::Printer::Printer()
   SetUseUtf8StringEscaping(false);
 }
 
-TextFormat::Printer::~Printer() {
-  STLDeleteValues(&custom_printers_);
-  STLDeleteValues(&custom_message_printers_);
-}
-
 void TextFormat::Printer::SetUseUtf8StringEscaping(bool as_utf8) {
   SetDefaultFieldValuePrinter(as_utf8 ? new FastFieldValuePrinterUtf8Escaping()
                                       : new FastFieldValuePrinter());
@@ -1820,28 +1816,45 @@ bool TextFormat::Printer::RegisterFieldValuePrinter(
   if (field == nullptr || printer == nullptr) {
     return false;
   }
-  FieldValuePrinterWrapper* const wrapper =
-      new FieldValuePrinterWrapper(nullptr);
-  if (custom_printers_.insert(std::make_pair(field, wrapper)).second) {
+  std::unique_ptr<FieldValuePrinterWrapper> wrapper(
+      new FieldValuePrinterWrapper(nullptr));
+  auto pair = custom_printers_.insert(std::make_pair(field, nullptr));
+  if (pair.second) {
     wrapper->SetDelegate(printer);
+    pair.first->second = std::move(wrapper);
     return true;
   } else {
-    delete wrapper;
     return false;
   }
 }
 
 bool TextFormat::Printer::RegisterFieldValuePrinter(
     const FieldDescriptor* field, const FastFieldValuePrinter* printer) {
-  return field != nullptr && printer != nullptr &&
-         custom_printers_.insert(std::make_pair(field, printer)).second;
+  if (field == nullptr || printer == nullptr) {
+    return false;
+  }
+  auto pair = custom_printers_.insert(std::make_pair(field, nullptr));
+  if (pair.second) {
+    pair.first->second.reset(printer);
+    return true;
+  } else {
+    return false;
+  }
 }
 
 bool TextFormat::Printer::RegisterMessagePrinter(
     const Descriptor* descriptor, const MessagePrinter* printer) {
-  return descriptor != nullptr && printer != nullptr &&
-         custom_message_printers_.insert(std::make_pair(descriptor, printer))
-             .second;
+  if (descriptor == nullptr || printer == nullptr) {
+    return false;
+  }
+  auto pair =
+      custom_message_printers_.insert(std::make_pair(descriptor, nullptr));
+  if (pair.second) {
+    pair.first->second.reset(printer);
+    return true;
+  } else {
+    return false;
+  }
 }
 
 bool TextFormat::Printer::PrintToString(const Message& message,
@@ -1942,8 +1955,7 @@ bool TextFormat::Printer::PrintAny(const Message& message,
   generator->PrintLiteral("[");
   generator->PrintString(type_url);
   generator->PrintLiteral("]");
-  const FastFieldValuePrinter* printer = FindWithDefault(
-      custom_printers_, value_field, default_field_value_printer_.get());
+  const FastFieldValuePrinter* printer = GetFieldPrinter(value_field);
   printer->PrintMessageStart(message, -1, 0, single_line_mode_, generator);
   generator->Indent();
   Print(*value_message, generator);
@@ -2218,8 +2230,7 @@ void TextFormat::Printer::PrintField(const Message& message,
     PrintFieldName(message, field_index, count, reflection, field, generator);
 
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-      const FastFieldValuePrinter* printer = FindWithDefault(
-          custom_printers_, field, default_field_value_printer_.get());
+      const FastFieldValuePrinter* printer = GetFieldPrinter(field);
       const Message& sub_message =
           field->is_repeated()
               ? (is_map ? *sorted_map_field[j]
@@ -2282,8 +2293,7 @@ void TextFormat::Printer::PrintFieldName(const Message& message,
     return;
   }
 
-  const FastFieldValuePrinter* printer = FindWithDefault(
-      custom_printers_, field, default_field_value_printer_.get());
+  const FastFieldValuePrinter* printer = GetFieldPrinter(field);
   printer->PrintFieldName(message, field_index, field_count, reflection, field,
                           generator);
 }
@@ -2296,8 +2306,7 @@ void TextFormat::Printer::PrintFieldValue(const Message& message,
   GOOGLE_DCHECK(field->is_repeated() || (index == -1))
       << "Index must be -1 for non-repeated fields";
 
-  const FastFieldValuePrinter* printer = FindWithDefault(
-      custom_printers_, field, default_field_value_printer_.get());
+  const FastFieldValuePrinter* printer = GetFieldPrinter(field);
 
   switch (field->cpp_type()) {
 #define OUTPUT_FIELD(CPPTYPE, METHOD)                                \

@@ -281,7 +281,7 @@ void DynamicMapField::MergeFrom(const MapFieldBase& other) {
   Map<MapKey, MapValueRef>* map = MutableMap();
   const DynamicMapField& other_field =
       reinterpret_cast<const DynamicMapField&>(other);
-  for (typename Map<MapKey, MapValueRef>::const_iterator other_it =
+  for (Map<MapKey, MapValueRef>::const_iterator other_it =
            other_field.map_.begin();
        other_it != other_field.map_.end(); ++other_it) {
     Map<MapKey, MapValueRef>::iterator iter = map->find(other_it->first);

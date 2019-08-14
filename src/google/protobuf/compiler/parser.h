@@ -440,6 +440,7 @@ class PROTOBUF_EXPORT Parser {
   // Parse "required", "optional", or "repeated" and fill in "label"
   // with the value. Returns true if such a label is consumed.
   bool ParseLabel(FieldDescriptorProto::Label* label,
+                  const LocationRecorder& field_location,
                   const FileDescriptorProto* containing_file);
 
   // Parse a type name and fill in "type" (if it is a primitive) or

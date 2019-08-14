@@ -64,8 +64,6 @@
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
 
-
-
 namespace google {
 namespace protobuf {
 namespace compiler {

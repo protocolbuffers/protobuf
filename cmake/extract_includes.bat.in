@@ -56,6 +56,7 @@ copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\implicit_weak_message
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\inlined_string_field.h" include\google\protobuf\inlined_string_field.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\io\coded_stream.h" include\google\protobuf\io\coded_stream.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\io\gzip_stream.h" include\google\protobuf\io\gzip_stream.h
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\io\io_win32.h" include\google\protobuf\io\io_win32.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\io\printer.h" include\google\protobuf\io\printer.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\io\strtod.h" include\google\protobuf\io\strtod.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\io\tokenizer.h" include\google\protobuf\io\tokenizer.h
@@ -89,9 +90,9 @@ copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\casts.h" includ
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\common.h" include\google\protobuf\stubs\common.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\fastmem.h" include\google\protobuf\stubs\fastmem.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\hash.h" include\google\protobuf\stubs\hash.h
-copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\io_win32.h" include\google\protobuf\stubs\io_win32.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\logging.h" include\google\protobuf\stubs\logging.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\macros.h" include\google\protobuf\stubs\macros.h
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\map_util.h" include\google\protobuf\stubs\map_util.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\mutex.h" include\google\protobuf\stubs\mutex.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\once.h" include\google\protobuf\stubs\once.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\platform_macros.h" include\google\protobuf\stubs\platform_macros.h

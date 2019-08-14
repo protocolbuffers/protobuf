@@ -16,11 +16,15 @@ use Google\Protobuf\Internal\GPBUtil;
 class ExtensionRange extends \Google\Protobuf\Internal\Message
 {
     /**
+     * Inclusive.
+     *
      * Generated from protobuf field <code>optional int32 start = 1;</code>
      */
     private $start = 0;
     private $has_start = false;
     /**
+     * Exclusive.
+     *
      * Generated from protobuf field <code>optional int32 end = 2;</code>
      */
     private $end = 0;
@@ -38,7 +42,9 @@ class ExtensionRange extends \Google\Protobuf\Internal\Message
      *     Optional. Data for populating the Message object.
      *
      *     @type int $start
+     *           Inclusive.
      *     @type int $end
+     *           Exclusive.
      *     @type \Google\Protobuf\Internal\ExtensionRangeOptions $options
      * }
      */
@@ -48,6 +54,8 @@ class ExtensionRange extends \Google\Protobuf\Internal\Message
     }
 
     /**
+     * Inclusive.
+     *
      * Generated from protobuf field <code>optional int32 start = 1;</code>
      * @return int
      */
@@ -57,6 +65,8 @@ class ExtensionRange extends \Google\Protobuf\Internal\Message
     }
 
     /**
+     * Inclusive.
+     *
      * Generated from protobuf field <code>optional int32 start = 1;</code>
      * @param int $var
      * @return $this
@@ -76,6 +86,8 @@ class ExtensionRange extends \Google\Protobuf\Internal\Message
     }
 
     /**
+     * Exclusive.
+     *
      * Generated from protobuf field <code>optional int32 end = 2;</code>
      * @return int
      */
@@ -85,6 +97,8 @@ class ExtensionRange extends \Google\Protobuf\Internal\Message
     }
 
     /**
+     * Exclusive.
+     *
      * Generated from protobuf field <code>optional int32 end = 2;</code>
      * @param int $var
      * @return $this

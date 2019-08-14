@@ -46,14 +46,11 @@
 #include <memory>
 
 #include <google/protobuf/compiler/importer.h>
-
 #include <google/protobuf/compiler/parser.h>
-#include <google/protobuf/io/io_win32.h>
 #include <google/protobuf/io/tokenizer.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/stubs/strutil.h>
-
-
+#include <google/protobuf/io/io_win32.h>
 
 #ifdef _WIN32
 #include <ctype.h>

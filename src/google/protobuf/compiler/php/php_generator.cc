@@ -678,14 +678,14 @@ void GenerateFieldAccessor(const FieldDescriptor* field, bool is_descriptor,
         field->name());
   }
 
-  // For wrapper types, generate an additional getXXXValue getter
+  // For wrapper types, generate an additional getXXXUnwrapped getter
   if (!field->is_map() &&
       !field->is_repeated() &&
       field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
       IsWrapperType(field)) {
     GenerateWrapperFieldGetterDocComment(printer, field);
     printer->Print(
-        "public function get^camel_name^Value()\n"
+        "public function get^camel_name^Unwrapped()\n"
         "{\n"
         "    $wrapper = $this->get^camel_name^();\n"
         "    return is_null($wrapper) ? null : $wrapper->getValue();\n"
@@ -798,7 +798,7 @@ void GenerateFieldAccessor(const FieldDescriptor* field, bool is_descriptor,
       IsWrapperType(field)) {
     GenerateWrapperFieldSetterDocComment(printer, field);
     printer->Print(
-        "public function set^camel_name^Value($var)\n"
+        "public function set^camel_name^Unwrapped($var)\n"
         "{\n"
         "    $wrappedVar = is_null($var) ? null : new \\^wrapper_type^(['value' => $var]);\n"
         "    return $this->set^camel_name^($wrappedVar);\n"
@@ -1463,7 +1463,7 @@ static void GenerateDocCommentBodyForLocation(
     // HTML-escape them so that they don't accidentally close the doc comment.
     comments = EscapePhpdoc(comments);
 
-    std::vector<string> lines = Split(comments, "\n");
+    std::vector<string> lines = Split(comments, "\n", true);
     while (!lines.empty() && lines.back().empty()) {
       lines.pop_back();
     }

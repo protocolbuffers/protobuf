@@ -371,7 +371,7 @@ void GenerateMessageAssignment(const std::string& prefix,
     "prefix", prefix,
     "name", RubifyConstant(message->name()));
   printer->Print(
-    "Google::Protobuf::DescriptorPool.generated_pool."
+    "::Google::Protobuf::DescriptorPool.generated_pool."
     "lookup(\"$full_name$\").msgclass\n",
     "full_name", message->full_name());
 
@@ -391,7 +391,7 @@ void GenerateEnumAssignment(const std::string& prefix, const EnumDescriptor* en,
     "prefix", prefix,
     "name", RubifyConstant(en->name()));
   printer->Print(
-    "Google::Protobuf::DescriptorPool.generated_pool."
+    "::Google::Protobuf::DescriptorPool.generated_pool."
     "lookup(\"$full_name$\").enummodule\n",
     "full_name", en->full_name());
 }
@@ -537,7 +537,8 @@ bool GenerateFile(const FileDescriptor* file, io::Printer* printer,
   }
 
   // TODO: Remove this when ruby supports extensions for proto2 syntax.
-  if (file->extension_count() > 0) {
+  if (file->syntax() == FileDescriptor::SYNTAX_PROTO2 &&
+      file->extension_count() > 0) {
     *error = "Extensions are not yet supported for proto2 .proto files.";
     return false;
   }

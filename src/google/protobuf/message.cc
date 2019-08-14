@@ -56,7 +56,6 @@
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/wire_format_lite.h>
 #include <google/protobuf/stubs/strutil.h>
-
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/stl_util.h>
 #include <google/protobuf/stubs/hash.h>
@@ -157,6 +156,11 @@ class ReflectionAccessor {
                                const FieldDescriptor* field, Message* msg) {
     return reflection->MutableRawRepeatedField(
         msg, field, FieldDescriptor::CPPTYPE_ENUM, 0, nullptr);
+  }
+
+  static InternalMetadataWithArena* MutableInternalMetadataWithArena(
+      const Reflection* reflection, Message* msg) {
+    return reflection->MutableInternalMetadataWithArena(msg);
   }
 };
 
@@ -263,7 +267,9 @@ const char* ParsePackedField(const FieldDescriptor* field, Message* msg,
       } else {
         return internal::PackedEnumParserArg(
             object, ptr, ctx, ReflectiveValidator, field->enum_type(),
-            reflection->MutableUnknownFields(msg), field->number());
+            internal::ReflectionAccessor::MutableInternalMetadataWithArena(
+                reflection, msg),
+            field->number());
       }
     }
       HANDLE_PACKED_TYPE(FIXED32, uint32, Fixed32);
@@ -520,14 +526,10 @@ const char* Message::_InternalParse(const char* ptr,
 }
 #endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 
-void Message::SerializeWithCachedSizes(io::CodedOutputStream* output) const {
-  const internal::SerializationTable* table =
-      static_cast<const internal::SerializationTable*>(InternalGetTable());
-  if (table == 0) {
-    WireFormat::SerializeWithCachedSizes(*this, GetCachedSize(), output);
-  } else {
-    internal::TableSerialize(*this, table, output);
-  }
+uint8* Message::InternalSerializeWithCachedSizesToArray(
+    uint8* target, io::EpsCopyOutputStream* stream) const {
+  return WireFormat::InternalSerializeWithCachedSizesToArray(*this, target,
+                                                             stream);
 }
 
 size_t Message::ByteSizeLong() const {

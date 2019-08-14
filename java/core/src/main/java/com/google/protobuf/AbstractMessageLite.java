@@ -51,6 +51,7 @@ public abstract class AbstractMessageLite<
         BuilderType extends AbstractMessageLite.Builder<MessageType, BuilderType>>
     implements MessageLite {
   protected int memoizedHashCode = 0;
+
   @Override
   public ByteString toByteString() {
     try {
@@ -106,16 +107,6 @@ public abstract class AbstractMessageLite<
   }
 
 
-  @ExperimentalApi
-  protected final boolean isInitializedInternal() {
-    return Protobuf.getInstance().schemaFor(this).isInitialized(this);
-  }
-
-  @ExperimentalApi
-  protected final int getSerializedSizeInternal() {
-    return Protobuf.getInstance().schemaFor(this).getSerializedSize(this);
-  }
-
   int getSerializedSize(Schema schema) {
     int memoizedSerializedSize = getMemoizedSerializedSize();
     if (memoizedSerializedSize == -1) {
@@ -123,37 +114,6 @@ public abstract class AbstractMessageLite<
       setMemoizedSerializedSize(memoizedSerializedSize);
     }
     return memoizedSerializedSize;
-  }
-
-  @ExperimentalApi
-  protected final void writeToInternal(CodedOutputStream output) throws IOException {
-    Protobuf.getInstance()
-        .schemaFor(getClassInternal())
-        .writeTo(this, CodedOutputStreamWriter.forCodedOutput(output));
-  }
-
-  @ExperimentalApi
-  protected void mergeFromInternal(CodedInputStream input, ExtensionRegistryLite extensionRegistry)
-      throws InvalidProtocolBufferException {
-    try {
-      Protobuf.getInstance()
-          .schemaFor(getClassInternal())
-          .mergeFrom(this, CodedInputStreamReader.forCodedInput(input), extensionRegistry);
-    } catch (InvalidProtocolBufferException e) {
-      throw e.setUnfinishedMessage(this);
-    } catch (IOException e) {
-      throw new InvalidProtocolBufferException(e).setUnfinishedMessage(this);
-    }
-  }
-
-  @ExperimentalApi
-  protected void makeImmutableInternal() {
-    Protobuf.getInstance().schemaFor(getClassInternal()).makeImmutable(this);
-  }
-
-  @SuppressWarnings("unchecked")
-  private Class<AbstractMessageLite<MessageType, BuilderType>> getClassInternal() {
-    return (Class<AbstractMessageLite<MessageType, BuilderType>>) getClass();
   }
 
   /** Package private helper method for AbstractParser to create UninitializedMessageException. */

@@ -589,6 +589,7 @@ VALUE Google_Protobuf_deep_copy(VALUE self, VALUE obj);
 VALUE build_module_from_enumdesc(VALUE _enumdesc);
 VALUE enum_lookup(VALUE self, VALUE number);
 VALUE enum_resolve(VALUE self, VALUE sym);
+VALUE enum_descriptor(VALUE self);
 
 const upb_pbdecodermethod *new_fillmsg_decodermethod(
     Descriptor* descriptor, const void *owner);

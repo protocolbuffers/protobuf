@@ -45,6 +45,7 @@ goog.require('goog.testing.asserts');
 goog.require('jspb.BinaryConstants');
 goog.require('jspb.BinaryDecoder');
 goog.require('jspb.BinaryEncoder');
+goog.require('jspb.utils');
 
 
 /**
@@ -172,11 +173,9 @@ describe('binaryDecoderTest', function() {
   });
 
 
-  /**
-   * Tests reading 64-bit integers as hash strings.
-   */
-  it('testHashStrings', function() {
-    var encoder = new jspb.BinaryEncoder();
+  describe('varint64', function() {
+    var /** !jspb.BinaryEncoder */ encoder;
+    var /** !jspb.BinaryDecoder */ decoder;
 
     var hashA = String.fromCharCode(0x00, 0x00, 0x00, 0x00,
                                     0x00, 0x00, 0x00, 0x00);
@@ -186,28 +185,54 @@ describe('binaryDecoderTest', function() {
                                     0x87, 0x65, 0x43, 0x21);
     var hashD = String.fromCharCode(0xFF, 0xFF, 0xFF, 0xFF,
                                     0xFF, 0xFF, 0xFF, 0xFF);
+    beforeEach(function() {
+      encoder = new jspb.BinaryEncoder();
 
-    encoder.writeVarintHash64(hashA);
-    encoder.writeVarintHash64(hashB);
-    encoder.writeVarintHash64(hashC);
-    encoder.writeVarintHash64(hashD);
+      encoder.writeVarintHash64(hashA);
+      encoder.writeVarintHash64(hashB);
+      encoder.writeVarintHash64(hashC);
+      encoder.writeVarintHash64(hashD);
 
-    encoder.writeFixedHash64(hashA);
-    encoder.writeFixedHash64(hashB);
-    encoder.writeFixedHash64(hashC);
-    encoder.writeFixedHash64(hashD);
+      encoder.writeFixedHash64(hashA);
+      encoder.writeFixedHash64(hashB);
+      encoder.writeFixedHash64(hashC);
+      encoder.writeFixedHash64(hashD);
 
-    var decoder = jspb.BinaryDecoder.alloc(encoder.end());
+      decoder = jspb.BinaryDecoder.alloc(encoder.end());
+    });
 
-    assertEquals(hashA, decoder.readVarintHash64());
-    assertEquals(hashB, decoder.readVarintHash64());
-    assertEquals(hashC, decoder.readVarintHash64());
-    assertEquals(hashD, decoder.readVarintHash64());
+    it('reads 64-bit integers as hash strings', function() {
+      assertEquals(hashA, decoder.readVarintHash64());
+      assertEquals(hashB, decoder.readVarintHash64());
+      assertEquals(hashC, decoder.readVarintHash64());
+      assertEquals(hashD, decoder.readVarintHash64());
 
-    assertEquals(hashA, decoder.readFixedHash64());
-    assertEquals(hashB, decoder.readFixedHash64());
-    assertEquals(hashC, decoder.readFixedHash64());
-    assertEquals(hashD, decoder.readFixedHash64());
+      assertEquals(hashA, decoder.readFixedHash64());
+      assertEquals(hashB, decoder.readFixedHash64());
+      assertEquals(hashC, decoder.readFixedHash64());
+      assertEquals(hashD, decoder.readFixedHash64());
+    });
+
+    it('reads split 64 bit integers', function() {
+      function hexJoin(bitsLow, bitsHigh) {
+        return `0x${(bitsHigh >>> 0).toString(16)}:0x${
+            (bitsLow >>> 0).toString(16)}`;
+      }
+      function hexJoinHash(hash64) {
+        jspb.utils.splitHash64(hash64);
+        return hexJoin(jspb.utils.split64Low, jspb.utils.split64High);
+      }
+
+      expect(decoder.readSplitVarint64(hexJoin)).toEqual(hexJoinHash(hashA));
+      expect(decoder.readSplitVarint64(hexJoin)).toEqual(hexJoinHash(hashB));
+      expect(decoder.readSplitVarint64(hexJoin)).toEqual(hexJoinHash(hashC));
+      expect(decoder.readSplitVarint64(hexJoin)).toEqual(hexJoinHash(hashD));
+
+      expect(decoder.readSplitFixed64(hexJoin)).toEqual(hexJoinHash(hashA));
+      expect(decoder.readSplitFixed64(hexJoin)).toEqual(hexJoinHash(hashB));
+      expect(decoder.readSplitFixed64(hexJoin)).toEqual(hexJoinHash(hashC));
+      expect(decoder.readSplitFixed64(hexJoin)).toEqual(hexJoinHash(hashD));
+    });
   });
 
   /**

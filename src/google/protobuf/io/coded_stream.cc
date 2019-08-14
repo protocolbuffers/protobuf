@@ -38,14 +38,19 @@
 // will not cross the end of the buffer, since we can avoid a lot
 // of branching in this case.
 
+#include <google/protobuf/io/coded_stream.h>
+
 #include <limits.h>
+
 #include <algorithm>
+#include <cstring>
 #include <utility>
+
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/io/coded_stream_inl.h>
-#include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/arena.h>
+#include <google/protobuf/io/zero_copy_stream.h>
+#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 #include <google/protobuf/stubs/stl_util.h>
 
 
@@ -83,10 +88,6 @@ CodedInputStream::~CodedInputStream() {
 // Static.
 int CodedInputStream::default_recursion_limit_ = 100;
 
-
-void CodedOutputStream::EnableAliasing(bool enabled) {
-  aliasing_enabled_ = enabled && output_->AllowsAliasing();
-}
 
 void CodedInputStream::BackUpInputToCurrentPosition() {
   int backup_bytes = BufferSize() + buffer_size_after_limit_ + overflow_bytes_;
@@ -189,12 +190,13 @@ int CodedInputStream::BytesUntilTotalBytesLimit() const {
 }
 
 void CodedInputStream::PrintTotalBytesLimitError() {
-  GOOGLE_LOG(ERROR) << "A protocol message was rejected because it was too "
-                "big (more than "
-             << total_bytes_limit_
-             << " bytes).  To increase the limit (or to disable these "
-                "warnings), see CodedInputStream::SetTotalBytesLimit() "
-                "in net/proto2/io/public/coded_stream.h.";
+  GOOGLE_LOG(ERROR)
+      << "A protocol message was rejected because it was too "
+         "big (more than "
+      << total_bytes_limit_
+      << " bytes).  To increase the limit (or to disable these "
+         "warnings), see CodedInputStream::SetTotalBytesLimit() "
+         "in third_party/protobuf/src/google/protobuf/io/coded_stream.h.";
 }
 
 bool CodedInputStream::SkipFallback(int count, int original_buffer_size) {
@@ -237,12 +239,39 @@ bool CodedInputStream::GetDirectBufferPointer(const void** data, int* size) {
 }
 
 bool CodedInputStream::ReadRaw(void* buffer, int size) {
-  return InternalReadRawInline(buffer, size);
+  int current_buffer_size;
+  while ((current_buffer_size = BufferSize()) < size) {
+    // Reading past end of buffer.  Copy what we have, then refresh.
+    memcpy(buffer, buffer_, current_buffer_size);
+    buffer = reinterpret_cast<uint8*>(buffer) + current_buffer_size;
+    size -= current_buffer_size;
+    Advance(current_buffer_size);
+    if (!Refresh()) return false;
+  }
+
+  memcpy(buffer, buffer_, size);
+  Advance(size);
+
+  return true;
 }
 
 bool CodedInputStream::ReadString(std::string* buffer, int size) {
   if (size < 0) return false;  // security: size is often user-supplied
-  return InternalReadStringInline(buffer, size);
+
+  if (BufferSize() >= size) {
+    STLStringResizeUninitialized(buffer, size);
+    std::pair<char*, bool> z = as_string_data(buffer);
+    if (z.second) {
+      // Oddly enough, memcpy() requires its first two args to be non-NULL even
+      // if we copy 0 bytes.  So, we have ensured that z.first is non-NULL here.
+      GOOGLE_DCHECK(z.first != NULL);
+      memcpy(z.first, buffer_, size);
+      Advance(size);
+    }
+    return true;
+  }
+
+  return ReadStringFallback(buffer, size);
 }
 
 bool CodedInputStream::ReadStringFallback(std::string* buffer, int size) {
@@ -637,152 +666,283 @@ bool CodedInputStream::Refresh() {
 
 // CodedOutputStream =================================================
 
+void EpsCopyOutputStream::EnableAliasing(bool enabled) {
+  aliasing_enabled_ = enabled && stream_->AllowsAliasing();
+}
+
+int64 EpsCopyOutputStream::ByteCount(uint8* ptr) const {
+  // Calculate the current offset relative to the end of the stream buffer.
+  int delta = (end_ - ptr) + (buffer_end_ ? 0 : kSlopBytes);
+  return stream_->ByteCount() - delta;
+}
+
+// Flushes what's written out to the underlying ZeroCopyOutputStream buffers.
+// Returns the size remaining in the buffer and sets buffer_end_ to the start
+// of the remaining buffer, ie. [buffer_end_, buffer_end_ + return value)
+int EpsCopyOutputStream::Flush(uint8* ptr) {
+  while (buffer_end_ && ptr > end_) {
+    int overrun = ptr - end_;
+    GOOGLE_DCHECK(!had_error_);
+    GOOGLE_DCHECK(overrun <= kSlopBytes);  // NOLINT
+    ptr = Next() + overrun;
+    if (had_error_) return 0;
+  }
+  int s;
+  if (buffer_end_) {
+    std::memcpy(buffer_end_, buffer_, ptr - buffer_);
+    buffer_end_ += ptr - buffer_;
+    s = end_ - ptr;
+  } else {
+    // The stream is writing directly in the ZeroCopyOutputStream buffer.
+    s = end_ + kSlopBytes - ptr;
+    buffer_end_ = ptr;
+  }
+  GOOGLE_DCHECK(s >= 0);  // NOLINT
+  return s;
+}
+
+uint8* EpsCopyOutputStream::Trim(uint8* ptr) {
+  if (had_error_) return ptr;
+  int s = Flush(ptr);
+  if (s) stream_->BackUp(s);
+  // Reset to initial state (expecting new buffer)
+  buffer_end_ = end_ = buffer_;
+  return buffer_;
+}
+
+
+uint8* EpsCopyOutputStream::FlushAndResetBuffer(uint8* ptr) {
+  if (had_error_) return buffer_;
+  int s = Flush(ptr);
+  if (had_error_) return buffer_;
+  return SetInitialBuffer(buffer_end_, s);
+}
+
+bool EpsCopyOutputStream::Skip(int count, uint8** pp) {
+  if (count < 0) return false;
+  if (had_error_) {
+    *pp = buffer_;
+    return false;
+  }
+  int size = Flush(*pp);
+  if (had_error_) {
+    *pp = buffer_;
+    return false;
+  }
+  void* data = buffer_end_;
+  while (count > size) {
+    count -= size;
+    if (!stream_->Next(&data, &size)) {
+      *pp = Error();
+      return false;
+    }
+  }
+  *pp = SetInitialBuffer(static_cast<uint8*>(data) + count, size - count);
+  return true;
+}
+
+bool EpsCopyOutputStream::GetDirectBufferPointer(void** data, int* size,
+                                                 uint8** pp) {
+  if (had_error_) {
+    *pp = buffer_;
+    return false;
+  }
+  *size = Flush(*pp);
+  if (had_error_) {
+    *pp = buffer_;
+    return false;
+  }
+  *data = buffer_end_;
+  while (*size == 0) {
+    if (!stream_->Next(data, size)) {
+      *pp = Error();
+      return false;
+    }
+  }
+  *pp = SetInitialBuffer(*data, *size);
+  return true;
+}
+
+uint8* EpsCopyOutputStream::GetDirectBufferForNBytesAndAdvance(int size,
+                                                               uint8** pp) {
+  if (had_error_) {
+    *pp = buffer_;
+    return nullptr;
+  }
+  int s = Flush(*pp);
+  if (had_error_) {
+    *pp = buffer_;
+    return nullptr;
+  }
+  if (s >= size) {
+    auto res = buffer_end_;
+    *pp = SetInitialBuffer(buffer_end_ + size, s - size);
+    return res;
+  } else {
+    *pp = SetInitialBuffer(buffer_end_, s);
+    return nullptr;
+  }
+}
+
+uint8* EpsCopyOutputStream::Next() {
+  GOOGLE_DCHECK(!had_error_);  // NOLINT
+  if (PROTOBUF_PREDICT_FALSE(stream_ == nullptr)) return Error();
+  if (buffer_end_) {
+    // We're in the patch buffer and need to fill up the previous buffer.
+    std::memcpy(buffer_end_, buffer_, end_ - buffer_);
+    uint8* ptr;
+    int size;
+    do {
+      void* data;
+      if (PROTOBUF_PREDICT_FALSE(!stream_->Next(&data, &size))) {
+        // Stream has an error, we use the patch buffer to continue to be
+        // able to write.
+        return Error();
+      }
+      ptr = static_cast<uint8*>(data);
+    } while (size == 0);
+    if (PROTOBUF_PREDICT_TRUE(size > kSlopBytes)) {
+      std::memcpy(ptr, end_, kSlopBytes);
+      end_ = ptr + size - kSlopBytes;
+      buffer_end_ = nullptr;
+      return ptr;
+    } else {
+      GOOGLE_DCHECK(size > 0);  // NOLINT
+      // Buffer to small
+      std::memmove(buffer_, end_, kSlopBytes);
+      buffer_end_ = ptr;
+      end_ = buffer_ + size;
+      return buffer_;
+    }
+  } else {
+    std::memcpy(buffer_, end_, kSlopBytes);
+    buffer_end_ = end_;
+    end_ = buffer_ + kSlopBytes;
+    return buffer_;
+  }
+}
+
+uint8* EpsCopyOutputStream::EnsureSpaceFallback(uint8* ptr) {
+  do {
+    if (PROTOBUF_PREDICT_FALSE(had_error_)) return buffer_;
+    int overrun = ptr - end_;
+    GOOGLE_DCHECK(overrun >= 0);           // NOLINT
+    GOOGLE_DCHECK(overrun <= kSlopBytes);  // NOLINT
+    ptr = Next() + overrun;
+  } while (ptr >= end_);
+  GOOGLE_DCHECK(ptr < end_);  // NOLINT
+  return ptr;
+}
+
+uint8* EpsCopyOutputStream::WriteRawFallback(const void* data, int size,
+                                             uint8* ptr) {
+  int s = GetSize(ptr);
+  while (s < size) {
+    std::memcpy(ptr, data, s);
+    size -= s;
+    data = static_cast<const uint8*>(data) + s;
+    ptr = EnsureSpaceFallback(ptr + s);
+    s = GetSize(ptr);
+  }
+  std::memcpy(ptr, data, size);
+  return ptr + size;
+}
+
+uint8* EpsCopyOutputStream::WriteAliasedRaw(const void* data, int size,
+                                            uint8* ptr) {
+  if (size < GetSize(ptr)
+  ) {
+    return WriteRaw(data, size, ptr);
+  } else {
+    ptr = Trim(ptr);
+    if (stream_->WriteAliasedRaw(data, size)) return ptr;
+    return Error();
+  }
+}
+
+#ifndef PROTOBUF_LITTLE_ENDIAN
+uint8* EpsCopyOutputStream::WriteRawLittleEndian32(const void* data, int size,
+                                                   uint8* ptr) {
+  auto p = static_cast<const uint8*>(data);
+  auto end = p + size;
+  while (end - p >= kSlopBytes) {
+    EnsureSpace(&ptr);
+    uint32 buffer[4];
+    static_assert(sizeof(buffer) == kSlopBytes, "Buffer must be kSlopBytes");
+    std::memcpy(buffer, p, kSlopBytes);
+    p += kSlopBytes;
+    for (auto x : buffer)
+      ptr = CodedOutputStream::WriteLittleEndian32ToArray(x, ptr);
+  }
+  while (p < end) {
+    EnsureSpace(&ptr);
+    uint32 buffer;
+    std::memcpy(&buffer, p, 4);
+    p += 4;
+    ptr = CodedOutputStream::WriteLittleEndian32ToArray(buffer, ptr);
+  }
+  return ptr;
+}
+
+uint8* EpsCopyOutputStream::WriteRawLittleEndian64(const void* data, int size,
+                                                   uint8* ptr) {
+  auto p = static_cast<const uint8*>(data);
+  auto end = p + size;
+  while (end - p >= kSlopBytes) {
+    EnsureSpace(&ptr);
+    uint64 buffer[2];
+    static_assert(sizeof(buffer) == kSlopBytes, "Buffer must be kSlopBytes");
+    std::memcpy(buffer, p, kSlopBytes);
+    p += kSlopBytes;
+    for (auto x : buffer)
+      ptr = CodedOutputStream::WriteLittleEndian64ToArray(x, ptr);
+  }
+  while (p < end) {
+    EnsureSpace(&ptr);
+    uint64 buffer;
+    std::memcpy(&buffer, p, 8);
+    p += 8;
+    ptr = CodedOutputStream::WriteLittleEndian64ToArray(buffer, ptr);
+  }
+  return ptr;
+}
+#endif
+
+
+uint8* EpsCopyOutputStream::WriteStringMaybeAliasedOutline(uint32 num,
+                                                           const std::string& s,
+                                                           uint8* ptr) {
+  EnsureSpace(&ptr);
+  uint32 size = s.size();
+  ptr = WriteLengthDelim(num, size, ptr);
+  return WriteRawMaybeAliased(s.data(), size, ptr);
+}
+
+uint8* EpsCopyOutputStream::WriteStringOutline(uint32 num, const std::string& s,
+                                               uint8* ptr) {
+  EnsureSpace(&ptr);
+  uint32 size = s.size();
+  ptr = WriteLengthDelim(num, size, ptr);
+  return WriteRaw(s.data(), size, ptr);
+}
+
 std::atomic<bool> CodedOutputStream::default_serialization_deterministic_{
     false};
 
-CodedOutputStream::CodedOutputStream(ZeroCopyOutputStream* output)
-    : CodedOutputStream(output, true) {}
-
-CodedOutputStream::CodedOutputStream(ZeroCopyOutputStream* output,
+CodedOutputStream::CodedOutputStream(ZeroCopyOutputStream* stream,
                                      bool do_eager_refresh)
-    : output_(output),
-      buffer_(NULL),
-      buffer_size_(0),
-      total_bytes_(0),
-      had_error_(false),
-      aliasing_enabled_(false),
-      is_serialization_deterministic_(IsDefaultSerializationDeterministic()) {
+    : impl_(stream, IsDefaultSerializationDeterministic(), &cur_),
+      start_count_(stream->ByteCount()) {
   if (do_eager_refresh) {
-    // Eagerly Refresh() so buffer space is immediately available.
-    Refresh();
-    // The Refresh() may have failed. If the client doesn't write any data,
-    // though, don't consider this an error. If the client does write data, then
-    // another Refresh() will be attempted and it will set the error once again.
-    had_error_ = false;
+    void* data;
+    int size;
+    if (!stream->Next(&data, &size) || size == 0) return;
+    cur_ = impl_.SetInitialBuffer(data, size);
   }
 }
 
 CodedOutputStream::~CodedOutputStream() { Trim(); }
 
-void CodedOutputStream::Trim() {
-  if (buffer_size_ > 0) {
-    output_->BackUp(buffer_size_);
-    total_bytes_ -= buffer_size_;
-    buffer_size_ = 0;
-    buffer_ = NULL;
-  }
-}
-
-bool CodedOutputStream::Skip(int count) {
-  if (count < 0) return false;
-
-  while (count > buffer_size_) {
-    count -= buffer_size_;
-    if (!Refresh()) return false;
-  }
-
-  Advance(count);
-  return true;
-}
-
-bool CodedOutputStream::GetDirectBufferPointer(void** data, int* size) {
-  if (buffer_size_ == 0 && !Refresh()) return false;
-
-  *data = buffer_;
-  *size = buffer_size_;
-  return true;
-}
-
-void CodedOutputStream::WriteRaw(const void* data, int size) {
-  while (buffer_size_ < size) {
-    memcpy(buffer_, data, buffer_size_);
-    size -= buffer_size_;
-    data = reinterpret_cast<const uint8*>(data) + buffer_size_;
-    if (!Refresh()) return;
-  }
-
-  memcpy(buffer_, data, size);
-  Advance(size);
-}
-
-uint8* CodedOutputStream::WriteRawToArray(const void* data, int size,
-                                          uint8* target) {
-  memcpy(target, data, size);
-  return target + size;
-}
-
-
-void CodedOutputStream::WriteAliasedRaw(const void* data, int size) {
-  if (size < buffer_size_
-  ) {
-    WriteRaw(data, size);
-  } else {
-    Trim();
-
-    total_bytes_ += size;
-    had_error_ |= !output_->WriteAliasedRaw(data, size);
-  }
-}
-
-void CodedOutputStream::WriteLittleEndian32(uint32 value) {
-  uint8 bytes[sizeof(value)];
-
-  bool use_fast = buffer_size_ >= sizeof(value);
-  uint8* ptr = use_fast ? buffer_ : bytes;
-
-  WriteLittleEndian32ToArray(value, ptr);
-
-  if (use_fast) {
-    Advance(sizeof(value));
-  } else {
-    WriteRaw(bytes, sizeof(value));
-  }
-}
-
-void CodedOutputStream::WriteLittleEndian64(uint64 value) {
-  uint8 bytes[sizeof(value)];
-
-  bool use_fast = buffer_size_ >= sizeof(value);
-  uint8* ptr = use_fast ? buffer_ : bytes;
-
-  WriteLittleEndian64ToArray(value, ptr);
-
-  if (use_fast) {
-    Advance(sizeof(value));
-  } else {
-    WriteRaw(bytes, sizeof(value));
-  }
-}
-
-void CodedOutputStream::WriteVarint32SlowPath(uint32 value) {
-  uint8 bytes[kMaxVarint32Bytes];
-  uint8* target = &bytes[0];
-  uint8* end = WriteVarint32ToArray(value, target);
-  int size = end - target;
-  WriteRaw(bytes, size);
-}
-
-void CodedOutputStream::WriteVarint64SlowPath(uint64 value) {
-  uint8 bytes[kMaxVarintBytes];
-  uint8* target = &bytes[0];
-  uint8* end = WriteVarint64ToArray(value, target);
-  int size = end - target;
-  WriteRaw(bytes, size);
-}
-
-bool CodedOutputStream::Refresh() {
-  void* void_buffer;
-  if (output_->Next(&void_buffer, &buffer_size_)) {
-    buffer_ = reinterpret_cast<uint8*>(void_buffer);
-    total_bytes_ += buffer_size_;
-    return true;
-  } else {
-    buffer_ = NULL;
-    buffer_size_ = 0;
-    had_error_ = true;
-    return false;
-  }
-}
 
 uint8* CodedOutputStream::WriteStringWithSizeToArray(const std::string& str,
                                                      uint8* target) {

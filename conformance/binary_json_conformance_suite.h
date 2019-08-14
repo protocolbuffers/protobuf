@@ -63,6 +63,11 @@ class BinaryAndJsonConformanceSuite : public ConformanceTestSuite {
                                   ConformanceLevel level,
                                   const string& input_protobuf,
                                   bool is_proto3);
+  void RunValidBinaryProtobufTest(const string& test_name,
+                                  ConformanceLevel level,
+                                  const string& input_protobuf,
+                                  const string& expected_protobuf,
+                                  bool is_proto3);
   void RunValidProtobufTestWithMessage(
       const string& test_name, ConformanceLevel level,
       const Message *input,
@@ -109,6 +114,7 @@ class BinaryAndJsonConformanceSuite : public ConformanceTestSuite {
   void TestValidDataForType(
       google::protobuf::FieldDescriptor::Type,
       std::vector<std::pair<std::string, std::string>> values);
+  void TestValidDataForRepeatedScalarMessage();
 
   std::unique_ptr<google::protobuf::util::TypeResolver>
       type_resolver_;

@@ -338,7 +338,10 @@ void Subprocess::Start(const std::string& program, SearchMode search_mode) {
     // stuff that is unsafe here.
     int ignored;
     ignored = write(STDERR_FILENO, argv[0], strlen(argv[0]));
-    const char* message = ": program not found or is not executable\n";
+    const char* message =
+        ": program not found or is not executable\n"
+        "Please specify a program using absolute path or make sure "
+        "the program is available in your PATH system variable\n";
     ignored = write(STDERR_FILENO, message, strlen(message));
     (void)ignored;
 

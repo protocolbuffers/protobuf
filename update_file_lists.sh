@@ -63,6 +63,7 @@ WKT_PROTOS=$(get_variable_value $MAKEFILE nobase_dist_proto_DATA)
 COMMON_TEST_SOURCES=$(get_source_files $MAKEFILE COMMON_TEST_SOURCES)
 COMMON_LITE_TEST_SOURCES=$(get_source_files $MAKEFILE COMMON_LITE_TEST_SOURCES)
 TEST_SOURCES=$(get_source_files $MAKEFILE protobuf_test_SOURCES)
+NON_MSVC_TEST_SOURCES=$(get_source_files $MAKEFILE NON_MSVC_TEST_SOURCES)
 LITE_TEST_SOURCES=$(get_source_files $MAKEFILE protobuf_lite_test_SOURCES)
 LITE_ARENA_TEST_SOURCES=$(get_source_files $MAKEFILE protobuf_lite_arena_test_SOURCES)
 TEST_PLUGIN_SOURCES=$(get_source_files $MAKEFILE test_plugin_SOURCES)
@@ -123,6 +124,7 @@ set_cmake_value $CMAKE_DIR/tests.cmake tests_protos "" $PROTOS_BLACKLISTED
 set_cmake_value $CMAKE_DIR/tests.cmake common_test_files $CMAKE_PREFIX $COMMON_TEST_SOURCES
 set_cmake_value $CMAKE_DIR/tests.cmake common_lite_test_files $CMAKE_PREFIX $COMMON_LITE_TEST_SOURCES
 set_cmake_value $CMAKE_DIR/tests.cmake tests_files $CMAKE_PREFIX $TEST_SOURCES
+set_cmake_value $CMAKE_DIR/tests.cmake non_msvc_tests_files $CMAKE_PREFIX $NON_MSVC_TEST_SOURCES
 set_cmake_value $CMAKE_DIR/tests.cmake lite_test_files $CMAKE_PREFIX $LITE_TEST_SOURCES
 set_cmake_value $CMAKE_DIR/tests.cmake lite_arena_test_files $CMAKE_PREFIX $LITE_ARENA_TEST_SOURCES
 
@@ -186,6 +188,7 @@ if [ -f "$BAZEL_BUILD" ]; then
   set_bazel_value $BAZEL_BUILD test_protos "" $PROTOS
   set_bazel_value $BAZEL_BUILD common_test_srcs $BAZEL_PREFIX $COMMON_TEST_SOURCES
   set_bazel_value $BAZEL_BUILD test_srcs $BAZEL_PREFIX $TEST_SOURCES
+  set_bazel_value $BAZEL_BUILD non_msvc_test_srcs $BAZEL_PREFIX $NON_MSVC_TEST_SOURCES
   set_bazel_value $BAZEL_BUILD test_plugin_srcs $BAZEL_PREFIX $TEST_PLUGIN_SOURCES
 else
   echo "Skipped BUILD file update."

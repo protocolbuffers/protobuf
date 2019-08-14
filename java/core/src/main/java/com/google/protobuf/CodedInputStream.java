@@ -483,7 +483,9 @@ public abstract class CodedInputStream {
   /**
    * Returns true if the stream has reached the end of the input. This is the case if either the end
    * of the underlying input source has been reached or if the stream has reached a limit created
-   * using {@link #pushLimit(int)}.
+   * using {@link #pushLimit(int)}. This function may get blocked when using StreamDecoder as it
+   * invokes {@link #StreamDecoder.tryRefillBuffer(int)} in this function which will try to read
+   * bytes from input.
    */
   public abstract boolean isAtEnd() throws IOException;
 

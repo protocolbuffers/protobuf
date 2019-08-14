@@ -55,8 +55,6 @@
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
 
-
-
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -439,6 +437,8 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
     printer->Print(
         vars,
         "/**\n"
+        " * @param value The number of the enum to look for.\n"
+        " * @return The enum associated with the given number.\n"
         " * @deprecated Use {@link #forNumber(int)} instead.\n"
         " */\n"
         "@java.lang.Deprecated\n"
