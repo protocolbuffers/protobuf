@@ -41,7 +41,7 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
+import os
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 import google.protobuf
@@ -69,6 +69,7 @@ release = google.protobuf.__version__
 # ones.
 extensions = [
   "sphinx.ext.autosummary",
+  "sphinx.ext.ifconfig",
   "sphinx.ext.intersphinx",
   "sphinxcontrib.napoleon",
 ]
@@ -237,3 +238,17 @@ autosummary_generate = True
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {"https://docs.python.org/": None}
+
+# -- Config values -----------------------------------------------------------
+# The setup() function is needed to add configuration values to the Sphinx
+# builder. We use this to show a banner when built on Read the Docs.
+# https://www.sphinx-doc.org/en/master/usage/extensions/ifconfig.html
+
+def setup(app):
+  app.add_config_value(
+    "build_env",
+    # Read the Docs sets a READTHEDOCS environment during builds.
+    # https://docs.readthedocs.io/en/stable/builds.html#build-environment
+    "readthedocs" if os.getenv("READTHEDOCS") else "",
+    "env"
+  )
