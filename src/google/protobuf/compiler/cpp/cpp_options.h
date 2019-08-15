@@ -44,7 +44,7 @@ namespace cpp {
 
 enum class EnforceOptimizeMode {
   kNoEnforcement,  // Use the runtime specified by the file specific options.
-  kSpeed,  // This is the full runtime.
+  kSpeed,          // This is the full runtime.
   kLiteRuntime,
 };
 
@@ -61,6 +61,7 @@ struct Options {
   bool lite_implicit_weak_fields = false;
   bool bootstrap = false;
   bool opensource_runtime = false;
+  bool annotate_accessor = false;
   std::string runtime_include_base;
   int num_cc_files = 0;
   std::string annotation_pragma_name;
@@ -72,6 +73,5 @@ struct Options {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
-
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_CPP_OPTIONS_H__

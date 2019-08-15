@@ -102,7 +102,7 @@ inline ExtensionSet* GetExtensionSet(MessageLite* msg, int64 extension_offset) {
 template <typename Type>
 inline Type* AddField(MessageLite* msg, int64 offset) {
   static_assert(std::is_pod<Type>::value ||
-                std::is_same<Type, InlinedStringField>::value,
+                    std::is_same<Type, InlinedStringField>::value,
                 "Do not assign");
 
   RepeatedField<Type>* repeated = Raw<RepeatedField<Type>>(msg, offset);
@@ -157,7 +157,7 @@ inline void SetOneofField(MessageLite* msg, uint32* oneof_case,
 // Clears a oneof field. The field argument should correspond to the particular
 // field that is currently set in the oneof.
 inline void ClearOneofField(const ParseTableField& field, Arena* arena,
-                     MessageLite* msg) {
+                            MessageLite* msg) {
   switch (field.processing_type & kTypeMask) {
     case WireFormatLite::TYPE_MESSAGE:
       if (arena == NULL) {
@@ -237,12 +237,12 @@ static inline bool HandleString(io::CodedInputStream* input, MessageLite* msg,
 
   switch (ctype) {
     case StringType_INLINED: {
-      InlinedStringField* s;
+      InlinedStringField* s = nullptr;
       switch (cardinality) {
         case Cardinality_SINGULAR:
           // TODO(ckennelly): Is this optimal?
-          s = MutableField<InlinedStringField>(
-              msg, has_bits, has_bit_index, offset);
+          s = MutableField<InlinedStringField>(msg, has_bits, has_bit_index,
+                                               offset);
           break;
         case Cardinality_REPEATED:
           s = AddField<InlinedStringField>(msg, offset);
@@ -543,8 +543,7 @@ bool MergePartialFromCodedStreamInlined(MessageLite* msg,
         {
           Arena* const arena =
               GetArena<InternalMetadata>(msg, table.arena_offset);
-          const void* default_ptr =
-              table.aux[field_number].strings.default_ptr;
+          const void* default_ptr = table.aux[field_number].strings.default_ptr;
 
           if (PROTOBUF_PREDICT_FALSE(
                   (!HandleString<UnknownFieldHandler, Cardinality_REPEATED,
@@ -782,8 +781,8 @@ bool MergePartialFromCodedStreamInlined(MessageLite* msg,
       // TODO(ckennelly): Use a computed goto on GCC/LLVM.
       //
       // Mask out kRepeatedMask bit, allowing the jump table to be smaller.
-      switch (static_cast<WireFormatLite::FieldType>(
-          processing_type ^ kRepeatedMask)) {
+      switch (static_cast<WireFormatLite::FieldType>(processing_type ^
+                                                     kRepeatedMask)) {
 #define HANDLE_PACKED_TYPE(TYPE, CPPTYPE, CPPTYPE_METHOD)                      \
   case WireFormatLite::TYPE_##TYPE: {                                          \
     RepeatedField<CPPTYPE>* values = Raw<RepeatedField<CPPTYPE>>(msg, offset); \

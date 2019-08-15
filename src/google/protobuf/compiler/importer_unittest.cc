@@ -74,14 +74,14 @@ class MockErrorCollector : public MultiFileErrorCollector {
   // implements ErrorCollector ---------------------------------------
   void AddError(const std::string& filename, int line, int column,
                 const std::string& message) {
-    strings::SubstituteAndAppend(&text_, "$0:$1:$2: $3\n",
-                                 filename, line, column, message);
+    strings::SubstituteAndAppend(&text_, "$0:$1:$2: $3\n", filename, line,
+                                 column, message);
   }
 
   void AddWarning(const std::string& filename, int line, int column,
                   const std::string& message) {
-    strings::SubstituteAndAppend(&warning_text_, "$0:$1:$2: $3\n",
-                                 filename, line, column, message);
+    strings::SubstituteAndAppend(&warning_text_, "$0:$1:$2: $3\n", filename,
+                                 line, column, message);
   }
 };
 
@@ -117,15 +117,13 @@ class MockSourceTree : public SourceTree {
 
 class ImporterTest : public testing::Test {
  protected:
-  ImporterTest()
-    : importer_(&source_tree_, &error_collector_) {}
+  ImporterTest() : importer_(&source_tree_, &error_collector_) {}
 
   void AddFile(const std::string& filename, const char* text) {
     source_tree_.AddFile(filename, text);
   }
 
   // Return the collected error text
-  std::string error() const { return error_collector_.text_; }
   std::string warning() const { return error_collector_.warning_text_; }
 
   MockErrorCollector error_collector_;
@@ -136,8 +134,8 @@ class ImporterTest : public testing::Test {
 TEST_F(ImporterTest, Import) {
   // Test normal importing.
   AddFile("foo.proto",
-    "syntax = \"proto2\";\n"
-    "message Foo {}\n");
+          "syntax = \"proto2\";\n"
+          "message Foo {}\n");
 
   const FileDescriptor* file = importer_.Import("foo.proto");
   EXPECT_EQ("", error_collector_.text_);
@@ -153,14 +151,14 @@ TEST_F(ImporterTest, Import) {
 TEST_F(ImporterTest, ImportNested) {
   // Test that importing a file which imports another file works.
   AddFile("foo.proto",
-    "syntax = \"proto2\";\n"
-    "import \"bar.proto\";\n"
-    "message Foo {\n"
-    "  optional Bar bar = 1;\n"
-    "}\n");
+          "syntax = \"proto2\";\n"
+          "import \"bar.proto\";\n"
+          "message Foo {\n"
+          "  optional Bar bar = 1;\n"
+          "}\n");
   AddFile("bar.proto",
-    "syntax = \"proto2\";\n"
-    "message Bar {}\n");
+          "syntax = \"proto2\";\n"
+          "message Bar {}\n");
 
   // Note that both files are actually parsed by the first call to Import()
   // here, since foo.proto imports bar.proto.  The second call just returns
@@ -190,42 +188,73 @@ TEST_F(ImporterTest, ImportNested) {
 TEST_F(ImporterTest, FileNotFound) {
   // Error:  Parsing a file that doesn't exist.
   EXPECT_TRUE(importer_.Import("foo.proto") == NULL);
-  EXPECT_EQ(
-    "foo.proto:-1:0: File not found.\n",
-    error_collector_.text_);
+  EXPECT_EQ("foo.proto:-1:0: File not found.\n", error_collector_.text_);
 }
 
 TEST_F(ImporterTest, ImportNotFound) {
   // Error:  Importing a file that doesn't exist.
   AddFile("foo.proto",
-    "syntax = \"proto2\";\n"
-    "import \"bar.proto\";\n");
+          "syntax = \"proto2\";\n"
+          "import \"bar.proto\";\n");
 
   EXPECT_TRUE(importer_.Import("foo.proto") == NULL);
   EXPECT_EQ(
-    "bar.proto:-1:0: File not found.\n"
-    "foo.proto:-1:0: Import \"bar.proto\" was not found or had errors.\n",
-    error_collector_.text_);
+      "bar.proto:-1:0: File not found.\n"
+      "foo.proto:1:0: Import \"bar.proto\" was not found or had errors.\n",
+      error_collector_.text_);
 }
 
 TEST_F(ImporterTest, RecursiveImport) {
   // Error:  Recursive import.
   AddFile("recursive1.proto",
-    "syntax = \"proto2\";\n"
-    "import \"recursive2.proto\";\n");
+          "syntax = \"proto2\";\n"
+          "\n"
+          "import \"recursive2.proto\";\n");
   AddFile("recursive2.proto",
-    "syntax = \"proto2\";\n"
-    "import \"recursive1.proto\";\n");
+          "syntax = \"proto2\";\n"
+          "import \"recursive1.proto\";\n");
 
   EXPECT_TRUE(importer_.Import("recursive1.proto") == NULL);
   EXPECT_EQ(
-    "recursive1.proto:-1:0: File recursively imports itself: recursive1.proto "
+      "recursive1.proto:2:0: File recursively imports itself: "
+      "recursive1.proto "
       "-> recursive2.proto -> recursive1.proto\n"
-    "recursive2.proto:-1:0: Import \"recursive1.proto\" was not found "
+      "recursive2.proto:1:0: Import \"recursive1.proto\" was not found "
       "or had errors.\n"
-    "recursive1.proto:-1:0: Import \"recursive2.proto\" was not found "
+      "recursive1.proto:2:0: Import \"recursive2.proto\" was not found "
       "or had errors.\n",
-    error_collector_.text_);
+      error_collector_.text_);
+}
+
+TEST_F(ImporterTest, RecursiveImportSelf) {
+  // Error:  Recursive import.
+  AddFile("recursive.proto",
+          "syntax = \"proto2\";\n"
+          "\n"
+          "import \"recursive.proto\";\n");
+
+  EXPECT_TRUE(importer_.Import("recursive.proto") == nullptr);
+  EXPECT_EQ(
+      "recursive.proto:2:0: File recursively imports itself: "
+      "recursive.proto -> recursive.proto\n",
+      error_collector_.text_);
+}
+
+TEST_F(ImporterTest, LiteRuntimeImport) {
+  // Error:  Recursive import.
+  AddFile("bar.proto",
+          "syntax = \"proto2\";\n"
+          "option optimize_for = LITE_RUNTIME;\n");
+  AddFile("foo.proto",
+          "syntax = \"proto2\";\n"
+          "import \"bar.proto\";\n");
+
+  EXPECT_TRUE(importer_.Import("foo.proto") == nullptr);
+  EXPECT_EQ(
+      "foo.proto:1:0: Files that do not use optimize_for = LITE_RUNTIME "
+      "cannot import files which do use this option.  This file is not "
+      "lite, but it imports \"bar.proto\" which is.\n",
+      error_collector_.text_);
 }
 
 
@@ -396,23 +425,23 @@ TEST_F(DiskSourceTreeTest, DiskFileToVirtualFile) {
   std::string shadowing_disk_file;
 
   EXPECT_EQ(DiskSourceTree::NO_MAPPING,
-    source_tree_.DiskFileToVirtualFile(
-      "/foo", &virtual_file, &shadowing_disk_file));
+            source_tree_.DiskFileToVirtualFile("/foo", &virtual_file,
+                                               &shadowing_disk_file));
 
   EXPECT_EQ(DiskSourceTree::SHADOWED,
-    source_tree_.DiskFileToVirtualFile(
-      dirnames_[1] + "/foo", &virtual_file, &shadowing_disk_file));
+            source_tree_.DiskFileToVirtualFile(
+                dirnames_[1] + "/foo", &virtual_file, &shadowing_disk_file));
   EXPECT_EQ("bar/foo", virtual_file);
   EXPECT_EQ(dirnames_[0] + "/foo", shadowing_disk_file);
 
   EXPECT_EQ(DiskSourceTree::CANNOT_OPEN,
-    source_tree_.DiskFileToVirtualFile(
-      dirnames_[1] + "/baz", &virtual_file, &shadowing_disk_file));
+            source_tree_.DiskFileToVirtualFile(
+                dirnames_[1] + "/baz", &virtual_file, &shadowing_disk_file));
   EXPECT_EQ("bar/baz", virtual_file);
 
   EXPECT_EQ(DiskSourceTree::SUCCESS,
-    source_tree_.DiskFileToVirtualFile(
-      dirnames_[0] + "/foo", &virtual_file, &shadowing_disk_file));
+            source_tree_.DiskFileToVirtualFile(
+                dirnames_[0] + "/foo", &virtual_file, &shadowing_disk_file));
   EXPECT_EQ("bar/foo", virtual_file);
 }
 
@@ -431,55 +460,55 @@ TEST_F(DiskSourceTreeTest, DiskFileToVirtualFileCanonicalization) {
 
   // "../.." should not be considered to be under "..".
   EXPECT_EQ(DiskSourceTree::NO_MAPPING,
-    source_tree_.DiskFileToVirtualFile(
-      "../../baz", &virtual_file, &shadowing_disk_file));
+            source_tree_.DiskFileToVirtualFile("../../baz", &virtual_file,
+                                               &shadowing_disk_file));
 
   // "/foo" is not mapped (it should not be misintepreted as being under ".").
   EXPECT_EQ(DiskSourceTree::NO_MAPPING,
-    source_tree_.DiskFileToVirtualFile(
-      "/foo", &virtual_file, &shadowing_disk_file));
+            source_tree_.DiskFileToVirtualFile("/foo", &virtual_file,
+                                               &shadowing_disk_file));
 
 #ifdef WIN32
   // "C:\foo" is not mapped (it should not be misintepreted as being under ".").
   EXPECT_EQ(DiskSourceTree::NO_MAPPING,
-    source_tree_.DiskFileToVirtualFile(
-      "C:\\foo", &virtual_file, &shadowing_disk_file));
+            source_tree_.DiskFileToVirtualFile("C:\\foo", &virtual_file,
+                                               &shadowing_disk_file));
 #endif  // WIN32
 
   // But "../baz" should be.
   EXPECT_EQ(DiskSourceTree::CANNOT_OPEN,
-    source_tree_.DiskFileToVirtualFile(
-      "../baz", &virtual_file, &shadowing_disk_file));
+            source_tree_.DiskFileToVirtualFile("../baz", &virtual_file,
+                                               &shadowing_disk_file));
   EXPECT_EQ("dir1/baz", virtual_file);
 
   // "../../foo/baz" is under "../../foo".
   EXPECT_EQ(DiskSourceTree::CANNOT_OPEN,
-    source_tree_.DiskFileToVirtualFile(
-      "../../foo/baz", &virtual_file, &shadowing_disk_file));
+            source_tree_.DiskFileToVirtualFile("../../foo/baz", &virtual_file,
+                                               &shadowing_disk_file));
   EXPECT_EQ("dir2/baz", virtual_file);
 
   // "foo/./bar/baz" is under "./foo/bar/.".
   EXPECT_EQ(DiskSourceTree::CANNOT_OPEN,
-    source_tree_.DiskFileToVirtualFile(
-      "foo/bar/baz", &virtual_file, &shadowing_disk_file));
+            source_tree_.DiskFileToVirtualFile("foo/bar/baz", &virtual_file,
+                                               &shadowing_disk_file));
   EXPECT_EQ("dir3/baz", virtual_file);
 
   // "bar" is under ".".
   EXPECT_EQ(DiskSourceTree::CANNOT_OPEN,
-    source_tree_.DiskFileToVirtualFile(
-      "bar", &virtual_file, &shadowing_disk_file));
+            source_tree_.DiskFileToVirtualFile("bar", &virtual_file,
+                                               &shadowing_disk_file));
   EXPECT_EQ("dir4/bar", virtual_file);
 
   // "/qux/baz" is under "/qux".
   EXPECT_EQ(DiskSourceTree::CANNOT_OPEN,
-    source_tree_.DiskFileToVirtualFile(
-      "/qux/baz", &virtual_file, &shadowing_disk_file));
+            source_tree_.DiskFileToVirtualFile("/qux/baz", &virtual_file,
+                                               &shadowing_disk_file));
   EXPECT_EQ("baz", virtual_file);
 
   // "/quux/bar" is under "/quux".
   EXPECT_EQ(DiskSourceTree::CANNOT_OPEN,
-    source_tree_.DiskFileToVirtualFile(
-      "/quux/bar", &virtual_file, &shadowing_disk_file));
+            source_tree_.DiskFileToVirtualFile("/quux/bar", &virtual_file,
+                                               &shadowing_disk_file));
   EXPECT_EQ("dir5/bar", virtual_file);
 }
 

@@ -49,6 +49,10 @@ namespace io {
 
 namespace {
 
+// This approximately 0x1.ffffffp127, but we don't use 0x1.ffffffp127 because
+// it won't compile in MSVC.
+const double MAX_FLOAT_AS_DOUBLE_ROUNDED = 3.4028235677973366e+38;
+
 // Returns a string identical to *input except that the character pointed to
 // by radix_pos (which should be '.') is replaced with the locale-specific
 // radix character.
@@ -61,7 +65,7 @@ std::string LocalizeRadix(const char* input, const char* radix_pos) {
   char temp[16];
   int size = sprintf(temp, "%.1f", 1.5);
   GOOGLE_CHECK_EQ(temp[0], '1');
-  GOOGLE_CHECK_EQ(temp[size-1], '5');
+  GOOGLE_CHECK_EQ(temp[size - 1], '5');
   GOOGLE_CHECK_LE(size, 6);
 
   // Now replace the '.' in the input with it.
@@ -94,8 +98,7 @@ double NoLocaleStrtod(const char* text, char** original_endptr) {
   const char* localized_cstr = localized.c_str();
   char* localized_endptr;
   result = strtod(localized_cstr, &localized_endptr);
-  if ((localized_endptr - localized_cstr) >
-      (temp_endptr - text)) {
+  if ((localized_endptr - localized_cstr) > (temp_endptr - text)) {
     // This attempt got further, so replacing the decimal must have helped.
     // Update original_endptr to point at the right location.
     if (original_endptr != NULL) {
@@ -103,7 +106,7 @@ double NoLocaleStrtod(const char* text, char** original_endptr) {
       int size_diff = localized.size() - strlen(text);
       // const_cast is necessary to match the strtod() interface.
       *original_endptr = const_cast<char*>(
-        text + (localized_endptr - localized_cstr - size_diff));
+          text + (localized_endptr - localized_cstr - size_diff));
     }
   }
 
@@ -111,9 +114,24 @@ double NoLocaleStrtod(const char* text, char** original_endptr) {
 }
 
 float SafeDoubleToFloat(double value) {
+  // static_cast<float> on a number larger than float can result in illegal
+  // instruction error, so we need to manually convert it to infinity or max.
   if (value > std::numeric_limits<float>::max()) {
+    // Max float value is about 3.4028234664E38 when represented as a double.
+    // However, when printing float as text, it will be rounded as
+    // 3.4028235e+38. If we parse the value of 3.4028235e+38 from text and
+    // compare it to 3.4028234664E38, we may think that it is larger, but
+    // actually, any number between these two numbers could only be represented
+    // as the same max float number in float, so we should treat them the same
+    // as max float.
+    if (value <= MAX_FLOAT_AS_DOUBLE_ROUNDED) {
+      return std::numeric_limits<float>::max();
+    }
     return std::numeric_limits<float>::infinity();
   } else if (value < -std::numeric_limits<float>::max()) {
+    if (value >= -MAX_FLOAT_AS_DOUBLE_ROUNDED) {
+      return -std::numeric_limits<float>::max();
+    }
     return -std::numeric_limits<float>::infinity();
   } else {
     return static_cast<float>(value);

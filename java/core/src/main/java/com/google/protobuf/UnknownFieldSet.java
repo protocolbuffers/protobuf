@@ -59,6 +59,7 @@ public final class UnknownFieldSet implements MessageLite {
 
   private UnknownFieldSet() {
     fields = null;
+    fieldsDescending = null;
   }
 
   /** Create a new {@link Builder}. */
@@ -90,9 +91,13 @@ public final class UnknownFieldSet implements MessageLite {
    */
   UnknownFieldSet(final Map<Integer, Field> fields, final Map<Integer, Field> fieldsDescending) {
     this.fields = fields;
+    this.fieldsDescending = fieldsDescending;
   }
 
   private final Map<Integer, Field> fields;
+
+  /** A copy of {@link #fields} who's iterator order is reversed. */
+  private final Map<Integer, Field> fieldsDescending;
 
 
   @Override
@@ -135,11 +140,11 @@ public final class UnknownFieldSet implements MessageLite {
 
   /**
    * Converts the set to a string in protocol buffer text format. This is just a trivial wrapper
-   * around {@link TextFormat#printToString(UnknownFieldSet)}.
+   * around {@link TextFormat.Printer#printToString(UnknownFieldSet)}.
    */
   @Override
   public String toString() {
-    return TextFormat.printToString(this);
+    return TextFormat.printer().printToString(this);
   }
 
   /**
@@ -212,6 +217,35 @@ public final class UnknownFieldSet implements MessageLite {
     }
   }
 
+  /** Serializes the set and writes it to {@code writer}. */
+  void writeTo(Writer writer) throws IOException {
+    if (writer.fieldOrder() == Writer.FieldOrder.DESCENDING) {
+      // Write fields in descending order.
+      for (Map.Entry<Integer, Field> entry : fieldsDescending.entrySet()) {
+        entry.getValue().writeTo(entry.getKey(), writer);
+      }
+    } else {
+      // Write fields in ascending order.
+      for (Map.Entry<Integer, Field> entry : fields.entrySet()) {
+        entry.getValue().writeTo(entry.getKey(), writer);
+      }
+    }
+  }
+
+  /** Serializes the set and writes it to {@code writer} using {@code MessageSet} wire format. */
+  void writeAsMessageSetTo(final Writer writer) throws IOException {
+    if (writer.fieldOrder() == Writer.FieldOrder.DESCENDING) {
+      // Write fields in descending order.
+      for (final Map.Entry<Integer, Field> entry : fieldsDescending.entrySet()) {
+        entry.getValue().writeAsMessageSetExtensionTo(entry.getKey(), writer);
+      }
+    } else {
+      // Write fields in ascending order.
+      for (final Map.Entry<Integer, Field> entry : fields.entrySet()) {
+        entry.getValue().writeAsMessageSetExtensionTo(entry.getKey(), writer);
+      }
+    }
+  }
 
   /** Get the number of bytes required to encode this set using {@code MessageSet} wire format. */
   public int getSerializedSizeAsMessageSet() {
@@ -328,6 +362,8 @@ public final class UnknownFieldSet implements MessageLite {
         result = getDefaultInstance();
       } else {
         Map<Integer, Field> descendingFields = null;
+        descendingFields =
+            Collections.unmodifiableMap(((TreeMap<Integer, Field>) fields).descendingMap());
         result = new UnknownFieldSet(Collections.unmodifiableMap(fields), descendingFields);
       }
       fields = null;
@@ -344,6 +380,8 @@ public final class UnknownFieldSet implements MessageLite {
     public Builder clone() {
       getFieldBuilder(0); // Force lastField to be built.
       Map<Integer, Field> descendingFields = null;
+      descendingFields =
+          Collections.unmodifiableMap(((TreeMap<Integer, Field>) fields).descendingMap());
       return UnknownFieldSet.newBuilder().mergeFrom(new UnknownFieldSet(fields, descendingFields));
     }
 
@@ -808,6 +846,47 @@ public final class UnknownFieldSet implements MessageLite {
       }
     }
 
+    /** Serializes the field, including field number, and writes it to {@code writer}. */
+    void writeTo(final int fieldNumber, final Writer writer) throws IOException {
+      writer.writeInt64List(fieldNumber, varint, false);
+      writer.writeFixed32List(fieldNumber, fixed32, false);
+      writer.writeFixed64List(fieldNumber, fixed64, false);
+      writer.writeBytesList(fieldNumber, lengthDelimited);
+
+      if (writer.fieldOrder() == Writer.FieldOrder.ASCENDING) {
+        for (int i = 0; i < group.size(); i++) {
+          writer.writeStartGroup(fieldNumber);
+          group.get(i).writeTo(writer);
+          writer.writeEndGroup(fieldNumber);
+        }
+      } else {
+        for (int i = group.size() - 1; i >= 0; i--) {
+          writer.writeEndGroup(fieldNumber);
+          group.get(i).writeTo(writer);
+          writer.writeStartGroup(fieldNumber);
+        }
+      }
+    }
+
+    /**
+     * Serializes the field, including field number, and writes it to {@code writer}, using {@code
+     * MessageSet} wire format.
+     */
+    private void writeAsMessageSetExtensionTo(final int fieldNumber, final Writer writer)
+        throws IOException {
+      if (writer.fieldOrder() == Writer.FieldOrder.DESCENDING) {
+        // Write in descending field order.
+        ListIterator<ByteString> iter = lengthDelimited.listIterator(lengthDelimited.size());
+        while (iter.hasPrevious()) {
+          writer.writeMessageSetItem(fieldNumber, iter.previous());
+        }
+      } else {
+        // Write in ascending field order.
+        for (final ByteString value : lengthDelimited) {
+          writer.writeMessageSetItem(fieldNumber, value);
+        }
+      }
+    }
 
     /**
      * Get the number of bytes required to encode this field, including field number, using {@code

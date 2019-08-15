@@ -11,24 +11,17 @@ it's designed/implemented with different constraints. In particular, Java
 Lite runtime has a much smaller code size which makes it more suitable to
 be used on Android.
 
-To use Java Lite runtime, you need to install protoc and the protoc plugin for
-Java Lite runtime. You can obtain protoc following the instructions in the
-toplevel [README.md](../README.md) file. For the protoc plugin, you can
-download it from maven:
+Note that in order to achieve maximum performance and code size, we will
+NOT guarantee API/ABI stability for Java Lite. If this is not acceptable
+for your use-case, please use the full Java runtime instead. Note that
+the latest version of Java Lite is not compatible with the 3.0.0 version.
 
-    https://repo1.maven.org/maven2/com/google/protobuf/protoc-gen-javalite/
+You can generate Java Lite code for your .proto files:
 
-Choose the version that works on your platform (e.g., on windows you can
-download `protoc-gen-javalite-3.0.0-windows-x86_32.exe`), rename it to
-protoc-gen-javalite (or protoc-gen-javalite.exe on windows) and place it
-in a directory where it can be find in PATH. If you are using unix like OS
-then make sure to convert `protoc-gen-javalite` to unix executable. For example
-`chmod +x protoc-gen-javalite`
+    $ protoc --java_out=lite:${OUTPUT_DIR} path/to/your/proto/file
 
-Once you have the protoc and protoc plugin, you can generate Java Lite code
-for your .proto files:
-
-    $ protoc --javalite_out=${OUTPUT_DIR} path/to/your/proto/file
+Note that "optimize_for = LITE_RUNTIME" option in proto file is deprecated
+and will not have any effect any more.
 
 Include the generated Java files in your project and add a dependency on the
 protobuf Java runtime. If you are using Maven, use the following:
@@ -36,17 +29,11 @@ protobuf Java runtime. If you are using Maven, use the following:
 ```xml
 <dependency>
   <groupId>com.google.protobuf</groupId>
-  <artifactId>protobuf-lite</artifactId>
-  <version>3.0.1</version>
+  <artifactId>protobuf-javalite</artifactId>
+  <version>3.8.0</version>
 </dependency>
 ```
 
-Make sure the version number of the runtime matches (or is newer than) the
-version number of the protoc plugin. The version number of the protoc doesn't
-matter and any version >= 3.0.0 should work.
+For the older version of Java Lite (v3.0.0), please refer to:
 
-### Use Protobuf Java Lite Runtime with Bazel
-
-Bazel has native build rules to work with protobuf. For Java Lite runtime,
-you can use the `java_lite_proto_library` rule. Check out [our build files
-examples](../examples/BUILD) to learn how to use it.
+    https://github.com/protocolbuffers/protobuf/blob/javalite/java/lite.md

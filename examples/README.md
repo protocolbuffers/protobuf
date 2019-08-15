@@ -38,7 +38,7 @@ and the protobuf runtime for the language you want to build.
 
 You can simply run "make" to build the example for all languages (except for
 Go). However, since different language has different installation requirement,
-it will likely fail. It's better to follow individual instrutions below to
+it will likely fail. It's better to follow individual instructions below to
 build only the language you are interested in.
 
 ### C++
@@ -135,7 +135,7 @@ Build the Dart samples in this directory with `make dart`.
 To run the examples:
 
 ```sh
-$ dart add_person.dart addessbook.data
+$ dart add_person.dart addressbook.data
 $ dart list_people.dart addressbook.data
 ```
 

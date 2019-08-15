@@ -6,6 +6,8 @@
 
 # For when some other test needs the C++ main build, including protoc and
 # libprotobuf.
+LAST_RELEASED=3.9.0
+
 internal_build_cpp() {
   if [ -f src/protoc ]; then
     # Already built.
@@ -48,6 +50,10 @@ build_cpp_tcmalloc() {
 }
 
 build_cpp_distcheck() {
+  grep -q -- "-Og" src/Makefile.am &&
+    echo "The -Og flag is incompatible with Clang versions older than 4.0." &&
+    exit 1
+
   # Initialize any submodules.
   git submodule update --init --recursive
   ./autogen.sh
@@ -80,11 +86,49 @@ build_cpp_distcheck() {
   make distcheck -j$(nproc)
 }
 
+build_dist_install() {
+  # Initialize any submodules.
+  git submodule update --init --recursive
+  ./autogen.sh
+  ./configure
+  make dist
+
+  # Unzip the dist tar file and install it.
+  DIST=`ls *.tar.gz`
+  tar -xf $DIST
+  pushd ${DIST//.tar.gz}
+  ./configure && make check -j4 && make install
+
+  export LD_LIBRARY_PATH=/usr/local/lib
+
+  # Try to install Java
+  pushd java
+  use_java jdk7
+  $MVN install
+  popd
+
+  # Try to install Python
+  virtualenv --no-site-packages venv
+  source venv/bin/activate
+  pushd python
+  python setup.py clean build sdist
+  pip install dist/protobuf-*.tar.gz
+  popd
+  deactivate
+  rm -rf python/venv
+}
+
 build_csharp() {
   # Required for conformance tests and to regenerate protos.
   internal_build_cpp
   NUGET=/usr/local/bin/nuget.exe
 
+  # Disable some unwanted dotnet options
+  export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=true
+  export DOTNET_CLI_TELEMETRY_OPTOUT=true
+
+  # TODO(jtattermusch): is this still needed with "first time experience"
+  # disabled?
   # Perform "dotnet new" once to get the setup preprocessing out of the
   # way. That spews a lot of output (including backspaces) into logs
   # otherwise, and can cause problems. It doesn't matter if this step
@@ -105,6 +149,9 @@ build_csharp() {
 
   # Run csharp compatibility test between 3.0.0 and the current version.
   csharp/compatibility_tests/v3.0.0/test.sh 3.0.0
+
+  # Run csharp compatibility test between last released and the current version.
+  csharp/compatibility_tests/v3.0.0/test.sh $LAST_RELEASED
 }
 
 build_golang() {
@@ -126,6 +173,10 @@ build_golang() {
 use_java() {
   version=$1
   case "$version" in
+    jdk8)
+      export PATH=/usr/lib/jvm/java-8-openjdk-amd64/bin:$PATH
+      export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+      ;;
     jdk7)
       export PATH=/usr/lib/jvm/java-7-openjdk-amd64/bin:$PATH
       export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
@@ -183,6 +234,35 @@ build_java_compatibility() {
   # 3.0.0-beta-4 and the current version.
   cd java/compatibility_tests/v2.5.0
   ./test.sh 3.0.0-beta-4
+
+  # Test the last released and current version.
+  ./test.sh $LAST_RELEASED
+}
+build_java_linkage_monitor() {
+  # Linkage Monitor checks compatibility with other Google libraries
+  # https://github.com/GoogleCloudPlatform/cloud-opensource-java/tree/master/linkage-monitor
+
+  use_java jdk8
+  internal_build_cpp
+
+  # Linkage Monitor uses $HOME/.m2 local repository
+  MVN="mvn -e -B -Dhttps.protocols=TLSv1.2"
+  cd java
+  # Sets java artifact version with SNAPSHOT, as Linkage Monitor looks for SNAPSHOT versions.
+  # Example: "3.9.0" (without 'rc')
+  VERSION=`grep '<version>' pom.xml |head -1 |perl -nle 'print $1 if m/<version>(\d+\.\d+.\d+)/'`
+  cd bom
+  $MVN versions:set -DnewVersion=${VERSION}-SNAPSHOT
+  cd ..
+  $MVN versions:set -DnewVersion=${VERSION}-SNAPSHOT
+  # Installs the snapshot version locally
+  $MVN install -Dmaven.test.skip=true
+
+  # Linkage Monitor uses the snapshot versions installed in $HOME/.m2 to verify compatibility
+  JAR=linkage-monitor-latest-all-deps.jar
+  curl -v -O "https://storage.googleapis.com/cloud-opensource-java-linkage-monitor/${JAR}"
+  # Fails if there's new linkage errors compared with baseline
+  java -jar $JAR com.google.cloud:libraries-bom
 }
 
 build_objectivec_ios() {
@@ -330,6 +410,9 @@ build_python_compatibility() {
   ./test.sh 2.5.0
   # Test between 3.0.0-beta-1 and the current version.
   ./test.sh 3.0.0-beta-1
+
+  # Test between last released and current version.
+  ./test.sh $LAST_RELEASED
 }
 
 build_ruby23() {
@@ -435,6 +518,16 @@ build_php5.5_c() {
   # popd
 }
 
+build_php5.5_mixed() {
+  use_php 5.5
+  pushd php
+  rm -rf vendor
+  composer update
+  /bin/bash ./tests/compile_extension.sh ./ext/google/protobuf
+  php -dextension=./ext/google/protobuf/modules/protobuf.so ./vendor/bin/phpunit
+  popd
+}
+
 build_php5.5_zts_c() {
   use_php_zts 5.5
   cd php/tests && /bin/bash ./test.sh 5.5-zts && cd ../..
@@ -463,6 +556,16 @@ build_php5.6_c() {
   # pushd conformance
   # make test_php_c
   # popd
+}
+
+build_php5.6_mixed() {
+  use_php 5.6
+  pushd php
+  rm -rf vendor
+  composer update
+  /bin/bash ./tests/compile_extension.sh ./ext/google/protobuf
+  php -dextension=./ext/google/protobuf/modules/protobuf.so ./vendor/bin/phpunit
+  popd
 }
 
 build_php5.6_zts_c() {
@@ -520,6 +623,16 @@ build_php7.0_c() {
   # popd
 }
 
+build_php7.0_mixed() {
+  use_php 7.0
+  pushd php
+  rm -rf vendor
+  composer update
+  /bin/bash ./tests/compile_extension.sh ./ext/google/protobuf
+  php -dextension=./ext/google/protobuf/modules/protobuf.so ./vendor/bin/phpunit
+  popd
+}
+
 build_php7.0_zts_c() {
   use_php_zts 7.0
   cd php/tests && /bin/bash ./test.sh 7.0-zts && cd ../..
@@ -556,7 +669,7 @@ build_php7.0_mac() {
 
 build_php_compatibility() {
   internal_build_cpp
-  php/tests/compatibility_test.sh
+  php/tests/compatibility_test.sh $LAST_RELEASED
 }
 
 build_php7.1() {
@@ -583,6 +696,16 @@ build_php7.1_c() {
   fi
 }
 
+build_php7.1_mixed() {
+  use_php 7.1
+  pushd php
+  rm -rf vendor
+  composer update
+  /bin/bash ./tests/compile_extension.sh ./ext/google/protobuf
+  php -dextension=./ext/google/protobuf/modules/protobuf.so ./vendor/bin/phpunit
+  popd
+}
+
 build_php7.1_zts_c() {
   use_php_zts 7.1
   cd php/tests && /bin/bash ./test.sh 7.1-zts && cd ../..
@@ -600,6 +723,10 @@ build_php_all_32() {
   build_php5.6_c
   build_php7.0_c
   build_php7.1_c $1
+  build_php5.5_mixed
+  build_php5.6_mixed
+  build_php7.0_mixed
+  build_php7.1_mixed
   build_php5.5_zts_c
   build_php5.6_zts_c
   build_php7.0_zts_c
@@ -626,6 +753,7 @@ Usage: $0 { cpp |
             java_jdk7 |
             java_oracle7 |
             java_compatibility |
+            java_linkage_monitor |
             objectivec_ios |
             objectivec_ios_debug |
             objectivec_ios_release |
@@ -653,6 +781,7 @@ Usage: $0 { cpp |
             php7.1   |
             php7.1_c |
             php_all |
+            dist_install |
             benchmark)
 "
   exit 1

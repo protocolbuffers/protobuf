@@ -35,8 +35,8 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_MESSAGE_BUILDER_H__
 #define GOOGLE_PROTOBUF_COMPILER_JAVA_MESSAGE_BUILDER_H__
 
-#include <string>
 #include <map>
+#include <string>
 #include <google/protobuf/compiler/java/java_field.h>
 
 namespace google {

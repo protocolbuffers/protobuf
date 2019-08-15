@@ -46,6 +46,9 @@
 #include <fstream>
 #include <sstream>
 
+#include <google/protobuf/stubs/logging.h>
+#include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/test_util2.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream.h>
@@ -54,13 +57,10 @@
 #include <google/protobuf/arena.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/generated_message_reflection.h>
-
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
-#include <google/protobuf/stubs/io_win32.h>
+#include <google/protobuf/io/io_win32.h>
+
 
 namespace google {
 namespace protobuf {
@@ -68,8 +68,8 @@ namespace protobuf {
 #if defined(_WIN32)
 // DO NOT include <io.h>, instead create functions in io_win32.{h,cc} and import
 // them like we do below.
-using google::protobuf::internal::win32::close;
-using google::protobuf::internal::win32::open;
+using google::protobuf::io::win32::close;
+using google::protobuf::io::win32::open;
 #endif
 
 #ifndef O_BINARY
@@ -627,7 +627,6 @@ TEST(MESSAGE_TEST_NAME, MOMIParserEdgeCases) {
     EXPECT_FALSE(msg.ParsePartialFromZeroCopyStream(&zcis));
   }
 }
-
 
 
 }  // namespace protobuf

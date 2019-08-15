@@ -43,8 +43,6 @@
 #include <google/protobuf/util/internal/constants.h>
 #include <google/protobuf/util/internal/utility.h>
 #include <google/protobuf/stubs/strutil.h>
-
-
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/statusor.h>
 
@@ -57,10 +55,10 @@ namespace util {
 namespace converter {
 
 using ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite;
+using std::placeholders::_1;
 using util::Status;
 using util::StatusOr;
 using util::error::INVALID_ARGUMENT;
-using std::placeholders::_1;
 
 
 ProtoStreamObjectWriter::ProtoStreamObjectWriter(
@@ -359,9 +357,9 @@ void ProtoStreamObjectWriter::AnyWriter::StartAny(const DataPiece& value) {
 
   // Create our object writer and initialize it with the first StartObject
   // call.
-  ow_.reset(new ProtoStreamObjectWriter(
-      parent_->typeinfo(), *type, &output_, parent_->listener(),
-      parent_->options_));
+  ow_.reset(new ProtoStreamObjectWriter(parent_->typeinfo(), *type, &output_,
+                                        parent_->listener(),
+                                        parent_->options_));
 
   // Don't call StartObject() for well-known types yet. Depending on the
   // type of actual data, we may not need to call StartObject(). For
@@ -879,7 +877,32 @@ Status ProtoStreamObjectWriter::RenderStructValue(ProtoStreamObjectWriter* ow,
                                                   const DataPiece& data) {
   std::string struct_field_name;
   switch (data.type()) {
-    // Our JSON parser parses numbers as either int64, uint64, or double.
+    case DataPiece::TYPE_INT32: {
+      if (ow->options_.struct_integers_as_strings) {
+        StatusOr<int32> int_value = data.ToInt32();
+        if (int_value.ok()) {
+          ow->ProtoWriter::RenderDataPiece(
+              "string_value",
+              DataPiece(SimpleDtoa(int_value.ValueOrDie()), true));
+          return Status();
+        }
+      }
+      struct_field_name = "number_value";
+      break;
+    }
+    case DataPiece::TYPE_UINT32: {
+      if (ow->options_.struct_integers_as_strings) {
+        StatusOr<uint32> int_value = data.ToUint32();
+        if (int_value.ok()) {
+          ow->ProtoWriter::RenderDataPiece(
+              "string_value",
+              DataPiece(SimpleDtoa(int_value.ValueOrDie()), true));
+          return Status();
+        }
+      }
+      struct_field_name = "number_value";
+      break;
+    }
     case DataPiece::TYPE_INT64: {
       // If the option to treat integers as strings is set, then render them as
       // strings. Otherwise, fallback to rendering them as double.
@@ -904,6 +927,19 @@ Status ProtoStreamObjectWriter::RenderStructValue(ProtoStreamObjectWriter* ow,
           ow->ProtoWriter::RenderDataPiece(
               "string_value",
               DataPiece(StrCat(int_value.ValueOrDie()), true));
+          return Status();
+        }
+      }
+      struct_field_name = "number_value";
+      break;
+    }
+    case DataPiece::TYPE_FLOAT: {
+      if (ow->options_.struct_integers_as_strings) {
+        StatusOr<float> float_value = data.ToFloat();
+        if (float_value.ok()) {
+          ow->ProtoWriter::RenderDataPiece(
+              "string_value",
+              DataPiece(SimpleDtoa(float_value.ValueOrDie()), true));
           return Status();
         }
       }
@@ -985,9 +1021,9 @@ Status ProtoStreamObjectWriter::RenderFieldMask(ProtoStreamObjectWriter* ow,
                                data.ValueAsStringOrDefault("")));
   }
 
-// TODO(tsun): figure out how to do proto descriptor based snake case
-// conversions as much as possible. Because ToSnakeCase sometimes returns the
-// wrong value.
+  // TODO(tsun): figure out how to do proto descriptor based snake case
+  // conversions as much as possible. Because ToSnakeCase sometimes returns the
+  // wrong value.
   return DecodeCompactFieldMaskPaths(data.str(),
                                      std::bind(&RenderOneFieldPath, ow, _1));
 }

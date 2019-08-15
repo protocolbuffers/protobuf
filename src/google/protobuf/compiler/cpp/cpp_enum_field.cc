@@ -86,10 +86,12 @@ void EnumFieldGenerator::GenerateInlineAccessorDefinitions(
   Formatter format(printer, variables_);
   format(
       "inline $type$ $classname$::$name$() const {\n"
+      "$annotate_accessor$"
       "  // @@protoc_insertion_point(field_get:$full_name$)\n"
       "  return static_cast< $type$ >($name$_);\n"
       "}\n"
-      "inline void $classname$::set_$name$($type$ value) {\n");
+      "inline void $classname$::set_$name$($type$ value) {\n"
+      "$annotate_accessor$");
   if (!HasPreservingUnknownEnumSemantics(descriptor_)) {
     format("  assert($type$_IsValid(value));\n");
   }
@@ -157,18 +159,11 @@ void EnumFieldGenerator::GenerateMergeFromCodedStream(
   }
 }
 
-void EnumFieldGenerator::GenerateSerializeWithCachedSizes(
-    io::Printer* printer) const {
-  Formatter format(printer, variables_);
-  format(
-      "::$proto_ns$::internal::WireFormatLite::WriteEnum(\n"
-      "  $number$, this->$name$(), output);\n");
-}
-
 void EnumFieldGenerator::GenerateSerializeWithCachedSizesToArray(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
   format(
+      "stream->EnsureSpace(&target);\n"
       "target = ::$proto_ns$::internal::WireFormatLite::WriteEnumToArray(\n"
       "  $number$, this->$name$(), target);\n");
 }
@@ -195,13 +190,15 @@ void EnumOneofFieldGenerator::GenerateInlineAccessorDefinitions(
   Formatter format(printer, variables_);
   format(
       "inline $type$ $classname$::$name$() const {\n"
+      "$annotate_accessor$"
       "  // @@protoc_insertion_point(field_get:$full_name$)\n"
       "  if (has_$name$()) {\n"
       "    return static_cast< $type$ >($field_member$);\n"
       "  }\n"
       "  return static_cast< $type$ >($default$);\n"
       "}\n"
-      "inline void $classname$::set_$name$($type$ value) {\n");
+      "inline void $classname$::set_$name$($type$ value) {\n"
+      "$annotate_accessor$");
   if (!HasPreservingUnknownEnumSemantics(descriptor_)) {
     format("  assert($type$_IsValid(value));\n");
   }
@@ -269,10 +266,12 @@ void RepeatedEnumFieldGenerator::GenerateInlineAccessorDefinitions(
   Formatter format(printer, variables_);
   format(
       "inline $type$ $classname$::$name$(int index) const {\n"
+      "$annotate_accessor$"
       "  // @@protoc_insertion_point(field_get:$full_name$)\n"
       "  return static_cast< $type$ >($name$_.Get(index));\n"
       "}\n"
-      "inline void $classname$::set_$name$(int index, $type$ value) {\n");
+      "inline void $classname$::set_$name$(int index, $type$ value) {\n"
+      "$annotate_accessor$");
   if (!HasPreservingUnknownEnumSemantics(descriptor_)) {
     format("  assert($type$_IsValid(value));\n");
   }
@@ -280,7 +279,8 @@ void RepeatedEnumFieldGenerator::GenerateInlineAccessorDefinitions(
       "  $name$_.Set(index, value);\n"
       "  // @@protoc_insertion_point(field_set:$full_name$)\n"
       "}\n"
-      "inline void $classname$::add_$name$($type$ value) {\n");
+      "inline void $classname$::add_$name$($type$ value) {\n"
+      "$annotate_accessor$");
   if (!HasPreservingUnknownEnumSemantics(descriptor_)) {
     format("  assert($type$_IsValid(value));\n");
   }
@@ -290,11 +290,13 @@ void RepeatedEnumFieldGenerator::GenerateInlineAccessorDefinitions(
       "}\n"
       "inline const ::$proto_ns$::RepeatedField<int>&\n"
       "$classname$::$name$() const {\n"
+      "$annotate_accessor$"
       "  // @@protoc_insertion_point(field_list:$full_name$)\n"
       "  return $name$_;\n"
       "}\n"
       "inline ::$proto_ns$::RepeatedField<int>*\n"
       "$classname$::mutable_$name$() {\n"
+      "$annotate_accessor$"
       "  // @@protoc_insertion_point(field_mutable_list:$full_name$)\n"
       "  return &$name$_;\n"
       "}\n");
@@ -423,58 +425,27 @@ void RepeatedEnumFieldGenerator::GenerateMergeFromCodedStreamWithPacking(
   }
 }
 
-void RepeatedEnumFieldGenerator::GenerateSerializeWithCachedSizes(
-    io::Printer* printer) const {
-  Formatter format(printer, variables_);
-  if (descriptor_->is_packed()) {
-    // Write the tag and the size.
-    format(
-        "if (this->$name$_size() > 0) {\n"
-        "  ::$proto_ns$::internal::WireFormatLite::WriteTag(\n"
-        "    $number$,\n"
-        "    "
-        "::$proto_ns$::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED,\n"
-        "    output);\n"
-        "  output->WriteVarint32(_$name$_cached_byte_size_.load(\n"
-        "      std::memory_order_relaxed));\n"
-        "}\n");
-  }
-  format("for (int i = 0, n = this->$name$_size(); i < n; i++) {\n");
-  if (descriptor_->is_packed()) {
-    format(
-        "  ::$proto_ns$::internal::WireFormatLite::WriteEnumNoTag(\n"
-        "    this->$name$(i), output);\n");
-  } else {
-    format(
-        "  ::$proto_ns$::internal::WireFormatLite::WriteEnum(\n"
-        "    $number$, this->$name$(i), output);\n");
-  }
-  format("}\n");
-}
-
 void RepeatedEnumFieldGenerator::GenerateSerializeWithCachedSizesToArray(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
   if (descriptor_->is_packed()) {
     // Write the tag and the size.
     format(
-        "if (this->$name$_size() > 0) {\n"
-        "  target = ::$proto_ns$::internal::WireFormatLite::WriteTagToArray(\n"
-        "    $number$,\n"
-        "    "
-        "::$proto_ns$::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED,\n"
-        "    target);\n"
-        "  target = ::$proto_ns$::io::CodedOutputStream::WriteVarint32ToArray("
-        "      _$name$_cached_byte_size_.load(std::memory_order_relaxed),\n"
-        "      target);\n"
-        "  target = "
-        "::$proto_ns$::internal::WireFormatLite::WriteEnumNoTagToArray(\n"
-        "    this->$name$_, target);\n"
+        "{\n"
+        "  int byte_size = "
+        "_$name$_cached_byte_size_.load(std::memory_order_relaxed);\n"
+        "  if (byte_size > 0) {\n"
+        "    target = stream->WriteEnumPacked(\n"
+        "        $number$, $name$_, byte_size, target);\n"
+        "  }\n"
         "}\n");
   } else {
     format(
-        "target = ::$proto_ns$::internal::WireFormatLite::WriteEnumToArray(\n"
-        "  $number$, this->$name$_, target);\n");
+        "for (const auto& x : this->$name$()) {\n"
+        "  stream->EnsureSpace(&target);\n"
+        "  target = ::$proto_ns$::internal::WireFormatLite::WriteEnumToArray(\n"
+        "      $number$, x, target);\n"
+        "}\n");
   }
 }
 

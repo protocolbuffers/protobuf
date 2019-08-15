@@ -224,6 +224,14 @@ class ConformanceTestSuite {
 
     string ConformanceLevelToString(ConformanceLevel level) const;
 
+    void SetPrintUnknownFields(bool print_unknown_fields) {
+      request_.set_print_unknown_fields(true);
+    }
+
+    void SetPrototypeMessageForCompare(const Message& message) {
+      prototype_message_for_compare_.reset(message.New());
+    }
+
    protected:
     virtual string InputFormatString(conformance::WireFormat format) const;
     virtual string OutputFormatString(conformance::WireFormat format) const;
@@ -234,6 +242,7 @@ class ConformanceTestSuite {
     ::conformance::WireFormat input_format_;
     ::conformance::WireFormat output_format_;
     const Message& prototype_message_;
+    std::unique_ptr<Message> prototype_message_for_compare_;
     string test_name_;
   };
 
@@ -252,7 +261,8 @@ class ConformanceTestSuite {
       const ConformanceRequestSetting& setting,
       const string& equivalent_wire_format,
       const conformance::ConformanceResponse& response,
-      bool need_report_success);
+      bool need_report_success,
+      bool require_same_wire_format);
 
   void ReportSuccess(const std::string& test_name);
   void ReportFailure(const string& test_name,
@@ -267,7 +277,8 @@ class ConformanceTestSuite {
   void RunValidInputTest(const ConformanceRequestSetting& setting,
                          const string& equivalent_text_format);
   void RunValidBinaryInputTest(const ConformanceRequestSetting& setting,
-                               const string& equivalent_wire_format);
+                               const string& equivalent_wire_format,
+                               bool require_same_wire_format = false);
 
   void RunTest(const std::string& test_name,
                const conformance::ConformanceRequest& request,

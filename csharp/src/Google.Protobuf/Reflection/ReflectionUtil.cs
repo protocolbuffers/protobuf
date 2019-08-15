@@ -116,6 +116,13 @@ namespace Google.Protobuf.Reflection
             GetReflectionHelper(method.DeclaringType, method.ReturnType).CreateFuncIMessageBool(method);
 
         /// <summary>
+        /// Creates a delegate which will execute the given method after casting the first argument to
+        /// the type that declares the method, and the second argument to the first parameter type of the method.
+        /// </summary>
+        internal static IExtensionReflectionHelper CreateExtensionHelper(Extension extension) =>
+            (IExtensionReflectionHelper)Activator.CreateInstance(typeof(ExtensionReflectionHelper<,>).MakeGenericType(extension.TargetType, extension.GetType().GenericTypeArguments[1]));
+
+        /// <summary>
         /// Creates a reflection helper for the given type arguments. Currently these are created on demand
         /// rather than cached; this will be "busy" when initially loading a message's descriptor, but after that
         /// they can be garbage collected. We could cache them by type if that proves to be important, but creating
@@ -133,6 +140,14 @@ namespace Google.Protobuf.Reflection
             Func<IMessage, object> CreateFuncIMessageObject(MethodInfo method);
             Action<IMessage, object> CreateActionIMessageObject(MethodInfo method);
             Func<IMessage, bool> CreateFuncIMessageBool(MethodInfo method);
+        }
+
+        internal interface IExtensionReflectionHelper
+        {
+            object GetExtension(IMessage message);
+            void SetExtension(IMessage message, object value);
+            bool HasExtension(IMessage message);
+            void ClearExtension(IMessage message);
         }
 
         private class ReflectionHelper<T1, T2> : IReflectionHelper
@@ -179,6 +194,109 @@ namespace Google.Protobuf.Reflection
             {
                 var del = (Func<T1, bool>)method.CreateDelegate(typeof(Func<T1, bool>));
                 return message => del((T1)message);
+            }
+        }
+
+        private class ExtensionReflectionHelper<T1, T3> : IExtensionReflectionHelper
+            where T1 : IExtendableMessage<T1>
+        {
+            private readonly Extension extension;
+
+            public ExtensionReflectionHelper(Extension extension)
+            {
+                this.extension = extension;
+            }
+
+            public object GetExtension(IMessage message)
+            {
+                if (!(message is T1))
+                {
+                    throw new InvalidCastException("Cannot access extension on message that isn't IExtensionMessage");
+                }
+
+                T1 extensionMessage = (T1)message;
+
+                if (extension is Extension<T1, T3>)
+                {
+                    return extensionMessage.GetExtension(extension as Extension<T1, T3>);
+                }
+                else if (extension is RepeatedExtension<T1, T3>)
+                {
+                    return extensionMessage.GetExtension(extension as RepeatedExtension<T1, T3>);
+                }
+                else
+                {
+                    throw new InvalidCastException("The provided extension is not a valid extension identifier type");
+                }
+            }
+
+            public bool HasExtension(IMessage message)
+            {
+                if (!(message is T1))
+                {
+                    throw new InvalidCastException("Cannot access extension on message that isn't IExtensionMessage");
+                }
+
+                T1 extensionMessage = (T1)message;
+
+                if (extension is Extension<T1, T3>)
+                {
+                    return extensionMessage.HasExtension(extension as Extension<T1, T3>);
+                }
+                else if (extension is RepeatedExtension<T1, T3>)
+                {
+                    throw new InvalidOperationException("HasValue is not implemented for repeated extensions");
+                }
+                else
+                {
+                    throw new InvalidCastException("The provided extension is not a valid extension identifier type");
+                }
+            }
+
+            public void SetExtension(IMessage message, object value)
+            {
+                if (!(message is T1))
+                {
+                    throw new InvalidCastException("Cannot access extension on message that isn't IExtensionMessage");
+                }
+
+                T1 extensionMessage = (T1)message;
+
+                if (extension is Extension<T1, T3>)
+                {
+                    extensionMessage.SetExtension(extension as Extension<T1, T3>, (T3)value);
+                }
+                else if (extension is RepeatedExtension<T1, T3>)
+                {
+                    throw new InvalidOperationException("SetValue is not implemented for repeated extensions");
+                }
+                else
+                {
+                    throw new InvalidCastException("The provided extension is not a valid extension identifier type");
+                }
+            }
+
+            public void ClearExtension(IMessage message)
+            {
+                if (!(message is T1))
+                {
+                    throw new InvalidCastException("Cannot access extension on message that isn't IExtensionMessage");
+                }
+
+                T1 extensionMessage = (T1)message;
+
+                if (extension is Extension<T1, T3>)
+                {
+                    extensionMessage.ClearExtension(extension as Extension<T1, T3>);
+                }
+                else if (extension is RepeatedExtension<T1, T3>)
+                {
+                    extensionMessage.GetExtension(extension as RepeatedExtension<T1, T3>).Clear();
+                }
+                else
+                {
+                    throw new InvalidCastException("The provided extension is not a valid extension identifier type");
+                }
             }
         }
 

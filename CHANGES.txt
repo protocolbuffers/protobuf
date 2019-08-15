@@ -1,3 +1,127 @@
+2019-06-28 version 3.9.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  C++
+  * Optimize and simplify implementation of RepeatedPtrFieldBase
+  * Don't create unnecessary unknown field sets.
+  * Remove branch from accessors to repeated field element array.
+  * Added delimited parse and serialize util.
+  * Reduce size by not emitting constants for fieldnumbers
+  * Fix a bug when comparing finite and infinite field values with explicit tolerances.
+  * TextFormat::Parser should use a custom Finder to look up extensions by number if one is provided.
+  * Add MessageLite::Utf8DebugString() to make MessageLite more compatible with Message.
+  * Fail fast for better performance in DescriptorPool::FindExtensionByNumber() if descriptor has no defined extensions.
+  * Adding the file name to help debug colliding extensions
+  * Added FieldDescriptor::PrintableNameForExtension() and DescriptorPool::FindExtensionByPrintableName().
+    The latter will replace Reflection::FindKnownExtensionByName().
+  * Replace NULL with nullptr
+  * Created a new Add method in repeated field that allows adding a range of elements all at once.
+  * Enabled enum name-to-value mapping functions for C++ lite
+  * Avoid dynamic initialization in descriptor.proto generated code
+  * Move stream functions to MessageLite from Message.
+  * Move all zero_copy_stream functionality to io_lite.
+  * Do not create array of matched fields for simple repeated fields
+  * Enabling silent mode by default to reduce make compilation noise. (#6237)
+
+  Java
+  * Expose TextFormat.Printer and make it configurable. Deprecate the static methods.
+  * Library for constructing google.protobuf.Struct and google.protobuf.Value
+  * Make OneofDescriptor extend GenericDescriptor.
+  * Expose streamingness of service methods from MethodDescriptor.
+  * Fix a bug where TextFormat fails to parse Any filed with > 1 embedded message sub-fields.
+  * Establish consistent JsonFormat behavior for nulls in oneofs, regardless of order.
+  * Update GSON version to 3.8.5. (#6268)
+  * Add `protobuf_java_lite` Bazel target. (#6177)
+
+  Python
+  * Change implementation of Name() for enums that allow aliases in proto2 in Python
+    to be in line with claims in C++ implementation (to return first value).
+  * Explicitly say what field cannot be set when the new value fails a type check.
+  * Duplicate register in descriptor pool will raise errors
+  * Add __slots__ to all well_known_types classes, custom attributes are not allowed anymore.
+  * text_format only present 8 valid digits for float fields by default
+
+  JavaScript
+  * Add Oneof enum to the list of goog.provide
+
+  PHP
+  * Make php message class final to avoid mocking. (#6277)
+  * Rename get/setXXXValue to get/setXXXWrapper. (#6295)
+
+  Ruby
+  * Remove to_hash methods. (#6166)
+
+
+2019-04-29 version 3.8.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  C++
+  * Use std::atomic<int32> in case of myriad2 platform
+  * Always declare enums to be int-sized
+  * Added DebugString() and ShortDebugString() methods on MessageLite
+  * Specialized different parse loop control flows
+  * Make hasbits potentially in register. The or's start forming an obstacle because it's a read modify store on the same mem address on each iteration.
+  * Move to an internal MACRO for parser validity checks.
+  * Improve map parsing performance.
+  * Make MergePartialFromCodedStream non virtual. This allows direct calls, potential inlining and is also a code health improvement
+  * Add an overall limit to parse_context to prevent reading past it. This allows to remove a annoying level of indirection.
+  * Fix a mistake, we shouldn't verify map key/value strings for utf8 in opt mode for proto2.
+  * Further improvements to cut binary size.
+  * Prepare to make MergePartialFromCodedStream non-virtual.
+  * A report on some interesting behavior change in python (caused by b/27494216) made me realize there is a check that needs to be done in case the parse ended on a end group tag.
+  * Add a note of caution to the comments around skip in CodedOutputStream.
+  * Simplify end check.
+  * Add overload for ParseMessage for MessageLite/Message types. If the explicit type is not known inlining won't help de-virtualizing the virtual call.
+  * Reduce linker input. It turns out that ParseMessage is not inlined, producing  template instantiations that are used only once and save nothing but cost more.
+  * Improve the parser.
+  * [c++17] Changed proto2::RepeatedPtrField iterators to no longer derive from the deprecated std::iterator class.
+  * Change the default value of case_insensitive_enum_parsing to false for JsonStringToMessage.
+  * Add a warning if a field name doesn't match the style guide.
+  * Fix TextFormat not round-trip correctly when float value is max float.
+  * Added locationed info for some errors at compiler
+  * Python reserved keywords are now working with getattr()/setattr() for most descriptors.
+  * Added AllowUnknownField() in text_format
+  * Append '_' to C++ reserved keywords for message, enum, extension
+  * Fix MSVC warning C4244 in protobuf's parse_context.h.
+  * Updating Iterators to be compatible with C++17 in MSVC.
+  * Use capability annotation in mutex.h
+  * Fix "UndefinedBehaviorSanitizer: cfi-bad-type"
+  * CriticalSectionLock class as a lightweight replacement for std::mutex on Windows platforms.
+  * Removed vestigial wire_format_lite_inl.h
+
+  C#
+  * Added System.Memory dependency.
+
+  Java
+  * Make Java protoc code generator ignore optimize_for LITE_RUNTIME. Users should instead use the Java lite protoc plugin.
+  * Change Extension getMessageDefaultInstance() to return Message instead of MessageLite.
+  * Prevent malicious input streams from leaking buffers for ByteString or ByteBuffer parsing.
+  * Release new Javalite runtime.
+  * Show warning in case potential file name conflict.
+  * Allow Java reserved keywords to be used in extensions.
+  * Added setAllowUnknownFields() in text format
+  * Add memoization to ExtensionRegistryLite.getEmptyRegistry()
+  * Improve performance of CodedOutputStream.writeUInt32NoTag
+  * Add an optimized mismatch-finding algorithm to UnsafeUtil.
+  * When serializing uint32 varints, check that we have MAX_VARINT32_SIZE bytes left, not just MAX_VARINT_SIZE.
+  * Minor optimization to RopeByteString.PieceIterator
+
+  JavaScript
+  * Simplify generated toObject code when the default value is used.
+
+  Python
+  * Changes implementation of Name() for enums that allow aliases in proto2 in Python to be in line with claims in C++ implementation (to return first value).
+  * Added double_format option in text format printer.
+  * Added iter and __contains__ to extension dict
+  * Added allow_unknown_field option in python text format parser
+  * Fixed Timestamp.ToDatetime() loses precision issue
+  * Support unknown field in text format printer.
+  * Float field will be convert to inf if bigger than struct.unpack('f', b'\xff\xff\x7f\x7f')[0] which is about 3.4028234664e+38,
+  convert to -inf if smaller than -3.4028234664e+38
+  * Allowed casting str->bytes in Message.__setstate__
+
+  Ruby
+  * Helper methods to get enum name for Ruby.
+
+
 2019-01-24 version 3.7.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   C++
@@ -647,7 +771,7 @@
     details about APIs.
 
   Objective-C
-  * Helpers are now provided for working the the Any well known type (see
+  * Helpers are now provided for working the Any well known type (see
     GPBWellKnownTypes.h for the api additions).
   * Some improvements in startup code (especially when extensions aren’t used).
 

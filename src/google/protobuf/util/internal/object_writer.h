@@ -88,6 +88,7 @@ class PROTOBUF_EXPORT ObjectWriter {
   // Renders an 64-bit unsigned integer value.
   virtual ObjectWriter* RenderUint64(StringPiece name, uint64 value) = 0;
 
+
   // Renders a double value.
   virtual ObjectWriter* RenderDouble(StringPiece name, double value) = 0;
 

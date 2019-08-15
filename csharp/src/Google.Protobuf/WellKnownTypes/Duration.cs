@@ -32,8 +32,8 @@ namespace Google.Protobuf.WellKnownTypes {
             "bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
-          new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Duration), global::Google.Protobuf.WellKnownTypes.Duration.Parser, new[]{ "Seconds", "Nanos" }, null, null, null)
+          new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Duration), global::Google.Protobuf.WellKnownTypes.Duration.Parser, new[]{ "Seconds", "Nanos" }, null, null, null, null)
           }));
     }
     #endregion
@@ -62,7 +62,7 @@ namespace Google.Protobuf.WellKnownTypes {
   ///     if (duration.seconds &lt; 0 &amp;&amp; duration.nanos > 0) {
   ///       duration.seconds += 1;
   ///       duration.nanos -= 1000000000;
-  ///     } else if (durations.seconds > 0 &amp;&amp; duration.nanos &lt; 0) {
+  ///     } else if (duration.seconds > 0 &amp;&amp; duration.nanos &lt; 0) {
   ///       duration.seconds -= 1;
   ///       duration.nanos += 1000000000;
   ///     }

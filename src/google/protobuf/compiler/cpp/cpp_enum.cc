@@ -57,6 +57,17 @@ bool ShouldGenerateArraySize(const EnumDescriptor* descriptor) {
   }
   return max_value != kint32max;
 }
+
+// Returns the number of unique numeric enum values. This is less than
+// descriptor->value_count() when there are aliased values.
+int CountUniqueValues(const EnumDescriptor* descriptor) {
+  std::set<int> values;
+  for (int i = 0; i < descriptor->value_count(); ++i) {
+    values.insert(descriptor->value(i)->number());
+  }
+  return values.size();
+}
+
 }  // namespace
 
 EnumGenerator::EnumGenerator(const EnumDescriptor* descriptor,
@@ -70,8 +81,8 @@ EnumGenerator::EnumGenerator(const EnumDescriptor* descriptor,
   variables_["classname"] = classname_;
   variables_["classtype"] = QualifiedClassName(descriptor_, options);
   variables_["short_name"] = descriptor_->name();
-  variables_["enumbase"] = options_.proto_h ? " : int" : "";
   variables_["nested_name"] = descriptor_->name();
+  variables_["resolved_name"] = ResolveKeyword(descriptor_->name());
   variables_["prefix"] =
       (descriptor_->containing_type() == NULL) ? "" : classname_ + "_";
 }
@@ -80,7 +91,7 @@ EnumGenerator::~EnumGenerator() {}
 
 void EnumGenerator::GenerateDefinition(io::Printer* printer) {
   Formatter format(printer, variables_);
-  format("enum ${1$$classname$$}$$enumbase$ {\n", descriptor_);
+  format("enum ${1$$classname$$}$ : int {\n", descriptor_);
   format.Indent();
 
   const EnumValueDescriptor* min_value = descriptor_->value(0);
@@ -143,35 +154,42 @@ void EnumGenerator::GenerateDefinition(io::Printer* printer) {
     format(
         "$dllexport_decl $const ::$proto_ns$::EnumDescriptor* "
         "$classname$_descriptor();\n");
-    // The _Name and _Parse methods
-    if (options_.opensource_runtime) {
-      // TODO(haberman): consider removing this in favor of the stricter
-      // version below.  Would this break our compatibility guarantees?
-      format(
-          "inline const std::string& $classname$_Name($classname$ value) {\n"
-          "  return ::$proto_ns$::internal::NameOfEnum(\n"
-          "    $classname$_descriptor(), value);\n"
-          "}\n");
-    } else {
-      // Support a stricter, type-checked enum-to-string method that
-      // statically checks whether the parameter is the exact enum type or is
-      // an integral type.
-      format(
-          "template<typename T>\n"
-          "inline const std::string& $classname$_Name(T enum_t_value) {\n"
-          "  static_assert(::std::is_same<T, $classname$>::value ||\n"
-          "    ::std::is_integral<T>::value,\n"
-          "    \"Incorrect type passed to function $classname$_Name.\");\n"
-          "  return ::$proto_ns$::internal::NameOfEnum(\n"
-          "    $classname$_descriptor(), enum_t_value);\n"
-          "}\n");
-    }
+  }
+
+  // The _Name and _Parse functions. The lite implementation is table-based, so
+  // we make sure to keep the tables hidden in the .cc file.
+  if (!HasDescriptorMethods(descriptor_->file(), options_)) {
+    format("const std::string& $classname$_Name($classname$ value);\n");
+  }
+  // The _Name() function accepts the enum type itself but also any integral
+  // type.
+  format(
+      "template<typename T>\n"
+      "inline const std::string& $classname$_Name(T enum_t_value) {\n"
+      "  static_assert(::std::is_same<T, $classname$>::value ||\n"
+      "    ::std::is_integral<T>::value,\n"
+      "    \"Incorrect type passed to function $classname$_Name.\");\n");
+  if (HasDescriptorMethods(descriptor_->file(), options_)) {
+    format(
+        "  return ::$proto_ns$::internal::NameOfEnum(\n"
+        "    $classname$_descriptor(), enum_t_value);\n");
+  } else {
+    format(
+        "  return $classname$_Name(static_cast<$classname$>(enum_t_value));\n");
+  }
+  format("}\n");
+
+  if (HasDescriptorMethods(descriptor_->file(), options_)) {
     format(
         "inline bool $classname$_Parse(\n"
         "    const std::string& name, $classname$* value) {\n"
         "  return ::$proto_ns$::internal::ParseNamedEnum<$classname$>(\n"
         "    $classname$_descriptor(), name, value);\n"
         "}\n");
+  } else {
+    format(
+        "bool $classname$_Parse(\n"
+        "    const std::string& name, $classname$* value);\n");
   }
 }
 
@@ -192,13 +210,13 @@ void EnumGenerator::GenerateGetEnumDescriptorSpecializations(
 
 void EnumGenerator::GenerateSymbolImports(io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("typedef $classname$ $nested_name$;\n");
+  format("typedef $classname$ $resolved_name$;\n");
 
   for (int j = 0; j < descriptor_->value_count(); j++) {
     std::string deprecated_attr = DeprecatedAttribute(
         options_, descriptor_->value(j)->options().deprecated());
     format(
-        "$1$static constexpr $nested_name$ ${2$$3$$}$ =\n"
+        "$1$static constexpr $resolved_name$ ${2$$3$$}$ =\n"
         "  $classname$_$3$;\n",
         deprecated_attr, descriptor_->value(j),
         EnumValueName(descriptor_->value(j)));
@@ -208,9 +226,9 @@ void EnumGenerator::GenerateSymbolImports(io::Printer* printer) const {
       "static inline bool $nested_name$_IsValid(int value) {\n"
       "  return $classname$_IsValid(value);\n"
       "}\n"
-      "static constexpr $nested_name$ ${1$$nested_name$_MIN$}$ =\n"
+      "static constexpr $resolved_name$ ${1$$nested_name$_MIN$}$ =\n"
       "  $classname$_$nested_name$_MIN;\n"
-      "static constexpr $nested_name$ ${1$$nested_name$_MAX$}$ =\n"
+      "static constexpr $resolved_name$ ${1$$nested_name$_MAX$}$ =\n"
       "  $classname$_$nested_name$_MAX;\n",
       descriptor_);
   if (generate_array_size_) {
@@ -226,35 +244,21 @@ void EnumGenerator::GenerateSymbolImports(io::Printer* printer) const {
         "$nested_name$_descriptor() {\n"
         "  return $classname$_descriptor();\n"
         "}\n");
-    if (options_.opensource_runtime) {
-      // TODO(haberman): consider removing this in favor of the stricter
-      // version below.  Would this break our compatibility guarantees?
-      format(
-          "static inline const std::string& "
-          "$nested_name$_Name($nested_name$ value) {"
-          "\n"
-          "  return $classname$_Name(value);\n"
-          "}\n");
-    } else {
-      // Support a stricter, type-checked enum-to-string method that
-      // statically checks whether the parameter is the exact enum type or is
-      // an integral type.
-      format(
-          "template<typename T>\n"
-          "static inline const std::string& $nested_name$_Name(T enum_t_value) "
-          "{\n"
-          "  static_assert(::std::is_same<T, $nested_name$>::value ||\n"
-          "    ::std::is_integral<T>::value,\n"
-          "    \"Incorrect type passed to function $nested_name$_Name.\");\n"
-          "  return $classname$_Name(enum_t_value);\n"
-          "}\n");
-    }
-    format(
-        "static inline bool $nested_name$_Parse(const std::string& name,\n"
-        "    $nested_name$* value) {\n"
-        "  return $classname$_Parse(name, value);\n"
-        "}\n");
   }
+
+  format(
+      "template<typename T>\n"
+      "static inline const std::string& $nested_name$_Name(T enum_t_value) {\n"
+      "  static_assert(::std::is_same<T, $resolved_name$>::value ||\n"
+      "    ::std::is_integral<T>::value,\n"
+      "    \"Incorrect type passed to function $nested_name$_Name.\");\n"
+      "  return $classname$_Name(enum_t_value);\n"
+      "}\n");
+  format(
+      "static inline bool $nested_name$_Parse(const std::string& name,\n"
+      "    $resolved_name$* value) {\n"
+      "  return $classname$_Parse(name, value);\n"
+      "}\n");
 }
 
 void EnumGenerator::GenerateMethods(int idx, io::Printer* printer) {
@@ -262,7 +266,7 @@ void EnumGenerator::GenerateMethods(int idx, io::Printer* printer) {
   if (HasDescriptorMethods(descriptor_->file(), options_)) {
     format(
         "const ::$proto_ns$::EnumDescriptor* $classname$_descriptor() {\n"
-        "  ::$proto_ns$::internal::AssignDescriptors(&$assign_desc_table$);\n"
+        "  ::$proto_ns$::internal::AssignDescriptors(&$desc_table$);\n"
         "  return $file_level_enum_descriptors$[$1$];\n"
         "}\n",
         idx);
@@ -295,13 +299,112 @@ void EnumGenerator::GenerateMethods(int idx, io::Printer* printer) {
       "}\n"
       "\n");
 
+  if (!HasDescriptorMethods(descriptor_->file(), options_)) {
+    // In lite mode (where descriptors are unavailable), we generate separate
+    // tables for mapping between enum names and numbers. The _entries table
+    // contains the bulk of the data and is sorted by name, while
+    // _entries_by_number is sorted by number and just contains pointers into
+    // _entries. The two tables allow mapping from name to number and number to
+    // name, both in time logarithmic in the number of enum entries. This could
+    // probably be made faster, but for now the tables are intended to be simple
+    // and compact.
+    //
+    // Enums with allow_alias = true support multiple entries with the same
+    // numerical value. In cases where there are multiple names for the same
+    // number, we treat the first name appearing in the .proto file as the
+    // canonical one.
+    std::map<std::string, int> name_to_number;
+    std::map<int, std::string> number_to_canonical_name;
+    for (int i = 0; i < descriptor_->value_count(); i++) {
+      const EnumValueDescriptor* value = descriptor_->value(i);
+      name_to_number.emplace(value->name(), value->number());
+      // The same number may appear with multiple names, so we use emplace() to
+      // let the first name win.
+      number_to_canonical_name.emplace(value->number(), value->name());
+    }
+
+    format(
+        "static ::$proto_ns$::internal::ExplicitlyConstructed<std::string> "
+        "$classname$_strings[$1$] = {};\n\n",
+        CountUniqueValues(descriptor_));
+
+    // We concatenate all the names for a given enum into one big string
+    // literal. If instead we store an array of string literals, the linker
+    // seems to put all enum strings for a given .proto file in the same
+    // section, which hinders its ability to strip out unused strings.
+    format("static const char $classname$_names[] =");
+    for (const auto& p : name_to_number) {
+      format("\n  \"$1$\"", p.first);
+    }
+    format(";\n\n");
+
+    format(
+        "static const ::$proto_ns$::internal::EnumEntry $classname$_entries[] "
+        "= {\n");
+    int i = 0;
+    std::map<int, int> number_to_index;
+    int data_index = 0;
+    for (const auto& p : name_to_number) {
+      format("  { {$classname$_names + $1$, $2$}, $3$ },\n", data_index,
+             p.first.size(), p.second);
+      if (number_to_canonical_name[p.second] == p.first) {
+        number_to_index.emplace(p.second, i);
+      }
+      ++i;
+      data_index += p.first.size();
+    }
+
+    format(
+        "};\n"
+        "\n"
+        "static const int $classname$_entries_by_number[] = {\n");
+    for (const auto& p : number_to_index) {
+      format("  $1$, // $2$ -> $3$\n", p.second, p.first,
+             number_to_canonical_name[p.first]);
+    }
+    format(
+        "};\n"
+        "\n");
+
+    format(
+        "const std::string& $classname$_Name(\n"
+        "    $classname$ value) {\n"
+        "  static const bool dummy =\n"
+        "      ::$proto_ns$::internal::InitializeEnumStrings(\n"
+        "          $classname$_entries,\n"
+        "          $classname$_entries_by_number,\n"
+        "          $1$, $classname$_strings);\n"
+        "  (void) dummy;\n"
+        "  int idx = ::$proto_ns$::internal::LookUpEnumName(\n"
+        "      $classname$_entries,\n"
+        "      $classname$_entries_by_number,\n"
+        "      $1$, value);\n"
+        "  return idx == -1 ? ::$proto_ns$::internal::GetEmptyString() :\n"
+        "                     $classname$_strings[idx].get();\n"
+        "}\n",
+        CountUniqueValues(descriptor_));
+    format(
+        "bool $classname$_Parse(\n"
+        "    const std::string& name, $classname$* value) {\n"
+        "  int int_value;\n"
+        "  bool success = ::$proto_ns$::internal::LookUpEnumValue(\n"
+        "      $classname$_entries, $1$, name, &int_value);\n"
+        "  if (success) {\n"
+        "    *value = static_cast<$classname$>(int_value);\n"
+        "  }\n"
+        "  return success;\n"
+        "}\n",
+        descriptor_->value_count());
+  }
+
   if (descriptor_->containing_type() != NULL) {
     std::string parent = ClassName(descriptor_->containing_type(), false);
     // Before C++17, we must define the static constants which were
     // declared in the header, to give the linker a place to put them.
     // But pre-2015 MSVC++ insists that we not.
-    format("#if (__cplusplus < 201703) && "
-           "(!defined(_MSC_VER) || _MSC_VER >= 1900)\n");
+    format(
+        "#if (__cplusplus < 201703) && "
+        "(!defined(_MSC_VER) || _MSC_VER >= 1900)\n");
 
     for (int i = 0; i < descriptor_->value_count(); i++) {
       format("constexpr $classname$ $1$::$2$;\n", parent,
@@ -315,8 +418,9 @@ void EnumGenerator::GenerateMethods(int idx, io::Printer* printer) {
       format("constexpr int $1$::$nested_name$_ARRAYSIZE;\n", parent);
     }
 
-    format("#endif  // (__cplusplus < 201703) && "
-           "(!defined(_MSC_VER) || _MSC_VER >= 1900)\n");
+    format(
+        "#endif  // (__cplusplus < 201703) && "
+        "(!defined(_MSC_VER) || _MSC_VER >= 1900)\n");
   }
 }
 

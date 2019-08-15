@@ -74,7 +74,8 @@ class FieldGenerator {
                           const Options& options)
       : descriptor_(descriptor), options_(options) {}
   virtual ~FieldGenerator();
-
+  virtual void GenerateSerializeWithCachedSizes(
+      io::Printer* printer) const final{};
   // Generate lines of code declaring members fields of the message class
   // needed to represent this field.  These are placed inside the message
   // class.
@@ -180,10 +181,6 @@ class FieldGenerator {
   virtual void GenerateMergeFromCodedStreamWithPacking(
       io::Printer* printer) const;
 
-  // Generate lines to serialize this field, which are placed within the
-  // message's SerializeWithCachedSizes() method.
-  virtual void GenerateSerializeWithCachedSizes(io::Printer* printer) const = 0;
-
   // Generate lines to serialize this field directly to the array "target",
   // which are placed within the message's SerializeWithCachedSizesToArray()
   // method. This must also advance "target" past the written bytes.
@@ -227,7 +224,6 @@ class FieldGeneratorMap {
 
  private:
   const Descriptor* descriptor_;
-  const Options& options_;
   std::vector<std::unique_ptr<FieldGenerator>> field_generators_;
 
   static FieldGenerator* MakeGoogleInternalGenerator(

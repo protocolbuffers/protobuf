@@ -315,6 +315,7 @@ void FileBuilderContext_register(VALUE module);
 FileBuilderContext* ruby_to_FileBuilderContext(VALUE _self);
 upb_strview FileBuilderContext_strdup(VALUE _self, VALUE rb_str);
 upb_strview FileBuilderContext_strdup_name(VALUE _self, VALUE rb_str);
+upb_strview FileBuilderContext_strdup_sym(VALUE _self, VALUE rb_sym);
 VALUE FileBuilderContext_initialize(VALUE _self, VALUE descriptor_pool,
                                     VALUE name, VALUE options);
 VALUE FileBuilderContext_add_message(VALUE _self, VALUE name);
@@ -588,6 +589,7 @@ VALUE Google_Protobuf_deep_copy(VALUE self, VALUE obj);
 VALUE build_module_from_enumdesc(VALUE _enumdesc);
 VALUE enum_lookup(VALUE self, VALUE number);
 VALUE enum_resolve(VALUE self, VALUE sym);
+VALUE enum_descriptor(VALUE self);
 
 const upb_pbdecodermethod *new_fillmsg_decodermethod(
     Descriptor* descriptor, const void *owner);
@@ -596,6 +598,11 @@ void add_handlers_for_message(const void *closure, upb_handlers *h);
 // Maximum depth allowed during encoding, to avoid stack overflows due to
 // cycles.
 #define ENCODE_MAX_NESTING 63
+
+// -----------------------------------------------------------------------------
+// A cache of frozen string objects to use as field defaults.
+// -----------------------------------------------------------------------------
+VALUE get_frozen_string(const char* data, size_t size, bool binary);
 
 // -----------------------------------------------------------------------------
 // Global map from upb {msg,enum}defs to wrapper Descriptor/EnumDescriptor
@@ -625,5 +632,13 @@ extern ID descriptor_instancevar_interned;
 // constructor argument to enforce that certain objects cannot be created from
 // Ruby.
 extern VALUE c_only_cookie;
+
+#ifdef NDEBUG
+#define UPB_ASSERT(expr) do {} while (false && (expr))
+#else
+#define UPB_ASSERT(expr) assert(expr)
+#endif
+
+#define UPB_UNUSED(var) (void)var
 
 #endif  // __GOOGLE_PROTOBUF_RUBY_PROTOBUF_H__

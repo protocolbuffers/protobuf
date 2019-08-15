@@ -154,22 +154,6 @@ class PROTOBUF_EXPORT DataPiece {
 
   util::StatusOr<std::string> ToBytes() const;
 
-  // Converts a value into protocol buffer enum number. If the value is a
-  // string, first attempts conversion by name, trying names as follows:
-  //   1) the directly provided string value.
-  //   2) the value upper-cased and replacing '-' by '_'
-  //   3) if use_lower_camel_for_enums is true it also attempts by comparing
-  //   enum name without underscore with the value upper cased above.
-  // If the value is not a string, attempts to convert to a 32-bit integer.
-  // If none of these succeeds, returns a conversion error status.
-  util::StatusOr<int> ToEnum(const google::protobuf::Enum* enum_type,
-                               bool use_lower_camel_for_enums) const {
-    return ToEnum(enum_type, use_lower_camel_for_enums,
-                  /* ignore_unknown_enum_values */ false,
-                  /* case_insensitive_enum_parsing */ true,
-                  /* is_unknown_enum_value */ nullptr);
-  }
-
  private:
   friend class ProtoWriter;
 

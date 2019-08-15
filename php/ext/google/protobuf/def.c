@@ -853,9 +853,10 @@ static zend_class_entry *register_class(const upb_filedef *file,
 
   fill_namespace(package, php_namespace, &namesink);
   fill_classname(fullname, package, prefix, &namesink, use_nested_submsg);
+  stringsink_string(&namesink, NULL, "\0", 1, NULL);
 
   PHP_PROTO_CE_DECLARE pce;
-  if (php_proto_zend_lookup_class(namesink.ptr, namesink.len, &pce) ==
+  if (php_proto_zend_lookup_class(namesink.ptr, namesink.len - 1, &pce) ==
       FAILURE) {
     zend_error(
         E_ERROR,
@@ -895,8 +896,8 @@ const upb_filedef *parse_and_add_descriptor(const char *data,
   const upb_filedef* file;
   upb_status status;
 
-  set = google_protobuf_FileDescriptorSet_parsenew(
-      upb_strview_make(data, data_len), arena);
+  set = google_protobuf_FileDescriptorSet_parse(
+      data, data_len, arena);
 
   if (!set) {
     zend_error(E_ERROR, "Failed to parse binary descriptor\n");

@@ -38,7 +38,6 @@
 #include <google/protobuf/compiler/cpp/cpp_helpers.h>
 #include <google/protobuf/compiler/cpp/cpp_primitive_field.h>
 #include <google/protobuf/compiler/cpp/cpp_string_field.h>
-
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/compiler/cpp/cpp_enum_field.h>
@@ -77,10 +76,11 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
   (*variables)["clear_hasbit"] = "";
   if (HasFieldPresence(descriptor->file())) {
     (*variables)["set_hasbit_io"] =
-        "HasBitSetters::set_has_" + FieldName(descriptor) + "(this);";
+        "_Internal::set_has_" + FieldName(descriptor) + "(&_has_bits_);";
   } else {
     (*variables)["set_hasbit_io"] = "";
   }
+  (*variables)["annotate_accessor"] = "";
 
   // These variables are placeholders to pick out the beginning and ends of
   // identifiers for annotations (when doing so with existing variables would
@@ -113,8 +113,8 @@ void SetCommonOneofFieldVariables(
 
 FieldGenerator::~FieldGenerator() {}
 
-void FieldGenerator::
-GenerateMergeFromCodedStreamWithPacking(io::Printer* printer) const {
+void FieldGenerator::GenerateMergeFromCodedStreamWithPacking(
+    io::Printer* printer) const {
   // Reaching here indicates a bug. Cases are:
   //   - This FieldGenerator should support packing, but this method should be
   //     overridden.
@@ -122,15 +122,12 @@ GenerateMergeFromCodedStreamWithPacking(io::Printer* printer) const {
   //     never have been called.
   GOOGLE_LOG(FATAL) << "GenerateMergeFromCodedStreamWithPacking() "
              << "called on field generator that does not support packing.";
-
 }
 
 FieldGeneratorMap::FieldGeneratorMap(const Descriptor* descriptor,
                                      const Options& options,
                                      MessageSCCAnalyzer* scc_analyzer)
-    : descriptor_(descriptor),
-      options_(options),
-      field_generators_(descriptor->field_count()) {
+    : descriptor_(descriptor), field_generators_(descriptor->field_count()) {
   // Construct all the FieldGenerators.
   for (int i = 0; i < descriptor->field_count(); i++) {
     field_generators_[i].reset(

@@ -36,8 +36,8 @@ syntax = "proto2";
 
 package protobuf_unittest;
 
-
 import "google/protobuf/unittest_custom_options.proto";
+
 
 message TestMessageWithCustomOptionsContainer {
   optional TestMessageWithCustomOptions field = 1;

@@ -41,6 +41,7 @@
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/stubs/once.h>
+#include <google/protobuf/unknown_field_set.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/wire_format_lite.h>
 #include <google/protobuf/util/internal/field_mask_utility.h>
@@ -48,8 +49,6 @@
 #include <google/protobuf/util/internal/utility.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/casts.h>
-
-
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/status_macros.h>
 
@@ -64,7 +63,7 @@ using util::StatusOr;
 namespace error {
 using util::error::Code;
 using util::error::INTERNAL;
-}
+}  // namespace error
 namespace converter {
 using ::PROTOBUF_NAMESPACE_ID::internal::WireFormat;
 using ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite;
@@ -330,7 +329,6 @@ Status ProtoStreamObjectSource::RenderPacked(
   stream_->PopLimit(old_limit);
   return util::Status();
 }
-
 
 Status ProtoStreamObjectSource::RenderTimestamp(
     const ProtoStreamObjectSource* os, const google::protobuf::Type& type,
@@ -746,7 +744,6 @@ void ProtoStreamObjectSource::InitRendererMap() {
   ::google::protobuf::internal::OnShutdown(&DeleteRendererMap);
 }
 
-
 void ProtoStreamObjectSource::DeleteRendererMap() {
   delete ProtoStreamObjectSource::renderers_;
   renderers_ = NULL;
@@ -802,6 +799,7 @@ Status ProtoStreamObjectSource::RenderField(
   }
   return util::Status();
 }
+
 
 Status ProtoStreamObjectSource::RenderNonMessageField(
     const google::protobuf::Field* field, StringPiece field_name,

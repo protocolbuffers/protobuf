@@ -35,8 +35,8 @@
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/field_mask.pb.h>
-#include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/test_util.h>
+#include <google/protobuf/unittest.pb.h>
 #include <gtest/gtest.h>
 
 namespace google {
@@ -113,11 +113,11 @@ TEST_F(SnakeCaseCamelCaseTest, RoundTripTest) {
   } while (std::next_permutation(name.begin(), name.end()));
 }
 
+using google::protobuf::FieldMask;
+using protobuf_unittest::NestedTestAllTypes;
 using protobuf_unittest::TestAllTypes;
 using protobuf_unittest::TestRequired;
 using protobuf_unittest::TestRequiredMessage;
-using protobuf_unittest::NestedTestAllTypes;
-using google::protobuf::FieldMask;
 
 TEST(FieldMaskUtilTest, StringFormat) {
   FieldMask mask;
@@ -707,16 +707,14 @@ TEST(FieldMaskUtilTest, TrimMessage) {
   required_msg_2.clear_repeated_message();
   required_msg_2.mutable_required_message()->clear_dummy2();
   FieldMaskUtil::TrimMessage(mask, &trimmed_required_msg_2, options);
-  EXPECT_EQ(trimmed_required_msg_2.DebugString(),
-            required_msg_2.DebugString());
+  EXPECT_EQ(trimmed_required_msg_2.DebugString(), required_msg_2.DebugString());
 
   FieldMaskUtil::FromString("required_message", &mask);
   required_msg_2.mutable_required_message()->set_dummy2(7890);
   trimmed_required_msg_2.mutable_required_message()->set_dummy2(7890);
   required_msg_2.clear_optional_message();
   FieldMaskUtil::TrimMessage(mask, &trimmed_required_msg_2, options);
-  EXPECT_EQ(trimmed_required_msg_2.DebugString(),
-            required_msg_2.DebugString());
+  EXPECT_EQ(trimmed_required_msg_2.DebugString(), required_msg_2.DebugString());
 
   // Test trim required message with keep_required_fields is set false.
   FieldMaskUtil::FromString("required_message.dummy2", &mask);
@@ -725,8 +723,7 @@ TEST(FieldMaskUtilTest, TrimMessage) {
   required_msg_2.mutable_required_message()->clear_c();
   options.set_keep_required_fields(false);
   FieldMaskUtil::TrimMessage(mask, &trimmed_required_msg_2, options);
-  EXPECT_EQ(trimmed_required_msg_2.DebugString(),
-            required_msg_2.DebugString());
+  EXPECT_EQ(trimmed_required_msg_2.DebugString(), required_msg_2.DebugString());
 
   // Verify that trimming an empty message has no effect. In particular, fields
   // mentioned in the field mask should not be created or changed.

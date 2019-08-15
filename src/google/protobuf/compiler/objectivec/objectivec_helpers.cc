@@ -47,8 +47,8 @@
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
-#include <google/protobuf/stubs/io_win32.h>
-#include <google/protobuf/stubs/port.h>
+#include <google/protobuf/io/io_win32.h>
+#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/strutil.h>
 
 // NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
@@ -63,7 +63,7 @@ namespace objectivec {
 // in this port namespace to avoid ambiguous definition.
 namespace posix {
 #ifdef _WIN32
-using ::google::protobuf::internal::win32::open;
+using ::google::protobuf::io::win32::open;
 #else
 using ::open;
 #endif
@@ -805,17 +805,17 @@ string DefaultValue(const FieldDescriptor* field) {
       if (field->default_value_int32() == INT_MIN) {
         return "-0x80000000";
       }
-      return SimpleItoa(field->default_value_int32());
+      return StrCat(field->default_value_int32());
     case FieldDescriptor::CPPTYPE_UINT32:
-      return SimpleItoa(field->default_value_uint32()) + "U";
+      return StrCat(field->default_value_uint32()) + "U";
     case FieldDescriptor::CPPTYPE_INT64:
       // gcc and llvm reject the decimal form of kint32min and kint64min.
       if (field->default_value_int64() == LLONG_MIN) {
         return "-0x8000000000000000LL";
       }
-      return SimpleItoa(field->default_value_int64()) + "LL";
+      return StrCat(field->default_value_int64()) + "LL";
     case FieldDescriptor::CPPTYPE_UINT64:
-      return SimpleItoa(field->default_value_uint64()) + "ULL";
+      return StrCat(field->default_value_uint64()) + "ULL";
     case FieldDescriptor::CPPTYPE_DOUBLE:
       return HandleExtremeFloatingPoint(
           SimpleDtoa(field->default_value_double()), false);
@@ -931,7 +931,7 @@ string BuildCommentsString(const SourceLocation& location,
                                ? location.trailing_comments
                                : location.leading_comments;
   std::vector<string> lines;
-  SplitStringAllowEmpty(comments, "\n", &lines);
+  lines = Split(comments, "\n", false);
   while (!lines.empty() && lines.back().empty()) {
     lines.pop_back();
   }
@@ -981,7 +981,7 @@ string BuildCommentsString(const SourceLocation& location,
 // want to put the library in a framework is an interesting question. The
 // problem is it means changing sources shipped with the library to actually
 // use a different value; so it isn't as simple as a option.
-const char* const ProtobufLibraryFrameworkName = "Protobuf";
+const char* const ProtobufLibraryFrameworkName = "protobuf";
 
 string ProtobufFrameworkImportSymbol(const string& framework_name) {
   // GPB_USE_[framework_name]_FRAMEWORK_IMPORTS
@@ -1547,7 +1547,7 @@ bool ParseSimpleFile(
     if (!parser.ParseChunk(StringPiece(static_cast<const char*>(buf), buf_len))) {
       *out_error =
           string("error: ") + path +
-          " Line " + SimpleItoa(parser.last_line()) + ", " + parser.error_str();
+          " Line " + StrCat(parser.last_line()) + ", " + parser.error_str();
       return false;
     }
   }

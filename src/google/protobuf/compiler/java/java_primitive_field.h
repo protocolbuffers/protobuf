@@ -87,9 +87,6 @@ class ImmutablePrimitiveFieldGenerator : public ImmutableFieldGenerator {
  protected:
   const FieldDescriptor* descriptor_;
   std::map<std::string, std::string> variables_;
-  const int messageBitIndex_;
-  const int builderBitIndex_;
-  Context* context_;
   ClassNameResolver* name_resolver_;
 
  private:
@@ -148,9 +145,6 @@ class RepeatedImmutablePrimitiveFieldGenerator
  private:
   const FieldDescriptor* descriptor_;
   std::map<std::string, std::string> variables_;
-  const int messageBitIndex_;
-  const int builderBitIndex_;
-  Context* context_;
   ClassNameResolver* name_resolver_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RepeatedImmutablePrimitiveFieldGenerator);

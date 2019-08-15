@@ -35,23 +35,26 @@
 #include <google/protobuf/generated_message_util.h>
 
 #include <limits>
+
+#ifndef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
 // We're only using this as a standard way for getting the thread id.
 // We're not using any thread functionality.
 #include <thread>  // NOLINT
+#endif             // #ifndef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
+
 #include <vector>
 
-#include <google/protobuf/io/coded_stream_inl.h>
 #include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 #include <google/protobuf/arenastring.h>
 #include <google/protobuf/extension_set.h>
 #include <google/protobuf/generated_message_table_driven.h>
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/metadata_lite.h>
 #include <google/protobuf/stubs/mutex.h>
+#include <google/protobuf/port_def.inc>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/wire_format_lite.h>
-
-#include <google/protobuf/port_def.inc>
 
 
 namespace google {
@@ -295,15 +298,11 @@ void SerializeMessageNoTable(const MessageLite* msg,
 }
 
 void SerializeMessageNoTable(const MessageLite* msg, ArrayOutput* output) {
-  if (output->is_deterministic) {
-    io::ArrayOutputStream array_stream(output->ptr, INT_MAX);
-    io::CodedOutputStream o(&array_stream);
-    o.SetSerializationDeterministic(true);
-    msg->SerializeWithCachedSizes(&o);
-    output->ptr += o.ByteCount();
-  } else {
-    output->ptr = msg->InternalSerializeWithCachedSizesToArray(output->ptr);
-  }
+  io::ArrayOutputStream array_stream(output->ptr, INT_MAX);
+  io::CodedOutputStream o(&array_stream);
+  o.SetSerializationDeterministic(output->is_deterministic);
+  msg->SerializeWithCachedSizes(&o);
+  output->ptr += o.ByteCount();
 }
 
 // Helper to branch to fast path if possible
@@ -312,16 +311,6 @@ void SerializeMessageDispatch(const MessageLite& msg,
                               int32 cached_size,
                               io::CodedOutputStream* output) {
   const uint8* base = reinterpret_cast<const uint8*>(&msg);
-  if (!output->IsSerializationDeterministic()) {
-    // Try the fast path
-    uint8* ptr = output->GetDirectBufferForNBytesAndAdvance(cached_size);
-    if (ptr) {
-      // We use virtual dispatch to enable dedicated generated code for the
-      // fast path.
-      msg.InternalSerializeWithCachedSizesToArray(ptr);
-      return;
-    }
-  }
   SerializeInternal(base, field_table, num_fields, output);
 }
 
@@ -493,8 +482,8 @@ struct RepeatedFieldHelper<WireFormatLite::TYPE_MESSAGE> {
     for (int i = 0; i < AccessorHelper::Size(array); i++) {
       WriteTagTo(md.tag, output);
       SerializeMessageTo(
-          static_cast<const MessageLite*>(AccessorHelper::Get(array, i)), md.ptr,
-          output);
+          static_cast<const MessageLite*>(AccessorHelper::Get(array, i)),
+          md.ptr, output);
     }
   }
 };
@@ -659,8 +648,8 @@ void SerializeInternal(const uint8* base,
       case FieldMetadata::kSpecial:
         func = reinterpret_cast<SpecialSerializer>(
             const_cast<void*>(field_metadata.ptr));
-        func (base, field_metadata.offset, field_metadata.tag,
-            field_metadata.has_offset, output);
+        func(base, field_metadata.offset, field_metadata.tag,
+             field_metadata.has_offset, output);
         break;
       default:
         // __builtin_unreachable()
@@ -704,10 +693,10 @@ uint8* SerializeInternalToArray(const uint8* base,
         io::ArrayOutputStream array_stream(array_output.ptr, INT_MAX);
         io::CodedOutputStream output(&array_stream);
         output.SetSerializationDeterministic(is_deterministic);
-                func =  reinterpret_cast<SpecialSerializer>(
+        func = reinterpret_cast<SpecialSerializer>(
             const_cast<void*>(field_metadata.ptr));
-                func (base, field_metadata.offset, field_metadata.tag,
-            field_metadata.has_offset, &output);
+        func(base, field_metadata.offset, field_metadata.tag,
+             field_metadata.has_offset, &output);
         array_output.ptr += output.ByteCount();
       } break;
       default:
@@ -743,6 +732,15 @@ MessageLite* DuplicateIfNonNullInternal(MessageLite* message) {
   }
 }
 
+void GenericSwap(MessageLite* m1, MessageLite* m2) {
+  std::unique_ptr<MessageLite> tmp(m1->New());
+  tmp->CheckTypeAndMergeFrom(*m1);
+  m1->Clear();
+  m1->CheckTypeAndMergeFrom(*m2);
+  m2->Clear();
+  m2->CheckTypeAndMergeFrom(*tmp);
+}
+
 // Returns a message owned by this Arena.  This may require Own()ing or
 // duplicating the message.
 MessageLite* GetOwnedMessageInternal(Arena* message_arena,
@@ -764,12 +762,22 @@ namespace {
 
 void InitSCC_DFS(SCCInfoBase* scc) {
   if (scc->visit_status.load(std::memory_order_relaxed) !=
-      SCCInfoBase::kUninitialized) return;
+      SCCInfoBase::kUninitialized)
+    return;
   scc->visit_status.store(SCCInfoBase::kRunning, std::memory_order_relaxed);
-  // Each base is followed by an array of pointers to deps
-  auto deps = reinterpret_cast<SCCInfoBase* const*>(scc + 1);
-  for (int i = 0; i < scc->num_deps; i++) {
-    if (deps[i]) InitSCC_DFS(deps[i]);
+  // Each base is followed by an array of void*, containing first pointers to
+  // SCCInfoBase and then pointers-to-pointers to SCCInfoBase.
+  auto deps = reinterpret_cast<void**>(scc + 1);
+  auto strong_deps = reinterpret_cast<SCCInfoBase* const*>(deps);
+  for (int i = 0; i < scc->num_deps; ++i) {
+    if (strong_deps[i]) InitSCC_DFS(strong_deps[i]);
+  }
+  auto implicit_weak_deps =
+      reinterpret_cast<SCCInfoBase** const*>(deps + scc->num_deps);
+  for (int i = 0; i < scc->num_implicit_weak_deps; ++i) {
+    if (*implicit_weak_deps[i]) {
+      InitSCC_DFS(*implicit_weak_deps[i]);
+    }
   }
   scc->init_func();
   // Mark done (note we use memory order release here), other threads could
@@ -784,8 +792,17 @@ void InitSCCImpl(SCCInfoBase* scc) {
   static WrappedMutex mu{GOOGLE_PROTOBUF_LINKER_INITIALIZED};
   // Either the default in case no initialization is running or the id of the
   // thread that is currently initializing.
+#ifndef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
   static std::atomic<std::thread::id> runner;
   auto me = std::this_thread::get_id();
+#else
+  // This is a lightweight replacement for std::thread::id. std::thread does not
+  // work on Windows XP SP2 with the latest VC++ libraries, because it utilizes
+  // the Concurrency Runtime that is only supported on Windows XP SP3 and above.
+  static std::atomic_llong runner(-1);
+  auto me = ::GetCurrentThreadId();
+#endif  // #ifndef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
+
   // This will only happen because the constructor will call InitSCC while
   // constructing the default instance.
   if (runner.load(std::memory_order_relaxed) == me) {
@@ -799,7 +816,13 @@ void InitSCCImpl(SCCInfoBase* scc) {
   mu.Lock();
   runner.store(me, std::memory_order_relaxed);
   InitSCC_DFS(scc);
+
+#ifndef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
   runner.store(std::thread::id{}, std::memory_order_relaxed);
+#else
+  runner.store(-1, std::memory_order_relaxed);
+#endif  // #ifndef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
+
   mu.Unlock();
 }
 

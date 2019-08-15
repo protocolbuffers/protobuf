@@ -135,21 +135,13 @@ class MessageGenerator {
   // Generate the arena-specific destructor code.
   void GenerateArenaDestructorCode(io::Printer* printer);
 
-  // Helper for GenerateClear and others.  Optionally emits a condition that
-  // assumes the existence of the cached_has_bits variable, and returns true
-  // if the condition was printed.
-  bool MaybeGenerateOptionalFieldCondition(io::Printer* printer,
-                                           const FieldDescriptor* field,
-                                           int expected_has_bits_index);
-
   // Generate standard Message methods.
   void GenerateClear(io::Printer* printer);
   void GenerateOneofClear(io::Printer* printer);
   void GenerateMergeFromCodedStream(io::Printer* printer);
   void GenerateSerializeWithCachedSizes(io::Printer* printer);
   void GenerateSerializeWithCachedSizesToArray(io::Printer* printer);
-  void GenerateSerializeWithCachedSizesBody(io::Printer* printer,
-                                            bool to_array);
+  void GenerateSerializeWithCachedSizesBody(io::Printer* printer);
   void GenerateByteSize(io::Printer* printer);
   void GenerateMergeFrom(io::Printer* printer);
   void GenerateCopyFrom(io::Printer* printer);
@@ -162,16 +154,14 @@ class MessageGenerator {
   //   cached_has_bits = _has_bits_[cached_has_bit_index]
   // for cached_has_bit_index >= 0
   void GenerateSerializeOneField(io::Printer* printer,
-                                 const FieldDescriptor* field, bool unbounded,
+                                 const FieldDescriptor* field,
                                  int cached_has_bits_index);
   // Generate a switch statement to serialize 2+ fields from the same oneof.
   // Or, if fields.size() == 1, just call GenerateSerializeOneField().
   void GenerateSerializeOneofFields(
-      io::Printer* printer, const std::vector<const FieldDescriptor*>& fields,
-      bool to_array);
+      io::Printer* printer, const std::vector<const FieldDescriptor*>& fields);
   void GenerateSerializeOneExtensionRange(
-      io::Printer* printer, const Descriptor::ExtensionRange* range,
-      bool unbounded);
+      io::Printer* printer, const Descriptor::ExtensionRange* range);
 
   // Generates has_foo() functions and variables for singular field has-bits.
   void GenerateSingularFieldHasBits(const FieldDescriptor* field,

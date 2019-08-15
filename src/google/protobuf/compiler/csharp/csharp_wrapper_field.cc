@@ -31,7 +31,6 @@
 #include <sstream>
 
 #include <google/protobuf/compiler/code_generator.h>
-#include <google/protobuf/compiler/plugin.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/printer.h>
@@ -180,6 +179,17 @@ void WrapperFieldGenerator::GenerateCodecCode(io::Printer* printer) {
       variables_,
       "pb::FieldCodec.ForClassWrapper<$type_name$>($tag$)");
   }
+}
+
+void WrapperFieldGenerator::GenerateExtensionCode(io::Printer* printer) {
+  WritePropertyDocComment(printer, descriptor_);
+  AddDeprecatedFlag(printer);
+  printer->Print(
+    variables_,
+    "$access_level$ static readonly pb::Extension<$extended_type$, $type_name$> $property_name$ =\n"
+    "  new pb::Extension<$extended_type$, $type_name$>($number$, ");
+  GenerateCodecCode(printer);
+  printer->Print(");\n");
 }
 
 WrapperOneofFieldGenerator::WrapperOneofFieldGenerator(

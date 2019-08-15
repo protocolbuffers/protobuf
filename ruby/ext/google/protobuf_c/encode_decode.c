@@ -370,16 +370,8 @@ static bool endmap_handler(void *closure, const void *hd, upb_status* s) {
       mapdata->key_field_type, Qnil,
       &frame->key_storage);
 
-  VALUE value_field_typeclass = Qnil;
-  VALUE value;
-
-  if (mapdata->value_field_type == UPB_TYPE_MESSAGE ||
-      mapdata->value_field_type == UPB_TYPE_ENUM) {
-    value_field_typeclass = mapdata->subklass;
-  }
-
-  value = native_slot_get(
-      mapdata->value_field_type, value_field_typeclass,
+  VALUE value = native_slot_get(
+      mapdata->value_field_type, mapdata->subklass,
       &frame->value_storage);
 
   Map_index_set(frame->map, key, value);
@@ -672,9 +664,9 @@ static void add_handlers_for_oneof_field(upb_handlers *h,
 
 static bool unknown_field_handler(void* closure, const void* hd,
                                   const char* buf, size_t size) {
+  MessageHeader* msg = (MessageHeader*)closure;
   UPB_UNUSED(hd);
 
-  MessageHeader* msg = (MessageHeader*)closure;
   if (msg->unknown_fields == NULL) {
     msg->unknown_fields = malloc(sizeof(stringsink));
     stringsink_init(msg->unknown_fields);
@@ -691,6 +683,7 @@ void add_handlers_for_message(const void *closure, upb_handlers *h) {
   Descriptor* desc =
       ruby_to_Descriptor(get_msgdef_obj(descriptor_pool, msgdef));
   upb_msg_field_iter i;
+  upb_handlerattr attr = UPB_HANDLERATTR_INIT;
 
   // Ensure layout exists. We may be invoked to create handlers for a given
   // message if we are included as a submsg of another message type before our
@@ -707,7 +700,6 @@ void add_handlers_for_message(const void *closure, upb_handlers *h) {
     return;
   }
 
-  upb_handlerattr attr = UPB_HANDLERATTR_INIT;
   upb_handlers_setunknown(h, unknown_field_handler, &attr);
 
   for (upb_msg_field_begin(&i, desc->msgdef);
@@ -969,6 +961,7 @@ static void putary(VALUE ary, const upb_fielddef* f, upb_sink sink, int depth,
   upb_fieldtype_t type = upb_fielddef_type(f);
   upb_selector_t sel = 0;
   int size;
+  int i;
 
   if (ary == Qnil) return;
   if (!emit_defaults && NUM2INT(RepeatedField_length(ary)) == 0) return;
@@ -982,7 +975,7 @@ static void putary(VALUE ary, const upb_fielddef* f, upb_sink sink, int depth,
     sel = getsel(f, upb_handlers_getprimitivehandlertype(f));
   }
 
-  for (int i = 0; i < size; i++) {
+  for (i = 0; i < size; i++) {
     void* memory = RepeatedField_index_native(ary, i);
     switch (type) {
 #define T(upbtypeconst, upbtype, ctype)                     \
@@ -1017,12 +1010,13 @@ static void putary(VALUE ary, const upb_fielddef* f, upb_sink sink, int depth,
 static void put_ruby_value(VALUE value, const upb_fielddef* f, VALUE type_class,
                            int depth, upb_sink sink, bool emit_defaults,
                            bool is_json) {
+  upb_selector_t sel = 0;
+
   if (depth > ENCODE_MAX_NESTING) {
     rb_raise(rb_eRuntimeError,
              "Maximum recursion depth exceeded during encoding.");
   }
 
-  upb_selector_t sel = 0;
   if (upb_fielddef_isprimitive(f)) {
     sel = getsel(f, upb_handlers_getprimitivehandlertype(f));
   }
@@ -1157,12 +1151,10 @@ static void putjsonany(VALUE msg_rb, const Descriptor* desc, upb_sink sink,
   {
     uint32_t value_offset;
     VALUE value_str_rb;
-    const char* value_str;
     size_t value_len;
 
     value_offset = desc->layout->fields[upb_fielddef_index(value_field)].offset;
     value_str_rb = DEREF(Message_data(msg), value_offset, VALUE);
-    value_str = RSTRING_PTR(value_str_rb);
     value_len = RSTRING_LEN(value_str_rb);
 
     if (value_len > 0) {
@@ -1193,14 +1185,50 @@ static void putjsonany(VALUE msg_rb, const Descriptor* desc, upb_sink sink,
   upb_sink_endmsg(sink, &status);
 }
 
-static void putmsg(VALUE msg_rb, const Descriptor* desc, upb_sink sink,
-                   int depth, bool emit_defaults, bool is_json, bool open_msg) {
+static void putjsonlistvalue(
+    VALUE msg_rb, const Descriptor* desc,
+    upb_sink sink, int depth, bool emit_defaults) {
+  upb_status status;
+  upb_sink subsink;
+  MessageHeader* msg = NULL;
+  const upb_fielddef* f = upb_msgdef_itof(desc->msgdef, 1);
+  uint32_t offset =
+      desc->layout->fields[upb_fielddef_index(f)].offset +
+      sizeof(MessageHeader);
+  VALUE ary;
+
+  TypedData_Get_Struct(msg_rb, MessageHeader, &Message_type, msg);
+
+  upb_sink_startmsg(sink);
+
+  ary = DEREF(msg, offset, VALUE);
+
+  if (ary == Qnil || RepeatedField_size(ary) == 0) {
+    upb_sink_startseq(sink, getsel(f, UPB_HANDLER_STARTSEQ), &subsink);
+    upb_sink_endseq(sink, getsel(f, UPB_HANDLER_ENDSEQ));
+  } else {
+    putary(ary, f, sink, depth, emit_defaults, true);
+  }
+
+  upb_sink_endmsg(sink, &status);
+}
+
+static void putmsg(VALUE msg_rb, const Descriptor* desc,
+                   upb_sink sink, int depth, bool emit_defaults,
+                   bool is_json, bool open_msg) {
   MessageHeader* msg;
   upb_msg_field_iter i;
   upb_status status;
 
-  if (is_json && upb_msgdef_wellknowntype(desc->msgdef) == UPB_WELLKNOWN_ANY) {
+  if (is_json &&
+      upb_msgdef_wellknowntype(desc->msgdef) == UPB_WELLKNOWN_ANY) {
     putjsonany(msg_rb, desc, sink, depth, emit_defaults);
+    return;
+  }
+
+  if (is_json &&
+      upb_msgdef_wellknowntype(desc->msgdef) == UPB_WELLKNOWN_LISTVALUE) {
+    putjsonlistvalue(msg_rb, desc, sink, depth, emit_defaults);
     return;
   }
 
@@ -1311,9 +1339,11 @@ static void putmsg(VALUE msg_rb, const Descriptor* desc, upb_sink sink,
     }
   }
 
-  stringsink* unknown = msg->unknown_fields;
-  if (unknown != NULL) {
-    upb_sink_putunknown(sink, unknown->ptr, unknown->len);
+  {
+    stringsink* unknown = msg->unknown_fields;
+    if (unknown != NULL) {
+      upb_sink_putunknown(sink, unknown->ptr, unknown->len);
+    }
   }
 
   if (open_msg) {
@@ -1422,10 +1452,12 @@ static void discard_unknown(VALUE msg_rb, const Descriptor* desc) {
 
   TypedData_Get_Struct(msg_rb, MessageHeader, &Message_type, msg);
 
-  stringsink* unknown = msg->unknown_fields;
-  if (unknown != NULL) {
-    stringsink_uninit(unknown);
-    msg->unknown_fields = NULL;
+  {
+    stringsink* unknown = msg->unknown_fields;
+    if (unknown != NULL) {
+      stringsink_uninit(unknown);
+      msg->unknown_fields = NULL;
+    }
   }
 
   for (upb_msg_field_begin(&it, desc->msgdef);
@@ -1455,10 +1487,12 @@ static void discard_unknown(VALUE msg_rb, const Descriptor* desc) {
     }
 
     if (is_map_field(f)) {
-      if (!upb_fielddef_issubmsg(map_field_value(f))) continue;
-      VALUE map = DEREF(msg, offset, VALUE);
-      if (map == Qnil) continue;
+      VALUE map;
       Map_iter map_it;
+
+      if (!upb_fielddef_issubmsg(map_field_value(f))) continue;
+      map = DEREF(msg, offset, VALUE);
+      if (map == Qnil) continue;
       for (Map_begin(map, &map_it); !Map_done(&map_it); Map_next(&map_it)) {
         VALUE submsg = Map_iter_value(&map_it);
         VALUE descriptor = rb_ivar_get(submsg, descriptor_instancevar_interned);
@@ -1467,9 +1501,12 @@ static void discard_unknown(VALUE msg_rb, const Descriptor* desc) {
       }
     } else if (upb_fielddef_isseq(f)) {
       VALUE ary = DEREF(msg, offset, VALUE);
+      int size;
+      int i;
+
       if (ary == Qnil) continue;
-      int size = NUM2INT(RepeatedField_length(ary));
-      for (int i = 0; i < size; i++) {
+      size = NUM2INT(RepeatedField_length(ary));
+      for (i = 0; i < size; i++) {
         void* memory = RepeatedField_index_native(ary, i);
         VALUE submsg = *((VALUE *)memory);
         VALUE descriptor = rb_ivar_get(submsg, descriptor_instancevar_interned);
@@ -1478,9 +1515,12 @@ static void discard_unknown(VALUE msg_rb, const Descriptor* desc) {
       }
     } else {
       VALUE submsg = DEREF(msg, offset, VALUE);
+      VALUE descriptor;
+      const Descriptor* subdesc;
+
       if (submsg == Qnil) continue;
-      VALUE descriptor = rb_ivar_get(submsg, descriptor_instancevar_interned);
-      const Descriptor* subdesc = ruby_to_Descriptor(descriptor);
+      descriptor = rb_ivar_get(submsg, descriptor_instancevar_interned);
+      subdesc = ruby_to_Descriptor(descriptor);
       discard_unknown(submsg, subdesc);
     }
   }

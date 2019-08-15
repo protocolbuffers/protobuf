@@ -96,17 +96,19 @@ VALUE native_slot_encode_and_freeze_string(upb_fieldtype_t type, VALUE value) {
       kRubyStringUtf8Encoding : kRubyString8bitEncoding;
   VALUE desired_encoding_value = rb_enc_from_encoding(desired_encoding);
 
-  // Note: this will not duplicate underlying string data unless necessary.
-  value = rb_str_encode(value, desired_encoding_value, 0, Qnil);
+  if (rb_obj_encoding(value) != desired_encoding_value || !OBJ_FROZEN(value)) {
+    // Note: this will not duplicate underlying string data unless necessary.
+    value = rb_str_encode(value, desired_encoding_value, 0, Qnil);
 
-  if (type == UPB_TYPE_STRING &&
-      rb_enc_str_coderange(value) == ENC_CODERANGE_BROKEN) {
-    rb_raise(rb_eEncodingError, "String is invalid UTF-8");
+    if (type == UPB_TYPE_STRING &&
+        rb_enc_str_coderange(value) == ENC_CODERANGE_BROKEN) {
+      rb_raise(rb_eEncodingError, "String is invalid UTF-8");
+    }
+
+    // Ensure the data remains valid.  Since we called #encode a moment ago,
+    // this does not freeze the string the user assigned.
+    rb_obj_freeze(value);
   }
-
-  // Ensure the data remains valid.  Since we called #encode a moment ago,
-  // this does not freeze the string the user assigned.
-  rb_obj_freeze(value);
 
   return value;
 }
@@ -178,9 +180,50 @@ void native_slot_set_value_and_case(const char* name,
       if (CLASS_OF(value) == CLASS_OF(Qnil)) {
         value = Qnil;
       } else if (CLASS_OF(value) != type_class) {
-        rb_raise(cTypeError,
-                 "Invalid type %s to assign to submessage field '%s'.",
-                rb_class2name(CLASS_OF(value)), name);
+        // check for possible implicit conversions
+        VALUE converted_value = Qnil;
+        const char* field_type_name = rb_class2name(type_class);
+
+        if (strcmp(field_type_name, "Google::Protobuf::Timestamp") == 0 &&
+            rb_obj_is_kind_of(value, rb_cTime)) {
+          // Time -> Google::Protobuf::Timestamp
+          VALUE hash = rb_hash_new();
+          rb_hash_aset(hash, rb_str_new2("seconds"),
+                       rb_funcall(value, rb_intern("to_i"), 0));
+          rb_hash_aset(hash, rb_str_new2("nanos"),
+                       rb_funcall(value, rb_intern("nsec"), 0));
+          {
+            VALUE args[1] = {hash};
+            converted_value = rb_class_new_instance(1, args, type_class);
+          }
+        } else if (strcmp(field_type_name, "Google::Protobuf::Duration") == 0 &&
+                   rb_obj_is_kind_of(value, rb_cNumeric)) {
+          // Numeric -> Google::Protobuf::Duration
+          VALUE hash = rb_hash_new();
+          rb_hash_aset(hash, rb_str_new2("seconds"),
+                       rb_funcall(value, rb_intern("to_i"), 0));
+          {
+            VALUE n_value =
+                rb_funcall(value, rb_intern("remainder"), 1, INT2NUM(1));
+            n_value =
+                rb_funcall(n_value, rb_intern("*"), 1, INT2NUM(1000000000));
+            n_value = rb_funcall(n_value, rb_intern("round"), 0);
+            rb_hash_aset(hash, rb_str_new2("nanos"), n_value);
+          }
+          {
+            VALUE args[1] = { hash };
+            converted_value = rb_class_new_instance(1, args, type_class);
+          }
+        }
+
+        // raise if no suitable conversaion could be found
+        if (converted_value == Qnil) {
+          rb_raise(cTypeError,
+                   "Invalid type %s to assign to submessage field '%s'.",
+                  rb_class2name(CLASS_OF(value)), name);
+        } else {
+          value = converted_value;
+        }
       }
       DEREF(memory, VALUE) = value;
       break;
@@ -433,15 +476,15 @@ static size_t align_up_to(size_t offset, size_t granularity) {
 MessageLayout* create_layout(const Descriptor* desc) {
   const upb_msgdef *msgdef = desc->msgdef;
   MessageLayout* layout = ALLOC(MessageLayout);
-  layout->desc = desc;
   int nfields = upb_msgdef_numfields(msgdef);
   upb_msg_field_iter it;
   upb_msg_oneof_iter oit;
   size_t off = 0;
+  size_t hasbit = 0;
 
+  layout->desc = desc;
   layout->fields = ALLOC_N(MessageField, nfields);
 
-  size_t hasbit = 0;
   for (upb_msg_field_begin(&it, msgdef);
        !upb_msg_field_done(&it);
        upb_msg_field_next(&it)) {
@@ -698,12 +741,8 @@ VALUE layout_get_default(const upb_fielddef *field) {
     case UPB_TYPE_BYTES: {
       size_t size;
       const char *str = upb_fielddef_defaultstr(field, &size);
-      VALUE str_rb = rb_str_new(str, size);
-
-      rb_enc_associate(str_rb, (upb_fielddef_type(field) == UPB_TYPE_BYTES) ?
-                 kRubyString8bitEncoding : kRubyStringUtf8Encoding);
-      rb_obj_freeze(str_rb);
-      return str_rb;
+      return get_frozen_string(str, size,
+                               upb_fielddef_type(field) == UPB_TYPE_BYTES);
     }
     default: return Qnil;
   }

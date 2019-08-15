@@ -38,12 +38,13 @@ syntax = "proto2";
 
 package protobuf_unittest;
 
-option optimize_for = LITE_RUNTIME;
-
 import "com/google/protobuf/non_nested_extension_lite.proto";
+
+option optimize_for = LITE_RUNTIME;
 
 message MyNestedExtensionLite {
   extend MessageLiteToBeExtended {
     optional MessageLiteToBeExtended recursiveExtensionLite = 3;
+    optional double private = 2004;
   }
 }

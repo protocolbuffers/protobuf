@@ -67,7 +67,6 @@ module BasicTest
     add_message "BadFieldNames" do
       optional :dup, :int32, 1
       optional :class, :int32, 2
-      optional :"a.b", :int32, 3
     end
 
     add_message "MapMessage" do
@@ -212,12 +211,12 @@ module BasicTest
       e = assert_raise ArgumentError do
         MapMessage.new(:map_string_int32 => "hello")
       end
-      assert_equal e.message, "Expected Hash object as initializer value for map field 'map_string_int32'."
+      assert_equal e.message, "Expected Hash object as initializer value for map field 'map_string_int32' (given String)."
 
       e = assert_raise ArgumentError do
         TestMessage.new(:repeated_uint32 => "hello")
       end
-      assert_equal e.message, "Expected array as initializer value for repeated field 'repeated_uint32'."
+      assert_equal e.message, "Expected array as initializer value for repeated field 'repeated_uint32' (given String)."
     end
 
     def test_type_errors
@@ -1067,8 +1066,6 @@ module BasicTest
       assert m['class'] == 2
       m['dup'] = 3
       assert m['dup'] == 3
-      m['a.b'] = 4
-      assert m['a.b'] == 4
     end
 
     def test_int_ranges

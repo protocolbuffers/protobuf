@@ -100,7 +100,6 @@ class ImmutableExtensionGenerator : public ExtensionGenerator {
 
  protected:
   const FieldDescriptor* descriptor_;
-  Context* context_;
   ClassNameResolver* name_resolver_;
   std::string scope_;
 

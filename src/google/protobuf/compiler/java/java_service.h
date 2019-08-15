@@ -83,7 +83,6 @@ class ImmutableServiceGenerator : public ServiceGenerator {
   virtual void Generate(io::Printer* printer);
 
  private:
-
   // Generate the getDescriptorForType() method.
   void GenerateGetDescriptorForType(io::Printer* printer);
 

@@ -5,7 +5,6 @@
 
 #include <algorithm>
 
-#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/extension_set.h>
 #include <google/protobuf/wire_format_lite.h>
@@ -15,14 +14,13 @@
 #include <google/protobuf/wire_format.h>
 // @@protoc_insertion_point(includes)
 #include <google/protobuf/port_def.inc>
-
 PROTOBUF_NAMESPACE_OPEN
 class DurationDefaultTypeInternal {
  public:
   ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<Duration> _instance;
 } _Duration_default_instance_;
 PROTOBUF_NAMESPACE_CLOSE
-static void InitDefaultsDuration_google_2fprotobuf_2fduration_2eproto() {
+static void InitDefaultsscc_info_Duration_google_2fprotobuf_2fduration_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   {
@@ -34,11 +32,7 @@ static void InitDefaultsDuration_google_2fprotobuf_2fduration_2eproto() {
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Duration_google_2fprotobuf_2fduration_2eproto =
-    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsDuration_google_2fprotobuf_2fduration_2eproto}, {}};
-
-void InitDefaults_google_2fprotobuf_2fduration_2eproto() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_Duration_google_2fprotobuf_2fduration_2eproto.base);
-}
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_Duration_google_2fprotobuf_2fduration_2eproto}, {}};
 
 static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_google_2fprotobuf_2fduration_2eproto[1];
 static constexpr ::PROTOBUF_NAMESPACE_ID::EnumDescriptor const** file_level_enum_descriptors_google_2fprotobuf_2fduration_2eproto = nullptr;
@@ -61,13 +55,7 @@ static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] =
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&PROTOBUF_NAMESPACE_ID::_Duration_default_instance_),
 };
 
-static ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptorsTable assign_descriptors_table_google_2fprotobuf_2fduration_2eproto = {
-  {}, AddDescriptors_google_2fprotobuf_2fduration_2eproto, "google/protobuf/duration.proto", schemas,
-  file_default_instances, TableStruct_google_2fprotobuf_2fduration_2eproto::offsets,
-  file_level_metadata_google_2fprotobuf_2fduration_2eproto, 1, file_level_enum_descriptors_google_2fprotobuf_2fduration_2eproto, file_level_service_descriptors_google_2fprotobuf_2fduration_2eproto,
-};
-
-const char descriptor_table_protodef_google_2fprotobuf_2fduration_2eproto[] =
+const char descriptor_table_protodef_google_2fprotobuf_2fduration_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
   "\n\036google/protobuf/duration.proto\022\017google"
   ".protobuf\"*\n\010Duration\022\017\n\007seconds\030\001 \001(\003\022\r"
   "\n\005nanos\030\002 \001(\005B|\n\023com.google.protobufB\rDu"
@@ -75,35 +63,31 @@ const char descriptor_table_protodef_google_2fprotobuf_2fduration_2eproto[] =
   "f/ptypes/duration\370\001\001\242\002\003GPB\252\002\036Google.Prot"
   "obuf.WellKnownTypesb\006proto3"
   ;
-static ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fduration_2eproto = {
-  false, InitDefaults_google_2fprotobuf_2fduration_2eproto, 
-  descriptor_table_protodef_google_2fprotobuf_2fduration_2eproto,
-  "google/protobuf/duration.proto", &assign_descriptors_table_google_2fprotobuf_2fduration_2eproto, 227,
+static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_google_2fprotobuf_2fduration_2eproto_deps[1] = {
+};
+static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_google_2fprotobuf_2fduration_2eproto_sccs[1] = {
+  &scc_info_Duration_google_2fprotobuf_2fduration_2eproto.base,
+};
+static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_google_2fprotobuf_2fduration_2eproto_once;
+static bool descriptor_table_google_2fprotobuf_2fduration_2eproto_initialized = false;
+const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fduration_2eproto = {
+  &descriptor_table_google_2fprotobuf_2fduration_2eproto_initialized, descriptor_table_protodef_google_2fprotobuf_2fduration_2eproto, "google/protobuf/duration.proto", 227,
+  &descriptor_table_google_2fprotobuf_2fduration_2eproto_once, descriptor_table_google_2fprotobuf_2fduration_2eproto_sccs, descriptor_table_google_2fprotobuf_2fduration_2eproto_deps, 1, 0,
+  schemas, file_default_instances, TableStruct_google_2fprotobuf_2fduration_2eproto::offsets,
+  file_level_metadata_google_2fprotobuf_2fduration_2eproto, 1, file_level_enum_descriptors_google_2fprotobuf_2fduration_2eproto, file_level_service_descriptors_google_2fprotobuf_2fduration_2eproto,
 };
 
-void AddDescriptors_google_2fprotobuf_2fduration_2eproto() {
-  static constexpr ::PROTOBUF_NAMESPACE_ID::internal::InitFunc deps[1] =
-  {
-  };
- ::PROTOBUF_NAMESPACE_ID::internal::AddDescriptors(&descriptor_table_google_2fprotobuf_2fduration_2eproto, deps, 0);
-}
-
 // Force running AddDescriptors() at dynamic initialization time.
-static bool dynamic_init_dummy_google_2fprotobuf_2fduration_2eproto = []() { AddDescriptors_google_2fprotobuf_2fduration_2eproto(); return true; }();
+static bool dynamic_init_dummy_google_2fprotobuf_2fduration_2eproto = (  ::PROTOBUF_NAMESPACE_ID::internal::AddDescriptors(&descriptor_table_google_2fprotobuf_2fduration_2eproto), true);
 PROTOBUF_NAMESPACE_OPEN
 
 // ===================================================================
 
 void Duration::InitAsDefaultInstance() {
 }
-class Duration::HasBitSetters {
+class Duration::_Internal {
  public:
 };
-
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int Duration::kSecondsFieldNumber;
-const int Duration::kNanosFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 Duration::Duration()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
@@ -171,40 +155,45 @@ void Duration::Clear() {
 
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 const char* Duration::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
-  ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArena(); (void)arena;
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArenaNoVirtual(); (void)arena;
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
-    GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+    CHK_(ptr);
     switch (tag >> 3) {
       // int64 seconds = 1;
-      case 1: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 8) goto handle_unusual;
-        set_seconds(::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr));
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        break;
-      }
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
+          seconds_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // int32 nanos = 2;
-      case 2: {
-        if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) != 16) goto handle_unusual;
-        set_nanos(::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr));
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        break;
-      }
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16)) {
+          nanos_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
           ctx->SetLastTag(tag);
-          return ptr;
+          goto success;
         }
-        ptr = UnknownFieldParse(tag,
-          _internal_metadata_.mutable_unknown_fields(), ptr, ctx);
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr != nullptr);
-        break;
+        ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
       }
     }  // switch
   }  // while
+success:
   return ptr;
+failure:
+  ptr = nullptr;
+  goto success;
+#undef CHK_
 }
 #else  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 bool Duration::MergePartialFromCodedStream(
@@ -264,48 +253,27 @@ failure:
 }
 #endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 
-void Duration::SerializeWithCachedSizes(
-    ::PROTOBUF_NAMESPACE_ID::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:google.protobuf.Duration)
-  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
-  (void) cached_has_bits;
-
-  // int64 seconds = 1;
-  if (this->seconds() != 0) {
-    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt64(1, this->seconds(), output);
-  }
-
-  // int32 nanos = 2;
-  if (this->nanos() != 0) {
-    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt32(2, this->nanos(), output);
-  }
-
-  if (_internal_metadata_.have_unknown_fields()) {
-    ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::SerializeUnknownFields(
-        _internal_metadata_.unknown_fields(), output);
-  }
-  // @@protoc_insertion_point(serialize_end:google.protobuf.Duration)
-}
-
 ::PROTOBUF_NAMESPACE_ID::uint8* Duration::InternalSerializeWithCachedSizesToArray(
-    ::PROTOBUF_NAMESPACE_ID::uint8* target) const {
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Duration)
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   // int64 seconds = 1;
   if (this->seconds() != 0) {
+    stream->EnsureSpace(&target);
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt64ToArray(1, this->seconds(), target);
   }
 
   // int32 nanos = 2;
   if (this->nanos() != 0) {
+    stream->EnsureSpace(&target);
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt32ToArray(2, this->nanos(), target);
   }
 
-  if (_internal_metadata_.have_unknown_fields()) {
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::SerializeUnknownFieldsToArray(
-        _internal_metadata_.unknown_fields(), target);
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target, stream);
   }
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.Duration)
   return target;
@@ -315,11 +283,6 @@ size_t Duration::ByteSizeLong() const {
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.Duration)
   size_t total_size = 0;
 
-  if (_internal_metadata_.have_unknown_fields()) {
-    total_size +=
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::ComputeUnknownFieldsSize(
-        _internal_metadata_.unknown_fields());
-  }
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
@@ -338,6 +301,10 @@ size_t Duration::ByteSizeLong() const {
         this->nanos());
   }
 
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
+        _internal_metadata_, total_size, &_cached_size_);
+  }
   int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
   SetCachedSize(cached_size);
   return total_size;
@@ -391,25 +358,6 @@ bool Duration::IsInitialized() const {
   return true;
 }
 
-void Duration::Swap(Duration* other) {
-  if (other == this) return;
-  if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
-    InternalSwap(other);
-  } else {
-    Duration* temp = New(GetArenaNoVirtual());
-    temp->MergeFrom(*other);
-    other->CopyFrom(*this);
-    InternalSwap(temp);
-    if (GetArenaNoVirtual() == nullptr) {
-      delete temp;
-    }
-  }
-}
-void Duration::UnsafeArenaSwap(Duration* other) {
-  if (other == this) return;
-  GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
-  InternalSwap(other);
-}
 void Duration::InternalSwap(Duration* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
@@ -418,8 +366,7 @@ void Duration::InternalSwap(Duration* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata Duration::GetMetadata() const {
-  ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::assign_descriptors_table_google_2fprotobuf_2fduration_2eproto);
-  return ::file_level_metadata_google_2fprotobuf_2fduration_2eproto[kIndexInFileMessages];
+  return GetMetadataStatic();
 }
 
 

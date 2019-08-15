@@ -2776,7 +2776,7 @@ public final class TestUtil {
     }
 
     /** Shorthand to get a FieldDescriptor for a field of unittest::TestAllTypes. */
-    private Descriptors.FieldDescriptor f(String name) {
+    Descriptors.FieldDescriptor f(String name) {
       Descriptors.FieldDescriptor result;
       if (extensionRegistry == null) {
         result = baseDescriptor.findFieldByName(name);

@@ -50,9 +50,9 @@ using type_info = ::type_info;
 #include <typeinfo>
 #endif
 
+#include <type_traits>
 #include <google/protobuf/arena_impl.h>
 #include <google/protobuf/port.h>
-#include <type_traits>
 
 #include <google/protobuf/port_def.inc>
 
@@ -72,8 +72,8 @@ struct ArenaOptions;  // defined below
 namespace google {
 namespace protobuf {
 
-class Arena;          // defined below
-class Message;        // defined in message.h
+class Arena;    // defined below
+class Message;  // defined in message.h
 class MessageLite;
 
 namespace arena_metrics {
@@ -84,8 +84,8 @@ void EnableArenaMetrics(ArenaOptions* options);
 
 namespace internal {
 
-struct ArenaStringPtr;     // defined in arenastring.h
-class LazyField;           // defined in lazy_field.h
+struct ArenaStringPtr;  // defined in arenastring.h
+class LazyField;        // defined in lazy_field.h
 
 template <typename Type>
 class GenericTypeHandler;  // defined in repeated_field.h
@@ -245,7 +245,7 @@ struct ArenaOptions {
 // well as protobuf container types like RepeatedPtrField and Map. The protocol
 // is internal to protobuf and is not guaranteed to be stable. Non-proto types
 // should not rely on this protocol.
-class PROTOBUF_EXPORT Arena final {
+class PROTOBUF_EXPORT alignas(8) Arena final {
  public:
   // Arena constructor taking custom options. See ArenaOptions below for
   // descriptions of the options available.
@@ -402,8 +402,8 @@ class PROTOBUF_EXPORT Arena final {
   // will be manually called when the arena is destroyed or reset. This differs
   // from OwnDestructor() in that any member function may be specified, not only
   // the class destructor.
-  PROTOBUF_NOINLINE void OwnCustomDestructor(
-      void* object, void (*destruct)(void*)) {
+  PROTOBUF_NOINLINE void OwnCustomDestructor(void* object,
+                                             void (*destruct)(void*)) {
     impl_.AddCleanup(object, destruct);
   }
 
@@ -688,6 +688,7 @@ class PROTOBUF_EXPORT Arena final {
                                         !has_get_arena<T>::value,
                                     int>::type = 0>
   PROTOBUF_ALWAYS_INLINE static Arena* GetArenaInternal(const T* value) {
+    (void) value;
     return nullptr;
   }
 

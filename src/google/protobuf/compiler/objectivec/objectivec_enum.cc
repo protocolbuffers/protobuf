@@ -142,7 +142,7 @@ void EnumGenerator::GenerateHeader(io::Printer* printer) {
         "$name$$deprecated_attribute$ = $value$,\n",
         "name", EnumValueName(all_values_[i]),
         "deprecated_attribute", GetOptionalDeprecatedAttribute(all_values_[i]),
-        "value", SimpleItoa(all_values_[i]->number()));
+        "value", StrCat(all_values_[i]->number()));
   }
   printer->Outdent();
   printer->Print(

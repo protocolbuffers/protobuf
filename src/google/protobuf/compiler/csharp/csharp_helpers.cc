@@ -33,7 +33,6 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
 #include <algorithm>
-#include <google/protobuf/stubs/hash.h>
 #include <limits>
 #include <vector>
 #include <sstream>
@@ -44,7 +43,6 @@
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/stubs/substitute.h>
 
 #include <google/protobuf/compiler/csharp/csharp_field_base.h>
 #include <google/protobuf/compiler/csharp/csharp_enum_field.h>
@@ -133,6 +131,12 @@ std::string GetReflectionClassUnqualifiedName(const FileDescriptor* descriptor) 
   // TODO: Detect collisions with existing messages,
   // and append an underscore if necessary.
   return GetFileNameBase(descriptor) + "Reflection";
+}
+
+std::string GetExtensionClassUnqualifiedName(const FileDescriptor* descriptor) {
+  // TODO: Detect collisions with existing messages,
+  // and append an underscore if necessary.
+  return GetFileNameBase(descriptor) + "Extensions";
 }
 
 // TODO(jtattermusch): can we reuse a utility function?
@@ -317,6 +321,15 @@ std::string GetReflectionClassName(const FileDescriptor* descriptor) {
   return "global::" + result;
 }
 
+std::string GetFullExtensionName(const FieldDescriptor* descriptor) {
+  if (descriptor->extension_scope()) {
+    return GetClassName(descriptor->extension_scope()) + ".Extensions." + GetPropertyName(descriptor);
+  }
+  else {
+    return GetExtensionClassUnqualifiedName(descriptor->file())  + "." + GetPropertyName(descriptor);
+  }
+}
+
 std::string GetClassName(const Descriptor* descriptor) {
   return ToCSharpName(descriptor->full_name(), descriptor->file());
 }
@@ -355,12 +368,10 @@ std::string GetPropertyName(const FieldDescriptor* descriptor) {
   return property_name;
 }
 
-std::string GetOutputFile(
-    const google::protobuf::FileDescriptor* descriptor,
-    const std::string file_extension,
-    const bool generate_directories,
-    const std::string base_namespace,
-    string* error) {
+std::string GetOutputFile(const FileDescriptor* descriptor,
+                          const std::string file_extension,
+                          const bool generate_directories,
+                          const std::string base_namespace, string* error) {
   string relative_filename = GetFileNameBase(descriptor) + file_extension;
   if (!generate_directories) {
     return relative_filename;

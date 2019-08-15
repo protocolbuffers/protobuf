@@ -132,6 +132,25 @@ if (HAVE_ZLIB)
   add_definitions(-DHAVE_ZLIB)
 endif (HAVE_ZLIB)
 
+# We need to link with libatomic on systems that do not have builtin atomics, or
+# don't have builtin support for 8 byte atomics
+set(protobuf_LINK_LIBATOMIC false)
+if (NOT MSVC)
+  include(CheckCXXSourceCompiles)
+  set(OLD_CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS})
+  set(CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS} -std=c++11)
+  check_cxx_source_compiles("
+    #include <atomic>
+    int main() {
+      return std::atomic<int64_t>{};
+    }
+  " protobuf_HAVE_BUILTIN_ATOMICS)
+  if (NOT protobuf_HAVE_BUILTIN_ATOMICS)
+    set(protobuf_LINK_LIBATOMIC true)
+  endif (NOT protobuf_HAVE_BUILTIN_ATOMICS)
+  set(CMAKE_REQUIRED_FLAGS ${OLD_CMAKE_REQUIRED_FLAGS})
+endif (NOT MSVC)
+
 if (protobuf_BUILD_SHARED_LIBS)
   set(protobuf_SHARED_OR_STATIC "SHARED")
 else (protobuf_BUILD_SHARED_LIBS)

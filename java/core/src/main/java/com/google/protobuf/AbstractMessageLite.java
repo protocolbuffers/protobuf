@@ -51,6 +51,7 @@ public abstract class AbstractMessageLite<
         BuilderType extends AbstractMessageLite.Builder<MessageType, BuilderType>>
     implements MessageLite {
   protected int memoizedHashCode = 0;
+
   @Override
   public ByteString toByteString() {
     try {
@@ -105,6 +106,15 @@ public abstract class AbstractMessageLite<
     throw new UnsupportedOperationException();
   }
 
+
+  int getSerializedSize(Schema schema) {
+    int memoizedSerializedSize = getMemoizedSerializedSize();
+    if (memoizedSerializedSize == -1) {
+      memoizedSerializedSize = schema.getSerializedSize(this);
+      setMemoizedSerializedSize(memoizedSerializedSize);
+    }
+    return memoizedSerializedSize;
+  }
 
   /** Package private helper method for AbstractParser to create UninitializedMessageException. */
   UninitializedMessageException newUninitializedMessageException() {

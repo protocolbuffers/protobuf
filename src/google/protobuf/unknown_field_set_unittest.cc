@@ -35,22 +35,20 @@
 // This test is testing a lot more than just the UnknownFieldSet class.  It
 // tests handling of unknown fields throughout the system.
 
-#include <google/protobuf/stubs/mutex.h>
 #include <google/protobuf/unknown_field_set.h>
-#include <google/protobuf/descriptor.h>
+#include <google/protobuf/test_util.h>
+#include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
+#include <google/protobuf/descriptor.h>
+#include <google/protobuf/stubs/mutex.h>
 #include <google/protobuf/wire_format.h>
-#include <google/protobuf/unittest.pb.h>
-#include <google/protobuf/test_util.h>
 
 #include <google/protobuf/stubs/callback.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
-
-
 #include <google/protobuf/stubs/stl_util.h>
 
 namespace google {
@@ -85,7 +83,7 @@ class UnknownFieldSetTest : public testing::Test {
   std::string GetBizarroData() {
     unittest::TestEmptyMessage bizarro_message;
     UnknownFieldSet* bizarro_unknown_fields =
-      bizarro_message.mutable_unknown_fields();
+        bizarro_message.mutable_unknown_fields();
     for (int i = 0; i < unknown_fields_->field_count(); i++) {
       const UnknownField& unknown_field = unknown_fields_->field(i);
       if (unknown_field.type() == UnknownField::TYPE_VARINT) {
@@ -180,7 +178,7 @@ TEST_F(UnknownFieldSetTest, Group) {
 
   const UnknownField& nested_field = field->group().field(0);
   const FieldDescriptor* nested_field_descriptor =
-    unittest::TestAllTypes::OptionalGroup::descriptor()->FindFieldByName("a");
+      unittest::TestAllTypes::OptionalGroup::descriptor()->FindFieldByName("a");
   ASSERT_TRUE(nested_field_descriptor != NULL);
 
   EXPECT_EQ(nested_field_descriptor->number(), nested_field.number());
@@ -189,8 +187,8 @@ TEST_F(UnknownFieldSetTest, Group) {
 }
 
 TEST_F(UnknownFieldSetTest, SerializeFastAndSlowAreEquivalent) {
-  int size = WireFormat::ComputeUnknownFieldsSize(
-      empty_message_.unknown_fields());
+  int size =
+      WireFormat::ComputeUnknownFieldsSize(empty_message_.unknown_fields());
   std::string slow_buffer;
   std::string fast_buffer;
   slow_buffer.resize(size);
@@ -198,7 +196,7 @@ TEST_F(UnknownFieldSetTest, SerializeFastAndSlowAreEquivalent) {
 
   uint8* target = reinterpret_cast<uint8*>(::google::protobuf::string_as_array(&fast_buffer));
   uint8* result = WireFormat::SerializeUnknownFieldsToArray(
-          empty_message_.unknown_fields(), target);
+      empty_message_.unknown_fields(), target);
   EXPECT_EQ(size, result - target);
 
   {
@@ -299,13 +297,13 @@ TEST_F(UnknownFieldSetTest, MergeFrom) {
   destination.MergeFrom(source);
 
   EXPECT_EQ(
-    // Note:  The ordering of fields here depends on the ordering of adds
-    //   and merging, above.
-    "1: 1\n"
-    "3: 2\n"
-    "2: 3\n"
-    "3: 4\n",
-    destination.DebugString());
+      // Note:  The ordering of fields here depends on the ordering of adds
+      //   and merging, above.
+      "1: 1\n"
+      "3: 2\n"
+      "2: 3\n"
+      "3: 4\n",
+      destination.DebugString());
 }
 
 
@@ -408,14 +406,14 @@ TEST_F(UnknownFieldSetTest, WrongExtensionTypeTreatedAsUnknown) {
 }
 
 TEST_F(UnknownFieldSetTest, UnknownEnumValue) {
-  using unittest::TestAllTypes;
   using unittest::TestAllExtensions;
+  using unittest::TestAllTypes;
   using unittest::TestEmptyMessage;
 
   const FieldDescriptor* singular_field =
-    TestAllTypes::descriptor()->FindFieldByName("optional_nested_enum");
+      TestAllTypes::descriptor()->FindFieldByName("optional_nested_enum");
   const FieldDescriptor* repeated_field =
-    TestAllTypes::descriptor()->FindFieldByName("repeated_nested_enum");
+      TestAllTypes::descriptor()->FindFieldByName("repeated_nested_enum");
   ASSERT_TRUE(singular_field != NULL);
   ASSERT_TRUE(repeated_field != NULL);
 
@@ -572,8 +570,7 @@ void CheckDeleteByNumber(const std::vector<int>& field_numbers,
   unknown_fields.DeleteByNumber(deleted_number);
   ASSERT_EQ(expected_field_nubmers.size(), unknown_fields.field_count());
   for (int i = 0; i < expected_field_nubmers.size(); ++i) {
-    EXPECT_EQ(expected_field_nubmers[i],
-              unknown_fields.field(i).number());
+    EXPECT_EQ(expected_field_nubmers[i], unknown_fields.field(i).number());
   }
 }
 

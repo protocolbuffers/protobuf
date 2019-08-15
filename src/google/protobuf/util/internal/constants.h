@@ -86,15 +86,8 @@ const char kDurationType[] = "google.protobuf.Duration";
 // Type URL for struct value type google.protobuf.Value
 const char kStructValueTypeUrl[] = "type.googleapis.com/google.protobuf.Value";
 
-// Type URL for struct value type google.protobuf.Value
-const char kStructTypeUrl[] = "type.googleapis.com/google.protobuf.Struct";
-
 // Type string for google.protobuf.Any
 const char kAnyType[] = "google.protobuf.Any";
-
-// The type URL of google.protobuf.FieldMask;
-const char kFieldMaskTypeUrl[] =
-    "type.googleapis.com/google.protobuf.FieldMask";
 
 // The protobuf option name of jspb.message_id;
 const char kOptionJspbMessageId[] = "jspb.message_id";

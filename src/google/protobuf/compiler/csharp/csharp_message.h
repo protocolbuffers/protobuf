@@ -50,6 +50,9 @@ class MessageGenerator : public SourceGeneratorBase {
   MessageGenerator(const Descriptor* descriptor, const Options* options);
   ~MessageGenerator();
 
+  MessageGenerator(const MessageGenerator&) = delete;
+  MessageGenerator& operator=(const MessageGenerator&) = delete;
+
   void GenerateCloningCode(io::Printer* printer);
   void GenerateFreezingCode(io::Printer* printer);
   void GenerateFrameworkMethods(io::Printer* printer);
@@ -60,6 +63,7 @@ class MessageGenerator : public SourceGeneratorBase {
   std::vector<const FieldDescriptor*> fields_by_number_;
   int has_bit_field_count_;
   uint end_tag_;
+  bool has_extension_ranges_;
 
   void GenerateMessageSerializationMethods(io::Printer* printer);
   void GenerateMergingMethods(io::Printer* printer);
@@ -78,8 +82,6 @@ class MessageGenerator : public SourceGeneratorBase {
 
   // field descriptors sorted by number
   const std::vector<const FieldDescriptor*>& fields_by_number();
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MessageGenerator);
 };
 
 }  // namespace csharp

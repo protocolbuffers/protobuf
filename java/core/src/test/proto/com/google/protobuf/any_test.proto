@@ -32,10 +32,10 @@ syntax = "proto3";
 
 package any_test;
 
+import "google/protobuf/any.proto";
+
 option java_package = "any_test";
 option java_outer_classname = "AnyTestProto";
-
-import "google/protobuf/any.proto";
 
 message TestAny {
   google.protobuf.Any value = 1;

@@ -306,6 +306,16 @@ class GeneratorTest(unittest.TestCase):
       else:
         self.assertIsNone(field_desc.containing_oneof)
 
+  def testEnumWithDupValue(self):
+    self.assertEqual('FOO1',
+                     unittest_pb2.TestEnumWithDupValue.Name(unittest_pb2.FOO1))
+    self.assertEqual('FOO1',
+                     unittest_pb2.TestEnumWithDupValue.Name(unittest_pb2.FOO2))
+    self.assertEqual('BAR1',
+                     unittest_pb2.TestEnumWithDupValue.Name(unittest_pb2.BAR1))
+    self.assertEqual('BAR1',
+                     unittest_pb2.TestEnumWithDupValue.Name(unittest_pb2.BAR2))
+
 
 class SymbolDatabaseRegistrationTest(unittest.TestCase):
   """Checks that messages, enums and files are correctly registered."""

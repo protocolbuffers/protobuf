@@ -8,5 +8,6 @@ Description: Google's Data Interchange Format
 Version: @VERSION@
 Libs: -L${libdir} -lprotobuf @PTHREAD_LIBS@
 Libs.private: @LIBS@
-Cflags: -I${includedir} @PTHREAD_CFLAGS@ @CXXFLAGS@
+
+Cflags: -I${includedir} @PTHREAD_CFLAGS@
 Conflicts: protobuf-lite

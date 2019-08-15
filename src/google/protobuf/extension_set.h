@@ -69,13 +69,9 @@ class MessageLite;      // message_lite.h
 class Message;          // message.h
 class MessageFactory;   // message.h
 class UnknownFieldSet;  // unknown_field_set.h
-namespace io {
-class CodedInputStream;   // coded_stream.h
-class CodedOutputStream;  // coded_stream.h
-}  // namespace io
 namespace internal {
 class FieldSkipper;  // wire_format_lite.h
-}
+}  // namespace internal
 }  // namespace protobuf
 }  // namespace google
 
@@ -272,7 +268,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   void SetDouble(int number, FieldType type, double value, desc);
   void SetBool(int number, FieldType type, bool value, desc);
   void SetEnum(int number, FieldType type, int value, desc);
-  void SetString(int number, FieldType type, const std::string& value, desc);
+  void SetString(int number, FieldType type, std::string value, desc);
   std::string* MutableString(int number, FieldType type, desc);
   MessageLite* MutableMessage(int number, FieldType type,
                               const MessageLite& prototype, desc);
@@ -335,7 +331,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   void SetRepeatedDouble(int number, int index, double value);
   void SetRepeatedBool(int number, int index, bool value);
   void SetRepeatedEnum(int number, int index, int value);
-  void SetRepeatedString(int number, int index, const std::string& value);
+  void SetRepeatedString(int number, int index, std::string value);
   std::string* MutableRepeatedString(int number, int index);
   MessageLite* MutableRepeatedMessage(int number, int index);
 
@@ -348,7 +344,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   void AddDouble(int number, FieldType type, bool packed, double value, desc);
   void AddBool(int number, FieldType type, bool packed, bool value, desc);
   void AddEnum(int number, FieldType type, bool packed, int value, desc);
-  void AddString(int number, FieldType type, const std::string& value, desc);
+  void AddString(int number, FieldType type, std::string value, desc);
   std::string* AddString(int number, FieldType type, desc);
   MessageLite* AddMessage(int number, FieldType type,
                           const MessageLite& prototype, desc);
@@ -463,20 +459,28 @@ class PROTOBUF_EXPORT ExtensionSet {
   // to the output stream, using the cached sizes computed when ByteSize() was
   // last called.  Note that the range bounds are inclusive-exclusive.
   void SerializeWithCachedSizes(int start_field_number, int end_field_number,
-                                io::CodedOutputStream* output) const;
+                                io::CodedOutputStream* output) const {
+    output->SetCur(InternalSerializeWithCachedSizesToArray(
+        start_field_number, end_field_number, output->Cur(),
+        output->EpsCopy()));
+  }
 
   // Same as SerializeWithCachedSizes, but without any bounds checking.
   // The caller must ensure that target has sufficient capacity for the
   // serialized extensions.
   //
   // Returns a pointer past the last written byte.
-  uint8* InternalSerializeWithCachedSizesToArray(int start_field_number,
-                                                 int end_field_number,
-                                                 uint8* target) const;
+  uint8* InternalSerializeWithCachedSizesToArray(
+      int start_field_number, int end_field_number, uint8* target,
+      io::EpsCopyOutputStream* stream) const;
 
   // Like above but serializes in MessageSet format.
-  void SerializeMessageSetWithCachedSizes(io::CodedOutputStream* output) const;
-  uint8* InternalSerializeMessageSetWithCachedSizesToArray(uint8* target) const;
+  void SerializeMessageSetWithCachedSizes(io::CodedOutputStream* output) const {
+    output->SetCur(InternalSerializeMessageSetWithCachedSizesToArray(
+        output->Cur(), output->EpsCopy()));
+  }
+  uint8* InternalSerializeMessageSetWithCachedSizesToArray(
+      uint8* target, io::EpsCopyOutputStream* stream) const;
 
   // For backward-compatibility, versions of two of the above methods that
   // serialize deterministically iff SetDefaultSerializationDeterministic()
@@ -540,9 +544,8 @@ class PROTOBUF_EXPORT ExtensionSet {
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
     virtual const char* _InternalParse(const char* ptr, ParseContext* ctx) = 0;
 #endif
-    virtual void WriteMessage(int number,
-                              io::CodedOutputStream* output) const = 0;
-    virtual uint8* WriteMessageToArray(int number, uint8* target) const = 0;
+    virtual uint8* WriteMessageToArray(
+        int number, uint8* target, io::EpsCopyOutputStream* stream) const = 0;
 
    private:
     virtual void UnusedKeyMethod();  // Dummy key method to avoid weak vtable.
@@ -609,14 +612,10 @@ class PROTOBUF_EXPORT ExtensionSet {
     const FieldDescriptor* descriptor;
 
     // Some helper methods for operations on a single Extension.
-    void SerializeFieldWithCachedSizes(int number,
-                                       io::CodedOutputStream* output) const;
-    uint8* InternalSerializeFieldWithCachedSizesToArray(int number,
-                                                        uint8* target) const;
-    void SerializeMessageSetItemWithCachedSizes(
-        int number, io::CodedOutputStream* output) const;
+    uint8* InternalSerializeFieldWithCachedSizesToArray(
+        int number, uint8* target, io::EpsCopyOutputStream* stream) const;
     uint8* InternalSerializeMessageSetItemWithCachedSizesToArray(
-        int number, uint8* target) const;
+        int number, uint8* target, io::EpsCopyOutputStream* stream) const;
     size_t ByteSize(int number) const;
     size_t MessageSetItemByteSize(int number) const;
     void Clear();
@@ -859,20 +858,19 @@ class PROTOBUF_EXPORT ExtensionSet {
 
 // These are just for convenience...
 inline void ExtensionSet::SetString(int number, FieldType type,
-                                    const std::string& value,
+                                    std::string value,
                                     const FieldDescriptor* descriptor) {
-  MutableString(number, type, descriptor)->assign(value);
+  MutableString(number, type, descriptor)->assign(std::move(value));
 }
 inline void ExtensionSet::SetRepeatedString(int number, int index,
-                                            const std::string& value) {
-  MutableRepeatedString(number, index)->assign(value);
+                                            std::string value) {
+  MutableRepeatedString(number, index)->assign(std::move(value));
 }
 inline void ExtensionSet::AddString(int number, FieldType type,
-                                    const std::string& value,
+                                    std::string value,
                                     const FieldDescriptor* descriptor) {
-  AddString(number, type, descriptor)->assign(value);
+  AddString(number, type, descriptor)->assign(std::move(value));
 }
-
 // ===================================================================
 // Glue for generated extension accessors
 
@@ -1335,7 +1333,7 @@ RepeatedMessageTypeTraits<Type>::GetDefaultRepeatedField() {
 // This is the type of actual extension objects.  E.g. if you have:
 //   extends Foo with optional int32 bar = 1234;
 // then "bar" will be defined in C++ as:
-//   ExtensionIdentifier<Foo, PrimitiveTypeTraits<int32>, 1, false> bar(1234);
+//   ExtensionIdentifier<Foo, PrimitiveTypeTraits<int32>, 5, false> bar(1234);
 //
 // Note that we could, in theory, supply the field number as a template
 // parameter, and thus make an instance of ExtensionIdentifier have no

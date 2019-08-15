@@ -2031,6 +2031,16 @@ public final class Descriptors {
       return outputType;
     }
 
+    /** Get whether or not the inputs are streaming. */
+    public boolean isClientStreaming() {
+      return proto.getClientStreaming();
+    }
+
+    /** Get whether or not the outputs are streaming. */
+    public boolean isServerStreaming() {
+      return proto.getServerStreaming();
+    }
+
     /** Get the {@code MethodOptions}, defined in {@code descriptor.proto}. */
     public MethodOptions getOptions() {
       return proto.getOptions();
@@ -2109,11 +2119,12 @@ public final class Descriptors {
   /**
    * All descriptors implement this to make it easier to implement tools like {@code
    * DescriptorPool}.
-   *
-   * <p>This class is public so that the methods it exposes can be called from outside of this
-   * package. However, it should only be subclassed from nested classes of Descriptors.
    */
   public abstract static class GenericDescriptor {
+
+    // Private constructor to prevent subclasses outside of com.google.protobuf.Descriptors
+    private GenericDescriptor() {}
+
     public abstract Message toProto();
 
     public abstract String getName();
@@ -2583,20 +2594,23 @@ public final class Descriptors {
   }
 
   /** Describes an oneof of a message type. */
-  public static final class OneofDescriptor {
+  public static final class OneofDescriptor extends GenericDescriptor {
     /** Get the index of this descriptor within its parent. */
     public int getIndex() {
       return index;
     }
 
+    @Override
     public String getName() {
       return proto.getName();
     }
 
+    @Override
     public FileDescriptor getFile() {
       return file;
     }
 
+    @Override
     public String getFullName() {
       return fullName;
     }
@@ -2620,6 +2634,11 @@ public final class Descriptors {
 
     public FieldDescriptor getField(int index) {
       return fields[index];
+    }
+
+    @Override
+    public OneofDescriptorProto toProto() {
+      return proto;
     }
 
     private void setProto(final OneofDescriptorProto proto) {

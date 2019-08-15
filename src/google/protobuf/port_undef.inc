@@ -50,6 +50,7 @@
 #undef PROTOBUF_VERSION_SUFFIX
 #undef PROTOBUF_FIELD_OFFSET
 #undef PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC
+#undef PROTOBUF_MIN_PROTOC_VERSION
 #undef PROTOBUF_PREDICT_TRUE
 #undef PROTOBUF_PREDICT_FALSE
 #undef PROTOBUF_LONGLONG
@@ -67,6 +68,8 @@
 // Restore macro that may have been #undef'd in port_def.inc.
 #ifdef _MSC_VER
 #pragma pop_macro("GetMessage")
+#pragma pop_macro("IGNORE")
+#pragma pop_macro("IN")
 #endif
 
 #if defined(__clang__)

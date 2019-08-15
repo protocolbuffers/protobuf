@@ -31,7 +31,6 @@
 #include <sstream>
 
 #include <google/protobuf/compiler/code_generator.h>
-#include <google/protobuf/compiler/plugin.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/printer.h>
@@ -41,6 +40,7 @@
 
 #include <google/protobuf/compiler/csharp/csharp_enum.h>
 #include <google/protobuf/compiler/csharp/csharp_helpers.h>
+#include <google/protobuf/compiler/csharp/csharp_field_base.h>
 #include <google/protobuf/compiler/csharp/csharp_message.h>
 #include <google/protobuf/compiler/csharp/csharp_names.h>
 #include <google/protobuf/compiler/csharp/csharp_options.h>
@@ -57,6 +57,7 @@ ReflectionClassGenerator::ReflectionClassGenerator(const FileDescriptor* file,
       file_(file) {
   namespace_ = GetFileNamespace(file);
   reflectionClassname_ = GetReflectionClassUnqualifiedName(file);
+  extensionClassname_ = GetExtensionClassUnqualifiedName(file);
 }
 
 ReflectionClassGenerator::~ReflectionClassGenerator() {
@@ -69,6 +70,25 @@ void ReflectionClassGenerator::Generate(io::Printer* printer) {
   // Close the class declaration.
   printer->Outdent();
   printer->Print("}\n");
+
+  if (file_->extension_count() > 0) {
+    printer->Print(
+        "/// <summary>Holder for extension identifiers generated from the top level of $file_name$</summary>\n"
+        "internal static partial class $class_name$ {\n",
+        "access_level", class_access_level(),
+        "class_name", extensionClassname_,
+        "file_name", file_->name());
+    printer->Indent();
+    for (int i = 0; i < file_->extension_count(); i++) {
+        std::unique_ptr<FieldGeneratorBase> generator(
+          CreateFieldGenerator(file_->extension(i), -1, this->options()));
+        generator->GenerateExtensionCode(printer);
+    }
+    printer->Outdent();
+    printer->Print(
+    "}\n"
+    "\n");
+  }
 
   // write children: Enums
   if (file_->enum_type_count() > 0) {
@@ -170,17 +190,10 @@ void ReflectionClassGenerator::WriteDescriptor(io::Printer* printer) {
       "descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,\n");
   printer->Print("    new pbr::FileDescriptor[] { ");
   for (int i = 0; i < file_->dependency_count(); i++) {
-    // descriptor.proto is special: we don't allow access to the generated code, but there's
-    // a separately-exposed property to get at the file descriptor, specifically to allow this
-    // kind of dependency.
-    if (IsDescriptorProto(file_->dependency(i))) {
-      printer->Print("pbr::FileDescriptor.DescriptorProtoFileDescriptor, ");
-    } else {
       printer->Print(
       "$full_reflection_class_name$.Descriptor, ",
       "full_reflection_class_name",
       GetReflectionClassName(file_->dependency(i)));
-    }
   }
   printer->Print("},\n"
       "    new pbr::GeneratedClrTypeInfo(");
@@ -194,6 +207,16 @@ void ReflectionClassGenerator::WriteDescriptor(io::Printer* printer) {
   }
   else {
       printer->Print("null, ");
+  }  
+  if (file_->extension_count() > 0) {
+    std::vector<std::string> extensions;
+    for (int i = 0; i < file_->extension_count(); i++) {
+      extensions.push_back(GetFullExtensionName(file_->extension(i)));
+    }
+    printer->Print("new pb::Extension[] { $extensions$ }, ", "extensions", Join(extensions, ", "));
+  }
+  else {
+    printer->Print("null, ");
   }
   if (file_->message_type_count() > 0) {
       printer->Print("new pbr::GeneratedClrTypeInfo[] {\n");
@@ -242,7 +265,7 @@ void ReflectionClassGenerator::WriteGeneratedCodeInfo(const Descriptor* descript
       for (int i = 0; i < descriptor->field_count(); i++) {
           fields.push_back(GetPropertyName(descriptor->field(i)));
       }
-      printer->Print("new[]{ \"$fields$\" }, ", "fields", JoinStrings(fields, "\", \""));
+      printer->Print("new[]{ \"$fields$\" }, ", "fields", Join(fields, "\", \""));
   }
   else {
       printer->Print("null, ");
@@ -255,7 +278,7 @@ void ReflectionClassGenerator::WriteGeneratedCodeInfo(const Descriptor* descript
       for (int i = 0; i < descriptor->oneof_decl_count(); i++) {
           oneofs.push_back(UnderscoresToCamelCase(descriptor->oneof_decl(i)->name(), true));
       }
-      printer->Print("new[]{ \"$oneofs$\" }, ", "oneofs", JoinStrings(oneofs, "\", \""));
+      printer->Print("new[]{ \"$oneofs$\" }, ", "oneofs", Join(oneofs, "\", \""));
   }
   else {
       printer->Print("null, ");
@@ -268,10 +291,22 @@ void ReflectionClassGenerator::WriteGeneratedCodeInfo(const Descriptor* descript
       for (int i = 0; i < descriptor->enum_type_count(); i++) {
           enums.push_back(GetClassName(descriptor->enum_type(i)));
       }
-      printer->Print("new[]{ typeof($enums$) }, ", "enums", JoinStrings(enums, "), typeof("));
+      printer->Print("new[]{ typeof($enums$) }, ", "enums", Join(enums, "), typeof("));
   }
   else {
       printer->Print("null, ");
+  }
+
+  // Extensions
+  if (descriptor->extension_count() > 0) {
+    std::vector<std::string> extensions;
+    for (int i = 0; i < descriptor->extension_count(); i++) {
+      extensions.push_back(GetFullExtensionName(descriptor->extension(i)));
+    }
+    printer->Print("new pb::Extension[] { $extensions$ }, ", "extensions", Join(extensions, ", "));
+  }
+  else {
+    printer->Print("null, ");
   }
 
   // Nested types

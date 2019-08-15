@@ -36,13 +36,8 @@ package protobuf_unittest;
 message Proto1 {
   option experimental_java_message_interface =
       "com.google.protobuf.ExtraInterfaces.HasBoolValue";
-
-  option experimental_java_interface_extends =
-      "com.google.protobuf.ExtraInterfaces.HasByteValue";
-
   option experimental_java_message_interface =
       "com.google.protobuf.ExtraInterfaces.HasStringValue<Proto1>";
-
   option experimental_java_builder_interface =
       "com.google.protobuf.ExtraInterfaces.HasStringValueBuilder"
       "<Proto1, Builder>";
