@@ -181,32 +181,43 @@ void native_slot_set_value_and_case(const char* name,
         value = Qnil;
       } else if (CLASS_OF(value) != type_class) {
         // check for possible implicit conversions
-        VALUE converted_value = NULL;
-        char* field_type_name = rb_class2name(type_class);
+        VALUE converted_value = Qnil;
+        const char* field_type_name = rb_class2name(type_class);
 
         if (strcmp(field_type_name, "Google::Protobuf::Timestamp") == 0 &&
             rb_obj_is_kind_of(value, rb_cTime)) {
           // Time -> Google::Protobuf::Timestamp
           VALUE hash = rb_hash_new();
-          rb_hash_aset(hash, rb_str_new2("seconds"), rb_funcall(value, rb_intern("to_i"), 0));
-          rb_hash_aset(hash, rb_str_new2("nanos"), rb_funcall(value, rb_intern("nsec"), 0));
-          VALUE args[1] = { hash };
-          converted_value = rb_class_new_instance(1, args, type_class);
+          rb_hash_aset(hash, rb_str_new2("seconds"),
+                       rb_funcall(value, rb_intern("to_i"), 0));
+          rb_hash_aset(hash, rb_str_new2("nanos"),
+                       rb_funcall(value, rb_intern("nsec"), 0));
+          {
+            VALUE args[1] = {hash};
+            converted_value = rb_class_new_instance(1, args, type_class);
+          }
         } else if (strcmp(field_type_name, "Google::Protobuf::Duration") == 0 &&
                    rb_obj_is_kind_of(value, rb_cNumeric)) {
           // Numeric -> Google::Protobuf::Duration
           VALUE hash = rb_hash_new();
-          rb_hash_aset(hash, rb_str_new2("seconds"), rb_funcall(value, rb_intern("to_i"), 0));
-          VALUE n_value = rb_funcall(value, rb_intern("remainder"), 1, INT2NUM(1));
-          n_value = rb_funcall(n_value, rb_intern("*"), 1, INT2NUM(1000000000));
-          n_value = rb_funcall(n_value, rb_intern("round"), 0);
-          rb_hash_aset(hash, rb_str_new2("nanos"), n_value);
-          VALUE args[1] = { hash };
-          converted_value = rb_class_new_instance(1, args, type_class);
+          rb_hash_aset(hash, rb_str_new2("seconds"),
+                       rb_funcall(value, rb_intern("to_i"), 0));
+          {
+            VALUE n_value =
+                rb_funcall(value, rb_intern("remainder"), 1, INT2NUM(1));
+            n_value =
+                rb_funcall(n_value, rb_intern("*"), 1, INT2NUM(1000000000));
+            n_value = rb_funcall(n_value, rb_intern("round"), 0);
+            rb_hash_aset(hash, rb_str_new2("nanos"), n_value);
+          }
+          {
+            VALUE args[1] = { hash };
+            converted_value = rb_class_new_instance(1, args, type_class);
+          }
         }
 
         // raise if no suitable conversaion could be found
-        if (converted_value == NULL) {
+        if (converted_value == Qnil) {
           rb_raise(cTypeError,
                    "Invalid type %s to assign to submessage field '%s'.",
                   rb_class2name(CLASS_OF(value)), name);
@@ -462,14 +473,17 @@ static size_t align_up_to(size_t offset, size_t granularity) {
   return (offset + granularity - 1) & ~(granularity - 1);
 }
 
-MessageLayout* create_layout(const upb_msgdef* msgdef) {
+MessageLayout* create_layout(const Descriptor* desc) {
+  const upb_msgdef *msgdef = desc->msgdef;
   MessageLayout* layout = ALLOC(MessageLayout);
   int nfields = upb_msgdef_numfields(msgdef);
   int noneofs = upb_msgdef_numoneofs(msgdef);
   upb_msg_field_iter it;
   upb_msg_oneof_iter oit;
   size_t off = 0;
+  size_t hasbit = 0;
 
+  layout->desc = desc;
   layout->fields = ALLOC_N(MessageField, nfields);
   layout->oneofs = NULL;
 
@@ -477,7 +491,6 @@ MessageLayout* create_layout(const upb_msgdef* msgdef) {
     layout->oneofs = ALLOC_N(MessageOneof, noneofs);
   }
 
-  size_t hasbit = 0;
   for (upb_msg_field_begin(&it, msgdef);
        !upb_msg_field_done(&it);
        upb_msg_field_next(&it)) {
@@ -557,8 +570,6 @@ MessageLayout* create_layout(const upb_msgdef* msgdef) {
        !upb_msg_oneof_done(&oit);
        upb_msg_oneof_next(&oit)) {
     const upb_oneofdef* oneof = upb_msg_iter_oneof(&oit);
-    upb_oneof_iter fit;
-
     size_t field_size = sizeof(uint32_t);
     // Align the offset.
     off = (off + field_size - 1) & ~(field_size - 1);
@@ -567,9 +578,7 @@ MessageLayout* create_layout(const upb_msgdef* msgdef) {
   }
 
   layout->size = off;
-
   layout->msgdef = msgdef;
-  upb_msgdef_ref(layout->msgdef, &layout->msgdef);
 
   return layout;
 }
@@ -577,19 +586,18 @@ MessageLayout* create_layout(const upb_msgdef* msgdef) {
 void free_layout(MessageLayout* layout) {
   xfree(layout->fields);
   xfree(layout->oneofs);
-  upb_msgdef_unref(layout->msgdef, &layout->msgdef);
   xfree(layout);
 }
 
-VALUE field_type_class(const upb_fielddef* field) {
+VALUE field_type_class(const MessageLayout* layout, const upb_fielddef* field) {
   VALUE type_class = Qnil;
   if (upb_fielddef_type(field) == UPB_TYPE_MESSAGE) {
-    VALUE submsgdesc =
-        get_def_obj(upb_fielddef_subdef(field));
+    VALUE submsgdesc = get_msgdef_obj(layout->desc->descriptor_pool,
+                                      upb_fielddef_msgsubdef(field));
     type_class = Descriptor_msgclass(submsgdesc);
   } else if (upb_fielddef_type(field) == UPB_TYPE_ENUM) {
-    VALUE subenumdesc =
-        get_def_obj(upb_fielddef_subdef(field));
+    VALUE subenumdesc = get_enumdef_obj(layout->desc->descriptor_pool,
+                                        upb_fielddef_enumsubdef(field));
     type_class = EnumDescriptor_enummodule(subenumdesc);
   }
   return type_class;
@@ -670,7 +678,7 @@ void layout_clear(MessageLayout* layout,
 
     const upb_fielddef* key_field = map_field_key(field);
     const upb_fielddef* value_field = map_field_value(field);
-    VALUE type_class = field_type_class(value_field);
+    VALUE type_class = field_type_class(layout, value_field);
 
     if (type_class != Qnil) {
       VALUE args[3] = {
@@ -691,7 +699,7 @@ void layout_clear(MessageLayout* layout,
   } else if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
     VALUE ary = Qnil;
 
-    VALUE type_class = field_type_class(field);
+    VALUE type_class = field_type_class(layout, field);
 
     if (type_class != Qnil) {
       VALUE args[2] = {
@@ -706,9 +714,9 @@ void layout_clear(MessageLayout* layout,
 
     DEREF(memory, VALUE) = ary;
   } else {
-    native_slot_set(upb_fielddef_name(field),
-                    upb_fielddef_type(field), field_type_class(field),
-                    memory, layout_get_default(field));
+    native_slot_set(upb_fielddef_name(field), upb_fielddef_type(field),
+                    field_type_class(layout, field), memory,
+                    layout_get_default(field));
   }
 }
 
@@ -762,20 +770,19 @@ VALUE layout_get(MessageLayout* layout,
       return layout_get_default(field);
     }
     return native_slot_get(upb_fielddef_type(field),
-                           field_type_class(field),
-                           memory);
+                           field_type_class(layout, field), memory);
   } else if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
     return *((VALUE *)memory);
   } else if (!field_set) {
     return layout_get_default(field);
   } else {
     return native_slot_get(upb_fielddef_type(field),
-                           field_type_class(field),
-                           memory);
+                           field_type_class(layout, field), memory);
   }
 }
 
-static void check_repeated_field_type(VALUE val, const upb_fielddef* field) {
+static void check_repeated_field_type(const MessageLayout* layout, VALUE val,
+                                      const upb_fielddef* field) {
   RepeatedField* self;
   assert(upb_fielddef_label(field) == UPB_LABEL_REPEATED);
 
@@ -789,25 +796,13 @@ static void check_repeated_field_type(VALUE val, const upb_fielddef* field) {
     rb_raise(cTypeError, "Repeated field array has wrong element type");
   }
 
-  if (self->field_type == UPB_TYPE_MESSAGE) {
-    if (self->field_type_class !=
-        Descriptor_msgclass(get_def_obj(upb_fielddef_subdef(field)))) {
-      rb_raise(cTypeError,
-               "Repeated field array has wrong message class");
-    }
-  }
-
-
-  if (self->field_type == UPB_TYPE_ENUM) {
-    if (self->field_type_class !=
-        EnumDescriptor_enummodule(get_def_obj(upb_fielddef_subdef(field)))) {
-      rb_raise(cTypeError,
-               "Repeated field array has wrong enum class");
-    }
+  if (self->field_type_class != field_type_class(layout, field)) {
+    rb_raise(cTypeError, "Repeated field array has wrong message/enum class");
   }
 }
 
-static void check_map_field_type(VALUE val, const upb_fielddef* field) {
+static void check_map_field_type(const MessageLayout* layout, VALUE val,
+                                 const upb_fielddef* field) {
   const upb_fielddef* key_field = map_field_key(field);
   const upb_fielddef* value_field = map_field_value(field);
   Map* self;
@@ -824,16 +819,10 @@ static void check_map_field_type(VALUE val, const upb_fielddef* field) {
   if (self->value_type != upb_fielddef_type(value_field)) {
     rb_raise(cTypeError, "Map value type does not match field's value type");
   }
-  if (upb_fielddef_type(value_field) == UPB_TYPE_MESSAGE ||
-      upb_fielddef_type(value_field) == UPB_TYPE_ENUM) {
-    if (self->value_type_class !=
-        get_def_obj(upb_fielddef_subdef(value_field))) {
-      rb_raise(cTypeError,
-               "Map value type has wrong message/enum class");
-    }
+  if (self->value_type_class != field_type_class(layout, value_field)) {
+    rb_raise(cTypeError, "Map value type has wrong message/enum class");
   }
 }
-
 
 void layout_set(MessageLayout* layout,
                 void* storage,
@@ -863,20 +852,19 @@ void layout_set(MessageLayout* layout,
       // and case number are altered atomically (w.r.t. the Ruby VM).
       native_slot_set_value_and_case(
           upb_fielddef_name(field),
-          upb_fielddef_type(field), field_type_class(field),
+          upb_fielddef_type(field), field_type_class(layout, field),
           memory, val,
           oneof_case, upb_fielddef_number(field));
     }
   } else if (is_map_field(field)) {
-    check_map_field_type(val, field);
+    check_map_field_type(layout, val, field);
     DEREF(memory, VALUE) = val;
   } else if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
-    check_repeated_field_type(val, field);
+    check_repeated_field_type(layout, val, field);
     DEREF(memory, VALUE) = val;
   } else {
-    native_slot_set(upb_fielddef_name(field),
-                    upb_fielddef_type(field), field_type_class(field),
-                    memory, val);
+    native_slot_set(upb_fielddef_name(field), upb_fielddef_type(field),
+                    field_type_class(layout, field), memory, val);
   }
 
   if (layout->fields[upb_fielddef_index(field)].hasbit !=
