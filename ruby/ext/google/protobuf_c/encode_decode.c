@@ -738,12 +738,13 @@ static void add_handlers_for_message(const void *closure, upb_handlers *h) {
        !upb_msg_field_done(&i);
        upb_msg_field_next(&i)) {
     const upb_fielddef *f = upb_msg_iter_field(&i);
+    const upb_oneofdef *oneof = upb_fielddef_containingoneof(f);
     size_t offset = desc->layout->fields[upb_fielddef_index(f)].offset +
         sizeof(MessageHeader);
 
-    if (upb_fielddef_containingoneof(f)) {
+    if (oneof) {
       size_t oneof_case_offset =
-          desc->layout->fields[upb_fielddef_index(f)].case_offset +
+          desc->layout->oneofs[upb_oneofdef_index(oneof)].case_offset +
           sizeof(MessageHeader);
       add_handlers_for_oneof_field(h, f, offset, oneof_case_offset);
     } else if (is_map_field(f)) {
@@ -1311,19 +1312,18 @@ static void putmsg(VALUE msg_rb, const Descriptor* desc,
        !upb_msg_field_done(&i);
        upb_msg_field_next(&i)) {
     upb_fielddef *f = upb_msg_iter_field(&i);
+    const upb_oneofdef *oneof = upb_fielddef_containingoneof(f);
     bool is_matching_oneof = false;
     uint32_t offset =
         desc->layout->fields[upb_fielddef_index(f)].offset +
         sizeof(MessageHeader);
 
-    if (upb_fielddef_containingoneof(f)) {
-      uint32_t oneof_case_offset =
-          desc->layout->fields[upb_fielddef_index(f)].case_offset +
-          sizeof(MessageHeader);
+    if (oneof) {
+      uint32_t oneof_case =
+          slot_read_oneof_case(desc->layout, Message_data(msg), oneof);
       // For a oneof, check that this field is actually present -- skip all the
       // below if not.
-      if (DEREF(msg, oneof_case_offset, uint32_t) !=
-          upb_fielddef_number(f)) {
+      if (oneof_case != upb_fielddef_number(f)) {
         continue;
       }
       // Otherwise, fall through to the appropriate singular-field handler
@@ -1543,18 +1543,17 @@ static void discard_unknown(VALUE msg_rb, const Descriptor* desc) {
        !upb_msg_field_done(&it);
        upb_msg_field_next(&it)) {
     upb_fielddef *f = upb_msg_iter_field(&it);
+    const upb_oneofdef *oneof = upb_fielddef_containingoneof(f);
     uint32_t offset =
         desc->layout->fields[upb_fielddef_index(f)].offset +
         sizeof(MessageHeader);
 
-    if (upb_fielddef_containingoneof(f)) {
-      uint32_t oneof_case_offset =
-          desc->layout->fields[upb_fielddef_index(f)].case_offset +
-          sizeof(MessageHeader);
+    if (oneof) {
+      uint32_t oneof_case =
+          slot_read_oneof_case(desc->layout, Message_data(msg), oneof);
       // For a oneof, check that this field is actually present -- skip all the
       // below if not.
-      if (DEREF(msg, oneof_case_offset, uint32_t) !=
-          upb_fielddef_number(f)) {
+      if (oneof_case != upb_fielddef_number(f)) {
         continue;
       }
       // Otherwise, fall through to the appropriate singular-field handler

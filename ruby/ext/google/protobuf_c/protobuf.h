@@ -59,6 +59,7 @@ typedef struct OneofDescriptor OneofDescriptor;
 typedef struct EnumDescriptor EnumDescriptor;
 typedef struct MessageLayout MessageLayout;
 typedef struct MessageField MessageField;
+typedef struct MessageOneof MessageOneof;
 typedef struct MessageHeader MessageHeader;
 typedef struct MessageBuilderContext MessageBuilderContext;
 typedef struct OneofBuilderContext OneofBuilderContext;
@@ -363,6 +364,8 @@ bool native_slot_eq(upb_fieldtype_t type, void* mem1, void* mem2);
 
 VALUE native_slot_encode_and_freeze_string(upb_fieldtype_t type, VALUE value);
 void native_slot_check_int_range_precision(const char* name, upb_fieldtype_t type, VALUE value);
+uint32_t slot_read_oneof_case(MessageLayout* layout, const void* storage,
+                              const upb_oneofdef* oneof);
 
 extern rb_encoding* kRubyStringUtf8Encoding;
 extern rb_encoding* kRubyStringASCIIEncoding;
@@ -492,18 +495,21 @@ VALUE Map_iter_value(Map_iter* iter);
 // Message layout / storage.
 // -----------------------------------------------------------------------------
 
-#define MESSAGE_FIELD_NO_CASE ((size_t)-1)
-#define MESSAGE_FIELD_NO_HASBIT ((size_t)-1)
+#define MESSAGE_FIELD_NO_HASBIT ((uint32_t)-1)
 
 struct MessageField {
-  size_t offset;
-  size_t case_offset;  // for oneofs, a uint32. Else, MESSAGE_FIELD_NO_CASE.
-  size_t hasbit;
+  uint32_t offset;
+  uint32_t hasbit;
+};
+
+struct MessageOneof {
+  uint32_t case_offset;
 };
 
 struct MessageLayout {
   const upb_msgdef* msgdef;
   MessageField* fields;
+  MessageOneof* oneofs;
   size_t size;
 };
 
