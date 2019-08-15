@@ -473,6 +473,11 @@ static size_t align_up_to(size_t offset, size_t granularity) {
   return (offset + granularity - 1) & ~(granularity - 1);
 }
 
+static bool is_value_field(const upb_fielddef* f) {
+  return upb_fielddef_isseq(f) || upb_fielddef_issubmsg(f) ||
+         upb_fielddef_isstring(f);
+}
+
 MessageLayout* create_layout(const Descriptor* desc) {
   const upb_msgdef *msgdef = desc->msgdef;
   MessageLayout* layout = ALLOC(MessageLayout);
@@ -507,24 +512,38 @@ MessageLayout* create_layout(const Descriptor* desc) {
     off += (hasbit + 8 - 1) / 8;
   }
 
+  off = align_up_to(off, sizeof(VALUE));
+  layout->value_offset = off;
+  layout->value_count = 0;
+
+  // Place all (non-oneof) VALUE fields first.
+  for (upb_msg_field_begin(&it, msgdef);
+       !upb_msg_field_done(&it);
+       upb_msg_field_next(&it)) {
+    const upb_fielddef* field = upb_msg_iter_field(&it);
+    if (upb_fielddef_containingoneof(field) || !is_value_field(field)) {
+      continue;
+    }
+
+    layout->fields[upb_fielddef_index(field)].offset = off;
+    off += sizeof(VALUE);
+    layout->value_count++;
+  }
+
+  // Now place all other (non-oneof) fields.
   for (upb_msg_field_begin(&it, msgdef);
        !upb_msg_field_done(&it);
        upb_msg_field_next(&it)) {
     const upb_fielddef* field = upb_msg_iter_field(&it);
     size_t field_size;
 
-    if (upb_fielddef_containingoneof(field)) {
-      // Oneofs are handled separately below.
+    if (upb_fielddef_containingoneof(field) || is_value_field(field)) {
       continue;
     }
 
     // Allocate |field_size| bytes for this field in the layout.
-    field_size = 0;
-    if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
-      field_size = sizeof(VALUE);
-    } else {
-      field_size = native_slot_size(upb_fielddef_type(field));
-    }
+    field_size = native_slot_size(upb_fielddef_type(field));
+
     // Align current offset up to |size| granularity.
     off = align_up_to(off, field_size);
     layout->fields[upb_fielddef_index(field)].offset = off;
@@ -561,6 +580,7 @@ MessageLayout* create_layout(const Descriptor* desc) {
          upb_oneof_next(&fit)) {
       const upb_fielddef* field = upb_oneof_iter_field(&fit);
       layout->fields[upb_fielddef_index(field)].offset = off;
+      layout->oneofs[upb_oneofdef_index(oneof)].offset = off;
     }
     off += field_size;
   }
@@ -620,7 +640,7 @@ static uint32_t* slot_oneof_case(MessageLayout* layout,
 uint32_t slot_read_oneof_case(MessageLayout* layout, const void* storage,
                               const upb_oneofdef* oneof) {
   uint32_t* ptr = slot_oneof_case(layout, storage, oneof);
-  return *ptr;
+  return *ptr & ~ONEOF_CASE_MASK;
 }
 
 static void slot_set_hasbit(MessageLayout* layout,
@@ -850,11 +870,14 @@ void layout_set(MessageLayout* layout,
       // sync with the value slot whenever the Ruby VM has been called. Thus, we
       // use native_slot_set_value_and_case(), which ensures that both the value
       // and case number are altered atomically (w.r.t. the Ruby VM).
+      uint32_t case_value = upb_fielddef_number(field);
+      if (upb_fielddef_issubmsg(field) || upb_fielddef_isstring(field)) {
+        case_value |= ONEOF_CASE_MASK;
+      }
+
       native_slot_set_value_and_case(
-          upb_fielddef_name(field),
-          upb_fielddef_type(field), field_type_class(layout, field),
-          memory, val,
-          oneof_case, upb_fielddef_number(field));
+          upb_fielddef_name(field), upb_fielddef_type(field),
+          field_type_class(layout, field), memory, val, oneof_case, case_value);
     }
   } else if (is_map_field(field)) {
     check_map_field_type(layout, val, field);
@@ -885,23 +908,19 @@ void layout_init(MessageLayout* layout,
 }
 
 void layout_mark(MessageLayout* layout, void* storage) {
-  upb_msg_field_iter it;
-  for (upb_msg_field_begin(&it, layout->msgdef);
-       !upb_msg_field_done(&it);
-       upb_msg_field_next(&it)) {
-    const upb_fielddef* field = upb_msg_iter_field(&it);
-    const upb_oneofdef* oneof = upb_fielddef_containingoneof(field);
-    void* memory = slot_memory(layout, storage, field);
+  VALUE* values = (VALUE*)CHARPTR_AT(storage, layout->value_offset);
+  int noneofs = upb_msgdef_numoneofs(layout->msgdef);
+  int i;
 
-    if (oneof) {
-      uint32_t oneof_case = slot_read_oneof_case(layout, storage, oneof);
-      if (oneof_case == upb_fielddef_number(field)) {
-        native_slot_mark(upb_fielddef_type(field), memory);
-      }
-    } else if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
-      rb_gc_mark(DEREF(memory, VALUE));
-    } else {
-      native_slot_mark(upb_fielddef_type(field), memory);
+  for (i = 0; i < layout->value_count; i++) {
+    rb_gc_mark(values[i]);
+  }
+
+  for (i = 0; i < noneofs; i++) {
+    MessageOneof* oneof = &layout->oneofs[i];
+    uint32_t* case_ptr = (uint32_t*)CHARPTR_AT(storage, oneof->case_offset);
+    if (*case_ptr & ONEOF_CASE_MASK) {
+      rb_gc_mark(DEREF_OFFSET(storage, oneof->offset, VALUE));
     }
   }
 }

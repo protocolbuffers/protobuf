@@ -507,6 +507,7 @@ struct MessageField {
 };
 
 struct MessageOneof {
+  uint32_t offset;
   uint32_t case_offset;
 };
 
@@ -516,8 +517,12 @@ struct MessageLayout {
   const upb_msgdef* msgdef;
   MessageField* fields;
   MessageOneof* oneofs;
-  size_t size;
+  uint32_t size;
+  uint32_t value_offset;
+  int value_count;
 };
+
+#define ONEOF_CASE_MASK 0x80000000
 
 MessageLayout* create_layout(const Descriptor* desc);
 void free_layout(MessageLayout* layout);
