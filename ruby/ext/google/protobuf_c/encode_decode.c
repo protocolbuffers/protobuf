@@ -690,7 +690,7 @@ void add_handlers_for_message(const void *closure, upb_handlers *h) {
   // class is actually built, so to work around this, we just create the layout
   // (and handlers, in the class-building function) on-demand.
   if (desc->layout == NULL) {
-    desc->layout = create_layout(desc);
+    create_layout(desc);
   }
 
   // If this is a mapentry message type, set up a special set of handlers and

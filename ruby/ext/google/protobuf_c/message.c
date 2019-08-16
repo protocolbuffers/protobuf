@@ -64,7 +64,7 @@ VALUE Message_alloc(VALUE klass) {
   VALUE ret;
 
   if (desc->layout == NULL) {
-    desc->layout = create_layout(desc);
+    create_layout(desc);
   }
 
   msg = (MessageHeader*)ALLOC_N(uint8_t,

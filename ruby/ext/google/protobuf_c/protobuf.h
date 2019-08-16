@@ -509,11 +509,12 @@ struct MessageField {
 struct MessageLayout {
   const Descriptor* desc;
   const upb_msgdef* msgdef;
+  void* empty_template;  // Can memcpy() onto a layout to clear it.
   MessageField* fields;
   size_t size;
 };
 
-MessageLayout* create_layout(const Descriptor* desc);
+void create_layout(Descriptor* desc);
 void free_layout(MessageLayout* layout);
 bool field_contains_hasbit(MessageLayout* layout,
                  const upb_fielddef* field);
