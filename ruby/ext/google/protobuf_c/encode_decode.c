@@ -155,6 +155,9 @@ static const void *newoneofhandlerdata(upb_handlers *h,
   // create a separate ID space. In addition, using the field tag number here
   // lets us easily look up the field in the oneof accessor.
   hd->oneof_case_num = upb_fielddef_number(f);
+  if (is_value_field(f)) {
+    hd->oneof_case_num |= ONEOF_CASE_MASK;
+  }
   hd->subklass = field_type_class(desc->layout, f);
   upb_handlers_addcleanup(h, hd, xfree);
   return hd;

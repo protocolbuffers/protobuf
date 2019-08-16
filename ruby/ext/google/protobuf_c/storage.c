@@ -473,7 +473,7 @@ static size_t align_up_to(size_t offset, size_t granularity) {
   return (offset + granularity - 1) & ~(granularity - 1);
 }
 
-static bool is_value_field(const upb_fielddef* f) {
+bool is_value_field(const upb_fielddef* f) {
   return upb_fielddef_isseq(f) || upb_fielddef_issubmsg(f) ||
          upb_fielddef_isstring(f);
 }

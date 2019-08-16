@@ -370,6 +370,7 @@ VALUE native_slot_encode_and_freeze_string(upb_fieldtype_t type, VALUE value);
 void native_slot_check_int_range_precision(const char* name, upb_fieldtype_t type, VALUE value);
 uint32_t slot_read_oneof_case(MessageLayout* layout, const void* storage,
                               const upb_oneofdef* oneof);
+bool is_value_field(const upb_fielddef* f);
 
 extern rb_encoding* kRubyStringUtf8Encoding;
 extern rb_encoding* kRubyStringASCIIEncoding;
