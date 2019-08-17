@@ -756,5 +756,33 @@ namespace Google.Protobuf.Collections
             Assert.True(list1.Contains(SampleNaNs.SignallingFlipped));
             Assert.False(list2.Contains(SampleNaNs.SignallingFlipped));
         }
+
+#if NETCOREAPP2_1
+        [Test]
+        public void AsSpan_BasicUsage()
+        {
+            var list = new RepeatedField<int> { 10, 11 };
+            var span = list.AsSpan();
+
+            // Span was constructed correctly
+            Assert.AreEqual(2, span.Length);
+            Assert.AreEqual(10, span[0]);
+            Assert.AreEqual(11, span[1]);
+
+            // Writing to span writes to RepeatedField
+            span[0] = 100;
+            Assert.AreEqual(100, list[0]);
+        }
+
+        [Test]
+        public void AsSpan_Empty()
+        {
+            var list = new RepeatedField<int>();
+            var span = list.AsSpan();
+
+            // Empty Span was constructed correctly
+            Assert.AreEqual(0, span.Length);
+        }
+#endif
     }
 }

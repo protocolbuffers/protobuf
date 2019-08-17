@@ -543,6 +543,20 @@ namespace Google.Protobuf.Collections
             }
         }
 
+#if NETSTANDARD2_0
+        /// <summary>
+        /// Creates a new span over the RepeatedField.  This is the most
+        /// efficient way to read and write values to the RepeatedField because
+        /// there are no internal null or bounds checks.  You are responsible
+        /// for ensuring no null values are written to the span.
+        /// </summary>
+        /// <returns>Span representation of the RepeatedField</returns>
+        public Span<T> AsSpan()
+        {
+            return array.AsSpan(0, count);
+        }
+#endif
+
         #region Explicit interface implementation for IList and ICollection.
         bool IList.IsFixedSize => false;
 
