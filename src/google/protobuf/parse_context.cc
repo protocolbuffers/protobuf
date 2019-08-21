@@ -119,8 +119,7 @@ const char* EpsCopyInputStream::Next(int overrun, int d) {
     const void* data;
     // ZeroCopyInputStream indicates Next may return 0 size buffers. Hence
     // we loop.
-    while (zcis_->Next(&data, &size_)) {
-      overall_limit_ -= size_;
+    while (StreamNext(&data)) {
       if (size_ > kSlopBytes) {
         // We got a large chunk
         std::memcpy(buffer_ + kSlopBytes, data, kSlopBytes);
@@ -310,7 +309,6 @@ const char* EpsCopyInputStream::InitFrom(io::ZeroCopyInputStream* zcis) {
   return buffer_;
 }
 
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 const char* ParseContext::ParseMessage(MessageLite* msg, const char* ptr) {
   return ParseMessage<MessageLite>(msg, ptr);
 }
@@ -318,7 +316,6 @@ const char* ParseContext::ParseMessage(Message* msg, const char* ptr) {
   // Use reinterptret case to prevent inclusion of non lite header
   return ParseMessage(reinterpret_cast<MessageLite*>(msg), ptr);
 }
-#endif
 
 inline void WriteVarint(uint64 val, std::string* s) {
   while (val >= 128) {

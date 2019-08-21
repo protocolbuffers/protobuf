@@ -124,8 +124,6 @@ void MessageLite::LogInitializationErrorMessage() const {
 
 namespace internal {
 
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-
 template <bool aliasing>
 bool MergePartialFromImpl(StringPiece input, MessageLite* msg) {
   const char* ptr;
@@ -157,38 +155,6 @@ bool MergePartialFromImpl(BoundedZCIS input, MessageLite* msg) {
   return ctx.EndedAtLimit();
 }
 
-#else  // !GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-
-inline bool InlineMergePartialEntireStream(io::CodedInputStream* cis,
-                                           MessageLite* message,
-                                           bool aliasing) {
-  return message->MergePartialFromCodedStream(cis) &&
-         cis->ConsumedEntireMessage();
-}
-
-template <bool aliasing>
-bool MergePartialFromImpl(StringPiece input, MessageLite* msg) {
-  io::CodedInputStream decoder(reinterpret_cast<const uint8*>(input.data()),
-                               input.size());
-  return InlineMergePartialEntireStream(&decoder, msg, aliasing);
-}
-
-template <bool aliasing>
-bool MergePartialFromImpl(BoundedZCIS input, MessageLite* msg) {
-  io::CodedInputStream decoder(input.zcis);
-  decoder.PushLimit(input.limit);
-  return InlineMergePartialEntireStream(&decoder, msg, aliasing) &&
-         decoder.BytesUntilLimit() == 0;
-}
-
-template <bool aliasing>
-bool MergePartialFromImpl(io::ZeroCopyInputStream* input, MessageLite* msg) {
-  io::CodedInputStream decoder(input);
-  return InlineMergePartialEntireStream(&decoder, msg, aliasing);
-}
-
-#endif  // !GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-
 template bool MergePartialFromImpl<false>(StringPiece input,
                                           MessageLite* msg);
 template bool MergePartialFromImpl<true>(StringPiece input,
@@ -210,7 +176,6 @@ MessageLite* MessageLite::New(Arena* arena) const {
   return message;
 }
 
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 class ZeroCopyCodedInputStream : public io::ZeroCopyInputStream {
  public:
   ZeroCopyCodedInputStream(io::CodedInputStream* cis) : cis_(cis) {}
@@ -252,7 +217,6 @@ bool MessageLite::MergePartialFromCodedStream(io::CodedInputStream* input) {
   input->SetConsumed();
   return true;
 }
-#endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 
 bool MessageLite::MergeFromCodedStream(io::CodedInputStream* input) {
   return MergePartialFromCodedStream(input) && IsInitializedWithErrors();

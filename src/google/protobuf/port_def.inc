@@ -364,3 +364,19 @@
 // violations. So let's ignore for now.
 #pragma clang diagnostic ignored "-Wshorten-64-to-32"
 #endif
+
+// PROTOBUF_ASSUME(pred) tells the compiler that it can assume pred is true. To
+// be safe, we also validate the assumption with a GOOGLE_DCHECK in unoptimized
+// builds. The macro does not do anything useful if the compiler does not
+// support __builtin_assume.
+#ifdef __has_builtin
+#if __has_builtin(__builtin_assume)
+#define PROTOBUF_ASSUME(pred) \
+  GOOGLE_DCHECK(pred);               \
+  __builtin_assume(pred)
+#else
+#define PROTOBUF_ASSUME(pred) GOOGLE_DCHECK(pred)
+#endif
+#else
+#define PROTOBUF_ASSUME(pred) GOOGLE_DCHECK(pred)
+#endif

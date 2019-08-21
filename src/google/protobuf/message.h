@@ -296,13 +296,9 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   void Clear() override;
   bool IsInitialized() const override;
   void CheckTypeAndMergeFrom(const MessageLite& other) override;
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
   // Reflective parser
   const char* _InternalParse(const char* ptr,
                              internal::ParseContext* ctx) override;
-#else
-  bool MergePartialFromCodedStream(io::CodedInputStream* input) override;
-#endif
   size_t ByteSizeLong() const override;
   uint8* InternalSerializeWithCachedSizesToArray(
       uint8* target, io::EpsCopyOutputStream* stream) const override;
@@ -1204,9 +1200,7 @@ T* DynamicCastToGenerated(Message* from) {
 // of loops (on x86-64 it compiles into two "mov" instructions).
 template <typename T>
 void LinkMessageReflection() {
-  typedef const T& GetDefaultInstanceFunction();
-  GetDefaultInstanceFunction* volatile unused = &T::default_instance;
-  (void)&unused;  // Use address to avoid an extra load of volatile variable.
+  internal::StrongReference(T::default_instance);
 }
 
 // =============================================================================

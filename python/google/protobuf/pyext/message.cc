@@ -66,7 +66,6 @@
 #include <google/protobuf/pyext/scoped_pyobject_ptr.h>
 #include <google/protobuf/pyext/unknown_fields.h>
 #include <google/protobuf/util/message_differencer.h>
-#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/io/strtod.h>
 #include <google/protobuf/stubs/map_util.h>
 
@@ -1332,7 +1331,7 @@ static void Dealloc(CMessage* self) {
 
 PyObject* IsInitialized(CMessage* self, PyObject* args) {
   PyObject* errors = NULL;
-  if (PyArg_ParseTuple(args, "|O", &errors) < 0) {
+  if (!PyArg_ParseTuple(args, "|O", &errors)) {
     return NULL;
   }
   if (self->message->IsInitialized()) {
@@ -1360,20 +1359,18 @@ PyObject* IsInitialized(CMessage* self, PyObject* args) {
   Py_RETURN_FALSE;
 }
 
-PyObject* HasFieldByDescriptor(
-    CMessage* self, const FieldDescriptor* field_descriptor) {
+int HasFieldByDescriptor(CMessage* self,
+                         const FieldDescriptor* field_descriptor) {
   Message* message = self->message;
   if (!CheckFieldBelongsToMessage(field_descriptor, message)) {
-    return NULL;
+    return -1;
   }
   if (field_descriptor->label() == FieldDescriptor::LABEL_REPEATED) {
     PyErr_SetString(PyExc_KeyError,
                     "Field is repeated. A singular method is required.");
-    return NULL;
+    return -1;
   }
-  bool has_field =
-      message->GetReflection()->HasField(*message, field_descriptor);
-  return PyBool_FromLong(has_field ? 1 : 0);
+  return message->GetReflection()->HasField(*message, field_descriptor);
 }
 
 const FieldDescriptor* FindFieldWithOneofs(
@@ -1475,10 +1472,10 @@ PyObject* ClearExtension(CMessage* self, PyObject* extension) {
   if (descriptor == NULL) {
     return NULL;
   }
-  if (InternalReleaseFieldByDescriptor(self, descriptor) < 0) {
-    return NULL;
+  if (ClearFieldByDescriptor(self, descriptor) < 0) {
+    return nullptr;
   }
-  return ClearFieldByDescriptor(self, descriptor);
+  Py_RETURN_NONE;
 }
 
 PyObject* HasExtension(CMessage* self, PyObject* extension) {
@@ -1486,7 +1483,12 @@ PyObject* HasExtension(CMessage* self, PyObject* extension) {
   if (descriptor == NULL) {
     return NULL;
   }
-  return HasFieldByDescriptor(self, descriptor);
+  int has_field = HasFieldByDescriptor(self, descriptor);
+  if (has_field < 0) {
+    return nullptr;
+  } else {
+    return PyBool_FromLong(has_field);
+  }
 }
 
 // ---------------------------------------------------------------------
@@ -1597,57 +1599,45 @@ int InternalReleaseFieldByDescriptor(
                                 containers_to_release);
 }
 
-PyObject* ClearFieldByDescriptor(
-    CMessage* self,
-    const FieldDescriptor* field_descriptor) {
+int ClearFieldByDescriptor(CMessage* self,
+                           const FieldDescriptor* field_descriptor) {
   if (!CheckFieldBelongsToMessage(field_descriptor, self->message)) {
-    return NULL;
+    return -1;
+  }
+  if (InternalReleaseFieldByDescriptor(self, field_descriptor) < 0) {
+    return -1;
   }
   AssureWritable(self);
   Message* message = self->message;
   message->GetReflection()->ClearField(message, field_descriptor);
-  Py_RETURN_NONE;
+  return 0;
 }
 
 PyObject* ClearField(CMessage* self, PyObject* arg) {
-  if (!(PyString_Check(arg) || PyUnicode_Check(arg))) {
-    PyErr_SetString(PyExc_TypeError, "field name must be a string");
-    return NULL;
-  }
-#if PY_MAJOR_VERSION < 3
   char* field_name;
-  Py_ssize_t size;
-  if (PyString_AsStringAndSize(arg, &field_name, &size) < 0) {
+  Py_ssize_t field_size;
+  if (PyString_AsStringAndSize(arg, &field_name, &field_size) < 0) {
     return NULL;
   }
-#else
-  Py_ssize_t size;
-  const char* field_name = PyUnicode_AsUTF8AndSize(arg, &size);
-#endif
   AssureWritable(self);
-  Message* message = self->message;
-  ScopedPyObjectPtr arg_in_oneof;
   bool is_in_oneof;
-  const FieldDescriptor* field_descriptor =
-      FindFieldWithOneofs(message, string(field_name, size), &is_in_oneof);
+  const FieldDescriptor* field_descriptor = FindFieldWithOneofs(
+      self->message, string(field_name, field_size), &is_in_oneof);
   if (field_descriptor == NULL) {
-    if (!is_in_oneof) {
+    if (is_in_oneof) {
+      // We gave the name of a oneof, and none of its fields are set.
+      Py_RETURN_NONE;
+    } else {
       PyErr_Format(PyExc_ValueError,
                    "Protocol message has no \"%s\" field.", field_name);
       return NULL;
-    } else {
-      Py_RETURN_NONE;
     }
-  } else if (is_in_oneof) {
-    const string& name = field_descriptor->name();
-    arg_in_oneof.reset(PyString_FromStringAndSize(name.c_str(), name.size()));
-    arg = arg_in_oneof.get();
   }
 
-  if (InternalReleaseFieldByDescriptor(self, field_descriptor) < 0) {
-    return NULL;
+  if (ClearFieldByDescriptor(self, field_descriptor) < 0) {
+    return nullptr;
   }
-  return ClearFieldByDescriptor(self, field_descriptor);
+  Py_RETURN_NONE;
 }
 
 PyObject* Clear(CMessage* self) {
@@ -1750,6 +1740,15 @@ static PyObject* InternalSerializeToString(
   if (size == 0) {
     return PyBytes_FromString("");
   }
+
+  if (size > INT_MAX) {
+    PyErr_Format(PyExc_ValueError,
+                 "Message %s exceeds maximum protobuf "
+                 "size of 2GB: %zu",
+                 GetMessageName(self).c_str(), size);
+    return nullptr;
+  }
+
   PyObject* result = PyBytes_FromStringAndSize(NULL, size);
   if (result == NULL) {
     return NULL;
@@ -1935,32 +1934,42 @@ static PyObject* MergeFromString(CMessage* self, PyObject* arg) {
 
   AssureWritable(self);
 
-  io::CodedInputStream input(
-      reinterpret_cast<const uint8*>(data), data_length);
-  if (allow_oversize_protos) {
-    input.SetTotalBytesLimit(INT_MAX, INT_MAX);
-    input.SetRecursionLimit(INT_MAX);
-  }
   PyMessageFactory* factory = GetFactoryForMessage(self);
-  input.SetExtensionRegistry(factory->pool->pool, factory->message_factory);
-  bool success = self->message->MergePartialFromCodedStream(&input);
+  int depth = allow_oversize_protos
+                  ? INT_MAX
+                  : io::CodedInputStream::GetDefaultRecursionLimit();
+  const char* ptr;
+  internal::ParseContext ctx(
+      depth, false, &ptr,
+      StringPiece(static_cast<const char*>(data), data_length));
+  ctx.data().pool = factory->pool->pool;
+  ctx.data().factory = factory->message_factory;
+
+  ptr = self->message->_InternalParse(ptr, &ctx);
+
   // Child message might be lazily created before MergeFrom. Make sure they
   // are mutable at this point if child messages are really created.
   if (FixupMessageAfterMerge(self) < 0) {
     return NULL;
   }
 
-  if (success) {
-    if (!input.ConsumedEntireMessage()) {
-      // TODO(jieluo): Raise error and return NULL instead.
-      // b/27494216
-      PyErr_Warn(NULL, "Unexpected end-group tag: Not all data was converted");
-    }
-    return PyInt_FromLong(input.CurrentPosition());
-  } else {
+  // Python makes distinction in error message, between a general parse failure
+  // and in-correct ending on a terminating tag. Hence we need to be a bit more
+  // explicit in our correctness checks.
+  if (ptr == nullptr || ctx.BytesUntilLimit(ptr) < 0) {
+    // Parse error or the parser overshoot the limit.
     PyErr_Format(DecodeError_class, "Error parsing message");
     return NULL;
   }
+  // ctx has an explicit limit set (length of string_view), so we have to
+  // check we ended at that limit.
+  if (!ctx.EndedAtLimit()) {
+    // TODO(jieluo): Raise error and return NULL instead.
+    // b/27494216
+    PyErr_Warn(nullptr, "Unexpected end-group tag: Not all data was converted");
+    return PyInt_FromLong(data_length - ctx.BytesUntilLimit(ptr));
+  }
+  return PyInt_FromLong(data_length);
 }
 
 static PyObject* ParseFromString(CMessage* self, PyObject* arg) {

@@ -655,7 +655,8 @@ class GeneratedDescriptorTest(unittest.TestCase):
     nested_message_descriptor = unittest_pb2.TestAllTypes.NestedMessage.DESCRIPTOR
     self.assertEqual(len(message_descriptor.nested_types), 3)
     self.assertFalse(None in message_descriptor.nested_types)
-    self.assertTrue(nested_message_descriptor in message_descriptor.nested_types)
+    self.assertTrue(
+        nested_message_descriptor in message_descriptor.nested_types)
 
   def testServiceDescriptor(self):
     service_descriptor = unittest_pb2.DESCRIPTOR.services_by_name['TestService']

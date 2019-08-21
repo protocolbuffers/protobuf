@@ -355,7 +355,7 @@ describe('binaryUtilsTest', function() {
      */
     function test(x, opt_bits) {
       jspb.utils.splitFloat32(x);
-      if (goog.isDef(opt_bits)) {
+      if (opt_bits !== undefined) {
         if (opt_bits != jspb.utils.split64Low) throw 'fail!';
       }
       if (truncate(x) != jspb.utils.joinFloat32(jspb.utils.split64Low,
@@ -422,10 +422,10 @@ describe('binaryUtilsTest', function() {
      */
     function test(x, opt_highBits, opt_lowBits) {
       jspb.utils.splitFloat64(x);
-      if (goog.isDef(opt_highBits)) {
+      if (opt_highBits !== undefined) {
         if (opt_highBits != jspb.utils.split64High) throw 'fail!';
       }
-      if (goog.isDef(opt_lowBits)) {
+      if (opt_lowBits !== undefined) {
         if (opt_lowBits != jspb.utils.split64Low) throw 'fail!';
       }
       if (x != jspb.utils.joinFloat64(jspb.utils.split64Low,

@@ -465,6 +465,53 @@ describe('binaryUtilsTest', function() {
     }
   });
 
+  /**
+   * Tests zigzag conversions.
+   */
+  it('can encode and decode zigzag 64', function() {
+    function stringToHiLoPair(str) {
+      jspb.utils.splitDecimalString(str);
+      return {
+        lo: jspb.utils.split64Low >>> 0,
+        hi: jspb.utils.split64High >>> 0
+      };
+    }
+    function makeHiLoPair(lo, hi) {
+      return {lo: lo >>> 0, hi: hi >>> 0};
+    }
+    // Test cases direcly from the protobuf dev guide.
+    // https://engdoc.corp.google.com/eng/howto/protocolbuffers/developerguide/encoding.shtml?cl=head#types
+    var testCases = [
+      {original: stringToHiLoPair('0'), zigzag: stringToHiLoPair('0')},
+      {original: stringToHiLoPair('-1'), zigzag: stringToHiLoPair('1')},
+      {original: stringToHiLoPair('1'), zigzag: stringToHiLoPair('2')},
+      {original: stringToHiLoPair('-2'), zigzag: stringToHiLoPair('3')},
+      {
+        original: stringToHiLoPair('2147483647'),
+        zigzag: stringToHiLoPair('4294967294')
+      },
+      {
+        original: stringToHiLoPair('-2147483648'),
+        zigzag: stringToHiLoPair('4294967295')
+      },
+      // 64-bit extremes
+      {
+        original: stringToHiLoPair('9223372036854775807'),
+        zigzag: stringToHiLoPair('18446744073709551614')
+      },
+      {
+        original: stringToHiLoPair('-9223372036854775808'),
+        zigzag: stringToHiLoPair('18446744073709551615')
+      },
+    ];
+    for (const c of testCases) {
+      expect(jspb.utils.toZigzag64(c.original.lo, c.original.hi, makeHiLoPair))
+          .toEqual(c.zigzag);
+      expect(jspb.utils.fromZigzag64(c.zigzag.lo, c.zigzag.hi, makeHiLoPair))
+          .toEqual(c.original);
+    }
+  });
+
 
   /**
    * Tests counting packed varints.

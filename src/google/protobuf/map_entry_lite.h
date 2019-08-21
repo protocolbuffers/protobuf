@@ -234,7 +234,6 @@ class MapEntryImpl : public Base {
     MergeFromInternal(*::google::protobuf::internal::DownCast<const Derived*>(&other));
   }
 
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
   const char* _InternalParse(const char* ptr, ParseContext* ctx) final {
     while (!ctx->Done(&ptr)) {
       uint32 tag;
@@ -262,47 +261,6 @@ class MapEntryImpl : public Base {
     }
     return ptr;
   }
-#else
-  bool MergePartialFromCodedStream(io::CodedInputStream* input) override {
-    uint32 tag;
-
-    for (;;) {
-      // 1) corrupted data: return false;
-      // 2) unknown field: skip without putting into unknown field set;
-      // 3) unknown enum value: keep it in parsing. In proto2, caller should
-      // check the value and put this entry into containing message's unknown
-      // field set if the value is an unknown enum. In proto3, caller doesn't
-      // need to care whether the value is unknown enum;
-      // 4) missing key/value: missed key/value will have default value. caller
-      // should take this entry as if key/value is set to default value.
-      tag = input->ReadTagNoLastTag();
-      switch (tag) {
-        case kKeyTag:
-          if (!KeyTypeHandler::Read(input, mutable_key())) {
-            return false;
-          }
-          set_has_key();
-          break;
-
-        case kValueTag:
-          if (!ValueTypeHandler::Read(input, mutable_value())) {
-            return false;
-          }
-          set_has_value();
-          if (input->ExpectAtEnd()) return true;
-          break;
-
-        default:
-          if (tag == 0 || WireFormatLite::GetTagWireType(tag) ==
-                              WireFormatLite::WIRETYPE_END_GROUP) {
-            return true;
-          }
-          if (!WireFormatLite::SkipField(input, tag)) return false;
-          break;
-      }
-    }
-  }
-#endif
 
   size_t ByteSizeLong() const override {
     size_t size = 0;

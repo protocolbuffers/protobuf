@@ -202,7 +202,7 @@ void SetIntVar(const Options& options, const std::string& type,
 }
 
 bool HasInternalAccessors(const FieldOptions::CType ctype) {
-  return ctype == FieldOptions::STRING;
+  return ctype == FieldOptions::STRING || ctype == FieldOptions::CORD;
 }
 
 }  // namespace
@@ -397,11 +397,6 @@ std::string DescriptorTableName(const FileDescriptor* file,
 
 std::string FileDllExport(const FileDescriptor* file, const Options& options) {
   return UniqueName("PROTOBUF_INTERNAL_EXPORT", file, options);
-}
-
-std::string ReferenceFunctionName(const Descriptor* descriptor,
-                                  const Options& options) {
-  return QualifiedClassName(descriptor, options) + "_ReferenceStrong";
 }
 
 std::string SuperClassName(const Descriptor* descriptor,
@@ -1505,9 +1500,11 @@ class ParseLoopGenerator {
             StrCat(", ", QualifiedClassName(field->enum_type(), options_),
                          "_IsValid, &_internal_metadata_, ", field->number());
       }
-      format_("ptr = $pi_ns$::Packed$1$Parser(mutable_$2$(), ptr, ctx$3$);\n",
-              DeclaredTypeMethodName(field->type()), FieldName(field),
-              enum_validator);
+      format_(
+          "ptr = $pi_ns$::Packed$1$Parser(_internal_mutable_$2$(), ptr, "
+          "ctx$3$);\n",
+          DeclaredTypeMethodName(field->type()), FieldName(field),
+          enum_validator);
     } else {
       auto field_type = field->type();
       switch (field_type) {
@@ -1537,8 +1534,8 @@ class ParseLoopGenerator {
           } else if (IsLazy(field, options_)) {
             if (field->containing_oneof() != nullptr) {
               format_(
-                  "if (!has_$1$()) {\n"
-                  "  clear_$1$();\n"
+                  "if (!_internal_has_$1$()) {\n"
+                  "  clear_$2$();\n"
                   "  $2$_.$1$_ = ::$proto_ns$::Arena::CreateMessage<\n"
                   "      $pi_ns$::LazyField>("
                   "GetArenaNoVirtual());\n"
@@ -1575,7 +1572,7 @@ class ParseLoopGenerator {
                 " _$classname$_default_instance_.$2$_), ptr);\n",
                 field->number(), FieldName(field));
           } else {
-            format_("ptr = ctx->ParseMessage($1$_$2$(), ptr);\n",
+            format_("ptr = ctx->ParseMessage(_internal_$1$_$2$(), ptr);\n",
                     field->is_repeated() ? "add" : "mutable", FieldName(field));
           }
           break;
@@ -1619,7 +1616,8 @@ class ParseLoopGenerator {
                     QualifiedClassName(field->enum_type(), options_));
             format_.Indent();
           }
-          format_("$1$_$2$(static_cast<$3$>(val));\n", prefix, FieldName(field),
+          format_("_internal_$1$_$2$(static_cast<$3$>(val));\n", prefix,
+                  FieldName(field),
                   QualifiedClassName(field->enum_type(), options_));
           if (!HasPreservingUnknownEnumSemantics(field)) {
             format_.Outdent();
@@ -1639,7 +1637,7 @@ class ParseLoopGenerator {
           if (field->is_repeated() || field->containing_oneof()) {
             string prefix = field->is_repeated() ? "add" : "set";
             format_(
-                "$1$_$2$($pi_ns$::ReadVarint$3$(&ptr));\n"
+                "_internal_$1$_$2$($pi_ns$::ReadVarint$3$(&ptr));\n"
                 "CHK_(ptr);\n",
                 prefix, FieldName(field), zigzag);
           } else {
@@ -1661,7 +1659,7 @@ class ParseLoopGenerator {
         if (field->is_repeated() || field->containing_oneof()) {
           string prefix = field->is_repeated() ? "add" : "set";
           format_(
-              "$1$_$2$($pi_ns$::UnalignedLoad<$3$>(ptr));\n"
+              "_internal_$1$_$2$($pi_ns$::UnalignedLoad<$3$>(ptr));\n"
               "ptr += sizeof($3$);\n",
               prefix, FieldName(field), type);
         } else {
@@ -1682,7 +1680,7 @@ class ParseLoopGenerator {
       }
       case WireFormatLite::WIRETYPE_START_GROUP: {
         format_(
-            "ptr = ctx->ParseGroup($1$_$2$(), ptr, $3$);\n"
+            "ptr = ctx->ParseGroup(_internal_$1$_$2$(), ptr, $3$);\n"
             "CHK_(ptr);\n",
             field->is_repeated() ? "add" : "mutable", FieldName(field), tag);
         break;

@@ -49,6 +49,7 @@
 #include <google/protobuf/port.h>
 #include <google/protobuf/stubs/strutil.h>
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -152,12 +153,6 @@ std::string DescriptorTableName(const FileDescriptor* file,
 // When declaring symbol externs from another file, this macro will supply the
 // dllexport needed for the target file, if any.
 std::string FileDllExport(const FileDescriptor* file, const Options& options);
-
-// Returns the name of a no-op function that we can call to introduce a linker
-// dependency on the given message type. This is used to implement implicit weak
-// fields.
-std::string ReferenceFunctionName(const Descriptor* descriptor,
-                                  const Options& options);
 
 // Name of the base class: google::protobuf::Message or google::protobuf::MessageLite.
 std::string SuperClassName(const Descriptor* descriptor,

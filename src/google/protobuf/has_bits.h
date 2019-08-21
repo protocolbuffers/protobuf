@@ -70,7 +70,7 @@ class HasBits {
   }
 
   void Or(const HasBits<doublewords>& rhs) {
-    for (int i = 0; i < doublewords; i++) has_bits_[i] |= rhs[i];
+    for (size_t i = 0; i < doublewords; i++) has_bits_[i] |= rhs[i];
   }
 
   bool empty() const;

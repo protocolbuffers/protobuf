@@ -71,7 +71,7 @@ static string ToOctString(const string& binary_string) {
   return oct_string;
 }
 
-}
+}  // namespace
 
 namespace google {
 namespace protobuf {
@@ -239,21 +239,18 @@ void ConformanceTestSuite::RunValidInputTest(
 
 void ConformanceTestSuite::RunValidBinaryInputTest(
     const ConformanceRequestSetting& setting,
-    const string& equivalent_wire_format,
-    bool require_same_wire_format) {
+    const string& equivalent_wire_format, bool require_same_wire_format) {
   const ConformanceRequest& request = setting.GetRequest();
   ConformanceResponse response;
   RunTest(setting.GetTestName(), request, &response);
-  VerifyResponse(setting, equivalent_wire_format, response,
-                 true, require_same_wire_format);
+  VerifyResponse(setting, equivalent_wire_format, response, true,
+                 require_same_wire_format);
 }
 
 void ConformanceTestSuite::VerifyResponse(
     const ConformanceRequestSetting& setting,
-    const string& equivalent_wire_format,
-    const ConformanceResponse& response,
-    bool need_report_success,
-    bool require_same_wire_format) {
+    const string& equivalent_wire_format, const ConformanceResponse& response,
+    bool need_report_success, bool require_same_wire_format) {
   Message* test_message = setting.GetTestMessage();
   const ConformanceRequest& request = setting.GetRequest();
   const string& test_name = setting.GetTestName();
@@ -296,8 +293,8 @@ void ConformanceTestSuite::VerifyResponse(
 
   if (require_same_wire_format) {
     GOOGLE_DCHECK_EQ(response.result_case(),
-                    ConformanceResponse::kProtobufPayload);
-    const string& protobuf_payload =  response.protobuf_payload();
+                     ConformanceResponse::kProtobufPayload);
+    const string& protobuf_payload = response.protobuf_payload();
     check = equivalent_wire_format == protobuf_payload;
     differences = StrCat("Expect: ", ToOctString(equivalent_wire_format),
                          ", but got: ", ToOctString(protobuf_payload));
