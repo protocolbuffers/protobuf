@@ -506,6 +506,11 @@ class ReflectionTest(unittest.TestCase):
         (unittest_pb2.optional_fixed32_extension, 1),
         (unittest_pb2.optional_string_extension , 'foo') ],
       proto.ListFields())
+    del proto.Extensions[unittest_pb2.optional_fixed32_extension]
+    self.assertEqual(
+        [(unittest_pb2.optional_int32_extension, 5),
+         (unittest_pb2.optional_string_extension, 'foo')],
+        proto.ListFields())
 
   def testRepeatedListExtensions(self):
     proto = unittest_pb2.TestAllExtensions()
@@ -522,6 +527,12 @@ class ReflectionTest(unittest.TestCase):
         (unittest_pb2.repeated_fixed32_extension, [1]),
         (unittest_pb2.repeated_string_extension , ['foo', 'bar', 'baz']) ],
       proto.ListFields())
+    del proto.Extensions[unittest_pb2.repeated_int32_extension]
+    del proto.Extensions[unittest_pb2.repeated_string_extension]
+    self.assertEqual(
+        [(unittest_pb2.optional_int32_extension, 21),
+         (unittest_pb2.repeated_fixed32_extension, [1])],
+        proto.ListFields())
 
   def testListFieldsAndExtensions(self):
     proto = unittest_pb2.TestFieldOrderings()
@@ -583,6 +594,7 @@ class ReflectionTest(unittest.TestCase):
   def testClearFieldWithUnknownFieldName(self):
     proto = unittest_pb2.TestAllTypes()
     self.assertRaises(ValueError, proto.ClearField, 'nonexistent_field')
+    self.assertRaises(ValueError, proto.ClearField, b'nonexistent_field')
 
   def testClearRemovesChildren(self):
     # Make sure there aren't any implementation bugs that are only partially
@@ -1198,6 +1210,32 @@ class ReflectionTest(unittest.TestCase):
     self.assertEqual(prius.automatic, new_prius.automatic)
     self.assertEqual(prius.price, new_prius.price)
     self.assertEqual(prius.owners, new_prius.owners)
+
+  def testExtensionDelete(self):
+    extendee_proto = more_extensions_pb2.ExtendedMessage()
+
+    extension_int32 = more_extensions_pb2.optional_int_extension
+    extendee_proto.Extensions[extension_int32] = 23
+
+    extension_repeated = more_extensions_pb2.repeated_int_extension
+    extendee_proto.Extensions[extension_repeated].append(11)
+
+    extension_msg = more_extensions_pb2.optional_message_extension
+    extendee_proto.Extensions[extension_msg].foreign_message_int = 56
+
+    self.assertEqual(len(extendee_proto.Extensions), 3)
+    del extendee_proto.Extensions[extension_msg]
+    self.assertEqual(len(extendee_proto.Extensions), 2)
+    del extendee_proto.Extensions[extension_repeated]
+    self.assertEqual(len(extendee_proto.Extensions), 1)
+    # Delete a none exist extension. It is OK to "del m.Extensions[ext]"
+    # even if the extension is not present in the message; we don't
+    # raise KeyError. This is consistent with "m.Extensions[ext]"
+    # returning a default value even if we did not set anything.
+    del extendee_proto.Extensions[extension_repeated]
+    self.assertEqual(len(extendee_proto.Extensions), 1)
+    del extendee_proto.Extensions[extension_int32]
+    self.assertEqual(len(extendee_proto.Extensions), 0)
 
   def testExtensionIter(self):
     extendee_proto = more_extensions_pb2.ExtendedMessage()
@@ -1820,6 +1858,7 @@ class ReflectionTest(unittest.TestCase):
     proto = unittest_pb2.TestRequired()
     self.assertFalse(proto.IsInitialized(errors))
     self.assertEqual(errors, ['a', 'b', 'c'])
+    self.assertRaises(TypeError, proto.IsInitialized, 1, 2, 3)
 
   @unittest.skipIf(
       api_implementation.Type() != 'cpp' or api_implementation.Version() != 2,

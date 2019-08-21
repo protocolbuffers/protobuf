@@ -414,6 +414,7 @@ describe('binaryReaderTest', function() {
     var writer = new jspb.BinaryWriter();
     writer.writeInt64String(1, '4294967296');
     writer.writeSfixed64String(2, '4294967298');
+    writer.writeInt64String(3, '3');  // 3 is the zig-zag encoding of -2.
     var reader = jspb.BinaryReader.alloc(writer.getResultBuffer());
 
     function rejoin(lowBits, highBits) {
@@ -426,6 +427,10 @@ describe('binaryReaderTest', function() {
     reader.nextField();
     expect(reader.getFieldNumber()).toEqual(2);
     expect(reader.readSplitFixed64(rejoin)).toEqual(0x100000002);
+
+    reader.nextField();
+    expect(reader.getFieldNumber()).toEqual(3);
+    expect(reader.readSplitZigzagVarint64(rejoin)).toEqual(-2);
   });
 
   /**
@@ -490,6 +495,11 @@ describe('binaryReaderTest', function() {
         jspb.BinaryReader.prototype.readSint64,
         jspb.BinaryWriter.prototype.writeSint64,
         1, -Math.pow(2, 63), Math.pow(2, 63) - 513, Math.round);
+
+    doTestSignedField_(
+        jspb.BinaryReader.prototype.readSintHash64,
+        jspb.BinaryWriter.prototype.writeSintHash64, 1, -Math.pow(2, 63),
+        Math.pow(2, 63) - 513, jspb.utils.numberToHash64);
   });
 
 

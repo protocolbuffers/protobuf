@@ -136,13 +136,6 @@ void Message::DiscardUnknownFields() {
   return ReflectionOps::DiscardUnknownFields(this);
 }
 
-#if !GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-bool Message::MergePartialFromCodedStream(io::CodedInputStream* input) {
-  return WireFormat::ParseAndMergePartial(input, this);
-}
-#endif
-
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 namespace internal {
 
 class ReflectionAccessor {
@@ -306,6 +299,7 @@ const char* ParseLenDelim(int field_number, const FieldDescriptor* field,
       case kStrict:
         return internal::InlineGreedyStringParserUTF8(s, ptr, ctx, field_name);
     }
+    GOOGLE_LOG(FATAL) << "Should not reach here";
   };
   switch (field->type()) {
     case FieldDescriptor::TYPE_STRING: {
@@ -524,7 +518,6 @@ const char* Message::_InternalParse(const char* ptr,
   ReflectiveFieldParser field_parser(this, ctx);
   return internal::WireFormatParser(field_parser, ptr, ctx);
 }
-#endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 
 uint8* Message::InternalSerializeWithCachedSizesToArray(
     uint8* target, io::EpsCopyOutputStream* stream) const {

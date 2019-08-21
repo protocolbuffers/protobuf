@@ -345,8 +345,8 @@ public class FieldMaskUtil {
   }
 
   /**
-   * Merges fields specified by a FieldMask from one message to another with the
-   * specified merge options.
+   * Merges fields specified by a FieldMask from one message to another with the specified merge
+   * options. The destination will remain unchanged if an empty FieldMask is provided.
    */
   public static void merge(
       FieldMask mask, Message source, Message.Builder destination, MergeOptions options) {

@@ -232,13 +232,27 @@ jspb.BinaryEncoder.prototype.writeZigzagVarint64 = function(value) {
  * @param {string} value The integer to convert.
  */
 jspb.BinaryEncoder.prototype.writeZigzagVarint64String = function(value) {
-  // TODO(haberman): write lossless 64-bit zig-zag math.
-  this.writeZigzagVarint64(parseInt(value, 10));
+  this.writeZigzagVarintHash64(jspb.utils.decimalStringToHash64(value));
 };
 
 
 /**
- * Writes a 8-bit unsigned integer to the buffer. Numbers outside the range
+ * Writes a 64-bit hash string (8 characters @ 8 bits of data each) to the
+ * buffer as a zigzag varint.
+ * @param {string} hash The hash to write.
+ */
+jspb.BinaryEncoder.prototype.writeZigzagVarintHash64 = function(hash) {
+  var self = this;
+  jspb.utils.splitHash64(hash);
+  jspb.utils.toZigzag64(
+      jspb.utils.split64Low, jspb.utils.split64High, function(lo, hi) {
+        self.writeSplitVarint64(lo >>> 0, hi >>> 0);
+      });
+};
+
+
+/**
+ * Writes an 8-bit unsigned integer to the buffer. Numbers outside the range
  * [0,2^8) will be truncated.
  * @param {number} value The value to write.
  */
@@ -294,7 +308,7 @@ jspb.BinaryEncoder.prototype.writeUint64 = function(value) {
 
 
 /**
- * Writes a 8-bit integer to the buffer. Numbers outside the range
+ * Writes an 8-bit integer to the buffer. Numbers outside the range
  * [-2^7,2^7) will be truncated.
  * @param {number} value The value to write.
  */

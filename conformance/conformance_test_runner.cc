@@ -195,7 +195,8 @@ int ForkPipeRunner::Run(
   }
   bool all_ok = true;
   for (ConformanceTestSuite* suite : suites) {
-    char *program;
+    string program;
+    std::vector<string> program_args;
     string failure_list_filename;
     conformance::FailureSet failure_list;
 
@@ -221,15 +222,15 @@ int ForkPipeRunner::Run(
           UsageError();
         }
       } else {
-        if (arg != argc - 1) {
-          fprintf(stderr, "Too many arguments.\n");
-          UsageError();
+        program += argv[arg];
+        while (arg < argc) {
+          program_args.push_back(argv[arg]);
+          arg++;
         }
-        program = argv[arg];
       }
     }
 
-    ForkPipeRunner runner(program);
+    ForkPipeRunner runner(program, program_args);
 
     std::string output;
     all_ok = all_ok &&
@@ -295,8 +296,14 @@ void ForkPipeRunner::SpawnTestProgram() {
     memcpy(executable.get(), executable_.c_str(), executable_.size());
     executable[executable_.size()] = '\0';
 
-    char *const argv[] = {executable.get(), NULL};
-    CHECK_SYSCALL(execv(executable.get(), argv));  // Never returns.
+    std::vector<const char *> argv;
+    argv.push_back(executable.get());
+    for (int i = 0; i < executable_args_.size(); ++i) {
+      argv.push_back(executable_args_[i].c_str());
+    }
+    argv.push_back(nullptr);
+    // Never returns.
+    CHECK_SYSCALL(execv(executable.get(), const_cast<char **>(argv.data())));
   }
 }
 

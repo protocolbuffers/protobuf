@@ -414,7 +414,7 @@ void FileGenerator::GenerateSourceIncludes(io::Printer* printer) {
   if (IsProto2MessageSetFile(file_, options_)) {
     format(
         // Implementation of proto1 MessageSet API methods.
-        "#include \"net/proto2/bridge/internal/message_set_util.h\"\n");
+        "#include \"net/proto2/internal/message_set_util.h\"\n");
   }
 
   if (options_.proto_h) {
@@ -591,10 +591,6 @@ void FileGenerator::GenerateSourceForMessage(int idx, io::Printer* printer) {
 
     // Define default instances
     GenerateSourceDefaultInstance(idx, printer);
-    if (options_.lite_implicit_weak_fields) {
-      format("void $1$_ReferenceStrong() {}\n",
-             message_generators_[idx]->classname_);
-    }
 
     // Generate classes.
     format("\n");
@@ -665,10 +661,6 @@ void FileGenerator::GenerateSource(io::Printer* printer) {
     // Define default instances
     for (int i = 0; i < message_generators_.size(); i++) {
       GenerateSourceDefaultInstance(i, printer);
-      if (options_.lite_implicit_weak_fields) {
-        format("void $1$_ReferenceStrong() {}\n",
-               message_generators_[i]->classname_);
-      }
     }
   }
 
@@ -1159,9 +1151,6 @@ class FileGenerator::ForwardDeclarations {
           "$dllexport_decl $extern $3$ $4$;\n",
           class_desc, classname, DefaultInstanceType(class_desc, options),
           DefaultInstanceName(class_desc, options));
-      if (options.lite_implicit_weak_fields) {
-        format("void $1$_ReferenceStrong();\n", classname);
-      }
     }
   }
 

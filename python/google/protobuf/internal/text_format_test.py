@@ -845,17 +845,18 @@ class OnlyWorksWithProto2RightNowTests(TextFormatBase):
     all_data = message.SerializeToString()
     empty_message = unittest_pb2.TestEmptyMessage()
     empty_message.ParseFromString(all_data)
-    self.assertEqual('1: 101\n'
-                     '12: 4636878028842991616\n'
-                     '14: "hello"\n'
-                     '15: "103"\n'
-                     '16 {\n'
-                     '  17: 104\n'
-                     '}\n'
-                     '18 {\n'
-                     '  1: 105\n'
-                     '}\n',
+    self.assertEqual('  1: 101\n'
+                     '  12: 4636878028842991616\n'
+                     '  14: "hello"\n'
+                     '  15: "103"\n'
+                     '  16 {\n'
+                     '    17: 104\n'
+                     '  }\n'
+                     '  18 {\n'
+                     '    1: 105\n'
+                     '  }\n',
                      text_format.MessageToString(empty_message,
+                                                 indent=2,
                                                  print_unknown_fields=True))
     self.assertEqual('1: 101 '
                      '12: 4636878028842991616 '
