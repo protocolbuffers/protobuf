@@ -1,5 +1,10 @@
 # Bazel (http://bazel.io/) BUILD file for Protobuf.
 
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test", "objc_library")
+load("@rules_java//java:defs.bzl", "java_library")
+load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain")
+load("@rules_python//python:defs.bzl", "py_library")
+
 licenses(["notice"])
 
 exports_files(["LICENSE"])
@@ -27,16 +32,19 @@ config_setting(
 # Android builds do not need to link in a separate pthread library.
 LINK_OPTS = select({
     ":android": [],
-    "//conditions:default": ["-lpthread", "-lm"],
+    "//conditions:default": [
+        "-lpthread",
+        "-lm",
+    ],
 })
 
 load(
     ":protobuf.bzl",
     "cc_proto_library",
-    "py_proto_library",
     "internal_copied_filegroup",
     "internal_gen_well_known_protos_java",
     "internal_protobuf_py_tests",
+    "py_proto_library",
 )
 
 config_setting(
@@ -100,9 +108,9 @@ cc_library(
     ],
     hdrs = glob(["src/google/protobuf/**/*.h"]),
     copts = select({
+        ":ios_arm64": IOS_ARM_COPTS,
         ":ios_armv7": IOS_ARM_COPTS,
         ":ios_armv7s": IOS_ARM_COPTS,
-        ":ios_arm64": IOS_ARM_COPTS,
         "//conditions:default": COPTS,
     }),
     includes = ["src/"],
@@ -170,9 +178,9 @@ cc_library(
     ],
     hdrs = glob(["src/**/*.h"]),
     copts = select({
+        ":ios_arm64": IOS_ARM_COPTS,
         ":ios_armv7": IOS_ARM_COPTS,
         ":ios_armv7s": IOS_ARM_COPTS,
-        ":ios_arm64": IOS_ARM_COPTS,
         "//conditions:default": COPTS,
     }),
     includes = ["src/"],
@@ -543,8 +551,8 @@ java_library(
     name = "protobuf_java_lite",
     srcs = [
         "java/core/src/main/java/com/google/protobuf/AbstractMessageLite.java",
-        "java/core/src/main/java/com/google/protobuf/AbstractProtobufList.java",
         "java/core/src/main/java/com/google/protobuf/AbstractParser.java",
+        "java/core/src/main/java/com/google/protobuf/AbstractProtobufList.java",
         "java/core/src/main/java/com/google/protobuf/BooleanArrayList.java",
         "java/core/src/main/java/com/google/protobuf/ByteBufferWriter.java",
         "java/core/src/main/java/com/google/protobuf/ByteOutput.java",
@@ -582,8 +590,8 @@ java_library(
         "java/core/src/main/java/com/google/protobuf/TextFormatEscaper.java",
         "java/core/src/main/java/com/google/protobuf/UninitializedMessageException.java",
         "java/core/src/main/java/com/google/protobuf/UnknownFieldSetLite.java",
-        "java/core/src/main/java/com/google/protobuf/UnsafeUtil.java",
         "java/core/src/main/java/com/google/protobuf/UnmodifiableLazyStringList.java",
+        "java/core/src/main/java/com/google/protobuf/UnsafeUtil.java",
         "java/core/src/main/java/com/google/protobuf/Utf8.java",
         "java/core/src/main/java/com/google/protobuf/WireFormat.java",
     ],
@@ -632,8 +640,8 @@ java_library(
         "java/core/src/main/java/com/google/protobuf/UnsafeByteOperations.java",
         ":gen_well_known_protos_java",
     ],
-    deps = [":protobuf_java_lite"],
     visibility = ["//visibility:public"],
+    deps = [":protobuf_java_lite"],
 )
 
 java_library(
@@ -680,8 +688,8 @@ cc_binary(
     linkshared = 1,
     linkstatic = 1,
     deps = select({
-        "//conditions:default": [],
         ":use_fast_cpp_protos": ["//external:python_headers"],
+        "//conditions:default": [],
     }),
 )
 
@@ -694,8 +702,8 @@ cc_binary(
     copts = COPTS + [
         "-DGOOGLE_PROTOBUF_HAS_ONEOF=1",
     ] + select({
-        "//conditions:default": [],
         ":allow_oversize_protos": ["-DPROTOBUF_PYTHON_ALLOW_OVERSIZE_PROTOS=1"],
+        "//conditions:default": [],
     }),
     includes = [
         "python/",
@@ -706,8 +714,8 @@ cc_binary(
     deps = [
         ":protobuf",
     ] + select({
-        "//conditions:default": [],
         ":use_fast_cpp_protos": ["//external:python_headers"],
+        "//conditions:default": [],
     }),
 )
 
@@ -746,11 +754,11 @@ py_proto_library(
     srcs = COPIED_WELL_KNOWN_PROTOS,
     include = "python",
     data = select({
-        "//conditions:default": [],
         ":use_fast_cpp_protos": [
             ":python/google/protobuf/internal/_api_implementation.so",
             ":python/google/protobuf/pyext/_message.so",
         ],
+        "//conditions:default": [],
     }),
     default_runtime = "",
     protoc = ":protoc",

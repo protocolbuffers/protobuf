@@ -114,3 +114,5 @@ conformance/google/
 conformance/javac_middleman
 conformance/lite/
 conformance/protoc_middleman
+
+bazel-*
