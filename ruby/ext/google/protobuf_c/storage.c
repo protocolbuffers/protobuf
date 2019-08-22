@@ -956,15 +956,6 @@ void layout_init(MessageLayout* layout, void* storage) {
   for (i = 0; i < layout->map_count; i++, value++) {
     *value = Map_new_this_type(*value);
   }
-
-  /*
-  upb_msg_field_iter it;
-  for (upb_msg_field_begin(&it, layout->msgdef);
-       !upb_msg_field_done(&it);
-       upb_msg_field_next(&it)) {
-    layout_clear(layout, storage, upb_msg_iter_field(&it));
-  }
-  */
 }
 
 void layout_mark(MessageLayout* layout, void* storage) {
