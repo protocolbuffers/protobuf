@@ -524,7 +524,6 @@ void BinaryAndJsonConformanceSuite::ExpectSerializeFailureForJson(
   }
 }
 
-//TODO: proto2?
 void BinaryAndJsonConformanceSuite::TestPrematureEOFForType(
     FieldDescriptor::Type type) {
   // Incomplete values for each wire type.
@@ -827,7 +826,6 @@ void BinaryAndJsonConformanceSuite::TestValidDataForRepeatedScalarMessage() {
   }
 }
 
-// TODO: proto2?
 void BinaryAndJsonConformanceSuite::TestIllegalTags() {
   // field num 0 is illegal
   string nullfield[] = {
