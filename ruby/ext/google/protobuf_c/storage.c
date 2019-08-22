@@ -478,7 +478,7 @@ bool is_value_field(const upb_fielddef* f) {
          upb_fielddef_isstring(f);
 }
 
-MessageLayout* create_layout(Descriptor* desc) {
+void create_layout(Descriptor* desc) {
   const upb_msgdef *msgdef = desc->msgdef;
   MessageLayout* layout = ALLOC(MessageLayout);
   int nfields = upb_msgdef_numfields(msgdef);
@@ -517,14 +517,49 @@ MessageLayout* create_layout(Descriptor* desc) {
 
   off = align_up_to(off, sizeof(VALUE));
   layout->value_offset = off;
+  layout->repeated_count = 0;
+  layout->map_count = 0;
   layout->value_count = 0;
 
-  // Place all (non-oneof) VALUE fields first.
+  // Place all VALUE fields for repeated fields.
   for (upb_msg_field_begin(&it, msgdef);
        !upb_msg_field_done(&it);
        upb_msg_field_next(&it)) {
     const upb_fielddef* field = upb_msg_iter_field(&it);
-    if (upb_fielddef_containingoneof(field) || !is_value_field(field)) {
+    if (upb_fielddef_containingoneof(field) || !upb_fielddef_isseq(field) ||
+        upb_fielddef_ismap(field)) {
+      continue;
+    }
+
+    layout->fields[upb_fielddef_index(field)].offset = off;
+    off += sizeof(VALUE);
+    layout->repeated_count++;
+  }
+
+  // Place all VALUE fields for map fields.
+  for (upb_msg_field_begin(&it, msgdef);
+       !upb_msg_field_done(&it);
+       upb_msg_field_next(&it)) {
+    const upb_fielddef* field = upb_msg_iter_field(&it);
+    if (upb_fielddef_containingoneof(field) || !upb_fielddef_isseq(field) ||
+        !upb_fielddef_ismap(field)) {
+      continue;
+    }
+
+    layout->fields[upb_fielddef_index(field)].offset = off;
+    off += sizeof(VALUE);
+    layout->map_count++;
+  }
+
+  layout->value_count = layout->repeated_count + layout->map_count;
+
+  // Next place all other (non-oneof) VALUE fields.
+  for (upb_msg_field_begin(&it, msgdef);
+       !upb_msg_field_done(&it);
+       upb_msg_field_next(&it)) {
+    const upb_fielddef* field = upb_msg_iter_field(&it);
+    if (upb_fielddef_containingoneof(field) || !is_value_field(field) ||
+        upb_fielddef_isseq(field)) {
       continue;
     }
 
@@ -909,7 +944,19 @@ void layout_set(MessageLayout* layout,
 }
 
 void layout_init(MessageLayout* layout, void* storage) {
+  VALUE* value = (VALUE*)CHARPTR_AT(storage, layout->value_offset);
+  int i;
+
   memcpy(storage, layout->empty_template, layout->size);
+
+  for (i = 0; i < layout->repeated_count; i++, value++) {
+    *value = RepeatedField_new_this_type(*value);
+  }
+
+  for (i = 0; i < layout->map_count; i++, value++) {
+    *value = Map_new_this_type(*value);
+  }
+
   /*
   upb_msg_field_iter it;
   for (upb_msg_field_begin(&it, layout->msgdef);

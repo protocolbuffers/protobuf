@@ -70,8 +70,6 @@ VALUE Message_alloc(VALUE klass) {
   msg = (MessageHeader*)ALLOC_N(uint8_t,
                                 sizeof(MessageHeader) + desc->layout->size);
 
-  memset(Message_data(msg), 0, desc->layout->size);
-
   // We wrap first so that everything in the message object is GC-rooted in case
   // a collection happens during object creation in layout_init().
   ret = TypedData_Wrap_Struct(klass, &Message_type, msg);
