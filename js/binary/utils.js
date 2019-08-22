@@ -296,7 +296,7 @@ jspb.utils.splitHash64 = function(hash) {
  * @return {number}
  */
 jspb.utils.joinUint64 = function(bitsLow, bitsHigh) {
-  return bitsHigh * jspb.BinaryConstants.TWO_TO_32 + bitsLow;
+  return bitsHigh * jspb.BinaryConstants.TWO_TO_32 + (bitsLow >>> 0);
 };
 
 
@@ -322,6 +322,33 @@ jspb.utils.joinInt64 = function(bitsLow, bitsHigh) {
   return sign ? -result : result;
 };
 
+/**
+ * Converts split 64-bit values from standard two's complement encoding to
+ * zig-zag encoding. Invokes the provided function to produce final result.
+ *
+ * @param {number} bitsLow
+ * @param {number} bitsHigh
+ * @param {function(number, number): T} convert Conversion function to produce
+ *     the result value, takes parameters (lowBits, highBits).
+ * @return {T}
+ * @template T
+ */
+jspb.utils.toZigzag64 = function(bitsLow, bitsHigh, convert) {
+  // See
+  // https://engdoc.corp.google.com/eng/howto/protocolbuffers/developerguide/encoding.shtml?cl=head#types
+  // 64-bit math is: (n << 1) ^ (n >> 63)
+  //
+  // To do this in 32 bits, we can get a 32-bit sign-flipping mask from the
+  // high word.
+  // Then we can operate on each word individually, with the addition of the
+  // "carry" to get the most significant bit from the low word into the high
+  // word.
+  var signFlipMask = bitsHigh >> 31;
+  bitsHigh = (bitsHigh << 1 | bitsLow >>> 31) ^ signFlipMask;
+  bitsLow = (bitsLow << 1) ^ signFlipMask;
+  return convert(bitsLow, bitsHigh);
+};
+
 
 /**
  * Joins two 32-bit values into a 64-bit unsigned integer and applies zigzag
@@ -331,21 +358,33 @@ jspb.utils.joinInt64 = function(bitsLow, bitsHigh) {
  * @return {number}
  */
 jspb.utils.joinZigzag64 = function(bitsLow, bitsHigh) {
-  // Extract the sign bit and shift right by one.
-  var sign = bitsLow & 1;
-  bitsLow = ((bitsLow >>> 1) | (bitsHigh << 31)) >>> 0;
-  bitsHigh = bitsHigh >>> 1;
+  return jspb.utils.fromZigzag64(bitsLow, bitsHigh, jspb.utils.joinInt64);
+};
 
-  // Increment the split value if the sign bit was set.
-  if (sign) {
-    bitsLow = (bitsLow + 1) >>> 0;
-    if (bitsLow == 0) {
-      bitsHigh = (bitsHigh + 1) >>> 0;
-    }
-  }
 
-  var result = jspb.utils.joinUint64(bitsLow, bitsHigh);
-  return sign ? -result : result;
+/**
+ * Converts split 64-bit values from zigzag encoding to standard two's
+ * complement encoding. Invokes the provided function to produce final result.
+ *
+ * @param {number} bitsLow
+ * @param {number} bitsHigh
+ * @param {function(number, number): T} convert Conversion function to produce
+ *     the result value, takes parameters (lowBits, highBits).
+ * @return {T}
+ * @template T
+ */
+jspb.utils.fromZigzag64 = function(bitsLow, bitsHigh, convert) {
+  // 64 bit math is:
+  //   signmask = (zigzag & 1) ? -1 : 0;
+  //   twosComplement = (zigzag >> 1) ^ signmask;
+  //
+  // To work with 32 bit, we can operate on both but "carry" the lowest bit
+  // from the high word by shifting it up 31 bits to be the most significant bit
+  // of the low word.
+  var signFlipMask = -(bitsLow & 1);
+  bitsLow = ((bitsLow >>> 1) | (bitsHigh << 31)) ^ signFlipMask;
+  bitsHigh = (bitsHigh >>> 1) ^ signFlipMask;
+  return convert(bitsLow, bitsHigh);
 };
 
 

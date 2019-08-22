@@ -2365,6 +2365,11 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
         }
         try {
           return new MethodHandleInvoker(accessor);
+        } catch (NoClassDefFoundError e) {
+          // Fall back to reflection if MethodHandleInvoker isn't available,
+          // allowing clients that don't want to use method handles to opt out
+          // by deleting the class.
+          return accessor;
         } catch (IllegalAccessException e) {
           throw new RuntimeException(e);
         }
@@ -2703,6 +2708,11 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
         }
         try {
           return new MethodHandleInvoker(accessor);
+        } catch (NoClassDefFoundError e) {
+          // Fall back to reflection if MethodHandleInvoker isn't available,
+          // allowing clients that don't want to use method handles to opt out
+          // by deleting the class.
+          return accessor;
         } catch (IllegalAccessException e) {
           throw new RuntimeException(e);
         }

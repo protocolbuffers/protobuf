@@ -119,7 +119,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     } else {
       count = size_ + static_cast<int>(buffer_end_ - ptr);
     }
-    if (count > 0) zcis_->BackUp(count);
+    if (count > 0) StreamBackUp(count);
   }
 
   // If return value is negative it's an error
@@ -192,6 +192,9 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   bool IsExceedingLimit(const char* ptr) {
     return ptr > limit_end_ &&
            (next_chunk_ == nullptr || ptr - buffer_end_ > limit_);
+  }
+  int BytesUntilLimit(const char* ptr) const {
+    return limit_ + static_cast<int>(buffer_end_ - ptr);
   }
   // Returns true if more data is available, if false is returned one has to
   // call Done for further checks.
@@ -273,6 +276,15 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   const char* SkipFallback(const char* ptr, int size);
   const char* AppendStringFallback(const char* ptr, int size, std::string* str);
   const char* ReadStringFallback(const char* ptr, int size, std::string* str);
+  bool StreamNext(const void** data) {
+    bool res = zcis_->Next(data, &size_);
+    if (res) overall_limit_ -= size_;
+    return res;
+  }
+  void StreamBackUp(int count) {
+    zcis_->BackUp(count);
+    overall_limit_ += count;
+  }
 
   template <typename A>
   const char* AppendSize(const char* ptr, int size, const A& append) {
@@ -438,7 +450,9 @@ T UnalignedLoad(const char* p) {
   return res;
 }
 
+PROTOBUF_EXPORT
 std::pair<const char*, uint32> VarintParseSlow32(const char* p, uint32 res);
+PROTOBUF_EXPORT
 std::pair<const char*, uint64> VarintParseSlow64(const char* p, uint32 res);
 
 inline const char* VarintParseSlow(const char* p, uint32 res, uint32* out) {
@@ -473,6 +487,7 @@ PROTOBUF_MUST_USE_RESULT const char* VarintParse(const char* p, T* out) {
 // Used for tags, could read up to 5 bytes which must be available.
 // Caller must ensure its safe to call.
 
+PROTOBUF_EXPORT
 std::pair<const char*, uint32> ReadTagFallback(const char* p, uint32 res);
 
 // Same as ParseVarint but only accept 5 bytes at most.
@@ -538,6 +553,7 @@ inline const char* ParseBigVarint(const char* p, uint64* out) {
   return nullptr;
 }
 
+PROTOBUF_EXPORT
 std::pair<const char*, int32> ReadSizeFallback(const char* p, uint32 first);
 // Used for tags, could read up to 5 bytes which must be available. Additionally
 // it makes sure the unsigned value fits a int32, otherwise returns nullptr.
@@ -625,6 +641,8 @@ inline PROTOBUF_MUST_USE_RESULT const char* InlineGreedyStringParserUTF8Verify(
   auto p = InlineGreedyStringParser(s, ptr, ctx);
 #ifndef NDEBUG
   VerifyUTF8(*s, field_name);
+#else   // !NDEBUG
+  (void)field_name;
 #endif  // !NDEBUG
   return p;
 }

@@ -42,6 +42,7 @@ goog.require('goog.crypt');
 goog.require('goog.testing.asserts');
 goog.require('jspb.BinaryReader');
 goog.require('jspb.BinaryWriter');
+goog.require('jspb.utils');
 
 
 /**
@@ -128,8 +129,13 @@ describe('binaryWriterTest', function() {
     var writer = new jspb.BinaryWriter();
     writer.writeBytes(1, new Uint8Array([127]));
     assertEquals('CgF/', writer.getResultBase64String());
-    assertEquals('CgF/', writer.getResultBase64String(false));
-    assertEquals('CgF_', writer.getResultBase64String(true));
+    assertEquals(
+        'CgF/',
+        writer.getResultBase64String(goog.crypt.base64.Alphabet.DEFAULT));
+    assertEquals(
+        'CgF_',
+        writer.getResultBase64String(
+            goog.crypt.base64.Alphabet.WEBSAFE_NO_PADDING));
   });
 
   it('writes split 64 fields', function() {
@@ -200,5 +206,117 @@ describe('binaryWriterTest', function() {
       String(3 * 2 ** 32 + 2),
       String(4 * 2 ** 32 + 3),
     ]);
+  });
+
+  it('writes zigzag 64 fields', function() {
+    // Test cases direcly from the protobuf dev guide.
+    // https://engdoc.corp.google.com/eng/howto/protocolbuffers/developerguide/encoding.shtml?cl=head#types
+    var testCases = [
+      {original: '0', zigzag: '0'},
+      {original: '-1', zigzag: '1'},
+      {original: '1', zigzag: '2'},
+      {original: '-2', zigzag: '3'},
+      {original: '2147483647', zigzag: '4294967294'},
+      {original: '-2147483648', zigzag: '4294967295'},
+      // 64-bit extremes, not in dev guide.
+      {original: '9223372036854775807', zigzag: '18446744073709551614'},
+      {original: '-9223372036854775808', zigzag: '18446744073709551615'},
+    ];
+    function decimalToLowBits(v) {
+      jspb.utils.splitDecimalString(v);
+      return jspb.utils.split64Low >>> 0;
+    }
+    function decimalToHighBits(v) {
+      jspb.utils.splitDecimalString(v);
+      return jspb.utils.split64High >>> 0;
+    }
+
+    var writer = new jspb.BinaryWriter();
+    testCases.forEach(function(c) {
+      writer.writeSint64String(1, c.original);
+      writer.writeSintHash64(1, jspb.utils.decimalStringToHash64(c.original));
+      jspb.utils.splitDecimalString(c.original);
+      writer.writeSplitZigzagVarint64(
+          1, jspb.utils.split64Low, jspb.utils.split64High);
+    });
+
+    writer.writeRepeatedSint64String(2, testCases.map(function(c) {
+      return c.original;
+    }));
+
+    writer.writeRepeatedSintHash64(3, testCases.map(function(c) {
+      return jspb.utils.decimalStringToHash64(c.original);
+    }));
+
+    writer.writeRepeatedSplitZigzagVarint64(
+        4, testCases.map(function(c) {
+          return c.original;
+        }),
+        decimalToLowBits, decimalToHighBits);
+
+    writer.writePackedSint64String(5, testCases.map(function(c) {
+      return c.original;
+    }));
+
+    writer.writePackedSintHash64(6, testCases.map(function(c) {
+      return jspb.utils.decimalStringToHash64(c.original);
+    }));
+
+    writer.writePackedSplitZigzagVarint64(
+        7, testCases.map(function(c) {
+          return c.original;
+        }),
+        decimalToLowBits, decimalToHighBits);
+
+    // Verify by reading the stream as normal int64 fields and checking with
+    // the canonical zigzag encoding of each value.
+    var reader = jspb.BinaryReader.alloc(writer.getResultBuffer());
+    testCases.forEach(function(c) {
+      reader.nextField();
+      expect(reader.getFieldNumber()).toEqual(1);
+      expect(reader.readUint64String()).toEqual(c.zigzag);
+      reader.nextField();
+      expect(reader.getFieldNumber()).toEqual(1);
+      expect(reader.readUint64String()).toEqual(c.zigzag);
+      reader.nextField();
+      expect(reader.getFieldNumber()).toEqual(1);
+      expect(reader.readUint64String()).toEqual(c.zigzag);
+    });
+
+    testCases.forEach(function(c) {
+      reader.nextField();
+      expect(reader.getFieldNumber()).toEqual(2);
+      expect(reader.readUint64String()).toEqual(c.zigzag);
+    });
+
+    testCases.forEach(function(c) {
+      reader.nextField();
+      expect(reader.getFieldNumber()).toEqual(3);
+      expect(reader.readUint64String()).toEqual(c.zigzag);
+    });
+
+    testCases.forEach(function(c) {
+      reader.nextField();
+      expect(reader.getFieldNumber()).toEqual(4);
+      expect(reader.readUint64String()).toEqual(c.zigzag);
+    });
+
+    reader.nextField();
+    expect(reader.getFieldNumber()).toEqual(5);
+    expect(reader.readPackedUint64String()).toEqual(testCases.map(function(c) {
+      return c.zigzag;
+    }));
+
+    reader.nextField();
+    expect(reader.getFieldNumber()).toEqual(6);
+    expect(reader.readPackedUint64String()).toEqual(testCases.map(function(c) {
+      return c.zigzag;
+    }));
+
+    reader.nextField();
+    expect(reader.getFieldNumber()).toEqual(7);
+    expect(reader.readPackedUint64String()).toEqual(testCases.map(function(c) {
+      return c.zigzag;
+    }));
   });
 });

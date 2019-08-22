@@ -162,6 +162,9 @@ class _ExtensionDict(object):
         type_checker.CheckValue(value))
     self._extended_message._Modified()
 
+  def __delitem__(self, extension_handle):
+    self._extended_message.ClearExtension(extension_handle)
+
   def _FindExtensionByName(self, name):
     """Tries to find a known extension with the specified name.
 

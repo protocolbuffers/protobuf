@@ -35,7 +35,6 @@
 #include <google/protobuf/stubs/time.h>
 #include <google/protobuf/util/internal/expecting_objectwriter.h>
 #include <google/protobuf/util/internal/object_writer.h>
-#include <google/protobuf/stubs/strutil.h>
 #include <gtest/gtest.h>
 #include <google/protobuf/stubs/status.h>
 

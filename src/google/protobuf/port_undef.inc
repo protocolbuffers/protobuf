@@ -64,6 +64,7 @@
 #undef PROTOBUF_NAMESPACE_OPEN
 #undef PROTOBUF_NAMESPACE_CLOSE
 #undef PROTOBUF_UNUSED
+#undef PROTOBUF_ASSUME
 
 // Restore macro that may have been #undef'd in port_def.inc.
 #ifdef _MSC_VER

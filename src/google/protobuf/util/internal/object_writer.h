@@ -32,8 +32,9 @@
 #define GOOGLE_PROTOBUF_UTIL_CONVERTER_OBJECT_WRITER_H__
 
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/stringpiece.h>
+#include <google/protobuf/stubs/strutil.h>
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {

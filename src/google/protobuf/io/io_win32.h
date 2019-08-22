@@ -53,7 +53,6 @@
 #include <string>
 
 #include <google/protobuf/port.h>
-
 #include <google/protobuf/port_def.inc>
 
 // Compilers on Windows other than MSVC (e.g. Cygwin, MinGW32) define the
@@ -92,7 +91,7 @@ enum class ExpandWildcardsResult {
 // `consume`. The resulting paths may not be absolute nor normalized.
 //
 // The function returns a value from `ExpandWildcardsResult`.
-LIBPROTOBUF_EXPORT ExpandWildcardsResult ExpandWildcards(
+PROTOBUF_EXPORT ExpandWildcardsResult ExpandWildcards(
     const std::string& path, std::function<void(const std::string&)> consume);
 
 namespace strings {

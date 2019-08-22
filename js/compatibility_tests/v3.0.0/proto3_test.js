@@ -50,7 +50,7 @@ var BYTES_B64 = goog.crypt.base64.encodeByteArray(BYTES);
  * @return {boolean}
  */
 function bytesCompare(arr, expected) {
-  if (goog.isString(arr)) {
+  if (typeof arr === 'string') {
     arr = goog.crypt.base64.decodeStringToUint8Array(arr);
   }
   if (arr.length != expected.length) {

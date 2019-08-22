@@ -1860,7 +1860,6 @@ jspb.Message.clone_ = function(obj) {
  * @param {Function} constructor The message constructor.
  */
 jspb.Message.registerMessageType = function(id, constructor) {
-  jspb.Message.registry_[id] = constructor;
   // This is needed so we can later access messageId directly on the contructor,
   // otherwise it is not available due to 'property collapsing' by the compiler.
   /**
@@ -1868,15 +1867,6 @@ jspb.Message.registerMessageType = function(id, constructor) {
    */
   constructor.messageId = id;
 };
-
-
-/**
- * The registry of message ids to message constructors.
- * @private
- */
-jspb.Message.registry_ = {};
-
-
 /**
  * The extensions registered on MessageSet. This is a map of extension
  * field number to field info object. This should be considered as a

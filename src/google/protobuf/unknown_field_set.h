@@ -178,7 +178,6 @@ class PROTOBUF_EXPORT UnknownFieldSet {
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(UnknownFieldSet);
 };
 
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 namespace internal {
 
 inline void WriteVarint(uint32 num, uint64 val, UnknownFieldSet* unknown) {
@@ -212,7 +211,6 @@ const char* UnknownFieldParse(uint32 tag, InternalMetadataWithArena* metadata,
                               const char* ptr, ParseContext* ctx);
 
 }  // namespace internal
-#endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 
 // Represents one field in an UnknownFieldSet.
 class PROTOBUF_EXPORT UnknownField {

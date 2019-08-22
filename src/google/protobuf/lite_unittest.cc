@@ -1062,11 +1062,9 @@ TEST(Lite, CorrectEnding) {
     // for non-group messages (like TestAllTypesLite) which made it not accept
     // end-group. This is not a real big deal, but I think going forward its
     // good to have all parse loops behave 'exactly' the same.
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
     EXPECT_TRUE(msg.MergePartialFromCodedStream(&cis));
     EXPECT_FALSE(cis.ConsumedEntireMessage());
     EXPECT_TRUE(cis.LastTagWas(132));
-#endif
   }
   {
     // This is an incomplete end-group tag. This should be a genuine parse
@@ -1076,9 +1074,7 @@ TEST(Lite, CorrectEnding) {
     // Unfortunately the old parser detects a parse error in ReadTag and returns
     // 0 (as it states 0 is an invalid tag). However 0 is not an invalid tag
     // as it can be used to terminate the stream, so this returns true.
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
     EXPECT_FALSE(msg.MergePartialFromCodedStream(&cis));
-#endif
   }
 }
 
