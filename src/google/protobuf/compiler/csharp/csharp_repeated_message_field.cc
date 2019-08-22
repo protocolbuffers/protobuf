@@ -83,6 +83,12 @@ void RepeatedMessageFieldGenerator::GenerateMembers(io::Printer* printer) {
     variables_,
     "$access_level$ pbc::RepeatedField<$type_name$> $property_name$ {\n"
     "  get { return $name$_; }\n"
+    "  set {\n"
+    "    $name$_.Clear();\n"
+    "    if(!ReferenceEquals(value, null)) {\n"
+    "      $name$_.AddRange(value);\n"
+    "    }\n"
+    "  }\n"
     "}\n");
 }
 
