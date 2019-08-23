@@ -237,7 +237,8 @@ bool FileGenerator::Validate(std::string* error) {
   }
 
   // Print a warning if optimize_for = LITE_RUNTIME is used.
-  if (file_->options().optimize_for() == FileOptions::LITE_RUNTIME) {
+  if (file_->options().optimize_for() == FileOptions::LITE_RUNTIME &&
+      !options_.enforce_lite) {
     GOOGLE_LOG(WARNING)
         << "The optimize_for = LITE_RUNTIME option is no longer supported by "
         << "protobuf Java code generator and is ignored--protoc will always "

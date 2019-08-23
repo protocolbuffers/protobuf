@@ -203,7 +203,7 @@ inline void GOOGLE_UNALIGNED_STORE64(void *p, uint64 v) {
   __sanitizer_unaligned_store64(p, v);
 }
 
-#elif GOOGLE_PROTOBUF_USE_UNALIGNED
+#elif defined(GOOGLE_PROTOBUF_USE_UNALIGNED) && GOOGLE_PROTOBUF_USE_UNALIGNED
 
 #define GOOGLE_UNALIGNED_LOAD16(_p) (*reinterpret_cast<const uint16 *>(_p))
 #define GOOGLE_UNALIGNED_LOAD32(_p) (*reinterpret_cast<const uint32 *>(_p))
@@ -430,13 +430,6 @@ class BigEndian {
 
 }  // namespace protobuf
 }  // namespace google
-
-#ifdef PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-#define GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER \
-  PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-#else
-#define GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER 0
-#endif
 
 #include <google/protobuf/port_undef.inc>
 

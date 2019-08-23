@@ -392,8 +392,8 @@ ExpandWildcardsResult ExpandWildcards(
   ExpandWildcardsResult matched = ExpandWildcardsResult::kErrorNoMatchingFile;
   do {
     // Ignore ".", "..", and directories.
-    if ((metadata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0
-        && kDot != metadata.cFileName && kDotDot != metadata.cFileName) {
+    if ((metadata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0 &&
+        kDot != metadata.cFileName && kDotDot != metadata.cFileName) {
       matched = ExpandWildcardsResult::kSuccess;
       string filename;
       if (!strings::wcs_to_utf8(metadata.cFileName, &filename)) {

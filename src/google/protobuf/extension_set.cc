@@ -1196,7 +1196,6 @@ bool ExtensionSet::ParseField(uint32 tag, io::CodedInputStream* input,
   }
 }
 
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 const char* ExtensionSet::ParseField(
     uint64 tag, const char* ptr, const MessageLite* containing_type,
     internal::InternalMetadataWithArenaLite* metadata,
@@ -1219,8 +1218,6 @@ const char* ExtensionSet::ParseMessageSetItem(
     internal::ParseContext* ctx) {
   return ParseMessageSetItemTmpl(ptr, containing_type, metadata, ctx);
 }
-
-#endif
 
 bool ExtensionSet::ParseFieldWithExtensionInfo(int number,
                                                bool was_packed_on_wire,

@@ -33,11 +33,12 @@
 #include <google/protobuf/compiler/mock_code_generator.h>
 
 #include <stdlib.h>
+
 #include <iostream>
 #include <memory>
 #include <vector>
-#include <google/protobuf/stubs/strutil.h>
 
+#include <google/protobuf/stubs/strutil.h>
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
@@ -50,8 +51,8 @@
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/text_format.h>
-#include <google/protobuf/stubs/substitute.h>
 #include <gtest/gtest.h>
+#include <google/protobuf/stubs/substitute.h>
 
 #ifdef major
 #undef major

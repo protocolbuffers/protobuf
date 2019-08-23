@@ -413,7 +413,9 @@ class CommandLineInterface::MemoryOutputStream
   // implements ZeroCopyOutputStream ---------------------------------
   virtual bool Next(void** data, int* size) { return inner_->Next(data, size); }
   virtual void BackUp(int count) { inner_->BackUp(count); }
-  virtual int64 ByteCount() const { return inner_->ByteCount(); }
+  virtual int64 ByteCount() const {
+    return inner_->ByteCount();
+  }
 
  private:
   // Checks to see if "filename_.meta" exists in directory_; if so, fixes the
@@ -1062,15 +1064,19 @@ bool CommandLineInterface::ParseInputFiles(
     DescriptorPool* descriptor_pool,
     std::vector<const FileDescriptor*>* parsed_files) {
 
+  // Track unused imports in all source files
+  for (const auto& input_file : input_files_) {
+    descriptor_pool->AddUnusedImportTrackFile(input_file);
+  }
+  bool result = true;
   // Parse each file.
   for (const auto& input_file : input_files_) {
     // Import the file.
-    descriptor_pool->AddUnusedImportTrackFile(input_file);
     const FileDescriptor* parsed_file =
         descriptor_pool->FindFileByName(input_file);
-    descriptor_pool->ClearUnusedImportTrackFiles();
     if (parsed_file == NULL) {
-      return false;
+      result = false;
+      break;
     }
     parsed_files->push_back(parsed_file);
 
@@ -1080,7 +1086,8 @@ bool CommandLineInterface::ParseInputFiles(
                 << ": This file contains services, but "
                    "--disallow_services was used."
                 << std::endl;
-      return false;
+      result = false;
+      break;
     }
 
     // Enforce --direct_dependencies
@@ -1098,11 +1105,13 @@ bool CommandLineInterface::ParseInputFiles(
         }
       }
       if (indirect_imports) {
-        return false;
+        result = false;
+        break;
       }
     }
   }
-  return true;
+  descriptor_pool->ClearUnusedImportTrackFiles();
+  return result;
 }
 
 void CommandLineInterface::Clear() {
@@ -1431,13 +1440,12 @@ CommandLineInterface::InterpretArgument(const std::string& name,
     // On Windows, the shell (typically cmd.exe) does not expand wildcards in
     // file names (e.g. foo\*.proto), so we do it ourselves.
     switch (google::protobuf::io::win32::ExpandWildcards(
-          value,
-          [this](const string& path) {
-            this->input_files_.push_back(path);
-          })) {
+        value,
+        [this](const string& path) { this->input_files_.push_back(path); })) {
       case google::protobuf::io::win32::ExpandWildcardsResult::kSuccess:
         break;
-      case google::protobuf::io::win32::ExpandWildcardsResult::kErrorNoMatchingFile:
+      case google::protobuf::io::win32::ExpandWildcardsResult::
+          kErrorNoMatchingFile:
         // Path does not exist, is not a file, or it's longer than MAX_PATH and
         // long path handling is disabled.
         std::cerr << "Invalid file name pattern or missing input file \""
@@ -1448,7 +1456,7 @@ CommandLineInterface::InterpretArgument(const std::string& name,
                   << "\" to or from Windows style" << std::endl;
         return PARSE_ARGUMENT_FAIL;
     }
-#else  // not _WIN32
+#else   // not _WIN32
     // On other platforms than Windows (e.g. Linux, Mac OS) the shell (typically
     // Bash) expands wildcards.
     input_files_.push_back(value);
