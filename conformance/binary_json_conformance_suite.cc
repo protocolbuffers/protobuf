@@ -904,7 +904,7 @@ void BinaryAndJsonConformanceSuite::TestValidDataForMapType(
           StrCat("ValidDataMap",
                  key_type_name,
                  value_type_name,
-                 "Default"),
+                 ".Default"),
           REQUIRED, proto, text, is_proto3);
     }
 
@@ -920,7 +920,7 @@ void BinaryAndJsonConformanceSuite::TestValidDataForMapType(
           StrCat("ValidDataMap",
                  key_type_name,
                  value_type_name,
-                 "MissingDefault"),
+                 ".MissingDefault"),
           REQUIRED, proto, text, is_proto3);
     }
 
@@ -936,7 +936,7 @@ void BinaryAndJsonConformanceSuite::TestValidDataForMapType(
           StrCat("ValidDataMap",
                  key_type_name,
                  value_type_name,
-                 "NonDefault"),
+                 ".NonDefault"),
           REQUIRED, proto, text, is_proto3);
     }
 
@@ -956,7 +956,7 @@ void BinaryAndJsonConformanceSuite::TestValidDataForMapType(
           StrCat("ValidDataMap",
                  key_type_name,
                  value_type_name,
-                 "DuplicateKey"),
+                 ".DuplicateKey"),
           REQUIRED, proto, text, is_proto3);
     }
   }
