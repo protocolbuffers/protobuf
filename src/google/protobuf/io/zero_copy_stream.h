@@ -117,10 +117,6 @@ namespace google {
 namespace protobuf {
 namespace io {
 
-// TODO(b/136291652): remove once we have switched the default to int64_t and
-// updated everyone who derives from this class.
-using ByteCountInt64 = int64_t;
-
 // Defined in this file.
 class ZeroCopyInputStream;
 class ZeroCopyOutputStream;
@@ -175,7 +171,7 @@ class PROTOBUF_EXPORT ZeroCopyInputStream {
   virtual bool Skip(int count) = 0;
 
   // Returns the total number of bytes read since this object was created.
-  virtual ByteCountInt64 ByteCount() const = 0;
+  virtual int64_t ByteCount() const = 0;
 
 
  private:
@@ -230,7 +226,7 @@ class PROTOBUF_EXPORT ZeroCopyOutputStream {
   virtual void BackUp(int count) = 0;
 
   // Returns the total number of bytes written since this object was created.
-  virtual ByteCountInt64 ByteCount() const = 0;
+  virtual int64_t ByteCount() const = 0;
 
   // Write a given chunk of data to the output.  Some output streams may
   // implement this in a way that avoids copying. Check AllowsAliasing() before
