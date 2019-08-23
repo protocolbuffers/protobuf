@@ -214,6 +214,10 @@ int ass_subscript(ExtensionDict* self, PyObject* key, PyObject* value) {
     return -1;
   }
 
+  if (value == nullptr) {
+    return cmessage::ClearFieldByDescriptor(self->parent, descriptor);
+  }
+
   if (descriptor->label() != FieldDescriptor::LABEL_OPTIONAL ||
       descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
     PyErr_SetString(PyExc_TypeError, "Extension is repeated and/or composite "

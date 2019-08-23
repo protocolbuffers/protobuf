@@ -146,7 +146,7 @@ class PROTOBUF_EXPORT GeneratedExtensionFinder : public ExtensionFinder {
  public:
   GeneratedExtensionFinder(const MessageLite* containing_type)
       : containing_type_(containing_type) {}
-  virtual ~GeneratedExtensionFinder() {}
+  ~GeneratedExtensionFinder() override {}
 
   // Returns true and fills in *output if found, otherwise returns false.
   bool Find(int number, ExtensionInfo* output) override;
@@ -394,7 +394,6 @@ class PROTOBUF_EXPORT ExtensionSet {
                   const MessageLite* containing_type,
                   io::CodedOutputStream* unknown_fields);
 
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
   // Lite parser
   const char* ParseField(uint64 tag, const char* ptr,
                          const MessageLite* containing_type,
@@ -434,7 +433,6 @@ class PROTOBUF_EXPORT ExtensionSet {
     }
     return ptr;
   }
-#endif
 
   // Parse an entire message in MessageSet format.  Such messages have no
   // fields, only extensions.
@@ -541,9 +539,7 @@ class PROTOBUF_EXPORT ExtensionSet {
 
     virtual bool ReadMessage(const MessageLite& prototype,
                              io::CodedInputStream* input) = 0;
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
     virtual const char* _InternalParse(const char* ptr, ParseContext* ctx) = 0;
-#endif
     virtual uint8* WriteMessageToArray(
         int number, uint8* target, io::EpsCopyOutputStream* stream) const = 0;
 
@@ -762,7 +758,6 @@ class PROTOBUF_EXPORT ExtensionSet {
                            ExtensionFinder* extension_finder,
                            MessageSetFieldSkipper* field_skipper);
 
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
   bool FindExtension(int wire_type, uint32 field,
                      const MessageLite* containing_type,
                      const internal::ParseContext* ctx,
@@ -807,7 +802,6 @@ class PROTOBUF_EXPORT ExtensionSet {
                                       const Msg* containing_type,
                                       Metadata* metadata,
                                       internal::ParseContext* ctx);
-#endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 
   // Hack:  RepeatedPtrFieldBase declares ExtensionSet as a friend.  This
   //   friendship should automatically extend to ExtensionSet::Extension, but
@@ -1583,8 +1577,7 @@ template <typename ExtendeeType, typename TypeTraitsType,
 void LinkExtensionReflection(
     const google::protobuf::internal::ExtensionIdentifier<
         ExtendeeType, TypeTraitsType, field_type, is_packed>& extension) {
-  const void* volatile unused = &extension;
-  (void)&unused;  // Use address to avoid an extra load of volatile variable.
+  internal::StrongReference(extension);
 }
 
 }  // namespace protobuf

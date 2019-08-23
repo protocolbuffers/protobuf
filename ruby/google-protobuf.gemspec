@@ -1,12 +1,14 @@
 Gem::Specification.new do |s|
   s.name        = "google-protobuf"
   s.version     = "3.9.1"
+  git_tag       = "v#{s.version.to_s.sub('.rc.', '-rc')}" # Converts X.Y.Z.rc.N to vX.Y.Z-rcN, used for the git tag
   s.licenses    = ["BSD-3-Clause"]
   s.summary     = "Protocol Buffers"
   s.description = "Protocol Buffers are Google's data interchange format."
   s.homepage    = "https://developers.google.com/protocol-buffers"
   s.authors     = ["Protobuf Authors"]
   s.email       = "protobuf@googlegroups.com"
+  s.metadata    = { "source_code_uri" => "https://github.com/protocolbuffers/protobuf/tree/#{git_tag}/ruby" }
   s.require_paths = ["lib"]
   s.files       = Dir.glob('lib/**/*.rb')
   if RUBY_PLATFORM == "java"

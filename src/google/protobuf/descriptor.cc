@@ -59,8 +59,8 @@
 #include <google/protobuf/text_format.h>
 #include <google/protobuf/unknown_field_set.h>
 #include <google/protobuf/wire_format.h>
-#include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/stubs/casts.h>
+#include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/io/strtod.h>
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/stl_util.h>
@@ -905,6 +905,14 @@ inline Symbol FileDescriptorTables::FindNestedSymbolOfType(
 
 Symbol DescriptorPool::Tables::FindByNameHelper(const DescriptorPool* pool,
                                                 const std::string& name) {
+  if (pool->mutex_ != nullptr) {
+    // Fast path: the Symbol is already cached.  This is just a hash lookup.
+    ReaderMutexLock lock(pool->mutex_);
+    if (known_bad_symbols_.empty() && known_bad_files_.empty()) {
+      Symbol result = FindSymbol(name);
+      if (!result.IsNull()) return result;
+    }
+  }
   MutexLockMaybe lock(pool->mutex_);
   if (pool->fallback_database_ != nullptr) {
     known_bad_symbols_.clear();
@@ -3681,7 +3689,14 @@ Symbol DescriptorBuilder::FindSymbolNotEnforcingDepsHelper(
 
 Symbol DescriptorBuilder::FindSymbolNotEnforcingDeps(const std::string& name,
                                                      bool build_it) {
-  return FindSymbolNotEnforcingDepsHelper(pool_, name, build_it);
+  Symbol result = FindSymbolNotEnforcingDepsHelper(pool_, name, build_it);
+  // Only find symbols which were defined in this file or one of its
+  // dependencies.
+  const FileDescriptor* file = result.GetFile();
+  if (file == file_ || dependencies_.count(file) > 0) {
+    unused_dependency_.erase(file);
+  }
+  return result;
 }
 
 Symbol DescriptorBuilder::FindSymbol(const std::string& name, bool build_it) {
@@ -3698,7 +3713,6 @@ Symbol DescriptorBuilder::FindSymbol(const std::string& name, bool build_it) {
   // dependencies.
   const FileDescriptor* file = result.GetFile();
   if (file == file_ || dependencies_.count(file) > 0) {
-    unused_dependency_.erase(file);
     return result;
   }
 
@@ -7104,35 +7118,13 @@ void DescriptorBuilder::LogUnusedDependency(const FileDescriptorProto& proto,
                                             const FileDescriptor* result) {
 
   if (!unused_dependency_.empty()) {
-    std::set<std::string> annotation_extensions;
-    annotation_extensions.insert("google.protobuf.MessageOptions");
-    annotation_extensions.insert("google.protobuf.FileOptions");
-    annotation_extensions.insert("google.protobuf.FieldOptions");
-    annotation_extensions.insert("google.protobuf.EnumOptions");
-    annotation_extensions.insert("google.protobuf.EnumValueOptions");
-    annotation_extensions.insert("google.protobuf.EnumValueOptions");
-    annotation_extensions.insert("google.protobuf.ServiceOptions");
-    annotation_extensions.insert("google.protobuf.MethodOptions");
-    annotation_extensions.insert("google.protobuf.StreamOptions");
     for (std::set<const FileDescriptor*>::const_iterator it =
              unused_dependency_.begin();
          it != unused_dependency_.end(); ++it) {
-      // Do not log warnings for proto files which extend annotations.
-      int i;
-      for (i = 0; i < (*it)->extension_count(); ++i) {
-        if (annotation_extensions.find(
-                (*it)->extension(i)->containing_type()->full_name()) !=
-            annotation_extensions.end()) {
-          break;
-        }
-      }
       // Log warnings for unused imported files.
-      if (i == (*it)->extension_count()) {
-        std::string error_message =
-            "Import " + (*it)->name() + " but not used.";
-        AddWarning((*it)->name(), proto, DescriptorPool::ErrorCollector::IMPORT,
-                   error_message);
-      }
+      std::string error_message = "Import " + (*it)->name() + " but not used.";
+      AddWarning((*it)->name(), proto, DescriptorPool::ErrorCollector::IMPORT,
+                 error_message);
     }
   }
 }

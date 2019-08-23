@@ -113,6 +113,10 @@ message TestNestedMap {
   map<string, TestNestedMap> map_map = 7;
 }
 
+message TestStringMap {
+  map<string, string> string_map = 1;
+}
+
 message TestWrapper {
   google.protobuf.BoolValue bool_value = 1;
   google.protobuf.Int32Value int32_value = 2;

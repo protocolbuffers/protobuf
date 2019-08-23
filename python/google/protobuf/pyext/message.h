@@ -224,28 +224,19 @@ bool SetSubmessage(CMessage* self, CMessage* submessage);
 // Corresponds to message api method Clear.
 PyObject* Clear(CMessage* self);
 
-// Clears the data described by the given descriptor. Used to clear extensions
-// (which don't have names). Extension release is handled by ExtensionDict
-// class, not this function.
-// TODO(anuraag): Try to make this discrepancy in release semantics with
-//                ClearField less confusing.
+// Clears the data described by the given descriptor.
+// Returns -1 on error.
 //
 // Corresponds to reflection api method ClearField.
-PyObject* ClearFieldByDescriptor(
-    CMessage* self, const FieldDescriptor* descriptor);
-
-// Clears the data for the given field name. The message is released if there
-// are any external references.
-//
-// Corresponds to reflection api method ClearField.
-PyObject* ClearField(CMessage* self, PyObject* arg);
+int ClearFieldByDescriptor(CMessage* self, const FieldDescriptor* descriptor);
 
 // Checks if the message has the field described by the descriptor. Used for
 // extensions (which have no name).
+// Returns 1 if true, 0 if false, and -1 on error.
 //
 // Corresponds to reflection api method HasField
-PyObject* HasFieldByDescriptor(
-    CMessage* self, const FieldDescriptor* field_descriptor);
+int HasFieldByDescriptor(CMessage* self,
+                         const FieldDescriptor* field_descriptor);
 
 // Checks if the message has the named field.
 //

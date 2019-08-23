@@ -187,6 +187,14 @@ T* OnShutdownDelete(T* p) {
   return p;
 }
 
+// Strongly references the given variable such that the linker will be forced
+// to pull in this variable's translation unit.
+template <typename T>
+void StrongReference(const T& var) {
+  auto volatile unused = &var;
+  (void)&unused;  // Use address to avoid an extra load of "unused".
+}
+
 }  // namespace internal
 
 #if PROTOBUF_USE_EXCEPTIONS

@@ -168,19 +168,6 @@ class FieldGenerator {
   virtual void GenerateDefaultInstanceAllocator(
       io::Printer* /*printer*/) const {}
 
-  // Generate lines to decode this field, which will be placed inside the
-  // message's MergeFromCodedStream() method.
-  virtual void GenerateMergeFromCodedStream(io::Printer* printer) const = 0;
-
-  // Returns true if this field's "MergeFromCodedStream" code needs the arena
-  // to be defined as a variable.
-  virtual bool MergeFromCodedStreamNeedsArena() const { return false; }
-
-  // Generate lines to decode this field from a packed value, which will be
-  // placed inside the message's MergeFromCodedStream() method.
-  virtual void GenerateMergeFromCodedStreamWithPacking(
-      io::Printer* printer) const;
-
   // Generate lines to serialize this field directly to the array "target",
   // which are placed within the message's SerializeWithCachedSizesToArray()
   // method. This must also advance "target" past the written bytes.

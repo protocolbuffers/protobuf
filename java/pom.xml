@@ -104,7 +104,7 @@
       <dependency>
         <groupId>com.google.truth</groupId>
         <artifactId>truth</artifactId>
-        <version>0.45</version>
+        <version>1.0</version>
         <scope>test</scope>
       </dependency>
     </dependencies>

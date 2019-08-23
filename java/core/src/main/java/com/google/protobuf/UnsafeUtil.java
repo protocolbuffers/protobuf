@@ -43,6 +43,9 @@ import java.util.logging.Logger;
 final class UnsafeUtil {
   private static final Logger logger = Logger.getLogger(UnsafeUtil.class.getName());
   private static final sun.misc.Unsafe UNSAFE = getUnsafe();
+  private static final Class<?> MEMORY_CLASS = Android.getMemoryClass();
+  private static final boolean IS_ANDROID_64 = determineAndroidSupportByAddressSize(long.class);
+  private static final boolean IS_ANDROID_32 = determineAndroidSupportByAddressSize(int.class);
   private static final MemoryAccessor MEMORY_ACCESSOR = getMemoryAccessor();
   private static final boolean HAS_UNSAFE_BYTEBUFFER_OPERATIONS =
       supportsUnsafeByteBufferOperations();
@@ -89,6 +92,9 @@ final class UnsafeUtil {
     return HAS_UNSAFE_BYTEBUFFER_OPERATIONS;
   }
 
+  static boolean isAndroid64() {
+    return IS_ANDROID_64;
+  }
 
   @SuppressWarnings("unchecked") // safe by method contract
   static <T> T allocateInstance(Class<T> clazz) {
@@ -314,6 +320,16 @@ final class UnsafeUtil {
     if (UNSAFE == null) {
       return null;
     }
+    if (Android.isOnAndroidDevice()) {
+      if (IS_ANDROID_64) {
+        return new Android64MemoryAccessor(UNSAFE);
+      } else if (IS_ANDROID_32) {
+        return new Android32MemoryAccessor(UNSAFE);
+      } else {
+        return null;
+      }
+    }
+
     return new JvmMemoryAccessor(UNSAFE);
   }
 
@@ -333,6 +349,9 @@ final class UnsafeUtil {
       clazz.getMethod("putLong", Object.class, long.class, long.class);
       clazz.getMethod("getObject", Object.class, long.class);
       clazz.getMethod("putObject", Object.class, long.class, Object.class);
+      if (Android.isOnAndroidDevice()) {
+        return true;
+      }
       clazz.getMethod("getByte", Object.class, long.class);
       clazz.getMethod("putByte", Object.class, long.class, byte.class);
       clazz.getMethod("getBoolean", Object.class, long.class);
@@ -365,6 +384,9 @@ final class UnsafeUtil {
         return false;
       }
 
+      if (Android.isOnAndroidDevice()) {
+        return true;
+      }
       clazz.getMethod("getByte", long.class);
       clazz.getMethod("putByte", long.class, byte.class);
       clazz.getMethod("getInt", long.class);
@@ -382,9 +404,36 @@ final class UnsafeUtil {
     return false;
   }
 
+  private static boolean determineAndroidSupportByAddressSize(Class<?> addressClass) {
+    if (!Android.isOnAndroidDevice()) {
+      return false;
+    }
+    try {
+      Class<?> clazz = MEMORY_CLASS;
+      clazz.getMethod("peekLong", addressClass, boolean.class);
+      clazz.getMethod("pokeLong", addressClass, long.class, boolean.class);
+      clazz.getMethod("pokeInt", addressClass, int.class, boolean.class);
+      clazz.getMethod("peekInt", addressClass, boolean.class);
+      clazz.getMethod("pokeByte", addressClass, byte.class);
+      clazz.getMethod("peekByte", addressClass);
+      clazz.getMethod("pokeByteArray", addressClass, byte[].class, int.class, int.class);
+      clazz.getMethod("peekByteArray", addressClass, byte[].class, int.class, int.class);
+      return true;
+    } catch (Throwable t) {
+      return false;
+    }
+  }
 
   /** Finds the address field within a direct {@link Buffer}. */
   private static Field bufferAddressField() {
+    if (Android.isOnAndroidDevice()) {
+      // Old versions of Android had renamed the address field to 'effectiveDirectAddress', but
+      // recent versions of Android (>M?) use the OpenJDK implementation. Fall through in that case.
+      Field field = field(Buffer.class, "effectiveDirectAddress");
+      if (field != null) {
+        return field;
+      }
+    }
     Field field = field(Buffer.class, "address");
     return field != null && field.getType() == long.class ? field : null;
   }
@@ -656,4 +705,273 @@ final class UnsafeUtil {
     }
   }
 
+  private static final class Android64MemoryAccessor extends MemoryAccessor {
+
+    Android64MemoryAccessor(sun.misc.Unsafe unsafe) {
+      super(unsafe);
+    }
+
+    @Override
+    public byte getByte(long address) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void putByte(long address, byte value) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public int getInt(long address) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void putInt(long address, int value) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public long getLong(long address) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void putLong(long address, long value) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public byte getByte(Object target, long offset) {
+      if (IS_BIG_ENDIAN) {
+        return getByteBigEndian(target, offset);
+      } else {
+        return getByteLittleEndian(target, offset);
+      }
+    }
+
+    @Override
+    public void putByte(Object target, long offset, byte value) {
+      if (IS_BIG_ENDIAN) {
+        putByteBigEndian(target, offset, value);
+      } else {
+        putByteLittleEndian(target, offset, value);
+      }
+    }
+
+    @Override
+    public boolean getBoolean(Object target, long offset) {
+      if (IS_BIG_ENDIAN) {
+        return getBooleanBigEndian(target, offset);
+      } else {
+        return getBooleanLittleEndian(target, offset);
+      }
+    }
+
+    @Override
+    public void putBoolean(Object target, long offset, boolean value) {
+      if (IS_BIG_ENDIAN) {
+        putBooleanBigEndian(target, offset, value);
+      } else {
+        putBooleanLittleEndian(target, offset, value);
+      }
+    }
+
+    @Override
+    public float getFloat(Object target, long offset) {
+      return Float.intBitsToFloat(getInt(target, offset));
+    }
+
+    @Override
+    public void putFloat(Object target, long offset, float value) {
+      putInt(target, offset, Float.floatToIntBits(value));
+    }
+
+    @Override
+    public double getDouble(Object target, long offset) {
+      return Double.longBitsToDouble(getLong(target, offset));
+    }
+
+    @Override
+    public void putDouble(Object target, long offset, double value) {
+      putLong(target, offset, Double.doubleToLongBits(value));
+    }
+
+    @Override
+    public void copyMemory(long srcOffset, byte[] target, long targetIndex, long length) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void copyMemory(byte[] src, long srcIndex, long targetOffset, long length) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Object getStaticObject(Field field) {
+      try {
+        return field.get(null);
+      } catch (IllegalAccessException e) {
+        return null;
+      }
+    }
+  }
+
+  private static final class Android32MemoryAccessor extends MemoryAccessor {
+
+    /** Mask used to convert a 64 bit memory address to a 32 bit address. */
+    private static final long SMALL_ADDRESS_MASK = 0x00000000FFFFFFFF;
+
+    /** Truncate a {@code long} address into a short {@code int} address. */
+    private static int smallAddress(long address) {
+      return (int) (SMALL_ADDRESS_MASK & address);
+    }
+
+    Android32MemoryAccessor(sun.misc.Unsafe unsafe) {
+      super(unsafe);
+    }
+
+    @Override
+    public byte getByte(long address) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void putByte(long address, byte value) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public int getInt(long address) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void putInt(long address, int value) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public long getLong(long address) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void putLong(long address, long value) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public byte getByte(Object target, long offset) {
+      if (IS_BIG_ENDIAN) {
+        return getByteBigEndian(target, offset);
+      } else {
+        return getByteLittleEndian(target, offset);
+      }
+    }
+
+    @Override
+    public void putByte(Object target, long offset, byte value) {
+      if (IS_BIG_ENDIAN) {
+        putByteBigEndian(target, offset, value);
+      } else {
+        putByteLittleEndian(target, offset, value);
+      }
+    }
+
+    @Override
+    public boolean getBoolean(Object target, long offset) {
+      if (IS_BIG_ENDIAN) {
+        return getBooleanBigEndian(target, offset);
+      } else {
+        return getBooleanLittleEndian(target, offset);
+      }
+    }
+
+    @Override
+    public void putBoolean(Object target, long offset, boolean value) {
+      if (IS_BIG_ENDIAN) {
+        putBooleanBigEndian(target, offset, value);
+      } else {
+        putBooleanLittleEndian(target, offset, value);
+      }
+    }
+
+    @Override
+    public float getFloat(Object target, long offset) {
+      return Float.intBitsToFloat(getInt(target, offset));
+    }
+
+    @Override
+    public void putFloat(Object target, long offset, float value) {
+      putInt(target, offset, Float.floatToIntBits(value));
+    }
+
+    @Override
+    public double getDouble(Object target, long offset) {
+      return Double.longBitsToDouble(getLong(target, offset));
+    }
+
+    @Override
+    public void putDouble(Object target, long offset, double value) {
+      putLong(target, offset, Double.doubleToLongBits(value));
+    }
+
+    @Override
+    public void copyMemory(long srcOffset, byte[] target, long targetIndex, long length) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void copyMemory(byte[] src, long srcIndex, long targetOffset, long length) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Object getStaticObject(Field field) {
+      try {
+        return field.get(null);
+      } catch (IllegalAccessException e) {
+        return null;
+      }
+    }
+  }
+
+  private static byte getByteBigEndian(Object target, long offset) {
+    return (byte) ((getInt(target, offset & ~3) >>> ((~offset & 3) << 3)) & 0xFF);
+  }
+
+  private static byte getByteLittleEndian(Object target, long offset) {
+    return (byte) ((getInt(target, offset & ~3) >>> ((offset & 3) << 3)) & 0xFF);
+  }
+
+  private static void putByteBigEndian(Object target, long offset, byte value) {
+    int intValue = getInt(target, offset & ~3);
+    int shift = ((~(int) offset) & 3) << 3;
+    int output = (intValue & ~(0xFF << shift)) | ((0xFF & value) << shift);
+    putInt(target, offset & ~3, output);
+  }
+
+  private static void putByteLittleEndian(Object target, long offset, byte value) {
+    int intValue = getInt(target, offset & ~3);
+    int shift = (((int) offset) & 3) << 3;
+    int output = (intValue & ~(0xFF << shift)) | ((0xFF & value) << shift);
+    putInt(target, offset & ~3, output);
+  }
+
+  private static boolean getBooleanBigEndian(Object target, long offset) {
+    return getByteBigEndian(target, offset) != 0;
+  }
+
+  private static boolean getBooleanLittleEndian(Object target, long offset) {
+    return getByteLittleEndian(target, offset) != 0;
+  }
+
+  private static void putBooleanBigEndian(Object target, long offset, boolean value) {
+    putByteBigEndian(target, offset, (byte) (value ? 1 : 0));
+  }
+
+  private static void putBooleanLittleEndian(Object target, long offset, boolean value) {
+    putByteLittleEndian(target, offset, (byte) (value ? 1 : 0));
+  }
 }

@@ -157,16 +157,16 @@ enum class Packed {
   FALSE = 2,
 };
 
-const FieldDescriptor* GetFieldForType(
-    FieldDescriptor::Type type, bool repeated, bool is_proto3,
-    Packed packed = Packed::UNSPECIFIED) {
+const FieldDescriptor* GetFieldForType(FieldDescriptor::Type type,
+                                       bool repeated, bool is_proto3,
+                                       Packed packed = Packed::UNSPECIFIED) {
   const Descriptor* d = is_proto3 ?
       TestAllTypesProto3().GetDescriptor() : TestAllTypesProto2().GetDescriptor();
   for (int i = 0; i < d->field_count(); i++) {
     const FieldDescriptor* f = d->field(i);
     if (f->type() == type && f->is_repeated() == repeated) {
-      if (packed == Packed::TRUE && !f->is_packed() ||
-          packed == Packed::FALSE && f->is_packed()) {
+      if ((packed == Packed::TRUE && !f->is_packed()) ||
+          (packed == Packed::FALSE && f->is_packed())) {
         continue;
       }
       return f;
@@ -183,10 +183,8 @@ const FieldDescriptor* GetFieldForType(
     packed_string = "Unpacked ";
   }
   GOOGLE_LOG(FATAL) << "Couldn't find field with type: "
-                    << repeated_string.c_str()
-                    << packed_string.c_str()
-                    << FieldDescriptor::TypeName(type)
-                    << " for "
+                    << repeated_string.c_str() << packed_string.c_str()
+                    << FieldDescriptor::TypeName(type) << " for "
                     << proto_string.c_str();
   return nullptr;
 }
@@ -425,14 +423,13 @@ void BinaryAndJsonConformanceSuite::RunValidProtobufTest(
 void BinaryAndJsonConformanceSuite::RunValidBinaryProtobufTest(
     const string& test_name, ConformanceLevel level,
     const string& input_protobuf, bool is_proto3) {
-  RunValidBinaryProtobufTest(
-      test_name, level, input_protobuf, input_protobuf, is_proto3);
+  RunValidBinaryProtobufTest(test_name, level, input_protobuf, input_protobuf,
+                             is_proto3);
 }
 
 void BinaryAndJsonConformanceSuite::RunValidBinaryProtobufTest(
     const string& test_name, ConformanceLevel level,
-    const string& input_protobuf,
-    const string& expected_protobuf,
+    const string& input_protobuf, const string& expected_protobuf,
     bool is_proto3) {
   std::unique_ptr<Message> prototype = NewTestMessage(is_proto3);
   ConformanceRequestSetting setting(
@@ -654,8 +651,7 @@ void BinaryAndJsonConformanceSuite::TestValidDataForType(
 
     // Test singular data for singular fields.
     for (size_t i = 0; i < values.size(); i++) {
-      string proto =
-          cat(tag(field->number(), wire_type), values[i].first);
+      string proto = cat(tag(field->number(), wire_type), values[i].first);
       // In proto3, default primitive fields should not be encoded.
       string expected_proto =
           is_proto3 && IsProto3Default(field->type(), values[i].second) ?
@@ -727,18 +723,15 @@ void BinaryAndJsonConformanceSuite::TestValidDataForType(
         unpacked_proto_expected +=
             cat(tag(unpacked_field->number(), wire_type), values[i].second);
       }
-      default_proto_packed =
-          cat(tag(rep_field->number(),
-                  WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
-              delim(default_proto_packed));
-      default_proto_packed_expected =
-          cat(tag(rep_field->number(),
-                  WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
-              delim(default_proto_packed_expected));
-      packed_proto_packed =
-          cat(tag(packed_field->number(),
-                  WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
-              delim(packed_proto_packed));
+      default_proto_packed = cat(
+          tag(rep_field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+          delim(default_proto_packed));
+      default_proto_packed_expected = cat(
+          tag(rep_field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+          delim(default_proto_packed_expected));
+      packed_proto_packed = cat(tag(packed_field->number(),
+                                    WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+                                delim(packed_proto_packed));
       packed_proto_expected =
           cat(tag(packed_field->number(),
                   WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
@@ -748,60 +741,44 @@ void BinaryAndJsonConformanceSuite::TestValidDataForType(
                   WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
               delim(unpacked_proto_packed));
 
-
       std::unique_ptr<Message> test_message = NewTestMessage(is_proto3);
       test_message->MergeFromString(default_proto_packed_expected);
       string text = test_message->DebugString();
 
       // Ensures both packed and unpacked data can be parsed.
       RunValidProtobufTest(
-          StrCat("ValidDataRepeated", type_name, ".UnpackedInput"),
-          REQUIRED, default_proto_unpacked, text, is_proto3);
+          StrCat("ValidDataRepeated", type_name, ".UnpackedInput"), REQUIRED,
+          default_proto_unpacked, text, is_proto3);
       RunValidProtobufTest(
-          StrCat("ValidDataRepeated", type_name, ".PackedInput"),
-          REQUIRED, default_proto_packed, text, is_proto3);
+          StrCat("ValidDataRepeated", type_name, ".PackedInput"), REQUIRED,
+          default_proto_packed, text, is_proto3);
 
       // proto2 should encode as unpacked by default and proto3 should encode as
       // packed by default.
-      string expected_proto =
-          rep_field->is_packed() ? default_proto_packed_expected :
-                                   default_proto_unpacked_expected;
+      string expected_proto = rep_field->is_packed()
+                                  ? default_proto_packed_expected
+                                  : default_proto_unpacked_expected;
+      RunValidBinaryProtobufTest(StrCat("ValidDataRepeated", type_name,
+                                        ".UnpackedInput.DefaultOutput"),
+                                 RECOMMENDED, default_proto_unpacked,
+                                 expected_proto, is_proto3);
       RunValidBinaryProtobufTest(
-          StrCat("ValidDataRepeated", type_name,
-                 ".UnpackedInput.DefaultOutput"),
-          RECOMMENDED,
-          default_proto_unpacked,
-          expected_proto, is_proto3);
+          StrCat("ValidDataRepeated", type_name, ".PackedInput.DefaultOutput"),
+          RECOMMENDED, default_proto_packed, expected_proto, is_proto3);
       RunValidBinaryProtobufTest(
-          StrCat("ValidDataRepeated", type_name,
-                 ".PackedInput.DefaultOutput"),
-          RECOMMENDED,
-          default_proto_packed,
-          expected_proto, is_proto3);
+          StrCat("ValidDataRepeated", type_name, ".UnpackedInput.PackedOutput"),
+          RECOMMENDED, packed_proto_unpacked, packed_proto_expected, is_proto3);
       RunValidBinaryProtobufTest(
-          StrCat("ValidDataRepeated", type_name,
-                 ".UnpackedInput.PackedOutput"),
-          RECOMMENDED,
-          packed_proto_unpacked,
-          packed_proto_expected, is_proto3);
+          StrCat("ValidDataRepeated", type_name, ".PackedInput.PackedOutput"),
+          RECOMMENDED, packed_proto_packed, packed_proto_expected, is_proto3);
+      RunValidBinaryProtobufTest(StrCat("ValidDataRepeated", type_name,
+                                        ".UnpackedInput.UnpackedOutput"),
+                                 RECOMMENDED, unpacked_proto_unpacked,
+                                 unpacked_proto_expected, is_proto3);
       RunValidBinaryProtobufTest(
-          StrCat("ValidDataRepeated", type_name,
-                 ".PackedInput.PackedOutput"),
-          RECOMMENDED,
-          packed_proto_packed,
-          packed_proto_expected, is_proto3);
-      RunValidBinaryProtobufTest(
-          StrCat("ValidDataRepeated", type_name,
-                 ".UnpackedInput.UnpackedOutput"),
-          RECOMMENDED,
-          unpacked_proto_unpacked,
-          unpacked_proto_expected, is_proto3);
-      RunValidBinaryProtobufTest(
-          StrCat("ValidDataRepeated", type_name,
-                 ".PackedInput.UnpackedOutput"),
-          RECOMMENDED,
-          unpacked_proto_packed,
-          unpacked_proto_expected, is_proto3);
+          StrCat("ValidDataRepeated", type_name, ".PackedInput.UnpackedOutput"),
+          RECOMMENDED, unpacked_proto_packed, unpacked_proto_expected,
+          is_proto3);
     } else {
       string proto;
       string expected_proto;
@@ -814,27 +791,24 @@ void BinaryAndJsonConformanceSuite::TestValidDataForType(
       test_message->MergeFromString(expected_proto);
       string text = test_message->DebugString();
 
-      RunValidProtobufTest(
-          StrCat("ValidDataRepeated", type_name),
-          REQUIRED, proto, text, is_proto3);
+      RunValidProtobufTest(StrCat("ValidDataRepeated", type_name), REQUIRED,
+                           proto, text, is_proto3);
     }
   }
 }
 
 void BinaryAndJsonConformanceSuite::TestValidDataForRepeatedScalarMessage() {
   std::vector<std::string> values = {
-      delim(cat(tag(2, WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
-                delim(cat(
-                    tag(1, WireFormatLite::WIRETYPE_VARINT), varint(1234),
+      delim(cat(
+          tag(2, WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+          delim(cat(tag(1, WireFormatLite::WIRETYPE_VARINT), varint(1234),
                     tag(2, WireFormatLite::WIRETYPE_VARINT), varint(1234),
-                    tag(31, WireFormatLite::WIRETYPE_VARINT), varint(1234)
-                )))),
-      delim(cat(tag(2, WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
-                delim(cat(
-                    tag(1, WireFormatLite::WIRETYPE_VARINT), varint(4321),
+                    tag(31, WireFormatLite::WIRETYPE_VARINT), varint(1234))))),
+      delim(cat(
+          tag(2, WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+          delim(cat(tag(1, WireFormatLite::WIRETYPE_VARINT), varint(4321),
                     tag(3, WireFormatLite::WIRETYPE_VARINT), varint(4321),
-                    tag(31, WireFormatLite::WIRETYPE_VARINT), varint(4321)
-                )))),
+                    tag(31, WireFormatLite::WIRETYPE_VARINT), varint(4321))))),
   };
 
   const std::string expected =
@@ -857,9 +831,8 @@ void BinaryAndJsonConformanceSuite::TestValidDataForRepeatedScalarMessage() {
               values[i]);
     }
 
-    RunValidProtobufTest(
-        "RepeatedScalarMessageMerge", REQUIRED, proto,
-        field->name() + ": " + expected, is_proto3);
+    RunValidProtobufTest("RepeatedScalarMessageMerge", REQUIRED, proto,
+                         field->name() + ": " + expected, is_proto3);
   }
 }
 
@@ -1055,11 +1028,11 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
     {delim("\xfb"), delim("\xfb")},
   });
   TestValidDataForType(FieldDescriptor::TYPE_ENUM, {
-    {varint(0), varint(0)},
-    {varint(1), varint(1)},
-    {varint(2), varint(2)},
-    {varint(-1), varint(-1)},
-  });
+                                                       {varint(0), varint(0)},
+                                                       {varint(1), varint(1)},
+                                                       {varint(2), varint(2)},
+                                                       {varint(-1), varint(-1)},
+                                                   });
   TestValidDataForRepeatedScalarMessage();
   TestValidDataForType(FieldDescriptor::TYPE_MESSAGE, {
     {delim(""), delim("")},

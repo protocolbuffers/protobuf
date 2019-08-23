@@ -339,33 +339,36 @@ rb_data_type_t MapParseFrame_type = {
   { MapParseFrame_mark, MapParseFrame_free, NULL },
 };
 
-static map_parse_frame_t* map_push_frame(VALUE map,
-                                         const map_handlerdata_t* handlerdata) {
+// Handler to begin a map entry: allocates a temporary frame. This is the
+// 'startsubmsg' handler on the msgdef that contains the map field.
+static void *startmap_handler(void *closure, const void *hd) {
+  MessageHeader* msg = closure;
+  const map_handlerdata_t* mapdata = hd;
   map_parse_frame_t* frame = ALLOC(map_parse_frame_t);
-  frame->handlerdata = handlerdata;
-  frame->map = map;
-  native_slot_init(handlerdata->key_field_type, &frame->key_storage);
-  native_slot_init(handlerdata->value_field_type, &frame->value_storage);
+  VALUE map_rb = DEREF(msg, mapdata->ofs, VALUE);
 
-  Map_set_frame(map,
-              TypedData_Wrap_Struct(rb_cObject, &MapParseFrame_type, frame));
+  frame->handlerdata = mapdata;
+  frame->map = map_rb;
+  native_slot_init(mapdata->key_field_type, &frame->key_storage);
+  native_slot_init(mapdata->value_field_type, &frame->value_storage);
+
+  Map_set_frame(map_rb,
+                TypedData_Wrap_Struct(rb_cObject, &MapParseFrame_type, frame));
 
   return frame;
 }
 
-// Handler to begin a map entry: allocates a temporary frame. This is the
-// 'startsubmsg' handler on the msgdef that contains the map field.
-static void *startmapentry_handler(void *closure, const void *hd) {
+static bool endmap_handler(void *closure, const void *hd) {
   MessageHeader* msg = closure;
   const map_handlerdata_t* mapdata = hd;
   VALUE map_rb = DEREF(msg, mapdata->ofs, VALUE);
-
-  return map_push_frame(map_rb, mapdata);
+  Map_set_frame(map_rb, Qnil);
+  return true;
 }
 
 // Handler to end a map entry: inserts the value defined during the message into
 // the map. This is the 'endmsg' handler on the map entry msgdef.
-static bool endmap_handler(void *closure, const void *hd, upb_status* s) {
+static bool endmapentry_handler(void* closure, const void* hd, upb_status* s) {
   map_parse_frame_t* frame = closure;
   const map_handlerdata_t* mapdata = hd;
 
@@ -378,7 +381,6 @@ static bool endmap_handler(void *closure, const void *hd, upb_status* s) {
       &frame->value_storage);
 
   Map_index_set(frame->map, key, value);
-  Map_set_frame(frame->map, Qnil);
 
   return true;
 }
@@ -595,7 +597,8 @@ static void add_handlers_for_mapfield(upb_handlers* h,
 
   upb_handlers_addcleanup(h, hd, xfree);
   attr.handler_data = hd;
-  upb_handlers_setstartsubmsg(h, fielddef, startmapentry_handler, &attr);
+  upb_handlers_setstartsubmsg(h, fielddef, startmap_handler, &attr);
+  upb_handlers_setendsubmsg(h, fielddef, endmap_handler, &attr);
 }
 
 // Adds handlers to a map-entry msgdef.
@@ -608,7 +611,7 @@ static void add_handlers_for_mapentry(const upb_msgdef* msgdef, upb_handlers* h,
 
   upb_handlers_addcleanup(h, hd, xfree);
   attr.handler_data = hd;
-  upb_handlers_setendmsg(h, endmap_handler, &attr);
+  upb_handlers_setendmsg(h, endmapentry_handler, &attr);
 
   add_handlers_for_singular_field(
       desc, h, key_field,

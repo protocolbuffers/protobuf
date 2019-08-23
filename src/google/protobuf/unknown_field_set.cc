@@ -278,7 +278,6 @@ uint8* UnknownField::InternalSerializeLengthDelimitedNoTag(
   return target;
 }
 
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 namespace internal {
 const char* PackedEnumParser(void* object, const char* ptr, ParseContext* ctx,
                              bool (*is_valid)(int),
@@ -359,7 +358,5 @@ const char* UnknownFieldParse(uint32 tag, InternalMetadataWithArena* metadata,
 }
 
 }  // namespace internal
-#endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-
 }  // namespace protobuf
 }  // namespace google
