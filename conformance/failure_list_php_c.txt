@@ -45,6 +45,7 @@ Recommended.Proto3.ProtobufInput.ValidDataRepeated.UINT32.PackedInput.DefaultOut
 Recommended.Proto3.ProtobufInput.ValidDataRepeated.UINT32.UnpackedInput.DefaultOutput.ProtobufOutput
 Recommended.Proto3.ProtobufInput.ValidDataRepeated.UINT64.PackedInput.DefaultOutput.ProtobufOutput
 Recommended.Proto3.ProtobufInput.ValidDataRepeated.UINT64.UnpackedInput.DefaultOutput.ProtobufOutput
+Recommended.Proto3.ProtobufInput.ValidDataScalarBinary.ENUM[3].ProtobufOutput
 Required.DurationProtoInputTooLarge.JsonOutput
 Required.DurationProtoInputTooSmall.JsonOutput
 Required.Proto3.JsonInput.DoubleFieldMaxNegativeValue.JsonOutput
@@ -71,7 +72,7 @@ Required.Proto3.ProtobufInput.ValidDataRepeated.FLOAT.PackedInput.JsonOutput
 Required.Proto3.ProtobufInput.ValidDataRepeated.FLOAT.UnpackedInput.JsonOutput
 Required.Proto3.ProtobufInput.ValidDataRepeated.STRING.JsonOutput
 Required.Proto3.ProtobufInput.ValidDataRepeated.STRING.ProtobufOutput
-Required.Proto3.ProtobufInput.ValidDataScalar.FLOAT[1].JsonOutput
+Required.Proto3.ProtobufInput.ValidDataScalar.FLOAT[2].JsonOutput
 Required.TimestampProtoInputTooLarge.JsonOutput
 Required.TimestampProtoInputTooSmall.JsonOutput
 Recommended.Proto3.ProtobufInput.ValidDataRepeated.BOOL.PackedInput.PackedOutput.ProtobufOutput
