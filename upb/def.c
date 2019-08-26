@@ -1029,6 +1029,7 @@ static bool parse_default(const symtab_addctx *ctx, const char *str, size_t len,
       } else {
         return false;
       }
+      break;
     }
     case UPB_TYPE_STRING:
       f->defaultval.str = newstr(ctx->alloc, str, len);
