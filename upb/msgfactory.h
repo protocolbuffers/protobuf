@@ -41,6 +41,11 @@ const upb_symtab *upb_msgfactory_symtab(const upb_msgfactory *f);
 const upb_msglayout *upb_msgfactory_getlayout(upb_msgfactory *f,
                                               const upb_msgdef *m);
 
+const upb_msglayout *upb_msgfactory_getmaplayout(upb_msgfactory *f,
+                                                 const upb_fieldtype_t keytype,
+                                                 const upb_fieldtype_t valtype,
+                                                 const upb_msgdef *valmsg);
+
 #ifdef __cplusplus
 }  /* extern "C" */
 #endif

@@ -121,7 +121,6 @@ upb_msg *lupb_msg_checkmsg2(lua_State *L, int narg,
 const lupb_msgclass *lupb_msgclass_check(lua_State *L, int narg);
 const upb_msglayout *lupb_msgclass_getlayout(lua_State *L, int narg);
 const upb_msgdef *lupb_msgclass_getmsgdef(const lupb_msgclass *lmsgclass);
-upb_msgfactory *lupb_msgclass_getfactory(const lupb_msgclass *lmsgclass);
 void lupb_msg_registertypes(lua_State *L);
 
 #endif  /* UPB_LUA_UPB_H_ */

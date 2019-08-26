@@ -92,14 +92,13 @@ upb_array *upb_array_new(upb_arena *a) {
   return arr;
 }
 
-upb_strmap *upb_strmap_new(upb_arena *a) {
-  upb_strmap *map = upb_arena_malloc(a, sizeof(upb_strmap));
+upb_map *upb_map_new(upb_arena *a) {
+  upb_map *map = upb_arena_malloc(a, sizeof(upb_map));
 
   if (!map) {
     return NULL;
   }
 
-  upb_array_init(&map->array);
   upb_strtable_init(&map->table, UPB_CTYPE_INT32);
 
   return map;

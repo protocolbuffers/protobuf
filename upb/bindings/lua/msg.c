@@ -276,7 +276,6 @@ static const struct luaL_Reg lupb_msgfactory_mm[] = {
 struct lupb_msgclass {
   const upb_msglayout *layout;
   const upb_msgdef *msgdef;
-  const lupb_msgfactory *lfactory;
 };
 
 /* Type-checks for assigning to a message field. */
@@ -299,10 +298,6 @@ const upb_msglayout *lupb_msgclass_getlayout(lua_State *L, int narg) {
 
 const upb_msgdef *lupb_msgclass_getmsgdef(const lupb_msgclass *lmsgclass) {
   return lmsgclass->msgdef;
-}
-
-upb_msgfactory *lupb_msgclass_getfactory(const lupb_msgclass *lmsgclass) {
-  return lmsgclass->lfactory->factory;
 }
 
 /**
@@ -355,7 +350,6 @@ static int lupb_msgclass_pushnew(lua_State *L, int factory,
 
   lupb_uservalseti(L, -1, LUPB_MSGCLASS_FACTORY, factory);
   lmc->layout = upb_msgfactory_getlayout(lfactory->factory, md);
-  lmc->lfactory = lfactory;
   lmc->msgdef = md;
 
   return 1;
@@ -493,13 +487,13 @@ static upb_msgval lupb_array_typecheck(lua_State *L, int narg, int msg,
                                        const upb_fielddef *f) {
   lupb_array *larray = lupb_array_check(L, narg);
 
-  if (upb_array_type(larray->arr) != upb_fielddef_type(f) ||
+  if (larray->type != upb_fielddef_type(f) ||
       lupb_msg_getsubmsgclass(L, msg, f) != larray->lmsgclass) {
     luaL_error(L, "Array had incorrect type (expected: %d, got: %d)",
-               (int)upb_fielddef_type(f), (int)upb_array_type(larray->arr));
+               (int)upb_fielddef_type(f), (int)larray->type);
   }
 
-  if (upb_array_type(larray->arr) == UPB_TYPE_MESSAGE) {
+  if (larray->type == UPB_TYPE_MESSAGE) {
     lupb_msgclass_typecheck(L, lupb_msg_getsubmsgclass(L, msg, f),
                             larray->lmsgclass);
   }
@@ -550,7 +544,7 @@ static int lupb_array_new(lua_State *L) {
 
 static int lupb_array_newindex(lua_State *L) {
   lupb_array *larray = lupb_array_check(L, 1);
-  upb_fieldtype_t type = upb_array_type(larray->arr);
+  upb_fieldtype_t type = larray->type;
   uint32_t n = lupb_array_checkindex(L, 2, upb_array_size(larray->arr) + 1);
   upb_msgval msgval = lupb_tomsgval(L, type, 3, larray->lmsgclass);
 
@@ -567,13 +561,12 @@ static int lupb_array_index(lua_State *L) {
   lupb_array *larray = lupb_array_check(L, 1);
   upb_array *array = larray->arr;
   uint32_t n = lupb_array_checkindex(L, 2, upb_array_size(array));
-  upb_fieldtype_t type = upb_array_type(array);
+  upb_fieldtype_t type = larray->type;
 
   if (lupb_istypewrapped(type)) {
     lupb_uservalgeti(L, 1, n);
   } else {
-    lupb_pushmsgval(L, upb_array_type(array),
-                    upb_array_get(array, larray->type, n));
+    lupb_pushmsgval(L, type, upb_array_get(array, type, n));
   }
 
   return 1;
