@@ -117,6 +117,7 @@ conformance/Conformance.pbobjc.h
 conformance/Conformance.pbobjc.m
 conformance/conformance_pb.js
 conformance/conformance_pb.rb
+conformance/core
 conformance/failing_tests.txt
 conformance/google/
 conformance/google-protobuf/
