@@ -118,6 +118,7 @@
         <extensions>true</extensions>
         <configuration>
           <instructions>
+            <Automatic-Module-Name>com.google.protobuf.util</Automatic-Module-Name> <!-- Java9+ Jigsaw module name -->
             <Bundle-DocURL>https://developers.google.com/protocol-buffers/</Bundle-DocURL>
             <Bundle-SymbolicName>com.google.protobuf.util</Bundle-SymbolicName>
             <Export-Package>com.google.protobuf.util;version=${project.version}</Export-Package>
