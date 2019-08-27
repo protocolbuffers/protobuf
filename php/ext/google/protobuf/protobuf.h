@@ -46,6 +46,15 @@
 #define ARRAY_SIZE(x) \
     ((sizeof(x)/sizeof(0[x])) / ((size_t)(!(sizeof(x) % sizeof(0[x])))))
 
+#define PHP_PROTO_UNUSED(var) (void)var
+/* PHP_PROTO_ASSERT(): in release mode, we use the expression without letting
+ * it be evaluated.  This prevents "unused variable" warnings. */
+#ifdef NDEBUG
+#define PHP_PROTO_ASSERT(expr) do {} while (false && (expr))
+#else
+#define PHP_PROTO_ASSERT(expr) assert(expr)
+#endif
+
 // -----------------------------------------------------------------------------
 // PHP7 Wrappers
 // ----------------------------------------------------------------------------

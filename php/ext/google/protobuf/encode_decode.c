@@ -47,8 +47,8 @@ size_t stringsink_string(void *_sink, const void *hd, const char *ptr,
   stringsink *sink = _sink;
   size_t new_size = sink->size;
 
-  UPB_UNUSED(hd);
-  UPB_UNUSED(handle);
+  PHP_PROTO_UNUSED(hd);
+  PHP_PROTO_UNUSED(handle);
 
   while (sink->len + len > new_size) {
     new_size *= 2;
@@ -243,7 +243,7 @@ DEFINE_APPEND_HANDLER(double, double)
 static void* appendstr_handler(void *closure,
                                const void *hd,
                                size_t size_hint) {
-  UPB_UNUSED(hd);
+  PHP_PROTO_UNUSED(hd);
 
   stringfields_parseframe_t* frame =
       (stringfields_parseframe_t*)malloc(sizeof(stringfields_parseframe_t));
@@ -354,7 +354,7 @@ static void new_php_string(zval* value_ptr, const char* str, size_t len) {
 static void* str_handler(void *closure,
                          const void *hd,
                          size_t size_hint) {
-  UPB_UNUSED(hd);
+  PHP_PROTO_UNUSED(hd);
 
   stringfields_parseframe_t* frame =
       (stringfields_parseframe_t*)malloc(sizeof(stringfields_parseframe_t));
@@ -763,7 +763,7 @@ static bool oneofstr_end_handler(void *closure, const void *hd) {
 static void *oneofstr_handler(void *closure,
                               const void *hd,
                               size_t size_hint) {
-  UPB_UNUSED(hd);
+  PHP_PROTO_UNUSED(hd);
 
   stringfields_parseframe_t* frame =
       (stringfields_parseframe_t*)malloc(sizeof(stringfields_parseframe_t));
@@ -1093,7 +1093,7 @@ static void putmap(zval* map, const upb_fielddef* f, upb_sink sink,
 static upb_selector_t getsel(const upb_fielddef* f, upb_handlertype_t type) {
   upb_selector_t ret;
   bool ok = upb_handlers_getselector(f, type, &ret);
-  UPB_ASSERT(ok);
+  PHP_PROTO_ASSERT(ok);
   return ret;
 }
 
