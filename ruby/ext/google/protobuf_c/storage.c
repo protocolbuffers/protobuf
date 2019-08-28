@@ -947,8 +947,6 @@ void layout_init(MessageLayout* layout, void* storage) {
   VALUE* value = (VALUE*)CHARPTR_AT(storage, layout->value_offset);
   int i;
 
-  memcpy(storage, layout->empty_template, layout->size);
-
   for (i = 0; i < layout->repeated_count; i++, value++) {
     *value = RepeatedField_new_this_type(*value);
   }
