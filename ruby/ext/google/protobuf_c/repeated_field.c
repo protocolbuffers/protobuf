@@ -323,7 +323,7 @@ VALUE RepeatedField_length(VALUE _self) {
   return INT2NUM(self->size);
 }
 
-static VALUE RepeatedField_new_this_type(VALUE _self) {
+VALUE RepeatedField_new_this_type(VALUE _self) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
   VALUE new_rptfield = Qnil;
   VALUE element_type = fieldtype_to_ruby(self->field_type);
