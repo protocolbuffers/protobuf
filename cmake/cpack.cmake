@@ -53,24 +53,21 @@ if( ${CMAKE_SYSTEM_NAME} STREQUAL "Linux" )
     set( CPACK_RPM_COMPRESSION_TYPE "xz" )
     set( CPACK_RPM_PACKAGE_AUTOPROV 1 )
 
-    set( CPACK_RPM_libprotobuf_PACKAGE_ARCHITECTURE ${CPACK_PACKAGE_ARCHITECTURE} )
-    set( CPACK_RPM_libprotobuf_PACKAGE_NAME "libprotobuf" )
-    set( CPACK_RPM_libprotobuf_FILE_NAME
-         "${CPACK_RPM_libprotobuf_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_RPM_PACKAGE_RELEASE}.${CPACK_RPM_libprotobuf_PACKAGE_ARCHITECTURE}.rpm" )
     set( CPACK_RPM_libprotobuf_PACKAGE_SUMMARY ${CPACK_COMPONENT_libprotobuf_DESCRIPTION} )
+    set( CPACK_RPM_libprotobuf_PACKAGE_ARCHITECTURE ${CPACK_RPM_PACKAGE_ARCHITECTURE} )
+    set( CPACK_RPM_libprotobuf_PACKAGE_NAME "libprotobuf" )
+    set( CPACK_RPM_libprotobuf_FILE_NAME "RPM-DEFAULT" )
 
-    set( CPACK_RPM_libprotobuf-lite_PACKAGE_ARCHITECTURE ${CPACK_PACKAGE_ARCHITECTURE} )
-    set( CPACK_RPM_libprotobuf-lite_PACKAGE_NAME "libprotobuf-lite" )
-    set( CPACK_RPM_libprotobuf-lite_FILE_NAME
-         "${CPACK_RPM_libprotobuf-lite_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_RPM_PACKAGE_RELEASE}.${CPACK_RPM_libprotobuf-lite_PACKAGE_ARCHITECTURE}.rpm" )
     set( CPACK_RPM_libprotobuf-lite_PACKAGE_SUMMARY ${CPACK_COMPONENT_libprotobuf-lite_DESCRIPTION} )
+    set( CPACK_RPM_libprotobuf-lite_PACKAGE_ARCHITECTURE ${CPACK_RPM_PACKAGE_ARCHITECTURE} )
+    set( CPACK_RPM_libprotobuf-lite_PACKAGE_NAME "libprotobuf-lite" )
+    set( CPACK_RPM_libprotobuf-lite_FILE_NAME "RPM-DEFAULT" )
 
     set( CPACK_RPM_devel_PACKAGE_REQUIRES "cmake >= ${CMAKE_MINIMUM_REQUIRED_VERSION},libprotobuf >= ${CPACK_PACKAGE_VERSION},libprotobuf-lite >= ${CPACK_PACKAGE_VERSION}" )
     set( CPACK_RPM_devel_PACKAGE_SUMMARY ${CPACK_COMPONENT_devel_DESCRIPTION} )
-    set( CPACK_RPM_devel_PACKAGE_ARCHITECTURE ${CPACK_PACKAGE_ARCHITECTURE} )
+    set( CPACK_RPM_devel_PACKAGE_ARCHITECTURE ${CPACK_RPM_PACKAGE_ARCHITECTURE} )
     set( CPACK_RPM_devel_PACKAGE_NAME "${CPACK_PACKAGE_NAME}-devel" )
-    set( CPACK_RPM_devel_FILE_NAME
-         "${CPACK_RPM_devel_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_RPM_PACKAGE_RELEASE}.${CPACK_RPM_devel_PACKAGE_ARCHITECTURE}.rpm" )
+    set( CPACK_RPM_devel_FILE_NAME "RPM-DEFAULT" )
 
 
     # DEB - https://cmake.org/cmake/help/latest/cpack_gen/deb.html
