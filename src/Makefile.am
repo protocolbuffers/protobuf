@@ -313,7 +313,8 @@ if HAVE_LD_VERSION_SCRIPT
 libprotoc_la_LDFLAGS += -Wl,--version-script=$(srcdir)/libprotoc.map
 EXTRA_libprotoc_la_DEPENDENCIES = libprotoc.map
 endif
-libprotoc_la_SOURCES =                                         \
+
+libprotoc_base_SOURCES =                                       \
   google/protobuf/compiler/code_generator.cc                   \
   google/protobuf/compiler/command_line_interface.cc           \
   google/protobuf/compiler/plugin.cc                           \
@@ -322,7 +323,9 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/subprocess.cc                       \
   google/protobuf/compiler/subprocess.h                        \
   google/protobuf/compiler/zip_writer.cc                       \
-  google/protobuf/compiler/zip_writer.h                        \
+  google/protobuf/compiler/zip_writer.h
+
+libprotoc_cpp_SOURCES =                                        \
   google/protobuf/compiler/cpp/cpp_enum.cc                     \
   google/protobuf/compiler/cpp/cpp_enum.h                      \
   google/protobuf/compiler/cpp/cpp_enum_field.cc               \
@@ -351,7 +354,43 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/cpp/cpp_service.cc                  \
   google/protobuf/compiler/cpp/cpp_service.h                   \
   google/protobuf/compiler/cpp/cpp_string_field.cc             \
-  google/protobuf/compiler/cpp/cpp_string_field.h              \
+  google/protobuf/compiler/cpp/cpp_string_field.h
+
+libprotoc_csharp_SOURCES =                                     \
+  google/protobuf/compiler/csharp/csharp_doc_comment.cc        \
+  google/protobuf/compiler/csharp/csharp_doc_comment.h         \
+  google/protobuf/compiler/csharp/csharp_enum.cc               \
+  google/protobuf/compiler/csharp/csharp_enum.h                \
+  google/protobuf/compiler/csharp/csharp_enum_field.cc         \
+  google/protobuf/compiler/csharp/csharp_enum_field.h          \
+  google/protobuf/compiler/csharp/csharp_field_base.cc         \
+  google/protobuf/compiler/csharp/csharp_field_base.h          \
+  google/protobuf/compiler/csharp/csharp_generator.cc          \
+  google/protobuf/compiler/csharp/csharp_helpers.cc            \
+  google/protobuf/compiler/csharp/csharp_helpers.h             \
+  google/protobuf/compiler/csharp/csharp_map_field.cc          \
+  google/protobuf/compiler/csharp/csharp_map_field.h           \
+  google/protobuf/compiler/csharp/csharp_message.cc            \
+  google/protobuf/compiler/csharp/csharp_message.h             \
+  google/protobuf/compiler/csharp/csharp_message_field.cc      \
+  google/protobuf/compiler/csharp/csharp_message_field.h       \
+  google/protobuf/compiler/csharp/csharp_options.h             \
+  google/protobuf/compiler/csharp/csharp_primitive_field.cc    \
+  google/protobuf/compiler/csharp/csharp_primitive_field.h     \
+  google/protobuf/compiler/csharp/csharp_reflection_class.cc     \
+  google/protobuf/compiler/csharp/csharp_reflection_class.h      \
+  google/protobuf/compiler/csharp/csharp_repeated_enum_field.cc \
+  google/protobuf/compiler/csharp/csharp_repeated_enum_field.h \
+  google/protobuf/compiler/csharp/csharp_repeated_message_field.cc \
+  google/protobuf/compiler/csharp/csharp_repeated_message_field.h \
+  google/protobuf/compiler/csharp/csharp_repeated_primitive_field.cc \
+  google/protobuf/compiler/csharp/csharp_repeated_primitive_field.h \
+  google/protobuf/compiler/csharp/csharp_source_generator_base.cc \
+  google/protobuf/compiler/csharp/csharp_source_generator_base.h \
+  google/protobuf/compiler/csharp/csharp_wrapper_field.cc      \
+  google/protobuf/compiler/csharp/csharp_wrapper_field.h
+
+libprotoc_java_SOURCES =                                       \
   google/protobuf/compiler/java/java_context.cc                \
   google/protobuf/compiler/java/java_context.h                 \
   google/protobuf/compiler/java/java_enum.cc                   \
@@ -407,9 +446,13 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/java/java_string_field_lite.cc      \
   google/protobuf/compiler/java/java_string_field_lite.h       \
   google/protobuf/compiler/java/java_doc_comment.cc            \
-  google/protobuf/compiler/java/java_doc_comment.h             \
+  google/protobuf/compiler/java/java_doc_comment.h
+
+libprotoc_js_SOURCES =                                         \
   google/protobuf/compiler/js/js_generator.cc                  \
-  google/protobuf/compiler/js/well_known_types_embed.cc        \
+  google/protobuf/compiler/js/well_known_types_embed.cc
+
+libprotoc_objectivec_SOURCES =                                 \
   google/protobuf/compiler/objectivec/objectivec_enum.cc       \
   google/protobuf/compiler/objectivec/objectivec_enum.h        \
   google/protobuf/compiler/objectivec/objectivec_enum_field.cc \
@@ -427,48 +470,33 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/objectivec/objectivec_map_field.h   \
   google/protobuf/compiler/objectivec/objectivec_message.cc    \
   google/protobuf/compiler/objectivec/objectivec_message.h     \
-  google/protobuf/compiler/objectivec/objectivec_message_field.cc \
-  google/protobuf/compiler/objectivec/objectivec_message_field.h \
+  google/protobuf/compiler/objectivec/objectivec_message_field.cc  \
+  google/protobuf/compiler/objectivec/objectivec_message_field.h  \
   google/protobuf/compiler/objectivec/objectivec_nsobject_methods.h  \
   google/protobuf/compiler/objectivec/objectivec_oneof.cc      \
   google/protobuf/compiler/objectivec/objectivec_oneof.h       \
-  google/protobuf/compiler/objectivec/objectivec_primitive_field.cc \
-  google/protobuf/compiler/objectivec/objectivec_primitive_field.h \
-  google/protobuf/compiler/php/php_generator.cc                \
-  google/protobuf/compiler/python/python_generator.cc          \
-  google/protobuf/compiler/ruby/ruby_generator.cc              \
-  google/protobuf/compiler/csharp/csharp_doc_comment.cc        \
-  google/protobuf/compiler/csharp/csharp_doc_comment.h         \
-  google/protobuf/compiler/csharp/csharp_enum.cc               \
-  google/protobuf/compiler/csharp/csharp_enum.h                \
-  google/protobuf/compiler/csharp/csharp_enum_field.cc         \
-  google/protobuf/compiler/csharp/csharp_enum_field.h          \
-  google/protobuf/compiler/csharp/csharp_field_base.cc         \
-  google/protobuf/compiler/csharp/csharp_field_base.h          \
-  google/protobuf/compiler/csharp/csharp_generator.cc          \
-  google/protobuf/compiler/csharp/csharp_helpers.cc            \
-  google/protobuf/compiler/csharp/csharp_helpers.h             \
-  google/protobuf/compiler/csharp/csharp_map_field.cc          \
-  google/protobuf/compiler/csharp/csharp_map_field.h           \
-  google/protobuf/compiler/csharp/csharp_message.cc            \
-  google/protobuf/compiler/csharp/csharp_message.h             \
-  google/protobuf/compiler/csharp/csharp_message_field.cc      \
-  google/protobuf/compiler/csharp/csharp_message_field.h       \
-  google/protobuf/compiler/csharp/csharp_options.h             \
-  google/protobuf/compiler/csharp/csharp_primitive_field.cc    \
-  google/protobuf/compiler/csharp/csharp_primitive_field.h     \
-  google/protobuf/compiler/csharp/csharp_reflection_class.cc     \
-  google/protobuf/compiler/csharp/csharp_reflection_class.h      \
-  google/protobuf/compiler/csharp/csharp_repeated_enum_field.cc \
-  google/protobuf/compiler/csharp/csharp_repeated_enum_field.h \
-  google/protobuf/compiler/csharp/csharp_repeated_message_field.cc \
-  google/protobuf/compiler/csharp/csharp_repeated_message_field.h \
-  google/protobuf/compiler/csharp/csharp_repeated_primitive_field.cc \
-  google/protobuf/compiler/csharp/csharp_repeated_primitive_field.h \
-  google/protobuf/compiler/csharp/csharp_source_generator_base.cc \
-  google/protobuf/compiler/csharp/csharp_source_generator_base.h \
-  google/protobuf/compiler/csharp/csharp_wrapper_field.cc      \
-  google/protobuf/compiler/csharp/csharp_wrapper_field.h
+  google/protobuf/compiler/objectivec/objectivec_primitive_field.cc  \
+  google/protobuf/compiler/objectivec/objectivec_primitive_field.h
+
+libprotoc_php_SOURCES =                                        \
+  google/protobuf/compiler/php/php_generator.cc
+
+libprotoc_python_SOURCES =                                     \
+  google/protobuf/compiler/python/python_generator.cc
+
+libprotoc_ruby_SOURCES =                                       \
+  google/protobuf/compiler/ruby/ruby_generator.cc
+
+libprotoc_la_SOURCES =                                         \
+  $(libprotoc_base_SOURCES)                                    \
+  $(libprotoc_cpp_SOURCES)                                     \
+  $(libprotoc_csharp_SOURCES)                                  \
+  $(libprotoc_java_SOURCES)                                    \
+  $(libprotoc_js_SOURCES)                                      \
+  $(libprotoc_objectivec_SOURCES)                              \
+  $(libprotoc_php_SOURCES)                                     \
+  $(libprotoc_python_SOURCES)                                  \
+  $(libprotoc_ruby_SOURCES)
 
 bin_PROGRAMS = protoc
 protoc_LDADD = $(PTHREAD_LIBS) libprotobuf.la libprotoc.la

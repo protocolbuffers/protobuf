@@ -319,11 +319,27 @@ cc_proto_library(
 ################################################################################
 
 cc_library(
-    name = "protoc_lib",
+    name = "protoc_base",
     srcs = [
-        # AUTOGEN(protoc_lib_srcs)
+        # AUTOGEN(protoc_base_srcs)
         "src/google/protobuf/compiler/code_generator.cc",
         "src/google/protobuf/compiler/command_line_interface.cc",
+        "src/google/protobuf/compiler/plugin.cc",
+        "src/google/protobuf/compiler/plugin.pb.cc",
+        "src/google/protobuf/compiler/subprocess.cc",
+        "src/google/protobuf/compiler/zip_writer.cc",
+    ],
+    copts = COPTS,
+    includes = ["src/"],
+    linkopts = LINK_OPTS,
+    visibility = ["//visibility:public"],
+    deps = [":protobuf"],
+)
+
+cc_library(
+    name = "protoc_cpp",
+    srcs = [
+        # AUTOGEN(protoc_cpp_srcs)
         "src/google/protobuf/compiler/cpp/cpp_enum.cc",
         "src/google/protobuf/compiler/cpp/cpp_enum_field.cc",
         "src/google/protobuf/compiler/cpp/cpp_extension.cc",
@@ -338,6 +354,21 @@ cc_library(
         "src/google/protobuf/compiler/cpp/cpp_primitive_field.cc",
         "src/google/protobuf/compiler/cpp/cpp_service.cc",
         "src/google/protobuf/compiler/cpp/cpp_string_field.cc",
+    ],
+    copts = COPTS,
+    includes = ["src/"],
+    linkopts = LINK_OPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":protobuf",
+        ":protoc_base",
+    ],
+)
+
+cc_library(
+    name = "protoc_csharp",
+    srcs = [
+        # AUTOGEN(protoc_csharp_srcs)
         "src/google/protobuf/compiler/csharp/csharp_doc_comment.cc",
         "src/google/protobuf/compiler/csharp/csharp_enum.cc",
         "src/google/protobuf/compiler/csharp/csharp_enum_field.cc",
@@ -354,6 +385,21 @@ cc_library(
         "src/google/protobuf/compiler/csharp/csharp_repeated_primitive_field.cc",
         "src/google/protobuf/compiler/csharp/csharp_source_generator_base.cc",
         "src/google/protobuf/compiler/csharp/csharp_wrapper_field.cc",
+    ],
+    copts = COPTS,
+    includes = ["src/"],
+    linkopts = LINK_OPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":protobuf",
+        ":protoc_base",
+    ],
+)
+
+cc_library(
+    name = "protoc_java",
+    srcs = [
+        # AUTOGEN(protoc_java_srcs)
         "src/google/protobuf/compiler/java/java_context.cc",
         "src/google/protobuf/compiler/java/java_doc_comment.cc",
         "src/google/protobuf/compiler/java/java_enum.cc",
@@ -382,8 +428,38 @@ cc_library(
         "src/google/protobuf/compiler/java/java_shared_code_generator.cc",
         "src/google/protobuf/compiler/java/java_string_field.cc",
         "src/google/protobuf/compiler/java/java_string_field_lite.cc",
+    ],
+    copts = COPTS,
+    includes = ["src/"],
+    linkopts = LINK_OPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":protobuf",
+        ":protoc_base",
+    ],
+)
+
+cc_library(
+    name = "protoc_js",
+    srcs = [
+        # AUTOGEN(protoc_js_srcs)
         "src/google/protobuf/compiler/js/js_generator.cc",
         "src/google/protobuf/compiler/js/well_known_types_embed.cc",
+    ],
+    copts = COPTS,
+    includes = ["src/"],
+    linkopts = LINK_OPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":protobuf",
+        ":protoc_base",
+    ],
+)
+
+cc_library(
+    name = "protoc_objectivec",
+    srcs = [
+        # AUTOGEN(protoc_objectivec_srcs)
         "src/google/protobuf/compiler/objectivec/objectivec_enum.cc",
         "src/google/protobuf/compiler/objectivec/objectivec_enum_field.cc",
         "src/google/protobuf/compiler/objectivec/objectivec_extension.cc",
@@ -396,19 +472,82 @@ cc_library(
         "src/google/protobuf/compiler/objectivec/objectivec_message_field.cc",
         "src/google/protobuf/compiler/objectivec/objectivec_oneof.cc",
         "src/google/protobuf/compiler/objectivec/objectivec_primitive_field.cc",
-        "src/google/protobuf/compiler/php/php_generator.cc",
-        "src/google/protobuf/compiler/plugin.cc",
-        "src/google/protobuf/compiler/plugin.pb.cc",
-        "src/google/protobuf/compiler/python/python_generator.cc",
-        "src/google/protobuf/compiler/ruby/ruby_generator.cc",
-        "src/google/protobuf/compiler/subprocess.cc",
-        "src/google/protobuf/compiler/zip_writer.cc",
     ],
     copts = COPTS,
     includes = ["src/"],
     linkopts = LINK_OPTS,
     visibility = ["//visibility:public"],
-    deps = [":protobuf"],
+    deps = [
+        ":protobuf",
+        ":protoc_base",
+    ],
+)
+
+cc_library(
+    name = "protoc_php",
+    srcs = [
+        # AUTOGEN(protoc_php_srcs)
+        "src/google/protobuf/compiler/php/php_generator.cc",
+    ],
+    copts = COPTS,
+    includes = ["src/"],
+    linkopts = LINK_OPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":protobuf",
+        ":protoc_base",
+    ],
+)
+
+cc_library(
+    name = "protoc_python",
+    srcs = [
+        # AUTOGEN(protoc_python_srcs)
+        "src/google/protobuf/compiler/python/python_generator.cc",
+    ],
+    copts = COPTS,
+    includes = ["src/"],
+    linkopts = LINK_OPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":protobuf",
+        ":protoc_base",
+    ],
+)
+
+cc_library(
+    name = "protoc_ruby",
+    srcs = [
+        # AUTOGEN(protoc_ruby_srcs)
+        "src/google/protobuf/compiler/ruby/ruby_generator.cc",
+    ],
+    copts = COPTS,
+    includes = ["src/"],
+    linkopts = LINK_OPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":protobuf",
+        ":protoc_base",
+    ],
+)
+
+cc_library(
+    name = "protoc_lib",
+    copts = COPTS,
+    includes = ["src/"],
+    linkopts = LINK_OPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":protoc_base",
+        ":protoc_cpp",
+        ":protoc_csharp",
+        ":protoc_java",
+        ":protoc_js",
+        ":protoc_objectivec",
+        ":protoc_php",
+        ":protoc_python",
+        ":protoc_ruby",
+    ],
 )
 
 cc_binary(

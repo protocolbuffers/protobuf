@@ -54,8 +54,24 @@ HEADERS=$(get_variable_value $MAKEFILE nobase_include_HEADERS)
 PUBLIC_HEADERS=$(sort_files $GZHEADERS $HEADERS)
 LIBPROTOBUF_LITE_SOURCES=$(get_source_files $MAKEFILE libprotobuf_lite_la_SOURCES)
 LIBPROTOBUF_SOURCES=$(get_source_files $MAKEFILE libprotobuf_la_SOURCES)
-LIBPROTOC_SOURCES=$(get_source_files $MAKEFILE libprotoc_la_SOURCES)
-LIBPROTOC_HEADERS=$(get_header_files $MAKEFILE libprotoc_la_SOURCES)
+LIBPROTOC_BASE_SOURCES=$(get_source_files $MAKEFILE libprotoc_base_SOURCES)
+LIBPROTOC_BASE_HEADERS=$(get_header_files $MAKEFILE libprotoc_base_SOURCES)
+LIBPROTOC_CPP_SOURCES=$(get_source_files $MAKEFILE libprotoc_cpp_SOURCES)
+LIBPROTOC_CPP_HEADERS=$(get_header_files $MAKEFILE libprotoc_cpp_SOURCES)
+LIBPROTOC_CSHARP_SOURCES=$(get_source_files $MAKEFILE libprotoc_csharp_SOURCES)
+LIBPROTOC_CSHARP_HEADERS=$(get_header_files $MAKEFILE libprotoc_csharp_SOURCES)
+LIBPROTOC_JAVA_SOURCES=$(get_source_files $MAKEFILE libprotoc_java_SOURCES)
+LIBPROTOC_JAVA_HEADERS=$(get_header_files $MAKEFILE libprotoc_java_SOURCES)
+LIBPROTOC_JS_SOURCES=$(get_source_files $MAKEFILE libprotoc_js_SOURCES)
+LIBPROTOC_JS_HEADERS=$(get_header_files $MAKEFILE libprotoc_js_SOURCES)
+LIBPROTOC_OBJECTIVEC_SOURCES=$(get_source_files $MAKEFILE libprotoc_objectivec_SOURCES)
+LIBPROTOC_OBJECTIVEC_HEADERS=$(get_header_files $MAKEFILE libprotoc_objectivec_SOURCES)
+LIBPROTOC_PHP_SOURCES=$(get_source_files $MAKEFILE libprotoc_php_SOURCES)
+LIBPROTOC_PHP_HEADERS=$(get_header_files $MAKEFILE libprotoc_php_SOURCES)
+LIBPROTOC_PYTHON_SOURCES=$(get_source_files $MAKEFILE libprotoc_python_SOURCES)
+LIBPROTOC_PYTHON_HEADERS=$(get_header_files $MAKEFILE libprotoc_python_SOURCES)
+LIBPROTOC_RUBY_SOURCES=$(get_source_files $MAKEFILE libprotoc_ruby_SOURCES)
+LIBPROTOC_RUBY_HEADERS=$(get_header_files $MAKEFILE libprotoc_ruby_SOURCES)
 LITE_PROTOS=$(get_proto_files $MAKEFILE protoc_lite_outputs)
 PROTOS=$(get_proto_files $MAKEFILE protoc_outputs)
 PROTOS_BLACKLISTED=$(get_proto_files_blacklisted $MAKEFILE protoc_outputs)
@@ -117,8 +133,24 @@ set_cmake_value() {
 CMAKE_PREFIX="\${protobuf_source_dir}/src/"
 set_cmake_value $CMAKE_DIR/libprotobuf-lite.cmake libprotobuf_lite_files $CMAKE_PREFIX $LIBPROTOBUF_LITE_SOURCES
 set_cmake_value $CMAKE_DIR/libprotobuf.cmake libprotobuf_files $CMAKE_PREFIX $LIBPROTOBUF_SOURCES
-set_cmake_value $CMAKE_DIR/libprotoc.cmake libprotoc_files $CMAKE_PREFIX $LIBPROTOC_SOURCES
-set_cmake_value $CMAKE_DIR/libprotoc.cmake libprotoc_headers $CMAKE_PREFIX $LIBPROTOC_HEADERS
+set_cmake_value $CMAKE_DIR/libprotoc.cmake libprotoc_base_srcs $CMAKE_PREFIX $LIBPROTOC_BASE_SOURCES
+set_cmake_value $CMAKE_DIR/libprotoc.cmake libprotoc_base_hdrs $CMAKE_PREFIX $LIBPROTOC_BASE_HEADERS
+set_cmake_value $CMAKE_DIR/libprotoc.cmake libprotoc_cpp_srcs $CMAKE_PREFIX $LIBPROTOC_CPP_SOURCES
+set_cmake_value $CMAKE_DIR/libprotoc.cmake libprotoc_cpp_hdrs $CMAKE_PREFIX $LIBPROTOC_CPP_HEADERS
+set_cmake_value $CMAKE_DIR/libprotoc.cmake libprotoc_csharp_srcs $CMAKE_PREFIX $LIBPROTOC_CSHARP_SOURCES
+set_cmake_value $CMAKE_DIR/libprotoc.cmake libprotoc_csharp_hdrs $CMAKE_PREFIX $LIBPROTOC_CSHARP_HEADERS
+set_cmake_value $CMAKE_DIR/libprotoc.cmake libprotoc_java_srcs $CMAKE_PREFIX $LIBPROTOC_JAVA_SOURCES
+set_cmake_value $CMAKE_DIR/libprotoc.cmake libprotoc_java_hdrs $CMAKE_PREFIX $LIBPROTOC_JAVA_HEADERS
+set_cmake_value $CMAKE_DIR/libprotoc.cmake libprotoc_js_srcs $CMAKE_PREFIX $LIBPROTOC_JS_SOURCES
+set_cmake_value $CMAKE_DIR/libprotoc.cmake libprotoc_js_hdrs $CMAKE_PREFIX $LIBPROTOC_JS_HEADERS
+set_cmake_value $CMAKE_DIR/libprotoc.cmake libprotoc_objectivec_srcs $CMAKE_PREFIX $LIBPROTOC_OBJECTIVEC_SOURCES
+set_cmake_value $CMAKE_DIR/libprotoc.cmake libprotoc_objectivec_hdrs $CMAKE_PREFIX $LIBPROTOC_OBJECTIVEC_HEADERS
+set_cmake_value $CMAKE_DIR/libprotoc.cmake libprotoc_php_srcs $CMAKE_PREFIX $LIBPROTOC_PHP_SOURCES
+set_cmake_value $CMAKE_DIR/libprotoc.cmake libprotoc_php_hdrs $CMAKE_PREFIX $LIBPROTOC_PHP_HEADERS
+set_cmake_value $CMAKE_DIR/libprotoc.cmake libprotoc_python_srcs $CMAKE_PREFIX $LIBPROTOC_PYTHON_SOURCES
+set_cmake_value $CMAKE_DIR/libprotoc.cmake libprotoc_python_hdrs $CMAKE_PREFIX $LIBPROTOC_PYTHON_HEADERS
+set_cmake_value $CMAKE_DIR/libprotoc.cmake libprotoc_ruby_srcs $CMAKE_PREFIX $LIBPROTOC_RUBY_SOURCES
+set_cmake_value $CMAKE_DIR/libprotoc.cmake libprotoc_ruby_hdrs $CMAKE_PREFIX $LIBPROTOC_RUBY_HEADERS
 set_cmake_value $CMAKE_DIR/tests.cmake lite_test_protos "" $LITE_PROTOS
 set_cmake_value $CMAKE_DIR/tests.cmake tests_protos "" $PROTOS_BLACKLISTED
 set_cmake_value $CMAKE_DIR/tests.cmake common_test_files $CMAKE_PREFIX $COMMON_TEST_SOURCES
@@ -182,7 +214,15 @@ BAZEL_PREFIX="src/"
 if [ -f "$BAZEL_BUILD" ]; then
   set_bazel_value $BAZEL_BUILD protobuf_lite_srcs $BAZEL_PREFIX $LIBPROTOBUF_LITE_SOURCES
   set_bazel_value $BAZEL_BUILD protobuf_srcs $BAZEL_PREFIX $LIBPROTOBUF_SOURCES
-  set_bazel_value $BAZEL_BUILD protoc_lib_srcs $BAZEL_PREFIX $LIBPROTOC_SOURCES
+  set_bazel_value $BAZEL_BUILD protoc_base_srcs $BAZEL_PREFIX $LIBPROTOC_BASE_SOURCES
+  set_bazel_value $BAZEL_BUILD protoc_cpp_srcs $BAZEL_PREFIX $LIBPROTOC_CPP_SOURCES
+  set_bazel_value $BAZEL_BUILD protoc_csharp_srcs $BAZEL_PREFIX $LIBPROTOC_CSHARP_SOURCES
+  set_bazel_value $BAZEL_BUILD protoc_java_srcs $BAZEL_PREFIX $LIBPROTOC_JAVA_SOURCES
+  set_bazel_value $BAZEL_BUILD protoc_js_srcs $BAZEL_PREFIX $LIBPROTOC_JS_SOURCES
+  set_bazel_value $BAZEL_BUILD protoc_objectivec_srcs $BAZEL_PREFIX $LIBPROTOC_OBJECTIVEC_SOURCES
+  set_bazel_value $BAZEL_BUILD protoc_php_srcs $BAZEL_PREFIX $LIBPROTOC_PHP_SOURCES
+  set_bazel_value $BAZEL_BUILD protoc_python_srcs $BAZEL_PREFIX $LIBPROTOC_PYTHON_SOURCES
+  set_bazel_value $BAZEL_BUILD protoc_ruby_srcs $BAZEL_PREFIX $LIBPROTOC_RUBY_SOURCES
   set_bazel_value $BAZEL_BUILD lite_test_protos "" $LITE_PROTOS
   set_bazel_value $BAZEL_BUILD well_known_protos "" $WKT_PROTOS
   set_bazel_value $BAZEL_BUILD test_protos "" $PROTOS
