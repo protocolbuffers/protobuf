@@ -299,8 +299,12 @@ class CodedInputStream
             return false;
         }
 
-        $buffer = substr($this->buffer, $this->current, $size);
-        $this->advance($size);
+        if ($size === 0) {
+          $buffer = "";
+        } else {
+          $buffer = substr($this->buffer, $this->current, $size);
+          $this->advance($size);
+        }
 
         return true;
     }
