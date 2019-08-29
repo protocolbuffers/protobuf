@@ -487,6 +487,9 @@ void Descriptor_mark(void* _self) {
   Descriptor* self = _self;
   rb_gc_mark(self->klass);
   rb_gc_mark(self->descriptor_pool);
+  if (self->layout && self->layout->empty_template) {
+    layout_mark(self->layout, self->layout->empty_template);
+  }
 }
 
 void Descriptor_free(void* _self) {

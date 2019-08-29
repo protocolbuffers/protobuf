@@ -495,7 +495,7 @@ VALUE Map_length(VALUE _self) {
   return ULL2NUM(upb_strtable_count(&self->table));
 }
 
-static VALUE Map_new_this_type(VALUE _self) {
+VALUE Map_new_this_type(VALUE _self) {
   Map* self = ruby_to_Map(_self);
   VALUE new_map = Qnil;
   VALUE key_type = fieldtype_to_ruby(self->key_type);

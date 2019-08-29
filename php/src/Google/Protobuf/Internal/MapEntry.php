@@ -42,9 +42,9 @@ class MapEntry extends Message
 
     public function __construct($desc) {
         parent::__construct($desc);
-	// For MapEntry, getValue should always return a valid value. Thus, we
-	// need to create a default instance value if the value type is
-	// message, in case no value is provided in data.
+        // For MapEntry, getValue should always return a valid value. Thus, we
+        // need to create a default instance value if the value type is
+        // message, in case no value is provided in data.
         $value_field = $desc->getFieldByNumber(2);
         if ($value_field->getType() == GPBType::MESSAGE) {
             $klass = $value_field->getMessageType()->getClass();

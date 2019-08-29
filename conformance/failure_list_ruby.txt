@@ -102,8 +102,6 @@ Required.Proto3.JsonInput.OptionalInt64Wrapper.JsonOutput
 Required.Proto3.JsonInput.OptionalStringWrapper.JsonOutput
 Required.Proto3.JsonInput.OptionalUint32Wrapper.JsonOutput
 Required.Proto3.JsonInput.OptionalUint64Wrapper.JsonOutput
-Required.Proto3.JsonInput.OptionalWrapperTypesWithNonDefaultValue.JsonOutput
-Required.Proto3.JsonInput.OptionalWrapperTypesWithNonDefaultValue.ProtobufOutput
 Required.Proto3.JsonInput.RejectTopLevelNull
 Required.Proto3.JsonInput.RepeatedBoolWrapper.JsonOutput
 Required.Proto3.JsonInput.RepeatedBytesWrapper.JsonOutput
