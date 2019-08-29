@@ -91,14 +91,24 @@ class MapFieldIter implements \Iterator
     public function key()
     {
         $key = key($this->container);
-        if ($this->key_type === GPBType::BOOL) {
-            // PHP associative array stores bool as integer for key.
-            return boolval($key);
-        } elseif ($this->key_type === GPBType::STRING) {
-            // PHP associative array stores int string as int for key.
-            return strval($key);
-        } else {
-            return $key;
+        switch ($this->key_type) {
+            case GPBType::INT64:
+            case GPBType::UINT64:
+            case GPBType::FIXED64:
+            case GPBType::SFIXED64:
+            case GPBType::SINT64:
+                if (PHP_INT_SIZE === 8) {
+                    return $key;
+                }
+                // Intentionally fall through
+            case GPBType::STRING:
+                // PHP associative array stores int string as int for key.
+                return strval($key);
+            case GPBType::BOOL:
+                // PHP associative array stores bool as integer for key.
+                return boolval($key);
+            default:
+                return $key;
         }
     }
 
