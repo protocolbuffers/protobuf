@@ -357,7 +357,7 @@
   NSMutableData *data = [NSMutableData data];
   NSKeyedArchiver *archiver = [[NSKeyedArchiver alloc] initForWritingWithMutableData:data];
   [archiver setRequiresSecureCoding:YES];
-  [archiver encodeObject:obj forKey:key];
+  [archiver encodeObject:original forKey:key];
   [archiver finishEncoding];
 
   NSKeyedUnarchiver *unarchiver = [[NSKeyedUnarchiver alloc] initForReadingWithData:data];
