@@ -1,8 +1,17 @@
 ---
 name: Bug report
 about: Create a report to help us improve
+title: ''
+labels: ''
+assignees: ''
 
 ---
+
+<!--
+
+NOTE: this form is for bug reports only. For questions or troubleshooting, please see the protobuf mailing list: https://groups.google.com/forum/#!forum/protobuf
+
+-->
 
 **What version of protobuf and what language are you using?**
 Version: master/v3.6.0/v3.5.0 etc.
