@@ -1,17 +1,19 @@
-Proto2 support in Google.Protobuf is finally here! This document outlines the new changes brought about 
-by this initial release of proto2 support. The generated code and public API associated with proto2 
-is experimental and subject to change in the future. APIs may be added, removed, or adjusted as feedback is received.
-Generated code may also be modified, adding, removing, or adjusting APIs as feedback is received.
+As part of the 3.10 release of Google.Protobuf, proto2 support has been reimplemented. This document outlines the new changes brought about by this experimental rerelease of proto2 support. This does not break existing proto3 support and users may continue to use proto3 features without changing their current code. Again the generated code and public API associated with proto2 is experimental and subject to change in the future. APIs for proto2 may be added, removed, or adjusted as feedback is received.
+Generated code for proto2 may also be modified by adding, removing, or adjusting APIs as feedback is received.
+
+### Enabling proto2 features
+
+For information about specific proto2 features, please read the [proto2 language guide](https://developers.google.com/protocol-buffers/docs/proto).
+
+Much like other languages, proto2 features are used with proto2 files with the syntax declaration `syntax = "proto2";`. However, please note, proto3 is still the recommended version of protobuf and proto2 support is meant for legacy system interop and advanced uses.
 
 # Generated code
 
 ### Messages
 
-Messages in proto2 files are very similar to their proto3 counterparts. However, they have some added properties
-and methods to handle field presence.
+Messages in proto2 files are very similar to their proto3 counterparts. They expose the usual property for getting and setting,  but they also include properties and methods to handle field presence.
 
-A normal single value proto2 fields will have a normal property for getting and setting, as well as a 
-`HasValue` property for checking presence, and a `Clear` method for clearing the value.
+For `optional`/`required` field XYZ, a `HasXYZ` property is included for checking presence and a `ClearXYZ` method is included for clearing the value.
 
 ```proto
 message Foo {
@@ -95,7 +97,7 @@ foo.GetOrInitializeExtension(RepeatedFooExt).Add(new Baz());
 
 ### Message initialization
 
-Checking message initialization is not handled automatically by the library, but can be done manually via the
+Initialization refers to the status of required fields in a proto2 message. If a message is uninitialized, not all required fields are set in either the message itself or any of its submessages. Checking message initialization is not handled automatically by the library, but can be done manually via the
 `IsInitialized` extension method in `MessageExtensions`. Please note, parsers and input streams don't check messages 
 for initialization on their own and throw errors. Instead it's up to you to handle messages with missing required fields
 in whatever way you see fit.
@@ -125,8 +127,7 @@ Assert.False(foo.HasExtension(Bas.Extensions.FooExt));
 
 ### Custom options
 
-The original `CustomOptions` APIs are now deprecated. Using the new generated extension identifiers, 
-you can access extensions safely through the GetOption APIs. Note that cloneable values such as 
+Due to their limited use and lack of type safety, the original `CustomOptions` APIs are now deprecated. Using the new generated extension identifiers, you can access extensions safely through the GetOption APIs. Note that cloneable values such as 
 repeated fields and messages will be deep cloned.
 
 Example based on custom options usage example [here](https://github.com/protocolbuffers/protobuf/issues/5007#issuecomment-411604515).
@@ -151,7 +152,7 @@ foreach (var service in input.Services)
 
 ### Reflection
 
-Reflection APIs have been included to access the new portions of the library.
+Reflection APIs have been extended to enable accessing the new proto2 portions of the library and generated code.
 
  * FieldDescriptor.Extension
     * Gets the extension identifier behind an extension field, allowing it to be added to an ExtensionRegistry
