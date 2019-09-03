@@ -23,6 +23,7 @@ These are projects we know about implementing Protocol Buffers for other program
 * C#/.NET/WCF/VB: http://code.google.com/p/protobuf-net/
 * Clojure: http://github.com/ninjudd/clojure-protobuf
 * Clojure: https://github.com/clojusc/protobuf
+* Clojure: https://protojure.github.io
 * Common Lisp: http://github.com/ndantam/s-protobuf
 * Common Lisp: http://github.com/brown/protobuf
 * D: https://github.com/dcarp/protobuf-d
@@ -111,6 +112,7 @@ GRPC (http://www.grpc.io/) is Google's RPC implementation for Protocol Buffers. 
 * http://deltavsoft.com/RcfUserGuide/Protobufs (C++)
 * http://code.google.com/p/protobuf-mina-rpc/ (Python client, Java server)
 * http://code.google.com/p/casocklib/ (C++)
+* https://protojure.github.io (Clojure)
 * http://code.google.com/p/cxf-protobuf/ (Java)
 * http://code.google.com/p/protobuf-remote/ (C++/C#)
 * http://code.google.com/p/protobuf-rpc-pro/ (Java)
