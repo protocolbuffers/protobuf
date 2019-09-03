@@ -148,6 +148,10 @@ namespace Google.Protobuf.Collections
             {
                 var sizeCalculator = codec.ValueSizeCalculator;
                 int size = count * CodedOutputStream.ComputeRawVarint32Size(tag);
+                if (codec.EndTag != 0)
+                {
+                    size += count * CodedOutputStream.ComputeRawVarint32Size(codec.EndTag);
+                }
                 for (int i = 0; i < count; i++)
                 {
                     size += sizeCalculator(array[i]);

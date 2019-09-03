@@ -43,6 +43,25 @@ using static Google.Protobuf.Reflection.SourceCodeInfo.Types;
 namespace Google.Protobuf.Reflection
 {
     /// <summary>
+    /// The syntax of a .proto file
+    /// </summary>
+    public enum Syntax
+    {
+        /// <summary>
+        /// Proto2 syntax
+        /// </summary>
+        Proto2,
+        /// <summary>
+        /// Proto3 syntax
+        /// </summary>
+        Proto3,
+        /// <summary>
+        /// An unknown declared syntax
+        /// </summary>
+        Unknown
+    }
+
+    /// <summary>
     /// Describes a .proto file, including everything defined within.
     /// IDescriptor is implemented such that the File property returns this descriptor,
     /// and the FullName is the same as the Name.
@@ -87,6 +106,19 @@ namespace Google.Protobuf.Reflection
             Extensions = new ExtensionCollection(this, generatedCodeInfo?.Extensions);
 
             declarations = new Lazy<Dictionary<IDescriptor, DescriptorDeclaration>>(CreateDeclarationMap, LazyThreadSafetyMode.ExecutionAndPublication);
+
+            if (!proto.HasSyntax || proto.Syntax == "proto2")
+            {
+                Syntax = Syntax.Proto2;
+            }
+            else if (proto.Syntax == "proto3")
+            {
+                Syntax = Syntax.Proto3;
+            }
+            else
+            {
+                Syntax = Syntax.Unknown;
+            }
         }
 
         private Dictionary<IDescriptor, DescriptorDeclaration> CreateDeclarationMap()
@@ -216,6 +248,11 @@ namespace Google.Protobuf.Reflection
         /// The descriptor in its protocol message representation.
         /// </value>
         internal FileDescriptorProto Proto { get; }
+
+        /// <summary>
+        /// The syntax of the file
+        /// </summary>
+        public Syntax Syntax { get; }
 
         /// <value>
         /// The file name.
@@ -504,17 +541,16 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// The (possibly empty) set of custom options for this file.
         /// </summary>
-        //[Obsolete("CustomOptions are obsolete. Use GetOption")]
+        [Obsolete("CustomOptions are obsolete. Use GetOption")]
         public CustomOptions CustomOptions => new CustomOptions(Proto.Options._extensions?.ValuesByNumber);
 
-        /* // uncomment this in the full proto2 support PR
         /// <summary>
         /// Gets a single value enum option for this descriptor
         /// </summary>
         public T GetOption<T>(Extension<FileOptions, T> extension)
         {
             var value = Proto.Options.GetExtension(extension);
-            return value is IDeepCloneable<T> clonable ? clonable.Clone() : value;
+            return value is IDeepCloneable<T> ? (value as IDeepCloneable<T>).Clone() : value;
         }
 
         /// <summary>
@@ -524,7 +560,6 @@ namespace Google.Protobuf.Reflection
         {
             return Proto.Options.GetExtension(extension).Clone();
         }
-        */
 
         /// <summary>
         /// Performs initialization for the given generic type argument.

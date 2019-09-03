@@ -89,7 +89,7 @@ namespace Google.Protobuf
         /// <summary>
         /// Gets the value of the specified repeated extension, registering it if it doesn't exist
         /// </summary>
-        public static RepeatedField<TValue> GetOrRegister<TTarget, TValue>(ref ExtensionSet<TTarget> set, RepeatedExtension<TTarget, TValue> extension) where TTarget : IExtendableMessage<TTarget>
+        public static RepeatedField<TValue> GetOrInitialize<TTarget, TValue>(ref ExtensionSet<TTarget> set, RepeatedExtension<TTarget, TValue> extension) where TTarget : IExtendableMessage<TTarget>
         {
             IExtensionValue value;
             if (set == null)
@@ -115,6 +115,8 @@ namespace Google.Protobuf
         /// </summary>
         public static void Set<TTarget, TValue>(ref ExtensionSet<TTarget> set, Extension<TTarget, TValue> extension, TValue value) where TTarget : IExtendableMessage<TTarget>
         {
+            ProtoPreconditions.CheckNotNullUnconstrained(value, nameof(value));
+
             IExtensionValue extensionValue;
             if (set == null)
             {
@@ -329,6 +331,11 @@ namespace Google.Protobuf
             {
                 value.WriteTo(stream);
             }
+        }
+
+        internal bool IsInitialized()
+        {
+            return ValuesByNumber.Values.All(v => v.IsInitialized());
         }
     }
 }

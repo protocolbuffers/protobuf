@@ -66,7 +66,10 @@ namespace Google.Protobuf.Reflection
 
         internal FieldDescriptorProto Proto { get; }
 
-        internal Extension Extension { get; }
+        /// <summary>
+        /// An extension identifier for this field, or <c>null</c> if this field isn't an extension.
+        /// </summary>
+        public Extension Extension { get; }
 
         internal FieldDescriptor(FieldDescriptorProto proto, FileDescriptor file,
                                  MessageDescriptor parent, int index, string propertyName, Extension extension)
@@ -201,7 +204,25 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// Returns <c>true</c> if this field is a packed, repeated field; <c>false</c> otherwise.
         /// </summary>
-        public bool IsPacked => File.Proto.Syntax == "proto2" ? Proto.Options?.Packed ?? false : !Proto.Options.HasPacked || Proto.Options.Packed;
+        public bool IsPacked
+        {
+            get
+            {
+                if (File.Syntax != Syntax.Proto3)
+                {
+                    return Proto.Options?.Packed ?? false;
+                }
+                else
+                {
+                    return !Proto.Options.HasPacked || Proto.Options.Packed;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns <c>true</c> if this field extends another message type; <c>false</c> otherwise.
+        /// </summary>
+        public bool IsExtension => Proto.HasExtendee;
 
         /// <summary>
         /// Returns the type of the field.
@@ -277,17 +298,16 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// The (possibly empty) set of custom options for this field.
         /// </summary>
-        //[Obsolete("CustomOptions are obsolete. Use GetOption")]
+        [Obsolete("CustomOptions are obsolete. Use GetOption")]
         public CustomOptions CustomOptions => new CustomOptions(Proto.Options._extensions?.ValuesByNumber);
 
-        /* // uncomment this in the full proto2 support PR
         /// <summary>
         /// Gets a single value enum option for this descriptor
         /// </summary>
         public T GetOption<T>(Extension<FieldOptions, T> extension)
         {
             var value = Proto.Options.GetExtension(extension);
-            return value is IDeepCloneable<T> clonable ? clonable.Clone() : value;
+            return value is IDeepCloneable<T> ? (value as IDeepCloneable<T>).Clone() : value;
         }
 
         /// <summary>
@@ -297,7 +317,6 @@ namespace Google.Protobuf.Reflection
         {
             return Proto.Options.GetExtension(extension).Clone();
         }
-        */
 
         /// <summary>
         /// Look up and cross-link all field types etc.
@@ -378,6 +397,11 @@ namespace Google.Protobuf.Reflection
 
         private IFieldAccessor CreateAccessor()
         {
+            if (Extension != null)
+            {
+                return new ExtensionAccessor(this);
+            }
+
             // If we're given no property name, that's because we really don't want an accessor.
             // This could be because it's a map message, or it could be that we're loading a FileDescriptor dynamically.
             // TODO: Support dynamic messages.
@@ -386,10 +410,6 @@ namespace Google.Protobuf.Reflection
                 return null;
             }
 
-            if (Extension != null)
-            {
-                return new ExtensionAccessor(this);
-            }
             var property = ContainingType.ClrType.GetProperty(propertyName);
             if (property == null)
             {

@@ -33,6 +33,7 @@
 using System;
 using System.IO;
 using Google.Protobuf.TestProtos;
+using Proto2 = Google.Protobuf.TestProtos.Proto2;
 using NUnit.Framework;
 using System.Collections;
 using System.Collections.Generic;
@@ -44,7 +45,7 @@ namespace Google.Protobuf
     /// <summary>
     /// Tests around the generated TestAllTypes message.
     /// </summary>
-    public class GeneratedMessageTest
+    public partial class GeneratedMessageTest
     {
         [Test]
         public void EmptyMessageFieldDistinctFromMissingMessageField()
