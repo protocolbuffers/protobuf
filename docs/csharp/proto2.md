@@ -1,4 +1,4 @@
-As part of the 3.10 release of Google.Protobuf, proto2 support has been reimplemented. This document outlines the new changes brought about by this experimental rerelease of proto2 support. This does not break existing proto3 support and users may continue to use proto3 features without changing their current code. Again the generated code and public API associated with proto2 is experimental and subject to change in the future. APIs for proto2 may be added, removed, or adjusted as feedback is received.
+As part of the 3.10 release of Google.Protobuf, experimental proto2 support has been released. This document outlines the new changes brought about to include proto2 support. This does not break existing proto3 support and users may continue to use proto3 features without changing their current code. Again the generated code and public API associated with proto2 is experimental and subject to change in the future. APIs for proto2 may be added, removed, or adjusted as feedback is received.
 Generated code for proto2 may also be modified by adding, removing, or adjusting APIs as feedback is received.
 
 ### Enabling proto2 features
