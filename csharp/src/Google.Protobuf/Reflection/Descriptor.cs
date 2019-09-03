@@ -12,7 +12,7 @@ using scg = global::System.Collections.Generic;
 namespace Google.Protobuf.Reflection {
 
   /// <summary>Holder for reflection information generated from google/protobuf/descriptor.proto</summary>
-  internal static partial class DescriptorReflection {
+  public static partial class DescriptorReflection {
 
     #region Descriptor
     /// <summary>File descriptor for google/protobuf/descriptor.proto</summary>
@@ -193,7 +193,7 @@ namespace Google.Protobuf.Reflection {
   /// The protocol compiler can output a FileDescriptorSet containing the .proto
   /// files it parses.
   /// </summary>
-  internal sealed partial class FileDescriptorSet : pb::IMessage<FileDescriptorSet> {
+  public sealed partial class FileDescriptorSet : pb::IMessage<FileDescriptorSet> {
     private static readonly pb::MessageParser<FileDescriptorSet> _parser = new pb::MessageParser<FileDescriptorSet>(() => new FileDescriptorSet());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -317,7 +317,7 @@ namespace Google.Protobuf.Reflection {
   /// <summary>
   /// Describes a complete .proto file.
   /// </summary>
-  internal sealed partial class FileDescriptorProto : pb::IMessage<FileDescriptorProto> {
+  public sealed partial class FileDescriptorProto : pb::IMessage<FileDescriptorProto> {
     private static readonly pb::MessageParser<FileDescriptorProto> _parser = new pb::MessageParser<FileDescriptorProto>(() => new FileDescriptorProto());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -800,7 +800,7 @@ namespace Google.Protobuf.Reflection {
   /// <summary>
   /// Describes a message type.
   /// </summary>
-  internal sealed partial class DescriptorProto : pb::IMessage<DescriptorProto> {
+  public sealed partial class DescriptorProto : pb::IMessage<DescriptorProto> {
     private static readonly pb::MessageParser<DescriptorProto> _parser = new pb::MessageParser<DescriptorProto>(() => new DescriptorProto());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1151,7 +1151,7 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Container for nested types declared in the DescriptorProto message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static partial class Types {
-      internal sealed partial class ExtensionRange : pb::IMessage<ExtensionRange> {
+      public sealed partial class ExtensionRange : pb::IMessage<ExtensionRange> {
         private static readonly pb::MessageParser<ExtensionRange> _parser = new pb::MessageParser<ExtensionRange>(() => new ExtensionRange());
         private pb::UnknownFieldSet _unknownFields;
         private int _hasBits0;
@@ -1391,7 +1391,7 @@ namespace Google.Protobuf.Reflection {
       /// fields or extension ranges in the same message. Reserved ranges may
       /// not overlap.
       /// </summary>
-      internal sealed partial class ReservedRange : pb::IMessage<ReservedRange> {
+      public sealed partial class ReservedRange : pb::IMessage<ReservedRange> {
         private static readonly pb::MessageParser<ReservedRange> _parser = new pb::MessageParser<ReservedRange>(() => new ReservedRange());
         private pb::UnknownFieldSet _unknownFields;
         private int _hasBits0;
@@ -1587,10 +1587,11 @@ namespace Google.Protobuf.Reflection {
 
   }
 
-  internal sealed partial class ExtensionRangeOptions : pb::IExtendableMessage<ExtensionRangeOptions> {
+  public sealed partial class ExtensionRangeOptions : pb::IExtendableMessage<ExtensionRangeOptions> {
     private static readonly pb::MessageParser<ExtensionRangeOptions> _parser = new pb::MessageParser<ExtensionRangeOptions>(() => new ExtensionRangeOptions());
     private pb::UnknownFieldSet _unknownFields;
     internal pb::ExtensionSet<ExtensionRangeOptions> _extensions;
+    private pb::ExtensionSet<ExtensionRangeOptions> _Extensions => _extensions;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<ExtensionRangeOptions> Parser { get { return _parser; } }
 
@@ -1732,8 +1733,8 @@ namespace Google.Protobuf.Reflection {
     public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<ExtensionRangeOptions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
-    public pbc::RepeatedField<TValue> GetOrRegisterExtension<TValue>(pb::RepeatedExtension<ExtensionRangeOptions, TValue> extension) {
-      return pb::ExtensionSet.GetOrRegister(ref _extensions, extension);
+    public pbc::RepeatedField<TValue> GetOrInitializeExtension<TValue>(pb::RepeatedExtension<ExtensionRangeOptions, TValue> extension) {
+      return pb::ExtensionSet.GetOrInitialize(ref _extensions, extension);
     }
     public void SetExtension<TValue>(pb::Extension<ExtensionRangeOptions, TValue> extension, TValue value) {
       pb::ExtensionSet.Set(ref _extensions, extension, value);
@@ -1753,7 +1754,7 @@ namespace Google.Protobuf.Reflection {
   /// <summary>
   /// Describes a field within a message.
   /// </summary>
-  internal sealed partial class FieldDescriptorProto : pb::IMessage<FieldDescriptorProto> {
+  public sealed partial class FieldDescriptorProto : pb::IMessage<FieldDescriptorProto> {
     private static readonly pb::MessageParser<FieldDescriptorProto> _parser = new pb::MessageParser<FieldDescriptorProto>(() => new FieldDescriptorProto());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
@@ -2298,7 +2299,7 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Container for nested types declared in the FieldDescriptorProto message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static partial class Types {
-      internal enum Type {
+      public enum Type {
         /// <summary>
         /// 0 is reserved for errors.
         /// Order is weird for historical reasons.
@@ -2349,7 +2350,7 @@ namespace Google.Protobuf.Reflection {
         [pbr::OriginalName("TYPE_SINT64")] Sint64 = 18,
       }
 
-      internal enum Label {
+      public enum Label {
         /// <summary>
         /// 0 is reserved for errors
         /// </summary>
@@ -2366,7 +2367,7 @@ namespace Google.Protobuf.Reflection {
   /// <summary>
   /// Describes a oneof.
   /// </summary>
-  internal sealed partial class OneofDescriptorProto : pb::IMessage<OneofDescriptorProto> {
+  public sealed partial class OneofDescriptorProto : pb::IMessage<OneofDescriptorProto> {
     private static readonly pb::MessageParser<OneofDescriptorProto> _parser = new pb::MessageParser<OneofDescriptorProto>(() => new OneofDescriptorProto());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2554,7 +2555,7 @@ namespace Google.Protobuf.Reflection {
   /// <summary>
   /// Describes an enum type.
   /// </summary>
-  internal sealed partial class EnumDescriptorProto : pb::IMessage<EnumDescriptorProto> {
+  public sealed partial class EnumDescriptorProto : pb::IMessage<EnumDescriptorProto> {
     private static readonly pb::MessageParser<EnumDescriptorProto> _parser = new pb::MessageParser<EnumDescriptorProto>(() => new EnumDescriptorProto());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2818,7 +2819,7 @@ namespace Google.Protobuf.Reflection {
       /// is inclusive such that it can appropriately represent the entire int32
       /// domain.
       /// </summary>
-      internal sealed partial class EnumReservedRange : pb::IMessage<EnumReservedRange> {
+      public sealed partial class EnumReservedRange : pb::IMessage<EnumReservedRange> {
         private static readonly pb::MessageParser<EnumReservedRange> _parser = new pb::MessageParser<EnumReservedRange>(() => new EnumReservedRange());
         private pb::UnknownFieldSet _unknownFields;
         private int _hasBits0;
@@ -3017,7 +3018,7 @@ namespace Google.Protobuf.Reflection {
   /// <summary>
   /// Describes a value within an enum.
   /// </summary>
-  internal sealed partial class EnumValueDescriptorProto : pb::IMessage<EnumValueDescriptorProto> {
+  public sealed partial class EnumValueDescriptorProto : pb::IMessage<EnumValueDescriptorProto> {
     private static readonly pb::MessageParser<EnumValueDescriptorProto> _parser = new pb::MessageParser<EnumValueDescriptorProto>(() => new EnumValueDescriptorProto());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
@@ -3248,7 +3249,7 @@ namespace Google.Protobuf.Reflection {
   /// <summary>
   /// Describes a service.
   /// </summary>
-  internal sealed partial class ServiceDescriptorProto : pb::IMessage<ServiceDescriptorProto> {
+  public sealed partial class ServiceDescriptorProto : pb::IMessage<ServiceDescriptorProto> {
     private static readonly pb::MessageParser<ServiceDescriptorProto> _parser = new pb::MessageParser<ServiceDescriptorProto>(() => new ServiceDescriptorProto());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3456,7 +3457,7 @@ namespace Google.Protobuf.Reflection {
   /// <summary>
   /// Describes a method of a service.
   /// </summary>
-  internal sealed partial class MethodDescriptorProto : pb::IMessage<MethodDescriptorProto> {
+  public sealed partial class MethodDescriptorProto : pb::IMessage<MethodDescriptorProto> {
     private static readonly pb::MessageParser<MethodDescriptorProto> _parser = new pb::MessageParser<MethodDescriptorProto>(() => new MethodDescriptorProto());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
@@ -3815,10 +3816,11 @@ namespace Google.Protobuf.Reflection {
 
   }
 
-  internal sealed partial class FileOptions : pb::IExtendableMessage<FileOptions> {
+  public sealed partial class FileOptions : pb::IExtendableMessage<FileOptions> {
     private static readonly pb::MessageParser<FileOptions> _parser = new pb::MessageParser<FileOptions>(() => new FileOptions());
     private pb::UnknownFieldSet _unknownFields;
     internal pb::ExtensionSet<FileOptions> _extensions;
+    private pb::ExtensionSet<FileOptions> _Extensions => _extensions;
     private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<FileOptions> Parser { get { return _parser; } }
@@ -4869,8 +4871,8 @@ namespace Google.Protobuf.Reflection {
     public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<FileOptions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
-    public pbc::RepeatedField<TValue> GetOrRegisterExtension<TValue>(pb::RepeatedExtension<FileOptions, TValue> extension) {
-      return pb::ExtensionSet.GetOrRegister(ref _extensions, extension);
+    public pbc::RepeatedField<TValue> GetOrInitializeExtension<TValue>(pb::RepeatedExtension<FileOptions, TValue> extension) {
+      return pb::ExtensionSet.GetOrInitialize(ref _extensions, extension);
     }
     public void SetExtension<TValue>(pb::Extension<FileOptions, TValue> extension, TValue value) {
       pb::ExtensionSet.Set(ref _extensions, extension, value);
@@ -4892,7 +4894,7 @@ namespace Google.Protobuf.Reflection {
       /// <summary>
       /// Generated classes can be optimized for speed or code size.
       /// </summary>
-      internal enum OptimizeMode {
+      public enum OptimizeMode {
         /// <summary>
         /// Generate complete code for parsing, serialization,
         /// </summary>
@@ -4912,10 +4914,11 @@ namespace Google.Protobuf.Reflection {
 
   }
 
-  internal sealed partial class MessageOptions : pb::IExtendableMessage<MessageOptions> {
+  public sealed partial class MessageOptions : pb::IExtendableMessage<MessageOptions> {
     private static readonly pb::MessageParser<MessageOptions> _parser = new pb::MessageParser<MessageOptions>(() => new MessageOptions());
     private pb::UnknownFieldSet _unknownFields;
     internal pb::ExtensionSet<MessageOptions> _extensions;
+    private pb::ExtensionSet<MessageOptions> _Extensions => _extensions;
     private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<MessageOptions> Parser { get { return _parser; } }
@@ -5277,8 +5280,8 @@ namespace Google.Protobuf.Reflection {
     public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<MessageOptions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
-    public pbc::RepeatedField<TValue> GetOrRegisterExtension<TValue>(pb::RepeatedExtension<MessageOptions, TValue> extension) {
-      return pb::ExtensionSet.GetOrRegister(ref _extensions, extension);
+    public pbc::RepeatedField<TValue> GetOrInitializeExtension<TValue>(pb::RepeatedExtension<MessageOptions, TValue> extension) {
+      return pb::ExtensionSet.GetOrInitialize(ref _extensions, extension);
     }
     public void SetExtension<TValue>(pb::Extension<MessageOptions, TValue> extension, TValue value) {
       pb::ExtensionSet.Set(ref _extensions, extension, value);
@@ -5295,10 +5298,11 @@ namespace Google.Protobuf.Reflection {
 
   }
 
-  internal sealed partial class FieldOptions : pb::IExtendableMessage<FieldOptions> {
+  public sealed partial class FieldOptions : pb::IExtendableMessage<FieldOptions> {
     private static readonly pb::MessageParser<FieldOptions> _parser = new pb::MessageParser<FieldOptions>(() => new FieldOptions());
     private pb::UnknownFieldSet _unknownFields;
     internal pb::ExtensionSet<FieldOptions> _extensions;
+    private pb::ExtensionSet<FieldOptions> _Extensions => _extensions;
     private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<FieldOptions> Parser { get { return _parser; } }
@@ -5752,8 +5756,8 @@ namespace Google.Protobuf.Reflection {
     public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<FieldOptions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
-    public pbc::RepeatedField<TValue> GetOrRegisterExtension<TValue>(pb::RepeatedExtension<FieldOptions, TValue> extension) {
-      return pb::ExtensionSet.GetOrRegister(ref _extensions, extension);
+    public pbc::RepeatedField<TValue> GetOrInitializeExtension<TValue>(pb::RepeatedExtension<FieldOptions, TValue> extension) {
+      return pb::ExtensionSet.GetOrInitialize(ref _extensions, extension);
     }
     public void SetExtension<TValue>(pb::Extension<FieldOptions, TValue> extension, TValue value) {
       pb::ExtensionSet.Set(ref _extensions, extension, value);
@@ -5772,7 +5776,7 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Container for nested types declared in the FieldOptions message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static partial class Types {
-      internal enum CType {
+      public enum CType {
         /// <summary>
         /// Default mode.
         /// </summary>
@@ -5781,7 +5785,7 @@ namespace Google.Protobuf.Reflection {
         [pbr::OriginalName("STRING_PIECE")] StringPiece = 2,
       }
 
-      internal enum JSType {
+      public enum JSType {
         /// <summary>
         /// Use the default type.
         /// </summary>
@@ -5801,10 +5805,11 @@ namespace Google.Protobuf.Reflection {
 
   }
 
-  internal sealed partial class OneofOptions : pb::IExtendableMessage<OneofOptions> {
+  public sealed partial class OneofOptions : pb::IExtendableMessage<OneofOptions> {
     private static readonly pb::MessageParser<OneofOptions> _parser = new pb::MessageParser<OneofOptions>(() => new OneofOptions());
     private pb::UnknownFieldSet _unknownFields;
     internal pb::ExtensionSet<OneofOptions> _extensions;
+    private pb::ExtensionSet<OneofOptions> _Extensions => _extensions;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<OneofOptions> Parser { get { return _parser; } }
 
@@ -5946,8 +5951,8 @@ namespace Google.Protobuf.Reflection {
     public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<OneofOptions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
-    public pbc::RepeatedField<TValue> GetOrRegisterExtension<TValue>(pb::RepeatedExtension<OneofOptions, TValue> extension) {
-      return pb::ExtensionSet.GetOrRegister(ref _extensions, extension);
+    public pbc::RepeatedField<TValue> GetOrInitializeExtension<TValue>(pb::RepeatedExtension<OneofOptions, TValue> extension) {
+      return pb::ExtensionSet.GetOrInitialize(ref _extensions, extension);
     }
     public void SetExtension<TValue>(pb::Extension<OneofOptions, TValue> extension, TValue value) {
       pb::ExtensionSet.Set(ref _extensions, extension, value);
@@ -5964,10 +5969,11 @@ namespace Google.Protobuf.Reflection {
 
   }
 
-  internal sealed partial class EnumOptions : pb::IExtendableMessage<EnumOptions> {
+  public sealed partial class EnumOptions : pb::IExtendableMessage<EnumOptions> {
     private static readonly pb::MessageParser<EnumOptions> _parser = new pb::MessageParser<EnumOptions>(() => new EnumOptions());
     private pb::UnknownFieldSet _unknownFields;
     internal pb::ExtensionSet<EnumOptions> _extensions;
+    private pb::ExtensionSet<EnumOptions> _Extensions => _extensions;
     private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<EnumOptions> Parser { get { return _parser; } }
@@ -6203,8 +6209,8 @@ namespace Google.Protobuf.Reflection {
     public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<EnumOptions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
-    public pbc::RepeatedField<TValue> GetOrRegisterExtension<TValue>(pb::RepeatedExtension<EnumOptions, TValue> extension) {
-      return pb::ExtensionSet.GetOrRegister(ref _extensions, extension);
+    public pbc::RepeatedField<TValue> GetOrInitializeExtension<TValue>(pb::RepeatedExtension<EnumOptions, TValue> extension) {
+      return pb::ExtensionSet.GetOrInitialize(ref _extensions, extension);
     }
     public void SetExtension<TValue>(pb::Extension<EnumOptions, TValue> extension, TValue value) {
       pb::ExtensionSet.Set(ref _extensions, extension, value);
@@ -6221,10 +6227,11 @@ namespace Google.Protobuf.Reflection {
 
   }
 
-  internal sealed partial class EnumValueOptions : pb::IExtendableMessage<EnumValueOptions> {
+  public sealed partial class EnumValueOptions : pb::IExtendableMessage<EnumValueOptions> {
     private static readonly pb::MessageParser<EnumValueOptions> _parser = new pb::MessageParser<EnumValueOptions>(() => new EnumValueOptions());
     private pb::UnknownFieldSet _unknownFields;
     internal pb::ExtensionSet<EnumValueOptions> _extensions;
+    private pb::ExtensionSet<EnumValueOptions> _Extensions => _extensions;
     private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<EnumValueOptions> Parser { get { return _parser; } }
@@ -6415,8 +6422,8 @@ namespace Google.Protobuf.Reflection {
     public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<EnumValueOptions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
-    public pbc::RepeatedField<TValue> GetOrRegisterExtension<TValue>(pb::RepeatedExtension<EnumValueOptions, TValue> extension) {
-      return pb::ExtensionSet.GetOrRegister(ref _extensions, extension);
+    public pbc::RepeatedField<TValue> GetOrInitializeExtension<TValue>(pb::RepeatedExtension<EnumValueOptions, TValue> extension) {
+      return pb::ExtensionSet.GetOrInitialize(ref _extensions, extension);
     }
     public void SetExtension<TValue>(pb::Extension<EnumValueOptions, TValue> extension, TValue value) {
       pb::ExtensionSet.Set(ref _extensions, extension, value);
@@ -6433,10 +6440,11 @@ namespace Google.Protobuf.Reflection {
 
   }
 
-  internal sealed partial class ServiceOptions : pb::IExtendableMessage<ServiceOptions> {
+  public sealed partial class ServiceOptions : pb::IExtendableMessage<ServiceOptions> {
     private static readonly pb::MessageParser<ServiceOptions> _parser = new pb::MessageParser<ServiceOptions>(() => new ServiceOptions());
     private pb::UnknownFieldSet _unknownFields;
     internal pb::ExtensionSet<ServiceOptions> _extensions;
+    private pb::ExtensionSet<ServiceOptions> _Extensions => _extensions;
     private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<ServiceOptions> Parser { get { return _parser; } }
@@ -6627,8 +6635,8 @@ namespace Google.Protobuf.Reflection {
     public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<ServiceOptions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
-    public pbc::RepeatedField<TValue> GetOrRegisterExtension<TValue>(pb::RepeatedExtension<ServiceOptions, TValue> extension) {
-      return pb::ExtensionSet.GetOrRegister(ref _extensions, extension);
+    public pbc::RepeatedField<TValue> GetOrInitializeExtension<TValue>(pb::RepeatedExtension<ServiceOptions, TValue> extension) {
+      return pb::ExtensionSet.GetOrInitialize(ref _extensions, extension);
     }
     public void SetExtension<TValue>(pb::Extension<ServiceOptions, TValue> extension, TValue value) {
       pb::ExtensionSet.Set(ref _extensions, extension, value);
@@ -6645,10 +6653,11 @@ namespace Google.Protobuf.Reflection {
 
   }
 
-  internal sealed partial class MethodOptions : pb::IExtendableMessage<MethodOptions> {
+  public sealed partial class MethodOptions : pb::IExtendableMessage<MethodOptions> {
     private static readonly pb::MessageParser<MethodOptions> _parser = new pb::MessageParser<MethodOptions>(() => new MethodOptions());
     private pb::UnknownFieldSet _unknownFields;
     internal pb::ExtensionSet<MethodOptions> _extensions;
+    private pb::ExtensionSet<MethodOptions> _Extensions => _extensions;
     private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<MethodOptions> Parser { get { return _parser; } }
@@ -6880,8 +6889,8 @@ namespace Google.Protobuf.Reflection {
     public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<MethodOptions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
-    public pbc::RepeatedField<TValue> GetOrRegisterExtension<TValue>(pb::RepeatedExtension<MethodOptions, TValue> extension) {
-      return pb::ExtensionSet.GetOrRegister(ref _extensions, extension);
+    public pbc::RepeatedField<TValue> GetOrInitializeExtension<TValue>(pb::RepeatedExtension<MethodOptions, TValue> extension) {
+      return pb::ExtensionSet.GetOrInitialize(ref _extensions, extension);
     }
     public void SetExtension<TValue>(pb::Extension<MethodOptions, TValue> extension, TValue value) {
       pb::ExtensionSet.Set(ref _extensions, extension, value);
@@ -6905,7 +6914,7 @@ namespace Google.Protobuf.Reflection {
       /// or neither? HTTP based RPC implementation may choose GET verb for safe
       /// methods, and PUT verb for idempotent methods instead of the default POST.
       /// </summary>
-      internal enum IdempotencyLevel {
+      public enum IdempotencyLevel {
         [pbr::OriginalName("IDEMPOTENCY_UNKNOWN")] IdempotencyUnknown = 0,
         /// <summary>
         /// implies idempotent
@@ -6930,7 +6939,7 @@ namespace Google.Protobuf.Reflection {
   /// or produced by Descriptor::CopyTo()) will never have UninterpretedOptions
   /// in them.
   /// </summary>
-  internal sealed partial class UninterpretedOption : pb::IMessage<UninterpretedOption> {
+  public sealed partial class UninterpretedOption : pb::IMessage<UninterpretedOption> {
     private static readonly pb::MessageParser<UninterpretedOption> _parser = new pb::MessageParser<UninterpretedOption>(() => new UninterpretedOption());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
@@ -7309,7 +7318,7 @@ namespace Google.Protobuf.Reflection {
       /// E.g.,{ ["foo", false], ["bar.baz", true], ["qux", false] } represents
       /// "foo.(bar.baz).qux".
       /// </summary>
-      internal sealed partial class NamePart : pb::IMessage<NamePart> {
+      public sealed partial class NamePart : pb::IMessage<NamePart> {
         private static readonly pb::MessageParser<NamePart> _parser = new pb::MessageParser<NamePart>(() => new NamePart());
         private pb::UnknownFieldSet _unknownFields;
         private int _hasBits0;
@@ -7502,7 +7511,7 @@ namespace Google.Protobuf.Reflection {
   /// Encapsulates information about the original source file from which a
   /// FileDescriptorProto was generated.
   /// </summary>
-  internal sealed partial class SourceCodeInfo : pb::IMessage<SourceCodeInfo> {
+  public sealed partial class SourceCodeInfo : pb::IMessage<SourceCodeInfo> {
     private static readonly pb::MessageParser<SourceCodeInfo> _parser = new pb::MessageParser<SourceCodeInfo>(() => new SourceCodeInfo());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -7670,7 +7679,7 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Container for nested types declared in the SourceCodeInfo message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static partial class Types {
-      internal sealed partial class Location : pb::IMessage<Location> {
+      public sealed partial class Location : pb::IMessage<Location> {
         private static readonly pb::MessageParser<Location> _parser = new pb::MessageParser<Location>(() => new Location());
         private pb::UnknownFieldSet _unknownFields;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -8004,7 +8013,7 @@ namespace Google.Protobuf.Reflection {
   /// file. A GeneratedCodeInfo message is associated with only one generated
   /// source file, but may contain references to different source .proto files.
   /// </summary>
-  internal sealed partial class GeneratedCodeInfo : pb::IMessage<GeneratedCodeInfo> {
+  public sealed partial class GeneratedCodeInfo : pb::IMessage<GeneratedCodeInfo> {
     private static readonly pb::MessageParser<GeneratedCodeInfo> _parser = new pb::MessageParser<GeneratedCodeInfo>(() => new GeneratedCodeInfo());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -8131,7 +8140,7 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Container for nested types declared in the GeneratedCodeInfo message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static partial class Types {
-      internal sealed partial class Annotation : pb::IMessage<Annotation> {
+      public sealed partial class Annotation : pb::IMessage<Annotation> {
         private static readonly pb::MessageParser<Annotation> _parser = new pb::MessageParser<Annotation>(() => new Annotation());
         private pb::UnknownFieldSet _unknownFields;
         private int _hasBits0;
