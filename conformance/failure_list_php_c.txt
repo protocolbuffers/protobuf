@@ -66,6 +66,8 @@ Required.Proto3.ProtobufInput.DoubleFieldNormalizeQuietNan.JsonOutput
 Required.Proto3.ProtobufInput.DoubleFieldNormalizeSignalingNan.JsonOutput
 Required.Proto3.ProtobufInput.FloatFieldNormalizeQuietNan.JsonOutput
 Required.Proto3.ProtobufInput.FloatFieldNormalizeSignalingNan.JsonOutput
+Required.Proto3.ProtobufInput.ValidDataMap.STRING.MESSAGE.MissingDefault.JsonOutput
+Required.Proto3.ProtobufInput.ValidDataMap.STRING.MESSAGE.MissingDefault.ProtobufOutput
 Required.Proto3.ProtobufInput.ValidDataRepeated.BYTES.JsonOutput
 Required.Proto3.ProtobufInput.ValidDataRepeated.BYTES.ProtobufOutput
 Required.Proto3.ProtobufInput.ValidDataRepeated.FLOAT.PackedInput.JsonOutput

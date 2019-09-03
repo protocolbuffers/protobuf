@@ -82,6 +82,8 @@ Recommended.Proto3.ProtobufInput.ValidDataRepeated.UINT32.UnpackedInput.PackedOu
 Recommended.Proto3.ProtobufInput.ValidDataRepeated.UINT64.PackedInput.UnpackedOutput.ProtobufOutput
 Recommended.Proto3.ProtobufInput.ValidDataRepeated.UINT64.UnpackedInput.DefaultOutput.ProtobufOutput
 Recommended.Proto3.ProtobufInput.ValidDataRepeated.UINT64.UnpackedInput.PackedOutput.ProtobufOutput
+Required.Proto3.ProtobufInput.RepeatedScalarMessageMerge.ProtobufOutput
+Required.Proto3.ProtobufInput.ValidDataMap.STRING.MESSAGE.MergeValue.ProtobufOutput
 Required.Proto2.ProtobufInput.ValidDataRepeated.BOOL.PackedInput.ProtobufOutput
 Required.Proto2.ProtobufInput.ValidDataRepeated.DOUBLE.PackedInput.ProtobufOutput
 Required.Proto2.ProtobufInput.ValidDataRepeated.ENUM.PackedInput.ProtobufOutput
@@ -96,7 +98,6 @@ Required.Proto2.ProtobufInput.ValidDataRepeated.SINT32.PackedInput.ProtobufOutpu
 Required.Proto2.ProtobufInput.ValidDataRepeated.SINT64.PackedInput.ProtobufOutput
 Required.Proto2.ProtobufInput.ValidDataRepeated.UINT32.PackedInput.ProtobufOutput
 Required.Proto2.ProtobufInput.ValidDataRepeated.UINT64.PackedInput.ProtobufOutput
-Required.Proto3.ProtobufInput.RepeatedScalarMessageMerge.ProtobufOutput
 Required.Proto3.ProtobufInput.ValidDataRepeated.BOOL.UnpackedInput.ProtobufOutput
 Required.Proto3.ProtobufInput.ValidDataRepeated.DOUBLE.UnpackedInput.ProtobufOutput
 Required.Proto3.ProtobufInput.ValidDataRepeated.ENUM.UnpackedInput.ProtobufOutput
