@@ -146,8 +146,15 @@
 #define PROTOBUF_NAMESPACE_CLOSE \
   } /* namespace protobuf */     \
   } /* namespace google */
-#define PROTOBUF_DEPRECATED
-#define PROTOBUF_DEPRECATED_MSG(x)
+
+#if defined(__GNUC__) || defined(__clang__)
+#define PROTOBUF_DEPRECATED __attribute__((deprecated))
+#define PROTOBUF_DEPRECATED_MSG(msg) __attribute__((deprecated(msg)))
+#elif defined(_MSC_VER)
+#define PROTOBUF_DEPRECATED __declspec(deprecated)
+#define PROTOBUF_DEPRECATED_MSG(msg) __declspec(deprecated(msg))
+#endif
+
 #define PROTOBUF_SECTION_VARIABLE(x)
 #define PROTOBUF_MUST_USE_RESULT
 
