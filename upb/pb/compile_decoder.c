@@ -909,7 +909,8 @@ const upb_pbdecodermethod *upb_pbcodecache_get(upb_pbcodecache *c,
     g = upb_value_getconstptr(v);
   } else {
     g = mgroup_new(h, c->lazy);
-    upb_inttable_push(&c->groups, upb_value_constptr(g));
+    ok = upb_inttable_insertptr(&c->groups, md, upb_value_constptr(g));
+    UPB_ASSERT(ok);
   }
 
   ok = upb_inttable_lookupptr(&g->methods, h, &v);
