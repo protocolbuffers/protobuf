@@ -10,15 +10,15 @@
   <email>protobuf-opensource@google.com</email>
   <active>yes</active>
  </lead>
- <date>2019-08-02</date>
- <time>15:59:08</time>
+ <date>2019-09-04</date>
+ <time>10:58:30</time>
  <version>
-  <release>3.9.1</release>
+  <release>3.9.1-SNAPSHOT</release>
   <api>3.9.1</api>
  </version>
  <stability>
-  <release>stable</release>
-  <api>stable</api>
+  <release>beta</release>
+  <api>beta</api>
  </stability>
  <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
  <notes>GA release.</notes>

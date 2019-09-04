@@ -16,7 +16,7 @@ if len(sys.argv) < 2 or len(sys.argv) > 3:
   print """
 [ERROR] Please specify a version.
 
-./update_version.py <MAJOR>.<MINOR>.<MICRO> [<RC version>]
+./update_version.py <MAJOR>.<MINOR>.<MICRO> [<RC version>|SNAPSHOT]
 
 Example:
 ./update_version.py 3.7.1 2
@@ -36,7 +36,10 @@ Example:
 
 RC_VERSION = 0
 if len(sys.argv) > 2:
-  RC_VERSION = int(sys.argv[2])
+  if sys.argv[2] == 'SNAPSHOT':
+    RC_VERSION = sys.argv[2]
+  else:
+    RC_VERSION = int(sys.argv[2])
 
 
 def Find(elem, tagname):
@@ -57,6 +60,8 @@ def ReplaceText(elem, text):
 def GetFullVersion(rc_suffix = '-rc-'):
   if RC_VERSION == 0:
     return NEW_VERSION
+  if RC_VERSION == 'SNAPSHOT':
+    return '%s-SNAPSHOT' % (NEW_VERSION)
   else:
     return '%s%s%s' % (NEW_VERSION, rc_suffix, RC_VERSION)
 
