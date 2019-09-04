@@ -6336,7 +6336,7 @@ struct upb_pbcodecache {
   bool allow_jit;
   bool lazy;
 
-  /* Array of mgroups. */
+  /* Map of upb_msgdef -> mgroup. */
   upb_inttable groups;
 };
 
@@ -6352,15 +6352,6 @@ typedef struct {
   /* The bytecode for our methods, if any exists.  Owned by us. */
   uint32_t *bytecode;
   uint32_t *bytecode_end;
-
-#ifdef UPB_USE_JIT_X64
-  /* JIT-generated machine code, if any. */
-  upb_string_handlerfunc *jit_code;
-  /* The size of the jit_code (required to munmap()). */
-  size_t jit_size;
-  char *debug_info;
-  void *dl;
-#endif
 } mgroup;
 
 /* The maximum that any submessages can be nested.  Matches proto2's limit.
@@ -6471,19 +6462,10 @@ struct upb_pbdecoder {
   size_t stack_size;
 
   upb_status *status;
-
-#ifdef UPB_USE_JIT_X64
-  /* Used momentarily by the generated code to store a value while a user
-   * function is called. */
-  uint32_t tmp_len;
-
-  const void *saved_rsp;
-#endif
 };
 
 /* Decoder entry points; used as handlers. */
 void *upb_pbdecoder_startbc(void *closure, const void *pc, size_t size_hint);
-void *upb_pbdecoder_startjit(void *closure, const void *hd, size_t size_hint);
 size_t upb_pbdecoder_decode(void *closure, const void *hd, const char *buf,
                             size_t size, const upb_bufhandle *handle);
 bool upb_pbdecoder_end(void *closure, const void *handler_data);
@@ -6506,10 +6488,6 @@ extern const char *kPbDecoderSubmessageTooLong;
 
 /* Access to decoderplan members needed by the decoder. */
 const char *upb_pbdecoder_getopname(unsigned int op);
-
-/* JIT codegen entry point. */
-void upb_pbdecoder_jit(mgroup *group);
-void upb_pbdecoder_freejit(mgroup *group);
 
 /* A special label that means "do field dispatch for this message and branch to
  * wherever that takes you." */

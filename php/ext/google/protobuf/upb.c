@@ -1536,7 +1536,8 @@ static upb_tabkey strcopy(lookupkey_t k2, upb_alloc *a) {
   char *str = upb_malloc(a, k2.str.len + sizeof(uint32_t) + 1);
   if (str == NULL) return 0;
   memcpy(str, &len, sizeof(uint32_t));
-  memcpy(str + sizeof(uint32_t), k2.str.str, k2.str.len + 1);
+  memcpy(str + sizeof(uint32_t), k2.str.str, k2.str.len);
+  str[sizeof(uint32_t) + k2.str.len] = '\0';
   return (uintptr_t)str;
 }
 
@@ -6309,11 +6310,9 @@ static void set_bytecode_handlers(mgroup *g) {
 
 /* TODO(haberman): allow this to be constructed for an arbitrary set of dest
  * handlers and other mgroups (but verify we have a transitive closure). */
-const mgroup *mgroup_new(const upb_handlers *dest, bool allowjit, bool lazy) {
+const mgroup *mgroup_new(const upb_handlers *dest, bool lazy) {
   mgroup *g;
   compiler *c;
-
-  UPB_UNUSED(allowjit);
 
   g = newgroup();
   c = newcompiler(g, lazy);
@@ -6359,7 +6358,6 @@ upb_pbcodecache *upb_pbcodecache_new(upb_handlercache *dest) {
   if (!c) return NULL;
 
   c->dest = dest;
-  c->allow_jit = true;
   c->lazy = false;
 
   c->arena = upb_arena_new();
@@ -6369,27 +6367,17 @@ upb_pbcodecache *upb_pbcodecache_new(upb_handlercache *dest) {
 }
 
 void upb_pbcodecache_free(upb_pbcodecache *c) {
-  size_t i;
+  upb_inttable_iter i;
 
-  for (i = 0; i < upb_inttable_count(&c->groups); i++) {
-    upb_value v;
-    bool ok = upb_inttable_lookup(&c->groups, i, &v);
-    UPB_ASSERT(ok);
-    freegroup((void*)upb_value_getconstptr(v));
+  upb_inttable_begin(&i, &c->groups);
+  for(; !upb_inttable_done(&i); upb_inttable_next(&i)) {
+    upb_value val = upb_inttable_iter_value(&i);
+    freegroup((void*)upb_value_getconstptr(val));
   }
 
   upb_inttable_uninit(&c->groups);
   upb_arena_free(c->arena);
   upb_gfree(c);
-}
-
-bool upb_pbcodecache_allowjit(const upb_pbcodecache *c) {
-  return c->allow_jit;
-}
-
-void upb_pbcodecache_setallowjit(upb_pbcodecache *c, bool allow) {
-  UPB_ASSERT(upb_inttable_count(&c->groups) == 0);
-  c->allow_jit = allow;
 }
 
 void upb_pbdecodermethodopts_setlazy(upb_pbcodecache *c, bool lazy) {
@@ -6404,11 +6392,14 @@ const upb_pbdecodermethod *upb_pbcodecache_get(upb_pbcodecache *c,
   const upb_handlers *h;
   const mgroup *g;
 
-  /* Right now we build a new DecoderMethod every time.
-   * TODO(haberman): properly cache methods by their true key. */
   h = upb_handlercache_get(c->dest, md);
-  g = mgroup_new(h, c->allow_jit, c->lazy);
-  upb_inttable_push(&c->groups, upb_value_constptr(g));
+  if (upb_inttable_lookupptr(&c->groups, md, &v)) {
+    g = upb_value_getconstptr(v);
+  } else {
+    g = mgroup_new(h, c->lazy);
+    ok = upb_inttable_insertptr(&c->groups, md, upb_value_constptr(g));
+    UPB_ASSERT(ok);
+  }
 
   ok = upb_inttable_lookupptr(&g->methods, h, &v);
   UPB_ASSERT(ok);
@@ -6489,16 +6480,6 @@ static size_t stacksize(upb_pbdecoder *d, size_t entries) {
 
 static size_t callstacksize(upb_pbdecoder *d, size_t entries) {
   UPB_UNUSED(d);
-
-#ifdef UPB_USE_JIT_X64
-  if (d->method_->is_native_) {
-    /* Each native stack frame needs two pointers, plus we need a few frames for
-     * the enter/exit trampolines. */
-    size_t ret = entries * sizeof(void*) * 2;
-    ret += sizeof(void*) * 10;
-    return ret;
-  }
-#endif
 
   return entries * sizeof(uint32_t*);
 }
@@ -7315,17 +7296,6 @@ void *upb_pbdecoder_startbc(void *closure, const void *pc, size_t size_hint) {
   return d;
 }
 
-void *upb_pbdecoder_startjit(void *closure, const void *hd, size_t size_hint) {
-  upb_pbdecoder *d = closure;
-  UPB_UNUSED(hd);
-  UPB_UNUSED(size_hint);
-  d->top->end_ofs = UINT64_MAX;
-  d->bufstart_ofs = 0;
-  d->call_len = 0;
-  d->skip = 0;
-  return d;
-}
-
 bool upb_pbdecoder_end(void *closure, const void *handler_data) {
   upb_pbdecoder *d = closure;
   const upb_pbdecodermethod *method = handler_data;
@@ -7351,14 +7321,6 @@ bool upb_pbdecoder_end(void *closure, const void *handler_data) {
   end = offset(d);
   d->top->end_ofs = end;
 
-#ifdef UPB_USE_JIT_X64
-  if (method->is_native_) {
-    const mgroup *group = (const mgroup*)method->group;
-    if (d->top != d->stack)
-      d->stack->end_ofs = 0;
-    group->jit_code(closure, method->code_base.ptr, &dummy, 0, NULL);
-  } else
-#endif
   {
     const uint32_t *p = d->pc;
     d->stack->end_ofs = end;
