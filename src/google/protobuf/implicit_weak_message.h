@@ -84,7 +84,7 @@ class PROTOBUF_EXPORT ImplicitWeakMessage : public MessageLite {
 
   uint8* InternalSerializeWithCachedSizesToArray(
       uint8* target, io::EpsCopyOutputStream* stream) const final {
-    return stream->WriteRaw(data_.data(), static_cast<int>(data_.size()),
+    return stream->WriteRaw(data_.data(), static_cast<size_t>(data_.size()),
                             target);
   }
 

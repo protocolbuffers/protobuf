@@ -690,8 +690,8 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
     }
   }
 
-  uint8* WriteRaw(const void* data, int size, uint8* ptr) {
-    if (PROTOBUF_PREDICT_FALSE(end_ - ptr < size)) {
+  uint8* WriteRaw(const void* data, size_t size, uint8* ptr) {
+    if (PROTOBUF_PREDICT_FALSE(end_ - ptr < static_cast<long int>(size))) {
       return WriteRawFallback(data, size, ptr);
     }
     std::memcpy(ptr, data, size);
