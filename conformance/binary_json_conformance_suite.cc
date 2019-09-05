@@ -280,6 +280,25 @@ const FieldDescriptor* GetFieldForMapType(
   return nullptr;
 }
 
+const FieldDescriptor* GetFieldForOneofType(
+    FieldDescriptor::Type type, bool is_proto3, bool exclusive = false) {
+  const Descriptor* d = is_proto3 ?
+      TestAllTypesProto3().GetDescriptor() : TestAllTypesProto2().GetDescriptor();
+  for (int i = 0; i < d->field_count(); i++) {
+    const FieldDescriptor* f = d->field(i);
+    if (f->containing_oneof() && ((f->type() == type) ^ exclusive)) {
+      return f;
+    }
+  }
+
+  const string proto_string = is_proto3 ? "Proto3" : "Proto2";
+  GOOGLE_LOG(FATAL) << "Couldn't find oneof field with type: "
+                    << FieldDescriptor::TypeName(type)
+                    << " for "
+                    << proto_string.c_str();
+  return nullptr;
+}
+
 string UpperCase(string str) {
   for (int i = 0; i < str.size(); i++) {
     str[i] = toupper(str[i]);
@@ -1111,6 +1130,141 @@ void BinaryAndJsonConformanceSuite::TestOverwriteMessageValueMap() {
   }
 }
 
+void BinaryAndJsonConformanceSuite::TestValidDataForOneofType(
+    FieldDescriptor::Type type) {
+  const string type_name =
+      UpperCase(string(".") + FieldDescriptor::TypeName(type));
+  WireFormatLite::WireType wire_type =
+      WireFormatLite::WireTypeForFieldType(
+          static_cast<WireFormatLite::FieldType>(type));
+
+  for (int is_proto3 = 0; is_proto3 < 2; is_proto3++) {
+    const FieldDescriptor* field = GetFieldForOneofType(type, is_proto3);
+    const string default_value =
+        cat(tag(field->number(), wire_type), GetDefaultValue(type));
+    const string non_default_value =
+        cat(tag(field->number(), wire_type), GetNonDefaultValue(type));
+
+    {
+      // Tests oneof with default value.
+      const string proto = default_value;
+      std::unique_ptr<Message> test_message = NewTestMessage(is_proto3);
+      test_message->MergeFromString(proto);
+      string text = test_message->DebugString();
+
+      RunValidProtobufTest(StrCat("ValidDataOneof", type_name, ".DefaultValue"),
+                           REQUIRED, proto, text, is_proto3);
+      RunValidBinaryProtobufTest(
+          StrCat("ValidDataOneofBinary", type_name, ".DefaultValue"),
+          RECOMMENDED, proto, proto, is_proto3);
+    }
+
+    {
+      // Tests oneof with non-default value.
+      const string proto = non_default_value;
+      std::unique_ptr<Message> test_message = NewTestMessage(is_proto3);
+      test_message->MergeFromString(proto);
+      string text = test_message->DebugString();
+
+      RunValidProtobufTest(
+          StrCat("ValidDataOneof", type_name, ".NonDefaultValue"),
+          REQUIRED, proto, text, is_proto3);
+      RunValidBinaryProtobufTest(
+          StrCat("ValidDataOneofBinary", type_name, ".NonDefaultValue"),
+          RECOMMENDED, proto, proto, is_proto3);
+    }
+
+    {
+      // Tests oneof with multiple values of the same field.
+      const string proto = StrCat(default_value, non_default_value);
+      const string expected_proto = non_default_value;
+      std::unique_ptr<Message> test_message = NewTestMessage(is_proto3);
+      test_message->MergeFromString(expected_proto);
+      string text = test_message->DebugString();
+
+      RunValidProtobufTest(
+          StrCat("ValidDataOneof", type_name, ".MultipleValuesForSameField"),
+          REQUIRED, proto, text, is_proto3);
+      RunValidBinaryProtobufTest(
+          StrCat("ValidDataOneofBinary", type_name,
+                 ".MultipleValuesForSameField"),
+          RECOMMENDED, proto, expected_proto, is_proto3);
+    }
+
+    {
+      // Tests oneof with multiple values of the different fields.
+      const FieldDescriptor* other_field =
+          GetFieldForOneofType(type, is_proto3, true);
+      FieldDescriptor::Type other_type = other_field->type();
+      WireFormatLite::WireType other_wire_type =
+          WireFormatLite::WireTypeForFieldType(
+              static_cast<WireFormatLite::FieldType>(other_type));
+      const string other_value =
+          cat(tag(other_field->number(), other_wire_type),
+              GetDefaultValue(other_type));
+
+      const string proto = StrCat(other_value, non_default_value);
+      const string expected_proto = non_default_value;
+      std::unique_ptr<Message> test_message = NewTestMessage(is_proto3);
+      test_message->MergeFromString(expected_proto);
+      string text = test_message->DebugString();
+
+      RunValidProtobufTest(
+          StrCat("ValidDataOneof", type_name,
+                 ".MultipleValuesForDifferentField"),
+          REQUIRED, proto, text, is_proto3);
+      RunValidBinaryProtobufTest(
+          StrCat("ValidDataOneofBinary", type_name,
+                 ".MultipleValuesForDifferentField"),
+          RECOMMENDED, proto, expected_proto, is_proto3);
+    }
+  }
+}
+
+void BinaryAndJsonConformanceSuite::TestMergeOneofMessage() {
+  string field1_data = cat(tag(1, WireFormatLite::WIRETYPE_VARINT), varint(1));
+  string field2a_data = cat(tag(2, WireFormatLite::WIRETYPE_VARINT), varint(1));
+  string field2b_data = cat(tag(2, WireFormatLite::WIRETYPE_VARINT), varint(1));
+  string field89_data = cat(tag(89, WireFormatLite::WIRETYPE_VARINT),
+                            varint(1));
+  string submsg1_data =
+      cat(tag(2, WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+          delim(cat(field1_data, field2a_data, field89_data)));
+  string submsg2_data =
+      cat(tag(2, WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+          delim(cat(field2b_data, field89_data)));
+  string merged_data = cat(tag(2, WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+                           delim(cat(field1_data, field2b_data,
+                                     field89_data, field89_data)));
+
+  for (int is_proto3 = 0; is_proto3 < 2; is_proto3++) {
+    const FieldDescriptor* field =
+        GetFieldForOneofType(FieldDescriptor::TYPE_MESSAGE, is_proto3);
+
+    string proto1 = cat(tag(field->number(),
+                            WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+                        delim(submsg1_data));
+    string proto2 = cat(tag(field->number(),
+                            WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+                        delim(submsg2_data));
+    string proto = cat(proto1, proto2);
+    string expected_proto =
+        cat(tag(field->number(),
+                WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+                delim(merged_data));
+
+    std::unique_ptr<Message> test_message = NewTestMessage(is_proto3);
+    test_message->MergeFromString(expected_proto);
+    string text = test_message->DebugString();
+    RunValidProtobufTest(
+        "ValidDataOneof.MESSAGE.Merge",
+        REQUIRED, proto, text, is_proto3);
+    RunValidBinaryProtobufTest(
+        "ValidDataOneofBinary.MESSAGE.Merge",
+        RECOMMENDED, proto, expected_proto, is_proto3);
+  }
+}
+
 void BinaryAndJsonConformanceSuite::TestIllegalTags() {
   // field num 0 is illegal
   string nullfield[] = {
@@ -1368,6 +1522,18 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
     FieldDescriptor::TYPE_MESSAGE);
   // Additional test to check overwriting message value map.
   TestOverwriteMessageValueMap();
+
+  TestValidDataForOneofType(FieldDescriptor::TYPE_UINT32);
+  TestValidDataForOneofType(FieldDescriptor::TYPE_BOOL);
+  TestValidDataForOneofType(FieldDescriptor::TYPE_UINT64);
+  TestValidDataForOneofType(FieldDescriptor::TYPE_FLOAT);
+  TestValidDataForOneofType(FieldDescriptor::TYPE_DOUBLE);
+  TestValidDataForOneofType(FieldDescriptor::TYPE_STRING);
+  TestValidDataForOneofType(FieldDescriptor::TYPE_BYTES);
+  TestValidDataForOneofType(FieldDescriptor::TYPE_ENUM);
+  TestValidDataForOneofType(FieldDescriptor::TYPE_MESSAGE);
+  // Additional test to check merging oneof message.
+  TestMergeOneofMessage();
 
   // TODO(haberman):
   // TestValidDataForType(FieldDescriptor::TYPE_GROUP
