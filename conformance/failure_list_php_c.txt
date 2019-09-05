@@ -107,3 +107,4 @@ Recommended.Proto3.ProtobufInput.ValidDataRepeated.UINT32.PackedInput.PackedOutp
 Recommended.Proto3.ProtobufInput.ValidDataRepeated.UINT32.UnpackedInput.PackedOutput.ProtobufOutput
 Recommended.Proto3.ProtobufInput.ValidDataRepeated.UINT64.PackedInput.PackedOutput.ProtobufOutput
 Recommended.Proto3.ProtobufInput.ValidDataRepeated.UINT64.UnpackedInput.PackedOutput.ProtobufOutput
+Required.Proto3.ProtobufInput.ValidDataOneof.BYTES.DefaultValue.JsonOutput
