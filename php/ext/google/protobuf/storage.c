@@ -102,8 +102,10 @@ bool native_slot_set(upb_fieldtype_t type, const zend_class_entry* klass,
       if (EXPECTED(cached_zval != NULL)) {
 #if PHP_MAJOR_VERSION < 7
         REPLACE_ZVAL_VALUE((zval**)memory, value, 1);
-#else
+#elif PHP_VERSION_ID < 70400
         zend_assign_to_variable(cached_zval, value, IS_CV);
+#else
+        zend_assign_to_variable(cached_zval, value, IS_CV, 0);
 #endif
       }
       break;
