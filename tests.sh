@@ -254,7 +254,7 @@ build_java_linkage_monitor() {
   cd bom
   # This local installation avoids the problem caused by a new version not yet in Maven Central
   # https://github.com/protocolbuffers/protobuf/issues/6627
-  mvn install
+  $MVN install
   $MVN versions:set -DnewVersion=${VERSION}-SNAPSHOT
   cd ..
   $MVN versions:set -DnewVersion=${VERSION}-SNAPSHOT
