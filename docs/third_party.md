@@ -28,7 +28,6 @@ These are projects we know about implementing Protocol Buffers for other program
 * Common Lisp: http://github.com/brown/protobuf
 * D: https://github.com/dcarp/protobuf-d
 * D: https://github.com/msoucy/dproto
-* D: http://256.makerslocal.org/wiki/index.php/ProtocolBuffer
 * D: https://github.com/opticron/ProtocolBuffer
 * Dart: https://github.com/dart-lang/dart-protobuf (runtime) https://github.com/dart-lang/dart-protoc-plugin (code generator)
 * Delphi: http://sourceforge.net/projects/protobuf-delphi/
