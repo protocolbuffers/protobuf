@@ -32,7 +32,6 @@ CPPOPTS = [
 COPTS = CPPOPTS + [
     # copybara:strip_for_google3_begin
     "-pedantic",
-    "-std=c89",
     "-Wstrict-prototypes",
     # copybara:strip_end
 ]
