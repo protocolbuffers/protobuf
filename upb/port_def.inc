@@ -114,7 +114,7 @@ int msvc_vsnprintf(char* s, size_t n, const char* format, va_list arg);
 #ifdef __cplusplus
 #if __cplusplus >= 201103L || defined(__GXX_EXPERIMENTAL_CXX0X__) || \
     (defined(_MSC_VER) && _MSC_VER >= 1900)
-// C++11 is present
+/* C++11 is present */
 #else
 #error upb requires C++11 for C++ support
 #endif
