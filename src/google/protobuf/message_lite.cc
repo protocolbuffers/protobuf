@@ -186,7 +186,7 @@ class ZeroCopyCodedInputStream : public io::ZeroCopyInputStream {
   }
   void BackUp(int count) final { cis_->Advance(-count); }
   bool Skip(int count) final { return cis_->Skip(count); }
-  google::protobuf::io::ByteCountInt64 ByteCount() const final { return 0; }
+  int64_t ByteCount() const final { return 0; }
 
   bool aliasing_enabled() { return cis_->aliasing_enabled_; }
 
