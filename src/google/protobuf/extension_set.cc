@@ -1931,7 +1931,7 @@ uint8* ExtensionSet::Extension::InternalSerializeFieldWithCachedSizesToArray(
     if (is_packed) {
       if (cached_size == 0) return target;
 
-      target = target = stream->EnsureSpace(target);
+      target = stream->EnsureSpace(target);
       target = WireFormatLite::WriteTagToArray(
           number, WireFormatLite::WIRETYPE_LENGTH_DELIMITED, target);
       target = WireFormatLite::WriteInt32NoTagToArray(cached_size, target);
