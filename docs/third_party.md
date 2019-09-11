@@ -60,6 +60,7 @@ These are projects we know about implementing Protocol Buffers for other program
 * Javascript: http://code.google.com/p/protobuf-for-node/
 * Javascript: http://code.google.com/p/protostuff/
 * Julia: https://github.com/tanmaykm/ProtoBuf.jl
+* Kotlin: https://github.com/marcoferrer/kroto-plus
 * Kotlin: https://github.com/Kotlin/kotlinx.serialization
 * Lua: http://code.google.com/p/protoc-gen-lua/
 * Lua: http://github.com/indygreg/lua-protobuf
