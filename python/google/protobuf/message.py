@@ -317,3 +317,21 @@ class Message(object):
     if not isinstance(serialized, bytes):
       serialized = serialized.encode('latin1')
     self.ParseFromString(serialized)
+
+  def __reduce__(self):
+    message_descriptor = self.DESCRIPTOR
+    if message_descriptor.containing_type is None:
+      return type(self), (), self.__getstate__()
+    # the message type must be nested.
+    # Python does not pickle nested classes; use the symbol_database on the
+    # receiving end.
+    container = message_descriptor
+    return (_InternalConstructMessage, (container.full_name,),
+            self.__getstate__())
+
+
+def _InternalConstructMessage(full_name):
+  """Constructs a nested message."""
+  from google.protobuf import symbol_database  # pylint:disable=g-import-not-at-top
+
+  return symbol_database.Default().GetSymbol(full_name)()

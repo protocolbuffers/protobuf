@@ -97,7 +97,7 @@ bool ArrayInputStream::Skip(int count) {
   }
 }
 
-int64 ArrayInputStream::ByteCount() const { return position_; }
+int64_t ArrayInputStream::ByteCount() const { return position_; }
 
 
 // ===================================================================
@@ -132,7 +132,7 @@ void ArrayOutputStream::BackUp(int count) {
   last_returned_size_ = 0;  // Don't let caller back up further.
 }
 
-int64 ArrayOutputStream::ByteCount() const { return position_; }
+int64_t ArrayOutputStream::ByteCount() const { return position_; }
 
 // ===================================================================
 
@@ -176,7 +176,7 @@ void StringOutputStream::BackUp(int count) {
   target_->resize(target_->size() - count);
 }
 
-int64 StringOutputStream::ByteCount() const {
+int64_t StringOutputStream::ByteCount() const {
   GOOGLE_CHECK(target_ != NULL);
   return target_->size();
 }
@@ -282,7 +282,7 @@ bool CopyingInputStreamAdaptor::Skip(int count) {
   return skipped == count;
 }
 
-int64 CopyingInputStreamAdaptor::ByteCount() const {
+int64_t CopyingInputStreamAdaptor::ByteCount() const {
   return position_ - backup_bytes_;
 }
 
@@ -342,7 +342,7 @@ void CopyingOutputStreamAdaptor::BackUp(int count) {
   buffer_used_ -= count;
 }
 
-int64 CopyingOutputStreamAdaptor::ByteCount() const {
+int64_t CopyingOutputStreamAdaptor::ByteCount() const {
   return position_ + buffer_used_;
 }
 
@@ -424,7 +424,7 @@ bool LimitingInputStream::Skip(int count) {
   }
 }
 
-int64 LimitingInputStream::ByteCount() const {
+int64_t LimitingInputStream::ByteCount() const {
   if (limit_ < 0) {
     return input_->ByteCount() + limit_ - prior_bytes_read_;
   } else {

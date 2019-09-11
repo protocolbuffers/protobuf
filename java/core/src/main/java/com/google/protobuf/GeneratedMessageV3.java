@@ -158,7 +158,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
 
   /**
    * Internal helper to return a modifiable map containing all the fields.
-   * The returned Map is modifialbe so that the caller can add additional
+   * The returned Map is modifiable so that the caller can add additional
    * extension fields to implement {@link #getAllFields()}.
    *
    * @param getBytesForString whether to generate ByteString for string fields
@@ -2853,7 +2853,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
       @Override
       @SuppressWarnings("unchecked")
       public Object get(GeneratedMessageV3 message) {
-        List result = new ArrayList();
+        List result = new ArrayList<>();
         for (int i = 0; i < getRepeatedCount(message); i++) {
           result.add(getRepeated(message, i));
         }
@@ -2863,7 +2863,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
       @Override
       @SuppressWarnings("unchecked")
       public Object get(Builder builder) {
-        List result = new ArrayList();
+        List result = new ArrayList<>();
         for (int i = 0; i < getRepeatedCount(builder); i++) {
           result.add(getRepeated(builder, i));
         }
@@ -3068,7 +3068,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
       @Override
       @SuppressWarnings("unchecked")
       public Object get(final GeneratedMessageV3 message) {
-        final List newList = new ArrayList();
+        final List newList = new ArrayList<>();
         final int size = getRepeatedCount(message);
         for (int i = 0; i < size; i++) {
           newList.add(getRepeated(message, i));
@@ -3079,7 +3079,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
       @Override
       @SuppressWarnings("unchecked")
       public Object get(final GeneratedMessageV3.Builder builder) {
-        final List newList = new ArrayList();
+        final List newList = new ArrayList<>();
         final int size = getRepeatedCount(builder);
         for (int i = 0; i < size; i++) {
           newList.add(getRepeated(builder, i));

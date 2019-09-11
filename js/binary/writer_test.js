@@ -40,6 +40,7 @@
 
 goog.require('goog.crypt');
 goog.require('goog.testing.asserts');
+goog.require('jspb.BinaryConstants');
 goog.require('jspb.BinaryReader');
 goog.require('jspb.BinaryWriter');
 goog.require('jspb.utils');
@@ -318,5 +319,51 @@ describe('binaryWriterTest', function() {
     expect(reader.readPackedUint64String()).toEqual(testCases.map(function(c) {
       return c.zigzag;
     }));
+  });
+
+  it('writes float32 fields', function() {
+    var testCases = [
+      0, 1, -1, jspb.BinaryConstants.FLOAT32_MIN,
+      -jspb.BinaryConstants.FLOAT32_MIN, jspb.BinaryConstants.FLOAT32_MAX,
+      -jspb.BinaryConstants.FLOAT32_MAX, 3.1415927410125732, Infinity,
+      -Infinity, NaN
+    ];
+    var writer = new jspb.BinaryWriter();
+    testCases.forEach(function(f) {
+      writer.writeFloat(1, f);
+    });
+    var reader = jspb.BinaryReader.alloc(writer.getResultBuffer());
+    testCases.forEach(function(f) {
+      reader.nextField();
+      expect(reader.getFieldNumber()).toEqual(1);
+      if (isNaN(f)) {
+        expect(isNaN(reader.readFloat())).toEqual(true);
+      } else {
+        expect(reader.readFloat()).toEqual(f);
+      }
+    });
+  });
+
+  it('writes double fields', function() {
+    var testCases = [
+      0, 1, -1, Number.MAX_SAFE_INTEGER, Number.MIN_SAFE_INTEGER,
+      Number.MAX_VALUE, Number.MIN_VALUE, jspb.BinaryConstants.FLOAT32_MIN,
+      -jspb.BinaryConstants.FLOAT32_MIN, jspb.BinaryConstants.FLOAT32_MAX,
+      -jspb.BinaryConstants.FLOAT32_MAX, Math.PI, Infinity, -Infinity, NaN
+    ];
+    var writer = new jspb.BinaryWriter();
+    testCases.forEach(function(f) {
+      writer.writeDouble(1, f);
+    });
+    var reader = jspb.BinaryReader.alloc(writer.getResultBuffer());
+    testCases.forEach(function(f) {
+      reader.nextField();
+      expect(reader.getFieldNumber()).toEqual(1);
+      if (isNaN(f)) {
+        expect(isNaN(reader.readDouble())).toEqual(true);
+      } else {
+        expect(reader.readDouble()).toEqual(f);
+      }
+    });
   });
 });

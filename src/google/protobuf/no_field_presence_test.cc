@@ -68,7 +68,7 @@ void CheckDefaultValues(
   // default instance.
   EXPECT_EQ(41, m.optional_proto2_message().default_int32());
   EXPECT_EQ(false, m.has_optional_foreign_message());
-  EXPECT_EQ(proto2_nofieldpresence_unittest::TestAllTypes_NestedEnum_FOO,
+  EXPECT_EQ(proto2_nofieldpresence_unittest::TestAllTypes::FOO,
             m.optional_nested_enum());
   EXPECT_EQ(proto2_nofieldpresence_unittest::FOREIGN_FOO,
             m.optional_foreign_enum());
@@ -119,7 +119,7 @@ void FillValues(proto2_nofieldpresence_unittest::TestAllTypes* m) {
   m->mutable_optional_foreign_message()->set_c(43);
   m->mutable_optional_proto2_message()->set_optional_int32(44);
   m->set_optional_nested_enum(
-      proto2_nofieldpresence_unittest::TestAllTypes_NestedEnum_BAZ);
+      proto2_nofieldpresence_unittest::TestAllTypes::BAZ);
   m->set_optional_foreign_enum(proto2_nofieldpresence_unittest::FOREIGN_BAZ);
   m->mutable_optional_lazy_message()->set_bb(45);
   m->add_repeated_int32(100);
@@ -141,7 +141,7 @@ void FillValues(proto2_nofieldpresence_unittest::TestAllTypes* m) {
   m->add_repeated_foreign_message()->set_c(47);
   m->add_repeated_proto2_message()->set_optional_int32(48);
   m->add_repeated_nested_enum(
-      proto2_nofieldpresence_unittest::TestAllTypes_NestedEnum_BAZ);
+      proto2_nofieldpresence_unittest::TestAllTypes::BAZ);
   m->add_repeated_foreign_enum(proto2_nofieldpresence_unittest::FOREIGN_BAZ);
   m->add_repeated_lazy_message()->set_bb(49);
 
@@ -173,7 +173,7 @@ void CheckNonDefaultValues(
   EXPECT_EQ(43, m.optional_foreign_message().c());
   EXPECT_EQ(true, m.has_optional_proto2_message());
   EXPECT_EQ(44, m.optional_proto2_message().optional_int32());
-  EXPECT_EQ(proto2_nofieldpresence_unittest::TestAllTypes_NestedEnum_BAZ,
+  EXPECT_EQ(proto2_nofieldpresence_unittest::TestAllTypes::BAZ,
             m.optional_nested_enum());
   EXPECT_EQ(proto2_nofieldpresence_unittest::FOREIGN_BAZ,
             m.optional_foreign_enum());
@@ -217,7 +217,7 @@ void CheckNonDefaultValues(
   EXPECT_EQ(1, m.repeated_proto2_message_size());
   EXPECT_EQ(48, m.repeated_proto2_message(0).optional_int32());
   EXPECT_EQ(1, m.repeated_nested_enum_size());
-  EXPECT_EQ(proto2_nofieldpresence_unittest::TestAllTypes_NestedEnum_BAZ,
+  EXPECT_EQ(proto2_nofieldpresence_unittest::TestAllTypes::BAZ,
             m.repeated_nested_enum(0));
   EXPECT_EQ(1, m.repeated_foreign_enum_size());
   EXPECT_EQ(proto2_nofieldpresence_unittest::FOREIGN_BAZ,
@@ -442,8 +442,7 @@ TEST(NoFieldPresenceTest, DontSerializeDefaultValuesTest) {
   message.set_optional_string("");
   message.set_optional_bytes("");
   message.set_optional_nested_enum(
-      proto2_nofieldpresence_unittest::
-          TestAllTypes_NestedEnum_FOO);  // first enum entry
+      proto2_nofieldpresence_unittest::TestAllTypes::FOO);  // first enum entry
   message.set_optional_foreign_enum(
       proto2_nofieldpresence_unittest::FOREIGN_FOO);  // first enum entry
 
@@ -557,8 +556,8 @@ TEST(NoFieldPresenceTest, OneofPresence) {
 
   message.Clear();
   message.set_oneof_enum(
-      proto2_nofieldpresence_unittest::TestAllTypes_NestedEnum_FOO);  // default
-                                                                      // value.
+      proto2_nofieldpresence_unittest::TestAllTypes::FOO);  // default
+                                                            // value.
   message.SerializeToString(&serialized);
   EXPECT_EQ(3, serialized.size());
   EXPECT_TRUE(message.ParseFromString(serialized));

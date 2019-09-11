@@ -341,6 +341,28 @@ void JsonEscaping::Escape(strings::ByteSource* input,
   }
 }
 
+void JsonEscaping::Escape(StringPiece input, strings::ByteSink* output) {
+  const size_t len = input.length();
+  const char* p = input.data();
+
+  bool can_skip_escaping = true;
+  for (int i = 0; i < len; i++) {
+    char c = p[i];
+    if (c < 0x20 || c >= 0x7F || c == '"' || c == '<' || c == '>' ||
+        c == '\\') {
+      can_skip_escaping = false;
+      break;
+    }
+  }
+
+  if (can_skip_escaping) {
+    output->Append(input.data(), input.length());
+  } else {
+    strings::ArrayByteSource source(input);
+    Escape(&source, output);
+  }
+}
+
 }  // namespace converter
 }  // namespace util
 }  // namespace protobuf

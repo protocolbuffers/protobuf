@@ -45,8 +45,6 @@ namespace protobuf {
 namespace util {
 namespace converter {
 
-using strings::ArrayByteSource;
-;
 
 JsonObjectWriter::~JsonObjectWriter() {
   if (element_ && !element_->is_root()) {
@@ -101,7 +99,7 @@ JsonObjectWriter* JsonObjectWriter::RenderInt64(StringPiece name,
                                                 int64 value) {
   WritePrefix(name);
   WriteChar('"');
-  stream_->WriteString(StrCat(value));
+  WriteRawString(StrCat(value));
   WriteChar('"');
   return this;
 }
@@ -110,7 +108,7 @@ JsonObjectWriter* JsonObjectWriter::RenderUint64(StringPiece name,
                                                  uint64 value) {
   WritePrefix(name);
   WriteChar('"');
-  stream_->WriteString(StrCat(value));
+  WriteRawString(StrCat(value));
   WriteChar('"');
   return this;
 }
@@ -139,8 +137,7 @@ JsonObjectWriter* JsonObjectWriter::RenderString(StringPiece name,
                                                  StringPiece value) {
   WritePrefix(name);
   WriteChar('"');
-  ArrayByteSource source(value);
-  JsonEscaping::Escape(&source, &sink_);
+  JsonEscaping::Escape(value, &sink_);
   WriteChar('"');
   return this;
 }
@@ -179,10 +176,9 @@ void JsonObjectWriter::WritePrefix(StringPiece name) {
   if (!name.empty() || element()->is_json_object()) {
     WriteChar('"');
     if (!name.empty()) {
-      ArrayByteSource source(name);
-      JsonEscaping::Escape(&source, &sink_);
+      JsonEscaping::Escape(name, &sink_);
     }
-    stream_->WriteString("\":");
+    WriteRawString("\":");
     if (!indent_string_.empty()) WriteChar(' ');
   }
 }

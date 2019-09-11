@@ -1359,103 +1359,94 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
   int32 kInt32Min = -2147483648;
   uint32 kUint32Max = 4294967295UL;
 
-  TestValidDataForType(FieldDescriptor::TYPE_DOUBLE, {
-    {dbl(0), dbl(0)},
-    {dbl(0.1), dbl(0.1)},
-    {dbl(1.7976931348623157e+308), dbl(1.7976931348623157e+308)},
-    {dbl(2.22507385850720138309e-308), dbl(2.22507385850720138309e-308)},
-  });
-  TestValidDataForType(FieldDescriptor::TYPE_FLOAT, {
-    {flt(0), flt(0)},
-    {flt(0.1), flt(0.1)},
-    {flt(1.00000075e-36), flt(1.00000075e-36)},
-    {flt(3.402823e+38), flt(3.402823e+38)},  // 3.40282347e+38
-    {flt(1.17549435e-38f), flt(1.17549435e-38)},
-  });
-  TestValidDataForType(FieldDescriptor::TYPE_INT64, {
-    {varint(0), varint(0)},
-    {varint(12345), varint(12345)},
-    {varint(kInt64Max), varint(kInt64Max)},
-    {varint(kInt64Min), varint(kInt64Min)},
-  });
-  TestValidDataForType(FieldDescriptor::TYPE_UINT64, {
-    {varint(0), varint(0)},
-    {varint(12345), varint(12345)},
-    {varint(kUint64Max), varint(kUint64Max)},
-  });
-  TestValidDataForType(FieldDescriptor::TYPE_INT32, {
-    {varint(0), varint(0)},
-    {varint(12345), varint(12345)},
-    {longvarint(12345, 2), varint(12345)},
-    {longvarint(12345, 7), varint(12345)},
-    {varint(kInt32Max), varint(kInt32Max)},
-    {varint(kInt32Min), varint(kInt32Min)},
-    {varint(1LL << 33), varint(0)},
-    {varint((1LL << 33) - 1), varint(-1)},
-  });
-  TestValidDataForType(FieldDescriptor::TYPE_UINT32, {
-    {varint(0), varint(0)},
-    {varint(12345), varint(12345)},
-    {longvarint(12345, 2), varint(12345)},
-    {longvarint(12345, 7), varint(12345)},
-    {varint(kUint32Max), varint(kUint32Max)},  // UINT32_MAX
-    {varint(1LL << 33), varint(0)},
-    {varint((1LL << 33) - 1), varint((1LL << 32) - 1)},
-  });
-  TestValidDataForType(FieldDescriptor::TYPE_FIXED64, {
-    {u64(0), u64(0)},
-    {u64(12345), u64(12345)},
-    {u64(kUint64Max), u64(kUint64Max)},
-  });
-  TestValidDataForType(FieldDescriptor::TYPE_FIXED32, {
-    {u32(0), u32(0)},
-    {u32(12345), u32(12345)},
-    {u32(kUint32Max), u32(kUint32Max)},  // UINT32_MAX
-  });
-  TestValidDataForType(FieldDescriptor::TYPE_SFIXED64, {
-    {u64(0), u64(0)},
-    {u64(12345), u64(12345)},
-    {u64(kInt64Max), u64(kInt64Max)},
-    {u64(kInt64Min), u64(kInt64Min)},
-  });
-  TestValidDataForType(FieldDescriptor::TYPE_SFIXED32, {
-    {u32(0), u32(0)},
-    {u32(12345), u32(12345)},
-    {u32(kInt32Max), u32(kInt32Max)},
-    {u32(kInt32Min), u32(kInt32Min)},
-  });
-  TestValidDataForType(FieldDescriptor::TYPE_BOOL, {
-    {varint(0), varint(0)},
-    {varint(1), varint(1)},
-    {varint(12345678), varint(1)},
-  });
-  TestValidDataForType(FieldDescriptor::TYPE_SINT32, {
-    {zz32(0), zz32(0)},
-    {zz32(12345), zz32(12345)},
-    {zz32(kInt32Max), zz32(kInt32Max)},
-    {zz32(kInt32Min), zz32(kInt32Min)},
-  });
-  TestValidDataForType(FieldDescriptor::TYPE_SINT64, {
-    {zz64(0), zz64(0)},
-    {zz64(12345), zz64(12345)},
-    {zz64(kInt64Max), zz64(kInt64Max)},
-    {zz64(kInt64Min), zz64(kInt64Min)},
-  });
-  TestValidDataForType(FieldDescriptor::TYPE_STRING, {
-    {delim(""), delim("")},
-    {delim("Hello world!"), delim("Hello world!")},
-    {delim("\'\"\?\\\a\b\f\n\r\t\v"),
-     delim("\'\"\?\\\a\b\f\n\r\t\v")},  // escape
-    {delim("谷歌"), delim("谷歌")},  // Google in Chinese
-    {delim("\u8C37\u6B4C"), delim("谷歌")},  // unicode escape
-    {delim("\u8c37\u6b4c"), delim("谷歌")},  // lowercase unicode
-    {delim("\xF0\x9F\x98\x81"), delim("\xF0\x9F\x98\x81")},  // emoji: 😁
-  });
-  TestValidDataForType(FieldDescriptor::TYPE_BYTES, {
-    {delim(""), delim("")},
-    {delim("\x01\x02"), delim("\x01\x02")},
-    {delim("\xfb"), delim("\xfb")},
-  });
+  TestValidDataForType(
+      FieldDescriptor::TYPE_DOUBLE,
+      {{dbl(0.1), dbl(0.1)},
+       {dbl(1.7976931348623157e+308), dbl(1.7976931348623157e+308)},
+       {dbl(2.22507385850720138309e-308), dbl(2.22507385850720138309e-308)}});
+  TestValidDataForType(
+      FieldDescriptor::TYPE_FLOAT,
+      {{flt(0.1), flt(0.1)},
+       {flt(1.00000075e-36), flt(1.00000075e-36)},
+       {flt(3.402823e+38), flt(3.402823e+38)},  // 3.40282347e+38
+       {flt(1.17549435e-38f), flt(1.17549435e-38)}});
+  TestValidDataForType(FieldDescriptor::TYPE_INT64,
+                       {{varint(12345), varint(12345)},
+                        {varint(kInt64Max), varint(kInt64Max)},
+                        {varint(kInt64Min), varint(kInt64Min)}});
+  TestValidDataForType(FieldDescriptor::TYPE_UINT64,
+                       {{varint(12345), varint(12345)},
+                        {varint(kUint64Max), varint(kUint64Max)},
+                        {varint(0), varint(0)}});
+  TestValidDataForType(FieldDescriptor::TYPE_INT32,
+                       {
+                           {varint(12345), varint(12345)},
+                           {longvarint(12345, 2), varint(12345)},
+                           {longvarint(12345, 7), varint(12345)},
+                           {varint(kInt32Max), varint(kInt32Max)},
+                           {varint(kInt32Min), varint(kInt32Min)},
+                           {varint(1LL << 33), varint(0)},
+                           {varint((1LL << 33) - 1), varint(-1)},
+                       });
+  TestValidDataForType(
+      FieldDescriptor::TYPE_UINT32,
+      {
+          {varint(12345), varint(12345)},
+          {longvarint(12345, 2), varint(12345)},
+          {longvarint(12345, 7), varint(12345)},
+          {varint(kUint32Max), varint(kUint32Max)},  // UINT32_MAX
+          {varint(0), varint(0)},
+          {varint(1LL << 33), varint(0)},
+          {varint((1LL << 33) - 1), varint((1LL << 32) - 1)},
+      });
+  TestValidDataForType(FieldDescriptor::TYPE_FIXED64,
+                       {{u64(12345), u64(12345)},
+                        {u64(kUint64Max), u64(kUint64Max)},
+                        {u64(0), u64(0)}});
+  TestValidDataForType(FieldDescriptor::TYPE_FIXED32,
+                       {{u32(12345), u32(12345)},
+                        {u32(kUint32Max), u32(kUint32Max)},  // UINT32_MAX
+                        {u32(0), u32(0)}});
+  TestValidDataForType(FieldDescriptor::TYPE_SFIXED64,
+                       {{u64(12345), u64(12345)},
+                        {u64(kInt64Max), u64(kInt64Max)},
+                        {u64(kInt64Min), u64(kInt64Min)}});
+  TestValidDataForType(FieldDescriptor::TYPE_SFIXED32,
+                       {{u32(12345), u32(12345)},
+                        {u32(kInt32Max), u32(kInt32Max)},
+                        {u32(kInt32Min), u32(kInt32Min)}});
+  // Bools should be serialized as 0 for false and 1 for true. Parsers should
+  // also interpret any nonzero value as true.
+  TestValidDataForType(FieldDescriptor::TYPE_BOOL,
+                       {{varint(1), varint(1)},
+                        {varint(0), varint(0)},
+                        {varint(12345678), varint(1)}});
+  TestValidDataForType(FieldDescriptor::TYPE_SINT32,
+                       {{zz32(12345), zz32(12345)},
+                        {zz32(kInt32Max), zz32(kInt32Max)},
+                        {zz32(kInt32Min), zz32(kInt32Min)}});
+  TestValidDataForType(FieldDescriptor::TYPE_SINT64,
+                       {{zz64(12345), zz64(12345)},
+                        {zz64(kInt64Max), zz64(kInt64Max)},
+                        {zz64(kInt64Min), zz64(kInt64Min)}});
+  TestValidDataForType(
+      FieldDescriptor::TYPE_STRING,
+      {
+          {delim("Hello world!"), delim("Hello world!")},
+          {delim("\'\"\?\\\a\b\f\n\r\t\v"),
+           delim("\'\"\?\\\a\b\f\n\r\t\v")},       // escape
+          {delim("谷歌"), delim("谷歌")},          // Google in Chinese
+          {delim("\u8C37\u6B4C"), delim("谷歌")},  // unicode escape
+          {delim("\u8c37\u6b4c"), delim("谷歌")},  // lowercase unicode
+          {delim("\xF0\x9F\x98\x81"), delim("\xF0\x9F\x98\x81")},  // emoji: 😁
+          {delim(""), delim("")},
+      });
+  TestValidDataForType(FieldDescriptor::TYPE_BYTES,
+                       {
+                           {delim("\x01\x02"), delim("\x01\x02")},
+                           {delim("\xfb"), delim("\xfb")},
+                           {delim(""), delim("")},
+                       });
   TestValidDataForType(FieldDescriptor::TYPE_ENUM, {
                                                        {varint(0), varint(0)},
                                                        {varint(1), varint(1)},

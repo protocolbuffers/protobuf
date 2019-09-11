@@ -273,6 +273,10 @@ class PROTOBUF_EXPORT JsonStreamParser {
   // value.
   bool allow_empty_null_;
 
+  // Whether unquoted object keys can contain embedded non-alphanumeric
+  // characters when this is unambiguous for parsing.
+  bool allow_permissive_key_naming_;
+
   // Whether allows out-of-range floating point numbers or reject them.
   bool loose_float_number_conversion_;
 

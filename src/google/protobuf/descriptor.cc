@@ -802,9 +802,7 @@ DescriptorPool::Tables::Tables()
       symbols_by_name_(3),
       files_by_name_(3) {}
 
-DescriptorPool::Tables::~Tables() {
-  GOOGLE_DCHECK(checkpoints_.empty());
-}
+DescriptorPool::Tables::~Tables() { GOOGLE_DCHECK(checkpoints_.empty()); }
 
 FileDescriptorTables::FileDescriptorTables()
     // Initialize all the hash tables to start out with a small # of buckets.
@@ -1329,7 +1327,6 @@ const DescriptorPool* DescriptorPool::generated_pool() {
   DescriptorProto::descriptor();
   return pool;
 }
-
 
 
 void DescriptorPool::InternalAddGeneratedFile(
@@ -5013,11 +5010,10 @@ void DescriptorBuilder::BuildOneof(const OneofDescriptorProto& proto,
   // We need to fill these in later.
   result->field_count_ = 0;
   result->fields_ = nullptr;
+  result->options_ = nullptr;
 
   // Copy options.
-  if (!proto.has_options()) {
-    result->options_ = nullptr;  // Will set to default_instance later.
-  } else {
+  if (proto.has_options()) {
     AllocateOptions(proto.options(), result,
                     OneofDescriptorProto::kOptionsFieldNumber);
   }
@@ -5466,12 +5462,19 @@ void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
             field->number());
 
     if (extension_range == nullptr) {
-      AddError(field->full_name(), proto,
-               DescriptorPool::ErrorCollector::NUMBER,
-               strings::Substitute("\"$0\" does not declare $1 as an "
-                                   "extension number.",
-                                   field->containing_type()->full_name(),
-                                   field->number()));
+      // Set of valid extension numbers for MessageSet is different (< 2^32)
+      // from other extendees (< 2^29). If unknown deps are allowed, we may not
+      // have that information, and wrongly deem the extension as invalid.
+      auto skip_check = get_allow_unknown(pool_) &&
+                        proto.extendee() == "google.protobuf.bridge.MessageSet";
+      if (!skip_check) {
+        AddError(field->full_name(), proto,
+                 DescriptorPool::ErrorCollector::NUMBER,
+                 strings::Substitute("\"$0\" does not declare $1 as an "
+                                     "extension number.",
+                                     field->containing_type()->full_name(),
+                                     field->number()));
+      }
     }
   }
 

@@ -141,8 +141,14 @@ function doTestSignedValue(readValue,
   }
 
   // Encoding values outside the valid range should assert.
-  assertThrows(function() {writeValue.call(encoder, lowerLimit * 1.1);});
-  assertThrows(function() {writeValue.call(encoder, upperLimit * 1.1);});
+  var pastLowerLimit = lowerLimit * 1.1;
+  var pastUpperLimit = upperLimit * 1.1;
+  if (pastLowerLimit !== -Infinity) {
+    expect(() => void writeValue.call(encoder, pastLowerLimit)).toThrow();
+  }
+  if (pastUpperLimit !== Infinity) {
+    expect(() => void writeValue.call(encoder, pastUpperLimit)).toThrow();
+  }
 }
 
 describe('binaryDecoderTest', function() {

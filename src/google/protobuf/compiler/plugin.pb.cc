@@ -358,19 +358,19 @@ failure:
   cached_has_bits = _has_bits_[0];
   // optional int32 major = 1;
   if (cached_has_bits & 0x00000002u) {
-    stream->EnsureSpace(&target);
+    target = stream->EnsureSpace(target);
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt32ToArray(1, this->_internal_major(), target);
   }
 
   // optional int32 minor = 2;
   if (cached_has_bits & 0x00000004u) {
-    stream->EnsureSpace(&target);
+    target = stream->EnsureSpace(target);
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt32ToArray(2, this->_internal_minor(), target);
   }
 
   // optional int32 patch = 3;
   if (cached_has_bits & 0x00000008u) {
-    stream->EnsureSpace(&target);
+    target = stream->EnsureSpace(target);
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt32ToArray(3, this->_internal_patch(), target);
   }
 
@@ -707,7 +707,7 @@ failure:
 
   // optional .google.protobuf.compiler.Version compiler_version = 3;
   if (cached_has_bits & 0x00000002u) {
-    stream->EnsureSpace(&target);
+    target = stream->EnsureSpace(target);
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
       InternalWriteMessageToArray(
         3, _Internal::compiler_version(this), target, stream);
@@ -716,7 +716,7 @@ failure:
   // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
   for (unsigned int i = 0,
       n = static_cast<unsigned int>(this->_internal_proto_file_size()); i < n; i++) {
-    stream->EnsureSpace(&target);
+    target = stream->EnsureSpace(target);
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
       InternalWriteMessageToArray(15, this->_internal_proto_file(i), target, stream);
   }
@@ -1287,7 +1287,7 @@ failure:
   // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;
   for (unsigned int i = 0,
       n = static_cast<unsigned int>(this->_internal_file_size()); i < n; i++) {
-    stream->EnsureSpace(&target);
+    target = stream->EnsureSpace(target);
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
       InternalWriteMessageToArray(15, this->_internal_file(i), target, stream);
   }

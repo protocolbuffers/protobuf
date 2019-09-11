@@ -45,6 +45,7 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/message.h>
 #include <google/protobuf/stubs/mutex.h>
+#include <google/protobuf/reflection.h>
 #include <google/protobuf/repeated_field.h>
 
 #ifdef SWIG
@@ -158,16 +159,13 @@ class PROTOBUF_EXPORT DynamicMapSorter {
   static std::vector<const Message*> Sort(const Message& message, int map_size,
                                           const Reflection* reflection,
                                           const FieldDescriptor* field) {
-    std::vector<const Message*> result(static_cast<size_t>(map_size));
-    const RepeatedPtrField<Message>& map_field =
-        reflection->GetRepeatedPtrField<Message>(message, field);
-    size_t i = 0;
-    for (RepeatedPtrField<Message>::const_pointer_iterator it =
-             map_field.pointer_begin();
-         it != map_field.pointer_end();) {
-      result[i++] = *it++;
+    std::vector<const Message*> result;
+    result.reserve(map_size);
+    RepeatedFieldRef<Message> map_field =
+        reflection->GetRepeatedFieldRef<Message>(message, field);
+    for (auto it = map_field.begin(); it != map_field.end(); ++it) {
+      result.push_back(&*it);
     }
-    GOOGLE_DCHECK_EQ(result.size(), i);
     MapEntryMessageComparator comparator(field->message_type());
     std::stable_sort(result.begin(), result.end(), comparator);
     // Complain if the keys aren't in ascending order.

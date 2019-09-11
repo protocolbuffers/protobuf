@@ -382,8 +382,10 @@ jspb.BinaryEncoder.prototype.writeInt64String = function(value) {
  * @param {number} value The value to write.
  */
 jspb.BinaryEncoder.prototype.writeFloat = function(value) {
-  goog.asserts.assert((value >= -jspb.BinaryConstants.FLOAT32_MAX) &&
-                      (value <= jspb.BinaryConstants.FLOAT32_MAX));
+  goog.asserts.assert(
+      value === Infinity || value === -Infinity || isNaN(value) ||
+      ((value >= -jspb.BinaryConstants.FLOAT32_MAX) &&
+       (value <= jspb.BinaryConstants.FLOAT32_MAX)));
   jspb.utils.splitFloat32(value);
   this.writeUint32(jspb.utils.split64Low);
 };
@@ -395,8 +397,10 @@ jspb.BinaryEncoder.prototype.writeFloat = function(value) {
  * @param {number} value The value to write.
  */
 jspb.BinaryEncoder.prototype.writeDouble = function(value) {
-  goog.asserts.assert((value >= -jspb.BinaryConstants.FLOAT64_MAX) &&
-                      (value <= jspb.BinaryConstants.FLOAT64_MAX));
+  goog.asserts.assert(
+      value === Infinity || value === -Infinity || isNaN(value) ||
+      ((value >= -jspb.BinaryConstants.FLOAT64_MAX) &&
+       (value <= jspb.BinaryConstants.FLOAT64_MAX)));
   jspb.utils.splitFloat64(value);
   this.writeUint32(jspb.utils.split64Low);
   this.writeUint32(jspb.utils.split64High);

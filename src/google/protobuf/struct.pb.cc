@@ -699,14 +699,14 @@ failure:
 
   // .google.protobuf.NullValue null_value = 1;
   if (_internal_has_null_value()) {
-    stream->EnsureSpace(&target);
+    target = stream->EnsureSpace(target);
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteEnumToArray(
       1, this->_internal_null_value(), target);
   }
 
   // double number_value = 2;
   if (_internal_has_number_value()) {
-    stream->EnsureSpace(&target);
+    target = stream->EnsureSpace(target);
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteDoubleToArray(2, this->_internal_number_value(), target);
   }
 
@@ -722,13 +722,13 @@ failure:
 
   // bool bool_value = 4;
   if (_internal_has_bool_value()) {
-    stream->EnsureSpace(&target);
+    target = stream->EnsureSpace(target);
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteBoolToArray(4, this->_internal_bool_value(), target);
   }
 
   // .google.protobuf.Struct struct_value = 5;
   if (_internal_has_struct_value()) {
-    stream->EnsureSpace(&target);
+    target = stream->EnsureSpace(target);
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
       InternalWriteMessageToArray(
         5, _Internal::struct_value(this), target, stream);
@@ -736,7 +736,7 @@ failure:
 
   // .google.protobuf.ListValue list_value = 6;
   if (_internal_has_list_value()) {
-    stream->EnsureSpace(&target);
+    target = stream->EnsureSpace(target);
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
       InternalWriteMessageToArray(
         6, _Internal::list_value(this), target, stream);
@@ -1008,7 +1008,7 @@ failure:
   // repeated .google.protobuf.Value values = 1;
   for (unsigned int i = 0,
       n = static_cast<unsigned int>(this->_internal_values_size()); i < n; i++) {
-    stream->EnsureSpace(&target);
+    target = stream->EnsureSpace(target);
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
       InternalWriteMessageToArray(1, this->_internal_values(i), target, stream);
   }
