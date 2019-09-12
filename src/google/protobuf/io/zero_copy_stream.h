@@ -107,6 +107,7 @@
 #ifndef GOOGLE_PROTOBUF_IO_ZERO_COPY_STREAM_H__
 #define GOOGLE_PROTOBUF_IO_ZERO_COPY_STREAM_H__
 
+
 #include <string>
 
 #include <google/protobuf/stubs/common.h>

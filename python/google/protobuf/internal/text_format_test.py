@@ -868,6 +868,51 @@ class OnlyWorksWithProto2RightNowTests(TextFormatBase):
                                                  print_unknown_fields=True,
                                                  as_one_line=True))
 
+  def testPrintUnknownFieldsEmbeddedMessageInBytes(self):
+    inner_msg = unittest_pb2.TestAllTypes()
+    inner_msg.optional_int32 = 101
+    inner_msg.optional_double = 102.0
+    inner_msg.optional_string = u'hello'
+    inner_msg.optional_bytes = b'103'
+    inner_msg.optionalgroup.a = 104
+    inner_msg.optional_nested_message.bb = 105
+    inner_data = inner_msg.SerializeToString()
+    outer_message = unittest_pb2.TestAllTypes()
+    outer_message.optional_int32 = 101
+    outer_message.optional_bytes = inner_data
+    all_data = outer_message.SerializeToString()
+    empty_message = unittest_pb2.TestEmptyMessage()
+    empty_message.ParseFromString(all_data)
+
+    self.assertEqual('  1: 101\n'
+                     '  15 {\n'
+                     '    1: 101\n'
+                     '    12: 4636878028842991616\n'
+                     '    14: "hello"\n'
+                     '    15: "103"\n'
+                     '    16 {\n'
+                     '      17: 104\n'
+                     '    }\n'
+                     '    18 {\n'
+                     '      1: 105\n'
+                     '    }\n'
+                     '  }\n',
+                     text_format.MessageToString(empty_message,
+                                                 indent=2,
+                                                 print_unknown_fields=True))
+    self.assertEqual('1: 101 '
+                     '15 { '
+                     '1: 101 '
+                     '12: 4636878028842991616 '
+                     '14: "hello" '
+                     '15: "103" '
+                     '16 { 17: 104 } '
+                     '18 { 1: 105 } '
+                     '}',
+                     text_format.MessageToString(empty_message,
+                                                 print_unknown_fields=True,
+                                                 as_one_line=True))
+
   def testPrintInIndexOrder(self):
     message = unittest_pb2.TestFieldOrderings()
     # Fields are listed in index order instead of field number.

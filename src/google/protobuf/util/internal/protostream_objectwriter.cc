@@ -1315,9 +1315,8 @@ void ProtoStreamObjectWriter::PopOneElement() {
 
 bool ProtoStreamObjectWriter::IsMap(const google::protobuf::Field& field) {
   if (field.type_url().empty() ||
-      field.kind() != google::protobuf::Field_Kind_TYPE_MESSAGE ||
-      field.cardinality() !=
-          google::protobuf::Field_Cardinality_CARDINALITY_REPEATED) {
+      field.kind() != google::protobuf::Field::TYPE_MESSAGE ||
+      field.cardinality() != google::protobuf::Field::CARDINALITY_REPEATED) {
     return false;
   }
   const google::protobuf::Type* field_type =

@@ -198,7 +198,7 @@ void PrimitiveFieldGenerator::GenerateSerializeWithCachedSizesToArray(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
   format(
-      "stream->EnsureSpace(&target);\n"
+      "target = stream->EnsureSpace(target);\n"
       "target = "
       "::$proto_ns$::internal::WireFormatLite::Write$declared_type$ToArray("
       "$number$, this->_internal_$name$(), target);\n");
@@ -423,7 +423,7 @@ void RepeatedPrimitiveFieldGenerator::GenerateSerializeWithCachedSizesToArray(
   } else {
     format(
         "for (int i = 0, n = this->_internal_$name$_size(); i < n; i++) {\n"
-        "  stream->EnsureSpace(&target);\n"
+        "  target = stream->EnsureSpace(target);\n"
         "  target = ::$proto_ns$::internal::WireFormatLite::"
         "Write$declared_type$ToArray($number$, this->_internal_$name$(i), "
         "target);\n"

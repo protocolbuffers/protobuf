@@ -411,11 +411,11 @@ class CommandLineInterface::MemoryOutputStream
   virtual ~MemoryOutputStream();
 
   // implements ZeroCopyOutputStream ---------------------------------
-  virtual bool Next(void** data, int* size) { return inner_->Next(data, size); }
-  virtual void BackUp(int count) { inner_->BackUp(count); }
-  virtual int64 ByteCount() const {
-    return inner_->ByteCount();
+  bool Next(void** data, int* size) override {
+    return inner_->Next(data, size);
   }
+  void BackUp(int count) override { inner_->BackUp(count); }
+  int64_t ByteCount() const override { return inner_->ByteCount(); }
 
  private:
   // Checks to see if "filename_.meta" exists in directory_; if so, fixes the

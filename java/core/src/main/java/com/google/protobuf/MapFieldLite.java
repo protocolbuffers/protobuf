@@ -58,7 +58,7 @@ public final class MapFieldLite<K, V> extends LinkedHashMap<K, V> {
   }
 
   @SuppressWarnings({"rawtypes", "unchecked"})
-  private static final MapFieldLite EMPTY_MAP_FIELD = new MapFieldLite();
+  private static final MapFieldLite EMPTY_MAP_FIELD = new MapFieldLite<>();
 
   static {
     EMPTY_MAP_FIELD.makeImmutable();

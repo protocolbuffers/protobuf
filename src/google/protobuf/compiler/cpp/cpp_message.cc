@@ -3461,7 +3461,7 @@ void MessageGenerator::GenerateSerializeOneField(io::Printer* printer,
 
       format("if (cached_has_bits & 0x$1$u) {\n", mask);
     } else {
-      format("if (has_$1$()) {\n", FieldName(field));
+      format("if (_internal_has_$1$()) {\n", FieldName(field));
     }
 
     format.Indent();

@@ -44,6 +44,7 @@
 #ifndef GOOGLE_PROTOBUF_IO_ZERO_COPY_STREAM_IMPL_LITE_H__
 #define GOOGLE_PROTOBUF_IO_ZERO_COPY_STREAM_IMPL_LITE_H__
 
+
 #include <iosfwd>
 #include <memory>
 #include <string>
@@ -79,7 +80,7 @@ class PROTOBUF_EXPORT ArrayInputStream : public ZeroCopyInputStream {
   bool Next(const void** data, int* size) override;
   void BackUp(int count) override;
   bool Skip(int count) override;
-  int64 ByteCount() const override;
+  int64_t ByteCount() const override;
 
 
  private:
@@ -112,7 +113,7 @@ class PROTOBUF_EXPORT ArrayOutputStream : public ZeroCopyOutputStream {
   // implements ZeroCopyOutputStream ---------------------------------
   bool Next(void** data, int* size) override;
   void BackUp(int count) override;
-  int64 ByteCount() const override;
+  int64_t ByteCount() const override;
 
  private:
   uint8* const data_;     // The byte array.
@@ -146,7 +147,7 @@ class PROTOBUF_EXPORT StringOutputStream : public ZeroCopyOutputStream {
   // implements ZeroCopyOutputStream ---------------------------------
   bool Next(void** data, int* size) override;
   void BackUp(int count) override;
-  int64 ByteCount() const override;
+  int64_t ByteCount() const override;
 
  private:
   static const int kMinimumSize = 16;
@@ -218,7 +219,7 @@ class PROTOBUF_EXPORT CopyingInputStreamAdaptor : public ZeroCopyInputStream {
   bool Next(const void** data, int* size) override;
   void BackUp(int count) override;
   bool Skip(int count) override;
-  int64 ByteCount() const override;
+  int64_t ByteCount() const override;
 
  private:
   // Insures that buffer_ is not NULL.
@@ -305,7 +306,7 @@ class PROTOBUF_EXPORT CopyingOutputStreamAdaptor : public ZeroCopyOutputStream {
   // implements ZeroCopyOutputStream ---------------------------------
   bool Next(void** data, int* size) override;
   void BackUp(int count) override;
-  int64 ByteCount() const override;
+  int64_t ByteCount() const override;
 
  private:
   // Write the current buffer, if it is present.
@@ -352,7 +353,7 @@ class PROTOBUF_EXPORT LimitingInputStream : public ZeroCopyInputStream {
   bool Next(const void** data, int* size) override;
   void BackUp(int count) override;
   bool Skip(int count) override;
-  int64 ByteCount() const override;
+  int64_t ByteCount() const override;
 
 
  private:

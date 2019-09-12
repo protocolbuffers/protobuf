@@ -1357,12 +1357,6 @@ def _AddWhichOneofMethod(message_descriptor, cls):
   cls.WhichOneof = WhichOneof
 
 
-def _AddReduceMethod(cls):
-  def __reduce__(self):  # pylint: disable=invalid-name
-    return (type(self), (), self.__getstate__())
-  cls.__reduce__ = __reduce__
-
-
 def _Clear(self):
   # Clear fields.
   self._fields = {}
@@ -1425,7 +1419,6 @@ def _AddMessageMethods(message_descriptor, cls):
   _AddIsInitializedMethod(message_descriptor, cls)
   _AddMergeFromMethod(cls)
   _AddWhichOneofMethod(message_descriptor, cls)
-  _AddReduceMethod(cls)
   # Adds methods which do not depend on cls.
   cls.Clear = _Clear
   cls.UnknownFields = _UnknownFields

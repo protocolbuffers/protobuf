@@ -791,7 +791,8 @@ bool CheckAndSetString(
   } else if (index < 0) {
     reflection->SetString(message, descriptor, std::move(value_string));
   } else {
-    reflection->SetRepeatedString(message, descriptor, index, std::move(value_string));
+    reflection->SetRepeatedString(message, descriptor, index,
+                                  std::move(value_string));
   }
   return true;
 }
@@ -1777,7 +1778,7 @@ static PyObject* SerializePartialToString(
 
 // Formats proto fields for ascii dumps using python formatting functions where
 // appropriate.
-class PythonFieldValuePrinter : public TextFormat::FieldValuePrinter {
+class PythonFieldValuePrinter : public TextFormat::FastFieldValuePrinter {
  public:
   // Python has some differences from C++ when printing floating point numbers.
   //
@@ -1789,8 +1790,12 @@ class PythonFieldValuePrinter : public TextFormat::FieldValuePrinter {
   //
   // We override floating point printing with the C-API function for printing
   // Python floats to ensure consistency.
-  string PrintFloat(float value) const { return PrintDouble(value); }
-  string PrintDouble(double value) const {
+  void PrintFloat(float val,
+                  TextFormat::BaseTextGenerator* generator) const override {
+    PrintDouble(val, generator);
+  }
+  void PrintDouble(double val,
+                   TextFormat::BaseTextGenerator* generator) const override {
     // This implementation is not highly optimized (it allocates two temporary
     // Python objects) but it is simple and portable.  If this is shown to be a
     // performance bottleneck, we can optimize it, but the results will likely
@@ -1799,17 +1804,17 @@ class PythonFieldValuePrinter : public TextFormat::FieldValuePrinter {
     //
     // (Though a valid question is: do we really want to make out output
     // dependent on the Python version?)
-    ScopedPyObjectPtr py_value(PyFloat_FromDouble(value));
+    ScopedPyObjectPtr py_value(PyFloat_FromDouble(val));
     if (!py_value.get()) {
-      return string();
+      return;
     }
 
     ScopedPyObjectPtr py_str(PyObject_Str(py_value.get()));
     if (!py_str.get()) {
-      return string();
+      return;
     }
 
-    return string(PyString_AsString(py_str.get()));
+    generator->PrintString(PyString_AsString(py_str.get()));
   }
 };
 
@@ -1980,7 +1985,7 @@ static PyObject* ParseFromString(CMessage* self, PyObject* arg) {
 }
 
 static PyObject* ByteSize(CMessage* self, PyObject* args) {
-  return PyLong_FromLong(self->message->ByteSize());
+  return PyLong_FromLong(self->message->ByteSizeLong());
 }
 
 PyObject* RegisterExtension(PyObject* cls, PyObject* extension_handle) {
@@ -2433,52 +2438,6 @@ PyObject* ToUnicode(CMessage* self) {
   return decoded;
 }
 
-PyObject* Reduce(CMessage* self) {
-  ScopedPyObjectPtr constructor(reinterpret_cast<PyObject*>(Py_TYPE(self)));
-  constructor.inc();
-  ScopedPyObjectPtr args(PyTuple_New(0));
-  if (args == NULL) {
-    return NULL;
-  }
-  ScopedPyObjectPtr state(PyDict_New());
-  if (state == NULL) {
-    return  NULL;
-  }
-  string contents;
-  self->message->SerializePartialToString(&contents);
-  ScopedPyObjectPtr serialized(
-      PyBytes_FromStringAndSize(contents.c_str(), contents.size()));
-  if (serialized == NULL) {
-    return NULL;
-  }
-  if (PyDict_SetItemString(state.get(), "serialized", serialized.get()) < 0) {
-    return NULL;
-  }
-  return Py_BuildValue("OOO", constructor.get(), args.get(), state.get());
-}
-
-PyObject* SetState(CMessage* self, PyObject* state) {
-  if (!PyDict_Check(state)) {
-    PyErr_SetString(PyExc_TypeError, "state not a dict");
-    return NULL;
-  }
-  PyObject* serialized = PyDict_GetItemString(state, "serialized");
-  if (serialized == NULL) {
-    return NULL;
-  }
-#if PY_MAJOR_VERSION >= 3
-  // On Python 3, using encoding='latin1' is required for unpickling
-  // protos pickled by Python 2.
-  if (!PyBytes_Check(serialized)) {
-    serialized = PyUnicode_AsEncodedString(serialized, "latin1", NULL);
-  }
-#endif
-  if (ScopedPyObjectPtr(ParseFromString(self, serialized)) == NULL) {
-    return NULL;
-  }
-  Py_RETURN_NONE;
-}
-
 // CMessage static methods:
 PyObject* _CheckCalledFromGeneratedFile(PyObject* unused,
                                         PyObject* unused_arg) {
@@ -2539,10 +2498,6 @@ static PyGetSetDef Getters[] = {
 static PyMethodDef Methods[] = {
   { "__deepcopy__", (PyCFunction)DeepCopy, METH_VARARGS,
     "Makes a deep copy of the class." },
-  { "__reduce__", (PyCFunction)Reduce, METH_NOARGS,
-    "Outputs picklable representation of the message." },
-  { "__setstate__", (PyCFunction)SetState, METH_O,
-    "Inputs picklable representation of the message." },
   { "__unicode__", (PyCFunction)ToUnicode, METH_NOARGS,
     "Outputs a unicode representation of the message." },
   { "ByteSize", (PyCFunction)ByteSize, METH_NOARGS,

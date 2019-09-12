@@ -612,8 +612,6 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     void* elements[1];
   };
   static const size_t kRepHeaderSize = sizeof(Rep) - sizeof(void*);
-  // Contains arena ptr and the elements array. We also keep the invariant that
-  // if rep_ is NULL, then arena is NULL.
   Rep* rep_;
 
   template <typename TypeHandler>

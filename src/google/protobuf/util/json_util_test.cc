@@ -499,7 +499,7 @@ class SegmentedZeroCopyOutputStream : public io::ZeroCopyOutputStream {
         last_segment_(static_cast<char*>(NULL), 0),
         byte_count_(0) {}
 
-  virtual bool Next(void** buffer, int* length) {
+  bool Next(void** buffer, int* length) override {
     if (segments_.empty()) {
       return false;
     }
@@ -511,7 +511,7 @@ class SegmentedZeroCopyOutputStream : public io::ZeroCopyOutputStream {
     return true;
   }
 
-  virtual void BackUp(int length) {
+  void BackUp(int length) override {
     GOOGLE_CHECK(length <= last_segment_.second);
     segments_.push_front(
         Segment(last_segment_.first + last_segment_.second - length, length));
@@ -519,7 +519,7 @@ class SegmentedZeroCopyOutputStream : public io::ZeroCopyOutputStream {
     byte_count_ -= length;
   }
 
-  virtual int64 ByteCount() const { return byte_count_; }
+  int64_t ByteCount() const override { return byte_count_; }
 
  private:
   std::list<Segment> segments_;
