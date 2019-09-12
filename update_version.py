@@ -24,7 +24,7 @@ Example:
   exit(1)
 
 NEW_VERSION = sys.argv[1]
-NEW_VERSION_INFO = NEW_VERSION.split('.')
+NEW_VERSION_INFO = [int(x) for x in NEW_VERSION.split('.')]
 if len(NEW_VERSION_INFO) != 3:
   print """
 [ERROR] Version must be in the format <MAJOR>.<MINOR>.<MICRO>
@@ -99,7 +99,7 @@ def UpdateConfigure():
 
 
 def UpdateCpp():
-  cpp_version = '%s00%s00%s' % (
+  cpp_version = '%d%03d%03d' % (
     NEW_VERSION_INFO[0], NEW_VERSION_INFO[1], NEW_VERSION_INFO[2])
   def RewriteCommon(line):
     line = re.sub(
@@ -110,7 +110,7 @@ def UpdateCpp():
       r'^#define PROTOBUF_VERSION .*$',
       '#define PROTOBUF_VERSION %s' % cpp_version,
       line)
-    if NEW_VERSION_INFO[2] == '0':
+    if NEW_VERSION_INFO[2] == 0:
       line = re.sub(
         r'^#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC .*$',
         '#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC %s' % cpp_version,
@@ -134,7 +134,7 @@ def UpdateCpp():
       r'^#define PROTOBUF_VERSION .*$',
       '#define PROTOBUF_VERSION %s' % cpp_version,
       line)
-    if NEW_VERSION_INFO[2] == '0':
+    if NEW_VERSION_INFO[2] == 0:
       line = re.sub(
         r'^#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC .*$',
         '#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC %s' % cpp_version,
@@ -228,7 +228,7 @@ def UpdateJavaScript():
 
 def UpdateMakefile():
   protobuf_version_offset = 11
-  expected_major_version = '3'
+  expected_major_version = 3
   if NEW_VERSION_INFO[0] != expected_major_version:
     print """[ERROR] Major protobuf version has changed. Please update
 update_version.py to readjust the protobuf_version_offset and
@@ -237,8 +237,8 @@ always increasing.
     """
     exit(1)
 
-  protobuf_version_info = '%s:%s:0' % (
-    int(NEW_VERSION_INFO[1]) + protobuf_version_offset, NEW_VERSION_INFO[2])
+  protobuf_version_info = '%d:%d:0' % (
+    NEW_VERSION_INFO[1] + protobuf_version_offset, NEW_VERSION_INFO[2])
   RewriteTextFile('src/Makefile.am',
     lambda line : re.sub(
       r'^PROTOBUF_VERSION = .*$',
