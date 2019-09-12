@@ -8,11 +8,11 @@
   ],
   "dependencies": {},
   "devDependencies": {
-    "glob": "~6.0.4",
-    "google-closure-compiler": "~20190301.0.0",
-    "google-closure-library": "~20190301.0.0",
-    "gulp": "~4.0.1",
-    "jasmine": "~2.4.1"
+    "glob": "~7.1.4",
+    "google-closure-compiler": "~20190819.0.0",
+    "google-closure-library": "~20190819.0.0",
+    "gulp": "~4.0.2",
+    "jasmine": "~3.4.0"
   },
   "scripts": {
     "test": "node ./node_modules/gulp/bin/gulp.js test"
