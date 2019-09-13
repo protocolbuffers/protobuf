@@ -117,7 +117,7 @@ function onEof(totalRead) {
 
 // Utility function to read a buffer of N bytes.
 function readBuffer(bytes) {
-  var buf = new Buffer(bytes);
+  var buf = Buffer.from(bytes);
   var totalRead = 0;
   while (totalRead < bytes) {
     var read = 0;
@@ -167,10 +167,10 @@ function doTestIo() {
 
   var serializedResponse = response.serializeBinary();
 
-  lengthBuf = new Buffer(4);
+  lengthBuf = Buffer.alloc(4);
   lengthBuf.writeInt32LE(serializedResponse.length, 0);
   writeBuffer(lengthBuf);
-  writeBuffer(new Buffer(serializedResponse));
+  writeBuffer(Buffer.from(serializedResponse));
 
   testCount += 1
 
