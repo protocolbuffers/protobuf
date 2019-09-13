@@ -1434,6 +1434,8 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
     {zz32(12345), zz32(12345)},
     {zz32(kInt32Max), zz32(kInt32Max)},
     {zz32(kInt32Min), zz32(kInt32Min)},
+    {zz64(kInt64Max), zz32(kInt32Max)},
+    {zz64(kInt64Min), zz32(kInt32Min)},
   });
   TestValidDataForType(FieldDescriptor::TYPE_SINT64, {
     {zz64(0), zz64(0)},
@@ -1457,11 +1459,14 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
     {delim("\xfb"), delim("\xfb")},
   });
   TestValidDataForType(FieldDescriptor::TYPE_ENUM, {
-                                                       {varint(0), varint(0)},
-                                                       {varint(1), varint(1)},
-                                                       {varint(2), varint(2)},
-                                                       {varint(-1), varint(-1)},
-                                                   });
+    {varint(0), varint(0)},
+    {varint(1), varint(1)},
+    {varint(2), varint(2)},
+    {varint(-1), varint(-1)},
+    {varint(12345), varint(12345)},  // Unknown value
+    {varint(1LL << 33), varint(0)},
+    {varint((1LL << 33) - 1), varint(-1)},
+  });
   TestValidDataForRepeatedScalarMessage();
   TestValidDataForType(FieldDescriptor::TYPE_MESSAGE, {
     {delim(""), delim("")},
