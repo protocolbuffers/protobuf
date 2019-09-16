@@ -1463,7 +1463,6 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
     {varint(1), varint(1)},
     {varint(2), varint(2)},
     {varint(-1), varint(-1)},
-    {varint(12345), varint(12345)},  // Unknown value
     {varint(1LL << 33), varint(0)},
     {varint((1LL << 33) - 1), varint(-1)},
   });
