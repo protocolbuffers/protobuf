@@ -160,9 +160,6 @@ class build_py(_build_py):
 class test_conformance(_build_py):
   target = 'test_python'
   def run(self):
-    # Python 2.6 dodges these extra failures.
-    os.environ["CONFORMANCE_PYTHON_EXTRA_FAILURES"] = (
-        "--failure_list failure_list_python-post26.txt")
     cmd = 'cd ../conformance && make %s' % (test_conformance.target)
     status = subprocess.check_call(cmd, shell=True)
 
@@ -254,10 +251,7 @@ if __name__ == '__main__':
     os.environ['PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION'] = 'cpp'
 
   # Keep this list of dependencies in sync with tox.ini.
-  install_requires = ['six>=1.9']
-  if sys.version_info <= (2,7):
-    install_requires.append('ordereddict')
-    install_requires.append('unittest2')
+  install_requires = ['six>=1.9', 'setuptools']
 
   setup(
       name='protobuf',

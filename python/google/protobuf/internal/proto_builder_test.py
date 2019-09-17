@@ -32,14 +32,8 @@
 
 """Tests for google.protobuf.proto_builder."""
 
-try:
-    from collections import OrderedDict
-except ImportError:
-    from ordereddict import OrderedDict  #PY26
-try:
-  import unittest2 as unittest
-except ImportError:
-  import unittest
+from collections import OrderedDict
+import unittest
 
 from google.protobuf import descriptor_pb2
 from google.protobuf import descriptor_pool

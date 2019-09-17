@@ -42,13 +42,7 @@ Simple usage example:
 
 __author__ = 'jieluo@google.com (Jie Luo)'
 
-# pylint: disable=g-statement-before-imports,g-import-not-at-top
-try:
-  from collections import OrderedDict
-except ImportError:
-  from ordereddict import OrderedDict  # PY26
-# pylint: enable=g-statement-before-imports,g-import-not-at-top
-
+from collections import OrderedDict
 import base64
 import json
 import math

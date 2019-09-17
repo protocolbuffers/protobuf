@@ -61,10 +61,7 @@ except ImportError:
   # Won't work after python 3.8
   import collections as collections_abc
 
-try:
-  import unittest2 as unittest  # PY26
-except ImportError:
-  import unittest
+import unittest
 try:
   cmp                                   # Python 2
 except NameError:
@@ -2638,9 +2635,8 @@ class PackedFieldTest(unittest.TestCase):
     self.assertEqual(golden_data, message.SerializeToString())
 
 
-@unittest.skipIf(api_implementation.Type() != 'cpp' or
-                 sys.version_info < (2, 7),
-                 'explicit tests of the C++ implementation for PY27 and above')
+@unittest.skipIf(api_implementation.Type() != 'cpp'
+                 'explicit tests of the C++ implementation')
 @testing_refleaks.TestCase
 class OversizeProtosTest(unittest.TestCase):
 

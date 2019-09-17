@@ -52,9 +52,6 @@ class build_py(_build_py):
 if __name__ == '__main__':
   # Keep this list of dependencies in sync with tox.ini.
   install_requires = ['six>=1.9', 'setuptools']
-  if sys.version_info <= (2,7):
-    install_requires.append('ordereddict')
-    install_requires.append('unittest2')
 
   setup(
       name='protobuf',
@@ -68,7 +65,6 @@ if __name__ == '__main__':
       classifiers=[
         "Programming Language :: Python",
         "Programming Language :: Python :: 2",
-        "Programming Language :: Python :: 2.6",
         "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.3",

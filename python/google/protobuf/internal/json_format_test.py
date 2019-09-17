@@ -39,10 +39,7 @@ import math
 import struct
 import sys
 
-try:
-  import unittest2 as unittest  #PY26
-except ImportError:
-  import unittest
+import unittest
 
 from google.protobuf import any_pb2
 from google.protobuf import duration_pb2
@@ -1039,8 +1036,6 @@ class JsonFormatTest(JsonFormatBase):
         json_format.ParseError,
         'Failed to parse boolMap field: Expected "true" or "false", not null.',
         json_format.Parse, text, message)
-    if sys.version_info < (2, 7):
-      return
     text = r'{"stringMap": {"a": 3, "\u0061": 2}}'
     self.assertRaisesRegexp(
         json_format.ParseError,

@@ -42,10 +42,7 @@ import textwrap
 import six
 
 # pylint: disable=g-import-not-at-top
-try:
-  import unittest2 as unittest  # PY26
-except ImportError:
-  import unittest
+import unittest
 
 from google.protobuf import any_pb2
 from google.protobuf import any_test_pb2
