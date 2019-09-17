@@ -288,23 +288,24 @@ def UpdatePhp():
         print ('[WARNING] Version %s already exists in the change log.'
           % NEW_VERSION)
         return
-    changelog.appendChild(document.createTextNode(' '))
-    release = CreateNode('release', 2, [
-        CreateNode('version', 3, [
-          FindAndClone(version, 'release'),
-          FindAndClone(version, 'api')
-        ]),
-        CreateNode('stability', 3, [
-          FindAndClone(stability, 'release'),
-          FindAndClone(stability, 'api')
-        ]),
-        FindAndClone(root, 'date'),
-        FindAndClone(root, 'time'),
-        FindAndClone(root, 'license'),
-        FindAndClone(root, 'notes')
-      ])
-    changelog.appendChild(release)
-    changelog.appendChild(document.createTextNode('\n '))
+    if RC_VERSION != 0:
+      changelog.appendChild(document.createTextNode(' '))
+      release = CreateNode('release', 2, [
+          CreateNode('version', 3, [
+            FindAndClone(version, 'release'),
+            FindAndClone(version, 'api')
+          ]),
+          CreateNode('stability', 3, [
+            FindAndClone(stability, 'release'),
+            FindAndClone(stability, 'api')
+          ]),
+          FindAndClone(root, 'date'),
+          FindAndClone(root, 'time'),
+          FindAndClone(root, 'license'),
+          FindAndClone(root, 'notes')
+        ])
+      changelog.appendChild(release)
+      changelog.appendChild(document.createTextNode('\n '))
   RewriteXml('php/ext/google/protobuf/package.xml', Callback)
   RewriteTextFile('php/ext/google/protobuf/protobuf.h',
     lambda line : re.sub(
