@@ -10,6 +10,7 @@ Recommended.Proto3.ProtobufInput.ValidDataScalarBinary.BOOL[0].ProtobufOutput
 Recommended.Proto3.ProtobufInput.ValidDataScalarBinary.BYTES[0].ProtobufOutput
 Recommended.Proto3.ProtobufInput.ValidDataScalarBinary.DOUBLE[0].ProtobufOutput
 Recommended.Proto3.ProtobufInput.ValidDataScalarBinary.ENUM[0].ProtobufOutput
+Recommended.Proto3.ProtobufInput.ValidDataScalarBinary.ENUM[4].ProtobufOutput
 Recommended.Proto3.ProtobufInput.ValidDataScalarBinary.FIXED32[0].ProtobufOutput
 Recommended.Proto3.ProtobufInput.ValidDataScalarBinary.FIXED64[0].ProtobufOutput
 Recommended.Proto3.ProtobufInput.ValidDataScalarBinary.FLOAT[0].ProtobufOutput
