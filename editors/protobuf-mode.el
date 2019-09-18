@@ -186,6 +186,16 @@
 (or protobuf-mode-map
     (setq protobuf-mode-map (c-make-inherited-keymap)))
 
+(defvar protobuf-imenu-generic-expression
+  `(("Message"
+     ,(rx bol (* space) bow "message" eow (+ space)
+          (group alpha (+ (any alpha num "_"))))
+     1)
+    ("Enum"
+     ,(rx bol (* space) bow "enum" eow (+ space)
+          (group alpha (+ (any alpha num "_"))))
+     1)))
+
 (easy-menu-define protobuf-menu protobuf-mode-map
   "Protocol Buffers Mode Commands"
   (cons "Protocol Buffers" (c-lang-const c-mode-menu protobuf)))
@@ -208,6 +218,7 @@ Key bindings:
         mode-name "Protocol-Buffers"
         local-abbrev-table protobuf-mode-abbrev-table
         abbrev-mode t)
+  (setq-local imenu-generic-expression protobuf-imenu-generic-expression)
   (use-local-map protobuf-mode-map)
   (c-initialize-cc-mode t)
   (if (fboundp 'c-make-emacs-variables-local)
