@@ -10124,6 +10124,10 @@ static bool isleap(int year) {
   return (year % 4) == 0 && (year % 100 != 0 || (year % 400) == 0);
 }
 
+static int isleap_count(int year) {
+  return year / 4 - year / 100 + year/ 400;
+}
+
 const unsigned short int __mon_yday[2][13] = {
     /* Normal years.  */
     { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365 },
@@ -10134,7 +10138,7 @@ const unsigned short int __mon_yday[2][13] = {
 int64_t epoch(int year, int yday, int hour, int min, int sec) {
   int64_t years = year - EPOCH_YEAR;
 
-  int64_t leap_days = years / 4 - years / 100 + years / 400;
+  int64_t leap_days = isleap_count(year - 1) - isleap_count(EPOCH_YEAR - 1);
 
   int64_t days = years * 365 + yday + leap_days;
   int64_t hours = days * 24 + hour;
