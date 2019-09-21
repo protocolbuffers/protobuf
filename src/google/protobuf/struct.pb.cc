@@ -312,7 +312,7 @@ failure:
     struct Utf8Check {
       static void Check(ConstPtr p) {
         ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
-          p->first.data(), static_cast<int>(p->first.length()),
+          p->first.data(), p->first.length(),
           ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
           "google.protobuf.Struct.FieldsEntry.key");
       }
@@ -713,7 +713,7 @@ failure:
   // string string_value = 3;
   if (_internal_has_string_value()) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
-      this->_internal_string_value().data(), static_cast<int>(this->_internal_string_value().length()),
+      this->_internal_string_value().data(), this->_internal_string_value().length(),
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.Value.string_value");
     target = stream->WriteStringMaybeAliased(

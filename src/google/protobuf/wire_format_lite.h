@@ -325,7 +325,7 @@ class PROTOBUF_EXPORT WireFormatLite {
   };
 
   // Returns true if the data is valid UTF-8.
-  static bool VerifyUtf8String(const char* data, int size, Operation op,
+  static bool VerifyUtf8String(const char* data, size_t size, Operation op,
                                const char* field_name);
 
   template <typename MessageType>
