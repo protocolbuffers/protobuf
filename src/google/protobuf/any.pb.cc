@@ -221,7 +221,7 @@ failure:
   // string type_url = 1;
   if (this->type_url().size() > 0) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
-      this->_internal_type_url().data(), static_cast<int>(this->_internal_type_url().length()),
+      this->_internal_type_url().data(), this->_internal_type_url().length(),
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.Any.type_url");
     target = stream->WriteStringMaybeAliased(

@@ -158,7 +158,7 @@ util::Status JsonStreamParser::Parse(StringPiece json) {
   }
 
   // Find the structurally valid UTF8 prefix and parse only that.
-  int n = internal::UTF8SpnStructurallyValid(chunk);
+  size_t n = internal::UTF8SpnStructurallyValid(chunk);
   if (n > 0) {
     util::Status status = ParseChunk(chunk.substr(0, n));
 

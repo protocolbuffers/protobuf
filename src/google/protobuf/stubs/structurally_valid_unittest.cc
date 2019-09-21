@@ -47,7 +47,7 @@ TEST(StructurallyValidTest, ValidUTF8String) {
   EXPECT_TRUE(IsStructurallyValidUTF8(valid_str.data(),
                                       valid_str.size()));
   // Additional check for pointer alignment
-  for (int i = 1; i < 8; ++i) {
+  for (size_t i = 1; i < 8; ++i) {
     EXPECT_TRUE(IsStructurallyValidUTF8(valid_str.data() + i,
                                         valid_str.size() - i));
   }
@@ -58,7 +58,7 @@ TEST(StructurallyValidTest, InvalidUTF8String) {
   EXPECT_FALSE(IsStructurallyValidUTF8(invalid_str.data(),
                                        invalid_str.size()));
   // Additional check for pointer alignment
-  for (int i = 1; i < 8; ++i) {
+  for (size_t i = 1; i < 8; ++i) {
     EXPECT_FALSE(IsStructurallyValidUTF8(invalid_str.data() + i,
                                          invalid_str.size() - i));
   }

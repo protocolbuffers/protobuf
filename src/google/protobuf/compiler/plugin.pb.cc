@@ -377,7 +377,7 @@ failure:
   // optional string suffix = 4;
   if (cached_has_bits & 0x00000001u) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::VerifyUTF8StringNamedField(
-      this->_internal_suffix().data(), static_cast<int>(this->_internal_suffix().length()),
+      this->_internal_suffix().data(), this->_internal_suffix().length(),
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::SERIALIZE,
       "google.protobuf.compiler.Version.suffix");
     target = stream->WriteStringMaybeAliased(
@@ -688,7 +688,7 @@ failure:
   for (int i = 0, n = this->_internal_file_to_generate_size(); i < n; i++) {
     const auto& s = this->_internal_file_to_generate(i);
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::VerifyUTF8StringNamedField(
-      s.data(), static_cast<int>(s.length()),
+      s.data(), s.length(),
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::SERIALIZE,
       "google.protobuf.compiler.CodeGeneratorRequest.file_to_generate");
     target = stream->WriteString(1, s, target);
@@ -698,7 +698,7 @@ failure:
   // optional string parameter = 2;
   if (cached_has_bits & 0x00000001u) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::VerifyUTF8StringNamedField(
-      this->_internal_parameter().data(), static_cast<int>(this->_internal_parameter().length()),
+      this->_internal_parameter().data(), this->_internal_parameter().length(),
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::SERIALIZE,
       "google.protobuf.compiler.CodeGeneratorRequest.parameter");
     target = stream->WriteStringMaybeAliased(
@@ -1001,7 +1001,7 @@ failure:
   // optional string name = 1;
   if (cached_has_bits & 0x00000001u) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::VerifyUTF8StringNamedField(
-      this->_internal_name().data(), static_cast<int>(this->_internal_name().length()),
+      this->_internal_name().data(), this->_internal_name().length(),
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::SERIALIZE,
       "google.protobuf.compiler.CodeGeneratorResponse.File.name");
     target = stream->WriteStringMaybeAliased(
@@ -1011,7 +1011,7 @@ failure:
   // optional string insertion_point = 2;
   if (cached_has_bits & 0x00000002u) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::VerifyUTF8StringNamedField(
-      this->_internal_insertion_point().data(), static_cast<int>(this->_internal_insertion_point().length()),
+      this->_internal_insertion_point().data(), this->_internal_insertion_point().length(),
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::SERIALIZE,
       "google.protobuf.compiler.CodeGeneratorResponse.File.insertion_point");
     target = stream->WriteStringMaybeAliased(
@@ -1021,7 +1021,7 @@ failure:
   // optional string content = 15;
   if (cached_has_bits & 0x00000004u) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::VerifyUTF8StringNamedField(
-      this->_internal_content().data(), static_cast<int>(this->_internal_content().length()),
+      this->_internal_content().data(), this->_internal_content().length(),
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::SERIALIZE,
       "google.protobuf.compiler.CodeGeneratorResponse.File.content");
     target = stream->WriteStringMaybeAliased(
@@ -1277,7 +1277,7 @@ failure:
   // optional string error = 1;
   if (cached_has_bits & 0x00000001u) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::VerifyUTF8StringNamedField(
-      this->_internal_error().data(), static_cast<int>(this->_internal_error().length()),
+      this->_internal_error().data(), this->_internal_error().length(),
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::SERIALIZE,
       "google.protobuf.compiler.CodeGeneratorResponse.error");
     target = stream->WriteStringMaybeAliased(
