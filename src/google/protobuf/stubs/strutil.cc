@@ -81,21 +81,6 @@ inline bool isprint(char c) {
 }
 
 // ----------------------------------------------------------------------
-// StripString
-//    Replaces any occurrence of the character 'remove' (or the characters
-//    in 'remove') with the character 'replacewith'.
-// ----------------------------------------------------------------------
-void StripString(string* s, const char* remove, char replacewith) {
-  const char * str_start = s->c_str();
-  const char * str = str_start;
-  for (str = strpbrk(str, remove);
-       str != nullptr;
-       str = strpbrk(str + 1, remove)) {
-    (*s)[str - str_start] = replacewith;
-  }
-}
-
-// ----------------------------------------------------------------------
 // ReplaceCharacters
 //    Replaces any occurrence of the character 'remove' (or the characters
 //    in 'remove') with the character 'replacewith'.
