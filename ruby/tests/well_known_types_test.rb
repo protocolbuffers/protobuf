@@ -25,6 +25,11 @@ class TestWellKnownTypes < Test::Unit::TestCase
     ts.from_time(time)
     assert_equal 654321321, ts.nanos
     assert_equal time, ts.to_time
+
+    timestamp = Google::Protobuf::Timestamp.from_time(Time.at(123456, Rational(654321321, 1000)))
+    ts.from_time(time)
+    assert_equal 654321321, timestamp.nanos
+    assert_equal ts, timestamp
   end
 
   def test_duration
