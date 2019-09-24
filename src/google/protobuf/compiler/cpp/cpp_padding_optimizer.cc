@@ -43,15 +43,15 @@ namespace {
 // fields that are grouped together because they have compatible alignment, and
 // a preferred location in the final field ordering.
 class FieldGroup {
- public:
+public:
   FieldGroup() : preferred_location_(0) {}
 
   // A group with a single field.
-  FieldGroup(float preferred_location, const FieldDescriptor* field)
+  FieldGroup(float preferred_location, const FieldDescriptor *field)
       : preferred_location_(preferred_location), fields_(1, field) {}
 
   // Append the fields in 'other' to this group.
-  void Append(const FieldGroup& other) {
+  void Append(const FieldGroup &other) {
     if (other.fields_.empty()) {
       return;
     }
@@ -64,26 +64,26 @@ class FieldGroup {
   }
 
   void SetPreferredLocation(float location) { preferred_location_ = location; }
-  const std::vector<const FieldDescriptor*>& fields() const { return fields_; }
+  const std::vector<const FieldDescriptor *> &fields() const { return fields_; }
 
   // FieldGroup objects sort by their preferred location.
-  bool operator<(const FieldGroup& other) const {
+  bool operator<(const FieldGroup &other) const {
     return preferred_location_ < other.preferred_location_;
   }
 
- private:
+private:
   // "preferred_location_" is an estimate of where this group should go in the
   // final list of fields.  We compute this by taking the average index of each
   // field in this group in the original ordering of fields.  This is very
   // approximate, but should put this group close to where its member fields
   // originally went.
   float preferred_location_;
-  std::vector<const FieldDescriptor*> fields_;
+  std::vector<const FieldDescriptor *> fields_;
   // We rely on the default copy constructor and operator= so this type can be
   // used in a vector.
 };
 
-}  // namespace
+} // namespace
 
 // Reorder 'fields' so that if the fields are output into a c++ class in the new
 // order, fields of similar family (see below) are together and within each
@@ -118,7 +118,7 @@ class FieldGroup {
 //
 // OTHER these fields are initialized one-by-one.
 void PaddingOptimizer::OptimizeLayout(
-    std::vector<const FieldDescriptor*>* fields, const Options& options) {
+    std::vector<const FieldDescriptor *> *fields, const Options &options) {
   // The sorted numeric order of Family determines the declaration order in the
   // memory layout.
   enum Family {
@@ -138,7 +138,7 @@ void PaddingOptimizer::OptimizeLayout(
   std::vector<FieldGroup> aligned_to_4[kMaxFamily];
   std::vector<FieldGroup> aligned_to_8[kMaxFamily];
   for (int i = 0; i < fields->size(); ++i) {
-    const FieldDescriptor* field = (*fields)[i];
+    const FieldDescriptor *field = (*fields)[i];
 
     Family f = OTHER;
     if (field->is_repeated()) {
@@ -156,18 +156,19 @@ void PaddingOptimizer::OptimizeLayout(
 
     const int j = field->number();
     switch (EstimateAlignmentSize(field)) {
-      case 1:
-        aligned_to_1[f].push_back(FieldGroup(j, field));
-        break;
-      case 4:
-        aligned_to_4[f].push_back(FieldGroup(j, field));
-        break;
-      case 8:
-        aligned_to_8[f].push_back(FieldGroup(j, field));
-        break;
-      default:
-        GOOGLE_LOG(FATAL) << "Unknown alignment size " << EstimateAlignmentSize(field)
-                   << "for a field " << field->full_name() << ".";
+    case 1:
+      aligned_to_1[f].push_back(FieldGroup(j, field));
+      break;
+    case 4:
+      aligned_to_4[f].push_back(FieldGroup(j, field));
+      break;
+    case 8:
+      aligned_to_8[f].push_back(FieldGroup(j, field));
+      break;
+    default:
+      GOOGLE_LOG(FATAL) << "Unknown alignment size "
+                        << EstimateAlignmentSize(field) << "for a field "
+                        << field->full_name() << ".";
     }
   }
 
@@ -221,7 +222,7 @@ void PaddingOptimizer::OptimizeLayout(
   }
 }
 
-}  // namespace cpp
-}  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+} // namespace cpp
+} // namespace compiler
+} // namespace protobuf
+} // namespace google

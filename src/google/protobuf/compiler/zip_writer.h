@@ -60,23 +60,23 @@
 
 // Author: kenton@google.com (Kenton Varda)
 
-#include <vector>
-#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/io/zero_copy_stream.h>
+#include <google/protobuf/stubs/common.h>
+#include <vector>
 
 namespace google {
 namespace protobuf {
 namespace compiler {
 
 class ZipWriter {
- public:
-  ZipWriter(io::ZeroCopyOutputStream* raw_output);
+public:
+  ZipWriter(io::ZeroCopyOutputStream *raw_output);
   ~ZipWriter();
 
-  bool Write(const std::string& filename, const std::string& contents);
+  bool Write(const std::string &filename, const std::string &contents);
   bool WriteDirectory();
 
- private:
+private:
   struct FileInfo {
     std::string name;
     uint32 offset;
@@ -84,10 +84,10 @@ class ZipWriter {
     uint32 crc32;
   };
 
-  io::ZeroCopyOutputStream* raw_output_;
+  io::ZeroCopyOutputStream *raw_output_;
   std::vector<FileInfo> files_;
 };
 
-}  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+} // namespace compiler
+} // namespace protobuf
+} // namespace google

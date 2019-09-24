@@ -36,8 +36,8 @@
 #include <sstream>
 
 #include <google/protobuf/test_util.h>
-#include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/testing/googletest.h>
+#include <google/protobuf/unittest.pb.h>
 #include <gtest/gtest.h>
 
 namespace google {
@@ -63,25 +63,25 @@ TEST(DelimitedMessageUtilTest, DelimitedMessages) {
 
     protobuf_unittest::TestAllTypes message1;
     clean_eof = true;
-    EXPECT_TRUE(ParseDelimitedFromZeroCopyStream(&message1,
-        &zstream, &clean_eof));
+    EXPECT_TRUE(
+        ParseDelimitedFromZeroCopyStream(&message1, &zstream, &clean_eof));
     EXPECT_FALSE(clean_eof);
     TestUtil::ExpectAllFieldsSet(message1);
 
     protobuf_unittest::TestPackedTypes message2;
     clean_eof = true;
-    EXPECT_TRUE(ParseDelimitedFromZeroCopyStream(&message2,
-        &zstream, &clean_eof));
+    EXPECT_TRUE(
+        ParseDelimitedFromZeroCopyStream(&message2, &zstream, &clean_eof));
     EXPECT_FALSE(clean_eof);
     TestUtil::ExpectPackedFieldsSet(message2);
 
     clean_eof = false;
-    EXPECT_FALSE(ParseDelimitedFromZeroCopyStream(&message2,
-        &zstream, &clean_eof));
+    EXPECT_FALSE(
+        ParseDelimitedFromZeroCopyStream(&message2, &zstream, &clean_eof));
     EXPECT_TRUE(clean_eof);
   }
 }
 
-}  // namespace util
-}  // namespace protobuf
-}  // namespace google
+} // namespace util
+} // namespace protobuf
+} // namespace google

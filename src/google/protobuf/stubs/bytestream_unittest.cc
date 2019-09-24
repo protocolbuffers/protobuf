@@ -30,9 +30,9 @@
 
 #include <google/protobuf/stubs/bytestream.h>
 
+#include <algorithm>
 #include <stdio.h>
 #include <string.h>
-#include <algorithm>
 
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
@@ -46,17 +46,15 @@ namespace {
 // contains multiple fragments.  ArrayByteSource returns the entire array in
 // one fragment.
 class MockByteSource : public ByteSource {
- public:
+public:
   MockByteSource(StringPiece data, int block_size)
-    : data_(data), block_size_(block_size) {}
+      : data_(data), block_size_(block_size) {}
 
   size_t Available() const { return data_.size(); }
-  StringPiece Peek() {
-    return data_.substr(0, block_size_);
-  }
+  StringPiece Peek() { return data_.substr(0, block_size_); }
   void Skip(size_t n) { data_.remove_prefix(n); }
 
- private:
+private:
   StringPiece data_;
   int block_size_;
 };
@@ -120,15 +118,16 @@ TEST(ByteSourceTest, CopyToStringByteSink) {
 
 // Verify that ByteSink is subclassable and Flush() overridable.
 class FlushingByteSink : public StringByteSink {
- public:
-  explicit FlushingByteSink(string* dest) : StringByteSink(dest) {}
+public:
+  explicit FlushingByteSink(string *dest) : StringByteSink(dest) {}
   virtual void Flush() { Append("z", 1); }
- private:
+
+private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FlushingByteSink);
 };
 
 // Write and Flush via the ByteSink superclass interface.
-void WriteAndFlush(ByteSink* s) {
+void WriteAndFlush(ByteSink *s) {
   s->Append("abc", 3);
   s->Flush();
 }
@@ -140,7 +139,7 @@ TEST(ByteSinkTest, Flush) {
   EXPECT_STREQ("abcz", str.c_str());
 }
 
-}  // namespace
-}  // namespace strings
-}  // namespace protobuf
-}  // namespace google
+} // namespace
+} // namespace strings
+} // namespace protobuf
+} // namespace google

@@ -35,8 +35,8 @@
 #include <string>
 
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/status.h>
+#include <google/protobuf/stubs/strutil.h>
 
 #include <google/protobuf/port_def.inc>
 
@@ -68,18 +68,16 @@ class ObjectWriter;
 // This parser is thread-compatible as long as only one thread is calling a
 // Parse() method at a time.
 class PROTOBUF_EXPORT JsonStreamParser {
- public:
+public:
   // Creates a JsonStreamParser that will write to the given ObjectWriter.
-  explicit JsonStreamParser(ObjectWriter* ow);
+  explicit JsonStreamParser(ObjectWriter *ow);
   virtual ~JsonStreamParser();
 
   // Parses a UTF-8 encoded JSON string from a StringPiece.
   util::Status Parse(StringPiece json);
 
-
   // Finish parsing the JSON string.
   util::Status FinishParse();
-
 
   // Sets the max recursion depth of JSON message to be deserialized. JSON
   // messages over this depth will fail to be deserialized.
@@ -88,34 +86,34 @@ class PROTOBUF_EXPORT JsonStreamParser {
     max_recursion_depth_ = max_depth;
   }
 
- private:
+private:
   friend class JsonStreamParserTest;
   // Return the current recursion depth.
   int recursion_depth() { return recursion_depth_; }
 
   enum TokenType {
-    BEGIN_STRING,     // " or '
-    BEGIN_NUMBER,     // - or digit
-    BEGIN_TRUE,       // true
-    BEGIN_FALSE,      // false
-    BEGIN_NULL,       // null
-    BEGIN_OBJECT,     // {
-    END_OBJECT,       // }
-    BEGIN_ARRAY,      // [
-    END_ARRAY,        // ]
-    ENTRY_SEPARATOR,  // :
-    VALUE_SEPARATOR,  // ,
-    BEGIN_KEY,        // letter, _, $ or digit.  Must begin with non-digit
-    UNKNOWN           // Unknown token or we ran out of the stream.
+    BEGIN_STRING,    // " or '
+    BEGIN_NUMBER,    // - or digit
+    BEGIN_TRUE,      // true
+    BEGIN_FALSE,     // false
+    BEGIN_NULL,      // null
+    BEGIN_OBJECT,    // {
+    END_OBJECT,      // }
+    BEGIN_ARRAY,     // [
+    END_ARRAY,       // ]
+    ENTRY_SEPARATOR, // :
+    VALUE_SEPARATOR, // ,
+    BEGIN_KEY,       // letter, _, $ or digit.  Must begin with non-digit
+    UNKNOWN          // Unknown token or we ran out of the stream.
   };
 
   enum ParseType {
-    VALUE,        // Expects a {, [, true, false, null, string or number
-    OBJ_MID,      // Expects a ',' or }
-    ENTRY,        // Expects a key or }
-    ENTRY_MID,    // Expects a :
-    ARRAY_VALUE,  // Expects a value or ]
-    ARRAY_MID     // Expects a ',' or ]
+    VALUE,       // Expects a {, [, true, false, null, string or number
+    OBJ_MID,     // Expects a ',' or }
+    ENTRY,       // Expects a key or }
+    ENTRY_MID,   // Expects a :
+    ARRAY_VALUE, // Expects a value or ]
+    ARRAY_MID    // Expects a ',' or ]
   };
 
   // Holds the result of parsing a number
@@ -161,11 +159,11 @@ class PROTOBUF_EXPORT JsonStreamParser {
   // be parsed. This method will try to parse into a uint64, int64, or double
   // based on whether the number was positive or negative or had a decimal
   // component.
-  util::Status ParseNumberHelper(NumberResult* result);
+  util::Status ParseNumberHelper(NumberResult *result);
 
   // Parse a number as double into a NumberResult.
-  util::Status ParseDoubleHelper(const std::string& number,
-                                   NumberResult* result);
+  util::Status ParseDoubleHelper(const std::string &number,
+                                 NumberResult *result);
 
   // Handles a { during parsing of a value.
   util::Status HandleBeginObject();
@@ -223,7 +221,7 @@ class PROTOBUF_EXPORT JsonStreamParser {
   TokenType GetNextTokenType();
 
   // The object writer to write parse events to.
-  ObjectWriter* ow_;
+  ObjectWriter *ow_;
 
   // The stack of parsing we still need to do. When the stack runs empty we will
   // have parsed a single value from the root (e.g. an object or list).
@@ -289,11 +287,11 @@ class PROTOBUF_EXPORT JsonStreamParser {
   GOOGLE_DISALLOW_IMPLICIT_CONSTRUCTORS(JsonStreamParser);
 };
 
-}  // namespace converter
-}  // namespace util
-}  // namespace protobuf
-}  // namespace google
+} // namespace converter
+} // namespace util
+} // namespace protobuf
+} // namespace google
 
 #include <google/protobuf/port_undef.inc>
 
-#endif  // GOOGLE_PROTOBUF_UTIL_CONVERTER_JSON_STREAM_PARSER_H__
+#endif // GOOGLE_PROTOBUF_UTIL_CONVERTER_JSON_STREAM_PARSER_H__

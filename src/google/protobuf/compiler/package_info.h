@@ -59,5 +59,5 @@ namespace protobuf {
 //   which you will have to link against.
 namespace compiler {}
 
-}  // namespace protobuf
-}  // namespace google
+} // namespace protobuf
+} // namespace google

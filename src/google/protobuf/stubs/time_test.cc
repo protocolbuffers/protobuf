@@ -248,14 +248,15 @@ TEST(DateTimeTest, ParseString) {
   EXPECT_EQ("1970-01-01T00:00:00.010Z", FormatTime(seconds, nanos));
   ASSERT_TRUE(ParseTime("1970-01-01T00:00:00.00001-08:00", &seconds, &nanos));
   EXPECT_EQ("1970-01-01T08:00:00.000010Z", FormatTime(seconds, nanos));
-  ASSERT_TRUE(ParseTime("1970-01-01T00:00:00.00000001+08:00", &seconds, &nanos));
+  ASSERT_TRUE(
+      ParseTime("1970-01-01T00:00:00.00000001+08:00", &seconds, &nanos));
   EXPECT_EQ("1969-12-31T16:00:00.000000010Z", FormatTime(seconds, nanos));
   // Fractional parts less than 1 nanosecond will be ignored.
   ASSERT_TRUE(ParseTime("1970-01-01T00:00:00.0123456789Z", &seconds, &nanos));
   EXPECT_EQ("1970-01-01T00:00:00.012345678Z", FormatTime(seconds, nanos));
 }
 
-}  // namespace
-}  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+} // namespace
+} // namespace internal
+} // namespace protobuf
+} // namespace google

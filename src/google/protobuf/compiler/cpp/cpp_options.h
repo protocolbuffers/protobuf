@@ -43,8 +43,8 @@ class AccessInfoMap;
 namespace cpp {
 
 enum class EnforceOptimizeMode {
-  kNoEnforcement,  // Use the runtime specified by the file specific options.
-  kSpeed,          // This is the full runtime.
+  kNoEnforcement, // Use the runtime specified by the file specific options.
+  kSpeed,         // This is the full runtime.
   kLiteRuntime,
 };
 
@@ -66,12 +66,12 @@ struct Options {
   int num_cc_files = 0;
   std::string annotation_pragma_name;
   std::string annotation_guard_name;
-  const AccessInfoMap* access_info_map = nullptr;
+  const AccessInfoMap *access_info_map = nullptr;
 };
 
-}  // namespace cpp
-}  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+} // namespace cpp
+} // namespace compiler
+} // namespace protobuf
+} // namespace google
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_CPP_OPTIONS_H__
+#endif // GOOGLE_PROTOBUF_COMPILER_CPP_OPTIONS_H__

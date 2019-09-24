@@ -44,7 +44,7 @@ namespace protobuf {
 // improve performance.  However, since it's totally non-portable it has no
 // place in open source code.  Feel free to fill this function in with your
 // own disgusting hack if you want the perf boost.
-inline void STLStringResizeUninitialized(string* s, size_t new_size) {
+inline void STLStringResizeUninitialized(string *s, size_t new_size) {
   s->resize(new_size);
 }
 
@@ -60,12 +60,12 @@ inline void STLStringResizeUninitialized(string* s, size_t new_size) {
 // (http://www.open-std.org/JTC1/SC22/WG21/docs/lwg-active.html#530)
 // proposes this as the method. According to Matt Austern, this should
 // already work on all current implementations.
-inline char* string_as_array(string* str) {
+inline char *string_as_array(string *str) {
   // DO NOT USE const_cast<char*>(str->data())! See the unittest for why.
   return str->empty() ? nullptr : &*str->begin();
 }
 
-}  // namespace protobuf
-}  // namespace google
+} // namespace protobuf
+} // namespace google
 
-#endif  // GOOGLE_PROTOBUF_STUBS_STL_UTIL_H__
+#endif // GOOGLE_PROTOBUF_STUBS_STL_UTIL_H__

@@ -55,29 +55,30 @@ namespace unittest_import = ::protobuf_unittest_import;
 namespace TestUtil {
 
 class ReflectionTester {
- public:
+public:
   // base_descriptor must be a descriptor for TestAllTypes or
   // TestAllExtensions.  In the former case, ReflectionTester fetches from
   // it the FieldDescriptors needed to use the reflection interface.  In
   // the latter case, ReflectionTester searches for extension fields in
   // its file.
-  explicit ReflectionTester(const Descriptor* base_descriptor);
+  explicit ReflectionTester(const Descriptor *base_descriptor);
 
-  void SetAllFieldsViaReflection(Message* message);
-  void ModifyRepeatedFieldsViaReflection(Message* message);
-  void ExpectAllFieldsSetViaReflection(const Message& message);
-  void ExpectClearViaReflection(const Message& message);
+  void SetAllFieldsViaReflection(Message *message);
+  void ModifyRepeatedFieldsViaReflection(Message *message);
+  void ExpectAllFieldsSetViaReflection(const Message &message);
+  void ExpectClearViaReflection(const Message &message);
 
-  void SetPackedFieldsViaReflection(Message* message);
-  void ExpectPackedFieldsSetViaReflection(const Message& message);
+  void SetPackedFieldsViaReflection(Message *message);
+  void ExpectPackedFieldsSetViaReflection(const Message &message);
 
-  void RemoveLastRepeatedsViaReflection(Message* message);
-  void ReleaseLastRepeatedsViaReflection(Message* message,
+  void RemoveLastRepeatedsViaReflection(Message *message);
+  void ReleaseLastRepeatedsViaReflection(Message *message,
                                          bool expect_extensions_notnull);
-  void SwapRepeatedsViaReflection(Message* message);
-  void SetAllocatedOptionalMessageFieldsToNullViaReflection(Message* message);
-  static void SetAllocatedOptionalMessageFieldsToMessageViaReflection(
-      Message* from_message, Message* to_message);
+  void SwapRepeatedsViaReflection(Message *message);
+  void SetAllocatedOptionalMessageFieldsToNullViaReflection(Message *message);
+  static void
+  SetAllocatedOptionalMessageFieldsToMessageViaReflection(Message *from_message,
+                                                          Message *to_message);
 
   enum MessageReleaseState {
     IS_NULL,
@@ -85,50 +86,50 @@ class ReflectionTester {
     NOT_NULL,
   };
   void ExpectMessagesReleasedViaReflection(
-      Message* message, MessageReleaseState expected_release_state);
+      Message *message, MessageReleaseState expected_release_state);
 
   // Set and check functions for TestOneof2 messages. No need to construct
   // the ReflectionTester by TestAllTypes nor TestAllExtensions.
-  static void SetOneofViaReflection(Message* message);
-  static void ExpectOneofSetViaReflection(const Message& message);
+  static void SetOneofViaReflection(Message *message);
+  static void ExpectOneofSetViaReflection(const Message &message);
 
- private:
-  const FieldDescriptor* F(const std::string& name);
+private:
+  const FieldDescriptor *F(const std::string &name);
 
-  const Descriptor* base_descriptor_;
+  const Descriptor *base_descriptor_;
 
-  const FieldDescriptor* group_a_;
-  const FieldDescriptor* repeated_group_a_;
-  const FieldDescriptor* nested_b_;
-  const FieldDescriptor* foreign_c_;
-  const FieldDescriptor* import_d_;
-  const FieldDescriptor* import_e_;
+  const FieldDescriptor *group_a_;
+  const FieldDescriptor *repeated_group_a_;
+  const FieldDescriptor *nested_b_;
+  const FieldDescriptor *foreign_c_;
+  const FieldDescriptor *import_d_;
+  const FieldDescriptor *import_e_;
 
-  const EnumValueDescriptor* nested_foo_;
-  const EnumValueDescriptor* nested_bar_;
-  const EnumValueDescriptor* nested_baz_;
-  const EnumValueDescriptor* foreign_foo_;
-  const EnumValueDescriptor* foreign_bar_;
-  const EnumValueDescriptor* foreign_baz_;
-  const EnumValueDescriptor* import_foo_;
-  const EnumValueDescriptor* import_bar_;
-  const EnumValueDescriptor* import_baz_;
+  const EnumValueDescriptor *nested_foo_;
+  const EnumValueDescriptor *nested_bar_;
+  const EnumValueDescriptor *nested_baz_;
+  const EnumValueDescriptor *foreign_foo_;
+  const EnumValueDescriptor *foreign_bar_;
+  const EnumValueDescriptor *foreign_baz_;
+  const EnumValueDescriptor *import_foo_;
+  const EnumValueDescriptor *import_bar_;
+  const EnumValueDescriptor *import_baz_;
 
   // We have to split this into three function otherwise it creates a stack
   // frame so large that it triggers a warning.
-  void ExpectAllFieldsSetViaReflection1(const Message& message);
-  void ExpectAllFieldsSetViaReflection2(const Message& message);
-  void ExpectAllFieldsSetViaReflection3(const Message& message);
+  void ExpectAllFieldsSetViaReflection1(const Message &message);
+  void ExpectAllFieldsSetViaReflection2(const Message &message);
+  void ExpectAllFieldsSetViaReflection3(const Message &message);
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ReflectionTester);
 };
 
 inline TestUtil::ReflectionTester::ReflectionTester(
-    const Descriptor* base_descriptor)
+    const Descriptor *base_descriptor)
     : base_descriptor_(base_descriptor) {
-  const DescriptorPool* pool = base_descriptor->file()->pool();
+  const DescriptorPool *pool = base_descriptor->file()->pool();
   std::string package = base_descriptor->file()->package();
-  const FieldDescriptor* import_descriptor =
+  const FieldDescriptor *import_descriptor =
       pool->FindFieldByName(package + ".TestAllTypes.optional_import_message");
   std::string import_package =
       import_descriptor->message_type()->file()->package();
@@ -175,9 +176,9 @@ inline TestUtil::ReflectionTester::ReflectionTester(
 }
 
 // Shorthand to get a FieldDescriptor for a field of TestAllTypes.
-inline const FieldDescriptor* TestUtil::ReflectionTester::F(
-    const std::string& name) {
-  const FieldDescriptor* result = nullptr;
+inline const FieldDescriptor *
+TestUtil::ReflectionTester::F(const std::string &name) {
+  const FieldDescriptor *result = nullptr;
   if (base_descriptor_->name() == "TestAllExtensions" ||
       base_descriptor_->name() == "TestPackedExtensions") {
     result = base_descriptor_->file()->FindExtensionByName(name + "_extension");
@@ -190,10 +191,10 @@ inline const FieldDescriptor* TestUtil::ReflectionTester::F(
 
 // -------------------------------------------------------------------
 
-inline void TestUtil::ReflectionTester::SetAllFieldsViaReflection(
-    Message* message) {
-  const Reflection* reflection = message->GetReflection();
-  Message* sub_message;
+inline void
+TestUtil::ReflectionTester::SetAllFieldsViaReflection(Message *message) {
+  const Reflection *reflection = message->GetReflection();
+  Message *sub_message;
 
   reflection->SetInt32(message, F("optional_int32"), 101);
   reflection->SetInt64(message, F("optional_int64"), 102);
@@ -340,11 +341,11 @@ inline void TestUtil::ReflectionTester::SetAllFieldsViaReflection(
   reflection->SetString(message, F("oneof_bytes"), "604");
 }
 
-inline void TestUtil::ReflectionTester::SetOneofViaReflection(
-    Message* message) {
-  const Descriptor* descriptor = message->GetDescriptor();
-  const Reflection* reflection = message->GetReflection();
-  Message* sub_message = reflection->MutableMessage(
+inline void
+TestUtil::ReflectionTester::SetOneofViaReflection(Message *message) {
+  const Descriptor *descriptor = message->GetDescriptor();
+  const Reflection *reflection = message->GetReflection();
+  Message *sub_message = reflection->MutableMessage(
       message, descriptor->FindFieldByName("foo_lazy_message"));
   sub_message->GetReflection()->SetInt64(
       sub_message, sub_message->GetDescriptor()->FindFieldByName("qux_int"),
@@ -358,9 +359,9 @@ inline void TestUtil::ReflectionTester::SetOneofViaReflection(
 }
 
 inline void TestUtil::ReflectionTester::ExpectOneofSetViaReflection(
-    const Message& message) {
-  const Descriptor* descriptor = message.GetDescriptor();
-  const Reflection* reflection = message.GetReflection();
+    const Message &message) {
+  const Descriptor *descriptor = message.GetDescriptor();
+  const Reflection *reflection = message.GetReflection();
   std::string scratch;
   EXPECT_TRUE(reflection->HasField(
       message, descriptor->FindFieldByName("foo_lazy_message")));
@@ -371,7 +372,7 @@ inline void TestUtil::ReflectionTester::ExpectOneofSetViaReflection(
   EXPECT_TRUE(
       reflection->HasField(message, descriptor->FindFieldByName("baz_string")));
 
-  const Message* sub_message = &reflection->GetMessage(
+  const Message *sub_message = &reflection->GetMessage(
       message, descriptor->FindFieldByName("foo_lazy_message"));
   EXPECT_EQ(100, sub_message->GetReflection()->GetInt64(
                      *sub_message,
@@ -393,9 +394,9 @@ inline void TestUtil::ReflectionTester::ExpectOneofSetViaReflection(
                 message, descriptor->FindFieldByName("baz_string"), &scratch));
 }
 
-inline void TestUtil::ReflectionTester::SetPackedFieldsViaReflection(
-    Message* message) {
-  const Reflection* reflection = message->GetReflection();
+inline void
+TestUtil::ReflectionTester::SetPackedFieldsViaReflection(Message *message) {
+  const Reflection *reflection = message->GetReflection();
   reflection->AddInt32(message, F("packed_int32"), 601);
   reflection->AddInt64(message, F("packed_int64"), 602);
   reflection->AddUInt32(message, F("packed_uint32"), 603);
@@ -430,7 +431,7 @@ inline void TestUtil::ReflectionTester::SetPackedFieldsViaReflection(
 // -------------------------------------------------------------------
 
 inline void TestUtil::ReflectionTester::ExpectAllFieldsSetViaReflection(
-    const Message& message) {
+    const Message &message) {
   // We have to split this into three function otherwise it creates a stack
   // frame so large that it triggers a warning.
   ExpectAllFieldsSetViaReflection1(message);
@@ -439,10 +440,10 @@ inline void TestUtil::ReflectionTester::ExpectAllFieldsSetViaReflection(
 }
 
 inline void TestUtil::ReflectionTester::ExpectAllFieldsSetViaReflection1(
-    const Message& message) {
-  const Reflection* reflection = message.GetReflection();
+    const Message &message) {
+  const Reflection *reflection = message.GetReflection();
   std::string scratch;
-  const Message* sub_message;
+  const Message *sub_message;
 
   EXPECT_TRUE(reflection->HasField(message, F("optional_int32")));
   EXPECT_TRUE(reflection->HasField(message, F("optional_int64")));
@@ -563,10 +564,10 @@ inline void TestUtil::ReflectionTester::ExpectAllFieldsSetViaReflection1(
 }
 
 inline void TestUtil::ReflectionTester::ExpectAllFieldsSetViaReflection2(
-    const Message& message) {
-  const Reflection* reflection = message.GetReflection();
+    const Message &message) {
+  const Reflection *reflection = message.GetReflection();
   std::string scratch;
-  const Message* sub_message;
+  const Message *sub_message;
 
   // -----------------------------------------------------------------
 
@@ -738,8 +739,8 @@ inline void TestUtil::ReflectionTester::ExpectAllFieldsSetViaReflection2(
 }
 
 inline void TestUtil::ReflectionTester::ExpectAllFieldsSetViaReflection3(
-    const Message& message) {
-  const Reflection* reflection = message.GetReflection();
+    const Message &message) {
+  const Reflection *reflection = message.GetReflection();
   std::string scratch;
 
   // -----------------------------------------------------------------
@@ -805,8 +806,8 @@ inline void TestUtil::ReflectionTester::ExpectAllFieldsSetViaReflection3(
 }
 
 inline void TestUtil::ReflectionTester::ExpectPackedFieldsSetViaReflection(
-    const Message& message) {
-  const Reflection* reflection = message.GetReflection();
+    const Message &message) {
+  const Reflection *reflection = message.GetReflection();
 
   ASSERT_EQ(2, reflection->FieldSize(message, F("packed_int32")));
   ASSERT_EQ(2, reflection->FieldSize(message, F("packed_int64")));
@@ -866,11 +867,11 @@ inline void TestUtil::ReflectionTester::ExpectPackedFieldsSetViaReflection(
 
 // -------------------------------------------------------------------
 
-inline void TestUtil::ReflectionTester::ExpectClearViaReflection(
-    const Message& message) {
-  const Reflection* reflection = message.GetReflection();
+inline void
+TestUtil::ReflectionTester::ExpectClearViaReflection(const Message &message) {
+  const Reflection *reflection = message.GetReflection();
   std::string scratch;
-  const Message* sub_message;
+  const Message *sub_message;
 
   // has_blah() should initially be false for all optional fields.
   EXPECT_FALSE(reflection->HasField(message, F("optional_int32")));
@@ -1059,9 +1060,9 @@ inline void TestUtil::ReflectionTester::ExpectClearViaReflection(
 // -------------------------------------------------------------------
 
 inline void TestUtil::ReflectionTester::ModifyRepeatedFieldsViaReflection(
-    Message* message) {
-  const Reflection* reflection = message->GetReflection();
-  Message* sub_message;
+    Message *message) {
+  const Reflection *reflection = message->GetReflection();
+  Message *sub_message;
 
   reflection->SetRepeatedInt32(message, F("repeated_int32"), 1, 501);
   reflection->SetRepeatedInt64(message, F("repeated_int64"), 1, 502);
@@ -1106,32 +1107,35 @@ inline void TestUtil::ReflectionTester::ModifyRepeatedFieldsViaReflection(
   reflection->SetRepeatedString(message, F("repeated_cord"), 1, "525");
 }
 
-inline void TestUtil::ReflectionTester::RemoveLastRepeatedsViaReflection(
-    Message* message) {
-  const Reflection* reflection = message->GetReflection();
+inline void
+TestUtil::ReflectionTester::RemoveLastRepeatedsViaReflection(Message *message) {
+  const Reflection *reflection = message->GetReflection();
 
-  std::vector<const FieldDescriptor*> output;
+  std::vector<const FieldDescriptor *> output;
   reflection->ListFields(*message, &output);
   for (int i = 0; i < output.size(); ++i) {
-    const FieldDescriptor* field = output[i];
-    if (!field->is_repeated()) continue;
+    const FieldDescriptor *field = output[i];
+    if (!field->is_repeated())
+      continue;
 
     reflection->RemoveLast(message, field);
   }
 }
 
 inline void TestUtil::ReflectionTester::ReleaseLastRepeatedsViaReflection(
-    Message* message, bool expect_extensions_notnull) {
-  const Reflection* reflection = message->GetReflection();
+    Message *message, bool expect_extensions_notnull) {
+  const Reflection *reflection = message->GetReflection();
 
-  std::vector<const FieldDescriptor*> output;
+  std::vector<const FieldDescriptor *> output;
   reflection->ListFields(*message, &output);
   for (int i = 0; i < output.size(); ++i) {
-    const FieldDescriptor* field = output[i];
-    if (!field->is_repeated()) continue;
-    if (field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) continue;
+    const FieldDescriptor *field = output[i];
+    if (!field->is_repeated())
+      continue;
+    if (field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE)
+      continue;
 
-    Message* released = reflection->ReleaseLast(message, field);
+    Message *released = reflection->ReleaseLast(message, field);
     if (!field->is_extension() || expect_extensions_notnull) {
       ASSERT_TRUE(released != nullptr)
           << "ReleaseLast returned nullptr for: " << field->name();
@@ -1140,29 +1144,30 @@ inline void TestUtil::ReflectionTester::ReleaseLastRepeatedsViaReflection(
   }
 }
 
-inline void TestUtil::ReflectionTester::SwapRepeatedsViaReflection(
-    Message* message) {
-  const Reflection* reflection = message->GetReflection();
+inline void
+TestUtil::ReflectionTester::SwapRepeatedsViaReflection(Message *message) {
+  const Reflection *reflection = message->GetReflection();
 
-  std::vector<const FieldDescriptor*> output;
+  std::vector<const FieldDescriptor *> output;
   reflection->ListFields(*message, &output);
   for (int i = 0; i < output.size(); ++i) {
-    const FieldDescriptor* field = output[i];
-    if (!field->is_repeated()) continue;
+    const FieldDescriptor *field = output[i];
+    if (!field->is_repeated())
+      continue;
 
     reflection->SwapElements(message, field, 0, 1);
   }
 }
 
 inline void TestUtil::ReflectionTester::
-    SetAllocatedOptionalMessageFieldsToNullViaReflection(Message* message) {
-  const Reflection* reflection = message->GetReflection();
+    SetAllocatedOptionalMessageFieldsToNullViaReflection(Message *message) {
+  const Reflection *reflection = message->GetReflection();
 
-  std::vector<const FieldDescriptor*> fields;
+  std::vector<const FieldDescriptor *> fields;
   reflection->ListFields(*message, &fields);
 
   for (int i = 0; i < fields.size(); ++i) {
-    const FieldDescriptor* field = fields[i];
+    const FieldDescriptor *field = fields[i];
     if (!field->is_optional() ||
         field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE)
       continue;
@@ -1173,53 +1178,53 @@ inline void TestUtil::ReflectionTester::
 
 inline void TestUtil::ReflectionTester::
     SetAllocatedOptionalMessageFieldsToMessageViaReflection(
-        Message* from_message, Message* to_message) {
+        Message *from_message, Message *to_message) {
   EXPECT_EQ(from_message->GetDescriptor(), to_message->GetDescriptor());
-  const Reflection* from_reflection = from_message->GetReflection();
-  const Reflection* to_reflection = to_message->GetReflection();
+  const Reflection *from_reflection = from_message->GetReflection();
+  const Reflection *to_reflection = to_message->GetReflection();
 
-  std::vector<const FieldDescriptor*> fields;
+  std::vector<const FieldDescriptor *> fields;
   from_reflection->ListFields(*from_message, &fields);
 
   for (int i = 0; i < fields.size(); ++i) {
-    const FieldDescriptor* field = fields[i];
+    const FieldDescriptor *field = fields[i];
     if (!field->is_optional() ||
         field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE)
       continue;
 
-    Message* sub_message = from_reflection->ReleaseMessage(from_message, field);
+    Message *sub_message = from_reflection->ReleaseMessage(from_message, field);
     to_reflection->SetAllocatedMessage(to_message, sub_message, field);
   }
 }
 
 inline void TestUtil::ReflectionTester::ExpectMessagesReleasedViaReflection(
-    Message* message,
+    Message *message,
     TestUtil::ReflectionTester::MessageReleaseState expected_release_state) {
-  const Reflection* reflection = message->GetReflection();
+  const Reflection *reflection = message->GetReflection();
 
-  static const char* fields[] = {
+  static const char *fields[] = {
       "optionalgroup",
       "optional_nested_message",
       "optional_foreign_message",
       "optional_import_message",
   };
   for (int i = 0; i < GOOGLE_ARRAYSIZE(fields); i++) {
-    const Message& sub_message = reflection->GetMessage(*message, F(fields[i]));
-    Message* released = reflection->ReleaseMessage(message, F(fields[i]));
+    const Message &sub_message = reflection->GetMessage(*message, F(fields[i]));
+    Message *released = reflection->ReleaseMessage(message, F(fields[i]));
     switch (expected_release_state) {
-      case IS_NULL:
-        EXPECT_TRUE(released == nullptr);
-        break;
-      case NOT_NULL:
-        EXPECT_TRUE(released != nullptr);
-        if (message->GetArena() == nullptr) {
-          // released message must be same as sub_message if source message is
-          // not on arena.
-          EXPECT_EQ(&sub_message, released);
-        }
-        break;
-      case CAN_BE_NULL:
-        break;
+    case IS_NULL:
+      EXPECT_TRUE(released == nullptr);
+      break;
+    case NOT_NULL:
+      EXPECT_TRUE(released != nullptr);
+      if (message->GetArena() == nullptr) {
+        // released message must be same as sub_message if source message is
+        // not on arena.
+        EXPECT_EQ(&sub_message, released);
+      }
+      break;
+    case CAN_BE_NULL:
+      break;
     }
     delete released;
     EXPECT_FALSE(reflection->HasField(*message, F(fields[i])));
@@ -1229,24 +1234,24 @@ inline void TestUtil::ReflectionTester::ExpectMessagesReleasedViaReflection(
 // Check that the passed-in serialization is the canonical serialization we
 // expect for a TestFieldOrderings message filled in by
 // SetAllFieldsAndExtensions().
-inline void ExpectAllFieldsAndExtensionsInOrder(const std::string& serialized) {
+inline void ExpectAllFieldsAndExtensionsInOrder(const std::string &serialized) {
   // We set each field individually, serialize separately, and concatenate all
   // the strings in canonical order to determine the expected serialization.
   std::string expected;
   unittest::TestFieldOrderings message;
-  message.set_my_int(1);  // Field 1.
+  message.set_my_int(1); // Field 1.
   message.AppendToString(&expected);
   message.Clear();
-  message.SetExtension(unittest::my_extension_int, 23);  // Field 5.
+  message.SetExtension(unittest::my_extension_int, 23); // Field 5.
   message.AppendToString(&expected);
   message.Clear();
-  message.set_my_string("foo");  // Field 11.
+  message.set_my_string("foo"); // Field 11.
   message.AppendToString(&expected);
   message.Clear();
-  message.SetExtension(unittest::my_extension_string, "bar");  // Field 50.
+  message.SetExtension(unittest::my_extension_string, "bar"); // Field 50.
   message.AppendToString(&expected);
   message.Clear();
-  message.set_my_float(1.0);  // Field 101.
+  message.set_my_float(1.0); // Field 101.
   message.AppendToString(&expected);
   message.Clear();
 
@@ -1254,10 +1259,10 @@ inline void ExpectAllFieldsAndExtensionsInOrder(const std::string& serialized) {
   EXPECT_TRUE(serialized == expected);
 }
 
-}  // namespace TestUtil
-}  // namespace protobuf
-}  // namespace google
+} // namespace TestUtil
+} // namespace protobuf
+} // namespace google
 
 #include <google/protobuf/port_undef.inc>
 
-#endif  // GOOGLE_PROTOBUF_TEST_UTIL_H__
+#endif // GOOGLE_PROTOBUF_TEST_UTIL_H__

@@ -62,36 +62,32 @@ namespace {
 
 // When we forward-declare things, we want to create a sorted order so our
 // output is deterministic and minimizes namespace changes.
-template <class T>
-std::string GetSortKey(const T& val) {
+template <class T> std::string GetSortKey(const T &val) {
   return val.full_name();
 }
 
-template <>
-std::string GetSortKey<FileDescriptor>(const FileDescriptor& val) {
+template <> std::string GetSortKey<FileDescriptor>(const FileDescriptor &val) {
   return val.name();
 }
 
-template <>
-std::string GetSortKey<SCC>(const SCC& val) {
+template <> std::string GetSortKey<SCC>(const SCC &val) {
   return val.GetRepresentative()->full_name();
 }
 
-template <class T>
-bool CompareSortKeys(const T* a, const T* b) {
+template <class T> bool CompareSortKeys(const T *a, const T *b) {
   return GetSortKey(*a) < GetSortKey(*b);
 }
 
 template <class T>
-std::vector<const T*> Sorted(const std::unordered_set<const T*>& vals) {
-  std::vector<const T*> sorted(vals.begin(), vals.end());
+std::vector<const T *> Sorted(const std::unordered_set<const T *> &vals) {
+  std::vector<const T *> sorted(vals.begin(), vals.end());
   std::sort(sorted.begin(), sorted.end(), CompareSortKeys<T>);
   return sorted;
 }
 
-}  // namespace
+} // namespace
 
-FileGenerator::FileGenerator(const FileDescriptor* file, const Options& options)
+FileGenerator::FileGenerator(const FileDescriptor *file, const Options &options)
     : file_(file), options_(options), scc_analyzer_(options) {
   // These variables are the same on a file level
   SetCommonVars(options, &variables_);
@@ -107,10 +103,10 @@ FileGenerator::FileGenerator(const FileDescriptor* file, const Options& options)
   variables_["filename"] = file_->name();
   variables_["package_ns"] = Namespace(file_, options);
 
-  std::vector<const Descriptor*> msgs = FlattenMessagesInFile(file);
+  std::vector<const Descriptor *> msgs = FlattenMessagesInFile(file);
   for (int i = 0; i < msgs.size(); i++) {
     // Deleted in destructor
-    MessageGenerator* msg_gen =
+    MessageGenerator *msg_gen =
         new MessageGenerator(msgs[i], variables_, i, options, &scc_analyzer_);
     message_generators_.emplace_back(msg_gen);
     msg_gen->AddGenerators(&enum_generators_, &extension_generators_);
@@ -148,7 +144,7 @@ FileGenerator::FileGenerator(const FileDescriptor* file, const Options& options)
 
 FileGenerator::~FileGenerator() = default;
 
-void FileGenerator::GenerateMacroUndefs(io::Printer* printer) {
+void FileGenerator::GenerateMacroUndefs(io::Printer *printer) {
   Formatter format(printer, variables_);
   // Only do this for protobuf's own types. There are some google3 protos using
   // macros as field names and the generated code compiles after the macro
@@ -158,11 +154,11 @@ void FileGenerator::GenerateMacroUndefs(io::Printer* printer) {
     return;
   }
   std::vector<std::string> names_to_undef;
-  std::vector<const FieldDescriptor*> fields;
+  std::vector<const FieldDescriptor *> fields;
   ListAllFields(file_, &fields);
   for (int i = 0; i < fields.size(); i++) {
-    const std::string& name = fields[i]->name();
-    static const char* kMacroNames[] = {"major", "minor"};
+    const std::string &name = fields[i]->name();
+    static const char *kMacroNames[] = {"major", "minor"};
     for (int i = 0; i < GOOGLE_ARRAYSIZE(kMacroNames); ++i) {
       if (name == kMacroNames[i]) {
         names_to_undef.push_back(name);
@@ -171,15 +167,14 @@ void FileGenerator::GenerateMacroUndefs(io::Printer* printer) {
     }
   }
   for (int i = 0; i < names_to_undef.size(); ++i) {
-    format(
-        "#ifdef $1$\n"
-        "#undef $1$\n"
-        "#endif\n",
-        names_to_undef[i]);
+    format("#ifdef $1$\n"
+           "#undef $1$\n"
+           "#endif\n",
+           names_to_undef[i]);
   }
 }
 
-void FileGenerator::GenerateHeader(io::Printer* printer) {
+void FileGenerator::GenerateHeader(io::Printer *printer) {
   Formatter format(printer, variables_);
 
   // port_def.inc must be included after all other includes.
@@ -189,12 +184,11 @@ void FileGenerator::GenerateHeader(io::Printer* printer) {
 
   // For Any support with lite protos, we need to friend AnyMetadata, so we
   // forward-declare it here.
-  format(
-      "PROTOBUF_NAMESPACE_OPEN\n"
-      "namespace internal {\n"
-      "class AnyMetadata;\n"
-      "}  // namespace internal\n"
-      "PROTOBUF_NAMESPACE_CLOSE\n");
+  format("PROTOBUF_NAMESPACE_OPEN\n"
+         "namespace internal {\n"
+         "class AnyMetadata;\n"
+         "}  // namespace internal\n"
+         "PROTOBUF_NAMESPACE_CLOSE\n");
 
   GenerateGlobalStateFunctionDeclarations(printer);
 
@@ -226,24 +220,22 @@ void FileGenerator::GenerateHeader(io::Printer* printer) {
 
     GenerateInlineFunctionDefinitions(printer);
 
-    format(
-        "\n"
-        "// @@protoc_insertion_point(namespace_scope)\n"
-        "\n");
+    format("\n"
+           "// @@protoc_insertion_point(namespace_scope)\n"
+           "\n");
   }
 
   // We need to specialize some templates in the ::google::protobuf namespace:
   GenerateProto2NamespaceEnumSpecializations(printer);
 
-  format(
-      "\n"
-      "// @@protoc_insertion_point(global_scope)\n"
-      "\n");
+  format("\n"
+         "// @@protoc_insertion_point(global_scope)\n"
+         "\n");
   IncludeFile("net/proto2/public/port_undef.inc", printer);
 }
 
-void FileGenerator::GenerateProtoHeader(io::Printer* printer,
-                                        const std::string& info_path) {
+void FileGenerator::GenerateProtoHeader(io::Printer *printer,
+                                        const std::string &info_path) {
   Formatter format(printer, variables_);
   if (!options_.proto_h) {
     return;
@@ -252,11 +244,10 @@ void FileGenerator::GenerateProtoHeader(io::Printer* printer,
   GenerateTopHeaderGuard(printer, false);
 
   if (!options_.opensource_runtime) {
-    format(
-        "#ifdef SWIG\n"
-        "#error \"Do not SWIG-wrap protobufs.\"\n"
-        "#endif  // SWIG\n"
-        "\n");
+    format("#ifdef SWIG\n"
+           "#error \"Do not SWIG-wrap protobufs.\"\n"
+           "#endif  // SWIG\n"
+           "\n");
   }
 
   if (IsBootstrapProto(options_, file_)) {
@@ -267,7 +258,7 @@ void FileGenerator::GenerateProtoHeader(io::Printer* printer,
   GenerateLibraryIncludes(printer);
 
   for (int i = 0; i < file_->public_dependency_count(); i++) {
-    const FileDescriptor* dep = file_->public_dependency(i);
+    const FileDescriptor *dep = file_->public_dependency(i);
     format("#include \"$1$.proto.h\"\n", StripProto(dep->name()));
   }
 
@@ -280,8 +271,8 @@ void FileGenerator::GenerateProtoHeader(io::Printer* printer,
   GenerateBottomHeaderGuard(printer, false);
 }
 
-void FileGenerator::GeneratePBHeader(io::Printer* printer,
-                                     const std::string& info_path) {
+void FileGenerator::GeneratePBHeader(io::Printer *printer,
+                                     const std::string &info_path) {
   Formatter format(printer, variables_);
   GenerateTopHeaderGuard(printer, true);
 
@@ -312,21 +303,19 @@ void FileGenerator::GeneratePBHeader(io::Printer* printer,
   } else {
     {
       NamespaceOpener ns(Namespace(file_, options_), format);
-      format(
-          "\n"
-          "// @@protoc_insertion_point(namespace_scope)\n");
+      format("\n"
+             "// @@protoc_insertion_point(namespace_scope)\n");
     }
-    format(
-        "\n"
-        "// @@protoc_insertion_point(global_scope)\n"
-        "\n");
+    format("\n"
+           "// @@protoc_insertion_point(global_scope)\n"
+           "\n");
   }
 
   GenerateBottomHeaderGuard(printer, true);
 }
 
-void FileGenerator::DoIncludeFile(const std::string& google3_name,
-                                  bool do_export, io::Printer* printer) {
+void FileGenerator::DoIncludeFile(const std::string &google3_name,
+                                  bool do_export, io::Printer *printer) {
   Formatter format(printer, variables_);
   const std::string prefix = "net/proto2/";
   GOOGLE_CHECK(google3_name.find(prefix) == 0) << google3_name;
@@ -354,8 +343,8 @@ void FileGenerator::DoIncludeFile(const std::string& google3_name,
   format("\n");
 }
 
-std::string FileGenerator::CreateHeaderInclude(const std::string& basename,
-                                               const FileDescriptor* file) {
+std::string FileGenerator::CreateHeaderInclude(const std::string &basename,
+                                               const FileDescriptor *file) {
   bool use_system_include = false;
   std::string name = basename;
 
@@ -378,22 +367,21 @@ std::string FileGenerator::CreateHeaderInclude(const std::string& basename,
   return left + name + right;
 }
 
-void FileGenerator::GenerateSourceIncludes(io::Printer* printer) {
+void FileGenerator::GenerateSourceIncludes(io::Printer *printer) {
   Formatter format(printer, variables_);
   std::string target_basename = StripProto(file_->name());
   if (!options_.opensource_runtime) {
     GetBootstrapBasename(options_, target_basename, &target_basename);
   }
   target_basename += options_.proto_h ? ".proto.h" : ".pb.h";
-  format(
-      "// Generated by the protocol buffer compiler.  DO NOT EDIT!\n"
-      "// source: $filename$\n"
-      "\n"
-      "#include $1$\n"
-      "\n"
-      "#include <algorithm>\n"  // for swap()
-      "\n",
-      CreateHeaderInclude(target_basename, file_));
+  format("// Generated by the protocol buffer compiler.  DO NOT EDIT!\n"
+         "// source: $filename$\n"
+         "\n"
+         "#include $1$\n"
+         "\n"
+         "#include <algorithm>\n" // for swap()
+         "\n",
+         CreateHeaderInclude(target_basename, file_));
 
   IncludeFile("net/proto2/io/public/coded_stream.h", printer);
   // TODO(gerbens) This is to include parse_context.h, we need a better way
@@ -420,9 +408,10 @@ void FileGenerator::GenerateSourceIncludes(io::Printer* printer) {
   if (options_.proto_h) {
     // Use the smaller .proto.h files.
     for (int i = 0; i < file_->dependency_count(); i++) {
-      const FileDescriptor* dep = file_->dependency(i);
+      const FileDescriptor *dep = file_->dependency(i);
       // Do not import weak deps.
-      if (!options_.opensource_runtime && IsDepWeak(dep)) continue;
+      if (!options_.opensource_runtime && IsDepWeak(dep))
+        continue;
       std::string basename = StripProto(dep->name());
       if (IsBootstrapProto(options_, file_)) {
         GetBootstrapBasename(options_, basename, &basename);
@@ -436,15 +425,14 @@ void FileGenerator::GenerateSourceIncludes(io::Printer* printer) {
 }
 
 void FileGenerator::GenerateSourceDefaultInstance(int idx,
-                                                  io::Printer* printer) {
+                                                  io::Printer *printer) {
   Formatter format(printer, variables_);
-  MessageGenerator* generator = message_generators_[idx].get();
-  format(
-      "class $1$ {\n"
-      " public:\n"
-      "  ::$proto_ns$::internal::ExplicitlyConstructed<$2$> _instance;\n",
-      DefaultInstanceType(generator->descriptor_, options_),
-      generator->classname_);
+  MessageGenerator *generator = message_generators_[idx].get();
+  format("class $1$ {\n"
+         " public:\n"
+         "  ::$proto_ns$::internal::ExplicitlyConstructed<$2$> _instance;\n",
+         DefaultInstanceType(generator->descriptor_, options_),
+         generator->classname_);
   format.Indent();
   generator->GenerateExtraDefaultFields(printer);
   format.Outdent();
@@ -460,20 +448,21 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx,
 // another .pb.cc file.
 struct FileGenerator::CrossFileReferences {
   // Populated if we are referencing from messages or files.
-  std::unordered_set<const SCC*> strong_sccs;
-  std::unordered_set<const SCC*> weak_sccs;
-  std::unordered_set<const Descriptor*> weak_default_instances;
+  std::unordered_set<const SCC *> strong_sccs;
+  std::unordered_set<const SCC *> weak_sccs;
+  std::unordered_set<const Descriptor *> weak_default_instances;
 
   // Only if we are referencing from files.
-  std::unordered_set<const FileDescriptor*> strong_reflection_files;
-  std::unordered_set<const FileDescriptor*> weak_reflection_files;
+  std::unordered_set<const FileDescriptor *> strong_reflection_files;
+  std::unordered_set<const FileDescriptor *> weak_reflection_files;
 };
 
-void FileGenerator::GetCrossFileReferencesForField(const FieldDescriptor* field,
-                                                   CrossFileReferences* refs) {
-  const Descriptor* msg = field->message_type();
-  if (msg == nullptr) return;
-  const SCC* scc = GetSCC(msg);
+void FileGenerator::GetCrossFileReferencesForField(const FieldDescriptor *field,
+                                                   CrossFileReferences *refs) {
+  const Descriptor *msg = field->message_type();
+  if (msg == nullptr)
+    return;
+  const SCC *scc = GetSCC(msg);
 
   if (IsImplicitWeakField(field, options_, &scc_analyzer_) ||
       IsWeak(field, options_)) {
@@ -486,16 +475,17 @@ void FileGenerator::GetCrossFileReferencesForField(const FieldDescriptor* field,
   }
 }
 
-void FileGenerator::GetCrossFileReferencesForFile(const FileDescriptor* file,
-                                                  CrossFileReferences* refs) {
-  ForEachField(file, [this, refs](const FieldDescriptor* field) {
+void FileGenerator::GetCrossFileReferencesForFile(const FileDescriptor *file,
+                                                  CrossFileReferences *refs) {
+  ForEachField(file, [this, refs](const FieldDescriptor *field) {
     GetCrossFileReferencesForField(field, refs);
   });
 
-  if (!HasDescriptorMethods(file, options_)) return;
+  if (!HasDescriptorMethods(file, options_))
+    return;
 
   for (int i = 0; i < file->dependency_count(); i++) {
-    const FileDescriptor* dep = file->dependency(i);
+    const FileDescriptor *dep = file->dependency(i);
     if (IsDepWeak(dep)) {
       refs->weak_reflection_files.insert(dep);
     } else {
@@ -506,7 +496,7 @@ void FileGenerator::GetCrossFileReferencesForFile(const FileDescriptor* file,
 
 // Generates references to variables defined in other files.
 void FileGenerator::GenerateInternalForwardDeclarations(
-    const CrossFileReferences& refs, io::Printer* printer) {
+    const CrossFileReferences &refs, io::Printer *printer) {
   Formatter format(printer, variables_);
 
   for (auto scc : Sorted(refs.strong_sccs)) {
@@ -526,10 +516,9 @@ void FileGenerator::GenerateInternalForwardDeclarations(
     if (options_.lite_implicit_weak_fields) {
       format("extern ::$proto_ns$::internal::SCCInfo<$1$> $2$;\n",
              scc->children.size(), SccInfoSymbol(scc, options_));
-      format(
-          "__attribute__((weak)) ::$proto_ns$::internal::SCCInfo<$1$>*\n"
-          "    $2$ = nullptr;\n",
-          scc->children.size(), SccInfoPtrSymbol(scc, options_));
+      format("__attribute__((weak)) ::$proto_ns$::internal::SCCInfo<$1$>*\n"
+             "    $2$ = nullptr;\n",
+             scc->children.size(), SccInfoPtrSymbol(scc, options_));
     } else {
       format(
           "extern __attribute__((weak)) ::$proto_ns$::internal::SCCInfo<$1$> "
@@ -557,14 +546,13 @@ void FileGenerator::GenerateInternalForwardDeclarations(
   }
 
   for (auto file : Sorted(refs.weak_reflection_files)) {
-    format(
-        "extern __attribute__((weak)) const "
-        "::$proto_ns$::internal::DescriptorTable $1$;\n",
-        DescriptorTableName(file, options_));
+    format("extern __attribute__((weak)) const "
+           "::$proto_ns$::internal::DescriptorTable $1$;\n",
+           DescriptorTableName(file, options_));
   }
 }
 
-void FileGenerator::GenerateSourceForMessage(int idx, io::Printer* printer) {
+void FileGenerator::GenerateSourceForMessage(int idx, io::Printer *printer) {
   Formatter format(printer, variables_);
   GenerateSourceIncludes(printer);
 
@@ -572,10 +560,10 @@ void FileGenerator::GenerateSourceForMessage(int idx, io::Printer* printer) {
   // component (SCC), because we have a single InitDefaults* function for the
   // SCC.
   CrossFileReferences refs;
-  for (const Descriptor* message :
+  for (const Descriptor *message :
        scc_analyzer_.GetSCC(message_generators_[idx]->descriptor_)
            ->descriptors) {
-    ForEachField(message, [this, &refs](const FieldDescriptor* field) {
+    ForEachField(message, [this, &refs](const FieldDescriptor *field) {
       GetCrossFileReferencesForField(field, &refs);
     });
   }
@@ -586,7 +574,7 @@ void FileGenerator::GenerateSourceForMessage(int idx, io::Printer* printer) {
                        printer);
   }
 
-  {  // package namespace
+  { // package namespace
     NamespaceOpener ns(Namespace(file_, options_), format);
 
     // Define default instances
@@ -596,22 +584,20 @@ void FileGenerator::GenerateSourceForMessage(int idx, io::Printer* printer) {
     format("\n");
     message_generators_[idx]->GenerateClassMethods(printer);
 
-    format(
-        "\n"
-        "// @@protoc_insertion_point(namespace_scope)\n");
-  }  // end package namespace
+    format("\n"
+           "// @@protoc_insertion_point(namespace_scope)\n");
+  } // end package namespace
 
   {
     NamespaceOpener proto_ns(ProtobufNamespace(options_), format);
     message_generators_[idx]->GenerateSourceInProto2Namespace(printer);
   }
 
-  format(
-      "\n"
-      "// @@protoc_insertion_point(global_scope)\n");
+  format("\n"
+         "// @@protoc_insertion_point(global_scope)\n");
 }
 
-void FileGenerator::GenerateGlobalSource(io::Printer* printer) {
+void FileGenerator::GenerateGlobalSource(io::Printer *printer) {
   Formatter format(printer, variables_);
   GenerateSourceIncludes(printer);
 
@@ -640,7 +626,8 @@ void FileGenerator::GenerateGlobalSource(io::Printer* printer) {
   if (HasGenericServices(file_, options_)) {
     // Generate services.
     for (int i = 0; i < service_generators_.size(); i++) {
-      if (i == 0) format("\n");
+      if (i == 0)
+        format("\n");
       format(kThickSeparator);
       format("\n");
       service_generators_[i]->GenerateImplementation(printer);
@@ -648,7 +635,7 @@ void FileGenerator::GenerateGlobalSource(io::Printer* printer) {
   }
 }
 
-void FileGenerator::GenerateSource(io::Printer* printer) {
+void FileGenerator::GenerateSource(io::Printer *printer) {
   Formatter format(printer, variables_);
   GenerateSourceIncludes(printer);
   CrossFileReferences refs;
@@ -700,7 +687,8 @@ void FileGenerator::GenerateSource(io::Printer* printer) {
     if (HasGenericServices(file_, options_)) {
       // Generate services.
       for (int i = 0; i < service_generators_.size(); i++) {
-        if (i == 0) format("\n");
+        if (i == 0)
+          format("\n");
         format(kThickSeparator);
         format("\n");
         service_generators_[i]->GenerateImplementation(printer);
@@ -712,9 +700,8 @@ void FileGenerator::GenerateSource(io::Printer* printer) {
       extension_generators_[i]->GenerateDefinition(printer);
     }
 
-    format(
-        "\n"
-        "// @@protoc_insertion_point(namespace_scope)\n");
+    format("\n"
+           "// @@protoc_insertion_point(namespace_scope)\n");
   }
 
   {
@@ -724,14 +711,13 @@ void FileGenerator::GenerateSource(io::Printer* printer) {
     }
   }
 
-  format(
-      "\n"
-      "// @@protoc_insertion_point(global_scope)\n");
+  format("\n"
+         "// @@protoc_insertion_point(global_scope)\n");
 
   IncludeFile("net/proto2/public/port_undef.inc", printer);
 }
 
-void FileGenerator::GenerateReflectionInitializationCode(io::Printer* printer) {
+void FileGenerator::GenerateReflectionInitializationCode(io::Printer *printer) {
   Formatter format(printer, variables_);
 
   if (!message_generators_.empty()) {
@@ -743,46 +729,40 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* printer) {
         "constexpr ::$proto_ns$::Metadata* $file_level_metadata$ = nullptr;\n");
   }
   if (!enum_generators_.empty()) {
-    format(
-        "static "
-        "const ::$proto_ns$::EnumDescriptor* "
-        "$file_level_enum_descriptors$[$1$];\n",
-        enum_generators_.size());
+    format("static "
+           "const ::$proto_ns$::EnumDescriptor* "
+           "$file_level_enum_descriptors$[$1$];\n",
+           enum_generators_.size());
   } else {
-    format(
-        "static "
-        "constexpr ::$proto_ns$::EnumDescriptor const** "
-        "$file_level_enum_descriptors$ = nullptr;\n");
+    format("static "
+           "constexpr ::$proto_ns$::EnumDescriptor const** "
+           "$file_level_enum_descriptors$ = nullptr;\n");
   }
   if (HasGenericServices(file_, options_) && file_->service_count() > 0) {
-    format(
-        "static "
-        "const ::$proto_ns$::ServiceDescriptor* "
-        "$file_level_service_descriptors$[$1$];\n",
-        file_->service_count());
+    format("static "
+           "const ::$proto_ns$::ServiceDescriptor* "
+           "$file_level_service_descriptors$[$1$];\n",
+           file_->service_count());
   } else {
-    format(
-        "static "
-        "constexpr ::$proto_ns$::ServiceDescriptor const** "
-        "$file_level_service_descriptors$ = nullptr;\n");
+    format("static "
+           "constexpr ::$proto_ns$::ServiceDescriptor const** "
+           "$file_level_service_descriptors$ = nullptr;\n");
   }
 
   if (!message_generators_.empty()) {
-    format(
-        "\n"
-        "const $uint32$ $tablename$::offsets[] "
-        "PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {\n");
+    format("\n"
+           "const $uint32$ $tablename$::offsets[] "
+           "PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {\n");
     format.Indent();
-    std::vector<std::pair<size_t, size_t> > pairs;
+    std::vector<std::pair<size_t, size_t>> pairs;
     pairs.reserve(message_generators_.size());
     for (int i = 0; i < message_generators_.size(); i++) {
       pairs.push_back(message_generators_[i]->GenerateOffsets(printer));
     }
     format.Outdent();
-    format(
-        "};\n"
-        "static const ::$proto_ns$::internal::MigrationSchema schemas[] "
-        "PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {\n");
+    format("};\n"
+           "static const ::$proto_ns$::internal::MigrationSchema schemas[] "
+           "PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {\n");
     format.Indent();
     {
       int offset = 0;
@@ -799,17 +779,15 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* printer) {
         "::$proto_ns$::Message const * const file_default_instances[] = {\n");
     format.Indent();
     for (int i = 0; i < message_generators_.size(); i++) {
-      const Descriptor* descriptor = message_generators_[i]->descriptor_;
-      format(
-          "reinterpret_cast<const "
-          "::$proto_ns$::Message*>(&$1$::_$2$_default_instance_),\n",
-          Namespace(descriptor, options_),  // 1
-          ClassName(descriptor));           // 2
+      const Descriptor *descriptor = message_generators_[i]->descriptor_;
+      format("reinterpret_cast<const "
+             "::$proto_ns$::Message*>(&$1$::_$2$_default_instance_),\n",
+             Namespace(descriptor, options_), // 1
+             ClassName(descriptor));          // 2
     }
     format.Outdent();
-    format(
-        "};\n"
-        "\n");
+    format("};\n"
+           "\n");
   } else {
     // we still need these symbols to exist
     format(
@@ -851,14 +829,13 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* printer) {
         }
         format("\n");
       }
-      format("'\\0' }");  // null-terminate
+      format("'\\0' }"); // null-terminate
     } else {
       // Only write 40 bytes per line.
       static const int kBytesPerLine = 40;
       for (int i = 0; i < file_data.size(); i += kBytesPerLine) {
-        format(
-            "\"$1$\"\n",
-            EscapeTrigraphs(CEscape(file_data.substr(i, kBytesPerLine))));
+        format("\"$1$\"\n",
+               EscapeTrigraphs(CEscape(file_data.substr(i, kBytesPerLine))));
       }
     }
     format(";\n");
@@ -871,10 +848,9 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* printer) {
       refs.strong_reflection_files.size() + refs.weak_reflection_files.size();
 
   // Build array of DescriptorTable deps.
-  format(
-      "static const ::$proto_ns$::internal::DescriptorTable*const "
-      "$desc_table$_deps[$1$] = {\n",
-      std::max(num_deps, 1));
+  format("static const ::$proto_ns$::internal::DescriptorTable*const "
+         "$desc_table$_deps[$1$] = {\n",
+         std::max(num_deps, 1));
 
   for (auto dep : Sorted(refs.strong_reflection_files)) {
     format("  &::$1$,\n", DescriptorTableName(dep, options_));
@@ -886,10 +862,9 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* printer) {
   format("};\n");
 
   // Build array of SCCs from this file.
-  format(
-      "static ::$proto_ns$::internal::SCCInfoBase*const "
-      "$desc_table$_sccs[$1$] = {\n",
-      std::max<int>(sccs_.size(), 1));
+  format("static ::$proto_ns$::internal::SCCInfoBase*const "
+         "$desc_table$_sccs[$1$] = {\n",
+         std::max<int>(sccs_.size(), 1));
 
   for (auto scc : sccs_) {
     format("  &$1$.base,\n", SccInfoSymbol(scc, options_));
@@ -916,17 +891,16 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* printer) {
   // unnecessary code that can't be stripped by --gc-sections. Descriptor
   // initialization will still be performed lazily when it's needed.
   if (file_->name() != "net/proto2/proto/descriptor.proto") {
-    format(
-        "// Force running AddDescriptors() at dynamic initialization time.\n"
-        "static bool $1$ = ("
-        "  ::$proto_ns$::internal::AddDescriptors(&$desc_table$), true);\n",
-        UniqueName("dynamic_init_dummy", file_, options_));
+    format("// Force running AddDescriptors() at dynamic initialization time.\n"
+           "static bool $1$ = ("
+           "  ::$proto_ns$::internal::AddDescriptors(&$desc_table$), true);\n",
+           UniqueName("dynamic_init_dummy", file_, options_));
   }
 }
 
-void FileGenerator::GenerateInitForSCC(const SCC* scc,
-                                       const CrossFileReferences& refs,
-                                       io::Printer* printer) {
+void FileGenerator::GenerateInitForSCC(const SCC *scc,
+                                       const CrossFileReferences &refs,
+                                       io::Printer *printer) {
   Formatter format(printer, variables_);
   // We use static and not anonymous namespace because symbol names are
   // substantially shorter.
@@ -946,19 +920,17 @@ void FileGenerator::GenerateInitForSCC(const SCC* scc,
     // TODO(gerbens) This requires this function to be friend. Remove
     // the need for this.
     message_generators_[i]->GenerateFieldDefaultInstances(printer);
-    format(
-        "{\n"
-        "  void* ptr = &$1$;\n"
-        "  new (ptr) $2$();\n",
-        QualifiedDefaultInstanceName(message_generators_[i]->descriptor_,
-                                     options_),
-        QualifiedClassName(message_generators_[i]->descriptor_, options_));
+    format("{\n"
+           "  void* ptr = &$1$;\n"
+           "  new (ptr) $2$();\n",
+           QualifiedDefaultInstanceName(message_generators_[i]->descriptor_,
+                                        options_),
+           QualifiedClassName(message_generators_[i]->descriptor_, options_));
     if (options_.opensource_runtime &&
         !IsMapEntryMessage(message_generators_[i]->descriptor_)) {
-      format(
-          "  "
-          "::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);"
-          "\n");
+      format("  "
+             "::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);"
+             "\n");
     }
     format("}\n");
   }
@@ -979,9 +951,9 @@ void FileGenerator::GenerateInitForSCC(const SCC* scc,
   // If we are using lite implicit weak fields then we need to distinguish
   // between regular SCC dependencies and ones that we need to reference weakly
   // through an extra pointer indirection.
-  std::vector<const SCC*> regular_sccs;
-  std::vector<const SCC*> implicit_weak_sccs;
-  for (const SCC* child : scc->children) {
+  std::vector<const SCC *> regular_sccs;
+  std::vector<const SCC *> implicit_weak_sccs;
+  for (const SCC *child : scc->children) {
     if (options_.lite_implicit_weak_fields &&
         refs.weak_sccs.find(child) != refs.weak_sccs.end()) {
       implicit_weak_sccs.push_back(child);
@@ -995,38 +967,35 @@ void FileGenerator::GenerateInitForSCC(const SCC* scc,
       "    "
       "{{ATOMIC_VAR_INIT(::$proto_ns$::internal::SCCInfoBase::kUninitialized), "
       "$3$, $4$, InitDefaults$2$}, {",
-      scc->children.size(),  // 1
+      scc->children.size(), // 1
       SccInfoSymbol(scc, options_), regular_sccs.size(),
       implicit_weak_sccs.size());
-  for (const SCC* child : regular_sccs) {
+  for (const SCC *child : regular_sccs) {
     format("\n      &$1$.base,", SccInfoSymbol(child, options_));
   }
-  for (const SCC* child : implicit_weak_sccs) {
-    format(
-        "\n      reinterpret_cast<::$proto_ns$::internal::SCCInfoBase**>("
-        "\n          &$1$),",
-        SccInfoPtrSymbol(child, options_));
+  for (const SCC *child : implicit_weak_sccs) {
+    format("\n      reinterpret_cast<::$proto_ns$::internal::SCCInfoBase**>("
+           "\n          &$1$),",
+           SccInfoPtrSymbol(child, options_));
   }
   format("}};\n\n");
 
   if (options_.lite_implicit_weak_fields) {
-    format(
-        "$dllexport_decl $::$proto_ns$::internal::SCCInfo<$1$>*\n"
-        "    $2$ = &$3$;\n\n",
-        scc->children.size(), SccInfoPtrSymbol(scc, options_),
-        SccInfoSymbol(scc, options_));
+    format("$dllexport_decl $::$proto_ns$::internal::SCCInfo<$1$>*\n"
+           "    $2$ = &$3$;\n\n",
+           scc->children.size(), SccInfoPtrSymbol(scc, options_),
+           SccInfoSymbol(scc, options_));
   }
 }
 
-void FileGenerator::GenerateTables(io::Printer* printer) {
+void FileGenerator::GenerateTables(io::Printer *printer) {
   Formatter format(printer, variables_);
   if (options_.table_driven_parsing) {
     // TODO(ckennelly): Gate this with the same options flag to enable
     // table-driven parsing.
-    format(
-        "PROTOBUF_CONSTEXPR_VAR ::$proto_ns$::internal::ParseTableField\n"
-        "    const $tablename$::entries[] "
-        "PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {\n");
+    format("PROTOBUF_CONSTEXPR_VAR ::$proto_ns$::internal::ParseTableField\n"
+           "    const $tablename$::entries[] "
+           "PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {\n");
     format.Indent();
 
     std::vector<size_t> entries;
@@ -1043,13 +1012,12 @@ void FileGenerator::GenerateTables(io::Printer* printer) {
     }
 
     format.Outdent();
-    format(
-        "};\n"
-        "\n"
-        "PROTOBUF_CONSTEXPR_VAR "
-        "::$proto_ns$::internal::AuxillaryParseTableField\n"
-        "    const $tablename$::aux[] "
-        "PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {\n");
+    format("};\n"
+           "\n"
+           "PROTOBUF_CONSTEXPR_VAR "
+           "::$proto_ns$::internal::AuxillaryParseTableField\n"
+           "    const $tablename$::aux[] "
+           "PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {\n");
     format.Indent();
 
     std::vector<size_t> aux_entries;
@@ -1065,11 +1033,10 @@ void FileGenerator::GenerateTables(io::Printer* printer) {
     }
 
     format.Outdent();
-    format(
-        "};\n"
-        "PROTOBUF_CONSTEXPR_VAR ::$proto_ns$::internal::ParseTable const\n"
-        "    $tablename$::schema[] "
-        "PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {\n");
+    format("};\n"
+           "PROTOBUF_CONSTEXPR_VAR ::$proto_ns$::internal::ParseTable const\n"
+           "    $tablename$::schema[] "
+           "PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {\n");
     format.Indent();
 
     size_t offset = 0;
@@ -1085,16 +1052,14 @@ void FileGenerator::GenerateTables(io::Printer* printer) {
     }
 
     format.Outdent();
-    format(
-        "};\n"
-        "\n");
+    format("};\n"
+           "\n");
   }
 
   if (!message_generators_.empty() && options_.table_driven_serialization) {
-    format(
-        "const ::$proto_ns$::internal::FieldMetadata "
-        "$tablename$::field_metadata[] "
-        "= {\n");
+    format("const ::$proto_ns$::internal::FieldMetadata "
+           "$tablename$::field_metadata[] "
+           "= {\n");
     format.Indent();
     std::vector<int> field_metadata_offsets;
     int idx = 0;
@@ -1104,89 +1069,86 @@ void FileGenerator::GenerateTables(io::Printer* printer) {
     }
     field_metadata_offsets.push_back(idx);
     format.Outdent();
-    format(
-        "};\n"
-        "const ::$proto_ns$::internal::SerializationTable "
-        "$tablename$::serialization_table[] = {\n");
+    format("};\n"
+           "const ::$proto_ns$::internal::SerializationTable "
+           "$tablename$::serialization_table[] = {\n");
     format.Indent();
     // We rely on the order we layout the tables to match the order we
     // calculate them with FlattenMessagesInFile, so we check here that
     // these match exactly.
-    std::vector<const Descriptor*> calculated_order =
+    std::vector<const Descriptor *> calculated_order =
         FlattenMessagesInFile(file_);
     GOOGLE_CHECK_EQ(calculated_order.size(), message_generators_.size());
     for (int i = 0; i < message_generators_.size(); i++) {
       GOOGLE_CHECK_EQ(calculated_order[i], message_generators_[i]->descriptor_);
       format("{$1$, $tablename$::field_metadata + $2$},\n",
-             field_metadata_offsets[i + 1] - field_metadata_offsets[i],  // 1
-             field_metadata_offsets[i]);                                 // 2
+             field_metadata_offsets[i + 1] - field_metadata_offsets[i], // 1
+             field_metadata_offsets[i]);                                // 2
     }
     format.Outdent();
-    format(
-        "};\n"
-        "\n");
+    format("};\n"
+           "\n");
   }
 }
 
 class FileGenerator::ForwardDeclarations {
- public:
-  void AddMessage(const Descriptor* d) { classes_[ClassName(d)] = d; }
-  void AddEnum(const EnumDescriptor* d) { enums_[ClassName(d)] = d; }
+public:
+  void AddMessage(const Descriptor *d) { classes_[ClassName(d)] = d; }
+  void AddEnum(const EnumDescriptor *d) { enums_[ClassName(d)] = d; }
 
-  void Print(const Formatter& format, const Options& options) const {
-    for (const auto& p : enums_) {
-      const std::string& enumname = p.first;
-      const EnumDescriptor* enum_desc = p.second;
-      format(
-          "enum ${1$$2$$}$ : int;\n"
-          "bool $2$_IsValid(int value);\n",
-          enum_desc, enumname);
+  void Print(const Formatter &format, const Options &options) const {
+    for (const auto &p : enums_) {
+      const std::string &enumname = p.first;
+      const EnumDescriptor *enum_desc = p.second;
+      format("enum ${1$$2$$}$ : int;\n"
+             "bool $2$_IsValid(int value);\n",
+             enum_desc, enumname);
     }
-    for (const auto& p : classes_) {
-      const std::string& classname = p.first;
-      const Descriptor* class_desc = p.second;
-      format(
-          "class ${1$$2$$}$;\n"
-          "class $3$;\n"
-          "$dllexport_decl $extern $3$ $4$;\n",
-          class_desc, classname, DefaultInstanceType(class_desc, options),
-          DefaultInstanceName(class_desc, options));
+    for (const auto &p : classes_) {
+      const std::string &classname = p.first;
+      const Descriptor *class_desc = p.second;
+      format("class ${1$$2$$}$;\n"
+             "class $3$;\n"
+             "$dllexport_decl $extern $3$ $4$;\n",
+             class_desc, classname, DefaultInstanceType(class_desc, options),
+             DefaultInstanceName(class_desc, options));
     }
   }
 
-  void PrintTopLevelDecl(const Formatter& format,
-                         const Options& options) const {
-    for (const auto& pair : classes_) {
-      format(
-          "template<> $dllexport_decl $"
-          "$1$* Arena::CreateMaybeMessage<$1$>(Arena*);\n",
-          QualifiedClassName(pair.second, options));
+  void PrintTopLevelDecl(const Formatter &format,
+                         const Options &options) const {
+    for (const auto &pair : classes_) {
+      format("template<> $dllexport_decl $"
+             "$1$* Arena::CreateMaybeMessage<$1$>(Arena*);\n",
+             QualifiedClassName(pair.second, options));
     }
   }
 
- private:
-  std::map<std::string, const Descriptor*> classes_;
-  std::map<std::string, const EnumDescriptor*> enums_;
+private:
+  std::map<std::string, const Descriptor *> classes_;
+  std::map<std::string, const EnumDescriptor *> enums_;
 };
 
-static void PublicImportDFS(const FileDescriptor* fd,
-                            std::unordered_set<const FileDescriptor*>* fd_set) {
+static void
+PublicImportDFS(const FileDescriptor *fd,
+                std::unordered_set<const FileDescriptor *> *fd_set) {
   for (int i = 0; i < fd->public_dependency_count(); i++) {
-    const FileDescriptor* dep = fd->public_dependency(i);
-    if (fd_set->insert(dep).second) PublicImportDFS(dep, fd_set);
+    const FileDescriptor *dep = fd->public_dependency(i);
+    if (fd_set->insert(dep).second)
+      PublicImportDFS(dep, fd_set);
   }
 }
 
-void FileGenerator::GenerateForwardDeclarations(io::Printer* printer) {
+void FileGenerator::GenerateForwardDeclarations(io::Printer *printer) {
   Formatter format(printer, variables_);
-  std::vector<const Descriptor*> classes;
-  std::vector<const EnumDescriptor*> enums;
+  std::vector<const Descriptor *> classes;
+  std::vector<const EnumDescriptor *> enums;
 
-  FlattenMessagesInFile(file_, &classes);  // All messages need forward decls.
+  FlattenMessagesInFile(file_, &classes); // All messages need forward decls.
 
-  if (options_.proto_h) {  // proto.h needs extra forward declarations.
+  if (options_.proto_h) { // proto.h needs extra forward declarations.
     // All classes / enums refered to as field members
-    std::vector<const FieldDescriptor*> fields;
+    std::vector<const FieldDescriptor *> fields;
     ListAllFields(file_, &fields);
     for (int i = 0; i < fields.size(); i++) {
       classes.push_back(fields[i]->containing_type());
@@ -1198,49 +1160,47 @@ void FileGenerator::GenerateForwardDeclarations(io::Printer* printer) {
 
   // Calculate the set of files whose definitions we get through include.
   // No need to forward declare types that are defined in these.
-  std::unordered_set<const FileDescriptor*> public_set;
+  std::unordered_set<const FileDescriptor *> public_set;
   PublicImportDFS(file_, &public_set);
 
   std::map<std::string, ForwardDeclarations> decls;
   for (int i = 0; i < classes.size(); i++) {
-    const Descriptor* d = classes[i];
+    const Descriptor *d = classes[i];
     if (d && !public_set.count(d->file()))
       decls[Namespace(d, options_)].AddMessage(d);
   }
   for (int i = 0; i < enums.size(); i++) {
-    const EnumDescriptor* d = enums[i];
+    const EnumDescriptor *d = enums[i];
     if (d && !public_set.count(d->file()))
       decls[Namespace(d, options_)].AddEnum(d);
   }
 
-
   {
     NamespaceOpener ns(format);
-    for (const auto& pair : decls) {
+    for (const auto &pair : decls) {
       ns.ChangeTo(pair.first);
       pair.second.Print(format, options_);
     }
   }
   format("PROTOBUF_NAMESPACE_OPEN\n");
-  for (const auto& pair : decls) {
+  for (const auto &pair : decls) {
     pair.second.PrintTopLevelDecl(format, options_);
   }
   format("PROTOBUF_NAMESPACE_CLOSE\n");
 }
 
-void FileGenerator::GenerateTopHeaderGuard(io::Printer* printer, bool pb_h) {
+void FileGenerator::GenerateTopHeaderGuard(io::Printer *printer, bool pb_h) {
   Formatter format(printer, variables_);
   // Generate top of header.
-  format(
-      "// Generated by the protocol buffer compiler.  DO NOT EDIT!\n"
-      "// source: $filename$\n"
-      "\n"
-      "#ifndef $1$\n"
-      "#define $1$\n"
-      "\n"
-      "#include <limits>\n"
-      "#include <string>\n",
-      IncludeGuard(file_, pb_h, options_));
+  format("// Generated by the protocol buffer compiler.  DO NOT EDIT!\n"
+         "// source: $filename$\n"
+         "\n"
+         "#ifndef $1$\n"
+         "#define $1$\n"
+         "\n"
+         "#include <limits>\n"
+         "#include <string>\n",
+         IncludeGuard(file_, pb_h, options_));
   if (!options_.opensource_runtime && !enum_generators_.empty()) {
     // Add header to provide std::is_integral for safe Enum_Name() function.
     format("#include <type_traits>\n");
@@ -1248,13 +1208,13 @@ void FileGenerator::GenerateTopHeaderGuard(io::Printer* printer, bool pb_h) {
   format("\n");
 }
 
-void FileGenerator::GenerateBottomHeaderGuard(io::Printer* printer, bool pb_h) {
+void FileGenerator::GenerateBottomHeaderGuard(io::Printer *printer, bool pb_h) {
   Formatter format(printer, variables_);
   format("#endif  // $GOOGLE_PROTOBUF$_INCLUDED_$1$\n",
          IncludeGuard(file_, pb_h, options_));
 }
 
-void FileGenerator::GenerateLibraryIncludes(io::Printer* printer) {
+void FileGenerator::GenerateLibraryIncludes(io::Printer *printer) {
   Formatter format(printer, variables_);
   if (UsingImplicitWeakFields(file_, options_)) {
     IncludeFile("net/proto2/public/implicit_weak_message.h", printer);
@@ -1285,8 +1245,8 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* printer) {
         "#error regenerate this file with a newer version of protoc.\n"
         "#endif\n"
         "\n",
-        PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC,  // 1
-        PROTOBUF_VERSION);                       // 2
+        PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC, // 1
+        PROTOBUF_VERSION);                      // 2
     IncludeFile("net/proto2/public/port_undef.inc", printer);
   }
 
@@ -1363,28 +1323,28 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* printer) {
   }
 }
 
-void FileGenerator::GenerateMetadataPragma(io::Printer* printer,
-                                           const std::string& info_path) {
+void FileGenerator::GenerateMetadataPragma(io::Printer *printer,
+                                           const std::string &info_path) {
   Formatter format(printer, variables_);
   if (!info_path.empty() && !options_.annotation_pragma_name.empty() &&
       !options_.annotation_guard_name.empty()) {
     format.Set("guard", options_.annotation_guard_name);
     format.Set("pragma", options_.annotation_pragma_name);
     format.Set("info_path", info_path);
-    format(
-        "#ifdef $guard$\n"
-        "#pragma $pragma$ \"$info_path$\"\n"
-        "#endif  // $guard$\n");
+    format("#ifdef $guard$\n"
+           "#pragma $pragma$ \"$info_path$\"\n"
+           "#endif  // $guard$\n");
   }
 }
 
-void FileGenerator::GenerateDependencyIncludes(io::Printer* printer) {
+void FileGenerator::GenerateDependencyIncludes(io::Printer *printer) {
   Formatter format(printer, variables_);
   for (int i = 0; i < file_->dependency_count(); i++) {
     std::string basename = StripProto(file_->dependency(i)->name());
 
     // Do not import weak deps.
-    if (IsDepWeak(file_->dependency(i))) continue;
+    if (IsDepWeak(file_->dependency(i)))
+      continue;
 
     if (IsBootstrapProto(options_, file_)) {
       GetBootstrapBasename(options_, basename, &basename);
@@ -1396,7 +1356,7 @@ void FileGenerator::GenerateDependencyIncludes(io::Printer* printer) {
 }
 
 void FileGenerator::GenerateGlobalStateFunctionDeclarations(
-    io::Printer* printer) {
+    io::Printer *printer) {
   Formatter format(printer, variables_);
   // Forward-declare the DescriptorTable because this is referenced by .pb.cc
   // files depending on this file.
@@ -1430,7 +1390,7 @@ void FileGenerator::GenerateGlobalStateFunctionDeclarations(
   }
 }
 
-void FileGenerator::GenerateMessageDefinitions(io::Printer* printer) {
+void FileGenerator::GenerateMessageDefinitions(io::Printer *printer) {
   Formatter format(printer, variables_);
   // Generate class definitions.
   for (int i = 0; i < message_generators_.size(); i++) {
@@ -1443,14 +1403,14 @@ void FileGenerator::GenerateMessageDefinitions(io::Printer* printer) {
   }
 }
 
-void FileGenerator::GenerateEnumDefinitions(io::Printer* printer) {
+void FileGenerator::GenerateEnumDefinitions(io::Printer *printer) {
   // Generate enum definitions.
   for (int i = 0; i < enum_generators_.size(); i++) {
     enum_generators_[i]->GenerateDefinition(printer);
   }
 }
 
-void FileGenerator::GenerateServiceDefinitions(io::Printer* printer) {
+void FileGenerator::GenerateServiceDefinitions(io::Printer *printer) {
   Formatter format(printer, variables_);
   if (HasGenericServices(file_, options_)) {
     // Generate service definitions.
@@ -1469,24 +1429,24 @@ void FileGenerator::GenerateServiceDefinitions(io::Printer* printer) {
   }
 }
 
-void FileGenerator::GenerateExtensionIdentifiers(io::Printer* printer) {
+void FileGenerator::GenerateExtensionIdentifiers(io::Printer *printer) {
   // Declare extension identifiers. These are in global scope and so only
   // the global scope extensions.
-  for (auto& extension_generator : extension_generators_) {
-    if (extension_generator->IsScoped()) continue;
+  for (auto &extension_generator : extension_generators_) {
+    if (extension_generator->IsScoped())
+      continue;
     extension_generator->GenerateDeclaration(printer);
   }
 }
 
-void FileGenerator::GenerateInlineFunctionDefinitions(io::Printer* printer) {
+void FileGenerator::GenerateInlineFunctionDefinitions(io::Printer *printer) {
   Formatter format(printer, variables_);
   // TODO(gerbens) remove pragmas when gcc is no longer used. Current version
   // of gcc fires a bogus error when compiled with strict-aliasing.
-  format(
-      "#ifdef __GNUC__\n"
-      "  #pragma GCC diagnostic push\n"
-      "  #pragma GCC diagnostic ignored \"-Wstrict-aliasing\"\n"
-      "#endif  // __GNUC__\n");
+  format("#ifdef __GNUC__\n"
+         "  #pragma GCC diagnostic push\n"
+         "  #pragma GCC diagnostic ignored \"-Wstrict-aliasing\"\n"
+         "#endif  // __GNUC__\n");
   // Generate class inline methods.
   for (int i = 0; i < message_generators_.size(); i++) {
     if (i > 0) {
@@ -1495,10 +1455,9 @@ void FileGenerator::GenerateInlineFunctionDefinitions(io::Printer* printer) {
     }
     message_generators_[i]->GenerateInlineMethods(printer);
   }
-  format(
-      "#ifdef __GNUC__\n"
-      "  #pragma GCC diagnostic pop\n"
-      "#endif  // __GNUC__\n");
+  format("#ifdef __GNUC__\n"
+         "  #pragma GCC diagnostic pop\n"
+         "#endif  // __GNUC__\n");
 
   for (int i = 0; i < message_generators_.size(); i++) {
     if (i > 0) {
@@ -1509,7 +1468,7 @@ void FileGenerator::GenerateInlineFunctionDefinitions(io::Printer* printer) {
 }
 
 void FileGenerator::GenerateProto2NamespaceEnumSpecializations(
-    io::Printer* printer) {
+    io::Printer *printer) {
   Formatter format(printer, variables_);
   // Emit GetEnumDescriptor specializations into google::protobuf namespace:
   if (HasEnumDefinitions(file_)) {
@@ -1525,7 +1484,7 @@ void FileGenerator::GenerateProto2NamespaceEnumSpecializations(
   }
 }
 
-}  // namespace cpp
-}  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+} // namespace cpp
+} // namespace compiler
+} // namespace protobuf
+} // namespace google

@@ -32,11 +32,11 @@
 
 #include <type_traits>
 
-#include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/generated_message_table_driven_lite.h>
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 #include <google/protobuf/metadata.h>
 #include <google/protobuf/repeated_field.h>
+#include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/wire_format_lite.h>
 
@@ -46,7 +46,7 @@ namespace internal {
 
 namespace {
 
-UnknownFieldSet* MutableUnknownFields(MessageLite* msg, int64 arena_offset) {
+UnknownFieldSet *MutableUnknownFields(MessageLite *msg, int64 arena_offset) {
   return Raw<InternalMetadataWithArena>(msg, arena_offset)
       ->mutable_unknown_fields();
 }
@@ -56,15 +56,15 @@ struct UnknownFieldHandler {
   // and conflating InternalMetaData into it, simplifying the template.
   static constexpr bool IsLite() { return false; }
 
-  static bool Skip(MessageLite* msg, const ParseTable& table,
-                   io::CodedInputStream* input, int tag) {
+  static bool Skip(MessageLite *msg, const ParseTable &table,
+                   io::CodedInputStream *input, int tag) {
     GOOGLE_DCHECK(table.unknown_field_set);
 
     return WireFormat::SkipField(input, tag,
                                  MutableUnknownFields(msg, table.arena_offset));
   }
 
-  static void Varint(MessageLite* msg, const ParseTable& table, int tag,
+  static void Varint(MessageLite *msg, const ParseTable &table, int tag,
                      int value) {
     GOOGLE_DCHECK(table.unknown_field_set);
 
@@ -72,34 +72,34 @@ struct UnknownFieldHandler {
         ->AddVarint(WireFormatLite::GetTagFieldNumber(tag), value);
   }
 
-  static bool ParseExtension(MessageLite* msg, const ParseTable& table,
-                             io::CodedInputStream* input, int tag) {
-    ExtensionSet* extensions = GetExtensionSet(msg, table.extension_offset);
+  static bool ParseExtension(MessageLite *msg, const ParseTable &table,
+                             io::CodedInputStream *input, int tag) {
+    ExtensionSet *extensions = GetExtensionSet(msg, table.extension_offset);
     if (extensions == NULL) {
       return false;
     }
 
-    const Message* prototype =
-        down_cast<const Message*>(table.default_instance());
+    const Message *prototype =
+        down_cast<const Message *>(table.default_instance());
 
     GOOGLE_DCHECK(prototype != NULL);
     GOOGLE_DCHECK(table.unknown_field_set);
-    UnknownFieldSet* unknown_fields =
+    UnknownFieldSet *unknown_fields =
         MutableUnknownFields(msg, table.arena_offset);
 
     return extensions->ParseField(tag, input, prototype, unknown_fields);
   }
 };
 
-}  // namespace
+} // namespace
 
-bool MergePartialFromCodedStream(MessageLite* msg, const ParseTable& table,
-                                 io::CodedInputStream* input) {
+bool MergePartialFromCodedStream(MessageLite *msg, const ParseTable &table,
+                                 io::CodedInputStream *input) {
   return MergePartialFromCodedStreamImpl<UnknownFieldHandler,
                                          InternalMetadataWithArena>(msg, table,
                                                                     input);
 }
 
-}  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+} // namespace internal
+} // namespace protobuf
+} // namespace google

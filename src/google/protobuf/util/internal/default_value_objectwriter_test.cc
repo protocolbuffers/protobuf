@@ -28,11 +28,11 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include <google/protobuf/util/internal/constants.h>
 #include <google/protobuf/util/internal/default_value_objectwriter.h>
 #include <google/protobuf/util/internal/expecting_objectwriter.h>
 #include <google/protobuf/util/internal/testdata/default_value_test.pb.h>
 #include <google/protobuf/util/internal/type_info_test_helper.h>
-#include <google/protobuf/util/internal/constants.h>
 #include <gtest/gtest.h>
 
 namespace google {
@@ -47,8 +47,8 @@ using proto_util_converter::testing::DefaultValueTest;
 // different descriptors.
 class BaseDefaultValueObjectWriterTest
     : public ::testing::TestWithParam<testing::TypeInfoSource> {
- protected:
-  explicit BaseDefaultValueObjectWriterTest(const Descriptor* descriptor)
+protected:
+  explicit BaseDefaultValueObjectWriterTest(const Descriptor *descriptor)
       : helper_(GetParam()), mock_(), expects_(&mock_) {
     helper_.ResetTypeInfo(descriptor);
     testing_.reset(helper_.NewDefaultValueWriter(
@@ -67,7 +67,7 @@ class BaseDefaultValueObjectWriterTest
 // Tests to cover some basic DefaultValueObjectWriter use cases. More tests are
 // in the marshalling_test.cc and translator_integration_test.cc.
 class DefaultValueObjectWriterTest : public BaseDefaultValueObjectWriterTest {
- protected:
+protected:
   DefaultValueObjectWriterTest()
       : BaseDefaultValueObjectWriterTest(DefaultValueTest::descriptor()) {}
   virtual ~DefaultValueObjectWriterTest() {}
@@ -75,8 +75,7 @@ class DefaultValueObjectWriterTest : public BaseDefaultValueObjectWriterTest {
 
 INSTANTIATE_TEST_SUITE_P(DifferentTypeInfoSourceTest,
                          DefaultValueObjectWriterTest,
-                         ::testing::Values(
-                             testing::USE_TYPE_RESOLVER));
+                         ::testing::Values(testing::USE_TYPE_RESOLVER));
 
 TEST_P(DefaultValueObjectWriterTest, Empty) {
   // Set expectation
@@ -149,10 +148,9 @@ TEST_P(DefaultValueObjectWriterTest, ShouldRetainUnknownField) {
       ->EndObject();
 }
 
-
 class DefaultValueObjectWriterSuppressListTest
     : public BaseDefaultValueObjectWriterTest {
- protected:
+protected:
   DefaultValueObjectWriterSuppressListTest()
       : BaseDefaultValueObjectWriterTest(DefaultValueTest::descriptor()) {
     testing_->set_suppress_empty_list(true);
@@ -162,8 +160,7 @@ class DefaultValueObjectWriterSuppressListTest
 
 INSTANTIATE_TEST_SUITE_P(DifferentTypeInfoSourceTest,
                          DefaultValueObjectWriterSuppressListTest,
-                         ::testing::Values(
-                             testing::USE_TYPE_RESOLVER));
+                         ::testing::Values(testing::USE_TYPE_RESOLVER));
 
 TEST_P(DefaultValueObjectWriterSuppressListTest, Empty) {
   // Set expectation. Emtpy lists should be suppressed.
@@ -183,8 +180,8 @@ TEST_P(DefaultValueObjectWriterSuppressListTest, Empty) {
   // Actual testing
   testing_->StartObject("")->EndObject();
 }
-}  // namespace testing
-}  // namespace converter
-}  // namespace util
-}  // namespace protobuf
-}  // namespace google
+} // namespace testing
+} // namespace converter
+} // namespace util
+} // namespace protobuf
+} // namespace google

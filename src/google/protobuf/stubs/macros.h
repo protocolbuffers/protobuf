@@ -37,15 +37,15 @@ namespace google {
 namespace protobuf {
 
 #undef GOOGLE_DISALLOW_EVIL_CONSTRUCTORS
-#define GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(TypeName)    \
-  TypeName(const TypeName&);                           \
-  void operator=(const TypeName&)
+#define GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(TypeName)                            \
+  TypeName(const TypeName &);                                                  \
+  void operator=(const TypeName &)
 
 #undef GOOGLE_DISALLOW_IMPLICIT_CONSTRUCTORS
-#define GOOGLE_DISALLOW_IMPLICIT_CONSTRUCTORS(TypeName) \
-  TypeName();                                           \
-  TypeName(const TypeName&);                            \
-  void operator=(const TypeName&)
+#define GOOGLE_DISALLOW_IMPLICIT_CONSTRUCTORS(TypeName)                        \
+  TypeName();                                                                  \
+  TypeName(const TypeName &);                                                  \
+  void operator=(const TypeName &)
 
 // ===================================================================
 // from google3/base/basictypes.h
@@ -85,8 +85,8 @@ namespace protobuf {
 // Kudos to Jorg Brown for this simple and elegant implementation.
 
 #undef GOOGLE_ARRAYSIZE
-#define GOOGLE_ARRAYSIZE(a) \
-  ((sizeof(a) / sizeof(*(a))) / \
+#define GOOGLE_ARRAYSIZE(a)                                                    \
+  ((sizeof(a) / sizeof(*(a))) /                                                \
    static_cast<size_t>(!(sizeof(a) % sizeof(*(a)))))
 
 // The COMPILE_ASSERT macro can be used to verify that a compile time
@@ -106,15 +106,13 @@ namespace protobuf {
 
 namespace internal {
 
-template <bool>
-struct CompileAssert {
-};
+template <bool> struct CompileAssert {};
 
-}  // namespace internal
+} // namespace internal
 
 #define GOOGLE_COMPILE_ASSERT(expr, msg) static_assert(expr, #msg)
 
-}  // namespace protobuf
-}  // namespace google
+} // namespace protobuf
+} // namespace google
 
-#endif  // GOOGLE_PROTOBUF_MACROS_H__
+#endif // GOOGLE_PROTOBUF_MACROS_H__

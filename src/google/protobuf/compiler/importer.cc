@@ -47,10 +47,10 @@
 
 #include <google/protobuf/compiler/importer.h>
 #include <google/protobuf/compiler/parser.h>
+#include <google/protobuf/io/io_win32.h>
 #include <google/protobuf/io/tokenizer.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/io/io_win32.h>
 
 #ifdef _WIN32
 #include <ctype.h>
@@ -70,7 +70,7 @@ using google::protobuf::io::win32::open;
 // Returns true if the text looks like a Windows-style absolute path, starting
 // with a drive letter.  Example:  "C:\foo".  TODO(kenton):  Share this with
 // copy in command_line_interface.cc?
-static bool IsWindowsAbsolutePath(const std::string& text) {
+static bool IsWindowsAbsolutePath(const std::string &text) {
 #if defined(_WIN32) || defined(__CYGWIN__)
   return text.size() >= 3 && text[1] == ':' && isalpha(text[0]) &&
          (text[2] == '/' || text[2] == '\\') && text.find_last_of(':') == 1;
@@ -87,9 +87,9 @@ MultiFileErrorCollector::~MultiFileErrorCollector() {}
 // - It lets us check if any errors have occurred.
 class SourceTreeDescriptorDatabase::SingleFileErrorCollector
     : public io::ErrorCollector {
- public:
-  SingleFileErrorCollector(const std::string& filename,
-                           MultiFileErrorCollector* multi_file_error_collector)
+public:
+  SingleFileErrorCollector(const std::string &filename,
+                           MultiFileErrorCollector *multi_file_error_collector)
       : filename_(filename),
         multi_file_error_collector_(multi_file_error_collector),
         had_errors_(false) {}
@@ -98,41 +98,37 @@ class SourceTreeDescriptorDatabase::SingleFileErrorCollector
   bool had_errors() { return had_errors_; }
 
   // implements ErrorCollector ---------------------------------------
-  void AddError(int line, int column, const std::string& message) override {
+  void AddError(int line, int column, const std::string &message) override {
     if (multi_file_error_collector_ != NULL) {
       multi_file_error_collector_->AddError(filename_, line, column, message);
     }
     had_errors_ = true;
   }
 
- private:
+private:
   std::string filename_;
-  MultiFileErrorCollector* multi_file_error_collector_;
+  MultiFileErrorCollector *multi_file_error_collector_;
   bool had_errors_;
 };
 
 // ===================================================================
 
 SourceTreeDescriptorDatabase::SourceTreeDescriptorDatabase(
-    SourceTree* source_tree)
-    : source_tree_(source_tree),
-      fallback_database_(nullptr),
-      error_collector_(nullptr),
-      using_validation_error_collector_(false),
+    SourceTree *source_tree)
+    : source_tree_(source_tree), fallback_database_(nullptr),
+      error_collector_(nullptr), using_validation_error_collector_(false),
       validation_error_collector_(this) {}
 
 SourceTreeDescriptorDatabase::SourceTreeDescriptorDatabase(
-    SourceTree* source_tree, DescriptorDatabase* fallback_database)
-    : source_tree_(source_tree),
-      fallback_database_(fallback_database),
-      error_collector_(nullptr),
-      using_validation_error_collector_(false),
+    SourceTree *source_tree, DescriptorDatabase *fallback_database)
+    : source_tree_(source_tree), fallback_database_(fallback_database),
+      error_collector_(nullptr), using_validation_error_collector_(false),
       validation_error_collector_(this) {}
 
 SourceTreeDescriptorDatabase::~SourceTreeDescriptorDatabase() {}
 
-bool SourceTreeDescriptorDatabase::FindFileByName(const std::string& filename,
-                                                  FileDescriptorProto* output) {
+bool SourceTreeDescriptorDatabase::FindFileByName(const std::string &filename,
+                                                  FileDescriptorProto *output) {
   std::unique_ptr<io::ZeroCopyInputStream> input(source_tree_->Open(filename));
   if (input == NULL) {
     if (fallback_database_ != nullptr &&
@@ -164,30 +160,31 @@ bool SourceTreeDescriptorDatabase::FindFileByName(const std::string& filename,
 }
 
 bool SourceTreeDescriptorDatabase::FindFileContainingSymbol(
-    const std::string& symbol_name, FileDescriptorProto* output) {
+    const std::string &symbol_name, FileDescriptorProto *output) {
   return false;
 }
 
 bool SourceTreeDescriptorDatabase::FindFileContainingExtension(
-    const std::string& containing_type, int field_number,
-    FileDescriptorProto* output) {
+    const std::string &containing_type, int field_number,
+    FileDescriptorProto *output) {
   return false;
 }
 
 // -------------------------------------------------------------------
 
 SourceTreeDescriptorDatabase::ValidationErrorCollector::
-    ValidationErrorCollector(SourceTreeDescriptorDatabase* owner)
+    ValidationErrorCollector(SourceTreeDescriptorDatabase *owner)
     : owner_(owner) {}
 
 SourceTreeDescriptorDatabase::ValidationErrorCollector::
     ~ValidationErrorCollector() {}
 
 void SourceTreeDescriptorDatabase::ValidationErrorCollector::AddError(
-    const std::string& filename, const std::string& element_name,
-    const Message* descriptor, ErrorLocation location,
-    const std::string& message) {
-  if (owner_->error_collector_ == NULL) return;
+    const std::string &filename, const std::string &element_name,
+    const Message *descriptor, ErrorLocation location,
+    const std::string &message) {
+  if (owner_->error_collector_ == NULL)
+    return;
 
   int line, column;
   if (location == DescriptorPool::ErrorCollector::IMPORT) {
@@ -200,10 +197,11 @@ void SourceTreeDescriptorDatabase::ValidationErrorCollector::AddError(
 }
 
 void SourceTreeDescriptorDatabase::ValidationErrorCollector::AddWarning(
-    const std::string& filename, const std::string& element_name,
-    const Message* descriptor, ErrorLocation location,
-    const std::string& message) {
-  if (owner_->error_collector_ == NULL) return;
+    const std::string &filename, const std::string &element_name,
+    const Message *descriptor, ErrorLocation location,
+    const std::string &message) {
+  if (owner_->error_collector_ == NULL)
+    return;
 
   int line, column;
   if (location == DescriptorPool::ErrorCollector::IMPORT) {
@@ -217,8 +215,8 @@ void SourceTreeDescriptorDatabase::ValidationErrorCollector::AddWarning(
 
 // ===================================================================
 
-Importer::Importer(SourceTree* source_tree,
-                   MultiFileErrorCollector* error_collector)
+Importer::Importer(SourceTree *source_tree,
+                   MultiFileErrorCollector *error_collector)
     : database_(source_tree),
       pool_(&database_, database_.GetValidationErrorCollector()) {
   pool_.EnforceWeakDependencies(true);
@@ -227,18 +225,17 @@ Importer::Importer(SourceTree* source_tree,
 
 Importer::~Importer() {}
 
-const FileDescriptor* Importer::Import(const std::string& filename) {
+const FileDescriptor *Importer::Import(const std::string &filename) {
   return pool_.FindFileByName(filename);
 }
 
-void Importer::AddUnusedImportTrackFile(const std::string& file_name) {
+void Importer::AddUnusedImportTrackFile(const std::string &file_name) {
   pool_.AddUnusedImportTrackFile(file_name);
 }
 
 void Importer::ClearUnusedImportTrackFiles() {
   pool_.ClearUnusedImportTrackFiles();
 }
-
 
 // ===================================================================
 
@@ -250,7 +247,7 @@ DiskSourceTree::DiskSourceTree() {}
 
 DiskSourceTree::~DiskSourceTree() {}
 
-static inline char LastChar(const std::string& str) {
+static inline char LastChar(const std::string &str) {
   return str[str.size() - 1];
 }
 
@@ -287,8 +284,8 @@ static std::string CanonicalizePath(std::string path) {
 #endif
 
   std::vector<std::string> canonical_parts;
-  std::vector<std::string> parts = Split(
-      path, "/", true);  // Note:  Removes empty parts.
+  std::vector<std::string> parts =
+      Split(path, "/", true); // Note:  Removes empty parts.
   for (int i = 0; i < parts.size(); i++) {
     if (parts[i] == ".") {
       // Ignore.
@@ -309,7 +306,7 @@ static std::string CanonicalizePath(std::string path) {
   return result;
 }
 
-static inline bool ContainsParentReference(const std::string& path) {
+static inline bool ContainsParentReference(const std::string &path) {
   return path == ".." || HasPrefixString(path, "../") ||
          HasSuffixString(path, "/..") || path.find("/../") != string::npos;
 }
@@ -331,9 +328,9 @@ static inline bool ContainsParentReference(const std::string& path) {
 //   assert(!ApplyMapping("foo/bar", "baz", "qux", &result));
 //   assert(!ApplyMapping("foo/bar", "baz", "qux", &result));
 //   assert(!ApplyMapping("foobar", "foo", "baz", &result));
-static bool ApplyMapping(const std::string& filename,
-                         const std::string& old_prefix,
-                         const std::string& new_prefix, std::string* result) {
+static bool ApplyMapping(const std::string &filename,
+                         const std::string &old_prefix,
+                         const std::string &new_prefix, std::string *result) {
   if (old_prefix.empty()) {
     // old_prefix matches any relative path.
     if (ContainsParentReference(filename)) {
@@ -345,7 +342,8 @@ static bool ApplyMapping(const std::string& filename,
       return false;
     }
     result->assign(new_prefix);
-    if (!result->empty()) result->push_back('/');
+    if (!result->empty())
+      result->push_back('/');
     result->append(filename);
     return true;
   } else if (HasPrefixString(filename, old_prefix)) {
@@ -375,7 +373,8 @@ static bool ApplyMapping(const std::string& filename,
           return false;
         }
         result->assign(new_prefix);
-        if (!result->empty()) result->push_back('/');
+        if (!result->empty())
+          result->push_back('/');
         result->append(after_prefix);
         return true;
       }
@@ -385,15 +384,15 @@ static bool ApplyMapping(const std::string& filename,
   return false;
 }
 
-void DiskSourceTree::MapPath(const std::string& virtual_path,
-                             const std::string& disk_path) {
+void DiskSourceTree::MapPath(const std::string &virtual_path,
+                             const std::string &disk_path) {
   mappings_.push_back(Mapping(virtual_path, CanonicalizePath(disk_path)));
 }
 
 DiskSourceTree::DiskFileToVirtualFileResult
-DiskSourceTree::DiskFileToVirtualFile(const std::string& disk_file,
-                                      std::string* virtual_file,
-                                      std::string* shadowing_disk_file) {
+DiskSourceTree::DiskFileToVirtualFile(const std::string &disk_file,
+                                      std::string *virtual_file,
+                                      std::string *shadowing_disk_file) {
   int mapping_index = -1;
   std::string canonical_disk_file = CanonicalizePath(disk_file);
 
@@ -435,14 +434,14 @@ DiskSourceTree::DiskFileToVirtualFile(const std::string& disk_file,
   return SUCCESS;
 }
 
-bool DiskSourceTree::VirtualFileToDiskFile(const std::string& virtual_file,
-                                           std::string* disk_file) {
+bool DiskSourceTree::VirtualFileToDiskFile(const std::string &virtual_file,
+                                           std::string *disk_file) {
   std::unique_ptr<io::ZeroCopyInputStream> stream(
       OpenVirtualFile(virtual_file, disk_file));
   return stream != NULL;
 }
 
-io::ZeroCopyInputStream* DiskSourceTree::Open(const std::string& filename) {
+io::ZeroCopyInputStream *DiskSourceTree::Open(const std::string &filename) {
   return OpenVirtualFile(filename, NULL);
 }
 
@@ -450,16 +449,16 @@ std::string DiskSourceTree::GetLastErrorMessage() {
   return last_error_message_;
 }
 
-io::ZeroCopyInputStream* DiskSourceTree::OpenVirtualFile(
-    const std::string& virtual_file, std::string* disk_file) {
+io::ZeroCopyInputStream *
+DiskSourceTree::OpenVirtualFile(const std::string &virtual_file,
+                                std::string *disk_file) {
   if (virtual_file != CanonicalizePath(virtual_file) ||
       ContainsParentReference(virtual_file)) {
     // We do not allow importing of paths containing things like ".." or
     // consecutive slashes since the compiler expects files to be uniquely
     // identified by file name.
-    last_error_message_ =
-        "Backslashes, consecutive slashes, \".\", or \"..\" "
-        "are not allowed in the virtual path";
+    last_error_message_ = "Backslashes, consecutive slashes, \".\", or \"..\" "
+                          "are not allowed in the virtual path";
     return NULL;
   }
 
@@ -467,7 +466,7 @@ io::ZeroCopyInputStream* DiskSourceTree::OpenVirtualFile(
     std::string temp_disk_file;
     if (ApplyMapping(virtual_file, mappings_[i].virtual_path,
                      mappings_[i].disk_path, &temp_disk_file)) {
-      io::ZeroCopyInputStream* stream = OpenDiskFile(temp_disk_file);
+      io::ZeroCopyInputStream *stream = OpenDiskFile(temp_disk_file);
       if (stream != NULL) {
         if (disk_file != NULL) {
           *disk_file = temp_disk_file;
@@ -487,14 +486,14 @@ io::ZeroCopyInputStream* DiskSourceTree::OpenVirtualFile(
   return NULL;
 }
 
-io::ZeroCopyInputStream* DiskSourceTree::OpenDiskFile(
-    const std::string& filename) {
+io::ZeroCopyInputStream *
+DiskSourceTree::OpenDiskFile(const std::string &filename) {
   int file_descriptor;
   do {
     file_descriptor = open(filename.c_str(), O_RDONLY);
   } while (file_descriptor < 0 && errno == EINTR);
   if (file_descriptor >= 0) {
-    io::FileInputStream* result = new io::FileInputStream(file_descriptor);
+    io::FileInputStream *result = new io::FileInputStream(file_descriptor);
     result->SetCloseOnDelete(true);
     return result;
   } else {
@@ -502,6 +501,6 @@ io::ZeroCopyInputStream* DiskSourceTree::OpenDiskFile(
   }
 }
 
-}  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+} // namespace compiler
+} // namespace protobuf
+} // namespace google

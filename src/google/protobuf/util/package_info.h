@@ -42,5 +42,5 @@ namespace protobuf {
 // conversion, well known types, etc.
 namespace util {}
 
-}  // namespace protobuf
-}  // namespace google
+} // namespace protobuf
+} // namespace google

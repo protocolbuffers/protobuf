@@ -31,12 +31,11 @@
 #ifndef GOOGLE_PROTOBUF_MAP_TEST_UTIL_IMPL_H__
 #define GOOGLE_PROTOBUF_MAP_TEST_UTIL_IMPL_H__
 
-#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
 #include <gtest/gtest.h>
 
-
-namespace protobuf_unittest {}  // namespace protobuf_unittest
+namespace protobuf_unittest {} // namespace protobuf_unittest
 
 namespace google {
 namespace protobuf {
@@ -44,52 +43,52 @@ namespace protobuf {
 namespace unittest = ::protobuf_unittest;
 
 class MapTestUtilImpl {
- public:
+public:
   // Set every field in the TestMap message to a unique value.
   template <typename EnumType, EnumType enum_value0, EnumType enum_value1,
             typename MapMessage>
-  static void SetMapFields(MapMessage* message);
+  static void SetMapFields(MapMessage *message);
 
   // Set every field in the TestArenaMap message to a unique value.
   template <typename EnumType, EnumType enum_value0, EnumType enum_value1,
             typename MapMessage>
-  static void SetArenaMapFields(MapMessage* message);
+  static void SetArenaMapFields(MapMessage *message);
 
   // Set every field in the message to a default value.
   template <typename MapMessage>
-  static void SetMapFieldsInitialized(MapMessage* message);
+  static void SetMapFieldsInitialized(MapMessage *message);
 
   // Modify all the map fields of the message (which should already have been
   // initialized with SetMapFields()).
   template <typename EnumType, EnumType enum_value, typename MapMessage>
-  static void ModifyMapFields(MapMessage* message);
+  static void ModifyMapFields(MapMessage *message);
 
   // Check that all fields have the values that they should have after
   // SetMapFields() is called.
   template <typename EnumType, EnumType enum_value0, EnumType enum_value1,
             typename MapMessage>
-  static void ExpectMapFieldsSet(const MapMessage& message);
+  static void ExpectMapFieldsSet(const MapMessage &message);
 
   // Check that all fields have the values that they should have after
   // SetMapFields() is called for TestArenaMap.
   template <typename EnumType, EnumType enum_value0, EnumType enum_value1,
             typename MapMessage>
-  static void ExpectArenaMapFieldsSet(const MapMessage& message);
+  static void ExpectArenaMapFieldsSet(const MapMessage &message);
 
   // Check that all fields have the values that they should have after
   // SetMapFieldsInitialized() is called.
   template <typename EnumType, EnumType enum_value, typename MapMessage>
-  static void ExpectMapFieldsSetInitialized(const MapMessage& message);
+  static void ExpectMapFieldsSetInitialized(const MapMessage &message);
 
   // Expect that the message is modified as would be expected from
   // ModifyMapFields().
   template <typename EnumType, EnumType enum_value0, EnumType enum_value1,
             typename MapMessage>
-  static void ExpectMapFieldsModified(const MapMessage& message);
+  static void ExpectMapFieldsModified(const MapMessage &message);
 
   // Check that all fields are empty.
   template <typename MapMessage>
-  static void ExpectClear(const MapMessage& message);
+  static void ExpectClear(const MapMessage &message);
 
   // // Check that all map fields have the given size.
   // template <typename MapMessage>
@@ -106,7 +105,7 @@ class MapTestUtilImpl {
 
 template <typename EnumType, EnumType enum_value0, EnumType enum_value1,
           typename MapMessage>
-void MapTestUtilImpl::SetMapFields(MapMessage* message) {
+void MapTestUtilImpl::SetMapFields(MapMessage *message) {
   // Add first element.
   (*message->mutable_map_int32_int32())[0] = 0;
   (*message->mutable_map_int64_int64())[0] = 0;
@@ -148,7 +147,7 @@ void MapTestUtilImpl::SetMapFields(MapMessage* message) {
 
 template <typename EnumType, EnumType enum_value0, EnumType enum_value1,
           typename MapMessage>
-void MapTestUtilImpl::SetArenaMapFields(MapMessage* message) {
+void MapTestUtilImpl::SetArenaMapFields(MapMessage *message) {
   // Add first element.
   (*message->mutable_map_int32_int32())[0] = 0;
   (*message->mutable_map_int64_int64())[0] = 0;
@@ -191,7 +190,7 @@ void MapTestUtilImpl::SetArenaMapFields(MapMessage* message) {
 }
 
 template <typename MapMessage>
-void MapTestUtilImpl::SetMapFieldsInitialized(MapMessage* message) {
+void MapTestUtilImpl::SetMapFieldsInitialized(MapMessage *message) {
   // Add first element using bracket operator, which should assign default
   // value automatically.
   (*message->mutable_map_int32_int32())[0];
@@ -214,7 +213,7 @@ void MapTestUtilImpl::SetMapFieldsInitialized(MapMessage* message) {
 }
 
 template <typename EnumType, EnumType enum_value, typename MapMessage>
-void MapTestUtilImpl::ModifyMapFields(MapMessage* message) {
+void MapTestUtilImpl::ModifyMapFields(MapMessage *message) {
   (*message->mutable_map_int32_int32())[1] = 2;
   (*message->mutable_map_int64_int64())[1] = 2;
   (*message->mutable_map_uint32_uint32())[1] = 2;
@@ -235,7 +234,7 @@ void MapTestUtilImpl::ModifyMapFields(MapMessage* message) {
 }
 
 template <typename MapMessage>
-void MapTestUtilImpl::ExpectClear(const MapMessage& message) {
+void MapTestUtilImpl::ExpectClear(const MapMessage &message) {
   EXPECT_EQ(0, message.map_int32_int32().size());
   EXPECT_EQ(0, message.map_int64_int64().size());
   EXPECT_EQ(0, message.map_uint32_uint32().size());
@@ -257,7 +256,7 @@ void MapTestUtilImpl::ExpectClear(const MapMessage& message) {
 
 template <typename EnumType, EnumType enum_value0, EnumType enum_value1,
           typename MapMessage>
-void MapTestUtilImpl::ExpectMapFieldsSet(const MapMessage& message) {
+void MapTestUtilImpl::ExpectMapFieldsSet(const MapMessage &message) {
   ASSERT_EQ(2, message.map_int32_int32().size());
   ASSERT_EQ(2, message.map_int64_int64().size());
   ASSERT_EQ(2, message.map_uint32_uint32().size());
@@ -315,7 +314,7 @@ void MapTestUtilImpl::ExpectMapFieldsSet(const MapMessage& message) {
 
 template <typename EnumType, EnumType enum_value0, EnumType enum_value1,
           typename MapMessage>
-void MapTestUtilImpl::ExpectArenaMapFieldsSet(const MapMessage& message) {
+void MapTestUtilImpl::ExpectArenaMapFieldsSet(const MapMessage &message) {
   EXPECT_EQ(2, message.map_int32_int32().size());
   EXPECT_EQ(2, message.map_int64_int64().size());
   EXPECT_EQ(2, message.map_uint32_uint32().size());
@@ -375,7 +374,7 @@ void MapTestUtilImpl::ExpectArenaMapFieldsSet(const MapMessage& message) {
 }
 
 template <typename EnumType, EnumType enum_value, typename MapMessage>
-void MapTestUtilImpl::ExpectMapFieldsSetInitialized(const MapMessage& message) {
+void MapTestUtilImpl::ExpectMapFieldsSetInitialized(const MapMessage &message) {
   EXPECT_EQ(1, message.map_int32_int32().size());
   EXPECT_EQ(1, message.map_int64_int64().size());
   EXPECT_EQ(1, message.map_uint32_uint32().size());
@@ -415,7 +414,7 @@ void MapTestUtilImpl::ExpectMapFieldsSetInitialized(const MapMessage& message) {
 
 template <typename EnumType, EnumType enum_value0, EnumType enum_value1,
           typename MapMessage>
-void MapTestUtilImpl::ExpectMapFieldsModified(const MapMessage& message) {
+void MapTestUtilImpl::ExpectMapFieldsModified(const MapMessage &message) {
   // ModifyMapFields only sets the second element of each field.  In addition to
   // verifying this, we also verify that the first element and size were *not*
   // modified.
@@ -475,7 +474,7 @@ void MapTestUtilImpl::ExpectMapFieldsModified(const MapMessage& message) {
   EXPECT_EQ(2, message.map_int32_foreign_message().at(1).c());
 }
 
-}  // namespace protobuf
-}  // namespace google
+} // namespace protobuf
+} // namespace google
 
-#endif  // GOOGLE_PROTOBUF_MAP_TEST_UTIL_IMPL_H__
+#endif // GOOGLE_PROTOBUF_MAP_TEST_UTIL_IMPL_H__

@@ -18,8 +18,8 @@ static const int64 kSecondsPer400Years =
 // Seconds from 0001-01-01T00:00:00 to 1970-01-01T:00:00:00
 static const int64 kSecondsFromEraToEpoch = 62135596800LL;
 // The range of timestamp values we support.
-static const int64 kMinTime = -62135596800LL;  // 0001-01-01T00:00:00
-static const int64 kMaxTime = 253402300799LL;  // 9999-12-31T23:59:59
+static const int64 kMinTime = -62135596800LL; // 0001-01-01T00:00:00
+static const int64 kMaxTime = 253402300799LL; // 9999-12-31T23:59:59
 
 static const int kNanosPerMillisecond = 1000000;
 static const int kNanosPerMicrosecond = 1000;
@@ -55,9 +55,8 @@ int64 SecondsPerYear(int year) {
   return kSecondsPerDay * (IsLeapYear(year) ? 366 : 365);
 }
 
-static const int kDaysInMonth[13] = {
-  0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
-};
+static const int kDaysInMonth[13] = {0,  31, 28, 31, 30, 31, 30,
+                                     31, 31, 30, 31, 30, 31};
 
 int64 SecondsPerMonth(int month, bool leap) {
   if (month == 2 && leap) {
@@ -67,16 +66,14 @@ int64 SecondsPerMonth(int month, bool leap) {
 }
 
 static const int kDaysSinceJan[13] = {
-  0, 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334,
+    0, 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334,
 };
 
-bool ValidateDateTime(const DateTime& time) {
-  if (time.year < 1 || time.year > 9999 ||
-      time.month < 1 || time.month > 12 ||
-      time.day < 1 || time.day > 31 ||
-      time.hour < 0 || time.hour > 23 ||
-      time.minute < 0 || time.minute > 59 ||
-      time.second < 0 || time.second > 59) {
+bool ValidateDateTime(const DateTime &time) {
+  if (time.year < 1 || time.year > 9999 || time.month < 1 || time.month > 12 ||
+      time.day < 1 || time.day > 31 || time.hour < 0 || time.hour > 23 ||
+      time.minute < 0 || time.minute > 59 || time.second < 0 ||
+      time.second > 59) {
     return false;
   }
   if (time.month == 2 && IsLeapYear(time.year)) {
@@ -88,7 +85,7 @@ bool ValidateDateTime(const DateTime& time) {
 
 // Count the number of seconds elapsed from 0001-01-01T00:00:00 to the given
 // time.
-int64 SecondsSinceCommonEra(const DateTime& time) {
+int64 SecondsSinceCommonEra(const DateTime &time) {
   int64 result = 0;
   // Years should be between 1 and 9999.
   assert(time.year >= 1 && time.year <= 9999);
@@ -118,13 +115,11 @@ int64 SecondsSinceCommonEra(const DateTime& time) {
     result += kSecondsPerDay;
   }
   assert(time.day >= 1 &&
-         time.day <= (month == 2 && IsLeapYear(year)
-                          ? kDaysInMonth[month] + 1
-                          : kDaysInMonth[month]));
+         time.day <= (month == 2 && IsLeapYear(year) ? kDaysInMonth[month] + 1
+                                                     : kDaysInMonth[month]));
   result += kSecondsPerDay * (time.day - 1);
-  result += kSecondsPerHour * time.hour +
-      kSecondsPerMinute * time.minute +
-      time.second;
+  result += kSecondsPerHour * time.hour + kSecondsPerMinute * time.minute +
+            time.second;
   return result;
 }
 
@@ -144,8 +139,8 @@ string FormatNanos(int32 nanos) {
 // consumes at most "width" chars. Returns a pointer after the consumed
 // integer, or nullptr if the data does not start with an integer or the
 // integer value does not fall in the range of [min_value, max_value].
-const char* ParseInt(const char* data, int width, int min_value,
-                     int max_value, int* result) {
+const char *ParseInt(const char *data, int width, int min_value, int max_value,
+                     int *result) {
   if (!ascii_isdigit(*data)) {
     return nullptr;
   }
@@ -167,7 +162,7 @@ const char* ParseInt(const char* data, int width, int min_value,
 
 // Consumes the fractional parts of a second into nanos. For example,
 // "010" will be parsed to 10000000 nanos.
-const char* ParseNanos(const char* data, int32* nanos) {
+const char *ParseNanos(const char *data, int32 *nanos) {
   if (!ascii_isdigit(*data)) {
     return nullptr;
   }
@@ -190,7 +185,7 @@ const char* ParseNanos(const char* data, int32* nanos) {
   return data;
 }
 
-const char* ParseTimezoneOffset(const char* data, int64* offset) {
+const char *ParseTimezoneOffset(const char *data, int64 *offset) {
   // Accept format "HH:MM". E.g., "08:00"
   int hour;
   if ((data = ParseInt(data, 2, 0, 23, &hour)) == nullptr) {
@@ -206,9 +201,9 @@ const char* ParseTimezoneOffset(const char* data, int64* offset) {
   *offset = (hour * 60 + minute) * 60;
   return data;
 }
-}  // namespace
+} // namespace
 
-bool SecondsToDateTime(int64 seconds, DateTime* time) {
+bool SecondsToDateTime(int64 seconds, DateTime *time) {
   if (seconds < kMinTime || seconds > kMaxTime) {
     return false;
   }
@@ -253,7 +248,7 @@ bool SecondsToDateTime(int64 seconds, DateTime* time) {
   return true;
 }
 
-bool DateTimeToSeconds(const DateTime& time, int64* seconds) {
+bool DateTimeToSeconds(const DateTime &time, int64 *seconds) {
   if (!ValidateDateTime(time)) {
     return false;
   }
@@ -261,7 +256,7 @@ bool DateTimeToSeconds(const DateTime& time, int64* seconds) {
   return true;
 }
 
-void GetCurrentTime(int64* seconds, int32* nanos) {
+void GetCurrentTime(int64 *seconds, int32 *nanos) {
   // TODO(xiaofeng): Improve the accuracy of this implementation (or just
   // remove this method from protobuf).
   *seconds = time(nullptr);
@@ -273,18 +268,18 @@ string FormatTime(int64 seconds, int32 nanos) {
   if (nanos < 0 || nanos > 999999999 || !SecondsToDateTime(seconds, &time)) {
     return "InvalidTime";
   }
-  string result = StringPrintf("%04d-%02d-%02dT%02d:%02d:%02d",
-                               time.year, time.month, time.day,
-                               time.hour, time.minute, time.second);
+  string result =
+      StringPrintf("%04d-%02d-%02dT%02d:%02d:%02d", time.year, time.month,
+                   time.day, time.hour, time.minute, time.second);
   if (nanos != 0) {
     result += "." + FormatNanos(nanos);
   }
   return result + "Z";
 }
 
-bool ParseTime(const string& value, int64* seconds, int32* nanos) {
+bool ParseTime(const string &value, int64 *seconds, int32 *nanos) {
   DateTime time;
-  const char* data = value.c_str();
+  const char *data = value.c_str();
   // We only accept:
   //   Z-normalized: 2015-05-20T13:29:35.120Z
   //   With UTC offset: 2015-05-20T13:29:35.120-08:00
@@ -294,31 +289,36 @@ bool ParseTime(const string& value, int64* seconds, int32* nanos) {
     return false;
   }
   // Expect '-'
-  if (*data++ != '-') return false;
+  if (*data++ != '-')
+    return false;
   // Parse month
   if ((data = ParseInt(data, 2, 1, 12, &time.month)) == nullptr) {
     return false;
   }
   // Expect '-'
-  if (*data++ != '-') return false;
+  if (*data++ != '-')
+    return false;
   // Parse day
   if ((data = ParseInt(data, 2, 1, 31, &time.day)) == nullptr) {
     return false;
   }
   // Expect 'T'
-  if (*data++ != 'T') return false;
+  if (*data++ != 'T')
+    return false;
   // Parse hour
   if ((data = ParseInt(data, 2, 0, 23, &time.hour)) == nullptr) {
     return false;
   }
   // Expect ':'
-  if (*data++ != ':') return false;
+  if (*data++ != ':')
+    return false;
   // Parse minute
   if ((data = ParseInt(data, 2, 0, 59, &time.minute)) == nullptr) {
     return false;
   }
   // Expect ':'
-  if (*data++ != ':') return false;
+  if (*data++ != ':')
+    return false;
   // Parse second
   if ((data = ParseInt(data, 2, 0, 59, &time.second)) == nullptr) {
     return false;
@@ -360,6 +360,6 @@ bool ParseTime(const string& value, int64* seconds, int32* nanos) {
   return *data == 0;
 }
 
-}  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+} // namespace internal
+} // namespace protobuf
+} // namespace google

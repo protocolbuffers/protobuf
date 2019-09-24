@@ -39,9 +39,9 @@
 #include <vector>
 
 #ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN  // We only need minimal includes
+#define WIN32_LEAN_AND_MEAN // We only need minimal includes
 #include <windows.h>
-#define snprintf _snprintf    // see comment in strutil.cc
+#define snprintf _snprintf // see comment in strutil.cc
 #elif defined(HAVE_PTHREAD)
 #include <pthread.h>
 #else
@@ -52,13 +52,13 @@
 #endif
 
 #include <google/protobuf/stubs/callback.h>
+#include <google/protobuf/stubs/int128.h>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/mutex.h>
 #include <google/protobuf/stubs/once.h>
 #include <google/protobuf/stubs/status.h>
 #include <google/protobuf/stubs/stringpiece.h>
 #include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/stubs/int128.h>
 
 #include <google/protobuf/port_def.inc>
 
@@ -67,31 +67,36 @@ namespace protobuf {
 
 namespace internal {
 
-void VerifyVersion(int headerVersion,
-                   int minLibraryVersion,
-                   const char* filename) {
+void VerifyVersion(int headerVersion, int minLibraryVersion,
+                   const char *filename) {
   if (GOOGLE_PROTOBUF_VERSION < minLibraryVersion) {
     // Library is too old for headers.
     GOOGLE_LOG(FATAL)
-      << "This program requires version " << VersionString(minLibraryVersion)
-      << " of the Protocol Buffer runtime library, but the installed version "
-         "is " << VersionString(GOOGLE_PROTOBUF_VERSION) << ".  Please update "
-         "your library.  If you compiled the program yourself, make sure that "
-         "your headers are from the same version of Protocol Buffers as your "
-         "link-time library.  (Version verification failed in \""
-      << filename << "\".)";
+        << "This program requires version " << VersionString(minLibraryVersion)
+        << " of the Protocol Buffer runtime library, but the installed version "
+           "is "
+        << VersionString(GOOGLE_PROTOBUF_VERSION)
+        << ".  Please update "
+           "your library.  If you compiled the program yourself, make sure "
+           "that "
+           "your headers are from the same version of Protocol Buffers as your "
+           "link-time library.  (Version verification failed in \""
+        << filename << "\".)";
   }
   if (headerVersion < kMinHeaderVersionForLibrary) {
     // Headers are too old for library.
     GOOGLE_LOG(FATAL)
-      << "This program was compiled against version "
-      << VersionString(headerVersion) << " of the Protocol Buffer runtime "
-         "library, which is not compatible with the installed version ("
-      << VersionString(GOOGLE_PROTOBUF_VERSION) <<  ").  Contact the program "
-         "author for an update.  If you compiled the program yourself, make "
-         "sure that your headers are from the same version of Protocol Buffers "
-         "as your link-time library.  (Version verification failed in \""
-      << filename << "\".)";
+        << "This program was compiled against version "
+        << VersionString(headerVersion)
+        << " of the Protocol Buffer runtime "
+           "library, which is not compatible with the installed version ("
+        << VersionString(GOOGLE_PROTOBUF_VERSION)
+        << ").  Contact the program "
+           "author for an update.  If you compiled the program yourself, make "
+           "sure that your headers are from the same version of Protocol "
+           "Buffers "
+           "as your link-time library.  (Version verification failed in \""
+        << filename << "\".)";
   }
 }
 
@@ -106,12 +111,12 @@ string VersionString(int version) {
   snprintf(buffer, sizeof(buffer), "%d.%d.%d", major, minor, micro);
 
   // Guard against broken MSVC snprintf().
-  buffer[sizeof(buffer)-1] = '\0';
+  buffer[sizeof(buffer) - 1] = '\0';
 
   return buffer;
 }
 
-}  // namespace internal
+} // namespace internal
 
 // ===================================================================
 // emulates google3/base/logging.cc
@@ -125,18 +130,18 @@ string VersionString(int version) {
 namespace internal {
 
 #if defined(__ANDROID__)
-inline void DefaultLogHandler(LogLevel level, const char* filename, int line,
-                              const string& message) {
+inline void DefaultLogHandler(LogLevel level, const char *filename, int line,
+                              const string &message) {
   if (level < GOOGLE_PROTOBUF_MIN_LOG_LEVEL) {
     return;
   }
-  static const char* level_names[] = {"INFO", "WARNING", "ERROR", "FATAL"};
+  static const char *level_names[] = {"INFO", "WARNING", "ERROR", "FATAL"};
 
   static const int android_log_levels[] = {
-      ANDROID_LOG_INFO,   // LOG(INFO),
-      ANDROID_LOG_WARN,   // LOG(WARNING)
-      ANDROID_LOG_ERROR,  // LOG(ERROR)
-      ANDROID_LOG_FATAL,  // LOG(FATAL)
+      ANDROID_LOG_INFO,  // LOG(INFO),
+      ANDROID_LOG_WARN,  // LOG(WARNING)
+      ANDROID_LOG_ERROR, // LOG(ERROR)
+      ANDROID_LOG_FATAL, // LOG(FATAL)
   };
 
   // Bound the logging level.
@@ -160,50 +165,50 @@ inline void DefaultLogHandler(LogLevel level, const char* filename, int line,
 }
 
 #else
-void DefaultLogHandler(LogLevel level, const char* filename, int line,
-                       const string& message) {
+void DefaultLogHandler(LogLevel level, const char *filename, int line,
+                       const string &message) {
   if (level < GOOGLE_PROTOBUF_MIN_LOG_LEVEL) {
     return;
   }
-  static const char* level_names[] = { "INFO", "WARNING", "ERROR", "FATAL" };
+  static const char *level_names[] = {"INFO", "WARNING", "ERROR", "FATAL"};
 
   // We use fprintf() instead of cerr because we want this to work at static
   // initialization time.
-  fprintf(stderr, "[libprotobuf %s %s:%d] %s\n",
-          level_names[level], filename, line, message.c_str());
-  fflush(stderr);  // Needed on MSVC.
+  fprintf(stderr, "[libprotobuf %s %s:%d] %s\n", level_names[level], filename,
+          line, message.c_str());
+  fflush(stderr); // Needed on MSVC.
 }
 #endif
 
-void NullLogHandler(LogLevel /* level */, const char* /* filename */,
-                    int /* line */, const string& /* message */) {
+void NullLogHandler(LogLevel /* level */, const char * /* filename */,
+                    int /* line */, const string & /* message */) {
   // Nothing.
 }
 
-static LogHandler* log_handler_ = &DefaultLogHandler;
+static LogHandler *log_handler_ = &DefaultLogHandler;
 static std::atomic<int> log_silencer_count_ = ATOMIC_VAR_INIT(0);
 
-LogMessage& LogMessage::operator<<(const string& value) {
+LogMessage &LogMessage::operator<<(const string &value) {
   message_ += value;
   return *this;
 }
 
-LogMessage& LogMessage::operator<<(const char* value) {
+LogMessage &LogMessage::operator<<(const char *value) {
   message_ += value;
   return *this;
 }
 
-LogMessage& LogMessage::operator<<(const StringPiece& value) {
+LogMessage &LogMessage::operator<<(const StringPiece &value) {
   message_ += value.ToString();
   return *this;
 }
 
-LogMessage& LogMessage::operator<<(const util::Status& status) {
+LogMessage &LogMessage::operator<<(const util::Status &status) {
   message_ += status.ToString();
   return *this;
 }
 
-LogMessage& LogMessage::operator<<(const uint128& value) {
+LogMessage &LogMessage::operator<<(const uint128 &value) {
   std::ostringstream str;
   str << value;
   message_ += str.str();
@@ -214,32 +219,32 @@ LogMessage& LogMessage::operator<<(const uint128& value) {
 // the results -- in fact, we probably prefer that.  So we use snprintf()
 // instead of Simple*toa().
 #undef DECLARE_STREAM_OPERATOR
-#define DECLARE_STREAM_OPERATOR(TYPE, FORMAT)                       \
-  LogMessage& LogMessage::operator<<(TYPE value) {                  \
-    /* 128 bytes should be big enough for any of the primitive */   \
-    /* values which we print with this, but well use snprintf() */  \
-    /* anyway to be extra safe. */                                  \
-    char buffer[128];                                               \
-    snprintf(buffer, sizeof(buffer), FORMAT, value);                \
-    /* Guard against broken MSVC snprintf(). */                     \
-    buffer[sizeof(buffer)-1] = '\0';                                \
-    message_ += buffer;                                             \
-    return *this;                                                   \
+#define DECLARE_STREAM_OPERATOR(TYPE, FORMAT)                                  \
+  LogMessage &LogMessage::operator<<(TYPE value) {                             \
+    /* 128 bytes should be big enough for any of the primitive */              \
+    /* values which we print with this, but well use snprintf() */             \
+    /* anyway to be extra safe. */                                             \
+    char buffer[128];                                                          \
+    snprintf(buffer, sizeof(buffer), FORMAT, value);                           \
+    /* Guard against broken MSVC snprintf(). */                                \
+    buffer[sizeof(buffer) - 1] = '\0';                                         \
+    message_ += buffer;                                                        \
+    return *this;                                                              \
   }
 
-DECLARE_STREAM_OPERATOR(char         , "%c" )
-DECLARE_STREAM_OPERATOR(int          , "%d" )
-DECLARE_STREAM_OPERATOR(unsigned int , "%u" )
-DECLARE_STREAM_OPERATOR(long         , "%ld")
+DECLARE_STREAM_OPERATOR(char, "%c")
+DECLARE_STREAM_OPERATOR(int, "%d")
+DECLARE_STREAM_OPERATOR(unsigned int, "%u")
+DECLARE_STREAM_OPERATOR(long, "%ld")
 DECLARE_STREAM_OPERATOR(unsigned long, "%lu")
-DECLARE_STREAM_OPERATOR(double       , "%g" )
-DECLARE_STREAM_OPERATOR(void*        , "%p" )
-DECLARE_STREAM_OPERATOR(long long         , "%" PROTOBUF_LL_FORMAT "d")
+DECLARE_STREAM_OPERATOR(double, "%g")
+DECLARE_STREAM_OPERATOR(void *, "%p")
+DECLARE_STREAM_OPERATOR(long long, "%" PROTOBUF_LL_FORMAT "d")
 DECLARE_STREAM_OPERATOR(unsigned long long, "%" PROTOBUF_LL_FORMAT "u")
 #undef DECLARE_STREAM_OPERATOR
 
-LogMessage::LogMessage(LogLevel level, const char* filename, int line)
-  : level_(level), filename_(filename), line_(line) {}
+LogMessage::LogMessage(LogLevel level, const char *filename, int line)
+    : level_(level), filename_(filename), line_(line) {}
 LogMessage::~LogMessage() {}
 
 void LogMessage::Finish() {
@@ -262,14 +267,12 @@ void LogMessage::Finish() {
   }
 }
 
-void LogFinisher::operator=(LogMessage& other) {
-  other.Finish();
-}
+void LogFinisher::operator=(LogMessage &other) { other.Finish(); }
 
-}  // namespace internal
+} // namespace internal
 
-LogHandler* SetLogHandler(LogHandler* new_func) {
-  LogHandler* old = internal::log_handler_;
+LogHandler *SetLogHandler(LogHandler *new_func) {
+  LogHandler *old = internal::log_handler_;
   if (old == &internal::NullLogHandler) {
     old = nullptr;
   }
@@ -281,20 +284,18 @@ LogHandler* SetLogHandler(LogHandler* new_func) {
   return old;
 }
 
-LogSilencer::LogSilencer() {
-  ++internal::log_silencer_count_;
-};
+LogSilencer::LogSilencer() { ++internal::log_silencer_count_; };
 
-LogSilencer::~LogSilencer() {
-  --internal::log_silencer_count_;
-};
+LogSilencer::~LogSilencer() { --internal::log_silencer_count_; };
 
 // ===================================================================
 // emulates google3/base/callback.cc
 
 Closure::~Closure() {}
 
-namespace internal { FunctionClosure0::~FunctionClosure0() {} }
+namespace internal {
+FunctionClosure0::~FunctionClosure0() {}
+} // namespace internal
 
 void DoNothing() {}
 
@@ -324,34 +325,35 @@ namespace internal {
 struct ShutdownData {
   ~ShutdownData() {
     std::reverse(functions.begin(), functions.end());
-    for (auto pair : functions) pair.first(pair.second);
+    for (auto pair : functions)
+      pair.first(pair.second);
   }
 
-  static ShutdownData* get() {
-    static auto* data = new ShutdownData;
+  static ShutdownData *get() {
+    static auto *data = new ShutdownData;
     return data;
   }
 
-  std::vector<std::pair<void (*)(const void*), const void*>> functions;
+  std::vector<std::pair<void (*)(const void *), const void *>> functions;
   Mutex mutex;
 };
 
-static void RunZeroArgFunc(const void* arg) {
-  void (*func)() = reinterpret_cast<void (*)()>(const_cast<void*>(arg));
+static void RunZeroArgFunc(const void *arg) {
+  void (*func)() = reinterpret_cast<void (*)()>(const_cast<void *>(arg));
   func();
 }
 
 void OnShutdown(void (*func)()) {
-  OnShutdownRun(RunZeroArgFunc, reinterpret_cast<void*>(func));
+  OnShutdownRun(RunZeroArgFunc, reinterpret_cast<void *>(func));
 }
 
-void OnShutdownRun(void (*f)(const void*), const void* arg) {
+void OnShutdownRun(void (*f)(const void *), const void *arg) {
   auto shutdown_data = ShutdownData::get();
   MutexLock lock(&shutdown_data->mutex);
   shutdown_data->functions.push_back(std::make_pair(f, arg));
 }
 
-}  // namespace internal
+} // namespace internal
 
 void ShutdownProtobufLibrary() {
   // This function should be called only once, but accepts multiple calls.
@@ -365,10 +367,8 @@ void ShutdownProtobufLibrary() {
 #if PROTOBUF_USE_EXCEPTIONS
 FatalException::~FatalException() throw() {}
 
-const char* FatalException::what() const throw() {
-  return message_.c_str();
-}
+const char *FatalException::what() const throw() { return message_.c_str(); }
 #endif
 
-}  // namespace protobuf
-}  // namespace google
+} // namespace protobuf
+} // namespace google

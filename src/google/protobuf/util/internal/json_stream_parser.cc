@@ -37,13 +37,12 @@
 #include <cstring>
 #include <memory>
 
-#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/util/internal/object_writer.h>
-#include <google/protobuf/util/internal/json_escaping.h>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/mathlimits.h>
-
+#include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/util/internal/json_escaping.h>
+#include <google/protobuf/util/internal/object_writer.h>
 
 namespace google {
 namespace protobuf {
@@ -56,7 +55,7 @@ namespace error {
 using util::error::CANCELLED;
 using util::error::INTERNAL;
 using util::error::INVALID_ARGUMENT;
-}  // namespace error
+} // namespace error
 
 namespace converter {
 
@@ -85,8 +84,9 @@ inline bool IsKeySeparator(char c) {
           c == '[' || c == ']' || c == ':' || c == ',');
 }
 
-static bool ConsumeKey(StringPiece* input, StringPiece* key) {
-  if (input->empty() || !IsLetter((*input)[0])) return false;
+static bool ConsumeKey(StringPiece *input, StringPiece *key) {
+  if (input->empty() || !IsLetter((*input)[0]))
+    return false;
   int len = 1;
   for (; len < input->size(); ++len) {
     if (!IsAlphanumeric((*input)[len])) {
@@ -99,9 +99,9 @@ static bool ConsumeKey(StringPiece* input, StringPiece* key) {
 }
 
 // Same as 'ConsumeKey', but allows a widened set of key characters.
-static bool ConsumeKeyPermissive(StringPiece* input,
-                                 StringPiece* key) {
-  if (input->empty() || !IsLetter((*input)[0])) return false;
+static bool ConsumeKeyPermissive(StringPiece *input, StringPiece *key) {
+  if (input->empty() || !IsLetter((*input)[0]))
+    return false;
   int len = 1;
   for (; len < input->size(); ++len) {
     if (IsKeySeparator((*input)[len])) {
@@ -117,31 +117,18 @@ static bool MatchKey(StringPiece input) {
   return !input.empty() && IsLetter(input[0]);
 }
 
-JsonStreamParser::JsonStreamParser(ObjectWriter* ow)
-    : ow_(ow),
-      stack_(),
-      leftover_(),
-      json_(),
-      p_(),
-      key_(),
-      key_storage_(),
-      finishing_(false),
-      parsed_(),
-      parsed_storage_(),
-      string_open_(0),
-      chunk_storage_(),
-      coerce_to_utf8_(false),
-      allow_empty_null_(false),
+JsonStreamParser::JsonStreamParser(ObjectWriter *ow)
+    : ow_(ow), stack_(), leftover_(), json_(), p_(), key_(), key_storage_(),
+      finishing_(false), parsed_(), parsed_storage_(), string_open_(0),
+      chunk_storage_(), coerce_to_utf8_(false), allow_empty_null_(false),
       allow_permissive_key_naming_(false),
-      loose_float_number_conversion_(false),
-      recursion_depth_(0),
+      loose_float_number_conversion_(false), recursion_depth_(0),
       max_recursion_depth_(kDefaultMaxRecursionDepth) {
   // Initialize the stack with a single value to be parsed.
   stack_.push(VALUE);
 }
 
 JsonStreamParser::~JsonStreamParser() {}
-
 
 util::Status JsonStreamParser::Parse(StringPiece json) {
   StringPiece chunk = json;
@@ -183,7 +170,8 @@ util::Status JsonStreamParser::FinishParse() {
   std::unique_ptr<char[]> utf8;
   if (coerce_to_utf8_) {
     utf8.reset(new char[leftover_.size()]);
-    char* coerced = internal::UTF8CoerceToStructurallyValid(leftover_, utf8.get(), ' ');
+    char *coerced =
+        internal::UTF8CoerceToStructurallyValid(leftover_, utf8.get(), ' ');
     p_ = json_ = StringPiece(coerced, leftover_.size());
   } else {
     p_ = json_ = leftover_;
@@ -207,13 +195,15 @@ util::Status JsonStreamParser::FinishParse() {
 
 util::Status JsonStreamParser::ParseChunk(StringPiece chunk) {
   // Do not do any work if the chunk is empty.
-  if (chunk.empty()) return util::Status();
+  if (chunk.empty())
+    return util::Status();
 
   p_ = json_ = chunk;
 
   finishing_ = false;
   util::Status result = RunParser();
-  if (!result.ok()) return result;
+  if (!result.ok())
+    return result;
 
   SkipWhitespace();
   if (p_.empty()) {
@@ -239,39 +229,38 @@ util::Status JsonStreamParser::RunParser() {
     stack_.pop();
     util::Status result;
     switch (type) {
-      case VALUE:
-        result = ParseValue(t);
-        break;
+    case VALUE:
+      result = ParseValue(t);
+      break;
 
-      case OBJ_MID:
-        result = ParseObjectMid(t);
-        break;
+    case OBJ_MID:
+      result = ParseObjectMid(t);
+      break;
 
-      case ENTRY:
-        result = ParseEntry(t);
-        break;
+    case ENTRY:
+      result = ParseEntry(t);
+      break;
 
-      case ENTRY_MID:
-        result = ParseEntryMid(t);
-        break;
+    case ENTRY_MID:
+      result = ParseEntryMid(t);
+      break;
 
-      case ARRAY_VALUE:
-        result = ParseArrayValue(t);
-        break;
+    case ARRAY_VALUE:
+      result = ParseArrayValue(t);
+      break;
 
-      case ARRAY_MID:
-        result = ParseArrayMid(t);
-        break;
+    case ARRAY_MID:
+      result = ParseArrayMid(t);
+      break;
 
-      default:
-        result = util::Status(util::error::INTERNAL,
-                              StrCat("Unknown parse type: ", type));
-        break;
+    default:
+      result = util::Status(util::error::INTERNAL,
+                            StrCat("Unknown parse type: ", type));
+      break;
     }
     if (!result.ok()) {
       // If we were cancelled, save our state and try again later.
-      if (!finishing_ &&
-          result == util::Status(util::error::CANCELLED, "")) {
+      if (!finishing_ && result == util::Status(util::error::CANCELLED, "")) {
         stack_.push(type);
         // If we have a key we still need to render, make sure to save off the
         // contents in our own storage.
@@ -289,36 +278,36 @@ util::Status JsonStreamParser::RunParser() {
 
 util::Status JsonStreamParser::ParseValue(TokenType type) {
   switch (type) {
-    case BEGIN_OBJECT:
-      return HandleBeginObject();
-    case BEGIN_ARRAY:
-      return HandleBeginArray();
-    case BEGIN_STRING:
-      return ParseString();
-    case BEGIN_NUMBER:
-      return ParseNumber();
-    case BEGIN_TRUE:
-      return ParseTrue();
-    case BEGIN_FALSE:
-      return ParseFalse();
-    case BEGIN_NULL:
-      return ParseNull();
-    case UNKNOWN:
-      return ReportUnknown("Expected a value.");
-    default: {
-      if (allow_empty_null_ && IsEmptyNullAllowed(type)) {
-        return ParseEmptyNull();
-      }
-
-      // Special case for having been cut off while parsing, wait for more data.
-      // This handles things like 'fals' being at the end of the string, we
-      // don't know if the next char would be e, completing it, or something
-      // else, making it invalid.
-      if (!finishing_ && p_.length() < kKeywordFalse.length()) {
-        return util::Status(util::error::CANCELLED, "");
-      }
-      return ReportFailure("Unexpected token.");
+  case BEGIN_OBJECT:
+    return HandleBeginObject();
+  case BEGIN_ARRAY:
+    return HandleBeginArray();
+  case BEGIN_STRING:
+    return ParseString();
+  case BEGIN_NUMBER:
+    return ParseNumber();
+  case BEGIN_TRUE:
+    return ParseTrue();
+  case BEGIN_FALSE:
+    return ParseFalse();
+  case BEGIN_NULL:
+    return ParseNull();
+  case UNKNOWN:
+    return ReportUnknown("Expected a value.");
+  default: {
+    if (allow_empty_null_ && IsEmptyNullAllowed(type)) {
+      return ParseEmptyNull();
     }
+
+    // Special case for having been cut off while parsing, wait for more data.
+    // This handles things like 'fals' being at the end of the string, we
+    // don't know if the next char would be e, completing it, or something
+    // else, making it invalid.
+    if (!finishing_ && p_.length() < kKeywordFalse.length()) {
+      return util::Status(util::error::CANCELLED, "");
+    }
+    return ReportFailure("Unexpected token.");
+  }
   }
 }
 
@@ -341,9 +330,9 @@ util::Status JsonStreamParser::ParseStringHelper() {
     Advance();
   }
   // Track where we last copied data from so we can minimize copying.
-  const char* last = p_.data();
+  const char *last = p_.data();
   while (!p_.empty()) {
-    const char* data = p_.data();
+    const char *data = p_.data();
     if (*data == '\\') {
       // We're about to handle an escape, copy all bytes from last to data.
       if (last < data) {
@@ -369,26 +358,26 @@ util::Status JsonStreamParser::ParseStringHelper() {
       }
       // Handle the standard set of backslash-escaped characters.
       switch (data[1]) {
-        case 'b':
-          parsed_storage_.push_back('\b');
-          break;
-        case 'f':
-          parsed_storage_.push_back('\f');
-          break;
-        case 'n':
-          parsed_storage_.push_back('\n');
-          break;
-        case 'r':
-          parsed_storage_.push_back('\r');
-          break;
-        case 't':
-          parsed_storage_.push_back('\t');
-          break;
-        case 'v':
-          parsed_storage_.push_back('\v');
-          break;
-        default:
-          parsed_storage_.push_back(data[1]);
+      case 'b':
+        parsed_storage_.push_back('\b');
+        break;
+      case 'f':
+        parsed_storage_.push_back('\f');
+        break;
+      case 'n':
+        parsed_storage_.push_back('\n');
+        break;
+      case 'r':
+        parsed_storage_.push_back('\r');
+        break;
+      case 't':
+        parsed_storage_.push_back('\t');
+        break;
+      case 'v':
+        parsed_storage_.push_back('\v');
+        break;
+      default:
+        parsed_storage_.push_back(data[1]);
       }
       // We handled two characters, so advance past them and continue.
       p_.remove_prefix(2);
@@ -500,30 +489,30 @@ util::Status JsonStreamParser::ParseNumber() {
   util::Status result = ParseNumberHelper(&number);
   if (result.ok()) {
     switch (number.type) {
-      case NumberResult::DOUBLE:
-        ow_->RenderDouble(key_, number.double_val);
-        key_ = StringPiece();
-        break;
+    case NumberResult::DOUBLE:
+      ow_->RenderDouble(key_, number.double_val);
+      key_ = StringPiece();
+      break;
 
-      case NumberResult::INT:
-        ow_->RenderInt64(key_, number.int_val);
-        key_ = StringPiece();
-        break;
+    case NumberResult::INT:
+      ow_->RenderInt64(key_, number.int_val);
+      key_ = StringPiece();
+      break;
 
-      case NumberResult::UINT:
-        ow_->RenderUint64(key_, number.uint_val);
-        key_ = StringPiece();
-        break;
+    case NumberResult::UINT:
+      ow_->RenderUint64(key_, number.uint_val);
+      key_ = StringPiece();
+      break;
 
-      default:
-        return ReportFailure("Unable to parse number.");
+    default:
+      return ReportFailure("Unable to parse number.");
     }
   }
   return result;
 }
 
-util::Status JsonStreamParser::ParseDoubleHelper(const std::string& number,
-                                                 NumberResult* result) {
+util::Status JsonStreamParser::ParseDoubleHelper(const std::string &number,
+                                                 NumberResult *result) {
   if (!safe_strtod(number, &result->double_val)) {
     return ReportFailure("Unable to parse number.");
   }
@@ -535,8 +524,8 @@ util::Status JsonStreamParser::ParseDoubleHelper(const std::string& number,
   return util::Status();
 }
 
-util::Status JsonStreamParser::ParseNumberHelper(NumberResult* result) {
-  const char* data = p_.data();
+util::Status JsonStreamParser::ParseNumberHelper(NumberResult *result) {
+  const char *data = p_.data();
   int length = p_.length();
 
   // Look for the first non-numeric character, or the end of the string.
@@ -549,12 +538,14 @@ util::Status JsonStreamParser::ParseNumberHelper(NumberResult* result) {
   // we do not support hex or octal notations.
   for (; index < length; ++index) {
     char c = data[index];
-    if (isdigit(c)) continue;
+    if (isdigit(c))
+      continue;
     if (c == '.' || c == 'e' || c == 'E') {
       floating = true;
       continue;
     }
-    if (c == '+' || c == '-' || c == 'x') continue;
+    if (c == '+' || c == '-' || c == 'x')
+      continue;
     // Not a valid number character, break out.
     break;
   }
@@ -794,17 +785,18 @@ util::Status JsonStreamParser::ParseEmptyNull() {
 }
 
 bool JsonStreamParser::IsEmptyNullAllowed(TokenType type) {
-  if (stack_.empty()) return false;
+  if (stack_.empty())
+    return false;
   return (stack_.top() == ARRAY_MID && type == VALUE_SEPARATOR) ||
          stack_.top() == OBJ_MID;
 }
 
 util::Status JsonStreamParser::ReportFailure(StringPiece message) {
   static const int kContextLength = 20;
-  const char* p_start = p_.data();
-  const char* json_start = json_.data();
-  const char* begin = std::max(p_start - kContextLength, json_start);
-  const char* end =
+  const char *p_start = p_.data();
+  const char *json_start = json_.data();
+  const char *begin = std::max(p_start - kContextLength, json_start);
+  const char *end =
       std::min(p_start + kContextLength, json_start + json_.size());
   StringPiece segment(begin, end - begin);
   std::string location(p_start - begin, ' ');
@@ -824,13 +816,12 @@ util::Status JsonStreamParser::ReportUnknown(StringPiece message) {
   return ReportFailure(message);
 }
 
-util::Status JsonStreamParser::IncrementRecursionDepth(
-    StringPiece key) const {
+util::Status JsonStreamParser::IncrementRecursionDepth(StringPiece key) const {
   if (++recursion_depth_ > max_recursion_depth_) {
     return Status(
         util::error::INVALID_ARGUMENT,
-        StrCat("Message too deep. Max recursion depth reached for key '",
-                     key, "'"));
+        StrCat("Message too deep. Max recursion depth reached for key '", key,
+               "'"));
   }
   return util::Status();
 }
@@ -883,9 +874,10 @@ JsonStreamParser::TokenType JsonStreamParser::GetNextTokenType() {
   }
   // TODO(sven): Split this method based on context since different contexts
   // support different tokens. Would slightly speed up processing?
-  const char* data = p_.data();
+  const char *data = p_.data();
   StringPiece data_view = StringPiece(data, size);
-  if (*data == '\"' || *data == '\'') return BEGIN_STRING;
+  if (*data == '\"' || *data == '\'')
+    return BEGIN_STRING;
   if (*data == '-' || ('0' <= *data && *data <= '9')) {
     return BEGIN_NUMBER;
   }
@@ -901,12 +893,18 @@ JsonStreamParser::TokenType JsonStreamParser::GetNextTokenType() {
       HasPrefixString(data_view, kKeywordNull)) {
     return BEGIN_NULL;
   }
-  if (*data == '{') return BEGIN_OBJECT;
-  if (*data == '}') return END_OBJECT;
-  if (*data == '[') return BEGIN_ARRAY;
-  if (*data == ']') return END_ARRAY;
-  if (*data == ':') return ENTRY_SEPARATOR;
-  if (*data == ',') return VALUE_SEPARATOR;
+  if (*data == '{')
+    return BEGIN_OBJECT;
+  if (*data == '}')
+    return END_OBJECT;
+  if (*data == '[')
+    return BEGIN_ARRAY;
+  if (*data == ']')
+    return END_ARRAY;
+  if (*data == ':')
+    return ENTRY_SEPARATOR;
+  if (*data == ',')
+    return VALUE_SEPARATOR;
   if (MatchKey(p_)) {
     return BEGIN_KEY;
   }
@@ -918,7 +916,7 @@ JsonStreamParser::TokenType JsonStreamParser::GetNextTokenType() {
   return UNKNOWN;
 }
 
-}  // namespace converter
-}  // namespace util
-}  // namespace protobuf
-}  // namespace google
+} // namespace converter
+} // namespace util
+} // namespace protobuf
+} // namespace google

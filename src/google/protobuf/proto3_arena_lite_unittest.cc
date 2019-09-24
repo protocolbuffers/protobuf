@@ -32,9 +32,9 @@
 #include <string>
 #include <vector>
 
-#include <google/protobuf/unittest_proto3_arena.pb.h>
 #include <google/protobuf/arena.h>
 #include <google/protobuf/testing/googletest.h>
+#include <google/protobuf/unittest_proto3_arena.pb.h>
 #include <gtest/gtest.h>
 
 using proto3_arena_unittest::TestAllTypes;
@@ -44,7 +44,7 @@ namespace protobuf {
 namespace {
 // We selectively set/check a few representative fields rather than all fields
 // as this test is only expected to cover the basics of arena support.
-void SetAllFields(TestAllTypes* m) {
+void SetAllFields(TestAllTypes *m) {
   m->set_optional_int32(100);
   m->set_optional_string("asdf");
   m->set_optional_bytes("jkl;");
@@ -66,10 +66,10 @@ void SetAllFields(TestAllTypes* m) {
 
   m->set_oneof_uint32(1);
   m->mutable_oneof_nested_message()->set_bb(50);
-  m->set_oneof_string("test");  // only this one remains set
+  m->set_oneof_string("test"); // only this one remains set
 }
 
-void ExpectAllFieldsSet(const TestAllTypes& m) {
+void ExpectAllFieldsSet(const TestAllTypes &m) {
   EXPECT_EQ(100, m.optional_int32());
   EXPECT_EQ("asdf", m.optional_string());
   EXPECT_EQ("jkl;", m.optional_bytes());
@@ -115,7 +115,7 @@ TEST(Proto3ArenaLiteTest, Parsing) {
   SetAllFields(&original);
 
   Arena arena;
-  TestAllTypes* arena_message = Arena::CreateMessage<TestAllTypes>(&arena);
+  TestAllTypes *arena_message = Arena::CreateMessage<TestAllTypes>(&arena);
   arena_message->ParseFromString(original.SerializeAsString());
   ExpectAllFieldsSet(*arena_message);
 }
@@ -125,8 +125,8 @@ TEST(Proto3ArenaLiteTest, Swap) {
   Arena arena2;
 
   // Test Swap().
-  TestAllTypes* arena1_message = Arena::CreateMessage<TestAllTypes>(&arena1);
-  TestAllTypes* arena2_message = Arena::CreateMessage<TestAllTypes>(&arena2);
+  TestAllTypes *arena1_message = Arena::CreateMessage<TestAllTypes>(&arena1);
+  TestAllTypes *arena2_message = Arena::CreateMessage<TestAllTypes>(&arena2);
   arena1_message->Swap(arena2_message);
   EXPECT_EQ(&arena1, arena1_message->GetArena());
   EXPECT_EQ(&arena2, arena2_message->GetArena());
@@ -134,8 +134,8 @@ TEST(Proto3ArenaLiteTest, Swap) {
 
 TEST(Proto3ArenaLiteTest, SetAllocatedMessage) {
   Arena arena;
-  TestAllTypes* arena_message = Arena::CreateMessage<TestAllTypes>(&arena);
-  TestAllTypes::NestedMessage* nested = new TestAllTypes::NestedMessage;
+  TestAllTypes *arena_message = Arena::CreateMessage<TestAllTypes>(&arena);
+  TestAllTypes::NestedMessage *nested = new TestAllTypes::NestedMessage;
   nested->set_bb(118);
   arena_message->set_allocated_optional_nested_message(nested);
   EXPECT_EQ(118, arena_message->optional_nested_message().bb());
@@ -143,13 +143,13 @@ TEST(Proto3ArenaLiteTest, SetAllocatedMessage) {
 
 TEST(Proto3ArenaLiteTest, ReleaseMessage) {
   Arena arena;
-  TestAllTypes* arena_message = Arena::CreateMessage<TestAllTypes>(&arena);
+  TestAllTypes *arena_message = Arena::CreateMessage<TestAllTypes>(&arena);
   arena_message->mutable_optional_nested_message()->set_bb(118);
   std::unique_ptr<TestAllTypes::NestedMessage> nested(
       arena_message->release_optional_nested_message());
   EXPECT_EQ(118, nested->bb());
 }
 
-}  // namespace
-}  // namespace protobuf
-}  // namespace google
+} // namespace
+} // namespace protobuf
+} // namespace google

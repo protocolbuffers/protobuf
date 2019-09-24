@@ -77,24 +77,21 @@ const char kUtf8Text[] = {
     // utf-8: 11010000 10110101, utf-16: 100 0011 0101 = 0x0435
     static_cast<char>(0xd0), static_cast<char>(0xb5),
     // utf-8: 11010001 10000010, utf-16: 100 0100 0010 = 0x0442
-    static_cast<char>(0xd1), static_cast<char>(0x82), 0
-};
+    static_cast<char>(0xd1), static_cast<char>(0x82), 0};
 
-const wchar_t kUtf16Text[] = {
-  L'h', L'i', L' ',
-  L'\x41f', L'\x440', L'\x438', L'\x432', L'\x435', L'\x442', 0
-};
+const wchar_t kUtf16Text[] = {L'h',     L'i',     L' ',     L'\x41f', L'\x440',
+                              L'\x438', L'\x432', L'\x435', L'\x442', 0};
 
 using std::string;
 using std::vector;
 using std::wstring;
 
 class IoWin32Test : public ::testing::Test {
- public:
+public:
   void SetUp();
   void TearDown();
 
- protected:
+protected:
   bool CreateAllUnder(wstring path);
   bool DeleteAllUnder(wstring path);
 
@@ -103,20 +100,21 @@ class IoWin32Test : public ::testing::Test {
   wstring wtest_tmpdir;
 };
 
-#define ASSERT_INITIALIZED              \
-  {                                     \
-    EXPECT_FALSE(test_tmpdir.empty());  \
-    EXPECT_FALSE(wtest_tmpdir.empty()); \
+#define ASSERT_INITIALIZED                                                     \
+  {                                                                            \
+    EXPECT_FALSE(test_tmpdir.empty());                                         \
+    EXPECT_FALSE(wtest_tmpdir.empty());                                        \
   }
 
 namespace {
-void StripTrailingSlashes(string* str) {
+void StripTrailingSlashes(string *str) {
   int i = str->size() - 1;
-  for (; i >= 0 && ((*str)[i] == '/' || (*str)[i] == '\\'); --i) {}
-  str->resize(i+1);
+  for (; i >= 0 && ((*str)[i] == '/' || (*str)[i] == '\\'); --i) {
+  }
+  str->resize(i + 1);
 }
 
-bool GetEnvVarAsUtf8(const WCHAR* name, string* result) {
+bool GetEnvVarAsUtf8(const WCHAR *name, string *result) {
   DWORD size = ::GetEnvironmentVariableW(name, nullptr, 0);
   if (size > 0 && GetLastError() != ERROR_ENVVAR_NOT_FOUND) {
     std::unique_ptr<WCHAR[]> wcs(new WCHAR[size]);
@@ -132,7 +130,7 @@ bool GetEnvVarAsUtf8(const WCHAR* name, string* result) {
   }
 }
 
-bool GetCwdAsUtf8(string* result) {
+bool GetCwdAsUtf8(string *result) {
   DWORD size = ::GetCurrentDirectoryW(0, nullptr);
   if (size > 0) {
     std::unique_ptr<WCHAR[]> wcs(new WCHAR[size]);
@@ -148,7 +146,7 @@ bool GetCwdAsUtf8(string* result) {
   }
 }
 
-bool CreateEmptyFile(const wstring& path) {
+bool CreateEmptyFile(const wstring &path) {
   HANDLE h = CreateFileW(path.c_str(), GENERIC_WRITE, 0, NULL, CREATE_ALWAYS,
                          FILE_ATTRIBUTE_NORMAL, NULL);
   if (h == INVALID_HANDLE_VALUE) {
@@ -158,7 +156,7 @@ bool CreateEmptyFile(const wstring& path) {
   return true;
 }
 
-}  // namespace
+} // namespace
 
 void IoWin32Test::SetUp() {
   test_tmpdir.clear();
@@ -253,7 +251,7 @@ bool IoWin32Test::DeleteAllUnder(wstring path) {
   WIN32_FIND_DATAW metadata;
   HANDLE handle = ::FindFirstFileW((path + L"*").c_str(), &metadata);
   if (handle == INVALID_HANDLE_VALUE) {
-    return true;  // directory doesn't exist
+    return true; // directory doesn't exist
   }
 
   bool result = true;
@@ -370,7 +368,8 @@ TEST_F(IoWin32Test, MkdirTestNonAscii) {
   // Create a non-ASCII path.
   // Ensure that we can create the directory using CreateDirectoryW.
   EXPECT_TRUE(CreateDirectoryW((wtest_tmpdir + L"\\1").c_str(), nullptr));
-  EXPECT_TRUE(CreateDirectoryW((wtest_tmpdir + L"\\1\\" + kUtf16Text).c_str(), nullptr));
+  EXPECT_TRUE(CreateDirectoryW((wtest_tmpdir + L"\\1\\" + kUtf16Text).c_str(),
+                               nullptr));
   // Ensure that we can create a very similarly named directory using mkdir.
   // We don't attemp to delete and recreate the same directory, because on
   // Windows, deleting files and directories seems to be asynchronous.
@@ -432,7 +431,7 @@ TEST_F(IoWin32Test, ExpandWildcardsInRelativePathTest) {
   // Assert matching a relative path pattern. Results should also be relative.
   ExpandWildcardsResult result =
       ExpandWildcards(string(kUtf8Text) + "\\foo*.proto",
-                      [&found_a, &found_b, &found_bad](const string& p) {
+                      [&found_a, &found_b, &found_bad](const string &p) {
                         if (p == string(kUtf8Text) + "\\foo_a.proto") {
                           found_a++;
                         } else if (p == string(kUtf8Text) + "\\foo_b.proto") {
@@ -452,7 +451,7 @@ TEST_F(IoWin32Test, ExpandWildcardsInRelativePathTest) {
   found_a = 0;
   found_bad.clear();
   result = ExpandWildcards(string(kUtf8Text) + "\\foo_a.proto",
-                           [&found_a, &found_bad](const string& p) {
+                           [&found_a, &found_bad](const string &p) {
                              if (p == string(kUtf8Text) + "\\foo_a.proto") {
                                found_a++;
                              } else {
@@ -481,7 +480,7 @@ TEST_F(IoWin32Test, ExpandWildcardsInAbsolutePathTest) {
   // path.
   ExpandWildcardsResult result =
       ExpandWildcards(string(test_tmpdir) + "\\" + kUtf8Text + "\\foo*.proto",
-                      [this, &found_a, &found_b, &found_bad](const string& p) {
+                      [this, &found_a, &found_b, &found_bad](const string &p) {
                         if (p == string(this->test_tmpdir) + "\\" + kUtf8Text +
                                      "\\foo_a.proto") {
                           found_a++;
@@ -504,7 +503,7 @@ TEST_F(IoWin32Test, ExpandWildcardsInAbsolutePathTest) {
   found_bad.clear();
   result =
       ExpandWildcards(string(test_tmpdir) + "\\" + kUtf8Text + "\\foo_a.proto",
-                      [this, &found_a, &found_bad](const string& p) {
+                      [this, &found_a, &found_bad](const string &p) {
                         if (p == string(this->test_tmpdir) + "\\" + kUtf8Text +
                                      "\\foo_a.proto") {
                           found_a++;
@@ -537,7 +536,7 @@ TEST_F(IoWin32Test, ExpandWildcardsIgnoresDirectoriesTest) {
   // absolute path as did the input pattern.
   ExpandWildcardsResult result =
       ExpandWildcards(string(kUtf8Text) + "\\foo*.proto",
-                      [&found_a, &found_c, &found_bad](const string& p) {
+                      [&found_a, &found_c, &found_bad](const string &p) {
                         if (p == string(kUtf8Text) + "\\foo_a.proto") {
                           found_a++;
                         } else if (p == string(kUtf8Text) + "\\foo_c.proto") {
@@ -563,18 +562,18 @@ TEST_F(IoWin32Test, ExpandWildcardsFailsIfNoFileMatchesTest) {
   EXPECT_TRUE(SetCurrentDirectoryW(wtest_tmpdir.c_str()));
 
   // Control test: should match foo*.proto
-  ExpandWildcardsResult result =
-      ExpandWildcards(string(kUtf8Text) + "\\foo*.proto", [](const string&) {});
+  ExpandWildcardsResult result = ExpandWildcards(
+      string(kUtf8Text) + "\\foo*.proto", [](const string &) {});
   EXPECT_EQ(result, ExpandWildcardsResult::kSuccess);
 
   // Control test: should match foo_a.proto
   result = ExpandWildcards(string(kUtf8Text) + "\\foo_a.proto",
-                           [](const string&) {});
+                           [](const string &) {});
   EXPECT_EQ(result, ExpandWildcardsResult::kSuccess);
 
   // Actual test: should not match anything.
-  result =
-      ExpandWildcards(string(kUtf8Text) + "\\bar*.proto", [](const string&) {});
+  result = ExpandWildcards(string(kUtf8Text) + "\\bar*.proto",
+                           [](const string &) {});
   ASSERT_EQ(result, ExpandWildcardsResult::kErrorNoMatchingFile);
 }
 
@@ -591,7 +590,7 @@ TEST_F(IoWin32Test, AsWindowsPathTest) {
   ASSERT_EQ(testonly_utf8_to_winpath("./normalize_me\\/../blah"),
             cwd + L"\\blah");
   std::ostringstream relpath;
-  for (wchar_t* p = cwd_str.get(); *p; ++p) {
+  for (wchar_t *p = cwd_str.get(); *p; ++p) {
     if (*p == '/' || *p == '\\') {
       relpath << "../";
     }
@@ -621,11 +620,10 @@ TEST_F(IoWin32Test, Utf8Utf16ConversionTest) {
   ASSERT_EQ(mbs, kUtf8Text);
 }
 
-}  // namespace
-}  // namespace win32
-}  // namespace io
-}  // namespace protobuf
-}  // namespace google
+} // namespace
+} // namespace win32
+} // namespace io
+} // namespace protobuf
+} // namespace google
 
-#endif  // defined(_WIN32)
-
+#endif // defined(_WIN32)

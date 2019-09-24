@@ -33,11 +33,11 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
 #include <google/protobuf/compiler/cpp/cpp_extension.h>
-#include <map>
 #include <google/protobuf/compiler/cpp/cpp_helpers.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <map>
 
 namespace google {
 namespace protobuf {
@@ -49,15 +49,15 @@ namespace {
 // Returns the fully-qualified class name of the message that this field
 // extends. This function is used in the Google-internal code to handle some
 // legacy cases.
-std::string ExtendeeClassName(const FieldDescriptor* descriptor) {
-  const Descriptor* extendee = descriptor->containing_type();
+std::string ExtendeeClassName(const FieldDescriptor *descriptor) {
+  const Descriptor *extendee = descriptor->containing_type();
   return ClassName(extendee, true);
 }
 
-}  // anonymous namespace
+} // anonymous namespace
 
-ExtensionGenerator::ExtensionGenerator(const FieldDescriptor* descriptor,
-                                       const Options& options)
+ExtensionGenerator::ExtensionGenerator(const FieldDescriptor *descriptor,
+                                       const Options &options)
     : descriptor_(descriptor), options_(options) {
   // Construct type_traits_.
   if (descriptor_->is_repeated()) {
@@ -65,26 +65,26 @@ ExtensionGenerator::ExtensionGenerator(const FieldDescriptor* descriptor,
   }
 
   switch (descriptor_->cpp_type()) {
-    case FieldDescriptor::CPPTYPE_ENUM:
-      type_traits_.append("EnumTypeTraits< ");
-      type_traits_.append(ClassName(descriptor_->enum_type(), true));
-      type_traits_.append(", ");
-      type_traits_.append(ClassName(descriptor_->enum_type(), true));
-      type_traits_.append("_IsValid>");
-      break;
-    case FieldDescriptor::CPPTYPE_STRING:
-      type_traits_.append("StringTypeTraits");
-      break;
-    case FieldDescriptor::CPPTYPE_MESSAGE:
-      type_traits_.append("MessageTypeTraits< ");
-      type_traits_.append(ClassName(descriptor_->message_type(), true));
-      type_traits_.append(" >");
-      break;
-    default:
-      type_traits_.append("PrimitiveTypeTraits< ");
-      type_traits_.append(PrimitiveTypeName(options_, descriptor_->cpp_type()));
-      type_traits_.append(" >");
-      break;
+  case FieldDescriptor::CPPTYPE_ENUM:
+    type_traits_.append("EnumTypeTraits< ");
+    type_traits_.append(ClassName(descriptor_->enum_type(), true));
+    type_traits_.append(", ");
+    type_traits_.append(ClassName(descriptor_->enum_type(), true));
+    type_traits_.append("_IsValid>");
+    break;
+  case FieldDescriptor::CPPTYPE_STRING:
+    type_traits_.append("StringTypeTraits");
+    break;
+  case FieldDescriptor::CPPTYPE_MESSAGE:
+    type_traits_.append("MessageTypeTraits< ");
+    type_traits_.append(ClassName(descriptor_->message_type(), true));
+    type_traits_.append(" >");
+    break;
+  default:
+    type_traits_.append("PrimitiveTypeTraits< ");
+    type_traits_.append(PrimitiveTypeName(options_, descriptor_->cpp_type()));
+    type_traits_.append(" >");
+    break;
   }
   SetCommonVars(options, &variables_);
   variables_["extendee"] = ExtendeeClassName(descriptor_);
@@ -92,8 +92,7 @@ ExtensionGenerator::ExtensionGenerator(const FieldDescriptor* descriptor,
   std::string name = descriptor_->name();
   variables_["name"] = ResolveKeyword(name);
   variables_["constant_name"] = FieldConstantName(descriptor_);
-  variables_["field_type"] =
-      StrCat(static_cast<int>(descriptor_->type()));
+  variables_["field_type"] = StrCat(static_cast<int>(descriptor_->type()));
   variables_["packed"] = descriptor_->options().packed() ? "true" : "false";
 
   std::string scope =
@@ -110,7 +109,7 @@ bool ExtensionGenerator::IsScoped() const {
   return descriptor_->extension_scope() != nullptr;
 }
 
-void ExtensionGenerator::GenerateDeclaration(io::Printer* printer) const {
+void ExtensionGenerator::GenerateDeclaration(io::Printer *printer) const {
   Formatter format(printer, variables_);
 
   // If this is a class member, it needs to be declared "static".  Otherwise,
@@ -126,15 +125,14 @@ void ExtensionGenerator::GenerateDeclaration(io::Printer* printer) const {
     qualifier = "static";
   }
 
-  format(
-      "static const int $constant_name$ = $number$;\n"
-      "$1$ ::$proto_ns$::internal::ExtensionIdentifier< $extendee$,\n"
-      "    ::$proto_ns$::internal::$type_traits$, $field_type$, $packed$ >\n"
-      "  ${2$$name$$}$;\n",
-      qualifier, descriptor_);
+  format("static const int $constant_name$ = $number$;\n"
+         "$1$ ::$proto_ns$::internal::ExtensionIdentifier< $extendee$,\n"
+         "    ::$proto_ns$::internal::$type_traits$, $field_type$, $packed$ >\n"
+         "  ${2$$name$$}$;\n",
+         qualifier, descriptor_);
 }
 
-void ExtensionGenerator::GenerateDefinition(io::Printer* printer) {
+void ExtensionGenerator::GenerateDefinition(io::Printer *printer) {
   // If we are building for lite with implicit weak fields, we want to skip over
   // any custom options (i.e. extensions of messages from descriptor.proto).
   // This prevents the creation of any unnecessary linker references to the
@@ -163,20 +161,18 @@ void ExtensionGenerator::GenerateDefinition(io::Printer* printer) {
 
   // Likewise, class members need to declare the field constant variable.
   if (IsScoped()) {
-    format(
-        "#if !defined(_MSC_VER) || _MSC_VER >= 1900\n"
-        "const int $scope$$constant_name$;\n"
-        "#endif\n");
+    format("#if !defined(_MSC_VER) || _MSC_VER >= 1900\n"
+           "const int $scope$$constant_name$;\n"
+           "#endif\n");
   }
 
-  format(
-      "::$proto_ns$::internal::ExtensionIdentifier< $extendee$,\n"
-      "    ::$proto_ns$::internal::$type_traits$, $field_type$, $packed$ >\n"
-      "  $scoped_name$($constant_name$, $1$);\n",
-      default_str);
+  format("::$proto_ns$::internal::ExtensionIdentifier< $extendee$,\n"
+         "    ::$proto_ns$::internal::$type_traits$, $field_type$, $packed$ >\n"
+         "  $scoped_name$($constant_name$, $1$);\n",
+         default_str);
 }
 
-}  // namespace cpp
-}  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+} // namespace cpp
+} // namespace compiler
+} // namespace protobuf
+} // namespace google

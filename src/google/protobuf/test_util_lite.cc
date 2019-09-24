@@ -34,15 +34,15 @@
 
 #include <google/protobuf/test_util_lite.h>
 
-#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
-#include <gtest/gtest.h>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <gtest/gtest.h>
 
 namespace google {
 namespace protobuf {
 
-void TestUtilLite::SetAllFields(unittest::TestAllTypesLite* message) {
+void TestUtilLite::SetAllFields(unittest::TestAllTypesLite *message) {
   message->set_optional_int32(101);
   message->set_optional_int64(102);
   message->set_optional_uint32(103);
@@ -69,7 +69,6 @@ void TestUtilLite::SetAllFields(unittest::TestAllTypesLite* message) {
   message->set_optional_nested_enum(unittest::TestAllTypesLite::BAZ);
   message->set_optional_foreign_enum(unittest::FOREIGN_LITE_BAZ);
   message->set_optional_import_enum(unittest_import::IMPORT_LITE_BAZ);
-
 
   // -----------------------------------------------------------------
 
@@ -99,7 +98,6 @@ void TestUtilLite::SetAllFields(unittest::TestAllTypesLite* message) {
   message->add_repeated_foreign_enum(unittest::FOREIGN_LITE_BAR);
   message->add_repeated_import_enum(unittest_import::IMPORT_LITE_BAR);
 
-
   // Add a second one of each field.
   message->add_repeated_int32(301);
   message->add_repeated_int64(302);
@@ -127,7 +125,6 @@ void TestUtilLite::SetAllFields(unittest::TestAllTypesLite* message) {
   message->add_repeated_foreign_enum(unittest::FOREIGN_LITE_BAZ);
   message->add_repeated_import_enum(unittest_import::IMPORT_LITE_BAZ);
 
-
   // -----------------------------------------------------------------
 
   message->set_default_int32(401);
@@ -150,7 +147,6 @@ void TestUtilLite::SetAllFields(unittest::TestAllTypesLite* message) {
   message->set_default_foreign_enum(unittest::FOREIGN_LITE_FOO);
   message->set_default_import_enum(unittest_import::IMPORT_LITE_FOO);
 
-
   message->set_oneof_uint32(601);
   message->mutable_oneof_nested_message()->set_bb(602);
   message->set_oneof_string("603");
@@ -159,7 +155,7 @@ void TestUtilLite::SetAllFields(unittest::TestAllTypesLite* message) {
 
 // -------------------------------------------------------------------
 
-void TestUtilLite::ModifyRepeatedFields(unittest::TestAllTypesLite* message) {
+void TestUtilLite::ModifyRepeatedFields(unittest::TestAllTypesLite *message) {
   message->set_repeated_int32(1, 501);
   message->set_repeated_int64(1, 502);
   message->set_repeated_uint32(1, 503);
@@ -185,13 +181,12 @@ void TestUtilLite::ModifyRepeatedFields(unittest::TestAllTypesLite* message) {
   message->set_repeated_nested_enum(1, unittest::TestAllTypesLite::FOO);
   message->set_repeated_foreign_enum(1, unittest::FOREIGN_LITE_FOO);
   message->set_repeated_import_enum(1, unittest_import::IMPORT_LITE_FOO);
-
 }
 
 // -------------------------------------------------------------------
 
 void TestUtilLite::ExpectAllFieldsSet(
-    const unittest::TestAllTypesLite& message) {
+    const unittest::TestAllTypesLite &message) {
   EXPECT_TRUE(message.has_optional_int32());
   EXPECT_TRUE(message.has_optional_int64());
   EXPECT_TRUE(message.has_optional_uint32());
@@ -226,7 +221,6 @@ void TestUtilLite::ExpectAllFieldsSet(
   EXPECT_TRUE(message.has_optional_foreign_enum());
   EXPECT_TRUE(message.has_optional_import_enum());
 
-
   EXPECT_EQ(101, message.optional_int32());
   EXPECT_EQ(102, message.optional_int64());
   EXPECT_EQ(103, message.optional_uint32());
@@ -253,7 +247,6 @@ void TestUtilLite::ExpectAllFieldsSet(
   EXPECT_EQ(unittest::TestAllTypesLite::BAZ, message.optional_nested_enum());
   EXPECT_EQ(unittest::FOREIGN_LITE_BAZ, message.optional_foreign_enum());
   EXPECT_EQ(unittest_import::IMPORT_LITE_BAZ, message.optional_import_enum());
-
 
   // -----------------------------------------------------------------
 
@@ -282,7 +275,6 @@ void TestUtilLite::ExpectAllFieldsSet(
   ASSERT_EQ(2, message.repeated_foreign_enum_size());
   ASSERT_EQ(2, message.repeated_import_enum_size());
 
-
   EXPECT_EQ(201, message.repeated_int32(0));
   EXPECT_EQ(202, message.repeated_int64(0));
   EXPECT_EQ(203, message.repeated_uint32(0));
@@ -304,7 +296,6 @@ void TestUtilLite::ExpectAllFieldsSet(
   EXPECT_EQ(219, message.repeated_foreign_message(0).c());
   EXPECT_EQ(220, message.repeated_import_message(0).d());
   EXPECT_EQ(227, message.repeated_lazy_message(0).bb());
-
 
   EXPECT_EQ(unittest::TestAllTypesLite::BAR, message.repeated_nested_enum(0));
   EXPECT_EQ(unittest::FOREIGN_LITE_BAR, message.repeated_foreign_enum(0));
@@ -336,7 +327,6 @@ void TestUtilLite::ExpectAllFieldsSet(
   EXPECT_EQ(unittest::FOREIGN_LITE_BAZ, message.repeated_foreign_enum(1));
   EXPECT_EQ(unittest_import::IMPORT_LITE_BAZ, message.repeated_import_enum(1));
 
-
   // -----------------------------------------------------------------
 
   EXPECT_TRUE(message.has_default_int32());
@@ -359,7 +349,6 @@ void TestUtilLite::ExpectAllFieldsSet(
   EXPECT_TRUE(message.has_default_foreign_enum());
   EXPECT_TRUE(message.has_default_import_enum());
 
-
   EXPECT_EQ(401, message.default_int32());
   EXPECT_EQ(402, message.default_int64());
   EXPECT_EQ(403, message.default_uint32());
@@ -380,7 +369,6 @@ void TestUtilLite::ExpectAllFieldsSet(
   EXPECT_EQ(unittest::FOREIGN_LITE_FOO, message.default_foreign_enum());
   EXPECT_EQ(unittest_import::IMPORT_LITE_FOO, message.default_import_enum());
 
-
   EXPECT_FALSE(message.has_oneof_uint32());
   EXPECT_FALSE(message.has_oneof_nested_message());
   EXPECT_FALSE(message.has_oneof_string());
@@ -391,7 +379,7 @@ void TestUtilLite::ExpectAllFieldsSet(
 
 // -------------------------------------------------------------------
 
-void TestUtilLite::ExpectClear(const unittest::TestAllTypesLite& message) {
+void TestUtilLite::ExpectClear(const unittest::TestAllTypesLite &message) {
   // has_blah() should initially be false for all optional fields.
   EXPECT_FALSE(message.has_optional_int32());
   EXPECT_FALSE(message.has_optional_int64());
@@ -419,7 +407,6 @@ void TestUtilLite::ExpectClear(const unittest::TestAllTypesLite& message) {
   EXPECT_FALSE(message.has_optional_nested_enum());
   EXPECT_FALSE(message.has_optional_foreign_enum());
   EXPECT_FALSE(message.has_optional_import_enum());
-
 
   // Optional fields without defaults are set to zero or something like it.
   EXPECT_EQ(0, message.optional_int32());
@@ -456,7 +443,6 @@ void TestUtilLite::ExpectClear(const unittest::TestAllTypesLite& message) {
   EXPECT_EQ(unittest::FOREIGN_LITE_FOO, message.optional_foreign_enum());
   EXPECT_EQ(unittest_import::IMPORT_LITE_FOO, message.optional_import_enum());
 
-
   // Repeated fields are empty.
   EXPECT_EQ(0, message.repeated_int32_size());
   EXPECT_EQ(0, message.repeated_int64_size());
@@ -483,7 +469,6 @@ void TestUtilLite::ExpectClear(const unittest::TestAllTypesLite& message) {
   EXPECT_EQ(0, message.repeated_foreign_enum_size());
   EXPECT_EQ(0, message.repeated_import_enum_size());
 
-
   // has_blah() should also be false for all default fields.
   EXPECT_FALSE(message.has_default_int32());
   EXPECT_FALSE(message.has_default_int64());
@@ -504,7 +489,6 @@ void TestUtilLite::ExpectClear(const unittest::TestAllTypesLite& message) {
   EXPECT_FALSE(message.has_default_nested_enum());
   EXPECT_FALSE(message.has_default_foreign_enum());
   EXPECT_FALSE(message.has_default_import_enum());
-
 
   // Fields with defaults have their default values (duh).
   EXPECT_EQ(41, message.default_int32());
@@ -527,7 +511,6 @@ void TestUtilLite::ExpectClear(const unittest::TestAllTypesLite& message) {
   EXPECT_EQ(unittest::FOREIGN_LITE_BAR, message.default_foreign_enum());
   EXPECT_EQ(unittest_import::IMPORT_LITE_BAR, message.default_import_enum());
 
-
   EXPECT_FALSE(message.has_oneof_uint32());
   EXPECT_FALSE(message.has_oneof_nested_message());
   EXPECT_FALSE(message.has_oneof_string());
@@ -537,7 +520,7 @@ void TestUtilLite::ExpectClear(const unittest::TestAllTypesLite& message) {
 // -------------------------------------------------------------------
 
 void TestUtilLite::ExpectRepeatedFieldsModified(
-    const unittest::TestAllTypesLite& message) {
+    const unittest::TestAllTypesLite &message) {
   // ModifyRepeatedFields only sets the second repeated element of each
   // field.  In addition to verifying this, we also verify that the first
   // element and size were *not* modified.
@@ -566,7 +549,6 @@ void TestUtilLite::ExpectRepeatedFieldsModified(
   ASSERT_EQ(2, message.repeated_foreign_enum_size());
   ASSERT_EQ(2, message.repeated_import_enum_size());
 
-
   EXPECT_EQ(201, message.repeated_int32(0));
   EXPECT_EQ(202, message.repeated_int64(0));
   EXPECT_EQ(203, message.repeated_uint32(0));
@@ -592,7 +574,6 @@ void TestUtilLite::ExpectRepeatedFieldsModified(
   EXPECT_EQ(unittest::TestAllTypesLite::BAR, message.repeated_nested_enum(0));
   EXPECT_EQ(unittest::FOREIGN_LITE_BAR, message.repeated_foreign_enum(0));
   EXPECT_EQ(unittest_import::IMPORT_LITE_BAR, message.repeated_import_enum(0));
-
 
   // Actually verify the second (modified) elements now.
   EXPECT_EQ(501, message.repeated_int32(1));
@@ -620,12 +601,11 @@ void TestUtilLite::ExpectRepeatedFieldsModified(
   EXPECT_EQ(unittest::TestAllTypesLite::FOO, message.repeated_nested_enum(1));
   EXPECT_EQ(unittest::FOREIGN_LITE_FOO, message.repeated_foreign_enum(1));
   EXPECT_EQ(unittest_import::IMPORT_LITE_FOO, message.repeated_import_enum(1));
-
 }
 
 // -------------------------------------------------------------------
 
-void TestUtilLite::SetPackedFields(unittest::TestPackedTypesLite* message) {
+void TestUtilLite::SetPackedFields(unittest::TestPackedTypesLite *message) {
   message->add_packed_int32(601);
   message->add_packed_int64(602);
   message->add_packed_uint32(603);
@@ -659,7 +639,7 @@ void TestUtilLite::SetPackedFields(unittest::TestPackedTypesLite* message) {
 
 // -------------------------------------------------------------------
 
-void TestUtilLite::ModifyPackedFields(unittest::TestPackedTypesLite* message) {
+void TestUtilLite::ModifyPackedFields(unittest::TestPackedTypesLite *message) {
   message->set_packed_int32(1, 801);
   message->set_packed_int64(1, 802);
   message->set_packed_uint32(1, 803);
@@ -679,7 +659,7 @@ void TestUtilLite::ModifyPackedFields(unittest::TestPackedTypesLite* message) {
 // -------------------------------------------------------------------
 
 void TestUtilLite::ExpectPackedFieldsSet(
-    const unittest::TestPackedTypesLite& message) {
+    const unittest::TestPackedTypesLite &message) {
   ASSERT_EQ(2, message.packed_int32_size());
   ASSERT_EQ(2, message.packed_int64_size());
   ASSERT_EQ(2, message.packed_uint32_size());
@@ -729,7 +709,7 @@ void TestUtilLite::ExpectPackedFieldsSet(
 // -------------------------------------------------------------------
 
 void TestUtilLite::ExpectPackedClear(
-    const unittest::TestPackedTypesLite& message) {
+    const unittest::TestPackedTypesLite &message) {
   // Packed repeated fields are empty.
   EXPECT_EQ(0, message.packed_int32_size());
   EXPECT_EQ(0, message.packed_int64_size());
@@ -750,7 +730,7 @@ void TestUtilLite::ExpectPackedClear(
 // -------------------------------------------------------------------
 
 void TestUtilLite::ExpectPackedFieldsModified(
-    const unittest::TestPackedTypesLite& message) {
+    const unittest::TestPackedTypesLite &message) {
   // Do the same for packed repeated fields.
   ASSERT_EQ(2, message.packed_int32_size());
   ASSERT_EQ(2, message.packed_int64_size());
@@ -806,7 +786,7 @@ void TestUtilLite::ExpectPackedFieldsModified(
 //
 // I gave up on the 80-char limit here.  Sorry.
 
-void TestUtilLite::SetAllExtensions(unittest::TestAllExtensionsLite* message) {
+void TestUtilLite::SetAllExtensions(unittest::TestAllExtensionsLite *message) {
   message->SetExtension(unittest::optional_int32_extension_lite, 101);
   message->SetExtension(unittest::optional_int64_extension_lite, 102);
   message->SetExtension(unittest::optional_uint32_extension_lite, 103);
@@ -844,7 +824,6 @@ void TestUtilLite::SetAllExtensions(unittest::TestAllExtensionsLite* message) {
   message->SetExtension(unittest::optional_import_enum_extension_lite,
                         unittest_import::IMPORT_LITE_BAZ);
 
-
   // -----------------------------------------------------------------
 
   message->AddExtension(unittest::repeated_int32_extension_lite, 201);
@@ -880,7 +859,6 @@ void TestUtilLite::SetAllExtensions(unittest::TestAllExtensionsLite* message) {
   message->AddExtension(unittest::repeated_import_enum_extension_lite,
                         unittest_import::IMPORT_LITE_BAR);
 
-
   // Add a second one of each field.
   message->AddExtension(unittest::repeated_int32_extension_lite, 301);
   message->AddExtension(unittest::repeated_int64_extension_lite, 302);
@@ -915,7 +893,6 @@ void TestUtilLite::SetAllExtensions(unittest::TestAllExtensionsLite* message) {
   message->AddExtension(unittest::repeated_import_enum_extension_lite,
                         unittest_import::IMPORT_LITE_BAZ);
 
-
   // -----------------------------------------------------------------
 
   message->SetExtension(unittest::default_int32_extension_lite, 401);
@@ -941,7 +918,6 @@ void TestUtilLite::SetAllExtensions(unittest::TestAllExtensionsLite* message) {
   message->SetExtension(unittest::default_import_enum_extension_lite,
                         unittest_import::IMPORT_LITE_FOO);
 
-
   message->SetExtension(unittest::oneof_uint32_extension_lite, 601);
   message->MutableExtension(unittest::oneof_nested_message_extension_lite)
       ->set_bb(602);
@@ -953,7 +929,7 @@ void TestUtilLite::SetAllExtensions(unittest::TestAllExtensionsLite* message) {
 // -------------------------------------------------------------------
 
 void TestUtilLite::ModifyRepeatedExtensions(
-    unittest::TestAllExtensionsLite* message) {
+    unittest::TestAllExtensionsLite *message) {
   message->SetExtension(unittest::repeated_int32_extension_lite, 1, 501);
   message->SetExtension(unittest::repeated_int64_extension_lite, 1, 502);
   message->SetExtension(unittest::repeated_uint32_extension_lite, 1, 503);
@@ -988,13 +964,12 @@ void TestUtilLite::ModifyRepeatedExtensions(
                         unittest::FOREIGN_LITE_FOO);
   message->SetExtension(unittest::repeated_import_enum_extension_lite, 1,
                         unittest_import::IMPORT_LITE_FOO);
-
 }
 
 // -------------------------------------------------------------------
 
 void TestUtilLite::ExpectAllExtensionsSet(
-    const unittest::TestAllExtensionsLite& message) {
+    const unittest::TestAllExtensionsLite &message) {
   EXPECT_TRUE(message.HasExtension(unittest::optional_int32_extension_lite));
   EXPECT_TRUE(message.HasExtension(unittest::optional_int64_extension_lite));
   EXPECT_TRUE(message.HasExtension(unittest::optional_uint32_extension_lite));
@@ -1048,7 +1023,6 @@ void TestUtilLite::ExpectAllExtensionsSet(
       message.HasExtension(unittest::optional_foreign_enum_extension_lite));
   EXPECT_TRUE(
       message.HasExtension(unittest::optional_import_enum_extension_lite));
-
 
   EXPECT_EQ(101, message.GetExtension(unittest::optional_int32_extension_lite));
   EXPECT_EQ(102, message.GetExtension(unittest::optional_int64_extension_lite));
@@ -1110,7 +1084,6 @@ void TestUtilLite::ExpectAllExtensionsSet(
       unittest_import::IMPORT_LITE_BAZ,
       message.GetExtension(unittest::optional_import_enum_extension_lite));
 
-
   // -----------------------------------------------------------------
 
   ASSERT_EQ(2, message.ExtensionSize(unittest::repeated_int32_extension_lite));
@@ -1148,7 +1121,6 @@ void TestUtilLite::ExpectAllExtensionsSet(
       2, message.ExtensionSize(unittest::repeated_foreign_enum_extension_lite));
   ASSERT_EQ(
       2, message.ExtensionSize(unittest::repeated_import_enum_extension_lite));
-
 
   EXPECT_EQ(201,
             message.GetExtension(unittest::repeated_int32_extension_lite, 0));
@@ -1210,7 +1182,6 @@ void TestUtilLite::ExpectAllExtensionsSet(
       unittest_import::IMPORT_LITE_BAR,
       message.GetExtension(unittest::repeated_import_enum_extension_lite, 0));
 
-
   EXPECT_EQ(301,
             message.GetExtension(unittest::repeated_int32_extension_lite, 1));
   EXPECT_EQ(302,
@@ -1271,7 +1242,6 @@ void TestUtilLite::ExpectAllExtensionsSet(
       unittest_import::IMPORT_LITE_BAZ,
       message.GetExtension(unittest::repeated_import_enum_extension_lite, 1));
 
-
   // -----------------------------------------------------------------
 
   EXPECT_TRUE(message.HasExtension(unittest::default_int32_extension_lite));
@@ -1296,7 +1266,6 @@ void TestUtilLite::ExpectAllExtensionsSet(
       message.HasExtension(unittest::default_foreign_enum_extension_lite));
   EXPECT_TRUE(
       message.HasExtension(unittest::default_import_enum_extension_lite));
-
 
   EXPECT_EQ(401, message.GetExtension(unittest::default_int32_extension_lite));
   EXPECT_EQ(402, message.GetExtension(unittest::default_int64_extension_lite));
@@ -1328,7 +1297,6 @@ void TestUtilLite::ExpectAllExtensionsSet(
   EXPECT_EQ(unittest_import::IMPORT_LITE_FOO,
             message.GetExtension(unittest::default_import_enum_extension_lite));
 
-
   EXPECT_TRUE(message.HasExtension(unittest::oneof_uint32_extension_lite));
   EXPECT_TRUE(
       message.GetExtension(unittest::oneof_nested_message_extension_lite)
@@ -1347,7 +1315,7 @@ void TestUtilLite::ExpectAllExtensionsSet(
 // -------------------------------------------------------------------
 
 void TestUtilLite::ExpectExtensionsClear(
-    const unittest::TestAllExtensionsLite& message) {
+    const unittest::TestAllExtensionsLite &message) {
   std::string serialized;
   ASSERT_TRUE(message.SerializeToString(&serialized));
   EXPECT_EQ("", serialized);
@@ -1390,7 +1358,6 @@ void TestUtilLite::ExpectExtensionsClear(
       message.HasExtension(unittest::optional_foreign_enum_extension_lite));
   EXPECT_FALSE(
       message.HasExtension(unittest::optional_import_enum_extension_lite));
-
 
   // Optional fields without defaults are set to zero or something like it.
   EXPECT_EQ(0, message.GetExtension(unittest::optional_int32_extension_lite));
@@ -1462,7 +1429,6 @@ void TestUtilLite::ExpectExtensionsClear(
       unittest_import::IMPORT_LITE_FOO,
       message.GetExtension(unittest::optional_import_enum_extension_lite));
 
-
   // Repeated fields are empty.
   EXPECT_EQ(0, message.ExtensionSize(unittest::repeated_int32_extension_lite));
   EXPECT_EQ(0, message.ExtensionSize(unittest::repeated_int64_extension_lite));
@@ -1500,7 +1466,6 @@ void TestUtilLite::ExpectExtensionsClear(
   EXPECT_EQ(
       0, message.ExtensionSize(unittest::repeated_import_enum_extension_lite));
 
-
   // has_blah() should also be false for all default fields.
   EXPECT_FALSE(message.HasExtension(unittest::default_int32_extension_lite));
   EXPECT_FALSE(message.HasExtension(unittest::default_int64_extension_lite));
@@ -1524,7 +1489,6 @@ void TestUtilLite::ExpectExtensionsClear(
       message.HasExtension(unittest::default_foreign_enum_extension_lite));
   EXPECT_FALSE(
       message.HasExtension(unittest::default_import_enum_extension_lite));
-
 
   // Fields with defaults have their default values (duh).
   EXPECT_EQ(41, message.GetExtension(unittest::default_int32_extension_lite));
@@ -1556,7 +1520,6 @@ void TestUtilLite::ExpectExtensionsClear(
   EXPECT_EQ(unittest_import::IMPORT_LITE_BAR,
             message.GetExtension(unittest::default_import_enum_extension_lite));
 
-
   EXPECT_FALSE(message.HasExtension(unittest::oneof_uint32_extension_lite));
   EXPECT_FALSE(
       message.GetExtension(unittest::oneof_nested_message_extension_lite)
@@ -1568,7 +1531,7 @@ void TestUtilLite::ExpectExtensionsClear(
 // -------------------------------------------------------------------
 
 void TestUtilLite::ExpectRepeatedExtensionsModified(
-    const unittest::TestAllExtensionsLite& message) {
+    const unittest::TestAllExtensionsLite &message) {
   // ModifyRepeatedFields only sets the second repeated element of each
   // field.  In addition to verifying this, we also verify that the first
   // element and size were *not* modified.
@@ -1607,7 +1570,6 @@ void TestUtilLite::ExpectRepeatedExtensionsModified(
       2, message.ExtensionSize(unittest::repeated_foreign_enum_extension_lite));
   ASSERT_EQ(
       2, message.ExtensionSize(unittest::repeated_import_enum_extension_lite));
-
 
   EXPECT_EQ(201,
             message.GetExtension(unittest::repeated_int32_extension_lite, 0));
@@ -1669,7 +1631,6 @@ void TestUtilLite::ExpectRepeatedExtensionsModified(
       unittest_import::IMPORT_LITE_BAR,
       message.GetExtension(unittest::repeated_import_enum_extension_lite, 0));
 
-
   // Actually verify the second (modified) elements now.
   EXPECT_EQ(501,
             message.GetExtension(unittest::repeated_int32_extension_lite, 1));
@@ -1730,13 +1691,12 @@ void TestUtilLite::ExpectRepeatedExtensionsModified(
   EXPECT_EQ(
       unittest_import::IMPORT_LITE_FOO,
       message.GetExtension(unittest::repeated_import_enum_extension_lite, 1));
-
 }
 
 // -------------------------------------------------------------------
 
 void TestUtilLite::SetPackedExtensions(
-    unittest::TestPackedExtensionsLite* message) {
+    unittest::TestPackedExtensionsLite *message) {
   message->AddExtension(unittest::packed_int32_extension_lite, 601);
   message->AddExtension(unittest::packed_int64_extension_lite, 602);
   message->AddExtension(unittest::packed_uint32_extension_lite, 603);
@@ -1773,7 +1733,7 @@ void TestUtilLite::SetPackedExtensions(
 // -------------------------------------------------------------------
 
 void TestUtilLite::ModifyPackedExtensions(
-    unittest::TestPackedExtensionsLite* message) {
+    unittest::TestPackedExtensionsLite *message) {
   message->SetExtension(unittest::packed_int32_extension_lite, 1, 801);
   message->SetExtension(unittest::packed_int64_extension_lite, 1, 802);
   message->SetExtension(unittest::packed_uint32_extension_lite, 1, 803);
@@ -1794,7 +1754,7 @@ void TestUtilLite::ModifyPackedExtensions(
 // -------------------------------------------------------------------
 
 void TestUtilLite::ExpectPackedExtensionsSet(
-    const unittest::TestPackedExtensionsLite& message) {
+    const unittest::TestPackedExtensionsLite &message) {
   ASSERT_EQ(2, message.ExtensionSize(unittest::packed_int32_extension_lite));
   ASSERT_EQ(2, message.ExtensionSize(unittest::packed_int64_extension_lite));
   ASSERT_EQ(2, message.ExtensionSize(unittest::packed_uint32_extension_lite));
@@ -1871,7 +1831,7 @@ void TestUtilLite::ExpectPackedExtensionsSet(
 // -------------------------------------------------------------------
 
 void TestUtilLite::ExpectPackedExtensionsClear(
-    const unittest::TestPackedExtensionsLite& message) {
+    const unittest::TestPackedExtensionsLite &message) {
   EXPECT_EQ(0, message.ExtensionSize(unittest::packed_int32_extension_lite));
   EXPECT_EQ(0, message.ExtensionSize(unittest::packed_int64_extension_lite));
   EXPECT_EQ(0, message.ExtensionSize(unittest::packed_uint32_extension_lite));
@@ -1891,7 +1851,7 @@ void TestUtilLite::ExpectPackedExtensionsClear(
 // -------------------------------------------------------------------
 
 void TestUtilLite::ExpectPackedExtensionsModified(
-    const unittest::TestPackedExtensionsLite& message) {
+    const unittest::TestPackedExtensionsLite &message) {
   ASSERT_EQ(2, message.ExtensionSize(unittest::packed_int32_extension_lite));
   ASSERT_EQ(2, message.ExtensionSize(unittest::packed_int64_extension_lite));
   ASSERT_EQ(2, message.ExtensionSize(unittest::packed_uint32_extension_lite));
@@ -1966,5 +1926,5 @@ void TestUtilLite::ExpectPackedExtensionsModified(
             message.GetExtension(unittest::packed_enum_extension_lite, 1));
 }
 
-}  // namespace protobuf
-}  // namespace google
+} // namespace protobuf
+} // namespace google

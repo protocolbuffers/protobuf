@@ -33,10 +33,10 @@
 #include <list>
 #include <string>
 
-#include <google/protobuf/io/zero_copy_stream.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/descriptor_database.h>
 #include <google/protobuf/dynamic_message.h>
+#include <google/protobuf/io/zero_copy_stream.h>
+#include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/util/internal/testdata/maps.pb.h>
 #include <google/protobuf/util/json_format.pb.h>
 #include <google/protobuf/util/json_format_proto3.pb.h>
@@ -64,21 +64,21 @@ using proto_util_converter::testing::MapIn;
 // parameters to the underlying implementation correctly. More detailed
 // tests are contained in the //net/proto2/util/converter directory.
 class JsonUtilTest : public ::testing::Test {
- protected:
+protected:
   JsonUtilTest() {}
 
-  std::string ToJson(const Message& message, const JsonPrintOptions& options) {
+  std::string ToJson(const Message &message, const JsonPrintOptions &options) {
     std::string result;
     GOOGLE_CHECK_OK(MessageToJsonString(message, &result, options));
     return result;
   }
 
-  bool FromJson(const std::string& json, Message* message,
-                const JsonParseOptions& options) {
+  bool FromJson(const std::string &json, Message *message,
+                const JsonParseOptions &options) {
     return JsonStringToMessage(json, message, options).ok();
   }
 
-  bool FromJson(const std::string& json, Message* message) {
+  bool FromJson(const std::string &json, Message *message) {
     return FromJson(json, message, JsonParseOptions());
   }
 
@@ -92,11 +92,10 @@ TEST_F(JsonUtilTest, TestWhitespaces) {
   JsonPrintOptions options;
   EXPECT_EQ("{\"messageValue\":{}}", ToJson(m, options));
   options.add_whitespace = true;
-  EXPECT_EQ(
-      "{\n"
-      " \"messageValue\": {}\n"
-      "}\n",
-      ToJson(m, options));
+  EXPECT_EQ("{\n"
+            " \"messageValue\": {}\n"
+            "}\n",
+            ToJson(m, options));
 }
 
 TEST_F(JsonUtilTest, TestDefaultValues) {
@@ -104,86 +103,83 @@ TEST_F(JsonUtilTest, TestDefaultValues) {
   JsonPrintOptions options;
   EXPECT_EQ("{}", ToJson(m, options));
   options.always_print_primitive_fields = true;
-  EXPECT_EQ(
-      "{\"boolValue\":false,"
-      "\"int32Value\":0,"
-      "\"int64Value\":\"0\","
-      "\"uint32Value\":0,"
-      "\"uint64Value\":\"0\","
-      "\"floatValue\":0,"
-      "\"doubleValue\":0,"
-      "\"stringValue\":\"\","
-      "\"bytesValue\":\"\","
-      "\"enumValue\":\"FOO\","
-      "\"repeatedBoolValue\":[],"
-      "\"repeatedInt32Value\":[],"
-      "\"repeatedInt64Value\":[],"
-      "\"repeatedUint32Value\":[],"
-      "\"repeatedUint64Value\":[],"
-      "\"repeatedFloatValue\":[],"
-      "\"repeatedDoubleValue\":[],"
-      "\"repeatedStringValue\":[],"
-      "\"repeatedBytesValue\":[],"
-      "\"repeatedEnumValue\":[],"
-      "\"repeatedMessageValue\":[]"
-      "}",
-      ToJson(m, options));
+  EXPECT_EQ("{\"boolValue\":false,"
+            "\"int32Value\":0,"
+            "\"int64Value\":\"0\","
+            "\"uint32Value\":0,"
+            "\"uint64Value\":\"0\","
+            "\"floatValue\":0,"
+            "\"doubleValue\":0,"
+            "\"stringValue\":\"\","
+            "\"bytesValue\":\"\","
+            "\"enumValue\":\"FOO\","
+            "\"repeatedBoolValue\":[],"
+            "\"repeatedInt32Value\":[],"
+            "\"repeatedInt64Value\":[],"
+            "\"repeatedUint32Value\":[],"
+            "\"repeatedUint64Value\":[],"
+            "\"repeatedFloatValue\":[],"
+            "\"repeatedDoubleValue\":[],"
+            "\"repeatedStringValue\":[],"
+            "\"repeatedBytesValue\":[],"
+            "\"repeatedEnumValue\":[],"
+            "\"repeatedMessageValue\":[]"
+            "}",
+            ToJson(m, options));
 
   options.always_print_primitive_fields = true;
   m.set_string_value("i am a test string value");
   m.set_bytes_value("i am a test bytes value");
-  EXPECT_EQ(
-      "{\"boolValue\":false,"
-      "\"int32Value\":0,"
-      "\"int64Value\":\"0\","
-      "\"uint32Value\":0,"
-      "\"uint64Value\":\"0\","
-      "\"floatValue\":0,"
-      "\"doubleValue\":0,"
-      "\"stringValue\":\"i am a test string value\","
-      "\"bytesValue\":\"aSBhbSBhIHRlc3QgYnl0ZXMgdmFsdWU=\","
-      "\"enumValue\":\"FOO\","
-      "\"repeatedBoolValue\":[],"
-      "\"repeatedInt32Value\":[],"
-      "\"repeatedInt64Value\":[],"
-      "\"repeatedUint32Value\":[],"
-      "\"repeatedUint64Value\":[],"
-      "\"repeatedFloatValue\":[],"
-      "\"repeatedDoubleValue\":[],"
-      "\"repeatedStringValue\":[],"
-      "\"repeatedBytesValue\":[],"
-      "\"repeatedEnumValue\":[],"
-      "\"repeatedMessageValue\":[]"
-      "}",
-      ToJson(m, options));
+  EXPECT_EQ("{\"boolValue\":false,"
+            "\"int32Value\":0,"
+            "\"int64Value\":\"0\","
+            "\"uint32Value\":0,"
+            "\"uint64Value\":\"0\","
+            "\"floatValue\":0,"
+            "\"doubleValue\":0,"
+            "\"stringValue\":\"i am a test string value\","
+            "\"bytesValue\":\"aSBhbSBhIHRlc3QgYnl0ZXMgdmFsdWU=\","
+            "\"enumValue\":\"FOO\","
+            "\"repeatedBoolValue\":[],"
+            "\"repeatedInt32Value\":[],"
+            "\"repeatedInt64Value\":[],"
+            "\"repeatedUint32Value\":[],"
+            "\"repeatedUint64Value\":[],"
+            "\"repeatedFloatValue\":[],"
+            "\"repeatedDoubleValue\":[],"
+            "\"repeatedStringValue\":[],"
+            "\"repeatedBytesValue\":[],"
+            "\"repeatedEnumValue\":[],"
+            "\"repeatedMessageValue\":[]"
+            "}",
+            ToJson(m, options));
 
   options.preserve_proto_field_names = true;
   m.set_string_value("i am a test string value");
   m.set_bytes_value("i am a test bytes value");
-  EXPECT_EQ(
-      "{\"bool_value\":false,"
-      "\"int32_value\":0,"
-      "\"int64_value\":\"0\","
-      "\"uint32_value\":0,"
-      "\"uint64_value\":\"0\","
-      "\"float_value\":0,"
-      "\"double_value\":0,"
-      "\"string_value\":\"i am a test string value\","
-      "\"bytes_value\":\"aSBhbSBhIHRlc3QgYnl0ZXMgdmFsdWU=\","
-      "\"enum_value\":\"FOO\","
-      "\"repeated_bool_value\":[],"
-      "\"repeated_int32_value\":[],"
-      "\"repeated_int64_value\":[],"
-      "\"repeated_uint32_value\":[],"
-      "\"repeated_uint64_value\":[],"
-      "\"repeated_float_value\":[],"
-      "\"repeated_double_value\":[],"
-      "\"repeated_string_value\":[],"
-      "\"repeated_bytes_value\":[],"
-      "\"repeated_enum_value\":[],"
-      "\"repeated_message_value\":[]"
-      "}",
-      ToJson(m, options));
+  EXPECT_EQ("{\"bool_value\":false,"
+            "\"int32_value\":0,"
+            "\"int64_value\":\"0\","
+            "\"uint32_value\":0,"
+            "\"uint64_value\":\"0\","
+            "\"float_value\":0,"
+            "\"double_value\":0,"
+            "\"string_value\":\"i am a test string value\","
+            "\"bytes_value\":\"aSBhbSBhIHRlc3QgYnl0ZXMgdmFsdWU=\","
+            "\"enum_value\":\"FOO\","
+            "\"repeated_bool_value\":[],"
+            "\"repeated_int32_value\":[],"
+            "\"repeated_int64_value\":[],"
+            "\"repeated_uint32_value\":[],"
+            "\"repeated_uint64_value\":[],"
+            "\"repeated_float_value\":[],"
+            "\"repeated_double_value\":[],"
+            "\"repeated_string_value\":[],"
+            "\"repeated_bytes_value\":[],"
+            "\"repeated_enum_value\":[],"
+            "\"repeated_message_value\":[]"
+            "}",
+            ToJson(m, options));
 }
 
 TEST_F(JsonUtilTest, TestPreserveProtoFieldNames) {
@@ -243,17 +239,16 @@ TEST_F(JsonUtilTest, TestPrintEnumsAsIntsWithDefaultValue) {
 TEST_F(JsonUtilTest, ParseMessage) {
   // Some random message but good enough to verify that the parsing warpper
   // functions are working properly.
-  std::string input =
-      "{\n"
-      "  \"int32Value\": 1024,\n"
-      "  \"repeatedInt32Value\": [1, 2],\n"
-      "  \"messageValue\": {\n"
-      "    \"value\": 2048\n"
-      "  },\n"
-      "  \"repeatedMessageValue\": [\n"
-      "    {\"value\": 40}, {\"value\": 96}\n"
-      "  ]\n"
-      "}\n";
+  std::string input = "{\n"
+                      "  \"int32Value\": 1024,\n"
+                      "  \"repeatedInt32Value\": [1, 2],\n"
+                      "  \"messageValue\": {\n"
+                      "    \"value\": 2048\n"
+                      "  },\n"
+                      "  \"repeatedMessageValue\": [\n"
+                      "    {\"value\": 40}, {\"value\": 96}\n"
+                      "  ]\n"
+                      "}\n";
   JsonParseOptions options;
   TestMessage m;
   ASSERT_TRUE(FromJson(input, &m, options));
@@ -319,17 +314,16 @@ TEST_F(JsonUtilTest, TestParseErrors) {
 
 TEST_F(JsonUtilTest, TestDynamicMessage) {
   // Some random message but good enough to test the wrapper functions.
-  std::string input =
-      "{\n"
-      "  \"int32Value\": 1024,\n"
-      "  \"repeatedInt32Value\": [1, 2],\n"
-      "  \"messageValue\": {\n"
-      "    \"value\": 2048\n"
-      "  },\n"
-      "  \"repeatedMessageValue\": [\n"
-      "    {\"value\": 40}, {\"value\": 96}\n"
-      "  ]\n"
-      "}\n";
+  std::string input = "{\n"
+                      "  \"int32Value\": 1024,\n"
+                      "  \"repeatedInt32Value\": [1, 2],\n"
+                      "  \"messageValue\": {\n"
+                      "    \"value\": 2048\n"
+                      "  },\n"
+                      "  \"repeatedMessageValue\": [\n"
+                      "    {\"value\": 40}, {\"value\": 96}\n"
+                      "  ]\n"
+                      "}\n";
 
   // Create a new DescriptorPool with the same protos as the generated one.
   DescriptorPoolDatabase database(*DescriptorPool::generated_pool());
@@ -380,10 +374,9 @@ TEST_F(JsonUtilTest, TestParsingUnknownAnyFields) {
 }
 
 TEST_F(JsonUtilTest, TestParsingUnknownEnumsProto2) {
-  std::string input =
-      "{\n"
-      "  \"a\": \"UNKNOWN_VALUE\"\n"
-      "}";
+  std::string input = "{\n"
+                      "  \"a\": \"UNKNOWN_VALUE\"\n"
+                      "}";
   protobuf_unittest::TestNumbers m;
   JsonParseOptions options;
   EXPECT_FALSE(FromJson(input, &m, options));
@@ -398,25 +391,23 @@ TEST_F(JsonUtilTest, TestParsingUnknownEnumsProto3) {
   {
     JsonParseOptions options;
     ASSERT_FALSE(options.ignore_unknown_fields);
-    std::string input =
-        "{\n"
-        "  \"enum_value\":\"UNKNOWN_VALUE\"\n"
-        "}";
+    std::string input = "{\n"
+                        "  \"enum_value\":\"UNKNOWN_VALUE\"\n"
+                        "}";
     m.set_enum_value(proto3::BAR);
     EXPECT_FALSE(FromJson(input, &m, options));
-    ASSERT_EQ(proto3::BAR, m.enum_value());  // Keep previous value
+    ASSERT_EQ(proto3::BAR, m.enum_value()); // Keep previous value
 
     options.ignore_unknown_fields = true;
     EXPECT_TRUE(FromJson(input, &m, options));
-    EXPECT_EQ(0, m.enum_value());  // Unknown enum value must be decoded as 0
+    EXPECT_EQ(0, m.enum_value()); // Unknown enum value must be decoded as 0
   }
   // Integer values are read as usual
   {
     JsonParseOptions options;
-    std::string input =
-        "{\n"
-        "  \"enum_value\":12345\n"
-        "}";
+    std::string input = "{\n"
+                        "  \"enum_value\":12345\n"
+                        "}";
     m.set_enum_value(proto3::BAR);
     EXPECT_TRUE(FromJson(input, &m, options));
     ASSERT_EQ(12345, m.enum_value());
@@ -430,10 +421,9 @@ TEST_F(JsonUtilTest, TestParsingUnknownEnumsProto3) {
   // error
   {
     JsonParseOptions options;
-    std::string input =
-        "{\n"
-        "  \"enum_value\":{}\n"
-        "}";
+    std::string input = "{\n"
+                        "  \"enum_value\":{}\n"
+                        "}";
     options.ignore_unknown_fields = true;
     EXPECT_FALSE(FromJson(input, &m, options));
     options.ignore_unknown_fields = false;
@@ -443,10 +433,9 @@ TEST_F(JsonUtilTest, TestParsingUnknownEnumsProto3) {
   // error
   {
     JsonParseOptions options;
-    std::string input =
-        "{\n"
-        "  \"enum_value\":[]\n"
-        "}";
+    std::string input = "{\n"
+                        "  \"enum_value\":[]\n"
+                        "}";
     EXPECT_FALSE(FromJson(input, &m, options));
     options.ignore_unknown_fields = true;
     EXPECT_FALSE(FromJson(input, &m, options));
@@ -457,10 +446,9 @@ TEST_F(JsonUtilTest, TestParsingEnumIgnoreCase) {
   TestMessage m;
   {
     JsonParseOptions options;
-    std::string input =
-        "{\n"
-        "  \"enum_value\":\"bar\"\n"
-        "}";
+    std::string input = "{\n"
+                        "  \"enum_value\":\"bar\"\n"
+                        "}";
     m.set_enum_value(proto3::FOO);
     EXPECT_FALSE(FromJson(input, &m, options));
     // Default behavior is case-sensitive, so keep previous value.
@@ -469,37 +457,34 @@ TEST_F(JsonUtilTest, TestParsingEnumIgnoreCase) {
   {
     JsonParseOptions options;
     options.case_insensitive_enum_parsing = false;
-    std::string input =
-        "{\n"
-        "  \"enum_value\":\"bar\"\n"
-        "}";
+    std::string input = "{\n"
+                        "  \"enum_value\":\"bar\"\n"
+                        "}";
     m.set_enum_value(proto3::FOO);
     EXPECT_FALSE(FromJson(input, &m, options));
-    ASSERT_EQ(proto3::FOO, m.enum_value());  // Keep previous value
+    ASSERT_EQ(proto3::FOO, m.enum_value()); // Keep previous value
   }
   {
     JsonParseOptions options;
     options.case_insensitive_enum_parsing = true;
-    std::string input =
-        "{\n"
-        "  \"enum_value\":\"bar\"\n"
-        "}";
+    std::string input = "{\n"
+                        "  \"enum_value\":\"bar\"\n"
+                        "}";
     m.set_enum_value(proto3::FOO);
     EXPECT_TRUE(FromJson(input, &m, options));
     ASSERT_EQ(proto3::BAR, m.enum_value());
   }
 }
 
-typedef std::pair<char*, int> Segment;
+typedef std::pair<char *, int> Segment;
 // A ZeroCopyOutputStream that writes to multiple buffers.
 class SegmentedZeroCopyOutputStream : public io::ZeroCopyOutputStream {
- public:
+public:
   explicit SegmentedZeroCopyOutputStream(std::list<Segment> segments)
-      : segments_(segments),
-        last_segment_(static_cast<char*>(NULL), 0),
+      : segments_(segments), last_segment_(static_cast<char *>(NULL), 0),
         byte_count_(0) {}
 
-  bool Next(void** buffer, int* length) override {
+  bool Next(void **buffer, int *length) override {
     if (segments_.empty()) {
       return false;
     }
@@ -521,7 +506,7 @@ class SegmentedZeroCopyOutputStream : public io::ZeroCopyOutputStream {
 
   int64_t ByteCount() const override { return byte_count_; }
 
- private:
+private:
   std::list<Segment> segments_;
   Segment last_segment_;
   int64 byte_count_;
@@ -623,7 +608,7 @@ TEST_F(JsonUtilTest, TestWrongJsonInput) {
   char proto_buffer[10000];
   io::ArrayOutputStream output_stream(proto_buffer, sizeof(proto_buffer));
   std::string message_type = "type.googleapis.com/proto3.TestMessage";
-  TypeResolver* resolver = NewTypeResolverForDescriptorPool(
+  TypeResolver *resolver = NewTypeResolverForDescriptorPool(
       "type.googleapis.com", DescriptorPool::generated_pool());
 
   auto result_status = util::JsonToBinaryStream(resolver, message_type,
@@ -632,8 +617,7 @@ TEST_F(JsonUtilTest, TestWrongJsonInput) {
   delete resolver;
 
   EXPECT_FALSE(result_status.ok());
-  EXPECT_EQ(result_status.code(),
-            util::error::INVALID_ARGUMENT);
+  EXPECT_EQ(result_status.code(), util::error::INVALID_ARGUMENT);
 }
 
 TEST_F(JsonUtilTest, HtmlEscape) {
@@ -643,7 +627,7 @@ TEST_F(JsonUtilTest, HtmlEscape) {
   EXPECT_EQ("{\"stringValue\":\"\\u003c/script\\u003e\"}", ToJson(m, options));
 }
 
-}  // namespace
-}  // namespace util
-}  // namespace protobuf
-}  // namespace google
+} // namespace
+} // namespace util
+} // namespace protobuf
+} // namespace google

@@ -35,8 +35,8 @@
 #include <limits>
 #include <string>
 
-#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
 
 namespace google {
 namespace protobuf {
@@ -56,7 +56,7 @@ const double MAX_FLOAT_AS_DOUBLE_ROUNDED = 3.4028235677973366e+38;
 // Returns a string identical to *input except that the character pointed to
 // by radix_pos (which should be '.') is replaced with the locale-specific
 // radix character.
-std::string LocalizeRadix(const char* input, const char* radix_pos) {
+std::string LocalizeRadix(const char *input, const char *radix_pos) {
   // Determine the locale-specific radix character by calling sprintf() to
   // print the number 1.5, then stripping off the digits.  As far as I can
   // tell, this is the only portable, thread-safe way to get the C library
@@ -77,26 +77,28 @@ std::string LocalizeRadix(const char* input, const char* radix_pos) {
   return result;
 }
 
-}  // namespace
+} // namespace
 
-double NoLocaleStrtod(const char* text, char** original_endptr) {
+double NoLocaleStrtod(const char *text, char **original_endptr) {
   // We cannot simply set the locale to "C" temporarily with setlocale()
   // as this is not thread-safe.  Instead, we try to parse in the current
   // locale first.  If parsing stops at a '.' character, then this is a
   // pretty good hint that we're actually in some other locale in which
   // '.' is not the radix character.
 
-  char* temp_endptr;
+  char *temp_endptr;
   double result = strtod(text, &temp_endptr);
-  if (original_endptr != NULL) *original_endptr = temp_endptr;
-  if (*temp_endptr != '.') return result;
+  if (original_endptr != NULL)
+    *original_endptr = temp_endptr;
+  if (*temp_endptr != '.')
+    return result;
 
   // Parsing halted on a '.'.  Perhaps we're in a different locale?  Let's
   // try to replace the '.' with a locale-specific radix character and
   // try again.
   std::string localized = LocalizeRadix(text, temp_endptr);
-  const char* localized_cstr = localized.c_str();
-  char* localized_endptr;
+  const char *localized_cstr = localized.c_str();
+  char *localized_endptr;
   result = strtod(localized_cstr, &localized_endptr);
   if ((localized_endptr - localized_cstr) > (temp_endptr - text)) {
     // This attempt got further, so replacing the decimal must have helped.
@@ -105,7 +107,7 @@ double NoLocaleStrtod(const char* text, char** original_endptr) {
       // size_diff is non-zero if the localized radix has multiple bytes.
       int size_diff = localized.size() - strlen(text);
       // const_cast is necessary to match the strtod() interface.
-      *original_endptr = const_cast<char*>(
+      *original_endptr = const_cast<char *>(
           text + (localized_endptr - localized_cstr - size_diff));
     }
   }
@@ -138,6 +140,6 @@ float SafeDoubleToFloat(double value) {
   }
 }
 
-}  // namespace io
-}  // namespace protobuf
-}  // namespace google
+} // namespace io
+} // namespace protobuf
+} // namespace google

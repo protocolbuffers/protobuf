@@ -58,13 +58,13 @@
 using google::protobuf::io::FileOutputStream;
 using google::protobuf::io::GzipOutputStream;
 
-int main(int argc, const char** argv) {
+int main(int argc, const char **argv) {
   FileOutputStream fout(STDOUT_FILENO);
   GzipOutputStream out(&fout);
   int readlen;
 
   while (true) {
-    void* outptr;
+    void *outptr;
     int outlen;
     bool ok;
     do {

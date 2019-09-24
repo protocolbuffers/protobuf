@@ -37,9 +37,9 @@
 #include <algorithm>
 #include <limits>
 
+#include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/stubs/stl_util.h>
 
 namespace google {
@@ -51,18 +51,16 @@ namespace {
 // Default block size for Copying{In,Out}putStreamAdaptor.
 static const int kDefaultBlockSize = 8192;
 
-}  // namespace
+} // namespace
 
 // ===================================================================
 
-ArrayInputStream::ArrayInputStream(const void* data, int size, int block_size)
-    : data_(reinterpret_cast<const uint8*>(data)),
-      size_(size),
-      block_size_(block_size > 0 ? block_size : size),
-      position_(0),
+ArrayInputStream::ArrayInputStream(const void *data, int size, int block_size)
+    : data_(reinterpret_cast<const uint8 *>(data)), size_(size),
+      block_size_(block_size > 0 ? block_size : size), position_(0),
       last_returned_size_(0) {}
 
-bool ArrayInputStream::Next(const void** data, int* size) {
+bool ArrayInputStream::Next(const void **data, int *size) {
   if (position_ < size_) {
     last_returned_size_ = std::min(block_size_, size_ - position_);
     *data = data_ + position_;
@@ -71,7 +69,7 @@ bool ArrayInputStream::Next(const void** data, int* size) {
     return true;
   } else {
     // We're at the end of the array.
-    last_returned_size_ = 0;  // Don't let caller back up.
+    last_returned_size_ = 0; // Don't let caller back up.
     return false;
   }
 }
@@ -82,12 +80,12 @@ void ArrayInputStream::BackUp(int count) {
   GOOGLE_CHECK_LE(count, last_returned_size_);
   GOOGLE_CHECK_GE(count, 0);
   position_ -= count;
-  last_returned_size_ = 0;  // Don't let caller back up further.
+  last_returned_size_ = 0; // Don't let caller back up further.
 }
 
 bool ArrayInputStream::Skip(int count) {
   GOOGLE_CHECK_GE(count, 0);
-  last_returned_size_ = 0;  // Don't let caller back up.
+  last_returned_size_ = 0; // Don't let caller back up.
   if (count > size_ - position_) {
     position_ = size_;
     return false;
@@ -99,17 +97,14 @@ bool ArrayInputStream::Skip(int count) {
 
 int64_t ArrayInputStream::ByteCount() const { return position_; }
 
-
 // ===================================================================
 
-ArrayOutputStream::ArrayOutputStream(void* data, int size, int block_size)
-    : data_(reinterpret_cast<uint8*>(data)),
-      size_(size),
-      block_size_(block_size > 0 ? block_size : size),
-      position_(0),
+ArrayOutputStream::ArrayOutputStream(void *data, int size, int block_size)
+    : data_(reinterpret_cast<uint8 *>(data)), size_(size),
+      block_size_(block_size > 0 ? block_size : size), position_(0),
       last_returned_size_(0) {}
 
-bool ArrayOutputStream::Next(void** data, int* size) {
+bool ArrayOutputStream::Next(void **data, int *size) {
   if (position_ < size_) {
     last_returned_size_ = std::min(block_size_, size_ - position_);
     *data = data_ + position_;
@@ -118,7 +113,7 @@ bool ArrayOutputStream::Next(void** data, int* size) {
     return true;
   } else {
     // We're at the end of the array.
-    last_returned_size_ = 0;  // Don't let caller back up.
+    last_returned_size_ = 0; // Don't let caller back up.
     return false;
   }
 }
@@ -129,16 +124,16 @@ void ArrayOutputStream::BackUp(int count) {
   GOOGLE_CHECK_LE(count, last_returned_size_);
   GOOGLE_CHECK_GE(count, 0);
   position_ -= count;
-  last_returned_size_ = 0;  // Don't let caller back up further.
+  last_returned_size_ = 0; // Don't let caller back up further.
 }
 
 int64_t ArrayOutputStream::ByteCount() const { return position_; }
 
 // ===================================================================
 
-StringOutputStream::StringOutputStream(std::string* target) : target_(target) {}
+StringOutputStream::StringOutputStream(std::string *target) : target_(target) {}
 
-bool StringOutputStream::Next(void** data, int* size) {
+bool StringOutputStream::Next(void **data, int *size) {
   GOOGLE_CHECK(target_ != NULL);
   int old_size = target_->size();
 
@@ -153,7 +148,7 @@ bool StringOutputStream::Next(void** data, int* size) {
       // Can not double the size otherwise it is going to cause integer
       // overflow in the expression below: old_size * 2 ";
       GOOGLE_LOG(ERROR) << "Cannot allocate buffer larger than kint32max for "
-                 << "StringOutputStream.";
+                        << "StringOutputStream.";
       return false;
     }
     // Double the size, also make sure that the new size is at least
@@ -161,7 +156,7 @@ bool StringOutputStream::Next(void** data, int* size) {
     STLStringResizeUninitialized(
         target_,
         std::max(old_size * 2,
-                 kMinimumSize + 0));  // "+ 0" works around GCC4 weirdness.
+                 kMinimumSize + 0)); // "+ 0" works around GCC4 weirdness.
   }
 
   *data = mutable_string_data(target_) + old_size;
@@ -187,8 +182,8 @@ int CopyingInputStream::Skip(int count) {
   char junk[4096];
   int skipped = 0;
   while (skipped < count) {
-    int bytes = Read(junk, std::min(count - skipped,
-                                    implicit_cast<int>(sizeof(junk))));
+    int bytes =
+        Read(junk, std::min(count - skipped, implicit_cast<int>(sizeof(junk))));
     if (bytes <= 0) {
       // EOF or read error.
       return skipped;
@@ -199,14 +194,11 @@ int CopyingInputStream::Skip(int count) {
 }
 
 CopyingInputStreamAdaptor::CopyingInputStreamAdaptor(
-    CopyingInputStream* copying_stream, int block_size)
-    : copying_stream_(copying_stream),
-      owns_copying_stream_(false),
-      failed_(false),
-      position_(0),
+    CopyingInputStream *copying_stream, int block_size)
+    : copying_stream_(copying_stream), owns_copying_stream_(false),
+      failed_(false), position_(0),
       buffer_size_(block_size > 0 ? block_size : kDefaultBlockSize),
-      buffer_used_(0),
-      backup_bytes_(0) {}
+      buffer_used_(0), backup_bytes_(0) {}
 
 CopyingInputStreamAdaptor::~CopyingInputStreamAdaptor() {
   if (owns_copying_stream_) {
@@ -214,7 +206,7 @@ CopyingInputStreamAdaptor::~CopyingInputStreamAdaptor() {
   }
 }
 
-bool CopyingInputStreamAdaptor::Next(const void** data, int* size) {
+bool CopyingInputStreamAdaptor::Next(const void **data, int *size) {
   if (failed_) {
     // Already failed on a previous read.
     return false;
@@ -301,11 +293,9 @@ void CopyingInputStreamAdaptor::FreeBuffer() {
 // ===================================================================
 
 CopyingOutputStreamAdaptor::CopyingOutputStreamAdaptor(
-    CopyingOutputStream* copying_stream, int block_size)
-    : copying_stream_(copying_stream),
-      owns_copying_stream_(false),
-      failed_(false),
-      position_(0),
+    CopyingOutputStream *copying_stream, int block_size)
+    : copying_stream_(copying_stream), owns_copying_stream_(false),
+      failed_(false), position_(0),
       buffer_size_(block_size > 0 ? block_size : kDefaultBlockSize),
       buffer_used_(0) {}
 
@@ -318,9 +308,10 @@ CopyingOutputStreamAdaptor::~CopyingOutputStreamAdaptor() {
 
 bool CopyingOutputStreamAdaptor::Flush() { return WriteBuffer(); }
 
-bool CopyingOutputStreamAdaptor::Next(void** data, int* size) {
+bool CopyingOutputStreamAdaptor::Next(void **data, int *size) {
   if (buffer_used_ == buffer_size_) {
-    if (!WriteBuffer()) return false;
+    if (!WriteBuffer())
+      return false;
   }
 
   AllocateBufferIfNeeded();
@@ -352,7 +343,8 @@ bool CopyingOutputStreamAdaptor::WriteBuffer() {
     return false;
   }
 
-  if (buffer_used_ == 0) return true;
+  if (buffer_used_ == 0)
+    return true;
 
   if (copying_stream_->Write(buffer_.get(), buffer_used_)) {
     position_ += buffer_used_;
@@ -378,7 +370,7 @@ void CopyingOutputStreamAdaptor::FreeBuffer() {
 
 // ===================================================================
 
-LimitingInputStream::LimitingInputStream(ZeroCopyInputStream* input,
+LimitingInputStream::LimitingInputStream(ZeroCopyInputStream *input,
                                          int64 limit)
     : input_(input), limit_(limit) {
   prior_bytes_read_ = input_->ByteCount();
@@ -386,12 +378,15 @@ LimitingInputStream::LimitingInputStream(ZeroCopyInputStream* input,
 
 LimitingInputStream::~LimitingInputStream() {
   // If we overshot the limit, back up.
-  if (limit_ < 0) input_->BackUp(-limit_);
+  if (limit_ < 0)
+    input_->BackUp(-limit_);
 }
 
-bool LimitingInputStream::Next(const void** data, int* size) {
-  if (limit_ <= 0) return false;
-  if (!input_->Next(data, size)) return false;
+bool LimitingInputStream::Next(const void **data, int *size) {
+  if (limit_ <= 0)
+    return false;
+  if (!input_->Next(data, size))
+    return false;
 
   limit_ -= *size;
   if (limit_ < 0) {
@@ -413,12 +408,14 @@ void LimitingInputStream::BackUp(int count) {
 
 bool LimitingInputStream::Skip(int count) {
   if (count > limit_) {
-    if (limit_ < 0) return false;
+    if (limit_ < 0)
+      return false;
     input_->Skip(limit_);
     limit_ = 0;
     return false;
   } else {
-    if (!input_->Skip(count)) return false;
+    if (!input_->Skip(count))
+      return false;
     limit_ -= count;
     return true;
   }
@@ -432,9 +429,8 @@ int64_t LimitingInputStream::ByteCount() const {
   }
 }
 
-
 // ===================================================================
 
-}  // namespace io
-}  // namespace protobuf
-}  // namespace google
+} // namespace io
+} // namespace protobuf
+} // namespace google

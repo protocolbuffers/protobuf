@@ -30,9 +30,9 @@
 
 #include <google/protobuf/util/internal/field_mask_utility.h>
 
-#include <google/protobuf/util/internal/utility.h>
-#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/status_macros.h>
+#include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/util/internal/utility.h>
 
 // Must be included last.
 #include <google/protobuf/port_def.inc>
@@ -45,8 +45,7 @@ namespace converter {
 namespace {
 
 // Appends a FieldMask path segment to a prefix.
-std::string AppendPathSegmentToPrefix(StringPiece prefix,
-                                      StringPiece segment) {
+std::string AppendPathSegmentToPrefix(StringPiece prefix, StringPiece segment) {
   if (prefix.empty()) {
     return std::string(segment);
   }
@@ -60,7 +59,7 @@ std::string AppendPathSegmentToPrefix(StringPiece prefix,
   return StrCat(prefix, ".", segment);
 }
 
-}  // namespace
+} // namespace
 
 std::string ConvertFieldMaskPath(const StringPiece path,
                                  ConverterCallback converter) {
@@ -107,7 +106,7 @@ std::string ConvertFieldMaskPath(const StringPiece path,
 }
 
 util::Status DecodeCompactFieldMaskPaths(StringPiece paths,
-                                           PathSinkCallback path_sink) {
+                                         PathSinkCallback path_sink) {
   std::stack<std::string> prefix;
   int length = paths.length();
   int previous_position = 0;
@@ -135,9 +134,8 @@ util::Status DecodeCompactFieldMaskPaths(StringPiece paths,
         if (i >= length - 1 || paths[i + 1] != ']') {
           return util::Status(
               util::error::INVALID_ARGUMENT,
-              StrCat(
-                  "Invalid FieldMask '", paths,
-                  "'. Map keys should be represented as [\"some_key\"]."));
+              StrCat("Invalid FieldMask '", paths,
+                     "'. Map keys should be represented as [\"some_key\"]."));
         }
         // The end of the map key ("\"]") has been found.
         in_map_key = false;
@@ -148,9 +146,8 @@ util::Status DecodeCompactFieldMaskPaths(StringPiece paths,
             paths[i + 1] != ')' && paths[i + 1] != '(') {
           return util::Status(
               util::error::INVALID_ARGUMENT,
-              StrCat(
-                  "Invalid FieldMask '", paths,
-                  "'. Map keys should be at the end of a path segment."));
+              StrCat("Invalid FieldMask '", paths,
+                     "'. Map keys should be at the end of a path segment."));
         }
         is_escaping = false;
         continue;
@@ -161,13 +158,12 @@ util::Status DecodeCompactFieldMaskPaths(StringPiece paths,
         if (i >= length - 1 || paths[i + 1] != '\"') {
           return util::Status(
               util::error::INVALID_ARGUMENT,
-              StrCat(
-                  "Invalid FieldMask '", paths,
-                  "'. Map keys should be represented as [\"some_key\"]."));
+              StrCat("Invalid FieldMask '", paths,
+                     "'. Map keys should be represented as [\"some_key\"]."));
         }
         // "[\"" starts a map key.
         in_map_key = true;
-        i++;  // Skips the '\"'.
+        i++; // Skips the '\"'.
         continue;
       }
       // If the current character is not a special character (',', '(' or ')'),
@@ -196,31 +192,28 @@ util::Status DecodeCompactFieldMaskPaths(StringPiece paths,
     // Removes the last prefix after seeing a ')'.
     if (i < length && paths[i] == ')') {
       if (prefix.empty()) {
-        return util::Status(
-            util::error::INVALID_ARGUMENT,
-            StrCat("Invalid FieldMask '", paths,
-                         "'. Cannot find matching '(' for all ')'."));
+        return util::Status(util::error::INVALID_ARGUMENT,
+                            StrCat("Invalid FieldMask '", paths,
+                                   "'. Cannot find matching '(' for all ')'."));
       }
       prefix.pop();
     }
     previous_position = i + 1;
   }
   if (in_map_key) {
-    return util::Status(
-        util::error::INVALID_ARGUMENT,
-        StrCat("Invalid FieldMask '", paths,
-                     "'. Cannot find matching ']' for all '['."));
+    return util::Status(util::error::INVALID_ARGUMENT,
+                        StrCat("Invalid FieldMask '", paths,
+                               "'. Cannot find matching ']' for all '['."));
   }
   if (!prefix.empty()) {
-    return util::Status(
-        util::error::INVALID_ARGUMENT,
-        StrCat("Invalid FieldMask '", paths,
-                     "'. Cannot find matching ')' for all '('."));
+    return util::Status(util::error::INVALID_ARGUMENT,
+                        StrCat("Invalid FieldMask '", paths,
+                               "'. Cannot find matching ')' for all '('."));
   }
   return util::Status();
 }
 
-}  // namespace converter
-}  // namespace util
-}  // namespace protobuf
-}  // namespace google
+} // namespace converter
+} // namespace util
+} // namespace protobuf
+} // namespace google

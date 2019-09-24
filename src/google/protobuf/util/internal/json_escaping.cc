@@ -30,8 +30,8 @@
 
 #include <google/protobuf/util/internal/json_escaping.h>
 
-#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
 
 namespace google {
 namespace protobuf {
@@ -51,27 +51,27 @@ static const char kHex[] = "0123456789abcdef";
 //                    or an empty string, if escaping is not needed.
 static const char kCommonEscapes[160][7] = {
     // C0 (ASCII and derivatives) control characters
-    "\\u0000", "\\u0001", "\\u0002", "\\u0003",  // 0x00
+    "\\u0000", "\\u0001", "\\u0002", "\\u0003", // 0x00
     "\\u0004", "\\u0005", "\\u0006", "\\u0007", "\\b", "\\t", "\\n", "\\u000b",
     "\\f", "\\r", "\\u000e", "\\u000f", "\\u0010", "\\u0011", "\\u0012",
-    "\\u0013",  // 0x10
+    "\\u0013", // 0x10
     "\\u0014", "\\u0015", "\\u0016", "\\u0017", "\\u0018", "\\u0019", "\\u001a",
     "\\u001b", "\\u001c", "\\u001d", "\\u001e", "\\u001f",
     // Escaping of " and \ are required by www.json.org string definition.
     // Escaping of < and > are required for HTML security.
-    "", "", "\\\"", "", "", "", "", "",                              // 0x20
-    "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",  // 0x30
+    "", "", "\\\"", "", "", "", "", "",                             // 0x20
+    "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", // 0x30
     "", "", "", "", "\\u003c", "", "\\u003e", "", "", "", "", "", "", "", "",
-    "",                                                                  // 0x40
-    "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",      // 0x50
-    "", "", "", "", "\\\\", "", "", "", "", "", "", "", "", "", "", "",  // 0x60
-    "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",      // 0x70
+    "",                                                                 // 0x40
+    "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",     // 0x50
+    "", "", "", "", "\\\\", "", "", "", "", "", "", "", "", "", "", "", // 0x60
+    "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",     // 0x70
     "", "", "", "", "", "", "", "\\u007f",
     // C1 (ISO 8859 and Unicode) extended control characters
-    "\\u0080", "\\u0081", "\\u0082", "\\u0083",  // 0x80
+    "\\u0080", "\\u0081", "\\u0082", "\\u0083", // 0x80
     "\\u0084", "\\u0085", "\\u0086", "\\u0087", "\\u0088", "\\u0089", "\\u008a",
     "\\u008b", "\\u008c", "\\u008d", "\\u008e", "\\u008f", "\\u0090", "\\u0091",
-    "\\u0092", "\\u0093",  // 0x90
+    "\\u0092", "\\u0093", // 0x90
     "\\u0094", "\\u0095", "\\u0096", "\\u0097", "\\u0098", "\\u0099", "\\u009a",
     "\\u009b", "\\u009c", "\\u009d", "\\u009e", "\\u009f"};
 
@@ -125,8 +125,8 @@ inline uint16 ToHighSurrogate(uint32 cp) {
 // Returns false if we encounter an invalid UTF-8 string. Returns true
 // otherwise, including the case when we reach the end of the input (str)
 // before a complete unicode code point is read.
-bool ReadCodePoint(StringPiece str, int index, uint32* cp, int* num_left,
-                   int* num_read) {
+bool ReadCodePoint(StringPiece str, int index, uint32 *cp, int *num_left,
+                   int *num_read) {
   if (*num_left == 0) {
     // Last read was complete. Start reading a new unicode code point.
     *cp = static_cast<uint8>(str[index++]);
@@ -182,7 +182,8 @@ bool ReadCodePoint(StringPiece str, int index, uint32* cp, int* num_left,
     --(*num_left);
     ++(*num_read);
     *cp = (*cp << 6) | (ch & 0x3f);
-    if (ch < 0x80 || ch > 0xbf) return false;
+    if (ch < 0x80 || ch > 0xbf)
+      return false;
   }
   return *num_left > 0 || (!IsSurrogate(*cp) && IsValidCodePoint(*cp));
 }
@@ -190,7 +191,7 @@ bool ReadCodePoint(StringPiece str, int index, uint32* cp, int* num_left,
 // Stores the 16-bit unicode code point as its hexadecimal digits in buffer
 // and returns a StringPiece that points to this buffer. The input buffer needs
 // to be at least 6 bytes long.
-StringPiece ToHex(uint16 cp, char* buffer) {
+StringPiece ToHex(uint16 cp, char *buffer) {
   buffer[5] = kHex[cp & 0x0f];
   cp >>= 4;
   buffer[4] = kHex[cp & 0x0f];
@@ -204,7 +205,7 @@ StringPiece ToHex(uint16 cp, char* buffer) {
 // Stores the 32-bit unicode code point as its hexadecimal digits in buffer
 // and returns a StringPiece that points to this buffer. The input buffer needs
 // to be at least 12 bytes long.
-StringPiece ToSurrogateHex(uint32 cp, char* buffer) {
+StringPiece ToSurrogateHex(uint32 cp, char *buffer) {
   uint16 low = ToLowSurrogate(cp);
   uint16 high = ToHighSurrogate(cp);
 
@@ -234,37 +235,38 @@ StringPiece ToSurrogateHex(uint32 cp, char* buffer) {
 //
 // If the given unicode code point does not need escaping, an empty
 // StringPiece is returned.
-StringPiece EscapeCodePoint(uint32 cp, char* buffer) {
-  if (cp < 0xa0) return kCommonEscapes[cp];
+StringPiece EscapeCodePoint(uint32 cp, char *buffer) {
+  if (cp < 0xa0)
+    return kCommonEscapes[cp];
   switch (cp) {
-    // These are not required by json spec
-    // but used to prevent security bugs in javascript.
-    case 0xfeff:  // Zero width no-break space
-    case 0xfff9:  // Interlinear annotation anchor
-    case 0xfffa:  // Interlinear annotation separator
-    case 0xfffb:  // Interlinear annotation terminator
+  // These are not required by json spec
+  // but used to prevent security bugs in javascript.
+  case 0xfeff: // Zero width no-break space
+  case 0xfff9: // Interlinear annotation anchor
+  case 0xfffa: // Interlinear annotation separator
+  case 0xfffb: // Interlinear annotation terminator
 
-    case 0x00ad:  // Soft-hyphen
-    case 0x06dd:  // Arabic end of ayah
-    case 0x070f:  // Syriac abbreviation mark
-    case 0x17b4:  // Khmer vowel inherent Aq
-    case 0x17b5:  // Khmer vowel inherent Aa
+  case 0x00ad: // Soft-hyphen
+  case 0x06dd: // Arabic end of ayah
+  case 0x070f: // Syriac abbreviation mark
+  case 0x17b4: // Khmer vowel inherent Aq
+  case 0x17b5: // Khmer vowel inherent Aa
+    return ToHex(cp, buffer);
+
+  default:
+    if ((cp >= 0x0600 && cp <= 0x0603) || // Arabic signs
+        (cp >= 0x200b && cp <= 0x200f) || // Zero width etc.
+        (cp >= 0x2028 && cp <= 0x202e) || // Separators etc.
+        (cp >= 0x2060 && cp <= 0x2064) || // Invisible etc.
+        (cp >= 0x206a && cp <= 0x206f)) { // Shaping etc.
       return ToHex(cp, buffer);
+    }
 
-    default:
-      if ((cp >= 0x0600 && cp <= 0x0603) ||  // Arabic signs
-          (cp >= 0x200b && cp <= 0x200f) ||  // Zero width etc.
-          (cp >= 0x2028 && cp <= 0x202e) ||  // Separators etc.
-          (cp >= 0x2060 && cp <= 0x2064) ||  // Invisible etc.
-          (cp >= 0x206a && cp <= 0x206f)) {  // Shaping etc.
-        return ToHex(cp, buffer);
-      }
-
-      if (cp == 0x000e0001 ||                        // Language tag
-          (cp >= 0x0001d173 && cp <= 0x0001d17a) ||  // Music formatting
-          (cp >= 0x000e0020 && cp <= 0x000e007f)) {  // TAG symbols
-        return ToSurrogateHex(cp, buffer);
-      }
+    if (cp == 0x000e0001 ||                       // Language tag
+        (cp >= 0x0001d173 && cp <= 0x0001d17a) || // Music formatting
+        (cp >= 0x000e0020 && cp <= 0x000e007f)) { // TAG symbols
+      return ToSurrogateHex(cp, buffer);
+    }
   }
   return StringPiece();
 }
@@ -272,7 +274,7 @@ StringPiece EscapeCodePoint(uint32 cp, char* buffer) {
 // Tries to escape the given code point first. If the given code point
 // does not need to be escaped, but force_output is true, then render
 // the given multi-byte code point in UTF8 in the buffer and returns it.
-StringPiece EscapeCodePoint(uint32 cp, char* buffer, bool force_output) {
+StringPiece EscapeCodePoint(uint32 cp, char *buffer, bool force_output) {
   StringPiece sp = EscapeCodePoint(cp, buffer);
   if (force_output && sp.empty()) {
     buffer[5] = (cp & 0x3f) | 0x80;
@@ -296,13 +298,13 @@ StringPiece EscapeCodePoint(uint32 cp, char* buffer, bool force_output) {
   return sp;
 }
 
-}  // namespace
+} // namespace
 
-void JsonEscaping::Escape(strings::ByteSource* input,
-                          strings::ByteSink* output) {
+void JsonEscaping::Escape(strings::ByteSource *input,
+                          strings::ByteSink *output) {
   char buffer[12] = "\\udead\\ubee";
-  uint32 cp = 0;     // Current unicode code point.
-  int num_left = 0;  // Num of chars to read to complete the code point.
+  uint32 cp = 0;    // Current unicode code point.
+  int num_left = 0; // Num of chars to read to complete the code point.
   while (input->Available() > 0) {
     StringPiece str = input->Peek();
     StringPiece escaped;
@@ -317,15 +319,19 @@ void JsonEscaping::Escape(strings::ByteSource* input,
     //  iv) end of the StringPiece str is reached.
     do {
       ok = ReadCodePoint(str, i, &cp, &num_left, &num_read);
-      if (num_left > 0 || !ok) break;  // case iii or iv
+      if (num_left > 0 || !ok)
+        break; // case iii or iv
       escaped = EscapeCodePoint(cp, buffer, cp_was_split);
-      if (!escaped.empty()) break;  // case i or ii
+      if (!escaped.empty())
+        break; // case i or ii
       i += num_read;
       num_read = 0;
-    } while (i < str.length());  // case iv
+    } while (i < str.length()); // case iv
     // First copy the un-escaped prefix, if any, to the output ByteSink.
-    if (i > 0) input->CopyTo(output, i);
-    if (num_read > 0) input->Skip(num_read);
+    if (i > 0)
+      input->CopyTo(output, i);
+    if (num_read > 0)
+      input->Skip(num_read);
     if (!ok) {
       // Case iii: Report error.
       // TODO(wpoon): Add error reporting.
@@ -341,9 +347,9 @@ void JsonEscaping::Escape(strings::ByteSource* input,
   }
 }
 
-void JsonEscaping::Escape(StringPiece input, strings::ByteSink* output) {
+void JsonEscaping::Escape(StringPiece input, strings::ByteSink *output) {
   const size_t len = input.length();
-  const char* p = input.data();
+  const char *p = input.data();
 
   bool can_skip_escaping = true;
   for (int i = 0; i < len; i++) {
@@ -363,7 +369,7 @@ void JsonEscaping::Escape(StringPiece input, strings::ByteSink* output) {
   }
 }
 
-}  // namespace converter
-}  // namespace util
-}  // namespace protobuf
-}  // namespace google
+} // namespace converter
+} // namespace util
+} // namespace protobuf
+} // namespace google

@@ -119,7 +119,7 @@ static const uint32 kCRC32Table[256] = {
     0x54de5729, 0x23d967bf, 0xb3667a2e, 0xc4614ab8, 0x5d681b02, 0x2a6f2b94,
     0xb40bbe37, 0xc30c8ea1, 0x5a05df1b, 0x2d02ef8d};
 
-static uint32 ComputeCRC32(const std::string& buf) {
+static uint32 ComputeCRC32(const std::string &buf) {
   uint32 x = ~0U;
   for (int i = 0; i < buf.size(); ++i) {
     unsigned char c = buf[i];
@@ -128,19 +128,19 @@ static uint32 ComputeCRC32(const std::string& buf) {
   return ~x;
 }
 
-static void WriteShort(io::CodedOutputStream* out, uint16 val) {
+static void WriteShort(io::CodedOutputStream *out, uint16 val) {
   uint8 p[2];
   p[0] = static_cast<uint8>(val);
   p[1] = static_cast<uint8>(val >> 8);
   out->WriteRaw(p, 2);
 }
 
-ZipWriter::ZipWriter(io::ZeroCopyOutputStream* raw_output)
+ZipWriter::ZipWriter(io::ZeroCopyOutputStream *raw_output)
     : raw_output_(raw_output) {}
 ZipWriter::~ZipWriter() {}
 
-bool ZipWriter::Write(const std::string& filename,
-                      const std::string& contents) {
+bool ZipWriter::Write(const std::string &filename,
+                      const std::string &contents) {
   FileInfo info;
 
   info.name = filename;
@@ -153,19 +153,19 @@ bool ZipWriter::Write(const std::string& filename,
 
   // write file header
   io::CodedOutputStream output(raw_output_);
-  output.WriteLittleEndian32(0x04034b50);  // magic
-  WriteShort(&output, 10);                 // version needed to extract
-  WriteShort(&output, 0);                  // flags
-  WriteShort(&output, 0);                  // compression method: stored
-  WriteShort(&output, 0);                  // last modified time
-  WriteShort(&output, kDosEpoch);          // last modified date
-  output.WriteLittleEndian32(info.crc32);  // crc-32
-  output.WriteLittleEndian32(info.size);   // compressed size
-  output.WriteLittleEndian32(info.size);   // uncompressed size
-  WriteShort(&output, filename_size);      // file name length
-  WriteShort(&output, 0);                  // extra field length
-  output.WriteString(filename);            // file name
-  output.WriteString(contents);            // file data
+  output.WriteLittleEndian32(0x04034b50); // magic
+  WriteShort(&output, 10);                // version needed to extract
+  WriteShort(&output, 0);                 // flags
+  WriteShort(&output, 0);                 // compression method: stored
+  WriteShort(&output, 0);                 // last modified time
+  WriteShort(&output, kDosEpoch);         // last modified date
+  output.WriteLittleEndian32(info.crc32); // crc-32
+  output.WriteLittleEndian32(info.size);  // compressed size
+  output.WriteLittleEndian32(info.size);  // uncompressed size
+  WriteShort(&output, filename_size);     // file name length
+  WriteShort(&output, 0);                 // extra field length
+  output.WriteString(filename);           // file name
+  output.WriteString(contents);           // file data
 
   return !output.HadError();
 }
@@ -177,46 +177,46 @@ bool ZipWriter::WriteDirectory() {
   // write central directory
   io::CodedOutputStream output(raw_output_);
   for (int i = 0; i < num_entries; ++i) {
-    const std::string& filename = files_[i].name;
+    const std::string &filename = files_[i].name;
     uint16 filename_size = filename.size();
     uint32 crc32 = files_[i].crc32;
     uint32 size = files_[i].size;
     uint32 offset = files_[i].offset;
 
-    output.WriteLittleEndian32(0x02014b50);  // magic
-    WriteShort(&output, 10);                 // version made by
-    WriteShort(&output, 10);                 // version needed to extract
-    WriteShort(&output, 0);                  // flags
-    WriteShort(&output, 0);                  // compression method: stored
-    WriteShort(&output, 0);                  // last modified time
-    WriteShort(&output, kDosEpoch);          // last modified date
-    output.WriteLittleEndian32(crc32);       // crc-32
-    output.WriteLittleEndian32(size);        // compressed size
-    output.WriteLittleEndian32(size);        // uncompressed size
-    WriteShort(&output, filename_size);      // file name length
-    WriteShort(&output, 0);                  // extra field length
-    WriteShort(&output, 0);                  // file comment length
-    WriteShort(&output, 0);                  // starting disk number
-    WriteShort(&output, 0);                  // internal file attributes
-    output.WriteLittleEndian32(0);           // external file attributes
-    output.WriteLittleEndian32(offset);      // local header offset
-    output.WriteString(filename);            // file name
+    output.WriteLittleEndian32(0x02014b50); // magic
+    WriteShort(&output, 10);                // version made by
+    WriteShort(&output, 10);                // version needed to extract
+    WriteShort(&output, 0);                 // flags
+    WriteShort(&output, 0);                 // compression method: stored
+    WriteShort(&output, 0);                 // last modified time
+    WriteShort(&output, kDosEpoch);         // last modified date
+    output.WriteLittleEndian32(crc32);      // crc-32
+    output.WriteLittleEndian32(size);       // compressed size
+    output.WriteLittleEndian32(size);       // uncompressed size
+    WriteShort(&output, filename_size);     // file name length
+    WriteShort(&output, 0);                 // extra field length
+    WriteShort(&output, 0);                 // file comment length
+    WriteShort(&output, 0);                 // starting disk number
+    WriteShort(&output, 0);                 // internal file attributes
+    output.WriteLittleEndian32(0);          // external file attributes
+    output.WriteLittleEndian32(offset);     // local header offset
+    output.WriteString(filename);           // file name
   }
   uint32 dir_len = output.ByteCount();
 
   // write end of central directory marker
-  output.WriteLittleEndian32(0x06054b50);  // magic
-  WriteShort(&output, 0);                  // disk number
-  WriteShort(&output, 0);               // disk with start of central directory
-  WriteShort(&output, num_entries);     // central directory entries (this disk)
-  WriteShort(&output, num_entries);     // central directory entries (total)
-  output.WriteLittleEndian32(dir_len);  // central directory byte size
-  output.WriteLittleEndian32(dir_ofs);  // central directory offset
-  WriteShort(&output, 0);               // comment length
+  output.WriteLittleEndian32(0x06054b50); // magic
+  WriteShort(&output, 0);                 // disk number
+  WriteShort(&output, 0);              // disk with start of central directory
+  WriteShort(&output, num_entries);    // central directory entries (this disk)
+  WriteShort(&output, num_entries);    // central directory entries (total)
+  output.WriteLittleEndian32(dir_len); // central directory byte size
+  output.WriteLittleEndian32(dir_ofs); // central directory offset
+  WriteShort(&output, 0);              // comment length
 
   return output.HadError();
 }
 
-}  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+} // namespace compiler
+} // namespace protobuf
+} // namespace google

@@ -46,16 +46,16 @@ namespace cpp {
 // Provides an abstract interface to optimize message layout
 // by rearranging the fields of a message.
 class MessageLayoutHelper {
- public:
+public:
   virtual ~MessageLayoutHelper() {}
 
-  virtual void OptimizeLayout(std::vector<const FieldDescriptor*>* fields,
-                              const Options& options) = 0;
+  virtual void OptimizeLayout(std::vector<const FieldDescriptor *> *fields,
+                              const Options &options) = 0;
 };
 
-}  // namespace cpp
-}  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+} // namespace cpp
+} // namespace compiler
+} // namespace protobuf
+} // namespace google
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_CPP_MESSAGE_LAYOUT_HELPER_H__
+#endif // GOOGLE_PROTOBUF_COMPILER_CPP_MESSAGE_LAYOUT_HELPER_H__

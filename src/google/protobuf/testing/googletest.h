@@ -34,13 +34,13 @@
 #ifndef GOOGLE_PROTOBUF_GOOGLETEST_H__
 #define GOOGLE_PROTOBUF_GOOGLETEST_H__
 
-#include <map>
-#include <vector>
+#include <gmock/gmock.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
-#include <gmock/gmock.h>
+#include <map>
+#include <vector>
 // Disable death tests if we use exceptions in CHECK().
-#if !PROTOBUF_USE_EXCEPTIONS && defined(GTEST_HAS_DEATH_TEST) && \
+#if !PROTOBUF_USE_EXCEPTIONS && defined(GTEST_HAS_DEATH_TEST) &&               \
     !GTEST_OS_WINDOWS
 #define PROTOBUF_HAS_DEATH_TEST
 #endif
@@ -66,7 +66,7 @@ string GetCapturedTestStderr();
 // For use with ScopedMemoryLog::GetMessages().  Inside Google the LogLevel
 // constants don't have the LOGLEVEL_ prefix, so the code that used
 // ScopedMemoryLog refers to LOGLEVEL_ERROR as just ERROR.
-#undef ERROR  // defend against promiscuous windows.h
+#undef ERROR // defend against promiscuous windows.h
 static const LogLevel ERROR = LOGLEVEL_ERROR;
 static const LogLevel WARNING = LOGLEVEL_WARNING;
 
@@ -79,26 +79,26 @@ static const LogLevel WARNING = LOGLEVEL_WARNING;
 // This is a dummy implementation which covers only what is used by protocol
 // buffer unit tests.
 class ScopedMemoryLog {
- public:
+public:
   ScopedMemoryLog();
   virtual ~ScopedMemoryLog();
 
   // Fetches all messages with the given severity level.
-  const std::vector<string>& GetMessages(LogLevel error);
+  const std::vector<string> &GetMessages(LogLevel error);
 
- private:
-  std::map<LogLevel, std::vector<string> > messages_;
-  LogHandler* old_handler_;
+private:
+  std::map<LogLevel, std::vector<string>> messages_;
+  LogHandler *old_handler_;
 
-  static void HandleLog(LogLevel level, const char* filename, int line,
-                        const string& message);
+  static void HandleLog(LogLevel level, const char *filename, int line,
+                        const string &message);
 
-  static ScopedMemoryLog* active_log_;
+  static ScopedMemoryLog *active_log_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ScopedMemoryLog);
 };
 
-}  // namespace protobuf
-}  // namespace google
+} // namespace protobuf
+} // namespace google
 
-#endif  // GOOGLE_PROTOBUF_GOOGLETEST_H__
+#endif // GOOGLE_PROTOBUF_GOOGLETEST_H__

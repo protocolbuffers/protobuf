@@ -30,8 +30,8 @@
 
 #include <google/protobuf/stubs/bytestream.h>
 
-#include <string.h>
 #include <algorithm>
+#include <string.h>
 
 #include <google/protobuf/stubs/logging.h>
 
@@ -39,7 +39,7 @@ namespace google {
 namespace protobuf {
 namespace strings {
 
-void ByteSource::CopyTo(ByteSink* sink, size_t n) {
+void ByteSource::CopyTo(ByteSink *sink, size_t n) {
   while (n > 0) {
     StringPiece fragment = Peek();
     if (fragment.empty()) {
@@ -55,7 +55,7 @@ void ByteSource::CopyTo(ByteSink* sink, size_t n) {
 
 void ByteSink::Flush() {}
 
-void UncheckedArrayByteSink::Append(const char* data, size_t n) {
+void UncheckedArrayByteSink::Append(const char *data, size_t n) {
   if (data != dest_) {
     // Catch cases where the pointer returned by GetAppendBuffer() was modified.
     GOOGLE_DCHECK(!(dest_ <= data && data < (dest_ + n)))
@@ -65,11 +65,10 @@ void UncheckedArrayByteSink::Append(const char* data, size_t n) {
   dest_ += n;
 }
 
-CheckedArrayByteSink::CheckedArrayByteSink(char* outbuf, size_t capacity)
-    : outbuf_(outbuf), capacity_(capacity), size_(0), overflowed_(false) {
-}
+CheckedArrayByteSink::CheckedArrayByteSink(char *outbuf, size_t capacity)
+    : outbuf_(outbuf), capacity_(capacity), size_(0), overflowed_(false) {}
 
-void CheckedArrayByteSink::Append(const char* bytes, size_t n) {
+void CheckedArrayByteSink::Append(const char *bytes, size_t n) {
   size_t available = capacity_ - size_;
   if (n > available) {
     n = available;
@@ -85,16 +84,13 @@ void CheckedArrayByteSink::Append(const char* bytes, size_t n) {
 }
 
 GrowingArrayByteSink::GrowingArrayByteSink(size_t estimated_size)
-    : capacity_(estimated_size),
-      buf_(new char[estimated_size]),
-      size_(0) {
-}
+    : capacity_(estimated_size), buf_(new char[estimated_size]), size_(0) {}
 
 GrowingArrayByteSink::~GrowingArrayByteSink() {
-  delete[] buf_;  // Just in case the user didn't call GetBuffer.
+  delete[] buf_; // Just in case the user didn't call GetBuffer.
 }
 
-void GrowingArrayByteSink::Append(const char* bytes, size_t n) {
+void GrowingArrayByteSink::Append(const char *bytes, size_t n) {
   size_t available = capacity_ - size_;
   if (bytes != (buf_ + size_)) {
     // Catch cases where the pointer returned by GetAppendBuffer() was modified.
@@ -111,18 +107,18 @@ void GrowingArrayByteSink::Append(const char* bytes, size_t n) {
   size_ += n;
 }
 
-char* GrowingArrayByteSink::GetBuffer(size_t* nbytes) {
+char *GrowingArrayByteSink::GetBuffer(size_t *nbytes) {
   ShrinkToFit();
-  char* b = buf_;
+  char *b = buf_;
   *nbytes = size_;
   buf_ = nullptr;
   size_ = capacity_ = 0;
   return b;
 }
 
-void GrowingArrayByteSink::Expand(size_t amount) {  // Expand by at least 50%.
+void GrowingArrayByteSink::Expand(size_t amount) { // Expand by at least 50%.
   size_t new_capacity = std::max(capacity_ + amount, (3 * capacity_) / 2);
-  char* bigger = new char[new_capacity];
+  char *bigger = new char[new_capacity];
   memcpy(bigger, buf_, size_);
   delete[] buf_;
   buf_ = bigger;
@@ -133,7 +129,7 @@ void GrowingArrayByteSink::ShrinkToFit() {
   // Shrink only if the buffer is large and size_ is less than 3/4
   // of capacity_.
   if (capacity_ > 256 && size_ < (3 * capacity_) / 4) {
-    char* just_enough = new char[size_];
+    char *just_enough = new char[size_];
     memcpy(just_enough, buf_, size_);
     delete[] buf_;
     buf_ = just_enough;
@@ -141,17 +137,13 @@ void GrowingArrayByteSink::ShrinkToFit() {
   }
 }
 
-void StringByteSink::Append(const char* data, size_t n) {
+void StringByteSink::Append(const char *data, size_t n) {
   dest_->append(data, n);
 }
 
-size_t ArrayByteSource::Available() const {
-  return input_.size();
-}
+size_t ArrayByteSource::Available() const { return input_.size(); }
 
-StringPiece ArrayByteSource::Peek() {
-  return input_;
-}
+StringPiece ArrayByteSource::Peek() { return input_; }
 
 void ArrayByteSource::Skip(size_t n) {
   GOOGLE_DCHECK_LE(n, input_.size());
@@ -159,9 +151,7 @@ void ArrayByteSource::Skip(size_t n) {
 }
 
 LimitByteSource::LimitByteSource(ByteSource *source, size_t limit)
-  : source_(source),
-    limit_(limit) {
-}
+    : source_(source), limit_(limit) {}
 
 size_t LimitByteSource::Available() const {
   size_t available = source_->Available();
@@ -193,6 +183,6 @@ void LimitByteSource::CopyTo(ByteSink *sink, size_t n) {
   limit_ -= n;
 }
 
-}  // namespace strings
-}  // namespace protobuf
-}  // namespace google
+} // namespace strings
+} // namespace protobuf
+} // namespace google

@@ -56,26 +56,25 @@ namespace converter {
 //
 // Derived classes could be thread-unsafe.
 class PROTOBUF_EXPORT StructuredObjectWriter : public ObjectWriter {
- public:
+public:
   virtual ~StructuredObjectWriter() {}
 
- protected:
+protected:
   // A base element class for subclasses to extend, makes tracking state easier.
   //
   // StructuredObjectWriter behaves as a visitor. BaseElement represents a node
   // in the input tree. Implementation of StructuredObjectWriter should also
   // extend BaseElement to keep track of the location in the input tree.
   class PROTOBUF_EXPORT BaseElement {
-   public:
+  public:
     // Takes ownership of the parent Element.
-    explicit BaseElement(BaseElement* parent)
+    explicit BaseElement(BaseElement *parent)
         : parent_(parent), level_(parent == NULL ? 0 : parent->level() + 1) {}
     virtual ~BaseElement() {}
 
     // Releases ownership of the parent and returns a pointer to it.
-    template <typename ElementType>
-    ElementType* pop() {
-      return down_cast<ElementType*>(parent_.release());
+    template <typename ElementType> ElementType *pop() {
+      return down_cast<ElementType *>(parent_.release());
     }
 
     // Returns true if this element is the root.
@@ -84,11 +83,11 @@ class PROTOBUF_EXPORT StructuredObjectWriter : public ObjectWriter {
     // Returns the number of hops from this element to the root element.
     int level() const { return level_; }
 
-   protected:
+  protected:
     // Returns pointer to parent element without releasing ownership.
-    virtual BaseElement* parent() const { return parent_.get(); }
+    virtual BaseElement *parent() const { return parent_.get(); }
 
-   private:
+  private:
     // Pointer to the parent Element.
     std::unique_ptr<BaseElement> parent_;
 
@@ -102,18 +101,18 @@ class PROTOBUF_EXPORT StructuredObjectWriter : public ObjectWriter {
   StructuredObjectWriter() {}
 
   // Returns the current element. Used for indentation and name overrides.
-  virtual BaseElement* element() = 0;
+  virtual BaseElement *element() = 0;
 
- private:
+private:
   // Do not add any data members to this class.
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(StructuredObjectWriter);
 };
 
-}  // namespace converter
-}  // namespace util
-}  // namespace protobuf
-}  // namespace google
+} // namespace converter
+} // namespace util
+} // namespace protobuf
+} // namespace google
 
 #include <google/protobuf/port_undef.inc>
 
-#endif  // GOOGLE_PROTOBUF_UTIL_CONVERTER_STRUCTURED_OBJECTWRITER_H__
+#endif // GOOGLE_PROTOBUF_UTIL_CONVERTER_STRUCTURED_OBJECTWRITER_H__

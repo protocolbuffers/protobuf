@@ -100,9 +100,9 @@
 #ifndef GOOGLE_PROTOBUF_SERVICE_H__
 #define GOOGLE_PROTOBUF_SERVICE_H__
 
-#include <string>
 #include <google/protobuf/stubs/callback.h>
 #include <google/protobuf/stubs/common.h>
+#include <string>
 
 #ifdef SWIG
 #error "You cannot SWIG proto headers"
@@ -119,10 +119,10 @@ class RpcController;
 class RpcChannel;
 
 // Defined in other files.
-class Descriptor;         // descriptor.h
-class ServiceDescriptor;  // descriptor.h
-class MethodDescriptor;   // descriptor.h
-class Message;            // message.h
+class Descriptor;        // descriptor.h
+class ServiceDescriptor; // descriptor.h
+class MethodDescriptor;  // descriptor.h
+class Message;           // message.h
 
 // Abstract base interface for protocol-buffer-based RPC services.  Services
 // themselves are abstract interfaces (implemented either by servers or as
@@ -130,7 +130,7 @@ class Message;            // message.h
 // interface can be used to call the methods of the Service without knowing
 // its exact type at compile time (analogous to Reflection).
 class PROTOBUF_EXPORT Service {
- public:
+public:
   inline Service() {}
   virtual ~Service();
 
@@ -140,7 +140,7 @@ class PROTOBUF_EXPORT Service {
   enum ChannelOwnership { STUB_OWNS_CHANNEL, STUB_DOESNT_OWN_CHANNEL };
 
   // Get the ServiceDescriptor describing this service and its methods.
-  virtual const ServiceDescriptor* GetDescriptor() = 0;
+  virtual const ServiceDescriptor *GetDescriptor() = 0;
 
   // Call a method of the service specified by MethodDescriptor.  This is
   // normally implemented as a simple switch() that calls the standard
@@ -167,9 +167,9 @@ class PROTOBUF_EXPORT Service {
   // * If the RPC failed, "response"'s contents are undefined.  The
   //   RpcController can be queried to determine if an error occurred and
   //   possibly to get more information about the error.
-  virtual void CallMethod(const MethodDescriptor* method,
-                          RpcController* controller, const Message* request,
-                          Message* response, Closure* done) = 0;
+  virtual void CallMethod(const MethodDescriptor *method,
+                          RpcController *controller, const Message *request,
+                          Message *response, Closure *done) = 0;
 
   // CallMethod() requires that the request and response passed in are of a
   // particular subclass of Message.  GetRequestPrototype() and
@@ -184,12 +184,12 @@ class PROTOBUF_EXPORT Service {
   //   Message* response = stub->GetResponsePrototype(method)->New();
   //   request->ParseFromString(input);
   //   service->CallMethod(method, *request, response, callback);
-  virtual const Message& GetRequestPrototype(
-      const MethodDescriptor* method) const = 0;
-  virtual const Message& GetResponsePrototype(
-      const MethodDescriptor* method) const = 0;
+  virtual const Message &
+  GetRequestPrototype(const MethodDescriptor *method) const = 0;
+  virtual const Message &
+  GetResponsePrototype(const MethodDescriptor *method) const = 0;
 
- private:
+private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(Service);
 };
 
@@ -202,7 +202,7 @@ class PROTOBUF_EXPORT Service {
 // implementations to support.  Specific implementations may provide more
 // advanced features (e.g. deadline propagation).
 class PROTOBUF_EXPORT RpcController {
- public:
+public:
   inline RpcController() {}
   virtual ~RpcController();
 
@@ -239,7 +239,7 @@ class PROTOBUF_EXPORT RpcController {
   // you need to return machine-readable information about failures, you
   // should incorporate it into your response protocol buffer and should
   // NOT call SetFailed().
-  virtual void SetFailed(const std::string& reason) = 0;
+  virtual void SetFailed(const std::string &reason) = 0;
 
   // If true, indicates that the client canceled the RPC, so the server may
   // as well give up on replying to it.  The server should still call the
@@ -253,9 +253,9 @@ class PROTOBUF_EXPORT RpcController {
   // will be called immediately.
   //
   // NotifyOnCancel() must be called no more than once per request.
-  virtual void NotifyOnCancel(Closure* callback) = 0;
+  virtual void NotifyOnCancel(Closure *callback) = 0;
 
- private:
+private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RpcController);
 };
 
@@ -268,7 +268,7 @@ class PROTOBUF_EXPORT RpcController {
 //   MyService* service = new MyService::Stub(channel);
 //   service->MyMethod(request, &response, callback);
 class PROTOBUF_EXPORT RpcChannel {
- public:
+public:
   inline RpcChannel() {}
   virtual ~RpcChannel();
 
@@ -277,17 +277,17 @@ class PROTOBUF_EXPORT RpcChannel {
   // are less strict in one important way:  the request and response objects
   // need not be of any specific class as long as their descriptors are
   // method->input_type() and method->output_type().
-  virtual void CallMethod(const MethodDescriptor* method,
-                          RpcController* controller, const Message* request,
-                          Message* response, Closure* done) = 0;
+  virtual void CallMethod(const MethodDescriptor *method,
+                          RpcController *controller, const Message *request,
+                          Message *response, Closure *done) = 0;
 
- private:
+private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RpcChannel);
 };
 
-}  // namespace protobuf
-}  // namespace google
+} // namespace protobuf
+} // namespace google
 
 #include <google/protobuf/port_undef.inc>
 
-#endif  // GOOGLE_PROTOBUF_SERVICE_H__
+#endif // GOOGLE_PROTOBUF_SERVICE_H__

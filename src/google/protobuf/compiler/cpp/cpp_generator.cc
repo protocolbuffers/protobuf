@@ -38,12 +38,12 @@
 #include <utility>
 #include <vector>
 
-#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/compiler/cpp/cpp_file.h>
 #include <google/protobuf/compiler/cpp/cpp_helpers.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
+#include <google/protobuf/stubs/strutil.h>
 
 namespace google {
 namespace protobuf {
@@ -53,11 +53,11 @@ namespace cpp {
 CppGenerator::CppGenerator() {}
 CppGenerator::~CppGenerator() {}
 
-bool CppGenerator::Generate(const FileDescriptor* file,
-                            const std::string& parameter,
-                            GeneratorContext* generator_context,
-                            std::string* error) const {
-  std::vector<std::pair<std::string, std::string> > options;
+bool CppGenerator::Generate(const FileDescriptor *file,
+                            const std::string &parameter,
+                            GeneratorContext *generator_context,
+                            std::string *error) const {
+  std::vector<std::pair<std::string, std::string>> options;
   ParseGeneratorParameter(parameter, &options);
 
   // -----------------------------------------------------------------
@@ -122,7 +122,6 @@ bool CppGenerator::Generate(const FileDescriptor* file,
 
   // -----------------------------------------------------------------
 
-
   std::string basename = StripProto(file->name());
 
   if (MaybeBootstrap(file_options, generator_context, file_options.bootstrap,
@@ -140,9 +139,9 @@ bool CppGenerator::Generate(const FileDescriptor* file,
     io::AnnotationProtoCollector<GeneratedCodeInfo> annotation_collector(
         &annotations);
     std::string info_path = basename + ".proto.h.meta";
-    io::Printer printer(
-        output.get(), '$',
-        file_options.annotate_headers ? &annotation_collector : NULL);
+    io::Printer printer(output.get(), '$',
+                        file_options.annotate_headers ? &annotation_collector
+                                                      : NULL);
     file_generator.GenerateProtoHeader(
         &printer, file_options.annotate_headers ? info_path : "");
     if (file_options.annotate_headers) {
@@ -159,9 +158,9 @@ bool CppGenerator::Generate(const FileDescriptor* file,
     io::AnnotationProtoCollector<GeneratedCodeInfo> annotation_collector(
         &annotations);
     std::string info_path = basename + ".pb.h.meta";
-    io::Printer printer(
-        output.get(), '$',
-        file_options.annotate_headers ? &annotation_collector : NULL);
+    io::Printer printer(output.get(), '$',
+                        file_options.annotate_headers ? &annotation_collector
+                                                      : NULL);
     file_generator.GeneratePBHeader(
         &printer, file_options.annotate_headers ? info_path : "");
     if (file_options.annotate_headers) {
@@ -211,7 +210,7 @@ bool CppGenerator::Generate(const FileDescriptor* file,
   return true;
 }
 
-}  // namespace cpp
-}  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+} // namespace cpp
+} // namespace compiler
+} // namespace protobuf
+} // namespace google

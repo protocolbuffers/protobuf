@@ -36,14 +36,14 @@
 #include <string>
 #include <vector>
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/descriptor.h>
+#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/map_field.h>
 #include <google/protobuf/map_field_inl.h>
-#include <google/protobuf/unknown_field_set.h>
+#include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/unknown_field_set.h>
 
 #include <google/protobuf/port_def.inc>
 
@@ -51,43 +51,47 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-static const Reflection* GetReflectionOrDie(const Message& m) {
-  const Reflection* r = m.GetReflection();
+static const Reflection *GetReflectionOrDie(const Message &m) {
+  const Reflection *r = m.GetReflection();
   if (r == nullptr) {
-    const Descriptor* d = m.GetDescriptor();
-    const std::string& mtype = d ? d->name() : "unknown";
+    const Descriptor *d = m.GetDescriptor();
+    const std::string &mtype = d ? d->name() : "unknown";
     // RawMessage is one known type for which GetReflection() returns nullptr.
-    GOOGLE_LOG(FATAL) << "Message does not support reflection (type " << mtype << ").";
+    GOOGLE_LOG(FATAL) << "Message does not support reflection (type " << mtype
+                      << ").";
   }
   return r;
 }
 
-void ReflectionOps::Copy(const Message& from, Message* to) {
-  if (&from == to) return;
+void ReflectionOps::Copy(const Message &from, Message *to) {
+  if (&from == to)
+    return;
   Clear(to);
   Merge(from, to);
 }
 
-void ReflectionOps::Merge(const Message& from, Message* to) {
+void ReflectionOps::Merge(const Message &from, Message *to) {
   GOOGLE_CHECK_NE(&from, to);
 
-  const Descriptor* descriptor = from.GetDescriptor();
+  const Descriptor *descriptor = from.GetDescriptor();
   GOOGLE_CHECK_EQ(to->GetDescriptor(), descriptor)
       << "Tried to merge messages of different types "
       << "(merge " << descriptor->full_name() << " to "
       << to->GetDescriptor()->full_name() << ")";
 
-  const Reflection* from_reflection = GetReflectionOrDie(from);
-  const Reflection* to_reflection = GetReflectionOrDie(*to);
-  bool is_from_generated = (from_reflection->GetMessageFactory() ==
-                            google::protobuf::MessageFactory::generated_factory());
-  bool is_to_generated = (to_reflection->GetMessageFactory() ==
-                          google::protobuf::MessageFactory::generated_factory());
+  const Reflection *from_reflection = GetReflectionOrDie(from);
+  const Reflection *to_reflection = GetReflectionOrDie(*to);
+  bool is_from_generated =
+      (from_reflection->GetMessageFactory() ==
+       google::protobuf::MessageFactory::generated_factory());
+  bool is_to_generated =
+      (to_reflection->GetMessageFactory() ==
+       google::protobuf::MessageFactory::generated_factory());
 
-  std::vector<const FieldDescriptor*> fields;
+  std::vector<const FieldDescriptor *> fields;
   from_reflection->ListFields(from, &fields);
   for (int i = 0; i < fields.size(); i++) {
-    const FieldDescriptor* field = fields[i];
+    const FieldDescriptor *field = fields[i];
 
     if (field->is_repeated()) {
       // Use map reflection if both are in map status and have the
@@ -96,9 +100,9 @@ void ReflectionOps::Merge(const Message& from, Message* to) {
       // map field types are the same if they are both generated
       // messages or both dynamic messages.
       if (is_from_generated == is_to_generated && field->is_map()) {
-        const MapFieldBase* from_field =
+        const MapFieldBase *from_field =
             from_reflection->GetMapData(from, field);
-        MapFieldBase* to_field = to_reflection->MutableMapData(to, field);
+        MapFieldBase *to_field = to_reflection->MutableMapData(to, field);
         if (to_field->IsMapValid() && from_field->IsMapValid()) {
           to_field->MergeFrom(*from_field);
           continue;
@@ -107,10 +111,10 @@ void ReflectionOps::Merge(const Message& from, Message* to) {
       int count = from_reflection->FieldSize(from, field);
       for (int j = 0; j < count; j++) {
         switch (field->cpp_type()) {
-#define HANDLE_TYPE(CPPTYPE, METHOD)                                      \
-  case FieldDescriptor::CPPTYPE_##CPPTYPE:                                \
-    to_reflection->Add##METHOD(                                           \
-        to, field, from_reflection->GetRepeated##METHOD(from, field, j)); \
+#define HANDLE_TYPE(CPPTYPE, METHOD)                                           \
+  case FieldDescriptor::CPPTYPE_##CPPTYPE:                                     \
+    to_reflection->Add##METHOD(                                                \
+        to, field, from_reflection->GetRepeated##METHOD(from, field, j));      \
     break;
 
           HANDLE_TYPE(INT32, Int32);
@@ -124,18 +128,18 @@ void ReflectionOps::Merge(const Message& from, Message* to) {
           HANDLE_TYPE(ENUM, Enum);
 #undef HANDLE_TYPE
 
-          case FieldDescriptor::CPPTYPE_MESSAGE:
-            to_reflection->AddMessage(to, field)->MergeFrom(
-                from_reflection->GetRepeatedMessage(from, field, j));
-            break;
+        case FieldDescriptor::CPPTYPE_MESSAGE:
+          to_reflection->AddMessage(to, field)->MergeFrom(
+              from_reflection->GetRepeatedMessage(from, field, j));
+          break;
         }
       }
     } else {
       switch (field->cpp_type()) {
-#define HANDLE_TYPE(CPPTYPE, METHOD)                                       \
-  case FieldDescriptor::CPPTYPE_##CPPTYPE:                                 \
-    to_reflection->Set##METHOD(to, field,                                  \
-                               from_reflection->Get##METHOD(from, field)); \
+#define HANDLE_TYPE(CPPTYPE, METHOD)                                           \
+  case FieldDescriptor::CPPTYPE_##CPPTYPE:                                     \
+    to_reflection->Set##METHOD(to, field,                                      \
+                               from_reflection->Get##METHOD(from, field));     \
     break;
 
         HANDLE_TYPE(INT32, Int32);
@@ -149,10 +153,10 @@ void ReflectionOps::Merge(const Message& from, Message* to) {
         HANDLE_TYPE(ENUM, Enum);
 #undef HANDLE_TYPE
 
-        case FieldDescriptor::CPPTYPE_MESSAGE:
-          to_reflection->MutableMessage(to, field)->MergeFrom(
-              from_reflection->GetMessage(from, field));
-          break;
+      case FieldDescriptor::CPPTYPE_MESSAGE:
+        to_reflection->MutableMessage(to, field)->MergeFrom(
+            from_reflection->GetMessage(from, field));
+        break;
       }
     }
   }
@@ -161,10 +165,10 @@ void ReflectionOps::Merge(const Message& from, Message* to) {
       from_reflection->GetUnknownFields(from));
 }
 
-void ReflectionOps::Clear(Message* message) {
-  const Reflection* reflection = GetReflectionOrDie(*message);
+void ReflectionOps::Clear(Message *message) {
+  const Reflection *reflection = GetReflectionOrDie(*message);
 
-  std::vector<const FieldDescriptor*> fields;
+  std::vector<const FieldDescriptor *> fields;
   reflection->ListFields(*message, &fields);
   for (int i = 0; i < fields.size(); i++) {
     reflection->ClearField(message, fields[i]);
@@ -173,9 +177,9 @@ void ReflectionOps::Clear(Message* message) {
   reflection->MutableUnknownFields(message)->Clear();
 }
 
-bool ReflectionOps::IsInitialized(const Message& message) {
-  const Descriptor* descriptor = message.GetDescriptor();
-  const Reflection* reflection = GetReflectionOrDie(message);
+bool ReflectionOps::IsInitialized(const Message &message) {
+  const Descriptor *descriptor = message.GetDescriptor();
+  const Reflection *reflection = GetReflectionOrDie(message);
 
   // Check required fields of this message.
   for (int i = 0; i < descriptor->field_count(); i++) {
@@ -187,20 +191,20 @@ bool ReflectionOps::IsInitialized(const Message& message) {
   }
 
   // Check that sub-messages are initialized.
-  std::vector<const FieldDescriptor*> fields;
+  std::vector<const FieldDescriptor *> fields;
   reflection->ListFields(message, &fields);
   for (int i = 0; i < fields.size(); i++) {
-    const FieldDescriptor* field = fields[i];
+    const FieldDescriptor *field = fields[i];
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
 
       if (field->is_map()) {
-        const FieldDescriptor* value_field = field->message_type()->field(1);
+        const FieldDescriptor *value_field = field->message_type()->field(1);
         if (value_field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-          const MapFieldBase* map_field =
+          const MapFieldBase *map_field =
               reflection->GetMapData(message, field);
           if (map_field->IsMapValid()) {
-            MapIterator iter(const_cast<Message*>(&message), field);
-            MapIterator end(const_cast<Message*>(&message), field);
+            MapIterator iter(const_cast<Message *>(&message), field);
+            MapIterator end(const_cast<Message *>(&message), field);
             for (map_field->MapBegin(&iter), map_field->MapEnd(&end);
                  iter != end; ++iter) {
               if (!iter.GetValueRef().GetMessageValue().IsInitialized()) {
@@ -234,29 +238,29 @@ bool ReflectionOps::IsInitialized(const Message& message) {
   return true;
 }
 
-static bool IsMapValueMessageTyped(const FieldDescriptor* map_field) {
+static bool IsMapValueMessageTyped(const FieldDescriptor *map_field) {
   return map_field->message_type()->field(1)->cpp_type() ==
          FieldDescriptor::CPPTYPE_MESSAGE;
 }
 
-void ReflectionOps::DiscardUnknownFields(Message* message) {
-  const Reflection* reflection = GetReflectionOrDie(*message);
+void ReflectionOps::DiscardUnknownFields(Message *message) {
+  const Reflection *reflection = GetReflectionOrDie(*message);
 
   reflection->MutableUnknownFields(message)->Clear();
 
   // Walk through the fields of this message and DiscardUnknownFields on any
   // messages present.
-  std::vector<const FieldDescriptor*> fields;
+  std::vector<const FieldDescriptor *> fields;
   reflection->ListFields(*message, &fields);
   for (int i = 0; i < fields.size(); i++) {
-    const FieldDescriptor* field = fields[i];
+    const FieldDescriptor *field = fields[i];
     // Skip over non-message fields.
     if (field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) {
       continue;
     }
     // Discard the unknown fields in maps that contain message values.
     if (field->is_map() && IsMapValueMessageTyped(field)) {
-      const MapFieldBase* map_field =
+      const MapFieldBase *map_field =
           reflection->MutableMapData(message, field);
       if (map_field->IsMapValid()) {
         MapIterator iter(message, field);
@@ -280,8 +284,8 @@ void ReflectionOps::DiscardUnknownFields(Message* message) {
   }
 }
 
-static std::string SubMessagePrefix(const std::string& prefix,
-                                    const FieldDescriptor* field, int index) {
+static std::string SubMessagePrefix(const std::string &prefix,
+                                    const FieldDescriptor *field, int index) {
   std::string result(prefix);
   if (field->is_extension()) {
     result.append("(");
@@ -299,11 +303,11 @@ static std::string SubMessagePrefix(const std::string& prefix,
   return result;
 }
 
-void ReflectionOps::FindInitializationErrors(const Message& message,
-                                             const std::string& prefix,
-                                             std::vector<std::string>* errors) {
-  const Descriptor* descriptor = message.GetDescriptor();
-  const Reflection* reflection = GetReflectionOrDie(message);
+void ReflectionOps::FindInitializationErrors(const Message &message,
+                                             const std::string &prefix,
+                                             std::vector<std::string> *errors) {
+  const Descriptor *descriptor = message.GetDescriptor();
+  const Reflection *reflection = GetReflectionOrDie(message);
 
   // Check required fields of this message.
   for (int i = 0; i < descriptor->field_count(); i++) {
@@ -315,23 +319,23 @@ void ReflectionOps::FindInitializationErrors(const Message& message,
   }
 
   // Check sub-messages.
-  std::vector<const FieldDescriptor*> fields;
+  std::vector<const FieldDescriptor *> fields;
   reflection->ListFields(message, &fields);
   for (int i = 0; i < fields.size(); i++) {
-    const FieldDescriptor* field = fields[i];
+    const FieldDescriptor *field = fields[i];
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
 
       if (field->is_repeated()) {
         int size = reflection->FieldSize(message, field);
 
         for (int j = 0; j < size; j++) {
-          const Message& sub_message =
+          const Message &sub_message =
               reflection->GetRepeatedMessage(message, field, j);
           FindInitializationErrors(sub_message,
                                    SubMessagePrefix(prefix, field, j), errors);
         }
       } else {
-        const Message& sub_message = reflection->GetMessage(message, field);
+        const Message &sub_message = reflection->GetMessage(message, field);
         FindInitializationErrors(sub_message,
                                  SubMessagePrefix(prefix, field, -1), errors);
       }
@@ -339,6 +343,6 @@ void ReflectionOps::FindInitializationErrors(const Message& message,
   }
 }
 
-}  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+} // namespace internal
+} // namespace protobuf
+} // namespace google

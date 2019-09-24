@@ -55,8 +55,8 @@ template <typename Derived, typename Key, typename Value,
           WireFormatLite::FieldType kValueFieldType, int default_enum_value>
 class MapField;
 }
-}  // namespace protobuf
-}  // namespace google
+} // namespace protobuf
+} // namespace google
 
 namespace google {
 namespace protobuf {
@@ -95,9 +95,9 @@ template <typename Derived, typename Key, typename Value,
 class MapEntry
     : public MapEntryImpl<Derived, Message, Key, Value, kKeyFieldType,
                           kValueFieldType, default_enum_value> {
- public:
+public:
   MapEntry() : _internal_metadata_(NULL) {}
-  explicit MapEntry(Arena* arena)
+  explicit MapEntry(Arena *arena)
       : MapEntryImpl<Derived, Message, Key, Value, kKeyFieldType,
                      kValueFieldType, default_enum_value>(arena),
         _internal_metadata_(arena) {}
@@ -120,7 +120,7 @@ class MapEntry
 
   InternalMetadataWithArena _internal_metadata_;
 
- private:
+private:
   friend class ::PROTOBUF_NAMESPACE_ID::Arena;
   template <typename C, typename K, typename V,
             WireFormatLite::FieldType k_wire_type, WireFormatLite::FieldType,
@@ -135,19 +135,19 @@ template <typename Derived, typename Key, typename Value,
           WireFormatLite::FieldType kKeyFieldType,
           WireFormatLite::FieldType kValueFieldType, int default_enum_value>
 struct MapEntryHelper<MapEntry<Derived, Key, Value, kKeyFieldType,
-                               kValueFieldType, default_enum_value> >
+                               kValueFieldType, default_enum_value>>
     : MapEntryHelper<MapEntryLite<Derived, Key, Value, kKeyFieldType,
-                                  kValueFieldType, default_enum_value> > {
-  explicit MapEntryHelper(const MapPair<Key, Value>& map_pair)
+                                  kValueFieldType, default_enum_value>> {
+  explicit MapEntryHelper(const MapPair<Key, Value> &map_pair)
       : MapEntryHelper<MapEntryLite<Derived, Key, Value, kKeyFieldType,
-                                    kValueFieldType, default_enum_value> >(
+                                    kValueFieldType, default_enum_value>>(
             map_pair) {}
 };
 
 template <typename Derived, typename K, typename V,
           WireFormatLite::FieldType key, WireFormatLite::FieldType value,
           int default_enum>
-struct DeconstructMapEntry<MapEntry<Derived, K, V, key, value, default_enum> > {
+struct DeconstructMapEntry<MapEntry<Derived, K, V, key, value, default_enum>> {
   typedef K Key;
   typedef V Value;
   static const WireFormatLite::FieldType kKeyFieldType = key;
@@ -155,10 +155,10 @@ struct DeconstructMapEntry<MapEntry<Derived, K, V, key, value, default_enum> > {
   static const int default_enum_value = default_enum;
 };
 
-}  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+} // namespace internal
+} // namespace protobuf
+} // namespace google
 
 #include <google/protobuf/port_undef.inc>
 
-#endif  // GOOGLE_PROTOBUF_MAP_ENTRY_H__
+#endif // GOOGLE_PROTOBUF_MAP_ENTRY_H__

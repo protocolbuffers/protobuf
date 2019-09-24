@@ -34,10 +34,10 @@
 
 #include <google/protobuf/compiler/code_generator.h>
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/compiler/plugin.pb.h>
 #include <google/protobuf/descriptor.h>
+#include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/strutil.h>
 
 namespace google {
@@ -46,20 +46,19 @@ namespace compiler {
 
 CodeGenerator::~CodeGenerator() {}
 
-bool CodeGenerator::GenerateAll(const std::vector<const FileDescriptor*>& files,
-                                const std::string& parameter,
-                                GeneratorContext* generator_context,
-                                std::string* error) const {
+bool CodeGenerator::GenerateAll(
+    const std::vector<const FileDescriptor *> &files,
+    const std::string &parameter, GeneratorContext *generator_context,
+    std::string *error) const {
   // Default implemenation is just to call the per file method, and prefix any
   // error string with the file to provide context.
   bool succeeded = true;
   for (int i = 0; i < files.size(); i++) {
-    const FileDescriptor* file = files[i];
+    const FileDescriptor *file = files[i];
     succeeded = Generate(file, parameter, generator_context, error);
     if (!succeeded && error && error->empty()) {
-      *error =
-          "Code generator returned false but provided no error "
-          "description.";
+      *error = "Code generator returned false but provided no error "
+               "description.";
     }
     if (error && !error->empty()) {
       *error = file->name() + ": " + *error;
@@ -74,23 +73,24 @@ bool CodeGenerator::GenerateAll(const std::vector<const FileDescriptor*>& files,
 
 GeneratorContext::~GeneratorContext() {}
 
-io::ZeroCopyOutputStream* GeneratorContext::OpenForAppend(
-    const std::string& filename) {
+io::ZeroCopyOutputStream *
+GeneratorContext::OpenForAppend(const std::string &filename) {
   return NULL;
 }
 
-io::ZeroCopyOutputStream* GeneratorContext::OpenForInsert(
-    const std::string& filename, const std::string& insertion_point) {
+io::ZeroCopyOutputStream *
+GeneratorContext::OpenForInsert(const std::string &filename,
+                                const std::string &insertion_point) {
   GOOGLE_LOG(FATAL) << "This GeneratorContext does not support insertion.";
-  return NULL;  // make compiler happy
+  return NULL; // make compiler happy
 }
 
 void GeneratorContext::ListParsedFiles(
-    std::vector<const FileDescriptor*>* output) {
+    std::vector<const FileDescriptor *> *output) {
   GOOGLE_LOG(FATAL) << "This GeneratorContext does not support ListParsedFiles";
 }
 
-void GeneratorContext::GetCompilerVersion(Version* version) const {
+void GeneratorContext::GetCompilerVersion(Version *version) const {
   version->set_major(GOOGLE_PROTOBUF_VERSION / 1000000);
   version->set_minor(GOOGLE_PROTOBUF_VERSION / 1000 % 1000);
   version->set_patch(GOOGLE_PROTOBUF_VERSION % 1000);
@@ -99,8 +99,8 @@ void GeneratorContext::GetCompilerVersion(Version* version) const {
 
 // Parses a set of comma-delimited name/value pairs.
 void ParseGeneratorParameter(
-    const std::string& text,
-    std::vector<std::pair<std::string, std::string> >* output) {
+    const std::string &text,
+    std::vector<std::pair<std::string, std::string>> *output) {
   std::vector<std::string> parts = Split(text, ",", true);
 
   for (int i = 0; i < parts.size(); i++) {
@@ -117,6 +117,6 @@ void ParseGeneratorParameter(
   }
 }
 
-}  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+} // namespace compiler
+} // namespace protobuf
+} // namespace google

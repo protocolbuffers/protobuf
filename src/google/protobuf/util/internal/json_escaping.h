@@ -31,8 +31,8 @@
 #ifndef GOOGLE_PROTOBUF_UTIL_INTERNAL__JSON_ESCAPING_H__
 #define GOOGLE_PROTOBUF_UTIL_INTERNAL__JSON_ESCAPING_H__
 
-#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/bytestream.h>
+#include <google/protobuf/stubs/common.h>
 
 namespace google {
 namespace protobuf {
@@ -40,7 +40,7 @@ namespace util {
 namespace converter {
 
 class JsonEscaping {
- public:
+public:
   // The minimum value of a unicode high-surrogate code unit in the utf-16
   // encoding. A high-surrogate is also known as a leading-surrogate.
   // See http://www.unicode.org/glossary/#high_surrogate_code_unit
@@ -77,20 +77,20 @@ class JsonEscaping {
   virtual ~JsonEscaping() {}
 
   // Escape the given ByteSource to the given ByteSink.
-  static void Escape(strings::ByteSource* input, strings::ByteSink* output);
+  static void Escape(strings::ByteSource *input, strings::ByteSink *output);
 
   // Escape the given ByteSource to the given ByteSink.
   // This is optimized for the case where the string is all printable 7-bit
   // ASCII and does not contain a few other characters (such as quotes).
-  static void Escape(StringPiece input, strings::ByteSink* output);
+  static void Escape(StringPiece input, strings::ByteSink *output);
 
- private:
+private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(JsonEscaping);
 };
 
-}  // namespace converter
-}  // namespace util
-}  // namespace protobuf
-}  // namespace google
+} // namespace converter
+} // namespace util
+} // namespace protobuf
+} // namespace google
 
-#endif  // GOOGLE_PROTOBUF_UTIL_INTERNAL__JSON_ESCAPING_H__
+#endif // GOOGLE_PROTOBUF_UTIL_INTERNAL__JSON_ESCAPING_H__

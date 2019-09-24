@@ -33,9 +33,9 @@
 
 #include <map>
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/descriptor.h>
+#include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
 
 #include <google/protobuf/port_def.inc>
 
@@ -47,52 +47,52 @@ namespace compiler {
 // of both the descriptors in this SCC and the order of children is
 // deterministic.
 struct SCC {
-  std::vector<const Descriptor*> descriptors;
-  std::vector<const SCC*> children;
+  std::vector<const Descriptor *> descriptors;
+  std::vector<const SCC *> children;
 
-  const Descriptor* GetRepresentative() const { return descriptors[0]; }
+  const Descriptor *GetRepresentative() const { return descriptors[0]; }
 
   // All messages must necessarily be in the same file.
-  const FileDescriptor* GetFile() const { return descriptors[0]->file(); }
+  const FileDescriptor *GetFile() const { return descriptors[0]->file(); }
 };
 
 // This class is used for analyzing the SCC for each message, to ensure linear
 // instead of quadratic performance, if we do this per message we would get
 // O(V*(V+E)).
-template <class DepsGenerator>
-class PROTOC_EXPORT SCCAnalyzer {
- public:
+template <class DepsGenerator> class PROTOC_EXPORT SCCAnalyzer {
+public:
   explicit SCCAnalyzer() : index_(0) {}
 
-  const SCC* GetSCC(const Descriptor* descriptor) {
-    if (cache_.count(descriptor)) return cache_[descriptor].scc;
+  const SCC *GetSCC(const Descriptor *descriptor) {
+    if (cache_.count(descriptor))
+      return cache_[descriptor].scc;
     return DFS(descriptor).scc;
   }
 
- private:
+private:
   struct NodeData {
-    const SCC* scc;  // if null it means its still on the stack
+    const SCC *scc; // if null it means its still on the stack
     int index;
     int lowlink;
   };
 
-  std::map<const Descriptor*, NodeData> cache_;
-  std::vector<const Descriptor*> stack_;
+  std::map<const Descriptor *, NodeData> cache_;
+  std::vector<const Descriptor *> stack_;
   int index_;
   std::vector<std::unique_ptr<SCC>> garbage_bin_;
 
-  SCC* CreateSCC() {
+  SCC *CreateSCC() {
     garbage_bin_.emplace_back(new SCC());
     return garbage_bin_.back().get();
   }
 
   // Tarjan's Strongly Connected Components algo
-  NodeData DFS(const Descriptor* descriptor) {
+  NodeData DFS(const Descriptor *descriptor) {
     // Must not have visited already.
     GOOGLE_DCHECK_EQ(cache_.count(descriptor), 0);
 
     // Mark visited by inserting in map.
-    NodeData& result = cache_[descriptor];
+    NodeData &result = cache_[descriptor];
     // Initialize data structures.
     result.index = result.lowlink = index_++;
     stack_.push_back(descriptor);
@@ -114,21 +114,22 @@ class PROTOC_EXPORT SCCAnalyzer {
     }
     if (result.index == result.lowlink) {
       // This is the root of a strongly connected component
-      SCC* scc = CreateSCC();
+      SCC *scc = CreateSCC();
       while (true) {
-        const Descriptor* scc_desc = stack_.back();
+        const Descriptor *scc_desc = stack_.back();
         scc->descriptors.push_back(scc_desc);
         // Remove from stack
         stack_.pop_back();
         cache_[scc_desc].scc = scc;
 
-        if (scc_desc == descriptor) break;
+        if (scc_desc == descriptor)
+          break;
       }
 
       // The order of descriptors is random and depends how this SCC was
       // discovered. In-order to ensure maximum stability we sort it by name.
       std::sort(scc->descriptors.begin(), scc->descriptors.end(),
-                [](const Descriptor* a, const Descriptor* b) {
+                [](const Descriptor *a, const Descriptor *b) {
                   return a->full_name() < b->full_name();
                 });
       AddChildren(scc);
@@ -137,13 +138,14 @@ class PROTOC_EXPORT SCCAnalyzer {
   }
 
   // Add the SCC's that are children of this SCC to its children.
-  void AddChildren(SCC* scc) {
-    std::set<const SCC*> seen;
+  void AddChildren(SCC *scc) {
+    std::set<const SCC *> seen;
     for (auto descriptor : scc->descriptors) {
       for (auto child_msg : DepsGenerator()(descriptor)) {
         GOOGLE_CHECK(child_msg);
-        const SCC* child = GetSCC(child_msg);
-        if (child == scc) continue;
+        const SCC *child = GetSCC(child_msg);
+        if (child == scc)
+          continue;
         if (seen.insert(child).second) {
           scc->children.push_back(child);
         }
@@ -155,10 +157,10 @@ class PROTOC_EXPORT SCCAnalyzer {
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(SCCAnalyzer);
 };
 
-}  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+} // namespace compiler
+} // namespace protobuf
+} // namespace google
 
 #include <google/protobuf/port_undef.inc>
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_SCC_H__
+#endif // GOOGLE_PROTOBUF_COMPILER_SCC_H__

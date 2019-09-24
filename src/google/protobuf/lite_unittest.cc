@@ -33,32 +33,32 @@
 #include <iostream>
 #include <string>
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/arena_test_util.h>
-#include <google/protobuf/map_lite_test_util.h>
-#include <google/protobuf/map_lite_unittest.pb.h>
-#include <google/protobuf/test_util_lite.h>
-#include <google/protobuf/unittest_lite.pb.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
+#include <google/protobuf/map_lite_test_util.h>
+#include <google/protobuf/map_lite_unittest.pb.h>
+#include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
+#include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/test_util_lite.h>
+#include <google/protobuf/unittest_lite.pb.h>
 #include <google/protobuf/wire_format_lite.h>
 #include <gtest/gtest.h>
-#include <google/protobuf/stubs/strutil.h>
 
 namespace google {
 namespace protobuf {
 
 // Helper methods to test parsing merge behavior.
-void ExpectMessageMerged(const unittest::TestAllTypesLite& message) {
+void ExpectMessageMerged(const unittest::TestAllTypesLite &message) {
   EXPECT_EQ(message.optional_int32(), 3);
   EXPECT_EQ(message.optional_int64(), 2);
   EXPECT_EQ(message.optional_string(), "hello");
 }
 
-void AssignParsingMergeMessages(unittest::TestAllTypesLite* msg1,
-                                unittest::TestAllTypesLite* msg2,
-                                unittest::TestAllTypesLite* msg3) {
+void AssignParsingMergeMessages(unittest::TestAllTypesLite *msg1,
+                                unittest::TestAllTypesLite *msg2,
+                                unittest::TestAllTypesLite *msg3) {
   msg1->set_optional_int32(1);
   msg2->set_optional_int64(2);
   msg3->set_optional_int32(3);
@@ -66,7 +66,7 @@ void AssignParsingMergeMessages(unittest::TestAllTypesLite* msg1,
 }
 
 void SetAllTypesInEmptyMessageUnknownFields(
-    unittest::TestEmptyMessageLite* empty_message) {
+    unittest::TestEmptyMessageLite *empty_message) {
   protobuf_unittest::TestAllTypesLite message;
   TestUtilLite::ExpectClear(message);
   TestUtilLite::SetAllFields(&message);
@@ -75,7 +75,7 @@ void SetAllTypesInEmptyMessageUnknownFields(
 }
 
 void SetSomeTypesInEmptyMessageUnknownFields(
-    unittest::TestEmptyMessageLite* empty_message) {
+    unittest::TestEmptyMessageLite *empty_message) {
   protobuf_unittest::TestAllTypesLite message;
   TestUtilLite::ExpectClear(message);
   message.set_optional_int32(101);
@@ -169,14 +169,14 @@ TEST(Lite, AllLite5) {
     // Test that if an optional or required message/group field appears multiple
     // times in the input, they need to be merged.
     unittest::TestParsingMergeLite::RepeatedFieldsGenerator generator;
-    unittest::TestAllTypesLite* msg1;
-    unittest::TestAllTypesLite* msg2;
-    unittest::TestAllTypesLite* msg3;
+    unittest::TestAllTypesLite *msg1;
+    unittest::TestAllTypesLite *msg2;
+    unittest::TestAllTypesLite *msg3;
 
-#define ASSIGN_REPEATED_FIELD(FIELD) \
-  msg1 = generator.add_##FIELD();    \
-  msg2 = generator.add_##FIELD();    \
-  msg3 = generator.add_##FIELD();    \
+#define ASSIGN_REPEATED_FIELD(FIELD)                                           \
+  msg1 = generator.add_##FIELD();                                              \
+  msg2 = generator.add_##FIELD();                                              \
+  msg3 = generator.add_##FIELD();                                              \
   AssignParsingMergeMessages(msg1, msg2, msg3)
 
     ASSIGN_REPEATED_FIELD(field1);
@@ -186,10 +186,10 @@ TEST(Lite, AllLite5) {
     ASSIGN_REPEATED_FIELD(ext2);
 
 #undef ASSIGN_REPEATED_FIELD
-#define ASSIGN_REPEATED_GROUP(FIELD)                \
-  msg1 = generator.add_##FIELD()->mutable_field1(); \
-  msg2 = generator.add_##FIELD()->mutable_field1(); \
-  msg3 = generator.add_##FIELD()->mutable_field1(); \
+#define ASSIGN_REPEATED_GROUP(FIELD)                                           \
+  msg1 = generator.add_##FIELD()->mutable_field1();                            \
+  msg2 = generator.add_##FIELD()->mutable_field1();                            \
+  msg3 = generator.add_##FIELD()->mutable_field1();                            \
   AssignParsingMergeMessages(msg1, msg2, msg3)
 
     ASSIGN_REPEATED_GROUP(group1);
@@ -615,8 +615,11 @@ TEST(Lite, AllLite28) {
     MapLiteTestUtil::SetMapFields(&message1);
     int size = message1.ByteSize();
     data.resize(size);
-    ::google::protobuf::uint8* start = reinterpret_cast<::google::protobuf::uint8*>(::google::protobuf::string_as_array(&data));
-    ::google::protobuf::uint8* end = message1.SerializeWithCachedSizesToArray(start);
+    ::google::protobuf::uint8 *start =
+        reinterpret_cast<::google::protobuf::uint8 *>(
+            ::google::protobuf::string_as_array(&data));
+    ::google::protobuf::uint8 *end =
+        message1.SerializeWithCachedSizesToArray(start);
     EXPECT_EQ(size, end - start);
     EXPECT_TRUE(message2.ParseFromString(data));
     MapLiteTestUtil::ExpectMapFieldsSet(message2);
@@ -635,7 +638,8 @@ TEST(Lite, AllLite29) {
     data.resize(size);
     {
       // Allow the output stream to buffer only one byte at a time.
-      io::ArrayOutputStream array_stream(::google::protobuf::string_as_array(&data), size, 1);
+      io::ArrayOutputStream array_stream(
+          ::google::protobuf::string_as_array(&data), size, 1);
       io::CodedOutputStream output_stream(&array_stream);
       message1.SerializeWithCachedSizes(&output_stream);
       EXPECT_FALSE(output_stream.HadError());
@@ -645,7 +649,6 @@ TEST(Lite, AllLite29) {
     MapLiteTestUtil::ExpectMapFieldsSet(message2);
   }
 }
-
 
 TEST(Lite, AllLite32) {
   std::string data;
@@ -875,7 +878,8 @@ TEST(Lite, AllLite43) {
     protobuf_unittest::TestOneofParsingLite message2;
     message2.mutable_oneof_submessage();
     io::CodedInputStream input_stream(
-        reinterpret_cast<const ::google::protobuf::uint8*>(serialized.data()), serialized.size());
+        reinterpret_cast<const ::google::protobuf::uint8 *>(serialized.data()),
+        serialized.size());
     EXPECT_TRUE(message2.MergeFromCodedStream(&input_stream));
     EXPECT_EQ(17, message2.oneof_int32());
   }
@@ -885,7 +889,8 @@ TEST(Lite, AllLite43) {
     protobuf_unittest::TestOneofParsingLite message2;
     message2.set_oneof_string("string");
     io::CodedInputStream input_stream(
-        reinterpret_cast<const ::google::protobuf::uint8*>(serialized.data()), serialized.size());
+        reinterpret_cast<const ::google::protobuf::uint8 *>(serialized.data()),
+        serialized.size());
     EXPECT_TRUE(message2.MergeFromCodedStream(&input_stream));
     EXPECT_EQ(17, message2.oneof_int32());
   }
@@ -895,7 +900,8 @@ TEST(Lite, AllLite43) {
     protobuf_unittest::TestOneofParsingLite message2;
     message2.set_oneof_bytes("bytes");
     io::CodedInputStream input_stream(
-        reinterpret_cast<const ::google::protobuf::uint8*>(serialized.data()), serialized.size());
+        reinterpret_cast<const ::google::protobuf::uint8 *>(serialized.data()),
+        serialized.size());
     EXPECT_TRUE(message2.MergeFromCodedStream(&input_stream));
     EXPECT_EQ(17, message2.oneof_int32());
   }
@@ -914,7 +920,8 @@ TEST(Lite, AllLite44) {
     protobuf_unittest::TestOneofParsingLite parsed;
     for (int i = 0; i < 2; ++i) {
       io::CodedInputStream input_stream(
-          reinterpret_cast<const ::google::protobuf::uint8*>(serialized.data()),
+          reinterpret_cast<const ::google::protobuf::uint8 *>(
+              serialized.data()),
           serialized.size());
       EXPECT_TRUE(parsed.MergeFromCodedStream(&input_stream));
       EXPECT_EQ(17, parsed.oneof_int32());
@@ -930,7 +937,8 @@ TEST(Lite, AllLite44) {
     protobuf_unittest::TestOneofParsingLite parsed;
     for (int i = 0; i < 2; ++i) {
       io::CodedInputStream input_stream(
-          reinterpret_cast<const ::google::protobuf::uint8*>(serialized.data()),
+          reinterpret_cast<const ::google::protobuf::uint8 *>(
+              serialized.data()),
           serialized.size());
       EXPECT_TRUE(parsed.MergeFromCodedStream(&input_stream));
       EXPECT_EQ(5, parsed.oneof_submessage().optional_int32());
@@ -946,7 +954,8 @@ TEST(Lite, AllLite44) {
     protobuf_unittest::TestOneofParsingLite parsed;
     for (int i = 0; i < 2; ++i) {
       io::CodedInputStream input_stream(
-          reinterpret_cast<const ::google::protobuf::uint8*>(serialized.data()),
+          reinterpret_cast<const ::google::protobuf::uint8 *>(
+              serialized.data()),
           serialized.size());
       EXPECT_TRUE(parsed.MergeFromCodedStream(&input_stream));
       EXPECT_EQ("string", parsed.oneof_string());
@@ -962,7 +971,8 @@ TEST(Lite, AllLite44) {
     protobuf_unittest::TestOneofParsingLite parsed;
     for (int i = 0; i < 2; ++i) {
       io::CodedInputStream input_stream(
-          reinterpret_cast<const ::google::protobuf::uint8*>(serialized.data()),
+          reinterpret_cast<const ::google::protobuf::uint8 *>(
+              serialized.data()),
           serialized.size());
       EXPECT_TRUE(parsed.MergeFromCodedStream(&input_stream));
       EXPECT_EQ("bytes", parsed.oneof_bytes());
@@ -978,7 +988,8 @@ TEST(Lite, AllLite44) {
     protobuf_unittest::TestOneofParsingLite parsed;
     for (int i = 0; i < 2; ++i) {
       io::CodedInputStream input_stream(
-          reinterpret_cast<const ::google::protobuf::uint8*>(serialized.data()),
+          reinterpret_cast<const ::google::protobuf::uint8 *>(
+              serialized.data()),
           serialized.size());
       EXPECT_TRUE(parsed.MergeFromCodedStream(&input_stream));
       EXPECT_EQ(protobuf_unittest::V2_SECOND, parsed.oneof_enum());
@@ -990,12 +1001,13 @@ TEST(Lite, AllLite44) {
 
 TEST(Lite, AllLite45) {
   // Test unknown fields are not discarded upon parsing.
-  std::string data = "\20\1";  // varint 1 with field number 2
+  std::string data = "\20\1"; // varint 1 with field number 2
 
   protobuf_unittest::ForeignMessageLite a;
   EXPECT_TRUE(a.ParseFromString(data));
   io::CodedInputStream input_stream(
-      reinterpret_cast<const ::google::protobuf::uint8*>(data.data()), data.size());
+      reinterpret_cast<const ::google::protobuf::uint8 *>(data.data()),
+      data.size());
   EXPECT_TRUE(a.MergePartialFromCodedStream(&input_stream));
 
   std::string serialized = a.SerializeAsString();
@@ -1057,7 +1069,7 @@ TEST(Lite, CorrectEnding) {
     // will not encounter an end-group tag. However the parser should behave
     // like any wire format parser should.
     static const char kWireFormat[] = "\204\1";
-    io::CodedInputStream cis(reinterpret_cast<const uint8*>(kWireFormat), 2);
+    io::CodedInputStream cis(reinterpret_cast<const uint8 *>(kWireFormat), 2);
     // The old CodedInputStream parser got an optimization (ReadTagNoLastTag)
     // for non-group messages (like TestAllTypesLite) which made it not accept
     // end-group. This is not a real big deal, but I think going forward its
@@ -1070,7 +1082,7 @@ TEST(Lite, CorrectEnding) {
     // This is an incomplete end-group tag. This should be a genuine parse
     // failure.
     static const char kWireFormat[] = "\214";
-    io::CodedInputStream cis(reinterpret_cast<const uint8*>(kWireFormat), 1);
+    io::CodedInputStream cis(reinterpret_cast<const uint8 *>(kWireFormat), 1);
     // Unfortunately the old parser detects a parse error in ReadTag and returns
     // 0 (as it states 0 is an invalid tag). However 0 is not an invalid tag
     // as it can be used to terminate the stream, so this returns true.
@@ -1177,15 +1189,15 @@ TEST(Lite, AliasedEnum) {
   EXPECT_EQ("", protobuf_unittest::DupEnum::TestEnumWithDupValueLite_Name(999));
 
   protobuf_unittest::DupEnum::TestEnumWithDupValueLite value;
-  ASSERT_TRUE(
-      protobuf_unittest::DupEnum::TestEnumWithDupValueLite_Parse("FOO1", &value));
+  ASSERT_TRUE(protobuf_unittest::DupEnum::TestEnumWithDupValueLite_Parse(
+      "FOO1", &value));
   EXPECT_EQ(protobuf_unittest::DupEnum::FOO1, value);
 
   value = static_cast<protobuf_unittest::DupEnum::TestEnumWithDupValueLite>(0);
-  ASSERT_TRUE(
-      protobuf_unittest::DupEnum::TestEnumWithDupValueLite_Parse("FOO2", &value));
+  ASSERT_TRUE(protobuf_unittest::DupEnum::TestEnumWithDupValueLite_Parse(
+      "FOO2", &value));
   EXPECT_EQ(protobuf_unittest::DupEnum::FOO2, value);
 }
 
-}  // namespace protobuf
-}  // namespace google
+} // namespace protobuf
+} // namespace google

@@ -30,9 +30,9 @@
 #include <google/protobuf/unittest_well_known_types.pb.h>
 
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/stl_util.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
-#include <google/protobuf/stubs/stl_util.h>
 
 namespace google {
 namespace protobuf {
@@ -54,7 +54,7 @@ TEST(WellKnownTypesTest, AllKnownTypesAreIncluded) {
   EXPECT_EQ(0, message.int32_field().ByteSize());
 }
 
-}  // namespace
+} // namespace
 
-}  // namespace protobuf
-}  // namespace google
+} // namespace protobuf
+} // namespace google

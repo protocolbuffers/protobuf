@@ -32,8 +32,8 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include <google/protobuf/compiler/cpp/cpp_service.h>
 #include <google/protobuf/compiler/cpp/cpp_helpers.h>
+#include <google/protobuf/compiler/cpp/cpp_service.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/stubs/strutil.h>
 
@@ -44,19 +44,19 @@ namespace cpp {
 
 namespace {
 
-void InitMethodVariables(const MethodDescriptor* method, const Options& options,
-                         Formatter* format) {
+void InitMethodVariables(const MethodDescriptor *method, const Options &options,
+                         Formatter *format) {
   format->Set("name", method->name());
   format->Set("input_type", QualifiedClassName(method->input_type(), options));
   format->Set("output_type",
               QualifiedClassName(method->output_type(), options));
 }
 
-}  // namespace
+} // namespace
 
 ServiceGenerator::ServiceGenerator(
-    const ServiceDescriptor* descriptor,
-    const std::map<std::string, std::string>& vars, const Options& options)
+    const ServiceDescriptor *descriptor,
+    const std::map<std::string, std::string> &vars, const Options &options)
     : descriptor_(descriptor), vars_(vars), options_(options) {
   vars_["classname"] = descriptor_->name();
   vars_["full_name"] = descriptor_->full_name();
@@ -64,34 +64,31 @@ ServiceGenerator::ServiceGenerator(
 
 ServiceGenerator::~ServiceGenerator() {}
 
-void ServiceGenerator::GenerateDeclarations(io::Printer* printer) {
+void ServiceGenerator::GenerateDeclarations(io::Printer *printer) {
   Formatter format(printer, vars_);
   // Forward-declare the stub type.
-  format(
-      "class $classname$_Stub;\n"
-      "\n");
+  format("class $classname$_Stub;\n"
+         "\n");
 
   GenerateInterface(printer);
   GenerateStubDefinition(printer);
 }
 
-void ServiceGenerator::GenerateInterface(io::Printer* printer) {
+void ServiceGenerator::GenerateInterface(io::Printer *printer) {
   Formatter format(printer, vars_);
-  format(
-      "class $dllexport_decl $$classname$ : public ::$proto_ns$::Service {\n"
-      " protected:\n"
-      "  // This class should be treated as an abstract interface.\n"
-      "  inline $classname$() {};\n"
-      " public:\n"
-      "  virtual ~$classname$();\n");
+  format("class $dllexport_decl $$classname$ : public ::$proto_ns$::Service {\n"
+         " protected:\n"
+         "  // This class should be treated as an abstract interface.\n"
+         "  inline $classname$() {};\n"
+         " public:\n"
+         "  virtual ~$classname$();\n");
   printer->Indent();
 
-  format(
-      "\n"
-      "typedef $classname$_Stub Stub;\n"
-      "\n"
-      "static const ::$proto_ns$::ServiceDescriptor* descriptor();\n"
-      "\n");
+  format("\n"
+         "typedef $classname$_Stub Stub;\n"
+         "\n"
+         "static const ::$proto_ns$::ServiceDescriptor* descriptor();\n"
+         "\n");
 
   GenerateMethodSignatures(VIRTUAL, printer);
 
@@ -111,19 +108,17 @@ void ServiceGenerator::GenerateInterface(io::Printer* printer) {
       "  const ::$proto_ns$::MethodDescriptor* method) const;\n");
 
   printer->Outdent();
-  format(
-      "\n"
-      " private:\n"
-      "  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS($classname$);\n"
-      "};\n"
-      "\n");
+  format("\n"
+         " private:\n"
+         "  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS($classname$);\n"
+         "};\n"
+         "\n");
 }
 
-void ServiceGenerator::GenerateStubDefinition(io::Printer* printer) {
+void ServiceGenerator::GenerateStubDefinition(io::Printer *printer) {
   Formatter format(printer, vars_);
-  format(
-      "class $dllexport_decl $$classname$_Stub : public $classname$ {\n"
-      " public:\n");
+  format("class $dllexport_decl $$classname$_Stub : public $classname$ {\n"
+         " public:\n");
 
   printer->Indent();
 
@@ -141,33 +136,31 @@ void ServiceGenerator::GenerateStubDefinition(io::Printer* printer) {
   GenerateMethodSignatures(NON_VIRTUAL, printer);
 
   printer->Outdent();
-  format(
-      " private:\n"
-      "  ::$proto_ns$::RpcChannel* channel_;\n"
-      "  bool owns_channel_;\n"
-      "  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS($classname$_Stub);\n"
-      "};\n"
-      "\n");
+  format(" private:\n"
+         "  ::$proto_ns$::RpcChannel* channel_;\n"
+         "  bool owns_channel_;\n"
+         "  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS($classname$_Stub);\n"
+         "};\n"
+         "\n");
 }
 
 void ServiceGenerator::GenerateMethodSignatures(VirtualOrNon virtual_or_non,
-                                                io::Printer* printer) {
+                                                io::Printer *printer) {
   for (int i = 0; i < descriptor_->method_count(); i++) {
-    const MethodDescriptor* method = descriptor_->method(i);
+    const MethodDescriptor *method = descriptor_->method(i);
     Formatter format(printer, vars_);
     InitMethodVariables(method, options_, &format);
     format.Set("virtual", virtual_or_non == VIRTUAL ? "virtual " : "");
-    format(
-        "$virtual$void $name$(::$proto_ns$::RpcController* controller,\n"
-        "                     const $input_type$* request,\n"
-        "                     $output_type$* response,\n"
-        "                     ::google::protobuf::Closure* done);\n");
+    format("$virtual$void $name$(::$proto_ns$::RpcController* controller,\n"
+           "                     const $input_type$* request,\n"
+           "                     $output_type$* response,\n"
+           "                     ::google::protobuf::Closure* done);\n");
   }
 }
 
 // ===================================================================
 
-void ServiceGenerator::GenerateImplementation(io::Printer* printer) {
+void ServiceGenerator::GenerateImplementation(io::Printer *printer) {
   Formatter format(printer, vars_);
   format(
       "$classname$::~$classname$() {}\n"
@@ -209,24 +202,23 @@ void ServiceGenerator::GenerateImplementation(io::Printer* printer) {
   GenerateStubMethods(printer);
 }
 
-void ServiceGenerator::GenerateNotImplementedMethods(io::Printer* printer) {
+void ServiceGenerator::GenerateNotImplementedMethods(io::Printer *printer) {
   for (int i = 0; i < descriptor_->method_count(); i++) {
-    const MethodDescriptor* method = descriptor_->method(i);
+    const MethodDescriptor *method = descriptor_->method(i);
     Formatter format(printer, vars_);
     InitMethodVariables(method, options_, &format);
-    format(
-        "void $classname$::$name$(::$proto_ns$::RpcController* controller,\n"
-        "                         const $input_type$*,\n"
-        "                         $output_type$*,\n"
-        "                         ::google::protobuf::Closure* done) {\n"
-        "  controller->SetFailed(\"Method $name$() not implemented.\");\n"
-        "  done->Run();\n"
-        "}\n"
-        "\n");
+    format("void $classname$::$name$(::$proto_ns$::RpcController* controller,\n"
+           "                         const $input_type$*,\n"
+           "                         $output_type$*,\n"
+           "                         ::google::protobuf::Closure* done) {\n"
+           "  controller->SetFailed(\"Method $name$() not implemented.\");\n"
+           "  done->Run();\n"
+           "}\n"
+           "\n");
   }
 }
 
-void ServiceGenerator::GenerateCallMethod(io::Printer* printer) {
+void ServiceGenerator::GenerateCallMethod(io::Printer *printer) {
   Formatter format(printer, vars_);
   format(
       "void $classname$::CallMethod(const ::$proto_ns$::MethodDescriptor* "
@@ -235,12 +227,13 @@ void ServiceGenerator::GenerateCallMethod(io::Printer* printer) {
       "                             const ::$proto_ns$::Message* request,\n"
       "                             ::$proto_ns$::Message* response,\n"
       "                             ::google::protobuf::Closure* done) {\n"
-      "  GOOGLE_DCHECK_EQ(method->service(), $file_level_service_descriptors$[$1$]);\n"
+      "  GOOGLE_DCHECK_EQ(method->service(), "
+      "$file_level_service_descriptors$[$1$]);\n"
       "  switch(method->index()) {\n",
       index_in_metadata_);
 
   for (int i = 0; i < descriptor_->method_count(); i++) {
-    const MethodDescriptor* method = descriptor_->method(i);
+    const MethodDescriptor *method = descriptor_->method(i);
     Formatter format(printer, vars_);
     InitMethodVariables(method, options_, &format);
 
@@ -258,17 +251,17 @@ void ServiceGenerator::GenerateCallMethod(io::Printer* printer) {
         i);
   }
 
-  format(
-      "    default:\n"
-      "      GOOGLE_LOG(FATAL) << \"Bad method index; this should never happen.\";\n"
-      "      break;\n"
-      "  }\n"
-      "}\n"
-      "\n");
+  format("    default:\n"
+         "      GOOGLE_LOG(FATAL) << \"Bad method index; this should never "
+         "happen.\";\n"
+         "      break;\n"
+         "  }\n"
+         "}\n"
+         "\n");
 }
 
 void ServiceGenerator::GenerateGetPrototype(RequestOrResponse which,
-                                            io::Printer* printer) {
+                                            io::Printer *printer) {
   Formatter format(printer, vars_);
   if (which == REQUEST) {
     format("const ::$proto_ns$::Message& $classname$::GetRequestPrototype(\n");
@@ -276,36 +269,34 @@ void ServiceGenerator::GenerateGetPrototype(RequestOrResponse which,
     format("const ::$proto_ns$::Message& $classname$::GetResponsePrototype(\n");
   }
 
-  format(
-      "    const ::$proto_ns$::MethodDescriptor* method) const {\n"
-      "  GOOGLE_DCHECK_EQ(method->service(), descriptor());\n"
-      "  switch(method->index()) {\n");
+  format("    const ::$proto_ns$::MethodDescriptor* method) const {\n"
+         "  GOOGLE_DCHECK_EQ(method->service(), descriptor());\n"
+         "  switch(method->index()) {\n");
 
   for (int i = 0; i < descriptor_->method_count(); i++) {
-    const MethodDescriptor* method = descriptor_->method(i);
-    const Descriptor* type =
+    const MethodDescriptor *method = descriptor_->method(i);
+    const Descriptor *type =
         (which == REQUEST) ? method->input_type() : method->output_type();
 
-    format(
-        "    case $1$:\n"
-        "      return $2$::default_instance();\n",
-        i, QualifiedClassName(type, options_));
+    format("    case $1$:\n"
+           "      return $2$::default_instance();\n",
+           i, QualifiedClassName(type, options_));
   }
 
-  format(
-      "    default:\n"
-      "      GOOGLE_LOG(FATAL) << \"Bad method index; this should never happen.\";\n"
-      "      return *::$proto_ns$::MessageFactory::generated_factory()\n"
-      "          ->GetPrototype(method->$1$_type());\n"
-      "  }\n"
-      "}\n"
-      "\n",
-      which == REQUEST ? "input" : "output");
+  format("    default:\n"
+         "      GOOGLE_LOG(FATAL) << \"Bad method index; this should never "
+         "happen.\";\n"
+         "      return *::$proto_ns$::MessageFactory::generated_factory()\n"
+         "          ->GetPrototype(method->$1$_type());\n"
+         "  }\n"
+         "}\n"
+         "\n",
+         which == REQUEST ? "input" : "output");
 }
 
-void ServiceGenerator::GenerateStubMethods(io::Printer* printer) {
+void ServiceGenerator::GenerateStubMethods(io::Printer *printer) {
   for (int i = 0; i < descriptor_->method_count(); i++) {
-    const MethodDescriptor* method = descriptor_->method(i);
+    const MethodDescriptor *method = descriptor_->method(i);
     Formatter format(printer, vars_);
     InitMethodVariables(method, options_, &format);
     format(
@@ -321,7 +312,7 @@ void ServiceGenerator::GenerateStubMethods(io::Printer* printer) {
   }
 }
 
-}  // namespace cpp
-}  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+} // namespace cpp
+} // namespace compiler
+} // namespace protobuf
+} // namespace google

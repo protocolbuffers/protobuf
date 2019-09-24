@@ -31,24 +31,24 @@
 #ifndef GOOGLE_PROTOBUF_EXTENSION_SET_INL_H__
 #define GOOGLE_PROTOBUF_EXTENSION_SET_INL_H__
 
-#include <google/protobuf/parse_context.h>
 #include <google/protobuf/extension_set.h>
+#include <google/protobuf/parse_context.h>
 
 namespace google {
 namespace protobuf {
 namespace internal {
 
 template <typename T>
-const char* ExtensionSet::ParseFieldWithExtensionInfo(
-    int number, bool was_packed_on_wire, const ExtensionInfo& extension,
-    T* metadata, const char* ptr, internal::ParseContext* ctx) {
+const char *ExtensionSet::ParseFieldWithExtensionInfo(
+    int number, bool was_packed_on_wire, const ExtensionInfo &extension,
+    T *metadata, const char *ptr, internal::ParseContext *ctx) {
   if (was_packed_on_wire) {
     switch (extension.type) {
-#define HANDLE_TYPE(UPPERCASE, CPP_CAMELCASE)                                \
-  case WireFormatLite::TYPE_##UPPERCASE:                                     \
-    return internal::Packed##CPP_CAMELCASE##Parser(                          \
-        MutableRawRepeatedField(number, extension.type, extension.is_packed, \
-                                extension.descriptor),                       \
+#define HANDLE_TYPE(UPPERCASE, CPP_CAMELCASE)                                  \
+  case WireFormatLite::TYPE_##UPPERCASE:                                       \
+    return internal::Packed##CPP_CAMELCASE##Parser(                            \
+        MutableRawRepeatedField(number, extension.type, extension.is_packed,   \
+                                extension.descriptor),                         \
         ptr, ctx);
       HANDLE_TYPE(INT32, Int32);
       HANDLE_TYPE(INT64, Int64);
@@ -65,33 +65,33 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
       HANDLE_TYPE(BOOL, Bool);
 #undef HANDLE_TYPE
 
-      case WireFormatLite::TYPE_ENUM:
-        return internal::PackedEnumParserArg(
-            MutableRawRepeatedField(number, extension.type, extension.is_packed,
-                                    extension.descriptor),
-            ptr, ctx, extension.enum_validity_check.func,
-            extension.enum_validity_check.arg, metadata, number);
-      case WireFormatLite::TYPE_STRING:
-      case WireFormatLite::TYPE_BYTES:
-      case WireFormatLite::TYPE_GROUP:
-      case WireFormatLite::TYPE_MESSAGE:
-        GOOGLE_LOG(FATAL) << "Non-primitive types can't be packed.";
-        break;
+    case WireFormatLite::TYPE_ENUM:
+      return internal::PackedEnumParserArg(
+          MutableRawRepeatedField(number, extension.type, extension.is_packed,
+                                  extension.descriptor),
+          ptr, ctx, extension.enum_validity_check.func,
+          extension.enum_validity_check.arg, metadata, number);
+    case WireFormatLite::TYPE_STRING:
+    case WireFormatLite::TYPE_BYTES:
+    case WireFormatLite::TYPE_GROUP:
+    case WireFormatLite::TYPE_MESSAGE:
+      GOOGLE_LOG(FATAL) << "Non-primitive types can't be packed.";
+      break;
     }
   } else {
     switch (extension.type) {
-#define HANDLE_VARINT_TYPE(UPPERCASE, CPP_CAMELCASE)                        \
-  case WireFormatLite::TYPE_##UPPERCASE: {                                  \
-    uint64 value;                                                           \
-    ptr = VarintParse(ptr, &value);                                         \
-    GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);                                    \
-    if (extension.is_repeated) {                                            \
-      Add##CPP_CAMELCASE(number, WireFormatLite::TYPE_##UPPERCASE,          \
-                         extension.is_packed, value, extension.descriptor); \
-    } else {                                                                \
-      Set##CPP_CAMELCASE(number, WireFormatLite::TYPE_##UPPERCASE, value,   \
-                         extension.descriptor);                             \
-    }                                                                       \
+#define HANDLE_VARINT_TYPE(UPPERCASE, CPP_CAMELCASE)                           \
+  case WireFormatLite::TYPE_##UPPERCASE: {                                     \
+    uint64 value;                                                              \
+    ptr = VarintParse(ptr, &value);                                            \
+    GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);                                        \
+    if (extension.is_repeated) {                                               \
+      Add##CPP_CAMELCASE(number, WireFormatLite::TYPE_##UPPERCASE,             \
+                         extension.is_packed, value, extension.descriptor);    \
+    } else {                                                                   \
+      Set##CPP_CAMELCASE(number, WireFormatLite::TYPE_##UPPERCASE, value,      \
+                         extension.descriptor);                                \
+    }                                                                          \
   } break
 
       HANDLE_VARINT_TYPE(INT32, Int32);
@@ -99,35 +99,35 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
       HANDLE_VARINT_TYPE(UINT32, UInt32);
       HANDLE_VARINT_TYPE(UINT64, UInt64);
 #undef HANDLE_VARINT_TYPE
-#define HANDLE_SVARINT_TYPE(UPPERCASE, CPP_CAMELCASE, SIZE)                 \
-  case WireFormatLite::TYPE_##UPPERCASE: {                                  \
-    uint64 val;                                                             \
-    ptr = VarintParse(ptr, &val);                                           \
-    GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);                                    \
-    auto value = WireFormatLite::ZigZagDecode##SIZE(val);                   \
-    if (extension.is_repeated) {                                            \
-      Add##CPP_CAMELCASE(number, WireFormatLite::TYPE_##UPPERCASE,          \
-                         extension.is_packed, value, extension.descriptor); \
-    } else {                                                                \
-      Set##CPP_CAMELCASE(number, WireFormatLite::TYPE_##UPPERCASE, value,   \
-                         extension.descriptor);                             \
-    }                                                                       \
+#define HANDLE_SVARINT_TYPE(UPPERCASE, CPP_CAMELCASE, SIZE)                    \
+  case WireFormatLite::TYPE_##UPPERCASE: {                                     \
+    uint64 val;                                                                \
+    ptr = VarintParse(ptr, &val);                                              \
+    GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);                                        \
+    auto value = WireFormatLite::ZigZagDecode##SIZE(val);                      \
+    if (extension.is_repeated) {                                               \
+      Add##CPP_CAMELCASE(number, WireFormatLite::TYPE_##UPPERCASE,             \
+                         extension.is_packed, value, extension.descriptor);    \
+    } else {                                                                   \
+      Set##CPP_CAMELCASE(number, WireFormatLite::TYPE_##UPPERCASE, value,      \
+                         extension.descriptor);                                \
+    }                                                                          \
   } break
 
       HANDLE_SVARINT_TYPE(SINT32, Int32, 32);
       HANDLE_SVARINT_TYPE(SINT64, Int64, 64);
 #undef HANDLE_SVARINT_TYPE
-#define HANDLE_FIXED_TYPE(UPPERCASE, CPP_CAMELCASE, CPPTYPE)                \
-  case WireFormatLite::TYPE_##UPPERCASE: {                                  \
-    auto value = UnalignedLoad<CPPTYPE>(ptr);                               \
-    ptr += sizeof(CPPTYPE);                                                 \
-    if (extension.is_repeated) {                                            \
-      Add##CPP_CAMELCASE(number, WireFormatLite::TYPE_##UPPERCASE,          \
-                         extension.is_packed, value, extension.descriptor); \
-    } else {                                                                \
-      Set##CPP_CAMELCASE(number, WireFormatLite::TYPE_##UPPERCASE, value,   \
-                         extension.descriptor);                             \
-    }                                                                       \
+#define HANDLE_FIXED_TYPE(UPPERCASE, CPP_CAMELCASE, CPPTYPE)                   \
+  case WireFormatLite::TYPE_##UPPERCASE: {                                     \
+    auto value = UnalignedLoad<CPPTYPE>(ptr);                                  \
+    ptr += sizeof(CPPTYPE);                                                    \
+    if (extension.is_repeated) {                                               \
+      Add##CPP_CAMELCASE(number, WireFormatLite::TYPE_##UPPERCASE,             \
+                         extension.is_packed, value, extension.descriptor);    \
+    } else {                                                                   \
+      Set##CPP_CAMELCASE(number, WireFormatLite::TYPE_##UPPERCASE, value,      \
+                         extension.descriptor);                                \
+    }                                                                          \
   } break
 
       HANDLE_FIXED_TYPE(FIXED32, UInt32, uint32);
@@ -139,72 +139,71 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
       HANDLE_FIXED_TYPE(BOOL, Bool, bool);
 #undef HANDLE_FIXED_TYPE
 
-      case WireFormatLite::TYPE_ENUM: {
-        uint64 val;
-        ptr = VarintParse(ptr, &val);
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        int value = val;
+    case WireFormatLite::TYPE_ENUM: {
+      uint64 val;
+      ptr = VarintParse(ptr, &val);
+      GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+      int value = val;
 
-        if (!extension.enum_validity_check.func(
-                extension.enum_validity_check.arg, value)) {
-          WriteVarint(number, val, metadata->mutable_unknown_fields());
-        } else if (extension.is_repeated) {
-          AddEnum(number, WireFormatLite::TYPE_ENUM, extension.is_packed, value,
-                  extension.descriptor);
-        } else {
-          SetEnum(number, WireFormatLite::TYPE_ENUM, value,
-                  extension.descriptor);
-        }
-        break;
+      if (!extension.enum_validity_check.func(extension.enum_validity_check.arg,
+                                              value)) {
+        WriteVarint(number, val, metadata->mutable_unknown_fields());
+      } else if (extension.is_repeated) {
+        AddEnum(number, WireFormatLite::TYPE_ENUM, extension.is_packed, value,
+                extension.descriptor);
+      } else {
+        SetEnum(number, WireFormatLite::TYPE_ENUM, value, extension.descriptor);
       }
+      break;
+    }
 
-      case WireFormatLite::TYPE_BYTES:
-      case WireFormatLite::TYPE_STRING: {
-        std::string* value =
-            extension.is_repeated
-                ? AddString(number, WireFormatLite::TYPE_STRING,
-                            extension.descriptor)
-                : MutableString(number, WireFormatLite::TYPE_STRING,
-                                extension.descriptor);
-        int size = ReadSize(&ptr);
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        return ctx->ReadString(ptr, size, value);
-      }
+    case WireFormatLite::TYPE_BYTES:
+    case WireFormatLite::TYPE_STRING: {
+      std::string *value =
+          extension.is_repeated
+              ? AddString(number, WireFormatLite::TYPE_STRING,
+                          extension.descriptor)
+              : MutableString(number, WireFormatLite::TYPE_STRING,
+                              extension.descriptor);
+      int size = ReadSize(&ptr);
+      GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+      return ctx->ReadString(ptr, size, value);
+    }
 
-      case WireFormatLite::TYPE_GROUP: {
-        MessageLite* value =
-            extension.is_repeated
-                ? AddMessage(number, WireFormatLite::TYPE_GROUP,
-                             *extension.message_info.prototype,
-                             extension.descriptor)
-                : MutableMessage(number, WireFormatLite::TYPE_GROUP,
-                                 *extension.message_info.prototype,
-                                 extension.descriptor);
-        uint32 tag = (number << 3) + WireFormatLite::WIRETYPE_START_GROUP;
-        return ctx->ParseGroup(value, ptr, tag);
-      }
+    case WireFormatLite::TYPE_GROUP: {
+      MessageLite *value =
+          extension.is_repeated
+              ? AddMessage(number, WireFormatLite::TYPE_GROUP,
+                           *extension.message_info.prototype,
+                           extension.descriptor)
+              : MutableMessage(number, WireFormatLite::TYPE_GROUP,
+                               *extension.message_info.prototype,
+                               extension.descriptor);
+      uint32 tag = (number << 3) + WireFormatLite::WIRETYPE_START_GROUP;
+      return ctx->ParseGroup(value, ptr, tag);
+    }
 
-      case WireFormatLite::TYPE_MESSAGE: {
-        MessageLite* value =
-            extension.is_repeated
-                ? AddMessage(number, WireFormatLite::TYPE_MESSAGE,
-                             *extension.message_info.prototype,
-                             extension.descriptor)
-                : MutableMessage(number, WireFormatLite::TYPE_MESSAGE,
-                                 *extension.message_info.prototype,
-                                 extension.descriptor);
-        return ctx->ParseMessage(value, ptr);
-      }
+    case WireFormatLite::TYPE_MESSAGE: {
+      MessageLite *value =
+          extension.is_repeated
+              ? AddMessage(number, WireFormatLite::TYPE_MESSAGE,
+                           *extension.message_info.prototype,
+                           extension.descriptor)
+              : MutableMessage(number, WireFormatLite::TYPE_MESSAGE,
+                               *extension.message_info.prototype,
+                               extension.descriptor);
+      return ctx->ParseMessage(value, ptr);
+    }
     }
   }
   return ptr;
 }
 
 template <typename Msg, typename Metadata>
-const char* ExtensionSet::ParseMessageSetItemTmpl(const char* ptr,
-                                                  const Msg* containing_type,
-                                                  Metadata* metadata,
-                                                  internal::ParseContext* ctx) {
+const char *ExtensionSet::ParseMessageSetItemTmpl(const char *ptr,
+                                                  const Msg *containing_type,
+                                                  Metadata *metadata,
+                                                  internal::ParseContext *ctx) {
   std::string payload;
   uint32 type_id = 0;
   while (!ctx->Done(&ptr)) {
@@ -222,7 +221,7 @@ const char* ExtensionSet::ParseMessageSetItemTmpl(const char* ptr,
           WriteLengthDelimited(type_id, payload,
                                metadata->mutable_unknown_fields());
         } else {
-          MessageLite* value =
+          MessageLite *value =
               extension.is_repeated
                   ? AddMessage(type_id, WireFormatLite::TYPE_MESSAGE,
                                *extension.message_info.prototype,
@@ -231,14 +230,14 @@ const char* ExtensionSet::ParseMessageSetItemTmpl(const char* ptr,
                                    *extension.message_info.prototype,
                                    extension.descriptor);
 
-          const char* p;
+          const char *p;
           // We can't use regular parse from string as we have to track
           // proper recursion depth and descriptor pools.
           ParseContext tmp_ctx(ctx->depth(), false, &p, payload);
           tmp_ctx.data().pool = ctx->data().pool;
           tmp_ctx.data().factory = ctx->data().factory;
           GOOGLE_PROTOBUF_PARSER_ASSERT(value->_InternalParse(p, &tmp_ctx) &&
-                                         tmp_ctx.EndedAtLimit());
+                                        tmp_ctx.EndedAtLimit());
         }
         type_id = 0;
       }
@@ -267,8 +266,8 @@ const char* ExtensionSet::ParseMessageSetItemTmpl(const char* ptr,
   return ptr;
 }
 
-}  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+} // namespace internal
+} // namespace protobuf
+} // namespace google
 
-#endif  // GOOGLE_PROTOBUF_EXTENSION_SET_INL_H__
+#endif // GOOGLE_PROTOBUF_EXTENSION_SET_INL_H__

@@ -48,9 +48,9 @@
 // Define thread-safety annotations for use below, if we are building with
 // Clang.
 #if defined(__clang__) && !defined(SWIG)
-#define GOOGLE_PROTOBUF_ACQUIRE(...) \
+#define GOOGLE_PROTOBUF_ACQUIRE(...)                                           \
   __attribute__((acquire_capability(__VA_ARGS__)))
-#define GOOGLE_PROTOBUF_RELEASE(...) \
+#define GOOGLE_PROTOBUF_RELEASE(...)                                           \
   __attribute__((release_capability(__VA_ARGS__)))
 #define GOOGLE_PROTOBUF_CAPABILITY(x) __attribute__((capability(x)))
 #else
@@ -76,13 +76,13 @@ namespace internal {
 // because it utilizes the Concurrency Runtime that is only supported on Windows
 // XP SP3 and above.
 class PROTOBUF_EXPORT CriticalSectionLock {
- public:
+public:
   CriticalSectionLock() { InitializeCriticalSection(&critical_section_); }
   ~CriticalSectionLock() { DeleteCriticalSection(&critical_section_); }
   void lock() { EnterCriticalSection(&critical_section_); }
   void unlock() { LeaveCriticalSection(&critical_section_); }
 
- private:
+private:
   CRITICAL_SECTION critical_section_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(CriticalSectionLock);
@@ -94,7 +94,7 @@ class PROTOBUF_EXPORT CriticalSectionLock {
 // specialized mutexes. gRPC also provides an injection mechanism for custom
 // mutexes.
 class GOOGLE_PROTOBUF_CAPABILITY("mutex") PROTOBUF_EXPORT WrappedMutex {
- public:
+public:
   WrappedMutex() = default;
   void Lock() GOOGLE_PROTOBUF_ACQUIRE() { mu_.lock(); }
   void Unlock() GOOGLE_PROTOBUF_RELEASE() { mu_.unlock(); }
@@ -102,22 +102,23 @@ class GOOGLE_PROTOBUF_CAPABILITY("mutex") PROTOBUF_EXPORT WrappedMutex {
   // May fail to crash when it should; will never crash when it should not.
   void AssertHeld() const {}
 
- private:
+private:
 #ifndef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
   std::mutex mu_;
 #else  // ifndef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
   CriticalSectionLock mu_;
-#endif  // #ifndef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
+#endif // #ifndef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
 };
 
 using Mutex = WrappedMutex;
 
 // MutexLock(mu) acquires mu when constructed and releases it when destroyed.
 class PROTOBUF_EXPORT MutexLock {
- public:
+public:
   explicit MutexLock(Mutex *mu) : mu_(mu) { this->mu_->Lock(); }
   ~MutexLock() { this->mu_->Unlock(); }
- private:
+
+private:
   Mutex *const mu_;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MutexLock);
 };
@@ -128,59 +129,63 @@ typedef MutexLock WriterMutexLock;
 
 // MutexLockMaybe is like MutexLock, but is a no-op when mu is nullptr.
 class PROTOBUF_EXPORT MutexLockMaybe {
- public:
-  explicit MutexLockMaybe(Mutex *mu) :
-    mu_(mu) { if (this->mu_ != nullptr) { this->mu_->Lock(); } }
-  ~MutexLockMaybe() { if (this->mu_ != nullptr) { this->mu_->Unlock(); } }
- private:
+public:
+  explicit MutexLockMaybe(Mutex *mu) : mu_(mu) {
+    if (this->mu_ != nullptr) {
+      this->mu_->Lock();
+    }
+  }
+  ~MutexLockMaybe() {
+    if (this->mu_ != nullptr) {
+      this->mu_->Unlock();
+    }
+  }
+
+private:
   Mutex *const mu_;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MutexLockMaybe);
 };
 
 #if defined(GOOGLE_PROTOBUF_NO_THREADLOCAL)
-template<typename T>
-class ThreadLocalStorage {
- public:
+template <typename T> class ThreadLocalStorage {
+public:
   ThreadLocalStorage() {
     pthread_key_create(&key_, &ThreadLocalStorage::Delete);
   }
-  ~ThreadLocalStorage() {
-    pthread_key_delete(key_);
-  }
-  T* Get() {
-    T* result = static_cast<T*>(pthread_getspecific(key_));
+  ~ThreadLocalStorage() { pthread_key_delete(key_); }
+  T *Get() {
+    T *result = static_cast<T *>(pthread_getspecific(key_));
     if (result == nullptr) {
       result = new T();
       pthread_setspecific(key_, result);
     }
     return result;
   }
- private:
-  static void Delete(void* value) {
-    delete static_cast<T*>(value);
-  }
+
+private:
+  static void Delete(void *value) { delete static_cast<T *>(value); }
   pthread_key_t key_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ThreadLocalStorage);
 };
 #endif
 
-}  // namespace internal
+} // namespace internal
 
 // We made these internal so that they would show up as such in the docs,
 // but we don't want to stick "internal::" in front of them everywhere.
 using internal::Mutex;
 using internal::MutexLock;
+using internal::MutexLockMaybe;
 using internal::ReaderMutexLock;
 using internal::WriterMutexLock;
-using internal::MutexLockMaybe;
 
-}  // namespace protobuf
-}  // namespace google
+} // namespace protobuf
+} // namespace google
 
 #undef GOOGLE_PROTOBUF_ACQUIRE
 #undef GOOGLE_PROTOBUF_RELEASE
 
 #include <google/protobuf/port_undef.inc>
 
-#endif  // GOOGLE_PROTOBUF_STUBS_MUTEX_H_
+#endif // GOOGLE_PROTOBUF_STUBS_MUTEX_H_

@@ -44,19 +44,17 @@ TEST(StructurallyValidTest, ValidUTF8String) {
   //   "abcd 1234 - \u2014\u2013\u2212"
   // MSVC seems to interpret \u differently.
   string valid_str("abcd 1234 - \342\200\224\342\200\223\342\210\222 - xyz789");
-  EXPECT_TRUE(IsStructurallyValidUTF8(valid_str.data(),
-                                      valid_str.size()));
+  EXPECT_TRUE(IsStructurallyValidUTF8(valid_str.data(), valid_str.size()));
   // Additional check for pointer alignment
   for (int i = 1; i < 8; ++i) {
-    EXPECT_TRUE(IsStructurallyValidUTF8(valid_str.data() + i,
-                                        valid_str.size() - i));
+    EXPECT_TRUE(
+        IsStructurallyValidUTF8(valid_str.data() + i, valid_str.size() - i));
   }
 }
 
 TEST(StructurallyValidTest, InvalidUTF8String) {
   const string invalid_str("abcd\xA0\xB0\xA0\xB0\xA0\xB0 - xyz789");
-  EXPECT_FALSE(IsStructurallyValidUTF8(invalid_str.data(),
-                                       invalid_str.size()));
+  EXPECT_FALSE(IsStructurallyValidUTF8(invalid_str.data(), invalid_str.size()));
   // Additional check for pointer alignment
   for (int i = 1; i < 8; ++i) {
     EXPECT_FALSE(IsStructurallyValidUTF8(invalid_str.data() + i,
@@ -64,7 +62,7 @@ TEST(StructurallyValidTest, InvalidUTF8String) {
   }
 }
 
-}  // namespace
-}  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+} // namespace
+} // namespace internal
+} // namespace protobuf
+} // namespace google

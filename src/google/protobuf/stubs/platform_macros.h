@@ -31,7 +31,7 @@
 #ifndef GOOGLE_PROTOBUF_PLATFORM_MACROS_H_
 #define GOOGLE_PROTOBUF_PLATFORM_MACROS_H_
 
-#define GOOGLE_PROTOBUF_PLATFORM_ERROR \
+#define GOOGLE_PROTOBUF_PLATFORM_ERROR                                         \
 #error "Host platform was not detected as supported by protobuf"
 
 // Processor architecture detection.  For more info on what's defined, see:
@@ -80,19 +80,19 @@
 #define GOOGLE_PROTOBUF_ARCH_PPC 1
 #define GOOGLE_PROTOBUF_ARCH_32_BIT 1
 #elif defined(__GNUC__)
-# if (((__GNUC__ == 4) && (__GNUC_MINOR__ >= 7)) || (__GNUC__ > 4))
+#if (((__GNUC__ == 4) && (__GNUC_MINOR__ >= 7)) || (__GNUC__ > 4))
 // We fallback to the generic Clang/GCC >= 4.7 implementation in atomicops.h
-# elif defined(__clang__)
-#  if !__has_extension(c_atomic)
+#elif defined(__clang__)
+#if !__has_extension(c_atomic)
 GOOGLE_PROTOBUF_PLATFORM_ERROR
-#  endif
+#endif
 // We fallback to the generic Clang/GCC >= 4.7 implementation in atomicops.h
-# endif
-# if __LP64__
-#  define GOOGLE_PROTOBUF_ARCH_64_BIT 1
-# else
-#  define GOOGLE_PROTOBUF_ARCH_32_BIT 1
-# endif
+#endif
+#if __LP64__
+#define GOOGLE_PROTOBUF_ARCH_64_BIT 1
+#else
+#define GOOGLE_PROTOBUF_ARCH_32_BIT 1
+#endif
 #else
 GOOGLE_PROTOBUF_PLATFORM_ERROR
 #endif
@@ -118,7 +118,8 @@ GOOGLE_PROTOBUF_PLATFORM_ERROR
 
 #undef GOOGLE_PROTOBUF_PLATFORM_ERROR
 
-#if defined(GOOGLE_PROTOBUF_OS_ANDROID) || defined(GOOGLE_PROTOBUF_OS_IPHONE) || defined(__OpenBSD__)
+#if defined(GOOGLE_PROTOBUF_OS_ANDROID) ||                                     \
+    defined(GOOGLE_PROTOBUF_OS_IPHONE) || defined(__OpenBSD__)
 // Android ndk does not support the __thread keyword very well yet. Here
 // we use pthread_key_create()/pthread_getspecific()/... methods for
 // TLS support on android.
@@ -126,9 +127,10 @@ GOOGLE_PROTOBUF_PLATFORM_ERROR
 #define GOOGLE_PROTOBUF_NO_THREADLOCAL
 #endif
 
-#if defined(__MAC_OS_X_VERSION_MIN_REQUIRED) && __MAC_OS_X_VERSION_MIN_REQUIRED < 1070
+#if defined(__MAC_OS_X_VERSION_MIN_REQUIRED) &&                                \
+    __MAC_OS_X_VERSION_MIN_REQUIRED < 1070
 // __thread keyword requires at least 10.7
 #define GOOGLE_PROTOBUF_NO_THREADLOCAL
 #endif
 
-#endif  // GOOGLE_PROTOBUF_PLATFORM_MACROS_H_
+#endif // GOOGLE_PROTOBUF_PLATFORM_MACROS_H_

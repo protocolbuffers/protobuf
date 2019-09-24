@@ -49,5 +49,5 @@ namespace protobuf {
 // temporary buffer -- should take a closer look.
 namespace io {}
 
-}  // namespace protobuf
-}  // namespace google
+} // namespace protobuf
+} // namespace google

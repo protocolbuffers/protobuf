@@ -33,8 +33,8 @@
 #include <ctime>
 
 #include <google/protobuf/duration.pb.h>
-#include <google/protobuf/timestamp.pb.h>
 #include <google/protobuf/testing/googletest.h>
+#include <google/protobuf/timestamp.pb.h>
 #include <gtest/gtest.h>
 
 namespace google {
@@ -374,7 +374,7 @@ TEST(TimeUtilTest, TimestampOperators) {
   EXPECT_TRUE(t2 != t1);
 }
 
-}  // namespace
-}  // namespace util
-}  // namespace protobuf
-}  // namespace google
+} // namespace
+} // namespace util
+} // namespace protobuf
+} // namespace google

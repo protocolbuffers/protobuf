@@ -33,10 +33,10 @@
 
 #include <memory>
 
-#include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/map.h>
 #include <google/protobuf/map_field.h>
 #include <google/protobuf/map_type_handler.h>
+#include <google/protobuf/stubs/casts.h>
 
 #ifdef SWIG
 #error "You cannot SWIG proto headers"
@@ -46,111 +46,101 @@ namespace google {
 namespace protobuf {
 namespace internal {
 // UnwrapMapKey template
-template <typename T>
-T UnwrapMapKey(const MapKey& map_key);
-template <>
-inline int32 UnwrapMapKey<int32>(const MapKey& map_key) {
+template <typename T> T UnwrapMapKey(const MapKey &map_key);
+template <> inline int32 UnwrapMapKey<int32>(const MapKey &map_key) {
   return map_key.GetInt32Value();
 }
-template <>
-inline uint32 UnwrapMapKey<uint32>(const MapKey& map_key) {
+template <> inline uint32 UnwrapMapKey<uint32>(const MapKey &map_key) {
   return map_key.GetUInt32Value();
 }
-template <>
-inline int64 UnwrapMapKey<int64>(const MapKey& map_key) {
+template <> inline int64 UnwrapMapKey<int64>(const MapKey &map_key) {
   return map_key.GetInt64Value();
 }
-template <>
-inline uint64 UnwrapMapKey<uint64>(const MapKey& map_key) {
+template <> inline uint64 UnwrapMapKey<uint64>(const MapKey &map_key) {
   return map_key.GetUInt64Value();
 }
-template <>
-inline bool UnwrapMapKey<bool>(const MapKey& map_key) {
+template <> inline bool UnwrapMapKey<bool>(const MapKey &map_key) {
   return map_key.GetBoolValue();
 }
 template <>
-inline std::string UnwrapMapKey<std::string>(const MapKey& map_key) {
+inline std::string UnwrapMapKey<std::string>(const MapKey &map_key) {
   return map_key.GetStringValue();
 }
 
 // SetMapKey template
-template <typename T>
-inline void SetMapKey(MapKey* map_key, const T& value);
-template <>
-inline void SetMapKey<int32>(MapKey* map_key, const int32& value) {
+template <typename T> inline void SetMapKey(MapKey *map_key, const T &value);
+template <> inline void SetMapKey<int32>(MapKey *map_key, const int32 &value) {
   map_key->SetInt32Value(value);
 }
 template <>
-inline void SetMapKey<uint32>(MapKey* map_key, const uint32& value) {
+inline void SetMapKey<uint32>(MapKey *map_key, const uint32 &value) {
   map_key->SetUInt32Value(value);
 }
-template <>
-inline void SetMapKey<int64>(MapKey* map_key, const int64& value) {
+template <> inline void SetMapKey<int64>(MapKey *map_key, const int64 &value) {
   map_key->SetInt64Value(value);
 }
 template <>
-inline void SetMapKey<uint64>(MapKey* map_key, const uint64& value) {
+inline void SetMapKey<uint64>(MapKey *map_key, const uint64 &value) {
   map_key->SetUInt64Value(value);
 }
-template <>
-inline void SetMapKey<bool>(MapKey* map_key, const bool& value) {
+template <> inline void SetMapKey<bool>(MapKey *map_key, const bool &value) {
   map_key->SetBoolValue(value);
 }
 template <>
-inline void SetMapKey<std::string>(MapKey* map_key, const std::string& value) {
+inline void SetMapKey<std::string>(MapKey *map_key, const std::string &value) {
   map_key->SetStringValue(value);
 }
 
 // ------------------------TypeDefinedMapFieldBase---------------
 template <typename Key, typename T>
-typename Map<Key, T>::const_iterator&
+typename Map<Key, T>::const_iterator &
 TypeDefinedMapFieldBase<Key, T>::InternalGetIterator(
-    const MapIterator* map_iter) const {
-  return *reinterpret_cast<typename Map<Key, T>::const_iterator*>(
+    const MapIterator *map_iter) const {
+  return *reinterpret_cast<typename Map<Key, T>::const_iterator *>(
       map_iter->iter_);
 }
 
 template <typename Key, typename T>
-void TypeDefinedMapFieldBase<Key, T>::MapBegin(MapIterator* map_iter) const {
+void TypeDefinedMapFieldBase<Key, T>::MapBegin(MapIterator *map_iter) const {
   InternalGetIterator(map_iter) = GetMap().begin();
   SetMapIteratorValue(map_iter);
 }
 
 template <typename Key, typename T>
-void TypeDefinedMapFieldBase<Key, T>::MapEnd(MapIterator* map_iter) const {
+void TypeDefinedMapFieldBase<Key, T>::MapEnd(MapIterator *map_iter) const {
   InternalGetIterator(map_iter) = GetMap().end();
 }
 
 template <typename Key, typename T>
 bool TypeDefinedMapFieldBase<Key, T>::EqualIterator(
-    const MapIterator& a, const MapIterator& b) const {
+    const MapIterator &a, const MapIterator &b) const {
   return InternalGetIterator(&a) == InternalGetIterator(&b);
 }
 
 template <typename Key, typename T>
 void TypeDefinedMapFieldBase<Key, T>::IncreaseIterator(
-    MapIterator* map_iter) const {
+    MapIterator *map_iter) const {
   ++InternalGetIterator(map_iter);
   SetMapIteratorValue(map_iter);
 }
 
 template <typename Key, typename T>
 void TypeDefinedMapFieldBase<Key, T>::InitializeIterator(
-    MapIterator* map_iter) const {
+    MapIterator *map_iter) const {
   map_iter->iter_ = new typename Map<Key, T>::const_iterator;
   GOOGLE_CHECK(map_iter->iter_ != NULL);
 }
 
 template <typename Key, typename T>
 void TypeDefinedMapFieldBase<Key, T>::DeleteIterator(
-    MapIterator* map_iter) const {
-  delete reinterpret_cast<typename Map<Key, T>::const_iterator*>(
+    MapIterator *map_iter) const {
+  delete reinterpret_cast<typename Map<Key, T>::const_iterator *>(
       map_iter->iter_);
 }
 
 template <typename Key, typename T>
 void TypeDefinedMapFieldBase<Key, T>::CopyIterator(
-    MapIterator* this_iter, const MapIterator& that_iter) const {
+    MapIterator *this_iter, const MapIterator &that_iter) const {
   InternalGetIterator(this_iter) = InternalGetIterator(&that_iter);
   this_iter->key_.SetType(that_iter.key_.type());
   // MapValueRef::type() fails when containing data is null. However, if
@@ -177,8 +167,8 @@ template <typename Derived, typename Key, typename T,
 void MapField<Derived, Key, T, kKeyFieldType, kValueFieldType,
               default_enum_value>::Clear() {
   if (this->MapFieldBase::repeated_field_ != nullptr) {
-    RepeatedPtrField<EntryType>* repeated_field =
-        reinterpret_cast<RepeatedPtrField<EntryType>*>(
+    RepeatedPtrField<EntryType> *repeated_field =
+        reinterpret_cast<RepeatedPtrField<EntryType> *>(
             this->MapFieldBase::repeated_field_);
     repeated_field->Clear();
   }
@@ -194,12 +184,13 @@ template <typename Derived, typename Key, typename T,
           WireFormatLite::FieldType kKeyFieldType,
           WireFormatLite::FieldType kValueFieldType, int default_enum_value>
 void MapField<Derived, Key, T, kKeyFieldType, kValueFieldType,
-              default_enum_value>::SetMapIteratorValue(MapIterator* map_iter)
+              default_enum_value>::SetMapIteratorValue(MapIterator *map_iter)
     const {
-  const Map<Key, T>& map = impl_.GetMap();
+  const Map<Key, T> &map = impl_.GetMap();
   typename Map<Key, T>::const_iterator iter =
       TypeDefinedMapFieldBase<Key, T>::InternalGetIterator(map_iter);
-  if (iter == map.end()) return;
+  if (iter == map.end())
+    return;
   SetMapKey(&map_iter->key_, iter->first);
   map_iter->value_.SetValue(&iter->second);
 }
@@ -208,9 +199,9 @@ template <typename Derived, typename Key, typename T,
           WireFormatLite::FieldType kKeyFieldType,
           WireFormatLite::FieldType kValueFieldType, int default_enum_value>
 bool MapField<Derived, Key, T, kKeyFieldType, kValueFieldType,
-              default_enum_value>::ContainsMapKey(const MapKey& map_key) const {
-  const Map<Key, T>& map = impl_.GetMap();
-  const Key& key = UnwrapMapKey<Key>(map_key);
+              default_enum_value>::ContainsMapKey(const MapKey &map_key) const {
+  const Map<Key, T> &map = impl_.GetMap();
+  const Key &key = UnwrapMapKey<Key>(map_key);
   typename Map<Key, T>::const_iterator iter = map.find(key);
   return iter != map.end();
 }
@@ -219,12 +210,12 @@ template <typename Derived, typename Key, typename T,
           WireFormatLite::FieldType kKeyFieldType,
           WireFormatLite::FieldType kValueFieldType, int default_enum_value>
 bool MapField<Derived, Key, T, kKeyFieldType, kValueFieldType,
-              default_enum_value>::InsertOrLookupMapValue(const MapKey& map_key,
-                                                          MapValueRef* val) {
+              default_enum_value>::InsertOrLookupMapValue(const MapKey &map_key,
+                                                          MapValueRef *val) {
   // Always use mutable map because users may change the map value by
   // MapValueRef.
-  Map<Key, T>* map = MutableMap();
-  const Key& key = UnwrapMapKey<Key>(map_key);
+  Map<Key, T> *map = MutableMap();
+  const Key &key = UnwrapMapKey<Key>(map_key);
   typename Map<Key, T>::iterator iter = map->find(key);
   if (map->end() == iter) {
     val->SetValue(&((*map)[key]));
@@ -240,8 +231,8 @@ template <typename Derived, typename Key, typename T,
           WireFormatLite::FieldType kKeyFieldType,
           WireFormatLite::FieldType kValueFieldType, int default_enum_value>
 bool MapField<Derived, Key, T, kKeyFieldType, kValueFieldType,
-              default_enum_value>::DeleteMapValue(const MapKey& map_key) {
-  const Key& key = UnwrapMapKey<Key>(map_key);
+              default_enum_value>::DeleteMapValue(const MapKey &map_key) {
+  const Key &key = UnwrapMapKey<Key>(map_key);
   return MutableMap()->erase(key);
 }
 
@@ -249,9 +240,9 @@ template <typename Derived, typename Key, typename T,
           WireFormatLite::FieldType kKeyFieldType,
           WireFormatLite::FieldType kValueFieldType, int default_enum_value>
 void MapField<Derived, Key, T, kKeyFieldType, kValueFieldType,
-              default_enum_value>::MergeFrom(const MapFieldBase& other) {
+              default_enum_value>::MergeFrom(const MapFieldBase &other) {
   MapFieldBase::SyncMapWithRepeatedField();
-  const MapField& other_field = static_cast<const MapField&>(other);
+  const MapField &other_field = static_cast<const MapField &>(other);
   other_field.SyncMapWithRepeatedField();
   impl_.MergeFrom(other_field.impl_);
   MapFieldBase::SetMapDirty();
@@ -261,8 +252,8 @@ template <typename Derived, typename Key, typename T,
           WireFormatLite::FieldType kKeyFieldType,
           WireFormatLite::FieldType kValueFieldType, int default_enum_value>
 void MapField<Derived, Key, T, kKeyFieldType, kValueFieldType,
-              default_enum_value>::Swap(MapFieldBase* other) {
-  MapField* other_field = down_cast<MapField*>(other);
+              default_enum_value>::Swap(MapFieldBase *other) {
+  MapField *other_field = down_cast<MapField *>(other);
   std::swap(this->MapFieldBase::repeated_field_, other_field->repeated_field_);
   impl_.Swap(&other_field->impl_);
   // a relaxed swap of the atomic
@@ -282,13 +273,13 @@ void MapField<Derived, Key, T, kKeyFieldType, kValueFieldType,
       this->MapFieldBase::repeated_field_ = new RepeatedPtrField<Message>();
     } else {
       this->MapFieldBase::repeated_field_ =
-          Arena::CreateMessage<RepeatedPtrField<Message> >(
+          Arena::CreateMessage<RepeatedPtrField<Message>>(
               this->MapFieldBase::arena_);
     }
   }
-  const Map<Key, T>& map = impl_.GetMap();
-  RepeatedPtrField<EntryType>* repeated_field =
-      reinterpret_cast<RepeatedPtrField<EntryType>*>(
+  const Map<Key, T> &map = impl_.GetMap();
+  RepeatedPtrField<EntryType> *repeated_field =
+      reinterpret_cast<RepeatedPtrField<EntryType> *>(
           this->MapFieldBase::repeated_field_);
 
   repeated_field->Clear();
@@ -298,11 +289,11 @@ void MapField<Derived, Key, T, kKeyFieldType, kValueFieldType,
   // on the encompassing field. So that type must have existed and hence we
   // know that this MapEntry default_type has also already been constructed.
   // So it's safe to just call internal_default_instance().
-  const Message* default_entry = Derived::internal_default_instance();
+  const Message *default_entry = Derived::internal_default_instance();
   for (typename Map<Key, T>::const_iterator it = map.begin(); it != map.end();
        ++it) {
-    EntryType* new_entry =
-        down_cast<EntryType*>(default_entry->New(this->MapFieldBase::arena_));
+    EntryType *new_entry =
+        down_cast<EntryType *>(default_entry->New(this->MapFieldBase::arena_));
     repeated_field->AddAllocated(new_entry);
     (*new_entry->mutable_key()) = it->first;
     (*new_entry->mutable_value()) = it->second;
@@ -314,9 +305,9 @@ template <typename Derived, typename Key, typename T,
           WireFormatLite::FieldType kValueFieldType, int default_enum_value>
 void MapField<Derived, Key, T, kKeyFieldType, kValueFieldType,
               default_enum_value>::SyncMapWithRepeatedFieldNoLock() const {
-  Map<Key, T>* map = const_cast<MapField*>(this)->impl_.MutableMap();
-  RepeatedPtrField<EntryType>* repeated_field =
-      reinterpret_cast<RepeatedPtrField<EntryType>*>(
+  Map<Key, T> *map = const_cast<MapField *>(this)->impl_.MutableMap();
+  RepeatedPtrField<EntryType> *repeated_field =
+      reinterpret_cast<RepeatedPtrField<EntryType> *>(
           this->MapFieldBase::repeated_field_);
   GOOGLE_CHECK(this->MapFieldBase::repeated_field_ != NULL);
   map->clear();
@@ -341,7 +332,7 @@ size_t MapField<Derived, Key, T, kKeyFieldType, kValueFieldType,
   if (this->MapFieldBase::repeated_field_ != NULL) {
     size += this->MapFieldBase::repeated_field_->SpaceUsedExcludingSelfLong();
   }
-  Map<Key, T>* map = const_cast<MapField*>(this)->impl_.MutableMap();
+  Map<Key, T> *map = const_cast<MapField *>(this)->impl_.MutableMap();
   size += sizeof(*map);
   for (typename Map<Key, T>::iterator it = map->begin(); it != map->end();
        ++it) {
@@ -350,8 +341,8 @@ size_t MapField<Derived, Key, T, kKeyFieldType, kValueFieldType,
   }
   return size;
 }
-}  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+} // namespace internal
+} // namespace protobuf
+} // namespace google
 
-#endif  // GOOGLE_PROTOBUF_MAP_FIELD_INL_H__
+#endif // GOOGLE_PROTOBUF_MAP_FIELD_INL_H__

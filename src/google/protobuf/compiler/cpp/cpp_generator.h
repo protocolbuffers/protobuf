@@ -37,8 +37,8 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_CPP_GENERATOR_H__
 #define GOOGLE_PROTOBUF_COMPILER_CPP_GENERATOR_H__
 
-#include <string>
 #include <google/protobuf/compiler/code_generator.h>
+#include <string>
 
 #include <google/protobuf/port_def.inc>
 
@@ -52,13 +52,13 @@ namespace cpp {
 // it to support C++ output, you can do so by registering an instance of this
 // CodeGenerator with the CommandLineInterface in your main() function.
 class PROTOC_EXPORT CppGenerator : public CodeGenerator {
- public:
+public:
   CppGenerator();
   ~CppGenerator();
 
   enum class Runtime {
-    kGoogle3,     // Use the internal google3 runtime.
-    kOpensource,  // Use the open-source runtime.
+    kGoogle3,    // Use the internal google3 runtime.
+    kOpensource, // Use the open-source runtime.
 
     // Use the open-source runtime with google3 #include paths.  We make these
     // absolute to avoid ambiguity, so the runtime will be #included like:
@@ -75,25 +75,25 @@ class PROTOC_EXPORT CppGenerator : public CodeGenerator {
   // instead of:
   //   #include <google/protobuf/message.h>
   // This has no effect if opensource_runtime = false.
-  void set_runtime_include_base(const std::string& base) {
+  void set_runtime_include_base(const std::string &base) {
     runtime_include_base_ = base;
   }
 
   // implements CodeGenerator ----------------------------------------
-  bool Generate(const FileDescriptor* file, const std::string& parameter,
-                GeneratorContext* generator_context, std::string* error) const;
+  bool Generate(const FileDescriptor *file, const std::string &parameter,
+                GeneratorContext *generator_context, std::string *error) const;
 
- private:
+private:
   bool opensource_runtime_ = true;
   std::string runtime_include_base_;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(CppGenerator);
 };
 
-}  // namespace cpp
-}  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+} // namespace cpp
+} // namespace compiler
+} // namespace protobuf
+} // namespace google
 
 #include <google/protobuf/port_undef.inc>
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_CPP_GENERATOR_H__
+#endif // GOOGLE_PROTOBUF_COMPILER_CPP_GENERATOR_H__

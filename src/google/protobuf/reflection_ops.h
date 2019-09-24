@@ -38,8 +38,8 @@
 #ifndef GOOGLE_PROTOBUF_REFLECTION_OPS_H__
 #define GOOGLE_PROTOBUF_REFLECTION_OPS_H__
 
-#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/message.h>
+#include <google/protobuf/stubs/common.h>
 
 #ifdef SWIG
 #error "You cannot SWIG proto headers"
@@ -61,29 +61,29 @@ namespace internal {
 //
 // This class is really a namespace that contains only static methods.
 class PROTOBUF_EXPORT ReflectionOps {
- public:
-  static void Copy(const Message& from, Message* to);
-  static void Merge(const Message& from, Message* to);
-  static void Clear(Message* message);
-  static bool IsInitialized(const Message& message);
-  static void DiscardUnknownFields(Message* message);
+public:
+  static void Copy(const Message &from, Message *to);
+  static void Merge(const Message &from, Message *to);
+  static void Clear(Message *message);
+  static bool IsInitialized(const Message &message);
+  static void DiscardUnknownFields(Message *message);
 
   // Finds all unset required fields in the message and adds their full
   // paths (e.g. "foo.bar[5].baz") to *names.  "prefix" will be attached to
   // the front of each name.
-  static void FindInitializationErrors(const Message& message,
-                                       const std::string& prefix,
-                                       std::vector<std::string>* errors);
+  static void FindInitializationErrors(const Message &message,
+                                       const std::string &prefix,
+                                       std::vector<std::string> *errors);
 
- private:
+private:
   // All methods are static.  No need to construct.
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ReflectionOps);
 };
 
-}  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+} // namespace internal
+} // namespace protobuf
+} // namespace google
 
 #include <google/protobuf/port_undef.inc>
 
-#endif  // GOOGLE_PROTOBUF_REFLECTION_OPS_H__
+#endif // GOOGLE_PROTOBUF_REFLECTION_OPS_H__

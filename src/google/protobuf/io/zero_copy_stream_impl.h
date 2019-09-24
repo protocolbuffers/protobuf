@@ -40,14 +40,12 @@
 #ifndef GOOGLE_PROTOBUF_IO_ZERO_COPY_STREAM_IMPL_H__
 #define GOOGLE_PROTOBUF_IO_ZERO_COPY_STREAM_IMPL_H__
 
-
 #include <iosfwd>
 #include <string>
 
-#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
-
+#include <google/protobuf/stubs/common.h>
 
 #include <google/protobuf/port_def.inc>
 
@@ -64,7 +62,7 @@ namespace io {
 // Also, it's conceivable that FileInputStream could someday be enhanced
 // to use zero-copy file descriptors on OSs which support them.
 class PROTOBUF_EXPORT FileInputStream : public ZeroCopyInputStream {
- public:
+public:
   // Creates a stream that reads from the given Unix file descriptor.
   // If a block_size is given, it specifies the number of bytes that
   // should be read and returned with each call to Next().  Otherwise,
@@ -90,14 +88,14 @@ class PROTOBUF_EXPORT FileInputStream : public ZeroCopyInputStream {
   int GetErrno() const { return copying_input_.GetErrno(); }
 
   // implements ZeroCopyInputStream ----------------------------------
-  bool Next(const void** data, int* size) override;
+  bool Next(const void **data, int *size) override;
   void BackUp(int count) override;
   bool Skip(int count) override;
   int64_t ByteCount() const override;
 
- private:
+private:
   class PROTOBUF_EXPORT CopyingFileInputStream : public CopyingInputStream {
-   public:
+  public:
     CopyingFileInputStream(int file_descriptor);
     ~CopyingFileInputStream() override;
 
@@ -106,10 +104,10 @@ class PROTOBUF_EXPORT FileInputStream : public ZeroCopyInputStream {
     int GetErrno() const { return errno_; }
 
     // implements CopyingInputStream ---------------------------------
-    int Read(void* buffer, int size) override;
+    int Read(void *buffer, int size) override;
     int Skip(int count) override;
 
-   private:
+  private:
     // The file descriptor.
     const int file_;
     bool close_on_delete_;
@@ -141,7 +139,7 @@ class PROTOBUF_EXPORT FileInputStream : public ZeroCopyInputStream {
 // someday be enhanced to use zero-copy file descriptors on OSs which
 // support them.
 class PROTOBUF_EXPORT FileOutputStream : public ZeroCopyOutputStream {
- public:
+public:
   // Creates a stream that writes to the given Unix file descriptor.
   // If a block_size is given, it specifies the size of the buffers
   // that should be returned by Next().  Otherwise, a reasonable default
@@ -173,13 +171,13 @@ class PROTOBUF_EXPORT FileOutputStream : public ZeroCopyOutputStream {
   int GetErrno() const { return copying_output_.GetErrno(); }
 
   // implements ZeroCopyOutputStream ---------------------------------
-  bool Next(void** data, int* size) override;
+  bool Next(void **data, int *size) override;
   void BackUp(int count) override;
   int64_t ByteCount() const override;
 
- private:
+private:
   class PROTOBUF_EXPORT CopyingFileOutputStream : public CopyingOutputStream {
-   public:
+  public:
     CopyingFileOutputStream(int file_descriptor);
     ~CopyingFileOutputStream() override;
 
@@ -188,9 +186,9 @@ class PROTOBUF_EXPORT FileOutputStream : public ZeroCopyOutputStream {
     int GetErrno() const { return errno_; }
 
     // implements CopyingOutputStream --------------------------------
-    bool Write(const void* buffer, int size) override;
+    bool Write(const void *buffer, int size) override;
 
-   private:
+  private:
     // The file descriptor.
     const int file_;
     bool close_on_delete_;
@@ -215,32 +213,32 @@ class PROTOBUF_EXPORT FileOutputStream : public ZeroCopyOutputStream {
 // Note that for reading files (or anything represented by a file descriptor),
 // FileInputStream is more efficient.
 class PROTOBUF_EXPORT IstreamInputStream : public ZeroCopyInputStream {
- public:
+public:
   // Creates a stream that reads from the given C++ istream.
   // If a block_size is given, it specifies the number of bytes that
   // should be read and returned with each call to Next().  Otherwise,
   // a reasonable default is used.
-  explicit IstreamInputStream(std::istream* stream, int block_size = -1);
+  explicit IstreamInputStream(std::istream *stream, int block_size = -1);
 
   // implements ZeroCopyInputStream ----------------------------------
-  bool Next(const void** data, int* size) override;
+  bool Next(const void **data, int *size) override;
   void BackUp(int count) override;
   bool Skip(int count) override;
   int64_t ByteCount() const override;
 
- private:
+private:
   class PROTOBUF_EXPORT CopyingIstreamInputStream : public CopyingInputStream {
-   public:
-    CopyingIstreamInputStream(std::istream* input);
+  public:
+    CopyingIstreamInputStream(std::istream *input);
     ~CopyingIstreamInputStream() override;
 
     // implements CopyingInputStream ---------------------------------
-    int Read(void* buffer, int size) override;
+    int Read(void *buffer, int size) override;
     // (We use the default implementation of Skip().)
 
-   private:
+  private:
     // The stream.
-    std::istream* input_;
+    std::istream *input_;
 
     GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(CopyingIstreamInputStream);
   };
@@ -258,32 +256,32 @@ class PROTOBUF_EXPORT IstreamInputStream : public ZeroCopyInputStream {
 // Note that for writing files (or anything represented by a file descriptor),
 // FileOutputStream is more efficient.
 class PROTOBUF_EXPORT OstreamOutputStream : public ZeroCopyOutputStream {
- public:
+public:
   // Creates a stream that writes to the given C++ ostream.
   // If a block_size is given, it specifies the size of the buffers
   // that should be returned by Next().  Otherwise, a reasonable default
   // is used.
-  explicit OstreamOutputStream(std::ostream* stream, int block_size = -1);
+  explicit OstreamOutputStream(std::ostream *stream, int block_size = -1);
   ~OstreamOutputStream() override;
 
   // implements ZeroCopyOutputStream ---------------------------------
-  bool Next(void** data, int* size) override;
+  bool Next(void **data, int *size) override;
   void BackUp(int count) override;
   int64_t ByteCount() const override;
 
- private:
+private:
   class PROTOBUF_EXPORT CopyingOstreamOutputStream
       : public CopyingOutputStream {
-   public:
-    CopyingOstreamOutputStream(std::ostream* output);
+  public:
+    CopyingOstreamOutputStream(std::ostream *output);
     ~CopyingOstreamOutputStream() override;
 
     // implements CopyingOutputStream --------------------------------
-    bool Write(const void* buffer, int size) override;
+    bool Write(const void *buffer, int size) override;
 
-   private:
+  private:
     // The stream.
-    std::ostream* output_;
+    std::ostream *output_;
 
     GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(CopyingOstreamOutputStream);
   };
@@ -304,35 +302,34 @@ class PROTOBUF_EXPORT OstreamOutputStream : public ZeroCopyOutputStream {
 // not use ConcatenatingInputStream on streams that might produce read errors
 // other than end-of-stream.
 class PROTOBUF_EXPORT ConcatenatingInputStream : public ZeroCopyInputStream {
- public:
+public:
   // All streams passed in as well as the array itself must remain valid
   // until the ConcatenatingInputStream is destroyed.
-  ConcatenatingInputStream(ZeroCopyInputStream* const streams[], int count);
+  ConcatenatingInputStream(ZeroCopyInputStream *const streams[], int count);
   ~ConcatenatingInputStream() override = default;
 
   // implements ZeroCopyInputStream ----------------------------------
-  bool Next(const void** data, int* size) override;
+  bool Next(const void **data, int *size) override;
   void BackUp(int count) override;
   bool Skip(int count) override;
   int64_t ByteCount() const override;
 
-
- private:
+private:
   // As streams are retired, streams_ is incremented and count_ is
   // decremented.
-  ZeroCopyInputStream* const* streams_;
+  ZeroCopyInputStream *const *streams_;
   int stream_count_;
-  int64 bytes_retired_;  // Bytes read from previous streams.
+  int64 bytes_retired_; // Bytes read from previous streams.
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ConcatenatingInputStream);
 };
 
 // ===================================================================
 
-}  // namespace io
-}  // namespace protobuf
-}  // namespace google
+} // namespace io
+} // namespace protobuf
+} // namespace google
 
 #include <google/protobuf/port_undef.inc>
 
-#endif  // GOOGLE_PROTOBUF_IO_ZERO_COPY_STREAM_IMPL_H__
+#endif // GOOGLE_PROTOBUF_IO_ZERO_COPY_STREAM_IMPL_H__

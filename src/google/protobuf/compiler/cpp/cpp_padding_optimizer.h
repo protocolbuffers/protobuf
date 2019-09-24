@@ -48,17 +48,17 @@ namespace cpp {
 // field results in zero padding overhead. See OptimizeLayout's
 // comment for details.
 class PaddingOptimizer : public MessageLayoutHelper {
- public:
+public:
   PaddingOptimizer() {}
   ~PaddingOptimizer() override {}
 
-  void OptimizeLayout(std::vector<const FieldDescriptor*>* fields,
-                      const Options& options) override;
+  void OptimizeLayout(std::vector<const FieldDescriptor *> *fields,
+                      const Options &options) override;
 };
 
-}  // namespace cpp
-}  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+} // namespace cpp
+} // namespace compiler
+} // namespace protobuf
+} // namespace google
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_CPP_PADDING_OPTIMIZER_H__
+#endif // GOOGLE_PROTOBUF_COMPILER_CPP_PADDING_OPTIMIZER_H__

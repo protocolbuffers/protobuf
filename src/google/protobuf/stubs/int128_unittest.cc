@@ -178,7 +178,7 @@ TEST(Int128, AllTests) {
 }
 
 TEST(Int128, PodTests) {
-  uint128_pod pod = { 12345, 67890 };
+  uint128_pod pod = {12345, 67890};
   uint128 from_pod(pod);
   EXPECT_EQ(12345, Uint128High64(from_pod));
   EXPECT_EQ(67890, Uint128Low64(from_pod));
@@ -288,7 +288,7 @@ TEST(Int128, Multiply) {
       a = uint128(1) << i;
       b = uint128(1) << j;
       c = a * b;
-      EXPECT_EQ(uint128(1) << (i+j), c);
+      EXPECT_EQ(uint128(1) << (i + j), c);
     }
   }
 
@@ -314,7 +314,7 @@ TEST(Int128, Multiply) {
                     PROTOBUF_ULONGLONG(0x342d0bbf48948200)),
             c);
   EXPECT_EQ(0, c - b * a);
-  EXPECT_EQ(a*a - b*b, (a+b) * (a-b));
+  EXPECT_EQ(a * a - b * b, (a + b) * (a - b));
 }
 
 TEST(Int128, AliasTests) {
@@ -345,7 +345,7 @@ TEST(Int128, ModByZeroCheckFails) {
   a = 123;
   EXPECT_DEATH(a % b, "Division or mod by zero:");
 }
-#endif  // PROTOBUF_HAS_DEATH_TEST
+#endif // PROTOBUF_HAS_DEATH_TEST
 
 TEST(Int128, DivideAndMod) {
   // a := q * b + r
@@ -365,7 +365,7 @@ TEST(Int128, DivideAndMod) {
               PROTOBUF_ULONGLONG(0x14c34ab4676e4bab));
   b = uint128(0x1110001);
   r = uint128(0x3eb455);
-  ASSERT_EQ(a, q * b + r);  // Sanity-check.
+  ASSERT_EQ(a, q * b + r); // Sanity-check.
 
   uint128 result_q, result_r;
   result_q = a / b;
@@ -424,7 +424,7 @@ TEST(Int128, DivideAndModRandomInputs) {
     const uint128 a(RandomUint64(), RandomUint64());
     const uint128 b(RandomUint64(), RandomUint64());
     if (b == 0) {
-      continue;  // Avoid a div-by-zero.
+      continue; // Avoid a div-by-zero.
     }
     const uint128 q = a / b;
     const uint128 r = a % b;
@@ -449,7 +449,7 @@ TEST(Int128, Traits) {
   EXPECT_TRUE(std::is_trivially_copy_assignable<uint128>::value);
   EXPECT_TRUE(std::is_trivially_destructible<uint128>::value);
 }
-#endif  // GOOGLE_PROTOBUF_HAS_CONSTEXPR
+#endif // GOOGLE_PROTOBUF_HAS_CONSTEXPR
 
 TEST(Int128, OStream) {
   struct {
@@ -457,7 +457,7 @@ TEST(Int128, OStream) {
     std::ios_base::fmtflags flags;
     std::streamsize width;
     char fill;
-    const char* rep;
+    const char *rep;
   } cases[] = {
       // zero with different bases
       {uint128(0), std::ios::dec, 0, '_', "0"},
@@ -513,5 +513,5 @@ TEST(Int128, OStream) {
     EXPECT_EQ(cases[i].rep, os.str());
   }
 }
-}  // namespace protobuf
-}  // namespace google
+} // namespace protobuf
+} // namespace google

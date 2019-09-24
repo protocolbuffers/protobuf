@@ -34,12 +34,12 @@
 #define GOOGLE_PROTOBUF_COMPILER_SUBPROCESS_H__
 
 #ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN  // right...
+#define WIN32_LEAN_AND_MEAN // right...
 #include <windows.h>
-#else  // _WIN32
+#else // _WIN32
 #include <sys/types.h>
 #include <unistd.h>
-#endif  // !_WIN32
+#endif // !_WIN32
 #include <google/protobuf/stubs/common.h>
 
 #include <string>
@@ -55,25 +55,25 @@ namespace compiler {
 
 // Utility class for launching sub-processes.
 class PROTOC_EXPORT Subprocess {
- public:
+public:
   Subprocess();
   ~Subprocess();
 
   enum SearchMode {
-    SEARCH_PATH,  // Use PATH environment variable.
-    EXACT_NAME    // Program is an exact file name; don't use the PATH.
+    SEARCH_PATH, // Use PATH environment variable.
+    EXACT_NAME   // Program is an exact file name; don't use the PATH.
   };
 
   // Start the subprocess.  Currently we don't provide a way to specify
   // arguments as protoc plugins don't have any.
-  void Start(const std::string& program, SearchMode search_mode);
+  void Start(const std::string &program, SearchMode search_mode);
 
   // Serialize the input message and pipe it to the subprocess's stdin, then
   // close the pipe.  Meanwhile, read from the subprocess's stdout and parse
   // the data into *output.  All this is done carefully to avoid deadlocks.
   // Returns true if successful.  On any sort of error, returns false and sets
   // *error to a description of the problem.
-  bool Communicate(const Message& input, Message* output, std::string* error);
+  bool Communicate(const Message &input, Message *output, std::string *error);
 
 #ifdef _WIN32
   // Given an error code, returns a human-readable error message.  This is
@@ -81,7 +81,7 @@ class PROTOC_EXPORT Subprocess {
   static std::string Win32ErrorMessage(DWORD error_code);
 #endif
 
- private:
+private:
 #ifdef _WIN32
   DWORD process_start_error_;
   HANDLE child_handle_;
@@ -91,7 +91,7 @@ class PROTOC_EXPORT Subprocess {
   HANDLE child_stdin_;
   HANDLE child_stdout_;
 
-#else  // _WIN32
+#else // _WIN32
   pid_t child_pid_;
 
   // The file descriptors for our end of the child's pipes.  We close each and
@@ -99,13 +99,13 @@ class PROTOC_EXPORT Subprocess {
   int child_stdin_;
   int child_stdout_;
 
-#endif  // !_WIN32
+#endif // !_WIN32
 };
 
-}  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+} // namespace compiler
+} // namespace protobuf
+} // namespace google
 
 #include <google/protobuf/port_undef.inc>
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_SUBPROCESS_H__
+#endif // GOOGLE_PROTOBUF_COMPILER_SUBPROCESS_H__

@@ -34,9 +34,11 @@
 #include <sstream>
 
 #include <google/protobuf/any.pb.h>
+#include <google/protobuf/descriptor.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
-#include <google/protobuf/descriptor.h>
+#include <google/protobuf/stubs/casts.h>
+#include <google/protobuf/util/internal/constants.h>
 #include <google/protobuf/util/internal/expecting_objectwriter.h>
 #include <google/protobuf/util/internal/testdata/anys.pb.h>
 #include <google/protobuf/util/internal/testdata/books.pb.h>
@@ -46,10 +48,7 @@
 #include <google/protobuf/util/internal/testdata/struct.pb.h>
 #include <google/protobuf/util/internal/testdata/timestamp_duration.pb.h>
 #include <google/protobuf/util/internal/type_info_test_helper.h>
-#include <google/protobuf/util/internal/constants.h>
 #include <gtest/gtest.h>
-#include <google/protobuf/stubs/casts.h>
-
 
 namespace google {
 namespace protobuf {
@@ -79,36 +78,31 @@ using proto_util_converter::testing::TimestampDuration;
 using ::testing::_;
 using util::Status;
 
-
 namespace {
-std::string GetTypeUrl(const Descriptor* descriptor) {
+std::string GetTypeUrl(const Descriptor *descriptor) {
   return std::string(kTypeServiceBaseUrl) + "/" + descriptor->full_name();
 }
-}  // namespace
+} // namespace
 
 class ProtostreamObjectSourceTest
     : public ::testing::TestWithParam<testing::TypeInfoSource> {
- protected:
+protected:
   ProtostreamObjectSourceTest()
-      : helper_(GetParam()),
-        mock_(),
-        ow_(&mock_),
-        use_lower_camel_for_enums_(false),
-        use_ints_for_enums_(false),
-        use_preserve_proto_field_names_(false),
-        add_trailing_zeros_(false),
+      : helper_(GetParam()), mock_(), ow_(&mock_),
+        use_lower_camel_for_enums_(false), use_ints_for_enums_(false),
+        use_preserve_proto_field_names_(false), add_trailing_zeros_(false),
         render_unknown_enum_values_(true) {
     helper_.ResetTypeInfo(Book::descriptor(), Proto3Message::descriptor());
   }
 
   virtual ~ProtostreamObjectSourceTest() {}
 
-  void DoTest(const Message& msg, const Descriptor* descriptor) {
+  void DoTest(const Message &msg, const Descriptor *descriptor) {
     Status status = ExecuteTest(msg, descriptor);
     EXPECT_EQ(util::Status(), status);
   }
 
-  Status ExecuteTest(const Message& msg, const Descriptor* descriptor) {
+  Status ExecuteTest(const Message &msg, const Descriptor *descriptor) {
     std::ostringstream oss;
     msg.SerializePartialToOstream(&oss);
     std::string proto = oss.str();
@@ -117,8 +111,10 @@ class ProtostreamObjectSourceTest
 
     std::unique_ptr<ProtoStreamObjectSource> os(
         helper_.NewProtoSource(&in_stream, GetTypeUrl(descriptor)));
-    if (use_lower_camel_for_enums_) os->set_use_lower_camel_for_enums(true);
-    if (use_ints_for_enums_) os->set_use_ints_for_enums(true);
+    if (use_lower_camel_for_enums_)
+      os->set_use_lower_camel_for_enums(true);
+    if (use_ints_for_enums_)
+      os->set_use_ints_for_enums(true);
     if (use_preserve_proto_field_names_)
       os->set_preserve_proto_field_names(true);
     os->set_max_recursion_depth(64);
@@ -291,8 +287,7 @@ class ProtostreamObjectSourceTest
 
 INSTANTIATE_TEST_SUITE_P(DifferentTypeInfoSourceTest,
                          ProtostreamObjectSourceTest,
-                         ::testing::Values(
-                             testing::USE_TYPE_RESOLVER));
+                         ::testing::Values(testing::USE_TYPE_RESOLVER));
 
 TEST_P(ProtostreamObjectSourceTest, EmptyMessage) {
   Book empty;
@@ -363,7 +358,7 @@ TEST_P(ProtostreamObjectSourceTest, CustomJsonName) {
 }
 
 TEST_P(ProtostreamObjectSourceTest, NestedMessage) {
-  Author* author = new Author();
+  Author *author = new Author();
   author->set_name("Tolstoy");
   Book book;
   book.set_title("My Book");
@@ -436,7 +431,7 @@ TEST_P(ProtostreamObjectSourceTest, BadAuthor) {
 }
 
 TEST_P(ProtostreamObjectSourceTest, NestedBookToBadNestedBook) {
-  Book* book = new Book();
+  Book *book = new Book();
   book->set_length(250);
   book->set_published(2014L);
   NestedBook nested;
@@ -444,9 +439,9 @@ TEST_P(ProtostreamObjectSourceTest, NestedBookToBadNestedBook) {
 
   ow_.StartObject("")
       ->StartList("book")
-      ->RenderUint32("", 24)  // tag for field length (3 << 3)
+      ->RenderUint32("", 24) // tag for field length (3 << 3)
       ->RenderUint32("", 250)
-      ->RenderUint32("", 32)  // tag for field published (4 << 3)
+      ->RenderUint32("", 32) // tag for field published (4 << 3)
       ->RenderUint32("", 2014)
       ->EndList()
       ->EndObject();
@@ -475,7 +470,7 @@ TEST_P(ProtostreamObjectSourceTest,
 
   int repeat = 10000;
   for (int i = 0; i < repeat; ++i) {
-    Book_Label* label = book.add_labels();
+    Book_Label *label = book.add_labels();
     label->set_key(StrCat("i", i));
     label->set_value(StrCat("v", i));
   }
@@ -575,12 +570,12 @@ TEST_P(ProtostreamObjectSourceTest, CyclicMessageDepthTest) {
   Cyclic cyclic;
   cyclic.set_m_int(123);
 
-  Book* book = cyclic.mutable_m_book();
+  Book *book = cyclic.mutable_m_book();
   book->set_title("book title");
-  Cyclic* current = cyclic.mutable_m_cyclic();
-  Author* current_author = cyclic.add_m_author();
+  Cyclic *current = cyclic.mutable_m_cyclic();
+  Author *current_author = cyclic.add_m_author();
   for (int i = 0; i < 63; ++i) {
-    Author* next = current_author->add_friend_();
+    Author *next = current_author->add_friend_();
     next->set_id(i);
     next->set_name(StrCat("author_name_", i));
     next->set_alive(true);
@@ -589,7 +584,7 @@ TEST_P(ProtostreamObjectSourceTest, CyclicMessageDepthTest) {
 
   // Recursive message with depth (65) > max (max is 64).
   for (int i = 0; i < 64; ++i) {
-    Cyclic* next = current->mutable_m_cyclic();
+    Cyclic *next = current->mutable_m_cyclic();
     next->set_m_str(StrCat("count_", i));
     current = next;
   }
@@ -599,7 +594,7 @@ TEST_P(ProtostreamObjectSourceTest, CyclicMessageDepthTest) {
 }
 
 class ProtostreamObjectSourceMapsTest : public ProtostreamObjectSourceTest {
- protected:
+protected:
   ProtostreamObjectSourceMapsTest() {
     helper_.ResetTypeInfo(MapOut::descriptor());
   }
@@ -607,8 +602,7 @@ class ProtostreamObjectSourceMapsTest : public ProtostreamObjectSourceTest {
 
 INSTANTIATE_TEST_SUITE_P(DifferentTypeInfoSourceTest,
                          ProtostreamObjectSourceMapsTest,
-                         ::testing::Values(
-                             testing::USE_TYPE_RESOLVER));
+                         ::testing::Values(testing::USE_TYPE_RESOLVER));
 
 // Tests JSON map.
 //
@@ -642,7 +636,7 @@ TEST_P(ProtostreamObjectSourceMapsTest, MapsTest) {
   (*out.mutable_map1())["key1"].set_foo("foovalue");
   (*out.mutable_map1())["key2"].set_foo("barvalue");
 
-  MapOut* nested_value = &(*out.mutable_map2())["nestedself"];
+  MapOut *nested_value = &(*out.mutable_map2())["nestedself"];
   (*nested_value->mutable_map1())["nested_key1"].set_foo("nested_foo");
   nested_value->set_bar("nested_bar_string");
 
@@ -708,7 +702,7 @@ TEST_P(ProtostreamObjectSourceMapsTest, MissingKeysTest) {
   //   }
   // }
   out.add_map1()->mutable_value()->set_foo("foovalue");
-  MapOut* nested = out.add_map2()->mutable_value();
+  MapOut *nested = out.add_map2()->mutable_value();
   (*nested->mutable_map1())["nested_key1"].set_foo("nested_foo");
   out.add_map3()->set_value("one one one");
   out.add_map4()->set_value("bool");
@@ -740,7 +734,7 @@ TEST_P(ProtostreamObjectSourceMapsTest, MissingKeysTest) {
 }
 
 class ProtostreamObjectSourceAnysTest : public ProtostreamObjectSourceTest {
- protected:
+protected:
   ProtostreamObjectSourceAnysTest() {
     helper_.ResetTypeInfo({AnyOut::descriptor(), Book::descriptor(),
                            google::protobuf::Any::descriptor()});
@@ -749,8 +743,7 @@ class ProtostreamObjectSourceAnysTest : public ProtostreamObjectSourceTest {
 
 INSTANTIATE_TEST_SUITE_P(DifferentTypeInfoSourceTest,
                          ProtostreamObjectSourceAnysTest,
-                         ::testing::Values(
-                             testing::USE_TYPE_RESOLVER));
+                         ::testing::Values(testing::USE_TYPE_RESOLVER));
 
 // Tests JSON any support.
 //
@@ -763,7 +756,7 @@ INSTANTIATE_TEST_SUITE_P(DifferentTypeInfoSourceTest,
 // }
 TEST_P(ProtostreamObjectSourceAnysTest, BasicAny) {
   AnyOut out;
-  ::google::protobuf::Any* any = out.mutable_any();
+  ::google::protobuf::Any *any = out.mutable_any();
 
   AnyM m;
   m.set_foo("foovalue");
@@ -782,7 +775,7 @@ TEST_P(ProtostreamObjectSourceAnysTest, BasicAny) {
 
 TEST_P(ProtostreamObjectSourceAnysTest, LowerCamelEnumOutputSnakeCase) {
   AnyOut out;
-  ::google::protobuf::Any* any = out.mutable_any();
+  ::google::protobuf::Any *any = out.mutable_any();
 
   Book book;
   book.set_type(Book::arts_and_photography);
@@ -803,7 +796,7 @@ TEST_P(ProtostreamObjectSourceAnysTest, LowerCamelEnumOutputSnakeCase) {
 
 TEST_P(ProtostreamObjectSourceAnysTest, UseIntsForEnumsTest) {
   AnyOut out;
-  ::google::protobuf::Any* any = out.mutable_any();
+  ::google::protobuf::Any *any = out.mutable_any();
 
   Book book;
   book.set_type(Book::ACTION_AND_ADVENTURE);
@@ -824,7 +817,7 @@ TEST_P(ProtostreamObjectSourceAnysTest, UseIntsForEnumsTest) {
 
 TEST_P(ProtostreamObjectSourceAnysTest, UsePreserveProtoFieldNames) {
   AnyOut out;
-  ::google::protobuf::Any* any = out.mutable_any();
+  ::google::protobuf::Any *any = out.mutable_any();
 
   Book book;
   book.set_snake_field("foo");
@@ -845,7 +838,7 @@ TEST_P(ProtostreamObjectSourceAnysTest, UsePreserveProtoFieldNames) {
 
 TEST_P(ProtostreamObjectSourceAnysTest, RecursiveAny) {
   AnyOut out;
-  ::google::protobuf::Any* any = out.mutable_any();
+  ::google::protobuf::Any *any = out.mutable_any();
   any->set_type_url("type.googleapis.com/google.protobuf.Any");
 
   ::google::protobuf::Any nested_any;
@@ -874,7 +867,7 @@ TEST_P(ProtostreamObjectSourceAnysTest, RecursiveAny) {
 
 TEST_P(ProtostreamObjectSourceAnysTest, DoubleRecursiveAny) {
   AnyOut out;
-  ::google::protobuf::Any* any = out.mutable_any();
+  ::google::protobuf::Any *any = out.mutable_any();
   any->set_type_url("type.googleapis.com/google.protobuf.Any");
 
   ::google::protobuf::Any nested_any;
@@ -931,7 +924,7 @@ TEST_P(ProtostreamObjectSourceAnysTest, EmptyWithTypeAndNoValueOutputsType) {
 
 TEST_P(ProtostreamObjectSourceAnysTest, MissingTypeUrlError) {
   AnyOut out;
-  ::google::protobuf::Any* any = out.mutable_any();
+  ::google::protobuf::Any *any = out.mutable_any();
 
   AnyM m;
   m.set_foo("foovalue");
@@ -946,7 +939,7 @@ TEST_P(ProtostreamObjectSourceAnysTest, MissingTypeUrlError) {
 
 TEST_P(ProtostreamObjectSourceAnysTest, UnknownTypeServiceError) {
   AnyOut out;
-  ::google::protobuf::Any* any = out.mutable_any();
+  ::google::protobuf::Any *any = out.mutable_any();
   any->set_type_url("foo.googleapis.com/my.own.Type");
 
   AnyM m;
@@ -962,7 +955,7 @@ TEST_P(ProtostreamObjectSourceAnysTest, UnknownTypeServiceError) {
 
 TEST_P(ProtostreamObjectSourceAnysTest, UnknownTypeError) {
   AnyOut out;
-  ::google::protobuf::Any* any = out.mutable_any();
+  ::google::protobuf::Any *any = out.mutable_any();
   any->set_type_url("type.googleapis.com/unknown.Type");
 
   AnyM m;
@@ -977,7 +970,7 @@ TEST_P(ProtostreamObjectSourceAnysTest, UnknownTypeError) {
 }
 
 class ProtostreamObjectSourceStructTest : public ProtostreamObjectSourceTest {
- protected:
+protected:
   ProtostreamObjectSourceStructTest() {
     helper_.ResetTypeInfo(StructType::descriptor(),
                           google::protobuf::Struct::descriptor());
@@ -986,8 +979,7 @@ class ProtostreamObjectSourceStructTest : public ProtostreamObjectSourceTest {
 
 INSTANTIATE_TEST_SUITE_P(DifferentTypeInfoSourceTest,
                          ProtostreamObjectSourceStructTest,
-                         ::testing::Values(
-                             testing::USE_TYPE_RESOLVER));
+                         ::testing::Values(testing::USE_TYPE_RESOLVER));
 
 // Tests struct
 //
@@ -997,7 +989,7 @@ INSTANTIATE_TEST_SUITE_P(DifferentTypeInfoSourceTest,
 //  }
 TEST_P(ProtostreamObjectSourceStructTest, StructRenderSuccess) {
   StructType out;
-  google::protobuf::Struct* s = out.mutable_object();
+  google::protobuf::Struct *s = out.mutable_object();
   s->mutable_fields()->operator[]("k1").set_number_value(123);
   s->mutable_fields()->operator[]("k2").set_bool_value(true);
 
@@ -1013,7 +1005,7 @@ TEST_P(ProtostreamObjectSourceStructTest, StructRenderSuccess) {
 
 TEST_P(ProtostreamObjectSourceStructTest, MissingValueSkipsField) {
   StructType out;
-  google::protobuf::Struct* s = out.mutable_object();
+  google::protobuf::Struct *s = out.mutable_object();
   s->mutable_fields()->operator[]("k1");
 
   ow_.StartObject("")->StartObject("object")->EndObject()->EndObject();
@@ -1023,7 +1015,7 @@ TEST_P(ProtostreamObjectSourceStructTest, MissingValueSkipsField) {
 
 class ProtostreamObjectSourceFieldMaskTest
     : public ProtostreamObjectSourceTest {
- protected:
+protected:
   ProtostreamObjectSourceFieldMaskTest() {
     helper_.ResetTypeInfo(FieldMaskTest::descriptor(),
                           google::protobuf::FieldMask::descriptor());
@@ -1032,20 +1024,19 @@ class ProtostreamObjectSourceFieldMaskTest
 
 INSTANTIATE_TEST_SUITE_P(DifferentTypeInfoSourceTest,
                          ProtostreamObjectSourceFieldMaskTest,
-                         ::testing::Values(
-                             testing::USE_TYPE_RESOLVER));
+                         ::testing::Values(testing::USE_TYPE_RESOLVER));
 
 TEST_P(ProtostreamObjectSourceFieldMaskTest, FieldMaskRenderSuccess) {
   FieldMaskTest out;
   out.set_id("1");
   out.mutable_single_mask()->add_paths("path1");
   out.mutable_single_mask()->add_paths("snake_case_path2");
-  ::google::protobuf::FieldMask* mask = out.add_repeated_mask();
+  ::google::protobuf::FieldMask *mask = out.add_repeated_mask();
   mask->add_paths("path3");
   mask = out.add_repeated_mask();
   mask->add_paths("snake_case_path4");
   mask->add_paths("path5");
-  NestedFieldMask* nested = out.add_nested_mask();
+  NestedFieldMask *nested = out.add_nested_mask();
   nested->set_data("data");
   nested->mutable_single_mask()->add_paths("nested.path1");
   nested->mutable_single_mask()->add_paths("nested_field.snake_case_path2");
@@ -1073,10 +1064,9 @@ TEST_P(ProtostreamObjectSourceFieldMaskTest, FieldMaskRenderSuccess) {
       ->StartList("repeatedMask")
       ->RenderString("", "nestedField.path3,nested.snakeCasePath4")
       ->RenderString("", "nested.path5")
-      ->RenderString("",
-                     "snakeCase.mapField[\"map_key_should_be_ignored\"]."
-                     "nestedSnakeCase.mapField[\"map_key_sho\\\"uld_be_"
-                     "ignored\"]")
+      ->RenderString("", "snakeCase.mapField[\"map_key_should_be_ignored\"]."
+                         "nestedSnakeCase.mapField[\"map_key_sho\\\"uld_be_"
+                         "ignored\"]")
       ->EndList()
       ->EndObject()
       ->EndList()
@@ -1087,7 +1077,7 @@ TEST_P(ProtostreamObjectSourceFieldMaskTest, FieldMaskRenderSuccess) {
 
 class ProtostreamObjectSourceTimestampTest
     : public ProtostreamObjectSourceTest {
- protected:
+protected:
   ProtostreamObjectSourceTimestampTest() {
     helper_.ResetTypeInfo(TimestampDuration::descriptor());
   }
@@ -1095,12 +1085,11 @@ class ProtostreamObjectSourceTimestampTest
 
 INSTANTIATE_TEST_SUITE_P(DifferentTypeInfoSourceTest,
                          ProtostreamObjectSourceTimestampTest,
-                         ::testing::Values(
-                             testing::USE_TYPE_RESOLVER));
+                         ::testing::Values(testing::USE_TYPE_RESOLVER));
 
 TEST_P(ProtostreamObjectSourceTimestampTest, InvalidTimestampBelowMinTest) {
   TimestampDuration out;
-  google::protobuf::Timestamp* ts = out.mutable_ts();
+  google::protobuf::Timestamp *ts = out.mutable_ts();
   // Min allowed seconds - 1
   ts->set_seconds(kTimestampMinSeconds - 1);
   ow_.StartObject("");
@@ -1111,7 +1100,7 @@ TEST_P(ProtostreamObjectSourceTimestampTest, InvalidTimestampBelowMinTest) {
 
 TEST_P(ProtostreamObjectSourceTimestampTest, InvalidTimestampAboveMaxTest) {
   TimestampDuration out;
-  google::protobuf::Timestamp* ts = out.mutable_ts();
+  google::protobuf::Timestamp *ts = out.mutable_ts();
   // Max allowed seconds + 1
   ts->set_seconds(kTimestampMaxSeconds + 1);
   ow_.StartObject("");
@@ -1122,7 +1111,7 @@ TEST_P(ProtostreamObjectSourceTimestampTest, InvalidTimestampAboveMaxTest) {
 
 TEST_P(ProtostreamObjectSourceTimestampTest, InvalidDurationBelowMinTest) {
   TimestampDuration out;
-  google::protobuf::Duration* dur = out.mutable_dur();
+  google::protobuf::Duration *dur = out.mutable_dur();
   // Min allowed seconds - 1
   dur->set_seconds(kDurationMinSeconds - 1);
   ow_.StartObject("");
@@ -1133,7 +1122,7 @@ TEST_P(ProtostreamObjectSourceTimestampTest, InvalidDurationBelowMinTest) {
 
 TEST_P(ProtostreamObjectSourceTimestampTest, InvalidDurationAboveMaxTest) {
   TimestampDuration out;
-  google::protobuf::Duration* dur = out.mutable_dur();
+  google::protobuf::Duration *dur = out.mutable_dur();
   // Min allowed seconds + 1
   dur->set_seconds(kDurationMaxSeconds + 1);
   ow_.StartObject("");
@@ -1155,8 +1144,7 @@ TEST_P(ProtostreamObjectSourceTimestampTest, TimestampDurationDefaultValue) {
   DoTest(out, TimestampDuration::descriptor());
 }
 
-
-}  // namespace converter
-}  // namespace util
-}  // namespace protobuf
-}  // namespace google
+} // namespace converter
+} // namespace util
+} // namespace protobuf
+} // namespace google

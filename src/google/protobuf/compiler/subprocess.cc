@@ -43,9 +43,9 @@
 #include <sys/wait.h>
 #endif
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/message.h>
+#include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/substitute.h>
 
 namespace google {
@@ -53,14 +53,14 @@ namespace protobuf {
 namespace compiler {
 
 namespace {
-char* portable_strdup(const char* s) {
-  char* ns = (char*)malloc(strlen(s) + 1);
+char *portable_strdup(const char *s) {
+  char *ns = (char *)malloc(strlen(s) + 1);
   if (ns != NULL) {
     strcpy(ns, s);
   }
   return ns;
 }
-}  // namespace
+} // namespace
 
 #ifdef _WIN32
 
@@ -72,10 +72,8 @@ static void CloseHandleOrDie(HANDLE handle) {
 }
 
 Subprocess::Subprocess()
-    : process_start_error_(ERROR_SUCCESS),
-      child_handle_(NULL),
-      child_stdin_(NULL),
-      child_stdout_(NULL) {}
+    : process_start_error_(ERROR_SUCCESS), child_handle_(NULL),
+      child_stdin_(NULL), child_stdout_(NULL) {}
 
 Subprocess::~Subprocess() {
   if (child_stdin_ != NULL) {
@@ -86,7 +84,7 @@ Subprocess::~Subprocess() {
   }
 }
 
-void Subprocess::Start(const std::string& program, SearchMode search_mode) {
+void Subprocess::Start(const std::string &program, SearchMode search_mode) {
   // Create the pipes.
   HANDLE stdin_pipe_read;
   HANDLE stdin_pipe_write;
@@ -128,7 +126,7 @@ void Subprocess::Start(const std::string& program, SearchMode search_mode) {
   // Invoking cmd.exe allows for '.bat' files from the path as well as '.exe'.
   // Using a malloc'ed string because CreateProcess() can mutate its second
   // parameter.
-  char* command_line =
+  char *command_line =
       portable_strdup(("cmd.exe /c \"" + program + "\"").c_str());
 
   // Create the process.
@@ -136,12 +134,12 @@ void Subprocess::Start(const std::string& program, SearchMode search_mode) {
 
   if (CreateProcessA((search_mode == SEARCH_PATH) ? NULL : program.c_str(),
                      (search_mode == SEARCH_PATH) ? command_line : NULL,
-                     NULL,  // process security attributes
-                     NULL,  // thread security attributes
-                     TRUE,  // inherit handles?
-                     0,     // obscure creation flags
-                     NULL,  // environment (inherit from parent)
-                     NULL,  // current directory (inherit from parent)
+                     NULL, // process security attributes
+                     NULL, // thread security attributes
+                     TRUE, // inherit handles?
+                     0,    // obscure creation flags
+                     NULL, // environment (inherit from parent)
+                     NULL, // current directory (inherit from parent)
                      &startup_info, &process_info)) {
     child_handle_ = process_info.hProcess;
     CloseHandleOrDie(process_info.hThread);
@@ -158,8 +156,8 @@ void Subprocess::Start(const std::string& program, SearchMode search_mode) {
   free(command_line);
 }
 
-bool Subprocess::Communicate(const Message& input, Message* output,
-                             std::string* error) {
+bool Subprocess::Communicate(const Message &input, Message *output,
+                             std::string *error) {
   if (process_start_error_ != ERROR_SUCCESS) {
     *error = Win32ErrorMessage(process_start_error_);
     return false;
@@ -269,13 +267,13 @@ bool Subprocess::Communicate(const Message& input, Message* output,
 }
 
 std::string Subprocess::Win32ErrorMessage(DWORD error_code) {
-  char* message;
+  char *message;
 
   // WTF?
   FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
                      FORMAT_MESSAGE_IGNORE_INSERTS,
                  NULL, error_code, 0,
-                 (LPSTR)&message,  // NOT A BUG!
+                 (LPSTR)&message, // NOT A BUG!
                  0, NULL);
 
   std::string result = message;
@@ -285,7 +283,7 @@ std::string Subprocess::Win32ErrorMessage(DWORD error_code) {
 
 // ===================================================================
 
-#else  // _WIN32
+#else // _WIN32
 
 Subprocess::Subprocess()
     : child_pid_(-1), child_stdin_(-1), child_stdout_(-1) {}
@@ -299,7 +297,7 @@ Subprocess::~Subprocess() {
   }
 }
 
-void Subprocess::Start(const std::string& program, SearchMode search_mode) {
+void Subprocess::Start(const std::string &program, SearchMode search_mode) {
   // Note that we assume that there are no other threads, thus we don't have to
   // do crazy stuff like using socket pairs or avoiding libc locks.
 
@@ -310,7 +308,7 @@ void Subprocess::Start(const std::string& program, SearchMode search_mode) {
   GOOGLE_CHECK(pipe(stdin_pipe) != -1);
   GOOGLE_CHECK(pipe(stdout_pipe) != -1);
 
-  char* argv[2] = {portable_strdup(program.c_str()), NULL};
+  char *argv[2] = {portable_strdup(program.c_str()), NULL};
 
   child_pid_ = fork();
   if (child_pid_ == -1) {
@@ -326,19 +324,19 @@ void Subprocess::Start(const std::string& program, SearchMode search_mode) {
     close(stdout_pipe[1]);
 
     switch (search_mode) {
-      case SEARCH_PATH:
-        execvp(argv[0], argv);
-        break;
-      case EXACT_NAME:
-        execv(argv[0], argv);
-        break;
+    case SEARCH_PATH:
+      execvp(argv[0], argv);
+      break;
+    case EXACT_NAME:
+      execv(argv[0], argv);
+      break;
     }
 
     // Write directly to STDERR_FILENO to avoid stdio code paths that may do
     // stuff that is unsafe here.
     int ignored;
     ignored = write(STDERR_FILENO, argv[0], strlen(argv[0]));
-    const char* message =
+    const char *message =
         ": program not found or is not executable\n"
         "Please specify a program using absolute path or make sure "
         "the program is available in your PATH system variable\n";
@@ -359,15 +357,15 @@ void Subprocess::Start(const std::string& program, SearchMode search_mode) {
   }
 }
 
-bool Subprocess::Communicate(const Message& input, Message* output,
-                             std::string* error) {
+bool Subprocess::Communicate(const Message &input, Message *output,
+                             std::string *error) {
   GOOGLE_CHECK_NE(child_stdin_, -1) << "Must call Start() first.";
 
   // The "sighandler_t" typedef is GNU-specific, so define our own.
   typedef void SignalHandler(int);
 
   // Make sure SIGPIPE is disabled so that if the child dies it doesn't kill us.
-  SignalHandler* old_pipe_handler = signal(SIGPIPE, SIG_IGN);
+  SignalHandler *old_pipe_handler = signal(SIGPIPE, SIG_IGN);
 
   std::string input_data = input.SerializeAsString();
   std::string output_data;
@@ -469,8 +467,8 @@ bool Subprocess::Communicate(const Message& input, Message* output,
   return true;
 }
 
-#endif  // !_WIN32
+#endif // !_WIN32
 
-}  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+} // namespace compiler
+} // namespace protobuf
+} // namespace google

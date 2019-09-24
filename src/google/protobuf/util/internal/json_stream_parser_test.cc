@@ -30,14 +30,13 @@
 
 #include <google/protobuf/util/internal/json_stream_parser.h>
 
-#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
+#include <google/protobuf/stubs/status.h>
 #include <google/protobuf/stubs/time.h>
 #include <google/protobuf/util/internal/expecting_objectwriter.h>
 #include <google/protobuf/util/internal/object_writer.h>
 #include <gtest/gtest.h>
-#include <google/protobuf/stubs/status.h>
-
 
 namespace google {
 namespace protobuf {
@@ -45,7 +44,7 @@ namespace util {
 using util::Status;
 namespace error {
 using util::error::INVALID_ARGUMENT;
-}  // namespace error
+} // namespace error
 namespace converter {
 
 using util::Status;
@@ -83,12 +82,12 @@ using util::Status;
 //
 // It is verified that expected calls to the mocked objects are in sequence.
 class JsonStreamParserTest : public ::testing::Test {
- protected:
+protected:
   JsonStreamParserTest() : mock_(), ow_(&mock_) {}
   virtual ~JsonStreamParserTest() {}
 
   util::Status RunTest(StringPiece json, int split,
-                       std::function<void(JsonStreamParser*)> setup) {
+                       std::function<void(JsonStreamParser *)> setup) {
     JsonStreamParser parser(&mock_);
     setup(&parser);
 
@@ -124,7 +123,7 @@ class JsonStreamParserTest : public ::testing::Test {
 
   void DoTest(
       StringPiece json, int split,
-      std::function<void(JsonStreamParser*)> setup = [](JsonStreamParser* p) {
+      std::function<void(JsonStreamParser *)> setup = [](JsonStreamParser *p) {
       }) {
     util::Status result = RunTest(json, split, setup);
     if (!result.ok()) {
@@ -135,7 +134,7 @@ class JsonStreamParserTest : public ::testing::Test {
 
   void DoErrorTest(
       StringPiece json, int split, StringPiece error_prefix,
-      std::function<void(JsonStreamParser*)> setup = [](JsonStreamParser* p) {
+      std::function<void(JsonStreamParser *)> setup = [](JsonStreamParser *p) {
       }) {
     util::Status result = RunTest(json, split, setup);
     EXPECT_EQ(util::error::INVALID_ARGUMENT, result.code());
@@ -143,17 +142,15 @@ class JsonStreamParserTest : public ::testing::Test {
     EXPECT_EQ(error_prefix, error_message.substr(0, error_prefix.size()));
   }
 
-
 #ifndef _MSC_VER
   // TODO(xiaofeng): We have to disable InSequence check for MSVC because it
   // causes stack overflow due to its use of a linked list that is desctructed
   // recursively.
   ::testing::InSequence in_sequence_;
-#endif  // !_MSC_VER
+#endif // !_MSC_VER
   MockObjectWriter mock_;
   ExpectingObjectWriter ow_;
 };
-
 
 // Positive tests
 
@@ -351,7 +348,6 @@ TEST_F(JsonStreamParserTest, UnquotedObjectKeyWithEmbeddedNonAlphanumeric) {
   }
 }
 
-
 // - array containing primitive values (true, false, null, num, string)
 TEST_F(JsonStreamParserTest, ArrayPrimitiveValues) {
   StringPiece str = "[true, false, null, 'one', \"two\"]";
@@ -388,7 +384,6 @@ TEST_F(JsonStreamParserTest, ArrayComplexValues) {
   }
 }
 
-
 // - object containing array, object, value (true, false, null, num, string)
 TEST_F(JsonStreamParserTest, ObjectValues) {
   StringPiece str =
@@ -419,7 +414,6 @@ TEST_F(JsonStreamParserTest, ObjectValues) {
   }
 }
 
-
 TEST_F(JsonStreamParserTest, RejectNonUtf8WhenNotCoerced) {
   StringPiece json = "{\"address\":\xFF\"חרושת 23, רעננה, ישראל\"}";
   for (int i = 0; i <= json.length(); ++i) {
@@ -449,14 +443,12 @@ TEST_F(JsonStreamParserTest, UnicodeSurrogatePairEscaping) {
       "[\"\\u0bee\\ud800\\uddf1\\uD80C\\uDDA4\\uD83d\\udC1D\\uD83C\\uDF6F\"]";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.StartList("")
-        ->RenderString("",
-                       "\xE0\xAF\xAE\xF0\x90\x87\xB1\xF0\x93\x86\xA4\xF0"
-                       "\x9F\x90\x9D\xF0\x9F\x8D\xAF")
+        ->RenderString("", "\xE0\xAF\xAE\xF0\x90\x87\xB1\xF0\x93\x86\xA4\xF0"
+                           "\x9F\x90\x9D\xF0\x9F\x8D\xAF")
         ->EndList();
     DoTest(str, i);
   }
 }
-
 
 TEST_F(JsonStreamParserTest, UnicodeEscapingInvalidCodePointWhenNotCoerced) {
   // A low surrogate alone.
@@ -617,7 +609,6 @@ TEST_F(JsonStreamParserTest, UnterminatedObject) {
   }
 }
 
-
 // mismatched object and array closing
 TEST_F(JsonStreamParserTest, MismatchedCloseObject) {
   StringPiece str = "{'key': true]";
@@ -725,7 +716,7 @@ TEST_F(JsonStreamParserTest, ExtraCharactersAfterObject) {
 }
 
 TEST_F(JsonStreamParserTest, PositiveNumberTooBigIsDouble) {
-  StringPiece str = "18446744073709551616";  // 2^64
+  StringPiece str = "18446744073709551616"; // 2^64
   for (int i = 0; i <= str.length(); ++i) {
     ow_.RenderDouble("", 18446744073709552000.0);
     DoTest(str, i);
@@ -752,7 +743,6 @@ TEST_F(JsonStreamParserTest, DoubleTooBig) {
     DoErrorTest(str, i, "Number exceeds the range of double.");
   }
 }
-
 
 // invalid bare backslash.
 TEST_F(JsonStreamParserTest, UnfinishedEscape) {
@@ -785,7 +775,6 @@ TEST_F(JsonStreamParserTest, BracketedUnicodeEscape) {
     DoErrorTest(str, i, "Invalid escape sequence.");
   }
 }
-
 
 TEST_F(JsonStreamParserTest, UnicodeEscapeInvalidCharacters) {
   StringPiece str = "\"\\u12$4hello";
@@ -901,8 +890,7 @@ TEST_F(JsonStreamParserTest, DeepNestJsonExceedLimit) {
     StrAppend(&str, "{'a':");
   }
   // Supports trailing commas.
-  StrAppend(&str,
-                  "{'nest11' : [{'nest12' : null,},],"
+  StrAppend(&str, "{'nest11' : [{'nest12' : null,},],"
                   "'nest21' : {'nest22' : {'nest23' : false}}}");
   for (int i = 0; i < count; ++i) {
     StrAppend(&str, "}");
@@ -911,7 +899,7 @@ TEST_F(JsonStreamParserTest, DeepNestJsonExceedLimit) {
               "Message too deep. Max recursion depth reached for key 'nest22'");
 }
 
-}  // namespace converter
-}  // namespace util
-}  // namespace protobuf
-}  // namespace google
+} // namespace converter
+} // namespace util
+} // namespace protobuf
+} // namespace google

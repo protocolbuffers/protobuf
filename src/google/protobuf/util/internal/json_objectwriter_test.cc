@@ -43,11 +43,10 @@ using io::CodedOutputStream;
 using io::StringOutputStream;
 
 class JsonObjectWriterTest : public ::testing::Test {
- protected:
+protected:
   JsonObjectWriterTest()
       : str_stream_(new StringOutputStream(&output_)),
-        out_stream_(new CodedOutputStream(str_stream_)),
-        ow_(nullptr) {}
+        out_stream_(new CodedOutputStream(str_stream_)), ow_(nullptr) {}
 
   ~JsonObjectWriterTest() override { delete ow_; }
 
@@ -58,9 +57,9 @@ class JsonObjectWriterTest : public ::testing::Test {
   }
 
   std::string output_;
-  StringOutputStream* const str_stream_;
-  CodedOutputStream* const out_stream_;
-  JsonObjectWriter* ow_;
+  StringOutputStream *const str_stream_;
+  CodedOutputStream *const out_stream_;
+  JsonObjectWriter *ow_;
 };
 
 TEST_F(JsonObjectWriterTest, EmptyRootObject) {
@@ -154,21 +153,20 @@ TEST_F(JsonObjectWriterTest, RenderPrimitives) {
       ->RenderBytes("emptybytes", "")
       ->RenderString("emptystring", string())
       ->EndObject();
-  EXPECT_EQ(
-      "{\"bool\":true,"
-      "\"double\":" +
-          ValueAsString<double>(std::numeric_limits<double>::max()) +
-          ","
-          "\"float\":" +
-          ValueAsString<float>(std::numeric_limits<float>::max()) +
-          ","
-          "\"int\":-2147483648,"
-          "\"long\":\"-9223372036854775808\","
-          "\"bytes\":\"YWJyYWNhZGFicmE=\","
-          "\"string\":\"string\","
-          "\"emptybytes\":\"\","
-          "\"emptystring\":\"\"}",
-      CloseStreamAndGetString());
+  EXPECT_EQ("{\"bool\":true,"
+            "\"double\":" +
+                ValueAsString<double>(std::numeric_limits<double>::max()) +
+                ","
+                "\"float\":" +
+                ValueAsString<float>(std::numeric_limits<float>::max()) +
+                ","
+                "\"int\":-2147483648,"
+                "\"long\":\"-9223372036854775808\","
+                "\"bytes\":\"YWJyYWNhZGFicmE=\","
+                "\"string\":\"string\","
+                "\"emptybytes\":\"\","
+                "\"emptystring\":\"\"}",
+            CloseStreamAndGetString());
 }
 
 TEST_F(JsonObjectWriterTest, BytesEncodesAsNonWebSafeBase64) {
@@ -192,16 +190,15 @@ TEST_F(JsonObjectWriterTest, PrettyPrintList) {
       ->StartList("empty")
       ->EndList()
       ->EndObject();
-  EXPECT_EQ(
-      "{\n"
-      " \"items\": [\n"
-      "  \"item1\",\n"
-      "  \"item2\",\n"
-      "  \"item3\"\n"
-      " ],\n"
-      " \"empty\": []\n"
-      "}\n",
-      CloseStreamAndGetString());
+  EXPECT_EQ("{\n"
+            " \"items\": [\n"
+            "  \"item1\",\n"
+            "  \"item2\",\n"
+            "  \"item3\"\n"
+            " ],\n"
+            " \"empty\": []\n"
+            "}\n",
+            CloseStreamAndGetString());
 }
 
 TEST_F(JsonObjectWriterTest, PrettyPrintObject) {
@@ -215,16 +212,15 @@ TEST_F(JsonObjectWriterTest, PrettyPrintObject) {
       ->StartObject("empty")
       ->EndObject()
       ->EndObject();
-  EXPECT_EQ(
-      "{\n"
-      " \"items\": {\n"
-      "  \"key1\": \"item1\",\n"
-      "  \"key2\": \"item2\",\n"
-      "  \"key3\": \"item3\"\n"
-      " },\n"
-      " \"empty\": {}\n"
-      "}\n",
-      CloseStreamAndGetString());
+  EXPECT_EQ("{\n"
+            " \"items\": {\n"
+            "  \"key1\": \"item1\",\n"
+            "  \"key2\": \"item2\",\n"
+            "  \"key3\": \"item3\"\n"
+            " },\n"
+            " \"empty\": {}\n"
+            "}\n",
+            CloseStreamAndGetString());
 }
 
 TEST_F(JsonObjectWriterTest, PrettyPrintEmptyObjectInEmptyList) {
@@ -235,13 +231,12 @@ TEST_F(JsonObjectWriterTest, PrettyPrintEmptyObjectInEmptyList) {
       ->EndObject()
       ->EndList()
       ->EndObject();
-  EXPECT_EQ(
-      "{\n"
-      " \"list\": [\n"
-      "  {}\n"
-      " ]\n"
-      "}\n",
-      CloseStreamAndGetString());
+  EXPECT_EQ("{\n"
+            " \"list\": [\n"
+            "  {}\n"
+            " ]\n"
+            "}\n",
+            CloseStreamAndGetString());
 }
 
 TEST_F(JsonObjectWriterTest, PrettyPrintDoubleIndent) {
@@ -250,12 +245,11 @@ TEST_F(JsonObjectWriterTest, PrettyPrintDoubleIndent) {
       ->RenderBool("bool", true)
       ->RenderInt32("int", 42)
       ->EndObject();
-  EXPECT_EQ(
-      "{\n"
-      "  \"bool\": true,\n"
-      "  \"int\": 42\n"
-      "}\n",
-      CloseStreamAndGetString());
+  EXPECT_EQ("{\n"
+            "  \"bool\": true,\n"
+            "  \"int\": 42\n"
+            "}\n",
+            CloseStreamAndGetString());
 }
 
 TEST_F(JsonObjectWriterTest, StringsEscapedAndEnclosedInDoubleQuotes) {
@@ -275,21 +269,18 @@ TEST_F(JsonObjectWriterTest, Stringification) {
       ->RenderDouble("double_neg", -std::numeric_limits<double>::infinity())
       ->RenderFloat("float_neg", -std::numeric_limits<float>::infinity())
       ->EndObject();
-  EXPECT_EQ(
-      "{\"double_nan\":\"NaN\","
-      "\"float_nan\":\"NaN\","
-      "\"double_pos\":\"Infinity\","
-      "\"float_pos\":\"Infinity\","
-      "\"double_neg\":\"-Infinity\","
-      "\"float_neg\":\"-Infinity\"}",
-      CloseStreamAndGetString());
+  EXPECT_EQ("{\"double_nan\":\"NaN\","
+            "\"float_nan\":\"NaN\","
+            "\"double_pos\":\"Infinity\","
+            "\"float_pos\":\"Infinity\","
+            "\"double_neg\":\"-Infinity\","
+            "\"float_neg\":\"-Infinity\"}",
+            CloseStreamAndGetString());
 }
 
 TEST_F(JsonObjectWriterTest, TestRegularByteEncoding) {
   ow_ = new JsonObjectWriter("", out_stream_);
-  ow_->StartObject("")
-      ->RenderBytes("bytes", "\x03\xef\xc0")
-      ->EndObject();
+  ow_->StartObject("")->RenderBytes("bytes", "\x03\xef\xc0")->EndObject();
 
   // Test that we get regular (non websafe) base64 encoding on byte fields by
   // default.
@@ -299,15 +290,13 @@ TEST_F(JsonObjectWriterTest, TestRegularByteEncoding) {
 TEST_F(JsonObjectWriterTest, TestWebsafeByteEncoding) {
   ow_ = new JsonObjectWriter("", out_stream_);
   ow_->set_use_websafe_base64_for_bytes(true);
-  ow_->StartObject("")
-      ->RenderBytes("bytes", "\x03\xef\xc0\x10")
-      ->EndObject();
+  ow_->StartObject("")->RenderBytes("bytes", "\x03\xef\xc0\x10")->EndObject();
 
   // Test that we get websafe base64 encoding when explicitly asked.
   EXPECT_EQ("{\"bytes\":\"A-_AEA==\"}", CloseStreamAndGetString());
 }
 
-}  // namespace converter
-}  // namespace util
-}  // namespace protobuf
-}  // namespace google
+} // namespace converter
+} // namespace util
+} // namespace protobuf
+} // namespace google

@@ -32,9 +32,9 @@
 
 #include <algorithm>
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/field_mask.pb.h>
+#include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/test_util.h>
 #include <google/protobuf/unittest.pb.h>
 #include <gtest/gtest.h>
@@ -44,8 +44,8 @@ namespace protobuf {
 namespace util {
 
 class SnakeCaseCamelCaseTest : public ::testing::Test {
- protected:
-  string SnakeCaseToCamelCase(const std::string& input) {
+protected:
+  string SnakeCaseToCamelCase(const std::string &input) {
     std::string output;
     if (FieldMaskUtil::SnakeCaseToCamelCase(input, &output)) {
       return output;
@@ -54,7 +54,7 @@ class SnakeCaseCamelCaseTest : public ::testing::Test {
     }
   }
 
-  string CamelCaseToSnakeCase(const std::string& input) {
+  string CamelCaseToSnakeCase(const std::string &input) {
     std::string output;
     if (FieldMaskUtil::CamelCaseToSnakeCase(input, &output)) {
       return output;
@@ -162,7 +162,7 @@ TEST(FieldMaskUtilTest, JsonStringFormat) {
 }
 
 TEST(FieldMaskUtilTest, GetFieldDescriptors) {
-  std::vector<const FieldDescriptor*> field_descriptors;
+  std::vector<const FieldDescriptor *> field_descriptors;
   EXPECT_TRUE(FieldMaskUtil::GetFieldDescriptors(
       TestAllTypes::descriptor(), "optional_int32", &field_descriptors));
   EXPECT_EQ(1, field_descriptors.size());
@@ -278,34 +278,30 @@ TEST(FieldMaskUtilTest, TestToCanonicalForm) {
   EXPECT_EQ("bar,foo.b1,foo.b2", FieldMaskUtil::ToString(out));
 
   // Test more deeply nested cases.
-  FieldMaskUtil::FromString(
-      "foo.bar.baz1,"
-      "foo.bar.baz2.quz,"
-      "foo.bar.baz2",
-      &in);
+  FieldMaskUtil::FromString("foo.bar.baz1,"
+                            "foo.bar.baz2.quz,"
+                            "foo.bar.baz2",
+                            &in);
   FieldMaskUtil::ToCanonicalForm(in, &out);
   EXPECT_EQ("foo.bar.baz1,foo.bar.baz2", FieldMaskUtil::ToString(out));
-  FieldMaskUtil::FromString(
-      "foo.bar.baz1,"
-      "foo.bar.baz2,"
-      "foo.bar.baz2.quz",
-      &in);
+  FieldMaskUtil::FromString("foo.bar.baz1,"
+                            "foo.bar.baz2,"
+                            "foo.bar.baz2.quz",
+                            &in);
   FieldMaskUtil::ToCanonicalForm(in, &out);
   EXPECT_EQ("foo.bar.baz1,foo.bar.baz2", FieldMaskUtil::ToString(out));
-  FieldMaskUtil::FromString(
-      "foo.bar.baz1,"
-      "foo.bar.baz2,"
-      "foo.bar.baz2.quz,"
-      "foo.bar",
-      &in);
+  FieldMaskUtil::FromString("foo.bar.baz1,"
+                            "foo.bar.baz2,"
+                            "foo.bar.baz2.quz,"
+                            "foo.bar",
+                            &in);
   FieldMaskUtil::ToCanonicalForm(in, &out);
   EXPECT_EQ("foo.bar", FieldMaskUtil::ToString(out));
-  FieldMaskUtil::FromString(
-      "foo.bar.baz1,"
-      "foo.bar.baz2,"
-      "foo.bar.baz2.quz,"
-      "foo",
-      &in);
+  FieldMaskUtil::FromString("foo.bar.baz1,"
+                            "foo.bar.baz2,"
+                            "foo.bar.baz2.quz,"
+                            "foo",
+                            &in);
   FieldMaskUtil::ToCanonicalForm(in, &out);
   EXPECT_EQ("foo", FieldMaskUtil::ToString(out));
 }
@@ -410,19 +406,19 @@ TEST(FieldMaskUtilTest, MergeMessage) {
   TestUtil::SetAllFields(&src);
   FieldMaskUtil::MergeOptions options;
 
-#define TEST_MERGE_ONE_PRIMITIVE_FIELD(field_name)           \
-  {                                                          \
-    TestAllTypes tmp;                                        \
-    tmp.set_##field_name(src.field_name());                  \
-    FieldMask mask;                                          \
-    mask.add_paths(#field_name);                             \
-    dst.Clear();                                             \
-    FieldMaskUtil::MergeMessageTo(src, mask, options, &dst); \
-    EXPECT_EQ(tmp.DebugString(), dst.DebugString());         \
-    src.clear_##field_name();                                \
-    tmp.clear_##field_name();                                \
-    FieldMaskUtil::MergeMessageTo(src, mask, options, &dst); \
-    EXPECT_EQ(tmp.DebugString(), dst.DebugString());         \
+#define TEST_MERGE_ONE_PRIMITIVE_FIELD(field_name)                             \
+  {                                                                            \
+    TestAllTypes tmp;                                                          \
+    tmp.set_##field_name(src.field_name());                                    \
+    FieldMask mask;                                                            \
+    mask.add_paths(#field_name);                                               \
+    dst.Clear();                                                               \
+    FieldMaskUtil::MergeMessageTo(src, mask, options, &dst);                   \
+    EXPECT_EQ(tmp.DebugString(), dst.DebugString());                           \
+    src.clear_##field_name();                                                  \
+    tmp.clear_##field_name();                                                  \
+    FieldMaskUtil::MergeMessageTo(src, mask, options, &dst);                   \
+    EXPECT_EQ(tmp.DebugString(), dst.DebugString());                           \
   }
   TEST_MERGE_ONE_PRIMITIVE_FIELD(optional_int32)
   TEST_MERGE_ONE_PRIMITIVE_FIELD(optional_int64)
@@ -444,15 +440,15 @@ TEST(FieldMaskUtilTest, MergeMessage) {
   TEST_MERGE_ONE_PRIMITIVE_FIELD(optional_import_enum)
 #undef TEST_MERGE_ONE_PRIMITIVE_FIELD
 
-#define TEST_MERGE_ONE_FIELD(field_name)                     \
-  {                                                          \
-    TestAllTypes tmp;                                        \
-    *tmp.mutable_##field_name() = src.field_name();          \
-    FieldMask mask;                                          \
-    mask.add_paths(#field_name);                             \
-    dst.Clear();                                             \
-    FieldMaskUtil::MergeMessageTo(src, mask, options, &dst); \
-    EXPECT_EQ(tmp.DebugString(), dst.DebugString());         \
+#define TEST_MERGE_ONE_FIELD(field_name)                                       \
+  {                                                                            \
+    TestAllTypes tmp;                                                          \
+    *tmp.mutable_##field_name() = src.field_name();                            \
+    FieldMask mask;                                                            \
+    mask.add_paths(#field_name);                                               \
+    dst.Clear();                                                               \
+    FieldMaskUtil::MergeMessageTo(src, mask, options, &dst);                   \
+    EXPECT_EQ(tmp.DebugString(), dst.DebugString());                           \
   }
   TEST_MERGE_ONE_FIELD(optional_nested_message)
   TEST_MERGE_ONE_FIELD(optional_foreign_message)
@@ -559,16 +555,16 @@ TEST(FieldMaskUtilTest, MergeMessage) {
 }
 
 TEST(FieldMaskUtilTest, TrimMessage) {
-#define TEST_TRIM_ONE_PRIMITIVE_FIELD(field_name)    \
-  {                                                  \
-    TestAllTypes msg;                                \
-    TestUtil::SetAllFields(&msg);                    \
-    TestAllTypes tmp;                                \
-    tmp.set_##field_name(msg.field_name());          \
-    FieldMask mask;                                  \
-    mask.add_paths(#field_name);                     \
-    FieldMaskUtil::TrimMessage(mask, &msg);          \
-    EXPECT_EQ(tmp.DebugString(), msg.DebugString()); \
+#define TEST_TRIM_ONE_PRIMITIVE_FIELD(field_name)                              \
+  {                                                                            \
+    TestAllTypes msg;                                                          \
+    TestUtil::SetAllFields(&msg);                                              \
+    TestAllTypes tmp;                                                          \
+    tmp.set_##field_name(msg.field_name());                                    \
+    FieldMask mask;                                                            \
+    mask.add_paths(#field_name);                                               \
+    FieldMaskUtil::TrimMessage(mask, &msg);                                    \
+    EXPECT_EQ(tmp.DebugString(), msg.DebugString());                           \
   }
   TEST_TRIM_ONE_PRIMITIVE_FIELD(optional_int32)
   TEST_TRIM_ONE_PRIMITIVE_FIELD(optional_int64)
@@ -590,16 +586,16 @@ TEST(FieldMaskUtilTest, TrimMessage) {
   TEST_TRIM_ONE_PRIMITIVE_FIELD(optional_import_enum)
 #undef TEST_TRIM_ONE_PRIMITIVE_FIELD
 
-#define TEST_TRIM_ONE_FIELD(field_name)              \
-  {                                                  \
-    TestAllTypes msg;                                \
-    TestUtil::SetAllFields(&msg);                    \
-    TestAllTypes tmp;                                \
-    *tmp.mutable_##field_name() = msg.field_name();  \
-    FieldMask mask;                                  \
-    mask.add_paths(#field_name);                     \
-    FieldMaskUtil::TrimMessage(mask, &msg);          \
-    EXPECT_EQ(tmp.DebugString(), msg.DebugString()); \
+#define TEST_TRIM_ONE_FIELD(field_name)                                        \
+  {                                                                            \
+    TestAllTypes msg;                                                          \
+    TestUtil::SetAllFields(&msg);                                              \
+    TestAllTypes tmp;                                                          \
+    *tmp.mutable_##field_name() = msg.field_name();                            \
+    FieldMask mask;                                                            \
+    mask.add_paths(#field_name);                                               \
+    FieldMaskUtil::TrimMessage(mask, &msg);                                    \
+    EXPECT_EQ(tmp.DebugString(), msg.DebugString());                           \
   }
   TEST_TRIM_ONE_FIELD(optional_nested_message)
   TEST_TRIM_ONE_FIELD(optional_foreign_message)
@@ -697,7 +693,7 @@ TEST(FieldMaskUtilTest, TrimMessage) {
   required_msg_2.mutable_required_message()->set_b(3456);
   required_msg_2.mutable_required_message()->set_c(5678);
   required_msg_2.mutable_required_message()->set_dummy2(7890);
-  TestRequired* repeated_msg = required_msg_2.add_repeated_message();
+  TestRequired *repeated_msg = required_msg_2.add_repeated_message();
   repeated_msg->set_a(1234);
   repeated_msg->set_b(3456);
   repeated_msg->set_c(5678);
@@ -813,8 +809,7 @@ TEST(FieldMaskUtilTest, TrimMessageReturnValue) {
   // supported.
 }
 
-
-}  // namespace
-}  // namespace util
-}  // namespace protobuf
-}  // namespace google
+} // namespace
+} // namespace util
+} // namespace protobuf
+} // namespace google

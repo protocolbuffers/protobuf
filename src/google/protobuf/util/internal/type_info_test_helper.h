@@ -34,12 +34,12 @@
 #include <memory>
 #include <vector>
 
-#include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/descriptor.h>
+#include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/util/internal/default_value_objectwriter.h>
-#include <google/protobuf/util/internal/type_info.h>
 #include <google/protobuf/util/internal/protostream_objectsource.h>
 #include <google/protobuf/util/internal/protostream_objectwriter.h>
+#include <google/protobuf/util/internal/type_info.h>
 #include <google/protobuf/util/type_resolver.h>
 
 namespace google {
@@ -57,39 +57,40 @@ enum TypeInfoSource {
 // wraps the detail of where the type info is from and provides the same
 // interface so the same unit-test code can test both scenarios.
 class TypeInfoTestHelper {
- public:
+public:
   explicit TypeInfoTestHelper(TypeInfoSource type) : type_(type) {}
 
   // Creates a TypeInfo object for the given set of descriptors.
-  void ResetTypeInfo(const std::vector<const Descriptor*>& descriptors);
+  void ResetTypeInfo(const std::vector<const Descriptor *> &descriptors);
 
   // Convinent overloads.
-  void ResetTypeInfo(const Descriptor* descriptor);
-  void ResetTypeInfo(const Descriptor* descriptor1,
-                     const Descriptor* descriptor2);
+  void ResetTypeInfo(const Descriptor *descriptor);
+  void ResetTypeInfo(const Descriptor *descriptor1,
+                     const Descriptor *descriptor2);
 
   // Returns the TypeInfo created after ResetTypeInfo.
-  TypeInfo* GetTypeInfo();
+  TypeInfo *GetTypeInfo();
 
-  ProtoStreamObjectSource* NewProtoSource(io::CodedInputStream* coded_input,
-                                          const std::string& type_url);
+  ProtoStreamObjectSource *NewProtoSource(io::CodedInputStream *coded_input,
+                                          const std::string &type_url);
 
-  ProtoStreamObjectWriter* NewProtoWriter(
-      const std::string& type_url, strings::ByteSink* output,
-      ErrorListener* listener, const ProtoStreamObjectWriter::Options& options);
+  ProtoStreamObjectWriter *
+  NewProtoWriter(const std::string &type_url, strings::ByteSink *output,
+                 ErrorListener *listener,
+                 const ProtoStreamObjectWriter::Options &options);
 
-  DefaultValueObjectWriter* NewDefaultValueWriter(const std::string& type_url,
-                                                  ObjectWriter* writer);
+  DefaultValueObjectWriter *NewDefaultValueWriter(const std::string &type_url,
+                                                  ObjectWriter *writer);
 
- private:
+private:
   TypeInfoSource type_;
   std::unique_ptr<TypeInfo> typeinfo_;
   std::unique_ptr<TypeResolver> type_resolver_;
 };
-}  // namespace testing
-}  // namespace converter
-}  // namespace util
-}  // namespace protobuf
-}  // namespace google
+} // namespace testing
+} // namespace converter
+} // namespace util
+} // namespace protobuf
+} // namespace google
 
-#endif  // GOOGLE_PROTOBUF_UTIL_CONVERTER_TYPE_INFO_TEST_HELPER_H__
+#endif // GOOGLE_PROTOBUF_UTIL_CONVERTER_TYPE_INFO_TEST_HELPER_H__

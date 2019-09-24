@@ -64,15 +64,16 @@ namespace internal {
 // moderately-sized inputs, or inputs that share a common prefix and differ
 // somewhere in their last 8 bytes. Further optimizations can be added later
 // if it makes sense to do so.:w
-inline bool memeq(const char* a, const char* b, size_t n) {
+inline bool memeq(const char *a, const char *b, size_t n) {
   size_t n_rounded_down = n & ~static_cast<size_t>(7);
-  if (PROTOBUF_PREDICT_FALSE(n_rounded_down == 0)) {  // n <= 7
+  if (PROTOBUF_PREDICT_FALSE(n_rounded_down == 0)) { // n <= 7
     return memcmp(a, b, n) == 0;
   }
   // n >= 8
   uint64 u = GOOGLE_UNALIGNED_LOAD64(a) ^ GOOGLE_UNALIGNED_LOAD64(b);
-  uint64 v = GOOGLE_UNALIGNED_LOAD64(a + n - 8) ^ GOOGLE_UNALIGNED_LOAD64(b + n - 8);
-  if ((u | v) != 0) {  // The first or last 8 bytes differ.
+  uint64 v =
+      GOOGLE_UNALIGNED_LOAD64(a + n - 8) ^ GOOGLE_UNALIGNED_LOAD64(b + n - 8);
+  if ((u | v) != 0) { // The first or last 8 bytes differ.
     return false;
   }
   a += 8;
@@ -101,7 +102,7 @@ inline int fastmemcmp_inlined(const char *a, const char *b, size_t n) {
   if (n >= 64) {
     return memcmp(a, b, n);
   }
-  const char* a_limit = a + n;
+  const char *a_limit = a + n;
   while (a + sizeof(uint64) <= a_limit &&
          GOOGLE_UNALIGNED_LOAD64(a) == GOOGLE_UNALIGNED_LOAD64(b)) {
     a += sizeof(uint64);
@@ -115,7 +116,8 @@ inline int fastmemcmp_inlined(const char *a, const char *b, size_t n) {
   while (a < a_limit) {
     int d =
         static_cast<int>(static_cast<uint32>(*a++) - static_cast<uint32>(*b++));
-    if (d) return d;
+    if (d)
+      return d;
   }
   return 0;
 }
@@ -128,30 +130,64 @@ inline void memcpy_inlined(char *dst, const char *src, size_t size) {
   // Compiler inlines code with minimal amount of data movement when third
   // parameter of memcpy is a constant.
   switch (size) {
-    case  1: memcpy(dst, src, 1); break;
-    case  2: memcpy(dst, src, 2); break;
-    case  3: memcpy(dst, src, 3); break;
-    case  4: memcpy(dst, src, 4); break;
-    case  5: memcpy(dst, src, 5); break;
-    case  6: memcpy(dst, src, 6); break;
-    case  7: memcpy(dst, src, 7); break;
-    case  8: memcpy(dst, src, 8); break;
-    case  9: memcpy(dst, src, 9); break;
-    case 10: memcpy(dst, src, 10); break;
-    case 11: memcpy(dst, src, 11); break;
-    case 12: memcpy(dst, src, 12); break;
-    case 13: memcpy(dst, src, 13); break;
-    case 14: memcpy(dst, src, 14); break;
-    case 15: memcpy(dst, src, 15); break;
-    case 16: memcpy(dst, src, 16); break;
-    default: memcpy(dst, src, size); break;
+  case 1:
+    memcpy(dst, src, 1);
+    break;
+  case 2:
+    memcpy(dst, src, 2);
+    break;
+  case 3:
+    memcpy(dst, src, 3);
+    break;
+  case 4:
+    memcpy(dst, src, 4);
+    break;
+  case 5:
+    memcpy(dst, src, 5);
+    break;
+  case 6:
+    memcpy(dst, src, 6);
+    break;
+  case 7:
+    memcpy(dst, src, 7);
+    break;
+  case 8:
+    memcpy(dst, src, 8);
+    break;
+  case 9:
+    memcpy(dst, src, 9);
+    break;
+  case 10:
+    memcpy(dst, src, 10);
+    break;
+  case 11:
+    memcpy(dst, src, 11);
+    break;
+  case 12:
+    memcpy(dst, src, 12);
+    break;
+  case 13:
+    memcpy(dst, src, 13);
+    break;
+  case 14:
+    memcpy(dst, src, 14);
+    break;
+  case 15:
+    memcpy(dst, src, 15);
+    break;
+  case 16:
+    memcpy(dst, src, 16);
+    break;
+  default:
+    memcpy(dst, src, size);
+    break;
   }
 }
 
-}  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+} // namespace internal
+} // namespace protobuf
+} // namespace google
 
 #include <google/protobuf/port_undef.inc>
 
-#endif  // GOOGLE_PROTOBUF_STUBS_FASTMEM_H_
+#endif // GOOGLE_PROTOBUF_STUBS_FASTMEM_H_

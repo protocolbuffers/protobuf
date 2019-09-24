@@ -35,9 +35,9 @@
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/type.pb.h>
-#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/statusor.h>
+#include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/type.pb.h>
 
 #include <google/protobuf/port_def.inc>
 
@@ -57,7 +57,7 @@ class ProtoWriter;
 // the actual string or Cord, so it is the user's responsiblity to guarantee
 // that the underlying storage is still valid when the DataPiece is accessed.
 class PROTOBUF_EXPORT DataPiece {
- public:
+public:
   // Identifies data type of the value.
   // These are the types supported by DataPiece.
   enum Type {
@@ -71,7 +71,7 @@ class PROTOBUF_EXPORT DataPiece {
     TYPE_ENUM = 8,
     TYPE_STRING = 9,
     TYPE_BYTES = 10,
-    TYPE_NULL = 11,  // explicit NULL type
+    TYPE_NULL = 11, // explicit NULL type
   };
 
   // Constructors and Destructor
@@ -84,34 +84,30 @@ class PROTOBUF_EXPORT DataPiece {
   explicit DataPiece(const uint64 value)
       : type_(TYPE_UINT64), u64_(value), use_strict_base64_decoding_(false) {}
   explicit DataPiece(const double value)
-      : type_(TYPE_DOUBLE),
-        double_(value),
-        use_strict_base64_decoding_(false) {}
+      : type_(TYPE_DOUBLE), double_(value), use_strict_base64_decoding_(false) {
+  }
   explicit DataPiece(const float value)
       : type_(TYPE_FLOAT), float_(value), use_strict_base64_decoding_(false) {}
   explicit DataPiece(const bool value)
       : type_(TYPE_BOOL), bool_(value), use_strict_base64_decoding_(false) {}
   DataPiece(StringPiece value, bool use_strict_base64_decoding)
-      : type_(TYPE_STRING),
-        str_(StringPiecePod::CreateFromStringPiece(value)),
+      : type_(TYPE_STRING), str_(StringPiecePod::CreateFromStringPiece(value)),
         use_strict_base64_decoding_(use_strict_base64_decoding) {}
   // Constructor for bytes. The second parameter is not used.
   DataPiece(StringPiece value, bool dummy, bool use_strict_base64_decoding)
-      : type_(TYPE_BYTES),
-        str_(StringPiecePod::CreateFromStringPiece(value)),
+      : type_(TYPE_BYTES), str_(StringPiecePod::CreateFromStringPiece(value)),
         use_strict_base64_decoding_(use_strict_base64_decoding) {}
 
-  DataPiece(const DataPiece& r) : type_(r.type_) { InternalCopy(r); }
+  DataPiece(const DataPiece &r) : type_(r.type_) { InternalCopy(r); }
 
-  DataPiece& operator=(const DataPiece& x) {
+  DataPiece &operator=(const DataPiece &x) {
     InternalCopy(x);
     return *this;
   }
 
   static DataPiece NullData() { return DataPiece(TYPE_NULL, 0); }
 
-  virtual ~DataPiece() {
-  }
+  virtual ~DataPiece() {}
 
   // Accessors
   Type type() const { return type_; }
@@ -122,7 +118,6 @@ class PROTOBUF_EXPORT DataPiece {
     GOOGLE_LOG_IF(DFATAL, type_ != TYPE_STRING) << "Not a string type.";
     return str_;
   }
-
 
   // Parses, casts or converts the value stored in the DataPiece into an int32.
   util::StatusOr<int32> ToInt32() const;
@@ -154,7 +149,7 @@ class PROTOBUF_EXPORT DataPiece {
 
   util::StatusOr<std::string> ToBytes() const;
 
- private:
+private:
   friend class ProtoWriter;
 
   // Disallow implicit constructor.
@@ -166,28 +161,26 @@ class PROTOBUF_EXPORT DataPiece {
 
   // Same as the ToEnum() method above but with additional flag to ignore
   // unknown enum values.
-  util::StatusOr<int> ToEnum(const google::protobuf::Enum* enum_type,
-                               bool use_lower_camel_for_enums,
-                               bool case_insensitive_enum_parsing,
-                               bool ignore_unknown_enum_values,
-                               bool* is_unknown_enum_value) const;
+  util::StatusOr<int> ToEnum(const google::protobuf::Enum *enum_type,
+                             bool use_lower_camel_for_enums,
+                             bool case_insensitive_enum_parsing,
+                             bool ignore_unknown_enum_values,
+                             bool *is_unknown_enum_value) const;
 
   // For numeric conversion between
   //     int32, int64, uint32, uint64, double, float and bool
-  template <typename To>
-  util::StatusOr<To> GenericConvert() const;
+  template <typename To> util::StatusOr<To> GenericConvert() const;
 
   // For conversion from string to
   //     int32, int64, uint32, uint64, double, float and bool
   template <typename To>
-  util::StatusOr<To> StringToNumber(bool (*func)(StringPiece,
-                                                   To*)) const;
+  util::StatusOr<To> StringToNumber(bool (*func)(StringPiece, To *)) const;
 
   // Decodes a base64 string. Returns true on success.
-  bool DecodeBase64(StringPiece src, std::string* dest) const;
+  bool DecodeBase64(StringPiece src, std::string *dest) const;
 
   // Helper function to initialize this DataPiece with 'other'.
-  void InternalCopy(const DataPiece& other);
+  void InternalCopy(const DataPiece &other);
 
   // Data type for this piece of data.
   Type type_;
@@ -210,11 +203,11 @@ class PROTOBUF_EXPORT DataPiece {
   bool use_strict_base64_decoding_;
 };
 
-}  // namespace converter
-}  // namespace util
-}  // namespace protobuf
-}  // namespace google
+} // namespace converter
+} // namespace util
+} // namespace protobuf
+} // namespace google
 
 #include <google/protobuf/port_undef.inc>
 
-#endif  // GOOGLE_PROTOBUF_UTIL_CONVERTER_DATAPIECE_H__
+#endif // GOOGLE_PROTOBUF_UTIL_CONVERTER_DATAPIECE_H__

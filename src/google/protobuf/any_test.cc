@@ -32,7 +32,6 @@
 #include <google/protobuf/unittest.pb.h>
 #include <gtest/gtest.h>
 
-
 namespace google {
 namespace protobuf {
 namespace {
@@ -135,7 +134,7 @@ TEST(AnyTest, MoveConstructor) {
   google::protobuf::Any src;
   src.PackFrom(payload);
 
-  const char* type_url = src.type_url().data();
+  const char *type_url = src.type_url().data();
 
   google::protobuf::Any dst(std::move(src));
   EXPECT_EQ(type_url, dst.type_url().data());
@@ -151,7 +150,7 @@ TEST(AnyTest, MoveAssignment) {
   google::protobuf::Any src;
   src.PackFrom(payload);
 
-  const char* type_url = src.type_url().data();
+  const char *type_url = src.type_url().data();
 
   google::protobuf::Any dst;
   dst = std::move(src);
@@ -161,7 +160,6 @@ TEST(AnyTest, MoveAssignment) {
   EXPECT_EQ(12345, payload.int32_value());
 }
 
-
-}  // namespace
-}  // namespace protobuf
-}  // namespace google
+} // namespace
+} // namespace protobuf
+} // namespace google

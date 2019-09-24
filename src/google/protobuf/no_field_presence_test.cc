@@ -30,10 +30,10 @@
 
 #include <string>
 
+#include <google/protobuf/descriptor.h>
+#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/unittest_no_field_presence.pb.h>
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/descriptor.h>
 #include <gtest/gtest.h>
 
 namespace google {
@@ -42,7 +42,7 @@ namespace {
 
 // Helper: checks that all fields have default (zero/empty) values.
 void CheckDefaultValues(
-    const proto2_nofieldpresence_unittest::TestAllTypes& m) {
+    const proto2_nofieldpresence_unittest::TestAllTypes &m) {
   EXPECT_EQ(0, m.optional_int32());
   EXPECT_EQ(0, m.optional_int64());
   EXPECT_EQ(0, m.optional_uint32());
@@ -73,7 +73,6 @@ void CheckDefaultValues(
   EXPECT_EQ(proto2_nofieldpresence_unittest::FOREIGN_FOO,
             m.optional_foreign_enum());
 
-
   EXPECT_EQ(0, m.repeated_int32_size());
   EXPECT_EQ(0, m.repeated_int64_size());
   EXPECT_EQ(0, m.repeated_uint32_size());
@@ -99,7 +98,7 @@ void CheckDefaultValues(
             m.oneof_field_case());
 }
 
-void FillValues(proto2_nofieldpresence_unittest::TestAllTypes* m) {
+void FillValues(proto2_nofieldpresence_unittest::TestAllTypes *m) {
   m->set_optional_int32(100);
   m->set_optional_int64(101);
   m->set_optional_uint32(102);
@@ -147,11 +146,11 @@ void FillValues(proto2_nofieldpresence_unittest::TestAllTypes* m) {
 
   m->set_oneof_uint32(1);
   m->mutable_oneof_nested_message()->set_bb(50);
-  m->set_oneof_string("test");  // only this one remains set
+  m->set_oneof_string("test"); // only this one remains set
 }
 
 void CheckNonDefaultValues(
-    const proto2_nofieldpresence_unittest::TestAllTypes& m) {
+    const proto2_nofieldpresence_unittest::TestAllTypes &m) {
   EXPECT_EQ(100, m.optional_int32());
   EXPECT_EQ(101, m.optional_int64());
   EXPECT_EQ(102, m.optional_uint32());
@@ -279,19 +278,20 @@ TEST(NoFieldPresenceTest, ReflectionHasFieldTest) {
   // behaves properly for message fields.
 
   proto2_nofieldpresence_unittest::TestAllTypes message;
-  const Reflection* r = message.GetReflection();
-  const Descriptor* desc = message.GetDescriptor();
+  const Reflection *r = message.GetReflection();
+  const Descriptor *desc = message.GetDescriptor();
 
   // Check initial state: scalars not present (due to need to be consistent with
   // MergeFrom()), message fields not present, oneofs not present.
   for (int i = 0; i < desc->field_count(); i++) {
-    const FieldDescriptor* field = desc->field(i);
-    if (field->is_repeated()) continue;
+    const FieldDescriptor *field = desc->field(i);
+    if (field->is_repeated())
+      continue;
     EXPECT_EQ(false, r->HasField(message, field));
   }
 
   // Test field presence of a message field on the default instance.
-  const FieldDescriptor* msg_field =
+  const FieldDescriptor *msg_field =
       desc->FindFieldByName("optional_nested_message");
   EXPECT_EQ(
       false,
@@ -302,7 +302,7 @@ TEST(NoFieldPresenceTest, ReflectionHasFieldTest) {
   // Fill all fields, expect everything to report true (check oneofs below).
   FillValues(&message);
   for (int i = 0; i < desc->field_count(); i++) {
-    const FieldDescriptor* field = desc->field(i);
+    const FieldDescriptor *field = desc->field(i);
     if (field->is_repeated() || field->containing_oneof()) {
       continue;
     }
@@ -315,10 +315,10 @@ TEST(NoFieldPresenceTest, ReflectionHasFieldTest) {
   message.Clear();
 
   // Check zero/empty-means-not-present semantics.
-  const FieldDescriptor* field_int32 = desc->FindFieldByName("optional_int32");
-  const FieldDescriptor* field_double =
+  const FieldDescriptor *field_int32 = desc->FindFieldByName("optional_int32");
+  const FieldDescriptor *field_double =
       desc->FindFieldByName("optional_double");
-  const FieldDescriptor* field_string =
+  const FieldDescriptor *field_string =
       desc->FindFieldByName("optional_string");
 
   EXPECT_EQ(false, r->HasField(message, field_int32));
@@ -344,17 +344,17 @@ TEST(NoFieldPresenceTest, ReflectionHasFieldTest) {
 TEST(NoFieldPresenceTest, ReflectionClearFieldTest) {
   proto2_nofieldpresence_unittest::TestAllTypes message;
 
-  const Reflection* r = message.GetReflection();
-  const Descriptor* desc = message.GetDescriptor();
+  const Reflection *r = message.GetReflection();
+  const Descriptor *desc = message.GetDescriptor();
 
-  const FieldDescriptor* field_int32 = desc->FindFieldByName("optional_int32");
-  const FieldDescriptor* field_double =
+  const FieldDescriptor *field_int32 = desc->FindFieldByName("optional_int32");
+  const FieldDescriptor *field_double =
       desc->FindFieldByName("optional_double");
-  const FieldDescriptor* field_string =
+  const FieldDescriptor *field_string =
       desc->FindFieldByName("optional_string");
-  const FieldDescriptor* field_message =
+  const FieldDescriptor *field_message =
       desc->FindFieldByName("optional_nested_message");
-  const FieldDescriptor* field_lazy =
+  const FieldDescriptor *field_lazy =
       desc->FindFieldByName("optional_lazy_message");
 
   message.set_optional_int32(42);
@@ -384,13 +384,13 @@ TEST(NoFieldPresenceTest, HasFieldOneofsTest) {
   // check that HasField behaves properly for oneofs.
   proto2_nofieldpresence_unittest::TestAllTypes message;
 
-  const Reflection* r = message.GetReflection();
-  const Descriptor* desc = message.GetDescriptor();
-  const FieldDescriptor* desc_oneof_uint32 =
+  const Reflection *r = message.GetReflection();
+  const Descriptor *desc = message.GetDescriptor();
+  const FieldDescriptor *desc_oneof_uint32 =
       desc->FindFieldByName("oneof_uint32");
-  const FieldDescriptor* desc_oneof_nested_message =
+  const FieldDescriptor *desc_oneof_nested_message =
       desc->FindFieldByName("oneof_nested_message");
-  const FieldDescriptor* desc_oneof_string =
+  const FieldDescriptor *desc_oneof_string =
       desc->FindFieldByName("oneof_string");
   GOOGLE_CHECK(desc_oneof_uint32 != nullptr);
   GOOGLE_CHECK(desc_oneof_nested_message != nullptr);
@@ -442,9 +442,9 @@ TEST(NoFieldPresenceTest, DontSerializeDefaultValuesTest) {
   message.set_optional_string("");
   message.set_optional_bytes("");
   message.set_optional_nested_enum(
-      proto2_nofieldpresence_unittest::TestAllTypes::FOO);  // first enum entry
+      proto2_nofieldpresence_unittest::TestAllTypes::FOO); // first enum entry
   message.set_optional_foreign_enum(
-      proto2_nofieldpresence_unittest::FOREIGN_FOO);  // first enum entry
+      proto2_nofieldpresence_unittest::FOREIGN_FOO); // first enum entry
 
   message.SerializeToString(&output);
   EXPECT_EQ(0, output.size());
@@ -497,9 +497,9 @@ TEST(NoFieldPresenceTest, LazyMessageFieldHasBit) {
   // Check that has-bit interaction with lazy message works (has-bit before and
   // after lazy decode).
   proto2_nofieldpresence_unittest::TestAllTypes message;
-  const Reflection* r = message.GetReflection();
-  const Descriptor* desc = message.GetDescriptor();
-  const FieldDescriptor* field = desc->FindFieldByName("optional_lazy_message");
+  const Reflection *r = message.GetReflection();
+  const Descriptor *desc = message.GetDescriptor();
+  const FieldDescriptor *field = desc->FindFieldByName("optional_lazy_message");
   GOOGLE_CHECK(field != nullptr);
 
   EXPECT_EQ(false, message.has_optional_lazy_message());
@@ -547,7 +547,7 @@ TEST(NoFieldPresenceTest, OneofPresence) {
 
   // Also test int32 and enum fields.
   message.Clear();
-  message.set_oneof_uint32(0);  // would not go on wire if ordinary field.
+  message.set_oneof_uint32(0); // would not go on wire if ordinary field.
   message.SerializeToString(&serialized);
   EXPECT_EQ(3, serialized.size());
   EXPECT_TRUE(message.ParseFromString(serialized));
@@ -556,8 +556,8 @@ TEST(NoFieldPresenceTest, OneofPresence) {
 
   message.Clear();
   message.set_oneof_enum(
-      proto2_nofieldpresence_unittest::TestAllTypes::FOO);  // default
-                                                            // value.
+      proto2_nofieldpresence_unittest::TestAllTypes::FOO); // default
+                                                           // value.
   message.SerializeToString(&serialized);
   EXPECT_EQ(3, serialized.size());
   EXPECT_TRUE(message.ParseFromString(serialized));
@@ -570,6 +570,6 @@ TEST(NoFieldPresenceTest, OneofPresence) {
   EXPECT_EQ(0, message.ByteSize());
 }
 
-}  // namespace
-}  // namespace protobuf
-}  // namespace google
+} // namespace
+} // namespace protobuf
+} // namespace google

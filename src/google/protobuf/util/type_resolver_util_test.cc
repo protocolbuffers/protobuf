@@ -35,15 +35,15 @@
 #include <string>
 #include <vector>
 
-#include <google/protobuf/type.pb.h>
-#include <google/protobuf/wrappers.pb.h>
 #include <google/protobuf/map_unittest.pb.h>
 #include <google/protobuf/test_util.h>
+#include <google/protobuf/testing/googletest.h>
+#include <google/protobuf/type.pb.h>
 #include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/unittest_custom_options.pb.h>
 #include <google/protobuf/util/json_format_proto3.pb.h>
 #include <google/protobuf/util/type_resolver.h>
-#include <google/protobuf/testing/googletest.h>
+#include <google/protobuf/wrappers.pb.h>
 #include <gtest/gtest.h>
 
 namespace google {
@@ -62,15 +62,15 @@ using google::protobuf::UInt64Value;
 static const char kUrlPrefix[] = "type.googleapis.com";
 
 class DescriptorPoolTypeResolverTest : public testing::Test {
- public:
+public:
   DescriptorPoolTypeResolverTest() {
     resolver_.reset(NewTypeResolverForDescriptorPool(
         kUrlPrefix, DescriptorPool::generated_pool()));
   }
 
-  const Field* FindField(const Type& type, const std::string& name) {
+  const Field *FindField(const Type &type, const std::string &name) {
     for (int i = 0; i < type.fields_size(); ++i) {
-      const Field& field = type.fields(i);
+      const Field &field = type.fields(i);
       if (field.name() == name) {
         return &field;
       }
@@ -78,9 +78,9 @@ class DescriptorPoolTypeResolverTest : public testing::Test {
     return NULL;
   }
 
-  bool HasField(const Type& type, Field::Cardinality cardinality,
-                Field::Kind kind, const std::string& name, int number) {
-    const Field* field = FindField(type, name);
+  bool HasField(const Type &type, Field::Cardinality cardinality,
+                Field::Kind kind, const std::string &name, int number) {
+    const Field *field = FindField(type, name);
     if (field == NULL) {
       return false;
     }
@@ -88,18 +88,18 @@ class DescriptorPoolTypeResolverTest : public testing::Test {
            field->number() == number;
   }
 
-  bool CheckFieldTypeUrl(const Type& type, const std::string& name,
-                         const std::string& type_url) {
-    const Field* field = FindField(type, name);
+  bool CheckFieldTypeUrl(const Type &type, const std::string &name,
+                         const std::string &type_url) {
+    const Field *field = FindField(type, name);
     if (field == NULL) {
       return false;
     }
     return field->type_url() == type_url;
   }
 
-  bool FieldInOneof(const Type& type, const std::string& name,
-                    const std::string& oneof_name) {
-    const Field* field = FindField(type, name);
+  bool FieldInOneof(const Type &type, const std::string &name,
+                    const std::string &oneof_name) {
+    const Field *field = FindField(type, name);
     if (field == NULL || field->oneof_index() <= 0 ||
         field->oneof_index() > type.oneofs_size()) {
       return false;
@@ -107,16 +107,16 @@ class DescriptorPoolTypeResolverTest : public testing::Test {
     return type.oneofs(field->oneof_index() - 1) == oneof_name;
   }
 
-  bool IsPacked(const Type& type, const std::string& name) {
-    const Field* field = FindField(type, name);
+  bool IsPacked(const Type &type, const std::string &name) {
+    const Field *field = FindField(type, name);
     if (field == NULL) {
       return false;
     }
     return field->packed();
   }
 
-  const EnumValue* FindEnumValue(const Enum& type, const std::string& name) {
-    for (const EnumValue& value : type.enumvalue()) {
+  const EnumValue *FindEnumValue(const Enum &type, const std::string &name) {
+    for (const EnumValue &value : type.enumvalue()) {
       if (value.name() == name) {
         return &value;
       }
@@ -124,30 +124,30 @@ class DescriptorPoolTypeResolverTest : public testing::Test {
     return nullptr;
   }
 
-  bool EnumHasValue(const Enum& type, const std::string& name, int number) {
-    const EnumValue* value = FindEnumValue(type, name);
+  bool EnumHasValue(const Enum &type, const std::string &name, int number) {
+    const EnumValue *value = FindEnumValue(type, name);
     return value != nullptr && value->number() == number;
   }
 
-  bool HasBoolOption(const RepeatedPtrField<Option>& options,
-                     const std::string& name, bool value) {
+  bool HasBoolOption(const RepeatedPtrField<Option> &options,
+                     const std::string &name, bool value) {
     return HasOption<BoolValue>(options, name, value);
   }
 
-  bool HasInt32Option(const RepeatedPtrField<Option>& options,
-                      const std::string& name, int32 value) {
+  bool HasInt32Option(const RepeatedPtrField<Option> &options,
+                      const std::string &name, int32 value) {
     return HasOption<Int32Value>(options, name, value);
   }
 
-  bool HasUInt64Option(const RepeatedPtrField<Option>& options,
-                       const std::string& name, uint64 value) {
+  bool HasUInt64Option(const RepeatedPtrField<Option> &options,
+                       const std::string &name, uint64 value) {
     return HasOption<UInt64Value>(options, name, value);
   }
 
   template <typename WrapperT, typename T>
-  bool HasOption(const RepeatedPtrField<Option>& options,
-                 const std::string& name, T value) {
-    for (const Option& option : options) {
+  bool HasOption(const RepeatedPtrField<Option> &options,
+                 const std::string &name, T value) {
+    for (const Option &option : options) {
       if (option.name() == name) {
         WrapperT wrapper;
         if (option.value().UnpackTo(&wrapper) && wrapper.value() == value) {
@@ -162,12 +162,11 @@ class DescriptorPoolTypeResolverTest : public testing::Test {
     return kUrlPrefix + std::string("/") + full_name;
   }
 
-  template <typename T>
-  std::string GetTypeUrl() {
+  template <typename T> std::string GetTypeUrl() {
     return GetTypeUrl(T::descriptor()->full_name());
   }
 
- protected:
+protected:
   std::unique_ptr<TypeResolver> resolver_;
 };
 
@@ -224,17 +223,18 @@ TEST_F(DescriptorPoolTypeResolverTest, TestAllTypes) {
   EXPECT_TRUE(CheckFieldTypeUrl(
       type, "optional_nested_message",
       GetTypeUrl<protobuf_unittest::TestAllTypes::NestedMessage>()));
-  EXPECT_TRUE(CheckFieldTypeUrl(type, "optional_foreign_message",
-                                GetTypeUrl<protobuf_unittest::ForeignMessage>()));
+  EXPECT_TRUE(
+      CheckFieldTypeUrl(type, "optional_foreign_message",
+                        GetTypeUrl<protobuf_unittest::ForeignMessage>()));
 
   EXPECT_TRUE(HasField(type, Field::CARDINALITY_OPTIONAL, Field::TYPE_ENUM,
                        "optional_nested_enum", 21));
   EXPECT_TRUE(HasField(type, Field::CARDINALITY_OPTIONAL, Field::TYPE_ENUM,
                        "optional_foreign_enum", 22));
 
-  EXPECT_TRUE(
-      CheckFieldTypeUrl(type, "optional_nested_enum",
-                        GetTypeUrl("protobuf_unittest.TestAllTypes.NestedEnum")));
+  EXPECT_TRUE(CheckFieldTypeUrl(
+      type, "optional_nested_enum",
+      GetTypeUrl("protobuf_unittest.TestAllTypes.NestedEnum")));
   EXPECT_TRUE(CheckFieldTypeUrl(type, "optional_foreign_enum",
                                 GetTypeUrl("protobuf_unittest.ForeignEnum")));
 
@@ -285,17 +285,18 @@ TEST_F(DescriptorPoolTypeResolverTest, TestAllTypes) {
   EXPECT_TRUE(CheckFieldTypeUrl(
       type, "repeated_nested_message",
       GetTypeUrl<protobuf_unittest::TestAllTypes::NestedMessage>()));
-  EXPECT_TRUE(CheckFieldTypeUrl(type, "repeated_foreign_message",
-                                GetTypeUrl<protobuf_unittest::ForeignMessage>()));
+  EXPECT_TRUE(
+      CheckFieldTypeUrl(type, "repeated_foreign_message",
+                        GetTypeUrl<protobuf_unittest::ForeignMessage>()));
 
   EXPECT_TRUE(HasField(type, Field::CARDINALITY_REPEATED, Field::TYPE_ENUM,
                        "repeated_nested_enum", 51));
   EXPECT_TRUE(HasField(type, Field::CARDINALITY_REPEATED, Field::TYPE_ENUM,
                        "repeated_foreign_enum", 52));
 
-  EXPECT_TRUE(
-      CheckFieldTypeUrl(type, "repeated_nested_enum",
-                        GetTypeUrl("protobuf_unittest.TestAllTypes.NestedEnum")));
+  EXPECT_TRUE(CheckFieldTypeUrl(
+      type, "repeated_nested_enum",
+      GetTypeUrl("protobuf_unittest.TestAllTypes.NestedEnum")));
   EXPECT_TRUE(CheckFieldTypeUrl(type, "repeated_foreign_enum",
                                 GetTypeUrl("protobuf_unittest.ForeignEnum")));
 }
@@ -371,7 +372,7 @@ TEST_F(DescriptorPoolTypeResolverTest, TestCustomFieldOptions) {
               GetTypeUrl<protobuf_unittest::TestMessageWithCustomOptions>(),
               &type)
           .ok());
-  const Field* field = FindField(type, "field1");
+  const Field *field = FindField(type, "field1");
   ASSERT_TRUE(field != nullptr);
   EXPECT_TRUE(HasUInt64Option(field->options(), "protobuf_unittest.field_opt1",
                               8765432109));
@@ -395,7 +396,8 @@ TEST_F(DescriptorPoolTypeResolverTest, TestCustomEnumOptions) {
   ASSERT_TRUE(
       resolver_
           ->ResolveEnumType(
-              GetTypeUrl("protobuf_unittest.TestMessageWithCustomOptions.AnEnum"),
+              GetTypeUrl(
+                  "protobuf_unittest.TestMessageWithCustomOptions.AnEnum"),
               &type)
           .ok());
   ASSERT_TRUE(
@@ -407,13 +409,14 @@ TEST_F(DescriptorPoolTypeResolverTest, TestCustomValueOptions) {
   ASSERT_TRUE(
       resolver_
           ->ResolveEnumType(
-              GetTypeUrl("protobuf_unittest.TestMessageWithCustomOptions.AnEnum"),
+              GetTypeUrl(
+                  "protobuf_unittest.TestMessageWithCustomOptions.AnEnum"),
               &type)
           .ok());
-  const EnumValue* value = FindEnumValue(type, "ANENUM_VAL2");
+  const EnumValue *value = FindEnumValue(type, "ANENUM_VAL2");
   ASSERT_TRUE(value != nullptr);
-  ASSERT_TRUE(
-      HasInt32Option(value->options(), "protobuf_unittest.enum_value_opt1", 123));
+  ASSERT_TRUE(HasInt32Option(value->options(),
+                             "protobuf_unittest.enum_value_opt1", 123));
 }
 
 TEST_F(DescriptorPoolTypeResolverTest, TestJsonName) {
@@ -431,7 +434,7 @@ TEST_F(DescriptorPoolTypeResolverTest, TestJsonName) {
   EXPECT_EQ("@value", FindField(type, "value")->json_name());
 }
 
-}  // namespace
-}  // namespace util
-}  // namespace protobuf
-}  // namespace google
+} // namespace
+} // namespace util
+} // namespace protobuf
+} // namespace google

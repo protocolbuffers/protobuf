@@ -42,15 +42,15 @@
 
 #include <memory>
 
+#include <google/protobuf/descriptor.h>
+#include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/test_util.h>
 #include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/unittest_no_field_presence.pb.h>
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/dynamic_message.h>
 
-#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 
@@ -58,19 +58,19 @@ namespace google {
 namespace protobuf {
 
 class DynamicMessageTest : public ::testing::TestWithParam<bool> {
- protected:
+protected:
   DescriptorPool pool_;
   DynamicMessageFactory factory_;
-  const Descriptor* descriptor_;
-  const Message* prototype_;
-  const Descriptor* extensions_descriptor_;
-  const Message* extensions_prototype_;
-  const Descriptor* packed_descriptor_;
-  const Message* packed_prototype_;
-  const Descriptor* oneof_descriptor_;
-  const Message* oneof_prototype_;
-  const Descriptor* proto3_descriptor_;
-  const Message* proto3_prototype_;
+  const Descriptor *descriptor_;
+  const Message *prototype_;
+  const Descriptor *extensions_descriptor_;
+  const Message *extensions_prototype_;
+  const Descriptor *packed_descriptor_;
+  const Message *packed_prototype_;
+  const Descriptor *oneof_descriptor_;
+  const Message *oneof_prototype_;
+  const Descriptor *proto3_descriptor_;
+  const Message *proto3_prototype_;
 
   DynamicMessageTest() : factory_(&pool_) {}
 
@@ -145,7 +145,7 @@ TEST_P(DynamicMessageTest, IndependentOffsets) {
   // one to a unique value then checking that they all still have those
   // unique values (i.e. they don't stomp each other).
   Arena arena;
-  Message* message = prototype_->New(GetParam() ? &arena : NULL);
+  Message *message = prototype_->New(GetParam() ? &arena : NULL);
   TestUtil::ReflectionTester reflection_tester(descriptor_);
 
   reflection_tester.SetAllFieldsViaReflection(message);
@@ -159,7 +159,7 @@ TEST_P(DynamicMessageTest, IndependentOffsets) {
 TEST_P(DynamicMessageTest, Extensions) {
   // Check that extensions work.
   Arena arena;
-  Message* message = extensions_prototype_->New(GetParam() ? &arena : NULL);
+  Message *message = extensions_prototype_->New(GetParam() ? &arena : NULL);
   TestUtil::ReflectionTester reflection_tester(extensions_descriptor_);
 
   reflection_tester.SetAllFieldsViaReflection(message);
@@ -173,7 +173,7 @@ TEST_P(DynamicMessageTest, Extensions) {
 TEST_P(DynamicMessageTest, PackedFields) {
   // Check that packed fields work properly.
   Arena arena;
-  Message* message = packed_prototype_->New(GetParam() ? &arena : NULL);
+  Message *message = packed_prototype_->New(GetParam() ? &arena : NULL);
   TestUtil::ReflectionTester reflection_tester(packed_descriptor_);
 
   reflection_tester.SetPackedFieldsViaReflection(message);
@@ -187,11 +187,11 @@ TEST_P(DynamicMessageTest, PackedFields) {
 TEST_P(DynamicMessageTest, Oneof) {
   // Check that oneof fields work properly.
   Arena arena;
-  Message* message = oneof_prototype_->New(GetParam() ? &arena : NULL);
+  Message *message = oneof_prototype_->New(GetParam() ? &arena : NULL);
 
   // Check default values.
-  const Descriptor* descriptor = message->GetDescriptor();
-  const Reflection* reflection = message->GetReflection();
+  const Descriptor *descriptor = message->GetDescriptor();
+  const Reflection *reflection = message->GetReflection();
   EXPECT_EQ(0, reflection->GetInt32(*message,
                                     descriptor->FindFieldByName("foo_int")));
   EXPECT_EQ("", reflection->GetString(
@@ -206,16 +206,16 @@ TEST_P(DynamicMessageTest, Oneof) {
       unittest::TestOneof2::FOO,
       reflection->GetEnum(*message, descriptor->FindFieldByName("foo_enum"))
           ->number());
-  const Descriptor* nested_descriptor;
-  const Message* nested_prototype;
+  const Descriptor *nested_descriptor;
+  const Message *nested_prototype;
   nested_descriptor =
       pool_.FindMessageTypeByName("protobuf_unittest.TestOneof2.NestedMessage");
   nested_prototype = factory_.GetPrototype(nested_descriptor);
   EXPECT_EQ(nested_prototype,
             &reflection->GetMessage(
                 *message, descriptor->FindFieldByName("foo_message")));
-  const Descriptor* foogroup_descriptor;
-  const Message* foogroup_prototype;
+  const Descriptor *foogroup_descriptor;
+  const Message *foogroup_prototype;
   foogroup_descriptor =
       pool_.FindMessageTypeByName("protobuf_unittest.TestOneof2.FooGroup");
   foogroup_prototype = factory_.GetPrototype(foogroup_descriptor);
@@ -258,7 +258,7 @@ TEST_P(DynamicMessageTest, SpaceUsed) {
   // to test very much here.  Just make sure it appears to be working.
 
   Arena arena;
-  Message* message = prototype_->New(GetParam() ? &arena : NULL);
+  Message *message = prototype_->New(GetParam() ? &arena : NULL);
   TestUtil::ReflectionTester reflection_tester(descriptor_);
 
   int initial_space_used = message->SpaceUsed();
@@ -273,10 +273,10 @@ TEST_P(DynamicMessageTest, SpaceUsed) {
 
 TEST_F(DynamicMessageTest, Arena) {
   Arena arena;
-  Message* message = prototype_->New(&arena);
-  Message* extension_message = extensions_prototype_->New(&arena);
-  Message* packed_message = packed_prototype_->New(&arena);
-  Message* oneof_message = oneof_prototype_->New(&arena);
+  Message *message = prototype_->New(&arena);
+  Message *extension_message = extensions_prototype_->New(&arena);
+  Message *packed_message = packed_prototype_->New(&arena);
+  Message *oneof_message = oneof_prototype_->New(&arena);
 
   // avoid unused-variable error.
   (void)message;
@@ -287,17 +287,17 @@ TEST_F(DynamicMessageTest, Arena) {
 }
 
 TEST_F(DynamicMessageTest, Proto3) {
-  Message* message = proto3_prototype_->New();
-  const Reflection* refl = message->GetReflection();
-  const Descriptor* desc = message->GetDescriptor();
+  Message *message = proto3_prototype_->New();
+  const Reflection *refl = message->GetReflection();
+  const Descriptor *desc = message->GetDescriptor();
 
   // Just test a single primtive and single message field here to make sure we
   // are getting the no-field-presence semantics elsewhere. DynamicMessage uses
   // GeneratedMessageReflection under the hood, so the rest should be fine as
   // long as GMR recognizes that we're using a proto3 message.
-  const FieldDescriptor* optional_int32 =
+  const FieldDescriptor *optional_int32 =
       desc->FindFieldByName("optional_int32");
-  const FieldDescriptor* optional_msg =
+  const FieldDescriptor *optional_msg =
       desc->FindFieldByName("optional_nested_message");
   EXPECT_TRUE(optional_int32 != NULL);
   EXPECT_TRUE(optional_msg != NULL);
@@ -322,5 +322,5 @@ TEST_F(DynamicMessageTest, Proto3) {
 
 INSTANTIATE_TEST_SUITE_P(UseArena, DynamicMessageTest, ::testing::Bool());
 
-}  // namespace protobuf
-}  // namespace google
+} // namespace protobuf
+} // namespace google

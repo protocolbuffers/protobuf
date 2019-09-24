@@ -39,11 +39,11 @@
 
 #include <vector>
 
+#include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 
@@ -75,59 +75,59 @@ namespace {
 // which failed will be printed.  The case type must be printable using
 // ostream::operator<<.
 
-#define TEST_1D(FIXTURE, NAME, CASES)                             \
-  class FIXTURE##_##NAME##_DD : public FIXTURE {                  \
-   protected:                                                     \
-    template <typename CaseType>                                  \
-    void DoSingleCase(const CaseType& CASES##_case);              \
-  };                                                              \
-                                                                  \
-  TEST_F(FIXTURE##_##NAME##_DD, NAME) {                           \
-    for (int i = 0; i < GOOGLE_ARRAYSIZE(CASES); i++) {                  \
-      SCOPED_TRACE(testing::Message()                             \
-                   << #CASES " case #" << i << ": " << CASES[i]); \
-      DoSingleCase(CASES[i]);                                     \
-    }                                                             \
-  }                                                               \
-                                                                  \
-  template <typename CaseType>                                    \
-  void FIXTURE##_##NAME##_DD::DoSingleCase(const CaseType& CASES##_case)
+#define TEST_1D(FIXTURE, NAME, CASES)                                          \
+  class FIXTURE##_##NAME##_DD : public FIXTURE {                               \
+  protected:                                                                   \
+    template <typename CaseType>                                               \
+    void DoSingleCase(const CaseType &CASES##_case);                           \
+  };                                                                           \
+                                                                               \
+  TEST_F(FIXTURE##_##NAME##_DD, NAME) {                                        \
+    for (int i = 0; i < GOOGLE_ARRAYSIZE(CASES); i++) {                        \
+      SCOPED_TRACE(testing::Message()                                          \
+                   << #CASES " case #" << i << ": " << CASES[i]);              \
+      DoSingleCase(CASES[i]);                                                  \
+    }                                                                          \
+  }                                                                            \
+                                                                               \
+  template <typename CaseType>                                                 \
+  void FIXTURE##_##NAME##_DD::DoSingleCase(const CaseType &CASES##_case)
 
-#define TEST_2D(FIXTURE, NAME, CASES1, CASES2)                              \
-  class FIXTURE##_##NAME##_DD : public FIXTURE {                            \
-   protected:                                                               \
-    template <typename CaseType1, typename CaseType2>                       \
-    void DoSingleCase(const CaseType1& CASES1##_case,                       \
-                      const CaseType2& CASES2##_case);                      \
-  };                                                                        \
-                                                                            \
-  TEST_F(FIXTURE##_##NAME##_DD, NAME) {                                     \
-    for (int i = 0; i < GOOGLE_ARRAYSIZE(CASES1); i++) {                           \
-      for (int j = 0; j < GOOGLE_ARRAYSIZE(CASES2); j++) {                         \
-        SCOPED_TRACE(testing::Message()                                     \
-                     << #CASES1 " case #" << i << ": " << CASES1[i] << ", " \
-                     << #CASES2 " case #" << j << ": " << CASES2[j]);       \
-        DoSingleCase(CASES1[i], CASES2[j]);                                 \
-      }                                                                     \
-    }                                                                       \
-  }                                                                         \
-                                                                            \
-  template <typename CaseType1, typename CaseType2>                         \
-  void FIXTURE##_##NAME##_DD::DoSingleCase(const CaseType1& CASES1##_case,  \
-                                           const CaseType2& CASES2##_case)
+#define TEST_2D(FIXTURE, NAME, CASES1, CASES2)                                 \
+  class FIXTURE##_##NAME##_DD : public FIXTURE {                               \
+  protected:                                                                   \
+    template <typename CaseType1, typename CaseType2>                          \
+    void DoSingleCase(const CaseType1 &CASES1##_case,                          \
+                      const CaseType2 &CASES2##_case);                         \
+  };                                                                           \
+                                                                               \
+  TEST_F(FIXTURE##_##NAME##_DD, NAME) {                                        \
+    for (int i = 0; i < GOOGLE_ARRAYSIZE(CASES1); i++) {                       \
+      for (int j = 0; j < GOOGLE_ARRAYSIZE(CASES2); j++) {                     \
+        SCOPED_TRACE(testing::Message()                                        \
+                     << #CASES1 " case #" << i << ": " << CASES1[i] << ", "    \
+                     << #CASES2 " case #" << j << ": " << CASES2[j]);          \
+        DoSingleCase(CASES1[i], CASES2[j]);                                    \
+      }                                                                        \
+    }                                                                          \
+  }                                                                            \
+                                                                               \
+  template <typename CaseType1, typename CaseType2>                            \
+  void FIXTURE##_##NAME##_DD::DoSingleCase(const CaseType1 &CASES1##_case,     \
+                                           const CaseType2 &CASES2##_case)
 
 // -------------------------------------------------------------------
 
 // An input stream that is basically like an ArrayInputStream but sometimes
 // returns empty buffers, just to throw us off.
 class TestInputStream : public ZeroCopyInputStream {
- public:
-  TestInputStream(const void* data, int size, int block_size)
+public:
+  TestInputStream(const void *data, int size, int block_size)
       : array_stream_(data, size, block_size), counter_(0) {}
   ~TestInputStream() {}
 
   // implements ZeroCopyInputStream ----------------------------------
-  bool Next(const void** data, int* size) override {
+  bool Next(const void **data, int *size) override {
     // We'll return empty buffers starting with the first buffer, and every
     // 3 and 5 buffers after that.
     if (counter_ % 3 == 0 || counter_ % 5 == 0) {
@@ -145,7 +145,7 @@ class TestInputStream : public ZeroCopyInputStream {
   bool Skip(int count) override { return array_stream_.Skip(count); }
   int64_t ByteCount() const override { return array_stream_.ByteCount(); }
 
- private:
+private:
   ArrayInputStream array_stream_;
   int counter_;
 };
@@ -155,14 +155,14 @@ class TestInputStream : public ZeroCopyInputStream {
 // An error collector which simply concatenates all its errors into a big
 // block of text which can be checked.
 class TestErrorCollector : public ErrorCollector {
- public:
+public:
   TestErrorCollector() {}
   ~TestErrorCollector() {}
 
   std::string text_;
 
   // implements ErrorCollector ---------------------------------------
-  void AddError(int line, int column, const std::string& message) {
+  void AddError(int line, int column, const std::string &message) {
     strings::SubstituteAndAppend(&text_, "$0:$1: $2\n", line, column, message);
   }
 };
@@ -176,9 +176,9 @@ class TestErrorCollector : public ErrorCollector {
 const int kBlockSizes[] = {1, 2, 3, 5, 7, 13, 32, 1024};
 
 class TokenizerTest : public testing::Test {
- protected:
+protected:
   // For easy testing.
-  uint64 ParseInteger(const std::string& text) {
+  uint64 ParseInteger(const std::string &text) {
     uint64 result;
     EXPECT_TRUE(Tokenizer::ParseInteger(text, kuint64max, &result));
     return result;
@@ -198,8 +198,8 @@ struct SimpleTokenCase {
   Tokenizer::TokenType type;
 };
 
-inline std::ostream& operator<<(std::ostream& out,
-                                const SimpleTokenCase& test_case) {
+inline std::ostream &operator<<(std::ostream &out,
+                                const SimpleTokenCase &test_case) {
   return out << CEscape(test_case.input);
 }
 
@@ -291,7 +291,7 @@ TEST_1D(TokenizerTest, FloatSuffix, kBlockSizes) {
   // Test the "allow_f_after_float" option.
 
   // Set up the tokenizer.
-  const char* text = "1f 2.5f 6e3f 7F";
+  const char *text = "1f 2.5f 6e3f 7F";
   TestInputStream input(text, strlen(text), kBlockSizes_case);
   TestErrorCollector error_collector;
   Tokenizer tokenizer(&input, &error_collector);
@@ -325,14 +325,14 @@ TEST_1D(TokenizerTest, FloatSuffix, kBlockSizes) {
 // last token in "output" must have type TYPE_END.
 struct MultiTokenCase {
   std::string input;
-  Tokenizer::Token output[10];  // The compiler wants a constant array
-                                // size for initialization to work.  There
-                                // is no reason this can't be increased if
-                                // needed.
+  Tokenizer::Token output[10]; // The compiler wants a constant array
+                               // size for initialization to work.  There
+                               // is no reason this can't be increased if
+                               // needed.
 };
 
-inline std::ostream& operator<<(std::ostream& out,
-                                const MultiTokenCase& test_case) {
+inline std::ostream &operator<<(std::ostream &out,
+                                const MultiTokenCase &test_case) {
   return out << CEscape(test_case.input);
 }
 
@@ -486,12 +486,11 @@ TEST_2D(TokenizerTest, MultipleTokens, kMultiTokenCases, kBlockSizes) {
 TEST_1D(TokenizerTest, ShCommentStyle, kBlockSizes) {
   // Test the "comment_style" option.
 
-  const char* text =
-      "foo # bar\n"
-      "baz // qux\n"
-      "corge /* grault */\n"
-      "garply";
-  const char* const kTokens[] = {"foo",  // "# bar" is ignored
+  const char *text = "foo # bar\n"
+                     "baz // qux\n"
+                     "corge /* grault */\n"
+                     "garply";
+  const char *const kTokens[] = {"foo", // "# bar" is ignored
                                  "baz", "/",      "/", "qux", "corge", "/",
                                  "*",   "grault", "*", "/",   "garply"};
 
@@ -522,13 +521,13 @@ TEST_1D(TokenizerTest, ShCommentStyle, kBlockSizes) {
 struct DocCommentCase {
   std::string input;
 
-  const char* prev_trailing_comments;
-  const char* detached_comments[10];
-  const char* next_leading_comments;
+  const char *prev_trailing_comments;
+  const char *detached_comments[10];
+  const char *next_leading_comments;
 };
 
-inline std::ostream& operator<<(std::ostream& out,
-                                const DocCommentCase& test_case) {
+inline std::ostream &operator<<(std::ostream &out,
+                                const DocCommentCase &test_case) {
   return out << CEscape(test_case.input);
 }
 
@@ -762,7 +761,7 @@ TEST_F(TokenizerTest, ParseFloat) {
   EXPECT_EQ(0.0, Tokenizer::ParseFloat("1e-9999999999999999999999999999"));
   EXPECT_EQ(HUGE_VAL, Tokenizer::ParseFloat("1e+9999999999999999999999999999"));
 
-#ifdef PROTOBUF_HAS_DEATH_TEST  // death tests do not work on Windows yet
+#ifdef PROTOBUF_HAS_DEATH_TEST // death tests do not work on Windows yet
   // Test invalid integers that will never be tokenized as integers.
   EXPECT_DEBUG_DEATH(
       Tokenizer::ParseFloat("zxy"),
@@ -773,7 +772,7 @@ TEST_F(TokenizerTest, ParseFloat) {
   EXPECT_DEBUG_DEATH(
       Tokenizer::ParseFloat("-1.0"),
       "passed text that could not have been tokenized as a float");
-#endif  // PROTOBUF_HAS_DEATH_TEST
+#endif // PROTOBUF_HAS_DEATH_TEST
 }
 
 TEST_F(TokenizerTest, ParseString) {
@@ -788,7 +787,7 @@ TEST_F(TokenizerTest, ParseString) {
   EXPECT_EQ("\x20\x4", output);
 
   // Test invalid strings that may still be tokenized as strings.
-  Tokenizer::ParseString("\"\\a\\l\\v\\t", &output);  // \l is invalid
+  Tokenizer::ParseString("\"\\a\\l\\v\\t", &output); // \l is invalid
   EXPECT_EQ("\a?\v\t", output);
   Tokenizer::ParseString("'", &output);
   EXPECT_EQ("", output);
@@ -812,11 +811,11 @@ TEST_F(TokenizerTest, ParseString) {
   EXPECT_EQ("u0", output);
 
   // Test invalid strings that will never be tokenized as strings.
-#ifdef PROTOBUF_HAS_DEATH_TEST  // death tests do not work on Windows yet
+#ifdef PROTOBUF_HAS_DEATH_TEST // death tests do not work on Windows yet
   EXPECT_DEBUG_DEATH(
       Tokenizer::ParseString("", &output),
       "passed text that could not have been tokenized as a string");
-#endif  // PROTOBUF_HAS_DEATH_TEST
+#endif // PROTOBUF_HAS_DEATH_TEST
 }
 
 TEST_F(TokenizerTest, ParseStringAppend) {
@@ -834,14 +833,14 @@ TEST_F(TokenizerTest, ParseStringAppend) {
 // checks that the error output matches what is expected.
 struct ErrorCase {
   std::string input;
-  bool recoverable;  // True if the tokenizer should be able to recover and
-                     // parse more tokens after seeing this error.  Cases
-                     // for which this is true must end with "foo" as
-                     // the last token, which the test will check for.
-  const char* errors;
+  bool recoverable; // True if the tokenizer should be able to recover and
+                    // parse more tokens after seeing this error.  Cases
+                    // for which this is true must end with "foo" as
+                    // the last token, which the test will check for.
+  const char *errors;
 };
 
-inline std::ostream& operator<<(std::ostream& out, const ErrorCase& test_case) {
+inline std::ostream &operator<<(std::ostream &out, const ErrorCase &test_case) {
   return out << CEscape(test_case.input);
 }
 
@@ -952,8 +951,7 @@ TEST_1D(TokenizerTest, BackUpOnDestruction, kBlockSizes) {
   EXPECT_EQ(strlen("foo"), input.ByteCount());
 }
 
-
-}  // namespace
-}  // namespace io
-}  // namespace protobuf
-}  // namespace google
+} // namespace
+} // namespace io
+} // namespace protobuf
+} // namespace google

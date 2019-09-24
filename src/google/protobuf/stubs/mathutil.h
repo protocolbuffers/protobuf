@@ -40,33 +40,26 @@
 namespace google {
 namespace protobuf {
 namespace internal {
-template<typename T>
-bool AlmostEquals(T a, T b) {
-  return a == b;
-}
-template<>
-inline bool AlmostEquals(float a, float b) {
+template <typename T> bool AlmostEquals(T a, T b) { return a == b; }
+template <> inline bool AlmostEquals(float a, float b) {
   return fabs(a - b) < 32 * FLT_EPSILON;
 }
 
-template<>
-inline bool AlmostEquals(double a, double b) {
+template <> inline bool AlmostEquals(double a, double b) {
   return fabs(a - b) < 32 * DBL_EPSILON;
 }
-}  // namespace internal
+} // namespace internal
 
 class MathUtil {
- public:
-  template<typename T>
-  static T Sign(T value) {
+public:
+  template <typename T> static T Sign(T value) {
     if (value == T(0) || MathLimits<T>::IsNaN(value)) {
       return value;
     }
     return value > T(0) ? 1 : -1;
   }
 
-  template<typename T>
-  static bool AlmostEquals(T a, T b) {
+  template <typename T> static bool AlmostEquals(T a, T b) {
     return internal::AlmostEquals(a, b);
   }
 
@@ -76,8 +69,7 @@ class MathUtil {
   // which should be OK because, although they (can) have different
   // bit representation, they are observably the same when examined
   // with arithmetic and (in)equality operators.
-  template<typename T>
-  static T Max(const T x, const T y) {
+  template <typename T> static T Max(const T x, const T y) {
     return MathLimits<T>::IsNaN(x) || x > y ? x : y;
   }
 
@@ -86,14 +78,11 @@ class MathUtil {
   // for special floating point values.
   // Note: 0.0 and -0.0 are not differentiated by Abs (Abs(0.0) is -0.0),
   // which should be OK: see the comment for Max above.
-  template<typename T>
-  static T Abs(const T x) {
-    return x > T(0) ? x : -x;
-  }
+  template <typename T> static T Abs(const T x) { return x > T(0) ? x : -x; }
 
   // Absolute value of the difference between two numbers.
   // Works correctly for signed types and special floating point values.
-  template<typename T>
+  template <typename T>
   static typename MathLimits<T>::UnsignedType AbsDiff(const T x, const T y) {
     // Carries out arithmetic as unsigned to avoid overflow.
     typedef typename MathLimits<T>::UnsignedType R;
@@ -106,18 +95,17 @@ class MathUtil {
   //   WithinFraction(x, y, fraction)  ||  WithinMargin(x, y, margin)
   // E.g. WithinFraction(0.0, 1e-10, 1e-5) is false but
   //      WithinFractionOrMargin(0.0, 1e-10, 1e-5, 1e-5) is true.
-  template<typename T>
-  static bool WithinFractionOrMargin(const T x, const T y,
-                                     const T fraction, const T margin);
+  template <typename T>
+  static bool WithinFractionOrMargin(const T x, const T y, const T fraction,
+                                     const T margin);
 };
 
-template<typename T>
-bool MathUtil::WithinFractionOrMargin(const T x, const T y,
-                                      const T fraction, const T margin) {
+template <typename T>
+bool MathUtil::WithinFractionOrMargin(const T x, const T y, const T fraction,
+                                      const T margin) {
   // Not just "0 <= fraction" to fool the compiler for unsigned types.
-  GOOGLE_DCHECK((T(0) < fraction || T(0) == fraction) &&
-         fraction < T(1) &&
-         margin >= T(0));
+  GOOGLE_DCHECK((T(0) < fraction || T(0) == fraction) && fraction < T(1) &&
+                margin >= T(0));
 
   // Template specialization will convert the if() condition to a constant,
   // which will cause the compiler to generate code for either the "if" part
@@ -134,7 +122,7 @@ bool MathUtil::WithinFractionOrMargin(const T x, const T y,
   }
 }
 
-}  // namespace protobuf
-}  // namespace google
+} // namespace protobuf
+} // namespace google
 
-#endif  // GOOGLE_PROTOBUF_STUBS_MATHUTIL_H_
+#endif // GOOGLE_PROTOBUF_STUBS_MATHUTIL_H_

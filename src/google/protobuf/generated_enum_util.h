@@ -47,8 +47,7 @@ namespace protobuf {
 
 // This type trait can be used to cause templates to only match proto2 enum
 // types.
-template <typename T>
-struct is_proto_enum : ::std::false_type {};
+template <typename T> struct is_proto_enum : ::std::false_type {};
 
 namespace internal {
 
@@ -61,23 +60,23 @@ struct EnumEntry {
 };
 
 // Looks up a numeric enum value given the string name.
-PROTOBUF_EXPORT bool LookUpEnumValue(const EnumEntry* enums, size_t size,
-                                     StringPiece name, int* value);
+PROTOBUF_EXPORT bool LookUpEnumValue(const EnumEntry *enums, size_t size,
+                                     StringPiece name, int *value);
 
 // Looks up an enum name given the numeric value.
-PROTOBUF_EXPORT int LookUpEnumName(const EnumEntry* enums,
-                                   const int* sorted_indices, size_t size,
+PROTOBUF_EXPORT int LookUpEnumName(const EnumEntry *enums,
+                                   const int *sorted_indices, size_t size,
                                    int value);
 
 // Initializes the list of enum names in std::string form.
 PROTOBUF_EXPORT bool InitializeEnumStrings(
-    const EnumEntry* enums, const int* sorted_indices, size_t size,
-    internal::ExplicitlyConstructed<std::string>* enum_strings);
+    const EnumEntry *enums, const int *sorted_indices, size_t size,
+    internal::ExplicitlyConstructed<std::string> *enum_strings);
 
-}  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+} // namespace internal
+} // namespace protobuf
+} // namespace google
 
 #include <google/protobuf/port_undef.inc>
 
-#endif  // GOOGLE_PROTOBUF_GENERATED_ENUM_UTIL_H__
+#endif // GOOGLE_PROTOBUF_GENERATED_ENUM_UTIL_H__

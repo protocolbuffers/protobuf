@@ -32,9 +32,9 @@
 
 #include <google/protobuf/util/field_comparator.h>
 
-#include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/stubs/mathutil.h>
+#include <google/protobuf/unittest.pb.h>
 // This gtest header is put after mathutil.h intentionally. We have to do
 // this because mathutil.h includes mathlimits.h which requires cmath not
 // being included to compile on some versions of gcc:
@@ -50,37 +50,37 @@ namespace {
 using protobuf_unittest::TestAllTypes;
 
 class DefaultFieldComparatorTest : public ::testing::Test {
- protected:
+protected:
   void SetUp() { descriptor_ = TestAllTypes::descriptor(); }
 
-  const Descriptor* descriptor_;
+  const Descriptor *descriptor_;
   DefaultFieldComparator comparator_;
   TestAllTypes message_1_;
   TestAllTypes message_2_;
 };
 
 TEST_F(DefaultFieldComparatorTest, RecursesIntoGroup) {
-  const FieldDescriptor* field = descriptor_->FindFieldByName("optionalgroup");
+  const FieldDescriptor *field = descriptor_->FindFieldByName("optionalgroup");
   EXPECT_EQ(FieldComparator::RECURSE,
             comparator_.Compare(message_1_, message_2_, field, -1, -1, NULL));
 }
 
 TEST_F(DefaultFieldComparatorTest, RecursesIntoNestedMessage) {
-  const FieldDescriptor* field =
+  const FieldDescriptor *field =
       descriptor_->FindFieldByName("optional_nested_message");
   EXPECT_EQ(FieldComparator::RECURSE,
             comparator_.Compare(message_1_, message_2_, field, -1, -1, NULL));
 }
 
 TEST_F(DefaultFieldComparatorTest, RecursesIntoForeignMessage) {
-  const FieldDescriptor* field =
+  const FieldDescriptor *field =
       descriptor_->FindFieldByName("optional_foreign_message");
   EXPECT_EQ(FieldComparator::RECURSE,
             comparator_.Compare(message_1_, message_2_, field, -1, -1, NULL));
 }
 
 TEST_F(DefaultFieldComparatorTest, Int32Comparison) {
-  const FieldDescriptor* field = descriptor_->FindFieldByName("optional_int32");
+  const FieldDescriptor *field = descriptor_->FindFieldByName("optional_int32");
   message_1_.set_optional_int32(1);
   message_2_.set_optional_int32(1);
 
@@ -93,7 +93,7 @@ TEST_F(DefaultFieldComparatorTest, Int32Comparison) {
 }
 
 TEST_F(DefaultFieldComparatorTest, Int64Comparison) {
-  const FieldDescriptor* field = descriptor_->FindFieldByName("optional_int64");
+  const FieldDescriptor *field = descriptor_->FindFieldByName("optional_int64");
   message_1_.set_optional_int64(1L);
   message_2_.set_optional_int64(1L);
 
@@ -106,7 +106,7 @@ TEST_F(DefaultFieldComparatorTest, Int64Comparison) {
 }
 
 TEST_F(DefaultFieldComparatorTest, UInt32Comparison) {
-  const FieldDescriptor* field =
+  const FieldDescriptor *field =
       descriptor_->FindFieldByName("optional_uint32");
   message_1_.set_optional_uint32(1);
   message_2_.set_optional_uint32(1);
@@ -120,7 +120,7 @@ TEST_F(DefaultFieldComparatorTest, UInt32Comparison) {
 }
 
 TEST_F(DefaultFieldComparatorTest, UInt64Comparison) {
-  const FieldDescriptor* field =
+  const FieldDescriptor *field =
       descriptor_->FindFieldByName("optional_uint64");
   message_1_.set_optional_uint64(1L);
   message_2_.set_optional_uint64(1L);
@@ -134,7 +134,7 @@ TEST_F(DefaultFieldComparatorTest, UInt64Comparison) {
 }
 
 TEST_F(DefaultFieldComparatorTest, BooleanComparison) {
-  const FieldDescriptor* field = descriptor_->FindFieldByName("optional_bool");
+  const FieldDescriptor *field = descriptor_->FindFieldByName("optional_bool");
   message_1_.set_optional_bool(true);
   message_2_.set_optional_bool(true);
 
@@ -147,7 +147,7 @@ TEST_F(DefaultFieldComparatorTest, BooleanComparison) {
 }
 
 TEST_F(DefaultFieldComparatorTest, EnumComparison) {
-  const FieldDescriptor* field =
+  const FieldDescriptor *field =
       descriptor_->FindFieldByName("optional_nested_enum");
   message_1_.set_optional_nested_enum(TestAllTypes::BAR);
   message_2_.set_optional_nested_enum(TestAllTypes::BAR);
@@ -161,7 +161,7 @@ TEST_F(DefaultFieldComparatorTest, EnumComparison) {
 }
 
 TEST_F(DefaultFieldComparatorTest, StringComparison) {
-  const FieldDescriptor* field =
+  const FieldDescriptor *field =
       descriptor_->FindFieldByName("optional_string");
   message_1_.set_optional_string("foo");
   message_2_.set_optional_string("foo");
@@ -175,9 +175,9 @@ TEST_F(DefaultFieldComparatorTest, StringComparison) {
 }
 
 TEST_F(DefaultFieldComparatorTest, FloatingPointComparisonExact) {
-  const FieldDescriptor* field_float =
+  const FieldDescriptor *field_float =
       descriptor_->FindFieldByName("optional_float");
-  const FieldDescriptor* field_double =
+  const FieldDescriptor *field_double =
       descriptor_->FindFieldByName("optional_double");
 
   message_1_.set_optional_float(0.1f);
@@ -204,9 +204,9 @@ TEST_F(DefaultFieldComparatorTest, FloatingPointComparisonExact) {
 }
 
 TEST_F(DefaultFieldComparatorTest, FloatingPointComparisonApproximate) {
-  const FieldDescriptor* field_float =
+  const FieldDescriptor *field_float =
       descriptor_->FindFieldByName("optional_float");
-  const FieldDescriptor* field_double =
+  const FieldDescriptor *field_double =
       descriptor_->FindFieldByName("optional_double");
 
   message_1_.set_optional_float(2.300005f);
@@ -243,9 +243,9 @@ TEST_F(DefaultFieldComparatorTest, FloatingPointComparisonApproximate) {
 }
 
 TEST_F(DefaultFieldComparatorTest, FloatingPointComparisonTreatNaNsAsEqual) {
-  const FieldDescriptor* field_float =
+  const FieldDescriptor *field_float =
       descriptor_->FindFieldByName("optional_float");
-  const FieldDescriptor* field_double =
+  const FieldDescriptor *field_double =
       descriptor_->FindFieldByName("optional_double");
 
   message_1_.set_optional_float(MathLimits<float>::kNaN);
@@ -291,9 +291,9 @@ TEST_F(DefaultFieldComparatorTest, FloatingPointComparisonTreatNaNsAsEqual) {
 
 TEST_F(DefaultFieldComparatorTest,
        FloatingPointComparisonWithinFractionOrMargin) {
-  const FieldDescriptor* field_float =
+  const FieldDescriptor *field_float =
       descriptor_->FindFieldByName("optional_float");
-  const FieldDescriptor* field_double =
+  const FieldDescriptor *field_double =
       descriptor_->FindFieldByName("optional_double");
 
   message_1_.set_optional_float(100.0f);
@@ -406,9 +406,9 @@ TEST_F(DefaultFieldComparatorTest,
 
 TEST_F(DefaultFieldComparatorTest,
        FloatingPointComparisonWithinDefaultFractionOrMargin) {
-  const FieldDescriptor* field_float =
+  const FieldDescriptor *field_float =
       descriptor_->FindFieldByName("optional_float");
-  const FieldDescriptor* field_double =
+  const FieldDescriptor *field_double =
       descriptor_->FindFieldByName("optional_double");
 
   message_1_.set_optional_float(100.0f);
@@ -476,7 +476,7 @@ TEST_F(DefaultFieldComparatorTest,
 
 // Simple test checking whether we compare values at correct indices.
 TEST_F(DefaultFieldComparatorTest, RepeatedFieldComparison) {
-  const FieldDescriptor* field =
+  const FieldDescriptor *field =
       descriptor_->FindFieldByName("repeated_string");
 
   message_1_.add_repeated_string("foo");
@@ -492,7 +492,7 @@ TEST_F(DefaultFieldComparatorTest, RepeatedFieldComparison) {
             comparator_.Compare(message_1_, message_2_, field, 1, 0, NULL));
 }
 
-}  // namespace
-}  // namespace util
-}  // namespace protobuf
-}  // namespace google
+} // namespace
+} // namespace util
+} // namespace protobuf
+} // namespace google

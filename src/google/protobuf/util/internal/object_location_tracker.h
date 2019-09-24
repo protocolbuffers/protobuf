@@ -43,7 +43,7 @@ namespace converter {
 
 // An empty concrete implementation of LocationTrackerInterface.
 class ObjectLocationTracker : public LocationTrackerInterface {
- public:
+public:
   // Creates an empty location tracker.
   ObjectLocationTracker() {}
 
@@ -52,13 +52,13 @@ class ObjectLocationTracker : public LocationTrackerInterface {
   // Returns empty because nothing is tracked.
   std::string ToString() const override { return ""; }
 
- private:
+private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ObjectLocationTracker);
 };
 
-}  // namespace converter
-}  // namespace util
-}  // namespace protobuf
-}  // namespace google
+} // namespace converter
+} // namespace util
+} // namespace protobuf
+} // namespace google
 
-#endif  // GOOGLE_PROTOBUF_UTIL_CONVERTER_OBJECT_LOCATION_TRACKER_H__
+#endif // GOOGLE_PROTOBUF_UTIL_CONVERTER_OBJECT_LOCATION_TRACKER_H__

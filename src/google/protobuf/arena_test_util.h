@@ -31,17 +31,17 @@
 #ifndef GOOGLE_PROTOBUF_ARENA_TEST_UTIL_H__
 #define GOOGLE_PROTOBUF_ARENA_TEST_UTIL_H__
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
+#include <google/protobuf/arena.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
-#include <google/protobuf/arena.h>
+#include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
 
 namespace google {
 namespace protobuf {
 
 template <typename T, bool use_arena>
-void TestParseCorruptedString(const T& message) {
+void TestParseCorruptedString(const T &message) {
   int success_count = 0;
   std::string s;
   {
@@ -59,14 +59,14 @@ void TestParseCorruptedString(const T& message) {
     for (int c = 1 + (i % 17); c < 256; c += 2 * c + (i & 3)) {
       s[i] ^= c;
       Arena arena;
-      T* message = Arena::CreateMessage<T>(use_arena ? &arena : nullptr);
+      T *message = Arena::CreateMessage<T>(use_arena ? &arena : nullptr);
       if (message->ParseFromString(s)) {
         ++success_count;
       }
       if (!use_arena) {
         delete message;
       }
-      s[i] ^= c;  // Restore s to its original state.
+      s[i] ^= c; // Restore s to its original state.
     }
   }
   // This next line is a low bar.  But getting through the test without crashing
@@ -77,13 +77,13 @@ void TestParseCorruptedString(const T& message) {
 namespace internal {
 
 class NoHeapChecker {
- public:
+public:
   NoHeapChecker() { capture_alloc.Hook(); }
   ~NoHeapChecker();
 
- private:
+private:
   class NewDeleteCapture {
-   public:
+  public:
     // TOOD(xiaofeng): Implement this for opensource protobuf.
     void Hook() {}
     void Unhook() {}
@@ -92,8 +92,8 @@ class NoHeapChecker {
   } capture_alloc;
 };
 
-}  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+} // namespace internal
+} // namespace protobuf
+} // namespace google
 
-#endif  // GOOGLE_PROTOBUF_ARENA_TEST_UTIL_H__
+#endif // GOOGLE_PROTOBUF_ARENA_TEST_UTIL_H__

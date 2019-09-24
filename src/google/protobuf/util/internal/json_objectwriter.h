@@ -35,8 +35,8 @@
 #include <string>
 
 #include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/util/internal/structured_objectwriter.h>
 #include <google/protobuf/stubs/bytestream.h>
+#include <google/protobuf/util/internal/structured_objectwriter.h>
 
 // clang-format off
 #include <google/protobuf/port_def.inc>
@@ -46,7 +46,6 @@ namespace google {
 namespace protobuf {
 namespace util {
 namespace converter {
-
 
 // An ObjectWriter implementation that outputs JSON. This ObjectWriter
 // supports writing a compact form or a pretty printed form.
@@ -88,14 +87,11 @@ namespace converter {
 //
 // JsonObjectWriter is thread-unsafe.
 class PROTOBUF_EXPORT JsonObjectWriter : public StructuredObjectWriter {
- public:
-  JsonObjectWriter(StringPiece indent_string, io::CodedOutputStream* out)
+public:
+  JsonObjectWriter(StringPiece indent_string, io::CodedOutputStream *out)
       : element_(new Element(/*parent=*/nullptr, /*is_json_object=*/false)),
-        stream_(out),
-        sink_(out),
-        indent_string_(indent_string),
-        indent_char_('\0'),
-        indent_count_(0),
+        stream_(out), sink_(out), indent_string_(indent_string),
+        indent_char_('\0'), indent_count_(0),
         use_websafe_base64_for_bytes_(false) {
     // See if we have a trivial sequence of indent characters.
     if (!indent_string.empty()) {
@@ -113,33 +109,31 @@ class PROTOBUF_EXPORT JsonObjectWriter : public StructuredObjectWriter {
   virtual ~JsonObjectWriter();
 
   // ObjectWriter methods.
-  JsonObjectWriter* StartObject(StringPiece name) override;
-  JsonObjectWriter* EndObject() override;
-  JsonObjectWriter* StartList(StringPiece name) override;
-  JsonObjectWriter* EndList() override;
-  JsonObjectWriter* RenderBool(StringPiece name, bool value) override;
-  JsonObjectWriter* RenderInt32(StringPiece name, int32 value) override;
-  JsonObjectWriter* RenderUint32(StringPiece name, uint32 value) override;
-  JsonObjectWriter* RenderInt64(StringPiece name, int64 value) override;
-  JsonObjectWriter* RenderUint64(StringPiece name, uint64 value) override;
-  JsonObjectWriter* RenderDouble(StringPiece name, double value) override;
-  JsonObjectWriter* RenderFloat(StringPiece name, float value) override;
-  JsonObjectWriter* RenderString(StringPiece name,
-                                 StringPiece value) override;
-  JsonObjectWriter* RenderBytes(StringPiece name, StringPiece value) override;
-  JsonObjectWriter* RenderNull(StringPiece name) override;
-  virtual JsonObjectWriter* RenderNullAsEmpty(StringPiece name);
+  JsonObjectWriter *StartObject(StringPiece name) override;
+  JsonObjectWriter *EndObject() override;
+  JsonObjectWriter *StartList(StringPiece name) override;
+  JsonObjectWriter *EndList() override;
+  JsonObjectWriter *RenderBool(StringPiece name, bool value) override;
+  JsonObjectWriter *RenderInt32(StringPiece name, int32 value) override;
+  JsonObjectWriter *RenderUint32(StringPiece name, uint32 value) override;
+  JsonObjectWriter *RenderInt64(StringPiece name, int64 value) override;
+  JsonObjectWriter *RenderUint64(StringPiece name, uint64 value) override;
+  JsonObjectWriter *RenderDouble(StringPiece name, double value) override;
+  JsonObjectWriter *RenderFloat(StringPiece name, float value) override;
+  JsonObjectWriter *RenderString(StringPiece name, StringPiece value) override;
+  JsonObjectWriter *RenderBytes(StringPiece name, StringPiece value) override;
+  JsonObjectWriter *RenderNull(StringPiece name) override;
+  virtual JsonObjectWriter *RenderNullAsEmpty(StringPiece name);
 
   void set_use_websafe_base64_for_bytes(bool value) {
     use_websafe_base64_for_bytes_ = value;
   }
 
- protected:
+protected:
   class PROTOBUF_EXPORT Element : public BaseElement {
-   public:
-    Element(Element* parent, bool is_json_object)
-        : BaseElement(parent),
-          is_first_(true),
+  public:
+    Element(Element *parent, bool is_json_object)
+        : BaseElement(parent), is_first_(true),
           is_json_object_(is_json_object) {}
 
     // Called before each field of the Element is to be processed.
@@ -156,28 +150,28 @@ class PROTOBUF_EXPORT JsonObjectWriter : public StructuredObjectWriter {
     // StartObject() and EndObject()).
     bool is_json_object() const { return is_json_object_; }
 
-   private:
+  private:
     bool is_first_;
     bool is_json_object_;
 
     GOOGLE_DISALLOW_IMPLICIT_CONSTRUCTORS(Element);
   };
 
-  Element* element() override { return element_.get(); }
+  Element *element() override { return element_.get(); }
 
- private:
+private:
   class PROTOBUF_EXPORT ByteSinkWrapper : public strings::ByteSink {
-   public:
-    explicit ByteSinkWrapper(io::CodedOutputStream* stream) : stream_(stream) {}
+  public:
+    explicit ByteSinkWrapper(io::CodedOutputStream *stream) : stream_(stream) {}
     ~ByteSinkWrapper() override {}
 
     // ByteSink methods.
-    void Append(const char* bytes, size_t n) override {
+    void Append(const char *bytes, size_t n) override {
       stream_->WriteRaw(bytes, n);
     }
 
-   private:
-    io::CodedOutputStream* stream_;
+  private:
+    io::CodedOutputStream *stream_;
 
     GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ByteSinkWrapper);
   };
@@ -185,8 +179,7 @@ class PROTOBUF_EXPORT JsonObjectWriter : public StructuredObjectWriter {
   // Renders a simple value as a string. By default all non-string Render
   // methods convert their argument to a string and call this method. This
   // method can then be used to render the simple value without escaping it.
-  JsonObjectWriter* RenderSimple(StringPiece name,
-                                 StringPiece value) {
+  JsonObjectWriter *RenderSimple(StringPiece name, StringPiece value) {
     WritePrefix(name);
     WriteRawString(value);
     return this;
@@ -206,7 +199,8 @@ class PROTOBUF_EXPORT JsonObjectWriter : public StructuredObjectWriter {
   void Pop() {
     bool needs_newline = !element_->is_first();
     element_.reset(element_->pop<Element>());
-    if (needs_newline) NewLine();
+    if (needs_newline)
+      NewLine();
   }
 
   // If pretty printing is enabled, this will write a newline to the output,
@@ -218,7 +212,7 @@ class PROTOBUF_EXPORT JsonObjectWriter : public StructuredObjectWriter {
       // Take the slow-path if we don't have sufficient characters remaining in
       // our buffer or we have a non-trivial indent string which would prevent
       // us from using memset.
-      uint8* out = nullptr;
+      uint8 *out = nullptr;
       if (indent_count_ > 0) {
         out = stream_->GetDirectBufferForNBytesAndAdvance(len);
       }
@@ -250,7 +244,7 @@ class PROTOBUF_EXPORT JsonObjectWriter : public StructuredObjectWriter {
   }
 
   std::unique_ptr<Element> element_;
-  io::CodedOutputStream* stream_;
+  io::CodedOutputStream *stream_;
   ByteSinkWrapper sink_;
   const std::string indent_string_;
 
@@ -265,11 +259,11 @@ class PROTOBUF_EXPORT JsonObjectWriter : public StructuredObjectWriter {
   GOOGLE_DISALLOW_IMPLICIT_CONSTRUCTORS(JsonObjectWriter);
 };
 
-}  // namespace converter
-}  // namespace util
-}  // namespace protobuf
-}  // namespace google
+} // namespace converter
+} // namespace util
+} // namespace protobuf
+} // namespace google
 
 #include <google/protobuf/port_undef.inc>
 
-#endif  // GOOGLE_PROTOBUF_UTIL_CONVERTER_JSON_OBJECTWRITER_H__
+#endif // GOOGLE_PROTOBUF_UTIL_CONVERTER_JSON_OBJECTWRITER_H__

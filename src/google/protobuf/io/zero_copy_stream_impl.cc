@@ -43,12 +43,11 @@
 #include <algorithm>
 #include <iostream>
 
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/io/io_win32.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
+#include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/stl_util.h>
-
 
 namespace google {
 namespace protobuf {
@@ -78,7 +77,7 @@ int close_no_eintr(int fd) {
   return result;
 }
 
-}  // namespace
+} // namespace
 
 // ===================================================================
 
@@ -87,7 +86,7 @@ FileInputStream::FileInputStream(int file_descriptor, int block_size)
 
 bool FileInputStream::Close() { return copying_input_.Close(); }
 
-bool FileInputStream::Next(const void** data, int* size) {
+bool FileInputStream::Next(const void **data, int *size) {
   return impl_.Next(data, size);
 }
 
@@ -99,11 +98,8 @@ int64_t FileInputStream::ByteCount() const { return impl_.ByteCount(); }
 
 FileInputStream::CopyingFileInputStream::CopyingFileInputStream(
     int file_descriptor)
-    : file_(file_descriptor),
-      close_on_delete_(false),
-      is_closed_(false),
-      errno_(0),
-      previous_seek_failed_(false) {}
+    : file_(file_descriptor), close_on_delete_(false), is_closed_(false),
+      errno_(0), previous_seek_failed_(false) {}
 
 FileInputStream::CopyingFileInputStream::~CopyingFileInputStream() {
   if (close_on_delete_) {
@@ -128,7 +124,7 @@ bool FileInputStream::CopyingFileInputStream::Close() {
   return true;
 }
 
-int FileInputStream::CopyingFileInputStream::Read(void* buffer, int size) {
+int FileInputStream::CopyingFileInputStream::Read(void *buffer, int size) {
   GOOGLE_CHECK(!is_closed_);
 
   int result;
@@ -176,7 +172,7 @@ bool FileOutputStream::Close() {
 
 bool FileOutputStream::Flush() { return impl_.Flush(); }
 
-bool FileOutputStream::Next(void** data, int* size) {
+bool FileOutputStream::Next(void **data, int *size) {
   return impl_.Next(data, size);
 }
 
@@ -186,9 +182,7 @@ int64_t FileOutputStream::ByteCount() const { return impl_.ByteCount(); }
 
 FileOutputStream::CopyingFileOutputStream::CopyingFileOutputStream(
     int file_descriptor)
-    : file_(file_descriptor),
-      close_on_delete_(false),
-      is_closed_(false),
+    : file_(file_descriptor), close_on_delete_(false), is_closed_(false),
       errno_(0) {}
 
 FileOutputStream::CopyingFileOutputStream::~CopyingFileOutputStream() {
@@ -214,12 +208,12 @@ bool FileOutputStream::CopyingFileOutputStream::Close() {
   return true;
 }
 
-bool FileOutputStream::CopyingFileOutputStream::Write(const void* buffer,
+bool FileOutputStream::CopyingFileOutputStream::Write(const void *buffer,
                                                       int size) {
   GOOGLE_CHECK(!is_closed_);
   int total_written = 0;
 
-  const uint8* buffer_base = reinterpret_cast<const uint8*>(buffer);
+  const uint8 *buffer_base = reinterpret_cast<const uint8 *>(buffer);
 
   while (total_written < size) {
     int bytes;
@@ -251,10 +245,10 @@ bool FileOutputStream::CopyingFileOutputStream::Write(const void* buffer,
 
 // ===================================================================
 
-IstreamInputStream::IstreamInputStream(std::istream* input, int block_size)
+IstreamInputStream::IstreamInputStream(std::istream *input, int block_size)
     : copying_input_(input), impl_(&copying_input_, block_size) {}
 
-bool IstreamInputStream::Next(const void** data, int* size) {
+bool IstreamInputStream::Next(const void **data, int *size) {
   return impl_.Next(data, size);
 }
 
@@ -265,14 +259,14 @@ bool IstreamInputStream::Skip(int count) { return impl_.Skip(count); }
 int64_t IstreamInputStream::ByteCount() const { return impl_.ByteCount(); }
 
 IstreamInputStream::CopyingIstreamInputStream::CopyingIstreamInputStream(
-    std::istream* input)
+    std::istream *input)
     : input_(input) {}
 
 IstreamInputStream::CopyingIstreamInputStream::~CopyingIstreamInputStream() {}
 
-int IstreamInputStream::CopyingIstreamInputStream::Read(void* buffer,
+int IstreamInputStream::CopyingIstreamInputStream::Read(void *buffer,
                                                         int size) {
-  input_->read(reinterpret_cast<char*>(buffer), size);
+  input_->read(reinterpret_cast<char *>(buffer), size);
   int result = input_->gcount();
   if (result == 0 && input_->fail() && !input_->eof()) {
     return -1;
@@ -282,12 +276,12 @@ int IstreamInputStream::CopyingIstreamInputStream::Read(void* buffer,
 
 // ===================================================================
 
-OstreamOutputStream::OstreamOutputStream(std::ostream* output, int block_size)
+OstreamOutputStream::OstreamOutputStream(std::ostream *output, int block_size)
     : copying_output_(output), impl_(&copying_output_, block_size) {}
 
 OstreamOutputStream::~OstreamOutputStream() { impl_.Flush(); }
 
-bool OstreamOutputStream::Next(void** data, int* size) {
+bool OstreamOutputStream::Next(void **data, int *size) {
   return impl_.Next(data, size);
 }
 
@@ -296,28 +290,28 @@ void OstreamOutputStream::BackUp(int count) { impl_.BackUp(count); }
 int64_t OstreamOutputStream::ByteCount() const { return impl_.ByteCount(); }
 
 OstreamOutputStream::CopyingOstreamOutputStream::CopyingOstreamOutputStream(
-    std::ostream* output)
+    std::ostream *output)
     : output_(output) {}
 
 OstreamOutputStream::CopyingOstreamOutputStream::~CopyingOstreamOutputStream() {
 }
 
-bool OstreamOutputStream::CopyingOstreamOutputStream::Write(const void* buffer,
+bool OstreamOutputStream::CopyingOstreamOutputStream::Write(const void *buffer,
                                                             int size) {
-  output_->write(reinterpret_cast<const char*>(buffer), size);
+  output_->write(reinterpret_cast<const char *>(buffer), size);
   return output_->good();
 }
 
 // ===================================================================
 
 ConcatenatingInputStream::ConcatenatingInputStream(
-    ZeroCopyInputStream* const streams[], int count)
-    : streams_(streams), stream_count_(count), bytes_retired_(0) {
-}
+    ZeroCopyInputStream *const streams[], int count)
+    : streams_(streams), stream_count_(count), bytes_retired_(0) {}
 
-bool ConcatenatingInputStream::Next(const void** data, int* size) {
+bool ConcatenatingInputStream::Next(const void **data, int *size) {
   while (stream_count_ > 0) {
-    if (streams_[0]->Next(data, size)) return true;
+    if (streams_[0]->Next(data, size))
+      return true;
 
     // That stream is done.  Advance to the next one.
     bytes_retired_ += streams_[0]->ByteCount();
@@ -342,7 +336,8 @@ bool ConcatenatingInputStream::Skip(int count) {
     // Assume that ByteCount() can be used to find out how much we actually
     // skipped when Skip() fails.
     int64 target_byte_count = streams_[0]->ByteCount() + count;
-    if (streams_[0]->Skip(count)) return true;
+    if (streams_[0]->Skip(count))
+      return true;
 
     // Hit the end of the stream.  Figure out how many more bytes we still have
     // to skip.
@@ -367,9 +362,8 @@ int64_t ConcatenatingInputStream::ByteCount() const {
   }
 }
 
-
 // ===================================================================
 
-}  // namespace io
-}  // namespace protobuf
-}  // namespace google
+} // namespace io
+} // namespace protobuf
+} // namespace google

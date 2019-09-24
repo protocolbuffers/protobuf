@@ -44,14 +44,14 @@
 #include <type_traits>
 #include <vector>
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/unittest.pb.h>
-#include <google/protobuf/stubs/strutil.h>
 #include <gmock/gmock.h>
-#include <google/protobuf/testing/googletest.h>
-#include <gtest/gtest.h>
+#include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/stl_util.h>
+#include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/testing/googletest.h>
+#include <google/protobuf/unittest.pb.h>
+#include <gtest/gtest.h>
 
 namespace google {
 namespace protobuf {
@@ -113,10 +113,9 @@ TEST(RepeatedField, Small) {
   EXPECT_TRUE(field.empty());
   EXPECT_EQ(field.size(), 0);
   // Additional bytes are for 'struct Rep' header.
-  int expected_usage = 4 * sizeof(int) + sizeof(Arena*);
+  int expected_usage = 4 * sizeof(int) + sizeof(Arena *);
   EXPECT_GE(field.SpaceUsedExcludingSelf(), expected_usage);
 }
-
 
 // Test operations on a RepeatedField which is large enough to allocate a
 // separate array.
@@ -211,8 +210,8 @@ TEST(RepeatedField, SwapLargeLarge) {
 
 // Determines how much space was reserved by the given field by adding elements
 // to it until it re-allocates its space.
-static int ReservedSpace(RepeatedField<int>* field) {
-  const int* ptr = field->data();
+static int ReservedSpace(RepeatedField<int> *field) {
+  const int *ptr = field->data();
   do {
     field->Add(0);
   } while (field->data() == ptr);
@@ -245,7 +244,7 @@ TEST(RepeatedField, ReserveLessThanExisting) {
   // field to not re-allocate at all.
   RepeatedField<int> field;
   field.Reserve(20);
-  const int* previous_ptr = field.data();
+  const int *previous_ptr = field.data();
   field.Reserve(10);
 
   EXPECT_EQ(previous_ptr, field.data());
@@ -285,7 +284,6 @@ TEST(RepeatedField, MergeFrom) {
   EXPECT_EQ(4, destination.Get(3));
   EXPECT_EQ(5, destination.Get(4));
 }
-
 
 TEST(RepeatedField, CopyFrom) {
   RepeatedField<int> source, destination;
@@ -473,7 +471,7 @@ TEST(RepeatedField, MoveConstruct) {
     RepeatedField<int> source;
     source.Add(1);
     source.Add(2);
-    const int* data = source.data();
+    const int *data = source.data();
     RepeatedField<int> destination = std::move(source);
     EXPECT_EQ(data, destination.data());
     EXPECT_THAT(destination, ElementsAre(1, 2));
@@ -483,7 +481,7 @@ TEST(RepeatedField, MoveConstruct) {
   }
   {
     Arena arena;
-    RepeatedField<int>* source =
+    RepeatedField<int> *source =
         Arena::CreateMessage<RepeatedField<int>>(&arena);
     source->Add(1);
     source->Add(2);
@@ -503,8 +501,8 @@ TEST(RepeatedField, MoveAssign) {
     source.Add(2);
     RepeatedField<int> destination;
     destination.Add(3);
-    const int* source_data = source.data();
-    const int* destination_data = destination.data();
+    const int *source_data = source.data();
+    const int *destination_data = destination.data();
     destination = std::move(source);
     EXPECT_EQ(source_data, destination.data());
     EXPECT_THAT(destination, ElementsAre(1, 2));
@@ -515,15 +513,15 @@ TEST(RepeatedField, MoveAssign) {
   }
   {
     Arena arena;
-    RepeatedField<int>* source =
+    RepeatedField<int> *source =
         Arena::CreateMessage<RepeatedField<int>>(&arena);
     source->Add(1);
     source->Add(2);
-    RepeatedField<int>* destination =
+    RepeatedField<int> *destination =
         Arena::CreateMessage<RepeatedField<int>>(&arena);
     destination->Add(3);
-    const int* source_data = source->data();
-    const int* destination_data = destination->data();
+    const int *source_data = source->data();
+    const int *destination_data = destination->data();
     *destination = std::move(*source);
     EXPECT_EQ(source_data, destination->data());
     EXPECT_THAT(*destination, ElementsAre(1, 2));
@@ -534,12 +532,12 @@ TEST(RepeatedField, MoveAssign) {
   }
   {
     Arena source_arena;
-    RepeatedField<int>* source =
+    RepeatedField<int> *source =
         Arena::CreateMessage<RepeatedField<int>>(&source_arena);
     source->Add(1);
     source->Add(2);
     Arena destination_arena;
-    RepeatedField<int>* destination =
+    RepeatedField<int> *destination =
         Arena::CreateMessage<RepeatedField<int>>(&destination_arena);
     destination->Add(3);
     *destination = std::move(*source);
@@ -550,7 +548,7 @@ TEST(RepeatedField, MoveAssign) {
   }
   {
     Arena arena;
-    RepeatedField<int>* source =
+    RepeatedField<int> *source =
         Arena::CreateMessage<RepeatedField<int>>(&arena);
     source->Add(1);
     source->Add(2);
@@ -567,7 +565,7 @@ TEST(RepeatedField, MoveAssign) {
     source.Add(1);
     source.Add(2);
     Arena arena;
-    RepeatedField<int>* destination =
+    RepeatedField<int> *destination =
         Arena::CreateMessage<RepeatedField<int>>(&arena);
     destination->Add(3);
     *destination = std::move(source);
@@ -579,21 +577,21 @@ TEST(RepeatedField, MoveAssign) {
   {
     RepeatedField<int> field;
     // An alias to defeat -Wself-move.
-    RepeatedField<int>& alias = field;
+    RepeatedField<int> &alias = field;
     field.Add(1);
     field.Add(2);
-    const int* data = field.data();
+    const int *data = field.data();
     field = std::move(alias);
     EXPECT_EQ(data, field.data());
     EXPECT_THAT(field, ElementsAre(1, 2));
   }
   {
     Arena arena;
-    RepeatedField<int>* field =
+    RepeatedField<int> *field =
         Arena::CreateMessage<RepeatedField<int>>(&arena);
     field->Add(1);
     field->Add(2);
-    const int* data = field->data();
+    const int *data = field->data();
     *field = std::move(*field);
     EXPECT_EQ(data, field->data());
     EXPECT_THAT(*field, ElementsAre(1, 2));
@@ -602,19 +600,19 @@ TEST(RepeatedField, MoveAssign) {
 
 TEST(Movable, Works) {
   class NonMoveConstructible {
-   public:
-    NonMoveConstructible(NonMoveConstructible&&) = delete;
-    NonMoveConstructible& operator=(NonMoveConstructible&&) { return *this; }
+  public:
+    NonMoveConstructible(NonMoveConstructible &&) = delete;
+    NonMoveConstructible &operator=(NonMoveConstructible &&) { return *this; }
   };
   class NonMoveAssignable {
-   public:
-    NonMoveAssignable(NonMoveAssignable&&) {}
-    NonMoveAssignable& operator=(NonMoveConstructible&&) = delete;
+  public:
+    NonMoveAssignable(NonMoveAssignable &&) {}
+    NonMoveAssignable &operator=(NonMoveConstructible &&) = delete;
   };
   class NonMovable {
-   public:
-    NonMovable(NonMovable&&) = delete;
-    NonMovable& operator=(NonMovable&&) = delete;
+  public:
+    NonMovable(NonMovable &&) = delete;
+    NonMovable &operator=(NonMovable &&) = delete;
   };
 
   EXPECT_TRUE(internal::IsMovable<std::string>::value);
@@ -633,7 +631,7 @@ TEST(Movable, Works) {
 TEST(RepeatedField, MoveAdd) {
   RepeatedPtrField<TestAllTypes> field;
   TestAllTypes test_all_types;
-  auto* optional_nested_message =
+  auto *optional_nested_message =
       test_all_types.mutable_optional_nested_message();
   optional_nested_message->set_bb(42);
   field.Add(std::move(test_all_types));
@@ -658,7 +656,7 @@ TEST(RepeatedField, SubscriptOperators) {
   EXPECT_EQ(1, field.Get(0));
   EXPECT_EQ(1, field[0]);
   EXPECT_EQ(field.Mutable(0), &field[0]);
-  const RepeatedField<int>& const_field = field;
+  const RepeatedField<int> &const_field = field;
   EXPECT_EQ(field.data(), &const_field[0]);
 }
 
@@ -686,7 +684,6 @@ TEST(RepeatedField, Truncate) {
 #endif
 }
 
-
 TEST(RepeatedField, ExtractSubrange) {
   // Exhaustively test every subrange in arrays of all sizes from 0 through 9.
   for (int sz = 0; sz < 10; ++sz) {
@@ -694,23 +691,27 @@ TEST(RepeatedField, ExtractSubrange) {
       for (int start = 0; start < sz - num; ++start) {
         // Create RepeatedField with sz elements having values 0 through sz-1.
         RepeatedField<int32> field;
-        for (int i = 0; i < sz; ++i) field.Add(i);
+        for (int i = 0; i < sz; ++i)
+          field.Add(i);
         EXPECT_EQ(field.size(), sz);
 
         // Create a catcher array and call ExtractSubrange.
         int32 catcher[10];
-        for (int i = 0; i < 10; ++i) catcher[i] = -1;
+        for (int i = 0; i < 10; ++i)
+          catcher[i] = -1;
         field.ExtractSubrange(start, num, catcher);
 
         // Does the resulting array have the right size?
         EXPECT_EQ(field.size(), sz - num);
 
         // Were the removed elements extracted into the catcher array?
-        for (int i = 0; i < num; ++i) EXPECT_EQ(catcher[i], start + i);
+        for (int i = 0; i < num; ++i)
+          EXPECT_EQ(catcher[i], start + i);
         EXPECT_EQ(catcher[num], -1);
 
         // Does the resulting array contain the right values?
-        for (int i = 0; i < start; ++i) EXPECT_EQ(field.Get(i), i);
+        for (int i = 0; i < start; ++i)
+          EXPECT_EQ(field.Get(i), i);
         for (int i = start; i < field.size(); ++i)
           EXPECT_EQ(field.Get(i), i + num);
       }
@@ -883,8 +884,8 @@ TEST(RepeatedPtrField, SwapLargeLarge) {
   }
 }
 
-static int ReservedSpace(RepeatedPtrField<std::string>* field) {
-  const std::string* const* ptr = field->data();
+static int ReservedSpace(RepeatedPtrField<std::string> *field) {
+  const std::string *const *ptr = field->data();
   do {
     field->Add();
   } while (field->data() == ptr);
@@ -913,7 +914,7 @@ TEST(RepeatedPtrField, ReserveLessThanDouble) {
 TEST(RepeatedPtrField, ReserveLessThanExisting) {
   RepeatedPtrField<std::string> field;
   field.Reserve(20);
-  const std::string* const* previous_ptr = field.data();
+  const std::string *const *previous_ptr = field.data();
   field.Reserve(10);
 
   EXPECT_EQ(previous_ptr, field.data());
@@ -925,7 +926,7 @@ TEST(RepeatedPtrField, ReserveDoesntLoseAllocated) {
   // failed to copy pointers to allocated-but-cleared objects, possibly
   // leading to segfaults.
   RepeatedPtrField<std::string> field;
-  std::string* first = field.Add();
+  std::string *first = field.Add();
   field.RemoveLast();
 
   field.Reserve(20);
@@ -937,7 +938,7 @@ TEST(RepeatedPtrField, ReserveDoesntLoseAllocated) {
 TEST(RepeatedPtrField, ClearedElements) {
   RepeatedPtrField<std::string> field;
 
-  std::string* original = field.Add();
+  std::string *original = field.Add();
   *original = "foo";
 
   EXPECT_EQ(field.ClearedCount(), 0);
@@ -947,28 +948,28 @@ TEST(RepeatedPtrField, ClearedElements) {
   EXPECT_EQ(field.ClearedCount(), 1);
 
   EXPECT_EQ(field.Add(),
-            original);  // Should return same string for reuse.
+            original); // Should return same string for reuse.
 
-  EXPECT_EQ(field.ReleaseLast(), original);  // We take ownership.
+  EXPECT_EQ(field.ReleaseLast(), original); // We take ownership.
   EXPECT_EQ(field.ClearedCount(), 0);
 
-  EXPECT_NE(field.Add(), original);  // Should NOT return the same string.
+  EXPECT_NE(field.Add(), original); // Should NOT return the same string.
   EXPECT_EQ(field.ClearedCount(), 0);
 
-  field.AddAllocated(original);  // Give ownership back.
+  field.AddAllocated(original); // Give ownership back.
   EXPECT_EQ(field.ClearedCount(), 0);
   EXPECT_EQ(field.Mutable(1), original);
 
   field.Clear();
   EXPECT_EQ(field.ClearedCount(), 2);
-  EXPECT_EQ(field.ReleaseCleared(), original);  // Take ownership again.
+  EXPECT_EQ(field.ReleaseCleared(), original); // Take ownership again.
   EXPECT_EQ(field.ClearedCount(), 1);
   EXPECT_NE(field.Add(), original);
   EXPECT_EQ(field.ClearedCount(), 0);
   EXPECT_NE(field.Add(), original);
   EXPECT_EQ(field.ClearedCount(), 0);
 
-  field.AddCleared(original);  // Give ownership back, but as a cleared object.
+  field.AddCleared(original); // Give ownership back, but as a cleared object.
   EXPECT_EQ(field.ClearedCount(), 1);
   EXPECT_EQ(field.Add(), original);
   EXPECT_EQ(field.ClearedCount(), 0);
@@ -984,14 +985,14 @@ TEST(RepeatedPtrField, AddAlocated) {
   int index = field.size();
 
   // First branch:  Field is at capacity with no cleared objects.
-  std::string* foo = new std::string("foo");
+  std::string *foo = new std::string("foo");
   field.AddAllocated(foo);
   EXPECT_EQ(index + 1, field.size());
   EXPECT_EQ(0, field.ClearedCount());
   EXPECT_EQ(foo, &field.Get(index));
 
   // Last branch:  Field is not at capacity and there are no cleared objects.
-  std::string* bar = new std::string("bar");
+  std::string *bar = new std::string("bar");
   field.AddAllocated(bar);
   ++index;
   EXPECT_EQ(index + 1, field.size());
@@ -1000,7 +1001,7 @@ TEST(RepeatedPtrField, AddAlocated) {
 
   // Third branch:  Field is not at capacity and there are no cleared objects.
   field.RemoveLast();
-  std::string* baz = new std::string("baz");
+  std::string *baz = new std::string("baz");
   field.AddAllocated(baz);
   EXPECT_EQ(index + 1, field.size());
   EXPECT_EQ(1, field.ClearedCount());
@@ -1012,7 +1013,7 @@ TEST(RepeatedPtrField, AddAlocated) {
   }
   field.RemoveLast();
   index = field.size();
-  std::string* qux = new std::string("qux");
+  std::string *qux = new std::string("qux");
   field.AddAllocated(qux);
   EXPECT_EQ(index + 1, field.size());
   // We should have discarded the cleared object.
@@ -1037,7 +1038,6 @@ TEST(RepeatedPtrField, MergeFrom) {
   EXPECT_EQ("4", destination.Get(3));
   EXPECT_EQ("5", destination.Get(4));
 }
-
 
 TEST(RepeatedPtrField, CopyFrom) {
   RepeatedPtrField<std::string> source, destination;
@@ -1176,7 +1176,7 @@ TEST(RepeatedPtrField, MoveConstruct) {
     RepeatedPtrField<std::string> source;
     *source.Add() = "1";
     *source.Add() = "2";
-    const std::string* const* data = source.data();
+    const std::string *const *data = source.data();
     RepeatedPtrField<std::string> destination = std::move(source);
     EXPECT_EQ(data, destination.data());
     EXPECT_THAT(destination, ElementsAre("1", "2"));
@@ -1186,7 +1186,7 @@ TEST(RepeatedPtrField, MoveConstruct) {
   }
   {
     Arena arena;
-    RepeatedPtrField<std::string>* source =
+    RepeatedPtrField<std::string> *source =
         Arena::CreateMessage<RepeatedPtrField<std::string>>(&arena);
     *source->Add() = "1";
     *source->Add() = "2";
@@ -1206,8 +1206,8 @@ TEST(RepeatedPtrField, MoveAssign) {
     *source.Add() = "2";
     RepeatedPtrField<std::string> destination;
     *destination.Add() = "3";
-    const std::string* const* source_data = source.data();
-    const std::string* const* destination_data = destination.data();
+    const std::string *const *source_data = source.data();
+    const std::string *const *destination_data = destination.data();
     destination = std::move(source);
     EXPECT_EQ(source_data, destination.data());
     EXPECT_THAT(destination, ElementsAre("1", "2"));
@@ -1218,15 +1218,15 @@ TEST(RepeatedPtrField, MoveAssign) {
   }
   {
     Arena arena;
-    RepeatedPtrField<std::string>* source =
+    RepeatedPtrField<std::string> *source =
         Arena::CreateMessage<RepeatedPtrField<std::string>>(&arena);
     *source->Add() = "1";
     *source->Add() = "2";
-    RepeatedPtrField<std::string>* destination =
+    RepeatedPtrField<std::string> *destination =
         Arena::CreateMessage<RepeatedPtrField<std::string>>(&arena);
     *destination->Add() = "3";
-    const std::string* const* source_data = source->data();
-    const std::string* const* destination_data = destination->data();
+    const std::string *const *source_data = source->data();
+    const std::string *const *destination_data = destination->data();
     *destination = std::move(*source);
     EXPECT_EQ(source_data, destination->data());
     EXPECT_THAT(*destination, ElementsAre("1", "2"));
@@ -1237,12 +1237,12 @@ TEST(RepeatedPtrField, MoveAssign) {
   }
   {
     Arena source_arena;
-    RepeatedPtrField<std::string>* source =
+    RepeatedPtrField<std::string> *source =
         Arena::CreateMessage<RepeatedPtrField<std::string>>(&source_arena);
     *source->Add() = "1";
     *source->Add() = "2";
     Arena destination_arena;
-    RepeatedPtrField<std::string>* destination =
+    RepeatedPtrField<std::string> *destination =
         Arena::CreateMessage<RepeatedPtrField<std::string>>(&destination_arena);
     *destination->Add() = "3";
     *destination = std::move(*source);
@@ -1253,7 +1253,7 @@ TEST(RepeatedPtrField, MoveAssign) {
   }
   {
     Arena arena;
-    RepeatedPtrField<std::string>* source =
+    RepeatedPtrField<std::string> *source =
         Arena::CreateMessage<RepeatedPtrField<std::string>>(&arena);
     *source->Add() = "1";
     *source->Add() = "2";
@@ -1270,7 +1270,7 @@ TEST(RepeatedPtrField, MoveAssign) {
     *source.Add() = "1";
     *source.Add() = "2";
     Arena arena;
-    RepeatedPtrField<std::string>* destination =
+    RepeatedPtrField<std::string> *destination =
         Arena::CreateMessage<RepeatedPtrField<std::string>>(&arena);
     *destination->Add() = "3";
     *destination = std::move(source);
@@ -1282,21 +1282,21 @@ TEST(RepeatedPtrField, MoveAssign) {
   {
     RepeatedPtrField<std::string> field;
     // An alias to defeat -Wself-move.
-    RepeatedPtrField<std::string>& alias = field;
+    RepeatedPtrField<std::string> &alias = field;
     *field.Add() = "1";
     *field.Add() = "2";
-    const std::string* const* data = field.data();
+    const std::string *const *data = field.data();
     field = std::move(alias);
     EXPECT_EQ(data, field.data());
     EXPECT_THAT(field, ElementsAre("1", "2"));
   }
   {
     Arena arena;
-    RepeatedPtrField<std::string>* field =
+    RepeatedPtrField<std::string> *field =
         Arena::CreateMessage<RepeatedPtrField<std::string>>(&arena);
     *field->Add() = "1";
     *field->Add() = "2";
-    const std::string* const* data = field->data();
+    const std::string *const *data = field->data();
     *field = std::move(*field);
     EXPECT_EQ(data, field->data());
     EXPECT_THAT(*field, ElementsAre("1", "2"));
@@ -1309,7 +1309,7 @@ TEST(RepeatedPtrField, MutableDataIsMutable) {
   EXPECT_EQ("1", field.Get(0));
   // The fact that this line compiles would be enough, but we'll check the
   // value anyway.
-  std::string** data = field.mutable_data();
+  std::string **data = field.mutable_data();
   **data = "2";
   EXPECT_EQ("2", field.Get(0));
 }
@@ -1320,7 +1320,7 @@ TEST(RepeatedPtrField, SubscriptOperators) {
   EXPECT_EQ("1", field.Get(0));
   EXPECT_EQ("1", field[0]);
   EXPECT_EQ(field.Mutable(0), &field[0]);
-  const RepeatedPtrField<std::string>& const_field = field;
+  const RepeatedPtrField<std::string> &const_field = field;
   EXPECT_EQ(*field.data(), &const_field[0]);
 }
 
@@ -1331,7 +1331,7 @@ TEST(RepeatedPtrField, ExtractSubrange) {
     for (int num = 0; num <= sz; ++num) {
       for (int start = 0; start < sz - num; ++start) {
         for (int extra = 0; extra < 4; ++extra) {
-          std::vector<std::string*> subject;
+          std::vector<std::string *> subject;
 
           // Create an array with "sz" elements and "extra" cleared elements.
           RepeatedPtrField<std::string> field;
@@ -1340,13 +1340,15 @@ TEST(RepeatedPtrField, ExtractSubrange) {
             field.AddAllocated(subject[i]);
           }
           EXPECT_EQ(field.size(), sz + extra);
-          for (int i = 0; i < extra; ++i) field.RemoveLast();
+          for (int i = 0; i < extra; ++i)
+            field.RemoveLast();
           EXPECT_EQ(field.size(), sz);
           EXPECT_EQ(field.ClearedCount(), extra);
 
           // Create a catcher array and call ExtractSubrange.
-          std::string* catcher[10];
-          for (int i = 0; i < 10; ++i) catcher[i] = NULL;
+          std::string *catcher[10];
+          for (int i = 0; i < 10; ++i)
+            catcher[i] = NULL;
           field.ExtractSubrange(start, num, catcher);
 
           // Does the resulting array have the right size?
@@ -1365,7 +1367,8 @@ TEST(RepeatedPtrField, ExtractSubrange) {
 
           // Reinstate the cleared elements.
           EXPECT_EQ(field.ClearedCount(), extra);
-          for (int i = 0; i < extra; ++i) field.Add();
+          for (int i = 0; i < extra; ++i)
+            field.Add();
           EXPECT_EQ(field.ClearedCount(), 0);
           EXPECT_EQ(field.size(), sz - num + extra);
 
@@ -1373,13 +1376,15 @@ TEST(RepeatedPtrField, ExtractSubrange) {
           for (int i = sz; i < sz + extra; ++i) {
             int count = 0;
             for (int j = sz; j < sz + extra; ++j) {
-              if (field.Mutable(j - num) == subject[i]) count += 1;
+              if (field.Mutable(j - num) == subject[i])
+                count += 1;
             }
             EXPECT_EQ(count, 1);
           }
 
           // Release the caught elements.
-          for (int i = 0; i < num; ++i) delete catcher[i];
+          for (int i = 0; i < num; ++i)
+            delete catcher[i];
         }
       }
     }
@@ -1394,7 +1399,7 @@ TEST(RepeatedPtrField, DeleteSubrange) {
 
 // Iterator tests stolen from net/proto/proto-array_unittest.
 class RepeatedFieldIteratorTest : public testing::Test {
- protected:
+protected:
   virtual void SetUp() {
     for (int i = 0; i < 3; ++i) {
       proto_array_.Add(i);
@@ -1424,7 +1429,7 @@ TEST_F(RepeatedFieldIteratorTest, MutableIteration) {
 }
 
 TEST_F(RepeatedFieldIteratorTest, ConstIteration) {
-  const RepeatedField<int>& const_proto_array = proto_array_;
+  const RepeatedField<int> &const_proto_array = proto_array_;
   RepeatedField<int>::const_iterator iter = const_proto_array.begin();
   EXPECT_EQ(0, *iter);
   ++iter;
@@ -1444,7 +1449,7 @@ TEST_F(RepeatedFieldIteratorTest, Mutation) {
 // -------------------------------------------------------------------
 
 class RepeatedPtrFieldIteratorTest : public testing::Test {
- protected:
+protected:
   virtual void SetUp() {
     proto_array_.Add()->assign("foo");
     proto_array_.Add()->assign("bar");
@@ -1473,7 +1478,7 @@ TEST_F(RepeatedPtrFieldIteratorTest, MutableIteration) {
 }
 
 TEST_F(RepeatedPtrFieldIteratorTest, ConstIteration) {
-  const RepeatedPtrField<std::string>& const_proto_array = proto_array_;
+  const RepeatedPtrField<std::string> &const_proto_array = proto_array_;
   RepeatedPtrField<std::string>::const_iterator iter =
       const_proto_array.begin();
   EXPECT_EQ("foo", *iter);
@@ -1497,7 +1502,7 @@ TEST_F(RepeatedPtrFieldIteratorTest, MutableReverseIteration) {
 }
 
 TEST_F(RepeatedPtrFieldIteratorTest, ConstReverseIteration) {
-  const RepeatedPtrField<std::string>& const_proto_array = proto_array_;
+  const RepeatedPtrField<std::string> &const_proto_array = proto_array_;
   RepeatedPtrField<std::string>::const_reverse_iterator iter =
       const_proto_array.rbegin();
   EXPECT_EQ("baz", *iter);
@@ -1571,7 +1576,7 @@ TEST_F(RepeatedPtrFieldIteratorTest, Mutation) {
 // -------------------------------------------------------------------
 
 class RepeatedPtrFieldPtrsIteratorTest : public testing::Test {
- protected:
+protected:
   virtual void SetUp() {
     proto_array_.Add()->assign("foo");
     proto_array_.Add()->assign("bar");
@@ -1580,7 +1585,7 @@ class RepeatedPtrFieldPtrsIteratorTest : public testing::Test {
   }
 
   RepeatedPtrField<std::string> proto_array_;
-  const RepeatedPtrField<std::string>* const_proto_array_;
+  const RepeatedPtrField<std::string> *const_proto_array_;
 };
 
 TEST_F(RepeatedPtrFieldPtrsIteratorTest, ConvertiblePtr) {
@@ -1699,7 +1704,7 @@ TEST_F(RepeatedPtrFieldPtrsIteratorTest, UninitializedConstPtrIterator) {
 // string
 // - i.e. *iter has type std::string*.
 struct StringLessThan {
-  bool operator()(const std::string* z, const std::string* y) const {
+  bool operator()(const std::string *z, const std::string *y) const {
     return *z < *y;
   }
 };
@@ -1781,13 +1786,13 @@ TEST_F(RepeatedPtrFieldPtrsIteratorTest, Sort) {
 // Ported from util/gtl/proto-array-iterators_unittest.
 
 class RepeatedFieldInsertionIteratorsTest : public testing::Test {
- protected:
+protected:
   std::list<double> halves;
   std::list<int> fibonacci;
   std::vector<std::string> words;
   typedef TestAllTypes::NestedMessage Nested;
   Nested nesteds[2];
-  std::vector<Nested*> nested_ptrs;
+  std::vector<Nested *> nested_ptrs;
   TestAllTypes protobuffer;
 
   virtual void SetUp() {
@@ -1888,10 +1893,10 @@ TEST_F(RepeatedFieldInsertionIteratorsTest, Nesteds) {
 
 TEST_F(RepeatedFieldInsertionIteratorsTest,
        AllocatedRepeatedPtrFieldWithStringIntData) {
-  std::vector<Nested*> data;
+  std::vector<Nested *> data;
   TestAllTypes goldenproto;
   for (int i = 0; i < 10; ++i) {
-    Nested* new_data = new Nested;
+    Nested *new_data = new Nested;
     new_data->set_bb(i);
     data.push_back(new_data);
 
@@ -1907,10 +1912,10 @@ TEST_F(RepeatedFieldInsertionIteratorsTest,
 
 TEST_F(RepeatedFieldInsertionIteratorsTest,
        AllocatedRepeatedPtrFieldWithString) {
-  std::vector<std::string*> data;
+  std::vector<std::string *> data;
   TestAllTypes goldenproto;
   for (int i = 0; i < 10; ++i) {
-    std::string* new_data = new std::string;
+    std::string *new_data = new std::string;
     *new_data = "name-" + StrCat(i);
     data.push_back(new_data);
 
@@ -1926,10 +1931,10 @@ TEST_F(RepeatedFieldInsertionIteratorsTest,
 
 TEST_F(RepeatedFieldInsertionIteratorsTest,
        UnsafeArenaAllocatedRepeatedPtrFieldWithStringIntData) {
-  std::vector<Nested*> data;
+  std::vector<Nested *> data;
   TestAllTypes goldenproto;
   for (int i = 0; i < 10; ++i) {
-    Nested* new_data = new Nested;
+    Nested *new_data = new Nested;
     new_data->set_bb(i);
     data.push_back(new_data);
 
@@ -1945,10 +1950,10 @@ TEST_F(RepeatedFieldInsertionIteratorsTest,
 
 TEST_F(RepeatedFieldInsertionIteratorsTest,
        UnsafeArenaAllocatedRepeatedPtrFieldWithString) {
-  std::vector<std::string*> data;
+  std::vector<std::string *> data;
   TestAllTypes goldenproto;
   for (int i = 0; i < 10; ++i) {
-    std::string* new_data = new std::string;
+    std::string *new_data = new std::string;
     *new_data = "name-" + StrCat(i);
     data.push_back(new_data);
 
@@ -1965,7 +1970,7 @@ TEST_F(RepeatedFieldInsertionIteratorsTest,
 TEST_F(RepeatedFieldInsertionIteratorsTest, MoveStrings) {
   std::vector<std::string> src = {"a", "b", "c", "d"};
   std::vector<std::string> copy =
-      src;  // copy since move leaves in undefined state
+      src; // copy since move leaves in undefined state
   TestAllTypes testproto;
   std::move(copy.begin(), copy.end(),
             RepeatedFieldBackInserter(testproto.mutable_repeated_string()));
@@ -1980,7 +1985,7 @@ TEST_F(RepeatedFieldInsertionIteratorsTest, MoveProtos) {
     return ret;
   };
   std::vector<Nested> src = {make_nested(3), make_nested(5), make_nested(7)};
-  std::vector<Nested> copy = src;  // copy since move leaves in undefined state
+  std::vector<Nested> copy = src; // copy since move leaves in undefined state
   TestAllTypes testproto;
   std::move(
       copy.begin(), copy.end(),
@@ -1993,7 +1998,7 @@ TEST_F(RepeatedFieldInsertionIteratorsTest, MoveProtos) {
   }
 }
 
-}  // namespace
+} // namespace
 
-}  // namespace protobuf
-}  // namespace google
+} // namespace protobuf
+} // namespace google

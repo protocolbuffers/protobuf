@@ -37,7 +37,7 @@ namespace protobuf {
 namespace {
 
 class LiteArenaTest : public testing::Test {
- protected:
+protected:
   LiteArenaTest() {
     ArenaOptions options;
     options.start_block_size = 128 * 1024;
@@ -60,12 +60,12 @@ TEST_F(LiteArenaTest, MapNoHeapAllocation) {
     // Map.
     // internal::NoHeapChecker no_heap;
 
-    protobuf_unittest::TestArenaMapLite* from =
+    protobuf_unittest::TestArenaMapLite *from =
         Arena::CreateMessage<protobuf_unittest::TestArenaMapLite>(arena_.get());
     MapLiteTestUtil::SetArenaMapFields(from);
     from->SerializeToString(&data);
 
-    protobuf_unittest::TestArenaMapLite* to =
+    protobuf_unittest::TestArenaMapLite *to =
         Arena::CreateMessage<protobuf_unittest::TestArenaMapLite>(arena_.get());
     to->ParseFromString(data);
     MapLiteTestUtil::ExpectArenaMapFieldsSet(*to);
@@ -73,7 +73,7 @@ TEST_F(LiteArenaTest, MapNoHeapAllocation) {
 }
 
 TEST_F(LiteArenaTest, UnknownFieldMemLeak) {
-  protobuf_unittest::ForeignMessageArenaLite* message =
+  protobuf_unittest::ForeignMessageArenaLite *message =
       Arena::CreateMessage<protobuf_unittest::ForeignMessageArenaLite>(
           arena_.get());
   std::string data = "\012\000";
@@ -85,6 +85,6 @@ TEST_F(LiteArenaTest, UnknownFieldMemLeak) {
   message->ParseFromString(data);
 }
 
-}  // namespace
-}  // namespace protobuf
-}  // namespace google
+} // namespace
+} // namespace protobuf
+} // namespace google

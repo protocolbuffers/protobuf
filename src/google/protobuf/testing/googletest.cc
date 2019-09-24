@@ -31,23 +31,23 @@
 // Author: kenton@google.com (Kenton Varda)
 // emulates google3/testing/base/public/googletest.cc
 
-#include <google/protobuf/testing/googletest.h>
-#include <google/protobuf/testing/file.h>
+#include <errno.h>
 #include <google/protobuf/io/io_win32.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/testing/file.h>
+#include <google/protobuf/testing/googletest.h>
+#include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <errno.h>
-#include <stdlib.h>
 #ifdef _MSC_VER
 // #include <direct.h>
 #else
 #include <unistd.h>
 #endif
-#include <stdio.h>
 #include <fcntl.h>
-#include <iostream>
 #include <fstream>
+#include <iostream>
+#include <stdio.h>
 
 namespace google {
 namespace protobuf {
@@ -56,8 +56,8 @@ namespace protobuf {
 // DO NOT include <io.h>, instead create functions in io_win32.{h,cc} and import
 // them like we do below.
 using google::protobuf::io::win32::close;
-using google::protobuf::io::win32::dup2;
 using google::protobuf::io::win32::dup;
+using google::protobuf::io::win32::dup2;
 using google::protobuf::io::win32::mkdir;
 using google::protobuf::io::win32::open;
 #endif
@@ -66,7 +66,7 @@ using google::protobuf::io::win32::open;
 #ifdef _O_BINARY
 #define O_BINARY _O_BINARY
 #else
-#define O_BINARY 0     // If this isn't defined, the platform doesn't need it.
+#define O_BINARY 0 // If this isn't defined, the platform doesn't need it.
 #endif
 #endif
 
@@ -77,11 +77,11 @@ string TestSourceDir() {
 #else
 #ifndef _MSC_VER
   // automake sets the "srcdir" environment variable.
-  char* result = getenv("srcdir");
+  char *result = getenv("srcdir");
   if (result != NULL) {
     return result;
   }
-#endif  // _MSC_VER
+#endif // _MSC_VER
 
   // Look for the "src" directory.
   string prefix = ".";
@@ -93,16 +93,16 @@ string TestSourceDir() {
   while (!File::Exists(prefix + "/src/google/protobuf/descriptor.cc")) {
     if (!File::Exists(prefix)) {
       GOOGLE_LOG(FATAL)
-        << "Could not find protobuf source code.  Please run tests from "
-           "somewhere within the protobuf source package.";
+          << "Could not find protobuf source code.  Please run tests from "
+             "somewhere within the protobuf source package.";
     }
     prefix += "/..";
   }
   return prefix + "/src";
-#endif  // GOOGLE_PROTOBUF_TEST_SOURCE_PATH
+#endif // GOOGLE_PROTOBUF_TEST_SOURCE_PATH
 #else
   return "third_party/protobuf/src";
-#endif  // GOOGLE_THIRD_PARTY_PROTOBUF
+#endif // GOOGLE_THIRD_PARTY_PROTOBUF
 }
 
 namespace {
@@ -118,7 +118,7 @@ string GetTemporaryDirectoryName() {
   // tmpnam() is generally not considered safe but we're only using it for
   // testing.  We cannot use tmpfile() or mkstemp() since we're creating a
   // directory.
-  char b[L_tmpnam + 1];     // HPUX multithread return 0 if s is 0
+  char b[L_tmpnam + 1]; // HPUX multithread return 0 if s is 0
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
   string result = tmpnam(b);
@@ -151,14 +151,14 @@ string GetTemporaryDirectoryName() {
   // path doesn't use the "\\?\" prefix.
   // Let's avoid confusion and use only forward slashes.
   result = StringReplace(result, "\\", "/", true);
-#endif  // _WIN32
+#endif // _WIN32
   return result;
 }
 
 // Creates a temporary directory on demand and deletes it when the process
 // quits.
 class TempDirDeleter {
- public:
+public:
   TempDirDeleter() {}
   ~TempDirDeleter() {
     if (!name_.empty()) {
@@ -178,17 +178,15 @@ class TempDirDeleter {
     return name_;
   }
 
- private:
+private:
   string name_;
 };
 
 TempDirDeleter temp_dir_deleter_;
 
-}  // namespace
+} // namespace
 
-string TestTempDir() {
-  return temp_dir_deleter_.GetTempDir();
-}
+string TestTempDir() { return temp_dir_deleter_.GetTempDir(); }
 
 // TODO(kenton):  Share duplicated code below.  Too busy/lazy for now.
 
@@ -257,7 +255,7 @@ string GetCapturedTestStderr() {
   return result;
 }
 
-ScopedMemoryLog* ScopedMemoryLog::active_log_ = NULL;
+ScopedMemoryLog *ScopedMemoryLog::active_log_ = NULL;
 
 ScopedMemoryLog::ScopedMemoryLog() {
   GOOGLE_CHECK(active_log_ == NULL);
@@ -270,14 +268,13 @@ ScopedMemoryLog::~ScopedMemoryLog() {
   active_log_ = NULL;
 }
 
-const std::vector<string>& ScopedMemoryLog::GetMessages(LogLevel level) {
-  GOOGLE_CHECK(level == ERROR ||
-               level == WARNING);
+const std::vector<string> &ScopedMemoryLog::GetMessages(LogLevel level) {
+  GOOGLE_CHECK(level == ERROR || level == WARNING);
   return messages_[level];
 }
 
-void ScopedMemoryLog::HandleLog(LogLevel level, const char* filename,
-                                int line, const string& message) {
+void ScopedMemoryLog::HandleLog(LogLevel level, const char *filename, int line,
+                                const string &message) {
   GOOGLE_CHECK(active_log_ != NULL);
   if (level == ERROR || level == WARNING) {
     active_log_->messages_[level].push_back(message);
@@ -298,7 +295,7 @@ struct ForceShutdown {
   }
 } force_shutdown;
 
-}  // namespace
+} // namespace
 
-}  // namespace protobuf
-}  // namespace google
+} // namespace protobuf
+} // namespace google

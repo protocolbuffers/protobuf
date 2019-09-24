@@ -30,9 +30,9 @@
 
 #include <memory>
 
-#include <google/protobuf/unittest_drop_unknown_fields.pb.h>
 #include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/message_lite.h>
+#include <google/protobuf/unittest_drop_unknown_fields.pb.h>
 #include <gtest/gtest.h>
 
 using unittest_drop_unknown_fields::Foo;
@@ -79,5 +79,5 @@ TEST(DropUnknownFieldsTest, DynamicMessage) {
   EXPECT_EQ(2, foo_with_extra_fields.extra_int32_value());
 }
 
-}  // namespace protobuf
-}  // namespace google
+} // namespace protobuf
+} // namespace google

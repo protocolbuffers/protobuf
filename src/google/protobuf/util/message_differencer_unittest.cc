@@ -42,20 +42,20 @@
 #include <google/protobuf/stubs/strutil.h>
 
 #include <google/protobuf/any_test.pb.h>
+#include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/map_test_util.h>
 #include <google/protobuf/map_unittest.pb.h>
 #include <google/protobuf/test_util.h>
-#include <google/protobuf/unittest.pb.h>
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/text_format.h>
-#include <google/protobuf/wire_format.h>
-#include <google/protobuf/util/message_differencer_unittest.pb.h>
+#include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/util/field_comparator.h>
 #include <google/protobuf/util/message_differencer.h>
+#include <google/protobuf/util/message_differencer_unittest.pb.h>
+#include <google/protobuf/wire_format.h>
 
-#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 
@@ -64,13 +64,11 @@ namespace protobuf {
 
 namespace {
 
-
-const FieldDescriptor* GetFieldDescriptor(const Message& message,
-                                          const std::string& field_name) {
-  std::vector<std::string> field_path =
-      Split(field_name, ".", true);
-  const Descriptor* descriptor = message.GetDescriptor();
-  const FieldDescriptor* field = NULL;
+const FieldDescriptor *GetFieldDescriptor(const Message &message,
+                                          const std::string &field_name) {
+  std::vector<std::string> field_path = Split(field_name, ".", true);
+  const Descriptor *descriptor = message.GetDescriptor();
+  const FieldDescriptor *field = NULL;
   for (int i = 0; i < field_path.size(); i++) {
     field = descriptor->FindFieldByName(field_path[i]);
     descriptor = field->message_type();
@@ -78,8 +76,8 @@ const FieldDescriptor* GetFieldDescriptor(const Message& message,
   return field;
 }
 
-void ExpectEqualsWithDifferencer(util::MessageDifferencer* differencer,
-                                 const Message& msg1, const Message& msg2) {
+void ExpectEqualsWithDifferencer(util::MessageDifferencer *differencer,
+                                 const Message &msg1, const Message &msg2) {
   differencer->set_scope(util::MessageDifferencer::FULL);
   EXPECT_TRUE(differencer->Compare(msg1, msg2));
 
@@ -131,8 +129,8 @@ TEST(MessageDifferencerTest, RepeatedFieldSetOptimizationTest) {
   util::MessageDifferencer differencer;
   protobuf_unittest::TestDiffMessage msg1;
   protobuf_unittest::TestDiffMessage msg2;
-  protobuf_unittest::TestDiffMessage::Item* item1 = msg1.add_item();
-  protobuf_unittest::TestDiffMessage::Item* item2 = msg2.add_item();
+  protobuf_unittest::TestDiffMessage::Item *item1 = msg1.add_item();
+  protobuf_unittest::TestDiffMessage::Item *item2 = msg2.add_item();
   differencer.TreatAsSet(item1->GetDescriptor()->FindFieldByName("ra"));
   differencer.TreatAsSet(item2->GetDescriptor()->FindFieldByName("ra"));
   for (int i = 0; i < 1000; i++) {
@@ -551,7 +549,7 @@ TEST(MessageDifferencerTest, WithinFractionOrMarginFloatTest) {
   // Compare
   util::MessageDifferencer differencer;
   EXPECT_FALSE(differencer.Compare(msg1, msg2));
-  const FieldDescriptor* fd =
+  const FieldDescriptor *fd =
       msg1.GetDescriptor()->FindFieldByName("optional_float");
 
   // Set float comparison to exact, margin and fraction value should not matter.
@@ -608,7 +606,7 @@ TEST(MessageDifferencerTest, WithinFractionOrMarginDoubleTest) {
   // Set comparison to exact, margin and fraction value should not matter.
   differencer.set_float_comparison(util::MessageDifferencer::EXACT);
   // Set margin for float comparison.
-  const FieldDescriptor* fd =
+  const FieldDescriptor *fd =
       msg1.GetDescriptor()->FindFieldByName("optional_double");
   differencer.SetFractionAndMargin(fd, 0.0, 10.0);
   EXPECT_FALSE(differencer.Compare(msg1, msg2));
@@ -775,8 +773,8 @@ TEST(MessageDifferencerTest, UnknownFieldPartialEqualTest) {
   unittest::TestEmptyMessage empty1;
   unittest::TestEmptyMessage empty2;
 
-  UnknownFieldSet* unknown1 = empty1.mutable_unknown_fields();
-  UnknownFieldSet* unknown2 = empty2.mutable_unknown_fields();
+  UnknownFieldSet *unknown1 = empty1.mutable_unknown_fields();
+  UnknownFieldSet *unknown2 = empty2.mutable_unknown_fields();
 
   unknown1->AddVarint(243, 122);
   unknown1->AddLengthDelimited(245, "abc");
@@ -800,8 +798,8 @@ TEST(MessageDifferencerTest, SpecifiedFieldsEqualityAllTest) {
   TestUtil::SetAllFields(&msg1);
   TestUtil::SetAllFields(&msg2);
 
-  std::vector<const FieldDescriptor*> fields1;
-  std::vector<const FieldDescriptor*> fields2;
+  std::vector<const FieldDescriptor *> fields1;
+  std::vector<const FieldDescriptor *> fields2;
   msg1.GetReflection()->ListFields(msg1, &fields1);
   msg2.GetReflection()->ListFields(msg2, &fields2);
 
@@ -815,8 +813,8 @@ TEST(MessageDifferencerTest, SpecifiedFieldsInequalityAllTest) {
 
   TestUtil::SetAllFields(&msg1);
 
-  std::vector<const FieldDescriptor*> fields1;
-  std::vector<const FieldDescriptor*> fields2;
+  std::vector<const FieldDescriptor *> fields1;
+  std::vector<const FieldDescriptor *> fields2;
   msg1.GetReflection()->ListFields(msg1, &fields1);
   msg2.GetReflection()->ListFields(msg2, &fields2);
 
@@ -830,7 +828,7 @@ TEST(MessageDifferencerTest, SpecifiedFieldsEmptyListAlwaysSucceeds) {
 
   TestUtil::SetAllFields(&msg1);
 
-  std::vector<const FieldDescriptor*> empty_fields;
+  std::vector<const FieldDescriptor *> empty_fields;
 
   util::MessageDifferencer differencer;
   EXPECT_TRUE(
@@ -845,7 +843,7 @@ TEST(MessageDifferencerTest, SpecifiedFieldsCompareWithSelf) {
   unittest::TestAllTypes msg1;
   TestUtil::SetAllFields(&msg1);
 
-  std::vector<const FieldDescriptor*> fields;
+  std::vector<const FieldDescriptor *> fields;
   msg1.GetReflection()->ListFields(msg1, &fields);
 
   util::MessageDifferencer differencer;
@@ -853,7 +851,7 @@ TEST(MessageDifferencerTest, SpecifiedFieldsCompareWithSelf) {
 
   {
     // Compare with a subset of fields.
-    std::vector<const FieldDescriptor*> compare_fields;
+    std::vector<const FieldDescriptor *> compare_fields;
     for (int i = 0; i < fields.size(); ++i) {
       if (i % 2 == 0) {
         compare_fields.push_back(fields[i]);
@@ -866,8 +864,8 @@ TEST(MessageDifferencerTest, SpecifiedFieldsCompareWithSelf) {
     // Specify a different set of fields to compare, even though we're using the
     // same message. This should fail, since we are explicitly saying that the
     // set of fields are different.
-    std::vector<const FieldDescriptor*> compare_fields1;
-    std::vector<const FieldDescriptor*> compare_fields2;
+    std::vector<const FieldDescriptor *> compare_fields1;
+    std::vector<const FieldDescriptor *> compare_fields2;
     for (int i = 0; i < fields.size(); ++i) {
       if (i % 2 == 0) {
         compare_fields1.push_back(fields[i]);
@@ -890,8 +888,8 @@ TEST(MessageDifferencerTest, SpecifiedFieldsEqualityAllShuffledTest) {
   TestUtil::SetAllFields(&msg1);
   TestUtil::SetAllFields(&msg2);
 
-  std::vector<const FieldDescriptor*> fields1;
-  std::vector<const FieldDescriptor*> fields2;
+  std::vector<const FieldDescriptor *> fields1;
+  std::vector<const FieldDescriptor *> fields2;
   msg1.GetReflection()->ListFields(msg1, &fields1);
   msg2.GetReflection()->ListFields(msg2, &fields2);
 
@@ -910,10 +908,10 @@ TEST(MessageDifferencerTest, SpecifiedFieldsSubsetEqualityTest) {
   TestUtil::SetAllFields(&msg1);
   TestUtil::SetAllFields(&msg2);
 
-  std::vector<const FieldDescriptor*> fields1;
+  std::vector<const FieldDescriptor *> fields1;
   msg1.GetReflection()->ListFields(msg1, &fields1);
 
-  std::vector<const FieldDescriptor*> compare_fields;
+  std::vector<const FieldDescriptor *> compare_fields;
   // Only compare the field descriptors with even indices.
   for (int i = 0; i < fields1.size(); ++i) {
     if (i % 2 == 0) {
@@ -936,11 +934,11 @@ TEST(MessageDifferencerTest,
   TestUtil::SetAllFields(&msg1);
   TestUtil::SetAllFields(&msg2);
 
-  std::vector<const FieldDescriptor*> fields1;
-  const Reflection* reflection = msg1.GetReflection();
+  std::vector<const FieldDescriptor *> fields1;
+  const Reflection *reflection = msg1.GetReflection();
   reflection->ListFields(msg1, &fields1);
 
-  std::vector<const FieldDescriptor*> compare_fields;
+  std::vector<const FieldDescriptor *> compare_fields;
   // Only compare the field descriptors with even indices.
   for (int i = 0; i < fields1.size(); ++i) {
     if (i % 2 == 0) {
@@ -965,10 +963,10 @@ TEST(MessageDifferencerTest, SpecifiedFieldsDetectsDifferencesTest) {
   TestUtil::SetAllFields(&msg2);
   TestUtil::ModifyRepeatedFields(&msg2);
 
-  std::vector<const FieldDescriptor*> fields1;
+  std::vector<const FieldDescriptor *> fields1;
   msg1.GetReflection()->ListFields(msg1, &fields1);
 
-  std::vector<const FieldDescriptor*> compare_fields;
+  std::vector<const FieldDescriptor *> compare_fields;
   // Only compare the repeated field descriptors.
   for (int i = 0; i < fields1.size(); ++i) {
     if (fields1[i]->is_repeated()) {
@@ -988,8 +986,8 @@ TEST(MessageDifferencerTest, SpecifiedFieldsEquivalenceAllTest) {
   TestUtil::SetAllFields(&msg1);
   TestUtil::SetAllFields(&msg2);
 
-  std::vector<const FieldDescriptor*> fields1;
-  std::vector<const FieldDescriptor*> fields2;
+  std::vector<const FieldDescriptor *> fields1;
+  std::vector<const FieldDescriptor *> fields2;
   msg1.GetReflection()->ListFields(msg1, &fields1);
   msg2.GetReflection()->ListFields(msg2, &fields2);
 
@@ -1003,13 +1001,13 @@ TEST(MessageDifferencerTest,
      SpecifiedFieldsEquivalenceIgnoresOtherFieldDifferencesTest) {
   unittest::TestAllTypes msg1;
   unittest::TestAllTypes msg2;
-  const Descriptor* desc = msg1.GetDescriptor();
+  const Descriptor *desc = msg1.GetDescriptor();
 
-  const FieldDescriptor* optional_int32_desc =
+  const FieldDescriptor *optional_int32_desc =
       desc->FindFieldByName("optional_int32");
-  const FieldDescriptor* optional_int64_desc =
+  const FieldDescriptor *optional_int64_desc =
       desc->FindFieldByName("optional_int64");
-  const FieldDescriptor* default_int64_desc =
+  const FieldDescriptor *default_int64_desc =
       desc->FindFieldByName("default_int64");
   ASSERT_TRUE(optional_int32_desc != NULL);
   ASSERT_TRUE(optional_int64_desc != NULL);
@@ -1022,8 +1020,8 @@ TEST(MessageDifferencerTest,
   // actually doing something.
   msg2.set_optional_uint64(23);
 
-  std::vector<const FieldDescriptor*> fields1;
-  std::vector<const FieldDescriptor*> fields2;
+  std::vector<const FieldDescriptor *> fields1;
+  std::vector<const FieldDescriptor *> fields2;
   fields1.push_back(optional_int32_desc);
   fields1.push_back(default_int64_desc);
 
@@ -1068,20 +1066,19 @@ TEST(MessageDifferencerTest, RepeatedFieldSmartListTest) {
   differencer.set_repeated_field_comparison(
       util::MessageDifferencer::AS_SMART_LIST);
   EXPECT_FALSE(differencer.Compare(msg1, msg2));
-  EXPECT_EQ(
-      "deleted: rv[0]: 1\n"
-      "added: rv[0]: 9\n"
-      "added: rv[1]: 0\n"
-      "moved: rv[1] -> rv[2] : 2\n"
-      "added: rv[3]: 7\n"
-      "moved: rv[2] -> rv[4] : 3\n"
-      "deleted: rv[3]: 9\n"
-      "moved: rv[4] -> rv[5] : 4\n"
-      "moved: rv[5] -> rv[6] : 5\n"
-      "deleted: rv[6]: 7\n"
-      "added: rv[7]: 6\n"
-      "moved: rv[7] -> rv[8] : 2\n",
-      diff_report);
+  EXPECT_EQ("deleted: rv[0]: 1\n"
+            "added: rv[0]: 9\n"
+            "added: rv[1]: 0\n"
+            "moved: rv[1] -> rv[2] : 2\n"
+            "added: rv[3]: 7\n"
+            "moved: rv[2] -> rv[4] : 3\n"
+            "deleted: rv[3]: 9\n"
+            "moved: rv[4] -> rv[5] : 4\n"
+            "moved: rv[5] -> rv[6] : 5\n"
+            "deleted: rv[6]: 7\n"
+            "added: rv[7]: 6\n"
+            "moved: rv[7] -> rv[8] : 2\n",
+            diff_report);
 
   // Compare two sub messages
   // a: 1, 2, 3,    4, 5
@@ -1100,14 +1097,13 @@ TEST(MessageDifferencerTest, RepeatedFieldSmartListTest) {
   differencer.set_repeated_field_comparison(
       util::MessageDifferencer::AS_SMART_LIST);
   EXPECT_FALSE(differencer.Compare(msg1, msg2));
-  EXPECT_EQ(
-      "deleted: rm[0]: { a: 1 }\n"
-      "moved: rm[1] -> rm[0] : { a: 2 }\n"
-      "deleted: rm[2]: { a: 3 }\n"
-      "added: rm[1]: { a: 6 }\n"
-      "moved: rm[3] -> rm[2] : { a: 4 }\n"
-      "deleted: rm[4]: { a: 5 }\n",
-      diff_report);
+  EXPECT_EQ("deleted: rm[0]: { a: 1 }\n"
+            "moved: rm[1] -> rm[0] : { a: 2 }\n"
+            "deleted: rm[2]: { a: 3 }\n"
+            "added: rm[1]: { a: 6 }\n"
+            "moved: rm[3] -> rm[2] : { a: 4 }\n"
+            "deleted: rm[4]: { a: 5 }\n",
+            diff_report);
 }
 
 TEST(MessageDifferencerTest, RepeatedFieldSmartSetTest) {
@@ -1151,11 +1147,10 @@ TEST(MessageDifferencerTest, RepeatedFieldSmartSetTest) {
   differencer.set_repeated_field_comparison(
       util::MessageDifferencer::AS_SMART_SET);
   EXPECT_FALSE(differencer.Compare(msg1, msg2));
-  EXPECT_EQ(
-      "modified: rm[0].a -> rm[1].a: 1 -> 0\n"
-      "modified: rm[1].b -> rm[2].b: 2 -> 0\n"
-      "modified: rm[2].b -> rm[0].b: 3 -> 0\n",
-      diff_report);
+  EXPECT_EQ("modified: rm[0].a -> rm[1].a: 1 -> 0\n"
+            "modified: rm[1].b -> rm[2].b: 2 -> 0\n"
+            "modified: rm[2].b -> rm[0].b: 3 -> 0\n",
+            diff_report);
 }
 
 TEST(MessageDifferencerTest, RepeatedFieldSmartSetTest_IdenticalElements) {
@@ -1211,10 +1206,9 @@ TEST(MessageDifferencerTest, RepeatedFieldSmartSetTest_PreviouslyMatch) {
   differencer.set_repeated_field_comparison(
       util::MessageDifferencer::AS_SMART_SET);
   EXPECT_FALSE(differencer.Compare(msg1, msg2));
-  EXPECT_EQ(
-      "modified: rm[0].c: 1 -> 0\n"
-      "modified: rm[1].b: 1 -> 0\n",
-      diff_report);
+  EXPECT_EQ("modified: rm[0].c: 1 -> 0\n"
+            "modified: rm[1].b: 1 -> 0\n",
+            diff_report);
 }
 
 TEST(MessageDifferencerTest, RepeatedFieldSmartSet_MultipleMatches) {
@@ -1255,11 +1249,10 @@ TEST(MessageDifferencerTest, RepeatedFieldSmartSet_MultipleMatches) {
   differencer.set_repeated_field_comparison(
       util::MessageDifferencer::AS_SMART_SET);
   EXPECT_FALSE(differencer.Compare(msg1, msg2));
-  EXPECT_EQ(
-      "modified: rm[1].b -> rm[0].b: 2 -> 0\n"
-      "modified: rm[2].b -> rm[1].b: 3 -> 0\n"
-      "deleted: rm[0]: { c: 1 a: 1 b: 1 }\n",
-      diff_report);
+  EXPECT_EQ("modified: rm[1].b -> rm[0].b: 2 -> 0\n"
+            "modified: rm[2].b -> rm[1].b: 3 -> 0\n"
+            "deleted: rm[0]: { c: 1 a: 1 b: 1 }\n",
+            diff_report);
 }
 
 TEST(MessageDifferencerTest, RepeatedFieldSmartSet_MultipleMatchesNoReporter) {
@@ -1303,10 +1296,9 @@ TEST(MessageDifferencerTest, RepeatedFieldSmartSet_NonMessageTypeTest) {
   differencer.set_repeated_field_comparison(
       util::MessageDifferencer::AS_SMART_SET);
   EXPECT_TRUE(differencer.Compare(msg1, msg2));
-  EXPECT_EQ(
-      "moved: rw[0] -> rw[2] : \"b\"\n"
-      "moved: rw[2] -> rw[0] : \"a\"\n",
-      diff_report);
+  EXPECT_EQ("moved: rw[0] -> rw[2] : \"b\"\n"
+            "moved: rw[2] -> rw[0] : \"a\"\n",
+            diff_report);
 }
 
 TEST(MessageDifferencerTest, RepeatedFieldSetTest_SetOfSet) {
@@ -1314,7 +1306,7 @@ TEST(MessageDifferencerTest, RepeatedFieldSetTest_SetOfSet) {
   protobuf_unittest::TestDiffMessage msg1;
   protobuf_unittest::TestDiffMessage msg2;
 
-  protobuf_unittest::TestDiffMessage::Item* item = msg1.add_item();
+  protobuf_unittest::TestDiffMessage::Item *item = msg1.add_item();
   item->add_ra(1);
   item->add_ra(2);
   item->add_ra(3);
@@ -1358,7 +1350,7 @@ TEST(MessageDifferencerTest, RepeatedFieldSetTest_Combination) {
   // Treat "item.ra" also as Set
   // Treat "rv" as Set
   // Treat "rw" as List
-  protobuf_unittest::TestDiffMessage::Item* item = msg1.add_item();
+  protobuf_unittest::TestDiffMessage::Item *item = msg1.add_item();
   item->set_a(3);
   item->add_ra(1);
   item->add_ra(2);
@@ -1433,7 +1425,7 @@ TEST(MessageDifferencerTest, RepeatedFieldMapTest_Partial) {
   // message msg1 {
   //   item { a: 1; b: "11" }
   // }
-  protobuf_unittest::TestDiffMessage::Item* item = msg1.add_item();
+  protobuf_unittest::TestDiffMessage::Item *item = msg1.add_item();
   item->set_a(1);
   item->set_b("11");
 
@@ -1534,7 +1526,7 @@ TEST(MessageDifferencerTest, RepeatedFieldSetTest_Partial) {
   //   rm { b: 2; c: 3 }
   //   rm { b: 2 }
   // }
-  protobuf_unittest::TestField* field = msg2.add_rm();
+  protobuf_unittest::TestField *field = msg2.add_rm();
   field->set_a(1);
   field->set_c(3);
   field = msg2.add_rm();
@@ -1554,7 +1546,7 @@ TEST(MessageDifferencerTest, RepeatedFieldMapTest_MultipleFieldsAsKey) {
   protobuf_unittest::TestDiffMessage msg2;
   // Treat "item" as Map, with key = ("a", "ra")
   // Treat "item.ra" as Set
-  protobuf_unittest::TestDiffMessage::Item* item = msg1.add_item();
+  protobuf_unittest::TestDiffMessage::Item *item = msg1.add_item();
   // key => value: (1, {2, 3}) => "a"
   item->set_a(1);
   item->add_ra(2);
@@ -1596,7 +1588,7 @@ TEST(MessageDifferencerTest, RepeatedFieldMapTest_MultipleFieldsAsKey) {
   util::MessageDifferencer differencer;
   differencer.TreatAsSet(GetFieldDescriptor(msg1, "item.ra"));
   EXPECT_FALSE(differencer.Compare(msg1, msg2));
-  std::vector<const FieldDescriptor*> key_fields;
+  std::vector<const FieldDescriptor *> key_fields;
   key_fields.push_back(GetFieldDescriptor(msg1, "item.a"));
   key_fields.push_back(GetFieldDescriptor(msg1, "item.ra"));
   differencer.TreatAsMapWithMultipleFieldsAsKey(
@@ -1619,11 +1611,10 @@ TEST(MessageDifferencerTest, RepeatedFieldMapTest_MultipleFieldsAsKey) {
   std::string output;
   differencer.ReportDifferencesToString(&output);
   EXPECT_FALSE(differencer.Compare(msg1, msg2));
-  EXPECT_EQ(
-      "moved: item[0].ra[0] -> item[0].ra[1] : 5\n"
-      "moved: item[0].ra[1] -> item[0].ra[0] : 6\n"
-      "modified: item[0].b: \"hello\" -> \"world\"\n",
-      output);
+  EXPECT_EQ("moved: item[0].ra[0] -> item[0].ra[1] : 5\n"
+            "moved: item[0].ra[1] -> item[0].ra[0] : 6\n"
+            "modified: item[0].b: \"hello\" -> \"world\"\n",
+            output);
 }
 
 TEST(MessageDifferencerTest, RepeatedFieldMapTest_MultipleFieldPathsAsKey) {
@@ -1631,7 +1622,7 @@ TEST(MessageDifferencerTest, RepeatedFieldMapTest_MultipleFieldPathsAsKey) {
   protobuf_unittest::TestDiffMessage msg2;
   // Treat "item" as Map, with key = ("m.a", "m.rc")
   // Treat "item.m.rc" as Set
-  protobuf_unittest::TestDiffMessage::Item* item = msg1.add_item();
+  protobuf_unittest::TestDiffMessage::Item *item = msg1.add_item();
   // key => value: (1, {2, 3}) => "a"
   item->mutable_m()->set_a(1);
   item->mutable_m()->add_rc(2);
@@ -1673,11 +1664,11 @@ TEST(MessageDifferencerTest, RepeatedFieldMapTest_MultipleFieldPathsAsKey) {
   util::MessageDifferencer differencer;
   differencer.TreatAsSet(GetFieldDescriptor(msg1, "item.m.rc"));
   EXPECT_FALSE(differencer.Compare(msg1, msg2));
-  std::vector<std::vector<const FieldDescriptor*> > key_field_paths;
-  std::vector<const FieldDescriptor*> key_field_path1;
+  std::vector<std::vector<const FieldDescriptor *>> key_field_paths;
+  std::vector<const FieldDescriptor *> key_field_path1;
   key_field_path1.push_back(GetFieldDescriptor(msg1, "item.m"));
   key_field_path1.push_back(GetFieldDescriptor(msg1, "item.m.a"));
-  std::vector<const FieldDescriptor*> key_field_path2;
+  std::vector<const FieldDescriptor *> key_field_path2;
   key_field_path2.push_back(GetFieldDescriptor(msg1, "item.m"));
   key_field_path2.push_back(GetFieldDescriptor(msg1, "item.m.rc"));
   key_field_paths.push_back(key_field_path1);
@@ -1702,18 +1693,17 @@ TEST(MessageDifferencerTest, RepeatedFieldMapTest_MultipleFieldPathsAsKey) {
   std::string output;
   differencer.ReportDifferencesToString(&output);
   EXPECT_FALSE(differencer.Compare(msg1, msg2));
-  EXPECT_EQ(
-      "modified: item[0].b: \"hello\" -> \"world\"\n"
-      "moved: item[0].m.rc[0] -> item[0].m.rc[1] : 5\n"
-      "moved: item[0].m.rc[1] -> item[0].m.rc[0] : 6\n",
-      output);
+  EXPECT_EQ("modified: item[0].b: \"hello\" -> \"world\"\n"
+            "moved: item[0].m.rc[0] -> item[0].m.rc[1] : 5\n"
+            "moved: item[0].m.rc[1] -> item[0].m.rc[0] : 6\n",
+            output);
 }
 
 TEST(MessageDifferencerTest, RepeatedFieldMapTest_IgnoredKeyFields) {
   protobuf_unittest::TestDiffMessage msg1;
   protobuf_unittest::TestDiffMessage msg2;
   // Treat "item" as Map, with key = ("a", "ra")
-  protobuf_unittest::TestDiffMessage::Item* item = msg1.add_item();
+  protobuf_unittest::TestDiffMessage::Item *item = msg1.add_item();
   item->set_a(1);
   item->add_ra(2);
   item->set_b("hello");
@@ -1723,7 +1713,7 @@ TEST(MessageDifferencerTest, RepeatedFieldMapTest_IgnoredKeyFields) {
   item->set_b("world");
   // Compare
   util::MessageDifferencer differencer;
-  std::vector<const FieldDescriptor*> key_fields;
+  std::vector<const FieldDescriptor *> key_fields;
   key_fields.push_back(GetFieldDescriptor(msg1, "item.a"));
   key_fields.push_back(GetFieldDescriptor(msg1, "item.ra"));
   differencer.TreatAsMapWithMultipleFieldsAsKey(
@@ -1731,19 +1721,17 @@ TEST(MessageDifferencerTest, RepeatedFieldMapTest_IgnoredKeyFields) {
   std::string output;
   differencer.ReportDifferencesToString(&output);
   EXPECT_FALSE(differencer.Compare(msg1, msg2));
-  EXPECT_EQ(
-      "added: item[0]: { a: 1 ra: 3 b: \"world\" }\n"
-      "deleted: item[0]: { a: 1 ra: 2 b: \"hello\" }\n",
-      output);
+  EXPECT_EQ("added: item[0]: { a: 1 ra: 3 b: \"world\" }\n"
+            "deleted: item[0]: { a: 1 ra: 2 b: \"hello\" }\n",
+            output);
   // Ignored fields that are listed as parts of the key are still used
   // in key comparison, but they're not used in value comparison.
   differencer.IgnoreField(GetFieldDescriptor(msg1, "item.ra"));
   output.clear();
   EXPECT_FALSE(differencer.Compare(msg1, msg2));
-  EXPECT_EQ(
-      "added: item[0]: { a: 1 ra: 3 b: \"world\" }\n"
-      "deleted: item[0]: { a: 1 ra: 2 b: \"hello\" }\n",
-      output);
+  EXPECT_EQ("added: item[0]: { a: 1 ra: 3 b: \"world\" }\n"
+            "deleted: item[0]: { a: 1 ra: 2 b: \"hello\" }\n",
+            output);
   // Ignoring a field in the key is different from treating the left fields
   // as key. That is:
   //   (key = ("a", "ra") && ignore "ra") != (key = ("a") && ignore "ra")
@@ -1754,21 +1742,20 @@ TEST(MessageDifferencerTest, RepeatedFieldMapTest_IgnoredKeyFields) {
   output.clear();
   differencer2.ReportDifferencesToString(&output);
   EXPECT_FALSE(differencer2.Compare(msg1, msg2));
-  EXPECT_EQ(
-      "ignored: item[0].ra\n"
-      "modified: item[0].b: \"hello\" -> \"world\"\n",
-      output);
+  EXPECT_EQ("ignored: item[0].ra\n"
+            "modified: item[0].b: \"hello\" -> \"world\"\n",
+            output);
 }
 
-static const char* const kIgnoredFields[] = {"rm.b", "rm.m.b"};
+static const char *const kIgnoredFields[] = {"rm.b", "rm.m.b"};
 
 class TestIgnorer : public util::MessageDifferencer::IgnoreCriteria {
- public:
-  virtual bool IsIgnored(
-      const Message& message1, const Message& message2,
-      const FieldDescriptor* field,
-      const std::vector<util::MessageDifferencer::SpecificField>&
-          parent_fields) {
+public:
+  virtual bool
+  IsIgnored(const Message &message1, const Message &message2,
+            const FieldDescriptor *field,
+            const std::vector<util::MessageDifferencer::SpecificField>
+                &parent_fields) {
     std::string name = "";
     for (int i = 0; i < parent_fields.size(); ++i) {
       name += parent_fields[i].field->name() + ".";
@@ -1809,14 +1796,14 @@ TEST(MessageDifferencerTest, TreatRepeatedFieldAsMapWithIgnoredKeyFields) {
 // Takes the product of all elements of item.ra as the key for key comparison.
 class ValueProductMapKeyComparator
     : public util::MessageDifferencer::MapKeyComparator {
- public:
+public:
   typedef util::MessageDifferencer::SpecificField SpecificField;
-  virtual bool IsMatch(const Message& message1, const Message& message2,
-                       const std::vector<SpecificField>& parent_fields) const {
-    const Reflection* reflection1 = message1.GetReflection();
-    const Reflection* reflection2 = message2.GetReflection();
+  virtual bool IsMatch(const Message &message1, const Message &message2,
+                       const std::vector<SpecificField> &parent_fields) const {
+    const Reflection *reflection1 = message1.GetReflection();
+    const Reflection *reflection2 = message2.GetReflection();
     // FieldDescriptor for item.ra
-    const FieldDescriptor* ra_field =
+    const FieldDescriptor *ra_field =
         message1.GetDescriptor()->FindFieldByName("ra");
     // Get the product of all elements in item.ra
     int result1 = 1, result2 = 1;
@@ -1835,7 +1822,7 @@ TEST(MessageDifferencerTest, RepeatedFieldMapTest_CustomMapKeyComparator) {
   protobuf_unittest::TestDiffMessage msg2;
   // Treat "item" as Map, using custom key comparator to determine if two
   // elements have the same key.
-  protobuf_unittest::TestDiffMessage::Item* item = msg1.add_item();
+  protobuf_unittest::TestDiffMessage::Item *item = msg1.add_item();
   item->add_ra(6);
   item->add_ra(35);
   item->set_b("hello");
@@ -1856,10 +1843,9 @@ TEST(MessageDifferencerTest, RepeatedFieldMapTest_CustomMapKeyComparator) {
   // consideration, so they are different because their item.ra fields have
   // different values using normal value comparison.
   EXPECT_FALSE(differencer.Compare(msg1, msg2));
-  EXPECT_EQ(
-      "modified: item[0].ra[0]: 6 -> 10\n"
-      "modified: item[0].ra[1]: 35 -> 21\n",
-      output);
+  EXPECT_EQ("modified: item[0].ra[0]: 6 -> 10\n"
+            "modified: item[0].ra[1]: 35 -> 21\n",
+            output);
   differencer.IgnoreField(GetFieldDescriptor(msg1, "item.ra"));
   output.clear();
   // item.ra is ignored in value comparison, so the two messages equal.
@@ -1870,10 +1856,10 @@ TEST(MessageDifferencerTest, RepeatedFieldMapTest_CustomMapKeyComparator) {
 // Compares fields by their index offset by one, so index 0 matches with 1, etc.
 class OffsetByOneMapKeyComparator
     : public util::MessageDifferencer::MapKeyComparator {
- public:
+public:
   typedef util::MessageDifferencer::SpecificField SpecificField;
-  virtual bool IsMatch(const Message& message1, const Message& message2,
-                       const std::vector<SpecificField>& parent_fields) const {
+  virtual bool IsMatch(const Message &message1, const Message &message2,
+                       const std::vector<SpecificField> &parent_fields) const {
     return parent_fields.back().index + 1 == parent_fields.back().new_index;
   }
 };
@@ -1883,7 +1869,7 @@ TEST(MessageDifferencerTest, RepeatedFieldMapTest_CustomIndexMapKeyComparator) {
   protobuf_unittest::TestDiffMessage msg2;
   // Treat "item" as Map, using custom key comparator to determine if two
   // elements have the same key.
-  protobuf_unittest::TestDiffMessage::Item* item = msg1.add_item();
+  protobuf_unittest::TestDiffMessage::Item *item = msg1.add_item();
   item->set_b("one");
   item = msg2.add_item();
   item->set_b("zero");
@@ -1898,10 +1884,9 @@ TEST(MessageDifferencerTest, RepeatedFieldMapTest_CustomIndexMapKeyComparator) {
   // With the offset by one comparator msg1.item[0] should be compared to
   // msg2.item[1] and thus be moved, msg2.item[0] should be marked as added.
   EXPECT_FALSE(differencer.Compare(msg1, msg2));
-  EXPECT_EQ(
-      "moved: item[0] -> item[1] : { b: \"one\" }\n"
-      "added: item[0]: { b: \"zero\" }\n",
-      output);
+  EXPECT_EQ("moved: item[0] -> item[1] : { b: \"one\" }\n"
+            "added: item[0]: { b: \"zero\" }\n",
+            output);
 }
 
 TEST(MessageDifferencerTest, RepeatedFieldSetTest_Subset) {
@@ -1972,7 +1957,7 @@ TEST(MessageDifferencerTest, IgnoreField_Message) {
   protobuf_unittest::TestDiffMessage msg1;
   protobuf_unittest::TestDiffMessage msg2;
 
-  protobuf_unittest::TestField* field;
+  protobuf_unittest::TestField *field;
 
   field = msg1.add_rm();
   field->set_c(3);
@@ -1990,7 +1975,7 @@ TEST(MessageDifferencerTest, IgnoreField_Group) {
   protobuf_unittest::TestDiffMessage msg1;
   protobuf_unittest::TestDiffMessage msg2;
 
-  protobuf_unittest::TestDiffMessage::Item* item;
+  protobuf_unittest::TestDiffMessage::Item *item;
 
   item = msg1.add_item();
   item->set_a(3);
@@ -2032,22 +2017,22 @@ TEST(MessageDifferencerTest, IgnoreField_Multiple) {
   msg2.add_rc(1);
   msg2.add_rc(3);
 
-  const FieldDescriptor* c = GetFieldDescriptor(msg1, "c");
-  const FieldDescriptor* rc = GetFieldDescriptor(msg1, "rc");
+  const FieldDescriptor *c = GetFieldDescriptor(msg1, "c");
+  const FieldDescriptor *rc = GetFieldDescriptor(msg1, "rc");
 
-  {  // Ignore c
+  { // Ignore c
     util::MessageDifferencer differencer;
     differencer.IgnoreField(c);
 
     EXPECT_FALSE(differencer.Compare(msg1, msg2));
   }
-  {  // Ignore rc
+  { // Ignore rc
     util::MessageDifferencer differencer;
     differencer.IgnoreField(rc);
 
     EXPECT_FALSE(differencer.Compare(msg1, msg2));
   }
-  {  // Ignore both
+  { // Ignore both
     util::MessageDifferencer differencer;
     differencer.IgnoreField(c);
     differencer.IgnoreField(rc);
@@ -2060,7 +2045,7 @@ TEST(MessageDifferencerTest, IgnoreField_NestedMessage) {
   protobuf_unittest::TestDiffMessage msg1;
   protobuf_unittest::TestDiffMessage msg2;
 
-  protobuf_unittest::TestField* field;
+  protobuf_unittest::TestField *field;
 
   field = msg1.add_rm();
   field->set_c(3);
@@ -2080,7 +2065,7 @@ TEST(MessageDifferencerTest, IgnoreField_NestedGroup) {
   protobuf_unittest::TestDiffMessage msg1;
   protobuf_unittest::TestDiffMessage msg2;
 
-  protobuf_unittest::TestDiffMessage::Item* item;
+  protobuf_unittest::TestDiffMessage::Item *item;
 
   item = msg1.add_item();
   item->set_a(3);
@@ -2100,7 +2085,7 @@ TEST(MessageDifferencerTest, IgnoreField_InsideSet) {
   protobuf_unittest::TestDiffMessage msg1;
   protobuf_unittest::TestDiffMessage msg2;
 
-  protobuf_unittest::TestDiffMessage::Item* item;
+  protobuf_unittest::TestDiffMessage::Item *item;
 
   item = msg1.add_item();
   item->set_a(1);
@@ -2122,8 +2107,8 @@ TEST(MessageDifferencerTest, IgnoreField_InsideSet) {
   item->set_b("baz");
   item->add_ra(1);
 
-  const FieldDescriptor* item_desc = GetFieldDescriptor(msg1, "item");
-  const FieldDescriptor* b = GetFieldDescriptor(msg1, "item.b");
+  const FieldDescriptor *item_desc = GetFieldDescriptor(msg1, "item");
+  const FieldDescriptor *b = GetFieldDescriptor(msg1, "item.b");
 
   util::MessageDifferencer differencer;
   differencer.IgnoreField(b);
@@ -2136,7 +2121,7 @@ TEST(MessageDifferencerTest, IgnoreField_InsideMap) {
   protobuf_unittest::TestDiffMessage msg1;
   protobuf_unittest::TestDiffMessage msg2;
 
-  protobuf_unittest::TestDiffMessage::Item* item;
+  protobuf_unittest::TestDiffMessage::Item *item;
 
   item = msg1.add_item();
   item->set_a(1);
@@ -2158,9 +2143,9 @@ TEST(MessageDifferencerTest, IgnoreField_InsideMap) {
   item->set_b("baz");
   item->add_ra(1);
 
-  const FieldDescriptor* item_desc = GetFieldDescriptor(msg1, "item");
-  const FieldDescriptor* a = GetFieldDescriptor(msg1, "item.a");
-  const FieldDescriptor* b = GetFieldDescriptor(msg1, "item.b");
+  const FieldDescriptor *item_desc = GetFieldDescriptor(msg1, "item");
+  const FieldDescriptor *a = GetFieldDescriptor(msg1, "item.a");
+  const FieldDescriptor *b = GetFieldDescriptor(msg1, "item.b");
 
   util::MessageDifferencer differencer;
   differencer.IgnoreField(b);
@@ -2173,7 +2158,7 @@ TEST(MessageDifferencerTest, IgnoreField_DoesNotIgnoreKey) {
   protobuf_unittest::TestDiffMessage msg1;
   protobuf_unittest::TestDiffMessage msg2;
 
-  protobuf_unittest::TestDiffMessage::Item* item;
+  protobuf_unittest::TestDiffMessage::Item *item;
 
   item = msg1.add_item();
   item->set_a(1);
@@ -2185,8 +2170,8 @@ TEST(MessageDifferencerTest, IgnoreField_DoesNotIgnoreKey) {
   item->set_b("foo");
   item->add_ra(1);
 
-  const FieldDescriptor* item_desc = GetFieldDescriptor(msg1, "item");
-  const FieldDescriptor* a = GetFieldDescriptor(msg1, "item.a");
+  const FieldDescriptor *item_desc = GetFieldDescriptor(msg1, "item");
+  const FieldDescriptor *a = GetFieldDescriptor(msg1, "item.a");
 
   util::MessageDifferencer differencer;
   differencer.IgnoreField(a);
@@ -2207,10 +2192,10 @@ TEST(MessageDifferencerTest, IgnoreField_TrumpsCompareWithFields) {
   msg2.add_rc(1);
   msg2.add_rc(3);
 
-  const FieldDescriptor* c = GetFieldDescriptor(msg1, "c");
-  const FieldDescriptor* rc = GetFieldDescriptor(msg1, "rc");
+  const FieldDescriptor *c = GetFieldDescriptor(msg1, "c");
+  const FieldDescriptor *rc = GetFieldDescriptor(msg1, "rc");
 
-  std::vector<const FieldDescriptor*> fields;
+  std::vector<const FieldDescriptor *> fields;
   fields.push_back(c);
   fields.push_back(rc);
 
@@ -2237,12 +2222,12 @@ TEST(MessageDifferencerTest, IgnoreField_SetReportIgnoresFalse) {
   msg2.set_a(1);
   msg2.set_b(1);
 
-  const FieldDescriptor* a = GetFieldDescriptor(msg1, "a");
-  const FieldDescriptor* b = GetFieldDescriptor(msg1, "b");
-  const FieldDescriptor* c = GetFieldDescriptor(msg1, "c");
-  const FieldDescriptor* rc = GetFieldDescriptor(msg1, "rc");
+  const FieldDescriptor *a = GetFieldDescriptor(msg1, "a");
+  const FieldDescriptor *b = GetFieldDescriptor(msg1, "b");
+  const FieldDescriptor *c = GetFieldDescriptor(msg1, "c");
+  const FieldDescriptor *rc = GetFieldDescriptor(msg1, "rc");
 
-  std::vector<const FieldDescriptor*> fields;
+  std::vector<const FieldDescriptor *> fields;
   fields.push_back(a);
   fields.push_back(b);
   fields.push_back(c);
@@ -2258,24 +2243,23 @@ TEST(MessageDifferencerTest, IgnoreField_SetReportIgnoresFalse) {
   differencer.set_scope(util::MessageDifferencer::FULL);
   EXPECT_FALSE(differencer.CompareWithFields(msg1, msg2, fields, fields));
 
-  EXPECT_EQ(diff_report,
-            "matched: a : 1\n"
-            "modified: b: 2 -> 1\n");
+  EXPECT_EQ(diff_report, "matched: a : 1\n"
+                         "modified: b: 2 -> 1\n");
 }
-
 
 // Test class to save a copy of the last field_context.parent_fields() vector
 // passed to the comparison function.
 class ParentSavingFieldComparator : public util::FieldComparator {
- public:
+public:
   ParentSavingFieldComparator() {}
 
-  virtual ComparisonResult Compare(const Message& message_1,
-                                   const Message& message_2,
-                                   const FieldDescriptor* field, int index_1,
+  virtual ComparisonResult Compare(const Message &message_1,
+                                   const Message &message_2,
+                                   const FieldDescriptor *field, int index_1,
                                    int index_2,
-                                   const util::FieldContext* field_context) {
-    if (field_context) parent_fields_ = *(field_context->parent_fields());
+                                   const util::FieldContext *field_context) {
+    if (field_context)
+      parent_fields_ = *(field_context->parent_fields());
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
       return RECURSE;
     } else {
@@ -2287,7 +2271,7 @@ class ParentSavingFieldComparator : public util::FieldComparator {
     return parent_fields_;
   }
 
- private:
+private:
   std::vector<util::MessageDifferencer::SpecificField> parent_fields_;
 };
 
@@ -2309,9 +2293,8 @@ TEST(MessageDifferencerTest, FieldContextParentFieldsTest) {
   EXPECT_EQ("rm", field_comparator.parent_fields()[0].field->name());
 }
 
-
 class ComparisonTest : public testing::Test {
- protected:
+protected:
   ComparisonTest() : use_equivalency_(false), repeated_field_as_set_(false) {
     // Setup the test.
     TestUtil::SetAllFields(&proto1_);
@@ -2329,8 +2312,8 @@ class ComparisonTest : public testing::Test {
 
   ~ComparisonTest() {}
 
-  void SetSpecialFieldOption(const Message& message,
-                             util::MessageDifferencer* d) {
+  void SetSpecialFieldOption(const Message &message,
+                             util::MessageDifferencer *d) {
     if (!ignored_field_.empty()) {
       d->IgnoreField(GetFieldDescriptor(message, ignored_field_));
     }
@@ -2349,7 +2332,7 @@ class ComparisonTest : public testing::Test {
     }
   }
 
-  std::string Run(const Message& msg1, const Message& msg2) {
+  std::string Run(const Message &msg1, const Message &msg2) {
     std::string output;
 
     // Setup the comparison.
@@ -2383,14 +2366,14 @@ class ComparisonTest : public testing::Test {
 
   void repeated_field_as_set() { repeated_field_as_set_ = true; }
 
-  void field_as_set(const std::string& field) { set_field_ = field; }
+  void field_as_set(const std::string &field) { set_field_ = field; }
 
-  void field_as_map(const string& field, const std::string& key) {
+  void field_as_map(const string &field, const std::string &key) {
     map_field_ = field;
     map_key_ = key;
   }
 
-  void ignore_field(const std::string& field) { ignored_field_ = field; }
+  void ignore_field(const std::string &field) { ignored_field_ = field; }
 
   unittest::TestAllTypes proto1_;
   unittest::TestAllTypes proto2_;
@@ -2410,8 +2393,8 @@ class ComparisonTest : public testing::Test {
   unittest::TestMap map_proto1_;
   unittest::TestMap map_proto2_;
 
-  UnknownFieldSet* unknown1_;
-  UnknownFieldSet* unknown2_;
+  UnknownFieldSet *unknown1_;
+  UnknownFieldSet *unknown2_;
 
   bool use_equivalency_;
   bool repeated_field_as_set_;
@@ -2450,10 +2433,9 @@ TEST_F(ComparisonTest, Deletion_OrderTest) {
 TEST_F(ComparisonTest, RepeatedDeletionTest) {
   proto2_.clear_repeated_int32();
 
-  EXPECT_EQ(
-      "deleted: repeated_int32[0]: 201\n"
-      "deleted: repeated_int32[1]: 301\n",
-      Run());
+  EXPECT_EQ("deleted: repeated_int32[0]: 201\n"
+            "deleted: repeated_int32[1]: 301\n",
+            Run());
 }
 
 TEST_F(ComparisonTest, ModificationTest) {
@@ -2523,19 +2505,20 @@ TEST_F(ComparisonTest, RepeatedSetOptionTest) {
   proto1_.add_repeatedgroup()->set_a(907);
   proto1_.add_repeatedgroup()->set_a(909);
 
-  EXPECT_EQ(
-      "moved: repeatedgroup[2] -> repeatedgroup[1] : { a: 907 }\n"
-      "moved: repeatedgroup[3] -> repeatedgroup[0] : { a: 909 }\n"
-      "deleted: repeatedgroup[0]: { a: 317 }\n"
-      "deleted: repeatedgroup[1]: { a: 904 }\n",
-      Run());
+  EXPECT_EQ("moved: repeatedgroup[2] -> repeatedgroup[1] : { a: 907 }\n"
+            "moved: repeatedgroup[3] -> repeatedgroup[0] : { a: 909 }\n"
+            "deleted: repeatedgroup[0]: { a: 317 }\n"
+            "deleted: repeatedgroup[1]: { a: 904 }\n",
+            Run());
 }
 
 TEST_F(ComparisonTest, RepeatedSetOptionTest_Ex) {
   repeated_field_as_set();
 
-  proto1ex_.ClearExtension(protobuf_unittest::repeated_nested_message_extension);
-  proto2ex_.ClearExtension(protobuf_unittest::repeated_nested_message_extension);
+  proto1ex_.ClearExtension(
+      protobuf_unittest::repeated_nested_message_extension);
+  proto2ex_.ClearExtension(
+      protobuf_unittest::repeated_nested_message_extension);
   proto2ex_.AddExtension(protobuf_unittest::repeated_nested_message_extension)
       ->set_bb(909);
   proto2ex_.AddExtension(protobuf_unittest::repeated_nested_message_extension)
@@ -2547,13 +2530,12 @@ TEST_F(ComparisonTest, RepeatedSetOptionTest_Ex) {
   proto1ex_.AddExtension(protobuf_unittest::repeated_nested_message_extension)
       ->set_bb(909);
 
-  EXPECT_EQ(
-      "moved: (protobuf_unittest.repeated_nested_message_extension)[2] ->"
-      " (protobuf_unittest.repeated_nested_message_extension)[0] :"
-      " { bb: 909 }\n"
-      "deleted: (protobuf_unittest.repeated_nested_message_extension)[0]:"
-      " { bb: 904 }\n",
-      RunEx());
+  EXPECT_EQ("moved: (protobuf_unittest.repeated_nested_message_extension)[2] ->"
+            " (protobuf_unittest.repeated_nested_message_extension)[0] :"
+            " { bb: 909 }\n"
+            "deleted: (protobuf_unittest.repeated_nested_message_extension)[0]:"
+            " { bb: 904 }\n",
+            RunEx());
 }
 
 TEST_F(ComparisonTest, RepeatedMapFieldTest_Group) {
@@ -2561,21 +2543,20 @@ TEST_F(ComparisonTest, RepeatedMapFieldTest_Group) {
   proto1_.clear_repeatedgroup();
   proto2_.clear_repeatedgroup();
 
-  proto1_.add_repeatedgroup()->set_a(317);  // deleted
-  proto1_.add_repeatedgroup()->set_a(904);  // deleted
-  proto1_.add_repeatedgroup()->set_a(907);  // moved from
-  proto1_.add_repeatedgroup()->set_a(909);  // moved from
+  proto1_.add_repeatedgroup()->set_a(317); // deleted
+  proto1_.add_repeatedgroup()->set_a(904); // deleted
+  proto1_.add_repeatedgroup()->set_a(907); // moved from
+  proto1_.add_repeatedgroup()->set_a(909); // moved from
 
-  proto2_.add_repeatedgroup()->set_a(909);  // moved to
-  proto2_.add_repeatedgroup()->set_a(318);  // added
-  proto2_.add_repeatedgroup()->set_a(907);  // moved to
+  proto2_.add_repeatedgroup()->set_a(909); // moved to
+  proto2_.add_repeatedgroup()->set_a(318); // added
+  proto2_.add_repeatedgroup()->set_a(907); // moved to
 
-  EXPECT_EQ(
-      "moved: repeatedgroup[3] -> repeatedgroup[0] : { a: 909 }\n"
-      "added: repeatedgroup[1]: { a: 318 }\n"
-      "deleted: repeatedgroup[0]: { a: 317 }\n"
-      "deleted: repeatedgroup[1]: { a: 904 }\n",
-      Run());
+  EXPECT_EQ("moved: repeatedgroup[3] -> repeatedgroup[0] : { a: 909 }\n"
+            "added: repeatedgroup[1]: { a: 318 }\n"
+            "deleted: repeatedgroup[0]: { a: 317 }\n"
+            "deleted: repeatedgroup[1]: { a: 904 }\n",
+            Run());
 }
 
 TEST_F(ComparisonTest, RepeatedMapFieldTest_MessageKey) {
@@ -2584,7 +2565,7 @@ TEST_F(ComparisonTest, RepeatedMapFieldTest_MessageKey) {
 
   protobuf_unittest::TestDiffMessage msg1;
   protobuf_unittest::TestDiffMessage msg2;
-  protobuf_unittest::TestDiffMessage::Item* item = msg1.add_item();
+  protobuf_unittest::TestDiffMessage::Item *item = msg1.add_item();
 
   // The following code creates one deletion, one addition and two moved fields
   // on the messages.
@@ -2594,33 +2575,32 @@ TEST_F(ComparisonTest, RepeatedMapFieldTest_MessageKey) {
   item->mutable_m()->set_c(2);
   item->set_b("second");
   item = msg1.add_item();
-  item->set_b("null");  // empty key moved
+  item->set_b("null"); // empty key moved
   item = msg1.add_item();
   item->mutable_m()->set_c(3);
-  item->set_b("third");  // deletion
+  item->set_b("third"); // deletion
   item = msg1.add_item();
   item->mutable_m()->set_c(2);
-  item->set_b("second");  // duplicated key ( deletion )
+  item->set_b("second"); // duplicated key ( deletion )
   item = msg2.add_item();
   item->mutable_m()->set_c(2);
-  item->set_b("second");  // modification
+  item->set_b("second"); // modification
   item = msg2.add_item();
   item->mutable_m()->set_c(4);
-  item->set_b("fourth");  // addition
+  item->set_b("fourth"); // addition
   item = msg2.add_item();
   item->mutable_m()->set_c(0);
-  item->set_b("fist");  // move with change
+  item->set_b("fist"); // move with change
   item = msg2.add_item();
   item->set_b("null");
 
-  EXPECT_EQ(
-      "modified: item[0].b -> item[2].b: \"first\" -> \"fist\"\n"
-      "moved: item[1] -> item[0] : { b: \"second\" m { c: 2 } }\n"
-      "moved: item[2] -> item[3] : { b: \"null\" }\n"
-      "added: item[1]: { b: \"fourth\" m { c: 4 } }\n"
-      "deleted: item[3]: { b: \"third\" m { c: 3 } }\n"
-      "deleted: item[4]: { b: \"second\" m { c: 2 } }\n",
-      Run(msg1, msg2));
+  EXPECT_EQ("modified: item[0].b -> item[2].b: \"first\" -> \"fist\"\n"
+            "moved: item[1] -> item[0] : { b: \"second\" m { c: 2 } }\n"
+            "moved: item[2] -> item[3] : { b: \"null\" }\n"
+            "added: item[1]: { b: \"fourth\" m { c: 4 } }\n"
+            "deleted: item[3]: { b: \"third\" m { c: 3 } }\n"
+            "deleted: item[4]: { b: \"second\" m { c: 2 } }\n",
+            Run(msg1, msg2));
 }
 
 TEST_F(ComparisonTest, RepeatedFieldSetTest_SetOfSet) {
@@ -2629,7 +2609,7 @@ TEST_F(ComparisonTest, RepeatedFieldSetTest_SetOfSet) {
   protobuf_unittest::TestDiffMessage msg1;
   protobuf_unittest::TestDiffMessage msg2;
 
-  protobuf_unittest::TestDiffMessage::Item* item = msg1.add_item();
+  protobuf_unittest::TestDiffMessage::Item *item = msg1.add_item();
   item->add_ra(1);
   item->add_ra(2);
   item->add_ra(3);
@@ -2659,16 +2639,15 @@ TEST_F(ComparisonTest, RepeatedFieldSetTest_SetOfSet) {
   item->add_ra(1);
 
   // Compare
-  EXPECT_EQ(
-      "moved: item[0].ra[0] -> item[3].ra[2] : 1\n"
-      "moved: item[0].ra[2] -> item[3].ra[0] : 3\n"
-      "moved: item[0] -> item[3] : { ra: 1 ra: 2 ra: 3 }\n"
-      "moved: item[1].ra[0] -> item[0].ra[1] : 5\n"
-      "moved: item[1].ra[1] -> item[0].ra[0] : 6\n"
-      "moved: item[1] -> item[0] : { ra: 5 ra: 6 }\n"
-      "added: item[1]: { ra: 6 ra: 8 }\n"
-      "deleted: item[3]: { ra: 6 ra: 7 ra: 8 }\n",
-      Run(msg1, msg2));
+  EXPECT_EQ("moved: item[0].ra[0] -> item[3].ra[2] : 1\n"
+            "moved: item[0].ra[2] -> item[3].ra[0] : 3\n"
+            "moved: item[0] -> item[3] : { ra: 1 ra: 2 ra: 3 }\n"
+            "moved: item[1].ra[0] -> item[0].ra[1] : 5\n"
+            "moved: item[1].ra[1] -> item[0].ra[0] : 6\n"
+            "moved: item[1] -> item[0] : { ra: 5 ra: 6 }\n"
+            "added: item[1]: { ra: 6 ra: 8 }\n"
+            "deleted: item[3]: { ra: 6 ra: 7 ra: 8 }\n",
+            Run(msg1, msg2));
 }
 
 TEST_F(ComparisonTest, RepeatedMapFieldTest_RepeatedKey) {
@@ -2678,7 +2657,7 @@ TEST_F(ComparisonTest, RepeatedMapFieldTest_RepeatedKey) {
 
   protobuf_unittest::TestDiffMessage msg1;
   protobuf_unittest::TestDiffMessage msg2;
-  protobuf_unittest::TestDiffMessage::Item* item = msg1.add_item();
+  protobuf_unittest::TestDiffMessage::Item *item = msg1.add_item();
   item->add_rb("a");
   item->add_rb("b");
   item->set_b("first");
@@ -2692,12 +2671,11 @@ TEST_F(ComparisonTest, RepeatedMapFieldTest_RepeatedKey) {
   item->add_rb("a");
   item->set_b("fist");
 
-  EXPECT_EQ(
-      "modified: item[0].b -> item[1].b: \"first\" -> \"fist\"\n"
-      "moved: item[0].rb[0] -> item[1].rb[1] : \"a\"\n"
-      "moved: item[0].rb[1] -> item[1].rb[0] : \"b\"\n"
-      "added: item[0]: { b: \"second\" rb: \"c\" }\n",
-      Run(msg1, msg2));
+  EXPECT_EQ("modified: item[0].b -> item[1].b: \"first\" -> \"fist\"\n"
+            "moved: item[0].rb[0] -> item[1].rb[1] : \"a\"\n"
+            "moved: item[0].rb[1] -> item[1].rb[0] : \"b\"\n"
+            "added: item[0]: { b: \"second\" rb: \"c\" }\n",
+            Run(msg1, msg2));
 }
 
 TEST_F(ComparisonTest, RepeatedMapFieldTest_RepeatedMessageKey) {
@@ -2705,8 +2683,8 @@ TEST_F(ComparisonTest, RepeatedMapFieldTest_RepeatedMessageKey) {
 
   protobuf_unittest::TestDiffMessage msg1;
   protobuf_unittest::TestDiffMessage msg2;
-  protobuf_unittest::TestDiffMessage::Item* item = msg1.add_item();
-  protobuf_unittest::TestField* key = item->add_rm();
+  protobuf_unittest::TestDiffMessage::Item *item = msg1.add_item();
+  protobuf_unittest::TestField *key = item->add_rm();
   key->set_c(2);
   key->add_rc(10);
   key->add_rc(10);
@@ -2723,10 +2701,9 @@ TEST_F(ComparisonTest, RepeatedMapFieldTest_RepeatedMessageKey) {
   item->CopyFrom(msg1.item(1));
   item->add_rb("second");
 
-  EXPECT_EQ(
-      "added: item[0].rb[1]: \"second\"\n"
-      "deleted: item[0]: { rm { c: 2 rc: 10 rc: 10 } }\n",
-      Run(msg1, msg2));
+  EXPECT_EQ("added: item[0].rb[1]: \"second\"\n"
+            "deleted: item[0]: { rm { c: 2 rc: 10 rc: 10 } }\n",
+            Run(msg1, msg2));
 }
 
 TEST_F(ComparisonTest, RepeatedSetOptionTest_Unknown) {
@@ -2738,10 +2715,9 @@ TEST_F(ComparisonTest, RepeatedSetOptionTest_Unknown) {
   unknown2_->AddGroup(245)->AddFixed32(248, 1);
 
   // We expect it behaves the same as normal comparison.
-  EXPECT_EQ(
-      "modified: 245[0].248[0]: 0x00000001 -> 0x00000003\n"
-      "added: 245[1]: { ... }\n",
-      RunUn());
+  EXPECT_EQ("modified: 245[0].248[0]: 0x00000001 -> 0x00000003\n"
+            "added: 245[1]: { ... }\n",
+            RunUn());
 }
 
 TEST_F(ComparisonTest, Matching_Unknown) {
@@ -2753,10 +2729,9 @@ TEST_F(ComparisonTest, Matching_Unknown) {
   unknown2_->AddGroup(246)->AddFixed32(248, 4);
 
   // report_match is false so only added/modified fields are expected.
-  EXPECT_EQ(
-      "added: 242[0]: \"cat\"\n"
-      "added: 246[0]: { ... }\n",
-      RunUn());
+  EXPECT_EQ("added: 242[0]: \"cat\"\n"
+            "added: 246[0]: { ... }\n",
+            RunUn());
 }
 
 TEST_F(ComparisonTest, RepeatedSetFieldTest) {
@@ -2771,12 +2746,11 @@ TEST_F(ComparisonTest, RepeatedSetFieldTest) {
   proto1_.add_repeatedgroup()->set_a(907);
   proto1_.add_repeatedgroup()->set_a(909);
 
-  EXPECT_EQ(
-      "moved: repeatedgroup[2] -> repeatedgroup[1] : { a: 907 }\n"
-      "moved: repeatedgroup[3] -> repeatedgroup[0] : { a: 909 }\n"
-      "deleted: repeatedgroup[0]: { a: 317 }\n"
-      "deleted: repeatedgroup[1]: { a: 904 }\n",
-      Run());
+  EXPECT_EQ("moved: repeatedgroup[2] -> repeatedgroup[1] : { a: 907 }\n"
+            "moved: repeatedgroup[3] -> repeatedgroup[0] : { a: 909 }\n"
+            "deleted: repeatedgroup[0]: { a: 317 }\n"
+            "deleted: repeatedgroup[1]: { a: 904 }\n",
+            Run());
 }
 
 // Embedded message tests.
@@ -2833,11 +2807,10 @@ TEST_F(ComparisonTest, BasicRepeatedTest) {
   proto2_.add_repeated_int32(502);
   proto2_.add_repeated_int32(504);
 
-  EXPECT_EQ(
-      "modified: repeated_int32[1]: 501 -> 509\n"
-      "modified: repeated_int32[3]: 503 -> 504\n"
-      "deleted: repeated_int32[4]: 500\n",
-      Run());
+  EXPECT_EQ("modified: repeated_int32[1]: 501 -> 509\n"
+            "modified: repeated_int32[3]: 503 -> 504\n"
+            "deleted: repeated_int32[4]: 500\n",
+            Run());
 }
 
 TEST_F(ComparisonTest, BasicRepeatedTest_SetOption) {
@@ -2857,14 +2830,13 @@ TEST_F(ComparisonTest, BasicRepeatedTest_SetOption) {
   proto2_.add_repeated_int32(502);
   proto2_.add_repeated_int32(504);
 
-  EXPECT_EQ(
-      "moved: repeated_int32[1] -> repeated_int32[3] : 502\n"
-      "moved: repeated_int32[3] -> repeated_int32[0] : 500\n"
-      "added: repeated_int32[1]: 509\n"
-      "added: repeated_int32[4]: 504\n"
-      "deleted: repeated_int32[0]: 501\n"
-      "deleted: repeated_int32[4]: 500\n",
-      Run());
+  EXPECT_EQ("moved: repeated_int32[1] -> repeated_int32[3] : 502\n"
+            "moved: repeated_int32[3] -> repeated_int32[0] : 500\n"
+            "added: repeated_int32[1]: 509\n"
+            "added: repeated_int32[4]: 504\n"
+            "deleted: repeated_int32[0]: 501\n"
+            "deleted: repeated_int32[4]: 500\n",
+            Run());
 }
 
 TEST_F(ComparisonTest, BasicRepeatedTest_SetField) {
@@ -2884,14 +2856,13 @@ TEST_F(ComparisonTest, BasicRepeatedTest_SetField) {
   proto2_.add_repeated_int32(502);
   proto2_.add_repeated_int32(504);
 
-  EXPECT_EQ(
-      "moved: repeated_int32[1] -> repeated_int32[3] : 502\n"
-      "moved: repeated_int32[3] -> repeated_int32[0] : 500\n"
-      "added: repeated_int32[1]: 509\n"
-      "added: repeated_int32[4]: 504\n"
-      "deleted: repeated_int32[0]: 501\n"
-      "deleted: repeated_int32[4]: 500\n",
-      Run());
+  EXPECT_EQ("moved: repeated_int32[1] -> repeated_int32[3] : 502\n"
+            "moved: repeated_int32[3] -> repeated_int32[0] : 500\n"
+            "added: repeated_int32[1]: 509\n"
+            "added: repeated_int32[4]: 504\n"
+            "deleted: repeated_int32[0]: 501\n"
+            "deleted: repeated_int32[4]: 500\n",
+            Run());
 }
 
 // Multiple action tests.
@@ -2899,20 +2870,18 @@ TEST_F(ComparisonTest, AddDeleteTest) {
   proto1_.clear_optional_int32();
   proto2_.clear_optional_int64();
 
-  EXPECT_EQ(
-      "added: optional_int32: 101\n"
-      "deleted: optional_int64: 102\n",
-      Run());
+  EXPECT_EQ("added: optional_int32: 101\n"
+            "deleted: optional_int64: 102\n",
+            Run());
 }
 
 TEST_F(ComparisonTest, AddDelete_FieldOrderingTest) {
   orderings_proto1_.ClearExtension(unittest::my_extension_string);
   orderings_proto2_.clear_my_int();
 
-  EXPECT_EQ(
-      "deleted: my_int: 1\n"
-      "added: (protobuf_unittest.my_extension_string): \"bar\"\n",
-      RunOrder());
+  EXPECT_EQ("deleted: my_int: 1\n"
+            "added: (protobuf_unittest.my_extension_string): \"bar\"\n",
+            RunOrder());
 }
 
 TEST_F(ComparisonTest, AllThreeTest) {
@@ -2920,11 +2889,10 @@ TEST_F(ComparisonTest, AllThreeTest) {
   proto2_.clear_optional_float();
   proto2_.set_optional_string("hello world!");
 
-  EXPECT_EQ(
-      "added: optional_int32: 101\n"
-      "deleted: optional_float: 111\n"
-      "modified: optional_string: \"115\" -> \"hello world!\"\n",
-      Run());
+  EXPECT_EQ("added: optional_int32: 101\n"
+            "deleted: optional_float: 111\n"
+            "modified: optional_string: \"115\" -> \"hello world!\"\n",
+            Run());
 }
 
 TEST_F(ComparisonTest, SandwhichTest) {
@@ -2933,11 +2901,10 @@ TEST_F(ComparisonTest, SandwhichTest) {
 
   proto2_.clear_optional_uint64();
 
-  EXPECT_EQ(
-      "added: optional_int64: 102\n"
-      "added: optional_uint32: 103\n"
-      "deleted: optional_uint64: 104\n",
-      Run());
+  EXPECT_EQ("added: optional_int64: 102\n"
+            "added: optional_uint32: 103\n"
+            "deleted: optional_uint64: 104\n",
+            Run());
 }
 
 TEST_F(ComparisonTest, IgnoredNoChangeTest) {
@@ -2947,10 +2914,9 @@ TEST_F(ComparisonTest, IgnoredNoChangeTest) {
 
   ignore_field("v");
 
-  EXPECT_EQ(
-      "ignored: v\n"
-      "added: w: \"foo\"\n",
-      RunDiff());
+  EXPECT_EQ("ignored: v\n"
+            "added: w: \"foo\"\n",
+            RunDiff());
 }
 
 TEST_F(ComparisonTest, IgnoredAddTest) {
@@ -2959,10 +2925,9 @@ TEST_F(ComparisonTest, IgnoredAddTest) {
 
   ignore_field("v");
 
-  EXPECT_EQ(
-      "ignored: v\n"
-      "added: w: \"foo\"\n",
-      RunDiff());
+  EXPECT_EQ("ignored: v\n"
+            "added: w: \"foo\"\n",
+            RunDiff());
 }
 
 TEST_F(ComparisonTest, IgnoredDeleteTest) {
@@ -2971,10 +2936,9 @@ TEST_F(ComparisonTest, IgnoredDeleteTest) {
 
   ignore_field("v");
 
-  EXPECT_EQ(
-      "ignored: v\n"
-      "added: w: \"foo\"\n",
-      RunDiff());
+  EXPECT_EQ("ignored: v\n"
+            "added: w: \"foo\"\n",
+            RunDiff());
 }
 
 TEST_F(ComparisonTest, IgnoredModifyTest) {
@@ -2984,10 +2948,9 @@ TEST_F(ComparisonTest, IgnoredModifyTest) {
 
   ignore_field("v");
 
-  EXPECT_EQ(
-      "ignored: v\n"
-      "added: w: \"foo\"\n",
-      RunDiff());
+  EXPECT_EQ("ignored: v\n"
+            "added: w: \"foo\"\n",
+            RunDiff());
 }
 
 TEST_F(ComparisonTest, IgnoredRepeatedAddTest) {
@@ -3002,10 +2965,9 @@ TEST_F(ComparisonTest, IgnoredRepeatedAddTest) {
 
   ignore_field("rv");
 
-  EXPECT_EQ(
-      "ignored: rv\n"
-      "added: w: \"foo\"\n",
-      RunDiff());
+  EXPECT_EQ("ignored: rv\n"
+            "added: w: \"foo\"\n",
+            RunDiff());
 }
 
 TEST_F(ComparisonTest, IgnoredRepeatedDeleteTest) {
@@ -3020,10 +2982,9 @@ TEST_F(ComparisonTest, IgnoredRepeatedDeleteTest) {
 
   ignore_field("rv");
 
-  EXPECT_EQ(
-      "ignored: rv\n"
-      "added: w: \"foo\"\n",
-      RunDiff());
+  EXPECT_EQ("ignored: rv\n"
+            "added: w: \"foo\"\n",
+            RunDiff());
 }
 
 TEST_F(ComparisonTest, IgnoredRepeatedModifyTest) {
@@ -3037,10 +2998,9 @@ TEST_F(ComparisonTest, IgnoredRepeatedModifyTest) {
 
   ignore_field("rv");
 
-  EXPECT_EQ(
-      "ignored: rv\n"
-      "added: w: \"foo\"\n",
-      RunDiff());
+  EXPECT_EQ("ignored: rv\n"
+            "added: w: \"foo\"\n",
+            RunDiff());
 }
 
 TEST_F(ComparisonTest, IgnoredWholeNestedMessage) {
@@ -3051,10 +3011,9 @@ TEST_F(ComparisonTest, IgnoredWholeNestedMessage) {
 
   ignore_field("m");
 
-  EXPECT_EQ(
-      "added: w: \"foo\"\n"
-      "ignored: m\n",
-      RunDiff());
+  EXPECT_EQ("added: w: \"foo\"\n"
+            "ignored: m\n",
+            RunDiff());
 }
 
 TEST_F(ComparisonTest, IgnoredNestedField) {
@@ -3065,10 +3024,9 @@ TEST_F(ComparisonTest, IgnoredNestedField) {
 
   ignore_field("m.c");
 
-  EXPECT_EQ(
-      "added: w: \"foo\"\n"
-      "ignored: m.c\n",
-      RunDiff());
+  EXPECT_EQ("added: w: \"foo\"\n"
+            "ignored: m.c\n",
+            RunDiff());
 }
 
 TEST_F(ComparisonTest, IgnoredRepeatedNested) {
@@ -3081,11 +3039,10 @@ TEST_F(ComparisonTest, IgnoredRepeatedNested) {
 
   ignore_field("rm.c");
 
-  EXPECT_EQ(
-      "ignored: rm[0].c\n"
-      "ignored: rm[1].c\n"
-      "added: w: \"foo\"\n",
-      RunDiff());
+  EXPECT_EQ("ignored: rm[0].c\n"
+            "ignored: rm[1].c\n"
+            "added: w: \"foo\"\n",
+            RunDiff());
 }
 
 TEST_F(ComparisonTest, IgnoredNestedRepeated) {
@@ -3097,10 +3054,9 @@ TEST_F(ComparisonTest, IgnoredNestedRepeated) {
 
   ignore_field("m.rc");
 
-  EXPECT_EQ(
-      "added: w: \"foo\"\n"
-      "ignored: m.rc\n",
-      RunDiff());
+  EXPECT_EQ("added: w: \"foo\"\n"
+            "ignored: m.rc\n",
+            RunDiff());
 }
 
 TEST_F(ComparisonTest, ExtensionTest) {
@@ -3124,12 +3080,11 @@ TEST_F(ComparisonTest, MatchedUnknownFieldTagTest) {
   unknown1_->AddLengthDelimited(242, "cat");
   unknown2_->AddLengthDelimited(242, "dog");
 
-  EXPECT_EQ(
-      "modified: 240[0]: 122 -> 121\n"
-      "deleted: 241[0]: 0x00000001\n"
-      "added: 241[0]: 0x0000000000000002\n"
-      "modified: 242[0]: \"cat\" -> \"dog\"\n",
-      RunUn());
+  EXPECT_EQ("modified: 240[0]: 122 -> 121\n"
+            "deleted: 241[0]: 0x00000001\n"
+            "added: 241[0]: 0x0000000000000002\n"
+            "modified: 242[0]: \"cat\" -> \"dog\"\n",
+            RunUn());
 }
 
 TEST_F(ComparisonTest, UnmatchedUnknownFieldTagTest) {
@@ -3137,11 +3092,10 @@ TEST_F(ComparisonTest, UnmatchedUnknownFieldTagTest) {
   unknown2_->AddVarint(244, 2);
   unknown2_->AddVarint(244, 4);
 
-  EXPECT_EQ(
-      "deleted: 243[0]: 0x00000001\n"
-      "added: 244[0]: 2\n"
-      "added: 244[1]: 4\n",
-      RunUn());
+  EXPECT_EQ("deleted: 243[0]: 0x00000001\n"
+            "added: 244[0]: 2\n"
+            "added: 244[1]: 4\n",
+            RunUn());
 }
 
 TEST_F(ComparisonTest, DifferentSizedUnknownFieldTest) {
@@ -3153,11 +3107,10 @@ TEST_F(ComparisonTest, DifferentSizedUnknownFieldTest) {
   unknown2_->AddVarint(240, 2);
   unknown2_->AddVarint(240, 5);
 
-  EXPECT_EQ(
-      "modified: 240[0]: 1 -> 2\n"
-      "modified: 240[2]: 4 -> 2\n"
-      "added: 240[3]: 5\n",
-      RunUn());
+  EXPECT_EQ("modified: 240[0]: 1 -> 2\n"
+            "modified: 240[2]: 4 -> 2\n"
+            "added: 240[3]: 5\n",
+            RunUn());
 }
 
 TEST_F(ComparisonTest, UnknownFieldsAll) {
@@ -3173,16 +3126,15 @@ TEST_F(ComparisonTest, UnknownFieldsAll) {
   unknown2_->AddGroup(245)->AddFixed32(248, 3);
   unknown2_->AddGroup(247);
 
-  EXPECT_EQ(
-      "modified: 243[0]: 122 -> 121\n"
-      "deleted: 244[0]: 0x0000000000172356\n"
-      "deleted: 244[1]: 0x0000000000000098\n"
-      "modified: 245[0].248[0]: 0x00000001 -> 0x00000003\n"
-      "deleted: 245[0].248[1]: 0x00000002\n"
-      "added: 247[0]: { ... }\n"
-      "deleted: 249[0]: { ... }\n"
-      "added: 73882[0]: \"test 123\"\n",
-      RunUn());
+  EXPECT_EQ("modified: 243[0]: 122 -> 121\n"
+            "deleted: 244[0]: 0x0000000000172356\n"
+            "deleted: 244[1]: 0x0000000000000098\n"
+            "modified: 245[0].248[0]: 0x00000001 -> 0x00000003\n"
+            "deleted: 245[0].248[1]: 0x00000002\n"
+            "added: 247[0]: { ... }\n"
+            "deleted: 249[0]: { ... }\n"
+            "added: 73882[0]: \"test 123\"\n",
+            RunUn());
 }
 
 TEST_F(ComparisonTest, EquivalentIgnoresUnknown) {
@@ -3198,11 +3150,11 @@ TEST_F(ComparisonTest, EquivalentIgnoresUnknown) {
 }
 
 TEST_F(ComparisonTest, MapTest) {
-  Map<string, std::string>& map1 = *map_proto1_.mutable_map_string_string();
+  Map<string, std::string> &map1 = *map_proto1_.mutable_map_string_string();
   map1["key1"] = "1";
   map1["key2"] = "2";
   map1["key3"] = "3";
-  Map<string, std::string>& map2 = *map_proto2_.mutable_map_string_string();
+  Map<string, std::string> &map2 = *map_proto2_.mutable_map_string_string();
   map2["key3"] = "0";
   map2["key2"] = "2";
   map2["key1"] = "1";
@@ -3212,11 +3164,11 @@ TEST_F(ComparisonTest, MapTest) {
 }
 
 TEST_F(ComparisonTest, MapIgnoreKeyTest) {
-  Map<string, std::string>& map1 = *map_proto1_.mutable_map_string_string();
+  Map<string, std::string> &map1 = *map_proto1_.mutable_map_string_string();
   map1["key1"] = "1";
   map1["key2"] = "2";
   map1["key3"] = "3";
-  Map<string, std::string>& map2 = *map_proto2_.mutable_map_string_string();
+  Map<string, std::string> &map2 = *map_proto2_.mutable_map_string_string();
   map2["key4"] = "2";
   map2["key5"] = "3";
   map2["key6"] = "1";
@@ -3297,13 +3249,13 @@ TEST_F(ComparisonTest, MapEntryMissingEmptyFieldIsOkTest) {
 // Considers strings keys as equal if they have equal lengths.
 class LengthMapKeyComparator
     : public util::MessageDifferencer::MapKeyComparator {
- public:
+public:
   typedef util::MessageDifferencer::SpecificField SpecificField;
-  virtual bool IsMatch(const Message& message1, const Message& message2,
-                       const std::vector<SpecificField>& parent_fields) const {
-    const Reflection* reflection1 = message1.GetReflection();
-    const Reflection* reflection2 = message2.GetReflection();
-    const FieldDescriptor* key_field =
+  virtual bool IsMatch(const Message &message1, const Message &message2,
+                       const std::vector<SpecificField> &parent_fields) const {
+    const Reflection *reflection1 = message1.GetReflection();
+    const Reflection *reflection2 = message2.GetReflection();
+    const FieldDescriptor *key_field =
         message1.GetDescriptor()->FindFieldByName("key");
     return reflection1->GetString(message1, key_field).size() ==
            reflection2->GetString(message2, key_field).size();
@@ -3341,16 +3293,16 @@ TEST_F(ComparisonTest, MapEntryCustomMapKeyComparator) {
 }
 
 class MatchingTest : public testing::Test {
- public:
+public:
   typedef util::MessageDifferencer MessageDifferencer;
 
- protected:
+protected:
   MatchingTest() {}
 
   ~MatchingTest() {}
 
-  std::string RunWithResult(MessageDifferencer* differencer,
-                            const Message& msg1, const Message& msg2,
+  std::string RunWithResult(MessageDifferencer *differencer,
+                            const Message &msg1, const Message &msg2,
                             bool result) {
     std::string output;
     {
@@ -3371,7 +3323,7 @@ class MatchingTest : public testing::Test {
     return output;
   }
 
- private:
+private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MatchingTest);
 };
 
@@ -3388,11 +3340,10 @@ TEST_F(MatchingTest, StreamReporterMatching) {
   differencer.set_report_matches(true);
   differencer.ReportDifferencesToString(&output);
   EXPECT_TRUE(differencer.Compare(msg1, msg2));
-  EXPECT_EQ(
-      "matched: c : 72\n"
-      "matched: rc[0] : 13\n"
-      "matched: rc[1] : 17\n",
-      output);
+  EXPECT_EQ("matched: c : 72\n"
+            "matched: rc[0] : 13\n"
+            "matched: rc[1] : 17\n",
+            output);
 }
 
 TEST_F(MatchingTest, DontReportMatchedWhenIgnoring) {
@@ -3411,16 +3362,15 @@ TEST_F(MatchingTest, DontReportMatchedWhenIgnoring) {
   differencer.IgnoreField(msg1.GetDescriptor()->FindFieldByName("c"));
 
   EXPECT_TRUE(differencer.Compare(msg1, msg2));
-  EXPECT_EQ(
-      "ignored: c\n"
-      "matched: rc[0] : 13\n"
-      "matched: rc[1] : 17\n",
-      output);
+  EXPECT_EQ("ignored: c\n"
+            "matched: rc[0] : 13\n"
+            "matched: rc[1] : 17\n",
+            output);
 }
 
 TEST_F(MatchingTest, ReportMatchedForMovedFields) {
   protobuf_unittest::TestDiffMessage msg1, msg2;
-  protobuf_unittest::TestDiffMessage::Item* item = msg1.add_item();
+  protobuf_unittest::TestDiffMessage::Item *item = msg1.add_item();
   item->set_a(53);
   item->set_b("hello");
   item = msg2.add_item();
@@ -3431,27 +3381,26 @@ TEST_F(MatchingTest, ReportMatchedForMovedFields) {
   item = msg1.add_item();
   item->set_a(27);
   MessageDifferencer differencer;
-  const FieldDescriptor* desc;
+  const FieldDescriptor *desc;
   desc = msg1.GetDescriptor()->FindFieldByName("item");
   differencer.TreatAsSet(desc);
 
-  EXPECT_EQ(
-      "matched: item[0].a -> item[1].a : 53\n"
-      "matched: item[0].b -> item[1].b : \"hello\"\n"
-      "moved: item[0] -> item[1] : { a: 53 b: \"hello\" }\n"
-      "matched: item[1].a -> item[0].a : 27\n"
-      "moved: item[1] -> item[0] : { a: 27 }\n",
-      RunWithResult(&differencer, msg1, msg2, true));
+  EXPECT_EQ("matched: item[0].a -> item[1].a : 53\n"
+            "matched: item[0].b -> item[1].b : \"hello\"\n"
+            "moved: item[0] -> item[1] : { a: 53 b: \"hello\" }\n"
+            "matched: item[1].a -> item[0].a : 27\n"
+            "moved: item[1] -> item[0] : { a: 27 }\n",
+            RunWithResult(&differencer, msg1, msg2, true));
 }
 
 TEST_F(MatchingTest, MatchesAppearInPostTraversalOrderForMovedFields) {
   protobuf_unittest::TestDiffMessage msg1, msg2;
-  protobuf_unittest::TestDiffMessage::Item* item;
-  protobuf_unittest::TestField* field;
+  protobuf_unittest::TestDiffMessage::Item *item;
+  protobuf_unittest::TestField *field;
 
-  const FieldDescriptor* desc;
-  const FieldDescriptor* nested_desc;
-  const FieldDescriptor* double_nested_desc;
+  const FieldDescriptor *desc;
+  const FieldDescriptor *nested_desc;
+  const FieldDescriptor *double_nested_desc;
   desc = msg1.GetDescriptor()->FindFieldByName("item");
   nested_desc = desc->message_type()->FindFieldByName("rm");
   double_nested_desc = nested_desc->message_type()->FindFieldByName("rc");
@@ -3516,14 +3465,14 @@ TEST_F(MatchingTest, MatchesAppearInPostTraversalOrderForMovedFields) {
 
 TEST_F(MatchingTest, MatchAndModifiedInterleaveProperly) {
   protobuf_unittest::TestDiffMessage msg1, msg2;
-  protobuf_unittest::TestDiffMessage::Item* item;
-  protobuf_unittest::TestField* field;
+  protobuf_unittest::TestDiffMessage::Item *item;
+  protobuf_unittest::TestField *field;
 
-  const FieldDescriptor* desc;
-  const FieldDescriptor* nested_key;
-  const FieldDescriptor* nested_desc;
-  const FieldDescriptor* double_nested_key;
-  const FieldDescriptor* double_nested_desc;
+  const FieldDescriptor *desc;
+  const FieldDescriptor *nested_key;
+  const FieldDescriptor *nested_desc;
+  const FieldDescriptor *double_nested_key;
+  const FieldDescriptor *double_nested_desc;
   desc = msg1.GetDescriptor()->FindFieldByName("item");
   nested_key = desc->message_type()->FindFieldByName("a");
   nested_desc = desc->message_type()->FindFieldByName("rm");
@@ -3603,12 +3552,12 @@ TEST_F(MatchingTest, MatchAndModifiedInterleaveProperly) {
 
 TEST_F(MatchingTest, MatchingWorksWithExtensions) {
   protobuf_unittest::TestAllExtensions msg1, msg2;
-  protobuf_unittest::TestAllTypes::NestedMessage* nested;
+  protobuf_unittest::TestAllTypes::NestedMessage *nested;
   using protobuf_unittest::repeated_nested_message_extension;
 
-  const FileDescriptor* descriptor;
-  const FieldDescriptor* desc;
-  const FieldDescriptor* nested_key;
+  const FileDescriptor *descriptor;
+  const FieldDescriptor *desc;
+  const FieldDescriptor *nested_key;
   descriptor = msg1.GetDescriptor()->file();
   desc = descriptor->FindExtensionByName("repeated_nested_message_extension");
   ASSERT_FALSE(desc == NULL);
@@ -3700,7 +3649,6 @@ TEST(Anytest, TreatAsSet_DifferentType) {
   EXPECT_TRUE(message_differencer.Compare(m1, m2));
 }
 
-
-}  // namespace
-}  // namespace protobuf
-}  // namespace google
+} // namespace
+} // namespace protobuf
+} // namespace google

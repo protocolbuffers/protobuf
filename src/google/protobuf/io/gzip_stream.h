@@ -43,10 +43,9 @@
 #ifndef GOOGLE_PROTOBUF_IO_GZIP_STREAM_H__
 #define GOOGLE_PROTOBUF_IO_GZIP_STREAM_H__
 
-
-#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/port.h>
+#include <google/protobuf/stubs/common.h>
 #include <zlib.h>
 
 #include <google/protobuf/port_def.inc>
@@ -57,7 +56,7 @@ namespace io {
 
 // A ZeroCopyInputStream that reads compressed data through zlib
 class PROTOBUF_EXPORT GzipInputStream : public ZeroCopyInputStream {
- public:
+public:
   // Format key for constructor
   enum Format {
     // zlib will autodetect gzip header or deflate stream
@@ -71,41 +70,41 @@ class PROTOBUF_EXPORT GzipInputStream : public ZeroCopyInputStream {
   };
 
   // buffer_size and format may be -1 for default of 64kB and GZIP format
-  explicit GzipInputStream(ZeroCopyInputStream* sub_stream,
+  explicit GzipInputStream(ZeroCopyInputStream *sub_stream,
                            Format format = AUTO, int buffer_size = -1);
   virtual ~GzipInputStream();
 
   // Return last error message or NULL if no error.
-  inline const char* ZlibErrorMessage() const { return zcontext_.msg; }
+  inline const char *ZlibErrorMessage() const { return zcontext_.msg; }
   inline int ZlibErrorCode() const { return zerror_; }
 
   // implements ZeroCopyInputStream ----------------------------------
-  bool Next(const void** data, int* size);
+  bool Next(const void **data, int *size);
   void BackUp(int count);
   bool Skip(int count);
   int64_t ByteCount() const;
 
- private:
+private:
   Format format_;
 
-  ZeroCopyInputStream* sub_stream_;
+  ZeroCopyInputStream *sub_stream_;
 
   z_stream zcontext_;
   int zerror_;
 
-  void* output_buffer_;
-  void* output_position_;
+  void *output_buffer_;
+  void *output_position_;
   size_t output_buffer_length_;
   int64 byte_count_;
 
   int Inflate(int flush);
-  void DoNextOutput(const void** data, int* size);
+  void DoNextOutput(const void **data, int *size);
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(GzipInputStream);
 };
 
 class PROTOBUF_EXPORT GzipOutputStream : public ZeroCopyOutputStream {
- public:
+public:
   // Format key for constructor
   enum Format {
     // GZIP streams have some extra header data for file attributes.
@@ -131,19 +130,19 @@ class PROTOBUF_EXPORT GzipOutputStream : public ZeroCopyOutputStream {
     // zlib.h for definitions of these constants.
     int compression_strategy;
 
-    Options();  // Initializes with default values.
+    Options(); // Initializes with default values.
   };
 
   // Create a GzipOutputStream with default options.
-  explicit GzipOutputStream(ZeroCopyOutputStream* sub_stream);
+  explicit GzipOutputStream(ZeroCopyOutputStream *sub_stream);
 
   // Create a GzipOutputStream with the given options.
-  GzipOutputStream(ZeroCopyOutputStream* sub_stream, const Options& options);
+  GzipOutputStream(ZeroCopyOutputStream *sub_stream, const Options &options);
 
   virtual ~GzipOutputStream();
 
   // Return last error message or NULL if no error.
-  inline const char* ZlibErrorMessage() const { return zcontext_.msg; }
+  inline const char *ZlibErrorMessage() const { return zcontext_.msg; }
   inline int ZlibErrorCode() const { return zerror_; }
 
   // Flushes data written so far to zipped data in the underlying stream.
@@ -167,23 +166,23 @@ class PROTOBUF_EXPORT GzipOutputStream : public ZeroCopyOutputStream {
   bool Close();
 
   // implements ZeroCopyOutputStream ---------------------------------
-  bool Next(void** data, int* size);
+  bool Next(void **data, int *size);
   void BackUp(int count);
   int64_t ByteCount() const;
 
- private:
-  ZeroCopyOutputStream* sub_stream_;
+private:
+  ZeroCopyOutputStream *sub_stream_;
   // Result from calling Next() on sub_stream_
-  void* sub_data_;
+  void *sub_data_;
   int sub_data_size_;
 
   z_stream zcontext_;
   int zerror_;
-  void* input_buffer_;
+  void *input_buffer_;
   size_t input_buffer_length_;
 
   // Shared constructor code.
-  void Init(ZeroCopyOutputStream* sub_stream, const Options& options);
+  void Init(ZeroCopyOutputStream *sub_stream, const Options &options);
 
   // Do some compression.
   // Takes zlib flush mode.
@@ -193,10 +192,10 @@ class PROTOBUF_EXPORT GzipOutputStream : public ZeroCopyOutputStream {
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(GzipOutputStream);
 };
 
-}  // namespace io
-}  // namespace protobuf
-}  // namespace google
+} // namespace io
+} // namespace protobuf
+} // namespace google
 
 #include <google/protobuf/port_undef.inc>
 
-#endif  // GOOGLE_PROTOBUF_IO_GZIP_STREAM_H__
+#endif // GOOGLE_PROTOBUF_IO_GZIP_STREAM_H__

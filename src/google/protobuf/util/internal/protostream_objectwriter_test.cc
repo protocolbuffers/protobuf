@@ -30,16 +30,18 @@
 
 #include <google/protobuf/util/internal/protostream_objectwriter.h>
 
-#include <stddef.h>  // For size_t
+#include <stddef.h> // For size_t
 
-#include <google/protobuf/field_mask.pb.h>
-#include <google/protobuf/timestamp.pb.h>
-#include <google/protobuf/wrappers.pb.h>
-#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
-#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/descriptor.h>
+#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/dynamic_message.h>
+#include <google/protobuf/field_mask.pb.h>
+#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 #include <google/protobuf/message.h>
+#include <google/protobuf/stubs/bytestream.h>
+#include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/timestamp.pb.h>
+#include <google/protobuf/util/internal/constants.h>
 #include <google/protobuf/util/internal/mock_error_listener.h>
 #include <google/protobuf/util/internal/testdata/anys.pb.h>
 #include <google/protobuf/util/internal/testdata/books.pb.h>
@@ -51,12 +53,9 @@
 #include <google/protobuf/util/internal/testdata/timestamp_duration.pb.h>
 #include <google/protobuf/util/internal/testdata/wrappers.pb.h>
 #include <google/protobuf/util/internal/type_info_test_helper.h>
-#include <google/protobuf/util/internal/constants.h>
 #include <google/protobuf/util/message_differencer.h>
-#include <google/protobuf/stubs/bytestream.h>
-#include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/wrappers.pb.h>
 #include <gtest/gtest.h>
-
 
 namespace google {
 namespace protobuf {
@@ -83,12 +82,11 @@ using strings::GrowingArrayByteSink;
 using ::testing::_;
 using ::testing::Args;
 
-
 namespace {
-std::string GetTypeUrl(const Descriptor* descriptor) {
+std::string GetTypeUrl(const Descriptor *descriptor) {
   return std::string(kTypeServiceBaseUrl) + "/" + descriptor->full_name();
 }
-}  // namespace
+} // namespace
 
 #if __cplusplus >= 201103L
 using std::get;
@@ -98,48 +96,42 @@ using std::tr1::get;
 
 class BaseProtoStreamObjectWriterTest
     : public ::testing::TestWithParam<testing::TypeInfoSource> {
- protected:
+protected:
   BaseProtoStreamObjectWriterTest()
-      : helper_(GetParam()),
-        listener_(),
-        output_(new GrowingArrayByteSink(1000)),
-        ow_() {}
+      : helper_(GetParam()), listener_(),
+        output_(new GrowingArrayByteSink(1000)), ow_() {}
 
-  explicit BaseProtoStreamObjectWriterTest(const Descriptor* descriptor)
-      : helper_(GetParam()),
-        listener_(),
-        output_(new GrowingArrayByteSink(1000)),
-        ow_() {
-    std::vector<const Descriptor*> descriptors;
+  explicit BaseProtoStreamObjectWriterTest(const Descriptor *descriptor)
+      : helper_(GetParam()), listener_(),
+        output_(new GrowingArrayByteSink(1000)), ow_() {
+    std::vector<const Descriptor *> descriptors;
     descriptors.push_back(descriptor);
     ResetTypeInfo(descriptors);
   }
 
   explicit BaseProtoStreamObjectWriterTest(
-      std::vector<const Descriptor*> descriptors)
-      : helper_(GetParam()),
-        listener_(),
-        output_(new GrowingArrayByteSink(1000)),
-        ow_() {
+      std::vector<const Descriptor *> descriptors)
+      : helper_(GetParam()), listener_(),
+        output_(new GrowingArrayByteSink(1000)), ow_() {
     ResetTypeInfo(descriptors);
   }
 
-  void ResetTypeInfo(std::vector<const Descriptor*> descriptors) {
+  void ResetTypeInfo(std::vector<const Descriptor *> descriptors) {
     GOOGLE_CHECK(!descriptors.empty()) << "Must have at least one descriptor!";
     helper_.ResetTypeInfo(descriptors);
     ow_.reset(helper_.NewProtoWriter(GetTypeUrl(descriptors[0]), output_.get(),
                                      &listener_, options_));
   }
 
-  void ResetTypeInfo(const Descriptor* descriptor) {
-    std::vector<const Descriptor*> descriptors;
+  void ResetTypeInfo(const Descriptor *descriptor) {
+    std::vector<const Descriptor *> descriptors;
     descriptors.push_back(descriptor);
     ResetTypeInfo(descriptors);
   }
 
   virtual ~BaseProtoStreamObjectWriterTest() {}
 
-  void CheckOutput(const Message& expected, int expected_length) {
+  void CheckOutput(const Message &expected, int expected_length) {
     size_t nbytes;
     std::unique_ptr<char[]> buffer(output_->GetBuffer(&nbytes));
     if (expected_length >= 0) {
@@ -157,7 +149,7 @@ class BaseProtoStreamObjectWriterTest
     }
   }
 
-  void CheckOutput(const Message& expected) { CheckOutput(expected, -1); }
+  void CheckOutput(const Message &expected) { CheckOutput(expected, -1); }
 
   testing::TypeInfoTestHelper helper_;
   MockErrorListener listener_;
@@ -169,13 +161,14 @@ class BaseProtoStreamObjectWriterTest
 MATCHER_P(HasObjectLocation, expected,
           "Verifies the expected object location") {
   std::string actual = get<0>(arg).ToString();
-  if (actual.compare(expected) == 0) return true;
+  if (actual.compare(expected) == 0)
+    return true;
   *result_listener << "actual location is: " << actual;
   return false;
 }
 
 class ProtoStreamObjectWriterTest : public BaseProtoStreamObjectWriterTest {
- protected:
+protected:
   ProtoStreamObjectWriterTest()
       : BaseProtoStreamObjectWriterTest(Book::descriptor()) {}
 
@@ -186,8 +179,7 @@ class ProtoStreamObjectWriterTest : public BaseProtoStreamObjectWriterTest {
 
 INSTANTIATE_TEST_SUITE_P(DifferentTypeInfoSourceTest,
                          ProtoStreamObjectWriterTest,
-                         ::testing::Values(
-                             testing::USE_TYPE_RESOLVER));
+                         ::testing::Values(testing::USE_TYPE_RESOLVER));
 
 TEST_P(ProtoStreamObjectWriterTest, EmptyObject) {
   Book empty;
@@ -215,9 +207,9 @@ TEST_P(ProtoStreamObjectWriterTest, SimpleMessage) {
   Book book;
   book.set_title("Some Book");
   book.set_length(102);
-  Publisher* publisher = book.mutable_publisher();
+  Publisher *publisher = book.mutable_publisher();
   publisher->set_name("My Publisher");
-  Author* robert = book.mutable_author();
+  Author *robert = book.mutable_author();
   robert->set_alive(true);
   robert->set_name("robert");
   robert->add_pseudonym("bob");
@@ -249,7 +241,7 @@ TEST_P(ProtoStreamObjectWriterTest, SimpleMessage) {
 
 TEST_P(ProtoStreamObjectWriterTest, CustomJsonName) {
   Book book;
-  Author* robert = book.mutable_author();
+  Author *robert = book.mutable_author();
   robert->set_id(12345);
   robert->set_name("robert");
 
@@ -282,7 +274,7 @@ TEST_P(ProtoStreamObjectWriterTest, IntEnumValuesAreAccepted) {
   Book book;
   book.set_title("Some Book");
   book.set_type(proto_util_converter::testing::Book::KIDS);
-  Author* robert = book.mutable_author();
+  Author *robert = book.mutable_author();
   robert->set_name("robert");
 
   ow_->StartObject("")
@@ -298,7 +290,7 @@ TEST_P(ProtoStreamObjectWriterTest, IntEnumValuesAreAccepted) {
 TEST_P(ProtoStreamObjectWriterTest, EnumValuesWithDifferentCaseIsRejected) {
   Book book;
   book.set_title("Some Book");
-  Author* robert = book.mutable_author();
+  Author *robert = book.mutable_author();
   robert->set_name("robert");
 
   options_.case_insensitive_enum_parsing = false;
@@ -318,7 +310,7 @@ TEST_P(ProtoStreamObjectWriterTest, EnumValuesWithSameCaseIsAccepted) {
   Book book;
   book.set_title("Some Book");
   book.set_type(proto_util_converter::testing::Book::ACTION_AND_ADVENTURE);
-  Author* robert = book.mutable_author();
+  Author *robert = book.mutable_author();
   robert->set_name("robert");
 
   options_.case_insensitive_enum_parsing = false;
@@ -338,7 +330,7 @@ TEST_P(ProtoStreamObjectWriterTest, EnumValuesWithDifferentCaseIsAccepted) {
   Book book;
   book.set_title("Some Book");
   book.set_type(proto_util_converter::testing::Book::ACTION_AND_ADVENTURE);
-  Author* robert = book.mutable_author();
+  Author *robert = book.mutable_author();
   robert->set_name("robert");
 
   options_.case_insensitive_enum_parsing = true;
@@ -358,7 +350,7 @@ TEST_P(ProtoStreamObjectWriterTest, EnumValuesWithoutUnderscoreAreAccepted) {
   Book book;
   book.set_title("Some Book");
   book.set_type(proto_util_converter::testing::Book::ACTION_AND_ADVENTURE);
-  Author* robert = book.mutable_author();
+  Author *robert = book.mutable_author();
   robert->set_name("robert");
 
   options_.use_lower_camel_for_enums = true;
@@ -378,7 +370,7 @@ TEST_P(ProtoStreamObjectWriterTest, EnumValuesInCamelCaseAreAccepted) {
   Book book;
   book.set_title("Some Book");
   book.set_type(proto_util_converter::testing::Book::ACTION_AND_ADVENTURE);
-  Author* robert = book.mutable_author();
+  Author *robert = book.mutable_author();
   robert->set_name("robert");
 
   options_.use_lower_camel_for_enums = true;
@@ -399,7 +391,7 @@ TEST_P(ProtoStreamObjectWriterTest,
   Book book;
   book.set_title("Some Book");
   book.set_type(proto_util_converter::testing::Book::ACTION_AND_ADVENTURE);
-  Author* robert = book.mutable_author();
+  Author *robert = book.mutable_author();
   robert->set_name("robert");
 
   options_.use_lower_camel_for_enums = true;
@@ -421,7 +413,7 @@ TEST_P(ProtoStreamObjectWriterTest,
   Book book;
   book.set_title("Some Book");
   book.set_type(proto_util_converter::testing::Book::arts_and_photography);
-  Author* robert = book.mutable_author();
+  Author *robert = book.mutable_author();
   robert->set_name("robert");
 
   options_.use_lower_camel_for_enums = true;
@@ -484,7 +476,7 @@ TEST_P(ProtoStreamObjectWriterTest, PrimitiveFromStringConversion) {
       ->RenderString("sf64", "-40000000004")
       ->RenderString("s64", "-40000000005")
       ->RenderString("str", "string1")
-      ->RenderString("bytes", "U29tZSBCeXRlcw==")  // "Some Bytes"
+      ->RenderString("bytes", "U29tZSBCeXRlcw==") // "Some Bytes"
       ->RenderString("float", "3.14")
       ->RenderString("double", "-4.05")
       ->RenderString("bool", "true")
@@ -522,7 +514,7 @@ TEST_P(ProtoStreamObjectWriterTest, PrimitiveFromStringConversion) {
       ->RenderString("", "string2")
       ->EndList()
       ->StartList("rep_bytes")
-      ->RenderString("", "TW9yZSBCeXRlcw==")  // "More Bytes"
+      ->RenderString("", "TW9yZSBCeXRlcw==") // "More Bytes"
       ->EndList()
       ->StartList("rep_float")
       ->RenderString("", "6.14")
@@ -587,8 +579,8 @@ TEST_P(ProtoStreamObjectWriterTest, NaNInputTest) {
   EXPECT_CALL(listener_, InvalidValue(_, StringPiece("TYPE_SFIXED64"),
                                       StringPiece("\"NaN\"")))
       .With(Args<0>(HasObjectLocation("sf64")));
-  EXPECT_CALL(listener_, InvalidValue(_, StringPiece("TYPE_BOOL"),
-                                      StringPiece("\"NaN\"")))
+  EXPECT_CALL(listener_,
+              InvalidValue(_, StringPiece("TYPE_BOOL"), StringPiece("\"NaN\"")))
       .With(Args<0>(HasObjectLocation("bool")));
 
   ow_->StartObject("")
@@ -606,7 +598,7 @@ TEST_P(ProtoStreamObjectWriterTest, NaNInputTest) {
 
 TEST_P(ProtoStreamObjectWriterTest, ImplicitPrimitiveList) {
   Book expected;
-  Author* author = expected.mutable_author();
+  Author *author = expected.mutable_author();
   author->set_name("The Author");
   author->add_pseudonym("first");
   author->add_pseudonym("second");
@@ -624,7 +616,7 @@ TEST_P(ProtoStreamObjectWriterTest, ImplicitPrimitiveList) {
 TEST_P(ProtoStreamObjectWriterTest,
        LastWriteWinsOnNonRepeatedPrimitiveFieldWithDuplicates) {
   Book expected;
-  Author* author = expected.mutable_author();
+  Author *author = expected.mutable_author();
   author->set_name("second");
 
   ow_->StartObject("")
@@ -638,7 +630,7 @@ TEST_P(ProtoStreamObjectWriterTest,
 
 TEST_P(ProtoStreamObjectWriterTest, ExplicitPrimitiveList) {
   Book expected;
-  Author* author = expected.mutable_author();
+  Author *author = expected.mutable_author();
   author->set_name("The Author");
   author->add_pseudonym("first");
   author->add_pseudonym("second");
@@ -661,9 +653,9 @@ TEST_P(ProtoStreamObjectWriterTest, NonRepeatedExplicitPrimitiveList) {
 
   EXPECT_CALL(
       listener_,
-      InvalidName(_, StringPiece("name"),
-                  StringPiece(
-                      "Proto field is not repeating, cannot start list.")))
+      InvalidName(
+          _, StringPiece("name"),
+          StringPiece("Proto field is not repeating, cannot start list.")))
       .With(Args<0>(HasObjectLocation("author")));
   ow_->StartObject("")
       ->StartObject("author")
@@ -678,12 +670,12 @@ TEST_P(ProtoStreamObjectWriterTest, NonRepeatedExplicitPrimitiveList) {
 
 TEST_P(ProtoStreamObjectWriterTest, ImplicitMessageList) {
   Book expected;
-  Author* outer = expected.mutable_author();
+  Author *outer = expected.mutable_author();
   outer->set_name("outer");
   outer->set_alive(true);
-  Author* first = outer->add_friend_();
+  Author *first = outer->add_friend_();
   first->set_name("first");
-  Author* second = outer->add_friend_();
+  Author *second = outer->add_friend_();
   second->set_name("second");
 
   ow_->StartObject("")
@@ -704,9 +696,9 @@ TEST_P(ProtoStreamObjectWriterTest, ImplicitMessageList) {
 TEST_P(ProtoStreamObjectWriterTest,
        LastWriteWinsOnNonRepeatedMessageFieldWithDuplicates) {
   Book expected;
-  Author* author = expected.mutable_author();
+  Author *author = expected.mutable_author();
   author->set_name("The Author");
-  Publisher* publisher = expected.mutable_publisher();
+  Publisher *publisher = expected.mutable_publisher();
   publisher->set_name("second");
 
   ow_->StartObject("")
@@ -725,12 +717,12 @@ TEST_P(ProtoStreamObjectWriterTest,
 
 TEST_P(ProtoStreamObjectWriterTest, ExplicitMessageList) {
   Book expected;
-  Author* outer = expected.mutable_author();
+  Author *outer = expected.mutable_author();
   outer->set_name("outer");
   outer->set_alive(true);
-  Author* first = outer->add_friend_();
+  Author *first = outer->add_friend_();
   first->set_name("first");
-  Author* second = outer->add_friend_();
+  Author *second = outer->add_friend_();
   second->set_name("second");
 
   ow_->StartObject("")
@@ -752,14 +744,14 @@ TEST_P(ProtoStreamObjectWriterTest, ExplicitMessageList) {
 
 TEST_P(ProtoStreamObjectWriterTest, NonRepeatedExplicitMessageList) {
   Book expected;
-  Author* author = expected.mutable_author();
+  Author *author = expected.mutable_author();
   author->set_name("The Author");
 
   EXPECT_CALL(
       listener_,
-      InvalidName(_, StringPiece("publisher"),
-                  StringPiece(
-                      "Proto field is not repeating, cannot start list.")))
+      InvalidName(
+          _, StringPiece("publisher"),
+          StringPiece("Proto field is not repeating, cannot start list.")))
       .With(Args<0>(HasObjectLocation("")));
   ow_->StartObject("")
       ->StartObject("author")
@@ -789,13 +781,13 @@ TEST_P(ProtoStreamObjectWriterTest, UnknownFieldAtRoot) {
 
 TEST_P(ProtoStreamObjectWriterTest, UnknownFieldAtAuthorFriend) {
   Book expected;
-  Author* paul = expected.mutable_author();
+  Author *paul = expected.mutable_author();
   paul->set_name("Paul");
-  Author* mark = paul->add_friend_();
+  Author *mark = paul->add_friend_();
   mark->set_name("Mark");
-  Author* john = paul->add_friend_();
+  Author *john = paul->add_friend_();
   john->set_name("John");
-  Author* luke = paul->add_friend_();
+  Author *luke = paul->add_friend_();
   luke->set_name("Luke");
 
   EXPECT_CALL(listener_, InvalidName(_, StringPiece("address"),
@@ -833,7 +825,7 @@ TEST_P(ProtoStreamObjectWriterTest, UnknownObjectAtRoot) {
 
 TEST_P(ProtoStreamObjectWriterTest, UnknownObjectAtAuthor) {
   Book expected;
-  Author* author = expected.mutable_author();
+  Author *author = expected.mutable_author();
   author->set_name("William");
   author->add_pseudonym("Bill");
 
@@ -865,7 +857,7 @@ TEST_P(ProtoStreamObjectWriterTest, UnknownListAtRoot) {
 TEST_P(ProtoStreamObjectWriterTest, UnknownListAtPublisher) {
   Book expected;
   expected.set_title("Brainwashing");
-  Publisher* publisher = expected.mutable_publisher();
+  Publisher *publisher = expected.mutable_publisher();
   publisher->set_name("propaganda");
 
   EXPECT_CALL(listener_, InvalidName(_, StringPiece("alliance"),
@@ -895,13 +887,13 @@ TEST_P(ProtoStreamObjectWriterTest, IgnoreUnknownFieldAtRoot) {
 
 TEST_P(ProtoStreamObjectWriterTest, IgnoreUnknownFieldAtAuthorFriend) {
   Book expected;
-  Author* paul = expected.mutable_author();
+  Author *paul = expected.mutable_author();
   paul->set_name("Paul");
-  Author* mark = paul->add_friend_();
+  Author *mark = paul->add_friend_();
   mark->set_name("Mark");
-  Author* john = paul->add_friend_();
+  Author *john = paul->add_friend_();
   john->set_name("John");
-  Author* luke = paul->add_friend_();
+  Author *luke = paul->add_friend_();
   luke->set_name("Luke");
 
   options_.ignore_unknown_fields = true;
@@ -943,7 +935,7 @@ TEST_P(ProtoStreamObjectWriterTest, IgnoreUnknownObjectAtRoot) {
 
 TEST_P(ProtoStreamObjectWriterTest, IgnoreUnknownObjectAtAuthor) {
   Book expected;
-  Author* author = expected.mutable_author();
+  Author *author = expected.mutable_author();
   author->set_name("William");
   author->add_pseudonym("Bill");
 
@@ -977,7 +969,7 @@ TEST_P(ProtoStreamObjectWriterTest, IgnoreUnknownListAtRoot) {
 TEST_P(ProtoStreamObjectWriterTest, IgnoreUnknownListAtPublisher) {
   Book expected;
   expected.set_title("Brainwashing");
-  Publisher* publisher = expected.mutable_publisher();
+  Publisher *publisher = expected.mutable_publisher();
   publisher->set_name("propaganda");
 
   options_.ignore_unknown_fields = true;
@@ -1000,10 +992,9 @@ TEST_P(ProtoStreamObjectWriterTest,
   ResetTypeInfo(Proto3Message::descriptor());
 
   Proto3Message expected;
-  EXPECT_CALL(
-      listener_,
-      InvalidValue(_, StringPiece("TYPE_ENUM"),
-                   StringPiece("\"someunknownvalueyouwillneverknow\"")))
+  EXPECT_CALL(listener_,
+              InvalidValue(_, StringPiece("TYPE_ENUM"),
+                           StringPiece("\"someunknownvalueyouwillneverknow\"")))
       .With(Args<0>(HasObjectLocation("enum_value")));
   ow_->StartObject("")
       ->RenderString("enumValue", "someunknownvalueyouwillneverknow")
@@ -1114,10 +1105,9 @@ TEST_P(ProtoStreamObjectWriterTest, RootNamedObject) {
   Book expected;
   expected.set_title("Annie");
 
-  EXPECT_CALL(
-      listener_,
-      InvalidName(_, StringPiece("oops"),
-                  StringPiece("Root element should not be named.")))
+  EXPECT_CALL(listener_,
+              InvalidName(_, StringPiece("oops"),
+                          StringPiece("Root element should not be named.")))
       .With(Args<0>(HasObjectLocation("")));
   ow_->StartObject("oops")->RenderString("title", "Annie")->EndObject();
   CheckOutput(expected, 7);
@@ -1126,10 +1116,9 @@ TEST_P(ProtoStreamObjectWriterTest, RootNamedObject) {
 TEST_P(ProtoStreamObjectWriterTest, RootNamedList) {
   Book empty;
 
-  EXPECT_CALL(
-      listener_,
-      InvalidName(_, StringPiece("oops"),
-                  StringPiece("Root element should not be named.")))
+  EXPECT_CALL(listener_,
+              InvalidName(_, StringPiece("oops"),
+                          StringPiece("Root element should not be named.")))
       .With(Args<0>(HasObjectLocation("")));
   ow_->StartList("oops")->RenderString("", "item")->EndList();
   CheckOutput(empty, 0);
@@ -1180,9 +1169,9 @@ TEST_P(ProtoStreamObjectWriterTest, NullValueForPrimitiveField) {
 
 class ProtoStreamObjectWriterTimestampDurationTest
     : public BaseProtoStreamObjectWriterTest {
- protected:
+protected:
   ProtoStreamObjectWriterTimestampDurationTest() {
-    std::vector<const Descriptor*> descriptors;
+    std::vector<const Descriptor *> descriptors;
     descriptors.push_back(TimestampDuration::descriptor());
     descriptors.push_back(google::protobuf::Timestamp::descriptor());
     descriptors.push_back(google::protobuf::Duration::descriptor());
@@ -1192,12 +1181,11 @@ class ProtoStreamObjectWriterTimestampDurationTest
 
 INSTANTIATE_TEST_SUITE_P(DifferentTypeInfoSourceTest,
                          ProtoStreamObjectWriterTimestampDurationTest,
-                         ::testing::Values(
-                             testing::USE_TYPE_RESOLVER));
+                         ::testing::Values(testing::USE_TYPE_RESOLVER));
 
 TEST_P(ProtoStreamObjectWriterTimestampDurationTest, ParseTimestamp) {
   TimestampDuration timestamp;
-  google::protobuf::Timestamp* ts = timestamp.mutable_ts();
+  google::protobuf::Timestamp *ts = timestamp.mutable_ts();
   ts->set_seconds(1448249855);
   ts->set_nanos(33155000);
 
@@ -1210,7 +1198,7 @@ TEST_P(ProtoStreamObjectWriterTimestampDurationTest, ParseTimestamp) {
 TEST_P(ProtoStreamObjectWriterTimestampDurationTest,
        ParseTimestampYearNotZeroPadded) {
   TimestampDuration timestamp;
-  google::protobuf::Timestamp* ts = timestamp.mutable_ts();
+  google::protobuf::Timestamp *ts = timestamp.mutable_ts();
   ts->set_seconds(-61665654145);
   ts->set_nanos(33155000);
 
@@ -1223,7 +1211,7 @@ TEST_P(ProtoStreamObjectWriterTimestampDurationTest,
 TEST_P(ProtoStreamObjectWriterTimestampDurationTest,
        ParseTimestampYearZeroPadded) {
   TimestampDuration timestamp;
-  google::protobuf::Timestamp* ts = timestamp.mutable_ts();
+  google::protobuf::Timestamp *ts = timestamp.mutable_ts();
   ts->set_seconds(-61665654145);
   ts->set_nanos(33155000);
 
@@ -1236,7 +1224,7 @@ TEST_P(ProtoStreamObjectWriterTimestampDurationTest,
 TEST_P(ProtoStreamObjectWriterTimestampDurationTest,
        ParseTimestampWithPositiveOffset) {
   TimestampDuration timestamp;
-  google::protobuf::Timestamp* ts = timestamp.mutable_ts();
+  google::protobuf::Timestamp *ts = timestamp.mutable_ts();
   ts->set_seconds(1448249855);
   ts->set_nanos(33155000);
 
@@ -1249,7 +1237,7 @@ TEST_P(ProtoStreamObjectWriterTimestampDurationTest,
 TEST_P(ProtoStreamObjectWriterTimestampDurationTest,
        ParseTimestampWithNegativeOffset) {
   TimestampDuration timestamp;
-  google::protobuf::Timestamp* ts = timestamp.mutable_ts();
+  google::protobuf::Timestamp *ts = timestamp.mutable_ts();
   ts->set_seconds(1448249855);
   ts->set_nanos(33155000);
 
@@ -1265,10 +1253,10 @@ TEST_P(ProtoStreamObjectWriterTimestampDurationTest,
 
   EXPECT_CALL(
       listener_,
-      InvalidValue(
-          _, StringPiece("type.googleapis.com/google.protobuf.Timestamp"),
-          StringPiece("Field 'ts', Invalid time format: "
-                      "2016-03-07T15:14:23+")));
+      InvalidValue(_,
+                   StringPiece("type.googleapis.com/google.protobuf.Timestamp"),
+                   StringPiece("Field 'ts', Invalid time format: "
+                               "2016-03-07T15:14:23+")));
 
   ow_->StartObject("")->RenderString("ts", "2016-03-07T15:14:23+")->EndObject();
   CheckOutput(timestamp);
@@ -1280,10 +1268,10 @@ TEST_P(ProtoStreamObjectWriterTimestampDurationTest,
 
   EXPECT_CALL(
       listener_,
-      InvalidValue(
-          _, StringPiece("type.googleapis.com/google.protobuf.Timestamp"),
-          StringPiece("Field 'ts', Invalid time format: "
-                      "2016-03-07T15:14:23+08-10")));
+      InvalidValue(_,
+                   StringPiece("type.googleapis.com/google.protobuf.Timestamp"),
+                   StringPiece("Field 'ts', Invalid time format: "
+                               "2016-03-07T15:14:23+08-10")));
 
   ow_->StartObject("")
       ->RenderString("ts", "2016-03-07T15:14:23+08-10")
@@ -1297,10 +1285,10 @@ TEST_P(ProtoStreamObjectWriterTimestampDurationTest,
 
   EXPECT_CALL(
       listener_,
-      InvalidValue(
-          _, StringPiece("type.googleapis.com/google.protobuf.Timestamp"),
-          StringPiece("Field 'ts', Invalid time format: "
-                      "2016-03-07T15:14:23+24:10")));
+      InvalidValue(_,
+                   StringPiece("type.googleapis.com/google.protobuf.Timestamp"),
+                   StringPiece("Field 'ts', Invalid time format: "
+                               "2016-03-07T15:14:23+24:10")));
 
   ow_->StartObject("")
       ->RenderString("ts", "2016-03-07T15:14:23+24:10")
@@ -1314,10 +1302,10 @@ TEST_P(ProtoStreamObjectWriterTimestampDurationTest,
 
   EXPECT_CALL(
       listener_,
-      InvalidValue(
-          _, StringPiece("type.googleapis.com/google.protobuf.Timestamp"),
-          StringPiece("Field 'ts', Invalid time format: "
-                      "2016-03-07T15:14:23+04:60")));
+      InvalidValue(_,
+                   StringPiece("type.googleapis.com/google.protobuf.Timestamp"),
+                   StringPiece("Field 'ts', Invalid time format: "
+                               "2016-03-07T15:14:23+04:60")));
 
   ow_->StartObject("")
       ->RenderString("ts", "2016-03-07T15:14:23+04:60")
@@ -1330,9 +1318,9 @@ TEST_P(ProtoStreamObjectWriterTimestampDurationTest, InvalidTimestampError1) {
 
   EXPECT_CALL(
       listener_,
-      InvalidValue(
-          _, StringPiece("type.googleapis.com/google.protobuf.Timestamp"),
-          StringPiece("Field 'ts', Invalid time format: ")));
+      InvalidValue(_,
+                   StringPiece("type.googleapis.com/google.protobuf.Timestamp"),
+                   StringPiece("Field 'ts', Invalid time format: ")));
 
   ow_->StartObject("")->RenderString("ts", "")->EndObject();
   CheckOutput(timestamp);
@@ -1343,9 +1331,9 @@ TEST_P(ProtoStreamObjectWriterTimestampDurationTest, InvalidTimestampError2) {
 
   EXPECT_CALL(
       listener_,
-      InvalidValue(
-          _, StringPiece("type.googleapis.com/google.protobuf.Timestamp"),
-          StringPiece("Field 'ts', Invalid time format: Z")));
+      InvalidValue(_,
+                   StringPiece("type.googleapis.com/google.protobuf.Timestamp"),
+                   StringPiece("Field 'ts', Invalid time format: Z")));
 
   ow_->StartObject("")->RenderString("ts", "Z")->EndObject();
   CheckOutput(timestamp);
@@ -1356,10 +1344,10 @@ TEST_P(ProtoStreamObjectWriterTimestampDurationTest, InvalidTimestampError3) {
 
   EXPECT_CALL(
       listener_,
-      InvalidValue(
-          _, StringPiece("type.googleapis.com/google.protobuf.Timestamp"),
-          StringPiece("Field 'ts', Invalid time format: "
-                      "1970-01-01T00:00:00.ABZ")));
+      InvalidValue(_,
+                   StringPiece("type.googleapis.com/google.protobuf.Timestamp"),
+                   StringPiece("Field 'ts', Invalid time format: "
+                               "1970-01-01T00:00:00.ABZ")));
 
   ow_->StartObject("")
       ->RenderString("ts", "1970-01-01T00:00:00.ABZ")
@@ -1372,10 +1360,10 @@ TEST_P(ProtoStreamObjectWriterTimestampDurationTest, InvalidTimestampError4) {
 
   EXPECT_CALL(
       listener_,
-      InvalidValue(
-          _, StringPiece("type.googleapis.com/google.protobuf.Timestamp"),
-          StringPiece("Field 'ts', Invalid time format: "
-                      "-8031-10-18T00:00:00.000Z")));
+      InvalidValue(_,
+                   StringPiece("type.googleapis.com/google.protobuf.Timestamp"),
+                   StringPiece("Field 'ts', Invalid time format: "
+                               "-8031-10-18T00:00:00.000Z")));
 
   ow_->StartObject("")
       ->RenderString("ts", "-8031-10-18T00:00:00.000Z")
@@ -1388,10 +1376,10 @@ TEST_P(ProtoStreamObjectWriterTimestampDurationTest, InvalidTimestampError5) {
 
   EXPECT_CALL(
       listener_,
-      InvalidValue(
-          _, StringPiece("type.googleapis.com/google.protobuf.Timestamp"),
-          StringPiece("Field 'ts', Invalid time format: "
-                      "2015-11-23T03:37:35.033155   Z")));
+      InvalidValue(_,
+                   StringPiece("type.googleapis.com/google.protobuf.Timestamp"),
+                   StringPiece("Field 'ts', Invalid time format: "
+                               "2015-11-23T03:37:35.033155   Z")));
 
   ow_->StartObject("")
       // Whitespace in the Timestamp nanos is not allowed.
@@ -1405,10 +1393,10 @@ TEST_P(ProtoStreamObjectWriterTimestampDurationTest, InvalidTimestampError6) {
 
   EXPECT_CALL(
       listener_,
-      InvalidValue(
-          _, StringPiece("type.googleapis.com/google.protobuf.Timestamp"),
-          StringPiece("Field 'ts', Invalid time format: "
-                      "2015-11-23T03:37:35.033155 1234Z")));
+      InvalidValue(_,
+                   StringPiece("type.googleapis.com/google.protobuf.Timestamp"),
+                   StringPiece("Field 'ts', Invalid time format: "
+                               "2015-11-23T03:37:35.033155 1234Z")));
 
   ow_->StartObject("")
       // Whitespace in the Timestamp nanos is not allowed.
@@ -1422,10 +1410,10 @@ TEST_P(ProtoStreamObjectWriterTimestampDurationTest, InvalidTimestampError7) {
 
   EXPECT_CALL(
       listener_,
-      InvalidValue(
-          _, StringPiece("type.googleapis.com/google.protobuf.Timestamp"),
-          StringPiece("Field 'ts', Invalid time format: "
-                      "2015-11-23T03:37:35.033abc155Z")));
+      InvalidValue(_,
+                   StringPiece("type.googleapis.com/google.protobuf.Timestamp"),
+                   StringPiece("Field 'ts', Invalid time format: "
+                               "2015-11-23T03:37:35.033abc155Z")));
 
   ow_->StartObject("")
       // Non-numeric characters in the Timestamp nanos is not allowed.
@@ -1439,10 +1427,10 @@ TEST_P(ProtoStreamObjectWriterTimestampDurationTest, InvalidTimestampError8) {
 
   EXPECT_CALL(
       listener_,
-      InvalidValue(
-          _, StringPiece("type.googleapis.com/google.protobuf.Timestamp"),
-          StringPiece("Field 'ts', Invalid time format: "
-                      "0-12-31T23:59:59.000Z")));
+      InvalidValue(_,
+                   StringPiece("type.googleapis.com/google.protobuf.Timestamp"),
+                   StringPiece("Field 'ts', Invalid time format: "
+                               "0-12-31T23:59:59.000Z")));
 
   ow_->StartObject("")
       ->RenderString("ts", "0-12-31T23:59:59.000Z")
@@ -1452,7 +1440,7 @@ TEST_P(ProtoStreamObjectWriterTimestampDurationTest, InvalidTimestampError8) {
 
 TEST_P(ProtoStreamObjectWriterTimestampDurationTest, ParseDuration) {
   TimestampDuration duration;
-  google::protobuf::Duration* dur = duration.mutable_dur();
+  google::protobuf::Duration *dur = duration.mutable_dur();
   dur->set_seconds(1448216930);
   dur->set_nanos(132262000);
 
@@ -1467,9 +1455,8 @@ TEST_P(ProtoStreamObjectWriterTimestampDurationTest, InvalidDurationError1) {
       listener_,
       InvalidValue(
           _, StringPiece("type.googleapis.com/google.protobuf.Duration"),
-          StringPiece(
-              "Field 'dur', Illegal duration format; duration must "
-              "end with 's'")));
+          StringPiece("Field 'dur', Illegal duration format; duration must "
+                      "end with 's'")));
 
   ow_->StartObject("")->RenderString("dur", "")->EndObject();
   CheckOutput(duration);
@@ -1482,9 +1469,8 @@ TEST_P(ProtoStreamObjectWriterTimestampDurationTest, InvalidDurationError2) {
       listener_,
       InvalidValue(
           _, StringPiece("type.googleapis.com/google.protobuf.Duration"),
-          StringPiece(
-              "Field 'dur', Invalid duration format, failed to parse "
-              "seconds")));
+          StringPiece("Field 'dur', Invalid duration format, failed to parse "
+                      "seconds")));
 
   ow_->StartObject("")->RenderString("dur", "s")->EndObject();
   CheckOutput(duration);
@@ -1493,12 +1479,12 @@ TEST_P(ProtoStreamObjectWriterTimestampDurationTest, InvalidDurationError2) {
 TEST_P(ProtoStreamObjectWriterTimestampDurationTest, InvalidDurationError3) {
   TimestampDuration duration;
 
-  EXPECT_CALL(
-      listener_,
-      InvalidValue(
-          _, StringPiece("type.googleapis.com/google.protobuf.Duration"),
-          StringPiece("Field 'dur', Invalid duration format, failed to "
-                            "parse nano seconds")));
+  EXPECT_CALL(listener_,
+              InvalidValue(
+                  _,
+                  StringPiece("type.googleapis.com/google.protobuf.Duration"),
+                  StringPiece("Field 'dur', Invalid duration format, failed to "
+                              "parse nano seconds")));
 
   ow_->StartObject("")->RenderString("dur", "123.DEFs")->EndObject();
   CheckOutput(duration);
@@ -1509,9 +1495,9 @@ TEST_P(ProtoStreamObjectWriterTimestampDurationTest, InvalidDurationError4) {
 
   EXPECT_CALL(
       listener_,
-      InvalidValue(
-          _, StringPiece("type.googleapis.com/google.protobuf.Duration"),
-          StringPiece("Field 'dur', Duration value exceeds limits")));
+      InvalidValue(_,
+                   StringPiece("type.googleapis.com/google.protobuf.Duration"),
+                   StringPiece("Field 'dur', Duration value exceeds limits")));
 
   ow_->StartObject("")->RenderString("dur", "315576000002s")->EndObject();
   CheckOutput(duration);
@@ -1522,9 +1508,9 @@ TEST_P(ProtoStreamObjectWriterTimestampDurationTest, InvalidDurationError5) {
 
   EXPECT_CALL(
       listener_,
-      InvalidValue(
-          _, StringPiece("type.googleapis.com/google.protobuf.Duration"),
-          StringPiece("Field 'dur', Duration value exceeds limits")));
+      InvalidValue(_,
+                   StringPiece("type.googleapis.com/google.protobuf.Duration"),
+                   StringPiece("Field 'dur', Duration value exceeds limits")));
 
   ow_->StartObject("")->RenderString("dur", "0.1000000001s")->EndObject();
   CheckOutput(duration);
@@ -1574,12 +1560,12 @@ TEST_P(ProtoStreamObjectWriterTimestampDurationTest, DurationAcceptsNull) {
 
 class ProtoStreamObjectWriterStructTest
     : public BaseProtoStreamObjectWriterTest {
- protected:
+protected:
   ProtoStreamObjectWriterStructTest() { ResetProtoWriter(); }
 
   // Resets ProtoWriter with current set of options and other state.
   void ResetProtoWriter() {
-    std::vector<const Descriptor*> descriptors;
+    std::vector<const Descriptor *> descriptors;
     descriptors.push_back(StructType::descriptor());
     descriptors.push_back(google::protobuf::Struct::descriptor());
     ResetTypeInfo(descriptors);
@@ -1588,13 +1574,12 @@ class ProtoStreamObjectWriterStructTest
 
 INSTANTIATE_TEST_SUITE_P(DifferentTypeInfoSourceTest,
                          ProtoStreamObjectWriterStructTest,
-                         ::testing::Values(
-                             testing::USE_TYPE_RESOLVER));
+                         ::testing::Values(testing::USE_TYPE_RESOLVER));
 
 // TODO(skarvaje): Write tests for failure cases.
 TEST_P(ProtoStreamObjectWriterStructTest, StructRenderSuccess) {
   StructType struct_type;
-  google::protobuf::Struct* s = struct_type.mutable_object();
+  google::protobuf::Struct *s = struct_type.mutable_object();
   s->mutable_fields()->operator[]("k1").set_number_value(123);
   s->mutable_fields()->operator[]("k2").set_bool_value(true);
 
@@ -1621,9 +1606,8 @@ TEST_P(ProtoStreamObjectWriterStructTest, StructInvalidInputFailure) {
   StructType struct_type;
   EXPECT_CALL(
       listener_,
-      InvalidValue(
-          _, StringPiece("type.googleapis.com/google.protobuf.Struct"),
-          StringPiece("true")))
+      InvalidValue(_, StringPiece("type.googleapis.com/google.protobuf.Struct"),
+                   StringPiece("true")))
       .With(Args<0>(HasObjectLocation("object")));
 
   ow_->StartObject("")->RenderBool("object", true)->EndObject();
@@ -1653,10 +1637,10 @@ TEST_P(ProtoStreamObjectWriterStructTest, StructValuePreservesNull) {
 }
 
 TEST_P(ProtoStreamObjectWriterStructTest, SimpleRepeatedStructMapKeyTest) {
-  EXPECT_CALL(listener_,
-              InvalidName(_, StringPiece("gBike"),
-                          StringPiece(
-                              "Repeated map key: 'gBike' is already set.")));
+  EXPECT_CALL(
+      listener_,
+      InvalidName(_, StringPiece("gBike"),
+                  StringPiece("Repeated map key: 'gBike' is already set.")));
   ow_->StartObject("")
       ->StartObject("object")
       ->RenderString("gBike", "v1")
@@ -1699,7 +1683,7 @@ TEST_P(ProtoStreamObjectWriterStructTest, RepeatedStructMapObjectKeyTest) {
 
 TEST_P(ProtoStreamObjectWriterStructTest, OptionStructIntAsStringsTest) {
   StructType struct_type;
-  google::protobuf::Struct* s = struct_type.mutable_object();
+  google::protobuf::Struct *s = struct_type.mutable_object();
   s->mutable_fields()->operator[]("k1").set_string_value("123");
   s->mutable_fields()->operator[]("k2").set_bool_value(true);
   s->mutable_fields()->operator[]("k3").set_string_value("-222222222");
@@ -1721,7 +1705,7 @@ TEST_P(ProtoStreamObjectWriterStructTest, OptionStructIntAsStringsTest) {
 
 TEST_P(ProtoStreamObjectWriterStructTest, Struct32BitIntsAndFloatsTest) {
   StructType struct_type;
-  google::protobuf::Struct* s = struct_type.mutable_object();
+  google::protobuf::Struct *s = struct_type.mutable_object();
   s->mutable_fields()->operator[]("k1").set_number_value(1.5);
   s->mutable_fields()->operator[]("k2").set_number_value(100);
   s->mutable_fields()->operator[]("k3").set_number_value(100);
@@ -1740,7 +1724,7 @@ TEST_P(ProtoStreamObjectWriterStructTest, Struct32BitIntsAndFloatsTest) {
 TEST_P(ProtoStreamObjectWriterStructTest,
        Struct32BitIntsAndFloatsAsStringsTest) {
   StructType struct_type;
-  google::protobuf::Struct* s = struct_type.mutable_object();
+  google::protobuf::Struct *s = struct_type.mutable_object();
   s->mutable_fields()->operator[]("k1").set_string_value("1.5");
   s->mutable_fields()->operator[]("k2").set_string_value("100");
   s->mutable_fields()->operator[]("k3").set_string_value("100");
@@ -1768,9 +1752,9 @@ TEST_P(ProtoStreamObjectWriterStructTest, ValuePreservesNull) {
 }
 
 class ProtoStreamObjectWriterMapTest : public BaseProtoStreamObjectWriterTest {
- protected:
+protected:
   ProtoStreamObjectWriterMapTest() {
-    std::vector<const Descriptor*> descriptors;
+    std::vector<const Descriptor *> descriptors;
     descriptors.push_back(MapIn::descriptor());
     descriptors.push_back(google::protobuf::DoubleValue::descriptor());
     ResetTypeInfo(descriptors);
@@ -1779,16 +1763,15 @@ class ProtoStreamObjectWriterMapTest : public BaseProtoStreamObjectWriterTest {
 
 INSTANTIATE_TEST_SUITE_P(DifferentTypeInfoSourceTest,
                          ProtoStreamObjectWriterMapTest,
-                         ::testing::Values(
-                             testing::USE_TYPE_RESOLVER));
+                         ::testing::Values(testing::USE_TYPE_RESOLVER));
 
 TEST_P(ProtoStreamObjectWriterMapTest, MapShouldNotAcceptList) {
   MapIn mm;
   EXPECT_CALL(
       listener_,
-      InvalidValue(_, StringPiece("Map"),
-                   StringPiece(
-                       "Cannot bind a list to map for field 'map_input'.")));
+      InvalidValue(
+          _, StringPiece("Map"),
+          StringPiece("Cannot bind a list to map for field 'map_input'.")));
   ow_->StartObject("")
       ->StartList("map_input")
       ->RenderString("a", "b")
@@ -1858,9 +1841,9 @@ TEST_P(ProtoStreamObjectWriterMapTest, AnyInMap) {
 }
 
 class ProtoStreamObjectWriterAnyTest : public BaseProtoStreamObjectWriterTest {
- protected:
+protected:
   ProtoStreamObjectWriterAnyTest() {
-    std::vector<const Descriptor*> descriptors;
+    std::vector<const Descriptor *> descriptors;
     descriptors.push_back(AnyOut::descriptor());
     descriptors.push_back(Book::descriptor());
     descriptors.push_back(google::protobuf::Any::descriptor());
@@ -1876,12 +1859,11 @@ class ProtoStreamObjectWriterAnyTest : public BaseProtoStreamObjectWriterTest {
 
 INSTANTIATE_TEST_SUITE_P(DifferentTypeInfoSourceTest,
                          ProtoStreamObjectWriterAnyTest,
-                         ::testing::Values(
-                             testing::USE_TYPE_RESOLVER));
+                         ::testing::Values(testing::USE_TYPE_RESOLVER));
 
 TEST_P(ProtoStreamObjectWriterAnyTest, AnyRenderSuccess) {
   AnyOut any;
-  google::protobuf::Any* any_type = any.mutable_any();
+  google::protobuf::Any *any_type = any.mutable_any();
   any_type->set_type_url("type.googleapis.com/google.protobuf.DoubleValue");
   google::protobuf::DoubleValue d;
   d.set_value(40.2);
@@ -1898,7 +1880,7 @@ TEST_P(ProtoStreamObjectWriterAnyTest, AnyRenderSuccess) {
 
 TEST_P(ProtoStreamObjectWriterAnyTest, RecursiveAny) {
   AnyOut out;
-  ::google::protobuf::Any* any = out.mutable_any();
+  ::google::protobuf::Any *any = out.mutable_any();
   any->set_type_url("type.googleapis.com/google.protobuf.Any");
 
   ::google::protobuf::Any nested_any;
@@ -1926,7 +1908,7 @@ TEST_P(ProtoStreamObjectWriterAnyTest, RecursiveAny) {
 
 TEST_P(ProtoStreamObjectWriterAnyTest, DoubleRecursiveAny) {
   AnyOut out;
-  ::google::protobuf::Any* any = out.mutable_any();
+  ::google::protobuf::Any *any = out.mutable_any();
   any->set_type_url("type.googleapis.com/google.protobuf.Any");
 
   ::google::protobuf::Any nested_any;
@@ -2062,11 +2044,10 @@ TEST_P(ProtoStreamObjectWriterAnyTest, EmptyAnyFromEmptyObject) {
 TEST_P(ProtoStreamObjectWriterAnyTest, AnyWithoutTypeUrlFails1) {
   AnyOut any;
 
-  EXPECT_CALL(
-      listener_,
-      InvalidValue(_, StringPiece("Any"),
-                   StringPiece("Missing @type for any field in "
-                                     "proto_util_converter.testing.AnyOut")));
+  EXPECT_CALL(listener_,
+              InvalidValue(_, StringPiece("Any"),
+                           StringPiece("Missing @type for any field in "
+                                       "proto_util_converter.testing.AnyOut")));
 
   ow_->StartObject("")
       ->StartObject("any")
@@ -2080,11 +2061,10 @@ TEST_P(ProtoStreamObjectWriterAnyTest, AnyWithoutTypeUrlFails1) {
 TEST_P(ProtoStreamObjectWriterAnyTest, AnyWithoutTypeUrlFails2) {
   AnyOut any;
 
-  EXPECT_CALL(
-      listener_,
-      InvalidValue(_, StringPiece("Any"),
-                   StringPiece("Missing @type for any field in "
-                                     "proto_util_converter.testing.AnyOut")));
+  EXPECT_CALL(listener_,
+              InvalidValue(_, StringPiece("Any"),
+                           StringPiece("Missing @type for any field in "
+                                       "proto_util_converter.testing.AnyOut")));
 
   ow_->StartObject("")
       ->StartObject("any")
@@ -2098,11 +2078,10 @@ TEST_P(ProtoStreamObjectWriterAnyTest, AnyWithoutTypeUrlFails2) {
 TEST_P(ProtoStreamObjectWriterAnyTest, AnyWithoutTypeUrlFails3) {
   AnyOut any;
 
-  EXPECT_CALL(
-      listener_,
-      InvalidValue(_, StringPiece("Any"),
-                   StringPiece("Missing @type for any field in "
-                                     "proto_util_converter.testing.AnyOut")));
+  EXPECT_CALL(listener_,
+              InvalidValue(_, StringPiece("Any"),
+                           StringPiece("Missing @type for any field in "
+                                       "proto_util_converter.testing.AnyOut")));
 
   ow_->StartObject("")
       ->StartObject("any")
@@ -2115,13 +2094,12 @@ TEST_P(ProtoStreamObjectWriterAnyTest, AnyWithoutTypeUrlFails3) {
 TEST_P(ProtoStreamObjectWriterAnyTest, AnyWithInvalidTypeUrlFails) {
   AnyOut any;
 
-  EXPECT_CALL(
-      listener_,
-      InvalidValue(
-          _, StringPiece("Any"),
-          StringPiece("Invalid type URL, type URLs must be of the form "
-                            "'type.googleapis.com/<typename>', got: "
-                            "type.other.com/some.Type")));
+  EXPECT_CALL(listener_,
+              InvalidValue(
+                  _, StringPiece("Any"),
+                  StringPiece("Invalid type URL, type URLs must be of the form "
+                              "'type.googleapis.com/<typename>', got: "
+                              "type.other.com/some.Type")));
 
   ow_->StartObject("")
       ->StartObject("any")
@@ -2135,10 +2113,10 @@ TEST_P(ProtoStreamObjectWriterAnyTest, AnyWithInvalidTypeUrlFails) {
 TEST_P(ProtoStreamObjectWriterAnyTest, AnyWithUnknownTypeFails) {
   AnyOut any;
 
-  EXPECT_CALL(listener_,
-              InvalidValue(_, StringPiece("Any"),
-                           StringPiece(
-                               "Invalid type URL, unknown type: some.Type")));
+  EXPECT_CALL(
+      listener_,
+      InvalidValue(_, StringPiece("Any"),
+                   StringPiece("Invalid type URL, unknown type: some.Type")));
   ow_->StartObject("")
       ->StartObject("any")
       ->RenderString("@type", "type.googleapis.com/some.Type")
@@ -2153,8 +2131,7 @@ TEST_P(ProtoStreamObjectWriterAnyTest, AnyIncorrectInputTypeFails) {
 
   EXPECT_CALL(
       listener_,
-      InvalidValue(_,
-                   StringPiece("type.googleapis.com/google.protobuf.Any"),
+      InvalidValue(_, StringPiece("type.googleapis.com/google.protobuf.Any"),
                    StringPiece("1")));
   ow_->StartObject("")->RenderInt32("any", 1)->EndObject();
   CheckOutput(any);
@@ -2173,7 +2150,7 @@ TEST_P(ProtoStreamObjectWriterAnyTest, AnyWellKnownTypeErrorTest) {
                                       StringPiece("Invalid time format: ")));
 
   AnyOut any;
-  google::protobuf::Any* any_type = any.mutable_any();
+  google::protobuf::Any *any_type = any.mutable_any();
   any_type->set_type_url("type.googleapis.com/google.protobuf.Timestamp");
 
   ow_->StartObject("")
@@ -2195,7 +2172,7 @@ TEST_P(ProtoStreamObjectWriterAnyTest, AnyWellKnownTypeErrorTest) {
 // }
 TEST_P(ProtoStreamObjectWriterAnyTest, AnyWithNestedPrimitiveValue) {
   AnyOut out;
-  ::google::protobuf::Any* any = out.mutable_any();
+  ::google::protobuf::Any *any = out.mutable_any();
 
   ::google::protobuf::Value value;
   value.set_string_value("abc");
@@ -2222,7 +2199,7 @@ TEST_P(ProtoStreamObjectWriterAnyTest, AnyWithNestedPrimitiveValue) {
 // }
 TEST_P(ProtoStreamObjectWriterAnyTest, AnyWithNestedObjectValue) {
   AnyOut out;
-  ::google::protobuf::Any* any = out.mutable_any();
+  ::google::protobuf::Any *any = out.mutable_any();
 
   ::google::protobuf::Value value;
   (*value.mutable_struct_value()->mutable_fields())["foo"].set_string_value(
@@ -2250,7 +2227,7 @@ TEST_P(ProtoStreamObjectWriterAnyTest, AnyWithNestedObjectValue) {
 // }
 TEST_P(ProtoStreamObjectWriterAnyTest, AnyWithNestedArrayValue) {
   AnyOut out;
-  ::google::protobuf::Any* any = out.mutable_any();
+  ::google::protobuf::Any *any = out.mutable_any();
 
   ::google::protobuf::Value value;
   value.mutable_list_value()->add_values()->set_string_value("hello");
@@ -2284,7 +2261,7 @@ TEST_P(ProtoStreamObjectWriterAnyTest,
           _, StringPiece("Any"),
           StringPiece("Expect a \"value\" field for well-known types.")));
   AnyOut any;
-  google::protobuf::Any* any_type = any.mutable_any();
+  google::protobuf::Any *any_type = any.mutable_any();
   any_type->set_type_url("type.googleapis.com/google.protobuf.Value");
 
   ow_->StartObject("")
@@ -2311,7 +2288,7 @@ TEST_P(ProtoStreamObjectWriterAnyTest, AnyWellKnownTypesNoValueFieldForObject) {
           _, StringPiece("Any"),
           StringPiece("Expect a \"value\" field for well-known types.")));
   AnyOut any;
-  google::protobuf::Any* any_type = any.mutable_any();
+  google::protobuf::Any *any_type = any.mutable_any();
   any_type->set_type_url("type.googleapis.com/google.protobuf.Value");
 
   ow_->StartObject("")
@@ -2339,7 +2316,7 @@ TEST_P(ProtoStreamObjectWriterAnyTest, AnyWellKnownTypesNoValueFieldForArray) {
           _, StringPiece("Any"),
           StringPiece("Expect a \"value\" field for well-known types.")));
   AnyOut any;
-  google::protobuf::Any* any_type = any.mutable_any();
+  google::protobuf::Any *any_type = any.mutable_any();
   any_type->set_type_url("type.googleapis.com/google.protobuf.Value");
 
   ow_->StartObject("")
@@ -2362,11 +2339,10 @@ TEST_P(ProtoStreamObjectWriterAnyTest, AnyWellKnownTypesNoValueFieldForArray) {
 //   }
 // }
 TEST_P(ProtoStreamObjectWriterAnyTest, AnyWellKnownTypesExpectObjectForStruct) {
-  EXPECT_CALL(listener_,
-              InvalidValue(_, StringPiece("Any"),
-                           StringPiece("Expect a JSON object.")));
+  EXPECT_CALL(listener_, InvalidValue(_, StringPiece("Any"),
+                                      StringPiece("Expect a JSON object.")));
   AnyOut any;
-  google::protobuf::Any* any_type = any.mutable_any();
+  google::protobuf::Any *any_type = any.mutable_any();
   any_type->set_type_url("type.googleapis.com/google.protobuf.Struct");
 
   ow_->StartObject("")
@@ -2387,11 +2363,10 @@ TEST_P(ProtoStreamObjectWriterAnyTest, AnyWellKnownTypesExpectObjectForStruct) {
 //   }
 // }
 TEST_P(ProtoStreamObjectWriterAnyTest, AnyWellKnownTypesExpectObjectForAny) {
-  EXPECT_CALL(listener_,
-              InvalidValue(_, StringPiece("Any"),
-                           StringPiece("Expect a JSON object.")));
+  EXPECT_CALL(listener_, InvalidValue(_, StringPiece("Any"),
+                                      StringPiece("Expect a JSON object.")));
   AnyOut any;
-  google::protobuf::Any* any_type = any.mutable_any();
+  google::protobuf::Any *any_type = any.mutable_any();
   any_type->set_type_url("type.googleapis.com/google.protobuf.Any");
 
   ow_->StartObject("")
@@ -2510,9 +2485,9 @@ TEST_P(ProtoStreamObjectWriterAnyTest, WrapperInAnyAcceptsNull) {
 
 class ProtoStreamObjectWriterFieldMaskTest
     : public BaseProtoStreamObjectWriterTest {
- protected:
+protected:
   ProtoStreamObjectWriterFieldMaskTest() {
-    std::vector<const Descriptor*> descriptors;
+    std::vector<const Descriptor *> descriptors;
     descriptors.push_back(FieldMaskTest::descriptor());
     descriptors.push_back(google::protobuf::FieldMask::descriptor());
     ResetTypeInfo(descriptors);
@@ -2521,8 +2496,7 @@ class ProtoStreamObjectWriterFieldMaskTest
 
 INSTANTIATE_TEST_SUITE_P(DifferentTypeInfoSourceTest,
                          ProtoStreamObjectWriterFieldMaskTest,
-                         ::testing::Values(
-                             testing::USE_TYPE_RESOLVER));
+                         ::testing::Values(testing::USE_TYPE_RESOLVER));
 
 TEST_P(ProtoStreamObjectWriterFieldMaskTest, SimpleFieldMaskTest) {
   FieldMaskTest expected;
@@ -2555,7 +2529,7 @@ TEST_P(ProtoStreamObjectWriterFieldMaskTest, MutipleMasksInCompactForm) {
 TEST_P(ProtoStreamObjectWriterFieldMaskTest, RepeatedFieldMaskTest) {
   FieldMaskTest expected;
   expected.set_id("1");
-  google::protobuf::FieldMask* mask = expected.add_repeated_mask();
+  google::protobuf::FieldMask *mask = expected.add_repeated_mask();
   mask->add_paths("field1");
   mask->add_paths("field2");
   expected.add_repeated_mask()->add_paths("field3");
@@ -2599,7 +2573,7 @@ TEST_P(ProtoStreamObjectWriterFieldMaskTest, MaskUsingApiaryStyleShouldWork) {
   ow_->StartList("repeated_mask");
 
   ow_->RenderString("", "a(field1,field2)");
-  google::protobuf::FieldMask* mask = expected.add_repeated_mask();
+  google::protobuf::FieldMask *mask = expected.add_repeated_mask();
   mask->add_paths("a.field1");
   mask->add_paths("a.field2");
 
@@ -2650,7 +2624,7 @@ TEST_P(ProtoStreamObjectWriterFieldMaskTest, MoreCloseThanOpenParentheses) {
       InvalidValue(
           _, StringPiece("type.googleapis.com/google.protobuf.FieldMask"),
           StringPiece("Field 'single_mask', Invalid FieldMask 'a(b,c))'. "
-                            "Cannot find matching '(' for all ')'.")));
+                      "Cannot find matching '(' for all ')'.")));
 
   ow_->StartObject("");
   ow_->RenderString("id", "1");
@@ -2695,10 +2669,9 @@ TEST_P(ProtoStreamObjectWriterFieldMaskTest,
       listener_,
       InvalidValue(
           _, StringPiece("type.googleapis.com/google.protobuf.FieldMask"),
-          StringPiece(
-              "Field 'single_mask', Invalid FieldMask "
-              "'path.to.map[\"key1\"]a,path.to.map[\"key2\"]'. "
-              "Map keys should be at the end of a path segment.")));
+          StringPiece("Field 'single_mask', Invalid FieldMask "
+                      "'path.to.map[\"key1\"]a,path.to.map[\"key2\"]'. "
+                      "Map keys should be at the end of a path segment.")));
 
   ow_->StartObject("");
   ow_->RenderString("single_mask",
@@ -2709,11 +2682,11 @@ TEST_P(ProtoStreamObjectWriterFieldMaskTest,
 TEST_P(ProtoStreamObjectWriterFieldMaskTest, MapKeyMustEnd) {
   EXPECT_CALL(
       listener_,
-      InvalidValue(
-          _, StringPiece("type.googleapis.com/google.protobuf.FieldMask"),
-          StringPiece("Field 'single_mask', Invalid FieldMask "
-                            "'path.to.map[\"key1\"'. Map keys should be "
-                            "represented as [\"some_key\"].")));
+      InvalidValue(_,
+                   StringPiece("type.googleapis.com/google.protobuf.FieldMask"),
+                   StringPiece("Field 'single_mask', Invalid FieldMask "
+                               "'path.to.map[\"key1\"'. Map keys should be "
+                               "represented as [\"some_key\"].")));
 
   ow_->StartObject("");
   ow_->RenderString("single_mask", "path.to.map[\"key1\"");
@@ -2723,11 +2696,11 @@ TEST_P(ProtoStreamObjectWriterFieldMaskTest, MapKeyMustEnd) {
 TEST_P(ProtoStreamObjectWriterFieldMaskTest, MapKeyMustBeEscapedCorrectly) {
   EXPECT_CALL(
       listener_,
-      InvalidValue(
-          _, StringPiece("type.googleapis.com/google.protobuf.FieldMask"),
-          StringPiece("Field 'single_mask', Invalid FieldMask "
-                            "'path.to.map[\"ke\"y1\"]'. Map keys should be "
-                            "represented as [\"some_key\"].")));
+      InvalidValue(_,
+                   StringPiece("type.googleapis.com/google.protobuf.FieldMask"),
+                   StringPiece("Field 'single_mask', Invalid FieldMask "
+                               "'path.to.map[\"ke\"y1\"]'. Map keys should be "
+                               "represented as [\"some_key\"].")));
 
   ow_->StartObject("");
   ow_->RenderString("single_mask", "path.to.map[\"ke\"y1\"]");
@@ -2763,9 +2736,9 @@ TEST_P(ProtoStreamObjectWriterFieldMaskTest, FieldMaskAcceptsNull) {
 
 class ProtoStreamObjectWriterWrappersTest
     : public BaseProtoStreamObjectWriterTest {
- protected:
+protected:
   ProtoStreamObjectWriterWrappersTest() {
-    std::vector<const Descriptor*> descriptors;
+    std::vector<const Descriptor *> descriptors;
     descriptors.push_back(Int32Wrapper::descriptor());
     descriptors.push_back(google::protobuf::Int32Value::descriptor());
     ResetTypeInfo(descriptors);
@@ -2774,8 +2747,7 @@ class ProtoStreamObjectWriterWrappersTest
 
 INSTANTIATE_TEST_SUITE_P(DifferentTypeInfoSourceTest,
                          ProtoStreamObjectWriterWrappersTest,
-                         ::testing::Values(
-                             testing::USE_TYPE_RESOLVER));
+                         ::testing::Values(testing::USE_TYPE_RESOLVER));
 
 TEST_P(ProtoStreamObjectWriterWrappersTest, WrapperAcceptsNull) {
   Int32Wrapper wrapper;
@@ -2786,9 +2758,9 @@ TEST_P(ProtoStreamObjectWriterWrappersTest, WrapperAcceptsNull) {
 
 class ProtoStreamObjectWriterOneOfsTest
     : public BaseProtoStreamObjectWriterTest {
- protected:
+protected:
   ProtoStreamObjectWriterOneOfsTest() {
-    std::vector<const Descriptor*> descriptors;
+    std::vector<const Descriptor *> descriptors;
     descriptors.push_back(OneOfsRequest::descriptor());
     descriptors.push_back(google::protobuf::Struct::descriptor());
     ResetTypeInfo(descriptors);
@@ -2797,8 +2769,7 @@ class ProtoStreamObjectWriterOneOfsTest
 
 INSTANTIATE_TEST_SUITE_P(DifferentTypeInfoSourceTest,
                          ProtoStreamObjectWriterOneOfsTest,
-                         ::testing::Values(
-                             testing::USE_TYPE_RESOLVER));
+                         ::testing::Values(testing::USE_TYPE_RESOLVER));
 
 TEST_P(ProtoStreamObjectWriterOneOfsTest,
        MultipleOneofsFailForPrimitiveTypesTest) {
@@ -2818,10 +2789,10 @@ TEST_P(ProtoStreamObjectWriterOneOfsTest,
 TEST_P(ProtoStreamObjectWriterOneOfsTest,
        MultipleOneofsFailForMessageTypesPrimitiveFirstTest) {
   // Test for setting primitive oneof field first and then message field.
-  EXPECT_CALL(listener_, InvalidValue(_, StringPiece("oneof"),
-                                      StringPiece(
-                                          "oneof field 'data' is already set. "
-                                          "Cannot set 'messageData'")));
+  EXPECT_CALL(listener_,
+              InvalidValue(_, StringPiece("oneof"),
+                           StringPiece("oneof field 'data' is already set. "
+                                       "Cannot set 'messageData'")));
 
   // JSON: { "strData": "blah", "messageData": { "dataValue": 123 } }
   ow_->StartObject("");
@@ -2835,10 +2806,10 @@ TEST_P(ProtoStreamObjectWriterOneOfsTest,
 TEST_P(ProtoStreamObjectWriterOneOfsTest,
        MultipleOneofsFailForMessageTypesMessageFirstTest) {
   // Test for setting message oneof field first and then primitive field.
-  EXPECT_CALL(listener_, InvalidValue(_, StringPiece("oneof"),
-                                      StringPiece(
-                                          "oneof field 'data' is already set. "
-                                          "Cannot set 'strData'")));
+  EXPECT_CALL(listener_,
+              InvalidValue(_, StringPiece("oneof"),
+                           StringPiece("oneof field 'data' is already set. "
+                                       "Cannot set 'strData'")));
 
   // JSON: { "messageData": { "dataValue": 123 }, "strData": "blah" }
   ow_->StartObject("");
@@ -2851,10 +2822,10 @@ TEST_P(ProtoStreamObjectWriterOneOfsTest,
 
 TEST_P(ProtoStreamObjectWriterOneOfsTest,
        MultipleOneofsFailForStructTypesPrimitiveFirstTest) {
-  EXPECT_CALL(listener_, InvalidValue(_, StringPiece("oneof"),
-                                      StringPiece(
-                                          "oneof field 'data' is already set. "
-                                          "Cannot set 'structData'")));
+  EXPECT_CALL(listener_,
+              InvalidValue(_, StringPiece("oneof"),
+                           StringPiece("oneof field 'data' is already set. "
+                                       "Cannot set 'structData'")));
 
   // JSON: { "strData": "blah", "structData": { "a": "b" } }
   ow_->StartObject("");
@@ -2867,10 +2838,10 @@ TEST_P(ProtoStreamObjectWriterOneOfsTest,
 
 TEST_P(ProtoStreamObjectWriterOneOfsTest,
        MultipleOneofsFailForStructTypesStructFirstTest) {
-  EXPECT_CALL(listener_, InvalidValue(_, StringPiece("oneof"),
-                                      StringPiece(
-                                          "oneof field 'data' is already set. "
-                                          "Cannot set 'strData'")));
+  EXPECT_CALL(listener_,
+              InvalidValue(_, StringPiece("oneof"),
+                           StringPiece("oneof field 'data' is already set. "
+                                       "Cannot set 'strData'")));
 
   // JSON: { "structData": { "a": "b" }, "strData": "blah" }
   ow_->StartObject("");
@@ -2883,10 +2854,10 @@ TEST_P(ProtoStreamObjectWriterOneOfsTest,
 
 TEST_P(ProtoStreamObjectWriterOneOfsTest,
        MultipleOneofsFailForStructValueTypesTest) {
-  EXPECT_CALL(listener_, InvalidValue(_, StringPiece("oneof"),
-                                      StringPiece(
-                                          "oneof field 'data' is already set. "
-                                          "Cannot set 'valueData'")));
+  EXPECT_CALL(listener_,
+              InvalidValue(_, StringPiece("oneof"),
+                           StringPiece("oneof field 'data' is already set. "
+                                       "Cannot set 'valueData'")));
 
   // JSON: { "messageData": { "dataValue": 123 }, "valueData": { "a": "b" } }
   ow_->StartObject("");
@@ -2901,10 +2872,10 @@ TEST_P(ProtoStreamObjectWriterOneOfsTest,
 
 TEST_P(ProtoStreamObjectWriterOneOfsTest,
        MultipleOneofsFailForWellKnownTypesPrimitiveFirstTest) {
-  EXPECT_CALL(listener_, InvalidValue(_, StringPiece("oneof"),
-                                      StringPiece(
-                                          "oneof field 'data' is already set. "
-                                          "Cannot set 'tsData'")));
+  EXPECT_CALL(listener_,
+              InvalidValue(_, StringPiece("oneof"),
+                           StringPiece("oneof field 'data' is already set. "
+                                       "Cannot set 'tsData'")));
 
   // JSON: { "intData": 123, "tsData": "1970-01-02T01:00:00.000Z" }
   ow_->StartObject("");
@@ -2915,10 +2886,10 @@ TEST_P(ProtoStreamObjectWriterOneOfsTest,
 
 TEST_P(ProtoStreamObjectWriterOneOfsTest,
        MultipleOneofsFailForWellKnownTypesWktFirstTest) {
-  EXPECT_CALL(listener_, InvalidValue(_, StringPiece("oneof"),
-                                      StringPiece(
-                                          "oneof field 'data' is already set. "
-                                          "Cannot set 'intData'")));
+  EXPECT_CALL(listener_,
+              InvalidValue(_, StringPiece("oneof"),
+                           StringPiece("oneof field 'data' is already set. "
+                                       "Cannot set 'intData'")));
 
   // JSON: { "tsData": "1970-01-02T01:00:00.000Z", "intData": 123 }
   ow_->StartObject("");
@@ -2929,10 +2900,10 @@ TEST_P(ProtoStreamObjectWriterOneOfsTest,
 
 TEST_P(ProtoStreamObjectWriterOneOfsTest,
        MultipleOneofsFailForWellKnownTypesAndMessageTest) {
-  EXPECT_CALL(listener_, InvalidValue(_, StringPiece("oneof"),
-                                      StringPiece(
-                                          "oneof field 'data' is already set. "
-                                          "Cannot set 'messageData'")));
+  EXPECT_CALL(listener_,
+              InvalidValue(_, StringPiece("oneof"),
+                           StringPiece("oneof field 'data' is already set. "
+                                       "Cannot set 'messageData'")));
 
   // JSON: { "tsData": "1970-01-02T01:00:00.000Z",
   //         "messageData": { "dataValue": 123 } }
@@ -2946,10 +2917,10 @@ TEST_P(ProtoStreamObjectWriterOneOfsTest,
 
 TEST_P(ProtoStreamObjectWriterOneOfsTest,
        MultipleOneofsFailForOneofWithinAnyTest) {
-  EXPECT_CALL(listener_, InvalidValue(_, StringPiece("oneof"),
-                                      StringPiece(
-                                          "oneof field 'data' is already set. "
-                                          "Cannot set 'intData'")));
+  EXPECT_CALL(listener_,
+              InvalidValue(_, StringPiece("oneof"),
+                           StringPiece("oneof field 'data' is already set. "
+                                       "Cannot set 'intData'")));
 
   // JSON:
   // { "anyData":
@@ -2970,7 +2941,7 @@ TEST_P(ProtoStreamObjectWriterOneOfsTest,
   ow_->EndObject();
 }
 
-}  // namespace converter
-}  // namespace util
-}  // namespace protobuf
-}  // namespace google
+} // namespace converter
+} // namespace util
+} // namespace protobuf
+} // namespace google

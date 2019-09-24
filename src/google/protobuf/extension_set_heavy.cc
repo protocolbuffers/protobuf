@@ -37,19 +37,18 @@
 
 #include <google/protobuf/extension_set.h>
 
-#include <google/protobuf/stubs/casts.h>
+#include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/extension_set_inl.h>
-#include <google/protobuf/parse_context.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
-#include <google/protobuf/descriptor.h>
 #include <google/protobuf/message.h>
+#include <google/protobuf/parse_context.h>
 #include <google/protobuf/repeated_field.h>
+#include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/unknown_field_set.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/wire_format_lite.h>
-
 
 #include <google/protobuf/port_def.inc>
 
@@ -59,18 +58,19 @@ namespace internal {
 
 // A FieldSkipper used to store unknown MessageSet fields into UnknownFieldSet.
 class MessageSetFieldSkipper : public UnknownFieldSetFieldSkipper {
- public:
-  explicit MessageSetFieldSkipper(UnknownFieldSet* unknown_fields)
+public:
+  explicit MessageSetFieldSkipper(UnknownFieldSet *unknown_fields)
       : UnknownFieldSetFieldSkipper(unknown_fields) {}
   virtual ~MessageSetFieldSkipper() {}
 
-  virtual bool SkipMessageSetField(io::CodedInputStream* input,
+  virtual bool SkipMessageSetField(io::CodedInputStream *input,
                                    int field_number);
 };
-bool MessageSetFieldSkipper::SkipMessageSetField(io::CodedInputStream* input,
+bool MessageSetFieldSkipper::SkipMessageSetField(io::CodedInputStream *input,
                                                  int field_number) {
   uint32 length;
-  if (!input->ReadVarint32(&length)) return false;
+  if (!input->ReadVarint32(&length))
+    return false;
   if (unknown_fields_ == NULL) {
     return input->Skip(length);
   } else {
@@ -79,30 +79,29 @@ bool MessageSetFieldSkipper::SkipMessageSetField(io::CodedInputStream* input,
   }
 }
 
-
 // Implementation of ExtensionFinder which finds extensions in a given
 // DescriptorPool, using the given MessageFactory to construct sub-objects.
 // This class is implemented in extension_set_heavy.cc.
 class DescriptorPoolExtensionFinder : public ExtensionFinder {
- public:
-  DescriptorPoolExtensionFinder(const DescriptorPool* pool,
-                                MessageFactory* factory,
-                                const Descriptor* containing_type)
+public:
+  DescriptorPoolExtensionFinder(const DescriptorPool *pool,
+                                MessageFactory *factory,
+                                const Descriptor *containing_type)
       : pool_(pool), factory_(factory), containing_type_(containing_type) {}
   ~DescriptorPoolExtensionFinder() override {}
 
-  bool Find(int number, ExtensionInfo* output) override;
+  bool Find(int number, ExtensionInfo *output) override;
 
- private:
-  const DescriptorPool* pool_;
-  MessageFactory* factory_;
-  const Descriptor* containing_type_;
+private:
+  const DescriptorPool *pool_;
+  MessageFactory *factory_;
+  const Descriptor *containing_type_;
 };
 
 void ExtensionSet::AppendToList(
-    const Descriptor* containing_type, const DescriptorPool* pool,
-    std::vector<const FieldDescriptor*>* output) const {
-  ForEach([containing_type, pool, &output](int number, const Extension& ext) {
+    const Descriptor *containing_type, const DescriptorPool *pool,
+    std::vector<const FieldDescriptor *> *output) const {
+  ForEach([containing_type, pool, &output](int number, const Extension &ext) {
     bool has = false;
     if (ext.is_repeated) {
       has = ext.GetSize() > 0;
@@ -140,16 +139,17 @@ inline WireFormatLite::FieldType field_type(FieldType type) {
   return static_cast<WireFormatLite::FieldType>(type);
 }
 
-#define GOOGLE_DCHECK_TYPE(EXTENSION, LABEL, CPPTYPE)                         \
-  GOOGLE_DCHECK_EQ((EXTENSION).is_repeated ? FieldDescriptor::LABEL_REPEATED  \
-                                    : FieldDescriptor::LABEL_OPTIONAL, \
-            FieldDescriptor::LABEL_##LABEL);                           \
-  GOOGLE_DCHECK_EQ(cpp_type((EXTENSION).type), FieldDescriptor::CPPTYPE_##CPPTYPE)
+#define GOOGLE_DCHECK_TYPE(EXTENSION, LABEL, CPPTYPE)                          \
+  GOOGLE_DCHECK_EQ((EXTENSION).is_repeated ? FieldDescriptor::LABEL_REPEATED   \
+                                           : FieldDescriptor::LABEL_OPTIONAL,  \
+                   FieldDescriptor::LABEL_##LABEL);                            \
+  GOOGLE_DCHECK_EQ(cpp_type((EXTENSION).type),                                 \
+                   FieldDescriptor::CPPTYPE_##CPPTYPE)
 
-const MessageLite& ExtensionSet::GetMessage(int number,
-                                            const Descriptor* message_type,
-                                            MessageFactory* factory) const {
-  const Extension* extension = FindOrNull(number);
+const MessageLite &ExtensionSet::GetMessage(int number,
+                                            const Descriptor *message_type,
+                                            MessageFactory *factory) const {
+  const Extension *extension = FindOrNull(number);
   if (extension == NULL || extension->is_cleared) {
     // Not present.  Return the default value.
     return *factory->GetPrototype(message_type);
@@ -164,15 +164,16 @@ const MessageLite& ExtensionSet::GetMessage(int number,
   }
 }
 
-MessageLite* ExtensionSet::MutableMessage(const FieldDescriptor* descriptor,
-                                          MessageFactory* factory) {
-  Extension* extension;
+MessageLite *ExtensionSet::MutableMessage(const FieldDescriptor *descriptor,
+                                          MessageFactory *factory) {
+  Extension *extension;
   if (MaybeNewExtension(descriptor->number(), descriptor, &extension)) {
     extension->type = descriptor->type();
-    GOOGLE_DCHECK_EQ(cpp_type(extension->type), FieldDescriptor::CPPTYPE_MESSAGE);
+    GOOGLE_DCHECK_EQ(cpp_type(extension->type),
+                     FieldDescriptor::CPPTYPE_MESSAGE);
     extension->is_repeated = false;
     extension->is_packed = false;
-    const MessageLite* prototype =
+    const MessageLite *prototype =
         factory->GetPrototype(descriptor->message_type());
     extension->is_lazy = false;
     extension->message_value = prototype->New(arena_);
@@ -190,15 +191,15 @@ MessageLite* ExtensionSet::MutableMessage(const FieldDescriptor* descriptor,
   }
 }
 
-MessageLite* ExtensionSet::ReleaseMessage(const FieldDescriptor* descriptor,
-                                          MessageFactory* factory) {
-  Extension* extension = FindOrNull(descriptor->number());
+MessageLite *ExtensionSet::ReleaseMessage(const FieldDescriptor *descriptor,
+                                          MessageFactory *factory) {
+  Extension *extension = FindOrNull(descriptor->number());
   if (extension == NULL) {
     // Not present.  Return NULL.
     return NULL;
   } else {
     GOOGLE_DCHECK_TYPE(*extension, OPTIONAL, MESSAGE);
-    MessageLite* ret = NULL;
+    MessageLite *ret = NULL;
     if (extension->is_lazy) {
       ret = extension->lazymessage_value->ReleaseMessage(
           *factory->GetPrototype(descriptor->message_type()));
@@ -218,15 +219,16 @@ MessageLite* ExtensionSet::ReleaseMessage(const FieldDescriptor* descriptor,
   }
 }
 
-MessageLite* ExtensionSet::UnsafeArenaReleaseMessage(
-    const FieldDescriptor* descriptor, MessageFactory* factory) {
-  Extension* extension = FindOrNull(descriptor->number());
+MessageLite *
+ExtensionSet::UnsafeArenaReleaseMessage(const FieldDescriptor *descriptor,
+                                        MessageFactory *factory) {
+  Extension *extension = FindOrNull(descriptor->number());
   if (extension == NULL) {
     // Not present.  Return NULL.
     return NULL;
   } else {
     GOOGLE_DCHECK_TYPE(*extension, OPTIONAL, MESSAGE);
-    MessageLite* ret = NULL;
+    MessageLite *ret = NULL;
     if (extension->is_lazy) {
       ret = extension->lazymessage_value->UnsafeArenaReleaseMessage(
           *factory->GetPrototype(descriptor->message_type()));
@@ -241,33 +243,33 @@ MessageLite* ExtensionSet::UnsafeArenaReleaseMessage(
   }
 }
 
-ExtensionSet::Extension* ExtensionSet::MaybeNewRepeatedExtension(
-    const FieldDescriptor* descriptor) {
-  Extension* extension;
+ExtensionSet::Extension *
+ExtensionSet::MaybeNewRepeatedExtension(const FieldDescriptor *descriptor) {
+  Extension *extension;
   if (MaybeNewExtension(descriptor->number(), descriptor, &extension)) {
     extension->type = descriptor->type();
-    GOOGLE_DCHECK_EQ(cpp_type(extension->type), FieldDescriptor::CPPTYPE_MESSAGE);
+    GOOGLE_DCHECK_EQ(cpp_type(extension->type),
+                     FieldDescriptor::CPPTYPE_MESSAGE);
     extension->is_repeated = true;
     extension->repeated_message_value =
-        Arena::CreateMessage<RepeatedPtrField<MessageLite> >(arena_);
+        Arena::CreateMessage<RepeatedPtrField<MessageLite>>(arena_);
   } else {
     GOOGLE_DCHECK_TYPE(*extension, REPEATED, MESSAGE);
   }
   return extension;
 }
 
-MessageLite* ExtensionSet::AddMessage(const FieldDescriptor* descriptor,
-                                      MessageFactory* factory) {
-  Extension* extension = MaybeNewRepeatedExtension(descriptor);
+MessageLite *ExtensionSet::AddMessage(const FieldDescriptor *descriptor,
+                                      MessageFactory *factory) {
+  Extension *extension = MaybeNewRepeatedExtension(descriptor);
 
   // RepeatedPtrField<Message> does not know how to Add() since it cannot
   // allocate an abstract object, so we have to be tricky.
-  MessageLite* result =
-      reinterpret_cast<internal::RepeatedPtrFieldBase*>(
-          extension->repeated_message_value)
-          ->AddFromCleared<GenericTypeHandler<MessageLite> >();
+  MessageLite *result = reinterpret_cast<internal::RepeatedPtrFieldBase *>(
+                            extension->repeated_message_value)
+                            ->AddFromCleared<GenericTypeHandler<MessageLite>>();
   if (result == NULL) {
-    const MessageLite* prototype;
+    const MessageLite *prototype;
     if (extension->repeated_message_value->size() == 0) {
       prototype = factory->GetPrototype(descriptor->message_type());
       GOOGLE_CHECK(prototype != NULL);
@@ -280,20 +282,20 @@ MessageLite* ExtensionSet::AddMessage(const FieldDescriptor* descriptor,
   return result;
 }
 
-void ExtensionSet::AddAllocatedMessage(const FieldDescriptor* descriptor,
-                                       MessageLite* new_entry) {
-  Extension* extension = MaybeNewRepeatedExtension(descriptor);
+void ExtensionSet::AddAllocatedMessage(const FieldDescriptor *descriptor,
+                                       MessageLite *new_entry) {
+  Extension *extension = MaybeNewRepeatedExtension(descriptor);
 
   extension->repeated_message_value->AddAllocated(new_entry);
 }
 
-static bool ValidateEnumUsingDescriptor(const void* arg, int number) {
-  return reinterpret_cast<const EnumDescriptor*>(arg)->FindValueByNumber(
+static bool ValidateEnumUsingDescriptor(const void *arg, int number) {
+  return reinterpret_cast<const EnumDescriptor *>(arg)->FindValueByNumber(
              number) != NULL;
 }
 
-bool DescriptorPoolExtensionFinder::Find(int number, ExtensionInfo* output) {
-  const FieldDescriptor* extension =
+bool DescriptorPoolExtensionFinder::Find(int number, ExtensionInfo *output) {
+  const FieldDescriptor *extension =
       pool_->FindExtensionByNumber(containing_type_, number);
   if (extension == NULL) {
     return false;
@@ -317,12 +319,11 @@ bool DescriptorPoolExtensionFinder::Find(int number, ExtensionInfo* output) {
   }
 }
 
-
 bool ExtensionSet::FindExtension(int wire_type, uint32 field,
-                                 const Message* containing_type,
-                                 const internal::ParseContext* ctx,
-                                 ExtensionInfo* extension,
-                                 bool* was_packed_on_wire) {
+                                 const Message *containing_type,
+                                 const internal::ParseContext *ctx,
+                                 ExtensionInfo *extension,
+                                 bool *was_packed_on_wire) {
   if (ctx->data().pool == nullptr) {
     GeneratedExtensionFinder finder(containing_type);
     if (!FindExtensionInfoFromFieldNumber(wire_type, field, &finder, extension,
@@ -340,10 +341,11 @@ bool ExtensionSet::FindExtension(int wire_type, uint32 field,
   return true;
 }
 
-const char* ExtensionSet::ParseField(
-    uint64 tag, const char* ptr, const Message* containing_type,
-    internal::InternalMetadataWithArena* metadata,
-    internal::ParseContext* ctx) {
+const char *
+ExtensionSet::ParseField(uint64 tag, const char *ptr,
+                         const Message *containing_type,
+                         internal::InternalMetadataWithArena *metadata,
+                         internal::ParseContext *ctx) {
   int number = tag >> 3;
   bool was_packed_on_wire;
   ExtensionInfo extension;
@@ -355,23 +357,24 @@ const char* ExtensionSet::ParseField(
                                      metadata, ptr, ctx);
 }
 
-const char* ExtensionSet::ParseFieldMaybeLazily(
-    uint64 tag, const char* ptr, const Message* containing_type,
-    internal::InternalMetadataWithArena* metadata,
-    internal::ParseContext* ctx) {
+const char *ExtensionSet::ParseFieldMaybeLazily(
+    uint64 tag, const char *ptr, const Message *containing_type,
+    internal::InternalMetadataWithArena *metadata,
+    internal::ParseContext *ctx) {
   return ParseField(tag, ptr, containing_type, metadata, ctx);
 }
 
-const char* ExtensionSet::ParseMessageSetItem(
-    const char* ptr, const Message* containing_type,
-    internal::InternalMetadataWithArena* metadata,
-    internal::ParseContext* ctx) {
+const char *
+ExtensionSet::ParseMessageSetItem(const char *ptr,
+                                  const Message *containing_type,
+                                  internal::InternalMetadataWithArena *metadata,
+                                  internal::ParseContext *ctx) {
   return ParseMessageSetItemTmpl(ptr, containing_type, metadata, ctx);
 }
 
-bool ExtensionSet::ParseField(uint32 tag, io::CodedInputStream* input,
-                              const Message* containing_type,
-                              UnknownFieldSet* unknown_fields) {
+bool ExtensionSet::ParseField(uint32 tag, io::CodedInputStream *input,
+                              const Message *containing_type,
+                              UnknownFieldSet *unknown_fields) {
   UnknownFieldSetFieldSkipper skipper(unknown_fields);
   if (input->GetExtensionPool() == NULL) {
     GeneratedExtensionFinder finder(containing_type);
@@ -384,9 +387,9 @@ bool ExtensionSet::ParseField(uint32 tag, io::CodedInputStream* input,
   }
 }
 
-bool ExtensionSet::ParseMessageSet(io::CodedInputStream* input,
-                                   const Message* containing_type,
-                                   UnknownFieldSet* unknown_fields) {
+bool ExtensionSet::ParseMessageSet(io::CodedInputStream *input,
+                                   const Message *containing_type,
+                                   UnknownFieldSet *unknown_fields) {
   MessageSetFieldSkipper skipper(unknown_fields);
   if (input->GetExtensionPool() == NULL) {
     GeneratedExtensionFinder finder(containing_type);
@@ -405,25 +408,25 @@ int ExtensionSet::SpaceUsedExcludingSelf() const {
 
 size_t ExtensionSet::SpaceUsedExcludingSelfLong() const {
   size_t total_size = Size() * sizeof(KeyValue);
-  ForEach([&total_size](int /* number */, const Extension& ext) {
+  ForEach([&total_size](int /* number */, const Extension &ext) {
     total_size += ext.SpaceUsedExcludingSelfLong();
   });
   return total_size;
 }
 
 inline size_t ExtensionSet::RepeatedMessage_SpaceUsedExcludingSelfLong(
-    RepeatedPtrFieldBase* field) {
-  return field->SpaceUsedExcludingSelfLong<GenericTypeHandler<Message> >();
+    RepeatedPtrFieldBase *field) {
+  return field->SpaceUsedExcludingSelfLong<GenericTypeHandler<Message>>();
 }
 
 size_t ExtensionSet::Extension::SpaceUsedExcludingSelfLong() const {
   size_t total_size = 0;
   if (is_repeated) {
     switch (cpp_type(type)) {
-#define HANDLE_TYPE(UPPERCASE, LOWERCASE)                                     \
-  case FieldDescriptor::CPPTYPE_##UPPERCASE:                                  \
-    total_size += sizeof(*repeated_##LOWERCASE##_value) +                     \
-                  repeated_##LOWERCASE##_value->SpaceUsedExcludingSelfLong(); \
+#define HANDLE_TYPE(UPPERCASE, LOWERCASE)                                      \
+  case FieldDescriptor::CPPTYPE_##UPPERCASE:                                   \
+    total_size += sizeof(*repeated_##LOWERCASE##_value) +                      \
+                  repeated_##LOWERCASE##_value->SpaceUsedExcludingSelfLong();  \
     break
 
       HANDLE_TYPE(INT32, int32);
@@ -437,40 +440,40 @@ size_t ExtensionSet::Extension::SpaceUsedExcludingSelfLong() const {
       HANDLE_TYPE(STRING, string);
 #undef HANDLE_TYPE
 
-      case FieldDescriptor::CPPTYPE_MESSAGE:
-        // repeated_message_value is actually a RepeatedPtrField<MessageLite>,
-        // but MessageLite has no SpaceUsedLong(), so we must directly call
-        // RepeatedPtrFieldBase::SpaceUsedExcludingSelfLong() with a different
-        // type handler.
-        total_size += sizeof(*repeated_message_value) +
-                      RepeatedMessage_SpaceUsedExcludingSelfLong(
-                          reinterpret_cast<internal::RepeatedPtrFieldBase*>(
-                              repeated_message_value));
-        break;
+    case FieldDescriptor::CPPTYPE_MESSAGE:
+      // repeated_message_value is actually a RepeatedPtrField<MessageLite>,
+      // but MessageLite has no SpaceUsedLong(), so we must directly call
+      // RepeatedPtrFieldBase::SpaceUsedExcludingSelfLong() with a different
+      // type handler.
+      total_size += sizeof(*repeated_message_value) +
+                    RepeatedMessage_SpaceUsedExcludingSelfLong(
+                        reinterpret_cast<internal::RepeatedPtrFieldBase *>(
+                            repeated_message_value));
+      break;
     }
   } else {
     switch (cpp_type(type)) {
-      case FieldDescriptor::CPPTYPE_STRING:
-        total_size += sizeof(*string_value) +
-                      StringSpaceUsedExcludingSelfLong(*string_value);
-        break;
-      case FieldDescriptor::CPPTYPE_MESSAGE:
-        if (is_lazy) {
-          total_size += lazymessage_value->SpaceUsedLong();
-        } else {
-          total_size += down_cast<Message*>(message_value)->SpaceUsedLong();
-        }
-        break;
-      default:
-        // No extra storage costs for primitive types.
-        break;
+    case FieldDescriptor::CPPTYPE_STRING:
+      total_size += sizeof(*string_value) +
+                    StringSpaceUsedExcludingSelfLong(*string_value);
+      break;
+    case FieldDescriptor::CPPTYPE_MESSAGE:
+      if (is_lazy) {
+        total_size += lazymessage_value->SpaceUsedLong();
+      } else {
+        total_size += down_cast<Message *>(message_value)->SpaceUsedLong();
+      }
+      break;
+    default:
+      // No extra storage costs for primitive types.
+      break;
     }
   }
   return total_size;
 }
 
-uint8* ExtensionSet::SerializeMessageSetWithCachedSizesToArray(
-    uint8* target) const {
+uint8 *
+ExtensionSet::SerializeMessageSetWithCachedSizesToArray(uint8 *target) const {
   io::EpsCopyOutputStream stream(
       target, MessageSetByteSize(),
       io::CodedOutputStream::IsDefaultSerializationDeterministic());
@@ -478,59 +481,59 @@ uint8* ExtensionSet::SerializeMessageSetWithCachedSizesToArray(
 }
 
 bool ExtensionSet::ParseFieldMaybeLazily(
-    int wire_type, int field_number, io::CodedInputStream* input,
-    ExtensionFinder* extension_finder, MessageSetFieldSkipper* field_skipper) {
+    int wire_type, int field_number, io::CodedInputStream *input,
+    ExtensionFinder *extension_finder, MessageSetFieldSkipper *field_skipper) {
   return ParseField(
       WireFormatLite::MakeTag(field_number,
                               static_cast<WireFormatLite::WireType>(wire_type)),
       input, extension_finder, field_skipper);
 }
 
-bool ExtensionSet::ParseMessageSet(io::CodedInputStream* input,
-                                   ExtensionFinder* extension_finder,
-                                   MessageSetFieldSkipper* field_skipper) {
+bool ExtensionSet::ParseMessageSet(io::CodedInputStream *input,
+                                   ExtensionFinder *extension_finder,
+                                   MessageSetFieldSkipper *field_skipper) {
   while (true) {
     const uint32 tag = input->ReadTag();
     switch (tag) {
-      case 0:
-        return true;
-      case WireFormatLite::kMessageSetItemStartTag:
-        if (!ParseMessageSetItem(input, extension_finder, field_skipper)) {
-          return false;
-        }
-        break;
-      default:
-        if (!ParseField(tag, input, extension_finder, field_skipper)) {
-          return false;
-        }
-        break;
+    case 0:
+      return true;
+    case WireFormatLite::kMessageSetItemStartTag:
+      if (!ParseMessageSetItem(input, extension_finder, field_skipper)) {
+        return false;
+      }
+      break;
+    default:
+      if (!ParseField(tag, input, extension_finder, field_skipper)) {
+        return false;
+      }
+      break;
     }
   }
 }
 
-bool ExtensionSet::ParseMessageSetItem(io::CodedInputStream* input,
-                                       ExtensionFinder* extension_finder,
-                                       MessageSetFieldSkipper* field_skipper) {
+bool ExtensionSet::ParseMessageSetItem(io::CodedInputStream *input,
+                                       ExtensionFinder *extension_finder,
+                                       MessageSetFieldSkipper *field_skipper) {
   struct MSFull {
-    bool ParseField(int type_id, io::CodedInputStream* input) {
+    bool ParseField(int type_id, io::CodedInputStream *input) {
       return me->ParseFieldMaybeLazily(
           WireFormatLite::WIRETYPE_LENGTH_DELIMITED, type_id, input,
           extension_finder, field_skipper);
     }
 
-    bool SkipField(uint32 tag, io::CodedInputStream* input) {
+    bool SkipField(uint32 tag, io::CodedInputStream *input) {
       return field_skipper->SkipField(input, tag);
     }
 
-    ExtensionSet* me;
-    ExtensionFinder* extension_finder;
-    MessageSetFieldSkipper* field_skipper;
+    ExtensionSet *me;
+    ExtensionFinder *extension_finder;
+    MessageSetFieldSkipper *field_skipper;
   };
 
   return ParseMessageSetItemImpl(input,
                                  MSFull{this, extension_finder, field_skipper});
 }
 
-}  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+} // namespace internal
+} // namespace protobuf
+} // namespace google

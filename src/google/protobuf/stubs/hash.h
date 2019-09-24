@@ -33,35 +33,34 @@
 #ifndef GOOGLE_PROTOBUF_STUBS_HASH_H__
 #define GOOGLE_PROTOBUF_STUBS_HASH_H__
 
-#include <string.h>
 #include <google/protobuf/stubs/common.h>
+#include <string.h>
 
 #include <unordered_map>
 #include <unordered_set>
 
-# define GOOGLE_PROTOBUF_HASH_NAMESPACE_DECLARATION_START \
-  namespace google {                                      \
+#define GOOGLE_PROTOBUF_HASH_NAMESPACE_DECLARATION_START                       \
+  namespace google {                                                           \
   namespace protobuf {
-# define GOOGLE_PROTOBUF_HASH_NAMESPACE_DECLARATION_END }}
+#define GOOGLE_PROTOBUF_HASH_NAMESPACE_DECLARATION_END                         \
+  }                                                                            \
+  }
 
 namespace google {
 namespace protobuf {
 
-template <typename Key>
-struct hash : public std::hash<Key> {};
+template <typename Key> struct hash : public std::hash<Key> {};
 
-template <typename Key>
-struct hash<const Key*> {
-  inline size_t operator()(const Key* key) const {
+template <typename Key> struct hash<const Key *> {
+  inline size_t operator()(const Key *key) const {
     return reinterpret_cast<size_t>(key);
   }
 };
 
 // Unlike the old SGI version, the TR1 "hash" does not special-case char*.  So,
 // we go ahead and provide our own implementation.
-template <>
-struct hash<const char*> {
-  inline size_t operator()(const char* str) const {
+template <> struct hash<const char *> {
+  inline size_t operator()(const char *str) const {
     size_t result = 0;
     for (; *str != '\0'; str++) {
       result = 5 * result + static_cast<size_t>(*str);
@@ -70,29 +69,25 @@ struct hash<const char*> {
   }
 };
 
-template<>
-struct hash<bool> {
-  size_t operator()(bool x) const {
-    return static_cast<size_t>(x);
-  }
+template <> struct hash<bool> {
+  size_t operator()(bool x) const { return static_cast<size_t>(x); }
 };
 
-template <>
-struct hash<string> {
-  inline size_t operator()(const string& key) const {
-    return hash<const char*>()(key.c_str());
+template <> struct hash<string> {
+  inline size_t operator()(const string &key) const {
+    return hash<const char *>()(key.c_str());
   }
 
   static const size_t bucket_size = 4;
   static const size_t min_buckets = 8;
-  inline bool operator()(const string& a, const string& b) const {
+  inline bool operator()(const string &a, const string &b) const {
     return a < b;
   }
 };
 
 template <typename First, typename Second>
-struct hash<std::pair<First, Second> > {
-  inline size_t operator()(const std::pair<First, Second>& key) const {
+struct hash<std::pair<First, Second>> {
+  inline size_t operator()(const std::pair<First, Second> &key) const {
     size_t first_hash = hash<First>()(key.first);
     size_t second_hash = hash<Second>()(key.second);
 
@@ -103,8 +98,8 @@ struct hash<std::pair<First, Second> > {
 
   static const size_t bucket_size = 4;
   static const size_t min_buckets = 8;
-  inline bool operator()(const std::pair<First, Second>& a,
-                           const std::pair<First, Second>& b) const {
+  inline bool operator()(const std::pair<First, Second> &a,
+                         const std::pair<First, Second> &b) const {
     return a < b;
   }
 };
@@ -112,12 +107,12 @@ struct hash<std::pair<First, Second> > {
 // Used by GCC/SGI STL only.  (Why isn't this provided by the standard
 // library?  :( )
 struct streq {
-  inline bool operator()(const char* a, const char* b) const {
+  inline bool operator()(const char *a, const char *b) const {
     return strcmp(a, b) == 0;
   }
 };
 
-}  // namespace protobuf
-}  // namespace google
+} // namespace protobuf
+} // namespace google
 
-#endif  // GOOGLE_PROTOBUF_STUBS_HASH_H__
+#endif // GOOGLE_PROTOBUF_STUBS_HASH_H__

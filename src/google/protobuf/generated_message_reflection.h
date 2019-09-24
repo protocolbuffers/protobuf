@@ -38,19 +38,18 @@
 #ifndef GOOGLE_PROTOBUF_GENERATED_MESSAGE_REFLECTION_H__
 #define GOOGLE_PROTOBUF_GENERATED_MESSAGE_REFLECTION_H__
 
-#include <string>
-#include <vector>
 #include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/stubs/common.h>
+#include <string>
+#include <vector>
 // TODO(jasonh): Remove this once the compiler change to directly include this
 // is released to components.
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/generated_enum_reflection.h>
 #include <google/protobuf/metadata.h>
-#include <google/protobuf/stubs/once.h>
 #include <google/protobuf/port.h>
+#include <google/protobuf/stubs/once.h>
 #include <google/protobuf/unknown_field_set.h>
-
 
 #include <google/protobuf/port_def.inc>
 
@@ -66,8 +65,8 @@ class MapValueRef;
 class MessageLayoutInspector;
 class Message;
 struct Metadata;
-}  // namespace protobuf
-}  // namespace google
+} // namespace protobuf
+} // namespace google
 
 namespace google {
 namespace protobuf {
@@ -76,8 +75,8 @@ class DefaultEmptyOneof;
 class ReflectionAccessor;
 
 // Defined in other files.
-class ExtensionSet;  // extension_set.h
-class WeakFieldMap;  // weak_field_map.h
+class ExtensionSet; // extension_set.h
+class WeakFieldMap; // weak_field_map.h
 
 // This struct describes the internal layout of the message, hence this is
 // used to act on the message reflectively.
@@ -123,19 +122,19 @@ class WeakFieldMap;  // weak_field_map.h
 //                  offset of _weak_field_map_ in the generated proto. Otherwise
 //                  -1.
 struct ReflectionSchema {
- public:
+public:
   // Size of a google::protobuf::Message object of this type.
   uint32 GetObjectSize() const { return static_cast<uint32>(object_size_); }
 
   // Offset of a non-oneof field.  Getting a field offset is slightly more
   // efficient when we know statically that it is not a oneof field.
-  uint32 GetFieldOffsetNonOneof(const FieldDescriptor* field) const {
+  uint32 GetFieldOffsetNonOneof(const FieldDescriptor *field) const {
     GOOGLE_DCHECK(!field->containing_oneof());
     return OffsetValue(offsets_[field->index()], field->type());
   }
 
   // Offset of any field.
-  uint32 GetFieldOffset(const FieldDescriptor* field) const {
+  uint32 GetFieldOffset(const FieldDescriptor *field) const {
     if (field->containing_oneof()) {
       size_t offset =
           static_cast<size_t>(field->containing_type()->field_count() +
@@ -146,7 +145,7 @@ struct ReflectionSchema {
     }
   }
 
-  bool IsFieldInlined(const FieldDescriptor* field) const {
+  bool IsFieldInlined(const FieldDescriptor *field) const {
     if (field->containing_oneof()) {
       size_t offset =
           static_cast<size_t>(field->containing_type()->field_count() +
@@ -157,7 +156,7 @@ struct ReflectionSchema {
     }
   }
 
-  uint32 GetOneofCaseOffset(const OneofDescriptor* oneof_descriptor) const {
+  uint32 GetOneofCaseOffset(const OneofDescriptor *oneof_descriptor) const {
     return static_cast<uint32>(oneof_case_offset_) +
            static_cast<uint32>(static_cast<size_t>(oneof_descriptor->index()) *
                                sizeof(uint32));
@@ -166,7 +165,7 @@ struct ReflectionSchema {
   bool HasHasbits() const { return has_bits_offset_ != -1; }
 
   // Bit index within the bit array of hasbits.  Bit order is low-to-high.
-  uint32 HasBitIndex(const FieldDescriptor* field) const {
+  uint32 HasBitIndex(const FieldDescriptor *field) const {
     GOOGLE_DCHECK(HasHasbits());
     return has_bit_indices_[field->index()];
   }
@@ -198,17 +197,16 @@ struct ReflectionSchema {
   // The default is 0 for now.
   int GetWeakFieldMapOffset() const { return weak_field_map_offset_; }
 
-  bool IsDefaultInstance(const Message& message) const {
+  bool IsDefaultInstance(const Message &message) const {
     return &message == default_instance_;
   }
 
   // Returns a pointer to the default value for this field.  The size and type
   // of the underlying data depends on the field's type.
-  const void* GetFieldDefault(const FieldDescriptor* field) const {
-    return reinterpret_cast<const uint8*>(default_instance_) +
+  const void *GetFieldDefault(const FieldDescriptor *field) const {
+    return reinterpret_cast<const uint8 *>(default_instance_) +
            OffsetValue(offsets_[field->index()], field->type());
   }
-
 
   bool HasWeakFields() const { return weak_field_map_offset_ > 0; }
 
@@ -218,9 +216,9 @@ struct ReflectionSchema {
   //
   //   ReflectionSchema schema = {a, b, c, d, e, ...};
   // private:
-  const Message* default_instance_;
-  const uint32* offsets_;
-  const uint32* has_bit_indices_;
+  const Message *default_instance_;
+  const uint32 *offsets_;
+  const uint32 *has_bit_indices_;
   int has_bits_offset_;
   int metadata_offset_;
   int extensions_offset_;
@@ -263,23 +261,23 @@ struct MigrationSchema {
 };
 
 struct PROTOBUF_EXPORT DescriptorTable {
-  bool* is_initialized;
-  const char* descriptor;
-  const char* filename;
-  int size;  // of serialized descriptor
-  once_flag* once;
-  SCCInfoBase* const* init_default_instances;
-  const DescriptorTable* const* deps;
+  bool *is_initialized;
+  const char *descriptor;
+  const char *filename;
+  int size; // of serialized descriptor
+  once_flag *once;
+  SCCInfoBase *const *init_default_instances;
+  const DescriptorTable *const *deps;
   int num_sccs;
   int num_deps;
-  const MigrationSchema* schemas;
-  const Message* const* default_instances;
-  const uint32* offsets;
+  const MigrationSchema *schemas;
+  const Message *const *default_instances;
+  const uint32 *offsets;
   // update the following descriptor arrays.
-  Metadata* file_level_metadata;
+  Metadata *file_level_metadata;
   int num_messages;
-  const EnumDescriptor** file_level_enum_descriptors;
-  const ServiceDescriptor** file_level_service_descriptors;
+  const EnumDescriptor **file_level_enum_descriptors;
+  const ServiceDescriptor **file_level_service_descriptors;
 };
 
 // AssignDescriptors() pulls the compiled FileDescriptor from the DescriptorPool
@@ -287,24 +285,24 @@ struct PROTOBUF_EXPORT DescriptorTable {
 // the descriptor objects.  It also constructs the reflection objects.  It is
 // called the first time anyone calls descriptor() or GetReflection() on one of
 // the types defined in the file.  AssignDescriptors() is thread-safe.
-void PROTOBUF_EXPORT AssignDescriptors(const DescriptorTable* table);
+void PROTOBUF_EXPORT AssignDescriptors(const DescriptorTable *table);
 
 // AddDescriptors() is a file-level procedure which adds the encoded
 // FileDescriptorProto for this .proto file to the global DescriptorPool for
 // generated files (DescriptorPool::generated_pool()). It ordinarily runs at
 // static initialization time, but is not used at all in LITE_RUNTIME mode.
 // AddDescriptors() is *not* thread-safe.
-void PROTOBUF_EXPORT AddDescriptors(const DescriptorTable* table);
+void PROTOBUF_EXPORT AddDescriptors(const DescriptorTable *table);
 
 // These cannot be in lite so we put them in the reflection.
-PROTOBUF_EXPORT void UnknownFieldSetSerializer(const uint8* base, uint32 offset,
+PROTOBUF_EXPORT void UnknownFieldSetSerializer(const uint8 *base, uint32 offset,
                                                uint32 tag, uint32 has_offset,
-                                               io::CodedOutputStream* output);
+                                               io::CodedOutputStream *output);
 
-}  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+} // namespace internal
+} // namespace protobuf
+} // namespace google
 
 #include <google/protobuf/port_undef.inc>
 
-#endif  // GOOGLE_PROTOBUF_GENERATED_MESSAGE_REFLECTION_H__
+#endif // GOOGLE_PROTOBUF_GENERATED_MESSAGE_REFLECTION_H__

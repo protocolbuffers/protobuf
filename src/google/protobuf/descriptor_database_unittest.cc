@@ -37,14 +37,14 @@
 #include <algorithm>
 #include <memory>
 
-#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/descriptor.h>
+#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/descriptor_database.h>
 #include <google/protobuf/text_format.h>
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
 #include <gmock/gmock.h>
+#include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 
@@ -52,17 +52,18 @@ namespace google {
 namespace protobuf {
 namespace {
 
-static void AddToDatabase(SimpleDescriptorDatabase* database,
-                          const char* file_text) {
+static void AddToDatabase(SimpleDescriptorDatabase *database,
+                          const char *file_text) {
   FileDescriptorProto file_proto;
   EXPECT_TRUE(TextFormat::ParseFromString(file_text, &file_proto));
   database->Add(file_proto);
 }
 
-static void ExpectContainsType(const FileDescriptorProto& proto,
-                               const std::string& type_name) {
+static void ExpectContainsType(const FileDescriptorProto &proto,
+                               const std::string &type_name) {
   for (int i = 0; i < proto.message_type_size(); i++) {
-    if (proto.message_type(i).name() == type_name) return;
+    if (proto.message_type(i).name() == type_name)
+      return;
   }
   ADD_FAILURE() << "\"" << proto.name() << "\" did not contain expected type \""
                 << type_name << "\".";
@@ -80,70 +81,70 @@ static void ExpectContainsType(const FileDescriptorProto& proto,
 // The parameterized test runs against a DescriptorDatabaseTestCase.  We have
 // implementations for each of the three classes we want to test.
 class DescriptorDatabaseTestCase {
- public:
+public:
   virtual ~DescriptorDatabaseTestCase() {}
 
-  virtual DescriptorDatabase* GetDatabase() = 0;
-  virtual bool AddToDatabase(const FileDescriptorProto& file) = 0;
+  virtual DescriptorDatabase *GetDatabase() = 0;
+  virtual bool AddToDatabase(const FileDescriptorProto &file) = 0;
 };
 
 // Factory function type.
-typedef DescriptorDatabaseTestCase* DescriptorDatabaseTestCaseFactory();
+typedef DescriptorDatabaseTestCase *DescriptorDatabaseTestCaseFactory();
 
 // Specialization for SimpleDescriptorDatabase.
 class SimpleDescriptorDatabaseTestCase : public DescriptorDatabaseTestCase {
- public:
-  static DescriptorDatabaseTestCase* New() {
+public:
+  static DescriptorDatabaseTestCase *New() {
     return new SimpleDescriptorDatabaseTestCase;
   }
 
   virtual ~SimpleDescriptorDatabaseTestCase() {}
 
-  virtual DescriptorDatabase* GetDatabase() { return &database_; }
-  virtual bool AddToDatabase(const FileDescriptorProto& file) {
+  virtual DescriptorDatabase *GetDatabase() { return &database_; }
+  virtual bool AddToDatabase(const FileDescriptorProto &file) {
     return database_.Add(file);
   }
 
- private:
+private:
   SimpleDescriptorDatabase database_;
 };
 
 // Specialization for EncodedDescriptorDatabase.
 class EncodedDescriptorDatabaseTestCase : public DescriptorDatabaseTestCase {
- public:
-  static DescriptorDatabaseTestCase* New() {
+public:
+  static DescriptorDatabaseTestCase *New() {
     return new EncodedDescriptorDatabaseTestCase;
   }
 
   virtual ~EncodedDescriptorDatabaseTestCase() {}
 
-  virtual DescriptorDatabase* GetDatabase() { return &database_; }
-  virtual bool AddToDatabase(const FileDescriptorProto& file) {
+  virtual DescriptorDatabase *GetDatabase() { return &database_; }
+  virtual bool AddToDatabase(const FileDescriptorProto &file) {
     std::string data;
     file.SerializeToString(&data);
     return database_.AddCopy(data.data(), data.size());
   }
 
- private:
+private:
   EncodedDescriptorDatabase database_;
 };
 
 // Specialization for DescriptorPoolDatabase.
 class DescriptorPoolDatabaseTestCase : public DescriptorDatabaseTestCase {
- public:
-  static DescriptorDatabaseTestCase* New() {
+public:
+  static DescriptorDatabaseTestCase *New() {
     return new EncodedDescriptorDatabaseTestCase;
   }
 
   DescriptorPoolDatabaseTestCase() : database_(pool_) {}
   virtual ~DescriptorPoolDatabaseTestCase() {}
 
-  virtual DescriptorDatabase* GetDatabase() { return &database_; }
-  virtual bool AddToDatabase(const FileDescriptorProto& file) {
+  virtual DescriptorDatabase *GetDatabase() { return &database_; }
+  virtual bool AddToDatabase(const FileDescriptorProto &file) {
     return pool_.BuildFile(file);
   }
 
- private:
+private:
   DescriptorPool pool_;
   DescriptorPoolDatabase database_;
 };
@@ -151,36 +152,34 @@ class DescriptorPoolDatabaseTestCase : public DescriptorDatabaseTestCase {
 // -------------------------------------------------------------------
 
 class DescriptorDatabaseTest
-    : public testing::TestWithParam<DescriptorDatabaseTestCaseFactory*> {
- protected:
+    : public testing::TestWithParam<DescriptorDatabaseTestCaseFactory *> {
+protected:
   virtual void SetUp() {
     test_case_.reset(GetParam()());
     database_ = test_case_->GetDatabase();
   }
 
-  void AddToDatabase(const char* file_descriptor_text) {
+  void AddToDatabase(const char *file_descriptor_text) {
     FileDescriptorProto file_proto;
     EXPECT_TRUE(TextFormat::ParseFromString(file_descriptor_text, &file_proto));
     EXPECT_TRUE(test_case_->AddToDatabase(file_proto));
   }
 
-  void AddToDatabaseWithError(const char* file_descriptor_text) {
+  void AddToDatabaseWithError(const char *file_descriptor_text) {
     FileDescriptorProto file_proto;
     EXPECT_TRUE(TextFormat::ParseFromString(file_descriptor_text, &file_proto));
     EXPECT_FALSE(test_case_->AddToDatabase(file_proto));
   }
 
   std::unique_ptr<DescriptorDatabaseTestCase> test_case_;
-  DescriptorDatabase* database_;
+  DescriptorDatabase *database_;
 };
 
 TEST_P(DescriptorDatabaseTest, FindFileByName) {
-  AddToDatabase(
-      "name: \"foo.proto\" "
-      "message_type { name:\"Foo\" }");
-  AddToDatabase(
-      "name: \"bar.proto\" "
-      "message_type { name:\"Bar\" }");
+  AddToDatabase("name: \"foo.proto\" "
+                "message_type { name:\"Foo\" }");
+  AddToDatabase("name: \"bar.proto\" "
+                "message_type { name:\"Bar\" }");
 
   {
     FileDescriptorProto file;
@@ -204,27 +203,25 @@ TEST_P(DescriptorDatabaseTest, FindFileByName) {
 }
 
 TEST_P(DescriptorDatabaseTest, FindFileContainingSymbol) {
-  AddToDatabase(
-      "name: \"foo.proto\" "
-      "message_type { "
-      "  name: \"Foo\" "
-      "  field { name:\"qux\" }"
-      "  nested_type { name: \"Grault\" } "
-      "  enum_type { name: \"Garply\" } "
-      "} "
-      "enum_type { "
-      "  name: \"Waldo\" "
-      "  value { name:\"FRED\" } "
-      "} "
-      "extension { name: \"plugh\" } "
-      "service { "
-      "  name: \"Xyzzy\" "
-      "  method { name: \"Thud\" } "
-      "}");
-  AddToDatabase(
-      "name: \"bar.proto\" "
-      "package: \"corge\" "
-      "message_type { name: \"Bar\" }");
+  AddToDatabase("name: \"foo.proto\" "
+                "message_type { "
+                "  name: \"Foo\" "
+                "  field { name:\"qux\" }"
+                "  nested_type { name: \"Grault\" } "
+                "  enum_type { name: \"Garply\" } "
+                "} "
+                "enum_type { "
+                "  name: \"Waldo\" "
+                "  value { name:\"FRED\" } "
+                "} "
+                "extension { name: \"plugh\" } "
+                "service { "
+                "  name: \"Xyzzy\" "
+                "  method { name: \"Thud\" } "
+                "}");
+  AddToDatabase("name: \"bar.proto\" "
+                "package: \"corge\" "
+                "message_type { name: \"Bar\" }");
 
   {
     FileDescriptorProto file;
@@ -435,29 +432,25 @@ TEST_P(DescriptorDatabaseTest, FindAllExtensionNumbers) {
 }
 
 TEST_P(DescriptorDatabaseTest, ConflictingFileError) {
-  AddToDatabase(
-      "name: \"foo.proto\" "
-      "message_type { "
-      "  name: \"Foo\" "
-      "}");
-  AddToDatabaseWithError(
-      "name: \"foo.proto\" "
-      "message_type { "
-      "  name: \"Bar\" "
-      "}");
+  AddToDatabase("name: \"foo.proto\" "
+                "message_type { "
+                "  name: \"Foo\" "
+                "}");
+  AddToDatabaseWithError("name: \"foo.proto\" "
+                         "message_type { "
+                         "  name: \"Bar\" "
+                         "}");
 }
 
 TEST_P(DescriptorDatabaseTest, ConflictingTypeError) {
-  AddToDatabase(
-      "name: \"foo.proto\" "
-      "message_type { "
-      "  name: \"Foo\" "
-      "}");
-  AddToDatabaseWithError(
-      "name: \"bar.proto\" "
-      "message_type { "
-      "  name: \"Foo\" "
-      "}");
+  AddToDatabase("name: \"foo.proto\" "
+                "message_type { "
+                "  name: \"Foo\" "
+                "}");
+  AddToDatabaseWithError("name: \"bar.proto\" "
+                         "message_type { "
+                         "  name: \"Foo\" "
+                         "}");
 }
 
 TEST_P(DescriptorDatabaseTest, ConflictingExtensionError) {
@@ -480,7 +473,7 @@ INSTANTIATE_TEST_CASE_P(
 INSTANTIATE_TEST_CASE_P(Pool, DescriptorDatabaseTest,
                         testing::Values(&DescriptorPoolDatabaseTestCase::New));
 
-#endif  // GTEST_HAS_PARAM_TEST
+#endif // GTEST_HAS_PARAM_TEST
 
 TEST(EncodedDescriptorDatabaseExtraTest, FindNameOfFileContainingSymbol) {
   // Create two files, one of which is in two parts.
@@ -574,7 +567,7 @@ TEST(SimpleDescriptorDatabaseExtraTest, FindAllMessageNames) {
 // ===================================================================
 
 class MergedDescriptorDatabaseTest : public testing::Test {
- protected:
+protected:
   MergedDescriptorDatabaseTest()
       : forward_merged_(&database1_, &database2_),
         reverse_merged_(&database2_, &database1_) {}
@@ -798,6 +791,6 @@ TEST_F(MergedDescriptorDatabaseTest, FindAllExtensionNumbers) {
   }
 }
 
-}  // anonymous namespace
-}  // namespace protobuf
-}  // namespace google
+} // anonymous namespace
+} // namespace protobuf
+} // namespace google

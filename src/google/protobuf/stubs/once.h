@@ -41,15 +41,14 @@ namespace protobuf {
 namespace internal {
 
 using once_flag = std::once_flag;
-template <typename... Args>
-void call_once(Args&&... args ) {
+template <typename... Args> void call_once(Args &&... args) {
   std::call_once(std::forward<Args>(args)...);
 }
 
-}  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+} // namespace internal
+} // namespace protobuf
+} // namespace google
 
 #include <google/protobuf/port_undef.inc>
 
-#endif  // GOOGLE_PROTOBUF_STUBS_ONCE_H__
+#endif // GOOGLE_PROTOBUF_STUBS_ONCE_H__

@@ -35,18 +35,18 @@
 #include <google/protobuf/compiler/cpp/cpp_field.h>
 #include <memory>
 
-#include <google/protobuf/compiler/cpp/cpp_helpers.h>
-#include <google/protobuf/compiler/cpp/cpp_primitive_field.h>
-#include <google/protobuf/compiler/cpp/cpp_string_field.h>
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/compiler/cpp/cpp_enum_field.h>
+#include <google/protobuf/compiler/cpp/cpp_helpers.h>
 #include <google/protobuf/compiler/cpp/cpp_map_field.h>
 #include <google/protobuf/compiler/cpp/cpp_message_field.h>
+#include <google/protobuf/compiler/cpp/cpp_primitive_field.h>
+#include <google/protobuf/compiler/cpp/cpp_string_field.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/printer.h>
-#include <google/protobuf/wire_format.h>
+#include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/wire_format.h>
 
 namespace google {
 namespace protobuf {
@@ -55,9 +55,9 @@ namespace cpp {
 
 using internal::WireFormat;
 
-void SetCommonFieldVariables(const FieldDescriptor* descriptor,
-                             std::map<std::string, std::string>* variables,
-                             const Options& options) {
+void SetCommonFieldVariables(const FieldDescriptor *descriptor,
+                             std::map<std::string, std::string> *variables,
+                             const Options &options) {
   SetCommonVars(options, variables);
   (*variables)["ns"] = Namespace(descriptor, options);
   (*variables)["name"] = FieldName(descriptor);
@@ -67,8 +67,8 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
   (*variables)["declared_type"] = DeclaredTypeMethodName(descriptor->type());
   (*variables)["field_member"] = FieldName(descriptor) + "_";
 
-  (*variables)["tag_size"] = StrCat(
-      WireFormat::TagSize(descriptor->number(), descriptor->type()));
+  (*variables)["tag_size"] =
+      StrCat(WireFormat::TagSize(descriptor->number(), descriptor->type()));
   (*variables)["deprecated_attr"] =
       DeprecatedAttribute(options, descriptor->options().deprecated());
 
@@ -103,19 +103,18 @@ void FieldGenerator::SetHasBitIndex(int32 has_bit_index) {
 }
 
 void SetCommonOneofFieldVariables(
-    const FieldDescriptor* descriptor,
-    std::map<std::string, std::string>* variables) {
+    const FieldDescriptor *descriptor,
+    std::map<std::string, std::string> *variables) {
   const std::string prefix = descriptor->containing_oneof()->name() + "_.";
   (*variables)["oneof_name"] = descriptor->containing_oneof()->name();
-  (*variables)["field_member"] =
-      StrCat(prefix, (*variables)["name"], "_");
+  (*variables)["field_member"] = StrCat(prefix, (*variables)["name"], "_");
 }
 
 FieldGenerator::~FieldGenerator() {}
 
-FieldGeneratorMap::FieldGeneratorMap(const Descriptor* descriptor,
-                                     const Options& options,
-                                     MessageSCCAnalyzer* scc_analyzer)
+FieldGeneratorMap::FieldGeneratorMap(const Descriptor *descriptor,
+                                     const Options &options,
+                                     MessageSCCAnalyzer *scc_analyzer)
     : descriptor_(descriptor), field_generators_(descriptor->field_count()) {
   // Construct all the FieldGenerators.
   for (int i = 0; i < descriptor->field_count(); i++) {
@@ -124,17 +123,18 @@ FieldGeneratorMap::FieldGeneratorMap(const Descriptor* descriptor,
   }
 }
 
-FieldGenerator* FieldGeneratorMap::MakeGoogleInternalGenerator(
-    const FieldDescriptor* field, const Options& options,
-    MessageSCCAnalyzer* scc_analyzer) {
+FieldGenerator *FieldGeneratorMap::MakeGoogleInternalGenerator(
+    const FieldDescriptor *field, const Options &options,
+    MessageSCCAnalyzer *scc_analyzer) {
 
   return nullptr;
 }
 
-FieldGenerator* FieldGeneratorMap::MakeGenerator(
-    const FieldDescriptor* field, const Options& options,
-    MessageSCCAnalyzer* scc_analyzer) {
-  FieldGenerator* generator =
+FieldGenerator *
+FieldGeneratorMap::MakeGenerator(const FieldDescriptor *field,
+                                 const Options &options,
+                                 MessageSCCAnalyzer *scc_analyzer) {
+  FieldGenerator *generator =
       MakeGoogleInternalGenerator(field, options, scc_analyzer);
   if (generator) {
     return generator;
@@ -142,54 +142,53 @@ FieldGenerator* FieldGeneratorMap::MakeGenerator(
 
   if (field->is_repeated()) {
     switch (field->cpp_type()) {
-      case FieldDescriptor::CPPTYPE_MESSAGE:
-        if (field->is_map()) {
-          return new MapFieldGenerator(field, options);
-        } else {
-          return new RepeatedMessageFieldGenerator(field, options,
-                                                   scc_analyzer);
-        }
-      case FieldDescriptor::CPPTYPE_STRING:
-        return new RepeatedStringFieldGenerator(field, options);
-      case FieldDescriptor::CPPTYPE_ENUM:
-        return new RepeatedEnumFieldGenerator(field, options);
-      default:
-        return new RepeatedPrimitiveFieldGenerator(field, options);
+    case FieldDescriptor::CPPTYPE_MESSAGE:
+      if (field->is_map()) {
+        return new MapFieldGenerator(field, options);
+      } else {
+        return new RepeatedMessageFieldGenerator(field, options, scc_analyzer);
+      }
+    case FieldDescriptor::CPPTYPE_STRING:
+      return new RepeatedStringFieldGenerator(field, options);
+    case FieldDescriptor::CPPTYPE_ENUM:
+      return new RepeatedEnumFieldGenerator(field, options);
+    default:
+      return new RepeatedPrimitiveFieldGenerator(field, options);
     }
   } else if (field->containing_oneof()) {
     switch (field->cpp_type()) {
-      case FieldDescriptor::CPPTYPE_MESSAGE:
-        return new MessageOneofFieldGenerator(field, options, scc_analyzer);
-      case FieldDescriptor::CPPTYPE_STRING:
-        return new StringOneofFieldGenerator(field, options);
-      case FieldDescriptor::CPPTYPE_ENUM:
-        return new EnumOneofFieldGenerator(field, options);
-      default:
-        return new PrimitiveOneofFieldGenerator(field, options);
+    case FieldDescriptor::CPPTYPE_MESSAGE:
+      return new MessageOneofFieldGenerator(field, options, scc_analyzer);
+    case FieldDescriptor::CPPTYPE_STRING:
+      return new StringOneofFieldGenerator(field, options);
+    case FieldDescriptor::CPPTYPE_ENUM:
+      return new EnumOneofFieldGenerator(field, options);
+    default:
+      return new PrimitiveOneofFieldGenerator(field, options);
     }
   } else {
     switch (field->cpp_type()) {
-      case FieldDescriptor::CPPTYPE_MESSAGE:
-        return new MessageFieldGenerator(field, options, scc_analyzer);
-      case FieldDescriptor::CPPTYPE_STRING:
-        return new StringFieldGenerator(field, options);
-      case FieldDescriptor::CPPTYPE_ENUM:
-        return new EnumFieldGenerator(field, options);
-      default:
-        return new PrimitiveFieldGenerator(field, options);
+    case FieldDescriptor::CPPTYPE_MESSAGE:
+      return new MessageFieldGenerator(field, options, scc_analyzer);
+    case FieldDescriptor::CPPTYPE_STRING:
+      return new StringFieldGenerator(field, options);
+    case FieldDescriptor::CPPTYPE_ENUM:
+      return new EnumFieldGenerator(field, options);
+    default:
+      return new PrimitiveFieldGenerator(field, options);
     }
   }
 }
 
 FieldGeneratorMap::~FieldGeneratorMap() {}
 
-const FieldGenerator& FieldGeneratorMap::get(
-    const FieldDescriptor* field) const {
+const FieldGenerator &
+FieldGeneratorMap::get(const FieldDescriptor *field) const {
   GOOGLE_CHECK_EQ(field->containing_type(), descriptor_);
   return *field_generators_[field->index()];
 }
 
-}  // namespace cpp
-}  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+} // namespace cpp
+} // namespace compiler
+} // namespace protobuf
+} // namespace google

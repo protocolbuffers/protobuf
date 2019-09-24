@@ -44,15 +44,15 @@
 #include <string>
 #include <vector>
 
-#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/has_bits.h>
 #include <google/protobuf/implicit_weak_message.h>
 #include <google/protobuf/message_lite.h>
-#include <google/protobuf/stubs/once.h>  // Add direct dep on port for pb.cc
 #include <google/protobuf/port.h>
-#include <google/protobuf/wire_format_lite.h>
-#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/casts.h>
+#include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/once.h> // Add direct dep on port for pb.cc
+#include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/wire_format_lite.h>
 
 #include <google/protobuf/port_def.inc>
 
@@ -71,34 +71,30 @@ class CodedInputStream;
 
 namespace internal {
 
-template <typename To, typename From>
-inline To DownCast(From* f) {
+template <typename To, typename From> inline To DownCast(From *f) {
   return PROTOBUF_NAMESPACE_ID::internal::down_cast<To>(f);
 }
-template <typename To, typename From>
-inline To DownCast(From& f) {
+template <typename To, typename From> inline To DownCast(From &f) {
   return PROTOBUF_NAMESPACE_ID::internal::down_cast<To>(f);
 }
-
 
 PROTOBUF_EXPORT void InitProtobufDefaults();
 
 // This used by proto1
-PROTOBUF_EXPORT inline const std::string& GetEmptyString() {
+PROTOBUF_EXPORT inline const std::string &GetEmptyString() {
   InitProtobufDefaults();
   return GetEmptyStringAlreadyInited();
 }
-
 
 // True if IsInitialized() is true for all elements of t.  Type is expected
 // to be a RepeatedPtrField<some message type>.  It's useful to have this
 // helper here to keep the protobuf compiler from ever having to emit loops in
 // IsInitialized() methods.  We want the C++ compiler to inline this or not
 // as it sees fit.
-template <class Type>
-bool AllAreInitialized(const Type& t) {
+template <class Type> bool AllAreInitialized(const Type &t) {
   for (int i = t.size(); --i >= 0;) {
-    if (!t.Get(i).IsInitialized()) return false;
+    if (!t.Get(i).IsInitialized())
+      return false;
   }
   return true;
 }
@@ -106,11 +102,10 @@ bool AllAreInitialized(const Type& t) {
 // "Weak" variant of AllAreInitialized, used to implement implicit weak fields.
 // This version operates on MessageLite to avoid introducing a dependency on the
 // concrete message type.
-template <class T>
-bool AllAreInitializedWeak(const RepeatedPtrField<T>& t) {
+template <class T> bool AllAreInitializedWeak(const RepeatedPtrField<T> &t) {
   for (int i = t.size(); --i >= 0;) {
-    if (!reinterpret_cast<const RepeatedPtrFieldBase&>(t)
-             .Get<ImplicitWeakTypeHandler<T> >(i)
+    if (!reinterpret_cast<const RepeatedPtrFieldBase &>(t)
+             .Get<ImplicitWeakTypeHandler<T>>(i)
              .IsInitialized()) {
       return false;
     }
@@ -118,61 +113,60 @@ bool AllAreInitializedWeak(const RepeatedPtrField<T>& t) {
   return true;
 }
 
-inline bool IsPresent(const void* base, uint32 hasbit) {
-  const uint32* has_bits_array = static_cast<const uint32*>(base);
+inline bool IsPresent(const void *base, uint32 hasbit) {
+  const uint32 *has_bits_array = static_cast<const uint32 *>(base);
   return (has_bits_array[hasbit / 32] & (1u << (hasbit & 31))) != 0;
 }
 
-inline bool IsOneofPresent(const void* base, uint32 offset, uint32 tag) {
-  const uint32* oneof =
-      reinterpret_cast<const uint32*>(static_cast<const uint8*>(base) + offset);
+inline bool IsOneofPresent(const void *base, uint32 offset, uint32 tag) {
+  const uint32 *oneof = reinterpret_cast<const uint32 *>(
+      static_cast<const uint8 *>(base) + offset);
   return *oneof == tag >> 3;
 }
 
-typedef void (*SpecialSerializer)(const uint8* base, uint32 offset, uint32 tag,
+typedef void (*SpecialSerializer)(const uint8 *base, uint32 offset, uint32 tag,
                                   uint32 has_offset,
-                                  io::CodedOutputStream* output);
+                                  io::CodedOutputStream *output);
 
-PROTOBUF_EXPORT void ExtensionSerializer(const uint8* base, uint32 offset,
+PROTOBUF_EXPORT void ExtensionSerializer(const uint8 *base, uint32 offset,
                                          uint32 tag, uint32 has_offset,
-                                         io::CodedOutputStream* output);
-PROTOBUF_EXPORT void UnknownFieldSerializerLite(const uint8* base,
+                                         io::CodedOutputStream *output);
+PROTOBUF_EXPORT void UnknownFieldSerializerLite(const uint8 *base,
                                                 uint32 offset, uint32 tag,
                                                 uint32 has_offset,
-                                                io::CodedOutputStream* output);
+                                                io::CodedOutputStream *output);
 
-PROTOBUF_EXPORT MessageLite* DuplicateIfNonNullInternal(MessageLite* message);
-PROTOBUF_EXPORT MessageLite* GetOwnedMessageInternal(Arena* message_arena,
-                                                     MessageLite* submessage,
-                                                     Arena* submessage_arena);
-PROTOBUF_EXPORT void GenericSwap(MessageLite* m1, MessageLite* m2);
+PROTOBUF_EXPORT MessageLite *DuplicateIfNonNullInternal(MessageLite *message);
+PROTOBUF_EXPORT MessageLite *GetOwnedMessageInternal(Arena *message_arena,
+                                                     MessageLite *submessage,
+                                                     Arena *submessage_arena);
+PROTOBUF_EXPORT void GenericSwap(MessageLite *m1, MessageLite *m2);
 
-template <typename T>
-T* DuplicateIfNonNull(T* message) {
+template <typename T> T *DuplicateIfNonNull(T *message) {
   // The casts must be reinterpret_cast<> because T might be a forward-declared
   // type that the compiler doesn't know is related to MessageLite.
-  return reinterpret_cast<T*>(
-      DuplicateIfNonNullInternal(reinterpret_cast<MessageLite*>(message)));
+  return reinterpret_cast<T *>(
+      DuplicateIfNonNullInternal(reinterpret_cast<MessageLite *>(message)));
 }
 
 template <typename T>
-T* GetOwnedMessage(Arena* message_arena, T* submessage,
-                   Arena* submessage_arena) {
+T *GetOwnedMessage(Arena *message_arena, T *submessage,
+                   Arena *submessage_arena) {
   // The casts must be reinterpret_cast<> because T might be a forward-declared
   // type that the compiler doesn't know is related to MessageLite.
-  return reinterpret_cast<T*>(GetOwnedMessageInternal(
-      message_arena, reinterpret_cast<MessageLite*>(submessage),
+  return reinterpret_cast<T *>(GetOwnedMessageInternal(
+      message_arena, reinterpret_cast<MessageLite *>(submessage),
       submessage_arena));
 }
 
 // Hide atomic from the public header and allow easy change to regular int
 // on platforms where the atomic might have a perf impact.
 class PROTOBUF_EXPORT CachedSize {
- public:
+public:
   int Get() const { return size_.load(std::memory_order_relaxed); }
   void Set(int size) { size_.store(size, std::memory_order_relaxed); }
 
- private:
+private:
   std::atomic<int> size_{0};
 };
 
@@ -182,9 +176,9 @@ struct PROTOBUF_EXPORT SCCInfoBase {
   // We use 0 for the Initialized state, because test eax,eax, jnz is smaller
   // and is subject to macro fusion.
   enum {
-    kInitialized = 0,  // final state
+    kInitialized = 0, // final state
     kRunning = 1,
-    kUninitialized = -1,  // initial state
+    kUninitialized = -1, // initial state
   };
 #if defined(_MSC_VER) && !defined(__clang__)
   // MSVC doesnt make std::atomic constant initialized. This union trick
@@ -211,8 +205,7 @@ struct PROTOBUF_EXPORT SCCInfoBase {
 #define PROTOBUF_ARRAY_SIZE(n) ((n) ? (n) : 1)
 #endif
 
-template <int N>
-struct SCCInfo {
+template <int N> struct SCCInfo {
   SCCInfoBase base;
   // Semantically this is const SCCInfo<T>* which is is a templated type.
   // The obvious inheriting from SCCInfoBase mucks with struct initialization.
@@ -221,34 +214,34 @@ struct SCCInfo {
   // by base.num_implicit_weak_deps pointers to SCCInfoBase*. We need the extra
   // pointer indirection for implicit weak fields. We cannot use a union type
   // here, since that would prevent the array from being linker-initialized.
-  void* deps[PROTOBUF_ARRAY_SIZE(N)];
+  void *deps[PROTOBUF_ARRAY_SIZE(N)];
 };
 
 #undef PROTOBUF_ARRAY_SIZE
 
-PROTOBUF_EXPORT void InitSCCImpl(SCCInfoBase* scc);
+PROTOBUF_EXPORT void InitSCCImpl(SCCInfoBase *scc);
 
-inline void InitSCC(SCCInfoBase* scc) {
+inline void InitSCC(SCCInfoBase *scc) {
   auto status = scc->visit_status.load(std::memory_order_acquire);
   if (PROTOBUF_PREDICT_FALSE(status != SCCInfoBase::kInitialized))
     InitSCCImpl(scc);
 }
 
-PROTOBUF_EXPORT void DestroyMessage(const void* message);
-PROTOBUF_EXPORT void DestroyString(const void* s);
+PROTOBUF_EXPORT void DestroyMessage(const void *message);
+PROTOBUF_EXPORT void DestroyString(const void *s);
 // Destroy (not delete) the message
-inline void OnShutdownDestroyMessage(const void* ptr) {
+inline void OnShutdownDestroyMessage(const void *ptr) {
   OnShutdownRun(DestroyMessage, ptr);
 }
 // Destroy the string (call std::string destructor)
-inline void OnShutdownDestroyString(const std::string* ptr) {
+inline void OnShutdownDestroyString(const std::string *ptr) {
   OnShutdownRun(DestroyString, ptr);
 }
 
-}  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+} // namespace internal
+} // namespace protobuf
+} // namespace google
 
 #include <google/protobuf/port_undef.inc>
 
-#endif  // GOOGLE_PROTOBUF_GENERATED_MESSAGE_UTIL_H__
+#endif // GOOGLE_PROTOBUF_GENERATED_MESSAGE_UTIL_H__

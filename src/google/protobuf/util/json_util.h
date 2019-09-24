@@ -34,9 +34,9 @@
 #define GOOGLE_PROTOBUF_UTIL_JSON_UTIL_H__
 
 #include <google/protobuf/message.h>
-#include <google/protobuf/util/type_resolver.h>
 #include <google/protobuf/stubs/bytestream.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/util/type_resolver.h>
 
 #include <google/protobuf/port_def.inc>
 
@@ -45,7 +45,7 @@ namespace protobuf {
 namespace io {
 class ZeroCopyInputStream;
 class ZeroCopyOutputStream;
-}  // namespace io
+} // namespace io
 namespace util {
 
 struct JsonParseOptions {
@@ -60,8 +60,7 @@ struct JsonParseOptions {
   bool case_insensitive_enum_parsing;
 
   JsonParseOptions()
-      : ignore_unknown_fields(false),
-        case_insensitive_enum_parsing(false) {}
+      : ignore_unknown_fields(false), case_insensitive_enum_parsing(false) {}
 };
 
 struct JsonPrintOptions {
@@ -80,10 +79,8 @@ struct JsonPrintOptions {
   bool preserve_proto_field_names;
 
   JsonPrintOptions()
-      : add_whitespace(false),
-        always_print_primitive_fields(false),
-        always_print_enums_as_ints(false),
-        preserve_proto_field_names(false) {}
+      : add_whitespace(false), always_print_primitive_fields(false),
+        always_print_enums_as_ints(false), preserve_proto_field_names(false) {}
 };
 
 // DEPRECATED. Use JsonPrintOptions instead.
@@ -92,23 +89,23 @@ typedef JsonPrintOptions JsonOptions;
 // Converts from protobuf message to JSON and appends it to |output|. This is a
 // simple wrapper of BinaryToJsonString(). It will use the DescriptorPool of the
 // passed-in message to resolve Any types.
-PROTOBUF_EXPORT util::Status MessageToJsonString(const Message& message,
-                                                   std::string* output,
-                                                   const JsonOptions& options);
+PROTOBUF_EXPORT util::Status MessageToJsonString(const Message &message,
+                                                 std::string *output,
+                                                 const JsonOptions &options);
 
-inline util::Status MessageToJsonString(const Message& message,
-                                          std::string* output) {
+inline util::Status MessageToJsonString(const Message &message,
+                                        std::string *output) {
   return MessageToJsonString(message, output, JsonOptions());
 }
 
 // Converts from JSON to protobuf message. This is a simple wrapper of
 // JsonStringToBinary(). It will use the DescriptorPool of the passed-in
 // message to resolve Any types.
-PROTOBUF_EXPORT util::Status JsonStringToMessage(
-    StringPiece input, Message* message, const JsonParseOptions& options);
+PROTOBUF_EXPORT util::Status
+JsonStringToMessage(StringPiece input, Message *message,
+                    const JsonParseOptions &options);
 
-inline util::Status JsonStringToMessage(StringPiece input,
-                                          Message* message) {
+inline util::Status JsonStringToMessage(StringPiece input, Message *message) {
   return JsonStringToMessage(input, message, JsonParseOptions());
 }
 
@@ -118,28 +115,29 @@ inline util::Status JsonStringToMessage(StringPiece input,
 //   2. input is not valid protobuf wire format, or conflicts with the type
 //      information returned by TypeResolver.
 // Note that unknown fields will be discarded silently.
-PROTOBUF_EXPORT util::Status BinaryToJsonStream(
-    TypeResolver* resolver, const std::string& type_url,
-    io::ZeroCopyInputStream* binary_input,
-    io::ZeroCopyOutputStream* json_output, const JsonPrintOptions& options);
+PROTOBUF_EXPORT util::Status
+BinaryToJsonStream(TypeResolver *resolver, const std::string &type_url,
+                   io::ZeroCopyInputStream *binary_input,
+                   io::ZeroCopyOutputStream *json_output,
+                   const JsonPrintOptions &options);
 
-inline util::Status BinaryToJsonStream(
-    TypeResolver* resolver, const std::string& type_url,
-    io::ZeroCopyInputStream* binary_input,
-    io::ZeroCopyOutputStream* json_output) {
+inline util::Status BinaryToJsonStream(TypeResolver *resolver,
+                                       const std::string &type_url,
+                                       io::ZeroCopyInputStream *binary_input,
+                                       io::ZeroCopyOutputStream *json_output) {
   return BinaryToJsonStream(resolver, type_url, binary_input, json_output,
                             JsonPrintOptions());
 }
 
-PROTOBUF_EXPORT util::Status BinaryToJsonString(
-    TypeResolver* resolver, const std::string& type_url,
-    const std::string& binary_input, std::string* json_output,
-    const JsonPrintOptions& options);
+PROTOBUF_EXPORT util::Status
+BinaryToJsonString(TypeResolver *resolver, const std::string &type_url,
+                   const std::string &binary_input, std::string *json_output,
+                   const JsonPrintOptions &options);
 
-inline util::Status BinaryToJsonString(TypeResolver* resolver,
-                                         const std::string& type_url,
-                                         const std::string& binary_input,
-                                         std::string* json_output) {
+inline util::Status BinaryToJsonString(TypeResolver *resolver,
+                                       const std::string &type_url,
+                                       const std::string &binary_input,
+                                       std::string *json_output) {
   return BinaryToJsonString(resolver, type_url, binary_input, json_output,
                             JsonPrintOptions());
 }
@@ -149,28 +147,29 @@ inline util::Status BinaryToJsonString(TypeResolver* resolver,
 //   1. TypeResolver fails to resolve a type.
 //   2. input is not valid JSON format, or conflicts with the type
 //      information returned by TypeResolver.
-PROTOBUF_EXPORT util::Status JsonToBinaryStream(
-    TypeResolver* resolver, const std::string& type_url,
-    io::ZeroCopyInputStream* json_input,
-    io::ZeroCopyOutputStream* binary_output, const JsonParseOptions& options);
+PROTOBUF_EXPORT util::Status
+JsonToBinaryStream(TypeResolver *resolver, const std::string &type_url,
+                   io::ZeroCopyInputStream *json_input,
+                   io::ZeroCopyOutputStream *binary_output,
+                   const JsonParseOptions &options);
 
-inline util::Status JsonToBinaryStream(
-    TypeResolver* resolver, const std::string& type_url,
-    io::ZeroCopyInputStream* json_input,
-    io::ZeroCopyOutputStream* binary_output) {
+inline util::Status
+JsonToBinaryStream(TypeResolver *resolver, const std::string &type_url,
+                   io::ZeroCopyInputStream *json_input,
+                   io::ZeroCopyOutputStream *binary_output) {
   return JsonToBinaryStream(resolver, type_url, json_input, binary_output,
                             JsonParseOptions());
 }
 
-PROTOBUF_EXPORT util::Status JsonToBinaryString(
-    TypeResolver* resolver, const std::string& type_url,
-    StringPiece json_input, std::string* binary_output,
-    const JsonParseOptions& options);
+PROTOBUF_EXPORT util::Status
+JsonToBinaryString(TypeResolver *resolver, const std::string &type_url,
+                   StringPiece json_input, std::string *binary_output,
+                   const JsonParseOptions &options);
 
-inline util::Status JsonToBinaryString(TypeResolver* resolver,
-                                         const std::string& type_url,
-                                         StringPiece json_input,
-                                         std::string* binary_output) {
+inline util::Status JsonToBinaryString(TypeResolver *resolver,
+                                       const std::string &type_url,
+                                       StringPiece json_input,
+                                       std::string *binary_output) {
   return JsonToBinaryString(resolver, type_url, json_input, binary_output,
                             JsonParseOptions());
 }
@@ -178,26 +177,26 @@ inline util::Status JsonToBinaryString(TypeResolver* resolver,
 namespace internal {
 // Internal helper class. Put in the header so we can write unit-tests for it.
 class PROTOBUF_EXPORT ZeroCopyStreamByteSink : public strings::ByteSink {
- public:
-  explicit ZeroCopyStreamByteSink(io::ZeroCopyOutputStream* stream)
+public:
+  explicit ZeroCopyStreamByteSink(io::ZeroCopyOutputStream *stream)
       : stream_(stream), buffer_(NULL), buffer_size_(0) {}
   ~ZeroCopyStreamByteSink();
 
-  void Append(const char* bytes, size_t len) override;
+  void Append(const char *bytes, size_t len) override;
 
- private:
-  io::ZeroCopyOutputStream* stream_;
-  void* buffer_;
+private:
+  io::ZeroCopyOutputStream *stream_;
+  void *buffer_;
   int buffer_size_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ZeroCopyStreamByteSink);
 };
-}  // namespace internal
+} // namespace internal
 
-}  // namespace util
-}  // namespace protobuf
-}  // namespace google
+} // namespace util
+} // namespace protobuf
+} // namespace google
 
 #include <google/protobuf/port_undef.inc>
 
-#endif  // GOOGLE_PROTOBUF_UTIL_JSON_UTIL_H__
+#endif // GOOGLE_PROTOBUF_UTIL_JSON_UTIL_H__

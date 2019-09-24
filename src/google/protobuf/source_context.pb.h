@@ -19,154 +19,166 @@
 #error regenerate this file with a newer version of protoc.
 #endif
 
-#include <google/protobuf/port_undef.inc>
-#include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/arena.h>
 #include <google/protobuf/arenastring.h>
+#include <google/protobuf/extension_set.h> // IWYU pragma: export
+#include <google/protobuf/generated_message_reflection.h>
 #include <google/protobuf/generated_message_table_driven.h>
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/inlined_string_field.h>
-#include <google/protobuf/metadata.h>
-#include <google/protobuf/generated_message_reflection.h>
+#include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/message.h>
-#include <google/protobuf/repeated_field.h>  // IWYU pragma: export
-#include <google/protobuf/extension_set.h>  // IWYU pragma: export
+#include <google/protobuf/metadata.h>
+#include <google/protobuf/port_undef.inc>
+#include <google/protobuf/repeated_field.h> // IWYU pragma: export
 #include <google/protobuf/unknown_field_set.h>
 // @@protoc_insertion_point(includes)
 #include <google/protobuf/port_def.inc>
-#define PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2fsource_5fcontext_2eproto PROTOBUF_EXPORT
+#define PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2fsource_5fcontext_2eproto  \
+  PROTOBUF_EXPORT
 PROTOBUF_NAMESPACE_OPEN
 namespace internal {
 class AnyMetadata;
-}  // namespace internal
+} // namespace internal
 PROTOBUF_NAMESPACE_CLOSE
 
 // Internal implementation detail -- do not use these members.
-struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2fsource_5fcontext_2eproto {
-  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTableField entries[]
-    PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-  static const ::PROTOBUF_NAMESPACE_ID::internal::AuxillaryParseTableField aux[]
-    PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[1]
-    PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-  static const ::PROTOBUF_NAMESPACE_ID::internal::FieldMetadata field_metadata[];
-  static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
+struct PROTOBUF_EXPORT
+    TableStruct_google_2fprotobuf_2fsource_5fcontext_2eproto {
+  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTableField
+      entries[] PROTOBUF_SECTION_VARIABLE(protodesc_cold);
+  static const ::PROTOBUF_NAMESPACE_ID::internal::AuxillaryParseTableField
+      aux[] PROTOBUF_SECTION_VARIABLE(protodesc_cold);
+  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable
+      schema[1] PROTOBUF_SECTION_VARIABLE(protodesc_cold);
+  static const ::PROTOBUF_NAMESPACE_ID::internal::FieldMetadata
+      field_metadata[];
+  static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable
+      serialization_table[];
   static const ::PROTOBUF_NAMESPACE_ID::uint32 offsets[];
 };
-extern PROTOBUF_EXPORT const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto;
+extern PROTOBUF_EXPORT const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable
+    descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto;
 PROTOBUF_NAMESPACE_OPEN
 class SourceContext;
 class SourceContextDefaultTypeInternal;
-PROTOBUF_EXPORT extern SourceContextDefaultTypeInternal _SourceContext_default_instance_;
+PROTOBUF_EXPORT extern SourceContextDefaultTypeInternal
+    _SourceContext_default_instance_;
 PROTOBUF_NAMESPACE_CLOSE
 PROTOBUF_NAMESPACE_OPEN
-template<> PROTOBUF_EXPORT PROTOBUF_NAMESPACE_ID::SourceContext* Arena::CreateMaybeMessage<PROTOBUF_NAMESPACE_ID::SourceContext>(Arena*);
+template <>
+PROTOBUF_EXPORT PROTOBUF_NAMESPACE_ID::SourceContext *
+Arena::CreateMaybeMessage<PROTOBUF_NAMESPACE_ID::SourceContext>(Arena *);
 PROTOBUF_NAMESPACE_CLOSE
 PROTOBUF_NAMESPACE_OPEN
 
 // ===================================================================
 
-class PROTOBUF_EXPORT SourceContext :
-    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.SourceContext) */ {
- public:
+class PROTOBUF_EXPORT SourceContext
+    : public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.SourceContext)
+                                               */
+{
+public:
   SourceContext();
   virtual ~SourceContext();
 
-  SourceContext(const SourceContext& from);
-  SourceContext(SourceContext&& from) noexcept
-    : SourceContext() {
+  SourceContext(const SourceContext &from);
+  SourceContext(SourceContext &&from) noexcept : SourceContext() {
     *this = ::std::move(from);
   }
 
-  inline SourceContext& operator=(const SourceContext& from) {
+  inline SourceContext &operator=(const SourceContext &from) {
     CopyFrom(from);
     return *this;
   }
-  inline SourceContext& operator=(SourceContext&& from) noexcept {
+  inline SourceContext &operator=(SourceContext &&from) noexcept {
     if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
-      if (this != &from) InternalSwap(&from);
+      if (this != &from)
+        InternalSwap(&from);
     } else {
       CopyFrom(from);
     }
     return *this;
   }
 
-  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor *descriptor() {
     return GetDescriptor();
   }
-  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor *GetDescriptor() {
     return GetMetadataStatic().descriptor;
   }
-  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection *GetReflection() {
     return GetMetadataStatic().reflection;
   }
-  static const SourceContext& default_instance();
+  static const SourceContext &default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
-  static inline const SourceContext* internal_default_instance() {
-    return reinterpret_cast<const SourceContext*>(
-               &_SourceContext_default_instance_);
+  static void InitAsDefaultInstance(); // FOR INTERNAL USE ONLY
+  static inline const SourceContext *internal_default_instance() {
+    return reinterpret_cast<const SourceContext *>(
+        &_SourceContext_default_instance_);
   }
-  static constexpr int kIndexInFileMessages =
-    0;
+  static constexpr int kIndexInFileMessages = 0;
 
-  friend void swap(SourceContext& a, SourceContext& b) {
-    a.Swap(&b);
-  }
-  inline void Swap(SourceContext* other) {
-    if (other == this) return;
+  friend void swap(SourceContext &a, SourceContext &b) { a.Swap(&b); }
+  inline void Swap(SourceContext *other) {
+    if (other == this)
+      return;
     InternalSwap(other);
   }
 
   // implements Message ----------------------------------------------
 
-  inline SourceContext* New() const final {
+  inline SourceContext *New() const final {
     return CreateMaybeMessage<SourceContext>(nullptr);
   }
 
-  SourceContext* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  SourceContext *New(::PROTOBUF_NAMESPACE_ID::Arena *arena) const final {
     return CreateMaybeMessage<SourceContext>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void CopyFrom(const SourceContext& from);
-  void MergeFrom(const SourceContext& from);
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message &from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message &from) final;
+  void CopyFrom(const SourceContext &from);
+  void MergeFrom(const SourceContext &from);
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* InternalSerializeWithCachedSizesToArray(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  const char *
+  _InternalParse(const char *ptr,
+                 ::PROTOBUF_NAMESPACE_ID::internal::ParseContext *ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8 *InternalSerializeWithCachedSizesToArray(
+      ::PROTOBUF_NAMESPACE_ID::uint8 *target,
+      ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream *stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
-  private:
+private:
   inline void SharedCtor();
   inline void SharedDtor();
   void SetCachedSize(int size) const final;
-  void InternalSwap(SourceContext* other);
+  void InternalSwap(SourceContext *other);
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.SourceContext";
   }
-  private:
-  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
-    return nullptr;
-  }
-  inline void* MaybeArenaPtr() const {
-    return nullptr;
-  }
-  public:
 
+private:
+  inline ::PROTOBUF_NAMESPACE_ID::Arena *GetArenaNoVirtual() const {
+    return nullptr;
+  }
+  inline void *MaybeArenaPtr() const { return nullptr; }
+
+public:
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
-  private:
+
+private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
-    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto);
-    return ::descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto.file_level_metadata[kIndexInFileMessages];
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
+        &::descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto);
+    return ::descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto
+        .file_level_metadata[kIndexInFileMessages];
   }
 
-  public:
-
+public:
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -176,103 +188,113 @@ class PROTOBUF_EXPORT SourceContext :
   };
   // string file_name = 1;
   void clear_file_name();
-  const std::string& file_name() const;
-  void set_file_name(const std::string& value);
-  void set_file_name(std::string&& value);
-  void set_file_name(const char* value);
-  void set_file_name(const char* value, size_t size);
-  std::string* mutable_file_name();
-  std::string* release_file_name();
-  void set_allocated_file_name(std::string* file_name);
-  private:
-  const std::string& _internal_file_name() const;
-  void _internal_set_file_name(const std::string& value);
-  std::string* _internal_mutable_file_name();
-  public:
+  const std::string &file_name() const;
+  void set_file_name(const std::string &value);
+  void set_file_name(std::string &&value);
+  void set_file_name(const char *value);
+  void set_file_name(const char *value, size_t size);
+  std::string *mutable_file_name();
+  std::string *release_file_name();
+  void set_allocated_file_name(std::string *file_name);
 
+private:
+  const std::string &_internal_file_name() const;
+  void _internal_set_file_name(const std::string &value);
+  std::string *_internal_mutable_file_name();
+
+public:
   // @@protoc_insertion_point(class_scope:google.protobuf.SourceContext)
- private:
+private:
   class _Internal;
 
-  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
+  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena
+      _internal_metadata_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr file_name_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_google_2fprotobuf_2fsource_5fcontext_2eproto;
 };
 // ===================================================================
 
-
 // ===================================================================
 
 #ifdef __GNUC__
-  #pragma GCC diagnostic push
-  #pragma GCC diagnostic ignored "-Wstrict-aliasing"
-#endif  // __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-aliasing"
+#endif // __GNUC__
 // SourceContext
 
 // string file_name = 1;
 inline void SourceContext::clear_file_name() {
-  file_name_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  file_name_.ClearToEmptyNoArena(
+      &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
-inline const std::string& SourceContext::file_name() const {
+inline const std::string &SourceContext::file_name() const {
   // @@protoc_insertion_point(field_get:google.protobuf.SourceContext.file_name)
   return _internal_file_name();
 }
-inline void SourceContext::set_file_name(const std::string& value) {
+inline void SourceContext::set_file_name(const std::string &value) {
   _internal_set_file_name(value);
   // @@protoc_insertion_point(field_set:google.protobuf.SourceContext.file_name)
 }
-inline std::string* SourceContext::mutable_file_name() {
+inline std::string *SourceContext::mutable_file_name() {
   // @@protoc_insertion_point(field_mutable:google.protobuf.SourceContext.file_name)
   return _internal_mutable_file_name();
 }
-inline const std::string& SourceContext::_internal_file_name() const {
+inline const std::string &SourceContext::_internal_file_name() const {
   return file_name_.GetNoArena();
 }
-inline void SourceContext::_internal_set_file_name(const std::string& value) {
-  
-  file_name_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
-}
-inline void SourceContext::set_file_name(std::string&& value) {
-  
+inline void SourceContext::_internal_set_file_name(const std::string &value) {
+
   file_name_.SetNoArena(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+      &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
+}
+inline void SourceContext::set_file_name(std::string &&value) {
+
+  file_name_.SetNoArena(
+      &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      ::std::move(value));
   // @@protoc_insertion_point(field_set_rvalue:google.protobuf.SourceContext.file_name)
 }
-inline void SourceContext::set_file_name(const char* value) {
+inline void SourceContext::set_file_name(const char *value) {
   GOOGLE_DCHECK(value != nullptr);
-  
-  file_name_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+
+  file_name_.SetNoArena(
+      &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(value));
   // @@protoc_insertion_point(field_set_char:google.protobuf.SourceContext.file_name)
 }
-inline void SourceContext::set_file_name(const char* value, size_t size) {
-  
-  file_name_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
+inline void SourceContext::set_file_name(const char *value, size_t size) {
+
+  file_name_.SetNoArena(
+      &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char *>(value), size));
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.SourceContext.file_name)
 }
-inline std::string* SourceContext::_internal_mutable_file_name() {
-  
-  return file_name_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+inline std::string *SourceContext::_internal_mutable_file_name() {
+
+  return file_name_.MutableNoArena(
+      &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
-inline std::string* SourceContext::release_file_name() {
+inline std::string *SourceContext::release_file_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.SourceContext.file_name)
-  
-  return file_name_.ReleaseNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+
+  return file_name_.ReleaseNoArena(
+      &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
-inline void SourceContext::set_allocated_file_name(std::string* file_name) {
+inline void SourceContext::set_allocated_file_name(std::string *file_name) {
   if (file_name != nullptr) {
-    
+
   } else {
-    
   }
-  file_name_.SetAllocatedNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), file_name);
+  file_name_.SetAllocatedNoArena(
+      &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      file_name);
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.SourceContext.file_name)
 }
 
 #ifdef __GNUC__
-  #pragma GCC diagnostic pop
-#endif  // __GNUC__
+#pragma GCC diagnostic pop
+#endif // __GNUC__
 
 // @@protoc_insertion_point(namespace_scope)
 
@@ -281,4 +303,4 @@ PROTOBUF_NAMESPACE_CLOSE
 // @@protoc_insertion_point(global_scope)
 
 #include <google/protobuf/port_undef.inc>
-#endif  // GOOGLE_PROTOBUF_INCLUDED_GOOGLE_PROTOBUF_INCLUDED_google_2fprotobuf_2fsource_5fcontext_2eproto
+#endif // GOOGLE_PROTOBUF_INCLUDED_GOOGLE_PROTOBUF_INCLUDED_google_2fprotobuf_2fsource_5fcontext_2eproto

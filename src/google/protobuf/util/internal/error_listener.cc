@@ -33,10 +33,7 @@
 namespace google {
 namespace protobuf {
 namespace util {
-namespace converter {
-
-
-}  // namespace converter
-}  // namespace util
-}  // namespace protobuf
-}  // namespace google
+namespace converter {} // namespace converter
+} // namespace util
+} // namespace protobuf
+} // namespace google

@@ -51,7 +51,7 @@ namespace cpp_unittest {
 TEST(MovableMessageTest, MoveConstructor) {
   protobuf_unittest::TestAllTypes message1;
   TestUtil::SetAllFields(&message1);
-  const auto* nested = &message1.optional_nested_message();
+  const auto *nested = &message1.optional_nested_message();
 
   protobuf_unittest::TestAllTypes message2(std::move(message1));
   TestUtil::ExpectAllFieldsSet(message2);
@@ -65,7 +65,7 @@ TEST(MovableMessageTest, MoveConstructor) {
 TEST(MovableMessageTest, MoveAssignmentOperator) {
   protobuf_unittest::TestAllTypes message1;
   TestUtil::SetAllFields(&message1);
-  const auto* nested = &message1.optional_nested_message();
+  const auto *nested = &message1.optional_nested_message();
 
   protobuf_unittest::TestAllTypes message2;
   message2 = std::move(message1);
@@ -88,12 +88,12 @@ TEST(MovableMessageTest, SelfMoveAssignment) {
 TEST(MovableMessageTest, MoveSameArena) {
   Arena arena;
 
-  auto* message1_on_arena =
+  auto *message1_on_arena =
       Arena::CreateMessage<protobuf_unittest::TestAllTypes>(&arena);
   TestUtil::SetAllFields(message1_on_arena);
-  const auto* nested = &message1_on_arena->optional_nested_message();
+  const auto *nested = &message1_on_arena->optional_nested_message();
 
-  auto* message2_on_arena =
+  auto *message2_on_arena =
       Arena::CreateMessage<protobuf_unittest::TestAllTypes>(&arena);
 
   // Moving messages on the same arena should lead to swapped pointers.
@@ -104,12 +104,12 @@ TEST(MovableMessageTest, MoveSameArena) {
 TEST(MovableMessageTest, MoveDifferentArenas) {
   Arena arena1, arena2;
 
-  auto* message1_on_arena =
+  auto *message1_on_arena =
       Arena::CreateMessage<protobuf_unittest::TestAllTypes>(&arena1);
   TestUtil::SetAllFields(message1_on_arena);
-  const auto* nested = &message1_on_arena->optional_nested_message();
+  const auto *nested = &message1_on_arena->optional_nested_message();
 
-  auto* message2_on_arena =
+  auto *message2_on_arena =
       Arena::CreateMessage<protobuf_unittest::TestAllTypes>(&arena2);
 
   // Moving messages on two different arenas should lead to a copy.
@@ -122,10 +122,10 @@ TEST(MovableMessageTest, MoveDifferentArenas) {
 TEST(MovableMessageTest, MoveFromArena) {
   Arena arena;
 
-  auto* message1_on_arena =
+  auto *message1_on_arena =
       Arena::CreateMessage<protobuf_unittest::TestAllTypes>(&arena);
   TestUtil::SetAllFields(message1_on_arena);
-  const auto* nested = &message1_on_arena->optional_nested_message();
+  const auto *nested = &message1_on_arena->optional_nested_message();
 
   protobuf_unittest::TestAllTypes message2;
 
@@ -141,9 +141,9 @@ TEST(MovableMessageTest, MoveToArena) {
 
   protobuf_unittest::TestAllTypes message1;
   TestUtil::SetAllFields(&message1);
-  const auto* nested = &message1.optional_nested_message();
+  const auto *nested = &message1.optional_nested_message();
 
-  auto* message2_on_arena =
+  auto *message2_on_arena =
       Arena::CreateMessage<protobuf_unittest::TestAllTypes>(&arena);
 
   // Moving to a message on the arena should lead to a copy.
@@ -156,14 +156,15 @@ TEST(MovableMessageTest, MoveToArena) {
 TEST(MovableMessageTest, Noexcept) {
   EXPECT_TRUE(
       std::is_nothrow_move_constructible<protobuf_unittest::TestAllTypes>());
-  EXPECT_TRUE(std::is_nothrow_move_assignable<protobuf_unittest::TestAllTypes>());
+  EXPECT_TRUE(
+      std::is_nothrow_move_assignable<protobuf_unittest::TestAllTypes>());
 }
 
-#endif  // LANG_CXX11
+#endif // LANG_CXX11
 
-}  // namespace cpp_unittest
+} // namespace cpp_unittest
 
-}  // namespace cpp
-}  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+} // namespace cpp
+} // namespace compiler
+} // namespace protobuf
+} // namespace google

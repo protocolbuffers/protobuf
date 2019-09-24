@@ -124,7 +124,7 @@ TEST(TemplateUtilTest, TestIdentity) {
       (type_equals_<GOOGLE_NAMESPACE::identity_<void>::type, void>::value));
 }
 
-}  // anonymous namespace
-}  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+} // anonymous namespace
+} // namespace internal
+} // namespace protobuf
+} // namespace google

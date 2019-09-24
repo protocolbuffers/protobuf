@@ -31,8 +31,8 @@
 #ifndef GOOGLE_PROTOBUF_HAS_BITS_H__
 #define GOOGLE_PROTOBUF_HAS_BITS_H__
 
-#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/port.h>
+#include <google/protobuf/stubs/common.h>
 
 #include <google/protobuf/port_def.inc>
 
@@ -44,73 +44,67 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-template <size_t doublewords>
-class HasBits {
- public:
+template <size_t doublewords> class HasBits {
+public:
   HasBits() PROTOBUF_ALWAYS_INLINE { Clear(); }
 
   void Clear() PROTOBUF_ALWAYS_INLINE {
     memset(has_bits_, 0, sizeof(has_bits_));
   }
 
-  uint32& operator[](int index) PROTOBUF_ALWAYS_INLINE {
+  uint32 &operator[](int index) PROTOBUF_ALWAYS_INLINE {
     return has_bits_[index];
   }
 
-  const uint32& operator[](int index) const PROTOBUF_ALWAYS_INLINE {
+  const uint32 &operator[](int index) const PROTOBUF_ALWAYS_INLINE {
     return has_bits_[index];
   }
 
-  bool operator==(const HasBits<doublewords>& rhs) const {
+  bool operator==(const HasBits<doublewords> &rhs) const {
     return memcmp(has_bits_, rhs.has_bits_, sizeof(has_bits_)) == 0;
   }
 
-  bool operator!=(const HasBits<doublewords>& rhs) const {
+  bool operator!=(const HasBits<doublewords> &rhs) const {
     return !(*this == rhs);
   }
 
-  void Or(const HasBits<doublewords>& rhs) {
-    for (size_t i = 0; i < doublewords; i++) has_bits_[i] |= rhs[i];
+  void Or(const HasBits<doublewords> &rhs) {
+    for (size_t i = 0; i < doublewords; i++)
+      has_bits_[i] |= rhs[i];
   }
 
   bool empty() const;
 
- private:
+private:
   uint32 has_bits_[doublewords];
 };
 
-template <>
-inline bool HasBits<1>::empty() const {
-  return !has_bits_[0];
-}
+template <> inline bool HasBits<1>::empty() const { return !has_bits_[0]; }
 
-template <>
-inline bool HasBits<2>::empty() const {
+template <> inline bool HasBits<2>::empty() const {
   return !(has_bits_[0] | has_bits_[1]);
 }
 
-template <>
-inline bool HasBits<3>::empty() const {
+template <> inline bool HasBits<3>::empty() const {
   return !(has_bits_[0] | has_bits_[1] | has_bits_[2]);
 }
 
-template <>
-inline bool HasBits<4>::empty() const {
+template <> inline bool HasBits<4>::empty() const {
   return !(has_bits_[0] | has_bits_[1] | has_bits_[2] | has_bits_[3]);
 }
 
-template <size_t doublewords>
-inline bool HasBits<doublewords>::empty() const {
+template <size_t doublewords> inline bool HasBits<doublewords>::empty() const {
   for (size_t i = 0; i < doublewords; ++i) {
-    if (has_bits_[i]) return false;
+    if (has_bits_[i])
+      return false;
   }
   return true;
 }
 
-}  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+} // namespace internal
+} // namespace protobuf
+} // namespace google
 
 #include <google/protobuf/port_undef.inc>
 
-#endif  // GOOGLE_PROTOBUF_HAS_BITS_H__
+#endif // GOOGLE_PROTOBUF_HAS_BITS_H__

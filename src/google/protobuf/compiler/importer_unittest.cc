@@ -37,18 +37,16 @@
 #include <memory>
 #include <unordered_map>
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/testing/file.h>
-#include <google/protobuf/testing/file.h>
-#include <google/protobuf/testing/file.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/descriptor.h>
-#include <google/protobuf/testing/googletest.h>
-#include <gtest/gtest.h>
-#include <google/protobuf/stubs/substitute.h>
+#include <google/protobuf/io/zero_copy_stream_impl.h>
+#include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/stubs/substitute.h>
+#include <google/protobuf/testing/file.h>
+#include <google/protobuf/testing/googletest.h>
+#include <gtest/gtest.h>
 
 namespace google {
 namespace protobuf {
@@ -56,15 +54,13 @@ namespace compiler {
 
 namespace {
 
-bool FileExists(const std::string& path) {
-  return File::Exists(path);
-}
+bool FileExists(const std::string &path) { return File::Exists(path); }
 
-#define EXPECT_SUBSTRING(needle, haystack) \
+#define EXPECT_SUBSTRING(needle, haystack)                                     \
   EXPECT_PRED_FORMAT2(testing::IsSubstring, (needle), (haystack))
 
 class MockErrorCollector : public MultiFileErrorCollector {
- public:
+public:
   MockErrorCollector() {}
   ~MockErrorCollector() {}
 
@@ -72,14 +68,14 @@ class MockErrorCollector : public MultiFileErrorCollector {
   std::string warning_text_;
 
   // implements ErrorCollector ---------------------------------------
-  void AddError(const std::string& filename, int line, int column,
-                const std::string& message) {
+  void AddError(const std::string &filename, int line, int column,
+                const std::string &message) {
     strings::SubstituteAndAppend(&text_, "$0:$1:$2: $3\n", filename, line,
                                  column, message);
   }
 
-  void AddWarning(const std::string& filename, int line, int column,
-                  const std::string& message) {
+  void AddWarning(const std::string &filename, int line, int column,
+                  const std::string &message) {
     strings::SubstituteAndAppend(&warning_text_, "$0:$1:$2: $3\n", filename,
                                  line, column, message);
   }
@@ -89,17 +85,17 @@ class MockErrorCollector : public MultiFileErrorCollector {
 
 // A dummy implementation of SourceTree backed by a simple map.
 class MockSourceTree : public SourceTree {
- public:
+public:
   MockSourceTree() {}
   ~MockSourceTree() {}
 
-  void AddFile(const std::string& name, const char* contents) {
+  void AddFile(const std::string &name, const char *contents) {
     files_[name] = contents;
   }
 
   // implements SourceTree -------------------------------------------
-  io::ZeroCopyInputStream* Open(const std::string& filename) {
-    const char* contents = FindPtrOrNull(files_, filename);
+  io::ZeroCopyInputStream *Open(const std::string &filename) {
+    const char *contents = FindPtrOrNull(files_, filename);
     if (contents == NULL) {
       return NULL;
     } else {
@@ -109,17 +105,17 @@ class MockSourceTree : public SourceTree {
 
   std::string GetLastErrorMessage() { return "File not found."; }
 
- private:
-  std::unordered_map<std::string, const char*> files_;
+private:
+  std::unordered_map<std::string, const char *> files_;
 };
 
 // ===================================================================
 
 class ImporterTest : public testing::Test {
- protected:
+protected:
   ImporterTest() : importer_(&source_tree_, &error_collector_) {}
 
-  void AddFile(const std::string& filename, const char* text) {
+  void AddFile(const std::string &filename, const char *text) {
     source_tree_.AddFile(filename, text);
   }
 
@@ -133,11 +129,10 @@ class ImporterTest : public testing::Test {
 
 TEST_F(ImporterTest, Import) {
   // Test normal importing.
-  AddFile("foo.proto",
-          "syntax = \"proto2\";\n"
-          "message Foo {}\n");
+  AddFile("foo.proto", "syntax = \"proto2\";\n"
+                       "message Foo {}\n");
 
-  const FileDescriptor* file = importer_.Import("foo.proto");
+  const FileDescriptor *file = importer_.Import("foo.proto");
   EXPECT_EQ("", error_collector_.text_);
   ASSERT_TRUE(file != NULL);
 
@@ -150,23 +145,21 @@ TEST_F(ImporterTest, Import) {
 
 TEST_F(ImporterTest, ImportNested) {
   // Test that importing a file which imports another file works.
-  AddFile("foo.proto",
-          "syntax = \"proto2\";\n"
-          "import \"bar.proto\";\n"
-          "message Foo {\n"
-          "  optional Bar bar = 1;\n"
-          "}\n");
-  AddFile("bar.proto",
-          "syntax = \"proto2\";\n"
-          "message Bar {}\n");
+  AddFile("foo.proto", "syntax = \"proto2\";\n"
+                       "import \"bar.proto\";\n"
+                       "message Foo {\n"
+                       "  optional Bar bar = 1;\n"
+                       "}\n");
+  AddFile("bar.proto", "syntax = \"proto2\";\n"
+                       "message Bar {}\n");
 
   // Note that both files are actually parsed by the first call to Import()
   // here, since foo.proto imports bar.proto.  The second call just returns
   // the same ProtoFile for bar.proto which was constructed while importing
   // foo.proto.  We test that this is the case below by checking that bar
   // is among foo's dependencies (by pointer).
-  const FileDescriptor* foo = importer_.Import("foo.proto");
-  const FileDescriptor* bar = importer_.Import("bar.proto");
+  const FileDescriptor *foo = importer_.Import("foo.proto");
+  const FileDescriptor *bar = importer_.Import("bar.proto");
   EXPECT_EQ("", error_collector_.text_);
   ASSERT_TRUE(foo != NULL);
   ASSERT_TRUE(bar != NULL);
@@ -193,9 +186,8 @@ TEST_F(ImporterTest, FileNotFound) {
 
 TEST_F(ImporterTest, ImportNotFound) {
   // Error:  Importing a file that doesn't exist.
-  AddFile("foo.proto",
-          "syntax = \"proto2\";\n"
-          "import \"bar.proto\";\n");
+  AddFile("foo.proto", "syntax = \"proto2\";\n"
+                       "import \"bar.proto\";\n");
 
   EXPECT_TRUE(importer_.Import("foo.proto") == NULL);
   EXPECT_EQ(
@@ -206,62 +198,53 @@ TEST_F(ImporterTest, ImportNotFound) {
 
 TEST_F(ImporterTest, RecursiveImport) {
   // Error:  Recursive import.
-  AddFile("recursive1.proto",
-          "syntax = \"proto2\";\n"
-          "\n"
-          "import \"recursive2.proto\";\n");
-  AddFile("recursive2.proto",
-          "syntax = \"proto2\";\n"
-          "import \"recursive1.proto\";\n");
+  AddFile("recursive1.proto", "syntax = \"proto2\";\n"
+                              "\n"
+                              "import \"recursive2.proto\";\n");
+  AddFile("recursive2.proto", "syntax = \"proto2\";\n"
+                              "import \"recursive1.proto\";\n");
 
   EXPECT_TRUE(importer_.Import("recursive1.proto") == NULL);
-  EXPECT_EQ(
-      "recursive1.proto:2:0: File recursively imports itself: "
-      "recursive1.proto "
-      "-> recursive2.proto -> recursive1.proto\n"
-      "recursive2.proto:1:0: Import \"recursive1.proto\" was not found "
-      "or had errors.\n"
-      "recursive1.proto:2:0: Import \"recursive2.proto\" was not found "
-      "or had errors.\n",
-      error_collector_.text_);
+  EXPECT_EQ("recursive1.proto:2:0: File recursively imports itself: "
+            "recursive1.proto "
+            "-> recursive2.proto -> recursive1.proto\n"
+            "recursive2.proto:1:0: Import \"recursive1.proto\" was not found "
+            "or had errors.\n"
+            "recursive1.proto:2:0: Import \"recursive2.proto\" was not found "
+            "or had errors.\n",
+            error_collector_.text_);
 }
 
 TEST_F(ImporterTest, RecursiveImportSelf) {
   // Error:  Recursive import.
-  AddFile("recursive.proto",
-          "syntax = \"proto2\";\n"
-          "\n"
-          "import \"recursive.proto\";\n");
+  AddFile("recursive.proto", "syntax = \"proto2\";\n"
+                             "\n"
+                             "import \"recursive.proto\";\n");
 
   EXPECT_TRUE(importer_.Import("recursive.proto") == nullptr);
-  EXPECT_EQ(
-      "recursive.proto:2:0: File recursively imports itself: "
-      "recursive.proto -> recursive.proto\n",
-      error_collector_.text_);
+  EXPECT_EQ("recursive.proto:2:0: File recursively imports itself: "
+            "recursive.proto -> recursive.proto\n",
+            error_collector_.text_);
 }
 
 TEST_F(ImporterTest, LiteRuntimeImport) {
   // Error:  Recursive import.
-  AddFile("bar.proto",
-          "syntax = \"proto2\";\n"
-          "option optimize_for = LITE_RUNTIME;\n");
-  AddFile("foo.proto",
-          "syntax = \"proto2\";\n"
-          "import \"bar.proto\";\n");
+  AddFile("bar.proto", "syntax = \"proto2\";\n"
+                       "option optimize_for = LITE_RUNTIME;\n");
+  AddFile("foo.proto", "syntax = \"proto2\";\n"
+                       "import \"bar.proto\";\n");
 
   EXPECT_TRUE(importer_.Import("foo.proto") == nullptr);
-  EXPECT_EQ(
-      "foo.proto:1:0: Files that do not use optimize_for = LITE_RUNTIME "
-      "cannot import files which do use this option.  This file is not "
-      "lite, but it imports \"bar.proto\" which is.\n",
-      error_collector_.text_);
+  EXPECT_EQ("foo.proto:1:0: Files that do not use optimize_for = LITE_RUNTIME "
+            "cannot import files which do use this option.  This file is not "
+            "lite, but it imports \"bar.proto\" which is.\n",
+            error_collector_.text_);
 }
-
 
 // ===================================================================
 
 class DiskSourceTreeTest : public testing::Test {
- protected:
+protected:
   virtual void SetUp() {
     dirnames_.push_back(TestTempDir() + "/test_proto2_import_path_1");
     dirnames_.push_back(TestTempDir() + "/test_proto2_import_path_2");
@@ -282,33 +265,33 @@ class DiskSourceTreeTest : public testing::Test {
     }
   }
 
-  void AddFile(const std::string& filename, const char* contents) {
+  void AddFile(const std::string &filename, const char *contents) {
     GOOGLE_CHECK_OK(File::SetContents(filename, contents, true));
   }
 
-  void AddSubdir(const std::string& dirname) {
+  void AddSubdir(const std::string &dirname) {
     GOOGLE_CHECK_OK(File::CreateDir(dirname, 0777));
   }
 
-  void ExpectFileContents(const std::string& filename,
-                          const char* expected_contents) {
+  void ExpectFileContents(const std::string &filename,
+                          const char *expected_contents) {
     std::unique_ptr<io::ZeroCopyInputStream> input(source_tree_.Open(filename));
 
     ASSERT_FALSE(input == NULL);
 
     // Read all the data from the file.
     std::string file_contents;
-    const void* data;
+    const void *data;
     int size;
     while (input->Next(&data, &size)) {
-      file_contents.append(reinterpret_cast<const char*>(data), size);
+      file_contents.append(reinterpret_cast<const char *>(data), size);
     }
 
     EXPECT_EQ(expected_contents, file_contents);
   }
 
-  void ExpectCannotOpenFile(const std::string& filename,
-                            const std::string& error_message) {
+  void ExpectCannotOpenFile(const std::string &filename,
+                            const std::string &error_message) {
     std::unique_ptr<io::ZeroCopyInputStream> input(source_tree_.Open(filename));
     EXPECT_TRUE(input == NULL);
     EXPECT_EQ(error_message, source_tree_.GetLastErrorMessage());
@@ -473,7 +456,7 @@ TEST_F(DiskSourceTreeTest, DiskFileToVirtualFileCanonicalization) {
   EXPECT_EQ(DiskSourceTree::NO_MAPPING,
             source_tree_.DiskFileToVirtualFile("C:\\foo", &virtual_file,
                                                &shadowing_disk_file));
-#endif  // WIN32
+#endif // WIN32
 
   // But "../baz" should be.
   EXPECT_EQ(DiskSourceTree::CANNOT_OPEN,
@@ -540,8 +523,8 @@ TEST_F(DiskSourceTreeTest, VirtualFileToDiskFile) {
   EXPECT_FALSE(source_tree_.VirtualFileToDiskFile("baz/foo", NULL));
 }
 
-}  // namespace
+} // namespace
 
-}  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+} // namespace compiler
+} // namespace protobuf
+} // namespace google

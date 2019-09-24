@@ -106,9 +106,7 @@ TEST(Status, AssignEmpty) {
   ASSERT_TRUE(a.ok());
 }
 
-TEST(Status, EqualsOK) {
-  ASSERT_EQ(util::Status::OK, util::Status());
-}
+TEST(Status, EqualsOK) { ASSERT_EQ(util::Status::OK, util::Status()); }
 
 TEST(Status, EqualsSame) {
   const util::Status a = util::Status(util::error::CANCELLED, "message");
@@ -133,6 +131,6 @@ TEST(Status, EqualsDifferentMessage) {
   const util::Status b = util::Status(util::error::CANCELLED, "another");
   ASSERT_NE(a, b);
 }
-}  // namespace
-}  // namespace protobuf
-}  // namespace google
+} // namespace
+} // namespace protobuf
+} // namespace google

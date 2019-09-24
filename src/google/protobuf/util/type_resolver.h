@@ -36,8 +36,8 @@
 #include <string>
 
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/type.pb.h>
 #include <google/protobuf/stubs/status.h>
+#include <google/protobuf/type.pb.h>
 
 #include <google/protobuf/port_def.inc>
 
@@ -50,26 +50,27 @@ namespace util {
 //
 // Implementations of this interface must be thread-safe.
 class PROTOBUF_EXPORT TypeResolver {
- public:
+public:
   TypeResolver() {}
   virtual ~TypeResolver() {}
 
   // Resolves a type url for a message type.
-  virtual util::Status ResolveMessageType(
-      const std::string& type_url, google::protobuf::Type* message_type) = 0;
+  virtual util::Status
+  ResolveMessageType(const std::string &type_url,
+                     google::protobuf::Type *message_type) = 0;
 
   // Resolves a type url for an enum type.
-  virtual util::Status ResolveEnumType(const std::string& type_url,
-                                         google::protobuf::Enum* enum_type) = 0;
+  virtual util::Status ResolveEnumType(const std::string &type_url,
+                                       google::protobuf::Enum *enum_type) = 0;
 
- private:
+private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(TypeResolver);
 };
 
-}  // namespace util
-}  // namespace protobuf
-}  // namespace google
+} // namespace util
+} // namespace protobuf
+} // namespace google
 
 #include <google/protobuf/port_undef.inc>
 
-#endif  // GOOGLE_PROTOBUF_UTIL_TYPE_RESOLVER_H__
+#endif // GOOGLE_PROTOBUF_UTIL_TYPE_RESOLVER_H__

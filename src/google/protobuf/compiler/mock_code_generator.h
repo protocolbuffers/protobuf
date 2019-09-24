@@ -40,8 +40,8 @@
 namespace google {
 namespace protobuf {
 class FileDescriptor;
-}  // namespace protobuf
-}  // namespace google
+} // namespace protobuf
+} // namespace google
 
 namespace google {
 namespace protobuf {
@@ -73,8 +73,8 @@ namespace compiler {
 //   MockCodeGenerator_Annotate:  Generate() will add annotations to its output
 //     that can later be verified with CheckGeneratedAnnotations.
 class MockCodeGenerator : public CodeGenerator {
- public:
-  MockCodeGenerator(const std::string& name);
+public:
+  MockCodeGenerator(const std::string &name);
   virtual ~MockCodeGenerator();
 
   // Expect (via gTest) that a MockCodeGenerator with the given name was called
@@ -84,47 +84,48 @@ class MockCodeGenerator : public CodeGenerator {
   // should have inserted lines into this file.
   // |parsed_file_list| is a comma-separated list of names of the files
   // that are being compiled together in this run.
-  static void ExpectGenerated(const std::string& name,
-                              const std::string& parameter,
-                              const std::string& insertions,
-                              const std::string& file,
-                              const std::string& first_message_name,
-                              const std::string& parsed_file_list,
-                              const std::string& output_directory);
+  static void ExpectGenerated(const std::string &name,
+                              const std::string &parameter,
+                              const std::string &insertions,
+                              const std::string &file,
+                              const std::string &first_message_name,
+                              const std::string &parsed_file_list,
+                              const std::string &output_directory);
 
   // Checks that the correct text ranges were annotated by the
   // MockCodeGenerator_Annotate directive.
-  static void CheckGeneratedAnnotations(const std::string& name,
-                                        const std::string& file,
-                                        const std::string& output_directory);
+  static void CheckGeneratedAnnotations(const std::string &name,
+                                        const std::string &file,
+                                        const std::string &output_directory);
 
   // Get the name of the file which would be written by the given generator.
-  static std::string GetOutputFileName(const std::string& generator_name,
-                                       const FileDescriptor* file);
-  static std::string GetOutputFileName(const std::string& generator_name,
-                                       const std::string& file);
+  static std::string GetOutputFileName(const std::string &generator_name,
+                                       const FileDescriptor *file);
+  static std::string GetOutputFileName(const std::string &generator_name,
+                                       const std::string &file);
 
   // implements CodeGenerator ----------------------------------------
 
-  virtual bool Generate(const FileDescriptor* file,
-                        const std::string& parameter, GeneratorContext* context,
-                        std::string* error) const;
+  virtual bool Generate(const FileDescriptor *file,
+                        const std::string &parameter, GeneratorContext *context,
+                        std::string *error) const;
 
- private:
+private:
   std::string name_;
 
-  static std::string GetOutputFileContent(const std::string& generator_name,
-                                          const std::string& parameter,
-                                          const FileDescriptor* file,
-                                          GeneratorContext* context);
-  static std::string GetOutputFileContent(
-      const std::string& generator_name, const std::string& parameter,
-      const std::string& file, const std::string& parsed_file_list,
-      const std::string& first_message_name);
+  static std::string GetOutputFileContent(const std::string &generator_name,
+                                          const std::string &parameter,
+                                          const FileDescriptor *file,
+                                          GeneratorContext *context);
+  static std::string
+  GetOutputFileContent(const std::string &generator_name,
+                       const std::string &parameter, const std::string &file,
+                       const std::string &parsed_file_list,
+                       const std::string &first_message_name);
 };
 
-}  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+} // namespace compiler
+} // namespace protobuf
+} // namespace google
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_MOCK_CODE_GENERATOR_H__
+#endif // GOOGLE_PROTOBUF_COMPILER_MOCK_CODE_GENERATOR_H__

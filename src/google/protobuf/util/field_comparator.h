@@ -58,20 +58,20 @@ class MessageDifferencer;
 // rather than this interface.
 // Currently, this does not support comparing unknown fields.
 class PROTOBUF_EXPORT FieldComparator {
- public:
+public:
   FieldComparator();
   virtual ~FieldComparator();
 
   enum ComparisonResult {
-    SAME,       // Compared fields are equal. In case of comparing submessages,
-                // user should not recursively compare their contents.
-    DIFFERENT,  // Compared fields are different. In case of comparing
-                // submessages, user should not recursively compare their
-                // contents.
-    RECURSE,    // Compared submessages need to be compared recursively.
-                // FieldComparator does not specify the semantics of recursive
-                // comparison. This value should not be returned for simple
-                // values.
+    SAME,      // Compared fields are equal. In case of comparing submessages,
+               // user should not recursively compare their contents.
+    DIFFERENT, // Compared fields are different. In case of comparing
+               // submessages, user should not recursively compare their
+               // contents.
+    RECURSE,   // Compared submessages need to be compared recursively.
+               // FieldComparator does not specify the semantics of recursive
+               // comparison. This value should not be returned for simple
+               // values.
   };
 
   // Compares the values of a field in two protocol buffer messages.
@@ -84,13 +84,13 @@ class PROTOBUF_EXPORT FieldComparator {
   // FieldContext contains information about the specific instances of the
   // fields being compared, versus FieldDescriptor which only contains general
   // type information about the fields.
-  virtual ComparisonResult Compare(const Message& message_1,
-                                   const Message& message_2,
-                                   const FieldDescriptor* field, int index_1,
+  virtual ComparisonResult Compare(const Message &message_1,
+                                   const Message &message_2,
+                                   const FieldDescriptor *field, int index_1,
                                    int index_2,
-                                   const util::FieldContext* field_context) = 0;
+                                   const util::FieldContext *field_context) = 0;
 
- private:
+private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FieldComparator);
 };
 
@@ -98,12 +98,12 @@ class PROTOBUF_EXPORT FieldComparator {
 // point value comparison: exact, approximate using MathUtil::AlmostEqual
 // method, and arbitrarily precise using MathUtil::WithinFractionOrMargin.
 class PROTOBUF_EXPORT DefaultFieldComparator : public FieldComparator {
- public:
+public:
   enum FloatComparison {
-    EXACT,        // Floats and doubles are compared exactly.
-    APPROXIMATE,  // Floats and doubles are compared using the
-                  // MathUtil::AlmostEqual method or
-                  // MathUtil::WithinFractionOrMargin method.
+    EXACT,       // Floats and doubles are compared exactly.
+    APPROXIMATE, // Floats and doubles are compared using the
+                 // MathUtil::AlmostEqual method or
+                 // MathUtil::WithinFractionOrMargin method.
     // TODO(ksroka): Introduce third value to differentiate uses of AlmostEqual
     //               and WithinFractionOrMargin.
   };
@@ -113,10 +113,10 @@ class PROTOBUF_EXPORT DefaultFieldComparator : public FieldComparator {
 
   ~DefaultFieldComparator() override;
 
-  ComparisonResult Compare(const Message& message_1, const Message& message_2,
-                           const FieldDescriptor* field, int index_1,
+  ComparisonResult Compare(const Message &message_1, const Message &message_2,
+                           const FieldDescriptor *field, int index_1,
                            int index_2,
-                           const util::FieldContext* field_context) override;
+                           const util::FieldContext *field_context) override;
 
   void set_float_comparison(FloatComparison float_comparison) {
     float_comparison_ = float_comparison;
@@ -139,7 +139,7 @@ class PROTOBUF_EXPORT DefaultFieldComparator : public FieldComparator {
   // REQUIRES: field->cpp_type == FieldDescriptor::CPPTYPE_DOUBLE or
   //           field->cpp_type == FieldDescriptor::CPPTYPE_FLOAT
   // REQUIRES: float_comparison_ == APPROXIMATE
-  void SetFractionAndMargin(const FieldDescriptor* field, double fraction,
+  void SetFractionAndMargin(const FieldDescriptor *field, double fraction,
                             double margin);
 
   // Sets the fraction and margin for the float comparison of all float and
@@ -150,15 +150,15 @@ class PROTOBUF_EXPORT DefaultFieldComparator : public FieldComparator {
   // REQUIRES: float_comparison_ == APPROXIMATE
   void SetDefaultFractionAndMargin(double fraction, double margin);
 
- protected:
+protected:
   // Compare using the provided message_differencer. For example, a subclass can
   // use this method to compare some field in a certain way using the same
   // message_differencer instance and the field context.
-  bool Compare(MessageDifferencer* differencer, const Message& message1,
-               const Message& message2,
-               const util::FieldContext* field_context);
+  bool Compare(MessageDifferencer *differencer, const Message &message1,
+               const Message &message2,
+               const util::FieldContext *field_context);
 
- private:
+private:
   // Defines the tolerance for floating point comparison (fraction and margin).
   struct Tolerance {
     double fraction;
@@ -168,51 +168,51 @@ class PROTOBUF_EXPORT DefaultFieldComparator : public FieldComparator {
   };
 
   // Defines the map to store the tolerances for floating point comparison.
-  typedef std::map<const FieldDescriptor*, Tolerance> ToleranceMap;
+  typedef std::map<const FieldDescriptor *, Tolerance> ToleranceMap;
 
   // The following methods get executed when CompareFields is called for the
   // basic types (instead of submessages). They return true on success. One
   // can use ResultFromBoolean() to convert that boolean to a ComparisonResult
   // value.
-  bool CompareBool(const FieldDescriptor& /* unused */, bool value_1,
+  bool CompareBool(const FieldDescriptor & /* unused */, bool value_1,
                    bool value_2) {
     return value_1 == value_2;
   }
 
   // Uses CompareDoubleOrFloat, a helper function used by both CompareDouble and
   // CompareFloat.
-  bool CompareDouble(const FieldDescriptor& field, double value_1,
+  bool CompareDouble(const FieldDescriptor &field, double value_1,
                      double value_2);
 
-  bool CompareEnum(const FieldDescriptor& field,
-                   const EnumValueDescriptor* value_1,
-                   const EnumValueDescriptor* value_2);
+  bool CompareEnum(const FieldDescriptor &field,
+                   const EnumValueDescriptor *value_1,
+                   const EnumValueDescriptor *value_2);
 
   // Uses CompareDoubleOrFloat, a helper function used by both CompareDouble and
   // CompareFloat.
-  bool CompareFloat(const FieldDescriptor& field, float value_1, float value_2);
+  bool CompareFloat(const FieldDescriptor &field, float value_1, float value_2);
 
-  bool CompareInt32(const FieldDescriptor& /* unused */, int32 value_1,
+  bool CompareInt32(const FieldDescriptor & /* unused */, int32 value_1,
                     int32 value_2) {
     return value_1 == value_2;
   }
 
-  bool CompareInt64(const FieldDescriptor& /* unused */, int64 value_1,
+  bool CompareInt64(const FieldDescriptor & /* unused */, int64 value_1,
                     int64 value_2) {
     return value_1 == value_2;
   }
 
-  bool CompareString(const FieldDescriptor& /* unused */,
-                     const std::string& value_1, const std::string& value_2) {
+  bool CompareString(const FieldDescriptor & /* unused */,
+                     const std::string &value_1, const std::string &value_2) {
     return value_1 == value_2;
   }
 
-  bool CompareUInt32(const FieldDescriptor& /* unused */, uint32 value_1,
+  bool CompareUInt32(const FieldDescriptor & /* unused */, uint32 value_1,
                      uint32 value_2) {
     return value_1 == value_2;
   }
 
-  bool CompareUInt64(const FieldDescriptor& /* unused */, uint64 value_1,
+  bool CompareUInt64(const FieldDescriptor & /* unused */, uint64 value_1,
                      uint64 value_2) {
     return value_1 == value_2;
   }
@@ -221,7 +221,7 @@ class PROTOBUF_EXPORT DefaultFieldComparator : public FieldComparator {
   // duplication. There are no checks done against types of the values passed,
   // but it's likely to fail if passed non-numeric arguments.
   template <typename T>
-  bool CompareDoubleOrFloat(const FieldDescriptor& field, T value_1, T value_2);
+  bool CompareDoubleOrFloat(const FieldDescriptor &field, T value_1, T value_2);
 
   // Returns FieldComparator::SAME if boolean_result is true and
   // FieldComparator::DIFFERENT otherwise.
@@ -251,10 +251,10 @@ class PROTOBUF_EXPORT DefaultFieldComparator : public FieldComparator {
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(DefaultFieldComparator);
 };
 
-}  // namespace util
-}  // namespace protobuf
-}  // namespace google
+} // namespace util
+} // namespace protobuf
+} // namespace google
 
 #include <google/protobuf/port_undef.inc>
 
-#endif  // GOOGLE_PROTOBUF_UTIL_FIELD_COMPARATOR_H__
+#endif // GOOGLE_PROTOBUF_UTIL_FIELD_COMPARATOR_H__

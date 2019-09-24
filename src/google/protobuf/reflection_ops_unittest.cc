@@ -32,13 +32,13 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+#include <google/protobuf/descriptor.h>
 #include <google/protobuf/reflection_ops.h>
 #include <google/protobuf/test_util.h>
 #include <google/protobuf/unittest.pb.h>
-#include <google/protobuf/descriptor.h>
 
-#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 
@@ -198,7 +198,7 @@ TEST(ReflectionOpsTest, MergeFromSelf) {
   EXPECT_DEATH(ReflectionOps::Merge(message, &message), "&from");
 }
 
-#endif  // PROTOBUF_HAS_DEATH_TEST
+#endif // PROTOBUF_HAS_DEATH_TEST
 
 TEST(ReflectionOpsTest, Clear) {
   unittest::TestAllTypes message;
@@ -366,7 +366,7 @@ TEST(ReflectionOpsTest, ForeignIsInitialized) {
   EXPECT_TRUE(ReflectionOps::IsInitialized(message));
 
   // Add a repeated version of the message.  No longer initialized.
-  unittest::TestRequired* sub_message = message.add_repeated_message();
+  unittest::TestRequired *sub_message = message.add_repeated_message();
   EXPECT_FALSE(ReflectionOps::IsInitialized(message));
 
   // Initialize that repeated version.
@@ -420,7 +420,7 @@ TEST(ReflectionOpsTest, OneofIsInitialized) {
   EXPECT_TRUE(ReflectionOps::IsInitialized(message));
 }
 
-static std::string FindInitializationErrors(const Message& message) {
+static std::string FindInitializationErrors(const Message &message) {
   std::vector<std::string> errors;
   ReflectionOps::FindInitializationErrors(message, "", &errors);
   return Join(errors, ",");
@@ -436,17 +436,16 @@ TEST(ReflectionOpsTest, FindForeignInitializationErrors) {
   message.mutable_optional_message();
   message.add_repeated_message();
   message.add_repeated_message();
-  EXPECT_EQ(
-      "optional_message.a,"
-      "optional_message.b,"
-      "optional_message.c,"
-      "repeated_message[0].a,"
-      "repeated_message[0].b,"
-      "repeated_message[0].c,"
-      "repeated_message[1].a,"
-      "repeated_message[1].b,"
-      "repeated_message[1].c",
-      FindInitializationErrors(message));
+  EXPECT_EQ("optional_message.a,"
+            "optional_message.b,"
+            "optional_message.c,"
+            "repeated_message[0].a,"
+            "repeated_message[0].b,"
+            "repeated_message[0].c,"
+            "repeated_message[1].a,"
+            "repeated_message[1].b,"
+            "repeated_message[1].c",
+            FindInitializationErrors(message));
 }
 
 TEST(ReflectionOpsTest, FindExtensionInitializationErrors) {
@@ -454,17 +453,16 @@ TEST(ReflectionOpsTest, FindExtensionInitializationErrors) {
   message.MutableExtension(unittest::TestRequired::single);
   message.AddExtension(unittest::TestRequired::multi);
   message.AddExtension(unittest::TestRequired::multi);
-  EXPECT_EQ(
-      "(protobuf_unittest.TestRequired.single).a,"
-      "(protobuf_unittest.TestRequired.single).b,"
-      "(protobuf_unittest.TestRequired.single).c,"
-      "(protobuf_unittest.TestRequired.multi)[0].a,"
-      "(protobuf_unittest.TestRequired.multi)[0].b,"
-      "(protobuf_unittest.TestRequired.multi)[0].c,"
-      "(protobuf_unittest.TestRequired.multi)[1].a,"
-      "(protobuf_unittest.TestRequired.multi)[1].b,"
-      "(protobuf_unittest.TestRequired.multi)[1].c",
-      FindInitializationErrors(message));
+  EXPECT_EQ("(protobuf_unittest.TestRequired.single).a,"
+            "(protobuf_unittest.TestRequired.single).b,"
+            "(protobuf_unittest.TestRequired.single).c,"
+            "(protobuf_unittest.TestRequired.multi)[0].a,"
+            "(protobuf_unittest.TestRequired.multi)[0].b,"
+            "(protobuf_unittest.TestRequired.multi)[0].c,"
+            "(protobuf_unittest.TestRequired.multi)[1].a,"
+            "(protobuf_unittest.TestRequired.multi)[1].b,"
+            "(protobuf_unittest.TestRequired.multi)[1].c",
+            FindInitializationErrors(message));
 }
 
 TEST(ReflectionOpsTest, FindOneofInitializationErrors) {
@@ -473,7 +471,7 @@ TEST(ReflectionOpsTest, FindOneofInitializationErrors) {
   EXPECT_EQ("foo_message.required_double", FindInitializationErrors(message));
 }
 
-}  // namespace
-}  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+} // namespace
+} // namespace internal
+} // namespace protobuf
+} // namespace google

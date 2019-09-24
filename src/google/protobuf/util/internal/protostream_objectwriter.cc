@@ -35,17 +35,16 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#include <google/protobuf/stubs/time.h>
+#include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/once.h>
-#include <google/protobuf/wire_format_lite.h>
+#include <google/protobuf/stubs/statusor.h>
+#include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/stubs/time.h>
+#include <google/protobuf/util/internal/constants.h>
 #include <google/protobuf/util/internal/field_mask_utility.h>
 #include <google/protobuf/util/internal/object_location_tracker.h>
-#include <google/protobuf/util/internal/constants.h>
 #include <google/protobuf/util/internal/utility.h>
-#include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/stubs/map_util.h>
-#include <google/protobuf/stubs/statusor.h>
-
+#include <google/protobuf/wire_format_lite.h>
 
 #include <google/protobuf/port_def.inc>
 
@@ -60,15 +59,12 @@ using util::Status;
 using util::StatusOr;
 using util::error::INVALID_ARGUMENT;
 
-
 ProtoStreamObjectWriter::ProtoStreamObjectWriter(
-    TypeResolver* type_resolver, const google::protobuf::Type& type,
-    strings::ByteSink* output, ErrorListener* listener,
-    const ProtoStreamObjectWriter::Options& options)
-    : ProtoWriter(type_resolver, type, output, listener),
-      master_type_(type),
-      current_(nullptr),
-      options_(options) {
+    TypeResolver *type_resolver, const google::protobuf::Type &type,
+    strings::ByteSink *output, ErrorListener *listener,
+    const ProtoStreamObjectWriter::Options &options)
+    : ProtoWriter(type_resolver, type, output, listener), master_type_(type),
+      current_(nullptr), options_(options) {
   set_ignore_unknown_fields(options_.ignore_unknown_fields);
   set_ignore_unknown_enum_values(options_.ignore_unknown_enum_values);
   set_use_lower_camel_for_enums(options_.use_lower_camel_for_enums);
@@ -76,34 +72,32 @@ ProtoStreamObjectWriter::ProtoStreamObjectWriter(
 }
 
 ProtoStreamObjectWriter::ProtoStreamObjectWriter(
-    const TypeInfo* typeinfo, const google::protobuf::Type& type,
-    strings::ByteSink* output, ErrorListener* listener,
-    const ProtoStreamObjectWriter::Options& options)
-    : ProtoWriter(typeinfo, type, output, listener),
-      master_type_(type),
-      current_(nullptr),
-      options_(options) {
+    const TypeInfo *typeinfo, const google::protobuf::Type &type,
+    strings::ByteSink *output, ErrorListener *listener,
+    const ProtoStreamObjectWriter::Options &options)
+    : ProtoWriter(typeinfo, type, output, listener), master_type_(type),
+      current_(nullptr), options_(options) {
   set_ignore_unknown_fields(options_.ignore_unknown_fields);
   set_use_lower_camel_for_enums(options.use_lower_camel_for_enums);
   set_case_insensitive_enum_parsing(options_.case_insensitive_enum_parsing);
 }
 
 ProtoStreamObjectWriter::ProtoStreamObjectWriter(
-    const TypeInfo* typeinfo, const google::protobuf::Type& type,
-    strings::ByteSink* output, ErrorListener* listener)
-    : ProtoWriter(typeinfo, type, output, listener),
-      master_type_(type),
+    const TypeInfo *typeinfo, const google::protobuf::Type &type,
+    strings::ByteSink *output, ErrorListener *listener)
+    : ProtoWriter(typeinfo, type, output, listener), master_type_(type),
       current_(nullptr),
       options_(ProtoStreamObjectWriter::Options::Defaults()) {}
 
 ProtoStreamObjectWriter::~ProtoStreamObjectWriter() {
-  if (current_ == nullptr) return;
+  if (current_ == nullptr)
+    return;
   // Cleanup explicitly in order to avoid destructor stack overflow when input
   // is deeply nested.
   // Cast to BaseElement to avoid doing additional checks (like missing fields)
   // during pop().
   std::unique_ptr<BaseElement> element(
-      static_cast<BaseElement*>(current_.get())->pop<BaseElement>());
+      static_cast<BaseElement *>(current_.get())->pop<BaseElement>());
   while (element != nullptr) {
     element.reset(element->pop<BaseElement>());
   }
@@ -112,8 +106,8 @@ ProtoStreamObjectWriter::~ProtoStreamObjectWriter() {
 namespace {
 // Utility method to split a string representation of Timestamp or Duration and
 // return the parts.
-void SplitSecondsAndNanos(StringPiece input, StringPiece* seconds,
-                          StringPiece* nanos) {
+void SplitSecondsAndNanos(StringPiece input, StringPiece *seconds,
+                          StringPiece *nanos) {
   size_t idx = input.rfind('.');
   if (idx != std::string::npos) {
     *seconds = input.substr(0, idx);
@@ -125,9 +119,9 @@ void SplitSecondsAndNanos(StringPiece input, StringPiece* seconds,
 }
 
 Status GetNanosFromStringPiece(StringPiece s_nanos,
-                               const char* parse_failure_message,
-                               const char* exceeded_limit_message,
-                               int32* nanos) {
+                               const char *parse_failure_message,
+                               const char *exceeded_limit_message,
+                               int32 *nanos) {
   *nanos = 0;
 
   // Count the number of leading 0s and consume them.
@@ -160,36 +154,35 @@ Status GetNanosFromStringPiece(StringPiece s_nanos,
     // For efficiency, we precompute the conversion factor.
     int32 conversion = 0;
     switch (scale) {
-      case 1:
-        conversion = 100000000;
-        break;
-      case 2:
-        conversion = 10000000;
-        break;
-      case 3:
-        conversion = 1000000;
-        break;
-      case 4:
-        conversion = 100000;
-        break;
-      case 5:
-        conversion = 10000;
-        break;
-      case 6:
-        conversion = 1000;
-        break;
-      case 7:
-        conversion = 100;
-        break;
-      case 8:
-        conversion = 10;
-        break;
-      case 9:
-        conversion = 1;
-        break;
-      default:
-        return Status(util::error::INVALID_ARGUMENT,
-                      exceeded_limit_message);
+    case 1:
+      conversion = 100000000;
+      break;
+    case 2:
+      conversion = 10000000;
+      break;
+    case 3:
+      conversion = 1000000;
+      break;
+    case 4:
+      conversion = 100000;
+      break;
+    case 5:
+      conversion = 10000;
+      break;
+    case 6:
+      conversion = 1000;
+      break;
+    case 7:
+      conversion = 100;
+      break;
+    case 8:
+      conversion = 10;
+      break;
+    case 9:
+      conversion = 1;
+      break;
+    default:
+      return Status(util::error::INVALID_ARGUMENT, exceeded_limit_message);
     }
     *nanos = i_nanos * conversion;
   }
@@ -197,17 +190,11 @@ Status GetNanosFromStringPiece(StringPiece s_nanos,
   return Status();
 }
 
-}  // namespace
+} // namespace
 
-ProtoStreamObjectWriter::AnyWriter::AnyWriter(ProtoStreamObjectWriter* parent)
-    : parent_(parent),
-      ow_(),
-      invalid_(false),
-      data_(),
-      output_(&data_),
-      depth_(0),
-      is_well_known_type_(false),
-      well_known_type_render_(nullptr) {}
+ProtoStreamObjectWriter::AnyWriter::AnyWriter(ProtoStreamObjectWriter *parent)
+    : parent_(parent), ow_(), invalid_(false), data_(), output_(&data_),
+      depth_(0), is_well_known_type_(false), well_known_type_render_(nullptr) {}
 
 ProtoStreamObjectWriter::AnyWriter::~AnyWriter() {}
 
@@ -290,7 +277,7 @@ void ProtoStreamObjectWriter::AnyWriter::EndList() {
 }
 
 void ProtoStreamObjectWriter::AnyWriter::RenderDataPiece(
-    StringPiece name, const DataPiece& value) {
+    StringPiece name, const DataPiece &value) {
   // Start an Any only at depth_ 0. Other RenderDataPiece calls with "@type"
   // should go to the contained ow_ as they indicate nested Anys.
   if (depth_ == 0 && ow_ == nullptr && name == "@type") {
@@ -314,7 +301,8 @@ void ProtoStreamObjectWriter::AnyWriter::RenderDataPiece(
     } else {
       ow_->ProtoWriter::StartObject("");
       Status status = (*well_known_type_render_)(ow_.get(), value);
-      if (!status.ok()) ow_->InvalidValue("Any", status.message());
+      if (!status.ok())
+        ow_->InvalidValue("Any", status.message());
       ow_->ProtoWriter::EndObject();
     }
   } else {
@@ -322,7 +310,7 @@ void ProtoStreamObjectWriter::AnyWriter::RenderDataPiece(
   }
 }
 
-void ProtoStreamObjectWriter::AnyWriter::StartAny(const DataPiece& value) {
+void ProtoStreamObjectWriter::AnyWriter::StartAny(const DataPiece &value) {
   // Figure out the type url. This is a copy-paste from WriteString but we also
   // need the value, so we can't just call through to that.
   if (value.type() == DataPiece::TYPE_STRING) {
@@ -337,7 +325,7 @@ void ProtoStreamObjectWriter::AnyWriter::StartAny(const DataPiece& value) {
     type_url_ = s.ValueOrDie();
   }
   // Resolve the type url, and report an error if we failed to resolve it.
-  StatusOr<const google::protobuf::Type*> resolved_type =
+  StatusOr<const google::protobuf::Type *> resolved_type =
       parent_->typeinfo()->ResolveTypeUrl(type_url_);
   if (!resolved_type.ok()) {
     parent_->InvalidValue("Any", resolved_type.status().message());
@@ -345,7 +333,7 @@ void ProtoStreamObjectWriter::AnyWriter::StartAny(const DataPiece& value) {
     return;
   }
   // At this point, type is never null.
-  const google::protobuf::Type* type = resolved_type.ValueOrDie();
+  const google::protobuf::Type *type = resolved_type.ValueOrDie();
 
   well_known_type_render_ = FindTypeRenderer(type_url_);
   if (well_known_type_render_ != nullptr ||
@@ -390,9 +378,8 @@ void ProtoStreamObjectWriter::AnyWriter::WriteAny() {
     } else {
       // There are uninterpreted data, but we never got a "@type" field.
       if (!invalid_) {
-        parent_->InvalidValue("Any",
-                              StrCat("Missing @type for any field in ",
-                                           parent_->master_type_.name()));
+        parent_->InvalidValue("Any", StrCat("Missing @type for any field in ",
+                                            parent_->master_type_.name()));
         invalid_ = true;
       }
       return;
@@ -407,23 +394,23 @@ void ProtoStreamObjectWriter::AnyWriter::WriteAny() {
 }
 
 void ProtoStreamObjectWriter::AnyWriter::Event::Replay(
-    AnyWriter* writer) const {
+    AnyWriter *writer) const {
   switch (type_) {
-    case START_OBJECT:
-      writer->StartObject(name_);
-      break;
-    case END_OBJECT:
-      writer->EndObject();
-      break;
-    case START_LIST:
-      writer->StartList(name_);
-      break;
-    case END_LIST:
-      writer->EndList();
-      break;
-    case RENDER_DATA_PIECE:
-      writer->RenderDataPiece(name_, value_);
-      break;
+  case START_OBJECT:
+    writer->StartObject(name_);
+    break;
+  case END_OBJECT:
+    writer->EndObject();
+    break;
+  case START_LIST:
+    writer->StartList(name_);
+    break;
+  case END_LIST:
+    writer->EndList();
+    break;
+  case RENDER_DATA_PIECE:
+    writer->RenderDataPiece(name_, value_);
+    break;
   }
 }
 
@@ -441,15 +428,11 @@ void ProtoStreamObjectWriter::AnyWriter::Event::DeepCopy() {
   }
 }
 
-ProtoStreamObjectWriter::Item::Item(ProtoStreamObjectWriter* enclosing,
+ProtoStreamObjectWriter::Item::Item(ProtoStreamObjectWriter *enclosing,
                                     ItemType item_type, bool is_placeholder,
                                     bool is_list)
-    : BaseElement(nullptr),
-      ow_(enclosing),
-      any_(),
-      item_type_(item_type),
-      is_placeholder_(is_placeholder),
-      is_list_(is_list) {
+    : BaseElement(nullptr), ow_(enclosing), any_(), item_type_(item_type),
+      is_placeholder_(is_placeholder), is_list_(is_list) {
   if (item_type_ == ANY) {
     any_.reset(new AnyWriter(ow_));
   }
@@ -458,14 +441,11 @@ ProtoStreamObjectWriter::Item::Item(ProtoStreamObjectWriter* enclosing,
   }
 }
 
-ProtoStreamObjectWriter::Item::Item(ProtoStreamObjectWriter::Item* parent,
+ProtoStreamObjectWriter::Item::Item(ProtoStreamObjectWriter::Item *parent,
                                     ItemType item_type, bool is_placeholder,
                                     bool is_list)
-    : BaseElement(parent),
-      ow_(this->parent()->ow_),
-      any_(),
-      item_type_(item_type),
-      is_placeholder_(is_placeholder),
+    : BaseElement(parent), ow_(this->parent()->ow_), any_(),
+      item_type_(item_type), is_placeholder_(is_placeholder),
       is_list_(is_list) {
   if (item_type == ANY) {
     any_.reset(new AnyWriter(ow_));
@@ -480,8 +460,8 @@ bool ProtoStreamObjectWriter::Item::InsertMapKeyIfNotPresent(
   return InsertIfNotPresent(map_keys_.get(), std::string(map_key));
 }
 
-ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartObject(
-    StringPiece name) {
+ProtoStreamObjectWriter *
+ProtoStreamObjectWriter::StartObject(StringPiece name) {
   if (invalid_depth() > 0) {
     IncrementInvalidDepth();
     return this;
@@ -561,7 +541,8 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartObject(
          false);
 
     // Make sure we are valid so far after starting map fields.
-    if (invalid_depth() > 0) return this;
+    if (invalid_depth() > 0)
+      return this;
 
     // If top of stack is g.p.Struct type, start the struct the map field within
     // it.
@@ -582,8 +563,9 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartObject(
     return this;
   }
 
-  const google::protobuf::Field* field = BeginNamed(name, false);
-  if (field == nullptr) return this;
+  const google::protobuf::Field *field = BeginNamed(name, false);
+  if (field == nullptr)
+    return this;
 
   if (IsStruct(*field)) {
     // Start a struct object.
@@ -625,16 +607,18 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartObject(
   return this;
 }
 
-ProtoStreamObjectWriter* ProtoStreamObjectWriter::EndObject() {
+ProtoStreamObjectWriter *ProtoStreamObjectWriter::EndObject() {
   if (invalid_depth() > 0) {
     DecrementInvalidDepth();
     return this;
   }
 
-  if (current_ == nullptr) return this;
+  if (current_ == nullptr)
+    return this;
 
   if (current_->IsAny()) {
-    if (current_->any()->EndObject()) return this;
+    if (current_->any()->EndObject())
+      return this;
   }
 
   Pop();
@@ -642,8 +626,7 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::EndObject() {
   return this;
 }
 
-ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartList(
-    StringPiece name) {
+ProtoStreamObjectWriter *ProtoStreamObjectWriter::StartList(StringPiece name) {
   if (invalid_depth() > 0) {
     IncrementInvalidDepth();
     return this;
@@ -728,7 +711,8 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartList(
     Push("value", Item::MESSAGE, true, false);
 
     // Make sure we are valid after pushing all above items.
-    if (invalid_depth() > 0) return this;
+    if (invalid_depth() > 0)
+      return this;
 
     // case i and ii above. Start "list_value" field within g.p.Value
     if (element() != nullptr && element()->parent_field() != nullptr) {
@@ -752,7 +736,7 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartList(
 
     // Report an error.
     InvalidValue("Map", StrCat("Cannot have repeated items ('", name,
-                                     "') within a map."));
+                               "') within a map."));
     return this;
   }
 
@@ -789,7 +773,7 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartList(
   }
 
   // name is not empty
-  const google::protobuf::Field* field = Lookup(name);
+  const google::protobuf::Field *field = Lookup(name);
   if (field == nullptr) {
     IncrementInvalidDepth();
     return this;
@@ -843,8 +827,8 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartList(
   }
 
   if (IsMap(*field)) {
-    InvalidValue("Map", StrCat("Cannot bind a list to map for field '",
-                                     name, "'."));
+    InvalidValue("Map",
+                 StrCat("Cannot bind a list to map for field '", name, "'."));
     IncrementInvalidDepth();
     return this;
   }
@@ -856,13 +840,14 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartList(
   return this;
 }
 
-ProtoStreamObjectWriter* ProtoStreamObjectWriter::EndList() {
+ProtoStreamObjectWriter *ProtoStreamObjectWriter::EndList() {
   if (invalid_depth() > 0) {
     DecrementInvalidDepth();
     return this;
   }
 
-  if (current_ == nullptr) return this;
+  if (current_ == nullptr)
+    return this;
 
   if (current_->IsAny()) {
     current_->any()->EndList();
@@ -873,121 +858,120 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::EndList() {
   return this;
 }
 
-Status ProtoStreamObjectWriter::RenderStructValue(ProtoStreamObjectWriter* ow,
-                                                  const DataPiece& data) {
+Status ProtoStreamObjectWriter::RenderStructValue(ProtoStreamObjectWriter *ow,
+                                                  const DataPiece &data) {
   std::string struct_field_name;
   switch (data.type()) {
-    case DataPiece::TYPE_INT32: {
-      if (ow->options_.struct_integers_as_strings) {
-        StatusOr<int32> int_value = data.ToInt32();
-        if (int_value.ok()) {
-          ow->ProtoWriter::RenderDataPiece(
-              "string_value",
-              DataPiece(SimpleDtoa(int_value.ValueOrDie()), true));
-          return Status();
-        }
+  case DataPiece::TYPE_INT32: {
+    if (ow->options_.struct_integers_as_strings) {
+      StatusOr<int32> int_value = data.ToInt32();
+      if (int_value.ok()) {
+        ow->ProtoWriter::RenderDataPiece(
+            "string_value",
+            DataPiece(SimpleDtoa(int_value.ValueOrDie()), true));
+        return Status();
       }
-      struct_field_name = "number_value";
-      break;
     }
-    case DataPiece::TYPE_UINT32: {
-      if (ow->options_.struct_integers_as_strings) {
-        StatusOr<uint32> int_value = data.ToUint32();
-        if (int_value.ok()) {
-          ow->ProtoWriter::RenderDataPiece(
-              "string_value",
-              DataPiece(SimpleDtoa(int_value.ValueOrDie()), true));
-          return Status();
-        }
+    struct_field_name = "number_value";
+    break;
+  }
+  case DataPiece::TYPE_UINT32: {
+    if (ow->options_.struct_integers_as_strings) {
+      StatusOr<uint32> int_value = data.ToUint32();
+      if (int_value.ok()) {
+        ow->ProtoWriter::RenderDataPiece(
+            "string_value",
+            DataPiece(SimpleDtoa(int_value.ValueOrDie()), true));
+        return Status();
       }
-      struct_field_name = "number_value";
-      break;
     }
-    case DataPiece::TYPE_INT64: {
-      // If the option to treat integers as strings is set, then render them as
-      // strings. Otherwise, fallback to rendering them as double.
-      if (ow->options_.struct_integers_as_strings) {
-        StatusOr<int64> int_value = data.ToInt64();
-        if (int_value.ok()) {
-          ow->ProtoWriter::RenderDataPiece(
-              "string_value",
-              DataPiece(StrCat(int_value.ValueOrDie()), true));
-          return Status();
-        }
+    struct_field_name = "number_value";
+    break;
+  }
+  case DataPiece::TYPE_INT64: {
+    // If the option to treat integers as strings is set, then render them as
+    // strings. Otherwise, fallback to rendering them as double.
+    if (ow->options_.struct_integers_as_strings) {
+      StatusOr<int64> int_value = data.ToInt64();
+      if (int_value.ok()) {
+        ow->ProtoWriter::RenderDataPiece(
+            "string_value", DataPiece(StrCat(int_value.ValueOrDie()), true));
+        return Status();
       }
-      struct_field_name = "number_value";
-      break;
     }
-    case DataPiece::TYPE_UINT64: {
-      // If the option to treat integers as strings is set, then render them as
-      // strings. Otherwise, fallback to rendering them as double.
-      if (ow->options_.struct_integers_as_strings) {
-        StatusOr<uint64> int_value = data.ToUint64();
-        if (int_value.ok()) {
-          ow->ProtoWriter::RenderDataPiece(
-              "string_value",
-              DataPiece(StrCat(int_value.ValueOrDie()), true));
-          return Status();
-        }
+    struct_field_name = "number_value";
+    break;
+  }
+  case DataPiece::TYPE_UINT64: {
+    // If the option to treat integers as strings is set, then render them as
+    // strings. Otherwise, fallback to rendering them as double.
+    if (ow->options_.struct_integers_as_strings) {
+      StatusOr<uint64> int_value = data.ToUint64();
+      if (int_value.ok()) {
+        ow->ProtoWriter::RenderDataPiece(
+            "string_value", DataPiece(StrCat(int_value.ValueOrDie()), true));
+        return Status();
       }
-      struct_field_name = "number_value";
-      break;
     }
-    case DataPiece::TYPE_FLOAT: {
-      if (ow->options_.struct_integers_as_strings) {
-        StatusOr<float> float_value = data.ToFloat();
-        if (float_value.ok()) {
-          ow->ProtoWriter::RenderDataPiece(
-              "string_value",
-              DataPiece(SimpleDtoa(float_value.ValueOrDie()), true));
-          return Status();
-        }
+    struct_field_name = "number_value";
+    break;
+  }
+  case DataPiece::TYPE_FLOAT: {
+    if (ow->options_.struct_integers_as_strings) {
+      StatusOr<float> float_value = data.ToFloat();
+      if (float_value.ok()) {
+        ow->ProtoWriter::RenderDataPiece(
+            "string_value",
+            DataPiece(SimpleDtoa(float_value.ValueOrDie()), true));
+        return Status();
       }
-      struct_field_name = "number_value";
-      break;
     }
-    case DataPiece::TYPE_DOUBLE: {
-      if (ow->options_.struct_integers_as_strings) {
-        StatusOr<double> double_value = data.ToDouble();
-        if (double_value.ok()) {
-          ow->ProtoWriter::RenderDataPiece(
-              "string_value",
-              DataPiece(SimpleDtoa(double_value.ValueOrDie()), true));
-          return Status();
-        }
+    struct_field_name = "number_value";
+    break;
+  }
+  case DataPiece::TYPE_DOUBLE: {
+    if (ow->options_.struct_integers_as_strings) {
+      StatusOr<double> double_value = data.ToDouble();
+      if (double_value.ok()) {
+        ow->ProtoWriter::RenderDataPiece(
+            "string_value",
+            DataPiece(SimpleDtoa(double_value.ValueOrDie()), true));
+        return Status();
       }
-      struct_field_name = "number_value";
-      break;
     }
-    case DataPiece::TYPE_STRING: {
-      struct_field_name = "string_value";
-      break;
-    }
-    case DataPiece::TYPE_BOOL: {
-      struct_field_name = "bool_value";
-      break;
-    }
-    case DataPiece::TYPE_NULL: {
-      struct_field_name = "null_value";
-      break;
-    }
-    default: {
-      return Status(util::error::INVALID_ARGUMENT,
-                    "Invalid struct data type. Only number, string, boolean or "
-                    "null values are supported.");
-    }
+    struct_field_name = "number_value";
+    break;
+  }
+  case DataPiece::TYPE_STRING: {
+    struct_field_name = "string_value";
+    break;
+  }
+  case DataPiece::TYPE_BOOL: {
+    struct_field_name = "bool_value";
+    break;
+  }
+  case DataPiece::TYPE_NULL: {
+    struct_field_name = "null_value";
+    break;
+  }
+  default: {
+    return Status(util::error::INVALID_ARGUMENT,
+                  "Invalid struct data type. Only number, string, boolean or "
+                  "null values are supported.");
+  }
   }
   ow->ProtoWriter::RenderDataPiece(struct_field_name, data);
   return Status();
 }
 
-Status ProtoStreamObjectWriter::RenderTimestamp(ProtoStreamObjectWriter* ow,
-                                                const DataPiece& data) {
-  if (data.type() == DataPiece::TYPE_NULL) return Status();
+Status ProtoStreamObjectWriter::RenderTimestamp(ProtoStreamObjectWriter *ow,
+                                                const DataPiece &data) {
+  if (data.type() == DataPiece::TYPE_NULL)
+    return Status();
   if (data.type() != DataPiece::TYPE_STRING) {
     return Status(util::error::INVALID_ARGUMENT,
                   StrCat("Invalid data type for timestamp, value is ",
-                               data.ValueAsStringOrDefault("")));
+                         data.ValueAsStringOrDefault("")));
   }
 
   StringPiece value(data.str());
@@ -999,26 +983,26 @@ Status ProtoStreamObjectWriter::RenderTimestamp(ProtoStreamObjectWriter* ow,
     return Status(INVALID_ARGUMENT, StrCat("Invalid time format: ", value));
   }
 
-
   ow->ProtoWriter::RenderDataPiece("seconds", DataPiece(seconds));
   ow->ProtoWriter::RenderDataPiece("nanos", DataPiece(nanos));
   return Status();
 }
 
-static inline util::Status RenderOneFieldPath(ProtoStreamObjectWriter* ow,
-                                                StringPiece path) {
+static inline util::Status RenderOneFieldPath(ProtoStreamObjectWriter *ow,
+                                              StringPiece path) {
   ow->ProtoWriter::RenderDataPiece(
       "paths", DataPiece(ConvertFieldMaskPath(path, &ToSnakeCase), true));
   return Status();
 }
 
-Status ProtoStreamObjectWriter::RenderFieldMask(ProtoStreamObjectWriter* ow,
-                                                const DataPiece& data) {
-  if (data.type() == DataPiece::TYPE_NULL) return Status();
+Status ProtoStreamObjectWriter::RenderFieldMask(ProtoStreamObjectWriter *ow,
+                                                const DataPiece &data) {
+  if (data.type() == DataPiece::TYPE_NULL)
+    return Status();
   if (data.type() != DataPiece::TYPE_STRING) {
     return Status(util::error::INVALID_ARGUMENT,
                   StrCat("Invalid data type for field mask, value is ",
-                               data.ValueAsStringOrDefault("")));
+                         data.ValueAsStringOrDefault("")));
   }
 
   // TODO(tsun): figure out how to do proto descriptor based snake case
@@ -1028,13 +1012,14 @@ Status ProtoStreamObjectWriter::RenderFieldMask(ProtoStreamObjectWriter* ow,
                                      std::bind(&RenderOneFieldPath, ow, _1));
 }
 
-Status ProtoStreamObjectWriter::RenderDuration(ProtoStreamObjectWriter* ow,
-                                               const DataPiece& data) {
-  if (data.type() == DataPiece::TYPE_NULL) return Status();
+Status ProtoStreamObjectWriter::RenderDuration(ProtoStreamObjectWriter *ow,
+                                               const DataPiece &data) {
+  if (data.type() == DataPiece::TYPE_NULL)
+    return Status();
   if (data.type() != DataPiece::TYPE_STRING) {
     return Status(util::error::INVALID_ARGUMENT,
                   StrCat("Invalid data type for duration, value is ",
-                               data.ValueAsStringOrDefault("")));
+                         data.ValueAsStringOrDefault("")));
   }
 
   StringPiece value(data.str());
@@ -1079,20 +1064,23 @@ Status ProtoStreamObjectWriter::RenderDuration(ProtoStreamObjectWriter* ow,
   return Status();
 }
 
-Status ProtoStreamObjectWriter::RenderWrapperType(ProtoStreamObjectWriter* ow,
-                                                  const DataPiece& data) {
-  if (data.type() == DataPiece::TYPE_NULL) return Status();
+Status ProtoStreamObjectWriter::RenderWrapperType(ProtoStreamObjectWriter *ow,
+                                                  const DataPiece &data) {
+  if (data.type() == DataPiece::TYPE_NULL)
+    return Status();
   ow->ProtoWriter::RenderDataPiece("value", data);
   return Status();
 }
 
-ProtoStreamObjectWriter* ProtoStreamObjectWriter::RenderDataPiece(
-    StringPiece name, const DataPiece& data) {
+ProtoStreamObjectWriter *
+ProtoStreamObjectWriter::RenderDataPiece(StringPiece name,
+                                         const DataPiece &data) {
   Status status;
-  if (invalid_depth() > 0) return this;
+  if (invalid_depth() > 0)
+    return this;
 
   if (current_ == nullptr) {
-    const TypeRenderer* type_renderer =
+    const TypeRenderer *type_renderer =
         FindTypeRenderer(GetFullTypeWithUrl(master_type_.name()));
     if (type_renderer == nullptr) {
       InvalidName(name, "Root element must be a message.");
@@ -1117,9 +1105,10 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::RenderDataPiece(
     return this;
   }
 
-  const google::protobuf::Field* field = nullptr;
+  const google::protobuf::Field *field = nullptr;
   if (current_->IsMap()) {
-    if (!ValidMapKey(name)) return this;
+    if (!ValidMapKey(name))
+      return this;
 
     field = Lookup("value");
     if (field == nullptr) {
@@ -1142,7 +1131,7 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::RenderDataPiece(
     ProtoWriter::RenderDataPiece("key",
                                  DataPiece(name, use_strict_base64_decoding()));
 
-    const TypeRenderer* type_renderer = FindTypeRenderer(field->type_url());
+    const TypeRenderer *type_renderer = FindTypeRenderer(field->type_url());
     if (type_renderer != nullptr) {
       // Map's value type is a special type. Render it like a message:
       // "value": {
@@ -1173,10 +1162,11 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::RenderDataPiece(
   }
 
   field = Lookup(name);
-  if (field == nullptr) return this;
+  if (field == nullptr)
+    return this;
 
   // Check if the field is of special type. Render it accordingly if so.
-  const TypeRenderer* type_renderer = FindTypeRenderer(field->type_url());
+  const TypeRenderer *type_renderer = FindTypeRenderer(field->type_url());
   if (type_renderer != nullptr) {
     // Pass through null value only for google.protobuf.Value. For other
     // types we ignore null value just like for regular field types.
@@ -1206,8 +1196,8 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::RenderDataPiece(
 
 // Map of functions that are responsible for rendering well known type
 // represented by the key.
-std::unordered_map<std::string, ProtoStreamObjectWriter::TypeRenderer>*
-    ProtoStreamObjectWriter::renderers_ = NULL;
+std::unordered_map<std::string, ProtoStreamObjectWriter::TypeRenderer>
+    *ProtoStreamObjectWriter::renderers_ = NULL;
 PROTOBUF_NAMESPACE_ID::internal::once_flag writer_renderers_init_;
 
 void ProtoStreamObjectWriter::InitRendererMap() {
@@ -1265,29 +1255,28 @@ void ProtoStreamObjectWriter::DeleteRendererMap() {
   renderers_ = NULL;
 }
 
-ProtoStreamObjectWriter::TypeRenderer*
-ProtoStreamObjectWriter::FindTypeRenderer(const std::string& type_url) {
+ProtoStreamObjectWriter::TypeRenderer *
+ProtoStreamObjectWriter::FindTypeRenderer(const std::string &type_url) {
   PROTOBUF_NAMESPACE_ID::internal::call_once(writer_renderers_init_,
                                              InitRendererMap);
   return FindOrNull(*renderers_, type_url);
 }
 
 bool ProtoStreamObjectWriter::ValidMapKey(StringPiece unnormalized_name) {
-  if (current_ == nullptr) return true;
+  if (current_ == nullptr)
+    return true;
 
   if (!current_->InsertMapKeyIfNotPresent(unnormalized_name)) {
     listener()->InvalidName(
         location(), unnormalized_name,
-        StrCat("Repeated map key: '", unnormalized_name,
-                     "' is already set."));
+        StrCat("Repeated map key: '", unnormalized_name, "' is already set."));
     return false;
   }
 
   return true;
 }
 
-void ProtoStreamObjectWriter::Push(StringPiece name,
-                                   Item::ItemType item_type,
+void ProtoStreamObjectWriter::Push(StringPiece name, Item::ItemType item_type,
                                    bool is_placeholder, bool is_list) {
   is_list ? ProtoWriter::StartList(name) : ProtoWriter::StartObject(name);
 
@@ -1313,37 +1302,37 @@ void ProtoStreamObjectWriter::PopOneElement() {
   current_.reset(current_->pop<Item>());
 }
 
-bool ProtoStreamObjectWriter::IsMap(const google::protobuf::Field& field) {
+bool ProtoStreamObjectWriter::IsMap(const google::protobuf::Field &field) {
   if (field.type_url().empty() ||
       field.kind() != google::protobuf::Field::TYPE_MESSAGE ||
       field.cardinality() != google::protobuf::Field::CARDINALITY_REPEATED) {
     return false;
   }
-  const google::protobuf::Type* field_type =
+  const google::protobuf::Type *field_type =
       typeinfo()->GetTypeByTypeUrl(field.type_url());
 
   return converter::IsMap(field, *field_type);
 }
 
-bool ProtoStreamObjectWriter::IsAny(const google::protobuf::Field& field) {
+bool ProtoStreamObjectWriter::IsAny(const google::protobuf::Field &field) {
   return GetTypeWithoutUrl(field.type_url()) == kAnyType;
 }
 
-bool ProtoStreamObjectWriter::IsStruct(const google::protobuf::Field& field) {
+bool ProtoStreamObjectWriter::IsStruct(const google::protobuf::Field &field) {
   return GetTypeWithoutUrl(field.type_url()) == kStructType;
 }
 
 bool ProtoStreamObjectWriter::IsStructValue(
-    const google::protobuf::Field& field) {
+    const google::protobuf::Field &field) {
   return GetTypeWithoutUrl(field.type_url()) == kStructValueType;
 }
 
 bool ProtoStreamObjectWriter::IsStructListValue(
-    const google::protobuf::Field& field) {
+    const google::protobuf::Field &field) {
   return GetTypeWithoutUrl(field.type_url()) == kStructListValueType;
 }
 
-}  // namespace converter
-}  // namespace util
-}  // namespace protobuf
-}  // namespace google
+} // namespace converter
+} // namespace util
+} // namespace protobuf
+} // namespace google

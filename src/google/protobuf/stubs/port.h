@@ -32,10 +32,10 @@
 #define GOOGLE_PROTOBUF_STUBS_PORT_H_
 
 #include <assert.h>
-#include <stdlib.h>
 #include <cstddef>
-#include <string>
+#include <stdlib.h>
 #include <string.h>
+#include <string>
 #if defined(__osf__)
 // Tru64 lacks stdint.h, but has inttypes.h which defines a superset of
 // what stdint.h would define.
@@ -50,57 +50,57 @@
 
 #undef PROTOBUF_LITTLE_ENDIAN
 #ifdef _WIN32
-  // Assuming windows is always little-endian.
-  // TODO(xiaofeng): The PROTOBUF_LITTLE_ENDIAN is not only used for
-  // optimization but also for correctness. We should define an
-  // different macro to test the big-endian code path in coded_stream.
-  #if !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
-    #define PROTOBUF_LITTLE_ENDIAN 1
-  #endif
-  #if _MSC_VER >= 1300 && !defined(__INTEL_COMPILER)
-    // If MSVC has "/RTCc" set, it will complain about truncating casts at
-    // runtime.  This file contains some intentional truncating casts.
-    #pragma runtime_checks("c", off)
-  #endif
+// Assuming windows is always little-endian.
+// TODO(xiaofeng): The PROTOBUF_LITTLE_ENDIAN is not only used for
+// optimization but also for correctness. We should define an
+// different macro to test the big-endian code path in coded_stream.
+#if !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
+#define PROTOBUF_LITTLE_ENDIAN 1
+#endif
+#if _MSC_VER >= 1300 && !defined(__INTEL_COMPILER)
+// If MSVC has "/RTCc" set, it will complain about truncating casts at
+// runtime.  This file contains some intentional truncating casts.
+#pragma runtime_checks("c", off)
+#endif
 #else
-  #include <sys/param.h>   // __BYTE_ORDER
-  #if defined(__OpenBSD__)
-    #include <endian.h>
-  #endif
-  #if ((defined(__LITTLE_ENDIAN__) && !defined(__BIG_ENDIAN__)) || \
-         (defined(__BYTE_ORDER) && __BYTE_ORDER == __LITTLE_ENDIAN) || \
-         (defined(BYTE_ORDER) && BYTE_ORDER == LITTLE_ENDIAN)) && \
-      !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
-    #define PROTOBUF_LITTLE_ENDIAN 1
-  #endif
+#include <sys/param.h> // __BYTE_ORDER
+#if defined(__OpenBSD__)
+#include <endian.h>
+#endif
+#if ((defined(__LITTLE_ENDIAN__) && !defined(__BIG_ENDIAN__)) ||               \
+     (defined(__BYTE_ORDER) && __BYTE_ORDER == __LITTLE_ENDIAN) ||             \
+     (defined(BYTE_ORDER) && BYTE_ORDER == LITTLE_ENDIAN)) &&                  \
+    !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
+#define PROTOBUF_LITTLE_ENDIAN 1
+#endif
 #endif
 
 // These #includes are for the byte swap functions declared later on.
 #ifdef _MSC_VER
-#include <stdlib.h>  // NOLINT(build/include)
 #include <intrin.h>
+#include <stdlib.h> // NOLINT(build/include)
 #elif defined(__APPLE__)
 #include <libkern/OSByteOrder.h>
 #elif defined(__GLIBC__) || defined(__BIONIC__) || defined(__CYGWIN__)
-#include <byteswap.h>  // IWYU pragma: export
+#include <byteswap.h> // IWYU pragma: export
 #endif
 
 // Legacy: some users reference these (internal-only) macros even though we
 // don't need them any more.
 #if defined(_MSC_VER) && defined(PROTOBUF_USE_DLLS)
-  #ifdef LIBPROTOBUF_EXPORTS
-    #define LIBPROTOBUF_EXPORT __declspec(dllexport)
-  #else
-    #define LIBPROTOBUF_EXPORT __declspec(dllimport)
-  #endif
-  #ifdef LIBPROTOC_EXPORTS
-    #define LIBPROTOC_EXPORT   __declspec(dllexport)
-  #else
-    #define LIBPROTOC_EXPORT   __declspec(dllimport)
-  #endif
+#ifdef LIBPROTOBUF_EXPORTS
+#define LIBPROTOBUF_EXPORT __declspec(dllexport)
 #else
-  #define LIBPROTOBUF_EXPORT
-  #define LIBPROTOC_EXPORT
+#define LIBPROTOBUF_EXPORT __declspec(dllimport)
+#endif
+#ifdef LIBPROTOC_EXPORTS
+#define LIBPROTOC_EXPORT __declspec(dllexport)
+#else
+#define LIBPROTOC_EXPORT __declspec(dllimport)
+#endif
+#else
+#define LIBPROTOBUF_EXPORT
+#define LIBPROTOC_EXPORT
 #endif
 
 #define PROTOBUF_RUNTIME_DEPRECATED(message)
@@ -109,7 +109,7 @@
 // ===================================================================
 // from google3/base/port.h
 
-#if (defined(__GXX_EXPERIMENTAL_CXX0X__) || __cplusplus >= 201103L || \
+#if (defined(__GXX_EXPERIMENTAL_CXX0X__) || __cplusplus >= 201103L ||          \
      (defined(_MSC_VER) && _MSC_VER >= 1900))
 // Define this to 1 if the code is compiled in C++11 mode; leave it
 // undefined otherwise.  Do NOT define it to 0 -- that causes
@@ -135,12 +135,12 @@ namespace protobuf {
 typedef unsigned int uint;
 
 #ifdef _MSC_VER
-typedef signed __int8  int8;
+typedef signed __int8 int8;
 typedef __int16 int16;
 typedef __int32 int32;
 typedef __int64 int64;
 
-typedef unsigned __int8  uint8;
+typedef unsigned __int8 uint8;
 typedef unsigned __int16 uint16;
 typedef unsigned __int32 uint32;
 typedef unsigned __int64 uint64;
@@ -163,12 +163,12 @@ static const int64 kint64min = -kint64max - 1;
 static const uint32 kuint32max = 0xFFFFFFFFu;
 static const uint64 kuint64max = PROTOBUF_ULONGLONG(0xFFFFFFFFFFFFFFFF);
 
-#if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER) ||\
+#if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER) ||                 \
     defined(MEMORY_SANITIZER)
 
 #ifdef __cplusplus
 extern "C" {
-#endif  // __cplusplus
+#endif // __cplusplus
 uint16_t __sanitizer_unaligned_load16(const void *p);
 uint32_t __sanitizer_unaligned_load32(const void *p);
 uint64_t __sanitizer_unaligned_load64(const void *p);
@@ -176,8 +176,8 @@ void __sanitizer_unaligned_store16(void *p, uint16_t v);
 void __sanitizer_unaligned_store32(void *p, uint32_t v);
 void __sanitizer_unaligned_store64(void *p, uint64_t v);
 #ifdef __cplusplus
-}  // extern "C"
-#endif  // __cplusplus
+} // extern "C"
+#endif // __cplusplus
 
 inline uint16 GOOGLE_UNALIGNED_LOAD16(const void *p) {
   return __sanitizer_unaligned_load16(p);
@@ -209,9 +209,12 @@ inline void GOOGLE_UNALIGNED_STORE64(void *p, uint64 v) {
 #define GOOGLE_UNALIGNED_LOAD32(_p) (*reinterpret_cast<const uint32 *>(_p))
 #define GOOGLE_UNALIGNED_LOAD64(_p) (*reinterpret_cast<const uint64 *>(_p))
 
-#define GOOGLE_UNALIGNED_STORE16(_p, _val) (*reinterpret_cast<uint16 *>(_p) = (_val))
-#define GOOGLE_UNALIGNED_STORE32(_p, _val) (*reinterpret_cast<uint32 *>(_p) = (_val))
-#define GOOGLE_UNALIGNED_STORE64(_p, _val) (*reinterpret_cast<uint64 *>(_p) = (_val))
+#define GOOGLE_UNALIGNED_STORE16(_p, _val)                                     \
+  (*reinterpret_cast<uint16 *>(_p) = (_val))
+#define GOOGLE_UNALIGNED_STORE32(_p, _val)                                     \
+  (*reinterpret_cast<uint32 *>(_p) = (_val))
+#define GOOGLE_UNALIGNED_STORE64(_p, _val)                                     \
+  (*reinterpret_cast<uint64 *>(_p) = (_val))
 
 #else
 inline uint16 GOOGLE_UNALIGNED_LOAD16(const void *p) {
@@ -245,11 +248,11 @@ inline void GOOGLE_UNALIGNED_STORE64(void *p, uint64 v) {
 }
 #endif
 
-#if defined(GOOGLE_PROTOBUF_OS_NACL) \
-    || (defined(__ANDROID__) && defined(__clang__) \
-        && (__clang_major__ == 3 && __clang_minor__ == 8) \
-        && (__clang_patchlevel__ < 275480))
-# define GOOGLE_PROTOBUF_USE_PORTABLE_LOG2
+#if defined(GOOGLE_PROTOBUF_OS_NACL) ||                                        \
+    (defined(__ANDROID__) && defined(__clang__) &&                             \
+     (__clang_major__ == 3 && __clang_minor__ == 8) &&                         \
+     (__clang_patchlevel__ < 275480))
+#define GOOGLE_PROTOBUF_USE_PORTABLE_LOG2
 #endif
 
 #if defined(_MSC_VER)
@@ -281,9 +284,7 @@ static inline uint16 bswap_16(uint16 x) {
 
 #ifndef bswap_32
 static inline uint32 bswap_32(uint32 x) {
-  return (((x & 0xFF) << 24) |
-          ((x & 0xFF00) << 8) |
-          ((x & 0xFF0000) >> 8) |
+  return (((x & 0xFF) << 24) | ((x & 0xFF00) << 8) | ((x & 0xFF0000) >> 8) |
           ((x & 0xFF000000) >> 24));
 }
 #define bswap_32(x) bswap_32(x)
@@ -309,16 +310,16 @@ static inline uint64 bswap_64(uint64 x) {
 // from google3/util/bits/bits.h
 
 class Bits {
- public:
+public:
   static uint32 Log2FloorNonZero(uint32 n) {
 #if defined(__GNUC__)
-  return 31 ^ static_cast<uint32>(__builtin_clz(n));
+    return 31 ^ static_cast<uint32>(__builtin_clz(n));
 #elif defined(_MSC_VER)
-  unsigned long where;
-  _BitScanReverse(&where, n);
-  return where;
+    unsigned long where;
+    _BitScanReverse(&where, n);
+    return where;
 #else
-  return Log2FloorNonZero_Portable(n);
+    return Log2FloorNonZero_Portable(n);
 #endif
   }
 
@@ -330,16 +331,17 @@ class Bits {
     // To work around this, when we build with those we use the portable
     // implementation instead.
 #if defined(__GNUC__) && !defined(GOOGLE_PROTOBUF_USE_PORTABLE_LOG2)
-  return 63 ^ static_cast<uint32>(__builtin_clzll(n));
+    return 63 ^ static_cast<uint32>(__builtin_clzll(n));
 #elif defined(_MSC_VER) && defined(_M_X64)
-  unsigned long where;
-  _BitScanReverse64(&where, n);
-  return where;
+    unsigned long where;
+    _BitScanReverse64(&where, n);
+    return where;
 #else
-  return Log2FloorNonZero64_Portable(n);
+    return Log2FloorNonZero64_Portable(n);
 #endif
   }
- private:
+
+private:
   static int Log2FloorNonZero_Portable(uint32 n) {
     if (n == 0)
       return -1;
@@ -373,7 +375,7 @@ class Bits {
 PROTOBUF_EXPORT uint32 ghtonl(uint32 x);
 
 class BigEndian {
- public:
+public:
 #ifdef PROTOBUF_LITTLE_ENDIAN
 
   static uint16 FromHost16(uint16 x) { return bswap_16(x); }
@@ -428,9 +430,9 @@ class BigEndian {
   }
 };
 
-}  // namespace protobuf
-}  // namespace google
+} // namespace protobuf
+} // namespace google
 
 #include <google/protobuf/port_undef.inc>
 
-#endif  // GOOGLE_PROTOBUF_STUBS_PORT_H_
+#endif // GOOGLE_PROTOBUF_STUBS_PORT_H_

@@ -33,8 +33,8 @@
 
 #include <string>
 
-#include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/arena.h>
+#include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/repeated_field.h>
 
@@ -55,35 +55,35 @@ namespace internal {
 // acts as a placeholder for an implicit weak field in the case where the true
 // message type does not get linked into the binary.
 class PROTOBUF_EXPORT ImplicitWeakMessage : public MessageLite {
- public:
+public:
   ImplicitWeakMessage() : arena_(NULL) {}
-  explicit ImplicitWeakMessage(Arena* arena) : arena_(arena) {}
+  explicit ImplicitWeakMessage(Arena *arena) : arena_(arena) {}
 
-  static const ImplicitWeakMessage* default_instance();
+  static const ImplicitWeakMessage *default_instance();
 
   std::string GetTypeName() const override { return ""; }
 
-  MessageLite* New() const override { return new ImplicitWeakMessage; }
-  MessageLite* New(Arena* arena) const override {
+  MessageLite *New() const override { return new ImplicitWeakMessage; }
+  MessageLite *New(Arena *arena) const override {
     return Arena::CreateMessage<ImplicitWeakMessage>(arena);
   }
 
-  Arena* GetArena() const override { return arena_; }
+  Arena *GetArena() const override { return arena_; }
 
   void Clear() override { data_.clear(); }
 
   bool IsInitialized() const override { return true; }
 
-  void CheckTypeAndMergeFrom(const MessageLite& other) override {
-    data_.append(static_cast<const ImplicitWeakMessage&>(other).data_);
+  void CheckTypeAndMergeFrom(const MessageLite &other) override {
+    data_.append(static_cast<const ImplicitWeakMessage &>(other).data_);
   }
 
-  const char* _InternalParse(const char* ptr, ParseContext* ctx) final;
+  const char *_InternalParse(const char *ptr, ParseContext *ctx) final;
 
   size_t ByteSizeLong() const override { return data_.size(); }
 
-  uint8* InternalSerializeWithCachedSizesToArray(
-      uint8* target, io::EpsCopyOutputStream* stream) const final {
+  uint8 *InternalSerializeWithCachedSizesToArray(
+      uint8 *target, io::EpsCopyOutputStream *stream) const final {
     return stream->WriteRaw(data_.data(), static_cast<int>(data_.size()),
                             target);
   }
@@ -92,56 +92,54 @@ class PROTOBUF_EXPORT ImplicitWeakMessage : public MessageLite {
 
   typedef void InternalArenaConstructable_;
 
- private:
-  Arena* const arena_;
+private:
+  Arena *const arena_;
   std::string data_;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ImplicitWeakMessage);
 };
 
 // A type handler for use with implicit weak repeated message fields.
-template <typename ImplicitWeakType>
-class ImplicitWeakTypeHandler {
- public:
+template <typename ImplicitWeakType> class ImplicitWeakTypeHandler {
+public:
   typedef MessageLite Type;
   static const bool Moveable = false;
 
-  static inline MessageLite* NewFromPrototype(const MessageLite* prototype,
-                                              Arena* arena = NULL) {
+  static inline MessageLite *NewFromPrototype(const MessageLite *prototype,
+                                              Arena *arena = NULL) {
     return prototype->New(arena);
   }
 
-  static inline void Delete(MessageLite* value, Arena* arena) {
+  static inline void Delete(MessageLite *value, Arena *arena) {
     if (arena == NULL) {
       delete value;
     }
   }
-  static inline Arena* GetArena(MessageLite* value) {
+  static inline Arena *GetArena(MessageLite *value) {
     return value->GetArena();
   }
-  static inline void* GetMaybeArenaPointer(MessageLite* value) {
+  static inline void *GetMaybeArenaPointer(MessageLite *value) {
     return value->GetArena();
   }
-  static inline void Clear(MessageLite* value) { value->Clear(); }
-  static void Merge(const MessageLite& from, MessageLite* to) {
+  static inline void Clear(MessageLite *value) { value->Clear(); }
+  static void Merge(const MessageLite &from, MessageLite *to) {
     to->CheckTypeAndMergeFrom(from);
   }
 };
 
-}  // namespace internal
+} // namespace internal
 
-template <typename T>
-struct WeakRepeatedPtrField {
+template <typename T> struct WeakRepeatedPtrField {
   using TypeHandler = internal::ImplicitWeakTypeHandler<T>;
   WeakRepeatedPtrField() : weak() {}
-  explicit WeakRepeatedPtrField(Arena* arena) : weak(arena) {}
+  explicit WeakRepeatedPtrField(Arena *arena) : weak(arena) {}
   ~WeakRepeatedPtrField() { weak.template Destroy<TypeHandler>(); }
 
   typedef internal::RepeatedPtrIterator<MessageLite> iterator;
   typedef internal::RepeatedPtrIterator<const MessageLite> const_iterator;
-  typedef internal::RepeatedPtrOverPtrsIterator<MessageLite*, void*>
+  typedef internal::RepeatedPtrOverPtrsIterator<MessageLite *, void *>
       pointer_iterator;
-  typedef internal::RepeatedPtrOverPtrsIterator<const MessageLite* const,
-                                                const void* const>
+  typedef internal::RepeatedPtrOverPtrsIterator<const MessageLite *const,
+                                                const void *const>
       const_pointer_iterator;
 
   iterator begin() { return iterator(base().raw_data()); }
@@ -163,20 +161,20 @@ struct WeakRepeatedPtrField {
     return const_pointer_iterator(base().raw_mutable_data() + base().size());
   }
 
-  MessageLite* AddWeak(const MessageLite* prototype) {
+  MessageLite *AddWeak(const MessageLite *prototype) {
     return base().AddWeak(prototype);
   }
-  T* Add() { return weak.Add(); }
+  T *Add() { return weak.Add(); }
   void Clear() { base().template Clear<TypeHandler>(); }
-  void MergeFrom(const WeakRepeatedPtrField& other) {
+  void MergeFrom(const WeakRepeatedPtrField &other) {
     base().template MergeFrom<TypeHandler>(other.base());
   }
-  void InternalSwap(WeakRepeatedPtrField* other) {
+  void InternalSwap(WeakRepeatedPtrField *other) {
     base().InternalSwap(&other->base());
   }
 
-  const internal::RepeatedPtrFieldBase& base() const { return weak; }
-  internal::RepeatedPtrFieldBase& base() { return weak; }
+  const internal::RepeatedPtrFieldBase &base() const { return weak; }
+  internal::RepeatedPtrFieldBase &base() { return weak; }
   // Union disables running the destructor. Which would create a strong link.
   // Instead we explicitly destroy the underlying base through the virtual
   // destructor.
@@ -185,9 +183,9 @@ struct WeakRepeatedPtrField {
   };
 };
 
-}  // namespace protobuf
-}  // namespace google
+} // namespace protobuf
+} // namespace google
 
 #include <google/protobuf/port_undef.inc>
 
-#endif  // GOOGLE_PROTOBUF_IMPLICIT_WEAK_MESSAGE_H__
+#endif // GOOGLE_PROTOBUF_IMPLICIT_WEAK_MESSAGE_H__

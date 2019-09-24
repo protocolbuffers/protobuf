@@ -38,20 +38,18 @@
 #include <string>
 #include <vector>
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
+#include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
 #include <gtest/gtest.h>
-
 
 namespace google {
 namespace protobuf {
 
 using internal::ArenaStringPtr;
 
-
-static std::string WrapString(const char* value) { return value; }
+static std::string WrapString(const char *value) { return value; }
 
 // Test ArenaStringPtr with arena == NULL.
 TEST(ArenaStringPtrTest, ArenaStringPtrOnHeap) {
@@ -68,12 +66,12 @@ TEST(ArenaStringPtrTest, ArenaStringPtrOnHeap) {
 
   ArenaStringPtr field2;
   field2.UnsafeSetDefault(&default_value);
-  std::string* mut = field2.Mutable(&default_value, NULL);
+  std::string *mut = field2.Mutable(&default_value, NULL);
   EXPECT_EQ(mut, field2.Mutable(&default_value, NULL));
   EXPECT_EQ(mut, &field2.Get());
   EXPECT_NE(&default_value, mut);
   EXPECT_EQ(std::string("default"), *mut);
-  *mut = "Test long long long long value";  // ensure string allocates storage
+  *mut = "Test long long long long value"; // ensure string allocates storage
   EXPECT_EQ(std::string("Test long long long long value"), field2.Get());
   field2.Destroy(&default_value, NULL);
 }
@@ -94,12 +92,12 @@ TEST(ArenaStringPtrTest, ArenaStringPtrOnArena) {
 
   ArenaStringPtr field2;
   field2.UnsafeSetDefault(&default_value);
-  std::string* mut = field2.Mutable(&default_value, &arena);
+  std::string *mut = field2.Mutable(&default_value, &arena);
   EXPECT_EQ(mut, field2.Mutable(&default_value, &arena));
   EXPECT_EQ(mut, &field2.Get());
   EXPECT_NE(&default_value, mut);
   EXPECT_EQ(std::string("default"), *mut);
-  *mut = "Test long long long long value";  // ensure string allocates storage
+  *mut = "Test long long long long value"; // ensure string allocates storage
   EXPECT_EQ(std::string("Test long long long long value"), field2.Get());
   field2.Destroy(&default_value, &arena);
 }
@@ -121,16 +119,15 @@ TEST(ArenaStringPtrTest, ArenaStringPtrOnArenaNoSSO) {
 
   ArenaStringPtr field2;
   field2.UnsafeSetDefault(&default_value);
-  std::string* mut = field2.Mutable(&default_value, &arena);
+  std::string *mut = field2.Mutable(&default_value, &arena);
   EXPECT_EQ(mut, field2.Mutable(&default_value, &arena));
   EXPECT_EQ(mut, &field2.Get());
   EXPECT_NE(&default_value, mut);
   EXPECT_EQ(std::string("default"), *mut);
-  *mut = "Test long long long long value";  // ensure string allocates storage
+  *mut = "Test long long long long value"; // ensure string allocates storage
   EXPECT_EQ(std::string("Test long long long long value"), field2.Get());
   field2.Destroy(&default_value, &arena);
 }
 
-
-}  // namespace protobuf
-}  // namespace google
+} // namespace protobuf
+} // namespace google

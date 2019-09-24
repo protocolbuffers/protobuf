@@ -59,57 +59,54 @@ class DataPiece;
 // TODO(xinb): seems like a prime candidate to apply the RAII paradigm
 // and get rid the need to call EndXXX().
 class PROTOBUF_EXPORT ObjectWriter {
- public:
+public:
   virtual ~ObjectWriter() {}
 
   // Starts an object. If the name is empty, the object will not be named.
-  virtual ObjectWriter* StartObject(StringPiece name) = 0;
+  virtual ObjectWriter *StartObject(StringPiece name) = 0;
 
   // Ends an object.
-  virtual ObjectWriter* EndObject() = 0;
+  virtual ObjectWriter *EndObject() = 0;
 
   // Starts a list. If the name is empty, the list will not be named.
-  virtual ObjectWriter* StartList(StringPiece name) = 0;
+  virtual ObjectWriter *StartList(StringPiece name) = 0;
 
   // Ends a list.
-  virtual ObjectWriter* EndList() = 0;
+  virtual ObjectWriter *EndList() = 0;
 
   // Renders a boolean value.
-  virtual ObjectWriter* RenderBool(StringPiece name, bool value) = 0;
+  virtual ObjectWriter *RenderBool(StringPiece name, bool value) = 0;
 
   // Renders an 32-bit integer value.
-  virtual ObjectWriter* RenderInt32(StringPiece name, int32 value) = 0;
+  virtual ObjectWriter *RenderInt32(StringPiece name, int32 value) = 0;
 
   // Renders an 32-bit unsigned integer value.
-  virtual ObjectWriter* RenderUint32(StringPiece name, uint32 value) = 0;
+  virtual ObjectWriter *RenderUint32(StringPiece name, uint32 value) = 0;
 
   // Renders a 64-bit integer value.
-  virtual ObjectWriter* RenderInt64(StringPiece name, int64 value) = 0;
+  virtual ObjectWriter *RenderInt64(StringPiece name, int64 value) = 0;
 
   // Renders an 64-bit unsigned integer value.
-  virtual ObjectWriter* RenderUint64(StringPiece name, uint64 value) = 0;
-
+  virtual ObjectWriter *RenderUint64(StringPiece name, uint64 value) = 0;
 
   // Renders a double value.
-  virtual ObjectWriter* RenderDouble(StringPiece name, double value) = 0;
+  virtual ObjectWriter *RenderDouble(StringPiece name, double value) = 0;
 
   // Renders a float value.
-  virtual ObjectWriter* RenderFloat(StringPiece name, float value) = 0;
+  virtual ObjectWriter *RenderFloat(StringPiece name, float value) = 0;
 
   // Renders a StringPiece value. This is for rendering strings.
-  virtual ObjectWriter* RenderString(StringPiece name,
-                                     StringPiece value) = 0;
+  virtual ObjectWriter *RenderString(StringPiece name, StringPiece value) = 0;
 
   // Renders a bytes value.
-  virtual ObjectWriter* RenderBytes(StringPiece name, StringPiece value) = 0;
+  virtual ObjectWriter *RenderBytes(StringPiece name, StringPiece value) = 0;
 
   // Renders a Null value.
-  virtual ObjectWriter* RenderNull(StringPiece name) = 0;
-
+  virtual ObjectWriter *RenderNull(StringPiece name) = 0;
 
   // Renders a DataPiece object to a ObjectWriter.
-  static void RenderDataPieceTo(const DataPiece& data, StringPiece name,
-                                ObjectWriter* ow);
+  static void RenderDataPieceTo(const DataPiece &data, StringPiece name,
+                                ObjectWriter *ow);
 
   // Indicates whether this ObjectWriter has completed writing the root message,
   // usually this means writing of one complete object. Subclasses must override
@@ -124,10 +121,10 @@ class PROTOBUF_EXPORT ObjectWriter {
     return use_strict_base64_decoding_;
   }
 
- protected:
+protected:
   ObjectWriter() : use_strict_base64_decoding_(true) {}
 
- private:
+private:
   // If set to true, we use the stricter version of base64 decoding for byte
   // fields by making sure decoded version encodes back to the original string.
   bool use_strict_base64_decoding_;
@@ -136,11 +133,11 @@ class PROTOBUF_EXPORT ObjectWriter {
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ObjectWriter);
 };
 
-}  // namespace converter
-}  // namespace util
-}  // namespace protobuf
-}  // namespace google
+} // namespace converter
+} // namespace util
+} // namespace protobuf
+} // namespace google
 
 #include <google/protobuf/port_undef.inc>
 
-#endif  // GOOGLE_PROTOBUF_UTIL_CONVERTER_OBJECT_WRITER_H__
+#endif // GOOGLE_PROTOBUF_UTIL_CONVERTER_OBJECT_WRITER_H__

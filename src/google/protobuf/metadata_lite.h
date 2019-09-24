@@ -31,12 +31,12 @@
 #ifndef GOOGLE_PROTOBUF_METADATA_LITE_H__
 #define GOOGLE_PROTOBUF_METADATA_LITE_H__
 
-#include <string>
-#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/arena.h>
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/port.h>
+#include <google/protobuf/stubs/common.h>
+#include <string>
 
 #include <google/protobuf/port_def.inc>
 
@@ -58,11 +58,10 @@ namespace internal {
 // The tagged pointer uses the LSB to disambiguate cases, and uses bit 0 == 0 to
 // indicate an arena pointer and bit 0 == 1 to indicate a UFS+Arena-container
 // pointer.
-template <class T, class Derived>
-class InternalMetadataWithArenaBase {
- public:
+template <class T, class Derived> class InternalMetadataWithArenaBase {
+public:
   InternalMetadataWithArenaBase() : ptr_(NULL) {}
-  explicit InternalMetadataWithArenaBase(Arena* arena) : ptr_(arena) {}
+  explicit InternalMetadataWithArenaBase(Arena *arena) : ptr_(arena) {}
 
   ~InternalMetadataWithArenaBase() {
     if (have_unknown_fields() && arena() == NULL) {
@@ -71,7 +70,7 @@ class InternalMetadataWithArenaBase {
     ptr_ = NULL;
   }
 
-  PROTOBUF_ALWAYS_INLINE const T& unknown_fields() const {
+  PROTOBUF_ALWAYS_INLINE const T &unknown_fields() const {
     if (PROTOBUF_PREDICT_FALSE(have_unknown_fields())) {
       return PtrValue<Container>()->unknown_fields;
     } else {
@@ -79,7 +78,7 @@ class InternalMetadataWithArenaBase {
     }
   }
 
-  PROTOBUF_ALWAYS_INLINE T* mutable_unknown_fields() {
+  PROTOBUF_ALWAYS_INLINE T *mutable_unknown_fields() {
     if (PROTOBUF_PREDICT_TRUE(have_unknown_fields())) {
       return &PtrValue<Container>()->unknown_fields;
     } else {
@@ -87,7 +86,7 @@ class InternalMetadataWithArenaBase {
     }
   }
 
-  PROTOBUF_ALWAYS_INLINE Arena* arena() const {
+  PROTOBUF_ALWAYS_INLINE Arena *arena() const {
     if (PROTOBUF_PREDICT_FALSE(have_unknown_fields())) {
       return PtrValue<Container>()->arena;
     } else {
@@ -99,7 +98,7 @@ class InternalMetadataWithArenaBase {
     return PtrTag() == kTagContainer;
   }
 
-  PROTOBUF_ALWAYS_INLINE void Swap(Derived* other) {
+  PROTOBUF_ALWAYS_INLINE void Swap(Derived *other) {
     // Semantics here are that we swap only the unknown fields, not the arena
     // pointer. We cannot simply swap ptr_ with other->ptr_ because we need to
     // maintain our own arena ptr. Also, our ptr_ and other's ptr_ may be in
@@ -107,26 +106,26 @@ class InternalMetadataWithArenaBase {
     // cannot simply swap ptr_ and then restore the arena pointers. We reuse
     // UFS's swap implementation instead.
     if (have_unknown_fields() || other->have_unknown_fields()) {
-      static_cast<Derived*>(this)->DoSwap(other->mutable_unknown_fields());
+      static_cast<Derived *>(this)->DoSwap(other->mutable_unknown_fields());
     }
   }
 
-  PROTOBUF_ALWAYS_INLINE void MergeFrom(const Derived& other) {
+  PROTOBUF_ALWAYS_INLINE void MergeFrom(const Derived &other) {
     if (other.have_unknown_fields()) {
-      static_cast<Derived*>(this)->DoMergeFrom(other.unknown_fields());
+      static_cast<Derived *>(this)->DoMergeFrom(other.unknown_fields());
     }
   }
 
   PROTOBUF_ALWAYS_INLINE void Clear() {
     if (have_unknown_fields()) {
-      static_cast<Derived*>(this)->DoClear();
+      static_cast<Derived *>(this)->DoClear();
     }
   }
 
-  PROTOBUF_ALWAYS_INLINE void* raw_arena_ptr() const { return ptr_; }
+  PROTOBUF_ALWAYS_INLINE void *raw_arena_ptr() const { return ptr_; }
 
- private:
-  void* ptr_;
+private:
+  void *ptr_;
 
   // Tagged pointer implementation.
   enum {
@@ -143,26 +142,25 @@ class InternalMetadataWithArenaBase {
     return reinterpret_cast<intptr_t>(ptr_) & kPtrTagMask;
   }
 
-  template <typename U>
-  U* PtrValue() const {
-    return reinterpret_cast<U*>(reinterpret_cast<intptr_t>(ptr_) &
-                                kPtrValueMask);
+  template <typename U> U *PtrValue() const {
+    return reinterpret_cast<U *>(reinterpret_cast<intptr_t>(ptr_) &
+                                 kPtrValueMask);
   }
 
   // If ptr_'s tag is kTagContainer, it points to an instance of this struct.
   struct Container {
     T unknown_fields;
-    Arena* arena;
+    Arena *arena;
   };
 
-  PROTOBUF_NOINLINE T* mutable_unknown_fields_slow() {
-    Arena* my_arena = arena();
-    Container* container = Arena::Create<Container>(my_arena);
+  PROTOBUF_NOINLINE T *mutable_unknown_fields_slow() {
+    Arena *my_arena = arena();
+    Container *container = Arena::Create<Container>(my_arena);
     // Two-step assignment works around a bug in clang's static analyzer:
     // https://bugs.llvm.org/show_bug.cgi?id=34198.
     ptr_ = container;
-    ptr_ = reinterpret_cast<void*>(reinterpret_cast<intptr_t>(ptr_) |
-                                   kTagContainer);
+    ptr_ = reinterpret_cast<void *>(reinterpret_cast<intptr_t>(ptr_) |
+                                    kTagContainer);
     container->arena = my_arena;
     return &(container->unknown_fields);
   }
@@ -175,22 +173,22 @@ class InternalMetadataWithArenaBase {
 class InternalMetadataWithArenaLite
     : public InternalMetadataWithArenaBase<std::string,
                                            InternalMetadataWithArenaLite> {
- public:
+public:
   InternalMetadataWithArenaLite() {}
 
-  explicit InternalMetadataWithArenaLite(Arena* arena)
+  explicit InternalMetadataWithArenaLite(Arena *arena)
       : InternalMetadataWithArenaBase<std::string,
                                       InternalMetadataWithArenaLite>(arena) {}
 
-  void DoSwap(std::string* other) { mutable_unknown_fields()->swap(*other); }
+  void DoSwap(std::string *other) { mutable_unknown_fields()->swap(*other); }
 
-  void DoMergeFrom(const std::string& other) {
+  void DoMergeFrom(const std::string &other) {
     mutable_unknown_fields()->append(other);
   }
 
   void DoClear() { mutable_unknown_fields()->clear(); }
 
-  static const std::string& default_instance() {
+  static const std::string &default_instance() {
     // Can't use GetEmptyStringAlreadyInited() here because empty string
     // may not have been initalized yet. This happens when protocol compiler
     // statically determines the user can't access defaults and omits init code
@@ -209,27 +207,28 @@ class InternalMetadataWithArenaLite
 // StringOutputStream stream(setter.buffer());
 // guarantees that the string is only swapped after stream is destroyed.
 class PROTOBUF_EXPORT LiteUnknownFieldSetter {
- public:
-  explicit LiteUnknownFieldSetter(InternalMetadataWithArenaLite* metadata)
+public:
+  explicit LiteUnknownFieldSetter(InternalMetadataWithArenaLite *metadata)
       : metadata_(metadata) {
     if (metadata->have_unknown_fields()) {
       buffer_.swap(*metadata->mutable_unknown_fields());
     }
   }
   ~LiteUnknownFieldSetter() {
-    if (!buffer_.empty()) metadata_->mutable_unknown_fields()->swap(buffer_);
+    if (!buffer_.empty())
+      metadata_->mutable_unknown_fields()->swap(buffer_);
   }
-  std::string* buffer() { return &buffer_; }
+  std::string *buffer() { return &buffer_; }
 
- private:
-  InternalMetadataWithArenaLite* metadata_;
+private:
+  InternalMetadataWithArenaLite *metadata_;
   std::string buffer_;
 };
 
-}  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+} // namespace internal
+} // namespace protobuf
+} // namespace google
 
 #include <google/protobuf/port_undef.inc>
 
-#endif  // GOOGLE_PROTOBUF_METADATA_LITE_H__
+#endif // GOOGLE_PROTOBUF_METADATA_LITE_H__

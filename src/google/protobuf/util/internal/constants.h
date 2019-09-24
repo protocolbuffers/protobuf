@@ -92,8 +92,8 @@ const char kAnyType[] = "google.protobuf.Any";
 // The protobuf option name of jspb.message_id;
 const char kOptionJspbMessageId[] = "jspb.message_id";
 
-}  // namespace converter
-}  // namespace util
-}  // namespace protobuf
-}  // namespace google
-#endif  // GOOGLE_PROTOBUF_UTIL_CONVERTER_CONSTANTS_H__
+} // namespace converter
+} // namespace util
+} // namespace protobuf
+} // namespace google
+#endif // GOOGLE_PROTOBUF_UTIL_CONVERTER_CONSTANTS_H__

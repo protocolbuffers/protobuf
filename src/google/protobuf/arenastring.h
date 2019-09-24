@@ -34,18 +34,17 @@
 #include <string>
 #include <utility>
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/fastmem.h>
 #include <google/protobuf/arena.h>
 #include <google/protobuf/port.h>
+#include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/fastmem.h>
+#include <google/protobuf/stubs/logging.h>
 
 #include <google/protobuf/port_def.inc>
 
 #ifdef SWIG
 #error "You cannot SWIG proto headers"
 #endif
-
 
 // This is the implementation of arena string fields written for the open-source
 // release. The ArenaStringPtr struct below is an internal implementation class
@@ -59,21 +58,20 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-template <typename T>
-class TaggedPtr {
- public:
-  void Set(T* p) { ptr_ = reinterpret_cast<uintptr_t>(p); }
-  T* Get() const { return reinterpret_cast<T*>(ptr_); }
+template <typename T> class TaggedPtr {
+public:
+  void Set(T *p) { ptr_ = reinterpret_cast<uintptr_t>(p); }
+  T *Get() const { return reinterpret_cast<T *>(ptr_); }
 
   bool IsNull() { return ptr_ == 0; }
 
- private:
+private:
   uintptr_t ptr_;
 };
 
 struct PROTOBUF_EXPORT ArenaStringPtr {
-  inline void Set(const ::std::string* default_value,
-                  const ::std::string& value, Arena* arena) {
+  inline void Set(const ::std::string *default_value,
+                  const ::std::string &value, Arena *arena) {
     if (ptr_ == default_value) {
       CreateInstance(arena, &value);
     } else {
@@ -81,16 +79,16 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
     }
   }
 
-  inline void SetLite(const ::std::string* default_value,
-                      const ::std::string& value, Arena* arena) {
+  inline void SetLite(const ::std::string *default_value,
+                      const ::std::string &value, Arena *arena) {
     Set(default_value, value, arena);
   }
 
   // Basic accessors.
-  inline const ::std::string& Get() const { return *ptr_; }
+  inline const ::std::string &Get() const { return *ptr_; }
 
-  inline ::std::string* Mutable(const ::std::string* default_value,
-                                Arena* arena) {
+  inline ::std::string *Mutable(const ::std::string *default_value,
+                                Arena *arena) {
     if (ptr_ == default_value) {
       CreateInstance(arena, default_value);
     }
@@ -101,8 +99,8 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   // Own()'d by any arena. If the field was not set, it returns NULL. The caller
   // retains ownership. Clears this field back to NULL state. Used to implement
   // release_<field>() methods on generated classes.
-  inline ::std::string* Release(const ::std::string* default_value,
-                                Arena* arena) {
+  inline ::std::string *Release(const ::std::string *default_value,
+                                Arena *arena) {
     if (ptr_ == default_value) {
       return NULL;
     }
@@ -110,10 +108,10 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   }
 
   // Similar to Release, but ptr_ cannot be the default_value.
-  inline ::std::string* ReleaseNonDefault(const ::std::string* default_value,
-                                          Arena* arena) {
+  inline ::std::string *ReleaseNonDefault(const ::std::string *default_value,
+                                          Arena *arena) {
     GOOGLE_DCHECK(!IsDefault(default_value));
-    ::std::string* released = NULL;
+    ::std::string *released = NULL;
     if (arena != NULL) {
       // ptr_ is owned by the arena.
       released = new ::std::string;
@@ -121,7 +119,7 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
     } else {
       released = ptr_;
     }
-    ptr_ = const_cast< ::std::string*>(default_value);
+    ptr_ = const_cast<::std::string *>(default_value);
     return released;
   }
 
@@ -130,21 +128,21 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   // field was not set, this returns NULL. This method clears this field back to
   // NULL state. Used to implement unsafe_arena_release_<field>() methods on
   // generated classes.
-  inline ::std::string* UnsafeArenaRelease(const ::std::string* default_value,
-                                           Arena* /* arena */) {
+  inline ::std::string *UnsafeArenaRelease(const ::std::string *default_value,
+                                           Arena * /* arena */) {
     if (ptr_ == default_value) {
       return NULL;
     }
-    ::std::string* released = ptr_;
-    ptr_ = const_cast< ::std::string*>(default_value);
+    ::std::string *released = ptr_;
+    ptr_ = const_cast<::std::string *>(default_value);
     return released;
   }
 
   // Takes a string that is heap-allocated, and takes ownership. The string's
   // destructor is registered with the arena. Used to implement
   // set_allocated_<field> in generated classes.
-  inline void SetAllocated(const ::std::string* default_value,
-                           ::std::string* value, Arena* arena) {
+  inline void SetAllocated(const ::std::string *default_value,
+                           ::std::string *value, Arena *arena) {
     if (arena == NULL && ptr_ != default_value) {
       Destroy(default_value, arena);
     }
@@ -154,7 +152,7 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
         arena->Own(value);
       }
     } else {
-      ptr_ = const_cast< ::std::string*>(default_value);
+      ptr_ = const_cast<::std::string *>(default_value);
     }
   }
 
@@ -162,25 +160,25 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   // must be non-null. It is safe only to pass this method a value returned by
   // UnsafeArenaRelease() on another field of a message in the same arena. Used
   // to implement unsafe_arena_set_allocated_<field> in generated classes.
-  inline void UnsafeArenaSetAllocated(const ::std::string* default_value,
-                                      ::std::string* value,
-                                      Arena* /* arena */) {
+  inline void UnsafeArenaSetAllocated(const ::std::string *default_value,
+                                      ::std::string *value,
+                                      Arena * /* arena */) {
     if (value != NULL) {
       ptr_ = value;
     } else {
-      ptr_ = const_cast< ::std::string*>(default_value);
+      ptr_ = const_cast<::std::string *>(default_value);
     }
   }
 
   // Swaps internal pointers. Arena-safety semantics: this is guarded by the
   // logic in Swap()/UnsafeArenaSwap() at the message level, so this method is
   // 'unsafe' if called directly.
-  PROTOBUF_ALWAYS_INLINE void Swap(ArenaStringPtr* other) {
+  PROTOBUF_ALWAYS_INLINE void Swap(ArenaStringPtr *other) {
     std::swap(ptr_, other->ptr_);
   }
-  PROTOBUF_ALWAYS_INLINE void Swap(ArenaStringPtr* other,
-                                   const ::std::string* default_value,
-                                   Arena* arena) {
+  PROTOBUF_ALWAYS_INLINE void Swap(ArenaStringPtr *other,
+                                   const ::std::string *default_value,
+                                   Arena *arena) {
 #ifndef NDEBUG
     // For debug builds, we swap the contents of the string, rather than the
     // string instances themselves.  This invalidates previously taken const
@@ -194,8 +192,8 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
       return;
     }
 
-    ::std::string* this_ptr = Mutable(default_value, arena);
-    ::std::string* other_ptr = other->Mutable(default_value, arena);
+    ::std::string *this_ptr = Mutable(default_value, arena);
+    ::std::string *other_ptr = other->Mutable(default_value, arena);
 
     this_ptr->swap(*other_ptr);
 #else
@@ -206,7 +204,7 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   }
 
   // Frees storage (if not on an arena).
-  inline void Destroy(const ::std::string* default_value, Arena* arena) {
+  inline void Destroy(const ::std::string *default_value, Arena *arena) {
     if (arena == NULL && ptr_ != default_value) {
       delete ptr_;
     }
@@ -216,8 +214,8 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   // overhead of heap operations. After this returns, the content (as seen by
   // the user) will always be the empty string. Assumes that |default_value|
   // is an empty string.
-  inline void ClearToEmpty(const ::std::string* default_value,
-                           Arena* /* arena */) {
+  inline void ClearToEmpty(const ::std::string *default_value,
+                           Arena * /* arena */) {
     if (ptr_ == default_value) {
       // Already set to default (which is empty) -- do nothing.
     } else {
@@ -233,8 +231,8 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   // Clears content, but keeps allocated string if arena != NULL, to avoid the
   // overhead of heap operations. After this returns, the content (as seen by
   // the user) will always be equal to |default_value|.
-  inline void ClearToDefault(const ::std::string* default_value,
-                             Arena* /* arena */) {
+  inline void ClearToDefault(const ::std::string *default_value,
+                             Arena * /* arena */) {
     if (ptr_ == default_value) {
       // Already set to default -- do nothing.
     } else {
@@ -250,10 +248,10 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   // does not own the pointed-to memory. Disregards initial value of ptr_ (so
   // this is the *ONLY* safe method to call after construction or when
   // reinitializing after becoming the active field in a oneof union).
-  inline void UnsafeSetDefault(const ::std::string* default_value) {
+  inline void UnsafeSetDefault(const ::std::string *default_value) {
     // Casting away 'const' is safe here: accessors ensure that ptr_ is only
     // returned as a const if it is equal to default_value.
-    ptr_ = const_cast< ::std::string*>(default_value);
+    ptr_ = const_cast<::std::string *>(default_value);
   }
 
   // The 'NoArena' variants of methods below assume arena == NULL and are
@@ -263,8 +261,8 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   // ever been mutated by NoArena methods must *only* be in the String state
   // (i.e., tag bits are not used), *NEVER* ArenaString. This allows all
   // tagged-pointer manipulations to be avoided.
-  inline void SetNoArena(const ::std::string* default_value,
-                         const ::std::string& value) {
+  inline void SetNoArena(const ::std::string *default_value,
+                         const ::std::string &value) {
     if (ptr_ == default_value) {
       CreateInstanceNoArena(&value);
     } else {
@@ -272,7 +270,7 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
     }
   }
 
-  void SetNoArena(const ::std::string* default_value, ::std::string&& value) {
+  void SetNoArena(const ::std::string *default_value, ::std::string &&value) {
     if (IsDefault(default_value)) {
       ptr_ = new ::std::string(std::move(value));
     } else {
@@ -280,19 +278,19 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
     }
   }
 
-  void AssignWithDefault(const ::std::string* default_value,
+  void AssignWithDefault(const ::std::string *default_value,
                          ArenaStringPtr value);
 
-  inline const ::std::string& GetNoArena() const { return *ptr_; }
+  inline const ::std::string &GetNoArena() const { return *ptr_; }
 
-  inline ::std::string* MutableNoArena(const ::std::string* default_value) {
+  inline ::std::string *MutableNoArena(const ::std::string *default_value) {
     if (ptr_ == default_value) {
       CreateInstanceNoArena(default_value);
     }
     return ptr_;
   }
 
-  inline ::std::string* ReleaseNoArena(const ::std::string* default_value) {
+  inline ::std::string *ReleaseNoArena(const ::std::string *default_value) {
     if (ptr_ == default_value) {
       return NULL;
     } else {
@@ -300,33 +298,33 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
     }
   }
 
-  inline ::std::string* ReleaseNonDefaultNoArena(
-      const ::std::string* default_value) {
+  inline ::std::string *
+  ReleaseNonDefaultNoArena(const ::std::string *default_value) {
     GOOGLE_DCHECK(!IsDefault(default_value));
-    ::std::string* released = ptr_;
-    ptr_ = const_cast< ::std::string*>(default_value);
+    ::std::string *released = ptr_;
+    ptr_ = const_cast<::std::string *>(default_value);
     return released;
   }
 
-  inline void SetAllocatedNoArena(const ::std::string* default_value,
-                                  ::std::string* value) {
+  inline void SetAllocatedNoArena(const ::std::string *default_value,
+                                  ::std::string *value) {
     if (ptr_ != default_value) {
       delete ptr_;
     }
     if (value != NULL) {
       ptr_ = value;
     } else {
-      ptr_ = const_cast< ::std::string*>(default_value);
+      ptr_ = const_cast<::std::string *>(default_value);
     }
   }
 
-  inline void DestroyNoArena(const ::std::string* default_value) {
+  inline void DestroyNoArena(const ::std::string *default_value) {
     if (ptr_ != default_value) {
       delete ptr_;
     }
   }
 
-  inline void ClearToEmptyNoArena(const ::std::string* default_value) {
+  inline void ClearToEmptyNoArena(const ::std::string *default_value) {
     if (ptr_ == default_value) {
       // Nothing: already equal to default (which is the empty string).
     } else {
@@ -334,7 +332,7 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
     }
   }
 
-  inline void ClearToDefaultNoArena(const ::std::string* default_value) {
+  inline void ClearToDefaultNoArena(const ::std::string *default_value) {
     if (ptr_ == default_value) {
       // Nothing: already set to default.
     } else {
@@ -347,58 +345,58 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   // raw pointer from the shared parse routine (in the non-arenas case). The
   // parse routine does the string allocation in order to save code size in the
   // generated parsing code.
-  inline ::std::string** UnsafeRawStringPointer() { return &ptr_; }
+  inline ::std::string **UnsafeRawStringPointer() { return &ptr_; }
 
-  inline bool IsDefault(const ::std::string* default_value) const {
+  inline bool IsDefault(const ::std::string *default_value) const {
     return ptr_ == default_value;
   }
 
   // Internal accessors!!!!
-  void UnsafeSetTaggedPointer(TaggedPtr< ::std::string> value) {
+  void UnsafeSetTaggedPointer(TaggedPtr<::std::string> value) {
     ptr_ = value.Get();
   }
   // Generated code only! An optimization, in certain cases the generated
   // code is certain we can obtain a string with no default checks and
   // tag tests.
-  ::std::string* UnsafeMutablePointer() { return ptr_; }
+  ::std::string *UnsafeMutablePointer() { return ptr_; }
 
- private:
-  ::std::string* ptr_;
+private:
+  ::std::string *ptr_;
 
   PROTOBUF_NOINLINE
-  void CreateInstance(Arena* arena, const ::std::string* initial_value) {
+  void CreateInstance(Arena *arena, const ::std::string *initial_value) {
     GOOGLE_DCHECK(initial_value != NULL);
     // uses "new ::std::string" when arena is nullptr
-    ptr_ = Arena::Create< ::std::string>(arena, *initial_value);
+    ptr_ = Arena::Create<::std::string>(arena, *initial_value);
   }
   PROTOBUF_NOINLINE
-  void CreateInstanceNoArena(const ::std::string* initial_value) {
+  void CreateInstanceNoArena(const ::std::string *initial_value) {
     GOOGLE_DCHECK(initial_value != NULL);
     ptr_ = new ::std::string(*initial_value);
   }
 };
 
-}  // namespace internal
-}  // namespace protobuf
+} // namespace internal
+} // namespace protobuf
 
 namespace protobuf {
 namespace internal {
 
-inline void ArenaStringPtr::AssignWithDefault(
-    const ::std::string* default_value, ArenaStringPtr value) {
-  const ::std::string* me = *UnsafeRawStringPointer();
-  const ::std::string* other = *value.UnsafeRawStringPointer();
+inline void
+ArenaStringPtr::AssignWithDefault(const ::std::string *default_value,
+                                  ArenaStringPtr value) {
+  const ::std::string *me = *UnsafeRawStringPointer();
+  const ::std::string *other = *value.UnsafeRawStringPointer();
   // If the pointers are the same then do nothing.
   if (me != other) {
     SetNoArena(default_value, value.GetNoArena());
   }
 }
 
-}  // namespace internal
-}  // namespace protobuf
-}  // namespace google
-
+} // namespace internal
+} // namespace protobuf
+} // namespace google
 
 #include <google/protobuf/port_undef.inc>
 
-#endif  // GOOGLE_PROTOBUF_ARENASTRING_H__
+#endif // GOOGLE_PROTOBUF_ARENASTRING_H__

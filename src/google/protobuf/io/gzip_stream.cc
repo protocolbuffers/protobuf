@@ -33,7 +33,6 @@
 // This file contains the implementation of classes GzipInputStream and
 // GzipOutputStream.
 
-
 #if HAVE_ZLIB
 #include <google/protobuf/io/gzip_stream.h>
 
@@ -46,7 +45,7 @@ namespace io {
 
 static const int kDefaultBufferSize = 65536;
 
-GzipInputStream::GzipInputStream(ZeroCopyInputStream* sub_stream, Format format,
+GzipInputStream::GzipInputStream(ZeroCopyInputStream *sub_stream, Format format,
                                  int buffer_size)
     : format_(format), sub_stream_(sub_stream), zerror_(Z_OK), byte_count_(0) {
   zcontext_.state = Z_NULL;
@@ -65,7 +64,7 @@ GzipInputStream::GzipInputStream(ZeroCopyInputStream* sub_stream, Format format,
   }
   output_buffer_ = operator new(output_buffer_length_);
   GOOGLE_CHECK(output_buffer_ != NULL);
-  zcontext_.next_out = static_cast<Bytef*>(output_buffer_);
+  zcontext_.next_out = static_cast<Bytef *>(output_buffer_);
   zcontext_.avail_out = output_buffer_length_;
   output_position_ = output_buffer_;
 }
@@ -74,19 +73,19 @@ GzipInputStream::~GzipInputStream() {
   zerror_ = inflateEnd(&zcontext_);
 }
 
-static inline int internalInflateInit2(z_stream* zcontext,
+static inline int internalInflateInit2(z_stream *zcontext,
                                        GzipInputStream::Format format) {
   int windowBitsFormat = 0;
   switch (format) {
-    case GzipInputStream::GZIP:
-      windowBitsFormat = 16;
-      break;
-    case GzipInputStream::AUTO:
-      windowBitsFormat = 32;
-      break;
-    case GzipInputStream::ZLIB:
-      windowBitsFormat = 0;
-      break;
+  case GzipInputStream::GZIP:
+    windowBitsFormat = 16;
+    break;
+  case GzipInputStream::AUTO:
+    windowBitsFormat = 32;
+    break;
+  case GzipInputStream::ZLIB:
+    windowBitsFormat = 0;
+    break;
   }
   return inflateInit2(zcontext, /* windowBits */ 15 | windowBitsFormat);
 }
@@ -95,7 +94,7 @@ int GzipInputStream::Inflate(int flush) {
   if ((zerror_ == Z_OK) && (zcontext_.avail_out == 0)) {
     // previous inflate filled output buffer. don't change input params yet.
   } else if (zcontext_.avail_in == 0) {
-    const void* in;
+    const void *in;
     int in_size;
     bool first = zcontext_.next_in == NULL;
     bool ok = sub_stream_->Next(&in, &in_size);
@@ -104,7 +103,7 @@ int GzipInputStream::Inflate(int flush) {
       zcontext_.avail_out = 0;
       return Z_STREAM_END;
     }
-    zcontext_.next_in = static_cast<Bytef*>(const_cast<void*>(in));
+    zcontext_.next_in = static_cast<Bytef *>(const_cast<void *>(in));
     zcontext_.avail_in = in_size;
     if (first) {
       int error = internalInflateInit2(&zcontext_, format_);
@@ -113,21 +112,21 @@ int GzipInputStream::Inflate(int flush) {
       }
     }
   }
-  zcontext_.next_out = static_cast<Bytef*>(output_buffer_);
+  zcontext_.next_out = static_cast<Bytef *>(output_buffer_);
   zcontext_.avail_out = output_buffer_length_;
   output_position_ = output_buffer_;
   int error = inflate(&zcontext_, flush);
   return error;
 }
 
-void GzipInputStream::DoNextOutput(const void** data, int* size) {
+void GzipInputStream::DoNextOutput(const void **data, int *size) {
   *data = output_position_;
   *size = ((uintptr_t)zcontext_.next_out) - ((uintptr_t)output_position_);
   output_position_ = zcontext_.next_out;
 }
 
 // implements ZeroCopyInputStream ----------------------------------
-bool GzipInputStream::Next(const void** data, int* size) {
+bool GzipInputStream::Next(const void **data, int *size) {
   bool ok = (zerror_ == Z_OK) || (zerror_ == Z_STREAM_END) ||
             (zerror_ == Z_BUF_ERROR);
   if ((!ok) || (zcontext_.next_out == NULL)) {
@@ -169,11 +168,11 @@ bool GzipInputStream::Next(const void** data, int* size) {
   return true;
 }
 void GzipInputStream::BackUp(int count) {
-  output_position_ = reinterpret_cast<void*>(
+  output_position_ = reinterpret_cast<void *>(
       reinterpret_cast<uintptr_t>(output_position_) - count);
 }
 bool GzipInputStream::Skip(int count) {
-  const void* data;
+  const void *data;
   int size = 0;
   bool ok = Next(&data, &size);
   while (ok && (size < count)) {
@@ -197,22 +196,21 @@ int64_t GzipInputStream::ByteCount() const {
 // =========================================================================
 
 GzipOutputStream::Options::Options()
-    : format(GZIP),
-      buffer_size(kDefaultBufferSize),
+    : format(GZIP), buffer_size(kDefaultBufferSize),
       compression_level(Z_DEFAULT_COMPRESSION),
       compression_strategy(Z_DEFAULT_STRATEGY) {}
 
-GzipOutputStream::GzipOutputStream(ZeroCopyOutputStream* sub_stream) {
+GzipOutputStream::GzipOutputStream(ZeroCopyOutputStream *sub_stream) {
   Init(sub_stream, Options());
 }
 
-GzipOutputStream::GzipOutputStream(ZeroCopyOutputStream* sub_stream,
-                                   const Options& options) {
+GzipOutputStream::GzipOutputStream(ZeroCopyOutputStream *sub_stream,
+                                   const Options &options) {
   Init(sub_stream, options);
 }
 
-void GzipOutputStream::Init(ZeroCopyOutputStream* sub_stream,
-                            const Options& options) {
+void GzipOutputStream::Init(ZeroCopyOutputStream *sub_stream,
+                            const Options &options) {
   sub_stream_ = sub_stream;
   sub_data_ = NULL;
   sub_data_size_ = 0;
@@ -259,7 +257,7 @@ int GzipOutputStream::Deflate(int flush) {
         return Z_BUF_ERROR;
       }
       GOOGLE_CHECK_GT(sub_data_size_, 0);
-      zcontext_.next_out = static_cast<Bytef*>(sub_data_);
+      zcontext_.next_out = static_cast<Bytef *>(sub_data_);
       zcontext_.avail_out = sub_data_size_;
     }
     error = deflate(&zcontext_, flush);
@@ -275,7 +273,7 @@ int GzipOutputStream::Deflate(int flush) {
 }
 
 // implements ZeroCopyOutputStream ---------------------------------
-bool GzipOutputStream::Next(void** data, int* size) {
+bool GzipOutputStream::Next(void **data, int *size) {
   if ((zerror_ != Z_OK) && (zerror_ != Z_BUF_ERROR)) {
     return false;
   }
@@ -287,7 +285,7 @@ bool GzipOutputStream::Next(void** data, int* size) {
   }
   if (zcontext_.avail_in == 0) {
     // all input was consumed. reset the buffer.
-    zcontext_.next_in = static_cast<Bytef*>(input_buffer_);
+    zcontext_.next_in = static_cast<Bytef *>(input_buffer_);
     zcontext_.avail_in = input_buffer_length_;
     *data = input_buffer_;
     *size = input_buffer_length_;
@@ -326,8 +324,8 @@ bool GzipOutputStream::Close() {
   return ok;
 }
 
-}  // namespace io
-}  // namespace protobuf
-}  // namespace google
+} // namespace io
+} // namespace protobuf
+} // namespace google
 
-#endif  // HAVE_ZLIB
+#endif // HAVE_ZLIB

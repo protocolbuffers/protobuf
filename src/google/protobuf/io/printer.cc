@@ -36,33 +36,23 @@
 
 #include <cctype>
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/io/zero_copy_stream.h>
+#include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
 
 namespace google {
 namespace protobuf {
 namespace io {
 
-Printer::Printer(ZeroCopyOutputStream* output, char variable_delimiter)
-    : variable_delimiter_(variable_delimiter),
-      output_(output),
-      buffer_(NULL),
-      buffer_size_(0),
-      offset_(0),
-      at_start_of_line_(true),
-      failed_(false),
+Printer::Printer(ZeroCopyOutputStream *output, char variable_delimiter)
+    : variable_delimiter_(variable_delimiter), output_(output), buffer_(NULL),
+      buffer_size_(0), offset_(0), at_start_of_line_(true), failed_(false),
       annotation_collector_(NULL) {}
 
-Printer::Printer(ZeroCopyOutputStream* output, char variable_delimiter,
-                 AnnotationCollector* annotation_collector)
-    : variable_delimiter_(variable_delimiter),
-      output_(output),
-      buffer_(NULL),
-      buffer_size_(0),
-      offset_(0),
-      at_start_of_line_(true),
-      failed_(false),
+Printer::Printer(ZeroCopyOutputStream *output, char variable_delimiter,
+                 AnnotationCollector *annotation_collector)
+    : variable_delimiter_(variable_delimiter), output_(output), buffer_(NULL),
+      buffer_size_(0), offset_(0), at_start_of_line_(true), failed_(false),
       annotation_collector_(annotation_collector) {}
 
 Printer::~Printer() {
@@ -72,9 +62,9 @@ Printer::~Printer() {
   }
 }
 
-bool Printer::GetSubstitutionRange(const char* varname,
-                                   std::pair<size_t, size_t>* range) {
-  std::map<std::string, std::pair<size_t, size_t> >::const_iterator iter =
+bool Printer::GetSubstitutionRange(const char *varname,
+                                   std::pair<size_t, size_t> *range) {
+  std::map<std::string, std::pair<size_t, size_t>>::const_iterator iter =
       substitutions_.find(varname);
   if (iter == substitutions_.end()) {
     GOOGLE_LOG(DFATAL) << " Undefined variable in annotation: " << varname;
@@ -82,16 +72,16 @@ bool Printer::GetSubstitutionRange(const char* varname,
   }
   if (iter->second.first > iter->second.second) {
     GOOGLE_LOG(DFATAL) << " Variable used for annotation used multiple times: "
-                << varname;
+                       << varname;
     return false;
   }
   *range = iter->second;
   return true;
 }
 
-void Printer::Annotate(const char* begin_varname, const char* end_varname,
-                       const std::string& file_path,
-                       const std::vector<int>& path) {
+void Printer::Annotate(const char *begin_varname, const char *end_varname,
+                       const std::string &file_path,
+                       const std::vector<int> &path) {
   if (annotation_collector_ == NULL) {
     // Can't generate signatures with this Printer.
     return;
@@ -102,18 +92,18 @@ void Printer::Annotate(const char* begin_varname, const char* end_varname,
     return;
   }
   if (begin.first > end.second) {
-    GOOGLE_LOG(DFATAL) << "  Annotation has negative length from " << begin_varname
-                << " to " << end_varname;
+    GOOGLE_LOG(DFATAL) << "  Annotation has negative length from "
+                       << begin_varname << " to " << end_varname;
   } else {
     annotation_collector_->AddAnnotation(begin.first, end.second, file_path,
                                          path);
   }
 }
 
-void Printer::Print(const std::map<std::string, std::string>& variables,
-                    const char* text) {
+void Printer::Print(const std::map<std::string, std::string> &variables,
+                    const char *text) {
   int size = strlen(text);
-  int pos = 0;  // The number of bytes we've written so far.
+  int pos = 0; // The number of bytes we've written so far.
   substitutions_.clear();
   line_start_variables_.clear();
 
@@ -137,7 +127,7 @@ void Printer::Print(const std::map<std::string, std::string>& variables,
       pos = i + 1;
 
       // Find closing delimiter.
-      const char* end = strchr(text + pos, variable_delimiter_);
+      const char *end = strchr(text + pos, variable_delimiter_);
       if (end == NULL) {
         GOOGLE_LOG(DFATAL) << " Unclosed variable name.";
         end = text + pos;
@@ -159,7 +149,7 @@ void Printer::Print(const std::map<std::string, std::string>& variables,
             line_start_variables_.push_back(varname);
           }
           WriteRaw(iter->second.data(), iter->second.size());
-          std::pair<std::map<std::string, std::pair<size_t, size_t> >::iterator,
+          std::pair<std::map<std::string, std::pair<size_t, size_t>>::iterator,
                     bool>
               inserted = substitutions_.insert(std::make_pair(
                   varname,
@@ -194,24 +184,28 @@ void Printer::Outdent() {
   indent_.resize(indent_.size() - 2);
 }
 
-void Printer::PrintRaw(const std::string& data) {
+void Printer::PrintRaw(const std::string &data) {
   WriteRaw(data.data(), data.size());
 }
 
-void Printer::PrintRaw(const char* data) {
-  if (failed_) return;
+void Printer::PrintRaw(const char *data) {
+  if (failed_)
+    return;
   WriteRaw(data, strlen(data));
 }
 
-void Printer::WriteRaw(const char* data, int size) {
-  if (failed_) return;
-  if (size == 0) return;
+void Printer::WriteRaw(const char *data, int size) {
+  if (failed_)
+    return;
+  if (size == 0)
+    return;
 
   if (at_start_of_line_ && (size > 0) && (data[0] != '\n')) {
     // Insert an indent.
     at_start_of_line_ = false;
     CopyToBuffer(indent_.data(), indent_.size());
-    if (failed_) return;
+    if (failed_)
+      return;
     // Fix up empty variables (e.g., "{") that should be annotated as
     // coming after the indent.
     for (std::vector<std::string>::iterator i = line_start_variables_.begin();
@@ -231,19 +225,21 @@ void Printer::WriteRaw(const char* data, int size) {
 
 bool Printer::Next() {
   do {
-    void* void_buffer;
+    void *void_buffer;
     if (!output_->Next(&void_buffer, &buffer_size_)) {
       failed_ = true;
       return false;
     }
-    buffer_ = reinterpret_cast<char*>(void_buffer);
+    buffer_ = reinterpret_cast<char *>(void_buffer);
   } while (buffer_size_ == 0);
   return true;
 }
 
-void Printer::CopyToBuffer(const char* data, int size) {
-  if (failed_) return;
-  if (size == 0) return;
+void Printer::CopyToBuffer(const char *data, int size) {
+  if (failed_)
+    return;
+  if (size == 0)
+    return;
 
   while (size > buffer_size_) {
     // Data exceeds space in the buffer.  Copy what we can and request a
@@ -254,10 +250,11 @@ void Printer::CopyToBuffer(const char* data, int size) {
       data += buffer_size_;
       size -= buffer_size_;
     }
-    void* void_buffer;
+    void *void_buffer;
     failed_ = !output_->Next(&void_buffer, &buffer_size_);
-    if (failed_) return;
-    buffer_ = reinterpret_cast<char*>(void_buffer);
+    if (failed_)
+      return;
+    buffer_ = reinterpret_cast<char *>(void_buffer);
   }
 
   // Buffer is big enough to receive the data; copy it.
@@ -274,25 +271,25 @@ void Printer::IndentIfAtStart() {
   }
 }
 
-void Printer::FormatInternal(const std::vector<std::string>& args,
-                             const std::map<std::string, std::string>& vars,
-                             const char* format) {
+void Printer::FormatInternal(const std::vector<std::string> &args,
+                             const std::map<std::string, std::string> &vars,
+                             const char *format) {
   auto save = format;
   int arg_index = 0;
   std::vector<AnnotationCollector::Annotation> annotations;
   while (*format) {
     char c = *format++;
     switch (c) {
-      case '$':
-        format = WriteVariable(args, vars, format, &arg_index, &annotations);
-        continue;
-      case '\n':
-        at_start_of_line_ = true;
-        line_start_variables_.clear();
-        break;
-      default:
-        IndentIfAtStart();
-        break;
+    case '$':
+      format = WriteVariable(args, vars, format, &arg_index, &annotations);
+      continue;
+    case '\n':
+      at_start_of_line_ = true;
+      line_start_variables_.clear();
+      break;
+    default:
+      IndentIfAtStart();
+      break;
     }
     push_back(c);
   }
@@ -300,14 +297,15 @@ void Printer::FormatInternal(const std::vector<std::string>& args,
     GOOGLE_LOG(FATAL) << " Unused arguments. " << save;
   }
   if (!annotations.empty()) {
-    GOOGLE_LOG(FATAL) << " Annotation range is not-closed, expect $}$. " << save;
+    GOOGLE_LOG(FATAL) << " Annotation range is not-closed, expect $}$. "
+                      << save;
   }
 }
 
-const char* Printer::WriteVariable(
-    const std::vector<string>& args,
-    const std::map<std::string, std::string>& vars, const char* format,
-    int* arg_index, std::vector<AnnotationCollector::Annotation>* annotations) {
+const char *Printer::WriteVariable(
+    const std::vector<string> &args,
+    const std::map<std::string, std::string> &vars, const char *format,
+    int *arg_index, std::vector<AnnotationCollector::Annotation> *annotations) {
   auto start = format;
   auto end = strchr(format, '$');
   if (!end) {
@@ -328,8 +326,9 @@ const char* Printer::WriteVariable(
       GOOGLE_LOG(FATAL) << "Annotation ${" << idx + 1 << "$ is out of bounds.";
     }
     if (idx > *arg_index) {
-      GOOGLE_LOG(FATAL) << "Annotation arg must be in correct order as given. Expected"
-                 << " ${" << (*arg_index) + 1 << "$ got ${" << idx + 1 << "$.";
+      GOOGLE_LOG(FATAL)
+          << "Annotation arg must be in correct order as given. Expected"
+          << " ${" << (*arg_index) + 1 << "$ got ${" << idx + 1 << "$.";
     } else if (idx == *arg_index) {
       (*arg_index)++;
     }
@@ -341,32 +340,36 @@ const char* Printer::WriteVariable(
     if (annotations->empty()) {
       GOOGLE_LOG(FATAL) << "Unexpected end of annotation found.";
     }
-    auto& a = annotations->back();
+    auto &a = annotations->back();
     a.first.second = offset_;
-    if (annotation_collector_) annotation_collector_->AddAnnotationNew(a);
+    if (annotation_collector_)
+      annotation_collector_->AddAnnotationNew(a);
     annotations->pop_back();
     return format;
   }
   auto start_var = start;
-  while (start_var < end && *start_var == ' ') start_var++;
+  while (start_var < end && *start_var == ' ')
+    start_var++;
   if (start_var == end) {
     GOOGLE_LOG(FATAL) << " Empty variable.";
   }
   auto end_var = end;
-  while (start_var < end_var && *(end_var - 1) == ' ') end_var--;
+  while (start_var < end_var && *(end_var - 1) == ' ')
+    end_var--;
   std::string var_name{
       start_var, static_cast<std::string::size_type>(end_var - start_var)};
   std::string sub;
   if (std::isdigit(var_name[0])) {
-    GOOGLE_CHECK_EQ(var_name.size(), 1);  // No need for multi-digits
-    int idx = var_name[0] - '1';   // Start counting at 1
+    GOOGLE_CHECK_EQ(var_name.size(), 1); // No need for multi-digits
+    int idx = var_name[0] - '1';         // Start counting at 1
     GOOGLE_CHECK_GE(idx, 0);
     if (idx >= args.size()) {
       GOOGLE_LOG(FATAL) << "Argument $" << idx + 1 << "$ is out of bounds.";
     }
     if (idx > *arg_index) {
-      GOOGLE_LOG(FATAL) << "Arguments must be used in same order as given. Expected $"
-                 << (*arg_index) + 1 << "$ got $" << idx + 1 << "$.";
+      GOOGLE_LOG(FATAL)
+          << "Arguments must be used in same order as given. Expected $"
+          << (*arg_index) + 1 << "$ got $" << idx + 1 << "$.";
     } else if (idx == *arg_index) {
       (*arg_index)++;
     }
@@ -381,7 +384,8 @@ const char* Printer::WriteVariable(
 
   // By returning here in case of empty we also skip possible spaces inside
   // the $...$, i.e. "void$ dllexpor$ f();" -> "void f();" in the empty case.
-  if (sub.empty()) return format;
+  if (sub.empty())
+    return format;
 
   // We're going to write something non-empty so we need a possible indent.
   IndentIfAtStart();
@@ -395,6 +399,6 @@ const char* Printer::WriteVariable(
   return format;
 }
 
-}  // namespace io
-}  // namespace protobuf
-}  // namespace google
+} // namespace io
+} // namespace protobuf
+} // namespace google

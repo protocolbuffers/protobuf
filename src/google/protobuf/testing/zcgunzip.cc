@@ -59,12 +59,12 @@
 using google::protobuf::io::FileInputStream;
 using google::protobuf::io::GzipInputStream;
 
-int main(int argc, const char** argv) {
+int main(int argc, const char **argv) {
   FileInputStream fin(STDIN_FILENO);
   GzipInputStream in(&fin);
 
   while (true) {
-    const void* inptr;
+    const void *inptr;
     int inlen;
     bool ok;
     ok = in.Next(&inptr, &inlen);

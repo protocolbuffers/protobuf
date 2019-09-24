@@ -34,15 +34,15 @@
 #include <assert.h>
 #include <string>
 
-#include <google/protobuf/stubs/casts.h>
-#include <google/protobuf/parse_context.h>
-#include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/arena.h>
 #include <google/protobuf/arenastring.h>
 #include <google/protobuf/generated_message_util.h>
+#include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/map.h>
 #include <google/protobuf/map_type_handler.h>
+#include <google/protobuf/parse_context.h>
 #include <google/protobuf/port.h>
+#include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/wire_format_lite.h>
 
 #include <google/protobuf/port_def.inc>
@@ -61,9 +61,9 @@ template <typename Derived, typename Key, typename Value,
           WireFormatLite::FieldType kKeyFieldType,
           WireFormatLite::FieldType kValueFieldType, int default_enum_value>
 class MapFieldLite;
-}  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+} // namespace internal
+} // namespace protobuf
+} // namespace google
 
 namespace google {
 namespace protobuf {
@@ -73,26 +73,26 @@ namespace internal {
 // the C++11 sense), or swaps it. *src is left in a sane state for
 // subsequent destruction, but shouldn't be used for anything.
 template <bool is_enum, bool is_message, bool is_stringlike, typename T>
-struct MoveHelper {  // primitives
-  static void Move(T* src, T* dest) { *dest = *src; }
+struct MoveHelper { // primitives
+  static void Move(T *src, T *dest) { *dest = *src; }
 };
 
 template <bool is_message, bool is_stringlike, typename T>
-struct MoveHelper<true, is_message, is_stringlike, T> {  // enums
-  static void Move(T* src, T* dest) { *dest = *src; }
+struct MoveHelper<true, is_message, is_stringlike, T> { // enums
+  static void Move(T *src, T *dest) { *dest = *src; }
   // T is an enum here, so allow conversions to and from int.
-  static void Move(T* src, int* dest) { *dest = static_cast<int>(*src); }
-  static void Move(int* src, T* dest) { *dest = static_cast<T>(*src); }
+  static void Move(T *src, int *dest) { *dest = static_cast<int>(*src); }
+  static void Move(int *src, T *dest) { *dest = static_cast<T>(*src); }
 };
 
 template <bool is_stringlike, typename T>
-struct MoveHelper<false, true, is_stringlike, T> {  // messages
-  static void Move(T* src, T* dest) { dest->Swap(src); }
+struct MoveHelper<false, true, is_stringlike, T> { // messages
+  static void Move(T *src, T *dest) { dest->Swap(src); }
 };
 
 template <typename T>
-struct MoveHelper<false, false, true, T> {  // strings and similar
-  static void Move(T* src, T* dest) {
+struct MoveHelper<false, false, true, T> { // strings and similar
+  static void Move(T *src, T *dest) {
 #if __cplusplus >= 201103L
     *dest = std::move(*src);
 #else
@@ -111,9 +111,9 @@ struct MapEntryFuncs {
   static const int kKeyFieldNumber = 1;
   static const int kValueFieldNumber = 2;
 
-  static uint8* InternalSerialize(int field_number, const Key& key,
-                                  const Value& value, uint8* ptr,
-                                  io::EpsCopyOutputStream* stream) {
+  static uint8 *InternalSerialize(int field_number, const Key &key,
+                                  const Value &value, uint8 *ptr,
+                                  io::EpsCopyOutputStream *stream) {
     ptr = stream->EnsureSpace(ptr);
     ptr = WireFormatLite::WriteTagToArray(
         field_number, WireFormatLite::WIRETYPE_LENGTH_DELIMITED, ptr);
@@ -124,14 +124,14 @@ struct MapEntryFuncs {
     return ValueTypeHandler::Write(kValueFieldNumber, value, ptr, stream);
   }
 
-  static size_t ByteSizeLong(const Key& key, const Value& value) {
+  static size_t ByteSizeLong(const Key &key, const Value &value) {
     // Tags for key and value will both be one byte (field numbers 1 and 2).
     size_t inner_length =
         2 + KeyTypeHandler::ByteSize(key) + ValueTypeHandler::ByteSize(value);
     return inner_length + io::CodedOutputStream::VarintSize32(inner_length);
   }
 
-  static int GetCachedSize(const Key& key, const Value& value) {
+  static int GetCachedSize(const Key &key, const Value &value) {
     // Tags for key and value will both be one byte (field numbers 1 and 2).
     return 2 + KeyTypeHandler::GetCachedSize(key) +
            ValueTypeHandler::GetCachedSize(value);
@@ -145,10 +145,10 @@ template <typename Derived, typename Base, typename Key, typename Value,
           WireFormatLite::FieldType kKeyFieldType,
           WireFormatLite::FieldType kValueFieldType, int default_enum_value>
 class MapEntryImpl : public Base {
- public:
+public:
   typedef MapEntryFuncs<Key, Value, kKeyFieldType, kValueFieldType> Funcs;
 
- protected:
+protected:
   // Provide utilities to parse/serialize key/value.  Provide utilities to
   // manipulate internal stored type.
   typedef MapTypeHandler<kKeyFieldType, Key> KeyTypeHandler;
@@ -170,13 +170,13 @@ class MapEntryImpl : public Base {
   static const int kValueFieldNumber = 2;
 
   // Constants for field tag.
-  static const uint8 kKeyTag =
-      GOOGLE_PROTOBUF_WIRE_FORMAT_MAKE_TAG(kKeyFieldNumber, KeyTypeHandler::kWireType);
+  static const uint8 kKeyTag = GOOGLE_PROTOBUF_WIRE_FORMAT_MAKE_TAG(
+      kKeyFieldNumber, KeyTypeHandler::kWireType);
   static const uint8 kValueTag = GOOGLE_PROTOBUF_WIRE_FORMAT_MAKE_TAG(
       kValueFieldNumber, ValueTypeHandler::kWireType);
   static const size_t kTagSize = 1;
 
- public:
+public:
   // Work-around for a compiler bug (see repeated_field.h).
   typedef void MapEntryHasMergeTypeTrait;
   typedef Derived EntryType;
@@ -193,7 +193,7 @@ class MapEntryImpl : public Base {
     _has_bits_[0] = 0;
   }
 
-  explicit MapEntryImpl(Arena* arena) : arena_(arena) {
+  explicit MapEntryImpl(Arena *arena) : arena_(arena) {
     KeyTypeHandler::Initialize(&key_, arena);
     ValueTypeHandler::InitializeMaybeByDefaultEnum(&value_, default_enum_value,
                                                    arena);
@@ -201,25 +201,26 @@ class MapEntryImpl : public Base {
   }
 
   ~MapEntryImpl() {
-    if (GetArenaNoVirtual() != NULL) return;
+    if (GetArenaNoVirtual() != NULL)
+      return;
     KeyTypeHandler::DeleteNoArena(key_);
     ValueTypeHandler::DeleteNoArena(value_);
   }
 
   // accessors ======================================================
 
-  virtual inline const KeyMapEntryAccessorType& key() const {
+  virtual inline const KeyMapEntryAccessorType &key() const {
     return KeyTypeHandler::GetExternalReference(key_);
   }
-  virtual inline const ValueMapEntryAccessorType& value() const {
+  virtual inline const ValueMapEntryAccessorType &value() const {
     return ValueTypeHandler::DefaultIfNotInitialized(
         value_, Derived::internal_default_instance()->value_);
   }
-  inline KeyMapEntryAccessorType* mutable_key() {
+  inline KeyMapEntryAccessorType *mutable_key() {
     set_has_key();
     return KeyTypeHandler::EnsureMutable(&key_, GetArenaNoVirtual());
   }
-  inline ValueMapEntryAccessorType* mutable_value() {
+  inline ValueMapEntryAccessorType *mutable_value() {
     set_has_value();
     return ValueTypeHandler::EnsureMutable(&value_, GetArenaNoVirtual());
   }
@@ -230,32 +231,35 @@ class MapEntryImpl : public Base {
   // anywhere. Just provide a fake implementation here for MessageLite.
   std::string GetTypeName() const override { return ""; }
 
-  void CheckTypeAndMergeFrom(const MessageLite& other) override {
-    MergeFromInternal(*::google::protobuf::internal::DownCast<const Derived*>(&other));
+  void CheckTypeAndMergeFrom(const MessageLite &other) override {
+    MergeFromInternal(
+        *::google::protobuf::internal::DownCast<const Derived *>(&other));
   }
 
-  const char* _InternalParse(const char* ptr, ParseContext* ctx) final {
+  const char *_InternalParse(const char *ptr, ParseContext *ctx) final {
     while (!ctx->Done(&ptr)) {
       uint32 tag;
       ptr = ReadTag(ptr, &tag);
       GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
       if (tag == kKeyTag) {
         set_has_key();
-        KeyMapEntryAccessorType* key = mutable_key();
+        KeyMapEntryAccessorType *key = mutable_key();
         ptr = KeyTypeHandler::Read(ptr, ctx, key);
-        if (!Derived::ValidateKey(key)) return nullptr;
+        if (!Derived::ValidateKey(key))
+          return nullptr;
       } else if (tag == kValueTag) {
         set_has_value();
-        ValueMapEntryAccessorType* value = mutable_value();
+        ValueMapEntryAccessorType *value = mutable_value();
         ptr = ValueTypeHandler::Read(ptr, ctx, value);
-        if (!Derived::ValidateValue(value)) return nullptr;
+        if (!Derived::ValidateValue(value))
+          return nullptr;
       } else {
         if (tag == 0 || WireFormatLite::GetTagWireType(tag) ==
                             WireFormatLite::WIRETYPE_END_GROUP) {
           ctx->SetLastTag(tag);
           return ptr;
         }
-        ptr = UnknownFieldParse(tag, static_cast<string*>(nullptr), ptr, ctx);
+        ptr = UnknownFieldParse(tag, static_cast<string *>(nullptr), ptr, ctx);
       }
       GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
     }
@@ -274,8 +278,9 @@ class MapEntryImpl : public Base {
     return size;
   }
 
-  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
-      ::google::protobuf::uint8* ptr, io::EpsCopyOutputStream* stream) const override {
+  ::google::protobuf::uint8 *InternalSerializeWithCachedSizesToArray(
+      ::google::protobuf::uint8 *ptr,
+      io::EpsCopyOutputStream *stream) const override {
     ptr = KeyTypeHandler::Write(kKeyFieldNumber, key(), ptr, stream);
     return ValueTypeHandler::Write(kValueFieldNumber, value(), ptr, stream);
   }
@@ -297,20 +302,20 @@ class MapEntryImpl : public Base {
     return ValueTypeHandler::IsInitialized(value_);
   }
 
-  Base* New() const override {
-    Derived* entry = new Derived;
+  Base *New() const override {
+    Derived *entry = new Derived;
     return entry;
   }
 
-  Base* New(Arena* arena) const override {
-    Derived* entry = Arena::CreateMessage<Derived>(arena);
+  Base *New(Arena *arena) const override {
+    Derived *entry = Arena::CreateMessage<Derived>(arena);
     return entry;
   }
 
- protected:
+protected:
   // We can't declare this function directly here as it would hide the other
   // overload (const Message&).
-  void MergeFromInternal(const MapEntryImpl& from) {
+  void MergeFromInternal(const MapEntryImpl &from) {
     if (from._has_bits_[0]) {
       if (from.has_key()) {
         KeyTypeHandler::EnsureMutable(&key_, GetArenaNoVirtual());
@@ -325,7 +330,7 @@ class MapEntryImpl : public Base {
     }
   }
 
- public:
+public:
   void Clear() override {
     KeyTypeHandler::Clear(&key_, GetArenaNoVirtual());
     ValueTypeHandler::ClearMaybeByDefaultEnum(&value_, GetArenaNoVirtual(),
@@ -335,27 +340,27 @@ class MapEntryImpl : public Base {
   }
 
   static void InitAsDefaultInstance() {
-    Derived* d = const_cast<Derived*>(Derived::internal_default_instance());
+    Derived *d = const_cast<Derived *>(Derived::internal_default_instance());
     KeyTypeHandler::AssignDefaultValue(&d->key_);
     ValueTypeHandler::AssignDefaultValue(&d->value_);
   }
 
-  Arena* GetArena() const override { return GetArenaNoVirtual(); }
+  Arena *GetArena() const override { return GetArenaNoVirtual(); }
 
   // Parsing using MergePartialFromCodedStream, above, is not as
   // efficient as it could be.  This helper class provides a speedier way.
-  template <typename MapField, typename Map>
-  class Parser {
-   public:
-    explicit Parser(MapField* mf) : mf_(mf), map_(mf->MutableMap()) {}
+  template <typename MapField, typename Map> class Parser {
+  public:
+    explicit Parser(MapField *mf) : mf_(mf), map_(mf->MutableMap()) {}
     ~Parser() {
-      if (entry_ != nullptr && entry_->GetArena() == nullptr) delete entry_;
+      if (entry_ != nullptr && entry_->GetArena() == nullptr)
+        delete entry_;
     }
 
     // This does what the typical MergePartialFromCodedStream() is expected to
     // do, with the additional side-effect that if successful (i.e., if true is
     // going to be its return value) it inserts the key-value pair into map_.
-    bool MergePartialFromCodedStream(io::CodedInputStream* input) {
+    bool MergePartialFromCodedStream(io::CodedInputStream *input) {
       // Look for the expected thing: a key and then a value.  If it fails,
       // invoke the enclosing class's MergePartialFromCodedStream, or return
       // false if that would be pointless.
@@ -364,25 +369,27 @@ class MapEntryImpl : public Base {
           return false;
         }
         // Peek at the next byte to see if it is kValueTag.  If not, bail out.
-        const void* data;
+        const void *data;
         int size;
         input->GetDirectBufferPointerInline(&data, &size);
         // We could use memcmp here, but we don't bother. The tag is one byte.
         static_assert(kTagSize == 1, "tag size must be 1");
-        if (size > 0 && *reinterpret_cast<const char*>(data) == kValueTag) {
+        if (size > 0 && *reinterpret_cast<const char *>(data) == kValueTag) {
           typename Map::size_type map_size = map_->size();
           value_ptr_ = &(*map_)[key_];
           if (PROTOBUF_PREDICT_TRUE(map_size != map_->size())) {
             // We created a new key-value pair.  Fill in the value.
             typedef
-                typename MapIf<ValueTypeHandler::kIsEnum, int*, Value*>::type T;
-            input->Skip(kTagSize);  // Skip kValueTag.
+                typename MapIf<ValueTypeHandler::kIsEnum, int *, Value *>::type
+                    T;
+            input->Skip(kTagSize); // Skip kValueTag.
             if (!ValueTypeHandler::Read(input,
                                         reinterpret_cast<T>(value_ptr_))) {
-              map_->erase(key_);  // Failure! Undo insertion.
+              map_->erase(key_); // Failure! Undo insertion.
               return false;
             }
-            if (input->ExpectAtEnd()) return true;
+            if (input->ExpectAtEnd())
+              return true;
             return ReadBeyondKeyValuePair(input);
           }
         }
@@ -393,11 +400,12 @@ class MapEntryImpl : public Base {
       NewEntry();
       *entry_->mutable_key() = key_;
       const bool result = entry_->MergePartialFromCodedStream(input);
-      if (result) UseKeyAndValueFromEntry();
+      if (result)
+        UseKeyAndValueFromEntry();
       return result;
     }
 
-    const char* _InternalParse(const char* ptr, ParseContext* ctx) {
+    const char *_InternalParse(const char *ptr, ParseContext *ctx) {
       if (PROTOBUF_PREDICT_TRUE(!ctx->Done(&ptr) && *ptr == kKeyTag)) {
         ptr = KeyTypeHandler::Read(ptr + 1, ctx, &key_);
         if (PROTOBUF_PREDICT_FALSE(!ptr || !Derived::ValidateKey(&key_))) {
@@ -408,43 +416,49 @@ class MapEntryImpl : public Base {
           value_ptr_ = &(*map_)[key_];
           if (PROTOBUF_PREDICT_TRUE(map_size != map_->size())) {
             using T =
-                typename MapIf<ValueTypeHandler::kIsEnum, int*, Value*>::type;
+                typename MapIf<ValueTypeHandler::kIsEnum, int *, Value *>::type;
             ptr = ValueTypeHandler::Read(ptr + 1, ctx,
                                          reinterpret_cast<T>(value_ptr_));
             if (PROTOBUF_PREDICT_FALSE(!ptr ||
                                        !Derived::ValidateValue(value_ptr_))) {
-              map_->erase(key_);  // Failure! Undo insertion.
+              map_->erase(key_); // Failure! Undo insertion.
               return nullptr;
             }
-            if (PROTOBUF_PREDICT_TRUE(ctx->Done(&ptr))) return ptr;
-            if (!ptr) return nullptr;
+            if (PROTOBUF_PREDICT_TRUE(ctx->Done(&ptr)))
+              return ptr;
+            if (!ptr)
+              return nullptr;
             NewEntry();
             ValueMover::Move(value_ptr_, entry_->mutable_value());
             map_->erase(key_);
             goto move_key;
           }
         } else {
-          if (!ptr) return nullptr;
+          if (!ptr)
+            return nullptr;
         }
         NewEntry();
       move_key:
         KeyMover::Move(&key_, entry_->mutable_key());
       } else {
-        if (!ptr) return nullptr;
+        if (!ptr)
+          return nullptr;
         NewEntry();
       }
       ptr = entry_->_InternalParse(ptr, ctx);
-      if (ptr) UseKeyAndValueFromEntry();
+      if (ptr)
+        UseKeyAndValueFromEntry();
       return ptr;
     }
 
     template <typename Metadata>
-    const char* ParseWithEnumValidation(const char* ptr, ParseContext* ctx,
+    const char *ParseWithEnumValidation(const char *ptr, ParseContext *ctx,
                                         bool (*is_valid)(int), uint32 field_num,
-                                        Metadata* metadata) {
+                                        Metadata *metadata) {
       auto entry = NewEntry();
       ptr = entry->_InternalParse(ptr, ctx);
-      if (!ptr) return nullptr;
+      if (!ptr)
+        return nullptr;
       if (is_valid(entry->value())) {
         UseKeyAndValueFromEntry();
       } else {
@@ -454,15 +468,15 @@ class MapEntryImpl : public Base {
       return ptr;
     }
 
-    MapEntryImpl* NewEntry() { return entry_ = mf_->NewEntry(); }
+    MapEntryImpl *NewEntry() { return entry_ = mf_->NewEntry(); }
 
-    const Key& key() const { return key_; }
-    const Value& value() const { return *value_ptr_; }
+    const Key &key() const { return key_; }
+    const Value &value() const { return *value_ptr_; }
 
-    const Key& entry_key() const { return entry_->key(); }
-    const Value& entry_value() const { return entry_->value(); }
+    const Key &entry_key() const { return entry_->key(); }
+    const Value &entry_value() const { return entry_->value(); }
 
-   private:
+  private:
     void UseKeyAndValueFromEntry() {
       // Update key_ in case we need it later (because key() is called).
       // This is potentially inefficient, especially if the key is
@@ -476,13 +490,14 @@ class MapEntryImpl : public Base {
     // After reading a key and value successfully, and inserting that data
     // into map_, we are not at the end of the input.  This is unusual, but
     // allowed by the spec.
-    bool ReadBeyondKeyValuePair(io::CodedInputStream* input) PROTOBUF_COLD {
+    bool ReadBeyondKeyValuePair(io::CodedInputStream *input) PROTOBUF_COLD {
       NewEntry();
       ValueMover::Move(value_ptr_, entry_->mutable_value());
       map_->erase(key_);
       KeyMover::Move(&key_, entry_->mutable_key());
       const bool result = entry_->MergePartialFromCodedStream(input);
-      if (result) UseKeyAndValueFromEntry();
+      if (result)
+        UseKeyAndValueFromEntry();
       return result;
     }
 
@@ -497,14 +512,14 @@ class MapEntryImpl : public Base {
                        Value>
         ValueMover;
 
-    MapField* const mf_;
-    Map* const map_;
+    MapField *const mf_;
+    Map *const map_;
     Key key_;
-    Value* value_ptr_;
-    MapEntryImpl* entry_ = nullptr;
+    Value *value_ptr_;
+    MapEntryImpl *entry_ = nullptr;
   };
 
- protected:
+protected:
   void set_has_key() { _has_bits_[0] |= 0x00000001u; }
   bool has_key() const { return (_has_bits_[0] & 0x00000001u) != 0; }
   void clear_has_key() { _has_bits_[0] &= ~0x00000001u; }
@@ -512,16 +527,16 @@ class MapEntryImpl : public Base {
   bool has_value() const { return (_has_bits_[0] & 0x00000002u) != 0; }
   void clear_has_value() { _has_bits_[0] &= ~0x00000002u; }
 
- public:
-  inline Arena* GetArenaNoVirtual() const { return arena_; }
+public:
+  inline Arena *GetArenaNoVirtual() const { return arena_; }
 
- public:  // Needed for constructing tables
+public: // Needed for constructing tables
   KeyOnMemory key_;
   ValueOnMemory value_;
-  Arena* arena_;
+  Arena *arena_;
   uint32 _has_bits_[1];
 
- private:
+private:
   friend class ::PROTOBUF_NAMESPACE_ID::Arena;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -541,26 +556,25 @@ template <typename T, typename Key, typename Value,
 class MapEntryLite
     : public MapEntryImpl<T, MessageLite, Key, Value, kKeyFieldType,
                           kValueFieldType, default_enum_value> {
- public:
+public:
   typedef MapEntryImpl<T, MessageLite, Key, Value, kKeyFieldType,
                        kValueFieldType, default_enum_value>
       SuperType;
   MapEntryLite() {}
-  explicit MapEntryLite(Arena* arena) : SuperType(arena) {}
-  void MergeFrom(const MapEntryLite& other) { MergeFromInternal(other); }
+  explicit MapEntryLite(Arena *arena) : SuperType(arena) {}
+  void MergeFrom(const MapEntryLite &other) { MergeFromInternal(other); }
 
- private:
+private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MapEntryLite);
 };
 // The completely unprincipled and unwieldy use of template parameters in
 // the map code necessitates wrappers to make the code a little bit more
 // manageable.
-template <typename Derived>
-struct DeconstructMapEntry;
+template <typename Derived> struct DeconstructMapEntry;
 
 template <typename T, typename K, typename V, WireFormatLite::FieldType key,
           WireFormatLite::FieldType value, int default_enum>
-struct DeconstructMapEntry<MapEntryLite<T, K, V, key, value, default_enum> > {
+struct DeconstructMapEntry<MapEntryLite<T, K, V, key, value, default_enum>> {
   typedef K Key;
   typedef V Value;
   static const WireFormatLite::FieldType kKeyFieldType = key;
@@ -574,8 +588,7 @@ struct DeconstructMapEntry<MapEntryLite<T, K, V, key, value, default_enum> > {
 // type is relatively small and easy to copy then copying Keys into an
 // array of SortItems can be beneficial.  Then all the data the sorting
 // algorithm needs to touch is in that one array.
-template <typename Key, typename PtrToKeyValuePair>
-struct SortItem {
+template <typename Key, typename PtrToKeyValuePair> struct SortItem {
   SortItem() {}
   explicit SortItem(PtrToKeyValuePair p) : first(p->first), second(p) {}
 
@@ -583,62 +596,51 @@ struct SortItem {
   PtrToKeyValuePair second;
 };
 
-template <typename T>
-struct CompareByFirstField {
-  bool operator()(const T& a, const T& b) const { return a.first < b.first; }
+template <typename T> struct CompareByFirstField {
+  bool operator()(const T &a, const T &b) const { return a.first < b.first; }
 };
 
-template <typename T>
-struct CompareByDerefFirst {
-  bool operator()(const T& a, const T& b) const { return a->first < b->first; }
+template <typename T> struct CompareByDerefFirst {
+  bool operator()(const T &a, const T &b) const { return a->first < b->first; }
 };
 
 // Helper for table driven serialization
 
-template <WireFormatLite::FieldType FieldType>
-struct FromHelper {
-  template <typename T>
-  static const T& From(const T& x) {
-    return x;
-  }
+template <WireFormatLite::FieldType FieldType> struct FromHelper {
+  template <typename T> static const T &From(const T &x) { return x; }
 };
 
-template <>
-struct FromHelper<WireFormatLite::TYPE_STRING> {
-  static ArenaStringPtr From(const std::string& x) {
+template <> struct FromHelper<WireFormatLite::TYPE_STRING> {
+  static ArenaStringPtr From(const std::string &x) {
     ArenaStringPtr res;
     TaggedPtr<std::string> ptr;
-    ptr.Set(const_cast<std::string*>(&x));
+    ptr.Set(const_cast<std::string *>(&x));
     res.UnsafeSetTaggedPointer(ptr);
     return res;
   }
 };
-template <>
-struct FromHelper<WireFormatLite::TYPE_BYTES> {
-  static ArenaStringPtr From(const std::string& x) {
+template <> struct FromHelper<WireFormatLite::TYPE_BYTES> {
+  static ArenaStringPtr From(const std::string &x) {
     ArenaStringPtr res;
     TaggedPtr<std::string> ptr;
-    ptr.Set(const_cast<std::string*>(&x));
+    ptr.Set(const_cast<std::string *>(&x));
     res.UnsafeSetTaggedPointer(ptr);
     return res;
   }
 };
-template <>
-struct FromHelper<WireFormatLite::TYPE_MESSAGE> {
-  template <typename T>
-  static T* From(const T& x) {
-    return const_cast<T*>(&x);
+template <> struct FromHelper<WireFormatLite::TYPE_MESSAGE> {
+  template <typename T> static T *From(const T &x) {
+    return const_cast<T *>(&x);
   }
 };
 
-template <typename MapEntryType>
-struct MapEntryHelper;
+template <typename MapEntryType> struct MapEntryHelper;
 
 template <typename T, typename Key, typename Value,
           WireFormatLite::FieldType kKeyFieldType,
           WireFormatLite::FieldType kValueFieldType, int default_enum_value>
 struct MapEntryHelper<MapEntryLite<T, Key, Value, kKeyFieldType,
-                                   kValueFieldType, default_enum_value> > {
+                                   kValueFieldType, default_enum_value>> {
   // Provide utilities to parse/serialize key/value.  Provide utilities to
   // manipulate internal stored type.
   typedef MapTypeHandler<kKeyFieldType, Key> KeyTypeHandler;
@@ -649,7 +651,7 @@ struct MapEntryHelper<MapEntryLite<T, Key, Value, kKeyFieldType,
   typedef typename KeyTypeHandler::TypeOnMemory KeyOnMemory;
   typedef typename ValueTypeHandler::TypeOnMemory ValueOnMemory;
 
-  explicit MapEntryHelper(const MapPair<Key, Value>& map_pair)
+  explicit MapEntryHelper(const MapPair<Key, Value> &map_pair)
       : _has_bits_(3),
         _cached_size_(2 + KeyTypeHandler::GetCachedSize(map_pair.first) +
                       ValueTypeHandler::GetCachedSize(map_pair.second)),
@@ -661,16 +663,16 @@ struct MapEntryHelper<MapEntryLite<T, Key, Value, kKeyFieldType,
   // The proto compiler generates the offsets in this struct as if this was
   // a regular message. This way the table driven code barely notices it's
   // dealing with a map field.
-  uint32 _has_bits_;     // NOLINT
-  uint32 _cached_size_;  // NOLINT
-  KeyOnMemory key_;      // NOLINT
-  ValueOnMemory value_;  // NOLINT
+  uint32 _has_bits_;    // NOLINT
+  uint32 _cached_size_; // NOLINT
+  KeyOnMemory key_;     // NOLINT
+  ValueOnMemory value_; // NOLINT
 };
 
-}  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+} // namespace internal
+} // namespace protobuf
+} // namespace google
 
 #include <google/protobuf/port_undef.inc>
 
-#endif  // GOOGLE_PROTOBUF_MAP_ENTRY_LITE_H__
+#endif // GOOGLE_PROTOBUF_MAP_ENTRY_LITE_H__

@@ -40,19 +40,17 @@
 
 #include <google/protobuf/stubs/strutil.h>
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/testing/file.h>
-#include <google/protobuf/testing/file.h>
-#include <google/protobuf/testing/file.h>
 #include <google/protobuf/compiler/plugin.pb.h>
+#include <google/protobuf/descriptor.h>
+#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/descriptor.h>
+#include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
+#include <google/protobuf/stubs/substitute.h>
+#include <google/protobuf/testing/file.h>
 #include <google/protobuf/text_format.h>
 #include <gtest/gtest.h>
-#include <google/protobuf/stubs/substitute.h>
 
 #ifdef major
 #undef major
@@ -67,8 +65,8 @@ namespace compiler {
 
 // Returns the list of the names of files in all_files in the form of a
 // comma-separated string.
-std::string CommaSeparatedList(
-    const std::vector<const FileDescriptor*>& all_files) {
+std::string
+CommaSeparatedList(const std::vector<const FileDescriptor *> &all_files) {
   std::vector<std::string> names;
   for (size_t i = 0; i < all_files.size(); i++) {
     names.push_back(all_files[i]->name());
@@ -76,30 +74,28 @@ std::string CommaSeparatedList(
   return Join(names, ",");
 }
 
-static const char* kFirstInsertionPointName = "first_mock_insertion_point";
-static const char* kSecondInsertionPointName = "second_mock_insertion_point";
-static const char* kFirstInsertionPoint =
+static const char *kFirstInsertionPointName = "first_mock_insertion_point";
+static const char *kSecondInsertionPointName = "second_mock_insertion_point";
+static const char *kFirstInsertionPoint =
     "# @@protoc_insertion_point(first_mock_insertion_point) is here\n";
-static const char* kSecondInsertionPoint =
+static const char *kSecondInsertionPoint =
     "  # @@protoc_insertion_point(second_mock_insertion_point) is here\n";
 
-MockCodeGenerator::MockCodeGenerator(const std::string& name) : name_(name) {}
+MockCodeGenerator::MockCodeGenerator(const std::string &name) : name_(name) {}
 
 MockCodeGenerator::~MockCodeGenerator() {}
 
 void MockCodeGenerator::ExpectGenerated(
-    const std::string& name, const std::string& parameter,
-    const std::string& insertions, const std::string& file,
-    const std::string& first_message_name,
-    const std::string& first_parsed_file_name,
-    const std::string& output_directory) {
+    const std::string &name, const std::string &parameter,
+    const std::string &insertions, const std::string &file,
+    const std::string &first_message_name,
+    const std::string &first_parsed_file_name,
+    const std::string &output_directory) {
   std::string content;
-  GOOGLE_CHECK_OK(
-      File::GetContents(output_directory + "/" + GetOutputFileName(name, file),
-                        &content, true));
+  GOOGLE_CHECK_OK(File::GetContents(
+      output_directory + "/" + GetOutputFileName(name, file), &content, true));
 
-  std::vector<std::string> lines =
-      Split(content, "\n", true);
+  std::vector<std::string> lines = Split(content, "\n", true);
 
   while (!lines.empty() && lines.back().empty()) {
     lines.pop_back();
@@ -134,10 +130,10 @@ void MockCodeGenerator::ExpectGenerated(
 }
 
 namespace {
-void CheckSingleAnnotation(const std::string& expected_file,
-                           const std::string& expected_text,
-                           const std::string& file_content,
-                           const GeneratedCodeInfo::Annotation& annotation) {
+void CheckSingleAnnotation(const std::string &expected_file,
+                           const std::string &expected_text,
+                           const std::string &file_content,
+                           const GeneratedCodeInfo::Annotation &annotation) {
   EXPECT_EQ(expected_file, annotation.source_file());
   ASSERT_GE(file_content.size(), annotation.begin());
   ASSERT_GE(file_content.size(), annotation.end());
@@ -146,19 +142,19 @@ void CheckSingleAnnotation(const std::string& expected_file,
   EXPECT_EQ(expected_text,
             file_content.substr(annotation.begin(), expected_text.size()));
 }
-}  // anonymous namespace
+} // anonymous namespace
 
 void MockCodeGenerator::CheckGeneratedAnnotations(
-    const string& name, const std::string& file,
-    const std::string& output_directory) {
+    const string &name, const std::string &file,
+    const std::string &output_directory) {
   std::string file_content;
   GOOGLE_CHECK_OK(
       File::GetContents(output_directory + "/" + GetOutputFileName(name, file),
                         &file_content, true));
   std::string meta_content;
-  GOOGLE_CHECK_OK(File::GetContents(
-      output_directory + "/" + GetOutputFileName(name, file) + ".meta",
-      &meta_content, true));
+  GOOGLE_CHECK_OK(File::GetContents(output_directory + "/" +
+                                        GetOutputFileName(name, file) + ".meta",
+                                    &meta_content, true));
   GeneratedCodeInfo annotations;
   GOOGLE_CHECK(TextFormat::ParseFromString(meta_content, &annotations));
   ASSERT_EQ(3, annotations.annotation_size());
@@ -170,15 +166,15 @@ void MockCodeGenerator::CheckGeneratedAnnotations(
                         annotations.annotation(2));
 }
 
-bool MockCodeGenerator::Generate(const FileDescriptor* file,
-                                 const std::string& parameter,
-                                 GeneratorContext* context,
-                                 std::string* error) const {
+bool MockCodeGenerator::Generate(const FileDescriptor *file,
+                                 const std::string &parameter,
+                                 GeneratorContext *context,
+                                 std::string *error) const {
   bool annotate = false;
   for (int i = 0; i < file->message_type_count(); i++) {
     if (HasPrefixString(file->message_type(i)->name(), "MockCodeGenerator_")) {
-      std::string command = StripPrefixString(
-          file->message_type(i)->name(), "MockCodeGenerator_");
+      std::string command = StripPrefixString(file->message_type(i)->name(),
+                                              "MockCodeGenerator_");
       if (command == "Error") {
         *error = "Saw message type MockCodeGenerator_Error.";
         return false;
@@ -294,20 +290,22 @@ bool MockCodeGenerator::Generate(const FileDescriptor* file,
   return true;
 }
 
-std::string MockCodeGenerator::GetOutputFileName(
-    const std::string& generator_name, const FileDescriptor* file) {
+std::string
+MockCodeGenerator::GetOutputFileName(const std::string &generator_name,
+                                     const FileDescriptor *file) {
   return GetOutputFileName(generator_name, file->name());
 }
 
-std::string MockCodeGenerator::GetOutputFileName(
-    const std::string& generator_name, const std::string& file) {
+std::string
+MockCodeGenerator::GetOutputFileName(const std::string &generator_name,
+                                     const std::string &file) {
   return file + ".MockCodeGenerator." + generator_name;
 }
 
 std::string MockCodeGenerator::GetOutputFileContent(
-    const std::string& generator_name, const std::string& parameter,
-    const FileDescriptor* file, GeneratorContext* context) {
-  std::vector<const FileDescriptor*> all_files;
+    const std::string &generator_name, const std::string &parameter,
+    const FileDescriptor *file, GeneratorContext *context) {
+  std::vector<const FileDescriptor *> all_files;
   context->ListParsedFiles(&all_files);
   return GetOutputFileContent(
       generator_name, parameter, file->name(), CommaSeparatedList(all_files),
@@ -316,13 +314,13 @@ std::string MockCodeGenerator::GetOutputFileContent(
 }
 
 std::string MockCodeGenerator::GetOutputFileContent(
-    const std::string& generator_name, const std::string& parameter,
-    const std::string& file, const std::string& parsed_file_list,
-    const std::string& first_message_name) {
+    const std::string &generator_name, const std::string &parameter,
+    const std::string &file, const std::string &parsed_file_list,
+    const std::string &first_message_name) {
   return strings::Substitute("$0: $1, $2, $3, $4\n", generator_name, parameter,
                              file, first_message_name, parsed_file_list);
 }
 
-}  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+} // namespace compiler
+} // namespace protobuf
+} // namespace google

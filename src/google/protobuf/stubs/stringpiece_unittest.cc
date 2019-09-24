@@ -35,8 +35,8 @@
 #include <utility>
 #include <vector>
 
-#include <google/protobuf/testing/googletest.h>
 #include <google/protobuf/stubs/hash.h>
+#include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 
 namespace google {
@@ -52,7 +52,7 @@ TEST(StringPiece, Ctor) {
 
   {
     // const char* without length.
-    const char* hello = "hello";
+    const char *hello = "hello";
     StringPiece s20(hello);
     EXPECT_TRUE(s20.data() == hello);
     EXPECT_EQ(5, s20.length());
@@ -143,68 +143,68 @@ TEST(StringPiece, STLComparator) {
 }
 
 TEST(StringPiece, ComparisonOperators) {
-#define COMPARE(result, op, x, y) \
-  EXPECT_EQ(result, StringPiece((x)) op StringPiece((y))); \
+#define COMPARE(result, op, x, y)                                              \
+  EXPECT_EQ(result, StringPiece((x)) op StringPiece((y)));                     \
   EXPECT_EQ(result, StringPiece((x)).compare(StringPiece((y))) op 0)
 
-  COMPARE(true, ==, "",   "");
+  COMPARE(true, ==, "", "");
   COMPARE(true, ==, "", nullptr);
   COMPARE(true, ==, nullptr, "");
-  COMPARE(true, ==, "a",  "a");
+  COMPARE(true, ==, "a", "a");
   COMPARE(true, ==, "aa", "aa");
-  COMPARE(false, ==, "a",  "");
-  COMPARE(false, ==, "",   "a");
-  COMPARE(false, ==, "a",  "b");
-  COMPARE(false, ==, "a",  "aa");
+  COMPARE(false, ==, "a", "");
+  COMPARE(false, ==, "", "a");
+  COMPARE(false, ==, "a", "b");
+  COMPARE(false, ==, "a", "aa");
   COMPARE(false, ==, "aa", "a");
 
-  COMPARE(false, !=, "",   "");
-  COMPARE(false, !=, "a",  "a");
+  COMPARE(false, !=, "", "");
+  COMPARE(false, !=, "a", "a");
   COMPARE(false, !=, "aa", "aa");
-  COMPARE(true, !=, "a",  "");
-  COMPARE(true, !=, "",   "a");
-  COMPARE(true, !=, "a",  "b");
-  COMPARE(true, !=, "a",  "aa");
+  COMPARE(true, !=, "a", "");
+  COMPARE(true, !=, "", "a");
+  COMPARE(true, !=, "a", "b");
+  COMPARE(true, !=, "a", "aa");
   COMPARE(true, !=, "aa", "a");
 
-  COMPARE(true, <, "a",  "b");
-  COMPARE(true, <, "a",  "aa");
+  COMPARE(true, <, "a", "b");
+  COMPARE(true, <, "a", "aa");
   COMPARE(true, <, "aa", "b");
   COMPARE(true, <, "aa", "bb");
-  COMPARE(false, <, "a",  "a");
-  COMPARE(false, <, "b",  "a");
+  COMPARE(false, <, "a", "a");
+  COMPARE(false, <, "b", "a");
   COMPARE(false, <, "aa", "a");
-  COMPARE(false, <, "b",  "aa");
+  COMPARE(false, <, "b", "aa");
   COMPARE(false, <, "bb", "aa");
 
-  COMPARE(true, <=, "a",  "a");
-  COMPARE(true, <=, "a",  "b");
-  COMPARE(true, <=, "a",  "aa");
+  COMPARE(true, <=, "a", "a");
+  COMPARE(true, <=, "a", "b");
+  COMPARE(true, <=, "a", "aa");
   COMPARE(true, <=, "aa", "b");
   COMPARE(true, <=, "aa", "bb");
-  COMPARE(false, <=, "b",  "a");
+  COMPARE(false, <=, "b", "a");
   COMPARE(false, <=, "aa", "a");
-  COMPARE(false, <=, "b",  "aa");
+  COMPARE(false, <=, "b", "aa");
   COMPARE(false, <=, "bb", "aa");
 
-  COMPARE(false, >=, "a",  "b");
-  COMPARE(false, >=, "a",  "aa");
+  COMPARE(false, >=, "a", "b");
+  COMPARE(false, >=, "a", "aa");
   COMPARE(false, >=, "aa", "b");
   COMPARE(false, >=, "aa", "bb");
-  COMPARE(true, >=, "a",  "a");
-  COMPARE(true, >=, "b",  "a");
+  COMPARE(true, >=, "a", "a");
+  COMPARE(true, >=, "b", "a");
   COMPARE(true, >=, "aa", "a");
-  COMPARE(true, >=, "b",  "aa");
+  COMPARE(true, >=, "b", "aa");
   COMPARE(true, >=, "bb", "aa");
 
-  COMPARE(false, >, "a",  "a");
-  COMPARE(false, >, "a",  "b");
-  COMPARE(false, >, "a",  "aa");
+  COMPARE(false, >, "a", "a");
+  COMPARE(false, >, "a", "b");
+  COMPARE(false, >, "a", "aa");
   COMPARE(false, >, "aa", "b");
   COMPARE(false, >, "aa", "bb");
-  COMPARE(true, >, "b",  "a");
+  COMPARE(true, >, "b", "a");
   COMPARE(true, >, "aa", "a");
-  COMPARE(true, >, "b",  "aa");
+  COMPARE(true, >, "b", "aa");
   COMPARE(true, >, "bb", "aa");
 
   string x;
@@ -214,16 +214,16 @@ TEST(StringPiece, ComparisonOperators) {
     COMPARE(true, ==, x, y);
     for (int j = 0; j < i; j++) {
       string z = x;
-      z[j] = 'b';       // Differs in position 'j'
+      z[j] = 'b'; // Differs in position 'j'
       COMPARE(false, ==, x, z);
       COMPARE(true, <, x, z);
       COMPARE(true, >, z, x);
       if (j + 1 < i) {
-        z[j + 1] = 'A';  // Differs in position 'j+1' as well
+        z[j + 1] = 'A'; // Differs in position 'j+1' as well
         COMPARE(false, ==, x, z);
         COMPARE(true, <, x, z);
         COMPARE(true, >, z, x);
-        z[j + 1] = 'z';  // Differs in position 'j+1' as well
+        z[j + 1] = 'z'; // Differs in position 'j+1' as well
         COMPARE(false, ==, x, z);
         COMPARE(true, <, x, z);
         COMPARE(true, >, z, x);
@@ -281,7 +281,7 @@ TEST(StringPiece, STL1) {
   EXPECT_GE(a.max_size(), a.capacity());
   EXPECT_GE(a.capacity(), a.size());
 
-  char buf[4] = { '%', '%', '%', '%' };
+  char buf[4] = {'%', '%', '%', '%'};
   EXPECT_EQ(a.copy(buf, 4), 4);
   EXPECT_EQ(buf[0], a[0]);
   EXPECT_EQ(buf[1], a[1]);
@@ -307,7 +307,10 @@ TEST(StringPiece, STL2) {
   const StringPiece c("xyz");
   StringPiece d("foobar");
   const StringPiece e;
-  const StringPiece f("123" "\0" "456", 7);
+  const StringPiece f("123"
+                      "\0"
+                      "456",
+                      7);
 
   d.clear();
   EXPECT_EQ(d.size(), 0);
@@ -467,9 +470,9 @@ TEST(StringPiece, STL2) {
   //  StringPiece g("xx not found bb");
   StringPiece i("56");
   EXPECT_EQ(h.find_last_of(a), StringPiece::npos);
-  EXPECT_EQ(g.find_last_of(a), g.size()-1);
+  EXPECT_EQ(g.find_last_of(a), g.size() - 1);
   EXPECT_EQ(a.find_last_of(b), 2);
-  EXPECT_EQ(a.find_last_of(c), a.size()-1);
+  EXPECT_EQ(a.find_last_of(c), a.size() - 1);
   EXPECT_EQ(f.find_last_of(i), 6);
   EXPECT_EQ(a.find_last_of('a'), 0);
   EXPECT_EQ(a.find_last_of('b'), 1);
@@ -500,7 +503,7 @@ TEST(StringPiece, STL2) {
   EXPECT_EQ(d.find_last_of(f, 4), StringPiece::npos);
   EXPECT_EQ(e.find_last_of(f, 4), StringPiece::npos);
 
-  EXPECT_EQ(a.find_last_not_of(b), a.size()-1);
+  EXPECT_EQ(a.find_last_not_of(b), a.size() - 1);
   EXPECT_EQ(a.find_last_not_of(c), 22);
   EXPECT_EQ(b.find_last_not_of(a), StringPiece::npos);
   EXPECT_EQ(b.find_last_not_of(b), StringPiece::npos);
@@ -509,8 +512,8 @@ TEST(StringPiece, STL2) {
   EXPECT_EQ(a.find_last_not_of(b, 3), 3);
   EXPECT_EQ(a.find_last_not_of(b, 2), StringPiece::npos);
   // empty string nonsense
-  EXPECT_EQ(f.find_last_not_of(d), f.size()-1);
-  EXPECT_EQ(f.find_last_not_of(e), f.size()-1);
+  EXPECT_EQ(f.find_last_not_of(d), f.size() - 1);
+  EXPECT_EQ(f.find_last_not_of(e), f.size() - 1);
   EXPECT_EQ(f.find_last_not_of(d, 4), 4);
   EXPECT_EQ(f.find_last_not_of(e, 4), 4);
   EXPECT_EQ(d.find_last_not_of(d), StringPiece::npos);
@@ -658,11 +661,11 @@ TEST(StringPiece, Custom) {
   c.set("foobar");
   EXPECT_EQ(c, a);
 
-  c.set(static_cast<const void*>("foobar"), 6);
+  c.set(static_cast<const void *>("foobar"), 6);
   EXPECT_EQ(c, a);
-  c.set(static_cast<const void*>("foobar"), 0);
+  c.set(static_cast<const void *>("foobar"), 0);
   EXPECT_EQ(c, e);
-  c.set(static_cast<const void*>("foobar"), 7);
+  c.set(static_cast<const void *>("foobar"), 7);
   EXPECT_NE(c, a);
 
   // as_string
@@ -710,11 +713,11 @@ TEST(StringPiece, Contains) {
 TEST(StringPiece, NullInput) {
   // we used to crash here, but now we don't.
   StringPiece s(nullptr);
-  EXPECT_EQ(s.data(), (const char*)nullptr);
+  EXPECT_EQ(s.data(), (const char *)nullptr);
   EXPECT_EQ(s.size(), 0);
 
   s.set(nullptr);
-  EXPECT_EQ(s.data(), (const char*)nullptr);
+  EXPECT_EQ(s.data(), (const char *)nullptr);
   EXPECT_EQ(s.size(), 0);
 
   // .ToString() on a StringPiece with nullptr should produce the empty string.
@@ -788,9 +791,9 @@ TEST(FindOneCharTest, EdgeCases) {
 TEST(NonNegativeLenTest, NonNegativeLen) {
   EXPECT_DEATH(StringPiece("xyz", -1), "len >= 0");
 }
-#endif  // ndef DEBUG
-#endif  // PROTOBUF_HAS_DEATH_TEST
+#endif // ndef DEBUG
+#endif // PROTOBUF_HAS_DEATH_TEST
 
-}  // namespace
-}  // namespace protobuf
-}  // namespace google
+} // namespace
+} // namespace protobuf
+} // namespace google

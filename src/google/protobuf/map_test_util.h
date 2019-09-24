@@ -45,85 +45,84 @@ namespace protobuf {
 
 namespace unittest = ::protobuf_unittest;
 
-
 // Like above, but use the reflection interface.
 class MapReflectionTester {
- public:
+public:
   // base_descriptor must be a descriptor for TestMap, which is used for
   // MapReflectionTester to fetch the FieldDescriptors needed to use the
   // reflection interface.
-  explicit MapReflectionTester(const Descriptor* base_descriptor);
+  explicit MapReflectionTester(const Descriptor *base_descriptor);
 
-  void SetMapFieldsViaReflection(Message* message);
-  void SetMapFieldsViaMapReflection(Message* message);
-  void ClearMapFieldsViaReflection(Message* message);
-  void ModifyMapFieldsViaReflection(Message* message);
-  void RemoveLastMapsViaReflection(Message* message);
-  void ReleaseLastMapsViaReflection(Message* message);
-  void SwapMapsViaReflection(Message* message);
-  void MutableUnknownFieldsOfMapFieldsViaReflection(Message* message);
-  void ExpectMapFieldsSetViaReflection(const Message& message);
-  void ExpectMapFieldsSetViaReflectionIterator(Message* message);
-  void ExpectClearViaReflection(const Message& message);
-  void ExpectClearViaReflectionIterator(Message* message);
-  void GetMapValueViaMapReflection(Message* message,
-                                   const std::string& field_name,
-                                   const MapKey& map_key, MapValueRef* map_val);
-  Message* GetMapEntryViaReflection(Message* message,
-                                    const std::string& field_name, int index);
-  MapIterator MapBegin(Message* message, const std::string& field_name);
-  MapIterator MapEnd(Message* message, const std::string& field_name);
+  void SetMapFieldsViaReflection(Message *message);
+  void SetMapFieldsViaMapReflection(Message *message);
+  void ClearMapFieldsViaReflection(Message *message);
+  void ModifyMapFieldsViaReflection(Message *message);
+  void RemoveLastMapsViaReflection(Message *message);
+  void ReleaseLastMapsViaReflection(Message *message);
+  void SwapMapsViaReflection(Message *message);
+  void MutableUnknownFieldsOfMapFieldsViaReflection(Message *message);
+  void ExpectMapFieldsSetViaReflection(const Message &message);
+  void ExpectMapFieldsSetViaReflectionIterator(Message *message);
+  void ExpectClearViaReflection(const Message &message);
+  void ExpectClearViaReflectionIterator(Message *message);
+  void GetMapValueViaMapReflection(Message *message,
+                                   const std::string &field_name,
+                                   const MapKey &map_key, MapValueRef *map_val);
+  Message *GetMapEntryViaReflection(Message *message,
+                                    const std::string &field_name, int index);
+  MapIterator MapBegin(Message *message, const std::string &field_name);
+  MapIterator MapEnd(Message *message, const std::string &field_name);
 
- private:
-  const FieldDescriptor* F(const std::string& name);
+private:
+  const FieldDescriptor *F(const std::string &name);
 
-  const Descriptor* base_descriptor_;
+  const Descriptor *base_descriptor_;
 
-  const EnumValueDescriptor* map_enum_bar_;
-  const EnumValueDescriptor* map_enum_baz_;
-  const EnumValueDescriptor* map_enum_foo_;
+  const EnumValueDescriptor *map_enum_bar_;
+  const EnumValueDescriptor *map_enum_baz_;
+  const EnumValueDescriptor *map_enum_foo_;
 
-  const FieldDescriptor* foreign_c_;
-  const FieldDescriptor* map_int32_int32_key_;
-  const FieldDescriptor* map_int32_int32_val_;
-  const FieldDescriptor* map_int64_int64_key_;
-  const FieldDescriptor* map_int64_int64_val_;
-  const FieldDescriptor* map_uint32_uint32_key_;
-  const FieldDescriptor* map_uint32_uint32_val_;
-  const FieldDescriptor* map_uint64_uint64_key_;
-  const FieldDescriptor* map_uint64_uint64_val_;
-  const FieldDescriptor* map_sint32_sint32_key_;
-  const FieldDescriptor* map_sint32_sint32_val_;
-  const FieldDescriptor* map_sint64_sint64_key_;
-  const FieldDescriptor* map_sint64_sint64_val_;
-  const FieldDescriptor* map_fixed32_fixed32_key_;
-  const FieldDescriptor* map_fixed32_fixed32_val_;
-  const FieldDescriptor* map_fixed64_fixed64_key_;
-  const FieldDescriptor* map_fixed64_fixed64_val_;
-  const FieldDescriptor* map_sfixed32_sfixed32_key_;
-  const FieldDescriptor* map_sfixed32_sfixed32_val_;
-  const FieldDescriptor* map_sfixed64_sfixed64_key_;
-  const FieldDescriptor* map_sfixed64_sfixed64_val_;
-  const FieldDescriptor* map_int32_float_key_;
-  const FieldDescriptor* map_int32_float_val_;
-  const FieldDescriptor* map_int32_double_key_;
-  const FieldDescriptor* map_int32_double_val_;
-  const FieldDescriptor* map_bool_bool_key_;
-  const FieldDescriptor* map_bool_bool_val_;
-  const FieldDescriptor* map_string_string_key_;
-  const FieldDescriptor* map_string_string_val_;
-  const FieldDescriptor* map_int32_bytes_key_;
-  const FieldDescriptor* map_int32_bytes_val_;
-  const FieldDescriptor* map_int32_enum_key_;
-  const FieldDescriptor* map_int32_enum_val_;
-  const FieldDescriptor* map_int32_foreign_message_key_;
-  const FieldDescriptor* map_int32_foreign_message_val_;
+  const FieldDescriptor *foreign_c_;
+  const FieldDescriptor *map_int32_int32_key_;
+  const FieldDescriptor *map_int32_int32_val_;
+  const FieldDescriptor *map_int64_int64_key_;
+  const FieldDescriptor *map_int64_int64_val_;
+  const FieldDescriptor *map_uint32_uint32_key_;
+  const FieldDescriptor *map_uint32_uint32_val_;
+  const FieldDescriptor *map_uint64_uint64_key_;
+  const FieldDescriptor *map_uint64_uint64_val_;
+  const FieldDescriptor *map_sint32_sint32_key_;
+  const FieldDescriptor *map_sint32_sint32_val_;
+  const FieldDescriptor *map_sint64_sint64_key_;
+  const FieldDescriptor *map_sint64_sint64_val_;
+  const FieldDescriptor *map_fixed32_fixed32_key_;
+  const FieldDescriptor *map_fixed32_fixed32_val_;
+  const FieldDescriptor *map_fixed64_fixed64_key_;
+  const FieldDescriptor *map_fixed64_fixed64_val_;
+  const FieldDescriptor *map_sfixed32_sfixed32_key_;
+  const FieldDescriptor *map_sfixed32_sfixed32_val_;
+  const FieldDescriptor *map_sfixed64_sfixed64_key_;
+  const FieldDescriptor *map_sfixed64_sfixed64_val_;
+  const FieldDescriptor *map_int32_float_key_;
+  const FieldDescriptor *map_int32_float_val_;
+  const FieldDescriptor *map_int32_double_key_;
+  const FieldDescriptor *map_int32_double_val_;
+  const FieldDescriptor *map_bool_bool_key_;
+  const FieldDescriptor *map_bool_bool_val_;
+  const FieldDescriptor *map_string_string_key_;
+  const FieldDescriptor *map_string_string_val_;
+  const FieldDescriptor *map_int32_bytes_key_;
+  const FieldDescriptor *map_int32_bytes_val_;
+  const FieldDescriptor *map_int32_enum_key_;
+  const FieldDescriptor *map_int32_enum_val_;
+  const FieldDescriptor *map_int32_foreign_message_key_;
+  const FieldDescriptor *map_int32_foreign_message_val_;
 };
 
 inline MapReflectionTester::MapReflectionTester(
-    const Descriptor* base_descriptor)
+    const Descriptor *base_descriptor)
     : base_descriptor_(base_descriptor) {
-  const DescriptorPool* pool = base_descriptor->file()->pool();
+  const DescriptorPool *pool = base_descriptor->file()->pool();
   std::string package = base_descriptor->file()->package();
 
   map_enum_foo_ = pool->FindEnumValueByName(package + ".MAP_ENUM_FOO");
@@ -240,17 +239,17 @@ inline MapReflectionTester::MapReflectionTester(
 }
 
 // Shorthand to get a FieldDescriptor for a field of unittest::TestMap.
-inline const FieldDescriptor* MapReflectionTester::F(const std::string& name) {
-  const FieldDescriptor* result = nullptr;
+inline const FieldDescriptor *MapReflectionTester::F(const std::string &name) {
+  const FieldDescriptor *result = nullptr;
   result = base_descriptor_->FindFieldByName(name);
   GOOGLE_CHECK(result != nullptr);
   return result;
 }
 
-inline void MapReflectionTester::SetMapFieldsViaReflection(Message* message) {
-  const Reflection* reflection = message->GetReflection();
-  Message* sub_message = nullptr;
-  Message* sub_foreign_message = nullptr;
+inline void MapReflectionTester::SetMapFieldsViaReflection(Message *message) {
+  const Reflection *reflection = message->GetReflection();
+  Message *sub_message = nullptr;
+  Message *sub_foreign_message = nullptr;
 
   // Add first element.
   sub_message = reflection->AddMessage(message, F("map_int32_int32"));
@@ -443,11 +442,11 @@ inline void MapReflectionTester::SetMapFieldsViaReflection(Message* message) {
                                                  foreign_c_, 1);
 }
 
-inline void MapReflectionTester::SetMapFieldsViaMapReflection(
-    Message* message) {
-  const Reflection* reflection = message->GetReflection();
+inline void
+MapReflectionTester::SetMapFieldsViaMapReflection(Message *message) {
+  const Reflection *reflection = message->GetReflection();
 
-  Message* sub_foreign_message = nullptr;
+  Message *sub_foreign_message = nullptr;
   MapValueRef map_val;
 
   // Add first element.
@@ -633,33 +632,33 @@ inline void MapReflectionTester::SetMapFieldsViaMapReflection(
 }
 
 inline void MapReflectionTester::GetMapValueViaMapReflection(
-    Message* message, const std::string& field_name, const MapKey& map_key,
-    MapValueRef* map_val) {
-  const Reflection* reflection = message->GetReflection();
+    Message *message, const std::string &field_name, const MapKey &map_key,
+    MapValueRef *map_val) {
+  const Reflection *reflection = message->GetReflection();
   EXPECT_FALSE(reflection->InsertOrLookupMapValue(message, F(field_name),
                                                   map_key, map_val));
 }
 
-inline Message* MapReflectionTester::GetMapEntryViaReflection(
-    Message* message, const std::string& field_name, int index) {
-  const Reflection* reflection = message->GetReflection();
+inline Message *MapReflectionTester::GetMapEntryViaReflection(
+    Message *message, const std::string &field_name, int index) {
+  const Reflection *reflection = message->GetReflection();
   return reflection->MutableRepeatedMessage(message, F(field_name), index);
 }
 
-inline MapIterator MapReflectionTester::MapBegin(
-    Message* message, const std::string& field_name) {
-  const Reflection* reflection = message->GetReflection();
+inline MapIterator
+MapReflectionTester::MapBegin(Message *message, const std::string &field_name) {
+  const Reflection *reflection = message->GetReflection();
   return reflection->MapBegin(message, F(field_name));
 }
 
-inline MapIterator MapReflectionTester::MapEnd(Message* message,
-                                               const std::string& field_name) {
-  const Reflection* reflection = message->GetReflection();
+inline MapIterator MapReflectionTester::MapEnd(Message *message,
+                                               const std::string &field_name) {
+  const Reflection *reflection = message->GetReflection();
   return reflection->MapEnd(message, F(field_name));
 }
 
-inline void MapReflectionTester::ClearMapFieldsViaReflection(Message* message) {
-  const Reflection* reflection = message->GetReflection();
+inline void MapReflectionTester::ClearMapFieldsViaReflection(Message *message) {
+  const Reflection *reflection = message->GetReflection();
 
   reflection->ClearField(message, F("map_int32_int32"));
   reflection->ClearField(message, F("map_int64_int64"));
@@ -680,11 +679,11 @@ inline void MapReflectionTester::ClearMapFieldsViaReflection(Message* message) {
   reflection->ClearField(message, F("map_int32_foreign_message"));
 }
 
-inline void MapReflectionTester::ModifyMapFieldsViaReflection(
-    Message* message) {
-  const Reflection* reflection = message->GetReflection();
+inline void
+MapReflectionTester::ModifyMapFieldsViaReflection(Message *message) {
+  const Reflection *reflection = message->GetReflection();
   MapValueRef map_val;
-  Message* sub_foreign_message;
+  Message *sub_foreign_message;
 
   // Modify the second element
   MapKey map_key;
@@ -776,51 +775,55 @@ inline void MapReflectionTester::ModifyMapFieldsViaReflection(
                                                  foreign_c_, 2);
 }
 
-inline void MapReflectionTester::RemoveLastMapsViaReflection(Message* message) {
-  const Reflection* reflection = message->GetReflection();
+inline void MapReflectionTester::RemoveLastMapsViaReflection(Message *message) {
+  const Reflection *reflection = message->GetReflection();
 
-  std::vector<const FieldDescriptor*> output;
+  std::vector<const FieldDescriptor *> output;
   reflection->ListFields(*message, &output);
   for (int i = 0; i < output.size(); ++i) {
-    const FieldDescriptor* field = output[i];
-    if (!field->is_repeated()) continue;
+    const FieldDescriptor *field = output[i];
+    if (!field->is_repeated())
+      continue;
     reflection->RemoveLast(message, field);
   }
 }
 
-inline void MapReflectionTester::ReleaseLastMapsViaReflection(
-    Message* message) {
-  const Reflection* reflection = message->GetReflection();
+inline void
+MapReflectionTester::ReleaseLastMapsViaReflection(Message *message) {
+  const Reflection *reflection = message->GetReflection();
 
-  std::vector<const FieldDescriptor*> output;
+  std::vector<const FieldDescriptor *> output;
   reflection->ListFields(*message, &output);
   for (int i = 0; i < output.size(); ++i) {
-    const FieldDescriptor* field = output[i];
-    if (!field->is_repeated()) continue;
-    if (field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) continue;
+    const FieldDescriptor *field = output[i];
+    if (!field->is_repeated())
+      continue;
+    if (field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE)
+      continue;
 
-    Message* released = reflection->ReleaseLast(message, field);
+    Message *released = reflection->ReleaseLast(message, field);
     ASSERT_TRUE(released != nullptr)
         << "ReleaseLast returned nullptr for: " << field->name();
     delete released;
   }
 }
 
-inline void MapReflectionTester::SwapMapsViaReflection(Message* message) {
-  const Reflection* reflection = message->GetReflection();
-  std::vector<const FieldDescriptor*> output;
+inline void MapReflectionTester::SwapMapsViaReflection(Message *message) {
+  const Reflection *reflection = message->GetReflection();
+  std::vector<const FieldDescriptor *> output;
   reflection->ListFields(*message, &output);
   for (int i = 0; i < output.size(); ++i) {
-    const FieldDescriptor* field = output[i];
-    if (!field->is_repeated()) continue;
+    const FieldDescriptor *field = output[i];
+    if (!field->is_repeated())
+      continue;
     reflection->SwapElements(message, field, 0, 1);
   }
 }
 
 inline void MapReflectionTester::MutableUnknownFieldsOfMapFieldsViaReflection(
-    Message* message) {
-  const Reflection* reflection = message->GetReflection();
-  Message* sub_message = nullptr;
+    Message *message) {
+  const Reflection *reflection = message->GetReflection();
+  Message *sub_message = nullptr;
 
   sub_message = reflection->AddMessage(message, F("map_int32_int32"));
   EXPECT_TRUE(sub_message->GetReflection()->MutableUnknownFields(sub_message) !=
@@ -875,11 +878,11 @@ inline void MapReflectionTester::MutableUnknownFieldsOfMapFieldsViaReflection(
               nullptr);
 }
 
-inline void MapReflectionTester::ExpectMapFieldsSetViaReflection(
-    const Message& message) {
+inline void
+MapReflectionTester::ExpectMapFieldsSetViaReflection(const Message &message) {
   std::string scratch;
-  const Reflection* reflection = message.GetReflection();
-  const Message* sub_message;
+  const Reflection *reflection = message.GetReflection();
+  const Message *sub_message;
   MapKey map_key;
 
   // -----------------------------------------------------------------
@@ -1176,7 +1179,7 @@ inline void MapReflectionTester::ExpectMapFieldsSetViaReflection(
     }
   }
   {
-    std::map<int32, const EnumValueDescriptor*> map;
+    std::map<int32, const EnumValueDescriptor *> map;
     map[0] = map_enum_bar_;
     map[1] = map_enum_baz_;
     for (int i = 0; i < 2; i++) {
@@ -1184,7 +1187,7 @@ inline void MapReflectionTester::ExpectMapFieldsSetViaReflection(
           &reflection->GetRepeatedMessage(message, F("map_int32_enum"), i);
       int32 key = sub_message->GetReflection()->GetInt32(*sub_message,
                                                          map_int32_enum_key_);
-      const EnumValueDescriptor* val = sub_message->GetReflection()->GetEnum(
+      const EnumValueDescriptor *val = sub_message->GetReflection()->GetEnum(
           *sub_message, map_int32_enum_val_);
       EXPECT_EQ(map[key], val);
       // Check with Map Reflection
@@ -1202,7 +1205,7 @@ inline void MapReflectionTester::ExpectMapFieldsSetViaReflection(
           message, F("map_int32_foreign_message"), i);
       int32 key = sub_message->GetReflection()->GetInt32(
           *sub_message, map_int32_foreign_message_key_);
-      const Message& foreign_message = sub_message->GetReflection()->GetMessage(
+      const Message &foreign_message = sub_message->GetReflection()->GetMessage(
           *sub_message, map_int32_foreign_message_val_);
       int32 val = foreign_message.GetReflection()->GetInt32(foreign_message,
                                                             foreign_c_);
@@ -1215,11 +1218,11 @@ inline void MapReflectionTester::ExpectMapFieldsSetViaReflection(
   }
 }
 
-inline void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
-    Message* message) {
+inline void
+MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(Message *message) {
   std::string scratch;
   std::string serialized;
-  const Reflection* reflection = message->GetReflection();
+  const Reflection *reflection = message->GetReflection();
 
   ASSERT_EQ(2, reflection->FieldSize(*message, F("map_int32_int32")));
   ASSERT_EQ(2, reflection->FieldSize(*message, F("map_int64_int64")));
@@ -1410,7 +1413,7 @@ inline void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
     }
   }
   {
-    std::map<int32, const EnumValueDescriptor*> map;
+    std::map<int32, const EnumValueDescriptor *> map;
     map[0] = map_enum_bar_;
     map[1] = map_enum_baz_;
     for (MapIterator iter = reflection->MapBegin(message, F("map_int32_enum"));
@@ -1434,7 +1437,7 @@ inline void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
       message->SerializeToString(&serialized);
       message->SpaceUsedLong();
       message->ByteSizeLong();
-      const Message& sub_message = iter.GetValueRef().GetMessageValue();
+      const Message &sub_message = iter.GetValueRef().GetMessageValue();
       EXPECT_EQ(map[iter.GetKey().GetInt32Value()],
                 sub_message.GetReflection()->GetInt32(sub_message, foreign_c_));
     }
@@ -1442,9 +1445,9 @@ inline void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
   }
 }
 
-inline void MapReflectionTester::ExpectClearViaReflection(
-    const Message& message) {
-  const Reflection* reflection = message.GetReflection();
+inline void
+MapReflectionTester::ExpectClearViaReflection(const Message &message) {
+  const Reflection *reflection = message.GetReflection();
   // Map fields are empty.
   EXPECT_EQ(0, reflection->FieldSize(message, F("map_int32_int32")));
   EXPECT_EQ(0, reflection->FieldSize(message, F("map_int64_int64")));
@@ -1467,9 +1470,9 @@ inline void MapReflectionTester::ExpectClearViaReflection(
                   ->IsMapValid());
 }
 
-inline void MapReflectionTester::ExpectClearViaReflectionIterator(
-    Message* message) {
-  const Reflection* reflection = message->GetReflection();
+inline void
+MapReflectionTester::ExpectClearViaReflectionIterator(Message *message) {
+  const Reflection *reflection = message->GetReflection();
   EXPECT_TRUE(reflection->MapBegin(message, F("map_int32_int32")) ==
               reflection->MapEnd(message, F("map_int32_int32")));
   EXPECT_TRUE(reflection->MapBegin(message, F("map_int64_int64")) ==
@@ -1506,9 +1509,9 @@ inline void MapReflectionTester::ExpectClearViaReflectionIterator(
               reflection->MapEnd(message, F("map_int32_foreign_message")));
 }
 
-}  // namespace protobuf
-}  // namespace google
+} // namespace protobuf
+} // namespace google
 
 #include <google/protobuf/port_undef.inc>
 
-#endif  // GOOGLE_PROTOBUF_MAP_TEST_UTIL_H__
+#endif // GOOGLE_PROTOBUF_MAP_TEST_UTIL_H__

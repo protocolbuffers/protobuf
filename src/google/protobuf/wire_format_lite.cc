@@ -38,13 +38,12 @@
 #include <string>
 #include <vector>
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
-
+#include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
+#include <google/protobuf/stubs/stringprintf.h>
 
 #include <google/protobuf/port_def.inc>
 
@@ -75,157 +74,173 @@ const size_t WireFormatLite::kMessageSetItemTagsSize =
 
 const WireFormatLite::CppType
     WireFormatLite::kFieldTypeToCppTypeMap[MAX_FIELD_TYPE + 1] = {
-        static_cast<CppType>(0),  // 0 is reserved for errors
+        static_cast<CppType>(0), // 0 is reserved for errors
 
-        CPPTYPE_DOUBLE,   // TYPE_DOUBLE
-        CPPTYPE_FLOAT,    // TYPE_FLOAT
-        CPPTYPE_INT64,    // TYPE_INT64
-        CPPTYPE_UINT64,   // TYPE_UINT64
-        CPPTYPE_INT32,    // TYPE_INT32
-        CPPTYPE_UINT64,   // TYPE_FIXED64
-        CPPTYPE_UINT32,   // TYPE_FIXED32
-        CPPTYPE_BOOL,     // TYPE_BOOL
-        CPPTYPE_STRING,   // TYPE_STRING
-        CPPTYPE_MESSAGE,  // TYPE_GROUP
-        CPPTYPE_MESSAGE,  // TYPE_MESSAGE
-        CPPTYPE_STRING,   // TYPE_BYTES
-        CPPTYPE_UINT32,   // TYPE_UINT32
-        CPPTYPE_ENUM,     // TYPE_ENUM
-        CPPTYPE_INT32,    // TYPE_SFIXED32
-        CPPTYPE_INT64,    // TYPE_SFIXED64
-        CPPTYPE_INT32,    // TYPE_SINT32
-        CPPTYPE_INT64,    // TYPE_SINT64
+        CPPTYPE_DOUBLE,  // TYPE_DOUBLE
+        CPPTYPE_FLOAT,   // TYPE_FLOAT
+        CPPTYPE_INT64,   // TYPE_INT64
+        CPPTYPE_UINT64,  // TYPE_UINT64
+        CPPTYPE_INT32,   // TYPE_INT32
+        CPPTYPE_UINT64,  // TYPE_FIXED64
+        CPPTYPE_UINT32,  // TYPE_FIXED32
+        CPPTYPE_BOOL,    // TYPE_BOOL
+        CPPTYPE_STRING,  // TYPE_STRING
+        CPPTYPE_MESSAGE, // TYPE_GROUP
+        CPPTYPE_MESSAGE, // TYPE_MESSAGE
+        CPPTYPE_STRING,  // TYPE_BYTES
+        CPPTYPE_UINT32,  // TYPE_UINT32
+        CPPTYPE_ENUM,    // TYPE_ENUM
+        CPPTYPE_INT32,   // TYPE_SFIXED32
+        CPPTYPE_INT64,   // TYPE_SFIXED64
+        CPPTYPE_INT32,   // TYPE_SINT32
+        CPPTYPE_INT64,   // TYPE_SINT64
 };
 
 const WireFormatLite::WireType
     WireFormatLite::kWireTypeForFieldType[MAX_FIELD_TYPE + 1] = {
-        static_cast<WireFormatLite::WireType>(-1),  // invalid
-        WireFormatLite::WIRETYPE_FIXED64,           // TYPE_DOUBLE
-        WireFormatLite::WIRETYPE_FIXED32,           // TYPE_FLOAT
-        WireFormatLite::WIRETYPE_VARINT,            // TYPE_INT64
-        WireFormatLite::WIRETYPE_VARINT,            // TYPE_UINT64
-        WireFormatLite::WIRETYPE_VARINT,            // TYPE_INT32
-        WireFormatLite::WIRETYPE_FIXED64,           // TYPE_FIXED64
-        WireFormatLite::WIRETYPE_FIXED32,           // TYPE_FIXED32
-        WireFormatLite::WIRETYPE_VARINT,            // TYPE_BOOL
-        WireFormatLite::WIRETYPE_LENGTH_DELIMITED,  // TYPE_STRING
-        WireFormatLite::WIRETYPE_START_GROUP,       // TYPE_GROUP
-        WireFormatLite::WIRETYPE_LENGTH_DELIMITED,  // TYPE_MESSAGE
-        WireFormatLite::WIRETYPE_LENGTH_DELIMITED,  // TYPE_BYTES
-        WireFormatLite::WIRETYPE_VARINT,            // TYPE_UINT32
-        WireFormatLite::WIRETYPE_VARINT,            // TYPE_ENUM
-        WireFormatLite::WIRETYPE_FIXED32,           // TYPE_SFIXED32
-        WireFormatLite::WIRETYPE_FIXED64,           // TYPE_SFIXED64
-        WireFormatLite::WIRETYPE_VARINT,            // TYPE_SINT32
-        WireFormatLite::WIRETYPE_VARINT,            // TYPE_SINT64
+        static_cast<WireFormatLite::WireType>(-1), // invalid
+        WireFormatLite::WIRETYPE_FIXED64,          // TYPE_DOUBLE
+        WireFormatLite::WIRETYPE_FIXED32,          // TYPE_FLOAT
+        WireFormatLite::WIRETYPE_VARINT,           // TYPE_INT64
+        WireFormatLite::WIRETYPE_VARINT,           // TYPE_UINT64
+        WireFormatLite::WIRETYPE_VARINT,           // TYPE_INT32
+        WireFormatLite::WIRETYPE_FIXED64,          // TYPE_FIXED64
+        WireFormatLite::WIRETYPE_FIXED32,          // TYPE_FIXED32
+        WireFormatLite::WIRETYPE_VARINT,           // TYPE_BOOL
+        WireFormatLite::WIRETYPE_LENGTH_DELIMITED, // TYPE_STRING
+        WireFormatLite::WIRETYPE_START_GROUP,      // TYPE_GROUP
+        WireFormatLite::WIRETYPE_LENGTH_DELIMITED, // TYPE_MESSAGE
+        WireFormatLite::WIRETYPE_LENGTH_DELIMITED, // TYPE_BYTES
+        WireFormatLite::WIRETYPE_VARINT,           // TYPE_UINT32
+        WireFormatLite::WIRETYPE_VARINT,           // TYPE_ENUM
+        WireFormatLite::WIRETYPE_FIXED32,          // TYPE_SFIXED32
+        WireFormatLite::WIRETYPE_FIXED64,          // TYPE_SFIXED64
+        WireFormatLite::WIRETYPE_VARINT,           // TYPE_SINT32
+        WireFormatLite::WIRETYPE_VARINT,           // TYPE_SINT64
 };
 
-bool WireFormatLite::SkipField(io::CodedInputStream* input, uint32 tag) {
+bool WireFormatLite::SkipField(io::CodedInputStream *input, uint32 tag) {
   // Field number 0 is illegal.
-  if (WireFormatLite::GetTagFieldNumber(tag) == 0) return false;
+  if (WireFormatLite::GetTagFieldNumber(tag) == 0)
+    return false;
   switch (WireFormatLite::GetTagWireType(tag)) {
-    case WireFormatLite::WIRETYPE_VARINT: {
-      uint64 value;
-      if (!input->ReadVarint64(&value)) return false;
-      return true;
-    }
-    case WireFormatLite::WIRETYPE_FIXED64: {
-      uint64 value;
-      if (!input->ReadLittleEndian64(&value)) return false;
-      return true;
-    }
-    case WireFormatLite::WIRETYPE_LENGTH_DELIMITED: {
-      uint32 length;
-      if (!input->ReadVarint32(&length)) return false;
-      if (!input->Skip(length)) return false;
-      return true;
-    }
-    case WireFormatLite::WIRETYPE_START_GROUP: {
-      if (!input->IncrementRecursionDepth()) return false;
-      if (!SkipMessage(input)) return false;
-      input->DecrementRecursionDepth();
-      // Check that the ending tag matched the starting tag.
-      if (!input->LastTagWas(
-              WireFormatLite::MakeTag(WireFormatLite::GetTagFieldNumber(tag),
-                                      WireFormatLite::WIRETYPE_END_GROUP))) {
-        return false;
-      }
-      return true;
-    }
-    case WireFormatLite::WIRETYPE_END_GROUP: {
+  case WireFormatLite::WIRETYPE_VARINT: {
+    uint64 value;
+    if (!input->ReadVarint64(&value))
+      return false;
+    return true;
+  }
+  case WireFormatLite::WIRETYPE_FIXED64: {
+    uint64 value;
+    if (!input->ReadLittleEndian64(&value))
+      return false;
+    return true;
+  }
+  case WireFormatLite::WIRETYPE_LENGTH_DELIMITED: {
+    uint32 length;
+    if (!input->ReadVarint32(&length))
+      return false;
+    if (!input->Skip(length))
+      return false;
+    return true;
+  }
+  case WireFormatLite::WIRETYPE_START_GROUP: {
+    if (!input->IncrementRecursionDepth())
+      return false;
+    if (!SkipMessage(input))
+      return false;
+    input->DecrementRecursionDepth();
+    // Check that the ending tag matched the starting tag.
+    if (!input->LastTagWas(
+            WireFormatLite::MakeTag(WireFormatLite::GetTagFieldNumber(tag),
+                                    WireFormatLite::WIRETYPE_END_GROUP))) {
       return false;
     }
-    case WireFormatLite::WIRETYPE_FIXED32: {
-      uint32 value;
-      if (!input->ReadLittleEndian32(&value)) return false;
-      return true;
-    }
-    default: {
+    return true;
+  }
+  case WireFormatLite::WIRETYPE_END_GROUP: {
+    return false;
+  }
+  case WireFormatLite::WIRETYPE_FIXED32: {
+    uint32 value;
+    if (!input->ReadLittleEndian32(&value))
       return false;
-    }
+    return true;
+  }
+  default: {
+    return false;
+  }
   }
 }
 
-bool WireFormatLite::SkipField(io::CodedInputStream* input, uint32 tag,
-                               io::CodedOutputStream* output) {
+bool WireFormatLite::SkipField(io::CodedInputStream *input, uint32 tag,
+                               io::CodedOutputStream *output) {
   // Field number 0 is illegal.
-  if (WireFormatLite::GetTagFieldNumber(tag) == 0) return false;
+  if (WireFormatLite::GetTagFieldNumber(tag) == 0)
+    return false;
   switch (WireFormatLite::GetTagWireType(tag)) {
-    case WireFormatLite::WIRETYPE_VARINT: {
-      uint64 value;
-      if (!input->ReadVarint64(&value)) return false;
-      output->WriteVarint32(tag);
-      output->WriteVarint64(value);
-      return true;
-    }
-    case WireFormatLite::WIRETYPE_FIXED64: {
-      uint64 value;
-      if (!input->ReadLittleEndian64(&value)) return false;
-      output->WriteVarint32(tag);
-      output->WriteLittleEndian64(value);
-      return true;
-    }
-    case WireFormatLite::WIRETYPE_LENGTH_DELIMITED: {
-      uint32 length;
-      if (!input->ReadVarint32(&length)) return false;
-      output->WriteVarint32(tag);
-      output->WriteVarint32(length);
-      // TODO(mkilavuz): Provide API to prevent extra string copying.
-      std::string temp;
-      if (!input->ReadString(&temp, length)) return false;
-      output->WriteString(temp);
-      return true;
-    }
-    case WireFormatLite::WIRETYPE_START_GROUP: {
-      output->WriteVarint32(tag);
-      if (!input->IncrementRecursionDepth()) return false;
-      if (!SkipMessage(input, output)) return false;
-      input->DecrementRecursionDepth();
-      // Check that the ending tag matched the starting tag.
-      if (!input->LastTagWas(
-              WireFormatLite::MakeTag(WireFormatLite::GetTagFieldNumber(tag),
-                                      WireFormatLite::WIRETYPE_END_GROUP))) {
-        return false;
-      }
-      return true;
-    }
-    case WireFormatLite::WIRETYPE_END_GROUP: {
+  case WireFormatLite::WIRETYPE_VARINT: {
+    uint64 value;
+    if (!input->ReadVarint64(&value))
+      return false;
+    output->WriteVarint32(tag);
+    output->WriteVarint64(value);
+    return true;
+  }
+  case WireFormatLite::WIRETYPE_FIXED64: {
+    uint64 value;
+    if (!input->ReadLittleEndian64(&value))
+      return false;
+    output->WriteVarint32(tag);
+    output->WriteLittleEndian64(value);
+    return true;
+  }
+  case WireFormatLite::WIRETYPE_LENGTH_DELIMITED: {
+    uint32 length;
+    if (!input->ReadVarint32(&length))
+      return false;
+    output->WriteVarint32(tag);
+    output->WriteVarint32(length);
+    // TODO(mkilavuz): Provide API to prevent extra string copying.
+    std::string temp;
+    if (!input->ReadString(&temp, length))
+      return false;
+    output->WriteString(temp);
+    return true;
+  }
+  case WireFormatLite::WIRETYPE_START_GROUP: {
+    output->WriteVarint32(tag);
+    if (!input->IncrementRecursionDepth())
+      return false;
+    if (!SkipMessage(input, output))
+      return false;
+    input->DecrementRecursionDepth();
+    // Check that the ending tag matched the starting tag.
+    if (!input->LastTagWas(
+            WireFormatLite::MakeTag(WireFormatLite::GetTagFieldNumber(tag),
+                                    WireFormatLite::WIRETYPE_END_GROUP))) {
       return false;
     }
-    case WireFormatLite::WIRETYPE_FIXED32: {
-      uint32 value;
-      if (!input->ReadLittleEndian32(&value)) return false;
-      output->WriteVarint32(tag);
-      output->WriteLittleEndian32(value);
-      return true;
-    }
-    default: {
+    return true;
+  }
+  case WireFormatLite::WIRETYPE_END_GROUP: {
+    return false;
+  }
+  case WireFormatLite::WIRETYPE_FIXED32: {
+    uint32 value;
+    if (!input->ReadLittleEndian32(&value))
       return false;
-    }
+    output->WriteVarint32(tag);
+    output->WriteLittleEndian32(value);
+    return true;
+  }
+  default: {
+    return false;
+  }
   }
 }
 
-bool WireFormatLite::SkipMessage(io::CodedInputStream* input) {
+bool WireFormatLite::SkipMessage(io::CodedInputStream *input) {
   while (true) {
     uint32 tag = input->ReadTag();
     if (tag == 0) {
@@ -240,12 +255,13 @@ bool WireFormatLite::SkipMessage(io::CodedInputStream* input) {
       return true;
     }
 
-    if (!SkipField(input, tag)) return false;
+    if (!SkipField(input, tag))
+      return false;
   }
 }
 
-bool WireFormatLite::SkipMessage(io::CodedInputStream* input,
-                                 io::CodedOutputStream* output) {
+bool WireFormatLite::SkipMessage(io::CodedInputStream *input,
+                                 io::CodedOutputStream *output) {
   while (true) {
     uint32 tag = input->ReadTag();
     if (tag == 0) {
@@ -261,15 +277,16 @@ bool WireFormatLite::SkipMessage(io::CodedInputStream* input,
       return true;
     }
 
-    if (!SkipField(input, tag, output)) return false;
+    if (!SkipField(input, tag, output))
+      return false;
   }
 }
 
-bool FieldSkipper::SkipField(io::CodedInputStream* input, uint32 tag) {
+bool FieldSkipper::SkipField(io::CodedInputStream *input, uint32 tag) {
   return WireFormatLite::SkipField(input, tag);
 }
 
-bool FieldSkipper::SkipMessage(io::CodedInputStream* input) {
+bool FieldSkipper::SkipMessage(io::CodedInputStream *input) {
   return WireFormatLite::SkipMessage(input);
 }
 
@@ -277,12 +294,12 @@ void FieldSkipper::SkipUnknownEnum(int /* field_number */, int /* value */) {
   // Nothing.
 }
 
-bool CodedOutputStreamFieldSkipper::SkipField(io::CodedInputStream* input,
+bool CodedOutputStreamFieldSkipper::SkipField(io::CodedInputStream *input,
                                               uint32 tag) {
   return WireFormatLite::SkipField(input, tag, unknown_fields_);
 }
 
-bool CodedOutputStreamFieldSkipper::SkipMessage(io::CodedInputStream* input) {
+bool CodedOutputStreamFieldSkipper::SkipMessage(io::CodedInputStream *input) {
   return WireFormatLite::SkipMessage(input, unknown_fields_);
 }
 
@@ -293,10 +310,11 @@ void CodedOutputStreamFieldSkipper::SkipUnknownEnum(int field_number,
 }
 
 bool WireFormatLite::ReadPackedEnumPreserveUnknowns(
-    io::CodedInputStream* input, int field_number, bool (*is_valid)(int),
-    io::CodedOutputStream* unknown_fields_stream, RepeatedField<int>* values) {
+    io::CodedInputStream *input, int field_number, bool (*is_valid)(int),
+    io::CodedOutputStream *unknown_fields_stream, RepeatedField<int> *values) {
   uint32 length;
-  if (!input->ReadVarint32(&length)) return false;
+  if (!input->ReadVarint32(&length))
+    return false;
   io::CodedInputStream::Limit limit = input->PushLimit(length);
   while (input->BytesUntilLimit() > 0) {
     int value;
@@ -319,47 +337,47 @@ bool WireFormatLite::ReadPackedEnumPreserveUnknowns(
 #if !defined(PROTOBUF_LITTLE_ENDIAN)
 
 namespace {
-void EncodeFixedSizeValue(float v, uint8* dest) {
+void EncodeFixedSizeValue(float v, uint8 *dest) {
   WireFormatLite::WriteFloatNoTagToArray(v, dest);
 }
 
-void EncodeFixedSizeValue(double v, uint8* dest) {
+void EncodeFixedSizeValue(double v, uint8 *dest) {
   WireFormatLite::WriteDoubleNoTagToArray(v, dest);
 }
 
-void EncodeFixedSizeValue(uint32 v, uint8* dest) {
+void EncodeFixedSizeValue(uint32 v, uint8 *dest) {
   WireFormatLite::WriteFixed32NoTagToArray(v, dest);
 }
 
-void EncodeFixedSizeValue(uint64 v, uint8* dest) {
+void EncodeFixedSizeValue(uint64 v, uint8 *dest) {
   WireFormatLite::WriteFixed64NoTagToArray(v, dest);
 }
 
-void EncodeFixedSizeValue(int32 v, uint8* dest) {
+void EncodeFixedSizeValue(int32 v, uint8 *dest) {
   WireFormatLite::WriteSFixed32NoTagToArray(v, dest);
 }
 
-void EncodeFixedSizeValue(int64 v, uint8* dest) {
+void EncodeFixedSizeValue(int64 v, uint8 *dest) {
   WireFormatLite::WriteSFixed64NoTagToArray(v, dest);
 }
 
-void EncodeFixedSizeValue(bool v, uint8* dest) {
+void EncodeFixedSizeValue(bool v, uint8 *dest) {
   WireFormatLite::WriteBoolNoTagToArray(v, dest);
 }
-}  // anonymous namespace
+} // anonymous namespace
 
-#endif  // !defined(PROTOBUF_LITTLE_ENDIAN)
+#endif // !defined(PROTOBUF_LITTLE_ENDIAN)
 
 template <typename CType>
-static void WriteArray(const CType* a, int n, io::CodedOutputStream* output) {
+static void WriteArray(const CType *a, int n, io::CodedOutputStream *output) {
 #if defined(PROTOBUF_LITTLE_ENDIAN)
-  output->WriteRaw(reinterpret_cast<const char*>(a), n * sizeof(a[0]));
+  output->WriteRaw(reinterpret_cast<const char *>(a), n * sizeof(a[0]));
 #else
   const int kAtATime = 128;
   uint8 buf[sizeof(CType) * kAtATime];
   for (int i = 0; i < n; i += kAtATime) {
     int to_do = std::min(kAtATime, n - i);
-    uint8* ptr = buf;
+    uint8 *ptr = buf;
     for (int j = 0; j < to_do; j++) {
       EncodeFixedSizeValue(a[i + j], ptr);
       ptr += sizeof(a[0]);
@@ -369,114 +387,114 @@ static void WriteArray(const CType* a, int n, io::CodedOutputStream* output) {
 #endif
 }
 
-void WireFormatLite::WriteFloatArray(const float* a, int n,
-                                     io::CodedOutputStream* output) {
+void WireFormatLite::WriteFloatArray(const float *a, int n,
+                                     io::CodedOutputStream *output) {
   WriteArray<float>(a, n, output);
 }
 
-void WireFormatLite::WriteDoubleArray(const double* a, int n,
-                                      io::CodedOutputStream* output) {
+void WireFormatLite::WriteDoubleArray(const double *a, int n,
+                                      io::CodedOutputStream *output) {
   WriteArray<double>(a, n, output);
 }
 
-void WireFormatLite::WriteFixed32Array(const uint32* a, int n,
-                                       io::CodedOutputStream* output) {
+void WireFormatLite::WriteFixed32Array(const uint32 *a, int n,
+                                       io::CodedOutputStream *output) {
   WriteArray<uint32>(a, n, output);
 }
 
-void WireFormatLite::WriteFixed64Array(const uint64* a, int n,
-                                       io::CodedOutputStream* output) {
+void WireFormatLite::WriteFixed64Array(const uint64 *a, int n,
+                                       io::CodedOutputStream *output) {
   WriteArray<uint64>(a, n, output);
 }
 
-void WireFormatLite::WriteSFixed32Array(const int32* a, int n,
-                                        io::CodedOutputStream* output) {
+void WireFormatLite::WriteSFixed32Array(const int32 *a, int n,
+                                        io::CodedOutputStream *output) {
   WriteArray<int32>(a, n, output);
 }
 
-void WireFormatLite::WriteSFixed64Array(const int64* a, int n,
-                                        io::CodedOutputStream* output) {
+void WireFormatLite::WriteSFixed64Array(const int64 *a, int n,
+                                        io::CodedOutputStream *output) {
   WriteArray<int64>(a, n, output);
 }
 
-void WireFormatLite::WriteBoolArray(const bool* a, int n,
-                                    io::CodedOutputStream* output) {
+void WireFormatLite::WriteBoolArray(const bool *a, int n,
+                                    io::CodedOutputStream *output) {
   WriteArray<bool>(a, n, output);
 }
 
 void WireFormatLite::WriteInt32(int field_number, int32 value,
-                                io::CodedOutputStream* output) {
+                                io::CodedOutputStream *output) {
   WriteTag(field_number, WIRETYPE_VARINT, output);
   WriteInt32NoTag(value, output);
 }
 void WireFormatLite::WriteInt64(int field_number, int64 value,
-                                io::CodedOutputStream* output) {
+                                io::CodedOutputStream *output) {
   WriteTag(field_number, WIRETYPE_VARINT, output);
   WriteInt64NoTag(value, output);
 }
 void WireFormatLite::WriteUInt32(int field_number, uint32 value,
-                                 io::CodedOutputStream* output) {
+                                 io::CodedOutputStream *output) {
   WriteTag(field_number, WIRETYPE_VARINT, output);
   WriteUInt32NoTag(value, output);
 }
 void WireFormatLite::WriteUInt64(int field_number, uint64 value,
-                                 io::CodedOutputStream* output) {
+                                 io::CodedOutputStream *output) {
   WriteTag(field_number, WIRETYPE_VARINT, output);
   WriteUInt64NoTag(value, output);
 }
 void WireFormatLite::WriteSInt32(int field_number, int32 value,
-                                 io::CodedOutputStream* output) {
+                                 io::CodedOutputStream *output) {
   WriteTag(field_number, WIRETYPE_VARINT, output);
   WriteSInt32NoTag(value, output);
 }
 void WireFormatLite::WriteSInt64(int field_number, int64 value,
-                                 io::CodedOutputStream* output) {
+                                 io::CodedOutputStream *output) {
   WriteTag(field_number, WIRETYPE_VARINT, output);
   WriteSInt64NoTag(value, output);
 }
 void WireFormatLite::WriteFixed32(int field_number, uint32 value,
-                                  io::CodedOutputStream* output) {
+                                  io::CodedOutputStream *output) {
   WriteTag(field_number, WIRETYPE_FIXED32, output);
   WriteFixed32NoTag(value, output);
 }
 void WireFormatLite::WriteFixed64(int field_number, uint64 value,
-                                  io::CodedOutputStream* output) {
+                                  io::CodedOutputStream *output) {
   WriteTag(field_number, WIRETYPE_FIXED64, output);
   WriteFixed64NoTag(value, output);
 }
 void WireFormatLite::WriteSFixed32(int field_number, int32 value,
-                                   io::CodedOutputStream* output) {
+                                   io::CodedOutputStream *output) {
   WriteTag(field_number, WIRETYPE_FIXED32, output);
   WriteSFixed32NoTag(value, output);
 }
 void WireFormatLite::WriteSFixed64(int field_number, int64 value,
-                                   io::CodedOutputStream* output) {
+                                   io::CodedOutputStream *output) {
   WriteTag(field_number, WIRETYPE_FIXED64, output);
   WriteSFixed64NoTag(value, output);
 }
 void WireFormatLite::WriteFloat(int field_number, float value,
-                                io::CodedOutputStream* output) {
+                                io::CodedOutputStream *output) {
   WriteTag(field_number, WIRETYPE_FIXED32, output);
   WriteFloatNoTag(value, output);
 }
 void WireFormatLite::WriteDouble(int field_number, double value,
-                                 io::CodedOutputStream* output) {
+                                 io::CodedOutputStream *output) {
   WriteTag(field_number, WIRETYPE_FIXED64, output);
   WriteDoubleNoTag(value, output);
 }
 void WireFormatLite::WriteBool(int field_number, bool value,
-                               io::CodedOutputStream* output) {
+                               io::CodedOutputStream *output) {
   WriteTag(field_number, WIRETYPE_VARINT, output);
   WriteBoolNoTag(value, output);
 }
 void WireFormatLite::WriteEnum(int field_number, int value,
-                               io::CodedOutputStream* output) {
+                               io::CodedOutputStream *output) {
   WriteTag(field_number, WIRETYPE_VARINT, output);
   WriteEnumNoTag(value, output);
 }
 
-void WireFormatLite::WriteString(int field_number, const std::string& value,
-                                 io::CodedOutputStream* output) {
+void WireFormatLite::WriteString(int field_number, const std::string &value,
+                                 io::CodedOutputStream *output) {
   // String is for UTF-8 text only
   WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
   GOOGLE_CHECK_LE(value.size(), kint32max);
@@ -484,40 +502,39 @@ void WireFormatLite::WriteString(int field_number, const std::string& value,
   output->WriteString(value);
 }
 void WireFormatLite::WriteStringMaybeAliased(int field_number,
-                                             const std::string& value,
-                                             io::CodedOutputStream* output) {
+                                             const std::string &value,
+                                             io::CodedOutputStream *output) {
   // String is for UTF-8 text only
   WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
   GOOGLE_CHECK_LE(value.size(), kint32max);
   output->WriteVarint32(value.size());
   output->WriteRawMaybeAliased(value.data(), value.size());
 }
-void WireFormatLite::WriteBytes(int field_number, const std::string& value,
-                                io::CodedOutputStream* output) {
+void WireFormatLite::WriteBytes(int field_number, const std::string &value,
+                                io::CodedOutputStream *output) {
   WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
   GOOGLE_CHECK_LE(value.size(), kint32max);
   output->WriteVarint32(value.size());
   output->WriteString(value);
 }
 void WireFormatLite::WriteBytesMaybeAliased(int field_number,
-                                            const std::string& value,
-                                            io::CodedOutputStream* output) {
+                                            const std::string &value,
+                                            io::CodedOutputStream *output) {
   WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
   GOOGLE_CHECK_LE(value.size(), kint32max);
   output->WriteVarint32(value.size());
   output->WriteRawMaybeAliased(value.data(), value.size());
 }
 
-
-void WireFormatLite::WriteGroup(int field_number, const MessageLite& value,
-                                io::CodedOutputStream* output) {
+void WireFormatLite::WriteGroup(int field_number, const MessageLite &value,
+                                io::CodedOutputStream *output) {
   WriteTag(field_number, WIRETYPE_START_GROUP, output);
   value.SerializeWithCachedSizes(output);
   WriteTag(field_number, WIRETYPE_END_GROUP, output);
 }
 
-void WireFormatLite::WriteMessage(int field_number, const MessageLite& value,
-                                  io::CodedOutputStream* output) {
+void WireFormatLite::WriteMessage(int field_number, const MessageLite &value,
+                                  io::CodedOutputStream *output) {
   WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
   const int size = value.GetCachedSize();
   output->WriteVarint32(size);
@@ -525,14 +542,14 @@ void WireFormatLite::WriteMessage(int field_number, const MessageLite& value,
 }
 
 void WireFormatLite::WriteSubMessageMaybeToArray(
-    int size, const MessageLite& value, io::CodedOutputStream* output) {
+    int size, const MessageLite &value, io::CodedOutputStream *output) {
   output->SetCur(value.InternalSerializeWithCachedSizesToArray(
       output->Cur(), output->EpsCopy()));
 }
 
 void WireFormatLite::WriteGroupMaybeToArray(int field_number,
-                                            const MessageLite& value,
-                                            io::CodedOutputStream* output) {
+                                            const MessageLite &value,
+                                            io::CodedOutputStream *output) {
   WriteTag(field_number, WIRETYPE_START_GROUP, output);
   const int size = value.GetCachedSize();
   WriteSubMessageMaybeToArray(size, value, output);
@@ -540,59 +557,60 @@ void WireFormatLite::WriteGroupMaybeToArray(int field_number,
 }
 
 void WireFormatLite::WriteMessageMaybeToArray(int field_number,
-                                              const MessageLite& value,
-                                              io::CodedOutputStream* output) {
+                                              const MessageLite &value,
+                                              io::CodedOutputStream *output) {
   WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
   const int size = value.GetCachedSize();
   output->WriteVarint32(size);
   WriteSubMessageMaybeToArray(size, value, output);
 }
 
-PROTOBUF_ALWAYS_INLINE static bool ReadBytesToString(
-    io::CodedInputStream* input, std::string* value);
-inline static bool ReadBytesToString(io::CodedInputStream* input,
-                                     std::string* value) {
+PROTOBUF_ALWAYS_INLINE static bool
+ReadBytesToString(io::CodedInputStream *input, std::string *value);
+inline static bool ReadBytesToString(io::CodedInputStream *input,
+                                     std::string *value) {
   uint32 length;
   return input->ReadVarint32(&length) && input->ReadString(value, length);
 }
 
-bool WireFormatLite::ReadBytes(io::CodedInputStream* input,
-                               std::string* value) {
+bool WireFormatLite::ReadBytes(io::CodedInputStream *input,
+                               std::string *value) {
   return ReadBytesToString(input, value);
 }
 
-bool WireFormatLite::ReadBytes(io::CodedInputStream* input, std::string** p) {
+bool WireFormatLite::ReadBytes(io::CodedInputStream *input, std::string **p) {
   if (*p == &GetEmptyStringAlreadyInited()) {
     *p = new std::string();
   }
   return ReadBytesToString(input, *p);
 }
 
-void PrintUTF8ErrorLog(const char* field_name, const char* operation_str,
+void PrintUTF8ErrorLog(const char *field_name, const char *operation_str,
                        bool emit_stacktrace) {
   std::string stacktrace;
   std::string quoted_field_name = "";
   if (field_name != nullptr) {
     quoted_field_name = StringPrintf(" '%s'", field_name);
   }
-  GOOGLE_LOG(ERROR) << "String field" << quoted_field_name << " contains invalid "
-             << "UTF-8 data when " << operation_str << " a protocol "
-             << "buffer. Use the 'bytes' type if you intend to send raw "
-             << "bytes. " << stacktrace;
+  GOOGLE_LOG(ERROR) << "String field" << quoted_field_name
+                    << " contains invalid "
+                    << "UTF-8 data when " << operation_str << " a protocol "
+                    << "buffer. Use the 'bytes' type if you intend to send raw "
+                    << "bytes. " << stacktrace;
 }
 
-bool WireFormatLite::VerifyUtf8String(const char* data, int size, Operation op,
-                                      const char* field_name) {
+bool WireFormatLite::VerifyUtf8String(const char *data, int size, Operation op,
+                                      const char *field_name) {
   if (!IsStructurallyValidUTF8(data, size)) {
-    const char* operation_str = NULL;
+    const char *operation_str = NULL;
     switch (op) {
-      case PARSE:
-        operation_str = "parsing";
-        break;
-      case SERIALIZE:
-        operation_str = "serializing";
-        break;
-        // no default case: have the compiler warn if a case is not covered.
+    case PARSE:
+      operation_str = "parsing";
+      break;
+    case SERIALIZE:
+      operation_str = "serializing";
+      break;
+      // no default case: have the compiler warn if a case is not covered.
     }
     PrintUTF8ErrorLog(field_name, operation_str, false);
     return false;
@@ -603,17 +621,17 @@ bool WireFormatLite::VerifyUtf8String(const char* data, int size, Operation op,
 // this code is deliberately written such that clang makes it into really
 // efficient SSE code.
 template <bool ZigZag, bool SignExtended, typename T>
-static size_t VarintSize(const T* data, const int n) {
+static size_t VarintSize(const T *data, const int n) {
 #if __cplusplus >= 201103L
   static_assert(sizeof(T) == 4, "This routine only works for 32 bit integers");
   // is_unsigned<T> => !ZigZag
-  static_assert(
-      (std::is_unsigned<T>::value ^ ZigZag) || std::is_signed<T>::value,
-      "Cannot ZigZag encode unsigned types");
+  static_assert((std::is_unsigned<T>::value ^ ZigZag) ||
+                    std::is_signed<T>::value,
+                "Cannot ZigZag encode unsigned types");
   // is_unsigned<T> => !SignExtended
-  static_assert(
-      (std::is_unsigned<T>::value ^ SignExtended) || std::is_signed<T>::value,
-      "Cannot SignExtended unsigned types");
+  static_assert((std::is_unsigned<T>::value ^ SignExtended) ||
+                    std::is_signed<T>::value,
+                "Cannot SignExtended unsigned types");
   static_assert(!(SignExtended && ZigZag),
                 "Cannot SignExtended and ZigZag on the same type");
 #endif
@@ -630,17 +648,22 @@ static size_t VarintSize(const T* data, const int n) {
     // the loop 8 ints at a time. With a sequence of 4
     // cmpres = cmpgt x, sizeclass  ( -1 or 0)
     // sum = sum - cmpres
-    if (x > 0x7F) sum++;
-    if (x > 0x3FFF) sum++;
-    if (x > 0x1FFFFF) sum++;
-    if (x > 0xFFFFFFF) sum++;
+    if (x > 0x7F)
+      sum++;
+    if (x > 0x3FFF)
+      sum++;
+    if (x > 0x1FFFFF)
+      sum++;
+    if (x > 0xFFFFFFF)
+      sum++;
   }
-  if (SignExtended) sum += msb_sum * 5;
+  if (SignExtended)
+    sum += msb_sum * 5;
   return sum;
 }
 
 template <bool ZigZag, typename T>
-static size_t VarintSize64(const T* data, const int n) {
+static size_t VarintSize64(const T *data, const int n) {
 #if __cplusplus >= 201103L
   static_assert(sizeof(T) == 8, "This routine only works for 64 bit integers");
   // is_unsigned<T> => !ZigZag
@@ -659,10 +682,14 @@ static size_t VarintSize64(const T* data, const int n) {
     uint64 tmp = x >= (static_cast<uint64>(1) << 35) ? -1 : 0;
     sum += 5 & tmp;
     x >>= 35 & tmp;
-    if (x > 0x7F) sum++;
-    if (x > 0x3FFF) sum++;
-    if (x > 0x1FFFFF) sum++;
-    if (x > 0xFFFFFFF) sum++;
+    if (x > 0x7F)
+      sum++;
+    if (x > 0x3FFF)
+      sum++;
+    if (x > 0x1FFFFF)
+      sum++;
+    if (x > 0xFFFFFFF)
+      sum++;
   }
   return sum;
 }
@@ -672,26 +699,26 @@ static size_t VarintSize64(const T* data, const int n) {
 // varint size routine for each element is faster.
 // Hence we enable it only for clang
 #if defined(__SSE__) && defined(__clang__)
-size_t WireFormatLite::Int32Size(const RepeatedField<int32>& value) {
+size_t WireFormatLite::Int32Size(const RepeatedField<int32> &value) {
   return VarintSize<false, true>(value.data(), value.size());
 }
 
-size_t WireFormatLite::UInt32Size(const RepeatedField<uint32>& value) {
+size_t WireFormatLite::UInt32Size(const RepeatedField<uint32> &value) {
   return VarintSize<false, false>(value.data(), value.size());
 }
 
-size_t WireFormatLite::SInt32Size(const RepeatedField<int32>& value) {
+size_t WireFormatLite::SInt32Size(const RepeatedField<int32> &value) {
   return VarintSize<true, false>(value.data(), value.size());
 }
 
-size_t WireFormatLite::EnumSize(const RepeatedField<int>& value) {
+size_t WireFormatLite::EnumSize(const RepeatedField<int> &value) {
   // On ILP64, sizeof(int) == 8, which would require a different template.
   return VarintSize<false, true>(value.data(), value.size());
 }
 
-#else  // !(defined(__SSE4_1__) && defined(__clang__))
+#else // !(defined(__SSE4_1__) && defined(__clang__))
 
-size_t WireFormatLite::Int32Size(const RepeatedField<int32>& value) {
+size_t WireFormatLite::Int32Size(const RepeatedField<int32> &value) {
   size_t out = 0;
   const int n = value.size();
   for (int i = 0; i < n; i++) {
@@ -700,7 +727,7 @@ size_t WireFormatLite::Int32Size(const RepeatedField<int32>& value) {
   return out;
 }
 
-size_t WireFormatLite::UInt32Size(const RepeatedField<uint32>& value) {
+size_t WireFormatLite::UInt32Size(const RepeatedField<uint32> &value) {
   size_t out = 0;
   const int n = value.size();
   for (int i = 0; i < n; i++) {
@@ -709,7 +736,7 @@ size_t WireFormatLite::UInt32Size(const RepeatedField<uint32>& value) {
   return out;
 }
 
-size_t WireFormatLite::SInt32Size(const RepeatedField<int32>& value) {
+size_t WireFormatLite::SInt32Size(const RepeatedField<int32> &value) {
   size_t out = 0;
   const int n = value.size();
   for (int i = 0; i < n; i++) {
@@ -718,7 +745,7 @@ size_t WireFormatLite::SInt32Size(const RepeatedField<int32>& value) {
   return out;
 }
 
-size_t WireFormatLite::EnumSize(const RepeatedField<int>& value) {
+size_t WireFormatLite::EnumSize(const RepeatedField<int> &value) {
   size_t out = 0;
   const int n = value.size();
   for (int i = 0; i < n; i++) {
@@ -735,21 +762,21 @@ size_t WireFormatLite::EnumSize(const RepeatedField<int>& value) {
 // enable this.
 #define USE_SSE_FOR_64_BIT_INTEGER_ARRAYS 0
 #if USE_SSE_FOR_64_BIT_INTEGER_ARRAYS
-size_t WireFormatLite::Int64Size(const RepeatedField<int64>& value) {
+size_t WireFormatLite::Int64Size(const RepeatedField<int64> &value) {
   return VarintSize64<false>(value.data(), value.size());
 }
 
-size_t WireFormatLite::UInt64Size(const RepeatedField<uint64>& value) {
+size_t WireFormatLite::UInt64Size(const RepeatedField<uint64> &value) {
   return VarintSize64<false>(value.data(), value.size());
 }
 
-size_t WireFormatLite::SInt64Size(const RepeatedField<int64>& value) {
+size_t WireFormatLite::SInt64Size(const RepeatedField<int64> &value) {
   return VarintSize64<true>(value.data(), value.size());
 }
 
 #else
 
-size_t WireFormatLite::Int64Size(const RepeatedField<int64>& value) {
+size_t WireFormatLite::Int64Size(const RepeatedField<int64> &value) {
   size_t out = 0;
   const int n = value.size();
   for (int i = 0; i < n; i++) {
@@ -758,7 +785,7 @@ size_t WireFormatLite::Int64Size(const RepeatedField<int64>& value) {
   return out;
 }
 
-size_t WireFormatLite::UInt64Size(const RepeatedField<uint64>& value) {
+size_t WireFormatLite::UInt64Size(const RepeatedField<uint64> &value) {
   size_t out = 0;
   const int n = value.size();
   for (int i = 0; i < n; i++) {
@@ -767,7 +794,7 @@ size_t WireFormatLite::UInt64Size(const RepeatedField<uint64>& value) {
   return out;
 }
 
-size_t WireFormatLite::SInt64Size(const RepeatedField<int64>& value) {
+size_t WireFormatLite::SInt64Size(const RepeatedField<int64> &value) {
   size_t out = 0;
   const int n = value.size();
   for (int i = 0; i < n; i++) {
@@ -778,6 +805,6 @@ size_t WireFormatLite::SInt64Size(const RepeatedField<int64>& value) {
 
 #endif
 
-}  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+} // namespace internal
+} // namespace protobuf
+} // namespace google
