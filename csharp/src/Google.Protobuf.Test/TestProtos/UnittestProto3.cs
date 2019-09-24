@@ -228,13 +228,11 @@ namespace Google.Protobuf.TestProtos {
     [pbr::OriginalName("SPARSE_A")] SparseA = 123,
     [pbr::OriginalName("SPARSE_B")] SparseB = 62374,
     [pbr::OriginalName("SPARSE_C")] SparseC = 12589234,
-    [pbr::OriginalName("SPARSE_D")] SparseD = -15,
-    [pbr::OriginalName("SPARSE_E")] SparseE = -53452,
     /// <summary>
     /// In proto3, value 0 must be the first one specified
     /// SPARSE_F = 0;
     /// </summary>
-    [pbr::OriginalName("SPARSE_G")] SparseG = 2,
+    [pbr::OriginalName("SPARSE_E")] SparseE = 2,
   }
 
   /// <summary>
