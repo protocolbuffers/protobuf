@@ -664,7 +664,10 @@ class PROTOBUF_EXPORT ExtensionSet {
   // Grows the flat_capacity_.
   // If flat_capacity_ > kMaximumFlatCapacity, converts to LargeMap.
   void GrowCapacity(size_t minimum_new_capacity);
+  #ifndef __CUDACC__
   static constexpr uint16 kMaximumFlatCapacity = 256;
+  #warning expression not supported in CUDA
+  #endif
   bool is_large() const { return flat_capacity_ > kMaximumFlatCapacity; }
 
   // Removes a key from the ExtensionSet.

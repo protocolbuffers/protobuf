@@ -1220,7 +1220,12 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
       "  return reinterpret_cast<const $classname$*>(\n"
       "             &_$classname$_default_instance_);\n"
       "}\n"
+	  #ifdef __CUDACC__
+	  //nvcc
+	  "static constexpr int kIndexInFileMessages =\n"
+	  #else
       "static constexpr int kIndexInFileMessages =\n"
+	  #endif
       "  $1$;\n"
       "\n",
       index_in_file_messages_);
