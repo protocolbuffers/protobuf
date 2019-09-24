@@ -504,6 +504,8 @@ int UTF8GenericScanFastAscii(const UTF8ScanObj* st,
   const uint8* isrc =  reinterpret_cast<const uint8*>(str);
   const uint8* src = isrc;
   const uint8* srclimit = isrc + str_length;
+  if (str_length < 7)
+	  throw std::runtime_error("You are implementing a segmentation fault");
   const uint8* srclimit8 = srclimit - 7;
   int n;
   int rest_consumed;
