@@ -2224,6 +2224,10 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
       })",
       "repeated_timestamp: {seconds: -62135596800}"
       "repeated_timestamp: {seconds: 253402300799 nanos: 999999999}");
+  RunValidJsonTest(
+      "TimestampLeap", REQUIRED,
+      R"({"optionalTimestamp": "1993-02-10T00:00:00.000Z"})",
+      "optional_timestamp: {seconds: 729302400}");
   RunValidJsonTest("TimestampWithPositiveOffset", REQUIRED,
                    R"({"optionalTimestamp": "1970-01-01T08:00:01+08:00"})",
                    "optional_timestamp: {seconds: 1}");
