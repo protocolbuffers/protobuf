@@ -3640,6 +3640,10 @@ void Generator::GenerateFile(const GeneratorOptions& options,
                              const FileDescriptor* file) const {
   GenerateHeader(options, file, printer);
 
+  printer->Print(
+      "\n"
+      "// @@protoc_insertion_point(file_header)\n");
+
   // Generate "require" statements.
   if ((options.import_style == GeneratorOptions::kImportCommonJs ||
        options.import_style == GeneratorOptions::kImportCommonJsStrict)) {
@@ -3712,6 +3716,10 @@ void Generator::GenerateFile(const GeneratorOptions& options,
       printer->Print(toc->data);
     }
   }
+
+  printer->Print(
+      "\n"
+      "// @@protoc_insertion_point(global_scope)\n");
 }
 
 bool Generator::GenerateAll(const std::vector<const FileDescriptor*>& files,
