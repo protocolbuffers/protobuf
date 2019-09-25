@@ -170,16 +170,12 @@ public abstract class GeneratedMessageLite<
     Protobuf.getInstance().schemaFor(this).makeImmutable(this);
   }
 
-  protected final <
-          MessageType extends GeneratedMessageLite<MessageType, BuilderType>,
-          BuilderType extends GeneratedMessageLite.Builder<MessageType, BuilderType>>
+  protected final
       BuilderType createBuilder() {
     return (BuilderType) dynamicMethod(MethodToInvoke.NEW_BUILDER);
   }
 
-  protected final <
-          MessageType extends GeneratedMessageLite<MessageType, BuilderType>,
-          BuilderType extends GeneratedMessageLite.Builder<MessageType, BuilderType>>
+  protected final
       BuilderType createBuilder(MessageType prototype) {
     return ((BuilderType) createBuilder()).mergeFrom(prototype);
   }
