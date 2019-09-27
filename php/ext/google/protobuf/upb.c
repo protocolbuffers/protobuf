@@ -10124,6 +10124,12 @@ static bool isleap(int year) {
   return (year % 4) == 0 && (year % 100 != 0 || (year % 400) == 0);
 }
 
+/* Helper: returns the number of leap days between 1 and year in the
+ * calendar year. */
+static int leap_count(int year) {
+  return year / 4 - year / 100 + year / 400;
+}
+
 const unsigned short int __mon_yday[2][13] = {
     /* Normal years.  */
     { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365 },
@@ -10134,7 +10140,8 @@ const unsigned short int __mon_yday[2][13] = {
 int64_t epoch(int year, int yday, int hour, int min, int sec) {
   int64_t years = year - EPOCH_YEAR;
 
-  int64_t leap_days = years / 4 - years / 100 + years / 400;
+  /* Calculate the number of leap days between EPOCH_YEAR and year - 1. */
+  int64_t leap_days = leap_count(year - 1) - leap_count(EPOCH_YEAR - 1);
 
   int64_t days = years * 365 + yday + leap_days;
   int64_t hours = days * 24 + hour;
