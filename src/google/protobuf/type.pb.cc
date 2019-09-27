@@ -375,9 +375,9 @@ void Type::unsafe_arena_set_allocated_source_context(
   }
   source_context_ = source_context;
   if (source_context) {
-
+    
   } else {
-
+    
   }
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.Type.source_context)
 }
@@ -570,7 +570,7 @@ failure:
   // string name = 1;
   if (this->name().size() > 0) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
-      this->_internal_name().data(), this->_internal_name().length(),
+      this->_internal_name().data(), static_cast<int>(this->_internal_name().length()),
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.Type.name");
     target = stream->WriteStringMaybeAliased(
@@ -589,7 +589,7 @@ failure:
   for (int i = 0, n = this->_internal_oneofs_size(); i < n; i++) {
     const auto& s = this->_internal_oneofs(i);
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
-      s.data(), s.length(),
+      s.data(), static_cast<int>(s.length()),
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.Type.oneofs");
     target = stream->WriteString(3, s, target);
@@ -998,7 +998,7 @@ failure:
   // string name = 4;
   if (this->name().size() > 0) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
-      this->_internal_name().data(), this->_internal_name().length(),
+      this->_internal_name().data(), static_cast<int>(this->_internal_name().length()),
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.Field.name");
     target = stream->WriteStringMaybeAliased(
@@ -1008,7 +1008,7 @@ failure:
   // string type_url = 6;
   if (this->type_url().size() > 0) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
-      this->_internal_type_url().data(), this->_internal_type_url().length(),
+      this->_internal_type_url().data(), static_cast<int>(this->_internal_type_url().length()),
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.Field.type_url");
     target = stream->WriteStringMaybeAliased(
@@ -1038,7 +1038,7 @@ failure:
   // string json_name = 10;
   if (this->json_name().size() > 0) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
-      this->_internal_json_name().data(), this->_internal_json_name().length(),
+      this->_internal_json_name().data(), static_cast<int>(this->_internal_json_name().length()),
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.Field.json_name");
     target = stream->WriteStringMaybeAliased(
@@ -1048,7 +1048,7 @@ failure:
   // string default_value = 11;
   if (this->default_value().size() > 0) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
-      this->_internal_default_value().data(), this->_internal_default_value().length(),
+      this->_internal_default_value().data(), static_cast<int>(this->_internal_default_value().length()),
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.Field.default_value");
     target = stream->WriteStringMaybeAliased(
@@ -1262,9 +1262,9 @@ void Enum::unsafe_arena_set_allocated_source_context(
   }
   source_context_ = source_context;
   if (source_context) {
-
+    
   } else {
-
+    
   }
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.Enum.source_context)
 }
@@ -1442,7 +1442,7 @@ failure:
   // string name = 1;
   if (this->name().size() > 0) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
-      this->_internal_name().data(), this->_internal_name().length(),
+      this->_internal_name().data(), static_cast<int>(this->_internal_name().length()),
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.Enum.name");
     target = stream->WriteStringMaybeAliased(
@@ -1749,7 +1749,7 @@ failure:
   // string name = 1;
   if (this->name().size() > 0) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
-      this->_internal_name().data(), this->_internal_name().length(),
+      this->_internal_name().data(), static_cast<int>(this->_internal_name().length()),
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.EnumValue.name");
     target = stream->WriteStringMaybeAliased(
@@ -1901,9 +1901,9 @@ void Option::unsafe_arena_set_allocated_value(
   }
   value_ = value;
   if (value) {
-
+    
   } else {
-
+    
   }
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.Option.value)
 }
@@ -2039,7 +2039,7 @@ failure:
   // string name = 1;
   if (this->name().size() > 0) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
-      this->_internal_name().data(), this->_internal_name().length(),
+      this->_internal_name().data(), static_cast<int>(this->_internal_name().length()),
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.Option.name");
     target = stream->WriteStringMaybeAliased(

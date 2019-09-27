@@ -298,7 +298,7 @@ static inline bool HandleString(io::CodedInputStream* input, MessageLite* msg,
   if (kValidateUtf8) {
     // TODO(b/118759213): fail if proto3
     WireFormatLite::VerifyUtf8String(utf8_string_data.data(),
-                                     static_cast<size_t>(utf8_string_data.length()),
+                                     utf8_string_data.length(),
                                      WireFormatLite::PARSE, field_name);
   }
   return true;

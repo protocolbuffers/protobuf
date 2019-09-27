@@ -581,7 +581,7 @@ void PrintUTF8ErrorLog(const char* field_name, const char* operation_str,
              << "bytes. " << stacktrace;
 }
 
-bool WireFormatLite::VerifyUtf8String(const char* data, size_t size, Operation op,
+bool WireFormatLite::VerifyUtf8String(const char* data, int size, Operation op,
                                       const char* field_name) {
   if (!IsStructurallyValidUTF8(data, size)) {
     const char* operation_str = NULL;

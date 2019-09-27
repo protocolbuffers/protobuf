@@ -127,14 +127,14 @@ namespace internal {
 
 // Checks if the buffer contains structurally-valid UTF-8.  Implemented in
 // structurally_valid.cc.
-PROTOBUF_EXPORT bool IsStructurallyValidUTF8(const char* buf, size_t len);
+PROTOBUF_EXPORT bool IsStructurallyValidUTF8(const char* buf, int len);
 
 inline bool IsStructurallyValidUTF8(const std::string& str) {
-  return IsStructurallyValidUTF8(str.data(), str.length());
+  return IsStructurallyValidUTF8(str.data(), static_cast<int>(str.length()));
 }
 
 // Returns initial number of bytes of structually valid UTF-8.
-PROTOBUF_EXPORT size_t UTF8SpnStructurallyValid(const StringPiece& str);
+PROTOBUF_EXPORT int UTF8SpnStructurallyValid(const StringPiece& str);
 
 // Coerce UTF-8 byte string in src_str to be
 // a structurally-valid equal-length string by selectively
