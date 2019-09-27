@@ -123,7 +123,7 @@ composer install
 composer test
 ```
 
-### Test C Exteinsion
+### Test C Extension
 
 After you have finished testing the native php, you can test the c exteniosn:
 ```
