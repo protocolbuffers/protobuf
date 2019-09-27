@@ -2725,6 +2725,9 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
   RunValidJsonTest("TimestampWithNegativeOffset", REQUIRED,
                    R"({"optionalTimestamp": "1969-12-31T16:00:01-08:00"})",
                    "optional_timestamp: {seconds: 1}");
+  RunValidJsonTest("TimestampWithYearAfterLeapYear", REQUIRED,
+                   R"({"optionalTimestamp": "1973-01-01T00:00:00Z"})",
+                   "optional_timestamp: {seconds: 94694400}");
   RunValidJsonTest(
       "TimestampNull", REQUIRED,
       R"({"optionalTimestamp": null})",
