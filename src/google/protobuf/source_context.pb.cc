@@ -181,7 +181,7 @@ failure:
   // string file_name = 1;
   if (this->file_name().size() > 0) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
-      this->_internal_file_name().data(), this->_internal_file_name().length(),
+      this->_internal_file_name().data(), static_cast<int>(this->_internal_file_name().length()),
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.SourceContext.file_name");
     target = stream->WriteStringMaybeAliased(

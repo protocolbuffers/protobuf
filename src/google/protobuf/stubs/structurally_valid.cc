@@ -386,8 +386,8 @@ static inline bool InStateZero(const UTF8ScanObj* st, const uint8* Tbl) {
 // Set number of bytes scanned. Return reason for exiting
 int UTF8GenericScan(const UTF8ScanObj* st,
                     const char * str,
-                    size_t str_length,
-                    size_t* bytes_consumed) {
+                    int str_length,
+                    int* bytes_consumed) {
   *bytes_consumed = 0;
   if (str_length == 0) return kExitOK;
 
@@ -496,8 +496,8 @@ int UTF8GenericScan(const UTF8ScanObj* st,
 
 int UTF8GenericScanFastAscii(const UTF8ScanObj* st,
                     const char * str,
-                    size_t str_length,
-                    size_t* bytes_consumed) {
+                    int str_length,
+                    int* bytes_consumed) {
   *bytes_consumed = 0;
   if (str_length == 0) return kExitOK;
 
@@ -505,8 +505,8 @@ int UTF8GenericScanFastAscii(const UTF8ScanObj* st,
   const uint8* src = isrc;
   const uint8* srclimit = isrc + str_length;
   const uint8* srclimit8 = srclimit - 7;
-  size_t n;
-  size_t rest_consumed;
+  int n;
+  int rest_consumed;
   int exit_reason;
   do {
     // Check initial few bytes one at a time until 8-byte aligned
@@ -553,19 +553,19 @@ InitDetector init_detector;
 
 }  // namespace
 
-bool IsStructurallyValidUTF8(const char* buf, size_t len) {
+bool IsStructurallyValidUTF8(const char* buf, int len) {
   if (!module_initialized_) return true;
 
-  size_t bytes_consumed = 0;
+  int bytes_consumed = 0;
   UTF8GenericScanFastAscii(&utf8acceptnonsurrogates_obj,
                            buf, len, &bytes_consumed);
   return (bytes_consumed == len);
 }
 
-size_t UTF8SpnStructurallyValid(const StringPiece& str) {
+int UTF8SpnStructurallyValid(const StringPiece& str) {
   if (!module_initialized_) return str.size();
 
-  size_t bytes_consumed = 0;
+  int bytes_consumed = 0;
   UTF8GenericScanFastAscii(&utf8acceptnonsurrogates_obj,
                            str.data(), str.size(), &bytes_consumed);
   return bytes_consumed;
@@ -587,8 +587,8 @@ char* UTF8CoerceToStructurallyValid(const StringPiece& src_str,
                                     char* idst,
                                     const char replace_char) {
   const char* isrc = src_str.data();
-  const size_t len = src_str.length();
-  size_t n = UTF8SpnStructurallyValid(src_str);
+  const int len = src_str.length();
+  int n = UTF8SpnStructurallyValid(src_str);
   if (n == len) {               // Normal case -- all is cool, return
     return const_cast<char*>(isrc);
   } else {                      // Unusual case -- copy w/o bad bytes
