@@ -654,8 +654,8 @@ java_library(
     javacopts = select({
         "//:jdk9": ["--add-modules=jdk.unsupported"],
         "//conditions:default": [
-            "-source 7",
-            "-target 7",
+            "-source 8",
+            "-target 8",
         ],
     }),
     visibility = ["//visibility:public"],
@@ -755,8 +755,8 @@ java_library(
     javacopts = select({
         "//:jdk9": ["--add-modules=jdk.unsupported"],
         "//conditions:default": [
-            "-source 7",
-            "-target 7",
+            "-source 8",
+            "-target 8",
         ],
     }),
     visibility = ["//visibility:public"],
@@ -768,8 +768,8 @@ java_library(
         "java/util/src/main/java/com/google/protobuf/util/*.java",
     ]),
     javacopts = [
-        "-source 7",
-        "-target 7",
+        "-source 8",
+        "-target 8",
     ],
     visibility = ["//visibility:public"],
     deps = [
