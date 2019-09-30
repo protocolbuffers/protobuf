@@ -123,9 +123,9 @@ composer install
 composer test
 ```
 
-### Test C Exteinsion
+### Test C Extension
 
-After you have finished testing the native php, you can test the c exteniosn:
+After you have finished testing the native php, you can test the c extension:
 ```
 cd tests
 ./test.sh 5.6 # The php runtime version.
