@@ -255,7 +255,7 @@ void custom_data_init(const zend_class_entry* ce,
                       MessageHeader* intern PHP_PROTO_TSRMLS_DC) {
   Descriptor* desc = UNBOX_HASHTABLE_VALUE(Descriptor, get_ce_obj(ce));
   intern->data = ALLOC_N(uint8_t, desc->layout->size);
-  memset(message_data(intern), 0, desc->layout->size);
+  memcpy(message_data(intern), desc->layout->empty_template, desc->layout->size);
   // We wrap first so that everything in the message object is GC-rooted in
   // case a collection happens during object creation in layout_init().
   intern->descriptor = desc;
@@ -541,6 +541,7 @@ PHP_METHOD(Message, clear) {
   zend_object_std_dtor(&msg->std TSRMLS_CC);
   object_properties_init(&msg->std, ce);
 
+  memcpy(message_data(msg), desc->layout->empty_template, desc->layout->size);
   layout_init(desc->layout, message_data(msg), &msg->std TSRMLS_CC);
 }
 

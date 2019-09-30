@@ -599,6 +599,8 @@ MessageLayout* create_layout(const upb_msgdef* msgdef) {
   // Reserve space for unknown fields.
   off += sizeof(void*);
 
+  layout->empty_template = NULL;
+
   TSRMLS_FETCH();
   Descriptor* desc = UNBOX_HASHTABLE_VALUE(Descriptor, get_def_obj(msgdef));
   layout->fields = ALLOC_N(MessageField, nfields);
@@ -744,10 +746,15 @@ MessageLayout* create_layout(const upb_msgdef* msgdef) {
   layout->size = off;
   layout->msgdef = msgdef;
 
+  // Create the empty message template.
+  layout->empty_template = ALLOC_N(char, layout->size);
+  memset(layout->empty_template, 0, layout->size);
+
   return layout;
 }
 
 void free_layout(MessageLayout* layout) {
+  FREE(layout->empty_template);
   FREE(layout->fields);
   FREE(layout);
 }
@@ -757,21 +764,14 @@ void layout_init(MessageLayout* layout, void* storage,
   int i;
   upb_msg_field_iter it;
 
-  // Init unknown fields
-  memset(storage, 0, sizeof(void*));
-
   for (upb_msg_field_begin(&it, layout->msgdef), i = 0; !upb_msg_field_done(&it);
        upb_msg_field_next(&it), i++) {
     const upb_fielddef* field = upb_msg_iter_field(&it);
     void* memory = slot_memory(layout, storage, field);
-    uint32_t* oneof_case = slot_oneof_case(layout, storage, field);
     int cache_index = slot_property_cache(layout, storage, field);
     CACHED_VALUE* property_ptr = OBJ_PROP(object, cache_index);
 
-    if (upb_fielddef_containingoneof(field)) {
-      memset(memory, 0, NATIVE_SLOT_MAX_SIZE);
-      *oneof_case = ONEOF_CASE_NONE;
-    } else if (is_map_field(field)) {
+    if (is_map_field(field)) {
       zval_ptr_dtor(property_ptr);
 #if PHP_MAJOR_VERSION < 7
       MAKE_STD_ZVAL(*property_ptr);
@@ -788,7 +788,15 @@ void layout_init(MessageLayout* layout, void* storage,
                                        property_ptr PHP_PROTO_TSRMLS_CC);
       DEREF(memory, CACHED_VALUE*) = property_ptr;
     } else {
-      native_slot_init(upb_fielddef_type(field), memory, property_ptr);
+      switch (upb_fielddef_type(field)) {
+        case UPB_TYPE_STRING:
+        case UPB_TYPE_BYTES:
+        case UPB_TYPE_MESSAGE:
+          DEREF(memory, CACHED_VALUE*) = property_ptr;
+          break;
+        default:
+          break;
+      }
     }
   }
 }

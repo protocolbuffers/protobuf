@@ -935,6 +935,7 @@ struct MessageField {
 
 struct MessageLayout {
   const upb_msgdef* msgdef;
+  void* empty_template;  // Can memcpy() onto a layout to clear it.
   MessageField* fields;
   size_t size;
 };
