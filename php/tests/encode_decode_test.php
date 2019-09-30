@@ -5,6 +5,7 @@ require_once('test_util.php');
 
 use Google\Protobuf\RepeatedField;
 use Google\Protobuf\GPBType;
+use Foo\TestStringValue;
 use Foo\TestAny;
 use Foo\TestEnum;
 use Foo\TestMessage;
@@ -165,6 +166,14 @@ class EncodeDecodeTest extends TestBase
         $m = new StringValue();
         $m->setValue("a");
         $this->assertSame("\"a\"", $m->serializeToJsonString());
+    }
+
+    public function testEncodeStringValue()
+    {
+        $m = new TestStringValue(['field' => new StringValue(['value' => ''])]);
+        var_dump($m->getField());
+        var_dump($m->serializeToJsonString());
+        $this->assertSame("{\"field\":\"\"}", $m->serializeToJsonString());
     }
 
     public function testDecodeTopLevelBytesValue()
