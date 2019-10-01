@@ -119,6 +119,17 @@ static void stackenv_uninit(stackenv* se) {
 }
 
 // -----------------------------------------------------------------------------
+// Utility.
+// -----------------------------------------------------------------------------
+
+static CACHED_VALUE* find_cache(MessageHeader* msg, const upb_fielddef* field) {
+  int property_cache_index =
+      msg->descriptor->layout->fields[upb_fielddef_index(field)]
+          .cache_index;
+  return OBJ_PROP(&msg->std, property_cache_index);
+}
+
+// -----------------------------------------------------------------------------
 // Parsing.
 // -----------------------------------------------------------------------------
 
@@ -137,6 +148,15 @@ static const void* newhandlerdata(upb_handlers* h, uint32_t ofs) {
   *hd_ofs = ofs;
   upb_handlers_addcleanup(h, hd_ofs, free);
   return hd_ofs;
+}
+
+static const void* newhandlerfielddata(
+    upb_handlers* h, const upb_fielddef* field) {
+  void** hd_field = (void**)malloc(sizeof(void*));
+  PHP_PROTO_ASSERT(hd_field != NULL);
+  *hd_field = field;
+  upb_handlers_addcleanup(h, hd_field, free);
+  return hd_field;
 }
 
 typedef struct {
@@ -163,16 +183,18 @@ static const void *newunknownfieldshandlerdata(upb_handlers* h) {
 }
 
 typedef struct {
+  const upb_fielddef *fd;
   size_t ofs;
   const upb_msgdef *md;
 } submsg_handlerdata_t;
 
-// Creates a handlerdata that contains offset and submessage type information.
+// Creates a handlerdata that contains field and submessage type information.
 static const void *newsubmsghandlerdata(upb_handlers* h, uint32_t ofs,
                                         const upb_fielddef* f) {
   submsg_handlerdata_t* hd =
       (submsg_handlerdata_t*)malloc(sizeof(submsg_handlerdata_t));
   PHP_PROTO_ASSERT(hd != NULL);
+  hd->fd = f;
   hd->ofs = ofs;
   hd->md = upb_fielddef_msgsubdef(f);
   upb_handlers_addcleanup(h, hd, free);
@@ -322,15 +344,6 @@ static void *empty_php_string(zval* value_ptr) {
 }
 #endif
 #if PHP_MAJOR_VERSION < 7
-static void *empty_php_string2(zval** value_ptr) {
-  SEPARATE_ZVAL_IF_NOT_REF(value_ptr);
-  if (Z_TYPE_PP(value_ptr) == IS_STRING &&
-      !IS_INTERNED(Z_STRVAL_PP(value_ptr))) {
-    FREE(Z_STRVAL_PP(value_ptr));
-  }
-  ZVAL_EMPTY_STRING(*value_ptr);
-  return (void*)(*value_ptr);
-}
 static void new_php_string(zval** value_ptr, const char* str, size_t len) {
   SEPARATE_ZVAL_IF_NOT_REF(value_ptr);
   if (Z_TYPE_PP(value_ptr) == IS_STRING &&
@@ -340,13 +353,6 @@ static void new_php_string(zval** value_ptr, const char* str, size_t len) {
   ZVAL_STRINGL(*value_ptr, str, len, 1);
 }
 #else
-static void *empty_php_string2(zval* value_ptr) {
-  if (Z_TYPE_P(value_ptr) == IS_STRING) {
-    zend_string_release(Z_STR_P(value_ptr));
-  }
-  ZVAL_EMPTY_STRING(value_ptr);
-  return value_ptr;
-}
 static void new_php_string(zval* value_ptr, const char* str, size_t len) {
   if (Z_TYPE_P(value_ptr) == IS_STRING) {
     zend_string_release(Z_STR_P(value_ptr));
@@ -371,6 +377,21 @@ static void* str_handler(void *closure,
 }
 
 static bool str_end_handler(void *closure, const void *hd) {
+  stringfields_parseframe_t* frame = closure;
+  const upb_fielddef **field = hd;
+  MessageHeader* msg = (MessageHeader*)frame->closure;
+
+  CACHED_VALUE* cached = find_cache(msg, *field);
+
+  new_php_string(cached, frame->sink.ptr, frame->sink.len);
+
+  stringsink_uninit(&frame->sink);
+  free(frame);
+
+  return true;
+}
+
+static bool map_str_end_handler(void *closure, const void *hd) {
   stringfields_parseframe_t* frame = closure;
   const size_t *ofs = hd;
   MessageHeader* msg = (MessageHeader*)frame->closure;
@@ -430,26 +451,60 @@ static void *submsg_handler(void *closure, const void *hd) {
   zval* submsg_php;
   MessageHeader* submsg;
 
-  if (Z_TYPE_P(CACHED_PTR_TO_ZVAL_PTR(DEREF(message_data(msg), submsgdata->ofs,
-                                            CACHED_VALUE*))) == IS_NULL) {
+  CACHED_VALUE* cached = find_cache(msg, submsgdata->fd);
+
+  if (Z_TYPE_P(CACHED_PTR_TO_ZVAL_PTR(cached)) == IS_NULL) {
 #if PHP_MAJOR_VERSION < 7
     zval val;
     ZVAL_OBJ(&val, subklass->create_object(subklass TSRMLS_CC));
     MessageHeader* intern = UNBOX(MessageHeader, &val);
     custom_data_init(subklass, intern PHP_PROTO_TSRMLS_CC);
-    REPLACE_ZVAL_VALUE(DEREF(message_data(msg), submsgdata->ofs, zval**),
-                       &val, 1);
+    REPLACE_ZVAL_VALUE(cached, &val, 1);
     zval_dtor(&val);
 #else
     zend_object* obj = subklass->create_object(subklass TSRMLS_CC);
-    ZVAL_OBJ(DEREF(message_data(msg), submsgdata->ofs, zval*), obj);
+    ZVAL_OBJ(cached, obj);
     MessageHeader* intern = UNBOX_HASHTABLE_VALUE(MessageHeader, obj);
     custom_data_init(subklass, intern PHP_PROTO_TSRMLS_CC);
 #endif
   }
 
-  submsg_php = CACHED_PTR_TO_ZVAL_PTR(
-      DEREF(message_data(msg), submsgdata->ofs, CACHED_VALUE*));
+  submsg_php = CACHED_PTR_TO_ZVAL_PTR(cached);
+
+  submsg = UNBOX(MessageHeader, submsg_php);
+  return submsg;
+}
+
+static void *map_submsg_handler(void *closure, const void *hd) {
+  MessageHeader* msg = closure;
+  const submsg_handlerdata_t* submsgdata = hd;
+  TSRMLS_FETCH();
+  Descriptor* subdesc =
+      UNBOX_HASHTABLE_VALUE(Descriptor, get_def_obj((void*)submsgdata->md));
+  zend_class_entry* subklass = subdesc->klass;
+  zval* submsg_php;
+  MessageHeader* submsg;
+
+  CACHED_VALUE* cached =
+      DEREF(message_data(msg), submsgdata->ofs, CACHED_VALUE*);
+
+  if (Z_TYPE_P(CACHED_PTR_TO_ZVAL_PTR(cached)) == IS_NULL) {
+#if PHP_MAJOR_VERSION < 7
+    zval val;
+    ZVAL_OBJ(&val, subklass->create_object(subklass TSRMLS_CC));
+    MessageHeader* intern = UNBOX(MessageHeader, &val);
+    custom_data_init(subklass, intern PHP_PROTO_TSRMLS_CC);
+    REPLACE_ZVAL_VALUE(cached, &val, 1);
+    zval_dtor(&val);
+#else
+    zend_object* obj = subklass->create_object(subklass TSRMLS_CC);
+    ZVAL_OBJ(cached, obj);
+    MessageHeader* intern = UNBOX_HASHTABLE_VALUE(MessageHeader, obj);
+    custom_data_init(subklass, intern PHP_PROTO_TSRMLS_CC);
+#endif
+  }
+
+  submsg_php = CACHED_PTR_TO_ZVAL_PTR(cached);
 
   submsg = UNBOX(MessageHeader, submsg_php);
   return submsg;
@@ -884,7 +939,7 @@ static void add_handlers_for_repeated_field(upb_handlers *h,
 // Set up handlers for a singular field.
 static void add_handlers_for_singular_field(upb_handlers *h,
                                             const upb_fielddef *f,
-                                            size_t offset) {
+                                            size_t offset, bool is_map) {
   switch (upb_fielddef_type(f)) {
 #define SET_HANDLER(utype, ltype)                          \
   case utype: {                                            \
@@ -908,16 +963,29 @@ static void add_handlers_for_singular_field(upb_handlers *h,
     case UPB_TYPE_STRING:
     case UPB_TYPE_BYTES: {
       upb_handlerattr attr = UPB_HANDLERATTR_INIT;
-      attr.handler_data = newhandlerdata(h, offset);
+      if (is_map) {
+        attr.handler_data = newhandlerdata(h, offset);
+      } else {
+        attr.handler_data = newhandlerfielddata(h, f);
+      }
       upb_handlers_setstartstr(h, f, str_handler, &attr);
       upb_handlers_setstring(h, f, stringdata_handler, &attr);
-      upb_handlers_setendstr(h, f, str_end_handler, &attr);
+      if (is_map) {
+        upb_handlers_setendstr(h, f, map_str_end_handler, &attr);
+      } else {
+        upb_handlers_setendstr(h, f, str_end_handler, &attr);
+      }
       break;
     }
     case UPB_TYPE_MESSAGE: {
       upb_handlerattr attr = UPB_HANDLERATTR_INIT;
-      attr.handler_data = newsubmsghandlerdata(h, offset, f);
-      upb_handlers_setstartsubmsg(h, f, submsg_handler, &attr);
+      if (is_map) {
+        attr.handler_data = newsubmsghandlerdata(h, offset, f);
+        upb_handlers_setstartsubmsg(h, f, map_submsg_handler, &attr);
+      } else {
+        attr.handler_data = newsubmsghandlerdata(h, 0, f);
+        upb_handlers_setstartsubmsg(h, f, submsg_handler, &attr);
+      }
       break;
     }
   }
@@ -951,10 +1019,10 @@ static void add_handlers_for_mapentry(const upb_msgdef* msgdef, upb_handlers* h,
 
   add_handlers_for_singular_field(h, key_field,
                                   offsetof(map_parse_frame_data_t,
-                                           key_storage));
+                                           key_storage), true);
   add_handlers_for_singular_field(h, value_field,
                                   offsetof(map_parse_frame_data_t,
-                                           value_storage));
+                                           value_storage), true);
 }
 
 // Set up handlers for a oneof field.
@@ -1063,7 +1131,7 @@ void add_handlers_for_message(const void* closure, upb_handlers* h) {
     } else if (upb_fielddef_isseq(f)) {
       add_handlers_for_repeated_field(h, f, offset);
     } else {
-      add_handlers_for_singular_field(h, f, offset);
+      add_handlers_for_singular_field(h, f, offset, false);
     }
   }
 }
@@ -1102,6 +1170,8 @@ static void putjsonstruct(
 
 static void putstr(zval* str, const upb_fielddef* f, upb_sink sink,
                    bool force_default);
+static void putstr2(MessageHeader* msg, const upb_fielddef* f, upb_sink sink,
+                    bool force_default);
 
 static void putrawstr(const char* str, int len, const upb_fielddef* f,
                       upb_sink sink, bool force_default);
@@ -1259,16 +1329,13 @@ static void putjsonany(MessageHeader* msg, const Descriptor* desc,
   const upb_fielddef* type_field = upb_msgdef_itof(desc->msgdef, UPB_ANY_TYPE);
   const upb_fielddef* value_field = upb_msgdef_itof(desc->msgdef, UPB_ANY_VALUE);
 
-  uint32_t type_url_offset;
   zval* type_url_php_str;
   const upb_msgdef *payload_type = NULL;
 
   upb_sink_startmsg(sink);
 
   /* Handle type url */
-  type_url_offset = desc->layout->fields[upb_fielddef_index(type_field)].offset;
-  type_url_php_str = CACHED_PTR_TO_ZVAL_PTR(
-      DEREF(message_data(msg), type_url_offset, CACHED_VALUE*));
+  type_url_php_str = CACHED_PTR_TO_ZVAL_PTR(find_cache(msg, type_field));
   if (Z_STRLEN_P(type_url_php_str) > 0) {
     putstr(type_url_php_str, type_field, sink, false);
   }
@@ -1294,14 +1361,11 @@ static void putjsonany(MessageHeader* msg, const Descriptor* desc,
   }
 
   {
-    uint32_t value_offset;
     zval* value_php_str;
     const char* value_str;
     size_t value_len;
 
-    value_offset = desc->layout->fields[upb_fielddef_index(value_field)].offset;
-    value_php_str = CACHED_PTR_TO_ZVAL_PTR(
-        DEREF(message_data(msg), value_offset, CACHED_VALUE*));
+    value_php_str = CACHED_PTR_TO_ZVAL_PTR(find_cache(msg, value_field));
     value_str = Z_STRVAL_P(value_php_str);
     value_len = Z_STRLEN_P(value_php_str);
 
@@ -1467,16 +1531,14 @@ static void putrawmsg(MessageHeader* msg, const Descriptor* desc,
         putarray(array, f, sink, depth, is_json TSRMLS_CC);
       }
     } else if (upb_fielddef_isstring(f)) {
-      zval* str = CACHED_PTR_TO_ZVAL_PTR(
-          DEREF(message_data(msg), offset, CACHED_VALUE*));
+      zval* str = CACHED_PTR_TO_ZVAL_PTR(find_cache(msg, f));
       if (containing_oneof || (is_json && is_wrapper_msg(desc->msgdef)) ||
           Z_STRLEN_P(str) > 0) {
         putstr(str, f, sink, is_json && is_wrapper_msg(desc->msgdef));
       }
     } else if (upb_fielddef_issubmsg(f)) {
-      putsubmsg(CACHED_PTR_TO_ZVAL_PTR(
-                    DEREF(message_data(msg), offset, CACHED_VALUE*)),
-                f, sink, depth, is_json TSRMLS_CC);
+      zval* submsg = CACHED_PTR_TO_ZVAL_PTR(find_cache(msg, f));
+      putsubmsg(submsg, f, sink, depth, is_json TSRMLS_CC);
     } else {
       upb_selector_t sel = getsel(f, upb_handlers_getprimitivehandlertype(f));
 
@@ -1890,8 +1952,7 @@ static void discard_unknown_fields(MessageHeader* msg) {
         discard_unknown_fields(submsg);
       }
     } else if (upb_fielddef_issubmsg(f)) {
-      zval* submsg_php = CACHED_PTR_TO_ZVAL_PTR(
-          DEREF(message_data(msg), offset, CACHED_VALUE*));
+      zval* submsg_php = CACHED_PTR_TO_ZVAL_PTR(find_cache(msg, f));
       if (Z_TYPE_P(submsg_php) == IS_NULL) continue;
       MessageHeader* submsg = UNBOX(MessageHeader, submsg_php);
       discard_unknown_fields(submsg);

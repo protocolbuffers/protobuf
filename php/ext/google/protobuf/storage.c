@@ -75,11 +75,9 @@ static bool native_slot_is_default(upb_fieldtype_t type, const void* memory) {
 #undef CASE_TYPE
     case UPB_TYPE_STRING:
     case UPB_TYPE_BYTES:
-      return Z_STRLEN_P(CACHED_PTR_TO_ZVAL_PTR(DEREF(memory, CACHED_VALUE*))) ==
-             0;
+      return Z_STRLEN_P(CACHED_PTR_TO_ZVAL_PTR(memory)) == 0;
     case UPB_TYPE_MESSAGE:
-      return Z_TYPE_P(CACHED_PTR_TO_ZVAL_PTR(DEREF(memory, CACHED_VALUE*))) ==
-             IS_NULL;
+      return Z_TYPE_P(CACHED_PTR_TO_ZVAL_PTR(memory)) == IS_NULL;
     default: return false;
   }
 }
@@ -787,16 +785,6 @@ void layout_init(MessageLayout* layout, void* storage,
       repeated_field_create_with_field(repeated_field_type, field,
                                        property_ptr PHP_PROTO_TSRMLS_CC);
       DEREF(memory, CACHED_VALUE*) = property_ptr;
-    } else {
-      switch (upb_fielddef_type(field)) {
-        case UPB_TYPE_STRING:
-        case UPB_TYPE_BYTES:
-        case UPB_TYPE_MESSAGE:
-          DEREF(memory, CACHED_VALUE*) = property_ptr;
-          break;
-        default:
-          break;
-      }
     }
   }
 }
@@ -817,8 +805,61 @@ static void* value_memory(const upb_fielddef* field, void* memory) {
   return memory;
 }
 
-zval* layout_get(MessageLayout* layout, const void* storage,
+static void* value_memory2(
+    MessageHeader* header, const upb_fielddef* field, void* memory) {
+  switch (upb_fielddef_type(field)) {
+    case UPB_TYPE_STRING:
+    case UPB_TYPE_BYTES:
+    case UPB_TYPE_MESSAGE: {
+      int property_cache_index =
+          header->descriptor->layout->fields[upb_fielddef_index(field)]
+              .cache_index;
+      return OBJ_PROP(&header->std, property_cache_index);
+      break;
+    }
+    default:
+      // No operation
+      break;
+  }
+  return memory;
+}
+
+static void* value_memory3(
+    upb_fieldtype_t type, void* memory, CACHED_VALUE* cache) {
+  switch (type) {
+    case UPB_TYPE_STRING:
+    case UPB_TYPE_BYTES:
+    case UPB_TYPE_MESSAGE:
+      return cache;
+    default:
+      // No operation
+      break;
+  }
+  return memory;
+}
+
+static CACHED_VALUE* find_cache(
+    MessageHeader* header, const upb_fielddef* field) {
+  switch (upb_fielddef_type(field)) {
+    case UPB_TYPE_STRING:
+    case UPB_TYPE_BYTES:
+    case UPB_TYPE_MESSAGE: {
+      int property_cache_index =
+          header->descriptor->layout->fields[upb_fielddef_index(field)]
+              .cache_index;
+      return OBJ_PROP(&header->std, property_cache_index);
+      break;
+    }
+    default:
+      // No operation
+      break;
+  }
+  return NULL;
+}
+
+zval* layout_get(MessageLayout* layout, MessageHeader* header,
                  const upb_fielddef* field, CACHED_VALUE* cache TSRMLS_DC) {
+  const void* storage = message_data(header);
   void* memory = slot_memory(layout, storage, field);
   uint32_t* oneof_case = slot_oneof_case(layout, storage, field);
 
@@ -826,14 +867,17 @@ zval* layout_get(MessageLayout* layout, const void* storage,
     if (*oneof_case != upb_fielddef_number(field)) {
       native_slot_get_default(upb_fielddef_type(field), cache TSRMLS_CC);
     } else {
-      native_slot_get(upb_fielddef_type(field), value_memory(field, memory),
-                      cache TSRMLS_CC);
+      upb_fieldtype_t type = upb_fielddef_type(field);
+      CACHED_VALUE* stored_cache = find_cache(header, field);
+      native_slot_get(
+          type, value_memory3(type, memory, stored_cache), cache TSRMLS_CC);
     }
     return CACHED_PTR_TO_ZVAL_PTR(cache);
   } else if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
     return CACHED_PTR_TO_ZVAL_PTR(cache);
   } else {
-    native_slot_get(upb_fielddef_type(field), value_memory(field, memory),
+    upb_fieldtype_t type = upb_fielddef_type(field);
+    native_slot_get(type, value_memory3(type, memory, cache),
                     cache TSRMLS_CC);
     return CACHED_PTR_TO_ZVAL_PTR(cache);
   }
@@ -924,12 +968,16 @@ void layout_set(MessageLayout* layout, MessageHeader* header,
       Descriptor* desc = UNBOX_HASHTABLE_VALUE(Descriptor, get_def_obj(msg));
       ce = desc->klass;
     }
-    native_slot_set(type, ce, value_memory(field, memory), val TSRMLS_CC);
+    CACHED_VALUE* cache = find_cache(header, field);
+    native_slot_set(
+        type, ce, value_memory3(upb_fielddef_type(field), memory, cache),
+        val TSRMLS_CC);
   }
 }
 
-static void native_slot_merge(const upb_fielddef* field, const void* from_memory,
-                         void* to_memory PHP_PROTO_TSRMLS_DC) {
+static void native_slot_merge(
+    const upb_fielddef* field, const void* from_memory,
+    void* to_memory PHP_PROTO_TSRMLS_DC) {
   upb_fieldtype_t type = upb_fielddef_type(field);
   zend_class_entry* ce = NULL;
   if (!native_slot_is_default(type, from_memory)) {
@@ -951,9 +999,8 @@ static void native_slot_merge(const upb_fielddef* field, const void* from_memory
 #undef CASE_TYPE
       case UPB_TYPE_STRING:
       case UPB_TYPE_BYTES:
-        native_slot_set(type, NULL, value_memory(field, to_memory),
-                        CACHED_PTR_TO_ZVAL_PTR(DEREF(
-                            from_memory, CACHED_VALUE*)) PHP_PROTO_TSRMLS_CC);
+        native_slot_set(type, NULL, to_memory,
+                        CACHED_PTR_TO_ZVAL_PTR(from_memory) PHP_PROTO_TSRMLS_CC);
         break;
       case UPB_TYPE_MESSAGE: {
         const upb_msgdef* msg = upb_fielddef_msgsubdef(field);
@@ -961,22 +1008,21 @@ static void native_slot_merge(const upb_fielddef* field, const void* from_memory
         ce = desc->klass;
         if (native_slot_is_default(type, to_memory)) {
 #if PHP_MAJOR_VERSION < 7
-          SEPARATE_ZVAL_IF_NOT_REF((zval**)value_memory(field, to_memory));
+          SEPARATE_ZVAL_IF_NOT_REF((zval**)to_memory);
 #endif
           CREATE_OBJ_ON_ALLOCATED_ZVAL_PTR(
-              CACHED_PTR_TO_ZVAL_PTR(DEREF(to_memory, CACHED_VALUE*)), ce);
+              CACHED_PTR_TO_ZVAL_PTR(to_memory), ce);
           MessageHeader* submsg =
-              UNBOX(MessageHeader,
-                    CACHED_PTR_TO_ZVAL_PTR(DEREF(to_memory, CACHED_VALUE*)));
+              UNBOX(MessageHeader, CACHED_PTR_TO_ZVAL_PTR(to_memory));
           custom_data_init(ce, submsg PHP_PROTO_TSRMLS_CC);
         }
 
         MessageHeader* sub_from =
             UNBOX(MessageHeader,
-                  CACHED_PTR_TO_ZVAL_PTR(DEREF(from_memory, CACHED_VALUE*)));
+                  CACHED_PTR_TO_ZVAL_PTR(from_memory));
         MessageHeader* sub_to =
             UNBOX(MessageHeader,
-                  CACHED_PTR_TO_ZVAL_PTR(DEREF(to_memory, CACHED_VALUE*)));
+                  CACHED_PTR_TO_ZVAL_PTR(to_memory));
 
         layout_merge(desc->layout, sub_from, sub_to PHP_PROTO_TSRMLS_CC);
         break;
@@ -1137,7 +1183,19 @@ void layout_merge(MessageLayout* layout, MessageHeader* from,
         }
       }
     } else {
-      native_slot_merge(field, from_memory, to_memory PHP_PROTO_TSRMLS_CC);
+      switch (upb_fielddef_type(field)) {
+        case UPB_TYPE_STRING:
+        case UPB_TYPE_BYTES:
+        case UPB_TYPE_MESSAGE: {
+          CACHED_VALUE* from_cache = find_cache(from, field);
+          CACHED_VALUE* to_cache = find_cache(to, field);
+          native_slot_merge(field, from_cache, to_cache PHP_PROTO_TSRMLS_CC);
+          break;
+        }
+        default:
+          native_slot_merge(field, from_memory, to_memory PHP_PROTO_TSRMLS_CC);
+          break;
+      }
     }
   }
 }

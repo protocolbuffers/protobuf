@@ -178,7 +178,7 @@ static zval* message_get_property_internal(zval* object,
       zend_get_property_info(Z_OBJCE_P(object), Z_STR_P(member), true);
 #endif
   return layout_get(
-      self->descriptor->layout, message_data(self), field,
+      self->descriptor->layout, self, field,
       OBJ_PROP(Z_OBJ_P(object), property_info->offset) TSRMLS_CC);
 }
 
@@ -191,7 +191,7 @@ static void message_get_oneof_property_internal(zval* object, zval* member,
     return;
   }
 
-  layout_get(self->descriptor->layout, message_data(self), field,
+  layout_get(self->descriptor->layout, self, field,
              ZVAL_PTR_TO_CACHED_PTR(return_value) TSRMLS_CC);
 }
 
@@ -576,9 +576,9 @@ PHP_METHOD(Message, readOneof) {
   const upb_fielddef* field = upb_msgdef_itof(msg->descriptor->msgdef, index);
 
   // Unlike singular fields, oneof fields share cached property. So we cannot
-  // let lay_get modify the cached property. Instead, we pass in the return
+  // let layout_get modify the cached property. Instead, we pass in the return
   // value directly.
-  layout_get(msg->descriptor->layout, message_data(msg), field,
+  layout_get(msg->descriptor->layout, msg, field,
              ZVAL_PTR_TO_CACHED_PTR(return_value) TSRMLS_CC);
 }
 
