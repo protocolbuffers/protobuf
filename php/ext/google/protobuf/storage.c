@@ -759,20 +759,7 @@ void free_layout(MessageLayout* layout) {
 
 void layout_init(MessageLayout* layout, void* storage,
                  zend_object* object PHP_PROTO_TSRMLS_DC) {
-  int i;
-  upb_msg_field_iter it;
-
-  for (upb_msg_field_begin(&it, layout->msgdef), i = 0; !upb_msg_field_done(&it);
-       upb_msg_field_next(&it), i++) {
-    const upb_fielddef* field = upb_msg_iter_field(&it);
-    void* memory = slot_memory(layout, storage, field);
-    int cache_index = slot_property_cache(layout, storage, field);
-    CACHED_VALUE* property_ptr = OBJ_PROP(object, cache_index);
-
-    if (is_map_field(field)) {
-    } else if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
-    }
-  }
+  memcpy(storage, layout->empty_template, layout->size);
 }
 
 // For non-singular fields, the related memory needs to point to the actual
