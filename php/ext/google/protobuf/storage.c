@@ -771,13 +771,6 @@ void layout_init(MessageLayout* layout, void* storage,
 
     if (is_map_field(field)) {
     } else if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
-      zval_ptr_dtor(property_ptr);
-#if PHP_MAJOR_VERSION < 7
-      MAKE_STD_ZVAL(*property_ptr);
-#endif
-      repeated_field_create_with_field(repeated_field_type, field,
-                                       property_ptr PHP_PROTO_TSRMLS_CC);
-      DEREF(memory, CACHED_VALUE*) = property_ptr;
     }
   }
 }
@@ -859,6 +852,7 @@ zval* layout_get(MessageLayout* layout, MessageHeader* header,
     map_field_insure_created(field, cache PHP_PROTO_TSRMLS_CC);
     return CACHED_PTR_TO_ZVAL_PTR(cache);
   } else if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
+    repeated_field_insure_created(field, cache PHP_PROTO_TSRMLS_CC);
     return CACHED_PTR_TO_ZVAL_PTR(cache);
   } else {
     upb_fieldtype_t type = upb_fielddef_type(field);
@@ -1144,8 +1138,16 @@ void layout_merge(MessageLayout* layout, MessageHeader* from,
       }
 
     } else if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
-      zval* to_array_php = CACHED_PTR_TO_ZVAL_PTR(DEREF(to_memory, CACHED_VALUE*));
-      zval* from_array_php = CACHED_PTR_TO_ZVAL_PTR(DEREF(from_memory, CACHED_VALUE*));
+      CACHED_VALUE* from_cache = find_cache(from, field);
+      CACHED_VALUE* to_cache = find_cache(to, field);
+
+      if (Z_TYPE_P(CACHED_PTR_TO_ZVAL_PTR(from_cache)) == IS_NULL) {
+        continue;
+      }
+      repeated_field_insure_created(field, to_cache PHP_PROTO_TSRMLS_CC);
+
+      zval* to_array_php = CACHED_PTR_TO_ZVAL_PTR(to_cache);
+      zval* from_array_php = CACHED_PTR_TO_ZVAL_PTR(from_cache);
       RepeatedField* to_array = UNBOX(RepeatedField, to_array_php);
       RepeatedField* from_array = UNBOX(RepeatedField, from_array_php);
 

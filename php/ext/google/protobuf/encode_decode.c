@@ -243,8 +243,10 @@ static const void *newoneofhandlerdata(upb_handlers *h,
 // this field (such an instance always exists even in an empty message).
 static void *startseq_handler(void* closure, const void* hd) {
   MessageHeader* msg = closure;
-  const size_t *ofs = hd;
-  return CACHED_PTR_TO_ZVAL_PTR(DEREF(message_data(msg), *ofs, CACHED_VALUE*));
+  const upb_fielddef** field = hd;
+  CACHED_VALUE* cache = find_cache(msg, *field);
+  repeated_field_insure_created(*field, cache PHP_PROTO_TSRMLS_CC);
+  return CACHED_PTR_TO_ZVAL_PTR(cache);
 }
 
 // Handlers that append primitive values to a repeated field.
@@ -900,7 +902,7 @@ static void add_handlers_for_repeated_field(upb_handlers *h,
                                             const upb_fielddef *f,
                                             size_t offset) {
   upb_handlerattr attr = UPB_HANDLERATTR_INIT;
-  attr.handler_data = newhandlerdata(h, offset);
+  attr.handler_data = newhandlerfielddata(h, f);
   upb_handlers_setstartseq(h, f, startseq_handler, &attr);
 
   switch (upb_fielddef_type(f)) {
@@ -1420,17 +1422,21 @@ static void putjsonlistvalue(
 
   upb_sink_startmsg(sink);
 
-  array = CACHED_PTR_TO_ZVAL_PTR(
-      DEREF(message_data(msg), offset, CACHED_VALUE*));
-  intern = UNBOX(RepeatedField, array);
-  ht = PHP_PROTO_HASH_OF(intern->array);
-  size = zend_hash_num_elements(ht);
-
-  if (size == 0) {
+  array = CACHED_PTR_TO_ZVAL_PTR(find_cache(msg, f));
+  if (ZVAL_IS_NULL(array)) {
     upb_sink_startseq(sink, getsel(f, UPB_HANDLER_STARTSEQ), &subsink);
     upb_sink_endseq(sink, getsel(f, UPB_HANDLER_ENDSEQ));
   } else {
-    putarray(array, f, sink, depth, true TSRMLS_CC);
+    intern = UNBOX(RepeatedField, array);
+    ht = PHP_PROTO_HASH_OF(intern->array);
+    size = zend_hash_num_elements(ht);
+
+    if (size == 0) {
+      upb_sink_startseq(sink, getsel(f, UPB_HANDLER_STARTSEQ), &subsink);
+      upb_sink_endseq(sink, getsel(f, UPB_HANDLER_ENDSEQ));
+    } else {
+      putarray(array, f, sink, depth, true TSRMLS_CC);
+    }
   }
 
   upb_sink_endmsg(sink, &status);
@@ -1525,13 +1531,12 @@ static void putrawmsg(MessageHeader* msg, const Descriptor* desc,
 
     if (is_map_field(f)) {
       zval* map = CACHED_PTR_TO_ZVAL_PTR(find_cache(msg, f));
-      if (map != NULL && !ZVAL_IS_NULL(map)) {
+      if (!ZVAL_IS_NULL(map)) {
         putmap(map, f, sink, depth, is_json TSRMLS_CC);
       }
     } else if (upb_fielddef_isseq(f)) {
-      zval* array = CACHED_PTR_TO_ZVAL_PTR(
-          DEREF(message_data(msg), offset, CACHED_VALUE*));
-      if (array != NULL) {
+      zval* array = CACHED_PTR_TO_ZVAL_PTR(find_cache(msg, f));
+      if (!ZVAL_IS_NULL(array)) {
         putarray(array, f, sink, depth, is_json TSRMLS_CC);
       }
     } else if (upb_fielddef_isstring(f)) {
@@ -1933,9 +1938,8 @@ static void discard_unknown_fields(MessageHeader* msg) {
     } else if (upb_fielddef_isseq(f)) {
       if (!upb_fielddef_issubmsg(f)) continue;
 
-      zval* array_php = CACHED_PTR_TO_ZVAL_PTR(
-          DEREF(message_data(msg), offset, CACHED_VALUE*));
-      if (array_php == NULL) continue;
+      zval* array_php = CACHED_PTR_TO_ZVAL_PTR(find_cache(msg, f));
+      if (ZVAL_IS_NULL(array_php)) continue;
 
       int size, i;
       RepeatedField* intern = UNBOX(RepeatedField, array_php);

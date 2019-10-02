@@ -1150,6 +1150,9 @@ PHP_PROTO_WRAP_OBJECT_START(RepeatedFieldIter)
   long position;
 PHP_PROTO_WRAP_OBJECT_END
 
+void repeated_field_insure_created(
+    const upb_fielddef *field,
+    CACHED_VALUE *repeated_field PHP_PROTO_TSRMLS_DC);
 void repeated_field_create_with_field(
     zend_class_entry* ce, const upb_fielddef* field,
     CACHED_VALUE* repeated_field PHP_PROTO_TSRMLS_DC);
