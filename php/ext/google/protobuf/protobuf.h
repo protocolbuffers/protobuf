@@ -475,7 +475,7 @@ static inline int php_proto_zend_hash_get_current_data_ex(HashTable* ht,
 
 #define CACHED_VALUE zval
 #define CACHED_TO_ZVAL_PTR(VALUE) (&VALUE)
-#define CACHED_PTR_TO_ZVAL_PTR(VALUE) (VALUE)
+#define CACHED_PTR_TO_ZVAL_PTR(VALUE) ((CACHED_VALUE*)(VALUE))
 #define ZVAL_PTR_TO_CACHED_PTR(VALUE) (VALUE)
 #define ZVAL_PTR_TO_CACHED_VALUE(VALUE) (*VALUE)
 #define ZVAL_TO_CACHED_VALUE(VALUE) (VALUE)
