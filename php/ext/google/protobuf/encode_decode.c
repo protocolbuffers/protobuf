@@ -512,7 +512,7 @@ static void *map_submsg_handler(void *closure, const void *hd) {
 
 // Handler data for startmap/endmap handlers.
 typedef struct {
-  size_t ofs;
+  const upb_fielddef* fd;
   const upb_msgdef* value_md;
   upb_fieldtype_t key_field_type;
   upb_fieldtype_t value_field_type;
@@ -667,9 +667,10 @@ static void map_slot_value(upb_fieldtype_t type, const void* from,
 static void *startmapentry_handler(void *closure, const void *hd) {
   MessageHeader* msg = closure;
   const map_handlerdata_t* mapdata = hd;
+  CACHED_VALUE* cache = find_cache(msg, mapdata->fd);
   TSRMLS_FETCH();
-  zval* map = CACHED_PTR_TO_ZVAL_PTR(
-      DEREF(message_data(msg), mapdata->ofs, CACHED_VALUE*));
+  map_field_insure_created(mapdata->fd, cache PHP_PROTO_TSRMLS_CC);
+  zval* map = CACHED_PTR_TO_ZVAL_PTR(cache);
 
   map_parse_frame_t* frame = ALLOC(map_parse_frame_t);
   frame->data = ALLOC(map_parse_frame_data_t);
@@ -717,7 +718,7 @@ static bool endmap_handler(void* closure, const void* hd, upb_status* s) {
 // key/value and endmsg handlers. The reason is that there is no easy way to
 // pass the handlerdata down to the sub-message handler setup.
 static map_handlerdata_t* new_map_handlerdata(
-    size_t ofs,
+    const upb_fielddef* field,
     const upb_msgdef* mapentry_def,
     Descriptor* desc) {
   const upb_fielddef* key_field;
@@ -726,7 +727,7 @@ static map_handlerdata_t* new_map_handlerdata(
   map_handlerdata_t* hd =
       (map_handlerdata_t*)malloc(sizeof(map_handlerdata_t));
   PHP_PROTO_ASSERT(hd != NULL);
-  hd->ofs = ofs;
+  hd->fd = field;
   key_field = upb_msgdef_itof(mapentry_def, MAP_KEY_FIELD);
   PHP_PROTO_ASSERT(key_field != NULL);
   hd->key_field_type = upb_fielddef_type(key_field);
@@ -997,7 +998,7 @@ static void add_handlers_for_mapfield(upb_handlers* h,
                                       size_t offset,
                                       Descriptor* desc) {
   const upb_msgdef* map_msgdef = upb_fielddef_msgsubdef(fielddef);
-  map_handlerdata_t* hd = new_map_handlerdata(offset, map_msgdef, desc);
+  map_handlerdata_t* hd = new_map_handlerdata(fielddef, map_msgdef, desc);
   upb_handlerattr attr = UPB_HANDLERATTR_INIT;
 
   upb_handlers_addcleanup(h, hd, free);
@@ -1448,16 +1449,20 @@ static void putjsonstruct(
 
   upb_sink_startmsg(sink);
 
-  map = CACHED_PTR_TO_ZVAL_PTR(
-      DEREF(message_data(msg), offset, CACHED_VALUE*));
-  intern = UNBOX(Map, map);
-  size = upb_strtable_count(&intern->table);
-
-  if (size == 0) {
+  map = CACHED_PTR_TO_ZVAL_PTR(find_cache(msg, f));
+  if (ZVAL_IS_NULL(map)) {
     upb_sink_startseq(sink, getsel(f, UPB_HANDLER_STARTSEQ), &subsink);
     upb_sink_endseq(sink, getsel(f, UPB_HANDLER_ENDSEQ));
   } else {
-    putmap(map, f, sink, depth, true TSRMLS_CC);
+    intern = UNBOX(Map, map);
+    size = upb_strtable_count(&intern->table);
+
+    if (size == 0) {
+      upb_sink_startseq(sink, getsel(f, UPB_HANDLER_STARTSEQ), &subsink);
+      upb_sink_endseq(sink, getsel(f, UPB_HANDLER_ENDSEQ));
+    } else {
+      putmap(map, f, sink, depth, true TSRMLS_CC);
+    }
   }
 
   upb_sink_endmsg(sink, &status);
@@ -1519,9 +1524,8 @@ static void putrawmsg(MessageHeader* msg, const Descriptor* desc,
     }
 
     if (is_map_field(f)) {
-      zval* map = CACHED_PTR_TO_ZVAL_PTR(
-          DEREF(message_data(msg), offset, CACHED_VALUE*));
-      if (map != NULL) {
+      zval* map = CACHED_PTR_TO_ZVAL_PTR(find_cache(msg, f));
+      if (map != NULL && !ZVAL_IS_NULL(map)) {
         putmap(map, f, sink, depth, is_json TSRMLS_CC);
       }
     } else if (upb_fielddef_isseq(f)) {
@@ -1909,9 +1913,8 @@ static void discard_unknown_fields(MessageHeader* msg) {
       value_field = map_field_value(f);
       if (!upb_fielddef_issubmsg(value_field)) continue;
 
-      zval* map_php = CACHED_PTR_TO_ZVAL_PTR(
-          DEREF(message_data(msg), offset, CACHED_VALUE*));
-      if (map_php == NULL) continue;
+      zval* map_php = CACHED_PTR_TO_ZVAL_PTR(find_cache(msg, f));
+      if (ZVAL_IS_NULL(map_php)) continue;
 
       Map* intern = UNBOX(Map, map_php);
       for (map_begin(map_php, &map_it TSRMLS_CC);

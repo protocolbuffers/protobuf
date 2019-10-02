@@ -1090,6 +1090,8 @@ upb_value map_iter_value(MapIter* iter, int* len);
 const upb_fielddef* map_entry_key(const upb_msgdef* msgdef);
 const upb_fielddef* map_entry_value(const upb_msgdef* msgdef);
 
+void map_field_insure_created(const upb_fielddef *field,
+                              CACHED_VALUE *map_field PHP_PROTO_TSRMLS_DC);
 void map_field_create_with_field(const zend_class_entry* ce,
                                  const upb_fielddef* field,
                                  CACHED_VALUE* map_field PHP_PROTO_TSRMLS_DC);

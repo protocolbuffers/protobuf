@@ -770,13 +770,6 @@ void layout_init(MessageLayout* layout, void* storage,
     CACHED_VALUE* property_ptr = OBJ_PROP(object, cache_index);
 
     if (is_map_field(field)) {
-      zval_ptr_dtor(property_ptr);
-#if PHP_MAJOR_VERSION < 7
-      MAKE_STD_ZVAL(*property_ptr);
-#endif
-      map_field_create_with_field(map_field_type, field,
-                                  property_ptr PHP_PROTO_TSRMLS_CC);
-      DEREF(memory, CACHED_VALUE*) = property_ptr;
     } else if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
       zval_ptr_dtor(property_ptr);
 #if PHP_MAJOR_VERSION < 7
@@ -840,21 +833,10 @@ static void* value_memory3(
 
 static CACHED_VALUE* find_cache(
     MessageHeader* header, const upb_fielddef* field) {
-  switch (upb_fielddef_type(field)) {
-    case UPB_TYPE_STRING:
-    case UPB_TYPE_BYTES:
-    case UPB_TYPE_MESSAGE: {
-      int property_cache_index =
-          header->descriptor->layout->fields[upb_fielddef_index(field)]
-              .cache_index;
-      return OBJ_PROP(&header->std, property_cache_index);
-      break;
-    }
-    default:
-      // No operation
-      break;
-  }
-  return NULL;
+  int property_cache_index =
+      header->descriptor->layout->fields[upb_fielddef_index(field)]
+          .cache_index;
+  return OBJ_PROP(&header->std, property_cache_index);
 }
 
 zval* layout_get(MessageLayout* layout, MessageHeader* header,
@@ -872,6 +854,9 @@ zval* layout_get(MessageLayout* layout, MessageHeader* header,
       native_slot_get(
           type, value_memory3(type, memory, stored_cache), cache TSRMLS_CC);
     }
+    return CACHED_PTR_TO_ZVAL_PTR(cache);
+  } else if (is_map_field(field)) {
+    map_field_insure_created(field, cache PHP_PROTO_TSRMLS_CC);
     return CACHED_PTR_TO_ZVAL_PTR(cache);
   } else if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
     return CACHED_PTR_TO_ZVAL_PTR(cache);
@@ -920,8 +905,8 @@ void layout_set(MessageLayout* layout, MessageHeader* header,
     *oneof_case = upb_fielddef_number(field);
   } else if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
     // Works for both repeated and map fields
-    memory = DEREF(memory, void**);
-    zval* property_ptr = CACHED_PTR_TO_ZVAL_PTR((CACHED_VALUE*)memory);
+    CACHED_VALUE* cached = find_cache(header, field);
+    zval* property_ptr = CACHED_PTR_TO_ZVAL_PTR(cached);
 
     if (EXPECTED(property_ptr != val)) {
       zend_class_entry *subce = NULL;
@@ -953,7 +938,7 @@ void layout_set(MessageLayout* layout, MessageHeader* header,
                              &converted_value);
       }
 #if PHP_MAJOR_VERSION < 7
-      REPLACE_ZVAL_VALUE((zval**)memory, &converted_value, 1);
+      REPLACE_ZVAL_VALUE((zval**)cached, &converted_value, 1);
 #else
       php_proto_zval_ptr_dtor(property_ptr);
       ZVAL_ZVAL(property_ptr, &converted_value, 1, 0);
@@ -1123,10 +1108,17 @@ void layout_merge(MessageLayout* layout, MessageHeader* from,
       int size, key_length, value_length;
       MapIter map_it;
 
-      zval* to_map_php =
-          CACHED_PTR_TO_ZVAL_PTR(DEREF(to_memory, CACHED_VALUE*));
-      zval* from_map_php =
-          CACHED_PTR_TO_ZVAL_PTR(DEREF(from_memory, CACHED_VALUE*));
+      CACHED_VALUE* from_cache = find_cache(from, field);
+      CACHED_VALUE* to_cache = find_cache(to, field);
+
+      if (Z_TYPE_P(CACHED_PTR_TO_ZVAL_PTR(from_cache)) == IS_NULL) {
+        continue;
+      }
+      map_field_insure_created(field, to_cache PHP_PROTO_TSRMLS_CC);
+
+      zval* to_map_php = CACHED_PTR_TO_ZVAL_PTR(to_cache);
+      zval* from_map_php = CACHED_PTR_TO_ZVAL_PTR(from_cache);
+
       Map* to_map = UNBOX(Map, to_map_php);
       Map* from_map = UNBOX(Map, from_map_php);
 
