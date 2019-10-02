@@ -1228,7 +1228,7 @@ static void put_optional_value(const void* memory, int len,
       break;
     case UPB_TYPE_MESSAGE: {
 #if PHP_MAJOR_VERSION < 7
-      MessageHeader *submsg = UNBOX(MessageHeader, *(zval**)memory);
+      MessageHeader *submsg = submsg = UNBOX(MessageHeader, *(zval**)memory);
 #else
       MessageHeader *submsg =
           (MessageHeader*)((char*)(*(zend_object**)memory) -
