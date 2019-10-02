@@ -245,6 +245,7 @@ static void *startseq_handler(void* closure, const void* hd) {
   MessageHeader* msg = closure;
   const upb_fielddef** field = hd;
   CACHED_VALUE* cache = find_cache(msg, *field);
+  TSRMLS_FETCH();
   repeated_field_insure_created(*field, cache PHP_PROTO_TSRMLS_CC);
   return CACHED_PTR_TO_ZVAL_PTR(cache);
 }
