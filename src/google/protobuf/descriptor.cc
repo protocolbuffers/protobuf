@@ -7125,7 +7125,7 @@ void DescriptorBuilder::LogUnusedDependency(const FileDescriptorProto& proto,
              unused_dependency_.begin();
          it != unused_dependency_.end(); ++it) {
       // Log warnings for unused imported files.
-      std::string error_message = "Import " + (*it)->name() + " but not used.";
+      std::string error_message = "Import " + (*it)->name() + " is unused.";
       AddWarning((*it)->name(), proto, DescriptorPool::ErrorCollector::IMPORT,
                  error_message);
     }
