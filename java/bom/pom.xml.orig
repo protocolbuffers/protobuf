@@ -4,7 +4,11 @@
 
   <groupId>com.google.protobuf</groupId>
   <artifactId>protobuf-bom</artifactId>
+<<<<<<< HEAD
+  <version>3.10.0-rc-0</version>
+=======
   <version>3.10.0</version>
+>>>>>>> 3.10.x
   <packaging>pom</packaging>
 
   <name>Protocol Buffers [BOM]</name>

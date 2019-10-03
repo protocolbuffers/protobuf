@@ -30,7 +30,11 @@
 
 # Copyright 2007 Google Inc. All Rights Reserved.
 
+<<<<<<< HEAD
+__version__ = '3.10.0rc0'
+=======
 __version__ = '3.10.0'
+>>>>>>> 3.10.x
 
 if __name__ != '__main__':
   try:

@@ -4,7 +4,11 @@
     <Description>C# runtime library for Protocol Buffers - Google's data interchange format.</Description>
     <Copyright>Copyright 2015, Google Inc.</Copyright>
     <AssemblyTitle>Google Protocol Buffers</AssemblyTitle>
+<<<<<<< HEAD
+    <VersionPrefix>3.10.0-rc0</VersionPrefix>
+=======
     <VersionPrefix>3.10.0</VersionPrefix>
+>>>>>>> 3.10.x
     <LangVersion>6</LangVersion>
     <Authors>Google Inc.</Authors>
     <TargetFrameworks>netstandard1.0;netstandard2.0;net45</TargetFrameworks>
