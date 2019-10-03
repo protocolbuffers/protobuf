@@ -46,6 +46,10 @@
   * Change the parameter types of binaryReaderFn in ExtensionFieldBinaryInfo to (number, ?, ?).
   * Create dates.ts and time_of_days.ts to mirror Java versions. This is a near-identical conversion of c.g.type.util.{Dates,TimeOfDays} respectively.
   * Migrate moneys to TypeScript.
+  
+  PHP
+  * Fix incorrect leap day for Timestamp (#6696)
+  * Initialize well known type values (#6713)
 
   Ruby
   * Fix scope resolution for Google namespace (#5878)
@@ -55,6 +59,11 @@
   * Optimized layout_mark() for Ruby (#6521)
   * Optimization for layout_init() (#6547)
   * Fix for GC of Ruby map frames. (#6533)
+  * Fixed leap year handling by reworking upb_mktime() -> upb_timegm(). (#6695)
+  
+  Objective C
+  * Remove OSReadLittle* due to alignment requirements (#6678)
+  * Don't use unions and instead use memcpy for the type swaps. (#6672)
 
   Other
   * Override CocoaPods module to lowercase (#6464)
