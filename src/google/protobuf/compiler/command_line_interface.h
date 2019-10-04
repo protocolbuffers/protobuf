@@ -426,6 +426,11 @@ class PROTOC_EXPORT CommandLineInterface {
   // dependency file will be written. Otherwise, empty.
   std::string dependency_out_name_;
 
+  // If --create_phony_dependencies was given a phony target for each dependency wil be added, causing each to depend on nothing.
+  // These dummy rules work around errors make gives if you remove header files without updating the Makefile to match.
+  // Like -MP in gcc. Should be used with --dependency_out.
+  bool generate_phony_target_set_;
+
   // True if --include_imports was given, meaning that we should
   // write all transitive dependencies to the DescriptorSet.  Otherwise, only
   // the .proto files listed on the command-line are added.
