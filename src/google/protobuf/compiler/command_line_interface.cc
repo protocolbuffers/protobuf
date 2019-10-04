@@ -779,6 +779,7 @@ CommandLineInterface::CommandLineInterface()
       direct_dependencies_explicitly_set_(false),
       direct_dependencies_violation_msg_(
           kDefaultDirectDependenciesViolationMsg),
+      generate_phony_target_set_(false),
       imports_in_descriptor_set_(false),
       source_info_in_descriptor_set_(false),
       disallow_services_(false) {
@@ -1131,6 +1132,7 @@ void CommandLineInterface::Clear() {
 
   mode_ = MODE_COMPILE;
   print_mode_ = PRINT_NONE;
+  generate_phony_target_set_ = false;
   imports_in_descriptor_set_ = false;
   source_info_in_descriptor_set_ = false;
   disallow_services_ = false;
@@ -1347,6 +1349,11 @@ CommandLineInterface::ParseArgumentStatus CommandLineInterface::ParseArguments(
         << std::endl;
     return PARSE_ARGUMENT_FAIL;
   }
+  if (generate_phony_target_set_ && dependency_out_name_.empty()) {
+    std::cerr << "--create_phony_dependencies only makes sense when combined with "
+                 "--dependency_out."
+              << std::endl;
+  }
   if (imports_in_descriptor_set_ && descriptor_set_out_name_.empty()) {
     std::cerr << "--include_imports only makes sense when combined with "
                  "--descriptor_set_out."
@@ -1408,7 +1415,7 @@ bool CommandLineInterface::ParseArgument(const char* arg, std::string* name,
   if (*name == "-h" || *name == "--help" || *name == "--disallow_services" ||
       *name == "--include_imports" || *name == "--include_source_info" ||
       *name == "--version" || *name == "--decode_raw" ||
-      *name == "--print_free_field_numbers") {
+      *name == "--print_free_field_numbers" || "--create_phony_dependencies") {
     // HACK:  These are the only flags that don't take a value.
     //   They probably should not be hard-coded like this but for now it's
     //   not worth doing better.
@@ -1585,6 +1592,13 @@ CommandLineInterface::InterpretArgument(const std::string& name,
       return PARSE_ARGUMENT_FAIL;
     }
     dependency_out_name_ = value;
+
+  } else if (name == "--create_phony_dependencies") {
+    if (generate_phony_target_set_) {
+      std::cerr << name << " may only be passed once." << std::endl;
+      return PARSE_ARGUMENT_FAIL;
+    }
+    generate_phony_target_set_ = true;
 
   } else if (name == "--include_imports") {
     if (imports_in_descriptor_set_) {
@@ -1844,6 +1858,15 @@ void CommandLineInterface::PrintHelpText() {
          "                              expected by make. This writes the "
          "transitive\n"
          "                              set of input file paths to FILE\n"
+         "  --create_phony_dependencies Add a phony target for each dependency, "
+         "causing\n"
+         "                              each to depend on nothing.These dummy rules "
+         "work\n"
+         "                              around errors make gives if you remove header "
+         "files\n"
+         "                              without updating the Makefile to match.\n"
+         "                              Like -MP in gcc. Should be used with "
+         "--dependency_out\n"
          "  --error_format=FORMAT       Set the format in which to print "
          "errors.\n"
          "                              FORMAT may be 'gcc' (the default) or "
@@ -2010,6 +2033,8 @@ bool CommandLineInterface::GenerateDependencyManifestFile(
     }
   }
 
+  std::vector <string> dependencies;
+  if(generate_phony_target_set_) dependencies.reserve(file_set.file_size());
   for (int i = 0; i < file_set.file_size(); i++) {
     const FileDescriptorProto& file = file_set.file(i);
     const std::string& virtual_file = file.name();
@@ -2017,11 +2042,19 @@ bool CommandLineInterface::GenerateDependencyManifestFile(
     if (source_tree &&
         source_tree->VirtualFileToDiskFile(virtual_file, &disk_file)) {
       printer.Print(" $disk_file$", "disk_file", disk_file);
+      if(generate_phony_target_set_) dependencies.push_back(disk_file);
       if (i < file_set.file_size() - 1) printer.Print("\\\n");
     } else {
       std::cerr << "Unable to identify path for file " << virtual_file
                 << std::endl;
       return false;
+    }
+  }
+
+  if(generate_phony_target_set_) {
+    printer.Print("\n \n");
+    for (auto const& dependency : dependencies){
+      printer.Print(" $disk_file$: \n", "disk_file", dependency);
     }
   }
 
