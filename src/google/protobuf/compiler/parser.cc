@@ -643,10 +643,11 @@ bool Parser::Parse(io::Tokenizer* input, FileDescriptorProto* file) {
       // Store the syntax into the file.
       if (file != NULL) file->set_syntax(syntax_identifier_);
     } else if (!stop_after_syntax_identifier_) {
-      GOOGLE_LOG(WARNING) << "No syntax specified for the proto file: " << file->name()
-                   << ". Please use 'syntax = \"proto2\";' "
-                   << "or 'syntax = \"proto3\";' to specify a syntax "
-                   << "version. (Defaulted to proto2 syntax.)";
+      AddWarning(
+          "No syntax specified for the proto file: " + file->name() +
+          ". Please use 'syntax = \"proto2\";' " +
+          "or 'syntax = \"proto3\";' to specify a syntax " +
+          "version. (Defaulted to proto2 syntax.)");
       syntax_identifier_ = "proto2";
     }
 

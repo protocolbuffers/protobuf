@@ -105,6 +105,12 @@ class SourceTreeDescriptorDatabase::SingleFileErrorCollector
     had_errors_ = true;
   }
 
+  void AddWarning(int line, int column, const std::string& message) override {
+    if (multi_file_error_collector_ != NULL) {
+      multi_file_error_collector_->AddWarning(filename_, line, column, message);
+    }
+  }
+
  private:
   std::string filename_;
   MultiFileErrorCollector* multi_file_error_collector_;
