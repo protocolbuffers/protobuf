@@ -1495,6 +1495,9 @@ size_t stringsink_string(void *_sink, const void *hd, const char *ptr,
 #define FREE(object) efree(object)
 #define PEFREE(object) pefree(object, 1)
 
+// Find corresponding zval property for the field.
+CACHED_VALUE* find_zval_property(MessageHeader* msg, const upb_fielddef* field);
+
 // String argument.
 #define STR(str) (str), strlen(str)
 

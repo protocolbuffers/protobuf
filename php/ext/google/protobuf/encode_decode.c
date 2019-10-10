@@ -119,17 +119,6 @@ static void stackenv_uninit(stackenv* se) {
 }
 
 // -----------------------------------------------------------------------------
-// Utility.
-// -----------------------------------------------------------------------------
-
-static CACHED_VALUE* find_cache(MessageHeader* msg, const upb_fielddef* field) {
-  int property_cache_index =
-      msg->descriptor->layout->fields[upb_fielddef_index(field)]
-          .cache_index;
-  return OBJ_PROP(&msg->std, property_cache_index);
-}
-
-// -----------------------------------------------------------------------------
 // Parsing.
 // -----------------------------------------------------------------------------
 
@@ -244,7 +233,7 @@ static const void *newoneofhandlerdata(upb_handlers *h,
 static void *startseq_handler(void* closure, const void* hd) {
   MessageHeader* msg = closure;
   const upb_fielddef** field = hd;
-  CACHED_VALUE* cache = find_cache(msg, *field);
+  CACHED_VALUE* cache = find_zval_property(msg, *field);
   TSRMLS_FETCH();
   repeated_field_insure_created(*field, cache PHP_PROTO_TSRMLS_CC);
   return CACHED_PTR_TO_ZVAL_PTR(cache);
@@ -384,7 +373,7 @@ static bool str_end_handler(void *closure, const void *hd) {
   const upb_fielddef **field = hd;
   MessageHeader* msg = (MessageHeader*)frame->closure;
 
-  CACHED_VALUE* cached = find_cache(msg, *field);
+  CACHED_VALUE* cached = find_zval_property(msg, *field);
 
   new_php_string(cached, frame->sink.ptr, frame->sink.len);
 
@@ -454,7 +443,7 @@ static void *submsg_handler(void *closure, const void *hd) {
   zval* submsg_php;
   MessageHeader* submsg;
 
-  CACHED_VALUE* cached = find_cache(msg, submsgdata->fd);
+  CACHED_VALUE* cached = find_zval_property(msg, submsgdata->fd);
 
   if (Z_TYPE_P(CACHED_PTR_TO_ZVAL_PTR(cached)) == IS_NULL) {
 #if PHP_MAJOR_VERSION < 7
@@ -670,7 +659,7 @@ static void map_slot_value(upb_fieldtype_t type, const void* from,
 static void *startmapentry_handler(void *closure, const void *hd) {
   MessageHeader* msg = closure;
   const map_handlerdata_t* mapdata = hd;
-  CACHED_VALUE* cache = find_cache(msg, mapdata->fd);
+  CACHED_VALUE* cache = find_zval_property(msg, mapdata->fd);
   TSRMLS_FETCH();
   map_field_insure_created(mapdata->fd, cache PHP_PROTO_TSRMLS_CC);
   zval* map = CACHED_PTR_TO_ZVAL_PTR(cache);
@@ -1174,8 +1163,6 @@ static void putjsonstruct(
 
 static void putstr(zval* str, const upb_fielddef* f, upb_sink sink,
                    bool force_default);
-static void putstr2(MessageHeader* msg, const upb_fielddef* f, upb_sink sink,
-                    bool force_default);
 
 static void putrawstr(const char* str, int len, const upb_fielddef* f,
                       upb_sink sink, bool force_default);
@@ -1229,7 +1216,7 @@ static void put_optional_value(const void* memory, int len,
       break;
     case UPB_TYPE_MESSAGE: {
 #if PHP_MAJOR_VERSION < 7
-      MessageHeader *submsg = submsg = UNBOX(MessageHeader, *(zval**)memory);
+      MessageHeader *submsg = UNBOX(MessageHeader, *(zval**)memory);
 #else
       MessageHeader *submsg =
           (MessageHeader*)((char*)(*(zend_object**)memory) -
@@ -1339,7 +1326,7 @@ static void putjsonany(MessageHeader* msg, const Descriptor* desc,
   upb_sink_startmsg(sink);
 
   /* Handle type url */
-  type_url_php_str = CACHED_PTR_TO_ZVAL_PTR(find_cache(msg, type_field));
+  type_url_php_str = CACHED_PTR_TO_ZVAL_PTR(find_zval_property(msg, type_field));
   if (Z_STRLEN_P(type_url_php_str) > 0) {
     putstr(type_url_php_str, type_field, sink, false);
   }
@@ -1369,7 +1356,7 @@ static void putjsonany(MessageHeader* msg, const Descriptor* desc,
     const char* value_str;
     size_t value_len;
 
-    value_php_str = CACHED_PTR_TO_ZVAL_PTR(find_cache(msg, value_field));
+    value_php_str = CACHED_PTR_TO_ZVAL_PTR(find_zval_property(msg, value_field));
     value_str = Z_STRVAL_P(value_php_str);
     value_len = Z_STRLEN_P(value_php_str);
 
@@ -1423,7 +1410,7 @@ static void putjsonlistvalue(
 
   upb_sink_startmsg(sink);
 
-  array = CACHED_PTR_TO_ZVAL_PTR(find_cache(msg, f));
+  array = CACHED_PTR_TO_ZVAL_PTR(find_zval_property(msg, f));
   if (ZVAL_IS_NULL(array)) {
     upb_sink_startseq(sink, getsel(f, UPB_HANDLER_STARTSEQ), &subsink);
     upb_sink_endseq(sink, getsel(f, UPB_HANDLER_ENDSEQ));
@@ -1456,7 +1443,7 @@ static void putjsonstruct(
 
   upb_sink_startmsg(sink);
 
-  map = CACHED_PTR_TO_ZVAL_PTR(find_cache(msg, f));
+  map = CACHED_PTR_TO_ZVAL_PTR(find_zval_property(msg, f));
   if (ZVAL_IS_NULL(map)) {
     upb_sink_startseq(sink, getsel(f, UPB_HANDLER_STARTSEQ), &subsink);
     upb_sink_endseq(sink, getsel(f, UPB_HANDLER_ENDSEQ));
@@ -1531,23 +1518,23 @@ static void putrawmsg(MessageHeader* msg, const Descriptor* desc,
     }
 
     if (is_map_field(f)) {
-      zval* map = CACHED_PTR_TO_ZVAL_PTR(find_cache(msg, f));
+      zval* map = CACHED_PTR_TO_ZVAL_PTR(find_zval_property(msg, f));
       if (!ZVAL_IS_NULL(map)) {
         putmap(map, f, sink, depth, is_json TSRMLS_CC);
       }
     } else if (upb_fielddef_isseq(f)) {
-      zval* array = CACHED_PTR_TO_ZVAL_PTR(find_cache(msg, f));
+      zval* array = CACHED_PTR_TO_ZVAL_PTR(find_zval_property(msg, f));
       if (!ZVAL_IS_NULL(array)) {
         putarray(array, f, sink, depth, is_json TSRMLS_CC);
       }
     } else if (upb_fielddef_isstring(f)) {
-      zval* str = CACHED_PTR_TO_ZVAL_PTR(find_cache(msg, f));
+      zval* str = CACHED_PTR_TO_ZVAL_PTR(find_zval_property(msg, f));
       if (containing_oneof || (is_json && is_wrapper_msg(desc->msgdef)) ||
           Z_STRLEN_P(str) > 0) {
         putstr(str, f, sink, is_json && is_wrapper_msg(desc->msgdef));
       }
     } else if (upb_fielddef_issubmsg(f)) {
-      zval* submsg = CACHED_PTR_TO_ZVAL_PTR(find_cache(msg, f));
+      zval* submsg = CACHED_PTR_TO_ZVAL_PTR(find_zval_property(msg, f));
       putsubmsg(submsg, f, sink, depth, is_json TSRMLS_CC);
     } else {
       upb_selector_t sel = getsel(f, upb_handlers_getprimitivehandlertype(f));
@@ -1919,7 +1906,7 @@ static void discard_unknown_fields(MessageHeader* msg) {
       value_field = map_field_value(f);
       if (!upb_fielddef_issubmsg(value_field)) continue;
 
-      zval* map_php = CACHED_PTR_TO_ZVAL_PTR(find_cache(msg, f));
+      zval* map_php = CACHED_PTR_TO_ZVAL_PTR(find_zval_property(msg, f));
       if (ZVAL_IS_NULL(map_php)) continue;
 
       Map* intern = UNBOX(Map, map_php);
@@ -1939,7 +1926,7 @@ static void discard_unknown_fields(MessageHeader* msg) {
     } else if (upb_fielddef_isseq(f)) {
       if (!upb_fielddef_issubmsg(f)) continue;
 
-      zval* array_php = CACHED_PTR_TO_ZVAL_PTR(find_cache(msg, f));
+      zval* array_php = CACHED_PTR_TO_ZVAL_PTR(find_zval_property(msg, f));
       if (ZVAL_IS_NULL(array_php)) continue;
 
       int size, i;
@@ -1960,7 +1947,7 @@ static void discard_unknown_fields(MessageHeader* msg) {
         discard_unknown_fields(submsg);
       }
     } else if (upb_fielddef_issubmsg(f)) {
-      zval* submsg_php = CACHED_PTR_TO_ZVAL_PTR(find_cache(msg, f));
+      zval* submsg_php = CACHED_PTR_TO_ZVAL_PTR(find_zval_property(msg, f));
       if (Z_TYPE_P(submsg_php) == IS_NULL) continue;
       MessageHeader* submsg = UNBOX(MessageHeader, submsg_php);
       discard_unknown_fields(submsg);
