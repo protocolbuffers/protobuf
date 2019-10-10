@@ -337,7 +337,6 @@ static void new_php_string(zval** value_ptr, const char* str, size_t len) {
       !IS_INTERNED(Z_STRVAL_PP(value_ptr))) {
     FREE(Z_STRVAL_PP(value_ptr));
   }
-  ZVAL_EMPTY_STRING(*value_ptr);
   ZVAL_STRINGL(*value_ptr, str, len, 1);
 }
 #else
@@ -488,7 +487,7 @@ typedef struct map_parse_frame_t map_parse_frame_t;
 
 static void map_slot_init(
     void* memory, upb_fieldtype_t type, zval* cache,
-    const upb_msgdef* value_msg) {
+    const upb_msgdef* value_msg PHP_PROTO_TSRMLS_DC) {
   switch (type) {
     case UPB_TYPE_STRING:
     case UPB_TYPE_BYTES: {
@@ -613,6 +612,7 @@ static void map_slot_value(upb_fieldtype_t type, const void* from,
 static void *startmapentry_handler(void *closure, const void *hd) {
   MessageHeader* msg = closure;
   const map_handlerdata_t* mapdata = hd;
+  TSRMLS_FETCH();
   zval* map = CACHED_PTR_TO_ZVAL_PTR(
       DEREF(message_data(msg), mapdata->ofs, CACHED_VALUE*));
 
@@ -621,9 +621,9 @@ static void *startmapentry_handler(void *closure, const void *hd) {
   frame->map = map;
 
   map_slot_init(&frame->data->key_storage, mapdata->key_field_type,
-                &frame->key_zval, NULL);
+                &frame->key_zval, NULL PHP_PROTO_TSRMLS_CC);
   map_slot_init(&frame->data->value_storage, mapdata->value_field_type,
-                &frame->value_zval, mapdata->value_md);
+                &frame->value_zval, mapdata->value_md PHP_PROTO_TSRMLS_CC);
 
   return frame;
 }
