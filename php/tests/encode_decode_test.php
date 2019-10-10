@@ -1198,4 +1198,36 @@ class EncodeDecodeTest extends TestBase
         $n->mergeFromJsonString($data);
     }
 
+    public function testMessageMapNoValue()
+    {
+        $m = new TestMessage();
+        $m->mergeFromString(hex2bin("CA0700"));
+        $m->serializeToString();
+        $this->assertTrue(true);
+    }
+
+    public function testAnyMapNoValue()
+    {
+        $m = new TestMessage();
+        $m->mergeFromString(hex2bin("D20700"));
+        $m->serializeToString();
+        $this->assertTrue(true);
+    }
+
+    public function testListValueMapNoValue()
+    {
+        $m = new TestMessage();
+        $m->mergeFromString(hex2bin("DA0700"));
+        $m->serializeToString();
+        $this->assertTrue(true);
+    }
+
+    public function testStructMapNoValue()
+    {
+        $m = new TestMessage();
+        $m->mergeFromString(hex2bin("E20700"));
+        $m->serializeToString();
+        $this->assertTrue(true);
+    }
+
 }
