@@ -337,7 +337,6 @@ static void new_php_string(zval** value_ptr, const char* str, size_t len) {
       !IS_INTERNED(Z_STRVAL_PP(value_ptr))) {
     FREE(Z_STRVAL_PP(value_ptr));
   }
-  ZVAL_EMPTY_STRING(*value_ptr);
   ZVAL_STRINGL(*value_ptr, str, len, 1);
 }
 #else
@@ -459,6 +458,7 @@ static void *submsg_handler(void *closure, const void *hd) {
 // Handler data for startmap/endmap handlers.
 typedef struct {
   size_t ofs;
+  const upb_msgdef* value_md;
   upb_fieldtype_t key_field_type;
   upb_fieldtype_t value_field_type;
 } map_handlerdata_t;
@@ -485,7 +485,9 @@ PHP_PROTO_WRAP_OBJECT_START(map_parse_frame_t)
 PHP_PROTO_WRAP_OBJECT_END
 typedef struct map_parse_frame_t map_parse_frame_t;
 
-static void map_slot_init(void* memory, upb_fieldtype_t type, zval* cache) {
+static void map_slot_init(
+    void* memory, upb_fieldtype_t type, zval* cache,
+    const upb_msgdef* value_msg PHP_PROTO_TSRMLS_DC) {
   switch (type) {
     case UPB_TYPE_STRING:
     case UPB_TYPE_BYTES: {
@@ -505,16 +507,24 @@ static void map_slot_init(void* memory, upb_fieldtype_t type, zval* cache) {
       break;
     }
     case UPB_TYPE_MESSAGE: {
+      Descriptor* subdesc =
+          UNBOX_HASHTABLE_VALUE(Descriptor, get_def_obj(value_msg));
+      zend_class_entry* subklass = subdesc->klass;
+      MessageHeader* submsg;
 #if PHP_MAJOR_VERSION < 7
       zval** holder = ALLOC(zval*);
       zval* tmp;
       MAKE_STD_ZVAL(tmp);
-      ZVAL_NULL(tmp);
+      ZVAL_OBJ(tmp, subklass->create_object(subklass TSRMLS_CC));
+      submsg = UNBOX(MessageHeader, tmp);
+      custom_data_init(subklass, submsg PHP_PROTO_TSRMLS_CC);
       *holder = tmp;
       *(zval***)memory = holder;
 #else
       *(zval**)memory = cache;
-      ZVAL_NULL(*(zval**)memory);
+      ZVAL_OBJ(*(zval**)memory, subklass->create_object(subklass TSRMLS_CC));
+      submsg = UNBOX(MessageHeader, cache);
+      custom_data_init(subklass, submsg PHP_PROTO_TSRMLS_CC);
 #endif
       break;
     }
@@ -585,8 +595,10 @@ static void map_slot_value(upb_fieldtype_t type, const void* from,
       zend_string_addref(*(zend_string**)to);
       break;
     case UPB_TYPE_MESSAGE:
-      *(zend_object**)to = Z_OBJ_P(*(zval**)from);
-      GC_ADDREF(*(zend_object**)to);
+      if (!ZVAL_IS_NULL(*(zval**)from)) {
+        *(zend_object**)to = Z_OBJ_P(*(zval**)from);
+        GC_ADDREF(*(zend_object**)to);
+      }
       break;
 #endif
     default:
@@ -600,6 +612,7 @@ static void map_slot_value(upb_fieldtype_t type, const void* from,
 static void *startmapentry_handler(void *closure, const void *hd) {
   MessageHeader* msg = closure;
   const map_handlerdata_t* mapdata = hd;
+  TSRMLS_FETCH();
   zval* map = CACHED_PTR_TO_ZVAL_PTR(
       DEREF(message_data(msg), mapdata->ofs, CACHED_VALUE*));
 
@@ -608,9 +621,9 @@ static void *startmapentry_handler(void *closure, const void *hd) {
   frame->map = map;
 
   map_slot_init(&frame->data->key_storage, mapdata->key_field_type,
-                &frame->key_zval);
+                &frame->key_zval, NULL PHP_PROTO_TSRMLS_CC);
   map_slot_init(&frame->data->value_storage, mapdata->value_field_type,
-                &frame->value_zval);
+                &frame->value_zval, mapdata->value_md PHP_PROTO_TSRMLS_CC);
 
   return frame;
 }
@@ -665,6 +678,11 @@ static map_handlerdata_t* new_map_handlerdata(
   value_field = upb_msgdef_itof(mapentry_def, MAP_VALUE_FIELD);
   PHP_PROTO_ASSERT(value_field != NULL);
   hd->value_field_type = upb_fielddef_type(value_field);
+  if (upb_fielddef_type(value_field) == UPB_TYPE_MESSAGE) {
+    hd->value_md = upb_fielddef_msgsubdef(value_field);
+  } else {
+    hd->value_md = NULL;
+  }
 
   return hd;
 }
