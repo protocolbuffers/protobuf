@@ -153,7 +153,7 @@ class PROTOC_EXPORT CommandLineInterface {
   // The compiler determines the executable name to search for by concatenating
   // exe_name_prefix with the unrecognized flag name, removing "_out".  So, for
   // example, if exe_name_prefix is "protoc-" and you pass the flag --foo_out,
-  // the compiler will try to run the program "protoc-foo".
+  // the compiler will try to run the program "protoc-gen-foo".
   //
   // The plugin program should implement the following usage:
   //   plugin [--out=OUTDIR] [--parameter=PARAMETER] PROTO_FILES < DESCRIPTORS

@@ -108,7 +108,7 @@ Message* MapContainer::GetMutableMessage() {
 }
 
 // Consumes a reference on the Python string object.
-static bool PyStringToSTL(PyObject* py_string, string* stl_string) {
+static bool PyStringToSTL(PyObject* py_string, std::string* stl_string) {
   char *value;
   Py_ssize_t value_len;
 
@@ -155,7 +155,7 @@ static bool PythonToMapKey(PyObject* obj,
       break;
     }
     case FieldDescriptor::CPPTYPE_STRING: {
-      string str;
+      std::string str;
       if (!PyStringToSTL(CheckString(obj, field_descriptor), &str)) {
         return false;
       }
@@ -268,7 +268,7 @@ static bool PythonToMapValueRef(PyObject* obj,
       return true;;
     }
     case FieldDescriptor::CPPTYPE_STRING: {
-      string str;
+      std::string str;
       if (!PyStringToSTL(CheckString(obj, field_descriptor), &str)) {
         return false;
       }

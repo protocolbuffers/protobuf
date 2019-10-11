@@ -68,18 +68,6 @@ using internal::WireFormatLite;
 
 namespace {
 
-template <class T>
-void PrintFieldComment(const Formatter& format, const T* field) {
-  // Print the field's (or oneof's) proto-syntax definition as a comment.
-  // We don't want to print group bodies so we cut off after the first
-  // line.
-  DebugStringOptions options;
-  options.elide_group_body = true;
-  options.elide_oneof_body = true;
-  std::string def = field->DebugStringWithOptions(options);
-  format("// $1$\n", def.substr(0, def.find_first_of('\n')));
-}
-
 void PrintPresenceCheck(const Formatter& format, const FieldDescriptor* field,
                         const std::vector<int>& has_bit_indices,
                         io::Printer* printer, int* cached_has_bit_index) {
@@ -1231,14 +1219,39 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
         "\n");
     if (HasDescriptorMethods(descriptor_->file(), options_)) {
       format(
-          "void PackFrom(const ::$proto_ns$::Message& message);\n"
+          "void PackFrom(const ::$proto_ns$::Message& message) {\n"
+          "  _any_metadata_.PackFrom(message);\n"
+          "}\n"
           "void PackFrom(const ::$proto_ns$::Message& message,\n"
-          "              const std::string& type_url_prefix);\n"
-          "bool UnpackTo(::$proto_ns$::Message* message) const;\n"
+          "              const std::string& type_url_prefix) {\n"
+          "  _any_metadata_.PackFrom(message, type_url_prefix);\n"
+          "}\n"
+          "bool UnpackTo(::$proto_ns$::Message* message) const {\n"
+          "  return _any_metadata_.UnpackTo(message);\n"
+          "}\n"
           "static bool GetAnyFieldDescriptors(\n"
           "    const ::$proto_ns$::Message& message,\n"
           "    const ::$proto_ns$::FieldDescriptor** type_url_field,\n"
-          "    const ::$proto_ns$::FieldDescriptor** value_field);\n");
+          "    const ::$proto_ns$::FieldDescriptor** value_field);\n"
+          "template <typename T, class = typename std::enable_if<"
+          "!std::is_convertible<T, const ::$proto_ns$::Message&>"
+          "::value>::type>\n"
+          "void PackFrom(const T& message) {\n"
+          "  _any_metadata_.PackFrom<T>(message);\n"
+          "}\n"
+          "template <typename T, class = typename std::enable_if<"
+          "!std::is_convertible<T, const ::$proto_ns$::Message&>"
+          "::value>::type>\n"
+          "void PackFrom(const T& message,\n"
+          "              const std::string& type_url_prefix) {\n"
+          "  _any_metadata_.PackFrom<T>(message, type_url_prefix);"
+          "}\n"
+          "template <typename T, class = typename std::enable_if<"
+          "!std::is_convertible<T, const ::$proto_ns$::Message&>"
+          "::value>::type>\n"
+          "bool UnpackTo(T* message) const {\n"
+          "  return _any_metadata_.UnpackTo<T>(message);\n"
+          "}\n");
     } else {
       format(
           "template <typename T>\n"
@@ -1248,7 +1261,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
           "template <typename T>\n"
           "void PackFrom(const T& message,\n"
           "              const std::string& type_url_prefix) {\n"
-          "  _any_metadata_.PackFrom(message, type_url_prefix);"
+          "  _any_metadata_.PackFrom(message, type_url_prefix);\n"
           "}\n"
           "template <typename T>\n"
           "bool UnpackTo(T* message) const {\n"
@@ -2041,18 +2054,6 @@ void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
   if (IsAnyMessage(descriptor_, options_)) {
     if (HasDescriptorMethods(descriptor_->file(), options_)) {
       format(
-          "void $classname$::PackFrom(const ::$proto_ns$::Message& message) {\n"
-          "  _any_metadata_.PackFrom(message);\n"
-          "}\n"
-          "\n"
-          "void $classname$::PackFrom(const ::$proto_ns$::Message& message,\n"
-          "                           const std::string& type_url_prefix) {\n"
-          "  _any_metadata_.PackFrom(message, type_url_prefix);\n"
-          "}\n"
-          "\n"
-          "bool $classname$::UnpackTo(::$proto_ns$::Message* message) const {\n"
-          "  return _any_metadata_.UnpackTo(message);\n"
-          "}\n"
           "bool $classname$::GetAnyFieldDescriptors(\n"
           "    const ::$proto_ns$::Message& message,\n"
           "    const ::$proto_ns$::FieldDescriptor** type_url_field,\n"

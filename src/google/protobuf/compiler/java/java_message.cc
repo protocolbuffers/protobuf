@@ -999,7 +999,8 @@ void ImmutableMessageGenerator::GenerateEqualsAndHashCode(
     io::Printer* printer) {
   printer->Print(
       "@java.lang.Override\n"
-      "public boolean equals(final java.lang.Object obj) {\n");
+      "public boolean equals(");
+  printer->Print("final java.lang.Object obj) {\n");
   printer->Indent();
   printer->Print(
       "if (obj == this) {\n"

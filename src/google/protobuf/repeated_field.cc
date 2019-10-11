@@ -122,6 +122,7 @@ MessageLite* RepeatedPtrFieldBase::AddWeak(const MessageLite* prototype) {
 
 }  // namespace internal
 
+
 template class PROTOBUF_EXPORT_TEMPLATE_DEFINE(PROTOBUF_EXPORT)
     RepeatedField<bool>;
 template class PROTOBUF_EXPORT_TEMPLATE_DEFINE(PROTOBUF_EXPORT)

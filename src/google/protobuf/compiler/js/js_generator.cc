@@ -123,8 +123,8 @@ std::string GetJSFilename(const GeneratorOptions& options,
 
 // Given a filename like foo/bar/baz.proto, returns the root directory
 // path ../../
-string GetRootPath(const std::string& from_filename,
-                   const std::string& to_filename) {
+std::string GetRootPath(const std::string& from_filename,
+                        const std::string& to_filename) {
   if (to_filename.find("google/protobuf") == 0) {
     // Well-known types (.proto files in the google/protobuf directory) are
     // assumed to come from the 'google-protobuf' npm package.  We may want to
@@ -772,7 +772,7 @@ std::string PostProcessFloat(std::string result) {
       exponent = exponent.substr(1);
     }
 
-    return mantissa + "E" + string(exp_neg ? "-" : "") + exponent;
+    return mantissa + "E" + std::string(exp_neg ? "-" : "") + exponent;
   }
 
   // Otherwise, this is an ordinary decimal number. Append ".0" if result has no
@@ -2292,11 +2292,11 @@ void Generator::GenerateFieldValueExpression(io::Printer* printer,
       field->cpp_type() == FieldDescriptor::CPPTYPE_DOUBLE;
   const bool is_boolean = field->cpp_type() == FieldDescriptor::CPPTYPE_BOOL;
 
-  const string with_default = use_default ? "WithDefault" : "";
-  const string default_arg =
+  const std::string with_default = use_default ? "WithDefault" : "";
+  const std::string default_arg =
       use_default ? StrCat(", ", JSFieldDefault(field)) : "";
-  const string cardinality = field->is_repeated() ? "Repeated" : "";
-  string type = "";
+  const std::string cardinality = field->is_repeated() ? "Repeated" : "";
+  std::string type = "";
   if (is_float_or_double) {
     type = "FloatingPoint";
   }
@@ -3362,7 +3362,7 @@ void Generator::GenerateEnum(const GeneratorOptions& options,
       enumdesc->name());
   printer->Annotate("name", enumdesc);
 
-  std::set<string> used_name;
+  std::set<std::string> used_name;
   std::vector<int> valid_index;
   for (int i = 0; i < enumdesc->value_count(); i++) {
     if (enumdesc->options().allow_alias() &&

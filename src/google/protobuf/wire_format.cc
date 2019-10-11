@@ -1111,7 +1111,17 @@ size_t WireFormat::FieldByteSize(const FieldDescriptor* field,
 
   size_t count = 0;
   if (field->is_repeated()) {
-    count = FromIntSize(message_reflection->FieldSize(message, field));
+    if (field->is_map()) {
+      const MapFieldBase* map_field =
+          message_reflection->GetMapData(message, field);
+      if (map_field->IsMapValid()) {
+        count = FromIntSize(map_field->size());
+      } else {
+        count = FromIntSize(message_reflection->FieldSize(message, field));
+      }
+    } else {
+      count = FromIntSize(message_reflection->FieldSize(message, field));
+    }
   } else if (field->containing_type()->options().map_entry()) {
     // Map entry fields always need to be serialized.
     count = 1;

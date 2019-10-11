@@ -73,7 +73,7 @@ class PROTOBUF_EXPORT AnyMetadata {
 
   // Packs a message using the given type URL prefix. The type URL will be
   // constructed by concatenating the message type's full name to the prefix
-  // with an optional "/" separator if the prefix doesn't already end up "/".
+  // with an optional "/" separator if the prefix doesn't already end with "/".
   // For example, both PackFrom(message, "type.googleapis.com") and
   // PackFrom(message, "type.googleapis.com/") yield the same result type
   // URL: "type.googleapis.com/<message_full_name>".
@@ -96,7 +96,7 @@ class PROTOBUF_EXPORT AnyMetadata {
   bool UnpackTo(Message* message) const;
 
   // Checks whether the type specified in the type URL matches the given type.
-  // A type is consdiered matching if its full name matches the full name after
+  // A type is considered matching if its full name matches the full name after
   // the last "/" in the type URL.
   template <typename T>
   bool Is() const {
