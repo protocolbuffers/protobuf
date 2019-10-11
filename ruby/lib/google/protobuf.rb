@@ -56,15 +56,19 @@ else
       module Internal
         def self.infer_package(names)
           # Package is longest common prefix ending in '.', if any.
-          min, max = names.minmax
-          last_common_dot = nil
-          min.size.times { |i|
-            if min[i] != max[i] then break end
-            if min[i] == ?. then last_common_dot = i end
-          }
-          if last_common_dot
-            return min.slice(0, last_common_dot)
+          if not names.empty?
+            min, max = names.minmax
+            last_common_dot = nil
+            min.size.times { |i|
+              if min[i] != max[i] then break end
+              if min[i] == ?. then last_common_dot = i end
+            }
+            if last_common_dot
+              return min.slice(0, last_common_dot)
+            end
           end
+
+          nil
         end
 
         class NestingBuilder
