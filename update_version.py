@@ -24,7 +24,7 @@ Example:
   exit(1)
 
 NEW_VERSION = sys.argv[1]
-NEW_VERSION_INFO = NEW_VERSION.split('.')
+NEW_VERSION_INFO = [int(x) for x in NEW_VERSION.split('.')]
 if len(NEW_VERSION_INFO) != 3:
   print """
 [ERROR] Version must be in the format <MAJOR>.<MINOR>.<MICRO>
@@ -34,7 +34,7 @@ Example:
 """
   exit(1)
 
-RC_VERSION = 0
+RC_VERSION = -1
 if len(sys.argv) > 2:
   RC_VERSION = int(sys.argv[2])
 
@@ -55,7 +55,7 @@ def ReplaceText(elem, text):
 
 
 def GetFullVersion(rc_suffix = '-rc-'):
-  if RC_VERSION == 0:
+  if RC_VERSION < 0:
     return NEW_VERSION
   else:
     return '%s%s%s' % (NEW_VERSION, rc_suffix, RC_VERSION)
@@ -99,7 +99,7 @@ def UpdateConfigure():
 
 
 def UpdateCpp():
-  cpp_version = '%s00%s00%s' % (
+  cpp_version = '%d%03d%03d' % (
     NEW_VERSION_INFO[0], NEW_VERSION_INFO[1], NEW_VERSION_INFO[2])
   def RewriteCommon(line):
     line = re.sub(
@@ -110,7 +110,7 @@ def UpdateCpp():
       r'^#define PROTOBUF_VERSION .*$',
       '#define PROTOBUF_VERSION %s' % cpp_version,
       line)
-    if NEW_VERSION_INFO[2] == '0':
+    if NEW_VERSION_INFO[2] == 0:
       line = re.sub(
         r'^#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC .*$',
         '#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC %s' % cpp_version,
@@ -128,12 +128,13 @@ def UpdateCpp():
         'static const int kMinHeaderVersionForProtoc = %s;' % cpp_version,
         line)
     return line
+  
   def RewritePortDef(line):
     line = re.sub(
       r'^#define PROTOBUF_VERSION .*$',
       '#define PROTOBUF_VERSION %s' % cpp_version,
       line)
-    if NEW_VERSION_INFO[2] == '0':
+    if NEW_VERSION_INFO[2] == 0:
       line = re.sub(
         r'^#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC .*$',
         '#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC %s' % cpp_version,
@@ -148,8 +149,31 @@ def UpdateCpp():
         line)
     return line
 
+  def RewritePbH(line):
+    line = re.sub(
+        r'^#if PROTOBUF_VERSION < .*$',
+        '#if PROTOBUF_VERSION < %s' % cpp_version,
+        line)
+    line = re.sub(
+        r'^#if .* < PROTOBUF_MIN_PROTOC_VERSION$',
+        '#if %s < PROTOBUF_MIN_PROTOC_VERSION' % cpp_version,
+        line)
+    return line
+    
   RewriteTextFile('src/google/protobuf/stubs/common.h', RewriteCommon)
   RewriteTextFile('src/google/protobuf/port_def.inc', RewritePortDef)
+  RewriteTextFile('src/google/protobuf/any.pb.h', RewritePbH)
+  RewriteTextFile('src/google/protobuf/api.pb.h', RewritePbH)
+  RewriteTextFile('src/google/protobuf/descriptor.pb.h', RewritePbH)
+  RewriteTextFile('src/google/protobuf/duration.pb.h', RewritePbH)
+  RewriteTextFile('src/google/protobuf/empty.pb.h', RewritePbH)
+  RewriteTextFile('src/google/protobuf/field_mask.pb.h', RewritePbH)
+  RewriteTextFile('src/google/protobuf/source_context.pb.h', RewritePbH)
+  RewriteTextFile('src/google/protobuf/struct.pb.h', RewritePbH)
+  RewriteTextFile('src/google/protobuf/timestamp.pb.h', RewritePbH)
+  RewriteTextFile('src/google/protobuf/type.pb.h', RewritePbH)
+  RewriteTextFile('src/google/protobuf/wrappers.pb.h', RewritePbH)
+  RewriteTextFile('src/google/protobuf/compiler/plugin.pb.h', RewritePbH)
 
 
 def UpdateCsharp():
@@ -204,7 +228,7 @@ def UpdateJavaScript():
 
 def UpdateMakefile():
   protobuf_version_offset = 11
-  expected_major_version = '3'
+  expected_major_version = 3
   if NEW_VERSION_INFO[0] != expected_major_version:
     print """[ERROR] Major protobuf version has changed. Please update
 update_version.py to readjust the protobuf_version_offset and
@@ -213,8 +237,8 @@ always increasing.
     """
     exit(1)
 
-  protobuf_version_info = '%s:%s:0' % (
-    int(NEW_VERSION_INFO[1]) + protobuf_version_offset, NEW_VERSION_INFO[2])
+  protobuf_version_info = '%d:%d:0' % (
+    NEW_VERSION_INFO[1] + protobuf_version_offset, NEW_VERSION_INFO[2])
   RewriteTextFile('src/Makefile.am',
     lambda line : re.sub(
       r'^PROTOBUF_VERSION = .*$',
@@ -256,31 +280,32 @@ def UpdatePhp():
     ReplaceText(Find(version, 'api'), NEW_VERSION)
     stability = Find(root, 'stability')
     ReplaceText(Find(stability, 'release'),
-        'stable' if RC_VERSION == 0 else 'beta')
-    ReplaceText(Find(stability, 'api'), 'stable' if RC_VERSION == 0 else 'beta')
+        'stable' if RC_VERSION < 0 else 'beta')
+    ReplaceText(Find(stability, 'api'), 'stable' if RC_VERSION < 0 else 'beta')
     changelog = Find(root, 'changelog')
     for old_version in changelog.getElementsByTagName('version'):
       if Find(old_version, 'release').firstChild.nodeValue == NEW_VERSION:
         print ('[WARNING] Version %s already exists in the change log.'
           % NEW_VERSION)
         return
-    changelog.appendChild(document.createTextNode(' '))
-    release = CreateNode('release', 2, [
-        CreateNode('version', 3, [
-          FindAndClone(version, 'release'),
-          FindAndClone(version, 'api')
-        ]),
-        CreateNode('stability', 3, [
-          FindAndClone(stability, 'release'),
-          FindAndClone(stability, 'api')
-        ]),
-        FindAndClone(root, 'date'),
-        FindAndClone(root, 'time'),
-        FindAndClone(root, 'license'),
-        FindAndClone(root, 'notes')
-      ])
-    changelog.appendChild(release)
-    changelog.appendChild(document.createTextNode('\n '))
+    if RC_VERSION != 0:
+      changelog.appendChild(document.createTextNode(' '))
+      release = CreateNode('release', 2, [
+          CreateNode('version', 3, [
+            FindAndClone(version, 'release'),
+            FindAndClone(version, 'api')
+          ]),
+          CreateNode('stability', 3, [
+            FindAndClone(stability, 'release'),
+            FindAndClone(stability, 'api')
+          ]),
+          FindAndClone(root, 'date'),
+          FindAndClone(root, 'time'),
+          FindAndClone(root, 'license'),
+          FindAndClone(root, 'notes')
+        ])
+      changelog.appendChild(release)
+      changelog.appendChild(document.createTextNode('\n '))
   RewriteXml('php/ext/google/protobuf/package.xml', Callback)
   RewriteTextFile('php/ext/google/protobuf/protobuf.h',
     lambda line : re.sub(

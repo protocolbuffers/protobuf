@@ -952,7 +952,7 @@ TEST_F(CommandLineInterfaceTest, ReportsTransitiveMisingImports_LeafFirst) {
   Run("protocol_compiler --test_out=$tmpdir "
       "--proto_path=$tmpdir bar.proto foo.proto");
   ExpectWarningSubstring(
-      "bar.proto:2:1: warning: Import unused.proto but not used.");
+      "bar.proto:2:1: warning: Import unused.proto is unused.");
 }
 
 TEST_F(CommandLineInterfaceTest, ReportsTransitiveMisingImports_LeafLast) {
@@ -973,7 +973,7 @@ TEST_F(CommandLineInterfaceTest, ReportsTransitiveMisingImports_LeafLast) {
   Run("protocol_compiler --test_out=$tmpdir "
       "--proto_path=$tmpdir foo.proto bar.proto");
   ExpectWarningSubstring(
-      "bar.proto:2:1: warning: Import unused.proto but not used.");
+      "bar.proto:2:1: warning: Import unused.proto is unused.");
 }
 
 TEST_F(CommandLineInterfaceTest, CreateDirectory) {

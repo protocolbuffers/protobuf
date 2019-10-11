@@ -1018,7 +1018,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
         format(
             "  static bool ValidateKey(std::string* s) {\n"
             "    return ::$proto_ns$::internal::WireFormatLite::"
-            "VerifyUtf8String(s->data(), s->size(), "
+            "VerifyUtf8String(s->data(), static_cast<int>(s->size()), "
             "::$proto_ns$::internal::WireFormatLite::PARSE, \"$1$\");\n"
             " }\n",
             descriptor_->field(0)->full_name());
@@ -1028,7 +1028,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
             "  static bool ValidateKey(std::string* s) {\n"
             "#ifndef NDEBUG\n"
             "    ::$proto_ns$::internal::WireFormatLite::VerifyUtf8String(\n"
-            "       s->data(), s->size(), ::$proto_ns$::internal::"
+            "       s->data(), static_cast<int>(s->size()), ::$proto_ns$::internal::"
             "WireFormatLite::PARSE, \"$1$\");\n"
             "#endif\n"
             "    return true;\n"
@@ -1044,7 +1044,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
         format(
             "  static bool ValidateValue(std::string* s) {\n"
             "    return ::$proto_ns$::internal::WireFormatLite::"
-            "VerifyUtf8String(s->data(), s->size(), "
+            "VerifyUtf8String(s->data(), static_cast<int>(s->size()), "
             "::$proto_ns$::internal::WireFormatLite::PARSE, \"$1$\");\n"
             " }\n",
             descriptor_->field(1)->full_name());
@@ -1054,7 +1054,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
             "  static bool ValidateValue(std::string* s) {\n"
             "#ifndef NDEBUG\n"
             "    ::$proto_ns$::internal::WireFormatLite::VerifyUtf8String(\n"
-            "       s->data(), s->size(), ::$proto_ns$::internal::"
+            "       s->data(), static_cast<int>(s->size()), ::$proto_ns$::internal::"
             "WireFormatLite::PARSE, \"$1$\");\n"
             "#endif\n"
             "    return true;\n"
