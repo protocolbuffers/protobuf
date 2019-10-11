@@ -83,18 +83,20 @@ public class ExtensionRegistryLite {
   // Visible for testing.
   static final String EXTENSION_CLASS_NAME = "com.google.protobuf.Extension";
 
-  /* @Nullable */
-  static Class<?> resolveExtensionClass() {
-    try {
-      return Class.forName(EXTENSION_CLASS_NAME);
-    } catch (ClassNotFoundException e) {
-      // See comment in ExtensionRegistryFactory on the potential expense of this.
-      return null;
+  private static class ExtensionClassHolder {
+    /* @Nullable */
+    static final Class<?> INSTANCE = resolveExtensionClass();
+
+    /* @Nullable */
+    static Class<?> resolveExtensionClass() {
+      try {
+        return Class.forName(EXTENSION_CLASS_NAME);
+      } catch (ClassNotFoundException e) {
+        // See comment in ExtensionRegistryFactory on the potential expense of this.
+        return null;
+      }
     }
   }
-
-  /* @Nullable */
-  private static final Class<?> extensionClass = resolveExtensionClass();
 
   public static boolean isEagerlyParseMessageSets() {
     return eagerlyParseMessageSets;
@@ -175,7 +177,7 @@ public class ExtensionRegistryLite {
     }
     if (doFullRuntimeInheritanceCheck && ExtensionRegistryFactory.isFullRegistry(this)) {
       try {
-        this.getClass().getMethod("add", extensionClass).invoke(this, extension);
+        this.getClass().getMethod("add", ExtensionClassHolder.INSTANCE).invoke(this, extension);
       } catch (Exception e) {
         throw new IllegalArgumentException(
             String.format("Could not invoke ExtensionRegistry#add for %s", extension), e);

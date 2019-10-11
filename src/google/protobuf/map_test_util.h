@@ -73,6 +73,7 @@ class MapReflectionTester {
                                     const std::string& field_name, int index);
   MapIterator MapBegin(Message* message, const std::string& field_name);
   MapIterator MapEnd(Message* message, const std::string& field_name);
+  int MapSize(const Message& message, const std::string& field_name);
 
  private:
   const FieldDescriptor* F(const std::string& name);
@@ -656,6 +657,12 @@ inline MapIterator MapReflectionTester::MapEnd(Message* message,
                                                const std::string& field_name) {
   const Reflection* reflection = message->GetReflection();
   return reflection->MapEnd(message, F(field_name));
+}
+
+inline int MapReflectionTester::MapSize(const Message& message,
+                                        const std::string& field_name) {
+  const Reflection* reflection = message.GetReflection();
+  return reflection->MapSize(message, F(field_name));
 }
 
 inline void MapReflectionTester::ClearMapFieldsViaReflection(Message* message) {

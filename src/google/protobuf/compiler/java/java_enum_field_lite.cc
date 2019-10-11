@@ -116,6 +116,10 @@ void SetEnumVariables(const FieldDescriptor* descriptor, int messageBitIndex,
   } else {
     (*variables)["unknown"] = (*variables)["default"];
   }
+
+  // We use `x.getClass()` as a null check because it generates less bytecode
+  // than an `if (x == null) { throw ... }` statement.
+  (*variables)["null_check"] = "value.getClass();\n";
 }
 
 }  // namespace
@@ -200,11 +204,8 @@ void ImmutableEnumFieldLiteGenerator::GenerateMembers(
   WriteFieldAccessorDocComment(printer, descriptor_, SETTER);
   printer->Print(variables_,
                  "private void set$capitalized_name$($type$ value) {\n"
-                 "  if (value == null) {\n"
-                 "    throw new NullPointerException();\n"
-                 "  }\n"
-                 "  $set_has_field_bit_message$\n"
                  "  $name$_ = value.getNumber();\n"
+                 "  $set_has_field_bit_message$\n"
                  "}\n");
   WriteFieldAccessorDocComment(printer, descriptor_, CLEARER);
   printer->Print(variables_,
@@ -366,11 +367,8 @@ void ImmutableEnumOneofFieldLiteGenerator::GenerateMembers(
   WriteFieldAccessorDocComment(printer, descriptor_, SETTER);
   printer->Print(variables_,
                  "private void set$capitalized_name$($type$ value) {\n"
-                 "  if (value == null) {\n"
-                 "    throw new NullPointerException();\n"
-                 "  }\n"
-                 "  $set_oneof_case_message$;\n"
                  "  $oneof_name$_ = value.getNumber();\n"
+                 "  $set_oneof_case_message$;\n"
                  "}\n");
   WriteFieldAccessorDocComment(printer, descriptor_, CLEARER);
   printer->Print(variables_,
@@ -583,18 +581,14 @@ void RepeatedImmutableEnumFieldLiteGenerator::GenerateMembers(
   printer->Print(variables_,
                  "private void set$capitalized_name$(\n"
                  "    int index, $type$ value) {\n"
-                 "  if (value == null) {\n"
-                 "    throw new NullPointerException();\n"
-                 "  }\n"
+                 "  $null_check$"
                  "  ensure$capitalized_name$IsMutable();\n"
                  "  $name$_.setInt(index, value.getNumber());\n"
                  "}\n");
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_ADDER);
   printer->Print(variables_,
                  "private void add$capitalized_name$($type$ value) {\n"
-                 "  if (value == null) {\n"
-                 "    throw new NullPointerException();\n"
-                 "  }\n"
+                 "  $null_check$"
                  "  ensure$capitalized_name$IsMutable();\n"
                  "  $name$_.addInt(value.getNumber());\n"
                  "}\n");

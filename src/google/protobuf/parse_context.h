@@ -218,12 +218,12 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     overall_limit_ = 0;
     if (flat.size() > kSlopBytes) {
       limit_ = kSlopBytes;
-      limit_end_ = buffer_end_ = flat.end() - kSlopBytes;
+      limit_end_ = buffer_end_ = flat.data() + flat.size() - kSlopBytes;
       next_chunk_ = buffer_;
       if (aliasing_ == kOnPatch) aliasing_ = kNoDelta;
-      return flat.begin();
+      return flat.data();
     } else {
-      std::memcpy(buffer_, flat.begin(), flat.size());
+      std::memcpy(buffer_, flat.data(), flat.size());
       limit_ = 0;
       limit_end_ = buffer_end_ = buffer_ + flat.size();
       next_chunk_ = nullptr;

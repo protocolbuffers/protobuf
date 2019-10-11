@@ -263,8 +263,8 @@ void AddDefaultProtoPaths(
   }
 }
 
-string PluginName(const std::string& plugin_prefix,
-                  const std::string& directive) {
+std::string PluginName(const std::string& plugin_prefix,
+                       const std::string& directive) {
   // Assuming the directive starts with "--" and ends with "_out" or "_opt",
   // strip the "--" and "_out/_opt" and add the plugin prefix.
   return plugin_prefix + "gen-" + directive.substr(2, directive.size() - 6);
