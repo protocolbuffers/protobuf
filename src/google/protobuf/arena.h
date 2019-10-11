@@ -69,7 +69,6 @@ struct ArenaOptions;  // defined below
 }  // namespace protobuf
 }  // namespace google
 
-
 namespace google {
 namespace protobuf {
 

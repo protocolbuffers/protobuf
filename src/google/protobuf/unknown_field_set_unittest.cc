@@ -36,17 +36,18 @@
 // tests handling of unknown fields throughout the system.
 
 #include <google/protobuf/unknown_field_set.h>
+
+#include <google/protobuf/stubs/callback.h>
+#include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/test_util.h>
 #include <google/protobuf/unittest.pb.h>
+#include <google/protobuf/unittest_lite.pb.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/stubs/mutex.h>
 #include <google/protobuf/wire_format.h>
-
-#include <google/protobuf/stubs/callback.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 #include <google/protobuf/stubs/stl_util.h>
@@ -304,6 +305,42 @@ TEST_F(UnknownFieldSetTest, MergeFrom) {
       "2: 3\n"
       "3: 4\n",
       destination.DebugString());
+}
+
+TEST_F(UnknownFieldSetTest, MergeFromMessage) {
+  unittest::TestEmptyMessage source, destination;
+
+  destination.mutable_unknown_fields()->AddVarint(1, 1);
+  destination.mutable_unknown_fields()->AddVarint(3, 2);
+  source.mutable_unknown_fields()->AddVarint(2, 3);
+  source.mutable_unknown_fields()->AddVarint(3, 4);
+
+  destination.mutable_unknown_fields()->MergeFromMessage(source);
+
+  EXPECT_EQ(
+      // Note:  The ordering of fields here depends on the ordering of adds
+      //   and merging, above.
+      "1: 1\n"
+      "3: 2\n"
+      "2: 3\n"
+      "3: 4\n",
+      destination.DebugString());
+}
+
+TEST_F(UnknownFieldSetTest, MergeFromMessageLite) {
+  unittest::TestAllTypesLite source;
+  unittest::TestEmptyMessageLite destination;
+
+  source.set_optional_fixed32(42);
+  destination.ParseFromString(source.SerializeAsString());
+
+  UnknownFieldSet unknown_field_set;
+  EXPECT_TRUE(unknown_field_set.MergeFromMessage(destination));
+  EXPECT_EQ(unknown_field_set.field_count(), 1);
+
+  const UnknownField& unknown_field = unknown_field_set.field(0);
+  EXPECT_EQ(unknown_field.number(), 7);
+  EXPECT_EQ(unknown_field.fixed32(), 42);
 }
 
 

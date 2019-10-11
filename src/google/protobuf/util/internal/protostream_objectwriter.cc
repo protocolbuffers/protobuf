@@ -608,6 +608,12 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartObject(
     return this;
   }
 
+  // Legacy JSON map is a list of key value pairs. Starts a map entry object.
+  if (options_.use_legacy_json_map_format && name.empty()) {
+    Push(name, IsAny(*field) ? Item::ANY : Item::MESSAGE, false, false);
+    return this;
+  }
+
   if (IsMap(*field)) {
     // Begin a map. A map is triggered by a StartObject() call if the current
     // field has a map type.
@@ -843,6 +849,10 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartList(
   }
 
   if (IsMap(*field)) {
+    if (options_.use_legacy_json_map_format) {
+      Push(name, Item::MESSAGE, false, true);
+      return this;
+    }
     InvalidValue("Map", StrCat("Cannot bind a list to map for field '",
                                      name, "'."));
     IncrementInvalidDepth();

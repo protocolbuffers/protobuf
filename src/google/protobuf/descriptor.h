@@ -1813,6 +1813,12 @@ class PROTOBUF_EXPORT DescriptorPool {
   bool TryFindExtensionInFallbackDatabase(const Descriptor* containing_type,
                                           int field_number) const;
 
+  // This internal find extension method only check with its table and underlay
+  // descriptor_pool's table. It does not check with fallback DB and no
+  // additional proto file will be build in this method.
+  const FieldDescriptor* InternalFindExtensionByNumberNoLock(
+      const Descriptor* extendee, int number) const;
+
   // Like BuildFile() but called internally when the file has been loaded from
   // fallback_database_.  Declared const because it is called by (semantically)
   // const methods.

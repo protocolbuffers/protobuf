@@ -224,7 +224,7 @@ TEST_F(ParserTest, WarnIfSyntaxIdentifierOmmitted) {
   CaptureTestStderr();
   EXPECT_TRUE(parser_->Parse(input_.get(), &file));
   EXPECT_TRUE(GetCapturedTestStderr().find("No syntax specified") !=
-              string::npos);
+              std::string::npos);
 }
 
 TEST_F(ParserTest, WarnIfFieldNameIsNotUpperCamel) {
@@ -235,7 +235,7 @@ TEST_F(ParserTest, WarnIfFieldNameIsNotUpperCamel) {
   EXPECT_TRUE(parser_->Parse(input_.get(), &file));
   EXPECT_TRUE(error_collector_.warning_.find(
                   "Message name should be in UpperCamelCase. Found: abc.") !=
-              string::npos);
+              std::string::npos);
 }
 
 TEST_F(ParserTest, WarnIfFieldNameIsNotLowerUnderscore) {
@@ -248,7 +248,7 @@ TEST_F(ParserTest, WarnIfFieldNameIsNotLowerUnderscore) {
   EXPECT_TRUE(parser_->Parse(input_.get(), &file));
   EXPECT_TRUE(error_collector_.warning_.find(
                   "Field name should be lowercase. Found: SongName") !=
-              string::npos);
+              std::string::npos);
 }
 
 TEST_F(ParserTest, WarnIfFieldNameContainsNumberImmediatelyFollowUnderscore) {
@@ -261,7 +261,7 @@ TEST_F(ParserTest, WarnIfFieldNameContainsNumberImmediatelyFollowUnderscore) {
   EXPECT_TRUE(parser_->Parse(input_.get(), &file));
   EXPECT_TRUE(error_collector_.warning_.find(
                   "Number should not come right after an underscore. Found: "
-                  "song_name_1.") != string::npos);
+                  "song_name_1.") != std::string::npos);
 }
 
 // ===================================================================
@@ -2403,9 +2403,9 @@ TEST_F(ParseDescriptorDebugTest, TestMaps) {
   // Make sure the debug string uses map syntax and does not have the auto
   // generated entry.
   std::string debug_string = file->DebugString();
-  EXPECT_TRUE(debug_string.find("map<") != string::npos);
-  EXPECT_TRUE(debug_string.find("option map_entry") == string::npos);
-  EXPECT_TRUE(debug_string.find("MapEntry") == string::npos);
+  EXPECT_TRUE(debug_string.find("map<") != std::string::npos);
+  EXPECT_TRUE(debug_string.find("option map_entry") == std::string::npos);
+  EXPECT_TRUE(debug_string.find("MapEntry") == std::string::npos);
 
   // Make sure the descriptor debug string is parsable.
   FileDescriptorProto parsed;

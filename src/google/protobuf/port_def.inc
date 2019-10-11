@@ -386,6 +386,10 @@
 #undef IGNORE
 #pragma push_macro("IN")
 #undef IN
+#pragma push_macro("min")
+#undef min
+#pragma push_macro("max")
+#undef max
 #endif  // _MSC_VER
 
 #if defined(__clang__)

@@ -58,8 +58,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -81,17 +79,11 @@ import java.util.TreeMap;
 public abstract class GeneratedMessageV3 extends AbstractMessage
     implements Serializable {
   private static final long serialVersionUID = 1L;
-  // Whether to use reflection for FieldAccessor
-  private static boolean forTestUseReflection = false;
-
-  static void setForTestUseReflection(boolean useReflection) {
-    forTestUseReflection = useReflection;
-  }
 
   /**
-   * For testing. Allows a test to disable the optimization that avoids using
-   * field builders for nested messages until they are requested. By disabling
-   * this optimization, existing tests can be reused to test the field builders.
+   * For testing. Allows a test to disable the optimization that avoids using field builders for
+   * nested messages until they are requested. By disabling this optimization, existing tests can be
+   * reused to test the field builders.
    */
   protected static boolean alwaysUseFieldBuilders = false;
 
@@ -1880,32 +1872,14 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
     }
   }
 
-  /** Calls invoke and throws a RuntimeException if it fails. */
-  private static RuntimeException handleException(Throwable e) {
-    if (e instanceof ClassCastException) {
-      // Reflection throws a bad param type as an IllegalArgumentException, whereas MethodHandle
-      // throws it as a ClassCastException; convert for backwards compatibility
-      throw new IllegalArgumentException(e);
-    } else if (e instanceof RuntimeException) {
-      throw (RuntimeException) e;
-    } else if (e instanceof Error) {
-      throw (Error) e;
-    } else {
-      throw new RuntimeException(
-          "Unexpected exception thrown by generated accessor method.", e);
-    }
-  }
-
   /**
-   * Gets the map field with the given field number. This method should be
-   * overridden in the generated message class if the message contains map
-   * fields.
+   * Gets the map field with the given field number. This method should be overridden in the
+   * generated message class if the message contains map fields.
    *
-   * Unlike other field types, reflection support for map fields can't be
-   * implemented based on generated public API because we need to access a
-   * map field as a list in reflection API but the generated API only allows
-   * us to access it as a map. This method returns the underlying map field
-   * directly and thus enables us to access the map field as a list.
+   * <p>Unlike other field types, reflection support for map fields can't be implemented based on
+   * generated public API because we need to access a map field as a list in reflection API but the
+   * generated API only allows us to access it as a map. This method returns the underlying map
+   * field directly and thus enables us to access the map field as a list.
    */
   @SuppressWarnings({"rawtypes", "unused"})
   protected MapField internalGetMapField(int fieldNumber) {
@@ -2237,108 +2211,9 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
         }
       }
 
-      private static final class MethodHandleInvoker implements MethodInvoker {
-        protected final MethodHandle getMethod;
-        protected final MethodHandle getMethodBuilder;
-        protected final MethodHandle setMethod;
-        protected final MethodHandle hasMethod;
-        protected final MethodHandle hasMethodBuilder;
-        protected final MethodHandle clearMethod;
-        protected final MethodHandle caseMethod;
-        protected final MethodHandle caseMethodBuilder;
-
-        MethodHandleInvoker(ReflectionInvoker accessor) throws IllegalAccessException {
-          MethodHandles.Lookup lookup = MethodHandles.publicLookup();
-
-          this.getMethod = lookup.unreflect(accessor.getMethod);
-          this.getMethodBuilder = lookup.unreflect(accessor.getMethodBuilder);
-          this.setMethod = lookup.unreflect(accessor.setMethod);
-          this.hasMethod =
-              (accessor.hasMethod != null) ? lookup.unreflect(accessor.hasMethod) : null;
-          this.hasMethodBuilder = (accessor.hasMethodBuilder != null)
-              ? lookup.unreflect(accessor.hasMethodBuilder) : null;
-          this.clearMethod = lookup.unreflect(accessor.clearMethod);
-          this.caseMethod =
-              (accessor.caseMethod != null) ? lookup.unreflect(accessor.caseMethod) : null;
-          this.caseMethodBuilder = (accessor.caseMethodBuilder != null)
-              ? lookup.unreflect(accessor.caseMethodBuilder) : null;
-        }
-
-        @Override
-        public Object get(final GeneratedMessageV3 message) {
-          try {
-            return getMethod.invoke(message);
-          } catch (Throwable e) {
-            throw handleException(e);
-          }
-        }
-
-        @Override
-        public Object get(GeneratedMessageV3.Builder<?> builder) {
-          try {
-            return getMethodBuilder.invoke(builder);
-          } catch (Throwable e) {
-            throw handleException(e);
-          }
-        }
-
-        @Override
-        public int getOneofFieldNumber(final GeneratedMessageV3 message) {
-          try {
-            return ((Internal.EnumLite) caseMethod.invoke(message)).getNumber();
-          } catch (Throwable e) {
-            throw handleException(e);
-          }
-        }
-
-        @Override
-        public int getOneofFieldNumber(final GeneratedMessageV3.Builder<?> builder) {
-          try {
-            return ((Internal.EnumLite) caseMethodBuilder.invoke(builder)).getNumber();
-          } catch (Throwable e) {
-            throw handleException(e);
-          }
-        }
-
-        @Override
-        public void set(final GeneratedMessageV3.Builder<?> builder, final Object value) {
-          try {
-            setMethod.invoke(builder, value);
-          } catch (Throwable e) {
-            throw handleException(e);
-          }
-        }
-
-        @Override
-        public boolean has(final GeneratedMessageV3 message) {
-          try {
-            return (Boolean) hasMethod.invoke(message);
-          } catch (Throwable e) {
-            throw handleException(e);
-          }
-        }
-
-        @Override
-        public boolean has(GeneratedMessageV3.Builder<?> builder) {
-          try {
-            return (Boolean) hasMethodBuilder.invoke(builder);
-          } catch (Throwable e) {
-            throw handleException(e);
-          }
-        }
-
-        @Override
-        public void clear(final GeneratedMessageV3.Builder<?> builder) {
-          try {
-            clearMethod.invoke(builder);
-          } catch (Throwable e) {
-            throw handleException(e);
-          }
-        }
-      }
-
       SingularFieldAccessor(
-          final FieldDescriptor descriptor, final String camelCaseName,
+          final FieldDescriptor descriptor,
+          final String camelCaseName,
           final Class<? extends GeneratedMessageV3> messageClass,
           final Class<? extends Builder> builderClass,
           final String containingOneofCamelCaseName) {
@@ -2356,23 +2231,11 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
                 hasHasMethod);
         field = descriptor;
         type = reflectionInvoker.getMethod.getReturnType();
-        invoker = tryGetMethodHandleInvoke(reflectionInvoker);
+        invoker = getMethodInvoker(reflectionInvoker);
       }
 
-      static MethodInvoker tryGetMethodHandleInvoke(ReflectionInvoker accessor) {
-        if (forTestUseReflection) {
-          return accessor;
-        }
-        try {
-          return new MethodHandleInvoker(accessor);
-        } catch (NoClassDefFoundError e) {
-          // Fall back to reflection if MethodHandleInvoker isn't available,
-          // allowing clients that don't want to use method handles to opt out
-          // by deleting the class.
-          return accessor;
-        } catch (IllegalAccessException e) {
-          throw new RuntimeException(e);
-        }
+      static MethodInvoker getMethodInvoker(ReflectionInvoker accessor) {
+        return accessor;
       }
 
       // Note:  We use Java reflection to call public methods rather than
@@ -2581,114 +2444,6 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
         }
       }
 
-      private static final class MethodHandleInvoker implements MethodInvoker {
-        protected final MethodHandle getMethod;
-        protected final MethodHandle getMethodBuilder;
-        protected final MethodHandle getRepeatedMethod;
-        protected final MethodHandle getRepeatedMethodBuilder;
-        protected final MethodHandle setRepeatedMethod;
-        protected final MethodHandle addRepeatedMethod;
-        protected final MethodHandle getCountMethod;
-        protected final MethodHandle getCountMethodBuilder;
-        protected final MethodHandle clearMethod;
-
-        MethodHandleInvoker(ReflectionInvoker accessor) throws IllegalAccessException {
-          MethodHandles.Lookup lookup = MethodHandles.lookup();
-
-          this.getMethod = lookup.unreflect(accessor.getMethod);
-          this.getMethodBuilder = lookup.unreflect(accessor.getMethodBuilder);
-          this.getRepeatedMethod = lookup.unreflect(accessor.getRepeatedMethod);
-          this.getRepeatedMethodBuilder = lookup.unreflect(accessor.getRepeatedMethodBuilder);
-          this.setRepeatedMethod = lookup.unreflect(accessor.setRepeatedMethod);
-          this.addRepeatedMethod = lookup.unreflect(accessor.addRepeatedMethod);
-          this.getCountMethod = lookup.unreflect(accessor.getCountMethod);
-          this.getCountMethodBuilder = lookup.unreflect(accessor.getCountMethodBuilder);
-          this.clearMethod = lookup.unreflect(accessor.clearMethod);
-        }
-
-        @Override
-        public Object get(final GeneratedMessageV3 message) {
-          try {
-            return getMethod.invoke(message);
-          } catch (Throwable e) {
-            throw handleException(e);
-          }
-        }
-
-        @Override
-        public Object get(GeneratedMessageV3.Builder<?> builder) {
-          try {
-            return getMethodBuilder.invoke(builder);
-          } catch (Throwable e) {
-            throw handleException(e);
-          }
-        }
-
-        @Override
-        public Object getRepeated(final GeneratedMessageV3 message, final int index) {
-          try {
-            return getRepeatedMethod.invoke(message, index);
-          } catch (Throwable e) {
-            throw handleException(e);
-          }
-        }
-
-        @Override
-        public Object getRepeated(GeneratedMessageV3.Builder<?> builder, int index) {
-          try {
-            return getRepeatedMethodBuilder.invoke(builder, index);
-          } catch (Throwable e) {
-            throw handleException(e);
-          }
-        }
-
-        @Override
-        public void setRepeated(
-            final GeneratedMessageV3.Builder<?> builder, final int index, final Object value) {
-          try {
-            setRepeatedMethod.invoke(builder, index, value);
-          } catch (Throwable e) {
-            throw handleException(e);
-          }
-        }
-
-        @Override
-        public void addRepeated(final GeneratedMessageV3.Builder<?> builder, final Object value) {
-          try {
-            addRepeatedMethod.invoke(builder, value);
-          } catch (Throwable e) {
-            throw handleException(e);
-          }
-        }
-
-        @Override
-        public int getRepeatedCount(final GeneratedMessageV3 message) {
-          try {
-            return (Integer) getCountMethod.invoke(message);
-          } catch (Throwable e) {
-            throw handleException(e);
-          }
-        }
-
-        @Override
-        public int getRepeatedCount(GeneratedMessageV3.Builder<?> builder) {
-          try {
-            return (Integer) getCountMethodBuilder.invoke(builder);
-          } catch (Throwable e) {
-            throw handleException(e);
-          }
-        }
-
-        @Override
-        public void clear(final GeneratedMessageV3.Builder<?> builder) {
-          try {
-            clearMethod.invoke(builder);
-          } catch (Throwable e) {
-            throw handleException(e);
-          }
-        }
-      }
-
       protected final Class type;
       protected final MethodInvoker invoker;
 
@@ -2699,23 +2454,11 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
         ReflectionInvoker reflectionInvoker =
             new ReflectionInvoker(descriptor, camelCaseName, messageClass, builderClass);
         type = reflectionInvoker.getRepeatedMethod.getReturnType();
-        invoker = tryGetMethodHandleInvoke(reflectionInvoker);
+        invoker = getMethodInvoker(reflectionInvoker);
       }
 
-      static MethodInvoker tryGetMethodHandleInvoke(ReflectionInvoker accessor) {
-        if (forTestUseReflection) {
-          return accessor;
-        }
-        try {
-          return new MethodHandleInvoker(accessor);
-        } catch (NoClassDefFoundError e) {
-          // Fall back to reflection if MethodHandleInvoker isn't available,
-          // allowing clients that don't want to use method handles to opt out
-          // by deleting the class.
-          return accessor;
-        } catch (IllegalAccessException e) {
-          throw new RuntimeException(e);
-        }
+      static MethodInvoker getMethodInvoker(ReflectionInvoker accessor) {
+        return accessor;
       }
 
       @Override

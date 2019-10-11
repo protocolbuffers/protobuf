@@ -85,18 +85,6 @@ PROTOBUF_NAMESPACE_OPEN
 
 void Any::InitAsDefaultInstance() {
 }
-void Any::PackFrom(const ::PROTOBUF_NAMESPACE_ID::Message& message) {
-  _any_metadata_.PackFrom(message);
-}
-
-void Any::PackFrom(const ::PROTOBUF_NAMESPACE_ID::Message& message,
-                           const std::string& type_url_prefix) {
-  _any_metadata_.PackFrom(message, type_url_prefix);
-}
-
-bool Any::UnpackTo(::PROTOBUF_NAMESPACE_ID::Message* message) const {
-  return _any_metadata_.UnpackTo(message);
-}
 bool Any::GetAnyFieldDescriptors(
     const ::PROTOBUF_NAMESPACE_ID::Message& message,
     const ::PROTOBUF_NAMESPACE_ID::FieldDescriptor** type_url_field,

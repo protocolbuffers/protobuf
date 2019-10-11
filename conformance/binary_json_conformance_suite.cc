@@ -176,6 +176,8 @@ string GetDefaultValue(FieldDescriptor::Type type) {
     case FieldDescriptor::TYPE_BYTES:
     case FieldDescriptor::TYPE_MESSAGE:
       return delim("");
+    default:
+      return "";
   }
   return "";
 }
@@ -208,6 +210,8 @@ string GetNonDefaultValue(FieldDescriptor::Type type) {
       return delim("a");
     case FieldDescriptor::TYPE_MESSAGE:
       return delim(cat(tag(1, WireFormatLite::WIRETYPE_VARINT), varint(1234)));
+    default:
+      return "";
   }
   return "";
 }
@@ -252,12 +256,11 @@ const FieldDescriptor* GetFieldForType(FieldDescriptor::Type type,
   return nullptr;
 }
 
-const FieldDescriptor* GetFieldForMapType(
-    FieldDescriptor::Type key_type,
-    FieldDescriptor::Type value_type,
-    bool is_proto3) {
-  const Descriptor* d = is_proto3 ?
-      TestAllTypesProto3().GetDescriptor() : TestAllTypesProto2().GetDescriptor();
+const FieldDescriptor* GetFieldForMapType(FieldDescriptor::Type key_type,
+                                          FieldDescriptor::Type value_type,
+                                          bool is_proto3) {
+  const Descriptor* d = is_proto3 ? TestAllTypesProto3().GetDescriptor()
+                                  : TestAllTypesProto2().GetDescriptor();
   for (int i = 0; i < d->field_count(); i++) {
     const FieldDescriptor* f = d->field(i);
     if (f->is_map()) {
@@ -272,18 +275,17 @@ const FieldDescriptor* GetFieldForMapType(
 
   const string proto_string = is_proto3 ? "Proto3" : "Proto2";
   GOOGLE_LOG(FATAL) << "Couldn't find map field with type: "
-                    << FieldDescriptor::TypeName(key_type)
-                    << " and "
-                    << FieldDescriptor::TypeName(key_type)
-                    << " for "
+                    << FieldDescriptor::TypeName(key_type) << " and "
+                    << FieldDescriptor::TypeName(key_type) << " for "
                     << proto_string.c_str();
   return nullptr;
 }
 
-const FieldDescriptor* GetFieldForOneofType(
-    FieldDescriptor::Type type, bool is_proto3, bool exclusive = false) {
-  const Descriptor* d = is_proto3 ?
-      TestAllTypesProto3().GetDescriptor() : TestAllTypesProto2().GetDescriptor();
+const FieldDescriptor* GetFieldForOneofType(FieldDescriptor::Type type,
+                                            bool is_proto3,
+                                            bool exclusive = false) {
+  const Descriptor* d = is_proto3 ? TestAllTypesProto3().GetDescriptor()
+                                  : TestAllTypesProto2().GetDescriptor();
   for (int i = 0; i < d->field_count(); i++) {
     const FieldDescriptor* f = d->field(i);
     if (f->containing_oneof() && ((f->type() == type) ^ exclusive)) {
@@ -293,8 +295,7 @@ const FieldDescriptor* GetFieldForOneofType(
 
   const string proto_string = is_proto3 ? "Proto3" : "Proto2";
   GOOGLE_LOG(FATAL) << "Couldn't find oneof field with type: "
-                    << FieldDescriptor::TypeName(type)
-                    << " for "
+                    << FieldDescriptor::TypeName(type) << " for "
                     << proto_string.c_str();
   return nullptr;
 }
@@ -764,9 +765,9 @@ void BinaryAndJsonConformanceSuite::TestValidDataForType(
       string proto = cat(tag(field->number(), wire_type), values[i].first);
       // In proto3, default primitive fields should not be encoded.
       string expected_proto =
-          is_proto3 && IsProto3Default(field->type(), values[i].second) ?
-              "" :
-              cat(tag(field->number(), wire_type), values[i].second);
+          is_proto3 && IsProto3Default(field->type(), values[i].second)
+              ? ""
+              : cat(tag(field->number(), wire_type), values[i].second);
       std::unique_ptr<Message> test_message = NewTestMessage(is_proto3);
       test_message->MergeFromString(expected_proto);
       string text = test_message->DebugString();
@@ -774,10 +775,8 @@ void BinaryAndJsonConformanceSuite::TestValidDataForType(
       RunValidProtobufTest(StrCat("ValidDataScalar", type_name, "[", i, "]"),
                            REQUIRED, proto, text, is_proto3);
       RunValidBinaryProtobufTest(
-          StrCat("ValidDataScalarBinary", type_name, "[", i, "]"),
-          RECOMMENDED,
-          proto,
-          expected_proto, is_proto3);
+          StrCat("ValidDataScalarBinary", type_name, "[", i, "]"), RECOMMENDED,
+          proto, expected_proto, is_proto3);
     }
 
     // Test repeated data for singular fields.
@@ -947,25 +946,21 @@ void BinaryAndJsonConformanceSuite::TestValidDataForRepeatedScalarMessage() {
 }
 
 void BinaryAndJsonConformanceSuite::TestValidDataForMapType(
-    FieldDescriptor::Type key_type,
-    FieldDescriptor::Type value_type) {
+    FieldDescriptor::Type key_type, FieldDescriptor::Type value_type) {
   const string key_type_name =
       UpperCase(string(".") + FieldDescriptor::TypeName(key_type));
   const string value_type_name =
       UpperCase(string(".") + FieldDescriptor::TypeName(value_type));
-  WireFormatLite::WireType key_wire_type =
-      WireFormatLite::WireTypeForFieldType(
-          static_cast<WireFormatLite::FieldType>(key_type));
+  WireFormatLite::WireType key_wire_type = WireFormatLite::WireTypeForFieldType(
+      static_cast<WireFormatLite::FieldType>(key_type));
   WireFormatLite::WireType value_wire_type =
       WireFormatLite::WireTypeForFieldType(
           static_cast<WireFormatLite::FieldType>(value_type));
 
-  string key1_data =
-      cat(tag(1, key_wire_type), GetDefaultValue(key_type));
+  string key1_data = cat(tag(1, key_wire_type), GetDefaultValue(key_type));
   string value1_data =
       cat(tag(2, value_wire_type), GetDefaultValue(value_type));
-  string key2_data =
-      cat(tag(1, key_wire_type), GetNonDefaultValue(key_type));
+  string key2_data = cat(tag(1, key_wire_type), GetNonDefaultValue(key_type));
   string value2_data =
       cat(tag(2, value_wire_type), GetNonDefaultValue(value_type));
 
@@ -975,118 +970,97 @@ void BinaryAndJsonConformanceSuite::TestValidDataForMapType(
 
     {
       // Tests map with default key and value.
-      string proto = cat(tag(field->number(),
-                             WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
-                         delim(cat(key1_data, value1_data)));
+      string proto =
+          cat(tag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+              delim(cat(key1_data, value1_data)));
       std::unique_ptr<Message> test_message = NewTestMessage(is_proto3);
       test_message->MergeFromString(proto);
       string text = test_message->DebugString();
       RunValidProtobufTest(
-          StrCat("ValidDataMap",
-                 key_type_name,
-                 value_type_name,
-                 ".Default"),
+          StrCat("ValidDataMap", key_type_name, value_type_name, ".Default"),
           REQUIRED, proto, text, is_proto3);
     }
 
     {
       // Tests map with missing default key and value.
-      string proto = cat(tag(field->number(),
-                             WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
-                         delim(""));
+      string proto =
+          cat(tag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+              delim(""));
       std::unique_ptr<Message> test_message = NewTestMessage(is_proto3);
       test_message->MergeFromString(proto);
       string text = test_message->DebugString();
-      RunValidProtobufTest(
-          StrCat("ValidDataMap",
-                 key_type_name,
-                 value_type_name,
-                 ".MissingDefault"),
-          REQUIRED, proto, text, is_proto3);
+      RunValidProtobufTest(StrCat("ValidDataMap", key_type_name,
+                                  value_type_name, ".MissingDefault"),
+                           REQUIRED, proto, text, is_proto3);
     }
 
     {
       // Tests map with non-default key and value.
-      string proto = cat(tag(field->number(),
-                             WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
-                         delim(cat(key2_data, value2_data)));
+      string proto =
+          cat(tag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+              delim(cat(key2_data, value2_data)));
       std::unique_ptr<Message> test_message = NewTestMessage(is_proto3);
       test_message->MergeFromString(proto);
       string text = test_message->DebugString();
       RunValidProtobufTest(
-          StrCat("ValidDataMap",
-                 key_type_name,
-                 value_type_name,
-                 ".NonDefault"),
+          StrCat("ValidDataMap", key_type_name, value_type_name, ".NonDefault"),
           REQUIRED, proto, text, is_proto3);
     }
 
     {
       // Tests map with unordered key and value.
-      string proto = cat(tag(field->number(),
-                             WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
-                         delim(cat(value2_data, key2_data)));
+      string proto =
+          cat(tag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+              delim(cat(value2_data, key2_data)));
       std::unique_ptr<Message> test_message = NewTestMessage(is_proto3);
       test_message->MergeFromString(proto);
       string text = test_message->DebugString();
       RunValidProtobufTest(
-          StrCat("ValidDataMap",
-                 key_type_name,
-                 value_type_name,
-                 ".Unordered"),
+          StrCat("ValidDataMap", key_type_name, value_type_name, ".Unordered"),
           REQUIRED, proto, text, is_proto3);
     }
 
     {
       // Tests map with duplicate key.
-      string proto1 = cat(tag(field->number(),
-                              WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
-                          delim(cat(key2_data, value1_data)));
-      string proto2 = cat(tag(field->number(),
-                              WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
-                          delim(cat(key2_data, value2_data)));
+      string proto1 =
+          cat(tag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+              delim(cat(key2_data, value1_data)));
+      string proto2 =
+          cat(tag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+              delim(cat(key2_data, value2_data)));
       string proto = cat(proto1, proto2);
       std::unique_ptr<Message> test_message = NewTestMessage(is_proto3);
       test_message->MergeFromString(proto2);
       string text = test_message->DebugString();
-      RunValidProtobufTest(
-          StrCat("ValidDataMap",
-                 key_type_name,
-                 value_type_name,
-                 ".DuplicateKey"),
-          REQUIRED, proto, text, is_proto3);
+      RunValidProtobufTest(StrCat("ValidDataMap", key_type_name,
+                                  value_type_name, ".DuplicateKey"),
+                           REQUIRED, proto, text, is_proto3);
     }
 
     {
       // Tests map with duplicate key in map entry.
-      string proto = cat(tag(field->number(),
-                              WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
-                          delim(cat(key1_data, key2_data, value2_data)));
+      string proto =
+          cat(tag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+              delim(cat(key1_data, key2_data, value2_data)));
       std::unique_ptr<Message> test_message = NewTestMessage(is_proto3);
       test_message->MergeFromString(proto);
       string text = test_message->DebugString();
-      RunValidProtobufTest(
-          StrCat("ValidDataMap",
-                 key_type_name,
-                 value_type_name,
-                 ".DuplicateKeyInMapEntry"),
-          REQUIRED, proto, text, is_proto3);
+      RunValidProtobufTest(StrCat("ValidDataMap", key_type_name,
+                                  value_type_name, ".DuplicateKeyInMapEntry"),
+                           REQUIRED, proto, text, is_proto3);
     }
 
     {
       // Tests map with duplicate value in map entry.
-      string proto = cat(tag(field->number(),
-                              WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
-                          delim(cat(key2_data, value1_data, value2_data)));
+      string proto =
+          cat(tag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+              delim(cat(key2_data, value1_data, value2_data)));
       std::unique_ptr<Message> test_message = NewTestMessage(is_proto3);
       test_message->MergeFromString(proto);
       string text = test_message->DebugString();
-      RunValidProtobufTest(
-          StrCat("ValidDataMap",
-                 key_type_name,
-                 value_type_name,
-                 ".DuplicateValueInMapEntry"),
-          REQUIRED, proto, text, is_proto3);
+      RunValidProtobufTest(StrCat("ValidDataMap", key_type_name,
+                                  value_type_name, ".DuplicateValueInMapEntry"),
+                           REQUIRED, proto, text, is_proto3);
     }
   }
 }
@@ -1096,7 +1070,8 @@ void BinaryAndJsonConformanceSuite::TestOverwriteMessageValueMap() {
       cat(tag(1, WireFormatLite::WIRETYPE_LENGTH_DELIMITED), delim(""));
   string field1_data = cat(tag(1, WireFormatLite::WIRETYPE_VARINT), varint(1));
   string field2_data = cat(tag(2, WireFormatLite::WIRETYPE_VARINT), varint(1));
-  string field31_data = cat(tag(31, WireFormatLite::WIRETYPE_VARINT), varint(1));
+  string field31_data =
+      cat(tag(31, WireFormatLite::WIRETYPE_VARINT), varint(1));
   string submsg1_data = delim(cat(field1_data, field31_data));
   string submsg2_data = delim(cat(field2_data, field31_data));
   string value1_data =
@@ -1109,24 +1084,21 @@ void BinaryAndJsonConformanceSuite::TestOverwriteMessageValueMap() {
                     submsg2_data)));
 
   for (int is_proto3 = 0; is_proto3 < 2; is_proto3++) {
-    const FieldDescriptor* field =
-        GetFieldForMapType(
-            FieldDescriptor::TYPE_STRING,
-            FieldDescriptor::TYPE_MESSAGE, is_proto3);
+    const FieldDescriptor* field = GetFieldForMapType(
+        FieldDescriptor::TYPE_STRING, FieldDescriptor::TYPE_MESSAGE, is_proto3);
 
-    string proto1 = cat(tag(field->number(),
-                            WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
-                        delim(cat(key_data, value1_data)));
-    string proto2 = cat(tag(field->number(),
-                            WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
-                        delim(cat(key_data, value2_data)));
+    string proto1 =
+        cat(tag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+            delim(cat(key_data, value1_data)));
+    string proto2 =
+        cat(tag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+            delim(cat(key_data, value2_data)));
     string proto = cat(proto1, proto2);
     std::unique_ptr<Message> test_message = NewTestMessage(is_proto3);
     test_message->MergeFromString(proto2);
     string text = test_message->DebugString();
-    RunValidProtobufTest(
-        "ValidDataMap.STRING.MESSAGE.MergeValue",
-        REQUIRED, proto, text, is_proto3);
+    RunValidProtobufTest("ValidDataMap.STRING.MESSAGE.MergeValue", REQUIRED,
+                         proto, text, is_proto3);
   }
 }
 
@@ -1134,9 +1106,8 @@ void BinaryAndJsonConformanceSuite::TestValidDataForOneofType(
     FieldDescriptor::Type type) {
   const string type_name =
       UpperCase(string(".") + FieldDescriptor::TypeName(type));
-  WireFormatLite::WireType wire_type =
-      WireFormatLite::WireTypeForFieldType(
-          static_cast<WireFormatLite::FieldType>(type));
+  WireFormatLite::WireType wire_type = WireFormatLite::WireTypeForFieldType(
+      static_cast<WireFormatLite::FieldType>(type));
 
   for (int is_proto3 = 0; is_proto3 < 2; is_proto3++) {
     const FieldDescriptor* field = GetFieldForOneofType(type, is_proto3);
@@ -1167,8 +1138,8 @@ void BinaryAndJsonConformanceSuite::TestValidDataForOneofType(
       string text = test_message->DebugString();
 
       RunValidProtobufTest(
-          StrCat("ValidDataOneof", type_name, ".NonDefaultValue"),
-          REQUIRED, proto, text, is_proto3);
+          StrCat("ValidDataOneof", type_name, ".NonDefaultValue"), REQUIRED,
+          proto, text, is_proto3);
       RunValidBinaryProtobufTest(
           StrCat("ValidDataOneofBinary", type_name, ".NonDefaultValue"),
           RECOMMENDED, proto, proto, is_proto3);
@@ -1185,10 +1156,9 @@ void BinaryAndJsonConformanceSuite::TestValidDataForOneofType(
       RunValidProtobufTest(
           StrCat("ValidDataOneof", type_name, ".MultipleValuesForSameField"),
           REQUIRED, proto, text, is_proto3);
-      RunValidBinaryProtobufTest(
-          StrCat("ValidDataOneofBinary", type_name,
-                 ".MultipleValuesForSameField"),
-          RECOMMENDED, proto, expected_proto, is_proto3);
+      RunValidBinaryProtobufTest(StrCat("ValidDataOneofBinary", type_name,
+                                        ".MultipleValuesForSameField"),
+                                 RECOMMENDED, proto, expected_proto, is_proto3);
     }
 
     {
@@ -1209,14 +1179,12 @@ void BinaryAndJsonConformanceSuite::TestValidDataForOneofType(
       test_message->MergeFromString(expected_proto);
       string text = test_message->DebugString();
 
-      RunValidProtobufTest(
-          StrCat("ValidDataOneof", type_name,
-                 ".MultipleValuesForDifferentField"),
-          REQUIRED, proto, text, is_proto3);
-      RunValidBinaryProtobufTest(
-          StrCat("ValidDataOneofBinary", type_name,
-                 ".MultipleValuesForDifferentField"),
-          RECOMMENDED, proto, expected_proto, is_proto3);
+      RunValidProtobufTest(StrCat("ValidDataOneof", type_name,
+                                  ".MultipleValuesForDifferentField"),
+                           REQUIRED, proto, text, is_proto3);
+      RunValidBinaryProtobufTest(StrCat("ValidDataOneofBinary", type_name,
+                                        ".MultipleValuesForDifferentField"),
+                                 RECOMMENDED, proto, expected_proto, is_proto3);
     }
   }
 }
@@ -1225,43 +1193,39 @@ void BinaryAndJsonConformanceSuite::TestMergeOneofMessage() {
   string field1_data = cat(tag(1, WireFormatLite::WIRETYPE_VARINT), varint(1));
   string field2a_data = cat(tag(2, WireFormatLite::WIRETYPE_VARINT), varint(1));
   string field2b_data = cat(tag(2, WireFormatLite::WIRETYPE_VARINT), varint(1));
-  string field89_data = cat(tag(89, WireFormatLite::WIRETYPE_VARINT),
-                            varint(1));
+  string field89_data =
+      cat(tag(89, WireFormatLite::WIRETYPE_VARINT), varint(1));
   string submsg1_data =
       cat(tag(2, WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
           delim(cat(field1_data, field2a_data, field89_data)));
-  string submsg2_data =
+  string submsg2_data = cat(tag(2, WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+                            delim(cat(field2b_data, field89_data)));
+  string merged_data =
       cat(tag(2, WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
-          delim(cat(field2b_data, field89_data)));
-  string merged_data = cat(tag(2, WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
-                           delim(cat(field1_data, field2b_data,
-                                     field89_data, field89_data)));
+          delim(cat(field1_data, field2b_data, field89_data, field89_data)));
 
   for (int is_proto3 = 0; is_proto3 < 2; is_proto3++) {
     const FieldDescriptor* field =
         GetFieldForOneofType(FieldDescriptor::TYPE_MESSAGE, is_proto3);
 
-    string proto1 = cat(tag(field->number(),
-                            WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
-                        delim(submsg1_data));
-    string proto2 = cat(tag(field->number(),
-                            WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
-                        delim(submsg2_data));
+    string proto1 =
+        cat(tag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+            delim(submsg1_data));
+    string proto2 =
+        cat(tag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+            delim(submsg2_data));
     string proto = cat(proto1, proto2);
     string expected_proto =
-        cat(tag(field->number(),
-                WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
-                delim(merged_data));
+        cat(tag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+            delim(merged_data));
 
     std::unique_ptr<Message> test_message = NewTestMessage(is_proto3);
     test_message->MergeFromString(expected_proto);
     string text = test_message->DebugString();
-    RunValidProtobufTest(
-        "ValidDataOneof.MESSAGE.Merge",
-        REQUIRED, proto, text, is_proto3);
-    RunValidBinaryProtobufTest(
-        "ValidDataOneofBinary.MESSAGE.Merge",
-        RECOMMENDED, proto, expected_proto, is_proto3);
+    RunValidProtobufTest("ValidDataOneof.MESSAGE.Merge", REQUIRED, proto, text,
+                         is_proto3);
+    RunValidBinaryProtobufTest("ValidDataOneofBinary.MESSAGE.Merge",
+                               RECOMMENDED, proto, expected_proto, is_proto3);
   }
 }
 
@@ -1359,103 +1323,124 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
   int32 kInt32Min = -2147483648;
   uint32 kUint32Max = 4294967295UL;
 
-  TestValidDataForType(FieldDescriptor::TYPE_DOUBLE, {
-    {dbl(0), dbl(0)},
-    {dbl(0.1), dbl(0.1)},
-    {dbl(1.7976931348623157e+308), dbl(1.7976931348623157e+308)},
-    {dbl(2.22507385850720138309e-308), dbl(2.22507385850720138309e-308)},
-  });
-  TestValidDataForType(FieldDescriptor::TYPE_FLOAT, {
-    {flt(0), flt(0)},
-    {flt(0.1), flt(0.1)},
-    {flt(1.00000075e-36), flt(1.00000075e-36)},
-    {flt(3.402823e+38), flt(3.402823e+38)},  // 3.40282347e+38
-    {flt(1.17549435e-38f), flt(1.17549435e-38)},
-  });
-  TestValidDataForType(FieldDescriptor::TYPE_INT64, {
-    {varint(0), varint(0)},
-    {varint(12345), varint(12345)},
-    {varint(kInt64Max), varint(kInt64Max)},
-    {varint(kInt64Min), varint(kInt64Min)},
-  });
-  TestValidDataForType(FieldDescriptor::TYPE_UINT64, {
-    {varint(0), varint(0)},
-    {varint(12345), varint(12345)},
-    {varint(kUint64Max), varint(kUint64Max)},
-  });
-  TestValidDataForType(FieldDescriptor::TYPE_INT32, {
-    {varint(0), varint(0)},
-    {varint(12345), varint(12345)},
-    {longvarint(12345, 2), varint(12345)},
-    {longvarint(12345, 7), varint(12345)},
-    {varint(kInt32Max), varint(kInt32Max)},
-    {varint(kInt32Min), varint(kInt32Min)},
-    {varint(1LL << 33), varint(0)},
-    {varint((1LL << 33) - 1), varint(-1)},
-  });
-  TestValidDataForType(FieldDescriptor::TYPE_UINT32, {
-    {varint(0), varint(0)},
-    {varint(12345), varint(12345)},
-    {longvarint(12345, 2), varint(12345)},
-    {longvarint(12345, 7), varint(12345)},
-    {varint(kUint32Max), varint(kUint32Max)},  // UINT32_MAX
-    {varint(1LL << 33), varint(0)},
-    {varint((1LL << 33) - 1), varint((1LL << 32) - 1)},
-  });
-  TestValidDataForType(FieldDescriptor::TYPE_FIXED64, {
-    {u64(0), u64(0)},
-    {u64(12345), u64(12345)},
-    {u64(kUint64Max), u64(kUint64Max)},
-  });
-  TestValidDataForType(FieldDescriptor::TYPE_FIXED32, {
-    {u32(0), u32(0)},
-    {u32(12345), u32(12345)},
-    {u32(kUint32Max), u32(kUint32Max)},  // UINT32_MAX
-  });
-  TestValidDataForType(FieldDescriptor::TYPE_SFIXED64, {
-    {u64(0), u64(0)},
-    {u64(12345), u64(12345)},
-    {u64(kInt64Max), u64(kInt64Max)},
-    {u64(kInt64Min), u64(kInt64Min)},
-  });
-  TestValidDataForType(FieldDescriptor::TYPE_SFIXED32, {
-    {u32(0), u32(0)},
-    {u32(12345), u32(12345)},
-    {u32(kInt32Max), u32(kInt32Max)},
-    {u32(kInt32Min), u32(kInt32Min)},
-  });
-  TestValidDataForType(FieldDescriptor::TYPE_BOOL, {
-    {varint(0), varint(0)},
-    {varint(1), varint(1)},
-    {varint(12345678), varint(1)},
-  });
-  TestValidDataForType(FieldDescriptor::TYPE_SINT32, {
-    {zz32(0), zz32(0)},
-    {zz32(12345), zz32(12345)},
-    {zz32(kInt32Max), zz32(kInt32Max)},
-    {zz32(kInt32Min), zz32(kInt32Min)},
-  });
-  TestValidDataForType(FieldDescriptor::TYPE_SINT64, {
-    {zz64(0), zz64(0)},
-    {zz64(12345), zz64(12345)},
-    {zz64(kInt64Max), zz64(kInt64Max)},
-    {zz64(kInt64Min), zz64(kInt64Min)},
-  });
-  TestValidDataForType(FieldDescriptor::TYPE_STRING, {
-    {delim(""), delim("")},
-    {delim("Hello world!"), delim("Hello world!")},
-    {delim("\'\"\?\\\a\b\f\n\r\t\v"),
-     delim("\'\"\?\\\a\b\f\n\r\t\v")},  // escape
-    {delim("谷歌"), delim("谷歌")},  // Google in Chinese
-    {delim("\u8C37\u6B4C"), delim("谷歌")},  // unicode escape
-    {delim("\u8c37\u6b4c"), delim("谷歌")},  // lowercase unicode
-    {delim("\xF0\x9F\x98\x81"), delim("\xF0\x9F\x98\x81")},  // emoji: 😁
-  });
-  TestValidDataForType(FieldDescriptor::TYPE_BYTES, {
-    {delim(""), delim("")},
-    {delim("\x01\x02"), delim("\x01\x02")},
-    {delim("\xfb"), delim("\xfb")},
-  });
+  TestValidDataForType(
+      FieldDescriptor::TYPE_DOUBLE,
+      {
+          {dbl(0), dbl(0)},
+          {dbl(0.1), dbl(0.1)},
+          {dbl(1.7976931348623157e+308), dbl(1.7976931348623157e+308)},
+          {dbl(2.22507385850720138309e-308), dbl(2.22507385850720138309e-308)},
+      });
+  TestValidDataForType(
+      FieldDescriptor::TYPE_FLOAT,
+      {
+          {flt(0), flt(0)},
+          {flt(0.1), flt(0.1)},
+          {flt(1.00000075e-36), flt(1.00000075e-36)},
+          {flt(3.402823e+38), flt(3.402823e+38)},  // 3.40282347e+38
+          {flt(1.17549435e-38f), flt(1.17549435e-38)},
+      });
+  TestValidDataForType(FieldDescriptor::TYPE_INT64,
+                       {
+                           {varint(0), varint(0)},
+                           {varint(12345), varint(12345)},
+                           {varint(kInt64Max), varint(kInt64Max)},
+                           {varint(kInt64Min), varint(kInt64Min)},
+                       });
+  TestValidDataForType(FieldDescriptor::TYPE_UINT64,
+                       {
+                           {varint(0), varint(0)},
+                           {varint(12345), varint(12345)},
+                           {varint(kUint64Max), varint(kUint64Max)},
+                       });
+  TestValidDataForType(FieldDescriptor::TYPE_INT32,
+                       {
+                           {varint(0), varint(0)},
+                           {varint(12345), varint(12345)},
+                           {longvarint(12345, 2), varint(12345)},
+                           {longvarint(12345, 7), varint(12345)},
+                           {varint(kInt32Max), varint(kInt32Max)},
+                           {varint(kInt32Min), varint(kInt32Min)},
+                           {varint(1LL << 33), varint(0)},
+                           {varint((1LL << 33) - 1), varint(-1)},
+                       });
+  TestValidDataForType(
+      FieldDescriptor::TYPE_UINT32,
+      {
+          {varint(0), varint(0)},
+          {varint(12345), varint(12345)},
+          {longvarint(12345, 2), varint(12345)},
+          {longvarint(12345, 7), varint(12345)},
+          {varint(kUint32Max), varint(kUint32Max)},  // UINT32_MAX
+          {varint(1LL << 33), varint(0)},
+          {varint((1LL << 33) - 1), varint((1LL << 32) - 1)},
+      });
+  TestValidDataForType(FieldDescriptor::TYPE_FIXED64,
+                       {
+                           {u64(0), u64(0)},
+                           {u64(12345), u64(12345)},
+                           {u64(kUint64Max), u64(kUint64Max)},
+                       });
+  TestValidDataForType(FieldDescriptor::TYPE_FIXED32,
+                       {
+                           {u32(0), u32(0)},
+                           {u32(12345), u32(12345)},
+                           {u32(kUint32Max), u32(kUint32Max)},  // UINT32_MAX
+                       });
+  TestValidDataForType(FieldDescriptor::TYPE_SFIXED64,
+                       {
+                           {u64(0), u64(0)},
+                           {u64(12345), u64(12345)},
+                           {u64(kInt64Max), u64(kInt64Max)},
+                           {u64(kInt64Min), u64(kInt64Min)},
+                       });
+  TestValidDataForType(FieldDescriptor::TYPE_SFIXED32,
+                       {
+                           {u32(0), u32(0)},
+                           {u32(12345), u32(12345)},
+                           {u32(kInt32Max), u32(kInt32Max)},
+                           {u32(kInt32Min), u32(kInt32Min)},
+                       });
+  // Bools should be serialized as 0 for false and 1 for true. Parsers should
+  // also interpret any nonzero value as true.
+  TestValidDataForType(FieldDescriptor::TYPE_BOOL,
+                       {
+                           {varint(0), varint(0)},
+                           {varint(1), varint(1)},
+                           {varint(12345678), varint(1)},
+                       });
+  TestValidDataForType(FieldDescriptor::TYPE_SINT32,
+                       {
+                           {zz32(0), zz32(0)},
+                           {zz32(12345), zz32(12345)},
+                           {zz32(kInt32Max), zz32(kInt32Max)},
+                           {zz32(kInt32Min), zz32(kInt32Min)},
+                       });
+  TestValidDataForType(FieldDescriptor::TYPE_SINT64,
+                       {
+                           {zz64(0), zz64(0)},
+                           {zz64(12345), zz64(12345)},
+                           {zz64(kInt64Max), zz64(kInt64Max)},
+                           {zz64(kInt64Min), zz64(kInt64Min)},
+                       });
+  TestValidDataForType(
+      FieldDescriptor::TYPE_STRING,
+      {
+          {delim(""), delim("")},
+          {delim("Hello world!"), delim("Hello world!")},
+          {delim("\'\"\?\\\a\b\f\n\r\t\v"),
+           delim("\'\"\?\\\a\b\f\n\r\t\v")},       // escape
+          {delim("谷歌"), delim("谷歌")},          // Google in Chinese
+          {delim("\u8C37\u6B4C"), delim("谷歌")},  // unicode escape
+          {delim("\u8c37\u6b4c"), delim("谷歌")},  // lowercase unicode
+          {delim("\xF0\x9F\x98\x81"), delim("\xF0\x9F\x98\x81")},  // emoji: 😁
+      });
+  TestValidDataForType(FieldDescriptor::TYPE_BYTES,
+                       {
+                           {delim(""), delim("")},
+                           {delim("\x01\x02"), delim("\x01\x02")},
+                           {delim("\xfb"), delim("\xfb")},
+                       });
   TestValidDataForType(FieldDescriptor::TYPE_ENUM, {
                                                        {varint(0), varint(0)},
                                                        {varint(1), varint(1)},
@@ -1463,63 +1448,48 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
                                                        {varint(-1), varint(-1)},
                                                    });
   TestValidDataForRepeatedScalarMessage();
-  TestValidDataForType(FieldDescriptor::TYPE_MESSAGE, {
-    {delim(""), delim("")},
-    {delim(cat(tag(1, WireFormatLite::WIRETYPE_VARINT), varint(1234))),
-     delim(cat(tag(1, WireFormatLite::WIRETYPE_VARINT), varint(1234)))},
-  });
+  TestValidDataForType(
+      FieldDescriptor::TYPE_MESSAGE,
+      {
+          {delim(""), delim("")},
+          {delim(cat(tag(1, WireFormatLite::WIRETYPE_VARINT), varint(1234))),
+           delim(cat(tag(1, WireFormatLite::WIRETYPE_VARINT), varint(1234)))},
+      });
 
-  TestValidDataForMapType(
-    FieldDescriptor::TYPE_INT32,
-    FieldDescriptor::TYPE_INT32);
-  TestValidDataForMapType(
-    FieldDescriptor::TYPE_INT64,
-    FieldDescriptor::TYPE_INT64);
-  TestValidDataForMapType(
-    FieldDescriptor::TYPE_UINT32,
-    FieldDescriptor::TYPE_UINT32);
-  TestValidDataForMapType(
-    FieldDescriptor::TYPE_UINT64,
-    FieldDescriptor::TYPE_UINT64);
-  TestValidDataForMapType(
-    FieldDescriptor::TYPE_SINT32,
-    FieldDescriptor::TYPE_SINT32);
-  TestValidDataForMapType(
-    FieldDescriptor::TYPE_SINT64,
-    FieldDescriptor::TYPE_SINT64);
-  TestValidDataForMapType(
-    FieldDescriptor::TYPE_FIXED32,
-    FieldDescriptor::TYPE_FIXED32);
-  TestValidDataForMapType(
-    FieldDescriptor::TYPE_FIXED64,
-    FieldDescriptor::TYPE_FIXED64);
-  TestValidDataForMapType(
-    FieldDescriptor::TYPE_SFIXED32,
-    FieldDescriptor::TYPE_SFIXED32);
-  TestValidDataForMapType(
-    FieldDescriptor::TYPE_SFIXED64,
-    FieldDescriptor::TYPE_SFIXED64);
-  TestValidDataForMapType(
-    FieldDescriptor::TYPE_INT32,
-    FieldDescriptor::TYPE_FLOAT);
-  TestValidDataForMapType(
-    FieldDescriptor::TYPE_INT32,
-    FieldDescriptor::TYPE_DOUBLE);
-  TestValidDataForMapType(
-    FieldDescriptor::TYPE_BOOL,
-    FieldDescriptor::TYPE_BOOL);
-  TestValidDataForMapType(
-    FieldDescriptor::TYPE_STRING,
-    FieldDescriptor::TYPE_STRING);
-  TestValidDataForMapType(
-    FieldDescriptor::TYPE_STRING,
-    FieldDescriptor::TYPE_BYTES);
-  TestValidDataForMapType(
-    FieldDescriptor::TYPE_STRING,
-    FieldDescriptor::TYPE_ENUM);
-  TestValidDataForMapType(
-    FieldDescriptor::TYPE_STRING,
-    FieldDescriptor::TYPE_MESSAGE);
+  TestValidDataForMapType(FieldDescriptor::TYPE_INT32,
+                          FieldDescriptor::TYPE_INT32);
+  TestValidDataForMapType(FieldDescriptor::TYPE_INT64,
+                          FieldDescriptor::TYPE_INT64);
+  TestValidDataForMapType(FieldDescriptor::TYPE_UINT32,
+                          FieldDescriptor::TYPE_UINT32);
+  TestValidDataForMapType(FieldDescriptor::TYPE_UINT64,
+                          FieldDescriptor::TYPE_UINT64);
+  TestValidDataForMapType(FieldDescriptor::TYPE_SINT32,
+                          FieldDescriptor::TYPE_SINT32);
+  TestValidDataForMapType(FieldDescriptor::TYPE_SINT64,
+                          FieldDescriptor::TYPE_SINT64);
+  TestValidDataForMapType(FieldDescriptor::TYPE_FIXED32,
+                          FieldDescriptor::TYPE_FIXED32);
+  TestValidDataForMapType(FieldDescriptor::TYPE_FIXED64,
+                          FieldDescriptor::TYPE_FIXED64);
+  TestValidDataForMapType(FieldDescriptor::TYPE_SFIXED32,
+                          FieldDescriptor::TYPE_SFIXED32);
+  TestValidDataForMapType(FieldDescriptor::TYPE_SFIXED64,
+                          FieldDescriptor::TYPE_SFIXED64);
+  TestValidDataForMapType(FieldDescriptor::TYPE_INT32,
+                          FieldDescriptor::TYPE_FLOAT);
+  TestValidDataForMapType(FieldDescriptor::TYPE_INT32,
+                          FieldDescriptor::TYPE_DOUBLE);
+  TestValidDataForMapType(FieldDescriptor::TYPE_BOOL,
+                          FieldDescriptor::TYPE_BOOL);
+  TestValidDataForMapType(FieldDescriptor::TYPE_STRING,
+                          FieldDescriptor::TYPE_STRING);
+  TestValidDataForMapType(FieldDescriptor::TYPE_STRING,
+                          FieldDescriptor::TYPE_BYTES);
+  TestValidDataForMapType(FieldDescriptor::TYPE_STRING,
+                          FieldDescriptor::TYPE_ENUM);
+  TestValidDataForMapType(FieldDescriptor::TYPE_STRING,
+                          FieldDescriptor::TYPE_MESSAGE);
   // Additional test to check overwriting message value map.
   TestOverwriteMessageValueMap();
 

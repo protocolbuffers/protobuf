@@ -3010,6 +3010,58 @@ TEST(WireFormatForMapFieldTest, SerializeMapDynamicMessage) {
   EXPECT_TRUE(dynamic_data.size() == generated_data.size());
 }
 
+TEST(WireFormatForMapFieldTest, MapByteSizeDynamicMessage) {
+  DynamicMessageFactory factory;
+  std::unique_ptr<Message> dynamic_message;
+  dynamic_message.reset(
+      factory.GetPrototype(unittest::TestMap::descriptor())->New());
+  MapReflectionTester reflection_tester(unittest::TestMap::descriptor());
+  reflection_tester.SetMapFieldsViaReflection(dynamic_message.get());
+  reflection_tester.ExpectMapFieldsSetViaReflection(*dynamic_message);
+  std::string expected_serialized_data;
+  dynamic_message->SerializeToString(&expected_serialized_data);
+  int expected_size = expected_serialized_data.size();
+  EXPECT_EQ(dynamic_message->ByteSize(), expected_size);
+
+  std::unique_ptr<Message> message2;
+  message2.reset(factory.GetPrototype(unittest::TestMap::descriptor())->New());
+  reflection_tester.SetMapFieldsViaMapReflection(message2.get());
+
+  const FieldDescriptor* field =
+      unittest::TestMap::descriptor()->FindFieldByName("map_int32_int32");
+  const Reflection* reflection = dynamic_message->GetReflection();
+
+  // Force the map field to mark with STATE_MODIFIED_REPEATED
+  reflection->RemoveLast(dynamic_message.get(), field);
+  dynamic_message->MergeFrom(*message2);
+  dynamic_message->MergeFrom(*message2);
+  // The map field is marked as STATE_MODIFIED_REPEATED, ByteSize() will use
+  // repeated field which have duplicate keys to calculate.
+  int duplicate_size = dynamic_message->ByteSize();
+  EXPECT_TRUE(duplicate_size > expected_size);
+  std::string duplicate_serialized_data;
+  dynamic_message->SerializeToString(&duplicate_serialized_data);
+  EXPECT_EQ(dynamic_message->ByteSize(), duplicate_serialized_data.size());
+
+  // Force the map field to mark with map CLEAN
+  EXPECT_EQ(reflection_tester.MapSize(*dynamic_message, "map_int32_int32"), 2);
+  // The map field is marked as CLEAN, ByteSize() will use map which do not
+  // have duplicate keys to calculate.
+  int size = dynamic_message->ByteSize();
+  EXPECT_EQ(expected_size, size);
+
+  // Protobuf used to have a bug for serialize when map it marked CLEAN. It used
+  // repeated field to calulate ByteSize but use map to serialize the real data,
+  // thus the ByteSize may bigger than real serialized size. A crash might be
+  // happen at SerializeToString(). Or an "unexpect end group" warning was
+  // raised at parse back if user use SerializeWithCachedSizes() which avoids
+  // size check at serialize.
+  std::string serialized_data;
+  dynamic_message->SerializeToString(&serialized_data);
+  EXPECT_EQ(serialized_data, expected_serialized_data);
+  dynamic_message->ParseFromString(serialized_data);
+}
+
 TEST(WireFormatForMapFieldTest, MapParseHelpers) {
   std::string data;
 
