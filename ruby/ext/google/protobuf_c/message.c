@@ -189,8 +189,11 @@ static int extract_method_call(VALUE method_name, MessageHeader* self,
       name_len > 9 && strncmp(name + name_len - 9, "_as_value", 9) == 0) {
     const upb_oneofdef* test_o_wrapper;
     const upb_fielddef* test_f_wrapper;
+#ifdef _MSC_VER 
+    char* wrapper_field_name = alloca(name_len - 8);
+#else
     char wrapper_field_name[name_len - 8];
-
+#endif
     // Find the field name
     strncpy(wrapper_field_name, name, name_len - 9);
     wrapper_field_name[name_len - 9] = '\0';
@@ -216,8 +219,11 @@ static int extract_method_call(VALUE method_name, MessageHeader* self,
       name_len > 6 && strncmp(name + name_len - 6, "_const", 6) == 0) {
     const upb_oneofdef* test_o_enum;
     const upb_fielddef* test_f_enum;
+#ifdef _MSC_VER 
+    char* enum_name = alloca(name_len - 5);
+#else
     char enum_name[name_len - 5];
-
+#endif
     // Find enum field name
     strncpy(enum_name, name, name_len - 6);
     enum_name[name_len - 6] = '\0';
