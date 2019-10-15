@@ -343,7 +343,7 @@ const char* Api::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::intern
       // .google.protobuf.Syntax syntax = 7;
       case 7:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 56)) {
-          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
           _internal_set_syntax(static_cast<PROTOBUF_NAMESPACE_ID::Syntax>(val));
         } else goto handle_unusual;
@@ -697,7 +697,7 @@ const char* Method::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::int
       // bool request_streaming = 3;
       case 3:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 24)) {
-          request_streaming_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          request_streaming_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -713,7 +713,7 @@ const char* Method::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::int
       // bool response_streaming = 5;
       case 5:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 40)) {
-          response_streaming_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          response_streaming_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -732,7 +732,7 @@ const char* Method::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::int
       // .google.protobuf.Syntax syntax = 7;
       case 7:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 56)) {
-          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
           _internal_set_syntax(static_cast<PROTOBUF_NAMESPACE_ID::Syntax>(val));
         } else goto handle_unusual;
