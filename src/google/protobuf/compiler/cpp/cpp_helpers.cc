@@ -1723,8 +1723,8 @@ class ParseLoopGenerator {
         "while (!ctx->Done(&ptr)) {\n"
         "  $uint32$ tag;\n"
         "  ptr = $pi_ns$::ReadTag(ptr, &tag);\n"
-        "  CHK_(ptr);\n"
-        "  switch (tag >> 3) {\n");
+        "  CHK_(ptr);\n");
+    if (!ordered_fields.empty()) format_("  switch (tag >> 3) {\n");
 
     format_.Indent();
     format_.Indent();
@@ -1787,7 +1787,7 @@ class ParseLoopGenerator {
     }  // for loop over ordered fields
 
     // Default case
-    format_("default: {\n");
+    if (!ordered_fields.empty()) format_("default: {\n");
     if (!ordered_fields.empty()) format_("handle_unusual:\n");
     format_(
         "  if ((tag & 7) == 4 || tag == 0) {\n"
@@ -1828,12 +1828,11 @@ class ParseLoopGenerator {
           "  CHK_(ptr != nullptr);\n"
           "  continue;\n");
     }
-    format_("}\n");  // default case
+    if (!ordered_fields.empty()) format_("}\n");  // default case
     format_.Outdent();
     format_.Outdent();
-    format_(
-        "  }  // switch\n"
-        "}  // while\n");
+    if (!ordered_fields.empty()) format_("  }  // switch\n");
+    format_("}  // while\n");
   }
 };
 
