@@ -434,8 +434,8 @@ class PROTOBUF_EXPORT MessageLite {
   // method.)
   virtual int GetCachedSize() const = 0;
 
-  virtual const char* _InternalParse(const char* ptr,
-                                     internal::ParseContext* ctx) {
+  virtual const char* _InternalParse(const char* /*ptr*/,
+                                     internal::ParseContext* /*ctx*/) {
     return nullptr;
   }
 

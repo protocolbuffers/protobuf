@@ -760,7 +760,7 @@ class PROTOBUF_EXPORT ExtensionSet {
 
   bool FindExtension(int wire_type, uint32 field,
                      const MessageLite* containing_type,
-                     const internal::ParseContext* ctx,
+                     const internal::ParseContext* /*ctx*/,
                      ExtensionInfo* extension, bool* was_packed_on_wire) {
     GeneratedExtensionFinder finder(containing_type);
     return FindExtensionInfoFromFieldNumber(wire_type, field, &finder,
