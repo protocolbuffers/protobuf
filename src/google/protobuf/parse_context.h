@@ -491,7 +491,7 @@ PROTOBUF_EXPORT
 std::pair<const char*, uint32> ReadTagFallback(const char* p, uint32 res);
 
 // Same as ParseVarint but only accept 5 bytes at most.
-inline const char* ReadTag(const char* p, uint32* out, uint32 max_tag = 0) {
+inline const char* ReadTag(const char* p, uint32* out, uint32 /*max_tag*/ = 0) {
   uint32 res = static_cast<uint8>(p[0]);
   if (res < 128) {
     *out = res;
