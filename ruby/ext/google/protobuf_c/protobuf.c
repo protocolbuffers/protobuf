@@ -93,6 +93,9 @@ ID descriptor_instancevar_interned;
 
 // This must be named "Init_protobuf_c" because the Ruby module is named
 // "protobuf_c" -- the VM looks for this symbol in our .so.
+#if __GNUC__ >= 4
+__attribute__ ((visibility ("default")))
+#endif
 void Init_protobuf_c() {
   VALUE google = rb_define_module("Google");
   VALUE protobuf = rb_define_module_under(google, "Protobuf");
