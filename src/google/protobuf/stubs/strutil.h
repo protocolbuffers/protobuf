@@ -159,8 +159,6 @@ inline string StripSuffixString(const string& str, const string& suffix) {
 // ----------------------------------------------------------------------
 PROTOBUF_EXPORT void ReplaceCharacters(string* s, const char* remove,
                                        char replacewith);
-PROTOBUF_EXPORT void StripString(string* s, const char* remove,
-                                 char replacewith);
 
 PROTOBUF_EXPORT void StripWhitespace(string* s);
 

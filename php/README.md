@@ -95,3 +95,45 @@ Known Issues
 * HHVM not tested.
 * C extension not tested on windows, mac, php 7.0.
 * Message name cannot be Empty.
+
+## Development
+
+### Docker Image
+
+We provide a docker image for php development, which is also used in our automatic tests:
+```
+docker run --security-opt seccomp=unconfined -it protobuftesting/php_8dbe419c6df1a8b3af0ae3a267c112efb436b45c
+```
+
+### Test Native PHP
+
+```
+# Download protobuf
+git clone https://github.com/protocolbuffers/protobuf.git
+cd protobuf
+
+# Build protoc
+./autogen.sh
+./configure
+make -j4
+
+# Test native php
+cd php
+composer install
+composer test
+```
+
+### Test C Extension
+
+After you have finished testing the native php, you can test the c extension:
+```
+cd tests
+./test.sh 5.6 # The php runtime version.
+              # We provide 5.5, 5.5-zts, 5.6, 5.6-zts, 7.0, 7.0-zts, 7.1, 7.1-zts, 7.2, 7.2-zts, 7.3 and 7.3-zts
+              # ls /usr/local for more details
+```
+
+If you want to use gdb to debug the c extension, you can do:
+```
+./gdb_test.sh
+```

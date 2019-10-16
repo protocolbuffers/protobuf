@@ -62,7 +62,7 @@ class PROTOC_EXPORT CppGenerator : public CodeGenerator {
 
     // Use the open-source runtime with google3 #include paths.  We make these
     // absolute to avoid ambiguity, so the runtime will be #included like:
-    //   #include "third_party/protobuf/<...>/google/protobuf/message.h"
+    //   #include "third_party/protobuf/.../google/protobuf/message.h"
     kOpensourceGoogle3
   };
 

@@ -230,24 +230,24 @@ class BaseContainer(object):
       kwargs['cmp'] = kwargs.pop('sort_function')
     self._values.sort(*args, **kwargs)
 
+
 collections_abc.MutableSequence.register(BaseContainer)
 
 
 class RepeatedScalarFieldContainer(BaseContainer):
-
   """Simple, type-checked, list-like container for holding repeated scalars."""
 
   # Disallows assignment to other attributes.
   __slots__ = ['_type_checker']
 
   def __init__(self, message_listener, type_checker):
-    """
-    Args:
-      message_listener: A MessageListener implementation.
-        The RepeatedScalarFieldContainer will call this object's
-        Modified() method when it is modified.
+    """Args:
+
+      message_listener: A MessageListener implementation. The
+      RepeatedScalarFieldContainer will call this object's Modified() method
+      when it is modified.
       type_checker: A type_checkers.ValueChecker instance to run on elements
-        inserted into this container.
+      inserted into this container.
     """
     super(RepeatedScalarFieldContainer, self).__init__(message_listener)
     self._type_checker = type_checker
@@ -285,6 +285,7 @@ class RepeatedScalarFieldContainer(BaseContainer):
 
   def MergeFrom(self, other):
     """Appends the contents of another repeated field of the same type to this
+
     one. We do not check the types of the individual fields.
     """
     self._values.extend(other._values)
@@ -400,6 +401,7 @@ class RepeatedCompositeFieldContainer(BaseContainer):
 
   def extend(self, elem_seq):
     """Extends by appending the given sequence of elements of the same type
+
     as this one, copying each individual message.
     """
     message_class = self._message_descriptor._concrete_class
@@ -414,6 +416,7 @@ class RepeatedCompositeFieldContainer(BaseContainer):
 
   def MergeFrom(self, other):
     """Appends the contents of another repeated field of the same type to this
+
     one, copying each individual message.
     """
     self.extend(other._values)

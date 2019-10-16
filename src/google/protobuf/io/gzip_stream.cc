@@ -185,7 +185,7 @@ bool GzipInputStream::Skip(int count) {
   }
   return ok;
 }
-int64 GzipInputStream::ByteCount() const {
+int64_t GzipInputStream::ByteCount() const {
   int64 ret = byte_count_ + zcontext_.total_out;
   if (zcontext_.next_out != NULL && output_position_ != NULL) {
     ret += reinterpret_cast<uintptr_t>(zcontext_.next_out) -
@@ -301,7 +301,7 @@ void GzipOutputStream::BackUp(int count) {
   GOOGLE_CHECK_GE(zcontext_.avail_in, count);
   zcontext_.avail_in -= count;
 }
-int64 GzipOutputStream::ByteCount() const {
+int64_t GzipOutputStream::ByteCount() const {
   return zcontext_.total_in + zcontext_.avail_in;
 }
 

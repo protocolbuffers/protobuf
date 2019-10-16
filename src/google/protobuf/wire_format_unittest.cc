@@ -961,8 +961,7 @@ class Proto3PrimitiveRepeatedWireFormatTest : public ::testing::Test {
     message->add_repeated_float(1.0);
     message->add_repeated_double(1.0);
     message->add_repeated_bool(true);
-    message->add_repeated_nested_enum(
-        proto3_arena_unittest::TestAllTypes_NestedEnum_FOO);
+    message->add_repeated_nested_enum(proto3_arena_unittest::TestAllTypes::FOO);
   }
 
   template <class Proto>
@@ -980,7 +979,7 @@ class Proto3PrimitiveRepeatedWireFormatTest : public ::testing::Test {
     EXPECT_EQ(1.0, message.repeated_float(0));
     EXPECT_EQ(1.0, message.repeated_double(0));
     EXPECT_EQ(true, message.repeated_bool(0));
-    EXPECT_EQ(proto3_arena_unittest::TestAllTypes_NestedEnum_FOO,
+    EXPECT_EQ(proto3_arena_unittest::TestAllTypes::FOO,
               message.repeated_nested_enum(0));
   }
 

@@ -43,9 +43,6 @@ namespace protobuf {
 namespace util {
 namespace converter {
 
-;
-;
-;
 using util::Status;
 using util::StatusOr;
 using util::error::Code;

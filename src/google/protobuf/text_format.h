@@ -157,8 +157,8 @@ class PROTOBUF_EXPORT TextFormat {
     GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FastFieldValuePrinter);
   };
 
-  class PROTOBUF_EXPORT PROTOBUF_DEPRECATED_MSG(
-      "Please use FastFieldValuePrinter") FieldValuePrinter {
+  // Deprecated: please use FastFieldValuePrinter instead.
+  class PROTOBUF_EXPORT FieldValuePrinter {
    public:
     FieldValuePrinter();
     virtual ~FieldValuePrinter();
@@ -286,10 +286,12 @@ class PROTOBUF_EXPORT TextFormat {
     // sequences. This will change the default FastFieldValuePrinter.
     void SetUseUtf8StringEscaping(bool as_utf8);
 
-    // Set the default (Fast)FieldValuePrinter that is used for all fields that
+    // Set the default FastFieldValuePrinter that is used for all fields that
     // don't have a field-specific printer registered.
     // Takes ownership of the printer.
     void SetDefaultFieldValuePrinter(const FastFieldValuePrinter* printer);
+
+    PROTOBUF_DEPRECATED_MSG("Please use FastFieldValuePrinter")
     void SetDefaultFieldValuePrinter(const FieldValuePrinter* printer);
 
     // Sets whether we want to hide unknown fields or not.
@@ -335,15 +337,17 @@ class PROTOBUF_EXPORT TextFormat {
       truncate_string_field_longer_than_ = truncate_string_field_longer_than;
     }
 
-    // Register a custom field-specific (Fast)FieldValuePrinter for fields
+    // Register a custom field-specific FastFieldValuePrinter for fields
     // with a particular FieldDescriptor.
     // Returns "true" if the registration succeeded, or "false", if there is
     // already a printer for that FieldDescriptor.
     // Takes ownership of the printer on successful registration.
     bool RegisterFieldValuePrinter(const FieldDescriptor* field,
-                                   const FieldValuePrinter* printer);
-    bool RegisterFieldValuePrinter(const FieldDescriptor* field,
                                    const FastFieldValuePrinter* printer);
+
+    PROTOBUF_DEPRECATED_MSG("Please use FastFieldValuePrinter")
+    bool RegisterFieldValuePrinter(const FieldDescriptor* field,
+                                   const FieldValuePrinter* printer);
 
     // Register a custom message-specific MessagePrinter for messages with a
     // particular Descriptor.

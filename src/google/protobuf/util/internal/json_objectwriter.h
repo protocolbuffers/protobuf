@@ -38,7 +38,9 @@
 #include <google/protobuf/util/internal/structured_objectwriter.h>
 #include <google/protobuf/stubs/bytestream.h>
 
+// clang-format off
 #include <google/protobuf/port_def.inc>
+// clang-format on
 
 namespace google {
 namespace protobuf {
@@ -92,7 +94,22 @@ class PROTOBUF_EXPORT JsonObjectWriter : public StructuredObjectWriter {
         stream_(out),
         sink_(out),
         indent_string_(indent_string),
-        use_websafe_base64_for_bytes_(false) {}
+        indent_char_('\0'),
+        indent_count_(0),
+        use_websafe_base64_for_bytes_(false) {
+    // See if we have a trivial sequence of indent characters.
+    if (!indent_string.empty()) {
+      indent_char_ = indent_string[0];
+      indent_count_ = indent_string.length();
+      for (int i = 1; i < indent_string.length(); i++) {
+        if (indent_char_ != indent_string_[i]) {
+          indent_char_ = '\0';
+          indent_count_ = 0;
+          break;
+        }
+      }
+    }
+  }
   virtual ~JsonObjectWriter();
 
   // ObjectWriter methods.
@@ -169,9 +186,9 @@ class PROTOBUF_EXPORT JsonObjectWriter : public StructuredObjectWriter {
   // methods convert their argument to a string and call this method. This
   // method can then be used to render the simple value without escaping it.
   JsonObjectWriter* RenderSimple(StringPiece name,
-                                 const std::string& value) {
+                                 StringPiece value) {
     WritePrefix(name);
-    stream_->WriteString(value);
+    WriteRawString(value);
     return this;
   }
 
@@ -196,9 +213,25 @@ class PROTOBUF_EXPORT JsonObjectWriter : public StructuredObjectWriter {
   // followed by optional indentation. Otherwise this method is a noop.
   void NewLine() {
     if (!indent_string_.empty()) {
-      WriteChar('\n');
-      for (int i = 0; i < element()->level(); i++) {
-        stream_->WriteString(indent_string_);
+      size_t len = sizeof('\n') + (indent_string_.size() * element()->level());
+
+      // Take the slow-path if we don't have sufficient characters remaining in
+      // our buffer or we have a non-trivial indent string which would prevent
+      // us from using memset.
+      uint8* out = nullptr;
+      if (indent_count_ > 0) {
+        out = stream_->GetDirectBufferForNBytesAndAdvance(len);
+      }
+
+      if (out != nullptr) {
+        out[0] = '\n';
+        memset(&out[1], indent_char_, len - 1);
+      } else {
+        // Slow path, no contiguous output buffer available.
+        WriteChar('\n');
+        for (int i = 0; i < element()->level(); i++) {
+          stream_->WriteRaw(indent_string_.c_str(), indent_string_.length());
+        }
       }
     }
   }
@@ -211,10 +244,19 @@ class PROTOBUF_EXPORT JsonObjectWriter : public StructuredObjectWriter {
   // Writes an individual character to the output.
   void WriteChar(const char c) { stream_->WriteRaw(&c, sizeof(c)); }
 
+  // Writes a string to the output.
+  void WriteRawString(StringPiece s) {
+    stream_->WriteRaw(s.data(), s.length());
+  }
+
   std::unique_ptr<Element> element_;
   io::CodedOutputStream* stream_;
   ByteSinkWrapper sink_;
   const std::string indent_string_;
+
+  // For the common case of indent being a single character repeated.
+  char indent_char_;
+  int indent_count_;
 
   // Whether to use regular or websafe base64 encoding for byte fields. Defaults
   // to regular base64 encoding.

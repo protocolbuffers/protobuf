@@ -866,7 +866,7 @@ uint8* EpsCopyOutputStream::WriteRawLittleEndian32(const void* data, int size,
   auto p = static_cast<const uint8*>(data);
   auto end = p + size;
   while (end - p >= kSlopBytes) {
-    EnsureSpace(&ptr);
+    ptr = EnsureSpace(ptr);
     uint32 buffer[4];
     static_assert(sizeof(buffer) == kSlopBytes, "Buffer must be kSlopBytes");
     std::memcpy(buffer, p, kSlopBytes);
@@ -875,7 +875,7 @@ uint8* EpsCopyOutputStream::WriteRawLittleEndian32(const void* data, int size,
       ptr = CodedOutputStream::WriteLittleEndian32ToArray(x, ptr);
   }
   while (p < end) {
-    EnsureSpace(&ptr);
+    ptr = EnsureSpace(ptr);
     uint32 buffer;
     std::memcpy(&buffer, p, 4);
     p += 4;
@@ -889,7 +889,7 @@ uint8* EpsCopyOutputStream::WriteRawLittleEndian64(const void* data, int size,
   auto p = static_cast<const uint8*>(data);
   auto end = p + size;
   while (end - p >= kSlopBytes) {
-    EnsureSpace(&ptr);
+    ptr = EnsureSpace(ptr);
     uint64 buffer[2];
     static_assert(sizeof(buffer) == kSlopBytes, "Buffer must be kSlopBytes");
     std::memcpy(buffer, p, kSlopBytes);
@@ -898,7 +898,7 @@ uint8* EpsCopyOutputStream::WriteRawLittleEndian64(const void* data, int size,
       ptr = CodedOutputStream::WriteLittleEndian64ToArray(x, ptr);
   }
   while (p < end) {
-    EnsureSpace(&ptr);
+    ptr = EnsureSpace(ptr);
     uint64 buffer;
     std::memcpy(&buffer, p, 8);
     p += 8;
@@ -912,7 +912,7 @@ uint8* EpsCopyOutputStream::WriteRawLittleEndian64(const void* data, int size,
 uint8* EpsCopyOutputStream::WriteStringMaybeAliasedOutline(uint32 num,
                                                            const std::string& s,
                                                            uint8* ptr) {
-  EnsureSpace(&ptr);
+  ptr = EnsureSpace(ptr);
   uint32 size = s.size();
   ptr = WriteLengthDelim(num, size, ptr);
   return WriteRawMaybeAliased(s.data(), size, ptr);
@@ -920,7 +920,7 @@ uint8* EpsCopyOutputStream::WriteStringMaybeAliasedOutline(uint32 num,
 
 uint8* EpsCopyOutputStream::WriteStringOutline(uint32 num, const std::string& s,
                                                uint8* ptr) {
-  EnsureSpace(&ptr);
+  ptr = EnsureSpace(ptr);
   uint32 size = s.size();
   ptr = WriteLengthDelim(num, size, ptr);
   return WriteRaw(s.data(), size, ptr);

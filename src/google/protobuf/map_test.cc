@@ -3402,6 +3402,21 @@ TEST(ArenaTest, IsInitialized) {
   EXPECT_EQ(0, (*message->mutable_map_int32_int32())[0]);
 }
 
+TEST(ArenaTest, DynamicMapFieldOnArena) {
+  Arena arena;
+  unittest::TestMap message2;
+
+  DynamicMessageFactory factory;
+  Message* message1 =
+      factory.GetPrototype(unittest::TestMap::descriptor())->New(&arena);
+  MapReflectionTester reflection_tester(unittest::TestMap::descriptor());
+  reflection_tester.SetMapFieldsViaReflection(message1);
+  reflection_tester.ExpectMapFieldsSetViaReflection(*message1);
+  reflection_tester.ExpectMapFieldsSetViaReflectionIterator(message1);
+  message2.CopyFrom(*message1);
+  MapTestUtil::ExpectMapFieldsSet(message2);
+}
+
 TEST(MoveTest, MoveConstructorWorks) {
   Map<int32, TestAllTypes> original_map;
   original_map[42].mutable_optional_nested_message()->set_bb(42);

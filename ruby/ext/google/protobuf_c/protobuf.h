@@ -259,7 +259,7 @@ OneofDescriptor* ruby_to_OneofDescriptor(VALUE value);
 VALUE OneofDescriptor_initialize(VALUE _self, VALUE cookie,
                                  VALUE descriptor_pool, VALUE ptr);
 VALUE OneofDescriptor_name(VALUE _self);
-VALUE OneofDescriptor_each(VALUE _self, VALUE field);
+VALUE OneofDescriptor_each(VALUE _self);
 
 void EnumDescriptor_mark(void* _self);
 void EnumDescriptor_free(void* _self);

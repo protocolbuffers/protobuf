@@ -35,7 +35,7 @@
 #include <google/protobuf/text_format.h>
 
 #include <float.h>
-#include <math.h>
+#include <cmath>
 #include <stdio.h>
 
 #include <algorithm>

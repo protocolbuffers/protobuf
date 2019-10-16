@@ -55,7 +55,7 @@ namespace Google.Protobuf
         private readonly byte[] bytes;
 
         /// <summary>
-        /// Unsafe operations that can cause IO Failure and/or other catestrophic side-effects.
+        /// Unsafe operations that can cause IO Failure and/or other catastrophic side-effects.
         /// </summary>
         internal static class Unsafe
         {

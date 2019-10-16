@@ -1238,7 +1238,7 @@ public abstract class GeneratedMessageLite<
     Object fromFieldSetType(final Object value) {
       if (descriptor.isRepeated()) {
         if (descriptor.getLiteJavaType() == WireFormat.JavaType.ENUM) {
-          final List result = new ArrayList();
+          final List result = new ArrayList<>();
           for (final Object element : (List) value) {
             result.add(singularFromFieldSetType(element));
           }
@@ -1263,7 +1263,7 @@ public abstract class GeneratedMessageLite<
     Object toFieldSetType(final Object value) {
       if (descriptor.isRepeated()) {
         if (descriptor.getLiteJavaType() == WireFormat.JavaType.ENUM) {
-          final List result = new ArrayList();
+          final List result = new ArrayList<>();
           for (final Object element : (List) value) {
             result.add(singularToFieldSetType(element));
           }

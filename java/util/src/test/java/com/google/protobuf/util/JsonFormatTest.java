@@ -1723,6 +1723,22 @@ public class JsonFormatTest extends TestCase {
     }
   }
 
+  // Test that an error is thrown if a nested JsonObject is parsed as a primitive field.
+  public void testJsonObjectForPrimitiveField() throws Exception {
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    try {
+      mergeFromJson(
+          "{\n"
+              + "  \"optionalString\": {\n"
+              + "    \"invalidNestedString\": \"Hello world\"\n"
+              + "  }\n"
+              + "}\n",
+          builder);
+    } catch (InvalidProtocolBufferException e) {
+      // Expected.
+    }
+  }
+
   public void testSortedMapKeys() throws Exception {
     TestMap.Builder mapBuilder = TestMap.newBuilder();
     mapBuilder.putStringToInt32Map("\ud834\udd20", 3); // utf-8 F0 9D 84 A0

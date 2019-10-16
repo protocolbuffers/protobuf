@@ -30,6 +30,10 @@
 
 package com.google.protobuf;
 
+import static com.google.protobuf.TextFormatEscaper.escapeBytes;
+import static java.lang.Integer.toHexString;
+import static java.lang.System.identityHashCode;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -49,6 +53,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.NoSuchElementException;
 
 /**
@@ -1268,7 +1273,17 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
   @Override
   public final String toString() {
     return String.format(
-        "<ByteString@%s size=%d>", Integer.toHexString(System.identityHashCode(this)), size());
+        Locale.ROOT,
+        "<ByteString@%s size=%d contents=\"%s\">",
+        toHexString(identityHashCode(this)),
+        size(),
+        truncateAndEscapeForDisplay());
+  }
+
+  private String truncateAndEscapeForDisplay() {
+    final int limit = 50;
+
+    return size() <= limit ? escapeBytes(this) : escapeBytes(substring(0, limit - 3)) + "...";
   }
 
   /**
