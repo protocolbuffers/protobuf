@@ -1232,7 +1232,7 @@ VALUE OneofDescriptor_name(VALUE _self) {
  *
  * Iterates through fields in this oneof, yielding to the block on each one.
  */
-VALUE OneofDescriptor_each(VALUE _self, VALUE field) {
+VALUE OneofDescriptor_each(VALUE _self) {
   DEFINE_SELF(OneofDescriptor, self, _self);
   upb_oneof_iter it;
   for (upb_oneof_begin(&it, self->oneofdef);
