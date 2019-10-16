@@ -1222,7 +1222,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
       "}\n"
 	  #ifdef __CUDACC__
 	  //nvcc
-	  "static constexpr int kIndexInFileMessages =\n"
+	  "static const int kIndexInFileMessages =\n"
 	  #else
       "static constexpr int kIndexInFileMessages =\n"
 	  #endif
