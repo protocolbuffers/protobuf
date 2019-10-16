@@ -1703,7 +1703,7 @@ inline uint8* WireFormatLite::InternalWriteGroupToArray(
     io::EpsCopyOutputStream* stream) {
   target = WriteTagToArray(field_number, WIRETYPE_START_GROUP, target);
   target = value.InternalSerializeWithCachedSizesToArray(target, stream);
-  stream->EnsureSpace(&target);
+  target = stream->EnsureSpace(target);
   return WriteTagToArray(field_number, WIRETYPE_END_GROUP, target);
 }
 template <typename MessageType>

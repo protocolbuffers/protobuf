@@ -228,17 +228,17 @@ TEST_F(CodedStreamTest, EmptyInputBeforeEos) {
     In() : count_(0) {}
 
    private:
-    virtual bool Next(const void** data, int* size) {
+    bool Next(const void** data, int* size) override {
       *data = NULL;
       *size = 0;
       return count_++ < 2;
     }
-    virtual void BackUp(int count) { GOOGLE_LOG(FATAL) << "Tests never call this."; }
-    virtual bool Skip(int count) {
+    void BackUp(int count) override { GOOGLE_LOG(FATAL) << "Tests never call this."; }
+    bool Skip(int count) override {
       GOOGLE_LOG(FATAL) << "Tests never call this.";
       return false;
     }
-    virtual int64 ByteCount() const { return 0; }
+    int64_t ByteCount() const override { return 0; }
     int count_;
   } in;
   CodedInputStream input(&in);
@@ -1280,7 +1280,7 @@ class ReallyBigInputStream : public ZeroCopyInputStream {
   ~ReallyBigInputStream() {}
 
   // implements ZeroCopyInputStream ----------------------------------
-  bool Next(const void** data, int* size) {
+  bool Next(const void** data, int* size) override {
     // We only expect BackUp() to be called at the end.
     EXPECT_EQ(0, backup_amount_);
 
@@ -1302,13 +1302,13 @@ class ReallyBigInputStream : public ZeroCopyInputStream {
     }
   }
 
-  void BackUp(int count) { backup_amount_ = count; }
+  void BackUp(int count) override { backup_amount_ = count; }
 
-  bool Skip(int count) {
+  bool Skip(int count) override {
     GOOGLE_LOG(FATAL) << "Not implemented.";
     return false;
   }
-  int64 ByteCount() const {
+  int64_t ByteCount() const override {
     GOOGLE_LOG(FATAL) << "Not implemented.";
     return 0;
   }

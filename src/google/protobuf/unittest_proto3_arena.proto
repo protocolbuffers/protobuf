@@ -206,3 +206,13 @@ enum ForeignEnum {
 // TestEmptyMessage is used to test behavior of unknown fields.
 message TestEmptyMessage {
 }
+
+// Needed for a Python test.
+message TestPickleNestedMessage {
+  message NestedMessage {
+    int32 bb = 1;
+    message NestedNestedMessage {
+      int32 cc = 1;
+    }
+  }
+}

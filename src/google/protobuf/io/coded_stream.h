@@ -109,6 +109,7 @@
 #ifndef GOOGLE_PROTOBUF_IO_CODED_STREAM_H__
 #define GOOGLE_PROTOBUF_IO_CODED_STREAM_H__
 
+
 #include <assert.h>
 
 #include <atomic>
@@ -684,10 +685,11 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
   // After this it's guaranteed you can safely write kSlopBytes to ptr. This
   // will never fail! The underlying stream can produce an error. Use HadError
   // to check for errors.
-  void EnsureSpace(uint8** ptr) {
-    if (PROTOBUF_PREDICT_FALSE(*ptr >= end_)) {
-      *ptr = EnsureSpaceFallback(*ptr);
+  PROTOBUF_MUST_USE_RESULT uint8* EnsureSpace(uint8* ptr) {
+    if (PROTOBUF_PREDICT_FALSE(ptr >= end_)) {
+      return EnsureSpaceFallback(ptr);
     }
+    return ptr;
   }
 
   uint8* WriteRaw(const void* data, int size, uint8* ptr) {
@@ -782,7 +784,7 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
   template <typename T>
   PROTOBUF_ALWAYS_INLINE uint8* WriteFixedPacked(int num, const T& r,
                                                  uint8* ptr) {
-    EnsureSpace(&ptr);
+    ptr = EnsureSpace(ptr);
     constexpr auto element_size = sizeof(typename T::value_type);
     auto size = r.size() * element_size;
     ptr = WriteLengthDelim(num, size, ptr);
@@ -874,12 +876,12 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
   template <typename T, typename E>
   PROTOBUF_ALWAYS_INLINE uint8* WriteVarintPacked(int num, const T& r, int size,
                                                   uint8* ptr, const E& encode) {
-    EnsureSpace(&ptr);
+    ptr = EnsureSpace(ptr);
     ptr = WriteLengthDelim(num, size, ptr);
     auto it = r.data();
     auto end = it + r.size();
     do {
-      EnsureSpace(&ptr);
+      ptr = EnsureSpace(ptr);
       ptr = UnsafeVarint(encode(*it++), ptr);
     } while (it < end);
     return ptr;
@@ -1124,14 +1126,14 @@ class PROTOBUF_EXPORT CodedOutputStream {
 
   // Write a 32-bit little-endian integer.
   void WriteLittleEndian32(uint32 value) {
-    impl_.EnsureSpace(&cur_);
+    cur_ = impl_.EnsureSpace(cur_);
     SetCur(WriteLittleEndian32ToArray(value, Cur()));
   }
   // Like WriteLittleEndian32()  but writing directly to the target array.
   static uint8* WriteLittleEndian32ToArray(uint32 value, uint8* target);
   // Write a 64-bit little-endian integer.
   void WriteLittleEndian64(uint64 value) {
-    impl_.EnsureSpace(&cur_);
+    cur_ = impl_.EnsureSpace(cur_);
     SetCur(WriteLittleEndian64ToArray(value, Cur()));
   }
   // Like WriteLittleEndian64()  but writing directly to the target array.
@@ -1636,12 +1638,12 @@ inline uint8* CodedOutputStream::WriteLittleEndian64ToArray(uint64 value,
 }
 
 inline void CodedOutputStream::WriteVarint32(uint32 value) {
-  impl_.EnsureSpace(&cur_);
+  cur_ = impl_.EnsureSpace(cur_);
   SetCur(WriteVarint32ToArray(value, Cur()));
 }
 
 inline void CodedOutputStream::WriteVarint64(uint64 value) {
-  impl_.EnsureSpace(&cur_);
+  cur_ = impl_.EnsureSpace(cur_);
   SetCur(WriteVarint64ToArray(value, Cur()));
 }
 

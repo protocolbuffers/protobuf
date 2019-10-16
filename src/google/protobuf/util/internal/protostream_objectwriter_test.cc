@@ -281,7 +281,7 @@ TEST_P(ProtoStreamObjectWriterTest, ConflictingJsonName) {
 TEST_P(ProtoStreamObjectWriterTest, IntEnumValuesAreAccepted) {
   Book book;
   book.set_title("Some Book");
-  book.set_type(proto_util_converter::testing::Book_Type_KIDS);
+  book.set_type(proto_util_converter::testing::Book::KIDS);
   Author* robert = book.mutable_author();
   robert->set_name("robert");
 
@@ -317,7 +317,7 @@ TEST_P(ProtoStreamObjectWriterTest, EnumValuesWithDifferentCaseIsRejected) {
 TEST_P(ProtoStreamObjectWriterTest, EnumValuesWithSameCaseIsAccepted) {
   Book book;
   book.set_title("Some Book");
-  book.set_type(proto_util_converter::testing::Book_Type_ACTION_AND_ADVENTURE);
+  book.set_type(proto_util_converter::testing::Book::ACTION_AND_ADVENTURE);
   Author* robert = book.mutable_author();
   robert->set_name("robert");
 
@@ -337,7 +337,7 @@ TEST_P(ProtoStreamObjectWriterTest, EnumValuesWithSameCaseIsAccepted) {
 TEST_P(ProtoStreamObjectWriterTest, EnumValuesWithDifferentCaseIsAccepted) {
   Book book;
   book.set_title("Some Book");
-  book.set_type(proto_util_converter::testing::Book_Type_ACTION_AND_ADVENTURE);
+  book.set_type(proto_util_converter::testing::Book::ACTION_AND_ADVENTURE);
   Author* robert = book.mutable_author();
   robert->set_name("robert");
 
@@ -357,7 +357,7 @@ TEST_P(ProtoStreamObjectWriterTest, EnumValuesWithDifferentCaseIsAccepted) {
 TEST_P(ProtoStreamObjectWriterTest, EnumValuesWithoutUnderscoreAreAccepted) {
   Book book;
   book.set_title("Some Book");
-  book.set_type(proto_util_converter::testing::Book_Type_ACTION_AND_ADVENTURE);
+  book.set_type(proto_util_converter::testing::Book::ACTION_AND_ADVENTURE);
   Author* robert = book.mutable_author();
   robert->set_name("robert");
 
@@ -377,7 +377,7 @@ TEST_P(ProtoStreamObjectWriterTest, EnumValuesWithoutUnderscoreAreAccepted) {
 TEST_P(ProtoStreamObjectWriterTest, EnumValuesInCamelCaseAreAccepted) {
   Book book;
   book.set_title("Some Book");
-  book.set_type(proto_util_converter::testing::Book_Type_ACTION_AND_ADVENTURE);
+  book.set_type(proto_util_converter::testing::Book::ACTION_AND_ADVENTURE);
   Author* robert = book.mutable_author();
   robert->set_name("robert");
 
@@ -398,7 +398,7 @@ TEST_P(ProtoStreamObjectWriterTest,
        EnumValuesInCamelCaseRemoveDashAndUnderscoreAreAccepted) {
   Book book;
   book.set_title("Some Book");
-  book.set_type(proto_util_converter::testing::Book_Type_ACTION_AND_ADVENTURE);
+  book.set_type(proto_util_converter::testing::Book::ACTION_AND_ADVENTURE);
   Author* robert = book.mutable_author();
   robert->set_name("robert");
 
@@ -420,7 +420,7 @@ TEST_P(ProtoStreamObjectWriterTest,
        EnumValuesInCamelCaseWithNameNotUppercaseAreAccepted) {
   Book book;
   book.set_title("Some Book");
-  book.set_type(proto_util_converter::testing::Book_Type_arts_and_photography);
+  book.set_type(proto_util_converter::testing::Book::arts_and_photography);
   Author* robert = book.mutable_author();
   robert->set_name("robert");
 

@@ -43,7 +43,9 @@
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/mathlimits.h>
 
+// clang-format off
 #include <google/protobuf/port_def.inc>
+// clang-format on
 
 namespace google {
 namespace protobuf {
@@ -52,7 +54,7 @@ namespace converter {
 
 bool GetBoolOptionOrDefault(
     const RepeatedPtrField<google::protobuf::Option>& options,
-    const std::string& option_name, bool default_value) {
+    StringPiece option_name, bool default_value) {
   const google::protobuf::Option* opt = FindOptionOrNull(options, option_name);
   if (opt == nullptr) {
     return default_value;
@@ -62,7 +64,7 @@ bool GetBoolOptionOrDefault(
 
 int64 GetInt64OptionOrDefault(
     const RepeatedPtrField<google::protobuf::Option>& options,
-    const std::string& option_name, int64 default_value) {
+    StringPiece option_name, int64 default_value) {
   const google::protobuf::Option* opt = FindOptionOrNull(options, option_name);
   if (opt == nullptr) {
     return default_value;
@@ -72,7 +74,7 @@ int64 GetInt64OptionOrDefault(
 
 double GetDoubleOptionOrDefault(
     const RepeatedPtrField<google::protobuf::Option>& options,
-    const std::string& option_name, double default_value) {
+    StringPiece option_name, double default_value) {
   const google::protobuf::Option* opt = FindOptionOrNull(options, option_name);
   if (opt == nullptr) {
     return default_value;
@@ -82,10 +84,10 @@ double GetDoubleOptionOrDefault(
 
 std::string GetStringOptionOrDefault(
     const RepeatedPtrField<google::protobuf::Option>& options,
-    const std::string& option_name, const std::string& default_value) {
+    StringPiece option_name, StringPiece default_value) {
   const google::protobuf::Option* opt = FindOptionOrNull(options, option_name);
   if (opt == nullptr) {
-    return default_value;
+    return std::string(default_value);
   }
   return GetStringFromAny(opt->value());
 }
@@ -139,7 +141,7 @@ const std::string GetFullTypeWithUrl(StringPiece simple_type) {
 
 const google::protobuf::Option* FindOptionOrNull(
     const RepeatedPtrField<google::protobuf::Option>& options,
-    const std::string& option_name) {
+    StringPiece option_name) {
   for (int i = 0; i < options.size(); ++i) {
     const google::protobuf::Option& opt = options.Get(i);
     if (opt.name() == option_name) {
@@ -240,14 +242,14 @@ const google::protobuf::EnumValue* FindEnumValueByNameWithoutUnderscoreOrNull(
   return nullptr;
 }
 
-std::string EnumValueNameToLowerCamelCase(const StringPiece input) {
+std::string EnumValueNameToLowerCamelCase(StringPiece input) {
   std::string input_string(input);
   std::transform(input_string.begin(), input_string.end(), input_string.begin(),
                  ::tolower);
   return ToCamelCase(input_string);
 }
 
-std::string ToCamelCase(const StringPiece input) {
+std::string ToCamelCase(StringPiece input) {
   bool capitalize_next = false;
   bool was_cap = true;
   bool is_cap = false;
@@ -352,15 +354,14 @@ bool IsWellKnownType(const std::string& type_name) {
   return ContainsKey(*well_known_types_, type_name);
 }
 
-bool IsValidBoolString(const std::string& bool_string) {
+bool IsValidBoolString(StringPiece bool_string) {
   return bool_string == "true" || bool_string == "false" ||
          bool_string == "1" || bool_string == "0";
 }
 
 bool IsMap(const google::protobuf::Field& field,
            const google::protobuf::Type& type) {
-  return field.cardinality() ==
-             google::protobuf::Field_Cardinality_CARDINALITY_REPEATED &&
+  return field.cardinality() == google::protobuf::Field::CARDINALITY_REPEATED &&
          (GetBoolOptionOrDefault(type.options(), "map_entry", false) ||
           GetBoolOptionOrDefault(type.options(),
                                  "google.protobuf.MessageOptions.map_entry",

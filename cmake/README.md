@@ -131,7 +131,7 @@ If the *gmock* directory does not exist, and you do not want to build protobuf u
 you need to add *cmake* command argument `-Dprotobuf_BUILD_TESTS=OFF` to disable testing.
 
 To make a *Visual Studio* file for Visual Studio 15 2017, create the *Visual Studio*
-solution file above and edit the CmakeCache file.
+solution file above and edit the CMakeCache file.
 
 	C:Path\to\protobuf\cmake\build\solution\CMakeCache
 

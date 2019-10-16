@@ -1945,6 +1945,14 @@ public class JsonFormat {
           return field.getEnumType().findValueByNumber(0);
         }
         return null;
+      } else if (json instanceof JsonObject) {
+        if (field.getType() != FieldDescriptor.Type.MESSAGE
+            && field.getType() != FieldDescriptor.Type.GROUP) {
+          // If the field type is primitive, but the json type is JsonObject rather than
+          // JsonElement, throw a type mismatch error.
+          throw new InvalidProtocolBufferException(
+              String.format("Invalid value: %s for expected type: %s", json, field.getType()));
+        }
       }
       switch (field.getType()) {
         case INT32:

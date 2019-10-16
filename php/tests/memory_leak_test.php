@@ -31,6 +31,7 @@ require_once('generated/Foo/TestPackedMessage.php');
 require_once('generated/Foo/TestPhpDoc.php');
 require_once('generated/Foo/TestRandomFieldOrder.php');
 require_once('generated/Foo/TestReverseFieldOrder.php');
+require_once('generated/Foo/TestStringValue.php');
 require_once('generated/Foo/TestUnpackedMessage.php');
 require_once('generated/Foo/testLowerCaseMessage.php');
 require_once('generated/Foo/testLowerCaseEnum.php');

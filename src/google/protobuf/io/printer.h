@@ -37,6 +37,7 @@
 #ifndef GOOGLE_PROTOBUF_IO_PRINTER_H__
 #define GOOGLE_PROTOBUF_IO_PRINTER_H__
 
+
 #include <map>
 #include <string>
 #include <vector>

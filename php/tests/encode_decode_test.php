@@ -5,6 +5,7 @@ require_once('test_util.php');
 
 use Google\Protobuf\RepeatedField;
 use Google\Protobuf\GPBType;
+use Foo\TestStringValue;
 use Foo\TestAny;
 use Foo\TestEnum;
 use Foo\TestMessage;
@@ -165,6 +166,14 @@ class EncodeDecodeTest extends TestBase
         $m = new StringValue();
         $m->setValue("a");
         $this->assertSame("\"a\"", $m->serializeToJsonString());
+    }
+
+    public function testEncodeStringValue()
+    {
+        $m = new TestStringValue(['field' => new StringValue(['value' => ''])]);
+        var_dump($m->getField());
+        var_dump($m->serializeToJsonString());
+        $this->assertSame("{\"field\":\"\"}", $m->serializeToJsonString());
     }
 
     public function testDecodeTopLevelBytesValue()
@@ -1187,6 +1196,38 @@ class EncodeDecodeTest extends TestBase
         $this->assertSame("{\"mapStringString\":{\"1\":\"1\"}}", $data);
         $n = new TestMessage();
         $n->mergeFromJsonString($data);
+    }
+
+    public function testMessageMapNoValue()
+    {
+        $m = new TestMessage();
+        $m->mergeFromString(hex2bin("CA0700"));
+        $m->serializeToString();
+        $this->assertTrue(true);
+    }
+
+    public function testAnyMapNoValue()
+    {
+        $m = new TestMessage();
+        $m->mergeFromString(hex2bin("D20700"));
+        $m->serializeToString();
+        $this->assertTrue(true);
+    }
+
+    public function testListValueMapNoValue()
+    {
+        $m = new TestMessage();
+        $m->mergeFromString(hex2bin("DA0700"));
+        $m->serializeToString();
+        $this->assertTrue(true);
+    }
+
+    public function testStructMapNoValue()
+    {
+        $m = new TestMessage();
+        $m->mergeFromString(hex2bin("E20700"));
+        $m->serializeToString();
+        $this->assertTrue(true);
     }
 
 }

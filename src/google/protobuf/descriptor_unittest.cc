@@ -3479,7 +3479,7 @@ TEST(CustomOptions, UnusedImportWarning) {
   EXPECT_EQ(
       "custom_options_import.proto: "
       "google/protobuf/unittest_custom_options.proto: IMPORT: Import "
-      "google/protobuf/unittest_custom_options.proto but not used.\n",
+      "google/protobuf/unittest_custom_options.proto is unused.\n",
       error_collector.warning_text_);
   EXPECT_EQ("", error_collector.text_);
 }
@@ -5795,7 +5795,7 @@ TEST_F(ValidationErrorTest, UnusedImportWarning) {
       "  field { name:\"base\" number:1 label:LABEL_OPTIONAL "
       "type_name:\"Base\" }"
       "}",
-      "forward.proto: bar.proto: IMPORT: Import bar.proto but not used.\n");
+      "forward.proto: bar.proto: IMPORT: Import bar.proto is unused.\n");
 }
 
 namespace {

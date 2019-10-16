@@ -95,7 +95,7 @@ void FileInputStream::BackUp(int count) { impl_.BackUp(count); }
 
 bool FileInputStream::Skip(int count) { return impl_.Skip(count); }
 
-int64 FileInputStream::ByteCount() const { return impl_.ByteCount(); }
+int64_t FileInputStream::ByteCount() const { return impl_.ByteCount(); }
 
 FileInputStream::CopyingFileInputStream::CopyingFileInputStream(
     int file_descriptor)
@@ -182,7 +182,7 @@ bool FileOutputStream::Next(void** data, int* size) {
 
 void FileOutputStream::BackUp(int count) { impl_.BackUp(count); }
 
-int64 FileOutputStream::ByteCount() const { return impl_.ByteCount(); }
+int64_t FileOutputStream::ByteCount() const { return impl_.ByteCount(); }
 
 FileOutputStream::CopyingFileOutputStream::CopyingFileOutputStream(
     int file_descriptor)
@@ -262,7 +262,7 @@ void IstreamInputStream::BackUp(int count) { impl_.BackUp(count); }
 
 bool IstreamInputStream::Skip(int count) { return impl_.Skip(count); }
 
-int64 IstreamInputStream::ByteCount() const { return impl_.ByteCount(); }
+int64_t IstreamInputStream::ByteCount() const { return impl_.ByteCount(); }
 
 IstreamInputStream::CopyingIstreamInputStream::CopyingIstreamInputStream(
     std::istream* input)
@@ -293,7 +293,7 @@ bool OstreamOutputStream::Next(void** data, int* size) {
 
 void OstreamOutputStream::BackUp(int count) { impl_.BackUp(count); }
 
-int64 OstreamOutputStream::ByteCount() const { return impl_.ByteCount(); }
+int64_t OstreamOutputStream::ByteCount() const { return impl_.ByteCount(); }
 
 OstreamOutputStream::CopyingOstreamOutputStream::CopyingOstreamOutputStream(
     std::ostream* output)
@@ -359,7 +359,7 @@ bool ConcatenatingInputStream::Skip(int count) {
   return false;
 }
 
-int64 ConcatenatingInputStream::ByteCount() const {
+int64_t ConcatenatingInputStream::ByteCount() const {
   if (stream_count_ == 0) {
     return bytes_retired_;
   } else {

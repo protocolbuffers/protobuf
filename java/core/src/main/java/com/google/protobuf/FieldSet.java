@@ -526,7 +526,7 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
     if (descriptor.isRepeated()) {
       Object value = getField(descriptor);
       if (value == null) {
-        value = new ArrayList();
+        value = new ArrayList<>();
       }
       for (Object element : (List) otherValue) {
         ((List) value).add(cloneIfMutable(element));
@@ -1266,7 +1266,7 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
       if (descriptor.isRepeated()) {
         Object value = getField(descriptor);
         if (value == null) {
-          value = new ArrayList();
+          value = new ArrayList<>();
         }
         for (Object element : (List) otherValue) {
           ((List) value).add(FieldSet.cloneIfMutable(element));

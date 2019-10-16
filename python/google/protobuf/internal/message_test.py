@@ -209,6 +209,19 @@ class MessageTest(unittest.TestCase):
     unpickled_message = pickle.loads(pickled_message)
     self.assertEqual(unpickled_message, golden_message)
 
+  def testPickleNestedMessage(self, message_module):
+    golden_message = message_module.TestPickleNestedMessage.NestedMessage(bb=1)
+    pickled_message = pickle.dumps(golden_message)
+    unpickled_message = pickle.loads(pickled_message)
+    self.assertEqual(unpickled_message, golden_message)
+
+  def testPickleNestedNestedMessage(self, message_module):
+    cls = message_module.TestPickleNestedMessage.NestedMessage
+    golden_message = cls.NestedNestedMessage(cc=1)
+    pickled_message = pickle.dumps(golden_message)
+    unpickled_message = pickle.loads(pickled_message)
+    self.assertEqual(unpickled_message, golden_message)
+
   def testPositiveInfinity(self, message_module):
     if message_module is unittest_pb2:
       golden_data = (b'\x5D\x00\x00\x80\x7F'

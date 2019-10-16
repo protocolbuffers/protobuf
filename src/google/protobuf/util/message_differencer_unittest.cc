@@ -659,32 +659,32 @@ TEST(MessageDifferencerTest, WithinDefaultFractionOrMarginDoubleTest) {
   // Compare
   EXPECT_FALSE(differencer.Compare(msg1, msg2));
 
-  // Set up a custom field comparitor, with a default fraction and margin for
+  // Set up a custom field comparator, with a default fraction and margin for
   // float and double comparison.
-  util::DefaultFieldComparator field_comparitor;
-  field_comparitor.SetDefaultFractionAndMargin(0.0, 10.0);
-  differencer.set_field_comparator(&field_comparitor);
+  util::DefaultFieldComparator field_comparator;
+  field_comparator.SetDefaultFractionAndMargin(0.0, 10.0);
+  differencer.set_field_comparator(&field_comparator);
 
   // Set comparison to exact, margin and fraction value should not matter.
-  field_comparitor.set_float_comparison(util::DefaultFieldComparator::EXACT);
+  field_comparator.set_float_comparison(util::DefaultFieldComparator::EXACT);
   EXPECT_FALSE(differencer.Compare(msg1, msg2));
 
   // Margin and fraction comparison is activated when float comparison is
   // set to approximate.
-  field_comparitor.set_float_comparison(
+  field_comparator.set_float_comparison(
       util::DefaultFieldComparator::APPROXIMATE);
   EXPECT_TRUE(differencer.Compare(msg1, msg2));
 
   // Test out comparison with fraction.
-  field_comparitor.SetDefaultFractionAndMargin(0.2, 0.0);
+  field_comparator.SetDefaultFractionAndMargin(0.2, 0.0);
   EXPECT_TRUE(differencer.Compare(msg1, msg2));
 
   // Should fail since the fraction is smaller than error.
-  field_comparitor.SetDefaultFractionAndMargin(0.01, 0.0);
+  field_comparator.SetDefaultFractionAndMargin(0.01, 0.0);
   EXPECT_FALSE(differencer.Compare(msg1, msg2));
 
   // Should pass if either fraction or margin are satisfied.
-  field_comparitor.SetDefaultFractionAndMargin(0.01, 10.0);
+  field_comparator.SetDefaultFractionAndMargin(0.01, 10.0);
   EXPECT_TRUE(differencer.Compare(msg1, msg2));
 
   // Make sure that the default margin and fraction affects all fields
