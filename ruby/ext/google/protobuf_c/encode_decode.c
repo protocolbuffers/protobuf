@@ -298,6 +298,15 @@ static void *submsg_handler(void *closure, const void *hd) {
   return submsg;
 }
 
+static void* startwrapper(void* closure, const void* hd) {
+  char* msg = closure;
+  const submsg_handlerdata_t* submsgdata = hd;
+
+  set_hasbit(closure, submsgdata->hasbit);
+
+  return msg + submsgdata->ofs;
+}
+
 // Handler data for startmap/endmap handlers.
 typedef struct {
   size_t ofs;
@@ -541,6 +550,85 @@ static void add_handlers_for_repeated_field(upb_handlers *h,
   }
 }
 
+static bool doublewrapper_handler(void* closure, const void* hd, double val) {
+  VALUE* rbval = closure;
+  *rbval = DBL2NUM(val);
+  return true;
+}
+
+static bool floatwrapper_handler(void* closure, const void* hd, float val) {
+  VALUE* rbval = closure;
+  *rbval = DBL2NUM(val);
+  return true;
+}
+
+static bool int64wrapper_handler(void* closure, const void* hd, int64_t val) {
+  VALUE* rbval = closure;
+  *rbval = LL2NUM(val);
+  return true;
+}
+
+static bool uint64wrapper_handler(void* closure, const void* hd, uint64_t val) {
+  VALUE* rbval = closure;
+  *rbval = ULL2NUM(val);
+  return true;
+}
+
+static bool int32wrapper_handler(void* closure, const void* hd, int32_t val) {
+  VALUE* rbval = closure;
+  *rbval = INT2NUM(val);
+  return true;
+}
+
+static bool uint32wrapper_handler(void* closure, const void* hd, uint32_t val) {
+  VALUE* rbval = closure;
+  *rbval = UINT2NUM(val);
+  return true;
+}
+
+static size_t stringwrapper_handler(void* closure, const void* hd,
+                                    const char* ptr, size_t len,
+                                    const upb_bufhandle* handle) {
+  VALUE* rbval = closure;
+  *rbval = get_frozen_string(ptr, len, false);
+  return len;
+}
+
+static size_t byteswrapper_handler(void* closure, const void* hd,
+                                   const char* ptr, size_t len,
+                                   const upb_bufhandle* handle) {
+  VALUE* rbval = closure;
+  *rbval = get_frozen_string(ptr, len, true);
+  return len;
+}
+
+static bool boolwrapper_handler(void* closure, const void* hd, bool val) {
+  VALUE* rbval = closure;
+  if (val) {
+    *rbval = Qtrue;
+  } else {
+    *rbval = Qfalse;
+  }
+  return true;
+}
+
+bool is_wrapper(const upb_msgdef* m) {
+  switch (upb_msgdef_wellknowntype(m)) {
+    case UPB_WELLKNOWN_DOUBLEVALUE:
+    case UPB_WELLKNOWN_FLOATVALUE:
+    case UPB_WELLKNOWN_INT64VALUE:
+    case UPB_WELLKNOWN_UINT64VALUE:
+    case UPB_WELLKNOWN_INT32VALUE:
+    case UPB_WELLKNOWN_UINT32VALUE:
+    case UPB_WELLKNOWN_STRINGVALUE:
+    case UPB_WELLKNOWN_BYTESVALUE:
+    case UPB_WELLKNOWN_BOOLVALUE:
+      return true;
+    default:
+      return false;
+  }
+}
+
 // Set up handlers for a singular field.
 static void add_handlers_for_singular_field(const Descriptor* desc,
                                             upb_handlers* h,
@@ -580,8 +668,11 @@ static void add_handlers_for_singular_field(const Descriptor* desc,
       upb_handlerattr attr = UPB_HANDLERATTR_INIT;
       attr.handler_data = newsubmsghandlerdata(
           h, offset, hasbit, field_type_class(desc->layout, f));
-      upb_handlers_setstartsubmsg(h, f, submsg_handler, &attr);
-      break;
+      if (is_wrapper(upb_fielddef_msgsubdef(f))) {
+        upb_handlers_setstartsubmsg(h, f, startwrapper, &attr);
+      } else {
+        upb_handlers_setstartsubmsg(h, f, submsg_handler, &attr);
+      }
     }
   }
 }
@@ -621,6 +712,43 @@ static void add_handlers_for_mapentry(const upb_msgdef* msgdef, upb_handlers* h,
       desc, h, value_field,
       offsetof(map_parse_frame_t, value_storage),
       MESSAGE_FIELD_NO_HASBIT);
+}
+
+static void add_handlers_for_wrapper(const upb_msgdef* msgdef,
+                                     upb_handlers* h) {
+  const upb_fielddef* f = upb_msgdef_itof(msgdef, 1);
+  switch (upb_msgdef_wellknowntype(msgdef)) {
+    case UPB_WELLKNOWN_DOUBLEVALUE:
+      upb_handlers_setdouble(h, f, doublewrapper_handler, NULL);
+      break;
+    case UPB_WELLKNOWN_FLOATVALUE:
+      upb_handlers_setfloat(h, f, floatwrapper_handler, NULL);
+      break;
+    case UPB_WELLKNOWN_INT64VALUE:
+      upb_handlers_setint64(h, f, int64wrapper_handler, NULL);
+      break;
+    case UPB_WELLKNOWN_UINT64VALUE:
+      upb_handlers_setuint64(h, f, uint64wrapper_handler, NULL);
+      break;
+    case UPB_WELLKNOWN_INT32VALUE:
+      upb_handlers_setint32(h, f, int32wrapper_handler, NULL);
+      break;
+    case UPB_WELLKNOWN_UINT32VALUE:
+      upb_handlers_setuint32(h, f, uint32wrapper_handler, NULL);
+      break;
+    case UPB_WELLKNOWN_STRINGVALUE:
+      upb_handlers_setstring(h, f, stringwrapper_handler, NULL);
+      break;
+    case UPB_WELLKNOWN_BYTESVALUE:
+      upb_handlers_setstring(h, f, byteswrapper_handler, NULL);
+      break;
+    case UPB_WELLKNOWN_BOOLVALUE:
+      upb_handlers_setbool(h, f, boolwrapper_handler, NULL);
+      return;
+    default:
+      rb_raise(rb_eRuntimeError,
+               "Internal logic error with well-known types.");
+  }
 }
 
 // Set up handlers for a oneof field.
@@ -703,6 +831,12 @@ void add_handlers_for_message(const void *closure, upb_handlers *h) {
   // bail out of the normal (user-defined) message type handling.
   if (upb_msgdef_mapentry(msgdef)) {
     add_handlers_for_mapentry(msgdef, h, desc);
+    return;
+  }
+
+  // If this is a wrapper type, use special handlers and bail.
+  if (is_wrapper(msgdef)) {
+    add_handlers_for_wrapper(msgdef, h);
     return;
   }
 

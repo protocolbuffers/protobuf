@@ -1266,6 +1266,44 @@ module CommonTests
   end
 
   def test_wrapper_getters
+    run_asserts = ->(m) {
+      assert_equal 2.0, m.double_as_value
+      assert_equal 2.0, m.double.value
+      assert_equal 2.0, m.double_as_value
+
+      assert_equal 4.0, m.float_as_value
+      assert_equal 4.0, m.float.value
+      assert_equal 4.0, m.float_as_value
+
+      assert_equal 3, m.int32_as_value
+      assert_equal 3, m.int32.value
+      assert_equal 3, m.int32_as_value
+
+      assert_equal 4, m.int64_as_value
+      assert_equal 4, m.int64.value
+      assert_equal 4, m.int64_as_value
+
+      assert_equal 5, m.uint32_as_value
+      assert_equal 5, m.uint32.value
+      assert_equal 5, m.uint32_as_value
+
+      assert_equal 6, m.uint64_as_value
+      assert_equal 6, m.uint64.value
+      assert_equal 6, m.uint64_as_value
+
+      assert_equal true, m.bool_as_value
+      assert_equal true, m.bool.value
+      assert_equal true, m.bool_as_value
+
+      assert_equal 'str', m.string_as_value
+      assert_equal 'str', m.string.value
+      assert_equal 'str', m.string_as_value
+
+      assert_equal 'fun', m.bytes_as_value
+      assert_equal 'fun', m.bytes.value
+      assert_equal 'fun', m.bytes_as_value
+    }
+
     m = proto_module::Wrapper.new(
       double: Google::Protobuf::DoubleValue.new(value: 2.0),
       float: Google::Protobuf::FloatValue.new(value: 4.0),
@@ -1279,24 +1317,10 @@ module CommonTests
       real_string: '100'
     )
 
-    assert_equal 2.0, m.double_as_value
-    assert_equal 2.0, m.double.value
-    assert_equal 4.0, m.float_as_value
-    assert_equal 4.0, m.float.value
-    assert_equal 3, m.int32_as_value
-    assert_equal 3, m.int32.value
-    assert_equal 4, m.int64_as_value
-    assert_equal 4, m.int64.value
-    assert_equal 5, m.uint32_as_value
-    assert_equal 5, m.uint32.value
-    assert_equal 6, m.uint64_as_value
-    assert_equal 6, m.uint64.value
-    assert_equal true, m.bool_as_value
-    assert_equal true, m.bool.value
-    assert_equal 'str', m.string_as_value
-    assert_equal 'str', m.string.value
-    assert_equal 'fun', m.bytes_as_value
-    assert_equal 'fun', m.bytes.value
+    run_asserts.call(m)
+    serialized = proto_module::Wrapper::encode(m)
+    m2 = proto_module::Wrapper::decode(serialized)
+    run_asserts.call(m2)
   end
 
   def test_wrapper_setters_as_value
@@ -1443,7 +1467,7 @@ module CommonTests
     assert_raise(NoMethodError) { m.string_XXXXXXXXX }
     assert_raise(NoMethodError) { m.string_XXXXXXXXXX }
   end
-  
+
   def test_converts_time
     m = proto_module::TimeMessage.new
 
