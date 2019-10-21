@@ -108,8 +108,12 @@ enum {
 };
 
 // Check if the field is a well known wrapper type
-static bool is_wrapper_type_field(const upb_fielddef* field) {
-  const upb_msgdef *m = upb_fielddef_msgsubdef(field);
+bool is_wrapper_type_field(const upb_fielddef* field) {
+  const upb_msgdef *m;
+  if (upb_fielddef_type(field) != UPB_TYPE_MESSAGE) {
+    return false;
+  }
+  m = upb_fielddef_msgsubdef(field);
   switch (upb_msgdef_wellknowntype(m)) {
     case UPB_WELLKNOWN_DOUBLEVALUE:
     case UPB_WELLKNOWN_FLOATVALUE:
@@ -127,8 +131,8 @@ static bool is_wrapper_type_field(const upb_fielddef* field) {
 }
 
 // Get a new Ruby wrapper type and set the initial value
-static VALUE ruby_wrapper_type(const MessageLayout* layout,
-                               const upb_fielddef* field, const VALUE value) {
+VALUE ruby_wrapper_type(const MessageLayout* layout, const upb_fielddef* field,
+                        const VALUE value) {
   if (is_wrapper_type_field(field) && value != Qnil) {
     VALUE hash = rb_hash_new();
     rb_hash_aset(hash, rb_str_new2("value"), value);
@@ -195,7 +199,6 @@ static int extract_method_call(VALUE method_name, MessageHeader* self,
     // Check if field exists and is a wrapper type
     if (upb_msgdef_lookupname(self->descriptor->msgdef, wrapper_field_name,
                               name_len - 9, &test_f_wrapper, &test_o_wrapper) &&
-        upb_fielddef_type(test_f_wrapper) == UPB_TYPE_MESSAGE &&
         is_wrapper_type_field(test_f_wrapper)) {
       // It does exist!
       has_field = true;

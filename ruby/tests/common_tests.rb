@@ -1321,126 +1321,182 @@ module CommonTests
     serialized = proto_module::Wrapper::encode(m)
     m2 = proto_module::Wrapper::decode(serialized)
     run_asserts.call(m2)
+
+    # Test the case where we are serializing directly from the parsed form
+    # (before anything lazy is materialized).
+    m3 = proto_module::Wrapper::decode(serialized)
+    serialized2 = proto_module::Wrapper::encode(m3)
+    m4 = proto_module::Wrapper::decode(serialized2)
+    run_asserts.call(m4)
+
+    # Test that the lazy form compares equal to the expanded form.
+    m5 = proto_module::Wrapper::decode(serialized2)
+
+    # This doesn't work yet.
+    # assert_equal m5, m
   end
 
   def test_wrapper_setters_as_value
+    run_asserts = ->(m) {
+      m.double_as_value = 4.8
+      assert_equal 4.8, m.double_as_value
+      assert_equal Google::Protobuf::DoubleValue.new(value: 4.8), m.double
+      m.float_as_value = 2.4
+      assert_in_delta 2.4, m.float_as_value
+      assert_in_delta Google::Protobuf::FloatValue.new(value: 2.4).value, m.float.value
+      m.int32_as_value = 5
+      assert_equal 5, m.int32_as_value
+      assert_equal Google::Protobuf::Int32Value.new(value: 5), m.int32
+      m.int64_as_value = 15
+      assert_equal 15, m.int64_as_value
+      assert_equal Google::Protobuf::Int64Value.new(value: 15), m.int64
+      m.uint32_as_value = 50
+      assert_equal 50, m.uint32_as_value
+      assert_equal Google::Protobuf::UInt32Value.new(value: 50), m.uint32
+      m.uint64_as_value = 500
+      assert_equal 500, m.uint64_as_value
+      assert_equal Google::Protobuf::UInt64Value.new(value: 500), m.uint64
+      m.bool_as_value = false
+      assert_equal false, m.bool_as_value
+      assert_equal Google::Protobuf::BoolValue.new(value: false), m.bool
+      m.string_as_value = 'xy'
+      assert_equal 'xy', m.string_as_value
+      assert_equal Google::Protobuf::StringValue.new(value: 'xy'), m.string
+      m.bytes_as_value = '123'
+      assert_equal '123', m.bytes_as_value
+      assert_equal Google::Protobuf::BytesValue.new(value: '123'), m.bytes
+
+      m.double_as_value = nil
+      assert_nil m.double
+      assert_nil m.double_as_value
+      m.float_as_value = nil
+      assert_nil m.float
+      assert_nil m.float_as_value
+      m.int32_as_value = nil
+      assert_nil m.int32
+      assert_nil m.int32_as_value
+      m.int64_as_value = nil
+      assert_nil m.int64
+      assert_nil m.int64_as_value
+      m.uint32_as_value = nil
+      assert_nil m.uint32
+      assert_nil m.uint32_as_value
+      m.uint64_as_value = nil
+      assert_nil m.uint64
+      assert_nil m.uint64_as_value
+      m.bool_as_value = nil
+      assert_nil m.bool
+      assert_nil m.bool_as_value
+      m.string_as_value = nil
+      assert_nil m.string
+      assert_nil m.string_as_value
+      m.bytes_as_value = nil
+      assert_nil m.bytes
+      assert_nil m.bytes_as_value
+    }
+
     m = proto_module::Wrapper.new
 
-    m.double_as_value = 4.8
-    assert_equal 4.8, m.double_as_value
-    assert_equal Google::Protobuf::DoubleValue.new(value: 4.8), m.double
-    m.float_as_value = 2.4
-    assert_in_delta 2.4, m.float_as_value
-    assert_in_delta Google::Protobuf::FloatValue.new(value: 2.4).value, m.float.value
-    m.int32_as_value = 5
-    assert_equal 5, m.int32_as_value
-    assert_equal Google::Protobuf::Int32Value.new(value: 5), m.int32
-    m.int64_as_value = 15
-    assert_equal 15, m.int64_as_value
-    assert_equal Google::Protobuf::Int64Value.new(value: 15), m.int64
-    m.uint32_as_value = 50
-    assert_equal 50, m.uint32_as_value
-    assert_equal Google::Protobuf::UInt32Value.new(value: 50), m.uint32
-    m.uint64_as_value = 500
-    assert_equal 500, m.uint64_as_value
-    assert_equal Google::Protobuf::UInt64Value.new(value: 500), m.uint64
-    m.bool_as_value = false
-    assert_equal false, m.bool_as_value
-    assert_equal Google::Protobuf::BoolValue.new(value: false), m.bool
-    m.string_as_value = 'xy'
-    assert_equal 'xy', m.string_as_value
-    assert_equal Google::Protobuf::StringValue.new(value: 'xy'), m.string
-    m.bytes_as_value = '123'
-    assert_equal '123', m.bytes_as_value
-    assert_equal Google::Protobuf::BytesValue.new(value: '123'), m.bytes
+    m2 = proto_module::Wrapper.new(
+      double: Google::Protobuf::DoubleValue.new(value: 2.0),
+      float: Google::Protobuf::FloatValue.new(value: 4.0),
+      int32: Google::Protobuf::Int32Value.new(value: 3),
+      int64: Google::Protobuf::Int64Value.new(value: 4),
+      uint32: Google::Protobuf::UInt32Value.new(value: 5),
+      uint64: Google::Protobuf::UInt64Value.new(value: 6),
+      bool: Google::Protobuf::BoolValue.new(value: true),
+      string: Google::Protobuf::StringValue.new(value: 'str'),
+      bytes: Google::Protobuf::BytesValue.new(value: 'fun'),
+      real_string: '100'
+    )
 
-    m.double_as_value = nil
-    assert_nil m.double
-    assert_nil m.double_as_value
-    m.float_as_value = nil
-    assert_nil m.float
-    assert_nil m.float_as_value
-    m.int32_as_value = nil
-    assert_nil m.int32
-    assert_nil m.int32_as_value
-    m.int64_as_value = nil
-    assert_nil m.int64
-    assert_nil m.int64_as_value
-    m.uint32_as_value = nil
-    assert_nil m.uint32
-    assert_nil m.uint32_as_value
-    m.uint64_as_value = nil
-    assert_nil m.uint64
-    assert_nil m.uint64_as_value
-    m.bool_as_value = nil
-    assert_nil m.bool
-    assert_nil m.bool_as_value
-    m.string_as_value = nil
-    assert_nil m.string
-    assert_nil m.string_as_value
-    m.bytes_as_value = nil
-    assert_nil m.bytes
-    assert_nil m.bytes_as_value
+    run_asserts.call(m2)
+
+    serialized = proto_module::Wrapper::encode(m2)
+    m3 = proto_module::Wrapper::decode(serialized)
+    run_asserts.call(m3)
   end
 
   def test_wrapper_setters
+    run_asserts = ->(m) {
+      m.double = Google::Protobuf::DoubleValue.new(value: 4.8)
+      assert_equal 4.8, m.double_as_value
+      assert_equal Google::Protobuf::DoubleValue.new(value: 4.8), m.double
+      m.float = Google::Protobuf::FloatValue.new(value: 2.4)
+      assert_in_delta 2.4, m.float_as_value
+      assert_in_delta Google::Protobuf::FloatValue.new(value: 2.4).value, m.float.value
+      m.int32 = Google::Protobuf::Int32Value.new(value: 5)
+      assert_equal 5, m.int32_as_value
+      assert_equal Google::Protobuf::Int32Value.new(value: 5), m.int32
+      m.int64 = Google::Protobuf::Int64Value.new(value: 15)
+      assert_equal 15, m.int64_as_value
+      assert_equal Google::Protobuf::Int64Value.new(value: 15), m.int64
+      m.uint32 = Google::Protobuf::UInt32Value.new(value: 50)
+      assert_equal 50, m.uint32_as_value
+      assert_equal Google::Protobuf::UInt32Value.new(value: 50), m.uint32
+      m.uint64 = Google::Protobuf::UInt64Value.new(value: 500)
+      assert_equal 500, m.uint64_as_value
+      assert_equal Google::Protobuf::UInt64Value.new(value: 500), m.uint64
+      m.bool = Google::Protobuf::BoolValue.new(value: false)
+      assert_equal false, m.bool_as_value
+      assert_equal Google::Protobuf::BoolValue.new(value: false), m.bool
+      m.string = Google::Protobuf::StringValue.new(value: 'xy')
+      assert_equal 'xy', m.string_as_value
+      assert_equal Google::Protobuf::StringValue.new(value: 'xy'), m.string
+      m.bytes = Google::Protobuf::BytesValue.new(value: '123')
+      assert_equal '123', m.bytes_as_value
+      assert_equal Google::Protobuf::BytesValue.new(value: '123'), m.bytes
+
+      m.double = nil
+      assert_nil m.double
+      assert_nil m.double_as_value
+      m.float = nil
+      assert_nil m.float
+      assert_nil m.float_as_value
+      m.int32 = nil
+      assert_nil m.int32
+      assert_nil m.int32_as_value
+      m.int64 = nil
+      assert_nil m.int64
+      assert_nil m.int64_as_value
+      m.uint32 = nil
+      assert_nil m.uint32
+      assert_nil m.uint32_as_value
+      m.uint64 = nil
+      assert_nil m.uint64
+      assert_nil m.uint64_as_value
+      m.bool = nil
+      assert_nil m.bool
+      assert_nil m.bool_as_value
+      m.string = nil
+      assert_nil m.string
+      assert_nil m.string_as_value
+      m.bytes = nil
+      assert_nil m.bytes
+      assert_nil m.bytes_as_value
+    }
+
     m = proto_module::Wrapper.new
+    run_asserts.call(m)
 
-    m.double = Google::Protobuf::DoubleValue.new(value: 4.8)
-    assert_equal 4.8, m.double_as_value
-    assert_equal Google::Protobuf::DoubleValue.new(value: 4.8), m.double
-    m.float = Google::Protobuf::FloatValue.new(value: 2.4)
-    assert_in_delta 2.4, m.float_as_value
-    assert_in_delta Google::Protobuf::FloatValue.new(value: 2.4).value, m.float.value
-    m.int32 = Google::Protobuf::Int32Value.new(value: 5)
-    assert_equal 5, m.int32_as_value
-    assert_equal Google::Protobuf::Int32Value.new(value: 5), m.int32
-    m.int64 = Google::Protobuf::Int64Value.new(value: 15)
-    assert_equal 15, m.int64_as_value
-    assert_equal Google::Protobuf::Int64Value.new(value: 15), m.int64
-    m.uint32 = Google::Protobuf::UInt32Value.new(value: 50)
-    assert_equal 50, m.uint32_as_value
-    assert_equal Google::Protobuf::UInt32Value.new(value: 50), m.uint32
-    m.uint64 = Google::Protobuf::UInt64Value.new(value: 500)
-    assert_equal 500, m.uint64_as_value
-    assert_equal Google::Protobuf::UInt64Value.new(value: 500), m.uint64
-    m.bool = Google::Protobuf::BoolValue.new(value: false)
-    assert_equal false, m.bool_as_value
-    assert_equal Google::Protobuf::BoolValue.new(value: false), m.bool
-    m.string = Google::Protobuf::StringValue.new(value: 'xy')
-    assert_equal 'xy', m.string_as_value
-    assert_equal Google::Protobuf::StringValue.new(value: 'xy'), m.string
-    m.bytes = Google::Protobuf::BytesValue.new(value: '123')
-    assert_equal '123', m.bytes_as_value
-    assert_equal Google::Protobuf::BytesValue.new(value: '123'), m.bytes
+    m2 = proto_module::Wrapper.new(
+      double: Google::Protobuf::DoubleValue.new(value: 2.0),
+      float: Google::Protobuf::FloatValue.new(value: 4.0),
+      int32: Google::Protobuf::Int32Value.new(value: 3),
+      int64: Google::Protobuf::Int64Value.new(value: 4),
+      uint32: Google::Protobuf::UInt32Value.new(value: 5),
+      uint64: Google::Protobuf::UInt64Value.new(value: 6),
+      bool: Google::Protobuf::BoolValue.new(value: true),
+      string: Google::Protobuf::StringValue.new(value: 'str'),
+      bytes: Google::Protobuf::BytesValue.new(value: 'fun'),
+      real_string: '100'
+    )
 
-    m.double = nil
-    assert_nil m.double
-    assert_nil m.double_as_value
-    m.float = nil
-    assert_nil m.float
-    assert_nil m.float_as_value
-    m.int32 = nil
-    assert_nil m.int32
-    assert_nil m.int32_as_value
-    m.int64 = nil
-    assert_nil m.int64
-    assert_nil m.int64_as_value
-    m.uint32 = nil
-    assert_nil m.uint32
-    assert_nil m.uint32_as_value
-    m.uint64 = nil
-    assert_nil m.uint64
-    assert_nil m.uint64_as_value
-    m.bool = nil
-    assert_nil m.bool
-    assert_nil m.bool_as_value
-    m.string = nil
-    assert_nil m.string
-    assert_nil m.string_as_value
-    m.bytes = nil
-    assert_nil m.bytes
-    assert_nil m.bytes_as_value
+    run_asserts.call(m2)
+
+    serialized = proto_module::Wrapper::encode(m2)
+    m3 = proto_module::Wrapper::decode(serialized)
+    run_asserts.call(m3)
   end
 
   def test_wrappers_only

@@ -556,6 +556,10 @@ VALUE layout_eq(MessageLayout* layout, void* msg1, void* msg2);
 VALUE layout_hash(MessageLayout* layout, void* storage);
 VALUE layout_inspect(MessageLayout* layout, void* storage);
 
+bool is_wrapper_type_field(const upb_fielddef* field);
+VALUE ruby_wrapper_type(const MessageLayout* layout, const upb_fielddef* field,
+                        const VALUE value);
+
 // -----------------------------------------------------------------------------
 // Message class creation.
 // -----------------------------------------------------------------------------
