@@ -45,7 +45,11 @@ struct Options {
       base_namespace(""),
       base_namespace_specified(false),
       internal_access(false),
-      serializable(false) {
+      serializable(false),
+      custom_base_class(""),
+      keep_original_file_name(false), 
+      keep_original_field_name(false), 
+      disable_nested_types_container(false) {
   }
   // Extension of the generated file. Defaults to ".cs"
   std::string file_extension;
@@ -71,6 +75,22 @@ struct Options {
   // Whether the generated classes should have a global::System.Serializable attribute added
   // Defaults to false
   bool serializable;
+  // Custom base class to use for generated classes. Defaults to "".
+  // If specified, the base class must be a public class in the current namespace.
+  // There is a special support for generic classes, which can be specified by "MyBaseClass<>",
+  // "<>" is a placeholder, which will be replaced by the current message class name.
+  // For example, for a message named "MyMessage", if "MyBaseClass<>" is specified, 
+  // the base class will be "MyBaseClass<MyMessage>".
+  std::string custom_base_class;
+  // Whether to keep the original file name. Defaults to false.
+  // If true, the CamelCase name transformation is skipped, and the original file name of proto file is preserved
+  bool keep_original_file_name;
+  // Whether to keep the original field name. Defaults to false.
+  // If true, the CamelCase name transformation is skipped, and the original field name defined in proto file is preserved
+  bool keep_original_field_name;
+  // Whether to generate a nested `Types` container class for sub messages.
+  // If true, the nested `Types` container class will not be generated. Be ware, name collision may occurs.
+  bool disable_nested_types_container;
 };
 
 }  // namespace csharp

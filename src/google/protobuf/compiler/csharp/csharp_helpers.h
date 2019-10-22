@@ -53,6 +53,8 @@ namespace csharp {
 struct Options;
 class FieldGeneratorBase;
 
+void HelperSetGeneratorOptions(const Options*);
+
 // TODO: start using this enum.
 enum CSharpType {
   CSHARPTYPE_INT32 = 1,

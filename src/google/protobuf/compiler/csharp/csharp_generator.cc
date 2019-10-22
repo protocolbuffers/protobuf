@@ -80,11 +80,21 @@ bool Generator::Generate(const FileDescriptor* file,
       cli_options.internal_access = true;
     } else if (options[i].first == "serializable") {
       cli_options.serializable = true;
+    } else if (options[i].first == "custom_base_class") {
+      cli_options.custom_base_class = options[i].second;
+    } else if (options[i].first == "keep_original_file_name") {
+      cli_options.keep_original_file_name = true;
+    } else if (options[i].first == "keep_original_field_name") {
+      cli_options.keep_original_field_name = true;
+    } else if (options[i].first == "disable_nested_types_container") {
+      cli_options.disable_nested_types_container = true;
     } else {
       *error = "Unknown generator option: " + options[i].first;
       return false;
     }
   }
+
+  HelperSetGeneratorOptions(&cli_options);
 
   std::string filename_error = "";
   std::string filename = GetOutputFile(file,

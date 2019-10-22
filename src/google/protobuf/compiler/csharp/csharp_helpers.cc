@@ -60,6 +60,11 @@ namespace protobuf {
 namespace compiler {
 namespace csharp {
 
+static Options generator_options;
+void HelperSetGeneratorOptions(const Options* options) {
+  generator_options = *options;
+}
+
 CSharpType GetCSharpType(FieldDescriptor::Type type) {
   switch (type) {
     case FieldDescriptor::TYPE_INT32:
@@ -118,13 +123,19 @@ std::string GetFileNamespace(const FileDescriptor* descriptor) {
   return UnderscoresToCamelCase(descriptor->package(), true, true);
 }
 
+// Returns the original last part of the proto file. For example,
+// input of "google/protobuf/foo_bar.proto" would result in "foo_bar".
+std::string GetOriginalFileNameBase(const FileDescriptor* descriptor) {
+  std::string proto_file = descriptor->name();
+  int lastslash = proto_file.find_last_of("/");
+  std::string base = proto_file.substr(lastslash + 1);
+  return StripDotProto(base);
+}
+
 // Returns the Pascal-cased last part of the proto file. For example,
 // input of "google/protobuf/foo_bar.proto" would result in "FooBar".
 std::string GetFileNameBase(const FileDescriptor* descriptor) {
-    std::string proto_file = descriptor->name();
-    int lastslash = proto_file.find_last_of("/");
-    std::string base = proto_file.substr(lastslash + 1);
-    return UnderscoresToPascalCase(StripDotProto(base));
+  return UnderscoresToPascalCase(GetOriginalFileNameBase(descriptor));
 }
 
 std::string GetReflectionClassUnqualifiedName(const FileDescriptor* descriptor) {
@@ -272,6 +283,9 @@ std::string TryRemovePrefix(const std::string& prefix, const std::string& value)
 // For example, an enum called Color with a value of COLOR_BLUE should
 // result in an enum value in C# called just Blue
 std::string GetEnumValueName(const std::string& enum_name, const std::string& enum_value_name) {
+  if (generator_options.keep_original_field_name) {
+    return enum_value_name;
+  }
   std::string stripped = TryRemovePrefix(enum_name, enum_value_name);
   std::string result = ShoutyToPascalCase(stripped);
   // Just in case we have an enum name of FOO and a value of FOO_2... make sure the returned
@@ -333,7 +347,11 @@ std::string ToCSharpName(const std::string& name, const FileDescriptor* file) {
     // the C# namespace.
     classname = name.substr(file->package().size() + 1);
   }
-  result += StringReplace(classname, ".", ".Types.", true);
+  if (generator_options.disable_nested_types_container) {
+    result += classname;
+  } else {
+    result += StringReplace(classname, ".", ".Types.", true);
+  }
   return "global::" + result;
 }
 
@@ -380,7 +398,10 @@ std::string GetFieldConstantName(const FieldDescriptor* field) {
 
 std::string GetPropertyName(const FieldDescriptor* descriptor) {
   // TODO(jtattermusch): consider introducing csharp_property_name field option
-  std::string property_name = UnderscoresToPascalCase(GetFieldName(descriptor));
+  std::string property_name = GetFieldName(descriptor);
+  if (!generator_options.keep_original_field_name) {
+    property_name = UnderscoresToPascalCase(property_name);
+  }
   // Avoid either our own type name or reserved names. Note that not all names
   // are reserved - a field called to_string, write_to etc would still cause a problem.
   // There are various ways of ending up with naming collisions, but we try to avoid obvious
@@ -398,7 +419,8 @@ std::string GetOutputFile(const FileDescriptor* descriptor,
                           const bool generate_directories,
                           const std::string base_namespace,
                           std::string* error) {
-  std::string relative_filename = GetFileNameBase(descriptor) + file_extension;
+  std::string relative_filename = (generator_options.keep_original_file_name ? 
+    GetOriginalFileNameBase(descriptor) : GetFileNameBase(descriptor)) + file_extension;
   if (!generate_directories) {
     return relative_filename;
   }

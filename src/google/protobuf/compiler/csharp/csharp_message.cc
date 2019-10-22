@@ -111,6 +111,20 @@ void MessageGenerator::AddSerializableAttribute(io::Printer* printer) {
   }
 }
 
+void MessageGenerator::AddCustomBaseClass(io::Printer* printer) {
+  if (!this->options()->custom_base_class.empty()) {
+    std::vector<std::string> list = Split(this->options()->custom_base_class, ",");
+    std::map<std::string, std::string> vars;
+    vars["class_name"] = class_name();
+
+    for (const std::string& base : list)	{
+      std::string base_class = StringReplace(base, "<>", "<$class_name$>", false);
+      printer->Print(vars, base_class.c_str());
+      printer->Print(", ");
+    }
+  }
+}
+
 void MessageGenerator::Generate(io::Printer* printer) {
   std::map<std::string, std::string> vars;
   vars["class_name"] = class_name();
@@ -123,6 +137,8 @@ void MessageGenerator::Generate(io::Printer* printer) {
   printer->Print(
     vars,
     "$access_level$ sealed partial class $class_name$ : ");
+
+  AddCustomBaseClass(printer);
 
   if (has_extension_ranges_) {
     printer->Print(vars, "pb::IExtendableMessage<$class_name$>\n");
@@ -308,13 +324,15 @@ void MessageGenerator::Generate(io::Printer* printer) {
 
   // Nested messages and enums
   if (HasNestedGeneratedTypes()) {
-    printer->Print(
-      vars,
-      "#region Nested types\n"
-      "/// <summary>Container for nested types declared in the $class_name$ message type.</summary>\n");
-    WriteGeneratedCodeAttributes(printer);
-    printer->Print("public static partial class Types {\n");
-    printer->Indent();
+    printer->Print("#region Nested types\n");
+    if (!this->options()->disable_nested_types_container) {
+      printer->Print(
+        vars,
+        "/// <summary>Container for nested types declared in the $class_name$ message type.</summary>\n");
+      WriteGeneratedCodeAttributes(printer);
+      printer->Print("public static partial class Types {\n");
+      printer->Indent();
+    }
     for (int i = 0; i < descriptor_->enum_type_count(); i++) {
       EnumGenerator enumGenerator(descriptor_->enum_type(i), this->options());
       enumGenerator.Generate(printer);
@@ -327,9 +345,11 @@ void MessageGenerator::Generate(io::Printer* printer) {
         messageGenerator.Generate(printer);
       }
     }
-    printer->Outdent();
-    printer->Print("}\n"
-                   "#endregion\n"
+    if (!this->options()->disable_nested_types_container) {
+      printer->Outdent();
+      printer->Print("}\n");
+    }
+    printer->Print("#endregion\n"
                    "\n");
   }
 
