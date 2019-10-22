@@ -48,11 +48,11 @@ namespace Conformance {
             "Z2xlLnByb3RvYnVmLmNvbmZvcm1hbmNlYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
-          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Conformance.WireFormat), typeof(global::Conformance.TestCategory), }, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.FailureSet), global::Conformance.FailureSet.Parser, new[]{ "Failure" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.ConformanceRequest), global::Conformance.ConformanceRequest.Parser, new[]{ "ProtobufPayload", "JsonPayload", "JspbPayload", "TextPayload", "RequestedOutputFormat", "MessageType", "TestCategory", "JspbEncodingOptions", "PrintUnknownFields" }, new[]{ "Payload" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.ConformanceResponse), global::Conformance.ConformanceResponse.Parser, new[]{ "ParseError", "SerializeError", "RuntimeError", "ProtobufPayload", "JsonPayload", "Skipped", "JspbPayload", "TextPayload" }, new[]{ "Result" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.JspbEncodingConfig), global::Conformance.JspbEncodingConfig.Parser, new[]{ "UseJspbArrayAnyFormat" }, null, null, null, null)
+          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Conformance.WireFormat), typeof(global::Conformance.TestCategory), }, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.FailureSet), global::Conformance.FailureSet.Parser, new[]{ "Failure" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.ConformanceRequest), global::Conformance.ConformanceRequest.Parser, new[]{ "ProtobufPayload", "JsonPayload", "JspbPayload", "TextPayload", "RequestedOutputFormat", "MessageType", "TestCategory", "JspbEncodingOptions", "PrintUnknownFields" }, new[]{ "Payload" }, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.ConformanceResponse), global::Conformance.ConformanceResponse.Parser, new[]{ "ParseError", "SerializeError", "RuntimeError", "ProtobufPayload", "JsonPayload", "Skipped", "JspbPayload", "TextPayload" }, new[]{ "Result" }, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.JspbEncodingConfig), global::Conformance.JspbEncodingConfig.Parser, new[]{ "UseJspbArrayAnyFormat" }, null, null, null)
           }));
     }
     #endregion

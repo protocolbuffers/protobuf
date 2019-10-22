@@ -63,7 +63,6 @@ class MessageGenerator : public SourceGeneratorBase {
   std::vector<const FieldDescriptor*> fields_by_number_;
   int has_bit_field_count_;
   uint end_tag_;
-  bool has_extension_ranges_;
 
   void GenerateMessageSerializationMethods(io::Printer* printer);
   void GenerateMergingMethods(io::Printer* printer);

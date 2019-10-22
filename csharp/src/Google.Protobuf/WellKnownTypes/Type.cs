@@ -62,12 +62,12 @@ namespace Google.Protobuf.WellKnownTypes {
             "bEtub3duVHlwZXNiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.AnyReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.SourceContextReflection.Descriptor, },
-          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Google.Protobuf.WellKnownTypes.Syntax), }, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Type), global::Google.Protobuf.WellKnownTypes.Type.Parser, new[]{ "Name", "Fields", "Oneofs", "Options", "SourceContext", "Syntax" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Field), global::Google.Protobuf.WellKnownTypes.Field.Parser, new[]{ "Kind", "Cardinality", "Number", "Name", "TypeUrl", "OneofIndex", "Packed", "Options", "JsonName", "DefaultValue" }, null, new[]{ typeof(global::Google.Protobuf.WellKnownTypes.Field.Types.Kind), typeof(global::Google.Protobuf.WellKnownTypes.Field.Types.Cardinality) }, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Enum), global::Google.Protobuf.WellKnownTypes.Enum.Parser, new[]{ "Name", "Enumvalue", "Options", "SourceContext", "Syntax" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.WellKnownTypes.EnumValue), global::Google.Protobuf.WellKnownTypes.EnumValue.Parser, new[]{ "Name", "Number", "Options" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Option), global::Google.Protobuf.WellKnownTypes.Option.Parser, new[]{ "Name", "Value" }, null, null, null, null)
+          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Google.Protobuf.WellKnownTypes.Syntax), }, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Type), global::Google.Protobuf.WellKnownTypes.Type.Parser, new[]{ "Name", "Fields", "Oneofs", "Options", "SourceContext", "Syntax" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Field), global::Google.Protobuf.WellKnownTypes.Field.Parser, new[]{ "Kind", "Cardinality", "Number", "Name", "TypeUrl", "OneofIndex", "Packed", "Options", "JsonName", "DefaultValue" }, null, new[]{ typeof(global::Google.Protobuf.WellKnownTypes.Field.Types.Kind), typeof(global::Google.Protobuf.WellKnownTypes.Field.Types.Cardinality) }, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Enum), global::Google.Protobuf.WellKnownTypes.Enum.Parser, new[]{ "Name", "Enumvalue", "Options", "SourceContext", "Syntax" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.WellKnownTypes.EnumValue), global::Google.Protobuf.WellKnownTypes.EnumValue.Parser, new[]{ "Name", "Number", "Options" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Option), global::Google.Protobuf.WellKnownTypes.Option.Parser, new[]{ "Name", "Value" }, null, null, null)
           }));
     }
     #endregion
