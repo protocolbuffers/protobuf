@@ -1,3 +1,12 @@
+2019-09-03 version 3.10.1 (C#/Ruby)
+
+  C#
+  * Add length checks to ExtensionCollection (#6759)
+  * Disable extension code gen for C# (#6760)
+  
+  Ruby
+  * Fixed bug in Ruby DSL when no names are defined in a file (#6756)
+
 2019-09-03 version 3.10.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   C++
