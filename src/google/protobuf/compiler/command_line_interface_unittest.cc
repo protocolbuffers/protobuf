@@ -52,6 +52,7 @@
 #include <google/protobuf/compiler/command_line_interface.h>
 #include <google/protobuf/test_util2.h>
 #include <google/protobuf/unittest.pb.h>
+#include <google/protobuf/unittest_custom_options.pb.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/descriptor.pb.h>
@@ -657,6 +658,73 @@ TEST_F(CommandLineInterfaceTest, MultipleInputs_DescriptorSetIn) {
                                     "foo.proto", "Foo");
   ExpectGeneratedWithMultipleInputs("test_plugin", "foo.proto,bar.proto",
                                     "bar.proto", "Bar");
+}
+
+TEST_F(CommandLineInterfaceTest, MultipleInputs_UnusedImport_DescriptorSetIn) {
+  // Test unused import warning is not raised when descriptor_set_in is called
+  // and custom options are in unknown field instead of uninterpreted_options.
+  FileDescriptorSet file_descriptor_set;
+
+  const FileDescriptor* descriptor_file =
+      FileDescriptorProto::descriptor()->file();
+  descriptor_file->CopyTo(file_descriptor_set.add_file());
+
+  const FileDescriptor* custom_file =
+      protobuf_unittest::AggregateMessage::descriptor()->file();
+  FileDescriptorProto* file_descriptor_proto = file_descriptor_set.add_file();
+  custom_file->CopyTo(file_descriptor_proto);
+  file_descriptor_proto->set_name("custom_options.proto");
+  // Add a custom message option.
+  FieldDescriptorProto* extension_option =
+      file_descriptor_proto->add_extension();
+  extension_option->set_name("unknown_option");
+  extension_option->set_extendee(".google.protobuf.MessageOptions");
+  extension_option->set_number(1111);
+  extension_option->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
+  extension_option->set_type(FieldDescriptorProto::TYPE_INT64);
+
+  file_descriptor_proto = file_descriptor_set.add_file();
+  file_descriptor_proto->set_name("import_custom_unknown_options.proto");
+  file_descriptor_proto->add_dependency("custom_options.proto");
+  // Add custom message option to unknown field. This custom option is
+  // not known in generated pool, thus option will be in unknown fields.
+  file_descriptor_proto->add_message_type()->set_name("Bar");
+  file_descriptor_proto->mutable_message_type(0)
+      ->mutable_options()
+      ->mutable_unknown_fields()
+      ->AddVarint(1111, 2222);
+
+  WriteDescriptorSet("foo.bin", &file_descriptor_set);
+
+  Run("protocol_compiler --test_out=$tmpdir --plug_out=$tmpdir "
+      "--descriptor_set_in=$tmpdir/foo.bin "
+      "import_custom_unknown_options.proto");
+
+  // TODO(jieluo): Fix this test. This test case only happens when
+  // CommandLineInterface::Run() is used instead of invoke protoc combined
+  // with descriptor_set_in, and same custom options are defined in both
+  // generated pool and descriptor_set_in. There's no such uages for now but
+  // still need to be fixed.
+  /*
+  file_descriptor_proto = file_descriptor_set.add_file();
+  file_descriptor_proto->set_name("import_custom_extension_options.proto");
+  file_descriptor_proto->add_dependency("custom_options.proto");
+  // Add custom message option to unknown field. This custom option is
+  // also defined in generated pool, thus option will be in extensions.
+  file_descriptor_proto->add_message_type()->set_name("Foo");
+  file_descriptor_proto->mutable_message_type(0)
+      ->mutable_options()
+      ->mutable_unknown_fields()
+      ->AddVarint(protobuf_unittest::message_opt1.number(), 2222);
+
+  WriteDescriptorSet("foo.bin", &file_descriptor_set);
+
+  Run("protocol_compiler --test_out=$tmpdir --plug_out=$tmpdir "
+      "--descriptor_set_in=$tmpdir/foo.bin import_custom_unknown_options.proto "
+      "import_custom_extension_options.proto");
+  */
+
+  ExpectNoErrors();
 }
 
 TEST_F(CommandLineInterfaceTest, MultipleInputsWithImport) {

@@ -356,7 +356,7 @@ StatusOr<To> DataPiece::StringToNumber(bool (*func)(StringPiece,
   }
   To result;
   if (func(str_, &result)) return result;
-  return InvalidArgument(StrCat("\"", string(str_), "\""));
+  return InvalidArgument(StrCat("\"", std::string(str_), "\""));
 }
 
 bool DataPiece::DecodeBase64(StringPiece src, std::string* dest) const {

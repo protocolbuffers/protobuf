@@ -149,7 +149,7 @@ void CheckSingleAnnotation(const std::string& expected_file,
 }  // anonymous namespace
 
 void MockCodeGenerator::CheckGeneratedAnnotations(
-    const string& name, const std::string& file,
+    const std::string& name, const std::string& file,
     const std::string& output_directory) {
   std::string file_content;
   GOOGLE_CHECK_OK(

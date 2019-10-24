@@ -578,45 +578,18 @@ class _Printer(object):
       else:
         out.write(str(value))
     elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_STRING:
-      embedded_unknown_message = None
-      if self.print_unknown_fields:
-        try:
-          # If this field is parseable as a Message, it is probably
-          # an embedded message.
-          # pylint: disable=protected-access
-          (embedded_unknown_message, pos) = decoder._DecodeUnknownFieldSet(
-              memoryview(value), 0, len(value))
-          if pos != len(value):
-            embedded_unknown_message = None
-        except Exception:    # pylint: disable=broad-except
-          pass
-      if embedded_unknown_message:
-        if self.as_one_line:
-          out.write(' { ')
-        else:
-          out.write(' {\n')
-          self.indent += 2
-
-        self._PrintUnknownFields(embedded_unknown_message)
-
-        if self.as_one_line:
-          out.write('} ')
-        else:
-          self.indent -= 2
-          out.write(' ' * self.indent + '}')
+      out.write('\"')
+      if isinstance(value, six.text_type) and (six.PY2 or not self.as_utf8):
+        out_value = value.encode('utf-8')
       else:
-        out.write('\"')
-        if isinstance(value, six.text_type) and (six.PY2 or not self.as_utf8):
-          out_value = value.encode('utf-8')
-        else:
-          out_value = value
-        if field.type == descriptor.FieldDescriptor.TYPE_BYTES:
-          # We always need to escape all binary data in TYPE_BYTES fields.
-          out_as_utf8 = False
-        else:
-          out_as_utf8 = self.as_utf8
-        out.write(text_encoding.CEscape(out_value, out_as_utf8))
-        out.write('\"')
+        out_value = value
+      if field.type == descriptor.FieldDescriptor.TYPE_BYTES:
+        # We always need to escape all binary data in TYPE_BYTES fields.
+        out_as_utf8 = False
+      else:
+        out_as_utf8 = self.as_utf8
+      out.write(text_encoding.CEscape(out_value, out_as_utf8))
+      out.write('\"')
     elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_BOOL:
       if value:
         out.write('true')

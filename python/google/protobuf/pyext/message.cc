@@ -111,9 +111,9 @@ static int InsertEmptyWeakref(PyTypeObject* base);
 
 namespace {
 // Copied over from internal 'google/protobuf/stubs/strutil.h'.
-inline void LowerString(string * s) {
-  string::iterator end = s->end();
-  for (string::iterator i = s->begin(); i != end; ++i) {
+inline void LowerString(std::string* s) {
+  std::string::iterator end = s->end();
+  for (std::string::iterator i = s->begin(); i != end; ++i) {
     // tolower() changes based on locale.  We don't want this!
     if ('A' <= *i && *i <= 'Z') *i += 'a' - 'A';
   }
@@ -436,7 +436,7 @@ static PyObject* GetClassAttribute(CMessageClass *self, PyObject* name) {
   static const char kSuffix[] = "_FIELD_NUMBER";
   if (PyString_AsStringAndSize(name, &attr, &attr_size) >= 0 &&
       strings::EndsWith(StringPiece(attr, attr_size), kSuffix)) {
-    string field_name(attr, attr_size - sizeof(kSuffix) + 1);
+    std::string field_name(attr, attr_size - sizeof(kSuffix) + 1);
     LowerString(&field_name);
 
     // Try to find a field with the given name, without the suffix.
@@ -798,7 +798,7 @@ bool CheckAndSetString(
 }
 
 PyObject* ToStringObject(const FieldDescriptor* descriptor,
-                         const string& value) {
+                         const std::string& value) {
   if (descriptor->type() != FieldDescriptor::TYPE_STRING) {
     return PyBytes_FromStringAndSize(value.c_str(), value.length());
   }
@@ -960,7 +960,7 @@ static PyObject* GetIntegerEnumValue(const FieldDescriptor& descriptor,
       return NULL;
     }
     const EnumValueDescriptor* enum_value_descriptor =
-        enum_descriptor->FindValueByName(string(enum_label, size));
+        enum_descriptor->FindValueByName(std::string(enum_label, size));
     if (enum_value_descriptor == NULL) {
       PyErr_Format(PyExc_ValueError, "unknown enum label \"%s\"", enum_label);
       return NULL;
@@ -1374,8 +1374,9 @@ int HasFieldByDescriptor(CMessage* self,
   return message->GetReflection()->HasField(*message, field_descriptor);
 }
 
-const FieldDescriptor* FindFieldWithOneofs(
-    const Message* message, const string& field_name, bool* in_oneof) {
+const FieldDescriptor* FindFieldWithOneofs(const Message* message,
+                                           const std::string& field_name,
+                                           bool* in_oneof) {
   *in_oneof = false;
   const Descriptor* descriptor = message->GetDescriptor();
   const FieldDescriptor* field_descriptor =
@@ -1446,7 +1447,7 @@ PyObject* HasField(CMessage* self, PyObject* arg) {
   Message* message = self->message;
   bool is_in_oneof;
   const FieldDescriptor* field_descriptor =
-      FindFieldWithOneofs(message, string(field_name, size), &is_in_oneof);
+      FindFieldWithOneofs(message, std::string(field_name, size), &is_in_oneof);
   if (field_descriptor == NULL) {
     if (!is_in_oneof) {
       PyErr_Format(PyExc_ValueError, "Protocol message %s has no field %s.",
@@ -1623,7 +1624,7 @@ PyObject* ClearField(CMessage* self, PyObject* arg) {
   AssureWritable(self);
   bool is_in_oneof;
   const FieldDescriptor* field_descriptor = FindFieldWithOneofs(
-      self->message, string(field_name, field_size), &is_in_oneof);
+      self->message, std::string(field_name, field_size), &is_in_oneof);
   if (field_descriptor == NULL) {
     if (is_in_oneof) {
       // We gave the name of a oneof, and none of its fields are set.
@@ -1671,7 +1672,7 @@ PyObject* Clear(CMessage* self) {
 
 // ---------------------------------------------------------------------
 
-static string GetMessageName(CMessage* self) {
+static std::string GetMessageName(CMessage* self) {
   if (self->parent_field_descriptor != NULL) {
     return self->parent_field_descriptor->full_name();
   } else {
@@ -1823,7 +1824,7 @@ static PyObject* ToStr(CMessage* self) {
   // Passes ownership
   printer.SetDefaultFieldValuePrinter(new PythonFieldValuePrinter());
   printer.SetHideUnknownFields(true);
-  string output;
+  std::string output;
   if (!printer.PrintToString(*self->message, &output)) {
     PyErr_SetString(PyExc_ValueError, "Unable to convert message to str");
     return NULL;
@@ -2024,7 +2025,7 @@ static PyObject* WhichOneof(CMessage* self, PyObject* arg) {
   char *name_data;
   if (PyString_AsStringAndSize(arg, &name_data, &name_size) < 0)
     return NULL;
-  string oneof_name = string(name_data, name_size);
+  std::string oneof_name = std::string(name_data, name_size);
   const OneofDescriptor* oneof_desc =
       self->message->GetDescriptor()->FindOneofByName(oneof_name);
   if (oneof_desc == NULL) {
@@ -2039,7 +2040,7 @@ static PyObject* WhichOneof(CMessage* self, PyObject* arg) {
   if (field_in_oneof == NULL) {
     Py_RETURN_NONE;
   } else {
-    const string& name = field_in_oneof->name();
+    const std::string& name = field_in_oneof->name();
     return PyString_FromStringAndSize(name.c_str(), name.size());
   }
 }
@@ -2131,7 +2132,7 @@ static PyObject* DiscardUnknownFields(CMessage* self) {
 
 PyObject* FindInitializationErrors(CMessage* self) {
   Message* message = self->message;
-  std::vector<string> errors;
+  std::vector<std::string> errors;
   message->FindInitializationErrors(&errors);
 
   PyObject* error_list = PyList_New(errors.size());
@@ -2139,7 +2140,7 @@ PyObject* FindInitializationErrors(CMessage* self) {
     return NULL;
   }
   for (size_t i = 0; i < errors.size(); ++i) {
-    const string& error = errors[i];
+    const std::string& error = errors[i];
     PyObject* error_string = PyString_FromStringAndSize(
         error.c_str(), error.length());
     if (error_string == NULL) {
@@ -2229,8 +2230,8 @@ PyObject* InternalGetScalar(const Message* message,
       break;
     }
     case FieldDescriptor::CPPTYPE_STRING: {
-      string scratch;
-      const string& value =
+      std::string scratch;
+      const std::string& value =
           reflection->GetStringReference(*message, field_descriptor, &scratch);
       result = ToStringObject(field_descriptor, value);
       break;
