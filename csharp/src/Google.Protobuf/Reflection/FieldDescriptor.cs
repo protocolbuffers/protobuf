@@ -302,7 +302,7 @@ namespace Google.Protobuf.Reflection
         public CustomOptions CustomOptions => new CustomOptions(Proto.Options._extensions?.ValuesByNumber);
 
         /// <summary>
-        /// Gets a single value enum option for this descriptor
+        /// Gets a single value field option for this descriptor
         /// </summary>
         public T GetOption<T>(Extension<FieldOptions, T> extension)
         {
@@ -311,7 +311,7 @@ namespace Google.Protobuf.Reflection
         }
 
         /// <summary>
-        /// Gets a repeated value enum option for this descriptor
+        /// Gets a repeated value field option for this descriptor
         /// </summary>
         public RepeatedField<T> GetOption<T>(RepeatedExtension<FieldOptions, T> extension)
         {

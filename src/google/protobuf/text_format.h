@@ -157,6 +157,7 @@ class PROTOBUF_EXPORT TextFormat {
     GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FastFieldValuePrinter);
   };
 
+  // Deprecated: please use FastFieldValuePrinter instead.
   class PROTOBUF_EXPORT FieldValuePrinter {
    public:
     FieldValuePrinter();

@@ -71,27 +71,31 @@ GPB_INLINE void GPBDebugCheckRuntimeVersion() {
 // Conversion functions for de/serializing floating point types.
 
 GPB_INLINE int64_t GPBConvertDoubleToInt64(double v) {
-  union { double f; int64_t i; } u;
-  u.f = v;
-  return u.i;
+  GPBInternalCompileAssert(sizeof(double) == sizeof(int64_t), double_not_64_bits);
+  int64_t result;
+  memcpy(&result, &v, sizeof(result));
+  return result;
 }
 
 GPB_INLINE int32_t GPBConvertFloatToInt32(float v) {
-  union { float f; int32_t i; } u;
-  u.f = v;
-  return u.i;
+  GPBInternalCompileAssert(sizeof(float) == sizeof(int32_t), float_not_32_bits);
+  int32_t result;
+  memcpy(&result, &v, sizeof(result));
+  return result;
 }
 
 GPB_INLINE double GPBConvertInt64ToDouble(int64_t v) {
-  union { double f; int64_t i; } u;
-  u.i = v;
-  return u.f;
+  GPBInternalCompileAssert(sizeof(double) == sizeof(int64_t), double_not_64_bits);
+  double result;
+  memcpy(&result, &v, sizeof(result));
+  return result;
 }
 
 GPB_INLINE float GPBConvertInt32ToFloat(int32_t v) {
-  union { float f; int32_t i; } u;
-  u.i = v;
-  return u.f;
+  GPBInternalCompileAssert(sizeof(float) == sizeof(int32_t), float_not_32_bits);
+  float result;
+  memcpy(&result, &v, sizeof(result));
+  return result;
 }
 
 GPB_INLINE int32_t GPBLogicalRightShift32(int32_t value, int32_t spaces) {

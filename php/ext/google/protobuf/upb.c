@@ -10131,32 +10131,28 @@ const unsigned short int __mon_yday[2][13] = {
     { 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366 }
 };
 
-int64_t epoch(int year, int yday, int hour, int min, int sec) {
-  int64_t years = year - EPOCH_YEAR;
+/* epoch_days(1970, 1, 1) == 1970-01-01 == 0. */
+static int epoch_days(int year, int month, int day) {
+  static const uint16_t month_yday[12] = {0,   31,  59,  90,  120, 151,
+                                          181, 212, 243, 273, 304, 334};
+  int febs_since_0 = month > 2 ? year + 1 : year;
+  int leap_days_since_0 = div_round_up(febs_since_0, 4) -
+                          div_round_up(febs_since_0, 100) +
+                          div_round_up(febs_since_0, 400);
+  int days_since_0 =
+      365 * year + month_yday[month - 1] + (day - 1) + leap_days_since_0;
 
-  int64_t leap_days = years / 4 - years / 100 + years / 400;
-
-  int64_t days = years * 365 + yday + leap_days;
-  int64_t hours = days * 24 + hour;
-  int64_t mins = hours * 60 + min;
-  int64_t secs = mins * 60 + sec;
-  return secs;
+  /* Convert from 0-epoch (0001-01-01 BC) to Unix Epoch (1970-01-01 AD).
+   * Since the "BC" system does not have a year zero, 1 BC == year zero. */
+  return days_since_0 - 719528;
 }
 
-
-static int64_t upb_mktime(const struct tm *tp) {
-  int sec = tp->tm_sec;
-  int min = tp->tm_min;
-  int hour = tp->tm_hour;
-  int mday = tp->tm_mday;
-  int mon = tp->tm_mon;
-  int year = tp->tm_year + TM_YEAR_BASE;
-
-  /* Calculate day of year from year, month, and day of month. */
-  int mon_yday = ((__mon_yday[isleap(year)][mon]) - 1);
-  int yday = mon_yday + mday;
-
-  return epoch(year, yday, hour, min, sec);
+static int64_t upb_timegm(const struct tm *tp) {
+  int64_t ret = epoch_days(tp->tm_year + 1900, tp->tm_mon + 1, tp->tm_mday);
+  ret = (ret * 24) + tp->tm_hour;
+  ret = (ret * 60) + tp->tm_min;
+  ret = (ret * 60) + tp->tm_sec;
+  return ret;
 }
 
 static bool end_timestamp_zone(upb_json_parser *p, const char *ptr) {
@@ -10186,7 +10182,7 @@ static bool end_timestamp_zone(upb_json_parser *p, const char *ptr) {
   }
 
   /* Normalize tm */
-  seconds = upb_mktime(&p->tm);
+  seconds = upb_timegm(&p->tm);
 
   /* Check timestamp boundary */
   if (seconds < -62135596800) {
