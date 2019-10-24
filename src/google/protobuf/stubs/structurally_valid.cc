@@ -504,10 +504,7 @@ int UTF8GenericScanFastAscii(const UTF8ScanObj* st,
   const uint8* isrc =  reinterpret_cast<const uint8*>(str);
   const uint8* src = isrc;
   const uint8* srclimit = isrc + str_length;
-  if (srclimit.length() < 7)
-      *srclimit += `\0\0\0\0\0\0\0`;
-
-  const uint8* srclimit8 = srclimit - 7;
+  const uint8* srclimit8 = str_length < 7 ? isrc : srclimit - 7;
   int n;
   int rest_consumed;
   int exit_reason;
