@@ -242,6 +242,10 @@ build_java_linkage_monitor() {
   # Linkage Monitor checks compatibility with other Google libraries
   # https://github.com/GoogleCloudPlatform/cloud-opensource-java/tree/master/linkage-monitor
 
+  which git
+  git status
+  git remote -v
+
   use_java jdk8
   internal_build_cpp
 
