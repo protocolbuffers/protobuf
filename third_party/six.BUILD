@@ -5,15 +5,15 @@ load("@rules_python//python:defs.bzl", "py_library")
 # https://github.com/protocolbuffers/protobuf/pull/6795#issuecomment-546060749
 # https://github.com/bazelbuild/bazel/issues/10076
 genrule(
-  name = "copy_six",
-  srcs = ["six-1.12.0/six.py"],
-  outs = ["__init__.py"],
-  cmd = "cp $< $(@)",
+    name = "copy_six",
+    srcs = ["six-1.12.0/six.py"],
+    outs = ["__init__.py"],
+    cmd = "cp $< $(@)",
 )
 
 py_library(
-  name = "six",
-  srcs = ["__init__.py"],
-  srcs_version = "PY2AND3",
-  visibility = ["//visibility:public"],
+    name = "six",
+    srcs = ["__init__.py"],
+    srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
 )
