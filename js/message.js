@@ -470,7 +470,7 @@ jspb.Message.initPivotAndExtensionObject_ = function(msg, suggestedPivot) {
     }
   }
 
-  if (suggestedPivot > -1) {
+  if (suggestedPivot > -1 && lastIndex > -1) {
     // If a extension object is not present, set the pivot value as being
     // after the last value in the array to avoid overwriting values, etc.
     msg.pivot_ = Math.max(
