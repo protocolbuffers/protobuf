@@ -22,6 +22,11 @@ def _get_real_short_path(file):
     if short_path.startswith("../"):
         second_slash = short_path.index("/", 3)
         short_path = short_path[second_slash + 1:]
+    # Sometimes it has another few prefixes like:
+    #   _virtual_imports/any_proto/google/protobuf/any.proto
+    # We want just google/protobuf/any.proto.
+    if short_path.startswith("_virtual_imports"):
+        short_path = short_path.split("/", 2)[-1]
     return short_path
 
 def _get_real_root(file):
@@ -175,7 +180,7 @@ def _upb_proto_rule_impl(ctx):
              "_WrappedGeneratedSrcsInfo (aspect should have handled this).")
     cc_info = dep[_WrappedCcInfo].cc_info
     srcs = dep[_WrappedGeneratedSrcsInfo].srcs
-    if (type(cc_info.linking_context.libraries_to_link) == "list"):
+    if type(cc_info.linking_context.libraries_to_link) == "list":
         lib = cc_info.linking_context.libraries_to_link[0]
     else:
         lib = cc_info.linking_context.libraries_to_link.to_list()[0]
