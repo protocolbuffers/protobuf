@@ -32,7 +32,6 @@
 
 goog.setTestOnly();
 
-goog.require('goog.json');
 goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
 goog.require('goog.userAgent');
@@ -118,6 +117,7 @@ goog.require('proto.jspb.test.TestReservedNamesExtension');
 goog.require('proto.jspb.test.ExtensionMessage');
 goog.require('proto.jspb.test.TestExtensionsMessage');
 
+goog.require('proto.jspb.test.TestAllowAliasEnum');
 
 describe('Message test suite', function() {
   var stubs = new goog.testing.PropertyReplacer();

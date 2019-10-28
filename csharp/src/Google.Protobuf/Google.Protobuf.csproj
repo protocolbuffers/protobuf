@@ -4,7 +4,7 @@
     <Description>C# runtime library for Protocol Buffers - Google's data interchange format.</Description>
     <Copyright>Copyright 2015, Google Inc.</Copyright>
     <AssemblyTitle>Google Protocol Buffers</AssemblyTitle>
-    <VersionPrefix>3.9.0-rc1</VersionPrefix>
+    <VersionPrefix>3.11.0-rc0</VersionPrefix>
     <LangVersion>6</LangVersion>
     <Authors>Google Inc.</Authors>
     <TargetFrameworks>netstandard1.0;netstandard2.0;net45</TargetFrameworks>
@@ -22,16 +22,16 @@
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
   </PropertyGroup>
 
-  <!--
-    - Override target frameworks on non-Windows to just .NET Core
-    - Doing this conditionally in the initial PropertyGroup confuses
-    - Visual Studio.
-    -->
-  <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
-    <TargetFrameworks>netstandard1.0;netstandard2.0</TargetFrameworks>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net45' or '$(TargetFramework)' == 'netstandard2.0' ">
+    <DefineConstants>$(DefineConstants);GOOGLE_PROTOBUF_SUPPORT_SYSTEM_MEMORY</DefineConstants>
   </PropertyGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+  <!-- Needed for the net45 build to work on Unix. See https://github.com/dotnet/designs/pull/33 -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" PrivateAssets="All" Version="1.0.0-preview.2"/>
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' or '$(TargetFramework)' == 'netstandard2.0' ">
     <PackageReference Include="System.Memory" Version="4.5.2"/>
   </ItemGroup>
 

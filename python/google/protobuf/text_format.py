@@ -42,6 +42,9 @@ Simple usage example:
 
 __author__ = 'kenton@google.com (Kenton Varda)'
 
+# TODO(b/129989314) Import thread contention leads to test failures.
+import encodings.raw_unicode_escape  # pylint: disable=unused-import
+import encodings.unicode_escape  # pylint: disable=unused-import
 import io
 import re
 
@@ -455,8 +458,8 @@ class _Printer(object):
         if self.as_one_line:
           out.write('} ')
         else:
-          out.write('}\n')
           self.indent -= 2
+          out.write(' ' * self.indent + '}\n')
       elif field.wire_type == WIRETYPE_LENGTH_DELIMITED:
         try:
           # If this field is parseable as a Message, it is probably
@@ -479,8 +482,8 @@ class _Printer(object):
           if self.as_one_line:
             out.write('} ')
           else:
-            out.write('}\n')
             self.indent -= 2
+            out.write(' ' * self.indent + '}\n')
         else:
           # A string or bytes field. self.as_utf8 may not work.
           out.write(': \"')

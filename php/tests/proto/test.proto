@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 import 'google/protobuf/any.proto';
+import 'google/protobuf/wrappers.proto';
 import 'google/protobuf/struct.proto';
 import 'proto/test_include.proto';
 import 'proto/test_no_namespace.proto';
@@ -119,6 +120,12 @@ message TestMessage {
   }
 
   reserved 111;
+
+  // Test map with missing message value
+  map<string, TestMessage> map_string_message = 121;
+  map<string, google.protobuf.Any> map_string_any = 122;
+  map<string, google.protobuf.ListValue> map_string_list = 123;
+  map<string, google.protobuf.Struct> map_string_struct = 124;
 }
 
 enum TestEnum {
@@ -206,4 +213,8 @@ enum testLowerCaseEnum {
 
 message TestAny {
   google.protobuf.Any any = 1;
+}
+
+message TestStringValue {
+  google.protobuf.StringValue field = 1;
 }

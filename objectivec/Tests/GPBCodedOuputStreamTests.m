@@ -237,7 +237,15 @@
 }
 
 - (void)testWriteVarint5 {
-  // 2961488830
+  // The sign/nosign distinction is done here because normally varints are
+  // around 64bit values, but for some cases a 32bit value is forced with
+  // with the sign bit (tags, uint32, etc.)
+
+  // 1887747006 (no sign bit)
+  [self assertWriteVarint:bytes(0xbe, 0xf7, 0x92, 0x84, 0x07)
+                    value:(0x3e << 0) | (0x77 << 7) | (0x12 << 14) |
+                          (0x04 << 21) | (0x07LL << 28)];
+  // 2961488830 (sign bit)
   [self assertWriteVarint:bytes(0xbe, 0xf7, 0x92, 0x84, 0x0b)
                     value:(0x3e << 0) | (0x77 << 7) | (0x12 << 14) |
                           (0x04 << 21) | (0x0bLL << 28)];

@@ -38,7 +38,6 @@
 #include <limits>
 #include <unordered_map>
 
-
 #include <google/protobuf/stubs/hash.h>
 
 #include <google/protobuf/stubs/casts.h>
@@ -120,7 +119,7 @@ bool IsLowercase(char c) { return c >= 'a' && c <= 'z'; }
 
 bool IsNumber(char c) { return c >= '0' && c <= '9'; }
 
-bool IsUpperCamelCase(const string& name) {
+bool IsUpperCamelCase(const std::string& name) {
   if (name.empty()) {
     return true;
   }
@@ -137,7 +136,7 @@ bool IsUpperCamelCase(const string& name) {
   return true;
 }
 
-bool IsUpperUnderscore(const string& name) {
+bool IsUpperUnderscore(const std::string& name) {
   for (int i = 0; i < name.length(); i++) {
     const char c = name[i];
     if (!IsUppercase(c) && c != '_' && !IsNumber(c)) {
@@ -147,7 +146,7 @@ bool IsUpperUnderscore(const string& name) {
   return true;
 }
 
-bool IsLowerUnderscore(const string& name) {
+bool IsLowerUnderscore(const std::string& name) {
   for (int i = 0; i < name.length(); i++) {
     const char c = name[i];
     if (!IsLowercase(c) && c != '_' && !IsNumber(c)) {
@@ -157,7 +156,7 @@ bool IsLowerUnderscore(const string& name) {
   return true;
 }
 
-bool IsNumberFollowUnderscore(const string& name) {
+bool IsNumberFollowUnderscore(const std::string& name) {
   for (int i = 1; i < name.length(); i++) {
     const char c = name[i];
     if (IsNumber(c) && name[i - 1] == '_') {
@@ -224,7 +223,7 @@ bool Parser::Consume(const char* text) {
   if (TryConsume(text)) {
     return true;
   } else {
-    AddError("Expected \"" + string(text) + "\".");
+    AddError("Expected \"" + std::string(text) + "\".");
     return false;
   }
 }
@@ -370,7 +369,7 @@ bool Parser::ConsumeEndOfDeclaration(const char* text,
   if (TryConsumeEndOfDeclaration(text, location)) {
     return true;
   } else {
-    AddError("Expected \"" + string(text) + "\".");
+    AddError("Expected \"" + std::string(text) + "\".");
     return false;
   }
 }
@@ -388,7 +387,7 @@ void Parser::AddError(const std::string& error) {
   AddError(input_->current().line, input_->current().column, error);
 }
 
-void Parser::AddWarning(const string& warning) {
+void Parser::AddWarning(const std::string& warning) {
   if (error_collector_ != nullptr) {
     error_collector_->AddWarning(input_->current().line,
                                  input_->current().column, warning);
@@ -478,7 +477,7 @@ void Parser::LocationRecorder::RecordLegacyLocation(
 }
 
 void Parser::LocationRecorder::RecordLegacyImportLocation(
-    const Message* descriptor, const string& name) {
+    const Message* descriptor, const std::string& name) {
   if (parser_->source_location_table_ != nullptr) {
     parser_->source_location_table_->AddImport(
         descriptor, name, location_->span(0), location_->span(1));
@@ -903,10 +902,8 @@ bool Parser::ParseMessageField(FieldDescriptorProto* field,
                                const LocationRecorder& field_location,
                                const FileDescriptorProto* containing_file) {
   {
-    LocationRecorder location(field_location,
-                              FieldDescriptorProto::kLabelFieldNumber);
     FieldDescriptorProto::Label label;
-    if (ParseLabel(&label, containing_file)) {
+    if (ParseLabel(&label, field_location, containing_file)) {
       field->set_label(label);
       if (label == FieldDescriptorProto::LABEL_OPTIONAL &&
           syntax_identifier_ == "proto3") {
@@ -2207,18 +2204,23 @@ bool Parser::ParseMethodOptions(const LocationRecorder& parent_location,
 // -------------------------------------------------------------------
 
 bool Parser::ParseLabel(FieldDescriptorProto::Label* label,
+                        const LocationRecorder& field_location,
                         const FileDescriptorProto* containing_file) {
+  if (!LookingAt("optional") && !LookingAt("repeated") &&
+      !LookingAt("required")) {
+    return false;
+  }
+  LocationRecorder location(field_location,
+                            FieldDescriptorProto::kLabelFieldNumber);
   if (TryConsume("optional")) {
     *label = FieldDescriptorProto::LABEL_OPTIONAL;
-    return true;
   } else if (TryConsume("repeated")) {
     *label = FieldDescriptorProto::LABEL_REPEATED;
-    return true;
-  } else if (TryConsume("required")) {
+  } else {
+    Consume("required");
     *label = FieldDescriptorProto::LABEL_REQUIRED;
-    return true;
   }
-  return false;
+  return true;
 }
 
 bool Parser::ParseType(FieldDescriptorProto::Type* type,
@@ -2325,7 +2327,7 @@ bool Parser::ParseImport(RepeatedPtrField<std::string>* dependency,
     *weak_dependency->Add() = dependency->size();
   }
 
-  string import_file;
+  std::string import_file;
   DO(ConsumeString(&import_file,
                    "Expected a string naming the file to import."));
   *dependency->Add() = import_file;
@@ -2359,7 +2361,7 @@ bool SourceLocationTable::Find(
 }
 
 bool SourceLocationTable::FindImport(const Message* descriptor,
-                                     const string& name, int* line,
+                                     const std::string& name, int* line,
                                      int* column) const {
   const std::pair<int, int>* result =
       FindOrNull(import_location_map_, std::make_pair(descriptor, name));
@@ -2383,7 +2385,8 @@ void SourceLocationTable::Add(
 }
 
 void SourceLocationTable::AddImport(const Message* descriptor,
-                                    const string& name, int line, int column) {
+                                    const std::string& name, int line,
+                                    int column) {
   import_location_map_[std::make_pair(descriptor, name)] =
       std::make_pair(line, column);
 }

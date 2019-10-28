@@ -59,26 +59,16 @@ final class ExtensionRegistryFactory {
 
   /** Construct a new, empty instance. */
   public static ExtensionRegistryLite create() {
-    if (EXTENSION_REGISTRY_CLASS != null) {
-      try {
-        return invokeSubclassFactory("newInstance");
-      } catch (Exception e) {
-        // return a Lite registry.
-      }
-    }
-    return new ExtensionRegistryLite();
+    ExtensionRegistryLite result = invokeSubclassFactory("newInstance");
+
+    return result != null ? result : new ExtensionRegistryLite();
   }
 
   /** Get the unmodifiable singleton empty instance. */
   public static ExtensionRegistryLite createEmpty() {
-    if (EXTENSION_REGISTRY_CLASS != null) {
-      try {
-        return invokeSubclassFactory("getEmptyRegistry");
-      } catch (Exception e) {
-        // return a Lite registry.
-      }
-    }
-    return EMPTY_REGISTRY_LITE;
+    ExtensionRegistryLite result = invokeSubclassFactory("getEmptyRegistry");
+
+    return result != null ? result : EMPTY_REGISTRY_LITE;
   }
 
 
@@ -87,9 +77,17 @@ final class ExtensionRegistryFactory {
         && EXTENSION_REGISTRY_CLASS.isAssignableFrom(registry.getClass());
   }
 
-  private static final ExtensionRegistryLite invokeSubclassFactory(String methodName)
-      throws Exception {
-    return (ExtensionRegistryLite)
-        EXTENSION_REGISTRY_CLASS.getDeclaredMethod(methodName).invoke(null);
+  /* @Nullable */
+  private static final ExtensionRegistryLite invokeSubclassFactory(String methodName) {
+    if (EXTENSION_REGISTRY_CLASS == null) {
+      return null;
+    }
+
+    try {
+      return (ExtensionRegistryLite)
+          EXTENSION_REGISTRY_CLASS.getDeclaredMethod(methodName).invoke(null);
+    } catch (Exception e) {
+      return null;
+    }
   }
 }

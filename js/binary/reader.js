@@ -49,6 +49,7 @@ goog.provide('jspb.BinaryReader');
 goog.require('goog.asserts');
 goog.require('jspb.BinaryConstants');
 goog.require('jspb.BinaryDecoder');
+goog.require('jspb.utils');
 
 
 
@@ -941,7 +942,7 @@ jspb.BinaryReader.prototype.readBytes = function() {
 
 
 /**
- * Reads a 64-bit varint or fixed64 field from the stream and returns it as a
+ * Reads a 64-bit varint or fixed64 field from the stream and returns it as an
  * 8-character Unicode string for use as a hash table key, or throws an error
  * if the next field in the stream is not of the correct wire type.
  *
@@ -951,6 +952,56 @@ jspb.BinaryReader.prototype.readVarintHash64 = function() {
   goog.asserts.assert(
       this.nextWireType_ == jspb.BinaryConstants.WireType.VARINT);
   return this.decoder_.readVarintHash64();
+};
+
+
+/**
+ * Reads an sint64 field from the stream and returns it as an 8-character
+ * Unicode string for use as a hash table key, or throws an error if the next
+ * field in the stream is not of the correct wire type.
+ *
+ * @return {string} The hash value.
+ */
+jspb.BinaryReader.prototype.readSintHash64 = function() {
+  goog.asserts.assert(
+      this.nextWireType_ == jspb.BinaryConstants.WireType.VARINT);
+  return this.decoder_.readZigzagVarintHash64();
+};
+
+
+/**
+ * Reads a 64-bit varint field from the stream and invokes `convert` to produce
+ * the return value, or throws an error if the next field in the stream is not
+ * of the correct wire type.
+ *
+ * @param {function(number, number): T} convert Conversion function to produce
+ *     the result value, takes parameters (lowBits, highBits).
+ * @return {T}
+ * @template T
+ */
+jspb.BinaryReader.prototype.readSplitVarint64 = function(convert) {
+  goog.asserts.assert(
+      this.nextWireType_ == jspb.BinaryConstants.WireType.VARINT);
+  return this.decoder_.readSplitVarint64(convert);
+};
+
+
+/**
+ * Reads a 64-bit zig-zag varint field from the stream and invokes `convert` to
+ * produce the return value, or throws an error if the next field in the stream
+ * is not of the correct wire type.
+ *
+ * @param {function(number, number): T} convert Conversion function to produce
+ *     the result value, takes parameters (lowBits, highBits).
+ * @return {T}
+ * @template T
+ */
+jspb.BinaryReader.prototype.readSplitZigzagVarint64 = function(convert) {
+  goog.asserts.assert(
+      this.nextWireType_ == jspb.BinaryConstants.WireType.VARINT);
+  return this.decoder_.readSplitVarint64(function(lowBits, highBits) {
+    return jspb.utils.fromZigzag64(lowBits, highBits, convert);
+  });
 };
 
 
@@ -965,6 +1016,23 @@ jspb.BinaryReader.prototype.readFixedHash64 = function() {
   goog.asserts.assert(
       this.nextWireType_ == jspb.BinaryConstants.WireType.FIXED64);
   return this.decoder_.readFixedHash64();
+};
+
+
+/**
+ * Reads a 64-bit fixed64 field from the stream and invokes `convert`
+ * to produce the return value, or throws an error if the next field in the
+ * stream is not of the correct wire type.
+ *
+ * @param {function(number, number): T} convert Conversion function to produce
+ *     the result value, takes parameters (lowBits, highBits).
+ * @return {T}
+ * @template T
+ */
+jspb.BinaryReader.prototype.readSplitFixed64 = function(convert) {
+  goog.asserts.assert(
+      this.nextWireType_ == jspb.BinaryConstants.WireType.FIXED64);
+  return this.decoder_.readSplitFixed64(convert);
 };
 
 

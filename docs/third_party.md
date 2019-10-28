@@ -16,6 +16,7 @@ These are projects we know about implementing Protocol Buffers for other program
 * C: https://github.com/cloudwu/pbc/
 * C: https://github.com/haberman/upb/wiki
 * C: https://github.com/squidfunk/protobluff
+* C: https://github.com/eerimoq/pbtools
 * C++: https://github.com/google/protobuf (Google-official implementation)
 * C/C++: http://spbc.sf.net/
 * C#: http://code.google.com/p/protobuf-csharp-port
@@ -23,11 +24,11 @@ These are projects we know about implementing Protocol Buffers for other program
 * C#/.NET/WCF/VB: http://code.google.com/p/protobuf-net/
 * Clojure: http://github.com/ninjudd/clojure-protobuf
 * Clojure: https://github.com/clojusc/protobuf
+* Clojure: https://protojure.github.io
 * Common Lisp: http://github.com/ndantam/s-protobuf
 * Common Lisp: http://github.com/brown/protobuf
 * D: https://github.com/dcarp/protobuf-d
 * D: https://github.com/msoucy/dproto
-* D: http://256.makerslocal.org/wiki/index.php/ProtocolBuffer
 * D: https://github.com/opticron/ProtocolBuffer
 * Dart: https://github.com/dart-lang/dart-protobuf (runtime) https://github.com/dart-lang/dart-protoc-plugin (code generator)
 * Delphi: http://sourceforge.net/projects/protobuf-delphi/
@@ -59,6 +60,7 @@ These are projects we know about implementing Protocol Buffers for other program
 * Javascript: http://code.google.com/p/protobuf-for-node/
 * Javascript: http://code.google.com/p/protostuff/
 * Julia: https://github.com/tanmaykm/ProtoBuf.jl
+* Kotlin: https://github.com/marcoferrer/kroto-plus
 * Kotlin: https://github.com/Kotlin/kotlinx.serialization
 * Lua: http://code.google.com/p/protoc-gen-lua/
 * Lua: http://github.com/indygreg/lua-protobuf
@@ -111,6 +113,7 @@ GRPC (http://www.grpc.io/) is Google's RPC implementation for Protocol Buffers. 
 * http://deltavsoft.com/RcfUserGuide/Protobufs (C++)
 * http://code.google.com/p/protobuf-mina-rpc/ (Python client, Java server)
 * http://code.google.com/p/casocklib/ (C++)
+* https://protojure.github.io (Clojure)
 * http://code.google.com/p/cxf-protobuf/ (Java)
 * http://code.google.com/p/protobuf-remote/ (C++/C#)
 * http://code.google.com/p/protobuf-rpc-pro/ (Java)

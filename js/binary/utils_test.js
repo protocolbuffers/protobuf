@@ -38,7 +38,6 @@
 
 goog.require('goog.crypt');
 goog.require('goog.crypt.base64');
-goog.require('goog.testing.asserts');
 goog.require('jspb.BinaryConstants');
 goog.require('jspb.BinaryWriter');
 goog.require('jspb.utils');
@@ -82,36 +81,36 @@ describe('binaryUtilsTest', function() {
     // Check some magic numbers.
     var result =
         jspb.utils.joinUnsignedDecimalString(0x89e80001, 0x8ac72304);
-    assertEquals('10000000000000000001', result);
+    expect(result).toEqual('10000000000000000001');
 
     result = jspb.utils.joinUnsignedDecimalString(0xacd05f15, 0x1b69b4b);
-    assertEquals('123456789123456789', result);
+    expect(result).toEqual('123456789123456789');
 
     result = jspb.utils.joinUnsignedDecimalString(0xeb1f0ad2, 0xab54a98c);
-    assertEquals('12345678901234567890', result);
+    expect(result).toEqual('12345678901234567890');
 
     result = jspb.utils.joinUnsignedDecimalString(0xe3b70cb1, 0x891087b8);
-    assertEquals('9876543210987654321', result);
+    expect(result).toEqual('9876543210987654321');
 
     // Check limits.
     result = jspb.utils.joinUnsignedDecimalString(0x00000000, 0x00000000);
-    assertEquals('0', result);
+    expect(result).toEqual('0');
 
     result = jspb.utils.joinUnsignedDecimalString(0xFFFFFFFF, 0xFFFFFFFF);
-    assertEquals('18446744073709551615', result);
+    expect(result).toEqual('18446744073709551615');
 
     // Check each bit of the low dword.
     for (var i = 0; i < 32; i++) {
       var low = (1 << i) >>> 0;
       result = jspb.utils.joinUnsignedDecimalString(low, 0);
-      assertEquals('' + Math.pow(2, i), result);
+      expect(result).toEqual('' + Math.pow(2, i));
     }
 
     // Check the first 20 bits of the high dword.
     for (var i = 0; i < 20; i++) {
       var high = (1 << i) >>> 0;
       result = jspb.utils.joinUnsignedDecimalString(0, high);
-      assertEquals('' + Math.pow(2, 32 + i), result);
+      expect(result).toEqual('' + Math.pow(2, 32 + i));
     }
 
     // V8's internal double-to-string conversion is inaccurate for values above
@@ -119,40 +118,40 @@ describe('binaryUtilsTest', function() {
     // manually against the correct string representations of 2^N.
 
     result = jspb.utils.joinUnsignedDecimalString(0x00000000, 0x00100000);
-    assertEquals('4503599627370496', result);
+    expect(result).toEqual('4503599627370496');
 
     result = jspb.utils.joinUnsignedDecimalString(0x00000000, 0x00200000);
-    assertEquals('9007199254740992', result);
+    expect(result).toEqual('9007199254740992');
 
     result = jspb.utils.joinUnsignedDecimalString(0x00000000, 0x00400000);
-    assertEquals('18014398509481984', result);
+    expect(result).toEqual('18014398509481984');
 
     result = jspb.utils.joinUnsignedDecimalString(0x00000000, 0x00800000);
-    assertEquals('36028797018963968', result);
+    expect(result).toEqual('36028797018963968');
 
     result = jspb.utils.joinUnsignedDecimalString(0x00000000, 0x01000000);
-    assertEquals('72057594037927936', result);
+    expect(result).toEqual('72057594037927936');
 
     result = jspb.utils.joinUnsignedDecimalString(0x00000000, 0x02000000);
-    assertEquals('144115188075855872', result);
+    expect(result).toEqual('144115188075855872');
 
     result = jspb.utils.joinUnsignedDecimalString(0x00000000, 0x04000000);
-    assertEquals('288230376151711744', result);
+    expect(result).toEqual('288230376151711744');
 
     result = jspb.utils.joinUnsignedDecimalString(0x00000000, 0x08000000);
-    assertEquals('576460752303423488', result);
+    expect(result).toEqual('576460752303423488');
 
     result = jspb.utils.joinUnsignedDecimalString(0x00000000, 0x10000000);
-    assertEquals('1152921504606846976', result);
+    expect(result).toEqual('1152921504606846976');
 
     result = jspb.utils.joinUnsignedDecimalString(0x00000000, 0x20000000);
-    assertEquals('2305843009213693952', result);
+    expect(result).toEqual('2305843009213693952');
 
     result = jspb.utils.joinUnsignedDecimalString(0x00000000, 0x40000000);
-    assertEquals('4611686018427387904', result);
+    expect(result).toEqual('4611686018427387904');
 
     result = jspb.utils.joinUnsignedDecimalString(0x00000000, 0x80000000);
-    assertEquals('9223372036854775808', result);
+    expect(result).toEqual('9223372036854775808');
   });
 
 
@@ -164,38 +163,38 @@ describe('binaryUtilsTest', function() {
     var convert = jspb.utils.hash64ToDecimalString;
 
     result = convert(toHashString(0x00000000, 0x00000000), false);
-    assertEquals('0', result);
+    expect(result).toEqual('0');
 
     result = convert(toHashString(0x00000000, 0x00000000), true);
-    assertEquals('0', result);
+    expect(result).toEqual('0');
 
     result = convert(toHashString(0xFFFFFFFF, 0xFFFFFFFF), false);
-    assertEquals('18446744073709551615', result);
+    expect(result).toEqual('18446744073709551615');
 
     result = convert(toHashString(0xFFFFFFFF, 0xFFFFFFFF), true);
-    assertEquals('-1', result);
+    expect(result).toEqual('-1');
 
     result = convert(toHashString(0x00000000, 0x80000000), false);
-    assertEquals('9223372036854775808', result);
+    expect(result).toEqual('9223372036854775808');
 
     result = convert(toHashString(0x00000000, 0x80000000), true);
-    assertEquals('-9223372036854775808', result);
+    expect(result).toEqual('-9223372036854775808');
 
     result = convert(toHashString(0xacd05f15, 0x01b69b4b), false);
-    assertEquals('123456789123456789', result);
+    expect(result).toEqual('123456789123456789');
 
     result = convert(toHashString(~0xacd05f15 + 1, ~0x01b69b4b), true);
-    assertEquals('-123456789123456789', result);
+    expect(result).toEqual('-123456789123456789');
 
     // And converting arrays of hashes should work the same way.
     result = jspb.utils.hash64ArrayToDecimalStrings([
       toHashString(0xFFFFFFFF, 0xFFFFFFFF),
       toHashString(0x00000000, 0x80000000),
       toHashString(0xacd05f15, 0x01b69b4b)], false);
-    assertEquals(3, result.length);
-    assertEquals('18446744073709551615', result[0]);
-    assertEquals('9223372036854775808', result[1]);
-    assertEquals('123456789123456789', result[2]);
+    expect(result.length).toEqual(3);
+    expect(result[0]).toEqual('18446744073709551615');
+    expect(result[1]).toEqual('9223372036854775808');
+    expect(result[2]).toEqual('123456789123456789');
   });
 
   /*
@@ -206,32 +205,32 @@ describe('binaryUtilsTest', function() {
     var convert = jspb.utils.decimalStringToHash64;
 
     result = convert('0');
-    assertEquals(goog.crypt.byteArrayToString(
-      [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]), result);
+    expect(result).toEqual(goog.crypt.byteArrayToString(
+        [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]));
 
     result = convert('-1');
-    assertEquals(goog.crypt.byteArrayToString(
-      [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]), result);
+    expect(result).toEqual(goog.crypt.byteArrayToString(
+        [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]));
 
     result = convert('18446744073709551615');
-    assertEquals(goog.crypt.byteArrayToString(
-      [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]), result);
+    expect(result).toEqual(goog.crypt.byteArrayToString(
+        [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]));
 
     result = convert('9223372036854775808');
-    assertEquals(goog.crypt.byteArrayToString(
-      [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80]), result);
+    expect(result).toEqual(goog.crypt.byteArrayToString(
+        [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80]));
 
     result = convert('-9223372036854775808');
-    assertEquals(goog.crypt.byteArrayToString(
-      [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80]), result);
+    expect(result).toEqual(goog.crypt.byteArrayToString(
+        [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80]));
 
     result = convert('123456789123456789');
-    assertEquals(goog.crypt.byteArrayToString(
-      [0x15, 0x5F, 0xD0, 0xAC, 0x4B, 0x9B, 0xB6, 0x01]), result);
+    expect(result).toEqual(goog.crypt.byteArrayToString(
+        [0x15, 0x5F, 0xD0, 0xAC, 0x4B, 0x9B, 0xB6, 0x01]));
 
     result = convert('-123456789123456789');
-    assertEquals(goog.crypt.byteArrayToString(
-      [0xEB, 0xA0, 0x2F, 0x53, 0xB4, 0x64, 0x49, 0xFE]), result);
+    expect(result).toEqual(goog.crypt.byteArrayToString(
+        [0xEB, 0xA0, 0x2F, 0x53, 0xB4, 0x64, 0x49, 0xFE]));
   });
 
   /**
@@ -242,13 +241,13 @@ describe('binaryUtilsTest', function() {
     var convert = jspb.utils.hash64ToHexString;
 
     result = convert(toHashString(0x00000000, 0x00000000));
-    assertEquals('0x0000000000000000', result);
+    expect(result).toEqual('0x0000000000000000');
 
     result = convert(toHashString(0xFFFFFFFF, 0xFFFFFFFF));
-    assertEquals('0xffffffffffffffff', result);
+    expect(result).toEqual('0xffffffffffffffff');
 
     result = convert(toHashString(0x12345678, 0x9ABCDEF0));
-    assertEquals('0x9abcdef012345678', result);
+    expect(result).toEqual('0x9abcdef012345678');
   });
 
 
@@ -260,22 +259,22 @@ describe('binaryUtilsTest', function() {
     var convert = jspb.utils.hexStringToHash64;
 
     result = convert('0x0000000000000000');
-    assertEquals(goog.crypt.byteArrayToString(
-        [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]), result);
+    expect(result).toEqual(goog.crypt.byteArrayToString(
+        [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]));
 
     result = convert('0xffffffffffffffff');
-    assertEquals(goog.crypt.byteArrayToString(
-        [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]), result);
+    expect(result).toEqual(goog.crypt.byteArrayToString(
+        [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]));
 
     // Hex string is big-endian, hash string is little-endian.
     result = convert('0x123456789ABCDEF0');
-    assertEquals(goog.crypt.byteArrayToString(
-        [0xF0, 0xDE, 0xBC, 0x9A, 0x78, 0x56, 0x34, 0x12]), result);
+    expect(result).toEqual(goog.crypt.byteArrayToString(
+        [0xF0, 0xDE, 0xBC, 0x9A, 0x78, 0x56, 0x34, 0x12]));
 
     // Capitalization should not matter.
     result = convert('0x0000abcdefABCDEF');
-    assertEquals(goog.crypt.byteArrayToString(
-        [0xEF, 0xCD, 0xAB, 0xEF, 0xCD, 0xAB, 0x00, 0x00]), result);
+    expect(result).toEqual(goog.crypt.byteArrayToString(
+        [0xEF, 0xCD, 0xAB, 0xEF, 0xCD, 0xAB, 0x00, 0x00]));
   });
 
 
@@ -288,25 +287,25 @@ describe('binaryUtilsTest', function() {
     var convert = jspb.utils.numberToHash64;
 
     result = convert(0x0000000000000);
-    assertEquals('0x0000000000000000', jspb.utils.hash64ToHexString(result));
+    expect(jspb.utils.hash64ToHexString(result)).toEqual('0x0000000000000000');
 
     result = convert(0xFFFFFFFFFFFFF);
-    assertEquals('0x000fffffffffffff', jspb.utils.hash64ToHexString(result));
+    expect(jspb.utils.hash64ToHexString(result)).toEqual('0x000fffffffffffff');
 
     result = convert(0x123456789ABCD);
-    assertEquals('0x000123456789abcd', jspb.utils.hash64ToHexString(result));
+    expect(jspb.utils.hash64ToHexString(result)).toEqual('0x000123456789abcd');
 
     result = convert(0xDCBA987654321);
-    assertEquals('0x000dcba987654321', jspb.utils.hash64ToHexString(result));
+    expect(jspb.utils.hash64ToHexString(result)).toEqual('0x000dcba987654321');
 
     // 53 bits of precision should not be truncated.
     result = convert(0x10000000000001);
-    assertEquals('0x0010000000000001', jspb.utils.hash64ToHexString(result));
+    expect(jspb.utils.hash64ToHexString(result)).toEqual('0x0010000000000001');
 
     // 54 bits of precision should be truncated.
     result = convert(0x20000000000001);
-    assertNotEquals(
-        '0x0020000000000001', jspb.utils.hash64ToHexString(result));
+    expect(jspb.utils.hash64ToHexString(result))
+        .not.toEqual('0x0020000000000001');
   });
 
 
@@ -322,15 +321,15 @@ describe('binaryUtilsTest', function() {
     // come back out of the string unchanged.
     for (var i = 0; i < 65536; i++) {
       strings[i] = 'a' + String.fromCharCode(i) + 'a';
-      if (3 != strings[i].length) throw 'fail!';
-      if (i != strings[i].charCodeAt(1)) throw 'fail!';
+      expect(strings[i].length).toEqual(3);
+      expect(strings[i].charCodeAt(1)).toEqual(i);
     }
 
     // Each unicode character should compare equal to itself and not equal to a
     // different unicode character.
     for (var i = 0; i < 65536; i++) {
-      if (strings[i] != strings[i]) throw 'fail!';
-      if (strings[i] == strings[(i + 1) % 65536]) throw 'fail!';
+      expect(strings[i] == strings[i]).toEqual(true);
+      expect(strings[i] == strings[(i + 1) % 65536]).toEqual(false);
     }
   });
 
@@ -342,13 +341,14 @@ describe('binaryUtilsTest', function() {
     var f32_eps = jspb.BinaryConstants.FLOAT32_EPS;
     var f32_min = jspb.BinaryConstants.FLOAT32_MIN;
     var f32_max = jspb.BinaryConstants.FLOAT32_MAX;
+    var f32_max_safe_int = jspb.utils.joinFloat32(0x4b7fffff, 0);
+    var f32_pi = Math.fround(Math.PI);
 
     // NaN.
     jspb.utils.splitFloat32(NaN);
-    if (!isNaN(jspb.utils.joinFloat32(jspb.utils.split64Low,
-                                      jspb.utils.split64High))) {
-      throw 'fail!';
-    }
+    expect(isNaN(jspb.utils.joinFloat32(
+               jspb.utils.split64Low, jspb.utils.split64High)))
+        .toEqual(true);
 
     /**
      * @param {number} x
@@ -359,10 +359,9 @@ describe('binaryUtilsTest', function() {
       if (goog.isDef(opt_bits)) {
         if (opt_bits != jspb.utils.split64Low) throw 'fail!';
       }
-      if (truncate(x) != jspb.utils.joinFloat32(jspb.utils.split64Low,
-          jspb.utils.split64High)) {
-        throw 'fail!';
-      }
+      expect(truncate(x))
+          .toEqual(jspb.utils.joinFloat32(
+              jspb.utils.split64Low, jspb.utils.split64High));
     }
 
     // Positive and negative infinity.
@@ -384,6 +383,13 @@ describe('binaryUtilsTest', function() {
     // Positive and negative max.
     test(f32_max, 0x7F7FFFFF);
     test(-f32_max, 0xFF7FFFFF);
+
+    // Positive and negative max_safe_int.
+    test(f32_max_safe_int, 0x4B7FFFFF);
+    test(-f32_max_safe_int, 0xCB7FFFFF);
+
+    // Pi.
+    test(f32_pi, 0x40490fdb);
 
     // Various positive values.
     var cursor = f32_eps * 10;
@@ -411,10 +417,9 @@ describe('binaryUtilsTest', function() {
 
     // NaN.
     jspb.utils.splitFloat64(NaN);
-    if (!isNaN(jspb.utils.joinFloat64(jspb.utils.split64Low,
-        jspb.utils.split64High))) {
-      throw 'fail!';
-    }
+    expect(isNaN(jspb.utils.joinFloat64(
+               jspb.utils.split64Low, jspb.utils.split64High)))
+        .toEqual(true);
 
     /**
      * @param {number} x
@@ -424,15 +429,16 @@ describe('binaryUtilsTest', function() {
     function test(x, opt_highBits, opt_lowBits) {
       jspb.utils.splitFloat64(x);
       if (goog.isDef(opt_highBits)) {
-        if (opt_highBits != jspb.utils.split64High) throw 'fail!';
+        var split64High = jspb.utils.split64High;
+        expect(opt_highBits.toString(16)).toEqual(split64High.toString(16));
       }
       if (goog.isDef(opt_lowBits)) {
-        if (opt_lowBits != jspb.utils.split64Low) throw 'fail!';
+        var split64Low = jspb.utils.split64Low;
+        expect(opt_lowBits.toString(16)).toEqual(split64Low.toString(16));
       }
-      if (x != jspb.utils.joinFloat64(jspb.utils.split64Low,
-          jspb.utils.split64High)) {
-        throw 'fail!';
-      }
+      expect(
+          jspb.utils.joinFloat64(jspb.utils.split64Low, jspb.utils.split64High))
+          .toEqual(x);
     }
 
     // Positive and negative infinity.
@@ -442,6 +448,9 @@ describe('binaryUtilsTest', function() {
     // Positive and negative zero.
     test(0, 0x00000000, 0x00000000);
     test(-0, 0x80000000, 0x00000000);
+
+    test(1, 0x3FF00000, 0x00000000);
+    test(2, 0x40000000, 0x00000000);
 
     // Positive and negative epsilon.
     test(f64_eps, 0x00000000, 0x00000001);
@@ -455,6 +464,19 @@ describe('binaryUtilsTest', function() {
     test(f64_max, 0x7FEFFFFF, 0xFFFFFFFF);
     test(-f64_max, 0xFFEFFFFF, 0xFFFFFFFF);
 
+    test(Number.MAX_SAFE_INTEGER, 0x433FFFFF, 0xFFFFFFFF);
+    test(Number.MIN_SAFE_INTEGER, 0xC33FFFFF, 0xFFFFFFFF);
+
+    // Test various edge cases with mantissa of all 1, all 0, or just the
+    // highest or lowest significant bit.
+    test(4503599627370497, 0x43300000, 0x00000001);
+    test(6755399441055744, 0x43380000, 0x00000000);
+    test(1.348269851146737e+308, 0x7FE80000, 0x00000000);
+    test(1.9999999999999998, 0x3FFFFFFF, 0xFFFFFFFF);
+    test(2.225073858507201e-308, 0x000FFFFF, 0xFFFFFFFF);
+    test(Math.PI, 0x400921fb, 0x54442d18);
+    test(jspb.BinaryConstants.FLOAT32_MIN, 0x38100000, 0x00000000);
+
     // Various positive values.
     var cursor = f64_eps * 10;
     while (cursor != Infinity) {
@@ -467,6 +489,53 @@ describe('binaryUtilsTest', function() {
     while (cursor != -Infinity) {
       test(cursor);
       cursor *= 1.1;
+    }
+  });
+
+  /**
+   * Tests zigzag conversions.
+   */
+  it('can encode and decode zigzag 64', function() {
+    function stringToHiLoPair(str) {
+      jspb.utils.splitDecimalString(str);
+      return {
+        lo: jspb.utils.split64Low >>> 0,
+        hi: jspb.utils.split64High >>> 0
+      };
+    }
+    function makeHiLoPair(lo, hi) {
+      return {lo: lo >>> 0, hi: hi >>> 0};
+    }
+    // Test cases direcly from the protobuf dev guide.
+    // https://engdoc.corp.google.com/eng/howto/protocolbuffers/developerguide/encoding.shtml?cl=head#types
+    var testCases = [
+      {original: stringToHiLoPair('0'), zigzag: stringToHiLoPair('0')},
+      {original: stringToHiLoPair('-1'), zigzag: stringToHiLoPair('1')},
+      {original: stringToHiLoPair('1'), zigzag: stringToHiLoPair('2')},
+      {original: stringToHiLoPair('-2'), zigzag: stringToHiLoPair('3')},
+      {
+        original: stringToHiLoPair('2147483647'),
+        zigzag: stringToHiLoPair('4294967294')
+      },
+      {
+        original: stringToHiLoPair('-2147483648'),
+        zigzag: stringToHiLoPair('4294967295')
+      },
+      // 64-bit extremes
+      {
+        original: stringToHiLoPair('9223372036854775807'),
+        zigzag: stringToHiLoPair('18446744073709551614')
+      },
+      {
+        original: stringToHiLoPair('-9223372036854775808'),
+        zigzag: stringToHiLoPair('18446744073709551615')
+      },
+    ];
+    for (const c of testCases) {
+      expect(jspb.utils.toZigzag64(c.original.lo, c.original.hi, makeHiLoPair))
+          .toEqual(c.zigzag);
+      expect(jspb.utils.fromZigzag64(c.zigzag.lo, c.zigzag.hi, makeHiLoPair))
+          .toEqual(c.original);
     }
   });
 
@@ -487,8 +556,8 @@ describe('binaryUtilsTest', function() {
 
     // We should have two more varints than we started with - one for the field
     // tag, one for the packed length.
-    assertEquals(values.length + 2,
-                 jspb.utils.countVarints(buffer, 0, buffer.length));
+    expect(jspb.utils.countVarints(buffer, 0, buffer.length))
+        .toEqual(values.length + 2);
   });
 
 
@@ -506,8 +575,8 @@ describe('binaryUtilsTest', function() {
     writer.writeString(2, 'terminator');
 
     var buffer = new Uint8Array(writer.getResultBuffer());
-    assertEquals(count,
-        jspb.utils.countVarintFields(buffer, 0, buffer.length, 1));
+    expect(jspb.utils.countVarintFields(buffer, 0, buffer.length, 1))
+        .toEqual(count);
 
     writer = new jspb.BinaryWriter();
 
@@ -519,8 +588,8 @@ describe('binaryUtilsTest', function() {
     writer.writeString(2, 'terminator');
 
     buffer = new Uint8Array(writer.getResultBuffer());
-    assertEquals(count,
-        jspb.utils.countVarintFields(buffer, 0, buffer.length, 123456789));
+    expect(jspb.utils.countVarintFields(buffer, 0, buffer.length, 123456789))
+        .toEqual(count);
   });
 
 
@@ -538,8 +607,8 @@ describe('binaryUtilsTest', function() {
     writer.writeString(2, 'terminator');
 
     var buffer = new Uint8Array(writer.getResultBuffer());
-    assertEquals(count,
-        jspb.utils.countFixed32Fields(buffer, 0, buffer.length, 1));
+    expect(jspb.utils.countFixed32Fields(buffer, 0, buffer.length, 1))
+        .toEqual(count);
 
     writer = new jspb.BinaryWriter();
 
@@ -551,8 +620,8 @@ describe('binaryUtilsTest', function() {
     writer.writeString(2, 'terminator');
 
     buffer = new Uint8Array(writer.getResultBuffer());
-    assertEquals(count,
-        jspb.utils.countFixed32Fields(buffer, 0, buffer.length, 123456789));
+    expect(jspb.utils.countFixed32Fields(buffer, 0, buffer.length, 123456789))
+        .toEqual(count);
   });
 
 
@@ -570,8 +639,8 @@ describe('binaryUtilsTest', function() {
     writer.writeString(2, 'terminator');
 
     var buffer = new Uint8Array(writer.getResultBuffer());
-    assertEquals(count,
-        jspb.utils.countFixed64Fields(buffer, 0, buffer.length, 1));
+    expect(jspb.utils.countFixed64Fields(buffer, 0, buffer.length, 1))
+        .toEqual(count);
 
     writer = new jspb.BinaryWriter();
 
@@ -583,8 +652,8 @@ describe('binaryUtilsTest', function() {
     writer.writeString(2, 'terminator');
 
     buffer = new Uint8Array(writer.getResultBuffer());
-    assertEquals(count,
-        jspb.utils.countFixed64Fields(buffer, 0, buffer.length, 123456789));
+    expect(jspb.utils.countFixed64Fields(buffer, 0, buffer.length, 123456789))
+        .toEqual(count);
   });
 
 
@@ -602,8 +671,8 @@ describe('binaryUtilsTest', function() {
     writer.writeString(2, 'terminator');
 
     var buffer = new Uint8Array(writer.getResultBuffer());
-    assertEquals(count,
-        jspb.utils.countDelimitedFields(buffer, 0, buffer.length, 1));
+    expect(jspb.utils.countDelimitedFields(buffer, 0, buffer.length, 1))
+        .toEqual(count);
 
     writer = new jspb.BinaryWriter();
 
@@ -615,8 +684,8 @@ describe('binaryUtilsTest', function() {
     writer.writeString(2, 'terminator');
 
     buffer = new Uint8Array(writer.getResultBuffer());
-    assertEquals(count,
-        jspb.utils.countDelimitedFields(buffer, 0, buffer.length, 123456789));
+    expect(jspb.utils.countDelimitedFields(buffer, 0, buffer.length, 123456789))
+        .toEqual(count);
   });
 
 
@@ -624,9 +693,10 @@ describe('binaryUtilsTest', function() {
    * Tests byte format for debug strings.
    */
   it('testDebugBytesToTextFormat', function() {
-    assertEquals('""', jspb.utils.debugBytesToTextFormat(null));
-    assertEquals('"\\x00\\x10\\xff"',
-        jspb.utils.debugBytesToTextFormat([0, 16, 255]));
+    expect(jspb.utils.debugBytesToTextFormat(null)).toEqual('""');
+    expect(jspb.utils.debugBytesToTextFormat([
+      0, 16, 255
+    ])).toEqual('"\\x00\\x10\\xff"');
   });
 
 
@@ -647,15 +717,15 @@ describe('binaryUtilsTest', function() {
     var sourceString = goog.crypt.byteArrayToString(sourceData);
 
     function check(result) {
-      assertEquals(Uint8Array, result.constructor);
-      assertEquals(sourceData.length, result.length);
+      expect(result.constructor).toEqual(Uint8Array);
+      expect(result.length).toEqual(sourceData.length);
       for (var i = 0; i < result.length; i++) {
-        assertEquals(sourceData[i], result[i]);
+        expect(result[i]).toEqual(sourceData[i]);
       }
     }
 
     // Converting Uint8Arrays into Uint8Arrays should be a no-op.
-    assertEquals(sourceBytes, convert(sourceBytes));
+    expect(convert(sourceBytes)).toEqual(sourceBytes);
 
     // Converting Array<numbers> into Uint8Arrays should work.
     check(convert(sourceData));

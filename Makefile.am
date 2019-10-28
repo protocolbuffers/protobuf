@@ -68,9 +68,12 @@ csharp_EXTRA_DIST=                                                           \
   csharp/protos/map_unittest_proto3.proto                                    \
   csharp/protos/unittest_custom_options_proto3.proto                         \
   csharp/protos/unittest_import_public_proto3.proto                          \
+  csharp/protos/unittest_import_public.proto                                 \
   csharp/protos/unittest_import_proto3.proto                                 \
+  csharp/protos/unittest_import.proto                                        \
   csharp/protos/unittest_issues.proto                                        \
   csharp/protos/unittest_proto3.proto                                        \
+  csharp/protos/unittest.proto                                               \
   csharp/src/AddressBook/AddPerson.cs                                        \
   csharp/src/AddressBook/Addressbook.cs                                      \
   csharp/src/AddressBook/AddressBook.csproj                                  \
@@ -100,9 +103,11 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf.Test/Compatibility/TypeExtensionsTest.cs        \
   csharp/src/Google.Protobuf.Test/DeprecatedMemberTest.cs                    \
   csharp/src/Google.Protobuf.Test/EqualityTester.cs                          \
+  csharp/src/Google.Protobuf.Test/ExtensionSetTest.cs                        \
   csharp/src/Google.Protobuf.Test/FieldCodecTest.cs                          \
   csharp/src/Google.Protobuf.Test/FieldMaskTreeTest.cs                       \
   csharp/src/Google.Protobuf.Test/GeneratedMessageTest.cs                    \
+  csharp/src/Google.Protobuf.Test/GeneratedMessageTest.Proto2.cs             \
   csharp/src/Google.Protobuf.Test/Google.Protobuf.Test.csproj                \
   csharp/src/Google.Protobuf.Test/IssuesTest.cs                              \
   csharp/src/Google.Protobuf.Test/JsonFormatterTest.cs                       \
@@ -119,13 +124,17 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf.Test/TestCornerCases.cs                         \
   csharp/src/Google.Protobuf.Test/TestProtos/ForeignMessagePartial.cs        \
   csharp/src/Google.Protobuf.Test/TestProtos/MapUnittestProto3.cs            \
+  csharp/src/Google.Protobuf.Test/TestProtos/TestMessagesProto2.cs           \
   csharp/src/Google.Protobuf.Test/TestProtos/TestMessagesProto3.cs           \
   csharp/src/Google.Protobuf.Test/TestProtos/UnittestCustomOptionsProto3.cs  \
   csharp/src/Google.Protobuf.Test/TestProtos/UnittestImportProto3.cs         \
   csharp/src/Google.Protobuf.Test/TestProtos/UnittestImportPublicProto3.cs   \
+  csharp/src/Google.Protobuf.Test/TestProtos/UnittestImportPublic.cs         \
+  csharp/src/Google.Protobuf.Test/TestProtos/UnittestImport.cs               \
   csharp/src/Google.Protobuf.Test/TestProtos/UnittestIssues.cs               \
   csharp/src/Google.Protobuf.Test/TestProtos/UnittestProto3.cs               \
   csharp/src/Google.Protobuf.Test/TestProtos/UnittestWellKnownTypes.cs       \
+  csharp/src/Google.Protobuf.Test/TestProtos/Unittest.cs                     \
   csharp/src/Google.Protobuf.Test/WellKnownTypes/AnyTest.cs                  \
   csharp/src/Google.Protobuf.Test/WellKnownTypes/DurationTest.cs             \
   csharp/src/Google.Protobuf.Test/WellKnownTypes/FieldMaskTest.cs            \
@@ -339,6 +348,7 @@ java_EXTRA_DIST=                                                                
   java/core/src/main/java/com/google/protobuf/TextFormatEscaper.java               \
   java/core/src/main/java/com/google/protobuf/TextFormatParseInfoTree.java         \
   java/core/src/main/java/com/google/protobuf/TextFormatParseLocation.java         \
+  java/core/src/main/java/com/google/protobuf/TypeRegistry.java                    \
   java/core/src/main/java/com/google/protobuf/UninitializedMessageException.java   \
   java/core/src/main/java/com/google/protobuf/UnknownFieldSchema.java              \
   java/core/src/main/java/com/google/protobuf/UnknownFieldSet.java                 \
@@ -435,6 +445,7 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/java/com/google/protobuf/TextFormatParseInfoTreeTest.java     \
   java/core/src/test/java/com/google/protobuf/TextFormatParseLocationTest.java     \
   java/core/src/test/java/com/google/protobuf/TextFormatTest.java                  \
+  java/core/src/test/java/com/google/protobuf/TypeRegistryTest.java                \
   java/core/src/test/java/com/google/protobuf/UnknownEnumValueTest.java            \
   java/core/src/test/java/com/google/protobuf/UnknownFieldSetTest.java             \
   java/core/src/test/java/com/google/protobuf/UnmodifiableLazyStringListTest.java  \
@@ -1228,14 +1239,13 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)   \
   examples/list_people.py                \
   examples/list_people_test.go           \
   examples/pubspec.yaml                  \
-  examples/third_party/zlib.BUILD        \
   protobuf.bzl                           \
   protobuf_deps.bzl                      \
   python/release/wheel/build_wheel_manylinux.sh  \
   python/release/wheel/Dockerfile                \
   python/release/wheel/protobuf_optimized_pip.sh \
   python/release/wheel/README.md         \
-  six.BUILD                              \
+  third_party/six.BUILD                  \
   third_party/zlib.BUILD                 \
   util/python/BUILD
 

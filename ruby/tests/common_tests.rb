@@ -807,7 +807,7 @@ module CommonTests
                                                         proto_module::TestMessage2.new(:foo => 2)])
     data = proto_module::TestMessage.encode m
     m2 = proto_module::TestMessage.decode data
-    assert m == m2
+    assert_equal m, m2
 
     data = Google::Protobuf.encode m
     m2 = Google::Protobuf.decode(proto_module::TestMessage, data)
@@ -902,8 +902,6 @@ module CommonTests
     assert m['class'] == 2
     m['dup'] = 3
     assert m['dup'] == 3
-    m['a.b'] = 4
-    assert m['a.b'] == 4
   end
 
   def test_int_ranges
@@ -1084,9 +1082,7 @@ module CommonTests
 
     json_text = proto_module::TestMessage.encode_json(m)
     m2 = proto_module::TestMessage.decode_json(json_text)
-    puts m.inspect
-    puts m2.inspect
-    assert m == m2
+    assert_equal m, m2
 
     # Crash case from GitHub issue 283.
     bar = proto_module::Bar.new(msg: "bar")
@@ -1132,7 +1128,7 @@ module CommonTests
 
     actual = proto_module::TestMessage.encode_json(m, :emit_defaults => true)
 
-    assert JSON.parse(actual, :symbolize_names => true) == expected
+    assert_equal expected, JSON.parse(actual, :symbolize_names => true)
   end
 
   def test_json_emit_defaults_submsg
@@ -1167,7 +1163,7 @@ module CommonTests
 
     actual = proto_module::TestMessage.encode_json(m, :emit_defaults => true)
 
-    assert JSON.parse(actual, :symbolize_names => true) == expected
+    assert_equal expected, JSON.parse(actual, :symbolize_names => true)
   end
 
   def test_json_emit_defaults_repeated_submsg
@@ -1201,7 +1197,7 @@ module CommonTests
 
     actual = proto_module::TestMessage.encode_json(m, :emit_defaults => true)
 
-    assert JSON.parse(actual, :symbolize_names => true) == expected
+    assert_equal expected, JSON.parse(actual, :symbolize_names => true)
   end
 
   def value_from_ruby(value)
@@ -1466,6 +1462,18 @@ module CommonTests
     assert_raise(Google::Protobuf::TypeError) { m.timestamp = 2.4 }
     assert_raise(Google::Protobuf::TypeError) { m.timestamp = '4' }
     assert_raise(Google::Protobuf::TypeError) { m.timestamp = proto_module::TimeMessage.new }
+
+    def test_time(year, month, day)
+      str = ("\"%04d-%02d-%02dT00:00:00.000+00:00\"" % [year, month, day])
+      t = Google::Protobuf::Timestamp.decode_json(str)
+      time = Time.new(year, month, day, 0, 0, 0, "+00:00")
+      assert_equal t.seconds, time.to_i
+    end
+
+    (1970..2010).each do |year|
+      test_time(year, 2, 28)
+      test_time(year, 3, 01)
+    end
   end
 
   def test_converts_duration

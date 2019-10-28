@@ -49,7 +49,7 @@
 #include <google/protobuf/port.h>
 #include <google/protobuf/stubs/strutil.h>
 
-
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -133,9 +133,18 @@ std::string DefaultInstanceType(const Descriptor* descriptor,
 std::string DefaultInstanceName(const Descriptor* descriptor,
                                 const Options& options);
 
+// Non-qualified name of the default instance pointer. This is used only for
+// implicit weak fields, where we need an extra indirection.
+std::string DefaultInstancePtr(const Descriptor* descriptor,
+                               const Options& options);
+
 // Fully qualified name of the default_instance of this message.
 std::string QualifiedDefaultInstanceName(const Descriptor* descriptor,
                                          const Options& options);
+
+// Fully qualified name of the default instance pointer.
+std::string QualifiedDefaultInstancePtr(const Descriptor* descriptor,
+                                        const Options& options);
 
 // DescriptorTable variable name.
 std::string DescriptorTableName(const FileDescriptor* file,
@@ -145,18 +154,12 @@ std::string DescriptorTableName(const FileDescriptor* file,
 // dllexport needed for the target file, if any.
 std::string FileDllExport(const FileDescriptor* file, const Options& options);
 
-// Returns the name of a no-op function that we can call to introduce a linker
-// dependency on the given message type. This is used to implement implicit weak
-// fields.
-std::string ReferenceFunctionName(const Descriptor* descriptor,
-                                  const Options& options);
-
 // Name of the base class: google::protobuf::Message or google::protobuf::MessageLite.
 std::string SuperClassName(const Descriptor* descriptor,
                            const Options& options);
 
 // Adds an underscore if necessary to prevent conflicting with a keyword.
-std::string ResolveKeyword(const string& name);
+std::string ResolveKeyword(const std::string& name);
 
 // Get the (unqualified) name that should be used for this field in C++ code.
 // The name is coerced to lower-case to emulate proto1 behavior.  People
@@ -549,6 +552,11 @@ inline std::string SccInfoSymbol(const SCC* scc, const Options& options) {
                     scc->GetRepresentative(), options);
 }
 
+inline std::string SccInfoPtrSymbol(const SCC* scc, const Options& options) {
+  return UniqueName("scc_info_ptr_" + ClassName(scc->GetRepresentative()),
+                    scc->GetRepresentative(), options);
+}
+
 void ListAllFields(const Descriptor* d,
                    std::vector<const FieldDescriptor*>* fields);
 void ListAllFields(const FileDescriptor* d,
@@ -694,6 +702,18 @@ class PROTOC_EXPORT Formatter {
     return annotation.SerializeAsString();
   }
 };
+
+template <class T>
+void PrintFieldComment(const Formatter& format, const T* field) {
+  // Print the field's (or oneof's) proto-syntax definition as a comment.
+  // We don't want to print group bodies so we cut off after the first
+  // line.
+  DebugStringOptions options;
+  options.elide_group_body = true;
+  options.elide_oneof_body = true;
+  std::string def = field->DebugStringWithOptions(options);
+  format("// $1$\n", def.substr(0, def.find_first_of('\n')));
+}
 
 class PROTOC_EXPORT NamespaceOpener {
  public:

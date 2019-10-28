@@ -17,7 +17,6 @@ module BasicTest
     add_message "BadFieldNames" do
       optional :dup, :int32, 1
       optional :class, :int32, 2
-      optional :"a.b", :int32, 3
     end
   end
 
@@ -204,6 +203,20 @@ module BasicTest
       end
     end
 
+    def test_map_field_with_symbol
+      m = MapMessage.new
+      assert m.map_string_int32 == {}
+      assert m.map_string_msg == {}
+
+      m = MapMessage.new(
+        :map_string_int32 => {a: 1, "b" => 2},
+        :map_string_msg => {a: TestMessage2.new(:foo => 1),
+                            b: TestMessage2.new(:foo => 10)})
+      assert_equal 1, m.map_string_int32[:a]
+      assert_equal 2, m.map_string_int32[:b]
+      assert_equal 10, m.map_string_msg[:b].foo
+    end
+
     def test_map_inspect
       m = MapMessage.new(
         :map_string_int32 => {"a" => 1, "b" => 2},
@@ -270,6 +283,14 @@ module BasicTest
       end
       assert_match(/No such field: not_in_message/, e.message)
     end
+
+    #def test_json_quoted_string
+    #  m = TestMessage.decode_json(%q(
+    #    "optionalInt64": "1",,
+    #  }))
+    #  puts(m)
+    #  assert_equal 1, m.optional_int32
+    #end
 
     def test_to_h
       m = TestMessage.new(:optional_bool => true, :optional_double => -10.100001, :optional_string => 'foo', :repeated_string => ['bar1', 'bar2'], :repeated_msg => [TestMessage2.new(:foo => 100)])
@@ -356,11 +377,6 @@ module BasicTest
       file_descriptor = TestEnum.descriptor.file_descriptor
       assert nil != file_descriptor
       assert_equal "tests/basic_test.proto", file_descriptor.name
-      assert_equal :proto3, file_descriptor.syntax
-
-      file_descriptor = BadFieldNames.descriptor.file_descriptor
-      assert nil != file_descriptor
-      assert_equal nil, file_descriptor.name
       assert_equal :proto3, file_descriptor.syntax
     end
 

@@ -55,7 +55,7 @@ namespace Google.Protobuf
         private readonly byte[] bytes;
 
         /// <summary>
-        /// Unsafe operations that can cause IO Failure and/or other catestrophic side-effects.
+        /// Unsafe operations that can cause IO Failure and/or other catastrophic side-effects.
         /// </summary>
         internal static class Unsafe
         {
@@ -110,7 +110,7 @@ namespace Google.Protobuf
             get { return Length == 0; }
         }
 
-#if NETSTANDARD2_0
+#if GOOGLE_PROTOBUF_SUPPORT_SYSTEM_MEMORY
         /// <summary>
         /// Provides read-only access to the data of this <see cref="ByteString"/>.
         /// No data is copied so this is the most efficient way of accessing.
@@ -218,7 +218,7 @@ namespace Google.Protobuf
             return new ByteString(portion);
         }
 
-#if NETSTANDARD2_0
+#if GOOGLE_PROTOBUF_SUPPORT_SYSTEM_MEMORY
         /// <summary>
         /// Constructs a <see cref="ByteString" /> from a read only span. The contents
         /// are copied, so further modifications to the span will not

@@ -64,7 +64,7 @@ bool ParseEndsInSlopRegion(const char* begin, int overrun, int d) {
     switch (tag & 7) {
       case 0: {  // Varint
         uint64 val;
-        ptr = ParseVarint64(ptr, &val);
+        ptr = VarintParse(ptr, &val);
         if (ptr == nullptr) return false;
         break;
       }
@@ -119,8 +119,7 @@ const char* EpsCopyInputStream::Next(int overrun, int d) {
     const void* data;
     // ZeroCopyInputStream indicates Next may return 0 size buffers. Hence
     // we loop.
-    while (zcis_->Next(&data, &size_)) {
-      overall_limit_ -= size_;
+    while (StreamNext(&data)) {
       if (size_ > kSlopBytes) {
         // We got a large chunk
         std::memcpy(buffer_ + kSlopBytes, data, kSlopBytes);
@@ -232,6 +231,19 @@ const char* EpsCopyInputStream::ReadRepeatedFixed(const char* ptr,
   return ptr;
 }
 
+template <int>
+void byteswap(void* p);
+template <>
+void byteswap<1>(void* p) {}
+template <>
+void byteswap<4>(void* p) {
+  *static_cast<uint32*>(p) = bswap_32(*static_cast<uint32*>(p));
+}
+template <>
+void byteswap<8>(void* p) {
+  *static_cast<uint64*>(p) = bswap_64(*static_cast<uint64*>(p));
+}
+
 template <typename T>
 const char* EpsCopyInputStream::ReadPackedFixed(const char* ptr, int size,
                                                 RepeatedField<T>* out) {
@@ -241,7 +253,13 @@ const char* EpsCopyInputStream::ReadPackedFixed(const char* ptr, int size,
     int old_entries = out->size();
     out->Reserve(old_entries + num);
     int block_size = num * sizeof(T);
-    std::memcpy(out->AddNAlreadyReserved(num), ptr, block_size);
+    auto dst = out->AddNAlreadyReserved(num);
+#ifdef PROTOBUF_LITTLE_ENDIAN
+    std::memcpy(dst, ptr, block_size);
+#else
+    for (int i = 0; i < num; i++)
+      dst[i] = UnalignedLoad<T>(ptr + i * sizeof(T));
+#endif
     ptr += block_size;
     size -= block_size;
     if (DoneWithCheck(&ptr, -1)) return nullptr;
@@ -251,7 +269,12 @@ const char* EpsCopyInputStream::ReadPackedFixed(const char* ptr, int size,
   int old_entries = out->size();
   out->Reserve(old_entries + num);
   int block_size = num * sizeof(T);
-  std::memcpy(out->AddNAlreadyReserved(num), ptr, block_size);
+  auto dst = out->AddNAlreadyReserved(num);
+#ifdef PROTOBUF_LITTLE_ENDIAN
+  std::memcpy(dst, ptr, block_size);
+#else
+  for (int i = 0; i < num; i++) dst[i] = UnalignedLoad<T>(ptr + i * sizeof(T));
+#endif
   ptr += block_size;
   if (size != block_size) return nullptr;
   return ptr;
@@ -286,7 +309,6 @@ const char* EpsCopyInputStream::InitFrom(io::ZeroCopyInputStream* zcis) {
   return buffer_;
 }
 
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 const char* ParseContext::ParseMessage(MessageLite* msg, const char* ptr) {
   return ParseMessage<MessageLite>(msg, ptr);
 }
@@ -294,7 +316,6 @@ const char* ParseContext::ParseMessage(Message* msg, const char* ptr) {
   // Use reinterptret case to prevent inclusion of non lite header
   return ParseMessage(reinterpret_cast<MessageLite*>(msg), ptr);
 }
-#endif
 
 inline void WriteVarint(uint64 val, std::string* s) {
   while (val >= 128) {
@@ -316,10 +337,17 @@ void WriteLengthDelimited(uint32 num, StringPiece val, std::string* s) {
   s->append(val.data(), val.size());
 }
 
-std::pair<const char*, uint32> ReadTagFallback(const char* p, uint32 res) {
-  for (std::uint32_t i = 0; i < 3; i++) {
-    std::uint32_t byte = static_cast<uint8>(p[i]);
-    res += (byte - 1) << (7 * (i + 2));
+std::pair<const char*, uint32> VarintParseSlow32(const char* p, uint32 res) {
+  for (std::uint32_t i = 2; i < 5; i++) {
+    uint32 byte = static_cast<uint8>(p[i]);
+    res += (byte - 1) << (7 * i);
+    if (PROTOBUF_PREDICT_TRUE(byte < 128)) {
+      return {p + i + 1, res};
+    }
+  }
+  // Accept >5 bytes
+  for (std::uint32_t i = 5; i < 10; i++) {
+    uint32 byte = static_cast<uint8>(p[i]);
     if (PROTOBUF_PREDICT_TRUE(byte < 128)) {
       return {p + i + 1, res};
     }
@@ -327,16 +355,47 @@ std::pair<const char*, uint32> ReadTagFallback(const char* p, uint32 res) {
   return {nullptr, 0};
 }
 
-std::pair<const char*, uint64> ParseVarint64Fallback(const char* p,
-                                                     uint64 res) {
-  return ParseVarint64FallbackInline(p, res);
+std::pair<const char*, uint64> VarintParseSlow64(const char* p, uint32 res32) {
+  uint64 res = res32;
+  for (std::uint32_t i = 2; i < 10; i++) {
+    uint64 byte = static_cast<uint8>(p[i]);
+    res += (byte - 1) << (7 * i);
+    if (PROTOBUF_PREDICT_TRUE(byte < 128)) {
+      return {p + i + 1, res};
+    }
+  }
+  return {nullptr, 0};
 }
 
-std::pair<const char*, int32> ReadSizeFallback(const char* p, uint32 first) {
-  uint32 tmp;
-  auto res = VarintParse<4>(p + 1, &tmp);
-  if (tmp >= (1 << 24) - ParseContext::kSlopBytes) return {nullptr, 0};
-  return {res, (tmp << 7) + first - 0x80};
+std::pair<const char*, uint32> ReadTagFallback(const char* p, uint32 res) {
+  for (std::uint32_t i = 2; i < 5; i++) {
+    uint32 byte = static_cast<uint8>(p[i]);
+    res += (byte - 1) << (7 * i);
+    if (PROTOBUF_PREDICT_TRUE(byte < 128)) {
+      return {p + i + 1, res};
+    }
+  }
+  return {nullptr, 0};
+}
+
+std::pair<const char*, int32> ReadSizeFallback(const char* p, uint32 res) {
+  for (std::uint32_t i = 1; i < 4; i++) {
+    uint32 byte = static_cast<uint8>(p[i]);
+    res += (byte - 1) << (7 * i);
+    if (PROTOBUF_PREDICT_TRUE(byte < 128)) {
+      return {p + i + 1, res};
+    }
+  }
+  std::uint32_t byte = static_cast<uint8>(p[4]);
+  if (PROTOBUF_PREDICT_FALSE(byte >= 8)) return {nullptr, 0};  // size >= 2gb
+  res += (byte - 1) << 28;
+  // Protect against sign integer overflow in PushLimit. Limits are relative
+  // to buffer ends and ptr could potential be kSlopBytes beyond a buffer end.
+  // To protect against overflow we reject limits absurdly close to INT_MAX.
+  if (PROTOBUF_PREDICT_FALSE(res > INT_MAX - ParseContext::kSlopBytes)) {
+    return {nullptr, 0};
+  }
+  return {p + 5, res};
 }
 
 const char* StringParser(const char* begin, const char* end, void* object,
@@ -501,7 +560,8 @@ class UnknownFieldLiteParserHelper {
     if (unknown_ == nullptr) return;
     WriteVarint(num * 8 + 1, unknown_);
     char buffer[8];
-    std::memcpy(buffer, &value, 8);
+    io::CodedOutputStream::WriteLittleEndian64ToArray(
+        value, reinterpret_cast<uint8*>(buffer));
     unknown_->append(buffer, 8);
   }
   const char* ParseLengthDelimited(uint32 num, const char* ptr,
@@ -524,7 +584,8 @@ class UnknownFieldLiteParserHelper {
     if (unknown_ == nullptr) return;
     WriteVarint(num * 8 + 5, unknown_);
     char buffer[4];
-    std::memcpy(buffer, &value, 4);
+    io::CodedOutputStream::WriteLittleEndian32ToArray(
+        value, reinterpret_cast<uint8*>(buffer));
     unknown_->append(buffer, 4);
   }
 

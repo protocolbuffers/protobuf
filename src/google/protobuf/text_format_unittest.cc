@@ -36,6 +36,7 @@
 
 #include <math.h>
 #include <stdlib.h>
+
 #include <limits>
 #include <memory>
 
@@ -54,8 +55,6 @@
 #include <google/protobuf/io/tokenizer.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/stubs/strutil.h>
-
-
 #include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
@@ -1003,6 +1002,9 @@ TEST_F(TextFormatTest, PrintExotic) {
   message.add_repeated_double(std::numeric_limits<double>::infinity());
   message.add_repeated_double(-std::numeric_limits<double>::infinity());
   message.add_repeated_double(std::numeric_limits<double>::quiet_NaN());
+  message.add_repeated_double(-std::numeric_limits<double>::quiet_NaN());
+  message.add_repeated_double(std::numeric_limits<double>::signaling_NaN());
+  message.add_repeated_double(-std::numeric_limits<double>::signaling_NaN());
   message.add_repeated_string(std::string("\000\001\a\b\f\n\r\t\v\\\'\"", 12));
 
   // Fun story:  We used to use 1.23e22 instead of 1.23e21 above, but this
@@ -1024,6 +1026,9 @@ TEST_F(TextFormatTest, PrintExotic) {
       "repeated_double: 1.23e-18\n"
       "repeated_double: inf\n"
       "repeated_double: -inf\n"
+      "repeated_double: nan\n"
+      "repeated_double: nan\n"
+      "repeated_double: nan\n"
       "repeated_double: nan\n"
       "repeated_string: "
       "\"\\000\\001\\007\\010\\014\\n\\r\\t\\013\\\\\\'\\\"\"\n",

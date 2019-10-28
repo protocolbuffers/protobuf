@@ -45,7 +45,6 @@
 #include <google/protobuf/unknown_field_set.h>
 #include <google/protobuf/stubs/strutil.h>
 
-
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -235,45 +234,48 @@ bool ReflectionOps::IsInitialized(const Message& message) {
   return true;
 }
 
+static bool IsMapValueMessageTyped(const FieldDescriptor* map_field) {
+  return map_field->message_type()->field(1)->cpp_type() ==
+         FieldDescriptor::CPPTYPE_MESSAGE;
+}
+
 void ReflectionOps::DiscardUnknownFields(Message* message) {
   const Reflection* reflection = GetReflectionOrDie(*message);
 
   reflection->MutableUnknownFields(message)->Clear();
 
+  // Walk through the fields of this message and DiscardUnknownFields on any
+  // messages present.
   std::vector<const FieldDescriptor*> fields;
   reflection->ListFields(*message, &fields);
   for (int i = 0; i < fields.size(); i++) {
     const FieldDescriptor* field = fields[i];
-    if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-      if (field->is_repeated()) {
-        if (field->is_map()) {
-          const FieldDescriptor* value_field = field->message_type()->field(1);
-          if (value_field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-            const MapFieldBase* map_field =
-                reflection->MutableMapData(message, field);
-            if (map_field->IsMapValid()) {
-              MapIterator iter(message, field);
-              MapIterator end(message, field);
-              for (map_field->MapBegin(&iter), map_field->MapEnd(&end);
-                   iter != end; ++iter) {
-                iter.MutableValueRef()
-                    ->MutableMessageValue()
-                    ->DiscardUnknownFields();
-              }
-              continue;
-            }
-          } else {
-            continue;
-          }
+    // Skip over non-message fields.
+    if (field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) {
+      continue;
+    }
+    // Discard the unknown fields in maps that contain message values.
+    if (field->is_map() && IsMapValueMessageTyped(field)) {
+      const MapFieldBase* map_field =
+          reflection->MutableMapData(message, field);
+      if (map_field->IsMapValid()) {
+        MapIterator iter(message, field);
+        MapIterator end(message, field);
+        for (map_field->MapBegin(&iter), map_field->MapEnd(&end); iter != end;
+             ++iter) {
+          iter.MutableValueRef()->MutableMessageValue()->DiscardUnknownFields();
         }
-        int size = reflection->FieldSize(*message, field);
-        for (int j = 0; j < size; j++) {
-          reflection->MutableRepeatedMessage(message, field, j)
-              ->DiscardUnknownFields();
-        }
-      } else {
-        reflection->MutableMessage(message, field)->DiscardUnknownFields();
       }
+      // Discard every unknown field inside messages in a repeated field.
+    } else if (field->is_repeated()) {
+      int size = reflection->FieldSize(*message, field);
+      for (int j = 0; j < size; j++) {
+        reflection->MutableRepeatedMessage(message, field, j)
+            ->DiscardUnknownFields();
+      }
+      // Discard the unknown fields inside an optional message.
+    } else {
+      reflection->MutableMessage(message, field)->DiscardUnknownFields();
     }
   }
 }

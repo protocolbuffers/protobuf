@@ -73,27 +73,25 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// The (possibly empty) set of custom options for this enum value.
         /// </summary>
-        //[Obsolete("CustomOptions are obsolete. Use GetOption")]
+        [Obsolete("CustomOptions are obsolete. Use GetOption")]
         public CustomOptions CustomOptions => new CustomOptions(Proto.Options._extensions?.ValuesByNumber);
 
-        /* // uncomment this in the full proto2 support PR
         /// <summary>
-        /// Gets a single value enum option for this descriptor
+        /// Gets a single value enum value option for this descriptor
         /// </summary>
         public T GetOption<T>(Extension<EnumValueOptions, T> extension)
         {
             var value = Proto.Options.GetExtension(extension);
-            return value is IDeepCloneable<T> clonable ? clonable.Clone() : value;
+            return value is IDeepCloneable<T> ? (value as IDeepCloneable<T>).Clone() : value;
         }
 
         /// <summary>
-        /// Gets a repeated value enum option for this descriptor
+        /// Gets a repeated value enum value option for this descriptor
         /// </summary>
         public RepeatedField<T> GetOption<T>(RepeatedExtension<EnumValueOptions, T> extension)
         {
             return Proto.Options.GetExtension(extension).Clone();
         }
-        */
     }
 }
  

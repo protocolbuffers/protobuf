@@ -338,14 +338,38 @@
 }
 
 - (void)testCoding {
+  GPBMessage *original = [self mergeResult];
   NSData *data =
-      [NSKeyedArchiver archivedDataWithRootObject:[self mergeResult]];
+      [NSKeyedArchiver archivedDataWithRootObject:original];
   id unarchivedObject = [NSKeyedUnarchiver unarchiveObjectWithData:data];
 
-  XCTAssertEqualObjects(unarchivedObject, [self mergeResult]);
+  XCTAssertEqualObjects(unarchivedObject, original);
 
   // Intentionally doing a pointer comparison.
-  XCTAssertNotEqual(unarchivedObject, [self mergeResult]);
+  XCTAssertNotEqual(unarchivedObject, original);
+}
+
+- (void)testSecureCoding {
+  GPBMessage *original = [self mergeResult];
+
+  NSString *key = @"testing123";
+
+  NSMutableData *data = [NSMutableData data];
+  NSKeyedArchiver *archiver = [[NSKeyedArchiver alloc] initForWritingWithMutableData:data];
+  [archiver setRequiresSecureCoding:YES];
+  [archiver encodeObject:original forKey:key];
+  [archiver finishEncoding];
+
+  NSKeyedUnarchiver *unarchiver = [[NSKeyedUnarchiver alloc] initForReadingWithData:data];
+  [unarchiver setRequiresSecureCoding:YES];
+  id unarchivedObject = [unarchiver decodeObjectOfClass:[GPBMessage class]
+                                                 forKey:key];
+  [unarchiver finishDecoding];
+
+  XCTAssertEqualObjects(unarchivedObject, original);
+
+  // Intentionally doing a pointer comparison.
+  XCTAssertNotEqual(unarchivedObject, original);
 }
 
 - (void)testObjectReset {

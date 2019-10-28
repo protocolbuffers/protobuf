@@ -294,15 +294,15 @@ class PROTOBUF_EXPORT Message : public MessageLite {
 
   std::string GetTypeName() const override;
   void Clear() override;
+
+  // Returns whether all required fields have been set. Note that required
+  // fields no longer exist starting in proto3.
   bool IsInitialized() const override;
+
   void CheckTypeAndMergeFrom(const MessageLite& other) override;
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
   // Reflective parser
   const char* _InternalParse(const char* ptr,
                              internal::ParseContext* ctx) override;
-#else
-  bool MergePartialFromCodedStream(io::CodedInputStream* input) override;
-#endif
   size_t ByteSizeLong() const override;
   uint8* InternalSerializeWithCachedSizesToArray(
       uint8* target, io::EpsCopyOutputStream* stream) const override;
@@ -330,15 +330,11 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // which can be used to read and modify the fields of the Message dynamically
   // (in other words, without knowing the message type at compile time).  This
   // object remains property of the Message.
-  //
-  // This method remains virtual in case a subclass does not implement
-  // reflection and wants to override the default behavior.
   const Reflection* GetReflection() const { return GetMetadata().reflection; }
 
  protected:
-  // Get a struct containing the metadata for the Message. Most subclasses only
-  // need to implement this method, rather than the GetDescriptor() and
-  // GetReflection() wrappers.
+  // Get a struct containing the metadata for the Message, which is used in turn
+  // to implement GetDescriptor() and GetReflection() above.
   virtual Metadata GetMetadata() const = 0;
 
 
@@ -539,7 +535,7 @@ class PROTOBUF_EXPORT Reflection final {
   void SetBool(Message* message, const FieldDescriptor* field,
                bool value) const;
   void SetString(Message* message, const FieldDescriptor* field,
-                 const std::string& value) const;
+                 std::string value) const;
   void SetEnum(Message* message, const FieldDescriptor* field,
                const EnumValueDescriptor* value) const;
   // Set an enum field's value with an integer rather than EnumValueDescriptor.
@@ -639,7 +635,7 @@ class PROTOBUF_EXPORT Reflection final {
   void SetRepeatedBool(Message* message, const FieldDescriptor* field,
                        int index, bool value) const;
   void SetRepeatedString(Message* message, const FieldDescriptor* field,
-                         int index, const std::string& value) const;
+                         int index, std::string value) const;
   void SetRepeatedEnum(Message* message, const FieldDescriptor* field,
                        int index, const EnumValueDescriptor* value) const;
   // Set an enum field's value with an integer rather than EnumValueDescriptor.
@@ -676,7 +672,7 @@ class PROTOBUF_EXPORT Reflection final {
   void AddBool(Message* message, const FieldDescriptor* field,
                bool value) const;
   void AddString(Message* message, const FieldDescriptor* field,
-                 const std::string& value) const;
+                 std::string value) const;
   void AddEnum(Message* message, const FieldDescriptor* field,
                const EnumValueDescriptor* value) const;
   // Add an integer value to a repeated enum field rather than
@@ -949,6 +945,7 @@ class PROTOBUF_EXPORT Reflection final {
 
   // Help method for MapIterator.
   friend class MapIterator;
+  friend class WireFormatForMapFieldTest;
   internal::MapFieldBase* MutableMapData(Message* message,
                                          const FieldDescriptor* field) const;
 
@@ -1204,9 +1201,7 @@ T* DynamicCastToGenerated(Message* from) {
 // of loops (on x86-64 it compiles into two "mov" instructions).
 template <typename T>
 void LinkMessageReflection() {
-  typedef const T& GetDefaultInstanceFunction();
-  GetDefaultInstanceFunction* volatile unused = &T::default_instance;
-  (void)&unused;  // Use address to avoid an extra load of volatile variable.
+  internal::StrongReference(T::default_instance);
 }
 
 // =============================================================================

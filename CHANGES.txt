@@ -1,3 +1,127 @@
+2019-09-03 version 3.10.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  C++
+  * Switch the proto parser to the faster MOMI parser.
+  * Properly escape Struct keys in the proto3 JSON serializer.
+  * Fix crash on uninitialized map entries.
+  * Informed the compiler of has-bit invariant to produce better code
+  * Unused imports of files defining descriptor extensions will now be reported
+  * Add proto2::util::RemoveSubranges to remove multiple subranges in linear time.
+  * Added BaseTextGenerator::GetCurrentIndentationSize()
+  * Made implicit weak fields compatible with the Apple linker
+  * Support 32 bit values for ProtoStreamObjectWriter to Struct.
+  * Removed the internal-only header coded_stream_inl.h and the internal-only methods defined there.
+  * Enforced no SWIG wrapping of descriptor_database.h (other headers already had this restriction).
+  * Implementation of the equivalent of the MOMI parser for serialization. This removes one of the two serialization routines, by making the fast array serialization routine completely general. SerializeToCodedStream can now be implemented in terms of the much much faster array serialization. The array serialization regresses slightly, but when array serialization is not possible this wins big. 
+  * Do not convert unknown field name to snake case to accurately report error.
+  * Fix a UBSAN warnings. (#6333)
+  * Add podspec for C++ (#6404)
+  * protoc: fix source code info location for missing label (#6436)
+  * C++ Add move constructor for Reflection's SetString (#6477)
+
+  Java
+  * Call loadDescriptor outside of synchronized block to remove one possible source of deadlock.
+  * Have oneof enums implement a separate interface (other than EnumLite) for clarity.
+  * Opensource Android Memory Accessors
+  * Update TextFormat to make use of the new TypeRegistry.
+  * Support getFieldBuilder and getRepeatedFieldBuilder in ExtendableBuilder
+  * Update JsonFormat to make use of the new TypeRegistry.
+  * Add proguard config generator for GmmBenchmarkSuiteLite.
+  * Change ProtobufArrayList to use Object[] instead of ArrayList for 5-10% faster parsing
+  * Implement ProtobufArrayList.add(E) for 20% (5%-40%) faster overall protolite2 parsing
+  * Make a copy of JsonFormat.TypeRegistry at the protobuf top level package. This will eventually replace JsonFormat.TypeRegistry.
+  * Fix javadoc warnings in generated files (#6231)
+  * Java: Add Automatic-Module-Name entries to the Manifest (#6568)
+
+  Python
+  * Add descriptor methods in descriptor_pool are deprecated.
+  * Uses explicit imports to prevent multithread test failures in py3.
+  * Added __delitem__ for Python extension dict
+  * Update six version to 1.12.0 and fix legacy_create_init issue (#6391)
+
+  JavaScript
+  * Remove deprecated boolean option to getResultBase64String().
+  * Fix sint64 zig-zag encoding.
+  * Simplify hash64 string conversion to avoid DIGIT array. Should reduce overhead if these functions aren't used, and be more efficient by avoiding linear array searches.
+  * Change the parameter types of binaryReaderFn in ExtensionFieldBinaryInfo to (number, ?, ?).
+  * Create dates.ts and time_of_days.ts to mirror Java versions. This is a near-identical conversion of c.g.type.util.{Dates,TimeOfDays} respectively.
+  * Migrate moneys to TypeScript.
+  
+  PHP
+  * Fix incorrect leap day for Timestamp (#6696)
+  * Initialize well known type values (#6713)
+
+  Ruby
+  * Fix scope resolution for Google namespace (#5878)
+  * Support hashes for struct initializers (#5716)
+  * Optimized away the creation of empty string objects. (#6502)
+  * Roll forward Ruby upb changes now that protobuf Ruby build is fixed (#5866)
+  * Optimized layout_mark() for Ruby (#6521)
+  * Optimization for layout_init() (#6547)
+  * Fix for GC of Ruby map frames. (#6533)
+  * Fixed leap year handling by reworking upb_mktime() -> upb_timegm(). (#6695)
+  
+  Objective C
+  * Remove OSReadLittle* due to alignment requirements (#6678)
+  * Don't use unions and instead use memcpy for the type swaps. (#6672)
+
+  Other
+  * Override CocoaPods module to lowercase (#6464)
+
+
+2019-06-28 version 3.9.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  C++
+  * Optimize and simplify implementation of RepeatedPtrFieldBase
+  * Don't create unnecessary unknown field sets.
+  * Remove branch from accessors to repeated field element array.
+  * Added delimited parse and serialize util.
+  * Reduce size by not emitting constants for fieldnumbers
+  * Fix a bug when comparing finite and infinite field values with explicit tolerances.
+  * TextFormat::Parser should use a custom Finder to look up extensions by number if one is provided.
+  * Add MessageLite::Utf8DebugString() to make MessageLite more compatible with Message.
+  * Fail fast for better performance in DescriptorPool::FindExtensionByNumber() if descriptor has no defined extensions.
+  * Adding the file name to help debug colliding extensions
+  * Added FieldDescriptor::PrintableNameForExtension() and DescriptorPool::FindExtensionByPrintableName().
+    The latter will replace Reflection::FindKnownExtensionByName().
+  * Replace NULL with nullptr
+  * Created a new Add method in repeated field that allows adding a range of elements all at once.
+  * Enabled enum name-to-value mapping functions for C++ lite
+  * Avoid dynamic initialization in descriptor.proto generated code
+  * Move stream functions to MessageLite from Message.
+  * Move all zero_copy_stream functionality to io_lite.
+  * Do not create array of matched fields for simple repeated fields
+  * Enabling silent mode by default to reduce make compilation noise. (#6237)
+
+  Java
+  * Expose TextFormat.Printer and make it configurable. Deprecate the static methods.
+  * Library for constructing google.protobuf.Struct and google.protobuf.Value
+  * Make OneofDescriptor extend GenericDescriptor.
+  * Expose streamingness of service methods from MethodDescriptor.
+  * Fix a bug where TextFormat fails to parse Any filed with > 1 embedded message sub-fields.
+  * Establish consistent JsonFormat behavior for nulls in oneofs, regardless of order.
+  * Update GSON version to 3.8.5. (#6268)
+  * Add `protobuf_java_lite` Bazel target. (#6177)
+
+  Python
+  * Change implementation of Name() for enums that allow aliases in proto2 in Python
+    to be in line with claims in C++ implementation (to return first value).
+  * Explicitly say what field cannot be set when the new value fails a type check.
+  * Duplicate register in descriptor pool will raise errors
+  * Add __slots__ to all well_known_types classes, custom attributes are not allowed anymore.
+  * text_format only present 8 valid digits for float fields by default
+
+  JavaScript
+  * Add Oneof enum to the list of goog.provide
+
+  PHP
+  * Make php message class final to avoid mocking. (#6277)
+  * Rename get/setXXXValue to get/setXXXWrapper. (#6295)
+
+  Ruby
+  * Remove to_hash methods. (#6166)
+
+
 2019-04-29 version 3.8.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   C++

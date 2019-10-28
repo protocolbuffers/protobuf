@@ -47,8 +47,8 @@ size_t stringsink_string(void *_sink, const void *hd, const char *ptr,
   stringsink *sink = _sink;
   size_t new_size = sink->size;
 
-  UPB_UNUSED(hd);
-  UPB_UNUSED(handle);
+  PHP_PROTO_UNUSED(hd);
+  PHP_PROTO_UNUSED(handle);
 
   while (sink->len + len > new_size) {
     new_size *= 2;
@@ -74,6 +74,7 @@ void stringsink_init(stringsink *sink) {
 
   sink->size = 32;
   sink->ptr = malloc(sink->size);
+  PHP_PROTO_ASSERT(sink->ptr != NULL);
   sink->len = 0;
 }
 
@@ -132,6 +133,7 @@ static bool is_wrapper_msg(const upb_msgdef *msg) {
 // Creates a handlerdata that simply contains the offset for this field.
 static const void* newhandlerdata(upb_handlers* h, uint32_t ofs) {
   size_t* hd_ofs = (size_t*)malloc(sizeof(size_t));
+  PHP_PROTO_ASSERT(hd_ofs != NULL);
   *hd_ofs = ofs;
   upb_handlers_addcleanup(h, hd_ofs, free);
   return hd_ofs;
@@ -154,6 +156,7 @@ typedef struct {
 static const void *newunknownfieldshandlerdata(upb_handlers* h) {
   unknownfields_handlerdata_t* hd =
       (unknownfields_handlerdata_t*)malloc(sizeof(unknownfields_handlerdata_t));
+  PHP_PROTO_ASSERT(hd != NULL);
   hd->handler = stringsink_string;
   upb_handlers_addcleanup(h, hd, free);
   return hd;
@@ -169,6 +172,7 @@ static const void *newsubmsghandlerdata(upb_handlers* h, uint32_t ofs,
                                         const upb_fielddef* f) {
   submsg_handlerdata_t* hd =
       (submsg_handlerdata_t*)malloc(sizeof(submsg_handlerdata_t));
+  PHP_PROTO_ASSERT(hd != NULL);
   hd->ofs = ofs;
   hd->md = upb_fielddef_msgsubdef(f);
   upb_handlers_addcleanup(h, hd, free);
@@ -192,6 +196,7 @@ static const void *newoneofhandlerdata(upb_handlers *h,
                                        const upb_fielddef *f) {
   oneof_handlerdata_t* hd =
       (oneof_handlerdata_t*)malloc(sizeof(oneof_handlerdata_t));
+  PHP_PROTO_ASSERT(hd != NULL);
   hd->ofs = ofs;
   hd->case_ofs = case_ofs;
   hd->property_ofs = property_ofs;
@@ -243,10 +248,11 @@ DEFINE_APPEND_HANDLER(double, double)
 static void* appendstr_handler(void *closure,
                                const void *hd,
                                size_t size_hint) {
-  UPB_UNUSED(hd);
+  PHP_PROTO_UNUSED(hd);
 
   stringfields_parseframe_t* frame =
       (stringfields_parseframe_t*)malloc(sizeof(stringfields_parseframe_t));
+  PHP_PROTO_ASSERT(frame != NULL);
   frame->closure = closure;
   stringsink_init(&frame->sink);
 
@@ -331,7 +337,6 @@ static void new_php_string(zval** value_ptr, const char* str, size_t len) {
       !IS_INTERNED(Z_STRVAL_PP(value_ptr))) {
     FREE(Z_STRVAL_PP(value_ptr));
   }
-  ZVAL_EMPTY_STRING(*value_ptr);
   ZVAL_STRINGL(*value_ptr, str, len, 1);
 }
 #else
@@ -354,10 +359,11 @@ static void new_php_string(zval* value_ptr, const char* str, size_t len) {
 static void* str_handler(void *closure,
                          const void *hd,
                          size_t size_hint) {
-  UPB_UNUSED(hd);
+  PHP_PROTO_UNUSED(hd);
 
   stringfields_parseframe_t* frame =
       (stringfields_parseframe_t*)malloc(sizeof(stringfields_parseframe_t));
+  PHP_PROTO_ASSERT(frame != NULL);
   frame->closure = closure;
   stringsink_init(&frame->sink);
 
@@ -452,6 +458,7 @@ static void *submsg_handler(void *closure, const void *hd) {
 // Handler data for startmap/endmap handlers.
 typedef struct {
   size_t ofs;
+  const upb_msgdef* value_md;
   upb_fieldtype_t key_field_type;
   upb_fieldtype_t value_field_type;
 } map_handlerdata_t;
@@ -478,7 +485,9 @@ PHP_PROTO_WRAP_OBJECT_START(map_parse_frame_t)
 PHP_PROTO_WRAP_OBJECT_END
 typedef struct map_parse_frame_t map_parse_frame_t;
 
-static void map_slot_init(void* memory, upb_fieldtype_t type, zval* cache) {
+static void map_slot_init(
+    void* memory, upb_fieldtype_t type, zval* cache,
+    const upb_msgdef* value_msg PHP_PROTO_TSRMLS_DC) {
   switch (type) {
     case UPB_TYPE_STRING:
     case UPB_TYPE_BYTES: {
@@ -498,16 +507,24 @@ static void map_slot_init(void* memory, upb_fieldtype_t type, zval* cache) {
       break;
     }
     case UPB_TYPE_MESSAGE: {
+      Descriptor* subdesc =
+          UNBOX_HASHTABLE_VALUE(Descriptor, get_def_obj(value_msg));
+      zend_class_entry* subklass = subdesc->klass;
+      MessageHeader* submsg;
 #if PHP_MAJOR_VERSION < 7
       zval** holder = ALLOC(zval*);
       zval* tmp;
       MAKE_STD_ZVAL(tmp);
-      ZVAL_NULL(tmp);
+      ZVAL_OBJ(tmp, subklass->create_object(subklass TSRMLS_CC));
+      submsg = UNBOX(MessageHeader, tmp);
+      custom_data_init(subklass, submsg PHP_PROTO_TSRMLS_CC);
       *holder = tmp;
       *(zval***)memory = holder;
 #else
       *(zval**)memory = cache;
-      ZVAL_NULL(*(zval**)memory);
+      ZVAL_OBJ(*(zval**)memory, subklass->create_object(subklass TSRMLS_CC));
+      submsg = UNBOX(MessageHeader, cache);
+      custom_data_init(subklass, submsg PHP_PROTO_TSRMLS_CC);
 #endif
       break;
     }
@@ -578,8 +595,10 @@ static void map_slot_value(upb_fieldtype_t type, const void* from,
       zend_string_addref(*(zend_string**)to);
       break;
     case UPB_TYPE_MESSAGE:
-      *(zend_object**)to = Z_OBJ_P(*(zval**)from);
-      GC_ADDREF(*(zend_object**)to);
+      if (!ZVAL_IS_NULL(*(zval**)from)) {
+        *(zend_object**)to = Z_OBJ_P(*(zval**)from);
+        GC_ADDREF(*(zend_object**)to);
+      }
       break;
 #endif
     default:
@@ -593,6 +612,7 @@ static void map_slot_value(upb_fieldtype_t type, const void* from,
 static void *startmapentry_handler(void *closure, const void *hd) {
   MessageHeader* msg = closure;
   const map_handlerdata_t* mapdata = hd;
+  TSRMLS_FETCH();
   zval* map = CACHED_PTR_TO_ZVAL_PTR(
       DEREF(message_data(msg), mapdata->ofs, CACHED_VALUE*));
 
@@ -601,9 +621,9 @@ static void *startmapentry_handler(void *closure, const void *hd) {
   frame->map = map;
 
   map_slot_init(&frame->data->key_storage, mapdata->key_field_type,
-                &frame->key_zval);
+                &frame->key_zval, NULL PHP_PROTO_TSRMLS_CC);
   map_slot_init(&frame->data->value_storage, mapdata->value_field_type,
-                &frame->value_zval);
+                &frame->value_zval, mapdata->value_md PHP_PROTO_TSRMLS_CC);
 
   return frame;
 }
@@ -650,14 +670,19 @@ static map_handlerdata_t* new_map_handlerdata(
   // TODO(teboring): Use emalloc and efree.
   map_handlerdata_t* hd =
       (map_handlerdata_t*)malloc(sizeof(map_handlerdata_t));
-
+  PHP_PROTO_ASSERT(hd != NULL);
   hd->ofs = ofs;
   key_field = upb_msgdef_itof(mapentry_def, MAP_KEY_FIELD);
-  assert(key_field != NULL);
+  PHP_PROTO_ASSERT(key_field != NULL);
   hd->key_field_type = upb_fielddef_type(key_field);
   value_field = upb_msgdef_itof(mapentry_def, MAP_VALUE_FIELD);
-  assert(value_field != NULL);
+  PHP_PROTO_ASSERT(value_field != NULL);
   hd->value_field_type = upb_fielddef_type(value_field);
+  if (upb_fielddef_type(value_field) == UPB_TYPE_MESSAGE) {
+    hd->value_md = upb_fielddef_msgsubdef(value_field);
+  } else {
+    hd->value_md = NULL;
+  }
 
   return hd;
 }
@@ -763,10 +788,11 @@ static bool oneofstr_end_handler(void *closure, const void *hd) {
 static void *oneofstr_handler(void *closure,
                               const void *hd,
                               size_t size_hint) {
-  UPB_UNUSED(hd);
+  PHP_PROTO_UNUSED(hd);
 
   stringfields_parseframe_t* frame =
       (stringfields_parseframe_t*)malloc(sizeof(stringfields_parseframe_t));
+  PHP_PROTO_ASSERT(frame != NULL);
   frame->closure = closure;
   stringsink_init(&frame->sink);
 
@@ -1093,7 +1119,7 @@ static void putmap(zval* map, const upb_fielddef* f, upb_sink sink,
 static upb_selector_t getsel(const upb_fielddef* f, upb_handlertype_t type) {
   upb_selector_t ret;
   bool ok = upb_handlers_getselector(f, type, &ret);
-  UPB_ASSERT(ok);
+  PHP_PROTO_ASSERT(ok);
   return ret;
 }
 
@@ -1101,7 +1127,7 @@ static void put_optional_value(const void* memory, int len,
                                const upb_fielddef* f,
                                int depth, upb_sink sink,
                                bool is_json TSRMLS_DC) {
-  assert(upb_fielddef_label(f) == UPB_LABEL_OPTIONAL);
+  PHP_PROTO_ASSERT(upb_fielddef_label(f) == UPB_LABEL_OPTIONAL);
 
   switch (upb_fielddef_type(f)) {
 #define T(upbtypeconst, upbtype, ctype, default_value)                         \
@@ -1139,7 +1165,7 @@ static void put_optional_value(const void* memory, int len,
       break;
     }
     default:
-      assert(false);
+      PHP_PROTO_ASSERT(false);
   }
 }
 
@@ -1181,14 +1207,14 @@ static void putmap(zval* map, const upb_fielddef* f, upb_sink sink,
   MapIter it;
   int len, size;
 
-  assert(map != NULL);
+  PHP_PROTO_ASSERT(map != NULL);
   Map* intern = UNBOX(Map, map);
   size = upb_strtable_count(&intern->table);
   if (size == 0) return;
 
   upb_sink_startseq(sink, getsel(f, UPB_HANDLER_STARTSEQ), &subsink);
 
-  assert(upb_fielddef_type(f) == UPB_TYPE_MESSAGE);
+  PHP_PROTO_ASSERT(upb_fielddef_type(f) == UPB_TYPE_MESSAGE);
   key_field = map_field_key(f);
   value_field = map_field_value(f);
 
@@ -1500,7 +1526,7 @@ static void putstr(zval* str, const upb_fielddef *f,
 
   if (ZVAL_IS_NULL(str)) return;
 
-  assert(Z_TYPE_P(str) == IS_STRING);
+  PHP_PROTO_ASSERT(Z_TYPE_P(str) == IS_STRING);
 
   upb_sink_startstr(sink, getsel(f, UPB_HANDLER_STARTSTR), Z_STRLEN_P(str),
                     &subsink);
@@ -1568,7 +1594,7 @@ static void putarray(zval* array, const upb_fielddef* f, upb_sink sink,
   upb_selector_t sel = 0;
   int size, i;
 
-  assert(array != NULL);
+  PHP_PROTO_ASSERT(array != NULL);
   RepeatedField* intern = UNBOX(RepeatedField, array);
   HashTable *ht = PHP_PROTO_HASH_OF(intern->array);
   size = zend_hash_num_elements(ht);

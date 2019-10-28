@@ -369,7 +369,7 @@ inline bool SupportUnknownEnumValue(const FileDescriptor* descriptor) {
   return descriptor->syntax() == FileDescriptor::SYNTAX_PROTO3;
 }
 
-// Check whether a mesasge has repeated fields.
+// Check whether a message has repeated fields.
 bool HasRepeatedFields(const Descriptor* descriptor);
 
 inline bool IsMapEntry(const Descriptor* descriptor) {

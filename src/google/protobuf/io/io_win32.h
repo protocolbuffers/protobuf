@@ -49,9 +49,10 @@
 
 #if defined(_WIN32)
 
+#include <functional>
 #include <string>
-#include <google/protobuf/port.h>
 
+#include <google/protobuf/port.h>
 #include <google/protobuf/port_def.inc>
 
 // Compilers on Windows other than MSVC (e.g. Cygwin, MinGW32) define the
@@ -74,6 +75,24 @@ PROTOBUF_EXPORT int setmode(int fd, int mode);
 PROTOBUF_EXPORT int stat(const char* path, struct _stat* buffer);
 PROTOBUF_EXPORT int write(int fd, const void* buffer, size_t size);
 PROTOBUF_EXPORT std::wstring testonly_utf8_to_winpath(const char* path);
+
+enum class ExpandWildcardsResult {
+  kSuccess = 0,
+  kErrorNoMatchingFile = 1,
+  kErrorInputPathConversion = 2,
+  kErrorOutputPathConversion = 3,
+};
+
+// Expand wildcards in a path pattern, feed the result to a consumer function.
+//
+// `path` must be a valid, Windows-style path. It may be absolute, or relative
+// to the current working directory, and it may contain wildcards ("*" and "?")
+// in the last path segment. This function passes all matching file names to
+// `consume`. The resulting paths may not be absolute nor normalized.
+//
+// The function returns a value from `ExpandWildcardsResult`.
+PROTOBUF_EXPORT ExpandWildcardsResult ExpandWildcards(
+    const std::string& path, std::function<void(const std::string&)> consume);
 
 namespace strings {
 

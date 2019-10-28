@@ -43,8 +43,6 @@
 #include <google/protobuf/util/internal/constants.h>
 #include <google/protobuf/util/internal/utility.h>
 #include <google/protobuf/stubs/strutil.h>
-
-
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/statusor.h>
 
@@ -610,6 +608,12 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartObject(
     return this;
   }
 
+  // Legacy JSON map is a list of key value pairs. Starts a map entry object.
+  if (options_.use_legacy_json_map_format && name.empty()) {
+    Push(name, IsAny(*field) ? Item::ANY : Item::MESSAGE, false, false);
+    return this;
+  }
+
   if (IsMap(*field)) {
     // Begin a map. A map is triggered by a StartObject() call if the current
     // field has a map type.
@@ -845,6 +849,10 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartList(
   }
 
   if (IsMap(*field)) {
+    if (options_.use_legacy_json_map_format) {
+      Push(name, Item::MESSAGE, false, true);
+      return this;
+    }
     InvalidValue("Map", StrCat("Cannot bind a list to map for field '",
                                      name, "'."));
     IncrementInvalidDepth();
@@ -879,7 +887,32 @@ Status ProtoStreamObjectWriter::RenderStructValue(ProtoStreamObjectWriter* ow,
                                                   const DataPiece& data) {
   std::string struct_field_name;
   switch (data.type()) {
-    // Our JSON parser parses numbers as either int64, uint64, or double.
+    case DataPiece::TYPE_INT32: {
+      if (ow->options_.struct_integers_as_strings) {
+        StatusOr<int32> int_value = data.ToInt32();
+        if (int_value.ok()) {
+          ow->ProtoWriter::RenderDataPiece(
+              "string_value",
+              DataPiece(SimpleDtoa(int_value.ValueOrDie()), true));
+          return Status();
+        }
+      }
+      struct_field_name = "number_value";
+      break;
+    }
+    case DataPiece::TYPE_UINT32: {
+      if (ow->options_.struct_integers_as_strings) {
+        StatusOr<uint32> int_value = data.ToUint32();
+        if (int_value.ok()) {
+          ow->ProtoWriter::RenderDataPiece(
+              "string_value",
+              DataPiece(SimpleDtoa(int_value.ValueOrDie()), true));
+          return Status();
+        }
+      }
+      struct_field_name = "number_value";
+      break;
+    }
     case DataPiece::TYPE_INT64: {
       // If the option to treat integers as strings is set, then render them as
       // strings. Otherwise, fallback to rendering them as double.
@@ -904,6 +937,19 @@ Status ProtoStreamObjectWriter::RenderStructValue(ProtoStreamObjectWriter* ow,
           ow->ProtoWriter::RenderDataPiece(
               "string_value",
               DataPiece(StrCat(int_value.ValueOrDie()), true));
+          return Status();
+        }
+      }
+      struct_field_name = "number_value";
+      break;
+    }
+    case DataPiece::TYPE_FLOAT: {
+      if (ow->options_.struct_integers_as_strings) {
+        StatusOr<float> float_value = data.ToFloat();
+        if (float_value.ok()) {
+          ow->ProtoWriter::RenderDataPiece(
+              "string_value",
+              DataPiece(SimpleDtoa(float_value.ValueOrDie()), true));
           return Status();
         }
       }
@@ -1279,9 +1325,8 @@ void ProtoStreamObjectWriter::PopOneElement() {
 
 bool ProtoStreamObjectWriter::IsMap(const google::protobuf::Field& field) {
   if (field.type_url().empty() ||
-      field.kind() != google::protobuf::Field_Kind_TYPE_MESSAGE ||
-      field.cardinality() !=
-          google::protobuf::Field_Cardinality_CARDINALITY_REPEATED) {
+      field.kind() != google::protobuf::Field::TYPE_MESSAGE ||
+      field.cardinality() != google::protobuf::Field::CARDINALITY_REPEATED) {
     return false;
   }
   const google::protobuf::Type* field_type =

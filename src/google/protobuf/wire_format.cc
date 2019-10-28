@@ -195,7 +195,7 @@ uint8* WireFormat::InternalSerializeUnknownFieldsToArray(
   for (int i = 0; i < unknown_fields.field_count(); i++) {
     const UnknownField& field = unknown_fields.field(i);
 
-    stream->EnsureSpace(&target);
+    target = stream->EnsureSpace(target);
     switch (field.type()) {
       case UnknownField::TYPE_VARINT:
         target = WireFormatLite::WriteUInt64ToArray(field.number(),
@@ -218,7 +218,7 @@ uint8* WireFormat::InternalSerializeUnknownFieldsToArray(
             field.number(), WireFormatLite::WIRETYPE_START_GROUP, target);
         target = InternalSerializeUnknownFieldsToArray(field.group(), target,
                                                        stream);
-        stream->EnsureSpace(&target);
+        target = stream->EnsureSpace(target);
         target = WireFormatLite::WriteTagToArray(
             field.number(), WireFormatLite::WIRETYPE_END_GROUP, target);
         break;
@@ -236,7 +236,7 @@ uint8* WireFormat::InternalSerializeUnknownMessageSetItemsToArray(
     // The only unknown fields that are allowed to exist in a MessageSet are
     // messages, which are length-delimited.
     if (field.type() == UnknownField::TYPE_LENGTH_DELIMITED) {
-      stream->EnsureSpace(&target);
+      target = stream->EnsureSpace(target);
       // Start group.
       target = io::CodedOutputStream::WriteTagToArray(
           WireFormatLite::kMessageSetItemStartTag, target);
@@ -253,7 +253,7 @@ uint8* WireFormat::InternalSerializeUnknownMessageSetItemsToArray(
 
       target = field.InternalSerializeLengthDelimitedNoTag(target, stream);
 
-      stream->EnsureSpace(&target);
+      target = stream->EnsureSpace(target);
       // End group.
       target = io::CodedOutputStream::WriteTagToArray(
           WireFormatLite::kMessageSetItemEndTag, target);
@@ -687,7 +687,7 @@ uint8* WireFormat::InternalSerializeWithCachedSizesToArray(
 static uint8* SerializeMapKeyWithCachedSizes(const FieldDescriptor* field,
                                              const MapKey& value, uint8* target,
                                              io::EpsCopyOutputStream* stream) {
-  stream->EnsureSpace(&target);
+  target = stream->EnsureSpace(target);
   switch (field->type()) {
     case FieldDescriptor::TYPE_DOUBLE:
     case FieldDescriptor::TYPE_FLOAT:
@@ -724,7 +724,7 @@ static uint8* SerializeMapKeyWithCachedSizes(const FieldDescriptor* field,
 static uint8* SerializeMapValueRefWithCachedSizes(
     const FieldDescriptor* field, const MapValueRef& value, uint8* target,
     io::EpsCopyOutputStream* stream) {
-  stream->EnsureSpace(&target);
+  target = stream->EnsureSpace(target);
   switch (field->type()) {
 #define CASE_TYPE(FieldType, CamelFieldType, CamelCppType)   \
   case FieldDescriptor::TYPE_##FieldType:                    \
@@ -815,7 +815,7 @@ static uint8* InternalSerializeMapEntry(const FieldDescriptor* field,
   size_t size = kMapEntryTagByteSize;
   size += MapKeyDataOnlyByteSize(key_field, key);
   size += MapValueRefDataOnlyByteSize(value_field, value);
-  stream->EnsureSpace(&target);
+  target = stream->EnsureSpace(target);
   target = WireFormatLite::WriteTagToArray(
       field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED, target);
   target = io::CodedOutputStream::WriteVarint32ToArray(size, target);
@@ -900,7 +900,7 @@ uint8* WireFormat::InternalSerializeField(const FieldDescriptor* field,
 
   if (field->is_packed()) {
     if (count == 0) return target;
-    stream->EnsureSpace(&target);
+    target = stream->EnsureSpace(target);
     switch (field->type()) {
 #define HANDLE_PRIMITIVE_TYPE(TYPE, CPPTYPE, TYPE_METHOD, CPPTYPE_METHOD)   \
   case FieldDescriptor::TYPE_##TYPE: {                                      \
@@ -943,7 +943,7 @@ uint8* WireFormat::InternalSerializeField(const FieldDescriptor* field,
   }
 
   for (int j = 0; j < count; j++) {
-    stream->EnsureSpace(&target);
+    target = stream->EnsureSpace(target);
     switch (field->type()) {
 #define HANDLE_PRIMITIVE_TYPE(TYPE, CPPTYPE, TYPE_METHOD, CPPTYPE_METHOD)     \
   case FieldDescriptor::TYPE_##TYPE: {                                        \
@@ -1046,7 +1046,7 @@ uint8* WireFormat::InternalSerializeMessageSetItem(
     io::EpsCopyOutputStream* stream) {
   const Reflection* message_reflection = message.GetReflection();
 
-  stream->EnsureSpace(&target);
+  target = stream->EnsureSpace(target);
   // Start group.
   target = io::CodedOutputStream::WriteTagToArray(
       WireFormatLite::kMessageSetItemStartTag, target);
@@ -1058,7 +1058,7 @@ uint8* WireFormat::InternalSerializeMessageSetItem(
       WireFormatLite::kMessageSetMessageNumber,
       message_reflection->GetMessage(message, field), target, stream);
   // End group.
-  stream->EnsureSpace(&target);
+  target = stream->EnsureSpace(target);
   target = io::CodedOutputStream::WriteTagToArray(
       WireFormatLite::kMessageSetItemEndTag, target);
   return target;
@@ -1111,7 +1111,17 @@ size_t WireFormat::FieldByteSize(const FieldDescriptor* field,
 
   size_t count = 0;
   if (field->is_repeated()) {
-    count = FromIntSize(message_reflection->FieldSize(message, field));
+    if (field->is_map()) {
+      const MapFieldBase* map_field =
+          message_reflection->GetMapData(message, field);
+      if (map_field->IsMapValid()) {
+        count = FromIntSize(map_field->size());
+      } else {
+        count = FromIntSize(message_reflection->FieldSize(message, field));
+      }
+    } else {
+      count = FromIntSize(message_reflection->FieldSize(message, field));
+    }
   } else if (field->containing_type()->options().map_entry()) {
     // Map entry fields always need to be serialized.
     count = 1;

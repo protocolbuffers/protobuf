@@ -32,11 +32,13 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+#include <google/protobuf/repeated_field.h>
+
 #include <algorithm>
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/repeated_field.h>
+#include <google/protobuf/implicit_weak_message.h>
 
 #include <google/protobuf/port_def.inc>
 
@@ -121,14 +123,14 @@ MessageLite* RepeatedPtrFieldBase::AddWeak(const MessageLite* prototype) {
 }  // namespace internal
 
 
-template class PROTOBUF_EXPORT RepeatedField<bool>;
-template class PROTOBUF_EXPORT RepeatedField<int32>;
-template class PROTOBUF_EXPORT RepeatedField<uint32>;
-template class PROTOBUF_EXPORT RepeatedField<int64>;
-template class PROTOBUF_EXPORT RepeatedField<uint64>;
-template class PROTOBUF_EXPORT RepeatedField<float>;
-template class PROTOBUF_EXPORT RepeatedField<double>;
-template class PROTOBUF_EXPORT RepeatedPtrField<std::string>;
+template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<bool>;
+template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<int32>;
+template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<uint32>;
+template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<int64>;
+template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<uint64>;
+template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<float>;
+template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<double>;
+template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedPtrField<std::string>;
 
 }  // namespace protobuf
 }  // namespace google

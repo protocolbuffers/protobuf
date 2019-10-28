@@ -123,6 +123,8 @@ target directory layout:
           protoc.exe
         + ppcle_64
           protoc.exe
+        + s390x_64
+          protoc.exe
       + osx
         + x86_64
           protoc.exe
@@ -169,6 +171,7 @@ dist/protoc-3.6.0-linux-x86_32.zip
 dist/protoc-3.6.0-linux-x86_64.zip
 dist/protoc-3.6.0-linux-aarch_64.zip
 dist/protoc-3.6.0-linux-ppcle_64.zip
+dist/protoc-3.6.0-linux-s390x_64.zip
 ```
 
 Before running the script, make sure the artifacts are accessible from:

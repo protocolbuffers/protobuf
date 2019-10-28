@@ -1,5 +1,10 @@
 # Bazel (https://bazel.build/) BUILD file for Protobuf.
 
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test", "objc_library")
+load("@rules_java//java:defs.bzl", "java_library")
+load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain", "proto_library")
+load("@rules_python//python:defs.bzl", "py_library")
+
 licenses(["notice"])
 
 exports_files(["LICENSE"])
@@ -54,6 +59,7 @@ COPTS = select({
         "-Wno-unused-function",
         # Prevents ISO C++ const string assignment warnings for pyext sources.
         "-Wno-write-strings",
+        "-Wno-deprecated-declarations",
     ],
 })
 
@@ -103,10 +109,10 @@ LINK_OPTS = select({
 load(
     ":protobuf.bzl",
     "cc_proto_library",
-    "py_proto_library",
     "internal_copied_filegroup",
     "internal_gen_well_known_protos_java",
     "internal_protobuf_py_tests",
+    "py_proto_library",
 )
 
 cc_library(
@@ -242,38 +248,36 @@ cc_library(
 # Map of all well known protos.
 # name => (include path, imports)
 WELL_KNOWN_PROTO_MAP = {
-    "any": ("google/protobuf/any.proto", []),
+    "any": ("src/google/protobuf/any.proto", []),
     "api": (
-        "google/protobuf/api.proto",
+        "src/google/protobuf/api.proto",
         [
             "source_context",
             "type",
         ],
     ),
     "compiler_plugin": (
-        "google/protobuf/compiler/plugin.proto",
+        "src/google/protobuf/compiler/plugin.proto",
         ["descriptor"],
     ),
-    "descriptor": ("google/protobuf/descriptor.proto", []),
-    "duration": ("google/protobuf/duration.proto", []),
-    "empty": ("google/protobuf/empty.proto", []),
-    "field_mask": ("google/protobuf/field_mask.proto", []),
-    "source_context": ("google/protobuf/source_context.proto", []),
-    "struct": ("google/protobuf/struct.proto", []),
-    "timestamp": ("google/protobuf/timestamp.proto", []),
+    "descriptor": ("src/google/protobuf/descriptor.proto", []),
+    "duration": ("src/google/protobuf/duration.proto", []),
+    "empty": ("src/google/protobuf/empty.proto", []),
+    "field_mask": ("src/google/protobuf/field_mask.proto", []),
+    "source_context": ("src/google/protobuf/source_context.proto", []),
+    "struct": ("src/google/protobuf/struct.proto", []),
+    "timestamp": ("src/google/protobuf/timestamp.proto", []),
     "type": (
-        "google/protobuf/type.proto",
+        "src/google/protobuf/type.proto",
         [
             "any",
             "source_context",
         ],
     ),
-    "wrappers": ("google/protobuf/wrappers.proto", []),
+    "wrappers": ("src/google/protobuf/wrappers.proto", []),
 }
 
-RELATIVE_WELL_KNOWN_PROTOS = [proto[1][0] for proto in WELL_KNOWN_PROTO_MAP.items()]
-
-WELL_KNOWN_PROTOS = ["src/" + s for s in RELATIVE_WELL_KNOWN_PROTOS]
+WELL_KNOWN_PROTOS = [value[0] for value in WELL_KNOWN_PROTO_MAP.values()]
 
 filegroup(
     name = "well_known_protos",
@@ -303,17 +307,10 @@ cc_proto_library(
 # )
 ################################################################################
 
-internal_copied_filegroup(
-    name = "_internal_wkt_protos",
-    srcs = WELL_KNOWN_PROTOS,
-    dest = "",
-    strip_prefix = "src",
-    visibility = ["//visibility:private"],
-)
-
 [proto_library(
     name = proto[0] + "_proto",
     srcs = [proto[1][0]],
+    strip_import_prefix = "src",
     visibility = ["//visibility:public"],
     deps = [dep + "_proto" for dep in proto[1][1]],
 ) for proto in WELL_KNOWN_PROTO_MAP.items()]
@@ -410,25 +407,7 @@ cc_library(
     ],
     copts = COPTS,
     includes = ["src/"],
-    linkopts = LINK_OPTS + select({
-        ":msvc": [
-            # Linking to setargv.obj makes the default command line argument
-            # parser expand wildcards, so the main method's argv will contain the
-            # expanded list instead of the wildcards.
-            #
-            # Adding dummy "-DEFAULTLIB:kernel32.lib", because:
-            # - Microsoft ships this object file next to default libraries
-            # - but this file is not a library, just a precompiled object
-            # - "-WHOLEARCHIVE" and "-DEFAULTLIB" only accept library,
-            #   not precompiled object.
-            # - Bazel would assume linkopt that does not start with "-" or "$"
-            #   as a label to a target, so we add a harmless "-DEFAULTLIB:kernel32.lib"
-            #   before "setargv.obj".
-            # See https://msdn.microsoft.com/en-us/library/8bch7bkk.aspx
-            "-DEFAULTLIB:kernel32.lib setargv.obj",
-        ],
-        "//conditions:default": [],
-    }),
+    linkopts = LINK_OPTS,
     visibility = ["//visibility:public"],
     deps = [":protobuf"],
 )
@@ -520,6 +499,7 @@ cc_proto_library(
 COMMON_TEST_SRCS = [
     # AUTOGEN(common_test_srcs)
     "src/google/protobuf/arena_test_util.cc",
+    "src/google/protobuf/map_test_util.inc",
     "src/google/protobuf/test_util.cc",
     "src/google/protobuf/test_util.inc",
     "src/google/protobuf/testing/file.cc",
@@ -632,7 +612,7 @@ cc_test(
         "src/google/protobuf/wire_format_unittest.cc",
     ] + select({
         "//conditions:default": [
-            # Doesn't pass on Windows with MSVC
+            # AUTOGEN(non_msvc_test_srcs)
             "src/google/protobuf/compiler/command_line_interface_unittest.cc",
         ],
         ":msvc": [],
@@ -809,12 +789,9 @@ py_library(
     name = "python_srcs",
     srcs = glob(
         [
-            "python/google/__init__.py",
-            "python/google/protobuf/*.py",
-            "python/google/protobuf/**/*.py",
+            "python/google/**/*.py",
         ],
         exclude = [
-            "python/google/protobuf/__init__.py",
             "python/google/protobuf/**/__init__.py",
             "python/google/protobuf/internal/*_test.py",
             "python/google/protobuf/internal/test_util.py",
@@ -893,7 +870,7 @@ internal_copied_filegroup(
 
 # TODO(dzc): Remove this once py_proto_library can have labels in srcs, in
 # which case we can simply add :protos_python in srcs.
-COPIED_WELL_KNOWN_PROTOS = ["python/" + s for s in RELATIVE_WELL_KNOWN_PROTOS]
+COPIED_WELL_KNOWN_PROTOS = ["python/" + s[4:] for s in WELL_KNOWN_PROTOS]
 
 py_proto_library(
     name = "protobuf_python",
@@ -911,7 +888,7 @@ py_proto_library(
     py_extra_srcs = glob(["python/**/__init__.py"]),
     py_libs = [
         ":python_srcs",
-        "//external:six",
+        "@six//:six",
     ],
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
@@ -1241,5 +1218,22 @@ cc_binary(
         ":binary_json_conformance_suite",
         ":conformance_test",
         ":text_format_conformance_suite",
+    ],
+)
+
+sh_test(
+    name = "build_files_updated_unittest",
+    srcs = [
+        "build_files_updated_unittest.sh",
+    ],
+    data = [
+        "BUILD",
+        "cmake/extract_includes.bat.in",
+        "cmake/libprotobuf.cmake",
+        "cmake/libprotobuf-lite.cmake",
+        "cmake/libprotoc.cmake",
+        "cmake/tests.cmake",
+        "src/Makefile.am",
+        "update_file_lists.sh",
     ],
 )

@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.google.protobuf</groupId>
     <artifactId>protobuf-parent</artifactId>
-    <version>3.9.0-rc-1</version>
+    <version>3.11.0-rc-0</version>
   </parent>
 
   <artifactId>protobuf-javalite</artifactId>
@@ -35,6 +35,11 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.google.truth</groupId>
+      <artifactId>truth</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -224,6 +229,7 @@
                     <exclude>TextFormatParseLocationTest.java</exclude>
                     <exclude>TextFormatTest.java</exclude>
                     <exclude>TestUtil.java</exclude>
+                    <exclude>TypeRegistryTest.java</exclude>
                     <exclude>UnknownEnumValueTest.java</exclude>
                     <exclude>UnknownFieldSetLiteTest.java</exclude>
                     <exclude>UnknownFieldSetTest.java</exclude>
@@ -323,6 +329,7 @@
         <extensions>true</extensions>
         <configuration>
           <instructions>
+            <Automatic-Module-Name>com.google.protobuf</Automatic-Module-Name> <!-- Java9+ Jigsaw module name -->
             <Bundle-DocURL>https://developers.google.com/protocol-buffers/</Bundle-DocURL>
             <Bundle-SymbolicName>com.google.protobuf</Bundle-SymbolicName>
             <Export-Package>com.google.protobuf;version=${project.version}</Export-Package>

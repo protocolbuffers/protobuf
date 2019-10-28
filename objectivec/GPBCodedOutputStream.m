@@ -374,12 +374,12 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
 }
 
 - (void)writeEnumNoTag:(int32_t)value {
-  GPBWriteRawVarint32(&state_, value);
+  GPBWriteInt32NoTag(&state_, value);
 }
 
 - (void)writeEnum:(int32_t)fieldNumber value:(int32_t)value {
   GPBWriteTagWithFormat(&state_, fieldNumber, GPBWireFormatVarint);
-  GPBWriteRawVarint32(&state_, value);
+  GPBWriteInt32NoTag(&state_, value);
 }
 
 - (void)writeSFixed32NoTag:(int32_t)value {
@@ -1053,7 +1053,7 @@ size_t GPBComputeUInt32SizeNoTag(int32_t value) {
 }
 
 size_t GPBComputeEnumSizeNoTag(int32_t value) {
-  return GPBComputeRawVarint32Size(value);
+  return GPBComputeInt32SizeNoTag(value);
 }
 
 size_t GPBComputeSFixed32SizeNoTag(int32_t value) {

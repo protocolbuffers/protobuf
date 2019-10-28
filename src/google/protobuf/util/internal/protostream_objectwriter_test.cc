@@ -281,7 +281,7 @@ TEST_P(ProtoStreamObjectWriterTest, ConflictingJsonName) {
 TEST_P(ProtoStreamObjectWriterTest, IntEnumValuesAreAccepted) {
   Book book;
   book.set_title("Some Book");
-  book.set_type(proto_util_converter::testing::Book_Type_KIDS);
+  book.set_type(proto_util_converter::testing::Book::KIDS);
   Author* robert = book.mutable_author();
   robert->set_name("robert");
 
@@ -317,7 +317,7 @@ TEST_P(ProtoStreamObjectWriterTest, EnumValuesWithDifferentCaseIsRejected) {
 TEST_P(ProtoStreamObjectWriterTest, EnumValuesWithSameCaseIsAccepted) {
   Book book;
   book.set_title("Some Book");
-  book.set_type(proto_util_converter::testing::Book_Type_ACTION_AND_ADVENTURE);
+  book.set_type(proto_util_converter::testing::Book::ACTION_AND_ADVENTURE);
   Author* robert = book.mutable_author();
   robert->set_name("robert");
 
@@ -337,7 +337,7 @@ TEST_P(ProtoStreamObjectWriterTest, EnumValuesWithSameCaseIsAccepted) {
 TEST_P(ProtoStreamObjectWriterTest, EnumValuesWithDifferentCaseIsAccepted) {
   Book book;
   book.set_title("Some Book");
-  book.set_type(proto_util_converter::testing::Book_Type_ACTION_AND_ADVENTURE);
+  book.set_type(proto_util_converter::testing::Book::ACTION_AND_ADVENTURE);
   Author* robert = book.mutable_author();
   robert->set_name("robert");
 
@@ -357,7 +357,7 @@ TEST_P(ProtoStreamObjectWriterTest, EnumValuesWithDifferentCaseIsAccepted) {
 TEST_P(ProtoStreamObjectWriterTest, EnumValuesWithoutUnderscoreAreAccepted) {
   Book book;
   book.set_title("Some Book");
-  book.set_type(proto_util_converter::testing::Book_Type_ACTION_AND_ADVENTURE);
+  book.set_type(proto_util_converter::testing::Book::ACTION_AND_ADVENTURE);
   Author* robert = book.mutable_author();
   robert->set_name("robert");
 
@@ -377,7 +377,7 @@ TEST_P(ProtoStreamObjectWriterTest, EnumValuesWithoutUnderscoreAreAccepted) {
 TEST_P(ProtoStreamObjectWriterTest, EnumValuesInCamelCaseAreAccepted) {
   Book book;
   book.set_title("Some Book");
-  book.set_type(proto_util_converter::testing::Book_Type_ACTION_AND_ADVENTURE);
+  book.set_type(proto_util_converter::testing::Book::ACTION_AND_ADVENTURE);
   Author* robert = book.mutable_author();
   robert->set_name("robert");
 
@@ -398,7 +398,7 @@ TEST_P(ProtoStreamObjectWriterTest,
        EnumValuesInCamelCaseRemoveDashAndUnderscoreAreAccepted) {
   Book book;
   book.set_title("Some Book");
-  book.set_type(proto_util_converter::testing::Book_Type_ACTION_AND_ADVENTURE);
+  book.set_type(proto_util_converter::testing::Book::ACTION_AND_ADVENTURE);
   Author* robert = book.mutable_author();
   robert->set_name("robert");
 
@@ -420,7 +420,7 @@ TEST_P(ProtoStreamObjectWriterTest,
        EnumValuesInCamelCaseWithNameNotUppercaseAreAccepted) {
   Book book;
   book.set_title("Some Book");
-  book.set_type(proto_util_converter::testing::Book_Type_arts_and_photography);
+  book.set_type(proto_util_converter::testing::Book::arts_and_photography);
   Author* robert = book.mutable_author();
   robert->set_name("robert");
 
@@ -1714,6 +1714,45 @@ TEST_P(ProtoStreamObjectWriterStructTest, OptionStructIntAsStringsTest) {
       ->RenderBool("k2", true)
       ->RenderInt64("k3", -222222222)
       ->RenderUint64("k4", 33333333)
+      ->EndObject()
+      ->EndObject();
+  CheckOutput(struct_type);
+}
+
+TEST_P(ProtoStreamObjectWriterStructTest, Struct32BitIntsAndFloatsTest) {
+  StructType struct_type;
+  google::protobuf::Struct* s = struct_type.mutable_object();
+  s->mutable_fields()->operator[]("k1").set_number_value(1.5);
+  s->mutable_fields()->operator[]("k2").set_number_value(100);
+  s->mutable_fields()->operator[]("k3").set_number_value(100);
+  ResetProtoWriter();
+
+  ow_->StartObject("")
+      ->StartObject("object")
+      ->RenderFloat("k1", 1.5)
+      ->RenderInt32("k2", 100)
+      ->RenderUint32("k3", 100)
+      ->EndObject()
+      ->EndObject();
+  CheckOutput(struct_type);
+}
+
+TEST_P(ProtoStreamObjectWriterStructTest,
+       Struct32BitIntsAndFloatsAsStringsTest) {
+  StructType struct_type;
+  google::protobuf::Struct* s = struct_type.mutable_object();
+  s->mutable_fields()->operator[]("k1").set_string_value("1.5");
+  s->mutable_fields()->operator[]("k2").set_string_value("100");
+  s->mutable_fields()->operator[]("k3").set_string_value("100");
+
+  options_.struct_integers_as_strings = true;
+  ResetProtoWriter();
+
+  ow_->StartObject("")
+      ->StartObject("object")
+      ->RenderFloat("k1", 1.5)
+      ->RenderInt32("k2", 100)
+      ->RenderUint32("k3", 100)
       ->EndObject()
       ->EndObject();
   CheckOutput(struct_type);

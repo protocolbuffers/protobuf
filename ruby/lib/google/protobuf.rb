@@ -50,6 +50,76 @@ else
   rescue LoadError
     require 'google/protobuf_c'
   end
+
+  module Google
+    module Protobuf
+      module Internal
+        def self.infer_package(names)
+          # Package is longest common prefix ending in '.', if any.
+          if not names.empty?
+            min, max = names.minmax
+            last_common_dot = nil
+            min.size.times { |i|
+              if min[i] != max[i] then break end
+              if min[i] == ?. then last_common_dot = i end
+            }
+            if last_common_dot
+              return min.slice(0, last_common_dot)
+            end
+          end
+
+          nil
+        end
+
+        class NestingBuilder
+          def initialize(msg_names, enum_names)
+            @to_pos = {nil=>nil}
+            @msg_children = Hash.new { |hash, key| hash[key] = [] }
+            @enum_children = Hash.new { |hash, key| hash[key] = [] }
+
+            msg_names.each_with_index { |name, idx| @to_pos[name] = idx }
+            enum_names.each_with_index { |name, idx| @to_pos[name] = idx }
+
+            msg_names.each { |name| @msg_children[parent(name)] << name }
+            enum_names.each { |name| @enum_children[parent(name)] << name }
+          end
+
+          def build(package)
+            return build_msg(package)
+          end
+
+          private
+          def build_msg(msg)
+            return {
+              :pos => @to_pos[msg],
+              :msgs => @msg_children[msg].map { |child| build_msg(child) },
+              :enums => @enum_children[msg].map { |child| @to_pos[child] },
+            }
+          end
+
+          private
+          def parent(name)
+            idx = name.rindex(?.)
+            if idx
+              return name.slice(0, idx)
+            else
+              return nil
+            end
+          end
+        end
+
+        def self.fixup_descriptor(package, msg_names, enum_names)
+          if package.nil?
+            package = self.infer_package(msg_names + enum_names)
+          end
+
+          nesting = NestingBuilder.new(msg_names, enum_names).build(package)
+
+          return package, nesting
+        end
+      end
+    end
+  end
 end
 
 require 'google/protobuf/repeated_field'

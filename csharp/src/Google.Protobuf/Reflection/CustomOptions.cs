@@ -254,11 +254,8 @@ namespace Google.Protobuf.Reflection
                 if (extensionValue is ExtensionValue<T>)
                 {
                     ExtensionValue<T> single = extensionValue as ExtensionValue<T>;
-                    if (single.HasValue)
-                    {
-                        value = single.GetValue();
-                        return true;
-                    }
+                    value = single.GetValue();
+                    return true;
                 }
                 else if (extensionValue is RepeatedExtensionValue<T>)
                 {
@@ -279,11 +276,8 @@ namespace Google.Protobuf.Reflection
                         var typeArgs = typeInfo.GenericTypeArguments;
                         if (typeArgs.Length == 1 && typeArgs[0].GetTypeInfo().IsEnum)
                         {
-                            if ((bool)typeInfo.GetDeclaredProperty(nameof(ExtensionValue<T>.HasValue)).GetValue(extensionValue))
-                            {
-                                value = (T)typeInfo.GetDeclaredMethod(nameof(ExtensionValue<T>.GetValue)).Invoke(extensionValue, EmptyParameters);
-                                return true;
-                            }
+                            value = (T)typeInfo.GetDeclaredMethod(nameof(ExtensionValue<T>.GetValue)).Invoke(extensionValue, EmptyParameters);
+                            return true;
                         }
                     }
                     else if (type.GetGenericTypeDefinition() == typeof(RepeatedExtensionValue<>))

@@ -146,6 +146,15 @@ public abstract class AbstractMessageLite<
     Builder.addAll(values, list);
   }
 
+  /** Interface for an enum which signifies which field in a {@code oneof} was specified. */
+  protected interface InternalOneOfEnum {
+    /**
+     * Retrieves the field number of the field which was set in this {@code oneof}, or {@code 0} if
+     * none were.
+     */
+    int getNumber();
+  }
+
   /**
    * A partial implementation of the {@link Message.Builder} interface which implements as many
    * methods of that interface as possible in terms of other methods.

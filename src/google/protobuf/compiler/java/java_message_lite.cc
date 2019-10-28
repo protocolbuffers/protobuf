@@ -55,8 +55,6 @@
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
 
-
-
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -237,9 +235,7 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
                    "private int $oneof_name$Case_ = 0;\n"
                    "private java.lang.Object $oneof_name$_;\n");
     // OneofCase enum
-    printer->Print(vars,
-                   "public enum $oneof_capitalized_name$Case\n"
-                   "    implements com.google.protobuf.Internal.EnumLite {\n");
+    printer->Print(vars, "public enum $oneof_capitalized_name$Case {\n");
     printer->Indent();
     for (int j = 0; j < oneof->field_count(); j++) {
       const FieldDescriptor* field = oneof->field(j);
@@ -277,7 +273,8 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
         "    default: return null;\n"
         "  }\n"
         "}\n"
-        "@java.lang.Override\n"
+        // TODO(b/135620659): Rename this to "getFieldNumber" or something to
+        // disambiguate it from actual proto enums.
         "public int getNumber() {\n"
         "  return this.value;\n"
         "}\n",

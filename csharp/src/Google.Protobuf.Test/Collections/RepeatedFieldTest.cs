@@ -33,6 +33,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -755,6 +756,53 @@ namespace Google.Protobuf.Collections
             EqualityTester.AssertEquality(list1, list3);
             Assert.True(list1.Contains(SampleNaNs.SignallingFlipped));
             Assert.False(list2.Contains(SampleNaNs.SignallingFlipped));
+        }
+
+        [Test]
+        public void Capacity_Increase()
+        {
+            // Unfortunately this case tests implementation details of RepeatedField.  This is necessary
+
+            var list = new RepeatedField<int>() { 1, 2, 3 };
+
+            Assert.AreEqual(8, list.Capacity);
+            Assert.AreEqual(3, list.Count);
+
+            list.Capacity = 10; // Set capacity to a larger value to trigger growth
+            Assert.AreEqual(10, list.Capacity, "Capacity increased");
+            Assert.AreEqual(3, list.Count);
+
+            CollectionAssert.AreEqual(new int[] {1, 2, 3}, list.ToArray(), "We didn't lose our data in the resize");
+        }
+
+        [Test]
+        public void Capacity_Decrease()
+        {
+            var list = new RepeatedField<int>() { 1, 2, 3 };
+
+            Assert.AreEqual(8, list.Capacity);
+            Assert.DoesNotThrow(() => list.Capacity = 5, "Can decrease capacity if new capacity is greater than list.Count");
+            Assert.AreEqual(5, list.Capacity);
+
+            Assert.DoesNotThrow(() => list.Capacity = 3, "Can set capacity exactly to list.Count" );
+
+            Assert.Throws<ArgumentOutOfRangeException>(() => list.Capacity = 2, "Can't set the capacity smaller than list.Count" );
+
+            Assert.Throws<ArgumentOutOfRangeException>(() => list.Capacity = 0, "Can't set the capacity to zero" );
+
+            Assert.Throws<ArgumentOutOfRangeException>(() => list.Capacity = -1, "Can't set the capacity to negative" );
+        }
+
+        [Test]
+        public void Capacity_Zero()
+        {
+            var list = new RepeatedField<int>() { 1 };
+            list.RemoveAt(0);
+            Assert.AreEqual(0, list.Count);
+            Assert.AreEqual(8, list.Capacity);
+
+            Assert.DoesNotThrow(() => list.Capacity = 0, "Can set Capacity to 0");
+            Assert.AreEqual(0, list.Capacity);
         }
     }
 }

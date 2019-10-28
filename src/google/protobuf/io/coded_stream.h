@@ -109,6 +109,7 @@
 #ifndef GOOGLE_PROTOBUF_IO_CODED_STREAM_H__
 #define GOOGLE_PROTOBUF_IO_CODED_STREAM_H__
 
+
 #include <assert.h>
 
 #include <atomic>
@@ -139,8 +140,8 @@
 #endif
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/port.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/port.h>
 #include <google/protobuf/stubs/port.h>
 
 
@@ -219,17 +220,8 @@ class PROTOBUF_EXPORT CodedInputStream {
   // Read raw bytes, copying them into the given buffer.
   bool ReadRaw(void* buffer, int size);
 
-  // Like the above, with inlined optimizations. This should only be used
-  // by the protobuf implementation.
-  PROTOBUF_ALWAYS_INLINE
-  bool InternalReadRawInline(void* buffer, int size);
-
   // Like ReadRaw, but reads into a string.
   bool ReadString(std::string* buffer, int size);
-  // Like the above, with inlined optimizations. This should only be used
-  // by the protobuf implementation.
-  PROTOBUF_ALWAYS_INLINE
-  bool InternalReadStringInline(std::string* buffer, int size);
 
 
   // Read a 32-bit little-endian integer.
@@ -693,10 +685,11 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
   // After this it's guaranteed you can safely write kSlopBytes to ptr. This
   // will never fail! The underlying stream can produce an error. Use HadError
   // to check for errors.
-  void EnsureSpace(uint8** ptr) {
-    if (PROTOBUF_PREDICT_FALSE(*ptr >= end_)) {
-      *ptr = EnsureSpaceFallback(*ptr);
+  PROTOBUF_MUST_USE_RESULT uint8* EnsureSpace(uint8* ptr) {
+    if (PROTOBUF_PREDICT_FALSE(ptr >= end_)) {
+      return EnsureSpaceFallback(ptr);
     }
+    return ptr;
   }
 
   uint8* WriteRaw(const void* data, int size, uint8* ptr) {
@@ -791,7 +784,7 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
   template <typename T>
   PROTOBUF_ALWAYS_INLINE uint8* WriteFixedPacked(int num, const T& r,
                                                  uint8* ptr) {
-    EnsureSpace(&ptr);
+    ptr = EnsureSpace(ptr);
     constexpr auto element_size = sizeof(typename T::value_type);
     auto size = r.size() * element_size;
     ptr = WriteLengthDelim(num, size, ptr);
@@ -814,37 +807,12 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
   // remains live until all of the data has been consumed from the stream.
   void EnableAliasing(bool enabled);
 
-  // Deterministic serialization, if requested, guarantees that for a given
-  // binary, equal messages will always be serialized to the same bytes. This
-  // implies:
-  //   . repeated serialization of a message will return the same bytes
-  //   . different processes of the same binary (which may be executing on
-  //     different machines) will serialize equal messages to the same bytes.
-  //
-  // Note the deterministic serialization is NOT canonical across languages; it
-  // is also unstable across different builds with schema changes due to unknown
-  // fields. Users who need canonical serialization, e.g., persistent storage in
-  // a canonical form, fingerprinting, etc., should define their own
-  // canonicalization specification and implement the serializer using
-  // reflection APIs rather than relying on this API.
-  //
-  // If deterministic serialization is requested, the serializer will
-  // sort map entries by keys in lexicographical order or numerical order.
-  // (This is an implementation detail and may subject to change.)
-  //
-  // There are two ways to determine whether serialization should be
-  // deterministic for this CodedOutputStream.  If SetSerializationDeterministic
-  // has not yet been called, then the default comes from the global default,
-  // which is false, until SetDefaultSerializationDeterministic has been called.
-  // Otherwise, SetSerializationDeterministic has been called, and the last
-  // value passed to it is all that matters.
+  // See documentation on CodedOutputStream::SetSerializationDeterministic.
   void SetSerializationDeterministic(bool value) {
     is_serialization_deterministic_ = value;
   }
-  // See above.  Also, note that users of this CodedOutputStream may need to
-  // call IsSerializationDeterministic() to serialize in the intended way.  This
-  // CodedOutputStream cannot enforce a desire for deterministic serialization
-  // by itself.
+
+  // See documentation on CodedOutputStream::IsSerializationDeterministic.
   bool IsSerializationDeterministic() const {
     return is_serialization_deterministic_;
   }
@@ -908,12 +876,12 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
   template <typename T, typename E>
   PROTOBUF_ALWAYS_INLINE uint8* WriteVarintPacked(int num, const T& r, int size,
                                                   uint8* ptr, const E& encode) {
-    EnsureSpace(&ptr);
+    ptr = EnsureSpace(ptr);
     ptr = WriteLengthDelim(num, size, ptr);
     auto it = r.data();
     auto end = it + r.size();
     do {
-      EnsureSpace(&ptr);
+      ptr = EnsureSpace(ptr);
       ptr = UnsafeVarint(encode(*it++), ptr);
     } while (it < end);
     return ptr;
@@ -1158,14 +1126,14 @@ class PROTOBUF_EXPORT CodedOutputStream {
 
   // Write a 32-bit little-endian integer.
   void WriteLittleEndian32(uint32 value) {
-    impl_.EnsureSpace(&cur_);
+    cur_ = impl_.EnsureSpace(cur_);
     SetCur(WriteLittleEndian32ToArray(value, Cur()));
   }
   // Like WriteLittleEndian32()  but writing directly to the target array.
   static uint8* WriteLittleEndian32ToArray(uint32 value, uint8* target);
   // Write a 64-bit little-endian integer.
   void WriteLittleEndian64(uint64 value) {
-    impl_.EnsureSpace(&cur_);
+    cur_ = impl_.EnsureSpace(cur_);
     SetCur(WriteLittleEndian64ToArray(value, Cur()));
   }
   // Like WriteLittleEndian64()  but writing directly to the target array.
@@ -1233,14 +1201,32 @@ class PROTOBUF_EXPORT CodedOutputStream {
   // remains live until all of the data has been consumed from the stream.
   void EnableAliasing(bool enabled) { impl_.EnableAliasing(enabled); }
 
+  // Indicate to the serializer whether the user wants derministic
+  // serialization. The default when this is not called comes from the global
+  // default, controlled by SetDefaultSerializationDeterministic.
+  //
+  // What deterministic serialization means is entirely up to the driver of the
+  // serialization process (i.e. the caller of methods like WriteVarint32). In
+  // the case of serializing a proto buffer message using one of the methods of
+  // MessageLite, this means that for a given binary equal messages will always
+  // be serialized to the same bytes. This implies:
+  //
+  //   * Repeated serialization of a message will return the same bytes.
+  //
+  //   * Different processes running the same binary (including on different
+  //     machines) will serialize equal messages to the same bytes.
+  //
+  // Note that this is *not* canonical across languages. It is also unstable
+  // across different builds with intervening message definition changes, due to
+  // unknown fields. Users who need canonical serialization (e.g. persistent
+  // storage in a canonical form, fingerprinting) should define their own
+  // canonicalization specification and implement the serializer using
+  // reflection APIs rather than relying on this API.
   void SetSerializationDeterministic(bool value) {
     impl_.SetSerializationDeterministic(value);
   }
-  // See above.  Also, note that users of this CodedOutputStream may need to
-  // call IsSerializationDeterministic() to serialize in the intended way.  This
-  // CodedOutputStream cannot enforce a desire for deterministic serialization
-  // by itself.
 
+  // Return whether the user wants deterministic serialization. See above.
   bool IsSerializationDeterministic() const {
     return impl_.IsSerializationDeterministic();
   }
@@ -1652,12 +1638,12 @@ inline uint8* CodedOutputStream::WriteLittleEndian64ToArray(uint64 value,
 }
 
 inline void CodedOutputStream::WriteVarint32(uint32 value) {
-  impl_.EnsureSpace(&cur_);
+  cur_ = impl_.EnsureSpace(cur_);
   SetCur(WriteVarint32ToArray(value, Cur()));
 }
 
 inline void CodedOutputStream::WriteVarint64(uint64 value) {
-  impl_.EnsureSpace(&cur_);
+  cur_ = impl_.EnsureSpace(cur_);
   SetCur(WriteVarint64ToArray(value, Cur()));
 }
 

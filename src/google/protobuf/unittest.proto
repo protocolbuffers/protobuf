@@ -441,6 +441,16 @@ message TestEmptyMessageWithExtensions {
   extensions 1 to max;
 }
 
+// Needed for a Python test.
+message TestPickleNestedMessage {
+  message NestedMessage {
+    optional int32 bb = 1;
+    message NestedNestedMessage {
+      optional int32 cc = 1;
+    }
+  }
+}
+
 message TestMultipleExtensionRanges {
   extensions 42;
   extensions 4143 to 4243;

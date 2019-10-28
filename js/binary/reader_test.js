@@ -407,6 +407,31 @@ describe('binaryReaderTest', function() {
       -6, '08 8B 80 80 80 80 80 80 80 80 00');
   });
 
+  /**
+   * Tests reading 64-bit integers as split values.
+   */
+  it('handles split 64 fields', function() {
+    var writer = new jspb.BinaryWriter();
+    writer.writeInt64String(1, '4294967296');
+    writer.writeSfixed64String(2, '4294967298');
+    writer.writeInt64String(3, '3');  // 3 is the zig-zag encoding of -2.
+    var reader = jspb.BinaryReader.alloc(writer.getResultBuffer());
+
+    function rejoin(lowBits, highBits) {
+      return highBits * 2 ** 32 + (lowBits >>> 0);
+    }
+    reader.nextField();
+    expect(reader.getFieldNumber()).toEqual(1);
+    expect(reader.readSplitVarint64(rejoin)).toEqual(0x100000000);
+
+    reader.nextField();
+    expect(reader.getFieldNumber()).toEqual(2);
+    expect(reader.readSplitFixed64(rejoin)).toEqual(0x100000002);
+
+    reader.nextField();
+    expect(reader.getFieldNumber()).toEqual(3);
+    expect(reader.readSplitZigzagVarint64(rejoin)).toEqual(-2);
+  });
 
   /**
    * Tests 64-bit fields that are handled as strings.
@@ -470,6 +495,11 @@ describe('binaryReaderTest', function() {
         jspb.BinaryReader.prototype.readSint64,
         jspb.BinaryWriter.prototype.writeSint64,
         1, -Math.pow(2, 63), Math.pow(2, 63) - 513, Math.round);
+
+    doTestSignedField_(
+        jspb.BinaryReader.prototype.readSintHash64,
+        jspb.BinaryWriter.prototype.writeSintHash64, 1, -Math.pow(2, 63),
+        Math.pow(2, 63) - 513, jspb.utils.numberToHash64);
   });
 
 

@@ -362,7 +362,7 @@ template <typename Type>
 inline uint8* MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::Write(
     int field, const MapEntryAccessorType& value, uint8* ptr,
     io::EpsCopyOutputStream* stream) {
-  stream->EnsureSpace(&ptr);
+  ptr = stream->EnsureSpace(ptr);
   return WireFormatLite::InternalWriteMessageToArray(field, value, ptr, stream);
 }
 
@@ -371,7 +371,7 @@ inline uint8* MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::Write(
   inline uint8* MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::Write( \
       int field, const MapEntryAccessorType& value, uint8* ptr,                \
       io::EpsCopyOutputStream* stream) {                                       \
-    stream->EnsureSpace(&ptr);                                                 \
+    ptr = stream->EnsureSpace(ptr);                                            \
     return stream->Write##DeclaredType(field, value, ptr);                     \
   }
 
@@ -384,7 +384,7 @@ WRITE_METHOD(BYTES, Bytes)
   inline uint8* MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::Write( \
       int field, const MapEntryAccessorType& value, uint8* ptr,                \
       io::EpsCopyOutputStream* stream) {                                       \
-    stream->EnsureSpace(&ptr);                                                 \
+    ptr = stream->EnsureSpace(ptr);                                            \
     return WireFormatLite::Write##DeclaredType##ToArray(field, value, ptr);    \
   }
 
@@ -446,47 +446,33 @@ const char* MapTypeHandler<WireFormatLite::TYPE_BYTES, Type>::Read(
 }
 
 inline const char* ReadINT64(const char* ptr, int64* value) {
-  return ParseVarint64(ptr, reinterpret_cast<uint64*>(value));
+  return VarintParse(ptr, reinterpret_cast<uint64*>(value));
 }
 inline const char* ReadUINT64(const char* ptr, uint64* value) {
-  return ParseVarint64(ptr, value);
+  return VarintParse(ptr, value);
 }
 inline const char* ReadINT32(const char* ptr, int32* value) {
-  uint64 tmp;
-  auto res = ParseVarint64(ptr, &tmp);
-  *value = static_cast<uint32>(tmp);
-  return res;
+  return VarintParse(ptr, reinterpret_cast<uint32*>(value));
 }
 inline const char* ReadUINT32(const char* ptr, uint32* value) {
-  uint64 tmp;
-  auto res = ParseVarint64(ptr, &tmp);
-  *value = static_cast<uint32>(tmp);
-  return res;
+  return VarintParse(ptr, value);
 }
 inline const char* ReadSINT64(const char* ptr, int64* value) {
-  uint64 tmp;
-  auto res = ParseVarint64(ptr, &tmp);
-  *value = WireFormatLite::ZigZagDecode64(tmp);
-  return res;
+  *value = ReadVarintZigZag64(&ptr);
+  return ptr;
 }
 inline const char* ReadSINT32(const char* ptr, int32* value) {
-  uint64 tmp;
-  auto res = ParseVarint64(ptr, &tmp);
-  *value = WireFormatLite::ZigZagDecode32(static_cast<uint32>(tmp));
-  return res;
+  *value = ReadVarintZigZag32(&ptr);
+  return ptr;
 }
 template <typename E>
 inline const char* ReadENUM(const char* ptr, E* value) {
-  uint64 tmp;
-  auto res = ParseVarint64(ptr, &tmp);
-  *value = static_cast<E>(tmp);
-  return res;
+  *value = static_cast<E>(ReadVarint(&ptr));
+  return ptr;
 }
 inline const char* ReadBOOL(const char* ptr, bool* value) {
-  uint64 tmp;
-  auto res = ParseVarint64(ptr, &tmp);
-  *value = static_cast<bool>(tmp);
-  return res;
+  *value = static_cast<bool>(ReadVarint(&ptr));
+  return ptr;
 }
 
 template <typename F>
@@ -524,6 +510,7 @@ inline const char* ReadSFIXED32(const char* ptr, int32* value) {
   template <typename Type>                                                  \
   const char* MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::Read( \
       const char* begin, ParseContext* ctx, MapEntryAccessorType* value) {  \
+    (void)ctx;                                                              \
     return Read##FieldType(begin, value);                                   \
   }
 
@@ -628,7 +615,7 @@ MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::DefaultIfNotInitialized(
 template <typename Type>
 inline bool MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::IsInitialized(
     Type* value) {
-  return value->IsInitialized();
+  return value ? value->IsInitialized() : false;
 }
 
 // Definition for string/bytes handler

@@ -56,7 +56,6 @@
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/wire_format_lite.h>
 #include <google/protobuf/stubs/strutil.h>
-
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/stl_util.h>
 #include <google/protobuf/stubs/hash.h>
@@ -137,13 +136,6 @@ void Message::DiscardUnknownFields() {
   return ReflectionOps::DiscardUnknownFields(this);
 }
 
-#if !GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-bool Message::MergePartialFromCodedStream(io::CodedInputStream* input) {
-  return WireFormat::ParseAndMergePartial(input, this);
-}
-#endif
-
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 namespace internal {
 
 class ReflectionAccessor {
@@ -297,7 +289,8 @@ const char* ParseLenDelim(int field_number, const FieldDescriptor* field,
   }
   enum { kNone = 0, kVerify, kStrict } utf8_level = kNone;
   const char* field_name = nullptr;
-  auto parse_string = [ptr, ctx, &utf8_level, &field_name](std::string* s) {
+  auto parse_string = [ptr, ctx, &utf8_level,
+                       &field_name](std::string* s) -> const char* {
     switch (utf8_level) {
       case kNone:
         return internal::InlineGreedyStringParser(s, ptr, ctx);
@@ -307,6 +300,8 @@ const char* ParseLenDelim(int field_number, const FieldDescriptor* field,
       case kStrict:
         return internal::InlineGreedyStringParserUTF8(s, ptr, ctx, field_name);
     }
+    GOOGLE_LOG(FATAL) << "Should not reach here";
+    return nullptr;  // Make compiler happy
   };
   switch (field->type()) {
     case FieldDescriptor::TYPE_STRING: {
@@ -525,7 +520,6 @@ const char* Message::_InternalParse(const char* ptr,
   ReflectiveFieldParser field_parser(this, ctx);
   return internal::WireFormatParser(field_parser, ptr, ctx);
 }
-#endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 
 uint8* Message::InternalSerializeWithCachedSizesToArray(
     uint8* target, io::EpsCopyOutputStream* stream) const {

@@ -40,8 +40,10 @@
 #ifndef GOOGLE_PROTOBUF_IO_ZERO_COPY_STREAM_IMPL_H__
 #define GOOGLE_PROTOBUF_IO_ZERO_COPY_STREAM_IMPL_H__
 
+
 #include <iosfwd>
 #include <string>
+
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
@@ -91,7 +93,7 @@ class PROTOBUF_EXPORT FileInputStream : public ZeroCopyInputStream {
   bool Next(const void** data, int* size) override;
   void BackUp(int count) override;
   bool Skip(int count) override;
-  int64 ByteCount() const override;
+  int64_t ByteCount() const override;
 
  private:
   class PROTOBUF_EXPORT CopyingFileInputStream : public CopyingInputStream {
@@ -173,7 +175,7 @@ class PROTOBUF_EXPORT FileOutputStream : public ZeroCopyOutputStream {
   // implements ZeroCopyOutputStream ---------------------------------
   bool Next(void** data, int* size) override;
   void BackUp(int count) override;
-  int64 ByteCount() const override;
+  int64_t ByteCount() const override;
 
  private:
   class PROTOBUF_EXPORT CopyingFileOutputStream : public CopyingOutputStream {
@@ -224,7 +226,7 @@ class PROTOBUF_EXPORT IstreamInputStream : public ZeroCopyInputStream {
   bool Next(const void** data, int* size) override;
   void BackUp(int count) override;
   bool Skip(int count) override;
-  int64 ByteCount() const override;
+  int64_t ByteCount() const override;
 
  private:
   class PROTOBUF_EXPORT CopyingIstreamInputStream : public CopyingInputStream {
@@ -267,7 +269,7 @@ class PROTOBUF_EXPORT OstreamOutputStream : public ZeroCopyOutputStream {
   // implements ZeroCopyOutputStream ---------------------------------
   bool Next(void** data, int* size) override;
   void BackUp(int count) override;
-  int64 ByteCount() const override;
+  int64_t ByteCount() const override;
 
  private:
   class PROTOBUF_EXPORT CopyingOstreamOutputStream
@@ -312,7 +314,7 @@ class PROTOBUF_EXPORT ConcatenatingInputStream : public ZeroCopyInputStream {
   bool Next(const void** data, int* size) override;
   void BackUp(int count) override;
   bool Skip(int count) override;
-  int64 ByteCount() const override;
+  int64_t ByteCount() const override;
 
 
  private:

@@ -43,6 +43,7 @@
 #ifndef GOOGLE_PROTOBUF_IO_GZIP_STREAM_H__
 #define GOOGLE_PROTOBUF_IO_GZIP_STREAM_H__
 
+
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/port.h>
@@ -82,7 +83,7 @@ class PROTOBUF_EXPORT GzipInputStream : public ZeroCopyInputStream {
   bool Next(const void** data, int* size);
   void BackUp(int count);
   bool Skip(int count);
-  int64 ByteCount() const;
+  int64_t ByteCount() const;
 
  private:
   Format format_;
@@ -168,7 +169,7 @@ class PROTOBUF_EXPORT GzipOutputStream : public ZeroCopyOutputStream {
   // implements ZeroCopyOutputStream ---------------------------------
   bool Next(void** data, int* size);
   void BackUp(int count);
-  int64 ByteCount() const;
+  int64_t ByteCount() const;
 
  private:
   ZeroCopyOutputStream* sub_stream_;

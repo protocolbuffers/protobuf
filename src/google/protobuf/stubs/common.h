@@ -81,7 +81,7 @@ namespace internal {
 
 // The current version, represented as a single integer to make comparison
 // easier:  major * 10^6 + minor * 10^3 + micro
-#define GOOGLE_PROTOBUF_VERSION 3009000
+#define GOOGLE_PROTOBUF_VERSION 3011000
 
 // A suffix string for alpha, beta or rc releases. Empty for stable releases.
 #define GOOGLE_PROTOBUF_VERSION_SUFFIX ""
@@ -89,15 +89,15 @@ namespace internal {
 // The minimum header version which works with the current version of
 // the library.  This constant should only be used by protoc's C++ code
 // generator.
-static const int kMinHeaderVersionForLibrary = 3009000;
+static const int kMinHeaderVersionForLibrary = 3011000;
 
 // The minimum protoc version which works with the current version of the
 // headers.
-#define GOOGLE_PROTOBUF_MIN_PROTOC_VERSION 3009000
+#define GOOGLE_PROTOBUF_MIN_PROTOC_VERSION 3011000
 
 // The minimum header version which works with the current version of
 // protoc.  This constant should only be used in VerifyVersion().
-static const int kMinHeaderVersionForProtoc = 3009000;
+static const int kMinHeaderVersionForProtoc = 3011000;
 
 // Verifies that the headers and libraries are compatible.  Use the macro
 // below to call this.
@@ -185,6 +185,14 @@ template <typename T>
 T* OnShutdownDelete(T* p) {
   OnShutdownRun([](const void* pp) { delete static_cast<const T*>(pp); }, p);
   return p;
+}
+
+// Strongly references the given variable such that the linker will be forced
+// to pull in this variable's translation unit.
+template <typename T>
+void StrongReference(const T& var) {
+  auto volatile unused = &var;
+  (void)&unused;  // Use address to avoid an extra load of "unused".
 }
 
 }  // namespace internal

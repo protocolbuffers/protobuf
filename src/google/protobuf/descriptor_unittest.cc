@@ -42,6 +42,10 @@
 #include <google/protobuf/compiler/parser.h>
 #include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/unittest_custom_options.pb.h>
+#include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
+#include <google/protobuf/stubs/logging.h>
+#include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/unittest_lazy_dependencies.pb.h>
 #include <google/protobuf/unittest_proto3_arena.pb.h>
 #include <google/protobuf/io/tokenizer.h>
@@ -51,15 +55,10 @@
 #include <google/protobuf/descriptor_database.h>
 #include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/text_format.h>
-#include <google/protobuf/stubs/substitute.h>
-
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
+#include <google/protobuf/stubs/substitute.h>
 
 
 #include <google/protobuf/port_def.inc>
@@ -3477,7 +3476,12 @@ TEST(CustomOptions, UnusedImportWarning) {
 
   MockErrorCollector error_collector;
   EXPECT_TRUE(pool.BuildFileCollectingErrors(file_proto, &error_collector));
-  EXPECT_EQ("", error_collector.warning_text_);
+  EXPECT_EQ(
+      "custom_options_import.proto: "
+      "google/protobuf/unittest_custom_options.proto: IMPORT: Import "
+      "google/protobuf/unittest_custom_options.proto is unused.\n",
+      error_collector.warning_text_);
+  EXPECT_EQ("", error_collector.text_);
 }
 
 // Verifies that proto files can correctly be parsed, even if the
@@ -4535,8 +4539,7 @@ TEST_F(ValidationErrorTest, RequiredExtension) {
       "  }"
       "}",
 
-      "foo.proto: Foo.foo: TYPE: Message extensions cannot have required "
-      "fields.\n");
+      "foo.proto: Foo.foo: TYPE: The extension Foo.foo cannot be required.\n");
 }
 
 TEST_F(ValidationErrorTest, UndefinedFieldType) {
@@ -5792,7 +5795,7 @@ TEST_F(ValidationErrorTest, UnusedImportWarning) {
       "  field { name:\"base\" number:1 label:LABEL_OPTIONAL "
       "type_name:\"Base\" }"
       "}",
-      "forward.proto: bar.proto: IMPORT: Import bar.proto but not used.\n");
+      "forward.proto: bar.proto: IMPORT: Import bar.proto is unused.\n");
 }
 
 namespace {

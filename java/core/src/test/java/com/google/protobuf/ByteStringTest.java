@@ -486,6 +486,25 @@ public class ByteStringTest extends TestCase {
         "copyToStringUtf8 must respect the charset", testString, byteString.toStringUtf8());
   }
 
+  public void testToString() {
+    String toString =
+        ByteString.copyFrom("Here are some bytes: \t\u00a1".getBytes(Internal.UTF_8)).toString();
+    assertTrue(toString, toString.contains("size=24"));
+    assertTrue(toString, toString.contains("contents=\"Here are some bytes: \\t\\302\\241\""));
+  }
+
+  public void testToString_long() {
+    String toString =
+        ByteString.copyFrom(
+                "123456789012345678901234567890123456789012345678901234567890"
+                    .getBytes(Internal.UTF_8))
+            .toString();
+    assertTrue(toString, toString.contains("size=60"));
+    assertTrue(
+        toString,
+        toString.contains("contents=\"12345678901234567890123456789012345678901234567...\""));
+  }
+
   public void testNewOutput_InitialCapacity() throws IOException {
     byte[] bytes = getTestBytes();
     ByteString.Output output = ByteString.newOutput(bytes.length + 100);

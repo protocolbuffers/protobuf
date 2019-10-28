@@ -55,8 +55,6 @@
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
 
-
-
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -417,9 +415,13 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
                    "private int $oneof_name$Case_ = 0;\n"
                    "private java.lang.Object $oneof_name$_;\n");
     // OneofCase enum
-    printer->Print(vars,
-                   "public enum $oneof_capitalized_name$Case\n"
-                   "    implements com.google.protobuf.Internal.EnumLite {\n");
+    printer->Print(
+        vars,
+        "public enum $oneof_capitalized_name$Case\n"
+        // TODO(dweis): Remove EnumLite when we want to break compatibility with
+        // 3.x users
+        "    implements com.google.protobuf.Internal.EnumLite,\n"
+        "        com.google.protobuf.AbstractMessage.InternalOneOfEnum {\n");
     printer->Indent();
     for (int j = 0; j < descriptor_->oneof_decl(i)->field_count(); j++) {
       const FieldDescriptor* field = descriptor_->oneof_decl(i)->field(j);
@@ -997,7 +999,8 @@ void ImmutableMessageGenerator::GenerateEqualsAndHashCode(
     io::Printer* printer) {
   printer->Print(
       "@java.lang.Override\n"
-      "public boolean equals(final java.lang.Object obj) {\n");
+      "public boolean equals(");
+  printer->Print("final java.lang.Object obj) {\n");
   printer->Indent();
   printer->Print(
       "if (obj == this) {\n"

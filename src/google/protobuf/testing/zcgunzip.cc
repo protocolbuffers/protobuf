@@ -39,9 +39,10 @@
 // output.
 
 #include <assert.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <fcntl.h>
+#include <unistd.h>
 
 #ifdef _WIN32
 #ifndef STDIN_FILENO

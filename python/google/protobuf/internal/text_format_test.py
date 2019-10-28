@@ -450,6 +450,46 @@ class TextFormatMessageToStringTests(TextFormatBase):
     text_format.Parse(expected_text, parsed_proto)
     self.assertEqual(message_proto, parsed_proto)
 
+  def testPrintUnknownFieldsEmbeddedMessageInBytes(self, message_module):
+    inner_msg = message_module.TestAllTypes()
+    inner_msg.optional_int32 = 101
+    inner_msg.optional_double = 102.0
+    inner_msg.optional_string = u'hello'
+    inner_msg.optional_bytes = b'103'
+    inner_msg.optional_nested_message.bb = 105
+    inner_data = inner_msg.SerializeToString()
+    outer_message = message_module.TestAllTypes()
+    outer_message.optional_int32 = 101
+    outer_message.optional_bytes = inner_data
+    all_data = outer_message.SerializeToString()
+    empty_message = message_module.TestEmptyMessage()
+    empty_message.ParseFromString(all_data)
+
+    self.assertEqual('  1: 101\n'
+                     '  15 {\n'
+                     '    1: 101\n'
+                     '    12: 4636878028842991616\n'
+                     '    14: "hello"\n'
+                     '    15: "103"\n'
+                     '    18 {\n'
+                     '      1: 105\n'
+                     '    }\n'
+                     '  }\n',
+                     text_format.MessageToString(empty_message,
+                                                 indent=2,
+                                                 print_unknown_fields=True))
+    self.assertEqual('1: 101 '
+                     '15 { '
+                     '1: 101 '
+                     '12: 4636878028842991616 '
+                     '14: "hello" '
+                     '15: "103" '
+                     '18 { 1: 105 } '
+                     '}',
+                     text_format.MessageToString(empty_message,
+                                                 print_unknown_fields=True,
+                                                 as_one_line=True))
+
 
 @_parameterized.parameters(unittest_pb2, unittest_proto3_arena_pb2)
 class TextFormatMessageToTextBytesTests(TextFormatBase):
@@ -845,17 +885,18 @@ class OnlyWorksWithProto2RightNowTests(TextFormatBase):
     all_data = message.SerializeToString()
     empty_message = unittest_pb2.TestEmptyMessage()
     empty_message.ParseFromString(all_data)
-    self.assertEqual('1: 101\n'
-                     '12: 4636878028842991616\n'
-                     '14: "hello"\n'
-                     '15: "103"\n'
-                     '16 {\n'
-                     '  17: 104\n'
-                     '}\n'
-                     '18 {\n'
-                     '  1: 105\n'
-                     '}\n',
+    self.assertEqual('  1: 101\n'
+                     '  12: 4636878028842991616\n'
+                     '  14: "hello"\n'
+                     '  15: "103"\n'
+                     '  16 {\n'
+                     '    17: 104\n'
+                     '  }\n'
+                     '  18 {\n'
+                     '    1: 105\n'
+                     '  }\n',
                      text_format.MessageToString(empty_message,
+                                                 indent=2,
                                                  print_unknown_fields=True))
     self.assertEqual('1: 101 '
                      '12: 4636878028842991616 '

@@ -32,12 +32,12 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+#include <google/protobuf/compiler/parser.h>
+
 #include <algorithm>
 #include <map>
 #include <memory>
 #include <vector>
-
-#include <google/protobuf/compiler/parser.h>
 
 #include <google/protobuf/test_util2.h>
 #include <google/protobuf/unittest.pb.h>
@@ -47,12 +47,10 @@
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/text_format.h>
 #include <google/protobuf/wire_format.h>
-#include <google/protobuf/stubs/substitute.h>
-
-#include <google/protobuf/stubs/map_util.h>
-
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
+#include <google/protobuf/stubs/substitute.h>
+#include <google/protobuf/stubs/map_util.h>
 
 namespace google {
 namespace protobuf {
@@ -226,7 +224,7 @@ TEST_F(ParserTest, WarnIfSyntaxIdentifierOmmitted) {
   CaptureTestStderr();
   EXPECT_TRUE(parser_->Parse(input_.get(), &file));
   EXPECT_TRUE(GetCapturedTestStderr().find("No syntax specified") !=
-              string::npos);
+              std::string::npos);
 }
 
 TEST_F(ParserTest, WarnIfFieldNameIsNotUpperCamel) {
@@ -237,7 +235,7 @@ TEST_F(ParserTest, WarnIfFieldNameIsNotUpperCamel) {
   EXPECT_TRUE(parser_->Parse(input_.get(), &file));
   EXPECT_TRUE(error_collector_.warning_.find(
                   "Message name should be in UpperCamelCase. Found: abc.") !=
-              string::npos);
+              std::string::npos);
 }
 
 TEST_F(ParserTest, WarnIfFieldNameIsNotLowerUnderscore) {
@@ -250,7 +248,7 @@ TEST_F(ParserTest, WarnIfFieldNameIsNotLowerUnderscore) {
   EXPECT_TRUE(parser_->Parse(input_.get(), &file));
   EXPECT_TRUE(error_collector_.warning_.find(
                   "Field name should be lowercase. Found: SongName") !=
-              string::npos);
+              std::string::npos);
 }
 
 TEST_F(ParserTest, WarnIfFieldNameContainsNumberImmediatelyFollowUnderscore) {
@@ -263,7 +261,7 @@ TEST_F(ParserTest, WarnIfFieldNameContainsNumberImmediatelyFollowUnderscore) {
   EXPECT_TRUE(parser_->Parse(input_.get(), &file));
   EXPECT_TRUE(error_collector_.warning_.find(
                   "Number should not come right after an underscore. Found: "
-                  "song_name_1.") != string::npos);
+                  "song_name_1.") != std::string::npos);
 }
 
 // ===================================================================
@@ -2041,7 +2039,7 @@ TEST_F(ParserValidationErrorTest, MethodOutputTypeError) {
 }
 
 
-TEST_F(ParserValidationErrorTest, ResovledUndefinedError) {
+TEST_F(ParserValidationErrorTest, ResolvedUndefinedError) {
   // Create another file which defines symbol ".base.bar".
   FileDescriptorProto other_file;
   other_file.set_name("base.proto");
@@ -2086,14 +2084,14 @@ TEST_F(ParserValidationErrorTest, ResovledUndefinedOptionError) {
   FieldDescriptorProto* field(message->add_field());
   field->set_name("foo");
   field->set_number(1);
-  field->set_label(FieldDescriptorProto_Label_LABEL_OPTIONAL);
-  field->set_type(FieldDescriptorProto_Type_TYPE_INT32);
+  field->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
+  field->set_type(FieldDescriptorProto::TYPE_INT32);
 
   FieldDescriptorProto* extension(other_file.add_extension());
   extension->set_name("bar");
   extension->set_number(7672757);
-  extension->set_label(FieldDescriptorProto_Label_LABEL_OPTIONAL);
-  extension->set_type(FieldDescriptorProto_Type_TYPE_MESSAGE);
+  extension->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
+  extension->set_type(FieldDescriptorProto::TYPE_MESSAGE);
   extension->set_type_name("Bar");
   extension->set_extendee("google.protobuf.FileOptions");
 
@@ -2405,9 +2403,9 @@ TEST_F(ParseDescriptorDebugTest, TestMaps) {
   // Make sure the debug string uses map syntax and does not have the auto
   // generated entry.
   std::string debug_string = file->DebugString();
-  EXPECT_TRUE(debug_string.find("map<") != string::npos);
-  EXPECT_TRUE(debug_string.find("option map_entry") == string::npos);
-  EXPECT_TRUE(debug_string.find("MapEntry") == string::npos);
+  EXPECT_TRUE(debug_string.find("map<") != std::string::npos);
+  EXPECT_TRUE(debug_string.find("option map_entry") == std::string::npos);
+  EXPECT_TRUE(debug_string.find("MapEntry") == std::string::npos);
 
   // Make sure the descriptor debug string is parsable.
   FileDescriptorProto parsed;
@@ -2805,6 +2803,35 @@ TEST_F(SourceInfoTest, Fields) {
 
   // Ignore these.
   EXPECT_TRUE(HasSpan(file_));
+  EXPECT_TRUE(HasSpan(file_.message_type(0)));
+  EXPECT_TRUE(HasSpan(file_.message_type(0), "name"));
+}
+
+TEST_F(SourceInfoTest, Proto3Fields) {
+  EXPECT_TRUE(
+      Parse("syntax = \"proto3\";\n"
+            "message Foo {\n"
+            "  $a$int32$b$ $c$bar$d$ = $e$1$f$;$g$\n"
+            "  $h$repeated$i$ $j$X.Y$k$ $l$baz$m$ = $n$2$o$;$p$\n"
+            "}\n"));
+
+  const FieldDescriptorProto& field1 = file_.message_type(0).field(0);
+  const FieldDescriptorProto& field2 = file_.message_type(0).field(1);
+
+  EXPECT_TRUE(HasSpan('a', 'g', field1));
+  EXPECT_TRUE(HasSpan('a', 'b', field1, "type"));
+  EXPECT_TRUE(HasSpan('c', 'd', field1, "name"));
+  EXPECT_TRUE(HasSpan('e', 'f', field1, "number"));
+
+  EXPECT_TRUE(HasSpan('h', 'p', field2));
+  EXPECT_TRUE(HasSpan('h', 'i', field2, "label"));
+  EXPECT_TRUE(HasSpan('j', 'k', field2, "type_name"));
+  EXPECT_TRUE(HasSpan('l', 'm', field2, "name"));
+  EXPECT_TRUE(HasSpan('n', 'o', field2, "number"));
+
+  // Ignore these.
+  EXPECT_TRUE(HasSpan(file_));
+  EXPECT_TRUE(HasSpan(file_, "syntax"));
   EXPECT_TRUE(HasSpan(file_.message_type(0)));
   EXPECT_TRUE(HasSpan(file_.message_type(0), "name"));
 }

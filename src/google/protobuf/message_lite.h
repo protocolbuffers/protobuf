@@ -330,11 +330,7 @@ class PROTOBUF_EXPORT MessageLite {
   //
   // MergeFromCodedStream() is just implemented as MergePartialFromCodedStream()
   // followed by IsInitialized().
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
   bool MergePartialFromCodedStream(io::CodedInputStream* input);
-#else
-  virtual bool MergePartialFromCodedStream(io::CodedInputStream* input) = 0;
-#endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 
   // Merge a protocol buffer contained in a string.
   bool MergeFromString(const std::string& data);
@@ -438,29 +434,12 @@ class PROTOBUF_EXPORT MessageLite {
   // method.)
   virtual int GetCachedSize() const = 0;
 
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  virtual const char* _InternalParse(const char* ptr,
-                                     internal::ParseContext* ctx) {
+  virtual const char* _InternalParse(const char* /*ptr*/,
+                                     internal::ParseContext* /*ctx*/) {
     return nullptr;
   }
-#endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 
  protected:
-  // CastToBase allows generated code to cast a RepeatedPtrField<T> to
-  // RepeatedPtrFieldBase. We try to restrict access to RepeatedPtrFieldBase
-  // because it is an implementation detail that user code should not access
-  // directly.
-  template <typename T>
-  static internal::RepeatedPtrFieldBase* CastToBase(
-      RepeatedPtrField<T>* repeated) {
-    return repeated;
-  }
-  template <typename T>
-  static const internal::RepeatedPtrFieldBase& CastToBase(
-      const RepeatedPtrField<T>& repeated) {
-    return repeated;
-  }
-
   template <typename T>
   static T* CreateMaybeMessage(Arena* arena) {
     return Arena::CreateMaybeMessage<T>(arena);

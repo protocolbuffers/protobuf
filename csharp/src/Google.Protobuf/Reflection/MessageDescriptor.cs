@@ -34,6 +34,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reflection;
 #if NET35
 // Needed for ReadOnlyDictionary, which does not exist in .NET 3.5
 using Google.Protobuf.Collections;
@@ -63,6 +64,7 @@ namespace Google.Protobuf.Reflection
         private readonly IList<FieldDescriptor> fieldsInDeclarationOrder;
         private readonly IList<FieldDescriptor> fieldsInNumberOrder;
         private readonly IDictionary<string, FieldDescriptor> jsonFieldMap;
+        private Func<IMessage, bool> extensionSetIsInitialized;
 
         internal MessageDescriptor(DescriptorProto proto, FileDescriptor file, MessageDescriptor parent, int typeIndex, GeneratedClrTypeInfo generatedCodeInfo)
             : base(file, file.ComputeFullName(parent, proto.Name), typeIndex)
@@ -133,6 +135,21 @@ namespace Google.Protobuf.Reflection
         }
 
         internal DescriptorProto Proto { get; }
+
+        internal bool IsExtensionsInitialized(IMessage message)
+        {
+            if (Proto.ExtensionRange.Count == 0)
+            {
+                return true;
+            }
+
+            if (extensionSetIsInitialized == null)
+            {
+                extensionSetIsInitialized = ReflectionUtil.CreateIsInitializedCaller(ClrType);
+            }
+
+            return extensionSetIsInitialized(message);
+        }
 
         /// <summary>
         /// The CLR type used to represent message instances from this descriptor.
@@ -243,27 +260,25 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// The (possibly empty) set of custom options for this message.
         /// </summary>
-        //[Obsolete("CustomOptions are obsolete. Use GetOption")]
+        [Obsolete("CustomOptions are obsolete. Use GetOption")]
         public CustomOptions CustomOptions => new CustomOptions(Proto.Options._extensions?.ValuesByNumber);
 
-        /* // uncomment this in the full proto2 support PR
         /// <summary>
-        /// Gets a single value enum option for this descriptor
+        /// Gets a single value message option for this descriptor
         /// </summary>
         public T GetOption<T>(Extension<MessageOptions, T> extension)
         {
             var value = Proto.Options.GetExtension(extension);
-            return value is IDeepCloneable<T> clonable ? clonable.Clone() : value;
+            return value is IDeepCloneable<T> ? (value as IDeepCloneable<T>).Clone() : value;
         }
 
         /// <summary>
-        /// Gets a repeated value enum option for this descriptor
+        /// Gets a repeated value message option for this descriptor
         /// </summary>
         public Collections.RepeatedField<T> GetOption<T>(RepeatedExtension<MessageOptions, T> extension)
         {
             return Proto.Options.GetExtension(extension).Clone();
         }
-        */
 
         /// <summary>
         /// Looks up and cross-links all fields and nested types.

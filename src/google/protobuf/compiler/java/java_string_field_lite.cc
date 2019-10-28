@@ -47,7 +47,6 @@
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/strutil.h>
 
-
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -76,10 +75,9 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
       StrCat(static_cast<int32>(WireFormat::MakeTag(descriptor)));
   (*variables)["tag_size"] = StrCat(
       WireFormat::TagSize(descriptor->number(), GetType(descriptor)));
-  (*variables)["null_check"] =
-      "  if (value == null) {\n"
-      "    throw new NullPointerException();\n"
-      "  }\n";
+  // We use `x.getClass()` as a null check because it generates less bytecode
+  // than an `if (x == null) { throw ... }` statement.
+  (*variables)["null_check"] = "  value.getClass();\n";
 
   // TODO(birdo): Add @deprecated javadoc when generating javadoc is supported
   // by the proto compiler
@@ -231,14 +229,13 @@ void ImmutableStringFieldLiteGenerator::GenerateMembers(
   WriteFieldStringBytesAccessorDocComment(printer, descriptor_, SETTER);
   printer->Print(variables_,
                  "private void set$capitalized_name$Bytes(\n"
-                 "    com.google.protobuf.ByteString value) {\n"
-                 "$null_check$");
+                 "    com.google.protobuf.ByteString value) {\n");
   if (CheckUtf8(descriptor_)) {
     printer->Print(variables_, "  checkByteStringIsUtf8(value);\n");
   }
   printer->Print(variables_,
-                 "  $set_has_field_bit_message$\n"
                  "  $name$_ = value.toStringUtf8();\n"
+                 "  $set_has_field_bit_message$\n"
                  "}\n");
 }
 
@@ -295,7 +292,7 @@ void ImmutableStringFieldLiteGenerator::GenerateBuilderMembers(
   printer->Annotate("{", "}", descriptor_);
 
   WriteFieldStringBytesAccessorDocComment(printer, descriptor_, SETTER,
-                               /* builder */ true);
+                                          /* builder */ true);
   printer->Print(
       variables_,
       "$deprecation$public Builder ${$set$capitalized_name$Bytes$}$(\n"
@@ -403,15 +400,14 @@ void ImmutableStringOneofFieldLiteGenerator::GenerateMembers(
   WriteFieldStringBytesAccessorDocComment(printer, descriptor_, SETTER);
   printer->Print(variables_,
                  "private void ${$set$capitalized_name$Bytes$}$(\n"
-                 "    com.google.protobuf.ByteString value) {\n"
-                 "$null_check$");
+                 "    com.google.protobuf.ByteString value) {\n");
   printer->Annotate("{", "}", descriptor_);
   if (CheckUtf8(descriptor_)) {
     printer->Print(variables_, "  checkByteStringIsUtf8(value);\n");
   }
   printer->Print(variables_,
-                 "  $set_oneof_case_message$;\n"
                  "  $oneof_name$_ = value.toStringUtf8();\n"
+                 "  $set_oneof_case_message$;\n"
                  "}\n");
 }
 
@@ -476,7 +472,7 @@ void ImmutableStringOneofFieldLiteGenerator::GenerateBuilderMembers(
   printer->Annotate("{", "}", descriptor_);
 
   WriteFieldStringBytesAccessorDocComment(printer, descriptor_, SETTER,
-                               /* builder */ true);
+                                          /* builder */ true);
   printer->Print(
       variables_,
       "$deprecation$public Builder ${$set$capitalized_name$Bytes$}$(\n"
@@ -610,8 +606,7 @@ void RepeatedImmutableStringFieldLiteGenerator::GenerateMembers(
   WriteFieldStringBytesAccessorDocComment(printer, descriptor_, LIST_ADDER);
   printer->Print(variables_,
                  "private void add$capitalized_name$Bytes(\n"
-                 "    com.google.protobuf.ByteString value) {\n"
-                 "$null_check$");
+                 "    com.google.protobuf.ByteString value) {\n");
   if (CheckUtf8(descriptor_)) {
     printer->Print(variables_, "  checkByteStringIsUtf8(value);\n");
   }

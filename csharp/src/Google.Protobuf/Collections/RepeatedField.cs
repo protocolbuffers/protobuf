@@ -148,6 +148,10 @@ namespace Google.Protobuf.Collections
             {
                 var sizeCalculator = codec.ValueSizeCalculator;
                 int size = count * CodedOutputStream.ComputeRawVarint32Size(tag);
+                if (codec.EndTag != 0)
+                {
+                    size += count * CodedOutputStream.ComputeRawVarint32Size(codec.EndTag);
+                }
                 for (int i = 0; i < count; i++)
                 {
                     size += sizeCalculator(array[i]);
@@ -216,14 +220,46 @@ namespace Google.Protobuf.Collections
             }
         }
 
+        /// <summary>
+        /// Gets and sets the capacity of the RepeatedField's internal array.  WHen set, the internal array is reallocated to the given capacity.
+        /// <exception cref="ArgumentOutOfRangeException">The new value is less than Count -or- when Count is less than 0.</exception>
+        /// </summary>
+        public int Capacity
+        {
+            get { return array.Length; }
+            set
+            {
+                if (value < count)
+                {
+                    throw new ArgumentOutOfRangeException("Capacity", value,
+                        $"Cannot set Capacity to a value smaller than the current item count, {count}");
+                }
+
+                if (value >= 0 && value != array.Length)
+                {
+                    SetSize(value);
+                }
+            }
+        }
+
+        // May increase the size of the internal array, but will never shrink it.
         private void EnsureSize(int size)
         {
             if (array.Length < size)
             {
                 size = Math.Max(size, MinArraySize);
                 int newSize = Math.Max(array.Length * 2, size);
-                var tmp = new T[newSize];
-                Array.Copy(array, 0, tmp, 0, array.Length);
+                SetSize(newSize);
+            }
+        }
+
+        // Sets the internal array to an exact size.
+        private void SetSize(int size)
+        {
+            if (size != array.Length)
+            {
+                var tmp = new T[size];
+                Array.Copy(array, 0, tmp, 0, count);
                 array = tmp;
             }
         }

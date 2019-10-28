@@ -37,14 +37,16 @@
 #include <stack>
 #include <string>
 #include <vector>
+
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/stringprintf.h>
-#include <google/protobuf/io/coded_stream_inl.h>
+#include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
-#include <google/protobuf/port_def.inc>
 
+
+#include <google/protobuf/port_def.inc>
 
 namespace google {
 namespace protobuf {
@@ -551,8 +553,7 @@ PROTOBUF_ALWAYS_INLINE static bool ReadBytesToString(
 inline static bool ReadBytesToString(io::CodedInputStream* input,
                                      std::string* value) {
   uint32 length;
-  return input->ReadVarint32(&length) &&
-         input->InternalReadStringInline(value, length);
+  return input->ReadVarint32(&length) && input->ReadString(value, length);
 }
 
 bool WireFormatLite::ReadBytes(io::CodedInputStream* input,

@@ -48,7 +48,9 @@ namespace Google.Protobuf.Conformance
             // This way we get the binary streams instead of readers/writers.
             var input = new BinaryReader(Console.OpenStandardInput());
             var output = new BinaryWriter(Console.OpenStandardOutput());
-            var typeRegistry = TypeRegistry.FromMessages(ProtobufTestMessages.Proto3.TestAllTypesProto3.Descriptor);
+            var typeRegistry = TypeRegistry.FromMessages(
+                ProtobufTestMessages.Proto3.TestAllTypesProto3.Descriptor,
+                ProtobufTestMessages.Proto2.TestAllTypesProto2.Descriptor);
 
             int count = 0;
             while (RunTest(input, output, typeRegistry))
@@ -81,7 +83,7 @@ namespace Google.Protobuf.Conformance
 
         private static ConformanceResponse PerformRequest(ConformanceRequest request, TypeRegistry typeRegistry)
         {
-            ProtobufTestMessages.Proto3.TestAllTypesProto3 message;
+            IMessage message;
             try
             {
                 switch (request.PayloadCase)
@@ -101,7 +103,13 @@ namespace Google.Protobuf.Conformance
                         }
                         else if (request.MessageType.Equals("protobuf_test_messages.proto2.TestAllTypesProto2"))
                         {
-                            return new ConformanceResponse { Skipped = "CSharp doesn't support proto2" };
+                            ExtensionRegistry registry = new ExtensionRegistry()
+                            {
+                                ProtobufTestMessages.Proto2.TestMessagesProto2Extensions.ExtensionInt32,
+                                ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.MessageSetCorrectExtension1.Extensions.MessageSetExtension,
+                                ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.MessageSetCorrectExtension2.Extensions.MessageSetExtension
+                            };
+                            message = ProtobufTestMessages.Proto2.TestAllTypesProto2.Parser.WithExtensionRegistry(registry).ParseFrom(request.ProtobufPayload);
                         }
                         else
                         {

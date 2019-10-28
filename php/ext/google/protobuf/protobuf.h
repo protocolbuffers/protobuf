@@ -37,7 +37,7 @@
 #include "upb.h"
 
 #define PHP_PROTOBUF_EXTNAME "protobuf"
-#define PHP_PROTOBUF_VERSION "3.9.0RC1"
+#define PHP_PROTOBUF_VERSION "3.11.0RC0"
 
 #define MAX_LENGTH_OF_INT64 20
 #define SIZEOF_INT64 8
@@ -45,6 +45,15 @@
 /* From Chromium. */
 #define ARRAY_SIZE(x) \
     ((sizeof(x)/sizeof(0[x])) / ((size_t)(!(sizeof(x) % sizeof(0[x])))))
+
+#define PHP_PROTO_UNUSED(var) (void)var
+/* PHP_PROTO_ASSERT(): in release mode, we use the expression without letting
+ * it be evaluated.  This prevents "unused variable" warnings. */
+#ifdef NDEBUG
+#define PHP_PROTO_ASSERT(expr) do {} while (false && (expr))
+#else
+#define PHP_PROTO_ASSERT(expr) assert(expr)
+#endif
 
 // -----------------------------------------------------------------------------
 // PHP7 Wrappers
@@ -948,6 +957,8 @@ void layout_merge(MessageLayout* layout, MessageHeader* from,
 const char* layout_get_oneof_case(MessageLayout* layout, const void* storage,
                                   const upb_oneofdef* oneof TSRMLS_DC);
 void free_layout(MessageLayout* layout);
+uint32_t* slot_oneof_case(MessageLayout* layout, const void* storage,
+                          const upb_fielddef* field);
 void* slot_memory(MessageLayout* layout, const void* storage,
                   const upb_fielddef* field);
 

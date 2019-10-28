@@ -116,7 +116,7 @@ class PROTOBUF_EXPORT DescriptorDatabase {
   //
   // This method has a default implementation that always returns
   // false.
-  virtual bool FindAllFileNames(std::vector<std::string>* output) {
+  virtual bool FindAllFileNames(std::vector<std::string>* /*output*/) {
     return false;
   }
 

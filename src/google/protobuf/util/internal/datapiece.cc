@@ -34,7 +34,6 @@
 #include <google/protobuf/type.pb.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/util/internal/utility.h>
-
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/mathlimits.h>
 #include <google/protobuf/stubs/mathutil.h>
@@ -44,9 +43,6 @@ namespace protobuf {
 namespace util {
 namespace converter {
 
-;
-;
-;
 using util::Status;
 using util::StatusOr;
 using util::error::Code;
@@ -360,7 +356,7 @@ StatusOr<To> DataPiece::StringToNumber(bool (*func)(StringPiece,
   }
   To result;
   if (func(str_, &result)) return result;
-  return InvalidArgument(StrCat("\"", string(str_), "\""));
+  return InvalidArgument(StrCat("\"", std::string(str_), "\""));
 }
 
 bool DataPiece::DecodeBase64(StringPiece src, std::string* dest) const {

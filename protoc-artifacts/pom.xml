@@ -8,7 +8,7 @@
   </parent>
   <groupId>com.google.protobuf</groupId>
   <artifactId>protoc</artifactId>
-  <version>3.9.0-rc-1</version>
+  <version>3.11.0-rc-0</version>
   <packaging>pom</packaging>
   <name>Protobuf Compiler</name>
   <description>
@@ -83,6 +83,11 @@
                 <artifact>
                   <file>${basedir}/target/linux/ppcle_64/protoc.exe</file>
                   <classifier>linux-ppcle_64</classifier>
+                  <type>exe</type>
+	  	</artifact>
+                <artifact>
+                  <file>${basedir}/target/linux/s390x_64/protoc.exe</file>
+                  <classifier>linux-s390x_64</classifier>
                   <type>exe</type>
                 </artifact>
               </artifacts>

@@ -13,7 +13,7 @@ use Google\Protobuf\Internal\GPBUtil;
 /**
  * Generated from protobuf message <code>google.protobuf.FieldOptions</code>
  */
-final class FieldOptions extends \Google\Protobuf\Internal\Message
+class FieldOptions extends \Google\Protobuf\Internal\Message
 {
     /**
      * The ctype option instructs the C++ code generator to use a different

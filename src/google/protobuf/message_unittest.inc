@@ -50,7 +50,6 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/test_util2.h>
-#include <google/protobuf/io/io_win32.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
@@ -60,6 +59,7 @@
 #include <google/protobuf/generated_message_reflection.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
+#include <google/protobuf/io/io_win32.h>
 
 
 namespace google {
@@ -269,7 +269,7 @@ class RepeatedInputStream : public io::ZeroCopyInputStream {
   RepeatedInputStream(const std::string& data, size_t count)
       : data_(data), count_(count), position_(0), total_byte_count_(0) {}
 
-  virtual bool Next(const void** data, int* size) {
+  bool Next(const void** data, int* size) override {
     if (position_ == data_.size()) {
       if (--count_ == 0) {
         return false;
@@ -283,12 +283,12 @@ class RepeatedInputStream : public io::ZeroCopyInputStream {
     return true;
   }
 
-  virtual void BackUp(int count) {
+  void BackUp(int count) override {
     position_ -= static_cast<size_t>(count);
     total_byte_count_ -= count;
   }
 
-  virtual bool Skip(int count) {
+  bool Skip(int count) override {
     while (count > 0) {
       const void* data;
       int size;
@@ -305,7 +305,7 @@ class RepeatedInputStream : public io::ZeroCopyInputStream {
     return false;
   }
 
-  virtual int64 ByteCount() const { return total_byte_count_; }
+  int64_t ByteCount() const override { return total_byte_count_; }
 
  private:
   std::string data_;

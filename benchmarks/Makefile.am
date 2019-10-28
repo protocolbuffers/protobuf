@@ -598,6 +598,12 @@ js: js-benchmark
 
 ############ JS RULE END #############
 
+EXTRA_DIST =									\
+	$(benchmarks_protoc_inputs_benchmark_wrapper)				\
+	$(benchmarks_protoc_inputs)						\
+	$(benchmarks_protoc_inputs_proto2)					\
+	google_size.proto
+
 MAINTAINERCLEANFILES =                                                     \
 	Makefile.in
 

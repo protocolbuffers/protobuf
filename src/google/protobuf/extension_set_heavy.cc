@@ -318,7 +318,6 @@ bool DescriptorPoolExtensionFinder::Find(int number, ExtensionInfo* output) {
 }
 
 
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 bool ExtensionSet::FindExtension(int wire_type, uint32 field,
                                  const Message* containing_type,
                                  const internal::ParseContext* ctx,
@@ -369,8 +368,6 @@ const char* ExtensionSet::ParseMessageSetItem(
     internal::ParseContext* ctx) {
   return ParseMessageSetItemTmpl(ptr, containing_type, metadata, ctx);
 }
-
-#endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 
 bool ExtensionSet::ParseField(uint32 tag, io::CodedInputStream* input,
                               const Message* containing_type,

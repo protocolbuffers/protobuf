@@ -47,7 +47,6 @@
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/strutil.h>
 
-
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -839,7 +838,8 @@ void RepeatedImmutableStringFieldGenerator::GenerateBuilderMembers(
                  "  return $name$_.get(index);\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
-  WriteFieldStringBytesAccessorDocComment(printer, descriptor_, LIST_ADDER);
+  WriteFieldStringBytesAccessorDocComment(printer, descriptor_,
+                                          LIST_INDEXED_GETTER);
   printer->Print(variables_,
                  "$deprecation$public com.google.protobuf.ByteString\n"
                  "    ${$get$capitalized_name$Bytes$}$(int index) {\n"

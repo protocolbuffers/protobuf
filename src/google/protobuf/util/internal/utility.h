@@ -41,11 +41,10 @@
 #include <google/protobuf/type.pb.h>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/stubs/stringpiece.h>
-
 #include <google/protobuf/stubs/status.h>
 #include <google/protobuf/stubs/statusor.h>
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -61,25 +60,25 @@ static const int64 kTypeUrlSize = 19;
 // When the option with the given name is not found, default_value is returned.
 PROTOBUF_EXPORT bool GetBoolOptionOrDefault(
     const RepeatedPtrField<google::protobuf::Option>& options,
-    const std::string& option_name, bool default_value);
+    StringPiece option_name, bool default_value);
 
 // Returns int64 option value. If the option isn't found, returns the
 // default_value.
 PROTOBUF_EXPORT int64 GetInt64OptionOrDefault(
     const RepeatedPtrField<google::protobuf::Option>& options,
-    const std::string& option_name, int64 default_value);
+    StringPiece option_name, int64 default_value);
 
 // Returns double option value. If the option isn't found, returns the
 // default_value.
 PROTOBUF_EXPORT double GetDoubleOptionOrDefault(
     const RepeatedPtrField<google::protobuf::Option>& options,
-    const std::string& option_name, double default_value);
+    StringPiece option_name, double default_value);
 
 // Returns string option value. If the option isn't found, returns the
 // default_value.
 PROTOBUF_EXPORT std::string GetStringOptionOrDefault(
     const RepeatedPtrField<google::protobuf::Option>& options,
-    const std::string& option_name, const std::string& default_value);
+    StringPiece option_name, StringPiece default_value);
 
 // Returns a boolean value contained in Any type.
 // TODO(skarvaje): Make these utilities dealing with Any types more generic,
@@ -114,7 +113,7 @@ PROTOBUF_EXPORT const std::string GetFullTypeWithUrl(
 // provided map. Returns nullptr if none found.
 const google::protobuf::Option* FindOptionOrNull(
     const RepeatedPtrField<google::protobuf::Option>& options,
-    const std::string& option_name);
+    StringPiece option_name);
 
 // Finds and returns the field identified by field_name in the passed tech Type
 // object. Returns nullptr if none found.
@@ -161,7 +160,7 @@ PROTOBUF_EXPORT bool IsWellKnownType(const std::string& type_name);
 
 // Returns true if 'bool_string' represents a valid boolean value. Only "true",
 // "false", "0" and "1" are allowed.
-PROTOBUF_EXPORT bool IsValidBoolString(const std::string& bool_string);
+PROTOBUF_EXPORT bool IsValidBoolString(StringPiece bool_string);
 
 // Returns true if "field" is a protobuf map field based on its type.
 PROTOBUF_EXPORT bool IsMap(const google::protobuf::Field& field,
