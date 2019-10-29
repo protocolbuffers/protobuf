@@ -631,7 +631,8 @@ VALUE Map_eq(VALUE _self, VALUE _other) {
       return Qfalse;
     }
 
-    if (!native_slot_eq(self->value_type, mem, other_mem)) {
+    if (!native_slot_eq(self->value_type, self->value_type_class, mem,
+                        other_mem)) {
       // Present, but value not equal.
       return Qfalse;
     }

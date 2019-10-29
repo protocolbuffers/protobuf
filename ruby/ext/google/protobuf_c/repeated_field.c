@@ -451,7 +451,8 @@ VALUE RepeatedField_eq(VALUE _self, VALUE _other) {
     for (i = 0; i < self->size; i++, off += elem_size) {
       void* self_mem = ((uint8_t *)self->elements) + off;
       void* other_mem = ((uint8_t *)other->elements) + off;
-      if (!native_slot_eq(field_type, self_mem, other_mem)) {
+      if (!native_slot_eq(field_type, self->field_type_class, self_mem,
+                          other_mem)) {
         return Qfalse;
       }
     }

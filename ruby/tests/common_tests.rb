@@ -1331,9 +1331,7 @@ module CommonTests
 
     # Test that the lazy form compares equal to the expanded form.
     m5 = proto_module::Wrapper::decode(serialized2)
-
-    # This doesn't work yet.
-    # assert_equal m5, m
+    assert_equal m5, m
   end
 
   def test_wrapper_setters_as_value

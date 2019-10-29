@@ -1444,7 +1444,7 @@ static void putmsg(VALUE msg_rb, const Descriptor* desc,
       int type = TYPE(val);
       if (type != T_DATA && type != T_NIL && is_wrapper_type_field(f)) {
         // OPT: could try to avoid expanding the wrapper here.
-        val = ruby_wrapper_type(desc->layout, f, val);
+        val = ruby_wrapper_type(field_type_class(desc->layout, f), val);
         DEREF(msg, offset, VALUE) = val;
       }
       putsubmsg(val, f, sink, depth, emit_defaults, is_json);

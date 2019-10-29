@@ -135,6 +135,18 @@ message Wrapper {
   oneof a_oneof {
     string oneof_string = 10;
   }
+
+  // Repeated wrappers don't really make sense, but we still need to make sure
+  // they work and don't crash.
+  repeated google.protobuf.DoubleValue repeated_double = 11;
+  repeated google.protobuf.FloatValue repeated_float = 12;
+  repeated google.protobuf.Int32Value repeated_int32 = 13;
+  repeated google.protobuf.Int64Value repeated_int64 = 14;
+  repeated google.protobuf.UInt32Value repeated_uint32 = 15;
+  repeated google.protobuf.UInt64Value repeated_uint64 = 16;
+  repeated google.protobuf.BoolValue repeated_bool = 17;
+  repeated google.protobuf.StringValue repeated_string = 18;
+  repeated google.protobuf.BytesValue repeated_bytes = 19;
 }
 
 message TimeMessage {

@@ -131,14 +131,13 @@ bool is_wrapper_type_field(const upb_fielddef* field) {
 }
 
 // Get a new Ruby wrapper type and set the initial value
-VALUE ruby_wrapper_type(const MessageLayout* layout, const upb_fielddef* field,
-                        const VALUE value) {
-  if (is_wrapper_type_field(field) && value != Qnil) {
+VALUE ruby_wrapper_type(VALUE type_class, VALUE value) {
+  if (value != Qnil) {
     VALUE hash = rb_hash_new();
     rb_hash_aset(hash, rb_str_new2("value"), value);
     {
       VALUE args[1] = {hash};
-      return rb_class_new_instance(1, args, field_type_class(layout, field));
+      return rb_class_new_instance(1, args, type_class);
     }
   }
   return Qnil;
@@ -343,7 +342,8 @@ VALUE Message_method_missing(int argc, VALUE* argv, VALUE _self) {
         return value;
     }
   } else if (accessor_type == METHOD_WRAPPER_SETTER) {
-    VALUE wrapper = ruby_wrapper_type(self->descriptor->layout, f, argv[1]);
+    VALUE wrapper = ruby_wrapper_type(
+        field_type_class(self->descriptor->layout, f), argv[1]);
     layout_set(self->descriptor->layout, Message_data(self), f, wrapper);
     return Qnil;
   } else if (accessor_type == METHOD_ENUM_GETTER) {
