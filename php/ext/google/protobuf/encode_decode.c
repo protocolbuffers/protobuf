@@ -122,11 +122,27 @@ static void stackenv_uninit(stackenv* se) {
 // Parsing.
 // -----------------------------------------------------------------------------
 
-// TODO(teboring): This shoud be a bit in upb_msgdef
-static bool is_wrapper_msg(const upb_msgdef *msg) {
-  return !strcmp(upb_filedef_name(upb_msgdef_file(msg)),
-                 "google/protobuf/wrappers.proto");
+static bool is_wrapper_msg(const upb_msgdef* m) {
+  switch (upb_msgdef_wellknowntype(m)) {
+    case UPB_WELLKNOWN_DOUBLEVALUE:
+    case UPB_WELLKNOWN_FLOATVALUE:
+    case UPB_WELLKNOWN_INT64VALUE:
+    case UPB_WELLKNOWN_UINT64VALUE:
+    case UPB_WELLKNOWN_INT32VALUE:
+    case UPB_WELLKNOWN_UINT32VALUE:
+    case UPB_WELLKNOWN_STRINGVALUE:
+    case UPB_WELLKNOWN_BYTESVALUE:
+    case UPB_WELLKNOWN_BOOLVALUE:
+      return true;
+    default:
+      return false;
+  }
 }
+
+typedef struct {
+  void* closure;
+  void* submsg;
+} wrapperfields_parseframe_t;
 
 #define DEREF(msg, ofs, type) *(type*)(((uint8_t *)msg) + ofs)
 
@@ -887,6 +903,52 @@ static void* oneofsubmsg_handler(void* closure, const void* hd) {
   return submsg;
 }
 
+// Sets a non-repeated wrapper submessage field in a message.
+static void* wrapper_submsg_handler(void* closure, const void* hd) {
+  MessageHeader* msg = closure;
+  const submsg_handlerdata_t* submsgdata = hd;
+  TSRMLS_FETCH();
+  Descriptor* subdesc =
+      UNBOX_HASHTABLE_VALUE(Descriptor, get_def_obj((void*)submsgdata->md));
+  zend_class_entry* subklass = subdesc->klass;
+  zval* submsg_php;
+  MessageHeader* submsg;
+  wrapperfields_parseframe_t* frame =
+      (wrapperfields_parseframe_t*)malloc(sizeof(wrapperfields_parseframe_t));
+
+  CACHED_VALUE* cached = find_zval_property(msg, submsgdata->fd);
+
+  if (Z_TYPE_P(CACHED_PTR_TO_ZVAL_PTR(cached)) == IS_NULL) {
+#if PHP_MAJOR_VERSION < 7
+    zval val;
+    ZVAL_OBJ(&val, subklass->create_object(subklass TSRMLS_CC));
+    MessageHeader* intern = UNBOX(MessageHeader, &val);
+    custom_data_init(subklass, intern PHP_PROTO_TSRMLS_CC);
+    REPLACE_ZVAL_VALUE(cached, &val, 1);
+    zval_dtor(&val);
+#else
+    zend_object* obj = subklass->create_object(subklass TSRMLS_CC);
+    ZVAL_OBJ(cached, obj);
+    MessageHeader* intern = UNBOX_HASHTABLE_VALUE(MessageHeader, obj);
+    custom_data_init(subklass, intern PHP_PROTO_TSRMLS_CC);
+#endif
+  }
+
+  submsg_php = CACHED_PTR_TO_ZVAL_PTR(cached);
+  submsg = UNBOX(MessageHeader, submsg_php);
+
+  frame->closure = closure;
+  frame->submsg = submsg;
+
+  return frame;
+}
+
+static bool wrapper_submsg_end_handler(void *closure, const void *hd) {
+  wrapperfields_parseframe_t* frame = closure;
+  free(frame);
+  return true;
+}
+
 // Set up handlers for a repeated field.
 static void add_handlers_for_repeated_field(upb_handlers *h,
                                             const upb_fielddef *f,
@@ -975,6 +1037,10 @@ static void add_handlers_for_singular_field(upb_handlers *h,
       if (is_map) {
         attr.handler_data = newsubmsghandlerdata(h, offset, f);
         upb_handlers_setstartsubmsg(h, f, map_submsg_handler, &attr);
+      } else if (is_wrapper_msg(upb_fielddef_msgsubdef(f))) {
+        attr.handler_data = newsubmsghandlerdata(h, 0, f);
+        upb_handlers_setstartsubmsg(h, f, wrapper_submsg_handler, &attr);
+        upb_handlers_setendsubmsg(h, f, wrapper_submsg_end_handler, &attr);
       } else {
         attr.handler_data = newsubmsghandlerdata(h, 0, f);
         upb_handlers_setstartsubmsg(h, f, submsg_handler, &attr);
@@ -1062,6 +1128,84 @@ static void add_handlers_for_oneof_field(upb_handlers *h,
   }
 }
 
+#define DEFINE_WRAPPER_HANDLER(type, ctype)                 \
+  static bool type##wrapper_handler(                        \
+      void* closure, const void* hd, ctype val) {           \
+    wrapperfields_parseframe_t* frame = closure;            \
+    MessageHeader* msg = (MessageHeader*)frame->submsg;     \
+    const size_t *ofs = hd;                                 \
+    DEREF(message_data(msg), *ofs, ctype) = val;            \
+    return true;                                            \
+  }
+
+DEFINE_WRAPPER_HANDLER(bool,   bool)
+DEFINE_WRAPPER_HANDLER(int32,  int32_t)
+DEFINE_WRAPPER_HANDLER(uint32, uint32_t)
+DEFINE_WRAPPER_HANDLER(float,  float)
+DEFINE_WRAPPER_HANDLER(int64,  int64_t)
+DEFINE_WRAPPER_HANDLER(uint64, uint64_t)
+DEFINE_WRAPPER_HANDLER(double, double)
+
+#undef DEFINE_WRAPPER_HANDLER
+
+static bool strwrapper_end_handler(void *closure, const void *hd) {
+  stringfields_parseframe_t* frame = closure;
+  const upb_fielddef **field = (const upb_fielddef **) hd;
+  wrapperfields_parseframe_t* wrapper_frame = frame->closure;
+  MessageHeader* msg = wrapper_frame->closure;
+
+  CACHED_VALUE* cached = find_zval_property(msg, *field);
+
+  new_php_string(cached, frame->sink.ptr, frame->sink.len);
+
+  stringsink_uninit(&frame->sink);
+  free(frame);
+
+  return true;
+}
+
+static void add_handlers_for_wrapper(const upb_msgdef* msgdef,
+                                     upb_handlers* h) {
+  const upb_fielddef* f = upb_msgdef_itof(msgdef, 1);
+  Descriptor* desc =
+      UNBOX_HASHTABLE_VALUE(Descriptor, get_def_obj((void*)msgdef));
+  size_t offset = desc->layout->fields[upb_fielddef_index(f)].offset;
+
+  switch (upb_msgdef_wellknowntype(msgdef)) {
+#define SET_HANDLER(utype, ltype)                                 \
+  case utype: {                                                   \
+    upb_handlerattr attr = UPB_HANDLERATTR_INIT;                  \
+    attr.handler_data = newhandlerdata(h, offset);                \
+    upb_handlers_set##ltype(h, f, ltype##wrapper_handler, &attr); \
+    break;                                                        \
+  }
+
+    SET_HANDLER(UPB_WELLKNOWN_BOOLVALUE,   bool);
+    SET_HANDLER(UPB_WELLKNOWN_INT32VALUE,  int32);
+    SET_HANDLER(UPB_WELLKNOWN_UINT32VALUE, uint32);
+    SET_HANDLER(UPB_WELLKNOWN_FLOATVALUE,  float);
+    SET_HANDLER(UPB_WELLKNOWN_INT64VALUE,  int64);
+    SET_HANDLER(UPB_WELLKNOWN_UINT64VALUE, uint64);
+    SET_HANDLER(UPB_WELLKNOWN_DOUBLEVALUE, double);
+
+#undef SET_HANDLER
+
+    case UPB_WELLKNOWN_STRINGVALUE:
+    case UPB_WELLKNOWN_BYTESVALUE: {
+      upb_handlerattr attr = UPB_HANDLERATTR_INIT;
+      attr.handler_data = newhandlerfielddata(h, f);
+
+      upb_handlers_setstartstr(h, f, str_handler, &attr);
+      upb_handlers_setstring(h, f, stringdata_handler, &attr);
+      upb_handlers_setendstr(h, f, strwrapper_end_handler, &attr);
+      break;
+    }
+    default:
+      // Cannot reach here.
+      break;
+  }
+}
+
 static bool add_unknown_handler(void* closure, const void* hd, const char* buf,
                          size_t size) {
   encodeunknown_handlerfunc handler =
@@ -1100,6 +1244,14 @@ void add_handlers_for_message(const void* closure, upb_handlers* h) {
   // (and handlers, in the class-building function) on-demand.
   if (desc->layout == NULL) {
     desc->layout = create_layout(desc->msgdef);
+  }
+
+
+  // If this is a wrapper message type, set up a special set of handlers and
+  // bail out of the normal (user-defined) message type handling.
+  if (is_wrapper_msg(msgdef)) {
+    add_handlers_for_wrapper(msgdef, h);
+    return;
   }
 
   upb_handlerattr attr = UPB_HANDLERATTR_INIT;
