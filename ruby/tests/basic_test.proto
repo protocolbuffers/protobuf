@@ -140,6 +140,18 @@ message Wrapper {
   repeated google.protobuf.BoolValue repeated_bool = 17;
   repeated google.protobuf.StringValue repeated_string = 18;
   repeated google.protobuf.BytesValue repeated_bytes = 19;
+
+  // Wrappers as map keys don't really make sense, but we still need to make
+  // sure they work and don't crash.
+  map<int32, google.protobuf.DoubleValue> map_double = 21;
+  map<int32, google.protobuf.FloatValue> map_float = 22;
+  map<int32, google.protobuf.Int32Value> map_int32 = 23;
+  map<int32, google.protobuf.Int64Value> map_int64 = 24;
+  map<int32, google.protobuf.UInt32Value> map_uint32 = 25;
+  map<int32, google.protobuf.UInt64Value> map_uint64 = 26;
+  map<int32, google.protobuf.BoolValue> map_bool = 27;
+  map<int32, google.protobuf.StringValue> map_string = 28;
+  map<int32, google.protobuf.BytesValue> map_bytes = 29;
 }
 
 message TimeMessage {

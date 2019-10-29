@@ -363,7 +363,8 @@ VALUE native_slot_get(upb_fieldtype_t type,
 void native_slot_init(upb_fieldtype_t type, void* memory);
 void native_slot_mark(upb_fieldtype_t type, void* memory);
 void native_slot_dup(upb_fieldtype_t type, void* to, void* from);
-void native_slot_deep_copy(upb_fieldtype_t type, void* to, void* from);
+void native_slot_deep_copy(upb_fieldtype_t type, VALUE type_class, void* to,
+                           void* from);
 bool native_slot_eq(upb_fieldtype_t type, VALUE type_class, void* mem1,
                     void* mem2);
 

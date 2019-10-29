@@ -1334,6 +1334,81 @@ module CommonTests
     assert_equal m5, m
   end
 
+  def test_repeated_wrappers
+    run_asserts = ->(m) {
+      assert_equal 2.0, m.repeated_double[0].value
+      assert_equal 4.0, m.repeated_float[0].value
+      assert_equal 3, m.repeated_int32[0].value
+      assert_equal 4, m.repeated_int64[0].value
+      assert_equal 5, m.repeated_uint32[0].value
+      assert_equal 6, m.repeated_uint64[0].value
+      assert_equal true, m.repeated_bool[0].value
+      assert_equal 'str', m.repeated_string[0].value
+      assert_equal 'fun', m.repeated_bytes[0].value
+    }
+
+    m = proto_module::Wrapper.new(
+      repeated_double: [Google::Protobuf::DoubleValue.new(value: 2.0)],
+      repeated_float: [Google::Protobuf::FloatValue.new(value: 4.0)],
+      repeated_int32: [Google::Protobuf::Int32Value.new(value: 3)],
+      repeated_int64: [Google::Protobuf::Int64Value.new(value: 4)],
+      repeated_uint32: [Google::Protobuf::UInt32Value.new(value: 5)],
+      repeated_uint64: [Google::Protobuf::UInt64Value.new(value: 6)],
+      repeated_bool: [Google::Protobuf::BoolValue.new(value: true)],
+      repeated_string: [Google::Protobuf::StringValue.new(value: 'str')],
+      repeated_bytes: [Google::Protobuf::BytesValue.new(value: 'fun')],
+    )
+
+    run_asserts.call(m)
+    serialized = proto_module::Wrapper::encode(m)
+    m2 = proto_module::Wrapper::decode(serialized)
+    run_asserts.call(m2)
+
+    # Test the case where we are serializing directly from the parsed form
+    # (before anything lazy is materialized).
+    m3 = proto_module::Wrapper::decode(serialized)
+    serialized2 = proto_module::Wrapper::encode(m3)
+    m4 = proto_module::Wrapper::decode(serialized2)
+    run_asserts.call(m4)
+
+    # Test that the lazy form compares equal to the expanded form.
+    m5 = proto_module::Wrapper::decode(serialized2)
+    assert_equal m5, m
+  end
+
+  def test_top_level_wrappers
+    # We don't expect anyone to do this, but we should also make sure it does
+    # the right thing.
+    run_test = ->(klass, val) {
+      m = klass.new(value: val)
+      serialized = klass::encode(m)
+      m2 = klass::decode(serialized)
+      assert_equal m, m2
+
+      # Encode directly from lazy form.
+      serialized2 = klass::encode(m2)
+
+      assert_equal m, m2
+      assert_equal serialized, serialized2
+
+      serialized_json = klass::encode_json(m)
+
+      # This is nonsensical to do and does not work.  There is no good reason
+      # to parse a wrapper type directly.
+      assert_raise(RuntimeError) { klass::decode_json(serialized_json) }
+    }
+
+    run_test.call(Google::Protobuf::DoubleValue, 2.0)
+    run_test.call(Google::Protobuf::FloatValue, 4.0)
+    run_test.call(Google::Protobuf::Int32Value, 3)
+    run_test.call(Google::Protobuf::Int64Value, 4)
+    run_test.call(Google::Protobuf::UInt32Value, 5)
+    run_test.call(Google::Protobuf::UInt64Value, 6)
+    run_test.call(Google::Protobuf::BoolValue, true)
+    run_test.call(Google::Protobuf::StringValue, 'str')
+    run_test.call(Google::Protobuf::BytesValue, 'fun')
+  end
+
   def test_wrapper_setters_as_value
     run_asserts = ->(m) {
       m.double_as_value = 4.8

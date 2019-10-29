@@ -297,12 +297,15 @@ VALUE native_slot_get(upb_fieldtype_t type,
       return DEREF(memory, VALUE);
     case UPB_TYPE_MESSAGE: {
       VALUE val = DEREF(memory, VALUE);
+
+      // Lazily expand wrapper type if necessary.
       int type = TYPE(val);
       if (type != T_DATA && type != T_NIL) {
         // This must be a wrapper type.
         val = ruby_wrapper_type(type_class, val);
         DEREF(memory, VALUE) = val;
       }
+
       return val;
     }
     case UPB_TYPE_ENUM: {
@@ -381,7 +384,8 @@ void native_slot_dup(upb_fieldtype_t type, void* to, void* from) {
   memcpy(to, from, native_slot_size(type));
 }
 
-void native_slot_deep_copy(upb_fieldtype_t type, void* to, void* from) {
+void native_slot_deep_copy(upb_fieldtype_t type, VALUE type_class, void* to,
+                           void* from) {
   switch (type) {
     case UPB_TYPE_STRING:
     case UPB_TYPE_BYTES: {
@@ -391,7 +395,7 @@ void native_slot_deep_copy(upb_fieldtype_t type, void* to, void* from) {
       break;
     }
     case UPB_TYPE_MESSAGE: {
-      VALUE from_val = DEREF(from, VALUE);
+      VALUE from_val = native_slot_get(type, type_class, from);
       DEREF(to, VALUE) = (from_val != Qnil) ?
           Message_deep_copy(from_val) : Qnil;
       break;
@@ -1035,7 +1039,9 @@ void layout_deep_copy(MessageLayout* layout, void* to, void* from) {
       if (slot_read_oneof_case(layout, from, oneof) ==
           upb_fielddef_number(field)) {
         *to_oneof_case = *from_oneof_case;
-        native_slot_deep_copy(upb_fielddef_type(field), to_memory, from_memory);
+        native_slot_deep_copy(upb_fielddef_type(field),
+                              field_type_class(layout, field), to_memory,
+                              from_memory);
       }
     } else if (is_map_field(field)) {
       DEREF(to_memory, VALUE) =
@@ -1049,7 +1055,9 @@ void layout_deep_copy(MessageLayout* layout, void* to, void* from) {
         slot_set_hasbit(layout, to, field);
       }
 
-      native_slot_deep_copy(upb_fielddef_type(field), to_memory, from_memory);
+      native_slot_deep_copy(upb_fielddef_type(field),
+                            field_type_class(layout, field), to_memory,
+                            from_memory);
     }
   }
 }

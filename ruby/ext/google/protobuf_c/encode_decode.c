@@ -278,6 +278,17 @@ static void *appendsubmsg_handler(void *closure, const void *hd) {
   return submsg;
 }
 
+// Appends a wrapper to a repeated field (a regular Ruby array for now).
+static void *appendwrapper_handler(void *closure, const void *hd) {
+  VALUE ary = (VALUE)closure;
+  int size = RepeatedField_size(ary);
+  (void)hd;
+
+  RepeatedField_push(ary, Qnil);
+
+  return RepeatedField_index_native(ary, size);
+}
+
 // Sets a non-repeated submessage field in a message.
 static void *submsg_handler(void *closure, const void *hd) {
   MessageHeader* msg = closure;
@@ -503,6 +514,23 @@ static void *oneofsubmsg_handler(void *closure,
   return submsg;
 }
 
+bool is_wrapper(const upb_msgdef* m) {
+  switch (upb_msgdef_wellknowntype(m)) {
+    case UPB_WELLKNOWN_DOUBLEVALUE:
+    case UPB_WELLKNOWN_FLOATVALUE:
+    case UPB_WELLKNOWN_INT64VALUE:
+    case UPB_WELLKNOWN_UINT64VALUE:
+    case UPB_WELLKNOWN_INT32VALUE:
+    case UPB_WELLKNOWN_UINT32VALUE:
+    case UPB_WELLKNOWN_STRINGVALUE:
+    case UPB_WELLKNOWN_BYTESVALUE:
+    case UPB_WELLKNOWN_BOOLVALUE:
+      return true;
+    default:
+      return false;
+  }
+}
+
 // Set up handlers for a repeated field.
 static void add_handlers_for_repeated_field(upb_handlers *h,
                                             const Descriptor* desc,
@@ -544,7 +572,11 @@ static void add_handlers_for_repeated_field(upb_handlers *h,
       VALUE subklass = field_type_class(desc->layout, f);
       upb_handlerattr attr = UPB_HANDLERATTR_INIT;
       attr.handler_data = newsubmsghandlerdata(h, 0, -1, subklass);
-      upb_handlers_setstartsubmsg(h, f, appendsubmsg_handler, &attr);
+      if (is_wrapper(upb_fielddef_msgsubdef(f))) {
+        upb_handlers_setstartsubmsg(h, f, appendwrapper_handler, &attr);
+      } else {
+        upb_handlers_setstartsubmsg(h, f, appendsubmsg_handler, &attr);
+      }
       break;
     }
   }
@@ -610,23 +642,6 @@ static bool boolwrapper_handler(void* closure, const void* hd, bool val) {
     *rbval = Qfalse;
   }
   return true;
-}
-
-bool is_wrapper(const upb_msgdef* m) {
-  switch (upb_msgdef_wellknowntype(m)) {
-    case UPB_WELLKNOWN_DOUBLEVALUE:
-    case UPB_WELLKNOWN_FLOATVALUE:
-    case UPB_WELLKNOWN_INT64VALUE:
-    case UPB_WELLKNOWN_UINT64VALUE:
-    case UPB_WELLKNOWN_INT32VALUE:
-    case UPB_WELLKNOWN_UINT32VALUE:
-    case UPB_WELLKNOWN_STRINGVALUE:
-    case UPB_WELLKNOWN_BYTESVALUE:
-    case UPB_WELLKNOWN_BOOLVALUE:
-      return true;
-    default:
-      return false;
-  }
 }
 
 // Set up handlers for a singular field.
@@ -811,6 +826,10 @@ static bool unknown_field_handler(void* closure, const void* hd,
   return true;
 }
 
+size_t get_field_offset(MessageLayout* layout, const upb_fielddef* f) {
+  return layout->fields[upb_fielddef_index(f)].offset + sizeof(MessageHeader);
+}
+
 void add_handlers_for_message(const void *closure, upb_handlers *h) {
   const VALUE descriptor_pool = (VALUE)closure;
   const upb_msgdef* msgdef = upb_handlers_msgdef(h);
@@ -847,8 +866,7 @@ void add_handlers_for_message(const void *closure, upb_handlers *h) {
        upb_msg_field_next(&i)) {
     const upb_fielddef *f = upb_msg_iter_field(&i);
     const upb_oneofdef *oneof = upb_fielddef_containingoneof(f);
-    size_t offset = desc->layout->fields[upb_fielddef_index(f)].offset +
-        sizeof(MessageHeader);
+    size_t offset = get_field_offset(desc->layout, f);
 
     if (oneof) {
       size_t oneof_case_offset =
@@ -960,17 +978,28 @@ VALUE Message_decode(VALUE klass, VALUE data) {
   {
     const upb_pbdecodermethod* method = msgdef_decodermethod(desc);
     const upb_handlers* h = upb_pbdecodermethod_desthandlers(method);
+    const upb_msgdef* m = upb_handlers_msgdef(h);
+    VALUE wrapper = Qnil;
+    void* ptr = msg;
     stackenv se;
     upb_sink sink;
     upb_pbdecoder* decoder;
     stackenv_init(&se, "Error occurred during parsing: %" PRIsVALUE);
 
-    upb_sink_reset(&sink, h, msg);
+    if (is_wrapper(m)) {
+      ptr = &wrapper;
+    }
+
+    upb_sink_reset(&sink, h, ptr);
     decoder = upb_pbdecoder_create(se.arena, method, sink, &se.status);
     upb_bufsrc_putbuf(RSTRING_PTR(data), RSTRING_LEN(data),
                       upb_pbdecoder_input(decoder));
 
     stackenv_uninit(&se);
+
+    if (is_wrapper(m)) {
+      msg_rb = ruby_wrapper_type(msgklass, wrapper);
+    }
   }
 
   return msg_rb;
@@ -1024,13 +1053,21 @@ VALUE Message_decode_json(int argc, VALUE* argv, VALUE klass) {
 
   {
     const upb_json_parsermethod* method = msgdef_jsonparsermethod(desc);
+    const upb_handlers* h = get_fill_handlers(desc);
+    const upb_msgdef* m = upb_handlers_msgdef(h);
     stackenv se;
     upb_sink sink;
     upb_json_parser* parser;
     DescriptorPool* pool = ruby_to_DescriptorPool(generated_pool);
     stackenv_init(&se, "Error occurred during parsing: %" PRIsVALUE);
 
-    upb_sink_reset(&sink, get_fill_handlers(desc), msg);
+    if (is_wrapper(m)) {
+      rb_raise(
+          rb_eRuntimeError,
+          "Parsing a wrapper type from JSON at the top level does not work.");
+    }
+
+    upb_sink_reset(&sink, h, msg);
     parser = upb_json_parser_create(se.arena, method, pool->symtab, sink,
                                     &se.status, RTEST(ignore_unknown_fields));
     upb_bufsrc_putbuf(RSTRING_PTR(data), RSTRING_LEN(data),
@@ -1103,6 +1140,7 @@ static void putary(VALUE ary, const upb_fielddef* f, upb_sink sink, int depth,
   upb_selector_t sel = 0;
   int size;
   int i;
+  VALUE type_class = ruby_to_RepeatedField(ary)->field_type_class;
 
   if (ary == Qnil) return;
   if (!emit_defaults && NUM2INT(RepeatedField_length(ary)) == 0) return;
@@ -1137,9 +1175,11 @@ static void putary(VALUE ary, const upb_fielddef* f, upb_sink sink, int depth,
       case UPB_TYPE_BYTES:
         putstr(*((VALUE *)memory), f, subsink);
         break;
-      case UPB_TYPE_MESSAGE:
-        putsubmsg(*((VALUE*)memory), f, subsink, depth, emit_defaults, is_json);
+      case UPB_TYPE_MESSAGE: {
+        VALUE val = native_slot_get(UPB_TYPE_MESSAGE, type_class, memory);
+        putsubmsg(val, f, subsink, depth, emit_defaults, is_json);
         break;
+      }
 
 #undef T
 
@@ -1440,13 +1480,9 @@ static void putmsg(VALUE msg_rb, const Descriptor* desc,
         putstr(str, f, sink);
       }
     } else if (upb_fielddef_issubmsg(f)) {
-      VALUE val = DEREF(msg, offset, VALUE);
-      int type = TYPE(val);
-      if (type != T_DATA && type != T_NIL && is_wrapper_type_field(f)) {
-        // OPT: could try to avoid expanding the wrapper here.
-        val = ruby_wrapper_type(field_type_class(desc->layout, f), val);
-        DEREF(msg, offset, VALUE) = val;
-      }
+      // OPT: could try to avoid the layout_get() (which will expand lazy
+      // wrappers).
+      VALUE val = layout_get(desc->layout, Message_data(msg), f);
       putsubmsg(val, f, sink, depth, emit_defaults, is_json);
     } else {
       upb_selector_t sel = getsel(f, upb_handlers_getprimitivehandlertype(f));
