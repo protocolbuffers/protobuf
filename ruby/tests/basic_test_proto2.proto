@@ -133,7 +133,7 @@ message Wrapper {
   optional google.protobuf.BytesValue bytes = 9;
   optional string real_string = 100;
   oneof a_oneof {
-    string oneof_string = 10;
+    string string_in_oneof = 10;
   }
 
   // Repeated wrappers don't really make sense, but we still need to make sure
@@ -147,6 +147,21 @@ message Wrapper {
   repeated google.protobuf.BoolValue repeated_bool = 17;
   repeated google.protobuf.StringValue repeated_string = 18;
   repeated google.protobuf.BytesValue repeated_bytes = 19;
+
+  // Wrappers in oneofs don't make sense, but we still need to make sure they
+  // work and don't crash.
+  oneof wrapper_oneof {
+    google.protobuf.DoubleValue oneof_double = 31;
+    google.protobuf.FloatValue oneof_float = 32;
+    google.protobuf.Int32Value oneof_int32 = 33;
+    google.protobuf.Int64Value oneof_int64 = 34;
+    google.protobuf.UInt32Value oneof_uint32 = 35;
+    google.protobuf.UInt64Value oneof_uint64 = 36;
+    google.protobuf.BoolValue oneof_bool = 37;
+    google.protobuf.StringValue oneof_string = 38;
+    google.protobuf.BytesValue oneof_bytes = 39;
+    string oneof_plain_string = 101;
+  }
 }
 
 message TimeMessage {

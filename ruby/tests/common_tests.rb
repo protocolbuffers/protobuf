@@ -1376,6 +1376,44 @@ module CommonTests
     assert_equal m5, m
   end
 
+  def test_oneof_wrappers
+    run_test = ->(m) {
+      serialized = proto_module::Wrapper::encode(m)
+      m2 = proto_module::Wrapper::decode(serialized)
+
+      # Encode directly from lazy form.
+      serialized2 = proto_module::Wrapper::encode(m2)
+
+      assert_equal m, m2
+      assert_equal serialized, serialized2
+
+      serialized_json = proto_module::Wrapper::encode_json(m)
+      m3 = proto_module::Wrapper::decode_json(serialized_json)
+      assert_equal m, m3
+    }
+
+    m = proto_module::Wrapper.new()
+
+    run_test.call(m)
+    m.oneof_double_as_value = 2.0
+    run_test.call(m)
+    m.oneof_float_as_value = 4.0
+    run_test.call(m)
+    m.oneof_int32_as_value = 3
+    run_test.call(m)
+    m.oneof_int64_as_value = 5
+    run_test.call(m)
+    m.oneof_uint32_as_value = 6
+    run_test.call(m)
+    m.oneof_uint64_as_value = 7
+    run_test.call(m)
+    m.oneof_string_as_value = 'str'
+    run_test.call(m)
+    m.oneof_bytes_as_value = 'fun'
+    run_test.call(m)
+    puts m
+  end
+
   def test_top_level_wrappers
     # We don't expect anyone to do this, but we should also make sure it does
     # the right thing.
@@ -1383,7 +1421,6 @@ module CommonTests
       m = klass.new(value: val)
       serialized = klass::encode(m)
       m2 = klass::decode(serialized)
-      assert_equal m, m2
 
       # Encode directly from lazy form.
       serialized2 = klass::encode(m2)
@@ -1573,12 +1610,12 @@ module CommonTests
   end
 
   def test_wrappers_only
-    m = proto_module::Wrapper.new(real_string: 'hi', oneof_string: 'there')
+    m = proto_module::Wrapper.new(real_string: 'hi', string_in_oneof: 'there')
 
     assert_raise(NoMethodError) { m.real_string_as_value }
     assert_raise(NoMethodError) { m.as_value }
     assert_raise(NoMethodError) { m._as_value }
-    assert_raise(NoMethodError) { m.oneof_string_as_value }
+    assert_raise(NoMethodError) { m.string_in_oneof_as_value }
 
     m = proto_module::Wrapper.new
     m.string_as_value = 'you'

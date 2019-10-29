@@ -506,12 +506,20 @@ static void *oneofsubmsg_handler(void *closure,
   // indicating a VALUE is present and expect a valid VALUE. See comment in
   // layout_set() for more detail: basically, the change to the value and the
   // case must be atomic w.r.t. the Ruby VM.
-  DEREF(msg, oneofdata->case_ofs, uint32_t) =
-      oneofdata->oneof_case_num;
+  DEREF(msg, oneofdata->case_ofs, uint32_t) = oneofdata->oneof_case_num;
 
   submsg_rb = DEREF(msg, oneofdata->ofs, VALUE);
   TypedData_Get_Struct(submsg_rb, MessageHeader, &Message_type, submsg);
   return submsg;
+}
+
+static void* oneof_startwrapper(void* closure, const void* hd) {
+  char* msg = closure;
+  const oneof_handlerdata_t *oneofdata = hd;
+
+  DEREF(msg, oneofdata->case_ofs, uint32_t) = oneofdata->oneof_case_num;
+
+  return msg + oneofdata->ofs;
 }
 
 bool is_wrapper(const upb_msgdef* m) {
@@ -805,7 +813,11 @@ static void add_handlers_for_oneof_field(upb_handlers *h,
       break;
     }
     case UPB_TYPE_MESSAGE: {
-      upb_handlers_setstartsubmsg(h, f, oneofsubmsg_handler, &attr);
+      if (is_wrapper(upb_fielddef_msgsubdef(f))) {
+        upb_handlers_setstartsubmsg(h, f, oneof_startwrapper, &attr);
+      } else {
+        upb_handlers_setstartsubmsg(h, f, oneofsubmsg_handler, &attr);
+      }
       break;
     }
   }
