@@ -243,7 +243,7 @@ map_field_handlers->write_dimension = map_field_write_dimension;
 map_field_handlers->get_gc = map_field_get_gc;
 PHP_PROTO_INIT_CLASS_END
 
-void map_field_insure_created(const upb_fielddef *field,
+void map_field_ensure_created(const upb_fielddef *field,
                               CACHED_VALUE *map_field PHP_PROTO_TSRMLS_DC) {
   if (ZVAL_IS_NULL(CACHED_PTR_TO_ZVAL_PTR(map_field))) {
     zval_ptr_dtor(map_field);

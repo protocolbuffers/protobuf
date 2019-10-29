@@ -141,7 +141,7 @@ static const void* newhandlerdata(upb_handlers* h, uint32_t ofs) {
 
 static const void* newhandlerfielddata(
     upb_handlers* h, const upb_fielddef* field) {
-  void** hd_field = (void**)malloc(sizeof(void*));
+  const void** hd_field = malloc(sizeof(void*));
   PHP_PROTO_ASSERT(hd_field != NULL);
   *hd_field = field;
   upb_handlers_addcleanup(h, hd_field, free);
@@ -232,10 +232,10 @@ static const void *newoneofhandlerdata(upb_handlers *h,
 // this field (such an instance always exists even in an empty message).
 static void *startseq_handler(void* closure, const void* hd) {
   MessageHeader* msg = closure;
-  const upb_fielddef** field = hd;
+  const upb_fielddef** field = (const upb_fielddef**) hd;
   CACHED_VALUE* cache = find_zval_property(msg, *field);
   TSRMLS_FETCH();
-  repeated_field_insure_created(*field, cache PHP_PROTO_TSRMLS_CC);
+  repeated_field_ensure_created(*field, cache PHP_PROTO_TSRMLS_CC);
   return CACHED_PTR_TO_ZVAL_PTR(cache);
 }
 
@@ -370,7 +370,7 @@ static void* str_handler(void *closure,
 
 static bool str_end_handler(void *closure, const void *hd) {
   stringfields_parseframe_t* frame = closure;
-  const upb_fielddef **field = hd;
+  const upb_fielddef **field = (const upb_fielddef **) hd;
   MessageHeader* msg = (MessageHeader*)frame->closure;
 
   CACHED_VALUE* cached = find_zval_property(msg, *field);
@@ -661,7 +661,7 @@ static void *startmapentry_handler(void *closure, const void *hd) {
   const map_handlerdata_t* mapdata = hd;
   CACHED_VALUE* cache = find_zval_property(msg, mapdata->fd);
   TSRMLS_FETCH();
-  map_field_insure_created(mapdata->fd, cache PHP_PROTO_TSRMLS_CC);
+  map_field_ensure_created(mapdata->fd, cache PHP_PROTO_TSRMLS_CC);
   zval* map = CACHED_PTR_TO_ZVAL_PTR(cache);
 
   map_parse_frame_t* frame = ALLOC(map_parse_frame_t);

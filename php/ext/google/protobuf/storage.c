@@ -805,10 +805,10 @@ zval* layout_get(MessageLayout* layout, MessageHeader* header,
     }
     return CACHED_PTR_TO_ZVAL_PTR(cache);
   } else if (is_map_field(field)) {
-    map_field_insure_created(field, cache PHP_PROTO_TSRMLS_CC);
+    map_field_ensure_created(field, cache PHP_PROTO_TSRMLS_CC);
     return CACHED_PTR_TO_ZVAL_PTR(cache);
   } else if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
-    repeated_field_insure_created(field, cache PHP_PROTO_TSRMLS_CC);
+    repeated_field_ensure_created(field, cache PHP_PROTO_TSRMLS_CC);
     return CACHED_PTR_TO_ZVAL_PTR(cache);
   } else {
     upb_fieldtype_t type = upb_fielddef_type(field);
@@ -1064,7 +1064,7 @@ void layout_merge(MessageLayout* layout, MessageHeader* from,
       if (Z_TYPE_P(CACHED_PTR_TO_ZVAL_PTR(from_cache)) == IS_NULL) {
         continue;
       }
-      map_field_insure_created(field, to_cache PHP_PROTO_TSRMLS_CC);
+      map_field_ensure_created(field, to_cache PHP_PROTO_TSRMLS_CC);
 
       zval* to_map_php = CACHED_PTR_TO_ZVAL_PTR(to_cache);
       zval* from_map_php = CACHED_PTR_TO_ZVAL_PTR(from_cache);
@@ -1100,7 +1100,7 @@ void layout_merge(MessageLayout* layout, MessageHeader* from,
       if (Z_TYPE_P(CACHED_PTR_TO_ZVAL_PTR(from_cache)) == IS_NULL) {
         continue;
       }
-      repeated_field_insure_created(field, to_cache PHP_PROTO_TSRMLS_CC);
+      repeated_field_ensure_created(field, to_cache PHP_PROTO_TSRMLS_CC);
 
       zval* to_array_php = CACHED_PTR_TO_ZVAL_PTR(to_cache);
       zval* from_array_php = CACHED_PTR_TO_ZVAL_PTR(from_cache);

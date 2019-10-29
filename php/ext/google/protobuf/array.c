@@ -259,7 +259,7 @@ void repeated_field_push_native(RepeatedField *intern, void *value) {
   }
 }
 
-void repeated_field_insure_created(
+void repeated_field_ensure_created(
     const upb_fielddef *field,
     CACHED_VALUE *repeated_field PHP_PROTO_TSRMLS_DC) {
   if (ZVAL_IS_NULL(CACHED_PTR_TO_ZVAL_PTR(repeated_field))) {

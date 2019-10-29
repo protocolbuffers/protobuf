@@ -1090,7 +1090,7 @@ upb_value map_iter_value(MapIter* iter, int* len);
 const upb_fielddef* map_entry_key(const upb_msgdef* msgdef);
 const upb_fielddef* map_entry_value(const upb_msgdef* msgdef);
 
-void map_field_insure_created(const upb_fielddef *field,
+void map_field_ensure_created(const upb_fielddef *field,
                               CACHED_VALUE *map_field PHP_PROTO_TSRMLS_DC);
 void map_field_create_with_field(const zend_class_entry* ce,
                                  const upb_fielddef* field,
@@ -1150,7 +1150,7 @@ PHP_PROTO_WRAP_OBJECT_START(RepeatedFieldIter)
   long position;
 PHP_PROTO_WRAP_OBJECT_END
 
-void repeated_field_insure_created(
+void repeated_field_ensure_created(
     const upb_fielddef *field,
     CACHED_VALUE *repeated_field PHP_PROTO_TSRMLS_DC);
 void repeated_field_create_with_field(
