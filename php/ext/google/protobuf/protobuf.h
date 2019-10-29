@@ -200,7 +200,7 @@
 
 #define CACHED_VALUE zval*
 #define CACHED_TO_ZVAL_PTR(VALUE) (VALUE)
-#define CACHED_PTR_TO_ZVAL_PTR(VALUE) (*VALUE)
+#define CACHED_PTR_TO_ZVAL_PTR(VALUE) (*(CACHED_VALUE*)(VALUE))
 #define ZVAL_PTR_TO_CACHED_PTR(VALUE) (&VALUE)
 #define ZVAL_PTR_TO_CACHED_VALUE(VALUE) (VALUE)
 #define ZVAL_TO_CACHED_VALUE(VALUE) (&VALUE)
@@ -475,7 +475,7 @@ static inline int php_proto_zend_hash_get_current_data_ex(HashTable* ht,
 
 #define CACHED_VALUE zval
 #define CACHED_TO_ZVAL_PTR(VALUE) (&VALUE)
-#define CACHED_PTR_TO_ZVAL_PTR(VALUE) (VALUE)
+#define CACHED_PTR_TO_ZVAL_PTR(VALUE) ((CACHED_VALUE*)(VALUE))
 #define ZVAL_PTR_TO_CACHED_PTR(VALUE) (VALUE)
 #define ZVAL_PTR_TO_CACHED_VALUE(VALUE) (*VALUE)
 #define ZVAL_TO_CACHED_VALUE(VALUE) (VALUE)
@@ -935,6 +935,7 @@ struct MessageField {
 
 struct MessageLayout {
   const upb_msgdef* msgdef;
+  void* empty_template;  // Can memcpy() onto a layout to clear it.
   MessageField* fields;
   size_t size;
 };
@@ -948,7 +949,7 @@ PHP_PROTO_WRAP_OBJECT_END
 MessageLayout* create_layout(const upb_msgdef* msgdef);
 void layout_init(MessageLayout* layout, void* storage,
                  zend_object* object PHP_PROTO_TSRMLS_DC);
-zval* layout_get(MessageLayout* layout, const void* storage,
+zval* layout_get(MessageLayout* layout, MessageHeader* header,
                  const upb_fielddef* field, CACHED_VALUE* cache TSRMLS_DC);
 void layout_set(MessageLayout* layout, MessageHeader* header,
                 const upb_fielddef* field, zval* val TSRMLS_DC);
@@ -1089,6 +1090,8 @@ upb_value map_iter_value(MapIter* iter, int* len);
 const upb_fielddef* map_entry_key(const upb_msgdef* msgdef);
 const upb_fielddef* map_entry_value(const upb_msgdef* msgdef);
 
+void map_field_ensure_created(const upb_fielddef *field,
+                              CACHED_VALUE *map_field PHP_PROTO_TSRMLS_DC);
 void map_field_create_with_field(const zend_class_entry* ce,
                                  const upb_fielddef* field,
                                  CACHED_VALUE* map_field PHP_PROTO_TSRMLS_DC);
@@ -1147,6 +1150,9 @@ PHP_PROTO_WRAP_OBJECT_START(RepeatedFieldIter)
   long position;
 PHP_PROTO_WRAP_OBJECT_END
 
+void repeated_field_ensure_created(
+    const upb_fielddef *field,
+    CACHED_VALUE *repeated_field PHP_PROTO_TSRMLS_DC);
 void repeated_field_create_with_field(
     zend_class_entry* ce, const upb_fielddef* field,
     CACHED_VALUE* repeated_field PHP_PROTO_TSRMLS_DC);
@@ -1488,6 +1494,9 @@ size_t stringsink_string(void *_sink, const void *hd, const char *ptr,
 #define ALLOC_N(class_name, n) (class_name*) emalloc(sizeof(class_name) * n)
 #define FREE(object) efree(object)
 #define PEFREE(object) pefree(object, 1)
+
+// Find corresponding zval property for the field.
+CACHED_VALUE* find_zval_property(MessageHeader* msg, const upb_fielddef* field);
 
 // String argument.
 #define STR(str) (str), strlen(str)
