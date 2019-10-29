@@ -172,7 +172,7 @@ class EncodeDecodeTest extends TestBase
     {
         $m = new TestStringValue();
         $m->mergeFromJsonString("{\"field\":\"\"}");
-        $this->assertSame("", $m->getValue());
+        $this->assertSame("", $m->getField()->getValue());
     }
 
     # public function testEncodeStringValue()
