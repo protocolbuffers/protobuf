@@ -749,7 +749,8 @@ size_t run_decoder_vm(upb_pbdecoder *d, const mgroup *group,
         CHECK_SUSPEND(upb_sink_startsubmsg(outer->sink, arg, &d->top->sink));
       )
       VMCASE(OP_ENDSUBMSG,
-        CHECK_SUSPEND(upb_sink_endsubmsg(d->top->sink, arg));
+        upb_sink subsink = (d->top + 1)->sink;
+        CHECK_SUSPEND(upb_sink_endsubmsg(d->top->sink, subsink, arg));
       )
       VMCASE(OP_STARTSTR,
         uint32_t len = delim_remaining(d);
