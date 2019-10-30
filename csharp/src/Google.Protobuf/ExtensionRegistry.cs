@@ -90,7 +90,9 @@ namespace Google.Protobuf
             ProtoPreconditions.CheckNotNull(extensions, nameof(extensions));
 
             foreach (var extension in extensions)
+            {
                 Add(extension);
+            }
         }
 
         /// <summary>
@@ -120,9 +122,13 @@ namespace Google.Protobuf
         {
             ProtoPreconditions.CheckNotNull(array, nameof(array));
             if (arrayIndex < 0 || arrayIndex >= array.Length)
+            {
                 throw new ArgumentOutOfRangeException(nameof(arrayIndex));
+            }
             if (array.Length - arrayIndex < Count)
+            {
                 throw new ArgumentException("The provided array is shorter than the number of elements in the registry");
+            }
 
             for (int i = 0; i < array.Length; i++)
             {
