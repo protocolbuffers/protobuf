@@ -45,7 +45,7 @@ $PROTOC -Isrc --csharp_out=csharp/src/Google.Protobuf \
 # and old_extensions2.proto, which are generated with an older version
 # of protoc.
 $PROTOC -Isrc -Icsharp/protos \
-    --csharp_out=csharp/src/Google.Protobuf.Test/TestProtos \
+    --csharp_out=csharp/src/Google.Protobuf.Test.CodeGen \
     --descriptor_set_out=csharp/src/Google.Protobuf.Test/testprotos.pb \
     --include_source_info \
     --include_imports \
