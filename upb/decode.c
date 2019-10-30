@@ -573,6 +573,7 @@ static bool upb_decode_field(upb_decstate *d, upb_decframe *frame) {
     CHK(upb_append_unknown(d, frame));
     return true;
   }
+  UPB_UNREACHABLE();
 }
 
 static bool upb_decode_message(upb_decstate *d, char *msg, const upb_msglayout *l) {
