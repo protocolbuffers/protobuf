@@ -41,6 +41,9 @@ $PROTOC -Isrc --csharp_out=csharp/src/Google.Protobuf \
     src/google/protobuf/wrappers.proto
 
 # Test protos
+# Note that this deliberately does *not* include old_extensions1.proto
+# and old_extensions2.proto, which are generated with an older version
+# of protoc.
 $PROTOC -Isrc -Icsharp/protos \
     --csharp_out=csharp/src/Google.Protobuf.Test/TestProtos \
     --descriptor_set_out=csharp/src/Google.Protobuf.Test/testprotos.pb \
