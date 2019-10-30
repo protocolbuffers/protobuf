@@ -122,7 +122,7 @@ static void stackenv_uninit(stackenv* se) {
 // Parsing.
 // -----------------------------------------------------------------------------
 
-static bool is_wrapper_msg(const upb_msgdef* m) {
+bool is_wrapper_msg(const upb_msgdef* m) {
   switch (upb_msgdef_wellknowntype(m)) {
     case UPB_WELLKNOWN_DOUBLEVALUE:
     case UPB_WELLKNOWN_FLOATVALUE:
@@ -952,33 +952,21 @@ static void* wrapper_submsg_handler(void* closure, const void* hd) {
       (wrapperfields_parseframe_t*)malloc(sizeof(wrapperfields_parseframe_t));
 
   CACHED_VALUE* cached = find_zval_property(msg, submsgdata->fd);
+  submsg_php = CACHED_PTR_TO_ZVAL_PTR(cached);
+  frame->closure = closure;
 
   if (Z_TYPE_P(CACHED_PTR_TO_ZVAL_PTR(cached)) == IS_NULL) {
-#if PHP_MAJOR_VERSION < 7
-    zval val;
-    ZVAL_OBJ(&val, subklass->create_object(subklass TSRMLS_CC));
-    MessageHeader* intern = UNBOX(MessageHeader, &val);
-    custom_data_init(subklass, intern PHP_PROTO_TSRMLS_CC);
-    REPLACE_ZVAL_VALUE(cached, &val, 1);
-    zval_dtor(&val);
-#else
-    zend_object* obj = subklass->create_object(subklass TSRMLS_CC);
-    ZVAL_OBJ(cached, obj);
-    MessageHeader* intern = UNBOX_HASHTABLE_VALUE(MessageHeader, obj);
-    custom_data_init(subklass, intern PHP_PROTO_TSRMLS_CC);
-#endif
+    // In this case, wrapper message hasn't been created and value will be
+    // stored in cache directly.
+    frame->submsg = cached;
+    frame->is_msg = false;
+  } else {
+    submsg = UNBOX(MessageHeader, submsg_php);
+    frame->submsg = submsg;
+    frame->is_msg = true;
   }
 
-  submsg_php = CACHED_PTR_TO_ZVAL_PTR(cached);
-  submsg = UNBOX(MessageHeader, submsg_php);
-
-  frame->closure = closure;
-  frame->submsg = submsg;
-  frame->is_msg = true;
-
   return frame;
-
-  //  return submsg_php;
 }
 
 static bool wrapper_submsg_end_handler(void *closure, const void *hd) {
@@ -1025,6 +1013,7 @@ static void add_handlers_for_repeated_field(upb_handlers *h,
       attr.handler_data = newsubmsghandlerdata(h, 0, f);
       if (is_wrapper_msg(upb_fielddef_msgsubdef(f))) {
         upb_handlers_setstartsubmsg(h, f, appendwrappersubmsg_handler, &attr);
+        upb_handlers_setendsubmsg(h, f, wrapper_submsg_end_handler, &attr);
       } else {
         upb_handlers_setstartsubmsg(h, f, appendsubmsg_handler, &attr);
       }
@@ -1170,34 +1159,43 @@ static void add_handlers_for_oneof_field(upb_handlers *h,
   }
 }
 
-#define DEFINE_WRAPPER_HANDLER(type, ctype)       \
-  static bool type##wrapper_handler(              \
-      void* closure, const void* hd, ctype val) { \
-    wrapperfields_parseframe_t* frame = closure;  \
-    MessageHeader* msg = frame->submsg;           \
-    const size_t *ofs = hd;                       \
-    DEREF(message_data(msg), *ofs, ctype) = val;  \
-    return true;                                  \
+#define DEFINE_WRAPPER_HANDLER(utype, type, ctype) \
+  static bool type##wrapper_handler(               \
+      void* closure, const void* hd, ctype val) {  \
+    wrapperfields_parseframe_t* frame = closure;   \
+    if (frame->is_msg) {                           \
+      MessageHeader* msg = frame->submsg;          \
+      const size_t *ofs = hd;                      \
+      DEREF(message_data(msg), *ofs, ctype) = val; \
+    } else {                                       \
+      native_slot_get(utype, &val, frame->submsg); \
+    }                                              \
+    return true;                                   \
   }
 
-DEFINE_WRAPPER_HANDLER(bool,   bool)
-DEFINE_WRAPPER_HANDLER(int32,  int32_t)
-DEFINE_WRAPPER_HANDLER(uint32, uint32_t)
-DEFINE_WRAPPER_HANDLER(float,  float)
-DEFINE_WRAPPER_HANDLER(int64,  int64_t)
-DEFINE_WRAPPER_HANDLER(uint64, uint64_t)
-DEFINE_WRAPPER_HANDLER(double, double)
+DEFINE_WRAPPER_HANDLER(UPB_TYPE_BOOL,   bool,   bool)
+DEFINE_WRAPPER_HANDLER(UPB_TYPE_INT32,  int32,  int32_t)
+DEFINE_WRAPPER_HANDLER(UPB_TYPE_UINT32, uint32, uint32_t)
+DEFINE_WRAPPER_HANDLER(UPB_TYPE_FLOAT,  float,  float)
+DEFINE_WRAPPER_HANDLER(UPB_TYPE_INT64,  int64,  int64_t)
+DEFINE_WRAPPER_HANDLER(UPB_TYPE_UINT64, uint64, uint64_t)
+DEFINE_WRAPPER_HANDLER(UPB_TYPE_DOUBLE, double, double)
 
 #undef DEFINE_WRAPPER_HANDLER
 
 static bool strwrapper_end_handler(void *closure, const void *hd) {
   stringfields_parseframe_t* frame = closure;
   const upb_fielddef **field = (const upb_fielddef **) hd;
-
   wrapperfields_parseframe_t* wrapper_frame = frame->closure;
-  MessageHeader* msg = wrapper_frame->submsg;
+  MessageHeader* msg;
+  CACHED_VALUE* cached;
 
-  CACHED_VALUE* cached = find_zval_property(msg, *field);
+  if (wrapper_frame->is_msg) {
+    msg = wrapper_frame->submsg;
+    cached = find_zval_property(msg, *field);
+  } else {
+    cached = wrapper_frame->submsg;
+  }
 
   new_php_string(cached, frame->sink.ptr, frame->sink.len);
 

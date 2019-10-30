@@ -1525,4 +1525,7 @@ static inline zval* php_proto_message_read_property(
 bool is_reserved_name(const char* name);
 bool is_valid_constant_name(const char* name);
 
+// For lazy wrapper
+bool is_wrapper_msg(const upb_msgdef* m);
+
 #endif  // __GOOGLE_PROTOBUF_PHP_PROTOBUF_H__

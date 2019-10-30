@@ -295,12 +295,6 @@ void build_class_from_descriptor(
 // PHP Methods
 // -----------------------------------------------------------------------------
 
-static bool is_wrapper_msg(const upb_msgdef* m) {
-  upb_wellknowntype_t type = upb_msgdef_wellknowntype(m);
-  return type >= UPB_WELLKNOWN_DOUBLEVALUE &&
-         type <= UPB_WELLKNOWN_BOOLVALUE;
-}
-
 static void append_wrapper_message(
     zend_class_entry* subklass, RepeatedField* intern, zval* value TSRMLS_DC) {
   MessageHeader* submsg;
