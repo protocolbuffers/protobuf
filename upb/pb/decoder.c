@@ -77,16 +77,6 @@ static size_t stacksize(upb_pbdecoder *d, size_t entries) {
 static size_t callstacksize(upb_pbdecoder *d, size_t entries) {
   UPB_UNUSED(d);
 
-#ifdef UPB_USE_JIT_X64
-  if (d->method_->is_native_) {
-    /* Each native stack frame needs two pointers, plus we need a few frames for
-     * the enter/exit trampolines. */
-    size_t ret = entries * sizeof(void*) * 2;
-    ret += sizeof(void*) * 10;
-    return ret;
-  }
-#endif
-
   return entries * sizeof(uint32_t*);
 }
 
@@ -902,17 +892,6 @@ void *upb_pbdecoder_startbc(void *closure, const void *pc, size_t size_hint) {
   return d;
 }
 
-void *upb_pbdecoder_startjit(void *closure, const void *hd, size_t size_hint) {
-  upb_pbdecoder *d = closure;
-  UPB_UNUSED(hd);
-  UPB_UNUSED(size_hint);
-  d->top->end_ofs = UINT64_MAX;
-  d->bufstart_ofs = 0;
-  d->call_len = 0;
-  d->skip = 0;
-  return d;
-}
-
 bool upb_pbdecoder_end(void *closure, const void *handler_data) {
   upb_pbdecoder *d = closure;
   const upb_pbdecodermethod *method = handler_data;
@@ -938,14 +917,6 @@ bool upb_pbdecoder_end(void *closure, const void *handler_data) {
   end = offset(d);
   d->top->end_ofs = end;
 
-#ifdef UPB_USE_JIT_X64
-  if (method->is_native_) {
-    const mgroup *group = (const mgroup*)method->group;
-    if (d->top != d->stack)
-      d->stack->end_ofs = 0;
-    group->jit_code(closure, method->code_base.ptr, &dummy, 0, NULL);
-  } else
-#endif
   {
     const uint32_t *p = d->pc;
     d->stack->end_ofs = end;

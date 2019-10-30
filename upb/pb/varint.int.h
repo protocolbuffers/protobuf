@@ -46,8 +46,12 @@ UPB_INLINE int32_t upb_zzdec_32(uint32_t n) {
 UPB_INLINE int64_t upb_zzdec_64(uint64_t n) {
   return (n >> 1) ^ -(int64_t)(n & 1);
 }
-UPB_INLINE uint32_t upb_zzenc_32(int32_t n) { return (n << 1) ^ (n >> 31); }
-UPB_INLINE uint64_t upb_zzenc_64(int64_t n) { return (n << 1) ^ (n >> 63); }
+UPB_INLINE uint32_t upb_zzenc_32(int32_t n) {
+  return ((uint32_t)n << 1) ^ (n >> 31);
+}
+UPB_INLINE uint64_t upb_zzenc_64(int64_t n) {
+  return ((uint64_t)n << 1) ^ (n >> 63);
+}
 
 /* Decoding *******************************************************************/
 

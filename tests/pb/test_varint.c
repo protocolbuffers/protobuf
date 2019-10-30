@@ -101,7 +101,7 @@ static void test_varint_decoder(upb_decoderet (*decoder)(const char*)) {
   upb_decoderet _upb_vdecode_ ## decoder(const char *p) { \
     return upb_vdecode_ ## decoder(p); \
   } \
-  void test_ ## decoder() { \
+  void test_ ## decoder(void) { \
     test_varint_decoder(&_upb_vdecode_ ## decoder); \
   } \
 

@@ -837,7 +837,7 @@ class upb::FileDefPtr {
 extern "C" {
 #endif
 
-upb_symtab *upb_symtab_new();
+upb_symtab *upb_symtab_new(void);
 void upb_symtab_free(upb_symtab* s);
 const upb_msgdef *upb_symtab_lookupmsg(const upb_symtab *s, const char *sym);
 const upb_msgdef *upb_symtab_lookupmsg2(

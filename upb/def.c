@@ -1029,6 +1029,7 @@ static bool parse_default(const symtab_addctx *ctx, const char *str, size_t len,
       } else {
         return false;
       }
+      break;
     }
     case UPB_TYPE_STRING:
       f->defaultval.str = newstr(ctx->alloc, str, len);
@@ -1633,7 +1634,7 @@ void upb_symtab_free(upb_symtab *s) {
   upb_gfree(s);
 }
 
-upb_symtab *upb_symtab_new() {
+upb_symtab *upb_symtab_new(void) {
   upb_symtab *s = upb_gmalloc(sizeof(*s));
   upb_alloc *alloc;
 

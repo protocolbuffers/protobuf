@@ -25,8 +25,8 @@ static size_t upb_encode_varint(uint64_t val, char *buf) {
   return i;
 }
 
-static uint32_t upb_zzencode_32(int32_t n) { return (n << 1) ^ (n >> 31); }
-static uint64_t upb_zzencode_64(int64_t n) { return (n << 1) ^ (n >> 63); }
+static uint32_t upb_zzencode_32(int32_t n) { return ((uint32_t)n << 1) ^ (n >> 31); }
+static uint64_t upb_zzencode_64(int64_t n) { return ((uint64_t)n << 1) ^ (n >> 63); }
 
 typedef struct {
   upb_alloc *alloc;
@@ -48,7 +48,9 @@ static bool upb_encode_growbuffer(upb_encstate *e, size_t bytes) {
   CHK(new_buf);
 
   /* We want previous data at the end, realloc() put it at the beginning. */
-  memmove(new_buf + new_size - old_size, e->buf, old_size);
+  if (old_size > 0) {
+    memmove(new_buf + new_size - old_size, e->buf, old_size);
+  }
 
   e->ptr = new_buf + new_size - (e->limit - e->ptr);
   e->limit = new_buf + new_size;

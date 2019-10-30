@@ -31,7 +31,7 @@ upb_textprinter *upb_textprinter_create(upb_arena *arena, const upb_handlers *h,
                                         upb_bytessink output);
 void upb_textprinter_setsingleline(upb_textprinter *p, bool single_line);
 upb_sink upb_textprinter_input(upb_textprinter *p);
-upb_handlercache *upb_textprinter_newcache();
+upb_handlercache *upb_textprinter_newcache(void);
 
 #ifdef __cplusplus
 }  /* extern "C" */

@@ -947,7 +947,7 @@ static bool parse_number_from_buffer(upb_json_parser *p, const char *buf,
   upb_fieldtype_t type = upb_fielddef_type(p->top->f);
   double val;
   double dummy;
-  double inf = 1.0 / 0.0;  /* C89 does not have an INFINITY macro. */
+  double inf = UPB_INFINITY;
 
   errno = 0;
 
@@ -1189,7 +1189,8 @@ static bool start_any_stringval(upb_json_parser *p) {
 
 static bool start_stringval(upb_json_parser *p) {
   if (is_top_level(p)) {
-    if (is_string_wrapper_object(p)) {
+    if (is_string_wrapper_object(p) ||
+        is_number_wrapper_object(p)) {
       start_wrapper_object(p);
     } else if (is_wellknown_msg(p, UPB_WELLKNOWN_FIELDMASK)) {
       start_fieldmask_object(p);
@@ -1202,7 +1203,8 @@ static bool start_stringval(upb_json_parser *p) {
     } else {
       return false;
     }
-  } else if (does_string_wrapper_start(p)) {
+  } else if (does_string_wrapper_start(p) ||
+             does_number_wrapper_start(p)) {
     if (!start_subobject(p)) {
       return false;
     }
@@ -1408,7 +1410,8 @@ static bool end_stringval(upb_json_parser *p) {
     return false;
   }
 
-  if (does_string_wrapper_end(p)) {
+  if (does_string_wrapper_end(p) ||
+      does_number_wrapper_end(p)) {
     end_wrapper_object(p);
     if (!is_top_level(p)) {
       end_subobject(p);
@@ -2958,7 +2961,7 @@ const upb_byteshandler *upb_json_parsermethod_inputhandler(
   return &m->input_handler_;
 }
 
-upb_json_codecache *upb_json_codecache_new() {
+upb_json_codecache *upb_json_codecache_new(void) {
   upb_alloc *alloc;
   upb_json_codecache *c;
 

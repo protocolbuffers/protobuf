@@ -447,12 +447,12 @@ upb::pb::DecoderPtr CreateDecoder(upb::Arena* arena,
 
 uint32_t Hash(const string& proto, const string* expected_output, size_t seam1,
               size_t seam2, bool may_skip) {
-  uint32_t hash = MurmurHash2(proto.c_str(), proto.size(), 0);
+  uint32_t hash = upb_murmur_hash2(proto.c_str(), proto.size(), 0);
   if (expected_output)
-    hash = MurmurHash2(expected_output->c_str(), expected_output->size(), hash);
-  hash = MurmurHash2(&seam1, sizeof(seam1), hash);
-  hash = MurmurHash2(&seam2, sizeof(seam2), hash);
-  hash = MurmurHash2(&may_skip, sizeof(may_skip), hash);
+    hash = upb_murmur_hash2(expected_output->c_str(), expected_output->size(), hash);
+  hash = upb_murmur_hash2(&seam1, sizeof(seam1), hash);
+  hash = upb_murmur_hash2(&seam2, sizeof(seam2), hash);
+  hash = upb_murmur_hash2(&may_skip, sizeof(may_skip), hash);
   return hash;
 }
 
