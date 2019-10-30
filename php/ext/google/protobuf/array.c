@@ -259,6 +259,19 @@ void repeated_field_push_native(RepeatedField *intern, void *value) {
   }
 }
 
+void repeated_field_ensure_created(
+    const upb_fielddef *field,
+    CACHED_VALUE *repeated_field PHP_PROTO_TSRMLS_DC) {
+  if (ZVAL_IS_NULL(CACHED_PTR_TO_ZVAL_PTR(repeated_field))) {
+    zval_ptr_dtor(repeated_field);
+#if PHP_MAJOR_VERSION < 7
+    MAKE_STD_ZVAL(CACHED_PTR_TO_ZVAL_PTR(repeated_field));
+#endif
+    repeated_field_create_with_field(repeated_field_type, field,
+                                     repeated_field PHP_PROTO_TSRMLS_CC);
+  }
+}
+
 void repeated_field_create_with_field(
     zend_class_entry *ce, const upb_fielddef *field,
     CACHED_VALUE *repeated_field PHP_PROTO_TSRMLS_DC) {

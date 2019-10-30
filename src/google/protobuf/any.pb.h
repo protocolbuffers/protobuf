@@ -113,14 +113,32 @@ class PROTOBUF_EXPORT Any :
 
   // implements Any -----------------------------------------------
 
-  void PackFrom(const ::PROTOBUF_NAMESPACE_ID::Message& message);
+  void PackFrom(const ::PROTOBUF_NAMESPACE_ID::Message& message) {
+    _any_metadata_.PackFrom(message);
+  }
   void PackFrom(const ::PROTOBUF_NAMESPACE_ID::Message& message,
-                const std::string& type_url_prefix);
-  bool UnpackTo(::PROTOBUF_NAMESPACE_ID::Message* message) const;
+                const std::string& type_url_prefix) {
+    _any_metadata_.PackFrom(message, type_url_prefix);
+  }
+  bool UnpackTo(::PROTOBUF_NAMESPACE_ID::Message* message) const {
+    return _any_metadata_.UnpackTo(message);
+  }
   static bool GetAnyFieldDescriptors(
       const ::PROTOBUF_NAMESPACE_ID::Message& message,
       const ::PROTOBUF_NAMESPACE_ID::FieldDescriptor** type_url_field,
       const ::PROTOBUF_NAMESPACE_ID::FieldDescriptor** value_field);
+  template <typename T, class = typename std::enable_if<!std::is_convertible<T, const ::PROTOBUF_NAMESPACE_ID::Message&>::value>::type>
+  void PackFrom(const T& message) {
+    _any_metadata_.PackFrom<T>(message);
+  }
+  template <typename T, class = typename std::enable_if<!std::is_convertible<T, const ::PROTOBUF_NAMESPACE_ID::Message&>::value>::type>
+  void PackFrom(const T& message,
+                const std::string& type_url_prefix) {
+    _any_metadata_.PackFrom<T>(message, type_url_prefix);}
+  template <typename T, class = typename std::enable_if<!std::is_convertible<T, const ::PROTOBUF_NAMESPACE_ID::Message&>::value>::type>
+  bool UnpackTo(T* message) const {
+    return _any_metadata_.UnpackTo<T>(message);
+  }
   template<typename T> bool Is() const {
     return _any_metadata_.Is<T>();
   }

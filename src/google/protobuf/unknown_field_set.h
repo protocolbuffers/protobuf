@@ -39,12 +39,15 @@
 #define GOOGLE_PROTOBUF_UNKNOWN_FIELD_SET_H__
 
 #include <assert.h>
+
 #include <string>
 #include <vector>
+
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/parse_context.h>
 #include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/port.h>
 
@@ -164,6 +167,12 @@ class PROTOBUF_EXPORT UnknownFieldSet {
     return ParseFromArray(data.data(), static_cast<int>(data.size()));
   }
 
+  // Merges this message's unknown field data (if any).  This works whether
+  // the message is a lite or full proto (for legacy reasons, lite and full
+  // return different types for MessageType::unknown_fields()).
+  template <typename MessageType>
+  bool MergeFromMessage(const MessageType& message);
+
   static const UnknownFieldSet* default_instance();
 
  private:
@@ -173,6 +182,27 @@ class PROTOBUF_EXPORT UnknownFieldSet {
   // is newly created and has no fields.
   void InternalMergeFrom(const UnknownFieldSet& other);
   void ClearFallback();
+
+  template <typename MessageType,
+            typename std::enable_if<
+                std::is_base_of<Message, MessageType>::value, int>::type = 0>
+  bool InternalMergeFromMessage(const MessageType& message) {
+    MergeFrom(message.GetReflection()->GetUnknownFields(message));
+    return true;
+  }
+
+  template <typename MessageType,
+            typename std::enable_if<
+                std::is_base_of<MessageLite, MessageType>::value &&
+                    !std::is_base_of<Message, MessageType>::value,
+                int>::type = 0>
+  bool InternalMergeFromMessage(const MessageType& message) {
+    const auto& unknown_fields = message.unknown_fields();
+    io::ArrayInputStream array_stream(unknown_fields.data(),
+                                      unknown_fields.size());
+    io::CodedInputStream coded_stream(&array_stream);
+    return MergeFromCodedStream(&coded_stream);
+  }
 
   std::vector<UnknownField> fields_;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(UnknownFieldSet);
@@ -373,6 +403,12 @@ inline UnknownFieldSet* UnknownField::mutable_group() {
   assert(type() == TYPE_GROUP);
   return data_.group_;
 }
+template <typename MessageType>
+bool UnknownFieldSet::MergeFromMessage(const MessageType& message) {
+  // SFINAE will route to the right version.
+  return InternalMergeFromMessage(message);
+}
+
 
 inline size_t UnknownField::GetLengthDelimitedSize() const {
   GOOGLE_DCHECK_EQ(TYPE_LENGTH_DELIMITED, type());

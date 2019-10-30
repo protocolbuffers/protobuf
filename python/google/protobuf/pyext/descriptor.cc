@@ -75,7 +75,7 @@ namespace python {
 // All descriptors are stored here.
 std::unordered_map<const void*, PyObject*>* interned_descriptors;
 
-PyObject* PyString_FromCppString(const string& str) {
+PyObject* PyString_FromCppString(const std::string& str) {
   return PyString_FromStringAndSize(str.c_str(), str.size());
 }
 
@@ -192,7 +192,7 @@ const FileDescriptor* GetFileDescriptor(const MethodDescriptor* descriptor) {
 bool Reparse(
     PyMessageFactory* message_factory, const Message& from, Message* to) {
   // Reparse message.
-  string serialized;
+  std::string serialized;
   from.SerializeToString(&serialized);
   io::CodedInputStream input(
       reinterpret_cast<const uint8*>(serialized.c_str()), serialized.size());
@@ -839,7 +839,7 @@ static PyObject* GetDefaultValue(PyBaseDescriptor *self, void *closure) {
       break;
     }
     case FieldDescriptor::CPPTYPE_STRING: {
-      const string& value = _GetDescriptor(self)->default_value_string();
+      const std::string& value = _GetDescriptor(self)->default_value_string();
       result = ToStringObject(_GetDescriptor(self), value);
       break;
     }
@@ -1350,7 +1350,7 @@ static PyObject* GetSerializedPb(PyFileDescriptor *self, void *closure) {
   }
   FileDescriptorProto file_proto;
   _GetDescriptor(self)->CopyTo(&file_proto);
-  string contents;
+  std::string contents;
   file_proto.SerializePartialToString(&contents);
   self->serialized_pb = PyBytes_FromStringAndSize(
       contents.c_str(), contents.size());
@@ -1690,7 +1690,7 @@ static PyObject* FindMethodByName(PyBaseDescriptor *self, PyObject* arg) {
   }
 
   const MethodDescriptor* method_descriptor =
-      _GetDescriptor(self)->FindMethodByName(string(name, name_size));
+      _GetDescriptor(self)->FindMethodByName(std::string(name, name_size));
   if (method_descriptor == NULL) {
     PyErr_Format(PyExc_KeyError, "Couldn't find method %.200s", name);
     return NULL;

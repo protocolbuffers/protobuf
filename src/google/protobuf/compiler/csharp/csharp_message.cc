@@ -150,7 +150,10 @@ void MessageGenerator::Generate(io::Printer* printer) {
       printer->Print(vars, "private pb::ExtensionSet<$class_name$> _extensions;\n");
     }
 
-    printer->Print(vars, "private pb::ExtensionSet<$class_name$> _Extensions => _extensions;\n"); // a read-only property for fast retrieval of the set in IsInitialized
+    printer->Print(vars,
+                   "private pb::ExtensionSet<$class_name$> _Extensions => "
+                   "_extensions;\n");  // a read-only property for fast
+                                       // retrieval of the set in IsInitialized
   }
 
   for (int i = 0; i < has_bit_field_count_; i++) {
@@ -265,28 +268,39 @@ void MessageGenerator::Generate(io::Printer* printer) {
 
   if (has_extension_ranges_) {
     printer->Print(
-      vars,
-      "public TValue GetExtension<TValue>(pb::Extension<$class_name$, TValue> extension) {\n"
-      "  return pb::ExtensionSet.Get(ref _extensions, extension);\n"
-      "}\n"
-      "public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<$class_name$, TValue> extension) {\n"
-      "  return pb::ExtensionSet.Get(ref _extensions, extension);\n"
-      "}\n"
-      "public pbc::RepeatedField<TValue> GetOrInitializeExtension<TValue>(pb::RepeatedExtension<$class_name$, TValue> extension) {\n"
-      "  return pb::ExtensionSet.GetOrInitialize(ref _extensions, extension);\n"
-      "}\n"
-      "public void SetExtension<TValue>(pb::Extension<$class_name$, TValue> extension, TValue value) {\n"
-      "  pb::ExtensionSet.Set(ref _extensions, extension, value);\n"
-      "}\n"
-      "public bool HasExtension<TValue>(pb::Extension<$class_name$, TValue> extension) {\n"
-      "  return pb::ExtensionSet.Has(ref _extensions, extension);\n"
-      "}\n"
-      "public void ClearExtension<TValue>(pb::Extension<$class_name$, TValue> extension) {\n"
-      "  pb::ExtensionSet.Clear(ref _extensions, extension);\n"
-      "}\n"
-      "public void ClearExtension<TValue>(pb::RepeatedExtension<$class_name$, TValue> extension) {\n"
-      "  pb::ExtensionSet.Clear(ref _extensions, extension);\n"
-      "}\n\n");
+        vars,
+        "public TValue GetExtension<TValue>(pb::Extension<$class_name$, "
+        "TValue> extension) {\n"
+        "  return pb::ExtensionSet.Get(ref _extensions, extension);\n"
+        "}\n"
+        "public pbc::RepeatedField<TValue> "
+        "GetExtension<TValue>(pb::RepeatedExtension<$class_name$, TValue> "
+        "extension) {\n"
+        "  return pb::ExtensionSet.Get(ref _extensions, extension);\n"
+        "}\n"
+        "public pbc::RepeatedField<TValue> "
+        "GetOrInitializeExtension<TValue>(pb::RepeatedExtension<$class_name$, "
+        "TValue> extension) {\n"
+        "  return pb::ExtensionSet.GetOrInitialize(ref _extensions, "
+        "extension);\n"
+        "}\n"
+        "public void SetExtension<TValue>(pb::Extension<$class_name$, TValue> "
+        "extension, TValue value) {\n"
+        "  pb::ExtensionSet.Set(ref _extensions, extension, value);\n"
+        "}\n"
+        "public bool HasExtension<TValue>(pb::Extension<$class_name$, TValue> "
+        "extension) {\n"
+        "  return pb::ExtensionSet.Has(ref _extensions, extension);\n"
+        "}\n"
+        "public void ClearExtension<TValue>(pb::Extension<$class_name$, "
+        "TValue> extension) {\n"
+        "  pb::ExtensionSet.Clear(ref _extensions, extension);\n"
+        "}\n"
+        "public void "
+        "ClearExtension<TValue>(pb::RepeatedExtension<$class_name$, TValue> "
+        "extension) {\n"
+        "  pb::ExtensionSet.Clear(ref _extensions, extension);\n"
+        "}\n\n");
   }
 
   // Nested messages and enums
@@ -627,9 +641,9 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
   printer->Indent();
   if (end_tag_ != 0) {
     printer->Print(
-      "case $end_tag$:\n"
-      "  return;\n",
-      "end_tag", StrCat(end_tag_));
+        "case $end_tag$:\n"
+        "  return;\n",
+        "end_tag", StrCat(end_tag_));
   }
   if (has_extension_ranges_) {
     printer->Print(
@@ -683,7 +697,8 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
 
 // it's a waste of space to track presence for all values, so we only track them if they're not nullable
 int MessageGenerator::GetPresenceIndex(const FieldDescriptor* descriptor) {
-  if (IsNullable(descriptor) || !IsProto2(descriptor->file()) || descriptor->is_extension()) {
+  if (IsNullable(descriptor) || !IsProto2(descriptor->file()) ||
+      descriptor->is_extension()) {
     return -1;
   }
 

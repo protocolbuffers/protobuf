@@ -124,10 +124,9 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
   }
 
   if (IsReferenceType(javaType)) {
-    (*variables)["null_check"] =
-        "  if (value == null) {\n"
-        "    throw new NullPointerException();\n"
-        "  }\n";
+    // We use `x.getClass()` as a null check because it generates less bytecode
+    // than an `if (x == null) { throw ... }` statement.
+    (*variables)["null_check"] = "  value.getClass();\n";
   } else {
     (*variables)["null_check"] = "";
   }

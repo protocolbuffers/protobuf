@@ -406,7 +406,7 @@ std::string SuperClassName(const Descriptor* descriptor,
                                                             : "::MessageLite");
 }
 
-std::string ResolveKeyword(const string& name) {
+std::string ResolveKeyword(const std::string& name) {
   if (kKeywords.count(name) > 0) {
     return name + "_";
   }
@@ -665,7 +665,7 @@ std::string DefaultValue(const Options& options, const FieldDescriptor* field) {
         // If floating point value contains a period (.) or an exponent
         // (either E or e), then append suffix 'f' to make it a float
         // literal.
-        if (float_value.find_first_of(".eE") != string::npos) {
+        if (float_value.find_first_of(".eE") != std::string::npos) {
           float_value.push_back('f');
         }
         return float_value;
@@ -709,8 +709,8 @@ std::string FilenameIdentifier(const std::string& filename) {
   return result;
 }
 
-string UniqueName(const std::string& name, const std::string& filename,
-                  const Options& options) {
+std::string UniqueName(const std::string& name, const std::string& filename,
+                       const Options& options) {
   return name + "_" + FilenameIdentifier(filename);
 }
 
@@ -1428,7 +1428,7 @@ class ParseLoopGenerator {
     if (HasFieldPresence(field->file())) {
       format_("_Internal::set_has_$1$(&$has_bits$);\n", FieldName(field));
     }
-    string default_string =
+    std::string default_string =
         field->default_value_string().empty()
             ? "::" + ProtobufNamespace(options_) +
                   "::internal::GetEmptyStringAlreadyInited()"
@@ -1635,7 +1635,7 @@ class ParseLoopGenerator {
             zigzag = StrCat("ZigZag", size);
           }
           if (field->is_repeated() || field->containing_oneof()) {
-            string prefix = field->is_repeated() ? "add" : "set";
+            std::string prefix = field->is_repeated() ? "add" : "set";
             format_(
                 "_internal_$1$_$2$($pi_ns$::ReadVarint$3$(&ptr));\n"
                 "CHK_(ptr);\n",
@@ -1657,7 +1657,7 @@ class ParseLoopGenerator {
       case WireFormatLite::WIRETYPE_FIXED64: {
         std::string type = PrimitiveTypeName(options_, field->cpp_type());
         if (field->is_repeated() || field->containing_oneof()) {
-          string prefix = field->is_repeated() ? "add" : "set";
+          std::string prefix = field->is_repeated() ? "add" : "set";
           format_(
               "_internal_$1$_$2$($pi_ns$::UnalignedLoad<$3$>(ptr));\n"
               "ptr += sizeof($3$);\n",
@@ -1723,28 +1723,15 @@ class ParseLoopGenerator {
         "while (!ctx->Done(&ptr)) {\n"
         "  $uint32$ tag;\n"
         "  ptr = $pi_ns$::ReadTag(ptr, &tag);\n"
-        "  CHK_(ptr);\n"
-        "  switch (tag >> 3) {\n");
+        "  CHK_(ptr);\n");
+    if (!ordered_fields.empty()) format_("  switch (tag >> 3) {\n");
 
     format_.Indent();
     format_.Indent();
 
     for (const auto* field : ordered_fields) {
-      // Print the field's (or oneof's) proto-syntax definition as a comment.
-      // We don't want to print group bodies so we cut off after the first
-      // line.
-      std::string def;
-      {
-        DebugStringOptions options;
-        options.elide_group_body = true;
-        options.elide_oneof_body = true;
-        def = field->DebugStringWithOptions(options);
-        def = def.substr(0, def.find_first_of('\n'));
-      }
-      format_(
-          "// $1$\n"
-          "case $2$:\n",
-          def, field->number());
+      PrintFieldComment(format_, field);
+      format_("case $1$:\n", field->number());
       format_.Indent();
       uint32 fallback_tag = 0;
       uint32 expected_tag = ExpectedTag(field, &fallback_tag);
@@ -1787,7 +1774,7 @@ class ParseLoopGenerator {
     }  // for loop over ordered fields
 
     // Default case
-    format_("default: {\n");
+    if (!ordered_fields.empty()) format_("default: {\n");
     if (!ordered_fields.empty()) format_("handle_unusual:\n");
     format_(
         "  if ((tag & 7) == 4 || tag == 0) {\n"
@@ -1828,12 +1815,11 @@ class ParseLoopGenerator {
           "  CHK_(ptr != nullptr);\n"
           "  continue;\n");
     }
-    format_("}\n");  // default case
+    if (!ordered_fields.empty()) format_("}\n");  // default case
     format_.Outdent();
     format_.Outdent();
-    format_(
-        "  }  // switch\n"
-        "}  // while\n");
+    if (!ordered_fields.empty()) format_("  }  // switch\n");
+    format_("}  // while\n");
   }
 };
 

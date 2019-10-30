@@ -56,6 +56,7 @@ namespace protobuf {
 namespace util {
 namespace converter {
 
+using ::google::protobuf::Any;
 using io::ArrayInputStream;
 using io::CodedInputStream;
 using proto_util_converter::testing::AnyM;
@@ -1154,6 +1155,7 @@ TEST_P(ProtostreamObjectSourceTimestampTest, TimestampDurationDefaultValue) {
 
   DoTest(out, TimestampDuration::descriptor());
 }
+
 
 
 }  // namespace converter

@@ -799,7 +799,6 @@ Status ProtoStreamObjectSource::RenderField(
   return util::Status();
 }
 
-
 Status ProtoStreamObjectSource::RenderNonMessageField(
     const google::protobuf::Field* field, StringPiece field_name,
     ObjectWriter* ow) const {

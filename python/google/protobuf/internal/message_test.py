@@ -164,6 +164,9 @@ class MessageTest(unittest.TestCase):
         msg.FromString(end_tag)
       self.assertEqual('Unexpected end-group tag.', str(context.exception))
 
+    # Field number 0 is illegal.
+    self.assertRaises(message.DecodeError, msg.FromString, b'\3\4')
+
   def testDeterminismParameters(self, message_module):
     # This message is always deterministically serialized, even if determinism
     # is disabled, so we can use it to verify that all the determinism
@@ -2017,6 +2020,15 @@ class Proto3Test(unittest.TestCase):
     m2.map_int32_message[123].optional_int32 = 10
     m1.map_int32_all_types.MergeFrom(m2.map_int32_message)
     self.assertEqual(10, m1.map_int32_all_types[123].optional_int32)
+
+    # Test overwrite message value map
+    msg = map_unittest_pb2.TestMap()
+    msg.map_int32_foreign_message[222].c = 123
+    msg2 = map_unittest_pb2.TestMap()
+    msg2.map_int32_foreign_message[222].d = 20
+    msg.MergeFromString(msg2.SerializeToString())
+    self.assertEqual(msg.map_int32_foreign_message[222].d, 20)
+    self.assertNotEqual(msg.map_int32_foreign_message[222].c, 123)
 
   def testMergeFromBadType(self):
     msg = map_unittest_pb2.TestMap()

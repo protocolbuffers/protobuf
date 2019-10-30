@@ -218,12 +218,12 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     overall_limit_ = 0;
     if (flat.size() > kSlopBytes) {
       limit_ = kSlopBytes;
-      limit_end_ = buffer_end_ = flat.end() - kSlopBytes;
+      limit_end_ = buffer_end_ = flat.data() + flat.size() - kSlopBytes;
       next_chunk_ = buffer_;
       if (aliasing_ == kOnPatch) aliasing_ = kNoDelta;
-      return flat.begin();
+      return flat.data();
     } else {
-      std::memcpy(buffer_, flat.begin(), flat.size());
+      std::memcpy(buffer_, flat.data(), flat.size());
       limit_ = 0;
       limit_end_ = buffer_end_ = buffer_ + flat.size();
       next_chunk_ = nullptr;
@@ -491,7 +491,7 @@ PROTOBUF_EXPORT
 std::pair<const char*, uint32> ReadTagFallback(const char* p, uint32 res);
 
 // Same as ParseVarint but only accept 5 bytes at most.
-inline const char* ReadTag(const char* p, uint32* out, uint32 max_tag = 0) {
+inline const char* ReadTag(const char* p, uint32* out, uint32 /*max_tag*/ = 0) {
   uint32 res = static_cast<uint8>(p[0]);
   if (res < 128) {
     *out = res;
