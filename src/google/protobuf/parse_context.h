@@ -586,9 +586,9 @@ inline uint64 ReadVarint64(const char** p) {
 }
 
 inline uint32 ReadVarint32(const char** p) {
-  uint64 tmp;
+  uint32 tmp;
   *p = VarintParse(*p, &tmp);
-  return static_cast<uint32>(tmp);
+  return tmp;
 }
 
 inline int64 ReadVarintZigZag64(const char** p) {

@@ -467,11 +467,11 @@ inline const char* ReadSINT32(const char* ptr, int32* value) {
 }
 template <typename E>
 inline const char* ReadENUM(const char* ptr, E* value) {
-  *value = static_cast<E>(ReadVarint64(&ptr));
+  *value = static_cast<E>(ReadVarint32(&ptr));
   return ptr;
 }
 inline const char* ReadBOOL(const char* ptr, bool* value) {
-  *value = static_cast<bool>(ReadVarint64(&ptr));
+  *value = static_cast<bool>(ReadVarint32(&ptr));
   return ptr;
 }
 
