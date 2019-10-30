@@ -982,8 +982,8 @@ static void* wrapper_submsg_handler(void* closure, const void* hd) {
 }
 
 static bool wrapper_submsg_end_handler(void *closure, const void *hd) {
-  // wrapperfields_parseframe_t* frame = closure;
-  // free(frame);
+  wrapperfields_parseframe_t* frame = closure;
+  free(frame);
   return true;
 }
 
@@ -1494,7 +1494,7 @@ static void putmap(zval* map, const upb_fielddef* f, upb_sink sink,
                        value_field, depth + 1, entry_sink, is_json TSRMLS_CC);
 
     upb_sink_endmsg(entry_sink, &status);
-    upb_sink_endsubmsg(subsink, getsel(f, UPB_HANDLER_ENDSUBMSG));
+    upb_sink_endsubmsg(subsink, entry_sink, getsel(f, UPB_HANDLER_ENDSUBMSG));
   }
 
   upb_sink_endseq(sink, getsel(f, UPB_HANDLER_ENDSEQ));
@@ -1838,7 +1838,7 @@ static void putrawsubmsg(MessageHeader* submsg, const upb_fielddef* f,
 
   upb_sink_startsubmsg(sink, getsel(f, UPB_HANDLER_STARTSUBMSG), &subsink);
   putrawmsg(submsg, subdesc, subsink, depth + 1, is_json, true TSRMLS_CC);
-  upb_sink_endsubmsg(sink, getsel(f, UPB_HANDLER_ENDSUBMSG));
+  upb_sink_endsubmsg(sink, subsink, getsel(f, UPB_HANDLER_ENDSUBMSG));
 }
 
 static void putarray(zval* array, const upb_fielddef* f, upb_sink sink,

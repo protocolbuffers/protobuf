@@ -116,7 +116,7 @@ int msvc_vsnprintf(char* s, size_t n, const char* format, va_list arg);
 #ifdef __cplusplus
 #if __cplusplus >= 201103L || defined(__GXX_EXPERIMENTAL_CXX0X__) || \
     (defined(_MSC_VER) && _MSC_VER >= 1900)
-// C++11 is present
+/* C++11 is present */
 #else
 #error upb requires C++11 for C++ support
 #endif
@@ -724,6 +724,7 @@ static bool upb_decode_field(upb_decstate *d, upb_decframe *frame) {
     CHK(upb_append_unknown(d, frame));
     return true;
   }
+  UPB_UNREACHABLE();
 }
 
 static bool upb_decode_message(upb_decstate *d, char *msg, const upb_msglayout *l) {
@@ -7153,7 +7154,8 @@ size_t run_decoder_vm(upb_pbdecoder *d, const mgroup *group,
         CHECK_SUSPEND(upb_sink_startsubmsg(outer->sink, arg, &d->top->sink));
       )
       VMCASE(OP_ENDSUBMSG,
-        CHECK_SUSPEND(upb_sink_endsubmsg(d->top->sink, arg));
+        upb_sink subsink = (d->top + 1)->sink;
+        CHECK_SUSPEND(upb_sink_endsubmsg(d->top->sink, subsink, arg));
       )
       VMCASE(OP_STARTSTR,
         uint32_t len = delim_remaining(d);
@@ -10131,28 +10133,32 @@ const unsigned short int __mon_yday[2][13] = {
     { 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366 }
 };
 
-/* epoch_days(1970, 1, 1) == 1970-01-01 == 0. */
-static int epoch_days(int year, int month, int day) {
-  static const uint16_t month_yday[12] = {0,   31,  59,  90,  120, 151,
-                                          181, 212, 243, 273, 304, 334};
-  int febs_since_0 = month > 2 ? year + 1 : year;
-  int leap_days_since_0 = div_round_up(febs_since_0, 4) -
-                          div_round_up(febs_since_0, 100) +
-                          div_round_up(febs_since_0, 400);
-  int days_since_0 =
-      365 * year + month_yday[month - 1] + (day - 1) + leap_days_since_0;
+int64_t epoch(int year, int yday, int hour, int min, int sec) {
+  int64_t years = year - EPOCH_YEAR;
 
-  /* Convert from 0-epoch (0001-01-01 BC) to Unix Epoch (1970-01-01 AD).
-   * Since the "BC" system does not have a year zero, 1 BC == year zero. */
-  return days_since_0 - 719528;
+  int64_t leap_days = years / 4 - years / 100 + years / 400;
+
+  int64_t days = years * 365 + yday + leap_days;
+  int64_t hours = days * 24 + hour;
+  int64_t mins = hours * 60 + min;
+  int64_t secs = mins * 60 + sec;
+  return secs;
 }
 
-static int64_t upb_timegm(const struct tm *tp) {
-  int64_t ret = epoch_days(tp->tm_year + 1900, tp->tm_mon + 1, tp->tm_mday);
-  ret = (ret * 24) + tp->tm_hour;
-  ret = (ret * 60) + tp->tm_min;
-  ret = (ret * 60) + tp->tm_sec;
-  return ret;
+
+static int64_t upb_mktime(const struct tm *tp) {
+  int sec = tp->tm_sec;
+  int min = tp->tm_min;
+  int hour = tp->tm_hour;
+  int mday = tp->tm_mday;
+  int mon = tp->tm_mon;
+  int year = tp->tm_year + TM_YEAR_BASE;
+
+  /* Calculate day of year from year, month, and day of month. */
+  int mon_yday = ((__mon_yday[isleap(year)][mon]) - 1);
+  int yday = mon_yday + mday;
+
+  return epoch(year, yday, hour, min, sec);
 }
 
 static bool end_timestamp_zone(upb_json_parser *p, const char *ptr) {
@@ -10182,7 +10188,7 @@ static bool end_timestamp_zone(upb_json_parser *p, const char *ptr) {
   }
 
   /* Normalize tm */
-  seconds = upb_timegm(&p->tm);
+  seconds = upb_mktime(&p->tm);
 
   /* Check timestamp boundary */
   if (seconds < -62135596800) {
@@ -10460,7 +10466,7 @@ static void end_member(upb_json_parser *p) {
     p->top--;
     ok = upb_handlers_getselector(mapfield, UPB_HANDLER_ENDSUBMSG, &sel);
     UPB_ASSERT(ok);
-    upb_sink_endsubmsg(p->top->sink, sel);
+    upb_sink_endsubmsg(p->top->sink, (p->top + 1)->sink, sel);
   }
 
   p->top->f = NULL;
@@ -10574,7 +10580,7 @@ static void end_subobject(upb_json_parser *p) {
     p->top--;
     if (!is_unknown) {
       sel = getsel_for_handlertype(p, UPB_HANDLER_ENDSUBMSG);
-      upb_sink_endsubmsg(p->top->sink, sel);
+      upb_sink_endsubmsg(p->top->sink, (p->top + 1)->sink, sel);
     }
   }
 }
