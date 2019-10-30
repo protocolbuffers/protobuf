@@ -106,7 +106,7 @@ namespace Google.Protobuf.Reflection
         /// The (possibly empty) set of custom options for this oneof.
         /// </summary>
         [Obsolete("CustomOptions are obsolete. Use GetOption")]
-        public CustomOptions CustomOptions => new CustomOptions(proto.Options._extensions?.ValuesByNumber);
+        public CustomOptions CustomOptions => new CustomOptions(proto.Options?._extensions?.ValuesByNumber);
 
         /// <summary>
         /// Gets a single value oneof option for this descriptor

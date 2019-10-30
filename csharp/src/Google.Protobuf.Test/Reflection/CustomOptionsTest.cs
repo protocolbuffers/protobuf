@@ -41,6 +41,7 @@ using static Google.Protobuf.WireFormat;
 using static UnitTest.Issues.TestProtos.ComplexOptionType2.Types;
 using static UnitTest.Issues.TestProtos.UnittestCustomOptionsProto3Extensions;
 using static UnitTest.Issues.TestProtos.DummyMessageContainingEnum.Types;
+using Google.Protobuf.TestProtos;
 
 #pragma warning disable CS0618
 
@@ -175,6 +176,21 @@ namespace Google.Protobuf.Test.Reflection
 
             var fieldOptions = AggregateMessage.Descriptor.Fields["fieldname"].CustomOptions;
             AssertOption(new Aggregate { S = "FieldAnnotation" }, fieldOptions.TryGetMessage, Fieldopt, AggregateMessage.Descriptor.Fields["fieldname"].GetOption);
+        }
+
+        [Test]
+        public void NoOptions()
+        {
+            var fileDescriptor = UnittestProto3Reflection.Descriptor;
+            var messageDescriptor = TestAllTypes.Descriptor;
+            Assert.NotNull(fileDescriptor.CustomOptions);
+            Assert.NotNull(messageDescriptor.CustomOptions);
+            Assert.NotNull(messageDescriptor.Fields[1].CustomOptions);
+            Assert.NotNull(fileDescriptor.Services[0].CustomOptions);
+            Assert.NotNull(fileDescriptor.Services[0].Methods[0].CustomOptions);
+            Assert.NotNull(fileDescriptor.EnumTypes[0].CustomOptions);
+            Assert.NotNull(fileDescriptor.EnumTypes[0].Values[0].CustomOptions);
+            Assert.NotNull(TestAllTypes.Descriptor.Oneofs[0].CustomOptions);
         }
 
         private void AssertOption<T, D>(T expected, OptionFetcher<T> fetcher, Extension<D, T> extension, Func<Extension<D, T>, T> descriptorOptionFetcher) where D : IExtendableMessage<D>
