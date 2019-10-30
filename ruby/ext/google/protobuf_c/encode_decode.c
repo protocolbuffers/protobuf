@@ -626,12 +626,28 @@ static bool uint32wrapper_handler(void* closure, const void* hd, uint32_t val) {
   return true;
 }
 
+static void* startstringwrapper_handler(void* closure, const void* hd,
+                                        size_t size_hint) {
+  VALUE* rbval = closure;
+  (void)size_hint;
+  *rbval = get_frozen_string(NULL, 0, false);
+  return closure;
+}
+
 static size_t stringwrapper_handler(void* closure, const void* hd,
                                     const char* ptr, size_t len,
                                     const upb_bufhandle* handle) {
   VALUE* rbval = closure;
   *rbval = get_frozen_string(ptr, len, false);
   return len;
+}
+
+static void* startbyteswrapper_handler(void* closure, const void* hd,
+                                       size_t size_hint) {
+  VALUE* rbval = closure;
+  (void)size_hint;
+  *rbval = get_frozen_string(NULL, 0, true);
+  return closure;
 }
 
 static size_t byteswrapper_handler(void* closure, const void* hd,
@@ -760,9 +776,11 @@ static void add_handlers_for_wrapper(const upb_msgdef* msgdef,
       upb_handlers_setuint32(h, f, uint32wrapper_handler, NULL);
       break;
     case UPB_WELLKNOWN_STRINGVALUE:
+      upb_handlers_setstartstr(h, f, startstringwrapper_handler, NULL);
       upb_handlers_setstring(h, f, stringwrapper_handler, NULL);
       break;
     case UPB_WELLKNOWN_BYTESVALUE:
+      upb_handlers_setstartstr(h, f, startbyteswrapper_handler, NULL);
       upb_handlers_setstring(h, f, byteswrapper_handler, NULL);
       break;
     case UPB_WELLKNOWN_BOOLVALUE:

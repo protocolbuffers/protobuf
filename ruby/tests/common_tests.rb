@@ -1411,7 +1411,6 @@ module CommonTests
     run_test.call(m)
     m.oneof_bytes_as_value = 'fun'
     run_test.call(m)
-    puts m
   end
 
   def test_top_level_wrappers
