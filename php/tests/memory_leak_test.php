@@ -23,6 +23,7 @@ require_once('generated/Foo/TestAny.php');
 require_once('generated/Foo/TestEnum.php');
 require_once('generated/Foo/TestIncludeNamespaceMessage.php');
 require_once('generated/Foo/TestIncludePrefixMessage.php');
+require_once('generated/Foo/TestInt32Value.php');
 require_once('generated/Foo/TestMessage.php');
 require_once('generated/Foo/TestMessage/PBEmpty.php');
 require_once('generated/Foo/TestMessage/NestedEnum.php');

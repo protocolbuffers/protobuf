@@ -142,6 +142,7 @@ static bool is_wrapper_msg(const upb_msgdef* m) {
 typedef struct {
   void* closure;
   void* submsg;
+  bool is_msg;
 } wrapperfields_parseframe_t;
 
 #define DEREF(msg, ofs, type) *(type*)(((uint8_t *)msg) + ofs)
@@ -446,6 +447,40 @@ static void *appendsubmsg_handler(void *closure, const void *hd) {
   custom_data_init(subklass, submsg PHP_PROTO_TSRMLS_CC);
 
   return submsg;
+}
+
+// Appends a wrapper submessage to a repeated field.
+static void *appendwrappersubmsg_handler(void *closure, const void *hd) {
+  zval* array = (zval*)closure;
+  TSRMLS_FETCH();
+  RepeatedField* intern = UNBOX(RepeatedField, array);
+
+  const submsg_handlerdata_t *submsgdata = hd;
+  Descriptor* subdesc =
+      UNBOX_HASHTABLE_VALUE(Descriptor, get_def_obj((void*)submsgdata->md));
+  zend_class_entry* subklass = subdesc->klass;
+  MessageHeader* submsg;
+  wrapperfields_parseframe_t* frame =
+      (wrapperfields_parseframe_t*)malloc(sizeof(wrapperfields_parseframe_t));
+
+#if PHP_MAJOR_VERSION < 7
+  zval* val = NULL;
+  MAKE_STD_ZVAL(val);
+  ZVAL_OBJ(val, subklass->create_object(subklass TSRMLS_CC));
+  repeated_field_push_native(intern, &val);
+  submsg = UNBOX(MessageHeader, val);
+#else
+  zend_object* obj = subklass->create_object(subklass TSRMLS_CC);
+  repeated_field_push_native(intern, &obj);
+  submsg = (MessageHeader*)((char*)obj - XtOffsetOf(MessageHeader, std));
+#endif
+  custom_data_init(subklass, submsg PHP_PROTO_TSRMLS_CC);
+
+  frame->closure = closure;
+  frame->submsg = submsg;
+  frame->is_msg = true;
+
+  return frame;
 }
 
 // Sets a non-repeated submessage field in a message.
@@ -912,9 +947,9 @@ static void* wrapper_submsg_handler(void* closure, const void* hd) {
       UNBOX_HASHTABLE_VALUE(Descriptor, get_def_obj((void*)submsgdata->md));
   zend_class_entry* subklass = subdesc->klass;
   zval* submsg_php;
-  // MessageHeader* submsg;
-  // wrapperfields_parseframe_t* frame =
-  //     (wrapperfields_parseframe_t*)malloc(sizeof(wrapperfields_parseframe_t));
+  MessageHeader* submsg;
+  wrapperfields_parseframe_t* frame =
+      (wrapperfields_parseframe_t*)malloc(sizeof(wrapperfields_parseframe_t));
 
   CACHED_VALUE* cached = find_zval_property(msg, submsgdata->fd);
 
@@ -935,14 +970,15 @@ static void* wrapper_submsg_handler(void* closure, const void* hd) {
   }
 
   submsg_php = CACHED_PTR_TO_ZVAL_PTR(cached);
-  // submsg = UNBOX(MessageHeader, submsg_php);
+  submsg = UNBOX(MessageHeader, submsg_php);
 
-  // frame->closure = closure;
-  // frame->submsg = submsg;
+  frame->closure = closure;
+  frame->submsg = submsg;
+  frame->is_msg = true;
 
-  // return frame;
+  return frame;
 
-  return submsg_php;
+  //  return submsg_php;
 }
 
 static bool wrapper_submsg_end_handler(void *closure, const void *hd) {
@@ -987,7 +1023,11 @@ static void add_handlers_for_repeated_field(upb_handlers *h,
     case UPB_TYPE_MESSAGE: {
       upb_handlerattr attr = UPB_HANDLERATTR_INIT;
       attr.handler_data = newsubmsghandlerdata(h, 0, f);
-      upb_handlers_setstartsubmsg(h, f, appendsubmsg_handler, &attr);
+      if (is_wrapper_msg(upb_fielddef_msgsubdef(f))) {
+        upb_handlers_setstartsubmsg(h, f, appendwrappersubmsg_handler, &attr);
+      } else {
+        upb_handlers_setstartsubmsg(h, f, appendsubmsg_handler, &attr);
+      }
       break;
     }
   }
@@ -1130,14 +1170,14 @@ static void add_handlers_for_oneof_field(upb_handlers *h,
   }
 }
 
-#define DEFINE_WRAPPER_HANDLER(type, ctype)             \
-  static bool type##wrapper_handler(                    \
-      void* closure, const void* hd, ctype val) {       \
-    zval* msg_php = closure;                            \
-    MessageHeader* msg = UNBOX(MessageHeader, msg_php); \
-    const size_t *ofs = hd;                             \
-    DEREF(message_data(msg), *ofs, ctype) = val;        \
-    return true;                                        \
+#define DEFINE_WRAPPER_HANDLER(type, ctype)       \
+  static bool type##wrapper_handler(              \
+      void* closure, const void* hd, ctype val) { \
+    wrapperfields_parseframe_t* frame = closure;  \
+    MessageHeader* msg = frame->submsg;           \
+    const size_t *ofs = hd;                       \
+    DEREF(message_data(msg), *ofs, ctype) = val;  \
+    return true;                                  \
   }
 
 DEFINE_WRAPPER_HANDLER(bool,   bool)
@@ -1153,8 +1193,9 @@ DEFINE_WRAPPER_HANDLER(double, double)
 static bool strwrapper_end_handler(void *closure, const void *hd) {
   stringfields_parseframe_t* frame = closure;
   const upb_fielddef **field = (const upb_fielddef **) hd;
-  zval* msg_php = frame->closure;
-  MessageHeader* msg = UNBOX(MessageHeader, msg_php);
+
+  wrapperfields_parseframe_t* wrapper_frame = frame->closure;
+  MessageHeader* msg = wrapper_frame->submsg;
 
   CACHED_VALUE* cached = find_zval_property(msg, *field);
 

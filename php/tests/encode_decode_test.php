@@ -5,6 +5,7 @@ require_once('test_util.php');
 
 use Google\Protobuf\RepeatedField;
 use Google\Protobuf\GPBType;
+use Foo\TestInt32Value;
 use Foo\TestStringValue;
 use Foo\TestAny;
 use Foo\TestEnum;
@@ -98,6 +99,20 @@ class EncodeDecodeTest extends TestBase
     #     $this->assertSame("1", $m->serializeToJsonString());
     # }
 
+    # public function testDecodeInt32Value()
+    # {
+    #     $m = new TestInt32Value();
+    #     $m->mergeFromJsonString("{\"field\":12345}");
+    #     $this->assertSame(12345, $m->getField()->getValue());
+    # }
+
+    # public function testDecodeRepeatedInt32Value()
+    # {
+    #     $m = new TestInt32Value();
+    #     $m->mergeFromJsonString("{\"repeated_field\":[12345]}");
+    #     $this->assertSame(12345, $m->getRepeatedField()[0]->getValue());
+    # }
+
     # public function testDecodeTopLevelUInt32Value()
     # {
     #     $m = new UInt32Value();
@@ -171,9 +186,23 @@ class EncodeDecodeTest extends TestBase
     public function testDecodeStringValue()
     {
         $m = new TestStringValue();
-        $m->mergeFromJsonString("{\"field\":\"\"}");
-        $this->assertSame("", $m->getField()->getValue());
+        $m->mergeFromJsonString("{\"field\":\"a\"}");
+        $this->assertSame("a", $m->getField()->getValue());
     }
+
+    public function testDecodeRepeatedStringValue()
+    {
+        $m = new TestStringValue();
+        $m->mergeFromJsonString("{\"repeated_field\":[\"a\"]}");
+        $this->assertSame("a", $m->getRepeatedField()[0]->getValue());
+    }
+
+    # public function testDecodeMapStringValue()
+    # {
+    #     $m = new TestStringValue();
+    #     $m->mergeFromJsonString("{\"map_field\":[\"1\", \"a\"]}");
+    #     $this->assertSame("a", $m->getMapField()[1]->getValue());
+    # }
 
     # public function testEncodeStringValue()
     # {

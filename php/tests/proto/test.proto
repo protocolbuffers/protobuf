@@ -215,6 +215,12 @@ message TestAny {
   google.protobuf.Any any = 1;
 }
 
+message TestInt32Value {
+  google.protobuf.Int32Value field = 1;
+  repeated google.protobuf.Int32Value repeated_field = 2;
+}
+
 message TestStringValue {
   google.protobuf.StringValue field = 1;
+  repeated google.protobuf.StringValue repeated_field = 2;
 }
