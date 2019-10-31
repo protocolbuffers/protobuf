@@ -630,7 +630,8 @@ static void* startstringwrapper_handler(void* closure, const void* hd,
                                         size_t size_hint) {
   VALUE* rbval = closure;
   (void)size_hint;
-  *rbval = get_frozen_string(NULL, 0, false);
+  *rbval = rb_str_new(NULL, 0);
+  rb_enc_associate(*rbval, kRubyStringUtf8Encoding);
   return closure;
 }
 
@@ -638,7 +639,7 @@ static size_t stringwrapper_handler(void* closure, const void* hd,
                                     const char* ptr, size_t len,
                                     const upb_bufhandle* handle) {
   VALUE* rbval = closure;
-  *rbval = get_frozen_string(ptr, len, false);
+  *rbval = noleak_rb_str_cat(*rbval, ptr, len);
   return len;
 }
 
@@ -646,7 +647,8 @@ static void* startbyteswrapper_handler(void* closure, const void* hd,
                                        size_t size_hint) {
   VALUE* rbval = closure;
   (void)size_hint;
-  *rbval = get_frozen_string(NULL, 0, true);
+  *rbval = rb_str_new(NULL, 0);
+  rb_enc_associate(*rbval, kRubyString8bitEncoding);
   return closure;
 }
 
@@ -654,7 +656,7 @@ static size_t byteswrapper_handler(void* closure, const void* hd,
                                    const char* ptr, size_t len,
                                    const upb_bufhandle* handle) {
   VALUE* rbval = closure;
-  *rbval = get_frozen_string(ptr, len, true);
+  *rbval = noleak_rb_str_cat(*rbval, ptr, len);
   return len;
 }
 

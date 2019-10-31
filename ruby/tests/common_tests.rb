@@ -1295,9 +1295,9 @@ module CommonTests
       assert_equal true, m.bool.value
       assert_equal true, m.bool_as_value
 
-      assert_equal 'str', m.string_as_value
-      assert_equal 'str', m.string.value
-      assert_equal 'str', m.string_as_value
+      assert_equal "st\nr", m.string_as_value
+      assert_equal "st\nr", m.string.value
+      assert_equal "st\nr", m.string_as_value
 
       assert_equal 'fun', m.bytes_as_value
       assert_equal 'fun', m.bytes.value
@@ -1312,7 +1312,7 @@ module CommonTests
       uint32: Google::Protobuf::UInt32Value.new(value: 5),
       uint64: Google::Protobuf::UInt64Value.new(value: 6),
       bool: Google::Protobuf::BoolValue.new(value: true),
-      string: Google::Protobuf::StringValue.new(value: 'str'),
+      string: Google::Protobuf::StringValue.new(value: "st\nr"),
       bytes: Google::Protobuf::BytesValue.new(value: 'fun'),
       real_string: '100'
     )
@@ -1332,6 +1332,10 @@ module CommonTests
     # Test that the lazy form compares equal to the expanded form.
     m5 = proto_module::Wrapper::decode(serialized2)
     assert_equal m5, m
+
+    serialized_json = proto_module::Wrapper::encode_json(m)
+    m6 = proto_module::Wrapper::decode_json(serialized_json)
+    assert_equal m6, m
   end
 
   def test_repeated_wrappers
@@ -1374,6 +1378,12 @@ module CommonTests
     # Test that the lazy form compares equal to the expanded form.
     m5 = proto_module::Wrapper::decode(serialized2)
     assert_equal m5, m
+
+    # Test JSON.
+    serialized_json = proto_module::Wrapper::encode_json(m5)
+    m6 = proto_module::Wrapper::decode_json(serialized_json)
+    run_asserts.call(m6)
+    assert_equal m6, m
   end
 
   def test_oneof_wrappers
