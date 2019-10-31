@@ -55,6 +55,7 @@ static  zend_function_entry message_methods[] = {
   PHP_ME(Message, serializeToJsonString, NULL, ZEND_ACC_PUBLIC)
   PHP_ME(Message, mergeFromJsonString, NULL, ZEND_ACC_PUBLIC)
   PHP_ME(Message, mergeFrom, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(Message, readWrapperValue, NULL, ZEND_ACC_PROTECTED)
   PHP_ME(Message, readOneof, NULL, ZEND_ACC_PROTECTED)
   PHP_ME(Message, writeOneof, NULL, ZEND_ACC_PROTECTED)
   PHP_ME(Message, whichOneof, NULL, ZEND_ACC_PROTECTED)
@@ -553,6 +554,36 @@ PHP_METHOD(Message, mergeFrom) {
   }
 
   layout_merge(from->descriptor->layout, from, to TSRMLS_CC);
+}
+
+PHP_METHOD(Message, readWrapperValue) {
+  char* member;
+  PHP_PROTO_SIZE length;
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &member,
+                            &length) == FAILURE) {
+    return;
+  }
+
+  MessageHeader* msg = UNBOX(MessageHeader, getThis());
+  const upb_fielddef* field =
+      upb_msgdef_ntofz(msg->descriptor->msgdef, member);
+
+  zval* cached_zval =
+      CACHED_PTR_TO_ZVAL_PTR(find_zval_property(msg, field));
+
+  if (Z_TYPE_P(cached_zval) == IS_NULL) {
+    RETURN_NULL();
+  }
+
+  if (Z_TYPE_P(cached_zval) == IS_OBJECT) {
+    const upb_msgdef* submsgdef = upb_fielddef_msgsubdef(field);
+    const upb_fielddef* value_field = upb_msgdef_itof(submsgdef, 1);
+    MessageHeader* msg = UNBOX(MessageHeader, cached_zval);
+    layout_get(msg->descriptor->layout, msg, value_field,
+               ZVAL_PTR_TO_CACHED_PTR(return_value) TSRMLS_CC);
+  } else {
+    RETURN_ZVAL(cached_zval, 1, 0);
+  }
 }
 
 PHP_METHOD(Message, readOneof) {

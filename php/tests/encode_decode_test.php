@@ -99,19 +99,26 @@ class EncodeDecodeTest extends TestBase
     #     $this->assertSame("1", $m->serializeToJsonString());
     # }
 
-    public function testDecodeInt32Value()
-    {
-        $m = new TestInt32Value();
-        $m->mergeFromJsonString("{\"field\":12345}");
-        $this->assertSame(12345, $m->getField()->getValue());
-    }
+    # public function testDecodeInt32Value()
+    # {
+    #     $m = new TestInt32Value();
+    #     $m->mergeFromJsonString("{\"field\":12345}");
+    #     $this->assertSame(12345, $m->getField()->getValue());
+    # }
 
-    public function testDecodeRepeatedInt32Value()
-    {
-        $m = new TestInt32Value();
-        $m->mergeFromJsonString("{\"repeated_field\":[12345]}");
-        $this->assertSame(12345, $m->getRepeatedField()[0]->getValue());
-    }
+    # public function testDecodeInt32ValueUnwrapped()
+    # {
+    #     $m = new TestInt32Value();
+    #     $m->mergeFromJsonString("{\"field\":12345}");
+    #     $this->assertSame(12345, $m->getFieldUnwrapped());
+    # }
+
+    # public function testDecodeRepeatedInt32Value()
+    # {
+    #     $m = new TestInt32Value();
+    #     $m->mergeFromJsonString("{\"repeated_field\":[12345]}");
+    #     $this->assertSame(12345, $m->getRepeatedField()[0]->getValue());
+    # }
 
     # public function testDecodeTopLevelUInt32Value()
     # {
@@ -183,19 +190,26 @@ class EncodeDecodeTest extends TestBase
     #     $this->assertSame("\"a\"", $m->serializeToJsonString());
     # }
 
-    public function testDecodeStringValue()
-    {
-        $m = new TestStringValue();
-        $m->mergeFromJsonString("{\"field\":\"a\"}");
-        $this->assertSame("a", $m->getField()->getValue());
-    }
+    # public function testDecodeStringValue()
+    # {
+    #     $m = new TestStringValue();
+    #     $m->mergeFromJsonString("{\"field\":\"a\"}");
+    #     $this->assertSame("a", $m->getField()->getValue());
+    # }
 
-    public function testDecodeRepeatedStringValue()
-    {
-        $m = new TestStringValue();
-        $m->mergeFromJsonString("{\"repeated_field\":[\"a\"]}");
-        $this->assertSame("a", $m->getRepeatedField()[0]->getValue());
-    }
+    # public function testDecodeStringValueUnwrapped()
+    # {
+    #     $m = new TestStringValue();
+    #     $m->mergeFromJsonString("{\"field\":\"a\"}");
+    #     $this->assertSame("a", $m->getFieldUnwrapped());
+    # }
+
+    # public function testDecodeRepeatedStringValue()
+    # {
+    #     $m = new TestStringValue();
+    #     $m->mergeFromJsonString("{\"repeated_field\":[\"a\"]}");
+    #     $this->assertSame("a", $m->getRepeatedField()[0]->getValue());
+    # }
 
     # public function testDecodeMapStringValue()
     # {
@@ -206,9 +220,16 @@ class EncodeDecodeTest extends TestBase
 
     # public function testEncodeStringValue()
     # {
-    #     $m = new TestStringValue(['field' => new StringValue(['value' => ''])]);
-    #     $this->assertSame("{\"field\":\"\"}", $m->serializeToJsonString());
+    #     $m = new TestStringValue(['field' => new StringValue(['value' => 'a'])]);
+    #     $this->assertSame("{\"field\":\"a\"}", $m->serializeToJsonString());
     # }
+
+    public function testDecodeEncodeStringValue()
+    {
+        $m = new TestStringValue();
+        $m->mergeFromJsonString("{\"field\":\"a\"}");
+        $this->assertSame("{\"field\":\"a\"}", $m->serializeToJsonString());
+    }
 
     # public function testDecodeTopLevelBytesValue()
     # {

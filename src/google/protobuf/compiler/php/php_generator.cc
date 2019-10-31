@@ -628,7 +628,7 @@ void GenerateField(const FieldDescriptor* field, io::Printer* printer,
   } else {
     GenerateFieldDocComment(printer, field, is_descriptor, kFieldProperty);
     printer->Print(
-        "private $^name^ = ^default^;\n",
+        "protected $^name^ = ^default^;\n",
         "name", field->name(),
         "default", DefaultForField(field));
   }
@@ -679,13 +679,23 @@ void GenerateFieldAccessor(const FieldDescriptor* field, bool is_descriptor,
       field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
       IsWrapperType(field)) {
     GenerateWrapperFieldGetterDocComment(printer, field);
-    printer->Print(
+    if (field->containing_oneof()) {
+      printer->Print(
         "public function get^camel_name^Unwrapped()\n"
         "{\n"
         "    $wrapper = $this->get^camel_name^();\n"
         "    return is_null($wrapper) ? null : $wrapper->getValue();\n"
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true));
+    } else {
+      printer->Print(
+          "public function get^camel_name^Unwrapped()\n"
+          "{\n"
+          "    return $this->readWrapperValue(\"^field_name^\");\n"
+          "}\n\n",
+          "camel_name", UnderscoresToCamelCase(field->name(), true),
+          "field_name", field->name());
+    }
   }
 
   // Generate setter.

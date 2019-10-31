@@ -175,6 +175,17 @@ class Message
         }
     }
 
+    protected function readWrapperValue($member)
+    {
+        $value = $this->$member;
+
+        if (is_object($value)) {
+          return $value->getValue();
+        } else {
+          return $value;
+        }
+    }
+
     protected function readOneof($number)
     {
         $field = $this->desc->getFieldByNumber($number);
