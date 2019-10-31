@@ -1184,7 +1184,8 @@ js_EXTRA_DIST=                                                         \
   js/test15.proto                                                      \
   js/test_bootstrap.js                                                 \
   js/testbinary.proto                                                  \
-  js/testempty.proto
+  js/testempty.proto                                                   \
+  js/testlargenumbers.proto
 
 all_EXTRA_DIST=$(csharp_EXTRA_DIST) $(java_EXTRA_DIST) $(objectivec_EXTRA_DIST) $(php_EXTRA_DIST) $(python_EXTRA_DIST) $(ruby_EXTRA_DIST) $(js_EXTRA_DIST)
 
