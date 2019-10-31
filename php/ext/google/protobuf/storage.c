@@ -811,7 +811,8 @@ zval* layout_get(MessageLayout* layout, MessageHeader* header,
     repeated_field_ensure_created(field, cache PHP_PROTO_TSRMLS_CC);
     return CACHED_PTR_TO_ZVAL_PTR(cache);
   } else {
-    if (is_wrapper_msg(upb_fielddef_msgsubdef(field))) {
+    if (upb_fielddef_type(field) == UPB_TYPE_MESSAGE &&
+        is_wrapper_msg(upb_fielddef_msgsubdef(field))) {
       zval * cached_zval = CACHED_PTR_TO_ZVAL_PTR(cache);
       if (Z_TYPE_P(cached_zval) != IS_OBJECT &&
           Z_TYPE_P(cached_zval) != IS_NULL) {
