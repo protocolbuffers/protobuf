@@ -578,9 +578,11 @@ PHP_METHOD(Message, readWrapperValue) {
   if (Z_TYPE_P(cached_zval) == IS_OBJECT) {
     const upb_msgdef* submsgdef = upb_fielddef_msgsubdef(field);
     const upb_fielddef* value_field = upb_msgdef_itof(submsgdef, 1);
-    MessageHeader* msg = UNBOX(MessageHeader, cached_zval);
-    layout_get(msg->descriptor->layout, msg, value_field,
-               ZVAL_PTR_TO_CACHED_PTR(return_value) TSRMLS_CC);
+    MessageHeader* submsg = UNBOX(MessageHeader, cached_zval);
+    CACHED_VALUE* cached_value = find_zval_property(submsg, value_field);
+    layout_get(msg->descriptor->layout, submsg, value_field,
+               cached_value TSRMLS_CC);
+    RETURN_ZVAL(CACHED_PTR_TO_ZVAL_PTR(cached_value), 1, 0);
   } else {
     RETURN_ZVAL(cached_zval, 1, 0);
   }
