@@ -797,59 +797,72 @@ zval* layout_get(MessageLayout* layout, MessageHeader* header,
   if (upb_fielddef_containingoneof(field)) {
     if (*oneof_case != upb_fielddef_number(field)) {
       native_slot_get_default(upb_fielddef_type(field), cache TSRMLS_CC);
-    } else {
-      upb_fieldtype_t type = upb_fielddef_type(field);
-      CACHED_VALUE* stored_cache = find_zval_property(header, field);
-      native_slot_get(
-          type, value_memory(type, memory, stored_cache), cache TSRMLS_CC);
+      return CACHED_PTR_TO_ZVAL_PTR(cache);
     }
-    return CACHED_PTR_TO_ZVAL_PTR(cache);
+    // Intentional fall through to be handled as a signuarl field.
   } else if (is_map_field(field)) {
     map_field_ensure_created(field, cache PHP_PROTO_TSRMLS_CC);
     return CACHED_PTR_TO_ZVAL_PTR(cache);
   } else if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
     repeated_field_ensure_created(field, cache PHP_PROTO_TSRMLS_CC);
     return CACHED_PTR_TO_ZVAL_PTR(cache);
-  } else {
-    if (upb_fielddef_type(field) == UPB_TYPE_MESSAGE &&
-        is_wrapper_msg(upb_fielddef_msgsubdef(field))) {
-      zval * cached_zval = CACHED_PTR_TO_ZVAL_PTR(cache);
-      if (Z_TYPE_P(cached_zval) != IS_OBJECT &&
-          Z_TYPE_P(cached_zval) != IS_NULL) {
-        // Needs to expand value to wrapper.
-        const upb_msgdef* submsgdef = upb_fielddef_msgsubdef(field);
-        const upb_fielddef* value_field = upb_msgdef_itof(submsgdef, 1);
-        MessageHeader* submsg;
-        Descriptor* subdesc =
-            UNBOX_HASHTABLE_VALUE(
-                Descriptor, get_def_obj((void*)submsgdef));
-        zend_class_entry* subklass = subdesc->klass;
-#if PHP_MAJOR_VERSION < 7
-        zval* val = NULL;
-        MAKE_STD_ZVAL(val);
-        ZVAL_OBJ(val, subklass->create_object(subklass TSRMLS_CC));
-        submsg = UNBOX(MessageHeader, val);
-#else
-        zend_object* obj = subklass->create_object(subklass TSRMLS_CC);
-        submsg = (MessageHeader*)((char*)obj - XtOffsetOf(MessageHeader, std));
-#endif
-        custom_data_init(subklass, submsg PHP_PROTO_TSRMLS_CC);
-
-        layout_set(subdesc->layout, submsg, value_field, cached_zval TSRMLS_CC);
-#if PHP_MAJOR_VERSION < 7
-        ZVAL_ZVAL(cached_zval, val, 1, 1);
-#else
-        ZVAL_OBJ(cached_zval, obj);
-#endif
-        return CACHED_PTR_TO_ZVAL_PTR(cache);
-      }
-    } else {
-      upb_fieldtype_t type = upb_fielddef_type(field);
-      native_slot_get(type, value_memory(type, memory, cache),
-                      cache TSRMLS_CC);
-    }
-    return CACHED_PTR_TO_ZVAL_PTR(cache);
   }
+
+    // } else {
+    //   upb_fieldtype_t type = upb_fielddef_type(field);
+    //   CACHED_VALUE* stored_cache = find_zval_property(header, field);
+    //   native_slot_get(
+    //       type, value_memory(type, memory, stored_cache), cache TSRMLS_CC);
+    // }
+    // return CACHED_PTR_TO_ZVAL_PTR(cache);
+
+  CACHED_VALUE* stored_cache = find_zval_property(header, field);
+
+  if (upb_fielddef_type(field) == UPB_TYPE_MESSAGE &&
+      is_wrapper_msg(upb_fielddef_msgsubdef(field))) {
+    zval * cached_zval = CACHED_PTR_TO_ZVAL_PTR(stored_cache);
+    if (Z_TYPE_P(cached_zval) != IS_OBJECT &&
+        Z_TYPE_P(cached_zval) != IS_NULL) {
+      // Needs to expand value to wrapper.
+      const upb_msgdef* submsgdef = upb_fielddef_msgsubdef(field);
+      const upb_fielddef* value_field = upb_msgdef_itof(submsgdef, 1);
+      MessageHeader* submsg;
+      Descriptor* subdesc =
+          UNBOX_HASHTABLE_VALUE(
+              Descriptor, get_def_obj((void*)submsgdef));
+      zend_class_entry* subklass = subdesc->klass;
+#if PHP_MAJOR_VERSION < 7
+      zval* val = NULL;
+      MAKE_STD_ZVAL(val);
+      ZVAL_OBJ(val, subklass->create_object(subklass TSRMLS_CC));
+      submsg = UNBOX(MessageHeader, val);
+#else
+      zend_object* obj = subklass->create_object(subklass TSRMLS_CC);
+      submsg = (MessageHeader*)((char*)obj - XtOffsetOf(MessageHeader, std));
+#endif
+      custom_data_init(subklass, submsg PHP_PROTO_TSRMLS_CC);
+
+      layout_set(subdesc->layout, submsg, value_field, cached_zval TSRMLS_CC);
+#if PHP_MAJOR_VERSION < 7
+      ZVAL_ZVAL(cached_zval, val, 1, 1);
+#else
+      ZVAL_OBJ(cached_zval, obj);
+#endif
+      if (stored_cache != cache) {
+#if PHP_MAJOR_VERSION < 7
+        ZVAL_ZVAL(CACHED_PTR_TO_ZVAL_PTR(cache), cached_zval, 1, 0);
+#else
+        ZVAL_OBJ(CACHED_PTR_TO_ZVAL_PTR(cache), obj);
+#endif
+      }
+      return CACHED_PTR_TO_ZVAL_PTR(cache);
+    }
+  } else {
+    upb_fieldtype_t type = upb_fielddef_type(field);
+    native_slot_get(type, value_memory(type, memory, stored_cache),
+                    cache TSRMLS_CC);
+  }
+  return CACHED_PTR_TO_ZVAL_PTR(cache);
 }
 
 void layout_set(MessageLayout* layout, MessageHeader* header,

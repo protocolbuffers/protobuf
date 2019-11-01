@@ -1336,9 +1336,9 @@ class EncodeDecodeTest extends TestBase
         // Oneof with non-default
         $m = new $class();
         $m->mergeFromJsonString("{\"oneof_field\":" . $nonDefaultValueData . "}");
-        $wrapper = $m->getField();
+        $wrapper = $m->getOneofField();
         $this->assertEquals($nonDefaultValue, $wrapper->getValue());
-        $this->assertEquals("oneof_field", $m->getOneofs());
+        $this->assertEquals("oneof_field", $m->getOneofFields());
     }
 
     # /**
