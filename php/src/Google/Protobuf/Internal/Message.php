@@ -177,13 +177,26 @@ class Message
 
     protected function readWrapperValue($member)
     {
-        $value = $this->$member;
+        $wrapper = $this->$member;
 
-        if (is_object($value)) {
-          return $value->getValue();
+        if (is_null($wrapper)) {
+            return NULL;
         } else {
-          return $value;
+            return $wrapper->getValue();
         }
+    }
+
+    protected function writeWrapperValue($member, $value)
+    {
+        $wrapped_value = $value;
+        if (!is_null($value)) {
+            $field = $this->desc->getFieldByName($member);
+            $desc = $field->getMessageType();
+            $klass = $desc->getClass();
+            $wrapped_value = new $klass;
+            $wrapped_value->setValue($value);
+        }
+        $this->$member = $wrapped_value;
     }
 
     protected function readOneof($number)

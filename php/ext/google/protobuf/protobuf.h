@@ -966,6 +966,7 @@ void* slot_memory(MessageLayout* layout, const void* storage,
 PHP_METHOD(Message, clear);
 PHP_METHOD(Message, mergeFrom);
 PHP_METHOD(Message, readWrapperValue);
+PHP_METHOD(Message, writeWrapperValue);
 PHP_METHOD(Message, readOneof);
 PHP_METHOD(Message, writeOneof);
 PHP_METHOD(Message, whichOneof);

@@ -56,6 +56,7 @@ static  zend_function_entry message_methods[] = {
   PHP_ME(Message, mergeFromJsonString, NULL, ZEND_ACC_PUBLIC)
   PHP_ME(Message, mergeFrom, NULL, ZEND_ACC_PUBLIC)
   PHP_ME(Message, readWrapperValue, NULL, ZEND_ACC_PROTECTED)
+  PHP_ME(Message, writeWrapperValue, NULL, ZEND_ACC_PROTECTED)
   PHP_ME(Message, readOneof, NULL, ZEND_ACC_PROTECTED)
   PHP_ME(Message, writeOneof, NULL, ZEND_ACC_PROTECTED)
   PHP_ME(Message, whichOneof, NULL, ZEND_ACC_PROTECTED)
@@ -585,6 +586,41 @@ PHP_METHOD(Message, readWrapperValue) {
     RETURN_ZVAL(CACHED_PTR_TO_ZVAL_PTR(cached_value), 1, 0);
   } else {
     RETURN_ZVAL(cached_zval, 1, 0);
+  }
+}
+
+PHP_METHOD(Message, writeWrapperValue) {
+  char* member;
+  PHP_PROTO_SIZE length;
+  zval* value;
+  if (zend_parse_parameters(
+      ZEND_NUM_ARGS() TSRMLS_CC, "sz", &member, &length, &value) ==
+      FAILURE) {
+    return;
+  }
+
+  MessageHeader* msg = UNBOX(MessageHeader, getThis());
+  const upb_fielddef* field = upb_msgdef_ntofz(msg->descriptor->msgdef, member);
+
+  zval* cached_zval =
+      CACHED_PTR_TO_ZVAL_PTR(find_zval_property(msg, field));
+
+  if (Z_TYPE_P(value) == IS_NULL) {
+    MessageHeader* msg = UNBOX(MessageHeader, getThis());
+    layout_set(msg->descriptor->layout, msg,
+               field, value TSRMLS_CC);
+    return;
+  }
+
+  if (Z_TYPE_P(cached_zval) == IS_OBJECT) {
+    const upb_msgdef* submsgdef = upb_fielddef_msgsubdef(field);
+    const upb_fielddef* value_field = upb_msgdef_itof(submsgdef, 1);
+    MessageHeader* submsg = UNBOX(MessageHeader, cached_zval);
+    CACHED_VALUE* cached_value = find_zval_property(submsg, value_field);
+    layout_set(submsg->descriptor->layout, submsg,
+               value_field, value TSRMLS_CC);
+  } else {
+    ZVAL_ZVAL(cached_zval, value, 1, 0);
   }
 }
 
