@@ -6,7 +6,12 @@ require_once('test_util.php');
 use Google\Protobuf\RepeatedField;
 use Google\Protobuf\GPBType;
 use Foo\TestInt32Value;
+use Foo\TestInt64Value;
+use Foo\TestUInt32Value;
+use Foo\TestUInt64Value;
+use Foo\TestBoolValue;
 use Foo\TestStringValue;
+use Foo\TestBytesValue;
 use Foo\TestAny;
 use Foo\TestEnum;
 use Foo\TestMessage;
@@ -1285,4 +1290,83 @@ class EncodeDecodeTest extends TestBase
     #     $this->assertTrue(true);
     # }
 
+    /**
+     * @dataProvider wrappersDataProvider
+     */
+    public function testWrapperJsonDecodeAndGet(
+        $class,
+        $nonDefaultValue,
+        $nonDefaultValueData,
+        $defaultValue,
+        $defaultValueData
+    )
+    {
+        // Singular with non-default
+        $m = new $class();
+        $m->mergeFromJsonString("{\"field\":" . $nonDefaultValueData . "}");
+        $wrapper = $m->getField();
+        $this->assertEquals($nonDefaultValue, $wrapper->getValue());
+
+        // Singular with default
+        $m = new $class();
+        $m->mergeFromJsonString("{\"field\":" . $defaultValueData . "}");
+        $wrapper = $m->getField();
+        $this->assertEquals($defaultValue, $wrapper->getValue());
+
+        // Repeated with empty
+        $m = new $class();
+        $m->mergeFromJsonString("{\"repeated_field\":[]}");
+        $repeatedWrapper = $m->getRepeatedField();
+        $this->assertSame(0, count($repeatedWrapper));
+
+        // Repeated with non-default
+        $m = new $class();
+        $m->mergeFromJsonString("{\"repeated_field\":[" . $defaultValueData . "]}");
+        $repeatedWrapper = $m->getRepeatedField();
+        $this->assertSame(1, count($repeatedWrapper));
+        $this->assertEquals($defaultValue, $repeatedWrapper[0]->getValue());
+
+        // Repeated with default
+        $m = new $class();
+        $m->mergeFromJsonString("{\"repeated_field\":[" . $defaultValueData . "]}");
+        $repeatedWrapper = $m->getRepeatedField();
+        $this->assertSame(1, count($repeatedWrapper));
+        $this->assertEquals($defaultValue, $repeatedWrapper[0]->getValue());
+
+        # // Oneof with non-default
+        # $m = new $class();
+        # $m->mergeFromJsonString("{\"oneof_field\":" . $nonDefaultValueData . "}");
+        # $wrapper = $m->getField();
+        # $this->assertEquals($nonDefaultValue, $wrapper->getValue());
+        # $this->assertEquals("oneof_field", $m->getOneofs());
+    }
+
+    /**
+     * @dataProvider wrappersDataProvider
+     */
+    public function testWrapperJsonDecodeAndGetUnwrapped(
+        $class,
+        $nonDefaultValue,
+        $nonDefaultValueData,
+        $defaultValue,
+        $defaultValueData
+    )
+    {
+        // Singular with non-default
+        $m = new $class();
+        $m->mergeFromJsonString("{\"field\":" . $nonDefaultValueData . "}");
+        $this->assertEquals($nonDefaultValue, $m->getFieldUnwrapped());
+
+        // Singular with default
+        $m = new $class();
+        $m->mergeFromJsonString("{\"field\":" . $defaultValueData . "}");
+        $this->assertEquals($defaultValue, $m->getFieldUnwrapped());
+    }
+
+    public function wrappersDataProvider()
+    {
+        return [
+            [TestStringValue::class, "a", "\"a\"", "", "\"\""],
+        ];
+    }
 }
