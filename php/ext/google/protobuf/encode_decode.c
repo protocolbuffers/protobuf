@@ -969,6 +969,36 @@ static void* wrapper_submsg_handler(void* closure, const void* hd) {
   return frame;
 }
 
+// Handler for a wrapper submessage field in a oneof.
+static void* wrapper_oneofsubmsg_handler(void* closure, const void* hd) {
+  MessageHeader* msg = closure;
+  const oneof_handlerdata_t *oneofdata = hd;
+  uint32_t oldcase = DEREF(message_data(msg), oneofdata->case_ofs, uint32_t);
+  TSRMLS_FETCH();
+  Descriptor* subdesc =
+      UNBOX_HASHTABLE_VALUE(Descriptor, get_def_obj((void*)oneofdata->md));
+  zend_class_entry* subklass = subdesc->klass;
+  wrapperfields_parseframe_t* frame =
+      (wrapperfields_parseframe_t*)malloc(sizeof(wrapperfields_parseframe_t));
+  CACHED_VALUE* cached = OBJ_PROP(&msg->std, oneofdata->property_ofs);
+  MessageHeader* submsg;
+
+  if (oldcase != oneofdata->oneof_case_num) {
+    oneof_cleanup(msg, oneofdata);
+    frame->submsg = cached;
+    frame->is_msg = false;
+  } else {
+    submsg = UNBOX(MessageHeader, CACHED_PTR_TO_ZVAL_PTR(cached));
+    frame->submsg = submsg;
+    frame->is_msg = true;
+  }
+
+  DEREF(message_data(msg), oneofdata->case_ofs, uint32_t) =
+      oneofdata->oneof_case_num;
+
+  return frame;
+}
+
 static bool wrapper_submsg_end_handler(void *closure, const void *hd) {
   wrapperfields_parseframe_t* frame = closure;
   free(frame);
@@ -1153,7 +1183,12 @@ static void add_handlers_for_oneof_field(upb_handlers *h,
       break;
     }
     case UPB_TYPE_MESSAGE: {
-      upb_handlers_setstartsubmsg(h, f, oneofsubmsg_handler, &attr);
+      if (is_wrapper_msg(upb_fielddef_msgsubdef(f))) {
+        upb_handlers_setstartsubmsg(h, f, wrapper_oneofsubmsg_handler, &attr);
+        upb_handlers_setendsubmsg(h, f, wrapper_submsg_end_handler, &attr);
+      } else {
+        upb_handlers_setstartsubmsg(h, f, oneofsubmsg_handler, &attr);
+      }
       break;
     }
   }
