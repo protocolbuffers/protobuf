@@ -808,14 +808,6 @@ zval* layout_get(MessageLayout* layout, MessageHeader* header,
     return CACHED_PTR_TO_ZVAL_PTR(cache);
   }
 
-    // } else {
-    //   upb_fieldtype_t type = upb_fielddef_type(field);
-    //   CACHED_VALUE* stored_cache = find_zval_property(header, field);
-    //   native_slot_get(
-    //       type, value_memory(type, memory, stored_cache), cache TSRMLS_CC);
-    // }
-    // return CACHED_PTR_TO_ZVAL_PTR(cache);
-
   CACHED_VALUE* stored_cache = find_zval_property(header, field);
 
   if (upb_fielddef_type(field) == UPB_TYPE_MESSAGE &&

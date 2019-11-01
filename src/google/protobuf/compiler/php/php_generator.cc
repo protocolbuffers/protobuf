@@ -679,23 +679,13 @@ void GenerateFieldAccessor(const FieldDescriptor* field, bool is_descriptor,
       field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
       IsWrapperType(field)) {
     GenerateWrapperFieldGetterDocComment(printer, field);
-    if (field->containing_oneof()) {
-      printer->Print(
+    printer->Print(
         "public function get^camel_name^Unwrapped()\n"
         "{\n"
-        "    $wrapper = $this->get^camel_name^();\n"
-        "    return is_null($wrapper) ? null : $wrapper->getValue();\n"
+        "    return $this->readWrapperValue(\"^field_name^\");\n"
         "}\n\n",
-        "camel_name", UnderscoresToCamelCase(field->name(), true));
-    } else {
-      printer->Print(
-          "public function get^camel_name^Unwrapped()\n"
-          "{\n"
-          "    return $this->readWrapperValue(\"^field_name^\");\n"
-          "}\n\n",
-          "camel_name", UnderscoresToCamelCase(field->name(), true),
-          "field_name", field->name());
-    }
+        "camel_name", UnderscoresToCamelCase(field->name(), true),
+        "field_name", field->name());
   }
 
   // Generate setter.
@@ -802,25 +792,14 @@ void GenerateFieldAccessor(const FieldDescriptor* field, bool is_descriptor,
       field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
       IsWrapperType(field)) {
     GenerateWrapperFieldSetterDocComment(printer, field);
-    if (field->containing_oneof()) {
-      printer->Print(
-          "public function set^camel_name^Unwrapped($var)\n"
-          "{\n"
-          "    $wrappedVar = is_null($var) ? null : new \\^wrapper_type^(['value' => $var]);\n"
-          "    return $this->set^camel_name^($wrappedVar);\n"
-          "}\n\n",
-          "camel_name", UnderscoresToCamelCase(field->name(), true),
-          "wrapper_type", LegacyFullClassName(field->message_type(), is_descriptor));
-    } else {
-      printer->Print(
-          "public function set^camel_name^Unwrapped($var)\n"
-          "{\n"
-          "    $this->writeWrapperValue(\"^field_name^\", $var);\n"
-          "    return $this;"
-          "}\n\n",
-          "camel_name", UnderscoresToCamelCase(field->name(), true),
-          "field_name", field->name());
-    }
+    printer->Print(
+        "public function set^camel_name^Unwrapped($var)\n"
+        "{\n"
+        "    $this->writeWrapperValue(\"^field_name^\", $var);\n"
+        "    return $this;"
+        "}\n\n",
+        "camel_name", UnderscoresToCamelCase(field->name(), true),
+        "field_name", field->name());
   }
 
   // Generate has method for proto2 only.

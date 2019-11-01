@@ -569,6 +569,14 @@ PHP_METHOD(Message, readWrapperValue) {
   const upb_fielddef* field =
       upb_msgdef_ntofz(msg->descriptor->msgdef, member);
 
+  if (upb_fielddef_containingoneof(field)) {
+    uint32_t* oneof_case =
+        slot_oneof_case(msg->descriptor->layout, message_data(msg), field);
+    if (*oneof_case != upb_fielddef_number(field)) {
+      RETURN_NULL();
+    }
+  }
+
   zval* cached_zval =
       CACHED_PTR_TO_ZVAL_PTR(find_zval_property(msg, field));
 
@@ -610,6 +618,19 @@ PHP_METHOD(Message, writeWrapperValue) {
     layout_set(msg->descriptor->layout, msg,
                field, value TSRMLS_CC);
     return;
+  }
+
+  if (upb_fielddef_containingoneof(field)) {
+    uint32_t* oneof_case =
+        slot_oneof_case(msg->descriptor->layout, message_data(msg), field);
+    if (*oneof_case != upb_fielddef_number(field)) {
+      zval null_value;
+      ZVAL_NULL(&null_value);
+      layout_set(msg->descriptor->layout, msg, field, &null_value TSRMLS_CC);
+      cached_zval = CACHED_PTR_TO_ZVAL_PTR(find_zval_property(msg, field));
+      ZVAL_ZVAL(cached_zval, value, 1, 0);
+      return;
+    }
   }
 
   if (Z_TYPE_P(cached_zval) == IS_OBJECT) {
