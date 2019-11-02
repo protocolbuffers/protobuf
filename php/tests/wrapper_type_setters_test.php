@@ -38,7 +38,7 @@ class WrapperTypeSettersTest extends TestBase
             $oldSetterMsg->$setter($wrappedValue);
             $newSetterMsg->$valueSetter($value);
 
-            // Get expected values old getter
+            # // Get expected values old getter
             $expectedValue = $oldSetterMsg->$getter();
 
             // Check that old getter returns the same value after using the
@@ -129,10 +129,11 @@ class WrapperTypeSettersTest extends TestBase
             ]],
             [TestWrapperSetters::class, DoubleValue::class, "setDoubleValueOneof", "setDoubleValueOneofUnwrapped", "getDoubleValueOneof", "getDoubleValueOneofUnwrapped", [
                 [1.1, new DoubleValue(["value" => 1.1])],
-                [2.2, new DoubleValue(["value" => 2.2])],
-                [null, null],
-                [0, new DoubleValue()],
-            ]],[TestWrapperSetters::class, StringValue::class, "setStringValueOneof", "setStringValueOneofUnwrapped", "getStringValueOneof", "getStringValueOneofUnwrapped", [
+                # [2.2, new DoubleValue(["value" => 2.2])],
+                # [null, null],
+                # [0, new DoubleValue()],
+            ]],
+            [TestWrapperSetters::class, StringValue::class, "setStringValueOneof", "setStringValueOneofUnwrapped", "getStringValueOneof", "getStringValueOneofUnwrapped", [
                 ["asdf", new StringValue(["value" => "asdf"])],
                 ["", new StringValue(["value" => ""])],
                 [null, null],

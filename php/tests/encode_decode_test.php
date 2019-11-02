@@ -1430,6 +1430,50 @@ class EncodeDecodeTest extends TestBase
         $this->assertEquals($defaultValue, $to->getOneofFieldUnwrapped());
     }
 
+    /**
+     * @dataProvider wrappersDataProvider
+     */
+    public function testWrapperSetUnwrappedJsonEncode(
+        $class,
+        $nonDefaultValue,
+        $nonDefaultValueData,
+        $defaultValue,
+        $defaultValueData
+    )
+    {
+        // Singular with non-default
+        $from = new $class();
+        $to = new $class();
+        $from->setFieldUnwrapped($nonDefaultValue);
+        $data = $from->serializeToJsonString();
+        $to->mergeFromJsonString($data);
+        $this->assertEquals($nonDefaultValue, $to->getFieldUnwrapped());
+
+        // Singular with default
+        $from = new $class();
+        $to = new $class();
+        $from->setFieldUnwrapped($defaultValue);
+        $data = $from->serializeToJsonString();
+        $to->mergeFromJsonString($data);
+        $this->assertEquals($defaultValue, $to->getFieldUnwrapped());
+
+        // Oneof with non-default
+        $from = new $class();
+        $to = new $class();
+        $from->setOneofFieldUnwrapped($nonDefaultValue);
+        $data = $from->serializeToJsonString();
+        $to->mergeFromJsonString($data);
+        $this->assertEquals($nonDefaultValue, $to->getOneofFieldUnwrapped());
+
+        // Oneof with default
+        $from = new $class();
+        $to = new $class();
+        $from->setOneofFieldUnwrapped($defaultValue);
+        $data = $from->serializeToJsonString();
+        $to->mergeFromJsonString($data);
+        $this->assertEquals($defaultValue, $to->getOneofFieldUnwrapped());
+    }
+
     public function wrappersDataProvider()
     {
         return [

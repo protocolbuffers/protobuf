@@ -840,14 +840,13 @@ zval* layout_get(MessageLayout* layout, MessageHeader* header,
 #else
       ZVAL_OBJ(cached_zval, obj);
 #endif
-      if (stored_cache != cache) {
+    }
+    if (stored_cache != cache) {
 #if PHP_MAJOR_VERSION < 7
-        ZVAL_ZVAL(CACHED_PTR_TO_ZVAL_PTR(cache), cached_zval, 1, 0);
+      ZVAL_ZVAL(CACHED_PTR_TO_ZVAL_PTR(cache), cached_zval, 1, 0);
 #else
-        ZVAL_OBJ(CACHED_PTR_TO_ZVAL_PTR(cache), obj);
+      ZVAL_OBJ(CACHED_PTR_TO_ZVAL_PTR(cache), obj);
 #endif
-      }
-      return CACHED_PTR_TO_ZVAL_PTR(cache);
     }
   } else {
     upb_fieldtype_t type = upb_fielddef_type(field);

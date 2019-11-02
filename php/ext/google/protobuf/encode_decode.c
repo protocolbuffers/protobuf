@@ -955,15 +955,15 @@ static void* wrapper_submsg_handler(void* closure, const void* hd) {
   submsg_php = CACHED_PTR_TO_ZVAL_PTR(cached);
   frame->closure = closure;
 
-  if (Z_TYPE_P(CACHED_PTR_TO_ZVAL_PTR(cached)) == IS_NULL) {
+  if (Z_TYPE_P(CACHED_PTR_TO_ZVAL_PTR(cached)) == IS_OBJECT) {
+    submsg = UNBOX(MessageHeader, submsg_php);
+    frame->submsg = submsg;
+    frame->is_msg = true;
+  } else {
     // In this case, wrapper message hasn't been created and value will be
     // stored in cache directly.
     frame->submsg = cached;
     frame->is_msg = false;
-  } else {
-    submsg = UNBOX(MessageHeader, submsg_php);
-    frame->submsg = submsg;
-    frame->is_msg = true;
   }
 
   return frame;
@@ -987,10 +987,15 @@ static void* wrapper_oneofsubmsg_handler(void* closure, const void* hd) {
     oneof_cleanup(msg, oneofdata);
     frame->submsg = cached;
     frame->is_msg = false;
-  } else {
+  } else if (Z_TYPE_P(CACHED_PTR_TO_ZVAL_PTR(cached)) == IS_OBJECT) {
     submsg = UNBOX(MessageHeader, CACHED_PTR_TO_ZVAL_PTR(cached));
     frame->submsg = submsg;
     frame->is_msg = true;
+  } else {
+    // In this case, wrapper message hasn't been created and value will be
+    // stored in cache directly.
+    frame->submsg = cached;
+    frame->is_msg = false;
   }
 
   DEREF(message_data(msg), oneofdata->case_ofs, uint32_t) =
