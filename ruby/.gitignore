@@ -7,3 +7,4 @@ target/
 pkg/
 tmp/
 tests/google/
+lib/google/git_version.rb

@@ -136,6 +136,18 @@ task :clean do
   sh "rm -f #{genproto_output.join(' ')}"
 end
 
+task :genversion do
+  File.open("lib/google/protobuf/git_version.rb", "w") do |fp|
+    fp.write(<<~EOD)
+    module Google
+      module Protobuf
+        GIT_VERSION = "#{`git rev-parse HEAD`.strip}".strip
+      end
+    end
+    EOD
+  end
+end
+
 Gem::PackageTask.new(spec) do |pkg|
 end
 
@@ -149,7 +161,7 @@ Rake::TestTask.new(:gc_test => :build) do |t|
   t.test_files = FileList["tests/gc_test.rb"]
 end
 
-task :build => [:clean, :compile, :genproto]
+task :build => [:clean, :compile, :genproto, :genversion]
 task :default => [:build]
 
 # vim:sw=2:et
