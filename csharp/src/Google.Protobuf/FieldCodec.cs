@@ -539,18 +539,21 @@ namespace Google.Protobuf
                 { typeof(ByteString), ForBytes(WireFormat.MakeTag(WrappersReflection.WrapperValueFieldNumber, WireFormat.WireType.LengthDelimited)) }
             };
 
-            private static readonly Dictionary<System.Type, Func<object>> Readers = new Dictionary<System.Type, Func<object>>
+            private static readonly Dictionary<System.Type, object> Readers = new Dictionary<System.Type, object>
             {
                 // TODO: Provide more optimized readers.
-                { typeof(bool), null },
-                { typeof(int), null },
-                { typeof(long), () => (Func<CodedInputStream, long?>)CodedInputStream.ReadInt64Wrapper },
-                { typeof(uint), null },
-                { typeof(ulong), null },
-                { typeof(float), null },
-                { typeof(double), () => BitConverter.IsLittleEndian ?
+                { typeof(bool), (Func<CodedInputStream, bool?>)CodedInputStream.ReadBoolWrapper },
+                { typeof(int), (Func<CodedInputStream, int?>)CodedInputStream.ReadInt32Wrapper },
+                { typeof(long), (Func<CodedInputStream, long?>)CodedInputStream.ReadInt64Wrapper },
+                { typeof(uint), (Func<CodedInputStream, uint?>)CodedInputStream.ReadUInt32Wrapper },
+                { typeof(ulong), (Func<CodedInputStream, ulong?>)CodedInputStream.ReadUInt64Wrapper },
+                { typeof(float), BitConverter.IsLittleEndian ?
+                    (Func<CodedInputStream, float?>)CodedInputStream.ReadFloatWrapperLittleEndian :
+                    (Func<CodedInputStream, float?>)CodedInputStream.ReadFloatWrapperSlow },
+                { typeof(double), BitConverter.IsLittleEndian ?
                     (Func<CodedInputStream, double?>)CodedInputStream.ReadDoubleWrapperLittleEndian :
-                    (Func<CodedInputStream, double?>)CodedInputStream.ReadDoubleWrapperBigEndian },
+                    (Func<CodedInputStream, double?>)CodedInputStream.ReadDoubleWrapperSlow },
+                // `string` and `ByteString` less performance-sensitive. Do not implement for now.
                 { typeof(string), null },
                 { typeof(ByteString), null },
             };
@@ -571,7 +574,7 @@ namespace Google.Protobuf
 
             internal static Func<CodedInputStream, T?> GetReader<T>() where T : struct
             {
-                Func<object> value;
+                object value;
                 if (!Readers.TryGetValue(typeof(T), out value))
                 {
                     throw new InvalidOperationException("Invalid type argument requested for wrapper reader: " + typeof(T));
@@ -583,7 +586,7 @@ namespace Google.Protobuf
                     return input => Read<T>(input, nestedCoded);
                 }
                 // Return optimized read for the wrapper type.
-                return (Func<CodedInputStream, T?>)value();
+                return (Func<CodedInputStream, T?>)value;
             }
 
             internal static T Read<T>(CodedInputStream input, FieldCodec<T> codec)
