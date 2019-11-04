@@ -74,3 +74,8 @@ $PROTOC -Ibenchmarks \
   benchmarks/datasets/google_message1/proto3/*.proto \
   benchmarks/benchmarks.proto \
   --csharp_out=csharp/src/Google.Protobuf.Benchmarks
+
+# C# only benchmark protos
+$PROTOC -Isrc -Icsharp/src/Google.Protobuf.Benchmarks \
+  csharp/src/Google.Protobuf.Benchmarks/*.proto \
+  --csharp_out=csharp/src/Google.Protobuf.Benchmarks
