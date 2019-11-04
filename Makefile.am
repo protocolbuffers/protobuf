@@ -127,21 +127,21 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf.Test/SampleMessages.cs                          \
   csharp/src/Google.Protobuf.Test/SampleNaNs.cs                              \
   csharp/src/Google.Protobuf.Test/TestCornerCases.cs                         \
-  csharp/src/Google.Protobuf.Test/TestProtos/ForeignMessagePartial.cs        \
-  csharp/src/Google.Protobuf.Test/TestProtos/MapUnittestProto3.cs            \
-  csharp/src/Google.Protobuf.Test/TestProtos/OldExtensions1.cs               \
-  csharp/src/Google.Protobuf.Test/TestProtos/OldExtensions2.cs               \
-  csharp/src/Google.Protobuf.Test/TestProtos/TestMessagesProto2.cs           \
-  csharp/src/Google.Protobuf.Test/TestProtos/TestMessagesProto3.cs           \
-  csharp/src/Google.Protobuf.Test/TestProtos/UnittestCustomOptionsProto3.cs  \
-  csharp/src/Google.Protobuf.Test/TestProtos/UnittestImportProto3.cs         \
-  csharp/src/Google.Protobuf.Test/TestProtos/UnittestImportPublicProto3.cs   \
-  csharp/src/Google.Protobuf.Test/TestProtos/UnittestImportPublic.cs         \
-  csharp/src/Google.Protobuf.Test/TestProtos/UnittestImport.cs               \
-  csharp/src/Google.Protobuf.Test/TestProtos/UnittestIssues.cs               \
-  csharp/src/Google.Protobuf.Test/TestProtos/UnittestProto3.cs               \
-  csharp/src/Google.Protobuf.Test/TestProtos/UnittestWellKnownTypes.cs       \
-  csharp/src/Google.Protobuf.Test/TestProtos/Unittest.cs                     \
+  csharp/src/Google.Protobuf.Test.CodeGen/ForeignMessagePartial.cs           \
+  csharp/src/Google.Protobuf.Test.CodeGen/MapUnittestProto3.cs               \
+  csharp/src/Google.Protobuf.Test.CodeGen/OldExtensions1.cs                  \
+  csharp/src/Google.Protobuf.Test.CodeGen/OldExtensions2.cs                  \
+  csharp/src/Google.Protobuf.Test.CodeGen/TestMessagesProto2.cs              \
+  csharp/src/Google.Protobuf.Test.CodeGen/TestMessagesProto3.cs              \
+  csharp/src/Google.Protobuf.Test.CodeGen/UnittestCustomOptionsProto3.cs     \
+  csharp/src/Google.Protobuf.Test.CodeGen/UnittestImportProto3.cs            \
+  csharp/src/Google.Protobuf.Test.CodeGen/UnittestImportPublicProto3.cs      \
+  csharp/src/Google.Protobuf.Test.CodeGen/UnittestImportPublic.cs            \
+  csharp/src/Google.Protobuf.Test.CodeGen/UnittestImport.cs                  \
+  csharp/src/Google.Protobuf.Test.CodeGen/UnittestIssues.cs                  \
+  csharp/src/Google.Protobuf.Test.CodeGen/UnittestProto3.cs                  \
+  csharp/src/Google.Protobuf.Test.CodeGen/UnittestWellKnownTypes.cs          \
+  csharp/src/Google.Protobuf.Test.CodeGen/Unittest.cs                        \
   csharp/src/Google.Protobuf.Test/WellKnownTypes/AnyTest.cs                  \
   csharp/src/Google.Protobuf.Test/WellKnownTypes/DurationTest.cs             \
   csharp/src/Google.Protobuf.Test/WellKnownTypes/FieldMaskTest.cs            \
