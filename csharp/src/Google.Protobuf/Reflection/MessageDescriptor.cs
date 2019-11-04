@@ -215,7 +215,10 @@ namespace Google.Protobuf.Reflection
         public FieldCollection Fields { get; }
 
         /// <summary>
-        /// An unmodifiable list of extensions defined in this message's scrope
+        /// An unmodifiable list of extensions defined in this message's scope.
+        /// Note that some extensions may be incomplete (FieldDescriptor.Extension may be null)
+        /// if they are declared in a file generated using a version of protoc that did not fully
+        /// support extensions in C#.
         /// </summary>
         public ExtensionCollection Extensions { get; }
 

@@ -282,6 +282,9 @@ namespace Google.Protobuf.Reflection
 
         /// <summary>
         /// Unmodifiable list of top-level extensions declared in this file.
+        /// Note that some extensions may be incomplete (FieldDescriptor.Extension may be null)
+        /// if this descriptor was generated using a version of protoc that did not fully
+        /// support extensions in C#.
         /// </summary>
         public ExtensionCollection Extensions { get; }
 
@@ -456,6 +459,7 @@ namespace Google.Protobuf.Reflection
         {
             return descriptor.Extensions.UnorderedExtensions
                 .Select(s => s.Extension)
+                .Where(e => e != null)
                 .Concat(descriptor.Dependencies.Concat(descriptor.PublicDependencies).SelectMany(GetAllDependedExtensions))
                 .Concat(descriptor.MessageTypes.SelectMany(GetAllDependedExtensionsFromMessage));
         }
@@ -464,6 +468,7 @@ namespace Google.Protobuf.Reflection
         {
             return descriptor.Extensions.UnorderedExtensions
                 .Select(s => s.Extension)
+                .Where(e => e != null)
                 .Concat(descriptor.NestedTypes.SelectMany(GetAllDependedExtensionsFromMessage));
         }
 
