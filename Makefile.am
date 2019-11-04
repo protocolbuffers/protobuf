@@ -66,8 +66,6 @@ csharp_EXTRA_DIST=                                                           \
   csharp/keys/README.md                                                      \
   csharp/protos/README.md                                                    \
   csharp/protos/map_unittest_proto3.proto                                    \
-  csharp/protos/old_extensions1.proto                                        \
-  csharp/protos/old_extensions2.proto                                        \
   csharp/protos/unittest_custom_options_proto3.proto                         \
   csharp/protos/unittest_import_public_proto3.proto                          \
   csharp/protos/unittest_import_public.proto                                 \
