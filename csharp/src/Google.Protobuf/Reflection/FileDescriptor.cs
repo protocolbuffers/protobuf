@@ -542,7 +542,7 @@ namespace Google.Protobuf.Reflection
         /// The (possibly empty) set of custom options for this file.
         /// </summary>
         [Obsolete("CustomOptions are obsolete. Use GetOption")]
-        public CustomOptions CustomOptions => new CustomOptions(Proto.Options._extensions?.ValuesByNumber);
+        public CustomOptions CustomOptions => new CustomOptions(Proto.Options?._extensions?.ValuesByNumber);
 
         /// <summary>
         /// Gets a single value file option for this descriptor
