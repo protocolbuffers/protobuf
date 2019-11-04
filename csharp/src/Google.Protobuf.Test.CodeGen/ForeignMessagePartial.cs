@@ -39,7 +39,7 @@ namespace Google.Protobuf.TestProtos
     {
         public string ToDiagnosticString()
         {
-            return $"{{ \"c\": {C}, \"@cInHex\": \"{C:x}\" }}";
+            return string.Format("{{ \"c\": {0}, \"@cInHex\": \"{0:x}\" }}", C);
         }
     }
 }
