@@ -888,7 +888,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     public static readonly pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, bool> DefaultBoolExtension =
       new pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, bool>(73, pb::FieldCodec.ForBool(584, true));
     public static readonly pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, string> DefaultStringExtension =
-      new pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, string>(74, pb::FieldCodec.ForString(594, global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("aGVsbG8="))));
+      new pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, string>(74, pb::FieldCodec.ForString(594, global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("aGVsbG8="), 0, 5)));
     public static readonly pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, pb::ByteString> DefaultBytesExtension =
       new pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, pb::ByteString>(75, pb::FieldCodec.ForBytes(602, pb::ByteString.FromBase64("d29ybGQ=")));
     public static readonly pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedEnum> DefaultNestedEnumExtension =
@@ -898,9 +898,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     public static readonly pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, global::Google.Protobuf.TestProtos.Proto2.ImportEnum> DefaultImportEnumExtension =
       new pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, global::Google.Protobuf.TestProtos.Proto2.ImportEnum>(83, pb::FieldCodec.ForEnum(664, x => (int) x, x => (global::Google.Protobuf.TestProtos.Proto2.ImportEnum) x, global::Google.Protobuf.TestProtos.Proto2.ImportEnum.ImportBar));
     public static readonly pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, string> DefaultStringPieceExtension =
-      new pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, string>(84, pb::FieldCodec.ForString(674, global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("YWJj"))));
+      new pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, string>(84, pb::FieldCodec.ForString(674, global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("YWJj"), 0, 3)));
     public static readonly pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, string> DefaultCordExtension =
-      new pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, string>(85, pb::FieldCodec.ForString(682, global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("MTIz"))));
+      new pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, string>(85, pb::FieldCodec.ForString(682, global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("MTIz"), 0, 3)));
     /// <summary>
     /// For oneof test
     /// </summary>
@@ -2421,7 +2421,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     /// <summary>Field number for the "default_string" field.</summary>
     public const int DefaultStringFieldNumber = 74;
-    private readonly static string DefaultStringDefaultValue = global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("aGVsbG8="));
+    private readonly static string DefaultStringDefaultValue = global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("aGVsbG8="), 0, 5);
 
     private string defaultString_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2539,7 +2539,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     /// <summary>Field number for the "default_string_piece" field.</summary>
     public const int DefaultStringPieceFieldNumber = 84;
-    private readonly static string DefaultStringPieceDefaultValue = global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("YWJj"));
+    private readonly static string DefaultStringPieceDefaultValue = global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("YWJj"), 0, 3);
 
     private string defaultStringPiece_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2562,7 +2562,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     /// <summary>Field number for the "default_cord" field.</summary>
     public const int DefaultCordFieldNumber = 85;
-    private readonly static string DefaultCordDefaultValue = global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("MTIz"));
+    private readonly static string DefaultCordDefaultValue = global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("MTIz"), 0, 3);
 
     private string defaultCord_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -6312,7 +6312,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       /// compile.
       /// </summary>
       public static readonly pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, string> Test =
-        new pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, string>(1002, pb::FieldCodec.ForString(8018, global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("dGVzdA=="))));
+        new pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, string>(1002, pb::FieldCodec.ForString(8018, global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("dGVzdA=="), 0, 4)));
       /// <summary>
       /// Used to test if generated extension name is correct when there are
       /// underscores.
@@ -13126,7 +13126,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     /// <summary>Field number for the "utf8_string" field.</summary>
     public const int Utf8StringFieldNumber = 6;
-    private readonly static string Utf8StringDefaultValue = global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("4Yi0"));
+    private readonly static string Utf8StringDefaultValue = global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("4Yi0"), 0, 3);
 
     private string utf8String_;
     /// <summary>
@@ -13475,7 +13475,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     /// <summary>Field number for the "cpp_trigraph" field.</summary>
     public const int CppTrigraphFieldNumber = 20;
-    private readonly static string CppTrigraphDefaultValue = global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("PyA/ID8/ID8/ID8/PyA/Py8gPz8t"));
+    private readonly static string CppTrigraphDefaultValue = global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("PyA/ID8/ID8/ID8/PyA/Py8gPz8t"), 0, 21);
 
     private string cppTrigraph_;
     /// <summary>
@@ -13505,7 +13505,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     /// <summary>Field number for the "string_with_zero" field.</summary>
     public const int StringWithZeroFieldNumber = 23;
-    private readonly static string StringWithZeroDefaultValue = global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("aGVsAGxv"));
+    private readonly static string StringWithZeroDefaultValue = global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("aGVsAGxv"), 0, 6);
 
     private string stringWithZero_;
     /// <summary>
@@ -13554,7 +13554,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     /// <summary>Field number for the "string_piece_with_zero" field.</summary>
     public const int StringPieceWithZeroFieldNumber = 25;
-    private readonly static string StringPieceWithZeroDefaultValue = global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("YWIAYw=="));
+    private readonly static string StringPieceWithZeroDefaultValue = global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("YWIAYw=="), 0, 4);
 
     private string stringPieceWithZero_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -13577,7 +13577,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     /// <summary>Field number for the "cord_with_zero" field.</summary>
     public const int CordWithZeroFieldNumber = 26;
-    private readonly static string CordWithZeroDefaultValue = global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("MTIAMw=="));
+    private readonly static string CordWithZeroDefaultValue = global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("MTIAMw=="), 0, 4);
 
     private string cordWithZero_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -13600,7 +13600,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     /// <summary>Field number for the "replacement_string" field.</summary>
     public const int ReplacementStringFieldNumber = 27;
-    private readonly static string ReplacementStringDefaultValue = global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("JHt1bmtub3dufQ=="));
+    private readonly static string ReplacementStringDefaultValue = global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("JHt1bmtub3dufQ=="), 0, 10);
 
     private string replacementString_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -16816,7 +16816,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     public const int BarStringFieldNumber = 13;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string BarString {
-      get { return HasBarString ? (string) bar_ : global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("U1RSSU5H")); }
+      get { return HasBarString ? (string) bar_ : global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("U1RSSU5H"), 0, 6); }
       set {
         bar_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         barCase_ = BarOneofCase.BarString;
@@ -16839,7 +16839,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     public const int BarCordFieldNumber = 14;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string BarCord {
-      get { return HasBarCord ? (string) bar_ : global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("Q09SRA==")); }
+      get { return HasBarCord ? (string) bar_ : global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("Q09SRA=="), 0, 4); }
       set {
         bar_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         barCase_ = BarOneofCase.BarCord;
@@ -16862,7 +16862,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     public const int BarStringPieceFieldNumber = 15;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string BarStringPiece {
-      get { return HasBarStringPiece ? (string) bar_ : global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("U1BJRUNF")); }
+      get { return HasBarStringPiece ? (string) bar_ : global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("U1BJRUNF"), 0, 6); }
       set {
         bar_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         barCase_ = BarOneofCase.BarStringPiece;
@@ -16953,7 +16953,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     /// <summary>Field number for the "baz_string" field.</summary>
     public const int BazStringFieldNumber = 19;
-    private readonly static string BazStringDefaultValue = global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("QkFa"));
+    private readonly static string BazStringDefaultValue = global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("QkFa"), 0, 3);
 
     private string bazString_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -21501,7 +21501,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     /// <summary>Field number for the "a" field.</summary>
     public const int AFieldNumber = 1;
-    private readonly static string ADefaultValue = global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("Ki8gPC0gTmVpdGhlciBzaG91bGQgdGhpcy4="));
+    private readonly static string ADefaultValue = global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("Ki8gPC0gTmVpdGhlciBzaG91bGQgdGhpcy4="), 0, 26);
 
     private string a_;
     /// <summary>
