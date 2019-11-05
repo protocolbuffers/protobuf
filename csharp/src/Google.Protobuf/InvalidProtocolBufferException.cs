@@ -136,20 +136,5 @@ namespace Google.Protobuf
         {
             return new InvalidProtocolBufferException("Message was missing required fields");
         }
-
-        internal static InvalidProtocolBufferException InvalidWrapperMessageLength()
-        {
-            return new InvalidProtocolBufferException("Wrapper type message length is incorrect.");
-        }
-
-        internal static InvalidProtocolBufferException InvalidWrapperMessageTag()
-        {
-            return new InvalidProtocolBufferException("Wrapper type message tag is incorrect.");
-        }
-
-        internal static InvalidProtocolBufferException InvalidWrapperMessageExtraFields()
-        {
-            return new InvalidProtocolBufferException("Wrapper type message contains invalid extra field(s).");
-        }
-    }
+}
 }
