@@ -813,6 +813,9 @@ zval* layout_get(MessageLayout* layout, MessageHeader* header,
   if (upb_fielddef_type(field) == UPB_TYPE_MESSAGE &&
       is_wrapper_msg(upb_fielddef_msgsubdef(field))) {
     zval * cached_zval = CACHED_PTR_TO_ZVAL_PTR(stored_cache);
+#if PHP_MAJOR_VERSION >= 7
+    zend_object* obj;
+#endif
     if (Z_TYPE_P(cached_zval) != IS_OBJECT &&
         Z_TYPE_P(cached_zval) != IS_NULL) {
       // Needs to expand value to wrapper.
@@ -829,7 +832,7 @@ zval* layout_get(MessageLayout* layout, MessageHeader* header,
       ZVAL_OBJ(val, subklass->create_object(subklass TSRMLS_CC));
       submsg = UNBOX(MessageHeader, val);
 #else
-      zend_object* obj = subklass->create_object(subklass TSRMLS_CC);
+      obj = subklass->create_object(subklass TSRMLS_CC);
       submsg = (MessageHeader*)((char*)obj - XtOffsetOf(MessageHeader, std));
 #endif
       custom_data_init(subklass, submsg PHP_PROTO_TSRMLS_CC);
