@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Google.Protobuf\Google.Protobuf.csproj" />
-    <ProjectReference Include="..\Google.Protobuf.Test.CodeGen\Google.Protobuf.Test.CodeGen.csproj"/>
+    <ProjectReference Include="..\Google.Protobuf.Test.TestProtos\Google.Protobuf.Test.TestProtos.csproj"/>
   </ItemGroup>
 
   <ItemGroup>
