@@ -278,6 +278,17 @@ static void *appendsubmsg_handler(void *closure, const void *hd) {
   return submsg;
 }
 
+// Appends a wrapper to a repeated field (a regular Ruby array for now).
+static void *appendwrapper_handler(void *closure, const void *hd) {
+  VALUE ary = (VALUE)closure;
+  int size = RepeatedField_size(ary);
+  (void)hd;
+
+  RepeatedField_push(ary, Qnil);
+
+  return RepeatedField_index_native(ary, size);
+}
+
 // Sets a non-repeated submessage field in a message.
 static void *submsg_handler(void *closure, const void *hd) {
   MessageHeader* msg = closure;
@@ -296,6 +307,15 @@ static void *submsg_handler(void *closure, const void *hd) {
   TypedData_Get_Struct(submsg_rb, MessageHeader, &Message_type, submsg);
 
   return submsg;
+}
+
+static void* startwrapper(void* closure, const void* hd) {
+  char* msg = closure;
+  const submsg_handlerdata_t* submsgdata = hd;
+
+  set_hasbit(closure, submsgdata->hasbit);
+
+  return msg + submsgdata->ofs;
 }
 
 // Handler data for startmap/endmap handlers.
@@ -486,12 +506,37 @@ static void *oneofsubmsg_handler(void *closure,
   // indicating a VALUE is present and expect a valid VALUE. See comment in
   // layout_set() for more detail: basically, the change to the value and the
   // case must be atomic w.r.t. the Ruby VM.
-  DEREF(msg, oneofdata->case_ofs, uint32_t) =
-      oneofdata->oneof_case_num;
+  DEREF(msg, oneofdata->case_ofs, uint32_t) = oneofdata->oneof_case_num;
 
   submsg_rb = DEREF(msg, oneofdata->ofs, VALUE);
   TypedData_Get_Struct(submsg_rb, MessageHeader, &Message_type, submsg);
   return submsg;
+}
+
+static void* oneof_startwrapper(void* closure, const void* hd) {
+  char* msg = closure;
+  const oneof_handlerdata_t *oneofdata = hd;
+
+  DEREF(msg, oneofdata->case_ofs, uint32_t) = oneofdata->oneof_case_num;
+
+  return msg + oneofdata->ofs;
+}
+
+bool is_wrapper(const upb_msgdef* m) {
+  switch (upb_msgdef_wellknowntype(m)) {
+    case UPB_WELLKNOWN_DOUBLEVALUE:
+    case UPB_WELLKNOWN_FLOATVALUE:
+    case UPB_WELLKNOWN_INT64VALUE:
+    case UPB_WELLKNOWN_UINT64VALUE:
+    case UPB_WELLKNOWN_INT32VALUE:
+    case UPB_WELLKNOWN_UINT32VALUE:
+    case UPB_WELLKNOWN_STRINGVALUE:
+    case UPB_WELLKNOWN_BYTESVALUE:
+    case UPB_WELLKNOWN_BOOLVALUE:
+      return true;
+    default:
+      return false;
+  }
 }
 
 // Set up handlers for a repeated field.
@@ -535,10 +580,94 @@ static void add_handlers_for_repeated_field(upb_handlers *h,
       VALUE subklass = field_type_class(desc->layout, f);
       upb_handlerattr attr = UPB_HANDLERATTR_INIT;
       attr.handler_data = newsubmsghandlerdata(h, 0, -1, subklass);
-      upb_handlers_setstartsubmsg(h, f, appendsubmsg_handler, &attr);
+      if (is_wrapper(upb_fielddef_msgsubdef(f))) {
+        upb_handlers_setstartsubmsg(h, f, appendwrapper_handler, &attr);
+      } else {
+        upb_handlers_setstartsubmsg(h, f, appendsubmsg_handler, &attr);
+      }
       break;
     }
   }
+}
+
+static bool doublewrapper_handler(void* closure, const void* hd, double val) {
+  VALUE* rbval = closure;
+  *rbval = DBL2NUM(val);
+  return true;
+}
+
+static bool floatwrapper_handler(void* closure, const void* hd, float val) {
+  VALUE* rbval = closure;
+  *rbval = DBL2NUM(val);
+  return true;
+}
+
+static bool int64wrapper_handler(void* closure, const void* hd, int64_t val) {
+  VALUE* rbval = closure;
+  *rbval = LL2NUM(val);
+  return true;
+}
+
+static bool uint64wrapper_handler(void* closure, const void* hd, uint64_t val) {
+  VALUE* rbval = closure;
+  *rbval = ULL2NUM(val);
+  return true;
+}
+
+static bool int32wrapper_handler(void* closure, const void* hd, int32_t val) {
+  VALUE* rbval = closure;
+  *rbval = INT2NUM(val);
+  return true;
+}
+
+static bool uint32wrapper_handler(void* closure, const void* hd, uint32_t val) {
+  VALUE* rbval = closure;
+  *rbval = UINT2NUM(val);
+  return true;
+}
+
+static void* startstringwrapper_handler(void* closure, const void* hd,
+                                        size_t size_hint) {
+  VALUE* rbval = closure;
+  (void)size_hint;
+  *rbval = rb_str_new(NULL, 0);
+  rb_enc_associate(*rbval, kRubyStringUtf8Encoding);
+  return closure;
+}
+
+static size_t stringwrapper_handler(void* closure, const void* hd,
+                                    const char* ptr, size_t len,
+                                    const upb_bufhandle* handle) {
+  VALUE* rbval = closure;
+  *rbval = noleak_rb_str_cat(*rbval, ptr, len);
+  return len;
+}
+
+static void* startbyteswrapper_handler(void* closure, const void* hd,
+                                       size_t size_hint) {
+  VALUE* rbval = closure;
+  (void)size_hint;
+  *rbval = rb_str_new(NULL, 0);
+  rb_enc_associate(*rbval, kRubyString8bitEncoding);
+  return closure;
+}
+
+static size_t byteswrapper_handler(void* closure, const void* hd,
+                                   const char* ptr, size_t len,
+                                   const upb_bufhandle* handle) {
+  VALUE* rbval = closure;
+  *rbval = noleak_rb_str_cat(*rbval, ptr, len);
+  return len;
+}
+
+static bool boolwrapper_handler(void* closure, const void* hd, bool val) {
+  VALUE* rbval = closure;
+  if (val) {
+    *rbval = Qtrue;
+  } else {
+    *rbval = Qfalse;
+  }
+  return true;
 }
 
 // Set up handlers for a singular field.
@@ -580,8 +709,11 @@ static void add_handlers_for_singular_field(const Descriptor* desc,
       upb_handlerattr attr = UPB_HANDLERATTR_INIT;
       attr.handler_data = newsubmsghandlerdata(
           h, offset, hasbit, field_type_class(desc->layout, f));
-      upb_handlers_setstartsubmsg(h, f, submsg_handler, &attr);
-      break;
+      if (is_wrapper(upb_fielddef_msgsubdef(f))) {
+        upb_handlers_setstartsubmsg(h, f, startwrapper, &attr);
+      } else {
+        upb_handlers_setstartsubmsg(h, f, submsg_handler, &attr);
+      }
     }
   }
 }
@@ -623,6 +755,45 @@ static void add_handlers_for_mapentry(const upb_msgdef* msgdef, upb_handlers* h,
       MESSAGE_FIELD_NO_HASBIT);
 }
 
+static void add_handlers_for_wrapper(const upb_msgdef* msgdef,
+                                     upb_handlers* h) {
+  const upb_fielddef* f = upb_msgdef_itof(msgdef, 1);
+  switch (upb_msgdef_wellknowntype(msgdef)) {
+    case UPB_WELLKNOWN_DOUBLEVALUE:
+      upb_handlers_setdouble(h, f, doublewrapper_handler, NULL);
+      break;
+    case UPB_WELLKNOWN_FLOATVALUE:
+      upb_handlers_setfloat(h, f, floatwrapper_handler, NULL);
+      break;
+    case UPB_WELLKNOWN_INT64VALUE:
+      upb_handlers_setint64(h, f, int64wrapper_handler, NULL);
+      break;
+    case UPB_WELLKNOWN_UINT64VALUE:
+      upb_handlers_setuint64(h, f, uint64wrapper_handler, NULL);
+      break;
+    case UPB_WELLKNOWN_INT32VALUE:
+      upb_handlers_setint32(h, f, int32wrapper_handler, NULL);
+      break;
+    case UPB_WELLKNOWN_UINT32VALUE:
+      upb_handlers_setuint32(h, f, uint32wrapper_handler, NULL);
+      break;
+    case UPB_WELLKNOWN_STRINGVALUE:
+      upb_handlers_setstartstr(h, f, startstringwrapper_handler, NULL);
+      upb_handlers_setstring(h, f, stringwrapper_handler, NULL);
+      break;
+    case UPB_WELLKNOWN_BYTESVALUE:
+      upb_handlers_setstartstr(h, f, startbyteswrapper_handler, NULL);
+      upb_handlers_setstring(h, f, byteswrapper_handler, NULL);
+      break;
+    case UPB_WELLKNOWN_BOOLVALUE:
+      upb_handlers_setbool(h, f, boolwrapper_handler, NULL);
+      return;
+    default:
+      rb_raise(rb_eRuntimeError,
+               "Internal logic error with well-known types.");
+  }
+}
+
 // Set up handlers for a oneof field.
 static void add_handlers_for_oneof_field(upb_handlers *h,
                                          const upb_fielddef *f,
@@ -662,7 +833,11 @@ static void add_handlers_for_oneof_field(upb_handlers *h,
       break;
     }
     case UPB_TYPE_MESSAGE: {
-      upb_handlers_setstartsubmsg(h, f, oneofsubmsg_handler, &attr);
+      if (is_wrapper(upb_fielddef_msgsubdef(f))) {
+        upb_handlers_setstartsubmsg(h, f, oneof_startwrapper, &attr);
+      } else {
+        upb_handlers_setstartsubmsg(h, f, oneofsubmsg_handler, &attr);
+      }
       break;
     }
   }
@@ -681,6 +856,10 @@ static bool unknown_field_handler(void* closure, const void* hd,
   stringsink_string(msg->unknown_fields, NULL, buf, size, NULL);
 
   return true;
+}
+
+size_t get_field_offset(MessageLayout* layout, const upb_fielddef* f) {
+  return layout->fields[upb_fielddef_index(f)].offset + sizeof(MessageHeader);
 }
 
 void add_handlers_for_message(const void *closure, upb_handlers *h) {
@@ -706,6 +885,12 @@ void add_handlers_for_message(const void *closure, upb_handlers *h) {
     return;
   }
 
+  // If this is a wrapper type, use special handlers and bail.
+  if (is_wrapper(msgdef)) {
+    add_handlers_for_wrapper(msgdef, h);
+    return;
+  }
+
   upb_handlers_setunknown(h, unknown_field_handler, &attr);
 
   for (upb_msg_field_begin(&i, desc->msgdef);
@@ -713,8 +898,7 @@ void add_handlers_for_message(const void *closure, upb_handlers *h) {
        upb_msg_field_next(&i)) {
     const upb_fielddef *f = upb_msg_iter_field(&i);
     const upb_oneofdef *oneof = upb_fielddef_containingoneof(f);
-    size_t offset = desc->layout->fields[upb_fielddef_index(f)].offset +
-        sizeof(MessageHeader);
+    size_t offset = get_field_offset(desc->layout, f);
 
     if (oneof) {
       size_t oneof_case_offset =
@@ -826,17 +1010,28 @@ VALUE Message_decode(VALUE klass, VALUE data) {
   {
     const upb_pbdecodermethod* method = msgdef_decodermethod(desc);
     const upb_handlers* h = upb_pbdecodermethod_desthandlers(method);
+    const upb_msgdef* m = upb_handlers_msgdef(h);
+    VALUE wrapper = Qnil;
+    void* ptr = msg;
     stackenv se;
     upb_sink sink;
     upb_pbdecoder* decoder;
     stackenv_init(&se, "Error occurred during parsing: %" PRIsVALUE);
 
-    upb_sink_reset(&sink, h, msg);
+    if (is_wrapper(m)) {
+      ptr = &wrapper;
+    }
+
+    upb_sink_reset(&sink, h, ptr);
     decoder = upb_pbdecoder_create(se.arena, method, sink, &se.status);
     upb_bufsrc_putbuf(RSTRING_PTR(data), RSTRING_LEN(data),
                       upb_pbdecoder_input(decoder));
 
     stackenv_uninit(&se);
+
+    if (is_wrapper(m)) {
+      msg_rb = ruby_wrapper_type(msgklass, wrapper);
+    }
   }
 
   return msg_rb;
@@ -890,13 +1085,21 @@ VALUE Message_decode_json(int argc, VALUE* argv, VALUE klass) {
 
   {
     const upb_json_parsermethod* method = msgdef_jsonparsermethod(desc);
+    const upb_handlers* h = get_fill_handlers(desc);
+    const upb_msgdef* m = upb_handlers_msgdef(h);
     stackenv se;
     upb_sink sink;
     upb_json_parser* parser;
     DescriptorPool* pool = ruby_to_DescriptorPool(generated_pool);
     stackenv_init(&se, "Error occurred during parsing: %" PRIsVALUE);
 
-    upb_sink_reset(&sink, get_fill_handlers(desc), msg);
+    if (is_wrapper(m)) {
+      rb_raise(
+          rb_eRuntimeError,
+          "Parsing a wrapper type from JSON at the top level does not work.");
+    }
+
+    upb_sink_reset(&sink, h, msg);
     parser = upb_json_parser_create(se.arena, method, pool->symtab, sink,
                                     &se.status, RTEST(ignore_unknown_fields));
     upb_bufsrc_putbuf(RSTRING_PTR(data), RSTRING_LEN(data),
@@ -969,6 +1172,7 @@ static void putary(VALUE ary, const upb_fielddef* f, upb_sink sink, int depth,
   upb_selector_t sel = 0;
   int size;
   int i;
+  VALUE type_class = ruby_to_RepeatedField(ary)->field_type_class;
 
   if (ary == Qnil) return;
   if (!emit_defaults && NUM2INT(RepeatedField_length(ary)) == 0) return;
@@ -1003,9 +1207,11 @@ static void putary(VALUE ary, const upb_fielddef* f, upb_sink sink, int depth,
       case UPB_TYPE_BYTES:
         putstr(*((VALUE *)memory), f, subsink);
         break;
-      case UPB_TYPE_MESSAGE:
-        putsubmsg(*((VALUE*)memory), f, subsink, depth, emit_defaults, is_json);
+      case UPB_TYPE_MESSAGE: {
+        VALUE val = native_slot_get(UPB_TYPE_MESSAGE, type_class, memory);
+        putsubmsg(val, f, subsink, depth, emit_defaults, is_json);
         break;
+      }
 
 #undef T
 
@@ -1306,8 +1512,10 @@ static void putmsg(VALUE msg_rb, const Descriptor* desc,
         putstr(str, f, sink);
       }
     } else if (upb_fielddef_issubmsg(f)) {
-      putsubmsg(DEREF(msg, offset, VALUE), f, sink, depth,
-                emit_defaults, is_json);
+      // OPT: could try to avoid the layout_get() (which will expand lazy
+      // wrappers).
+      VALUE val = layout_get(desc->layout, Message_data(msg), f);
+      putsubmsg(val, f, sink, depth, emit_defaults, is_json);
     } else {
       upb_selector_t sel = getsel(f, upb_handlers_getprimitivehandlertype(f));
 
@@ -1341,7 +1549,6 @@ static void putmsg(VALUE msg_rb, const Descriptor* desc,
       }
 
 #undef T
-
     }
   }
 
