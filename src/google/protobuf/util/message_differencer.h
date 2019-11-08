@@ -570,6 +570,9 @@ class PROTOBUF_EXPORT MessageDifferencer {
   // differencer when compare repeated fields in messages.
   void set_repeated_field_comparison(RepeatedFieldComparison comparison);
 
+  // Returns the current repeated field comparison used by this differencer.
+  RepeatedFieldComparison repeated_field_comparison();
+
   // Compares the two specified messages, returning true if they are the same,
   // false otherwise. If this method returns false, any changes between the
   // two messages will be reported if a Reporter was specified via

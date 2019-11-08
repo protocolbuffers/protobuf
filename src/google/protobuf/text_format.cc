@@ -35,11 +35,11 @@
 #include <google/protobuf/text_format.h>
 
 #include <float.h>
-#include <cmath>
 #include <stdio.h>
 
 #include <algorithm>
 #include <climits>
+#include <cmath>
 #include <limits>
 #include <vector>
 
@@ -2093,7 +2093,7 @@ bool MapFieldPrinterHelper::SortMap(
 
   if (base.IsRepeatedFieldValid()) {
     const RepeatedPtrField<Message>& map_field =
-        reflection->GetRepeatedPtrField<Message>(message, field);
+        reflection->GetRepeatedPtrFieldInternal<Message>(message, field);
     for (int i = 0; i < map_field.size(); ++i) {
       sorted_map_field->push_back(
           const_cast<RepeatedPtrField<Message>*>(&map_field)->Mutable(i));
@@ -2367,8 +2367,7 @@ void TextFormat::Printer::PrintFieldValue(const Message& message,
         // it is possible for the user to force an unknown integer value.  So we
         // simply use the integer value itself as the enum value name in this
         // case.
-        printer->PrintEnum(enum_value, StringPrintf("%d", enum_value),
-                           generator);
+        printer->PrintEnum(enum_value, StrCat(enum_value), generator);
       }
       break;
     }

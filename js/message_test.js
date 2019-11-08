@@ -855,7 +855,7 @@ describe('Message test suite', function() {
     var assertNan = function(x) {
       assertTrue(
           'Expected ' + x + ' (' + goog.typeOf(x) + ') to be NaN.',
-          goog.isNumber(x) && isNaN(x));
+          typeof x === 'number' && isNaN(x));
     };
 
     var message = new proto.jspb.test.FloatingPointFields([

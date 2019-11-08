@@ -153,8 +153,13 @@ EnumParseWrapper<T, Metadata> InitEnumParseWrapper(T* map_field,
 // expected to be message.  It's useful to have this helper here to keep the
 // protobuf compiler from ever having to emit loops in IsInitialized() methods.
 // We want the C++ compiler to inline this or not as it sees fit.
-template <typename Key, typename T>
-bool AllAreInitialized(const Map<Key, T>& t) {
+template <typename Derived, typename Key, typename T,
+          WireFormatLite::FieldType key_wire_type,
+          WireFormatLite::FieldType value_wire_type, int default_enum_value>
+bool AllAreInitialized(
+    const MapFieldLite<Derived, Key, T, key_wire_type, value_wire_type,
+                       default_enum_value>& field) {
+  const auto& t = field.GetMap();
   for (typename Map<Key, T>::const_iterator it = t.begin(); it != t.end();
        ++it) {
     if (!it->second.IsInitialized()) return false;

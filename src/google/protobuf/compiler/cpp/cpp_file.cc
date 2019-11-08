@@ -1357,10 +1357,6 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* printer) {
   if (UseUnknownFieldSet(file_, options_) && !message_generators_.empty()) {
     IncludeFile("net/proto2/public/unknown_field_set.h", printer);
   }
-
-  if (IsAnyMessage(file_, options_)) {
-    IncludeFile("net/proto2/internal/any.h", printer);
-  }
 }
 
 void FileGenerator::GenerateMetadataPragma(io::Printer* printer,

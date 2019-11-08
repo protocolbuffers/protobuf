@@ -1498,8 +1498,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
     }
 
     /** Clear an extension. */
-    public final <Type> BuilderType clearExtension(
-        final ExtensionLite<MessageType, ?> extensionLite) {
+    public final BuilderType clearExtension(final ExtensionLite<MessageType, ?> extensionLite) {
       Extension<MessageType, ?> extension = checkNotLite(extensionLite);
 
       verifyExtensionContainingType(extension);

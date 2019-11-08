@@ -28,6 +28,36 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 // This file contains a program for running the test suite in a separate
 // process.  The other alternative is to run the suite in-process.  See
 // conformance.proto for pros/cons of these two options.
@@ -53,28 +83,27 @@
 //   3. testee sends 4-byte length M (little endian)
 //   4. testee sends M bytes representing a ConformanceResponse proto
 
-#include <algorithm>
 #include <errno.h>
-#include <fstream>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+
+#include <algorithm>
+#include <fstream>
 #include <vector>
 
 #include <google/protobuf/stubs/stringprintf.h>
-
 #include "conformance.pb.h"
 #include "conformance_test.h"
 
 using conformance::ConformanceResponse;
-using google::protobuf::StringAppendF;
 using google::protobuf::ConformanceTestSuite;
 using std::string;
 using std::vector;
 
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
-#define CHECK_SYSCALL(call) \
+#define GOOGLE_CHECK_SYSCALL(call) \
   if (call < 0) { \
     perror(#call " " __FILE__ ":" TOSTRING(__LINE__)); \
     exit(1); \
@@ -275,22 +304,22 @@ void ForkPipeRunner::SpawnTestProgram() {
 
   if (pid) {
     // Parent.
-    CHECK_SYSCALL(close(toproc_pipe_fd[0]));
-    CHECK_SYSCALL(close(fromproc_pipe_fd[1]));
+    GOOGLE_CHECK_SYSCALL(close(toproc_pipe_fd[0]));
+    GOOGLE_CHECK_SYSCALL(close(fromproc_pipe_fd[1]));
     write_fd_ = toproc_pipe_fd[1];
     read_fd_ = fromproc_pipe_fd[0];
     child_pid_ = pid;
   } else {
     // Child.
-    CHECK_SYSCALL(close(STDIN_FILENO));
-    CHECK_SYSCALL(close(STDOUT_FILENO));
-    CHECK_SYSCALL(dup2(toproc_pipe_fd[0], STDIN_FILENO));
-    CHECK_SYSCALL(dup2(fromproc_pipe_fd[1], STDOUT_FILENO));
+    GOOGLE_CHECK_SYSCALL(close(STDIN_FILENO));
+    GOOGLE_CHECK_SYSCALL(close(STDOUT_FILENO));
+    GOOGLE_CHECK_SYSCALL(dup2(toproc_pipe_fd[0], STDIN_FILENO));
+    GOOGLE_CHECK_SYSCALL(dup2(fromproc_pipe_fd[1], STDOUT_FILENO));
 
-    CHECK_SYSCALL(close(toproc_pipe_fd[0]));
-    CHECK_SYSCALL(close(fromproc_pipe_fd[1]));
-    CHECK_SYSCALL(close(toproc_pipe_fd[1]));
-    CHECK_SYSCALL(close(fromproc_pipe_fd[0]));
+    GOOGLE_CHECK_SYSCALL(close(toproc_pipe_fd[0]));
+    GOOGLE_CHECK_SYSCALL(close(fromproc_pipe_fd[1]));
+    GOOGLE_CHECK_SYSCALL(close(toproc_pipe_fd[1]));
+    GOOGLE_CHECK_SYSCALL(close(fromproc_pipe_fd[0]));
 
     std::unique_ptr<char[]> executable(new char[executable_.size() + 1]);
     memcpy(executable.get(), executable_.c_str(), executable_.size());
@@ -303,15 +332,14 @@ void ForkPipeRunner::SpawnTestProgram() {
     }
     argv.push_back(nullptr);
     // Never returns.
-    CHECK_SYSCALL(execv(executable.get(), const_cast<char **>(argv.data())));
+    GOOGLE_CHECK_SYSCALL(execv(executable.get(), const_cast<char **>(argv.data())));
   }
 }
 
 void ForkPipeRunner::CheckedWrite(int fd, const void *buf, size_t len) {
   if (write(fd, buf, len) != len) {
     GOOGLE_LOG(FATAL) << current_test_name_
-                      << ": error writing to test program: "
-                      << strerror(errno);
+               << ": error writing to test program: " << strerror(errno);
   }
 }
 
@@ -321,13 +349,11 @@ bool ForkPipeRunner::TryRead(int fd, void *buf, size_t len) {
     ssize_t bytes_read = read(fd, (char*)buf + ofs, len);
 
     if (bytes_read == 0) {
-      GOOGLE_LOG(ERROR) << current_test_name_
-                        << ": unexpected EOF from test program";
+      GOOGLE_LOG(ERROR) << current_test_name_ << ": unexpected EOF from test program";
       return false;
     } else if (bytes_read < 0) {
       GOOGLE_LOG(ERROR) << current_test_name_
-                        << ": error reading from test program: "
-                        << strerror(errno);
+                 << ": error reading from test program: " << strerror(errno);
       return false;
     }
 
@@ -341,8 +367,7 @@ bool ForkPipeRunner::TryRead(int fd, void *buf, size_t len) {
 void ForkPipeRunner::CheckedRead(int fd, void *buf, size_t len) {
   if (!TryRead(fd, buf, len)) {
     GOOGLE_LOG(FATAL) << current_test_name_
-                      << ": error reading from test program: "
-                      << strerror(errno);
+               << ": error reading from test program: " << strerror(errno);
   }
 }
 

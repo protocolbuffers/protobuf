@@ -445,9 +445,9 @@ jspb.BinaryReader.prototype.skipField = function() {
  * @param {string} callbackName
  * @param {function(!jspb.BinaryReader):*} callback
  */
-jspb.BinaryReader.prototype.registerReadCallback =
-    function(callbackName, callback) {
-  if (goog.isNull(this.readCallbacks_)) {
+jspb.BinaryReader.prototype.registerReadCallback = function(
+    callbackName, callback) {
+  if (this.readCallbacks_ === null) {
     this.readCallbacks_ = {};
   }
   goog.asserts.assert(!this.readCallbacks_[callbackName]);
@@ -461,7 +461,7 @@ jspb.BinaryReader.prototype.registerReadCallback =
  * @return {*} The value returned by the callback.
  */
 jspb.BinaryReader.prototype.runReadCallback = function(callbackName) {
-  goog.asserts.assert(!goog.isNull(this.readCallbacks_));
+  goog.asserts.assert(this.readCallbacks_ !== null);
   var callback = this.readCallbacks_[callbackName];
   goog.asserts.assert(callback);
   return callback(this);

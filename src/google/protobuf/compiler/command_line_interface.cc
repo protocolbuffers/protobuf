@@ -869,7 +869,8 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   }
 
   descriptor_pool->EnforceWeakDependencies(true);
-  if (!ParseInputFiles(descriptor_pool.get(), &parsed_files)) {
+  if (!ParseInputFiles(descriptor_pool.get(), disk_source_tree.get(),
+                       &parsed_files)) {
     return 1;
   }
 
@@ -1044,7 +1045,8 @@ bool CommandLineInterface::VerifyInputFilesInDescriptors(
   for (const auto& input_file : input_files_) {
     FileDescriptorProto file_descriptor;
     if (!database->FindFileByName(input_file, &file_descriptor)) {
-      std::cerr << input_file << ": " << strerror(ENOENT) << std::endl;
+      std::cerr << "Could not find file in descriptor database: " << input_file
+                << ": " << strerror(ENOENT) << std::endl;
       return false;
     }
 
@@ -1061,7 +1063,7 @@ bool CommandLineInterface::VerifyInputFilesInDescriptors(
 }
 
 bool CommandLineInterface::ParseInputFiles(
-    DescriptorPool* descriptor_pool,
+    DescriptorPool* descriptor_pool, DiskSourceTree* source_tree,
     std::vector<const FileDescriptor*>* parsed_files) {
 
   // Track unused imports in all source files
@@ -1154,7 +1156,8 @@ bool CommandLineInterface::MakeProtoProtoPathRelative(
         in_fallback_database) {
       return true;
     } else {
-      std::cerr << *proto << ": " << strerror(ENOENT) << std::endl;
+      std::cerr << "Could not make proto path relative: " << *proto << ": "
+                << strerror(ENOENT) << std::endl;
       return false;
     }
   }
@@ -1177,7 +1180,8 @@ bool CommandLineInterface::MakeProtoProtoPathRelative(
       if (in_fallback_database) {
         return true;
       }
-      std::cerr << *proto << ": " << strerror(errno) << std::endl;
+      std::cerr << "Could not map to virtual file: " << *proto << ": "
+                << strerror(errno) << std::endl;
       return false;
     case DiskSourceTree::NO_MAPPING: {
       // Try to interpret the path as a virtual path.

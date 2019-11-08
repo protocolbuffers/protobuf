@@ -274,7 +274,7 @@ class PROTOBUF_EXPORT StringByteSink : public ByteSink {
 class PROTOBUF_EXPORT NullByteSink : public ByteSink {
  public:
   NullByteSink() {}
-  virtual void Append(const char* /*data*/, size_t /*n*/) override {}
+  void Append(const char* /*data*/, size_t /*n*/) override {}
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(NullByteSink);

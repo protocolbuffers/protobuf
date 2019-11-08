@@ -505,7 +505,7 @@ void MessageOneofFieldGenerator::GenerateInlineAccessorDefinitions(
       "inline $type$* $classname$::$release_name$() {\n"
       "$annotate_accessor$"
       "  // @@protoc_insertion_point(field_release:$full_name$)\n"
-      "  if (has_$name$()) {\n"
+      "  if (_internal_has_$name$()) {\n"
       "    clear_has_$oneof_name$();\n"
       "      $type$* temp = $field_member$;\n");
   if (SupportsArenas(descriptor_)) {
@@ -540,7 +540,7 @@ void MessageOneofFieldGenerator::GenerateInlineAccessorDefinitions(
         "$annotate_accessor$"
         "  // @@protoc_insertion_point(field_unsafe_arena_release"
         ":$full_name$)\n"
-        "  if (has_$name$()) {\n"
+        "  if (_internal_has_$name$()) {\n"
         "    clear_has_$oneof_name$();\n"
         "    $type$* temp = $field_member$;\n"
         "    $field_member$ = nullptr;\n"

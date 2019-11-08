@@ -285,7 +285,7 @@ void StringFieldGenerator::GenerateInlineAccessorDefinitions(
 
     if (HasFieldPresence(descriptor_->file())) {
       format(
-          "  if (!has_$name$()) {\n"
+          "  if (!_internal_has_$name$()) {\n"
           "    return nullptr;\n"
           "  }\n"
           "  $clear_hasbit$\n"
@@ -391,7 +391,7 @@ void StringFieldGenerator::GenerateInlineAccessorDefinitions(
 
     if (HasFieldPresence(descriptor_->file())) {
       format(
-          "  if (!has_$name$()) {\n"
+          "  if (!_internal_has_$name$()) {\n"
           "    return nullptr;\n"
           "  }\n"
           "  $clear_hasbit$\n"
