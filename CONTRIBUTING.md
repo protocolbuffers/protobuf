@@ -96,3 +96,11 @@ the final release.
   pull request. This will make it easier to identify which languages the pull
   request affects, allowing us to better identify appropriate reviewer, create
   a better release note, and make it easier to identify issues in the future.
+* When merging pull requests, use the "Squash and merge" option in GitHub. Use
+  the "Create a merge commit" option only for the following two cases:
+  * The pull request contains many commits and we want to keep the history of
+    individual commits (e.g. when merging the release branch into master).
+  * The pull request is a down integration of internal Google3 changes, since
+    squash changes the ID of the integration commit that Google3 <-> GitHub syncing
+    process relies on.
+    
