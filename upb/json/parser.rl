@@ -2020,7 +2020,7 @@ static void end_member(upb_json_parser *p) {
     p->top--;
     ok = upb_handlers_getselector(mapfield, UPB_HANDLER_ENDSUBMSG, &sel);
     UPB_ASSERT(ok);
-    upb_sink_endsubmsg(p->top->sink, sel);
+    upb_sink_endsubmsg(p->top->sink, (p->top + 1)->sink, sel);
   }
 
   p->top->f = NULL;
@@ -2134,7 +2134,7 @@ static void end_subobject(upb_json_parser *p) {
     p->top--;
     if (!is_unknown) {
       sel = getsel_for_handlertype(p, UPB_HANDLER_ENDSUBMSG);
-      upb_sink_endsubmsg(p->top->sink, sel);
+      upb_sink_endsubmsg(p->top->sink, (p->top + 1)->sink, sel);
     }
   }
 }
