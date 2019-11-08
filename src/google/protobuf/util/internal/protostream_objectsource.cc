@@ -128,7 +128,8 @@ ProtoStreamObjectSource::ProtoStreamObjectSource(
       render_unknown_fields_(false),
       render_unknown_enum_values_(true),
       add_trailing_zeros_for_timestamp_and_duration_(false),
-      suppress_empty_object_(false) {
+      suppress_empty_object_(false),
+      use_legacy_json_map_format_(false) {
   GOOGLE_LOG_IF(DFATAL, stream == nullptr) << "Input stream is nullptr.";
 }
 
@@ -147,7 +148,8 @@ ProtoStreamObjectSource::ProtoStreamObjectSource(
       render_unknown_fields_(false),
       render_unknown_enum_values_(true),
       add_trailing_zeros_for_timestamp_and_duration_(false),
-      suppress_empty_object_(false) {
+      suppress_empty_object_(false),
+      use_legacy_json_map_format_(false) {
   GOOGLE_LOG_IF(DFATAL, stream == nullptr) << "Input stream is nullptr.";
 }
 

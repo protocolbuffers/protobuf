@@ -817,11 +817,19 @@ class TextFormatParserTests(TextFormatBase):
         r'have multiple "optional_int32" fields.'), text_format.Parse, text,
                           message)
 
+  def testParseExistingScalarInMessage(self, message_module):
+    message = message_module.TestAllTypes(optional_int32=42)
+    text = 'optional_int32: 67'
+    six.assertRaisesRegex(self, text_format.ParseError,
+                          (r'Message type "\w+.TestAllTypes" should not '
+                           r'have multiple "optional_int32" fields.'),
+                          text_format.Parse, text, message)
+
 
 @_parameterized.parameters(unittest_pb2, unittest_proto3_arena_pb2)
 class TextFormatMergeTests(TextFormatBase):
 
-  def testMergeDuplicateScalars(self, message_module):
+  def testMergeDuplicateScalarsInText(self, message_module):
     message = message_module.TestAllTypes()
     text = ('optional_int32: 42 ' 'optional_int32: 67')
     r = text_format.Merge(text, message)
@@ -835,6 +843,22 @@ class TextFormatMergeTests(TextFormatBase):
     r = text_format.Merge(text, message)
     self.assertTrue(r is message)
     self.assertEqual(2, message.optional_nested_message.bb)
+
+  def testReplaceScalarInMessage(self, message_module):
+    message = message_module.TestAllTypes(optional_int32=42)
+    text = 'optional_int32: 67'
+    r = text_format.Merge(text, message)
+    self.assertIs(r, message)
+    self.assertEqual(67, message.optional_int32)
+
+  def testReplaceMessageInMessage(self, message_module):
+    message = message_module.TestAllTypes(
+        optional_int32=42, optional_nested_message=dict())
+    self.assertTrue(message.HasField('optional_nested_message'))
+    text = 'optional_nested_message{ bb: 3 }'
+    r = text_format.Merge(text, message)
+    self.assertIs(r, message)
+    self.assertEqual(3, message.optional_nested_message.bb)
 
   def testMergeMultipleOneof(self, message_module):
     m_string = '\n'.join(['oneof_uint32: 11', 'oneof_string: "foo"'])

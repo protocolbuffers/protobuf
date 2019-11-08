@@ -123,14 +123,22 @@ MessageLite* RepeatedPtrFieldBase::AddWeak(const MessageLite* prototype) {
 }  // namespace internal
 
 
-template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<bool>;
-template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<int32>;
-template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<uint32>;
-template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<int64>;
-template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<uint64>;
-template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<float>;
-template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<double>;
-template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedPtrField<std::string>;
+template class PROTOBUF_EXPORT_TEMPLATE_DEFINE(PROTOBUF_EXPORT)
+    RepeatedField<bool>;
+template class PROTOBUF_EXPORT_TEMPLATE_DEFINE(PROTOBUF_EXPORT)
+    RepeatedField<int32>;
+template class PROTOBUF_EXPORT_TEMPLATE_DEFINE(PROTOBUF_EXPORT)
+    RepeatedField<uint32>;
+template class PROTOBUF_EXPORT_TEMPLATE_DEFINE(PROTOBUF_EXPORT)
+    RepeatedField<int64>;
+template class PROTOBUF_EXPORT_TEMPLATE_DEFINE(PROTOBUF_EXPORT)
+    RepeatedField<uint64>;
+template class PROTOBUF_EXPORT_TEMPLATE_DEFINE(PROTOBUF_EXPORT)
+    RepeatedField<float>;
+template class PROTOBUF_EXPORT_TEMPLATE_DEFINE(PROTOBUF_EXPORT)
+    RepeatedField<double>;
+template class PROTOBUF_EXPORT_TEMPLATE_DEFINE(PROTOBUF_EXPORT)
+    RepeatedPtrField<std::string>;
 
 }  // namespace protobuf
 }  // namespace google

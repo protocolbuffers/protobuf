@@ -58,7 +58,6 @@
 #include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
-#include <google/protobuf/stubs/mathlimits.h>
 
 
 #include <google/protobuf/port_def.inc>
@@ -1203,8 +1202,8 @@ TEST_F(TextFormatTest, ParseExotic) {
             -std::numeric_limits<double>::infinity());
   EXPECT_EQ(message.repeated_double(10),
             -std::numeric_limits<double>::infinity());
-  EXPECT_TRUE(MathLimits<double>::IsNaN(message.repeated_double(11)));
-  EXPECT_TRUE(MathLimits<double>::IsNaN(message.repeated_double(12)));
+  EXPECT_TRUE(std::isnan(message.repeated_double(11)));
+  EXPECT_TRUE(std::isnan(message.repeated_double(12)));
 
   // Note:  Since these string literals have \0's in them, we must explicitly
   // pass their sizes to string's constructor.

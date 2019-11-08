@@ -1001,7 +1001,7 @@ jspb.utils.debugBytesToTextFormat = function(byteSource) {
  * @return {string} Stringified scalar for text format.
  */
 jspb.utils.debugScalarToTextFormat = function(scalar) {
-  if (goog.isString(scalar)) {
+  if (typeof scalar === 'string') {
     return goog.string.quote(scalar);
   } else {
     return scalar.toString();

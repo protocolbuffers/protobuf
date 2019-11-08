@@ -28,22 +28,53 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 #include "text_format_conformance_suite.h"
 
-#include "conformance_test.h"
-
 #include <google/protobuf/any.pb.h>
+#include <google/protobuf/text_format.h>
+#include "conformance_test.h"
 #include <google/protobuf/test_messages_proto2.pb.h>
 #include <google/protobuf/test_messages_proto3.pb.h>
-#include <google/protobuf/text_format.h>
+
+namespace proto2_messages = protobuf_test_messages::proto2;
 
 using conformance::ConformanceRequest;
 using conformance::ConformanceResponse;
 using conformance::WireFormat;
 using google::protobuf::Message;
 using google::protobuf::TextFormat;
-using protobuf_test_messages::proto2::TestAllTypesProto2;
-using protobuf_test_messages::proto2::UnknownToTestAllTypes;
+using proto2_messages::TestAllTypesProto2;
+using proto2_messages::UnknownToTestAllTypes;
 using protobuf_test_messages::proto3::TestAllTypesProto3;
 using std::string;
 
@@ -64,8 +95,8 @@ bool TextFormatConformanceTestSuite::ParseTextFormatResponse(
   }
   if (!parser.ParseFromString(response.text_payload(), test_message)) {
     GOOGLE_LOG(ERROR) << "INTERNAL ERROR: internal text->protobuf transcode "
-                      << "yielded unparseable proto. Text payload: "
-                      << response.text_payload();
+               << "yielded unparseable proto. Text payload: "
+               << response.text_payload();
     return false;
   }
 
@@ -83,11 +114,11 @@ bool TextFormatConformanceTestSuite::ParseResponse(
   switch (response.result_case()) {
     case ConformanceResponse::kProtobufPayload: {
       if (requested_output != conformance::PROTOBUF) {
-        ReportFailure(
-            test_name, level, request, response,
-            StrCat("Test was asked for ", WireFormatToString(requested_output),
-                   " output but provided PROTOBUF instead.")
-                .c_str());
+        ReportFailure(test_name, level, request, response,
+                      StrCat("Test was asked for ",
+                                   WireFormatToString(requested_output),
+                                   " output but provided PROTOBUF instead.")
+                          .c_str());
         return false;
       }
 
@@ -102,11 +133,11 @@ bool TextFormatConformanceTestSuite::ParseResponse(
 
     case ConformanceResponse::kTextPayload: {
       if (requested_output != conformance::TEXT_FORMAT) {
-        ReportFailure(
-            test_name, level, request, response,
-            StrCat("Test was asked for ", WireFormatToString(requested_output),
-                   " output but provided TEXT_FORMAT instead.")
-                .c_str());
+        ReportFailure(test_name, level, request, response,
+                      StrCat("Test was asked for ",
+                                   WireFormatToString(requested_output),
+                                   " output but provided TEXT_FORMAT instead.")
+                          .c_str());
         return false;
       }
 
@@ -122,7 +153,7 @@ bool TextFormatConformanceTestSuite::ParseResponse(
 
     default:
       GOOGLE_LOG(FATAL) << test_name
-                        << ": unknown payload type: " << response.result_case();
+                 << ": unknown payload type: " << response.result_case();
   }
 
   return true;
@@ -139,8 +170,9 @@ void TextFormatConformanceTestSuite::ExpectParseFailure(const string& test_name,
       conformance::TEXT_FORMAT_TEST, prototype, test_name, input);
   const ConformanceRequest& request = setting.GetRequest();
   ConformanceResponse response;
-  string effective_test_name = StrCat(setting.ConformanceLevelToString(level),
-                                      ".Proto3.TextFormatInput.", test_name);
+  string effective_test_name =
+      StrCat(setting.ConformanceLevelToString(level),
+                   ".Proto3.TextFormatInput.", test_name);
 
   RunTest(effective_test_name, request, &response);
   if (response.result_case() == ConformanceResponse::kParseError) {

@@ -148,7 +148,9 @@ const char* SourceContext::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_
       // string file_name = 1;
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
-          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8(_internal_mutable_file_name(), ptr, ctx, "google.protobuf.SourceContext.file_name");
+          auto str = _internal_mutable_file_name();
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
+          CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "google.protobuf.SourceContext.file_name"));
           CHK_(ptr);
         } else goto handle_unusual;
         continue;

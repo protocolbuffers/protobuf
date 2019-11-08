@@ -130,7 +130,7 @@ class JsonStreamParserTest : public ::testing::Test {
     if (!result.ok()) {
       GOOGLE_LOG(WARNING) << result;
     }
-    EXPECT_OK(result);
+    EXPECT_TRUE(result.ok());
   }
 
   void DoErrorTest(

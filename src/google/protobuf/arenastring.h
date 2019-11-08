@@ -32,6 +32,7 @@
 #define GOOGLE_PROTOBUF_ARENASTRING_H__
 
 #include <string>
+#include <type_traits>
 #include <utility>
 
 #include <google/protobuf/stubs/logging.h>

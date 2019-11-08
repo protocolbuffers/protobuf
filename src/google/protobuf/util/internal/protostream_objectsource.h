@@ -324,6 +324,8 @@ class PROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
   // the fields of the message are filtered out by field mask.
   bool suppress_empty_object_;
 
+  bool use_legacy_json_map_format_;
+
   GOOGLE_DISALLOW_IMPLICIT_CONSTRUCTORS(ProtoStreamObjectSource);
 };
 
