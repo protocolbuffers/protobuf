@@ -620,6 +620,45 @@ PHP_METHOD(Message, writeWrapperValue) {
     return;
   }
 
+  {
+    // Type Checking
+    const upb_msgdef* submsgdef = upb_fielddef_msgsubdef(field);
+    const upb_fielddef* value_field = upb_msgdef_itof(submsgdef, 1);
+    upb_fieldtype_t type = upb_fielddef_type(value_field);
+    switch(type) {
+      case UPB_TYPE_STRING:
+      case UPB_TYPE_BYTES: {
+        if (!protobuf_convert_to_string(value)) {
+          return;
+        }
+        if (type == UPB_TYPE_STRING &&
+            !is_structurally_valid_utf8(Z_STRVAL_P(value), Z_STRLEN_P(value))) {
+          zend_error(E_USER_ERROR, "Given string is not UTF8 encoded.");
+          return;
+        }
+      }
+      break;
+#define CASE_TYPE(upb_type, type, c_type)                    \
+  case UPB_TYPE_##upb_type: {                                \
+    c_type type##_value;                                     \
+    if (!protobuf_convert_to_##type(value, &type##_value)) { \
+      return;                                                \
+    }                                                        \
+    break;                                                   \
+  }
+      CASE_TYPE(INT32,  int32,  int32_t)
+      CASE_TYPE(UINT32, uint32, uint32_t)
+      CASE_TYPE(ENUM,   int32,  int32_t)
+      CASE_TYPE(INT64,  int64,  int64_t)
+      CASE_TYPE(UINT64, uint64, uint64_t)
+      CASE_TYPE(FLOAT,  float,  float)
+      CASE_TYPE(DOUBLE, double, double)
+      CASE_TYPE(BOOL,   bool,   int8_t)
+
+#undef CASE_TYPE
+    }
+  }
+
   if (upb_fielddef_containingoneof(field)) {
     uint32_t* oneof_case =
         slot_oneof_case(msg->descriptor->layout, message_data(msg), field);
