@@ -1199,18 +1199,19 @@ static void add_handlers_for_oneof_field(upb_handlers *h,
   }
 }
 
-#define DEFINE_WRAPPER_HANDLER(utype, type, ctype) \
-  static bool type##wrapper_handler(               \
-      void* closure, const void* hd, ctype val) {  \
-    wrapperfields_parseframe_t* frame = closure;   \
-    if (frame->is_msg) {                           \
-      MessageHeader* msg = frame->submsg;          \
-      const size_t *ofs = hd;                      \
-      DEREF(message_data(msg), *ofs, ctype) = val; \
-    } else {                                       \
-      native_slot_get(utype, &val, frame->submsg); \
-    }                                              \
-    return true;                                   \
+#define DEFINE_WRAPPER_HANDLER(utype, type, ctype)           \
+  static bool type##wrapper_handler(                         \
+      void* closure, const void* hd, ctype val) {            \
+    wrapperfields_parseframe_t* frame = closure;             \
+    if (frame->is_msg) {                                     \
+      MessageHeader* msg = frame->submsg;                    \
+      const size_t *ofs = hd;                                \
+      DEREF(message_data(msg), *ofs, ctype) = val;           \
+    } else {                                                 \
+      TSRMLS_FETCH();                                        \
+      native_slot_get(utype, &val, frame->submsg TSRMLS_CC); \
+    }                                                        \
+    return true;                                             \
   }
 
 DEFINE_WRAPPER_HANDLER(UPB_TYPE_BOOL,   bool,   bool)
@@ -1248,9 +1249,12 @@ static bool strwrapper_end_handler(void *closure, const void *hd) {
 static void add_handlers_for_wrapper(const upb_msgdef* msgdef,
                                      upb_handlers* h) {
   const upb_fielddef* f = upb_msgdef_itof(msgdef, 1);
-  Descriptor* desc =
-      UNBOX_HASHTABLE_VALUE(Descriptor, get_def_obj((void*)msgdef));
-  size_t offset = desc->layout->fields[upb_fielddef_index(f)].offset;
+  Descriptor* desc;
+  size_t offset;
+
+  TSRMLS_FETCH();
+  desc = UNBOX_HASHTABLE_VALUE(Descriptor, get_def_obj((void*)msgdef));
+  offset = desc->layout->fields[upb_fielddef_index(f)].offset;
 
   switch (upb_msgdef_wellknowntype(msgdef)) {
 #define SET_HANDLER(utype, ltype)                                 \
