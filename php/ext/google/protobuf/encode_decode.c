@@ -2058,11 +2058,27 @@ void merge_from_string(const char* data, int data_len, Descriptor* desc,
   stackenv se;
   upb_sink sink;
   upb_pbdecoder* decoder;
+  void* closure;
   stackenv_init(&se, "Error occurred during parsing: %s");
 
-  upb_sink_reset(&sink, h, msg);
+  if (is_wrapper_msg(desc->msgdef)) {
+    wrapperfields_parseframe_t* frame =
+        (wrapperfields_parseframe_t*)malloc(
+            sizeof(wrapperfields_parseframe_t));
+    frame->submsg = msg;
+    frame->is_msg = true;
+    closure = frame;
+  } else {
+    closure = msg;
+  }
+
+  upb_sink_reset(&sink, h, closure);
   decoder = upb_pbdecoder_create(se.arena, method, sink, &se.status);
   upb_bufsrc_putbuf(data, data_len, upb_pbdecoder_input(decoder));
+
+  if (is_wrapper_msg(desc->msgdef)) {
+    free((wrapperfields_parseframe_t*)closure);
+  }
 
   stackenv_uninit(&se);
 }
@@ -2141,13 +2157,28 @@ PHP_METHOD(Message, mergeFromJsonString) {
     stackenv se;
     upb_sink sink;
     upb_json_parser* parser;
+    void* closure;
     stackenv_init(&se, "Error occurred during parsing: %s");
 
-    upb_sink_reset(&sink, get_fill_handlers(desc), msg);
+    if (is_wrapper_msg(desc->msgdef)) {
+      wrapperfields_parseframe_t* frame =
+          (wrapperfields_parseframe_t*)malloc(
+              sizeof(wrapperfields_parseframe_t));
+      frame->submsg = msg;
+      frame->is_msg = true;
+      closure = frame;
+    } else {
+      closure = msg;
+    }
+
+    upb_sink_reset(&sink, get_fill_handlers(desc), closure);
     parser = upb_json_parser_create(se.arena, method, generated_pool->symtab,
                                     sink, &se.status, ignore_json_unknown);
     upb_bufsrc_putbuf(data, data_len, upb_json_parser_input(parser));
 
+    if (is_wrapper_msg(desc->msgdef)) {
+      free((wrapperfields_parseframe_t*)closure);
+    }
     stackenv_uninit(&se);
   }
 }
