@@ -329,7 +329,7 @@ upb_textprinter *upb_textprinter_create(upb_arena *arena, const upb_handlers *h,
   return p;
 }
 
-upb_handlercache *upb_textprinter_newcache() {
+upb_handlercache *upb_textprinter_newcache(void) {
   return upb_handlercache_new(&onmreg, NULL);
 }
 

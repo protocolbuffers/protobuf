@@ -276,14 +276,15 @@ static upb_tabkey strcopy(lookupkey_t k2, upb_alloc *a) {
   char *str = upb_malloc(a, k2.str.len + sizeof(uint32_t) + 1);
   if (str == NULL) return 0;
   memcpy(str, &len, sizeof(uint32_t));
-  memcpy(str + sizeof(uint32_t), k2.str.str, k2.str.len + 1);
+  memcpy(str + sizeof(uint32_t), k2.str.str, k2.str.len);
+  str[sizeof(uint32_t) + k2.str.len] = '\0';
   return (uintptr_t)str;
 }
 
 static uint32_t strhash(upb_tabkey key) {
   uint32_t len;
   char *str = upb_tabstr(key, &len);
-  return MurmurHash2(str, len, 0);
+  return upb_murmur_hash2(str, len, 0);
 }
 
 static bool streql(upb_tabkey k1, lookupkey_t k2) {
@@ -344,20 +345,20 @@ bool upb_strtable_insert3(upb_strtable *t, const char *k, size_t len,
   tabkey = strcopy(key, a);
   if (tabkey == 0) return false;
 
-  hash = MurmurHash2(key.str.str, key.str.len, 0);
+  hash = upb_murmur_hash2(key.str.str, key.str.len, 0);
   insert(&t->t, key, tabkey, v, hash, &strhash, &streql);
   return true;
 }
 
 bool upb_strtable_lookup2(const upb_strtable *t, const char *key, size_t len,
                           upb_value *v) {
-  uint32_t hash = MurmurHash2(key, len, 0);
+  uint32_t hash = upb_murmur_hash2(key, len, 0);
   return lookup(&t->t, strkey2(key, len), v, hash, &streql);
 }
 
 bool upb_strtable_remove3(upb_strtable *t, const char *key, size_t len,
                          upb_value *val, upb_alloc *alloc) {
-  uint32_t hash = MurmurHash2(key, len, 0);
+  uint32_t hash = upb_murmur_hash2(key, len, 0);
   upb_tabkey tabkey;
   if (rm(&t->t, strkey2(key, len), val, &tabkey, hash, &streql)) {
     upb_free(alloc, (void*)tabkey);
@@ -646,7 +647,7 @@ void upb_inttable_compact2(upb_inttable *t, upb_alloc *a) {
     size_t arr_size = max[size_lg2] + 1;  /* +1 so arr[max] will fit. */
     size_t hash_count = upb_inttable_count(t) - arr_count;
     size_t hash_size = hash_count ? (hash_count / MAX_LOAD) + 1 : 0;
-    size_t hashsize_lg2 = log2ceil(hash_size);
+    int hashsize_lg2 = log2ceil(hash_size);
 
     upb_inttable_sizedinit(&new_t, t->t.ctype, arr_size, hashsize_lg2, a);
     upb_inttable_begin(&i, t);
@@ -743,7 +744,7 @@ bool upb_inttable_iter_isequal(const upb_inttable_iter *i1,
  *   1. It will not work incrementally.
  *   2. It will not produce the same results on little-endian and big-endian
  *      machines. */
-uint32_t MurmurHash2(const void *key, size_t len, uint32_t seed) {
+uint32_t upb_murmur_hash2(const void *key, size_t len, uint32_t seed) {
   /* 'm' and 'r' are mixing constants generated offline.
    * They're not really 'magic', they just happen to work well. */
   const uint32_t m = 0x5bd1e995;
@@ -794,11 +795,11 @@ uint32_t MurmurHash2(const void *key, size_t len, uint32_t seed) {
 
 #define MIX(h,k,m) { k *= m; k ^= k >> r; k *= m; h *= m; h ^= k; }
 
-uint32_t MurmurHash2(const void * key, size_t len, uint32_t seed) {
+uint32_t upb_murmur_hash2(const void * key, size_t len, uint32_t seed) {
   const uint32_t m = 0x5bd1e995;
   const int32_t r = 24;
   const uint8_t * data = (const uint8_t *)key;
-  uint32_t h = seed ^ len;
+  uint32_t h = (uint32_t)(seed ^ len);
   uint8_t align = (uintptr_t)data & 3;
 
   if(align && (len >= 4)) {

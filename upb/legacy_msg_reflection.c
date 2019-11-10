@@ -325,7 +325,7 @@ struct upb_mapiter {
   upb_descriptortype_t key_type;
 };
 
-size_t upb_mapiter_sizeof() {
+size_t upb_mapiter_sizeof(void) {
   return sizeof(upb_mapiter);
 }
 

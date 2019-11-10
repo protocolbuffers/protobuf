@@ -245,7 +245,7 @@ UPB_INLINE bool upb_tabent_isempty(const upb_tabent *e) {
 }
 
 /* Used by some of the unit tests for generic hashing functionality. */
-uint32_t MurmurHash2(const void * key, size_t len, uint32_t seed);
+uint32_t upb_murmur_hash2(const void * key, size_t len, uint32_t seed);
 
 UPB_INLINE uintptr_t upb_intkey(uintptr_t key) {
   return key;

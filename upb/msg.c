@@ -5,7 +5,7 @@
 
 #include "upb/port_def.inc"
 
-#define VOIDPTR_AT(msg, ofs) (void*)((char*)msg + ofs)
+#define VOIDPTR_AT(msg, ofs) (void*)((char*)msg + (int)ofs)
 
 /* Internal members of a upb_msg.  We can change this without breaking binary
  * compatibility.  We put these before the user's data.  The user's upb_msg*
