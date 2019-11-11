@@ -127,6 +127,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf.Test/SampleMessages.cs                          \
   csharp/src/Google.Protobuf.Test/SampleNaNs.cs                              \
   csharp/src/Google.Protobuf.Test/TestCornerCases.cs                         \
+  csharp/src/Google.Protobuf.Test.TestProtos/Google.Protobuf.Test.TestProtos.csproj \
   csharp/src/Google.Protobuf.Test.TestProtos/ForeignMessagePartial.cs           \
   csharp/src/Google.Protobuf.Test.TestProtos/MapUnittestProto3.cs               \
   csharp/src/Google.Protobuf.Test.TestProtos/OldExtensions1.cs                  \
