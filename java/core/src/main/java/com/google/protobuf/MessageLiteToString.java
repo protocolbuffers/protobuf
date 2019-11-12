@@ -88,7 +88,7 @@ final class MessageLiteToString {
     }
 
     for (String getter : getters) {
-      String suffix = getter.replaceFirst("get", "");
+      String suffix = getter.startsWith("get") ? getter.substring(3) : getter;
       if (suffix.endsWith(LIST_SUFFIX)
           && !suffix.endsWith(BUILDER_LIST_SUFFIX)
           // Sometimes people have fields named 'list' that aren't repeated.

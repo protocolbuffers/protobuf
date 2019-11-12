@@ -38,15 +38,13 @@
 #ifndef CONFORMANCE_CONFORMANCE_TEST_H
 #define CONFORMANCE_CONFORMANCE_TEST_H
 
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/util/type_resolver.h>
-#include <google/protobuf/wire_format_lite.h>
-
 #include <functional>
 #include <string>
 #include <vector>
 
+#include <google/protobuf/descriptor.h>
+#include <google/protobuf/wire_format_lite.h>
+#include <google/protobuf/util/type_resolver.h>
 #include "conformance.pb.h"
 
 namespace conformance {
@@ -218,7 +216,7 @@ class ConformanceTestSuite {
         const string& test_name, const string& input);
     virtual ~ConformanceRequestSetting() {}
 
-    Message* GetTestMessage() const;
+    std::unique_ptr<Message> NewTestMessage() const;
 
     string GetTestName() const;
 

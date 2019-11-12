@@ -55,7 +55,6 @@
 
 #include <google/protobuf/stubs/callback.h>
 #include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/mutex.h>
 #include <google/protobuf/stubs/once.h>
 #include <google/protobuf/stubs/status.h>
 #include <google/protobuf/stubs/stringpiece.h>
@@ -316,52 +315,6 @@ uint32 ghtonl(uint32 x) {
   result_array[2] = static_cast<uint8>((x >> 8) & 0xFF);
   result_array[3] = static_cast<uint8>(x & 0xFF);
   return result;
-}
-
-// ===================================================================
-// Shutdown support.
-
-namespace internal {
-
-struct ShutdownData {
-  ~ShutdownData() {
-    std::reverse(functions.begin(), functions.end());
-    for (auto pair : functions) pair.first(pair.second);
-  }
-
-  static ShutdownData* get() {
-    static auto* data = new ShutdownData;
-    return data;
-  }
-
-  std::vector<std::pair<void (*)(const void*), const void*>> functions;
-  Mutex mutex;
-};
-
-static void RunZeroArgFunc(const void* arg) {
-  void (*func)() = reinterpret_cast<void (*)()>(const_cast<void*>(arg));
-  func();
-}
-
-void OnShutdown(void (*func)()) {
-  OnShutdownRun(RunZeroArgFunc, reinterpret_cast<void*>(func));
-}
-
-void OnShutdownRun(void (*f)(const void*), const void* arg) {
-  auto shutdown_data = ShutdownData::get();
-  MutexLock lock(&shutdown_data->mutex);
-  shutdown_data->functions.push_back(std::make_pair(f, arg));
-}
-
-}  // namespace internal
-
-void ShutdownProtobufLibrary() {
-  // This function should be called only once, but accepts multiple calls.
-  static bool is_shutdown = false;
-  if (!is_shutdown) {
-    delete internal::ShutdownData::get();
-    is_shutdown = true;
-  }
 }
 
 #if PROTOBUF_USE_EXCEPTIONS

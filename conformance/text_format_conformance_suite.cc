@@ -30,20 +30,21 @@
 
 #include "text_format_conformance_suite.h"
 
-#include "conformance_test.h"
-
 #include <google/protobuf/any.pb.h>
+#include <google/protobuf/text_format.h>
+#include "conformance_test.h"
 #include <google/protobuf/test_messages_proto2.pb.h>
 #include <google/protobuf/test_messages_proto3.pb.h>
-#include <google/protobuf/text_format.h>
+
+namespace proto2_messages = protobuf_test_messages::proto2;
 
 using conformance::ConformanceRequest;
 using conformance::ConformanceResponse;
 using conformance::WireFormat;
 using google::protobuf::Message;
 using google::protobuf::TextFormat;
-using protobuf_test_messages::proto2::TestAllTypesProto2;
-using protobuf_test_messages::proto2::UnknownToTestAllTypes;
+using proto2_messages::TestAllTypesProto2;
+using proto2_messages::UnknownToTestAllTypes;
 using protobuf_test_messages::proto3::TestAllTypesProto3;
 using std::string;
 
@@ -64,8 +65,8 @@ bool TextFormatConformanceTestSuite::ParseTextFormatResponse(
   }
   if (!parser.ParseFromString(response.text_payload(), test_message)) {
     GOOGLE_LOG(ERROR) << "INTERNAL ERROR: internal text->protobuf transcode "
-                      << "yielded unparseable proto. Text payload: "
-                      << response.text_payload();
+               << "yielded unparseable proto. Text payload: "
+               << response.text_payload();
     return false;
   }
 
@@ -83,11 +84,11 @@ bool TextFormatConformanceTestSuite::ParseResponse(
   switch (response.result_case()) {
     case ConformanceResponse::kProtobufPayload: {
       if (requested_output != conformance::PROTOBUF) {
-        ReportFailure(
-            test_name, level, request, response,
-            StrCat("Test was asked for ", WireFormatToString(requested_output),
-                   " output but provided PROTOBUF instead.")
-                .c_str());
+        ReportFailure(test_name, level, request, response,
+                      StrCat("Test was asked for ",
+                                   WireFormatToString(requested_output),
+                                   " output but provided PROTOBUF instead.")
+                          .c_str());
         return false;
       }
 
@@ -102,11 +103,11 @@ bool TextFormatConformanceTestSuite::ParseResponse(
 
     case ConformanceResponse::kTextPayload: {
       if (requested_output != conformance::TEXT_FORMAT) {
-        ReportFailure(
-            test_name, level, request, response,
-            StrCat("Test was asked for ", WireFormatToString(requested_output),
-                   " output but provided TEXT_FORMAT instead.")
-                .c_str());
+        ReportFailure(test_name, level, request, response,
+                      StrCat("Test was asked for ",
+                                   WireFormatToString(requested_output),
+                                   " output but provided TEXT_FORMAT instead.")
+                          .c_str());
         return false;
       }
 
@@ -122,7 +123,7 @@ bool TextFormatConformanceTestSuite::ParseResponse(
 
     default:
       GOOGLE_LOG(FATAL) << test_name
-                        << ": unknown payload type: " << response.result_case();
+                 << ": unknown payload type: " << response.result_case();
   }
 
   return true;
@@ -139,8 +140,9 @@ void TextFormatConformanceTestSuite::ExpectParseFailure(const string& test_name,
       conformance::TEXT_FORMAT_TEST, prototype, test_name, input);
   const ConformanceRequest& request = setting.GetRequest();
   ConformanceResponse response;
-  string effective_test_name = StrCat(setting.ConformanceLevelToString(level),
-                                      ".Proto3.TextFormatInput.", test_name);
+  string effective_test_name =
+      StrCat(setting.ConformanceLevelToString(level),
+                   ".Proto3.TextFormatInput.", test_name);
 
   RunTest(effective_test_name, request, &response);
   if (response.result_case() == ConformanceResponse::kParseError) {

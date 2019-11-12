@@ -424,14 +424,6 @@ const char* InlineGreedyStringParser(std::string* s, const char* ptr,
   return ctx->ReadString(ptr, size, s);
 }
 
-const char* InlineGreedyStringParserUTF8(std::string* s, const char* ptr,
-                                         ParseContext* ctx,
-                                         const char* field_name) {
-  auto p = InlineGreedyStringParser(s, ptr, ctx);
-  GOOGLE_PROTOBUF_PARSER_ASSERT(VerifyUTF8(*s, field_name));
-  return p;
-}
-
 
 template <typename T, bool sign>
 const char* VarintParser(void* object, const char* ptr, ParseContext* ctx) {

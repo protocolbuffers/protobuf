@@ -39,6 +39,7 @@
 #define GOOGLE_PROTOBUF_COMPILER_CSHARP_NAMES_H__
 
 #include <string>
+#include <google/protobuf/port.h>
 #include <google/protobuf/stubs/common.h>
 
 #include <google/protobuf/port_def.inc>

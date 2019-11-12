@@ -95,7 +95,7 @@ message ConformanceRequest {
   //
   // TODO(haberman): if/when we expand the conformance tests to support proto2,
   // we will want to include a field that lets the payload/response be a
-  // protobuf_test_messages.proto2.TestAllTypes message instead.
+  // protobuf_test_messages.google.protobuf.TestAllTypes message instead.
   oneof payload {
     bytes protobuf_payload = 1;
     string json_payload = 2;
@@ -109,7 +109,7 @@ message ConformanceRequest {
 
   // The full name for the test message to use; for the moment, either:
   // protobuf_test_messages.proto3.TestAllTypesProto3 or
-  // protobuf_test_messages.proto2.TestAllTypesProto2.
+  // protobuf_test_messages.google.protobuf.TestAllTypesProto2.
   string message_type = 4;
 
   // Each test is given a specific test category. Some category may need

@@ -930,6 +930,14 @@ inline bool EndsWith(StringPiece text, StringPiece suffix) {
 }
 }  // namespace strings
 
+namespace internal {
+
+// A locale-independent version of the standard strtod(), which always
+// uses a dot as the decimal separator.
+double NoLocaleStrtod(const char* str, char** endptr);
+
+}  // namespace internal
+
 }  // namespace protobuf
 }  // namespace google
 

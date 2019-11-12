@@ -1173,12 +1173,10 @@ final class MessageSchema<T> implements Schema<T> {
       mergeSingleField(message, other, i);
     }
 
-    if (!proto3) {
-      SchemaUtil.mergeUnknownFields(unknownFieldSchema, message, other);
+    SchemaUtil.mergeUnknownFields(unknownFieldSchema, message, other);
 
-      if (hasExtensions) {
-        SchemaUtil.mergeExtensions(extensionSchema, message, other);
-      }
+    if (hasExtensions) {
+      SchemaUtil.mergeExtensions(extensionSchema, message, other);
     }
   }
 

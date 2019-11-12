@@ -458,9 +458,8 @@ class PROTOBUF_EXPORT ExtensionSet {
   // last called.  Note that the range bounds are inclusive-exclusive.
   void SerializeWithCachedSizes(int start_field_number, int end_field_number,
                                 io::CodedOutputStream* output) const {
-    output->SetCur(InternalSerializeWithCachedSizesToArray(
-        start_field_number, end_field_number, output->Cur(),
-        output->EpsCopy()));
+    output->SetCur(_InternalSerialize(start_field_number, end_field_number,
+                                      output->Cur(), output->EpsCopy()));
   }
 
   // Same as SerializeWithCachedSizes, but without any bounds checking.
@@ -468,9 +467,9 @@ class PROTOBUF_EXPORT ExtensionSet {
   // serialized extensions.
   //
   // Returns a pointer past the last written byte.
-  uint8* InternalSerializeWithCachedSizesToArray(
-      int start_field_number, int end_field_number, uint8* target,
-      io::EpsCopyOutputStream* stream) const;
+  uint8* _InternalSerialize(int start_field_number, int end_field_number,
+                            uint8* target,
+                            io::EpsCopyOutputStream* stream) const;
 
   // Like above but serializes in MessageSet format.
   void SerializeMessageSetWithCachedSizes(io::CodedOutputStream* output) const {
