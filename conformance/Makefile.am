@@ -203,7 +203,7 @@ EXTRA_DIST =                  \
   failure_list_python-post26.txt \
   failure_list_ruby.txt       \
   failure_list_php.txt        \
-  failure_list_php_c.txt 			\
+  failure_list_php_c.txt      \
   java/lite/proguard.pgcfg
 
 
