@@ -589,7 +589,7 @@ PHP_METHOD(Message, readWrapperValue) {
     const upb_fielddef* value_field = upb_msgdef_itof(submsgdef, 1);
     MessageHeader* submsg = UNBOX(MessageHeader, cached_zval);
     CACHED_VALUE* cached_value = find_zval_property(submsg, value_field);
-    layout_get(msg->descriptor->layout, submsg, value_field,
+    layout_get(submsg->descriptor->layout, submsg, value_field,
                cached_value TSRMLS_CC);
     RETURN_ZVAL(CACHED_PTR_TO_ZVAL_PTR(cached_value), 1, 0);
   } else {
