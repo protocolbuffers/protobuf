@@ -422,7 +422,7 @@ class PROTOBUF_EXPORT FileDescriptorSet :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* InternalSerializeWithCachedSizesToArray(
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
       ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
@@ -590,7 +590,7 @@ class PROTOBUF_EXPORT FileDescriptorProto :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* InternalSerializeWithCachedSizesToArray(
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
       ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
@@ -1025,7 +1025,7 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* InternalSerializeWithCachedSizesToArray(
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
       ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
@@ -1223,7 +1223,7 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* InternalSerializeWithCachedSizesToArray(
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
       ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
@@ -1401,7 +1401,7 @@ class PROTOBUF_EXPORT DescriptorProto :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* InternalSerializeWithCachedSizesToArray(
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
       ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
@@ -1769,7 +1769,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* InternalSerializeWithCachedSizesToArray(
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
       ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
@@ -1940,7 +1940,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* InternalSerializeWithCachedSizesToArray(
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
       ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
@@ -2417,7 +2417,7 @@ class PROTOBUF_EXPORT OneofDescriptorProto :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* InternalSerializeWithCachedSizesToArray(
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
       ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
@@ -2616,7 +2616,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* InternalSerializeWithCachedSizesToArray(
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
       ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
@@ -2794,7 +2794,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* InternalSerializeWithCachedSizesToArray(
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
       ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
@@ -3061,7 +3061,7 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* InternalSerializeWithCachedSizesToArray(
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
       ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
@@ -3275,7 +3275,7 @@ class PROTOBUF_EXPORT ServiceDescriptorProto :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* InternalSerializeWithCachedSizesToArray(
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
       ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
@@ -3494,7 +3494,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* InternalSerializeWithCachedSizesToArray(
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
       ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
@@ -3785,7 +3785,7 @@ class PROTOBUF_EXPORT FileOptions :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* InternalSerializeWithCachedSizesToArray(
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
       ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
@@ -4448,7 +4448,7 @@ class PROTOBUF_EXPORT MessageOptions :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* InternalSerializeWithCachedSizesToArray(
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
       ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
@@ -4679,7 +4679,7 @@ class PROTOBUF_EXPORT FieldOptions :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* InternalSerializeWithCachedSizesToArray(
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
       ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
@@ -5004,7 +5004,7 @@ class PROTOBUF_EXPORT OneofOptions :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* InternalSerializeWithCachedSizesToArray(
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
       ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
@@ -5175,7 +5175,7 @@ class PROTOBUF_EXPORT EnumOptions :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* InternalSerializeWithCachedSizesToArray(
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
       ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
@@ -5376,7 +5376,7 @@ class PROTOBUF_EXPORT EnumValueOptions :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* InternalSerializeWithCachedSizesToArray(
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
       ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
@@ -5562,7 +5562,7 @@ class PROTOBUF_EXPORT ServiceOptions :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* InternalSerializeWithCachedSizesToArray(
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
       ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
@@ -5748,7 +5748,7 @@ class PROTOBUF_EXPORT MethodOptions :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* InternalSerializeWithCachedSizesToArray(
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
       ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
@@ -5981,7 +5981,7 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* InternalSerializeWithCachedSizesToArray(
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
       ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
@@ -6178,7 +6178,7 @@ class PROTOBUF_EXPORT UninterpretedOption :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* InternalSerializeWithCachedSizesToArray(
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
       ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
@@ -6486,7 +6486,7 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* InternalSerializeWithCachedSizesToArray(
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
       ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
@@ -6772,7 +6772,7 @@ class PROTOBUF_EXPORT SourceCodeInfo :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* InternalSerializeWithCachedSizesToArray(
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
       ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
@@ -6942,7 +6942,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* InternalSerializeWithCachedSizesToArray(
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
       ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
@@ -7176,7 +7176,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* InternalSerializeWithCachedSizesToArray(
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
       ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
@@ -7363,7 +7363,7 @@ inline std::string* FileDescriptorProto::_internal_mutable_name() {
 }
 inline std::string* FileDescriptorProto::release_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.FileDescriptorProto.name)
-  if (!has_name()) {
+  if (!_internal_has_name()) {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000001u;
@@ -7456,7 +7456,7 @@ inline std::string* FileDescriptorProto::_internal_mutable_package() {
 }
 inline std::string* FileDescriptorProto::release_package() {
   // @@protoc_insertion_point(field_release:google.protobuf.FileDescriptorProto.package)
-  if (!has_package()) {
+  if (!_internal_has_package()) {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000002u;
@@ -8009,7 +8009,7 @@ inline std::string* FileDescriptorProto::_internal_mutable_syntax() {
 }
 inline std::string* FileDescriptorProto::release_syntax() {
   // @@protoc_insertion_point(field_release:google.protobuf.FileDescriptorProto.syntax)
-  if (!has_syntax()) {
+  if (!_internal_has_syntax()) {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000004u;
@@ -8294,7 +8294,7 @@ inline std::string* DescriptorProto::_internal_mutable_name() {
 }
 inline std::string* DescriptorProto::release_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.DescriptorProto.name)
-  if (!has_name()) {
+  if (!_internal_has_name()) {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000001u;
@@ -8849,7 +8849,7 @@ inline std::string* FieldDescriptorProto::_internal_mutable_name() {
 }
 inline std::string* FieldDescriptorProto::release_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.FieldDescriptorProto.name)
-  if (!has_name()) {
+  if (!_internal_has_name()) {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000001u;
@@ -9028,7 +9028,7 @@ inline std::string* FieldDescriptorProto::_internal_mutable_type_name() {
 }
 inline std::string* FieldDescriptorProto::release_type_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.FieldDescriptorProto.type_name)
-  if (!has_type_name()) {
+  if (!_internal_has_type_name()) {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000004u;
@@ -9121,7 +9121,7 @@ inline std::string* FieldDescriptorProto::_internal_mutable_extendee() {
 }
 inline std::string* FieldDescriptorProto::release_extendee() {
   // @@protoc_insertion_point(field_release:google.protobuf.FieldDescriptorProto.extendee)
-  if (!has_extendee()) {
+  if (!_internal_has_extendee()) {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000002u;
@@ -9214,7 +9214,7 @@ inline std::string* FieldDescriptorProto::_internal_mutable_default_value() {
 }
 inline std::string* FieldDescriptorProto::release_default_value() {
   // @@protoc_insertion_point(field_release:google.protobuf.FieldDescriptorProto.default_value)
-  if (!has_default_value()) {
+  if (!_internal_has_default_value()) {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000008u;
@@ -9335,7 +9335,7 @@ inline std::string* FieldDescriptorProto::_internal_mutable_json_name() {
 }
 inline std::string* FieldDescriptorProto::release_json_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.FieldDescriptorProto.json_name)
-  if (!has_json_name()) {
+  if (!_internal_has_json_name()) {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000010u;
@@ -9500,7 +9500,7 @@ inline std::string* OneofDescriptorProto::_internal_mutable_name() {
 }
 inline std::string* OneofDescriptorProto::release_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.OneofDescriptorProto.name)
-  if (!has_name()) {
+  if (!_internal_has_name()) {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000001u;
@@ -9725,7 +9725,7 @@ inline std::string* EnumDescriptorProto::_internal_mutable_name() {
 }
 inline std::string* EnumDescriptorProto::release_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.EnumDescriptorProto.name)
-  if (!has_name()) {
+  if (!_internal_has_name()) {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000001u;
@@ -10042,7 +10042,7 @@ inline std::string* EnumValueDescriptorProto::_internal_mutable_name() {
 }
 inline std::string* EnumValueDescriptorProto::release_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.EnumValueDescriptorProto.name)
-  if (!has_name()) {
+  if (!_internal_has_name()) {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000001u;
@@ -10235,7 +10235,7 @@ inline std::string* ServiceDescriptorProto::_internal_mutable_name() {
 }
 inline std::string* ServiceDescriptorProto::release_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.ServiceDescriptorProto.name)
-  if (!has_name()) {
+  if (!_internal_has_name()) {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000001u;
@@ -10439,7 +10439,7 @@ inline std::string* MethodDescriptorProto::_internal_mutable_name() {
 }
 inline std::string* MethodDescriptorProto::release_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.MethodDescriptorProto.name)
-  if (!has_name()) {
+  if (!_internal_has_name()) {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000001u;
@@ -10532,7 +10532,7 @@ inline std::string* MethodDescriptorProto::_internal_mutable_input_type() {
 }
 inline std::string* MethodDescriptorProto::release_input_type() {
   // @@protoc_insertion_point(field_release:google.protobuf.MethodDescriptorProto.input_type)
-  if (!has_input_type()) {
+  if (!_internal_has_input_type()) {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000002u;
@@ -10625,7 +10625,7 @@ inline std::string* MethodDescriptorProto::_internal_mutable_output_type() {
 }
 inline std::string* MethodDescriptorProto::release_output_type() {
   // @@protoc_insertion_point(field_release:google.protobuf.MethodDescriptorProto.output_type)
-  if (!has_output_type()) {
+  if (!_internal_has_output_type()) {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000004u;
@@ -10846,7 +10846,7 @@ inline std::string* FileOptions::_internal_mutable_java_package() {
 }
 inline std::string* FileOptions::release_java_package() {
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.java_package)
-  if (!has_java_package()) {
+  if (!_internal_has_java_package()) {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000001u;
@@ -10939,7 +10939,7 @@ inline std::string* FileOptions::_internal_mutable_java_outer_classname() {
 }
 inline std::string* FileOptions::release_java_outer_classname() {
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.java_outer_classname)
-  if (!has_java_outer_classname()) {
+  if (!_internal_has_java_outer_classname()) {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000002u;
@@ -11145,7 +11145,7 @@ inline std::string* FileOptions::_internal_mutable_go_package() {
 }
 inline std::string* FileOptions::release_go_package() {
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.go_package)
-  if (!has_go_package()) {
+  if (!_internal_has_go_package()) {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000004u;
@@ -11406,7 +11406,7 @@ inline std::string* FileOptions::_internal_mutable_objc_class_prefix() {
 }
 inline std::string* FileOptions::release_objc_class_prefix() {
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.objc_class_prefix)
-  if (!has_objc_class_prefix()) {
+  if (!_internal_has_objc_class_prefix()) {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000008u;
@@ -11499,7 +11499,7 @@ inline std::string* FileOptions::_internal_mutable_csharp_namespace() {
 }
 inline std::string* FileOptions::release_csharp_namespace() {
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.csharp_namespace)
-  if (!has_csharp_namespace()) {
+  if (!_internal_has_csharp_namespace()) {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000010u;
@@ -11592,7 +11592,7 @@ inline std::string* FileOptions::_internal_mutable_swift_prefix() {
 }
 inline std::string* FileOptions::release_swift_prefix() {
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.swift_prefix)
-  if (!has_swift_prefix()) {
+  if (!_internal_has_swift_prefix()) {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000020u;
@@ -11685,7 +11685,7 @@ inline std::string* FileOptions::_internal_mutable_php_class_prefix() {
 }
 inline std::string* FileOptions::release_php_class_prefix() {
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.php_class_prefix)
-  if (!has_php_class_prefix()) {
+  if (!_internal_has_php_class_prefix()) {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000040u;
@@ -11778,7 +11778,7 @@ inline std::string* FileOptions::_internal_mutable_php_namespace() {
 }
 inline std::string* FileOptions::release_php_namespace() {
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.php_namespace)
-  if (!has_php_namespace()) {
+  if (!_internal_has_php_namespace()) {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000080u;
@@ -11871,7 +11871,7 @@ inline std::string* FileOptions::_internal_mutable_php_metadata_namespace() {
 }
 inline std::string* FileOptions::release_php_metadata_namespace() {
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.php_metadata_namespace)
-  if (!has_php_metadata_namespace()) {
+  if (!_internal_has_php_metadata_namespace()) {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000100u;
@@ -11964,7 +11964,7 @@ inline std::string* FileOptions::_internal_mutable_ruby_package() {
 }
 inline std::string* FileOptions::release_ruby_package() {
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.ruby_package)
-  if (!has_ruby_package()) {
+  if (!_internal_has_ruby_package()) {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000200u;
@@ -12852,7 +12852,7 @@ inline std::string* UninterpretedOption_NamePart::_internal_mutable_name_part() 
 }
 inline std::string* UninterpretedOption_NamePart::release_name_part() {
   // @@protoc_insertion_point(field_release:google.protobuf.UninterpretedOption.NamePart.name_part)
-  if (!has_name_part()) {
+  if (!_internal_has_name_part()) {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000001u;
@@ -13016,7 +13016,7 @@ inline std::string* UninterpretedOption::_internal_mutable_identifier_value() {
 }
 inline std::string* UninterpretedOption::release_identifier_value() {
   // @@protoc_insertion_point(field_release:google.protobuf.UninterpretedOption.identifier_value)
-  if (!has_identifier_value()) {
+  if (!_internal_has_identifier_value()) {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000001u;
@@ -13193,7 +13193,7 @@ inline std::string* UninterpretedOption::_internal_mutable_string_value() {
 }
 inline std::string* UninterpretedOption::release_string_value() {
   // @@protoc_insertion_point(field_release:google.protobuf.UninterpretedOption.string_value)
-  if (!has_string_value()) {
+  if (!_internal_has_string_value()) {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000002u;
@@ -13286,7 +13286,7 @@ inline std::string* UninterpretedOption::_internal_mutable_aggregate_value() {
 }
 inline std::string* UninterpretedOption::release_aggregate_value() {
   // @@protoc_insertion_point(field_release:google.protobuf.UninterpretedOption.aggregate_value)
-  if (!has_aggregate_value()) {
+  if (!_internal_has_aggregate_value()) {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000004u;
@@ -13477,7 +13477,7 @@ inline std::string* SourceCodeInfo_Location::_internal_mutable_leading_comments(
 }
 inline std::string* SourceCodeInfo_Location::release_leading_comments() {
   // @@protoc_insertion_point(field_release:google.protobuf.SourceCodeInfo.Location.leading_comments)
-  if (!has_leading_comments()) {
+  if (!_internal_has_leading_comments()) {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000001u;
@@ -13570,7 +13570,7 @@ inline std::string* SourceCodeInfo_Location::_internal_mutable_trailing_comments
 }
 inline std::string* SourceCodeInfo_Location::release_trailing_comments() {
   // @@protoc_insertion_point(field_release:google.protobuf.SourceCodeInfo.Location.trailing_comments)
-  if (!has_trailing_comments()) {
+  if (!_internal_has_trailing_comments()) {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000002u;
@@ -13831,7 +13831,7 @@ inline std::string* GeneratedCodeInfo_Annotation::_internal_mutable_source_file(
 }
 inline std::string* GeneratedCodeInfo_Annotation::release_source_file() {
   // @@protoc_insertion_point(field_release:google.protobuf.GeneratedCodeInfo.Annotation.source_file)
-  if (!has_source_file()) {
+  if (!_internal_has_source_file()) {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000001u;

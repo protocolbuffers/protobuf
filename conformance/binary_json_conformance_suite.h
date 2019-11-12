@@ -31,8 +31,8 @@
 #ifndef CONFORMANCE_BINARY_JSON_CONFORMANCE_SUITE_H
 #define CONFORMANCE_BINARY_JSON_CONFORMANCE_SUITE_H
 
-#include "conformance_test.h"
 #include "third_party/jsoncpp/json.h"
+#include "conformance_test.h"
 
 namespace google {
 namespace protobuf {
@@ -43,6 +43,16 @@ class BinaryAndJsonConformanceSuite : public ConformanceTestSuite {
 
  private:
   void RunSuiteImpl();
+  void RunJsonTests();
+  void RunJsonTestsForFieldNameConvention();
+  void RunJsonTestsForNonRepeatedTypes();
+  void RunJsonTestsForRepeatedTypes();
+  void RunJsonTestsForNullTypes();
+  void RunJsonTestsForWrapperTypes();
+  void RunJsonTestsForFieldMask();
+  void RunJsonTestsForStruct();
+  void RunJsonTestsForValue();
+  void RunJsonTestsForAny();
   void RunValidJsonTest(const string& test_name,
                         ConformanceLevel level,
                         const string& input_json,
@@ -121,8 +131,7 @@ class BinaryAndJsonConformanceSuite : public ConformanceTestSuite {
   void TestMergeOneofMessage();
   void TestOverwriteMessageValueMap();
 
-  std::unique_ptr<google::protobuf::util::TypeResolver>
-      type_resolver_;
+  std::unique_ptr<google::protobuf::util::TypeResolver> type_resolver_;
   std::string type_url_;
 };
 

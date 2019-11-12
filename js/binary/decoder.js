@@ -180,9 +180,9 @@ jspb.BinaryDecoder.prototype.getBuffer = function() {
 jspb.BinaryDecoder.prototype.setBlock =
     function(data, opt_start, opt_length) {
   this.bytes_ = jspb.utils.byteSourceToUint8Array(data);
-  this.start_ = goog.isDef(opt_start) ? opt_start : 0;
-  this.end_ =
-      goog.isDef(opt_length) ? this.start_ + opt_length : this.bytes_.length;
+  this.start_ = (opt_start !== undefined) ? opt_start : 0;
+  this.end_ = (opt_length !== undefined) ? this.start_ + opt_length :
+                                           this.bytes_.length;
   this.cursor_ = this.start_;
 };
 

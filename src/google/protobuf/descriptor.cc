@@ -6438,6 +6438,7 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
   std::vector<int> dest_path = options_path;
 
   for (int i = 0; i < uninterpreted_option_->name_size(); ++i) {
+    builder_->undefine_resolved_name_.clear();
     const std::string& name_part = uninterpreted_option_->name(i).name_part();
     if (debug_msg_name.size() > 0) {
       debug_msg_name += ".";

@@ -439,7 +439,7 @@ void MessageFieldGenerator::GenerateSerializeWithCachedSizesToArray(
   format(
       "target = stream->EnsureSpace(target);\n"
       "target = ::$proto_ns$::internal::WireFormatLite::\n"
-      "  InternalWrite$declared_type$ToArray(\n"
+      "  InternalWrite$declared_type$(\n"
       "    $number$, _Internal::$name$(this), target, stream);\n");
 }
 
@@ -505,7 +505,7 @@ void MessageOneofFieldGenerator::GenerateInlineAccessorDefinitions(
       "inline $type$* $classname$::$release_name$() {\n"
       "$annotate_accessor$"
       "  // @@protoc_insertion_point(field_release:$full_name$)\n"
-      "  if (has_$name$()) {\n"
+      "  if (_internal_has_$name$()) {\n"
       "    clear_has_$oneof_name$();\n"
       "      $type$* temp = $field_member$;\n");
   if (SupportsArenas(descriptor_)) {
@@ -540,7 +540,7 @@ void MessageOneofFieldGenerator::GenerateInlineAccessorDefinitions(
         "$annotate_accessor$"
         "  // @@protoc_insertion_point(field_unsafe_arena_release"
         ":$full_name$)\n"
-        "  if (has_$name$()) {\n"
+        "  if (_internal_has_$name$()) {\n"
         "    clear_has_$oneof_name$();\n"
         "    $type$* temp = $field_member$;\n"
         "    $field_member$ = nullptr;\n"
@@ -752,8 +752,7 @@ void RepeatedMessageFieldGenerator::GenerateSerializeWithCachedSizesToArray(
         "          end = this->$name$_.pointer_end(); it < end; ++it) {\n"
         "  target = stream->EnsureSpace(target);\n"
         "  target = ::$proto_ns$::internal::WireFormatLite::\n"
-        "    InternalWrite$declared_type$ToArray($number$, **it, target, "
-        "stream);\n"
+        "    InternalWrite$declared_type$($number$, **it, target, stream);\n"
         "}\n");
   } else {
     format(
@@ -763,9 +762,8 @@ void RepeatedMessageFieldGenerator::GenerateSerializeWithCachedSizesToArray(
         "{\n"
         "  target = stream->EnsureSpace(target);\n"
         "  target = ::$proto_ns$::internal::WireFormatLite::\n"
-        "    InternalWrite$declared_type$ToArray($number$, "
-        "this->_internal_$name$(i), target, "
-        "stream);\n"
+        "    InternalWrite$declared_type$($number$, "
+        "this->_internal_$name$(i), target, stream);\n"
         "}\n");
   }
 }

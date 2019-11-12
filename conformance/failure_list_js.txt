@@ -1,3 +1,4 @@
+
 Recommended.Proto2.ProtobufInput.ValidDataRepeated.BOOL.PackedInput.DefaultOutput.ProtobufOutput
 Recommended.Proto2.ProtobufInput.ValidDataRepeated.BOOL.PackedInput.UnpackedOutput.ProtobufOutput
 Recommended.Proto2.ProtobufInput.ValidDataRepeated.BOOL.UnpackedInput.PackedOutput.ProtobufOutput

@@ -1023,7 +1023,7 @@ public abstract class GeneratedMessageLite<
     }
 
     /** Clear an extension. */
-    public final <Type> BuilderType clearExtension(final ExtensionLite<MessageType, ?> extension) {
+    public final BuilderType clearExtension(final ExtensionLite<MessageType, ?> extension) {
       GeneratedExtension<MessageType, ?> extensionLite = checkIsLite(extension);
 
       verifyExtensionContainingType(extensionLite);

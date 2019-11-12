@@ -53,6 +53,7 @@
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/stl_util.h>
+#include <google/protobuf/stubs/mutex.h>
 
 #include <google/protobuf/port_def.inc>
 
@@ -316,7 +317,7 @@ inline uint8* SerializeToArrayImpl(const MessageLite& msg, uint8* target,
     io::EpsCopyOutputStream out(
         &stream, io::CodedOutputStream::IsDefaultSerializationDeterministic(),
         &ptr);
-    ptr = msg.InternalSerializeWithCachedSizesToArray(ptr, &out);
+    ptr = msg._InternalSerialize(ptr, &out);
     out.Trim(ptr);
     GOOGLE_DCHECK(!out.HadError() && stream.ByteCount() == size);
     return target + size;
@@ -324,7 +325,7 @@ inline uint8* SerializeToArrayImpl(const MessageLite& msg, uint8* target,
     io::EpsCopyOutputStream out(
         target, size,
         io::CodedOutputStream::IsDefaultSerializationDeterministic());
-    auto res = msg.InternalSerializeWithCachedSizesToArray(target, &out);
+    auto res = msg._InternalSerialize(target, &out);
     GOOGLE_DCHECK(target + size == res);
     return res;
   }
@@ -384,7 +385,7 @@ bool MessageLite::SerializePartialToZeroCopyStream(
   io::EpsCopyOutputStream stream(
       output, io::CodedOutputStream::IsDefaultSerializationDeterministic(),
       &target);
-  target = InternalSerializeWithCachedSizesToArray(target, &stream);
+  target = _InternalSerialize(target, &stream);
   stream.Trim(target);
   if (stream.HadError()) return false;
   return true;
@@ -498,6 +499,54 @@ void GenericTypeHandler<std::string>::Merge(const std::string& from,
 }
 
 }  // namespace internal
+
+
+// ===================================================================
+// Shutdown support.
+
+namespace internal {
+
+struct ShutdownData {
+  ~ShutdownData() {
+    std::reverse(functions.begin(), functions.end());
+    for (auto pair : functions) pair.first(pair.second);
+  }
+
+  static ShutdownData* get() {
+    static auto* data = new ShutdownData;
+    return data;
+  }
+
+  std::vector<std::pair<void (*)(const void*), const void*>> functions;
+  Mutex mutex;
+};
+
+static void RunZeroArgFunc(const void* arg) {
+  void (*func)() = reinterpret_cast<void (*)()>(const_cast<void*>(arg));
+  func();
+}
+
+void OnShutdown(void (*func)()) {
+  OnShutdownRun(RunZeroArgFunc, reinterpret_cast<void*>(func));
+}
+
+void OnShutdownRun(void (*f)(const void*), const void* arg) {
+  auto shutdown_data = ShutdownData::get();
+  MutexLock lock(&shutdown_data->mutex);
+  shutdown_data->functions.push_back(std::make_pair(f, arg));
+}
+
+}  // namespace internal
+
+void ShutdownProtobufLibrary() {
+  // This function should be called only once, but accepts multiple calls.
+  static bool is_shutdown = false;
+  if (!is_shutdown) {
+    delete internal::ShutdownData::get();
+    is_shutdown = true;
+  }
+}
+
 
 }  // namespace protobuf
 }  // namespace google

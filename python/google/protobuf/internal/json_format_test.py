@@ -818,6 +818,14 @@ class JsonFormatTest(JsonFormatBase):
     self.assertEqual(message.repeated_float_value[0], float('inf'))
     self.assertAlmostEqual(message.repeated_float_value[1], 1.4028235e-39)
 
+  def testFloatPrecision(self):
+    message = json_format_proto3_pb2.TestMessage()
+    message.float_value = 1.123456789
+    # Set to 7 valid digits.
+    text = '{\n  "floatValue": 1.123457\n}'
+    self.assertEqual(
+        json_format.MessageToJson(message, float_precision=7), text)
+
   def testParseEmptyText(self):
     self.CheckError('',
                     r'Failed to load JSON: (Expecting value)|(No JSON).')

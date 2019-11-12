@@ -32,13 +32,13 @@
 
 #include <google/protobuf/util/field_comparator.h>
 
+#include <limits>
 #include <string>
 
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/message.h>
 #include <google/protobuf/util/message_differencer.h>
 #include <google/protobuf/stubs/map_util.h>
-#include <google/protobuf/stubs/mathlimits.h>
 #include <google/protobuf/stubs/mathutil.h>
 
 namespace google {
@@ -175,14 +175,12 @@ bool DefaultFieldComparator::CompareDoubleOrFloat(const FieldDescriptor& field,
     // themselves), and is a shortcut for finite values.
     return true;
   } else if (float_comparison_ == EXACT) {
-    if (treat_nan_as_equal_ && MathLimits<T>::IsNaN(value_1) &&
-        MathLimits<T>::IsNaN(value_2)) {
+    if (treat_nan_as_equal_ && std::isnan(value_1) && std::isnan(value_2)) {
       return true;
     }
     return false;
   } else {
-    if (treat_nan_as_equal_ && MathLimits<T>::IsNaN(value_1) &&
-        MathLimits<T>::IsNaN(value_2)) {
+    if (treat_nan_as_equal_ && std::isnan(value_1) && std::isnan(value_2)) {
       return true;
     }
     // float_comparison_ == APPROXIMATE covers two use cases.

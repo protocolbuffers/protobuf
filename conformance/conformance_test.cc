@@ -28,30 +28,28 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <set>
-#include <stdarg.h>
-#include <string>
-#include <fstream>
-
-#include "conformance.pb.h"
 #include "conformance_test.h"
 
+#include <stdarg.h>
+
+#include <fstream>
+#include <set>
+#include <string>
+
 #include <google/protobuf/stubs/stringprintf.h>
-#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/message.h>
 #include <google/protobuf/text_format.h>
 #include <google/protobuf/util/field_comparator.h>
 #include <google/protobuf/util/json_util.h>
 #include <google/protobuf/util/message_differencer.h>
+#include "conformance.pb.h"
 
 using conformance::ConformanceRequest;
 using conformance::ConformanceResponse;
 using conformance::WireFormat;
 using google::protobuf::TextFormat;
 using google::protobuf::util::DefaultFieldComparator;
-using google::protobuf::util::JsonToBinaryString;
 using google::protobuf::util::MessageDifferencer;
-using google::protobuf::util::Status;
 using std::string;
 
 namespace {
@@ -120,9 +118,9 @@ ConformanceTestSuite::ConformanceRequestSetting::ConformanceRequestSetting(
   request_.set_requested_output_format(output_format);
 }
 
-Message* ConformanceTestSuite::ConformanceRequestSetting::
-    GetTestMessage() const {
-  return prototype_message_for_compare_->New();
+std::unique_ptr<Message>
+ConformanceTestSuite::ConformanceRequestSetting::NewTestMessage() const {
+  return std::unique_ptr<Message>(prototype_message_for_compare_->New());
 }
 
 string ConformanceTestSuite::ConformanceRequestSetting::
@@ -131,11 +129,9 @@ string ConformanceTestSuite::ConformanceRequestSetting::
       prototype_message_.GetDescriptor()->file()->syntax() ==
         FileDescriptor::SYNTAX_PROTO3 ? "Proto3" : "Proto2";
 
-  return StrCat(ConformanceLevelToString(level_), ".",
-                rname, ".",
-                InputFormatString(input_format_),
-                ".", test_name_, ".",
-                OutputFormatString(output_format_));
+  return StrCat(ConformanceLevelToString(level_), ".", rname, ".",
+                      InputFormatString(input_format_), ".", test_name_, ".",
+                      OutputFormatString(output_format_));
 }
 
 string ConformanceTestSuite::ConformanceRequestSetting::
@@ -228,11 +224,11 @@ void ConformanceTestSuite::ReportSkip(const string& test_name,
 void ConformanceTestSuite::RunValidInputTest(
     const ConformanceRequestSetting& setting,
     const string& equivalent_text_format) {
-  Message* reference_message = setting.GetTestMessage();
-  GOOGLE_CHECK(
-      TextFormat::ParseFromString(equivalent_text_format, reference_message))
-          << "Failed to parse data for test case: " << setting.GetTestName()
-          << ", data: " << equivalent_text_format;
+  std::unique_ptr<Message> reference_message(setting.NewTestMessage());
+  GOOGLE_CHECK(TextFormat::ParseFromString(equivalent_text_format,
+                                    reference_message.get()))
+      << "Failed to parse data for test case: " << setting.GetTestName()
+      << ", data: " << equivalent_text_format;
   const string equivalent_wire_format = reference_message->SerializeAsString();
   RunValidBinaryInputTest(setting, equivalent_wire_format);
 }
@@ -251,15 +247,14 @@ void ConformanceTestSuite::VerifyResponse(
     const ConformanceRequestSetting& setting,
     const string& equivalent_wire_format, const ConformanceResponse& response,
     bool need_report_success, bool require_same_wire_format) {
-  Message* test_message = setting.GetTestMessage();
+  std::unique_ptr<Message> test_message(setting.NewTestMessage());
   const ConformanceRequest& request = setting.GetRequest();
   const string& test_name = setting.GetTestName();
   ConformanceLevel level = setting.GetLevel();
-  Message* reference_message = setting.GetTestMessage();
+  std::unique_ptr<Message> reference_message = setting.NewTestMessage();
 
-  GOOGLE_CHECK(
-      reference_message->ParseFromString(equivalent_wire_format))
-          << "Failed to parse wire data for test case: " << test_name;
+  GOOGLE_CHECK(reference_message->ParseFromString(equivalent_wire_format))
+      << "Failed to parse wire data for test case: " << test_name;
 
   switch (response.result_case()) {
     case ConformanceResponse::RESULT_NOT_SET:
@@ -279,7 +274,7 @@ void ConformanceTestSuite::VerifyResponse(
       return;
 
     default:
-      if (!ParseResponse(response, setting, test_message)) return;
+      if (!ParseResponse(response, setting, test_message.get())) return;
   }
 
   MessageDifferencer differencer;
@@ -292,12 +287,11 @@ void ConformanceTestSuite::VerifyResponse(
   bool check = false;
 
   if (require_same_wire_format) {
-    GOOGLE_DCHECK_EQ(response.result_case(),
-                     ConformanceResponse::kProtobufPayload);
+    GOOGLE_DCHECK_EQ(response.result_case(), ConformanceResponse::kProtobufPayload);
     const string& protobuf_payload = response.protobuf_payload();
     check = equivalent_wire_format == protobuf_payload;
     differences = StrCat("Expect: ", ToOctString(equivalent_wire_format),
-                         ", but got: ", ToOctString(protobuf_payload));
+                               ", but got: ", ToOctString(protobuf_payload));
   } else {
     check = differencer.Compare(*reference_message, *test_message);
   }
@@ -386,8 +380,7 @@ string ConformanceTestSuite::WireFormatToString(
     case conformance::UNSPECIFIED:
       return "UNSPECIFIED";
     default:
-      GOOGLE_LOG(FATAL) << "unknown wire type: "
-                        << wire_format;
+      GOOGLE_LOG(FATAL) << "unknown wire type: " << wire_format;
   }
   return "";
 }
@@ -450,8 +443,8 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
   }
 
   StringAppendF(&output_,
-                "CONFORMANCE SUITE %s: %d successes, %d skipped, "
-                "%d expected failures, %d unexpected failures.\n",
+                "CONFORMANCE SUITE %s: %d successes, %zu skipped, "
+                "%d expected failures, %zu unexpected failures.\n",
                 ok ? "PASSED" : "FAILED", successes_, skipped_.size(),
                 expected_failures_, unexpected_failing_tests_.size());
   StringAppendF(&output_, "\n");

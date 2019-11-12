@@ -655,8 +655,8 @@ bool WireFormat::ParseAndMergeMessageSetItem(io::CodedInputStream* input,
 
 // ===================================================================
 
-uint8* WireFormat::InternalSerializeWithCachedSizesToArray(
-    const Message& message, uint8* target, io::EpsCopyOutputStream* stream) {
+uint8* WireFormat::_InternalSerialize(const Message& message, uint8* target,
+                                      io::EpsCopyOutputStream* stream) {
   const Descriptor* descriptor = message.GetDescriptor();
   const Reflection* message_reflection = message.GetReflection();
 
@@ -751,12 +751,12 @@ static uint8* SerializeMapValueRefWithCachedSizes(
       target = stream->WriteString(2, value.GetStringValue(), target);
       break;
     case FieldDescriptor::TYPE_MESSAGE:
-      target = WireFormatLite::InternalWriteMessageToArray(
-          2, value.GetMessageValue(), target, stream);
+      target = WireFormatLite::InternalWriteMessage(2, value.GetMessageValue(),
+                                                    target, stream);
       break;
     case FieldDescriptor::TYPE_GROUP:
-      target = WireFormatLite::InternalWriteGroupToArray(
-          2, value.GetMessageValue(), target, stream);
+      target = WireFormatLite::InternalWriteGroup(2, value.GetMessageValue(),
+                                                  target, stream);
       break;
   }
   return target;
@@ -902,12 +902,13 @@ uint8* WireFormat::InternalSerializeField(const FieldDescriptor* field,
     if (count == 0) return target;
     target = stream->EnsureSpace(target);
     switch (field->type()) {
-#define HANDLE_PRIMITIVE_TYPE(TYPE, CPPTYPE, TYPE_METHOD, CPPTYPE_METHOD)   \
-  case FieldDescriptor::TYPE_##TYPE: {                                      \
-    auto r = message_reflection->GetRepeatedField<CPPTYPE>(message, field); \
-    target = stream->Write##TYPE_METHOD##Packed(                            \
-        field->number(), r, FieldDataOnlyByteSize(field, message), target); \
-    break;                                                                  \
+#define HANDLE_PRIMITIVE_TYPE(TYPE, CPPTYPE, TYPE_METHOD, CPPTYPE_METHOD)      \
+  case FieldDescriptor::TYPE_##TYPE: {                                         \
+    auto r =                                                                   \
+        message_reflection->GetRepeatedFieldInternal<CPPTYPE>(message, field); \
+    target = stream->Write##TYPE_METHOD##Packed(                               \
+        field->number(), r, FieldDataOnlyByteSize(field, message), target);    \
+    break;                                                                     \
   }
 
       HANDLE_PRIMITIVE_TYPE(INT32, int32, Int32, Int32)
@@ -919,11 +920,12 @@ uint8* WireFormat::InternalSerializeField(const FieldDescriptor* field,
       HANDLE_PRIMITIVE_TYPE(ENUM, int, Enum, Enum)
 
 #undef HANDLE_PRIMITIVE_TYPE
-#define HANDLE_PRIMITIVE_TYPE(TYPE, CPPTYPE, TYPE_METHOD, CPPTYPE_METHOD)   \
-  case FieldDescriptor::TYPE_##TYPE: {                                      \
-    auto r = message_reflection->GetRepeatedField<CPPTYPE>(message, field); \
-    target = stream->WriteFixedPacked(field->number(), r, target);          \
-    break;                                                                  \
+#define HANDLE_PRIMITIVE_TYPE(TYPE, CPPTYPE, TYPE_METHOD, CPPTYPE_METHOD)      \
+  case FieldDescriptor::TYPE_##TYPE: {                                         \
+    auto r =                                                                   \
+        message_reflection->GetRepeatedFieldInternal<CPPTYPE>(message, field); \
+    target = stream->WriteFixedPacked(field->number(), r, target);             \
+    break;                                                                     \
   }
 
       HANDLE_PRIMITIVE_TYPE(FIXED32, uint32, Fixed32, UInt32)
@@ -977,7 +979,7 @@ uint8* WireFormat::InternalSerializeField(const FieldDescriptor* field,
 
 #define HANDLE_TYPE(TYPE, TYPE_METHOD, CPPTYPE_METHOD)                         \
   case FieldDescriptor::TYPE_##TYPE:                                           \
-    target = WireFormatLite::InternalWrite##TYPE_METHOD##ToArray(              \
+    target = WireFormatLite::InternalWrite##TYPE_METHOD(                       \
         field->number(),                                                       \
         field->is_repeated()                                                   \
             ? (map_entries.empty()                                             \
@@ -1054,7 +1056,7 @@ uint8* WireFormat::InternalSerializeMessageSetItem(
   target = WireFormatLite::WriteUInt32ToArray(
       WireFormatLite::kMessageSetTypeIdNumber, field->number(), target);
   // Write message.
-  target = WireFormatLite::InternalWriteMessageToArray(
+  target = WireFormatLite::InternalWriteMessage(
       WireFormatLite::kMessageSetMessageNumber,
       message_reflection->GetMessage(message, field), target, stream);
   // End group.
