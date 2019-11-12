@@ -172,26 +172,59 @@ size_t upb_array_size(const upb_array *arr) {
   return arr->len;
 }
 
-const void *upb_array_get(const upb_array *arr, size_t *size) {
-  if (size) *size = arr->len;
-  return arr->data;
+upb_msgval upb_array_get(const upb_array *arr, size_t i) {
+  UPB_ASSERT(i < arr->len);
+  const char* data = _upb_array_constptr(arr);
+  int elem_size_lg2 = arr->data & 7;
+  upb_msgval ret;
+
+  switch (elem_size_lg2) {
+    case 0:
+      ret.bool_val = *PTR_AT(data, i, bool);
+      break;
+    case 2:
+      memcpy(&ret, data + i * 4, 4);
+      break;
+    case 3:
+      memcpy(&ret, data + i * 8, 8);
+      break;
+    case 4:
+      memcpy(&ret, data + i * 16, 16);
+      break;
+    default:
+      UPB_UNREACHABLE();
+  }
+
+  return ret;
 }
 
-void* upb_array_getmutable(upb_array *arr, size_t *size) {
-  if (size) *size = arr->len;
-  return arr->data;
+void upb_array_set(upb_array *arr, size_t i, upb_msgval val) {
+  UPB_ASSERT(i < arr->len);
+  char* data = _upb_array_ptr(arr);
+  int elem_size_lg2 = arr->data & 7;
+
+  switch (elem_size_lg2) {
+    case 0:
+      *PTR_AT(data, i, bool) = val.bool_val;
+      break;
+    case 2:
+      memcpy(data + i * 4, &val, 4);
+      break;
+    case 3:
+      memcpy(data + i * 8, &val, 8);
+      break;
+    case 4:
+      memcpy(data + i * 16, &val, 16);
+      break;
+    default:
+      UPB_UNREACHABLE();
+  }
 }
 
 /* Resizes the array to the given size, reallocating if necessary, and returns a
  * pointer to the new array elements. */
-void *upb_array_resize(upb_array *arr, size_t size, upb_fieldtype_t type,
-                       upb_arena *arena) {
-  int elem_size = _upb_fieldtype_to_size[type];
-  if (size > arr->size && !_upb_array_realloc(arr, size, elem_size, arena)) {
-    return NULL;
-  }
-  arr->len = size;
-  return arr->data;
+bool upb_array_resize(upb_array *arr, size_t size, upb_arena *arena) {
+  return _upb_array_realloc(arr, size, arena);
 }
 
 #if 0

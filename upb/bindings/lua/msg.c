@@ -549,18 +549,23 @@ static int lupb_array_new(lua_State *L) {
   larray = lupb_newuserdata(L, sizeof(*larray), LUPB_ARRAY);
   larray->type = type;
   larray->lmsgclass = lmsgclass;
-  larray->arr = upb_array_new(lupb_arena_get(L));
+  larray->arr = upb_array_new(lupb_arena_get(L), type);
 
   return 1;
 }
 
 static int lupb_array_newindex(lua_State *L) {
   lupb_array *larray = lupb_array_check(L, 1);
+  size_t size = upb_array_size(larray->arr);
   upb_fieldtype_t type = larray->type;
-  uint32_t n = lupb_array_checkindex(L, 2, upb_array_size(larray->arr) + 1);
+  uint32_t n = lupb_array_checkindex(L, 2, size + 1);
   upb_msgval msgval = lupb_tomsgval(L, type, 3, larray->lmsgclass);
 
-  upb_array_set(larray->arr, larray->type, n, msgval, lupb_arena_get(L));
+  if (n == size) {
+    upb_array_append(larray->arr, msgval, lupb_arena_get(L));
+  } else {
+    upb_array_set(larray->arr, n, msgval);
+  }
 
   if (lupb_istypewrapped(type)) {
     lupb_uservalseti(L, 1, n, 3);
@@ -571,14 +576,15 @@ static int lupb_array_newindex(lua_State *L) {
 
 static int lupb_array_index(lua_State *L) {
   lupb_array *larray = lupb_array_check(L, 1);
-  upb_array *array = larray->arr;
-  uint32_t n = lupb_array_checkindex(L, 2, upb_array_size(array));
+  size_t size = upb_array_size(larray->arr);
+  uint32_t n = lupb_array_checkindex(L, 2, size);
   upb_fieldtype_t type = larray->type;
 
   if (lupb_istypewrapped(type)) {
     lupb_uservalgeti(L, 1, n);
   } else {
-    lupb_pushmsgval(L, type, upb_array_get(array, type, n));
+    upb_msgval val = upb_array_get(larray->arr, n);
+    lupb_pushmsgval(L, type, val);
   }
 
   return 1;
@@ -638,6 +644,7 @@ static upb_msgval lupb_map_typecheck(lua_State *L, int narg, int msg,
   const upb_msgdef *entry = upb_fielddef_msgsubdef(f);
   const upb_fielddef *key_field = upb_msgdef_itof(entry, UPB_MAPENTRY_KEY);
   const upb_fielddef *value_field = upb_msgdef_itof(entry, UPB_MAPENTRY_VALUE);
+  upb_msgval val;
 
   UPB_ASSERT(entry && key_field && value_field);
 
@@ -657,7 +664,8 @@ static upb_msgval lupb_map_typecheck(lua_State *L, int narg, int msg,
         lmap->value_lmsgclass);
   }
 
-  return upb_msgval_map(map);
+  val.map_val = map;
+  return val;
 }
 
 /* lupb_map Public API */
@@ -690,7 +698,7 @@ static int lupb_map_new(lua_State *L) {
   lmap->key_type = key_type;
   lmap->value_type = value_type;
   lmap->value_lmsgclass = value_lmsgclass;
-  lmap->map = upb_map_new(key_type, value_type, lupb_arena_get(L));
+  lmap->map = upb_map_new(lupb_arena_get(L), key_type, value_type);
 
   return 1;
 }
@@ -756,7 +764,7 @@ static int lupb_map_newindex(lua_State *L) {
 
   if (lua_isnil(L, 3)) {
     /* Delete from map. */
-    upb_map_del(map, key);
+    upb_map_delete(map, key);
 
     if (lupb_istypewrapped(lmap->value_type)) {
       /* Delete in userval. */
@@ -771,7 +779,7 @@ static int lupb_map_newindex(lua_State *L) {
     upb_msgval val =
         lupb_tomsgval(L, lmap->value_type, 3, lmap->value_lmsgclass);
 
-    upb_map_set(map, key, val, NULL);
+    upb_map_set(map, key, val, lupb_arena_get(L));
 
     if (lupb_istypewrapped(lmap->value_type)) {
       /* Set in userval. */
@@ -791,7 +799,6 @@ static int lupb_map_newindex(lua_State *L) {
 static int lupb_mapiter_next(lua_State *L) {
   upb_mapiter *i = lua_touserdata(L, lua_upvalueindex(1));
   lupb_map *lmap = lupb_map_check(L, 1);
-  upb_map *map = lmap->map;
 
   if (upb_mapiter_done(i)) {
     return 0;
@@ -969,7 +976,6 @@ static int lupb_msg_index(lua_State *L) {
   lupb_msg *lmsg = lupb_msg_check(L, 1);
   const upb_fielddef *f = lupb_msg_checkfield(L, lmsg, 2);
   const upb_msglayout *l = lmsg->lmsgclass->layout;
-  int field_index = upb_fielddef_index(f);
 
   if (in_userval(f)) {
     lupb_uservalgeti(L, 1, lupb_fieldindex(f));
@@ -982,16 +988,16 @@ static int lupb_msg_index(lua_State *L) {
         /* TODO(haberman) */
       } else {
         UPB_ASSERT(upb_fielddef_isstring(f));
-        if (upb_msg_has(lmsg->msg, field_index, l)) {
-          upb_msgval val = upb_msg_get(lmsg->msg, field_index, l);
+        if (upb_msg_has(lmsg->msg, f, l)) {
+          upb_msgval val = upb_msg_get(lmsg->msg, f, l);
           lua_pop(L, 1);
-          lua_pushlstring(L, val.str.data, val.str.size);
+          lua_pushlstring(L, val.str_val.data, val.str_val.size);
           lupb_uservalseti(L, 1, lupb_fieldindex(f), -1);
         }
       }
     }
   } else {
-    upb_msgval val = upb_msg_get(lmsg->msg, field_index, l);
+    upb_msgval val = upb_msg_get(lmsg->msg, f, l);
     lupb_pushmsgval(L, upb_fielddef_type(f), val);
   }
 
@@ -1010,7 +1016,8 @@ static int lupb_msg_newindex(lua_State *L) {
   lupb_msg *lmsg = lupb_msg_check(L, 1);
   const upb_fielddef *f = lupb_msg_checkfield(L, lmsg, 2);
   upb_fieldtype_t type = upb_fielddef_type(f);
-  int field_index = upb_fielddef_index(f);
+  upb_arena *arena = lupb_arena_get(L);
+  const upb_msglayout *layout = lmsg->lmsgclass->layout;
   upb_msgval msgval;
 
   /* Typecheck and get msgval. */
@@ -1031,7 +1038,7 @@ static int lupb_msg_newindex(lua_State *L) {
 
   /* Set in upb_msg and userval (if necessary). */
 
-  upb_msg_set(lmsg->msg, field_index, msgval, lmsg->lmsgclass->layout);
+  upb_msg_set(lmsg->msg, f, msgval, layout, arena);
 
   if (in_userval(f)) {
     lupb_uservalseti(L, 1, lupb_fieldindex(f), 3);

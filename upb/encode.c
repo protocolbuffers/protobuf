@@ -70,6 +70,7 @@ static bool upb_encode_reserve(upb_encstate *e, size_t bytes) {
 
 /* Writes the given bytes to the buffer, handling reserve/advance. */
 static bool upb_put_bytes(upb_encstate *e, const void *data, size_t len) {
+  if (len == 0) return true;
   CHK(upb_encode_reserve(e, len));
   memcpy(e->ptr, data, len);
   return true;
@@ -130,7 +131,8 @@ static bool upb_put_tag(upb_encstate *e, int field_number, int wire_type) {
 static bool upb_put_fixedarray(upb_encstate *e, const upb_array *arr,
                                size_t size) {
   size_t bytes = arr->len * size;
-  return upb_put_bytes(e, arr->data, bytes) && upb_put_varint(e, bytes);
+  const void* data = _upb_array_constptr(arr);
+  return upb_put_bytes(e, data, bytes) && upb_put_varint(e, bytes);
 }
 
 bool upb_encode_message(upb_encstate *e, const char *msg,
@@ -146,8 +148,8 @@ static bool upb_encode_array(upb_encstate *e, const char *field_mem,
   }
 
 #define VARINT_CASE(ctype, encode) { \
-  ctype *start = arr->data; \
-  ctype *ptr = start + arr->len; \
+  const ctype *start = _upb_array_constptr(arr); \
+  const ctype *ptr = start + arr->len; \
   size_t pre_len = e->limit - e->ptr; \
   do { \
     ptr--; \
@@ -189,8 +191,8 @@ do { ; } while(0)
       VARINT_CASE(int64_t, upb_zzencode_64(*ptr));
     case UPB_DESCRIPTOR_TYPE_STRING:
     case UPB_DESCRIPTOR_TYPE_BYTES: {
-      upb_strview *start = arr->data;
-      upb_strview *ptr = start + arr->len;
+      const upb_strview *start = _upb_array_constptr(arr);
+      const upb_strview *ptr = start + arr->len;
       do {
         ptr--;
         CHK(upb_put_bytes(e, ptr->data, ptr->size) &&
@@ -200,8 +202,8 @@ do { ; } while(0)
       return true;
     }
     case UPB_DESCRIPTOR_TYPE_GROUP: {
-      void **start = arr->data;
-      void **ptr = start + arr->len;
+      const void *const*start = _upb_array_constptr(arr);
+      const void *const*ptr = start + arr->len;
       const upb_msglayout *subm = m->submsgs[f->submsg_index];
       do {
         size_t size;
@@ -213,8 +215,8 @@ do { ; } while(0)
       return true;
     }
     case UPB_DESCRIPTOR_TYPE_MESSAGE: {
-      void **start = arr->data;
-      void **ptr = start + arr->len;
+      const void *const*start = _upb_array_constptr(arr);
+      const void *const*ptr = start + arr->len;
       const upb_msglayout *subm = m->submsgs[f->submsg_index];
       do {
         size_t size;

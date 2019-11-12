@@ -433,28 +433,31 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message, Output& output
           "}\n",
           CType(field), msgname, field->name(),
           GetSizeInit(layout.GetFieldOffset(field)),
-          GetSizeInit(MessageLayout::SizeOfUnwrapped(field).size));
+          UpbType(field));
       if (field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
         output(
             "UPB_INLINE struct $0* $1_add_$2($1 *msg, upb_arena *arena) {\n"
             "  struct $0* sub = (struct $0*)upb_msg_new(&$3, arena);\n"
-            "  bool ok = _upb_array_append_accessor("
-            "      msg, $4, $5, &sub, arena);\n"
+            "  bool ok = _upb_array_append_accessor(\n"
+            "      msg, $4, $5, $6, &sub, arena);\n"
             "  if (!ok) return NULL;\n"
             "  return sub;\n"
             "}\n",
             MessageName(field->message_type()), msgname, field->name(),
             MessageInit(field->message_type()),
             GetSizeInit(layout.GetFieldOffset(field)),
-            GetSizeInit(MessageLayout::SizeOfUnwrapped(field).size));
+            GetSizeInit(MessageLayout::SizeOfUnwrapped(field).size),
+            UpbType(field));
       } else {
         output(
             "UPB_INLINE bool $1_add_$2($1 *msg, $0 val, upb_arena *arena) {\n"
-            "  return _upb_array_append_accessor(msg, $3, $4, &val, arena);\n"
+            "  return _upb_array_append_accessor(msg, $3, $4, $5, &val,\n"
+            "      arena);\n"
             "}\n",
             CType(field), msgname, field->name(),
             GetSizeInit(layout.GetFieldOffset(field)),
-            GetSizeInit(MessageLayout::SizeOfUnwrapped(field).size));
+            GetSizeInit(MessageLayout::SizeOfUnwrapped(field).size),
+            UpbType(field));
       }
     } else {
       // Non-repeated field.

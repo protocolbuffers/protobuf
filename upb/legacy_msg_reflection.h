@@ -65,11 +65,11 @@ upb_msgval upb_array_get(const upb_array *arr, size_t i);
 void upb_array_set(upb_array *arr, size_t i, upb_msgval val);
 
 /* Appends an element to the array.  Returns false on allocation failure. */
-bool upb_array_append(upb_array *array, upb_msgval val);
+bool upb_array_append(upb_array *array, upb_msgval val, upb_arena *arena);
 
 /* Changes the size of a vector.  New elements are initialized to empty/0.
  * Returns false on allocation failure. */
-bool upb_array_resize(upb_array *array, size_t size);
+bool upb_array_resize(upb_array *array, size_t size, upb_arena *arena);
 
 /** upb_map *******************************************************************/
 
@@ -86,7 +86,8 @@ void upb_map_clear(upb_map *map);
 
 /* Sets the given key to the given value.  Returns true if this was a new key in
  * the map, or false if an existing key was replaced. */
-bool upb_map_set(upb_map *map, upb_msgval key, upb_msgval val);
+bool upb_map_set(upb_map *map, upb_msgval key, upb_msgval val,
+                 upb_arena *arena);
 
 /* Deletes this key from the table.  Returns true if the key was present. */
 bool upb_map_delete(upb_map *map, upb_msgval key);

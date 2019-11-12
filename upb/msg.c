@@ -26,20 +26,25 @@ typedef struct {
   upb_msg_internal base;
 } upb_msg_internal_withext;
 
-char _upb_fieldtype_to_size[12] = {
+char _upb_fieldtype_to_sizelg2[12] = {
   0,
-  1,  /* UPB_TYPE_BOOL */
-  4,  /* UPB_TYPE_FLOAT */
-  4,  /* UPB_TYPE_INT32 */
-  4,  /* UPB_TYPE_UINT32 */
-  4,  /* UPB_TYPE_ENUM */
-  sizeof(void*),  /* UPB_TYPE_STRING */
-  sizeof(void*),  /* UPB_TYPE_BYTES */
-  sizeof(void*),  /* UPB_TYPE_MESSAGE */
-  8,  /* UPB_TYPE_DOUBLE */
-  8,  /* UPB_TYPE_INT64 */
-  8,  /* UPB_TYPE_UINT64 */
+  0,  /* UPB_TYPE_BOOL */
+  2,  /* UPB_TYPE_FLOAT */
+  2,  /* UPB_TYPE_INT32 */
+  2,  /* UPB_TYPE_UINT32 */
+  2,  /* UPB_TYPE_ENUM */
+  UPB_SIZE(2, 3),  /* UPB_TYPE_MESSAGE */
+  3,  /* UPB_TYPE_DOUBLE */
+  3,  /* UPB_TYPE_INT64 */
+  3,  /* UPB_TYPE_UINT64 */
+  UPB_SIZE(3, 4),  /* UPB_TYPE_STRING */
+  UPB_SIZE(3, 4),  /* UPB_TYPE_BYTES */
 };
+
+static uintptr_t tag_arrptr(void* ptr, int elem_size_lg2) {
+  UPB_ASSERT(elem_size_lg2 <= 4);
+  return (uintptr_t)ptr | elem_size_lg2;
+}
 
 static int upb_msg_internalsize(const upb_msglayout *l) {
   return sizeof(upb_msg_internal) - l->extendable * sizeof(void *);
@@ -113,56 +118,57 @@ const char *upb_msg_getunknown(const upb_msg *msg, size_t *len) {
 
 /** upb_array *****************************************************************/
 
-static void upb_array_init(upb_array *arr) {
-  arr->data = NULL;
-  arr->len = 0;
-  arr->size = 0;
-}
-
-upb_array *upb_array_new(upb_arena *a) {
+upb_array *upb_array_new(upb_arena *a, upb_fieldtype_t type) {
   upb_array *arr = upb_arena_malloc(a, sizeof(upb_array));
 
   if (!arr) {
     return NULL;
   }
 
-  upb_array_init(arr);
+  arr->data = tag_arrptr(NULL, _upb_fieldtype_to_sizelg2[type]);
+  arr->len = 0;
+  arr->size = 0;
 
   return arr;
 }
 
-bool _upb_array_realloc(upb_array *arr, size_t min_size, int elem_size,
-                        upb_arena *arena) {
+bool _upb_array_realloc(upb_array *arr, size_t min_size, upb_arena *arena) {
   size_t new_size = UPB_MAX(arr->size, 4);
-  size_t old_bytes = arr->size * elem_size;
+  int elem_size_lg2 = arr->data & 7;
+  size_t old_bytes = arr->size << elem_size_lg2;
   size_t new_bytes;
+  void* ptr = _upb_array_ptr(arr);
+
+  /* Log2 ceiling of size. */
   while (new_size < min_size) new_size *= 2;
-  new_bytes = new_size * elem_size;
-  arr->data = upb_arena_realloc(arena, arr->data, old_bytes, new_bytes);
-  if (!arr->data) {
-    arr->len = 0;
-    arr->size = 0;
+
+  new_bytes = new_size << elem_size_lg2;
+  ptr = upb_arena_realloc(arena, ptr, old_bytes, new_bytes);
+
+  if (!ptr) {
     return false;
   }
+
+  arr->data = tag_arrptr(ptr, elem_size_lg2);
   arr->size = new_size;
   return true;
 }
 
-void *_upb_array_resize_fallback(upb_array **arr_ptr, size_t size, int elem_size,
-                                 upb_arena *arena) {
+void *_upb_array_resize_fallback(upb_array **arr_ptr, size_t size,
+                                 upb_fieldtype_t type, upb_arena *arena) {
   upb_array *arr = *arr_ptr;
   if (!arr) {
-    arr = upb_array_new(arena);
+    arr = upb_array_new(arena, type);
     if (!arr) return NULL;
     *arr_ptr = arr;
   }
 
-  if (size > arr->size && !_upb_array_realloc(arr, size, elem_size, arena)) {
+  if (size > arr->size && !_upb_array_realloc(arr, size, arena)) {
     return NULL;
   }
 
   arr->len = size;
-  return arr->data;
+  return _upb_array_ptr(arr);
 }
 
 /** upb_map *******************************************************************/

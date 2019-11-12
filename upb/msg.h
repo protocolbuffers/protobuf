@@ -14,6 +14,8 @@
 #include "upb/table.int.h"
 #include "upb/upb.h"
 
+#include "upb/port_def.inc"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -67,23 +69,30 @@ const char *upb_msg_getunknown(const upb_msg *msg, size_t *len);
 
 /* Our internal representation for repeated fields.  */
 typedef struct {
-  void *data;   /* Tagged: low 2 bits of ptr are lg2(elem size). */
+  uintptr_t data;   /* Tagged ptr: low 2 bits of ptr are lg2(elem size). */
   size_t len;   /* Measured in elements. */
   size_t size;  /* Measured in elements. */
 } upb_array;
+
+UPB_INLINE const void *_upb_array_constptr(const upb_array *arr) {
+  return (void*)((uintptr_t)arr->data & ~7UL);
+}
+
+UPB_INLINE void *_upb_array_ptr(upb_array *arr) {
+  return (void*)_upb_array_constptr(arr);
+}
 
 /* Creates a new array on the given arena. */
 upb_array *upb_array_new(upb_arena *a, upb_fieldtype_t type);
 
 /* Resizes the capacity of the array to be at least min_size. */
-bool _upb_array_realloc(upb_array *arr, size_t min_size, int elem_size,
-                        upb_arena *arena);
+bool _upb_array_realloc(upb_array *arr, size_t min_size, upb_arena *arena);
 
 /* Fallback functions for when the accessors require a resize. */
-void *_upb_array_resize_fallback(upb_array **arr_ptr, size_t size, int elem_size,
-                                 upb_arena *arena);
-bool _upb_array_append_fallback(upb_array **arr_ptr, int elem_size,
-                                const void *value, upb_arena *arena);
+void *_upb_array_resize_fallback(upb_array **arr_ptr, size_t size,
+                                 upb_fieldtype_t type, upb_arena *arena);
+bool _upb_array_append_fallback(upb_array **arr_ptr, const void *value,
+                                upb_fieldtype_t type, upb_arena *arena);
 
 /** upb_map *******************************************************************/
 
@@ -104,5 +113,7 @@ upb_map *upb_map_new(upb_arena *a, upb_fieldtype_t key_type,
 #ifdef __cplusplus
 }  /* extern "C" */
 #endif
+
+#include "upb/port_undef.inc"
 
 #endif /* UPB_MSG_H_ */
