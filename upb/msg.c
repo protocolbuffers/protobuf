@@ -7,6 +7,8 @@
 
 #define VOIDPTR_AT(msg, ofs) (void*)((char*)msg + (int)ofs)
 
+/** upb_msg *******************************************************************/
+
 /* Internal members of a upb_msg.  We can change this without breaking binary
  * compatibility.  We put these before the user's data.  The user's upb_msg*
  * points after the upb_msg_internal. */
@@ -23,6 +25,21 @@ typedef struct {
   upb_inttable *extdict;
   upb_msg_internal base;
 } upb_msg_internal_withext;
+
+char _upb_fieldtype_to_size[12] = {
+  0,
+  1,  /* UPB_TYPE_BOOL */
+  4,  /* UPB_TYPE_FLOAT */
+  4,  /* UPB_TYPE_INT32 */
+  4,  /* UPB_TYPE_UINT32 */
+  4,  /* UPB_TYPE_ENUM */
+  sizeof(void*),  /* UPB_TYPE_STRING */
+  sizeof(void*),  /* UPB_TYPE_BYTES */
+  sizeof(void*),  /* UPB_TYPE_MESSAGE */
+  8,  /* UPB_TYPE_DOUBLE */
+  8,  /* UPB_TYPE_INT64 */
+  8,  /* UPB_TYPE_UINT64 */
+};
 
 static int upb_msg_internalsize(const upb_msglayout *l) {
   return sizeof(upb_msg_internal) - l->extendable * sizeof(void *);
@@ -74,36 +91,6 @@ upb_msg *upb_msg_new(const upb_msglayout *l, upb_arena *a) {
   return msg;
 }
 
-static void upb_array_init(upb_array *arr) {
-  arr->data = NULL;
-  arr->len = 0;
-  arr->size = 0;
-}
-
-upb_array *upb_array_new(upb_arena *a) {
-  upb_array *arr = upb_arena_malloc(a, sizeof(upb_array));
-
-  if (!arr) {
-    return NULL;
-  }
-
-  upb_array_init(arr);
-
-  return arr;
-}
-
-upb_map *upb_map_new(upb_arena *a) {
-  upb_map *map = upb_arena_malloc(a, sizeof(upb_map));
-
-  if (!map) {
-    return NULL;
-  }
-
-  upb_strtable_init(&map->table, UPB_CTYPE_INT32);
-
-  return map;
-}
-
 void upb_msg_addunknown(upb_msg *msg, const char *data, size_t len,
                         upb_arena *arena) {
   upb_msg_internal *in = upb_msg_getinternal(msg);
@@ -123,5 +110,77 @@ const char *upb_msg_getunknown(const upb_msg *msg, size_t *len) {
   *len = in->unknown_len;
   return in->unknown;
 }
+
+/** upb_array *****************************************************************/
+
+static void upb_array_init(upb_array *arr) {
+  arr->data = NULL;
+  arr->len = 0;
+  arr->size = 0;
+}
+
+upb_array *upb_array_new(upb_arena *a) {
+  upb_array *arr = upb_arena_malloc(a, sizeof(upb_array));
+
+  if (!arr) {
+    return NULL;
+  }
+
+  upb_array_init(arr);
+
+  return arr;
+}
+
+bool _upb_array_realloc(upb_array *arr, size_t min_size, int elem_size,
+                        upb_arena *arena) {
+  size_t new_size = UPB_MAX(arr->size, 4);
+  size_t old_bytes = arr->size * elem_size;
+  size_t new_bytes;
+  while (new_size < min_size) new_size *= 2;
+  new_bytes = new_size * elem_size;
+  arr->data = upb_arena_realloc(arena, arr->data, old_bytes, new_bytes);
+  if (!arr->data) {
+    arr->len = 0;
+    arr->size = 0;
+    return false;
+  }
+  arr->size = new_size;
+  return true;
+}
+
+void *_upb_array_resize_fallback(upb_array **arr_ptr, size_t size, int elem_size,
+                                 upb_arena *arena) {
+  upb_array *arr = *arr_ptr;
+  if (!arr) {
+    arr = upb_array_new(arena);
+    if (!arr) return NULL;
+    *arr_ptr = arr;
+  }
+
+  if (size > arr->size && !_upb_array_realloc(arr, size, elem_size, arena)) {
+    return NULL;
+  }
+
+  arr->len = size;
+  return arr->data;
+}
+
+/** upb_map *******************************************************************/
+
+upb_map *upb_map_new(upb_arena *a, upb_fieldtype_t key_type,
+                     upb_fieldtype_t value_type) {
+  upb_map *map = upb_arena_malloc(a, sizeof(upb_map));
+
+  if (!map) {
+    return NULL;
+  }
+
+  upb_strtable_init(&map->table, UPB_CTYPE_INT32);
+  map->key_type = key_type;
+  map->value_type = value_type;
+
+  return map;
+}
+
 
 #undef VOIDPTR_AT

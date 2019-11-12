@@ -385,33 +385,43 @@ static bool lupb_istypewrapped(upb_fieldtype_t type) {
 
 static upb_msgval lupb_tomsgval(lua_State *L, upb_fieldtype_t type, int narg,
                                 const lupb_msgclass *lmsgclass) {
+  upb_msgval ret;
   switch (type) {
     case UPB_TYPE_INT32:
     case UPB_TYPE_ENUM:
-      return upb_msgval_int32(lupb_checkint32(L, narg));
+      ret.int32_val = lupb_checkint32(L, narg);
+      break;
     case UPB_TYPE_INT64:
-      return upb_msgval_int64(lupb_checkint64(L, narg));
+      ret.int64_val = lupb_checkint64(L, narg);
+      break;
     case UPB_TYPE_UINT32:
-      return upb_msgval_uint32(lupb_checkuint32(L, narg));
+      ret.uint32_val = lupb_checkuint32(L, narg);
+      break;
     case UPB_TYPE_UINT64:
-      return upb_msgval_uint64(lupb_checkuint64(L, narg));
+      ret.uint64_val = lupb_checkuint64(L, narg);
+      break;
     case UPB_TYPE_DOUBLE:
-      return upb_msgval_double(lupb_checkdouble(L, narg));
+      ret.double_val = lupb_checkdouble(L, narg);
+      break;
     case UPB_TYPE_FLOAT:
-      return upb_msgval_float(lupb_checkfloat(L, narg));
+      ret.float_val = lupb_checkfloat(L, narg);
+      break;
     case UPB_TYPE_BOOL:
-      return upb_msgval_bool(lupb_checkbool(L, narg));
+      ret.bool_val = lupb_checkbool(L, narg);
+      break;
     case UPB_TYPE_STRING:
     case UPB_TYPE_BYTES: {
       size_t len;
       const char *ptr = lupb_checkstring(L, narg, &len);
-      return upb_msgval_makestr(ptr, len);
+      ret.str_val = upb_strview_make(ptr, len);
+      break;
     }
     case UPB_TYPE_MESSAGE:
       UPB_ASSERT(lmsgclass);
-      return upb_msgval_msg(lupb_msg_checkmsg(L, narg, lmsgclass));
+      ret.msg_val = lupb_msg_checkmsg(L, narg, lmsgclass);
+      break;
   }
-  UPB_UNREACHABLE();
+  return ret;
 }
 
 static void lupb_pushmsgval(lua_State *L, upb_fieldtype_t type,
@@ -419,25 +429,25 @@ static void lupb_pushmsgval(lua_State *L, upb_fieldtype_t type,
   switch (type) {
     case UPB_TYPE_INT32:
     case UPB_TYPE_ENUM:
-      lupb_pushint32(L, upb_msgval_getint32(val));
+      lupb_pushint32(L, val.int32_val);
       return;
     case UPB_TYPE_INT64:
-      lupb_pushint64(L, upb_msgval_getint64(val));
+      lupb_pushint64(L, val.int64_val);
       return;
     case UPB_TYPE_UINT32:
-      lupb_pushuint32(L, upb_msgval_getuint32(val));
+      lupb_pushuint32(L, val.uint32_val);
       return;
     case UPB_TYPE_UINT64:
-      lupb_pushuint64(L, upb_msgval_getuint64(val));
+      lupb_pushuint64(L, val.uint64_val);
       return;
     case UPB_TYPE_DOUBLE:
-      lupb_pushdouble(L, upb_msgval_getdouble(val));
+      lupb_pushdouble(L, val.double_val);
       return;
     case UPB_TYPE_FLOAT:
-      lupb_pushfloat(L, upb_msgval_getfloat(val));
+      lupb_pushfloat(L, val.float_val);
       return;
     case UPB_TYPE_BOOL:
-      lua_pushboolean(L, upb_msgval_getbool(val));
+      lua_pushboolean(L, val.bool_val);
       return;
     case UPB_TYPE_STRING:
     case UPB_TYPE_BYTES:
@@ -486,6 +496,7 @@ static lupb_array *lupb_array_check(lua_State *L, int narg) {
 static upb_msgval lupb_array_typecheck(lua_State *L, int narg, int msg,
                                        const upb_fielddef *f) {
   lupb_array *larray = lupb_array_check(L, narg);
+  upb_msgval val;
 
   if (larray->type != upb_fielddef_type(f) ||
       lupb_msg_getsubmsgclass(L, msg, f) != larray->lmsgclass) {
@@ -498,7 +509,8 @@ static upb_msgval lupb_array_typecheck(lua_State *L, int narg, int msg,
                             larray->lmsgclass);
   }
 
-  return upb_msgval_arr(larray->arr);
+  val.array_val = larray->arr;
+  return val;
 }
 
 /**
@@ -599,6 +611,8 @@ static const struct luaL_Reg lupb_array_mm[] = {
 
 typedef struct {
   const lupb_msgclass *value_lmsgclass;
+  upb_fieldtype_t key_type;
+  upb_fieldtype_t value_type;
   upb_map *map;
 } lupb_map;
 
@@ -627,16 +641,17 @@ static upb_msgval lupb_map_typecheck(lua_State *L, int narg, int msg,
 
   UPB_ASSERT(entry && key_field && value_field);
 
-  if (upb_map_keytype(map) != upb_fielddef_type(key_field)) {
-    luaL_error(L, "Map key type invalid");
+  if (lmap->key_type != upb_fielddef_type(key_field)) {
+    luaL_error(L, "Map had incorrect field type (expected: %s, got: %s)",
+               upb_fielddef_type(key_field), lmap->key_type);
   }
 
-  if (upb_map_valuetype(map) != upb_fielddef_type(value_field)) {
+  if (lmap->value_type != upb_fielddef_type(value_field)) {
     luaL_error(L, "Map had incorrect value type (expected: %s, got: %s)",
-               upb_fielddef_type(value_field), upb_map_valuetype(map));
+               upb_fielddef_type(value_field), lmap->value_type);
   }
 
-  if (upb_map_valuetype(map) == UPB_TYPE_MESSAGE) {
+  if (lmap->value_type == UPB_TYPE_MESSAGE) {
     lupb_msgclass_typecheck(
         L, lupb_msg_msgclassfor(L, msg, upb_fielddef_msgsubdef(value_field)),
         lmap->value_lmsgclass);
@@ -672,6 +687,8 @@ static int lupb_map_new(lua_State *L) {
     lupb_uservalseti(L, -1, MAP_MSGCLASS_INDEX, 2);  /* GC-root lmsgclass. */
   }
 
+  lmap->key_type = key_type;
+  lmap->value_type = value_type;
   lmap->value_lmsgclass = value_lmsgclass;
   lmap->map = upb_map_new(key_type, value_type, lupb_arena_get(L));
 
@@ -687,9 +704,9 @@ static int lupb_map_new(lua_State *L) {
 static int lupb_map_index(lua_State *L) {
   lupb_map *lmap = lupb_map_check(L, 1);
   upb_map *map = lmap->map;
-  upb_fieldtype_t valtype = upb_map_valuetype(map);
+  upb_fieldtype_t valtype = lmap->value_type;
   /* We don't always use "key", but this call checks the key type. */
-  upb_msgval key = lupb_tomsgval(L, upb_map_keytype(map), 2, NULL);
+  upb_msgval key = lupb_tomsgval(L, lmap->key_type, 2, NULL);
 
   if (lupb_istypewrapped(valtype)) {
     /* Userval contains the full map, lookup there by key. */
@@ -704,7 +721,7 @@ static int lupb_map_index(lua_State *L) {
     /* Lookup in upb_map. */
     upb_msgval val;
     if (upb_map_get(map, key, &val)) {
-      lupb_pushmsgval(L, upb_map_valuetype(map), val);
+      lupb_pushmsgval(L, lmap->value_type, val);
     } else {
       lua_pushnil(L);
     }
@@ -735,13 +752,13 @@ static int lupb_map_len(lua_State *L) {
 static int lupb_map_newindex(lua_State *L) {
   lupb_map *lmap = lupb_map_check(L, 1);
   upb_map *map = lmap->map;
-  upb_msgval key = lupb_tomsgval(L, upb_map_keytype(map), 2, NULL);
+  upb_msgval key = lupb_tomsgval(L, lmap->key_type, 2, NULL);
 
   if (lua_isnil(L, 3)) {
     /* Delete from map. */
     upb_map_del(map, key);
 
-    if (lupb_istypewrapped(upb_map_valuetype(map))) {
+    if (lupb_istypewrapped(lmap->value_type)) {
       /* Delete in userval. */
       lupb_getuservalue(L, 1);
       lua_pushvalue(L, 2);
@@ -752,11 +769,11 @@ static int lupb_map_newindex(lua_State *L) {
   } else {
     /* Set in map. */
     upb_msgval val =
-        lupb_tomsgval(L, upb_map_valuetype(map), 3, lmap->value_lmsgclass);
+        lupb_tomsgval(L, lmap->value_type, 3, lmap->value_lmsgclass);
 
     upb_map_set(map, key, val, NULL);
 
-    if (lupb_istypewrapped(upb_map_valuetype(map))) {
+    if (lupb_istypewrapped(lmap->value_type)) {
       /* Set in userval. */
       lupb_getuservalue(L, 1);
       lua_pushvalue(L, 2);
@@ -780,8 +797,8 @@ static int lupb_mapiter_next(lua_State *L) {
     return 0;
   }
 
-  lupb_pushmsgval(L, upb_map_keytype(map), upb_mapiter_key(i));
-  lupb_pushmsgval(L, upb_map_valuetype(map), upb_mapiter_value(i));
+  lupb_pushmsgval(L, lmap->key_type, upb_mapiter_key(i));
+  lupb_pushmsgval(L, lmap->value_type, upb_mapiter_value(i));
   upb_mapiter_next(i);
 
   return 2;
@@ -790,8 +807,8 @@ static int lupb_mapiter_next(lua_State *L) {
 static int lupb_map_pairs(lua_State *L) {
   lupb_map *lmap = lupb_map_check(L, 1);
 
-  if (lupb_istypewrapped(upb_map_keytype(lmap->map)) ||
-      lupb_istypewrapped(upb_map_valuetype(lmap->map))) {
+  if (lupb_istypewrapped(lmap->key_type) ||
+      lupb_istypewrapped(lmap->value_type)) {
     /* Complex key or value type.
      * Sync upb_map to userval if necessary, then iterate over userval. */
 

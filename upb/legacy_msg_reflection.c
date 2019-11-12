@@ -20,6 +20,7 @@ bool upb_fieldtype_mapkeyok(upb_fieldtype_t type) {
 
 /** upb_msgval ****************************************************************/
 
+#if 0
 /* These functions will generate real memcpy() calls on ARM sadly, because
  * the compiler assumes they might not be aligned. */
 
@@ -163,52 +164,37 @@ void upb_msg_set(upb_msg *msg, int field_index, upb_msgval val,
   upb_msgval_write(msg, field->offset, val, size);
 }
 
+#endif
 
 /** upb_array *****************************************************************/
-
-#define DEREF_ARR(arr, i, type) ((type*)arr->data)[i]
 
 size_t upb_array_size(const upb_array *arr) {
   return arr->len;
 }
 
-upb_msgval upb_array_get(const upb_array *arr, upb_fieldtype_t type, size_t i) {
-  size_t element_size = upb_msgval_sizeof2(type);
-  UPB_ASSERT(i < arr->len);
-  return upb_msgval_read(arr->data, i * element_size, element_size);
+const void *upb_array_get(const upb_array *arr, size_t *size) {
+  if (size) *size = arr->len;
+  return arr->data;
 }
 
-bool upb_array_set(upb_array *arr, upb_fieldtype_t type, size_t i,
-                   upb_msgval val, upb_arena *arena) {
-  size_t element_size = upb_msgval_sizeof2(type);
-  UPB_ASSERT(i <= arr->len);
+void* upb_array_getmutable(upb_array *arr, size_t *size) {
+  if (size) *size = arr->len;
+  return arr->data;
+}
 
-  if (i == arr->len) {
-    /* Extending the array. */
-
-    if (i == arr->size) {
-      /* Need to reallocate. */
-      size_t new_size = UPB_MAX(arr->size * 2, 8);
-      size_t new_bytes = new_size * element_size;
-      size_t old_bytes = arr->size * element_size;
-      upb_alloc *alloc = upb_arena_alloc(arena);
-      upb_msgval *new_data =
-          upb_realloc(alloc, arr->data, old_bytes, new_bytes);
-
-      if (!new_data) {
-        return false;
-      }
-
-      arr->data = new_data;
-      arr->size = new_size;
-    }
-
-    arr->len = i + 1;
+/* Resizes the array to the given size, reallocating if necessary, and returns a
+ * pointer to the new array elements. */
+void *upb_array_resize(upb_array *arr, size_t size, upb_fieldtype_t type,
+                       upb_arena *arena) {
+  int elem_size = _upb_fieldtype_to_size[type];
+  if (size > arr->size && !_upb_array_realloc(arr, size, elem_size, arena)) {
+    return NULL;
   }
-
-  upb_msgval_write(arr->data, i * element_size, val, element_size);
-  return true;
+  arr->len = size;
+  return arr->data;
 }
+
+#if 0
 
 /** upb_map *******************************************************************/
 
@@ -375,3 +361,5 @@ void upb_mapiter_setdone(upb_mapiter *i) {
 bool upb_mapiter_isequal(const upb_mapiter *i1, const upb_mapiter *i2) {
   return upb_strtable_iter_isequal(&i1->iter, &i2->iter);
 }
+
+#endif

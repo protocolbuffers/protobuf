@@ -156,6 +156,7 @@ cc_library(
     deps = [
         ":table",
         ":upb",
+        ":reflection",
     ],
 )
 

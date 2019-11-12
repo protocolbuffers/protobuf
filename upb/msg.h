@@ -1,7 +1,6 @@
 /*
-** Data structures for message tables, used for parsing and serialization.
-** This are much lighter-weight than full reflection, but they are do not
-** have enough information to convert to text format, JSON, etc.
+** Our memory representation for parsing tables and messages themselves.
+** Functions in this file are used by generated code and possible reflection.
 **
 ** The definitions in this file are internal to upb.
 **/
@@ -46,29 +45,61 @@ typedef struct upb_msglayout {
   bool extendable;
 } upb_msglayout;
 
-/** Message internal representation *******************************************/
+/** upb_msg *******************************************************************/
 
-/* Our internal representation for repeated fields. */
+/* Representation is in msg.c for now. */
+
+/* Maps upb_fieldtype_t -> memory size. */
+extern char _upb_fieldtype_to_size[12];
+
+/* Creates a new messages with the given layout on the given arena. */
+upb_msg *upb_msg_new(const upb_msglayout *l, upb_arena *a);
+
+/* Adds unknown data (serialized protobuf data) to the given message.  The data
+ * is copied into the message instance. */
+void upb_msg_addunknown(upb_msg *msg, const char *data, size_t len,
+                        upb_arena *arena);
+
+/* Returns a reference to the message's unknown data. */
+const char *upb_msg_getunknown(const upb_msg *msg, size_t *len);
+
+/** upb_array *****************************************************************/
+
+/* Our internal representation for repeated fields.  */
 typedef struct {
-  void *data;   /* Each element is element_size. */
+  void *data;   /* Tagged: low 2 bits of ptr are lg2(elem size). */
   size_t len;   /* Measured in elements. */
   size_t size;  /* Measured in elements. */
 } upb_array;
 
-/* Our internal representation for maps.  Right now we use strmaps for
- * everything.  We'll likely want to use integer-specific maps for
- * integer-keyed maps.*/
+/* Creates a new array on the given arena. */
+upb_array *upb_array_new(upb_arena *a, upb_fieldtype_t type);
+
+/* Resizes the capacity of the array to be at least min_size. */
+bool _upb_array_realloc(upb_array *arr, size_t min_size, int elem_size,
+                        upb_arena *arena);
+
+/* Fallback functions for when the accessors require a resize. */
+void *_upb_array_resize_fallback(upb_array **arr_ptr, size_t size, int elem_size,
+                                 upb_arena *arena);
+bool _upb_array_append_fallback(upb_array **arr_ptr, int elem_size,
+                                const void *value, upb_arena *arena);
+
+/** upb_map *******************************************************************/
+
+/* Right now we use strmaps for everything.  We'll likely want to use
+ * integer-specific maps for integer-keyed maps.*/
 typedef struct {
+  /* We should pack these better and move them into table to avoid padding. */
+  upb_fieldtype_t key_type;
+  upb_fieldtype_t value_type;
+
   upb_strtable table;
 } upb_map;
 
-upb_msg *upb_msg_new(const upb_msglayout *l, upb_arena *a);
-upb_array *upb_array_new(upb_arena *a);
-upb_map *upb_map_new(upb_arena *a);
-
-void upb_msg_addunknown(upb_msg *msg, const char *data, size_t len,
-                        upb_arena *arena);
-const char *upb_msg_getunknown(const upb_msg *msg, size_t *len);
+/* Creates a new map on the given arena with this key/value type. */
+upb_map *upb_map_new(upb_arena *a, upb_fieldtype_t key_type,
+                     upb_fieldtype_t value_type);
 
 #ifdef __cplusplus
 }  /* extern "C" */
