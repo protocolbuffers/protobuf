@@ -116,10 +116,12 @@ cc_library(
     srcs = [
         "upb/def.c",
         "upb/msgfactory.c",
+        "upb/reflection.c",
     ],
     hdrs = [
         "upb/def.h",
         "upb/msgfactory.h",
+        "upb/reflection.h",
     ],
     copts = select({
         ":windows": [],
@@ -142,23 +144,6 @@ cc_library(
 )
 
 # Legacy C/C++ Libraries (not recommended for new code) ########################
-
-cc_library(
-    name = "legacy_msg_reflection",
-    srcs = [
-        "upb/legacy_msg_reflection.c",
-    ],
-    hdrs = ["upb/legacy_msg_reflection.h"],
-    copts = select({
-        ":windows": [],
-        "//conditions:default": COPTS
-    }),
-    deps = [
-        ":table",
-        ":upb",
-        ":reflection",
-    ],
-)
 
 cc_library(
     name = "handlers",
@@ -592,7 +577,7 @@ lua_cclibrary(
         "upb/bindings/lua/upb.h",
     ],
     deps = [
-        "legacy_msg_reflection",
+        "reflection",
         "upb",
         "upb_pb",
     ],

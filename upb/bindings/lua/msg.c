@@ -2,6 +2,8 @@
 ** lupb_msg -- Message/Array/Map objects in Lua/C that wrap upb/msg.h
 */
 
+#include "upb/msg.h"
+
 #include <float.h>
 #include <math.h>
 #include <stddef.h>
@@ -11,10 +13,8 @@
 #include "lauxlib.h"
 #include "upb/bindings/lua/upb.h"
 #include "upb/handlers.h"
-#include "upb/legacy_msg_reflection.h"
-#include "upb/msg.h"
-
 #include "upb/port_def.inc"
+#include "upb/reflection.h"
 
 /*
  * Message/Array/Map objects can be constructed in one of two ways:

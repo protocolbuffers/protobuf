@@ -1,5 +1,5 @@
 
-#include "upb/legacy_msg_reflection.h"
+#include "upb/reflection.h"
 
 #include <string.h>
 #include "upb/table.int.h"
