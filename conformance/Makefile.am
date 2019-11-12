@@ -203,7 +203,9 @@ EXTRA_DIST =                  \
   failure_list_python-post26.txt \
   failure_list_ruby.txt       \
   failure_list_php.txt        \
-  failure_list_php_c.txt
+  failure_list_php_c.txt 			\
+  java/lite/proguard.pgcfg
+
 
 conformance_test_runner_LDADD = $(top_srcdir)/src/libprotobuf.la
 conformance_test_runner_SOURCES = conformance_test.h conformance_test.cc \
