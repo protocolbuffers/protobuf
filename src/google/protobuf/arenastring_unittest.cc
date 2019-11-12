@@ -43,13 +43,13 @@
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <gtest/gtest.h>
+#include <google/protobuf/stubs/strutil.h>
 
 
 namespace google {
 namespace protobuf {
 
 using internal::ArenaStringPtr;
-
 
 static std::string WrapString(const char* value) { return value; }
 

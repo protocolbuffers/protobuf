@@ -45,7 +45,7 @@ if api_implementation.Type() == 'cpp':
   import binascii
   import os
   from google.protobuf.pyext import _message
-  _USE_C_DESCRIPTORS = getattr(_message, '_USE_C_DESCRIPTORS', False)
+  _USE_C_DESCRIPTORS = True
 
 
 class Error(Exception):
@@ -903,10 +903,6 @@ class FileDescriptor(DescriptorBase):
     self.services_by_name = {}
     self.dependencies = (dependencies or [])
     self.public_dependencies = (public_dependencies or [])
-
-    if (api_implementation.Type() == 'cpp' and
-        self.serialized_pb is not None):
-      _message.default_pool.AddSerializedFile(self.serialized_pb)
 
   def CopyToProto(self, proto):
     """Copies this to a descriptor_pb2.FileDescriptorProto.

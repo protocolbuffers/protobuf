@@ -30,7 +30,8 @@
 
 #include <google/protobuf/util/internal/json_objectwriter.h>
 
-#include <math.h>
+#include <cmath>
+#include <limits>
 
 #include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/stubs/logging.h>
@@ -38,7 +39,6 @@
 #include <google/protobuf/util/internal/utility.h>
 #include <google/protobuf/util/internal/json_escaping.h>
 #include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/stubs/mathlimits.h>
 
 namespace google {
 namespace protobuf {
@@ -115,7 +115,7 @@ JsonObjectWriter* JsonObjectWriter::RenderUint64(StringPiece name,
 
 JsonObjectWriter* JsonObjectWriter::RenderDouble(StringPiece name,
                                                  double value) {
-  if (MathLimits<double>::IsFinite(value)) {
+  if (std::isfinite(value)) {
     return RenderSimple(name, SimpleDtoa(value));
   }
 
@@ -125,7 +125,7 @@ JsonObjectWriter* JsonObjectWriter::RenderDouble(StringPiece name,
 
 JsonObjectWriter* JsonObjectWriter::RenderFloat(StringPiece name,
                                                 float value) {
-  if (MathLimits<float>::IsFinite(value)) {
+  if (std::isfinite(value)) {
     return RenderSimple(name, SimpleFtoa(value));
   }
 

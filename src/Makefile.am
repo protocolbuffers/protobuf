@@ -228,8 +228,6 @@ libprotobuf_la_SOURCES =                                       \
   $(libprotobuf_lite_la_SOURCES)                               \
   google/protobuf/any.pb.cc                                    \
   google/protobuf/api.pb.cc                                    \
-  google/protobuf/stubs/mathlimits.cc                          \
-  google/protobuf/stubs/mathlimits.h                           \
   google/protobuf/any.cc                                       \
   google/protobuf/descriptor.cc                                \
   google/protobuf/descriptor_database.cc                       \

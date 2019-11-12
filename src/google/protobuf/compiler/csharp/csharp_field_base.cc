@@ -308,7 +308,7 @@ std::string FieldGeneratorBase::GetStringDefaultValueInternal(const FieldDescrip
     else
       return "global::System.Text.Encoding.UTF8.GetString(global::System."
              "Convert.FromBase64String(\"" +
-             StringToBase64(descriptor->default_value_string()) + "\"))";
+             StringToBase64(descriptor->default_value_string()) + "\"), 0, " + StrCat(descriptor->default_value_string().length()) + ")";
 }
 
 std::string FieldGeneratorBase::GetBytesDefaultValueInternal(const FieldDescriptor* descriptor) {

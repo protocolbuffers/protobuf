@@ -363,7 +363,7 @@ inline uint8* MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::Write(
     int field, const MapEntryAccessorType& value, uint8* ptr,
     io::EpsCopyOutputStream* stream) {
   ptr = stream->EnsureSpace(ptr);
-  return WireFormatLite::InternalWriteMessageToArray(field, value, ptr, stream);
+  return WireFormatLite::InternalWriteMessage(field, value, ptr, stream);
 }
 
 #define WRITE_METHOD(FieldType, DeclaredType)                                  \

@@ -122,7 +122,7 @@ public:
   void MergeFrom(const Struct_FieldsEntry_DoNotUse& other);
   static const Struct_FieldsEntry_DoNotUse* internal_default_instance() { return reinterpret_cast<const Struct_FieldsEntry_DoNotUse*>(&_Struct_FieldsEntry_DoNotUse_default_instance_); }
   static bool ValidateKey(std::string* s) {
-    return ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(s->data(), s->size(), ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::PARSE, "google.protobuf.Struct.FieldsEntry.key");
+    return ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(s->data(), static_cast<int>(s->size()), ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::PARSE, "google.protobuf.Struct.FieldsEntry.key");
  }
   static bool ValidateValue(void*) { return true; }
   void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& other) final;
@@ -223,7 +223,7 @@ class PROTOBUF_EXPORT Struct :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* InternalSerializeWithCachedSizesToArray(
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
       ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
@@ -398,7 +398,7 @@ class PROTOBUF_EXPORT Value :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* InternalSerializeWithCachedSizesToArray(
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
       ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
@@ -666,7 +666,7 @@ class PROTOBUF_EXPORT ListValue :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* InternalSerializeWithCachedSizesToArray(
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
       ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
@@ -1039,7 +1039,7 @@ inline void Value::clear_struct_value() {
 }
 inline PROTOBUF_NAMESPACE_ID::Struct* Value::release_struct_value() {
   // @@protoc_insertion_point(field_release:google.protobuf.Value.struct_value)
-  if (has_struct_value()) {
+  if (_internal_has_struct_value()) {
     clear_has_kind();
       PROTOBUF_NAMESPACE_ID::Struct* temp = kind_.struct_value_;
     if (GetArenaNoVirtual() != nullptr) {
@@ -1062,7 +1062,7 @@ inline const PROTOBUF_NAMESPACE_ID::Struct& Value::struct_value() const {
 }
 inline PROTOBUF_NAMESPACE_ID::Struct* Value::unsafe_arena_release_struct_value() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.Value.struct_value)
-  if (has_struct_value()) {
+  if (_internal_has_struct_value()) {
     clear_has_kind();
     PROTOBUF_NAMESPACE_ID::Struct* temp = kind_.struct_value_;
     kind_.struct_value_ = nullptr;
@@ -1113,7 +1113,7 @@ inline void Value::clear_list_value() {
 }
 inline PROTOBUF_NAMESPACE_ID::ListValue* Value::release_list_value() {
   // @@protoc_insertion_point(field_release:google.protobuf.Value.list_value)
-  if (has_list_value()) {
+  if (_internal_has_list_value()) {
     clear_has_kind();
       PROTOBUF_NAMESPACE_ID::ListValue* temp = kind_.list_value_;
     if (GetArenaNoVirtual() != nullptr) {
@@ -1136,7 +1136,7 @@ inline const PROTOBUF_NAMESPACE_ID::ListValue& Value::list_value() const {
 }
 inline PROTOBUF_NAMESPACE_ID::ListValue* Value::unsafe_arena_release_list_value() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.Value.list_value)
-  if (has_list_value()) {
+  if (_internal_has_list_value()) {
     clear_has_kind();
     PROTOBUF_NAMESPACE_ID::ListValue* temp = kind_.list_value_;
     kind_.list_value_ = nullptr;

@@ -748,7 +748,7 @@ jspb.BinaryWriter.prototype.writeDouble = function(field, value) {
  */
 jspb.BinaryWriter.prototype.writeBool = function(field, value) {
   if (value == null) return;
-  goog.asserts.assert(goog.isBoolean(value) || goog.isNumber(value));
+  goog.asserts.assert(typeof value === 'boolean' || typeof value === 'number');
   this.writeFieldHeader_(field, jspb.BinaryConstants.WireType.VARINT);
   this.encoder_.writeBool(value);
 };

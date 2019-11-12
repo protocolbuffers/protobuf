@@ -57,12 +57,16 @@ import java.util.Locale;
 import java.util.NoSuchElementException;
 
 /**
- * Immutable sequence of bytes. Substring is supported by sharing the reference to the immutable
- * underlying bytes. Concatenation is likewise supported without copying (long strings) by building
- * a tree of pieces in {@link RopeByteString}.
+ * Immutable sequence of bytes. Provides conversions to and from {@code byte[]}, {@link
+ * java.lang.String}, {@link ByteBuffer}, {@link InputStream}, {@link OutputStream}. Also provides a
+ * conversion to {@link CodedInputStream}.
  *
  * <p>Like {@link String}, the contents of a {@link ByteString} can never be observed to change, not
  * even in the presence of a data race or incorrect API usage in the client code.
+ *
+ * <p>Substring is supported by sharing the reference to the immutable underlying bytes.
+ * Concatenation is likewise supported without copying (long strings) by building a tree of pieces
+ * in {@link RopeByteString}.
  *
  * @author crazybob@google.com Bob Lee
  * @author kenton@google.com Kenton Varda
