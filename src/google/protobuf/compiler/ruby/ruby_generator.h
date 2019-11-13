@@ -44,6 +44,20 @@ namespace protobuf {
 namespace compiler {
 namespace ruby {
 
+struct GeneratorOptions {
+  enum RequireStyle {
+    kRequireAbsolute,
+    kRequireRelative,
+  } require_style;
+
+  GeneratorOptions()
+      : require_style(kRequireAbsolute) {}
+
+  bool ParseFromOptions(
+    const std::vector<std::pair<std::string, std::string> >& options,
+    std::string* error);
+};
+
 // CodeGenerator implementation for generated Ruby protocol buffer classes.
 // If you create your own protocol compiler binary and you want it to support
 // Ruby output, you can do so by registering an instance of this
