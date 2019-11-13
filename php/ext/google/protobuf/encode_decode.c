@@ -553,6 +553,46 @@ static void *map_submsg_handler(void *closure, const void *hd) {
   return submsg;
 }
 
+static void *map_wrapper_submsg_handler(void *closure, const void *hd) {
+  MessageHeader* msg = closure;
+  const submsg_handlerdata_t* submsgdata = hd;
+  TSRMLS_FETCH();
+  Descriptor* subdesc =
+      UNBOX_HASHTABLE_VALUE(Descriptor, get_def_obj((void*)submsgdata->md));
+  zend_class_entry* subklass = subdesc->klass;
+  zval* submsg_php;
+  MessageHeader* submsg;
+  wrapperfields_parseframe_t* frame =
+      (wrapperfields_parseframe_t*)malloc(sizeof(wrapperfields_parseframe_t));
+
+  CACHED_VALUE* cached =
+      DEREF(message_data(msg), submsgdata->ofs, CACHED_VALUE*);
+
+  if (Z_TYPE_P(CACHED_PTR_TO_ZVAL_PTR(cached)) == IS_NULL) {
+#if PHP_MAJOR_VERSION < 7
+    zval val;
+    ZVAL_OBJ(&val, subklass->create_object(subklass TSRMLS_CC));
+    MessageHeader* intern = UNBOX(MessageHeader, &val);
+    custom_data_init(subklass, intern PHP_PROTO_TSRMLS_CC);
+    REPLACE_ZVAL_VALUE(cached, &val, 1);
+    zval_dtor(&val);
+#else
+    zend_object* obj = subklass->create_object(subklass TSRMLS_CC);
+    ZVAL_OBJ(cached, obj);
+    MessageHeader* intern = UNBOX_HASHTABLE_VALUE(MessageHeader, obj);
+    custom_data_init(subklass, intern PHP_PROTO_TSRMLS_CC);
+#endif
+  }
+
+  submsg_php = CACHED_PTR_TO_ZVAL_PTR(cached);
+
+  submsg = UNBOX(MessageHeader, submsg_php);
+  frame->closure = closure;
+  frame->submsg = submsg;
+  frame->is_msg = true;
+  return frame;
+}
+
 // Handler data for startmap/endmap handlers.
 typedef struct {
   const upb_fielddef* fd;
@@ -1102,7 +1142,12 @@ static void add_handlers_for_singular_field(upb_handlers *h,
       upb_handlerattr attr = UPB_HANDLERATTR_INIT;
       if (is_map) {
         attr.handler_data = newsubmsghandlerdata(h, offset, f);
-        upb_handlers_setstartsubmsg(h, f, map_submsg_handler, &attr);
+        if (is_wrapper_msg(upb_fielddef_msgsubdef(f))) {
+          upb_handlers_setstartsubmsg(h, f, map_wrapper_submsg_handler, &attr);
+          upb_handlers_setendsubmsg(h, f, wrapper_submsg_end_handler, &attr);
+        } else {
+          upb_handlers_setstartsubmsg(h, f, map_submsg_handler, &attr);
+        }
       } else if (is_wrapper_msg(upb_fielddef_msgsubdef(f))) {
         attr.handler_data = newsubmsghandlerdata(h, 0, f);
         upb_handlers_setstartsubmsg(h, f, wrapper_submsg_handler, &attr);

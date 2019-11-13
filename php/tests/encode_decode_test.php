@@ -188,12 +188,12 @@ class EncodeDecodeTest extends TestBase
         $this->assertSame("a", $m->getRepeatedField()[0]->getValue());
     }
 
-    # public function testDecodeMapStringValue()
-    # {
-    #     $m = new TestStringValue();
-    #     $m->mergeFromJsonString("{\"map_field\":[\"1\", \"a\"]}");
-    #     $this->assertSame("a", $m->getMapField()[1]->getValue());
-    # }
+    public function testDecodeMapStringValue()
+    {
+        $m = new TestStringValue();
+        $m->mergeFromJsonString("{\"map_field\":{\"1\": \"a\"}}");
+        $this->assertSame("a", $m->getMapField()[1]->getValue());
+    }
 
     public function testDecodeTopLevelBytesValue()
     {

@@ -267,6 +267,7 @@ message TestStringValue {
     google.protobuf.StringValue oneof_field = 3;
     int32 int32_field = 4;
   }
+  map<int32, google.protobuf.StringValue> map_field = 5;
 }
 
 message TestBytesValue {
