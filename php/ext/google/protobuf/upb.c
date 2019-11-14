@@ -116,7 +116,7 @@ int msvc_vsnprintf(char* s, size_t n, const char* format, va_list arg);
 #ifdef __cplusplus
 #if __cplusplus >= 201103L || defined(__GXX_EXPERIMENTAL_CXX0X__) || \
     (defined(_MSC_VER) && _MSC_VER >= 1900)
-// C++11 is present
+/* C++11 is present */
 #else
 #error upb requires C++11 for C++ support
 #endif
@@ -724,6 +724,7 @@ static bool upb_decode_field(upb_decstate *d, upb_decframe *frame) {
     CHK(upb_append_unknown(d, frame));
     return true;
   }
+  UPB_UNREACHABLE();
 }
 
 static bool upb_decode_message(upb_decstate *d, char *msg, const upb_msglayout *l) {
@@ -7153,7 +7154,8 @@ size_t run_decoder_vm(upb_pbdecoder *d, const mgroup *group,
         CHECK_SUSPEND(upb_sink_startsubmsg(outer->sink, arg, &d->top->sink));
       )
       VMCASE(OP_ENDSUBMSG,
-        CHECK_SUSPEND(upb_sink_endsubmsg(d->top->sink, arg));
+        upb_sink subsink = (d->top + 1)->sink;
+        CHECK_SUSPEND(upb_sink_endsubmsg(d->top->sink, subsink, arg));
       )
       VMCASE(OP_STARTSTR,
         uint32_t len = delim_remaining(d);
@@ -8430,7 +8432,7 @@ done:
   return r;
 }
 
-#line 1 "upb/json/parser.rl"
+// #line 1 "upb/json/parser.rl"
 /*
 ** upb::json::Parser (upb_json_parser)
 **
@@ -10117,28 +10119,18 @@ static void start_timestamp_zone(upb_json_parser *p, const char *ptr) {
   capture_begin(p, ptr);
 }
 
-#define EPOCH_YEAR 1970
-#define TM_YEAR_BASE 1900
-
-static bool isleap(int year) {
-  return (year % 4) == 0 && (year % 100 != 0 || (year % 400) == 0);
+static int div_round_up2(int n, int d) {
+  return (n + d - 1) / d;
 }
-
-const unsigned short int __mon_yday[2][13] = {
-    /* Normal years.  */
-    { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365 },
-    /* Leap years.  */
-    { 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366 }
-};
 
 /* epoch_days(1970, 1, 1) == 1970-01-01 == 0. */
 static int epoch_days(int year, int month, int day) {
   static const uint16_t month_yday[12] = {0,   31,  59,  90,  120, 151,
                                           181, 212, 243, 273, 304, 334};
   int febs_since_0 = month > 2 ? year + 1 : year;
-  int leap_days_since_0 = div_round_up(febs_since_0, 4) -
-                          div_round_up(febs_since_0, 100) +
-                          div_round_up(febs_since_0, 400);
+  int leap_days_since_0 = div_round_up2(febs_since_0, 4) -
+                          div_round_up2(febs_since_0, 100) +
+                          div_round_up2(febs_since_0, 400);
   int days_since_0 =
       365 * year + month_yday[month - 1] + (day - 1) + leap_days_since_0;
 
@@ -10460,7 +10452,7 @@ static void end_member(upb_json_parser *p) {
     p->top--;
     ok = upb_handlers_getselector(mapfield, UPB_HANDLER_ENDSUBMSG, &sel);
     UPB_ASSERT(ok);
-    upb_sink_endsubmsg(p->top->sink, sel);
+    upb_sink_endsubmsg(p->top->sink, (p->top + 1)->sink, sel);
   }
 
   p->top->f = NULL;
@@ -10574,7 +10566,7 @@ static void end_subobject(upb_json_parser *p) {
     p->top--;
     if (!is_unknown) {
       sel = getsel_for_handlertype(p, UPB_HANDLER_ENDSUBMSG);
-      upb_sink_endsubmsg(p->top->sink, sel);
+      upb_sink_endsubmsg(p->top->sink, (p->top + 1)->sink, sel);
     }
   }
 }
@@ -11013,11 +11005,11 @@ static bool does_fieldmask_end(upb_json_parser *p) {
  * final state once, when the closing '"' is seen. */
 
 
-#line 2794 "upb/json/parser.rl"
+// #line 2780 "upb/json/parser.rl"
 
 
 
-#line 2597 "upb/json/parser.c"
+// #line 2583 "upb/json/parser.c"
 static const char _json_actions[] = {
 	0, 1, 0, 1, 1, 1, 3, 1, 
 	4, 1, 6, 1, 7, 1, 8, 1, 
@@ -11272,7 +11264,7 @@ static const int json_en_value_machine = 78;
 static const int json_en_main = 1;
 
 
-#line 2797 "upb/json/parser.rl"
+// #line 2783 "upb/json/parser.rl"
 
 size_t parse(void *closure, const void *hd, const char *buf, size_t size,
              const upb_bufhandle *handle) {
@@ -11295,7 +11287,7 @@ size_t parse(void *closure, const void *hd, const char *buf, size_t size,
   capture_resume(parser, buf);
 
   
-#line 2875 "upb/json/parser.c"
+// #line 2861 "upb/json/parser.c"
 	{
 	int _klen;
 	unsigned int _trans;
@@ -11370,147 +11362,147 @@ _match:
 		switch ( *_acts++ )
 		{
 	case 1:
-#line 2602 "upb/json/parser.rl"
+// #line 2588 "upb/json/parser.rl"
 	{ p--; {cs = stack[--top]; goto _again;} }
 	break;
 	case 2:
-#line 2604 "upb/json/parser.rl"
+// #line 2590 "upb/json/parser.rl"
 	{ p--; {stack[top++] = cs; cs = 23;goto _again;} }
 	break;
 	case 3:
-#line 2608 "upb/json/parser.rl"
+// #line 2594 "upb/json/parser.rl"
 	{ start_text(parser, p); }
 	break;
 	case 4:
-#line 2609 "upb/json/parser.rl"
+// #line 2595 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_text(parser, p)); }
 	break;
 	case 5:
-#line 2615 "upb/json/parser.rl"
+// #line 2601 "upb/json/parser.rl"
 	{ start_hex(parser); }
 	break;
 	case 6:
-#line 2616 "upb/json/parser.rl"
+// #line 2602 "upb/json/parser.rl"
 	{ hexdigit(parser, p); }
 	break;
 	case 7:
-#line 2617 "upb/json/parser.rl"
+// #line 2603 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_hex(parser)); }
 	break;
 	case 8:
-#line 2623 "upb/json/parser.rl"
+// #line 2609 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(escape(parser, p)); }
 	break;
 	case 9:
-#line 2629 "upb/json/parser.rl"
+// #line 2615 "upb/json/parser.rl"
 	{ p--; {cs = stack[--top]; goto _again;} }
 	break;
 	case 10:
-#line 2634 "upb/json/parser.rl"
+// #line 2620 "upb/json/parser.rl"
 	{ start_year(parser, p); }
 	break;
 	case 11:
-#line 2635 "upb/json/parser.rl"
+// #line 2621 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_year(parser, p)); }
 	break;
 	case 12:
-#line 2639 "upb/json/parser.rl"
+// #line 2625 "upb/json/parser.rl"
 	{ start_month(parser, p); }
 	break;
 	case 13:
-#line 2640 "upb/json/parser.rl"
+// #line 2626 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_month(parser, p)); }
 	break;
 	case 14:
-#line 2644 "upb/json/parser.rl"
+// #line 2630 "upb/json/parser.rl"
 	{ start_day(parser, p); }
 	break;
 	case 15:
-#line 2645 "upb/json/parser.rl"
+// #line 2631 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_day(parser, p)); }
 	break;
 	case 16:
-#line 2649 "upb/json/parser.rl"
+// #line 2635 "upb/json/parser.rl"
 	{ start_hour(parser, p); }
 	break;
 	case 17:
-#line 2650 "upb/json/parser.rl"
+// #line 2636 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_hour(parser, p)); }
 	break;
 	case 18:
-#line 2654 "upb/json/parser.rl"
+// #line 2640 "upb/json/parser.rl"
 	{ start_minute(parser, p); }
 	break;
 	case 19:
-#line 2655 "upb/json/parser.rl"
+// #line 2641 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_minute(parser, p)); }
 	break;
 	case 20:
-#line 2659 "upb/json/parser.rl"
+// #line 2645 "upb/json/parser.rl"
 	{ start_second(parser, p); }
 	break;
 	case 21:
-#line 2660 "upb/json/parser.rl"
+// #line 2646 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_second(parser, p)); }
 	break;
 	case 22:
-#line 2665 "upb/json/parser.rl"
+// #line 2651 "upb/json/parser.rl"
 	{ start_duration_base(parser, p); }
 	break;
 	case 23:
-#line 2666 "upb/json/parser.rl"
+// #line 2652 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_duration_base(parser, p)); }
 	break;
 	case 24:
-#line 2668 "upb/json/parser.rl"
+// #line 2654 "upb/json/parser.rl"
 	{ p--; {cs = stack[--top]; goto _again;} }
 	break;
 	case 25:
-#line 2673 "upb/json/parser.rl"
+// #line 2659 "upb/json/parser.rl"
 	{ start_timestamp_base(parser); }
 	break;
 	case 26:
-#line 2675 "upb/json/parser.rl"
+// #line 2661 "upb/json/parser.rl"
 	{ start_timestamp_fraction(parser, p); }
 	break;
 	case 27:
-#line 2676 "upb/json/parser.rl"
+// #line 2662 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_timestamp_fraction(parser, p)); }
 	break;
 	case 28:
-#line 2678 "upb/json/parser.rl"
+// #line 2664 "upb/json/parser.rl"
 	{ start_timestamp_zone(parser, p); }
 	break;
 	case 29:
-#line 2679 "upb/json/parser.rl"
+// #line 2665 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_timestamp_zone(parser, p)); }
 	break;
 	case 30:
-#line 2681 "upb/json/parser.rl"
+// #line 2667 "upb/json/parser.rl"
 	{ p--; {cs = stack[--top]; goto _again;} }
 	break;
 	case 31:
-#line 2686 "upb/json/parser.rl"
+// #line 2672 "upb/json/parser.rl"
 	{ start_fieldmask_path_text(parser, p); }
 	break;
 	case 32:
-#line 2687 "upb/json/parser.rl"
+// #line 2673 "upb/json/parser.rl"
 	{ end_fieldmask_path_text(parser, p); }
 	break;
 	case 33:
-#line 2692 "upb/json/parser.rl"
+// #line 2678 "upb/json/parser.rl"
 	{ start_fieldmask_path(parser); }
 	break;
 	case 34:
-#line 2693 "upb/json/parser.rl"
+// #line 2679 "upb/json/parser.rl"
 	{ end_fieldmask_path(parser); }
 	break;
 	case 35:
-#line 2699 "upb/json/parser.rl"
+// #line 2685 "upb/json/parser.rl"
 	{ p--; {cs = stack[--top]; goto _again;} }
 	break;
 	case 36:
-#line 2704 "upb/json/parser.rl"
+// #line 2690 "upb/json/parser.rl"
 	{
         if (is_wellknown_msg(parser, UPB_WELLKNOWN_TIMESTAMP)) {
           {stack[top++] = cs; cs = 47;goto _again;}
@@ -11524,11 +11516,11 @@ _match:
       }
 	break;
 	case 37:
-#line 2717 "upb/json/parser.rl"
+// #line 2703 "upb/json/parser.rl"
 	{ p--; {stack[top++] = cs; cs = 78;goto _again;} }
 	break;
 	case 38:
-#line 2722 "upb/json/parser.rl"
+// #line 2708 "upb/json/parser.rl"
 	{
         if (is_wellknown_msg(parser, UPB_WELLKNOWN_ANY)) {
           start_any_member(parser, p);
@@ -11538,11 +11530,11 @@ _match:
       }
 	break;
 	case 39:
-#line 2729 "upb/json/parser.rl"
+// #line 2715 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_membername(parser)); }
 	break;
 	case 40:
-#line 2732 "upb/json/parser.rl"
+// #line 2718 "upb/json/parser.rl"
 	{
         if (is_wellknown_msg(parser, UPB_WELLKNOWN_ANY)) {
           end_any_member(parser, p);
@@ -11552,7 +11544,7 @@ _match:
       }
 	break;
 	case 41:
-#line 2743 "upb/json/parser.rl"
+// #line 2729 "upb/json/parser.rl"
 	{
         if (is_wellknown_msg(parser, UPB_WELLKNOWN_ANY)) {
           start_any_object(parser, p);
@@ -11562,7 +11554,7 @@ _match:
       }
 	break;
 	case 42:
-#line 2752 "upb/json/parser.rl"
+// #line 2738 "upb/json/parser.rl"
 	{
         if (is_wellknown_msg(parser, UPB_WELLKNOWN_ANY)) {
           CHECK_RETURN_TOP(end_any_object(parser, p));
@@ -11572,54 +11564,54 @@ _match:
       }
 	break;
 	case 43:
-#line 2764 "upb/json/parser.rl"
+// #line 2750 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(start_array(parser)); }
 	break;
 	case 44:
-#line 2768 "upb/json/parser.rl"
+// #line 2754 "upb/json/parser.rl"
 	{ end_array(parser); }
 	break;
 	case 45:
-#line 2773 "upb/json/parser.rl"
+// #line 2759 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(start_number(parser, p)); }
 	break;
 	case 46:
-#line 2774 "upb/json/parser.rl"
+// #line 2760 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_number(parser, p)); }
 	break;
 	case 47:
-#line 2776 "upb/json/parser.rl"
+// #line 2762 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(start_stringval(parser)); }
 	break;
 	case 48:
-#line 2777 "upb/json/parser.rl"
+// #line 2763 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_stringval(parser)); }
 	break;
 	case 49:
-#line 2779 "upb/json/parser.rl"
+// #line 2765 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_bool(parser, true)); }
 	break;
 	case 50:
-#line 2781 "upb/json/parser.rl"
+// #line 2767 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_bool(parser, false)); }
 	break;
 	case 51:
-#line 2783 "upb/json/parser.rl"
+// #line 2769 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_null(parser)); }
 	break;
 	case 52:
-#line 2785 "upb/json/parser.rl"
+// #line 2771 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(start_subobject_full(parser)); }
 	break;
 	case 53:
-#line 2786 "upb/json/parser.rl"
+// #line 2772 "upb/json/parser.rl"
 	{ end_subobject_full(parser); }
 	break;
 	case 54:
-#line 2791 "upb/json/parser.rl"
+// #line 2777 "upb/json/parser.rl"
 	{ p--; {cs = stack[--top]; goto _again;} }
 	break;
-#line 3199 "upb/json/parser.c"
+// #line 3185 "upb/json/parser.c"
 		}
 	}
 
@@ -11636,32 +11628,32 @@ _again:
 	while ( __nacts-- > 0 ) {
 		switch ( *__acts++ ) {
 	case 0:
-#line 2600 "upb/json/parser.rl"
+// #line 2586 "upb/json/parser.rl"
 	{ p--; {cs = stack[--top]; 	if ( p == pe )
 		goto _test_eof;
 goto _again;} }
 	break;
 	case 46:
-#line 2774 "upb/json/parser.rl"
+// #line 2760 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_number(parser, p)); }
 	break;
 	case 49:
-#line 2779 "upb/json/parser.rl"
+// #line 2765 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_bool(parser, true)); }
 	break;
 	case 50:
-#line 2781 "upb/json/parser.rl"
+// #line 2767 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_bool(parser, false)); }
 	break;
 	case 51:
-#line 2783 "upb/json/parser.rl"
+// #line 2769 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_null(parser)); }
 	break;
 	case 53:
-#line 2786 "upb/json/parser.rl"
+// #line 2772 "upb/json/parser.rl"
 	{ end_subobject_full(parser); }
 	break;
-#line 3241 "upb/json/parser.c"
+// #line 3227 "upb/json/parser.c"
 		}
 	}
 	}
@@ -11669,7 +11661,7 @@ goto _again;} }
 	_out: {}
 	}
 
-#line 2819 "upb/json/parser.rl"
+// #line 2805 "upb/json/parser.rl"
 
   if (p != pe) {
     upb_status_seterrf(parser->status, "Parse error at '%.*s'\n", pe - p, p);
@@ -11712,13 +11704,13 @@ static void json_parser_reset(upb_json_parser *p) {
 
   /* Emit Ragel initialization of the parser. */
   
-#line 3292 "upb/json/parser.c"
+// #line 3278 "upb/json/parser.c"
 	{
 	cs = json_start;
 	top = 0;
 	}
 
-#line 2861 "upb/json/parser.rl"
+// #line 2847 "upb/json/parser.rl"
   p->current_state = cs;
   p->parser_top = top;
   accumulate_clear(p);

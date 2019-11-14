@@ -628,7 +628,7 @@ void GenerateField(const FieldDescriptor* field, io::Printer* printer,
   } else {
     GenerateFieldDocComment(printer, field, is_descriptor, kFieldProperty);
     printer->Print(
-        "private $^name^ = ^default^;\n",
+        "protected $^name^ = ^default^;\n",
         "name", field->name(),
         "default", DefaultForField(field));
   }
@@ -682,10 +682,10 @@ void GenerateFieldAccessor(const FieldDescriptor* field, bool is_descriptor,
     printer->Print(
         "public function get^camel_name^Unwrapped()\n"
         "{\n"
-        "    $wrapper = $this->get^camel_name^();\n"
-        "    return is_null($wrapper) ? null : $wrapper->getValue();\n"
+        "    return $this->readWrapperValue(\"^field_name^\");\n"
         "}\n\n",
-        "camel_name", UnderscoresToCamelCase(field->name(), true));
+        "camel_name", UnderscoresToCamelCase(field->name(), true),
+        "field_name", field->name());
   }
 
   // Generate setter.
@@ -795,11 +795,11 @@ void GenerateFieldAccessor(const FieldDescriptor* field, bool is_descriptor,
     printer->Print(
         "public function set^camel_name^Unwrapped($var)\n"
         "{\n"
-        "    $wrappedVar = is_null($var) ? null : new \\^wrapper_type^(['value' => $var]);\n"
-        "    return $this->set^camel_name^($wrappedVar);\n"
+        "    $this->writeWrapperValue(\"^field_name^\", $var);\n"
+        "    return $this;"
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true),
-        "wrapper_type", LegacyFullClassName(field->message_type(), is_descriptor));
+        "field_name", field->name());
   }
 
   // Generate has method for proto2 only.
