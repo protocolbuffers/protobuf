@@ -584,8 +584,15 @@ InternalDescriptorPool *generated_pool;  // The actual generated pool
 void init_generated_pool_once(TSRMLS_D) {
   if (generated_pool == NULL) {
 #if PHP_MAJOR_VERSION < 7
-    MAKE_STD_ZVAL(generated_pool_php);
-    MAKE_STD_ZVAL(internal_generated_pool_php);
+    if (PROTOBUF_G(keep_descriptor_pool_after_request)) {
+      generated_pool_php = PEMALLOC(zval, 1);
+      INIT_PZVAL(generated_pool_php);
+      internal_generated_pool_php = PEMALLOC(zval, 1);
+      INIT_PZVAL(internal_generated_pool_php);
+    } else {
+      MAKE_STD_ZVAL(generated_pool_php);
+      MAKE_STD_ZVAL(internal_generated_pool_php);
+    }
     ZVAL_OBJ(internal_generated_pool_php,
              internal_descriptor_pool_type->create_object(
                  internal_descriptor_pool_type TSRMLS_CC));

@@ -32,7 +32,6 @@
 
 #include <zend_hash.h>
 
-ZEND_DECLARE_MODULE_GLOBALS(protobuf)
 static PHP_GINIT_FUNCTION(protobuf);
 static PHP_GSHUTDOWN_FUNCTION(protobuf);
 static PHP_RINIT_FUNCTION(protobuf);
@@ -226,12 +225,39 @@ ZEND_GET_MODULE(protobuf)
 
 // global variables
 static PHP_GINIT_FUNCTION(protobuf) {
+  protobuf_globals->keep_descriptor_pool_after_request = false;
 }
 
 static PHP_GSHUTDOWN_FUNCTION(protobuf) {
 }
 
-#if PHP_MAJOR_VERSION >= 7
+PHP_INI_BEGIN()
+STD_PHP_INI_ENTRY("protobuf.keep_descriptor_pool_after_request", "0",
+                  PHP_INI_SYSTEM, OnUpdateBool,
+                  keep_descriptor_pool_after_request, zend_protobuf_globals,
+                  protobuf_globals)
+PHP_INI_END()
+
+#if PHP_MAJOR_VERSION < 7
+static void php_proto_hashtable_descriptor_release_persistent(
+    void *zval_ptr) {
+  if (!Z_DELREF_P(zval_ptr)) {
+    TSRMLS_FETCH();
+
+    ZEND_ASSERT(zval_ptr != &EG(uninitialized_zval));
+    GC_REMOVE_ZVAL_FROM_BUFFER(zval_ptr);
+    zval_dtor(zval_ptr);
+    pefree(zval_ptr, 1);
+  } else {
+    TSRMLS_FETCH();
+    if (Z_REFCOUNT_P(zval_ptr) == 1) {
+    	Z_UNSET_ISREF_P(zval_ptr);
+    }
+    
+    GC_ZVAL_CHECK_POSSIBLE_ROOT(zval_ptr);
+  }
+}
+#else
 static void php_proto_hashtable_descriptor_release(zval* value) {
   void* ptr = Z_PTR_P(value);
   zend_object* object = *(zend_object**)ptr;
@@ -241,22 +267,51 @@ static void php_proto_hashtable_descriptor_release(zval* value) {
   }
   efree(ptr);
 }
+
+static void php_proto_hashtable_descriptor_release_persistent(zval* value) {
+  void* ptr = Z_PTR_P(value);
+  zend_object* object = *(zend_object**)ptr;
+  GC_DELREF(object);
+  if(GC_REFCOUNT(object) == 0) {
+    zend_objects_store_del(object);
+  }
+  pefree(ptr, 1);
+}
 #endif
 
-static PHP_RINIT_FUNCTION(protobuf) {
+static void descriptors_create(bool persistent) {
   int i = 0;
 
-  ALLOC_HASHTABLE(upb_def_to_php_obj_map);
-  zend_hash_init(upb_def_to_php_obj_map, 16, NULL, HASHTABLE_VALUE_DTOR, 0);
+  upb_def_to_php_obj_map = PEMALLOC(HashTable, persistent);
+  ce_to_php_obj_map = PEMALLOC(HashTable, persistent);
+  proto_to_php_obj_map = PEMALLOC(HashTable, persistent);
+  reserved_names = PEMALLOC(HashTable, persistent);
 
-  ALLOC_HASHTABLE(ce_to_php_obj_map);
-  zend_hash_init(ce_to_php_obj_map, 16, NULL, HASHTABLE_VALUE_DTOR, 0);
+  if (persistent) {
+    zend_hash_init(upb_def_to_php_obj_map, 16, NULL,
+                   php_proto_hashtable_descriptor_release_persistent,
+                   persistent);
+    zend_hash_init(ce_to_php_obj_map, 16, NULL,
+                   php_proto_hashtable_descriptor_release_persistent,
+                   persistent);
 
-  ALLOC_HASHTABLE(proto_to_php_obj_map);
-  zend_hash_init(proto_to_php_obj_map, 16, NULL, HASHTABLE_VALUE_DTOR, 0);
+    zend_hash_init(proto_to_php_obj_map, 16, NULL,
+                   php_proto_hashtable_descriptor_release_persistent,
+                   persistent);
+  } else {
+    zend_hash_init(upb_def_to_php_obj_map, 16, NULL,
+                   HASHTABLE_VALUE_DTOR,
+                   persistent);
+    zend_hash_init(ce_to_php_obj_map, 16, NULL,
+                   HASHTABLE_VALUE_DTOR,
+                   persistent);
 
-  ALLOC_HASHTABLE(reserved_names);
-  zend_hash_init(reserved_names, 16, NULL, NULL, 0);
+    zend_hash_init(proto_to_php_obj_map, 16, NULL,
+                   HASHTABLE_VALUE_DTOR,
+                   persistent);
+  }
+
+  zend_hash_init(reserved_names, 16, NULL, NULL, persistent);
   for (i = 0; i < kReservedNamesSize; i++) {
     php_proto_zend_hash_update(reserved_names, kReservedNames[i],
                                strlen(kReservedNames[i]));
@@ -276,31 +331,37 @@ static PHP_RINIT_FUNCTION(protobuf) {
   is_inited_file_timestamp = false;
   is_inited_file_type = false;
   is_inited_file_wrappers = false;
-
-  return 0;
 }
 
-static PHP_RSHUTDOWN_FUNCTION(protobuf) {
+static void descriptors_free(bool persistent) {
   zend_hash_destroy(upb_def_to_php_obj_map);
-  FREE_HASHTABLE(upb_def_to_php_obj_map);
+  PEFREE(upb_def_to_php_obj_map, persistent);
 
   zend_hash_destroy(ce_to_php_obj_map);
-  FREE_HASHTABLE(ce_to_php_obj_map);
+  PEFREE(ce_to_php_obj_map, persistent);
 
   zend_hash_destroy(proto_to_php_obj_map);
-  FREE_HASHTABLE(proto_to_php_obj_map);
+  PEFREE(proto_to_php_obj_map, persistent);
 
   zend_hash_destroy(reserved_names);
-  FREE_HASHTABLE(reserved_names);
+  PEFREE(reserved_names, persistent);
 
 #if PHP_MAJOR_VERSION < 7
   if (generated_pool_php != NULL) {
     zval_dtor(generated_pool_php);
-    FREE_ZVAL(generated_pool_php);
+    if (persistent) {
+      PEFREE(generated_pool_php, 1);
+    } else {
+      FREE_ZVAL(generated_pool_php);
+    }
   }
   if (internal_generated_pool_php != NULL) {
     zval_dtor(internal_generated_pool_php);
-    FREE_ZVAL(internal_generated_pool_php);
+    if (persistent) {
+      PEFREE(internal_generated_pool_php, 1);
+    } else {
+      FREE_ZVAL(internal_generated_pool_php);
+    }
   }
 #else
   if (generated_pool_php != NULL) {
@@ -315,21 +376,44 @@ static PHP_RSHUTDOWN_FUNCTION(protobuf) {
   }
 #endif
 
-  is_inited_file_any = true;
-  is_inited_file_api = true;
-  is_inited_file_duration = true;
-  is_inited_file_field_mask = true;
-  is_inited_file_empty = true;
-  is_inited_file_source_context = true;
-  is_inited_file_struct = true;
-  is_inited_file_timestamp = true;
-  is_inited_file_type = true;
-  is_inited_file_wrappers = true;
+  is_inited_file_any = false;
+  is_inited_file_api = false;
+  is_inited_file_duration = false;
+  is_inited_file_field_mask = false;
+  is_inited_file_empty = false;
+  is_inited_file_source_context = false;
+  is_inited_file_struct = false;
+  is_inited_file_timestamp = false;
+  is_inited_file_type = false;
+  is_inited_file_wrappers = false;
+}
+
+static PHP_RINIT_FUNCTION(protobuf) {
+  if (PROTOBUF_G(keep_descriptor_pool_after_request)) {
+    return 0;
+  }
+
+  descriptors_create(false);
+  return 0;
+}
+
+static PHP_RSHUTDOWN_FUNCTION(protobuf) {
+  if (PROTOBUF_G(keep_descriptor_pool_after_request)) {
+    return 0;
+  }
+
+  descriptors_free(false);
 
   return 0;
 }
 
 static PHP_MINIT_FUNCTION(protobuf) {
+  REGISTER_INI_ENTRIES();
+
+  if (PROTOBUF_G(keep_descriptor_pool_after_request)) {
+    descriptors_create(true);
+  }
+
   descriptor_pool_init(TSRMLS_C);
   descriptor_init(TSRMLS_C);
   enum_descriptor_init(TSRMLS_C);
@@ -391,11 +475,14 @@ static PHP_MINIT_FUNCTION(protobuf) {
 }
 
 static PHP_MSHUTDOWN_FUNCTION(protobuf) {
-  PEFREE(message_handlers);
-  PEFREE(repeated_field_handlers);
-  PEFREE(repeated_field_iter_handlers);
-  PEFREE(map_field_handlers);
-  PEFREE(map_field_iter_handlers);
+  if (PROTOBUF_G(keep_descriptor_pool_after_request)) {
+    descriptors_free(true);
+  }
+  PEFREE(message_handlers, 1);
+  PEFREE(repeated_field_handlers, 1);
+  PEFREE(repeated_field_iter_handlers, 1);
+  PEFREE(map_field_handlers, 1);
+  PEFREE(map_field_iter_handlers, 1);
 
   return 0;
 }
