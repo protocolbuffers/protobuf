@@ -240,21 +240,13 @@ PHP_INI_END()
 
 #if PHP_MAJOR_VERSION < 7
 static void php_proto_hashtable_descriptor_release_persistent(
-    void *zval_ptr) {
+    void* zval_ptr_ptr) {
+  zval* zval_ptr = *(zval**)zval_ptr_ptr;
+
   if (!Z_DELREF_P(zval_ptr)) {
     TSRMLS_FETCH();
-
-    ZEND_ASSERT(zval_ptr != &EG(uninitialized_zval));
-    GC_REMOVE_ZVAL_FROM_BUFFER(zval_ptr);
     zval_dtor(zval_ptr);
     pefree(zval_ptr, 1);
-  } else {
-    TSRMLS_FETCH();
-    if (Z_REFCOUNT_P(zval_ptr) == 1) {
-    	Z_UNSET_ISREF_P(zval_ptr);
-    }
-    
-    GC_ZVAL_CHECK_POSSIBLE_ROOT(zval_ptr);
   }
 }
 #else

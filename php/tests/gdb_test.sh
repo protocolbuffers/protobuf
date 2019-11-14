@@ -13,7 +13,8 @@ php -i | grep "Configuration"
 #
 # gdb --args php -dextension=../ext/google/protobuf/modules/protobuf.so `which phpunit` --bootstrap autoload.php generated_class_test.php
 # gdb --args php -dextension=../ext/google/protobuf/modules/protobuf.so `which phpunit` --bootstrap autoload.php encode_decode_test.php
-gdb --args php -dextension=../ext/google/protobuf/modules/protobuf.so -d protobuf.keep_descriptor_pool_after_request=1 `which phpunit` --bootstrap autoload.php wrapper_type_setters_test.php
+# gdb --args php -dextension=../ext/google/protobuf/modules/protobuf.so -d protobuf.keep_descriptor_pool_after_request=1 `which phpunit` --bootstrap autoload.php wrapper_type_setters_test.php
+gdb --args php -dextension=../ext/google/protobuf/modules/protobuf.so -d protobuf.keep_descriptor_pool_after_request=1 `which phpunit` --bootstrap autoload.php array_test.php
 #
 # gdb --args php -dextension=../ext/google/protobuf/modules/protobuf.so memory_leak_test.php
 #
