@@ -1002,6 +1002,13 @@ proto_lang_toolchain(
     visibility = ["//visibility:public"],
 )
 
+proto_lang_toolchain(
+    name = "javalite_toolchain",
+    command_line = "--java_out=lite:$(OUT)",
+    runtime = ":protobuf_java_lite",
+    visibility = ["//visibility:public"],
+)
+
 alias(
     name = "objectivec",
     actual = ":protobuf_objc",
