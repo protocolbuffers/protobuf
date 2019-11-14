@@ -6,7 +6,7 @@
 # Select Xcode version
 
 # Remember to udpate the Xcode version when xcode_9.4.1 is not available.
-# If xcode is not available, it will probaly encounter the failure for 
+# If xcode is not available, it will probaly encounter the failure for
 # "autom4te: need GNU m4 1.4 or later: /usr/bin/m4""
 export DEVELOPER_DIR=/Applications/Xcode_9.4.1.app/Contents/Developer
 
@@ -23,7 +23,7 @@ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/
 source $HOME/.rvm/scripts/rvm
 brew uninstall node icu4c cmake wget
 brew prune
-brew install gflags gpg gpg2 node openssl pcre ruby cmake wget
+brew install gflags gpg node openssl pcre ruby cmake wget m4
 sudo chown -R $(whoami) /usr/local
 brew postinstall node
 
@@ -34,7 +34,6 @@ sudo pip install tox==2.4.1
 
 ##
 # Install RVM
-
-gpg2 --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
-command curl -sSL https://rvm.io/mpapis.asc | gpg2 --import -
+command curl -sSL https://rvm.io/mpapis.asc | gpg --import -
+command curl -sSL https://rvm.io/pkuczynski.asc | gpg --import -
 curl -sSL https://get.rvm.io | bash -s stable --ruby
