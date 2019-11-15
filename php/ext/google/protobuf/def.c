@@ -442,13 +442,31 @@ PHP_METHOD(FieldDescriptor, getEnumType) {
     return;
   }
   const upb_enumdef *enumdef = upb_fielddef_enumsubdef(intern->fielddef);
-  PHP_PROTO_HASHTABLE_VALUE desc = get_def_obj(enumdef);
+  PHP_PROTO_HASHTABLE_VALUE desc_php = get_def_obj(enumdef);
+
+  if (desc_php == NULL) {
+    EnumDescriptorInternal* intern = get_enumdef_enumdesc(enumdef);
 
 #if PHP_MAJOR_VERSION < 7
-  RETURN_ZVAL(desc, 1, 0);
+    MAKE_STD_ZVAL(desc_php);
+    ZVAL_OBJ(desc_php, enum_descriptor_type->create_object(
+                                        enum_descriptor_type TSRMLS_CC));
+    Z_DELREF_P(desc_php);
 #else
-  GC_ADDREF(desc);
-  RETURN_OBJ(desc);
+    desc_php =
+        enum_descriptor_type->create_object(enum_descriptor_type TSRMLS_CC);
+    GC_DELREF(desc_php);
+#endif
+    EnumDescriptor* desc = UNBOX_HASHTABLE_VALUE(EnumDescriptor, desc_php);
+    desc->intern = intern;
+    add_def_obj(enumdef, desc_php);
+  }
+
+#if PHP_MAJOR_VERSION < 7
+  RETURN_ZVAL(desc_php, 1, 0);
+#else
+  GC_ADDREF(desc_php);
+  RETURN_OBJ(desc_php);
 #endif
 }
 
@@ -461,13 +479,31 @@ PHP_METHOD(FieldDescriptor, getMessageType) {
     return;
   }
   const upb_msgdef *msgdef = upb_fielddef_msgsubdef(intern->fielddef);
-  PHP_PROTO_HASHTABLE_VALUE desc = get_def_obj(msgdef);
+  PHP_PROTO_HASHTABLE_VALUE desc_php = get_def_obj(msgdef);
+
+  if (desc_php == NULL) {
+    DescriptorInternal* intern = get_def_desc(msgdef);
 
 #if PHP_MAJOR_VERSION < 7
-  RETURN_ZVAL(desc, 1, 0);
+    MAKE_STD_ZVAL(desc_php);
+    ZVAL_OBJ(desc_php, descriptor_type->create_object(
+                                   descriptor_type TSRMLS_CC));
+    Z_DELREF_P(desc_php);
 #else
-  GC_ADDREF(desc);
-  RETURN_OBJ(desc);
+    desc_php =
+        descriptor_type->create_object(descriptor_type TSRMLS_CC);
+    GC_DELREF(desc_php);
+#endif
+    Descriptor* desc = UNBOX_HASHTABLE_VALUE(Descriptor, desc_php);
+    desc->intern = intern;
+    add_def_obj(msgdef, desc_php);
+  }
+
+#if PHP_MAJOR_VERSION < 7
+  RETURN_ZVAL(desc_php, 1, 0);
+#else
+  GC_ADDREF(desc_php);
+  RETURN_OBJ(desc_php);
 #endif
 }
 
