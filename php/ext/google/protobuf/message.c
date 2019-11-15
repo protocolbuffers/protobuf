@@ -1534,14 +1534,13 @@ PHP_METHOD(Any, unpack) {
   }
 
   const char* fully_qualified_name = type_url + url_prefix_len;
-  PHP_PROTO_HASHTABLE_VALUE desc_php = get_proto_obj(fully_qualified_name);
-  if (desc_php == NULL) {
+  DescriptorInternal* desc = get_proto_desc(fully_qualified_name);
+  if (desc == NULL) {
     zend_throw_exception(
         NULL, "Specified message in any hasn't been added to descriptor pool",
         0 TSRMLS_CC);
     return;
   }
-  Descriptor* desc = UNBOX_HASHTABLE_VALUE(Descriptor, desc_php);
   zend_class_entry* klass = desc->klass;
   ZVAL_OBJ(return_value, klass->create_object(klass TSRMLS_CC));
   MessageHeader* msg = UNBOX(MessageHeader, return_value);
@@ -1556,7 +1555,7 @@ PHP_METHOD(Any, unpack) {
   zval_dtor(&value_member);
   PHP_PROTO_FAKE_SCOPE_END;
 
-  merge_from_string(Z_STRVAL_P(value), Z_STRLEN_P(value), desc->intern, msg);
+  merge_from_string(Z_STRVAL_P(value), Z_STRLEN_P(value), desc, msg);
 }
 
 PHP_METHOD(Any, pack) {

@@ -772,8 +772,6 @@ EnumDescriptorInternal* get_ce_enumdesc(const zend_class_entry* ce);
 
 // Global map from message/enum's proto fully-qualified name to corresponding
 // wrapper Descriptor/EnumDescriptor instances.
-void add_proto_obj(const char* proto, PHP_PROTO_HASHTABLE_VALUE value);
-PHP_PROTO_HASHTABLE_VALUE get_proto_obj(const char* proto);
 void add_proto_desc(const char* proto, DescriptorInternal* desc);
 DescriptorInternal* get_proto_desc(const char* proto);
 void add_proto_enumdesc(const char* proto, EnumDescriptorInternal* desc);

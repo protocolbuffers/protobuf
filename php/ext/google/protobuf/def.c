@@ -867,7 +867,6 @@ static zend_class_entry *register_class(const upb_filedef *file,
   }
   ret = PHP_PROTO_CE_UNREF(pce);
   add_ce_obj(ret, desc_php);
-  add_proto_obj(fullname, desc_php);
   if (is_enum) {
     EnumDescriptor* desc = UNBOX_HASHTABLE_VALUE(EnumDescriptor, desc_php);
     add_ce_enumdesc(ret, desc->intern);

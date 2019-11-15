@@ -42,19 +42,18 @@ static PHP_MSHUTDOWN_FUNCTION(protobuf);
 // Global map from upb {msg,enum}defs to wrapper Descriptor/EnumDescriptor
 // instances.
 static HashTable* upb_def_to_php_obj_map;
+static upb_inttable upb_def_to_desc_map_persistent;
+static upb_inttable upb_def_to_enumdesc_map_persistent;
 // Global map from message/enum's php class entry to corresponding wrapper
 // Descriptor/EnumDescriptor instances.
 static HashTable* ce_to_php_obj_map;
+static upb_inttable ce_to_desc_map_persistent;
+static upb_inttable ce_to_enumdesc_map_persistent;
 // Global map from message/enum's proto fully-qualified name to corresponding
 // wrapper Descriptor/EnumDescriptor instances.
-static HashTable* proto_to_php_obj_map;
+static upb_strtable proto_to_desc_map_persistent;
+static upb_strtable proto_to_enumdesc_map_persistent;
 
-upb_inttable upb_def_to_desc_map_persistent;
-upb_inttable upb_def_to_enumdesc_map_persistent;
-upb_inttable ce_to_desc_map_persistent;
-upb_inttable ce_to_enumdesc_map_persistent;
-upb_strtable proto_to_desc_map_persistent;
-upb_strtable proto_to_enumdesc_map_persistent;
 upb_strtable reserved_names;
 
 // -----------------------------------------------------------------------------
@@ -198,23 +197,9 @@ bool class_added(const void* ce) {
   return exist_in_table(ce_to_php_obj_map, ce);
 }
 
-void add_proto_obj(const char* proto, PHP_PROTO_HASHTABLE_VALUE value) {
-#if PHP_MAJOR_VERSION < 7
-  Z_ADDREF_P(value);
-#else
-  GC_ADDREF(value);
-#endif
-  add_to_strtable(proto_to_php_obj_map, proto, strlen(proto), value);
-}
-
-PHP_PROTO_HASHTABLE_VALUE get_proto_obj(const char* proto) {
-  return (PHP_PROTO_HASHTABLE_VALUE)get_from_strtable(proto_to_php_obj_map,
-                                                      proto, strlen(proto));
-}
-
 void add_proto_desc(const char* proto, DescriptorInternal* desc) {
-  upb_strtable_insert2(&proto_to_desc_map_persistent, proto,
-                       strlen(proto), upb_value_ptr(desc));
+  upb_strtable_insert(&proto_to_desc_map_persistent, proto,
+                      upb_value_ptr(desc));
 }
 
 DescriptorInternal* get_proto_desc(const char* proto) {
@@ -222,8 +207,7 @@ DescriptorInternal* get_proto_desc(const char* proto) {
 #ifndef NDEBUG
   v.ctype = UPB_CTYPE_PTR;
 #endif
-  if (!upb_strtable_lookupptr(&proto_to_desc_map_persistent,
-                              proto, strlen(proto), &v)) {
+  if (!upb_strtable_lookup(&proto_to_desc_map_persistent, proto, &v)) {
     return NULL;
   } else {
     return upb_value_getptr(v);
@@ -360,9 +344,6 @@ static PHP_RINIT_FUNCTION(protobuf) {
   ALLOC_HASHTABLE(ce_to_php_obj_map);
   zend_hash_init(ce_to_php_obj_map, 16, NULL, HASHTABLE_VALUE_DTOR, 0);
 
-  ALLOC_HASHTABLE(proto_to_php_obj_map);
-  zend_hash_init(proto_to_php_obj_map, 16, NULL, HASHTABLE_VALUE_DTOR, 0);
-
   generated_pool = NULL;
   generated_pool_php = NULL;
   internal_generated_pool_php = NULL;
@@ -387,9 +368,6 @@ static PHP_RSHUTDOWN_FUNCTION(protobuf) {
 
   zend_hash_destroy(ce_to_php_obj_map);
   FREE_HASHTABLE(ce_to_php_obj_map);
-
-  zend_hash_destroy(proto_to_php_obj_map);
-  FREE_HASHTABLE(proto_to_php_obj_map);
 
 #if PHP_MAJOR_VERSION < 7
   if (generated_pool_php != NULL) {
