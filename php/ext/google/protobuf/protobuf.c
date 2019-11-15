@@ -49,9 +49,12 @@ static HashTable* ce_to_php_obj_map;
 // wrapper Descriptor/EnumDescriptor instances.
 static HashTable* proto_to_php_obj_map;
 
-upb_inttable upb_def_to_php_obj_map_persistent;
-upb_inttable ce_to_php_obj_map_persistent;
-upb_inttable proto_to_php_obj_map_persistent;
+upb_inttable upb_def_to_desc_map_persistent;
+upb_inttable upb_def_to_enumdesc_map_persistent;
+upb_inttable ce_to_desc_map_persistent;
+upb_inttable ce_to_enumdesc_map_persistent;
+upb_strtable proto_to_desc_map_persistent;
+upb_strtable proto_to_enumdesc_map_persistent;
 upb_strtable reserved_names;
 
 // -----------------------------------------------------------------------------
@@ -106,8 +109,13 @@ void add_def_obj(const void* def, PHP_PROTO_HASHTABLE_VALUE value) {
   add_to_table(upb_def_to_php_obj_map, def, value);
 }
 
+PHP_PROTO_HASHTABLE_VALUE get_def_obj(const void* def) {
+  return (PHP_PROTO_HASHTABLE_VALUE)get_from_table(upb_def_to_php_obj_map, def);
+}
+
 void add_msgdef_desc(const upb_msgdef* m, DescriptorInternal* desc) {
-  upb_inttable_insertptr(&upb_def_to_php_obj_map_persistent, m, upb_value_ptr(desc));
+  upb_inttable_insertptr(&upb_def_to_desc_map_persistent,
+                         m, upb_value_ptr(desc));
 }
 
 DescriptorInternal* get_msgdef_desc(const upb_msgdef* m) {
@@ -115,15 +123,28 @@ DescriptorInternal* get_msgdef_desc(const upb_msgdef* m) {
 #ifndef NDEBUG
   v.ctype = UPB_CTYPE_PTR;
 #endif
-  if (!upb_inttable_lookupptr(&upb_def_to_php_obj_map_persistent, m, &v)) {
+  if (!upb_inttable_lookupptr(&upb_def_to_desc_map_persistent, m, &v)) {
     return NULL;
   } else {
     return upb_value_getptr(v);
   }
 }
 
-PHP_PROTO_HASHTABLE_VALUE get_def_obj(const void* def) {
-  return (PHP_PROTO_HASHTABLE_VALUE)get_from_table(upb_def_to_php_obj_map, def);
+void add_enumdef_enumdesc(const upb_enumdef* e, EnumDescriptorInternal* desc) {
+  upb_inttable_insertptr(&upb_def_to_enumdesc_map_persistent,
+                         e, upb_value_ptr(desc));
+}
+
+EnumDescriptorInternal* get_enumdef_enumdesc(const upb_enumdef* e) {
+  upb_value v;
+#ifndef NDEBUG
+  v.ctype = UPB_CTYPE_PTR;
+#endif
+  if (!upb_inttable_lookupptr(&upb_def_to_enumdesc_map_persistent, e, &v)) {
+    return NULL;
+  } else {
+    return upb_value_getptr(v);
+  }
 }
 
 void add_ce_obj(const void* ce, PHP_PROTO_HASHTABLE_VALUE value) {
@@ -137,6 +158,40 @@ void add_ce_obj(const void* ce, PHP_PROTO_HASHTABLE_VALUE value) {
 
 PHP_PROTO_HASHTABLE_VALUE get_ce_obj(const void* ce) {
   return (PHP_PROTO_HASHTABLE_VALUE)get_from_table(ce_to_php_obj_map, ce);
+}
+
+void add_ce_desc(const zend_class_entry* ce, DescriptorInternal* desc) {
+  upb_inttable_insertptr(&ce_to_desc_map_persistent,
+                         ce, upb_value_ptr(desc));
+}
+
+DescriptorInternal* get_ce_desc(const zend_class_entry* ce) {
+  upb_value v;
+#ifndef NDEBUG
+  v.ctype = UPB_CTYPE_PTR;
+#endif
+  if (!upb_inttable_lookupptr(&upb_def_to_desc_map_persistent, ce, &v)) {
+    return NULL;
+  } else {
+    return upb_value_getptr(v);
+  }
+}
+
+void add_ce_enumdesc(const zend_class_entry* ce, EnumDescriptorInternal* desc) {
+  upb_inttable_insertptr(&ce_to_enumdesc_map_persistent,
+                         ce, upb_value_ptr(desc));
+}
+
+EnumDescriptorInternal* get_ce_enumdesc(const zend_class_entry* ce) {
+  upb_value v;
+#ifndef NDEBUG
+  v.ctype = UPB_CTYPE_PTR;
+#endif
+  if (!upb_inttable_lookupptr(&upb_def_to_enumdesc_map_persistent, ce, &v)) {
+    return NULL;
+  } else {
+    return upb_value_getptr(v);
+  }
 }
 
 bool class_added(const void* ce) {
@@ -155,6 +210,42 @@ void add_proto_obj(const char* proto, PHP_PROTO_HASHTABLE_VALUE value) {
 PHP_PROTO_HASHTABLE_VALUE get_proto_obj(const char* proto) {
   return (PHP_PROTO_HASHTABLE_VALUE)get_from_strtable(proto_to_php_obj_map,
                                                       proto, strlen(proto));
+}
+
+void add_proto_desc(const char* proto, DescriptorInternal* desc) {
+  upb_strtable_insert2(&proto_to_desc_map_persistent, proto,
+                       strlen(proto), upb_value_ptr(desc));
+}
+
+DescriptorInternal* get_proto_desc(const char* proto) {
+  upb_value v;
+#ifndef NDEBUG
+  v.ctype = UPB_CTYPE_PTR;
+#endif
+  if (!upb_strtable_lookupptr(&proto_to_desc_map_persistent,
+                              proto, strlen(proto), &v)) {
+    return NULL;
+  } else {
+    return upb_value_getptr(v);
+  }
+}
+
+void add_proto_enumdesc(const char* proto, EnumDescriptorInternal* desc) {
+  upb_strtable_insert2(&proto_to_enumdesc_map_persistent, proto,
+                       strlen(proto), upb_value_ptr(desc));
+}
+
+EnumDescriptorInternal* get_proto_enumdesc(const char* proto) {
+  upb_value v;
+#ifndef NDEBUG
+  v.ctype = UPB_CTYPE_PTR;
+#endif
+  if (!upb_strtable_lookupptr(&proto_to_enumdesc_map_persistent,
+                              proto, strlen(proto), &v)) {
+    return NULL;
+  } else {
+    return upb_value_getptr(v);
+  }
 }
 
 // -----------------------------------------------------------------------------
@@ -349,9 +440,12 @@ static void reserved_names_init() {
 }
 
 static PHP_MINIT_FUNCTION(protobuf) {
-  upb_inttable_init(&upb_def_to_php_obj_map_persistent, UPB_CTYPE_PTR);
-  upb_inttable_init(&ce_to_php_obj_map_persistent, UPB_CTYPE_PTR);
-  upb_inttable_init(&proto_to_php_obj_map_persistent, UPB_CTYPE_PTR);
+  upb_inttable_init(&upb_def_to_desc_map_persistent, UPB_CTYPE_PTR);
+  upb_inttable_init(&upb_def_to_enumdesc_map_persistent, UPB_CTYPE_PTR);
+  upb_inttable_init(&ce_to_desc_map_persistent, UPB_CTYPE_PTR);
+  upb_inttable_init(&ce_to_enumdesc_map_persistent, UPB_CTYPE_PTR);
+  upb_strtable_init(&proto_to_desc_map_persistent, UPB_CTYPE_PTR);
+  upb_strtable_init(&proto_to_enumdesc_map_persistent, UPB_CTYPE_PTR);
   upb_strtable_init(&reserved_names, UPB_CTYPE_UINT64);
 
   reserved_names_init();
@@ -429,12 +523,30 @@ static void cleanup_inttable(upb_inttable* t) {
   }
 }
 
-static PHP_MSHUTDOWN_FUNCTION(protobuf) {
-  cleanup_inttable(&upb_def_to_php_obj_map_persistent);
+static void cleanup_strtable(upb_strtable* t) {
+  upb_strtable_iter i;
+  upb_value v;
+  void* ptr;
+  for(upb_strtable_begin(&i, t);
+      !upb_strtable_done(&i);
+      upb_strtable_next(&i)) {
+    v = upb_strtable_iter_value(&i);
+    ptr = upb_value_getptr(v);
+    SYS_FREE(ptr);
+  }
+}
 
-  upb_inttable_uninit(&upb_def_to_php_obj_map_persistent);
-  upb_inttable_uninit(&ce_to_php_obj_map_persistent);
-  upb_inttable_uninit(&proto_to_php_obj_map_persistent);
+static PHP_MSHUTDOWN_FUNCTION(protobuf) {
+  // Only needs to clean one map out of three (def=>desc, ce=>desc, proto=>desc)
+  cleanup_inttable(&upb_def_to_desc_map_persistent);
+  cleanup_inttable(&upb_def_to_enumdesc_map_persistent);
+
+  upb_inttable_uninit(&upb_def_to_desc_map_persistent);
+  upb_inttable_uninit(&upb_def_to_enumdesc_map_persistent);
+  upb_inttable_uninit(&ce_to_desc_map_persistent);
+  upb_inttable_uninit(&ce_to_enumdesc_map_persistent);
+  upb_strtable_uninit(&proto_to_desc_map_persistent);
+  upb_strtable_uninit(&proto_to_enumdesc_map_persistent);
   upb_strtable_uninit(&reserved_names);
 
   PEFREE(message_handlers);

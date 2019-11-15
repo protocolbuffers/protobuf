@@ -837,7 +837,8 @@ static void fill_classname(const char *fullname,
 static zend_class_entry *register_class(const upb_filedef *file,
                                         const char *fullname,
                                         PHP_PROTO_HASHTABLE_VALUE desc_php,
-                                        bool use_nested_submsg TSRMLS_DC) {
+                                        bool use_nested_submsg,
+                                        bool is_enum TSRMLS_DC) {
   // Prepend '.' to package name to make it absolute. In the 5 additional
   // bytes allocated, one for '.', one for trailing 0, and 3 for 'GPB' if
   // given message is google.protobuf.Empty.
@@ -867,6 +868,15 @@ static zend_class_entry *register_class(const upb_filedef *file,
   ret = PHP_PROTO_CE_UNREF(pce);
   add_ce_obj(ret, desc_php);
   add_proto_obj(fullname, desc_php);
+  if (is_enum) {
+    EnumDescriptor* desc = UNBOX_HASHTABLE_VALUE(EnumDescriptor, desc_php);
+    add_ce_enumdesc(ret, desc->intern);
+    add_proto_enumdesc(fullname, desc->intern);
+  } else {
+    Descriptor* desc = UNBOX_HASHTABLE_VALUE(Descriptor, desc_php);
+    add_ce_desc(ret, desc->intern);
+    add_proto_desc(fullname, desc->intern);
+  }
   stringsink_uninit(&namesink);
   return ret;
 }
@@ -965,7 +975,7 @@ void internal_add_generated_file(const char *data, PHP_PROTO_SIZE data_len,
     }
 
     desc->klass = register_class(file, upb_msgdef_fullname(msgdef), desc_php,
-                                 use_nested_submsg TSRMLS_CC);
+                                 use_nested_submsg, false TSRMLS_CC);
     desc->intern->klass = desc->klass;
 
     if (desc->klass == NULL) {
@@ -979,9 +989,13 @@ void internal_add_generated_file(const char *data, PHP_PROTO_SIZE data_len,
     const upb_enumdef *enumdef = upb_filedef_enum(file, i);
     CREATE_HASHTABLE_VALUE(desc, desc_php, EnumDescriptor, enum_descriptor_type);
     desc->enumdef = enumdef;
+    desc->intern = SYS_MALLOC(EnumDescriptorInternal);
+    desc->intern->enumdef = enumdef;
+
     add_def_obj(desc->enumdef, desc_php);
+    add_enumdef_enumdesc(desc->enumdef, desc->intern);
     desc->klass = register_class(file, upb_enumdef_fullname(enumdef), desc_php,
-                                 use_nested_submsg TSRMLS_CC);
+                                 use_nested_submsg, true TSRMLS_CC);
 
     if (desc->klass == NULL) {
       return;

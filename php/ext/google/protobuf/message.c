@@ -1556,7 +1556,7 @@ PHP_METHOD(Any, unpack) {
   zval_dtor(&value_member);
   PHP_PROTO_FAKE_SCOPE_END;
 
-  merge_from_string(Z_STRVAL_P(value), Z_STRLEN_P(value), desc, msg);
+  merge_from_string(Z_STRVAL_P(value), Z_STRLEN_P(value), desc->intern, msg);
 }
 
 PHP_METHOD(Any, pack) {

@@ -596,6 +596,7 @@ struct DoubleValue;
 struct Duration;
 struct Enum;
 struct EnumDescriptor;
+struct EnumDescriptorInternal;
 struct EnumValue;
 struct EnumValueDescriptor;
 struct Field;
@@ -641,6 +642,7 @@ typedef struct DescriptorPool DescriptorPool;
 typedef struct DoubleValue DoubleValue;
 typedef struct Duration Duration;
 typedef struct EnumDescriptor EnumDescriptor;
+typedef struct EnumDescriptorInternal EnumDescriptorInternal;
 typedef struct Enum Enum;
 typedef struct EnumValueDescriptor EnumValueDescriptor;
 typedef struct EnumValue EnumValue;
@@ -755,17 +757,27 @@ void add_def_obj(const void* def, PHP_PROTO_HASHTABLE_VALUE value);
 PHP_PROTO_HASHTABLE_VALUE get_def_obj(const void* def);
 void add_msgdef_desc(const upb_msgdef* m, DescriptorInternal* desc);
 DescriptorInternal* get_msgdef_desc(const upb_msgdef* m);
+void add_enumdef_enumdesc(const upb_enumdef* e, EnumDescriptorInternal* desc);
+EnumDescriptorInternal* get_enumdef_enumdesc(const upb_enumdef* e);
 
 // Global map from PHP class entries to wrapper Descriptor/EnumDescriptor
 // instances.
 void add_ce_obj(const void* ce, PHP_PROTO_HASHTABLE_VALUE value);
 PHP_PROTO_HASHTABLE_VALUE get_ce_obj(const void* ce);
 bool class_added(const void* ce);
+void add_ce_desc(const zend_class_entry* ce, DescriptorInternal* desc);
+DescriptorInternal* get_ce_desc(const zend_class_entry* ce);
+void add_ce_enumdesc(const zend_class_entry* ce, EnumDescriptorInternal* desc);
+EnumDescriptorInternal* get_ce_enumdesc(const zend_class_entry* ce);
 
 // Global map from message/enum's proto fully-qualified name to corresponding
 // wrapper Descriptor/EnumDescriptor instances.
 void add_proto_obj(const char* proto, PHP_PROTO_HASHTABLE_VALUE value);
 PHP_PROTO_HASHTABLE_VALUE get_proto_obj(const char* proto);
+void add_proto_desc(const char* proto, DescriptorInternal* desc);
+DescriptorInternal* get_proto_desc(const char* proto);
+void add_proto_enumdesc(const char* proto, EnumDescriptorInternal* desc);
+EnumDescriptorInternal* get_proto_enumdesc(const char* proto);
 
 extern zend_class_entry* map_field_type;
 extern zend_class_entry* repeated_field_type;
@@ -855,9 +867,15 @@ PHP_METHOD(FieldDescriptor, getMessageType);
 
 extern zend_class_entry* field_descriptor_type;
 
+struct EnumDescriptorInternal {
+  const upb_enumdef* enumdef;
+  zend_class_entry* klass;  // begins as NULL
+};
+
 PHP_PROTO_WRAP_OBJECT_START(EnumDescriptor)
   const upb_enumdef* enumdef;
   zend_class_entry* klass;  // begins as NULL
+  EnumDescriptorInternal* intern;
 PHP_PROTO_WRAP_OBJECT_END
 
 PHP_METHOD(EnumDescriptor, getValue);
