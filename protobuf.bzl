@@ -103,9 +103,12 @@ def _proto_gen_impl(ctx):
         in_gen_dir = src.root.path == gen_dir
         if in_gen_dir:
             import_flags_real = []
+            included_paths = {}
             for f in depset(import_flags).to_list():
                 path = f.replace("-I", "")
-                import_flags_real.append("-I$(realpath -s %s)" % path)
+                if path not in included_paths:
+                    included_paths.add(path)
+                    import_flags_real.append("-I$(realpath -s %s)" % path)
 
         outs = []
         use_grpc_plugin = (ctx.attr.plugin_language == "grpc" and ctx.attr.plugin)
