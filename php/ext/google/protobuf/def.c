@@ -951,7 +951,12 @@ void internal_add_generated_file(const char *data, PHP_PROTO_SIZE data_len,
     CREATE_HASHTABLE_VALUE(desc, desc_php, Descriptor, descriptor_type);
     desc->msgdef = msgdef;
     desc->pool = pool;
+    desc->intern = SYS_MALLOC(DescriptorInternal);
+    desc->intern->msgdef = msgdef;
+    desc->intern->pool = pool;
+
     add_def_obj(desc->msgdef, desc_php);
+    add_msgdef_desc(desc->msgdef, desc->intern);
 
     // Unlike other messages, MapEntry is shared by all map fields and doesn't
     // have generated PHP class.

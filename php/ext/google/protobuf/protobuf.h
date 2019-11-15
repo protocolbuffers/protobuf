@@ -590,6 +590,7 @@ struct Api;
 struct BoolValue;
 struct BytesValue;
 struct Descriptor;
+struct DescriptorInternal;
 struct DescriptorPool;
 struct DoubleValue;
 struct Duration;
@@ -635,6 +636,7 @@ typedef struct Api Api;
 typedef struct BoolValue BoolValue;
 typedef struct BytesValue BytesValue;
 typedef struct Descriptor Descriptor;
+typedef struct DescriptorInternal DescriptorInternal;
 typedef struct DescriptorPool DescriptorPool;
 typedef struct DoubleValue DoubleValue;
 typedef struct Duration Duration;
@@ -751,6 +753,7 @@ void gpb_metadata_wrappers_init(TSRMLS_D);
 // instances.
 void add_def_obj(const void* def, PHP_PROTO_HASHTABLE_VALUE value);
 PHP_PROTO_HASHTABLE_VALUE get_def_obj(const void* def);
+void add_msgdef_desc(const upb_msgdef* m, DescriptorInternal* desc);
 
 // Global map from PHP class entries to wrapper Descriptor/EnumDescriptor
 // instances.
@@ -811,11 +814,19 @@ void internal_descriptor_pool_free(zend_object* object);
 #endif
 extern InternalDescriptorPool* generated_pool;  // The actual generated pool
 
+struct DescriptorInternal {
+  InternalDescriptorPool* pool;
+  const upb_msgdef* msgdef;
+  MessageLayout* layout;
+  zend_class_entry* klass;  // begins as NULL
+};
+
 PHP_PROTO_WRAP_OBJECT_START(Descriptor)
   InternalDescriptorPool* pool;
   const upb_msgdef* msgdef;
   MessageLayout* layout;
   zend_class_entry* klass;  // begins as NULL
+  DescriptorInternal* intern;
 PHP_PROTO_WRAP_OBJECT_END
 
 PHP_METHOD(Descriptor, getClass);
@@ -1499,6 +1510,8 @@ size_t stringsink_string(void *_sink, const void *hd, const char *ptr,
 // -----------------------------------------------------------------------------
 
 // Memory management
+#define SYS_MALLOC(class_name) (class_name*) malloc(sizeof(class_name))
+#define SYS_FREE(ptr) free(ptr)
 #define ALLOC(class_name) (class_name*) emalloc(sizeof(class_name))
 #define PEMALLOC(class_name, persistent) (class_name*) pemalloc(sizeof(class_name), persistent)
 #define ALLOC_N(class_name, n) (class_name*) emalloc(sizeof(class_name) * n)
