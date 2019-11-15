@@ -108,7 +108,7 @@ class ClassNameResolver {
   // or outer class name.
   std::string GetClassFullName(const std::string& name_without_package,
                                const FileDescriptor* file, bool immutable,
-                               bool multiple_files);
+                               bool is_own_file);
   // Get the Java Class style full name of a message.
   std::string GetJavaClassFullName(const std::string& name_without_package,
                                    const FileDescriptor* file, bool immutable);
