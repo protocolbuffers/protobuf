@@ -482,7 +482,7 @@ PHP_METHOD(FieldDescriptor, getMessageType) {
   PHP_PROTO_HASHTABLE_VALUE desc_php = get_def_obj(msgdef);
 
   if (desc_php == NULL) {
-    DescriptorInternal* intern = get_def_desc(msgdef);
+    DescriptorInternal* intern = get_msgdef_desc(msgdef);
 
 #if PHP_MAJOR_VERSION < 7
     MAKE_STD_ZVAL(desc_php);
@@ -1077,22 +1077,39 @@ PHP_METHOD(DescriptorPool, getDescriptorByClassName) {
     RETURN_NULL();
   }
 
-  PHP_PROTO_HASHTABLE_VALUE desc = get_ce_obj(PHP_PROTO_CE_UNREF(pce));
-  if (desc == NULL) {
-    RETURN_NULL();
+  PHP_PROTO_HASHTABLE_VALUE desc_php = get_ce_obj(PHP_PROTO_CE_UNREF(pce));
+  if (desc_php == NULL) {
+    DescriptorInternal* intern = get_ce_desc(PHP_PROTO_CE_UNREF(pce));
+    if (intern == NULL) {
+      RETURN_NULL();
+    }
+
+#if PHP_MAJOR_VERSION < 7
+    MAKE_STD_ZVAL(desc_php);
+    ZVAL_OBJ(desc_php, descriptor_type->create_object(
+                                   descriptor_type TSRMLS_CC));
+    Z_DELREF_P(desc_php);
+#else
+    desc_php =
+        descriptor_type->create_object(descriptor_type TSRMLS_CC);
+    GC_DELREF(desc_php);
+#endif
+    Descriptor* desc = UNBOX_HASHTABLE_VALUE(Descriptor, desc_php);
+    desc->intern = intern;
+    add_ce_obj(PHP_PROTO_CE_UNREF(pce), desc_php);
   }
 
-  zend_class_entry* instance_ce = HASHTABLE_VALUE_CE(desc);
+  zend_class_entry* instance_ce = HASHTABLE_VALUE_CE(desc_php);
 
   if (!instanceof_function(instance_ce, descriptor_type TSRMLS_CC)) {
     RETURN_NULL();
   }
 
 #if PHP_MAJOR_VERSION < 7
-  RETURN_ZVAL(desc, 1, 0);
+  RETURN_ZVAL(desc_php, 1, 0);
 #else
-  GC_ADDREF(desc);
-  RETURN_OBJ(desc);
+  GC_ADDREF(desc_php);
+  RETURN_OBJ(desc_php);
 #endif
 }
 
@@ -1114,21 +1131,38 @@ PHP_METHOD(DescriptorPool, getEnumDescriptorByClassName) {
     RETURN_NULL();
   }
 
-  PHP_PROTO_HASHTABLE_VALUE desc = get_ce_obj(PHP_PROTO_CE_UNREF(pce));
-  if (desc == NULL) {
-    RETURN_NULL();
+  PHP_PROTO_HASHTABLE_VALUE desc_php = get_ce_obj(PHP_PROTO_CE_UNREF(pce));
+  if (desc_php == NULL) {
+    EnumDescriptorInternal* intern = get_ce_enumdesc(PHP_PROTO_CE_UNREF(pce));
+    if (intern == NULL) {
+      RETURN_NULL();
+    }
+
+#if PHP_MAJOR_VERSION < 7
+    MAKE_STD_ZVAL(desc_php);
+    ZVAL_OBJ(desc_php, enum_descriptor_type->create_object(
+                                        enum_descriptor_type TSRMLS_CC));
+    Z_DELREF_P(desc_php);
+#else
+    desc_php =
+        enum_descriptor_type->create_object(enum_descriptor_type TSRMLS_CC);
+    GC_DELREF(desc_php);
+#endif
+    EnumDescriptor* desc = UNBOX_HASHTABLE_VALUE(EnumDescriptor, desc_php);
+    desc->intern = intern;
+    add_ce_obj(PHP_PROTO_CE_UNREF(pce), desc_php);
   }
 
-  zend_class_entry* instance_ce = HASHTABLE_VALUE_CE(desc);
+  zend_class_entry* instance_ce = HASHTABLE_VALUE_CE(desc_php);
 
   if (!instanceof_function(instance_ce, enum_descriptor_type TSRMLS_CC)) {
     RETURN_NULL();
   }
 
 #if PHP_MAJOR_VERSION < 7
-  RETURN_ZVAL(desc, 1, 0);
+  RETURN_ZVAL(desc_php, 1, 0);
 #else
-  GC_ADDREF(desc);
-  RETURN_OBJ(desc);
+  GC_ADDREF(desc_php);
+  RETURN_OBJ(desc_php);
 #endif
 }
