@@ -981,7 +981,8 @@ struct MessageLayout {
 PHP_PROTO_WRAP_OBJECT_START(MessageHeader)
   void* data;  // Point to the real message data.
                // Place needs to be consistent with map_parse_frame_data_t.
-  Descriptor* descriptor;  // Kept alive by self.class.descriptor reference.
+  DescriptorInternal* descriptor;  // Kept alive by self.class.descriptor
+                                   // reference.
 PHP_PROTO_WRAP_OBJECT_END
 
 MessageLayout* create_layout(const upb_msgdef* msgdef);

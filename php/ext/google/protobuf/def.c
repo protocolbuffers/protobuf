@@ -996,6 +996,7 @@ void internal_add_generated_file(const char *data, PHP_PROTO_SIZE data_len,
     add_enumdef_enumdesc(desc->enumdef, desc->intern);
     desc->klass = register_class(file, upb_enumdef_fullname(enumdef), desc_php,
                                  use_nested_submsg, true TSRMLS_CC);
+    desc->intern->klass = desc->klass;
 
     if (desc->klass == NULL) {
       return;

@@ -255,7 +255,7 @@ void* message_data(MessageHeader* msg) {
 
 void custom_data_init(const zend_class_entry* ce,
                       MessageHeader* intern PHP_PROTO_TSRMLS_DC) {
-  Descriptor* desc = UNBOX_HASHTABLE_VALUE(Descriptor, get_ce_obj(ce));
+  DescriptorInternal* desc = get_ce_desc(ce);
   intern->data = ALLOC_N(uint8_t, desc->layout->size);
   // We wrap first so that everything in the message object is GC-rooted in
   // case a collection happens during object creation in layout_init().
@@ -528,7 +528,7 @@ PHP_METHOD(Message, __construct) {
 
 PHP_METHOD(Message, clear) {
   MessageHeader* msg = UNBOX(MessageHeader, getThis());
-  Descriptor* desc = msg->descriptor;
+  DescriptorInternal* desc = msg->descriptor;
   zend_class_entry* ce = desc->klass;
 
   zend_object_std_dtor(&msg->std TSRMLS_CC);
@@ -1587,8 +1587,7 @@ PHP_METHOD(Any, pack) {
   PHP_PROTO_FAKE_SCOPE_END;
 
   // Set type url.
-  Descriptor* desc =
-      UNBOX_HASHTABLE_VALUE(Descriptor, get_ce_obj(Z_OBJCE_P(val)));
+  DescriptorInternal* desc = get_ce_desc(Z_OBJCE_P(val));
   const char* fully_qualified_name = upb_msgdef_fullname(desc->msgdef);
   size_t type_url_len =
       strlen(TYPE_URL_PREFIX) + strlen(fully_qualified_name) + 1;
@@ -1615,14 +1614,12 @@ PHP_METHOD(Any, is) {
     return;
   }
 
-  PHP_PROTO_HASHTABLE_VALUE desc_php = get_ce_obj(klass);
-  if (desc_php == NULL) {
+  DescriptorInternal* desc = get_ce_desc(klass);
+  if (desc == NULL) {
     RETURN_BOOL(false);
   }
 
   // Create corresponded type url.
-  Descriptor* desc =
-      UNBOX_HASHTABLE_VALUE(Descriptor, get_ce_obj(klass));
   const char* fully_qualified_name = upb_msgdef_fullname(desc->msgdef);
   size_t type_url_len =
       strlen(TYPE_URL_PREFIX) + strlen(fully_qualified_name) + 1;

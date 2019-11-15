@@ -170,7 +170,7 @@ DescriptorInternal* get_ce_desc(const zend_class_entry* ce) {
 #ifndef NDEBUG
   v.ctype = UPB_CTYPE_PTR;
 #endif
-  if (!upb_inttable_lookupptr(&upb_def_to_desc_map_persistent, ce, &v)) {
+  if (!upb_inttable_lookupptr(&ce_to_desc_map_persistent, ce, &v)) {
     return NULL;
   } else {
     return upb_value_getptr(v);
@@ -187,7 +187,7 @@ EnumDescriptorInternal* get_ce_enumdesc(const zend_class_entry* ce) {
 #ifndef NDEBUG
   v.ctype = UPB_CTYPE_PTR;
 #endif
-  if (!upb_inttable_lookupptr(&upb_def_to_enumdesc_map_persistent, ce, &v)) {
+  if (!upb_inttable_lookupptr(&ce_to_enumdesc_map_persistent, ce, &v)) {
     return NULL;
   } else {
     return upb_value_getptr(v);

@@ -2059,14 +2059,13 @@ static const upb_handlers* msgdef_json_serialize_handlers(
 // -----------------------------------------------------------------------------
 
 void serialize_to_string(zval* val, zval* return_value TSRMLS_DC) {
-  Descriptor* desc =
-      UNBOX_HASHTABLE_VALUE(Descriptor, get_ce_obj(Z_OBJCE_P(val)));
+  DescriptorInternal* desc = get_ce_desc(Z_OBJCE_P(val));
 
   stringsink sink;
   stringsink_init(&sink);
 
   {
-    const upb_handlers* serialize_handlers = msgdef_pb_serialize_handlers(desc->intern);
+    const upb_handlers* serialize_handlers = msgdef_pb_serialize_handlers(desc);
 
     stackenv se;
     upb_pb_encoder* encoder;
@@ -2074,7 +2073,7 @@ void serialize_to_string(zval* val, zval* return_value TSRMLS_DC) {
     stackenv_init(&se, "Error occurred during encoding: %s");
     encoder = upb_pb_encoder_create(se.arena, serialize_handlers, sink.sink);
 
-    putmsg(val, desc->intern, upb_pb_encoder_input(encoder), 0, false TSRMLS_CC);
+    putmsg(val, desc, upb_pb_encoder_input(encoder), 0, false TSRMLS_CC);
 
     PHP_PROTO_RETVAL_STRINGL(sink.ptr, sink.len, 1);
 
@@ -2120,8 +2119,7 @@ void merge_from_string(const char* data, int data_len, DescriptorInternal* desc,
 }
 
 PHP_METHOD(Message, mergeFromString) {
-  Descriptor* desc =
-      UNBOX_HASHTABLE_VALUE(Descriptor, get_ce_obj(Z_OBJCE_P(getThis())));
+  DescriptorInternal* desc = get_ce_desc(Z_OBJCE_P(getThis()));
   MessageHeader* msg = UNBOX(MessageHeader, getThis());
 
   char *data = NULL;
@@ -2132,12 +2130,11 @@ PHP_METHOD(Message, mergeFromString) {
     return;
   }
 
-  merge_from_string(data, data_len, desc->intern, msg);
+  merge_from_string(data, data_len, desc, msg);
 }
 
 PHP_METHOD(Message, serializeToJsonString) {
-  Descriptor* desc =
-      UNBOX_HASHTABLE_VALUE(Descriptor, get_ce_obj(Z_OBJCE_P(getThis())));
+  DescriptorInternal* desc = get_ce_desc(Z_OBJCE_P(getThis()));
 
   zend_bool preserve_proto_fieldnames = false;
   if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|b",
@@ -2150,14 +2147,14 @@ PHP_METHOD(Message, serializeToJsonString) {
 
   {
     const upb_handlers* serialize_handlers =
-        msgdef_json_serialize_handlers(desc->intern, preserve_proto_fieldnames);
+        msgdef_json_serialize_handlers(desc, preserve_proto_fieldnames);
     upb_json_printer* printer;
     stackenv se;
 
     stackenv_init(&se, "Error occurred during encoding: %s");
     printer = upb_json_printer_create(se.arena, serialize_handlers, sink.sink);
 
-    putmsg(getThis(), desc->intern, upb_json_printer_input(printer), 0, true TSRMLS_CC);
+    putmsg(getThis(), desc, upb_json_printer_input(printer), 0, true TSRMLS_CC);
 
     PHP_PROTO_RETVAL_STRINGL(sink.ptr, sink.len, 1);
 
@@ -2167,8 +2164,7 @@ PHP_METHOD(Message, serializeToJsonString) {
 }
 
 PHP_METHOD(Message, mergeFromJsonString) {
-  Descriptor* desc =
-      UNBOX_HASHTABLE_VALUE(Descriptor, get_ce_obj(Z_OBJCE_P(getThis())));
+  DescriptorInternal* desc = get_ce_desc(Z_OBJCE_P(getThis()));
   MessageHeader* msg = UNBOX(MessageHeader, getThis());
 
   char *data = NULL;
@@ -2189,7 +2185,7 @@ PHP_METHOD(Message, mergeFromJsonString) {
   // TODO(teboring): Clear message.
 
   {
-    const upb_json_parsermethod* method = msgdef_jsonparsermethod(desc->intern);
+    const upb_json_parsermethod* method = msgdef_jsonparsermethod(desc);
     stackenv se;
     upb_sink sink;
     upb_json_parser* parser;
@@ -2207,7 +2203,7 @@ PHP_METHOD(Message, mergeFromJsonString) {
       closure = msg;
     }
 
-    upb_sink_reset(&sink, get_fill_handlers(desc->intern), closure);
+    upb_sink_reset(&sink, get_fill_handlers(desc), closure);
     parser = upb_json_parser_create(se.arena, method, generated_pool->symtab,
                                     sink, &se.status, ignore_json_unknown);
     upb_bufsrc_putbuf(data, data_len, upb_json_parser_input(parser));
@@ -2231,7 +2227,7 @@ static void discard_unknown_fields(MessageHeader* msg) {
   }
 
   // Recursively discard unknown fields of submessages.
-  Descriptor* desc = msg->descriptor;
+  DescriptorInternal* desc = msg->descriptor;
   TSRMLS_FETCH();
   for (upb_msg_field_begin(&it, desc->msgdef);
        !upb_msg_field_done(&it);
