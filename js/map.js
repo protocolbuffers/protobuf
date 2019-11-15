@@ -208,13 +208,13 @@ jspb.Map.ArrayIteratorIterable_.prototype.next = function() {
   }
 };
 
-
 if (typeof(Symbol) != 'undefined') {
-/** @override */
-jspb.Map.ArrayIteratorIterable_.prototype[Symbol.iterator] = function() {
-  return this;
-};
+  /** @override */
+  jspb.Map.ArrayIteratorIterable_.prototype[Symbol.iterator] = function() {
+    return this;
+  };
 }
+
 
 /**
  * Returns the map's length (number of key/value pairs).

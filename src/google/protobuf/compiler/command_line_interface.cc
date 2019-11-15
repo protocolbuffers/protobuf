@@ -811,6 +811,7 @@ void CommandLineInterface::AllowPlugins(const std::string& exe_name_prefix) {
   plugin_prefix_ = exe_name_prefix;
 }
 
+
 int CommandLineInterface::Run(int argc, const char* const argv[]) {
   Clear();
   switch (ParseArguments(argc, argv)) {
