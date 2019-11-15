@@ -553,8 +553,8 @@ const zend_class_entry* field_type_class(
     DescriptorInternal* desc = get_msgdef_desc(upb_fielddef_msgsubdef(field));
     return desc->klass;
   } else if (upb_fielddef_type(field) == UPB_TYPE_ENUM) {
-    EnumDescriptor* desc = UNBOX_HASHTABLE_VALUE(
-        EnumDescriptor, get_def_obj(upb_fielddef_enumsubdef(field)));
+    EnumDescriptorInternal* desc =
+        get_enumdef_enumdesc(upb_fielddef_enumsubdef(field));
     return desc->klass;
   }
   return NULL;
@@ -586,7 +586,7 @@ void* slot_memory(MessageLayout* layout, const void* storage,
 }
 
 MessageLayout* create_layout(const upb_msgdef* msgdef) {
-  MessageLayout* layout = ALLOC(MessageLayout);
+  MessageLayout* layout = SYS_MALLOC(MessageLayout);
   int nfields = upb_msgdef_numfields(msgdef);
   upb_msg_field_iter it;
   upb_msg_oneof_iter oit;
@@ -600,7 +600,7 @@ MessageLayout* create_layout(const upb_msgdef* msgdef) {
 
   TSRMLS_FETCH();
   DescriptorInternal* desc = get_msgdef_desc(msgdef);
-  layout->fields = ALLOC_N(MessageField, nfields);
+  layout->fields = SYS_MALLOC_N(MessageField, nfields);
 
   for (upb_msg_field_begin(&it, msgdef); !upb_msg_field_done(&it);
        upb_msg_field_next(&it)) {
@@ -744,16 +744,16 @@ MessageLayout* create_layout(const upb_msgdef* msgdef) {
   layout->msgdef = msgdef;
 
   // Create the empty message template.
-  layout->empty_template = ALLOC_N(char, layout->size);
+  layout->empty_template = SYS_MALLOC_N(char, layout->size);
   memset(layout->empty_template, 0, layout->size);
 
   return layout;
 }
 
 void free_layout(MessageLayout* layout) {
-  FREE(layout->empty_template);
-  FREE(layout->fields);
-  FREE(layout);
+  SYS_FREE(layout->empty_template);
+  SYS_FREE(layout->fields);
+  SYS_FREE(layout);
 }
 
 void layout_init(MessageLayout* layout, void* storage,

@@ -279,15 +279,14 @@ void build_class_from_descriptor(
   Descriptor* desc = UNBOX_HASHTABLE_VALUE(Descriptor, php_descriptor);
 
   // Map entries don't have existing php class.
-  if (upb_msgdef_mapentry(desc->msgdef)) {
+  if (upb_msgdef_mapentry(desc->intern->msgdef)) {
     return;
   }
 
-  zend_class_entry* registered_ce = desc->klass;
+  zend_class_entry* registered_ce = desc->intern->klass;
 
-  if (desc->layout == NULL) {
-    MessageLayout* layout = create_layout(desc->msgdef);
-    desc->layout = layout;
+  if (desc->intern->layout == NULL) {
+    MessageLayout* layout = create_layout(desc->intern->msgdef);
     desc->intern->layout = layout;
   }
 

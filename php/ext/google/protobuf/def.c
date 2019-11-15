@@ -148,19 +148,15 @@ static zend_function_entry descriptor_methods[] = {
 DEFINE_CLASS(Descriptor, descriptor, "Google\\Protobuf\\Descriptor");
 
 static void descriptor_free_c(Descriptor *self TSRMLS_DC) {
-  if (self->layout) {
-    free_layout(self->layout);
-  }
 }
 
 static void descriptor_init_c_instance(Descriptor *desc TSRMLS_DC) {
-  desc->msgdef = NULL;
-  desc->layout = NULL;
-  desc->klass = NULL;
+  desc->intern = NULL;
 }
 
 PHP_METHOD(Descriptor, getClass) {
-  Descriptor *intern = UNBOX(Descriptor, getThis());
+  Descriptor* desc = UNBOX(Descriptor, getThis());
+  DescriptorInternal* intern = desc->intern;
 #if PHP_MAJOR_VERSION < 7
   const char* classname = intern->klass->name;
 #else
@@ -170,7 +166,8 @@ PHP_METHOD(Descriptor, getClass) {
 }
 
 PHP_METHOD(Descriptor, getFullName) {
-  Descriptor *intern = UNBOX(Descriptor, getThis());
+  Descriptor* desc = UNBOX(Descriptor, getThis());
+  DescriptorInternal* intern = desc->intern;
   const char* fullname = upb_msgdef_fullname(intern->msgdef);
   PHP_PROTO_RETVAL_STRINGL(fullname, strlen(fullname), 1);
 }
@@ -183,7 +180,8 @@ PHP_METHOD(Descriptor, getField) {
     return;
   }
 
-  Descriptor *intern = UNBOX(Descriptor, getThis());
+  Descriptor* desc = UNBOX(Descriptor, getThis());
+  DescriptorInternal* intern = desc->intern;
   int field_num = upb_msgdef_numfields(intern->msgdef);
   if (index < 0 || index >= field_num) {
     zend_error(E_USER_ERROR, "Cannot get element at %ld.\n", index);
@@ -224,7 +222,8 @@ PHP_METHOD(Descriptor, getField) {
 }
 
 PHP_METHOD(Descriptor, getFieldCount) {
-  Descriptor *intern = UNBOX(Descriptor, getThis());
+  Descriptor* desc = UNBOX(Descriptor, getThis());
+  DescriptorInternal* intern = desc->intern;
   RETURN_LONG(upb_msgdef_numfields(intern->msgdef));
 }
 
@@ -236,7 +235,8 @@ PHP_METHOD(Descriptor, getOneofDecl) {
     return;
   }
 
-  Descriptor *intern = UNBOX(Descriptor, getThis());
+  Descriptor* desc = UNBOX(Descriptor, getThis());
+  DescriptorInternal* intern = desc->intern;
   int field_num = upb_msgdef_numoneofs(intern->msgdef);
   if (index < 0 || index >= field_num) {
     zend_error(E_USER_ERROR, "Cannot get element at %ld.\n", index);
@@ -257,7 +257,8 @@ PHP_METHOD(Descriptor, getOneofDecl) {
 }
 
 PHP_METHOD(Descriptor, getOneofDeclCount) {
-  Descriptor *intern = UNBOX(Descriptor, getThis());
+  Descriptor* desc = UNBOX(Descriptor, getThis());
+  DescriptorInternal* intern = desc->intern;
   RETURN_LONG(upb_msgdef_numoneofs(intern->msgdef));
 }
 
@@ -278,8 +279,7 @@ static void enum_descriptor_free_c(EnumDescriptor *self TSRMLS_DC) {
 }
 
 static void enum_descriptor_init_c_instance(EnumDescriptor *self TSRMLS_DC) {
-  self->enumdef = NULL;
-  self->klass = NULL;
+  self->intern = NULL;
 }
 
 PHP_METHOD(EnumDescriptor, getValue) {
@@ -290,7 +290,8 @@ PHP_METHOD(EnumDescriptor, getValue) {
     return;
   }
 
-  EnumDescriptor *intern = UNBOX(EnumDescriptor, getThis());
+  EnumDescriptor *desc = UNBOX(EnumDescriptor, getThis());
+  EnumDescriptorInternal *intern = desc->intern;
   int field_num = upb_enumdef_numvals(intern->enumdef);
   if (index < 0 || index >= field_num) {
     zend_error(E_USER_ERROR, "Cannot get element at %ld.\n", index);
@@ -312,7 +313,8 @@ PHP_METHOD(EnumDescriptor, getValue) {
 }
 
 PHP_METHOD(EnumDescriptor, getValueCount) {
-  EnumDescriptor *intern = UNBOX(EnumDescriptor, getThis());
+  EnumDescriptor *desc = UNBOX(EnumDescriptor, getThis());
+  EnumDescriptorInternal *intern = desc->intern;
   RETURN_LONG(upb_enumdef_numvals(intern->enumdef));
 }
 
@@ -958,14 +960,14 @@ void internal_add_generated_file(const char *data, PHP_PROTO_SIZE data_len,
   for (i = 0; i < upb_filedef_msgcount(file); i++) {
     const upb_msgdef *msgdef = upb_filedef_msg(file, i);
     CREATE_HASHTABLE_VALUE(desc, desc_php, Descriptor, descriptor_type);
-    desc->msgdef = msgdef;
-    desc->pool = pool;
     desc->intern = SYS_MALLOC(DescriptorInternal);
     desc->intern->msgdef = msgdef;
     desc->intern->pool = pool;
+    desc->intern->layout = NULL;
+    desc->intern->klass = NULL;
 
-    add_def_obj(desc->msgdef, desc_php);
-    add_msgdef_desc(desc->msgdef, desc->intern);
+    add_def_obj(desc->intern->msgdef, desc_php);
+    add_msgdef_desc(desc->intern->msgdef, desc->intern);
 
     // Unlike other messages, MapEntry is shared by all map fields and doesn't
     // have generated PHP class.
@@ -973,11 +975,11 @@ void internal_add_generated_file(const char *data, PHP_PROTO_SIZE data_len,
       continue;
     }
 
-    desc->klass = register_class(file, upb_msgdef_fullname(msgdef), desc_php,
-                                 use_nested_submsg, false TSRMLS_CC);
-    desc->intern->klass = desc->klass;
+    desc->intern->klass =
+        register_class(file, upb_msgdef_fullname(msgdef), desc_php,
+                       use_nested_submsg, false TSRMLS_CC);
 
-    if (desc->klass == NULL) {
+    if (desc->intern->klass == NULL) {
       return;
     }
 
@@ -987,17 +989,17 @@ void internal_add_generated_file(const char *data, PHP_PROTO_SIZE data_len,
   for (i = 0; i < upb_filedef_enumcount(file); i++) {
     const upb_enumdef *enumdef = upb_filedef_enum(file, i);
     CREATE_HASHTABLE_VALUE(desc, desc_php, EnumDescriptor, enum_descriptor_type);
-    desc->enumdef = enumdef;
     desc->intern = SYS_MALLOC(EnumDescriptorInternal);
     desc->intern->enumdef = enumdef;
+    desc->intern->klass = NULL;
 
-    add_def_obj(desc->enumdef, desc_php);
-    add_enumdef_enumdesc(desc->enumdef, desc->intern);
-    desc->klass = register_class(file, upb_enumdef_fullname(enumdef), desc_php,
-                                 use_nested_submsg, true TSRMLS_CC);
-    desc->intern->klass = desc->klass;
+    add_def_obj(desc->intern->enumdef, desc_php);
+    add_enumdef_enumdesc(desc->intern->enumdef, desc->intern);
+    desc->intern->klass =
+        register_class(file, upb_enumdef_fullname(enumdef), desc_php,
+                       use_nested_submsg, true TSRMLS_CC);
 
-    if (desc->klass == NULL) {
+    if (desc->intern->klass == NULL) {
       return;
     }
   }

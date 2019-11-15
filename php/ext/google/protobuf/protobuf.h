@@ -833,10 +833,6 @@ struct DescriptorInternal {
 };
 
 PHP_PROTO_WRAP_OBJECT_START(Descriptor)
-  InternalDescriptorPool* pool;
-  const upb_msgdef* msgdef;
-  MessageLayout* layout;
-  zend_class_entry* klass;  // begins as NULL
   DescriptorInternal* intern;
 PHP_PROTO_WRAP_OBJECT_END
 
@@ -871,8 +867,6 @@ struct EnumDescriptorInternal {
 };
 
 PHP_PROTO_WRAP_OBJECT_START(EnumDescriptor)
-  const upb_enumdef* enumdef;
-  zend_class_entry* klass;  // begins as NULL
   EnumDescriptorInternal* intern;
 PHP_PROTO_WRAP_OBJECT_END
 
@@ -1529,6 +1523,7 @@ size_t stringsink_string(void *_sink, const void *hd, const char *ptr,
 
 // Memory management
 #define SYS_MALLOC(class_name) (class_name*) malloc(sizeof(class_name))
+#define SYS_MALLOC_N(class_name, n) (class_name*) malloc(sizeof(class_name) * n)
 #define SYS_FREE(ptr) free(ptr)
 #define ALLOC(class_name) (class_name*) emalloc(sizeof(class_name))
 #define PEMALLOC(class_name, persistent) (class_name*) pemalloc(sizeof(class_name), persistent)

@@ -488,36 +488,39 @@ static PHP_MINIT_FUNCTION(protobuf) {
   return 0;
 }
 
-static void cleanup_inttable(upb_inttable* t) {
+static void cleanup_desc_table(upb_inttable* t) {
   upb_inttable_iter i;
   upb_value v;
-  void* ptr;
+  DescriptorInternal* desc;
   for(upb_inttable_begin(&i, t);
       !upb_inttable_done(&i);
       upb_inttable_next(&i)) {
     v = upb_inttable_iter_value(&i);
-    ptr = upb_value_getptr(v);
-    SYS_FREE(ptr);
+    desc = upb_value_getptr(v);
+    if (desc->layout) {
+      free_layout(desc->layout);
+    }
+    SYS_FREE(desc);
   }
 }
 
-static void cleanup_strtable(upb_strtable* t) {
-  upb_strtable_iter i;
+static void cleanup_enumdesc_table(upb_inttable* t) {
+  upb_inttable_iter i;
   upb_value v;
-  void* ptr;
-  for(upb_strtable_begin(&i, t);
-      !upb_strtable_done(&i);
-      upb_strtable_next(&i)) {
-    v = upb_strtable_iter_value(&i);
-    ptr = upb_value_getptr(v);
-    SYS_FREE(ptr);
+  EnumDescriptorInternal* desc;
+  for(upb_inttable_begin(&i, t);
+      !upb_inttable_done(&i);
+      upb_inttable_next(&i)) {
+    v = upb_inttable_iter_value(&i);
+    desc = upb_value_getptr(v);
+    SYS_FREE(desc);
   }
 }
 
 static PHP_MSHUTDOWN_FUNCTION(protobuf) {
   // Only needs to clean one map out of three (def=>desc, ce=>desc, proto=>desc)
-  cleanup_inttable(&upb_def_to_desc_map_persistent);
-  cleanup_inttable(&upb_def_to_enumdesc_map_persistent);
+  cleanup_desc_table(&upb_def_to_desc_map_persistent);
+  cleanup_enumdesc_table(&upb_def_to_enumdesc_map_persistent);
 
   upb_inttable_uninit(&upb_def_to_desc_map_persistent);
   upb_inttable_uninit(&upb_def_to_enumdesc_map_persistent);
