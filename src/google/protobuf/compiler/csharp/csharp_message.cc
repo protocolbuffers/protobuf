@@ -152,7 +152,9 @@ void MessageGenerator::Generate(io::Printer* printer) {
 
     // a read-only property for fast
     // retrieval of the set in IsInitialized
-    printer->Print(vars, "private pb::ExtensionSet<$class_name$> _Extensions { get { return _extensions; } }\n");
+    printer->Print(vars,
+                   "private pb::ExtensionSet<$class_name$> _Extensions { get { "
+                   "return _extensions; } }\n");
   }
 
   for (int i = 0; i < has_bit_field_count_; i++) {

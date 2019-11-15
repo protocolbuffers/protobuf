@@ -4602,7 +4602,6 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
 
   AddSymbol(result->full_name(), parent, result->name(), proto, Symbol(result));
 
-
   for (int i = 0; i < proto.reserved_range_size(); i++) {
     const DescriptorProto_ReservedRange& range1 = proto.reserved_range(i);
     for (int j = i + 1; j < proto.reserved_range_size(); j++) {
