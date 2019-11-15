@@ -171,7 +171,7 @@
                         LOWWERNAME##_methods);                               \
     LOWWERNAME##_type = zend_register_internal_class(&class_type TSRMLS_CC); \
     LOWWERNAME##_type->create_object = LOWWERNAME##_create;                  \
-    LOWWERNAME##_handlers = PEMALLOC(zend_object_handlers);                  \
+    LOWWERNAME##_handlers = PEMALLOC(zend_object_handlers, 1);               \
     memcpy(LOWWERNAME##_handlers, zend_get_std_object_handlers(),            \
            sizeof(zend_object_handlers));
 #define PHP_PROTO_INIT_CLASS_END \
@@ -440,7 +440,7 @@ static inline int php_proto_zend_hash_get_current_data_ex(HashTable* ht,
                         LOWWERNAME##_methods);                               \
     LOWWERNAME##_type = zend_register_internal_class(&class_type TSRMLS_CC); \
     LOWWERNAME##_type->create_object = LOWWERNAME##_create;                  \
-    LOWWERNAME##_handlers = PEMALLOC(zend_object_handlers);                  \
+    LOWWERNAME##_handlers = PEMALLOC(zend_object_handlers, 1);               \
     memcpy(LOWWERNAME##_handlers, zend_get_std_object_handlers(),            \
            sizeof(zend_object_handlers));                                    \
     LOWWERNAME##_handlers->free_obj = LOWWERNAME##_free;                     \
@@ -681,6 +681,14 @@ typedef struct Value Value;
 
 ZEND_BEGIN_MODULE_GLOBALS(protobuf)
 ZEND_END_MODULE_GLOBALS(protobuf)
+
+ZEND_DECLARE_MODULE_GLOBALS(protobuf)
+
+#ifdef ZTS
+#define PROTOBUF_G(v) TSRMG(protobuf_globals_id, zend_protobuf_globals *, v)
+#else
+#define PROTOBUF_G(v) (protobuf_globals.v)
+#endif
 
 // Init module and PHP classes.
 void any_init(TSRMLS_D);
@@ -1492,7 +1500,7 @@ size_t stringsink_string(void *_sink, const void *hd, const char *ptr,
 
 // Memory management
 #define ALLOC(class_name) (class_name*) emalloc(sizeof(class_name))
-#define PEMALLOC(class_name) (class_name*) pemalloc(sizeof(class_name), 1)
+#define PEMALLOC(class_name, persistent) (class_name*) pemalloc(sizeof(class_name), persistent)
 #define ALLOC_N(class_name, n) (class_name*) emalloc(sizeof(class_name) * n)
 #define FREE(object) efree(object)
 #define PEFREE(object) pefree(object, 1)

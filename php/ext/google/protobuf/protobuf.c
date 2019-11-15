@@ -32,7 +32,6 @@
 
 #include <zend_hash.h>
 
-ZEND_DECLARE_MODULE_GLOBALS(protobuf)
 static PHP_GINIT_FUNCTION(protobuf);
 static PHP_GSHUTDOWN_FUNCTION(protobuf);
 static PHP_RINIT_FUNCTION(protobuf);
@@ -49,7 +48,11 @@ static HashTable* ce_to_php_obj_map;
 // Global map from message/enum's proto fully-qualified name to corresponding
 // wrapper Descriptor/EnumDescriptor instances.
 static HashTable* proto_to_php_obj_map;
-static HashTable* reserved_names;
+
+// HashTable upb_def_to_php_obj_map_persistent;
+// HashTable ce_to_php_obj_map_persistent;
+// HashTable proto_to_php_obj_map_persistent;
+upb_strtable reserved_names;
 
 // -----------------------------------------------------------------------------
 // Global maps.
@@ -184,9 +187,11 @@ const char *const kReservedNames[] = {
 const int kReservedNamesSize = 73;
 
 bool is_reserved_name(const char* name) {
-  void** value;
-  return (php_proto_zend_hash_find(reserved_names, name, strlen(name),
-                                   (void**)&value) == SUCCESS);
+  upb_value v;
+#ifndef NDEBUG
+  v.ctype = UPB_CTYPE_UINT64;
+#endif
+  return upb_strtable_lookup2(&reserved_names, name, strlen(name), &v);
 }
 
 // -----------------------------------------------------------------------------
@@ -241,11 +246,13 @@ static void php_proto_hashtable_descriptor_release(zval* value) {
   }
   efree(ptr);
 }
+
+static void test_release(void* value) {
+  void* ptr = value;
+}
 #endif
 
 static PHP_RINIT_FUNCTION(protobuf) {
-  int i = 0;
-
   ALLOC_HASHTABLE(upb_def_to_php_obj_map);
   zend_hash_init(upb_def_to_php_obj_map, 16, NULL, HASHTABLE_VALUE_DTOR, 0);
 
@@ -254,13 +261,6 @@ static PHP_RINIT_FUNCTION(protobuf) {
 
   ALLOC_HASHTABLE(proto_to_php_obj_map);
   zend_hash_init(proto_to_php_obj_map, 16, NULL, HASHTABLE_VALUE_DTOR, 0);
-
-  ALLOC_HASHTABLE(reserved_names);
-  zend_hash_init(reserved_names, 16, NULL, NULL, 0);
-  for (i = 0; i < kReservedNamesSize; i++) {
-    php_proto_zend_hash_update(reserved_names, kReservedNames[i],
-                               strlen(kReservedNames[i]));
-  }
 
   generated_pool = NULL;
   generated_pool_php = NULL;
@@ -289,9 +289,6 @@ static PHP_RSHUTDOWN_FUNCTION(protobuf) {
 
   zend_hash_destroy(proto_to_php_obj_map);
   FREE_HASHTABLE(proto_to_php_obj_map);
-
-  zend_hash_destroy(reserved_names);
-  FREE_HASHTABLE(reserved_names);
 
 #if PHP_MAJOR_VERSION < 7
   if (generated_pool_php != NULL) {
@@ -329,7 +326,29 @@ static PHP_RSHUTDOWN_FUNCTION(protobuf) {
   return 0;
 }
 
+static void reserved_names_init() {
+  size_t i;
+  upb_value v;
+#ifndef NDEBUG
+  v.ctype = UPB_CTYPE_UINT64;
+#endif
+  for (i = 0; i < kReservedNamesSize; i++) {
+    upb_strtable_insert2(&reserved_names, kReservedNames[i],
+                         strlen(kReservedNames[i]), v);
+  }
+}
+
 static PHP_MINIT_FUNCTION(protobuf) {
+  // zend_hash_init(&upb_def_to_php_obj_map_persistent, 16, NULL,
+  //                EG(persistent_list).pDestructor, 1);
+  // zend_hash_init(&ce_to_php_obj_map_persistent, 16, NULL,
+  //                EG(persistent_list).pDestructor, 1);
+  // zend_hash_init(&proto_to_php_obj_map_persistent, 16, NULL,
+  //                EG(persistent_list).pDestructor, 1);
+  upb_strtable_init(&reserved_names, UPB_CTYPE_UINT64);
+
+  reserved_names_init();
+
   descriptor_pool_init(TSRMLS_C);
   descriptor_init(TSRMLS_C);
   enum_descriptor_init(TSRMLS_C);
@@ -391,6 +410,14 @@ static PHP_MINIT_FUNCTION(protobuf) {
 }
 
 static PHP_MSHUTDOWN_FUNCTION(protobuf) {
+  // zend_hash_clean(&upb_def_to_php_obj_map_persistent);
+  // zend_hash_clean(&ce_to_php_obj_map_persistent);
+  // zend_hash_clean(&proto_to_php_obj_map_persistent);
+  // zend_hash_destory(&upb_def_to_php_obj_map_persistent);
+  // zend_hash_destory(&ce_to_php_obj_map_persistent);
+  // zend_hash_destory(&proto_to_php_obj_map_persistent);
+  upb_strtable_uninit(&reserved_names);
+
   PEFREE(message_handlers);
   PEFREE(repeated_field_handlers);
   PEFREE(repeated_field_iter_handlers);
