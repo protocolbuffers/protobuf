@@ -288,6 +288,7 @@ void build_class_from_descriptor(
   if (desc->layout == NULL) {
     MessageLayout* layout = create_layout(desc->msgdef);
     desc->layout = layout;
+    desc->intern->layout = layout;
   }
 
   registered_ce->create_object = message_create;
@@ -395,8 +396,7 @@ void Message_construct(zval* msg, zval* array_wrapper) {
         is_wrapper = is_wrapper_msg(submsgdef);
 
         if (is_wrapper) {
-          PHP_PROTO_HASHTABLE_VALUE subdesc_php = get_def_obj(submsgdef);
-          Descriptor* subdesc = UNBOX_HASHTABLE_VALUE(Descriptor, subdesc_php);
+          DescriptorInternal* subdesc = get_msgdef_desc(submsgdef);
           subklass = subdesc->klass;
         }
       }
@@ -435,8 +435,7 @@ void Message_construct(zval* msg, zval* array_wrapper) {
         is_wrapper = is_wrapper_msg(submsgdef);
 
         if (is_wrapper) {
-          PHP_PROTO_HASHTABLE_VALUE subdesc_php = get_def_obj(submsgdef);
-          Descriptor* subdesc = UNBOX_HASHTABLE_VALUE(Descriptor, subdesc_php);
+          DescriptorInternal* subdesc = get_msgdef_desc(submsgdef);
           subklass = subdesc->klass;
         }
       }
@@ -459,8 +458,7 @@ void Message_construct(zval* msg, zval* array_wrapper) {
       }
     } else if (upb_fielddef_issubmsg(field)) {
       const upb_msgdef* submsgdef = upb_fielddef_msgsubdef(field);
-      PHP_PROTO_HASHTABLE_VALUE desc_php = get_def_obj(submsgdef);
-      Descriptor* desc = UNBOX_HASHTABLE_VALUE(Descriptor, desc_php);
+      DescriptorInternal* desc = get_msgdef_desc(submsgdef);
 
       CACHED_VALUE* cached = NULL;
       if (upb_fielddef_containingoneof(field)) {

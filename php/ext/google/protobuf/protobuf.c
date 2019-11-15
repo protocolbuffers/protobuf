@@ -110,6 +110,18 @@ void add_msgdef_desc(const upb_msgdef* m, DescriptorInternal* desc) {
   upb_inttable_insertptr(&upb_def_to_php_obj_map_persistent, m, upb_value_ptr(desc));
 }
 
+DescriptorInternal* get_msgdef_desc(const upb_msgdef* m) {
+  upb_value v;
+#ifndef NDEBUG
+  v.ctype = UPB_CTYPE_PTR;
+#endif
+  if (!upb_inttable_lookupptr(&upb_def_to_php_obj_map_persistent, m, &v)) {
+    return NULL;
+  } else {
+    return upb_value_getptr(v);
+  }
+}
+
 PHP_PROTO_HASHTABLE_VALUE get_def_obj(const void* def) {
   return (PHP_PROTO_HASHTABLE_VALUE)get_from_table(upb_def_to_php_obj_map, def);
 }

@@ -754,6 +754,7 @@ void gpb_metadata_wrappers_init(TSRMLS_D);
 void add_def_obj(const void* def, PHP_PROTO_HASHTABLE_VALUE value);
 PHP_PROTO_HASHTABLE_VALUE get_def_obj(const void* def);
 void add_msgdef_desc(const upb_msgdef* m, DescriptorInternal* desc);
+DescriptorInternal* get_msgdef_desc(const upb_msgdef* m);
 
 // Global map from PHP class entries to wrapper Descriptor/EnumDescriptor
 // instances.
@@ -1004,7 +1005,7 @@ PHP_METHOD(Message, __construct);
 const upb_pbdecodermethod *new_fillmsg_decodermethod(Descriptor *desc,
                                                      const void *owner);
 void serialize_to_string(zval* val, zval* return_value TSRMLS_DC);
-void merge_from_string(const char* data, int data_len, Descriptor* desc,
+void merge_from_string(const char* data, int data_len, DescriptorInternal* desc,
                        MessageHeader* msg);
 
 PHP_METHOD(Message, serializeToString);

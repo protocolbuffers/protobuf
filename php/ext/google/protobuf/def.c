@@ -966,6 +966,7 @@ void internal_add_generated_file(const char *data, PHP_PROTO_SIZE data_len,
 
     desc->klass = register_class(file, upb_msgdef_fullname(msgdef), desc_php,
                                  use_nested_submsg TSRMLS_CC);
+    desc->intern->klass = desc->klass;
 
     if (desc->klass == NULL) {
       return;
