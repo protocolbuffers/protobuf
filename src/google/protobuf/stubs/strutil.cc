@@ -1435,32 +1435,44 @@ AlphaNum::AlphaNum(strings::Hex hex) {
 // after the area just overwritten.  It comes in multiple flavors to minimize
 // call overhead.
 static char *Append1(char *out, const AlphaNum &x) {
-  memcpy(out, x.data(), x.size());
-  return out + x.size();
+  if (x.size() > 0) {
+    memcpy(out, x.data(), x.size());
+    out += x.size();
+  }
+  return out;
 }
 
 static char *Append2(char *out, const AlphaNum &x1, const AlphaNum &x2) {
-  memcpy(out, x1.data(), x1.size());
-  out += x1.size();
-
-  memcpy(out, x2.data(), x2.size());
-  return out + x2.size();
+  if (x1.size() > 0) {
+    memcpy(out, x1.data(), x1.size());
+    out += x1.size();
+  }
+  if (x2.size() > 0) {
+    memcpy(out, x2.data(), x2.size());
+    out += x2.size();
+  }
+  return out;
 }
 
-static char *Append4(char *out,
-                     const AlphaNum &x1, const AlphaNum &x2,
+static char *Append4(char *out, const AlphaNum &x1, const AlphaNum &x2,
                      const AlphaNum &x3, const AlphaNum &x4) {
-  memcpy(out, x1.data(), x1.size());
-  out += x1.size();
-
-  memcpy(out, x2.data(), x2.size());
-  out += x2.size();
-
-  memcpy(out, x3.data(), x3.size());
-  out += x3.size();
-
-  memcpy(out, x4.data(), x4.size());
-  return out + x4.size();
+  if (x1.size() > 0) {
+    memcpy(out, x1.data(), x1.size());
+    out += x1.size();
+  }
+  if (x2.size() > 0) {
+    memcpy(out, x2.data(), x2.size());
+    out += x2.size();
+  }
+  if (x3.size() > 0) {
+    memcpy(out, x3.data(), x3.size());
+    out += x3.size();
+  }
+  if (x4.size() > 0) {
+    memcpy(out, x4.data(), x4.size());
+    out += x4.size();
+  }
+  return out;
 }
 
 string StrCat(const AlphaNum &a, const AlphaNum &b) {
