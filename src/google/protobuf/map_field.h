@@ -36,6 +36,7 @@
 #include <google/protobuf/arena.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/generated_message_reflection.h>
+#include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/map_entry.h>
 #include <google/protobuf/map_field_lite.h>
 #include <google/protobuf/map_type_handler.h>
@@ -310,6 +311,20 @@ class MapField : public TypeDefinedMapFieldBase<Key, T> {
   friend class MapFieldStateTest;  // For testing, it needs raw access to impl_
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MapField);
 };
+
+template <typename Derived, typename Key, typename T,
+          WireFormatLite::FieldType key_wire_type,
+          WireFormatLite::FieldType value_wire_type, int default_enum_value>
+bool AllAreInitialized(
+    const MapField<Derived, Key, T, key_wire_type, value_wire_type,
+                   default_enum_value>& field) {
+  const auto& t = field.GetMap();
+  for (typename Map<Key, T>::const_iterator it = t.begin(); it != t.end();
+       ++it) {
+    if (!it->second.IsInitialized()) return false;
+  }
+  return true;
+}
 
 template <typename T, typename Key, typename Value,
           WireFormatLite::FieldType kKeyFieldType,

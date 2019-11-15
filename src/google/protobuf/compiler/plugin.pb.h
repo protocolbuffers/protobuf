@@ -165,7 +165,7 @@ class PROTOC_EXPORT Version :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* InternalSerializeWithCachedSizesToArray(
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
       ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
@@ -357,7 +357,7 @@ class PROTOC_EXPORT CodeGeneratorRequest :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* InternalSerializeWithCachedSizesToArray(
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
       ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
@@ -567,7 +567,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* InternalSerializeWithCachedSizesToArray(
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
       ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
@@ -758,7 +758,7 @@ class PROTOC_EXPORT CodeGeneratorResponse :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* InternalSerializeWithCachedSizesToArray(
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
       ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
@@ -998,7 +998,7 @@ inline std::string* Version::_internal_mutable_suffix() {
 }
 inline std::string* Version::release_suffix() {
   // @@protoc_insertion_point(field_release:google.protobuf.compiler.Version.suffix)
-  if (!has_suffix()) {
+  if (!_internal_has_suffix()) {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000001u;
@@ -1147,7 +1147,7 @@ inline std::string* CodeGeneratorRequest::_internal_mutable_parameter() {
 }
 inline std::string* CodeGeneratorRequest::release_parameter() {
   // @@protoc_insertion_point(field_release:google.protobuf.compiler.CodeGeneratorRequest.parameter)
-  if (!has_parameter()) {
+  if (!_internal_has_parameter()) {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000001u;
@@ -1318,7 +1318,7 @@ inline std::string* CodeGeneratorResponse_File::_internal_mutable_name() {
 }
 inline std::string* CodeGeneratorResponse_File::release_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.compiler.CodeGeneratorResponse.File.name)
-  if (!has_name()) {
+  if (!_internal_has_name()) {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000001u;
@@ -1389,7 +1389,7 @@ inline std::string* CodeGeneratorResponse_File::_internal_mutable_insertion_poin
 }
 inline std::string* CodeGeneratorResponse_File::release_insertion_point() {
   // @@protoc_insertion_point(field_release:google.protobuf.compiler.CodeGeneratorResponse.File.insertion_point)
-  if (!has_insertion_point()) {
+  if (!_internal_has_insertion_point()) {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000002u;
@@ -1460,7 +1460,7 @@ inline std::string* CodeGeneratorResponse_File::_internal_mutable_content() {
 }
 inline std::string* CodeGeneratorResponse_File::release_content() {
   // @@protoc_insertion_point(field_release:google.protobuf.compiler.CodeGeneratorResponse.File.content)
-  if (!has_content()) {
+  if (!_internal_has_content()) {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000004u;
@@ -1535,7 +1535,7 @@ inline std::string* CodeGeneratorResponse::_internal_mutable_error() {
 }
 inline std::string* CodeGeneratorResponse::release_error() {
   // @@protoc_insertion_point(field_release:google.protobuf.compiler.CodeGeneratorResponse.error)
-  if (!has_error()) {
+  if (!_internal_has_error()) {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000001u;

@@ -2079,19 +2079,19 @@ void Reflection::ClearOneof(Message* message,
   }
 }
 
-#define HANDLE_TYPE(TYPE, CPPTYPE, CTYPE)                               \
-  template <>                                                           \
-  const RepeatedField<TYPE>& Reflection::GetRepeatedField<TYPE>(        \
-      const Message& message, const FieldDescriptor* field) const {     \
-    return *static_cast<RepeatedField<TYPE>*>(MutableRawRepeatedField(  \
-        const_cast<Message*>(&message), field, CPPTYPE, CTYPE, NULL));  \
-  }                                                                     \
-                                                                        \
-  template <>                                                           \
-  RepeatedField<TYPE>* Reflection::MutableRepeatedField<TYPE>(          \
-      Message * message, const FieldDescriptor* field) const {          \
-    return static_cast<RepeatedField<TYPE>*>(                           \
-        MutableRawRepeatedField(message, field, CPPTYPE, CTYPE, NULL)); \
+#define HANDLE_TYPE(TYPE, CPPTYPE, CTYPE)                                \
+  template <>                                                            \
+  const RepeatedField<TYPE>& Reflection::GetRepeatedFieldInternal<TYPE>( \
+      const Message& message, const FieldDescriptor* field) const {      \
+    return *static_cast<RepeatedField<TYPE>*>(MutableRawRepeatedField(   \
+        const_cast<Message*>(&message), field, CPPTYPE, CTYPE, NULL));   \
+  }                                                                      \
+                                                                         \
+  template <>                                                            \
+  RepeatedField<TYPE>* Reflection::MutableRepeatedFieldInternal<TYPE>(   \
+      Message * message, const FieldDescriptor* field) const {           \
+    return static_cast<RepeatedField<TYPE>*>(                            \
+        MutableRawRepeatedField(message, field, CPPTYPE, CTYPE, NULL));  \
   }
 
 HANDLE_TYPE(int32, FieldDescriptor::CPPTYPE_INT32, -1);

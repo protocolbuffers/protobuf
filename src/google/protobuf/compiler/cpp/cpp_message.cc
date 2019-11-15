@@ -1011,10 +1011,10 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
         "  static const $classname$* internal_default_instance() { return "
         "reinterpret_cast<const "
         "$classname$*>(&_$classname$_default_instance_); }\n");
-    std::string suffix = GetUtf8Suffix(descriptor_->field(0), options_);
+    auto utf8_check = GetUtf8CheckMode(descriptor_->field(0), options_);
     if (descriptor_->field(0)->type() == FieldDescriptor::TYPE_STRING &&
-        !suffix.empty()) {
-      if (suffix == "UTF8") {
+        utf8_check != NONE) {
+      if (utf8_check == STRICT) {
         format(
             "  static bool ValidateKey(std::string* s) {\n"
             "    return ::$proto_ns$::internal::WireFormatLite::"
@@ -1023,12 +1023,13 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
             " }\n",
             descriptor_->field(0)->full_name());
       } else {
-        GOOGLE_CHECK(suffix == "UTF8Verify");
+        GOOGLE_CHECK(utf8_check == VERIFY);
         format(
             "  static bool ValidateKey(std::string* s) {\n"
             "#ifndef NDEBUG\n"
             "    ::$proto_ns$::internal::WireFormatLite::VerifyUtf8String(\n"
-            "       s->data(), static_cast<int>(s->size()), ::$proto_ns$::internal::"
+            "       s->data(), static_cast<int>(s->size()), "
+            "::$proto_ns$::internal::"
             "WireFormatLite::PARSE, \"$1$\");\n"
             "#endif\n"
             "    return true;\n"
@@ -1039,8 +1040,8 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
       format("  static bool ValidateKey(void*) { return true; }\n");
     }
     if (descriptor_->field(1)->type() == FieldDescriptor::TYPE_STRING &&
-        !suffix.empty()) {
-      if (suffix == "UTF8") {
+        utf8_check != NONE) {
+      if (utf8_check == STRICT) {
         format(
             "  static bool ValidateValue(std::string* s) {\n"
             "    return ::$proto_ns$::internal::WireFormatLite::"
@@ -1049,12 +1050,13 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
             " }\n",
             descriptor_->field(1)->full_name());
       } else {
-        GOOGLE_CHECK(suffix == "UTF8Verify");
+        GOOGLE_CHECK(utf8_check = VERIFY);
         format(
             "  static bool ValidateValue(std::string* s) {\n"
             "#ifndef NDEBUG\n"
             "    ::$proto_ns$::internal::WireFormatLite::VerifyUtf8String(\n"
-            "       s->data(), static_cast<int>(s->size()), ::$proto_ns$::internal::"
+            "       s->data(), static_cast<int>(s->size()), "
+            "::$proto_ns$::internal::"
             "WireFormatLite::PARSE, \"$1$\");\n"
             "#endif\n"
             "    return true;\n"
@@ -1351,7 +1353,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
         "size_t ByteSizeLong() const final;\n"
         "const char* _InternalParse(const char* ptr, "
         "::$proto_ns$::internal::ParseContext* ctx) final;\n"
-        "$uint8$* InternalSerializeWithCachedSizesToArray(\n"
+        "$uint8$* _InternalSerialize(\n"
         "    $uint8$* target, ::$proto_ns$::io::EpsCopyOutputStream* stream) "
         "const final;\n");
 
@@ -3488,7 +3490,7 @@ void MessageGenerator::GenerateSerializeOneExtensionRange(
   Formatter format(printer, vars);
   format("// Extension range [$start$, $end$)\n");
   format(
-      "target = _extensions_.InternalSerializeWithCachedSizesToArray(\n"
+      "target = _extensions_._InternalSerialize(\n"
       "    $start$, $end$, target, stream);\n\n");
 }
 
@@ -3498,7 +3500,7 @@ void MessageGenerator::GenerateSerializeWithCachedSizesToArray(
   if (descriptor_->options().message_set_wire_format()) {
     // Special-case MessageSet.
     format(
-        "$uint8$* $classname$::InternalSerializeWithCachedSizesToArray(\n"
+        "$uint8$* $classname$::_InternalSerialize(\n"
         "    $uint8$* target, ::$proto_ns$::io::EpsCopyOutputStream* stream) "
         "const {\n"
         "  target = _extensions_."
@@ -3517,7 +3519,7 @@ void MessageGenerator::GenerateSerializeWithCachedSizesToArray(
   }
 
   format(
-      "$uint8$* $classname$::InternalSerializeWithCachedSizesToArray(\n"
+      "$uint8$* $classname$::_InternalSerialize(\n"
       "    $uint8$* target, ::$proto_ns$::io::EpsCopyOutputStream* stream) "
       "const {\n");
   format.Indent();
@@ -3759,7 +3761,7 @@ void MessageGenerator::GenerateByteSize(io::Printer* printer) {
       if (field->is_required()) {
         format(
             "\n"
-            "if (has_$1$()) {\n",
+            "if (_internal_has_$1$()) {\n",
             FieldName(field));
         format.Indent();
         PrintFieldComment(format, field);
@@ -3820,7 +3822,7 @@ void MessageGenerator::GenerateByteSize(io::Printer* printer) {
     for (auto field : optimized_order_) {
       if (!field->is_required()) continue;
       PrintFieldComment(format, field);
-      format("if (has_$1$()) {\n", FieldName(field));
+      format("if (_internal_has_$1$()) {\n", FieldName(field));
       format.Indent();
       field_generators_.get(field).GenerateByteSize(printer);
       format.Outdent();
@@ -4042,13 +4044,13 @@ void MessageGenerator::GenerateIsInitialized(io::Printer* printer) {
         if (IsImplicitWeakField(field, options_, scc_analyzer_)) {
           format(
               "if "
-              "(!::$proto_ns$::internal::AllAreInitializedWeak(this->$1$_.weak)"
+              "(!::$proto_ns$::internal::AllAreInitializedWeak($1$_.weak)"
               ")"
               " return false;\n",
               FieldName(field));
         } else {
           format(
-              "if (!::$proto_ns$::internal::AllAreInitialized(this->$1$()))"
+              "if (!::$proto_ns$::internal::AllAreInitialized($1$_))"
               " return false;\n",
               FieldName(field));
         }
@@ -4057,8 +4059,8 @@ void MessageGenerator::GenerateIsInitialized(io::Printer* printer) {
       } else {
         GOOGLE_CHECK(!field->containing_oneof());
         format(
-            "if (has_$1$()) {\n"
-            "  if (!this->$1$_->IsInitialized()) return false;\n"
+            "if (_internal_has_$1$()) {\n"
+            "  if (!$1$_->IsInitialized()) return false;\n"
             "}\n",
             FieldName(field));
       }

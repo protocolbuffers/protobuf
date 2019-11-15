@@ -122,7 +122,7 @@ int msvc_vsnprintf(char* s, size_t n, const char* format, va_list arg);
 #ifdef __cplusplus
 #if __cplusplus >= 201103L || defined(__GXX_EXPERIMENTAL_CXX0X__) || \
     (defined(_MSC_VER) && _MSC_VER >= 1900)
-// C++11 is present
+/* C++11 is present */
 #else
 #error upb requires C++11 for C++ support
 #endif
@@ -5700,15 +5700,16 @@ UPB_INLINE bool upb_sink_startsubmsg(upb_sink s, upb_selector_t sel,
   return sub->closure ? true : false;
 }
 
-UPB_INLINE bool upb_sink_endsubmsg(upb_sink s, upb_selector_t sel) {
+UPB_INLINE bool upb_sink_endsubmsg(upb_sink s, upb_sink sub,
+                                   upb_selector_t sel) {
   typedef upb_endfield_handlerfunc func;
   func *endsubmsg;
   const void *hd;
   if (!s.handlers) return true;
   endsubmsg = (func*)upb_handlers_gethandler(s.handlers, sel, &hd);
 
-  if (!endsubmsg) return s.closure;
-  return endsubmsg(s.closure, hd);
+  if (!endsubmsg) return true;
+  return endsubmsg(sub.closure, hd);
 }
 
 #ifdef __cplusplus
@@ -5874,8 +5875,8 @@ class upb::Sink {
     return ret;
   }
 
-  bool EndSubMessage(HandlersPtr::Selector s) {
-    return upb_sink_endsubmsg(sink_, s);
+  bool EndSubMessage(HandlersPtr::Selector s, Sink sub) {
+    return upb_sink_endsubmsg(sink_, sub.sink_, s);
   }
 
   /* For repeated fields of any type, the sequence of values must be wrapped in

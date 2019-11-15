@@ -1902,7 +1902,7 @@ TEST_F(ExtensionDescriptorTest, ExtensionRanges) {
 
   EXPECT_EQ(20, foo_->extension_range(0)->end);
   EXPECT_EQ(40, foo_->extension_range(1)->end);
-};
+}
 
 TEST_F(ExtensionDescriptorTest, Extensions) {
   EXPECT_EQ(0, foo_->extension_count());
@@ -1947,7 +1947,7 @@ TEST_F(ExtensionDescriptorTest, Extensions) {
   EXPECT_TRUE(foo_file_->extension(1)->extension_scope() == nullptr);
   EXPECT_EQ(bar_, bar_->extension(0)->extension_scope());
   EXPECT_EQ(bar_, bar_->extension(1)->extension_scope());
-};
+}
 
 TEST_F(ExtensionDescriptorTest, IsExtensionNumber) {
   EXPECT_FALSE(foo_->IsExtensionNumber(9));
@@ -2095,7 +2095,7 @@ TEST_F(ReservedDescriptorTest, ReservedRanges) {
 
   EXPECT_EQ(15, foo_->reserved_range(2)->start);
   EXPECT_EQ(16, foo_->reserved_range(2)->end);
-};
+}
 
 TEST_F(ReservedDescriptorTest, IsReservedNumber) {
   EXPECT_FALSE(foo_->IsReservedNumber(1));
@@ -2110,20 +2110,20 @@ TEST_F(ReservedDescriptorTest, IsReservedNumber) {
   EXPECT_FALSE(foo_->IsReservedNumber(14));
   EXPECT_TRUE(foo_->IsReservedNumber(15));
   EXPECT_FALSE(foo_->IsReservedNumber(16));
-};
+}
 
 TEST_F(ReservedDescriptorTest, ReservedNames) {
   ASSERT_EQ(2, foo_->reserved_name_count());
 
   EXPECT_EQ("foo", foo_->reserved_name(0));
   EXPECT_EQ("bar", foo_->reserved_name(1));
-};
+}
 
 TEST_F(ReservedDescriptorTest, IsReservedName) {
   EXPECT_TRUE(foo_->IsReservedName("foo"));
   EXPECT_TRUE(foo_->IsReservedName("bar"));
   EXPECT_FALSE(foo_->IsReservedName("baz"));
-};
+}
 
 // ===================================================================
 

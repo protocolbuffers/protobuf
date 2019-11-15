@@ -778,7 +778,7 @@ jspb.Message.getRepeatedBooleanField = function(msg, fieldNumber) {
  * @return {?string} The field's coerced value.
  */
 jspb.Message.bytesAsB64 = function(value) {
-  if (value == null || goog.isString(value)) {
+  if (value == null || typeof value === 'string') {
     return value;
   }
   if (jspb.Message.SUPPORTS_UINT8ARRAY_ && value instanceof Uint8Array) {
@@ -800,7 +800,7 @@ jspb.Message.bytesAsU8 = function(value) {
   if (value == null || value instanceof Uint8Array) {
     return value;
   }
-  if (goog.isString(value)) {
+  if (typeof value === 'string') {
     return goog.crypt.base64.decodeStringToUint8Array(value);
   }
   goog.asserts.fail('Cannot coerce to Uint8Array: ' + goog.typeOf(value));
@@ -816,7 +816,7 @@ jspb.Message.bytesAsU8 = function(value) {
  */
 jspb.Message.bytesListAsB64 = function(value) {
   jspb.Message.assertConsistentTypes_(value);
-  if (!value.length || goog.isString(value[0])) {
+  if (!value.length || typeof value[0] === 'string') {
     return /** @type {!Array<string>} */ (value);
   }
   return goog.array.map(value, jspb.Message.bytesAsB64);
@@ -1654,8 +1654,8 @@ jspb.Message.compareFields = function(field1, field2) {
 
   if (!goog.isObject(field1) || !goog.isObject(field2)) {
     // NaN != NaN so we cover this case.
-    if ((goog.isNumber(field1) && isNaN(field1)) ||
-        (goog.isNumber(field2) && isNaN(field2))) {
+    if ((typeof field1 === 'number' && isNaN(field1)) ||
+        (typeof field2 === 'number' && isNaN(field2))) {
       // One of the fields might be a string 'NaN'.
       return String(field1) == String(field2);
     }

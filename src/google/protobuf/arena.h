@@ -88,6 +88,7 @@ namespace internal {
 
 struct ArenaStringPtr;  // defined in arenastring.h
 class LazyField;        // defined in lazy_field.h
+class EpsCopyInputStream;  // defined in parse_context.h
 
 template <typename Type>
 class GenericTypeHandler;  // defined in repeated_field.h
@@ -535,7 +536,7 @@ class PROTOBUF_EXPORT alignas(8) Arena final {
     AllocHook(RTTI_TYPE_ID(T), n);
     // Monitor allocation if needed.
     if (skip_explicit_ownership) {
-      return impl_.AllocateAligned(n);
+      return AllocateAlignedNoHook(n);
     } else {
       return impl_.AllocateAlignedAndAddCleanup(
           n, &internal::arena_destruct_object<T>);
@@ -596,7 +597,7 @@ class PROTOBUF_EXPORT alignas(8) Arena final {
     const size_t n = internal::AlignUpTo8(sizeof(T) * num_elements);
     // Monitor allocation if needed.
     AllocHook(RTTI_TYPE_ID(T), n);
-    return static_cast<T*>(impl_.AllocateAligned(n));
+    return static_cast<T*>(AllocateAlignedNoHook(n));
   }
 
   template <typename T, typename... Args>
@@ -689,8 +690,10 @@ class PROTOBUF_EXPORT alignas(8) Arena final {
   // For friends of arena.
   void* AllocateAligned(size_t n) {
     AllocHook(NULL, n);
-    return impl_.AllocateAligned(internal::AlignUpTo8(n));
+    return AllocateAlignedNoHook(internal::AlignUpTo8(n));
   }
+
+  void* AllocateAlignedNoHook(size_t n);
 
   internal::ArenaImpl impl_;
 
@@ -707,6 +710,7 @@ class PROTOBUF_EXPORT alignas(8) Arena final {
   friend class internal::GenericTypeHandler;
   friend struct internal::ArenaStringPtr;  // For AllocateAligned.
   friend class internal::LazyField;        // For CreateMaybeMessage.
+  friend class internal::EpsCopyInputStream;  // For parser performance
   friend class MessageLite;
   template <typename Key, typename T>
   friend class Map;

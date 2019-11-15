@@ -621,11 +621,11 @@ class PROTOBUF_EXPORT WireFormatLite {
   // have a CodedOutputStream available, so they get an additional parameter
   // telling them whether to serialize deterministically.
   template <typename MessageType>
-  PROTOBUF_ALWAYS_INLINE static uint8* InternalWriteGroupToArray(
+  PROTOBUF_ALWAYS_INLINE static uint8* InternalWriteGroup(
       int field_number, const MessageType& value, uint8* target,
       io::EpsCopyOutputStream* stream);
   template <typename MessageType>
-  PROTOBUF_ALWAYS_INLINE static uint8* InternalWriteMessageToArray(
+  PROTOBUF_ALWAYS_INLINE static uint8* InternalWriteMessage(
       int field_number, const MessageType& value, uint8* target,
       io::EpsCopyOutputStream* stream);
 
@@ -649,7 +649,7 @@ class PROTOBUF_EXPORT WireFormatLite {
             static_cast<int>(2 * io::CodedOutputStream::VarintSize32(
                                      static_cast<uint32>(field_number) << 3)),
         io::CodedOutputStream::IsDefaultSerializationDeterministic());
-    return InternalWriteGroupToArray(field_number, value, target, &stream);
+    return InternalWriteGroup(field_number, value, target, &stream);
   }
   PROTOBUF_ALWAYS_INLINE static uint8* WriteMessageToArray(
       int field_number, const MessageLite& value, uint8* target) {
@@ -660,7 +660,7 @@ class PROTOBUF_EXPORT WireFormatLite {
                                     static_cast<uint32>(field_number) << 3) +
                                 io::CodedOutputStream::VarintSize32(size)),
         io::CodedOutputStream::IsDefaultSerializationDeterministic());
-    return InternalWriteMessageToArray(field_number, value, target, &stream);
+    return InternalWriteMessage(field_number, value, target, &stream);
   }
 
   // Compute the byte size of a field.  The XxSize() functions do NOT include
@@ -1698,22 +1698,22 @@ inline uint8* WireFormatLite::WriteBytesToArray(int field_number,
 
 
 template <typename MessageType>
-inline uint8* WireFormatLite::InternalWriteGroupToArray(
+inline uint8* WireFormatLite::InternalWriteGroup(
     int field_number, const MessageType& value, uint8* target,
     io::EpsCopyOutputStream* stream) {
   target = WriteTagToArray(field_number, WIRETYPE_START_GROUP, target);
-  target = value.InternalSerializeWithCachedSizesToArray(target, stream);
+  target = value._InternalSerialize(target, stream);
   target = stream->EnsureSpace(target);
   return WriteTagToArray(field_number, WIRETYPE_END_GROUP, target);
 }
 template <typename MessageType>
-inline uint8* WireFormatLite::InternalWriteMessageToArray(
+inline uint8* WireFormatLite::InternalWriteMessage(
     int field_number, const MessageType& value, uint8* target,
     io::EpsCopyOutputStream* stream) {
   target = WriteTagToArray(field_number, WIRETYPE_LENGTH_DELIMITED, target);
   target = io::CodedOutputStream::WriteVarint32ToArray(
       static_cast<uint32>(value.GetCachedSize()), target);
-  return value.InternalSerializeWithCachedSizesToArray(target, stream);
+  return value._InternalSerialize(target, stream);
 }
 
 // See comment on ReadGroupNoVirtual to understand the need for this template
@@ -1724,7 +1724,7 @@ inline uint8* WireFormatLite::InternalWriteGroupNoVirtualToArray(
     uint8* target) {
   target = WriteTagToArray(field_number, WIRETYPE_START_GROUP, target);
   target = value.MessageType_WorkAroundCppLookupDefect::
-               InternalSerializeWithCachedSizesToArray(target);
+               SerializeWithCachedSizesToArray(target);
   return WriteTagToArray(field_number, WIRETYPE_END_GROUP, target);
 }
 template <typename MessageType_WorkAroundCppLookupDefect>
@@ -1736,8 +1736,9 @@ inline uint8* WireFormatLite::InternalWriteMessageNoVirtualToArray(
       static_cast<uint32>(
           value.MessageType_WorkAroundCppLookupDefect::GetCachedSize()),
       target);
-  return value.MessageType_WorkAroundCppLookupDefect::
-      InternalSerializeWithCachedSizesToArray(target);
+  return value
+      .MessageType_WorkAroundCppLookupDefect::SerializeWithCachedSizesToArray(
+          target);
 }
 
 // ===================================================================

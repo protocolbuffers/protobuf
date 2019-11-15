@@ -414,7 +414,7 @@ jspb.BinaryEncoder.prototype.writeDouble = function(value) {
  * @param {boolean|number} value The value to write.
  */
 jspb.BinaryEncoder.prototype.writeBool = function(value) {
-  goog.asserts.assert(goog.isBoolean(value) || goog.isNumber(value));
+  goog.asserts.assert(typeof value === 'boolean' || typeof value === 'number');
   this.buffer_.push(value ? 1 : 0);
 };
 

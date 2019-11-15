@@ -175,6 +175,42 @@ class Message
         }
     }
 
+    protected function readWrapperValue($member)
+    {
+        $field = $this->desc->getFieldByName($member);
+        $oneof_index = $field->getOneofIndex();
+        if ($oneof_index === -1) {
+            $wrapper = $this->$member;
+        } else {
+            $wrapper = $this->readOneof($field->getNumber());
+        }
+
+        if (is_null($wrapper)) {
+            return NULL;
+        } else {
+            return $wrapper->getValue();
+        }
+    }
+
+    protected function writeWrapperValue($member, $value)
+    {
+        $field = $this->desc->getFieldByName($member);
+        $wrapped_value = $value;
+        if (!is_null($value)) {
+            $desc = $field->getMessageType();
+            $klass = $desc->getClass();
+            $wrapped_value = new $klass;
+            $wrapped_value->setValue($value);
+        }
+
+        $oneof_index = $field->getOneofIndex();
+        if ($oneof_index === -1) {
+            $this->$member = $wrapped_value;
+        } else {
+            $this->writeOneof($field->getNumber(), $wrapped_value);
+        }
+    }
+
     protected function readOneof($number)
     {
         $field = $this->desc->getFieldByNumber($number);

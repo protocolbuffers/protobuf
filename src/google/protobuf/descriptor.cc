@@ -4602,7 +4602,6 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
 
   AddSymbol(result->full_name(), parent, result->name(), proto, Symbol(result));
 
-
   for (int i = 0; i < proto.reserved_range_size(); i++) {
     const DescriptorProto_ReservedRange& range1 = proto.reserved_range(i);
     for (int j = i + 1; j < proto.reserved_range_size(); j++) {
@@ -6438,6 +6437,7 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
   std::vector<int> dest_path = options_path;
 
   for (int i = 0; i < uninterpreted_option_->name_size(); ++i) {
+    builder_->undefine_resolved_name_.clear();
     const std::string& name_part = uninterpreted_option_->name(i).name_part();
     if (debug_msg_name.size() > 0) {
       debug_msg_name += ".";

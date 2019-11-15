@@ -149,9 +149,11 @@
 
 #if defined(__GNUC__) || defined(__clang__)
 #define PROTOBUF_DEPRECATED __attribute__((deprecated))
+#define PROTOBUF_DEPRECATED_ENUM __attribute__((deprecated))
 #define PROTOBUF_DEPRECATED_MSG(msg) __attribute__((deprecated(msg)))
 #elif defined(_MSC_VER)
 #define PROTOBUF_DEPRECATED __declspec(deprecated)
+#define PROTOBUF_DEPRECATED_ENUM
 #define PROTOBUF_DEPRECATED_MSG(msg) __declspec(deprecated(msg))
 #endif
 

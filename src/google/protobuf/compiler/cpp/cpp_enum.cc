@@ -104,10 +104,8 @@ void EnumGenerator::GenerateDefinition(io::Printer* printer) {
     // 2147483648, and since 2147483648 can't fit in an integer, this produces a
     // compiler warning.  This works around that issue.
     format_value.Set("number", Int32ToString(descriptor_->value(i)->number()));
-    format_value.Set(
-        "deprecation",
-        DeprecatedAttribute(options_,
-                            descriptor_->value(i)->options().deprecated()));
+    format_value.Set("deprecation",
+                     DeprecatedAttribute(options_, descriptor_->value(i)));
 
     if (i > 0) format_value(",\n");
     format_value("${1$$prefix$$name$$}$ $deprecation$= $number$",
@@ -213,8 +211,8 @@ void EnumGenerator::GenerateSymbolImports(io::Printer* printer) const {
   format("typedef $classname$ $resolved_name$;\n");
 
   for (int j = 0; j < descriptor_->value_count(); j++) {
-    std::string deprecated_attr = DeprecatedAttribute(
-        options_, descriptor_->value(j)->options().deprecated());
+    std::string deprecated_attr =
+        DeprecatedAttribute(options_, descriptor_->value(j));
     format(
         "$1$static constexpr $resolved_name$ ${2$$3$$}$ =\n"
         "  $classname$_$3$;\n",

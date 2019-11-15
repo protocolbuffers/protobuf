@@ -43,6 +43,7 @@
 #include <set>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -273,6 +274,7 @@ class PROTOC_EXPORT CommandLineInterface {
 
   // Parses input_files_ into parsed_files
   bool ParseInputFiles(DescriptorPool* descriptor_pool,
+                       DiskSourceTree* source_tree,
                        std::vector<const FileDescriptor*>* parsed_files);
 
   // Generate the given output file from the given input.

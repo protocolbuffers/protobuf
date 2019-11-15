@@ -160,6 +160,7 @@ inline bool MultipleJavaFiles(const FileDescriptor* descriptor,
   return descriptor->options().java_multiple_files();
 }
 
+
 // Returns true if `descriptor` will be written to its own .java file.
 // `immutable` should be set to true if we're generating for the immutable API.
 template <typename Descriptor>

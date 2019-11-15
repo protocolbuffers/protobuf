@@ -144,16 +144,6 @@ void ArenaImpl::SerialArena::AddCleanupFallback(void* elem,
   AddCleanup(elem, cleanup);
 }
 
-PROTOBUF_FUNC_ALIGN(32)
-void* ArenaImpl::AllocateAligned(size_t n) {
-  SerialArena* arena;
-  if (PROTOBUF_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
-    return arena->AllocateAligned(n);
-  } else {
-    return AllocateAlignedFallback(n);
-  }
-}
-
 void* ArenaImpl::AllocateAlignedAndAddCleanup(size_t n,
                                               void (*cleanup)(void*)) {
   SerialArena* arena;
@@ -187,28 +177,6 @@ void* ArenaImpl::AllocateAlignedAndAddCleanupFallback(size_t n,
 PROTOBUF_NOINLINE
 void ArenaImpl::AddCleanupFallback(void* elem, void (*cleanup)(void*)) {
   GetSerialArena()->AddCleanup(elem, cleanup);
-}
-
-inline PROTOBUF_ALWAYS_INLINE bool ArenaImpl::GetSerialArenaFast(
-    ArenaImpl::SerialArena** arena) {
-  // If this thread already owns a block in this arena then try to use that.
-  // This fast path optimizes the case where multiple threads allocate from the
-  // same arena.
-  ThreadCache* tc = &thread_cache();
-  if (PROTOBUF_PREDICT_TRUE(tc->last_lifecycle_id_seen == lifecycle_id_)) {
-    *arena = tc->last_serial_arena;
-    return true;
-  }
-
-  // Check whether we own the last accessed SerialArena on this arena.  This
-  // fast path optimizes the case where a single thread uses multiple arenas.
-  SerialArena* serial = hint_.load(std::memory_order_acquire);
-  if (PROTOBUF_PREDICT_TRUE(serial != NULL && serial->owner() == tc)) {
-    *arena = serial;
-    return true;
-  }
-
-  return false;
 }
 
 ArenaImpl::SerialArena* ArenaImpl::GetSerialArena() {
@@ -390,6 +358,11 @@ ArenaImpl::SerialArena* ArenaImpl::GetSerialArenaFallback(void* me) {
 }
 
 }  // namespace internal
+
+PROTOBUF_FUNC_ALIGN(32)
+void* Arena::AllocateAlignedNoHook(size_t n) {
+  return impl_.AllocateAligned(n);
+}
 
 void Arena::CallDestructorHooks() {
   uint64 space_allocated = impl_.SpaceAllocated();

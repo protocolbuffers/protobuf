@@ -1462,9 +1462,9 @@ bool ExtensionSet::ParseMessageSet(io::CodedInputStream* input,
   return ParseMessageSetLite(input, &finder, &skipper);
 }
 
-uint8* ExtensionSet::InternalSerializeWithCachedSizesToArray(
-    int start_field_number, int end_field_number, uint8* target,
-    io::EpsCopyOutputStream* stream) const {
+uint8* ExtensionSet::_InternalSerialize(int start_field_number,
+                                        int end_field_number, uint8* target,
+                                        io::EpsCopyOutputStream* stream) const {
   if (PROTOBUF_PREDICT_FALSE(is_large())) {
     const auto& end = map_.large->end();
     for (auto it = map_.large->lower_bound(start_field_number);
@@ -2010,7 +2010,7 @@ uint8* ExtensionSet::Extension::InternalSerializeFieldWithCachedSizesToArray(
   case WireFormatLite::TYPE_##UPPERCASE:                                 \
     for (int i = 0; i < repeated_##LOWERCASE##_value->size(); i++) {     \
       target = stream->EnsureSpace(target);                              \
-      target = WireFormatLite::InternalWrite##CAMELCASE##ToArray(        \
+      target = WireFormatLite::InternalWrite##CAMELCASE(                 \
           number, repeated_##LOWERCASE##_value->Get(i), target, stream); \
     }                                                                    \
     break
@@ -2053,8 +2053,8 @@ uint8* ExtensionSet::Extension::InternalSerializeFieldWithCachedSizesToArray(
 #undef HANDLE_TYPE
       case WireFormatLite::TYPE_GROUP:
         target = stream->EnsureSpace(target);
-        target = WireFormatLite::InternalWriteGroupToArray(
-            number, *message_value, target, stream);
+        target = WireFormatLite::InternalWriteGroup(number, *message_value,
+                                                    target, stream);
         break;
       case WireFormatLite::TYPE_MESSAGE:
         if (is_lazy) {
@@ -2062,8 +2062,8 @@ uint8* ExtensionSet::Extension::InternalSerializeFieldWithCachedSizesToArray(
               lazymessage_value->WriteMessageToArray(number, target, stream);
         } else {
           target = stream->EnsureSpace(target);
-          target = WireFormatLite::InternalWriteMessageToArray(
-              number, *message_value, target, stream);
+          target = WireFormatLite::InternalWriteMessage(number, *message_value,
+                                                        target, stream);
         }
         break;
     }
@@ -2094,7 +2094,7 @@ ExtensionSet::Extension::InternalSerializeMessageSetItemWithCachedSizesToArray(
     target = lazymessage_value->WriteMessageToArray(
         WireFormatLite::kMessageSetMessageNumber, target, stream);
   } else {
-    target = WireFormatLite::InternalWriteMessageToArray(
+    target = WireFormatLite::InternalWriteMessage(
         WireFormatLite::kMessageSetMessageNumber, *message_value, target,
         stream);
   }
