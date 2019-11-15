@@ -460,6 +460,7 @@ PHP_METHOD(FieldDescriptor, getEnumType) {
     EnumDescriptor* desc = UNBOX_HASHTABLE_VALUE(EnumDescriptor, desc_php);
     desc->intern = intern;
     add_def_obj(enumdef, desc_php);
+    add_ce_obj(intern->klass, desc_php);
   }
 
 #if PHP_MAJOR_VERSION < 7
@@ -497,6 +498,7 @@ PHP_METHOD(FieldDescriptor, getMessageType) {
     Descriptor* desc = UNBOX_HASHTABLE_VALUE(Descriptor, desc_php);
     desc->intern = intern;
     add_def_obj(msgdef, desc_php);
+    add_ce_obj(intern->klass, desc_php);
   }
 
 #if PHP_MAJOR_VERSION < 7
@@ -1096,6 +1098,7 @@ PHP_METHOD(DescriptorPool, getDescriptorByClassName) {
 #endif
     Descriptor* desc = UNBOX_HASHTABLE_VALUE(Descriptor, desc_php);
     desc->intern = intern;
+    add_def_obj(intern->msgdef, desc_php);
     add_ce_obj(PHP_PROTO_CE_UNREF(pce), desc_php);
   }
 
@@ -1150,6 +1153,7 @@ PHP_METHOD(DescriptorPool, getEnumDescriptorByClassName) {
 #endif
     EnumDescriptor* desc = UNBOX_HASHTABLE_VALUE(EnumDescriptor, desc_php);
     desc->intern = intern;
+    add_def_obj(intern->enumdef, desc_php);
     add_ce_obj(PHP_PROTO_CE_UNREF(pce), desc_php);
   }
 
