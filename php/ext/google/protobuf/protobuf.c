@@ -391,16 +391,16 @@ static PHP_RSHUTDOWN_FUNCTION(protobuf) {
   }
 #endif
 
-  // is_inited_file_any = true;
-  // is_inited_file_api = true;
-  // is_inited_file_duration = true;
-  // is_inited_file_field_mask = true;
-  // is_inited_file_empty = true;
-  // is_inited_file_source_context = true;
-  // is_inited_file_struct = true;
-  // is_inited_file_timestamp = true;
-  // is_inited_file_type = true;
-  // is_inited_file_wrappers = true;
+  is_inited_file_any = true;
+  is_inited_file_api = true;
+  is_inited_file_duration = true;
+  is_inited_file_field_mask = true;
+  is_inited_file_empty = true;
+  is_inited_file_source_context = true;
+  is_inited_file_struct = true;
+  is_inited_file_timestamp = true;
+  is_inited_file_type = true;
+  is_inited_file_wrappers = true;
 
   return 0;
 }

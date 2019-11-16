@@ -619,7 +619,7 @@ zval* internal_generated_pool_php;
 zend_object *generated_pool_php;
 zend_object *internal_generated_pool_php;
 #endif
-InternalDescriptorPool *generated_pool;
+InternalDescriptorPoolImpl *generated_pool;
 InternalDescriptorPoolImpl generated_pool_impl;  // The actual generated pool
 
 void init_generated_pool_once(TSRMLS_D) {
@@ -630,42 +630,25 @@ void init_generated_pool_once(TSRMLS_D) {
     ZVAL_OBJ(internal_generated_pool_php,
              internal_descriptor_pool_type->create_object(
                  internal_descriptor_pool_type TSRMLS_CC));
-    generated_pool = UNBOX(InternalDescriptorPool, internal_generated_pool_php);
     ZVAL_OBJ(generated_pool_php, descriptor_pool_type->create_object(
                                      descriptor_pool_type TSRMLS_CC));
 #else
     internal_generated_pool_php = internal_descriptor_pool_type->create_object(
         internal_descriptor_pool_type TSRMLS_CC);
-    generated_pool = (InternalDescriptorPool *)((char *)internal_generated_pool_php -
-                                        XtOffsetOf(InternalDescriptorPool, std));
     generated_pool_php =
         descriptor_pool_type->create_object(descriptor_pool_type TSRMLS_CC);
 #endif
+    generated_pool = &generated_pool_impl;
   }
 }
 
 static void internal_descriptor_pool_init_c_instance(
     InternalDescriptorPool *pool TSRMLS_DC) {
   pool->intern = &generated_pool_impl;
-  pool->symtab = upb_symtab_new();
-  pool->fill_handler_cache =
-      upb_handlercache_new(add_handlers_for_message, NULL);
-  pool->pb_serialize_handler_cache = upb_pb_encoder_newcache();
-  pool->json_serialize_handler_cache = upb_json_printer_newcache(false);
-  pool->json_serialize_handler_preserve_cache = upb_json_printer_newcache(true);
-  pool->fill_method_cache = upb_pbcodecache_new(pool->fill_handler_cache);
-  pool->json_fill_method_cache = upb_json_codecache_new();
 }
 
 static void internal_descriptor_pool_free_c(
     InternalDescriptorPool *pool TSRMLS_DC) {
-  upb_symtab_free(pool->symtab);
-  upb_handlercache_free(pool->fill_handler_cache);
-  upb_handlercache_free(pool->pb_serialize_handler_cache);
-  upb_handlercache_free(pool->json_serialize_handler_cache);
-  upb_handlercache_free(pool->json_serialize_handler_preserve_cache);
-  upb_pbcodecache_free(pool->fill_method_cache);
-  upb_json_codecache_free(pool->json_fill_method_cache);
 }
 
 void internal_descriptor_pool_impl_init(
@@ -962,7 +945,7 @@ bool depends_on_descriptor(const google_protobuf_FileDescriptorProto* file) {
 
 const upb_filedef *parse_and_add_descriptor(const char *data,
                                             PHP_PROTO_SIZE data_len,
-                                            InternalDescriptorPool *pool,
+                                            InternalDescriptorPoolImpl *pool,
                                             upb_arena *arena) {
   size_t n;
   google_protobuf_FileDescriptorSet *set;
@@ -1012,7 +995,7 @@ const upb_filedef *parse_and_add_descriptor(const char *data,
 }
 
 void internal_add_generated_file(const char *data, PHP_PROTO_SIZE data_len,
-                                 InternalDescriptorPool *pool,
+                                 InternalDescriptorPoolImpl *pool,
                                  bool use_nested_submsg TSRMLS_DC) {
   int i;
   upb_arena *arena;
@@ -1090,14 +1073,11 @@ PHP_METHOD(InternalDescriptorPool, internalAddGeneratedFile) {
   }
 
   InternalDescriptorPool *pool = UNBOX(InternalDescriptorPool, getThis());
-  internal_add_generated_file(data, data_len, pool,
+  internal_add_generated_file(data, data_len, pool->intern,
                               use_nested_submsg TSRMLS_CC);
 }
 
 PHP_METHOD(DescriptorPool, getDescriptorByClassName) {
-  DescriptorPool *public_pool = UNBOX(DescriptorPool, getThis());
-  InternalDescriptorPool *pool = public_pool->intern;
-
   char *classname = NULL;
   PHP_PROTO_SIZE classname_len;
 
@@ -1150,9 +1130,6 @@ PHP_METHOD(DescriptorPool, getDescriptorByClassName) {
 }
 
 PHP_METHOD(DescriptorPool, getEnumDescriptorByClassName) {
-  DescriptorPool *public_pool = UNBOX(DescriptorPool, getThis());
-  InternalDescriptorPool *pool = public_pool->intern;
-
   char *classname = NULL;
   PHP_PROTO_SIZE classname_len;
 

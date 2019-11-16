@@ -806,20 +806,13 @@ struct InternalDescriptorPoolImpl {
 
 PHP_PROTO_WRAP_OBJECT_START(InternalDescriptorPool)
   InternalDescriptorPoolImpl* intern;
-  upb_symtab* symtab;
-  upb_handlercache* fill_handler_cache;
-  upb_handlercache* pb_serialize_handler_cache;
-  upb_handlercache* json_serialize_handler_cache;
-  upb_handlercache* json_serialize_handler_preserve_cache;
-  upb_pbcodecache* fill_method_cache;
-  upb_json_codecache* json_fill_method_cache;
 PHP_PROTO_WRAP_OBJECT_END
 
 PHP_METHOD(InternalDescriptorPool, getGeneratedPool);
 PHP_METHOD(InternalDescriptorPool, internalAddGeneratedFile);
 
 void internal_add_generated_file(const char* data, PHP_PROTO_SIZE data_len,
-                                 InternalDescriptorPool* pool,
+                                 InternalDescriptorPoolImpl* pool,
                                  bool use_nested_submsg TSRMLS_DC);
 void init_generated_pool_once(TSRMLS_D);
 void add_handlers_for_message(const void* closure, upb_handlers* h);
@@ -836,7 +829,7 @@ extern zend_object *internal_generated_pool_php;
 void descriptor_pool_free(zend_object* object);
 void internal_descriptor_pool_free(zend_object* object);
 #endif
-extern InternalDescriptorPool* generated_pool;
+extern InternalDescriptorPoolImpl* generated_pool;
 // The actual generated pool
 extern InternalDescriptorPoolImpl generated_pool_impl;
 
@@ -846,7 +839,7 @@ void internal_descriptor_pool_impl_destroy(
     InternalDescriptorPoolImpl *pool TSRMLS_DC);
 
 struct DescriptorInternal {
-  InternalDescriptorPool* pool;
+  InternalDescriptorPoolImpl* pool;
   const upb_msgdef* msgdef;
   MessageLayout* layout;
   zend_class_entry* klass;  // begins as NULL
