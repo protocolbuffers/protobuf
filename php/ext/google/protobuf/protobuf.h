@@ -609,6 +609,7 @@ struct GPBEmpty;
 struct Int32Value;
 struct Int64Value;
 struct InternalDescriptorPool;
+struct InternalDescriptorPoolImpl;
 struct ListValue;
 struct Map;
 struct MapIter;
@@ -656,6 +657,7 @@ typedef struct GPBEmpty GPBEmpty;
 typedef struct Int32Value Int32Value;
 typedef struct Int64Value Int64Value;
 typedef struct InternalDescriptorPool InternalDescriptorPool;
+typedef struct InternalDescriptorPoolImpl InternalDescriptorPoolImpl;
 typedef struct ListValue ListValue;
 typedef struct MapIter MapIter;
 typedef struct Map Map;
@@ -792,7 +794,18 @@ PHP_METHOD(DescriptorPool, getGeneratedPool);
 PHP_METHOD(DescriptorPool, getDescriptorByClassName);
 PHP_METHOD(DescriptorPool, getEnumDescriptorByClassName);
 
+struct InternalDescriptorPoolImpl {
+  upb_symtab* symtab;
+  upb_handlercache* fill_handler_cache;
+  upb_handlercache* pb_serialize_handler_cache;
+  upb_handlercache* json_serialize_handler_cache;
+  upb_handlercache* json_serialize_handler_preserve_cache;
+  upb_pbcodecache* fill_method_cache;
+  upb_json_codecache* json_fill_method_cache;
+};
+
 PHP_PROTO_WRAP_OBJECT_START(InternalDescriptorPool)
+  InternalDescriptorPoolImpl* intern;
   upb_symtab* symtab;
   upb_handlercache* fill_handler_cache;
   upb_handlercache* pb_serialize_handler_cache;
@@ -823,7 +836,14 @@ extern zend_object *internal_generated_pool_php;
 void descriptor_pool_free(zend_object* object);
 void internal_descriptor_pool_free(zend_object* object);
 #endif
-extern InternalDescriptorPool* generated_pool;  // The actual generated pool
+extern InternalDescriptorPool* generated_pool;
+// The actual generated pool
+extern InternalDescriptorPoolImpl generated_pool_impl;
+
+void internal_descriptor_pool_impl_init(
+    InternalDescriptorPoolImpl *pool TSRMLS_DC);
+void internal_descriptor_pool_impl_destroy(
+    InternalDescriptorPoolImpl *pool TSRMLS_DC);
 
 struct DescriptorInternal {
   InternalDescriptorPool* pool;

@@ -619,7 +619,8 @@ zval* internal_generated_pool_php;
 zend_object *generated_pool_php;
 zend_object *internal_generated_pool_php;
 #endif
-InternalDescriptorPool *generated_pool;  // The actual generated pool
+InternalDescriptorPool *generated_pool;
+InternalDescriptorPoolImpl generated_pool_impl;  // The actual generated pool
 
 void init_generated_pool_once(TSRMLS_D) {
   if (generated_pool == NULL) {
@@ -645,6 +646,7 @@ void init_generated_pool_once(TSRMLS_D) {
 
 static void internal_descriptor_pool_init_c_instance(
     InternalDescriptorPool *pool TSRMLS_DC) {
+  pool->intern = &generated_pool_impl;
   pool->symtab = upb_symtab_new();
   pool->fill_handler_cache =
       upb_handlercache_new(add_handlers_for_message, NULL);
@@ -657,6 +659,29 @@ static void internal_descriptor_pool_init_c_instance(
 
 static void internal_descriptor_pool_free_c(
     InternalDescriptorPool *pool TSRMLS_DC) {
+  upb_symtab_free(pool->symtab);
+  upb_handlercache_free(pool->fill_handler_cache);
+  upb_handlercache_free(pool->pb_serialize_handler_cache);
+  upb_handlercache_free(pool->json_serialize_handler_cache);
+  upb_handlercache_free(pool->json_serialize_handler_preserve_cache);
+  upb_pbcodecache_free(pool->fill_method_cache);
+  upb_json_codecache_free(pool->json_fill_method_cache);
+}
+
+void internal_descriptor_pool_impl_init(
+    InternalDescriptorPoolImpl *pool TSRMLS_DC) {
+  pool->symtab = upb_symtab_new();
+  pool->fill_handler_cache =
+      upb_handlercache_new(add_handlers_for_message, NULL);
+  pool->pb_serialize_handler_cache = upb_pb_encoder_newcache();
+  pool->json_serialize_handler_cache = upb_json_printer_newcache(false);
+  pool->json_serialize_handler_preserve_cache = upb_json_printer_newcache(true);
+  pool->fill_method_cache = upb_pbcodecache_new(pool->fill_handler_cache);
+  pool->json_fill_method_cache = upb_json_codecache_new();
+}
+
+void internal_descriptor_pool_impl_destroy(
+    InternalDescriptorPoolImpl *pool TSRMLS_DC) {
   upb_symtab_free(pool->symtab);
   upb_handlercache_free(pool->fill_handler_cache);
   upb_handlercache_free(pool->pb_serialize_handler_cache);

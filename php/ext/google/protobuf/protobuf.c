@@ -427,6 +427,7 @@ static PHP_MINIT_FUNCTION(protobuf) {
   upb_strtable_init(&reserved_names, UPB_CTYPE_UINT64);
 
   reserved_names_init();
+  internal_descriptor_pool_impl_init(&generated_pool_impl TSRMLS_CC);
 
   descriptor_pool_init(TSRMLS_C);
   descriptor_init(TSRMLS_C);
@@ -521,6 +522,8 @@ static PHP_MSHUTDOWN_FUNCTION(protobuf) {
   // Only needs to clean one map out of three (def=>desc, ce=>desc, proto=>desc)
   cleanup_desc_table(&upb_def_to_desc_map_persistent);
   cleanup_enumdesc_table(&upb_def_to_enumdesc_map_persistent);
+
+  internal_descriptor_pool_impl_destroy(&generated_pool_impl TSRMLS_CC);
 
   upb_inttable_uninit(&upb_def_to_desc_map_persistent);
   upb_inttable_uninit(&upb_def_to_enumdesc_map_persistent);
