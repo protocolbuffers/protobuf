@@ -20,7 +20,7 @@ class MethodDescriptorProto extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>optional string name = 1;</code>
      */
-    private $name = '';
+    protected $name = '';
     private $has_name = false;
     /**
      * Input and output type names.  These are resolved in the same way as
@@ -28,31 +28,31 @@ class MethodDescriptorProto extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional string input_type = 2;</code>
      */
-    private $input_type = '';
+    protected $input_type = '';
     private $has_input_type = false;
     /**
      * Generated from protobuf field <code>optional string output_type = 3;</code>
      */
-    private $output_type = '';
+    protected $output_type = '';
     private $has_output_type = false;
     /**
      * Generated from protobuf field <code>optional .google.protobuf.MethodOptions options = 4;</code>
      */
-    private $options = null;
+    protected $options = null;
     private $has_options = false;
     /**
      * Identifies if client streams multiple client messages
      *
      * Generated from protobuf field <code>optional bool client_streaming = 5 [default = false];</code>
      */
-    private $client_streaming = false;
+    protected $client_streaming = false;
     private $has_client_streaming = false;
     /**
      * Identifies if server streams multiple server messages
      *
      * Generated from protobuf field <code>optional bool server_streaming = 6 [default = false];</code>
      */
-    private $server_streaming = false;
+    protected $server_streaming = false;
     private $has_server_streaming = false;
 
     /**
