@@ -22,14 +22,14 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional string name = 1;</code>
      */
-    private $name = '';
+    protected $name = '';
     private $has_name = false;
     /**
      * e.g. "foo", "foo.bar", etc.
      *
      * Generated from protobuf field <code>optional string package = 2;</code>
      */
-    private $package = '';
+    protected $package = '';
     private $has_package = false;
     /**
      * Names of files imported by this file.
@@ -78,7 +78,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>optional .google.protobuf.FileOptions options = 8;</code>
      */
-    private $options = null;
+    protected $options = null;
     private $has_options = false;
     /**
      * This field contains optional information about the original source code.
@@ -88,7 +88,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional .google.protobuf.SourceCodeInfo source_code_info = 9;</code>
      */
-    private $source_code_info = null;
+    protected $source_code_info = null;
     private $has_source_code_info = false;
     /**
      * The syntax of the proto file.
@@ -96,7 +96,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional string syntax = 12;</code>
      */
-    private $syntax = '';
+    protected $syntax = '';
     private $has_syntax = false;
 
     /**

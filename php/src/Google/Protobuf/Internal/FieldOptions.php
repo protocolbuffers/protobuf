@@ -23,7 +23,7 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional .google.protobuf.FieldOptions.CType ctype = 1 [default = STRING];</code>
      */
-    private $ctype = 0;
+    protected $ctype = 0;
     private $has_ctype = false;
     /**
      * The packed option can be enabled for repeated primitive fields to enable
@@ -34,7 +34,7 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional bool packed = 2;</code>
      */
-    private $packed = false;
+    protected $packed = false;
     private $has_packed = false;
     /**
      * The jstype option determines the JavaScript type used for values of the
@@ -50,7 +50,7 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];</code>
      */
-    private $jstype = 0;
+    protected $jstype = 0;
     private $has_jstype = false;
     /**
      * Should this field be parsed lazily?  Lazy applies only to message-type
@@ -80,7 +80,7 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional bool lazy = 5 [default = false];</code>
      */
-    private $lazy = false;
+    protected $lazy = false;
     private $has_lazy = false;
     /**
      * Is this field deprecated?
@@ -90,14 +90,14 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional bool deprecated = 3 [default = false];</code>
      */
-    private $deprecated = false;
+    protected $deprecated = false;
     private $has_deprecated = false;
     /**
      * For Google-internal migration only. Do not use.
      *
      * Generated from protobuf field <code>optional bool weak = 10 [default = false];</code>
      */
-    private $weak = false;
+    protected $weak = false;
     private $has_weak = false;
     /**
      * The parser stores options it doesn't recognize here. See above.

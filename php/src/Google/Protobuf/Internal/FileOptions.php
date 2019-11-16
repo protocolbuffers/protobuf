@@ -23,7 +23,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional string java_package = 1;</code>
      */
-    private $java_package = '';
+    protected $java_package = '';
     private $has_java_package = false;
     /**
      * If set, all the classes from the .proto file are wrapped in a single
@@ -34,7 +34,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional string java_outer_classname = 8;</code>
      */
-    private $java_outer_classname = '';
+    protected $java_outer_classname = '';
     private $has_java_outer_classname = false;
     /**
      * If set true, then the Java code generator will generate a separate .java
@@ -46,14 +46,14 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional bool java_multiple_files = 10 [default = false];</code>
      */
-    private $java_multiple_files = false;
+    protected $java_multiple_files = false;
     private $has_java_multiple_files = false;
     /**
      * This option does nothing.
      *
      * Generated from protobuf field <code>optional bool java_generate_equals_and_hash = 20 [deprecated = true];</code>
      */
-    private $java_generate_equals_and_hash = false;
+    protected $java_generate_equals_and_hash = false;
     private $has_java_generate_equals_and_hash = false;
     /**
      * If set true, then the Java2 code generator will generate code that
@@ -65,12 +65,12 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional bool java_string_check_utf8 = 27 [default = false];</code>
      */
-    private $java_string_check_utf8 = false;
+    protected $java_string_check_utf8 = false;
     private $has_java_string_check_utf8 = false;
     /**
      * Generated from protobuf field <code>optional .google.protobuf.FileOptions.OptimizeMode optimize_for = 9 [default = SPEED];</code>
      */
-    private $optimize_for = 0;
+    protected $optimize_for = 0;
     private $has_optimize_for = false;
     /**
      * Sets the Go package where structs generated from this .proto will be
@@ -81,7 +81,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional string go_package = 11;</code>
      */
-    private $go_package = '';
+    protected $go_package = '';
     private $has_go_package = false;
     /**
      * Should generic services be generated in each language?  "Generic" services
@@ -96,22 +96,22 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional bool cc_generic_services = 16 [default = false];</code>
      */
-    private $cc_generic_services = false;
+    protected $cc_generic_services = false;
     private $has_cc_generic_services = false;
     /**
      * Generated from protobuf field <code>optional bool java_generic_services = 17 [default = false];</code>
      */
-    private $java_generic_services = false;
+    protected $java_generic_services = false;
     private $has_java_generic_services = false;
     /**
      * Generated from protobuf field <code>optional bool py_generic_services = 18 [default = false];</code>
      */
-    private $py_generic_services = false;
+    protected $py_generic_services = false;
     private $has_py_generic_services = false;
     /**
      * Generated from protobuf field <code>optional bool php_generic_services = 42 [default = false];</code>
      */
-    private $php_generic_services = false;
+    protected $php_generic_services = false;
     private $has_php_generic_services = false;
     /**
      * Is this file deprecated?
@@ -121,7 +121,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional bool deprecated = 23 [default = false];</code>
      */
-    private $deprecated = false;
+    protected $deprecated = false;
     private $has_deprecated = false;
     /**
      * Enables the use of arenas for the proto messages in this file. This applies
@@ -129,7 +129,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional bool cc_enable_arenas = 31 [default = false];</code>
      */
-    private $cc_enable_arenas = false;
+    protected $cc_enable_arenas = false;
     private $has_cc_enable_arenas = false;
     /**
      * Sets the objective c class prefix which is prepended to all objective c
@@ -137,14 +137,14 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional string objc_class_prefix = 36;</code>
      */
-    private $objc_class_prefix = '';
+    protected $objc_class_prefix = '';
     private $has_objc_class_prefix = false;
     /**
      * Namespace for generated classes; defaults to the package.
      *
      * Generated from protobuf field <code>optional string csharp_namespace = 37;</code>
      */
-    private $csharp_namespace = '';
+    protected $csharp_namespace = '';
     private $has_csharp_namespace = false;
     /**
      * By default Swift generators will take the proto package and CamelCase it
@@ -154,7 +154,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional string swift_prefix = 39;</code>
      */
-    private $swift_prefix = '';
+    protected $swift_prefix = '';
     private $has_swift_prefix = false;
     /**
      * Sets the php class prefix which is prepended to all php generated classes
@@ -162,7 +162,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional string php_class_prefix = 40;</code>
      */
-    private $php_class_prefix = '';
+    protected $php_class_prefix = '';
     private $has_php_class_prefix = false;
     /**
      * Use this option to change the namespace of php generated classes. Default
@@ -171,7 +171,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional string php_namespace = 41;</code>
      */
-    private $php_namespace = '';
+    protected $php_namespace = '';
     private $has_php_namespace = false;
     /**
      * Use this option to change the namespace of php generated metadata classes.
@@ -180,7 +180,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional string php_metadata_namespace = 44;</code>
      */
-    private $php_metadata_namespace = '';
+    protected $php_metadata_namespace = '';
     private $has_php_metadata_namespace = false;
     /**
      * Use this option to change the package of ruby generated classes. Default
@@ -189,7 +189,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional string ruby_package = 45;</code>
      */
-    private $ruby_package = '';
+    protected $ruby_package = '';
     private $has_ruby_package = false;
     /**
      * The parser stores options it doesn't recognize here.
