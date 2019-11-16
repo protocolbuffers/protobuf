@@ -950,14 +950,22 @@ const upb_filedef *parse_and_add_descriptor(const char *data,
 
   if (!set) {
     zend_error(E_ERROR, "Failed to parse binary descriptor\n");
-    return false;
+    return NULL;
   }
 
   files = google_protobuf_FileDescriptorSet_file(set, &n);
 
   if (n != 1) {
     zend_error(E_ERROR, "Serialized descriptors should have exactly one file");
-    return false;
+    return NULL;
+  }
+
+  // Check whether file has already been added.
+  upb_strview name = google_protobuf_FileDescriptorProto_name(files[0]);
+  // TODO(teboring): Needs another look up method which takes data and length.
+  file = upb_symtab_lookupfile(pool->symtab, name.data);
+  if (file != NULL) {
+    return NULL;
   }
 
   // The PHP code generator currently special-cases descriptor.proto.  It
@@ -968,7 +976,7 @@ const upb_filedef *parse_and_add_descriptor(const char *data,
           NULL) {
     if (!parse_and_add_descriptor((char *)descriptor_proto,
                                   descriptor_proto_len, pool, arena)) {
-      return false;
+      return NULL;
     }
   }
 
