@@ -963,7 +963,7 @@ const upb_filedef *parse_and_add_descriptor(const char *data,
   // Check whether file has already been added.
   upb_strview name = google_protobuf_FileDescriptorProto_name(files[0]);
   // TODO(teboring): Needs another look up method which takes data and length.
-  file = upb_symtab_lookupfile(pool->symtab, name.data);
+  file = upb_symtab_lookupfile2(pool->symtab, name.data, name.size);
   if (file != NULL) {
     return NULL;
   }
