@@ -686,6 +686,7 @@ typedef struct Value Value;
 // -----------------------------------------------------------------------------
 
 ZEND_BEGIN_MODULE_GLOBALS(protobuf)
+  zend_bool keep_descriptor_pool_after_request;
 ZEND_END_MODULE_GLOBALS(protobuf)
 
 ZEND_DECLARE_MODULE_GLOBALS(protobuf)

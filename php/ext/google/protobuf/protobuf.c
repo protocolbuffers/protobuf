@@ -337,16 +337,15 @@ static void test_release(void* value) {
 }
 #endif
 
-static PHP_RINIT_FUNCTION(protobuf) {
-  ALLOC_HASHTABLE(upb_def_to_php_obj_map);
-  zend_hash_init(upb_def_to_php_obj_map, 16, NULL, HASHTABLE_VALUE_DTOR, 0);
+static initialize_persistent_descriptor_pool() {
+  upb_inttable_init(&upb_def_to_desc_map_persistent, UPB_CTYPE_PTR);
+  upb_inttable_init(&upb_def_to_enumdesc_map_persistent, UPB_CTYPE_PTR);
+  upb_inttable_init(&ce_to_desc_map_persistent, UPB_CTYPE_PTR);
+  upb_inttable_init(&ce_to_enumdesc_map_persistent, UPB_CTYPE_PTR);
+  upb_strtable_init(&proto_to_desc_map_persistent, UPB_CTYPE_PTR);
+  upb_strtable_init(&proto_to_enumdesc_map_persistent, UPB_CTYPE_PTR);
 
-  ALLOC_HASHTABLE(ce_to_php_obj_map);
-  zend_hash_init(ce_to_php_obj_map, 16, NULL, HASHTABLE_VALUE_DTOR, 0);
-
-  generated_pool = NULL;
-  generated_pool_php = NULL;
-  internal_generated_pool_php = NULL;
+  internal_descriptor_pool_impl_init(&generated_pool_impl TSRMLS_CC);
 
   is_inited_file_any = false;
   is_inited_file_api = false;
@@ -358,8 +357,70 @@ static PHP_RINIT_FUNCTION(protobuf) {
   is_inited_file_timestamp = false;
   is_inited_file_type = false;
   is_inited_file_wrappers = false;
+}
+
+static PHP_RINIT_FUNCTION(protobuf) {
+  ALLOC_HASHTABLE(upb_def_to_php_obj_map);
+  zend_hash_init(upb_def_to_php_obj_map, 16, NULL, HASHTABLE_VALUE_DTOR, 0);
+
+  ALLOC_HASHTABLE(ce_to_php_obj_map);
+  zend_hash_init(ce_to_php_obj_map, 16, NULL, HASHTABLE_VALUE_DTOR, 0);
+
+  generated_pool = NULL;
+  generated_pool_php = NULL;
+  internal_generated_pool_php = NULL;
+
+  if (!PROTOBUF_G(keep_descriptor_pool_after_request)) {
+    initialize_persistent_descriptor_pool();
+  }
 
   return 0;
+}
+
+static void cleanup_desc_table(upb_inttable* t) {
+  upb_inttable_iter i;
+  upb_value v;
+  DescriptorInternal* desc;
+  for(upb_inttable_begin(&i, t);
+      !upb_inttable_done(&i);
+      upb_inttable_next(&i)) {
+    v = upb_inttable_iter_value(&i);
+    desc = upb_value_getptr(v);
+    if (desc->layout) {
+      free_layout(desc->layout);
+    }
+    SYS_FREE(desc);
+  }
+}
+
+static void cleanup_enumdesc_table(upb_inttable* t) {
+  upb_inttable_iter i;
+  upb_value v;
+  EnumDescriptorInternal* desc;
+  for(upb_inttable_begin(&i, t);
+      !upb_inttable_done(&i);
+      upb_inttable_next(&i)) {
+    v = upb_inttable_iter_value(&i);
+    desc = upb_value_getptr(v);
+    SYS_FREE(desc);
+  }
+}
+
+static cleanup_persistent_descriptor_pool() {
+  // Clean up
+
+  // Only needs to clean one map out of three (def=>desc, ce=>desc, proto=>desc)
+  cleanup_desc_table(&upb_def_to_desc_map_persistent);
+  cleanup_enumdesc_table(&upb_def_to_enumdesc_map_persistent);
+
+  internal_descriptor_pool_impl_destroy(&generated_pool_impl TSRMLS_CC);
+
+  upb_inttable_uninit(&upb_def_to_desc_map_persistent);
+  upb_inttable_uninit(&upb_def_to_enumdesc_map_persistent);
+  upb_inttable_uninit(&ce_to_desc_map_persistent);
+  upb_inttable_uninit(&ce_to_enumdesc_map_persistent);
+  upb_strtable_uninit(&proto_to_desc_map_persistent);
+  upb_strtable_uninit(&proto_to_enumdesc_map_persistent);
 }
 
 static PHP_RSHUTDOWN_FUNCTION(protobuf) {
@@ -391,16 +452,9 @@ static PHP_RSHUTDOWN_FUNCTION(protobuf) {
   }
 #endif
 
-  is_inited_file_any = true;
-  is_inited_file_api = true;
-  is_inited_file_duration = true;
-  is_inited_file_field_mask = true;
-  is_inited_file_empty = true;
-  is_inited_file_source_context = true;
-  is_inited_file_struct = true;
-  is_inited_file_timestamp = true;
-  is_inited_file_type = true;
-  is_inited_file_wrappers = true;
+  if (!PROTOBUF_G(keep_descriptor_pool_after_request)) {
+    cleanup_persistent_descriptor_pool();
+  }
 
   return 0;
 }
@@ -417,17 +471,22 @@ static void reserved_names_init() {
   }
 }
 
-static PHP_MINIT_FUNCTION(protobuf) {
-  upb_inttable_init(&upb_def_to_desc_map_persistent, UPB_CTYPE_PTR);
-  upb_inttable_init(&upb_def_to_enumdesc_map_persistent, UPB_CTYPE_PTR);
-  upb_inttable_init(&ce_to_desc_map_persistent, UPB_CTYPE_PTR);
-  upb_inttable_init(&ce_to_enumdesc_map_persistent, UPB_CTYPE_PTR);
-  upb_strtable_init(&proto_to_desc_map_persistent, UPB_CTYPE_PTR);
-  upb_strtable_init(&proto_to_enumdesc_map_persistent, UPB_CTYPE_PTR);
-  upb_strtable_init(&reserved_names, UPB_CTYPE_UINT64);
+PHP_INI_BEGIN()
+STD_PHP_INI_ENTRY("protobuf.keep_descriptor_pool_after_request", "0",
+                  PHP_INI_SYSTEM, OnUpdateBool,
+                  keep_descriptor_pool_after_request, zend_protobuf_globals,
+                  protobuf_globals)
+PHP_INI_END()
 
+static PHP_MINIT_FUNCTION(protobuf) {
+  REGISTER_INI_ENTRIES();
+
+  upb_strtable_init(&reserved_names, UPB_CTYPE_UINT64);
   reserved_names_init();
-  internal_descriptor_pool_impl_init(&generated_pool_impl TSRMLS_CC);
+
+  if (PROTOBUF_G(keep_descriptor_pool_after_request)) {
+    initialize_persistent_descriptor_pool();
+  }
 
   descriptor_pool_init(TSRMLS_C);
   descriptor_init(TSRMLS_C);
@@ -489,48 +548,11 @@ static PHP_MINIT_FUNCTION(protobuf) {
   return 0;
 }
 
-static void cleanup_desc_table(upb_inttable* t) {
-  upb_inttable_iter i;
-  upb_value v;
-  DescriptorInternal* desc;
-  for(upb_inttable_begin(&i, t);
-      !upb_inttable_done(&i);
-      upb_inttable_next(&i)) {
-    v = upb_inttable_iter_value(&i);
-    desc = upb_value_getptr(v);
-    if (desc->layout) {
-      free_layout(desc->layout);
-    }
-    SYS_FREE(desc);
-  }
-}
-
-static void cleanup_enumdesc_table(upb_inttable* t) {
-  upb_inttable_iter i;
-  upb_value v;
-  EnumDescriptorInternal* desc;
-  for(upb_inttable_begin(&i, t);
-      !upb_inttable_done(&i);
-      upb_inttable_next(&i)) {
-    v = upb_inttable_iter_value(&i);
-    desc = upb_value_getptr(v);
-    SYS_FREE(desc);
-  }
-}
-
 static PHP_MSHUTDOWN_FUNCTION(protobuf) {
-  // Only needs to clean one map out of three (def=>desc, ce=>desc, proto=>desc)
-  cleanup_desc_table(&upb_def_to_desc_map_persistent);
-  cleanup_enumdesc_table(&upb_def_to_enumdesc_map_persistent);
+  if (PROTOBUF_G(keep_descriptor_pool_after_request)) {
+    cleanup_persistent_descriptor_pool();
+  }
 
-  internal_descriptor_pool_impl_destroy(&generated_pool_impl TSRMLS_CC);
-
-  upb_inttable_uninit(&upb_def_to_desc_map_persistent);
-  upb_inttable_uninit(&upb_def_to_enumdesc_map_persistent);
-  upb_inttable_uninit(&ce_to_desc_map_persistent);
-  upb_inttable_uninit(&ce_to_enumdesc_map_persistent);
-  upb_strtable_uninit(&proto_to_desc_map_persistent);
-  upb_strtable_uninit(&proto_to_enumdesc_map_persistent);
   upb_strtable_uninit(&reserved_names);
 
   PEFREE(message_handlers);
