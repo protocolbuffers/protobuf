@@ -788,7 +788,7 @@ extern zend_class_entry* repeated_field_type;
 // -----------------------------------------------------------------------------
 
 PHP_PROTO_WRAP_OBJECT_START(DescriptorPool)
-  InternalDescriptorPool* intern;
+  InternalDescriptorPoolImpl* intern;
 PHP_PROTO_WRAP_OBJECT_END
 
 PHP_METHOD(DescriptorPool, getGeneratedPool);

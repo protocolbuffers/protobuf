@@ -337,7 +337,7 @@ static void test_release(void* value) {
 }
 #endif
 
-static initialize_persistent_descriptor_pool() {
+static initialize_persistent_descriptor_pool(TSRMLS_D) {
   upb_inttable_init(&upb_def_to_desc_map_persistent, UPB_CTYPE_PTR);
   upb_inttable_init(&upb_def_to_enumdesc_map_persistent, UPB_CTYPE_PTR);
   upb_inttable_init(&ce_to_desc_map_persistent, UPB_CTYPE_PTR);
@@ -371,7 +371,7 @@ static PHP_RINIT_FUNCTION(protobuf) {
   internal_generated_pool_php = NULL;
 
   if (!PROTOBUF_G(keep_descriptor_pool_after_request)) {
-    initialize_persistent_descriptor_pool();
+    initialize_persistent_descriptor_pool(TSRMLS_C);
   }
 
   return 0;
@@ -406,7 +406,7 @@ static void cleanup_enumdesc_table(upb_inttable* t) {
   }
 }
 
-static cleanup_persistent_descriptor_pool() {
+static cleanup_persistent_descriptor_pool(TSRMLS_D) {
   // Clean up
 
   // Only needs to clean one map out of three (def=>desc, ce=>desc, proto=>desc)
@@ -453,7 +453,7 @@ static PHP_RSHUTDOWN_FUNCTION(protobuf) {
 #endif
 
   if (!PROTOBUF_G(keep_descriptor_pool_after_request)) {
-    cleanup_persistent_descriptor_pool();
+    cleanup_persistent_descriptor_pool(TSRMLS_C);
   }
 
   return 0;
@@ -485,7 +485,7 @@ static PHP_MINIT_FUNCTION(protobuf) {
   reserved_names_init();
 
   if (PROTOBUF_G(keep_descriptor_pool_after_request)) {
-    initialize_persistent_descriptor_pool();
+    initialize_persistent_descriptor_pool(TSRMLS_C);
   }
 
   descriptor_pool_init(TSRMLS_C);
@@ -550,7 +550,7 @@ static PHP_MINIT_FUNCTION(protobuf) {
 
 static PHP_MSHUTDOWN_FUNCTION(protobuf) {
   if (PROTOBUF_G(keep_descriptor_pool_after_request)) {
-    cleanup_persistent_descriptor_pool();
+    cleanup_persistent_descriptor_pool(TSRMLS_C);
   }
 
   upb_strtable_uninit(&reserved_names);
