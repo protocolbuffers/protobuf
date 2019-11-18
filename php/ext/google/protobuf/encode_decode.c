@@ -428,8 +428,7 @@ static void *appendsubmsg_handler(void *closure, const void *hd) {
   RepeatedField* intern = UNBOX(RepeatedField, array);
 
   const submsg_handlerdata_t *submsgdata = hd;
-  Descriptor* subdesc =
-      UNBOX_HASHTABLE_VALUE(Descriptor, get_def_obj((void*)submsgdata->md));
+  DescriptorInternal* subdesc = get_msgdef_desc(submsgdata->md);
   zend_class_entry* subklass = subdesc->klass;
   MessageHeader* submsg;
 
@@ -456,8 +455,7 @@ static void *appendwrappersubmsg_handler(void *closure, const void *hd) {
   RepeatedField* intern = UNBOX(RepeatedField, array);
 
   const submsg_handlerdata_t *submsgdata = hd;
-  Descriptor* subdesc =
-      UNBOX_HASHTABLE_VALUE(Descriptor, get_def_obj((void*)submsgdata->md));
+  DescriptorInternal* subdesc = get_msgdef_desc(submsgdata->md);
   zend_class_entry* subklass = subdesc->klass;
   MessageHeader* submsg;
   wrapperfields_parseframe_t* frame =
@@ -488,8 +486,7 @@ static void *submsg_handler(void *closure, const void *hd) {
   MessageHeader* msg = closure;
   const submsg_handlerdata_t* submsgdata = hd;
   TSRMLS_FETCH();
-  Descriptor* subdesc =
-      UNBOX_HASHTABLE_VALUE(Descriptor, get_def_obj((void*)submsgdata->md));
+  DescriptorInternal* subdesc = get_msgdef_desc(submsgdata->md);
   zend_class_entry* subklass = subdesc->klass;
   zval* submsg_php;
   MessageHeader* submsg;
@@ -522,8 +519,7 @@ static void *map_submsg_handler(void *closure, const void *hd) {
   MessageHeader* msg = closure;
   const submsg_handlerdata_t* submsgdata = hd;
   TSRMLS_FETCH();
-  Descriptor* subdesc =
-      UNBOX_HASHTABLE_VALUE(Descriptor, get_def_obj((void*)submsgdata->md));
+  DescriptorInternal* subdesc = get_msgdef_desc(submsgdata->md);
   zend_class_entry* subklass = subdesc->klass;
   zval* submsg_php;
   MessageHeader* submsg;
@@ -557,8 +553,7 @@ static void *map_wrapper_submsg_handler(void *closure, const void *hd) {
   MessageHeader* msg = closure;
   const submsg_handlerdata_t* submsgdata = hd;
   TSRMLS_FETCH();
-  Descriptor* subdesc =
-      UNBOX_HASHTABLE_VALUE(Descriptor, get_def_obj((void*)submsgdata->md));
+  DescriptorInternal* subdesc = get_msgdef_desc(submsgdata->md);
   zend_class_entry* subklass = subdesc->klass;
   zval* submsg_php;
   MessageHeader* submsg;
@@ -645,8 +640,7 @@ static void map_slot_init(
       break;
     }
     case UPB_TYPE_MESSAGE: {
-      Descriptor* subdesc =
-          UNBOX_HASHTABLE_VALUE(Descriptor, get_def_obj(value_msg));
+      DescriptorInternal* subdesc = get_msgdef_desc(value_msg);
       zend_class_entry* subklass = subdesc->klass;
       MessageHeader* submsg;
 #if PHP_MAJOR_VERSION < 7
@@ -802,8 +796,7 @@ static bool endmap_handler(void* closure, const void* hd, upb_status* s) {
 // pass the handlerdata down to the sub-message handler setup.
 static map_handlerdata_t* new_map_handlerdata(
     const upb_fielddef* field,
-    const upb_msgdef* mapentry_def,
-    Descriptor* desc) {
+    const upb_msgdef* mapentry_def) {
   const upb_fielddef* key_field;
   const upb_fielddef* value_field;
   // TODO(teboring): Use emalloc and efree.
@@ -944,8 +937,7 @@ static void* oneofsubmsg_handler(void* closure, const void* hd) {
   const oneof_handlerdata_t *oneofdata = hd;
   uint32_t oldcase = DEREF(message_data(msg), oneofdata->case_ofs, uint32_t);
   TSRMLS_FETCH();
-  Descriptor* subdesc =
-      UNBOX_HASHTABLE_VALUE(Descriptor, get_def_obj((void*)oneofdata->md));
+  DescriptorInternal* subdesc = get_msgdef_desc(oneofdata->md);
   zend_class_entry* subklass = subdesc->klass;
   zval* submsg_php;
   MessageHeader* submsg;
@@ -983,8 +975,7 @@ static void* wrapper_submsg_handler(void* closure, const void* hd) {
   MessageHeader* msg = closure;
   const submsg_handlerdata_t* submsgdata = hd;
   TSRMLS_FETCH();
-  Descriptor* subdesc =
-      UNBOX_HASHTABLE_VALUE(Descriptor, get_def_obj((void*)submsgdata->md));
+  DescriptorInternal* subdesc = get_msgdef_desc(submsgdata->md);
   zend_class_entry* subklass = subdesc->klass;
   zval* submsg_php;
   MessageHeader* submsg;
@@ -1015,8 +1006,7 @@ static void* wrapper_oneofsubmsg_handler(void* closure, const void* hd) {
   const oneof_handlerdata_t *oneofdata = hd;
   uint32_t oldcase = DEREF(message_data(msg), oneofdata->case_ofs, uint32_t);
   TSRMLS_FETCH();
-  Descriptor* subdesc =
-      UNBOX_HASHTABLE_VALUE(Descriptor, get_def_obj((void*)oneofdata->md));
+  DescriptorInternal* subdesc = get_msgdef_desc(oneofdata->md);
   zend_class_entry* subklass = subdesc->klass;
   wrapperfields_parseframe_t* frame =
       (wrapperfields_parseframe_t*)malloc(sizeof(wrapperfields_parseframe_t));
@@ -1164,10 +1154,9 @@ static void add_handlers_for_singular_field(upb_handlers *h,
 // Adds handlers to a map field.
 static void add_handlers_for_mapfield(upb_handlers* h,
                                       const upb_fielddef* fielddef,
-                                      size_t offset,
-                                      Descriptor* desc) {
+                                      size_t offset) {
   const upb_msgdef* map_msgdef = upb_fielddef_msgsubdef(fielddef);
-  map_handlerdata_t* hd = new_map_handlerdata(fielddef, map_msgdef, desc);
+  map_handlerdata_t* hd = new_map_handlerdata(fielddef, map_msgdef);
   upb_handlerattr attr = UPB_HANDLERATTR_INIT;
 
   upb_handlers_addcleanup(h, hd, free);
@@ -1176,11 +1165,11 @@ static void add_handlers_for_mapfield(upb_handlers* h,
 }
 
 // Adds handlers to a map-entry msgdef.
-static void add_handlers_for_mapentry(const upb_msgdef* msgdef, upb_handlers* h,
-                                      Descriptor* desc) {
+static void add_handlers_for_mapentry(
+    const upb_msgdef* msgdef, upb_handlers* h) {
   const upb_fielddef* key_field = map_entry_key(msgdef);
   const upb_fielddef* value_field = map_entry_value(msgdef);
-  map_handlerdata_t* hd = new_map_handlerdata(0, msgdef, desc);
+  map_handlerdata_t* hd = new_map_handlerdata(0, msgdef);
   upb_handlerattr attr = UPB_HANDLERATTR_INIT;
 
   upb_handlers_addcleanup(h, hd, free);
@@ -1294,11 +1283,11 @@ static bool strwrapper_end_handler(void *closure, const void *hd) {
 static void add_handlers_for_wrapper(const upb_msgdef* msgdef,
                                      upb_handlers* h) {
   const upb_fielddef* f = upb_msgdef_itof(msgdef, 1);
-  Descriptor* desc;
+  DescriptorInternal* desc;
   size_t offset;
 
   TSRMLS_FETCH();
-  desc = UNBOX_HASHTABLE_VALUE(Descriptor, get_def_obj((void*)msgdef));
+  desc = get_msgdef_desc(msgdef);
   offset = desc->layout->fields[upb_fielddef_index(f)].offset;
 
   switch (upb_msgdef_wellknowntype(msgdef)) {
@@ -1357,14 +1346,13 @@ static bool add_unknown_handler(void* closure, const void* hd, const char* buf,
 void add_handlers_for_message(const void* closure, upb_handlers* h) {
   const upb_msgdef* msgdef = upb_handlers_msgdef(h);
   TSRMLS_FETCH();
-  Descriptor* desc =
-      UNBOX_HASHTABLE_VALUE(Descriptor, get_def_obj((void*)msgdef));
+  DescriptorInternal* desc = get_msgdef_desc(msgdef);
   upb_msg_field_iter i;
 
   // If this is a mapentry message type, set up a special set of handlers and
   // bail out of the normal (user-defined) message type handling.
   if (upb_msgdef_mapentry(msgdef)) {
-    add_handlers_for_mapentry(msgdef, h, desc);
+    add_handlers_for_mapentry(msgdef, h);
     return;
   }
 
@@ -1402,7 +1390,7 @@ void add_handlers_for_message(const void* closure, upb_handlers* h) {
       add_handlers_for_oneof_field(h, desc->msgdef, f, offset,
                                    oneof_case_offset, property_cache_index);
     } else if (is_map_field(f)) {
-      add_handlers_for_mapfield(h, f, offset, desc);
+      add_handlers_for_mapfield(h, f, offset);
     } else if (upb_fielddef_isseq(f)) {
       add_handlers_for_repeated_field(h, f, offset);
     } else {
@@ -1413,15 +1401,15 @@ void add_handlers_for_message(const void* closure, upb_handlers* h) {
 
 // Constructs the handlers for filling a message's data into an in-memory
 // object.
-const upb_handlers* get_fill_handlers(Descriptor* desc) {
+const upb_handlers* get_fill_handlers(DescriptorInternal* desc) {
   return upb_handlercache_get(desc->pool->fill_handler_cache, desc->msgdef);
 }
 
-static const upb_pbdecodermethod *msgdef_decodermethod(Descriptor* desc) {
+static const upb_pbdecodermethod *msgdef_decodermethod(DescriptorInternal* desc) {
   return upb_pbcodecache_get(desc->pool->fill_method_cache, desc->msgdef);
 }
 
-static const upb_json_parsermethod *msgdef_jsonparsermethod(Descriptor* desc) {
+static const upb_json_parsermethod *msgdef_jsonparsermethod(DescriptorInternal* desc) {
   return upb_json_codecache_get(desc->pool->json_fill_method_cache, desc->msgdef);
 }
 
@@ -1429,21 +1417,21 @@ static const upb_json_parsermethod *msgdef_jsonparsermethod(Descriptor* desc) {
 // Serializing.
 // -----------------------------------------------------------------------------
 
-static void putmsg(zval* msg, const Descriptor* desc, upb_sink sink,
+static void putmsg(zval* msg, const DescriptorInternal* desc, upb_sink sink,
                    int depth, bool is_json TSRMLS_DC);
-static void putrawmsg(MessageHeader* msg, const Descriptor* desc,
+static void putrawmsg(MessageHeader* msg, const DescriptorInternal* desc,
                       upb_sink sink, int depth, bool is_json,
                       bool open_msg TSRMLS_DC);
 static void putwrappervalue(
     zval* value, const upb_fielddef* f,
     upb_sink sink, int depth, bool is_json TSRMLS_DC);
-static void putjsonany(MessageHeader* msg, const Descriptor* desc,
+static void putjsonany(MessageHeader* msg, const DescriptorInternal* desc,
                        upb_sink sink, int depth TSRMLS_DC);
 static void putjsonlistvalue(
-    MessageHeader* msg, const Descriptor* desc,
+    MessageHeader* msg, const DescriptorInternal* desc,
     upb_sink sink, int depth TSRMLS_DC);
 static void putjsonstruct(
-    MessageHeader* msg, const Descriptor* desc,
+    MessageHeader* msg, const DescriptorInternal* desc,
     upb_sink sink, int depth TSRMLS_DC);
 
 static void putstr(zval* str, const upb_fielddef* f, upb_sink sink,
@@ -1590,16 +1578,16 @@ static void putmap(zval* map, const upb_fielddef* f, upb_sink sink,
   upb_sink_endseq(sink, getsel(f, UPB_HANDLER_ENDSEQ));
 }
 
-static void putmsg(zval* msg_php, const Descriptor* desc, upb_sink sink,
+static void putmsg(zval* msg_php, const DescriptorInternal* desc, upb_sink sink,
                    int depth, bool is_json TSRMLS_DC) {
   MessageHeader* msg = UNBOX(MessageHeader, msg_php);
   putrawmsg(msg, desc, sink, depth, is_json, true TSRMLS_CC);
 }
 
 static const upb_handlers* msgdef_json_serialize_handlers(
-    Descriptor* desc, bool preserve_proto_fieldnames);
+    DescriptorInternal* desc, bool preserve_proto_fieldnames);
 
-static void putjsonany(MessageHeader* msg, const Descriptor* desc,
+static void putjsonany(MessageHeader* msg, const DescriptorInternal* desc,
                        upb_sink sink, int depth TSRMLS_DC) {
   upb_status status;
   const upb_fielddef* type_field = upb_msgdef_itof(desc->msgdef, UPB_ANY_TYPE);
@@ -1646,8 +1634,7 @@ static void putjsonany(MessageHeader* msg, const Descriptor* desc,
     value_len = Z_STRLEN_P(value_php_str);
 
     if (value_len > 0) {
-      Descriptor* payload_desc =
-          UNBOX_HASHTABLE_VALUE(Descriptor, get_def_obj((void*)payload_type));
+      DescriptorInternal* payload_desc = get_msgdef_desc(payload_type);
       zend_class_entry* payload_klass = payload_desc->klass;
       zval val;
       upb_sink subsink;
@@ -1682,7 +1669,7 @@ static void putjsonany(MessageHeader* msg, const Descriptor* desc,
 }
 
 static void putjsonlistvalue(
-    MessageHeader* msg, const Descriptor* desc,
+    MessageHeader* msg, const DescriptorInternal* desc,
     upb_sink sink, int depth TSRMLS_DC) {
   upb_status status;
   upb_sink subsink;
@@ -1716,7 +1703,7 @@ static void putjsonlistvalue(
 }
 
 static void putjsonstruct(
-    MessageHeader* msg, const Descriptor* desc,
+    MessageHeader* msg, const DescriptorInternal* desc,
     upb_sink sink, int depth TSRMLS_DC) {
   upb_status status;
   upb_sink subsink;
@@ -1747,7 +1734,7 @@ static void putjsonstruct(
   upb_sink_endmsg(sink, &status);
 }
 
-static void putrawmsg(MessageHeader* msg, const Descriptor* desc,
+static void putrawmsg(MessageHeader* msg, const DescriptorInternal* desc,
                       upb_sink sink, int depth, bool is_json,
                       bool open_msg TSRMLS_DC) {
   upb_msg_field_iter i;
@@ -1976,8 +1963,8 @@ static void putrawsubmsg(MessageHeader* submsg, const upb_fielddef* f,
                          upb_sink sink, int depth, bool is_json TSRMLS_DC) {
   upb_sink subsink;
 
-  Descriptor* subdesc =
-      UNBOX_HASHTABLE_VALUE(Descriptor, get_def_obj(upb_fielddef_msgsubdef(f)));
+  const upb_msgdef* m = upb_fielddef_msgsubdef(f);
+  DescriptorInternal* subdesc = get_msgdef_desc(m);
 
   upb_sink_startsubmsg(sink, getsel(f, UPB_HANDLER_STARTSUBMSG), &subsink);
   putrawmsg(submsg, subdesc, subsink, depth + 1, is_json, true TSRMLS_CC);
@@ -2051,13 +2038,13 @@ static void putarray(zval* array, const upb_fielddef* f, upb_sink sink,
   upb_sink_endseq(sink, getsel(f, UPB_HANDLER_ENDSEQ));
 }
 
-static const upb_handlers* msgdef_pb_serialize_handlers(Descriptor* desc) {
+static const upb_handlers* msgdef_pb_serialize_handlers(DescriptorInternal* desc) {
   return upb_handlercache_get(desc->pool->pb_serialize_handler_cache,
                               desc->msgdef);
 }
 
 static const upb_handlers* msgdef_json_serialize_handlers(
-    Descriptor* desc, bool preserve_proto_fieldnames) {
+    DescriptorInternal* desc, bool preserve_proto_fieldnames) {
   if (preserve_proto_fieldnames) {
     return upb_handlercache_get(
         desc->pool->json_serialize_handler_preserve_cache, desc->msgdef);
@@ -2072,8 +2059,7 @@ static const upb_handlers* msgdef_json_serialize_handlers(
 // -----------------------------------------------------------------------------
 
 void serialize_to_string(zval* val, zval* return_value TSRMLS_DC) {
-  Descriptor* desc =
-      UNBOX_HASHTABLE_VALUE(Descriptor, get_ce_obj(Z_OBJCE_P(val)));
+  DescriptorInternal* desc = get_ce_desc(Z_OBJCE_P(val));
 
   stringsink sink;
   stringsink_init(&sink);
@@ -2100,7 +2086,7 @@ PHP_METHOD(Message, serializeToString) {
   serialize_to_string(getThis(), return_value TSRMLS_CC);
 }
 
-void merge_from_string(const char* data, int data_len, Descriptor* desc,
+void merge_from_string(const char* data, int data_len, DescriptorInternal* desc,
                        MessageHeader* msg) {
   const upb_pbdecodermethod* method = msgdef_decodermethod(desc);
   const upb_handlers* h = upb_pbdecodermethod_desthandlers(method);
@@ -2133,8 +2119,7 @@ void merge_from_string(const char* data, int data_len, Descriptor* desc,
 }
 
 PHP_METHOD(Message, mergeFromString) {
-  Descriptor* desc =
-      UNBOX_HASHTABLE_VALUE(Descriptor, get_ce_obj(Z_OBJCE_P(getThis())));
+  DescriptorInternal* desc = get_ce_desc(Z_OBJCE_P(getThis()));
   MessageHeader* msg = UNBOX(MessageHeader, getThis());
 
   char *data = NULL;
@@ -2149,8 +2134,7 @@ PHP_METHOD(Message, mergeFromString) {
 }
 
 PHP_METHOD(Message, serializeToJsonString) {
-  Descriptor* desc =
-      UNBOX_HASHTABLE_VALUE(Descriptor, get_ce_obj(Z_OBJCE_P(getThis())));
+  DescriptorInternal* desc = get_ce_desc(Z_OBJCE_P(getThis()));
 
   zend_bool preserve_proto_fieldnames = false;
   if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|b",
@@ -2180,8 +2164,7 @@ PHP_METHOD(Message, serializeToJsonString) {
 }
 
 PHP_METHOD(Message, mergeFromJsonString) {
-  Descriptor* desc =
-      UNBOX_HASHTABLE_VALUE(Descriptor, get_ce_obj(Z_OBJCE_P(getThis())));
+  DescriptorInternal* desc = get_ce_desc(Z_OBJCE_P(getThis()));
   MessageHeader* msg = UNBOX(MessageHeader, getThis());
 
   char *data = NULL;
@@ -2244,7 +2227,7 @@ static void discard_unknown_fields(MessageHeader* msg) {
   }
 
   // Recursively discard unknown fields of submessages.
-  Descriptor* desc = msg->descriptor;
+  DescriptorInternal* desc = msg->descriptor;
   TSRMLS_FETCH();
   for (upb_msg_field_begin(&it, desc->msgdef);
        !upb_msg_field_done(&it);

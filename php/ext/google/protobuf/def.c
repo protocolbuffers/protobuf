@@ -148,19 +148,15 @@ static zend_function_entry descriptor_methods[] = {
 DEFINE_CLASS(Descriptor, descriptor, "Google\\Protobuf\\Descriptor");
 
 static void descriptor_free_c(Descriptor *self TSRMLS_DC) {
-  if (self->layout) {
-    free_layout(self->layout);
-  }
 }
 
 static void descriptor_init_c_instance(Descriptor *desc TSRMLS_DC) {
-  desc->msgdef = NULL;
-  desc->layout = NULL;
-  desc->klass = NULL;
+  desc->intern = NULL;
 }
 
 PHP_METHOD(Descriptor, getClass) {
-  Descriptor *intern = UNBOX(Descriptor, getThis());
+  Descriptor* desc = UNBOX(Descriptor, getThis());
+  DescriptorInternal* intern = desc->intern;
 #if PHP_MAJOR_VERSION < 7
   const char* classname = intern->klass->name;
 #else
@@ -170,7 +166,8 @@ PHP_METHOD(Descriptor, getClass) {
 }
 
 PHP_METHOD(Descriptor, getFullName) {
-  Descriptor *intern = UNBOX(Descriptor, getThis());
+  Descriptor* desc = UNBOX(Descriptor, getThis());
+  DescriptorInternal* intern = desc->intern;
   const char* fullname = upb_msgdef_fullname(intern->msgdef);
   PHP_PROTO_RETVAL_STRINGL(fullname, strlen(fullname), 1);
 }
@@ -183,7 +180,8 @@ PHP_METHOD(Descriptor, getField) {
     return;
   }
 
-  Descriptor *intern = UNBOX(Descriptor, getThis());
+  Descriptor* desc = UNBOX(Descriptor, getThis());
+  DescriptorInternal* intern = desc->intern;
   int field_num = upb_msgdef_numfields(intern->msgdef);
   if (index < 0 || index >= field_num) {
     zend_error(E_USER_ERROR, "Cannot get element at %ld.\n", index);
@@ -224,7 +222,8 @@ PHP_METHOD(Descriptor, getField) {
 }
 
 PHP_METHOD(Descriptor, getFieldCount) {
-  Descriptor *intern = UNBOX(Descriptor, getThis());
+  Descriptor* desc = UNBOX(Descriptor, getThis());
+  DescriptorInternal* intern = desc->intern;
   RETURN_LONG(upb_msgdef_numfields(intern->msgdef));
 }
 
@@ -236,7 +235,8 @@ PHP_METHOD(Descriptor, getOneofDecl) {
     return;
   }
 
-  Descriptor *intern = UNBOX(Descriptor, getThis());
+  Descriptor* desc = UNBOX(Descriptor, getThis());
+  DescriptorInternal* intern = desc->intern;
   int field_num = upb_msgdef_numoneofs(intern->msgdef);
   if (index < 0 || index >= field_num) {
     zend_error(E_USER_ERROR, "Cannot get element at %ld.\n", index);
@@ -257,7 +257,8 @@ PHP_METHOD(Descriptor, getOneofDecl) {
 }
 
 PHP_METHOD(Descriptor, getOneofDeclCount) {
-  Descriptor *intern = UNBOX(Descriptor, getThis());
+  Descriptor* desc = UNBOX(Descriptor, getThis());
+  DescriptorInternal* intern = desc->intern;
   RETURN_LONG(upb_msgdef_numoneofs(intern->msgdef));
 }
 
@@ -278,8 +279,7 @@ static void enum_descriptor_free_c(EnumDescriptor *self TSRMLS_DC) {
 }
 
 static void enum_descriptor_init_c_instance(EnumDescriptor *self TSRMLS_DC) {
-  self->enumdef = NULL;
-  self->klass = NULL;
+  self->intern = NULL;
 }
 
 PHP_METHOD(EnumDescriptor, getValue) {
@@ -290,7 +290,8 @@ PHP_METHOD(EnumDescriptor, getValue) {
     return;
   }
 
-  EnumDescriptor *intern = UNBOX(EnumDescriptor, getThis());
+  EnumDescriptor *desc = UNBOX(EnumDescriptor, getThis());
+  EnumDescriptorInternal *intern = desc->intern;
   int field_num = upb_enumdef_numvals(intern->enumdef);
   if (index < 0 || index >= field_num) {
     zend_error(E_USER_ERROR, "Cannot get element at %ld.\n", index);
@@ -312,7 +313,8 @@ PHP_METHOD(EnumDescriptor, getValue) {
 }
 
 PHP_METHOD(EnumDescriptor, getValueCount) {
-  EnumDescriptor *intern = UNBOX(EnumDescriptor, getThis());
+  EnumDescriptor *desc = UNBOX(EnumDescriptor, getThis());
+  EnumDescriptorInternal *intern = desc->intern;
   RETURN_LONG(upb_enumdef_numvals(intern->enumdef));
 }
 
@@ -440,13 +442,32 @@ PHP_METHOD(FieldDescriptor, getEnumType) {
     return;
   }
   const upb_enumdef *enumdef = upb_fielddef_enumsubdef(intern->fielddef);
-  PHP_PROTO_HASHTABLE_VALUE desc = get_def_obj(enumdef);
+  PHP_PROTO_HASHTABLE_VALUE desc_php = get_def_obj(enumdef);
+
+  if (desc_php == NULL) {
+    EnumDescriptorInternal* intern = get_enumdef_enumdesc(enumdef);
 
 #if PHP_MAJOR_VERSION < 7
-  RETURN_ZVAL(desc, 1, 0);
+    MAKE_STD_ZVAL(desc_php);
+    ZVAL_OBJ(desc_php, enum_descriptor_type->create_object(
+                                        enum_descriptor_type TSRMLS_CC));
+    Z_DELREF_P(desc_php);
 #else
-  GC_ADDREF(desc);
-  RETURN_OBJ(desc);
+    desc_php =
+        enum_descriptor_type->create_object(enum_descriptor_type TSRMLS_CC);
+    GC_DELREF(desc_php);
+#endif
+    EnumDescriptor* desc = UNBOX_HASHTABLE_VALUE(EnumDescriptor, desc_php);
+    desc->intern = intern;
+    add_def_obj(enumdef, desc_php);
+    add_ce_obj(intern->klass, desc_php);
+  }
+
+#if PHP_MAJOR_VERSION < 7
+  RETURN_ZVAL(desc_php, 1, 0);
+#else
+  GC_ADDREF(desc_php);
+  RETURN_OBJ(desc_php);
 #endif
 }
 
@@ -459,13 +480,32 @@ PHP_METHOD(FieldDescriptor, getMessageType) {
     return;
   }
   const upb_msgdef *msgdef = upb_fielddef_msgsubdef(intern->fielddef);
-  PHP_PROTO_HASHTABLE_VALUE desc = get_def_obj(msgdef);
+  PHP_PROTO_HASHTABLE_VALUE desc_php = get_def_obj(msgdef);
+
+  if (desc_php == NULL) {
+    DescriptorInternal* intern = get_msgdef_desc(msgdef);
 
 #if PHP_MAJOR_VERSION < 7
-  RETURN_ZVAL(desc, 1, 0);
+    MAKE_STD_ZVAL(desc_php);
+    ZVAL_OBJ(desc_php, descriptor_type->create_object(
+                                   descriptor_type TSRMLS_CC));
+    Z_DELREF_P(desc_php);
 #else
-  GC_ADDREF(desc);
-  RETURN_OBJ(desc);
+    desc_php =
+        descriptor_type->create_object(descriptor_type TSRMLS_CC);
+    GC_DELREF(desc_php);
+#endif
+    Descriptor* desc = UNBOX_HASHTABLE_VALUE(Descriptor, desc_php);
+    desc->intern = intern;
+    add_def_obj(msgdef, desc_php);
+    add_ce_obj(intern->klass, desc_php);
+  }
+
+#if PHP_MAJOR_VERSION < 7
+  RETURN_ZVAL(desc_php, 1, 0);
+#else
+  GC_ADDREF(desc_php);
+  RETURN_OBJ(desc_php);
 #endif
 }
 
@@ -579,7 +619,8 @@ zval* internal_generated_pool_php;
 zend_object *generated_pool_php;
 zend_object *internal_generated_pool_php;
 #endif
-InternalDescriptorPool *generated_pool;  // The actual generated pool
+InternalDescriptorPoolImpl *generated_pool;
+InternalDescriptorPoolImpl generated_pool_impl;  // The actual generated pool
 
 void init_generated_pool_once(TSRMLS_D) {
   if (generated_pool == NULL) {
@@ -589,22 +630,29 @@ void init_generated_pool_once(TSRMLS_D) {
     ZVAL_OBJ(internal_generated_pool_php,
              internal_descriptor_pool_type->create_object(
                  internal_descriptor_pool_type TSRMLS_CC));
-    generated_pool = UNBOX(InternalDescriptorPool, internal_generated_pool_php);
     ZVAL_OBJ(generated_pool_php, descriptor_pool_type->create_object(
                                      descriptor_pool_type TSRMLS_CC));
 #else
     internal_generated_pool_php = internal_descriptor_pool_type->create_object(
         internal_descriptor_pool_type TSRMLS_CC);
-    generated_pool = (InternalDescriptorPool *)((char *)internal_generated_pool_php -
-                                        XtOffsetOf(InternalDescriptorPool, std));
     generated_pool_php =
         descriptor_pool_type->create_object(descriptor_pool_type TSRMLS_CC);
 #endif
+    generated_pool = &generated_pool_impl;
   }
 }
 
 static void internal_descriptor_pool_init_c_instance(
     InternalDescriptorPool *pool TSRMLS_DC) {
+  pool->intern = &generated_pool_impl;
+}
+
+static void internal_descriptor_pool_free_c(
+    InternalDescriptorPool *pool TSRMLS_DC) {
+}
+
+void internal_descriptor_pool_impl_init(
+    InternalDescriptorPoolImpl *pool TSRMLS_DC) {
   pool->symtab = upb_symtab_new();
   pool->fill_handler_cache =
       upb_handlercache_new(add_handlers_for_message, NULL);
@@ -615,8 +663,8 @@ static void internal_descriptor_pool_init_c_instance(
   pool->json_fill_method_cache = upb_json_codecache_new();
 }
 
-static void internal_descriptor_pool_free_c(
-    InternalDescriptorPool *pool TSRMLS_DC) {
+void internal_descriptor_pool_impl_destroy(
+    InternalDescriptorPoolImpl *pool TSRMLS_DC) {
   upb_symtab_free(pool->symtab);
   upb_handlercache_free(pool->fill_handler_cache);
   upb_handlercache_free(pool->pb_serialize_handler_cache);
@@ -837,7 +885,8 @@ static void fill_classname(const char *fullname,
 static zend_class_entry *register_class(const upb_filedef *file,
                                         const char *fullname,
                                         PHP_PROTO_HASHTABLE_VALUE desc_php,
-                                        bool use_nested_submsg TSRMLS_DC) {
+                                        bool use_nested_submsg,
+                                        bool is_enum TSRMLS_DC) {
   // Prepend '.' to package name to make it absolute. In the 5 additional
   // bytes allocated, one for '.', one for trailing 0, and 3 for 'GPB' if
   // given message is google.protobuf.Empty.
@@ -866,7 +915,15 @@ static zend_class_entry *register_class(const upb_filedef *file,
   }
   ret = PHP_PROTO_CE_UNREF(pce);
   add_ce_obj(ret, desc_php);
-  add_proto_obj(fullname, desc_php);
+  if (is_enum) {
+    EnumDescriptor* desc = UNBOX_HASHTABLE_VALUE(EnumDescriptor, desc_php);
+    add_ce_enumdesc(ret, desc->intern);
+    add_proto_enumdesc(fullname, desc->intern);
+  } else {
+    Descriptor* desc = UNBOX_HASHTABLE_VALUE(Descriptor, desc_php);
+    add_ce_desc(ret, desc->intern);
+    add_proto_desc(fullname, desc->intern);
+  }
   stringsink_uninit(&namesink);
   return ret;
 }
@@ -888,7 +945,7 @@ bool depends_on_descriptor(const google_protobuf_FileDescriptorProto* file) {
 
 const upb_filedef *parse_and_add_descriptor(const char *data,
                                             PHP_PROTO_SIZE data_len,
-                                            InternalDescriptorPool *pool,
+                                            InternalDescriptorPoolImpl *pool,
                                             upb_arena *arena) {
   size_t n;
   google_protobuf_FileDescriptorSet *set;
@@ -901,14 +958,22 @@ const upb_filedef *parse_and_add_descriptor(const char *data,
 
   if (!set) {
     zend_error(E_ERROR, "Failed to parse binary descriptor\n");
-    return false;
+    return NULL;
   }
 
   files = google_protobuf_FileDescriptorSet_file(set, &n);
 
   if (n != 1) {
     zend_error(E_ERROR, "Serialized descriptors should have exactly one file");
-    return false;
+    return NULL;
+  }
+
+  // Check whether file has already been added.
+  upb_strview name = google_protobuf_FileDescriptorProto_name(files[0]);
+  // TODO(teboring): Needs another look up method which takes data and length.
+  file = upb_symtab_lookupfile2(pool->symtab, name.data, name.size);
+  if (file != NULL) {
+    return NULL;
   }
 
   // The PHP code generator currently special-cases descriptor.proto.  It
@@ -919,7 +984,7 @@ const upb_filedef *parse_and_add_descriptor(const char *data,
           NULL) {
     if (!parse_and_add_descriptor((char *)descriptor_proto,
                                   descriptor_proto_len, pool, arena)) {
-      return false;
+      return NULL;
     }
   }
 
@@ -930,7 +995,7 @@ const upb_filedef *parse_and_add_descriptor(const char *data,
 }
 
 void internal_add_generated_file(const char *data, PHP_PROTO_SIZE data_len,
-                                 InternalDescriptorPool *pool,
+                                 InternalDescriptorPoolImpl *pool,
                                  bool use_nested_submsg TSRMLS_DC) {
   int i;
   upb_arena *arena;
@@ -949,9 +1014,14 @@ void internal_add_generated_file(const char *data, PHP_PROTO_SIZE data_len,
   for (i = 0; i < upb_filedef_msgcount(file); i++) {
     const upb_msgdef *msgdef = upb_filedef_msg(file, i);
     CREATE_HASHTABLE_VALUE(desc, desc_php, Descriptor, descriptor_type);
-    desc->msgdef = msgdef;
-    desc->pool = pool;
-    add_def_obj(desc->msgdef, desc_php);
+    desc->intern = SYS_MALLOC(DescriptorInternal);
+    desc->intern->msgdef = msgdef;
+    desc->intern->pool = pool;
+    desc->intern->layout = NULL;
+    desc->intern->klass = NULL;
+
+    add_def_obj(desc->intern->msgdef, desc_php);
+    add_msgdef_desc(desc->intern->msgdef, desc->intern);
 
     // Unlike other messages, MapEntry is shared by all map fields and doesn't
     // have generated PHP class.
@@ -959,10 +1029,11 @@ void internal_add_generated_file(const char *data, PHP_PROTO_SIZE data_len,
       continue;
     }
 
-    desc->klass = register_class(file, upb_msgdef_fullname(msgdef), desc_php,
-                                 use_nested_submsg TSRMLS_CC);
+    desc->intern->klass =
+        register_class(file, upb_msgdef_fullname(msgdef), desc_php,
+                       use_nested_submsg, false TSRMLS_CC);
 
-    if (desc->klass == NULL) {
+    if (desc->intern->klass == NULL) {
       return;
     }
 
@@ -972,12 +1043,17 @@ void internal_add_generated_file(const char *data, PHP_PROTO_SIZE data_len,
   for (i = 0; i < upb_filedef_enumcount(file); i++) {
     const upb_enumdef *enumdef = upb_filedef_enum(file, i);
     CREATE_HASHTABLE_VALUE(desc, desc_php, EnumDescriptor, enum_descriptor_type);
-    desc->enumdef = enumdef;
-    add_def_obj(desc->enumdef, desc_php);
-    desc->klass = register_class(file, upb_enumdef_fullname(enumdef), desc_php,
-                                 use_nested_submsg TSRMLS_CC);
+    desc->intern = SYS_MALLOC(EnumDescriptorInternal);
+    desc->intern->enumdef = enumdef;
+    desc->intern->klass = NULL;
 
-    if (desc->klass == NULL) {
+    add_def_obj(desc->intern->enumdef, desc_php);
+    add_enumdef_enumdesc(desc->intern->enumdef, desc->intern);
+    desc->intern->klass =
+        register_class(file, upb_enumdef_fullname(enumdef), desc_php,
+                       use_nested_submsg, true TSRMLS_CC);
+
+    if (desc->intern->klass == NULL) {
       return;
     }
   }
@@ -997,14 +1073,11 @@ PHP_METHOD(InternalDescriptorPool, internalAddGeneratedFile) {
   }
 
   InternalDescriptorPool *pool = UNBOX(InternalDescriptorPool, getThis());
-  internal_add_generated_file(data, data_len, pool,
+  internal_add_generated_file(data, data_len, pool->intern,
                               use_nested_submsg TSRMLS_CC);
 }
 
 PHP_METHOD(DescriptorPool, getDescriptorByClassName) {
-  DescriptorPool *public_pool = UNBOX(DescriptorPool, getThis());
-  InternalDescriptorPool *pool = public_pool->intern;
-
   char *classname = NULL;
   PHP_PROTO_SIZE classname_len;
 
@@ -1019,29 +1092,44 @@ PHP_METHOD(DescriptorPool, getDescriptorByClassName) {
     RETURN_NULL();
   }
 
-  PHP_PROTO_HASHTABLE_VALUE desc = get_ce_obj(PHP_PROTO_CE_UNREF(pce));
-  if (desc == NULL) {
-    RETURN_NULL();
+  PHP_PROTO_HASHTABLE_VALUE desc_php = get_ce_obj(PHP_PROTO_CE_UNREF(pce));
+  if (desc_php == NULL) {
+    DescriptorInternal* intern = get_ce_desc(PHP_PROTO_CE_UNREF(pce));
+    if (intern == NULL) {
+      RETURN_NULL();
+    }
+
+#if PHP_MAJOR_VERSION < 7
+    MAKE_STD_ZVAL(desc_php);
+    ZVAL_OBJ(desc_php, descriptor_type->create_object(
+                                   descriptor_type TSRMLS_CC));
+    Z_DELREF_P(desc_php);
+#else
+    desc_php =
+        descriptor_type->create_object(descriptor_type TSRMLS_CC);
+    GC_DELREF(desc_php);
+#endif
+    Descriptor* desc = UNBOX_HASHTABLE_VALUE(Descriptor, desc_php);
+    desc->intern = intern;
+    add_def_obj(intern->msgdef, desc_php);
+    add_ce_obj(PHP_PROTO_CE_UNREF(pce), desc_php);
   }
 
-  zend_class_entry* instance_ce = HASHTABLE_VALUE_CE(desc);
+  zend_class_entry* instance_ce = HASHTABLE_VALUE_CE(desc_php);
 
   if (!instanceof_function(instance_ce, descriptor_type TSRMLS_CC)) {
     RETURN_NULL();
   }
 
 #if PHP_MAJOR_VERSION < 7
-  RETURN_ZVAL(desc, 1, 0);
+  RETURN_ZVAL(desc_php, 1, 0);
 #else
-  GC_ADDREF(desc);
-  RETURN_OBJ(desc);
+  GC_ADDREF(desc_php);
+  RETURN_OBJ(desc_php);
 #endif
 }
 
 PHP_METHOD(DescriptorPool, getEnumDescriptorByClassName) {
-  DescriptorPool *public_pool = UNBOX(DescriptorPool, getThis());
-  InternalDescriptorPool *pool = public_pool->intern;
-
   char *classname = NULL;
   PHP_PROTO_SIZE classname_len;
 
@@ -1056,21 +1144,39 @@ PHP_METHOD(DescriptorPool, getEnumDescriptorByClassName) {
     RETURN_NULL();
   }
 
-  PHP_PROTO_HASHTABLE_VALUE desc = get_ce_obj(PHP_PROTO_CE_UNREF(pce));
-  if (desc == NULL) {
-    RETURN_NULL();
+  PHP_PROTO_HASHTABLE_VALUE desc_php = get_ce_obj(PHP_PROTO_CE_UNREF(pce));
+  if (desc_php == NULL) {
+    EnumDescriptorInternal* intern = get_ce_enumdesc(PHP_PROTO_CE_UNREF(pce));
+    if (intern == NULL) {
+      RETURN_NULL();
+    }
+
+#if PHP_MAJOR_VERSION < 7
+    MAKE_STD_ZVAL(desc_php);
+    ZVAL_OBJ(desc_php, enum_descriptor_type->create_object(
+                                        enum_descriptor_type TSRMLS_CC));
+    Z_DELREF_P(desc_php);
+#else
+    desc_php =
+        enum_descriptor_type->create_object(enum_descriptor_type TSRMLS_CC);
+    GC_DELREF(desc_php);
+#endif
+    EnumDescriptor* desc = UNBOX_HASHTABLE_VALUE(EnumDescriptor, desc_php);
+    desc->intern = intern;
+    add_def_obj(intern->enumdef, desc_php);
+    add_ce_obj(PHP_PROTO_CE_UNREF(pce), desc_php);
   }
 
-  zend_class_entry* instance_ce = HASHTABLE_VALUE_CE(desc);
+  zend_class_entry* instance_ce = HASHTABLE_VALUE_CE(desc_php);
 
   if (!instanceof_function(instance_ce, enum_descriptor_type TSRMLS_CC)) {
     RETURN_NULL();
   }
 
 #if PHP_MAJOR_VERSION < 7
-  RETURN_ZVAL(desc, 1, 0);
+  RETURN_ZVAL(desc_php, 1, 0);
 #else
-  GC_ADDREF(desc);
-  RETURN_OBJ(desc);
+  GC_ADDREF(desc_php);
+  RETURN_OBJ(desc_php);
 #endif
 }
