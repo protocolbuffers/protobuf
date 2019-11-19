@@ -31,7 +31,7 @@ Non-goals
 Key elements:
 - Add CodedInputReader and CodedOutputWriter types (both are `ref structs` and thus can hold an instance of `Span`). These two types implement the low-level wire format semantics in terms of the `Span` type (as opposed to `byte[]` used by CodedInputStream and CodedOutputStream).
 - Introduce `IBufferMessage` interface (exact name TBD) which inherits from `IMessage` and marks protobuf messages that support the new serialization/deserialization API.
-- Introduce a new codegen option (exact name TBD) to enable/disable generating code required by CodedInputReader/CodedInputWriter (the MergeFrom and WriteTo methods).
+- Introduce a new codegen option (exact name TBD) to enable/disable generating code required by CodedInputReader/CodedInputWriter (the MergeFrom and WriteTo methods). This option will default to disabled. gRPC frameworks will likely provide the ability to explicitly control it, e.g. `<Protobuf Include="..\Shared\benchmark_service.proto" Serialization="Buffer" />`, and/or detect the version of .NET being targeted and automatically enable the option.
 
 A prototype implementation is https://github.com/protocolbuffers/protobuf/pull/5888
 
