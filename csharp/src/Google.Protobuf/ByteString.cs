@@ -116,6 +116,12 @@ namespace Google.Protobuf
         /// No data is copied so this is the most efficient way of accessing.
         /// </summary>
         public ReadOnlySpan<byte> Span => new ReadOnlySpan<byte>(bytes);
+
+        /// <summary>
+        /// Provides read-only access to the data of this <see cref="ByteString"/>.
+        /// No data is copied so this is the most efficient way of accessing.
+        /// </summary>
+        public ReadOnlyMemory<byte> Memory => new ReadOnlyMemory<byte>(bytes);
 #endif
 
         /// <summary>
