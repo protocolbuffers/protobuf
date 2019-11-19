@@ -1,3 +1,61 @@
+2019-11-19 version 3.11.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  C++
+  * Make serialization method naming consistent
+  * Make proto runtime + generated code free of deprecation warnings
+  * Moved ShutdownProtobufLibrary() to message_lite.h.  For backward compatibility a declaration is still available in stubs/common.h, but users should prefer message_lite.h
+  * Removed non-namespace macro EXPECT_OK()
+  * Removed mathlimits.h from stubs in favor of using std::numeric_limits from C++11
+  * Fixed bug in parser when ending on a group tag
+  * Add a helper function to UnknownFieldSet to deal with the changing return value of message::unknown_fields()
+  * Fix incorrect use of string_view iterators
+  * Support direct pickling of nested messages
+  * Skip extension tag validation for MessageSet if unknown dependencies are allowed
+  * Updated deprecation macros to annotate deprecated code (#6612)
+  * Remove conversion warning in MapEntryFuncs::ByteSizeLong (#6766)
+  * Make shared libraries be able to link to MSVC static runtime libraries (#6780)
+
+  Java
+  * Remove the usage of MethodHandle, so that Android users prior to API version 26 can use protobuf-java
+  * Improved Javadoc for ByteString
+  * Publish ProGuard config for javalite
+  * Fix for StrictMode disk read violation in ExtensionRegistryLite
+  * Include part of the ByteString's content in its toString().
+  * Include unknown fields when merging proto3 messages in Java lite builders
+
+  Python
+  * Clarify the behavior of text_format.Parse/Merge on non-repeated fields when the input proto is non-empty
+  * Add float_precision option in json format printer
+  * Improve error message when using unbuffered streams with delimited messages
+  * Optionally print bytes fields as messages, if possible
+  * FieldPath: fix testing IsSet on root path ''
+
+  JavaScript
+  * Change hiddenES6Property to @package rather than @private to avoid unused private property check
+  * Remove guard for Symbol iterator for jspb.Map
+  * Use string template to construct parameter
+  * Introduce jspb.Message.deserializeWithCtor to replace jspb.Message.deserialize method
+
+  PHP
+  * Avoid too much overhead in layout_init (#6716)
+  * Lazily Create Singular Wrapper Message (#6833)
+
+  Ruby
+  * Ruby lazy wrappers optimization (#6797)
+
+  C#
+  * (RepeatedField): Capacity property to resize the internal array (#6530)
+  * C# Proto2 feature : Finale (#5936)
+  * Add length checks to ExtensionCollection (#6759)
+  * Optimize parsing of some primitive and wrapper types (#6843)
+  * Document proto2 feature implementations in Google.Protobuf (#6499)
+  * Use 3 parameter Encoding.GetString for default string values (#6828)
+  * Change _Extensions property to normal body rather than expression (#6856)
+
+  Objective C
+  * Remove OSReadLittle* due to alignment requirements (#6678)
+
+
 2019-09-03 version 3.10.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   C++
