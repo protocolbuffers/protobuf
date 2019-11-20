@@ -13,7 +13,6 @@
   * Skip extension tag validation for MessageSet if unknown dependencies are allowed
   * Updated deprecation macros to annotate deprecated code (#6612)
   * Remove conversion warning in MapEntryFuncs::ByteSizeLong (#6766)
-  * Make shared libraries be able to link to MSVC static runtime libraries (#6780)
 
   Java
   * Remove the usage of MethodHandle, so that Android users prior to API version 26 can use protobuf-java
