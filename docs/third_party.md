@@ -51,6 +51,7 @@ These are projects we know about implementing Protocol Buffers for other program
 * Haxe: https://github.com/Atry/protoc-gen-haxe
 * Java: https://github.com/google/protobuf (Google-official implementation)
 * Java/Android: https://github.com/square/wire
+* Java: https://github.com/HebiRobotics/QuickBuffers/
 * Java ME: http://code.google.com/p/protobuf-javame/
 * Java ME: http://swingme.sourceforge.net/encode.shtml
 * Java ME: http://code.google.com/p/protobuf-j2me/
