@@ -407,6 +407,7 @@ static void cleanup_desc_table(upb_inttable* t) {
     desc = upb_value_getptr(v);
     if (desc->layout) {
       free_layout(desc->layout);
+      desc->layout = NULL;
     }
     free(desc->classname);
     SYS_FREE(desc);

@@ -1356,6 +1356,7 @@ void add_handlers_for_message(const void* closure, upb_handlers* h) {
   const upb_msgdef* msgdef = upb_handlers_msgdef(h);
   TSRMLS_FETCH();
   DescriptorInternal* desc = get_msgdef_desc(msgdef);
+  register_class(desc, false TSRMLS_CC);
   upb_msg_field_iter i;
 
   // If this is a mapentry message type, set up a special set of handlers and
@@ -1364,15 +1365,6 @@ void add_handlers_for_message(const void* closure, upb_handlers* h) {
     add_handlers_for_mapentry(msgdef, h);
     return;
   }
-
-  // Ensure layout exists. We may be invoked to create handlers for a given
-  // message if we are included as a submsg of another message type before our
-  // class is actually built, so to work around this, we just create the layout
-  // (and handlers, in the class-building function) on-demand.
-  if (desc->layout == NULL) {
-    desc->layout = create_layout(desc->msgdef);
-  }
-
 
   // If this is a wrapper message type, set up a special set of handlers and
   // bail out of the normal (user-defined) message type handling.

@@ -945,6 +945,9 @@ void register_class(void *desc, bool is_enum TSRMLS_DC) {
     if (msgdesc->klass) {
       return;
     }
+    if (!msgdesc->classname) {
+      return;
+    }
     classname = msgdesc->classname;
     fullname = upb_msgdef_fullname(msgdesc->msgdef);
   }
