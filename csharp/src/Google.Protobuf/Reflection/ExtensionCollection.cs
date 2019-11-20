@@ -109,7 +109,9 @@ namespace Google.Protobuf.Reflection
 
                 IList<FieldDescriptor> list;
                 if (!declarationOrder.TryGetValue(descriptor.ExtendeeType, out list))
+                {
                     declarationOrder.Add(descriptor.ExtendeeType, list = new List<FieldDescriptor>());
+                }
 
                 list.Add(descriptor);
             }
