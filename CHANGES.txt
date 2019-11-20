@@ -17,7 +17,6 @@
 
   Java
   * Remove the usage of MethodHandle, so that Android users prior to API version 26 can use protobuf-java
-  * Improved Javadoc for ByteString
   * Publish ProGuard config for javalite
   * Fix for StrictMode disk read violation in ExtensionRegistryLite
   * Include part of the ByteString's content in its toString().
@@ -30,10 +29,7 @@
   * Experimental code gen (fast import protobuf module) which only work with cpp generated code linked in
 
   JavaScript
-  * Change hiddenES6Property to @package rather than @private to avoid unused private property check
   * Remove guard for Symbol iterator for jspb.Map
-  * Use string template to construct parameter
-  * Introduce jspb.Message.deserializeWithCtor to replace jspb.Message.deserialize method
 
   PHP
   * Avoid too much overhead in layout_init (#6716)
