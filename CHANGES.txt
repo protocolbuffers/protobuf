@@ -1,3 +1,56 @@
+2019-11-19 version 3.11.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  C++
+  * Make serialization method naming consistent
+  * Make proto runtime + generated code free of deprecation warnings
+  * Moved ShutdownProtobufLibrary() to message_lite.h.  For backward compatibility a declaration is still available in stubs/common.h, but users should prefer message_lite.h
+  * Removed non-namespace macro EXPECT_OK()
+  * Removed mathlimits.h from stubs in favor of using std::numeric_limits from C++11
+  * Fixed bug in parser when ending on a group tag
+  * Add a helper function to UnknownFieldSet to deal with the changing return value of message::unknown_fields()
+  * Fix incorrect use of string_view iterators
+  * Support direct pickling of nested messages
+  * Skip extension tag validation for MessageSet if unknown dependencies are allowed
+  * Updated deprecation macros to annotate deprecated code (#6612)
+  * Remove conversion warning in MapEntryFuncs::ByteSizeLong (#6766)
+  * Make shared libraries be able to link to MSVC static runtime libraries (#6780)
+
+  Java
+  * Remove the usage of MethodHandle, so that Android users prior to API version 26 can use protobuf-java
+  * Publish ProGuard config for javalite
+  * Fix for StrictMode disk read violation in ExtensionRegistryLite
+  * Include part of the ByteString's content in its toString().
+  * Include unknown fields when merging proto3 messages in Java lite builders
+
+  Python
+  * Add float_precision option in json format printer
+  * Optionally print bytes fields as messages in unknown fields, if possible
+  * FieldPath: fix testing IsSet on root path ''
+  * Experimental code gen (fast import protobuf module) which only work with cpp generated code linked in
+
+  JavaScript
+  * Remove guard for Symbol iterator for jspb.Map
+
+  PHP
+  * Avoid too much overhead in layout_init (#6716)
+  * Lazily Create Singular Wrapper Message (#6833)
+
+  Ruby
+  * Ruby lazy wrappers optimization (#6797)
+
+  C#
+  * (RepeatedField): Capacity property to resize the internal array (#6530)
+  * Experimental proto2 support is now officially available (#4642, #5183, #5350, #5936)
+  * Getting started doc: https://github.com/protocolbuffers/protobuf/blob/master/docs/csharp/proto2.md
+  * Add length checks to ExtensionCollection (#6759)
+  * Optimize parsing of some primitive and wrapper types (#6843)
+  * Use 3 parameter Encoding.GetString for default string values (#6828)
+  * Change _Extensions property to normal body rather than expression (#6856)
+
+  Objective C
+  * Fixed unaligned reads for 32bit arm with newer Xcode versions (#6678)
+
+
 2019-09-03 version 3.10.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   C++
