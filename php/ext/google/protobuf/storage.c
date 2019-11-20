@@ -822,6 +822,7 @@ zval* layout_get(MessageLayout* layout, MessageHeader* header,
       const upb_fielddef* value_field = upb_msgdef_itof(submsgdef, 1);
       MessageHeader* submsg;
       DescriptorInternal* subdesc = get_msgdef_desc(submsgdef);
+      register_class(subdesc, false TSRMLS_CC);
       zend_class_entry* subklass = subdesc->klass;
 #if PHP_MAJOR_VERSION < 7
       zval* val = NULL;
@@ -946,6 +947,7 @@ static void native_slot_merge(
       case UPB_TYPE_MESSAGE: {
         const upb_msgdef* msg = upb_fielddef_msgsubdef(field);
         DescriptorInternal* desc = get_msgdef_desc(msg);
+        register_class(desc, false TSRMLS_CC);
         ce = desc->klass;
         if (native_slot_is_default(type, to_memory)) {
 #if PHP_MAJOR_VERSION < 7
@@ -992,6 +994,7 @@ static void native_slot_merge_by_array(const upb_fielddef* field, const void* fr
     case UPB_TYPE_MESSAGE: {
       const upb_msgdef* msg = upb_fielddef_msgsubdef(field);
       DescriptorInternal* desc = get_msgdef_desc(upb_fielddef_msgsubdef(field));
+      register_class(desc, false TSRMLS_CC);
       zend_class_entry* ce = desc->klass;
 #if PHP_MAJOR_VERSION < 7
       MAKE_STD_ZVAL(DEREF(to_memory, zval*));

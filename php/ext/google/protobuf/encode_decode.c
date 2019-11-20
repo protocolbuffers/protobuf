@@ -429,6 +429,7 @@ static void *appendsubmsg_handler(void *closure, const void *hd) {
 
   const submsg_handlerdata_t *submsgdata = hd;
   DescriptorInternal* subdesc = get_msgdef_desc(submsgdata->md);
+  register_class(subdesc, false TSRMLS_CC);
   zend_class_entry* subklass = subdesc->klass;
   MessageHeader* submsg;
 
@@ -456,6 +457,7 @@ static void *appendwrappersubmsg_handler(void *closure, const void *hd) {
 
   const submsg_handlerdata_t *submsgdata = hd;
   DescriptorInternal* subdesc = get_msgdef_desc(submsgdata->md);
+  register_class(subdesc, false TSRMLS_CC);
   zend_class_entry* subklass = subdesc->klass;
   MessageHeader* submsg;
   wrapperfields_parseframe_t* frame =
@@ -487,6 +489,7 @@ static void *submsg_handler(void *closure, const void *hd) {
   const submsg_handlerdata_t* submsgdata = hd;
   TSRMLS_FETCH();
   DescriptorInternal* subdesc = get_msgdef_desc(submsgdata->md);
+  register_class(subdesc, false TSRMLS_CC);
   zend_class_entry* subklass = subdesc->klass;
   zval* submsg_php;
   MessageHeader* submsg;
@@ -520,6 +523,7 @@ static void *map_submsg_handler(void *closure, const void *hd) {
   const submsg_handlerdata_t* submsgdata = hd;
   TSRMLS_FETCH();
   DescriptorInternal* subdesc = get_msgdef_desc(submsgdata->md);
+  register_class(subdesc, false TSRMLS_CC);
   zend_class_entry* subklass = subdesc->klass;
   zval* submsg_php;
   MessageHeader* submsg;
@@ -554,6 +558,7 @@ static void *map_wrapper_submsg_handler(void *closure, const void *hd) {
   const submsg_handlerdata_t* submsgdata = hd;
   TSRMLS_FETCH();
   DescriptorInternal* subdesc = get_msgdef_desc(submsgdata->md);
+  register_class(subdesc, false TSRMLS_CC);
   zend_class_entry* subklass = subdesc->klass;
   zval* submsg_php;
   MessageHeader* submsg;
@@ -641,6 +646,7 @@ static void map_slot_init(
     }
     case UPB_TYPE_MESSAGE: {
       DescriptorInternal* subdesc = get_msgdef_desc(value_msg);
+      register_class(subdesc, false TSRMLS_CC);
       zend_class_entry* subklass = subdesc->klass;
       MessageHeader* submsg;
 #if PHP_MAJOR_VERSION < 7
@@ -938,6 +944,7 @@ static void* oneofsubmsg_handler(void* closure, const void* hd) {
   uint32_t oldcase = DEREF(message_data(msg), oneofdata->case_ofs, uint32_t);
   TSRMLS_FETCH();
   DescriptorInternal* subdesc = get_msgdef_desc(oneofdata->md);
+  register_class(subdesc, false TSRMLS_CC);
   zend_class_entry* subklass = subdesc->klass;
   zval* submsg_php;
   MessageHeader* submsg;
@@ -1635,6 +1642,7 @@ static void putjsonany(MessageHeader* msg, const DescriptorInternal* desc,
 
     if (value_len > 0) {
       DescriptorInternal* payload_desc = get_msgdef_desc(payload_type);
+      register_class(payload_desc, false TSRMLS_CC);
       zend_class_entry* payload_klass = payload_desc->klass;
       zval val;
       upb_sink subsink;
