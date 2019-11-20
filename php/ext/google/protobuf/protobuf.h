@@ -781,6 +781,8 @@ void add_proto_enumdesc(const char* proto, EnumDescriptorInternal* desc);
 EnumDescriptorInternal* get_proto_enumdesc(const char* proto);
 void add_class_desc(const char* klass, DescriptorInternal* desc);
 DescriptorInternal* get_class_desc(const char* klass);
+void add_class_enumdesc(const char* klass, EnumDescriptorInternal* desc);
+EnumDescriptorInternal* get_class_enumdesc(const char* klass);
 
 extern zend_class_entry* map_field_type;
 extern zend_class_entry* repeated_field_type;

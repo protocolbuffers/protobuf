@@ -1101,7 +1101,7 @@ void internal_add_generated_file(const char *data, PHP_PROTO_SIZE data_len,
     add_def_obj(desc->intern->enumdef, desc_php);
     add_enumdef_enumdesc(desc->intern->enumdef, desc->intern);
     fill_classname_for_desc(desc->intern, true);
-    // add_class_desc(desc->intern->classname, desc->intern);
+    add_class_enumdesc(desc->intern->classname, desc->intern);
   }
 }
 
@@ -1190,9 +1190,17 @@ PHP_METHOD(DescriptorPool, getEnumDescriptorByClassName) {
     RETURN_NULL();
   }
 
-  PHP_PROTO_HASHTABLE_VALUE desc_php = get_ce_obj(PHP_PROTO_CE_UNREF(pce));
+  zend_class_entry* ce = PHP_PROTO_CE_UNREF(pce);
+
+  PHP_PROTO_HASHTABLE_VALUE desc_php = get_ce_obj(ce);
   if (desc_php == NULL) {
-    EnumDescriptorInternal* intern = get_ce_enumdesc(PHP_PROTO_CE_UNREF(pce));
+#if PHP_MAJOR_VERSION < 7
+    EnumDescriptorInternal* intern = get_class_enumdesc(ce->name);
+#else
+    EnumDescriptorInternal* intern = get_class_enumdesc(ZSTR_VAL(ce->name));
+#endif
+    register_class(intern, true TSRMLS_CC);
+
     if (intern == NULL) {
       RETURN_NULL();
     }
@@ -1210,7 +1218,7 @@ PHP_METHOD(DescriptorPool, getEnumDescriptorByClassName) {
     EnumDescriptor* desc = UNBOX_HASHTABLE_VALUE(EnumDescriptor, desc_php);
     desc->intern = intern;
     add_def_obj(intern->enumdef, desc_php);
-    add_ce_obj(PHP_PROTO_CE_UNREF(pce), desc_php);
+    add_ce_obj(ce, desc_php);
   }
 
   zend_class_entry* instance_ce = HASHTABLE_VALUE_CE(desc_php);

@@ -250,6 +250,23 @@ DescriptorInternal* get_class_desc(const char* klass) {
   }
 }
 
+void add_class_enumdesc(const char* klass, EnumDescriptorInternal* desc) {
+  upb_strtable_insert(&class_to_desc_map_persistent, klass,
+                      upb_value_ptr(desc));
+}
+
+EnumDescriptorInternal* get_class_enumdesc(const char* klass) {
+  upb_value v;
+#ifndef NDEBUG
+  v.ctype = UPB_CTYPE_PTR;
+#endif
+  if (!upb_strtable_lookup(&class_to_desc_map_persistent, klass, &v)) {
+    return NULL;
+  } else {
+    return upb_value_getptr(v);
+  }
+}
+
 // -----------------------------------------------------------------------------
 // Well Known Types.
 // -----------------------------------------------------------------------------
