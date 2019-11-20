@@ -44,7 +44,8 @@
 
   C#
   * (RepeatedField): Capacity property to resize the internal array (#6530)
-  * C# Proto2 feature : Finale (#5936)
+  * Experimental proto2 support is now officially available (#4642, #5183, #5350, #5936)
+    * Getting started doc: https://github.com/protocolbuffers/protobuf/blob/master/docs/csharp/proto2.md
   * Add length checks to ExtensionCollection (#6759)
   * Optimize parsing of some primitive and wrapper types (#6843)
   * Document proto2 feature implementations in Google.Protobuf (#6499)
