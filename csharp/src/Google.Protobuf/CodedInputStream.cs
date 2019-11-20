@@ -577,32 +577,7 @@ namespace Google.Protobuf
         /// </summary>
         public bool ReadBool()
         {
-            int result = 0; // can't do AND on bytes, it gets implicitly upcasted to int
-            byte index = 0;
-            if (bufferPos < bufferSize) // check if we have at least one byte for the most likely case of a one byte 1 or 0
-            {
-                result = buffer[bufferPos++];
-                if (result < 128)
-                {
-                    return result != 0;
-                }
-                result &= 0x7f;
-                index++;
-            }
-
-            do
-            {
-                byte b = ReadRawByte();
-                result |= b & 0x7F; // OR all bytes together since we don't care about the actual value, just whether is more than zero
-                if (b < 0x80)
-                {
-                    return result != 0;
-                }
-                index++;
-            }
-            while (index < 10);
-
-            throw InvalidProtocolBufferException.MalformedVarint();
+            return ReadRawVarint64() != 0;
         }
 
         /// <summary>
@@ -870,7 +845,7 @@ namespace Google.Protobuf
 
         internal static bool? ReadBoolWrapper(CodedInputStream input)
         {
-            return ReadUInt32Wrapper(input) != 0;
+            return ReadUInt64Wrapper(input) != 0;
         }
 
         internal static uint? ReadUInt32Wrapper(CodedInputStream input)
