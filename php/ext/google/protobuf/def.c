@@ -1084,7 +1084,6 @@ void internal_add_generated_file(const char *data, PHP_PROTO_SIZE data_len,
     fill_classname_for_desc(desc->intern, false);
     add_class_desc(desc->intern->classname, desc->intern);
     add_proto_desc(upb_msgdef_fullname(desc->intern->msgdef), desc->intern);
-    // register_class(desc->intern, false TSRMLS_CC);
   }
 
   for (i = 0; i < upb_filedef_enumcount(file); i++) {
@@ -1100,7 +1099,6 @@ void internal_add_generated_file(const char *data, PHP_PROTO_SIZE data_len,
     add_enumdef_enumdesc(desc->intern->enumdef, desc->intern);
     fill_classname_for_desc(desc->intern, true);
     // add_class_desc(desc->intern->classname, desc->intern);
-    // register_class(desc->intern, true TSRMLS_CC);
   }
 }
 

@@ -465,7 +465,7 @@ static inline int php_proto_zend_hash_get_current_data_ex(HashTable* ht,
   }
 
 #define PHP_PROTO_OBJECT_CREATE_START(NAME, LOWWERNAME)                     \
-  zend_object* LOWWERNAME##_create(zend_class_entry* ce TSRMLS_DC) {        \
+  static zend_object* LOWWERNAME##_create(zend_class_entry* ce TSRMLS_DC) { \
     PHP_PROTO_ALLOC_CLASS_OBJECT(NAME, ce);                                 \
     zend_object_std_init(&intern->std, ce TSRMLS_CC);                       \
     object_properties_init(&intern->std, ce);

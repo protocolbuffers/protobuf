@@ -983,6 +983,7 @@ static void* wrapper_submsg_handler(void* closure, const void* hd) {
   const submsg_handlerdata_t* submsgdata = hd;
   TSRMLS_FETCH();
   DescriptorInternal* subdesc = get_msgdef_desc(submsgdata->md);
+  register_class(subdesc, false TSRMLS_CC);
   zend_class_entry* subklass = subdesc->klass;
   zval* submsg_php;
   MessageHeader* submsg;
@@ -1014,6 +1015,7 @@ static void* wrapper_oneofsubmsg_handler(void* closure, const void* hd) {
   uint32_t oldcase = DEREF(message_data(msg), oneofdata->case_ofs, uint32_t);
   TSRMLS_FETCH();
   DescriptorInternal* subdesc = get_msgdef_desc(oneofdata->md);
+  register_class(subdesc, false TSRMLS_CC);
   zend_class_entry* subklass = subdesc->klass;
   wrapperfields_parseframe_t* frame =
       (wrapperfields_parseframe_t*)malloc(sizeof(wrapperfields_parseframe_t));

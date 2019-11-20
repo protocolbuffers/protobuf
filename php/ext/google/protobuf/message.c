@@ -520,6 +520,7 @@ PHP_METHOD(Message, __construct) {
 PHP_METHOD(Message, clear) {
   MessageHeader* msg = UNBOX(MessageHeader, getThis());
   DescriptorInternal* desc = msg->descriptor;
+  register_class(desc, false TSRMLS_CC);
   zend_class_entry* ce = desc->klass;
 
   zend_object_std_dtor(&msg->std TSRMLS_CC);
