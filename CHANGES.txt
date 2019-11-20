@@ -52,7 +52,7 @@
   * Change _Extensions property to normal body rather than expression (#6856)
 
   Objective C
-  * Remove OSReadLittle* due to alignment requirements (#6678)
+  * Fixed unaligned reads for 32bit arm with newer Xcode versions (#6678)
 
 
 2019-09-03 version 3.10.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
