@@ -974,7 +974,6 @@ void register_class(void *desc, bool is_enum TSRMLS_DC) {
         MessageLayout* layout = create_layout(msgdesc->msgdef);
         msgdesc->layout = layout;
       }
-      ret->create_object = message_create;
     }
   }
 }

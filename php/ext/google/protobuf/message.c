@@ -329,11 +329,12 @@ void Message_construct(zval* msg, zval* array_wrapper) {
   MessageHeader* intern = NULL;
 
   if (!class_added(ce)) {
+#if PHP_MAJOR_VERSION < 7
     DescriptorInternal* desc = get_class_desc(ce->name);
+#else
+    DescriptorInternal* desc = get_class_desc(ZSTR_VAL(ce->name));
+#endif
     register_class(desc, false TSRMLS_CC);
-
-    // php_proto_zval_ptr_dtor(msg);
-    ZVAL_OBJ(msg, ce->create_object(ce TSRMLS_CC));
   }
 
   intern = UNBOX(MessageHeader, msg);

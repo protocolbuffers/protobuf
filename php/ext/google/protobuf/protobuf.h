@@ -178,7 +178,7 @@
   }
 
 #define PHP_PROTO_OBJECT_CREATE_START(NAME, LOWWERNAME) \
-  zend_object_value LOWWERNAME##_create(                \
+  static zend_object_value LOWWERNAME##_create(         \
       zend_class_entry* ce TSRMLS_DC) {                 \
     PHP_PROTO_ALLOC_CLASS_OBJECT(NAME, ce);             \
     zend_object_std_init(&intern->std, ce TSRMLS_CC);   \
@@ -913,11 +913,6 @@ extern zend_class_entry* enum_value_descriptor_type;
 void* message_data(MessageHeader* msg);
 void custom_data_init(const zend_class_entry* ce,
                       MessageHeader* msg PHP_PROTO_TSRMLS_DC);
-#if PHP_MAJOR_VERSION < 7
-zend_object_value message_create(zend_class_entry* ce TSRMLS_DC); 
-#else
-zend_object* message_create(zend_class_entry* ce TSRMLS_DC);
-#endif
 
 extern zend_class_entry* message_type;
 extern zend_object_handlers* message_handlers;
