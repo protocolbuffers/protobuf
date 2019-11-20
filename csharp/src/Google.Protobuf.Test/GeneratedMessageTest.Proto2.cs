@@ -262,6 +262,13 @@ namespace Google.Protobuf
         }
 
         [Test]
+        public void RequiredFieldsNoThrow()
+        {
+            TestRequired.Parser.ParseFrom(new byte[0]);
+            (TestRequired.Parser as MessageParser).ParseFrom(new byte[0]);
+        }
+
+        [Test]
         public void RequiredFieldsInExtensions()
         {
             var message = new TestAllExtensions();
