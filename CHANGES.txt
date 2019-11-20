@@ -24,11 +24,10 @@
   * Include unknown fields when merging proto3 messages in Java lite builders
 
   Python
-  * Clarify the behavior of text_format.Parse/Merge on non-repeated fields when the input proto is non-empty
   * Add float_precision option in json format printer
-  * Improve error message when using unbuffered streams with delimited messages
-  * Optionally print bytes fields as messages, if possible
+  * Optionally print bytes fields as messages in unknown fields, if possible
   * FieldPath: fix testing IsSet on root path ''
+  * Experimental code gen (fast import protobuf module) which only work with cpp generated code linked in
 
   JavaScript
   * Change hiddenES6Property to @package rather than @private to avoid unused private property check
