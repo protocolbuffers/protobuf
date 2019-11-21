@@ -828,9 +828,11 @@ static void fill_segment(const char *segment, int length,
 static void fill_namespace(const char *package, const char *php_namespace,
                            stringsink *classname) {
   if (php_namespace != NULL) {
-    stringsink_string(classname, NULL, php_namespace, strlen(php_namespace),
-                      NULL);
-    stringsink_string(classname, NULL, "\\", 1, NULL);
+    if (strlen(php_namespace) != 0) {
+      stringsink_string(classname, NULL, php_namespace, strlen(php_namespace),
+                        NULL);
+      stringsink_string(classname, NULL, "\\", 1, NULL);
+    }
   } else if (package != NULL) {
     int i = 0, j, offset = 0;
     size_t package_len = strlen(package);
@@ -882,11 +884,23 @@ static void fill_classname(const char *fullname,
   }
 }
 
-static zend_class_entry *register_class(const upb_filedef *file,
-                                        const char *fullname,
-                                        PHP_PROTO_HASHTABLE_VALUE desc_php,
-                                        bool use_nested_submsg,
-                                        bool is_enum TSRMLS_DC) {
+static void fill_classname_for_desc(void *desc, bool is_enum) {
+  const upb_filedef *file;
+  const char *fullname;
+  bool use_nested_submsg;
+
+  if (is_enum) {
+    EnumDescriptorInternal* enumdesc = desc;
+    file = upb_enumdef_file(enumdesc->enumdef);
+    fullname = upb_enumdef_fullname(enumdesc->enumdef);
+    use_nested_submsg = enumdesc->use_nested_submsg;
+  } else {
+    DescriptorInternal* msgdesc = desc;
+    file = upb_msgdef_file(msgdesc->msgdef);
+    fullname = upb_msgdef_fullname(msgdesc->msgdef);
+    use_nested_submsg = msgdesc->use_nested_submsg;
+  }
+
   // Prepend '.' to package name to make it absolute. In the 5 additional
   // bytes allocated, one for '.', one for trailing 0, and 3 for 'GPB' if
   // given message is google.protobuf.Empty.
@@ -896,7 +910,6 @@ static zend_class_entry *register_class(const upb_filedef *file,
   size_t classname_len =
       classname_len_max(fullname, package, php_namespace, prefix);
   char* after_package;
-  zend_class_entry* ret;
   stringsink namesink;
   stringsink_init(&namesink);
 
@@ -904,28 +917,68 @@ static zend_class_entry *register_class(const upb_filedef *file,
   fill_classname(fullname, package, prefix, &namesink, use_nested_submsg);
   stringsink_string(&namesink, NULL, "\0", 1, NULL);
 
+  if (is_enum) {
+    EnumDescriptorInternal* enumdesc = desc;
+    enumdesc->classname = strdup(namesink.ptr);
+  } else {
+    DescriptorInternal* msgdesc = desc;
+    msgdesc->classname = strdup(namesink.ptr);
+  }
+
+  stringsink_uninit(&namesink);
+}
+
+void register_class(void *desc, bool is_enum TSRMLS_DC) {
+  const char *classname;
+  const char *fullname;
+  zend_class_entry* ret;
+
+  if (is_enum) {
+    EnumDescriptorInternal* enumdesc = desc;
+    if (enumdesc->klass) {
+      return;
+    }
+    classname = enumdesc->classname;
+    fullname = upb_enumdef_fullname(enumdesc->enumdef);
+  } else {
+    DescriptorInternal* msgdesc = desc;
+    if (msgdesc->klass) {
+      return;
+    }
+    if (!msgdesc->classname) {
+      return;
+    }
+    classname = msgdesc->classname;
+    fullname = upb_msgdef_fullname(msgdesc->msgdef);
+  }
+
   PHP_PROTO_CE_DECLARE pce;
-  if (php_proto_zend_lookup_class(namesink.ptr, namesink.len - 1, &pce) ==
+  if (php_proto_zend_lookup_class(classname, strlen(classname), &pce) ==
       FAILURE) {
     zend_error(
         E_ERROR,
-        "Generated message class %s hasn't been defined (%s, %s, %s, %s)",
-        namesink.ptr, fullname, package, php_namespace, prefix);
-    return NULL;
+        "Generated message class %s hasn't been defined (%s)",
+        classname);
+    return;
   }
   ret = PHP_PROTO_CE_UNREF(pce);
-  add_ce_obj(ret, desc_php);
   if (is_enum) {
-    EnumDescriptor* desc = UNBOX_HASHTABLE_VALUE(EnumDescriptor, desc_php);
-    add_ce_enumdesc(ret, desc->intern);
-    add_proto_enumdesc(fullname, desc->intern);
+    EnumDescriptorInternal* enumdesc = desc;
+    add_ce_enumdesc(ret, desc);
+    add_proto_enumdesc(fullname, desc);
+    enumdesc->klass = ret;
   } else {
-    Descriptor* desc = UNBOX_HASHTABLE_VALUE(Descriptor, desc_php);
-    add_ce_desc(ret, desc->intern);
-    add_proto_desc(fullname, desc->intern);
+    DescriptorInternal* msgdesc = desc;
+    add_ce_desc(ret, desc);
+    msgdesc->klass = ret;
+    // Map entries don't have existing php class.
+    if (!upb_msgdef_mapentry(msgdesc->msgdef)) {
+      if (msgdesc->layout == NULL) {
+        MessageLayout* layout = create_layout(msgdesc->msgdef);
+        msgdesc->layout = layout;
+      }
+    }
   }
-  stringsink_uninit(&namesink);
-  return ret;
 }
 
 bool depends_on_descriptor(const google_protobuf_FileDescriptorProto* file) {
@@ -1019,6 +1072,8 @@ void internal_add_generated_file(const char *data, PHP_PROTO_SIZE data_len,
     desc->intern->pool = pool;
     desc->intern->layout = NULL;
     desc->intern->klass = NULL;
+    desc->intern->use_nested_submsg = use_nested_submsg;
+    desc->intern->classname = NULL;
 
     add_def_obj(desc->intern->msgdef, desc_php);
     add_msgdef_desc(desc->intern->msgdef, desc->intern);
@@ -1029,15 +1084,9 @@ void internal_add_generated_file(const char *data, PHP_PROTO_SIZE data_len,
       continue;
     }
 
-    desc->intern->klass =
-        register_class(file, upb_msgdef_fullname(msgdef), desc_php,
-                       use_nested_submsg, false TSRMLS_CC);
-
-    if (desc->intern->klass == NULL) {
-      return;
-    }
-
-    build_class_from_descriptor(desc_php TSRMLS_CC);
+    fill_classname_for_desc(desc->intern, false);
+    add_class_desc(desc->intern->classname, desc->intern);
+    add_proto_desc(upb_msgdef_fullname(desc->intern->msgdef), desc->intern);
   }
 
   for (i = 0; i < upb_filedef_enumcount(file); i++) {
@@ -1046,16 +1095,13 @@ void internal_add_generated_file(const char *data, PHP_PROTO_SIZE data_len,
     desc->intern = SYS_MALLOC(EnumDescriptorInternal);
     desc->intern->enumdef = enumdef;
     desc->intern->klass = NULL;
+    desc->intern->use_nested_submsg = use_nested_submsg;
+    desc->intern->classname = NULL;
 
     add_def_obj(desc->intern->enumdef, desc_php);
     add_enumdef_enumdesc(desc->intern->enumdef, desc->intern);
-    desc->intern->klass =
-        register_class(file, upb_enumdef_fullname(enumdef), desc_php,
-                       use_nested_submsg, true TSRMLS_CC);
-
-    if (desc->intern->klass == NULL) {
-      return;
-    }
+    fill_classname_for_desc(desc->intern, true);
+    add_class_enumdesc(desc->intern->classname, desc->intern);
   }
 }
 
@@ -1144,9 +1190,17 @@ PHP_METHOD(DescriptorPool, getEnumDescriptorByClassName) {
     RETURN_NULL();
   }
 
-  PHP_PROTO_HASHTABLE_VALUE desc_php = get_ce_obj(PHP_PROTO_CE_UNREF(pce));
+  zend_class_entry* ce = PHP_PROTO_CE_UNREF(pce);
+
+  PHP_PROTO_HASHTABLE_VALUE desc_php = get_ce_obj(ce);
   if (desc_php == NULL) {
-    EnumDescriptorInternal* intern = get_ce_enumdesc(PHP_PROTO_CE_UNREF(pce));
+#if PHP_MAJOR_VERSION < 7
+    EnumDescriptorInternal* intern = get_class_enumdesc(ce->name);
+#else
+    EnumDescriptorInternal* intern = get_class_enumdesc(ZSTR_VAL(ce->name));
+#endif
+    register_class(intern, true TSRMLS_CC);
+
     if (intern == NULL) {
       RETURN_NULL();
     }
@@ -1164,7 +1218,7 @@ PHP_METHOD(DescriptorPool, getEnumDescriptorByClassName) {
     EnumDescriptor* desc = UNBOX_HASHTABLE_VALUE(EnumDescriptor, desc_php);
     desc->intern = intern;
     add_def_obj(intern->enumdef, desc_php);
-    add_ce_obj(PHP_PROTO_CE_UNREF(pce), desc_php);
+    add_ce_obj(ce, desc_php);
   }
 
   zend_class_entry* instance_ce = HASHTABLE_VALUE_CE(desc_php);
