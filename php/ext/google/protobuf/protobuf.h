@@ -779,6 +779,10 @@ void add_proto_desc(const char* proto, DescriptorInternal* desc);
 DescriptorInternal* get_proto_desc(const char* proto);
 void add_proto_enumdesc(const char* proto, EnumDescriptorInternal* desc);
 EnumDescriptorInternal* get_proto_enumdesc(const char* proto);
+void add_class_desc(const char* klass, DescriptorInternal* desc);
+DescriptorInternal* get_class_desc(const char* klass);
+void add_class_enumdesc(const char* klass, EnumDescriptorInternal* desc);
+EnumDescriptorInternal* get_class_enumdesc(const char* klass);
 
 extern zend_class_entry* map_field_type;
 extern zend_class_entry* repeated_field_type;
@@ -817,6 +821,7 @@ void internal_add_generated_file(const char* data, PHP_PROTO_SIZE data_len,
                                  bool use_nested_submsg TSRMLS_DC);
 void init_generated_pool_once(TSRMLS_D);
 void add_handlers_for_message(const void* closure, upb_handlers* h);
+void register_class(void *desc, bool is_enum TSRMLS_DC);
 
 // wrapper of generated pool
 #if PHP_MAJOR_VERSION < 7
@@ -844,6 +849,8 @@ struct DescriptorInternal {
   const upb_msgdef* msgdef;
   MessageLayout* layout;
   zend_class_entry* klass;  // begins as NULL
+  bool use_nested_submsg;
+  char* classname;
 };
 
 PHP_PROTO_WRAP_OBJECT_START(Descriptor)
@@ -878,6 +885,8 @@ extern zend_class_entry* field_descriptor_type;
 struct EnumDescriptorInternal {
   const upb_enumdef* enumdef;
   zend_class_entry* klass;  // begins as NULL
+  bool use_nested_submsg;
+  char* classname;
 };
 
 PHP_PROTO_WRAP_OBJECT_START(EnumDescriptor)
@@ -906,12 +915,6 @@ extern zend_class_entry* enum_value_descriptor_type;
 void* message_data(MessageHeader* msg);
 void custom_data_init(const zend_class_entry* ce,
                       MessageHeader* msg PHP_PROTO_TSRMLS_DC);
-
-// Build PHP class for given descriptor. Instead of building from scratch, this
-// function modifies existing class which has been partially defined in PHP
-// code.
-void build_class_from_descriptor(
-    PHP_PROTO_HASHTABLE_VALUE php_descriptor TSRMLS_DC);
 
 extern zend_class_entry* message_type;
 extern zend_object_handlers* message_handlers;
