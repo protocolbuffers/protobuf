@@ -965,7 +965,6 @@ void register_class(void *desc, bool is_enum TSRMLS_DC) {
   if (is_enum) {
     EnumDescriptorInternal* enumdesc = desc;
     add_ce_enumdesc(ret, desc);
-    add_proto_enumdesc(fullname, desc);
     enumdesc->klass = ret;
   } else {
     DescriptorInternal* msgdesc = desc;
