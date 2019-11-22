@@ -225,8 +225,8 @@ EnumDescriptorInternal* get_proto_enumdesc(const char* proto) {
 #ifndef NDEBUG
   v.ctype = UPB_CTYPE_PTR;
 #endif
-  if (!upb_strtable_lookupptr(&proto_to_enumdesc_map_persistent,
-                              proto, strlen(proto), &v)) {
+  if (!upb_strtable_lookup2(&proto_to_enumdesc_map_persistent,
+                            proto, strlen(proto), &v)) {
     return NULL;
   } else {
     return upb_value_getptr(v);
