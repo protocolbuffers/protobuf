@@ -777,8 +777,6 @@ EnumDescriptorInternal* get_ce_enumdesc(const zend_class_entry* ce);
 // wrapper Descriptor/EnumDescriptor instances.
 void add_proto_desc(const char* proto, DescriptorInternal* desc);
 DescriptorInternal* get_proto_desc(const char* proto);
-void add_proto_enumdesc(const char* proto, EnumDescriptorInternal* desc);
-EnumDescriptorInternal* get_proto_enumdesc(const char* proto);
 void add_class_desc(const char* klass, DescriptorInternal* desc);
 DescriptorInternal* get_class_desc(const char* klass);
 void add_class_enumdesc(const char* klass, EnumDescriptorInternal* desc);
