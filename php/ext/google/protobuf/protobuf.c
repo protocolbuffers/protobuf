@@ -52,7 +52,6 @@ static upb_inttable ce_to_enumdesc_map_persistent;
 // Global map from message/enum's proto fully-qualified name to corresponding
 // wrapper Descriptor/EnumDescriptor instances.
 static upb_strtable proto_to_desc_map_persistent;
-static upb_strtable proto_to_enumdesc_map_persistent;
 static upb_strtable class_to_desc_map_persistent;
 
 upb_strtable reserved_names;
@@ -215,24 +214,6 @@ DescriptorInternal* get_proto_desc(const char* proto) {
   }
 }
 
-void add_proto_enumdesc(const char* proto, EnumDescriptorInternal* desc) {
-  upb_strtable_insert2(&proto_to_enumdesc_map_persistent, proto,
-                       strlen(proto), upb_value_ptr(desc));
-}
-
-EnumDescriptorInternal* get_proto_enumdesc(const char* proto) {
-  upb_value v;
-#ifndef NDEBUG
-  v.ctype = UPB_CTYPE_PTR;
-#endif
-  if (!upb_strtable_lookupptr(&proto_to_enumdesc_map_persistent,
-                              proto, strlen(proto), &v)) {
-    return NULL;
-  } else {
-    return upb_value_getptr(v);
-  }
-}
-
 void add_class_desc(const char* klass, DescriptorInternal* desc) {
   upb_strtable_insert(&class_to_desc_map_persistent, klass,
                       upb_value_ptr(desc));
@@ -378,7 +359,6 @@ static initialize_persistent_descriptor_pool(TSRMLS_D) {
   upb_inttable_init(&ce_to_desc_map_persistent, UPB_CTYPE_PTR);
   upb_inttable_init(&ce_to_enumdesc_map_persistent, UPB_CTYPE_PTR);
   upb_strtable_init(&proto_to_desc_map_persistent, UPB_CTYPE_PTR);
-  upb_strtable_init(&proto_to_enumdesc_map_persistent, UPB_CTYPE_PTR);
   upb_strtable_init(&class_to_desc_map_persistent, UPB_CTYPE_PTR);
 
   internal_descriptor_pool_impl_init(&generated_pool_impl TSRMLS_CC);
@@ -459,7 +439,6 @@ static cleanup_persistent_descriptor_pool(TSRMLS_D) {
   upb_inttable_uninit(&ce_to_desc_map_persistent);
   upb_inttable_uninit(&ce_to_enumdesc_map_persistent);
   upb_strtable_uninit(&proto_to_desc_map_persistent);
-  upb_strtable_uninit(&proto_to_enumdesc_map_persistent);
   upb_strtable_uninit(&class_to_desc_map_persistent);
 }
 
