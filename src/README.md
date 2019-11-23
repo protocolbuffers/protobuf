@@ -201,7 +201,7 @@ Protobuf and its dependencies can be installed directly by using `vcpkg`:
 
 If zlib support is desired, you'll also need to install the zlib feature:
 
-    >.qvcpkg install protobuf[zlib] protobuf[zlib]:x64-windows
+    >.\vcpkg install protobuf[zlib] protobuf[zlib]:x64-windows
 
 See https://github.com/Microsoft/vcpkg for more information.
 
