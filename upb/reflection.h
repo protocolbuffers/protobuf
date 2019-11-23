@@ -30,35 +30,34 @@ typedef union {
 
 /** upb_msg *******************************************************************/
 
+/* Creates a new message of the given type in the given arena. */
+upb_msg *upb_msg_new(const upb_msgdef *m, upb_arena *a);
+
 /* Returns the value associated with this field. */
-upb_msgval upb_msg_get(const upb_msg *msg, const upb_fielddef *f,
-                       const upb_msglayout *l);
+upb_msgval upb_msg_get(const upb_msg *msg, const upb_fielddef *f);
 
 /* Returns a mutable pointer to a map, array, or submessage value, constructing
  * a new object if it was not previously present.  May not be called for
  * primitive fields. */
-upb_mutmsgval upb_msg_mutable(upb_msg *msg, const upb_fielddef *f,
-                              const upb_msglayout *l, upb_arena *a);
+upb_mutmsgval upb_msg_mutable(upb_msg *msg, const upb_fielddef *f, upb_arena *a);
 
 /* May only be called for fields where upb_fielddef_haspresence(f) == true. */
-bool upb_msg_has(const upb_msg *msg, const upb_fielddef *f,
-                 const upb_msglayout *l);
+bool upb_msg_has(const upb_msg *msg, const upb_fielddef *f);
 
 /* Sets the given field to the given value.  For a msg/array/map/string, the
  * value must be in the same arena.  */
 void upb_msg_set(upb_msg *msg, const upb_fielddef *f, upb_msgval val,
-                 const upb_msglayout *l, upb_arena *a);
+                 upb_arena *a);
 
 /* Clears any field presence and sets the value back to its default. */
-void upb_msg_clearfield(upb_msg *msg, const upb_fielddef *f,
-                        const upb_msglayout *l);
+void upb_msg_clearfield(upb_msg *msg, const upb_fielddef *f);
 
 /** upb_array *****************************************************************/
 
 /* Returns the size of the array. */
 size_t upb_array_size(const upb_array *arr);
 
-/* Returns the given element. */
+/* Returns the given element, which must be within the array's current size. */
 upb_msgval upb_array_get(const upb_array *arr, size_t i);
 
 /* Sets the given element, which must be within the array's current size. */

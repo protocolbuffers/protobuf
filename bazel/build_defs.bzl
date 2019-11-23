@@ -5,6 +5,19 @@ load(":upb_proto_library.bzl", "GeneratedSrcsInfo")
 def _librule(name):
     return name + "_lib"
 
+runfiles_init = """\
+# --- begin runfiles.bash initialization v2 ---
+# Copy-pasted from the Bazel Bash runfiles library v2.
+set -uo pipefail; f=bazel_tools/tools/bash/runfiles/runfiles.bash
+source "${RUNFILES_DIR:-/dev/null}/$f" 2>/dev/null || \
+  source "$(grep -sm1 "^$f " "${RUNFILES_MANIFEST_FILE:-/dev/null}" | cut -f2- -d' ')" 2>/dev/null || \
+  source "$0.runfiles/$f" 2>/dev/null || \
+  source "$(grep -sm1 "^$f " "$0.runfiles_manifest" | cut -f2- -d' ')" 2>/dev/null || \
+  source "$(grep -sm1 "^$f " "$0.exe.runfiles_manifest" | cut -f2- -d' ')" 2>/dev/null || \
+  { echo>&2 "ERROR: cannot find $f"; exit 1; }; f=; set -e
+# --- end runfiles.bash initialization v2 ---
+"""
+
 def _get_real_short_path(file):
     # For some reason, files from other archives have short paths that look like:
     #   ../com_google_protobuf/google/protobuf/descriptor.proto
@@ -26,7 +39,7 @@ def _get_real_roots(files):
             roots[real_root] = True
     return roots.keys()
 
-def lua_cclibrary(name, srcs, hdrs = [], deps = [], luadeps = []):
+def lua_cclibrary(name, srcs, hdrs = [], deps = []):
     lib_rule = name + "_lib"
     so_rule = "lib" + name + ".so"
     so_file = _remove_prefix(name, "lua/") + ".so"
@@ -35,7 +48,7 @@ def lua_cclibrary(name, srcs, hdrs = [], deps = [], luadeps = []):
         name = _librule(name),
         hdrs = hdrs,
         srcs = srcs,
-        deps = deps + [_librule(dep) for dep in luadeps] + ["@lua//:liblua_headers"],
+        deps = deps + ["@lua//:liblua_headers"],
     )
 
     native.cc_binary(
@@ -87,7 +100,7 @@ def lua_library(name, srcs, strip_prefix, luadeps = []):
     )
 
 def make_shell_script(name, contents, out):
-    contents = contents.replace("$", "$$")
+    contents = (runfiles_init + contents).replace("$", "$$")
     native.genrule(
         name = "gen_" + name,
         outs = [out],
@@ -104,14 +117,20 @@ def _lua_binary_or_test(name, luamain, luadeps, rule):
 BASE=$(dirname $(rlocation upb/upb_c.so))
 export LUA_CPATH="$BASE/?.so"
 export LUA_PATH="$BASE/?.lua"
-$(rlocation lua/lua) $(rlocation upb/tools/upbc.lua) "$@"
-""",
+LUA=$(rlocation lua/lua)
+MAIN=$(rlocation upb/%s)
+$LUA $MAIN
+""" % luamain,
     )
 
     rule(
         name = name,
         srcs = [script],
-        data = ["@lua//:lua", luamain] + luadeps,
+        data = [
+            "@lua//:lua",
+            luamain
+        ] + luadeps,
+        deps = ["@bazel_tools//tools/bash/runfiles"],
     )
 
 def lua_binary(name, luamain, luadeps = []):

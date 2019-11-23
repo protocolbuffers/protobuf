@@ -579,7 +579,6 @@ lua_cclibrary(
     deps = [
         "reflection",
         "upb",
-        "upb_pb",
     ],
 )
 
@@ -590,35 +589,12 @@ lua_library(
     strip_prefix = "upb/bindings/lua",
 )
 
-lua_cclibrary(
-    name = "lua/upb/pb_c",
-    srcs = ["upb/bindings/lua/upb/pb.c"],
-    luadeps = ["lua/upb_c"],
-    deps = ["upb_pb"],
-)
-
-lua_library(
-    name = "lua/upb/pb",
-    srcs = ["upb/bindings/lua/upb/pb.lua"],
-    luadeps = [
-        "lua/upb",
-        "lua/upb/pb_c",
-    ],
-    strip_prefix = "upb/bindings/lua",
-)
-
 # Lua tests. ###################################################################
 
 lua_test(
     name = "lua/test_upb",
     luadeps = ["lua/upb"],
     luamain = "tests/bindings/lua/test_upb.lua",
-)
-
-lua_test(
-    name = "lua/test_upb_pb",
-    luadeps = ["lua/upb/pb"],
-    luamain = "tests/bindings/lua/test_upb.pb.lua",
 )
 
 # Test the CMake build #########################################################
