@@ -198,6 +198,10 @@ namespace Google.Protobuf.Test.Reflection
         public void MultipleImportOfSameFileWithExtension()
         {
             var descriptor = ExtensionsCReflection.Descriptor;
+            var foo = Foo.Descriptor;
+            var bar = Bar.Descriptor;
+            AssertOption("bar", foo.CustomOptions.TryGetString, ExtensionsAExtensions.Opt, foo.GetOption);
+            AssertOption("foo", bar.CustomOptions.TryGetString, ExtensionsAExtensions.Opt, bar.GetOption);
         }
 
         private void AssertOption<T, D>(T expected, OptionFetcher<T> fetcher, Extension<D, T> extension, Func<Extension<D, T>, T> descriptorOptionFetcher) where D : IExtendableMessage<D>
