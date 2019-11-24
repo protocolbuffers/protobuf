@@ -44,23 +44,26 @@ $PROTOC -Isrc --csharp_out=csharp/src/Google.Protobuf \
 # Note that this deliberately does *not* include old_extensions1.proto
 # and old_extensions2.proto, which are generated with an older version
 # of protoc.
-$PROTOC -Isrc -Icsharp/protos \
+$PROTOC -Isrc -Icsharp/protos -Icsharp/protos/extensions \
     --csharp_out=csharp/src/Google.Protobuf.Test.TestProtos \
     --descriptor_set_out=csharp/src/Google.Protobuf.Test/testprotos.pb \
     --include_source_info \
     --include_imports \
-    csharp/protos/map_unittest_proto3.proto \
-    csharp/protos/unittest_issues.proto \
-    csharp/protos/unittest_custom_options_proto3.proto \
-    csharp/protos/unittest_proto3.proto \
-    csharp/protos/unittest_import_proto3.proto \
-    csharp/protos/unittest_import_public_proto3.proto \
-    csharp/protos/unittest.proto \
-    csharp/protos/unittest_import.proto \
-    csharp/protos/unittest_import_public.proto \
-    src/google/protobuf/unittest_well_known_types.proto \
-    src/google/protobuf/test_messages_proto3.proto \
-    src/google/protobuf/test_messages_proto2.proto
+    map_unittest_proto3.proto \
+    unittest_issues.proto \
+    unittest_custom_options_proto3.proto \
+    unittest_proto3.proto \
+    unittest_import_proto3.proto \
+    unittest_import_public_proto3.proto \
+    unittest.proto \
+    unittest_import.proto \
+    unittest_import_public.proto \
+    extensions_a.proto \
+    extensions_b.proto \
+    extensions_c.proto \
+    google/protobuf/unittest_well_known_types.proto \
+    google/protobuf/test_messages_proto3.proto \
+    google/protobuf/test_messages_proto2.proto
 
 # AddressBook sample protos
 $PROTOC -Iexamples -Isrc --csharp_out=csharp/src/AddressBook \
