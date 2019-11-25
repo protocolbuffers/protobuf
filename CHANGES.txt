@@ -13,6 +13,7 @@
   * Skip extension tag validation for MessageSet if unknown dependencies are allowed
   * Updated deprecation macros to annotate deprecated code (#6612)
   * Remove conversion warning in MapEntryFuncs::ByteSizeLong (#6766)
+  * Revert "Make shared libraries be able to link to MSVC static runtime libraries, so that VC runtime is not required." (#6914)
 
   Java
   * Remove the usage of MethodHandle, so that Android users prior to API version 26 can use protobuf-java
@@ -33,6 +34,7 @@
   PHP
   * Avoid too much overhead in layout_init (#6716)
   * Lazily Create Singular Wrapper Message (#6833)
+  * Implement lazy loading of php class for proto messages (#6911)
 
   Ruby
   * Ruby lazy wrappers optimization (#6797)
