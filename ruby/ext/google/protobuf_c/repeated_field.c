@@ -529,7 +529,7 @@ VALUE RepeatedField_plus(VALUE _self, VALUE list) {
  * call-seq:
  *     RepeatedField.concat(other) => self
  *
- * concats the passed in array to self.  Returns a Ruby array.
+ * Concats the passed in array to self. Returns self.
  */
 VALUE RepeatedField_concat(VALUE _self, VALUE list) {
   int i;

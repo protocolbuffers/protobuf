@@ -42,8 +42,8 @@ require 'forwardable'
 #
 # KNOWN ISSUES
 #   - #[]= doesn't allow less used approaches such as `arr[1, 2] = 'fizz'`
-#   - #concat should return the orig array
-#   - #push should accept multiple arguments and push them all at the same time
+#   - #concat should accept multiple arrays to append
+#   - #push only accepts multiple arguments in C, not JRuby
 #
 module Google
   module Protobuf
