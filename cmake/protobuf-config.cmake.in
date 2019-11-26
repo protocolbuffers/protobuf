@@ -94,7 +94,14 @@ function(protobuf_generate)
     get_filename_component(_abs_file ${_proto} ABSOLUTE)
     get_filename_component(_abs_dir ${_abs_file} DIRECTORY)
     get_filename_component(_basename ${_proto} NAME_WE)
-    file(RELATIVE_PATH _rel_dir ${CMAKE_CURRENT_SOURCE_DIR} ${_abs_dir})
+
+    if (protobuf_generate_IMPORT_DIRS)
+        # protoc generates the files relative to the first import directory
+        list(GET protobuf_generate_IMPORT_DIRS 0 _first_include)
+        file(RELATIVE_PATH _rel_dir ${_first_include} ${_abs_dir})
+    else()
+        file(RELATIVE_PATH _rel_dir ${CMAKE_CURRENT_SOURCE_DIR} ${_abs_dir})
+    endif()
 
     set(_generated_srcs)
     foreach(_ext ${protobuf_generate_GENERATE_EXTENSIONS})
