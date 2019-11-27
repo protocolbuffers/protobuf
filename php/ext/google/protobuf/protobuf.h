@@ -689,7 +689,7 @@ ZEND_BEGIN_MODULE_GLOBALS(protobuf)
   zend_bool keep_descriptor_pool_after_request;
 ZEND_END_MODULE_GLOBALS(protobuf)
 
-ZEND_DECLARE_MODULE_GLOBALS(protobuf)
+ZEND_EXTERN_MODULE_GLOBALS(protobuf)
 
 #ifdef ZTS
 #define PROTOBUF_G(v) TSRMG(protobuf_globals_id, zend_protobuf_globals *, v)
