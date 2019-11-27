@@ -98,5 +98,18 @@ namespace Google.Protobuf
             Assert.AreEqual(message, other);
             Assert.AreEqual(message.CalculateSize(), message.CalculateSize());
         }
+
+        [Test]
+        public void TestImportedMultipleTImes()
+        {
+            var descriptor = UnittestWithExtension1Proto3Reflection.Descriptor.FindTypeByName<Google.Protobuf.Reflection.MessageDescriptor>("TestMessageWithExtension1");
+
+            Assert.IsNotNull(descriptor);
+            var extensionData = descriptor.GetOption(UnittestImportExtensionProto3Extensions.UnittestExtension);
+            Assert.IsNotNull(extensionData);
+
+            Assert.AreEqual(extensionData, "TestMessageWithExtension1");
+            Assert.AreEqual(descriptor.Name, "TestMessageWithExtension1");
+        }
     }
 }

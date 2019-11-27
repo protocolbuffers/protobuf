@@ -451,6 +451,23 @@ namespace Google.Protobuf.Reflection
             return dependencies.SelectMany(GetAllDependedExtensions).Distinct(ExtensionRegistry.ExtensionComparer.Instance).Concat(GetAllGeneratedExtensions(generatedInfo));
         }
 
+        private static IEnumerable<FileDescriptor> BuildDependedFileDescriptors(IEnumerable<FileDescriptor> dependencies)
+        {
+            HashSet<FileDescriptor> descriptors = new HashSet<FileDescriptor>();
+            BuildDependedFileDescriptors(dependencies, descriptors);
+            return descriptors;
+        }
+
+        private static void BuildDependedFileDescriptors(IEnumerable<FileDescriptor> dependencies, ICollection<FileDescriptor> descriptors)
+        {
+            foreach (var descriptor in dependencies) {
+                if (!descriptors.Contains(descriptor)) {
+                    descriptors.Add(descriptor);
+                    BuildDependedFileDescriptors(descriptor.Dependencies.Concat(descriptor.PublicDependencies), descriptors);
+                }
+            }
+        }
+
         private static IEnumerable<Extension> GetAllGeneratedExtensions(GeneratedClrTypeInfo generated)
         {
             return generated.Extensions.Concat(generated.NestedTypes.Where(t => t != null).SelectMany(GetAllGeneratedExtensions));
@@ -461,7 +478,6 @@ namespace Google.Protobuf.Reflection
             return descriptor.Extensions.UnorderedExtensions
                 .Select(s => s.Extension)
                 .Where(e => e != null)
-                .Concat(descriptor.Dependencies.Concat(descriptor.PublicDependencies).SelectMany(GetAllDependedExtensions))
                 .Concat(descriptor.MessageTypes.SelectMany(GetAllDependedExtensionsFromMessage));
         }
 
