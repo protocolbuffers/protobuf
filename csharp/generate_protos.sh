@@ -44,7 +44,7 @@ $PROTOC -Isrc --csharp_out=csharp/src/Google.Protobuf \
 # Note that this deliberately does *not* include old_extensions1.proto
 # and old_extensions2.proto, which are generated with an older version
 # of protoc.
-$PROTOC -Isrc -Icsharp/protos -Icsharp/protos/extensions \
+$PROTOC -Isrc -Icsharp/protos \
     --csharp_out=csharp/src/Google.Protobuf.Test.TestProtos \
     --descriptor_set_out=csharp/src/Google.Protobuf.Test/testprotos.pb \
     --include_source_info \
@@ -58,9 +58,9 @@ $PROTOC -Isrc -Icsharp/protos -Icsharp/protos/extensions \
     unittest.proto \
     unittest_import.proto \
     unittest_import_public.proto \
-    extensions_a.proto \
-    extensions_b.proto \
-    extensions_c.proto \
+    extensions_issue6936_a.proto \
+    extensions_issue6936_b.proto \
+    extensions_issue6936_c.proto \
     google/protobuf/unittest_well_known_types.proto \
     google/protobuf/test_messages_proto3.proto \
     google/protobuf/test_messages_proto2.proto

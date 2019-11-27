@@ -42,7 +42,6 @@ using static UnitTest.Issues.TestProtos.ComplexOptionType2.Types;
 using static UnitTest.Issues.TestProtos.UnittestCustomOptionsProto3Extensions;
 using static UnitTest.Issues.TestProtos.DummyMessageContainingEnum.Types;
 using Google.Protobuf.TestProtos;
-using Google.Protobuf.TestProtos.Extensions;
 
 #pragma warning disable CS0618
 
@@ -197,11 +196,11 @@ namespace Google.Protobuf.Test.Reflection
         [Test]
         public void MultipleImportOfSameFileWithExtension()
         {
-            var descriptor = ExtensionsCReflection.Descriptor;
+            var descriptor = ExtensionsIssue6936CReflection.Descriptor;
             var foo = Foo.Descriptor;
             var bar = Bar.Descriptor;
-            AssertOption("bar", foo.CustomOptions.TryGetString, ExtensionsAExtensions.Opt, foo.GetOption);
-            AssertOption("foo", bar.CustomOptions.TryGetString, ExtensionsAExtensions.Opt, bar.GetOption);
+            AssertOption("foo", foo.CustomOptions.TryGetString, ExtensionsIssue6936AExtensions.Opt, foo.GetOption);
+            AssertOption("bar", bar.CustomOptions.TryGetString, ExtensionsIssue6936AExtensions.Opt, bar.GetOption);
         }
 
         private void AssertOption<T, D>(T expected, OptionFetcher<T> fetcher, Extension<D, T> extension, Func<Extension<D, T>, T> descriptorOptionFetcher) where D : IExtendableMessage<D>
