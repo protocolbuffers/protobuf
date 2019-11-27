@@ -1004,7 +1004,7 @@ proto_lang_toolchain(
 proto_lang_toolchain(
     name = "javalite_toolchain",
     command_line = "--java_out=lite:$(OUT)",
-    runtime = ":protobuf_java_lite",
+    runtime = ":protobuf_javalite",
     visibility = ["//visibility:public"],
 )
 
