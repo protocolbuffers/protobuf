@@ -918,8 +918,8 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* printer) {
   if (file_->name() != "net/proto2/proto/descriptor.proto") {
     format(
         "// Force running AddDescriptors() at dynamic initialization time.\n"
-        "static bool $1$ = ("
-        "  ::$proto_ns$::internal::AddDescriptors(&$desc_table$), true);\n",
+        "static bool $1$ = (static_cast<void>("
+        "::$proto_ns$::internal::AddDescriptors(&$desc_table$)), true);\n",
         UniqueName("dynamic_init_dummy", file_, options_));
   }
 }
