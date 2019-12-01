@@ -720,23 +720,65 @@ build_php7.1_zts_c() {
   popd
 }
 
+build_php7.4() {
+  use_php 7.4
+  pushd php
+  rm -rf vendor
+  composer update
+  ./vendor/bin/phpunit
+  popd
+  pushd conformance
+  make test_php
+  popd
+}
+
+build_php7.4_c() {
+  use_php 7.4
+  cd php/tests && /bin/bash ./test.sh 7.4 && cd ../..
+  pushd conformance
+  make test_php_c
+  popd
+}
+
+build_php7.4_mixed() {
+  use_php 7.4
+  pushd php
+  rm -rf vendor
+  composer update
+  /bin/bash ./tests/compile_extension.sh ./ext/google/protobuf
+  php -dextension=./ext/google/protobuf/modules/protobuf.so ./vendor/bin/phpunit
+  popd
+}
+
+build_php7.4_zts_c() {
+  use_php_zts 7.4
+  cd php/tests && /bin/bash ./test.sh 7.4-zts && cd ../..
+  pushd conformance
+  make test_php_zts_c
+  popd
+}
+
 build_php_all_32() {
   build_php5.5
   build_php5.6
   build_php7.0
   build_php7.1
+  build_php7.4
   build_php5.5_c
   build_php5.6_c
   build_php7.0_c
   build_php7.1_c $1
+  build_php7.4_c
   build_php5.5_mixed
   build_php5.6_mixed
   build_php7.0_mixed
   build_php7.1_mixed
+  build_php7.4_mixed
   build_php5.5_zts_c
   build_php5.6_zts_c
   build_php7.0_zts_c
   build_php7.1_zts_c
+  build_php7.4_zts_c
 }
 
 build_php_all() {
