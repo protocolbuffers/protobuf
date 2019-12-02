@@ -448,7 +448,7 @@ namespace Google.Protobuf.Reflection
 
         private static IEnumerable<Extension> GetAllExtensions(FileDescriptor[] dependencies, GeneratedClrTypeInfo generatedInfo)
         {
-            return dependencies.SelectMany(GetAllDependedExtensions).Distinct().Concat(GetAllGeneratedExtensions(generatedInfo));
+            return dependencies.SelectMany(GetAllDependedExtensions).Distinct(ExtensionRegistry.ExtensionComparer.Instance).Concat(GetAllGeneratedExtensions(generatedInfo));
         }
 
         private static IEnumerable<Extension> GetAllGeneratedExtensions(GeneratedClrTypeInfo generated)
