@@ -333,7 +333,7 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message, Output& output
   std::string msgname = ToCIdent(message->full_name());
   output(
       "UPB_INLINE $0 *$0_new(upb_arena *arena) {\n"
-      "  return ($0 *)upb_msg_new(&$1, arena);\n"
+      "  return ($0 *)_upb_msg_new(&$1, arena);\n"
       "}\n"
       "UPB_INLINE $0 *$0_parse(const char *buf, size_t size,\n"
       "                        upb_arena *arena) {\n"
@@ -437,7 +437,7 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message, Output& output
       if (field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
         output(
             "UPB_INLINE struct $0* $1_add_$2($1 *msg, upb_arena *arena) {\n"
-            "  struct $0* sub = (struct $0*)upb_msg_new(&$3, arena);\n"
+            "  struct $0* sub = (struct $0*)_upb_msg_new(&$3, arena);\n"
             "  bool ok = _upb_array_append_accessor(\n"
             "      msg, $4, $5, $6, &sub, arena);\n"
             "  if (!ok) return NULL;\n"
@@ -484,7 +484,7 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message, Output& output
             "UPB_INLINE struct $0* $1_mutable_$2($1 *msg, upb_arena *arena) {\n"
             "  struct $0* sub = (struct $0*)$1_$2(msg);\n"
             "  if (sub == NULL) {\n"
-            "    sub = (struct $0*)upb_msg_new(&$3, arena);\n"
+            "    sub = (struct $0*)_upb_msg_new(&$3, arena);\n"
             "    if (!sub) return NULL;\n"
             "    $1_set_$2(msg, sub);\n"
             "  }\n"

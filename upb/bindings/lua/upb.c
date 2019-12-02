@@ -32,43 +32,10 @@
 
 /* Lua compatibility code *****************************************************/
 
-/* Lua 5.1 and Lua 5.2 have slightly incompatible APIs.  A little bit of
- * compatibility code can help hide the difference.  Not too many people still
- * use Lua 5.1 but LuaJIT uses the Lua 5.1 API in some ways. */
-
-#if LUA_VERSION_NUM == 501
-
-/* taken from lua 5.2's source. */
-void *luaL_testudata(lua_State *L, int ud, const char *tname) {
-  void *p = lua_touserdata(L, ud);
-  if (p != NULL) {  /* value is a userdata? */
-    if (lua_getmetatable(L, ud)) {  /* does it have a metatable? */
-      luaL_getmetatable(L, tname);  /* get correct metatable */
-      if (!lua_rawequal(L, -1, -2))  /* not the same? */
-        p = NULL;  /* value is a userdata with wrong metatable */
-      lua_pop(L, 2);  /* remove both metatables */
-      return p;
-    }
-  }
-  return NULL;  /* value is not a userdata with a metatable */
-}
-
-#elif LUA_VERSION_NUM == 502
-
-int luaL_typerror(lua_State *L, int narg, const char *tname) {
-  const char *msg = lua_pushfstring(L, "%s expected, got %s",
-                                    tname, luaL_typename(L, narg));
-  return luaL_argerror(L, narg, msg);
-}
-
-#else
-#error Only Lua 5.1 and 5.2 are supported
-#endif
-
 /* Shims for upcoming Lua 5.3 functionality. */
-bool lua_isinteger(lua_State *L, int argn) {
-  UPB_UNUSED(L);
-  UPB_UNUSED(argn);
+static bool lua_isinteger(lua_State *L, int argn) {
+  LUPB_UNUSED(L);
+  LUPB_UNUSED(argn);
   return false;
 }
 
@@ -83,17 +50,61 @@ void lupb_checkstatus(lua_State *L, upb_status *s) {
 }
 
 /* Pushes a new userdata with the given metatable. */
-static void *lupb_newuserdata(lua_State *L, size_t size, const char *type) {
+void *lupb_newuserdata(lua_State *L, size_t size, int n, const char *type) {
+#if LUA_VERSION_NUM >= 504
+  void *ret = lua_newuserdatauv(L, size, n);
+#else
   void *ret = lua_newuserdata(L, size);
+  lua_createtable(L, 0, n);
+  lua_setuservalue(L, -2);
+#endif
 
   /* Set metatable. */
   luaL_getmetatable(L, type);
   assert(!lua_isnil(L, -1));  /* Should have been created by luaopen_upb. */
   lua_setmetatable(L, -2);
 
-  /* We don't set a uservalue here -- we lazily create it later if necessary. */
-
   return ret;
+}
+
+#if LUA_VERSION_NUM < 504
+int lua_setiuservalue(lua_State *L, int index, int n) {
+  lua_getuservalue(L, index);
+  lua_insert(L, -2);
+  lua_rawseti(L, -2, n);
+  lua_pop(L, 1);
+  return 1;
+}
+
+int lua_getiuservalue(lua_State *L, int index, int n) {
+  lua_getuservalue(L, index);
+  lua_rawgeti(L, -1, n);
+  lua_replace(L, -2);
+  return 1;
+}
+#endif
+
+void lupb_register_type(lua_State *L, const char *name, const luaL_Reg *m,
+                        const luaL_Reg *mm) {
+  luaL_newmetatable(L, name);
+
+  if (mm) {
+    lupb_setfuncs(L, mm);
+  }
+
+  if (m) {
+    /* Methods go in the mt's __index method.  This implies that you can'
+     * implement __index and also have methods. */
+    lua_getfield(L, -1, "__index");
+    lupb_assert(L, lua_isnil(L, -1));
+    lua_pop(L, 1);
+
+    lua_createtable(L, 0, 0);
+    lupb_setfuncs(L, m);
+    lua_setfield(L, -2, "__index");
+  }
+
+  lua_pop(L, 1);  /* The mt. */
 }
 
 /* Scalar type mapping ********************************************************/
@@ -181,32 +192,10 @@ void lupb_pushfloat(lua_State *L, float d) {
   lua_pushnumber(L, d);
 }
 
+/* Library entry point ********************************************************/
 
-void lupb_register_type(lua_State *L, const char *name, const luaL_Reg *m,
-                        const luaL_Reg *mm) {
-  luaL_newmetatable(L, name);
-
-  if (mm) {
-    lupb_setfuncs(L, mm);
-  }
-
-  if (m) {
-    /* Methods go in the mt's __index method.  This implies that you can'
-     * implement __index and also have methods. */
-    lua_getfield(L, -1, "__index");
-    lupb_assert(L, lua_isnil(L, -1));
-    lua_pop(L, 1);
-
-    lua_createtable(L, 0, 0);
-    lupb_setfuncs(L, m);
-    lua_setfield(L, -2, "__index");
-  }
-
-  lua_pop(L, 1);  /* The mt. */
-}
-
-int luaopen_upb_c(lua_State *L) {
-#if LUA_VERSION == 501
+int luaopen_lupb(lua_State *L) {
+#if LUA_VERSION_NUM == 501
   const struct luaL_Reg funcs[] = {{NULL, NULL}};
   luaL_register(L, "upb_c", funcs);
 #else

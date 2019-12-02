@@ -18,96 +18,6 @@ bool upb_fieldtype_mapkeyok(upb_fieldtype_t type) {
 #define ENCODE_MAX_NESTING 64
 #define CHECK_TRUE(x) if (!(x)) { return false; }
 
-/** upb_msgval ****************************************************************/
-
-#if 0
-/* These functions will generate real memcpy() calls on ARM sadly, because
- * the compiler assumes they might not be aligned. */
-
-static upb_msgval upb_msgval_read(const void *p, size_t ofs,
-                                  uint8_t size) {
-  upb_msgval val;
-  p = (char*)p + ofs;
-  memcpy(&val, p, size);
-  return val;
-}
-
-static void upb_msgval_write(void *p, size_t ofs, upb_msgval val,
-                             uint8_t size) {
-  p = (char*)p + ofs;
-  memcpy(p, &val, size);
-}
-
-static size_t upb_msgval_sizeof(upb_descriptortype_t type) {
-  static uint8_t sizes[] = {
-    0,  /* none */
-    8,  /* UPB_DESCRIPTOR_TYPE_DOUBLE   = 1 */
-    4,  /* UPB_DESCRIPTOR_TYPE_FLOAT    = 2 */
-    8,  /* UPB_DESCRIPTOR_TYPE_INT64    = 3 */
-    8,  /* UPB_DESCRIPTOR_TYPE_UINT64   = 4 */
-    4,  /* UPB_DESCRIPTOR_TYPE_INT32    = 5 */
-    8,  /* UPB_DESCRIPTOR_TYPE_FIXED64  = 6 */
-    4,  /* UPB_DESCRIPTOR_TYPE_FIXED32  = 7 */
-    1,  /* UPB_DESCRIPTOR_TYPE_BOOL     = 8 */
-    sizeof(upb_strview),  /* UPB_DESCRIPTOR_TYPE_STRING   = 9 */
-    sizeof(void*),  /* UPB_DESCRIPTOR_TYPE_GROUP    = 11 */
-    sizeof(void*),  /* UPB_DESCRIPTOR_TYPE_MESSAGE  = 12 */
-    sizeof(upb_strview),  /* UPB_DESCRIPTOR_TYPE_BYTES    = 13 */
-    4,  /* UPB_DESCRIPTOR_TYPE_UINT32   = 14 */
-    4,  /* UPB_DESCRIPTOR_TYPE_ENUM     = 15 */
-    4,  /* UPB_DESCRIPTOR_TYPE_SFIXED32 = 16 */
-    8,  /* UPB_DESCRIPTOR_TYPE_SFIXED64 = 17 */
-    4,  /* UPB_DESCRIPTOR_TYPE_SINT32   = 18 */
-    8,  /* UPB_DESCRIPTOR_TYPE_SINT64   = 19 */
-  };
-  UPB_ASSERT(type < sizeof(sizes));
-  return sizes[type];
-}
-
-static size_t upb_msgval_sizeof2(upb_fieldtype_t type) {
-  static uint8_t sizes[] = {
-    0,  /* none */
-    1,  /* UPB_TYPE_BOOL     = 1, */
-    4,  /* UPB_TYPE_FLOAT    = 2, */
-    4,  /* UPB_TYPE_INT32    = 3, */
-    4,  /* UPB_TYPE_UINT32   = 4, */
-    4,  /* UPB_TYPE_ENUM     = 5, */
-    sizeof(upb_strview),  /* UPB_TYPE_STRING   = 6, */
-    sizeof(upb_strview),  /* UPB_TYPE_BYTES    = 7, */
-    sizeof(void*),  /* UPB_TYPE_MESSAGE  = 8, */
-    8,  /* UPB_TYPE_DOUBLE   = 9, */
-    8,  /* UPB_TYPE_INT64    = 10, */
-    8,  /* UPB_TYPE_UINT64   = 11 */
-  };
-  UPB_ASSERT(type < sizeof(sizes));
-  return sizes[type];
-}
-
-static uint8_t upb_msg_fieldsize(const upb_msglayout_field *field) {
-  if (field->label == UPB_LABEL_REPEATED) {
-    return sizeof(void*);
-  } else {
-    return upb_msgval_sizeof(field->descriptortype);
-  }
-}
-
-/* TODO(haberman): this is broken right now because upb_msgval can contain
- * a char* / size_t pair, which is too big for a upb_value.  To fix this
- * we'll probably need to dynamically allocate a upb_msgval and store a
- * pointer to that in the tables for extensions/maps. */
-static upb_value upb_toval(upb_msgval val) {
-  upb_value ret;
-  UPB_UNUSED(val);
-  memset(&ret, 0, sizeof(upb_value));  /* XXX */
-  return ret;
-}
-
-static upb_msgval upb_msgval_fromval(upb_value val) {
-  upb_msgval ret;
-  UPB_UNUSED(val);
-  memset(&ret, 0, sizeof(upb_msgval));  /* XXX */
-  return ret;
-}
 
 /** upb_msg *******************************************************************/
 
@@ -116,6 +26,9 @@ static upb_msgval upb_msgval_fromval(upb_value val) {
  */
 #define DEREF(msg, ofs, type) *PTR_AT(msg, ofs, type)
 
+upb_msg *upb_msg_new(const upb_msgdef *m, upb_arena *a);
+
+#if 0
 static const upb_msglayout_field *upb_msg_checkfield(int field_index,
                                                      const upb_msglayout *l) {
   UPB_ASSERT(field_index >= 0 && field_index < l->field_count);
@@ -164,6 +77,7 @@ void upb_msg_set(upb_msg *msg, int field_index, upb_msgval val,
   upb_msgval_write(msg, field->offset, val, size);
 }
 
+#undef DEREF
 #endif
 
 /** upb_array *****************************************************************/
@@ -174,51 +88,27 @@ size_t upb_array_size(const upb_array *arr) {
 
 upb_msgval upb_array_get(const upb_array *arr, size_t i) {
   UPB_ASSERT(i < arr->len);
-  const char* data = _upb_array_constptr(arr);
-  int elem_size_lg2 = arr->data & 7;
   upb_msgval ret;
-
-  switch (elem_size_lg2) {
-    case 0:
-      ret.bool_val = *PTR_AT(data, i, bool);
-      break;
-    case 2:
-      memcpy(&ret, data + i * 4, 4);
-      break;
-    case 3:
-      memcpy(&ret, data + i * 8, 8);
-      break;
-    case 4:
-      memcpy(&ret, data + i * 16, 16);
-      break;
-    default:
-      UPB_UNREACHABLE();
-  }
-
+  const char* data = _upb_array_constptr(arr);
+  int lg2 = arr->data & 7;
+  memcpy(&ret, data + (i << lg2), 1 << lg2);
   return ret;
 }
 
 void upb_array_set(upb_array *arr, size_t i, upb_msgval val) {
   UPB_ASSERT(i < arr->len);
   char* data = _upb_array_ptr(arr);
-  int elem_size_lg2 = arr->data & 7;
+  int lg2 = arr->data & 7;
+  memcpy(data + (i << lg2), &val, 1 << lg2);
+}
 
-  switch (elem_size_lg2) {
-    case 0:
-      *PTR_AT(data, i, bool) = val.bool_val;
-      break;
-    case 2:
-      memcpy(data + i * 4, &val, 4);
-      break;
-    case 3:
-      memcpy(data + i * 8, &val, 8);
-      break;
-    case 4:
-      memcpy(data + i * 16, &val, 16);
-      break;
-    default:
-      UPB_UNREACHABLE();
+bool upb_array_append(upb_array *arr, upb_msgval val, upb_arena *arena) {
+  if (!_upb_array_realloc(arr, arr->len + 1, arena)) {
+    return false;
   }
+  arr->len++;
+  upb_array_set(arr, arr->len - 1, val);
+  return true;
 }
 
 /* Resizes the array to the given size, reallocating if necessary, and returns a
@@ -227,82 +117,51 @@ bool upb_array_resize(upb_array *arr, size_t size, upb_arena *arena) {
   return _upb_array_realloc(arr, size, arena);
 }
 
-#if 0
-
 /** upb_map *******************************************************************/
 
-static void upb_map_tokey(upb_descriptortype_t type, upb_msgval *key,
-                          const char **out_key, size_t *out_len) {
-  switch (type) {
-    case UPB_DESCRIPTOR_TYPE_BYTES:
-    case UPB_DESCRIPTOR_TYPE_STRING:
-      /* Point to string data of the input key. */
-      *out_key = key->str.data;
-      *out_len = key->str.size;
-      return;
-    case UPB_DESCRIPTOR_TYPE_BOOL:
-    case UPB_DESCRIPTOR_TYPE_INT32:
-    case UPB_DESCRIPTOR_TYPE_SINT32:
-    case UPB_DESCRIPTOR_TYPE_SFIXED32:
-    case UPB_DESCRIPTOR_TYPE_FIXED32:
-    case UPB_DESCRIPTOR_TYPE_UINT32:
-    case UPB_DESCRIPTOR_TYPE_INT64:
-    case UPB_DESCRIPTOR_TYPE_SINT64:
-    case UPB_DESCRIPTOR_TYPE_SFIXED64:
-    case UPB_DESCRIPTOR_TYPE_FIXED64:
-    case UPB_DESCRIPTOR_TYPE_UINT64:
-      /* Point to the key itself.  XXX: big-endian. */
-      *out_key = (const char*)key;
-      *out_len = upb_msgval_sizeof(type);
-      return;
-    case UPB_DESCRIPTOR_TYPE_DOUBLE:
-    case UPB_DESCRIPTOR_TYPE_ENUM:
-    case UPB_DESCRIPTOR_TYPE_FLOAT:
-    case UPB_DESCRIPTOR_TYPE_MESSAGE:
-    case UPB_DESCRIPTOR_TYPE_GROUP:
-      UPB_UNREACHABLE();  /* Cannot be a map key. */
-  }
-  UPB_UNREACHABLE();
+size_t upb_map_size(const upb_map *map) {
+  return upb_strtable_count(&map->table);
 }
 
-static upb_msgval upb_map_fromkey(upb_descriptortype_t type, const char *key,
-                                  size_t len) {
-  switch (type) {
-    case UPB_DESCRIPTOR_TYPE_BYTES:
-    case UPB_DESCRIPTOR_TYPE_STRING:
-      return upb_msgval_makestr(key, len);
-    case UPB_DESCRIPTOR_TYPE_BOOL:
-    case UPB_DESCRIPTOR_TYPE_INT32:
-    case UPB_DESCRIPTOR_TYPE_SINT32:
-    case UPB_DESCRIPTOR_TYPE_SFIXED32:
-    case UPB_DESCRIPTOR_TYPE_FIXED32:
-    case UPB_DESCRIPTOR_TYPE_UINT32:
-    case UPB_DESCRIPTOR_TYPE_INT64:
-    case UPB_DESCRIPTOR_TYPE_SINT64:
-    case UPB_DESCRIPTOR_TYPE_SFIXED64:
-    case UPB_DESCRIPTOR_TYPE_FIXED64:
-    case UPB_DESCRIPTOR_TYPE_UINT64:
-      return upb_msgval_read(key, 0, upb_msgval_sizeof(type));
-    case UPB_DESCRIPTOR_TYPE_DOUBLE:
-    case UPB_DESCRIPTOR_TYPE_ENUM:
-    case UPB_DESCRIPTOR_TYPE_FLOAT:
-    case UPB_DESCRIPTOR_TYPE_MESSAGE:
-    case UPB_DESCRIPTOR_TYPE_GROUP:
-      UPB_UNREACHABLE();  /* Cannot be a map key. */
+static upb_strview upb_map_tokey(int size_lg2, upb_msgval *key) {
+  if (size_lg2 == UPB_MAPTYPE_STRING) {
+    return key->str_val;
+  } else {
+    return upb_strview_make((const char*)key, 1 << size_lg2);
   }
-  UPB_UNREACHABLE();
 }
 
-bool upb_map_get(const upb_map *map, upb_msgval key, upb_msgval *val,
-                 const upb_msglayout *layout) {
+static upb_msgval upb_map_fromvalue(int size_lg2, upb_value val) {
+  upb_msgval ret;
+  if (size_lg2 == UPB_MAPTYPE_STRING) {
+    upb_strview *strp = upb_value_getptr(val);
+    ret.str_val = *strp;
+  } else {
+    memcpy(&ret, &val, 8);
+  }
+  return ret;
+}
+
+static upb_value upb_map_tovalue(int size_lg2, upb_msgval val, upb_arena *a) {
+  upb_value ret;
+  if (size_lg2 == UPB_MAPTYPE_STRING) {
+    upb_strview *strp = upb_arena_malloc(a, sizeof(*strp));
+    *strp = val.str_val;
+    ret = upb_value_ptr(strp);
+  } else {
+    memcpy(&ret, &val, 8);
+  }
+  return ret;
+}
+
+bool upb_map_get(const upb_map *map, upb_msgval key, upb_msgval *val) {
+  upb_strview strkey = upb_map_tokey(map->key_size_lg2, &key);
   upb_value tabval;
-  const char *key_str;
-  size_t key_len;
   bool ret;
 
-  upb_map_tokey(layout->fields[0].descriptortype, &key, &key_str, &key_len);
-  ret = upb_strtable_lookup2(&map->table, key_str, key_len, &tabval);
+  ret = upb_strtable_lookup2(&map->table, strkey.data, strkey.size, &tabval);
   if (ret) {
+    *val = upb_map_fromvalue(map->val_size_lg2, tabval);
     memcpy(val, &tabval, sizeof(tabval));
   }
 
@@ -310,60 +169,41 @@ bool upb_map_get(const upb_map *map, upb_msgval key, upb_msgval *val,
 }
 
 bool upb_map_set(upb_map *map, upb_msgval key, upb_msgval val,
-                 const upb_msglayout *layout, upb_arena *arena) {
-  const char *key_str;
-  size_t key_len;
-  upb_value tabval = upb_toval(val);
-  upb_value removedtabval;
+                 upb_arena *arena) {
+  upb_strview strkey = upb_map_tokey(map->key_size_lg2, &key);
+  upb_value tabval = upb_map_tovalue(map->val_size_lg2, val, arena);
   upb_alloc *a = upb_arena_alloc(arena);
-
-  upb_map_tokey(layout->fields[0].descriptortype, &key, &key_str, &key_len);
 
   /* TODO(haberman): add overwrite operation to minimize number of lookups. */
-  if (upb_strtable_lookup2(&map->table, key_str, key_len, NULL)) {
-    upb_strtable_remove3(&map->table, key_str, key_len, &removedtabval, a);
+  if (upb_strtable_lookup2(&map->table, strkey.data, strkey.size, NULL)) {
+    upb_strtable_remove3(&map->table, strkey.data, strkey.size, NULL, a);
   }
 
-  return upb_strtable_insert3(&map->table, key_str, key_len, tabval, a);
+  return upb_strtable_insert3(&map->table, strkey.data, strkey.size, tabval, a);
 }
 
-bool upb_map_del(upb_map *map, upb_msgval key, const upb_msglayout *layout,
-                 upb_arena *arena) {
-  const char *key_str;
-  size_t key_len;
+bool upb_map_delete(upb_map *map, upb_msgval key, upb_arena *arena) {
+  upb_strview strkey = upb_map_tokey(map->key_size_lg2, &key);
   upb_alloc *a = upb_arena_alloc(arena);
-
-  upb_map_tokey(layout->fields[0].descriptortype, &key, &key_str, &key_len);
-  return upb_strtable_remove3(&map->table, key_str, key_len, NULL, a);
+  return upb_strtable_remove3(&map->table, strkey.data, strkey.size, NULL, a);
 }
 
 /** upb_mapiter ***************************************************************/
 
 struct upb_mapiter {
   upb_strtable_iter iter;
-  upb_descriptortype_t key_type;
+  char key_size_lg2;
+  char val_size_lg2;
 };
 
 size_t upb_mapiter_sizeof(void) {
   return sizeof(upb_mapiter);
 }
 
-void upb_mapiter_begin(upb_mapiter *i, const upb_msglayout *layout,
-                       const upb_map *map) {
+void upb_mapiter_begin(upb_mapiter *i, upb_map *map) {
   upb_strtable_begin(&i->iter, &map->table);
-  i->key_type = layout->fields[0].descriptortype;
-}
-
-upb_mapiter *upb_mapiter_new(const upb_map *map, const upb_msglayout *layout,
-                             upb_alloc *a) {
-  upb_mapiter *ret = upb_malloc(a, upb_mapiter_sizeof());
-
-  if (!ret) {
-    return NULL;
-  }
-
-  upb_mapiter_begin(ret, layout, map);
-  return ret;
+  i->key_size_lg2 = map->key_size_lg2;
+  i->val_size_lg2 = map->val_size_lg2;
 }
 
 void upb_mapiter_free(upb_mapiter *i, upb_alloc *a) {
@@ -379,12 +219,18 @@ bool upb_mapiter_done(const upb_mapiter *i) {
 }
 
 upb_msgval upb_mapiter_key(const upb_mapiter *i) {
-  return upb_map_fromkey(i->key_type, upb_strtable_iter_key(&i->iter),
-                         upb_strtable_iter_keylength(&i->iter));
+  upb_strview key = upb_strtable_iter_key(&i->iter);
+  upb_msgval ret;
+  if (i->key_size_lg2 == UPB_MAPTYPE_STRING) {
+    ret.str_val = key;
+  } else {
+    memcpy(&ret, key.data, 1 << i->key_size_lg2);
+  }
+  return ret;
 }
 
 upb_msgval upb_mapiter_value(const upb_mapiter *i) {
-  return upb_msgval_fromval(upb_strtable_iter_value(&i->iter));
+  return upb_map_fromvalue(i->val_size_lg2, upb_strtable_iter_value(&i->iter));
 }
 
 void upb_mapiter_setdone(upb_mapiter *i) {
@@ -394,5 +240,3 @@ void upb_mapiter_setdone(upb_mapiter *i) {
 bool upb_mapiter_isequal(const upb_mapiter *i1, const upb_mapiter *i2) {
   return upb_strtable_iter_isequal(&i1->iter, &i2->iter);
 }
-
-#endif

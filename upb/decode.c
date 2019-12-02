@@ -216,7 +216,7 @@ static upb_msg *upb_getorcreatemsg(upb_decframe *frame,
   UPB_ASSERT(field->label != UPB_LABEL_REPEATED);
 
   if (!*submsg) {
-    *submsg = upb_msg_new(*subm, frame->state->arena);
+    *submsg = _upb_msg_new(*subm, frame->state->arena);
     CHK(*submsg);
   }
 
@@ -230,7 +230,7 @@ static upb_msg *upb_addmsg(upb_decframe *frame,
   upb_array *arr = upb_getorcreatearr(frame, field);
 
   *subm = frame->layout->submsgs[field->submsg_index];
-  submsg = upb_msg_new(*subm, frame->state->arena);
+  submsg = _upb_msg_new(*subm, frame->state->arena);
   CHK(submsg);
   upb_array_add(arr, 1, sizeof(submsg), &submsg, frame->state->arena);
 

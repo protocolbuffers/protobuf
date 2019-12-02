@@ -89,7 +89,9 @@ bool upb_map_set(upb_map *map, upb_msgval key, upb_msgval val,
                  upb_arena *arena);
 
 /* Deletes this key from the table.  Returns true if the key was present. */
-bool upb_map_delete(upb_map *map, upb_msgval key);
+/* TODO(haberman): can |arena| be removed once upb_table is arena-only and no
+ * longer tries to free keys? */
+bool upb_map_delete(upb_map *map, upb_msgval key, upb_arena *arena);
 
 /** upb_mapiter ***************************************************************/
 
@@ -106,8 +108,8 @@ size_t upb_mapiter_sizeof(void);
 
 /* Starts iteration.  If the map is mutable then we can modify entries while
  * iterating. */
-void upb_mapiter_constbegin(upb_mapiter *i, const upb_map *t);
-void upb_mapiter_begin(upb_mapiter *i, upb_map *t);
+void upb_mapiter_constbegin(upb_mapiter *i, const upb_map *map);
+void upb_mapiter_begin(upb_mapiter *i, upb_map *map);
 
 /* Sets the iterator to "done" state.  This will return "true" from
  * upb_mapiter_done() and will compare equal to other "done" iterators. */

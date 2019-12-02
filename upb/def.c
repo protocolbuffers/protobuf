@@ -52,6 +52,7 @@ struct upb_fielddef {
 };
 
 struct upb_msgdef {
+  const upb_msglayout *layout;
   const upb_filedef *file;
   const char *full_name;
   uint32_t selector_count;
@@ -379,7 +380,7 @@ const char *upb_enumdef_iton(const upb_enumdef *def, int32_t num) {
 }
 
 const char *upb_enum_iter_name(upb_enum_iter *iter) {
-  return upb_strtable_iter_key(iter);
+  return upb_strtable_iter_key(iter).data;
 }
 
 int32_t upb_enum_iter_number(upb_enum_iter *iter) {
@@ -1574,10 +1575,9 @@ static bool upb_symtab_addtotabs(upb_symtab *s, symtab_addctx *ctx,
 
   upb_strtable_begin(&iter, ctx->addtab);
   for (; !upb_strtable_done(&iter); upb_strtable_next(&iter)) {
-    const char *key = upb_strtable_iter_key(&iter);
-    size_t keylen = upb_strtable_iter_keylength(&iter);
+    upb_strview key = upb_strtable_iter_key(&iter);
     upb_value value = upb_strtable_iter_value(&iter);
-    CHK_OOM(upb_strtable_insert3(&s->syms, key, keylen, value, alloc));
+    CHK_OOM(upb_strtable_insert3(&s->syms, key.data, key.size, value, alloc));
   }
 
   return true;

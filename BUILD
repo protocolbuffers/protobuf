@@ -526,6 +526,7 @@ sh_test(
         ":conformance_upb",
         "@com_google_protobuf//:conformance_test_runner",
     ],
+    deps = ["@bazel_tools//tools/bash/runfiles"],
 )
 
 # copybara:strip_for_google3_begin
@@ -564,10 +565,10 @@ cc_library(
     }),
 )
 
-# Lua libraries. ###############################################################
+# Lua ##########################################################################
 
-lua_cclibrary(
-    name = "lua/upb_c",
+cc_library(
+    name = "lupb",
     srcs = [
         "upb/bindings/lua/def.c",
         "upb/bindings/lua/msg.c",
@@ -577,19 +578,20 @@ lua_cclibrary(
         "upb/bindings/lua/upb.h",
     ],
     deps = [
-        "reflection",
-        "upb",
+        ":reflection",
+        ":upb",
+        "@lua//:liblua",
     ],
 )
 
-lua_library(
-    name = "lua/upb",
-    srcs = ["upb/bindings/lua/upb.lua"],
-    luadeps = ["lua/upb_c"],
-    strip_prefix = "upb/bindings/lua",
+cc_binary(
+    name = "lua_tester",
+    srcs = ["tests/bindings/lua/main.c"],
+    deps = [
+        ":lupb",
+        "@lua//:liblua",
+    ]
 )
-
-# Lua tests. ###################################################################
 
 lua_test(
     name = "lua/test_upb",
@@ -621,6 +623,7 @@ sh_test(
     name = "cmake_build",
     srcs = ["run_cmake_build.sh"],
     data = [":cmake_files"],
+    deps = ["@bazel_tools//tools/bash/runfiles"],
 )
 
 # Generated files ##############################################################

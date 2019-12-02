@@ -314,12 +314,10 @@ bool upb_strtable_resize(upb_strtable *t, size_t size_lg2, upb_alloc *a) {
     return false;
   upb_strtable_begin(&i, t);
   for ( ; !upb_strtable_done(&i); upb_strtable_next(&i)) {
+    upb_strview key = upb_strtable_iter_key(&i);
     upb_strtable_insert3(
-        &new_table,
-        upb_strtable_iter_key(&i),
-        upb_strtable_iter_keylength(&i),
-        upb_strtable_iter_value(&i),
-        a);
+        &new_table, key.data, key.size,
+        upb_strtable_iter_value(&i), a);
   }
   upb_strtable_uninit2(t, a);
   *t = new_table;
@@ -389,16 +387,13 @@ bool upb_strtable_done(const upb_strtable_iter *i) {
          upb_tabent_isempty(str_tabent(i));
 }
 
-const char *upb_strtable_iter_key(const upb_strtable_iter *i) {
+upb_strview upb_strtable_iter_key(const upb_strtable_iter *i) {
   UPB_ASSERT(!upb_strtable_done(i));
-  return upb_tabstr(str_tabent(i)->key, NULL);
-}
-
-size_t upb_strtable_iter_keylength(const upb_strtable_iter *i) {
+  upb_strview key;
   uint32_t len;
-  UPB_ASSERT(!upb_strtable_done(i));
-  upb_tabstr(str_tabent(i)->key, &len);
-  return len;
+  key.data = upb_tabstr(str_tabent(i)->key, &len);
+  key.size = len;
+  return key;
 }
 
 upb_value upb_strtable_iter_value(const upb_strtable_iter *i) {

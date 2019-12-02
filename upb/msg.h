@@ -55,7 +55,7 @@ typedef struct upb_msglayout {
 extern char _upb_fieldtype_to_size[12];
 
 /* Creates a new messages with the given layout on the given arena. */
-upb_msg *upb_msg_new(const upb_msglayout *l, upb_arena *a);
+upb_msg *_upb_msg_new(const upb_msglayout *l, upb_arena *a);
 
 /* Adds unknown data (serialized protobuf data) to the given message.  The data
  * is copied into the message instance. */
@@ -100,8 +100,8 @@ bool _upb_array_append_fallback(upb_array **arr_ptr, const void *value,
  * integer-specific maps for integer-keyed maps.*/
 typedef struct {
   /* We should pack these better and move them into table to avoid padding. */
-  upb_fieldtype_t key_type;
-  upb_fieldtype_t value_type;
+  char key_size_lg2;
+  char val_size_lg2;
 
   upb_strtable table;
 } upb_map;

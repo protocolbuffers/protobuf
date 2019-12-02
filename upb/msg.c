@@ -26,7 +26,7 @@ typedef struct {
   upb_msg_internal base;
 } upb_msg_internal_withext;
 
-char _upb_fieldtype_to_sizelg2[12] = {
+static char _upb_fieldtype_to_sizelg2[12] = {
   0,
   0,  /* UPB_TYPE_BOOL */
   2,  /* UPB_TYPE_FLOAT */
@@ -39,6 +39,22 @@ char _upb_fieldtype_to_sizelg2[12] = {
   3,  /* UPB_TYPE_UINT64 */
   UPB_SIZE(3, 4),  /* UPB_TYPE_STRING */
   UPB_SIZE(3, 4),  /* UPB_TYPE_BYTES */
+};
+
+/* Strings/bytes are special-cased in maps. */
+static char _upb_fieldtype_to_mapsizelg2[12] = {
+  0,
+  0,  /* UPB_TYPE_BOOL */
+  2,  /* UPB_TYPE_FLOAT */
+  2,  /* UPB_TYPE_INT32 */
+  2,  /* UPB_TYPE_UINT32 */
+  2,  /* UPB_TYPE_ENUM */
+  UPB_SIZE(2, 3),  /* UPB_TYPE_MESSAGE */
+  3,  /* UPB_TYPE_DOUBLE */
+  3,  /* UPB_TYPE_INT64 */
+  3,  /* UPB_TYPE_UINT64 */
+  UPB_MAPTYPE_STRING,  /* UPB_TYPE_STRING */
+  UPB_MAPTYPE_STRING,  /* UPB_TYPE_BYTES */
 };
 
 static uintptr_t tag_arrptr(void* ptr, int elem_size_lg2) {
@@ -68,7 +84,7 @@ static upb_msg_internal_withext *upb_msg_getinternalwithext(
   return VOIDPTR_AT(msg, -sizeof(upb_msg_internal_withext));
 }
 
-upb_msg *upb_msg_new(const upb_msglayout *l, upb_arena *a) {
+upb_msg *_upb_msg_new(const upb_msglayout *l, upb_arena *a) {
   upb_alloc *alloc = upb_arena_alloc(a);
   void *mem = upb_malloc(alloc, upb_msg_sizeof(l));
   upb_msg_internal *in;
@@ -182,8 +198,8 @@ upb_map *upb_map_new(upb_arena *a, upb_fieldtype_t key_type,
   }
 
   upb_strtable_init(&map->table, UPB_CTYPE_INT32);
-  map->key_type = key_type;
-  map->value_type = value_type;
+  map->key_size_lg2 = _upb_fieldtype_to_mapsizelg2[key_type];
+  map->val_size_lg2 = _upb_fieldtype_to_mapsizelg2[value_type];
 
   return map;
 }
