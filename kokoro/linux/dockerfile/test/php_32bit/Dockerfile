@@ -222,7 +222,7 @@ RUN wget -O phpunit https://phar.phpunit.de/phpunit-7.phar \
   && mv phpunit /usr/local/php-7.3-zts/bin
 
 # php 7.4
-RUN wget http://ftp.gnu.org/gnu/bison/bison-3.0.1.tar.gz -O /var/local/bison-3.0.1.tar.gz
+RUN wget https://ftp.gnu.org/gnu/bison/bison-3.0.1.tar.gz -O /var/local/bison-3.0.1.tar.gz
 RUN cd /var/local \
   && tar -zxvf bison-3.0.1.tar.gz \
   && cd /var/local/bison-3.0.1 \
