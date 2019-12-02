@@ -7,16 +7,7 @@
 
 #include "upb/port_def.inc"
 
-bool upb_fieldtype_mapkeyok(upb_fieldtype_t type) {
-  return type == UPB_TYPE_BOOL || type == UPB_TYPE_INT32 ||
-         type == UPB_TYPE_UINT32 || type == UPB_TYPE_INT64 ||
-         type == UPB_TYPE_UINT64 || type == UPB_TYPE_STRING;
-}
-
 #define PTR_AT(msg, ofs, type) (type*)((char*)msg + ofs)
-#define VOIDPTR_AT(msg, ofs) PTR_AT(msg, ofs, void)
-#define ENCODE_MAX_NESTING 64
-#define CHECK_TRUE(x) if (!(x)) { return false; }
 
 
 /** upb_msg *******************************************************************/
@@ -26,9 +17,10 @@ bool upb_fieldtype_mapkeyok(upb_fieldtype_t type) {
  */
 #define DEREF(msg, ofs, type) *PTR_AT(msg, ofs, type)
 
-upb_msg *upb_msg_new(const upb_msgdef *m, upb_arena *a);
+upb_msg *upb_msg_new(const upb_msgdef *m, upb_arena *a) {
+  return _upb_msg_new(upb_msgdef_layout(m), a);
+}
 
-#if 0
 static const upb_msglayout_field *upb_msg_checkfield(int field_index,
                                                      const upb_msglayout *l) {
   UPB_ASSERT(field_index >= 0 && field_index < l->field_count);
@@ -46,10 +38,8 @@ static uint32_t *upb_msg_oneofcase(const upb_msg *msg, int field_index,
   return PTR_AT(msg, ~field->presence, uint32_t);
 }
 
-bool upb_msg_has(const upb_msg *msg,
-                 int field_index,
-                 const upb_msglayout *l) {
-  const upb_msglayout_field *field = upb_msg_checkfield(field_index, l);
+bool upb_msg_has(const upb_msg *msg, const upb_fielddef *f) {
+  const upb_msglayout_field *field = upb_fielddef_layout(f);
 
   UPB_ASSERT(field->presence);
 
@@ -63,22 +53,20 @@ bool upb_msg_has(const upb_msg *msg,
   }
 }
 
-upb_msgval upb_msg_get(const upb_msg *msg, int field_index,
-                       const upb_msglayout *l) {
-  const upb_msglayout_field *field = upb_msg_checkfield(field_index, l);
+upb_msgval upb_msg_get(const upb_msg *msg, const upb_fielddef *f) {
+  const upb_msglayout_field *field = upb_fielddef_layout(f);
   int size = upb_msg_fieldsize(field);
   return upb_msgval_read(msg, field->offset, size);
 }
 
-void upb_msg_set(upb_msg *msg, int field_index, upb_msgval val,
-                 const upb_msglayout *l) {
+void upb_msg_set(upb_msg *msg, const upb_fielddef *f, upb_msgval val,
+                 upb_arena *a) {
   const upb_msglayout_field *field = upb_msg_checkfield(field_index, l);
   int size = upb_msg_fieldsize(field);
   upb_msgval_write(msg, field->offset, val, size);
 }
 
 #undef DEREF
-#endif
 
 /** upb_array *****************************************************************/
 

@@ -761,12 +761,27 @@ void WriteDefSource(const protobuf::FileDescriptor* file, Output& output) {
     output("extern upb_def_init $0;\n", DefInitSymbol(file->dependency(i)));
   }
 
+  std::vector<const protobuf::Descriptor*> file_messages =
+      SortedMessages(file);
+
+  for (auto message : file_messages) {
+    output("extern const upb_msglayout $0;\n", MessageInit(message));
+  }
+  output("\n");
+
+  output("static const upb_msglayout *layouts[$0] = {\n", file_messages.size());
+  for (auto message : file_messages) {
+    output("  &$0,\n", MessageInit(message));
+  }
+  output("};\n");
+  output("\n");
+
   protobuf::FileDescriptorProto file_proto;
   file->CopyTo(&file_proto);
   std::string file_data;
   file_proto.SerializeToString(&file_data);
 
-  output("static const char descriptor[$0] =\n", file_data.size());
+  output("static const char descriptor[$0] =", file_data.size());
 
   {
     if (file_data.size() > 65535) {
@@ -786,13 +801,15 @@ void WriteDefSource(const protobuf::FileDescriptor* file, Output& output) {
       // Only write 40 bytes per line.
       static const size_t kBytesPerLine = 40;
       for (size_t i = 0; i < file_data.size(); i += kBytesPerLine) {
+        output("\n");
         output(
-            "\"$0\"\n",
+            "  \"$0\"",
             EscapeTrigraphs(absl::CEscape(file_data.substr(i, kBytesPerLine))));
       }
     }
     output(";\n");
   }
+  output("\n");
 
   output("static upb_def_init *deps[$0] = {\n", file->dependency_count() + 1);
   for (int i = 0; i < file->dependency_count(); i++) {
@@ -800,9 +817,11 @@ void WriteDefSource(const protobuf::FileDescriptor* file, Output& output) {
   }
   output("  NULL\n");
   output("};\n");
+  output("\n");
 
   output("upb_def_init $0 = {\n", DefInitSymbol(file));
   output("  deps,\n");
+  output("  layouts,\n");
   output("  \"$0\",\n", file->name());
   output("  UPB_STRVIEW_INIT(descriptor, $0)\n", file_data.size());
   output("};\n");

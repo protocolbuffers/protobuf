@@ -8,7 +8,6 @@
 #include "lauxlib.h"
 #include "upb/def.h"
 #include "upb/msg.h"
-#include "upb/msgfactory.h"
 
 /* Lua changes its API in incompatible ways in every minor release.
  * This is some shim code to paper over the differences. */

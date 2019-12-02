@@ -115,12 +115,10 @@ cc_library(
     name = "reflection",
     srcs = [
         "upb/def.c",
-        "upb/msgfactory.c",
         "upb/reflection.c",
     ],
     hdrs = [
         "upb/def.h",
-        "upb/msgfactory.h",
         "upb/reflection.h",
     ],
     copts = select({
@@ -593,11 +591,11 @@ cc_binary(
     ]
 )
 
-lua_test(
-    name = "lua/test_upb",
-    luadeps = ["lua/upb"],
-    luamain = "tests/bindings/lua/test_upb.lua",
-)
+#lua_test(
+#    name = "lua/test_upb",
+#    luadeps = ["lua/upb"],
+#    luamain = "tests/bindings/lua/test_upb.lua",
+#)
 
 # Test the CMake build #########################################################
 
