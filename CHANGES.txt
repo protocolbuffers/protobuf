@@ -1,3 +1,9 @@
+2019-12-02 version 3.11.1 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  PHP
+  * Extern declare protobuf_globals (#6946)
+
+
 2019-11-19 version 3.11.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   C++
