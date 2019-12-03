@@ -1,7 +1,7 @@
 syntax = "proto3";
 
-import "extensions_issue6936_a.proto";
-import "extensions_issue6936_b.proto";
+import "unittest_issue6936_a.proto";
+import "unittest_issue6936_b.proto";
 
 package unittest_issues;
 

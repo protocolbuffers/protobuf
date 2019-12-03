@@ -65,12 +65,12 @@ csharp_EXTRA_DIST=                                                           \
   csharp/keys/Google.Protobuf.snk                                            \
   csharp/keys/README.md                                                      \
   csharp/protos/README.md                                                    \
-  csharp/protos/extensions/extensions_a.proto                                \
-  csharp/protos/extensions/extensions_b.proto                                \
-  csharp/protos/extensions/extensions_c.proto                                \
   csharp/protos/map_unittest_proto3.proto                                    \
   csharp/protos/old_extensions1.proto                                        \
   csharp/protos/old_extensions2.proto                                        \
+  csharp/protos/unittest_issue6936_a.proto                                   \
+  csharp/protos/unittest_issue6936_b.proto                                   \
+  csharp/protos/unittest_issue6936_c.proto                                   \
   csharp/protos/unittest_custom_options_proto3.proto                         \
   csharp/protos/unittest_import_public_proto3.proto                          \
   csharp/protos/unittest_import_public.proto                                 \
@@ -131,9 +131,9 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf.Test/SampleNaNs.cs                              \
   csharp/src/Google.Protobuf.Test/TestCornerCases.cs                         \
   csharp/src/Google.Protobuf.Test.TestProtos/Google.Protobuf.Test.TestProtos.csproj \
-  csharp/src/Google.Protobuf.Test.TestProtos/ExtensionsA.cs                     \
-  csharp/src/Google.Protobuf.Test.TestProtos/ExtensionsB.cs                     \
-  csharp/src/Google.Protobuf.Test.TestProtos/ExtensionsC.cs                     \
+  csharp/src/Google.Protobuf.Test.TestProtos/UnittestIssue6936A.cs              \
+  csharp/src/Google.Protobuf.Test.TestProtos/UnittestIssue6936B.cs              \
+  csharp/src/Google.Protobuf.Test.TestProtos/UnittestIssue6936C.cs              \
   csharp/src/Google.Protobuf.Test.TestProtos/ForeignMessagePartial.cs           \
   csharp/src/Google.Protobuf.Test.TestProtos/MapUnittestProto3.cs               \
   csharp/src/Google.Protobuf.Test.TestProtos/OldExtensions1.cs                  \

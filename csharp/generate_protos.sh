@@ -49,21 +49,21 @@ $PROTOC -Isrc -Icsharp/protos \
     --descriptor_set_out=csharp/src/Google.Protobuf.Test/testprotos.pb \
     --include_source_info \
     --include_imports \
-    map_unittest_proto3.proto \
-    unittest_issues.proto \
-    unittest_custom_options_proto3.proto \
-    unittest_proto3.proto \
-    unittest_import_proto3.proto \
-    unittest_import_public_proto3.proto \
-    unittest.proto \
-    unittest_import.proto \
-    unittest_import_public.proto \
-    extensions_issue6936_a.proto \
-    extensions_issue6936_b.proto \
-    extensions_issue6936_c.proto \
-    google/protobuf/unittest_well_known_types.proto \
-    google/protobuf/test_messages_proto3.proto \
-    google/protobuf/test_messages_proto2.proto
+    csharp/protos/map_unittest_proto3.proto \
+    csharp/protos/unittest_issues.proto \
+    csharp/protos/unittest_custom_options_proto3.proto \
+    csharp/protos/unittest_proto3.proto \
+    csharp/protos/unittest_import_proto3.proto \
+    csharp/protos/unittest_import_public_proto3.proto \
+    csharp/protos/unittest.proto \
+    csharp/protos/unittest_import.proto \
+    csharp/protos/unittest_import_public.proto \
+    csharp/protos/unittest_issue6936_a.proto \
+    csharp/protos/unittest_issue6936_b.proto \
+    csharp/protos/unittest_issue6936_c.proto \
+    src/google/protobuf/unittest_well_known_types.proto \
+    src/google/protobuf/test_messages_proto3.proto \
+    src/google/protobuf/test_messages_proto2.proto
 
 # AddressBook sample protos
 $PROTOC -Iexamples -Isrc --csharp_out=csharp/src/AddressBook \
