@@ -75,8 +75,13 @@ static zval** message_get_property_ptr_ptr(zval* object, zval* member, int type,
                                            php_proto_zend_literal key TSRMLS_DC);
 static HashTable* message_get_gc(zval* object, zval*** table, int* n TSRMLS_DC);
 #else
+#if PHP_VERSION_ID < 70400
 static void message_set_property(zval* object, zval* member, zval* value,
                                  void** cache_slot);
+#else
+static zval* message_set_property(zval* object, zval* member, zval* value,
+                                  void** cache_slot);
+#endif
 static zval* message_get_property(zval* object, zval* member, int type,
                                   void** cache_slot, zval* rv);
 static zval* message_get_property_ptr_ptr(zval* object, zval* member, int type,
@@ -140,13 +145,20 @@ static void message_set_property_internal(zval* object, zval* member,
 #if PHP_MAJOR_VERSION < 7
 static void message_set_property(zval* object, zval* member, zval* value,
                                  php_proto_zend_literal key TSRMLS_DC) {
-#else
+#elif PHP_VERSION_ID < 70400
 static void message_set_property(zval* object, zval* member, zval* value,
                                  void** cache_slot) {
+#else
+static zval* message_set_property(zval* object, zval* member, zval* value,
+                                  void** cache_slot) {
 #endif
   if (Z_TYPE_P(member) != IS_STRING) {
     zend_error(E_USER_ERROR, "Unexpected type for field name");
+#if PHP_VERSION_ID < 70400
     return;
+#else
+    return value;
+#endif
   }
 
 #if PHP_MAJOR_VERSION < 7 || (PHP_MAJOR_VERSION == 7 && PHP_MINOR_VERSION == 0)
@@ -156,10 +168,17 @@ static void message_set_property(zval* object, zval* member, zval* value,
 #endif
     // User cannot set property directly (e.g., $m->a = 1)
     zend_error(E_USER_ERROR, "Cannot access private property.");
+#if PHP_VERSION_ID < 70400
     return;
+#else
+    return value;
+#endif
   }
 
   message_set_property_internal(object, member, value TSRMLS_CC);
+#if PHP_VERSION_ID >= 70400
+  return value;
+#endif
 }
 
 static zval* message_get_property_internal(zval* object,
