@@ -37,7 +37,7 @@
 #include "upb.h"
 
 #define PHP_PROTOBUF_EXTNAME "protobuf"
-#define PHP_PROTOBUF_VERSION "3.11.0RC1"
+#define PHP_PROTOBUF_VERSION "3.11.1"
 
 #define MAX_LENGTH_OF_INT64 20
 #define SIZEOF_INT64 8
@@ -689,7 +689,7 @@ ZEND_BEGIN_MODULE_GLOBALS(protobuf)
   zend_bool keep_descriptor_pool_after_request;
 ZEND_END_MODULE_GLOBALS(protobuf)
 
-ZEND_DECLARE_MODULE_GLOBALS(protobuf)
+ZEND_EXTERN_MODULE_GLOBALS(protobuf)
 
 #ifdef ZTS
 #define PROTOBUF_G(v) TSRMG(protobuf_globals_id, zend_protobuf_globals *, v)

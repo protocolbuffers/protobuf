@@ -39,6 +39,8 @@ static PHP_RSHUTDOWN_FUNCTION(protobuf);
 static PHP_MINIT_FUNCTION(protobuf);
 static PHP_MSHUTDOWN_FUNCTION(protobuf);
 
+ZEND_DECLARE_MODULE_GLOBALS(protobuf)
+
 // Global map from upb {msg,enum}defs to wrapper Descriptor/EnumDescriptor
 // instances.
 static HashTable* upb_def_to_php_obj_map;
