@@ -274,7 +274,6 @@ bool native_slot_set_by_map(upb_fieldtype_t type, const zend_class_entry* klass,
 }
 
 void native_slot_init(upb_fieldtype_t type, void* memory, CACHED_VALUE* cache) {
-  zval* tmp = NULL;
   switch (type) {
     case UPB_TYPE_FLOAT:
       DEREF(memory, float) = 0.0;
@@ -577,11 +576,6 @@ uint32_t* slot_oneof_case(MessageLayout* layout, const void* storage,
                           const upb_fielddef* field) {
   return (uint32_t*)(((uint8_t*)storage) +
                      layout->fields[upb_fielddef_index(field)].case_offset);
-}
-
-static int slot_property_cache(MessageLayout* layout, const void* storage,
-                               const upb_fielddef* field) {
-  return layout->fields[upb_fielddef_index(field)].cache_index;
 }
 
 void* slot_memory(MessageLayout* layout, const void* storage,
@@ -1000,7 +994,6 @@ static void native_slot_merge_by_array(const upb_fielddef* field, const void* fr
       break;
     }
     case UPB_TYPE_MESSAGE: {
-      const upb_msgdef* msg = upb_fielddef_msgsubdef(field);
       DescriptorInternal* desc = get_msgdef_desc(upb_fielddef_msgsubdef(field));
       register_class(desc, false TSRMLS_CC);
       zend_class_entry* ce = desc->klass;

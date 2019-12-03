@@ -6,5 +6,5 @@ pushd $EXTENSION_PATH
 make clean || true
 set -e
 # Add following in configure for debug: --enable-debug CFLAGS='-g -O0'
-phpize && ./configure CFLAGS='-g -O0' && make
+phpize && ./configure CFLAGS='-g -O0 -Wall' && make
 popd

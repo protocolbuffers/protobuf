@@ -105,7 +105,7 @@ PHP_PROTO_OBJECT_FREE_START(MessageHeader, message)
   }
 PHP_PROTO_OBJECT_FREE_END
 
-PHP_PROTO_OBJECT_DTOR_START(MessageHeader, message)
+PHP_PROTO_OBJECT_EMPTY_DTOR_START(MessageHeader, message)
 PHP_PROTO_OBJECT_DTOR_END
 
 // Define object create method.
@@ -399,7 +399,6 @@ void Message_construct(zval* msg, zval* array_wrapper) {
 
       if (upb_fielddef_issubmsg(value_field)) {
         const upb_msgdef* submsgdef = upb_fielddef_msgsubdef(value_field);
-        upb_wellknowntype_t type = upb_msgdef_wellknowntype(submsgdef);
         is_wrapper = is_wrapper_msg(submsgdef);
 
         if (is_wrapper) {
@@ -439,7 +438,6 @@ void Message_construct(zval* msg, zval* array_wrapper) {
 
       if (upb_fielddef_issubmsg(field)) {
         const upb_msgdef* submsgdef = upb_fielddef_msgsubdef(field);
-        upb_wellknowntype_t type = upb_msgdef_wellknowntype(submsgdef);
         is_wrapper = is_wrapper_msg(submsgdef);
 
         if (is_wrapper) {
@@ -665,6 +663,9 @@ PHP_METHOD(Message, writeWrapperValue) {
       CASE_TYPE(BOOL,   bool,   int8_t)
 
 #undef CASE_TYPE
+      case UPB_TYPE_MESSAGE:
+        zend_error(E_ERROR, "No wrapper for message.");
+        break;
     }
   }
 
@@ -685,7 +686,6 @@ PHP_METHOD(Message, writeWrapperValue) {
     const upb_msgdef* submsgdef = upb_fielddef_msgsubdef(field);
     const upb_fielddef* value_field = upb_msgdef_itof(submsgdef, 1);
     MessageHeader* submsg = UNBOX(MessageHeader, cached_zval);
-    CACHED_VALUE* cached_value = find_zval_property(submsg, value_field);
     layout_set(submsg->descriptor->layout, submsg,
                value_field, value TSRMLS_CC);
   } else {
@@ -1514,7 +1514,6 @@ static void hex_to_binary(const char* hex, char** binary, int* binary_len) {
 
 PHP_METHOD(Any, __construct) {
   init_file_any(TSRMLS_C);
-  MessageHeader* intern = UNBOX(MessageHeader, getThis());
   INIT_MESSAGE_WITH_ARRAY;
 }
 
@@ -1679,7 +1678,6 @@ PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(Duration, __construct) {
   init_file_duration(TSRMLS_C);
-  MessageHeader* intern = UNBOX(MessageHeader, getThis());
   INIT_MESSAGE_WITH_ARRAY;
 }
 
@@ -1714,7 +1712,6 @@ PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(Timestamp, __construct) {
   init_file_timestamp(TSRMLS_C);
-  MessageHeader* intern = UNBOX(MessageHeader, getThis());
   INIT_MESSAGE_WITH_ARRAY;
 }
 
@@ -1723,7 +1720,6 @@ PHP_PROTO_FIELD_ACCESSORS(Timestamp, timestamp, Nanos,   "nanos")
 
 PHP_METHOD(Timestamp, fromDateTime) {
   zval* datetime;
-  zval member;
 
   PHP_PROTO_CE_DECLARE date_interface_ce;
   if (php_proto_zend_lookup_class("\\DatetimeInterface", 18,
@@ -1916,7 +1912,6 @@ PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(Api, __construct) {
   init_file_api(TSRMLS_C);
-  MessageHeader* intern = UNBOX(MessageHeader, getThis());
   INIT_MESSAGE_WITH_ARRAY;
 }
 
@@ -1950,7 +1945,6 @@ PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(BoolValue, __construct) {
   init_file_wrappers(TSRMLS_C);
-  MessageHeader* intern = UNBOX(MessageHeader, getThis());
   INIT_MESSAGE_WITH_ARRAY;
 }
 
@@ -1978,7 +1972,6 @@ PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(BytesValue, __construct) {
   init_file_wrappers(TSRMLS_C);
-  MessageHeader* intern = UNBOX(MessageHeader, getThis());
   INIT_MESSAGE_WITH_ARRAY;
 }
 
@@ -2006,7 +1999,6 @@ PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(DoubleValue, __construct) {
   init_file_wrappers(TSRMLS_C);
-  MessageHeader* intern = UNBOX(MessageHeader, getThis());
   INIT_MESSAGE_WITH_ARRAY;
 }
 
@@ -2050,7 +2042,6 @@ PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(Enum, __construct) {
   init_file_type(TSRMLS_C);
-  MessageHeader* intern = UNBOX(MessageHeader, getThis());
   INIT_MESSAGE_WITH_ARRAY;
 }
 
@@ -2090,7 +2081,6 @@ PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(EnumValue, __construct) {
   init_file_type(TSRMLS_C);
-  MessageHeader* intern = UNBOX(MessageHeader, getThis());
   INIT_MESSAGE_WITH_ARRAY;
 }
 
@@ -2120,7 +2110,6 @@ PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(FieldMask, __construct) {
   init_file_field_mask(TSRMLS_C);
-  MessageHeader* intern = UNBOX(MessageHeader, getThis());
   INIT_MESSAGE_WITH_ARRAY;
 }
 
@@ -2185,7 +2174,6 @@ PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(Field, __construct) {
   init_file_type(TSRMLS_C);
-  MessageHeader* intern = UNBOX(MessageHeader, getThis());
   INIT_MESSAGE_WITH_ARRAY;
 }
 
@@ -2222,7 +2210,6 @@ PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(FloatValue, __construct) {
   init_file_wrappers(TSRMLS_C);
-  MessageHeader* intern = UNBOX(MessageHeader, getThis());
   INIT_MESSAGE_WITH_ARRAY;
 }
 
@@ -2246,7 +2233,6 @@ PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(GPBEmpty, __construct) {
   init_file_empty(TSRMLS_C);
-  MessageHeader* intern = UNBOX(MessageHeader, getThis());
   INIT_MESSAGE_WITH_ARRAY;
 }
 
@@ -2273,7 +2259,6 @@ PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(Int32Value, __construct) {
   init_file_wrappers(TSRMLS_C);
-  MessageHeader* intern = UNBOX(MessageHeader, getThis());
   INIT_MESSAGE_WITH_ARRAY;
 }
 
@@ -2301,7 +2286,6 @@ PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(Int64Value, __construct) {
   init_file_wrappers(TSRMLS_C);
-  MessageHeader* intern = UNBOX(MessageHeader, getThis());
   INIT_MESSAGE_WITH_ARRAY;
 }
 
@@ -2329,7 +2313,6 @@ PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(ListValue, __construct) {
   init_file_struct(TSRMLS_C);
-  MessageHeader* intern = UNBOX(MessageHeader, getThis());
   INIT_MESSAGE_WITH_ARRAY;
 }
 
@@ -2385,7 +2368,6 @@ PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(Method, __construct) {
   init_file_api(TSRMLS_C);
-  MessageHeader* intern = UNBOX(MessageHeader, getThis());
   INIT_MESSAGE_WITH_ARRAY;
 }
 
@@ -2423,7 +2405,6 @@ PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(Mixin, __construct) {
   init_file_api(TSRMLS_C);
-  MessageHeader* intern = UNBOX(MessageHeader, getThis());
   INIT_MESSAGE_WITH_ARRAY;
 }
 
@@ -2456,7 +2437,6 @@ PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(Option, __construct) {
   init_file_type(TSRMLS_C);
-  MessageHeader* intern = UNBOX(MessageHeader, getThis());
   INIT_MESSAGE_WITH_ARRAY;
 }
 
@@ -2486,7 +2466,6 @@ PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(SourceContext, __construct) {
   init_file_source_context(TSRMLS_C);
-  MessageHeader* intern = UNBOX(MessageHeader, getThis());
   INIT_MESSAGE_WITH_ARRAY;
 }
 
@@ -2514,7 +2493,6 @@ PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(StringValue, __construct) {
   init_file_wrappers(TSRMLS_C);
-  MessageHeader* intern = UNBOX(MessageHeader, getThis());
   INIT_MESSAGE_WITH_ARRAY;
 }
 
@@ -2542,7 +2520,6 @@ PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(Struct, __construct) {
   init_file_struct(TSRMLS_C);
-  MessageHeader* intern = UNBOX(MessageHeader, getThis());
   INIT_MESSAGE_WITH_ARRAY;
 }
 
@@ -2590,7 +2567,6 @@ PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(Type, __construct) {
   init_file_type(TSRMLS_C);
-  MessageHeader* intern = UNBOX(MessageHeader, getThis());
   INIT_MESSAGE_WITH_ARRAY;
 }
 
@@ -2623,7 +2599,6 @@ PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(UInt32Value, __construct) {
   init_file_wrappers(TSRMLS_C);
-  MessageHeader* intern = UNBOX(MessageHeader, getThis());
   INIT_MESSAGE_WITH_ARRAY;
 }
 
@@ -2651,7 +2626,6 @@ PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(UInt64Value, __construct) {
   init_file_wrappers(TSRMLS_C);
-  MessageHeader* intern = UNBOX(MessageHeader, getThis());
   INIT_MESSAGE_WITH_ARRAY;
 }
 
@@ -2690,7 +2664,6 @@ PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(Value, __construct) {
   init_file_struct(TSRMLS_C);
-  MessageHeader* intern = UNBOX(MessageHeader, getThis());
   INIT_MESSAGE_WITH_ARRAY;
 }
 
