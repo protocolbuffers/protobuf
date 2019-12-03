@@ -730,6 +730,9 @@ build_php7.4_c() {
   pushd conformance
   make test_php_c
   popd
+  pushd php/ext/google/protobuf
+  phpize --clean
+  popd
 }
 
 build_php7.4_mixed() {
@@ -740,6 +743,9 @@ build_php7.4_mixed() {
   /bin/bash ./tests/compile_extension.sh ./ext/google/protobuf
   php -dextension=./ext/google/protobuf/modules/protobuf.so ./vendor/bin/phpunit
   popd
+  pushd php/ext/google/protobuf
+  phpize --clean
+  popd
 }
 
 build_php7.4_zts_c() {
@@ -747,6 +753,9 @@ build_php7.4_zts_c() {
   cd php/tests && /bin/bash ./test.sh 7.4-zts && cd ../..
   pushd conformance
   make test_php_c
+  popd
+  pushd php/ext/google/protobuf
+  phpize --clean
   popd
 }
 
