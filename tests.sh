@@ -518,10 +518,9 @@ build_php5.5_c() {
   pushd php/tests
   /bin/bash ./test.sh 5.5
   popd
-  # TODO(teboring): Add it back
-  # pushd conformance
-  # make test_php_c
-  # popd
+  pushd conformance
+  make test_php_c
+  popd
 }
 
 build_php5.5_mixed() {
@@ -537,10 +536,9 @@ build_php5.5_mixed() {
 build_php5.5_zts_c() {
   use_php_zts 5.5
   cd php/tests && /bin/bash ./test.sh 5.5-zts && cd ../..
-  # TODO(teboring): Add it back
-  # pushd conformance
-  # make test_php_zts_c
-  # popd
+  pushd conformance
+  make test_php_c
+  popd
 }
 
 build_php5.6() {
@@ -558,10 +556,9 @@ build_php5.6() {
 build_php5.6_c() {
   use_php 5.6
   cd php/tests && /bin/bash ./test.sh 5.6 && cd ../..
-  # TODO(teboring): Add it back
-  # pushd conformance
-  # make test_php_c
-  # popd
+  pushd conformance
+  make test_php_c
+  popd
 }
 
 build_php5.6_mixed() {
@@ -577,10 +574,9 @@ build_php5.6_mixed() {
 build_php5.6_zts_c() {
   use_php_zts 5.6
   cd php/tests && /bin/bash ./test.sh 5.6-zts && cd ../..
-  # TODO(teboring): Add it back
-  # pushd conformance
-  # make test_php_zts_c
-  # popd
+  pushd conformance
+  make test_php_c
+  popd
 }
 
 build_php5.6_mac() {
@@ -602,10 +598,9 @@ build_php5.6_mac() {
 
   # Test
   cd php/tests && /bin/bash ./test.sh && cd ../..
-  # TODO(teboring): Add it back
-  # pushd conformance
-  # make test_php_c
-  # popd
+  pushd conformance
+  make test_php_c
+  popd
 }
 
 build_php7.0() {
@@ -623,10 +618,9 @@ build_php7.0() {
 build_php7.0_c() {
   use_php 7.0
   cd php/tests && /bin/bash ./test.sh 7.0 && cd ../..
-  # TODO(teboring): Add it back
-  # pushd conformance
-  # make test_php_c
-  # popd
+  pushd conformance
+  make test_php_c
+  popd
 }
 
 build_php7.0_mixed() {
@@ -642,10 +636,9 @@ build_php7.0_mixed() {
 build_php7.0_zts_c() {
   use_php_zts 7.0
   cd php/tests && /bin/bash ./test.sh 7.0-zts && cd ../..
-  # TODO(teboring): Add it back.
-  # pushd conformance
-  # make test_php_zts_c
-  # popd
+  pushd conformance
+  make test_php_c
+  popd
 }
 
 build_php7.0_mac() {
@@ -667,10 +660,9 @@ build_php7.0_mac() {
 
   # Test
   cd php/tests && /bin/bash ./test.sh && cd ../..
-  # TODO(teboring): Add it back
-  # pushd conformance
-  # make test_php_c
-  # popd
+  pushd conformance
+  make test_php_c
+  popd
 }
 
 build_php_compatibility() {
@@ -716,7 +708,7 @@ build_php7.1_zts_c() {
   use_php_zts 7.1
   cd php/tests && /bin/bash ./test.sh 7.1-zts && cd ../..
   pushd conformance
-  # make test_php_c
+  make test_php_c
   popd
 }
 
@@ -754,7 +746,7 @@ build_php7.4_zts_c() {
   use_php_zts 7.4
   cd php/tests && /bin/bash ./test.sh 7.4-zts && cd ../..
   pushd conformance
-  make test_php_zts_c
+  make test_php_c
   popd
 }
 
