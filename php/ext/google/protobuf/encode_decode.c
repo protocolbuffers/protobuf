@@ -999,6 +999,12 @@ static void* wrapper_submsg_handler(void* closure, const void* hd) {
     frame->submsg = submsg;
     frame->is_msg = true;
   } else {
+    if (Z_TYPE_P(CACHED_PTR_TO_ZVAL_PTR(cached)) == IS_NULL) {
+      // Needs to initiate the wrapper message
+      const upb_msgdef* msgdef = subdesc->msgdef;
+      const upb_fielddef* f = upb_msgdef_itof(msgdef, 1);
+      native_slot_get_default(upb_fielddef_type(f), cached TSRMLS_CC);
+    }
     // In this case, wrapper message hasn't been created and value will be
     // stored in cache directly.
     frame->submsg = cached;
@@ -1024,6 +1030,12 @@ static void* wrapper_oneofsubmsg_handler(void* closure, const void* hd) {
 
   if (oldcase != oneofdata->oneof_case_num) {
     oneof_cleanup(msg, oneofdata);
+    if (Z_TYPE_P(CACHED_PTR_TO_ZVAL_PTR(cached)) == IS_NULL) {
+      // Needs to initiate the wrapper message
+      const upb_msgdef* msgdef = subdesc->msgdef;
+      const upb_fielddef* f = upb_msgdef_itof(msgdef, 1);
+      native_slot_get_default(upb_fielddef_type(f), cached TSRMLS_CC);
+    }
     frame->submsg = cached;
     frame->is_msg = false;
   } else if (Z_TYPE_P(CACHED_PTR_TO_ZVAL_PTR(cached)) == IS_OBJECT) {
