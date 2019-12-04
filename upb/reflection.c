@@ -7,63 +7,134 @@
 
 #include "upb/port_def.inc"
 
-#define PTR_AT(msg, ofs, type) (type*)((char*)msg + ofs)
-
+char field_size[] = {
+  0,/* 0 */
+  8, /* UPB_DESCRIPTOR_TYPE_DOUBLE */
+  4, /* UPB_DESCRIPTOR_TYPE_FLOAT */
+  8, /* UPB_DESCRIPTOR_TYPE_INT64 */
+  8, /* UPB_DESCRIPTOR_TYPE_UINT64 */
+  4, /* UPB_DESCRIPTOR_TYPE_INT32 */
+  8, /* UPB_DESCRIPTOR_TYPE_FIXED64 */
+  4, /* UPB_DESCRIPTOR_TYPE_FIXED32 */
+  1, /* UPB_DESCRIPTOR_TYPE_BOOL */
+  sizeof(upb_strview), /* UPB_DESCRIPTOR_TYPE_STRING */
+  sizeof(void*), /* UPB_DESCRIPTOR_TYPE_GROUP */
+  sizeof(void*), /* UPB_DESCRIPTOR_TYPE_MESSAGE */
+  sizeof(upb_strview), /* UPB_DESCRIPTOR_TYPE_BYTES */
+  4, /* UPB_DESCRIPTOR_TYPE_UINT32 */
+  4, /* UPB_DESCRIPTOR_TYPE_ENUM */
+  4, /* UPB_DESCRIPTOR_TYPE_SFIXED32 */
+  8, /* UPB_DESCRIPTOR_TYPE_SFIXED64 */
+  4, /* UPB_DESCRIPTOR_TYPE_SINT32 */
+  8, /* UPB_DESCRIPTOR_TYPE_SINT64 */
+};
 
 /** upb_msg *******************************************************************/
 
 /* If we always read/write as a consistent type to each address, this shouldn't
  * violate aliasing.
  */
-#define DEREF(msg, ofs, type) *PTR_AT(msg, ofs, type)
+#define PTR_AT(msg, ofs, type) (type*)((char*)msg + ofs)
 
 upb_msg *upb_msg_new(const upb_msgdef *m, upb_arena *a) {
   return _upb_msg_new(upb_msgdef_layout(m), a);
 }
 
-static const upb_msglayout_field *upb_msg_checkfield(int field_index,
-                                                     const upb_msglayout *l) {
-  UPB_ASSERT(field_index >= 0 && field_index < l->field_count);
-  return &l->fields[field_index];
-}
-
-static bool upb_msg_inoneof(const upb_msglayout_field *field) {
+static bool in_oneof(const upb_msglayout_field *field) {
   return field->presence < 0;
 }
 
-static uint32_t *upb_msg_oneofcase(const upb_msg *msg, int field_index,
-                                   const upb_msglayout *l) {
-  const upb_msglayout_field *field = upb_msg_checkfield(field_index, l);
-  UPB_ASSERT(upb_msg_inoneof(field));
+static uint32_t *oneofcase(const upb_msg *msg,
+                           const upb_msglayout_field *field) {
+  UPB_ASSERT(in_oneof(field));
   return PTR_AT(msg, ~field->presence, uint32_t);
 }
 
 bool upb_msg_has(const upb_msg *msg, const upb_fielddef *f) {
   const upb_msglayout_field *field = upb_fielddef_layout(f);
-
   UPB_ASSERT(field->presence);
-
-  if (upb_msg_inoneof(field)) {
-    /* Oneofs are set when the oneof number is set to this field. */
-    return *upb_msg_oneofcase(msg, field_index, l) == field->number;
+  if (in_oneof(field)) {
+    return *oneofcase(msg, field) == field->number;
   } else {
-    /* Other fields are set when their hasbit is set. */
     uint32_t hasbit = field->presence;
-    return DEREF(msg, hasbit / 8, char) | (1 << (hasbit % 8));
+    return *PTR_AT(msg, hasbit / 8, char) | (1 << (hasbit % 8));
   }
 }
 
 upb_msgval upb_msg_get(const upb_msg *msg, const upb_fielddef *f) {
   const upb_msglayout_field *field = upb_fielddef_layout(f);
-  int size = upb_msg_fieldsize(field);
-  return upb_msgval_read(msg, field->offset, size);
+  const char *mem = PTR_AT(msg, field->offset, char);
+  upb_msgval val;
+  if (field->presence == 0 || upb_msg_has(msg, f)) {
+    memcpy(&val, mem, field_size[field->descriptortype]);
+  } else {
+    /* TODO(haberman): change upb_fielddef to not require this switch(). */
+    switch (upb_fielddef_type(f)) {
+      case UPB_TYPE_INT32:
+      case UPB_TYPE_ENUM:
+        val.int32_val = upb_fielddef_defaultint32(f);
+        break;
+      case UPB_TYPE_INT64:
+        val.int64_val = upb_fielddef_defaultint64(f);
+        break;
+      case UPB_TYPE_UINT32:
+        val.uint32_val = upb_fielddef_defaultuint32(f);
+        break;
+      case UPB_TYPE_UINT64:
+        val.uint64_val = upb_fielddef_defaultuint64(f);
+        break;
+      case UPB_TYPE_FLOAT:
+        val.float_val = upb_fielddef_defaultfloat(f);
+        break;
+      case UPB_TYPE_DOUBLE:
+        val.double_val = upb_fielddef_defaultdouble(f);
+        break;
+      case UPB_TYPE_BOOL:
+        val.double_val = upb_fielddef_defaultbool(f);
+        break;
+      case UPB_TYPE_STRING:
+      case UPB_TYPE_BYTES:
+        val.str_val.data = upb_fielddef_defaultstr(f, &val.str_val.size);
+        break;
+      case UPB_TYPE_MESSAGE:
+        val.msg_val = NULL;
+        break;
+    }
+  }
+  return val;
+}
+
+upb_mutmsgval upb_msg_mutable(upb_msg *msg, const upb_fielddef *f,
+                              upb_arena *a) {
+  const upb_msglayout_field *field = upb_fielddef_layout(f);
+  upb_mutmsgval ret;
+  char *mem = PTR_AT(msg, field->offset, char);
+  memcpy(&ret, mem, sizeof(void*));
+  if (!ret.msg) {
+    if (upb_fielddef_ismap(f)) {
+      const upb_msgdef *entry = upb_fielddef_msgsubdef(f);
+      const upb_fielddef *key = upb_msgdef_itof(entry, UPB_MAPENTRY_KEY);
+      const upb_fielddef *value = upb_msgdef_itof(entry, UPB_MAPENTRY_VALUE);
+      ret.map = upb_map_new(a, upb_fielddef_type(key), upb_fielddef_type(value));
+    } else if (upb_fielddef_isseq(f)) {
+      ret.array = upb_array_new(a, upb_fielddef_type(f));
+    } else {
+      UPB_ASSERT(upb_fielddef_issubmsg(f));
+      ret.msg = upb_msg_new(upb_fielddef_msgsubdef(f), a);
+    }
+    memcpy(mem, &ret, sizeof(void*));
+  }
+  return ret;
 }
 
 void upb_msg_set(upb_msg *msg, const upb_fielddef *f, upb_msgval val,
                  upb_arena *a) {
-  const upb_msglayout_field *field = upb_msg_checkfield(field_index, l);
-  int size = upb_msg_fieldsize(field);
-  upb_msgval_write(msg, field->offset, val, size);
+  const upb_msglayout_field *field = upb_fielddef_layout(f);
+  char *mem = PTR_AT(msg, field->offset, char);
+  memcpy(mem, &val, field_size[field->descriptortype]);
+  if (in_oneof(field)) {
+    *oneofcase(msg, field) = field->number;
+  }
 }
 
 #undef DEREF

@@ -578,7 +578,7 @@ const upb_enumdef *upb_fielddef_enumsubdef(const upb_fielddef *f) {
 }
 
 const upb_msglayout_field *upb_fielddef_layout(const upb_fielddef *f) {
-  return &f->containing_type->layout->fields[f->layout_index];
+  return &f->msgdef->layout->fields[f->layout_index];
 }
 
 bool upb_fielddef_issubmsg(const upb_fielddef *f) {
@@ -845,7 +845,7 @@ static size_t div_round_up(size_t n, size_t d) {
   return (n + d - 1) / d;
 }
 
-static size_t upb_msgval_sizeof2(upb_fieldtype_t type) {
+static size_t upb_msgval_sizeof(upb_fieldtype_t type) {
   switch (type) {
     case UPB_TYPE_DOUBLE:
     case UPB_TYPE_INT64:
@@ -871,7 +871,7 @@ static uint8_t upb_msg_fielddefsize(const upb_fielddef *f) {
   if (upb_fielddef_isseq(f)) {
     return sizeof(void*);
   } else {
-    return upb_msgval_sizeof2(upb_fielddef_type(f));
+    return upb_msgval_sizeof(upb_fielddef_type(f));
   }
 }
 

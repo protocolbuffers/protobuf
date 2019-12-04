@@ -38,6 +38,8 @@ class BuildFileFunctions(object):
   def cc_library(self, **kwargs):
     if kwargs["name"] == "amalgamation" or kwargs["name"] == "upbc_generator":
       return
+    if kwargs["name"] == "lupb":
+      return
     files = kwargs.get("srcs", []) + kwargs.get("hdrs", [])
     found_files = []
     for file in files:

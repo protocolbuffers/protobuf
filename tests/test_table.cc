@@ -166,7 +166,8 @@ class StrTable {
 
     std::pair<std::string, upb_value> operator*() const {
       std::pair<std::string, upb_value> ret;
-      ret.first.assign(upb_strtable_iter_key(&iter_));
+      upb_strview view = upb_strtable_iter_key(&iter_);
+      ret.first.assign(view.data, view.size);
       ret.second = upb_strtable_iter_value(&iter_);
       return ret;
     }
