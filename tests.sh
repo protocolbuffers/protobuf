@@ -514,17 +514,17 @@ build_php5.5() {
 }
 
 build_php5.5_c() {
-  IS_32BIT=$1
+  IS_64BIT=$1
   use_php 5.5
   pushd php/tests
   /bin/bash ./test.sh 5.5
   popd
   pushd conformance
-  if [ "$IS_32BIT" = "true" ]
+  if [ "$IS_64BIT" = "true" ]
   then
-    make test_php_c_32
-  else
     make test_php_c
+  else
+    make test_php_c_32
   fi
   popd
 }
@@ -540,15 +540,15 @@ build_php5.5_mixed() {
 }
 
 build_php5.5_zts_c() {
-  IS_32BIT=$1
+  IS_64BIT=$1
   use_php_zts 5.5
   cd php/tests && /bin/bash ./test.sh 5.5-zts && cd ../..
   pushd conformance
-  if [ "$IS_32BIT" = "true" ]
+  if [ "$IS_64BIT" = "true" ]
   then
-    make test_php_c_32
-  else
     make test_php_c
+  else
+    make test_php_c_32
   fi
   popd
 }
@@ -566,15 +566,15 @@ build_php5.6() {
 }
 
 build_php5.6_c() {
-  IS_32BIT=$1
+  IS_64BIT=$1
   use_php 5.6
   cd php/tests && /bin/bash ./test.sh 5.6 && cd ../..
   pushd conformance
-  if [ "$IS_32BIT" = "true" ]
+  if [ "$IS_64BIT" = "true" ]
   then
-    make test_php_c_32
-  else
     make test_php_c
+  else
+    make test_php_c_32
   fi
   popd
 }
@@ -590,15 +590,15 @@ build_php5.6_mixed() {
 }
 
 build_php5.6_zts_c() {
-  IS_32BIT=$1
+  IS_64BIT=$1
   use_php_zts 5.6
   cd php/tests && /bin/bash ./test.sh 5.6-zts && cd ../..
   pushd conformance
-  if [ "$IS_32BIT" = "true" ]
+  if [ "$IS_64BIT" = "true" ]
   then
-    make test_php_c_32
-  else
     make test_php_c
+  else
+    make test_php_c_32
   fi
   popd
 }
@@ -640,15 +640,15 @@ build_php7.0() {
 }
 
 build_php7.0_c() {
-  IS_32BIT=$1
+  IS_64BIT=$1
   use_php 7.0
   cd php/tests && /bin/bash ./test.sh 7.0 && cd ../..
   pushd conformance
-  if [ "$IS_32BIT" = "true" ]
+  if [ "$IS_64BIT" = "true" ]
   then
-    make test_php_c_32
-  else
     make test_php_c
+  else
+    make test_php_c_32
   fi
   popd
 }
@@ -664,15 +664,15 @@ build_php7.0_mixed() {
 }
 
 build_php7.0_zts_c() {
-  IS_32BIT=$1
+  IS_64BIT=$1
   use_php_zts 7.0
   cd php/tests && /bin/bash ./test.sh 7.0-zts && cd ../..
   pushd conformance
-  if [ "$IS_32BIT" = "true" ]
+  if [ "$IS_64BIT" = "true" ]
   then
-    make test_php_c_32
-  else
     make test_php_c
+  else
+    make test_php_c_32
   fi
   popd
 }
@@ -719,15 +719,15 @@ build_php7.1() {
 }
 
 build_php7.1_c() {
-  IS_32BIT=$1
+  IS_64BIT=$1
   use_php 7.1
   cd php/tests && /bin/bash ./test.sh 7.1 && cd ../..
   pushd conformance
-  if [ "$IS_32BIT" = "true" ]
+  if [ "$IS_64BIT" = "true" ]
   then
-    make test_php_c_32
-  else
     make test_php_c
+  else
+    make test_php_c_32
   fi
   popd
 }
@@ -743,15 +743,15 @@ build_php7.1_mixed() {
 }
 
 build_php7.1_zts_c() {
-  IS_32BIT=$1
+  IS_64BIT=$1
   use_php_zts 7.1
   cd php/tests && /bin/bash ./test.sh 7.1-zts && cd ../..
   pushd conformance
-  if [ "$IS_32BIT" = "true" ]
+  if [ "$IS_64BIT" = "true" ]
   then
-    make test_php_c_32
-  else
     make test_php_c
+  else
+    make test_php_c_32
   fi
   popd
 }
@@ -769,15 +769,15 @@ build_php7.4() {
 }
 
 build_php7.4_c() {
-  IS_32BIT=$1
+  IS_64BIT=$1
   use_php 7.4
   cd php/tests && /bin/bash ./test.sh 7.4 && cd ../..
   pushd conformance
-  if [ "$IS_32BIT" = "true" ]
+  if [ "$IS_64BIT" = "true" ]
   then
-    make test_php_c_32
-  else
     make test_php_c
+  else
+    make test_php_c_32
   fi
   popd
   pushd php/ext/google/protobuf
@@ -799,15 +799,15 @@ build_php7.4_mixed() {
 }
 
 build_php7.4_zts_c() {
-  IS_32BIT=$1
+  IS_64BIT=$1
   use_php_zts 7.4
   cd php/tests && /bin/bash ./test.sh 7.4-zts && cd ../..
   pushd conformance
-  if [ "$IS_32BIT" = "true" ]
+  if [ "$IS_64BIT" = "true" ]
   then
-    make test_php_c_32
-  else
     make test_php_c
+  else
+    make test_php_c_32
   fi
   popd
   pushd php/ext/google/protobuf
