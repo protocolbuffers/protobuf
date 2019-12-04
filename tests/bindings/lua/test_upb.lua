@@ -1,5 +1,5 @@
 
-local upb = require "upb"
+local upb = require "lupb"
 local lunit = require "lunit"
 
 if _VERSION >= 'Lua 5.2' then
