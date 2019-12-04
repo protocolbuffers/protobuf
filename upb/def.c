@@ -1751,9 +1751,11 @@ static bool build_filedef(
     }
   }
 
-  for (i = 0; i < file->msg_count; i++) {
-    const upb_msgdef *m = &file->msgs[i];
-    make_layout(ctx->symtab, m);
+  if (!ctx->layouts) {
+    for (i = 0; i < file->msg_count; i++) {
+      const upb_msgdef *m = &file->msgs[i];
+      make_layout(ctx->symtab, m);
+    }
   }
 
   return true;
