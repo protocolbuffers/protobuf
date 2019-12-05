@@ -1175,7 +1175,11 @@ PHP_METHOD(Field_Cardinality, name) {
       zend_throw_exception_ex(
           NULL, 0 TSRMLS_CC,
           "Enum Google\\Protobuf\\Field_Cardinality has no name "
+#if PHP_MAJOR_VERSION < 7
           "defined for value %d.",
+#else
+          "defined for value " ZEND_LONG_FMT ".",
+#endif
           value);
   }
 }
@@ -1310,7 +1314,11 @@ PHP_METHOD(Field_Kind, name) {
     default:
       zend_throw_exception_ex(NULL, 0 TSRMLS_CC,
                               "Enum Google\\Protobuf\\Field_Kind has no name "
+#if PHP_MAJOR_VERSION < 7
                               "defined for value %d.",
+#else
+                              "defined for value " ZEND_LONG_FMT ".",
+#endif
                               value);
   }
 }
@@ -1381,7 +1389,11 @@ PHP_METHOD(NullValue, name) {
     default:
       zend_throw_exception_ex(NULL, 0 TSRMLS_CC,
                               "Enum Google\\Protobuf\\NullValue has no name "
+#if PHP_MAJOR_VERSION < 7
                               "defined for value %d.",
+#else
+                              "defined for value " ZEND_LONG_FMT ".",
+#endif
                               value);
   }
 }
@@ -1438,7 +1450,11 @@ PHP_METHOD(Syntax, name) {
     default:
       zend_throw_exception_ex(NULL, 0 TSRMLS_CC,
                               "Enum Google\\Protobuf\\Syntax has no name "
+#if PHP_MAJOR_VERSION < 7
                               "defined for value %d.",
+#else
+                              "defined for value " ZEND_LONG_FMT ".",
+#endif
                               value);
   }
 }
