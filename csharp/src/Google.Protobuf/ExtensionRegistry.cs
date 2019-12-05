@@ -42,6 +42,19 @@ namespace Google.Protobuf
     /// </summary>
     public sealed class ExtensionRegistry : ICollection<Extension>, IDeepCloneable<ExtensionRegistry>
     {
+        internal sealed class ExtensionComparer : IEqualityComparer<Extension>
+        {
+            public bool Equals(Extension a, Extension b)
+            {
+                return new ObjectIntPair<Type>(a.TargetType, a.FieldNumber).Equals(new ObjectIntPair<Type>(b.TargetType, b.FieldNumber));
+            }
+            public int GetHashCode(Extension a)
+            {
+                return new ObjectIntPair<Type>(a.TargetType, a.FieldNumber).GetHashCode();
+            }
+
+            internal static ExtensionComparer Instance = new ExtensionComparer();
+        }
         private IDictionary<ObjectIntPair<Type>, Extension> extensions;
 
         /// <summary>
