@@ -133,7 +133,7 @@ namespace Google.Protobuf
         /// <param name="settings">The settings.</param>
         public JsonFormatter(Settings settings)
         {
-            this.settings = settings;
+            this.settings = ProtoPreconditions.CheckNotNull(settings, nameof(settings));
         }
 
         /// <summary>
