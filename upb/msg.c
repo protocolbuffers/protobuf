@@ -197,7 +197,7 @@ upb_map *upb_map_new(upb_arena *a, upb_fieldtype_t key_type,
     return NULL;
   }
 
-  upb_strtable_init(&map->table, UPB_CTYPE_INT32);
+  upb_strtable_init2(&map->table, UPB_CTYPE_INT32, upb_arena_alloc(a));
   map->key_size_lg2 = _upb_fieldtype_to_mapsizelg2[key_type];
   map->val_size_lg2 = _upb_fieldtype_to_mapsizelg2[value_type];
 

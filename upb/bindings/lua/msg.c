@@ -510,7 +510,7 @@ typedef struct {
 #define MAP_MSGDEF_INDEX 1
 
 static lupb_map *lupb_map_check(lua_State *L, int narg) {
-  return luaL_checkudata(L, narg, LUPB_ARRAY);
+  return luaL_checkudata(L, narg, LUPB_MAP);
 }
 
 /* lupb_map Public API */

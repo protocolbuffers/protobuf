@@ -405,122 +405,6 @@ function test_symtab()
   assert_equal(msgdef3:field("field5"):subdef(), msgdef2)
 end
 
-function test_numeric_array()
-  local function test_for_numeric_type(upb_type, val, too_big, too_small, bad3)
-    local array = upb.Array(upb_type)
-    assert_equal(0, #array)
-
-    -- 0 is never a valid index in Lua.
-    assert_error_match("array index", function() return array[0] end)
-    -- Past the end of the array.
-    assert_error_match("array index", function() return array[1] end)
-
-    array[1] = val
-    assert_equal(val, array[1])
-    assert_equal(1, #array)
-    assert_equal(val, array[1])
-    -- Past the end of the array.
-    assert_error_match("array index", function() return array[2] end)
-
-    array[2] = 10
-    assert_equal(val, array[1])
-    assert_equal(10, array[2])
-    assert_equal(2, #array)
-    -- Past the end of the array.
-    assert_error_match("array index", function() return array[3] end)
-
-    local n = 1
-    for i, val in upb.ipairs(array) do
-      assert_equal(n, i)
-      n = n + 1
-      assert_equal(array[i], val)
-    end
-
-    -- Values that are out of range.
-    local errmsg = "not an integer or out of range"
-    if too_small then
-      assert_error_match(errmsg, function() array[3] = too_small end)
-    end
-    if too_big then
-      assert_error_match(errmsg, function() array[3] = too_big end)
-    end
-    if bad3 then
-      assert_error_match(errmsg, function() array[3] = bad3 end)
-    end
-
-    -- Can't assign other Lua types.
-    errmsg = "bad argument #3"
-    assert_error_match(errmsg, function() array[3] = "abc" end)
-    assert_error_match(errmsg, function() array[3] = true end)
-    assert_error_match(errmsg, function() array[3] = false end)
-    assert_error_match(errmsg, function() array[3] = nil end)
-    assert_error_match(errmsg, function() array[3] = {} end)
-    assert_error_match(errmsg, function() array[3] = print end)
-    assert_error_match(errmsg, function() array[3] = array end)
-  end
-
-  -- in-range of 64-bit types but not exactly representable as double
-  local bad64 = 2^68 - 1
-
-  test_for_numeric_type(upb.TYPE_UINT32, 2^32 - 1, 2^32, -1, 5.1)
-  test_for_numeric_type(upb.TYPE_UINT64, 2^63, 2^64, -1, bad64)
-  test_for_numeric_type(upb.TYPE_INT32, 2^31 - 1, 2^31, -2^31 - 1, 5.1)
-  -- Enums don't exist at a language level in Lua, so we just represent enum
-  -- values as int32s.
-  test_for_numeric_type(upb.TYPE_ENUM, 2^31 - 1, 2^31, -2^31 - 1, 5.1)
-  test_for_numeric_type(upb.TYPE_INT64, 2^62, 2^63, -2^64, bad64)
-  test_for_numeric_type(upb.TYPE_FLOAT, 340282306073709652508363335590014353408)
-  test_for_numeric_type(upb.TYPE_DOUBLE, 10^101)
-end
-
-function test_string_array()
-  local function test_for_string_type(upb_type)
-    local array = upb.Array(upb_type)
-    assert_equal(0, #array)
-
-    -- 0 is never a valid index in Lua.
-    assert_error_match("array index", function() return array[0] end)
-    -- Past the end of the array.
-    assert_error_match("array index", function() return array[1] end)
-
-    array[1] = "foo"
-    assert_equal("foo", array[1])
-    assert_equal(1, #array)
-    -- Past the end of the array.
-    assert_error_match("array index", function() return array[2] end)
-
-    local array2 = upb.Array(upb_type)
-    assert_equal(0, #array2)
-
-    array[2] = "bar"
-    assert_equal("foo", array[1])
-    assert_equal("bar", array[2])
-    assert_equal(2, #array)
-    -- Past the end of the array.
-    assert_error_match("array index", function() return array[3] end)
-
-    local n = 1
-    for i, val in upb.ipairs(array) do
-      assert_equal(n, i)
-      n = n + 1
-      assert_equal(array[i], val)
-    end
-    assert_equal(3, n)
-
-    -- Can't assign other Lua types.
-    assert_error_match("Expected string", function() array[3] = 123 end)
-    assert_error_match("Expected string", function() array[3] = true end)
-    assert_error_match("Expected string", function() array[3] = false end)
-    assert_error_match("Expected string", function() array[3] = nil end)
-    assert_error_match("Expected string", function() array[3] = {} end)
-    assert_error_match("Expected string", function() array[3] = print end)
-    assert_error_match("Expected string", function() array[3] = array end)
-  end
-
-  test_for_string_type(upb.TYPE_STRING)
-  test_for_string_type(upb.TYPE_BYTES)
-end
-
 function test_msg_primitives()
   local function test_for_numeric_type(upb_type, val, too_big, too_small, bad3)
     local symtab = upb.SymbolTable{
@@ -699,6 +583,8 @@ function test_msg_submsg()
   assert_error_match("msg expected", function() msg.submsg = print end)
 end
 
+--]]
+
 -- Lua 5.1 and 5.2 have slightly different semantics for how a finalizer
 -- can be defined in Lua.
 if _VERSION >= 'Lua 5.2' then
@@ -719,33 +605,174 @@ function test_finalizer()
     defer(function()
       assert_error_match("called into dead object", function()
         -- Generic def call.
-        t[1]:full_name()
-      end)
-      assert_error_match("called into dead object", function()
-        -- Specific msgdef call.
-        t[1]:add()
-      end)
-      assert_error_match("called into dead object", function()
-        t[2]:values()
-      end)
-      assert_error_match("called into dead object", function()
-        t[3]:number()
-      end)
-      assert_error_match("called into dead object", function()
-        t[4]:lookup()
+        t[1]:lookup_msg("abc")
       end)
     end)
     t = {
-      upb.MessageDef(),
-      upb.EnumDef(),
-      upb.FieldDef(),
       upb.SymbolTable(),
     }
   end
   collectgarbage()
 end
 
---]]
+-- in-range of 64-bit types but not exactly representable as double
+local bad64 = 2^68 - 1
+
+local numeric_types = {
+  [upb.TYPE_UINT32] = {
+    valid_val = 2^32 - 1,
+    too_big = 2^32,
+    too_small = -1,
+    other_bad = 5.1
+  },
+  [upb.TYPE_UINT64] = {
+    valid_val = 2^63,
+    too_big = 2^64,
+    too_small = -1,
+    other_bad = bad64
+  },
+  [upb.TYPE_INT32] = {
+    valid_val = 2^31 - 1,
+    too_big = 2^31,
+    too_small = -2^31 - 1,
+    other_bad = 5.1
+  },
+  -- Enums don't exist at a language level in Lua, so we just represent enum
+  -- values as int32s.
+  [upb.TYPE_ENUM] = {
+    valid_val = 2^31 - 1,
+    too_big = 2^31,
+    too_small = -2^31 - 1,
+    other_bad = 5.1
+  },
+  [upb.TYPE_INT64] = {
+    valid_val = 2^62,
+    too_big = 2^63,
+    too_small = -2^64,
+    other_bad = bad64
+  },
+  [upb.TYPE_FLOAT] = {
+    valid_val = 340282306073709652508363335590014353408
+  },
+  [upb.TYPE_DOUBLE] = {
+    valid_val = 10^101
+  },
+}
+
+function test_string_array()
+  local function test_for_string_type(upb_type)
+    local array = upb.Array(upb_type)
+    assert_equal(0, #array)
+
+    -- 0 is never a valid index in Lua.
+    assert_error_match("array index", function() return array[0] end)
+    -- Past the end of the array.
+    assert_error_match("array index", function() return array[1] end)
+
+    array[1] = "foo"
+    assert_equal("foo", array[1])
+    assert_equal(1, #array)
+    -- Past the end of the array.
+    assert_error_match("array index", function() return array[2] end)
+
+    local array2 = upb.Array(upb_type)
+    assert_equal(0, #array2)
+
+    array[2] = "bar"
+    assert_equal("foo", array[1])
+    assert_equal("bar", array[2])
+    assert_equal(2, #array)
+    -- Past the end of the array.
+    assert_error_match("array index", function() return array[3] end)
+
+    -- Can't assign other Lua types.
+    assert_error_match("Expected string", function() array[3] = 123 end)
+    assert_error_match("Expected string", function() array[3] = true end)
+    assert_error_match("Expected string", function() array[3] = false end)
+    assert_error_match("Expected string", function() array[3] = nil end)
+    assert_error_match("Expected string", function() array[3] = {} end)
+    assert_error_match("Expected string", function() array[3] = print end)
+    assert_error_match("Expected string", function() array[3] = array end)
+  end
+
+  test_for_string_type(upb.TYPE_STRING)
+  test_for_string_type(upb.TYPE_BYTES)
+end
+
+function test_numeric_array()
+  local function test_for_numeric_type(upb_type)
+    local array = upb.Array(upb_type)
+    local vals = numeric_types[upb_type]
+    assert_equal(0, #array)
+
+    -- 0 is never a valid index in Lua.
+    assert_error_match("array index", function() return array[0] end)
+    -- Past the end of the array.
+    assert_error_match("array index", function() return array[1] end)
+
+    array[1] = vals.valid_val
+    assert_equal(vals.valid_val, array[1])
+    assert_equal(1, #array)
+    assert_equal(vals.valid_val, array[1])
+    -- Past the end of the array.
+    assert_error_match("array index", function() return array[2] end)
+
+    array[2] = 10
+    assert_equal(vals.valid_val, array[1])
+    assert_equal(10, array[2])
+    assert_equal(2, #array)
+    -- Past the end of the array.
+    assert_error_match("array index", function() return array[3] end)
+
+    -- Values that are out of range.
+    local errmsg = "not an integer or out of range"
+    if vals.too_small then
+      assert_error_match(errmsg, function() array[3] = vals.too_small end)
+    end
+    if vals.too_big then
+      assert_error_match(errmsg, function() array[3] = vals.too_big end)
+    end
+    if vals.other_bad then
+      assert_error_match(errmsg, function() array[3] = vals.other_bad end)
+    end
+
+    -- Can't assign other Lua types.
+    errmsg = "bad argument #3"
+    assert_error_match(errmsg, function() array[3] = "abc" end)
+    assert_error_match(errmsg, function() array[3] = true end)
+    assert_error_match(errmsg, function() array[3] = false end)
+    assert_error_match(errmsg, function() array[3] = nil end)
+    assert_error_match(errmsg, function() array[3] = {} end)
+    assert_error_match(errmsg, function() array[3] = print end)
+    assert_error_match(errmsg, function() array[3] = array end)
+  end
+
+  for k in pairs(numeric_types) do
+    test_for_numeric_type(k)
+  end
+end
+
+function test_numeric_map()
+  local function test_for_numeric_types(key_type, val_type)
+    local map = upb.Map(key_type, val_type)
+    local key_vals = numeric_types[key_type]
+    local val_vals = numeric_types[val_type]
+
+    assert_equal(0, #map)
+
+    -- Unset keys return nil
+    assert_nil(map[key_vals.valid_val])
+
+    map[key_vals.valid_val] = val_vals.valid_val
+    assert_equal(1, #map)
+  end
+
+  for k in pairs(numeric_types) do
+    for v in pairs(numeric_types) do
+      test_for_numeric_types(k, v)
+    end
+  end
+end
 
 function test_foo()
   local symtab = upb.SymbolTable()
