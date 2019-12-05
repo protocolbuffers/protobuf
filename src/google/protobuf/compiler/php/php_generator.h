@@ -48,7 +48,12 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
       const FileDescriptor* file,
       const string& parameter,
       GeneratorContext* generator_context,
-      string* error) const;
+      string* error) const override;
+
+  bool GenerateAll(const std::vector<const FileDescriptor*>& files,
+                   const std::string& parameter,
+                   GeneratorContext* generator_context,
+                   std::string* error) const override;
 };
 
 // To skip reserved keywords in php, some generated classname are prefixed.

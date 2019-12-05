@@ -37,6 +37,16 @@
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/any.pb.h>
+#include <google/protobuf/api.pb.h>
+#include <google/protobuf/duration.pb.h>
+#include <google/protobuf/empty.pb.h>
+#include <google/protobuf/field_mask.pb.h>
+#include <google/protobuf/source_context.pb.h>
+#include <google/protobuf/struct.pb.h>
+#include <google/protobuf/timestamp.pb.h>
+#include <google/protobuf/type.pb.h>
+#include <google/protobuf/wrappers.pb.h>
 
 #include <sstream>
 
@@ -926,17 +936,17 @@ void GenerateMessageToPool(const string& name_prefix, const Descriptor* message,
 
 void GenerateAddFileToPool(const FileDescriptor* file, bool is_descriptor,
                            io::Printer* printer) {
-    printer->Print(
-        "public static $is_initialized = false;\n\n"
-        "public static function initOnce() {\n");
-    Indent(printer);
+  printer->Print(
+      "public static $is_initialized = false;\n\n"
+      "public static function initOnce() {\n");
+  Indent(printer);
 
-    printer->Print(
-        "$pool = \\Google\\Protobuf\\Internal\\"
-        "DescriptorPool::getGeneratedPool();\n\n"
-        "if (static::$is_initialized == true) {\n"
-        "  return;\n"
-        "}\n");
+  printer->Print(
+      "$pool = \\Google\\Protobuf\\Internal\\"
+      "DescriptorPool::getGeneratedPool();\n\n"
+      "if (static::$is_initialized == true) {\n"
+      "  return;\n"
+      "}\n");
 
   if (is_descriptor) {
     for (int i = 0; i < file->message_type_count(); i++) {
@@ -1013,6 +1023,131 @@ void GenerateAddFileToPool(const FileDescriptor* file, bool is_descriptor,
   printer->Print("}\n");
 }
 
+void GenerateAddFilesToPool(
+    const std::vector<const FileDescriptor*>& files,
+    io::Printer* printer) {
+  printer->Print(
+      "$pool = \\Google\\Protobuf\\Internal\\"
+      "DescriptorPool::getGeneratedPool();\n");
+
+  FileDescriptorSet file_set;
+
+  // Add metadata for well know types
+  {
+    FileDescriptorProto* file_proto = file_set.add_file();
+    const FileDescriptor* file =
+        ::google::protobuf::Any::descriptor()->file();
+    file->CopyTo(file_proto);
+  }
+
+  {
+    FileDescriptorProto* file_proto = file_set.add_file();
+    const FileDescriptor* file =
+        ::google::protobuf::SourceContext::descriptor()->file();
+    file->CopyTo(file_proto);
+  }
+
+  {
+    FileDescriptorProto* file_proto = file_set.add_file();
+    const FileDescriptor* file =
+        ::google::protobuf::Type::descriptor()->file();
+    file->CopyTo(file_proto);
+  }
+
+  {
+    FileDescriptorProto* file_proto = file_set.add_file();
+    const FileDescriptor* file =
+        ::google::protobuf::Api::descriptor()->file();
+    file->CopyTo(file_proto);
+  }
+
+  {
+    FileDescriptorProto* file_proto = file_set.add_file();
+    const FileDescriptor* file =
+        ::google::protobuf::Duration::descriptor()->file();
+    file->CopyTo(file_proto);
+  }
+
+  {
+    FileDescriptorProto* file_proto = file_set.add_file();
+    const FileDescriptor* file =
+        ::google::protobuf::Empty::descriptor()->file();
+    file->CopyTo(file_proto);
+  }
+
+  {
+    FileDescriptorProto* file_proto = file_set.add_file();
+    const FileDescriptor* file =
+        ::google::protobuf::FieldMask::descriptor()->file();
+    file->CopyTo(file_proto);
+  }
+
+  {
+    FileDescriptorProto* file_proto = file_set.add_file();
+    const FileDescriptor* file =
+        ::google::protobuf::Struct::descriptor()->file();
+    file->CopyTo(file_proto);
+  }
+
+  {
+    FileDescriptorProto* file_proto = file_set.add_file();
+    const FileDescriptor* file =
+        ::google::protobuf::Timestamp::descriptor()->file();
+    file->CopyTo(file_proto);
+  }
+
+  {
+    FileDescriptorProto* file_proto = file_set.add_file();
+    const FileDescriptor* file =
+        ::google::protobuf::DoubleValue::descriptor()->file();
+    file->CopyTo(file_proto);
+  }
+
+  // Add metadata for other files
+  for (auto file : files) {
+    FileDescriptorProto* file_proto = file_set.add_file();
+    file->CopyTo(file_proto);
+
+    // Filter out descriptor.proto as it cannot be depended on for now.
+    RepeatedPtrField<string>* dependency = file_proto->mutable_dependency();
+    for (RepeatedPtrField<string>::iterator it = dependency->begin();
+         it != dependency->end(); ++it) {
+      if (*it != kDescriptorFile) {
+        dependency->erase(it);
+        break;
+      }
+    }
+
+    // Filter out all extensions, since we do not support extension yet.
+    file_proto->clear_extension();
+    RepeatedPtrField<DescriptorProto>* message_type =
+        file_proto->mutable_message_type();
+    for (RepeatedPtrField<DescriptorProto>::iterator it = message_type->begin();
+         it != message_type->end(); ++it) {
+      it->clear_extension();
+    }
+  }
+
+  string files_data;
+  file_set.SerializeToString(&files_data);
+
+  printer->Print("$pool->internalAddGeneratedFile(hex2bin(\n");
+  Indent(printer);
+
+  // Only write 30 bytes per line.
+  static const int kBytesPerLine = 30;
+  for (int i = 0; i < files_data.size(); i += kBytesPerLine) {
+    printer->Print(
+        "\"^data^\"^dot^\n",
+        "data", BinaryToHex(files_data.substr(i, kBytesPerLine)),
+        "dot", i + kBytesPerLine < files_data.size() ? " ." : "");
+  }
+
+  Outdent(printer);
+  printer->Print(
+      "), true);\n");
+}
+
 void GenerateUseDeclaration(bool is_descriptor, io::Printer* printer) {
   if (!is_descriptor) {
     printer->Print(
@@ -1036,6 +1171,13 @@ void GenerateHead(const FileDescriptor* file, io::Printer* printer) {
     "# source: ^filename^\n"
     "\n",
     "filename", file->name());
+}
+
+void GenerateHeadForAggregateMetadataFile(io::Printer* printer) {
+  printer->Print(
+    "<?php\n"
+    "# Generated by the protocol buffer compiler.  DO NOT EDIT!\n"
+    "\n");
 }
 
 std::string FilenameToClassname(const string& filename) {
@@ -1083,6 +1225,18 @@ void GenerateMetadataFile(const FileDescriptor* file,
 
   Outdent(&printer);
   printer.Print("}\n\n");
+}
+
+void GenerateMetadataFileForAll(
+    const std::vector<const FileDescriptor*>& files,
+    const string& aggregate_metadata_file,
+    GeneratorContext* generator_context) {
+  std::unique_ptr<io::ZeroCopyOutputStream> output(
+      generator_context->Open(aggregate_metadata_file));
+  io::Printer printer(output.get(), '^');
+
+  GenerateHeadForAggregateMetadataFile(&printer);
+  GenerateAddFilesToPool(files, &printer);
 }
 
 template <typename DescriptorType>
@@ -1229,6 +1383,7 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
 
 void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
                          bool is_descriptor,
+                         bool aggregate_metadata,
                          GeneratorContext* generator_context) {
   // Don't generate MapEntry messages -- we use the PHP extension's native
   // support for map fields instead.
@@ -1281,13 +1436,17 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
       "public function __construct($data = NULL) {\n");
   Indent(&printer);
 
-  std::string metadata_filename =
-      GeneratedMetadataFileName(file, is_descriptor);
-  std::string metadata_fullname = FilenameToClassname(metadata_filename);
+  if (!aggregate_metadata) {
+    std::string metadata_filename =
+        GeneratedMetadataFileName(file, is_descriptor);
+    std::string metadata_fullname = FilenameToClassname(metadata_filename);
+    printer.Print(
+        "\\^fullname^::initOnce();\n",
+        "fullname", metadata_fullname);
+  }
+
   printer.Print(
-      "\\^fullname^::initOnce();\n"
-      "parent::__construct($data);\n",
-      "fullname", metadata_fullname);
+      "parent::__construct($data);\n");
 
   Outdent(&printer);
   printer.Print("}\n\n");
@@ -1328,6 +1487,7 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
   // Nested messages and enums.
   for (int i = 0; i < message->nested_type_count(); i++) {
     GenerateMessageFile(file, message->nested_type(i), is_descriptor,
+                        aggregate_metadata,
                         generator_context);
   }
   for (int i = 0; i < message->enum_type_count(); i++) {
@@ -1384,10 +1544,15 @@ void GenerateServiceFile(const FileDescriptor* file,
 }
 
 void GenerateFile(const FileDescriptor* file, bool is_descriptor,
+                  bool aggregate_metadata,
                   GeneratorContext* generator_context) {
-  GenerateMetadataFile(file, is_descriptor, generator_context);
+  if (!aggregate_metadata) {
+    GenerateMetadataFile(file, is_descriptor, generator_context);
+  }
+
   for (int i = 0; i < file->message_type_count(); i++) {
     GenerateMessageFile(file, file->message_type(i), is_descriptor,
+                        aggregate_metadata,
                         generator_context);
   }
   for (int i = 0; i < file->enum_type_count(); i++) {
@@ -1397,7 +1562,7 @@ void GenerateFile(const FileDescriptor* file, bool is_descriptor,
   if (file->options().php_generic_services()) {
     for (int i = 0; i < file->service_count(); i++) {
       GenerateServiceFile(file, file->service(i), is_descriptor,
-                       generator_context);
+                          generator_context);
     }
   }
 }
@@ -1653,7 +1818,18 @@ void GenerateServiceMethodDocComment(io::Printer* printer,
 bool Generator::Generate(const FileDescriptor* file, const string& parameter,
                          GeneratorContext* generator_context,
                          string* error) const {
-  bool is_descriptor = parameter == "internal";
+  bool is_descriptor = false;
+  bool aggregate_metadata = false;
+
+  for (const auto& option : Split(parameter, ",")) {
+    const auto option_pair = Split(option, "=");
+    if (option_pair[0] == "aggregate_metadata") {
+      aggregate_metadata = true;
+    }
+    if (option_pair[0] == "internal") {
+      is_descriptor = true;
+    }
+  }
 
   if (is_descriptor && file->name() != kDescriptorFile) {
     *error =
@@ -1668,8 +1844,35 @@ bool Generator::Generate(const FileDescriptor* file, const string& parameter,
     return false;
   }
 
-  GenerateFile(file, is_descriptor, generator_context);
+  GenerateFile(file, is_descriptor, aggregate_metadata, generator_context);
 
+  return true;
+}
+
+bool Generator::GenerateAll(const std::vector<const FileDescriptor*>& files,
+                            const std::string& parameter,
+                            GeneratorContext* generator_context,
+                            std::string* error) const {
+  bool aggregate_metadata = false;
+  string aggregate_metadata_file;
+  for (const auto& option : Split(parameter, ",")) {
+    const auto option_pair = Split(option, "=");
+    if (option_pair[0] == "aggregate_metadata") {
+      aggregate_metadata = true;
+      aggregate_metadata_file = option_pair[1];
+    }
+  }
+
+  if (aggregate_metadata) {
+    GenerateMetadataFileForAll(
+        files, aggregate_metadata_file, generator_context);
+  }
+
+  for (auto file : files) {
+    if (!Generate(file, parameter, generator_context, error)) {
+      return false;
+    }
+  }
   return true;
 }
 
