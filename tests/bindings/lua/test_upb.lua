@@ -760,6 +760,10 @@ function test_foo()
   set = FileDescriptorSet()
   assert_equal(#set.file, 0)
   assert_error_match("lupb.array expected", function () set.file = 1 end)
+
+  set = upb.decode(FileDescriptorSet, descriptor)
+  assert_equal(#set.file, 1)
+  assert_equal(set.file[1].name, "google/protobuf/descriptor.proto")
 end
 
 local stats = lunit.main()

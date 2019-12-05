@@ -201,6 +201,11 @@ upb_arena *lupb_arena_pushnew(lua_State *L) {
   return a->arena;
 }
 
+/**
+ * lupb_arena_merge()
+ *
+ * Merges |from| into |to| so that there is a single arena group that contains
+ * both, and both arenas will point at this new table. */
 void lupb_arena_merge(lua_State *L, int to, int from) {
   int i, from_count, to_count;
   lua_getiuservalue(L, to, LUPB_ARENAGROUP_INDEX);
@@ -224,6 +229,23 @@ void lupb_arena_merge(lua_State *L, int to, int from) {
   /* Make |from| point to |to|'s table. */
   lua_pop(L, 1);
   lua_setiuservalue(L, from, LUPB_ARENAGROUP_INDEX);
+}
+
+/**
+ * lupb_arena_addobj()
+ *
+ * Creates a reference from the arena in |narg| to the object at the top of the
+ * stack, and pops it.  This will guarantee that the object lives as long as
+ * the arena.
+ *
+ * This is mainly useful for pinning strings we have parsed protobuf data from.
+ * It will allow us to point directly to string data in the original string. */
+void lupb_arena_addobj(lua_State *L, int narg) {
+  lua_getiuservalue(L, narg, LUPB_ARENAGROUP_INDEX);
+  int n = lua_rawlen(L, -1);
+  lua_pushvalue(L, -2);
+  lua_rawseti(L, -2, n + 1);
+  lua_pop(L, 2);  /* obj, arena group. */
 }
 
 static int lupb_arena_gc(lua_State *L) {
@@ -356,7 +378,7 @@ static void lupb_pushmsgval(lua_State *L, int container, upb_fieldtype_t type,
         lupb_msg_newmsgwrapper(L, container, val);
         lupb_cacheset(L, val.msg_val);
       }
-      break;  /* Shouldn't call this function. */
+      return;
   }
   LUPB_UNREACHABLE();
 }
@@ -865,44 +887,64 @@ static const struct luaL_Reg lupb_msg_mm[] = {
 
 /* lupb_msg toplevel **********************************************************/
 
-#if 0
 static int lupb_decode(lua_State *L) {
   size_t len;
-  const upb_msglayout *layout;
-  upb_msg *msg = lupb_msg_checkmsg(L, 1);
+  const upb_msgdef *m = lupb_msgdef_check(L, 1);
   const char *pb = lua_tolstring(L, 2, &len);
+  const upb_msglayout *layout = upb_msgdef_layout(m);
+  upb_msg *msg;
+  upb_arena *arena;
+  bool ok;
 
-  upb_decode(pb, len, msg, layout, lupb_arenaget(L, 1));
-  /* TODO(haberman): check for error. */
+  lupb_msg_pushnew(L);
+  msg = lupb_msg_check(L, -1);
 
-  return 0;
-}
+  lua_getiuservalue(L, -1, LUPB_ARENA_INDEX);
+  arena = lupb_arena_check(L, -1);
 
-static int lupb_encode(lua_State *L) {
-  const upb_msglayout *layout;
-  const upb_msg *msg = lupb_msg_checkmsg(L, 1);
-  upb_arena *arena = upb_arena_new();
-  size_t size;
-  char *result;
+  /* Pin string data so we can reference it. */
+  lua_pushvalue(L, 2);
+  lupb_arena_addobj(L, -2);
+  lua_pop(L, 1);
 
-  result = upb_encode(msg, (const void*)layout, arena, &size);
+  ok = upb_decode(pb, len, msg, layout, arena);
 
-  /* Free resources before we potentially bail on error. */
-  lua_pushlstring(L, result, size);
-  upb_arena_free(arena);
-  /* TODO(haberman): check for error. */
+  if (!ok) {
+    lua_pushstring(L, "Error decoding protobuf.");
+    return lua_error(L);
+  }
 
   return 1;
 }
-#endif
+
+static int lupb_encode(lua_State *L) {
+  const upb_msg *msg = lupb_msg_check(L, 1);
+  const upb_msglayout *layout;
+  upb_arena *arena = lupb_arena_pushnew(L);
+  size_t size;
+  char *result;
+
+  lua_getiuservalue(L, 1, LUPB_MSGDEF_INDEX);
+  layout = upb_msgdef_layout(lupb_msgdef_check(L, -1));
+  lua_pop(L, 1);
+
+  result = upb_encode(msg, (const void*)layout, arena, &size);
+
+  if (!result) {
+    lua_pushstring(L, "Error encoding protobuf.");
+    return lua_error(L);
+  }
+
+  lua_pushlstring(L, result, size);
+
+  return 1;
+}
 
 static const struct luaL_Reg lupb_msg_toplevel_m[] = {
   {"Array", lupb_array_new},
   {"Map", lupb_map_new},
-#if 0
   {"decode", lupb_decode},
   {"encode", lupb_encode},
-#endif
   {NULL, NULL}
 };
 
