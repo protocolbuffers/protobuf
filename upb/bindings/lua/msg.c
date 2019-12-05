@@ -193,7 +193,7 @@ upb_arena *lupb_arena_pushnew(lua_State *L) {
   /* Create arena group table and add this arena to it. */
   lua_createtable(L, 0, 1);
   lua_pushvalue(L, -2);
-  lua_rawseti(L, -3, 1);
+  lua_rawseti(L, -2, 1);
 
   /* Set arena group as this object's userval. */
   lua_setiuservalue(L, -2, LUPB_ARENAGROUP_INDEX);
@@ -681,7 +681,7 @@ static void lupb_msg_newmsgwrapper(lua_State *L, int narg, upb_msgval val) {
  */
 static bool lupb_msg_lazycreate(lua_State *L, int narg, const upb_fielddef *f,
                                 upb_msgval* val) {
-  if (val->msg_val == NULL && !upb_fielddef_isseq(f)) {
+  if (val->msg_val == NULL && upb_fielddef_isseq(f)) {
     upb_msg *msg = lupb_msg_check(L, narg);
     upb_arena *arena = lupb_arenaget(L, narg);
     upb_mutmsgval mutval = upb_msg_mutable(msg, f, arena);
@@ -703,7 +703,8 @@ static void *lupb_msg_newud(lua_State *L, int narg, size_t size,
   if (upb_fielddef_type(f) == UPB_TYPE_MESSAGE) {
     /* Wrapper needs a reference to the msgdef. */
     void* ud = lupb_newuserdata(L, size, 2, type);
-    lupb_msgdef_pushmsgdef(L, narg, f);
+    lua_getiuservalue(L, narg, LUPB_MSGDEF_INDEX);
+    lupb_msgdef_pushsubmsgdef(L, f);
     lua_setiuservalue(L, -2, LUPB_MSGDEF_INDEX);
     return ud;
   } else {
@@ -752,8 +753,7 @@ static void lupb_msg_typechecksubmsg(lua_State *L, int narg, int msgarg,
   /* Typecheck this map's msgdef against this message field. */
   lua_getiuservalue(L, narg, LUPB_MSGDEF_INDEX);
   lua_getiuservalue(L, msgarg, LUPB_MSGDEF_INDEX);
-  lupb_msgdef_pushmsgdef(L, -1, f);
-  lua_replace(L, -2);  /* replace msg msgdef, leaving only map and field. */
+  lupb_msgdef_pushsubmsgdef(L, f);
   luaL_argcheck(L, lua_rawequal(L, -1, -2), narg, "message type mismatch");
   lua_pop(L, 2);
 }

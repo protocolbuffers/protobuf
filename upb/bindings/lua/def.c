@@ -50,9 +50,17 @@ static void lupb_wrapper_pushwrapper(lua_State *L, int narg, const void *def,
   lua_replace(L, -2);  /* Remove symtab from stack. */
 }
 
-void lupb_msgdef_pushmsgdef(lua_State *L, int narg, const upb_fielddef *f) {
+/* lupb_msgdef_pushsubmsgdef()
+ *
+ * Pops the msgdef wrapper at the top of the stack and replaces it with a msgdef
+ * wrapper for field |f| of this msgdef.
+ */
+void lupb_msgdef_pushsubmsgdef(lua_State *L, const upb_fielddef *f) {
+  assert(luaL_testudata(L, -1, LUPB_MSGDEF));
   const upb_msgdef *m = upb_fielddef_msgsubdef(f);
-  lupb_wrapper_pushwrapper(L, narg, m, LUPB_MSGDEF);
+  assert(upb_fielddef_containingtype(f) == lupb_msgdef_check(L, -1));
+  lupb_wrapper_pushwrapper(L, -1, m, LUPB_MSGDEF);
+  lua_replace(L, -2);  /* Replace msgdef with submsgdef. */
 }
 
 /* lupb_fielddef **************************************************************/
@@ -611,6 +619,8 @@ upb_symtab *lupb_symtab_check(lua_State *L, int narg) {
 
 void lupb_symtab_pushwrapper(lua_State *L, int narg, const void *def,
                              const char *type) {
+  assert(luaL_testudata(L, narg, LUPB_SYMTAB));
+
   if (def == NULL) {
     lua_pushnil(L);
     return;
@@ -624,17 +634,13 @@ void lupb_symtab_pushwrapper(lua_State *L, int narg, const void *def,
   /* Stack is now: cache, cached value. */
   if (lua_isnil(L, -1)) {
     /* Create new wrapper. */
-    lupb_wrapper *w = lua_newuserdata(L, sizeof(*w));
+    lupb_wrapper *w = lupb_newuserdata(L, sizeof(*w), 1, type);
     w->def = def;
     lua_replace(L, -2);  /* Replace nil */
 
     /* Set symtab as userval. */
     lua_pushvalue(L, narg);
     lua_setiuservalue(L, -2, LUPB_SYMTAB_INDEX);
-
-    /* Set metatable of wrapper. */
-    luaL_getmetatable(L, type);
-    lua_setmetatable(L, -2);
 
     /* Add wrapper to the the cache. */
     lua_pushvalue(L, -1);
@@ -650,11 +656,8 @@ void lupb_symtab_pushwrapper(lua_State *L, int narg, const void *def,
  *   upb.SymbolTable() -> <new instance>
  */
 static int lupb_symtab_new(lua_State *L) {
-  lupb_symtab *lsymtab = lua_newuserdata(L, sizeof(*lsymtab));
+  lupb_symtab *lsymtab = lupb_newuserdata(L, sizeof(*lsymtab), 1, LUPB_SYMTAB);
   lsymtab->symtab = upb_symtab_new();
-
-  luaL_getmetatable(L, LUPB_SYMTAB);
-  lua_setmetatable(L, -2);
 
   /* Create our object cache. */
   lua_newtable(L);
@@ -678,7 +681,28 @@ static int lupb_symtab_gc(lua_State *L) {
   return 0;
 }
 
-static int lupb_symtab_add(lua_State *L) {
+static int lupb_symtab_addfile(lua_State *L) {
+  size_t len;
+  upb_symtab *s = lupb_symtab_check(L, 1);
+  const char *str = luaL_checklstring(L, 2, &len);
+  upb_arena *arena = lupb_arena_pushnew(L);;
+  const google_protobuf_FileDescriptorProto *file;
+  upb_status status;
+
+  upb_status_clear(&status);
+  file = google_protobuf_FileDescriptorProto_parse(str, len, arena);
+
+  if (!file) {
+    luaL_argerror(L, 2, "failed to parse descriptor");
+  }
+
+  upb_symtab_addfile(s, file, &status);
+  lupb_checkstatus(L, &status);
+
+  return 0;
+}
+
+static int lupb_symtab_addset(lua_State *L) {
   size_t i, n, len;
   const google_protobuf_FileDescriptorProto *const *files;
   google_protobuf_FileDescriptorSet *set;
@@ -718,7 +742,8 @@ static int lupb_symtab_lookupenum(lua_State *L) {
 }
 
 static const struct luaL_Reg lupb_symtab_m[] = {
-  {"add", lupb_symtab_add},
+  {"add_file", lupb_symtab_addfile},
+  {"add_set", lupb_symtab_addset},
   {"lookup_msg", lupb_symtab_lookupmsg},
   {"lookup_enum", lupb_symtab_lookupenum},
   {NULL, NULL}

@@ -39,42 +39,6 @@ def _get_real_roots(files):
             roots[real_root] = True
     return roots.keys()
 
-def lua_cclibrary(name, srcs, hdrs = [], deps = []):
-    lib_rule = name + "_lib"
-    so_rule = "lib" + name + ".so"
-    so_file = _remove_prefix(name, "lua/") + ".so"
-
-    native.cc_library(
-        name = _librule(name),
-        hdrs = hdrs,
-        srcs = srcs,
-        deps = deps + ["@lua//:liblua_headers"],
-    )
-
-    native.cc_binary(
-        name = so_rule,
-        linkshared = True,
-        deps = [_librule(name)],
-        linkopts = select({
-            ":darwin": [
-                "-undefined dynamic_lookup",
-            ],
-            "//conditions:default": [],
-        }),
-    )
-
-    native.genrule(
-        name = name + "_copy",
-        srcs = [":" + so_rule],
-        outs = [so_file],
-        cmd = "cp $< $@",
-    )
-
-    native.filegroup(
-        name = name,
-        data = [so_file],
-    )
-
 def _remove_prefix(str, prefix):
     if not str.startswith(prefix):
         fail("%s doesn't start with %s" % (str, prefix))
@@ -85,20 +49,6 @@ def _remove_suffix(str, suffix):
         fail("%s doesn't end with %s" % (str, suffix))
     return str[:-len(suffix)]
 
-def lua_library(name, srcs, strip_prefix, luadeps = []):
-    outs = [_remove_prefix(src, strip_prefix + "/") for src in srcs]
-    native.genrule(
-        name = name + "_copy",
-        srcs = srcs,
-        outs = outs,
-        cmd = "cp $(SRCS) $(@D)",
-    )
-
-    native.filegroup(
-        name = name,
-        data = outs + luadeps,
-    )
-
 def make_shell_script(name, contents, out):
     contents = (runfiles_init + contents).replace("$", "$$")
     native.genrule(
@@ -106,38 +56,6 @@ def make_shell_script(name, contents, out):
         outs = [out],
         cmd = "(cat <<'HEREDOC'\n%s\nHEREDOC\n) > $@" % contents,
     )
-
-def _lua_binary_or_test(name, luamain, luadeps, rule):
-    script = name + ".sh"
-
-    make_shell_script(
-        name = "gen_" + name,
-        out = script,
-        contents = """
-BASE=$(dirname $(rlocation upb/upb_c.so))
-export LUA_CPATH="$BASE/?.so"
-export LUA_PATH="$BASE/?.lua"
-LUA=$(rlocation lua/lua)
-MAIN=$(rlocation upb/%s)
-$LUA $MAIN
-""" % luamain,
-    )
-
-    rule(
-        name = name,
-        srcs = [script],
-        data = [
-            "@lua//:lua",
-            luamain
-        ] + luadeps,
-        deps = ["@bazel_tools//tools/bash/runfiles"],
-    )
-
-def lua_binary(name, luamain, luadeps = []):
-    _lua_binary_or_test(name, luamain, luadeps, native.sh_binary)
-
-def lua_test(name, luamain, luadeps = []):
-    _lua_binary_or_test(name, luamain, luadeps, native.sh_test)
 
 def generated_file_staleness_test(name, outs, generated_pattern):
     """Tests that checked-in file(s) match the contents of generated file(s).

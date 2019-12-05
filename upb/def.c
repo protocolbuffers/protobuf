@@ -884,6 +884,8 @@ static size_t upb_msglayout_place(upb_msglayout *l, size_t size) {
   return ret;
 }
 
+/* This function is the dynamic equivalent of message_layout.{cc,h} in upbc.
+ * It computes a dynamic layout for all of the fields in |m|. */
 static bool make_layout(const upb_symtab *symtab, const upb_msgdef *m) {
   upb_msglayout *l = (upb_msglayout*)m->layout;
   upb_msg_field_iter it;
@@ -923,12 +925,16 @@ static bool make_layout(const upb_symtab *symtab, const upb_msgdef *m) {
   for (upb_msg_field_begin(&it, m), hasbit = 0;
        !upb_msg_field_done(&it);
        upb_msg_field_next(&it)) {
-    const upb_fielddef* f = upb_msg_iter_field(&it);
+    upb_fielddef* f = upb_msg_iter_field(&it);
     upb_msglayout_field *field = &fields[upb_fielddef_index(f)];
 
     field->number = upb_fielddef_number(f);
     field->descriptortype = upb_fielddef_descriptortype(f);
     field->label = upb_fielddef_label(f);
+
+    /* TODO: we probably should sort the fields by field number to match the
+     * output of upbc, and to improve search speed for the table parser. */
+    f->layout_index = f->index_;
 
     if (upb_fielddef_issubmsg(f)) {
       const upb_msgdef *subm = upb_fielddef_msgsubdef(f);
@@ -1303,6 +1309,21 @@ static bool create_fielddef(
       upb_status_seterrf(ctx->status, "duplicate field number (%u)",
                          field_number);
       return false;
+    }
+
+    if (ctx->layouts) {
+      const upb_msglayout_field *fields = m->layout->fields;
+      int count = m->layout->field_count;
+      bool found = false;
+      int i;
+      for (i = 0; i < count; i++) {
+        if (fields[i].number == field_number) {
+          f->layout_index = i;
+          found = true;
+          break;
+        }
+      }
+      assert(found);
     }
   } else {
     /* extension field. */

@@ -69,7 +69,7 @@ const upb_msgdef *lupb_msgdef_check(lua_State *L, int narg);
 const upb_enumdef *lupb_enumdef_check(lua_State *L, int narg);
 const upb_fielddef *lupb_fielddef_check(lua_State *L, int narg);
 upb_symtab *lupb_symtab_check(lua_State *L, int narg);
-void lupb_msgdef_pushmsgdef(lua_State *L, int narg, const upb_fielddef *f);
+void lupb_msgdef_pushsubmsgdef(lua_State *L, const upb_fielddef *f);
 
 void lupb_def_registertypes(lua_State *L);
 

@@ -2,10 +2,6 @@ load(
     "//bazel:build_defs.bzl",
     "generated_file_staleness_test",
     "licenses",  # copybara:strip_for_google3
-    "lua_binary",
-    "lua_cclibrary",
-    "lua_library",
-    "lua_test",
     "make_shell_script",
     "upb_amalgamation",
 )
@@ -582,20 +578,22 @@ cc_library(
     ],
 )
 
-cc_binary(
+cc_test(
     name = "lua_tester",
+    linkstatic = 1,
     srcs = ["tests/bindings/lua/main.c"],
+    data = [
+        "@com_google_protobuf//:conformance_proto",
+        "@com_google_protobuf//:descriptor_proto",
+        "tests/bindings/lua/test_upb.lua",
+        "third_party/lunit/console.lua",
+        "third_party/lunit/lunit.lua",
+    ],
     deps = [
         ":lupb",
         "@lua//:liblua",
     ]
 )
-
-#lua_test(
-#    name = "lua/test_upb",
-#    luadeps = ["lua/upb"],
-#    luamain = "tests/bindings/lua/test_upb.lua",
-#)
 
 # Test the CMake build #########################################################
 

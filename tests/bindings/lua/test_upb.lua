@@ -16,6 +16,8 @@ function iter_to_array(iter)
   return arr
 end
 
+--[[
+
 function test_msgdef()
   local f2 = upb.FieldDef{name = "field2", number = 1, type = upb.TYPE_INT32}
   local o = upb.OneofDef{name = "field1", fields = {f2}}
@@ -741,6 +743,23 @@ function test_finalizer()
     }
   end
   collectgarbage()
+end
+
+--]]
+
+function test_foo()
+  local symtab = upb.SymbolTable()
+  local filename = "external/com_google_protobuf/descriptor_proto-descriptor-set.proto.bin"
+  local file = io.open(filename, "rb") or io.open("bazel-bin/" .. filename, "rb")
+  assert_not_nil(file)
+  local descriptor = file:read("*a")
+  assert_true(#descriptor > 0)
+  symtab:add_set(descriptor)
+  local FileDescriptorSet = symtab:lookup_msg("google.protobuf.FileDescriptorSet")
+  assert_not_nil(FileDescriptorSet)
+  set = FileDescriptorSet()
+  assert_equal(#set.file, 0)
+  assert_error_match("lupb.array expected", function () set.file = 1 end)
 end
 
 local stats = lunit.main()
