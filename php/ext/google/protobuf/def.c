@@ -998,7 +998,7 @@ bool depends_on_descriptor(const google_protobuf_FileDescriptorProto* file) {
 static void internal_add_single_generated_file(
     const upb_filedef* file,
     InternalDescriptorPoolImpl* pool,
-    bool use_nested_submsg) {
+    bool use_nested_submsg TSRMLS_DC) {
   size_t i;
   // For each enum/message, we need its PHP class, upb descriptor and its PHP
   // wrapper. These information are needed later for encoding, decoding and type
@@ -1045,11 +1045,11 @@ static void internal_add_single_generated_file(
   }
 }
 
-const upb_filedef *parse_and_add_descriptor(const char *data,
-                                            PHP_PROTO_SIZE data_len,
-                                            InternalDescriptorPoolImpl *pool,
-                                            upb_arena *arena,
-                                            bool use_nested_submsg) {
+const bool parse_and_add_descriptor(const char *data,
+                                    PHP_PROTO_SIZE data_len,
+                                    InternalDescriptorPoolImpl *pool,
+                                    upb_arena *arena,
+                                    bool use_nested_submsg TSRMLS_DC) {
   size_t i, n;
   google_protobuf_FileDescriptorSet *set;
   const google_protobuf_FileDescriptorProto* const* files;
@@ -1084,7 +1084,7 @@ const upb_filedef *parse_and_add_descriptor(const char *data,
                 NULL) {
       if (!parse_and_add_descriptor((char *)descriptor_proto,
                                     descriptor_proto_len, pool, arena,
-                                    use_nested_submsg)) {
+                                    use_nested_submsg TSRMLS_CC)) {
         return false;
       }
     }
@@ -1093,7 +1093,7 @@ const upb_filedef *parse_and_add_descriptor(const char *data,
     file = upb_symtab_addfile(pool->symtab, files[i], &status);
     check_upb_status(&status, "Unable to load descriptor");
 
-    internal_add_single_generated_file(file, pool, use_nested_submsg);
+    internal_add_single_generated_file(file, pool, use_nested_submsg TSRMLS_CC);
   }
 
   return true;
@@ -1104,12 +1104,12 @@ void internal_add_generated_file(const char *data, PHP_PROTO_SIZE data_len,
                                  bool use_nested_submsg TSRMLS_DC) {
   int i;
   upb_arena *arena;
-  const upb_filedef* file;
 
   arena = upb_arena_new();
-  parse_and_add_descriptor(data, data_len, pool, arena, use_nested_submsg);
+  parse_and_add_descriptor(data, data_len, pool, arena,
+                           use_nested_submsg TSRMLS_CC);
   upb_arena_free(arena);
-  if (!file) return;
+  return;
 }
 
 PHP_METHOD(InternalDescriptorPool, internalAddGeneratedFile) {
