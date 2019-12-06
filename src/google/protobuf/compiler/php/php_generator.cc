@@ -1128,8 +1128,53 @@ void GenerateAddFilesToPool(
     }
   }
 
+  // Sort files according to dependency
+  std::map<string, FileDescriptorProto*> name2file;
+  std::map<FileDescriptorProto*, std::set<FileDescriptorProto*>> deps;
+  std::map<FileDescriptorProto*, int> dependency_count;
+  std::set<FileDescriptorProto*> nodes_without_dependency;
+  FileDescriptorSet sorted_file_set;
+  
+  for (int i = 0; i < file_set.file_size(); i++) {
+    auto file = file_set.mutable_file(i);
+    name2file[file->name()] = file;
+    if (file->dependency_size() == 0) {
+      nodes_without_dependency.insert(file);
+    } else {
+      dependency_count[file] = file->dependency_size();
+    }
+  }
+
+  for (int i = 0; i < file_set.file_size(); i++) {
+    auto dependent = file_set.mutable_file(i);
+    for (const auto& dependency_name : dependent->dependency()) {
+      auto dependency = name2file[dependency_name];
+
+      if (deps.find(dependency) == deps.end()) {
+        deps[dependency] = std::set<FileDescriptorProto*>();
+      }
+
+      deps[dependency].insert(dependent);
+    }
+  }
+
+  while (!nodes_without_dependency.empty()) {
+    auto file = *nodes_without_dependency.begin();
+    nodes_without_dependency.erase(file);
+    for (auto dependent : deps[file]) {
+      if (dependency_count[dependent] == 1) {
+        dependency_count.erase(dependent);
+        nodes_without_dependency.insert(dependent);
+      } else {
+        dependency_count[dependent] -= 1;
+      }
+    }
+    auto new_file = sorted_file_set.add_file();
+    new_file->Swap(file);
+  }
+
   string files_data;
-  file_set.SerializeToString(&files_data);
+  sorted_file_set.SerializeToString(&files_data);
 
   printer->Print("$pool->internalAddGeneratedFile(hex2bin(\n");
   Indent(printer);
