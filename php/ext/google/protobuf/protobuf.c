@@ -454,10 +454,7 @@ static PHP_RSHUTDOWN_FUNCTION(protobuf) {
 
 static void reserved_names_init() {
   size_t i;
-  upb_value v;
-#ifndef NDEBUG
-  v.ctype = UPB_CTYPE_UINT64;
-#endif
+  upb_value v = upb_value_bool(false);
   for (i = 0; i < kReservedNamesSize; i++) {
     upb_strtable_insert2(&reserved_names, kReservedNames[i],
                          strlen(kReservedNames[i]), v);

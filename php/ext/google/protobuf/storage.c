@@ -1163,7 +1163,7 @@ void layout_merge(MessageLayout* layout, MessageHeader* from,
 const char* layout_get_oneof_case(MessageLayout* layout, const void* storage,
                                   const upb_oneofdef* oneof TSRMLS_DC) {
   upb_oneof_iter i;
-  const upb_fielddef* first_field;
+  const upb_fielddef* first_field = NULL;
 
   // Oneof is guaranteed to have at least one field. Get the first field.
   for(upb_oneof_begin(&i, oneof); !upb_oneof_done(&i); upb_oneof_next(&i)) {
