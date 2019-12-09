@@ -100,16 +100,7 @@ class BuildFileFunctions(object):
   def py_binary(self, **kwargs):
     pass
 
-  def lua_cclibrary(self, **kwargs):
-    pass
-
-  def lua_library(self, **kwargs):
-    pass
-
-  def lua_binary(self, **kwargs):
-    pass
-
-  def lua_test(self, **kwargs):
+  def lua_proto_library(self, **kwargs):
     pass
 
   def sh_test(self, **kwargs):

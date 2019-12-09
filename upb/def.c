@@ -932,6 +932,10 @@ static bool make_layout(const upb_symtab *symtab, const upb_msgdef *m) {
     field->descriptortype = upb_fielddef_descriptortype(f);
     field->label = upb_fielddef_label(f);
 
+    if (upb_fielddef_ismap(f)) {
+      field->label = UPB_LABEL_MAP;
+    }
+
     /* TODO: we probably should sort the fields by field number to match the
      * output of upbc, and to improve search speed for the table parser. */
     f->layout_index = f->index_;
@@ -1895,6 +1899,10 @@ const upb_filedef *upb_symtab_lookupfile(const upb_symtab *s, const char *name) 
   upb_value v;
   return upb_strtable_lookup(&s->files, name, &v) ? upb_value_getconstptr(v)
                                                   : NULL;
+}
+
+int upb_symtab_filecount(const upb_symtab *s) {
+  return upb_strtable_count(&s->files);
 }
 
 static const upb_filedef *_upb_symtab_addfile(

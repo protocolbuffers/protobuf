@@ -364,6 +364,17 @@ static int lupb_msgdef_lookupname(lua_State *L) {
   return 1;
 }
 
+/* lupb_msgdef_name()
+ *
+ * Handles:
+ *   msg.name() -> string
+ */
+static int lupb_msgdef_name(lua_State *L) {
+  const upb_msgdef *m = lupb_msgdef_check(L, 1);
+  lua_pushstring(L, upb_msgdef_name(m));
+  return 1;
+}
+
 static int lupb_msgfielditer_next(lua_State *L) {
   upb_msg_field_iter *i = lua_touserdata(L, lua_upvalueindex(1));
   const upb_fielddef *f;
@@ -383,6 +394,19 @@ static int lupb_msgdef_fields(lua_State *L) {
 
   /* Closure upvalues are: iter, symtab. */
   lua_pushcclosure(L, &lupb_msgfielditer_next, 2);
+  return 1;
+}
+
+static int lupb_msgdef_file(lua_State *L) {
+  const upb_msgdef *m = lupb_msgdef_check(L, 1);
+  const upb_filedef *file = upb_msgdef_file(m);
+  lupb_wrapper_pushwrapper(L, 1, file, LUPB_FILEDEF);
+  return 1;
+}
+
+static int lupb_msgdef_fullname(lua_State *L) {
+  const upb_msgdef *m = lupb_msgdef_check(L, 1);
+  lua_pushstring(L, upb_msgdef_fullname(m));
   return 1;
 }
 
@@ -419,16 +443,27 @@ static int lupb_msgdef_syntax(lua_State *L) {
   return 1;
 }
 
+static int lupb_msgdef_tostring(lua_State *L) {
+  const upb_msgdef *m = lupb_msgdef_check(L, 1);
+  lua_pushfstring(L, "<upb.MessageDef name=%s, field_count=%d>",
+                  upb_msgdef_fullname(m), (int)upb_msgdef_numfields(m));
+  return 1;
+}
+
 static const struct luaL_Reg lupb_msgdef_mm[] = {
   {"__call", lupb_msg_pushnew},
   {"__len", lupb_msgdef_len},
+  {"__tostring", lupb_msgdef_tostring},
   {NULL, NULL}
 };
 
 static const struct luaL_Reg lupb_msgdef_m[] = {
   {"field", lupb_msgdef_field},
   {"fields", lupb_msgdef_fields},
+  {"file", lupb_msgdef_file},
+  {"full_name", lupb_msgdef_fullname},
   {"lookup_name", lupb_msgdef_lookupname},
+  {"name", lupb_msgdef_name},
   {"oneofs", lupb_msgdef_oneofs},
   {"syntax", lupb_msgdef_syntax},
   {"_map_entry", lupb_msgdef_mapentry},
@@ -445,6 +480,13 @@ const upb_enumdef *lupb_enumdef_check(lua_State *L, int narg) {
 static int lupb_enumdef_len(lua_State *L) {
   const upb_enumdef *e = lupb_enumdef_check(L, 1);
   lua_pushinteger(L, upb_enumdef_numvals(e));
+  return 1;
+}
+
+static int lupb_enumdef_file(lua_State *L) {
+  const upb_enumdef *e = lupb_enumdef_check(L, 1);
+  const upb_filedef *file = upb_enumdef_file(e);
+  lupb_wrapper_pushwrapper(L, 1, file, LUPB_FILEDEF);
   return 1;
 }
 
@@ -510,6 +552,7 @@ static const struct luaL_Reg lupb_enumdef_mm[] = {
 };
 
 static const struct luaL_Reg lupb_enumdef_m[] = {
+  {"file", lupb_enumdef_file},
   {"value", lupb_enumdef_value},
   {"values", lupb_enumdef_values},
   {NULL, NULL}
@@ -619,6 +662,7 @@ upb_symtab *lupb_symtab_check(lua_State *L, int narg) {
 
 void lupb_symtab_pushwrapper(lua_State *L, int narg, const void *def,
                              const char *type) {
+  narg = lua_absindex(L, narg);
   assert(luaL_testudata(L, narg, LUPB_SYMTAB));
 
   if (def == NULL) {
@@ -687,6 +731,7 @@ static int lupb_symtab_addfile(lua_State *L) {
   const char *str = luaL_checklstring(L, 2, &len);
   upb_arena *arena = lupb_arena_pushnew(L);;
   const google_protobuf_FileDescriptorProto *file;
+  const upb_filedef *file_def;
   upb_status status;
 
   upb_status_clear(&status);
@@ -696,10 +741,12 @@ static int lupb_symtab_addfile(lua_State *L) {
     luaL_argerror(L, 2, "failed to parse descriptor");
   }
 
-  upb_symtab_addfile(s, file, &status);
+  file_def = upb_symtab_addfile(s, file, &status);
   lupb_checkstatus(L, &status);
 
-  return 0;
+  lupb_symtab_pushwrapper(L, 1, file_def, LUPB_FILEDEF);
+
+  return 1;
 }
 
 static int lupb_symtab_addset(lua_State *L) {
@@ -741,6 +788,13 @@ static int lupb_symtab_lookupenum(lua_State *L) {
   return 1;
 }
 
+static int lupb_symtab_tostring(lua_State *L) {
+  const upb_symtab *s = lupb_symtab_check(L, 1);
+  lua_pushfstring(L, "<upb.SymbolTable file_count=%d>",
+                  (int)upb_symtab_filecount(s));
+  return 1;
+}
+
 static const struct luaL_Reg lupb_symtab_m[] = {
   {"add_file", lupb_symtab_addfile},
   {"add_set", lupb_symtab_addset},
@@ -751,6 +805,7 @@ static const struct luaL_Reg lupb_symtab_m[] = {
 
 static const struct luaL_Reg lupb_symtab_mm[] = {
   {"__gc", lupb_symtab_gc},
+  {"__tostring", lupb_symtab_tostring},
   {NULL, NULL}
 };
 

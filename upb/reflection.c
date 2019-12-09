@@ -66,7 +66,8 @@ upb_msgval upb_msg_get(const upb_msg *msg, const upb_fielddef *f) {
   const char *mem = PTR_AT(msg, field->offset, char);
   upb_msgval val;
   if (field->presence == 0 || upb_msg_has(msg, f)) {
-    memcpy(&val, mem, field_size[field->descriptortype]);
+    int size = upb_fielddef_isseq(f) ? sizeof(void*) : field_size[field->descriptortype];
+    memcpy(&val, mem, size);
   } else {
     /* TODO(haberman): change upb_fielddef to not require this switch(). */
     switch (upb_fielddef_type(f)) {
@@ -131,7 +132,8 @@ void upb_msg_set(upb_msg *msg, const upb_fielddef *f, upb_msgval val,
                  upb_arena *a) {
   const upb_msglayout_field *field = upb_fielddef_layout(f);
   char *mem = PTR_AT(msg, field->offset, char);
-  memcpy(mem, &val, field_size[field->descriptortype]);
+  int size = upb_fielddef_isseq(f) ? sizeof(void*) : field_size[field->descriptortype];
+  memcpy(mem, &val, size);
   if (in_oneof(field)) {
     *oneofcase(msg, field) = field->number;
   }

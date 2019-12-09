@@ -22,7 +22,15 @@ static void sighandler(int i) {
 
 const char *init =
   "package.preload['lupb'] = ... "
-  "package.path = './?.lua;./third_party/lunit/?.lua'";
+  "package.path = '"
+    "./?.lua;"
+    "./third_party/lunit/?.lua;"
+    "external/com_google_protobuf/?.lua;"
+    "external/com_google_protobuf/src/?.lua;"
+    "bazel-bin/external/com_google_protobuf/src/?.lua;"
+    "bazel-bin/external/com_google_protobuf/?.lua;"
+    "upb/bindings/lua/?.lua"
+  "'";
 
 int main() {
   int ret = 0;

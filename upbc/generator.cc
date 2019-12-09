@@ -670,6 +670,8 @@ void WriteSource(const protobuf::FileDescriptor* file, Output& output) {
           case_offset.size64 = -case_offset.size64 - 1;
           presence = GetSizeInit(case_offset);
         }
+        // Sync '4' with UPB_LABEL_MAP in upb/msg.h.
+        int label = field->is_map() ? 4 : field->label();
 
         output("  {$0, $1, $2, $3, $4, $5},\n",
                field->number(),
@@ -677,7 +679,7 @@ void WriteSource(const protobuf::FileDescriptor* file, Output& output) {
                presence,
                submsg_index,
                field->type(),
-               field->label());
+               label);
       }
       output("};\n\n");
     }

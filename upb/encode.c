@@ -138,6 +138,82 @@ static bool upb_put_fixedarray(upb_encstate *e, const upb_array *arr,
 bool upb_encode_message(upb_encstate *e, const char *msg,
                         const upb_msglayout *m, size_t *size);
 
+static bool upb_encode_scalarfield(upb_encstate *e, const void *_field_mem,
+                                   const upb_msglayout *m,
+                                   const upb_msglayout_field *f,
+                                   bool skip_zero_value) {
+  const char *field_mem = _field_mem;
+#define CASE(ctype, type, wire_type, encodeval) do { \
+  ctype val = *(ctype*)field_mem; \
+  if (skip_zero_value && val == 0) { \
+    return true; \
+  } \
+  return upb_put_ ## type(e, encodeval) && \
+      upb_put_tag(e, f->number, wire_type); \
+} while(0)
+
+  switch (f->descriptortype) {
+    case UPB_DESCRIPTOR_TYPE_DOUBLE:
+      CASE(double, double, UPB_WIRE_TYPE_64BIT, val);
+    case UPB_DESCRIPTOR_TYPE_FLOAT:
+      CASE(float, float, UPB_WIRE_TYPE_32BIT, val);
+    case UPB_DESCRIPTOR_TYPE_INT64:
+    case UPB_DESCRIPTOR_TYPE_UINT64:
+      CASE(uint64_t, varint, UPB_WIRE_TYPE_VARINT, val);
+    case UPB_DESCRIPTOR_TYPE_UINT32:
+      CASE(uint32_t, varint, UPB_WIRE_TYPE_VARINT, val);
+    case UPB_DESCRIPTOR_TYPE_INT32:
+    case UPB_DESCRIPTOR_TYPE_ENUM:
+      CASE(int32_t, varint, UPB_WIRE_TYPE_VARINT, (int64_t)val);
+    case UPB_DESCRIPTOR_TYPE_SFIXED64:
+    case UPB_DESCRIPTOR_TYPE_FIXED64:
+      CASE(uint64_t, fixed64, UPB_WIRE_TYPE_64BIT, val);
+    case UPB_DESCRIPTOR_TYPE_FIXED32:
+    case UPB_DESCRIPTOR_TYPE_SFIXED32:
+      CASE(uint32_t, fixed32, UPB_WIRE_TYPE_32BIT, val);
+    case UPB_DESCRIPTOR_TYPE_BOOL:
+      CASE(bool, varint, UPB_WIRE_TYPE_VARINT, val);
+    case UPB_DESCRIPTOR_TYPE_SINT32:
+      CASE(int32_t, varint, UPB_WIRE_TYPE_VARINT, upb_zzencode_32(val));
+    case UPB_DESCRIPTOR_TYPE_SINT64:
+      CASE(int64_t, varint, UPB_WIRE_TYPE_VARINT, upb_zzencode_64(val));
+    case UPB_DESCRIPTOR_TYPE_STRING:
+    case UPB_DESCRIPTOR_TYPE_BYTES: {
+      upb_strview view = *(upb_strview*)field_mem;
+      if (skip_zero_value && view.size == 0) {
+        return true;
+      }
+      return upb_put_bytes(e, view.data, view.size) &&
+          upb_put_varint(e, view.size) &&
+          upb_put_tag(e, f->number, UPB_WIRE_TYPE_DELIMITED);
+    }
+    case UPB_DESCRIPTOR_TYPE_GROUP: {
+      size_t size;
+      void *submsg = *(void **)field_mem;
+      const upb_msglayout *subm = m->submsgs[f->submsg_index];
+      if (submsg == NULL) {
+        return true;
+      }
+      return upb_put_tag(e, f->number, UPB_WIRE_TYPE_END_GROUP) &&
+          upb_encode_message(e, submsg, subm, &size) &&
+          upb_put_tag(e, f->number, UPB_WIRE_TYPE_START_GROUP);
+    }
+    case UPB_DESCRIPTOR_TYPE_MESSAGE: {
+      size_t size;
+      void *submsg = *(void **)field_mem;
+      const upb_msglayout *subm = m->submsgs[f->submsg_index];
+      if (submsg == NULL) {
+        return true;
+      }
+      return upb_encode_message(e, submsg, subm, &size) &&
+          upb_put_varint(e, size) &&
+          upb_put_tag(e, f->number, UPB_WIRE_TYPE_DELIMITED);
+    }
+  }
+#undef CASE
+  UPB_UNREACHABLE();
+}
+
 static bool upb_encode_array(upb_encstate *e, const char *field_mem,
                              const upb_msglayout *m,
                              const upb_msglayout_field *f) {
@@ -236,80 +312,36 @@ do { ; } while(0)
   return true;
 }
 
-static bool upb_encode_scalarfield(upb_encstate *e, const char *field_mem,
-                                   const upb_msglayout *m,
-                                   const upb_msglayout_field *f,
-                                   bool skip_zero_value) {
-#define CASE(ctype, type, wire_type, encodeval) do { \
-  ctype val = *(ctype*)field_mem; \
-  if (skip_zero_value && val == 0) { \
-    return true; \
-  } \
-  return upb_put_ ## type(e, encodeval) && \
-      upb_put_tag(e, f->number, wire_type); \
-} while(0)
-
-  switch (f->descriptortype) {
-    case UPB_DESCRIPTOR_TYPE_DOUBLE:
-      CASE(double, double, UPB_WIRE_TYPE_64BIT, val);
-    case UPB_DESCRIPTOR_TYPE_FLOAT:
-      CASE(float, float, UPB_WIRE_TYPE_32BIT, val);
-    case UPB_DESCRIPTOR_TYPE_INT64:
-    case UPB_DESCRIPTOR_TYPE_UINT64:
-      CASE(uint64_t, varint, UPB_WIRE_TYPE_VARINT, val);
-    case UPB_DESCRIPTOR_TYPE_UINT32:
-      CASE(uint32_t, varint, UPB_WIRE_TYPE_VARINT, val);
-    case UPB_DESCRIPTOR_TYPE_INT32:
-    case UPB_DESCRIPTOR_TYPE_ENUM:
-      CASE(int32_t, varint, UPB_WIRE_TYPE_VARINT, (int64_t)val);
-    case UPB_DESCRIPTOR_TYPE_SFIXED64:
-    case UPB_DESCRIPTOR_TYPE_FIXED64:
-      CASE(uint64_t, fixed64, UPB_WIRE_TYPE_64BIT, val);
-    case UPB_DESCRIPTOR_TYPE_FIXED32:
-    case UPB_DESCRIPTOR_TYPE_SFIXED32:
-      CASE(uint32_t, fixed32, UPB_WIRE_TYPE_32BIT, val);
-    case UPB_DESCRIPTOR_TYPE_BOOL:
-      CASE(bool, varint, UPB_WIRE_TYPE_VARINT, val);
-    case UPB_DESCRIPTOR_TYPE_SINT32:
-      CASE(int32_t, varint, UPB_WIRE_TYPE_VARINT, upb_zzencode_32(val));
-    case UPB_DESCRIPTOR_TYPE_SINT64:
-      CASE(int64_t, varint, UPB_WIRE_TYPE_VARINT, upb_zzencode_64(val));
-    case UPB_DESCRIPTOR_TYPE_STRING:
-    case UPB_DESCRIPTOR_TYPE_BYTES: {
-      upb_strview view = *(upb_strview*)field_mem;
-      if (skip_zero_value && view.size == 0) {
-        return true;
-      }
-      return upb_put_bytes(e, view.data, view.size) &&
-          upb_put_varint(e, view.size) &&
-          upb_put_tag(e, f->number, UPB_WIRE_TYPE_DELIMITED);
-    }
-    case UPB_DESCRIPTOR_TYPE_GROUP: {
-      size_t size;
-      void *submsg = *(void **)field_mem;
-      const upb_msglayout *subm = m->submsgs[f->submsg_index];
-      if (submsg == NULL) {
-        return true;
-      }
-      return upb_put_tag(e, f->number, UPB_WIRE_TYPE_END_GROUP) &&
-          upb_encode_message(e, submsg, subm, &size) &&
-          upb_put_tag(e, f->number, UPB_WIRE_TYPE_START_GROUP);
-    }
-    case UPB_DESCRIPTOR_TYPE_MESSAGE: {
-      size_t size;
-      void *submsg = *(void **)field_mem;
-      const upb_msglayout *subm = m->submsgs[f->submsg_index];
-      if (submsg == NULL) {
-        return true;
-      }
-      return upb_encode_message(e, submsg, subm, &size) &&
-          upb_put_varint(e, size) &&
-          upb_put_tag(e, f->number, UPB_WIRE_TYPE_DELIMITED);
-    }
+static bool upb_encode_map(upb_encstate *e, const char *field_mem,
+                           const upb_msglayout *m,
+                           const upb_msglayout_field *f) {
+  const upb_map *map = *(const upb_map**)field_mem;
+  const upb_msglayout *entry = m->submsgs[f->submsg_index];
+  const upb_msglayout_field *key_field = &entry->fields[0];
+  const upb_msglayout_field *val_field = &entry->fields[1];
+  upb_strtable_iter i;
+  if (map == NULL) {
+    return true;
   }
-#undef CASE
-  UPB_UNREACHABLE();
+
+  upb_strtable_begin(&i, &map->table);
+  for(; !upb_strtable_done(&i); upb_strtable_next(&i)) {
+    size_t pre_len = e->limit - e->ptr;
+    size_t size;
+    upb_strview key = upb_strtable_iter_key(&i);
+    const upb_value val = upb_strtable_iter_value(&i);
+
+    /* XXX; string key/value */
+    CHK(upb_encode_scalarfield(e, &val, entry, val_field, false));
+    CHK(upb_encode_scalarfield(e, key.data, entry, key_field, false));
+    size = (e->limit - e->ptr) - pre_len;
+    CHK(upb_put_varint(e, size));
+    CHK(upb_put_tag(e, f->number, UPB_WIRE_TYPE_DELIMITED));
+  }
+
+  return true;
 }
+
 
 bool upb_encode_message(upb_encstate *e, const char *msg,
                         const upb_msglayout *m, size_t *size) {
@@ -318,11 +350,19 @@ bool upb_encode_message(upb_encstate *e, const char *msg,
   const char *unknown;
   size_t unknown_size;
 
+  unknown = upb_msg_getunknown(msg, &unknown_size);
+
+  if (unknown) {
+    upb_put_bytes(e, unknown, unknown_size);
+  }
+
   for (i = m->field_count - 1; i >= 0; i--) {
     const upb_msglayout_field *f = &m->fields[i];
 
     if (f->label == UPB_LABEL_REPEATED) {
       CHK(upb_encode_array(e, msg + f->offset, m, f));
+    } else if (f->label == UPB_LABEL_MAP) {
+      CHK(upb_encode_map(e, msg + f->offset, m, f));
     } else {
       bool skip_empty = false;
       if (f->presence == 0) {
@@ -341,12 +381,6 @@ bool upb_encode_message(upb_encstate *e, const char *msg,
       }
       CHK(upb_encode_scalarfield(e, msg + f->offset, m, f, skip_empty));
     }
-  }
-
-  unknown = upb_msg_getunknown(msg, &unknown_size);
-
-  if (unknown) {
-    upb_put_bytes(e, unknown, unknown_size);
   }
 
   *size = (e->limit - e->ptr) - pre_len;

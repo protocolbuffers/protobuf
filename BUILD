@@ -10,6 +10,10 @@ load(
     "upb_proto_library",
     "upb_proto_reflection_library",
 )
+load(
+    "//:upb/bindings/lua/lua_proto_library.bzl",
+    "lua_proto_library",
+)
 
 licenses(["notice"])  # BSD (Google-authored w/ possible external contributions)
 
@@ -585,14 +589,43 @@ cc_test(
     data = [
         "@com_google_protobuf//:conformance_proto",
         "@com_google_protobuf//:descriptor_proto",
+        ":descriptor_proto_lua",
+        ":test_messages_proto3_proto_lua",
         "tests/bindings/lua/test_upb.lua",
         "third_party/lunit/console.lua",
         "third_party/lunit/lunit.lua",
+        "upb/bindings/lua/upb.lua",
     ],
     deps = [
         ":lupb",
         "@lua//:liblua",
     ]
+)
+
+cc_binary(
+    name = "protoc-gen-lua",
+    srcs = ["upb/bindings/lua/upbc.cc"],
+    copts = select({
+        ":windows": [],
+        "//conditions:default": CPPOPTS
+    }),
+    visibility = ["//visibility:public"],
+    deps = [
+        "@absl//absl/strings",
+        "@com_google_protobuf//:protoc_lib"
+    ],
+)
+
+lua_proto_library(
+    name = "descriptor_proto_lua",
+    visibility = ["//visibility:public"],
+    deps = ["@com_google_protobuf//:descriptor_proto"],
+)
+
+lua_proto_library(
+    name = "test_messages_proto3_proto_lua",
+    testonly = 1,
+    deps = ["@com_google_protobuf//:test_messages_proto3_proto"],
 )
 
 # Test the CMake build #########################################################

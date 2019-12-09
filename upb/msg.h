@@ -28,6 +28,12 @@ typedef void upb_msg;
  * members are public so generated code can initialize them, but users MUST NOT
  * read or write any of its members. */
 
+/* This isn't a real label according to descriptor.proto, but in the table we
+ * use this for map fields instead of UPB_LABEL_REPEATED. */
+enum {
+  UPB_LABEL_MAP = 4
+};
+
 typedef struct {
   uint32_t number;
   uint16_t offset;

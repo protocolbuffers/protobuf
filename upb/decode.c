@@ -471,6 +471,13 @@ static bool upb_decode_delimitedfield(upb_decstate *d, upb_decframe *frame,
 
   if (field->label == UPB_LABEL_REPEATED) {
     return upb_decode_toarray(d, frame, field, len);
+  } else if (field->label == UPB_LABEL_MAP) {
+    /* Max map entry size is string key/val. */
+    char submsg[sizeof(upb_strview) * 2];
+    const upb_msglayout *layout = frame->layout->submsgs[field->submsg_index];
+    CHK(upb_decode_msgfield(d, &submsg, layout, len));
+    /* TODO: insert into map. */
+    return true;
   } else {
     switch (field->descriptortype) {
       case UPB_DESCRIPTOR_TYPE_STRING:
