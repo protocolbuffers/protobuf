@@ -1,3 +1,9 @@
+2019-12-10 version 3.11.2 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  PHP
+  * Make c extension portable for php 7.4 (#6968)
+  
+
 2019-12-02 version 3.11.1 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   PHP
