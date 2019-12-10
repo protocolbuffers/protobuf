@@ -63,8 +63,6 @@ upb_strtable reserved_names;
 // -----------------------------------------------------------------------------
 
 static void add_to_table(HashTable* t, const void* def, void* value) {
-  uint nIndex = (ulong)def & t->nTableMask;
-
   zval* pDest = NULL;
   php_proto_zend_hash_index_update_mem(t, (zend_ulong)def, &value,
                                        sizeof(zval*), (void**)&pDest);
@@ -73,28 +71,6 @@ static void add_to_table(HashTable* t, const void* def, void* value) {
 static void* get_from_table(const HashTable* t, const void* def) {
   void** value;
   if (php_proto_zend_hash_index_find_mem(t, (zend_ulong)def, (void**)&value) ==
-      FAILURE) {
-    return NULL;
-  }
-  return *value;
-}
-
-static bool exist_in_table(const HashTable* t, const void* def) {
-  void** value;
-  return (php_proto_zend_hash_index_find_mem(t, (zend_ulong)def,
-                                             (void**)&value) == SUCCESS);
-}
-
-static void add_to_strtable(HashTable* t, const char* key, int key_size,
-                            void* value) {
-  zval* pDest = NULL;
-  php_proto_zend_hash_update_mem(t, key, key_size, &value, sizeof(void*),
-                                 (void**)&pDest);
-}
-
-static void* get_from_strtable(const HashTable* t, const char* key, int key_size) {
-  void** value;
-  if (php_proto_zend_hash_find_mem(t, key, key_size, (void**)&value) ==
       FAILURE) {
     return NULL;
   }
@@ -349,13 +325,9 @@ static void php_proto_hashtable_descriptor_release(zval* value) {
   }
   efree(ptr);
 }
-
-static void test_release(void* value) {
-  void* ptr = value;
-}
 #endif
 
-static initialize_persistent_descriptor_pool(TSRMLS_D) {
+static void initialize_persistent_descriptor_pool(TSRMLS_D) {
   upb_inttable_init(&upb_def_to_desc_map_persistent, UPB_CTYPE_PTR);
   upb_inttable_init(&upb_def_to_enumdesc_map_persistent, UPB_CTYPE_PTR);
   upb_inttable_init(&ce_to_desc_map_persistent, UPB_CTYPE_PTR);
@@ -427,7 +399,7 @@ static void cleanup_enumdesc_table(upb_inttable* t) {
   }
 }
 
-static cleanup_persistent_descriptor_pool(TSRMLS_D) {
+static void cleanup_persistent_descriptor_pool(TSRMLS_D) {
   // Clean up
 
   // Only needs to clean one map out of three (def=>desc, ce=>desc, proto=>desc)
@@ -482,10 +454,7 @@ static PHP_RSHUTDOWN_FUNCTION(protobuf) {
 
 static void reserved_names_init() {
   size_t i;
-  upb_value v;
-#ifndef NDEBUG
-  v.ctype = UPB_CTYPE_UINT64;
-#endif
+  upb_value v = upb_value_bool(false);
   for (i = 0; i < kReservedNamesSize; i++) {
     upb_strtable_insert2(&reserved_names, kReservedNames[i],
                          strlen(kReservedNames[i]), v);

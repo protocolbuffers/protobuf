@@ -73,7 +73,6 @@ static int repeated_field_array_init(zval *array, upb_fieldtype_t type,
                                      uint size ZEND_FILE_LINE_DC);
 static void repeated_field_write_dimension(zval *object, zval *offset,
                                            zval *value TSRMLS_DC);
-static int repeated_field_has_dimension(zval *object, zval *offset TSRMLS_DC);
 static HashTable *repeated_field_get_gc(zval *object, CACHED_VALUE **table,
                                         int *n TSRMLS_DC);
 #if PHP_MAJOR_VERSION < 7
@@ -102,7 +101,7 @@ php_proto_zval_ptr_dtor(&intern->array);
 #endif
 PHP_PROTO_OBJECT_FREE_END
 
-PHP_PROTO_OBJECT_DTOR_START(RepeatedField, repeated_field)
+PHP_PROTO_OBJECT_EMPTY_DTOR_START(RepeatedField, repeated_field)
 PHP_PROTO_OBJECT_DTOR_END
 
 // Define object create method.
@@ -488,10 +487,10 @@ PHP_METHOD(RepeatedField, getIterator) {
 // -----------------------------------------------------------------------------
 
 // Define object free method.
-PHP_PROTO_OBJECT_FREE_START(RepeatedFieldIter, repeated_field_iter)
+PHP_PROTO_OBJECT_EMPTY_FREE_START(RepeatedFieldIter, repeated_field_iter)
 PHP_PROTO_OBJECT_FREE_END
 
-PHP_PROTO_OBJECT_DTOR_START(RepeatedFieldIter, repeated_field_iter)
+PHP_PROTO_OBJECT_EMPTY_DTOR_START(RepeatedFieldIter, repeated_field_iter)
 PHP_PROTO_OBJECT_DTOR_END
 
 // Define object create method.
@@ -519,7 +518,7 @@ PHP_METHOD(RepeatedFieldIter, current) {
   RepeatedFieldIter *intern = UNBOX(RepeatedFieldIter, getThis());
   RepeatedField *repeated_field = intern->repeated_field;
 
-  long index;
+  long index = 0;
   void *memory;
 
   HashTable *table = PHP_PROTO_HASH_OF(repeated_field->array);
@@ -527,13 +526,13 @@ PHP_METHOD(RepeatedFieldIter, current) {
   if (repeated_field->type == UPB_TYPE_MESSAGE) {
     if (php_proto_zend_hash_index_find_zval(table, intern->position,
                                             (void **)&memory) == FAILURE) {
-      zend_error(E_USER_ERROR, "Element at %d doesn't exist.\n", index);
+      zend_error(E_USER_ERROR, "Element at %ld doesn't exist.\n", index);
       return;
     }
   } else {
     if (php_proto_zend_hash_index_find_mem(table, intern->position,
                                            (void **)&memory) == FAILURE) {
-      zend_error(E_USER_ERROR, "Element at %d doesn't exist.\n", index);
+      zend_error(E_USER_ERROR, "Element at %ld doesn't exist.\n", index);
       return;
     }
   }
