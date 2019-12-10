@@ -8,13 +8,13 @@
 #endif
 
 #if GPB_USE_PROTOBUF_FRAMEWORK_IMPORTS
- #import <protobuf/GPBProtocolBuffers_RuntimeSupport.h>
+ #import <Protobuf/GPBProtocolBuffers_RuntimeSupport.h>
 #else
  #import "GPBProtocolBuffers_RuntimeSupport.h"
 #endif
 
 #if GPB_USE_PROTOBUF_FRAMEWORK_IMPORTS
- #import <protobuf/Timestamp.pbobjc.h>
+ #import <Protobuf/Timestamp.pbobjc.h>
 #else
  #import "google/protobuf/Timestamp.pbobjc.h"
 #endif
