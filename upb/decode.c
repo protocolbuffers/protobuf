@@ -517,9 +517,9 @@ static bool upb_decode_mapfield(upb_decstate *d, upb_decframe *frame,
     ent.v.val = upb_value_ptr(val_view);
   }
 
-  if (!upb_strtable_lookup2(t, key.data, key.size, NULL)) {
-    upb_strtable_insert3(t, key.data, key.size, ent.v.val, alloc);
-  }
+  /* Have to remove first, since upb's table won't overwrite. */
+  upb_strtable_remove3(t, key.data, key.size, NULL, alloc);
+  upb_strtable_insert3(t, key.data, key.size, ent.v.val, alloc);
   return true;
 }
 
