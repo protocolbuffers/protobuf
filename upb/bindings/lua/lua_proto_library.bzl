@@ -62,7 +62,6 @@ def _lua_proto_rule_impl(ctx):
     if _LuaFiles not in dep:
         fail("proto_library rule must generate _LuaFiles (aspect should have handled this).")
     files = dep[_LuaFiles].files
-    print(files)
     return [
         DefaultInfo(
            files = files,

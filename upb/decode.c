@@ -463,16 +463,24 @@ static bool upb_decode_toarray(upb_decstate *d, upb_decframe *frame,
 
 static bool upb_decode_mapfield(upb_decstate *d, upb_decframe *frame,
                                 const upb_msglayout_field *field, int len) {
-  /* Max map entry size is string key/val. */
-  size_t size = sizeof(upb_msg_internal) + (sizeof(upb_strview) * 2);
-  char submsg[size];
-  char *submsg_ptr = &submsg[sizeof(upb_msg_internal)];
   upb_map *map = *(upb_map**)&frame->msg[field->offset];
   upb_alloc *alloc = upb_arena_alloc(d->arena);
   const upb_msglayout *entry = frame->layout->submsgs[field->submsg_index];
-  upb_value val;
-  const char *key;
-  size_t key_size;
+  upb_strview key;
+  upb_strtable *t;
+
+  /* The compiler ensures that all map entry messages have this layout. */
+  struct map_entry {
+    upb_msg_internal internal;
+    union {
+      upb_strview str;  /* For str/bytes. */
+      upb_value val;    /* For all other types. */
+    } k;
+    union {
+      upb_strview str;  /* For str/bytes. */
+      upb_value val;    /* For all other types. */
+    } v;
+  } ent;
 
   if (!map) {
     /* Lazily create map. */
@@ -489,31 +497,28 @@ static bool upb_decode_mapfield(upb_decstate *d, upb_decframe *frame,
   }
 
   /* Parse map entry. */
-  memset(&submsg, 0, size);
-  CHK(upb_decode_msgfield(d, submsg_ptr, entry, len));
+  memset(&ent, 0, sizeof(ent));
+  CHK(upb_decode_msgfield(d, &ent.k, entry, len));
 
   /* Insert into map. */
+  t = &map->table;
+
   if (map->key_size_lg2 == UPB_MAPTYPE_STRING) {
-    const upb_strview* key_view = (const upb_strview*)submsg_ptr;
-    key = key_view->data;
-    key_size = key_view->size;
+    key = ent.k.str;
   } else {
-    key = submsg_ptr;
-    key_size = 1 << map->key_size_lg2;
+    key.data = (const char*)&ent.k;
+    key.size = 1 << map->key_size_lg2;
   }
 
   if (map->val_size_lg2 == UPB_MAPTYPE_STRING) {
     upb_strview* val_view = upb_arena_malloc(d->arena, sizeof(*val_view));
     CHK(val_view);
-    memcpy(val_view, submsg_ptr + sizeof(upb_strview), sizeof(upb_strview));
-    memset(&val, 0, sizeof(val));
-    memcpy(&val, &val_view, sizeof(void*));
-  } else {
-    memcpy(&val, submsg_ptr + sizeof(upb_strview), 8);
+    *val_view = ent.v.str;
+    ent.v.val = upb_value_ptr(val_view);
   }
 
-  if (!upb_strtable_lookup2(&map->table, key, key_size, NULL)) {
-    upb_strtable_insert3(&map->table, key, key_size, val, alloc);
+  if (!upb_strtable_lookup2(t, key.data, key.size, NULL)) {
+    upb_strtable_insert3(t, key.data, key.size, ent.v.val, alloc);
   }
   return true;
 }
