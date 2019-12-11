@@ -30,7 +30,7 @@
 
 # Copyright 2007 Google Inc. All Rights Reserved.
 
-__version__ = '3.11.1'
+__version__ = '3.11.2'
 
 if __name__ != '__main__':
   try:
