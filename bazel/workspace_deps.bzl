@@ -5,7 +5,7 @@ load("//bazel:repository_defs.bzl", "bazel_version_repository")
 
 def upb_deps():
     bazel_version_repository(
-        name = "bazel_version",
+        name = "upb_bazel_version",
     )
 
     git_repository(
