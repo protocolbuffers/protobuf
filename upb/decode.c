@@ -45,9 +45,7 @@ typedef struct {
   upb_decstate *state;
 } upb_decframe;
 
-#define CHK(x) if (!(x)) { \
-  fprintf(stderr, "Failure at %s:%d\n", __FILE__, __LINE__); \
-  return 0; }
+#define CHK(x) if (!(x)) { return 0; }
 
 static bool upb_skip_unknowngroup(upb_decstate *d, int field_number);
 static bool upb_decode_message(upb_decstate *d, char *msg,
