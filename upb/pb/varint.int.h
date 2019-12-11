@@ -26,16 +26,16 @@ extern "C" {
  * descriptor type (upb_descriptortype_t). */
 extern const uint8_t upb_pb_native_wire_types[];
 
-UPB_INLINE uint64_t byteswap64(uint64_t val)
-{
-  return ((((val) & 0xff00000000000000ull) >> 56)
-    | (((val) & 0x00ff000000000000ull) >> 40)
-    | (((val) & 0x0000ff0000000000ull) >> 24)
-    | (((val) & 0x000000ff00000000ull) >> 8)
-    | (((val) & 0x00000000ff000000ull) << 8)
-    | (((val) & 0x0000000000ff0000ull) << 24)
-    | (((val) & 0x000000000000ff00ull) << 40)
-    | (((val) & 0x00000000000000ffull) << 56));
+UPB_INLINE uint64_t byteswap64(uint64_t val) {
+  uint64_t byte = 0xff;
+  return (val & (byte << 56) >> 56)
+    | (val & (byte << 48) >> 40)
+    | (val & (byte << 40) >> 24)
+    | (val & (byte << 32) >> 8)
+    | (val & (byte << 24) << 8)
+    | (val & (byte << 16) << 24)
+    | (val & (byte <<  8) << 40)
+    | (val & (byte <<  0) << 56);
 }
 
 /* Zig-zag encoding/decoding **************************************************/

@@ -148,18 +148,18 @@ size_t upb_array_size(const upb_array *arr) {
 }
 
 upb_msgval upb_array_get(const upb_array *arr, size_t i) {
-  UPB_ASSERT(i < arr->len);
   upb_msgval ret;
   const char* data = _upb_array_constptr(arr);
   int lg2 = arr->data & 7;
+  UPB_ASSERT(i < arr->len);
   memcpy(&ret, data + (i << lg2), 1 << lg2);
   return ret;
 }
 
 void upb_array_set(upb_array *arr, size_t i, upb_msgval val) {
-  UPB_ASSERT(i < arr->len);
   char* data = _upb_array_ptr(arr);
   int lg2 = arr->data & 7;
+  UPB_ASSERT(i < arr->len);
   memcpy(data + (i << lg2), &val, 1 << lg2);
 }
 

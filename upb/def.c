@@ -869,9 +869,9 @@ static size_t upb_msgval_sizeof(upb_fieldtype_t type) {
 
 static uint8_t upb_msg_fielddefsize(const upb_fielddef *f) {
   if (upb_msgdef_mapentry(upb_fielddef_containingtype(f))) {
-    // Map entries aren't actually stored, they are only used during parsing.
-    // For parsing, it helps a lot if all map entry messages have the same
-    // layout.
+    /* Map entries aren't actually stored, they are only used during parsing.
+     * For parsing, it helps a lot if all map entry messages have the same
+     * layout. */
     return sizeof(upb_strview);
   } else if (upb_fielddef_isseq(f)) {
     return sizeof(void*);
@@ -1188,7 +1188,7 @@ static bool parse_default(const symtab_addctx *ctx, const char *str, size_t len,
     }
     case UPB_TYPE_INT64: {
       /* XXX: Need to write our own strtoll, since it's not available in c89. */
-      long long val = strtol(str, &end, 0);
+      int64_t val = strtol(str, &end, 0);
       CHK(val <= INT64_MAX && val >= INT64_MIN && errno != ERANGE && !*end);
       f->defaultval.sint = val;
       break;
@@ -1201,7 +1201,7 @@ static bool parse_default(const symtab_addctx *ctx, const char *str, size_t len,
     }
     case UPB_TYPE_UINT64: {
       /* XXX: Need to write our own strtoull, since it's not available in c89. */
-      unsigned long long val = strtoul(str, &end, 0);
+      uint64_t val = strtoul(str, &end, 0);
       CHK(val <= UINT64_MAX && errno != ERANGE && !*end);
       f->defaultval.uint = val;
       break;

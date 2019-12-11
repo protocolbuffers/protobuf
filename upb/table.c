@@ -371,9 +371,9 @@ bool upb_strtable_done(const upb_strtable_iter *i) {
 }
 
 upb_strview upb_strtable_iter_key(const upb_strtable_iter *i) {
-  UPB_ASSERT(!upb_strtable_done(i));
   upb_strview key;
   uint32_t len;
+  UPB_ASSERT(!upb_strtable_done(i));
   key.data = upb_tabstr(str_tabent(i)->key, &len);
   key.size = len;
   return key;

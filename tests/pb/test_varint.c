@@ -53,6 +53,13 @@ static void test_varint_for_num(upb_decoderet (*decoder)(const char*),
   ASSERT(upb_zzenc_64(upb_zzdec_64(num)) == num);
 }
 
+/* Making up for the lack of 64-bit constants in C89. */
+static uint64_t make_u64(uint32_t high, uint32_t low) {
+  uint64_t ret = high;
+  ret = (ret << 32) | low;
+  return ret;
+}
+
 static void test_varint_decoder(upb_decoderet (*decoder)(const char*)) {
 #define TEST(bytes, expected_val) {\
     size_t n = sizeof(bytes) - 1;  /* for NULL */ \
@@ -74,18 +81,20 @@ static void test_varint_decoder(upb_decoderet (*decoder)(const char*)) {
   upb_decoderet r = decoder(twelvebyte_buf);
   ASSERT(r.p == NULL);
 
-  TEST("\x00",                                                      0ULL);
-  TEST("\x01",                                                      1ULL);
-  TEST("\x81\x14",                                              0xa01ULL);
-  TEST("\x81\x03",                                              0x181ULL);
-  TEST("\x81\x83\x07",                                        0x1c181ULL);
-  TEST("\x81\x83\x87\x0f",                                  0x1e1c181ULL);
-  TEST("\x81\x83\x87\x8f\x1f",                            0x1f1e1c181ULL);
-  TEST("\x81\x83\x87\x8f\x9f\x3f",                      0x1f9f1e1c181ULL);
-  TEST("\x81\x83\x87\x8f\x9f\xbf\x7f",                0x1fdf9f1e1c181ULL);
-  TEST("\x81\x83\x87\x8f\x9f\xbf\xff\x01",            0x3fdf9f1e1c181ULL);
-  TEST("\x81\x83\x87\x8f\x9f\xbf\xff\x81\x03",      0x303fdf9f1e1c181ULL);
-  TEST("\x81\x83\x87\x8f\x9f\xbf\xff\x81\x83\x07", 0x8303fdf9f1e1c181ULL);
+  TEST("\x00", 0UL);
+  TEST("\x01", 1UL);
+  TEST("\x81\x14", 0xa01UL);
+  TEST("\x81\x03", 0x181UL);
+  TEST("\x81\x83\x07", 0x1c181UL);
+  TEST("\x81\x83\x87\x0f", 0x1e1c181UL);
+  TEST("\x81\x83\x87\x8f\x1f", make_u64(0x1, 0xf1e1c181UL));
+  TEST("\x81\x83\x87\x8f\x9f\x3f", make_u64(0x1f9, 0xf1e1c181UL));
+  TEST("\x81\x83\x87\x8f\x9f\xbf\x7f", make_u64(0x1fdf9, 0xf1e1c181UL));
+  TEST("\x81\x83\x87\x8f\x9f\xbf\xff\x01", make_u64(0x3fdf9, 0xf1e1c181UL));
+  TEST("\x81\x83\x87\x8f\x9f\xbf\xff\x81\x03",
+       make_u64(0x303fdf9, 0xf1e1c181UL));
+  TEST("\x81\x83\x87\x8f\x9f\xbf\xff\x81\x83\x07",
+       make_u64(0x8303fdf9, 0xf1e1c181UL));
 #undef TEST
 
   for (num = 5; num * 1.5 < UINT64_MAX; num *= 1.5) {
