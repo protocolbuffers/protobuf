@@ -534,7 +534,7 @@ build_php5.5_mixed() {
   pushd php
   rm -rf vendor
   composer update
-  /bin/bash ./tests/compile_extension.sh ./ext/google/protobuf
+  /bin/bash ./tests/compile_extension.sh 5.5
   php -dextension=./ext/google/protobuf/modules/protobuf.so ./vendor/bin/phpunit
   popd
 }
@@ -584,7 +584,7 @@ build_php5.6_mixed() {
   pushd php
   rm -rf vendor
   composer update
-  /bin/bash ./tests/compile_extension.sh ./ext/google/protobuf
+  /bin/bash ./tests/compile_extension.sh 5.6
   php -dextension=./ext/google/protobuf/modules/protobuf.so ./vendor/bin/phpunit
   popd
 }
@@ -658,7 +658,7 @@ build_php7.0_mixed() {
   pushd php
   rm -rf vendor
   composer update
-  /bin/bash ./tests/compile_extension.sh ./ext/google/protobuf
+  /bin/bash ./tests/compile_extension.sh 7.0
   php -dextension=./ext/google/protobuf/modules/protobuf.so ./vendor/bin/phpunit
   popd
 }
@@ -744,7 +744,7 @@ build_php7.1_mixed() {
   pushd php
   rm -rf vendor
   composer update
-  /bin/bash ./tests/compile_extension.sh ./ext/google/protobuf
+  /bin/bash ./tests/compile_extension.sh 7.1
   php -dextension=./ext/google/protobuf/modules/protobuf.so ./vendor/bin/phpunit
   popd
 }
@@ -797,7 +797,7 @@ build_php7.4_mixed() {
   pushd php
   rm -rf vendor
   composer update
-  /bin/bash ./tests/compile_extension.sh ./ext/google/protobuf
+  /bin/bash ./tests/compile_extension.sh 7.4
   php -dextension=./ext/google/protobuf/modules/protobuf.so ./vendor/bin/phpunit
   popd
   pushd php/ext/google/protobuf
