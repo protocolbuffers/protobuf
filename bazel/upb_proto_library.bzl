@@ -8,7 +8,7 @@ load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain")
 
 # copybara:strip_for_google3_begin
 load("@bazel_skylib//lib:versions.bzl", "versions")
-load("@bazel_version//:bazel_version.bzl", "bazel_version")
+load("@upb_bazel_version//:bazel_version.bzl", "bazel_version")
 # copybara:strip_end
 
 # Generic support code #########################################################
