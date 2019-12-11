@@ -706,6 +706,13 @@ build_php_compatibility() {
   php/tests/compatibility_test.sh $LAST_RELEASED
 }
 
+build_php_multirequest() {
+  use_php 7.4
+  pushd php/tests
+  ./multirequest.sh
+  popd
+}
+
 build_php7.1() {
   use_php 7.1
   pushd php
@@ -840,6 +847,7 @@ build_php_all_32() {
 
 build_php_all() {
   build_php_all_32 true
+  build_php_multirequest
   build_php_compatibility
 }
 
