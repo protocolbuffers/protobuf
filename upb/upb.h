@@ -326,7 +326,7 @@ typedef enum {
   UPB_TYPE_UINT64   = 9,
   /* Types stored as upb_strview (2 * void*) (probably 8 or 16 bytes). */
   UPB_TYPE_STRING   = 10,
-  UPB_TYPE_BYTES    = 11,
+  UPB_TYPE_BYTES    = 11
 } upb_fieldtype_t;
 
 /* The repeated-ness of each field; this matches descriptor.proto. */
