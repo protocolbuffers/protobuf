@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION=$1
+VERSION=$2
 
 export PATH=/usr/local/php-$VERSION/bin:$PATH
 export C_INCLUDE_PATH=/usr/local/php-$VERSION/include/php/main:/usr/local/php-$VERSION/include/php:$C_INCLUDE_PATH
