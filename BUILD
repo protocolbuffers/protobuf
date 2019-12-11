@@ -583,7 +583,7 @@ cc_library(
 )
 
 cc_test(
-    name = "lua_tester",
+    name = "test_lua",
     linkstatic = 1,
     srcs = ["tests/bindings/lua/main.c"],
     data = [
