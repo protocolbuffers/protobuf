@@ -145,12 +145,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
       "private pb::UnknownFieldSet _unknownFields;\n");
 
   if (has_extension_ranges_) {
-    if (IsDescriptorProto(descriptor_->file())) {
-      printer->Print(vars, "internal pb::ExtensionSet<$class_name$> _extensions;\n"); // CustomOptions compatibility
-    } else {
-      printer->Print(vars, "private pb::ExtensionSet<$class_name$> _extensions;\n");
-    }
-
+    printer->Print(vars, "private pb::ExtensionSet<$class_name$> _extensions;\n");
     // a read-only property for fast
     // retrieval of the set in IsInitialized
     printer->Print(vars,

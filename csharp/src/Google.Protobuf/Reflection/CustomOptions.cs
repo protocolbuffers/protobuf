@@ -65,10 +65,15 @@ namespace Google.Protobuf.Reflection
     {
         private static readonly object[] EmptyParameters = new object[0];
         private readonly IDictionary<int, IExtensionValue> values;
+        // since we made the descriptor protos public, we can't really reintroduce the CustomOptions
+        // container to handle unknown fields, since we'd then have to match the behavior of unknown fields in here
+        // so instead we pull the unknown values out of the unknown field set to make sure everything acts the same
+        private readonly UnknownFieldSet unknownFields;
 
-        internal CustomOptions(IDictionary<int, IExtensionValue> values)
+        internal CustomOptions(IDictionary<int, IExtensionValue> values, UnknownFieldSet unknownFields)
         {
             this.values = values;
+            this.unknownFields = unknownFields;
         }
 
         /// <summary>
@@ -77,7 +82,8 @@ namespace Google.Protobuf.Reflection
         /// <param name="field">The field to fetch the value for.</param>
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
-        public bool TryGetBool(int field, out bool value) => TryGetPrimitiveValue(field, out value);
+        public bool TryGetBool(int field, out bool value)
+            => TryGetPrimitiveValue<bool, ulong>(field, UnknownFieldSet.TryGetLastVarint, (b) => b != 0, out value);
 
         /// <summary>
         /// Retrieves a signed 32-bit integer value for the specified option field.
@@ -85,7 +91,8 @@ namespace Google.Protobuf.Reflection
         /// <param name="field">The field to fetch the value for.</param>
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
-        public bool TryGetInt32(int field, out int value) => TryGetPrimitiveValue(field, out value);
+        public bool TryGetInt32(int field, out int value)
+            => TryGetPrimitiveValue<int, ulong>(field, UnknownFieldSet.TryGetLastVarint, (v) => (int)v, out value);
 
         /// <summary>
         /// Retrieves a signed 64-bit integer value for the specified option field.
@@ -93,7 +100,8 @@ namespace Google.Protobuf.Reflection
         /// <param name="field">The field to fetch the value for.</param>
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
-        public bool TryGetInt64(int field, out long value) => TryGetPrimitiveValue(field, out value);
+        public bool TryGetInt64(int field, out long value)
+            => TryGetPrimitiveValue<long, ulong>(field, UnknownFieldSet.TryGetLastVarint, (v) => (long)v, out value);
 
         /// <summary>
         /// Retrieves an unsigned 32-bit integer value for the specified option field,
@@ -102,7 +110,8 @@ namespace Google.Protobuf.Reflection
         /// <param name="field">The field to fetch the value for.</param>
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
-        public bool TryGetFixed32(int field, out uint value) => TryGetUInt32(field, out value);
+        public bool TryGetFixed32(int field, out uint value)
+            => TryGetPrimitiveValue<uint, uint>(field, UnknownFieldSet.TryGetLastFixed32, (v) => v, out value);
 
         /// <summary>
         /// Retrieves an unsigned 64-bit integer value for the specified option field,
@@ -111,7 +120,8 @@ namespace Google.Protobuf.Reflection
         /// <param name="field">The field to fetch the value for.</param>
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
-        public bool TryGetFixed64(int field, out ulong value) => TryGetUInt64(field, out value);
+        public bool TryGetFixed64(int field, out ulong value)
+            => TryGetPrimitiveValue<ulong, ulong>(field, UnknownFieldSet.TryGetLastFixed64, (v) => v, out value);
 
         /// <summary>
         /// Retrieves a signed 32-bit integer value for the specified option field,
@@ -120,7 +130,8 @@ namespace Google.Protobuf.Reflection
         /// <param name="field">The field to fetch the value for.</param>
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
-        public bool TryGetSFixed32(int field, out int value) => TryGetInt32(field, out value);
+        public bool TryGetSFixed32(int field, out int value)
+            => TryGetPrimitiveValue<int, uint>(field, UnknownFieldSet.TryGetLastFixed32, (v) => (int)v, out value);
 
         /// <summary>
         /// Retrieves a signed 64-bit integer value for the specified option field,
@@ -129,7 +140,8 @@ namespace Google.Protobuf.Reflection
         /// <param name="field">The field to fetch the value for.</param>
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
-        public bool TryGetSFixed64(int field, out long value) => TryGetInt64(field, out value);
+        public bool TryGetSFixed64(int field, out long value)
+            => TryGetPrimitiveValue<long, ulong>(field, UnknownFieldSet.TryGetLastFixed64, (v) => (long)v, out value);
 
         /// <summary>
         /// Retrieves a signed 32-bit integer value for the specified option field,
@@ -138,7 +150,8 @@ namespace Google.Protobuf.Reflection
         /// <param name="field">The field to fetch the value for.</param>
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
-        public bool TryGetSInt32(int field, out int value) => TryGetPrimitiveValue(field, out value);
+        public bool TryGetSInt32(int field, out int value)
+            => TryGetPrimitiveValue<int, ulong>(field, UnknownFieldSet.TryGetLastVarint, (v) => CodedInputStream.DecodeZigZag32((uint)v), out value);
 
         /// <summary>
         /// Retrieves a signed 64-bit integer value for the specified option field,
@@ -147,7 +160,8 @@ namespace Google.Protobuf.Reflection
         /// <param name="field">The field to fetch the value for.</param>
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
-        public bool TryGetSInt64(int field, out long value) => TryGetPrimitiveValue(field, out value);
+        public bool TryGetSInt64(int field, out long value)
+            => TryGetPrimitiveValue<long, ulong>(field, UnknownFieldSet.TryGetLastVarint, CodedInputStream.DecodeZigZag64, out value);
 
         /// <summary>
         /// Retrieves an unsigned 32-bit integer value for the specified option field.
@@ -155,7 +169,8 @@ namespace Google.Protobuf.Reflection
         /// <param name="field">The field to fetch the value for.</param>
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
-        public bool TryGetUInt32(int field, out uint value) => TryGetPrimitiveValue(field, out value);
+        public bool TryGetUInt32(int field, out uint value)
+            => TryGetPrimitiveValue<uint, ulong>(field, UnknownFieldSet.TryGetLastVarint, (v) => (uint)v, out value);
 
         /// <summary>
         /// Retrieves an unsigned 64-bit integer value for the specified option field.
@@ -163,7 +178,8 @@ namespace Google.Protobuf.Reflection
         /// <param name="field">The field to fetch the value for.</param>
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
-        public bool TryGetUInt64(int field, out ulong value) => TryGetPrimitiveValue(field, out value);
+        public bool TryGetUInt64(int field, out ulong value)
+            => TryGetPrimitiveValue<ulong, ulong>(field, UnknownFieldSet.TryGetLastVarint, (v) => v, out value);
 
         /// <summary>
         /// Retrieves a 32-bit floating point value for the specified option field.
@@ -171,7 +187,11 @@ namespace Google.Protobuf.Reflection
         /// <param name="field">The field to fetch the value for.</param>
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
-        public bool TryGetFloat(int field, out float value) => TryGetPrimitiveValue(field, out value);
+        public bool TryGetFloat(int field, out float value)
+            => TryGetPrimitiveValue<float, uint>(field, UnknownFieldSet.TryGetLastFixed32, (v) => {
+                var bytes = BitConverter.GetBytes(v);
+                return BitConverter.ToSingle(bytes, 0);
+            }, out value);
 
         /// <summary>
         /// Retrieves a 64-bit floating point value for the specified option field.
@@ -179,7 +199,10 @@ namespace Google.Protobuf.Reflection
         /// <param name="field">The field to fetch the value for.</param>
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
-        public bool TryGetDouble(int field, out double value) => TryGetPrimitiveValue(field, out value);
+        public bool TryGetDouble(int field, out double value)
+            => TryGetPrimitiveValue<double, ulong>(field, UnknownFieldSet.TryGetLastFixed64, (v) => {
+                return BitConverter.Int64BitsToDouble((long)v);
+            }, out value);
 
         /// <summary>
         /// Retrieves a string value for the specified option field.
@@ -187,7 +210,8 @@ namespace Google.Protobuf.Reflection
         /// <param name="field">The field to fetch the value for.</param>
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
-        public bool TryGetString(int field, out string value) => TryGetPrimitiveValue(field, out value);
+        public bool TryGetString(int field, out string value)
+            => TryGetPrimitiveValue<string, ByteString>(field, UnknownFieldSet.TryGetLastLengthDelimited, (v) => v.ToStringUtf8(), out value);
 
         /// <summary>
         /// Retrieves a bytes value for the specified option field.
@@ -195,7 +219,8 @@ namespace Google.Protobuf.Reflection
         /// <param name="field">The field to fetch the value for.</param>
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
-        public bool TryGetBytes(int field, out ByteString value) => TryGetPrimitiveValue(field, out value);
+        public bool TryGetBytes(int field, out ByteString value)
+            => TryGetPrimitiveValue<ByteString, ByteString>(field, UnknownFieldSet.TryGetLastLengthDelimited, (v) => v, out value);
 
         /// <summary>
         /// Retrieves a message value for the specified option field.
@@ -205,95 +230,112 @@ namespace Google.Protobuf.Reflection
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
         public bool TryGetMessage<T>(int field, out T value) where T : class, IMessage, new()
         {
-            if (values == null)
+            if (values != null)
             {
-                value = default(T);
-                return false;
+                IExtensionValue extensionValue;
+                if (values.TryGetValue(field, out extensionValue))
+                {
+                    if (extensionValue is ExtensionValue<T>)
+                    {
+                        ExtensionValue<T> single = extensionValue as ExtensionValue<T>;
+                        ByteString bytes = single.GetValue().ToByteString();
+                        value = new T();
+                        value.MergeFrom(bytes);
+                        return true;
+                    }
+                    else if (extensionValue is RepeatedExtensionValue<T>)
+                    {
+                        RepeatedExtensionValue<T> repeated = extensionValue as RepeatedExtensionValue<T>;
+                        value = repeated.GetValue()
+                            .Select(v => v.ToByteString())
+                            .Aggregate(new T(), (t, b) =>
+                            {
+                                t.MergeFrom(b);
+                                return t;
+                            });
+                        return true;
+                    }
+                }
             }
 
-            IExtensionValue extensionValue;
-            if (values.TryGetValue(field, out extensionValue))
+            UnknownField f;
+            if (UnknownFieldSet.TryGetField(unknownFields, field, out f))
             {
-                if (extensionValue is ExtensionValue<T>)
+                value = new T();
+                foreach (var bytes in f.LengthDelimitedList ?? Enumerable.Empty<ByteString>())
                 {
-                    ExtensionValue<T> single = extensionValue as ExtensionValue<T>;
-                    ByteString bytes = single.GetValue().ToByteString();
-                    value = new T();
                     value.MergeFrom(bytes);
-                    return true;
                 }
-                else if (extensionValue is RepeatedExtensionValue<T>)
-                {
-                    RepeatedExtensionValue<T> repeated = extensionValue as RepeatedExtensionValue<T>;
-                    value = repeated.GetValue()
-                        .Select(v => v.ToByteString())
-                        .Aggregate(new T(), (t, b) =>
-                        {
-                            t.MergeFrom(b);
-                            return t;
-                        });
-                    return true;
-                }
+                return true;
             }
 
             value = null;
             return false;
         }
 
-        private bool TryGetPrimitiveValue<T>(int field, out T value)
-        {
-            if (values == null)
-            {
-                value = default(T);
-                return false;
-            }
+        private delegate bool TryGetUnknown<T>(UnknownFieldSet set, int field, out T value);
 
-            IExtensionValue extensionValue;
-            if (values.TryGetValue(field, out extensionValue))
+        private bool TryGetPrimitiveValue<T, U>(int field, TryGetUnknown<U> getUnknown, Func<U, T> conv, out T value)
+        {
+            if (values != null)
             {
-                if (extensionValue is ExtensionValue<T>)
+                IExtensionValue extensionValue;
+                if (values.TryGetValue(field, out extensionValue))
                 {
-                    ExtensionValue<T> single = extensionValue as ExtensionValue<T>;
-                    value = single.GetValue();
-                    return true;
-                }
-                else if (extensionValue is RepeatedExtensionValue<T>)
-                {
-                    RepeatedExtensionValue<T> repeated = extensionValue as RepeatedExtensionValue<T>;
-                    if (repeated.GetValue().Count != 0)
+                    if (extensionValue is ExtensionValue<T>)
                     {
-                        RepeatedField<T> repeatedField = repeated.GetValue();
-                        value = repeatedField[repeatedField.Count - 1];
+                        ExtensionValue<T> single = extensionValue as ExtensionValue<T>;
+                        value = single.GetValue();
                         return true;
                     }
-                }
-                else // and here we find explicit enum handling since T : Enum ! x is ExtensionValue<Enum>
-                {
-                    var type = extensionValue.GetType();
-                    if (type.GetGenericTypeDefinition() == typeof(ExtensionValue<>))
+                    else if (extensionValue is RepeatedExtensionValue<T>)
                     {
-                        var typeInfo = type.GetTypeInfo();
-                        var typeArgs = typeInfo.GenericTypeArguments;
-                        if (typeArgs.Length == 1 && typeArgs[0].GetTypeInfo().IsEnum)
+                        RepeatedExtensionValue<T> repeated = extensionValue as RepeatedExtensionValue<T>;
+                        if (repeated.GetValue().Count != 0)
                         {
-                            value = (T)typeInfo.GetDeclaredMethod(nameof(ExtensionValue<T>.GetValue)).Invoke(extensionValue, EmptyParameters);
+                            RepeatedField<T> repeatedField = repeated.GetValue();
+                            value = repeatedField[repeatedField.Count - 1];
                             return true;
                         }
                     }
-                    else if (type.GetGenericTypeDefinition() == typeof(RepeatedExtensionValue<>))
+                    else // and here we find explicit enum handling since T : Enum ! x is ExtensionValue<Enum>
                     {
-                        var typeInfo = type.GetTypeInfo();
-                        var typeArgs = typeInfo.GenericTypeArguments;
-                        if (typeArgs.Length == 1 && typeArgs[0].GetTypeInfo().IsEnum)
+                        var type = extensionValue.GetType();
+                        if (type.GetGenericTypeDefinition() == typeof(ExtensionValue<>))
                         {
-                            var values = (IList)typeInfo.GetDeclaredMethod(nameof(RepeatedExtensionValue<T>.GetValue)).Invoke(extensionValue, EmptyParameters);
-                            if (values.Count != 0)
+                            var typeInfo = type.GetTypeInfo();
+                            var typeArgs = typeInfo.GenericTypeArguments;
+                            if (typeArgs.Length == 1 && typeArgs[0].GetTypeInfo().IsEnum)
                             {
-                                value = (T)values[values.Count - 1];
+                                value = (T)typeInfo.GetDeclaredMethod(nameof(ExtensionValue<T>.GetValue)).Invoke(extensionValue, EmptyParameters);
                                 return true;
                             }
                         }
+                        else if (type.GetGenericTypeDefinition() == typeof(RepeatedExtensionValue<>))
+                        {
+                            var typeInfo = type.GetTypeInfo();
+                            var typeArgs = typeInfo.GenericTypeArguments;
+                            if (typeArgs.Length == 1 && typeArgs[0].GetTypeInfo().IsEnum)
+                            {
+                                var values = (IList)typeInfo.GetDeclaredMethod(nameof(RepeatedExtensionValue<T>.GetValue)).Invoke(extensionValue, EmptyParameters);
+                                if (values.Count != 0)
+                                {
+                                    value = (T)values[values.Count - 1];
+                                    return true;
+                                }
+                            }
+                        }
                     }
+                }
+            }
+
+            if (unknownFields != null)
+            {
+                U temp;
+                if (getUnknown(unknownFields, field, out temp))
+                {
+                    value = conv(temp);
+                    return true;
                 }
             }
 

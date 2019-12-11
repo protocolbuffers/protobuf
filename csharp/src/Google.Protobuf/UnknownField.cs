@@ -64,6 +64,8 @@ namespace Google.Protobuf
         {
         }
 
+        internal List<ByteString> LengthDelimitedList => lengthDelimitedList;
+
         /// <summary>
         /// Checks if two unknown field are equal.
         /// </summary>
@@ -270,6 +272,28 @@ namespace Google.Protobuf
         {
             groupList = Add(groupList, value);
             return this;
+        }
+
+        internal bool TryGetLastVarint(out ulong value) => TryGetLastOf(varintList, out value);
+
+        internal bool TryGetLastFixed32(out uint value) => TryGetLastOf(fixed32List, out value);
+
+        internal bool TryGetLastFixed64(out ulong value) => TryGetLastOf(fixed64List, out value);
+
+        internal bool TryGetLastLengthDelimited(out ByteString value) => TryGetLastOf(lengthDelimitedList, out value);
+
+        private static bool TryGetLastOf<T>(List<T> list, out T value)
+        {
+            if (list.Count != 0)
+            {
+                value = list[list.Count - 1];
+                return true;
+            }
+            else
+            {
+                value = default(T);
+                return false;
+            }
         }
 
         /// <summary>
