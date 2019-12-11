@@ -6,7 +6,7 @@
 #include "upb/port_def.inc"
 
 /* Maps descriptor type -> upb field type.  */
-const uint8_t upb_desctype_to_fieldtype[] = {
+const uint8_t desctype_to_fieldtype[] = {
   UPB_WIRE_TYPE_END_GROUP,  /* ENDGROUP */
   UPB_TYPE_DOUBLE,          /* DOUBLE */
   UPB_TYPE_FLOAT,           /* FLOAT */
@@ -198,7 +198,7 @@ static upb_array *upb_getorcreatearr(upb_decframe *frame,
   upb_array *arr = upb_getarr(frame, field);
 
   if (!arr) {
-    upb_fieldtype_t type = upb_desctype_to_fieldtype[field->descriptortype];
+    upb_fieldtype_t type = desctype_to_fieldtype[field->descriptortype];
     arr = upb_array_new(frame->state->arena, type);
     CHK(arr);
     *(upb_array**)&frame->msg[field->offset] = arr;
@@ -463,6 +463,63 @@ static bool upb_decode_toarray(upb_decstate *d, upb_decframe *frame,
   UPB_UNREACHABLE();
 }
 
+static bool upb_decode_mapfield(upb_decstate *d, upb_decframe *frame,
+                                const upb_msglayout_field *field, int len) {
+  /* Max map entry size is string key/val. */
+  size_t size = sizeof(upb_msg_internal) + (sizeof(upb_strview) * 2);
+  char submsg[size];
+  char *submsg_ptr = &submsg[sizeof(upb_msg_internal)];
+  upb_map *map = *(upb_map**)&frame->msg[field->offset];
+  upb_alloc *alloc = upb_arena_alloc(d->arena);
+  const upb_msglayout *entry = frame->layout->submsgs[field->submsg_index];
+  upb_value val;
+  const char *key;
+  size_t key_size;
+
+  if (!map) {
+    /* Lazily create map. */
+    const upb_msglayout_field *key_field = &entry->fields[0];
+    const upb_msglayout_field *val_field = &entry->fields[1];
+    upb_fieldtype_t key_type = desctype_to_fieldtype[key_field->descriptortype];
+    upb_fieldtype_t val_type = desctype_to_fieldtype[val_field->descriptortype];
+    UPB_ASSERT(key_field->number == 1);
+    UPB_ASSERT(val_field->number == 2);
+    UPB_ASSERT(key_field->offset == 0);
+    UPB_ASSERT(val_field->offset == sizeof(upb_strview));
+    map = upb_map_new(frame->state->arena, key_type, val_type);
+    *(upb_map**)&frame->msg[field->offset] = map;
+  }
+
+  /* Parse map entry. */
+  memset(&submsg, 0, size);
+  CHK(upb_decode_msgfield(d, submsg_ptr, entry, len));
+
+  /* Insert into map. */
+  if (map->key_size_lg2 == UPB_MAPTYPE_STRING) {
+    const upb_strview* key_view = (const upb_strview*)submsg_ptr;
+    key = key_view->data;
+    key_size = key_view->size;
+  } else {
+    key = submsg_ptr;
+    key_size = 1 << map->key_size_lg2;
+  }
+
+  if (map->val_size_lg2 == UPB_MAPTYPE_STRING) {
+    upb_strview* val_view = upb_arena_malloc(d->arena, sizeof(*val_view));
+    CHK(val_view);
+    memcpy(val_view, submsg_ptr + sizeof(upb_strview), sizeof(upb_strview));
+    memset(&val, 0, sizeof(val));
+    memcpy(&val, &val_view, sizeof(void*));
+  } else {
+    memcpy(&val, submsg_ptr + sizeof(upb_strview), 8);
+  }
+
+  if (!upb_strtable_lookup2(&map->table, key, key_size, NULL)) {
+    upb_strtable_insert3(&map->table, key, key_size, val, alloc);
+  }
+  return true;
+}
+
 static bool upb_decode_delimitedfield(upb_decstate *d, upb_decframe *frame,
                                       const upb_msglayout_field *field) {
   int len;
@@ -472,12 +529,7 @@ static bool upb_decode_delimitedfield(upb_decstate *d, upb_decframe *frame,
   if (field->label == UPB_LABEL_REPEATED) {
     return upb_decode_toarray(d, frame, field, len);
   } else if (field->label == UPB_LABEL_MAP) {
-    /* Max map entry size is string key/val. */
-    char submsg[sizeof(upb_strview) * 2];
-    const upb_msglayout *layout = frame->layout->submsgs[field->submsg_index];
-    CHK(upb_decode_msgfield(d, &submsg, layout, len));
-    /* TODO: insert into map. */
-    return true;
+    return upb_decode_mapfield(d, frame, field, len);
   } else {
     switch (field->descriptortype) {
       case UPB_DESCRIPTOR_TYPE_STRING:

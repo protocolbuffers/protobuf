@@ -358,8 +358,6 @@ typedef enum {
   UPB_DESCRIPTOR_TYPE_SINT64   = 18
 } upb_descriptortype_t;
 
-extern const uint8_t upb_desctype_to_fieldtype[];
-
 #include "upb/port_undef.inc"
 
 #endif  /* UPB_H_ */

@@ -1,6 +1,6 @@
 
-#ifndef UPB_LEGACY_MSG_REFLECTION_H_
-#define UPB_LEGACY_MSG_REFLECTION_H_
+#ifndef UPB_REFLECTION_H_
+#define UPB_REFLECTION_H_
 
 #include "upb/def.h"
 #include "upb/msg.h"
@@ -134,4 +134,4 @@ bool upb_mapiter_isequal(const upb_mapiter *i1, const upb_mapiter *i2);
 
 #include "upb/port_undef.inc"
 
-#endif /* UPB_LEGACY_MSG_REFLECTION_H_ */
+#endif /* UPB_REFLECTION_H_ */

@@ -55,7 +55,22 @@ typedef struct upb_msglayout {
 
 /** upb_msg *******************************************************************/
 
-/* Representation is in msg.c for now. */
+/* Internal members of a upb_msg.  We can change this without breaking binary
+ * compatibility.  We put these before the user's data.  The user's upb_msg*
+ * points after the upb_msg_internal. */
+
+/* Used when a message is not extendable. */
+typedef struct {
+  char *unknown;
+  size_t unknown_len;
+  size_t unknown_size;
+} upb_msg_internal;
+
+/* Used when a message is extendable. */
+typedef struct {
+  upb_inttable *extdict;
+  upb_msg_internal base;
+} upb_msg_internal_withext;
 
 /* Maps upb_fieldtype_t -> memory size. */
 extern char _upb_fieldtype_to_size[12];

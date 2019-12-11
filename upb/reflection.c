@@ -223,7 +223,6 @@ bool upb_map_get(const upb_map *map, upb_msgval key, upb_msgval *val) {
   ret = upb_strtable_lookup2(&map->table, strkey.data, strkey.size, &tabval);
   if (ret) {
     *val = upb_map_fromvalue(map->val_size_lg2, tabval);
-    memcpy(val, &tabval, sizeof(tabval));
   }
 
   return ret;
