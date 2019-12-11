@@ -17,6 +17,10 @@ sleep 1
 wget http://localhost:$PORT/multirequest.result -O multirequest.result
 wget http://localhost:$PORT/multirequest.result -O multirequest.result
 
+pushd ../ext/google/protobuf
+phpize --clean
+popd
+
 PID=`ps | grep "php" | awk '{print $1}'`
 echo $PID
 
