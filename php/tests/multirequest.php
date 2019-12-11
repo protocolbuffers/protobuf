@@ -1,8 +1,8 @@
 <?php
 
 if (extension_loaded("protobuf")) {
-    echo "<p>protobuf loaded</p>";
     require_once('memory_leak_test.php');
+    echo "<p>protobuf loaded</p>";
 } else {
     echo "<p>protobuf not loaded</p>";
 }
