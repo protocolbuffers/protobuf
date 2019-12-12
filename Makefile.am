@@ -877,6 +877,8 @@ php_EXTRA_DIST=                                                       \
   php/tests/generated_service_test.php                                \
   php/tests/map_field_test.php                                        \
   php/tests/memory_leak_test.php                                      \
+  php/tests/multirequest.php                                          \
+  php/tests/multirequest.sh                                           \
   php/tests/php_implementation_test.php                               \
   php/tests/proto/empty/echo.proto                                    \
   php/tests/proto/test.proto                                          \

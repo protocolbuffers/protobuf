@@ -534,7 +534,9 @@ build_php5.5_mixed() {
   pushd php
   rm -rf vendor
   composer update
-  /bin/bash ./tests/compile_extension.sh ./ext/google/protobuf
+  pushd tests
+  /bin/bash ./compile_extension.sh 5.5
+  popd
   php -dextension=./ext/google/protobuf/modules/protobuf.so ./vendor/bin/phpunit
   popd
 }
@@ -584,7 +586,9 @@ build_php5.6_mixed() {
   pushd php
   rm -rf vendor
   composer update
-  /bin/bash ./tests/compile_extension.sh ./ext/google/protobuf
+  pushd tests
+  /bin/bash ./compile_extension.sh 5.6
+  popd
   php -dextension=./ext/google/protobuf/modules/protobuf.so ./vendor/bin/phpunit
   popd
 }
@@ -658,7 +662,9 @@ build_php7.0_mixed() {
   pushd php
   rm -rf vendor
   composer update
-  /bin/bash ./tests/compile_extension.sh ./ext/google/protobuf
+  pushd tests
+  /bin/bash ./compile_extension.sh 7.0
+  popd
   php -dextension=./ext/google/protobuf/modules/protobuf.so ./vendor/bin/phpunit
   popd
 }
@@ -706,6 +712,13 @@ build_php_compatibility() {
   php/tests/compatibility_test.sh $LAST_RELEASED
 }
 
+build_php_multirequest() {
+  use_php 7.4
+  pushd php/tests
+  ./multirequest.sh
+  popd
+}
+
 build_php7.1() {
   use_php 7.1
   pushd php
@@ -737,7 +750,9 @@ build_php7.1_mixed() {
   pushd php
   rm -rf vendor
   composer update
-  /bin/bash ./tests/compile_extension.sh ./ext/google/protobuf
+  pushd tests
+  /bin/bash ./compile_extension.sh 7.1
+  popd
   php -dextension=./ext/google/protobuf/modules/protobuf.so ./vendor/bin/phpunit
   popd
 }
@@ -790,7 +805,9 @@ build_php7.4_mixed() {
   pushd php
   rm -rf vendor
   composer update
-  /bin/bash ./tests/compile_extension.sh ./ext/google/protobuf
+  pushd tests
+  /bin/bash ./compile_extension.sh 7.4
+  popd
   php -dextension=./ext/google/protobuf/modules/protobuf.so ./vendor/bin/phpunit
   popd
   pushd php/ext/google/protobuf
@@ -840,6 +857,7 @@ build_php_all_32() {
 
 build_php_all() {
   build_php_all_32 true
+  build_php_multirequest
   build_php_compatibility
 }
 
