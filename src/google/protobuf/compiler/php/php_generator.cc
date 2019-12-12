@@ -121,7 +121,6 @@ void GenerateServiceDocComment(io::Printer* printer,
 void GenerateServiceMethodDocComment(io::Printer* printer,
                               const MethodDescriptor* method);
 
-
 std::string ReservedNamePrefix(const string& classname,
                                 const FileDescriptor* file) {
   bool is_reserved = false;
@@ -1036,9 +1035,31 @@ void GenerateAddFileToPool(const FileDescriptor* file, bool is_descriptor,
   printer->Print("}\n");
 }
 
+static void AnalyzeDependencyForFile(
+    const FileDescriptor* file,
+    std::set<const FileDescriptor*>* nodes_without_dependency,
+    std::map<const FileDescriptor*, std::set<const FileDescriptor*>>* deps,
+    std::map<const FileDescriptor*, int>* dependency_count) {
+  if (file->dependency_count() == 0) {
+    nodes_without_dependency->insert(file);
+  } else {
+    (*dependency_count)[file] = file->dependency_count();
+    for (int i = 0; i < file->dependency_count(); i++) {
+      const FileDescriptor* dependency = file->dependency(i);
+      if (deps->find(dependency) == deps->end()) {
+        (*deps)[dependency] = std::set<const FileDescriptor*>();
+      }
+      (*deps)[dependency].insert(file);
+      AnalyzeDependencyForFile(
+          dependency, nodes_without_dependency, deps, dependency_count);
+    }
+  }
+}
+
 void GenerateAddFilesToPool(
     const std::vector<const FileDescriptor*>& files,
     string aggregate_metadata_class,
+    std::set<string> aggregate_metadata_prefixes,
     io::Printer* printer) {
   int lastindex = aggregate_metadata_class.find_last_of("\\");
 
@@ -1071,132 +1092,15 @@ void GenerateAddFilesToPool(
       "  return;\n"
       "}\n");
 
-  FileDescriptorSet file_set;
-
-  // Add metadata for well know types
-  {
-    FileDescriptorProto* file_proto = file_set.add_file();
-    const FileDescriptor* file =
-        ::google::protobuf::Any::descriptor()->file();
-    file->CopyTo(file_proto);
-  }
-
-  {
-    FileDescriptorProto* file_proto = file_set.add_file();
-    const FileDescriptor* file =
-        ::google::protobuf::SourceContext::descriptor()->file();
-    file->CopyTo(file_proto);
-  }
-
-  {
-    FileDescriptorProto* file_proto = file_set.add_file();
-    const FileDescriptor* file =
-        ::google::protobuf::Type::descriptor()->file();
-    file->CopyTo(file_proto);
-  }
-
-  {
-    FileDescriptorProto* file_proto = file_set.add_file();
-    const FileDescriptor* file =
-        ::google::protobuf::Api::descriptor()->file();
-    file->CopyTo(file_proto);
-  }
-
-  {
-    FileDescriptorProto* file_proto = file_set.add_file();
-    const FileDescriptor* file =
-        ::google::protobuf::Duration::descriptor()->file();
-    file->CopyTo(file_proto);
-  }
-
-  {
-    FileDescriptorProto* file_proto = file_set.add_file();
-    const FileDescriptor* file =
-        ::google::protobuf::Empty::descriptor()->file();
-    file->CopyTo(file_proto);
-  }
-
-  {
-    FileDescriptorProto* file_proto = file_set.add_file();
-    const FileDescriptor* file =
-        ::google::protobuf::FieldMask::descriptor()->file();
-    file->CopyTo(file_proto);
-  }
-
-  {
-    FileDescriptorProto* file_proto = file_set.add_file();
-    const FileDescriptor* file =
-        ::google::protobuf::Struct::descriptor()->file();
-    file->CopyTo(file_proto);
-  }
-
-  {
-    FileDescriptorProto* file_proto = file_set.add_file();
-    const FileDescriptor* file =
-        ::google::protobuf::Timestamp::descriptor()->file();
-    file->CopyTo(file_proto);
-  }
-
-  {
-    FileDescriptorProto* file_proto = file_set.add_file();
-    const FileDescriptor* file =
-        ::google::protobuf::DoubleValue::descriptor()->file();
-    file->CopyTo(file_proto);
-  }
-
-  // Add metadata for other files
-  for (auto file : files) {
-    FileDescriptorProto* file_proto = file_set.add_file();
-    file->CopyTo(file_proto);
-
-    // Filter out descriptor.proto as it cannot be depended on for now.
-    RepeatedPtrField<string>* dependency = file_proto->mutable_dependency();
-    for (RepeatedPtrField<string>::iterator it = dependency->begin();
-         it != dependency->end(); ++it) {
-      if (*it != kDescriptorFile) {
-        dependency->erase(it);
-        break;
-      }
-    }
-
-    // Filter out all extensions, since we do not support extension yet.
-    file_proto->clear_extension();
-    RepeatedPtrField<DescriptorProto>* message_type =
-        file_proto->mutable_message_type();
-    for (RepeatedPtrField<DescriptorProto>::iterator it = message_type->begin();
-         it != message_type->end(); ++it) {
-      it->clear_extension();
-    }
-  }
-
   // Sort files according to dependency
-  std::map<string, FileDescriptorProto*> name2file;
-  std::map<FileDescriptorProto*, std::set<FileDescriptorProto*>> deps;
-  std::map<FileDescriptorProto*, int> dependency_count;
-  std::set<FileDescriptorProto*> nodes_without_dependency;
+  std::map<const FileDescriptor*, std::set<const FileDescriptor*>> deps;
+  std::map<const FileDescriptor*, int> dependency_count;
+  std::set<const FileDescriptor*> nodes_without_dependency;
   FileDescriptorSet sorted_file_set;
   
-  for (int i = 0; i < file_set.file_size(); i++) {
-    auto file = file_set.mutable_file(i);
-    name2file[file->name()] = file;
-    if (file->dependency_size() == 0) {
-      nodes_without_dependency.insert(file);
-    } else {
-      dependency_count[file] = file->dependency_size();
-    }
-  }
-
-  for (int i = 0; i < file_set.file_size(); i++) {
-    auto dependent = file_set.mutable_file(i);
-    for (const auto& dependency_name : dependent->dependency()) {
-      auto dependency = name2file[dependency_name];
-
-      if (deps.find(dependency) == deps.end()) {
-        deps[dependency] = std::set<FileDescriptorProto*>();
-      }
-
-      deps[dependency].insert(dependent);
-    }
+  for (auto file : files) {
+    AnalyzeDependencyForFile(
+        file, &nodes_without_dependency, &deps, &dependency_count);
   }
 
   while (!nodes_without_dependency.empty()) {
@@ -1210,8 +1114,42 @@ void GenerateAddFilesToPool(
         dependency_count[dependent] -= 1;
       }
     }
-    auto new_file = sorted_file_set.add_file();
-    new_file->Swap(file);
+    bool needs_aggregate = false;
+    for (const auto& prefix : aggregate_metadata_prefixes) {
+      if (HasPrefixString(file->package(), prefix)) {
+        needs_aggregate = true;
+        break;
+      }
+    }
+    if (needs_aggregate) {
+      auto file_proto = sorted_file_set.add_file();
+      file->CopyTo(file_proto);
+
+      // Filter out descriptor.proto as it cannot be depended on for now.
+      RepeatedPtrField<string>* dependency = file_proto->mutable_dependency();
+      for (RepeatedPtrField<string>::iterator it = dependency->begin();
+           it != dependency->end(); ++it) {
+        if (*it != kDescriptorFile) {
+          dependency->erase(it);
+          break;
+        }
+      }
+
+      // Filter out all extensions, since we do not support extension yet.
+      file_proto->clear_extension();
+      RepeatedPtrField<DescriptorProto>* message_type =
+          file_proto->mutable_message_type();
+      for (RepeatedPtrField<DescriptorProto>::iterator it = message_type->begin();
+           it != message_type->end(); ++it) {
+        it->clear_extension();
+      }
+    } else {
+      std::string dependency_filename =
+          GeneratedMetadataFileName(file, false);
+      printer->Print(
+          "\\^name^::initOnce();\n",
+          "name", FilenameToClassname(dependency_filename));
+    }
   }
 
   string files_data;
@@ -1327,6 +1265,7 @@ void GenerateMetadataFile(const FileDescriptor* file,
 void GenerateMetadataFileForAll(
     const std::vector<const FileDescriptor*>& files,
     const string& aggregate_metadata_class,
+    std::set<string> aggregate_metadata_prefixes,
     GeneratorContext* generator_context) {
   const auto components = Split(aggregate_metadata_class, "\\");
   string aggregate_metadata_file = StrCat(JoinStrings(components, "/"), ".php");
@@ -1335,7 +1274,8 @@ void GenerateMetadataFileForAll(
   io::Printer printer(output.get(), '^');
 
   GenerateHeadForAggregateMetadataFile(&printer);
-  GenerateAddFilesToPool(files, aggregate_metadata_class, &printer);
+  GenerateAddFilesToPool(files, aggregate_metadata_class,
+                         aggregate_metadata_prefixes, &printer);
 }
 
 template <typename DescriptorType>
@@ -1921,9 +1861,11 @@ bool Generator::Generate(const FileDescriptor* file, const string& parameter,
 
   for (const auto& option : Split(parameter, ",")) {
     const auto option_pair = Split(option, "=");
-    if (option_pair[0] == "aggregate_metadata") {
+    if (HasPrefixString(option_pair[0], "aggregate_metadata")) {
       aggregate_metadata = true;
-      aggregate_metadata_class = option_pair[1];
+      string options_string = option_pair[1];
+      const auto options = Split(options_string, "#", false);
+      aggregate_metadata_class = options[0];
     }
     if (option_pair[0] == "internal") {
       is_descriptor = true;
@@ -1955,17 +1897,27 @@ bool Generator::GenerateAll(const std::vector<const FileDescriptor*>& files,
                             std::string* error) const {
   bool aggregate_metadata = false;
   string aggregate_metadata_class;
+  std::set<string> aggregate_metadata_prefixes;
+
   for (const auto& option : Split(parameter, ",")) {
     const auto option_pair = Split(option, "=");
-    if (option_pair[0] == "aggregate_metadata") {
+    if (HasPrefixString(option_pair[0], "aggregate_metadata")) {
       aggregate_metadata = true;
-      aggregate_metadata_class = option_pair[1];
+      string options_string = option_pair[1];
+      const auto options = Split(options_string, "#", false);
+      aggregate_metadata_class = options[0];
+      GOOGLE_LOG(INFO) << aggregate_metadata_class;
+      for (int i = 0; i < options.size(); i++) {
+        aggregate_metadata_prefixes.insert(options[i]);
+        GOOGLE_LOG(INFO) << options[i];
+      }
     }
   }
 
   if (aggregate_metadata) {
     GenerateMetadataFileForAll(
-        files, aggregate_metadata_class, generator_context);
+        files, aggregate_metadata_class,
+        aggregate_metadata_prefixes, generator_context);
   }
 
   for (auto file : files) {
