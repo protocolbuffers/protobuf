@@ -1072,7 +1072,7 @@ const bool parse_and_add_descriptor(const char *data,
     // TODO(teboring): Needs another look up method which takes data and length.
     file = upb_symtab_lookupfile2(pool->symtab, name.data, name.size);
     if (file != NULL) {
-      return true;
+      continue;
     }
 
     // The PHP code generator currently special-cases descriptor.proto.  It
