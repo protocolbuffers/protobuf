@@ -171,11 +171,16 @@ if __name__ == '__main__':
     # -fPIC for this to work.
     compile_static_ext = get_option_from_sys_argv('--compile_static_extension')
     libraries = ['protobuf']
+    protoc_libraries = ['protobuf', 'protoc']
     extra_objects = None
+    extra_protoc_objects = None
+    # TODO: Investigate what happens when you don't statically compile.
     if compile_static_ext:
       libraries = None
+      protoc_libraries = None
       extra_objects = ['../src/.libs/libprotobuf.a',
                        '../src/.libs/libprotobuf-lite.a']
+      extra_protoc_objects = ['../src/.libs/libprotoc.a'] + extra_objects
     test_conformance.target = 'test_python_cpp'
 
     extra_compile_args = []
@@ -238,6 +243,15 @@ if __name__ == '__main__':
             glob.glob('google/protobuf/internal/api_implementation.cc'),
             extra_compile_args=extra_compile_args + ['-DPYTHON_PROTO2_CPP_IMPL_V2'],
         ),
+        Extension(
+            "google.protobuf.pyext_protoc._protoc",
+            glob.glob('google/protobuf/pyext_protoc/*.cc'),
+            include_dirs=[".", "../src"],
+            libraries=protoc_libraries,
+            extra_objects=extra_protoc_objects,
+            library_dirs=['../src/.libs'],
+            extra_compile_args=extra_compile_args,
+        )
     ])
     os.environ['PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION'] = 'cpp'
 
