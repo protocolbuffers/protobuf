@@ -185,37 +185,30 @@ static int protoc_get_protos(
 }
 
 // TODO: Clean this horrible mess up.
-// TODO: Investigate which calls do error checking for you and remove the
-// explicit redundant error checking.
-// TODO: Investigate PyArg_ParseTuple.
-// TODO: Accept a sequence instead of just a list.
 static PyObject* get_protos_as_list(PyObject* unused_module, PyObject* args) {
   if (PyTuple_Size(args) != 2) {
     PyErr_SetString(PyExc_ValueError, "Expected 2 arguments.");
-    return Py_None;
+    return NULL;
   }
   PyObject* py_protobuf_path = PyTuple_GetItem(args, 0);
-  if (!PyBytes_CheckExact(py_protobuf_path)) {
-    PyErr_SetString(PyExc_ValueError, "Expected bytes.");
-    return Py_None;
-  }
   PyObject* py_include_paths = PyTuple_GetItem(args, 1);
-  if (!PyList_CheckExact(py_include_paths)) {
-    PyErr_SetString(PyExc_ValueError, "Expected list object.");
-    return Py_None;
-  }
   std::vector<std::string> include_paths;
-  include_paths.reserve(PyList_Size(py_include_paths));
-  for (Py_ssize_t i = 0; i < PyList_Size(py_include_paths); ++i) {
-    PyObject* py_include_path = PyList_GetItem(py_include_paths, i);
-    if (!PyBytes_CheckExact(py_include_path)) {
-      // TODO: Print out what was actually found.
-      PyErr_SetString(PyExc_ValueError, "Expected bytes entries in include_paths.");
-      return Py_None;
+  include_paths.reserve(PySequence_Size(py_include_paths));
+  for (Py_ssize_t i = 0; i < PySequence_Size(py_include_paths); ++i) {
+    PyObject* py_include_path = PySequence_ITEM(py_include_paths, i);
+    if (!py_include_path) {
+      return NULL;
     }
-    include_paths.push_back(PyBytes_AsString(py_include_path));
+    const char* include_path = PyBytes_AsString(py_include_path);
+    if (include_path == NULL) {
+      return NULL;
+    }
+    include_paths.push_back(include_path);
   }
   const char* protobuf_path = PyBytes_AsString(py_protobuf_path);
+  if (protobuf_path == NULL) {
+    return NULL;
+  }
   std::vector<std::pair<std::string, std::string>> files_out;
   std::vector<::google::protobuf::python::protoc::ProtocError> errors;
   std::vector<::google::protobuf::python::protoc::ProtocWarning> warnings;
@@ -226,12 +219,12 @@ static PyObject* get_protos_as_list(PyObject* unused_module, PyObject* args) {
   if (rc != 0) {
     // TODO: Do full error propagation.
     PyErr_SetString(PyExc_RuntimeError, "Encountered protoc errors. News at 11:00.");
-    return Py_None;
+    return NULL;
   }
   PyObject* py_files_out = PyList_New(files_out.size());
   if (py_files_out == NULL) {
     PyErr_SetString(PyExc_OSError, "Failed to allocate list object.");
-    return Py_None;
+    return NULL;
   }
   Py_ssize_t i = 0;
   for (const auto& file_pair : files_out) {
@@ -239,12 +232,12 @@ static PyObject* get_protos_as_list(PyObject* unused_module, PyObject* args) {
     PyObject* py_code = PyBytes_FromString(file_pair.second.c_str());
     if (py_path == NULL || py_code == NULL) {
       PyErr_SetString(PyExc_OSError, "Failed to allocate bytes object.");
-      return Py_None;
+      return NULL;
     }
     PyObject* py_file_pair = PyTuple_Pack(2, py_path, py_code);
     if (py_file_pair == NULL) {
       PyErr_SetString(PyExc_OSError, "Failed to allocate tuple object.");
-      return Py_None;
+      return NULL;
     }
     PyList_SET_ITEM(py_files_out, i, py_file_pair);
     ++i;
