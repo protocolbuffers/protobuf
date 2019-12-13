@@ -201,6 +201,7 @@ static bool parse_args(PyObject* args,
       return false;
     }
     const char* include_path = PyBytes_AsString(py_include_path);
+    Py_DECREF(py_include_path);
     if (include_path == NULL) {
       return false;
     }
@@ -213,6 +214,7 @@ static bool parse_args(PyObject* args,
   return true;
 }
 
+// NOTE: Returns new reference to List[Tuple[bytes, bytes]].
 static PyObject* pack_results(const std::vector<std::pair<std::string, std::string>>& files_out) {
   PyObject* py_files_out = PyList_New(files_out.size());
   if (py_files_out == NULL) {
@@ -245,6 +247,7 @@ static void process_errors(const std::vector<::google::protobuf::python::protoc:
   PyErr_SetString(PyExc_RuntimeError, errors[0].message.c_str());
 }
 
+// NOTE: Returns new reference to List[Tuple[bytes, bytes]].
 static PyObject* get_protos_as_list(PyObject* unused_module, PyObject* args) {
   const char* protobuf_path;
   std::vector<std::string> include_paths;
