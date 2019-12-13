@@ -4,7 +4,9 @@
 
 from __future__ import print_function
 from google import protobuf
-protos = protobuf.protos("addressbook.proto")
+import os
+_PROTO_ROOT = os.path.join(os.path.dirname(__file__), "../src/")
+protos = protobuf.protos("addressbook.proto", include_paths=[_PROTO_ROOT])
 import sys
 
 

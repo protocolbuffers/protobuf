@@ -2,7 +2,10 @@
 
 # See README.txt for information and build instructions.
 
-import addressbook_pb2
+from google import protobuf
+import os
+_PROTO_ROOT = os.path.join(os.path.dirname(__file__), "../src/")
+protos = protobuf.protos("addressbook.proto", include_paths=[_PROTO_ROOT])
 import sys
 
 try:
@@ -30,11 +33,11 @@ def PromptForAddress(person):
 
     type = raw_input("Is this a mobile, home, or work phone? ")
     if type == "mobile":
-      phone_number.type = addressbook_pb2.Person.MOBILE
+      phone_number.type = protos.Person.MOBILE
     elif type == "home":
-      phone_number.type = addressbook_pb2.Person.HOME
+      phone_number.type = protos.Person.HOME
     elif type == "work":
-      phone_number.type = addressbook_pb2.Person.WORK
+      phone_number.type = protos.Person.WORK
     else:
       print("Unknown phone type; leaving as default value.")
 
@@ -46,7 +49,7 @@ if len(sys.argv) != 2:
   print("Usage:", sys.argv[0], "ADDRESS_BOOK_FILE")
   sys.exit(-1)
 
-address_book = addressbook_pb2.AddressBook()
+address_book = protos.AddressBook()
 
 # Read the existing address book.
 try:

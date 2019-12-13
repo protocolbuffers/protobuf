@@ -241,8 +241,8 @@ static PyObject* pack_results(const std::vector<std::pair<std::string, std::stri
 static void process_errors(const std::vector<::google::protobuf::python::protoc::ProtocError>& errors,
                            const std::vector<::google::protobuf::python::protoc::ProtocWarning>& warnings) {
 
-  // TODO: Do full error propagation.
-  PyErr_SetString(PyExc_RuntimeError, "Encountered protoc errors. News at 11:00.");
+  // TODO: Fully report errors.
+  PyErr_SetString(PyExc_RuntimeError, errors[0].message.c_str());
 }
 
 static PyObject* get_protos_as_list(PyObject* unused_module, PyObject* args) {
