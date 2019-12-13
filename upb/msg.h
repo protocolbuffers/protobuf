@@ -268,7 +268,9 @@ UPB_INLINE bool _upb_map_get(const upb_map *map, const void *key,
 }
 
 UPB_INLINE void* _upb_map_next(const upb_map *map, size_t *iter) {
-  upb_strtable_iter it = {&map->table, *iter};
+  upb_strtable_iter it;
+  it.t = &map->table;
+  it.index = *iter;
   upb_strtable_next(&it);
   if (upb_strtable_done(&it)) return NULL;
   *iter = it.index;
@@ -345,7 +347,8 @@ UPB_INLINE void _upb_msg_map_clear(upb_msg *msg, size_t ofs) {
 UPB_INLINE void _upb_msg_map_key(const void* msg, void* key, size_t size) {
   const upb_tabent *ent = (const upb_tabent*)msg;
   uint32_t u32len;
-  upb_strview k = {upb_tabstr(ent->key, &u32len)};
+  upb_strview k;
+  k.data = upb_tabstr(ent->key, &u32len);
   k.size = u32len;
   _upb_map_fromkey(k, key, size);
 }

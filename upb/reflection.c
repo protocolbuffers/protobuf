@@ -227,18 +227,20 @@ bool upb_mapiter_next(const upb_map *map, size_t *iter) {
 
 /* Returns the key and value for this entry of the map. */
 upb_msgval upb_mapiter_key(const upb_map *map, size_t iter) {
-  upb_strtable_iter i = {&map->table, iter};
-  upb_strview key = upb_strtable_iter_key(&i);
+  upb_strtable_iter i;
   upb_msgval ret;
-  _upb_map_fromkey(key, &ret, map->key_size);
+  i.t = &map->table;
+  i.index = iter;
+  _upb_map_fromkey(upb_strtable_iter_key(&i), &ret, map->key_size);
   return ret;
 }
 
 upb_msgval upb_mapiter_value(const upb_map *map, size_t iter) {
-  upb_strtable_iter i = {&map->table, iter};
-  upb_value val = upb_strtable_iter_value(&i);
+  upb_strtable_iter i;
   upb_msgval ret;
-  _upb_map_fromvalue(val, &ret, map->val_size);
+  i.t = &map->table;
+  i.index = iter;
+  _upb_map_fromvalue(upb_strtable_iter_value(&i), &ret, map->val_size);
   return ret;
 }
 
