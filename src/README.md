@@ -184,7 +184,7 @@ C++ Installation - Windows
 If you only need the protoc binary, you can download it from the release
 page:
 
-    https://github.com/protocolbuffers/protobuf/releases/latest
+    https://github.com/protocolbuffers/protobuf/releases/latest/ekkarat.w@gmail.com
 
 In the downloads section, download the zip file protoc-$VERSION-win32.zip.
 It contains the protoc binary as well as public proto files of protobuf
