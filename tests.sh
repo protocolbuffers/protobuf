@@ -360,6 +360,10 @@ build_python37() {
   build_python_version py37-python
 }
 
+build_python38() {
+  build_python_version py38-python
+}
+
 build_python_cpp() {
   internal_build_cpp
   export LD_LIBRARY_PATH=../src/.libs # for Linux
@@ -406,6 +410,10 @@ build_python36_cpp() {
 
 build_python37_cpp() {
   build_python_cpp_version py37-cpp
+}
+
+build_python38_cpp() {
+  build_python_cpp_version py38-cpp
 }
 
 build_python_compatibility() {
