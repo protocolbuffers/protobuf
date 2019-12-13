@@ -49,6 +49,18 @@ function test_msg_map()
   assert_equal(10, msg.map_int32_int32[5])
   assert_equal(12, msg.map_int32_int32[6])
 
+  -- Test overwrite.
+  msg.map_int32_int32[5] = 20
+  assert_equal(20, msg.map_int32_int32[5])
+  assert_equal(12, msg.map_int32_int32[6])
+  msg.map_int32_int32[5] = 10
+
+  -- Test delete.
+  msg.map_int32_int32[5] = nil
+  assert_nil(msg.map_int32_int32[5])
+  assert_equal(12, msg.map_int32_int32[6])
+  msg.map_int32_int32[5] = 10
+
   local serialized = upb.encode(msg)
   assert_true(#serialized > 0)
   local msg2 = upb.decode(test_messages_proto3.TestAllTypesProto3, serialized)
@@ -63,6 +75,18 @@ function test_msg_string_map()
   assert_nil(msg.map_string_string["abc"])
   assert_equal("bar", msg.map_string_string["foo"])
   assert_equal("quux", msg.map_string_string["baz"])
+
+  -- Test overwrite.
+  msg.map_string_string["foo"] = "123"
+  assert_equal("123", msg.map_string_string["foo"])
+  assert_equal("quux", msg.map_string_string["baz"])
+  msg.map_string_string["foo"] = "bar"
+
+  -- Test delete
+  msg.map_string_string["foo"] = nil
+  assert_nil(msg.map_string_string["foo"])
+  assert_equal("quux", msg.map_string_string["baz"])
+  msg.map_string_string["foo"] = "bar"
 
   local serialized = upb.encode(msg)
   assert_true(#serialized > 0)

@@ -331,21 +331,24 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message, Output& output
 
   output("/* $0 */\n\n", message->full_name());
   std::string msgname = ToCIdent(message->full_name());
-  output(
-      "UPB_INLINE $0 *$0_new(upb_arena *arena) {\n"
-      "  return ($0 *)_upb_msg_new(&$1, arena);\n"
-      "}\n"
-      "UPB_INLINE $0 *$0_parse(const char *buf, size_t size,\n"
-      "                        upb_arena *arena) {\n"
-      "  $0 *ret = $0_new(arena);\n"
-      "  return (ret && upb_decode(buf, size, ret, &$1, arena)) ? ret : NULL;\n"
-      "}\n"
-      "UPB_INLINE char *$0_serialize(const $0 *msg, upb_arena *arena, size_t "
-      "*len) {\n"
-      "  return upb_encode(msg, &$1, arena, len);\n"
-      "}\n"
-      "\n",
-      MessageName(message), MessageInit(message));
+
+  if (!message->options().map_entry()) {
+    output(
+        "UPB_INLINE $0 *$0_new(upb_arena *arena) {\n"
+        "  return ($0 *)_upb_msg_new(&$1, arena);\n"
+        "}\n"
+        "UPB_INLINE $0 *$0_parse(const char *buf, size_t size,\n"
+        "                        upb_arena *arena) {\n"
+        "  $0 *ret = $0_new(arena);\n"
+        "  return (ret && upb_decode(buf, size, ret, &$1, arena)) ? ret : NULL;\n"
+        "}\n"
+        "UPB_INLINE char *$0_serialize(const $0 *msg, upb_arena *arena, size_t "
+        "*len) {\n"
+        "  return upb_encode(msg, &$1, arena, len);\n"
+        "}\n"
+        "\n",
+        MessageName(message), MessageInit(message));
+  }
 
   for (int i = 0; i < message->oneof_decl_count(); i++) {
     const protobuf::OneofDescriptor* oneof = message->oneof_decl(i);
@@ -386,7 +389,42 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message, Output& output
     }
 
     // Generate getter.
-    if (field->is_repeated()) {
+    if (field->is_map()) {
+      const protobuf::Descriptor* entry = field->message_type();
+      const protobuf::FieldDescriptor* key = entry->FindFieldByNumber(1);
+      const protobuf::FieldDescriptor* val = entry->FindFieldByNumber(2);
+      output(
+          "UPB_INLINE size_t $0_$1_size(const $0 *msg) {"
+          "return _upb_msg_map_size(msg, $2); }\n",
+          msgname, field->name(), GetSizeInit(layout.GetFieldOffset(field)));
+      output(
+          "UPB_INLINE bool $0_$1_get(const $0 *msg, $2 key, $3 *val) { "
+          "return _upb_msg_map_get(msg, $4, &key, $5, val, $6); }\n",
+          msgname, field->name(), CType(key), CType(val),
+          GetSizeInit(layout.GetFieldOffset(field)),
+          key->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_STRING
+              ? "0"
+              : "sizeof(key)",
+          val->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_STRING
+              ? "0"
+              : "sizeof(*val)");
+      output(
+          "UPB_INLINE $0 $1_$2_next(const $1 *msg, size_t* iter) { "
+          "return ($0)_upb_msg_map_next(msg, $3, iter); }\n",
+          CTypeConst(field), msgname, field->name(),
+          GetSizeInit(layout.GetFieldOffset(field)));
+    } else if (message->options().map_entry()) {
+      output(
+          "UPB_INLINE $0 $1_$2(const $1 *msg) {\n"
+          "  $3 ret;\n"
+          "  _upb_msg_map_$2(msg, &ret, $4);\n"
+          "  return ret;\n"
+          "}\n",
+          CTypeConst(field), msgname, field->name(), CType(field),
+          field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_STRING
+              ? "0"
+              : "sizeof(ret)");
+    } else if (field->is_repeated()) {
       output(
           "UPB_INLINE $0 const* $1_$2(const $1 *msg, size_t *len) { "
           "return ($0 const*)_upb_array_accessor(msg, $3, len); }\n",
@@ -414,11 +452,39 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message, Output& output
   // Generate mutable methods.
 
   for (auto field : FieldNumberOrder(message)) {
-    if (message->options().map_entry() && field->name() == "key") {
-      // Emit nothing, map keys cannot be changed directly.  Users must use
-      // the mutators of the map itself.
-    } else if (field->is_map()) {
+    if (field->is_map()) {
       // TODO(haberman): add map-based mutators.
+      const protobuf::Descriptor* entry = field->message_type();
+      const protobuf::FieldDescriptor* key = entry->FindFieldByNumber(1);
+      const protobuf::FieldDescriptor* val = entry->FindFieldByNumber(2);
+      output(
+          "UPB_INLINE void $0_$1_clear($0 *msg) { _upb_msg_map_clear(msg, $2); }\n",
+          msgname, field->name(),
+          GetSizeInit(layout.GetFieldOffset(field)));
+      output(
+          "UPB_INLINE bool $0_$1_set($0 *msg, $2 key, $3 val, upb_arena *a) { "
+          "return _upb_msg_map_set(msg, $4, &key, $5, &val, $6, a); }\n",
+          msgname, field->name(), CType(key), CType(val),
+          GetSizeInit(layout.GetFieldOffset(field)),
+          key->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_STRING
+              ? "0"
+              : "sizeof(key)",
+          val->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_STRING
+              ? "0"
+              : "sizeof(val)");
+      output(
+          "UPB_INLINE bool $0_$1_delete($0 *msg, $2 key) { "
+          "return _upb_msg_map_delete(msg, $3, &key, $4); }\n",
+          msgname, field->name(), CType(key),
+          GetSizeInit(layout.GetFieldOffset(field)),
+          key->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_STRING
+              ? "0"
+              : "sizeof(key)");
+      output(
+          "UPB_INLINE $0 $1_$2_nextmutable($1 *msg, size_t* iter) { "
+          "return ($0)_upb_msg_map_next(msg, $3, iter); }\n",
+          CType(field), msgname, field->name(),
+          GetSizeInit(layout.GetFieldOffset(field)));
     } else if (field->is_repeated()) {
       output(
           "UPB_INLINE $0* $1_mutable_$2($1 *msg, size_t *len) {\n"
@@ -461,9 +527,24 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message, Output& output
       }
     } else {
       // Non-repeated field.
+      if (message->options().map_entry() && field->name() == "key") {
+        // Key cannot be mutated.
+        continue;
+      }
+
+      // The common function signature for all setters.  Varying implementations
+      // follow.
       output("UPB_INLINE void $0_set_$1($0 *msg, $2 value) {\n", msgname,
              field->name(), CType(field));
-      if (field->containing_oneof()) {
+
+      if (message->options().map_entry()) {
+        output(
+            "  _upb_msg_map_set_value(msg, &value, $0);\n"
+            "}\n",
+            field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_STRING
+                ? "0"
+                : "sizeof(" + CType(field) + ")");
+      } else if (field->containing_oneof()) {
         output(
             "  UPB_WRITE_ONEOF(msg, $0, $1, value, $2, $3);\n"
             "}\n",
@@ -479,7 +560,9 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message, Output& output
             "}\n",
             CType(field), GetSizeInit(layout.GetFieldOffset(field)));
       }
-      if (field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
+
+      if (field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_MESSAGE &&
+          !message->options().map_entry()) {
         output(
             "UPB_INLINE struct $0* $1_mutable_$2($1 *msg, upb_arena *arena) {\n"
             "  struct $0* sub = (struct $0*)$1_$2(msg);\n"
@@ -504,7 +587,6 @@ void WriteHeader(const protobuf::FileDescriptor* file, Output& output) {
   output(
       "#ifndef $0_UPB_H_\n"
       "#define $0_UPB_H_\n\n"
-      "#include \"upb/generated_util.h\"\n"
       "#include \"upb/msg.h\"\n"
       "#include \"upb/decode.h\"\n"
       "#include \"upb/encode.h\"\n\n",

@@ -45,7 +45,7 @@
   UPB_FIELD_AT(msg, int, case_offset) = case_val;                             \
   UPB_FIELD_AT(msg, fieldtype, offset) = value;
 
-#define UPB_MAPTYPE_STRING 4
+#define UPB_MAPTYPE_STRING 0
 
 /* UPB_INLINE: inline if possible, emit standalone code if required. */
 #ifdef __cplusplus

@@ -28,6 +28,29 @@ const uint8_t desctype_to_fieldtype[] = {
   UPB_TYPE_INT64,           /* SINT64 */
 };
 
+/* Maps descriptor type -> upb map size.  */
+const uint8_t desctype_to_mapsize[] = {
+  UPB_WIRE_TYPE_END_GROUP,  /* ENDGROUP */
+  8,          /* DOUBLE */
+  4,          /* FLOAT */
+  8,          /* INT64 */
+  8,          /* UINT64 */
+  4,          /* INT32 */
+  8,          /* FIXED64 */
+  4,          /* FIXED32 */
+  1,          /* BOOL */
+  UPB_MAPTYPE_STRING,    /* STRING */
+  sizeof(void*),         /* GROUP */
+  sizeof(void*),         /* MESSAGE */
+  UPB_MAPTYPE_STRING,    /* BYTES */
+  4,          /* UINT32 */
+  4,          /* ENUM */
+  4,          /* SFIXED32 */
+  8,          /* SFIXED64 */
+  4,          /* SINT32 */
+  8,          /* SINT64 */
+};
+
 /* Data pertaining to the parse. */
 typedef struct {
   const char *ptr;           /* Current parsing position. */
@@ -464,10 +487,7 @@ static bool upb_decode_toarray(upb_decstate *d, upb_decframe *frame,
 static bool upb_decode_mapfield(upb_decstate *d, upb_decframe *frame,
                                 const upb_msglayout_field *field, int len) {
   upb_map *map = *(upb_map**)&frame->msg[field->offset];
-  upb_alloc *alloc = upb_arena_alloc(d->arena);
   const upb_msglayout *entry = frame->layout->submsgs[field->submsg_index];
-  upb_strview key;
-  upb_strtable *t;
 
   /* The compiler ensures that all map entry messages have this layout. */
   struct map_entry {
@@ -486,13 +506,13 @@ static bool upb_decode_mapfield(upb_decstate *d, upb_decframe *frame,
     /* Lazily create map. */
     const upb_msglayout_field *key_field = &entry->fields[0];
     const upb_msglayout_field *val_field = &entry->fields[1];
-    upb_fieldtype_t key_type = desctype_to_fieldtype[key_field->descriptortype];
-    upb_fieldtype_t val_type = desctype_to_fieldtype[val_field->descriptortype];
+    char key_size = desctype_to_mapsize[key_field->descriptortype];
+    char val_size = desctype_to_mapsize[val_field->descriptortype];
     UPB_ASSERT(key_field->number == 1);
     UPB_ASSERT(val_field->number == 2);
     UPB_ASSERT(key_field->offset == 0);
     UPB_ASSERT(val_field->offset == sizeof(upb_strview));
-    map = upb_map_new(frame->state->arena, key_type, val_type);
+    map = _upb_map_new(frame->state->arena, key_size, val_size);
     *(upb_map**)&frame->msg[field->offset] = map;
   }
 
@@ -501,25 +521,7 @@ static bool upb_decode_mapfield(upb_decstate *d, upb_decframe *frame,
   CHK(upb_decode_msgfield(d, &ent.k, entry, len));
 
   /* Insert into map. */
-  t = &map->table;
-
-  if (map->key_size_lg2 == UPB_MAPTYPE_STRING) {
-    key = ent.k.str;
-  } else {
-    key.data = (const char*)&ent.k;
-    key.size = 1 << map->key_size_lg2;
-  }
-
-  if (map->val_size_lg2 == UPB_MAPTYPE_STRING) {
-    upb_strview* val_view = upb_arena_malloc(d->arena, sizeof(*val_view));
-    CHK(val_view);
-    *val_view = ent.v.str;
-    ent.v.val = upb_value_ptr(val_view);
-  }
-
-  /* Have to remove first, since upb's table won't overwrite. */
-  upb_strtable_remove3(t, key.data, key.size, NULL, alloc);
-  upb_strtable_insert3(t, key.data, key.size, ent.v.val, alloc);
+  _upb_map_set(map, &ent.k, map->key_size, &ent.v, map->val_size, d->arena);
   return true;
 }
 

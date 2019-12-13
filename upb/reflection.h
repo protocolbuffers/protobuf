@@ -72,6 +72,10 @@ bool upb_array_resize(upb_array *array, size_t size, upb_arena *arena);
 
 /** upb_map *******************************************************************/
 
+/* Creates a new map on the given arena with the given key/value size. */
+upb_map *upb_map_new(upb_arena *a, upb_fieldtype_t key_type,
+                     upb_fieldtype_t value_type);
+
 /* Returns the number of entries in the map. */
 size_t upb_map_size(const upb_map *map);
 
@@ -89,48 +93,30 @@ bool upb_map_set(upb_map *map, upb_msgval key, upb_msgval val,
                  upb_arena *arena);
 
 /* Deletes this key from the table.  Returns true if the key was present. */
-/* TODO(haberman): can |arena| be removed once upb_table is arena-only and no
- * longer tries to free keys? */
-bool upb_map_delete(upb_map *map, upb_msgval key, upb_arena *arena);
+bool upb_map_delete(upb_map *map, upb_msgval key);
 
-/** upb_mapiter ***************************************************************/
+/* Map iteration:
+ *
+ * size_t iter = UPB_MAP_BEGIN;
+ * while (upb_mapiter_next(map, &iter)) {
+ *   upb_msgval key = upb_mapiter_key(map, iter);
+ *   upb_msgval val = upb_mapiter_value(map, iter);
+ *
+ *   // If mutating is desired.
+ *   upb_mapiter_setvalue(map, iter, value2);
+ * }
+ */
 
-/* For iterating over a map.  Map iterators are invalidated by mutations to the
- * map, but an invalidated iterator will never return junk or crash the process
- * (this is an important property when exposing iterators to interpreted
- * languages like Ruby, PHP, etc).  An invalidated iterator may return entries
- * that were already returned though, and if you keep invalidating the iterator
- * during iteration, the program may enter an infinite loop. */
-struct upb_mapiter;
-typedef struct upb_mapiter upb_mapiter;
-
-size_t upb_mapiter_sizeof(void);
-
-/* Starts iteration.  If the map is mutable then we can modify entries while
- * iterating. */
-void upb_mapiter_constbegin(upb_mapiter *i, const upb_map *map);
-void upb_mapiter_begin(upb_mapiter *i, upb_map *map);
-
-/* Sets the iterator to "done" state.  This will return "true" from
- * upb_mapiter_done() and will compare equal to other "done" iterators. */
-void upb_mapiter_setdone(upb_mapiter *i);
-
-/* Advances to the next entry.  The iterator must not be done. */
-void upb_mapiter_next(upb_mapiter *i);
+/* Advances to the next entry.  Returns false if no more entries are present. */
+bool upb_mapiter_next(const upb_map *map, size_t *iter);
 
 /* Returns the key and value for this entry of the map. */
-upb_msgval upb_mapiter_key(const upb_mapiter *i);
-upb_msgval upb_mapiter_value(const upb_mapiter *i);
+upb_msgval upb_mapiter_key(const upb_map *map, size_t iter);
+upb_msgval upb_mapiter_value(const upb_map *map, size_t iter);
 
 /* Sets the value for this entry.  The iterator must not be done, and the
  * iterator must not have been initialized const. */
-void upb_mapiter_setvalue(const upb_mapiter *i, upb_msgval value);
-
-/* Returns true if the iterator is done. */
-bool upb_mapiter_done(const upb_mapiter *i);
-
-/* Compares two iterators for equality. */
-bool upb_mapiter_isequal(const upb_mapiter *i1, const upb_mapiter *i2);
+void upb_mapiter_setvalue(upb_map *map, size_t iter, upb_msgval value);
 
 #include "upb/port_undef.inc"
 

@@ -262,6 +262,7 @@ upb_inttable *upb_inttable_pack(const upb_inttable *t, void *p, size_t *ofs,
                                 size_t size);
 upb_strtable *upb_strtable_pack(const upb_strtable *t, void *p, size_t *ofs,
                                 size_t size);
+void upb_strtable_clear(upb_strtable *t);
 
 /* Inserts the given key into the hashtable with the given value.  The key must
  * not already exist in the hash table.  For string tables, the key must be
@@ -450,6 +451,10 @@ typedef struct {
   size_t index;
   bool array_part;
 } upb_inttable_iter;
+
+UPB_INLINE const upb_tabent *str_tabent(const upb_strtable_iter *i) {
+  return &i->t->t.entries[i->index];
+}
 
 void upb_inttable_begin(upb_inttable_iter *i, const upb_inttable *t);
 void upb_inttable_next(upb_inttable_iter *i);

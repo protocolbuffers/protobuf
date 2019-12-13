@@ -63,7 +63,6 @@ enable_testing()
 add_library(upb
   upb/decode.c
   upb/encode.c
-  upb/generated_util.h
   upb/msg.c
   upb/msg.h
   upb/port.c

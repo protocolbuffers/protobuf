@@ -24,22 +24,6 @@ static char _upb_fieldtype_to_sizelg2[12] = {
   UPB_SIZE(3, 4),  /* UPB_TYPE_BYTES */
 };
 
-/* Strings/bytes are special-cased in maps. */
-static char _upb_fieldtype_to_mapsizelg2[12] = {
-  0,
-  0,  /* UPB_TYPE_BOOL */
-  2,  /* UPB_TYPE_FLOAT */
-  2,  /* UPB_TYPE_INT32 */
-  2,  /* UPB_TYPE_UINT32 */
-  2,  /* UPB_TYPE_ENUM */
-  UPB_SIZE(2, 3),  /* UPB_TYPE_MESSAGE */
-  3,  /* UPB_TYPE_DOUBLE */
-  3,  /* UPB_TYPE_INT64 */
-  3,  /* UPB_TYPE_UINT64 */
-  UPB_MAPTYPE_STRING,  /* UPB_TYPE_STRING */
-  UPB_MAPTYPE_STRING,  /* UPB_TYPE_BYTES */
-};
-
 static uintptr_t tag_arrptr(void* ptr, int elem_size_lg2) {
   UPB_ASSERT(elem_size_lg2 <= 4);
   return (uintptr_t)ptr | elem_size_lg2;
@@ -172,8 +156,7 @@ void *_upb_array_resize_fallback(upb_array **arr_ptr, size_t size,
 
 /** upb_map *******************************************************************/
 
-upb_map *upb_map_new(upb_arena *a, upb_fieldtype_t key_type,
-                     upb_fieldtype_t value_type) {
+upb_map *_upb_map_new(upb_arena *a, size_t key_size, size_t value_size) {
   upb_map *map = upb_arena_malloc(a, sizeof(upb_map));
 
   if (!map) {
@@ -181,11 +164,10 @@ upb_map *upb_map_new(upb_arena *a, upb_fieldtype_t key_type,
   }
 
   upb_strtable_init2(&map->table, UPB_CTYPE_INT32, upb_arena_alloc(a));
-  map->key_size_lg2 = _upb_fieldtype_to_mapsizelg2[key_type];
-  map->val_size_lg2 = _upb_fieldtype_to_mapsizelg2[value_type];
+  map->key_size = key_size;
+  map->val_size = value_size;
 
   return map;
 }
-
 
 #undef VOIDPTR_AT

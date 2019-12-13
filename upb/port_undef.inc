@@ -1,5 +1,6 @@
 /* See port_def.inc.  This should #undef all macros #defined there. */
 
+#undef UPB_MAPTYPE_STRING
 #undef UPB_SIZE
 #undef UPB_FIELD_AT
 #undef UPB_READ_ONEOF

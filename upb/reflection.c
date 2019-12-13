@@ -7,7 +7,7 @@
 
 #include "upb/port_def.inc"
 
-char field_size[] = {
+static char field_size[] = {
   0,/* 0 */
   8, /* UPB_DESCRIPTOR_TYPE_DOUBLE */
   4, /* UPB_DESCRIPTOR_TYPE_FLOAT */
@@ -27,6 +27,22 @@ char field_size[] = {
   8, /* UPB_DESCRIPTOR_TYPE_SFIXED64 */
   4, /* UPB_DESCRIPTOR_TYPE_SINT32 */
   8, /* UPB_DESCRIPTOR_TYPE_SINT64 */
+};
+
+/* Strings/bytes are special-cased in maps. */
+static char _upb_fieldtype_to_mapsize[12] = {
+  0,
+  1,  /* UPB_TYPE_BOOL */
+  4,  /* UPB_TYPE_FLOAT */
+  4,  /* UPB_TYPE_INT32 */
+  4,  /* UPB_TYPE_UINT32 */
+  4,  /* UPB_TYPE_ENUM */
+  sizeof(void*),  /* UPB_TYPE_MESSAGE */
+  8,  /* UPB_TYPE_DOUBLE */
+  8,  /* UPB_TYPE_INT64 */
+  8,  /* UPB_TYPE_UINT64 */
+  0,  /* UPB_TYPE_STRING */
+  0,  /* UPB_TYPE_BYTES */
 };
 
 /** upb_msg *******************************************************************/
@@ -66,7 +82,8 @@ upb_msgval upb_msg_get(const upb_msg *msg, const upb_fielddef *f) {
   const char *mem = PTR_AT(msg, field->offset, char);
   upb_msgval val;
   if (field->presence == 0 || upb_msg_has(msg, f)) {
-    int size = upb_fielddef_isseq(f) ? sizeof(void*) : field_size[field->descriptortype];
+    int size = upb_fielddef_isseq(f) ? sizeof(void *)
+                                     : field_size[field->descriptortype];
     memcpy(&val, mem, size);
   } else {
     /* TODO(haberman): change upb_fielddef to not require this switch(). */
@@ -132,7 +149,8 @@ void upb_msg_set(upb_msg *msg, const upb_fielddef *f, upb_msgval val,
                  upb_arena *a) {
   const upb_msglayout_field *field = upb_fielddef_layout(f);
   char *mem = PTR_AT(msg, field->offset, char);
-  int size = upb_fielddef_isseq(f) ? sizeof(void*) : field_size[field->descriptortype];
+  int size = upb_fielddef_isseq(f) ? sizeof(void *)
+                                   : field_size[field->descriptortype];
   memcpy(mem, &val, size);
   if (in_oneof(field)) {
     *oneofcase(msg, field) = field->number;
@@ -180,123 +198,48 @@ bool upb_array_resize(upb_array *arr, size_t size, upb_arena *arena) {
 
 /** upb_map *******************************************************************/
 
+upb_map *upb_map_new(upb_arena *a, upb_fieldtype_t key_type,
+                     upb_fieldtype_t value_type) {
+  return _upb_map_new(a, _upb_fieldtype_to_mapsize[key_type],
+                      _upb_fieldtype_to_mapsize[value_type]);
+}
+
 size_t upb_map_size(const upb_map *map) {
-  return upb_strtable_count(&map->table);
-}
-
-static upb_strview upb_map_tokey(int size_lg2, upb_msgval *key) {
-  if (size_lg2 == UPB_MAPTYPE_STRING) {
-    return key->str_val;
-  } else {
-    return upb_strview_make((const char*)key, 1 << size_lg2);
-  }
-}
-
-static upb_msgval upb_map_fromvalue(int size_lg2, upb_value val) {
-  upb_msgval ret;
-  if (size_lg2 == UPB_MAPTYPE_STRING) {
-    upb_strview *strp = upb_value_getptr(val);
-    ret.str_val = *strp;
-  } else {
-    memcpy(&ret, &val, 8);
-  }
-  return ret;
-}
-
-static upb_value upb_map_tovalue(int size_lg2, upb_msgval val, upb_arena *a) {
-  upb_value ret;
-  if (size_lg2 == UPB_MAPTYPE_STRING) {
-    upb_strview *strp = upb_arena_malloc(a, sizeof(*strp));
-    *strp = val.str_val;
-    ret = upb_value_ptr(strp);
-  } else {
-    memcpy(&ret, &val, 8);
-  }
-  return ret;
+  return _upb_map_size(map);
 }
 
 bool upb_map_get(const upb_map *map, upb_msgval key, upb_msgval *val) {
-  upb_strview strkey = upb_map_tokey(map->key_size_lg2, &key);
-  upb_value tabval;
-  bool ret;
-
-  ret = upb_strtable_lookup2(&map->table, strkey.data, strkey.size, &tabval);
-  if (ret) {
-    *val = upb_map_fromvalue(map->val_size_lg2, tabval);
-  }
-
-  return ret;
+  return _upb_map_get(map, &key, map->key_size, val, map->val_size);
 }
 
 bool upb_map_set(upb_map *map, upb_msgval key, upb_msgval val,
                  upb_arena *arena) {
-  upb_strview strkey = upb_map_tokey(map->key_size_lg2, &key);
-  upb_value tabval = upb_map_tovalue(map->val_size_lg2, val, arena);
-  upb_alloc *a = upb_arena_alloc(arena);
-
-  /* TODO(haberman): add overwrite operation to minimize number of lookups. */
-  if (upb_strtable_lookup2(&map->table, strkey.data, strkey.size, NULL)) {
-    upb_strtable_remove3(&map->table, strkey.data, strkey.size, NULL, a);
-  }
-
-  return upb_strtable_insert3(&map->table, strkey.data, strkey.size, tabval, a);
+  return _upb_map_set(map, &key, map->key_size, &val, map->val_size, arena);
 }
 
-bool upb_map_delete(upb_map *map, upb_msgval key, upb_arena *arena) {
-  upb_strview strkey = upb_map_tokey(map->key_size_lg2, &key);
-  upb_alloc *a = upb_arena_alloc(arena);
-  return upb_strtable_remove3(&map->table, strkey.data, strkey.size, NULL, a);
+bool upb_map_delete(upb_map *map, upb_msgval key) {
+  return _upb_map_delete(map, &key, map->key_size);
 }
 
-/** upb_mapiter ***************************************************************/
-
-struct upb_mapiter {
-  upb_strtable_iter iter;
-  char key_size_lg2;
-  char val_size_lg2;
-};
-
-size_t upb_mapiter_sizeof(void) {
-  return sizeof(upb_mapiter);
+bool upb_mapiter_next(const upb_map *map, size_t *iter) {
+  return _upb_map_next(map, iter);
 }
 
-void upb_mapiter_begin(upb_mapiter *i, upb_map *map) {
-  upb_strtable_begin(&i->iter, &map->table);
-  i->key_size_lg2 = map->key_size_lg2;
-  i->val_size_lg2 = map->val_size_lg2;
-}
-
-void upb_mapiter_free(upb_mapiter *i, upb_alloc *a) {
-  upb_free(a, i);
-}
-
-void upb_mapiter_next(upb_mapiter *i) {
-  upb_strtable_next(&i->iter);
-}
-
-bool upb_mapiter_done(const upb_mapiter *i) {
-  return upb_strtable_done(&i->iter);
-}
-
-upb_msgval upb_mapiter_key(const upb_mapiter *i) {
-  upb_strview key = upb_strtable_iter_key(&i->iter);
+/* Returns the key and value for this entry of the map. */
+upb_msgval upb_mapiter_key(const upb_map *map, size_t iter) {
+  upb_strtable_iter i = {&map->table, iter};
+  upb_strview key = upb_strtable_iter_key(&i);
   upb_msgval ret;
-  if (i->key_size_lg2 == UPB_MAPTYPE_STRING) {
-    ret.str_val = key;
-  } else {
-    memcpy(&ret, key.data, 1 << i->key_size_lg2);
-  }
+  _upb_map_fromkey(key, &ret, map->key_size);
   return ret;
 }
 
-upb_msgval upb_mapiter_value(const upb_mapiter *i) {
-  return upb_map_fromvalue(i->val_size_lg2, upb_strtable_iter_value(&i->iter));
+upb_msgval upb_mapiter_value(const upb_map *map, size_t iter) {
+  upb_strtable_iter i = {&map->table, iter};
+  upb_value val = upb_strtable_iter_value(&i);
+  upb_msgval ret;
+  _upb_map_fromvalue(val, &ret, map->val_size);
+  return ret;
 }
 
-void upb_mapiter_setdone(upb_mapiter *i) {
-  upb_strtable_iter_setdone(&i->iter);
-}
-
-bool upb_mapiter_isequal(const upb_mapiter *i1, const upb_mapiter *i2) {
-  return upb_strtable_iter_isequal(&i1->iter, &i2->iter);
-}
+/* void upb_mapiter_setvalue(upb_map *map, size_t iter, upb_msgval value); */

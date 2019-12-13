@@ -60,7 +60,6 @@ cc_library(
     srcs = [
         "upb/decode.c",
         "upb/encode.c",
-        "upb/generated_util.h",
         "upb/msg.c",
         "upb/msg.h",
         "upb/port.c",
@@ -91,7 +90,6 @@ cc_library(
 cc_library(
     name = "generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
     hdrs = [
-        "upb/generated_util.h",
         "upb/msg.h",
     ],
     copts = select({

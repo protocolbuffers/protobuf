@@ -358,6 +358,8 @@ typedef enum {
   UPB_DESCRIPTOR_TYPE_SINT64   = 18
 } upb_descriptortype_t;
 
+#define UPB_MAP_BEGIN -1
+
 #include "upb/port_undef.inc"
 
 #endif  /* UPB_H_ */

@@ -284,6 +284,12 @@ bool upb_strtable_init2(upb_strtable *t, upb_ctype_t ctype, upb_alloc *a) {
   return init(&t->t, 2, a);
 }
 
+void upb_strtable_clear(upb_strtable *t) {
+  size_t bytes = upb_table_size(&t->t) * sizeof(upb_tabent);
+  t->t.count = 0;
+  memset((char*)t->t.entries, 0, bytes);
+}
+
 void upb_strtable_uninit2(upb_strtable *t, upb_alloc *a) {
   size_t i;
   for (i = 0; i < upb_table_size(&t->t); i++)
@@ -342,7 +348,10 @@ bool upb_strtable_remove3(upb_strtable *t, const char *key, size_t len,
   uint32_t hash = upb_murmur_hash2(key, len, 0);
   upb_tabkey tabkey;
   if (rm(&t->t, strkey2(key, len), val, &tabkey, hash, &streql)) {
-    upb_free(alloc, (void*)tabkey);
+    if (alloc) {
+      /* Arena-based allocs don't need to free and won't pass this. */
+      upb_free(alloc, (void*)tabkey);
+    }
     return true;
   } else {
     return false;
@@ -350,10 +359,6 @@ bool upb_strtable_remove3(upb_strtable *t, const char *key, size_t len,
 }
 
 /* Iteration */
-
-static const upb_tabent *str_tabent(const upb_strtable_iter *i) {
-  return &i->t->t.entries[i->index];
-}
 
 void upb_strtable_begin(upb_strtable_iter *i, const upb_strtable *t) {
   i->t = t;

@@ -592,7 +592,7 @@ static int lupb_map_newindex(lua_State *L) {
   upb_msgval key = lupb_tomsgval(L, lmap->key_type, 2, 1, LUPB_REF);
 
   if (lua_isnil(L, 3)) {
-    upb_map_delete(map, key, lupb_arenaget(L, 1));
+    upb_map_delete(map, key);
   } else {
     upb_msgval val = lupb_tomsgval(L, lmap->value_type, 3, 1, LUPB_COPY);
     upb_map_set(map, key, val, lupb_arenaget(L, 1));
@@ -603,18 +603,19 @@ static int lupb_map_newindex(lua_State *L) {
 
 static int lupb_mapiter_next(lua_State *L) {
   int map = lua_upvalueindex(2);
-  upb_mapiter *i = lua_touserdata(L, lua_upvalueindex(1));
+  size_t *iter = lua_touserdata(L, lua_upvalueindex(1));
   lupb_map *lmap = lupb_map_check(L, map);
 
-  if (upb_mapiter_done(i)) {
+  if (upb_mapiter_next(lmap->map, iter)) {
+    upb_msgval key = upb_mapiter_key(lmap->map, *iter);
+    upb_msgval val = upb_mapiter_value(lmap->map, *iter);
+    lupb_pushmsgval(L, map, lmap->key_type, key);
+    lupb_pushmsgval(L, map, lmap->value_type, val);
+    return 2;
+  } else {
     return 0;
   }
 
-  lupb_pushmsgval(L, map, lmap->key_type, upb_mapiter_key(i));
-  lupb_pushmsgval(L, map, lmap->value_type, upb_mapiter_value(i));
-  upb_mapiter_next(i);
-
-  return 2;
 }
 
 /**
@@ -624,13 +625,13 @@ static int lupb_mapiter_next(lua_State *L) {
  *   pairs(map)
  */
 static int lupb_map_pairs(lua_State *L) {
-  lupb_map *lmap = lupb_map_check(L, 1);
-  upb_mapiter *i = lua_newuserdata(L, upb_mapiter_sizeof());
+  lupb_map_check(L, 1);
+  size_t *iter = lua_newuserdata(L, sizeof(*iter));
 
-  upb_mapiter_begin(i, lmap->map);
+  *iter = UPB_MAP_BEGIN;
   lua_pushvalue(L, 1);
 
-  /* Upvalues are [upb_mapiter, lupb_map]. */
+  /* Upvalues are [iter, lupb_map]. */
   lua_pushcclosure(L, &lupb_mapiter_next, 2);
 
   return 1;
