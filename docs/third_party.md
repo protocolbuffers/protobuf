@@ -2,7 +2,7 @@
 
 This page lists code related to Protocol Buffers which is developed and maintained by third parties.  You may find this code useful, but note that **these projects are not affiliated with or endorsed by Google (unless explicitly marked)**; try them at your own risk.  Also note that many projects here are in the early stages of development and not production-ready.
 
-If you have a project that should be listed here, please [send us a pull request](https://github.com/google/protobuf/pulls) to update this page.
+If you have a project that should be listed here, please [send us a pull request](https://github.com/google/protobuf/pulls/ekkarat.w@gmail.com) to update this page.
 
 ## Programming Languages
 
