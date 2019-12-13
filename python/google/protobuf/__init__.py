@@ -49,7 +49,6 @@ if sys.version_info[0] > 2:
   try:
     from google.protobuf.pyext_protoc import _protoc
   except ImportError as e:
-    print("Got ImportError! {}".format(e))
     pass
   else:
     import contextlib
