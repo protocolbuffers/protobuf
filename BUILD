@@ -998,6 +998,7 @@ internal_protobuf_py_tests(
         "text_format_test",
         "unknown_fields_test",
         "wire_format_test",
+        "runtime_protos_test",
     ],
     deps = [":python_tests"],
 )
