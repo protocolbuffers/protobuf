@@ -54,6 +54,9 @@ void upb_msg_clearfield(upb_msg *msg, const upb_fielddef *f);
 
 /** upb_array *****************************************************************/
 
+/* Creates a new array on the given arena that holds elements of this type. */
+upb_array *upb_array_new(upb_arena *a, upb_fieldtype_t type);
+
 /* Returns the size of the array. */
 size_t upb_array_size(const upb_array *arr);
 

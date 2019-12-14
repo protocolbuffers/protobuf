@@ -122,7 +122,7 @@ UPB_INLINE void *_upb_array_ptr(upb_array *arr) {
 }
 
 /* Creates a new array on the given arena. */
-upb_array *upb_array_new(upb_arena *a, upb_fieldtype_t type);
+upb_array *_upb_array_new(upb_arena *a, upb_fieldtype_t type);
 
 /* Resizes the capacity of the array to be at least min_size. */
 bool _upb_array_realloc(upb_array *arr, size_t min_size, upb_arena *arena);

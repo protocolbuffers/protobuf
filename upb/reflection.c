@@ -161,6 +161,10 @@ void upb_msg_set(upb_msg *msg, const upb_fielddef *f, upb_msgval val,
 
 /** upb_array *****************************************************************/
 
+upb_array *upb_array_new(upb_arena *a, upb_fieldtype_t type) {
+  return _upb_array_new(a, type);
+}
+
 size_t upb_array_size(const upb_array *arr) {
   return arr->len;
 }

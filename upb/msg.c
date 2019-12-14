@@ -101,7 +101,7 @@ const char *upb_msg_getunknown(const upb_msg *msg, size_t *len) {
 
 /** upb_array *****************************************************************/
 
-upb_array *upb_array_new(upb_arena *a, upb_fieldtype_t type) {
+upb_array *_upb_array_new(upb_arena *a, upb_fieldtype_t type) {
   upb_array *arr = upb_arena_malloc(a, sizeof(upb_array));
 
   if (!arr) {
@@ -141,7 +141,7 @@ void *_upb_array_resize_fallback(upb_array **arr_ptr, size_t size,
                                  upb_fieldtype_t type, upb_arena *arena) {
   upb_array *arr = *arr_ptr;
   if (!arr) {
-    arr = upb_array_new(arena, type);
+    arr = _upb_array_new(arena, type);
     if (!arr) return NULL;
     *arr_ptr = arr;
   }

@@ -220,7 +220,7 @@ static upb_array *upb_getorcreatearr(upb_decframe *frame,
 
   if (!arr) {
     upb_fieldtype_t type = desctype_to_fieldtype[field->descriptortype];
-    arr = upb_array_new(frame->state->arena, type);
+    arr = _upb_array_new(frame->state->arena, type);
     CHK(arr);
     *(upb_array**)&frame->msg[field->offset] = arr;
   }
