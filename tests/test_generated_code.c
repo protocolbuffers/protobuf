@@ -301,9 +301,29 @@ static void test_int32_map() {
   upb_arena_free(arena);
 }
 
+void test_repeated() {
+  upb_arena *arena = upb_arena_new();
+  protobuf_test_messages_proto3_TestAllTypesProto3 *msg =
+      protobuf_test_messages_proto3_TestAllTypesProto3_new(arena);
+  size_t size;
+  const int *elems;
+
+  protobuf_test_messages_proto3_TestAllTypesProto3_add_repeated_int32(
+      msg, 5, arena);
+
+  elems = protobuf_test_messages_proto3_TestAllTypesProto3_repeated_int32(
+      msg, &size);
+
+  ASSERT(size == 1);
+  ASSERT(elems[0] == 5);
+
+  upb_arena_free(arena);
+}
+
 int run_tests(int argc, char *argv[]) {
   test_scalars();
   test_string_map();
   test_int32_map();
+  test_repeated();
   return 0;
 }
