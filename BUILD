@@ -317,6 +317,15 @@ cc_test(
     ],
 )
 
+cc_test(
+    name = "test_generated_code",
+    srcs = ["tests/test_generated_code.c"],
+    deps = [
+        ":test_messages_proto3_proto_upb",
+        ":upb_test",
+    ],
+)
+
 proto_library(
     name = "test_decoder_proto",
     srcs = [
