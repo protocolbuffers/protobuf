@@ -841,6 +841,30 @@ cc_binary(
     }),
 )
 
+cc_binary(
+    name = "python/google/protobuf/pyext_protoc/_protoc.so",
+    srcs = glob([
+        "python/google/protobuf/pyext_protoc/*.cc",
+        "python/google/protobuf/pyext_protoc/*.h",
+    ]),
+    # TODO: Do we need PROTOBUF_HAS_ONEOF?
+    # TODO: Do we need ALLOW_OVERSIZE_PROTOS?
+    copts = COPTS,
+    includes = [
+        "python/",
+        "src/",
+    ],
+    linkshared = 1,
+    linkstatic = 1,
+    deps = [
+        "protoc_lib",
+        ":proto_api",
+    ] + select({
+        "//conditions:default": [],
+        ":use_fast_cpp_protos": ["//external:python_headers"],
+    })
+)
+
 config_setting(
     name = "use_fast_cpp_protos",
     values = {
@@ -880,6 +904,7 @@ py_proto_library(
         ":use_fast_cpp_protos": [
             ":python/google/protobuf/internal/_api_implementation.so",
             ":python/google/protobuf/pyext/_message.so",
+            ":python/google/protobuf/pyext_protoc/_protoc.so",
         ],
     }),
     default_runtime = "",
