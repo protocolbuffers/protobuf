@@ -36,9 +36,9 @@ upb_msg *upb_msg_new(const upb_msgdef *m, upb_arena *a);
 /* Returns the value associated with this field. */
 upb_msgval upb_msg_get(const upb_msg *msg, const upb_fielddef *f);
 
-/* Returns a mutable pointer to a map, array, or submessage value, constructing
- * a new object if it was not previously present.  May not be called for
- * primitive fields. */
+/* Returns a mutable pointer to a map, array, or submessage value.  If the given
+ * arena is non-NULL this will construct a new object if it was not previously
+ * present.  May not be called for primitive fields. */
 upb_mutmsgval upb_msg_mutable(upb_msg *msg, const upb_fielddef *f, upb_arena *a);
 
 /* May only be called for fields where upb_fielddef_haspresence(f) == true. */

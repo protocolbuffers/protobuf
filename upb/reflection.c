@@ -128,7 +128,7 @@ upb_mutmsgval upb_msg_mutable(upb_msg *msg, const upb_fielddef *f,
   upb_mutmsgval ret;
   char *mem = PTR_AT(msg, field->offset, char);
   memcpy(&ret, mem, sizeof(void*));
-  if (!ret.msg) {
+  if (a && !ret.msg) {
     if (upb_fielddef_ismap(f)) {
       const upb_msgdef *entry = upb_fielddef_msgsubdef(f);
       const upb_fielddef *key = upb_msgdef_itof(entry, UPB_MAPENTRY_KEY);

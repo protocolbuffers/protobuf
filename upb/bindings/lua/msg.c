@@ -698,28 +698,6 @@ static void lupb_msg_newmsgwrapper(lua_State *L, int narg, upb_msgval val) {
 }
 
 /**
- * lupb_msg_lazycreate()
- *
- * For maps and repeated fields, we lazily create the map/array when the field
- * is read, because we never want to return nil for these fields.  Maps and
- * repeated fields have no notion of presence, so we always want them to appear
- * present.  Messages on the other hand have presence so we return nil rather
- * than lazily create them.
- */
-static bool lupb_msg_lazycreate(lua_State *L, int narg, const upb_fielddef *f,
-                                upb_msgval* val) {
-  if (val->msg_val == NULL && upb_fielddef_isseq(f)) {
-    upb_msg *msg = lupb_msg_check(L, narg);
-    upb_arena *arena = lupb_arenaget(L, narg);
-    upb_mutmsgval mutval = upb_msg_mutable(msg, f, arena);
-    memcpy(val, &mutval, sizeof(void*));
-    return true;
-  } else {
-    return false;
-  }
-}
-
-/**
  * lupb_msg_newud()
  *
  * Creates the Lua userdata for a new wrapper object, adding a reference to
@@ -745,7 +723,7 @@ static void *lupb_msg_newud(lua_State *L, int narg, size_t size,
  * Creates a new Lua wrapper object to wrap the given array, map, or message.
  */
 static void lupb_msg_newwrapper(lua_State *L, int narg, const upb_fielddef *f,
-                                upb_msgval val) {
+                                upb_mutmsgval val) {
   if (upb_fielddef_ismap(f)) {
     const upb_msgdef *entry = upb_fielddef_msgsubdef(f);
     const upb_fielddef *key_f = upb_msgdef_itof(entry, UPB_MAPENTRY_KEY);
@@ -753,14 +731,14 @@ static void lupb_msg_newwrapper(lua_State *L, int narg, const upb_fielddef *f,
     lupb_map *lmap = lupb_msg_newud(L, narg, sizeof(*lmap), LUPB_MAP, val_f);
     lmap->key_type = upb_fielddef_type(key_f);
     lmap->value_type = upb_fielddef_type(val_f);
-    lmap->map = (upb_map*)val.map_val;  /* XXX: cast isn't great. */
+    lmap->map = val.map;
   } else if (upb_fielddef_isseq(f)) {
     lupb_array *larr = lupb_msg_newud(L, narg, sizeof(*larr), LUPB_ARRAY, f);
     larr->type = upb_fielddef_type(f);
-    larr->arr = (upb_array*)val.array_val;  /* XXX: cast isn't great. */
+    larr->arr = val.array;
   } else {
     lupb_msg *lmsg = lupb_msg_newud(L, narg, sizeof(*lmsg), LUPB_MSG, f);
-    lmsg->msg = (upb_msg*)val.msg_val;  /* XXX: cast isn't great. */
+    lmsg->msg = val.msg;
   }
 
   /* Copy arena ref to new wrapper.  This may be a different arena than the
@@ -769,7 +747,7 @@ static void lupb_msg_newwrapper(lua_State *L, int narg, const upb_fielddef *f,
   lua_getiuservalue(L, narg, LUPB_ARENA_INDEX);
   lua_setiuservalue(L, -2, LUPB_ARENA_INDEX);
 
-  lupb_cacheset(L, val.msg_val);
+  lupb_cacheset(L, val.msg);
 }
 
 /**
@@ -834,15 +812,17 @@ int lupb_msg_pushnew(lua_State *L) {
 static int lupb_msg_index(lua_State *L) {
   upb_msg *msg = lupb_msg_check(L, 1);
   const upb_fielddef *f = lupb_msg_checkfield(L, 1, 2);
-  upb_msgval val = upb_msg_get(msg, f);
 
   if (upb_fielddef_isseq(f) || upb_fielddef_issubmsg(f)) {
     /* Wrapped type; get or create wrapper. */
-    if (lupb_msg_lazycreate(L, 1, f, &val) || !lupb_cacheget(L, val.msg_val)) {
+    upb_arena *arena = upb_fielddef_isseq(f) ? lupb_arenaget(L, 1) : NULL;
+    upb_mutmsgval val = upb_msg_mutable(msg, f, arena);
+    if (!lupb_cacheget(L, val.msg)) {
       lupb_msg_newwrapper(L, 1, f, val);
     }
   } else {
     /* Value type, just push value and return .*/
+    upb_msgval val = upb_msg_get(msg, f);
     lupb_pushmsgval(L, 0, upb_fielddef_type(f), val);
   }
 
