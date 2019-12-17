@@ -159,3 +159,15 @@ if sys.version_info[0] > 2:
         ProtoFinder(_PROTO_MODULE_SUFFIX, _protoc.code_generator),
     ])
 
+    def _import(module_suffix):
+      def protos_impl(protobuf_path, include_paths=None):
+        with _augmented_syspath(include_paths):
+          module_name = _proto_file_to_module_name(module_suffix,
+                                                   protobuf_path)
+          module = importlib.import_module(module_name)
+          return module
+      return protos_impl
+
+    def get_import_machinery(module_suffix, code_generator):
+      return ProtoFinder(module_suffix, code_generator), _import(module_suffix)
+
