@@ -220,3 +220,7 @@ with info about your project (name and website) so we can add an entry for you.
 1. Analyze Re Graphene
    * Website: https://analyzere.com
    * Extensions: 1075
+
+1. Wire since and until
+   * Website: https://square.github.io/wire/
+   * Extensions: 1076, 1077
