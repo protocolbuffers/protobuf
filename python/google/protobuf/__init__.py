@@ -93,10 +93,10 @@ if sys.version_info[0] > 2:
 
     class ProtoLoader(importlib.abc.Loader):
 
-        def __init__(self, suffix, codegen_fn, module_name, protobuf_path,
+        def __init__(self, suffix, code_generator, module_name, protobuf_path,
                      proto_root):
             self._suffix = suffix
-            self._codegen_fn = codegen_fn
+            self._code_generator = code_generator
             self._module_name = module_name
             self._protobuf_path = protobuf_path
             self._proto_root = proto_root
@@ -117,7 +117,8 @@ if sys.version_info[0] > 2:
                     code = _proto_code_cache[self._module_name]
                     exec(code, module.__dict__)
                 else:
-                    files = self._codegen_fn(
+                    files = _protoc.get_protos_from_generator(
+                        self._code_generator,
                         self._protobuf_path.encode('ascii'),
                         [path.encode('ascii') for path in sys.path])
                     # NOTE: The files are returned in topological order of dependencies. Each
@@ -136,9 +137,9 @@ if sys.version_info[0] > 2:
 
     class ProtoFinder(importlib.abc.MetaPathFinder):
 
-        def __init__(self, suffix, codegen_fn):
+        def __init__(self, suffix, code_generator):
             self._suffix = suffix
-            self._codegen_fn = codegen_fn
+            self._code_generator = code_generator
 
         def find_spec(self, fullname, path, target=None):
             filepath = _module_name_to_proto_file(self._suffix, fullname)
@@ -151,10 +152,10 @@ if sys.version_info[0] > 2:
                 else:
                     return importlib.machinery.ModuleSpec(
                         fullname,
-                        ProtoLoader(self._suffix, self._codegen_fn, fullname,
+                        ProtoLoader(self._suffix, self._code_generator, fullname,
                                     filepath, search_path))
 
     sys.meta_path.extend([
-        ProtoFinder(_PROTO_MODULE_SUFFIX, _protoc.get_protos_as_list),
+        ProtoFinder(_PROTO_MODULE_SUFFIX, _protoc.code_generator),
     ])
 

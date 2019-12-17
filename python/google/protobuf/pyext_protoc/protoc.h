@@ -39,7 +39,45 @@ namespace protobuf {
 namespace python {
 namespace protoc {
 
+// The CodeGenerator protocol is defined as follows:
+// class CodeGenerator:
+//   def __int__(self):
+//     # Returns an integer representing a pointer to a
+//     # ::google::protobuf::compiler::CodeGenerator object.
+//     pass
+
+// NOTE: Returns *new* reference.
+// def get_protos_as_list(protobuf_path: bytes,
+//                        include_paths: Sequence[bytes]) ->
+//                        List[Tuple[bytes, bytes]]
 static PyObject* get_protos_as_list(PyObject* unused_module, PyObject* args);
+
+// NOTE: Returns *new* reference.
+// def get_protos_from_generator(protobuf_path: bytes,
+//                               include_paths: Sequence[bytes]
+//                               code_generator: CodeGenerator) ->
+//                               List[Tuple[bytes, bytes]]
+//
+// The CodeGenerator C++ object pointed to by code_generator must be maintained
+// for the duration of this function call. Static storage duration is
+// recommended in order to avoid the headaches of management of natively
+// allocated memory at runtime at the Python layer.
+//
+static PyObject* get_protos_from_generator(PyObject* unused_module, PyObject* args);
+
+// Idea: In the Python layer, create a function that takes a code generator and
+// returns Finder/Loader pair to be added to the system.
+//
+// The protobuf module will provide a module-level CodeGenerator protocol object
+// pointing to a ::g:p:c:python::Generator object with static storage duration.
+// At its top level module, it will then use that object to instantiate a Finder
+// and Loader and add them to the search path.
+//
+// The gRPC module will provide its own module-level CodeGenerator with static
+// storage duration and use protobuf's new function to instantiate its own
+// CodeGenerator object.
+//
+// This way, there's an open pluggable system and maximal code reuse.
 
 } // namespace protoc
 } // namespace python
