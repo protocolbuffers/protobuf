@@ -174,47 +174,6 @@ static int generate_code(
   return 0;
 }
 
-// TODO: Remove.
-static int protoc_get_protos(
-    const char* protobuf_path, const std::vector<std::string>* include_paths,
-    std::vector<std::pair<std::string, std::string>>* files_out,
-    std::vector<::google::protobuf::python::protoc::ProtocError>* errors,
-    std::vector<::google::protobuf::python::protoc::ProtocWarning>* warnings) {
-  ::google::protobuf::compiler::python::Generator python_generator;
-  return generate_code(&python_generator, protobuf_path, include_paths,
-                       files_out, errors, warnings);
-}
-
-static bool parse_args(PyObject* args,
-                      const char** protobuf_path,
-                      std::vector<std::string>* include_paths)
-{
-  if (PyTuple_Size(args) != 2) {
-    PyErr_SetString(PyExc_ValueError, "Expected 2 arguments.");
-    return false;
-  }
-  PyObject* py_protobuf_path = PyTuple_GetItem(args, 0);
-  PyObject* py_include_paths = PyTuple_GetItem(args, 1);
-  include_paths->reserve(PySequence_Size(py_include_paths));
-  for (Py_ssize_t i = 0; i < PySequence_Size(py_include_paths); ++i) {
-    PyObject* py_include_path = PySequence_ITEM(py_include_paths, i);
-    if (!py_include_path) {
-      return false;
-    }
-    const char* include_path = PyBytes_AsString(py_include_path);
-    Py_DECREF(py_include_path);
-    if (include_path == NULL) {
-      return false;
-    }
-    include_paths->push_back(include_path);
-  }
-  *protobuf_path = PyBytes_AsString(py_protobuf_path);
-  if (*protobuf_path == NULL) {
-    return false;
-  }
-  return true;
-}
-
 static bool from_generator_parse_args(PyObject* args,
                                       const char** protobuf_path,
                                       std::vector<std::string>* include_paths,
@@ -284,28 +243,6 @@ static void process_errors(const std::vector<::google::protobuf::python::protoc:
   PyErr_SetString(PyExc_RuntimeError, errors[0].message.c_str());
 }
 
-// TODO: Implement in Python.
-// NOTE: Returns new reference to List[Tuple[bytes, bytes]].
-static PyObject* get_protos_as_list(PyObject* unused_module, PyObject* args) {
-  const char* protobuf_path;
-  std::vector<std::string> include_paths;
-  if (!parse_args(args, &protobuf_path, &include_paths)) {
-    return NULL;
-  }
-  std::vector<std::pair<std::string, std::string>> files_out;
-  std::vector<::google::protobuf::python::protoc::ProtocError> errors;
-  std::vector<::google::protobuf::python::protoc::ProtocWarning> warnings;
-  int rc;
-  Py_BEGIN_ALLOW_THREADS;
-  rc = protoc_get_protos(protobuf_path, &include_paths, &files_out, &errors, &warnings);
-  Py_END_ALLOW_THREADS;
-  if (rc != 0) {
-    process_errors(errors, warnings);
-    return NULL;
-  }
-  return pack_results(files_out);
-}
-
 // NOTE: Returns new reference to List[Tuple[bytes, bytes]].
 static PyObject* get_protos_from_generator(PyObject* unused_module, PyObject* args) {
   const char* protobuf_path;
@@ -314,7 +251,6 @@ static PyObject* get_protos_from_generator(PyObject* unused_module, PyObject* ar
   if (!from_generator_parse_args(args, &protobuf_path, &include_paths, &code_generator)) {
     return NULL;
   }
-  // TODO: Implement.
   std::vector<std::pair<std::string, std::string>> files_out;
   std::vector<::google::protobuf::python::protoc::ProtocError> errors;
   std::vector<::google::protobuf::python::protoc::ProtocWarning> warnings;
@@ -341,13 +277,6 @@ static const char module_docstring[] =
   "definitions at runtime.";
 
 static PyMethodDef module_methods[] = {
-  {
-    "get_protos_as_list",
-    (PyCFunction)::google::protobuf::python::protoc::get_protos_as_list,
-    METH_VARARGS,
-    // TODO: Think harder about this docstring.
-    "Compiles .proto files and returns the generated code."
-  },
   {
     "get_protos_from_generator",
     (PyCFunction)::google::protobuf::python::protoc::get_protos_from_generator,

@@ -47,12 +47,6 @@ namespace protoc {
 //     pass
 
 // NOTE: Returns *new* reference.
-// def get_protos_as_list(protobuf_path: bytes,
-//                        include_paths: Sequence[bytes]) ->
-//                        List[Tuple[bytes, bytes]]
-static PyObject* get_protos_as_list(PyObject* unused_module, PyObject* args);
-
-// NOTE: Returns *new* reference.
 // def get_protos_from_generator(protobuf_path: bytes,
 //                               include_paths: Sequence[bytes]
 //                               code_generator: CodeGenerator) ->
