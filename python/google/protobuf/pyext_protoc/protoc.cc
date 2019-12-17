@@ -177,7 +177,7 @@ static int generate_code(
 static bool from_generator_parse_args(PyObject* args,
                                       const char** protobuf_path,
                                       std::vector<std::string>* include_paths,
-                                      ::google::protobuf::compiler::CodeGenerator const * * code_generator)
+                                      ::google::protobuf::compiler::CodeGenerator const ** code_generator)
 {
   if (PyTuple_Size(args) != 3) {
     PyErr_SetString(PyExc_ValueError, "Expected 3 arguments.");
@@ -236,11 +236,70 @@ static PyObject* pack_results(const std::vector<std::pair<std::string, std::stri
   return py_files_out;
 }
 
-static void process_errors(const std::vector<::google::protobuf::python::protoc::ProtocError>& errors,
-                           const std::vector<::google::protobuf::python::protoc::ProtocWarning>& warnings) {
+static bool process_warnings(const std::vector<::google::protobuf::python::protoc::ProtocWarning>& warnings) {
+  if (warnings.size() == 0) {return true;}
+  PyObject* warnings_module = PyImport_ImportModule("warnings");
+  if (warnings_module == NULL) {return false;}
+  PyObject* warn_function = PyObject_GetAttrString(warnings_module, "warn");
+  if (warn_function == NULL) {return false;}
+  Py_DECREF(warnings_module);
 
-  // TODO: Fully report errors.
-  PyErr_SetString(PyExc_RuntimeError, errors[0].message.c_str());
+  PyObject* base_module = PyImport_ImportModule("google.protobuf.pyext_protoc");
+  if (base_module == NULL) {return false;}
+  PyObject* py_protoc_warning_type = PyObject_GetAttrString(base_module, "ProtocWarning");
+  if (py_protoc_warning_type == NULL) {return false;}
+  Py_DECREF(base_module);
+
+  for (const auto& warning : warnings) {
+    // TODO: Make sure PyTuple_Pack steals references.
+    PyObject* args = PyTuple_Pack(4,
+                                  PyBytes_FromString(warning.filename.c_str()),
+                                  PyLong_FromLong(warning.line),
+                                  PyLong_FromLong(warning.column),
+                                  PyBytes_FromString(warning.message.c_str()));
+    if (args == NULL) return false;
+    PyObject* py_warning = PyObject_CallObject(py_protoc_warning_type, args);
+    if (py_warning == NULL) return false;
+    Py_DECREF(args);
+    // TODO: Make sure PyTuple_Pack steals references.
+    PyObject_CallObject(warn_function, PyTuple_Pack(1, py_warning));
+    Py_DECREF(py_warning);
+  }
+  Py_DECREF(py_protoc_warning_type);
+  return true;
+}
+
+static bool process_errors(const std::vector<::google::protobuf::python::protoc::ProtocError>& errors) {
+  if (errors.size() == 0) {return true;}
+  PyObject* base_module = PyImport_ImportModule("google.protobuf.pyext_protoc");
+  if (base_module == NULL) {return false;}
+  PyObject* py_protoc_error_type = PyObject_GetAttrString(base_module, "ProtocError");
+  if (py_protoc_error_type == NULL) {return false;}
+  PyObject* py_protoc_errors_type = PyObject_GetAttrString(base_module, "ProtocErrors");
+  if (py_protoc_errors_type == NULL) {return false;}
+  Py_DECREF(base_module);
+
+  PyObject* error_tuple = PyTuple_New(errors.size());
+  if (error_tuple == NULL) {return false;}
+  Py_ssize_t i = 0;
+  for (const auto& error : errors) {
+    PyObject* py_error = PyObject_CallObject(py_protoc_error_type,
+                                    PyTuple_Pack(4,
+                                                 PyBytes_FromString(error.filename.c_str()),
+                                                 PyLong_FromLong(error.line),
+                                                 PyLong_FromLong(error.column),
+                                                 PyBytes_FromString(error.message.c_str())));
+    if (py_error == NULL) {return false;}
+    PyTuple_SET_ITEM(error_tuple, i, py_error);
+    ++i;
+  }
+  PyObject* py_errors = PyObject_CallObject(py_protoc_errors_type, PyTuple_Pack(1, error_tuple));
+  if (py_errors == NULL) {return false;}
+  Py_DECREF(error_tuple);
+  PyErr_SetObject(py_protoc_errors_type, py_errors);
+  Py_DECREF(py_errors);
+  Py_DECREF(py_protoc_error_type);
+  return true;
 }
 
 // NOTE: Returns new reference to List[Tuple[bytes, bytes]].
@@ -258,8 +317,11 @@ static PyObject* get_protos_from_generator(PyObject* unused_module, PyObject* ar
   Py_BEGIN_ALLOW_THREADS;
   rc = generate_code(code_generator, protobuf_path, &include_paths, &files_out, &errors, &warnings);
   Py_END_ALLOW_THREADS;
+  if (!process_warnings(warnings)) {
+    return NULL;
+  }
   if (rc != 0) {
-    process_errors(errors, warnings);
+    process_errors(errors);
     return NULL;
   }
   return pack_results(files_out);
