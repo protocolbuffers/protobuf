@@ -79,15 +79,6 @@ if sys.version_info[0] > 2:
         finally:
             sys.path = original_sys_path
 
-    # TODO: Investigate making this even more of a no-op in the case that we have
-    # truly already imported the module.
-    def protos(protobuf_path, include_paths=None):
-        with _augmented_syspath(include_paths):
-            module_name = _proto_file_to_module_name(_PROTO_MODULE_SUFFIX,
-                                                     protobuf_path)
-            module = importlib.import_module(module_name)
-            return module
-
     _proto_code_cache = {}
     _proto_code_cache_lock = threading.RLock()
 
@@ -155,10 +146,6 @@ if sys.version_info[0] > 2:
                         ProtoLoader(self._suffix, self._code_generator, fullname,
                                     filepath, search_path))
 
-    sys.meta_path.extend([
-        ProtoFinder(_PROTO_MODULE_SUFFIX, _protoc.code_generator),
-    ])
-
     def _import(module_suffix):
       def protos_impl(protobuf_path, include_paths=None):
         with _augmented_syspath(include_paths):
@@ -171,3 +158,6 @@ if sys.version_info[0] > 2:
     def get_import_machinery(module_suffix, code_generator):
       return ProtoFinder(module_suffix, code_generator), _import(module_suffix)
 
+    finder, protos = get_import_machinery(_PROTO_MODULE_SUFFIX, _protoc.code_generator)
+
+    sys.meta_path.extend([finder])
