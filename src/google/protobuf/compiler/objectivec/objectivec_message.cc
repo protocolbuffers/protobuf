@@ -234,6 +234,30 @@ void MessageGenerator::DetermineForwardDeclarations(std::set<string>* fwd_decls)
   }
 }
 
+void MessageGenerator::DetermineObjectiveCClassDefinitions(std::set<string>* fwd_decls) {
+  if (!IsMapEntryMessage(descriptor_)) {
+    for (int i = 0; i < descriptor_->field_count(); i++) {
+      const FieldDescriptor* fieldDescriptor = descriptor_->field(i);
+      field_generators_.get(fieldDescriptor)
+          .DetermineObjectiveCClassDefinitions(fwd_decls);
+    }
+  }
+
+  for (const auto& generator : extension_generators_) {
+    generator->DetermineObjectiveCClassDefinitions(fwd_decls);
+  }
+
+  for (const auto& generator : nested_message_generators_) {
+    generator->DetermineObjectiveCClassDefinitions(fwd_decls);
+  }
+
+  const Descriptor* containing_descriptor = descriptor_->containing_type();
+  if (containing_descriptor != NULL) {
+    string containing_class = ClassName(containing_descriptor);
+    fwd_decls->insert(ObjCClassSymbolDefinition(containing_class));
+  }
+}
+
 bool MessageGenerator::IncludesOneOfDefinition() const {
   if (!oneof_generators_.empty()) {
     return true;
@@ -457,11 +481,11 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
       field_description_type = "GPBMessageFieldDescription";
     }
     if (has_fields) {
+      printer->Indent();
+      printer->Indent();
       printer->Print(
-          "    static $field_description_type$ fields[] = {\n",
+          "static $field_description_type$ fields[] = {\n",
           "field_description_type", field_description_type);
-      printer->Indent();
-      printer->Indent();
       printer->Indent();
       for (int i = 0; i < descriptor_->field_count(); ++i) {
         const FieldGenerator& field_generator =
@@ -474,10 +498,10 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
         }
       }
       printer->Outdent();
-      printer->Outdent();
-      printer->Outdent();
       printer->Print(
-          "    };\n");
+          "};\n");
+      printer->Outdent();
+      printer->Outdent();
     }
 
     std::map<string, string> vars;
@@ -492,6 +516,7 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
     }
 
     std::vector<string> init_flags;
+    init_flags.push_back("GPBDescriptorInitializationFlag_UsesClassRefs");
     if (need_defaults) {
       init_flags.push_back("GPBDescriptorInitializationFlag_FieldsWithDefault");
     }
@@ -556,10 +581,11 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
           "                                    count:(uint32_t)(sizeof(ranges) / sizeof(GPBExtensionRange))];\n");
     }
     if (descriptor_->containing_type() != NULL) {
-      string parent_class_name = ClassName(descriptor_->containing_type());
+      string containing_class = ClassName(descriptor_->containing_type());
+      string parent_class_ref = ObjCClassSymbolReference(containing_class);
       printer->Print(
-          "    [localDescriptor setupContainingMessageClassName:GPBStringifySymbol($parent_name$)];\n",
-          "parent_name", parent_class_name);
+          "    [localDescriptor setupContainingMessageClass:$parent_class_ref$];\n",
+          "parent_class_ref", parent_class_ref);
     }
     string suffix_added;
     ClassName(descriptor_, &suffix_added);

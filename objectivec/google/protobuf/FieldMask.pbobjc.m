@@ -66,7 +66,7 @@ typedef struct GPBFieldMask__storage_ {
     static GPBMessageFieldDescription fields[] = {
       {
         .name = "pathsArray",
-        .dataTypeSpecific.className = NULL,
+        .dataTypeSpecific.clazz = Nil,
         .number = GPBFieldMask_FieldNumber_PathsArray,
         .hasIndex = GPBNoHasBit,
         .offset = (uint32_t)offsetof(GPBFieldMask__storage_, pathsArray),
@@ -81,7 +81,7 @@ typedef struct GPBFieldMask__storage_ {
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
                                    storageSize:sizeof(GPBFieldMask__storage_)
-                                         flags:GPBDescriptorInitializationFlag_None];
+                                         flags:GPBDescriptorInitializationFlag_UsesClassRefs];
     #if defined(DEBUG) && DEBUG
       NSAssert(descriptor == nil, @"Startup recursed!");
     #endif  // DEBUG

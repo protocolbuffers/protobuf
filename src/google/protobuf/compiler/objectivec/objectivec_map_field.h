@@ -54,6 +54,7 @@ class MapFieldGenerator : public RepeatedFieldGenerator {
   MapFieldGenerator(const FieldDescriptor* descriptor, const Options& options);
   virtual ~MapFieldGenerator();
 
+  virtual void DetermineObjectiveCClassDefinitions(std::set<string>* fwd_decls) const;
   virtual void DetermineForwardDeclarations(std::set<string>* fwd_decls) const;
 
  private:
