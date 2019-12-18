@@ -6,8 +6,8 @@
 #include "upb/port_def.inc"
 
 /* Maps descriptor type -> upb field type.  */
-const uint8_t desctype_to_fieldtype[] = {
-  UPB_WIRE_TYPE_END_GROUP,  /* ENDGROUP */
+static const uint8_t desctype_to_fieldtype[] = {
+  -1,  /* invalid descriptor type */
   UPB_TYPE_DOUBLE,          /* DOUBLE */
   UPB_TYPE_FLOAT,           /* FLOAT */
   UPB_TYPE_INT64,           /* INT64 */
@@ -29,8 +29,8 @@ const uint8_t desctype_to_fieldtype[] = {
 };
 
 /* Maps descriptor type -> upb map size.  */
-const uint8_t desctype_to_mapsize[] = {
-  UPB_WIRE_TYPE_END_GROUP,  /* ENDGROUP */
+static const uint8_t desctype_to_mapsize[] = {
+  -1,  /* invalid descriptor type */
   8,          /* DOUBLE */
   4,          /* FLOAT */
   8,          /* INT64 */
