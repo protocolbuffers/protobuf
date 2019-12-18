@@ -156,6 +156,28 @@ if sys.version_info[0] > 2:
       return protos_impl
 
     def get_import_machinery(module_suffix, code_generator):
+      """Get the objects needed to do code generation at runtime.
+
+      Args:
+        module_suffix: A Text object appended to the proto's name in order to
+          form a module name. For example, for vanilla protocol buffers, this
+          will be "_pb2" and for gRPC it will be "_pb2_grpc".
+        code_generator: An object implementing the __int__ method (e.g. int),
+          where the return value of __int__ corresponds to a C++
+          const ::google::protobuf::compiler::CodeGenerator* object with static
+          storage duration. This CodeGenerator object will be used to generate
+          the requested modules.
+
+      Returns:
+        A tuple with two components:
+         1. An instance of importlib.abc.MetaPathFinder capable of importing
+           .proto files with module names derived using the module_suffix
+           argument. (e.g. capable of importing "foo.proto" as foo_pb2). It is
+           expected that this object be addeed to sys.meta_path.
+         2. A function with the same signature as google.protobuf.protos, but
+           utilizing the code generator provided in the arguments to this
+           function.
+      """
       return ProtoFinder(module_suffix, code_generator), _import(module_suffix)
 
     finder, protos = get_import_machinery(_PROTO_MODULE_SUFFIX, _protoc.code_generator)

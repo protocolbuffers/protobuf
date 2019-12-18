@@ -59,20 +59,6 @@ namespace protoc {
 //
 static PyObject* get_protos_from_generator(PyObject* unused_module, PyObject* args);
 
-// Idea: In the Python layer, create a function that takes a code generator and
-// returns Finder/Loader pair to be added to the system.
-//
-// The protobuf module will provide a module-level CodeGenerator protocol object
-// pointing to a ::g:p:c:python::Generator object with static storage duration.
-// At its top level module, it will then use that object to instantiate a Finder
-// and Loader and add them to the search path.
-//
-// The gRPC module will provide its own module-level CodeGenerator with static
-// storage duration and use protobuf's new function to instantiate its own
-// CodeGenerator object.
-//
-// This way, there's an open pluggable system and maximal code reuse.
-
 } // namespace protoc
 } // namespace python
 } // namespace protobuf
