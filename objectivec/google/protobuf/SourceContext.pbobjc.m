@@ -66,7 +66,7 @@ typedef struct GPBSourceContext__storage_ {
     static GPBMessageFieldDescription fields[] = {
       {
         .name = "fileName",
-        .dataTypeSpecific.className = NULL,
+        .dataTypeSpecific.clazz = Nil,
         .number = GPBSourceContext_FieldNumber_FileName,
         .hasIndex = 0,
         .offset = (uint32_t)offsetof(GPBSourceContext__storage_, fileName),
@@ -81,7 +81,7 @@ typedef struct GPBSourceContext__storage_ {
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
                                    storageSize:sizeof(GPBSourceContext__storage_)
-                                         flags:GPBDescriptorInitializationFlag_None];
+                                         flags:GPBDescriptorInitializationFlag_UsesClassRefs];
     #if defined(DEBUG) && DEBUG
       NSAssert(descriptor == nil, @"Startup recursed!");
     #endif  // DEBUG

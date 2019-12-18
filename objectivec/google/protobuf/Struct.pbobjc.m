@@ -25,6 +25,17 @@
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #pragma clang diagnostic ignored "-Wdirect-ivar-access"
+#pragma clang diagnostic ignored "-Wdollar-in-identifier-extension"
+
+#pragma mark - Objective C Class references
+// This somewhat arcane code forces linkage of classes from static archives by
+// adding a concrete reference to the classes.
+// We don't use `[Foo class]` because we need a static value for our initializer.
+// This also has the added benefit of reducing size in that we don't have to
+// encode the class names and look them up at runtime.
+extern const GPBObjcClassReference OBJC_CLASS_$_GPBListValue;
+extern const GPBObjcClassReference OBJC_CLASS_$_GPBStruct;
+extern const GPBObjcClassReference OBJC_CLASS_$_GPBValue;
 
 #pragma mark - GPBStructRoot
 
@@ -102,7 +113,7 @@ typedef struct GPBStruct__storage_ {
     static GPBMessageFieldDescription fields[] = {
       {
         .name = "fields",
-        .dataTypeSpecific.className = GPBStringifySymbol(GPBValue),
+        .dataTypeSpecific.clazz = ((__bridge Class)&OBJC_CLASS_$_GPBValue),
         .number = GPBStruct_FieldNumber_Fields,
         .hasIndex = GPBNoHasBit,
         .offset = (uint32_t)offsetof(GPBStruct__storage_, fields),
@@ -117,7 +128,7 @@ typedef struct GPBStruct__storage_ {
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
                                    storageSize:sizeof(GPBStruct__storage_)
-                                         flags:GPBDescriptorInitializationFlag_None];
+                                         flags:GPBDescriptorInitializationFlag_UsesClassRefs];
     #if defined(DEBUG) && DEBUG
       NSAssert(descriptor == nil, @"Startup recursed!");
     #endif  // DEBUG
@@ -166,7 +177,7 @@ typedef struct GPBValue__storage_ {
       },
       {
         .name = "numberValue",
-        .dataTypeSpecific.className = NULL,
+        .dataTypeSpecific.clazz = Nil,
         .number = GPBValue_FieldNumber_NumberValue,
         .hasIndex = -1,
         .offset = (uint32_t)offsetof(GPBValue__storage_, numberValue),
@@ -175,7 +186,7 @@ typedef struct GPBValue__storage_ {
       },
       {
         .name = "stringValue",
-        .dataTypeSpecific.className = NULL,
+        .dataTypeSpecific.clazz = Nil,
         .number = GPBValue_FieldNumber_StringValue,
         .hasIndex = -1,
         .offset = (uint32_t)offsetof(GPBValue__storage_, stringValue),
@@ -184,7 +195,7 @@ typedef struct GPBValue__storage_ {
       },
       {
         .name = "boolValue",
-        .dataTypeSpecific.className = NULL,
+        .dataTypeSpecific.clazz = Nil,
         .number = GPBValue_FieldNumber_BoolValue,
         .hasIndex = -1,
         .offset = 0,  // Stored in _has_storage_ to save space.
@@ -193,7 +204,7 @@ typedef struct GPBValue__storage_ {
       },
       {
         .name = "structValue",
-        .dataTypeSpecific.className = GPBStringifySymbol(GPBStruct),
+        .dataTypeSpecific.clazz = ((__bridge Class)&OBJC_CLASS_$_GPBStruct),
         .number = GPBValue_FieldNumber_StructValue,
         .hasIndex = -1,
         .offset = (uint32_t)offsetof(GPBValue__storage_, structValue),
@@ -202,7 +213,7 @@ typedef struct GPBValue__storage_ {
       },
       {
         .name = "listValue",
-        .dataTypeSpecific.className = GPBStringifySymbol(GPBListValue),
+        .dataTypeSpecific.clazz = ((__bridge Class)&OBJC_CLASS_$_GPBListValue),
         .number = GPBValue_FieldNumber_ListValue,
         .hasIndex = -1,
         .offset = (uint32_t)offsetof(GPBValue__storage_, listValue),
@@ -217,7 +228,7 @@ typedef struct GPBValue__storage_ {
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
                                    storageSize:sizeof(GPBValue__storage_)
-                                         flags:GPBDescriptorInitializationFlag_None];
+                                         flags:GPBDescriptorInitializationFlag_UsesClassRefs];
     static const char *oneofs[] = {
       "kind",
     };
@@ -270,7 +281,7 @@ typedef struct GPBListValue__storage_ {
     static GPBMessageFieldDescription fields[] = {
       {
         .name = "valuesArray",
-        .dataTypeSpecific.className = GPBStringifySymbol(GPBValue),
+        .dataTypeSpecific.clazz = ((__bridge Class)&OBJC_CLASS_$_GPBValue),
         .number = GPBListValue_FieldNumber_ValuesArray,
         .hasIndex = GPBNoHasBit,
         .offset = (uint32_t)offsetof(GPBListValue__storage_, valuesArray),
@@ -285,7 +296,7 @@ typedef struct GPBListValue__storage_ {
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
                                    storageSize:sizeof(GPBListValue__storage_)
-                                         flags:GPBDescriptorInitializationFlag_None];
+                                         flags:GPBDescriptorInitializationFlag_UsesClassRefs];
     #if defined(DEBUG) && DEBUG
       NSAssert(descriptor == nil, @"Startup recursed!");
     #endif  // DEBUG
