@@ -49,9 +49,11 @@ build_artifact_version() {
 
   mv wheelhouse/* $ARTIFACT_DIR
 }
-
+MB_OSX_VER=10.9
 build_artifact_version 2.7
+MB_OSX_VER=10.6
 build_artifact_version 3.5
+MB_OSX_VER=10.9
 build_artifact_version 3.6
 build_artifact_version 3.7
 build_artifact_version 3.8
