@@ -318,6 +318,43 @@ module BasicTest
       assert_equal m5, m
     end
 
+    def test_map_wrappers_with_no_value
+      run_asserts = ->(m) {
+        assert_equal nil, m.map_double[0]
+        assert_equal nil, m.map_float[0]
+        assert_equal nil, m.map_int32[0]
+        assert_equal nil, m.map_int64[0]
+        assert_equal nil, m.map_uint32[0]
+        assert_equal nil, m.map_uint64[0]
+        assert_equal nil, m.map_bool[0]
+        assert_equal nil, m.map_string[0]
+        assert_equal nil, m.map_bytes[0]
+      }
+
+      m = proto_module::Wrapper.new(
+        map_double: {0 => Google::Protobuf::DoubleValue.new()},
+        map_float: {0 => Google::Protobuf::FloatValue.new()},
+        map_int32: {0 => Google::Protobuf::Int32Value.new()},
+        map_int64: {0 => Google::Protobuf::Int64Value.new()},
+        map_uint32: {0 => Google::Protobuf::UInt32Value.new()},
+        map_uint64: {0 => Google::Protobuf::UInt64Value.new()},
+        map_bool: {0 => Google::Protobuf::BoolValue.new()},
+        map_string: {0 => Google::Protobuf::StringValue.new()},
+        map_bytes: {0 => Google::Protobuf::BytesValue.new()},
+      )
+
+      serialized = proto_module::Wrapper::encode(m)
+      m2 = proto_module::Wrapper::decode(serialized)
+      run_asserts.call(m2)
+
+      # Test the case where we are serializing directly from the parsed form
+      # (before anything lazy is materialized).
+      m3 = proto_module::Wrapper::decode(serialized)
+      serialized2 = proto_module::Wrapper::encode(m3)
+      m4 = proto_module::Wrapper::decode(serialized2)
+      run_asserts.call(m4)
+    end
+
     def test_concurrent_decoding
       o = Outer.new
       o.items[0] = Inner.new
