@@ -30,6 +30,8 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
+using System.Collections.Generic;
+
 namespace Google.Protobuf.Reflection
 {
     /// <summary>
@@ -37,29 +39,22 @@ namespace Google.Protobuf.Reflection
     /// </summary>
     public abstract class DescriptorBase : IDescriptor
     {
-        private readonly FileDescriptor file;
-        private readonly string fullName;
-        private readonly int index;
-
         internal DescriptorBase(FileDescriptor file, string fullName, int index)
         {
-            this.file = file;
-            this.fullName = fullName;
-            this.index = index;
+            File = file;
+            FullName = fullName;
+            Index = index;
         }
 
         /// <value>
-        /// The index of this descriptor within its parent descriptor. 
+        /// The index of this descriptor within its parent descriptor.
         /// </value>
         /// <remarks>
         /// This returns the index of this descriptor within its parent, for
         /// this descriptor's type. (There can be duplicate values for different
         /// types, e.g. one enum type with index 0 and one message type with index 0.)
         /// </remarks>
-        public int Index
-        {
-            get { return index; }
-        }
+        public int Index { get; }
 
         /// <summary>
         /// Returns the name of the entity (field, message etc) being described.
@@ -69,17 +64,29 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// The fully qualified name of the descriptor's target.
         /// </summary>
-        public string FullName
-        {
-            get { return fullName; }
-        }
+        public string FullName { get; }
 
         /// <value>
         /// The file this descriptor was declared in.
         /// </value>
-        public FileDescriptor File
-        {
-            get { return file; }
-        }
+        public FileDescriptor File { get; }
+
+        /// <summary>
+        /// The declaration information about the descriptor, or null if no declaration information
+        /// is available for this descriptor.
+        /// </summary>
+        /// <remarks>
+        /// This information is typically only available for dynamically loaded descriptors,
+        /// for example within a protoc plugin where the full descriptors, including source info,
+        /// are passed to the code by protoc.
+        /// </remarks>
+        public DescriptorDeclaration Declaration => File.GetDeclaration(this);
+
+        /// <summary>
+        /// Retrieves the list of nested descriptors corresponding to the given field number, if any.
+        /// If the field is unknown or not a nested descriptor list, return null to terminate the search.
+        /// The default implementation returns null.
+        /// </summary>
+        internal virtual IReadOnlyList<DescriptorBase> GetNestedDescriptorListForField(int fieldNumber) => null;
     }
 }

@@ -36,17 +36,18 @@
 // tests handling of unknown fields throughout the system.
 
 #include <google/protobuf/unknown_field_set.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
-#include <google/protobuf/wire_format.h>
-#include <google/protobuf/unittest.pb.h>
-#include <google/protobuf/test_util.h>
 
 #include <google/protobuf/stubs/callback.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
+#include <google/protobuf/test_util.h>
+#include <google/protobuf/unittest.pb.h>
+#include <google/protobuf/unittest_lite.pb.h>
+#include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/io/zero_copy_stream_impl.h>
+#include <google/protobuf/descriptor.h>
 #include <google/protobuf/stubs/mutex.h>
+#include <google/protobuf/wire_format.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 #include <google/protobuf/stubs/stl_util.h>
@@ -66,7 +67,7 @@ class UnknownFieldSetTest : public testing::Test {
     unknown_fields_ = empty_message_.mutable_unknown_fields();
   }
 
-  const UnknownField* GetField(const string& name) {
+  const UnknownField* GetField(const std::string& name) {
     const FieldDescriptor* field = descriptor_->FindFieldByName(name);
     if (field == NULL) return NULL;
     for (int i = 0; i < unknown_fields_->field_count(); i++) {
@@ -80,10 +81,10 @@ class UnknownFieldSetTest : public testing::Test {
   // Constructs a protocol buffer which contains fields with all the same
   // numbers as all_fields_data_ except that each field is some other wire
   // type.
-  string GetBizarroData() {
+  std::string GetBizarroData() {
     unittest::TestEmptyMessage bizarro_message;
     UnknownFieldSet* bizarro_unknown_fields =
-      bizarro_message.mutable_unknown_fields();
+        bizarro_message.mutable_unknown_fields();
     for (int i = 0; i < unknown_fields_->field_count(); i++) {
       const UnknownField& unknown_field = unknown_fields_->field(i);
       if (unknown_field.type() == UnknownField::TYPE_VARINT) {
@@ -93,14 +94,14 @@ class UnknownFieldSetTest : public testing::Test {
       }
     }
 
-    string data;
+    std::string data;
     EXPECT_TRUE(bizarro_message.SerializeToString(&data));
     return data;
   }
 
   const Descriptor* descriptor_;
   unittest::TestAllTypes all_fields_;
-  string all_fields_data_;
+  std::string all_fields_data_;
 
   // An empty message that has been parsed from all_fields_data_.  So, it has
   // unknown fields of every type.
@@ -178,7 +179,7 @@ TEST_F(UnknownFieldSetTest, Group) {
 
   const UnknownField& nested_field = field->group().field(0);
   const FieldDescriptor* nested_field_descriptor =
-    unittest::TestAllTypes::OptionalGroup::descriptor()->FindFieldByName("a");
+      unittest::TestAllTypes::OptionalGroup::descriptor()->FindFieldByName("a");
   ASSERT_TRUE(nested_field_descriptor != NULL);
 
   EXPECT_EQ(nested_field_descriptor->number(), nested_field.number());
@@ -187,20 +188,21 @@ TEST_F(UnknownFieldSetTest, Group) {
 }
 
 TEST_F(UnknownFieldSetTest, SerializeFastAndSlowAreEquivalent) {
-  int size = WireFormat::ComputeUnknownFieldsSize(
-      empty_message_.unknown_fields());
-  string slow_buffer;
-  string fast_buffer;
+  int size =
+      WireFormat::ComputeUnknownFieldsSize(empty_message_.unknown_fields());
+  std::string slow_buffer;
+  std::string fast_buffer;
   slow_buffer.resize(size);
   fast_buffer.resize(size);
 
-  uint8* target = reinterpret_cast<uint8*>(string_as_array(&fast_buffer));
+  uint8* target = reinterpret_cast<uint8*>(::google::protobuf::string_as_array(&fast_buffer));
   uint8* result = WireFormat::SerializeUnknownFieldsToArray(
-          empty_message_.unknown_fields(), target);
+      empty_message_.unknown_fields(), target);
   EXPECT_EQ(size, result - target);
 
   {
-    io::ArrayOutputStream raw_stream(string_as_array(&slow_buffer), size, 1);
+    io::ArrayOutputStream raw_stream(::google::protobuf::string_as_array(&slow_buffer), size,
+                                     1);
     io::CodedOutputStream output_stream(&raw_stream);
     WireFormat::SerializeUnknownFields(empty_message_.unknown_fields(),
                                        &output_stream);
@@ -213,7 +215,7 @@ TEST_F(UnknownFieldSetTest, Serialize) {
   // Check that serializing the UnknownFieldSet produces the original data
   // again.
 
-  string data;
+  std::string data;
   empty_message_.SerializeToString(&data);
 
   // Don't use EXPECT_EQ because we don't want to dump raw binary data to
@@ -238,7 +240,7 @@ TEST_F(UnknownFieldSetTest, SerializeViaReflection) {
   // Make sure fields are properly written from the UnknownFieldSet when
   // serializing via reflection.
 
-  string data;
+  std::string data;
 
   {
     io::StringOutputStream raw_output(&data);
@@ -267,8 +269,8 @@ TEST_F(UnknownFieldSetTest, Swap) {
 
   EXPECT_GT(empty_message_.unknown_fields().field_count(), 0);
   EXPECT_GT(other_message.unknown_fields().field_count(), 0);
-  const string debug_string = empty_message_.DebugString();
-  const string other_debug_string = other_message.DebugString();
+  const std::string debug_string = empty_message_.DebugString();
+  const std::string other_debug_string = other_message.DebugString();
   EXPECT_NE(debug_string, other_debug_string);
 
   empty_message_.Swap(&other_message);
@@ -277,7 +279,7 @@ TEST_F(UnknownFieldSetTest, Swap) {
 }
 
 TEST_F(UnknownFieldSetTest, SwapWithSelf) {
-  const string debug_string = empty_message_.DebugString();
+  const std::string debug_string = empty_message_.DebugString();
   EXPECT_GT(empty_message_.unknown_fields().field_count(), 0);
 
   empty_message_.Swap(&empty_message_);
@@ -296,13 +298,49 @@ TEST_F(UnknownFieldSetTest, MergeFrom) {
   destination.MergeFrom(source);
 
   EXPECT_EQ(
-    // Note:  The ordering of fields here depends on the ordering of adds
-    //   and merging, above.
-    "1: 1\n"
-    "3: 2\n"
-    "2: 3\n"
-    "3: 4\n",
-    destination.DebugString());
+      // Note:  The ordering of fields here depends on the ordering of adds
+      //   and merging, above.
+      "1: 1\n"
+      "3: 2\n"
+      "2: 3\n"
+      "3: 4\n",
+      destination.DebugString());
+}
+
+TEST_F(UnknownFieldSetTest, MergeFromMessage) {
+  unittest::TestEmptyMessage source, destination;
+
+  destination.mutable_unknown_fields()->AddVarint(1, 1);
+  destination.mutable_unknown_fields()->AddVarint(3, 2);
+  source.mutable_unknown_fields()->AddVarint(2, 3);
+  source.mutable_unknown_fields()->AddVarint(3, 4);
+
+  destination.mutable_unknown_fields()->MergeFromMessage(source);
+
+  EXPECT_EQ(
+      // Note:  The ordering of fields here depends on the ordering of adds
+      //   and merging, above.
+      "1: 1\n"
+      "3: 2\n"
+      "2: 3\n"
+      "3: 4\n",
+      destination.DebugString());
+}
+
+TEST_F(UnknownFieldSetTest, MergeFromMessageLite) {
+  unittest::TestAllTypesLite source;
+  unittest::TestEmptyMessageLite destination;
+
+  source.set_optional_fixed32(42);
+  destination.ParseFromString(source.SerializeAsString());
+
+  UnknownFieldSet unknown_field_set;
+  EXPECT_TRUE(unknown_field_set.MergeFromMessage(destination));
+  EXPECT_EQ(unknown_field_set.field_count(), 1);
+
+  const UnknownField& unknown_field = unknown_field_set.field(0);
+  EXPECT_EQ(unknown_field.number(), 7);
+  EXPECT_EQ(unknown_field.fixed32(), 42);
 }
 
 
@@ -325,7 +363,7 @@ TEST_F(UnknownFieldSetTest, ParseKnownAndUnknown) {
 
   unittest::TestEmptyMessage source;
   source.mutable_unknown_fields()->AddVarint(123456, 654321);
-  string data;
+  std::string data;
   ASSERT_TRUE(source.SerializeToString(&data));
 
   unittest::TestAllTypes destination;
@@ -344,7 +382,7 @@ TEST_F(UnknownFieldSetTest, WrongTypeTreatedAsUnknown) {
 
   unittest::TestAllTypes all_types_message;
   unittest::TestEmptyMessage empty_message;
-  string bizarro_data = GetBizarroData();
+  std::string bizarro_data = GetBizarroData();
   ASSERT_TRUE(all_types_message.ParseFromString(bizarro_data));
   ASSERT_TRUE(empty_message.ParseFromString(bizarro_data));
 
@@ -358,7 +396,7 @@ TEST_F(UnknownFieldSetTest, WrongTypeTreatedAsUnknownViaReflection) {
 
   unittest::TestAllTypes all_types_message;
   unittest::TestEmptyMessage empty_message;
-  string bizarro_data = GetBizarroData();
+  std::string bizarro_data = GetBizarroData();
   io::ArrayInputStream raw_input(bizarro_data.data(), bizarro_data.size());
   io::CodedInputStream input(&raw_input);
   ASSERT_TRUE(WireFormat::ParseAndMergePartial(&input, &all_types_message));
@@ -395,7 +433,7 @@ TEST_F(UnknownFieldSetTest, WrongExtensionTypeTreatedAsUnknown) {
 
   unittest::TestAllExtensions all_extensions_message;
   unittest::TestEmptyMessage empty_message;
-  string bizarro_data = GetBizarroData();
+  std::string bizarro_data = GetBizarroData();
   ASSERT_TRUE(all_extensions_message.ParseFromString(bizarro_data));
   ASSERT_TRUE(empty_message.ParseFromString(bizarro_data));
 
@@ -405,18 +443,18 @@ TEST_F(UnknownFieldSetTest, WrongExtensionTypeTreatedAsUnknown) {
 }
 
 TEST_F(UnknownFieldSetTest, UnknownEnumValue) {
-  using unittest::TestAllTypes;
   using unittest::TestAllExtensions;
+  using unittest::TestAllTypes;
   using unittest::TestEmptyMessage;
 
   const FieldDescriptor* singular_field =
-    TestAllTypes::descriptor()->FindFieldByName("optional_nested_enum");
+      TestAllTypes::descriptor()->FindFieldByName("optional_nested_enum");
   const FieldDescriptor* repeated_field =
-    TestAllTypes::descriptor()->FindFieldByName("repeated_nested_enum");
+      TestAllTypes::descriptor()->FindFieldByName("repeated_nested_enum");
   ASSERT_TRUE(singular_field != NULL);
   ASSERT_TRUE(repeated_field != NULL);
 
-  string data;
+  std::string data;
 
   {
     TestEmptyMessage empty_message;
@@ -488,7 +526,7 @@ TEST_F(UnknownFieldSetTest, UnknownEnumValue) {
 TEST_F(UnknownFieldSetTest, SpaceUsedExcludingSelf) {
   UnknownFieldSet empty;
   empty.AddVarint(1, 0);
-  EXPECT_EQ(sizeof(vector<UnknownField>) + sizeof(UnknownField),
+  EXPECT_EQ(sizeof(std::vector<UnknownField>) + sizeof(UnknownField),
             empty.SpaceUsedExcludingSelf());
 }
 
@@ -506,11 +544,11 @@ TEST_F(UnknownFieldSetTest, SpaceUsed) {
   EXPECT_LT(base_size, empty_message.SpaceUsed());
   base_size = empty_message.SpaceUsed();
 
-  string* str = unknown_fields->AddLengthDelimited(1);
+  std::string* str = unknown_fields->AddLengthDelimited(1);
   EXPECT_LT(base_size, empty_message.SpaceUsed());
   base_size = empty_message.SpaceUsed();
 
-  str->assign(sizeof(string) + 1, 'x');
+  str->assign(sizeof(std::string) + 1, 'x');
   EXPECT_LT(base_size, empty_message.SpaceUsed());
   base_size = empty_message.SpaceUsed();
 
@@ -559,8 +597,9 @@ TEST_F(UnknownFieldSetTest, DeleteSubrange) {
   }
 }
 
-void CheckDeleteByNumber(const vector<int>& field_numbers, int deleted_number,
-                        const vector<int>& expected_field_nubmers) {
+void CheckDeleteByNumber(const std::vector<int>& field_numbers,
+                         int deleted_number,
+                         const std::vector<int>& expected_field_nubmers) {
   UnknownFieldSet unknown_fields;
   for (int i = 0; i < field_numbers.size(); ++i) {
     unknown_fields.AddFixed32(field_numbers[i], i);
@@ -568,14 +607,13 @@ void CheckDeleteByNumber(const vector<int>& field_numbers, int deleted_number,
   unknown_fields.DeleteByNumber(deleted_number);
   ASSERT_EQ(expected_field_nubmers.size(), unknown_fields.field_count());
   for (int i = 0; i < expected_field_nubmers.size(); ++i) {
-    EXPECT_EQ(expected_field_nubmers[i],
-              unknown_fields.field(i).number());
+    EXPECT_EQ(expected_field_nubmers[i], unknown_fields.field(i).number());
   }
 }
 
-#define MAKE_VECTOR(x) vector<int>(x, x + GOOGLE_ARRAYSIZE(x))
+#define MAKE_VECTOR(x) std::vector<int>(x, x + GOOGLE_ARRAYSIZE(x))
 TEST_F(UnknownFieldSetTest, DeleteByNumber) {
-  CheckDeleteByNumber(vector<int>(), 1, vector<int>());
+  CheckDeleteByNumber(std::vector<int>(), 1, std::vector<int>());
   static const int kTestFieldNumbers1[] = {1, 2, 3};
   static const int kFieldNumberToDelete1 = 1;
   static const int kExpectedFieldNumbers1[] = {2, 3};

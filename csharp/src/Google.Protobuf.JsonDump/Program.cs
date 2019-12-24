@@ -32,6 +32,7 @@
 
 using System;
 using System.IO;
+using System.Reflection;
 
 namespace Google.Protobuf.ProtoDump
 {
@@ -55,7 +56,7 @@ namespace Google.Protobuf.ProtoDump
                 Console.Error.WriteLine("Unable to load type {0}.", args[0]);
                 return 1;
             }
-            if (!typeof(IMessage).IsAssignableFrom(type))
+            if (!typeof(IMessage).GetTypeInfo().IsAssignableFrom(type))
             {
                 Console.Error.WriteLine("Type {0} doesn't implement IMessage.", args[0]);
                 return 1;

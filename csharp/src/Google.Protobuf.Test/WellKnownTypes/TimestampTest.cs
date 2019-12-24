@@ -61,6 +61,29 @@ namespace Google.Protobuf.WellKnownTypes
             Assert.AreEqual(new DateTime(1969, 12, 31, 23, 59, 59).AddMilliseconds(1), t2.ToDateTime());
         }
 
+        [Test]
+        [TestCase(Timestamp.UnixSecondsAtBclMinValue - 1, Timestamp.MaxNanos)]
+        [TestCase(Timestamp.UnixSecondsAtBclMaxValue + 1, 0)]
+        [TestCase(0, -1)]
+        [TestCase(0, Timestamp.MaxNanos + 1)]
+        public void ToDateTime_OutOfRange(long seconds, int nanoseconds)
+        {
+            var value = new Timestamp { Seconds = seconds, Nanos = nanoseconds };
+            Assert.Throws<InvalidOperationException>(() => value.ToDateTime());
+        }
+
+        // 1ns larger or smaller than the above values
+        [Test]
+        [TestCase(Timestamp.UnixSecondsAtBclMinValue, 0)]
+        [TestCase(Timestamp.UnixSecondsAtBclMaxValue, Timestamp.MaxNanos)]
+        [TestCase(0, 0)]
+        [TestCase(0, Timestamp.MaxNanos)]
+        public void ToDateTime_ValidBoundaries(long seconds, int nanoseconds)
+        {
+            var value = new Timestamp { Seconds = seconds, Nanos = nanoseconds };
+            value.ToDateTime();
+        }
+
         private static void AssertRoundtrip(Timestamp timestamp, DateTime dateTime)
         {
             Assert.AreEqual(timestamp, Timestamp.FromDateTime(dateTime));
@@ -76,9 +99,118 @@ namespace Google.Protobuf.WellKnownTypes
             Duration difference = new Duration { Seconds = 1999, Nanos = Duration.NanosecondsPerSecond - 5000 };
             Assert.AreEqual(difference, t1 - t2);
             Assert.AreEqual(-difference, t2 - t1);
-            
+
             Assert.AreEqual(t1, t2 + difference);
             Assert.AreEqual(t2, t1 - difference);
+        }
+
+        [Test]
+        public void ToString_NonNormalized()
+        {
+            // Just a single example should be sufficient...
+            var duration = new Timestamp { Seconds = 1, Nanos = -1 };
+            Assert.AreEqual("{ \"@warning\": \"Invalid Timestamp\", \"seconds\": \"1\", \"nanos\": -1 }", duration.ToString());
+        }
+
+        [Test]
+        public void Comparability()
+        {
+            Timestamp
+                a = null,
+                b = new Timestamp { Seconds = 1, Nanos = 1 },
+                c = new Timestamp { Seconds = 1, Nanos = 10 },
+                d = new Timestamp { Seconds = 10, Nanos = 1 },
+                e = new Timestamp { Seconds = 10, Nanos = 10 };
+
+            Assert.IsTrue(b.CompareTo(a) > 0); // null is always first (according to default behavior of Array.Sort)
+            Assert.IsTrue(b.CompareTo(b) == 0);
+            Assert.IsTrue(b.CompareTo(b.Clone()) == 0);
+            Assert.IsTrue(b.CompareTo(c) < 0);
+            Assert.IsTrue(b.CompareTo(d) < 0);
+            Assert.IsTrue(b.CompareTo(e) < 0);
+
+            Assert.IsTrue(c.CompareTo(a) > 0);
+            Assert.IsTrue(c.CompareTo(b) > 0);
+            Assert.IsTrue(c.CompareTo(c) == 0);
+            Assert.IsTrue(c.CompareTo(c.Clone()) == 0);
+            Assert.IsTrue(c.CompareTo(d) < 0);
+            Assert.IsTrue(c.CompareTo(e) < 0);
+
+            Assert.IsTrue(d.CompareTo(a) > 0);
+            Assert.IsTrue(d.CompareTo(b) > 0);
+            Assert.IsTrue(d.CompareTo(c) > 0);
+            Assert.IsTrue(d.CompareTo(d) == 0);
+            Assert.IsTrue(d.CompareTo(d.Clone()) == 0);
+            Assert.IsTrue(d.CompareTo(e) < 0);
+
+            Assert.IsTrue(e.CompareTo(a) > 0);
+            Assert.IsTrue(e.CompareTo(b) > 0);
+            Assert.IsTrue(e.CompareTo(c) > 0);
+            Assert.IsTrue(e.CompareTo(d) > 0);
+            Assert.IsTrue(e.CompareTo(e) == 0);
+            Assert.IsTrue(e.CompareTo(e.Clone()) == 0);
+        }
+
+
+        [Test]
+        public void ComparabilityOperators()
+        {
+            Timestamp
+                a = null,
+                b = new Timestamp { Seconds = 1, Nanos = 1 },
+                c = new Timestamp { Seconds = 1, Nanos = 10 },
+                d = new Timestamp { Seconds = 10, Nanos = 1 },
+                e = new Timestamp { Seconds = 10, Nanos = 10 };
+
+#pragma warning disable CS1718 // Comparison made to same variable
+            Assert.IsTrue(b > a);
+            Assert.IsTrue(b == b);
+            Assert.IsTrue(b == b.Clone());
+            Assert.IsTrue(b < c);
+            Assert.IsTrue(b < d);
+            Assert.IsTrue(b < e);
+
+            Assert.IsTrue(c > a);
+            Assert.IsTrue(c > b);
+            Assert.IsTrue(c == c);
+            Assert.IsTrue(c == c.Clone());
+            Assert.IsTrue(c < d);
+            Assert.IsTrue(c < e);
+
+            Assert.IsTrue(d > a);
+            Assert.IsTrue(d > b);
+            Assert.IsTrue(d > c);
+            Assert.IsTrue(d == d);
+            Assert.IsTrue(d == d.Clone());
+            Assert.IsTrue(d < e);
+
+            Assert.IsTrue(e > a);
+            Assert.IsTrue(e > b);
+            Assert.IsTrue(e > c);
+            Assert.IsTrue(e > d);
+            Assert.IsTrue(e == e);
+            Assert.IsTrue(e == e.Clone());
+
+            Assert.IsTrue(b >= a);
+            Assert.IsTrue(b <= c);
+            Assert.IsTrue(b <= d);
+            Assert.IsTrue(b <= e);
+
+            Assert.IsTrue(c >= a);
+            Assert.IsTrue(c >= b);
+            Assert.IsTrue(c <= d);
+            Assert.IsTrue(c <= e);
+
+            Assert.IsTrue(d >= a);
+            Assert.IsTrue(d >= b);
+            Assert.IsTrue(d >= c);
+            Assert.IsTrue(d <= e);
+
+            Assert.IsTrue(e >= a);
+            Assert.IsTrue(e >= b);
+            Assert.IsTrue(e >= c);
+            Assert.IsTrue(e >= d);
+#pragma warning restore CS1718 // Comparison made to same variable
         }
     }
 }

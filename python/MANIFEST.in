@@ -4,6 +4,9 @@ exclude google/protobuf/internal/*_test.py
 exclude google/protobuf/internal/*.proto
 exclude google/protobuf/internal/test_util.py
 
+recursive-include google *.cc
+recursive-include google *.h
+
 recursive-exclude google *_test.py
 recursive-exclude google *_test.proto
 recursive-exclude google unittest*_pb2.py

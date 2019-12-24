@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- Install phpDocumentor to generate docs. -->
+<phpdoc>
+  <parser>
+    <target>doc</target>
+  </parser>
+  <transformer>
+    <target>doc</target>
+  </transformer>
+  <files>
+    <file>Google/Protobuf/Internal/MapField.php</file>
+    <file>Google/Protobuf/Internal/Message.php</file>
+    <file>Google/Protobuf/Internal/RepeatedField.php</file>
+  </files>
+</phpdoc>

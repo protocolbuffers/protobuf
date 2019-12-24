@@ -34,11 +34,10 @@
 
 try:
     from collections import OrderedDict
-except ImportError: 
+except ImportError:
     from ordereddict import OrderedDict  #PY26
-
 try:
-  import unittest2 as unittest  #PY26
+  import unittest2 as unittest
 except ImportError:
   import unittest
 

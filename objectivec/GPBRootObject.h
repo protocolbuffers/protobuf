@@ -34,11 +34,17 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-// All Root Objects derive from GPBRootObject. It supplies a registry
-// for derived classes to register their extensions to.
+/**
+ * Every generated proto file defines a local "Root" class that exposes a
+ * GPBExtensionRegistry for all the extensions defined by that file and
+ * the files it depends on.
+ **/
 @interface GPBRootObject : NSObject
 
-// Per class registry.
+/**
+ * @return An extension registry for the given file and all the files it depends
+ * on.
+ **/
 + (GPBExtensionRegistry *)extensionRegistry;
 
 @end

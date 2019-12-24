@@ -30,12 +30,37 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
+using Google.Protobuf.Collections;
+using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading;
+using static Google.Protobuf.Reflection.SourceCodeInfo.Types;
 
 namespace Google.Protobuf.Reflection
 {
+    /// <summary>
+    /// The syntax of a .proto file
+    /// </summary>
+    public enum Syntax
+    {
+        /// <summary>
+        /// Proto2 syntax
+        /// </summary>
+        Proto2,
+        /// <summary>
+        /// Proto3 syntax
+        /// </summary>
+        Proto3,
+        /// <summary>
+        /// An unknown declared syntax
+        /// </summary>
+        Unknown
+    }
+
     /// <summary>
     /// Describes a .proto file, including everything defined within.
     /// IDescriptor is implemented such that the File property returns this descriptor,
@@ -43,37 +68,131 @@ namespace Google.Protobuf.Reflection
     /// </summary>
     public sealed class FileDescriptor : IDescriptor
     {
-        private readonly ByteString descriptorData;
-        private readonly FileDescriptorProto proto;
-        private readonly IList<MessageDescriptor> messageTypes;
-        private readonly IList<EnumDescriptor> enumTypes;
-        private readonly IList<ServiceDescriptor> services;
-        private readonly IList<FileDescriptor> dependencies;
-        private readonly IList<FileDescriptor> publicDependencies;
-        private readonly DescriptorPool pool;
-        
-        private FileDescriptor(ByteString descriptorData, FileDescriptorProto proto, FileDescriptor[] dependencies, DescriptorPool pool, bool allowUnknownDependencies, GeneratedCodeInfo generatedCodeInfo)
+        // Prevent linker failures when using IL2CPP with the well-known types.
+        static FileDescriptor()
         {
-            this.descriptorData = descriptorData;
-            this.pool = pool;
-            this.proto = proto;
-            this.dependencies = new ReadOnlyCollection<FileDescriptor>((FileDescriptor[]) dependencies.Clone());
+            ForceReflectionInitialization<Syntax>();
+            ForceReflectionInitialization<NullValue>();
+            ForceReflectionInitialization<Field.Types.Cardinality>();
+            ForceReflectionInitialization<Field.Types.Kind>();
+            ForceReflectionInitialization<Value.KindOneofCase>();
+        }
 
-            publicDependencies = DeterminePublicDependencies(this, proto, dependencies, allowUnknownDependencies);
+        private readonly Lazy<Dictionary<IDescriptor, DescriptorDeclaration>> declarations;
+
+        private FileDescriptor(ByteString descriptorData, FileDescriptorProto proto, IEnumerable<FileDescriptor> dependencies, DescriptorPool pool, bool allowUnknownDependencies, GeneratedClrTypeInfo generatedCodeInfo)
+        {
+            SerializedData = descriptorData;
+            DescriptorPool = pool;
+            Proto = proto;
+            Dependencies = new ReadOnlyCollection<FileDescriptor>(dependencies.ToList());
+
+            PublicDependencies = DeterminePublicDependencies(this, proto, dependencies, allowUnknownDependencies);
 
             pool.AddPackage(Package, this);
 
-            messageTypes = DescriptorUtil.ConvertAndMakeReadOnly(proto.MessageType,
+            MessageTypes = DescriptorUtil.ConvertAndMakeReadOnly(proto.MessageType,
                                                                  (message, index) =>
-                                                                 new MessageDescriptor(message, this, null, index, generatedCodeInfo == null ? null : generatedCodeInfo.NestedTypes[index]));
+                                                                 new MessageDescriptor(message, this, null, index, generatedCodeInfo?.NestedTypes[index]));
 
-            enumTypes = DescriptorUtil.ConvertAndMakeReadOnly(proto.EnumType,
+            EnumTypes = DescriptorUtil.ConvertAndMakeReadOnly(proto.EnumType,
                                                               (enumType, index) =>
-                                                              new EnumDescriptor(enumType, this, null, index, generatedCodeInfo == null ? null : generatedCodeInfo.NestedEnums[index]));
+                                                              new EnumDescriptor(enumType, this, null, index, generatedCodeInfo?.NestedEnums[index]));
 
-            services = DescriptorUtil.ConvertAndMakeReadOnly(proto.Service,
+            Services = DescriptorUtil.ConvertAndMakeReadOnly(proto.Service,
                                                              (service, index) =>
                                                              new ServiceDescriptor(service, this, index));
+
+            Extensions = new ExtensionCollection(this, generatedCodeInfo?.Extensions);
+
+            declarations = new Lazy<Dictionary<IDescriptor, DescriptorDeclaration>>(CreateDeclarationMap, LazyThreadSafetyMode.ExecutionAndPublication);
+
+            if (!proto.HasSyntax || proto.Syntax == "proto2")
+            {
+                Syntax = Syntax.Proto2;
+            }
+            else if (proto.Syntax == "proto3")
+            {
+                Syntax = Syntax.Proto3;
+            }
+            else
+            {
+                Syntax = Syntax.Unknown;
+            }
+        }
+
+        private Dictionary<IDescriptor, DescriptorDeclaration> CreateDeclarationMap()
+        {
+            var dictionary = new Dictionary<IDescriptor, DescriptorDeclaration>();
+            foreach (var location in Proto.SourceCodeInfo?.Location ?? Enumerable.Empty<Location>())
+            {
+                var descriptor = FindDescriptorForPath(location.Path);
+                if (descriptor != null)
+                {
+                    dictionary[descriptor] = DescriptorDeclaration.FromProto(descriptor, location);
+                }
+            }
+            return dictionary;
+        }
+
+        private IDescriptor FindDescriptorForPath(IList<int> path)
+        {
+            // All complete declarations have an even, non-empty path length
+            // (There can be an empty path for a descriptor declaration, but that can't have any comments,
+            // so we currently ignore it.)
+            if (path.Count == 0 || (path.Count & 1) != 0)
+            {
+                return null;
+            }
+            IReadOnlyList<DescriptorBase> topLevelList = GetNestedDescriptorListForField(path[0]);
+            DescriptorBase current = GetDescriptorFromList(topLevelList, path[1]);
+
+            for (int i = 2; current != null && i < path.Count; i += 2)
+            {
+                var list = current.GetNestedDescriptorListForField(path[i]);
+                current = GetDescriptorFromList(list, path[i + 1]);
+            }
+            return current;
+        }
+
+        private DescriptorBase GetDescriptorFromList(IReadOnlyList<DescriptorBase> list, int index)
+        {
+            // This is fine: it may be a newer version of protobuf than we understand, with a new descriptor
+            // field.
+            if (list == null)
+            {
+                return null;
+            }
+            // We *could* return null to silently continue, but this is basically data corruption.
+            if (index < 0 || index >= list.Count)
+            {
+                // We don't have much extra information to give at this point unfortunately. If this becomes a problem,
+                // we can pass in the complete path and report that and the file name.
+                throw new InvalidProtocolBufferException($"Invalid descriptor location path: index out of range");
+            }
+            return list[index];
+        }
+
+        private IReadOnlyList<DescriptorBase> GetNestedDescriptorListForField(int fieldNumber)
+        {
+            switch (fieldNumber)
+            {
+                case FileDescriptorProto.ServiceFieldNumber:
+                    return (IReadOnlyList<DescriptorBase>) Services;
+                case FileDescriptorProto.MessageTypeFieldNumber:
+                    return (IReadOnlyList<DescriptorBase>) MessageTypes;
+                case FileDescriptorProto.EnumTypeFieldNumber:
+                    return (IReadOnlyList<DescriptorBase>) EnumTypes;
+                default:
+                    return null;
+            }
+        }
+
+        internal DescriptorDeclaration GetDeclaration(IDescriptor descriptor)
+        {
+            DescriptorDeclaration declaration;
+            declarations.Value.TryGetValue(descriptor, out declaration);
+            return declaration;
         }
 
         /// <summary>
@@ -96,13 +215,9 @@ namespace Google.Protobuf.Reflection
         /// Extracts public dependencies from direct dependencies. This is a static method despite its
         /// first parameter, as the value we're in the middle of constructing is only used for exceptions.
         /// </summary>
-        private static IList<FileDescriptor> DeterminePublicDependencies(FileDescriptor @this, FileDescriptorProto proto, FileDescriptor[] dependencies, bool allowUnknownDependencies)
+        private static IList<FileDescriptor> DeterminePublicDependencies(FileDescriptor @this, FileDescriptorProto proto, IEnumerable<FileDescriptor> dependencies, bool allowUnknownDependencies)
         {
-            var nameToFileMap = new Dictionary<string, FileDescriptor>();
-            foreach (var file in dependencies)
-            {
-                nameToFileMap[file.Name] = file;
-            }
+            var nameToFileMap = dependencies.ToDictionary(file => file.Name);
             var publicDependencies = new List<FileDescriptor>();
             for (int i = 0; i < proto.PublicDependency.Count; i++)
             {
@@ -112,8 +227,8 @@ namespace Google.Protobuf.Reflection
                     throw new DescriptorValidationException(@this, "Invalid public dependency index.");
                 }
                 string name = proto.Dependency[index];
-                FileDescriptor file = nameToFileMap[name];
-                if (file == null)
+                FileDescriptor file;
+                if (!nameToFileMap.TryGetValue(name, out file))
                 {
                     if (!allowUnknownDependencies)
                     {
@@ -132,99 +247,76 @@ namespace Google.Protobuf.Reflection
         /// <value>
         /// The descriptor in its protocol message representation.
         /// </value>
-        internal FileDescriptorProto Proto
-        {
-            get { return proto; }
-        }
+        internal FileDescriptorProto Proto { get; }
+
+        /// <summary>
+        /// The syntax of the file
+        /// </summary>
+        public Syntax Syntax { get; }
 
         /// <value>
         /// The file name.
         /// </value>
-        public string Name
-        {
-            get { return proto.Name; }
-        }
+        public string Name => Proto.Name;
 
         /// <summary>
         /// The package as declared in the .proto file. This may or may not
         /// be equivalent to the .NET namespace of the generated classes.
         /// </summary>
-        public string Package
-        {
-            get { return proto.Package; }
-        }
+        public string Package => Proto.Package;
 
         /// <value>
         /// Unmodifiable list of top-level message types declared in this file.
         /// </value>
-        public IList<MessageDescriptor> MessageTypes
-        {
-            get { return messageTypes; }
-        }
+        public IList<MessageDescriptor> MessageTypes { get; }
 
         /// <value>
         /// Unmodifiable list of top-level enum types declared in this file.
         /// </value>
-        public IList<EnumDescriptor> EnumTypes
-        {
-            get { return enumTypes; }
-        }
+        public IList<EnumDescriptor> EnumTypes { get; }
 
         /// <value>
         /// Unmodifiable list of top-level services declared in this file.
         /// </value>
-        public IList<ServiceDescriptor> Services
-        {
-            get { return services; }
-        }
+        public IList<ServiceDescriptor> Services { get; }
+
+        /// <summary>
+        /// Unmodifiable list of top-level extensions declared in this file.
+        /// Note that some extensions may be incomplete (FieldDescriptor.Extension may be null)
+        /// if this descriptor was generated using a version of protoc that did not fully
+        /// support extensions in C#.
+        /// </summary>
+        public ExtensionCollection Extensions { get; }
 
         /// <value>
         /// Unmodifiable list of this file's dependencies (imports).
         /// </value>
-        public IList<FileDescriptor> Dependencies
-        {
-            get { return dependencies; }
-        }
+        public IList<FileDescriptor> Dependencies { get; }
 
         /// <value>
         /// Unmodifiable list of this file's public dependencies (public imports).
         /// </value>
-        public IList<FileDescriptor> PublicDependencies
-        {
-            get { return publicDependencies; }
-        }
+        public IList<FileDescriptor> PublicDependencies { get; }
 
         /// <value>
         /// The original serialized binary form of this descriptor.
         /// </value>
-        public ByteString SerializedData
-        {
-            get { return descriptorData; }
-        }
+        public ByteString SerializedData { get; }
 
         /// <value>
         /// Implementation of IDescriptor.FullName - just returns the same as Name.
         /// </value>
-        string IDescriptor.FullName
-        {
-            get { return Name; }
-        }
+        string IDescriptor.FullName => Name;
 
         /// <value>
         /// Implementation of IDescriptor.File - just returns this descriptor.
         /// </value>
-        FileDescriptor IDescriptor.File
-        {
-            get { return this; }
-        }
+        FileDescriptor IDescriptor.File => this;
 
         /// <value>
         /// Pool containing symbol descriptors.
         /// </value>
-        internal DescriptorPool DescriptorPool
-        {
-            get { return pool; }
-        }
+        internal DescriptorPool DescriptorPool { get; }
 
         /// <summary>
         /// Finds a type (message, enum, service or extension) in the file by name. Does not find nested types.
@@ -245,7 +337,7 @@ namespace Google.Protobuf.Reflection
             {
                 name = Package + "." + name;
             }
-            T result = pool.FindSymbol<T>(name);
+            T result = DescriptorPool.FindSymbol<T>(name);
             if (result != null && result.File == this)
             {
                 return result;
@@ -264,11 +356,11 @@ namespace Google.Protobuf.Reflection
         /// file's dependencies, in the exact order listed in the .proto file. May be null,
         /// in which case it is treated as an empty array.</param>
         /// <param name="allowUnknownDependencies">Whether unknown dependencies are ignored (true) or cause an exception to be thrown (false).</param>
-        /// <param name="generatedCodeInfo">Reflection information, if any. May be null, specifically for non-generated code.</param>
+        /// <param name="generatedCodeInfo">Details about generated code, for the purposes of reflection.</param>
         /// <exception cref="DescriptorValidationException">If <paramref name="proto"/> is not
         /// a valid descriptor. This can occur for a number of reasons, such as a field
         /// having an undefined type or because two messages were defined with the same name.</exception>
-        private static FileDescriptor BuildFrom(ByteString descriptorData, FileDescriptorProto proto, FileDescriptor[] dependencies, bool allowUnknownDependencies, GeneratedCodeInfo generatedCodeInfo)
+        private static FileDescriptor BuildFrom(ByteString descriptorData, FileDescriptorProto proto, FileDescriptor[] dependencies, bool allowUnknownDependencies, GeneratedClrTypeInfo generatedCodeInfo)
         {
             // Building descriptors involves two steps: translating and linking.
             // In the translation step (implemented by FileDescriptor's
@@ -291,19 +383,10 @@ namespace Google.Protobuf.Reflection
             // need.
             if (dependencies.Length != proto.Dependency.Count)
             {
-                throw new DescriptorValidationException(result,
-                                                        "Dependencies passed to FileDescriptor.BuildFrom() don't match " +
-                                                        "those listed in the FileDescriptorProto.");
-            }
-            for (int i = 0; i < proto.Dependency.Count; i++)
-            {
-                if (dependencies[i].Name != proto.Dependency[i])
-                {
-                    throw new DescriptorValidationException(result,
-                        "Dependencies passed to FileDescriptor.BuildFrom() don't match " +
-                        "those listed in the FileDescriptorProto. Expected: " +
-                        proto.Dependency[i] + " but was: " + dependencies[i].Name);
-                }
+                throw new DescriptorValidationException(
+                    result,
+                    "Dependencies passed to FileDescriptor.BuildFrom() don't match " +
+                    "those listed in the FileDescriptorProto.");
             }
 
             result.CrossLink();
@@ -312,40 +395,44 @@ namespace Google.Protobuf.Reflection
 
         private void CrossLink()
         {
-            foreach (MessageDescriptor message in messageTypes)
+            foreach (MessageDescriptor message in MessageTypes)
             {
                 message.CrossLink();
             }
 
-            foreach (ServiceDescriptor service in services)
+            foreach (ServiceDescriptor service in Services)
             {
                 service.CrossLink();
             }
+
+            Extensions.CrossLink();
         }
 
         /// <summary>
-        /// Creates an instance for generated code.
+        /// Creates a descriptor for generated code.
         /// </summary>
         /// <remarks>
-        /// The <paramref name="generatedCodeInfo"/> parameter should be null for descriptors which don't correspond to
-        /// generated types. Otherwise, it should be a <see cref="GeneratedCodeInfo"/> with nested types and nested
-        /// enums corresponding to the types and enums contained within the file descriptor.
+        /// This method is only designed to be used by the results of generating code with protoc,
+        /// which creates the appropriate dependencies etc. It has to be public because the generated
+        /// code is "external", but should not be called directly by end users.
         /// </remarks>
-        public static FileDescriptor InternalBuildGeneratedFileFrom(byte[] descriptorData,
-                                                                    FileDescriptor[] dependencies,
-                                                                    GeneratedCodeInfo generatedCodeInfo)
+        public static FileDescriptor FromGeneratedCode(
+            byte[] descriptorData,
+            FileDescriptor[] dependencies,
+            GeneratedClrTypeInfo generatedCodeInfo)
         {
+            ExtensionRegistry registry = new ExtensionRegistry();
+            registry.AddRange(GetAllExtensions(dependencies, generatedCodeInfo));
+    
             FileDescriptorProto proto;
             try
             {
-                proto = FileDescriptorProto.Parser.ParseFrom(descriptorData);
+                proto = FileDescriptorProto.Parser.WithExtensionRegistry(registry).ParseFrom(descriptorData);
             }
             catch (InvalidProtocolBufferException e)
             {
                 throw new ArgumentException("Failed to parse protocol buffer descriptor for generated code.", e);
             }
-
-
 
             try
             {
@@ -355,8 +442,80 @@ namespace Google.Protobuf.Reflection
             }
             catch (DescriptorValidationException e)
             {
-                throw new ArgumentException("Invalid embedded descriptor for \"" + proto.Name + "\".", e);
+                throw new ArgumentException($"Invalid embedded descriptor for \"{proto.Name}\".", e);
             }
+        }
+
+        private static IEnumerable<Extension> GetAllExtensions(FileDescriptor[] dependencies, GeneratedClrTypeInfo generatedInfo)
+        {
+            return dependencies.SelectMany(GetAllDependedExtensions).Distinct(ExtensionRegistry.ExtensionComparer.Instance).Concat(GetAllGeneratedExtensions(generatedInfo));
+        }
+
+        private static IEnumerable<Extension> GetAllGeneratedExtensions(GeneratedClrTypeInfo generated)
+        {
+            return generated.Extensions.Concat(generated.NestedTypes.Where(t => t != null).SelectMany(GetAllGeneratedExtensions));
+        }
+
+        private static IEnumerable<Extension> GetAllDependedExtensions(FileDescriptor descriptor)
+        {
+            return descriptor.Extensions.UnorderedExtensions
+                .Select(s => s.Extension)
+                .Where(e => e != null)
+                .Concat(descriptor.Dependencies.Concat(descriptor.PublicDependencies).SelectMany(GetAllDependedExtensions))
+                .Concat(descriptor.MessageTypes.SelectMany(GetAllDependedExtensionsFromMessage));
+        }
+
+        private static IEnumerable<Extension> GetAllDependedExtensionsFromMessage(MessageDescriptor descriptor)
+        {
+            return descriptor.Extensions.UnorderedExtensions
+                .Select(s => s.Extension)
+                .Where(e => e != null)
+                .Concat(descriptor.NestedTypes.SelectMany(GetAllDependedExtensionsFromMessage));
+        }
+
+        /// <summary>
+        /// Converts the given descriptor binary data into FileDescriptor objects.
+        /// Note: reflection using the returned FileDescriptors is not currently supported.
+        /// </summary>
+        /// <param name="descriptorData">The binary file descriptor proto data. Must not be null, and any
+        /// dependencies must come before the descriptor which depends on them. (If A depends on B, and B
+        /// depends on C, then the descriptors must be presented in the order C, B, A.) This is compatible
+        /// with the order in which protoc provides descriptors to plugins.</param>
+        /// <returns>The file descriptors corresponding to <paramref name="descriptorData"/>.</returns>
+        public static IReadOnlyList<FileDescriptor> BuildFromByteStrings(IEnumerable<ByteString> descriptorData)
+        {
+            ProtoPreconditions.CheckNotNull(descriptorData, nameof(descriptorData));
+
+            // TODO: See if we can build a single DescriptorPool instead of building lots of them.
+            // This will all behave correctly, but it's less efficient than we'd like.
+            var descriptors = new List<FileDescriptor>();
+            var descriptorsByName = new Dictionary<string, FileDescriptor>();
+            foreach (var data in descriptorData)
+            {
+                var proto = FileDescriptorProto.Parser.ParseFrom(data);
+                var dependencies = new List<FileDescriptor>();
+                foreach (var dependencyName in proto.Dependency)
+                {
+                    FileDescriptor dependency;
+                    if (!descriptorsByName.TryGetValue(dependencyName, out dependency))
+                    {
+                        throw new ArgumentException($"Dependency missing: {dependencyName}");
+                    }
+                    dependencies.Add(dependency);
+                }
+                var pool = new DescriptorPool(dependencies);
+                FileDescriptor descriptor = new FileDescriptor(
+                    data, proto, dependencies, pool,
+                    allowUnknownDependencies: false, generatedCodeInfo: null);
+                descriptor.CrossLink();
+                descriptors.Add(descriptor);
+                if (descriptorsByName.ContainsKey(descriptor.Name))
+                {
+                    throw new ArgumentException($"Duplicate descriptor name: {descriptor.Name}");
+                }
+                descriptorsByName.Add(descriptor.Name, descriptor);
+            }
+            return new ReadOnlyCollection<FileDescriptor>(descriptors);
         }
 
         /// <summary>
@@ -367,7 +526,7 @@ namespace Google.Protobuf.Reflection
         /// </returns>
         public override string ToString()
         {
-            return "FileDescriptor for " + proto.Name;
+            return $"FileDescriptor for {Name}";
         }
 
         /// <summary>
@@ -383,6 +542,42 @@ namespace Google.Protobuf.Reflection
         /// <value>
         /// The file descriptor for <c>descriptor.proto</c>.
         /// </value>
-        public static FileDescriptor DescriptorProtoFileDescriptor { get { return DescriptorProtoFile.Descriptor; } }
+        public static FileDescriptor DescriptorProtoFileDescriptor { get { return DescriptorReflection.Descriptor; } }
+
+        /// <summary>
+        /// The (possibly empty) set of custom options for this file.
+        /// </summary>
+        [Obsolete("CustomOptions are obsolete. Use GetOption")]
+        public CustomOptions CustomOptions => new CustomOptions(Proto.Options?._extensions?.ValuesByNumber);
+
+        /// <summary>
+        /// Gets a single value file option for this descriptor
+        /// </summary>
+        public T GetOption<T>(Extension<FileOptions, T> extension)
+        {
+            var value = Proto.Options.GetExtension(extension);
+            return value is IDeepCloneable<T> ? (value as IDeepCloneable<T>).Clone() : value;
+        }
+
+        /// <summary>
+        /// Gets a repeated value file option for this descriptor
+        /// </summary>
+        public RepeatedField<T> GetOption<T>(RepeatedExtension<FileOptions, T> extension)
+        {
+            return Proto.Options.GetExtension(extension).Clone();
+        }
+
+        /// <summary>
+        /// Performs initialization for the given generic type argument.
+        /// </summary>
+        /// <remarks>
+        /// This method is present for the sake of AOT compilers. It allows code (whether handwritten or generated)
+        /// to make calls into the reflection machinery of this library to express an intention to use that type
+        /// reflectively (e.g. for JSON parsing and formatting). The call itself does almost nothing, but AOT compilers
+        /// attempting to determine which generic type arguments need to be handled will spot the code path and act
+        /// accordingly.
+        /// </remarks>
+        /// <typeparam name="T">The type to force initialization for.</typeparam>
+        public static void ForceReflectionInitialization<T>() => ReflectionUtil.ForceInitialize<T>();
     }
 }

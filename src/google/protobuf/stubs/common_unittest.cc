@@ -31,8 +31,10 @@
 // Author: kenton@google.com (Kenton Varda)
 
 #include <vector>
+#include <google/protobuf/stubs/callback.h>
 #include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
 
@@ -75,7 +77,7 @@ TEST(CommonTest, IntMinMaxConstants) {
   EXPECT_EQ(0, kuint64max + 1);
 }
 
-vector<string> captured_messages_;
+std::vector<string> captured_messages_;
 
 void CaptureLog(LogLevel level, const char* filename, int line,
                 const string& message) {
@@ -100,14 +102,14 @@ TEST(LoggingTest, DefaultLogging) {
 }
 
 TEST(LoggingTest, NullLogging) {
-  LogHandler* old_handler = SetLogHandler(NULL);
+  LogHandler* old_handler = SetLogHandler(nullptr);
 
   CaptureTestStderr();
   GOOGLE_LOG(INFO   ) << "A message.";
   GOOGLE_LOG(WARNING) << "A warning.";
   GOOGLE_LOG(ERROR  ) << "An error.";
 
-  EXPECT_TRUE(SetLogHandler(old_handler) == NULL);
+  EXPECT_TRUE(SetLogHandler(old_handler) == nullptr);
 
   string text = GetCapturedTestStderr();
   EXPECT_EQ("", text);
@@ -179,9 +181,9 @@ class ClosureTest : public testing::Test {
   virtual void SetUp() {
     current_instance_ = this;
     a_ = 0;
-    b_ = NULL;
+    b_ = nullptr;
     c_.clear();
-    permanent_closure_ = NULL;
+    permanent_closure_ = nullptr;
   }
 
   void DeleteClosureInCallback() {
@@ -196,7 +198,7 @@ class ClosureTest : public testing::Test {
   static ClosureTest* current_instance_;
 };
 
-ClosureTest* ClosureTest::current_instance_ = NULL;
+ClosureTest* ClosureTest::current_instance_ = nullptr;
 
 TEST_F(ClosureTest, TestClosureFunction0) {
   Closure* closure = NewCallback(&SetA123Function);
@@ -321,7 +323,7 @@ TEST_F(ClosureTest, TestPermanentClosureFunction2) {
   EXPECT_EQ(789, a_);
   EXPECT_EQ(cstr, b_);
   a_ = 0;
-  b_ = NULL;
+  b_ = nullptr;
   closure->Run();
   EXPECT_EQ(789, a_);
   EXPECT_EQ(cstr, b_);
@@ -338,7 +340,7 @@ TEST_F(ClosureTest, TestPermanentClosureMethod2) {
   EXPECT_EQ(789, a_);
   EXPECT_EQ(cstr, b_);
   a_ = 0;
-  b_ = NULL;
+  b_ = nullptr;
   closure->Run();
   EXPECT_EQ(789, a_);
   EXPECT_EQ(cstr, b_);

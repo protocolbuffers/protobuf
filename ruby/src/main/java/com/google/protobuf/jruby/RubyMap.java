@@ -148,8 +148,8 @@ public class RubyMap extends RubyObject {
      */
     @JRubyMethod(name = "[]=")
     public IRubyObject indexSet(ThreadContext context, IRubyObject key, IRubyObject value) {
-        Utils.checkType(context, keyType, key, (RubyModule) valueTypeClass);
-        Utils.checkType(context, valueType, value, (RubyModule) valueTypeClass);
+        key = Utils.checkType(context, keyType, key, (RubyModule) valueTypeClass);
+        value = Utils.checkType(context, valueType, value, (RubyModule) valueTypeClass);
         IRubyObject symbol;
         if (valueType == Descriptors.FieldDescriptor.Type.ENUM &&
                 Utils.isRubyNum(value) &&
@@ -338,7 +338,7 @@ public class RubyMap extends RubyObject {
         return newMap;
     }
 
-    @JRubyMethod(name = {"to_h", "to_hash"})
+    @JRubyMethod(name = "to_h")
     public RubyHash toHash(ThreadContext context) {
         return RubyHash.newHash(context.runtime, table, context.runtime.getNil());
     }

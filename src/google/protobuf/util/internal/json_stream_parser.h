@@ -35,14 +35,12 @@
 #include <string>
 
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/stringpiece.h>
+#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/status.h>
 
-namespace google {
-namespace util {
-class Status;
-}  // namespace util
+#include <google/protobuf/port_def.inc>
 
+namespace google {
 namespace protobuf {
 namespace util {
 namespace converter {
@@ -69,7 +67,7 @@ class ObjectWriter;
 //
 // This parser is thread-compatible as long as only one thread is calling a
 // Parse() method at a time.
-class LIBPROTOBUF_EXPORT JsonStreamParser {
+class PROTOBUF_EXPORT JsonStreamParser {
  public:
   // Creates a JsonStreamParser that will write to the given ObjectWriter.
   explicit JsonStreamParser(ObjectWriter* ow);
@@ -83,7 +81,18 @@ class LIBPROTOBUF_EXPORT JsonStreamParser {
   util::Status FinishParse();
 
 
+  // Sets the max recursion depth of JSON message to be deserialized. JSON
+  // messages over this depth will fail to be deserialized.
+  // Default value is 100.
+  void set_max_recursion_depth(int max_depth) {
+    max_recursion_depth_ = max_depth;
+  }
+
  private:
+  friend class JsonStreamParserTest;
+  // Return the current recursion depth.
+  int recursion_depth() { return recursion_depth_; }
+
   enum TokenType {
     BEGIN_STRING,     // " or '
     BEGIN_NUMBER,     // - or digit
@@ -154,6 +163,10 @@ class LIBPROTOBUF_EXPORT JsonStreamParser {
   // component.
   util::Status ParseNumberHelper(NumberResult* result);
 
+  // Parse a number as double into a NumberResult.
+  util::Status ParseDoubleHelper(const std::string& number,
+                                   NumberResult* result);
+
   // Handles a { during parsing of a value.
   util::Status HandleBeginObject();
 
@@ -179,6 +192,10 @@ class LIBPROTOBUF_EXPORT JsonStreamParser {
   util::Status ParseTrue();
   util::Status ParseFalse();
   util::Status ParseNull();
+  util::Status ParseEmptyNull();
+
+  // Whether an empty-null is allowed in the current state.
+  bool IsEmptyNullAllowed(TokenType type);
 
   // Report a failure as a util::Status.
   util::Status ReportFailure(StringPiece message);
@@ -187,6 +204,11 @@ class LIBPROTOBUF_EXPORT JsonStreamParser {
   // end of the stream and if we're finishing or not to detect what type of
   // status to return in this case.
   util::Status ReportUnknown(StringPiece message);
+
+  // Helper function to check recursion depth and increment it. It will return
+  // Status::OK if the current depth is allowed. Otherwise an error is returned.
+  // key is used for error reporting.
+  util::Status IncrementRecursionDepth(StringPiece key) const;
 
   // Advance p_ past all whitespace or until the end of the string.
   void SkipWhitespace();
@@ -209,7 +231,7 @@ class LIBPROTOBUF_EXPORT JsonStreamParser {
 
   // Contains any leftover text from a previous chunk that we weren't able to
   // fully parse, for example the start of a key or number.
-  string leftover_;
+  std::string leftover_;
 
   // The current chunk of JSON being parsed. Primarily used for providing
   // context during error reporting.
@@ -223,7 +245,7 @@ class LIBPROTOBUF_EXPORT JsonStreamParser {
 
   // Storage for key_ if we need to keep ownership, for example between chunks
   // or if the key was unescaped from a JSON string.
-  string key_storage_;
+  std::string key_storage_;
 
   // True during the FinishParse() call, so we know that any errors are fatal.
   // For example an unterminated string will normally result in cancelling and
@@ -235,17 +257,34 @@ class LIBPROTOBUF_EXPORT JsonStreamParser {
 
   // Storage for the string we parsed. This may be empty if the string was able
   // to be parsed directly from the input.
-  string parsed_storage_;
+  std::string parsed_storage_;
 
   // The character that opened the string, either ' or ".
   // A value of 0 indicates that string parsing is not in process.
   char string_open_;
 
   // Storage for the chunk that are being parsed in ParseChunk().
-  string chunk_storage_;
+  std::string chunk_storage_;
 
   // Whether to allow non UTF-8 encoded input and replace invalid code points.
   bool coerce_to_utf8_;
+
+  // Whether allows empty string represented null array value or object entry
+  // value.
+  bool allow_empty_null_;
+
+  // Whether unquoted object keys can contain embedded non-alphanumeric
+  // characters when this is unambiguous for parsing.
+  bool allow_permissive_key_naming_;
+
+  // Whether allows out-of-range floating point numbers or reject them.
+  bool loose_float_number_conversion_;
+
+  // Tracks current recursion depth.
+  mutable int recursion_depth_;
+
+  // Maximum allowed recursion depth.
+  int max_recursion_depth_;
 
   GOOGLE_DISALLOW_IMPLICIT_CONSTRUCTORS(JsonStreamParser);
 };
@@ -253,6 +292,8 @@ class LIBPROTOBUF_EXPORT JsonStreamParser {
 }  // namespace converter
 }  // namespace util
 }  // namespace protobuf
-
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
+
 #endif  // GOOGLE_PROTOBUF_UTIL_CONVERTER_JSON_STREAM_PARSER_H__

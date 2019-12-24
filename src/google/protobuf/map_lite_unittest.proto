@@ -81,7 +81,7 @@ message TestArenaMapLite {
       map_int32_foreign_message_no_arena = 18;
 }
 
-// Test embeded message with required fields
+// Test embedded message with required fields
 message TestRequiredMessageMapLite {
   map<int32, TestRequiredLite> map_field = 1;
 }

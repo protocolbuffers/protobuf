@@ -31,8 +31,9 @@
 #ifndef GOOGLE_PROTOBUF_CASTS_H__
 #define GOOGLE_PROTOBUF_CASTS_H__
 
+#include <type_traits>
+
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/type_traits.h>
 
 namespace google {
 namespace protobuf {
@@ -88,14 +89,14 @@ inline To down_cast(From* f) {                   // so we only accept pointers
   }
 
 #if !defined(NDEBUG) && !defined(GOOGLE_PROTOBUF_NO_RTTI)
-  assert(f == NULL || dynamic_cast<To>(f) != NULL);  // RTTI: debug mode only!
+  assert(f == nullptr || dynamic_cast<To>(f) != nullptr);  // RTTI: debug mode only!
 #endif
   return static_cast<To>(f);
 }
 
 template<typename To, typename From>    // use like this: down_cast<T&>(foo);
 inline To down_cast(From& f) {
-  typedef typename remove_reference<To>::type* ToAsPointer;
+  typedef typename std::remove_reference<To>::type* ToAsPointer;
   // Ensures that To is a sub-type of From *.  This test is here only
   // for compile-time type checking, and has no overhead in an
   // optimized build at run-time, as it will be optimized away
@@ -106,7 +107,7 @@ inline To down_cast(From& f) {
 
 #if !defined(NDEBUG) && !defined(GOOGLE_PROTOBUF_NO_RTTI)
   // RTTI: debug mode only!
-  assert(dynamic_cast<ToAsPointer>(&f) != NULL);
+  assert(dynamic_cast<ToAsPointer>(&f) != nullptr);
 #endif
   return *static_cast<ToAsPointer>(&f);
 }

@@ -54,135 +54,56 @@
 //   4. testee sends M bytes representing a ConformanceResponse proto
 
 #include <errno.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <unistd.h>
+
+#include <algorithm>
 #include <fstream>
 #include <vector>
 
+#include <google/protobuf/stubs/stringprintf.h>
 #include "conformance.pb.h"
 #include "conformance_test.h"
 
-using conformance::ConformanceRequest;
 using conformance::ConformanceResponse;
-using google::protobuf::internal::scoped_array;
+using google::protobuf::ConformanceTestSuite;
 using std::string;
 using std::vector;
 
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
-#define CHECK_SYSCALL(call) \
+#define GOOGLE_CHECK_SYSCALL(call) \
   if (call < 0) { \
     perror(#call " " __FILE__ ":" TOSTRING(__LINE__)); \
     exit(1); \
   }
 
-// Test runner that spawns the process being tested and communicates with it
-// over a pipe.
-class ForkPipeRunner : public google::protobuf::ConformanceTestRunner {
- public:
-  ForkPipeRunner(const std::string &executable)
-      : executable_(executable), running_(false) {}
+namespace google {
+namespace protobuf {
 
-  void RunTest(const std::string& request, std::string* response) {
-    if (!running_) {
-      SpawnTestProgram();
-    }
+void ParseFailureList(const char *filename,
+                      conformance::FailureSet *failure_list) {
+  std::ifstream infile(filename);
 
-    uint32_t len = request.size();
-    CheckedWrite(write_fd_, &len, sizeof(uint32_t));
-    CheckedWrite(write_fd_, request.c_str(), request.size());
-    CheckedRead(read_fd_, &len, sizeof(uint32_t));
-    response->resize(len);
-    CheckedRead(read_fd_, (void*)response->c_str(), len);
+  if (!infile.is_open()) {
+    fprintf(stderr, "Couldn't open failure list file: %s\n", filename);
+    exit(1);
   }
 
- private:
-  // TODO(haberman): make this work on Windows, instead of using these
-  // UNIX-specific APIs.
-  //
-  // There is a platform-agnostic API in
-  //    src/google/protobuf/compiler/subprocess.h
-  //
-  // However that API only supports sending a single message to the subprocess.
-  // We really want to be able to send messages and receive responses one at a
-  // time:
-  //
-  // 1. Spawning a new process for each test would take way too long for thousands
-  //    of tests and subprocesses like java that can take 100ms or more to start
-  //    up.
-  //
-  // 2. Sending all the tests in one big message and receiving all results in one
-  //    big message would take away our visibility about which test(s) caused a
-  //    crash or other fatal error.  It would also give us only a single failure
-  //    instead of all of them.
-  void SpawnTestProgram() {
-    int toproc_pipe_fd[2];
-    int fromproc_pipe_fd[2];
-    if (pipe(toproc_pipe_fd) < 0 || pipe(fromproc_pipe_fd) < 0) {
-      perror("pipe");
-      exit(1);
-    }
+  for (string line; getline(infile, line);) {
+    // Remove whitespace.
+    line.erase(std::remove_if(line.begin(), line.end(), ::isspace),
+               line.end());
 
-    pid_t pid = fork();
-    if (pid < 0) {
-      perror("fork");
-      exit(1);
-    }
+    // Remove comments.
+    line = line.substr(0, line.find("#"));
 
-    if (pid) {
-      // Parent.
-      CHECK_SYSCALL(close(toproc_pipe_fd[0]));
-      CHECK_SYSCALL(close(fromproc_pipe_fd[1]));
-      write_fd_ = toproc_pipe_fd[1];
-      read_fd_ = fromproc_pipe_fd[0];
-      running_ = true;
-    } else {
-      // Child.
-      CHECK_SYSCALL(close(STDIN_FILENO));
-      CHECK_SYSCALL(close(STDOUT_FILENO));
-      CHECK_SYSCALL(dup2(toproc_pipe_fd[0], STDIN_FILENO));
-      CHECK_SYSCALL(dup2(fromproc_pipe_fd[1], STDOUT_FILENO));
-
-      CHECK_SYSCALL(close(toproc_pipe_fd[0]));
-      CHECK_SYSCALL(close(fromproc_pipe_fd[1]));
-      CHECK_SYSCALL(close(toproc_pipe_fd[1]));
-      CHECK_SYSCALL(close(fromproc_pipe_fd[0]));
-
-      scoped_array<char> executable(new char[executable_.size() + 1]);
-      memcpy(executable.get(), executable_.c_str(), executable_.size());
-      executable[executable_.size()] = '\0';
-
-      char *const argv[] = {executable.get(), NULL};
-      CHECK_SYSCALL(execv(executable.get(), argv));  // Never returns.
+    if (!line.empty()) {
+      failure_list->add_failure(line);
     }
   }
-
-  void CheckedWrite(int fd, const void *buf, size_t len) {
-    if (write(fd, buf, len) != len) {
-      GOOGLE_LOG(FATAL) << "Error writing to test program: " << strerror(errno);
-    }
-  }
-
-  void CheckedRead(int fd, void *buf, size_t len) {
-    size_t ofs = 0;
-    while (len > 0) {
-      ssize_t bytes_read = read(fd, (char*)buf + ofs, len);
-
-      if (bytes_read == 0) {
-        GOOGLE_LOG(FATAL) << "Unexpected EOF from test program";
-      } else if (bytes_read < 0) {
-        GOOGLE_LOG(FATAL) << "Error reading from test program: " << strerror(errno);
-      }
-
-      len -= bytes_read;
-      ofs += bytes_read;
-    }
-  }
-
-  int write_fd_;
-  int read_fd_;
-  bool running_;
-  std::string executable_;
-};
+}
 
 void UsageError() {
   fprintf(stderr,
@@ -197,56 +118,228 @@ void UsageError() {
           "                              should contain one test name per\n");
   fprintf(stderr,
           "                              line.  Use '#' for comments.\n");
+  fprintf(stderr,
+          "  --text_format_failure_list <filename>   Use to specify list \n");
+  fprintf(stderr,
+          "                              of tests that are expected to \n");
+  fprintf(stderr,
+          "                              fail in the \n");
+  fprintf(stderr,
+          "                              text_format_conformance_suite.  \n");
+  fprintf(stderr,
+          "                              File should contain one test name \n");
+  fprintf(stderr,
+          "                              per line.  Use '#' for comments.\n");
+
+  fprintf(stderr,
+          "  --enforce_recommended       Enforce that recommended test\n");
+  fprintf(stderr,
+          "                              cases are also passing. Specify\n");
+  fprintf(stderr,
+          "                              this flag if you want to be\n");
+  fprintf(stderr,
+          "                              strictly conforming to protobuf\n");
+  fprintf(stderr,
+          "                              spec.\n");
   exit(1);
 }
 
-void ParseFailureList(const char *filename, vector<string>* failure_list) {
-  std::ifstream infile(filename);
-  for (string line; getline(infile, line);) {
-    // Remove whitespace.
-    line.erase(std::remove_if(line.begin(), line.end(), ::isspace),
-               line.end());
-
-    // Remove comments.
-    line = line.substr(0, line.find("#"));
-
-    if (!line.empty()) {
-      failure_list->push_back(line);
-    }
+void ForkPipeRunner::RunTest(
+    const std::string& test_name,
+    const std::string& request,
+    std::string* response) {
+  if (child_pid_ < 0) {
+    SpawnTestProgram();
   }
+
+  current_test_name_ = test_name;
+
+  uint32_t len = request.size();
+  CheckedWrite(write_fd_, &len, sizeof(uint32_t));
+  CheckedWrite(write_fd_, request.c_str(), request.size());
+
+  if (!TryRead(read_fd_, &len, sizeof(uint32_t))) {
+    // We failed to read from the child, assume a crash and try to reap.
+    GOOGLE_LOG(INFO) << "Trying to reap child, pid=" << child_pid_;
+
+    int status;
+    waitpid(child_pid_, &status, WEXITED);
+
+    string error_msg;
+    if (WIFEXITED(status)) {
+      StringAppendF(&error_msg,
+                    "child exited, status=%d", WEXITSTATUS(status));
+    } else if (WIFSIGNALED(status)) {
+      StringAppendF(&error_msg,
+                    "child killed by signal %d", WTERMSIG(status));
+    }
+    GOOGLE_LOG(INFO) << error_msg;
+    child_pid_ = -1;
+
+    conformance::ConformanceResponse response_obj;
+    response_obj.set_runtime_error(error_msg);
+    response_obj.SerializeToString(response);
+    return;
+  }
+
+  response->resize(len);
+  CheckedRead(read_fd_, (void*)response->c_str(), len);
 }
 
-int main(int argc, char *argv[]) {
-  int arg = 1;
-  char *program;
-  google::protobuf::ConformanceTestSuite suite;
+int ForkPipeRunner::Run(
+    int argc, char *argv[], const std::vector<ConformanceTestSuite*>& suites) {
+  if (suites.empty()) {
+    fprintf(stderr, "No test suites found.\n");
+    return EXIT_FAILURE;
+  }
+  bool all_ok = true;
+  for (ConformanceTestSuite* suite : suites) {
+    string program;
+    std::vector<string> program_args;
+    string failure_list_filename;
+    conformance::FailureSet failure_list;
 
-  for (int arg = 1; arg < argc; ++arg) {
-    if (strcmp(argv[arg], "--failure_list") == 0) {
-      if (++arg == argc) UsageError();
-      vector<string> failure_list;
-      ParseFailureList(argv[arg], &failure_list);
-      suite.SetFailureList(failure_list);
-    } else if (strcmp(argv[arg], "--verbose") == 0) {
-      suite.SetVerbose(true);
-    } else if (argv[arg][0] == '-') {
-      fprintf(stderr, "Unknown option: %s\n", argv[arg]);
-      UsageError();
-    } else {
-      if (arg != argc - 1) {
-        fprintf(stderr, "Too many arguments.\n");
-        UsageError();
+    for (int arg = 1; arg < argc; ++arg) {
+      if (strcmp(argv[arg], suite->GetFailureListFlagName().c_str()) == 0) {
+        if (++arg == argc) UsageError();
+        failure_list_filename = argv[arg];
+        ParseFailureList(argv[arg], &failure_list);
+      } else if (strcmp(argv[arg], "--verbose") == 0) {
+        suite->SetVerbose(true);
+      } else if (strcmp(argv[arg], "--enforce_recommended") == 0) {
+        suite->SetEnforceRecommended(true);
+      } else if (argv[arg][0] == '-') {
+        bool recognized_flag = false;
+        for (ConformanceTestSuite* suite : suites) {
+          if (strcmp(argv[arg], suite->GetFailureListFlagName().c_str()) == 0) {
+            if (++arg == argc) UsageError();
+            recognized_flag = true;
+          }
+        }
+        if (!recognized_flag) {
+          fprintf(stderr, "Unknown option: %s\n", argv[arg]);
+          UsageError();
+        }
+      } else {
+        program += argv[arg];
+        while (arg < argc) {
+          program_args.push_back(argv[arg]);
+          arg++;
+        }
       }
-      program = argv[arg];
     }
+
+    ForkPipeRunner runner(program, program_args);
+
+    std::string output;
+    all_ok = all_ok &&
+        suite->RunSuite(&runner, &output, failure_list_filename, &failure_list);
+
+    fwrite(output.c_str(), 1, output.size(), stderr);
+  }
+  return all_ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+// TODO(haberman): make this work on Windows, instead of using these
+// UNIX-specific APIs.
+//
+// There is a platform-agnostic API in
+//    src/google/protobuf/compiler/subprocess.h
+//
+// However that API only supports sending a single message to the subprocess.
+// We really want to be able to send messages and receive responses one at a
+// time:
+//
+// 1. Spawning a new process for each test would take way too long for thousands
+//    of tests and subprocesses like java that can take 100ms or more to start
+//    up.
+//
+// 2. Sending all the tests in one big message and receiving all results in one
+//    big message would take away our visibility about which test(s) caused a
+//    crash or other fatal error.  It would also give us only a single failure
+//    instead of all of them.
+void ForkPipeRunner::SpawnTestProgram() {
+  int toproc_pipe_fd[2];
+  int fromproc_pipe_fd[2];
+  if (pipe(toproc_pipe_fd) < 0 || pipe(fromproc_pipe_fd) < 0) {
+    perror("pipe");
+    exit(1);
   }
 
-  ForkPipeRunner runner(program);
+  pid_t pid = fork();
+  if (pid < 0) {
+    perror("fork");
+    exit(1);
+  }
 
-  std::string output;
-  bool ok = suite.RunSuite(&runner, &output);
+  if (pid) {
+    // Parent.
+    GOOGLE_CHECK_SYSCALL(close(toproc_pipe_fd[0]));
+    GOOGLE_CHECK_SYSCALL(close(fromproc_pipe_fd[1]));
+    write_fd_ = toproc_pipe_fd[1];
+    read_fd_ = fromproc_pipe_fd[0];
+    child_pid_ = pid;
+  } else {
+    // Child.
+    GOOGLE_CHECK_SYSCALL(close(STDIN_FILENO));
+    GOOGLE_CHECK_SYSCALL(close(STDOUT_FILENO));
+    GOOGLE_CHECK_SYSCALL(dup2(toproc_pipe_fd[0], STDIN_FILENO));
+    GOOGLE_CHECK_SYSCALL(dup2(fromproc_pipe_fd[1], STDOUT_FILENO));
 
-  fwrite(output.c_str(), 1, output.size(), stderr);
+    GOOGLE_CHECK_SYSCALL(close(toproc_pipe_fd[0]));
+    GOOGLE_CHECK_SYSCALL(close(fromproc_pipe_fd[1]));
+    GOOGLE_CHECK_SYSCALL(close(toproc_pipe_fd[1]));
+    GOOGLE_CHECK_SYSCALL(close(fromproc_pipe_fd[0]));
 
-  return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+    std::unique_ptr<char[]> executable(new char[executable_.size() + 1]);
+    memcpy(executable.get(), executable_.c_str(), executable_.size());
+    executable[executable_.size()] = '\0';
+
+    std::vector<const char *> argv;
+    argv.push_back(executable.get());
+    for (int i = 0; i < executable_args_.size(); ++i) {
+      argv.push_back(executable_args_[i].c_str());
+    }
+    argv.push_back(nullptr);
+    // Never returns.
+    GOOGLE_CHECK_SYSCALL(execv(executable.get(), const_cast<char **>(argv.data())));
+  }
 }
+
+void ForkPipeRunner::CheckedWrite(int fd, const void *buf, size_t len) {
+  if (write(fd, buf, len) != len) {
+    GOOGLE_LOG(FATAL) << current_test_name_
+               << ": error writing to test program: " << strerror(errno);
+  }
+}
+
+bool ForkPipeRunner::TryRead(int fd, void *buf, size_t len) {
+  size_t ofs = 0;
+  while (len > 0) {
+    ssize_t bytes_read = read(fd, (char*)buf + ofs, len);
+
+    if (bytes_read == 0) {
+      GOOGLE_LOG(ERROR) << current_test_name_ << ": unexpected EOF from test program";
+      return false;
+    } else if (bytes_read < 0) {
+      GOOGLE_LOG(ERROR) << current_test_name_
+                 << ": error reading from test program: " << strerror(errno);
+      return false;
+    }
+
+    len -= bytes_read;
+    ofs += bytes_read;
+  }
+
+  return true;
+}
+
+void ForkPipeRunner::CheckedRead(int fd, void *buf, size_t len) {
+  if (!TryRead(fd, buf, len)) {
+    GOOGLE_LOG(FATAL) << current_test_name_
+               << ": error reading from test program: " << strerror(errno);
+  }
+}
+
+}  // namespace protobuf
+}  // namespace google

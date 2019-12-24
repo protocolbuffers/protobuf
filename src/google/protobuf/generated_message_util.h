@@ -39,57 +39,58 @@
 #define GOOGLE_PROTOBUF_GENERATED_MESSAGE_UTIL_H__
 
 #include <assert.h>
-#include <string>
 
-#include <google/protobuf/stubs/once.h>
+#include <atomic>
+#include <climits>
+#include <string>
+#include <vector>
 
 #include <google/protobuf/stubs/common.h>
-namespace google {
+#include <google/protobuf/any.h>
+#include <google/protobuf/has_bits.h>
+#include <google/protobuf/implicit_weak_message.h>
+#include <google/protobuf/message_lite.h>
+#include <google/protobuf/stubs/once.h>  // Add direct dep on port for pb.cc
+#include <google/protobuf/port.h>
+#include <google/protobuf/repeated_field.h>
+#include <google/protobuf/wire_format_lite.h>
+#include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/stubs/casts.h>
 
+#include <google/protobuf/port_def.inc>
+
+#ifdef SWIG
+#error "You cannot SWIG proto headers"
+#endif
+
+namespace google {
 namespace protobuf {
 
 class Arena;
-namespace io { class CodedInputStream; }
+
+namespace io {
+class CodedInputStream;
+}
 
 namespace internal {
 
-
-// Annotation for the compiler to emit a deprecation message if a field marked
-// with option 'deprecated=true' is used in the code, or for other things in
-// generated code which are deprecated.
-//
-// For internal use in the pb.cc files, deprecation warnings are suppressed
-// there.
-#undef DEPRECATED_PROTOBUF_FIELD
-#define PROTOBUF_DEPRECATED
-
-
-// Constants for special floating point values.
-LIBPROTOBUF_EXPORT double Infinity();
-LIBPROTOBUF_EXPORT double NaN();
-
-// TODO(jieluo): Change to template. We have tried to use template,
-// but it causes net/rpc/python:rpcutil_test fail (the empty string will
-// init twice). It may related to swig. Change to template after we
-// found the solution.
-
-// Default empty string object. Don't use the pointer directly. Instead, call
-// GetEmptyString() to get the reference.
-LIBPROTOBUF_EXPORT extern const ::std::string* empty_string_;
-LIBPROTOBUF_EXPORT extern ProtobufOnceType empty_string_once_init_;
-LIBPROTOBUF_EXPORT void InitEmptyString();
-
-
-LIBPROTOBUF_EXPORT inline const ::std::string& GetEmptyStringAlreadyInited() {
-  assert(empty_string_ != NULL);
-  return *empty_string_;
+template <typename To, typename From>
+inline To DownCast(From* f) {
+  return PROTOBUF_NAMESPACE_ID::internal::down_cast<To>(f);
 }
-LIBPROTOBUF_EXPORT inline const ::std::string& GetEmptyString() {
-  ::google::protobuf::GoogleOnceInit(&empty_string_once_init_, &InitEmptyString);
+template <typename To, typename From>
+inline To DownCast(From& f) {
+  return PROTOBUF_NAMESPACE_ID::internal::down_cast<To>(f);
+}
+
+
+PROTOBUF_EXPORT void InitProtobufDefaults();
+
+// This used by proto1
+PROTOBUF_EXPORT inline const std::string& GetEmptyString() {
+  InitProtobufDefaults();
   return GetEmptyStringAlreadyInited();
 }
-
-LIBPROTOBUF_EXPORT int StringSpaceUsedExcludingSelf(const string& str);
 
 
 // True if IsInitialized() is true for all elements of t.  Type is expected
@@ -97,24 +98,160 @@ LIBPROTOBUF_EXPORT int StringSpaceUsedExcludingSelf(const string& str);
 // helper here to keep the protobuf compiler from ever having to emit loops in
 // IsInitialized() methods.  We want the C++ compiler to inline this or not
 // as it sees fit.
-template <class Type> bool AllAreInitialized(const Type& t) {
-  for (int i = t.size(); --i >= 0; ) {
+template <typename Msg>
+bool AllAreInitialized(const RepeatedPtrField<Msg>& t) {
+  for (int i = t.size(); --i >= 0;) {
     if (!t.Get(i).IsInitialized()) return false;
   }
   return true;
 }
 
-class ArenaString;
+// "Weak" variant of AllAreInitialized, used to implement implicit weak fields.
+// This version operates on MessageLite to avoid introducing a dependency on the
+// concrete message type.
+template <class T>
+bool AllAreInitializedWeak(const RepeatedPtrField<T>& t) {
+  for (int i = t.size(); --i >= 0;) {
+    if (!reinterpret_cast<const RepeatedPtrFieldBase&>(t)
+             .Get<ImplicitWeakTypeHandler<T> >(i)
+             .IsInitialized()) {
+      return false;
+    }
+  }
+  return true;
+}
 
-// Read a length (varint32), followed by a string, from *input.  Return a
-// pointer to a copy of the string that resides in *arena.  Requires both
-// args to be non-NULL.  If something goes wrong while reading the data
-// then NULL is returned (e.g., input does not start with a valid varint).
-ArenaString* ReadArenaString(::google::protobuf::io::CodedInputStream* input,
-                             ::google::protobuf::Arena* arena);
+inline bool IsPresent(const void* base, uint32 hasbit) {
+  const uint32* has_bits_array = static_cast<const uint32*>(base);
+  return (has_bits_array[hasbit / 32] & (1u << (hasbit & 31))) != 0;
+}
+
+inline bool IsOneofPresent(const void* base, uint32 offset, uint32 tag) {
+  const uint32* oneof =
+      reinterpret_cast<const uint32*>(static_cast<const uint8*>(base) + offset);
+  return *oneof == tag >> 3;
+}
+
+typedef void (*SpecialSerializer)(const uint8* base, uint32 offset, uint32 tag,
+                                  uint32 has_offset,
+                                  io::CodedOutputStream* output);
+
+PROTOBUF_EXPORT void ExtensionSerializer(const uint8* base, uint32 offset,
+                                         uint32 tag, uint32 has_offset,
+                                         io::CodedOutputStream* output);
+PROTOBUF_EXPORT void UnknownFieldSerializerLite(const uint8* base,
+                                                uint32 offset, uint32 tag,
+                                                uint32 has_offset,
+                                                io::CodedOutputStream* output);
+
+PROTOBUF_EXPORT MessageLite* DuplicateIfNonNullInternal(MessageLite* message);
+PROTOBUF_EXPORT MessageLite* GetOwnedMessageInternal(Arena* message_arena,
+                                                     MessageLite* submessage,
+                                                     Arena* submessage_arena);
+PROTOBUF_EXPORT void GenericSwap(MessageLite* m1, MessageLite* m2);
+
+template <typename T>
+T* DuplicateIfNonNull(T* message) {
+  // The casts must be reinterpret_cast<> because T might be a forward-declared
+  // type that the compiler doesn't know is related to MessageLite.
+  return reinterpret_cast<T*>(
+      DuplicateIfNonNullInternal(reinterpret_cast<MessageLite*>(message)));
+}
+
+template <typename T>
+T* GetOwnedMessage(Arena* message_arena, T* submessage,
+                   Arena* submessage_arena) {
+  // The casts must be reinterpret_cast<> because T might be a forward-declared
+  // type that the compiler doesn't know is related to MessageLite.
+  return reinterpret_cast<T*>(GetOwnedMessageInternal(
+      message_arena, reinterpret_cast<MessageLite*>(submessage),
+      submessage_arena));
+}
+
+// Hide atomic from the public header and allow easy change to regular int
+// on platforms where the atomic might have a perf impact.
+class PROTOBUF_EXPORT CachedSize {
+ public:
+  int Get() const { return size_.load(std::memory_order_relaxed); }
+  void Set(int size) { size_.store(size, std::memory_order_relaxed); }
+
+ private:
+  std::atomic<int> size_{0};
+};
+
+// SCCInfo represents information of a strongly connected component of
+// mutual dependent messages.
+struct PROTOBUF_EXPORT SCCInfoBase {
+  // We use 0 for the Initialized state, because test eax,eax, jnz is smaller
+  // and is subject to macro fusion.
+  enum {
+    kInitialized = 0,  // final state
+    kRunning = 1,
+    kUninitialized = -1,  // initial state
+  };
+#if defined(_MSC_VER) && !defined(__clang__)
+  // MSVC doesnt make std::atomic constant initialized. This union trick
+  // makes it so.
+  union {
+    int visit_status_to_make_linker_init;
+    std::atomic<int> visit_status;
+  };
+#else
+  std::atomic<int> visit_status;
+#endif
+  int num_deps;
+  int num_implicit_weak_deps;
+  void (*init_func)();
+  // This is followed by an array  of num_deps
+  // const SCCInfoBase* deps[];
+};
+
+// Zero-length arrays are a language extension available in GCC and Clang but
+// not MSVC.
+#ifdef __GNUC__
+#define PROTOBUF_ARRAY_SIZE(n) (n)
+#else
+#define PROTOBUF_ARRAY_SIZE(n) ((n) ? (n) : 1)
+#endif
+
+template <int N>
+struct SCCInfo {
+  SCCInfoBase base;
+  // Semantically this is const SCCInfo<T>* which is is a templated type.
+  // The obvious inheriting from SCCInfoBase mucks with struct initialization.
+  // Attempts showed the compiler was generating dynamic initialization code.
+  // This deps array consists of base.num_deps pointers to SCCInfoBase followed
+  // by base.num_implicit_weak_deps pointers to SCCInfoBase*. We need the extra
+  // pointer indirection for implicit weak fields. We cannot use a union type
+  // here, since that would prevent the array from being linker-initialized.
+  void* deps[PROTOBUF_ARRAY_SIZE(N)];
+};
+
+#undef PROTOBUF_ARRAY_SIZE
+
+PROTOBUF_EXPORT void InitSCCImpl(SCCInfoBase* scc);
+
+inline void InitSCC(SCCInfoBase* scc) {
+  auto status = scc->visit_status.load(std::memory_order_acquire);
+  if (PROTOBUF_PREDICT_FALSE(status != SCCInfoBase::kInitialized))
+    InitSCCImpl(scc);
+}
+
+PROTOBUF_EXPORT void DestroyMessage(const void* message);
+PROTOBUF_EXPORT void DestroyString(const void* s);
+// Destroy (not delete) the message
+inline void OnShutdownDestroyMessage(const void* ptr) {
+  OnShutdownRun(DestroyMessage, ptr);
+}
+// Destroy the string (call std::string destructor)
+inline void OnShutdownDestroyString(const std::string* ptr) {
+  OnShutdownRun(DestroyString, ptr);
+}
 
 }  // namespace internal
 }  // namespace protobuf
-
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
+
 #endif  // GOOGLE_PROTOBUF_GENERATED_MESSAGE_UTIL_H__

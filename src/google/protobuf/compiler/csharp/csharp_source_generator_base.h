@@ -34,25 +34,33 @@
 #include <string>
 
 #include <google/protobuf/compiler/code_generator.h>
+#include <google/protobuf/io/printer.h>
 
 namespace google {
 namespace protobuf {
 namespace compiler {
 namespace csharp {
 
+struct Options;
+
 class SourceGeneratorBase {
  protected:
-  SourceGeneratorBase(const FileDescriptor* descriptor);
+  SourceGeneratorBase(const FileDescriptor* descriptor, const Options* options);
   virtual ~SourceGeneratorBase();
 
-  std::string class_access_level();
+  SourceGeneratorBase(const SourceGeneratorBase&) = delete;
+  SourceGeneratorBase& operator=(const SourceGeneratorBase&) = delete;
 
+  std::string class_access_level();
+  const Options* options();
+
+  // Write any attributes used to decorate generated function members (methods and properties).
+  // Should not be used to decorate types.
   void WriteGeneratedCodeAttributes(io::Printer* printer);
 
  private:
   const FileDescriptor* descriptor_;
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(SourceGeneratorBase);
+  const Options *options_;
 };
 
 }  // namespace csharp

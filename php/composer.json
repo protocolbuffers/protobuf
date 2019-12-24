@@ -1,0 +1,28 @@
+{
+  "name": "google/protobuf",
+  "type": "library",
+  "description": "proto library for PHP",
+  "keywords": ["proto"],
+  "homepage": "https://developers.google.com/protocol-buffers/",
+  "license": "BSD-3-Clause",
+  "require": {
+    "php": ">=5.5.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^5|^4.8.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Google\\Protobuf\\": "src/Google/Protobuf",
+      "GPBMetadata\\Google\\Protobuf\\": "src/GPBMetadata/Google/Protobuf"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "": "tests/generated"
+    }
+  },
+  "scripts": {
+    "test": "(cd tests && rm -rf generated && mkdir -p generated && ../../src/protoc --php_out=generated -I../../src -I. proto/empty/echo.proto proto/test.proto proto/test_include.proto proto/test_no_namespace.proto proto/test_prefix.proto proto/test_php_namespace.proto proto/test_empty_php_namespace.proto proto/test_reserved_enum_lower.proto proto/test_reserved_enum_upper.proto proto/test_reserved_enum_value_lower.proto proto/test_reserved_enum_value_upper.proto proto/test_reserved_message_lower.proto proto/test_reserved_message_upper.proto proto/test_service.proto proto/test_service_namespace.proto proto/test_wrapper_type_setters.proto proto/test_descriptors.proto) && (cd ../src && ./protoc --php_out=../php/tests/generated -I../php/tests -I. ../php/tests/proto/test_import_descriptor_proto.proto) && vendor/bin/phpunit"
+  }
+}

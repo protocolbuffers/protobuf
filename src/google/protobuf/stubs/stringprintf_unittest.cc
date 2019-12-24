@@ -91,7 +91,7 @@ TEST(StringPrintfTest, Multibyte) {
   // out of memory while trying to determine destination buffer size.
   // see b/4194543.
 
-  char* old_locale = setlocale(LC_CTYPE, NULL);
+  char* old_locale = setlocale(LC_CTYPE, nullptr);
   // Push locale with multibyte mode
   setlocale(LC_CTYPE, "en_US.utf8");
 
@@ -120,7 +120,7 @@ TEST(StringPrintfTest, Multibyte) {
 
 TEST(StringPrintfTest, NoMultibyte) {
   // No multibyte handling, but the string contains funny chars.
-  char* old_locale = setlocale(LC_CTYPE, NULL);
+  char* old_locale = setlocale(LC_CTYPE, nullptr);
   setlocale(LC_CTYPE, "POSIX");
   string value = StringPrintf("%.*s", 3, "\375\067s");
   setlocale(LC_CTYPE, old_locale);

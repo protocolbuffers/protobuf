@@ -135,7 +135,7 @@ namespace Google.Protobuf.WellKnownTypes
                 DoubleField = { 12.5, -1.5, 0d },
                 FloatField = { 123.25f, -20f, 0f },
                 Int32Field = { int.MaxValue, int.MinValue, 0 },
-                Int64Field = { long.MaxValue, long.MinValue, 0L },                
+                Int64Field = { long.MaxValue, long.MinValue, 0L },
                 StringField = { "First", "Second", "" },
                 Uint32Field = { uint.MaxValue, uint.MinValue, 0U },
                 Uint64Field = { ulong.MaxValue, ulong.MinValue, 0UL },
@@ -149,8 +149,34 @@ namespace Google.Protobuf.WellKnownTypes
         }
 
         [Test]
+        public void RepeatedWrappersBinaryFormat()
+        {
+            // At one point we accidentally used a packed format for repeated wrappers, which is wrong (and weird).
+            // This test is just to prove that we use the right format.
+
+            var rawOutput = new MemoryStream();
+            var output = new CodedOutputStream(rawOutput);
+            // Write a value of 5
+            output.WriteTag(RepeatedWellKnownTypes.Int32FieldFieldNumber, WireFormat.WireType.LengthDelimited);
+            output.WriteLength(2);
+            output.WriteTag(WrappersReflection.WrapperValueFieldNumber, WireFormat.WireType.Varint);
+            output.WriteInt32(5);
+            // Write a value of 0 (empty message)
+            output.WriteTag(RepeatedWellKnownTypes.Int32FieldFieldNumber, WireFormat.WireType.LengthDelimited);
+            output.WriteLength(0);
+            output.Flush();
+            var expectedBytes = rawOutput.ToArray();
+
+            var message = new RepeatedWellKnownTypes { Int32Field = { 5, 0 } };
+            var actualBytes = message.ToByteArray();
+            Assert.AreEqual(expectedBytes, actualBytes);
+        }
+
+        [Test]
         public void MapWrappersSerializeDeserialize()
         {
+            // Note: no null values here, as they are prohibited in map fields
+            // (despite being representable).
             var message = new MapWellKnownTypes
             {
                 BoolField = { { 10, false }, { 20, true } },
@@ -158,13 +184,12 @@ namespace Google.Protobuf.WellKnownTypes
                     { -1, ByteString.CopyFrom(1, 2, 3) },
                     { 10, ByteString.CopyFrom(4, 5, 6) },
                     { 1000, ByteString.Empty },
-                    { 10000, null }
                 },
                 DoubleField = { { 1, 12.5 }, { 10, -1.5 }, { 20, 0d } },
                 FloatField = { { 2, 123.25f }, { 3, -20f }, { 4, 0f } },
                 Int32Field = { { 5, int.MaxValue }, { 6, int.MinValue }, { 7, 0 } },
                 Int64Field = { { 8, long.MaxValue }, { 9, long.MinValue }, { 10, 0L } },
-                StringField = { { 11, "First" }, { 12, "Second" }, { 13, "" }, { 14, null } },
+                StringField = { { 11, "First" }, { 12, "Second" }, { 13, "" } },
                 Uint32Field = { { 15, uint.MaxValue }, { 16, uint.MinValue }, { 17, 0U } },
                 Uint64Field = { { 18, ulong.MaxValue }, { 19, ulong.MinValue }, { 20, 0UL } },
             };
@@ -224,13 +249,11 @@ namespace Google.Protobuf.WellKnownTypes
         [Test]
         public void Reflection_MapFields()
         {
-            // Just a single example... note that we can't have a null value here
-            var message = new MapWellKnownTypes { Int32Field = { { 1, 2 }, { 3, null } } };
+            // Just a single example... note that we can't have a null value here despite the value type being int?
+            var message = new MapWellKnownTypes { Int32Field = { { 1, 2 } } };
             var fields = MapWellKnownTypes.Descriptor.Fields;
             var dictionary = (IDictionary) fields[MapWellKnownTypes.Int32FieldFieldNumber].Accessor.GetValue(message);
             Assert.AreEqual(2, dictionary[1]);
-            Assert.IsNull(dictionary[3]);
-            Assert.IsTrue(dictionary.Contains(3));
         }
 
         [Test]
@@ -296,9 +319,10 @@ namespace Google.Protobuf.WellKnownTypes
 
         // Merging is odd with wrapper types, due to the way that default values aren't emitted in
         // the binary stream. In fact we cheat a little bit - a message with an explicitly present default
-        // value will have that default value ignored.
+        // value will have that default value ignored. See issue 615. Fixing this would require significant upheaval to
+        // the FieldCodec side of things.
         [Test]
-        public void MergingCornerCase()
+        public void MergingStreamExplicitValue()
         {
             var message = new TestWellKnownTypes { Int32Field = 5 };
 
@@ -320,11 +344,49 @@ namespace Google.Protobuf.WellKnownTypes
 
             message.MergeFrom(bytes);
             // A normal implementation would have 0 now, as the explicit default would have been overwritten the 5.
+            // With the FieldCodec for Nullable<int>, we can't tell the difference between an implicit 0 and an explicit 0.
             Assert.AreEqual(5, message.Int32Field);
         }
 
         [Test]
-        public void UnknownFieldInWrapper()
+        public void MergingStreamNoValue()
+        {
+            var message = new TestWellKnownTypes { Int32Field = 5 };
+
+            // Create a byte array which an Int32 field, but with no value.
+            var bytes = new TestWellKnownTypes { Int32Field = 0 }.ToByteArray();
+            Assert.AreEqual(2, bytes.Length); // The tag for Int32Field is a single byte, then a byte indicating a 0-length message.
+            message.MergeFrom(bytes);
+
+            // The "implicit" 0 did *not* overwrite the value.
+            // (This is the correct behaviour.)
+            Assert.AreEqual(5, message.Int32Field);
+        }
+
+        // All permutations of origin/merging value being null, zero (default) or non-default.
+        // As this is the in-memory version, we don't need to worry about the difference between implicit and explicit 0.
+        [Test]
+        [TestCase(null, null, null)]
+        [TestCase(null, 0, 0)]
+        [TestCase(null, 5, 5)]
+        [TestCase(0, null, 0)]
+        [TestCase(0, 0, 0)]
+        [TestCase(0, 5, 5)]
+        [TestCase(5, null, 5)]
+        [TestCase(5, 0, 5)]
+        [TestCase(5, 10, 10)]
+        public void MergingMessageWithZero(int? originValue, int? mergingValue, int? expectedResult)
+        {
+            // This differs from the MergingStreamCornerCase because when we merge message *objects*,
+            // we ignore default values from the "source".
+            var message1 = new TestWellKnownTypes { Int32Field = originValue };
+            var message2 = new TestWellKnownTypes { Int32Field = mergingValue };
+            message1.MergeFrom(message2);
+            Assert.AreEqual(expectedResult, message1.Int32Field);
+        }
+
+        [Test]
+        public void UnknownFieldInWrapperInt32FastPath()
         {
             var stream = new MemoryStream();
             var output = new CodedOutputStream(stream);
@@ -333,17 +395,115 @@ namespace Google.Protobuf.WellKnownTypes
             var valueTag = WireFormat.MakeTag(Int32Value.ValueFieldNumber, WireFormat.WireType.Varint);
 
             output.WriteTag(wrapperTag);
-            output.WriteLength(4); // unknownTag + value 5 + valueType + value 6, each 1 byte
+            // Wrapper message is just long enough - 6 bytes - to use the wrapper fast-path.
+            output.WriteLength(6); // unknownTag + value 5 + valueType, each 1 byte, + value 65536, 3 bytes
             output.WriteTag(unknownTag);
             output.WriteInt32((int) valueTag); // Sneakily "pretend" it's a tag when it's really a value
+            output.WriteTag(valueTag);
+            output.WriteInt32(65536);
+            
+            output.Flush();
+            Assert.AreEqual(8, stream.Length); // tag (1 byte) + length (1 byte) + message (6 bytes)
+            stream.Position = 0;
+
+            var message = TestWellKnownTypes.Parser.ParseFrom(stream);
+            Assert.AreEqual(65536, message.Int32Field);
+        }
+
+        [Test]
+        public void UnknownFieldInWrapperInt32SlowPath()
+        {
+            var stream = new MemoryStream();
+            var output = new CodedOutputStream(stream);
+            var wrapperTag = WireFormat.MakeTag(TestWellKnownTypes.Int32FieldFieldNumber, WireFormat.WireType.LengthDelimited);
+            var unknownTag = WireFormat.MakeTag(15, WireFormat.WireType.Varint);
+            var valueTag = WireFormat.MakeTag(Int32Value.ValueFieldNumber, WireFormat.WireType.Varint);
+
+            output.WriteTag(wrapperTag);
+            // Wrapper message is too short to be used on the wrapper fast-path.
+            output.WriteLength(4); // unknownTag + value 5 + valueType + value 6, each 1 byte
+            output.WriteTag(unknownTag);
+            output.WriteInt32((int)valueTag); // Sneakily "pretend" it's a tag when it's really a value
             output.WriteTag(valueTag);
             output.WriteInt32(6);
 
             output.Flush();
+            Assert.Less(stream.Length, 8); // tag (1 byte) + length (1 byte) + message
             stream.Position = 0;
-            
+
             var message = TestWellKnownTypes.Parser.ParseFrom(stream);
             Assert.AreEqual(6, message.Int32Field);
+        }
+
+        [Test]
+        public void UnknownFieldInWrapperInt64FastPath()
+        {
+            var stream = new MemoryStream();
+            var output = new CodedOutputStream(stream);
+            var wrapperTag = WireFormat.MakeTag(TestWellKnownTypes.Int64FieldFieldNumber, WireFormat.WireType.LengthDelimited);
+            var unknownTag = WireFormat.MakeTag(15, WireFormat.WireType.Varint);
+            var valueTag = WireFormat.MakeTag(Int64Value.ValueFieldNumber, WireFormat.WireType.Varint);
+
+            output.WriteTag(wrapperTag);
+            // Wrapper message is just long enough - 10 bytes - to use the wrapper fast-path.
+            output.WriteLength(11); // unknownTag + value 5 + valueType, each 1 byte, + value 0xfffffffffffff, 8 bytes
+            output.WriteTag(unknownTag);
+            output.WriteInt64((int)valueTag); // Sneakily "pretend" it's a tag when it's really a value
+            output.WriteTag(valueTag);
+            output.WriteInt64(0xfffffffffffffL);
+
+            output.Flush();
+            Assert.AreEqual(13, stream.Length); // tag (1 byte) + length (1 byte) + message (11 bytes)
+            stream.Position = 0;
+
+            var message = TestWellKnownTypes.Parser.ParseFrom(stream);
+            Assert.AreEqual(0xfffffffffffffL, message.Int64Field);
+        }
+
+        [Test]
+        public void UnknownFieldInWrapperInt64SlowPath()
+        {
+            var stream = new MemoryStream();
+            var output = new CodedOutputStream(stream);
+            var wrapperTag = WireFormat.MakeTag(TestWellKnownTypes.Int64FieldFieldNumber, WireFormat.WireType.LengthDelimited);
+            var unknownTag = WireFormat.MakeTag(15, WireFormat.WireType.Varint);
+            var valueTag = WireFormat.MakeTag(Int64Value.ValueFieldNumber, WireFormat.WireType.Varint);
+
+            output.WriteTag(wrapperTag);
+            // Wrapper message is too short to be used on the wrapper fast-path.
+            output.WriteLength(4); // unknownTag + value 5 + valueType + value 6, each 1 byte
+            output.WriteTag(unknownTag);
+            output.WriteInt64((int)valueTag); // Sneakily "pretend" it's a tag when it's really a value
+            output.WriteTag(valueTag);
+            output.WriteInt64(6);
+
+            output.Flush();
+            Assert.Less(stream.Length, 12); // tag (1 byte) + length (1 byte) + message
+            stream.Position = 0;
+
+            var message = TestWellKnownTypes.Parser.ParseFrom(stream);
+            Assert.AreEqual(6L, message.Int64Field);
+        }
+
+        [Test]
+        public void ClearWithReflection()
+        {
+            // String and Bytes are the tricky ones here, as the CLR type of the property
+            // is the same between the wrapper and non-wrapper types.
+            var message = new TestWellKnownTypes { StringField = "foo" };
+            TestWellKnownTypes.Descriptor.Fields[TestWellKnownTypes.StringFieldFieldNumber].Accessor.Clear(message);
+            Assert.IsNull(message.StringField);
+        }
+
+        [Test]
+        public void NaNComparisons()
+        {
+            var message1 = new TestWellKnownTypes { DoubleField = SampleNaNs.Regular };
+            var message2 = new TestWellKnownTypes { DoubleField = SampleNaNs.PayloadFlipped };
+            var message3 = new TestWellKnownTypes { DoubleField = SampleNaNs.Regular };
+
+            EqualityTester.AssertInequality(message1, message2);
+            EqualityTester.AssertEquality(message1, message3);
         }
     }
 }

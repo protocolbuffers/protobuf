@@ -73,19 +73,19 @@ class ZipWriter {
   ZipWriter(io::ZeroCopyOutputStream* raw_output);
   ~ZipWriter();
 
-  bool Write(const string& filename, const string& contents);
+  bool Write(const std::string& filename, const std::string& contents);
   bool WriteDirectory();
 
  private:
   struct FileInfo {
-    string name;
+    std::string name;
     uint32 offset;
     uint32 size;
     uint32 crc32;
   };
 
   io::ZeroCopyOutputStream* raw_output_;
-  vector<FileInfo> files_;
+  std::vector<FileInfo> files_;
 };
 
 }  // namespace compiler

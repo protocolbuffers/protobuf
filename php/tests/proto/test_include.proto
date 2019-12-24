@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package bar;
+
+message TestInclude {
+  int32 a = 1;
+}
+
+message TestLegacyMessage {
+  NestedMessage message = 1;
+  NestedEnum enum = 2;
+  message NestedMessage {
+    int32 a = 1;
+  }
+  enum NestedEnum {
+    ZERO = 0;
+  }
+}

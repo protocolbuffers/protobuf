@@ -1,193 +1,85 @@
 Protocol Buffers - Google's data interchange format
 ===================================================
 
-[![Build Status](https://travis-ci.org/google/protobuf.svg?branch=master)](https://travis-ci.org/google/protobuf) [![Build status](https://ci.appveyor.com/api/projects/status/73ctee6ua4w2ruin?svg=true)](https://ci.appveyor.com/project/protobuf/protobuf)
-
 Copyright 2008 Google Inc.
 
 https://developers.google.com/protocol-buffers/
 
-C++ Installation - Unix
------------------------
+Overview
+--------
 
-If you get the source from github, you need to generate the configure script
-first:
+Protocol Buffers (a.k.a., protobuf) are Google's language-neutral,
+platform-neutral, extensible mechanism for serializing structured data. You
+can find [protobuf's documentation on the Google Developers site](https://developers.google.com/protocol-buffers/).
 
-    $ ./autogen.sh
+This README file contains protobuf installation instructions. To install
+protobuf, you need to install the protocol compiler (used to compile .proto
+files) and the protobuf runtime for your chosen programming language.
 
-This will download gmock source (which is used for C++ Protocol Buffer
-unit-tests) to the current directory and run automake, autoconf, etc.
-to generate the configure script and various template makefiles.
+Protocol Compiler Installation
+------------------------------
 
-You can skip this step if you are using a release package (which already
-contains gmock and the configure script).
+The protocol compiler is written in C++. If you are using C++, please follow
+the [C++ Installation Instructions](src/README.md) to install protoc along
+with the C++ runtime.
 
-To build and install the C++ Protocol Buffer runtime and the Protocol
-Buffer compiler (protoc) execute the following:
+For non-C++ users, the simplest way to install the protocol compiler is to
+download a pre-built binary from our release page:
 
-    $ ./configure
-    $ make
-    $ make check
-    $ make install
+  [https://github.com/protocolbuffers/protobuf/releases](https://github.com/protocolbuffers/protobuf/releases)
 
-If "make check" fails, you can still install, but it is likely that
-some features of this library will not work correctly on your system.
-Proceed at your own risk.
+In the downloads section of each release, you can find pre-built binaries in
+zip packages: protoc-$VERSION-$PLATFORM.zip. It contains the protoc binary
+as well as a set of standard .proto files distributed along with protobuf.
 
-"make install" may require superuser privileges.
+If you are looking for an old version that is not available in the release
+page, check out the maven repo here:
 
-For advanced usage information on configure and make, see INSTALL.txt.
+  [https://repo1.maven.org/maven2/com/google/protobuf/protoc/](https://repo1.maven.org/maven2/com/google/protobuf/protoc/)
 
-**Hint on install location**
+These pre-built binaries are only provided for released versions. If you want
+to use the github master version at HEAD, or you need to modify protobuf code,
+or you are using C++, it's recommended to build your own protoc binary from
+source.
 
-  By default, the package will be installed to /usr/local.  However,
-  on many platforms, /usr/local/lib is not part of LD_LIBRARY_PATH.
-  You can add it, but it may be easier to just install to /usr
-  instead.  To do this, invoke configure as follows:
+If you would like to build protoc binary from source, see the [C++ Installation
+Instructions](src/README.md).
 
-    ./configure --prefix=/usr
+Protobuf Runtime Installation
+-----------------------------
 
-  If you already built the package with a different prefix, make sure
-  to run "make clean" before building again.
+Protobuf supports several different programming languages. For each programming
+language, you can find instructions in the corresponding source directory about
+how to install protobuf runtime for that specific language:
 
-**Compiling dependent packages**
+| Language                             | Source                                                      | Ubuntu | MacOS | Windows |
+|--------------------------------------|-------------------------------------------------------------|--------|-------|---------|
+| C++ (include C++ runtime and protoc) | [src](src)                                                  | [![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/linux-cpp_distcheck.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fubuntu%2Fcpp_distcheck%2Fcontinuous)<br/>[![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/linux-bazel.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fubuntu%2Fbazel%2Fcontinuous)<br/>[![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/linux-dist_install.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fubuntu%2Fdist_install%2Fcontinuous) | [![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/macos-cpp.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fmacos%2Fcpp%2Fcontinuous)<br/>[![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/macos-cpp_distcheck.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fmacos%2Fcpp_distcheck%2Fcontinuous) | [![Build status](https://ci.appveyor.com/api/projects/status/73ctee6ua4w2ruin?svg=true)](https://ci.appveyor.com/project/protobuf/protobuf) |
+| Java                                 | [java](java)                                                | [![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/linux-java_compatibility.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fubuntu%2Fjava_compatibility%2Fcontinuous)<br/>[![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/linux-java_jdk7.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fubuntu%2Fjava_jdk7%2Fcontinuous)<br/>[![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/linux-java_oracle7.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fubuntu%2Fjava_oracle7%2Fcontinuous)<br/>[![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/linux-java_linkage_monitor.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fubuntu%2Fjava_linkage_monitor%2Fcontinuous) | | |
+| Python                               | [python](python)                                            | [![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/linux-python27.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fubuntu%2Fpython27%2Fcontinuous)<br/>[![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/linux-python33.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fubuntu%2Fpython33%2Fcontinuous)<br/>[![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/linux-python34.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fubuntu%2Fpython34%2Fcontinuous)<br/>[![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/linux-python35.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fubuntu%2Fpython35%2Fcontinuous)<br/>[![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/linux-python36.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fubuntu%2Fpython36%2Fcontinuous)<br/>[![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/linux-python37.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fubuntu%2Fpython37%2Fcontinuous)<br/>[![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/linux-python_compatibility.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fubuntu%2Fpython_compatibility%2Fcontinuous)<br/>[![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/linux-python27_cpp.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fubuntu%2Fpython27_cpp%2Fcontinuous)<br/>[![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/linux-python33_cpp.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fubuntu%2Fpython33_cpp%2Fcontinuous)<br/>[![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/linux-python34_cpp.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fubuntu%2Fpython34_cpp%2Fcontinuous)<br/>[![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/linux-python35_cpp.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fubuntu%2Fpython35_cpp%2Fcontinuous)<br/>[![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/linux-python36_cpp.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fubuntu%2Fpython36_cpp%2Fcontinuous)<br/>[![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/linux-python37_cpp.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fubuntu%2Fpython37_cpp%2Fcontinuous)<br/>[![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/linux-python-release.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fubuntu%2Fpython_release%2Fcontinuous) | [![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/macos-python.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fmacos%2Fpython%2Fcontinuous)<br/>[![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/macos-python_cpp.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fmacos%2Fpython_cpp%2Fcontinuous)<br/>[![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/macos-python-release.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fmacos%2Fpython_release%2Fcontinuous) | [![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/windows-python-release.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fwindows%2Fpython_release%2Fcontinuous) |
+| Objective-C                          | [objectivec](objectivec)                                    | | [![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/macos-objectivec_cocoapods_integration.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fmacos%2Fobjectivec_cocoapods_integration%2Fcontinuous)<br/>[![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/macos-objectivec_ios_debug.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fmacos%2Fobjectivec_ios_debug%2Fcontinuous)<br/>[![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/macos-objectivec_ios_release.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fmacos%2Fobjectivec_ios_release%2Fcontinuous)<br/>[![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/macos-objectivec_osx.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fmacos%2Fobjectivec_osx%2Fcontinuous) | |
+| C#                                   | [csharp](csharp)                                            | [![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/linux-csharp.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fubuntu%2Fcsharp%2Fcontinuous) | | [![Build status](https://ci.appveyor.com/api/projects/status/73ctee6ua4w2ruin?svg=true)](https://ci.appveyor.com/project/protobuf/protobuf)<br/>[![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/windows-csharp-release.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fwindows%2Fcsharp_release%2Fcontinuous) |
+| JavaScript                           | [js](js)                                                    | [![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/linux-javascript.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fubuntu%2Fjavascript%2Fcontinuous) | [![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/macos-javascript.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fmacos%2Fjavascript%2Fcontinuous) | |
+| Ruby                                 | [ruby](ruby)                                                | [![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/linux-ruby23.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fubuntu%2Fruby23%2Fcontinuous)<br/>[![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/linux-ruby24.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fubuntu%2Fruby24%2Fcontinuous)<br/>[![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/linux-ruby25.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fubuntu%2Fruby25%2Fcontinuous)<br/>[![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/linux-ruby26.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fubuntu%2Fruby26%2Fcontinuous)<br/>[![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/linux-ruby-release.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fubuntu%2Fruby_release%2Fcontinuous) | [![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/macos-ruby23.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fmacos%2Fruby23%2Fcontinuous)<br/>[![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/macos-ruby24.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fmacos%2Fruby24%2Fcontinuous)<br/>[![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/macos-ruby25.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fmacos%2Fruby25%2Fcontinuous)<br/>[![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/macos-ruby26.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fmacos%2Fruby26%2Fcontinuous)<br/>[![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/macos-ruby-release.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fmacos%2Fruby_release%2Fcontinuous) | |
+| Go                                   | [golang/protobuf](https://github.com/golang/protobuf)       | | | |
+| PHP                                  | [php](php)                                                  | [![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/linux-php_all.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fubuntu%2Fphp_all%2Fcontinuous)<br/>[![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/linux-32-bit.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fubuntu%2F32-bit%2Fcontinuous) | [![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/macos-php5.6_mac.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fmacos%2Fphp5.6_mac%2Fcontinuous)<br/>[![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/macos-php7.0_mac.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fmacos%2Fphp7.0_mac%2Fcontinuous) | |
+| Dart                                 | [dart-lang/protobuf](https://github.com/dart-lang/protobuf) | [![Build Status](https://travis-ci.org/dart-lang/protobuf.svg?branch=master)](https://travis-ci.org/dart-lang/protobuf) | | |
 
-  To compile a package that uses Protocol Buffers, you need to pass
-  various flags to your compiler and linker.  As of version 2.2.0,
-  Protocol Buffers integrates with pkg-config to manage this.  If you
-  have pkg-config installed, then you can invoke it to get a list of
-  flags like so:
+Quick Start
+-----------
 
-    pkg-config --cflags protobuf         # print compiler flags
-    pkg-config --libs protobuf           # print linker flags
-    pkg-config --cflags --libs protobuf  # print both
+The best way to learn how to use protobuf is to follow the tutorials in our
+developer guide:
 
-  For example:
+https://developers.google.com/protocol-buffers/docs/tutorials
 
-    c++ my_program.cc my_proto.pb.cc `pkg-config --cflags --libs protobuf`
+If you want to learn from code examples, take a look at the examples in the
+[examples](examples) directory.
 
-  Note that packages written prior to the 2.2.0 release of Protocol
-  Buffers may not yet integrate with pkg-config to get flags, and may
-  not pass the correct set of flags to correctly link against
-  libprotobuf.  If the package in question uses autoconf, you can
-  often fix the problem by invoking its configure script like:
-
-    configure CXXFLAGS="$(pkg-config --cflags protobuf)" \
-              LIBS="$(pkg-config --libs protobuf)"
-
-  This will force it to use the correct flags.
-
-  If you are writing an autoconf-based package that uses Protocol
-  Buffers, you should probably use the PKG_CHECK_MODULES macro in your
-  configure script like:
-
-    PKG_CHECK_MODULES([protobuf], [protobuf])
-
-  See the pkg-config man page for more info.
-
-  If you only want protobuf-lite, substitute "protobuf-lite" in place
-  of "protobuf" in these examples.
-
-**Note for Mac users**
-
-  For a Mac system, Unix tools are not available by default. You will first need
-  to install Xcode from the Mac AppStore and then run the following command from
-  a terminal:
-
-    $ sudo xcode-select --install
-
-  To install Unix tools, you can install "port" following the instructions at
-  https://www.macports.org . This will reside in /opt/local/bin/port for most
-  Mac installations.
-
-    $ sudo /opt/local/bin/port install autoconf automake libtool
-
-  Then follow the Unix instructions above.
-
-**Note for cross-compiling**
-
-  The makefiles normally invoke the protoc executable that they just
-  built in order to build tests.  When cross-compiling, the protoc
-  executable may not be executable on the host machine.  In this case,
-  you must build a copy of protoc for the host machine first, then use
-  the --with-protoc option to tell configure to use it instead.  For
-  example:
-
-    ./configure --with-protoc=protoc
-
-  This will use the installed protoc (found in your $PATH) instead of
-  trying to execute the one built during the build process.  You can
-  also use an executable that hasn't been installed.  For example, if
-  you built the protobuf package for your host machine in ../host,
-  you might do:
-
-    ./configure --with-protoc=../host/src/protoc
-
-  Either way, you must make sure that the protoc executable you use
-  has the same version as the protobuf source code you are trying to
-  use it with.
-
-**Note for Solaris users**
-
-  Solaris 10 x86 has a bug that will make linking fail, complaining
-  about libstdc++.la being invalid.  We have included a work-around
-  in this package.  To use the work-around, run configure as follows:
-
-    ./configure LDFLAGS=-L$PWD/src/solaris
-
-  See src/solaris/libstdc++.la for more info on this bug.
-
-**Note for HP C++ Tru64 users**
-
-  To compile invoke configure as follows:
-
-    ./configure CXXFLAGS="-O -std ansi -ieee -D__USE_STD_IOSTREAM"
-
-  Also, you will need to use gmake instead of make.
-
-**Note for AIX users**
-
-  Compile using the IBM xlC C++ compiler as follows:
-
-    ./configure CXX=xlC
-
-  Also, you will need to use GNU `make` (`gmake`) instead of AIX `make`.
-
-C++ Installation - Windows
---------------------------
-
-If you are using Microsoft Visual C++, see cmake/README.md.
-
-If you are using Cygwin or MinGW, follow the Unix installation
-instructions, above.
-
-Binary Compatibility Warning
-----------------------------
-
-Due to the nature of C++, it is unlikely that any two versions of the
-Protocol Buffers C++ runtime libraries will have compatible ABIs.
-That is, if you linked an executable against an older version of
-libprotobuf, it is unlikely to work with a newer version without
-re-compiling.  This problem, when it occurs, will normally be detected
-immediately on startup of your app.  Still, you may want to consider
-using static linkage.  You can configure this package to install
-static libraries only using:
-
-    ./configure --disable-shared
-
-Java and Python Installation
-----------------------------
-
-The Java and Python runtime libraries for Protocol Buffers are located
-in the java and python directories.  See the README file in each
-directory for more information on how to compile and install them.
-Note that both of them require you to first install the Protocol
-Buffer compiler (protoc), which is part of the C++ package.
-
-Usage
------
+Documentation
+-------------
 
 The complete documentation for Protocol Buffers is available via the
 web at:
 
-    https://developers.google.com/protocol-buffers/
+https://developers.google.com/protocol-buffers/

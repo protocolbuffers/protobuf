@@ -39,6 +39,9 @@
 @class TestUnpackedExtensions;
 @class GPBExtensionRegistry;
 
+static inline NSData *DataFromCStr(const char *str) {
+  return [NSData dataWithBytes:str length:strlen(str)];
+}
 
 // Helper for uses of C arrays in tests cases.
 #ifndef GPBARRAYSIZE

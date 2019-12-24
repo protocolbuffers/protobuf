@@ -30,9 +30,9 @@
 
 syntax = "proto2";
 
-import "google/protobuf/internal/cpp/proto1_api_test.proto";
-
 package google.protobuf.python.internal;
+
+import "google/protobuf/internal/cpp/proto1_api_test.proto";
 
 message TestNestedProto1APIMessage {
   optional int32 a = 1;

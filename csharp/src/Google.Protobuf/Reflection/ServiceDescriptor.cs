@@ -30,8 +30,10 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
+using Google.Protobuf.Collections;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace Google.Protobuf.Reflection
 {
@@ -58,6 +60,17 @@ namespace Google.Protobuf.Reflection
         /// </summary>
         public override string Name { get { return proto.Name; } }
 
+        internal override IReadOnlyList<DescriptorBase> GetNestedDescriptorListForField(int fieldNumber)
+        {
+            switch (fieldNumber)
+            {
+                case ServiceDescriptorProto.MethodFieldNumber:
+                    return (IReadOnlyList<DescriptorBase>) methods;
+                default:
+                    return null;
+            }
+        }
+
         internal ServiceDescriptorProto Proto { get { return proto; } }
 
         /// <value>
@@ -78,6 +91,29 @@ namespace Google.Protobuf.Reflection
             return File.DescriptorPool.FindSymbol<MethodDescriptor>(FullName + "." + name);
         }
 
+        /// <summary>
+        /// The (possibly empty) set of custom options for this service.
+        /// </summary>
+        [Obsolete("CustomOptions are obsolete. Use GetOption")]
+        public CustomOptions CustomOptions => new CustomOptions(Proto.Options?._extensions?.ValuesByNumber);
+
+        /// <summary>
+        /// Gets a single value service option for this descriptor
+        /// </summary>
+        public T GetOption<T>(Extension<ServiceOptions, T> extension)
+        {
+            var value = Proto.Options.GetExtension(extension);
+            return value is IDeepCloneable<T> ? (value as IDeepCloneable<T>).Clone() : value;
+        }
+
+        /// <summary>
+        /// Gets a repeated value service option for this descriptor
+        /// </summary>
+        public RepeatedField<T> GetOption<T>(RepeatedExtension<ServiceOptions, T> extension)
+        {
+            return Proto.Options.GetExtension(extension).Clone();
+        }
+
         internal void CrossLink()
         {
             foreach (MethodDescriptor method in methods)
@@ -87,3 +123,4 @@ namespace Google.Protobuf.Reflection
         }
     }
 }
+ 

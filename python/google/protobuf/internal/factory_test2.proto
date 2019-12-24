@@ -97,3 +97,8 @@ message MessageWithNestedEnumOnly {
 extend Factory1Message {
   optional string another_field = 1002;
 }
+
+message MessageWithOption {
+  option no_standard_descriptor_accessor = true;
+  optional int32 field1 = 1;
+}

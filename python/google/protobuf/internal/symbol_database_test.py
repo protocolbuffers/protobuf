@@ -33,17 +33,25 @@
 """Tests for google.protobuf.symbol_database."""
 
 try:
-  import unittest2 as unittest
+  import unittest2 as unittest  #PY26
 except ImportError:
   import unittest
+
 from google.protobuf import unittest_pb2
+from google.protobuf import descriptor
+from google.protobuf import descriptor_pool
 from google.protobuf import symbol_database
 
 
 class SymbolDatabaseTest(unittest.TestCase):
 
   def _Database(self):
-    db = symbol_database.SymbolDatabase()
+    if descriptor._USE_C_DESCRIPTORS:
+      # The C++ implementation does not allow mixing descriptors from
+      # different pools.
+      db = symbol_database.SymbolDatabase(pool=descriptor_pool.Default())
+    else:
+      db = symbol_database.SymbolDatabase()
     # Register representative types from unittest_pb2.
     db.RegisterFileDescriptor(unittest_pb2.DESCRIPTOR)
     db.RegisterMessage(unittest_pb2.TestAllTypes)
@@ -52,6 +60,7 @@ class SymbolDatabaseTest(unittest.TestCase):
     db.RegisterMessage(unittest_pb2.TestAllTypes.RepeatedGroup)
     db.RegisterEnumDescriptor(unittest_pb2.ForeignEnum.DESCRIPTOR)
     db.RegisterEnumDescriptor(unittest_pb2.TestAllTypes.NestedEnum.DESCRIPTOR)
+    db.RegisterServiceDescriptor(unittest_pb2._TESTSERVICE)
     return db
 
   def testGetPrototype(self):
@@ -101,7 +110,13 @@ class SymbolDatabaseTest(unittest.TestCase):
         self._Database().pool.FindMessageTypeByName(
             'protobuf_unittest.TestAllTypes.NestedMessage').full_name)
 
-  def testFindFindContainingSymbol(self):
+  def testFindServiceByName(self):
+    self.assertEqual(
+        'protobuf_unittest.TestService',
+        self._Database().pool.FindServiceByName(
+            'protobuf_unittest.TestService').full_name)
+
+  def testFindFileContainingSymbol(self):
     # Lookup based on either enum or message.
     self.assertEqual(
         'google/protobuf/unittest.proto',

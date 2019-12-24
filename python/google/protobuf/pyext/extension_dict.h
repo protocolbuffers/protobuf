@@ -37,9 +37,8 @@
 #include <Python.h>
 
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
+
+#include <google/protobuf/pyext/message.h>
 
 namespace google {
 namespace protobuf {
@@ -47,86 +46,26 @@ namespace protobuf {
 class Message;
 class FieldDescriptor;
 
-using internal::shared_ptr;
-
 namespace python {
-
-struct CMessage;
 
 typedef struct ExtensionDict {
   PyObject_HEAD;
 
-  // This is the top-level C++ Message object that owns the whole
-  // proto tree.  Every Python container class holds a
-  // reference to it in order to keep it alive as long as there's a
-  // Python object that references any part of the tree.
-  shared_ptr<Message> owner;
-
-  // Weak reference to parent message. Used to make sure
-  // the parent is writable when an extension field is modified.
+  // Strong, owned reference to the parent message. Never NULL.
   CMessage* parent;
-
-  // Pointer to the C++ Message that this ExtensionDict extends.
-  // Not owned by us.
-  Message* message;
-
-  // A dict of child messages, indexed by Extension descriptors.
-  // Similar to CMessage::composite_fields.
-  PyObject* values;
 } ExtensionDict;
 
 extern PyTypeObject ExtensionDict_Type;
+extern PyTypeObject ExtensionIterator_Type;
 
 namespace extension_dict {
 
 // Builds an Extensions dict for a specific message.
 ExtensionDict* NewExtensionDict(CMessage *parent);
 
-// Gets the number of extension values in this ExtensionDict as a python object.
-//
-// Returns a new reference.
-PyObject* len(ExtensionDict* self);
-
-// Releases extensions referenced outside this dictionary to keep outside
-// references alive.
-//
-// Returns 0 on success, -1 on failure.
-int ReleaseExtension(ExtensionDict* self,
-                     PyObject* extension,
-                     const FieldDescriptor* descriptor);
-
-// Gets an extension from the dict for the given extension descriptor.
-//
-// Returns a new reference.
-PyObject* subscript(ExtensionDict* self, PyObject* key);
-
-// Assigns a value to an extension in the dict. Can only be used for singular
-// simple types.
-//
-// Returns 0 on success, -1 on failure.
-int ass_subscript(ExtensionDict* self, PyObject* key, PyObject* value);
-
-// Clears an extension from the dict. Will release the extension if there
-// is still an external reference left to it.
-//
-// Returns None on success.
-PyObject* ClearExtension(ExtensionDict* self,
-                                       PyObject* extension);
-
-// Checks if the dict has an extension.
-//
-// Returns a new python boolean reference.
-PyObject* HasExtension(ExtensionDict* self, PyObject* extension);
-
-// Gets an extension from the dict given the extension name as opposed to
-// descriptor.
-//
-// Returns a new reference.
-PyObject* _FindExtensionByName(ExtensionDict* self, PyObject* name);
-
 }  // namespace extension_dict
 }  // namespace python
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_PYTHON_CPP_EXTENSION_DICT_H__

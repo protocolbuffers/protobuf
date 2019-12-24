@@ -33,7 +33,7 @@
 using Google.Protobuf.Reflection;
 using UnitTest.Issues.TestProtos;
 using NUnit.Framework;
-
+using static UnitTest.Issues.TestProtos.OneofMerging.Types;
 
 namespace Google.Protobuf
 {
@@ -58,6 +58,37 @@ namespace Google.Protobuf
             var message = new ReservedNames { Types_ = 10, Descriptor_ = 20 };
             // Underscores aren't reflected in the JSON.
             Assert.AreEqual("{ \"types\": 10, \"descriptor\": 20 }", message.ToString());
+        }
+
+        [Test]
+        public void JsonNameParseTest()
+        {
+            var settings = new JsonParser.Settings(10, TypeRegistry.FromFiles(UnittestIssuesReflection.Descriptor));
+            var parser = new JsonParser(settings);
+
+            // It is safe to use either original field name or explicitly specified json_name
+            Assert.AreEqual(new TestJsonName { Name = "test", Description = "test2", Guid = "test3" },
+                parser.Parse<TestJsonName>("{ \"name\": \"test\", \"desc\": \"test2\", \"guid\": \"test3\" }"));
+        }
+
+        [Test]
+        public void JsonNameFormatTest()
+        {
+            var message = new TestJsonName { Name = "test", Description = "test2", Guid = "test3" };
+            Assert.AreEqual("{ \"name\": \"test\", \"desc\": \"test2\", \"exid\": \"test3\" }",
+                JsonFormatter.Default.Format(message));
+        }
+
+        [Test]
+        public void OneofMerging()
+        {
+            var message1 = new OneofMerging { Nested = new Nested { X = 10 } };
+            var message2 = new OneofMerging { Nested = new Nested { Y = 20 } };
+            var expected = new OneofMerging { Nested = new Nested { X = 10, Y = 20 } };
+
+            var merged = message1.Clone();
+            merged.MergeFrom(message2);
+            Assert.AreEqual(expected, merged);
         }
     }
 }

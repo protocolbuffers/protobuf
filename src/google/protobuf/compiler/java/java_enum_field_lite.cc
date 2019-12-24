@@ -52,13 +52,18 @@ namespace compiler {
 namespace java {
 
 namespace {
+bool EnableExperimentalRuntimeForLite() {
+#ifdef PROTOBUF_EXPERIMENT
+  return PROTOBUF_EXPERIMENT;
+#else   // PROTOBUF_EXPERIMENT
+  return false;
+#endif  // !PROTOBUF_EXPERIMENT
+}
 
-void SetEnumVariables(const FieldDescriptor* descriptor,
-                      int messageBitIndex,
-                      int builderBitIndex,
-                      const FieldGeneratorInfo* info,
+void SetEnumVariables(const FieldDescriptor* descriptor, int messageBitIndex,
+                      int builderBitIndex, const FieldGeneratorInfo* info,
                       ClassNameResolver* name_resolver,
-                      map<string, string>* variables) {
+                      std::map<std::string, std::string>* variables) {
   SetCommonFieldVariables(descriptor, info, variables);
 
   (*variables)["type"] =
@@ -66,17 +71,17 @@ void SetEnumVariables(const FieldDescriptor* descriptor,
   (*variables)["mutable_type"] =
       name_resolver->GetMutableClassName(descriptor->enum_type());
   (*variables)["default"] = ImmutableDefaultValue(descriptor, name_resolver);
-  (*variables)["default_number"] = SimpleItoa(
-      descriptor->default_value_enum()->number());
-  (*variables)["tag"] = SimpleItoa(internal::WireFormat::MakeTag(descriptor));
-  (*variables)["tag_size"] = SimpleItoa(
+  (*variables)["default_number"] =
+      StrCat(descriptor->default_value_enum()->number());
+  (*variables)["tag"] = StrCat(
+      static_cast<int32>(internal::WireFormat::MakeTag(descriptor)));
+  (*variables)["tag_size"] = StrCat(
       internal::WireFormat::TagSize(descriptor->number(), GetType(descriptor)));
   // TODO(birdo): Add @deprecated javadoc when generating javadoc is supported
   // by the proto compiler
-  (*variables)["deprecation"] = descriptor->options().deprecated()
-      ? "@java.lang.Deprecated " : "";
-  (*variables)["on_changed"] =
-      HasDescriptorMethods(descriptor->containing_type()) ? "onChanged();" : "";
+  (*variables)["deprecation"] =
+      descriptor->options().deprecated() ? "@java.lang.Deprecated " : "";
+  (*variables)["required"] = descriptor->is_required() ? "true" : "false";
 
   if (SupportFieldPresence(descriptor->file())) {
     // For singular messages and builders, one bit is used for the hasField bit.
@@ -94,8 +99,8 @@ void SetEnumVariables(const FieldDescriptor* descriptor,
     (*variables)["clear_has_field_bit_message"] = "";
 
     (*variables)["is_field_present_message"] =
-        (*variables)["name"] + "_ != " +
-        (*variables)["default"] + ".getNumber()";
+        (*variables)["name"] + "_ != " + (*variables)["default"] +
+        ".getNumber()";
   }
 
   // For repeated builders, the underlying list tracks mutability state.
@@ -111,854 +116,666 @@ void SetEnumVariables(const FieldDescriptor* descriptor,
   } else {
     (*variables)["unknown"] = (*variables)["default"];
   }
+
+  // We use `x.getClass()` as a null check because it generates less bytecode
+  // than an `if (x == null) { throw ... }` statement.
+  (*variables)["null_check"] = "value.getClass();\n";
 }
 
 }  // namespace
 
 // ===================================================================
 
-ImmutableEnumFieldLiteGenerator::
-ImmutableEnumFieldLiteGenerator(const FieldDescriptor* descriptor,
-                            int messageBitIndex,
-                            int builderBitIndex,
-                            Context* context)
-  : descriptor_(descriptor), messageBitIndex_(messageBitIndex),
-    builderBitIndex_(builderBitIndex),
-    name_resolver_(context->GetNameResolver()) {
-  SetEnumVariables(descriptor, messageBitIndex, builderBitIndex,
-                   context->GetFieldGeneratorInfo(descriptor),
-                   name_resolver_, &variables_);
+ImmutableEnumFieldLiteGenerator::ImmutableEnumFieldLiteGenerator(
+    const FieldDescriptor* descriptor, int messageBitIndex, Context* context)
+    : descriptor_(descriptor),
+      messageBitIndex_(messageBitIndex),
+      context_(context),
+      name_resolver_(context->GetNameResolver()) {
+  SetEnumVariables(descriptor, messageBitIndex, 0,
+                   context->GetFieldGeneratorInfo(descriptor), name_resolver_,
+                   &variables_);
 }
 
 ImmutableEnumFieldLiteGenerator::~ImmutableEnumFieldLiteGenerator() {}
 
 int ImmutableEnumFieldLiteGenerator::GetNumBitsForMessage() const {
-  return 1;
+  return SupportFieldPresence(descriptor_->file()) ? 1 : 0;
 }
 
-int ImmutableEnumFieldLiteGenerator::GetNumBitsForBuilder() const {
-  return 0;
-}
-
-void ImmutableEnumFieldLiteGenerator::
-GenerateInterfaceMembers(io::Printer* printer) const {
+void ImmutableEnumFieldLiteGenerator::GenerateInterfaceMembers(
+    io::Printer* printer) const {
   if (SupportFieldPresence(descriptor_->file())) {
-    WriteFieldDocComment(printer, descriptor_);
+    WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
     printer->Print(variables_,
-      "$deprecation$boolean has$capitalized_name$();\n");
+                   "$deprecation$boolean has$capitalized_name$();\n");
   }
   if (SupportUnknownEnumValue(descriptor_->file())) {
-    WriteFieldDocComment(printer, descriptor_);
+    WriteFieldEnumValueAccessorDocComment(printer, descriptor_, GETTER);
     printer->Print(variables_,
-      "$deprecation$int get$capitalized_name$Value();\n");
+                   "$deprecation$int get$capitalized_name$Value();\n");
   }
-  WriteFieldDocComment(printer, descriptor_);
-  printer->Print(variables_,
-    "$deprecation$$type$ get$capitalized_name$();\n");
+  WriteFieldAccessorDocComment(printer, descriptor_, GETTER);
+  printer->Print(variables_, "$deprecation$$type$ get$capitalized_name$();\n");
 }
 
-void ImmutableEnumFieldLiteGenerator::
-GenerateMembers(io::Printer* printer) const {
-  printer->Print(variables_,
-    "private int $name$_;\n");
+void ImmutableEnumFieldLiteGenerator::GenerateMembers(
+    io::Printer* printer) const {
+  printer->Print(variables_, "private int $name$_;\n");
   PrintExtraFieldInfo(variables_, printer);
   if (SupportFieldPresence(descriptor_->file())) {
-    WriteFieldDocComment(printer, descriptor_);
-    printer->Print(variables_,
-      "$deprecation$public boolean has$capitalized_name$() {\n"
-      "  return $get_has_field_bit_message$;\n"
-      "}\n");
+    WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
+    printer->Print(
+        variables_,
+        "@java.lang.Override\n"
+        "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
+        "  return $get_has_field_bit_message$;\n"
+        "}\n");
+    printer->Annotate("{", "}", descriptor_);
   }
   if (SupportUnknownEnumValue(descriptor_->file())) {
-    WriteFieldDocComment(printer, descriptor_);
-    printer->Print(variables_,
-      "$deprecation$public int get$capitalized_name$Value() {\n"
-      "  return $name$_;\n"
-      "}\n");
+    WriteFieldEnumValueAccessorDocComment(printer, descriptor_, GETTER);
+    printer->Print(
+        variables_,
+        "@java.lang.Override\n"
+        "$deprecation$public int ${$get$capitalized_name$Value$}$() {\n"
+        "  return $name$_;\n"
+        "}\n");
+    printer->Annotate("{", "}", descriptor_);
   }
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldAccessorDocComment(printer, descriptor_, GETTER);
   printer->Print(variables_,
-    "$deprecation$public $type$ get$capitalized_name$() {\n"
-    "  $type$ result = $type$.valueOf($name$_);\n"
-    "  return result == null ? $unknown$ : result;\n"
-    "}\n");
+                 "@java.lang.Override\n"
+                 "$deprecation$public $type$ ${$get$capitalized_name$$}$() {\n"
+                 "  $type$ result = $type$.forNumber($name$_);\n"
+                 "  return result == null ? $unknown$ : result;\n"
+                 "}\n");
+  printer->Annotate("{", "}", descriptor_);
 
   // Generate private setters for the builder to proxy into.
   if (SupportUnknownEnumValue(descriptor_->file())) {
-    WriteFieldDocComment(printer, descriptor_);
+    WriteFieldEnumValueAccessorDocComment(printer, descriptor_, SETTER);
     printer->Print(variables_,
-      "private void set$capitalized_name$Value(int value) {\n"
-      "  $set_has_field_bit_message$"
-      "  $name$_ = value;\n"
-      "}\n");
+                   "private void set$capitalized_name$Value(int value) {\n"
+                   "  $set_has_field_bit_message$"
+                   "  $name$_ = value;\n"
+                   "}\n");
   }
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldAccessorDocComment(printer, descriptor_, SETTER);
   printer->Print(variables_,
-    "private void set$capitalized_name$($type$ value) {\n"
-    "  if (value == null) {\n"
-    "    throw new NullPointerException();\n"
-    "  }\n"
-    "  $set_has_field_bit_message$\n"
-    "  $name$_ = value.getNumber();\n"
-    "}\n");
-  WriteFieldDocComment(printer, descriptor_);
+                 "private void set$capitalized_name$($type$ value) {\n"
+                 "  $name$_ = value.getNumber();\n"
+                 "  $set_has_field_bit_message$\n"
+                 "}\n");
+  WriteFieldAccessorDocComment(printer, descriptor_, CLEARER);
   printer->Print(variables_,
-    "private void clear$capitalized_name$() {\n"
-    "  $clear_has_field_bit_message$\n"
-    "  $name$_ = $default_number$;\n"
-    "}\n");
+                 "private void clear$capitalized_name$() {\n"
+                 "  $clear_has_field_bit_message$\n"
+                 "  $name$_ = $default_number$;\n"
+                 "}\n");
 }
 
-void ImmutableEnumFieldLiteGenerator::
-GenerateBuilderMembers(io::Printer* printer) const {
+void ImmutableEnumFieldLiteGenerator::GenerateBuilderMembers(
+    io::Printer* printer) const {
   if (SupportFieldPresence(descriptor_->file())) {
-    WriteFieldDocComment(printer, descriptor_);
-    printer->Print(variables_,
-      "$deprecation$public boolean has$capitalized_name$() {\n"
-      "  return instance.has$capitalized_name$();\n"
-      "}\n");
+    WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
+    printer->Print(
+        variables_,
+        "@java.lang.Override\n"
+        "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
+        "  return instance.has$capitalized_name$();\n"
+        "}\n");
+    printer->Annotate("{", "}", descriptor_);
   }
   if (SupportUnknownEnumValue(descriptor_->file())) {
-    WriteFieldDocComment(printer, descriptor_);
+    WriteFieldEnumValueAccessorDocComment(printer, descriptor_, GETTER);
+    printer->Print(
+        variables_,
+        "@java.lang.Override\n"
+        "$deprecation$public int ${$get$capitalized_name$Value$}$() {\n"
+        "  return instance.get$capitalized_name$Value();\n"
+        "}\n");
+    printer->Annotate("{", "}", descriptor_);
+    WriteFieldAccessorDocComment(printer, descriptor_, SETTER,
+                                 /* builder */ true);
     printer->Print(variables_,
-      "$deprecation$public int get$capitalized_name$Value() {\n"
-      "  return instance.get$capitalized_name$Value();\n"
-      "}\n");
-    WriteFieldDocComment(printer, descriptor_);
-    printer->Print(variables_,
-      "$deprecation$public Builder set$capitalized_name$Value(int value) {\n"
+                   "$deprecation$public Builder "
+                   "${$set$capitalized_name$Value$}$(int value) {\n"
+                   "  copyOnWrite();\n"
+                   "  instance.set$capitalized_name$Value(value);\n"
+                   "  return this;\n"
+                   "}\n");
+    printer->Annotate("{", "}", descriptor_);
+  }
+  WriteFieldAccessorDocComment(printer, descriptor_, GETTER);
+  printer->Print(variables_,
+                 "@java.lang.Override\n"
+                 "$deprecation$public $type$ ${$get$capitalized_name$$}$() {\n"
+                 "  return instance.get$capitalized_name$();\n"
+                 "}\n");
+  printer->Annotate("{", "}", descriptor_);
+  WriteFieldEnumValueAccessorDocComment(printer, descriptor_, SETTER,
+                                        /* builder */ true);
+  printer->Print(variables_,
+                 "$deprecation$public Builder "
+                 "${$set$capitalized_name$$}$($type$ value) {\n"
+                 "  copyOnWrite();\n"
+                 "  instance.set$capitalized_name$(value);\n"
+                 "  return this;\n"
+                 "}\n");
+  printer->Annotate("{", "}", descriptor_);
+  WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
+                               /* builder */ true);
+  printer->Print(
+      variables_,
+      "$deprecation$public Builder ${$clear$capitalized_name$$}$() {\n"
       "  copyOnWrite();\n"
-      "  instance.set$capitalized_name$Value(int value);\n"
+      "  instance.clear$capitalized_name$();\n"
       "  return this;\n"
       "}\n");
+  printer->Annotate("{", "}", descriptor_);
+}
+
+void ImmutableEnumFieldLiteGenerator::GenerateInitializationCode(
+    io::Printer* printer) const {
+  if (!IsDefaultValueJavaDefault(descriptor_)) {
+    printer->Print(variables_, "$name$_ = $default_number$;\n");
   }
-  WriteFieldDocComment(printer, descriptor_);
-  printer->Print(variables_,
-    "$deprecation$public $type$ get$capitalized_name$() {\n"
-    "  return instance.get$capitalized_name$();\n"
-    "}\n");
-  WriteFieldDocComment(printer, descriptor_);
-  printer->Print(variables_,
-    "$deprecation$public Builder set$capitalized_name$($type$ value) {\n"
-    "  copyOnWrite();\n"
-    "  instance.set$capitalized_name$(value);\n"
-    "  return this;\n"
-    "}\n");
-  WriteFieldDocComment(printer, descriptor_);
-  printer->Print(variables_,
-    "$deprecation$public Builder clear$capitalized_name$() {\n"
-    "  copyOnWrite();\n"
-    "  instance.clear$capitalized_name$();\n"
-    "  return this;\n"
-    "}\n");
 }
 
-void ImmutableEnumFieldLiteGenerator::
-GenerateFieldBuilderInitializationCode(io::Printer* printer)  const {
-  // noop for enums
-}
-
-void ImmutableEnumFieldLiteGenerator::
-GenerateInitializationCode(io::Printer* printer) const {
-  printer->Print(variables_, "$name$_ = $default_number$;\n");
-}
-
-void ImmutableEnumFieldLiteGenerator::
-GenerateMergingCode(io::Printer* printer) const {
+void ImmutableEnumFieldLiteGenerator::GenerateFieldInfo(
+    io::Printer* printer, std::vector<uint16>* output) const {
+  WriteIntToUtf16CharSequence(descriptor_->number(), output);
+  WriteIntToUtf16CharSequence(GetExperimentalJavaFieldType(descriptor_),
+                              output);
   if (SupportFieldPresence(descriptor_->file())) {
-    printer->Print(variables_,
-      "if (other.has$capitalized_name$()) {\n"
-      "  set$capitalized_name$(other.get$capitalized_name$());\n"
-      "}\n");
-  } else if (SupportUnknownEnumValue(descriptor_->file())) {
-    printer->Print(variables_,
-      "if (other.$name$_ != $default_number$) {\n"
-      "  set$capitalized_name$Value(other.get$capitalized_name$Value());\n"
-      "}\n");
-  } else {
-    GOOGLE_LOG(FATAL) << "Can't reach here.";
+    WriteIntToUtf16CharSequence(messageBitIndex_, output);
+  }
+  printer->Print(variables_, "\"$name$_\",\n");
+  if (SupportFieldPresence(descriptor_->file())) {
+    PrintEnumVerifierLogic(printer, descriptor_, variables_,
+                           /*var_name=*/"$type$",
+                           /*terminating_string=*/",\n",
+                           /*enforce_lite=*/context_->EnforceLite());
   }
 }
 
-void ImmutableEnumFieldLiteGenerator::
-GenerateDynamicMethodMakeImmutableCode(io::Printer* printer) const {
-  // noop for scalars
-}
-
-void ImmutableEnumFieldLiteGenerator::
-GenerateParsingCode(io::Printer* printer) const {
-  if (SupportUnknownEnumValue(descriptor_->file())) {
-    printer->Print(variables_,
-      "int rawValue = input.readEnum();\n"
-      "$set_has_field_bit_message$\n"
-      "$name$_ = rawValue;\n");
-  } else {
-    printer->Print(variables_,
-      "int rawValue = input.readEnum();\n"
-      "$type$ value = $type$.valueOf(rawValue);\n"
-      "if (value == null) {\n");
-    if (PreserveUnknownFields(descriptor_->containing_type())) {
-      printer->Print(variables_,
-        "  unknownFields.mergeVarintField($number$, rawValue);\n");
-    }
-    printer->Print(variables_,
-      "} else {\n"
-      "  $set_has_field_bit_message$\n"
-      "  $name$_ = rawValue;\n"
-      "}\n");
-  }
-}
-
-void ImmutableEnumFieldLiteGenerator::
-GenerateParsingDoneCode(io::Printer* printer) const {
-  // noop for enums
-}
-
-void ImmutableEnumFieldLiteGenerator::
-GenerateSerializationCode(io::Printer* printer) const {
-  printer->Print(variables_,
-    "if ($is_field_present_message$) {\n"
-    "  output.writeEnum($number$, $name$_);\n"
-    "}\n");
-}
-
-void ImmutableEnumFieldLiteGenerator::
-GenerateSerializedSizeCode(io::Printer* printer) const {
-  printer->Print(variables_,
-    "if ($is_field_present_message$) {\n"
-    "  size += com.google.protobuf.CodedOutputStream\n"
-    "    .computeEnumSize($number$, $name$_);\n"
-    "}\n");
-}
-
-void ImmutableEnumFieldLiteGenerator::
-GenerateEqualsCode(io::Printer* printer) const {
-  printer->Print(variables_,
-    "result = result && $name$_ == other.$name$_;\n");
-}
-
-void ImmutableEnumFieldLiteGenerator::
-GenerateHashCode(io::Printer* printer) const {
-  printer->Print(variables_,
-    "hash = (37 * hash) + $constant_name$;\n"
-    "hash = (53 * hash) + $name$_;\n");
-}
-
-string ImmutableEnumFieldLiteGenerator::GetBoxedType() const {
+std::string ImmutableEnumFieldLiteGenerator::GetBoxedType() const {
   return name_resolver_->GetImmutableClassName(descriptor_->enum_type());
 }
 
 // ===================================================================
 
-ImmutableEnumOneofFieldLiteGenerator::
-ImmutableEnumOneofFieldLiteGenerator(const FieldDescriptor* descriptor,
-                                 int messageBitIndex,
-                                 int builderBitIndex,
-                                 Context* context)
-    : ImmutableEnumFieldLiteGenerator(
-          descriptor, messageBitIndex, builderBitIndex, context) {
+ImmutableEnumOneofFieldLiteGenerator::ImmutableEnumOneofFieldLiteGenerator(
+    const FieldDescriptor* descriptor, int messageBitIndex, Context* context)
+    : ImmutableEnumFieldLiteGenerator(descriptor, messageBitIndex, context) {
   const OneofGeneratorInfo* info =
       context->GetOneofGeneratorInfo(descriptor->containing_oneof());
   SetCommonOneofVariables(descriptor, info, &variables_);
 }
 
-ImmutableEnumOneofFieldLiteGenerator::
-~ImmutableEnumOneofFieldLiteGenerator() {}
+ImmutableEnumOneofFieldLiteGenerator::~ImmutableEnumOneofFieldLiteGenerator() {}
 
-void ImmutableEnumOneofFieldLiteGenerator::
-GenerateMembers(io::Printer* printer) const {
+void ImmutableEnumOneofFieldLiteGenerator::GenerateMembers(
+    io::Printer* printer) const {
   PrintExtraFieldInfo(variables_, printer);
   if (SupportFieldPresence(descriptor_->file())) {
-    WriteFieldDocComment(printer, descriptor_);
-    printer->Print(variables_,
-      "$deprecation$public boolean has$capitalized_name$() {\n"
-      "  return $has_oneof_case_message$;\n"
-      "}\n");
+    WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
+    printer->Print(
+        variables_,
+        "@java.lang.Override\n"
+        "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
+        "  return $has_oneof_case_message$;\n"
+        "}\n");
+    printer->Annotate("{", "}", descriptor_);
   }
   if (SupportUnknownEnumValue(descriptor_->file())) {
-    WriteFieldDocComment(printer, descriptor_);
-    printer->Print(variables_,
-      "$deprecation$public int get$capitalized_name$Value() {\n"
-      "  if ($has_oneof_case_message$) {\n"
-      "    return (java.lang.Integer) $oneof_name$_;\n"
-      "  }\n"
-      "  return $default_number$;\n"
-      "}\n");
+    WriteFieldEnumValueAccessorDocComment(printer, descriptor_, GETTER);
+    printer->Print(
+        variables_,
+        "@java.lang.Override\n"
+        "$deprecation$public int ${$get$capitalized_name$Value$}$() {\n"
+        "  if ($has_oneof_case_message$) {\n"
+        "    return (java.lang.Integer) $oneof_name$_;\n"
+        "  }\n"
+        "  return $default_number$;\n"
+        "}\n");
+    printer->Annotate("{", "}", descriptor_);
   }
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldAccessorDocComment(printer, descriptor_, GETTER);
   printer->Print(variables_,
-    "$deprecation$public $type$ get$capitalized_name$() {\n"
-    "  if ($has_oneof_case_message$) {\n"
-    "    $type$ result =  $type$.valueOf((java.lang.Integer) $oneof_name$_);\n"
-    "    return result == null ? $unknown$ : result;\n"
-    "  }\n"
-    "  return $default$;\n"
-    "}\n");
+                 "@java.lang.Override\n"
+                 "$deprecation$public $type$ ${$get$capitalized_name$$}$() {\n"
+                 "  if ($has_oneof_case_message$) {\n"
+                 "    $type$ result = $type$.forNumber((java.lang.Integer) "
+                 "$oneof_name$_);\n"
+                 "    return result == null ? $unknown$ : result;\n"
+                 "  }\n"
+                 "  return $default$;\n"
+                 "}\n");
+  printer->Annotate("{", "}", descriptor_);
 
   // Generate private setters for the builder to proxy into.
   if (SupportUnknownEnumValue(descriptor_->file())) {
-    WriteFieldDocComment(printer, descriptor_);
+    WriteFieldEnumValueAccessorDocComment(printer, descriptor_, SETTER);
     printer->Print(variables_,
-      "private void set$capitalized_name$Value(int value) {\n"
-      "  $set_oneof_case_message$;\n"
-      "  $oneof_name$_ = value;\n"
-      "}\n");
+                   "private void set$capitalized_name$Value(int value) {\n"
+                   "  $set_oneof_case_message$;\n"
+                   "  $oneof_name$_ = value;\n"
+                   "}\n");
   }
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldAccessorDocComment(printer, descriptor_, SETTER);
   printer->Print(variables_,
-    "private void set$capitalized_name$($type$ value) {\n"
-    "  if (value == null) {\n"
-    "    throw new NullPointerException();\n"
-    "  }\n"
-    "  $set_oneof_case_message$;\n"
-    "  $oneof_name$_ = value.getNumber();\n"
-    "}\n");
-  WriteFieldDocComment(printer, descriptor_);
+                 "private void set$capitalized_name$($type$ value) {\n"
+                 "  $oneof_name$_ = value.getNumber();\n"
+                 "  $set_oneof_case_message$;\n"
+                 "}\n");
+  WriteFieldAccessorDocComment(printer, descriptor_, CLEARER);
   printer->Print(variables_,
-    "private void clear$capitalized_name$() {\n"
-    "  if ($has_oneof_case_message$) {\n"
-    "    $clear_oneof_case_message$;\n"
-    "    $oneof_name$_ = null;\n"
-    "  }\n"
-    "}\n");
+                 "private void clear$capitalized_name$() {\n"
+                 "  if ($has_oneof_case_message$) {\n"
+                 "    $clear_oneof_case_message$;\n"
+                 "    $oneof_name$_ = null;\n"
+                 "  }\n"
+                 "}\n");
 }
 
-void ImmutableEnumOneofFieldLiteGenerator::
-GenerateBuilderMembers(io::Printer* printer) const {
+void ImmutableEnumOneofFieldLiteGenerator::GenerateFieldInfo(
+    io::Printer* printer, std::vector<uint16>* output) const {
+  WriteIntToUtf16CharSequence(descriptor_->number(), output);
+  WriteIntToUtf16CharSequence(GetExperimentalJavaFieldType(descriptor_),
+                              output);
+  WriteIntToUtf16CharSequence(descriptor_->containing_oneof()->index(), output);
   if (SupportFieldPresence(descriptor_->file())) {
-    WriteFieldDocComment(printer, descriptor_);
-    printer->Print(variables_,
-      "$deprecation$public boolean has$capitalized_name$() {\n"
-      "  return instance.has$capitalized_name$();\n"
-      "}\n");
+    PrintEnumVerifierLogic(printer, descriptor_, variables_,
+                           /*var_name=*/"$type$",
+                           /*terminating_string=*/",\n",
+                           /*enforce_lite=*/context_->EnforceLite());
+  }
+}
+
+void ImmutableEnumOneofFieldLiteGenerator::GenerateBuilderMembers(
+    io::Printer* printer) const {
+  if (SupportFieldPresence(descriptor_->file())) {
+    WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
+    printer->Print(
+        variables_,
+        "@java.lang.Override\n"
+        "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
+        "  return instance.has$capitalized_name$();\n"
+        "}\n");
+    printer->Annotate("{", "}", descriptor_);
   }
   if (SupportUnknownEnumValue(descriptor_->file())) {
-    WriteFieldDocComment(printer, descriptor_);
+    WriteFieldEnumValueAccessorDocComment(printer, descriptor_, GETTER);
+    printer->Print(
+        variables_,
+        "@java.lang.Override\n"
+        "$deprecation$public int ${$get$capitalized_name$Value$}$() {\n"
+        "  return instance.get$capitalized_name$Value();\n"
+        "}\n");
+    printer->Annotate("{", "}", descriptor_);
+    WriteFieldEnumValueAccessorDocComment(printer, descriptor_, SETTER,
+                                          /* builder */ true);
     printer->Print(variables_,
-      "$deprecation$public int get$capitalized_name$Value() {\n"
-      "  return instance.get$capitalized_name$Value();\n"
-      "}\n");
-    WriteFieldDocComment(printer, descriptor_);
-    printer->Print(variables_,
-      "$deprecation$public Builder set$capitalized_name$Value(int value) {\n"
+                   "$deprecation$public Builder "
+                   "${$set$capitalized_name$Value$}$(int value) {\n"
+                   "  copyOnWrite();\n"
+                   "  instance.set$capitalized_name$Value(value);\n"
+                   "  return this;\n"
+                   "}\n");
+    printer->Annotate("{", "}", descriptor_);
+  }
+  WriteFieldAccessorDocComment(printer, descriptor_, GETTER);
+  printer->Print(variables_,
+                 "@java.lang.Override\n"
+                 "$deprecation$public $type$ ${$get$capitalized_name$$}$() {\n"
+                 "  return instance.get$capitalized_name$();\n"
+                 "}\n");
+  printer->Annotate("{", "}", descriptor_);
+  WriteFieldAccessorDocComment(printer, descriptor_, SETTER,
+                               /* builder */ true);
+  printer->Print(variables_,
+                 "$deprecation$public Builder "
+                 "${$set$capitalized_name$$}$($type$ value) {\n"
+                 "  copyOnWrite();\n"
+                 "  instance.set$capitalized_name$(value);\n"
+                 "  return this;\n"
+                 "}\n");
+  printer->Annotate("{", "}", descriptor_);
+  WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
+                               /* builder */ true);
+  printer->Print(
+      variables_,
+      "$deprecation$public Builder ${$clear$capitalized_name$$}$() {\n"
       "  copyOnWrite();\n"
-      "  instance.set$capitalized_name$Value(value);\n"
+      "  instance.clear$capitalized_name$();\n"
       "  return this;\n"
       "}\n");
-  }
-  WriteFieldDocComment(printer, descriptor_);
-  printer->Print(variables_,
-    "$deprecation$public $type$ get$capitalized_name$() {\n"
-    "  return instance.get$capitalized_name$();\n"
-    "}\n");
-  WriteFieldDocComment(printer, descriptor_);
-  printer->Print(variables_,
-    "$deprecation$public Builder set$capitalized_name$($type$ value) {\n"
-    "  copyOnWrite();\n"
-    "  instance.set$capitalized_name$(value);\n"
-    "  return this;\n"
-    "}\n");
-  WriteFieldDocComment(printer, descriptor_);
-  printer->Print(variables_,
-    "$deprecation$public Builder clear$capitalized_name$() {\n"
-    "  copyOnWrite();\n"
-    "  instance.clear$capitalized_name$();\n"
-    "  return this;\n"
-    "}\n");
-}
-
-void ImmutableEnumOneofFieldLiteGenerator::
-GenerateMergingCode(io::Printer* printer) const {
-  if (SupportUnknownEnumValue(descriptor_->file())) {
-    printer->Print(variables_,
-      "set$capitalized_name$Value(other.get$capitalized_name$Value());\n");
-  } else {
-    printer->Print(variables_,
-      "set$capitalized_name$(other.get$capitalized_name$());\n");
-  }
-}
-
-void ImmutableEnumOneofFieldLiteGenerator::
-GenerateParsingCode(io::Printer* printer) const {
-  if (SupportUnknownEnumValue(descriptor_->file())) {
-    printer->Print(variables_,
-      "int rawValue = input.readEnum();\n"
-      "$set_oneof_case_message$;\n"
-      "$oneof_name$_ = rawValue;\n");
-  } else {
-    printer->Print(variables_,
-      "int rawValue = input.readEnum();\n"
-      "$type$ value = $type$.valueOf(rawValue);\n"
-      "if (value == null) {\n");
-    if (PreserveUnknownFields(descriptor_->containing_type())) {
-      printer->Print(variables_,
-        "  unknownFields.mergeVarintField($number$, rawValue);\n");
-    }
-    printer->Print(variables_,
-      "} else {\n"
-      "  $set_oneof_case_message$;\n"
-      "  $oneof_name$_ = rawValue;\n"
-      "}\n");
-  }
-}
-
-void ImmutableEnumOneofFieldLiteGenerator::
-GenerateSerializationCode(io::Printer* printer) const {
-  printer->Print(variables_,
-    "if ($has_oneof_case_message$) {\n"
-    "  output.writeEnum($number$, ((java.lang.Integer) $oneof_name$_));\n"
-    "}\n");
-}
-
-void ImmutableEnumOneofFieldLiteGenerator::
-GenerateSerializedSizeCode(io::Printer* printer) const {
-  printer->Print(variables_,
-    "if ($has_oneof_case_message$) {\n"
-    "  size += com.google.protobuf.CodedOutputStream\n"
-    "    .computeEnumSize($number$, ((java.lang.Integer) $oneof_name$_));\n"
-    "}\n");
-}
-
-void ImmutableEnumOneofFieldLiteGenerator::
-GenerateEqualsCode(io::Printer* printer) const {
-  if (SupportUnknownEnumValue(descriptor_->file())) {
-    printer->Print(variables_,
-      "result = result && get$capitalized_name$Value()\n"
-      "    == other.get$capitalized_name$Value();\n");
-  } else {
-    printer->Print(variables_,
-      "result = result && get$capitalized_name$()\n"
-      "    .equals(other.get$capitalized_name$());\n");
-  }
-}
-
-void ImmutableEnumOneofFieldLiteGenerator::
-GenerateHashCode(io::Printer* printer) const {
-  if (SupportUnknownEnumValue(descriptor_->file())) {
-    printer->Print(variables_,
-      "hash = (37 * hash) + $constant_name$;\n"
-      "hash = (53 * hash) + get$capitalized_name$Value();\n");
-  } else {
-    printer->Print(variables_,
-      "hash = (37 * hash) + $constant_name$;\n"
-      "hash = (53 * hash) + get$capitalized_name$().getNumber();\n");
-  }
+  printer->Annotate("{", "}", descriptor_);
 }
 
 // ===================================================================
 
 RepeatedImmutableEnumFieldLiteGenerator::
-RepeatedImmutableEnumFieldLiteGenerator(const FieldDescriptor* descriptor,
-                                    int messageBitIndex,
-                                    int builderBitIndex,
-                                    Context* context)
-  : descriptor_(descriptor), messageBitIndex_(messageBitIndex),
-    builderBitIndex_(builderBitIndex), context_(context),
-    name_resolver_(context->GetNameResolver()) {
-  SetEnumVariables(descriptor, messageBitIndex, builderBitIndex,
-                   context->GetFieldGeneratorInfo(descriptor),
-                   name_resolver_, &variables_);
+    RepeatedImmutableEnumFieldLiteGenerator(const FieldDescriptor* descriptor,
+                                            int messageBitIndex,
+                                            Context* context)
+    : descriptor_(descriptor),
+      context_(context),
+      name_resolver_(context->GetNameResolver()) {
+  SetEnumVariables(descriptor, messageBitIndex, 0,
+                   context->GetFieldGeneratorInfo(descriptor), name_resolver_,
+                   &variables_);
 }
 
 RepeatedImmutableEnumFieldLiteGenerator::
-~RepeatedImmutableEnumFieldLiteGenerator() {}
+    ~RepeatedImmutableEnumFieldLiteGenerator() {}
 
 int RepeatedImmutableEnumFieldLiteGenerator::GetNumBitsForMessage() const {
   return 0;
 }
 
-int RepeatedImmutableEnumFieldLiteGenerator::GetNumBitsForBuilder() const {
-  return 0;
-}
-
-void RepeatedImmutableEnumFieldLiteGenerator::
-GenerateInterfaceMembers(io::Printer* printer) const {
-  WriteFieldDocComment(printer, descriptor_);
+void RepeatedImmutableEnumFieldLiteGenerator::GenerateInterfaceMembers(
+    io::Printer* printer) const {
+  WriteFieldAccessorDocComment(printer, descriptor_, LIST_GETTER);
+  printer->Print(
+      variables_,
+      "$deprecation$java.util.List<$type$> get$capitalized_name$List();\n");
+  WriteFieldAccessorDocComment(printer, descriptor_, LIST_COUNT);
   printer->Print(variables_,
-    "$deprecation$java.util.List<$type$> get$capitalized_name$List();\n");
-  WriteFieldDocComment(printer, descriptor_);
+                 "$deprecation$int get$capitalized_name$Count();\n");
+  WriteFieldAccessorDocComment(printer, descriptor_, LIST_INDEXED_GETTER);
   printer->Print(variables_,
-    "$deprecation$int get$capitalized_name$Count();\n");
-  WriteFieldDocComment(printer, descriptor_);
-  printer->Print(variables_,
-    "$deprecation$$type$ get$capitalized_name$(int index);\n");
+                 "$deprecation$$type$ get$capitalized_name$(int index);\n");
   if (SupportUnknownEnumValue(descriptor_->file())) {
-    WriteFieldDocComment(printer, descriptor_);
+    WriteFieldEnumValueAccessorDocComment(printer, descriptor_, LIST_GETTER);
     printer->Print(variables_,
-      "$deprecation$java.util.List<java.lang.Integer>\n"
-      "get$capitalized_name$ValueList();\n");
-    WriteFieldDocComment(printer, descriptor_);
+                   "$deprecation$java.util.List<java.lang.Integer>\n"
+                   "get$capitalized_name$ValueList();\n");
+    WriteFieldEnumValueAccessorDocComment(printer, descriptor_,
+                                          LIST_INDEXED_GETTER);
     printer->Print(variables_,
-      "$deprecation$int get$capitalized_name$Value(int index);\n");
+                   "$deprecation$int get$capitalized_name$Value(int index);\n");
   }
 }
 
-void RepeatedImmutableEnumFieldLiteGenerator::
-GenerateMembers(io::Printer* printer) const {
-  printer->Print(variables_,
-    // TODO(dweis): Switch to IntList?
-    "private com.google.protobuf.Internal.ProtobufList<\n"
-    "    java.lang.Integer> $name$_;\n"
-    "private static final com.google.protobuf.Internal.ListAdapter.Converter<\n"
-    "    java.lang.Integer, $type$> $name$_converter_ =\n"
-    "        new com.google.protobuf.Internal.ListAdapter.Converter<\n"
-    "            java.lang.Integer, $type$>() {\n"
-    "          public $type$ convert(java.lang.Integer from) {\n"
-    "            $type$ result = $type$.valueOf(from);\n"
-    "            return result == null ? $unknown$ : result;\n"
-    "          }\n"
-    "        };\n");
+void RepeatedImmutableEnumFieldLiteGenerator::GenerateMembers(
+    io::Printer* printer) const {
+  printer->Print(
+      variables_,
+      "private com.google.protobuf.Internal.IntList $name$_;\n"
+      "private static final "
+      "com.google.protobuf.Internal.ListAdapter.Converter<\n"
+      "    java.lang.Integer, $type$> $name$_converter_ =\n"
+      "        new com.google.protobuf.Internal.ListAdapter.Converter<\n"
+      "            java.lang.Integer, $type$>() {\n"
+      "          @java.lang.Override\n"
+      "          public $type$ convert(java.lang.Integer from) {\n"
+      "            $type$ result = $type$.forNumber(from);\n"
+      "            return result == null ? $unknown$ : result;\n"
+      "          }\n"
+      "        };\n");
   PrintExtraFieldInfo(variables_, printer);
-  WriteFieldDocComment(printer, descriptor_);
-  printer->Print(variables_,
-    "$deprecation$public java.util.List<$type$> get$capitalized_name$List() {\n"
-    "  return new com.google.protobuf.Internal.ListAdapter<\n"
-    "      java.lang.Integer, $type$>($name$_, $name$_converter_);\n"
-    "}\n");
-  WriteFieldDocComment(printer, descriptor_);
-  printer->Print(variables_,
-    "$deprecation$public int get$capitalized_name$Count() {\n"
-    "  return $name$_.size();\n"
-    "}\n");
-  WriteFieldDocComment(printer, descriptor_);
-  printer->Print(variables_,
-    "$deprecation$public $type$ get$capitalized_name$(int index) {\n"
-    "  return $name$_converter_.convert($name$_.get(index));\n"
-    "}\n");
+  WriteFieldAccessorDocComment(printer, descriptor_, LIST_GETTER);
+  printer->Print(
+      variables_,
+      "@java.lang.Override\n"
+      "$deprecation$public java.util.List<$type$> "
+      "${$get$capitalized_name$List$}$() {\n"
+      "  return new com.google.protobuf.Internal.ListAdapter<\n"
+      "      java.lang.Integer, $type$>($name$_, $name$_converter_);\n"
+      "}\n");
+  printer->Annotate("{", "}", descriptor_);
+  WriteFieldAccessorDocComment(printer, descriptor_, LIST_COUNT);
+  printer->Print(
+      variables_,
+      "@java.lang.Override\n"
+      "$deprecation$public int ${$get$capitalized_name$Count$}$() {\n"
+      "  return $name$_.size();\n"
+      "}\n");
+  printer->Annotate("{", "}", descriptor_);
+  WriteFieldAccessorDocComment(printer, descriptor_, LIST_INDEXED_GETTER);
+  printer->Print(
+      variables_,
+      "@java.lang.Override\n"
+      "$deprecation$public $type$ ${$get$capitalized_name$$}$(int index) {\n"
+      "  return $name$_converter_.convert($name$_.getInt(index));\n"
+      "}\n");
+  printer->Annotate("{", "}", descriptor_);
   if (SupportUnknownEnumValue(descriptor_->file())) {
-    WriteFieldDocComment(printer, descriptor_);
+    WriteFieldEnumValueAccessorDocComment(printer, descriptor_, LIST_GETTER);
     printer->Print(variables_,
-      "$deprecation$public java.util.List<java.lang.Integer>\n"
-      "get$capitalized_name$ValueList() {\n"
-      "  return $name$_;\n"
-      "}\n");
-    WriteFieldDocComment(printer, descriptor_);
+                   "@java.lang.Override\n"
+                   "$deprecation$public java.util.List<java.lang.Integer>\n"
+                   "${$get$capitalized_name$ValueList$}$() {\n"
+                   "  return $name$_;\n"
+                   "}\n");
+    printer->Annotate("{", "}", descriptor_);
+    WriteFieldEnumValueAccessorDocComment(printer, descriptor_,
+                                          LIST_INDEXED_GETTER);
     printer->Print(variables_,
-      "$deprecation$public int get$capitalized_name$Value(int index) {\n"
-      "  return $name$_.get(index);\n"
-      "}\n");
+                   "@java.lang.Override\n"
+                   "$deprecation$public int "
+                   "${$get$capitalized_name$Value$}$(int index) {\n"
+                   "  return $name$_.getInt(index);\n"
+                   "}\n");
+    printer->Annotate("{", "}", descriptor_);
   }
 
-  if (descriptor_->options().packed() &&
-      HasGeneratedMethods(descriptor_->containing_type())) {
-    printer->Print(variables_,
-      "private int $name$MemoizedSerializedSize;\n");
+  if (!EnableExperimentalRuntimeForLite() && descriptor_->is_packed() &&
+      context_->HasGeneratedMethods(descriptor_->containing_type())) {
+    printer->Print(variables_, "private int $name$MemoizedSerializedSize;\n");
   }
 
   // Generate private setters for the builder to proxy into.
-  printer->Print(variables_,
-    "private void ensure$capitalized_name$IsMutable() {\n"
-    "  if (!$is_mutable$) {\n"
-    "    $name$_ = newProtobufList($name$_);\n"
-    "  }\n"
-    "}\n");
-  WriteFieldDocComment(printer, descriptor_);
-  printer->Print(variables_,
-    "private void set$capitalized_name$(\n"
-    "    int index, $type$ value) {\n"
-    "  if (value == null) {\n"
-    "    throw new NullPointerException();\n"
-    "  }\n"
-    "  ensure$capitalized_name$IsMutable();\n"
-    "  $name$_.set(index, value.getNumber());\n"
-    "}\n");
-  WriteFieldDocComment(printer, descriptor_);
-  printer->Print(variables_,
-    "private void add$capitalized_name$($type$ value) {\n"
-    "  if (value == null) {\n"
-    "    throw new NullPointerException();\n"
-    "  }\n"
-    "  ensure$capitalized_name$IsMutable();\n"
-    "  $name$_.add(value.getNumber());\n"
-    "}\n");
-  WriteFieldDocComment(printer, descriptor_);
-  printer->Print(variables_,
-    "private void addAll$capitalized_name$(\n"
-    "    java.lang.Iterable<? extends $type$> values) {\n"
-    "  ensure$capitalized_name$IsMutable();\n"
-    "  for ($type$ value : values) {\n"
-    "    $name$_.add(value.getNumber());\n"
-    "  }\n"
-    "}\n");
-  WriteFieldDocComment(printer, descriptor_);
-  printer->Print(variables_,
-    "private void clear$capitalized_name$() {\n"
-    "  $name$_ = emptyProtobufList();\n"
-    "}\n");
-
-  if (SupportUnknownEnumValue(descriptor_->file())) {
-    WriteFieldDocComment(printer, descriptor_);
-    printer->Print(variables_,
-      "private void set$capitalized_name$Value(\n"
-      "    int index, int value) {\n"
-      "  ensure$capitalized_name$IsMutable();\n"
-      "  $name$_.set(index, value);\n"
-      "}\n");
-    WriteFieldDocComment(printer, descriptor_);
-    printer->Print(variables_,
-      "private void add$capitalized_name$Value(int value) {\n"
-      "  ensure$capitalized_name$IsMutable();\n"
-      "  $name$_.add(value);\n"
-      "}\n");
-    WriteFieldDocComment(printer, descriptor_);
-    printer->Print(variables_,
-      "private void addAll$capitalized_name$Value(\n"
-      "    java.lang.Iterable<java.lang.Integer> values) {\n"
-      "  ensure$capitalized_name$IsMutable();\n"
-      "  for (int value : values) {\n"
-      "    $name$_.add(value);\n"
-      "  }\n"
-      "}\n");
-  }
-}
-
-void RepeatedImmutableEnumFieldLiteGenerator::
-GenerateBuilderMembers(io::Printer* printer) const {
-  WriteFieldDocComment(printer, descriptor_);
-  printer->Print(variables_,
-    "$deprecation$public java.util.List<$type$> get$capitalized_name$List() {\n"
-    "  return instance.get$capitalized_name$List();\n"
-    "}\n");
-  WriteFieldDocComment(printer, descriptor_);
-  printer->Print(variables_,
-    "$deprecation$public int get$capitalized_name$Count() {\n"
-    "  return instance.get$capitalized_name$Count();\n"
-    "}\n");
-  WriteFieldDocComment(printer, descriptor_);
-  printer->Print(variables_,
-    "$deprecation$public $type$ get$capitalized_name$(int index) {\n"
-    "  return instance.get$capitalized_name$(index);\n"
-    "}\n");
-  WriteFieldDocComment(printer, descriptor_);
-  printer->Print(variables_,
-    "$deprecation$public Builder set$capitalized_name$(\n"
-    "    int index, $type$ value) {\n"
-    "  copyOnWrite();\n"
-    "  instance.set$capitalized_name$(index, value);\n"
-    "  return this;\n"
-    "}\n");
-  WriteFieldDocComment(printer, descriptor_);
-  printer->Print(variables_,
-    "$deprecation$public Builder add$capitalized_name$($type$ value) {\n"
-    "  copyOnWrite();\n"
-    "  instance.add$capitalized_name$(value);\n"
-    "  return this;\n"
-    "}\n");
-  WriteFieldDocComment(printer, descriptor_);
-  printer->Print(variables_,
-    "$deprecation$public Builder addAll$capitalized_name$(\n"
-    "    java.lang.Iterable<? extends $type$> values) {\n"
-    "  copyOnWrite();\n"
-    "  instance.addAll$capitalized_name$(values);"
-    "  return this;\n"
-    "}\n");
-  WriteFieldDocComment(printer, descriptor_);
-  printer->Print(variables_,
-    "$deprecation$public Builder clear$capitalized_name$() {\n"
-    "  copyOnWrite();\n"
-    "  instance.clear$capitalized_name$();\n"
-    "  return this;\n"
-    "}\n");
-
-  if (SupportUnknownEnumValue(descriptor_->file())) {
-    WriteFieldDocComment(printer, descriptor_);
-    printer->Print(variables_,
-      "$deprecation$public java.util.List<java.lang.Integer>\n"
-      "get$capitalized_name$ValueList() {\n"
-      "  return java.util.Collections.unmodifiableList(\n"
-      "      instance.get$capitalized_name$ValueList());\n"
-      "}\n");
-    WriteFieldDocComment(printer, descriptor_);
-    printer->Print(variables_,
-      "$deprecation$public int get$capitalized_name$Value(int index) {\n"
-      "  return instance.get$capitalized_name$Value(index);\n"
-      "}\n");
-    WriteFieldDocComment(printer, descriptor_);
-    printer->Print(variables_,
-      "$deprecation$public Builder set$capitalized_name$Value(\n"
-      "    int index, int value) {\n"
-      "  copyOnWrite();\n"
-      "  instance.set$capitalized_name$Value(index, value);\n"
-      "  return this;\n"
-      "}\n");
-    WriteFieldDocComment(printer, descriptor_);
-    printer->Print(variables_,
-      "$deprecation$public Builder add$capitalized_name$Value(int value) {\n"
-      "  instance.add$capitalized_name$Value(value);\n"
-      "  return this;\n"
-      "}\n");
-    WriteFieldDocComment(printer, descriptor_);
-    printer->Print(variables_,
-      "$deprecation$public Builder addAll$capitalized_name$Value(\n"
-      "    java.lang.Iterable<java.lang.Integer> values) {\n"
-      "  copyOnWrite();\n"
-      "  instance.addAll$capitalized_name$Value(values);\n"
-      "  return this;\n"
-      "}\n");
-  }
-}
-
-void RepeatedImmutableEnumFieldLiteGenerator::
-GenerateFieldBuilderInitializationCode(io::Printer* printer)  const {
-  // noop for enums
-}
-
-void RepeatedImmutableEnumFieldLiteGenerator::
-GenerateInitializationCode(io::Printer* printer) const {
-  printer->Print(variables_, "$name$_ = emptyProtobufList();\n");
-}
-
-void RepeatedImmutableEnumFieldLiteGenerator::
-GenerateMergingCode(io::Printer* printer) const {
-  // The code below does two optimizations:
-  //   1. If the other list is empty, there's nothing to do. This ensures we
-  //      don't allocate a new array if we already have an immutable one.
-  //   2. If the other list is non-empty and our current list is empty, we can
-  //      reuse the other list which is guaranteed to be immutable.
-  printer->Print(variables_,
-    "if (!other.$name$_.isEmpty()) {\n"
-    "  if ($name$_.isEmpty()) {\n"
-    "    $name$_ = other.$name$_;\n"
-    "  } else {\n"
-    "    ensure$capitalized_name$IsMutable();\n"
-    "    $name$_.addAll(other.$name$_);\n"
-    "  }\n"
-    "  $on_changed$\n"
-    "}\n");
-}
-
-void RepeatedImmutableEnumFieldLiteGenerator::
-GenerateDynamicMethodMakeImmutableCode(io::Printer* printer) const {
-  printer->Print(variables_,
-    "$name$_.makeImmutable();\n");
-}
-
-void RepeatedImmutableEnumFieldLiteGenerator::
-GenerateParsingCode(io::Printer* printer) const {
-  // Read and store the enum
-  if (SupportUnknownEnumValue(descriptor_->file())) {
-    printer->Print(variables_,
-      "int rawValue = input.readEnum();\n"
-      "if (!$is_mutable$) {\n"
-      "  $name$_ = newProtobufList();\n"
-      "}\n"
-      "$name$_.add(rawValue);\n");
-  } else {
-    printer->Print(variables_,
-      "int rawValue = input.readEnum();\n"
-      "$type$ value = $type$.valueOf(rawValue);\n"
-        "if (value == null) {\n");
-    if (PreserveUnknownFields(descriptor_->containing_type())) {
-      printer->Print(variables_,
-        "  unknownFields.mergeVarintField($number$, rawValue);\n");
-    }
-    printer->Print(variables_,
-      "} else {\n"
-      "  if (!$is_mutable$) {\n"
-      "    $name$_ = newProtobufList();\n"
-      "  }\n"
-      "  $name$_.add(rawValue);\n"
-      "}\n");
-  }
-}
-
-void RepeatedImmutableEnumFieldLiteGenerator::
-GenerateParsingCodeFromPacked(io::Printer* printer) const {
-  // Wrap GenerateParsingCode's contents with a while loop.
-
-  printer->Print(variables_,
-    "int length = input.readRawVarint32();\n"
-    "int oldLimit = input.pushLimit(length);\n"
-    "while(input.getBytesUntilLimit() > 0) {\n");
-  printer->Indent();
-
-  GenerateParsingCode(printer);
-
-  printer->Outdent();
-  printer->Print(variables_,
-    "}\n"
-    "input.popLimit(oldLimit);\n");
-}
-
-void RepeatedImmutableEnumFieldLiteGenerator::
-GenerateParsingDoneCode(io::Printer* printer) const {
-  printer->Print(variables_,
-    "if ($is_mutable$) {\n"
-    "  $name$_.makeImmutable();\n"
-    "}\n");
-}
-
-void RepeatedImmutableEnumFieldLiteGenerator::
-GenerateSerializationCode(io::Printer* printer) const {
-  if (descriptor_->options().packed()) {
-    printer->Print(variables_,
-      "if (get$capitalized_name$List().size() > 0) {\n"
-      "  output.writeRawVarint32($tag$);\n"
-      "  output.writeRawVarint32($name$MemoizedSerializedSize);\n"
-      "}\n"
-      "for (int i = 0; i < $name$_.size(); i++) {\n"
-      "  output.writeEnumNoTag($name$_.get(i));\n"
-      "}\n");
-  } else {
-    printer->Print(variables_,
-      "for (int i = 0; i < $name$_.size(); i++) {\n"
-      "  output.writeEnum($number$, $name$_.get(i));\n"
-      "}\n");
-  }
-}
-
-void RepeatedImmutableEnumFieldLiteGenerator::
-GenerateSerializedSizeCode(io::Printer* printer) const {
-  printer->Print(variables_,
-    "{\n"
-    "  int dataSize = 0;\n");
-  printer->Indent();
-
-  printer->Print(variables_,
-    "for (int i = 0; i < $name$_.size(); i++) {\n"
-    "  dataSize += com.google.protobuf.CodedOutputStream\n"
-    "    .computeEnumSizeNoTag($name$_.get(i));\n"
-    "}\n");
   printer->Print(
-    "size += dataSize;\n");
-  if (descriptor_->options().packed()) {
-    printer->Print(variables_,
-      "if (!get$capitalized_name$List().isEmpty()) {"
-      "  size += $tag_size$;\n"
-      "  size += com.google.protobuf.CodedOutputStream\n"
-      "    .computeRawVarint32Size(dataSize);\n"
-      "}");
-  } else {
-    printer->Print(variables_,
-      "size += $tag_size$ * $name$_.size();\n");
-  }
-
-  // cache the data size for packed fields.
-  if (descriptor_->options().packed()) {
-    printer->Print(variables_,
-      "$name$MemoizedSerializedSize = dataSize;\n");
-  }
-
-  printer->Outdent();
-  printer->Print("}\n");
-}
-
-void RepeatedImmutableEnumFieldLiteGenerator::
-GenerateEqualsCode(io::Printer* printer) const {
+      variables_,
+      "private void ensure$capitalized_name$IsMutable() {\n"
+      "  if (!$is_mutable$) {\n"
+      "    $name$_ =\n"
+      "        com.google.protobuf.GeneratedMessageLite.mutableCopy($name$_);\n"
+      "  }\n"
+      "}\n");
+  WriteFieldAccessorDocComment(printer, descriptor_, LIST_INDEXED_SETTER);
   printer->Print(variables_,
-    "result = result && $name$_.equals(other.$name$_);\n");
-}
-
-void RepeatedImmutableEnumFieldLiteGenerator::
-GenerateHashCode(io::Printer* printer) const {
+                 "private void set$capitalized_name$(\n"
+                 "    int index, $type$ value) {\n"
+                 "  $null_check$"
+                 "  ensure$capitalized_name$IsMutable();\n"
+                 "  $name$_.setInt(index, value.getNumber());\n"
+                 "}\n");
+  WriteFieldAccessorDocComment(printer, descriptor_, LIST_ADDER);
   printer->Print(variables_,
-    "if (get$capitalized_name$Count() > 0) {\n"
-    "  hash = (37 * hash) + $constant_name$;\n"
-    "  hash = (53 * hash) + $name$_.hashCode();\n"
-    "}\n");
+                 "private void add$capitalized_name$($type$ value) {\n"
+                 "  $null_check$"
+                 "  ensure$capitalized_name$IsMutable();\n"
+                 "  $name$_.addInt(value.getNumber());\n"
+                 "}\n");
+  WriteFieldAccessorDocComment(printer, descriptor_, LIST_MULTI_ADDER);
+  printer->Print(variables_,
+                 "private void addAll$capitalized_name$(\n"
+                 "    java.lang.Iterable<? extends $type$> values) {\n"
+                 "  ensure$capitalized_name$IsMutable();\n"
+                 "  for ($type$ value : values) {\n"
+                 "    $name$_.addInt(value.getNumber());\n"
+                 "  }\n"
+                 "}\n");
+  WriteFieldAccessorDocComment(printer, descriptor_, CLEARER);
+  printer->Print(variables_,
+                 "private void clear$capitalized_name$() {\n"
+                 "  $name$_ = emptyIntList();\n"
+                 "}\n");
+
+  if (SupportUnknownEnumValue(descriptor_->file())) {
+    WriteFieldEnumValueAccessorDocComment(printer, descriptor_, SETTER);
+    printer->Print(variables_,
+                   "private void set$capitalized_name$Value(\n"
+                   "    int index, int value) {\n"
+                   "  ensure$capitalized_name$IsMutable();\n"
+                   "  $name$_.setInt(index, value);\n"
+                   "}\n");
+    WriteFieldEnumValueAccessorDocComment(printer, descriptor_, LIST_ADDER);
+    printer->Print(variables_,
+                   "private void add$capitalized_name$Value(int value) {\n"
+                   "  ensure$capitalized_name$IsMutable();\n"
+                   "  $name$_.addInt(value);\n"
+                   "}\n");
+    WriteFieldEnumValueAccessorDocComment(printer, descriptor_,
+                                          LIST_MULTI_ADDER);
+    printer->Print(variables_,
+                   "private void addAll$capitalized_name$Value(\n"
+                   "    java.lang.Iterable<java.lang.Integer> values) {\n"
+                   "  ensure$capitalized_name$IsMutable();\n"
+                   "  for (int value : values) {\n"
+                   "    $name$_.addInt(value);\n"
+                   "  }\n"
+                   "}\n");
+  }
 }
 
-string RepeatedImmutableEnumFieldLiteGenerator::GetBoxedType() const {
+void RepeatedImmutableEnumFieldLiteGenerator::GenerateFieldInfo(
+    io::Printer* printer, std::vector<uint16>* output) const {
+  WriteIntToUtf16CharSequence(descriptor_->number(), output);
+  WriteIntToUtf16CharSequence(GetExperimentalJavaFieldType(descriptor_),
+                              output);
+  printer->Print(variables_, "\"$name$_\",\n");
+  if (SupportFieldPresence(descriptor_->file())) {
+    PrintEnumVerifierLogic(printer, descriptor_, variables_,
+                           /*var_name=*/"$type$",
+                           /*terminating_string=*/",\n",
+                           /*enforce_lite=*/context_->EnforceLite());
+  }
+}
+
+void RepeatedImmutableEnumFieldLiteGenerator::GenerateBuilderMembers(
+    io::Printer* printer) const {
+  WriteFieldAccessorDocComment(printer, descriptor_, LIST_GETTER);
+  printer->Print(variables_,
+                 "@java.lang.Override\n"
+                 "$deprecation$public java.util.List<$type$> "
+                 "${$get$capitalized_name$List$}$() {\n"
+                 "  return instance.get$capitalized_name$List();\n"
+                 "}\n");
+  printer->Annotate("{", "}", descriptor_);
+  WriteFieldAccessorDocComment(printer, descriptor_, LIST_COUNT);
+  printer->Print(
+      variables_,
+      "@java.lang.Override\n"
+      "$deprecation$public int ${$get$capitalized_name$Count$}$() {\n"
+      "  return instance.get$capitalized_name$Count();\n"
+      "}\n");
+  printer->Annotate("{", "}", descriptor_);
+  WriteFieldAccessorDocComment(printer, descriptor_, LIST_INDEXED_GETTER);
+  printer->Print(
+      variables_,
+      "@java.lang.Override\n"
+      "$deprecation$public $type$ ${$get$capitalized_name$$}$(int index) {\n"
+      "  return instance.get$capitalized_name$(index);\n"
+      "}\n");
+  printer->Annotate("{", "}", descriptor_);
+  WriteFieldAccessorDocComment(printer, descriptor_, LIST_INDEXED_SETTER,
+                               /* builder */ true);
+  printer->Print(variables_,
+                 "$deprecation$public Builder ${$set$capitalized_name$$}$(\n"
+                 "    int index, $type$ value) {\n"
+                 "  copyOnWrite();\n"
+                 "  instance.set$capitalized_name$(index, value);\n"
+                 "  return this;\n"
+                 "}\n");
+  printer->Annotate("{", "}", descriptor_);
+  WriteFieldAccessorDocComment(printer, descriptor_, LIST_ADDER,
+                               /* builder */ true);
+  printer->Print(variables_,
+                 "$deprecation$public Builder "
+                 "${$add$capitalized_name$$}$($type$ value) {\n"
+                 "  copyOnWrite();\n"
+                 "  instance.add$capitalized_name$(value);\n"
+                 "  return this;\n"
+                 "}\n");
+  printer->Annotate("{", "}", descriptor_);
+  WriteFieldAccessorDocComment(printer, descriptor_, LIST_MULTI_ADDER,
+                               /* builder */ true);
+  printer->Print(variables_,
+                 "$deprecation$public Builder ${$addAll$capitalized_name$$}$(\n"
+                 "    java.lang.Iterable<? extends $type$> values) {\n"
+                 "  copyOnWrite();\n"
+                 "  instance.addAll$capitalized_name$(values);"
+                 "  return this;\n"
+                 "}\n");
+  printer->Annotate("{", "}", descriptor_);
+  WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
+                               /* builder */ true);
+  printer->Print(
+      variables_,
+      "$deprecation$public Builder ${$clear$capitalized_name$$}$() {\n"
+      "  copyOnWrite();\n"
+      "  instance.clear$capitalized_name$();\n"
+      "  return this;\n"
+      "}\n");
+  printer->Annotate("{", "}", descriptor_);
+
+  if (SupportUnknownEnumValue(descriptor_->file())) {
+    WriteFieldEnumValueAccessorDocComment(printer, descriptor_, LIST_GETTER);
+    printer->Print(variables_,
+                   "@java.lang.Override\n"
+                   "$deprecation$public java.util.List<java.lang.Integer>\n"
+                   "${$get$capitalized_name$ValueList$}$() {\n"
+                   "  return java.util.Collections.unmodifiableList(\n"
+                   "      instance.get$capitalized_name$ValueList());\n"
+                   "}\n");
+    printer->Annotate("{", "}", descriptor_);
+    WriteFieldEnumValueAccessorDocComment(printer, descriptor_,
+                                          LIST_INDEXED_GETTER);
+    printer->Print(variables_,
+                   "@java.lang.Override\n"
+                   "$deprecation$public int "
+                   "${$get$capitalized_name$Value$}$(int index) {\n"
+                   "  return instance.get$capitalized_name$Value(index);\n"
+                   "}\n");
+    printer->Annotate("{", "}", descriptor_);
+    WriteFieldEnumValueAccessorDocComment(printer, descriptor_,
+                                          LIST_INDEXED_SETTER,
+                                          /* builder */ true);
+    printer->Print(
+        variables_,
+        "$deprecation$public Builder ${$set$capitalized_name$Value$}$(\n"
+        "    int index, int value) {\n"
+        "  copyOnWrite();\n"
+        "  instance.set$capitalized_name$Value(index, value);\n"
+        "  return this;\n"
+        "}\n");
+    printer->Annotate("{", "}", descriptor_);
+    WriteFieldEnumValueAccessorDocComment(printer, descriptor_, LIST_ADDER,
+                                          /* builder */ true);
+    printer->Print(variables_,
+                   "$deprecation$public Builder "
+                   "${$add$capitalized_name$Value$}$(int value) {\n"
+                   "  instance.add$capitalized_name$Value(value);\n"
+                   "  return this;\n"
+                   "}\n");
+    printer->Annotate("{", "}", descriptor_);
+    WriteFieldEnumValueAccessorDocComment(printer, descriptor_,
+                                          LIST_MULTI_ADDER,
+                                          /* builder */ true);
+    printer->Print(
+        variables_,
+        "$deprecation$public Builder ${$addAll$capitalized_name$Value$}$(\n"
+        "    java.lang.Iterable<java.lang.Integer> values) {\n"
+        "  copyOnWrite();\n"
+        "  instance.addAll$capitalized_name$Value(values);\n"
+        "  return this;\n"
+        "}\n");
+    printer->Annotate("{", "}", descriptor_);
+  }
+}
+
+void RepeatedImmutableEnumFieldLiteGenerator::GenerateInitializationCode(
+    io::Printer* printer) const {
+  printer->Print(variables_, "$name$_ = emptyIntList();\n");
+}
+
+std::string RepeatedImmutableEnumFieldLiteGenerator::GetBoxedType() const {
   return name_resolver_->GetImmutableClassName(descriptor_->enum_type());
 }
 

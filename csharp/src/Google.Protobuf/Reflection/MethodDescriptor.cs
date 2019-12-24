@@ -30,6 +30,9 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
+using Google.Protobuf.Collections;
+using System;
+
 namespace Google.Protobuf.Reflection
 {
     /// <summary>
@@ -67,6 +70,29 @@ namespace Google.Protobuf.Reflection
         /// </value>
         public bool IsServerStreaming { get { return proto.ServerStreaming; } }
 
+        /// <summary>
+        /// The (possibly empty) set of custom options for this method.
+        /// </summary>
+        [Obsolete("CustomOptions are obsolete. Use GetOption")]
+        public CustomOptions CustomOptions => new CustomOptions(Proto.Options?._extensions?.ValuesByNumber);
+
+        /// <summary>
+        /// Gets a single value method option for this descriptor
+        /// </summary>
+        public T GetOption<T>(Extension<MethodOptions, T> extension)
+        {
+            var value = Proto.Options.GetExtension(extension);
+            return value is IDeepCloneable<T> ? (value as IDeepCloneable<T>).Clone() : value;
+        }
+
+        /// <summary>
+        /// Gets a repeated value method option for this descriptor
+        /// </summary>
+        public RepeatedField<T> GetOption<T>(RepeatedExtension<MethodOptions, T> extension)
+        {
+            return Proto.Options.GetExtension(extension).Clone();
+        }
+
         internal MethodDescriptor(MethodDescriptorProto proto, FileDescriptor file,
                                   ServiceDescriptor parent, int index)
             : base(file, parent.FullName + "." + proto.Name, index)
@@ -101,3 +127,4 @@ namespace Google.Protobuf.Reflection
         }
     }
 }
+ 

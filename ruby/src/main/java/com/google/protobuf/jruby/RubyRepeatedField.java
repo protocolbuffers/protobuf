@@ -110,7 +110,7 @@ public class RubyRepeatedField extends RubyObject {
     @JRubyMethod(name = "[]=")
     public IRubyObject indexSet(ThreadContext context, IRubyObject index, IRubyObject value) {
         int arrIndex = normalizeArrayIndex(index);
-        Utils.checkType(context, fieldType, value, (RubyModule) typeClass);
+        value = Utils.checkType(context, fieldType, value, (RubyModule) typeClass);
         IRubyObject defaultValue = defaultValue(context);
         for (int i = this.storage.size(); i < arrIndex; i++) {
             this.storage.set(i, defaultValue);
@@ -166,7 +166,7 @@ public class RubyRepeatedField extends RubyObject {
     public IRubyObject push(ThreadContext context, IRubyObject value) {
         if (!(fieldType == Descriptors.FieldDescriptor.Type.MESSAGE &&
             value == context.runtime.getNil())) {
-            Utils.checkType(context, fieldType, value, (RubyModule) typeClass);
+            value = Utils.checkType(context, fieldType, value, (RubyModule) typeClass);
         }
         this.storage.add(value);
         return this.storage;

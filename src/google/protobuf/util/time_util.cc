@@ -30,30 +30,30 @@
 
 #include <google/protobuf/util/time_util.h>
 
-#include <google/protobuf/stubs/time.h>
 #include <google/protobuf/stubs/int128.h>
-#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/stringprintf.h>
+#include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/stubs/time.h>
 #include <google/protobuf/duration.pb.h>
 #include <google/protobuf/timestamp.pb.h>
+
+#include <google/protobuf/port_def.inc>
 
 namespace google {
 namespace protobuf {
 namespace util {
 
-using google::protobuf::Timestamp;
 using google::protobuf::Duration;
+using google::protobuf::Timestamp;
 
 namespace {
 static const int kNanosPerSecond = 1000000000;
 static const int kMicrosPerSecond = 1000000;
 static const int kMillisPerSecond = 1000;
 static const int kNanosPerMillisecond = 1000000;
-static const int kMicrosPerMillisecond = 1000;
 static const int kNanosPerMicrosecond = 1000;
 static const int kSecondsPerMinute = 60;  // Note that we ignore leap seconds.
 static const int kSecondsPerHour = 3600;
-static const char kTimestampFormat[] = "%E4Y-%m-%dT%H:%M:%S";
 
 template <typename T>
 T CreateNormalized(int64 seconds, int64 nanos);
@@ -103,7 +103,7 @@ Duration CreateNormalized(int64 seconds, int64 nanos) {
 
 // Format nanoseconds with either 3, 6, or 9 digits depending on the required
 // precision to represent the exact value.
-string FormatNanos(int32 nanos) {
+std::string FormatNanos(int32 nanos) {
   if (nanos % kNanosPerMillisecond == 0) {
     return StringPrintf("%03d", nanos / kNanosPerMillisecond);
   } else if (nanos % kNanosPerMicrosecond == 0) {
@@ -113,11 +113,11 @@ string FormatNanos(int32 nanos) {
   }
 }
 
-string FormatTime(int64 seconds, int32 nanos) {
+std::string FormatTime(int64 seconds, int32 nanos) {
   return ::google::protobuf::internal::FormatTime(seconds, nanos);
 }
 
-bool ParseTime(const string& value, int64* seconds, int32* nanos) {
+bool ParseTime(const std::string& value, int64* seconds, int32* nanos) {
   return ::google::protobuf::internal::ParseTime(value, seconds, nanos);
 }
 
@@ -142,11 +142,20 @@ int64 RoundTowardZero(int64 value, int64 divider) {
 }
 }  // namespace
 
-string TimeUtil::ToString(const Timestamp& timestamp) {
+// Actually define these static const integers. Required by C++ standard (but
+// some compilers don't like it).
+#ifndef _MSC_VER
+const int64 TimeUtil::kTimestampMinSeconds;
+const int64 TimeUtil::kTimestampMaxSeconds;
+const int64 TimeUtil::kDurationMaxSeconds;
+const int64 TimeUtil::kDurationMinSeconds;
+#endif  // !_MSC_VER
+
+std::string TimeUtil::ToString(const Timestamp& timestamp) {
   return FormatTime(timestamp.seconds(), timestamp.nanos());
 }
 
-bool TimeUtil::FromString(const string& value, Timestamp* timestamp) {
+bool TimeUtil::FromString(const std::string& value, Timestamp* timestamp) {
   int64 seconds;
   int32 nanos;
   if (!ParseTime(value, &seconds, &nanos)) {
@@ -165,8 +174,8 @@ Timestamp TimeUtil::GetCurrentTime() {
 
 Timestamp TimeUtil::GetEpoch() { return Timestamp(); }
 
-string TimeUtil::ToString(const Duration& duration) {
-  string result;
+std::string TimeUtil::ToString(const Duration& duration) {
+  std::string result;
   int64 seconds = duration.seconds();
   int32 nanos = duration.nanos();
   if (seconds < 0 || nanos < 0) {
@@ -174,7 +183,7 @@ string TimeUtil::ToString(const Duration& duration) {
     seconds = -seconds;
     nanos = -nanos;
   }
-  result += StringPrintf("%" GOOGLE_LL_FORMAT "d", seconds);
+  result += StrCat(seconds);
   if (nanos != 0) {
     result += "." + FormatNanos(nanos);
   }
@@ -190,7 +199,7 @@ static int64 Pow(int64 x, int y) {
   return result;
 }
 
-bool TimeUtil::FromString(const string& value, Duration* duration) {
+bool TimeUtil::FromString(const std::string& value, Duration* duration) {
   if (value.length() <= 1 || value[value.length() - 1] != 's') {
     return false;
   }
@@ -198,9 +207,9 @@ bool TimeUtil::FromString(const string& value, Duration* duration) {
   int sign_length = (negative ? 1 : 0);
   // Parse the duration value as two integers rather than a float value
   // to avoid precision loss.
-  string seconds_part, nanos_part;
+  std::string seconds_part, nanos_part;
   size_t pos = value.find_last_of(".");
-  if (pos == string::npos) {
+  if (pos == std::string::npos) {
     seconds_part = value.substr(sign_length, value.length() - 1 - sign_length);
     nanos_part = "0";
   } else {
@@ -360,25 +369,13 @@ timeval TimeUtil::DurationToTimeval(const Duration& value) {
 
 }  // namespace util
 }  // namespace protobuf
+}  // namespace google
 
-
+namespace google {
 namespace protobuf {
 namespace {
-using google::protobuf::util::kNanosPerSecond;
-using google::protobuf::util::CreateNormalized;
-
-// Convert a Timestamp to uint128.
-void ToUint128(const Timestamp& value, uint128* result, bool* negative) {
-  if (value.seconds() < 0) {
-    *negative = true;
-    *result = static_cast<uint64>(-value.seconds());
-    *result = *result * kNanosPerSecond - static_cast<uint32>(value.nanos());
-  } else {
-    *negative = false;
-    *result = static_cast<uint64>(value.seconds());
-    *result = *result * kNanosPerSecond + static_cast<uint32>(value.nanos());
-  }
-}
+using ::PROTOBUF_NAMESPACE_ID::util::CreateNormalized;
+using ::PROTOBUF_NAMESPACE_ID::util::kNanosPerSecond;
 
 // Convert a Duration to uint128.
 void ToUint128(const Duration& value, uint128* result, bool* negative) {
@@ -393,23 +390,9 @@ void ToUint128(const Duration& value, uint128* result, bool* negative) {
   }
 }
 
-void ToTimestamp(const uint128& value, bool negative, Timestamp* timestamp) {
-  int64 seconds = static_cast<int64>(Uint128Low64(value / kNanosPerSecond));
-  int32 nanos = static_cast<int32>(Uint128Low64(value % kNanosPerSecond));
-  if (negative) {
-    seconds = -seconds;
-    nanos = -nanos;
-    if (nanos < 0) {
-      nanos += kNanosPerSecond;
-      seconds -= 1;
-    }
-  }
-  timestamp->set_seconds(seconds);
-  timestamp->set_nanos(nanos);
-}
-
 void ToDuration(const uint128& value, bool negative, Duration* duration) {
-  int64 seconds = static_cast<int64>(Uint128Low64(value / kNanosPerSecond));
+  int64 seconds =
+      static_cast<int64>(Uint128Low64(value / kNanosPerSecond));
   int32 nanos = static_cast<int32>(Uint128Low64(value % kNanosPerSecond));
   if (negative) {
     seconds = -seconds;
@@ -521,5 +504,4 @@ Duration operator-(const Timestamp& t1, const Timestamp& t2) {
                                     t1.nanos() - t2.nanos());
 }
 }  // namespace protobuf
-
 }  // namespace google

@@ -31,13 +31,13 @@
 #include <sstream>
 
 #include <google/protobuf/compiler/code_generator.h>
-#include <google/protobuf/compiler/plugin.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/stubs/strutil.h>
 
+#include <google/protobuf/compiler/csharp/csharp_doc_comment.h>
 #include <google/protobuf/compiler/csharp/csharp_helpers.h>
 #include <google/protobuf/compiler/csharp/csharp_map_field.h>
 
@@ -47,23 +47,25 @@ namespace compiler {
 namespace csharp {
 
 MapFieldGenerator::MapFieldGenerator(const FieldDescriptor* descriptor,
-                                             int fieldOrdinal)
-    : FieldGeneratorBase(descriptor, fieldOrdinal) {
+                                     int presenceIndex,
+                                     const Options* options)
+    : FieldGeneratorBase(descriptor, presenceIndex, options) {
 }
 
 MapFieldGenerator::~MapFieldGenerator() {
 }
 
-void MapFieldGenerator::GenerateMembers(io::Printer* printer) {   
+void MapFieldGenerator::GenerateMembers(io::Printer* printer) {
   const FieldDescriptor* key_descriptor =
       descriptor_->message_type()->FindFieldByName("key");
   const FieldDescriptor* value_descriptor =
       descriptor_->message_type()->FindFieldByName("value");
   variables_["key_type_name"] = type_name(key_descriptor);
   variables_["value_type_name"] = type_name(value_descriptor);
-  variables_["true_for_wrappers"] = IsWrapperType(value_descriptor) ? "true" : "";
-  scoped_ptr<FieldGeneratorBase> key_generator(CreateFieldGenerator(key_descriptor, 1));  
-  scoped_ptr<FieldGeneratorBase> value_generator(CreateFieldGenerator(value_descriptor, 2));
+  std::unique_ptr<FieldGeneratorBase> key_generator(
+      CreateFieldGenerator(key_descriptor, 1, this->options()));
+  std::unique_ptr<FieldGeneratorBase> value_generator(
+      CreateFieldGenerator(value_descriptor, 2, this->options()));
 
   printer->Print(
     variables_,
@@ -75,8 +77,9 @@ void MapFieldGenerator::GenerateMembers(io::Printer* printer) {
   printer->Print(
     variables_,
     ", $tag$);\n"
-    "private readonly pbc::MapField<$key_type_name$, $value_type_name$> $name$_ = new pbc::MapField<$key_type_name$, $value_type_name$>($true_for_wrappers$);\n");
-  AddDeprecatedFlag(printer);
+    "private readonly pbc::MapField<$key_type_name$, $value_type_name$> $name$_ = new pbc::MapField<$key_type_name$, $value_type_name$>();\n");
+  WritePropertyDocComment(printer, descriptor_);
+  AddPublicMemberAttributes(printer);
   printer->Print(
     variables_,
     "$access_level$ pbc::MapField<$key_type_name$, $value_type_name$> $property_name$ {\n"

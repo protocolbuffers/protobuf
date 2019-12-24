@@ -43,9 +43,12 @@
 // rather than generated accessors.
 
 #include <google/protobuf/generated_message_reflection.h>
-#include <google/protobuf/descriptor.h>
+#include <memory>
+
 #include <google/protobuf/test_util.h>
 #include <google/protobuf/unittest.pb.h>
+#include <google/protobuf/arena.h>
+#include <google/protobuf/descriptor.h>
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
@@ -58,9 +61,9 @@ namespace protobuf {
 namespace {
 
 // Shorthand to get a FieldDescriptor for a field of unittest::TestAllTypes.
-const FieldDescriptor* F(const string& name) {
+const FieldDescriptor* F(const std::string& name) {
   const FieldDescriptor* result =
-    unittest::TestAllTypes::descriptor()->FindFieldByName(name);
+      unittest::TestAllTypes::descriptor()->FindFieldByName(name);
   GOOGLE_CHECK(result != NULL);
   return result;
 }
@@ -69,7 +72,7 @@ TEST(GeneratedMessageReflectionTest, Defaults) {
   // Check that all default values are set correctly in the initial message.
   unittest::TestAllTypes message;
   TestUtil::ReflectionTester reflection_tester(
-    unittest::TestAllTypes::descriptor());
+      unittest::TestAllTypes::descriptor());
 
   reflection_tester.ExpectClearViaReflection(message);
 
@@ -93,7 +96,7 @@ TEST(GeneratedMessageReflectionTest, Accessors) {
   // values.
   unittest::TestAllTypes message;
   TestUtil::ReflectionTester reflection_tester(
-    unittest::TestAllTypes::descriptor());
+      unittest::TestAllTypes::descriptor());
 
   reflection_tester.SetAllFieldsViaReflection(&message);
   TestUtil::ExpectAllFieldsSet(message);
@@ -104,24 +107,26 @@ TEST(GeneratedMessageReflectionTest, Accessors) {
 }
 
 TEST(GeneratedMessageReflectionTest, GetStringReference) {
-  // Test that GetStringReference() returns the underlying string when it is
-  // a normal string field.
+  // Test that GetStringReference() returns the underlying string when it
+  // is a normal string field.
   unittest::TestAllTypes message;
   message.set_optional_string("foo");
   message.add_repeated_string("foo");
 
   const Reflection* reflection = message.GetReflection();
-  string scratch;
+  std::string scratch;
 
-  EXPECT_EQ(&message.optional_string(),
+  EXPECT_EQ(
+      &message.optional_string(),
       &reflection->GetStringReference(message, F("optional_string"), &scratch))
-    << "For simple string fields, GetStringReference() should return a "
-       "reference to the underlying string.";
+      << "For simple string fields, GetStringReference() should return a "
+         "reference to the underlying string.";
   EXPECT_EQ(&message.repeated_string(0),
-      &reflection->GetRepeatedStringReference(message, F("repeated_string"),
-                                              0, &scratch))
-    << "For simple string fields, GetRepeatedStringReference() should return "
-       "a reference to the underlying string.";
+            &reflection->GetRepeatedStringReference(
+                message, F("repeated_string"), 0, &scratch))
+      << "For simple string fields, GetRepeatedStringReference() should "
+         "return "
+         "a reference to the underlying string.";
 }
 
 
@@ -130,7 +135,7 @@ TEST(GeneratedMessageReflectionTest, DefaultsAfterClear) {
   // embedded message does NOT return the default instance.
   unittest::TestAllTypes message;
   TestUtil::ReflectionTester reflection_tester(
-    unittest::TestAllTypes::descriptor());
+      unittest::TestAllTypes::descriptor());
 
   TestUtil::SetAllFields(&message);
   message.Clear();
@@ -146,7 +151,6 @@ TEST(GeneratedMessageReflectionTest, DefaultsAfterClear) {
   EXPECT_NE(&unittest_import::ImportMessage::default_instance(),
             &reflection->GetMessage(message, F("optional_import_message")));
 }
-
 
 TEST(GeneratedMessageReflectionTest, Swap) {
   unittest::TestAllTypes message1;
@@ -217,7 +221,7 @@ TEST(GeneratedMessageReflectionTest, SwapFields) {
   message2.set_optional_string("hello");
   message2.mutable_repeated_int64()->Add(30);
 
-  vector<const FieldDescriptor*> fields;
+  std::vector<const FieldDescriptor*> fields;
   const Descriptor* descriptor = message1.GetDescriptor();
   fields.push_back(descriptor->FindFieldByName("optional_double"));
   fields.push_back(descriptor->FindFieldByName("repeated_int32"));
@@ -250,7 +254,7 @@ TEST(GeneratedMessageReflectionTest, SwapFieldsAll) {
 
   TestUtil::SetAllFields(&message2);
 
-  vector<const FieldDescriptor*> fields;
+  std::vector<const FieldDescriptor*> fields;
   const Reflection* reflection = message1.GetReflection();
   reflection->ListFields(message2, &fields);
   reflection->SwapFields(&message1, &message2, fields);
@@ -265,7 +269,7 @@ TEST(GeneratedMessageReflectionTest, SwapFieldsAllExtension) {
 
   TestUtil::SetAllExtensions(&message1);
 
-  vector<const FieldDescriptor*> fields;
+  std::vector<const FieldDescriptor*> fields;
   const Reflection* reflection = message1.GetReflection();
   reflection->ListFields(message1, &fields);
   reflection->SwapFields(&message1, &message2, fields);
@@ -301,7 +305,7 @@ TEST(GeneratedMessageReflectionTest, SwapFieldsOneof) {
   unittest::TestOneof2 message1, message2;
   TestUtil::SetOneof1(&message1);
 
-  vector<const FieldDescriptor*> fields;
+  std::vector<const FieldDescriptor*> fields;
   const Descriptor* descriptor = message1.GetDescriptor();
   for (int i = 0; i < descriptor->field_count(); i++) {
     fields.push_back(descriptor->field(i));
@@ -316,7 +320,7 @@ TEST(GeneratedMessageReflectionTest, SwapFieldsOneof) {
 TEST(GeneratedMessageReflectionTest, RemoveLast) {
   unittest::TestAllTypes message;
   TestUtil::ReflectionTester reflection_tester(
-    unittest::TestAllTypes::descriptor());
+      unittest::TestAllTypes::descriptor());
 
   TestUtil::SetAllFields(&message);
 
@@ -328,7 +332,7 @@ TEST(GeneratedMessageReflectionTest, RemoveLast) {
 TEST(GeneratedMessageReflectionTest, RemoveLastExtensions) {
   unittest::TestAllExtensions message;
   TestUtil::ReflectionTester reflection_tester(
-    unittest::TestAllExtensions::descriptor());
+      unittest::TestAllExtensions::descriptor());
 
   TestUtil::SetAllExtensions(&message);
 
@@ -354,7 +358,7 @@ TEST(GeneratedMessageReflectionTest, ReleaseLast) {
   ASSERT_EQ(2, message.repeated_foreign_message_size());
   const protobuf_unittest::ForeignMessage* expected =
       message.mutable_repeated_foreign_message(1);
-  scoped_ptr<Message> released(message.GetReflection()->ReleaseLast(
+  std::unique_ptr<Message> released(message.GetReflection()->ReleaseLast(
       &message, descriptor->FindFieldByName("repeated_foreign_message")));
   EXPECT_EQ(expected, released.get());
 }
@@ -373,21 +377,20 @@ TEST(GeneratedMessageReflectionTest, ReleaseLastExtensions) {
   // Now test that we actually release the right message.
   message.Clear();
   TestUtil::SetAllExtensions(&message);
-  ASSERT_EQ(2, message.ExtensionSize(
-      unittest::repeated_foreign_message_extension));
-  const protobuf_unittest::ForeignMessage* expected = message.MutableExtension(
-      unittest::repeated_foreign_message_extension, 1);
-  scoped_ptr<Message> released(message.GetReflection()->ReleaseLast(
+  ASSERT_EQ(
+      2, message.ExtensionSize(unittest::repeated_foreign_message_extension));
+  const protobuf_unittest::ForeignMessage* expected =
+      message.MutableExtension(unittest::repeated_foreign_message_extension, 1);
+  std::unique_ptr<Message> released(message.GetReflection()->ReleaseLast(
       &message, descriptor->file()->FindExtensionByName(
-          "repeated_foreign_message_extension")));
+                    "repeated_foreign_message_extension")));
   EXPECT_EQ(expected, released.get());
-
 }
 
 TEST(GeneratedMessageReflectionTest, SwapRepeatedElements) {
   unittest::TestAllTypes message;
   TestUtil::ReflectionTester reflection_tester(
-    unittest::TestAllTypes::descriptor());
+      unittest::TestAllTypes::descriptor());
 
   TestUtil::SetAllFields(&message);
 
@@ -403,7 +406,7 @@ TEST(GeneratedMessageReflectionTest, SwapRepeatedElements) {
 TEST(GeneratedMessageReflectionTest, SwapRepeatedElementsExtension) {
   unittest::TestAllExtensions message;
   TestUtil::ReflectionTester reflection_tester(
-    unittest::TestAllExtensions::descriptor());
+      unittest::TestAllExtensions::descriptor());
 
   TestUtil::SetAllExtensions(&message);
 
@@ -421,7 +424,7 @@ TEST(GeneratedMessageReflectionTest, Extensions) {
   // values.
   unittest::TestAllExtensions message;
   TestUtil::ReflectionTester reflection_tester(
-    unittest::TestAllExtensions::descriptor());
+      unittest::TestAllExtensions::descriptor());
 
   reflection_tester.SetAllFieldsViaReflection(&message);
   TestUtil::ExpectAllExtensionsSet(message);
@@ -433,14 +436,14 @@ TEST(GeneratedMessageReflectionTest, Extensions) {
 
 TEST(GeneratedMessageReflectionTest, FindExtensionTypeByNumber) {
   const Reflection* reflection =
-    unittest::TestAllExtensions::default_instance().GetReflection();
+      unittest::TestAllExtensions::default_instance().GetReflection();
 
   const FieldDescriptor* extension1 =
-    unittest::TestAllExtensions::descriptor()->file()->FindExtensionByName(
-      "optional_int32_extension");
+      unittest::TestAllExtensions::descriptor()->file()->FindExtensionByName(
+          "optional_int32_extension");
   const FieldDescriptor* extension2 =
-    unittest::TestAllExtensions::descriptor()->file()->FindExtensionByName(
-      "repeated_string_extension");
+      unittest::TestAllExtensions::descriptor()->file()->FindExtensionByName(
+          "repeated_string_extension");
 
   EXPECT_EQ(extension1,
             reflection->FindKnownExtensionByNumber(extension1->number()));
@@ -452,20 +455,21 @@ TEST(GeneratedMessageReflectionTest, FindExtensionTypeByNumber) {
 
   // Extensions of TestAllExtensions should not show up as extensions of
   // other types.
-  EXPECT_TRUE(unittest::TestAllTypes::default_instance().GetReflection()->
-              FindKnownExtensionByNumber(extension1->number()) == NULL);
+  EXPECT_TRUE(unittest::TestAllTypes::default_instance()
+                  .GetReflection()
+                  ->FindKnownExtensionByNumber(extension1->number()) == NULL);
 }
 
 TEST(GeneratedMessageReflectionTest, FindKnownExtensionByName) {
   const Reflection* reflection =
-    unittest::TestAllExtensions::default_instance().GetReflection();
+      unittest::TestAllExtensions::default_instance().GetReflection();
 
   const FieldDescriptor* extension1 =
-    unittest::TestAllExtensions::descriptor()->file()->FindExtensionByName(
-      "optional_int32_extension");
+      unittest::TestAllExtensions::descriptor()->file()->FindExtensionByName(
+          "optional_int32_extension");
   const FieldDescriptor* extension2 =
-    unittest::TestAllExtensions::descriptor()->file()->FindExtensionByName(
-      "repeated_string_extension");
+      unittest::TestAllExtensions::descriptor()->file()->FindExtensionByName(
+          "repeated_string_extension");
 
   EXPECT_EQ(extension1,
             reflection->FindKnownExtensionByName(extension1->full_name()));
@@ -477,8 +481,9 @@ TEST(GeneratedMessageReflectionTest, FindKnownExtensionByName) {
 
   // Extensions of TestAllExtensions should not show up as extensions of
   // other types.
-  EXPECT_TRUE(unittest::TestAllTypes::default_instance().GetReflection()->
-              FindKnownExtensionByName(extension1->full_name()) == NULL);
+  EXPECT_TRUE(unittest::TestAllTypes::default_instance()
+                  .GetReflection()
+                  ->FindKnownExtensionByName(extension1->full_name()) == NULL);
 }
 
 TEST(GeneratedMessageReflectionTest, SetAllocatedMessageTest) {
@@ -486,7 +491,7 @@ TEST(GeneratedMessageReflectionTest, SetAllocatedMessageTest) {
   unittest::TestAllTypes from_message2;
   unittest::TestAllTypes to_message;
   TestUtil::ReflectionTester reflection_tester(
-    unittest::TestAllTypes::descriptor());
+      unittest::TestAllTypes::descriptor());
   reflection_tester.SetAllFieldsViaReflection(&from_message1);
   reflection_tester.SetAllFieldsViaReflection(&from_message2);
 
@@ -514,12 +519,47 @@ TEST(GeneratedMessageReflectionTest, SetAllocatedMessageTest) {
       &to_message, TestUtil::ReflectionTester::IS_NULL);
 }
 
+TEST(GeneratedMessageReflectionTest, SetAllocatedMessageOnArenaTest) {
+  unittest::TestAllTypes from_message1;
+  unittest::TestAllTypes from_message2;
+  Arena arena;
+  unittest::TestAllTypes* to_message =
+      Arena::CreateMessage<unittest::TestAllTypes>(&arena);
+  TestUtil::ReflectionTester reflection_tester(
+      unittest::TestAllTypes::descriptor());
+  reflection_tester.SetAllFieldsViaReflection(&from_message1);
+  reflection_tester.SetAllFieldsViaReflection(&from_message2);
+
+  // Before moving fields, we expect the nested messages to be NULL.
+  reflection_tester.ExpectMessagesReleasedViaReflection(
+      to_message, TestUtil::ReflectionTester::IS_NULL);
+
+  // After fields are moved we should get non-NULL releases.
+  reflection_tester.SetAllocatedOptionalMessageFieldsToMessageViaReflection(
+      &from_message1, to_message);
+  reflection_tester.ExpectMessagesReleasedViaReflection(
+      to_message, TestUtil::ReflectionTester::NOT_NULL);
+
+  // Another move to make sure that we can SetAllocated several times.
+  reflection_tester.SetAllocatedOptionalMessageFieldsToMessageViaReflection(
+      &from_message2, to_message);
+  reflection_tester.ExpectMessagesReleasedViaReflection(
+      to_message, TestUtil::ReflectionTester::NOT_NULL);
+
+  // After SetAllocatedOptionalMessageFieldsToNullViaReflection() we expect the
+  // releases to be NULL again.
+  reflection_tester.SetAllocatedOptionalMessageFieldsToNullViaReflection(
+      to_message);
+  reflection_tester.ExpectMessagesReleasedViaReflection(
+      to_message, TestUtil::ReflectionTester::IS_NULL);
+}
+
 TEST(GeneratedMessageReflectionTest, SetAllocatedExtensionMessageTest) {
   unittest::TestAllExtensions from_message1;
   unittest::TestAllExtensions from_message2;
   unittest::TestAllExtensions to_message;
   TestUtil::ReflectionTester reflection_tester(
-    unittest::TestAllExtensions::descriptor());
+      unittest::TestAllExtensions::descriptor());
   reflection_tester.SetAllFieldsViaReflection(&from_message1);
   reflection_tester.SetAllFieldsViaReflection(&from_message2);
 
@@ -545,6 +585,41 @@ TEST(GeneratedMessageReflectionTest, SetAllocatedExtensionMessageTest) {
       &to_message);
   reflection_tester.ExpectMessagesReleasedViaReflection(
       &to_message, TestUtil::ReflectionTester::IS_NULL);
+}
+
+TEST(GeneratedMessageReflectionTest, SetAllocatedExtensionMessageOnArenaTest) {
+  Arena arena;
+  unittest::TestAllExtensions* to_message =
+      Arena::CreateMessage<unittest::TestAllExtensions>(&arena);
+  unittest::TestAllExtensions from_message1;
+  unittest::TestAllExtensions from_message2;
+  TestUtil::ReflectionTester reflection_tester(
+      unittest::TestAllExtensions::descriptor());
+  reflection_tester.SetAllFieldsViaReflection(&from_message1);
+  reflection_tester.SetAllFieldsViaReflection(&from_message2);
+
+  // Before moving fields, we expect the nested messages to be NULL.
+  reflection_tester.ExpectMessagesReleasedViaReflection(
+      to_message, TestUtil::ReflectionTester::IS_NULL);
+
+  // After fields are moved we should get non-NULL releases.
+  reflection_tester.SetAllocatedOptionalMessageFieldsToMessageViaReflection(
+      &from_message1, to_message);
+  reflection_tester.ExpectMessagesReleasedViaReflection(
+      to_message, TestUtil::ReflectionTester::NOT_NULL);
+
+  // Another move to make sure that we can SetAllocated several times.
+  reflection_tester.SetAllocatedOptionalMessageFieldsToMessageViaReflection(
+      &from_message2, to_message);
+  reflection_tester.ExpectMessagesReleasedViaReflection(
+      to_message, TestUtil::ReflectionTester::NOT_NULL);
+
+  // After SetAllocatedOptionalMessageFieldsToNullViaReflection() we expect the
+  // releases to be NULL again.
+  reflection_tester.SetAllocatedOptionalMessageFieldsToNullViaReflection(
+      to_message);
+  reflection_tester.ExpectMessagesReleasedViaReflection(
+      to_message, TestUtil::ReflectionTester::IS_NULL);
 }
 
 TEST(GeneratedMessageReflectionTest, AddRepeatedMessage) {
@@ -558,8 +633,8 @@ TEST(GeneratedMessageReflectionTest, AddRepeatedMessage) {
       unittest::TestAllTypes::NestedMessage::descriptor()->FindFieldByName(
           "bb");
 
-  Message* nested = reflection->AddMessage(
-      &message, F("repeated_nested_message"));
+  Message* nested =
+      reflection->AddMessage(&message, F("repeated_nested_message"));
   nested_reflection->SetInt32(nested, nested_bb, 11);
 
   EXPECT_EQ(11, message.repeated_nested_message(0).bb());
@@ -593,7 +668,8 @@ TEST(GeneratedMessageReflectionTest, AddAllocatedMessage) {
   unittest::TestAllTypes::NestedMessage* nested =
       new unittest::TestAllTypes::NestedMessage();
   nested->set_bb(11);
-  reflection->AddAllocatedMessage(&message, F("repeated_nested_message"), nested);
+  reflection->AddAllocatedMessage(&message, F("repeated_nested_message"),
+                                  nested);
   EXPECT_EQ(1, message.repeated_nested_message_size());
   EXPECT_EQ(11, message.repeated_nested_message(0).bb());
 }
@@ -603,7 +679,7 @@ TEST(GeneratedMessageReflectionTest, ListFieldsOneOf) {
   TestUtil::SetOneof1(&message);
 
   const Reflection* reflection = message.GetReflection();
-  vector<const FieldDescriptor*> fields;
+  std::vector<const FieldDescriptor*> fields;
   reflection->ListFields(message, &fields);
   EXPECT_EQ(4, fields.size());
 }
@@ -614,62 +690,72 @@ TEST(GeneratedMessageReflectionTest, Oneof) {
   const Reflection* reflection = message.GetReflection();
 
   // Check default values.
-  EXPECT_EQ(0, reflection->GetInt32(
-      message, descriptor->FindFieldByName("foo_int")));
+  EXPECT_EQ(
+      0, reflection->GetInt32(message, descriptor->FindFieldByName("foo_int")));
   EXPECT_EQ("", reflection->GetString(
-      message, descriptor->FindFieldByName("foo_string")));
+                    message, descriptor->FindFieldByName("foo_string")));
+  EXPECT_EQ("", reflection->GetString(message,
+                                      descriptor->FindFieldByName("foo_cord")));
   EXPECT_EQ("", reflection->GetString(
-      message, descriptor->FindFieldByName("foo_cord")));
+                    message, descriptor->FindFieldByName("foo_string_piece")));
   EXPECT_EQ("", reflection->GetString(
-      message, descriptor->FindFieldByName("foo_string_piece")));
-  EXPECT_EQ("", reflection->GetString(
-      message, descriptor->FindFieldByName("foo_bytes")));
-  EXPECT_EQ(unittest::TestOneof2::FOO, reflection->GetEnum(
-      message, descriptor->FindFieldByName("foo_enum"))->number());
+                    message, descriptor->FindFieldByName("foo_bytes")));
+  EXPECT_EQ(
+      unittest::TestOneof2::FOO,
+      reflection->GetEnum(message, descriptor->FindFieldByName("foo_enum"))
+          ->number());
   EXPECT_EQ(&unittest::TestOneof2::NestedMessage::default_instance(),
             &reflection->GetMessage(
                 message, descriptor->FindFieldByName("foo_message")));
   EXPECT_EQ(&unittest::TestOneof2::FooGroup::default_instance(),
-            &reflection->GetMessage(
-                message, descriptor->FindFieldByName("foogroup")));
+            &reflection->GetMessage(message,
+                                    descriptor->FindFieldByName("foogroup")));
   EXPECT_NE(&unittest::TestOneof2::FooGroup::default_instance(),
             &reflection->GetMessage(
                 message, descriptor->FindFieldByName("foo_lazy_message")));
-  EXPECT_EQ(5, reflection->GetInt32(
-      message, descriptor->FindFieldByName("bar_int")));
+  EXPECT_EQ(
+      5, reflection->GetInt32(message, descriptor->FindFieldByName("bar_int")));
   EXPECT_EQ("STRING", reflection->GetString(
-      message, descriptor->FindFieldByName("bar_string")));
+                          message, descriptor->FindFieldByName("bar_string")));
   EXPECT_EQ("CORD", reflection->GetString(
-      message, descriptor->FindFieldByName("bar_cord")));
-  EXPECT_EQ("SPIECE", reflection->GetString(
-      message, descriptor->FindFieldByName("bar_string_piece")));
+                        message, descriptor->FindFieldByName("bar_cord")));
+  EXPECT_EQ("SPIECE",
+            reflection->GetString(
+                message, descriptor->FindFieldByName("bar_string_piece")));
   EXPECT_EQ("BYTES", reflection->GetString(
-      message, descriptor->FindFieldByName("bar_bytes")));
-  EXPECT_EQ(unittest::TestOneof2::BAR, reflection->GetEnum(
-      message, descriptor->FindFieldByName("bar_enum"))->number());
+                         message, descriptor->FindFieldByName("bar_bytes")));
+  EXPECT_EQ(
+      unittest::TestOneof2::BAR,
+      reflection->GetEnum(message, descriptor->FindFieldByName("bar_enum"))
+          ->number());
 
   // Check Set functions.
-  reflection->SetInt32(
-      &message, descriptor->FindFieldByName("foo_int"), 123);
-  EXPECT_EQ(123, reflection->GetInt32(
-      message, descriptor->FindFieldByName("foo_int")));
-  reflection->SetString(
-      &message, descriptor->FindFieldByName("foo_string"), "abc");
+  reflection->SetInt32(&message, descriptor->FindFieldByName("foo_int"), 123);
+  EXPECT_EQ(123, reflection->GetInt32(message,
+                                      descriptor->FindFieldByName("foo_int")));
+  reflection->SetString(&message, descriptor->FindFieldByName("foo_string"),
+                        "abc");
   EXPECT_EQ("abc", reflection->GetString(
-      message, descriptor->FindFieldByName("foo_string")));
-  reflection->SetString(
-      &message, descriptor->FindFieldByName("foo_bytes"), "bytes");
+                       message, descriptor->FindFieldByName("foo_string")));
+  reflection->SetString(&message, descriptor->FindFieldByName("foo_bytes"),
+                        "bytes");
   EXPECT_EQ("bytes", reflection->GetString(
-      message, descriptor->FindFieldByName("foo_bytes")));
-  reflection->SetString(
-      &message, descriptor->FindFieldByName("bar_cord"), "change_cord");
-  EXPECT_EQ("change_cord", reflection->GetString(
-      message, descriptor->FindFieldByName("bar_cord")));
-  reflection->SetString(
-      &message, descriptor->FindFieldByName("bar_string_piece"),
-      "change_spiece");
-  EXPECT_EQ("change_spiece", reflection->GetString(
-      message, descriptor->FindFieldByName("bar_string_piece")));
+                         message, descriptor->FindFieldByName("foo_bytes")));
+  reflection->SetString(&message, descriptor->FindFieldByName("bar_cord"),
+                        "change_cord");
+  EXPECT_EQ(
+      "change_cord",
+      reflection->GetString(message, descriptor->FindFieldByName("bar_cord")));
+  reflection->SetString(&message,
+                        descriptor->FindFieldByName("bar_string_piece"),
+                        "change_spiece");
+  EXPECT_EQ("change_spiece",
+            reflection->GetString(
+                message, descriptor->FindFieldByName("bar_string_piece")));
+
+  message.clear_foo();
+  message.clear_bar();
+  TestUtil::ExpectOneofClear(message);
 }
 
 TEST(GeneratedMessageReflectionTest, SetAllocatedOneofMessageTest) {
@@ -690,8 +776,8 @@ TEST(GeneratedMessageReflectionTest, SetAllocatedOneofMessageTest) {
   TestUtil::ReflectionTester::ExpectOneofSetViaReflection(from_message1);
 
   TestUtil::ReflectionTester::
-      SetAllocatedOptionalMessageFieldsToMessageViaReflection(
-          &from_message1, &to_message);
+      SetAllocatedOptionalMessageFieldsToMessageViaReflection(&from_message1,
+                                                              &to_message);
   const Message& sub_message = reflection->GetMessage(
       to_message, descriptor->FindFieldByName("foo_lazy_message"));
   released = reflection->ReleaseMessage(
@@ -702,12 +788,12 @@ TEST(GeneratedMessageReflectionTest, SetAllocatedOneofMessageTest) {
 
   TestUtil::ReflectionTester::SetOneofViaReflection(&from_message2);
 
-  reflection->MutableMessage(
-      &from_message2, descriptor->FindFieldByName("foo_message"));
+  reflection->MutableMessage(&from_message2,
+                             descriptor->FindFieldByName("foo_message"));
 
   TestUtil::ReflectionTester::
-      SetAllocatedOptionalMessageFieldsToMessageViaReflection(
-          &from_message2, &to_message);
+      SetAllocatedOptionalMessageFieldsToMessageViaReflection(&from_message2,
+                                                              &to_message);
 
   const Message& sub_message2 = reflection->GetMessage(
       to_message, descriptor->FindFieldByName("foo_message"));
@@ -718,10 +804,62 @@ TEST(GeneratedMessageReflectionTest, SetAllocatedOneofMessageTest) {
   delete released;
 }
 
+TEST(GeneratedMessageReflectionTest, SetAllocatedOneofMessageOnArenaTest) {
+  unittest::TestOneof2 from_message1;
+  unittest::TestOneof2 from_message2;
+  Arena arena;
+  unittest::TestOneof2* to_message =
+      Arena::CreateMessage<unittest::TestOneof2>(&arena);
+  const Descriptor* descriptor = unittest::TestOneof2::descriptor();
+  const Reflection* reflection = to_message->GetReflection();
+
+  Message* released = reflection->ReleaseMessage(
+      to_message, descriptor->FindFieldByName("foo_lazy_message"));
+  EXPECT_TRUE(released == NULL);
+  released = reflection->ReleaseMessage(
+      to_message, descriptor->FindFieldByName("foo_message"));
+  EXPECT_TRUE(released == NULL);
+
+  TestUtil::ReflectionTester::SetOneofViaReflection(&from_message1);
+  TestUtil::ReflectionTester::ExpectOneofSetViaReflection(from_message1);
+
+  TestUtil::ReflectionTester::
+      SetAllocatedOptionalMessageFieldsToMessageViaReflection(&from_message1,
+                                                              to_message);
+  const Message& sub_message = reflection->GetMessage(
+      *to_message, descriptor->FindFieldByName("foo_lazy_message"));
+  released = reflection->ReleaseMessage(
+      to_message, descriptor->FindFieldByName("foo_lazy_message"));
+  EXPECT_TRUE(released != NULL);
+  // Since sub_message is arena allocated, releasing it results in copying it
+  // into new heap-allocated memory.
+  EXPECT_NE(&sub_message, released);
+  delete released;
+
+  TestUtil::ReflectionTester::SetOneofViaReflection(&from_message2);
+
+  reflection->MutableMessage(&from_message2,
+                             descriptor->FindFieldByName("foo_message"));
+
+  TestUtil::ReflectionTester::
+      SetAllocatedOptionalMessageFieldsToMessageViaReflection(&from_message2,
+                                                              to_message);
+
+  const Message& sub_message2 = reflection->GetMessage(
+      *to_message, descriptor->FindFieldByName("foo_message"));
+  released = reflection->ReleaseMessage(
+      to_message, descriptor->FindFieldByName("foo_message"));
+  EXPECT_TRUE(released != NULL);
+  // Since sub_message2 is arena allocated, releasing it results in copying it
+  // into new heap-allocated memory.
+  EXPECT_NE(&sub_message2, released);
+  delete released;
+}
+
 TEST(GeneratedMessageReflectionTest, ReleaseMessageTest) {
   unittest::TestAllTypes message;
   TestUtil::ReflectionTester reflection_tester(
-    unittest::TestAllTypes::descriptor());
+      unittest::TestAllTypes::descriptor());
 
   // When nothing is set, we expect all released messages to be NULL.
   reflection_tester.ExpectMessagesReleasedViaReflection(
@@ -747,7 +885,7 @@ TEST(GeneratedMessageReflectionTest, ReleaseMessageTest) {
 TEST(GeneratedMessageReflectionTest, ReleaseExtensionMessageTest) {
   unittest::TestAllExtensions message;
   TestUtil::ReflectionTester reflection_tester(
-    unittest::TestAllExtensions::descriptor());
+      unittest::TestAllExtensions::descriptor());
 
   // When nothing is set, we expect all released messages to be NULL.
   reflection_tester.ExpectMessagesReleasedViaReflection(
@@ -790,6 +928,73 @@ TEST(GeneratedMessageReflectionTest, ReleaseOneofMessageTest) {
   EXPECT_TRUE(released == NULL);
 }
 
+TEST(GeneratedMessageReflectionTest, ArenaReleaseMessageTest) {
+  Arena arena;
+  unittest::TestAllTypes* message =
+      Arena::CreateMessage<unittest::TestAllTypes>(&arena);
+  TestUtil::ReflectionTester reflection_tester(
+      unittest::TestAllTypes::descriptor());
+
+  // When nothing is set, we expect all released messages to be NULL.
+  reflection_tester.ExpectMessagesReleasedViaReflection(
+      message, TestUtil::ReflectionTester::IS_NULL);
+
+  // After fields are set we should get non-NULL releases.
+  reflection_tester.SetAllFieldsViaReflection(message);
+  reflection_tester.ExpectMessagesReleasedViaReflection(
+      message, TestUtil::ReflectionTester::NOT_NULL);
+
+  // After Clear() we may or may not get a message from ReleaseMessage().
+  // This is implementation specific.
+  reflection_tester.SetAllFieldsViaReflection(message);
+  message->Clear();
+  reflection_tester.ExpectMessagesReleasedViaReflection(
+      message, TestUtil::ReflectionTester::CAN_BE_NULL);
+}
+
+TEST(GeneratedMessageReflectionTest, ArenaReleaseExtensionMessageTest) {
+  Arena arena;
+  unittest::TestAllExtensions* message =
+      Arena::CreateMessage<unittest::TestAllExtensions>(&arena);
+  TestUtil::ReflectionTester reflection_tester(
+      unittest::TestAllExtensions::descriptor());
+
+  // When nothing is set, we expect all released messages to be NULL.
+  reflection_tester.ExpectMessagesReleasedViaReflection(
+      message, TestUtil::ReflectionTester::IS_NULL);
+
+  // After fields are set we should get non-NULL releases.
+  reflection_tester.SetAllFieldsViaReflection(message);
+  reflection_tester.ExpectMessagesReleasedViaReflection(
+      message, TestUtil::ReflectionTester::NOT_NULL);
+
+  // After Clear() we may or may not get a message from ReleaseMessage().
+  // This is implementation specific.
+  reflection_tester.SetAllFieldsViaReflection(message);
+  message->Clear();
+  reflection_tester.ExpectMessagesReleasedViaReflection(
+      message, TestUtil::ReflectionTester::CAN_BE_NULL);
+}
+
+TEST(GeneratedMessageReflectionTest, ArenaReleaseOneofMessageTest) {
+  Arena arena;
+  unittest::TestOneof2* message =
+      Arena::CreateMessage<unittest::TestOneof2>(&arena);
+  TestUtil::ReflectionTester::SetOneofViaReflection(message);
+
+  const Descriptor* descriptor = unittest::TestOneof2::descriptor();
+  const Reflection* reflection = message->GetReflection();
+  Message* released = reflection->ReleaseMessage(
+      message, descriptor->FindFieldByName("foo_lazy_message"));
+
+  EXPECT_TRUE(released != NULL);
+  delete released;
+
+  released = reflection->ReleaseMessage(
+      message, descriptor->FindFieldByName("foo_lazy_message"));
+  EXPECT_TRUE(released == NULL);
+}
+
 #ifdef PROTOBUF_HAS_DEATH_TEST
 
 TEST(GeneratedMessageReflectionTest, UsageErrors) {
@@ -802,39 +1007,41 @@ TEST(GeneratedMessageReflectionTest, UsageErrors) {
   // Testing every single failure mode would be too much work.  Let's just
   // check a few.
   EXPECT_DEATH(
-    reflection->GetInt32(
-      message, descriptor->FindFieldByName("optional_int64")),
-    "Protocol Buffer reflection usage error:\n"
-    "  Method      : google::protobuf::Reflection::GetInt32\n"
-    "  Message type: protobuf_unittest\\.TestAllTypes\n"
-    "  Field       : protobuf_unittest\\.TestAllTypes\\.optional_int64\n"
-    "  Problem     : Field is not the right type for this message:\n"
-    "    Expected  : CPPTYPE_INT32\n"
-    "    Field type: CPPTYPE_INT64");
+      reflection->GetInt32(message,
+                           descriptor->FindFieldByName("optional_int64")),
+      "Protocol Buffer reflection usage error:\n"
+      "  Method      : google::protobuf::Reflection::GetInt32\n"
+      "  Message type: protobuf_unittest\\.TestAllTypes\n"
+      "  Field       : protobuf_unittest\\.TestAllTypes\\.optional_int64\n"
+      "  Problem     : Field is not the right type for this message:\n"
+      "    Expected  : CPPTYPE_INT32\n"
+      "    Field type: CPPTYPE_INT64");
+  EXPECT_DEATH(reflection->GetInt32(
+                   message, descriptor->FindFieldByName("repeated_int32")),
+               "Protocol Buffer reflection usage error:\n"
+               "  Method      : google::protobuf::Reflection::GetInt32\n"
+               "  Message type: protobuf_unittest.TestAllTypes\n"
+               "  Field       : protobuf_unittest.TestAllTypes.repeated_int32\n"
+               "  Problem     : Field is repeated; the method requires a "
+               "singular field.");
   EXPECT_DEATH(
-    reflection->GetInt32(
-      message, descriptor->FindFieldByName("repeated_int32")),
-    "Protocol Buffer reflection usage error:\n"
-    "  Method      : google::protobuf::Reflection::GetInt32\n"
-    "  Message type: protobuf_unittest.TestAllTypes\n"
-    "  Field       : protobuf_unittest.TestAllTypes.repeated_int32\n"
-    "  Problem     : Field is repeated; the method requires a singular field.");
+      reflection->GetInt32(
+          message,
+          unittest::ForeignMessage::descriptor()->FindFieldByName("c")),
+      "Protocol Buffer reflection usage error:\n"
+      "  Method      : google::protobuf::Reflection::GetInt32\n"
+      "  Message type: protobuf_unittest.TestAllTypes\n"
+      "  Field       : protobuf_unittest.ForeignMessage.c\n"
+      "  Problem     : Field does not match message type.");
   EXPECT_DEATH(
-    reflection->GetInt32(
-      message, unittest::ForeignMessage::descriptor()->FindFieldByName("c")),
-    "Protocol Buffer reflection usage error:\n"
-    "  Method      : google::protobuf::Reflection::GetInt32\n"
-    "  Message type: protobuf_unittest.TestAllTypes\n"
-    "  Field       : protobuf_unittest.ForeignMessage.c\n"
-    "  Problem     : Field does not match message type.");
-  EXPECT_DEATH(
-    reflection->HasField(
-      message, unittest::ForeignMessage::descriptor()->FindFieldByName("c")),
-    "Protocol Buffer reflection usage error:\n"
-    "  Method      : google::protobuf::Reflection::HasField\n"
-    "  Message type: protobuf_unittest.TestAllTypes\n"
-    "  Field       : protobuf_unittest.ForeignMessage.c\n"
-    "  Problem     : Field does not match message type.");
+      reflection->HasField(
+          message,
+          unittest::ForeignMessage::descriptor()->FindFieldByName("c")),
+      "Protocol Buffer reflection usage error:\n"
+      "  Method      : google::protobuf::Reflection::HasField\n"
+      "  Message type: protobuf_unittest.TestAllTypes\n"
+      "  Field       : protobuf_unittest.ForeignMessage.c\n"
+      "  Problem     : Field does not match message type.");
 
 #undef f
 }

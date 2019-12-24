@@ -36,7 +36,9 @@
 #define GOOGLE_PROTOBUF_COMPILER_JAVA_HELPERS_H__
 
 #include <string>
+#include <google/protobuf/compiler/java/java_context.h>
 #include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/io/printer.h>
 #include <google/protobuf/descriptor.h>
 
 namespace google {
@@ -49,86 +51,152 @@ namespace java {
 extern const char kThickSeparator[];
 extern const char kThinSeparator[];
 
+// If annotation_file is non-empty, prints a javax.annotation.Generated
+// annotation to the given Printer. annotation_file will be referenced in the
+// annotation's comments field. delimiter should be the Printer's delimiter
+// character. annotation_file will be included verbatim into a Java literal
+// string, so it should not contain quotes or invalid Java escape sequences;
+// however, these are unlikely to appear in practice, as the value of
+// annotation_file should be generated from the filename of the source file
+// being annotated (which in turn must be a Java identifier plus ".java").
+void PrintGeneratedAnnotation(io::Printer* printer, char delimiter = '$',
+                              const std::string& annotation_file = "");
+
+// If a GeneratedMessageLite contains non-lite enums, then its verifier
+// must be instantiated inline, rather than retrieved from the enum class.
+void PrintEnumVerifierLogic(io::Printer* printer,
+                            const FieldDescriptor* descriptor,
+                            const std::map<std::string, std::string>& variables,
+                            const char* var_name,
+                            const char* terminating_string, bool enforce_lite);
+
 // Converts a name to camel-case. If cap_first_letter is true, capitalize the
 // first letter.
-string UnderscoresToCamelCase(const string& name, bool cap_first_letter);
+std::string UnderscoresToCamelCase(const std::string& name,
+                                   bool cap_first_letter);
 // Converts the field's name to camel-case, e.g. "foo_bar_baz" becomes
 // "fooBarBaz" or "FooBarBaz", respectively.
-string UnderscoresToCamelCase(const FieldDescriptor* field);
-string UnderscoresToCapitalizedCamelCase(const FieldDescriptor* field);
+std::string UnderscoresToCamelCase(const FieldDescriptor* field);
+std::string UnderscoresToCapitalizedCamelCase(const FieldDescriptor* field);
 
 // Similar, but for method names.  (Typically, this merely has the effect
 // of lower-casing the first letter of the name.)
-string UnderscoresToCamelCase(const MethodDescriptor* method);
+std::string UnderscoresToCamelCase(const MethodDescriptor* method);
+
+// Same as UnderscoresToCamelCase, but checks for reserved keywords
+std::string UnderscoresToCamelCaseCheckReserved(const FieldDescriptor* field);
+
+// Similar to UnderscoresToCamelCase, but guarentees that the result is a
+// complete Java identifier by adding a _ if needed.
+std::string CamelCaseFieldName(const FieldDescriptor* field);
 
 // Get an identifier that uniquely identifies this type within the file.
 // This is used to declare static variables related to this type at the
 // outermost file scope.
-string UniqueFileScopeIdentifier(const Descriptor* descriptor);
+std::string UniqueFileScopeIdentifier(const Descriptor* descriptor);
 
 // Strips ".proto" or ".protodevel" from the end of a filename.
-string StripProto(const string& filename);
+std::string StripProto(const std::string& filename);
 
 // Gets the unqualified class name for the file.  For each .proto file, there
 // will be one Java class containing all the immutable messages and another
 // Java class containing all the mutable messages.
 // TODO(xiaofeng): remove the default value after updating client code.
-string FileClassName(const FileDescriptor* file, bool immutable = true);
+std::string FileClassName(const FileDescriptor* file, bool immutable = true);
 
 // Returns the file's Java package name.
-string FileJavaPackage(const FileDescriptor* file, bool immutable = true);
+std::string FileJavaPackage(const FileDescriptor* file);
+std::string FileJavaPackage(const FileDescriptor* file, bool immutable);
 
 // Returns output directory for the given package name.
-string JavaPackageToDir(string package_name);
-
-// Converts the given fully-qualified name in the proto namespace to its
-// fully-qualified name in the Java namespace, given that it is in the given
-// file.
-// TODO(xiaofeng): this method is deprecated and should be removed in the
-// future.
-string ToJavaName(const string& full_name,
-                  const FileDescriptor* file);
+std::string JavaPackageToDir(std::string package_name);
 
 // TODO(xiaofeng): the following methods are kept for they are exposed
-// publicly in //google/protobuf/compiler/java/names.h. They return
+// publicly in //net/proto2/compiler/java/public/names.h. They return
 // immutable names only and should be removed after mutable API is
 // integrated into google3.
-string ClassName(const Descriptor* descriptor);
-string ClassName(const EnumDescriptor* descriptor);
-string ClassName(const ServiceDescriptor* descriptor);
-string ClassName(const FileDescriptor* descriptor);
+std::string ClassName(const Descriptor* descriptor);
+std::string ClassName(const EnumDescriptor* descriptor);
+std::string ClassName(const ServiceDescriptor* descriptor);
+std::string ClassName(const FileDescriptor* descriptor);
 
 // Comma-separate list of option-specified interfaces implemented by the
 // Message, to follow the "implements" declaration of the Message definition.
-string ExtraMessageInterfaces(const Descriptor* descriptor);
+std::string ExtraMessageInterfaces(const Descriptor* descriptor);
 // Comma-separate list of option-specified interfaces implemented by the
 // MutableMessage, to follow the "implements" declaration of the MutableMessage
 // definition.
-string ExtraMutableMessageInterfaces(const Descriptor* descriptor);
+std::string ExtraMutableMessageInterfaces(const Descriptor* descriptor);
 // Comma-separate list of option-specified interfaces implemented by the
 // Builder, to follow the "implements" declaration of the Builder definition.
-string ExtraBuilderInterfaces(const Descriptor* descriptor);
+std::string ExtraBuilderInterfaces(const Descriptor* descriptor);
 // Comma-separate list of option-specified interfaces extended by the
 // MessageOrBuilder, to follow the "extends" declaration of the
 // MessageOrBuilder definition.
-string ExtraMessageOrBuilderInterfaces(const Descriptor* descriptor);
+std::string ExtraMessageOrBuilderInterfaces(const Descriptor* descriptor);
 
 // Get the unqualified Java class name for mutable messages. i.e. without
 // package or outer classnames.
-inline string ShortMutableJavaClassName(const Descriptor* descriptor) {
+inline std::string ShortMutableJavaClassName(const Descriptor* descriptor) {
   return descriptor->name();
 }
 
+// Whether the given descriptor is for one of the core descriptor protos. We
+// cannot currently use the new runtime with core protos since there is a
+// bootstrapping problem with obtaining their descriptors.
+inline bool IsDescriptorProto(const Descriptor* descriptor) {
+  return descriptor->file()->name() == "net/proto2/proto/descriptor.proto" ||
+         descriptor->file()->name() == "google/protobuf/descriptor.proto";
+}
+
+// Returns the stored type string used by the experimental runtime for oneof
+// fields.
+std::string GetOneofStoredType(const FieldDescriptor* field);
+
 
 // Whether we should generate multiple java files for messages.
-inline bool MultipleJavaFiles(
-    const FileDescriptor* descriptor, bool immutable) {
+inline bool MultipleJavaFiles(const FileDescriptor* descriptor,
+                              bool immutable) {
   return descriptor->options().java_multiple_files();
+}
+
+
+// Returns true if `descriptor` will be written to its own .java file.
+// `immutable` should be set to true if we're generating for the immutable API.
+template <typename Descriptor>
+bool IsOwnFile(const Descriptor* descriptor, bool immutable) {
+  return descriptor->containing_type() == NULL &&
+         MultipleJavaFiles(descriptor->file(), immutable);
+}
+
+template <>
+inline bool IsOwnFile(const ServiceDescriptor* descriptor, bool immutable) {
+  return MultipleJavaFiles(descriptor->file(), immutable);
+}
+
+// If `descriptor` describes an object with its own .java file,
+// returns the name (relative to that .java file) of the file that stores
+// annotation data for that descriptor. `suffix` is usually empty, but may
+// (e.g.) be "OrBuilder" for some generated interfaces.
+template <typename Descriptor>
+std::string AnnotationFileName(const Descriptor* descriptor,
+                               const std::string& suffix) {
+  return descriptor->name() + suffix + ".java.pb.meta";
+}
+
+template <typename Descriptor>
+void MaybePrintGeneratedAnnotation(Context* context, io::Printer* printer,
+                                   Descriptor* descriptor, bool immutable,
+                                   const std::string& suffix = "") {
+  if (context->options().annotate_code && IsOwnFile(descriptor, immutable)) {
+    PrintGeneratedAnnotation(printer, '$',
+                             AnnotationFileName(descriptor, suffix));
+  }
 }
 
 // Get the unqualified name that should be used for a field's field
 // number constant.
-string FieldConstantName(const FieldDescriptor *field);
+std::string FieldConstantName(const FieldDescriptor* field);
 
 // Returns the type of the FieldDescriptor.
 // This does nothing interesting for the open source release, but is used for
@@ -162,104 +230,83 @@ const char* BoxedPrimitiveTypeName(JavaType type);
 const char* FieldTypeName(const FieldDescriptor::Type field_type);
 
 class ClassNameResolver;
-string DefaultValue(const FieldDescriptor* field, bool immutable,
-                    ClassNameResolver* name_resolver);
-inline string ImmutableDefaultValue(const FieldDescriptor* field,
-                                    ClassNameResolver* name_resolver) {
+std::string DefaultValue(const FieldDescriptor* field, bool immutable,
+                         ClassNameResolver* name_resolver);
+inline std::string ImmutableDefaultValue(const FieldDescriptor* field,
+                                         ClassNameResolver* name_resolver) {
   return DefaultValue(field, true, name_resolver);
 }
 bool IsDefaultValueJavaDefault(const FieldDescriptor* field);
-
-// Does this message class have generated parsing, serialization, and other
-// standard methods for which reflection-based fallback implementations exist?
-inline bool HasGeneratedMethods(const Descriptor* descriptor) {
-  return descriptor->file()->options().optimize_for() !=
-           FileOptions::CODE_SIZE;
-}
-
-// Does this message have specialized equals() and hashCode() methods?
-inline bool HasEqualsAndHashCode(const Descriptor* descriptor) {
-  return descriptor->file()->options().java_generate_equals_and_hash();
-}
+bool IsByteStringWithCustomDefaultValue(const FieldDescriptor* field);
 
 // Does this message class have descriptor and reflection methods?
-inline bool HasDescriptorMethods(const Descriptor* descriptor) {
-  return descriptor->file()->options().optimize_for() !=
-           FileOptions::LITE_RUNTIME;
+inline bool HasDescriptorMethods(const Descriptor* descriptor,
+                                 bool enforce_lite) {
+  return !enforce_lite;
 }
-inline bool HasDescriptorMethods(const EnumDescriptor* descriptor) {
-  return descriptor->file()->options().optimize_for() !=
-           FileOptions::LITE_RUNTIME;
+inline bool HasDescriptorMethods(const EnumDescriptor* descriptor,
+                                 bool enforce_lite) {
+  return !enforce_lite;
 }
-inline bool HasDescriptorMethods(const FileDescriptor* descriptor) {
-  return descriptor->options().optimize_for() !=
-           FileOptions::LITE_RUNTIME;
+inline bool HasDescriptorMethods(const FileDescriptor* descriptor,
+                                 bool enforce_lite) {
+  return !enforce_lite;
 }
 
 // Should we generate generic services for this file?
-inline bool HasGenericServices(const FileDescriptor *file) {
+inline bool HasGenericServices(const FileDescriptor* file, bool enforce_lite) {
   return file->service_count() > 0 &&
-         file->options().optimize_for() != FileOptions::LITE_RUNTIME &&
+         HasDescriptorMethods(file, enforce_lite) &&
          file->options().java_generic_services();
-}
-
-inline bool IsLazy(const FieldDescriptor* descriptor) {
-  // Currently, the proto-lite version suports lazy field.
-  // TODO(niwasaki): Support lazy fields also for other proto runtimes.
-  if (descriptor->file()->options().optimize_for() !=
-      FileOptions::LITE_RUNTIME) {
-    return false;
-  }
-  return descriptor->options().lazy();
 }
 
 // Methods for shared bitfields.
 
 // Gets the name of the shared bitfield for the given index.
-string GetBitFieldName(int index);
+std::string GetBitFieldName(int index);
 
 // Gets the name of the shared bitfield for the given bit index.
 // Effectively, GetBitFieldName(bitIndex / 32)
-string GetBitFieldNameForBit(int bitIndex);
+std::string GetBitFieldNameForBit(int bitIndex);
 
 // Generates the java code for the expression that returns the boolean value
 // of the bit of the shared bitfields for the given bit index.
 // Example: "((bitField1_ & 0x04) == 0x04)"
-string GenerateGetBit(int bitIndex);
+std::string GenerateGetBit(int bitIndex);
 
 // Generates the java code for the expression that sets the bit of the shared
 // bitfields for the given bit index.
 // Example: "bitField1_ = (bitField1_ | 0x04)"
-string GenerateSetBit(int bitIndex);
+std::string GenerateSetBit(int bitIndex);
 
 // Generates the java code for the expression that clears the bit of the shared
 // bitfields for the given bit index.
 // Example: "bitField1_ = (bitField1_ & ~0x04)"
-string GenerateClearBit(int bitIndex);
+std::string GenerateClearBit(int bitIndex);
 
 // Does the same as GenerateGetBit but operates on the bit field on a local
 // variable. This is used by the builder to copy the value in the builder to
 // the message.
 // Example: "((from_bitField1_ & 0x04) == 0x04)"
-string GenerateGetBitFromLocal(int bitIndex);
+std::string GenerateGetBitFromLocal(int bitIndex);
 
 // Does the same as GenerateSetBit but operates on the bit field on a local
 // variable. This is used by the builder to copy the value in the builder to
 // the message.
 // Example: "to_bitField1_ = (to_bitField1_ | 0x04)"
-string GenerateSetBitToLocal(int bitIndex);
+std::string GenerateSetBitToLocal(int bitIndex);
 
 // Does the same as GenerateGetBit but operates on the bit field on a local
 // variable. This is used by the parsing constructor to record if a repeated
 // field is mutable.
 // Example: "((mutable_bitField1_ & 0x04) == 0x04)"
-string GenerateGetBitMutableLocal(int bitIndex);
+std::string GenerateGetBitMutableLocal(int bitIndex);
 
 // Does the same as GenerateSetBit but operates on the bit field on a local
 // variable. This is used by the parsing constructor to record if a repeated
 // field is mutable.
 // Example: "mutable_bitField1_ = (mutable_bitField1_ | 0x04)"
-string GenerateSetBitMutableLocal(int bitIndex);
+std::string GenerateSetBitMutableLocal(int bitIndex);
 
 // Returns whether the JavaType is a reference type.
 bool IsReferenceType(JavaType type);
@@ -323,7 +370,7 @@ inline bool SupportUnknownEnumValue(const FileDescriptor* descriptor) {
   return descriptor->syntax() == FileDescriptor::SYNTAX_PROTO3;
 }
 
-// Check whether a mesasge has repeated fields.
+// Check whether a message has repeated fields.
 bool HasRepeatedFields(const Descriptor* descriptor);
 
 inline bool IsMapEntry(const Descriptor* descriptor) {
@@ -334,22 +381,50 @@ inline bool IsMapField(const FieldDescriptor* descriptor) {
   return descriptor->is_map();
 }
 
-inline bool PreserveUnknownFields(const Descriptor* descriptor) {
-  return descriptor->file()->syntax() != FileDescriptor::SYNTAX_PROTO3;
-}
-
 inline bool IsAnyMessage(const Descriptor* descriptor) {
   return descriptor->full_name() == "google.protobuf.Any";
 }
 
-inline bool CheckUtf8(const FieldDescriptor* descriptor) {
-  return descriptor->file()->syntax() == FileDescriptor::SYNTAX_PROTO3 ||
-      descriptor->file()->options().java_string_check_utf8();
+inline bool IsWrappersProtoFile(const FileDescriptor* descriptor) {
+  return descriptor->name() == "google/protobuf/wrappers.proto";
 }
 
+inline bool CheckUtf8(const FieldDescriptor* descriptor) {
+  return descriptor->file()->syntax() == FileDescriptor::SYNTAX_PROTO3 ||
+         descriptor->file()->options().java_string_check_utf8();
+}
+
+inline std::string GeneratedCodeVersionSuffix() {
+  return "V3";
+}
+
+void WriteUInt32ToUtf16CharSequence(uint32 number, std::vector<uint16>* output);
+
+inline void WriteIntToUtf16CharSequence(int value,
+                                        std::vector<uint16>* output) {
+  WriteUInt32ToUtf16CharSequence(static_cast<uint32>(value), output);
+}
+
+// Escape a UTF-16 character so it can be embedded in a Java string literal.
+void EscapeUtf16ToString(uint16 code, std::string* output);
+
+// Only the lowest two bytes of the return value are used. The lowest byte
+// is the integer value of a j/c/g/protobuf/FieldType enum. For the other
+// byte:
+//    bit 0: whether the field is required.
+//    bit 1: whether the field requires UTF-8 validation.
+//    bit 2: whether the field needs isInitialized check.
+//    bit 3: whether the field is a map field with proto2 enum value.
+//    bits 4-7: unused
+int GetExperimentalJavaFieldType(const FieldDescriptor* field);
+
+// To get the total number of entries need to be built for experimental runtime
+// and the first field number that are not in the table part
+std::pair<int, int> GetTableDrivenNumberOfEntriesAndLookUpStartFieldNumber(
+    const FieldDescriptor** fields, int count);
 }  // namespace java
 }  // namespace compiler
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_HELPERS_H__

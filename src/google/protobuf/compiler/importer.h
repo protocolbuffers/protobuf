@@ -37,18 +37,22 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_IMPORTER_H__
 #define GOOGLE_PROTOBUF_COMPILER_IMPORTER_H__
 
-#include <string>
-#include <vector>
 #include <set>
+#include <string>
 #include <utility>
+#include <vector>
+#include <google/protobuf/compiler/parser.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor_database.h>
-#include <google/protobuf/compiler/parser.h>
+
+#include <google/protobuf/port_def.inc>
 
 namespace google {
 namespace protobuf {
 
-namespace io { class ZeroCopyInputStream; }
+namespace io {
+class ZeroCopyInputStream;
+}
 
 namespace compiler {
 
@@ -73,9 +77,14 @@ class DiskSourceTree;
 //
 // Note:  This class does not implement FindFileContainingSymbol() or
 //   FindFileContainingExtension(); these will always return false.
-class LIBPROTOBUF_EXPORT SourceTreeDescriptorDatabase : public DescriptorDatabase {
+class PROTOBUF_EXPORT SourceTreeDescriptorDatabase : public DescriptorDatabase {
  public:
   SourceTreeDescriptorDatabase(SourceTree* source_tree);
+
+  // If non-NULL, fallback_database will be checked if a file doesn't exist in
+  // the specified source_tree.
+  SourceTreeDescriptorDatabase(SourceTree* source_tree,
+                               DescriptorDatabase* fallback_database);
   ~SourceTreeDescriptorDatabase();
 
   // Instructs the SourceTreeDescriptorDatabase to report any parse errors
@@ -96,30 +105,36 @@ class LIBPROTOBUF_EXPORT SourceTreeDescriptorDatabase : public DescriptorDatabas
   }
 
   // implements DescriptorDatabase -----------------------------------
-  bool FindFileByName(const string& filename, FileDescriptorProto* output);
-  bool FindFileContainingSymbol(const string& symbol_name,
-                                FileDescriptorProto* output);
-  bool FindFileContainingExtension(const string& containing_type,
+  bool FindFileByName(const std::string& filename,
+                      FileDescriptorProto* output) override;
+  bool FindFileContainingSymbol(const std::string& symbol_name,
+                                FileDescriptorProto* output) override;
+  bool FindFileContainingExtension(const std::string& containing_type,
                                    int field_number,
-                                   FileDescriptorProto* output);
+                                   FileDescriptorProto* output) override;
 
  private:
   class SingleFileErrorCollector;
 
   SourceTree* source_tree_;
+  DescriptorDatabase* fallback_database_;
   MultiFileErrorCollector* error_collector_;
 
-  class LIBPROTOBUF_EXPORT ValidationErrorCollector : public DescriptorPool::ErrorCollector {
+  class PROTOBUF_EXPORT ValidationErrorCollector
+      : public DescriptorPool::ErrorCollector {
    public:
     ValidationErrorCollector(SourceTreeDescriptorDatabase* owner);
     ~ValidationErrorCollector();
 
     // implements ErrorCollector ---------------------------------------
-    void AddError(const string& filename,
-                  const string& element_name,
-                  const Message* descriptor,
-                  ErrorLocation location,
-                  const string& message);
+    void AddError(const std::string& filename, const std::string& element_name,
+                  const Message* descriptor, ErrorLocation location,
+                  const std::string& message) override;
+
+    void AddWarning(const std::string& filename,
+                    const std::string& element_name, const Message* descriptor,
+                    ErrorLocation location,
+                    const std::string& message) override;
 
    private:
     SourceTreeDescriptorDatabase* owner_;
@@ -139,10 +154,9 @@ class LIBPROTOBUF_EXPORT SourceTreeDescriptorDatabase : public DescriptorDatabas
 // You may find that SourceTreeDescriptorDatabase is more flexible.
 //
 // TODO(kenton):  I feel like this class is not well-named.
-class LIBPROTOBUF_EXPORT Importer {
+class PROTOBUF_EXPORT Importer {
  public:
-  Importer(SourceTree* source_tree,
-           MultiFileErrorCollector* error_collector);
+  Importer(SourceTree* source_tree, MultiFileErrorCollector* error_collector);
   ~Importer();
 
   // Import the given file and build a FileDescriptor representing it.  If
@@ -158,16 +172,15 @@ class LIBPROTOBUF_EXPORT Importer {
   // you want to see errors for the same files repeatedly, you can use a
   // separate Importer object to import each one (but use the same
   // DescriptorPool so that they can be cross-linked).
-  const FileDescriptor* Import(const string& filename);
+  const FileDescriptor* Import(const std::string& filename);
 
   // The DescriptorPool in which all imported FileDescriptors and their
   // contents are stored.
-  inline const DescriptorPool* pool() const {
-    return &pool_;
-  }
+  inline const DescriptorPool* pool() const { return &pool_; }
 
-  void AddUnusedImportTrackFile(const string& file_name);
+  void AddUnusedImportTrackFile(const std::string& file_name);
   void ClearUnusedImportTrackFiles();
+
 
  private:
   SourceTreeDescriptorDatabase database_;
@@ -178,15 +191,18 @@ class LIBPROTOBUF_EXPORT Importer {
 
 // If the importer encounters problems while trying to import the proto files,
 // it reports them to a MultiFileErrorCollector.
-class LIBPROTOBUF_EXPORT MultiFileErrorCollector {
+class PROTOBUF_EXPORT MultiFileErrorCollector {
  public:
   inline MultiFileErrorCollector() {}
   virtual ~MultiFileErrorCollector();
 
   // Line and column numbers are zero-based.  A line number of -1 indicates
   // an error with the entire file (e.g. "not found").
-  virtual void AddError(const string& filename, int line, int column,
-                        const string& message) = 0;
+  virtual void AddError(const std::string& filename, int line, int column,
+                        const std::string& message) = 0;
+
+  virtual void AddWarning(const std::string& filename, int line, int column,
+                          const std::string& message) {}
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MultiFileErrorCollector);
@@ -196,7 +212,7 @@ class LIBPROTOBUF_EXPORT MultiFileErrorCollector {
 // Used by the default implementation of Importer to resolve import statements
 // Most users will probably want to use the DiskSourceTree implementation,
 // below.
-class LIBPROTOBUF_EXPORT SourceTree {
+class PROTOBUF_EXPORT SourceTree {
  public:
   inline SourceTree() {}
   virtual ~SourceTree();
@@ -205,14 +221,14 @@ class LIBPROTOBUF_EXPORT SourceTree {
   // found.  The caller takes ownership of the returned object.  The filename
   // must be a path relative to the root of the source tree and must not
   // contain "." or ".." components.
-  virtual io::ZeroCopyInputStream* Open(const string& filename) = 0;
+  virtual io::ZeroCopyInputStream* Open(const std::string& filename) = 0;
 
   // If Open() returns NULL, calling this method immediately will return an
   // description of the error.
   // Subclasses should implement this method and return a meaningful value for
   // better error reporting.
   // TODO(xiaofeng): change this to a pure virtual function.
-  virtual string GetLastErrorMessage();
+  virtual std::string GetLastErrorMessage();
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(SourceTree);
@@ -221,7 +237,7 @@ class LIBPROTOBUF_EXPORT SourceTree {
 // An implementation of SourceTree which loads files from locations on disk.
 // Multiple mappings can be set up to map locations in the DiskSourceTree to
 // locations in the physical filesystem.
-class LIBPROTOBUF_EXPORT DiskSourceTree : public SourceTree {
+class PROTOBUF_EXPORT DiskSourceTree : public SourceTree {
  public:
   DiskSourceTree();
   ~DiskSourceTree();
@@ -242,7 +258,7 @@ class LIBPROTOBUF_EXPORT DiskSourceTree : public SourceTree {
   //
   // disk_path may be an absolute path or relative to the current directory,
   // just like a path you'd pass to open().
-  void MapPath(const string& virtual_path, const string& disk_path);
+  void MapPath(const std::string& virtual_path, const std::string& disk_path);
 
   // Return type for DiskFileToVirtualFile().
   enum DiskFileToVirtualFileResult {
@@ -272,46 +288,48 @@ class LIBPROTOBUF_EXPORT DiskSourceTree : public SourceTree {
   //   it is not useful.
   // * NO_MAPPING: Indicates that no mapping was found which contains this
   //   file.
-  DiskFileToVirtualFileResult
-    DiskFileToVirtualFile(const string& disk_file,
-                          string* virtual_file,
-                          string* shadowing_disk_file);
+  DiskFileToVirtualFileResult DiskFileToVirtualFile(
+      const std::string& disk_file, std::string* virtual_file,
+      std::string* shadowing_disk_file);
 
   // Given a virtual path, find the path to the file on disk.
   // Return true and update disk_file with the on-disk path if the file exists.
   // Return false and leave disk_file untouched if the file doesn't exist.
-  bool VirtualFileToDiskFile(const string& virtual_file, string* disk_file);
+  bool VirtualFileToDiskFile(const std::string& virtual_file,
+                             std::string* disk_file);
 
   // implements SourceTree -------------------------------------------
-  virtual io::ZeroCopyInputStream* Open(const string& filename);
+  io::ZeroCopyInputStream* Open(const std::string& filename) override;
 
-  virtual string GetLastErrorMessage();
+  std::string GetLastErrorMessage() override;
 
  private:
   struct Mapping {
-    string virtual_path;
-    string disk_path;
+    std::string virtual_path;
+    std::string disk_path;
 
-    inline Mapping(const string& virtual_path_param,
-                   const string& disk_path_param)
-      : virtual_path(virtual_path_param), disk_path(disk_path_param) {}
+    inline Mapping(const std::string& virtual_path_param,
+                   const std::string& disk_path_param)
+        : virtual_path(virtual_path_param), disk_path(disk_path_param) {}
   };
-  vector<Mapping> mappings_;
-  string last_error_message_;
+  std::vector<Mapping> mappings_;
+  std::string last_error_message_;
 
   // Like Open(), but returns the on-disk path in disk_file if disk_file is
   // non-NULL and the file could be successfully opened.
-  io::ZeroCopyInputStream* OpenVirtualFile(const string& virtual_file,
-                                           string* disk_file);
+  io::ZeroCopyInputStream* OpenVirtualFile(const std::string& virtual_file,
+                                           std::string* disk_file);
 
   // Like Open() but given the actual on-disk path.
-  io::ZeroCopyInputStream* OpenDiskFile(const string& filename);
+  io::ZeroCopyInputStream* OpenDiskFile(const std::string& filename);
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(DiskSourceTree);
 };
 
 }  // namespace compiler
 }  // namespace protobuf
-
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
+
 #endif  // GOOGLE_PROTOBUF_COMPILER_IMPORTER_H__

@@ -40,6 +40,8 @@
 #include <string>
 #include <google/protobuf/compiler/code_generator.h>
 
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -49,24 +51,49 @@ namespace cpp {
 // header.  If you create your own protocol compiler binary and you want
 // it to support C++ output, you can do so by registering an instance of this
 // CodeGenerator with the CommandLineInterface in your main() function.
-class LIBPROTOC_EXPORT CppGenerator : public CodeGenerator {
+class PROTOC_EXPORT CppGenerator : public CodeGenerator {
  public:
   CppGenerator();
   ~CppGenerator();
 
+  enum class Runtime {
+    kGoogle3,     // Use the internal google3 runtime.
+    kOpensource,  // Use the open-source runtime.
+
+    // Use the open-source runtime with google3 #include paths.  We make these
+    // absolute to avoid ambiguity, so the runtime will be #included like:
+    //   #include "third_party/protobuf/.../google/protobuf/message.h"
+    kOpensourceGoogle3
+  };
+
+  void set_opensource_runtime(bool opensource) {
+    opensource_runtime_ = opensource;
+  }
+
+  // If set to a non-empty string, generated code will do:
+  //   #include "<BASE>/google/protobuf/message.h"
+  // instead of:
+  //   #include <google/protobuf/message.h>
+  // This has no effect if opensource_runtime = false.
+  void set_runtime_include_base(const std::string& base) {
+    runtime_include_base_ = base;
+  }
+
   // implements CodeGenerator ----------------------------------------
-  bool Generate(const FileDescriptor* file,
-                const string& parameter,
-                GeneratorContext* generator_context,
-                string* error) const;
+  bool Generate(const FileDescriptor* file, const std::string& parameter,
+                GeneratorContext* generator_context, std::string* error) const;
 
  private:
+  bool opensource_runtime_ = true;
+  std::string runtime_include_base_;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(CppGenerator);
 };
 
 }  // namespace cpp
 }  // namespace compiler
 }  // namespace protobuf
-
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
+
 #endif  // GOOGLE_PROTOBUF_COMPILER_CPP_GENERATOR_H__

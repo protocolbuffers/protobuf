@@ -1,0 +1,76 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2016 Google Inc.  All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+syntax = "proto2";
+
+package protobuf_deprecated_file;
+option objc_class_prefix = "FileDep";
+
+//
+// This file is like unittest_deprecated.proto, but does NOT use message, enum,
+// enum value, or field level deprecation; instead it uses the file level option
+// to mark everything.
+//
+// The source generated from this file needs to be inspect to confirm it has
+// all of the expected annotations. It also will be compiled into the unittest
+// and that compile should be clean without errors.
+//
+option deprecated = true;
+
+// Message to catch the deprecation.
+message Msg1 {
+  extensions 100 to max;
+
+  optional string string_field = 1;
+}
+
+// Mix of extension field types to catch the deprecation.
+extend Msg1 {
+  optional string string_ext_field = 101;
+  optional int32 int_ext_field = 102;
+  repeated fixed32 fixed_ext_field = 103;
+  optional Msg1 msg_ext_field = 104;
+}
+
+// Mix of extension field types (scoped to a message) to catch the deprecation.
+message Msg1A {
+  extend Msg1 {
+    optional string string_ext2_field = 201;
+    optional int32 int_ext2_field = 202;
+    repeated fixed32 fixed_ext2_field = 203;
+    optional Msg1 msg_ext2_field = 204;
+  }
+}
+
+// Enum to catch the deprecation.
+enum Enum1 {
+  ENUM1_ONE   = 1;
+  ENUM1_TWO   = 2;
+  ENUM1_THREE = 3;
+}

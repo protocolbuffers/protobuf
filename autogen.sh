@@ -6,6 +6,17 @@
 
 set -e
 
+if [ ! -z "$@" ]; then
+  for argument in "$@"; do
+    case $argument in
+	  # make curl silent
+      "-s")
+        curlopts="-s"
+        ;;
+    esac
+  done
+fi
+
 # Check that we're being run from the right directory.
 if test ! -f src/google/protobuf/stubs/common.h; then
   cat >&2 << __EOF__
@@ -15,17 +26,12 @@ __EOF__
   exit 1
 fi
 
-# Check that gmock is present.  Usually it is already there since the
-# directory is set up as an SVN external.
-if test ! -e gmock; then
-  echo "Google Mock not present.  Fetching gmock-1.7.0 from the web..."
-  curl -O https://googlemock.googlecode.com/files/gmock-1.7.0.zip
-  unzip -q gmock-1.7.0.zip
-  rm gmock-1.7.0.zip
-  mv gmock-1.7.0 gmock
-fi
-
 set -ex
+
+# The absence of a m4 directory in googletest causes autoreconf to fail when
+# building under the CentOS docker image. It's a warning in regular build on
+# Ubuntu/gLinux as well.
+mkdir -p third_party/googletest/m4
 
 # TODO(kenton):  Remove the ",no-obsolete" part and fix the resulting warnings.
 autoreconf -f -i -Wall,no-obsolete

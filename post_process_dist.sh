@@ -27,7 +27,7 @@ fi
 
 set -ex
 
-LANGUAGES="cpp csharp java javanano objectivec python ruby"
+LANGUAGES="cpp csharp java js objectivec python ruby php all"
 BASENAME=`basename $1 .tar.gz`
 VERSION=${BASENAME:9}
 

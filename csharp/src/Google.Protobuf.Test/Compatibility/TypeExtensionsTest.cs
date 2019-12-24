@@ -34,6 +34,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 
+#if !NET35
 namespace Google.Protobuf.Compatibility
 {
     public class TypeExtensionsTest
@@ -51,24 +52,6 @@ namespace Google.Protobuf.Compatibility
         }
 
         [Test]
-        [TestCase(typeof(int), true)]
-        [TestCase(typeof(int?), true)]
-        [TestCase(typeof(Nullable<>), true)]
-        [TestCase(typeof(WireFormat.WireType), true)]
-        [TestCase(typeof(string), false)]
-        [TestCase(typeof(object), false)]
-        [TestCase(typeof(Enum), false)]
-        [TestCase(typeof(ValueType), false)]
-        [TestCase(typeof(TypeExtensionsTest), false)]
-        [TestCase(typeof(Action), false)]
-        [TestCase(typeof(Action<>), false)]
-        [TestCase(typeof(IDisposable), false)]
-        public void IsValueType(Type type, bool expected)
-        {
-            Assert.AreEqual(expected, TypeExtensions.IsValueType(type));
-        }
-
-        [Test]
         [TestCase(typeof(object), typeof(string), true)]
         [TestCase(typeof(object), typeof(int), true)]
         [TestCase(typeof(string), typeof(string), true)]
@@ -76,7 +59,7 @@ namespace Google.Protobuf.Compatibility
         [TestCase(typeof(string), typeof(int), false)]
         [TestCase(typeof(int), typeof(int), true)]
         [TestCase(typeof(ValueType), typeof(int), true)]
-        [TestCase(typeof(long), typeof(int), false)] // 
+        [TestCase(typeof(long), typeof(int), false)] //
         public void IsAssignableFrom(Type target, Type argument, bool expected)
         {
             Assert.AreEqual(expected, TypeExtensions.IsAssignableFrom(target, argument));
@@ -131,3 +114,4 @@ namespace Google.Protobuf.Compatibility
         }
     }
 }
+#endif

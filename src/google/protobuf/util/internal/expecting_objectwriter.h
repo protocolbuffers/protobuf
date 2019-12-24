@@ -53,6 +53,7 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/util/internal/object_writer.h>
 #include <gmock/gmock.h>
+#include <google/protobuf/stubs/strutil.h>
 
 namespace google {
 namespace protobuf {
@@ -81,7 +82,8 @@ class MockObjectWriter : public ObjectWriter {
   MOCK_METHOD2(RenderUint64, ObjectWriter*(StringPiece, uint64));
   MOCK_METHOD2(RenderDouble, ObjectWriter*(StringPiece, double));
   MOCK_METHOD2(RenderFloat, ObjectWriter*(StringPiece, float));
-  MOCK_METHOD2(RenderString, ObjectWriter*(StringPiece, StringPiece));
+  MOCK_METHOD2(RenderString,
+               ObjectWriter*(StringPiece, StringPiece));
   MOCK_METHOD2(RenderBytes, ObjectWriter*(StringPiece, StringPiece));
   MOCK_METHOD1(RenderNull, ObjectWriter*(StringPiece));
 };
@@ -91,9 +93,8 @@ class ExpectingObjectWriter : public ObjectWriter {
   explicit ExpectingObjectWriter(MockObjectWriter* mock) : mock_(mock) {}
 
   virtual ObjectWriter* StartObject(StringPiece name) {
-    (name.empty()
-         ? EXPECT_CALL(*mock_, StartObject(IsEmpty()))
-         : EXPECT_CALL(*mock_, StartObject(StrEq(name.ToString()))))
+    (name.empty() ? EXPECT_CALL(*mock_, StartObject(IsEmpty()))
+                  : EXPECT_CALL(*mock_, StartObject(StrEq(std::string(name)))))
         .WillOnce(Return(mock_))
         .RetiresOnSaturation();
     return this;
@@ -107,9 +108,8 @@ class ExpectingObjectWriter : public ObjectWriter {
   }
 
   virtual ObjectWriter* StartList(StringPiece name) {
-    (name.empty()
-         ? EXPECT_CALL(*mock_, StartList(IsEmpty()))
-         : EXPECT_CALL(*mock_, StartList(StrEq(name.ToString()))))
+    (name.empty() ? EXPECT_CALL(*mock_, StartList(IsEmpty()))
+                  : EXPECT_CALL(*mock_, StartList(StrEq(std::string(name)))))
         .WillOnce(Return(mock_))
         .RetiresOnSaturation();
     return this;
@@ -125,7 +125,7 @@ class ExpectingObjectWriter : public ObjectWriter {
   virtual ObjectWriter* RenderBool(StringPiece name, bool value) {
     (name.empty()
          ? EXPECT_CALL(*mock_, RenderBool(IsEmpty(), TypedEq<bool>(value)))
-         : EXPECT_CALL(*mock_, RenderBool(StrEq(name.ToString()),
+         : EXPECT_CALL(*mock_, RenderBool(StrEq(std::string(name)),
                                           TypedEq<bool>(value))))
         .WillOnce(Return(mock_))
         .RetiresOnSaturation();
@@ -135,7 +135,7 @@ class ExpectingObjectWriter : public ObjectWriter {
   virtual ObjectWriter* RenderInt32(StringPiece name, int32 value) {
     (name.empty()
          ? EXPECT_CALL(*mock_, RenderInt32(IsEmpty(), TypedEq<int32>(value)))
-         : EXPECT_CALL(*mock_, RenderInt32(StrEq(name.ToString()),
+         : EXPECT_CALL(*mock_, RenderInt32(StrEq(std::string(name)),
                                            TypedEq<int32>(value))))
         .WillOnce(Return(mock_))
         .RetiresOnSaturation();
@@ -145,7 +145,7 @@ class ExpectingObjectWriter : public ObjectWriter {
   virtual ObjectWriter* RenderUint32(StringPiece name, uint32 value) {
     (name.empty()
          ? EXPECT_CALL(*mock_, RenderUint32(IsEmpty(), TypedEq<uint32>(value)))
-         : EXPECT_CALL(*mock_, RenderUint32(StrEq(name.ToString()),
+         : EXPECT_CALL(*mock_, RenderUint32(StrEq(std::string(name)),
                                             TypedEq<uint32>(value))))
         .WillOnce(Return(mock_))
         .RetiresOnSaturation();
@@ -155,7 +155,7 @@ class ExpectingObjectWriter : public ObjectWriter {
   virtual ObjectWriter* RenderInt64(StringPiece name, int64 value) {
     (name.empty()
          ? EXPECT_CALL(*mock_, RenderInt64(IsEmpty(), TypedEq<int64>(value)))
-         : EXPECT_CALL(*mock_, RenderInt64(StrEq(name.ToString()),
+         : EXPECT_CALL(*mock_, RenderInt64(StrEq(std::string(name)),
                                            TypedEq<int64>(value))))
         .WillOnce(Return(mock_))
         .RetiresOnSaturation();
@@ -165,7 +165,7 @@ class ExpectingObjectWriter : public ObjectWriter {
   virtual ObjectWriter* RenderUint64(StringPiece name, uint64 value) {
     (name.empty()
          ? EXPECT_CALL(*mock_, RenderUint64(IsEmpty(), TypedEq<uint64>(value)))
-         : EXPECT_CALL(*mock_, RenderUint64(StrEq(name.ToString()),
+         : EXPECT_CALL(*mock_, RenderUint64(StrEq(std::string(name)),
                                             TypedEq<uint64>(value))))
         .WillOnce(Return(mock_))
         .RetiresOnSaturation();
@@ -174,9 +174,9 @@ class ExpectingObjectWriter : public ObjectWriter {
 
   virtual ObjectWriter* RenderDouble(StringPiece name, double value) {
     (name.empty()
-         ? EXPECT_CALL(*mock_, RenderDouble(IsEmpty(),
-                                            NanSensitiveDoubleEq(value)))
-         : EXPECT_CALL(*mock_, RenderDouble(StrEq(name.ToString()),
+         ? EXPECT_CALL(*mock_,
+                       RenderDouble(IsEmpty(), NanSensitiveDoubleEq(value)))
+         : EXPECT_CALL(*mock_, RenderDouble(StrEq(std::string(name)),
                                             NanSensitiveDoubleEq(value))))
         .WillOnce(Return(mock_))
         .RetiresOnSaturation();
@@ -185,21 +185,23 @@ class ExpectingObjectWriter : public ObjectWriter {
 
   virtual ObjectWriter* RenderFloat(StringPiece name, float value) {
     (name.empty()
-         ? EXPECT_CALL(*mock_, RenderFloat(IsEmpty(),
-                                           NanSensitiveFloatEq(value)))
-         : EXPECT_CALL(*mock_, RenderFloat(StrEq(name.ToString()),
+         ? EXPECT_CALL(*mock_,
+                       RenderFloat(IsEmpty(), NanSensitiveFloatEq(value)))
+         : EXPECT_CALL(*mock_, RenderFloat(StrEq(std::string(name)),
                                            NanSensitiveFloatEq(value))))
         .WillOnce(Return(mock_))
         .RetiresOnSaturation();
     return this;
   }
 
-  virtual ObjectWriter* RenderString(StringPiece name, StringPiece value) {
-    (name.empty()
-         ? EXPECT_CALL(*mock_, RenderString(IsEmpty(),
-               TypedEq<StringPiece>(value.ToString())))
-         : EXPECT_CALL(*mock_, RenderString(StrEq(name.ToString()),
-               TypedEq<StringPiece>(value.ToString()))))
+  virtual ObjectWriter* RenderString(StringPiece name,
+                                     StringPiece value) {
+    (name.empty() ? EXPECT_CALL(*mock_, RenderString(IsEmpty(),
+                                                     TypedEq<StringPiece>(
+                                                         std::string(value))))
+                  : EXPECT_CALL(*mock_, RenderString(StrEq(std::string(name)),
+                                                     TypedEq<StringPiece>(
+                                                         std::string(value)))))
         .WillOnce(Return(mock_))
         .RetiresOnSaturation();
     return this;
@@ -218,7 +220,7 @@ class ExpectingObjectWriter : public ObjectWriter {
 
   virtual ObjectWriter* RenderNull(StringPiece name) {
     (name.empty() ? EXPECT_CALL(*mock_, RenderNull(IsEmpty()))
-                  : EXPECT_CALL(*mock_, RenderNull(StrEq(name.ToString())))
+                  : EXPECT_CALL(*mock_, RenderNull(StrEq(std::string(name))))
                         .WillOnce(Return(mock_))
                         .RetiresOnSaturation());
     return this;
@@ -233,6 +235,6 @@ class ExpectingObjectWriter : public ObjectWriter {
 }  // namespace converter
 }  // namespace util
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_UTIL_CONVERTER_EXPECTING_OBJECTWRITER_H__

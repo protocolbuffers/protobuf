@@ -69,17 +69,17 @@ module Google
       #        relationship explicit instead of implicit
       def_delegators :to_ary,
         :&, :*, :-, :'<=>',
-        :assoc, :bsearch, :combination, :compact, :count, :cycle,
-        :drop, :drop_while, :eql?, :fetch, :find_index, :flatten,
+        :assoc, :bsearch, :bsearch_index, :combination, :compact, :count,
+        :cycle, :dig, :drop, :drop_while, :eql?, :fetch, :find_index, :flatten,
         :include?, :index, :inspect, :join,
         :pack, :permutation, :product, :pretty_print, :pretty_print_cycle,
         :rassoc, :repeated_combination, :repeated_permutation, :reverse,
-        :rindex, :rotate, :sample, :shuffle, :shelljoin, :slice,
+        :rindex, :rotate, :sample, :shuffle, :shelljoin,
         :to_s, :transpose, :uniq, :|
 
 
       def first(n=nil)
-        n ? self[0..n] : self[0]
+        n ? self[0...n] : self[0]
       end
 
 
@@ -150,12 +150,12 @@ module Google
       end
 
 
-      %w(delete delete_at delete_if shift slice! unshift).each do |method_name|
+      %w(delete delete_at shift slice! unshift).each do |method_name|
         define_array_wrapper_method(method_name)
       end
 
 
-      %w(collect! compact! fill flatten! insert reverse!
+      %w(collect! compact! delete_if fill flatten! insert reverse!
         rotate! select! shuffle! sort! sort_by! uniq!).each do |method_name|
         define_array_wrapper_with_result_method(method_name)
       end
@@ -173,7 +173,7 @@ module Google
           external_enumerator.each_with_index do |val, i|
             result = yield(val)
             results << result
-            #nil means no change occured from yield; usually occurs when #to_a is called
+            #nil means no change occurred from yield; usually occurs when #to_a is called
             if result
               repeated_field[i] = result if result != val
             end

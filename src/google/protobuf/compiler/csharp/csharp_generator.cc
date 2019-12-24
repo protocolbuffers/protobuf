@@ -31,7 +31,6 @@
 #include <sstream>
 
 #include <google/protobuf/compiler/code_generator.h>
-#include <google/protobuf/compiler/plugin.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/printer.h>
@@ -41,54 +40,18 @@
 #include <google/protobuf/compiler/csharp/csharp_generator.h>
 #include <google/protobuf/compiler/csharp/csharp_helpers.h>
 #include <google/protobuf/compiler/csharp/csharp_names.h>
-#include <google/protobuf/compiler/csharp/csharp_umbrella_class.h>
-
-using google::protobuf::internal::scoped_ptr;
+#include <google/protobuf/compiler/csharp/csharp_options.h>
+#include <google/protobuf/compiler/csharp/csharp_reflection_class.h>
 
 namespace google {
 namespace protobuf {
 namespace compiler {
 namespace csharp {
 
-std::string GetOutputFile(
-    const google::protobuf::FileDescriptor* file,
-    const std::string file_extension,
-    const bool generate_directories,
-    const std::string base_namespace,
-    string* error) {
-  string relative_filename = GetUmbrellaClassUnqualifiedName(file) + file_extension;
-  if (!generate_directories) {
-    return relative_filename;
-  }
-  string ns = GetFileNamespace(file);
-  string namespace_suffix = ns;
-  if (!base_namespace.empty()) {
-    // Check that the base_namespace is either equal to or a leading part of
-    // the file namespace. This isn't just a simple prefix; "Foo.B" shouldn't
-    // be regarded as a prefix of "Foo.Bar". The simplest option is to add "."
-    // to both.
-    string extended_ns = ns + ".";
-    if (extended_ns.find(base_namespace + ".") != 0) {
-      *error = "Namespace " + ns + " is not a prefix namespace of base namespace " + base_namespace;
-      return ""; // This will be ignored, because we've set an error.
-    }
-    namespace_suffix = ns.substr(base_namespace.length());
-    if (namespace_suffix.find(".") == 0) {
-      namespace_suffix = namespace_suffix.substr(1);
-    }
-  }
-
-  string namespace_dir = StringReplace(namespace_suffix, ".", "/", true);
-  if (!namespace_dir.empty()) {
-    namespace_dir += "/";
-  }
-  return namespace_dir + relative_filename;
-}
-
-void GenerateFile(const google::protobuf::FileDescriptor* file,
-                  io::Printer* printer) {
-  UmbrellaClassGenerator umbrellaGenerator(file);
-  umbrellaGenerator.Generate(printer);
+void GenerateFile(const FileDescriptor* file, io::Printer* printer,
+                  const Options* options) {
+  ReflectionClassGenerator reflectionClassGenerator(file, options);
+  reflectionClassGenerator.Generate(printer);
 }
 
 bool Generator::Generate(
@@ -97,24 +60,21 @@ bool Generator::Generate(
     GeneratorContext* generator_context,
     string* error) const {
 
-  vector<pair<string, string> > options;
+  std::vector<std::pair<string, string> > options;
   ParseGeneratorParameter(parameter, &options);
 
-  // We only support proto3 - but we make an exception for descriptor.proto.
-  if (file->syntax() != FileDescriptor::SYNTAX_PROTO3 && !IsDescriptorProto(file)) {
-    *error = "C# code generation only supports proto3 syntax";
-    return false;
-  }
+  struct Options cli_options;
 
-  std::string file_extension = ".cs";
-  std::string base_namespace = "";
-  bool generate_directories = false;
   for (int i = 0; i < options.size(); i++) {
     if (options[i].first == "file_extension") {
-      file_extension = options[i].second;
+      cli_options.file_extension = options[i].second;
     } else if (options[i].first == "base_namespace") {
-      base_namespace = options[i].second;
-      generate_directories = true;
+      cli_options.base_namespace = options[i].second;
+      cli_options.base_namespace_specified = true;
+    } else if (options[i].first == "internal_access") {
+      cli_options.internal_access = true;
+    } else if (options[i].first == "serializable") {
+      cli_options.serializable = true;
     } else {
       *error = "Unknown generator option: " + options[i].first;
       return false;
@@ -122,16 +82,21 @@ bool Generator::Generate(
   }
 
   string filename_error = "";
-  std::string filename = GetOutputFile(file, file_extension, generate_directories, base_namespace, &filename_error);
-  if (!filename_error.empty()) {
+  std::string filename = GetOutputFile(file,
+      cli_options.file_extension,
+      cli_options.base_namespace_specified,
+      cli_options.base_namespace,
+      &filename_error);
+
+  if (filename.empty()) {
     *error = filename_error;
     return false;
   }
-  scoped_ptr<io::ZeroCopyOutputStream> output(
+  std::unique_ptr<io::ZeroCopyOutputStream> output(
       generator_context->Open(filename));
   io::Printer printer(output.get(), '$');
 
-  GenerateFile(file, &printer);
+  GenerateFile(file, &printer, &cli_options);
 
   return true;
 }

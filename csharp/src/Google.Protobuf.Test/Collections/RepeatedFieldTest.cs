@@ -33,10 +33,12 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
 using Google.Protobuf.TestProtos;
+using Google.Protobuf.WellKnownTypes;
 using NUnit.Framework;
 
 namespace Google.Protobuf.Collections
@@ -74,10 +76,96 @@ namespace Google.Protobuf.Collections
         }
 
         [Test]
-        public void Add_RepeatedField()
+        public void AddRange_SlowPath()
+        {
+            var list = new RepeatedField<string>();
+            list.AddRange(new[] { "foo", "bar" }.Select(x => x));
+            Assert.AreEqual(2, list.Count);
+            Assert.AreEqual("foo", list[0]);
+            Assert.AreEqual("bar", list[1]);
+        }
+
+        [Test]
+        public void AddRange_SlowPath_NullsProhibited_ReferenceType()
+        {
+            var list = new RepeatedField<string>();
+            // It's okay for this to throw ArgumentNullException if necessary.
+            // It's not ideal, but not awful.
+            Assert.Catch<ArgumentException>(() => list.AddRange(new[] { "foo", null }.Select(x => x)));
+        }
+
+        [Test]
+        public void AddRange_SlowPath_NullsProhibited_NullableValueType()
+        {
+            var list = new RepeatedField<int?>();
+            // It's okay for this to throw ArgumentNullException if necessary.
+            // It's not ideal, but not awful.
+            Assert.Catch<ArgumentException>(() => list.AddRange(new[] { 20, (int?)null }.Select(x => x)));
+        }
+
+        [Test]
+        public void AddRange_Optimized_NonNullableValueType()
+        {
+            var list = new RepeatedField<int>();
+            list.AddRange(new List<int> { 20, 30 });
+            Assert.AreEqual(2, list.Count);
+            Assert.AreEqual(20, list[0]);
+            Assert.AreEqual(30, list[1]);
+        }
+
+        [Test]
+        public void AddRange_Optimized_ReferenceType()
+        {
+            var list = new RepeatedField<string>();
+            list.AddRange(new List<string> { "foo", "bar" });
+            Assert.AreEqual(2, list.Count);
+            Assert.AreEqual("foo", list[0]);
+            Assert.AreEqual("bar", list[1]);
+        }
+
+        [Test]
+        public void AddRange_Optimized_NullableValueType()
+        {
+            var list = new RepeatedField<int?>();
+            list.AddRange(new List<int?> { 20, 30 });
+            Assert.AreEqual(2, list.Count);
+            Assert.AreEqual((int?) 20, list[0]);
+            Assert.AreEqual((int?) 30, list[1]);
+        }
+
+        [Test]
+        public void AddRange_Optimized_NullsProhibited_ReferenceType()
+        {
+            // We don't just trust that a collection with a nullable element type doesn't contain nulls
+            var list = new RepeatedField<string>();
+            // It's okay for this to throw ArgumentNullException if necessary.
+            // It's not ideal, but not awful.
+            Assert.Catch<ArgumentException>(() => list.AddRange(new List<string> { "foo", null }));
+        }
+
+        [Test]
+        public void AddRange_Optimized_NullsProhibited_NullableValueType()
+        {
+            // We don't just trust that a collection with a nullable element type doesn't contain nulls
+            var list = new RepeatedField<int?>();
+            // It's okay for this to throw ArgumentNullException if necessary.
+            // It's not ideal, but not awful.
+            Assert.Catch<ArgumentException>(() => list.AddRange(new List<int?> { 20, null }));
+        }
+
+        [Test]
+        public void AddRange_AlreadyNotEmpty()
+        {
+            var list = new RepeatedField<int> { 1, 2, 3 };
+            list.AddRange(new List<int> { 4, 5, 6 });
+            CollectionAssert.AreEqual(new[] { 1, 2, 3, 4, 5, 6 }, list);
+        }
+
+        [Test]
+        public void AddRange_RepeatedField()
         {
             var list = new RepeatedField<string> { "original" };
-            list.Add(new RepeatedField<string> { "foo", "bar" });
+            list.AddRange(new RepeatedField<string> { "foo", "bar" });
             Assert.AreEqual(3, list.Count);
             Assert.AreEqual("original", list[0]);
             Assert.AreEqual("foo", list[1]);
@@ -598,6 +686,123 @@ namespace Google.Protobuf.Collections
             IList list = new RepeatedField<string> { "first", "second" };
             list.Insert(1, "middle");
             CollectionAssert.AreEqual(new[] { "first", "middle", "second" }, list);
+        }
+
+        [Test]
+        public void ToString_Integers()
+        {
+            var list = new RepeatedField<int> { 5, 10, 20 };
+            var text = list.ToString();
+            Assert.AreEqual("[ 5, 10, 20 ]", text);
+        }
+
+        [Test]
+        public void ToString_Strings()
+        {
+            var list = new RepeatedField<string> { "x", "y", "z" };
+            var text = list.ToString();
+            Assert.AreEqual("[ \"x\", \"y\", \"z\" ]", text);
+        }
+
+        [Test]
+        public void ToString_Messages()
+        {
+            var list = new RepeatedField<TestAllTypes> { new TestAllTypes { SingleDouble = 1.5 }, new TestAllTypes { SingleInt32 = 10 } };
+            var text = list.ToString();
+            Assert.AreEqual("[ { \"singleDouble\": 1.5 }, { \"singleInt32\": 10 } ]", text);
+        }
+
+        [Test]
+        public void ToString_Empty()
+        {
+            var list = new RepeatedField<TestAllTypes> { };
+            var text = list.ToString();
+            Assert.AreEqual("[ ]", text);
+        }
+
+        [Test]
+        public void ToString_InvalidElementType()
+        {
+            var list = new RepeatedField<decimal> { 15m };
+            Assert.Throws<ArgumentException>(() => list.ToString());
+        }
+
+        [Test]
+        public void ToString_Timestamp()
+        {
+            var list = new RepeatedField<Timestamp> { Timestamp.FromDateTime(new DateTime(2015, 10, 1, 12, 34, 56, DateTimeKind.Utc)) };
+            var text = list.ToString();
+            Assert.AreEqual("[ \"2015-10-01T12:34:56Z\" ]", text);
+        }
+
+        [Test]
+        public void ToString_Struct()
+        {
+            var message = new Struct { Fields = { { "foo", new Value { NumberValue = 20 } } } };
+            var list = new RepeatedField<Struct> { message };
+            var text = list.ToString();
+            Assert.AreEqual(text, "[ { \"foo\": 20 } ]", message.ToString());
+        }
+
+        [Test]
+        public void NaNValuesComparedBitwise()
+        {
+            var list1 = new RepeatedField<double> { SampleNaNs.Regular, SampleNaNs.SignallingFlipped };
+            var list2 = new RepeatedField<double> { SampleNaNs.Regular, SampleNaNs.PayloadFlipped };
+            var list3 = new RepeatedField<double> { SampleNaNs.Regular, SampleNaNs.SignallingFlipped };
+
+            // All SampleNaNs have the same hashcode under certain targets (e.g. netcoreapp2.1)
+            EqualityTester.AssertInequality(list1, list2, checkHashcode: false);
+            EqualityTester.AssertEquality(list1, list3);
+            Assert.True(list1.Contains(SampleNaNs.SignallingFlipped));
+            Assert.False(list2.Contains(SampleNaNs.SignallingFlipped));
+        }
+
+        [Test]
+        public void Capacity_Increase()
+        {
+            // Unfortunately this case tests implementation details of RepeatedField.  This is necessary
+
+            var list = new RepeatedField<int>() { 1, 2, 3 };
+
+            Assert.AreEqual(8, list.Capacity);
+            Assert.AreEqual(3, list.Count);
+
+            list.Capacity = 10; // Set capacity to a larger value to trigger growth
+            Assert.AreEqual(10, list.Capacity, "Capacity increased");
+            Assert.AreEqual(3, list.Count);
+
+            CollectionAssert.AreEqual(new int[] {1, 2, 3}, list.ToArray(), "We didn't lose our data in the resize");
+        }
+
+        [Test]
+        public void Capacity_Decrease()
+        {
+            var list = new RepeatedField<int>() { 1, 2, 3 };
+
+            Assert.AreEqual(8, list.Capacity);
+            Assert.DoesNotThrow(() => list.Capacity = 5, "Can decrease capacity if new capacity is greater than list.Count");
+            Assert.AreEqual(5, list.Capacity);
+
+            Assert.DoesNotThrow(() => list.Capacity = 3, "Can set capacity exactly to list.Count" );
+
+            Assert.Throws<ArgumentOutOfRangeException>(() => list.Capacity = 2, "Can't set the capacity smaller than list.Count" );
+
+            Assert.Throws<ArgumentOutOfRangeException>(() => list.Capacity = 0, "Can't set the capacity to zero" );
+
+            Assert.Throws<ArgumentOutOfRangeException>(() => list.Capacity = -1, "Can't set the capacity to negative" );
+        }
+
+        [Test]
+        public void Capacity_Zero()
+        {
+            var list = new RepeatedField<int>() { 1 };
+            list.RemoveAt(0);
+            Assert.AreEqual(0, list.Count);
+            Assert.AreEqual(8, list.Capacity);
+
+            Assert.DoesNotThrow(() => list.Capacity = 0, "Can set Capacity to 0");
+            Assert.AreEqual(0, list.Capacity);
         }
     }
 }

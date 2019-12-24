@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+import "google/protobuf/descriptor.proto";
+
+message TestImportDescriptorProto {
+  extend google.protobuf.MethodOptions {
+    int32 a = 72295727;
+  }
+}
+
+extend google.protobuf.MethodOptions {
+  int32 a = 72295728;
+}
+

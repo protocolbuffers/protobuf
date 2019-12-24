@@ -32,10 +32,12 @@
 
 #include <google/protobuf/util/field_comparator.h>
 
+#include <limits>
+
 #include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/descriptor.h>
-#include <google/protobuf/stubs/mathutil.h>
 #include <gtest/gtest.h>
+#include <google/protobuf/stubs/mathutil.h>
 
 namespace google {
 namespace protobuf {
@@ -46,9 +48,7 @@ using protobuf_unittest::TestAllTypes;
 
 class DefaultFieldComparatorTest : public ::testing::Test {
  protected:
-  void SetUp() {
-    descriptor_ = TestAllTypes::descriptor();
-  }
+  void SetUp() { descriptor_ = TestAllTypes::descriptor(); }
 
   const Descriptor* descriptor_;
   DefaultFieldComparator comparator_;
@@ -57,8 +57,7 @@ class DefaultFieldComparatorTest : public ::testing::Test {
 };
 
 TEST_F(DefaultFieldComparatorTest, RecursesIntoGroup) {
-  const FieldDescriptor* field =
-      descriptor_->FindFieldByName("optionalgroup");
+  const FieldDescriptor* field = descriptor_->FindFieldByName("optionalgroup");
   EXPECT_EQ(FieldComparator::RECURSE,
             comparator_.Compare(message_1_, message_2_, field, -1, -1, NULL));
 }
@@ -132,8 +131,7 @@ TEST_F(DefaultFieldComparatorTest, UInt64Comparison) {
 }
 
 TEST_F(DefaultFieldComparatorTest, BooleanComparison) {
-  const FieldDescriptor* field =
-      descriptor_->FindFieldByName("optional_bool");
+  const FieldDescriptor* field = descriptor_->FindFieldByName("optional_bool");
   message_1_.set_optional_bool(true);
   message_2_.set_optional_bool(true);
 
@@ -184,22 +182,22 @@ TEST_F(DefaultFieldComparatorTest, FloatingPointComparisonExact) {
   message_1_.set_optional_double(0.1);
   message_2_.set_optional_double(0.1);
 
-  EXPECT_EQ(FieldComparator::SAME,
-            comparator_.Compare(message_1_, message_2_,
-                                field_float, -1, -1, NULL));
-  EXPECT_EQ(FieldComparator::SAME,
-            comparator_.Compare(message_1_, message_2_,
-                                field_double, -1, -1, NULL));
+  EXPECT_EQ(
+      FieldComparator::SAME,
+      comparator_.Compare(message_1_, message_2_, field_float, -1, -1, NULL));
+  EXPECT_EQ(
+      FieldComparator::SAME,
+      comparator_.Compare(message_1_, message_2_, field_double, -1, -1, NULL));
 
   message_2_.set_optional_float(0.2f);
   message_2_.set_optional_double(0.2);
 
-  EXPECT_EQ(FieldComparator::DIFFERENT,
-            comparator_.Compare(message_1_, message_2_,
-                                field_float, -1, -1, NULL));
-  EXPECT_EQ(FieldComparator::DIFFERENT,
-            comparator_.Compare(message_1_, message_2_,
-                                field_double, -1, -1, NULL));
+  EXPECT_EQ(
+      FieldComparator::DIFFERENT,
+      comparator_.Compare(message_1_, message_2_, field_float, -1, -1, NULL));
+  EXPECT_EQ(
+      FieldComparator::DIFFERENT,
+      comparator_.Compare(message_1_, message_2_, field_double, -1, -1, NULL));
 }
 
 TEST_F(DefaultFieldComparatorTest, FloatingPointComparisonApproximate) {
@@ -224,21 +222,21 @@ TEST_F(DefaultFieldComparatorTest, FloatingPointComparisonApproximate) {
 
   // DefaultFieldComparator's default float comparison mode is EXACT.
   ASSERT_EQ(DefaultFieldComparator::EXACT, comparator_.float_comparison());
-  EXPECT_EQ(FieldComparator::DIFFERENT,
-            comparator_.Compare(message_1_, message_2_,
-                                field_float, -1, -1, NULL));
-  EXPECT_EQ(FieldComparator::DIFFERENT,
-            comparator_.Compare(message_1_, message_2_,
-                                field_double, -1, -1, NULL));
+  EXPECT_EQ(
+      FieldComparator::DIFFERENT,
+      comparator_.Compare(message_1_, message_2_, field_float, -1, -1, NULL));
+  EXPECT_EQ(
+      FieldComparator::DIFFERENT,
+      comparator_.Compare(message_1_, message_2_, field_double, -1, -1, NULL));
 
   comparator_.set_float_comparison(DefaultFieldComparator::APPROXIMATE);
 
-  EXPECT_EQ(FieldComparator::SAME,
-            comparator_.Compare(message_1_, message_2_,
-                                field_float, -1, -1, NULL));
-  EXPECT_EQ(FieldComparator::SAME,
-            comparator_.Compare(message_1_, message_2_,
-                                field_double, -1, -1, NULL));
+  EXPECT_EQ(
+      FieldComparator::SAME,
+      comparator_.Compare(message_1_, message_2_, field_float, -1, -1, NULL));
+  EXPECT_EQ(
+      FieldComparator::SAME,
+      comparator_.Compare(message_1_, message_2_, field_double, -1, -1, NULL));
 }
 
 TEST_F(DefaultFieldComparatorTest, FloatingPointComparisonTreatNaNsAsEqual) {
@@ -247,45 +245,45 @@ TEST_F(DefaultFieldComparatorTest, FloatingPointComparisonTreatNaNsAsEqual) {
   const FieldDescriptor* field_double =
       descriptor_->FindFieldByName("optional_double");
 
-  message_1_.set_optional_float(MathLimits<float>::kNaN);
-  message_2_.set_optional_float(MathLimits<float>::kNaN);
-  message_1_.set_optional_double(MathLimits<double>::kNaN);
-  message_2_.set_optional_double(MathLimits<double>::kNaN);
+  message_1_.set_optional_float(std::numeric_limits<float>::quiet_NaN());
+  message_2_.set_optional_float(std::numeric_limits<float>::quiet_NaN());
+  message_1_.set_optional_double(std::numeric_limits<double>::quiet_NaN());
+  message_2_.set_optional_double(std::numeric_limits<double>::quiet_NaN());
 
   // DefaultFieldComparator's default float comparison mode is EXACT with
   // treating NaNs as different.
   ASSERT_EQ(DefaultFieldComparator::EXACT, comparator_.float_comparison());
   ASSERT_EQ(false, comparator_.treat_nan_as_equal());
-  EXPECT_EQ(FieldComparator::DIFFERENT,
-            comparator_.Compare(message_1_, message_2_,
-                                field_float, -1, -1, NULL));
-  EXPECT_EQ(FieldComparator::DIFFERENT,
-            comparator_.Compare(message_1_, message_2_,
-                                field_double, -1, -1, NULL));
+  EXPECT_EQ(
+      FieldComparator::DIFFERENT,
+      comparator_.Compare(message_1_, message_2_, field_float, -1, -1, NULL));
+  EXPECT_EQ(
+      FieldComparator::DIFFERENT,
+      comparator_.Compare(message_1_, message_2_, field_double, -1, -1, NULL));
   comparator_.set_float_comparison(DefaultFieldComparator::APPROXIMATE);
-  EXPECT_EQ(FieldComparator::DIFFERENT,
-            comparator_.Compare(message_1_, message_2_,
-                                field_float, -1, -1, NULL));
-  EXPECT_EQ(FieldComparator::DIFFERENT,
-            comparator_.Compare(message_1_, message_2_,
-                                field_double, -1, -1, NULL));
+  EXPECT_EQ(
+      FieldComparator::DIFFERENT,
+      comparator_.Compare(message_1_, message_2_, field_float, -1, -1, NULL));
+  EXPECT_EQ(
+      FieldComparator::DIFFERENT,
+      comparator_.Compare(message_1_, message_2_, field_double, -1, -1, NULL));
 
   comparator_.set_treat_nan_as_equal(true);
   ASSERT_EQ(true, comparator_.treat_nan_as_equal());
   comparator_.set_float_comparison(DefaultFieldComparator::EXACT);
-  EXPECT_EQ(FieldComparator::SAME,
-            comparator_.Compare(message_1_, message_2_,
-                                field_float, -1, -1, NULL));
-  EXPECT_EQ(FieldComparator::SAME,
-            comparator_.Compare(message_1_, message_2_,
-                                field_double, -1, -1, NULL));
+  EXPECT_EQ(
+      FieldComparator::SAME,
+      comparator_.Compare(message_1_, message_2_, field_float, -1, -1, NULL));
+  EXPECT_EQ(
+      FieldComparator::SAME,
+      comparator_.Compare(message_1_, message_2_, field_double, -1, -1, NULL));
   comparator_.set_float_comparison(DefaultFieldComparator::APPROXIMATE);
-  EXPECT_EQ(FieldComparator::SAME,
-            comparator_.Compare(message_1_, message_2_,
-                                field_float, -1, -1, NULL));
-  EXPECT_EQ(FieldComparator::SAME,
-            comparator_.Compare(message_1_, message_2_,
-                                field_double, -1, -1, NULL));
+  EXPECT_EQ(
+      FieldComparator::SAME,
+      comparator_.Compare(message_1_, message_2_, field_float, -1, -1, NULL));
+  EXPECT_EQ(
+      FieldComparator::SAME,
+      comparator_.Compare(message_1_, message_2_, field_double, -1, -1, NULL));
 }
 
 TEST_F(DefaultFieldComparatorTest,
@@ -301,92 +299,106 @@ TEST_F(DefaultFieldComparatorTest,
   message_2_.set_optional_double(109.9);
 
   comparator_.set_float_comparison(DefaultFieldComparator::APPROXIMATE);
-  EXPECT_EQ(FieldComparator::DIFFERENT,
-            comparator_.Compare(message_1_, message_2_,
-                                field_float, -1, -1, NULL));
-  EXPECT_EQ(FieldComparator::DIFFERENT,
-            comparator_.Compare(message_1_, message_2_,
-                                field_double, -1, -1, NULL));
+  EXPECT_EQ(
+      FieldComparator::DIFFERENT,
+      comparator_.Compare(message_1_, message_2_, field_float, -1, -1, NULL));
+  EXPECT_EQ(
+      FieldComparator::DIFFERENT,
+      comparator_.Compare(message_1_, message_2_, field_double, -1, -1, NULL));
 
   // Should fail since the fraction is too low.
   comparator_.SetFractionAndMargin(field_float, 0.01, 0.0);
   comparator_.SetFractionAndMargin(field_double, 0.01, 0.0);
 
-  EXPECT_EQ(FieldComparator::DIFFERENT,
-            comparator_.Compare(message_1_, message_2_,
-                                field_float, -1, -1, NULL));
-  EXPECT_EQ(FieldComparator::DIFFERENT,
-            comparator_.Compare(message_1_, message_2_,
-                                field_double, -1, -1, NULL));
+  EXPECT_EQ(
+      FieldComparator::DIFFERENT,
+      comparator_.Compare(message_1_, message_2_, field_float, -1, -1, NULL));
+  EXPECT_EQ(
+      FieldComparator::DIFFERENT,
+      comparator_.Compare(message_1_, message_2_, field_double, -1, -1, NULL));
 
   // Should fail since the margin is too low.
   comparator_.SetFractionAndMargin(field_float, 0.0, 9.0);
   comparator_.SetFractionAndMargin(field_double, 0.0, 9.0);
-  EXPECT_EQ(FieldComparator::DIFFERENT,
-            comparator_.Compare(message_1_, message_2_,
-                                field_float, -1, -1, NULL));
-  EXPECT_EQ(FieldComparator::DIFFERENT,
-            comparator_.Compare(message_1_, message_2_,
-                                field_double, -1, -1, NULL));
+  EXPECT_EQ(
+      FieldComparator::DIFFERENT,
+      comparator_.Compare(message_1_, message_2_, field_float, -1, -1, NULL));
+  EXPECT_EQ(
+      FieldComparator::DIFFERENT,
+      comparator_.Compare(message_1_, message_2_, field_double, -1, -1, NULL));
 
   // Should succeed since the fraction is high enough.
   comparator_.SetFractionAndMargin(field_float, 0.2, 0.0);
   comparator_.SetFractionAndMargin(field_double, 0.2, 0.0);
-  EXPECT_EQ(FieldComparator::SAME,
-            comparator_.Compare(message_1_, message_2_,
-                                field_float, -1, -1, NULL));
-  EXPECT_EQ(FieldComparator::SAME,
-            comparator_.Compare(message_1_, message_2_,
-                                field_double, -1, -1, NULL));
+  EXPECT_EQ(
+      FieldComparator::SAME,
+      comparator_.Compare(message_1_, message_2_, field_float, -1, -1, NULL));
+  EXPECT_EQ(
+      FieldComparator::SAME,
+      comparator_.Compare(message_1_, message_2_, field_double, -1, -1, NULL));
 
   // Should succeed since the margin is high enough.
   comparator_.SetFractionAndMargin(field_float, 0.0, 10.0);
   comparator_.SetFractionAndMargin(field_double, 0.0, 10.0);
-  EXPECT_EQ(FieldComparator::SAME,
-            comparator_.Compare(message_1_, message_2_,
-                                field_float, -1, -1, NULL));
-  EXPECT_EQ(FieldComparator::SAME,
-            comparator_.Compare(message_1_, message_2_,
-                                field_double, -1, -1, NULL));
+  EXPECT_EQ(
+      FieldComparator::SAME,
+      comparator_.Compare(message_1_, message_2_, field_float, -1, -1, NULL));
+  EXPECT_EQ(
+      FieldComparator::SAME,
+      comparator_.Compare(message_1_, message_2_, field_double, -1, -1, NULL));
 
   // Setting values for one of the fields should not affect the other.
   comparator_.SetFractionAndMargin(field_double, 0.0, 0.0);
-  EXPECT_EQ(FieldComparator::SAME,
-            comparator_.Compare(message_1_, message_2_,
-                                field_float, -1, -1, NULL));
-  EXPECT_EQ(FieldComparator::DIFFERENT,
-            comparator_.Compare(message_1_, message_2_,
-                                field_double, -1, -1, NULL));
+  EXPECT_EQ(
+      FieldComparator::SAME,
+      comparator_.Compare(message_1_, message_2_, field_float, -1, -1, NULL));
+  EXPECT_EQ(
+      FieldComparator::DIFFERENT,
+      comparator_.Compare(message_1_, message_2_, field_double, -1, -1, NULL));
 
   // +inf should be equal even though they are not technically within margin or
   // fraction.
-  message_1_.set_optional_float(numeric_limits<float>::infinity());
-  message_2_.set_optional_float(numeric_limits<float>::infinity());
-  message_1_.set_optional_double(numeric_limits<double>::infinity());
-  message_2_.set_optional_double(numeric_limits<double>::infinity());
+  message_1_.set_optional_float(std::numeric_limits<float>::infinity());
+  message_2_.set_optional_float(std::numeric_limits<float>::infinity());
+  message_1_.set_optional_double(std::numeric_limits<double>::infinity());
+  message_2_.set_optional_double(std::numeric_limits<double>::infinity());
   comparator_.SetFractionAndMargin(field_float, 0.0, 0.0);
   comparator_.SetFractionAndMargin(field_double, 0.0, 0.0);
-  EXPECT_EQ(FieldComparator::SAME,
-            comparator_.Compare(message_1_, message_2_,
-                                field_float, -1, -1, NULL));
-  EXPECT_EQ(FieldComparator::SAME,
-            comparator_.Compare(message_1_, message_2_,
-                                field_double, -1, -1, NULL));
+  EXPECT_EQ(
+      FieldComparator::SAME,
+      comparator_.Compare(message_1_, message_2_, field_float, -1, -1, NULL));
+  EXPECT_EQ(
+      FieldComparator::SAME,
+      comparator_.Compare(message_1_, message_2_, field_double, -1, -1, NULL));
 
   // -inf should be equal even though they are not technically within margin or
   // fraction.
-  message_1_.set_optional_float(-numeric_limits<float>::infinity());
-  message_2_.set_optional_float(-numeric_limits<float>::infinity());
-  message_1_.set_optional_double(-numeric_limits<double>::infinity());
-  message_2_.set_optional_double(-numeric_limits<double>::infinity());
+  message_1_.set_optional_float(-std::numeric_limits<float>::infinity());
+  message_2_.set_optional_float(-std::numeric_limits<float>::infinity());
+  message_1_.set_optional_double(-std::numeric_limits<double>::infinity());
+  message_2_.set_optional_double(-std::numeric_limits<double>::infinity());
   comparator_.SetFractionAndMargin(field_float, 0.0, 0.0);
   comparator_.SetFractionAndMargin(field_double, 0.0, 0.0);
-  EXPECT_EQ(FieldComparator::SAME,
-            comparator_.Compare(message_1_, message_2_,
-                                field_float, -1, -1, NULL));
-  EXPECT_EQ(FieldComparator::SAME,
-            comparator_.Compare(message_1_, message_2_,
-                                field_double, -1, -1, NULL));
+  EXPECT_EQ(
+      FieldComparator::SAME,
+      comparator_.Compare(message_1_, message_2_, field_float, -1, -1, NULL));
+  EXPECT_EQ(
+      FieldComparator::SAME,
+      comparator_.Compare(message_1_, message_2_, field_double, -1, -1, NULL));
+
+  // Finite values and inf should not be equal, even for a positive fraction.
+  message_1_.set_optional_float(std::numeric_limits<float>::infinity());
+  message_2_.set_optional_float(0.0f);
+  message_1_.set_optional_double(std::numeric_limits<double>::infinity());
+  message_2_.set_optional_double(0.0);
+  comparator_.SetFractionAndMargin(field_float, 0.1, 0.0);
+  comparator_.SetFractionAndMargin(field_double, 0.1, 0.0);
+  EXPECT_EQ(FieldComparator::DIFFERENT,
+            comparator_.Compare(message_1_, message_2_, field_float, -1, -1,
+                                nullptr));
+  EXPECT_EQ(FieldComparator::DIFFERENT,
+            comparator_.Compare(message_1_, message_2_, field_double, -1, -1,
+                                nullptr));
 }
 
 TEST_F(DefaultFieldComparatorTest,
@@ -402,23 +414,23 @@ TEST_F(DefaultFieldComparatorTest,
   message_2_.set_optional_double(109.9);
 
   comparator_.set_float_comparison(DefaultFieldComparator::APPROXIMATE);
-  EXPECT_EQ(FieldComparator::DIFFERENT,
-            comparator_.Compare(message_1_, message_2_,
-                                field_float, -1, -1, NULL));
-  EXPECT_EQ(FieldComparator::DIFFERENT,
-            comparator_.Compare(message_1_, message_2_,
-                                field_double, -1, -1, NULL));
+  EXPECT_EQ(
+      FieldComparator::DIFFERENT,
+      comparator_.Compare(message_1_, message_2_, field_float, -1, -1, NULL));
+  EXPECT_EQ(
+      FieldComparator::DIFFERENT,
+      comparator_.Compare(message_1_, message_2_, field_double, -1, -1, NULL));
 
   // Set default fraction and margin.
   comparator_.SetDefaultFractionAndMargin(0.01, 0.0);
 
   // Float comparisons should fail since the fraction is too low.
-  EXPECT_EQ(FieldComparator::DIFFERENT,
-            comparator_.Compare(message_1_, message_2_,
-                                field_float, -1, -1, NULL));
-  EXPECT_EQ(FieldComparator::DIFFERENT,
-            comparator_.Compare(message_1_, message_2_,
-                                field_double, -1, -1, NULL));
+  EXPECT_EQ(
+      FieldComparator::DIFFERENT,
+      comparator_.Compare(message_1_, message_2_, field_float, -1, -1, NULL));
+  EXPECT_EQ(
+      FieldComparator::DIFFERENT,
+      comparator_.Compare(message_1_, message_2_, field_double, -1, -1, NULL));
 
   // Set field-specific fraction and margin for one field (field_float) but not
   // the other (field_double)
@@ -426,37 +438,37 @@ TEST_F(DefaultFieldComparatorTest,
 
   // The field with the override should succeed, since its field-specific
   // fraction is high enough.
-  EXPECT_EQ(FieldComparator::SAME,
-            comparator_.Compare(message_1_, message_2_,
-                                field_float, -1, -1, NULL));
+  EXPECT_EQ(
+      FieldComparator::SAME,
+      comparator_.Compare(message_1_, message_2_, field_float, -1, -1, NULL));
   // The field with no override should fail, since the default fraction is too
   // low
-  EXPECT_EQ(FieldComparator::DIFFERENT,
-            comparator_.Compare(message_1_, message_2_,
-                                field_double, -1, -1, NULL));
+  EXPECT_EQ(
+      FieldComparator::DIFFERENT,
+      comparator_.Compare(message_1_, message_2_, field_double, -1, -1, NULL));
 
   // Set the default fraction and margin high enough so that fields that use
   // the default should succeed
   comparator_.SetDefaultFractionAndMargin(0.2, 0.0);
-  EXPECT_EQ(FieldComparator::SAME,
-            comparator_.Compare(message_1_, message_2_,
-                                field_double, -1, -1, NULL));
+  EXPECT_EQ(
+      FieldComparator::SAME,
+      comparator_.Compare(message_1_, message_2_, field_double, -1, -1, NULL));
 
   // The field with an override should still be OK
-  EXPECT_EQ(FieldComparator::SAME,
-            comparator_.Compare(message_1_, message_2_,
-                                field_float, -1, -1, NULL));
+  EXPECT_EQ(
+      FieldComparator::SAME,
+      comparator_.Compare(message_1_, message_2_, field_float, -1, -1, NULL));
 
   // Set fraction and margin for the field with an override to be too low
   comparator_.SetFractionAndMargin(field_float, 0.01, 0.0);
 
   // Now our default is high enough but field_float's override is too low.
-  EXPECT_EQ(FieldComparator::DIFFERENT,
-            comparator_.Compare(message_1_, message_2_,
-                                field_float, -1, -1, NULL));
-  EXPECT_EQ(FieldComparator::SAME,
-            comparator_.Compare(message_1_, message_2_,
-                                field_double, -1, -1, NULL));
+  EXPECT_EQ(
+      FieldComparator::DIFFERENT,
+      comparator_.Compare(message_1_, message_2_, field_float, -1, -1, NULL));
+  EXPECT_EQ(
+      FieldComparator::SAME,
+      comparator_.Compare(message_1_, message_2_, field_double, -1, -1, NULL));
 }
 
 // Simple test checking whether we compare values at correct indices.
@@ -477,7 +489,7 @@ TEST_F(DefaultFieldComparatorTest, RepeatedFieldComparison) {
             comparator_.Compare(message_1_, message_2_, field, 1, 0, NULL));
 }
 
+}  // namespace
 }  // namespace util
 }  // namespace protobuf
-}  // namespace
 }  // namespace google

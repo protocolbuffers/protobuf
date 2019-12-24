@@ -284,7 +284,21 @@ namespace Google.Protobuf
             Assert.Throws<InvalidProtocolBufferException>(() => input.ReadBytes());
         }
 
-        private static TestRecursiveMessage MakeRecursiveMessage(int depth)
+        // Representations of a tag for field 0 with various wire types
+        [Test]
+        [TestCase(0)]
+        [TestCase(1)]
+        [TestCase(2)]
+        [TestCase(3)]
+        [TestCase(4)]
+        [TestCase(5)]
+        public void ReadTag_ZeroFieldRejected(byte tag)
+        {
+            CodedInputStream cis = new CodedInputStream(new byte[] { tag });
+            Assert.Throws<InvalidProtocolBufferException>(() => cis.ReadTag());
+        }
+
+        internal static TestRecursiveMessage MakeRecursiveMessage(int depth)
         {
             if (depth == 0)
             {
@@ -296,7 +310,7 @@ namespace Google.Protobuf
             }
         }
 
-        private static void AssertMessageDepth(TestRecursiveMessage message, int depth)
+        internal static void AssertMessageDepth(TestRecursiveMessage message, int depth)
         {
             if (depth == 0)
             {
@@ -313,14 +327,14 @@ namespace Google.Protobuf
         [Test]
         public void MaliciousRecursion()
         {
-            ByteString data64 = MakeRecursiveMessage(64).ToByteString();
-            ByteString data65 = MakeRecursiveMessage(65).ToByteString();
+            ByteString atRecursiveLimit = MakeRecursiveMessage(CodedInputStream.DefaultRecursionLimit).ToByteString();
+            ByteString beyondRecursiveLimit = MakeRecursiveMessage(CodedInputStream.DefaultRecursionLimit + 1).ToByteString();
 
-            AssertMessageDepth(TestRecursiveMessage.Parser.ParseFrom(data64), 64);
+            AssertMessageDepth(TestRecursiveMessage.Parser.ParseFrom(atRecursiveLimit), CodedInputStream.DefaultRecursionLimit);
 
-            Assert.Throws<InvalidProtocolBufferException>(() => TestRecursiveMessage.Parser.ParseFrom(data65));
+            Assert.Throws<InvalidProtocolBufferException>(() => TestRecursiveMessage.Parser.ParseFrom(beyondRecursiveLimit));
 
-            CodedInputStream input = CodedInputStream.CreateWithLimits(new MemoryStream(data64.ToByteArray()), 1000000, 63);
+            CodedInputStream input = CodedInputStream.CreateWithLimits(new MemoryStream(atRecursiveLimit.ToByteArray()), 1000000, CodedInputStream.DefaultRecursionLimit - 1);
             Assert.Throws<InvalidProtocolBufferException>(() => TestRecursiveMessage.Parser.ParseFrom(input));
         }
 
@@ -357,6 +371,42 @@ namespace Google.Protobuf
             Assert.AreEqual(tag, input.ReadTag());
             string text = input.ReadString();
             Assert.AreEqual('\ufffd', text[0]);
+        }
+
+        [Test]
+        public void ReadNegativeSizedStringThrowsInvalidProtocolBufferException()
+        {
+            MemoryStream ms = new MemoryStream();
+            CodedOutputStream output = new CodedOutputStream(ms);
+
+            uint tag = WireFormat.MakeTag(1, WireFormat.WireType.LengthDelimited);
+            output.WriteRawVarint32(tag);
+            output.WriteLength(-1);
+            output.Flush();
+            ms.Position = 0;
+
+            CodedInputStream input = new CodedInputStream(ms);
+
+            Assert.AreEqual(tag, input.ReadTag());
+            Assert.Throws<InvalidProtocolBufferException>(() => input.ReadString());
+        }
+
+        [Test]
+        public void ReadNegativeSizedBytesThrowsInvalidProtocolBufferException()
+        {
+            MemoryStream ms = new MemoryStream();
+            CodedOutputStream output = new CodedOutputStream(ms);
+
+            uint tag = WireFormat.MakeTag(1, WireFormat.WireType.LengthDelimited);
+            output.WriteRawVarint32(tag);
+            output.WriteLength(-1);
+            output.Flush();
+            ms.Position = 0;
+
+            CodedInputStream input = new CodedInputStream(ms);
+
+            Assert.AreEqual(tag, input.ReadTag());
+            Assert.Throws<InvalidProtocolBufferException>(() => input.ReadBytes());
         }
 
         /// <summary>
@@ -403,7 +453,7 @@ namespace Google.Protobuf
                 output.Flush();
 
                 ms.Position = 0;
-                CodedInputStream input = new CodedInputStream(ms, new byte[ms.Length / 2], 0, 0);
+                CodedInputStream input = new CodedInputStream(ms, new byte[ms.Length / 2], 0, 0, false);
 
                 uint tag = input.ReadTag();
                 Assert.AreEqual(1, WireFormat.GetTagFieldNumber(tag));
@@ -470,6 +520,52 @@ namespace Google.Protobuf
         }
 
         [Test]
+        public void SkipGroup_WrongEndGroupTag()
+        {
+            // Create an output stream with:
+            // Field 1: string "field 1"
+            // Start group 2
+            //   Field 3: fixed int32
+            // End group 4 (should give an error)
+            var stream = new MemoryStream();
+            var output = new CodedOutputStream(stream);
+            output.WriteTag(1, WireFormat.WireType.LengthDelimited);
+            output.WriteString("field 1");
+
+            // The outer group...
+            output.WriteTag(2, WireFormat.WireType.StartGroup);
+            output.WriteTag(3, WireFormat.WireType.Fixed32);
+            output.WriteFixed32(100);
+            output.WriteTag(4, WireFormat.WireType.EndGroup);
+            output.Flush();
+            stream.Position = 0;
+
+            // Now act like a generated client
+            var input = new CodedInputStream(stream);
+            Assert.AreEqual(WireFormat.MakeTag(1, WireFormat.WireType.LengthDelimited), input.ReadTag());
+            Assert.AreEqual("field 1", input.ReadString());
+            Assert.AreEqual(WireFormat.MakeTag(2, WireFormat.WireType.StartGroup), input.ReadTag());
+            Assert.Throws<InvalidProtocolBufferException>(input.SkipLastField);
+        }
+
+        [Test]
+        public void RogueEndGroupTag()
+        {
+            // If we have an end-group tag without a leading start-group tag, generated
+            // code will just call SkipLastField... so that should fail.
+
+            var stream = new MemoryStream();
+            var output = new CodedOutputStream(stream);
+            output.WriteTag(1, WireFormat.WireType.EndGroup);
+            output.Flush();
+            stream.Position = 0;
+
+            var input = new CodedInputStream(stream);
+            Assert.AreEqual(WireFormat.MakeTag(1, WireFormat.WireType.EndGroup), input.ReadTag());
+            Assert.Throws<InvalidProtocolBufferException>(input.SkipLastField);
+        }
+
+        [Test]
         public void EndOfStreamReachedWhileSkippingGroup()
         {
             var stream = new MemoryStream();
@@ -484,7 +580,7 @@ namespace Google.Protobuf
             // Now act like a generated client
             var input = new CodedInputStream(stream);
             input.ReadTag();
-            Assert.Throws<InvalidProtocolBufferException>(() => input.SkipLastField());
+            Assert.Throws<InvalidProtocolBufferException>(input.SkipLastField);
         }
 
         [Test]
@@ -506,7 +602,7 @@ namespace Google.Protobuf
             // Now act like a generated client
             var input = new CodedInputStream(stream);
             Assert.AreEqual(WireFormat.MakeTag(1, WireFormat.WireType.StartGroup), input.ReadTag());
-            Assert.Throws<InvalidProtocolBufferException>(() => input.SkipLastField());
+            Assert.Throws<InvalidProtocolBufferException>(input.SkipLastField);
         }
 
         [Test]
@@ -525,6 +621,118 @@ namespace Google.Protobuf
             var stream = new MemoryStream();
             Assert.Throws<ArgumentOutOfRangeException>(() => CodedInputStream.CreateWithLimits(stream, 0, 1));
             Assert.Throws<ArgumentOutOfRangeException>(() => CodedInputStream.CreateWithLimits(stream, 1, 0));
+        }
+
+        [Test]
+        public void Dispose_DisposesUnderlyingStream()
+        {
+            var memoryStream = new MemoryStream();
+            Assert.IsTrue(memoryStream.CanRead);
+            using (var cis = new CodedInputStream(memoryStream))
+            {
+            }
+            Assert.IsFalse(memoryStream.CanRead); // Disposed
+        }
+
+        [Test]
+        public void Dispose_WithLeaveOpen()
+        {
+            var memoryStream = new MemoryStream();
+            Assert.IsTrue(memoryStream.CanRead);
+            using (var cis = new CodedInputStream(memoryStream, true))
+            {
+            }
+            Assert.IsTrue(memoryStream.CanRead); // We left the stream open
+        }
+
+        [Test]
+        public void Dispose_FromByteArray()
+        {
+            var stream = new CodedInputStream(new byte[10]);
+            stream.Dispose();
+        }
+
+        [Test]
+        public void TestParseMessagesCloseTo2G()
+        {
+            byte[] serializedMessage = GenerateBigSerializedMessage();
+            // How many of these big messages do we need to take us near our 2GB limit?
+            int count = Int32.MaxValue / serializedMessage.Length;
+            // Now make a MemoryStream that will fake a near-2GB stream of messages by returning
+            // our big serialized message 'count' times.
+            using (RepeatingMemoryStream stream = new RepeatingMemoryStream(serializedMessage, count))
+            {
+                Assert.DoesNotThrow(()=>TestAllTypes.Parser.ParseFrom(stream));
+            }
+        }
+
+        [Test]
+        public void TestParseMessagesOver2G()
+        {
+            byte[] serializedMessage = GenerateBigSerializedMessage();
+            // How many of these big messages do we need to take us near our 2GB limit?
+            int count = Int32.MaxValue / serializedMessage.Length;
+            // Now add one to take us over the 2GB limit
+            count++;
+            // Now make a MemoryStream that will fake a near-2GB stream of messages by returning
+            // our big serialized message 'count' times.
+            using (RepeatingMemoryStream stream = new RepeatingMemoryStream(serializedMessage, count))
+            {
+                Assert.Throws<InvalidProtocolBufferException>(() => TestAllTypes.Parser.ParseFrom(stream),
+                    "Protocol message was too large.  May be malicious.  " +
+                    "Use CodedInputStream.SetSizeLimit() to increase the size limit.");
+            }
+        }
+
+        /// <returns>A serialized big message</returns>
+        private static byte[] GenerateBigSerializedMessage()
+        {
+            byte[] value = new byte[16 * 1024 * 1024];
+            TestAllTypes message = SampleMessages.CreateFullTestAllTypes();
+            message.SingleBytes = ByteString.CopyFrom(value);
+            return message.ToByteArray();
+        }
+
+        /// <summary>
+        /// A MemoryStream that repeats a byte arrays' content a number of times.
+        /// Simulates really large input without consuming loads of memory. Used above
+        /// to test the parsing behavior when the input size exceeds 2GB or close to it.
+        /// </summary>
+        private class RepeatingMemoryStream: MemoryStream
+        {
+            private readonly byte[] bytes;
+            private readonly int maxIterations;
+            private int index = 0;
+
+            public RepeatingMemoryStream(byte[] bytes, int maxIterations)
+            {
+                this.bytes = bytes;
+                this.maxIterations = maxIterations;
+            }
+
+            public override int Read(byte[] buffer, int offset, int count)
+            {
+                if (bytes.Length == 0)
+                {
+                    return 0;
+                }
+                int numBytesCopiedTotal = 0;
+                while (numBytesCopiedTotal < count && index < maxIterations)
+                {
+                    int numBytesToCopy = Math.Min(bytes.Length - (int)Position, count);
+                    Array.Copy(bytes, (int)Position, buffer, offset, numBytesToCopy);
+                    numBytesCopiedTotal += numBytesToCopy;
+                    offset += numBytesToCopy;
+                    count -= numBytesCopiedTotal;
+                    Position += numBytesToCopy;
+                    if (Position >= bytes.Length)
+                    {
+                        Position = 0;
+                        index++;
+                    }
+                }
+                return numBytesCopiedTotal;
+            }
         }
     }
 }

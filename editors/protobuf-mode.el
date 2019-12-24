@@ -66,10 +66,13 @@
 (require 'cc-mode)
 
 (eval-when-compile
+  (and (= emacs-major-version 24)
+       (>= emacs-minor-version 4)
+       (require 'cl))
   (require 'cc-langs)
   (require 'cc-fonts))
 
-;; This mode does not inherit properties from other modes. So, we do not use 
+;; This mode does not inherit properties from other modes. So, we do not use
 ;; the usual `c-add-language' function.
 (eval-and-compile
   (put 'protobuf-mode 'c-mode-prefix "protobuf-"))

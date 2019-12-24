@@ -42,26 +42,29 @@
 
 namespace google {
 namespace protobuf {
-  namespace compiler {
-    namespace java {
-      class Context;           // context.h
-      class ClassNameResolver; // name_resolver.h
-    }
-  }
-}
+namespace compiler {
+namespace java {
+class Context;            // context.h
+class ClassNameResolver;  // name_resolver.h
+}  // namespace java
+}  // namespace compiler
+}  // namespace protobuf
+}  // namespace google
 
+namespace google {
 namespace protobuf {
 namespace compiler {
 namespace java {
 
 class ImmutableStringFieldGenerator : public ImmutableFieldGenerator {
  public:
-  explicit ImmutableStringFieldGenerator(
-      const FieldDescriptor* descriptor, int messageBitIndex,
-      int builderBitIndex, Context* context);
+  explicit ImmutableStringFieldGenerator(const FieldDescriptor* descriptor,
+                                         int messageBitIndex,
+                                         int builderBitIndex, Context* context);
   ~ImmutableStringFieldGenerator();
 
-  // implements ImmutableFieldGenerator ---------------------------------------
+  // implements ImmutableFieldGenerator
+  // ---------------------------------------
   int GetNumBitsForMessage() const;
   int GetNumBitsForBuilder() const;
   void GenerateInterfaceMembers(io::Printer* printer) const;
@@ -79,14 +82,11 @@ class ImmutableStringFieldGenerator : public ImmutableFieldGenerator {
   void GenerateEqualsCode(io::Printer* printer) const;
   void GenerateHashCode(io::Printer* printer) const;
 
-  string GetBoxedType() const;
+  std::string GetBoxedType() const;
 
  protected:
   const FieldDescriptor* descriptor_;
-  map<string, string> variables_;
-  const int messageBitIndex_;
-  const int builderBitIndex_;
-  Context* context_;
+  std::map<std::string, std::string> variables_;
   ClassNameResolver* name_resolver_;
 
  private:
@@ -96,9 +96,9 @@ class ImmutableStringFieldGenerator : public ImmutableFieldGenerator {
 class ImmutableStringOneofFieldGenerator
     : public ImmutableStringFieldGenerator {
  public:
-  ImmutableStringOneofFieldGenerator(
-      const FieldDescriptor* descriptor, int messageBitIndex,
-      int builderBitIndex, Context* context);
+  ImmutableStringOneofFieldGenerator(const FieldDescriptor* descriptor,
+                                     int messageBitIndex, int builderBitIndex,
+                                     Context* context);
   ~ImmutableStringOneofFieldGenerator();
 
  private:
@@ -131,7 +131,6 @@ class RepeatedImmutableStringFieldGenerator : public ImmutableFieldGenerator {
   void GenerateMergingCode(io::Printer* printer) const;
   void GenerateBuildingCode(io::Printer* printer) const;
   void GenerateParsingCode(io::Printer* printer) const;
-  void GenerateParsingCodeFromPacked(io::Printer* printer) const;
   void GenerateParsingDoneCode(io::Printer* printer) const;
   void GenerateSerializationCode(io::Printer* printer) const;
   void GenerateSerializedSizeCode(io::Printer* printer) const;
@@ -139,14 +138,11 @@ class RepeatedImmutableStringFieldGenerator : public ImmutableFieldGenerator {
   void GenerateEqualsCode(io::Printer* printer) const;
   void GenerateHashCode(io::Printer* printer) const;
 
-  string GetBoxedType() const;
+  std::string GetBoxedType() const;
 
  private:
   const FieldDescriptor* descriptor_;
-  map<string, string> variables_;
-  const int messageBitIndex_;
-  const int builderBitIndex_;
-  Context* context_;
+  std::map<std::string, std::string> variables_;
   ClassNameResolver* name_resolver_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RepeatedImmutableStringFieldGenerator);
@@ -155,6 +151,6 @@ class RepeatedImmutableStringFieldGenerator : public ImmutableFieldGenerator {
 }  // namespace java
 }  // namespace compiler
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_STRING_FIELD_H__

@@ -64,6 +64,112 @@ static const uint32_t kRepeatedCount = 100;
   }];
 }
 
+- (void)testMessageSerialParsingPerformance {
+  // This and the next test are meant to monitor that the parsing functionality of protos does not
+  // lock across threads when parsing different instances. The Serial version of the test should run
+  // around ~2 times slower than the Parallel version since it's parsing the protos in the same
+  // thread.
+  TestAllTypes *allTypesMessage = [TestAllTypes message];
+  [self setAllFields:allTypesMessage repeatedCount:2];
+  NSData *allTypesData = allTypesMessage.data;
+
+  [self measureBlock:^{
+    for (int i = 0; i < 500; ++i) {
+      [TestAllTypes parseFromData:allTypesData error:NULL];
+      [TestAllTypes parseFromData:allTypesData error:NULL];
+    }
+  }];
+}
+
+- (void)testMessageParallelParsingPerformance {
+  // This and the previous test are meant to monitor that the parsing functionality of protos does
+  // not lock across threads when parsing different instances. The Serial version of the test should
+  // run around ~2 times slower than the Parallel version since it's parsing the protos in the same
+  // thread.
+  TestAllTypes *allTypesMessage = [TestAllTypes message];
+  [self setAllFields:allTypesMessage repeatedCount:2];
+  NSData *allTypesData = allTypesMessage.data;
+
+  dispatch_queue_t concurrentQueue = dispatch_queue_create("perfQueue", DISPATCH_QUEUE_CONCURRENT);
+
+  [self measureBlock:^{
+    for (int i = 0; i < 500; ++i) {
+      dispatch_group_t group = dispatch_group_create();
+
+      dispatch_group_async(group, concurrentQueue, ^{
+        [TestAllTypes parseFromData:allTypesData error:NULL];
+      });
+
+      dispatch_group_async(group, concurrentQueue, ^{
+        [TestAllTypes parseFromData:allTypesData error:NULL];
+      });
+
+      dispatch_group_notify(group, concurrentQueue, ^{});
+
+      dispatch_release(group);
+    }
+  }];
+
+  dispatch_release(concurrentQueue);
+}
+
+- (void)testMessageSerialExtensionsParsingPerformance {
+  // This and the next test are meant to monitor that the parsing functionality of protos does not
+  // lock across threads when parsing different instances when using extensions. The Serial version
+  // of the test should run around ~2 times slower than the Parallel version since it's parsing the
+  // protos in the same thread.
+  TestAllExtensions *allExtensionsMessage = [TestAllExtensions message];
+  [self setAllExtensions:allExtensionsMessage repeatedCount:2];
+  NSData *allExtensionsData = allExtensionsMessage.data;
+
+  [self measureBlock:^{
+    for (int i = 0; i < 500; ++i) {
+      [TestAllExtensions parseFromData:allExtensionsData
+                     extensionRegistry:[self extensionRegistry]
+                                 error:NULL];
+      [TestAllExtensions parseFromData:allExtensionsData
+                     extensionRegistry:[self extensionRegistry]
+                                 error:NULL];
+    }
+  }];
+}
+
+- (void)testMessageParallelExtensionsParsingPerformance {
+  // This and the previous test are meant to monitor that the parsing functionality of protos does
+  // not lock across threads when parsing different instances when using extensions. The Serial
+  // version of the test should run around ~2 times slower than the Parallel version since it's
+  // parsing the protos in the same thread.
+  TestAllExtensions *allExtensionsMessage = [TestAllExtensions message];
+  [self setAllExtensions:allExtensionsMessage repeatedCount:2];
+  NSData *allExtensionsData = allExtensionsMessage.data;
+
+  dispatch_queue_t concurrentQueue = dispatch_queue_create("perfQueue", DISPATCH_QUEUE_CONCURRENT);
+
+  [self measureBlock:^{
+    for (int i = 0; i < 500; ++i) {
+      dispatch_group_t group = dispatch_group_create();
+
+      dispatch_group_async(group, concurrentQueue, ^{
+        [TestAllExtensions parseFromData:allExtensionsData
+                       extensionRegistry:[UnittestRoot extensionRegistry]
+                                   error:NULL];
+      });
+
+      dispatch_group_async(group, concurrentQueue, ^{
+        [TestAllExtensions parseFromData:allExtensionsData
+                       extensionRegistry:[UnittestRoot extensionRegistry]
+                                   error:NULL];
+      });
+
+      dispatch_group_notify(group, concurrentQueue, ^{});
+
+      dispatch_release(group);
+    }
+  }];
+
+  dispatch_release(concurrentQueue);
+}
+
 - (void)testExtensionsPerformance {
   [self measureBlock:^{
     for (int i = 0; i < 200; ++i) {

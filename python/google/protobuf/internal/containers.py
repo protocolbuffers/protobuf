@@ -41,12 +41,16 @@ are:
 
 __author__ = 'petar@google.com (Petar Petrov)'
 
-import collections
 import sys
+try:
+  # This fallback applies for all versions of Python before 3.3
+  import collections.abc as collections_abc
+except ImportError:
+  import collections as collections_abc
 
 if sys.version_info[0] < 3:
-  # We would use collections.MutableMapping all the time, but in Python 2 it
-  # doesn't define __slots__.  This causes two significant problems:
+  # We would use collections_abc.MutableMapping all the time, but in Python 2
+  # it doesn't define __slots__.  This causes two significant problems:
   #
   # 1. we can't disallow arbitrary attribute assignment, even if our derived
   #    classes *do* define __slots__.
@@ -59,7 +63,7 @@ if sys.version_info[0] < 3:
   # verbatim, except that:
   # 1. We declare __slots__.
   # 2. We don't declare this as a virtual base class.  The classes defined
-  #    in collections are the interesting base classes, not us.
+  #    in collections_abc are the interesting base classes, not us.
   #
   # Note: deriving from object is critical.  It is the only thing that makes
   # this a true type, allowing us to derive from it in C++ cleanly and making
@@ -106,7 +110,7 @@ if sys.version_info[0] < 3:
     __hash__ = None
 
     def __eq__(self, other):
-      if not isinstance(other, collections.Mapping):
+      if not isinstance(other, collections_abc.Mapping):
         return NotImplemented
       return dict(self.items()) == dict(other.items())
 
@@ -173,13 +177,13 @@ if sys.version_info[0] < 3:
         self[key] = default
       return default
 
-  collections.Mapping.register(Mapping)
-  collections.MutableMapping.register(MutableMapping)
+  collections_abc.Mapping.register(Mapping)
+  collections_abc.MutableMapping.register(MutableMapping)
 
 else:
   # In Python 3 we can just use MutableMapping directly, because it defines
   # __slots__.
-  MutableMapping = collections.MutableMapping
+  MutableMapping = collections_abc.MutableMapping
 
 
 class BaseContainer(object):
@@ -227,21 +231,23 @@ class BaseContainer(object):
     self._values.sort(*args, **kwargs)
 
 
-class RepeatedScalarFieldContainer(BaseContainer):
+collections_abc.MutableSequence.register(BaseContainer)
 
+
+class RepeatedScalarFieldContainer(BaseContainer):
   """Simple, type-checked, list-like container for holding repeated scalars."""
 
   # Disallows assignment to other attributes.
   __slots__ = ['_type_checker']
 
   def __init__(self, message_listener, type_checker):
-    """
-    Args:
-      message_listener: A MessageListener implementation.
-        The RepeatedScalarFieldContainer will call this object's
-        Modified() method when it is modified.
+    """Args:
+
+      message_listener: A MessageListener implementation. The
+      RepeatedScalarFieldContainer will call this object's Modified() method
+      when it is modified.
       type_checker: A type_checkers.ValueChecker instance to run on elements
-        inserted into this container.
+      inserted into this container.
     """
     super(RepeatedScalarFieldContainer, self).__init__(message_listener)
     self._type_checker = type_checker
@@ -275,10 +281,11 @@ class RepeatedScalarFieldContainer(BaseContainer):
     new_values = [self._type_checker.CheckValue(elem) for elem in elem_seq_iter]
     if new_values:
       self._values.extend(new_values)
-      self._message_listener.Modified()
+    self._message_listener.Modified()
 
   def MergeFrom(self, other):
     """Appends the contents of another repeated field of the same type to this
+
     one. We do not check the types of the individual fields.
     """
     self._values.extend(other._values)
@@ -337,8 +344,6 @@ class RepeatedScalarFieldContainer(BaseContainer):
     # We are presumably comparing against some other sequence type.
     return other == self._values
 
-collections.MutableSequence.register(BaseContainer)
-
 
 class RepeatedCompositeFieldContainer(BaseContainer):
 
@@ -376,8 +381,27 @@ class RepeatedCompositeFieldContainer(BaseContainer):
       self._message_listener.Modified()
     return new_element
 
+  def append(self, value):
+    """Appends one element by copying the message."""
+    new_element = self._message_descriptor._concrete_class()
+    new_element._SetListener(self._message_listener)
+    new_element.CopyFrom(value)
+    self._values.append(new_element)
+    if not self._message_listener.dirty:
+      self._message_listener.Modified()
+
+  def insert(self, key, value):
+    """Inserts the item at the specified position by copying."""
+    new_element = self._message_descriptor._concrete_class()
+    new_element._SetListener(self._message_listener)
+    new_element.CopyFrom(value)
+    self._values.insert(key, new_element)
+    if not self._message_listener.dirty:
+      self._message_listener.Modified()
+
   def extend(self, elem_seq):
     """Extends by appending the given sequence of elements of the same type
+
     as this one, copying each individual message.
     """
     message_class = self._message_descriptor._concrete_class
@@ -392,6 +416,7 @@ class RepeatedCompositeFieldContainer(BaseContainer):
 
   def MergeFrom(self, other):
     """Appends the contents of another repeated field of the same type to this
+
     one, copying each individual message.
     """
     self.extend(other._values)
@@ -436,9 +461,11 @@ class ScalarMap(MutableMapping):
   """Simple, type-checked, dict-like container for holding repeated scalars."""
 
   # Disallows assignment to other attributes.
-  __slots__ = ['_key_checker', '_value_checker', '_values', '_message_listener']
+  __slots__ = ['_key_checker', '_value_checker', '_values', '_message_listener',
+               '_entry_descriptor']
 
-  def __init__(self, message_listener, key_checker, value_checker):
+  def __init__(self, message_listener, key_checker, value_checker,
+               entry_descriptor):
     """
     Args:
       message_listener: A MessageListener implementation.
@@ -448,10 +475,12 @@ class ScalarMap(MutableMapping):
         inserted into this container.
       value_checker: A type_checkers.ValueChecker instance to run on values
         inserted into this container.
+      entry_descriptor: The MessageDescriptor of a map entry: key and value.
     """
     self._message_listener = message_listener
     self._key_checker = key_checker
     self._value_checker = value_checker
+    self._entry_descriptor = entry_descriptor
     self._values = {}
 
   def __getitem__(self, key):
@@ -464,6 +493,9 @@ class ScalarMap(MutableMapping):
       return val
 
   def __contains__(self, item):
+    # We check the key's type to match the strong-typing flavor of the API.
+    # Also this makes it easier to match the behavior of the C++ implementation.
+    self._key_checker.CheckValue(item)
     return item in self._values
 
   # We need to override this explicitly, because our defaultdict-like behavior
@@ -491,14 +523,27 @@ class ScalarMap(MutableMapping):
   def __iter__(self):
     return iter(self._values)
 
+  def __repr__(self):
+    return repr(self._values)
+
   def MergeFrom(self, other):
     self._values.update(other._values)
     self._message_listener.Modified()
+
+  def InvalidateIterators(self):
+    # It appears that the only way to reliably invalidate iterators to
+    # self._values is to ensure that its size changes.
+    original = self._values
+    self._values = original.copy()
+    original[None] = None
 
   # This is defined in the abstract base, but we can do it much more cheaply.
   def clear(self):
     self._values.clear()
     self._message_listener.Modified()
+
+  def GetEntryClass(self):
+    return self._entry_descriptor._concrete_class
 
 
 class MessageMap(MutableMapping):
@@ -507,9 +552,10 @@ class MessageMap(MutableMapping):
 
   # Disallows assignment to other attributes.
   __slots__ = ['_key_checker', '_values', '_message_listener',
-               '_message_descriptor']
+               '_message_descriptor', '_entry_descriptor']
 
-  def __init__(self, message_listener, message_descriptor, key_checker):
+  def __init__(self, message_listener, message_descriptor, key_checker,
+               entry_descriptor):
     """
     Args:
       message_listener: A MessageListener implementation.
@@ -519,17 +565,19 @@ class MessageMap(MutableMapping):
         inserted into this container.
       value_checker: A type_checkers.ValueChecker instance to run on values
         inserted into this container.
+      entry_descriptor: The MessageDescriptor of a map entry: key and value.
     """
     self._message_listener = message_listener
     self._message_descriptor = message_descriptor
     self._key_checker = key_checker
+    self._entry_descriptor = entry_descriptor
     self._values = {}
 
   def __getitem__(self, key):
+    key = self._key_checker.CheckValue(key)
     try:
       return self._values[key]
     except KeyError:
-      key = self._key_checker.CheckValue(key)
       new_element = self._message_descriptor._concrete_class()
       new_element._SetListener(self._message_listener)
       self._values[key] = new_element
@@ -561,12 +609,14 @@ class MessageMap(MutableMapping):
       return default
 
   def __contains__(self, item):
+    item = self._key_checker.CheckValue(item)
     return item in self._values
 
   def __setitem__(self, key, value):
     raise ValueError('May not set values directly, call my_map[key].foo = 5')
 
   def __delitem__(self, key):
+    key = self._key_checker.CheckValue(key)
     del self._values[key]
     self._message_listener.Modified()
 
@@ -576,13 +626,157 @@ class MessageMap(MutableMapping):
   def __iter__(self):
     return iter(self._values)
 
+  def __repr__(self):
+    return repr(self._values)
+
   def MergeFrom(self, other):
     for key in other:
-      self[key].MergeFrom(other[key])
+      # According to documentation: "When parsing from the wire or when merging,
+      # if there are duplicate map keys the last key seen is used".
+      if key in self:
+        del self[key]
+      self[key].CopyFrom(other[key])
     # self._message_listener.Modified() not required here, because
     # mutations to submessages already propagate.
+
+  def InvalidateIterators(self):
+    # It appears that the only way to reliably invalidate iterators to
+    # self._values is to ensure that its size changes.
+    original = self._values
+    self._values = original.copy()
+    original[None] = None
 
   # This is defined in the abstract base, but we can do it much more cheaply.
   def clear(self):
     self._values.clear()
     self._message_listener.Modified()
+
+  def GetEntryClass(self):
+    return self._entry_descriptor._concrete_class
+
+
+class _UnknownField(object):
+
+  """A parsed unknown field."""
+
+  # Disallows assignment to other attributes.
+  __slots__ = ['_field_number', '_wire_type', '_data']
+
+  def __init__(self, field_number, wire_type, data):
+    self._field_number = field_number
+    self._wire_type = wire_type
+    self._data = data
+    return
+
+  def __lt__(self, other):
+    # pylint: disable=protected-access
+    return self._field_number < other._field_number
+
+  def __eq__(self, other):
+    if self is other:
+      return True
+    # pylint: disable=protected-access
+    return (self._field_number == other._field_number and
+            self._wire_type == other._wire_type and
+            self._data == other._data)
+
+
+class UnknownFieldRef(object):
+
+  def __init__(self, parent, index):
+    self._parent = parent
+    self._index = index
+    return
+
+  def _check_valid(self):
+    if not self._parent:
+      raise ValueError('UnknownField does not exist. '
+                       'The parent message might be cleared.')
+    if self._index >= len(self._parent):
+      raise ValueError('UnknownField does not exist. '
+                       'The parent message might be cleared.')
+
+  @property
+  def field_number(self):
+    self._check_valid()
+    # pylint: disable=protected-access
+    return self._parent._internal_get(self._index)._field_number
+
+  @property
+  def wire_type(self):
+    self._check_valid()
+    # pylint: disable=protected-access
+    return self._parent._internal_get(self._index)._wire_type
+
+  @property
+  def data(self):
+    self._check_valid()
+    # pylint: disable=protected-access
+    return self._parent._internal_get(self._index)._data
+
+
+class UnknownFieldSet(object):
+
+  """UnknownField container"""
+
+  # Disallows assignment to other attributes.
+  __slots__ = ['_values']
+
+  def __init__(self):
+    self._values = []
+
+  def __getitem__(self, index):
+    if self._values is None:
+      raise ValueError('UnknownFields does not exist. '
+                       'The parent message might be cleared.')
+    size = len(self._values)
+    if index < 0:
+      index += size
+    if index < 0 or index >= size:
+      raise IndexError('index %d out of range'.index)
+
+    return UnknownFieldRef(self, index)
+
+  def _internal_get(self, index):
+    return self._values[index]
+
+  def __len__(self):
+    if self._values is None:
+      raise ValueError('UnknownFields does not exist. '
+                       'The parent message might be cleared.')
+    return len(self._values)
+
+  def _add(self, field_number, wire_type, data):
+    unknown_field = _UnknownField(field_number, wire_type, data)
+    self._values.append(unknown_field)
+    return unknown_field
+
+  def __iter__(self):
+    for i in range(len(self)):
+      yield UnknownFieldRef(self, i)
+
+  def _extend(self, other):
+    if other is None:
+      return
+    # pylint: disable=protected-access
+    self._values.extend(other._values)
+
+  def __eq__(self, other):
+    if self is other:
+      return True
+    # Sort unknown fields because their order shouldn't
+    # affect equality test.
+    values = list(self._values)
+    if other is None:
+      return not values
+    values.sort()
+    # pylint: disable=protected-access
+    other_values = sorted(other._values)
+    return values == other_values
+
+  def _clear(self):
+    for value in self._values:
+      # pylint: disable=protected-access
+      if isinstance(value._data, UnknownFieldSet):
+        value._data._clear()  # pylint: disable=protected-access
+    self._values = None

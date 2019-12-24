@@ -37,7 +37,6 @@
 // documentation generator.
 
 namespace google {
-
 namespace protobuf {
 
 // Implementation of the Protocol Buffer compiler.

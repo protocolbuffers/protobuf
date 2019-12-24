@@ -47,4 +47,5 @@ message DynamicMessageType {
 extend ExtendedMessage {
   optional int32 dynamic_int32_extension = 100;
   optional DynamicMessageType dynamic_message_extension = 101;
+  repeated DynamicMessageType repeated_dynamic_message_extension = 102;
 }

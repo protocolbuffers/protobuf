@@ -31,10 +31,8 @@ syntax = "proto2";
 
 package protobuf_unittest;
 
-// Cycles in the Message graph can cause problems for the mutable classes
-// since the properties on the mutable class change types. This file just
-// needs to generate source, and that source must compile, to ensure the
-// generated source works for this sort of case.
+// Cycles in the Message graph can cause problems for message class
+// initialization order.
 
 // You can't make a object graph that spans files, so this can only be done
 // within a single proto file.

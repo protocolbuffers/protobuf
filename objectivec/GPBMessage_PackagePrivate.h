@@ -34,6 +34,10 @@
 
 #import "GPBMessage.h"
 
+// TODO: Remove this import. Older generated code use the OSAtomic* apis,
+// so anyone that hasn't regenerated says building by having this. After
+// enough time has passed, this likely can be removed as folks should have
+// regenerated.
 #import <libkern/OSAtomic.h>
 
 #import "GPBBootstrap.h"
@@ -57,21 +61,11 @@ typedef struct GPBMessage_Storage *GPBMessage_StoragePtr;
   // GPBMessage_Storage with _has_storage__ as the first field.
   // Kept public because static functions need to access it.
   GPBMessage_StoragePtr messageStorage_;
-
-  // A lock to provide mutual exclusion from internal data that can be modified
-  // by *read* operations such as getters (autocreation of message fields and
-  // message extensions, not setting of values). Used to guarantee thread safety
-  // for concurrent reads on the message.
-  OSSpinLock readOnlyMutex_;
 }
 
 // Gets an extension value without autocreating the result if not found. (i.e.
 // returns nil if the extension is not set)
 - (id)getExistingExtension:(GPBExtensionDescriptor *)extension;
-
-// Returns an array of GPBExtensionDescriptor* for all the extensions currently
-// in use on the message.  They are sorted by field number.
-- (NSArray *)sortedExtensionsInUse;
 
 // Parses a message of this type from the input and merges it with this
 // message.
@@ -97,6 +91,10 @@ typedef struct GPBMessage_Storage *GPBMessage_StoragePtr;
 @end
 
 CF_EXTERN_C_BEGIN
+
+
+// Call this before using the readOnlySemaphore_. This ensures it is created only once.
+void GPBPrepareReadOnlySemaphore(GPBMessage *self);
 
 // Returns a new instance that was automatically created by |autocreator| for
 // its field |field|.

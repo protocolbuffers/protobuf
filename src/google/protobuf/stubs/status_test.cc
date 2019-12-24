@@ -40,13 +40,17 @@ namespace {
 TEST(Status, Empty) {
   util::Status status;
   EXPECT_EQ(util::error::OK, util::Status::OK.error_code());
+  EXPECT_EQ(util::error::OK, util::Status::OK.code());
   EXPECT_EQ("OK", util::Status::OK.ToString());
 }
 
 TEST(Status, GenericCodes) {
   EXPECT_EQ(util::error::OK, util::Status::OK.error_code());
+  EXPECT_EQ(util::error::OK, util::Status::OK.code());
   EXPECT_EQ(util::error::CANCELLED, util::Status::CANCELLED.error_code());
+  EXPECT_EQ(util::error::CANCELLED, util::Status::CANCELLED.code());
   EXPECT_EQ(util::error::UNKNOWN, util::Status::UNKNOWN.error_code());
+  EXPECT_EQ(util::error::UNKNOWN, util::Status::UNKNOWN.code());
 }
 
 TEST(Status, ConstructorZero) {
@@ -66,14 +70,17 @@ TEST(Status, ErrorMessage) {
   util::Status status(util::error::INVALID_ARGUMENT, "");
   EXPECT_FALSE(status.ok());
   EXPECT_EQ("", status.error_message().ToString());
+  EXPECT_EQ("", status.message().ToString());
   EXPECT_EQ("INVALID_ARGUMENT", status.ToString());
   status = util::Status(util::error::INVALID_ARGUMENT, "msg");
   EXPECT_FALSE(status.ok());
   EXPECT_EQ("msg", status.error_message().ToString());
+  EXPECT_EQ("msg", status.message().ToString());
   EXPECT_EQ("INVALID_ARGUMENT:msg", status.ToString());
   status = util::Status(util::error::OK, "msg");
   EXPECT_TRUE(status.ok());
   EXPECT_EQ("", status.error_message().ToString());
+  EXPECT_EQ("", status.message().ToString());
   EXPECT_EQ("OK", status.ToString());
 }
 

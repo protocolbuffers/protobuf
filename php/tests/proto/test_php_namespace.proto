@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package foo;
+option php_namespace = "Php\\Test";
+option php_metadata_namespace = "Metadata\\Php\\Test";
+
+message TestNamespace {
+  int32 a = 1;
+
+  // Test nested messages, enums, and reserved names
+  NestedMessage nested_message = 2;
+  NestedEnum nested_enum = 3;
+  Empty reserved_name = 4;
+  message NestedMessage {
+    int32 a = 1;
+  }
+  enum NestedEnum {
+      ZERO = 0;
+  };
+  // Test reserved name
+  message Empty {
+    NestedMessage nested_message = 1;
+    NestedEnum nested_enum = 2;
+    message NestedMessage {
+      int32 a = 1;
+    }
+    enum NestedEnum {
+      ZERO = 0;
+    };
+  }
+}

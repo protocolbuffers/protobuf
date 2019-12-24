@@ -31,6 +31,7 @@
 #endregion
 
 using Conformance;
+using Google.Protobuf.Reflection;
 using System;
 using System.IO;
 
@@ -47,16 +48,19 @@ namespace Google.Protobuf.Conformance
             // This way we get the binary streams instead of readers/writers.
             var input = new BinaryReader(Console.OpenStandardInput());
             var output = new BinaryWriter(Console.OpenStandardOutput());
+            var typeRegistry = TypeRegistry.FromMessages(
+                ProtobufTestMessages.Proto3.TestAllTypesProto3.Descriptor,
+                ProtobufTestMessages.Proto2.TestAllTypesProto2.Descriptor);
 
             int count = 0;
-            while (RunTest(input, output))
+            while (RunTest(input, output, typeRegistry))
             {
                 count++;
             }
             Console.Error.WriteLine("Received EOF after {0} tests", count);
         }
 
-        private static bool RunTest(BinaryReader input, BinaryWriter output)
+        private static bool RunTest(BinaryReader input, BinaryWriter output, TypeRegistry typeRegistry)
         {
             int? size = ReadInt32(input);
             if (size == null)
@@ -69,7 +73,7 @@ namespace Google.Protobuf.Conformance
                 throw new EndOfStreamException("Read " + inputData.Length + " bytes of data when expecting " + size);
             }
             ConformanceRequest request = ConformanceRequest.Parser.ParseFrom(inputData);
-            ConformanceResponse response = PerformRequest(request);
+            ConformanceResponse response = PerformRequest(request, typeRegistry);
             byte[] outputData = response.ToByteArray();
             output.Write(outputData.Length);
             output.Write(outputData);
@@ -77,34 +81,74 @@ namespace Google.Protobuf.Conformance
             return true;
         }
 
-        private static ConformanceResponse PerformRequest(ConformanceRequest request)
+        private static ConformanceResponse PerformRequest(ConformanceRequest request, TypeRegistry typeRegistry)
         {
-            TestAllTypes message;
-            switch (request.PayloadCase)
+            IMessage message;
+            try
             {
-                case ConformanceRequest.PayloadOneofCase.JsonPayload:
-                    return new ConformanceResponse { Skipped = "JSON parsing not implemented in C# yet" };
-                case ConformanceRequest.PayloadOneofCase.ProtobufPayload:
-                    try
+                switch (request.PayloadCase)
+                {
+                    case ConformanceRequest.PayloadOneofCase.JsonPayload:
+                        if (request.TestCategory == global::Conformance.TestCategory.JsonIgnoreUnknownParsingTest) {
+                            return new ConformanceResponse { Skipped = "CSharp doesn't support skipping unknown fields in json parsing." };
+                        }
+                        var parser = new JsonParser(new JsonParser.Settings(20, typeRegistry));
+                        message = parser.Parse<ProtobufTestMessages.Proto3.TestAllTypesProto3>(request.JsonPayload);
+                        break;
+                    case ConformanceRequest.PayloadOneofCase.ProtobufPayload:
                     {
-                        message = TestAllTypes.Parser.ParseFrom(request.ProtobufPayload);
+                        if (request.MessageType.Equals("protobuf_test_messages.proto3.TestAllTypesProto3"))
+                        {
+                            message = ProtobufTestMessages.Proto3.TestAllTypesProto3.Parser.ParseFrom(request.ProtobufPayload);
+                        }
+                        else if (request.MessageType.Equals("protobuf_test_messages.proto2.TestAllTypesProto2"))
+                        {
+                            ExtensionRegistry registry = new ExtensionRegistry()
+                            {
+                                ProtobufTestMessages.Proto2.TestMessagesProto2Extensions.ExtensionInt32,
+                                ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.MessageSetCorrectExtension1.Extensions.MessageSetExtension,
+                                ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.MessageSetCorrectExtension2.Extensions.MessageSetExtension
+                            };
+                            message = ProtobufTestMessages.Proto2.TestAllTypesProto2.Parser.WithExtensionRegistry(registry).ParseFrom(request.ProtobufPayload);
+                        }
+                        else
+                        {
+                            throw new Exception(" Protobuf request doesn't have specific payload type");
+                        }
+                        break;
                     }
-                    catch (InvalidProtocolBufferException e)
-                    {
-                        return new ConformanceResponse { ParseError = e.Message };
-                    }
-                    break;
-                default:
-                    throw new Exception("Unsupported request payload: " + request.PayloadCase);
+					case ConformanceRequest.PayloadOneofCase.TextPayload:
+					{
+						return new ConformanceResponse { Skipped = "CSharp doesn't support text format" };
+					}
+                    default:
+                        throw new Exception("Unsupported request payload: " + request.PayloadCase);
+                }
             }
-            switch (request.RequestedOutputFormat)
+            catch (InvalidProtocolBufferException e)
             {
-                case global::Conformance.WireFormat.JSON:
-                    return new ConformanceResponse { JsonPayload = JsonFormatter.Default.Format(message) };
-                case global::Conformance.WireFormat.PROTOBUF:
-                    return new ConformanceResponse { ProtobufPayload = message.ToByteString() };
-                default:
-                    throw new Exception("Unsupported request output format: " + request.PayloadCase);
+                return new ConformanceResponse { ParseError = e.Message };
+            }
+            catch (InvalidJsonException e)
+            {
+                return new ConformanceResponse { ParseError = e.Message };
+            }
+            try
+            {
+                switch (request.RequestedOutputFormat)
+                {
+                    case global::Conformance.WireFormat.Json:
+                        var formatter = new JsonFormatter(new JsonFormatter.Settings(false, typeRegistry));
+                        return new ConformanceResponse { JsonPayload = formatter.Format(message) };
+                    case global::Conformance.WireFormat.Protobuf:
+                        return new ConformanceResponse { ProtobufPayload = message.ToByteString() };
+                    default:
+                        throw new Exception("Unsupported request output format: " + request.RequestedOutputFormat);
+                }
+            }
+            catch (InvalidOperationException e)
+            {
+                return new ConformanceResponse { SerializeError = e.Message };
             }
         }
 

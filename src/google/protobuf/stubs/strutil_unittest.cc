@@ -50,18 +50,18 @@ namespace {
 
 TEST(StringUtilityTest, ImmuneToLocales) {
   // Remember the old locale.
-  char* old_locale_cstr = setlocale(LC_NUMERIC, NULL);
-  ASSERT_TRUE(old_locale_cstr != NULL);
+  char* old_locale_cstr = setlocale(LC_NUMERIC, nullptr);
+  ASSERT_TRUE(old_locale_cstr != nullptr);
   string old_locale = old_locale_cstr;
 
   // Set the locale to "C".
-  ASSERT_TRUE(setlocale(LC_NUMERIC, "C") != NULL);
+  ASSERT_TRUE(setlocale(LC_NUMERIC, "C") != nullptr);
 
   EXPECT_EQ("1.5", SimpleDtoa(1.5));
   EXPECT_EQ("1.5", SimpleFtoa(1.5));
 
-  if (setlocale(LC_NUMERIC, "es_ES") == NULL &&
-      setlocale(LC_NUMERIC, "es_ES.utf8") == NULL) {
+  if (setlocale(LC_NUMERIC, "es_ES") == nullptr &&
+      setlocale(LC_NUMERIC, "es_ES.utf8") == nullptr) {
     // Some systems may not have the desired locale available.
     GOOGLE_LOG(WARNING)
       << "Couldn't set locale to es_ES.  Skipping this test.";
@@ -782,7 +782,7 @@ TEST(Base64, EscapeAndUnescape) {
       reinterpret_cast<const unsigned char*>(base64_strings[i].plaintext);
     int plain_length = strlen(base64_strings[i].plaintext);
     int cypher_length = strlen(base64_strings[i].cyphertext);
-    vector<char> buffer(cypher_length+1);
+    std::vector<char> buffer(cypher_length+1);
     int encode_length = WebSafeBase64Escape(unsigned_plaintext,
                                                      plain_length,
                                                      &buffer[0],
@@ -804,6 +804,91 @@ TEST(Base64, EscapeAndUnescape) {
     EXPECT_TRUE(buf.empty());
   }
 }
+
+// Test StrCat of ints and longs of various sizes and signdedness.
+TEST(StrCat, Ints) {
+  const short s = -1;  // NOLINT(runtime/int)
+  const uint16_t us = 2;
+  const int i = -3;
+  const unsigned int ui = 4;
+  const long l = -5;                 // NOLINT(runtime/int)
+  const unsigned long ul = 6;        // NOLINT(runtime/int)
+  const long long ll = -7;           // NOLINT(runtime/int)
+  const unsigned long long ull = 8;  // NOLINT(runtime/int)
+  const ptrdiff_t ptrdiff = -9;
+  const size_t size = 10;
+  const intptr_t intptr = -12;
+  const uintptr_t uintptr = 13;
+  string answer;
+  answer = StrCat(s, us);
+  EXPECT_EQ(answer, "-12");
+  answer = StrCat(i, ui);
+  EXPECT_EQ(answer, "-34");
+  answer = StrCat(l, ul);
+  EXPECT_EQ(answer, "-56");
+  answer = StrCat(ll, ull);
+  EXPECT_EQ(answer, "-78");
+  answer = StrCat(ptrdiff, size);
+  EXPECT_EQ(answer, "-910");
+  answer = StrCat(ptrdiff, intptr);
+  EXPECT_EQ(answer, "-9-12");
+  answer = StrCat(uintptr, 0);
+  EXPECT_EQ(answer, "130");
+}
+
+class ReplaceChars : public ::testing::TestWithParam<
+                         std::tuple<string, string, const char*, char>> {};
+
+TEST_P(ReplaceChars, ReplacesAllOccurencesOfAnyCharInReplaceWithAReplaceChar) {
+  string expected = std::get<0>(GetParam());
+  string string_to_replace_in = std::get<1>(GetParam());
+  const char* what_to_replace = std::get<2>(GetParam());
+  char replacement = std::get<3>(GetParam());
+  ReplaceCharacters(&string_to_replace_in, what_to_replace, replacement);
+  ASSERT_EQ(expected, string_to_replace_in);
+}
+
+INSTANTIATE_TEST_CASE_P(
+    Replace, ReplaceChars,
+    ::testing::Values(
+        std::make_tuple("", "", "", '_'),    // empty string should remain empty
+        std::make_tuple(" ", " ", "", '_'),  // no replacement string
+        std::make_tuple(" ", " ", "_-abcedf",
+                        '*'),  // replacement character not in string
+        std::make_tuple("replace", "Replace", "R",
+                        'r'),  // replace one character
+        std::make_tuple("not_spaces__", "not\nspaces\t ", " \t\r\n",
+                        '_'),  // replace some special characters
+        std::make_tuple("c++", "cxx", "x",
+                        '+'),  // same character multiple times
+        std::make_tuple("qvvvvvng v T", "queueing a T", "aeiou",
+                        'v')));  // replace all voewls
+
+class StripWs : public ::testing::TestWithParam<std::tuple<string, string>> {};
+
+TEST_P(StripWs, AlwaysStripsLeadingAndTrailingWhitespace) {
+  string expected = std::get<0>(GetParam());
+  string string_to_strip = std::get<1>(GetParam());
+  StripWhitespace(&string_to_strip);
+  ASSERT_EQ(expected, string_to_strip);
+}
+
+INSTANTIATE_TEST_CASE_P(
+    Strip, StripWs,
+    ::testing::Values(
+        std::make_tuple("", ""),   // empty string should remain empty
+        std::make_tuple("", " "),  // only ws should become empty
+        std::make_tuple("no whitespace",
+                        " no whitespace"),  // leading ws removed
+        std::make_tuple("no whitespace",
+                        "no whitespace "),  // trailing ws removed
+        std::make_tuple("no whitespace",
+                        " no whitespace "),  // same nb. of leading and trailing
+        std::make_tuple(
+            "no whitespace",
+            "  no whitespace "),  // different nb. of leading/trailing
+        std::make_tuple("no whitespace",
+                        " no whitespace  ")));  // more trailing than leading
 
 }  // anonymous namespace
 }  // namespace protobuf

@@ -30,69 +30,50 @@
 
 #include <google/protobuf/any.h>
 
+#include <google/protobuf/arenastring.h>
+#include <google/protobuf/descriptor.h>
+#include <google/protobuf/generated_message_util.h>
+#include <google/protobuf/message.h>
+
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
 namespace internal {
 
-namespace {
-string GetTypeUrl(const Descriptor* message) {
-  return string(kTypeGoogleApisComPrefix) + message->full_name();
-}
-
-}  // namespace
-
-const char kAnyFullTypeName[] = "google.protobuf.Any";
-const char kTypeGoogleApisComPrefix[] = "type.googleapis.com/";
-
-AnyMetadata::AnyMetadata(UrlType* type_url, ValueType* value)
-    : type_url_(type_url), value_(value) {
-}
-
 void AnyMetadata::PackFrom(const Message& message) {
-  type_url_->SetNoArena(&::google::protobuf::internal::GetEmptyString(),
-                        GetTypeUrl(message.GetDescriptor()));
+  PackFrom(message, kTypeGoogleApisComPrefix);
+}
+
+void AnyMetadata::PackFrom(const Message& message,
+                           const std::string& type_url_prefix) {
+  type_url_->SetNoArena(
+      &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyString(),
+      GetTypeUrl(message.GetDescriptor()->full_name(), type_url_prefix));
   message.SerializeToString(value_->MutableNoArena(
-      &::google::protobuf::internal::GetEmptyStringAlreadyInited()));
+      &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited()));
 }
 
 bool AnyMetadata::UnpackTo(Message* message) const {
-  if (!InternalIs(message->GetDescriptor())) {
+  if (!InternalIs(message->GetDescriptor()->full_name())) {
     return false;
   }
-  return message->ParseFromString(
-      value_->GetNoArena(&::google::protobuf::internal::GetEmptyString()));
+  return message->ParseFromString(value_->GetNoArena());
 }
-
-bool AnyMetadata::InternalIs(const Descriptor* descriptor) const {
-  return type_url_->GetNoArena(
-             &::google::protobuf::internal::GetEmptyString()) ==
-         GetTypeUrl(descriptor);
-}
-
-bool ParseAnyTypeUrl(const string& type_url, string* full_type_name) {
-  const int prefix_len = strlen(kTypeGoogleApisComPrefix);
-  if (strncmp(type_url.c_str(), kTypeGoogleApisComPrefix, prefix_len) == 0) {
-    full_type_name->assign(type_url.data() + prefix_len,
-                           type_url.size() - prefix_len);
-    return true;
-  }
-  return false;
-}
-
 
 bool GetAnyFieldDescriptors(const Message& message,
                             const FieldDescriptor** type_url_field,
                             const FieldDescriptor** value_field) {
-    const Descriptor* descriptor = message.GetDescriptor();
-    if (descriptor->full_name() != kAnyFullTypeName) {
-      return false;
-    }
-    *type_url_field = descriptor->FindFieldByNumber(1);
-    *value_field = descriptor->FindFieldByNumber(2);
-    return (*type_url_field != NULL &&
-            (*type_url_field)->type() == FieldDescriptor::TYPE_STRING &&
-            *value_field != NULL &&
-            (*value_field)->type() == FieldDescriptor::TYPE_BYTES);
+  const Descriptor* descriptor = message.GetDescriptor();
+  if (descriptor->full_name() != kAnyFullTypeName) {
+    return false;
+  }
+  *type_url_field = descriptor->FindFieldByNumber(1);
+  *value_field = descriptor->FindFieldByNumber(2);
+  return (*type_url_field != NULL &&
+          (*type_url_field)->type() == FieldDescriptor::TYPE_STRING &&
+          *value_field != NULL &&
+          (*value_field)->type() == FieldDescriptor::TYPE_BYTES);
 }
 
 }  // namespace internal

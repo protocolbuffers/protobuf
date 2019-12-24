@@ -40,6 +40,13 @@
 //   }
 // You must link your plugin against libprotobuf and libprotoc.
 //
+// The core part of PluginMain is to invoke the given CodeGenerator on a
+// CodeGeneratorRequest to generate a CodeGeneratorResponse. This part is
+// abstracted out and made into function GenerateCode so that it can be reused,
+// for example, to implement a variant of PluginMain that does some
+// preprocessing on the input CodeGeneratorRequest before feeding the request
+// to the given code generator.
+//
 // To get protoc to use the plugin, do one of the following:
 // * Place the plugin binary somewhere in the PATH and give it the name
 //   "protoc-gen-NAME" (replacing "NAME" with the name of your plugin).  If you
@@ -55,18 +62,33 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_PLUGIN_H__
 #define GOOGLE_PROTOBUF_COMPILER_PLUGIN_H__
 
-#include <google/protobuf/stubs/common.h>
+#include <string>
+
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
 namespace compiler {
 
-class CodeGenerator;    // code_generator.h
+class CodeGenerator;  // code_generator.h
+class CodeGeneratorRequest;
+class CodeGeneratorResponse;
 
 // Implements main() for a protoc plugin exposing the given code generator.
-LIBPROTOC_EXPORT int PluginMain(int argc, char* argv[], const CodeGenerator* generator);
+PROTOC_EXPORT int PluginMain(int argc, char* argv[],
+                             const CodeGenerator* generator);
+
+// Generates code using the given code generator. Returns true if the code
+// generation is successful. If the code geneartion fails, error_msg may be
+// populated to describe the failure cause.
+bool GenerateCode(const CodeGeneratorRequest& request,
+                  const CodeGenerator& generator,
+                  CodeGeneratorResponse* response, std::string* error_msg);
 
 }  // namespace compiler
 }  // namespace protobuf
-
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
+
 #endif  // GOOGLE_PROTOBUF_COMPILER_PLUGIN_H__

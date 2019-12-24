@@ -26,7 +26,7 @@ AC_DEFUN([ACX_CHECK_SUNCC],[
   AS_IF([test "$SUNCC" = "yes" -a "x${ac_cv_env_CXXFLAGS_set}" = "x"],[
     dnl Sun Studio has a crashing bug with -xO4 in some cases. Keep this
     dnl at -xO3 until a proper test to detect those crashes can be done.
-    CXXFLAGS="-g0 -xO3 -xlibmil -xdepend -xbuiltin -mt -compat=5 -library=stlport4 -library=Crun -template=no%extdef ${CXXFLAGS}"
+    CXXFLAGS="-g0 -xO3 -xlibmil -xdepend -xbuiltin -mt -template=no%extdef ${CXXFLAGS}"
   ])
 
   case $host_os in
@@ -42,7 +42,6 @@ AC_DEFUN([ACX_CHECK_SUNCC],[
 
         AS_IF([test "x$ac_enable_64bit" = "xyes"],[
 
-          AC_DEFINE([SOLARIS_64BIT_ENABLED], [1], [64bit enabled])
           AS_IF([test "x$libdir" = "x\${exec_prefix}/lib"],[
            dnl The user hasn't overridden the default libdir, so we'll
            dnl the dir suffix to match solaris 32/64-bit policy
@@ -52,17 +51,13 @@ AC_DEFUN([ACX_CHECK_SUNCC],[
           dnl This should just be set in CPPFLAGS and in LDFLAGS, but libtool
           dnl does the wrong thing if you don't put it into CXXFLAGS. sigh.
           dnl (It also needs it in CFLAGS, or it does a different wrong thing!)
-          AS_IF([test "x${ac_cv_env_CXXFLAGS_set}" = "x"],[
-            CXXFLAGS="${CXXFLAGS} -m64"
-            ac_cv_env_CXXFLAGS_set=set
-            ac_cv_env_CXXFLAGS_value='-m64'
-          ])
+          CXXFLAGS="${CXXFLAGS} -m64"
+          ac_cv_env_CXXFLAGS_set=set
+          ac_cv_env_CXXFLAGS_value='-m64'
 
-          AS_IF([test "x${ac_cv_env_CFLAGS_set}" = "x"],[
-            CFLAGS="${CFLAGS} -m64"
-            ac_cv_env_CFLAGS_set=set
-            ac_cv_env_CFLAGS_value='-m64'
-          ])
+          CFLAGS="${CFLAGS} -m64"
+          ac_cv_env_CFLAGS_set=set
+          ac_cv_env_CFLAGS_value='-m64'
 
           AS_IF([test "$target_cpu" = "sparc" -a "x$SUNCC" = "xyes" ],[
             CXXFLAGS="-xmemalign=8s ${CXXFLAGS}"
@@ -72,4 +67,7 @@ AC_DEFUN([ACX_CHECK_SUNCC],[
     ;;
   esac
 
+  AS_IF([test "$target_cpu" = "sparc" -a "x$SUNCC" = "xyes" ],[
+    CXXFLAGS="-xregs=no%appl ${CXXFLAGS}"
+  ])
 ])

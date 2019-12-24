@@ -1,10 +1,16 @@
 // See README.txt for information and build instructions.
 
-#include <iostream>
+#include <ctime>
 #include <fstream>
+#include <google/protobuf/util/time_util.h>
+#include <iostream>
 #include <string>
+
 #include "addressbook.pb.h"
+
 using namespace std;
+
+using google::protobuf::util::TimeUtil;
 
 // This function fills in a Person message based on user input.
 void PromptForAddress(tutorial::Person* person) {
@@ -48,6 +54,7 @@ void PromptForAddress(tutorial::Person* person) {
       cout << "Unknown phone type.  Using default." << endl;
     }
   }
+  *person->mutable_last_updated() = TimeUtil::SecondsToTimestamp(time(NULL));
 }
 
 // Main function:  Reads the entire address book from a file,

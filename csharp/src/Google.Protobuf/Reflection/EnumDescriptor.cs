@@ -30,6 +30,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
+using Google.Protobuf.Collections;
 using System;
 using System.Collections.Generic;
 
@@ -43,13 +44,13 @@ namespace Google.Protobuf.Reflection
         private readonly EnumDescriptorProto proto;
         private readonly MessageDescriptor containingType;
         private readonly IList<EnumValueDescriptor> values;
-        private readonly Type generatedType;
+        private readonly Type clrType;
 
-        internal EnumDescriptor(EnumDescriptorProto proto, FileDescriptor file, MessageDescriptor parent, int index, Type generatedType)
+        internal EnumDescriptor(EnumDescriptorProto proto, FileDescriptor file, MessageDescriptor parent, int index, Type clrType)
             : base(file, file.ComputeFullName(parent, proto.Name), index)
         {
             this.proto = proto;
-            this.generatedType = generatedType;
+            this.clrType = clrType;
             containingType = parent;
 
             if (proto.Value.Count == 0)
@@ -72,10 +73,21 @@ namespace Google.Protobuf.Reflection
         /// </summary>
         public override string Name { get { return proto.Name; } }
 
+        internal override IReadOnlyList<DescriptorBase> GetNestedDescriptorListForField(int fieldNumber)
+        {
+            switch (fieldNumber)
+            {
+                case EnumDescriptorProto.ValueFieldNumber:
+                    return (IReadOnlyList<DescriptorBase>) Values;
+                default:
+                    return null;
+            }
+        }
+
         /// <summary>
-        /// The generated type for this enum, or <c>null</c> if the descriptor does not represent a generated type.
+        /// The CLR type for this enum. For generated code, this will be a CLR enum type.
         /// </summary>
-        public Type GeneratedType { get { return generatedType; } }
+        public Type ClrType { get { return clrType; } }
 
         /// <value>
         /// If this is a nested type, get the outer descriptor, otherwise null.
@@ -111,6 +123,29 @@ namespace Google.Protobuf.Reflection
         public EnumValueDescriptor FindValueByName(string name)
         {
             return File.DescriptorPool.FindSymbol<EnumValueDescriptor>(FullName + "." + name);
+        }
+
+        /// <summary>
+        /// The (possibly empty) set of custom options for this enum.
+        /// </summary>
+        [Obsolete("CustomOptions are obsolete. Use GetOption")]
+        public CustomOptions CustomOptions => new CustomOptions(Proto.Options?._extensions?.ValuesByNumber);
+
+        /// <summary>
+        /// Gets a single value enum option for this descriptor
+        /// </summary>
+        public T GetOption<T>(Extension<EnumOptions, T> extension)
+        {
+            var value = Proto.Options.GetExtension(extension);
+            return value is IDeepCloneable<T> ? (value as IDeepCloneable<T>).Clone() : value;
+        }
+
+        /// <summary>
+        /// Gets a repeated value enum option for this descriptor
+        /// </summary>
+        public RepeatedField<T> GetOption<T>(RepeatedExtension<EnumOptions, T> extension)
+        {
+            return Proto.Options.GetExtension(extension).Clone();
         }
     }
 }

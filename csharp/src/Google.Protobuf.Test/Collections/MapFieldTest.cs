@@ -56,7 +56,7 @@ namespace Google.Protobuf.Collections
         }
 
         [Test]
-        public void NullValues()
+        public void NullValuesProhibited()
         {
             TestNullValues<int?>(0);
             TestNullValues("");
@@ -65,17 +65,10 @@ namespace Google.Protobuf.Collections
 
         private void TestNullValues<T>(T nonNullValue)
         {
-            var map = new MapField<int, T>(false);
+            var map = new MapField<int, T>();
             var nullValue = (T) (object) null;
             Assert.Throws<ArgumentNullException>(() => map.Add(0, nullValue));
             Assert.Throws<ArgumentNullException>(() => map[0] = nullValue);
-            map.Add(1, nonNullValue);
-            map[1] = nonNullValue;
-
-            // Doesn't throw...
-            map = new MapField<int, T>(true);
-            map.Add(0, nullValue);
-            map[0] = nullValue;
             map.Add(1, nonNullValue);
             map[1] = nonNullValue;
         }
@@ -93,7 +86,7 @@ namespace Google.Protobuf.Collections
             var map = new MapField<string, ForeignMessage>();
             Assert.Throws<ArgumentNullException>(() => map[null] = new ForeignMessage());
         }
-        
+
         [Test]
         public void AddPreservesInsertionOrder()
         {
@@ -158,27 +151,6 @@ namespace Google.Protobuf.Collections
             map2.Add("b", "fourth value");
 
             EqualityTester.AssertInequality(map1, map2);
-        }
-
-        [Test]
-        public void EqualityHandlesNullValues()
-        {
-            var map1 = new MapField<string, ForeignMessage>();
-            map1.Add("a", new ForeignMessage { C = 10 });
-            map1.Add("b", null);
-
-            var map2 = new MapField<string, ForeignMessage>();
-            map2.Add("a", new ForeignMessage { C = 10 });
-            map2.Add("b", null);
-
-            EqualityTester.AssertEquality(map1, map2);
-            // Check the null value isn't ignored entirely...
-            Assert.IsTrue(map1.Remove("b"));
-            EqualityTester.AssertInequality(map1, map2);
-            map1.Add("b", new ForeignMessage());
-            EqualityTester.AssertInequality(map1, map2);
-            map1["b"] = null;
-            EqualityTester.AssertEquality(map1, map2);
         }
 
         [Test]
@@ -454,30 +426,6 @@ namespace Google.Protobuf.Collections
         }
 
         [Test]
-        public void AllowNullValues_Property()
-        {
-            // Non-message reference type values are non-nullable by default, but can be overridden
-            Assert.IsFalse(new MapField<int, string>().AllowsNullValues);
-            Assert.IsFalse(new MapField<int, string>(false).AllowsNullValues);
-            Assert.IsTrue(new MapField<int, string>(true).AllowsNullValues);
-
-            // Non-nullable value type values are never nullable
-            Assert.IsFalse(new MapField<int, int>().AllowsNullValues);
-            Assert.IsFalse(new MapField<int, int>(false).AllowsNullValues);
-            Assert.Throws<ArgumentException>(() => new MapField<int, int>(true));
-
-            // Message type values are nullable by default, but can be overridden
-            Assert.IsTrue(new MapField<int, TestAllTypes>().AllowsNullValues);
-            Assert.IsFalse(new MapField<int, TestAllTypes>(false).AllowsNullValues);
-            Assert.IsTrue(new MapField<int, TestAllTypes>(true).AllowsNullValues);
-
-            // Nullable value type values are nullable by default, but can be overridden
-            Assert.IsTrue(new MapField<int, int?>().AllowsNullValues);
-            Assert.IsFalse(new MapField<int, int?>(false).AllowsNullValues);
-            Assert.IsTrue(new MapField<int, int?>(true).AllowsNullValues);
-        }
-
-        [Test]
         public void KeysReturnsLiveView()
         {
             var map = new MapField<string, string>();
@@ -523,7 +471,7 @@ namespace Google.Protobuf.Collections
             keys.CopyTo(array, 1);
             CollectionAssert.AreEqual(new[] { null, "foo", "x", null }, array);
         }
-        
+
         // Just test keys - we know the implementation is the same for values
         [Test]
         public void NonGenericViewCopyTo()
@@ -551,6 +499,14 @@ namespace Google.Protobuf.Collections
         }
 
         [Test]
+        public void KeysCopyTo()
+        {
+            var map = new MapField<string, string> { { "foo", "bar" }, { "x", "y" } };
+            var keys = map.Keys.ToArray(); // Uses CopyTo internally
+            CollectionAssert.AreEquivalent(new[] { "foo", "x" }, keys);
+        }
+
+        [Test]
         public void ValuesContains()
         {
             var map = new MapField<string, string> { { "foo", "bar" }, { "x", "y" } };
@@ -561,6 +517,87 @@ namespace Google.Protobuf.Collections
             // Values can be null, so this makes sense
             Assert.IsFalse(values.Contains(null));
         }
+
+        [Test]
+        public void ValuesCopyTo()
+        {
+            var map = new MapField<string, string> { { "foo", "bar" }, { "x", "y" } };
+            var values = map.Values.ToArray(); // Uses CopyTo internally
+            CollectionAssert.AreEquivalent(new[] { "bar", "y" }, values);
+        }
+
+        [Test]
+        public void ToString_StringToString()
+        {
+            var map = new MapField<string, string> { { "foo", "bar" }, { "x", "y" } };
+            Assert.AreEqual("{ \"foo\": \"bar\", \"x\": \"y\" }", map.ToString());
+        }
+
+        [Test]
+        public void ToString_UnsupportedKeyType()
+        {
+            var map = new MapField<byte, string> { { 10, "foo" } };
+            Assert.Throws<ArgumentException>(() => map.ToString());
+        }
+
+        [Test]
+        public void NaNValuesComparedBitwise()
+        {
+            var map1 = new MapField<string, double>
+            {
+                { "x", SampleNaNs.Regular },
+                { "y", SampleNaNs.SignallingFlipped }
+            };
+
+            var map2 = new MapField<string, double>
+            {
+                { "x", SampleNaNs.Regular },
+                { "y", SampleNaNs.PayloadFlipped }
+            };
+
+            var map3 = new MapField<string, double>
+            {
+                { "x", SampleNaNs.Regular },
+                { "y", SampleNaNs.SignallingFlipped }
+            };
+
+            EqualityTester.AssertInequality(map1, map2);
+            EqualityTester.AssertEquality(map1, map3);
+            Assert.True(map1.Values.Contains(SampleNaNs.SignallingFlipped));
+            Assert.False(map2.Values.Contains(SampleNaNs.SignallingFlipped));
+        }
+
+        // This wouldn't usually happen, as protos can't use doubles as map keys,
+        // but let's be consistent.
+        [Test]
+        public void NaNKeysComparedBitwise()
+        {
+            var map = new MapField<double, string>
+            {
+                { SampleNaNs.Regular, "x" },
+                { SampleNaNs.SignallingFlipped, "y" }
+            };
+            Assert.AreEqual("x", map[SampleNaNs.Regular]);
+            Assert.AreEqual("y", map[SampleNaNs.SignallingFlipped]);
+            string ignored;
+            Assert.False(map.TryGetValue(SampleNaNs.PayloadFlipped, out ignored));
+        }
+
+#if !NET35
+        [Test]
+        public void IDictionaryKeys_Equals_IReadOnlyDictionaryKeys()
+        {
+            var map = new MapField<string, string> { { "foo", "bar" }, { "x", "y" } };
+            CollectionAssert.AreEquivalent(((IDictionary<string, string>)map).Keys, ((IReadOnlyDictionary<string, string>)map).Keys);
+        }
+
+        [Test]
+        public void IDictionaryValues_Equals_IReadOnlyDictionaryValues()
+        {
+            var map = new MapField<string, string> { { "foo", "bar" }, { "x", "y" } };
+            CollectionAssert.AreEquivalent(((IDictionary<string, string>)map).Values, ((IReadOnlyDictionary<string, string>)map).Values);
+        }
+#endif
 
         private static KeyValuePair<TKey, TValue> NewKeyValuePair<TKey, TValue>(TKey key, TValue value)
         {

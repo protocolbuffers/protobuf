@@ -46,14 +46,14 @@ OneofGenerator::OneofGenerator(const OneofDescriptor* descriptor)
   variables_["enum_name"] = OneofEnumName(descriptor_);
   variables_["name"] = OneofName(descriptor_);
   variables_["capitalized_name"] = OneofNameCapitalized(descriptor_);
-  variables_["raw_index"] = SimpleItoa(descriptor_->index());
+  variables_["raw_index"] = StrCat(descriptor_->index());
   const Descriptor* msg_descriptor = descriptor_->containing_type();
   variables_["owning_message_class"] = ClassName(msg_descriptor);
 
   string comments;
   SourceLocation location;
   if (descriptor_->GetSourceLocation(&location)) {
-    comments = BuildCommentsString(location);
+    comments = BuildCommentsString(location, true);
   } else {
     comments = "";
   }
@@ -65,7 +65,7 @@ OneofGenerator::~OneofGenerator() {}
 void OneofGenerator::SetOneofIndexBase(int index_base) {
   int index = descriptor_->index() + index_base;
   // Flip the sign to mark it as a oneof.
-  variables_["index"] = SimpleItoa(-index);
+  variables_["index"] = StrCat(-index);
 }
 
 void OneofGenerator::GenerateCaseEnum(io::Printer* printer) {
@@ -84,7 +84,7 @@ void OneofGenerator::GenerateCaseEnum(io::Printer* printer) {
         "$enum_name$_$field_name$ = $field_number$,\n",
         "enum_name", enum_name,
         "field_name", field_name,
-        "field_number", SimpleItoa(field->number()));
+        "field_number", StrCat(field->number()));
   }
   printer->Outdent();
   printer->Print(
@@ -104,6 +104,9 @@ void OneofGenerator::GeneratePublicCasePropertyDeclaration(
 void OneofGenerator::GenerateClearFunctionDeclaration(io::Printer* printer) {
   printer->Print(
       variables_,
+      "/**\n"
+      " * Clears whatever value was set for the oneof '$name$'.\n"
+      " **/\n"
       "void $owning_message_class$_Clear$capitalized_name$OneOfCase($owning_message_class$ *message);\n");
 }
 
@@ -118,18 +121,17 @@ void OneofGenerator::GenerateClearFunctionImplementation(io::Printer* printer) {
       variables_,
       "void $owning_message_class$_Clear$capitalized_name$OneOfCase($owning_message_class$ *message) {\n"
       "  GPBDescriptor *descriptor = [message descriptor];\n"
-      "  GPBOneofDescriptor *oneof = descriptor->oneofs_[$raw_index$];\n"
-      "  GPBMaybeClearOneof(message, oneof, 0);\n"
+      "  GPBOneofDescriptor *oneof = [descriptor.oneofs objectAtIndex:$raw_index$];\n"
+      "  GPBMaybeClearOneof(message, oneof, $index$, 0);\n"
       "}\n");
 }
 
-void OneofGenerator::GenerateDescription(io::Printer* printer) {
-  printer->Print(
-      variables_,
-      "{\n"
-      "  .name = \"$name$\",\n"
-      "  .index = $index$,\n"
-      "},\n");
+string OneofGenerator::DescriptorName(void) const {
+  return variables_.find("name")->second;
+}
+
+string OneofGenerator::HasIndexAsString(void) const {
+  return variables_.find("index")->second;
 }
 
 }  // namespace objectivec

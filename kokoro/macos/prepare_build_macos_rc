@@ -1,0 +1,41 @@
+#!/bin/bash
+#
+# This script sets up a Kokoro MacOS worker for running Protobuf tests
+
+##
+# Select Xcode version
+
+# Remember to udpate the Xcode version when Xcode_11.0.app is not available.
+# If xcode is not available, it will probaly encounter the failure for
+# "autom4te: need GNU m4 1.4 or later: /usr/bin/m4"
+# go/kokoro/userdocs/macos/selecting_xcode.md for more information.
+export DEVELOPER_DIR=/Applications/Xcode_11.0.app/Contents/Developer
+
+##
+# Select C/C++ compilers
+
+export CC=gcc
+export CXX=g++
+
+##
+# Install Brew and core softwares
+
+ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+source $HOME/.rvm/scripts/rvm
+brew uninstall node icu4c cmake wget
+brew prune
+brew install gflags gpg gpg2 node openssl pcre ruby cmake wget
+sudo chown -R $(whoami) /usr/local
+brew postinstall node
+
+##
+# Install Tox
+
+sudo pip install tox==2.4.1
+
+##
+# Install RVM
+
+gpg2 --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
+command curl -sSL https://rvm.io/mpapis.asc | gpg2 --import -
+curl -sSL https://get.rvm.io | bash -s stable --ruby

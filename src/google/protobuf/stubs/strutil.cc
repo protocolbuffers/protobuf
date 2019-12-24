@@ -31,15 +31,16 @@
 // from google3/strings/strutil.cc
 
 #include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/stubs/mathlimits.h>
 
 #include <errno.h>
 #include <float.h>    // FLT_DIG and DBL_DIG
-#include <limits>
 #include <limits.h>
 #include <stdio.h>
+#include <cmath>
 #include <iterator>
+#include <limits>
 
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/stl_util.h>
 
 #ifdef _WIN32
@@ -79,15 +80,15 @@ inline bool isprint(char c) {
 }
 
 // ----------------------------------------------------------------------
-// StripString
+// ReplaceCharacters
 //    Replaces any occurrence of the character 'remove' (or the characters
 //    in 'remove') with the character 'replacewith'.
 // ----------------------------------------------------------------------
-void StripString(string* s, const char* remove, char replacewith) {
-  const char * str_start = s->c_str();
-  const char * str = str_start;
+void ReplaceCharacters(string *s, const char *remove, char replacewith) {
+  const char *str_start = s->c_str();
+  const char *str = str_start;
   for (str = strpbrk(str, remove);
-       str != NULL;
+       str != nullptr;
        str = strpbrk(str + 1, remove)) {
     (*s)[str - str_start] = replacewith;
   }
@@ -211,8 +212,8 @@ void SplitStringToIteratorUsing(const string& full,
 
 void SplitStringUsing(const string& full,
                       const char* delim,
-                      vector<string>* result) {
-  back_insert_iterator< vector<string> > it(*result);
+                      std::vector<string>* result) {
+  std::back_insert_iterator< std::vector<string> > it(*result);
   SplitStringToIteratorUsing(full, delim, it);
 }
 
@@ -249,8 +250,8 @@ void SplitStringToIteratorAllowEmpty(const StringType& full,
 }
 
 void SplitStringAllowEmpty(const string& full, const char* delim,
-                           vector<string>* result) {
-  back_insert_iterator<vector<string> > it(*result);
+                           std::vector<string>* result) {
+  std::back_insert_iterator<std::vector<string> > it(*result);
   SplitStringToIteratorAllowEmpty(full, delim, 0, it);
 }
 
@@ -265,7 +266,7 @@ static void JoinStringsIterator(const ITERATOR& start,
                                 const ITERATOR& end,
                                 const char* delim,
                                 string* result) {
-  GOOGLE_CHECK(result != NULL);
+  GOOGLE_CHECK(result != nullptr);
   result->clear();
   int delim_length = strlen(delim);
 
@@ -288,7 +289,7 @@ static void JoinStringsIterator(const ITERATOR& start,
   }
 }
 
-void JoinStrings(const vector<string>& components,
+void JoinStrings(const std::vector<string>& components,
                  const char* delim,
                  string * result) {
   JoinStringsIterator(components.begin(), components.end(), delim, result);
@@ -303,7 +304,7 @@ void JoinStrings(const vector<string>& components,
 //    result is truncated to 8 bits.
 //
 //    The second call stores its errors in a supplied string vector.
-//    If the string vector pointer is NULL, it reports the errors with LOG().
+//    If the string vector pointer is nullptr, it reports the errors with LOG().
 // ----------------------------------------------------------------------
 
 #define IS_OCTAL_DIGIT(c) (((c) >= '0') && ((c) <= '7'))
@@ -313,12 +314,12 @@ void JoinStrings(const vector<string>& components,
 #define LOG_STRING(LEVEL, VECTOR) GOOGLE_LOG_IF(LEVEL, false)
 
 int UnescapeCEscapeSequences(const char* source, char* dest) {
-  return UnescapeCEscapeSequences(source, dest, NULL);
+  return UnescapeCEscapeSequences(source, dest, nullptr);
 }
 
 int UnescapeCEscapeSequences(const char* source, char* dest,
-                             vector<string> *errors) {
-  GOOGLE_DCHECK(errors == NULL) << "Error reporting not implemented.";
+                             std::vector<string> *errors) {
+  GOOGLE_DCHECK(errors == nullptr) << "Error reporting not implemented.";
 
   char* d = dest;
   const char* p = source;
@@ -443,18 +444,18 @@ int UnescapeCEscapeSequences(const char* source, char* dest,
 //    to be the same.
 //
 //    The second call stores its errors in a supplied string vector.
-//    If the string vector pointer is NULL, it reports the errors with LOG().
+//    If the string vector pointer is nullptr, it reports the errors with LOG().
 //
 //    In the first and second calls, the length of dest is returned. In the
 //    the third call, the new string is returned.
 // ----------------------------------------------------------------------
 int UnescapeCEscapeString(const string& src, string* dest) {
-  return UnescapeCEscapeString(src, dest, NULL);
+  return UnescapeCEscapeString(src, dest, nullptr);
 }
 
 int UnescapeCEscapeString(const string& src, string* dest,
-                          vector<string> *errors) {
-  scoped_array<char> unescaped(new char[src.size() + 1]);
+                          std::vector<string> *errors) {
+  std::unique_ptr<char[]> unescaped(new char[src.size() + 1]);
   int len = UnescapeCEscapeSequences(src.c_str(), unescaped.get(), errors);
   GOOGLE_CHECK(dest);
   dest->assign(unescaped.get(), len);
@@ -462,8 +463,8 @@ int UnescapeCEscapeString(const string& src, string* dest,
 }
 
 string UnescapeCEscapeString(const string& src) {
-  scoped_array<char> unescaped(new char[src.size() + 1]);
-  int len = UnescapeCEscapeSequences(src.c_str(), unescaped.get(), NULL);
+  std::unique_ptr<char[]> unescaped(new char[src.size() + 1]);
+  int len = UnescapeCEscapeSequences(src.c_str(), unescaped.get(), nullptr);
   return string(unescaped.get(), len);
 }
 
@@ -524,34 +525,88 @@ int CEscapeInternal(const char* src, int src_len, char* dest,
   return used;
 }
 
-int CEscapeString(const char* src, int src_len, char* dest, int dest_len) {
-  return CEscapeInternal(src, src_len, dest, dest_len, false, false);
+// Calculates the length of the C-style escaped version of 'src'.
+// Assumes that non-printable characters are escaped using octal sequences, and
+// that UTF-8 bytes are not handled specially.
+static inline size_t CEscapedLength(StringPiece src) {
+  static char c_escaped_len[256] = {
+    4, 4, 4, 4, 4, 4, 4, 4, 4, 2, 2, 4, 4, 2, 4, 4,  // \t, \n, \r
+    4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+    1, 1, 2, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1,  // ", '
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,  // '0'..'9'
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,  // 'A'..'O'
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1,  // 'P'..'Z', '\'
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,  // 'a'..'o'
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 4,  // 'p'..'z', DEL
+    4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+    4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+    4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+    4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+    4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+    4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+    4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+    4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+  };
+
+  size_t escaped_len = 0;
+  for (int i = 0; i < src.size(); ++i) {
+    unsigned char c = static_cast<unsigned char>(src[i]);
+    escaped_len += c_escaped_len[c];
+  }
+  return escaped_len;
 }
 
 // ----------------------------------------------------------------------
-// CEscape()
-// CHexEscape()
-//    Copies 'src' to result, escaping dangerous characters using
-//    C-style escape sequences. This is very useful for preparing query
-//    flags. 'src' and 'dest' should not overlap. The 'Hex' version
-//    hexadecimal rather than octal sequences.
-//
-//    Currently only \n, \r, \t, ", ', \ and !isprint() chars are escaped.
+// Escapes 'src' using C-style escape sequences, and appends the escaped string
+// to 'dest'. This version is faster than calling CEscapeInternal as it computes
+// the required space using a lookup table, and also does not do any special
+// handling for Hex or UTF-8 characters.
 // ----------------------------------------------------------------------
+void CEscapeAndAppend(StringPiece src, string* dest) {
+  size_t escaped_len = CEscapedLength(src);
+  if (escaped_len == src.size()) {
+    dest->append(src.data(), src.size());
+    return;
+  }
+
+  size_t cur_dest_len = dest->size();
+  dest->resize(cur_dest_len + escaped_len);
+  char* append_ptr = &(*dest)[cur_dest_len];
+
+  for (int i = 0; i < src.size(); ++i) {
+    unsigned char c = static_cast<unsigned char>(src[i]);
+    switch (c) {
+      case '\n': *append_ptr++ = '\\'; *append_ptr++ = 'n'; break;
+      case '\r': *append_ptr++ = '\\'; *append_ptr++ = 'r'; break;
+      case '\t': *append_ptr++ = '\\'; *append_ptr++ = 't'; break;
+      case '\"': *append_ptr++ = '\\'; *append_ptr++ = '\"'; break;
+      case '\'': *append_ptr++ = '\\'; *append_ptr++ = '\''; break;
+      case '\\': *append_ptr++ = '\\'; *append_ptr++ = '\\'; break;
+      default:
+        if (!isprint(c)) {
+          *append_ptr++ = '\\';
+          *append_ptr++ = '0' + c / 64;
+          *append_ptr++ = '0' + (c % 64) / 8;
+          *append_ptr++ = '0' + c % 8;
+        } else {
+          *append_ptr++ = c;
+        }
+        break;
+    }
+  }
+}
+
 string CEscape(const string& src) {
-  const int dest_length = src.size() * 4 + 1; // Maximum possible expansion
-  scoped_array<char> dest(new char[dest_length]);
-  const int len = CEscapeInternal(src.data(), src.size(),
-                                  dest.get(), dest_length, false, false);
-  GOOGLE_DCHECK_GE(len, 0);
-  return string(dest.get(), len);
+  string dest;
+  CEscapeAndAppend(src, &dest);
+  return dest;
 }
 
 namespace strings {
 
 string Utf8SafeCEscape(const string& src) {
   const int dest_length = src.size() * 4 + 1; // Maximum possible expansion
-  scoped_array<char> dest(new char[dest_length]);
+  std::unique_ptr<char[]> dest(new char[dest_length]);
   const int len = CEscapeInternal(src.data(), src.size(),
                                   dest.get(), dest_length, false, true);
   GOOGLE_DCHECK_GE(len, 0);
@@ -560,7 +615,7 @@ string Utf8SafeCEscape(const string& src) {
 
 string CHexEscape(const string& src) {
   const int dest_length = src.size() * 4 + 1; // Maximum possible expansion
-  scoped_array<char> dest(new char[dest_length]);
+  std::unique_ptr<char[]> dest(new char[dest_length]);
   const int len = CEscapeInternal(src.data(), src.size(),
                                   dest.get(), dest_length, true, false);
   GOOGLE_DCHECK_GE(len, 0);
@@ -912,8 +967,8 @@ static const char two_ASCII_digits[100][2] = {
 };
 
 char* FastUInt32ToBufferLeft(uint32 u, char* buffer) {
-  int digits;
-  const char *ASCII_digits = NULL;
+  uint32 digits;
+  const char *ASCII_digits = nullptr;
   // The idea of this implementation is to trim the number of divides to as few
   // as possible by using multiplication and subtraction rather than mod (%),
   // and by outputting two digits at a time rather than one.
@@ -994,17 +1049,19 @@ done:
 }
 
 char* FastInt32ToBufferLeft(int32 i, char* buffer) {
-  uint32 u = i;
+  uint32 u = 0;
   if (i < 0) {
     *buffer++ = '-';
-    u = -i;
+    u -= i;
+  } else {
+    u = i;
   }
   return FastUInt32ToBufferLeft(u, buffer);
 }
 
 char* FastUInt64ToBufferLeft(uint64 u64, char* buffer) {
   int digits;
-  const char *ASCII_digits = NULL;
+  const char *ASCII_digits = nullptr;
 
   uint32 u = static_cast<uint32>(u64);
   if (u == u64) return FastUInt32ToBufferLeft(u, buffer);
@@ -1045,10 +1102,12 @@ char* FastUInt64ToBufferLeft(uint64 u64, char* buffer) {
 }
 
 char* FastInt64ToBufferLeft(int64 i, char* buffer) {
-  uint64 u = i;
+  uint64 u = 0;
   if (i < 0) {
     *buffer++ = '-';
-    u = -i;
+    u -= i;
+  } else {
+    u = i;
   }
   return FastUInt64ToBufferLeft(u, buffer);
 }
@@ -1162,7 +1221,7 @@ static inline bool IsValidFloatChar(char c) {
 void DelocalizeRadix(char* buffer) {
   // Fast check:  if the buffer has a normal decimal point, assume no
   // translation is needed.
-  if (strchr(buffer, '.') != NULL) return;
+  if (strchr(buffer, '.') != nullptr) return;
 
   // Find the first unknown character.
   while (IsValidFloatChar(*buffer)) ++buffer;
@@ -1193,13 +1252,13 @@ char* DoubleToBuffer(double value, char* buffer) {
   // this assert.
   GOOGLE_COMPILE_ASSERT(DBL_DIG < 20, DBL_DIG_is_too_big);
 
-  if (value == numeric_limits<double>::infinity()) {
+  if (value == std::numeric_limits<double>::infinity()) {
     strcpy(buffer, "inf");
     return buffer;
-  } else if (value == -numeric_limits<double>::infinity()) {
+  } else if (value == -std::numeric_limits<double>::infinity()) {
     strcpy(buffer, "-inf");
     return buffer;
-  } else if (MathLimits<double>::IsNaN(value)) {
+  } else if (std::isnan(value)) {
     strcpy(buffer, "nan");
     return buffer;
   }
@@ -1217,7 +1276,7 @@ char* DoubleToBuffer(double value, char* buffer) {
   // of a double.  This long double may have extra bits that make it compare
   // unequal to "value" even though it would be exactly equal if it were
   // truncated to a double.
-  volatile double parsed_value = strtod(buffer, NULL);
+  volatile double parsed_value = internal::NoLocaleStrtod(buffer, nullptr);
   if (parsed_value != value) {
     int snprintf_result =
       snprintf(buffer, kDoubleToBufferSize, "%.*g", DBL_DIG+2, value);
@@ -1249,7 +1308,7 @@ inline bool CaseEqual(StringPiece s1, StringPiece s2) {
 }
 
 bool safe_strtob(StringPiece str, bool* value) {
-  GOOGLE_CHECK(value != NULL) << "NULL output boolean given.";
+  GOOGLE_CHECK(value != nullptr) << "nullptr output boolean given.";
   if (CaseEqual(str, "true") || CaseEqual(str, "t") ||
       CaseEqual(str, "yes") || CaseEqual(str, "y") ||
       CaseEqual(str, "1")) {
@@ -1269,7 +1328,7 @@ bool safe_strtof(const char* str, float* value) {
   char* endptr;
   errno = 0;  // errno only gets set on errors
 #if defined(_WIN32) || defined (__hpux)  // has no strtof()
-  *value = strtod(str, &endptr);
+  *value = internal::NoLocaleStrtod(str, &endptr);
 #else
   *value = strtof(str, &endptr);
 #endif
@@ -1278,7 +1337,7 @@ bool safe_strtof(const char* str, float* value) {
 
 bool safe_strtod(const char* str, double* value) {
   char* endptr;
-  *value = strtod(str, &endptr);
+  *value = internal::NoLocaleStrtod(str, &endptr);
   if (endptr != str) {
     while (ascii_isspace(*endptr)) ++endptr;
   }
@@ -1311,13 +1370,13 @@ char* FloatToBuffer(float value, char* buffer) {
   // this assert.
   GOOGLE_COMPILE_ASSERT(FLT_DIG < 10, FLT_DIG_is_too_big);
 
-  if (value == numeric_limits<double>::infinity()) {
+  if (value == std::numeric_limits<double>::infinity()) {
     strcpy(buffer, "inf");
     return buffer;
-  } else if (value == -numeric_limits<double>::infinity()) {
+  } else if (value == -std::numeric_limits<double>::infinity()) {
     strcpy(buffer, "-inf");
     return buffer;
-  } else if (MathLimits<float>::IsNaN(value)) {
+  } else if (std::isnan(value)) {
     strcpy(buffer, "nan");
     return buffer;
   }
@@ -1332,7 +1391,7 @@ char* FloatToBuffer(float value, char* buffer) {
   float parsed_value;
   if (!safe_strtof(buffer, &parsed_value) || parsed_value != value) {
     int snprintf_result =
-      snprintf(buffer, kFloatToBufferSize, "%.*g", FLT_DIG+2, value);
+      snprintf(buffer, kFloatToBufferSize, "%.*g", FLT_DIG+3, value);
 
     // Should never overflow; see above.
     GOOGLE_DCHECK(snprintf_result > 0 && snprintf_result < kFloatToBufferSize);
@@ -1376,32 +1435,44 @@ AlphaNum::AlphaNum(strings::Hex hex) {
 // after the area just overwritten.  It comes in multiple flavors to minimize
 // call overhead.
 static char *Append1(char *out, const AlphaNum &x) {
-  memcpy(out, x.data(), x.size());
-  return out + x.size();
+  if (x.size() > 0) {
+    memcpy(out, x.data(), x.size());
+    out += x.size();
+  }
+  return out;
 }
 
 static char *Append2(char *out, const AlphaNum &x1, const AlphaNum &x2) {
-  memcpy(out, x1.data(), x1.size());
-  out += x1.size();
-
-  memcpy(out, x2.data(), x2.size());
-  return out + x2.size();
+  if (x1.size() > 0) {
+    memcpy(out, x1.data(), x1.size());
+    out += x1.size();
+  }
+  if (x2.size() > 0) {
+    memcpy(out, x2.data(), x2.size());
+    out += x2.size();
+  }
+  return out;
 }
 
-static char *Append4(char *out,
-                     const AlphaNum &x1, const AlphaNum &x2,
+static char *Append4(char *out, const AlphaNum &x1, const AlphaNum &x2,
                      const AlphaNum &x3, const AlphaNum &x4) {
-  memcpy(out, x1.data(), x1.size());
-  out += x1.size();
-
-  memcpy(out, x2.data(), x2.size());
-  out += x2.size();
-
-  memcpy(out, x3.data(), x3.size());
-  out += x3.size();
-
-  memcpy(out, x4.data(), x4.size());
-  return out + x4.size();
+  if (x1.size() > 0) {
+    memcpy(out, x1.data(), x1.size());
+    out += x1.size();
+  }
+  if (x2.size() > 0) {
+    memcpy(out, x2.data(), x2.size());
+    out += x2.size();
+  }
+  if (x3.size() > 0) {
+    memcpy(out, x3.data(), x3.size());
+    out += x3.size();
+  }
+  if (x4.size() > 0) {
+    memcpy(out, x4.data(), x4.size());
+    out += x4.size();
+  }
+  return out;
 }
 
 string StrCat(const AlphaNum &a, const AlphaNum &b) {
@@ -1550,7 +1621,7 @@ void StrAppend(string *result,
 int GlobalReplaceSubstring(const string& substring,
                            const string& replacement,
                            string* s) {
-  GOOGLE_CHECK(s != NULL);
+  GOOGLE_CHECK(s != nullptr);
   if (s->empty() || substring.empty())
     return 0;
   string tmp;
@@ -1890,24 +1961,25 @@ int Base64UnescapeInternal(const char *src_param, int szsrc,
 // #include <sys/time.h>
 // #include <stdlib.h>
 // #include <string.h>
+// #include <stdio.h>
 // main()
 // {
 //   static const char Base64[] =
 //     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-//   char *pos;
+//   const char *pos;
 //   int idx, i, j;
 //   printf("    ");
 //   for (i = 0; i < 255; i += 8) {
 //     for (j = i; j < i + 8; j++) {
 //       pos = strchr(Base64, j);
-//       if ((pos == NULL) || (j == 0))
+//       if ((pos == nullptr) || (j == 0))
 //         idx = -1;
 //       else
 //         idx = pos - Base64;
 //       if (idx == -1)
 //         printf(" %2d,     ", idx);
 //       else
-//         printf(" %2d/*%c*/,", idx, j);
+//         printf(" %2d/""*%c*""/,", idx, j);
 //     }
 //     printf("\n    ");
 //   }
@@ -1925,7 +1997,7 @@ static const signed char kUnBase64[] = {
   52/*0*/, 53/*1*/, 54/*2*/, 55/*3*/, 56/*4*/, 57/*5*/, 58/*6*/, 59/*7*/,
   60/*8*/, 61/*9*/, -1,      -1,      -1,      -1,      -1,      -1,
   -1,       0/*A*/,  1/*B*/,  2/*C*/,  3/*D*/,  4/*E*/,  5/*F*/,  6/*G*/,
-  07/*H*/,  8/*I*/,  9/*J*/, 10/*K*/, 11/*L*/, 12/*M*/, 13/*N*/, 14/*O*/,
+   7/*H*/,  8/*I*/,  9/*J*/, 10/*K*/, 11/*L*/, 12/*M*/, 13/*N*/, 14/*O*/,
   15/*P*/, 16/*Q*/, 17/*R*/, 18/*S*/, 19/*T*/, 20/*U*/, 21/*V*/, 22/*W*/,
   23/*X*/, 24/*Y*/, 25/*Z*/, -1,      -1,      -1,      -1,      -1,
   -1,      26/*a*/, 27/*b*/, 28/*c*/, 29/*d*/, 30/*e*/, 31/*f*/, 32/*g*/,
@@ -1959,7 +2031,7 @@ static const signed char kUnWebSafeBase64[] = {
   52/*0*/, 53/*1*/, 54/*2*/, 55/*3*/, 56/*4*/, 57/*5*/, 58/*6*/, 59/*7*/,
   60/*8*/, 61/*9*/, -1,      -1,      -1,      -1,      -1,      -1,
   -1,       0/*A*/,  1/*B*/,  2/*C*/,  3/*D*/,  4/*E*/,  5/*F*/,  6/*G*/,
-  07/*H*/,  8/*I*/,  9/*J*/, 10/*K*/, 11/*L*/, 12/*M*/, 13/*N*/, 14/*O*/,
+   7/*H*/,  8/*I*/,  9/*J*/, 10/*K*/, 11/*L*/, 12/*M*/, 13/*N*/, 14/*O*/,
   15/*P*/, 16/*Q*/, 17/*R*/, 18/*S*/, 19/*T*/, 20/*U*/, 21/*V*/, 22/*W*/,
   23/*X*/, 24/*Y*/, 25/*Z*/, -1,      -1,      -1,      -1,      63/*_*/,
   -1,      26/*a*/, 27/*b*/, 28/*c*/, 29/*d*/, 30/*e*/, 31/*f*/, 32/*g*/,
@@ -2220,7 +2292,7 @@ static const unsigned char kUTF8LenTbl[256] = {
   1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,
   1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,
   2,2,2,2,2,2,2,2, 2,2,2,2,2,2,2,2, 2,2,2,2,2,2,2,2, 2,2,2,2,2,2,2,2,
-  3,3,3,3,3,3,3,3, 3,3,3,3,3,3,3,3, 4,4,4,4,4,4,4,4, 4,4,4,4,4,4,4,4
+  3,3,3,3,3,3,3,3, 3,3,3,3,3,3,3,3, 4,4,4,4,4,1,1,1, 1,1,1,1,1,1,1,1
 };
 
 // Return length of a single UTF-8 source character
@@ -2230,6 +2302,182 @@ int UTF8FirstLetterNumBytes(const char* src, int len) {
   }
   return kUTF8LenTbl[*reinterpret_cast<const uint8*>(src)];
 }
+
+// ----------------------------------------------------------------------
+// CleanStringLineEndings()
+//   Clean up a multi-line string to conform to Unix line endings.
+//   Reads from src and appends to dst, so usually dst should be empty.
+//
+//   If there is no line ending at the end of a non-empty string, it can
+//   be added automatically.
+//
+//   Four different types of input are correctly handled:
+//
+//     - Unix/Linux files: line ending is LF: pass through unchanged
+//
+//     - DOS/Windows files: line ending is CRLF: convert to LF
+//
+//     - Legacy Mac files: line ending is CR: convert to LF
+//
+//     - Garbled files: random line endings: convert gracefully
+//                      lonely CR, lonely LF, CRLF: convert to LF
+//
+//   @param src The multi-line string to convert
+//   @param dst The converted string is appended to this string
+//   @param auto_end_last_line Automatically terminate the last line
+//
+//   Limitations:
+//
+//     This does not do the right thing for CRCRLF files created by
+//     broken programs that do another Unix->DOS conversion on files
+//     that are already in CRLF format.  For this, a two-pass approach
+//     brute-force would be needed that
+//
+//       (1) determines the presence of LF (first one is ok)
+//       (2) if yes, removes any CR, else convert every CR to LF
+
+void CleanStringLineEndings(const string &src, string *dst,
+                            bool auto_end_last_line) {
+  if (dst->empty()) {
+    dst->append(src);
+    CleanStringLineEndings(dst, auto_end_last_line);
+  } else {
+    string tmp = src;
+    CleanStringLineEndings(&tmp, auto_end_last_line);
+    dst->append(tmp);
+  }
+}
+
+void CleanStringLineEndings(string *str, bool auto_end_last_line) {
+  ptrdiff_t output_pos = 0;
+  bool r_seen = false;
+  ptrdiff_t len = str->size();
+
+  char *p = &(*str)[0];
+
+  for (ptrdiff_t input_pos = 0; input_pos < len;) {
+    if (!r_seen && input_pos + 8 < len) {
+      uint64_t v = GOOGLE_UNALIGNED_LOAD64(p + input_pos);
+      // Loop over groups of 8 bytes at a time until we come across
+      // a word that has a byte whose value is less than or equal to
+      // '\r' (i.e. could contain a \n (0x0a) or a \r (0x0d) ).
+      //
+      // We use a has_less macro that quickly tests a whole 64-bit
+      // word to see if any of the bytes has a value < N.
+      //
+      // For more details, see:
+      //   http://graphics.stanford.edu/~seander/bithacks.html#HasLessInWord
+#define has_less(x, n) (((x) - ~0ULL / 255 * (n)) & ~(x) & ~0ULL / 255 * 128)
+      if (!has_less(v, '\r' + 1)) {
+#undef has_less
+        // No byte in this word has a value that could be a \r or a \n
+        if (output_pos != input_pos) {
+          GOOGLE_UNALIGNED_STORE64(p + output_pos, v);
+        }
+        input_pos += 8;
+        output_pos += 8;
+        continue;
+      }
+    }
+    string::const_reference in = p[input_pos];
+    if (in == '\r') {
+      if (r_seen) p[output_pos++] = '\n';
+      r_seen = true;
+    } else if (in == '\n') {
+      if (input_pos != output_pos)
+        p[output_pos++] = '\n';
+      else
+        output_pos++;
+      r_seen = false;
+    } else {
+      if (r_seen) p[output_pos++] = '\n';
+      r_seen = false;
+      if (input_pos != output_pos)
+        p[output_pos++] = in;
+      else
+        output_pos++;
+    }
+    input_pos++;
+  }
+  if (r_seen ||
+      (auto_end_last_line && output_pos > 0 && p[output_pos - 1] != '\n')) {
+    str->resize(output_pos + 1);
+    str->operator[](output_pos) = '\n';
+  } else if (output_pos < len) {
+    str->resize(output_pos);
+  }
+}
+
+namespace internal {
+
+// ----------------------------------------------------------------------
+// NoLocaleStrtod()
+//   This code will make you cry.
+// ----------------------------------------------------------------------
+
+namespace {
+
+// Returns a string identical to *input except that the character pointed to
+// by radix_pos (which should be '.') is replaced with the locale-specific
+// radix character.
+std::string LocalizeRadix(const char *input, const char *radix_pos) {
+  // Determine the locale-specific radix character by calling sprintf() to
+  // print the number 1.5, then stripping off the digits.  As far as I can
+  // tell, this is the only portable, thread-safe way to get the C library
+  // to divuldge the locale's radix character.  No, localeconv() is NOT
+  // thread-safe.
+  char temp[16];
+  int size = snprintf(temp, sizeof(temp), "%.1f", 1.5);
+  GOOGLE_CHECK_EQ(temp[0], '1');
+  GOOGLE_CHECK_EQ(temp[size - 1], '5');
+  GOOGLE_CHECK_LE(size, 6);
+
+  // Now replace the '.' in the input with it.
+  std::string result;
+  result.reserve(strlen(input) + size - 3);
+  result.append(input, radix_pos);
+  result.append(temp + 1, size - 2);
+  result.append(radix_pos + 1);
+  return result;
+}
+
+}  // namespace
+
+double NoLocaleStrtod(const char *str, char **endptr) {
+  // We cannot simply set the locale to "C" temporarily with setlocale()
+  // as this is not thread-safe.  Instead, we try to parse in the current
+  // locale first.  If parsing stops at a '.' character, then this is a
+  // pretty good hint that we're actually in some other locale in which
+  // '.' is not the radix character.
+
+  char *temp_endptr;
+  double result = strtod(str, &temp_endptr);
+  if (endptr != NULL) *endptr = temp_endptr;
+  if (*temp_endptr != '.') return result;
+
+  // Parsing halted on a '.'.  Perhaps we're in a different locale?  Let's
+  // try to replace the '.' with a locale-specific radix character and
+  // try again.
+  std::string localized = LocalizeRadix(str, temp_endptr);
+  const char *localized_cstr = localized.c_str();
+  char *localized_endptr;
+  result = strtod(localized_cstr, &localized_endptr);
+  if ((localized_endptr - localized_cstr) > (temp_endptr - str)) {
+    // This attempt got further, so replacing the decimal must have helped.
+    // Update endptr to point at the right location.
+    if (endptr != NULL) {
+      // size_diff is non-zero if the localized radix has multiple bytes.
+      int size_diff = localized.size() - strlen(str);
+      // const_cast is necessary to match the strtod() interface.
+      *endptr = const_cast<char *>(
+          str + (localized_endptr - localized_cstr - size_diff));
+    }
+  }
+
+  return result;
+}
+
+}  // namespace internal
 
 }  // namespace protobuf
 }  // namespace google

@@ -36,6 +36,8 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/stringpiece.h>
 
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
 namespace util {
@@ -62,7 +64,7 @@ enum Code {
 };
 }  // namespace error
 
-class LIBPROTOBUF_EXPORT Status {
+class PROTOBUF_EXPORT Status {
  public:
   // Creates a "successful" status.
   Status();
@@ -88,7 +90,13 @@ class LIBPROTOBUF_EXPORT Status {
   int error_code() const {
     return error_code_;
   }
+  error::Code code() const {
+    return error_code_;
+  }
   StringPiece error_message() const {
+    return error_message_;
+  }
+  StringPiece message() const {
     return error_message_;
   }
 
@@ -106,11 +114,12 @@ class LIBPROTOBUF_EXPORT Status {
 };
 
 // Prints a human-readable representation of 'x' to 'os'.
-LIBPROTOBUF_EXPORT ostream& operator<<(ostream& os, const Status& x);
-
-#define EXPECT_OK(value) EXPECT_TRUE((value).ok())
+PROTOBUF_EXPORT std::ostream& operator<<(std::ostream& os, const Status& x);
 
 }  // namespace util
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
+
 #endif  // GOOGLE_PROTOBUF_STUBS_STATUS_H_

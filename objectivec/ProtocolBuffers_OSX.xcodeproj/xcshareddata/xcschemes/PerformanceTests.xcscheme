@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "0630"
+   LastUpgradeVersion = "0930"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -23,10 +23,10 @@
       </BuildActionEntries>
    </BuildAction>
    <TestAction
+      buildConfiguration = "Release"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
-      shouldUseLaunchSchemeArgsEnv = "YES"
-      buildConfiguration = "Release">
+      shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
          <TestableReference
             skipped = "NO">
@@ -49,6 +49,12 @@
                </Test>
                <Test
                   Identifier = "DescriptorTests">
+               </Test>
+               <Test
+                  Identifier = "GPBAutocreatedArrayTests">
+               </Test>
+               <Test
+                  Identifier = "GPBAutocreatedDictionaryTests">
                </Test>
                <Test
                   Identifier = "GPBBoolArrayTests">
@@ -88,6 +94,9 @@
                </Test>
                <Test
                   Identifier = "GPBEnumArrayTests">
+               </Test>
+               <Test
+                  Identifier = "GPBExtensionRegistryTest">
                </Test>
                <Test
                   Identifier = "GPBFloatArrayTests">
@@ -159,6 +168,9 @@
                   Identifier = "GPBInt64UInt64DictionaryTests">
                </Test>
                <Test
+                  Identifier = "GPBObjectiveCPlusPlusTests">
+               </Test>
+               <Test
                   Identifier = "GPBStringBoolDictionaryTests">
                </Test>
                <Test
@@ -178,9 +190,6 @@
                </Test>
                <Test
                   Identifier = "GPBStringInt64DictionaryTests">
-               </Test>
-               <Test
-                  Identifier = "GPBStringTests">
                </Test>
                <Test
                   Identifier = "GPBStringUInt32DictionaryTests">
@@ -284,15 +293,18 @@
             </SkippedTests>
          </TestableReference>
       </Testables>
+      <AdditionalOptions>
+      </AdditionalOptions>
    </TestAction>
    <LaunchAction
+      buildConfiguration = "Release"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       launchStyle = "0"
       useCustomWorkingDirectory = "NO"
-      buildConfiguration = "Release"
       ignoresPersistentStateOnLaunch = "NO"
       debugDocumentVersioning = "YES"
+      debugServiceExtension = "internal"
       allowLocationSimulation = "YES">
       <MacroExpansion>
          <BuildableReference
@@ -307,10 +319,10 @@
       </AdditionalOptions>
    </LaunchAction>
    <ProfileAction
+      buildConfiguration = "Release"
       shouldUseLaunchSchemeArgsEnv = "YES"
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
-      buildConfiguration = "Release"
       debugDocumentVersioning = "YES">
       <MacroExpansion>
          <BuildableReference

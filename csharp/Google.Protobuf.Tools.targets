@@ -1,0 +1,11 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <protoc_tools>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)/../tools/'))</protoc_tools>
+        <protoc_linux64>$([System.IO.Path]::GetFullPath('$(protoc_tools)/linux_x64/protoc'))</protoc_linux64>
+        <protoc_linux86>$([System.IO.Path]::GetFullPath('$(protoc_tools)/linux_x86/protoc'))</protoc_linux86>
+        <protoc_macosx64>$([System.IO.Path]::GetFullPath('$(protoc_tools)/macosx_x64/protoc'))</protoc_macosx64>
+        <protoc_macosx86>$([System.IO.Path]::GetFullPath('$(protoc_tools)/macosx_x86/protoc'))</protoc_macosx86>
+        <protoc_windows64>$([System.IO.Path]::GetFullPath('$(protoc_tools)/windows_x64/protoc.exe'))</protoc_windows64>
+        <protoc_windows86>$([System.IO.Path]::GetFullPath('$(protoc_tools)/windows_x86/protoc.exe'))</protoc_windows86>
+    </PropertyGroup>
+</Project>

@@ -30,6 +30,8 @@
 
 #include <google/protobuf/stubs/statusor.h>
 
+#include <google/protobuf/stubs/logging.h>
+
 namespace google {
 namespace protobuf {
 namespace util {

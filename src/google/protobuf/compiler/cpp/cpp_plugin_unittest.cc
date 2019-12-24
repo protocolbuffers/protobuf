@@ -35,18 +35,16 @@
 //   worth.
 
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 
 #include <google/protobuf/compiler/cpp/cpp_generator.h>
 #include <google/protobuf/compiler/command_line_interface.h>
-#include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/io/printer.h>
+#include <google/protobuf/io/zero_copy_stream.h>
 
+#include <google/protobuf/testing/file.h>
+#include <google/protobuf/testing/file.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
-#include <google/protobuf/testing/file.h>
 
 namespace google {
 namespace protobuf {
@@ -60,9 +58,8 @@ class TestGenerator : public CodeGenerator {
   ~TestGenerator() {}
 
   virtual bool Generate(const FileDescriptor* file,
-                        const string& parameter,
-                        GeneratorContext* context,
-                        string* error) const {
+                        const std::string& parameter, GeneratorContext* context,
+                        std::string* error) const {
     TryInsert("test.pb.h", "includes", context);
     TryInsert("test.pb.h", "namespace_scope", context);
     TryInsert("test.pb.h", "global_scope", context);
@@ -131,7 +128,8 @@ class TestGenerator : public CodeGenerator {
     // Check field accessors for a message inside oneof{}:
     TryInsert("test.pb.h", "field_get:foo.Bar.oneOfMessage", context);
     TryInsert("test.pb.h", "field_mutable:foo.Bar.oneOfMessage", context);
-    TryInsert("test.pb.h", "field_set_allocated:foo.Bar.oneOfMessage", context);
+    TryInsert("test.pb.cc", "field_set_allocated:foo.Bar.oneOfMessage",
+              context);
 
     // Check field accessors for an optional enum:
     TryInsert("test.pb.h", "field_get:foo.Bar.optEnum", context);
@@ -169,9 +167,10 @@ class TestGenerator : public CodeGenerator {
     return true;
   }
 
-  void TryInsert(const string& filename, const string& insertion_point,
+  void TryInsert(const std::string& filename,
+                 const std::string& insertion_point,
                  GeneratorContext* context) const {
-    google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> output(
+    std::unique_ptr<io::ZeroCopyOutputStream> output(
         context->OpenForInsert(filename, insertion_point));
     io::Printer printer(output.get(), '$');
     printer.Print("// inserted $name$\n", "name", insertion_point);
@@ -221,7 +220,7 @@ TEST(CppPluginTest, PluginTest) {
                              "}\n",
                              true));
 
-  google::protobuf::compiler::CommandLineInterface cli;
+  CommandLineInterface cli;
   cli.SetInputsAreProtoPathRelative(true);
 
   CppGenerator cpp_generator;
@@ -229,17 +228,12 @@ TEST(CppPluginTest, PluginTest) {
   cli.RegisterGenerator("--cpp_out", &cpp_generator, "");
   cli.RegisterGenerator("--test_out", &test_generator, "");
 
-  string proto_path = "-I" + TestTempDir();
-  string cpp_out = "--cpp_out=" + TestTempDir();
-  string test_out = "--test_out=" + TestTempDir();
+  std::string proto_path = "-I" + TestTempDir();
+  std::string cpp_out = "--cpp_out=" + TestTempDir();
+  std::string test_out = "--test_out=" + TestTempDir();
 
-  const char* argv[] = {
-    "protoc",
-    proto_path.c_str(),
-    cpp_out.c_str(),
-    test_out.c_str(),
-    "test.proto"
-  };
+  const char* argv[] = {"protoc", proto_path.c_str(), cpp_out.c_str(),
+                        test_out.c_str(), "test.proto"};
 
   EXPECT_EQ(0, cli.Run(5, argv));
 }

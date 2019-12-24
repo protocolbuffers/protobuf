@@ -28,8 +28,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef NET_PROTO2_UTIL_CONVERTER_STRINGS_JSON_ESCAPING_H_
-#define NET_PROTO2_UTIL_CONVERTER_STRINGS_JSON_ESCAPING_H_
+#ifndef GOOGLE_PROTOBUF_UTIL_INTERNAL__JSON_ESCAPING_H__
+#define GOOGLE_PROTOBUF_UTIL_INTERNAL__JSON_ESCAPING_H__
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/bytestream.h>
@@ -79,6 +79,11 @@ class JsonEscaping {
   // Escape the given ByteSource to the given ByteSink.
   static void Escape(strings::ByteSource* input, strings::ByteSink* output);
 
+  // Escape the given ByteSource to the given ByteSink.
+  // This is optimized for the case where the string is all printable 7-bit
+  // ASCII and does not contain a few other characters (such as quotes).
+  static void Escape(StringPiece input, strings::ByteSink* output);
+
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(JsonEscaping);
 };
@@ -86,6 +91,6 @@ class JsonEscaping {
 }  // namespace converter
 }  // namespace util
 }  // namespace protobuf
-
-#endif  // NET_PROTO2_UTIL_CONVERTER_STRINGS_JSON_ESCAPING_H_
 }  // namespace google
+
+#endif  // GOOGLE_PROTOBUF_UTIL_INTERNAL__JSON_ESCAPING_H__

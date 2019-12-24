@@ -37,6 +37,8 @@ on proto classes.  For usage, see:
 
 __author__ = 'rabsatt@google.com (Kevin Rabsatt)'
 
+import six
+
 
 class EnumTypeWrapper(object):
   """A utility for finding the names of enum values."""
@@ -46,17 +48,23 @@ class EnumTypeWrapper(object):
   def __init__(self, enum_type):
     """Inits EnumTypeWrapper with an EnumDescriptor."""
     self._enum_type = enum_type
-    self.DESCRIPTOR = enum_type;
+    self.DESCRIPTOR = enum_type
 
   def Name(self, number):
     """Returns a string containing the name of an enum value."""
     if number in self._enum_type.values_by_number:
       return self._enum_type.values_by_number[number].name
-    raise ValueError('Enum %s has no name defined for value %d' % (
-        self._enum_type.name, number))
+
+    if not isinstance(number, six.integer_types):
+      raise TypeError('Enum value for %s must be an int, but got %r.' % (
+          self._enum_type.name, number))
+    else:
+      # %r here to handle the odd case when you pass in a boolean.
+      raise ValueError('Enum %s has no name defined for value %r' % (
+          self._enum_type.name, number))
 
   def Value(self, name):
-    """Returns the value coresponding to the given enum name."""
+    """Returns the value corresponding to the given enum name."""
     if name in self._enum_type.values_by_name:
       return self._enum_type.values_by_name[name].number
     raise ValueError('Enum %s has no value defined for name %s' % (
@@ -87,3 +95,9 @@ class EnumTypeWrapper(object):
     """
     return [(value_descriptor.name, value_descriptor.number)
             for value_descriptor in self._enum_type.values]
+
+  def __getattr__(self, name):
+    """Returns the value corresponding to the given enum name."""
+    if name in self._enum_type.values_by_name:
+      return self._enum_type.values_by_name[name].number
+    raise AttributeError

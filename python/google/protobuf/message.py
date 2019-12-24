@@ -172,20 +172,28 @@ class Message(object):
       we *do* stop because of an END_GROUP tag, the number
       of bytes returned does not include the bytes
       for the END_GROUP tag information.
+
+    Raises:
+      message.DecodeError if the input cannot be parsed.
     """
     raise NotImplementedError
 
   def ParseFromString(self, serialized):
     """Parse serialized protocol buffer data into this message.
 
-    Like MergeFromString(), except we clear the object first and
-    do not return the value that MergeFromString returns.
+    Like MergeFromString(), except we clear the object first.
     """
     self.Clear()
-    self.MergeFromString(serialized)
+    return self.MergeFromString(serialized)
 
-  def SerializeToString(self):
+  def SerializeToString(self, **kwargs):
     """Serializes the protocol message to a binary string.
+
+    Arguments:
+      **kwargs: Keyword arguments to the serialize method, accepts
+        the following keyword args:
+        deterministic: If true, requests deterministic serialization of the
+          protobuf, with predictable ordering of map keys.
 
     Returns:
       A binary string representation of the message if all of the required
@@ -196,11 +204,17 @@ class Message(object):
     """
     raise NotImplementedError
 
-  def SerializePartialToString(self):
+  def SerializePartialToString(self, **kwargs):
     """Serializes the protocol message to a binary string.
 
     This method is similar to SerializeToString but doesn't check if the
     message is initialized.
+
+    Arguments:
+      **kwargs: Keyword arguments to the serialize method, accepts
+        the following keyword args:
+        deterministic: If true, requests deterministic serialization of the
+          protobuf, with predictable ordering of map keys.
 
     Returns:
       A string representation of the partial message.
@@ -225,10 +239,11 @@ class Message(object):
   # """
   def ListFields(self):
     """Returns a list of (FieldDescriptor, value) tuples for all
-    fields in the message which are not empty.  A singular field is non-empty
-    if HasField() would return true, and a repeated field is non-empty if
-    it contains at least one element.  The fields are ordered by field
-    number"""
+    fields in the message which are not empty.  A message field is
+    non-empty if HasField() would return true. A singular primitive field
+    is non-empty if HasField() would return true in proto2 or it is non zero
+    in proto3. A repeated field is non-empty if it contains at least one
+    element.  The fields are ordered by field number"""
     raise NotImplementedError
 
   def HasField(self, field_name):
@@ -253,6 +268,13 @@ class Message(object):
     raise NotImplementedError
 
   def ClearExtension(self, extension_handle):
+    raise NotImplementedError
+
+  def UnknownFields(self):
+    """Returns the UnknownFieldSet."""
+    raise NotImplementedError
+
+  def DiscardUnknownFields(self):
     raise NotImplementedError
 
   def ByteSize(self):
@@ -289,4 +311,27 @@ class Message(object):
   def __setstate__(self, state):
     """Support the pickle protocol."""
     self.__init__()
-    self.ParseFromString(state['serialized'])
+    serialized = state['serialized']
+    # On Python 3, using encoding='latin1' is required for unpickling
+    # protos pickled by Python 2.
+    if not isinstance(serialized, bytes):
+      serialized = serialized.encode('latin1')
+    self.ParseFromString(serialized)
+
+  def __reduce__(self):
+    message_descriptor = self.DESCRIPTOR
+    if message_descriptor.containing_type is None:
+      return type(self), (), self.__getstate__()
+    # the message type must be nested.
+    # Python does not pickle nested classes; use the symbol_database on the
+    # receiving end.
+    container = message_descriptor
+    return (_InternalConstructMessage, (container.full_name,),
+            self.__getstate__())
+
+
+def _InternalConstructMessage(full_name):
+  """Constructs a nested message."""
+  from google.protobuf import symbol_database  # pylint:disable=g-import-not-at-top
+
+  return symbol_database.Default().GetSymbol(full_name)()

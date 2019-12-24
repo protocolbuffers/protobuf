@@ -35,19 +35,21 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_CPP_ENUM_H__
 #define GOOGLE_PROTOBUF_COMPILER_CPP_ENUM_H__
 
+#include <map>
 #include <set>
 #include <string>
 #include <google/protobuf/compiler/cpp/cpp_options.h>
 #include <google/protobuf/descriptor.h>
 
-
 namespace google {
 namespace protobuf {
-  namespace io {
-    class Printer;             // printer.h
-  }
+namespace io {
+class Printer;  // printer.h
 }
+}  // namespace protobuf
+}  // namespace google
 
+namespace google {
 namespace protobuf {
 namespace compiler {
 namespace cpp {
@@ -55,17 +57,10 @@ namespace cpp {
 class EnumGenerator {
  public:
   // See generator.cc for the meaning of dllexport_decl.
-  explicit EnumGenerator(const EnumDescriptor* descriptor,
-                         const Options& options);
+  EnumGenerator(const EnumDescriptor* descriptor,
+                const std::map<std::string, std::string>& vars,
+                const Options& options);
   ~EnumGenerator();
-
-  // Header stuff.
-
-  // Fills the name to use when declaring the enum. This is for use when
-  // generating other .proto.h files. This code should be placed within the
-  // enum's package namespace, but NOT within any class, even for nested
-  // enums.
-  void FillForwardDeclaration(set<string>* enum_names);
 
   // Generate header code defining the enum.  This code should be placed
   // within the enum's package namespace, but NOT within any class, even for
@@ -80,31 +75,31 @@ class EnumGenerator {
   // symbols (e.g. the enum type name, all its values, etc.) into the class's
   // namespace.  This should be placed inside the class definition in the
   // header.
-  void GenerateSymbolImports(io::Printer* printer);
+  void GenerateSymbolImports(io::Printer* printer) const;
 
   // Source file stuff.
 
-  // Generate code that initializes the global variable storing the enum's
-  // descriptor.
-  void GenerateDescriptorInitializer(io::Printer* printer, int index);
-
   // Generate non-inline methods related to the enum, such as IsValidValue().
-  // Goes in the .cc file.
-  void GenerateMethods(io::Printer* printer);
+  // Goes in the .cc file. EnumDescriptors are stored in an array, idx is
+  // the index in this array that corresponds with this enum.
+  void GenerateMethods(int idx, io::Printer* printer);
 
  private:
   const EnumDescriptor* descriptor_;
-  string classname_;
-  Options options_;
+  const std::string classname_;
+  const Options& options_;
   // whether to generate the *_ARRAYSIZE constant.
-  bool generate_array_size_;
+  const bool generate_array_size_;
 
+  std::map<std::string, std::string> variables_;
+
+  friend class FileGenerator;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(EnumGenerator);
 };
 
 }  // namespace cpp
 }  // namespace compiler
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_COMPILER_CPP_ENUM_H__

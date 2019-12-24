@@ -27,6 +27,9 @@ class ListPeople {
           case WORK:
             System.out.print("  Work phone #: ");
             break;
+          default:
+            System.out.println(" Unknown phone #: ");
+            break;
         }
         System.out.println(phoneNumber.getNumber());
       }

@@ -33,6 +33,7 @@
 using System;
 using System.IO;
 using Google.Protobuf.TestProtos;
+using Proto2 = Google.Protobuf.TestProtos.Proto2;
 using NUnit.Framework;
 using System.Collections;
 using System.Collections.Generic;
@@ -44,7 +45,7 @@ namespace Google.Protobuf
     /// <summary>
     /// Tests around the generated TestAllTypes message.
     /// </summary>
-    public class GeneratedMessageTest
+    public partial class GeneratedMessageTest
     {
         [Test]
         public void EmptyMessageFieldDistinctFromMissingMessageField()
@@ -66,13 +67,13 @@ namespace Google.Protobuf
             Assert.AreEqual(0, message.SingleFixed32);
             Assert.AreEqual(0L, message.SingleFixed64);
             Assert.AreEqual(0.0f, message.SingleFloat);
-            Assert.AreEqual(ForeignEnum.FOREIGN_UNSPECIFIED, message.SingleForeignEnum);
+            Assert.AreEqual(ForeignEnum.ForeignUnspecified, message.SingleForeignEnum);
             Assert.IsNull(message.SingleForeignMessage);
-            Assert.AreEqual(ImportEnum.IMPORT_ENUM_UNSPECIFIED, message.SingleImportEnum);
+            Assert.AreEqual(ImportEnum.Unspecified, message.SingleImportEnum);
             Assert.IsNull(message.SingleImportMessage);
             Assert.AreEqual(0, message.SingleInt32);
             Assert.AreEqual(0L, message.SingleInt64);
-            Assert.AreEqual(TestAllTypes.Types.NestedEnum.NESTED_ENUM_UNSPECIFIED, message.SingleNestedEnum);
+            Assert.AreEqual(TestAllTypes.Types.NestedEnum.Unspecified, message.SingleNestedEnum);
             Assert.IsNull(message.SingleNestedMessage);
             Assert.IsNull(message.SinglePublicImportMessage);
             Assert.AreEqual(0, message.SingleSfixed32);
@@ -145,13 +146,13 @@ namespace Google.Protobuf
                 SingleFixed32 = 23,
                 SingleFixed64 = 1234567890123,
                 SingleFloat = 12.25f,
-                SingleForeignEnum = ForeignEnum.FOREIGN_BAR,
+                SingleForeignEnum = ForeignEnum.ForeignBar,
                 SingleForeignMessage = new ForeignMessage { C = 10 },
-                SingleImportEnum = ImportEnum.IMPORT_BAZ,
+                SingleImportEnum = ImportEnum.ImportBaz,
                 SingleImportMessage = new ImportMessage { D = 20 },
                 SingleInt32 = 100,
                 SingleInt64 = 3210987654321,
-                SingleNestedEnum = TestAllTypes.Types.NestedEnum.FOO,
+                SingleNestedEnum = TestAllTypes.Types.NestedEnum.Foo,
                 SingleNestedMessage = new TestAllTypes.Types.NestedMessage { Bb = 35 },
                 SinglePublicImportMessage = new PublicImportMessage { E = 54 },
                 SingleSfixed32 = -123,
@@ -179,13 +180,13 @@ namespace Google.Protobuf
                 RepeatedFixed32 = { uint.MaxValue, 23 },
                 RepeatedFixed64 = { ulong.MaxValue, 1234567890123 },
                 RepeatedFloat = { 100f, 12.25f },
-                RepeatedForeignEnum = { ForeignEnum.FOREIGN_FOO, ForeignEnum.FOREIGN_BAR },
+                RepeatedForeignEnum = { ForeignEnum.ForeignFoo, ForeignEnum.ForeignBar },
                 RepeatedForeignMessage = { new ForeignMessage(), new ForeignMessage { C = 10 } },
-                RepeatedImportEnum = { ImportEnum.IMPORT_BAZ, ImportEnum.IMPORT_ENUM_UNSPECIFIED },
+                RepeatedImportEnum = { ImportEnum.ImportBaz, ImportEnum.Unspecified },
                 RepeatedImportMessage = { new ImportMessage { D = 20 }, new ImportMessage { D = 25 } },
                 RepeatedInt32 = { 100, 200 },
                 RepeatedInt64 = { 3210987654321, long.MaxValue },
-                RepeatedNestedEnum = { TestAllTypes.Types.NestedEnum.FOO, TestAllTypes.Types.NestedEnum.NEG },
+                RepeatedNestedEnum = { TestAllTypes.Types.NestedEnum.Foo, TestAllTypes.Types.NestedEnum.Neg },
                 RepeatedNestedMessage = { new TestAllTypes.Types.NestedMessage { Bb = 35 }, new TestAllTypes.Types.NestedMessage { Bb = 10 } },
                 RepeatedPublicImportMessage = { new PublicImportMessage { E = 54 }, new PublicImportMessage { E = -1 } },
                 RepeatedSfixed32 = { -123, 123 },
@@ -221,11 +222,11 @@ namespace Google.Protobuf
                 },
                 MapInt32ForeignMessage = {
                     { 0, new ForeignMessage { C = 10 } },
-                    { 5, null },
+                    { 5, new ForeignMessage() },
                 },
                 MapInt32Enum = {
-                    { 1, MapEnum.MAP_ENUM_BAR },
-                    { 2000, MapEnum.MAP_ENUM_FOO }
+                    { 1, MapEnum.Bar },
+                    { 2000, MapEnum.Foo }
                 }
             };
 
@@ -249,7 +250,7 @@ namespace Google.Protobuf
             Assert.AreEqual(1, parsed.MapInt32Bytes.Count);
             Assert.AreEqual(ByteString.Empty, parsed.MapInt32Bytes[0]);
         }
-        
+
         [Test]
         public void MapWithOnlyValue()
         {
@@ -266,6 +267,40 @@ namespace Google.Protobuf
 
             var parsed = TestMap.Parser.ParseFrom(memoryStream.ToArray());
             Assert.AreEqual(nestedMessage, parsed.MapInt32ForeignMessage[0]);
+        }
+
+        [Test]
+        public void MapWithOnlyKey_PrimitiveValue()
+        {
+            // Hand-craft the stream to contain a single entry with just a key.
+            var memoryStream = new MemoryStream();
+            var output = new CodedOutputStream(memoryStream);
+            output.WriteTag(TestMap.MapInt32DoubleFieldNumber, WireFormat.WireType.LengthDelimited);
+            int key = 10;
+            output.WriteLength(1 + CodedOutputStream.ComputeInt32Size(key));
+            output.WriteTag(1, WireFormat.WireType.Varint);
+            output.WriteInt32(key);
+            output.Flush();
+
+            var parsed = TestMap.Parser.ParseFrom(memoryStream.ToArray());
+            Assert.AreEqual(0.0, parsed.MapInt32Double[key]);
+        }
+
+        [Test]
+        public void MapWithOnlyKey_MessageValue()
+        {
+            // Hand-craft the stream to contain a single entry with just a key.
+            var memoryStream = new MemoryStream();
+            var output = new CodedOutputStream(memoryStream);
+            output.WriteTag(TestMap.MapInt32ForeignMessageFieldNumber, WireFormat.WireType.LengthDelimited);
+            int key = 10;
+            output.WriteLength(1 + CodedOutputStream.ComputeInt32Size(key));
+            output.WriteTag(1, WireFormat.WireType.Varint);
+            output.WriteInt32(key);
+            output.Flush();
+
+            var parsed = TestMap.Parser.ParseFrom(memoryStream.ToArray());
+            Assert.AreEqual(new ForeignMessage(), parsed.MapInt32ForeignMessage[key]);
         }
 
         [Test]
@@ -415,7 +450,7 @@ namespace Google.Protobuf
                 SingleFloat = 12.25f,
                 SingleInt32 = 100,
                 SingleInt64 = 3210987654321,
-                SingleNestedEnum = TestAllTypes.Types.NestedEnum.FOO,
+                SingleNestedEnum = TestAllTypes.Types.NestedEnum.Foo,
                 SingleSfixed32 = -123,
                 SingleSfixed64 = -12345678901234,
                 SingleSint32 = -456,
@@ -445,7 +480,7 @@ namespace Google.Protobuf
                 RepeatedFloat = { 100f, 12.25f },
                 RepeatedInt32 = { 100, 200 },
                 RepeatedInt64 = { 3210987654321, long.MaxValue },
-                RepeatedNestedEnum = { TestAllTypes.Types.NestedEnum.FOO, TestAllTypes.Types.NestedEnum.NEG },
+                RepeatedNestedEnum = { TestAllTypes.Types.NestedEnum.Foo, TestAllTypes.Types.NestedEnum.Neg },
                 RepeatedSfixed32 = { -123, 123 },
                 RepeatedSfixed64 = { -12345678901234, 12345678901234 },
                 RepeatedSint32 = { -456, 100 },
@@ -566,6 +601,16 @@ namespace Google.Protobuf
         }
 
         [Test]
+        public void Oneof_DefaultValuesNotEqual()
+        {
+            var message1 = new TestAllTypes { OneofString = "" };
+            var message2 = new TestAllTypes { OneofUint32 = 0 };
+            Assert.AreEqual(TestAllTypes.OneofFieldOneofCase.OneofString, message1.OneofFieldCase);
+            Assert.AreEqual(TestAllTypes.OneofFieldOneofCase.OneofUint32, message2.OneofFieldCase);
+            Assert.AreNotEqual(message1, message2);
+        }
+
+        [Test]
         public void OneofSerialization_NonDefaultValue()
         {
             var message = new TestAllTypes();
@@ -594,7 +639,7 @@ namespace Google.Protobuf
         }
 
         [Test]
-        public void IgnoreUnknownFields_RealDataStillRead()
+        public void DiscardUnknownFields_RealDataStillRead()
         {
             var message = SampleMessages.CreateFullTestAllTypes();
             var stream = new MemoryStream();
@@ -608,16 +653,18 @@ namespace Google.Protobuf
 
             stream.Position = 0;
             var parsed = TestAllTypes.Parser.ParseFrom(stream);
-            Assert.AreEqual(message, parsed);
+            // TODO(jieluo): Add test back when DiscardUnknownFields API is supported.
+            // Assert.AreEqual(message, parsed);
         }
 
         [Test]
-        public void IgnoreUnknownFields_AllTypes()
+        public void DiscardUnknownFields_AllTypes()
         {
             // Simple way of ensuring we can skip all kinds of fields.
             var data = SampleMessages.CreateFullTestAllTypes().ToByteArray();
             var empty = Empty.Parser.ParseFrom(data);
-            Assert.AreEqual(new Empty(), empty);
+            // TODO(jieluo): Add test back when DiscardUnknownFields API is supported.
+            // Assert.AreNotEqual(new Empty(), empty);
         }
 
         // This was originally seen as a conformance test failure.
@@ -626,7 +673,7 @@ namespace Google.Protobuf
         {
             // 130, 3 is the message tag
             // 1 is the data length - but there's no data.
-            var data = new byte[] { 130, 3, 1 };            
+            var data = new byte[] { 130, 3, 1 };
             Assert.Throws<InvalidProtocolBufferException>(() => TestAllTypes.Parser.ParseFrom(data));
         }
 
@@ -635,21 +682,56 @@ namespace Google.Protobuf
         /// for details; we may want to change this.
         /// </summary>
         [Test]
-        public void ExtraEndGroupSkipped()
+        public void ExtraEndGroupThrows()
         {
             var message = SampleMessages.CreateFullTestAllTypes();
             var stream = new MemoryStream();
             var output = new CodedOutputStream(stream);
 
-            output.WriteTag(100, WireFormat.WireType.EndGroup);
             output.WriteTag(TestAllTypes.SingleFixed32FieldNumber, WireFormat.WireType.Fixed32);
             output.WriteFixed32(123);
+            output.WriteTag(100, WireFormat.WireType.EndGroup);
 
             output.Flush();
 
             stream.Position = 0;
-            var parsed = TestAllTypes.Parser.ParseFrom(stream);
-            Assert.AreEqual(new TestAllTypes { SingleFixed32 = 123 }, parsed);
+            Assert.Throws<InvalidProtocolBufferException>(() => TestAllTypes.Parser.ParseFrom(stream));
+        }
+
+        [Test]
+        public void CustomDiagnosticMessage_DirectToStringCall()
+        {
+            var message = new ForeignMessage { C = 31 };
+            Assert.AreEqual("{ \"c\": 31, \"@cInHex\": \"1f\" }", message.ToString());
+            Assert.AreEqual("{ \"c\": 31 }", JsonFormatter.Default.Format(message));
+        }
+
+        [Test]
+        public void CustomDiagnosticMessage_Nested()
+        {
+            var message = new TestAllTypes { SingleForeignMessage = new ForeignMessage { C = 16 } };
+            Assert.AreEqual("{ \"singleForeignMessage\": { \"c\": 16, \"@cInHex\": \"10\" } }", message.ToString());
+            Assert.AreEqual("{ \"singleForeignMessage\": { \"c\": 16 } }", JsonFormatter.Default.Format(message));
+        }
+
+        [Test]
+        public void CustomDiagnosticMessage_DirectToTextWriterCall()
+        {
+            var message = new ForeignMessage { C = 31 };
+            var writer = new StringWriter();
+            JsonFormatter.Default.Format(message, writer);
+            Assert.AreEqual("{ \"c\": 31 }", writer.ToString());
+        }
+
+        [Test]
+        public void NaNComparisons()
+        {
+            var message1 = new TestAllTypes { SingleDouble = SampleNaNs.Regular };
+            var message2 = new TestAllTypes { SingleDouble = SampleNaNs.PayloadFlipped };
+            var message3 = new TestAllTypes { SingleDouble = SampleNaNs.Regular };
+
+            EqualityTester.AssertInequality(message1, message2);
+            EqualityTester.AssertEquality(message1, message3);
         }
     }
 }

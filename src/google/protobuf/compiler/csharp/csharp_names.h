@@ -39,6 +39,10 @@
 #define GOOGLE_PROTOBUF_COMPILER_CSHARP_NAMES_H__
 
 #include <string>
+#include <google/protobuf/port.h>
+#include <google/protobuf/stubs/common.h>
+
+#include <google/protobuf/port_def.inc>
 
 namespace google {
 namespace protobuf {
@@ -56,14 +60,14 @@ namespace csharp {
 //
 // Returns:
 //   The namespace to use for given file descriptor.
-string GetFileNamespace(const FileDescriptor* descriptor);
+string PROTOC_EXPORT GetFileNamespace(const FileDescriptor* descriptor);
 
 // Requires:
 //   descriptor != NULL
 //
 // Returns:
 //   The fully-qualified C# class name.
-string GetClassName(const Descriptor* descriptor);
+string PROTOC_EXPORT GetClassName(const Descriptor* descriptor);
 
 // Requires:
 //   descriptor != NULL
@@ -72,11 +76,32 @@ string GetClassName(const Descriptor* descriptor);
 //   The fully-qualified name of the C# class that provides
 //   access to the file descriptor. Proto compiler generates
 //   such class for each .proto file processed.
-std::string GetUmbrellaClassName(const FileDescriptor* descriptor);
+string PROTOC_EXPORT GetReflectionClassName(const FileDescriptor* descriptor);
+
+// Generates output file name for given file descriptor. If generate_directories
+// is true, the output file will be put under directory corresponding to file's
+// namespace. base_namespace can be used to strip some of the top level
+// directories. E.g. for file with namespace "Bar.Foo" and base_namespace="Bar",
+// the resulting file will be put under directory "Foo" (and not "Bar/Foo").
+//
+// Requires:
+//   descriptor != NULL
+//   error != NULL
+//
+//  Returns:
+//    The file name to use as output file for given file descriptor. In case
+//    of failure, this function will return empty string and error parameter
+//    will contain the error message.
+string PROTOC_EXPORT GetOutputFile(const FileDescriptor* descriptor,
+                                   const string file_extension,
+                                   const bool generate_directories,
+                                   const string base_namespace, string* error);
 
 }  // namespace csharp
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_CSHARP_NAMES_H__

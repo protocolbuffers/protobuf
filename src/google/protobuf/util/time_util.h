@@ -28,6 +28,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+// Defines utilities for the Timestamp and Duration well known types.
+
 #ifndef GOOGLE_PROTOBUF_UTIL_TIME_UTIL_H__
 #define GOOGLE_PROTOBUF_UTIL_TIME_UTIL_H__
 
@@ -35,20 +37,29 @@
 #include <ostream>
 #include <string>
 #ifdef _MSC_VER
+#ifdef _XBOX_ONE
+struct timeval {
+  int64 tv_sec;  /* seconds */
+  int64 tv_usec; /* and microseconds */
+};
+#else
 #include <winsock2.h>
+#endif  // _XBOX_ONE
 #else
 #include <sys/time.h>
 #endif
 
 #include <google/protobuf/duration.pb.h>
-#include <google/protobuf/stubs/port.h>
 #include <google/protobuf/timestamp.pb.h>
+
+#include <google/protobuf/port_def.inc>
 
 namespace google {
 namespace protobuf {
 namespace util {
 
-class LIBPROTOBUF_EXPORT TimeUtil {
+// Utility functions for Timestamp and Duration.
+class PROTOBUF_EXPORT TimeUtil {
   typedef google::protobuf::Timestamp Timestamp;
   typedef google::protobuf::Duration Duration;
 
@@ -77,8 +88,8 @@ class LIBPROTOBUF_EXPORT TimeUtil {
   //
   // Example of accepted format:
   //   "1972-01-01T10:00:20.021-05:00"
-  static string ToString(const Timestamp& timestamp);
-  static bool FromString(const string& value, Timestamp* timestamp);
+  static std::string ToString(const Timestamp& timestamp);
+  static bool FromString(const std::string& value, Timestamp* timestamp);
 
   // Converts Duration to/from string format. The string format will contains
   // 3, 6, or 9 fractional digits depending on the precision required to
@@ -86,8 +97,8 @@ class LIBPROTOBUF_EXPORT TimeUtil {
   //   "1s", "1.010s", "1.000000100s", "-3.100s"
   // The range that can be represented by Duration is from -315,576,000,000
   // to +315,576,000,000 inclusive (in seconds).
-  static string ToString(const Duration& duration);
-  static bool FromString(const string& value, Duration* timestamp);
+  static std::string ToString(const Duration& duration);
+  static bool FromString(const std::string& value, Duration* timestamp);
 
 #ifdef GetCurrentTime
 #undef GetCurrentTime  // Visual Studio has macro GetCurrentTime
@@ -154,18 +165,21 @@ class LIBPROTOBUF_EXPORT TimeUtil {
 
 }  // namespace util
 }  // namespace protobuf
+}  // namespace google
 
-
+namespace google {
 namespace protobuf {
 // Overloaded operators for Duration.
 //
 // Assignment operators.
-LIBPROTOBUF_EXPORT Duration& operator+=(Duration& d1, const Duration& d2);  // NOLINT
-LIBPROTOBUF_EXPORT Duration& operator-=(Duration& d1, const Duration& d2);  // NOLINT
-LIBPROTOBUF_EXPORT Duration& operator*=(Duration& d, int64 r);  // NOLINT
-LIBPROTOBUF_EXPORT Duration& operator*=(Duration& d, double r);  // NOLINT
-LIBPROTOBUF_EXPORT Duration& operator/=(Duration& d, int64 r);  // NOLINT
-LIBPROTOBUF_EXPORT Duration& operator/=(Duration& d, double r);  // NOLINT
+PROTOBUF_EXPORT Duration& operator+=(Duration& d1,
+                                     const Duration& d2);  // NOLINT
+PROTOBUF_EXPORT Duration& operator-=(Duration& d1,
+                                     const Duration& d2);     // NOLINT
+PROTOBUF_EXPORT Duration& operator*=(Duration& d, int64 r);   // NOLINT
+PROTOBUF_EXPORT Duration& operator*=(Duration& d, double r);  // NOLINT
+PROTOBUF_EXPORT Duration& operator/=(Duration& d, int64 r);   // NOLINT
+PROTOBUF_EXPORT Duration& operator/=(Duration& d, double r);  // NOLINT
 // Overload for other integer types.
 template <typename T>
 Duration& operator*=(Duration& d, T r) {  // NOLINT
@@ -177,7 +191,8 @@ Duration& operator/=(Duration& d, T r) {  // NOLINT
   int64 x = r;
   return d /= x;
 }
-LIBPROTOBUF_EXPORT Duration& operator%=(Duration& d1, const Duration& d2);  // NOLINT
+PROTOBUF_EXPORT Duration& operator%=(Duration& d1,
+                                     const Duration& d2);  // NOLINT
 // Relational operators.
 inline bool operator<(const Duration& d1, const Duration& d2) {
   if (d1.seconds() == d2.seconds()) {
@@ -216,37 +231,37 @@ inline Duration operator-(const Duration& d1, const Duration& d2) {
   return result -= d2;
 }
 // Multiplicative operators
-template<typename T>
+template <typename T>
 inline Duration operator*(Duration d, T r) {
   return d *= r;
 }
-template<typename T>
+template <typename T>
 inline Duration operator*(T r, Duration d) {
   return d *= r;
 }
-template<typename T>
+template <typename T>
 inline Duration operator/(Duration d, T r) {
   return d /= r;
 }
-LIBPROTOBUF_EXPORT int64 operator/(const Duration& d1, const Duration& d2);
+PROTOBUF_EXPORT int64 operator/(const Duration& d1, const Duration& d2);
 
 inline Duration operator%(const Duration& d1, const Duration& d2) {
   Duration result = d1;
   return result %= d2;
 }
 
-inline ostream& operator<<(ostream& out, const Duration& d) {
-  out << google::protobuf::util::TimeUtil::ToString(d);
+inline std::ostream& operator<<(std::ostream& out, const Duration& d) {
+  out << ::PROTOBUF_NAMESPACE_ID::util::TimeUtil::ToString(d);
   return out;
 }
 
 // Overloaded operators for Timestamp
 //
-// Assignement operators.
-LIBPROTOBUF_EXPORT
-Timestamp& operator+=(Timestamp& t, const Duration& d);  // NOLINT
-LIBPROTOBUF_EXPORT
-Timestamp& operator-=(Timestamp& t, const Duration& d);  // NOLINT
+// Assignment operators.
+PROTOBUF_EXPORT Timestamp& operator+=(Timestamp& t,
+                                      const Duration& d);  // NOLINT
+PROTOBUF_EXPORT Timestamp& operator-=(Timestamp& t,
+                                      const Duration& d);  // NOLINT
 // Relational operators.
 inline bool operator<(const Timestamp& t1, const Timestamp& t2) {
   if (t1.seconds() == t2.seconds()) {
@@ -282,15 +297,16 @@ inline Timestamp operator-(const Timestamp& t, const Duration& d) {
   Timestamp result = t;
   return result -= d;
 }
-LIBPROTOBUF_EXPORT Duration operator-(const Timestamp& t1, const Timestamp& t2);
+PROTOBUF_EXPORT Duration operator-(const Timestamp& t1, const Timestamp& t2);
 
-inline ostream& operator<<(ostream& out, const Timestamp& t) {
-  out << google::protobuf::util::TimeUtil::ToString(t);
+inline std::ostream& operator<<(std::ostream& out, const Timestamp& t) {
+  out << ::PROTOBUF_NAMESPACE_ID::util::TimeUtil::ToString(t);
   return out;
 }
 
 }  // namespace protobuf
-
-
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
+
 #endif  // GOOGLE_PROTOBUF_UTIL_TIME_UTIL_H__

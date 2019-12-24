@@ -37,19 +37,49 @@
 
 #include <google/protobuf/descriptor.h>
 
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
-  namespace io {
-    class Printer;             // printer.h
-  }
+namespace io {
+class Printer;  // printer.h
 }
+}  // namespace protobuf
+}  // namespace google
 
+namespace google {
 namespace protobuf {
 namespace compiler {
 namespace java {
 
+enum FieldAccessorType {
+  HAZZER,
+  GETTER,
+  SETTER,
+  CLEARER,
+  // Repeated
+  LIST_COUNT,
+  LIST_GETTER,
+  LIST_INDEXED_GETTER,
+  LIST_INDEXED_SETTER,
+  LIST_ADDER,
+  LIST_MULTI_ADDER
+};
+
 void WriteMessageDocComment(io::Printer* printer, const Descriptor* message);
 void WriteFieldDocComment(io::Printer* printer, const FieldDescriptor* field);
+void WriteFieldAccessorDocComment(io::Printer* printer,
+                                  const FieldDescriptor* field,
+                                  const FieldAccessorType type,
+                                  const bool builder = false);
+void WriteFieldEnumValueAccessorDocComment(io::Printer* printer,
+                                           const FieldDescriptor* field,
+                                           const FieldAccessorType type,
+                                           const bool builder = false);
+void WriteFieldStringBytesAccessorDocComment(io::Printer* printer,
+                                             const FieldDescriptor* field,
+                                             const FieldAccessorType type,
+                                             const bool builder = false);
 void WriteEnumDocComment(io::Printer* printer, const EnumDescriptor* enum_);
 void WriteEnumValueDocComment(io::Printer* printer,
                               const EnumValueDescriptor* value);
@@ -59,11 +89,13 @@ void WriteMethodDocComment(io::Printer* printer,
                            const MethodDescriptor* method);
 
 // Exposed for testing only.
-LIBPROTOC_EXPORT string EscapeJavadoc(const string& input);
+PROTOC_EXPORT std::string EscapeJavadoc(const std::string& input);
 
 }  // namespace java
 }  // namespace compiler
 }  // namespace protobuf
-
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
+
 #endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_DOC_COMMENT_H__
