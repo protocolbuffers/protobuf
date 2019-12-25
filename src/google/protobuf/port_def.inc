@@ -147,7 +147,7 @@
   } /* namespace protobuf */     \
   } /* namespace google */
 
-#if defined(__GNUC__) || defined(__clang__)
+#if defined(__GNUC__) || defined(__clang__) || defined(__SUNPRO_CC)
 #define PROTOBUF_DEPRECATED __attribute__((deprecated))
 #define PROTOBUF_DEPRECATED_ENUM __attribute__((deprecated))
 #define PROTOBUF_DEPRECATED_MSG(msg) __attribute__((deprecated(msg)))
@@ -174,6 +174,8 @@
 // For functions we want to force inline.
 // Introduced in gcc 3.1.
 #define PROTOBUF_ALWAYS_INLINE __attribute__((always_inline))
+#elif defined(__SUNPRO_CC) && (__SUNPRO_CC >= 0x590)
+#define PROTOBUF_ALWAYS_INLINE __attribute__((always_inline))
 #else
 // Other compilers will have to figure it out for themselves.
 #define PROTOBUF_ALWAYS_INLINE
@@ -187,6 +189,8 @@
     (__GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 1))
 // For functions we want to force not inline.
 // Introduced in gcc 3.1.
+#define PROTOBUF_NOINLINE __attribute__((noinline))
+#elif defined(__SUNPRO_CC) && (__SUNPRO_CC >= 0x590)
 #define PROTOBUF_NOINLINE __attribute__((noinline))
 #elif defined(_MSC_VER) && (_MSC_VER >= 1400)
 // Seems to have been around since at least Visual Studio 2005
@@ -204,6 +208,8 @@
     defined(__GNUC__) &&  \
         (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3))
 // Function alignment attribute introduced in gcc 4.3
+#define PROTOBUF_FUNC_ALIGN(bytes) __attribute__((aligned(bytes)))
+#elif defined(__SUNPRO_CC) && (__SUNPRO_CC >= 0x590)
 #define PROTOBUF_FUNC_ALIGN(bytes) __attribute__((aligned(bytes)))
 #else
 #define PROTOBUF_FUNC_ALIGN(bytes)

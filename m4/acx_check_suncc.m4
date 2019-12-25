@@ -27,6 +27,7 @@ AC_DEFUN([ACX_CHECK_SUNCC],[
     dnl Sun Studio has a crashing bug with -xO4 in some cases. Keep this
     dnl at -xO3 until a proper test to detect those crashes can be done.
     CXXFLAGS="-g0 -xO3 -xlibmil -xdepend -xbuiltin -mt -template=no%extdef ${CXXFLAGS}"
+    LDFLAGS="-lm -lstdc++ -lgcc_s -lCrunG3 -lc ${LDFLAGS}"
   ])
 
   case $host_os in
