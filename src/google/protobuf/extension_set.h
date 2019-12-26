@@ -272,7 +272,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   std::string* MutableString(int number, FieldType type, desc);
   MessageLite* MutableMessage(int number, FieldType type,
                               const MessageLite& prototype, desc);
-  MessageLite* MutableMessage(const FieldDescriptor* decsriptor,
+  MessageLite* MutableMessage(const FieldDescriptor* descriptor,
                               MessageFactory* factory);
   // Adds the given message to the ExtensionSet, taking ownership of the
   // message object. Existing message with the same number will be deleted.

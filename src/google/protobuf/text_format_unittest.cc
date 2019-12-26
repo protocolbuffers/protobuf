@@ -776,7 +776,7 @@ TEST_F(TextFormatTest, ParseUnknownEnumFieldProto3) {
 }
 
 TEST_F(TextFormatTest, ParseStringEscape) {
-  // Create a parse string with escpaed characters in it.
+  // Create a parse string with escaped characters in it.
   std::string parse_string =
       "optional_string: " + kEscapeTestStringEscaped + "\n";
 

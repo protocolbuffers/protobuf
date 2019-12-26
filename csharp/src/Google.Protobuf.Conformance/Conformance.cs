@@ -370,7 +370,7 @@ namespace Conformance {
     private global::Conformance.TestCategory testCategory_ = global::Conformance.TestCategory.UnspecifiedTest;
     /// <summary>
     /// Each test is given a specific test category. Some category may need
-    /// spedific support in testee programs. Refer to the defintion of TestCategory
+    /// spedific support in testee programs. Refer to the definition of TestCategory
     /// for more information.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1110,7 +1110,7 @@ namespace Conformance {
     public const int UseJspbArrayAnyFormatFieldNumber = 1;
     private bool useJspbArrayAnyFormat_;
     /// <summary>
-    /// Encode the value field of Any as jspb array if ture, otherwise binary.
+    /// Encode the value field of Any as jspb array if true, otherwise binary.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool UseJspbArrayAnyFormat {

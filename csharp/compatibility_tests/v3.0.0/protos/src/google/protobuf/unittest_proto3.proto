@@ -142,7 +142,7 @@ message TestAllTypes {
   }
 }
 
-// This proto includes a recusively nested message.
+// This proto includes a recursively nested message.
 message NestedTestAllTypes {
   NestedTestAllTypes child = 1;
   TestAllTypes payload = 2;

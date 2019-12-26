@@ -6378,7 +6378,7 @@ typedef struct {
 typedef struct {
   /* Space optimization note: we store two pointers here that the JIT
    * doesn't need at all; the upb_handlers* inside the sink and
-   * the dispatch table pointer.  We can optimze so that the JIT uses
+   * the dispatch table pointer.  We can optimize so that the JIT uses
    * smaller stack frames than the interpreter.  The only thing we need
    * to guarantee is that the fallback routines can find end_ofs. */
   upb_sink sink;
@@ -6455,7 +6455,7 @@ struct upb_pbdecoder {
   char residual[UPB_DECODER_MAX_RESIDUAL_BYTES];
   char *residual_end;
 
-  /* Bytes of data that should be discarded from the input beore we start
+  /* Bytes of data that should be discarded from the input before we start
    * parsing again.  We set this when we internally determine that we can
    * safely skip the next N bytes, but this region extends past the current
    * user buffer. */

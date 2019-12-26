@@ -309,7 +309,7 @@ class RepeatedInputStream : public io::ZeroCopyInputStream {
 
  private:
   std::string data_;
-  size_t count_;     // The number of strings that haven't been consuemd.
+  size_t count_;     // The number of strings that haven't been consumed.
   size_t position_;  // Position in the std::string for the next read.
   int64 total_byte_count_;
 };
@@ -331,7 +331,7 @@ TEST(MESSAGE_TEST_NAME, TestParseMessagesCloseTo2G) {
   UNITTEST::TestAllTypes result;
   EXPECT_TRUE(result.ParseFromZeroCopyStream(&input));
 
-  // When there are multiple occurences of a singulr field, the last one
+  // When there are multiple occurrences of a singular field, the last one
   // should win.
   EXPECT_EQ(value, result.optional_string());
 }

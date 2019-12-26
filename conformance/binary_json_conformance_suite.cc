@@ -1973,7 +1973,7 @@ void BinaryAndJsonConformanceSuite::RunJsonTestsForNonRepeatedTypes() {
   ExpectParseFailureForJson(
       "Uint64FieldNotNumber", REQUIRED,
       R"({"optionalUint64": "3x3"})");
-  // JSON does not allow "+" on numric values.
+  // JSON does not allow "+" on numeric values.
   ExpectParseFailureForJson(
       "Int32FieldPlusSign", REQUIRED,
       R"({"optionalInt32": +1})");
@@ -2080,7 +2080,7 @@ void BinaryAndJsonConformanceSuite::RunJsonTestsForNonRepeatedTypes() {
       "FloatFieldNegativeInfinity", REQUIRED,
       R"({"optionalFloat": "-Infinity"})",
       "optional_float: -inf");
-  // Non-cannonical Nan will be correctly normalized.
+  // Non-canonical Nan will be correctly normalized.
   {
     TestAllTypesProto3 message;
     // IEEE floating-point standard 32-bit quiet NaN:
@@ -2139,7 +2139,7 @@ void BinaryAndJsonConformanceSuite::RunJsonTestsForNonRepeatedTypes() {
       "DoubleFieldQuotedValue", REQUIRED,
       R"({"optionalDouble": "1"})",
       "optional_double: 1");
-  // Speical values.
+  // Special values.
   RunValidJsonTest(
       "DoubleFieldNan", REQUIRED,
       R"({"optionalDouble": "NaN"})",
@@ -2152,7 +2152,7 @@ void BinaryAndJsonConformanceSuite::RunJsonTestsForNonRepeatedTypes() {
       "DoubleFieldNegativeInfinity", REQUIRED,
       R"({"optionalDouble": "-Infinity"})",
       "optional_double: -inf");
-  // Non-cannonical Nan will be correctly normalized.
+  // Non-canonical Nan will be correctly normalized.
   {
     TestAllTypesProto3 message;
     message.set_optional_double(
