@@ -2652,7 +2652,7 @@ UnsafeArenaAllocatedRepeatedPtrFieldBackInserter(
       mutable_field);
 }
 
-// Extern declarations of common instantiations to reduce libray bloat.
+// Extern declarations of common instantiations to reduce library bloat.
 extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE RepeatedField<bool>;
 extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE RepeatedField<int32>;
 extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE RepeatedField<uint32>;

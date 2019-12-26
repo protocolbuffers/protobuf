@@ -508,7 +508,7 @@ void GPBDictionaryReadEntry(id mapDictionary,
 #if defined(__clang_analyzer__)
         case GPBDataTypeGroup:
           // Maps can't really have Groups as the value type, but this case is needed
-          // so the analyzer won't report the posibility of send nil in for the value
+          // so the analyzer won't report the possibility of send nil in for the value
           // in the NSMutableDictionary case below.
 #endif
         case GPBDataTypeMessage: {

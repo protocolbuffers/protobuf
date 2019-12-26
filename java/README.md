@@ -146,7 +146,7 @@ library (without the util package).
   are guaranteed for minor version releases if the user follows the guideline
   described in this section.
 
-* Protobuf major version releases may also be backwards-compatbile with the
+* Protobuf major version releases may also be backwards-compatible with the
   last release of the previous major version. See the release notice for more
   details.
 

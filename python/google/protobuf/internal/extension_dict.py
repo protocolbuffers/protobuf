@@ -139,7 +139,7 @@ class _ExtensionDict(object):
 
   # Note that this is only meaningful for non-repeated, scalar extension
   # fields.  Note also that we may have to call _Modified() when we do
-  # successfully set a field this way, to set any necssary "has" bits in the
+  # successfully set a field this way, to set any necessary "has" bits in the
   # ancestors of the extended message.
   def __setitem__(self, extension_handle, value):
     """If extension_handle specifies a non-repeated, scalar extension

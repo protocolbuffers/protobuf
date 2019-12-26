@@ -3051,7 +3051,7 @@ TEST(WireFormatForMapFieldTest, MapByteSizeDynamicMessage) {
   EXPECT_EQ(expected_size, size);
 
   // Protobuf used to have a bug for serialize when map it marked CLEAN. It used
-  // repeated field to calulate ByteSize but use map to serialize the real data,
+  // repeated field to calculate ByteSize but use map to serialize the real data,
   // thus the ByteSize may bigger than real serialized size. A crash might be
   // happen at SerializeToString(). Or an "unexpect end group" warning was
   // raised at parse back if user use SerializeWithCachedSizes() which avoids
@@ -3320,7 +3320,7 @@ TEST(TextFormatMapTest, NoDisableIterator) {
   TextFormat::Printer printer;
   printer.PrintToString(source, &output);
 
-  // Modify map via the iterator (invalidated in prvious implementation.).
+  // Modify map via the iterator (invalidated in previous implementation.).
   iter->second = 2;
 
   // In previous implementation, the new change won't be reflected in text
@@ -3350,13 +3350,13 @@ TEST(TextFormatMapTest, NoDisableReflectionIterator) {
       reflection->MutableRepeatedPtrField<Message>(&source, field_desc);
   RepeatedPtrField<Message>::iterator iter = map_field->begin();
 
-  // Serialize message to text format, which will invalidate the prvious
+  // Serialize message to text format, which will invalidate the previous
   // iterator previously.
   std::string output;
   TextFormat::Printer printer;
   printer.PrintToString(source, &output);
 
-  // Modify map via the iterator (invalidated in prvious implementation.).
+  // Modify map via the iterator (invalidated in previous implementation.).
   const Reflection* map_entry_reflection = iter->GetReflection();
   const FieldDescriptor* value_field_desc =
       iter->GetDescriptor()->FindFieldByName("value");

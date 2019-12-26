@@ -83,7 +83,7 @@ class PROTOBUF_EXPORT ByteSink {
   // Appends the "n" bytes starting at "bytes".
   virtual void Append(const char* bytes, size_t n) = 0;
 
-  // Flushes internal buffers. The default implemenation does nothing. ByteSink
+  // Flushes internal buffers. The default implementation does nothing. ByteSink
   // subclasses may use internal buffers that require calling Flush() at the end
   // of the stream.
   virtual void Flush();

@@ -103,7 +103,7 @@ public class FieldPresenceTest extends TestCase {
   public void testOneofEquals() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     TestAllTypes message1 = builder.build();
-    // Set message2's oneof_uint32 field to defalut value. The two
+    // Set message2's oneof_uint32 field to default value. The two
     // messages should be different when check with oneof case.
     builder.setOneofUint32(0);
     TestAllTypes message2 = builder.build();

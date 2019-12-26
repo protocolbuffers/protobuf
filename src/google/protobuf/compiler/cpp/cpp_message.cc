@@ -232,7 +232,7 @@ bool HasPrivateHasMethod(const FieldDescriptor* field) {
 }
 
 // TODO(ckennelly):  Cull these exclusions if/when these protos do not have
-// their methods overriden by subclasses.
+// their methods overridden by subclasses.
 
 bool ShouldMarkClassAsFinal(const Descriptor* descriptor,
                             const Options& options) {

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Run this script to regenerate desriptor protos after the protocol compiler
+# Run this script to regenerate descriptor protos after the protocol compiler
 # changes.
 
 if test ! -e src/google/protobuf/stubs/common.h; then

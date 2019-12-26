@@ -416,7 +416,7 @@
   XCTAssertEqual(dst.oOneOfCase, Message2_O_OneOfCase_OneofGroup);
   Message2_OneofGroup *mergedGroup = [[dst.oneofGroup retain] autorelease];
   XCTAssertNotNil(mergedGroup);
-  XCTAssertNotEqual(mergedGroup, group);  // Pointer comparision.
+  XCTAssertNotEqual(mergedGroup, group);  // Pointer comparison.
   XCTAssertEqualObjects(mergedGroup, group);
   XCTAssertEqualObjects(dst.oneofBytes, oneofBytesDefault);
 
@@ -427,10 +427,10 @@
   XCTAssertEqual(dst.oOneOfCase, Message2_O_OneOfCase_OneofMessage);
   Message2 *mergedSubMessage = [[dst.oneofMessage retain] autorelease];
   XCTAssertNotNil(mergedSubMessage);
-  XCTAssertNotEqual(mergedSubMessage, subMessage);  // Pointer comparision.
+  XCTAssertNotEqual(mergedSubMessage, subMessage);  // Pointer comparison.
   XCTAssertEqualObjects(mergedSubMessage, subMessage);
   XCTAssertNotNil(dst.oneofGroup);
-  XCTAssertNotEqual(dst.oneofGroup, mergedGroup);  // Pointer comparision.
+  XCTAssertNotEqual(dst.oneofGroup, mergedGroup);  // Pointer comparison.
 
   // Back to something else to make sure message clears out ok.
 
@@ -439,7 +439,7 @@
   XCTAssertEqual(dst.oOneOfCase, Message2_O_OneOfCase_OneofInt32);
   XCTAssertNotNil(dst.oneofMessage);
   XCTAssertNotEqual(dst.oneofMessage,
-                    mergedSubMessage);  // Pointer comparision.
+                    mergedSubMessage);  // Pointer comparison.
 
   //
   // Test merging in to message/group when they already had something.
@@ -452,9 +452,9 @@
   [dst mergeFrom:src];
   XCTAssertEqual(dst.oOneOfCase, Message2_O_OneOfCase_OneofGroup);
   // Shouldn't have been a new object.
-  XCTAssertEqual(dst.oneofGroup, mergedGroup);  // Pointer comparision.
-  XCTAssertEqual(dst.oneofGroup.a, 666);        // Pointer comparision.
-  XCTAssertEqual(dst.oneofGroup.b, 888);        // Pointer comparision.
+  XCTAssertEqual(dst.oneofGroup, mergedGroup);  // Pointer comparison.
+  XCTAssertEqual(dst.oneofGroup.a, 666);        // Pointer comparison.
+  XCTAssertEqual(dst.oneofGroup.b, 888);        // Pointer comparison.
 
   src.oneofMessage = subMessage;
   mergedSubMessage = [Message2 message];
@@ -463,9 +463,9 @@
   [dst mergeFrom:src];
   XCTAssertEqual(dst.oOneOfCase, Message2_O_OneOfCase_OneofMessage);
   // Shouldn't have been a new object.
-  XCTAssertEqual(dst.oneofMessage, mergedSubMessage);   // Pointer comparision.
-  XCTAssertEqual(dst.oneofMessage.optionalInt32, 777);  // Pointer comparision.
-  XCTAssertEqual(dst.oneofMessage.optionalInt64, 999);  // Pointer comparision.
+  XCTAssertEqual(dst.oneofMessage, mergedSubMessage);   // Pointer comparison.
+  XCTAssertEqual(dst.oneofMessage.optionalInt32, 777);  // Pointer comparison.
+  XCTAssertEqual(dst.oneofMessage.optionalInt64, 999);  // Pointer comparison.
 }
 
 - (void)testProto3MergeOneof {
@@ -637,7 +637,7 @@
   XCTAssertEqual(dst.oOneOfCase, Message3_O_OneOfCase_OneofMessage);
   Message3 *mergedSubMessage = [[dst.oneofMessage retain] autorelease];
   XCTAssertNotNil(mergedSubMessage);
-  XCTAssertNotEqual(mergedSubMessage, subMessage);  // Pointer comparision.
+  XCTAssertNotEqual(mergedSubMessage, subMessage);  // Pointer comparison.
   XCTAssertEqualObjects(mergedSubMessage, subMessage);
   XCTAssertEqualObjects(dst.oneofBytes, oneofBytesDefault);
 
@@ -648,7 +648,7 @@
   XCTAssertEqual(dst.oOneOfCase, Message3_O_OneOfCase_OneofInt32);
   XCTAssertNotNil(dst.oneofMessage);
   XCTAssertNotEqual(dst.oneofMessage,
-                    mergedSubMessage);  // Pointer comparision.
+                    mergedSubMessage);  // Pointer comparison.
 
   //
   // Test merging in to message when they already had something.
@@ -661,9 +661,9 @@
   [dst mergeFrom:src];
   XCTAssertEqual(dst.oOneOfCase, Message3_O_OneOfCase_OneofMessage);
   // Shouldn't have been a new object.
-  XCTAssertEqual(dst.oneofMessage, mergedSubMessage);   // Pointer comparision.
-  XCTAssertEqual(dst.oneofMessage.optionalInt32, 777);  // Pointer comparision.
-  XCTAssertEqual(dst.oneofMessage.optionalInt64, 999);  // Pointer comparision.
+  XCTAssertEqual(dst.oneofMessage, mergedSubMessage);   // Pointer comparison.
+  XCTAssertEqual(dst.oneofMessage.optionalInt32, 777);  // Pointer comparison.
+  XCTAssertEqual(dst.oneofMessage.optionalInt64, 999);  // Pointer comparison.
 }
 
 #pragma mark - Subset from from map_tests.cc

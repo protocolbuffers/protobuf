@@ -181,7 +181,7 @@ message TestUnpackedTypes {
   repeated TestAllTypes.NestedEnum repeated_nested_enum = 14 [packed = false];
 }
 
-// This proto includes a recusively nested message.
+// This proto includes a recursively nested message.
 message NestedTestAllTypes {
   NestedTestAllTypes child = 1;
   TestAllTypes payload = 2;

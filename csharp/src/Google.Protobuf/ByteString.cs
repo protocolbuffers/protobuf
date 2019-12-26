@@ -248,7 +248,7 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Retuns the byte at the given index.
+        /// Returns the byte at the given index.
         /// </summary>
         public byte this[int index]
         {

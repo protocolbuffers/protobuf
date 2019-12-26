@@ -398,7 +398,7 @@ void RepeatedFieldGenerator::GeneratePropertyDeclaration(
 }
 
 bool RepeatedFieldGenerator::WantsHasProperty(void) const {
-  // Consumer check the array size/existance rather than a has bit.
+  // Consumer check the array size/existence rather than a has bit.
   return false;
 }
 

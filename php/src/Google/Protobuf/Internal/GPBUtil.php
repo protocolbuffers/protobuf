@@ -405,7 +405,7 @@ class GPBUtil
 
     public static function parseTimestamp($timestamp)
     {
-        // prevent parsing timestamps containing with the non-existant year "0000"
+        // prevent parsing timestamps containing with the non-existent year "0000"
         // DateTime::createFromFormat parses without failing but as a nonsensical date
         if (substr($timestamp, 0, 4) === "0000") {
             throw new \Exception("Year cannot be zero.");

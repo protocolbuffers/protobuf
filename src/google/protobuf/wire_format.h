@@ -65,7 +65,7 @@ namespace protobuf {
 namespace internal {
 
 // This class is for internal use by the protocol buffer library and by
-// protocol-complier-generated message classes.  It must not be called
+// protocol-compiler-generated message classes.  It must not be called
 // directly by clients.
 //
 // This class contains code for implementing the binary protocol buffer
@@ -237,7 +237,7 @@ class PROTOBUF_EXPORT WireFormat {
                               const Message& message);
 
   // Parse/serialize a MessageSet::Item group.  Used with messages that use
-  // opion message_set_wire_format = true.
+  // option message_set_wire_format = true.
   static bool ParseAndMergeMessageSetItem(io::CodedInputStream* input,
                                           Message* message);
   static void SerializeMessageSetItemWithCachedSizes(

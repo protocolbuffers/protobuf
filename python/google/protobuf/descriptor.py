@@ -186,7 +186,7 @@ class _NestedDescriptorBase(DescriptorBase):
         file.serialized_pb that describes this descriptor.
       serialized_end: The end index (exclusive) in block in the
         file.serialized_pb that describes this descriptor.
-      serialized_options: Protocol message serilized options or None.
+      serialized_options: Protocol message serialized options or None.
     """
     super(_NestedDescriptorBase, self).__init__(
         options, serialized_options, options_class_name)
@@ -753,7 +753,7 @@ class ServiceDescriptor(_NestedDescriptorBase):
     name: (str) Name of the service.
     full_name: (str) Full name of the service, including package name.
     index: (int) 0-indexed index giving the order that this services
-      definition appears withing the .proto file.
+      definition appears within the .proto file.
     methods: (list of MethodDescriptor) List of methods provided by this
       service.
     methods_by_name: (dict str -> MethodDescriptor) Same MethodDescriptor

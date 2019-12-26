@@ -228,7 +228,7 @@ message MethodDescriptorProto {
 // * For options which will be published and used publicly by multiple
 //   independent entities, e-mail protobuf-global-extension-registry@google.com
 //   to reserve extension numbers. Simply provide your project name (e.g.
-//   Object-C plugin) and your porject website (if available) -- there's no need
+//   Object-C plugin) and your project website (if available) -- there's no need
 //   to explain how you intend to use them. Usually you only need one extension
 //   number. You can declare multiple options with only one extension number by
 //   putting them in a sub-message. See the Custom Options section of the docs

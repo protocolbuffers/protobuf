@@ -136,7 +136,7 @@ static void rewrite_enum_default(const upb_symtab* symtab,
  * same number.
  *
  * Here we do a pass over all enum defaults and rewrite numeric defaults by
- * looking up their labels.  This is compilcated by the fact that the enum
+ * looking up their labels.  This is complicated by the fact that the enum
  * definition can live in either the symtab or the file_proto.
  * */
 static void rewrite_enum_defaults(
@@ -572,7 +572,7 @@ VALUE Descriptor_file_descriptor(VALUE _self) {
  * call-seq:
  *     Descriptor.name => name
  *
- * Returns the name of this message type as a fully-qualfied string (e.g.,
+ * Returns the name of this message type as a fully-qualified string (e.g.,
  * My.Package.MessageType).
  */
 VALUE Descriptor_name(VALUE _self) {

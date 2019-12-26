@@ -265,7 +265,7 @@
   * Introduce Proto C API.
   * FindFileContainingSymbol in descriptor pool is now able to find field and enum values.
   * reflection.MakeClass()  and  reflection.ParseMessage() are deprecated.
-  * Added DescriptorPool.FindMethodByName() method in pure python (c extension alreay has it)
+  * Added DescriptorPool.FindMethodByName() method in pure python (c extension already has it)
   * Flipped proto3 to preserve unknown fields by default.
   * Added support for memoryview in python3 proto message parsing.
   * Added MergeFrom for repeated scalar fields in c extension (pure python already has it)
@@ -428,7 +428,7 @@
   PHP
   * Fixed memory leak in C-extension implementation.
   * Added discardUnknokwnFields API.
-  * Removed duplicatd typedef in C-extension headers.
+  * Removed duplicated typedef in C-extension headers.
   * Avoided calling private php methods (timelib_update_ts).
   * Fixed Any.php to use fully-qualified name for DescriptorPool.
 

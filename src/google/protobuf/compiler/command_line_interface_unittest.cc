@@ -1074,7 +1074,7 @@ TEST_F(CommandLineInterfaceTest, UnrecognizedExtraParameters) {
 }
 
 TEST_F(CommandLineInterfaceTest, ExtraPluginParametersForOutParameters) {
-  // This doesn't rely on the plugin having been registred and instead that
+  // This doesn't rely on the plugin having been registered and instead that
   // the existence of --[name]_out is enough to make the --[name]_opt valid.
   // However, running out of process plugins found via the search path (i.e. -
   // not pre registered with --plugin) isn't support in this test suite, so we

@@ -231,7 +231,7 @@ class PROTOBUF_EXPORT CopyingInputStreamAdaptor : public ZeroCopyInputStream {
   CopyingInputStream* copying_stream_;
   bool owns_copying_stream_;
 
-  // True if we have seen a permenant error from the underlying stream.
+  // True if we have seen a permanent error from the underlying stream.
   bool failed_;
 
   // The current position of copying_stream_, relative to the point where
@@ -320,7 +320,7 @@ class PROTOBUF_EXPORT CopyingOutputStreamAdaptor : public ZeroCopyOutputStream {
   CopyingOutputStream* copying_stream_;
   bool owns_copying_stream_;
 
-  // True if we have seen a permenant error from the underlying stream.
+  // True if we have seen a permanent error from the underlying stream.
   bool failed_;
 
   // The current position of copying_stream_, relative to the point where
