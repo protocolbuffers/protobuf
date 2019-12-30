@@ -874,8 +874,10 @@ class FileDescriptor(DescriptorBase):
       # FileDescriptor() is called from various places, not only from generated
       # files, to register dynamic proto files and messages.
       # pylint: disable=g-explicit-bool-comparison
-      if serialized_pb == b'':
-        # Cpp generated code must be linked in if serialized_pb is ''
+      if len(serialized_pb) == 0:
+        # Cpp generated code must be linked in if serialized_pb is ''.
+        # Explicity check length as this can be either of type `bytes` or `str`
+        # and this is the fastest method for checking for either an empty bytes.
         try:
           return _message.default_pool.FindFileByName(name)
         except KeyError:
