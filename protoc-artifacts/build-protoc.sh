@@ -91,6 +91,8 @@ checkArch ()
         assertEq $format "elf32-i386" $LINENO
       elif [[ "$ARCH" == x86_64 ]]; then
         assertEq $format "elf64-x86-64" $LINENO
+      elif [[ "$ARCH" == mips64el ]]; then
+        assertEq $format "elf64-tradlittlemips" $LINENO
       elif [[ "$ARCH" == aarch_64 ]]; then
         assertEq $format "elf64-little" $LINENO
       elif [[ "$ARCH" == s390x_64 ]]; then
@@ -187,7 +189,11 @@ checkDependencies ()
 
 echo "Building protoc, OS=$OS ARCH=$ARCH TARGET=$MAKE_TARGET"
 
-CONFIGURE_ARGS="--disable-shared"
+if [[ "$ARCH" == mips64el ]]; then
+  CONFIGURE_ARGS=""
+else
+  CONFIGURE_ARGS="--disable-shared"
+fi
 
 if [[ "$OS" == windows ]]; then
   MAKE_TARGET="${MAKE_TARGET}.exe"
@@ -221,6 +227,8 @@ elif [[ "$(uname)" == Linux* ]]; then
       CXXFLAGS="$CXXFLAGS -m64"
     elif [[ "$ARCH" == x86_32 ]]; then
       CXXFLAGS="$CXXFLAGS -m32"
+    elif [[ "$ARCH" == mips64el ]]; then
+      CXXFLAGS="$CXXFLAGS -mips64"
     elif [[ "$ARCH" == aarch_64 ]]; then
       CONFIGURE_ARGS="$CONFIGURE_ARGS --host=aarch64-linux-gnu"
     elif [[ "$ARCH" == ppcle_64 ]]; then
