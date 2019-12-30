@@ -383,6 +383,8 @@ def py_proto_library(
         default_runtime = "@com_google_protobuf//:protobuf_python",
         protoc = "@com_google_protobuf//:protoc",
         use_grpc_plugin = False,
+        plugin = None,
+        plugin_language = None,
         **kargs):
     """Bazel rule to create a Python protobuf library from proto source files
 
@@ -404,6 +406,8 @@ def py_proto_library(
       protoc: the label of the protocol compiler to generate the sources.
       use_grpc_plugin: a flag to indicate whether to call the Python C++ plugin
           when processing the proto files.
+      plugin: plugin name to pass to the proto_gen rule
+      plugin_language: plugin language to pass to the proto_gen rule
       **kargs: other keyword arguments that are passed to cc_library.
 
     """
@@ -414,11 +418,16 @@ def py_proto_library(
         includes = [include]
 
     grpc_python_plugin = None
-    if use_grpc_plugin:
-        grpc_python_plugin = "//external:grpc_python_plugin"
+    if use_grpc_plugin and plugin:
+        fail("use_grpc_plugin and plugin are mutually exclusive, please spicify only one of them")
+    elif use_grpc_plugin:
         # Note: Generated grpc code depends on Python grpc module. This dependency
         # is not explicitly listed in py_libs. Instead, host system is assumed to
         # have grpc installed.
+        plugin = "//external:grpc_python_plugin"
+        plugin_language = "grpc"
+    elif plugin is not None and plugin_language is None:
+        fail("plugin_language is required if plugin specified")
 
     proto_gen(
         name = name + "_genproto",
@@ -429,8 +438,8 @@ def py_proto_library(
         gen_py = 1,
         outs = outs,
         visibility = ["//visibility:public"],
-        plugin = grpc_python_plugin,
-        plugin_language = "grpc",
+        plugin = plugin,
+        plugin_language = plugin_language,
     )
 
     if default_runtime and not default_runtime in py_libs + deps:
