@@ -467,7 +467,7 @@ void Generator::PrintFileDescriptor() const {
       printer_->Print("]");
     }
   } else {
-    printer_->Print("serialized_pb=''\n");
+    printer_->Print("serialized_pb=b''\n");
   }
 
   // TODO(falk): Also print options and fix the message_type, enum_type,
