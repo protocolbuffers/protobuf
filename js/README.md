@@ -24,7 +24,7 @@ To use Protocol Buffers with JavaScript, you need two main components:
    into `.js` files.  The compiler is not currently available via
    npm, but you can download a pre-built binary
    [on GitHub](https://github.com/protocolbuffers/protobuf/releases)
-   (look for the `protoc-*.zip` files under **Downloads**).
+   (look for the `protoc-{version}-{arch}.zip` files under **Downloads**).
 
 
 Setup
