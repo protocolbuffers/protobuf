@@ -3505,10 +3505,6 @@ bool GeneratorOptions::ParseFromOptions(
         import_style = kImportCommonJs;
       } else if (options[i].second == "commonjs_strict") {
         import_style = kImportCommonJsStrict;
-      } else if (options[i].second == "browser") {
-        import_style = kImportBrowser;
-      } else if (options[i].second == "es6") {
-        import_style = kImportEs6;
       } else {
         *error = "Unknown import style " + options[i].second + ", expected " +
                  "one of: closure, commonjs, browser, es6.";

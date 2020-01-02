@@ -71,8 +71,6 @@ struct GeneratorOptions {
     kImportClosure,         // goog.require()
     kImportCommonJs,        // require()
     kImportCommonJsStrict,  // require() with no global export
-    kImportBrowser,         // no import statements
-    kImportEs6,             // import { member } from ''
   } import_style;
 
   GeneratorOptions()
