@@ -9,7 +9,7 @@ This directory contains the JavaScript Protocol Buffers runtime library.
 
 The library is currently compatible with:
 
-1. CommonJS-style imports (eg. `var protos = require('my-protos');`)
+1. CommonJS-style imports (eg. `var protos = require('my-protos');`), which is the default
 2. Closure-style imports (eg. `goog.require('my.package.MyProto');`)
 
 Support for ES6-style imports is not implemented yet.  Browsers can
