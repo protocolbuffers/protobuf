@@ -2,7 +2,7 @@
 
 ## Background
 Currently serialization of protobuf C# messages is done (much like java) through instances of CodedInputStream and CodedOutputStream.
-These APIs work well, but there is some inherent overhead due to the fact that they are basically `byte[]` based.
+These APIs work well, but there is some inherent overhead due to the fact that they are basically `byte[]` based. The way .NET gRPC uses these types involves allocating an array the size of the message, which for larger messages means allocations to the [large object heap](https://docs.microsoft.com/en-us/dotnet/standard/garbage-collection/large-object-heap#loh-performance-implications).
 Recently a set of new types has been added to the .NET Framework (Span, ReadOnlySequence, IBufferWriter)
 and these new types allow defining new serialization/deserialization APIs, ones that would be much more efficient especially from
 the perspective of memory management.
