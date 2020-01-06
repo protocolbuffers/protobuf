@@ -18,7 +18,7 @@ The goals for this effort:
 - all the changes made need to be backward compatible
 - introduce a set of new public APIs for serialization/deserialization that utilize the Span type
 - allow future incremental performance optimizations and make them as easy as possible
-- ensure the are microbenchmark that allow comparing the two implementations
+- ensure there are microbenchmark that allow comparing the two implementations
 - as support for the new serialization/deserialization APIs requires generating code that is not compatible with some older .NET frameworks, figure out a schema under which messages with "new serialization API support" and without it can coexist (without causing user friction).
 - the effort to maintain the Protobuf C# project should remain approximately the same (should not be negatively affected by introduction of new serialization/deserialization APIs).
 
@@ -29,9 +29,10 @@ Non-goals
 ## The Proposal
 
 Key elements:
-- Add CodedInputReader and CodedOutputWriter types (both are `ref structs` and thus can hold an instance of `Span`). These two types implement the low-level wire format semantics in terms of the `Span` type (as opposed to `byte[]` used by CodedInputStream and CodedOutputStream).
-- Introduce `IBufferMessage` interface (exact name TBD) which inherits from `IMessage` and marks protobuf messages that support the new serialization/deserialization API.
-- Introduce a new codegen option (exact name TBD) to enable/disable generating code required by CodedInputReader/CodedInputWriter (the MergeFrom and WriteTo methods). This option will default to disabled. gRPC frameworks will likely provide the ability to explicitly control it, e.g. `<Protobuf Include="..\Shared\benchmark_service.proto" Serialization="Buffer" />`, and/or detect the version of .NET being targeted and automatically enable the option.
+- Add `CodedInputReader` and `CodedOutputWriter` types (both are `ref structs` and thus can hold an instance of `Span`). These two types implement the low-level wire format semantics in terms of the `Span` type (as opposed to `byte[]` used by CodedInputStream and CodedOutputStream).
+- Introduce `IBufferMessage` interface which inherits from `IMessage` and marks protobuf messages that support the new serialization/deserialization API.
+- Introduce a new codegen option `--use_buffer_serialization` to enable/disable generating code required by CodedInputReader/CodedInputWriter (the `MergeFrom(ref CodedInputReader)` and `WriteTo(ref CodedOutputWriter output)` methods). This option will default to disabled. gRPC frameworks will likely provide the ability to explicitly control it, e.g. `<Protobuf Include="..\Shared\benchmark_service.proto" Serialization="Buffer" />`, and/or detect the version of .NET being targeted and automatically enable the option.
+- Generated code that uses the new IBufferMessage/CodedInputReader/CodedOutputWriter types will be surrounded by `#if !PROTOBUF_DISABLE_BUFFER_SERIALIZATION` defines. That will allow potentially incompatible generated code to be excluded by a project to support multi-targeting scenarios.
 
 A prototype implementation is https://github.com/protocolbuffers/protobuf/pull/5888
 
@@ -39,7 +40,12 @@ A prototype implementation is https://github.com/protocolbuffers/protobuf/pull/5
 
 - the new serialization API will be supported for projects that support at least `netstandard2.0` and allow use of C# 7.2. On newer .NET frameworks, there might be (and likely will be) further performance benefits.
 
+- TODO: add a note that on `net45` the new serialization API will be supported too, but it's mostly for convenience. `netstandard2.0` and higher are the primary targets.
+- TODO: add a note that the new serialization API won't be supported on netstandard1.0
+
 ## Backwards compatibility
+
+TODO: 
 
 ## Code duplication
 
@@ -47,12 +53,13 @@ TODO: testing (how to test both APIs without twice the effort).
 
 ## Other considerations
 
-TODO: design for codegen option
-TODO: will the generated code contain an #ifdef to enable multi-targeted projects?
+TODO: design for codegen option (--use_buffer_serialization, PROTOBUF_DISABLE_BUFFER_SERIALIZATION ifdef, describe possible scenarios and how the design solves them)
 
 TODO: design for Grpc.Tools and whether the span-based parsing will be enabled by default
 
 TODO: how will the old generated code coexist with the span-enabled generated code? how will it work across library boundaries (e.g. a client library contains code generated without the support for fast parsing and we want to use that client library).
+
+TODO: handling of `bytes` fields efficiently?
 
 ## References
 
