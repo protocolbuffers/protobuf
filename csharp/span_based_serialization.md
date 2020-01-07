@@ -86,6 +86,19 @@ While the logical structure of the (de)serialization code for both old and new a
 - fixing bugs (some bug might need to be fixed in two locations)
 - writing tests (in some cases, tests need to be duplicated, because behavior with both Stream/Buffer serialization need to be tested)
 
+## Integration with generated gRPC stubs
+
+To use the new (de)serialization API from gRPC, gRPC C# will need to modify the codegen plugin to generate 
+grpc stubs that utilize the new API.
+
+TODO: add the design for changes to grpc_csharp_plugin codegen plugin.
+
+TODO: what is going to be the flag to select the new serialization API in gRPC stubs?
+
+TODO: add example snippet of the generated marshaller code (current state: https://github.com/grpc/grpc/blob/b07d7f14857d09f05b58ccd0e5f15a6992618f3a/src/csharp/Grpc.Examples/MathGrpc.cs#L30)
+
+TODO: is there a way to autodetect that IBufferMessage serialization API is available and use it automatically (and fallback if it's not available?)
+
 ## Other considerations
 
 TODO: design for Grpc.Tools and whether the span-based parsing will be enabled by default
