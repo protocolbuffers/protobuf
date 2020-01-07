@@ -756,7 +756,8 @@ uint32_t upb_murmur_hash2(const void *key, size_t len, uint32_t seed) {
   /* Mix 4 bytes at a time into the hash */
   const uint8_t * data = (const uint8_t *)key;
   while(len >= 4) {
-    uint32_t k = *(uint32_t *)data;
+    uint32_t k;
+    memcpy(&k, data, sizeof(k));
 
     k *= m;
     k ^= k >> r;
