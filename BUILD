@@ -61,10 +61,7 @@ cc_library(
         "upb/encode.c",
         "upb/generated_util.h",
         "upb/msg.c",
-        "upb/msg.h",
         "upb/port.c",
-        "upb/port_def.inc",
-        "upb/port_undef.inc",
         "upb/table.c",
         "upb/table.int.h",
         "upb/upb.c",
@@ -72,6 +69,9 @@ cc_library(
     hdrs = [
         "upb/decode.h",
         "upb/encode.h",
+        "upb/msg.h",
+        "upb/port_def.inc",
+        "upb/port_undef.inc",
         "upb/upb.h",
     ],
     copts = select({
@@ -286,6 +286,11 @@ cc_binary(
 
 # C/C++ tests ##################################################################
 
+upb_proto_reflection_library(
+    name = "descriptor_upbreflection",
+    deps = ["@com_google_protobuf//:descriptor_proto"],
+)
+
 cc_binary(
     name = "benchmark",
     testonly = 1,
@@ -431,11 +436,6 @@ cc_binary(
 )
 
 # copybara:strip_for_google3_begin
-upb_proto_reflection_library(
-    name = "descriptor_upbreflection",
-    deps = ["@com_google_protobuf//:descriptor_proto"],
-)
-
 cc_test(
     name = "test_encoder",
     srcs = ["tests/pb/test_encoder.cc"],
