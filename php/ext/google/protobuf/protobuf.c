@@ -39,6 +39,8 @@ static PHP_RSHUTDOWN_FUNCTION(protobuf);
 static PHP_MINIT_FUNCTION(protobuf);
 static PHP_MSHUTDOWN_FUNCTION(protobuf);
 
+ZEND_DECLARE_MODULE_GLOBALS(protobuf)
+
 // Global map from upb {msg,enum}defs to wrapper Descriptor/EnumDescriptor
 // instances.
 static HashTable* upb_def_to_php_obj_map;
@@ -47,8 +49,8 @@ static upb_inttable upb_def_to_enumdesc_map_persistent;
 // Global map from message/enum's php class entry to corresponding wrapper
 // Descriptor/EnumDescriptor instances.
 static HashTable* ce_to_php_obj_map;
-static upb_inttable ce_to_desc_map_persistent;
-static upb_inttable ce_to_enumdesc_map_persistent;
+static upb_strtable ce_to_desc_map_persistent;
+static upb_strtable ce_to_enumdesc_map_persistent;
 // Global map from message/enum's proto fully-qualified name to corresponding
 // wrapper Descriptor/EnumDescriptor instances.
 static upb_strtable proto_to_desc_map_persistent;
@@ -61,8 +63,6 @@ upb_strtable reserved_names;
 // -----------------------------------------------------------------------------
 
 static void add_to_table(HashTable* t, const void* def, void* value) {
-  uint nIndex = (ulong)def & t->nTableMask;
-
   zval* pDest = NULL;
   php_proto_zend_hash_index_update_mem(t, (zend_ulong)def, &value,
                                        sizeof(zval*), (void**)&pDest);
@@ -71,28 +71,6 @@ static void add_to_table(HashTable* t, const void* def, void* value) {
 static void* get_from_table(const HashTable* t, const void* def) {
   void** value;
   if (php_proto_zend_hash_index_find_mem(t, (zend_ulong)def, (void**)&value) ==
-      FAILURE) {
-    return NULL;
-  }
-  return *value;
-}
-
-static bool exist_in_table(const HashTable* t, const void* def) {
-  void** value;
-  return (php_proto_zend_hash_index_find_mem(t, (zend_ulong)def,
-                                             (void**)&value) == SUCCESS);
-}
-
-static void add_to_strtable(HashTable* t, const char* key, int key_size,
-                            void* value) {
-  zval* pDest = NULL;
-  php_proto_zend_hash_update_mem(t, key, key_size, &value, sizeof(void*),
-                                 (void**)&pDest);
-}
-
-static void* get_from_strtable(const HashTable* t, const char* key, int key_size) {
-  void** value;
-  if (php_proto_zend_hash_find_mem(t, key, key_size, (void**)&value) ==
       FAILURE) {
     return NULL;
   }
@@ -160,16 +138,28 @@ PHP_PROTO_HASHTABLE_VALUE get_ce_obj(const void* ce) {
 }
 
 void add_ce_desc(const zend_class_entry* ce, DescriptorInternal* desc) {
-  upb_inttable_insertptr(&ce_to_desc_map_persistent,
-                         ce, upb_value_ptr(desc));
+#if PHP_MAJOR_VERSION < 7
+  const char* klass = ce->name;
+#else
+  const char* klass = ZSTR_VAL(ce->name);
+#endif
+  upb_strtable_insert(&ce_to_desc_map_persistent, klass,
+                      upb_value_ptr(desc));
 }
 
 DescriptorInternal* get_ce_desc(const zend_class_entry* ce) {
+#if PHP_MAJOR_VERSION < 7
+  const char* klass = ce->name;
+#else
+  const char* klass = ZSTR_VAL(ce->name);
+#endif
+
   upb_value v;
 #ifndef NDEBUG
   v.ctype = UPB_CTYPE_PTR;
 #endif
-  if (!upb_inttable_lookupptr(&ce_to_desc_map_persistent, ce, &v)) {
+
+  if (!upb_strtable_lookup(&ce_to_desc_map_persistent, klass, &v)) {
     return NULL;
   } else {
     return upb_value_getptr(v);
@@ -177,16 +167,26 @@ DescriptorInternal* get_ce_desc(const zend_class_entry* ce) {
 }
 
 void add_ce_enumdesc(const zend_class_entry* ce, EnumDescriptorInternal* desc) {
-  upb_inttable_insertptr(&ce_to_enumdesc_map_persistent,
-                         ce, upb_value_ptr(desc));
+#if PHP_MAJOR_VERSION < 7
+  const char* klass = ce->name;
+#else
+  const char* klass = ZSTR_VAL(ce->name);
+#endif
+  upb_strtable_insert(&ce_to_enumdesc_map_persistent, klass,
+                      upb_value_ptr(desc));
 }
 
 EnumDescriptorInternal* get_ce_enumdesc(const zend_class_entry* ce) {
+#if PHP_MAJOR_VERSION < 7
+  const char* klass = ce->name;
+#else
+  const char* klass = ZSTR_VAL(ce->name);
+#endif
   upb_value v;
 #ifndef NDEBUG
   v.ctype = UPB_CTYPE_PTR;
 #endif
-  if (!upb_inttable_lookupptr(&ce_to_enumdesc_map_persistent, ce, &v)) {
+  if (!upb_strtable_lookup(&ce_to_enumdesc_map_persistent, klass, &v)) {
     return NULL;
   } else {
     return upb_value_getptr(v);
@@ -347,17 +347,13 @@ static void php_proto_hashtable_descriptor_release(zval* value) {
   }
   efree(ptr);
 }
-
-static void test_release(void* value) {
-  void* ptr = value;
-}
 #endif
 
-static initialize_persistent_descriptor_pool(TSRMLS_D) {
+static void initialize_persistent_descriptor_pool(TSRMLS_D) {
   upb_inttable_init(&upb_def_to_desc_map_persistent, UPB_CTYPE_PTR);
   upb_inttable_init(&upb_def_to_enumdesc_map_persistent, UPB_CTYPE_PTR);
-  upb_inttable_init(&ce_to_desc_map_persistent, UPB_CTYPE_PTR);
-  upb_inttable_init(&ce_to_enumdesc_map_persistent, UPB_CTYPE_PTR);
+  upb_strtable_init(&ce_to_desc_map_persistent, UPB_CTYPE_PTR);
+  upb_strtable_init(&ce_to_enumdesc_map_persistent, UPB_CTYPE_PTR);
   upb_strtable_init(&proto_to_desc_map_persistent, UPB_CTYPE_PTR);
   upb_strtable_init(&class_to_desc_map_persistent, UPB_CTYPE_PTR);
 
@@ -386,7 +382,29 @@ static PHP_RINIT_FUNCTION(protobuf) {
   generated_pool_php = NULL;
   internal_generated_pool_php = NULL;
 
-  if (!PROTOBUF_G(keep_descriptor_pool_after_request)) {
+  if (PROTOBUF_G(keep_descriptor_pool_after_request)) {
+    // Needs to clean up obsolete class entry
+    upb_strtable_iter i;
+    upb_value v;
+
+    DescriptorInternal* desc;
+    for(upb_strtable_begin(&i, &ce_to_desc_map_persistent);
+        !upb_strtable_done(&i);
+        upb_strtable_next(&i)) {
+      v = upb_strtable_iter_value(&i);
+      desc = upb_value_getptr(v);
+      desc->klass = NULL;
+    }
+
+    EnumDescriptorInternal* enumdesc;
+    for(upb_strtable_begin(&i, &ce_to_enumdesc_map_persistent);
+        !upb_strtable_done(&i);
+        upb_strtable_next(&i)) {
+      v = upb_strtable_iter_value(&i);
+      enumdesc = upb_value_getptr(v);
+      enumdesc->klass = NULL;
+    }
+  } else {
     initialize_persistent_descriptor_pool(TSRMLS_C);
   }
 
@@ -425,7 +443,7 @@ static void cleanup_enumdesc_table(upb_inttable* t) {
   }
 }
 
-static cleanup_persistent_descriptor_pool(TSRMLS_D) {
+static void cleanup_persistent_descriptor_pool(TSRMLS_D) {
   // Clean up
 
   // Only needs to clean one map out of three (def=>desc, ce=>desc, proto=>desc)
@@ -436,8 +454,8 @@ static cleanup_persistent_descriptor_pool(TSRMLS_D) {
 
   upb_inttable_uninit(&upb_def_to_desc_map_persistent);
   upb_inttable_uninit(&upb_def_to_enumdesc_map_persistent);
-  upb_inttable_uninit(&ce_to_desc_map_persistent);
-  upb_inttable_uninit(&ce_to_enumdesc_map_persistent);
+  upb_strtable_uninit(&ce_to_desc_map_persistent);
+  upb_strtable_uninit(&ce_to_enumdesc_map_persistent);
   upb_strtable_uninit(&proto_to_desc_map_persistent);
   upb_strtable_uninit(&class_to_desc_map_persistent);
 }
@@ -480,10 +498,7 @@ static PHP_RSHUTDOWN_FUNCTION(protobuf) {
 
 static void reserved_names_init() {
   size_t i;
-  upb_value v;
-#ifndef NDEBUG
-  v.ctype = UPB_CTYPE_UINT64;
-#endif
+  upb_value v = upb_value_bool(false);
   for (i = 0; i < kReservedNamesSize; i++) {
     upb_strtable_insert2(&reserved_names, kReservedNames[i],
                          strlen(kReservedNames[i]), v);

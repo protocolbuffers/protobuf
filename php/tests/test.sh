@@ -7,7 +7,7 @@ export C_INCLUDE_PATH=/usr/local/php-$VERSION/include/php/main:/usr/local/php-$V
 export CPLUS_INCLUDE_PATH=/usr/local/php-$VERSION/include/php/main:/usr/local/php-$VERSION/include/php:$CPLUS_INCLUDE_PATH
 
 # Compile c extension
-/bin/bash ./compile_extension.sh ../ext/google/protobuf
+/bin/bash ./compile_extension.sh $VERSION
 
 tests=( array_test.php encode_decode_test.php generated_class_test.php map_field_test.php well_known_test.php descriptors_test.php wrapper_type_setters_test.php)
 

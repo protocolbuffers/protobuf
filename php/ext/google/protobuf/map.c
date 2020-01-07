@@ -222,7 +222,7 @@ for (map_begin_internal(intern, &it); !map_done(&it); map_next(&it)) {
 upb_strtable_uninit(&intern->table);
 PHP_PROTO_OBJECT_FREE_END
 
-PHP_PROTO_OBJECT_DTOR_START(Map, map_field)
+PHP_PROTO_OBJECT_EMPTY_DTOR_START(Map, map_field)
 PHP_PROTO_OBJECT_DTOR_END
 
 // Define object create method.
@@ -383,7 +383,6 @@ static bool map_field_unset_dimension(zval *object, zval *key TSRMLS_DC) {
   char keybuf[TABLE_KEY_BUF_LENGTH];
   const char* keyval = NULL;
   size_t length = 0;
-  upb_value v;
   if (!table_key(intern, key, keybuf, &keyval, &length TSRMLS_CC)) {
     return false;
   }
@@ -454,7 +453,7 @@ PHP_METHOD(MapField, offsetExists) {
 }
 
 PHP_METHOD(MapField, offsetGet) {
-  zval *index, *value;
+  zval *index;
   if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z", &index) ==
       FAILURE) {
     return;
@@ -495,7 +494,6 @@ PHP_METHOD(MapField, getIterator) {
   CREATE_OBJ_ON_ALLOCATED_ZVAL_PTR(return_value,
                                    map_field_iter_type);
 
-  Map *intern = UNBOX(Map, getThis());
   MapIter *iter = UNBOX(MapIter, return_value);
   map_begin(getThis(), iter TSRMLS_CC);
 }
@@ -544,10 +542,10 @@ static zend_function_entry map_field_iter_methods[] = {
 // -----------------------------------------------------------------------------
 
 // Define object free method.
-PHP_PROTO_OBJECT_FREE_START(MapIter, map_field_iter)
+PHP_PROTO_OBJECT_EMPTY_FREE_START(MapIter, map_field_iter)
 PHP_PROTO_OBJECT_FREE_END
 
-PHP_PROTO_OBJECT_DTOR_START(MapIter, map_field_iter)
+PHP_PROTO_OBJECT_EMPTY_DTOR_START(MapIter, map_field_iter)
 PHP_PROTO_OBJECT_DTOR_END
 
 // Define object create method.
