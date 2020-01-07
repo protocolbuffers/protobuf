@@ -40,8 +40,10 @@ RUN apt-get update && apt-get -t testing install -y \
   python3.5 \
   python3.6 \
   python3.7 \
+  python3.8 \
   python3-all-dev
 
 RUN curl https://bootstrap.pypa.io/get-pip.py | python3.5
 RUN curl https://bootstrap.pypa.io/get-pip.py | python3.6
 RUN curl https://bootstrap.pypa.io/get-pip.py | python3.7
+RUN curl https://bootstrap.pypa.io/get-pip.py | python3.8

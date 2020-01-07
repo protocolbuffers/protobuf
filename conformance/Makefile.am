@@ -353,8 +353,8 @@ test_php: protoc_middleman conformance-test-runner conformance-php $(other_langu
 test_php_c: protoc_middleman conformance-test-runner conformance-php-c $(other_language_protoc_outputs)
 	./conformance-test-runner --enforce_recommended --failure_list failure_list_php_c.txt --text_format_failure_list text_format_failure_list_php.txt ./conformance-php-c
 
-test_php_zts_c: protoc_middleman conformance-test-runner conformance-php-c $(other_language_protoc_outputs)
-	./conformance-test-runner --enforce_recommended --failure_list failure_list_php_zts_c.txt --text_format_failure_list text_format_failure_list_php.txt ./conformance-php-c
+test_php_c_32: protoc_middleman conformance-test-runner conformance-php-c $(other_language_protoc_outputs)
+	./conformance-test-runner --enforce_recommended --failure_list failure_list_php_c_32.txt --text_format_failure_list text_format_failure_list_php.txt ./conformance-php-c
 
 # These depend on library paths being properly set up.  The easiest way to
 # run them is to just use "tox" from the python dir.

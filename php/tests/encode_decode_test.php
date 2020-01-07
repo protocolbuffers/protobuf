@@ -1164,6 +1164,18 @@ class EncodeDecodeTest extends TestBase
             $m->serializeToJsonString());
     }
 
+    public function testEncodeAnyWithDefaultWrapperMessagePacked()
+    {
+        $any = new Any();
+        $any->pack(new TestInt32Value([
+            'field' => new Int32Value(['value' => 0]),
+        ]));
+        $this->assertSame(
+            "{\"@type\":\"type.googleapis.com/foo.TestInt32Value\"," .
+            "\"field\":0}",
+            $any->serializeToJsonString());
+    }
+
     public function testDecodeTopLevelFieldMask()
     {
         $m = new TestMessage();
