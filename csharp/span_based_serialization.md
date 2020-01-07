@@ -36,30 +36,61 @@ Key elements:
 
 A prototype implementation is https://github.com/protocolbuffers/protobuf/pull/5888
 
+## Efficiency improvements
+
+`MergeFrom(ref CodedInputReader)` allows parsing protobuf messages from a `ReadOnlySequence<byte>`, which offers these benefits over the existing `MergeFrom(ref CodedInputStream)` and/or `MergeFrom(byte[] input)`.
+
+- The input buffer does not have to be continguous, but can be formed from several segment/slices. That's a format that naturally matches the format in which the data are received from the network card (= we can parse directly from the memory slices we received from network)
+
+- Allows parsing directly from both managed and native memory buffer in a safe manner with a single API (this is beneficial for Grpc.Core implementation that uses a native layer, so we don't have to copy buffers into managed memory first).
+
+- In grpc-dotnet, the requests can be exposed as `ReadOnlySequence<byte>` in a very efficient manner.
+
+- Buffer segments can be reused once read so that there are no extra memory allocations.
+
+- Access to segments of read only sequence via `ReadOnlySpan<>` is heavily optimized in recent .NET Core releases.
+
+`WriteTo(ref CodedOutputWriter output)` allows serializing protobuf messages to `IBufferWriter<byte>` which has these benefits:
+
+- The output doesn't have to be written to a single continguous chunk of memory, but into smaller buffer segments, which
+avoids allocating large blocks of memory, resulting in slow LOH GC collections.
+
+- Allows serializing to both managed and native memory in a safe manner with the same API.
+
+- Buffer segments can be reused once read so that there are no extra memory allocations.
+
+- Allows avoiding any additional copies of data when serializing (in both Grpc.Core and grpc-dotnet). 
+
 ## Platform support
 
 - the new serialization API will be supported for projects that support at least `netstandard2.0` and allow use of C# 7.2. On newer .NET frameworks, there might be (and likely will be) further performance benefits.
 
-- TODO: add a note that on `net45` the new serialization API will be supported too, but it's mostly for convenience. `netstandard2.0` and higher are the primary targets.
-- TODO: add a note that the new serialization API won't be supported on netstandard1.0
+- the new serialization API will be supported on `net45`, but it's mostly for convenience and to minimize the differences between different builds of the library. `netstandard2.0` and higher are the primary targets.
+
+- the new serialization API won't be supported on netstandard1.0 (as it doesn't support the `System.Memory` package which contains several required types). Users will still be able to use the original serialization APIs as always. 
 
 ## Backwards compatibility
 
-TODO: 
+API changes to the runtime library are purely additive.
 
-## Code duplication
+By default (without `--use_buffer_serialization` options), the generated code will stay the same and won't depend on any of the newly introduced types, so existing users that don't opt-in won't be affected by the new APIs at all.
 
-TODO: testing (how to test both APIs without twice the effort).
+When `--use_buffer_serialization` is used when generating the code, the code requiring the newly introduces types will
+be protected by `PROTOBUF_DISABLE_BUFFER_SERIALIZATION` if-define, so that it can be disabled (needs to be manually set in a project) when needed.
+
+## Concern: Code duplication and maintainability
+
+While the logical structure of the (de)serialization code for both old and new approaches is very similar, due to the different nature of the object holding the parsing state (`class` vs `ref struct`), the parsing primitives need to be defined twice (e.g. ReadRawVarint64 exist in two copies, one under CodedInputStream and one user CodedInputReader) and that adds some extra overhead when:
+
+- optimizing the (de)serialization code (two locations need to be updated)
+- fixing bugs (some bug might need to be fixed in two locations)
+- writing tests (in some cases, tests need to be duplicated, because behavior with both Stream/Buffer serialization need to be tested)
 
 ## Other considerations
-
-TODO: design for codegen option (--use_buffer_serialization, PROTOBUF_DISABLE_BUFFER_SERIALIZATION ifdef, describe possible scenarios and how the design solves them)
 
 TODO: design for Grpc.Tools and whether the span-based parsing will be enabled by default
 
 TODO: how will the old generated code coexist with the span-enabled generated code? how will it work across library boundaries (e.g. a client library contains code generated without the support for fast parsing and we want to use that client library).
-
-TODO: handling of `bytes` fields efficiently?
 
 ## References
 
