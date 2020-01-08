@@ -249,6 +249,10 @@ static upb_msg *upb_addmsg(upb_decframe *frame,
   upb_msg *submsg;
   upb_array *arr = upb_getorcreatearr(frame, field);
 
+  UPB_ASSERT(field->label == UPB_LABEL_REPEATED);
+  UPB_ASSERT(field->descriptortype == UPB_DESCRIPTOR_TYPE_MESSAGE ||
+             field->descriptortype == UPB_DESCRIPTOR_TYPE_GROUP);
+
   *subm = frame->layout->submsgs[field->submsg_index];
   submsg = upb_msg_new(*subm, frame->state->arena);
   CHK(submsg);
