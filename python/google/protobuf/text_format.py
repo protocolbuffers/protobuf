@@ -50,7 +50,7 @@ import re
 
 import six
 
-if six.PY3:
+if not six.PY2:
   long = int  # pylint: disable=redefined-builtin,invalid-name
 
 # pylint: disable=g-import-not-at-top

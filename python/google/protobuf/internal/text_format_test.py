@@ -255,7 +255,7 @@ class TextFormatMessageToStringTests(TextFormatBase):
     message.repeated_string.append(u'\u00fc\t\ua71f')
     text = text_format.MessageToString(message, as_utf8=True)
     golden_unicode = u'repeated_string: "\u00fc\\t\ua71f"\n'
-    golden_text = golden_unicode if six.PY3 else golden_unicode.encode('utf-8')
+    golden_text = golden_unicode.encode('utf-8') if six.PY2 else golden_unicode
     # MessageToString always returns a native str.
     self.CompareToGoldenText(text, golden_text)
     parsed_message = message_module.TestAllTypes()

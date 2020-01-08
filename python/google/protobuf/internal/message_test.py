@@ -88,7 +88,7 @@ from google.protobuf import message
 from google.protobuf.internal import _parameterized
 
 UCS2_MAXUNICODE = 65535
-if six.PY3:
+if not six.PY2:
   long = int
 
 
@@ -853,7 +853,7 @@ class MessageTest(unittest.TestCase):
     self.assertIsInstance(m1.optional_string, six.text_type)
     self.assertIsInstance(m1.repeated_string[0], six.text_type)
 
-  @unittest.skipIf(six.PY3, 'memoryview is supported by py3')
+  @unittest.skipIf(not six.PY2, 'memoryview is supported by py3')
   def testMergeFromStringUsingMemoryViewIsPy2Error(self, message_module):
     memview = memoryview(b'')
     with self.assertRaises(TypeError):
@@ -2453,7 +2453,7 @@ class Proto3Test(unittest.TestCase):
       unittest_proto3_arena_pb2.TestAllTypes(
           optional_string=u'\ud801\ud801')
 
-  @unittest.skipIf(six.PY3 or sys.maxunicode == UCS2_MAXUNICODE,
+  @unittest.skipIf(not six.PY2 or sys.maxunicode == UCS2_MAXUNICODE,
                    'Surrogates are rejected at setters in Python3')
   def testSurrogatesInPython2(self):
     # Test optional_string=u'\ud801\udc01'.

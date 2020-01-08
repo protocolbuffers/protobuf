@@ -72,14 +72,14 @@ def CEscape(text, as_utf8):
   # escapes whereas our C++ unescaping function allows hex escapes to be any
   # length.  So, "\0011".encode('string_escape') ends up being "\\x011", which
   # will be decoded in C++ as a single-character string with char code 0x11.
-  if six.PY3:
-    text_is_unicode = isinstance(text, str)
-    if as_utf8 and text_is_unicode:
-      # We're already unicode, no processing beyond control char escapes.
-      return text.translate(_cescape_chr_to_symbol_map)
-    ord_ = ord if text_is_unicode else lambda x: x  # bytes iterate as ints.
-  else:
+  if six.PY2:
     ord_ = ord  # PY2
+  else:
+    text_is_unicode = isinstance(text, str)
+  if as_utf8 and text_is_unicode:
+    # We're already unicode, no processing beyond control char escapes.
+    return text.translate(_cescape_chr_to_symbol_map)
+  ord_ = ord if text_is_unicode else lambda x: x  # bytes iterate as ints.
   if as_utf8:
     return ''.join(_cescape_unicode_to_str[ord_(c)] for c in text)
   return ''.join(_cescape_byte_to_str[ord_(c)] for c in text)

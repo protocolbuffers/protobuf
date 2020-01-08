@@ -66,7 +66,7 @@ from google.protobuf.internal import decoder
 from google.protobuf.internal import _parameterized
 
 
-if six.PY3:
+if not six.PY2:
   long = int  # pylint: disable=redefined-builtin,invalid-name
 
 

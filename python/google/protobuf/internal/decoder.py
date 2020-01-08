@@ -85,11 +85,11 @@ import sys
 import six
 
 _UCS2_MAXUNICODE = 65535
-if six.PY3:
-  long = int
-else:
+if six.PY2:
   import re    # pylint: disable=g-import-not-at-top
   _SURROGATE_PATTERN = re.compile(six.u(r'[\ud800-\udfff]'))
+else:
+  long = int
 
 from google.protobuf.internal import containers
 from google.protobuf.internal import encoder

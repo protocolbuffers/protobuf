@@ -48,7 +48,7 @@ __author__ = 'robinson@google.com (Will Robinson)'
 import numbers
 import six
 
-if six.PY3:
+if not six.PY2:
   long = int
 
 from google.protobuf.internal import api_implementation
