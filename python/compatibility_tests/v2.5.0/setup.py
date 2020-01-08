@@ -7,8 +7,8 @@ import sys
 
 from setuptools import setup, Extension, find_packages
 
-if sys.version_info[0] == 3:
-  # Python 3
+if sys.version_info[0] >= 3:
+  # Python 3+
   from distutils.command.build_py import build_py_2to3 as _build_py
 else:
   # Python 2
