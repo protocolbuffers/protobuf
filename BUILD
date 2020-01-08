@@ -2,7 +2,7 @@
 
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test", "objc_library")
 load("@rules_java//java:defs.bzl", "java_library")
-load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain", "proto_library")
+load("@rules_proto//proto:defs.bzl", "proto_common", "proto_lang_toolchain", "proto_library")
 load("@rules_python//python:defs.bzl", "py_library")
 
 licenses(["notice"])
@@ -986,9 +986,11 @@ cc_library(
     ],
 )
 
+reject_blacklisted_files = not hasattr(proto_common, "proto_lang_toolchain_rejects_files_do_not_use_or_we_will_break_you_without_mercy"),
+cc_toolchain_blacklisted_protos = [proto + "_proto" for proto in WELL_KNOWN_PROTO_MAP.keys()] if reject_blacklisted_files else [":well_known_protos"],
 proto_lang_toolchain(
     name = "cc_toolchain",
-    blacklisted_protos = [proto + "_proto" for proto in WELL_KNOWN_PROTO_MAP.keys()],
+    blacklisted_protos = cc_toolchain_blacklisted_protos,
     command_line = "--cpp_out=$(OUT)",
     runtime = ":protobuf",
     visibility = ["//visibility:public"],
