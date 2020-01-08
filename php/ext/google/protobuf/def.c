@@ -69,31 +69,6 @@ static void check_upb_status(const upb_status* status, const char* msg) {
   }
 }
 
-// Camel-case the field name and append "Entry" for generated map entry name.
-// e.g. map<KeyType, ValueType> foo_map => FooMapEntry
-static void append_map_entry_name(char *result, const char *field_name,
-                                  int pos) {
-  bool cap_next = true;
-  int i;
-
-  for (i = 0; i < strlen(field_name); ++i) {
-    if (field_name[i] == '_') {
-      cap_next = true;
-    } else if (cap_next) {
-      // Note: Do not use ctype.h due to locales.
-      if ('a' <= field_name[i] && field_name[i] <= 'z') {
-        result[pos++] = field_name[i] - 'a' + 'A';
-      } else {
-        result[pos++] = field_name[i];
-      }
-      cap_next = false;
-    } else {
-      result[pos++] = field_name[i];
-    }
-  }
-  strcat(result, "Entry");
-}
-
 // -----------------------------------------------------------------------------
 // GPBType
 // -----------------------------------------------------------------------------
@@ -682,29 +657,6 @@ static void descriptor_pool_init_c_instance(DescriptorPool *pool TSRMLS_DC) {
 static void descriptor_pool_free_c(DescriptorPool *pool TSRMLS_DC) {
 }
 
-static void validate_enumdef(const upb_enumdef *enumdef) {
-  // Verify that an entry exists with integer value 0. (This is the default
-  // value.)
-  const char *lookup = upb_enumdef_iton(enumdef, 0);
-  if (lookup == NULL) {
-    zend_error(E_USER_ERROR,
-               "Enum definition does not contain a value for '0'.");
-  }
-}
-
-static void validate_msgdef(const upb_msgdef* msgdef) {
-  // Verify that no required fields exist. proto3 does not support these.
-  upb_msg_field_iter it;
-  for (upb_msg_field_begin(&it, msgdef);
-       !upb_msg_field_done(&it);
-       upb_msg_field_next(&it)) {
-    const upb_fielddef* field = upb_msg_iter_field(&it);
-    if (upb_fielddef_label(field) == UPB_LABEL_REQUIRED) {
-      zend_error(E_ERROR, "Required fields are unsupported in proto3.");
-    }
-  }
-}
-
 PHP_METHOD(DescriptorPool, getGeneratedPool) {
   init_generated_pool_once(TSRMLS_C);
 #if PHP_MAJOR_VERSION < 7
@@ -723,58 +675,6 @@ PHP_METHOD(InternalDescriptorPool, getGeneratedPool) {
   GC_ADDREF(internal_generated_pool_php);
   RETURN_OBJ(internal_generated_pool_php);
 #endif
-}
-
-static size_t classname_len_max(const char *fullname,
-                                const char *package,
-                                const char *php_namespace,
-                                const char *prefix) {
-  size_t fullname_len = strlen(fullname);
-  size_t package_len = 0;
-  size_t prefix_len = 0;
-  size_t namespace_len = 0;
-  size_t length = fullname_len;
-  int i, segment, classname_start = 0;
-
-  if (package != NULL) {
-    package_len = strlen(package);
-  }
-  if (prefix != NULL) {
-    prefix_len = strlen(prefix);
-  }
-  if (php_namespace != NULL) {
-    namespace_len = strlen(php_namespace);
-  }
-
-  // Process package
-  if (package_len > 0) {
-    segment = 1;
-    for (i = 0; i < package_len; i++) {
-      if (package[i] == '.') {
-        segment++;
-      }
-    }
-    // In case of reserved name in package.
-    length += 3 * segment;
-
-    classname_start = package_len + 1;
-  }
-
-  // Process class name
-  segment = 1;
-  for (i = classname_start; i < fullname_len; i++) {
-    if (fullname[i] == '.') {
-      segment++;
-    }
-  }
-  if (prefix_len == 0) {
-    length += 3 * segment;
-  } else {
-    length += prefix_len * segment;
-  }
-
-  // The additional 2, one is for preceding '.' and the other is for trailing 0.
-  return length + namespace_len + 2;
 }
 
 static bool is_reserved(const char *segment, int length) {
@@ -797,8 +697,6 @@ static void fill_prefix(const char *segment, int length,
                         const char *prefix_given,
                         const char *package_name,
                         stringsink *classname) {
-  size_t i;
-
   if (prefix_given != NULL && strcmp(prefix_given, "") != 0) {
     stringsink_string(classname, NULL, prefix_given,
                       strlen(prefix_given), NULL);
@@ -834,7 +732,7 @@ static void fill_namespace(const char *package, const char *php_namespace,
       stringsink_string(classname, NULL, "\\", 1, NULL);
     }
   } else if (package != NULL) {
-    int i = 0, j, offset = 0;
+    int i = 0, j = 0;
     size_t package_len = strlen(package);
     while (i < package_len) {
       j = i;
@@ -868,7 +766,7 @@ static void fill_classname(const char *fullname,
     while (j < fullname_len && fullname[j] != '.') {
       j++;
     }
-    if (use_nested_submsg || is_first_segment && j == fullname_len) {
+    if (use_nested_submsg || (is_first_segment && j == fullname_len)) {
       fill_prefix(fullname + i, j - i, prefix, package, classname);
     }
     is_first_segment = false;
@@ -907,9 +805,6 @@ static void fill_classname_for_desc(void *desc, bool is_enum) {
   const char *package = upb_filedef_package(file);
   const char *php_namespace = upb_filedef_phpnamespace(file);
   const char *prefix = upb_filedef_phpprefix(file);
-  size_t classname_len =
-      classname_len_max(fullname, package, php_namespace, prefix);
-  char* after_package;
   stringsink namesink;
   stringsink_init(&namesink);
 
@@ -958,7 +853,7 @@ void register_class(void *desc, bool is_enum TSRMLS_DC) {
     zend_error(
         E_ERROR,
         "Generated message class %s hasn't been defined (%s)",
-        classname);
+        classname, fullname);
     return;
   }
   ret = PHP_PROTO_CE_UNREF(pce);
@@ -1107,9 +1002,7 @@ void internal_add_generated_file(const char *data, PHP_PROTO_SIZE data_len,
 PHP_METHOD(InternalDescriptorPool, internalAddGeneratedFile) {
   char *data = NULL;
   PHP_PROTO_SIZE data_len;
-  upb_filedef **files;
   zend_bool use_nested_submsg = false;
-  size_t i;
 
   if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|b",
                             &data, &data_len, &use_nested_submsg) ==

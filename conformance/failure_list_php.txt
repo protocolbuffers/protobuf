@@ -64,7 +64,6 @@ Recommended.Proto3.ProtobufInput.ValidDataRepeated.UINT64.UnpackedInput.PackedOu
 Required.Proto3.JsonInput.DoubleFieldTooSmall
 Required.Proto3.JsonInput.FloatFieldTooLarge
 Required.Proto3.JsonInput.FloatFieldTooSmall
-Required.Proto3.JsonInput.Int32FieldLeadingSpace
 Required.Proto3.JsonInput.Int32FieldNotInteger
 Required.Proto3.JsonInput.Int64FieldNotInteger
 Required.Proto3.JsonInput.OneofFieldDuplicate

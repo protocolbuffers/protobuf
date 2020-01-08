@@ -53,3 +53,4 @@ build_artifact_version 2.7
 build_artifact_version 3.5
 build_artifact_version 3.6
 build_artifact_version 3.7
+build_artifact_version 3.8
