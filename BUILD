@@ -986,8 +986,8 @@ cc_library(
     ],
 )
 
-reject_blacklisted_files = not hasattr(proto_common, "proto_lang_toolchain_rejects_files_do_not_use_or_we_will_break_you_without_mercy"),
-cc_toolchain_blacklisted_protos = [proto + "_proto" for proto in WELL_KNOWN_PROTO_MAP.keys()] if reject_blacklisted_files else [":well_known_protos"],
+reject_blacklisted_files = not hasattr(proto_common, "proto_lang_toolchain_rejects_files_do_not_use_or_we_will_break_you_without_mercy")
+cc_toolchain_blacklisted_protos = [proto + "_proto" for proto in WELL_KNOWN_PROTO_MAP.keys()] if reject_blacklisted_files else [":well_known_protos"]
 proto_lang_toolchain(
     name = "cc_toolchain",
     blacklisted_protos = cc_toolchain_blacklisted_protos,
