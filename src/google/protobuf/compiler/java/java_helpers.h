@@ -86,7 +86,7 @@ std::string UnderscoresToCamelCase(const MethodDescriptor* method);
 // Same as UnderscoresToCamelCase, but checks for reserved keywords
 std::string UnderscoresToCamelCaseCheckReserved(const FieldDescriptor* field);
 
-// Similar to UnderscoresToCamelCase, but guarentees that the result is a
+// Similar to UnderscoresToCamelCase, but guarantees that the result is a
 // complete Java identifier by adding a _ if needed.
 std::string CamelCaseFieldName(const FieldDescriptor* field);
 

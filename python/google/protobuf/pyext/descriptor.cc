@@ -481,7 +481,7 @@ static PyObject* GetFile(PyBaseDescriptor *self, void *closure) {
 }
 
 static PyObject* GetConcreteClass(PyBaseDescriptor* self, void *closure) {
-  // Retuns the canonical class for the given descriptor.
+  // Returns the canonical class for the given descriptor.
   // This is the class that was registered with the primary descriptor pool
   // which contains this descriptor.
   // This might not be the one you expect! For example the returned object does

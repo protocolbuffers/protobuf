@@ -85,7 +85,7 @@ static zend_object *repeated_field_iter_create(zend_class_entry *ce TSRMLS_DC);
 #endif
 
 // -----------------------------------------------------------------------------
-// RepeatedField creation/desctruction
+// RepeatedField creation/destruction
 // -----------------------------------------------------------------------------
 
 zend_class_entry* repeated_field_type;
@@ -484,7 +484,7 @@ PHP_METHOD(RepeatedField, getIterator) {
 }
 
 // -----------------------------------------------------------------------------
-// RepeatedFieldIter creation/desctruction
+// RepeatedFieldIter creation/destruction
 // -----------------------------------------------------------------------------
 
 // Define object free method.

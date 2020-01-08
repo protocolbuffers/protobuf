@@ -153,7 +153,7 @@ static void map_field_write_dimension(zval *object, zval *key,
                                       zval *value TSRMLS_DC);
 
 // -----------------------------------------------------------------------------
-// MapField creation/desctruction
+// MapField creation/destruction
 // -----------------------------------------------------------------------------
 
 zend_class_entry* map_field_type;
@@ -540,7 +540,7 @@ static zend_function_entry map_field_iter_methods[] = {
 };
 
 // -----------------------------------------------------------------------------
-// MapFieldIter creation/desctruction
+// MapFieldIter creation/destruction
 // -----------------------------------------------------------------------------
 
 // Define object free method.

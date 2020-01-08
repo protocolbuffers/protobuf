@@ -166,7 +166,7 @@ INSTANTIATE_TEST_SUITE_P(DifferentTypeInfoSourceTest,
                              testing::USE_TYPE_RESOLVER));
 
 TEST_P(DefaultValueObjectWriterSuppressListTest, Empty) {
-  // Set expectation. Emtpy lists should be suppressed.
+  // Set expectation. Empty lists should be suppressed.
   expects_.StartObject("")
       ->RenderDouble("doubleValue", 0.0)
       ->RenderFloat("floatValue", 0.0)

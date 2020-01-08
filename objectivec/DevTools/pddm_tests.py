@@ -314,7 +314,7 @@ foo(x, y)
       self.fail('Should throw exception! Test failed to catch recursion.')
     except pddm.PDDMError as e:
       self.assertEqual(e.message,
-                       'Found macro recusion, invoking "foo(1, A)":\n...while expanding "bar(1, A)".\n...while expanding "foo(A,B)".')
+                       'Found macro recursion, invoking "foo(1, A)":\n...while expanding "bar(1, A)".\n...while expanding "foo(A,B)".')
 
 
 class TestParsingSource(unittest.TestCase):

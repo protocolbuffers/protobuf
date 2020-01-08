@@ -288,7 +288,7 @@ class MacroCollection(object):
     name = macro_ref_match.group('name')
     for prev_name, prev_macro_ref in macro_stack:
       if name == prev_name:
-        raise PDDMError('Found macro recusion, invoking "%s":%s' %
+        raise PDDMError('Found macro recursion, invoking "%s":%s' %
                         (macro_ref_str, self._FormatStack(macro_stack)))
     macro = self._macros[name]
     args_str = macro_ref_match.group('args').strip()
@@ -395,7 +395,7 @@ class SourceFile(object):
         wasn't append.  If SUCCESS is True, then CAN_ADD_MORE is True/False to
         indicate if more lines can be added after this one.
       """
-      assert False, "sublcass should have overridden"
+      assert False, "subclass should have overridden"
       return (False, False)
 
     def HitEOF(self):

@@ -564,7 +564,7 @@ static id CreateMapForField(GPBFieldDescriptor *field,
 // so use of the array/map after the call returns is flagged as a use after
 // free.
 // But GPBSetRetainedObjectIvarWithFieldInternal() is "consuming" the retain
-// count be holding onto the object (it is transfering it), the object is
+// count be holding onto the object (it is transferring it), the object is
 // still valid after returning from the call.  The other way to avoid this
 // would be to add a -retain/-autorelease, but that would force every
 // repeated/map field parsed into the autorelease pool which is both a memory
@@ -2518,7 +2518,7 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
               GetOrCreateArrayIvarWithField(self, field, syntax);
           [resultArray addRawValuesFromArray:otherArray];
         } else {
-          // The array type doesn't matter, that all implment
+          // The array type doesn't matter, that all implement
           // -addValuesFromArray:.
           GPBInt32Array *resultArray =
               GetOrCreateArrayIvarWithField(self, field, syntax);

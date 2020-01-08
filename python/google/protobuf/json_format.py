@@ -265,7 +265,7 @@ class _Printer(object):
           else:
             name = field.json_name
           if name in js:
-            # Skip the field which has been serailized already.
+            # Skip the field which has been serialized already.
             continue
           if _IsMapEntry(field):
             js[name] = {}

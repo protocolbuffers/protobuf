@@ -223,7 +223,7 @@ TEST(DateTimeTest, StringFormat) {
   EXPECT_EQ("0001-01-01T00:00:00Z", FormatTime(start_time, 0));
   EXPECT_EQ("9999-12-31T23:59:59Z", FormatTime(end_time, 0));
 
-  // Make sure the nanoseconds part is formated correctly.
+  // Make sure the nanoseconds part is formatted correctly.
   EXPECT_EQ("1970-01-01T00:00:00.010Z", FormatTime(0, 10000000));
   EXPECT_EQ("1970-01-01T00:00:00.000010Z", FormatTime(0, 10000));
   EXPECT_EQ("1970-01-01T00:00:00.000000010Z", FormatTime(0, 10));

@@ -225,7 +225,7 @@ void SetField(uint64 val, const FieldDescriptor* field, Message* msg,
       break;
     }
     default:
-      GOOGLE_LOG(FATAL) << "Error in descriptors, primitve field with field type "
+      GOOGLE_LOG(FATAL) << "Error in descriptors, primitive field with field type "
                  << field->type();
   }
 #undef STORE_TYPE

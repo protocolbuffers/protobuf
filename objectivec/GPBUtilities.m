@@ -504,7 +504,7 @@ void GPBClearAutocreatedMessageIvarWithField(GPBMessage *self,
   [oldValue release];
 }
 
-// This exists only for briging some aliased types, nothing else should use it.
+// This exists only for bridging some aliased types, nothing else should use it.
 static void GPBSetObjectIvarWithField(GPBMessage *self,
                                       GPBFieldDescriptor *field, id value) {
   if (self == nil || field == nil) return;
@@ -521,7 +521,7 @@ static void GPBSetCopyObjectIvarWithField(GPBMessage *self,
 // is marked as consuming the value. Note: For some reason this doesn't happen
 // with the -retain in GPBSetObjectIvarWithField.
 #if !defined(__clang_analyzer__)
-// This exists only for briging some aliased types, nothing else should use it.
+// This exists only for bridging some aliased types, nothing else should use it.
 static void GPBSetCopyObjectIvarWithField(GPBMessage *self,
                                           GPBFieldDescriptor *field, id value) {
   if (self == nil || field == nil) return;

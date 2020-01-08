@@ -83,7 +83,7 @@ TEST(TimeUtilTest, TimestampStringFormat) {
   EXPECT_TRUE(TimeUtil::FromString("1970-01-01T00:00:00.0000001Z", &time));
   EXPECT_EQ(100, TimeUtil::TimestampToNanoseconds(time));
 
-  // Also accpets offsets.
+  // Also accepts offsets.
   EXPECT_TRUE(TimeUtil::FromString("1970-01-01T00:00:00-08:00", &time));
   EXPECT_EQ(8 * 3600, TimeUtil::TimestampToSeconds(time));
 }

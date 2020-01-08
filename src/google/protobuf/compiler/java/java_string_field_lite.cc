@@ -137,7 +137,7 @@ int ImmutableStringFieldLiteGenerator::GetNumBitsForMessage() const {
 // strings are not stored as java.lang.String in the Message because of two
 // issues:
 //
-//  1. It wouldn't roundtrip byte arrays that were not vaid UTF-8 encoded
+//  1. It wouldn't roundtrip byte arrays that were not valid UTF-8 encoded
 //     strings, but rather fields that were raw bytes incorrectly marked
 //     as strings in the proto file. This is common because in the proto1
 //     syntax, string was the way to indicate bytes and C++ engineers can

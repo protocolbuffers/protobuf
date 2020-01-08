@@ -79,7 +79,7 @@ inline void WriteLengthDelimited(uint32 num, StringPiece val,
 //
 // Where the '-' represent the bytes which are vertically lined up with the
 // bytes of the stream. The proto parser requires its input to be presented
-// similarily with the extra
+// similarly with the extra
 // property that each chunk has kSlopBytes past its end that overlaps with the
 // first kSlopBytes of the next chunk, or if there is no next chunk at least its
 // still valid to read those bytes. Again, pictorially, we now have

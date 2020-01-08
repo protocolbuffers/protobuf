@@ -407,7 +407,7 @@ int GeneratePackageModules(const FileDescriptor* file, io::Printer* printer) {
   if (file->options().has_ruby_package()) {
     package_name = file->options().ruby_package();
 
-    // If :: is in the package use the Ruby formated name as-is
+    // If :: is in the package use the Ruby formatted name as-is
     //    -> A::B::C
     // otherwise, use the dot seperator
     //    -> A.B.C
@@ -421,7 +421,7 @@ int GeneratePackageModules(const FileDescriptor* file, io::Printer* printer) {
     package_name = file->package();
   }
 
-  // Use the appropriate delimter
+  // Use the appropriate delimiter
   string delimiter = need_change_to_module ? "." : "::";
   int delimiter_size = need_change_to_module ? 1 : 2;
 

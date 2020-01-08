@@ -382,7 +382,7 @@ class PROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
   // on the underlying ObjectWriter depending on whether is_list is false or
   // not.
   // is_placeholder conveys whether the item is a placeholder item or not.
-  // Placeholder items are pushed when adding auxillary types' StartObject or
+  // Placeholder items are pushed when adding auxiliary types' StartObject or
   // StartList calls.
   void Push(StringPiece name, Item::ItemType item_type,
             bool is_placeholder, bool is_list);

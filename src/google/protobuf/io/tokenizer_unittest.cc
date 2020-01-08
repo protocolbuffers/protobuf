@@ -56,7 +56,7 @@ namespace {
 // Data-Driven Test Infrastructure
 
 // TODO(kenton):  This is copied from coded_stream_unittest.  This is
-//   temporary until these fetaures are integrated into gTest itself.
+//   temporary until these features are integrated into gTest itself.
 
 // TEST_1D and TEST_2D are macros I'd eventually like to see added to
 // gTest.  These macros can be used to declare tests which should be

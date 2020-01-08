@@ -220,7 +220,7 @@ class CodedInputStream
     }
 
     /**
-     * Read 32-bit unsiged integer to $var. If the buffer has less than 4 bytes,
+     * Read 32-bit unsigned integer to $var. If the buffer has less than 4 bytes,
      * return false. Advance buffer with consumed bytes.
      * @param $var.
      */
@@ -236,7 +236,7 @@ class CodedInputStream
     }
 
     /**
-     * Read 64-bit unsiged integer to $var. If the buffer has less than 8 bytes,
+     * Read 64-bit unsigned integer to $var. If the buffer has less than 8 bytes,
      * return false. Advance buffer with consumed bytes.
      * @param $var.
      */
@@ -283,7 +283,7 @@ class CodedInputStream
         }
 
         $result = 0;
-        // The larget tag is 2^29 - 1, which can be represented by int32.
+        // The largest tag is 2^29 - 1, which can be represented by int32.
         $success = $this->readVarint32($result);
         if ($success) {
             return $result;

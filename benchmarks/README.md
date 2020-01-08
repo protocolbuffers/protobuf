@@ -168,7 +168,7 @@ $ ./cpp-benchmark $(specific generated dataset file name) [$(benchmark options)]
 
 ### Python:
 
-For Python benchmark we have `--json` for outputing the json result
+For Python benchmark we have `--json` for outputting the json result
 
 #### Pure Python:
 

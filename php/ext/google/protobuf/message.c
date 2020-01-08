@@ -106,8 +106,8 @@ PHP_PROTO_OBJECT_DTOR_END
 // Define object create method.
 PHP_PROTO_OBJECT_CREATE_START(MessageHeader, message)
 // Because php call this create func before calling the sub-message's
-// constructor defined in PHP, it's possible that the decriptor of this class
-// hasn't been added to descritpor pool (when the class is first
+// constructor defined in PHP, it's possible that the descriptor of this class
+// hasn't been added to descriptor pool (when the class is first
 // instantiated). In that case, we will defer the initialization of the custom
 // data to the parent Message's constructor, which will be called by
 // sub-message's constructors after the descriptor has been added.

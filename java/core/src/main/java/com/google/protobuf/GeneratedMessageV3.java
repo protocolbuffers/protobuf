@@ -515,7 +515,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
    * TODO(xiaofeng): remove this after b/29368482 is fixed. We need to move this
    * interface to AbstractMessage in order to versioning GeneratedMessageV3 but
    * this move breaks binary compatibility for AppEngine. After AppEngine is
-   * fixed we can exlude this from google3.
+   * fixed we can exclude this from google3.
    */
   protected interface BuilderParent extends AbstractMessage.BuilderParent {}
 
@@ -3086,7 +3086,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
       serializeMapTo(out, m, defaultEntry, fieldNumber);
       return;
     }
-    // Sorting the unboxed keys and then look up the values during serialziation is 2x faster
+    // Sorting the unboxed keys and then look up the values during serialization is 2x faster
     // than sorting map entries with a custom comparator directly.
     int[] keys = new int[m.size()];
     int index = 0;
@@ -3142,7 +3142,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
       return;
     }
 
-    // Sorting the String keys and then look up the values during serialziation is 25% faster than
+    // Sorting the String keys and then look up the values during serialization is 25% faster than
     // sorting map entries with a custom comparator directly.
     String[] keys = new String[m.size()];
     keys = m.keySet().toArray(keys);

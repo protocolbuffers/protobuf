@@ -105,7 +105,7 @@ void SetEnumVariables(const FieldDescriptor* descriptor, int messageBitIndex,
         ".getNumber()";
   }
 
-  // For repated builders, one bit is used for whether the array is immutable.
+  // For repeated builders, one bit is used for whether the array is immutable.
   (*variables)["get_mutable_bit_builder"] = GenerateGetBit(builderBitIndex);
   (*variables)["set_mutable_bit_builder"] = GenerateSetBit(builderBitIndex);
   (*variables)["clear_mutable_bit_builder"] = GenerateClearBit(builderBitIndex);

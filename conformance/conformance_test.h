@@ -191,7 +191,7 @@ class ConformanceTestSuite {
   // Test cases are classified into a few categories:
   //   REQUIRED: the test case must be passed for an implementation to be
   //             interoperable with other implementations. For example, a
-  //             parser implementaiton must accept both packed and unpacked
+  //             parser implementation must accept both packed and unpacked
   //             form of repeated primitive fields.
   //   RECOMMENDED: the test case is not required for the implementation to
   //                be interoperable with other implementations, but is

@@ -79,7 +79,7 @@ PROTOC_EXPORT int PluginMain(int argc, char* argv[],
                              const CodeGenerator* generator);
 
 // Generates code using the given code generator. Returns true if the code
-// generation is successful. If the code geneartion fails, error_msg may be
+// generation is successful. If the code generation fails, error_msg may be
 // populated to describe the failure cause.
 bool GenerateCode(const CodeGeneratorRequest& request,
                   const CodeGenerator& generator,

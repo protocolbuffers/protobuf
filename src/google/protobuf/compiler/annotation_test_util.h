@@ -60,7 +60,7 @@ struct ExpectedOutput {
 // directory.
 void AddFile(const std::string& filename, const std::string& data);
 
-// Runs proto compiler. Captures proto file structrue in FileDescriptorProto.
+// Runs proto compiler. Captures proto file structure in FileDescriptorProto.
 // Files will be generated in TestTempDir() folder. Callers of this
 // function must read generated files themselves.
 //

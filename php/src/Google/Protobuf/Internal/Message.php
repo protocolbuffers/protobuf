@@ -679,8 +679,8 @@ class Message
      * This method merges the contents of the specified message into the
      * current message. Singular fields that are set in the specified message
      * overwrite the corresponding fields in the current message.  Repeated
-     * fields are appended. Map fields key-value pairs are overritten.
-     * Singular/Oneof sub-messages are recursively merged. All overritten
+     * fields are appended. Map fields key-value pairs are overwritten.
+     * Singular/Oneof sub-messages are recursively merged. All overwritten
      * sub-messages are deep-copied.
      *
      * @param object $msg Protobuf message to be merged from.

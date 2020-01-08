@@ -658,7 +658,7 @@ struct MapEntryHelper<MapEntryLite<T, Key, Value, kKeyFieldType,
         key_(FromHelper<kKeyFieldType>::From(map_pair.first)),
         value_(FromHelper<kValueFieldType>::From(map_pair.second)) {}
 
-  // Purposely not folowing the style guide naming. These are the names
+  // Purposely not following the style guide naming. These are the names
   // the proto compiler would generate given the map entry descriptor.
   // The proto compiler generates the offsets in this struct as if this was
   // a regular message. This way the table driven code barely notices it's

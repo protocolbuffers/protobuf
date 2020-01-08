@@ -250,7 +250,7 @@ def cc_proto_library(
       include: a string indicating the include path of the .proto files.
       protoc: the label of the protocol compiler to generate the sources.
       internal_bootstrap_hack: a flag indicate the cc_proto_library is used only
-          for bootstraping. When it is set to True, no files will be generated.
+          for bootstrapping. When it is set to True, no files will be generated.
           The rule will simply be a provider for .proto files, so that other
           cc_proto_library can depend on it.
       use_grpc_plugin: a flag to indicate whether to call the grpc C++ plugin

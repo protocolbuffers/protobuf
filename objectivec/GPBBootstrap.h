@@ -46,7 +46,7 @@
 #endif
 
 // If the headers are imported into Objective-C++, we can run into an issue
-// where the defintion of NS_ENUM (really CF_ENUM) changes based on the C++
+// where the definition of NS_ENUM (really CF_ENUM) changes based on the C++
 // standard that is in effect.  If it isn't C++11 or higher, the definition
 // doesn't allow us to forward declare. We work around this one case by
 // providing a local definition. The default case has to use NS_ENUM for the

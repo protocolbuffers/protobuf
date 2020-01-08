@@ -457,7 +457,7 @@ int UTF8GenericScan(const UTF8ScanObj* st,
   //----------------------------
 
 
-  // Exit posibilities:
+  // Exit possibilities:
   //  Some exit code, !state0, back up over last char
   //  Some exit code, state0, back up one byte exactly
   //  source consumed, !state0, back up over partial char

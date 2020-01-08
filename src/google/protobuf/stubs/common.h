@@ -133,7 +133,7 @@ inline bool IsStructurallyValidUTF8(const std::string& str) {
   return IsStructurallyValidUTF8(str.data(), static_cast<int>(str.length()));
 }
 
-// Returns initial number of bytes of structually valid UTF-8.
+// Returns initial number of bytes of structurally valid UTF-8.
 PROTOBUF_EXPORT int UTF8SpnStructurallyValid(const StringPiece& str);
 
 // Coerce UTF-8 byte string in src_str to be

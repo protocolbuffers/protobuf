@@ -148,7 +148,7 @@ class GeneratorTest(unittest.TestCase):
     proto = unittest_custom_options_pb2.TestMessageWithCustomOptions()
     enum_options = proto.DESCRIPTOR.enum_types_by_name['AnEnum'].GetOptions()
     self.assertTrue(enum_options is not None)
-    # TODO(gps): We really should test for the presense of the enum_opt1
+    # TODO(gps): We really should test for the presence of the enum_opt1
     # extension and for its value to be set to -789.
 
   def testNestedTypes(self):

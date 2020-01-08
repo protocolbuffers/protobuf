@@ -9706,7 +9706,7 @@ static bool start_stringval(upb_json_parser *p) {
   } else if (upb_fielddef_type(p->top->f) != UPB_TYPE_BOOL &&
              upb_fielddef_type(p->top->f) != UPB_TYPE_MESSAGE) {
     /* No need to push a frame -- numeric values in quotes remain in the
-     * current parser frame.  These values must accmulate so we can convert
+     * current parser frame.  These values must accumulate so we can convert
      * them all at once at the end. */
     multipart_startaccum(p);
     return true;
