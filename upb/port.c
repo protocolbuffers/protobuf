@@ -1,5 +1,4 @@
 
-#include "upb/upb.h"
 #include "upb/port_def.inc"
 
 #ifdef UPB_MSVC_VSNPRINTF
