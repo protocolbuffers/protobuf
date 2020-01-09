@@ -279,7 +279,7 @@ _upb_proto_reflection_library_aspect = aspect(
         ),
         "_upb": attr.label_list(
             default = [
-                "//third_party/upb:generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
+                "//:generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
                 "//:upb",
                 "//:reflection",
             ],

@@ -101,6 +101,8 @@ cc_library(
     hdrs = [
         "upb/generated_util.h",
         "upb/msg.h",
+        "upb/port_def.inc",
+        "upb/port_undef.inc",
     ],
     copts = select({
         ":windows": [],
