@@ -569,8 +569,8 @@ def StringDecoder(field_number, is_repeated, is_packed, key, new_default,
     if is_strict_utf8 and six.PY2 and sys.maxunicode > _UCS2_MAXUNICODE:
       # Only do the check for python2 ucs4 when is_strict_utf8 enabled
       if _SURROGATE_PATTERN.search(value):
-        reason = ('String field %s contains invalid UTF-8 data when parsing'
-                  'a protocol buffer: surrogates not allowed. Use'
+        reason = ('String field %s contains invalid UTF-8 data when parsing '
+                  'a protocol buffer: surrogates not allowed. Use '
                   'the bytes type if you intend to send raw bytes.') % (
                       key.full_name)
         raise message.DecodeError(reason)
