@@ -63,7 +63,6 @@ cc_library(
     srcs = [
         "upb/port.c",
     ],
-    visibility = ["//visibility:public"],
 )
 
 cc_library(
@@ -109,7 +108,6 @@ cc_library(
     }),
     visibility = ["//visibility:public"],
     deps = [
-        ":port",
         ":upb",
     ],
 )

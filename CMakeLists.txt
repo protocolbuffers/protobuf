@@ -78,7 +78,6 @@ target_link_libraries(upb
   port)
 add_library(generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me INTERFACE)
 target_link_libraries(generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me INTERFACE
-  port
   upb)
 add_library(reflection
   upb/def.c
