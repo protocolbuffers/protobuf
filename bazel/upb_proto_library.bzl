@@ -238,7 +238,8 @@ _upb_proto_library_aspect = aspect(
         ),
         "_upb": attr.label_list(default = [
             "//:generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
-            "//:upb"
+            "//:port",
+            "//:upb",
         ]),
         "_ext": attr.string(default = ".upb"),
     }),
@@ -279,6 +280,7 @@ _upb_proto_reflection_library_aspect = aspect(
         ),
         "_upb": attr.label_list(
             default = [
+                "//:port",
                 "//:upb",
                 "//:reflection",
             ],

@@ -87,6 +87,7 @@ add_library(reflection
   upb/msgfactory.h)
 target_link_libraries(reflection
   descriptor_upbproto
+  port
   table
   upb)
 add_library(table INTERFACE)
@@ -109,6 +110,7 @@ add_library(handlers
   upb/sink.h)
 target_link_libraries(handlers
   reflection
+  port
   table
   upb)
 add_library(upb_pb
@@ -126,6 +128,7 @@ target_link_libraries(upb_pb
   descriptor_upbproto
   handlers
   reflection
+  port
   table
   upb)
 add_library(upb_json
@@ -140,6 +143,7 @@ add_library(upb_cc_bindings INTERFACE)
 target_link_libraries(upb_cc_bindings INTERFACE
   descriptor_upbproto
   handlers
+  port
   upb)
 add_library(upb_test
   tests/testmain.cc
@@ -147,6 +151,7 @@ add_library(upb_test
   tests/upb_test.h)
 target_link_libraries(upb_test
   handlers
+  port
   upb)
 
 
