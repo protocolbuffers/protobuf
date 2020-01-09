@@ -20,9 +20,7 @@
 *
 * This file is private and must not be included by users!
 */
-#ifndef UINTPTR_MAX
-#error must include stdint.h first
-#endif
+#include <stdint.h>
 
 #if UINTPTR_MAX == 0xffffffff
 #define UPB_SIZE(size32, size64) size32

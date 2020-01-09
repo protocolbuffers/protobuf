@@ -56,15 +56,23 @@ config_setting(
 # Public C/C++ libraries #######################################################
 
 cc_library(
+    name = "port",
+    textual_hdrs = [
+        "upb/port_def.inc",
+        "upb/port_undef.inc",
+    ],
+    srcs = [
+        "upb/port.c",
+    ],
+)
+
+cc_library(
     name = "upb",
     srcs = [
         "upb/decode.c",
         "upb/encode.c",
         "upb/msg.c",
         "upb/msg.h",
-        "upb/port.c",
-        "upb/port_def.inc",
-        "upb/port_undef.inc",
         "upb/table.c",
         "upb/table.int.h",
         "upb/upb.c",
@@ -79,6 +87,7 @@ cc_library(
         "//conditions:default": COPTS
     }),
     visibility = ["//visibility:public"],
+    deps = [":port"],
 )
 
 # Common support routines used by generated code.  This library has no
@@ -96,12 +105,11 @@ cc_library(
         ":windows": [],
         "//conditions:default": COPTS
     }),
-    textual_hdrs = [
-        "upb/port_def.inc",
-        "upb/port_undef.inc",
-    ],
     visibility = ["//visibility:public"],
-    deps = [":upb"],
+    deps = [
+        ":port",
+        ":upb",
+    ],
 )
 
 upb_proto_library(
@@ -137,7 +145,10 @@ cc_library(
 cc_library(
     name = "table",
     hdrs = ["upb/table.int.h"],
-    deps = [":upb"],
+    deps = [
+        ":port",
+        ":upb",
+    ],
 )
 
 # Legacy C/C++ Libraries (not recommended for new code) ########################
@@ -242,9 +253,9 @@ cc_library(
         "//conditions:default": CPPOPTS
     }),
     deps = [
-        "@absl//absl/base:core_headers",
-        "@absl//absl/container:flat_hash_map",
-        "@absl//absl/strings",
+        "@com_google_absl//absl/base:core_headers",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/strings",
         "@com_google_protobuf//:protobuf",
         "@com_google_protobuf//:protoc_lib",
     ],
@@ -268,6 +279,11 @@ cc_binary(
 # and upb_proto_reflection_library() rules are fixed.
 
 # C/C++ tests ##################################################################
+
+upb_proto_reflection_library(
+    name = "descriptor_upbreflection",
+    deps = ["@com_google_protobuf//:descriptor_proto"],
+)
 
 cc_binary(
     name = "benchmark",
@@ -423,11 +439,6 @@ cc_binary(
 )
 
 # copybara:strip_for_google3_begin
-upb_proto_reflection_library(
-    name = "descriptor_upbreflection",
-    deps = ["@com_google_protobuf//:descriptor_proto"],
-)
-
 cc_test(
     name = "test_encoder",
     srcs = ["tests/pb/test_encoder.cc"],
@@ -556,6 +567,7 @@ upb_amalgamation(
         ":descriptor_upbproto",
         ":reflection",
         ":handlers",
+        ":port",
         ":upb_pb",
         ":upb_json",
     ],
@@ -619,7 +631,7 @@ cc_binary(
     }),
     visibility = ["//visibility:public"],
     deps = [
-        "@absl//absl/strings",
+        "@com_google_absl//absl/strings",
         "@com_google_protobuf//:protoc_lib"
     ],
 )
