@@ -123,7 +123,7 @@ target directory layout:
           protoc.exe
         + ppcle_64
           protoc.exe
-        + s390x_64
+        + s390x
           protoc.exe
       + osx
         + x86_64
