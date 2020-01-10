@@ -86,8 +86,8 @@
                   <type>exe</type>
 	  	</artifact>
                 <artifact>
-                  <file>${basedir}/target/linux/s390x_64/protoc.exe</file>
-                  <classifier>linux-s390x_64</classifier>
+                  <file>${basedir}/target/linux/s390x/protoc.exe</file>
+                  <classifier>linux-s390x</classifier>
                   <type>exe</type>
                 </artifact>
               </artifacts>
