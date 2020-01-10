@@ -1,10 +1,11 @@
 # Bazel (https://bazel.build/) BUILD file for Protobuf.
 
-load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test", "objc_library")
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test", "objc_library", native_cc_proto_library = "cc_proto_library")
 load("@rules_java//java:defs.bzl", "java_library")
 load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain", "proto_library")
 load("@rules_proto//proto/private:native.bzl", "native_proto_common")
 load("@rules_python//python:defs.bzl", "py_library")
+load(":cc_proto_blacklist_test.bzl", "cc_proto_blacklist_test")
 
 licenses(["notice"])
 
@@ -314,6 +315,17 @@ cc_proto_library(
     visibility = ["//visibility:public"],
     deps = [dep + "_proto" for dep in proto[1][1]],
 ) for proto in WELL_KNOWN_PROTO_MAP.items()]
+
+[native_cc_proto_library(
+    name = proto + "_cc_proto",
+    deps = [proto + "_proto"],
+    visibility = ["//visibility:private"],
+) for proto in WELL_KNOWN_PROTO_MAP.keys()]
+
+cc_proto_blacklist_test(
+    name = "cc_proto_blacklist_test",
+    deps = [proto + "_cc_proto" for proto in WELL_KNOWN_PROTO_MAP.keys()]
+)
 
 ################################################################################
 # Protocol Buffers Compiler
@@ -989,7 +1001,7 @@ cc_library(
 
 # Note: We use `native_proto_common` here because we depend on an implementation-detail of
 # `proto_lang_toolchain`, which may not be available on `proto_common`.
-reject_blacklisted_files = not hasattr(native_proto_common, "proto_lang_toolchain_rejects_files_do_not_use_or_we_will_break_you_without_mercy")
+reject_blacklisted_files = hasattr(native_proto_common, "proto_lang_toolchain_rejects_files_do_not_use_or_we_will_break_you_without_mercy")
 cc_toolchain_blacklisted_protos = [proto + "_proto" for proto in WELL_KNOWN_PROTO_MAP.keys()] if reject_blacklisted_files else [":well_known_protos"]
 proto_lang_toolchain(
     name = "cc_toolchain",

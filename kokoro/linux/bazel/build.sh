@@ -23,7 +23,10 @@ cd $(dirname $0)/../../..
 git submodule update --init --recursive
 
 trap print_test_logs EXIT
-bazel test :build_files_updated_unittest :protobuf_test --copt=-Werror --host_copt=-Werror
+bazel test --copt=-Werror --host_copt=-Werror \
+  //:build_files_updated_unittest \
+  //:protobuf_test \
+  @com_google_protobuf//:cc_proto_blacklist_test
 trap - EXIT
 
 cd examples
