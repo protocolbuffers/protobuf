@@ -101,6 +101,8 @@ cc_library(
     hdrs = [
         "upb/generated_util.h",
         "upb/msg.h",
+        "upb/port_def.inc",
+        "upb/port_undef.inc",
     ],
     copts = select({
         ":windows": [],
@@ -108,7 +110,6 @@ cc_library(
     }),
     visibility = ["//visibility:public"],
     deps = [
-        ":port",
         ":upb",
     ],
 )
@@ -136,6 +137,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":descriptor_upbproto",
+        ":port",
         ":table",
         ":upb",
     ],
@@ -189,6 +191,7 @@ cc_library(
     }),
     deps = [
         ":reflection",
+        ":port",
         ":table",
         ":upb",
     ],
@@ -218,6 +221,7 @@ cc_library(
         ":descriptor_upbproto",
         ":handlers",
         ":reflection",
+        ":port",
         ":table",
         ":upb",
     ],
@@ -253,6 +257,7 @@ cc_library(
     deps = [
         ":descriptor_upbproto",
         ":handlers",
+        ":port",
         ":upb",
     ],
 )
@@ -331,6 +336,7 @@ cc_library(
     }),
     deps = [
         ":handlers",
+        ":port",
         ":upb",
     ],
 )
@@ -346,6 +352,7 @@ cc_test(
         "//conditions:default": COPTS
     }),
     deps = [
+        ":port",
         ":upb",
         ":upb_pb",
         ":upb_test",
@@ -376,6 +383,7 @@ cc_test(
     }),
     deps = [
         ":handlers",
+        ":port",
         ":test_decoder_upbproto",
         ":upb",
         ":upb_pb",
@@ -404,6 +412,7 @@ cc_test(
     }),
     deps = [
         ":handlers",
+        ":port",
         ":reflection",
         ":test_cpp_upbproto",
         ":upb",
@@ -420,6 +429,7 @@ cc_test(
         "//conditions:default": CPPOPTS
     }),
     deps = [
+        ":port",
         ":table",
         ":upb",
         ":upb_test",
