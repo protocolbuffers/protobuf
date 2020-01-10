@@ -783,6 +783,10 @@ DescriptorInternal* get_class_desc(const char* klass);
 void add_class_enumdesc(const char* klass, EnumDescriptorInternal* desc);
 EnumDescriptorInternal* get_class_enumdesc(const char* klass);
 
+// Global map to check whether file has been initialized.
+void add_file(const char* file);
+bool exist_file(const char* file, size_t len);
+
 extern zend_class_entry* map_field_type;
 extern zend_class_entry* repeated_field_type;
 
@@ -814,6 +818,7 @@ PHP_PROTO_WRAP_OBJECT_END
 
 PHP_METHOD(InternalDescriptorPool, getGeneratedPool);
 PHP_METHOD(InternalDescriptorPool, internalAddGeneratedFile);
+PHP_METHOD(InternalDescriptorPool, isFileInitialized);
 
 void internal_add_generated_file(const char* data, PHP_PROTO_SIZE data_len,
                                  InternalDescriptorPoolImpl* pool,

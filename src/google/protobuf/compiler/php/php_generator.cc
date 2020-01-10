@@ -960,7 +960,10 @@ void GenerateAddFileToPool(const FileDescriptor* file, bool is_descriptor,
       std::string dependency_filename =
           GeneratedMetadataFileName(file->dependency(i), is_descriptor);
       printer->Print(
-          "\\^name^::initOnce();\n",
+          "if (!$pool->isFileInitialized(\"^filename^\")) {\n"
+          "  \\^name^::initOnce();\n"
+          "}\n",
+          "filename", name,
           "name", FilenameToClassname(dependency_filename));
     }
 

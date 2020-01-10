@@ -55,6 +55,8 @@ static upb_strtable ce_to_enumdesc_map_persistent;
 // wrapper Descriptor/EnumDescriptor instances.
 static upb_strtable proto_to_desc_map_persistent;
 static upb_strtable class_to_desc_map_persistent;
+// Global map for recording initialized proto file
+static upb_strtable file_persistent;
 
 upb_strtable reserved_names;
 
@@ -248,6 +250,22 @@ EnumDescriptorInternal* get_class_enumdesc(const char* klass) {
   }
 }
 
+void add_file(const char* file) {
+  upb_strtable_insert(&file_persistent, file, upb_value_ptr(NULL));
+}
+
+bool exist_file(const char* file, size_t len) {
+  upb_value v;
+#ifndef NDEBUG
+  v.ctype = UPB_CTYPE_PTR;
+#endif
+  if (!upb_strtable_lookup2(&file_persistent, file, len, &v)) {
+    return false;
+  } else {
+    return true;
+  }
+}
+
 // -----------------------------------------------------------------------------
 // Well Known Types.
 // -----------------------------------------------------------------------------
@@ -356,6 +374,7 @@ static void initialize_persistent_descriptor_pool(TSRMLS_D) {
   upb_strtable_init(&ce_to_enumdesc_map_persistent, UPB_CTYPE_PTR);
   upb_strtable_init(&proto_to_desc_map_persistent, UPB_CTYPE_PTR);
   upb_strtable_init(&class_to_desc_map_persistent, UPB_CTYPE_PTR);
+  upb_strtable_init(&file_persistent, UPB_CTYPE_PTR);
 
   internal_descriptor_pool_impl_init(&generated_pool_impl TSRMLS_CC);
 
@@ -458,6 +477,7 @@ static void cleanup_persistent_descriptor_pool(TSRMLS_D) {
   upb_strtable_uninit(&ce_to_enumdesc_map_persistent);
   upb_strtable_uninit(&proto_to_desc_map_persistent);
   upb_strtable_uninit(&class_to_desc_map_persistent);
+  upb_strtable_uninit(&file_persistent);
 }
 
 static PHP_RSHUTDOWN_FUNCTION(protobuf) {

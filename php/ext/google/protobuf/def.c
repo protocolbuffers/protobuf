@@ -578,6 +578,7 @@ static zend_function_entry internal_descriptor_pool_methods[] = {
   PHP_ME(InternalDescriptorPool, getGeneratedPool, NULL,
          ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
   PHP_ME(InternalDescriptorPool, internalAddGeneratedFile, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(InternalDescriptorPool, isFileInitialized, NULL, ZEND_ACC_PUBLIC)
   ZEND_FE_END
 };
 
@@ -997,6 +998,8 @@ void internal_add_generated_file(const char *data, PHP_PROTO_SIZE data_len,
     fill_classname_for_desc(desc->intern, true);
     add_class_enumdesc(desc->intern->classname, desc->intern);
   }
+
+  add_file(upb_filedef_name(file));
 }
 
 PHP_METHOD(InternalDescriptorPool, internalAddGeneratedFile) {
@@ -1013,6 +1016,18 @@ PHP_METHOD(InternalDescriptorPool, internalAddGeneratedFile) {
   InternalDescriptorPool *pool = UNBOX(InternalDescriptorPool, getThis());
   internal_add_generated_file(data, data_len, pool->intern,
                               use_nested_submsg TSRMLS_CC);
+}
+
+PHP_METHOD(InternalDescriptorPool, isFileInitialized) {
+  char *filename = NULL;
+  PHP_PROTO_SIZE filename_len;
+
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &filename,
+                            &filename_len) == FAILURE) {
+    return;
+  }
+
+  RETURN_BOOL(exist_file(filename, filename_len));
 }
 
 PHP_METHOD(DescriptorPool, getDescriptorByClassName) {
