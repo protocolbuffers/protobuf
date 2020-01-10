@@ -869,10 +869,9 @@ static size_t upb_msgval_sizeof(upb_fieldtype_t type) {
 
 static uint8_t upb_msg_fielddefsize(const upb_fielddef *f) {
   if (upb_msgdef_mapentry(upb_fielddef_containingtype(f))) {
-    /* Map entries aren't actually stored, they are only used during parsing.
-     * For parsing, it helps a lot if all map entry messages have the same
-     * layout. */
-    return sizeof(upb_strview);
+    upb_map_entry ent;
+    UPB_ASSERT(sizeof(ent.k) == sizeof(ent.v));
+    return sizeof(ent.k);
   } else if (upb_fielddef_isseq(f)) {
     return sizeof(void*);
   } else {

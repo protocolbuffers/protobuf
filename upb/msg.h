@@ -200,6 +200,21 @@ typedef struct {
   upb_strtable table;
 } upb_map;
 
+/* Map entries aren't actually stored, they are only used during parsing.  For
+ * parsing, it helps a lot if all map entry messages have the same layout.
+ * The compiler and def.c must ensure that all map entries have this layout. */
+typedef struct {
+  upb_msg_internal internal;
+  union {
+    upb_strview str;  /* For str/bytes. */
+    upb_value val;    /* For all other types. */
+  } k;
+  union {
+    upb_strview str;  /* For str/bytes. */
+    upb_value val;    /* For all other types. */
+  } v;
+} upb_map_entry;
+
 /* Creates a new map on the given arena with this key/value type. */
 upb_map *_upb_map_new(upb_arena *a, size_t key_size, size_t value_size);
 

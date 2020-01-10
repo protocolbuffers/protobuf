@@ -492,19 +492,7 @@ static bool upb_decode_mapfield(upb_decstate *d, upb_decframe *frame,
                                 const upb_msglayout_field *field, int len) {
   upb_map *map = *(upb_map**)&frame->msg[field->offset];
   const upb_msglayout *entry = frame->layout->submsgs[field->submsg_index];
-
-  /* The compiler ensures that all map entry messages have this layout. */
-  struct map_entry {
-    upb_msg_internal internal;
-    union {
-      upb_strview str;  /* For str/bytes. */
-      upb_value val;    /* For all other types. */
-    } k;
-    union {
-      upb_strview str;  /* For str/bytes. */
-      upb_value val;    /* For all other types. */
-    } v;
-  } ent;
+  upb_map_entry ent;
 
   if (!map) {
     /* Lazily create map. */
