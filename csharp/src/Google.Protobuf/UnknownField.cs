@@ -284,7 +284,7 @@ namespace Google.Protobuf
 
         private static bool TryGetLastOf<T>(List<T> list, out T value)
         {
-            if (list.Count != 0)
+            if (list != null && list.Count != 0)
             {
                 value = list[list.Count - 1];
                 return true;

@@ -37,6 +37,7 @@ using System;
 using System.IO;
 using System.Linq;
 using UnitTest.Issues.TestProtos;
+using OldGenerator = UnitTest.Issues.TestProtos.OldGenerator;
 using static Google.Protobuf.WireFormat;
 using static UnitTest.Issues.TestProtos.ComplexOptionType2.Types;
 using static UnitTest.Issues.TestProtos.UnittestCustomOptionsProto3Extensions;
@@ -120,8 +121,7 @@ namespace Google.Protobuf.Test.Reflection
                 Bar = new ComplexOptionType1 { Foo = 743 },
                 Fred = new ComplexOptionType4 { Waldo = 321 },
                 Barney = { new ComplexOptionType4 { Waldo = 101 }, new ComplexOptionType4 { Waldo = 212 } }
-            },
-                customOptions.TryGetMessage, ComplexOpt2, d.GetOption, d.GetOptions().GetExtension);
+            }, customOptions.TryGetMessage, ComplexOpt2, d.GetOption, d.GetOptions().GetExtension);
             AssertOption(new ComplexOptionType3 { Qux = 9 }, customOptions.TryGetMessage, ComplexOpt3, d.GetOption, d.GetOptions().GetExtension);
         }
 
