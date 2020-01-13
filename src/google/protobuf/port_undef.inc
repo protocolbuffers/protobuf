@@ -74,6 +74,8 @@
 #pragma pop_macro("GetMessage")
 #pragma pop_macro("IGNORE")
 #pragma pop_macro("IN")
+#pragma pop_macro("OUT")
+#pragma pop_macro("OPTIONAL")
 #pragma pop_macro("min")
 #pragma pop_macro("max")
 #endif
